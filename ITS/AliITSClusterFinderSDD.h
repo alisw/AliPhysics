@@ -11,47 +11,51 @@
 #include "AliITSClusterFinder.h"
 
 class AliITSMapA2;
+class AliITSresponse;
+class AliITSresponseSDD;
+class AliITSsegmentation;
+class AliITSsegmentationSDD;
 class TFile;
 
 class AliITSClusterFinderSDD : public AliITSClusterFinder{
- public:
+  public:
     AliITSClusterFinderSDD
-	(AliITSsegmentation *seg,AliITSresponse *response,
-	 TClonesArray *digits,TClonesArray *recpoints);
+        (AliITSsegmentation *seg,AliITSresponse *response,
+         TClonesArray *digits,TClonesArray *recpoints);
     AliITSClusterFinderSDD();
-    virtual ~AliITSClusterFinderSDD();
-
-    virtual void  SetCutAmplitude(Float_t nsigma=4);
+    virtual ~AliITSClusterFinderSDD(){};
+    
+    virtual void  SetCutAmplitude(Double_t nsigma=4);
     virtual Int_t CutAmplitude() const {// get cut amplitude
-	return fCutAmplitude;}
-    virtual void SetDAnode(Float_t danode=4.2) {// setDAnode
-	fDAnode=danode;}
-    virtual Float_t DAnode() const {// get DAnode
-	return fDAnode;}
-    virtual void SetDTime(Float_t dtime=75) {// SetDTime
-	fDTime=dtime;}
-    virtual Float_t DTime() const {// get DTime
-	return fDTime;}
+        return fCutAmplitude;}
+    virtual void SetDAnode(Double_t danode=4.2) {// setDAnode
+        fDAnode=danode;}
+    virtual Double_t DAnode() const {// get DAnode
+        return fDAnode;}
+    virtual void SetDTime(Double_t dtime=75) {// SetDTime
+        fDTime=dtime;}
+    virtual Double_t DTime() const {// get DTime
+        return fDTime;}
     virtual void SetMinPeak(Int_t minpeak=10) {// SetMinPeak
-	fMinPeak=minpeak;}
+        fMinPeak=minpeak;}
     virtual Int_t MinPeak() const {// get MinPeak
-	return fMinPeak;}
+        return fMinPeak;}
     virtual void SetMinCharge(Int_t mincharge=30) {// SetMinCharge
-	fMinCharge=mincharge;}
+        fMinCharge=mincharge;}
     virtual Int_t MinCharge() const {// get MinCharge
-	return fMinCharge;}
+        return fMinCharge;}
     virtual void SetMinNCells(Int_t minc=3) {// setNCells
-	fMinNCells=minc;}
+        fMinNCells=minc;}
     virtual Int_t MinNCells() const {// get MinNCells
-	return fMinNCells;}
+        return fMinNCells;}
     virtual void SetMaxNCells(Int_t maxc=10) {// setNCells
-	fMaxNCells=maxc;}
+        fMaxNCells=maxc;}
     virtual Int_t MaxNCells() const {// get MaxNCells
-	return fMaxNCells;}
-    virtual void SetTimeCorr(Float_t timec=19.3) {// setNCells
-	fTimeCorr=timec;}
-    virtual Float_t TimeCorr() const{// get Time Correction (ns)
-	return fTimeCorr;}
+        return fMaxNCells;}
+    virtual void SetTimeCorr(Double_t timec=19.3) {// setNCells
+        fTimeCorr=timec;}
+    virtual Double_t TimeCorr() const{// get Time Correction (ns)
+        return fTimeCorr;}
 
     // Search for clusters
     virtual void FindRawClusters(Int_t mod=0);
@@ -62,34 +66,37 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     void  GetRecPoints();
     void  ResolveClusters(); // Boris........ 
     void  ResolveClustersE(); // Ernesto 
-    Int_t SearchPeak(Float_t *spect,Int_t xdim,Int_t zdim,Int_t *peakX,
-		     Int_t *peakZ,Float_t *peakAmp,Float_t minpeak); // Ernesto
-    Int_t NoLinearFit( Int_t xdim, Int_t zdim, Float_t *param, Float_t *spe,
-		       Int_t *niter, Float_t *chir );
-    void  Minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0,
-		Float_t *steprm, Float_t *chisqr,Float_t *spe,Float_t *speFit);
-    Float_t ChiSqr ( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit ) const;
-    void  PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe,
-		   Float_t *Integral=0 );
+    Int_t SearchPeak(Double_t *spect,Int_t xdim,Int_t zdim,Int_t *peakX,
+                     Int_t *peakZ,Double_t *peakAmp,Double_t minpeak);//Ernesto
+    Int_t NoLinearFit( Int_t xdim, Int_t zdim, Double_t *param, Double_t *spe,
+                       Int_t *niter, Double_t *chir );
+    void  Minim(Int_t xdim,Int_t zdim,Double_t *param,Double_t *prm0,
+             Double_t *steprm,Double_t *chisqr,Double_t *spe,Double_t *speFit);
+    Double_t ChiSqr(Int_t xdim,Int_t zdim,Double_t *spe,Double_t *speFit)const;
+    void  PeakFunc( Int_t xdim, Int_t zdim, Double_t *par, Double_t *spe,
+                    Double_t *Integral=0 );
     void  Print() const;
 
- private:
+  private:
+    virtual AliITSresponseSDD* GetResp()const{
+        return (AliITSresponseSDD*) GetResponse();}//Return Response
+    //Returns fSegmentation
+    virtual AliITSsegmentationSDD* GetSeg()const{
+        return (AliITSsegmentationSDD*)GetSegmentation();} 
     AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source); // copy ctor
     AliITSClusterFinderSDD& operator=(const AliITSClusterFinderSDD &source);
- private:
-    Int_t               fModule;        //! ITS current module 
-    TClonesArray       *fClusters;      //! clusters
+  private:
     Int_t               fNclusters;     //! num of clusters
-    Float_t             fDAnode;        //! fDanode
-    Float_t             fDTime;         //! fDtime
-    Float_t             fTimeCorr;      //! Correction factor along time coord
+    Double_t             fDAnode;        //! fDanode
+    Double_t             fDTime;         //! fDtime
+    Double_t             fTimeCorr;      //! Correction factor along time coord
     Int_t               fCutAmplitude;  //! cut amplitude
     Int_t               fMinPeak;       //! min peak
     Int_t               fMinCharge;     //! min charge
     Int_t               fMinNCells;     //! min num of cells
     Int_t               fMaxNCells;     //! max num of cells
 
-    ClassDef(AliITSClusterFinderSDD,1) // SDD clustering - Piergiorgio C. algo
+    ClassDef(AliITSClusterFinderSDD,2) // SDD clustering - Piergiorgio C. algo
     };
 
 #endif

@@ -30,17 +30,61 @@
 ClassImp(AliITSDetType)	 
 
 //______________________________________________________________________
-AliITSDetType::AliITSDetType(){
-    // constructor
-
-    fSegmentation = 0;
-    fResponse     = 0;
-    fSimulation   = 0;
-    fReconst      = 0;
+AliITSDetType::AliITSDetType():
+TObject(),
+fDetType(kND),
+fResponse(0),
+fSegmentation(0),
+fSimulation(0),
+fReconst(0),
+fDigClassName(""),
+fClustClassName(""){
+    // Default constructor.
+    // Inputs:
+    //   none.
+    // Output:
+    //   none.
+    // Return:
+    //   A default constructed AliITSDetType class.
+}
+//______________________________________________________________________
+AliITSDetType::AliITSDetType(AliITSDetector det,AliITSresponse *res,
+                             AliITSsegmentation *seg,AliITSsimulation *sim,
+                             AliITSClusterFinder *cf,
+                             const Char_t *DigClassName,
+                             const Char_t *ClustClassName):
+TObject(),
+fDetType(det),
+fResponse(res),
+fSegmentation(seg),
+fSimulation(sim),
+fReconst(cf),
+fDigClassName(DigClassName),
+fClustClassName(ClustClassName){
+    // Standard constructor
+    // Inputs:
+    //   AliITSDetector       det  Detector type
+    //   AliITSresponse      *res  response class to use
+    //   AliITSsegmentation  *seg  Segmentation class to use
+    //   AliITSsimulation    *sim  Simulation class to use
+    //   AliITSClusterFinder *cf   Cluster Finder/Reconstruction class to use
+    //   const Char_t        DigClassName   Name of the digit class to be used
+    //   const Char_t        ClustClassName Name of the cluster class to be 
+    //                                      used
+    // Output:
+    //   none.
+    // Return:
+    //   A Standard constructed AliITSDetType class.
 }
 //----------------------------------------------------------------------
 AliITSDetType::~AliITSDetType(){
     // destructor
+    // Inputs:
+    //   none.
+    // Output:
+    //   none.
+    // Return:
+    //   none.
 
     if(fSegmentation!=0) delete fSegmentation; fSegmentation = 0;
     if(fResponse!=0)     delete fResponse;     fResponse     = 0;
@@ -49,27 +93,41 @@ AliITSDetType::~AliITSDetType(){
 }
 //______________________________________________________________________
 AliITSDetType::AliITSDetType(const AliITSDetType &source) : TObject(source){
-  //     Copy Constructor 
+    //     Copy Constructor
+    // Inputs:
+    //   const AliITSDetType &source  class to copy from.
+    // Output:
+    //   none.
+    // Return:
+    //   none.
 
-  if(&source == this) return;
-  this->fReconst        = source.fReconst;
-  this->fSimulation     = source.fSimulation;
-  this->fResponse       = source.fResponse;
-  this->fSegmentation   = source.fSegmentation;
-  this->fDigClassName   = source.fDigClassName;
-  this->fClustClassName = source.fClustClassName;
-  return;
+    if(&source == this) return;
+    this->fDetType        = source.fDetType;
+    this->fReconst        = source.fReconst;
+    this->fSimulation     = source.fSimulation;
+    this->fResponse       = source.fResponse;
+    this->fSegmentation   = source.fSegmentation;
+    this->fDigClassName   = source.fDigClassName;
+    this->fClustClassName = source.fClustClassName;
+    return;
 }
 //______________________________________________________________________
 AliITSDetType& AliITSDetType::operator=(const AliITSDetType &source){
-  //    Assignment operator
+    //    Assignment operator
+    // Inputs:
+    //   const AliITSDetType &source  class to copy from.
+    // Output:
+    //   none.
+    // Return:
+    //   a new AliITSDetType class with the same values as in source.
 
-  if(&source == this) return *this;
-  this->fReconst        = source.fReconst;
-  this->fSimulation     = source.fSimulation;
-  this->fResponse       = source.fResponse;
-  this->fSegmentation   = source.fSegmentation;
-  this->fDigClassName   = source.fDigClassName;
-  this->fClustClassName = source.fClustClassName;
-  return *this;  
+    if(&source == this) return *this;
+    this->fDetType        = source.fDetType;
+    this->fReconst        = source.fReconst;
+    this->fSimulation     = source.fSimulation;
+    this->fResponse       = source.fResponse;
+    this->fSegmentation   = source.fSegmentation;
+    this->fDigClassName   = source.fDigClassName;
+    this->fClustClassName = source.fClustClassName;
+    return *this;  
 }

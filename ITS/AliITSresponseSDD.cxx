@@ -32,19 +32,19 @@ const Int_t AliITSresponseSDD::fgkModules;
 const Int_t AliITSresponseSDD::fgkChips;  
 const Int_t AliITSresponseSDD::fgkChannels; 
 const Int_t AliITSresponseSDD::fgkMaxAdcDefault = 1024;
-const Float_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;
-const Float_t AliITSresponseSDD::fgkfChargeLossDefault = 0;
-const Float_t AliITSresponseSDD::fgkDiffCoeffDefault = 3.23;
-const Float_t AliITSresponseSDD::fgkDiffCoeff1Default = 30.;
-const Float_t AliITSresponseSDD::fgkTemperatureDefault = 296.;
+const Double_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;
+const Double_t AliITSresponseSDD::fgkfChargeLossDefault = 0;
+const Double_t AliITSresponseSDD::fgkDiffCoeffDefault = 3.23;
+const Double_t AliITSresponseSDD::fgkDiffCoeff1Default = 30.;
+const Double_t AliITSresponseSDD::fgkTemperatureDefault = 296.;
 const TString AliITSresponseSDD::fgkParam1Default = "same";
 const TString AliITSresponseSDD::fgkParam2Default = "same";
-const Float_t AliITSresponseSDD::fgkNoiseDefault = 10.;
-const Float_t AliITSresponseSDD::fgkBaselineDefault = 20.;
+const Double_t AliITSresponseSDD::fgkNoiseDefault = 10.;
+const Double_t AliITSresponseSDD::fgkBaselineDefault = 20.;
 const TString AliITSresponseSDD::fgkOptionDefault = "1D";
-const Float_t AliITSresponseSDD::fgkMinValDefault  = 4;
-const Float_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
-const Float_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
+const Double_t AliITSresponseSDD::fgkMinValDefault  = 4;
+const Double_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
+const Double_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
 const Int_t AliITSresponseSDD::fgkNcompsDefault = 121;
 //______________________________________________________________________
 ClassImp(AliITSresponseSDD)
@@ -191,7 +191,7 @@ void AliITSresponseSDD::SetNLookUp(Int_t p1){
   fNcomps=p1;
   fGaus = new TArrayF(fNcomps+1);
   for(Int_t i=0; i<=fNcomps; i++) {
-    Float_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
+    Double_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
     (*fGaus)[i] = exp(-((x*x)/2));
     //     cout << "fGaus[" << i << "]: " << fGaus->At(i) << endl;
   }

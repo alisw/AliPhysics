@@ -18,28 +18,16 @@
 */
 
 #include <Riostream.h>
-//#include <stdio.h>
-//#include <stdlib.h>
 #include <TMath.h>
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TBRIK.h>
-//#include <TTUBE.h>
-//#include <TTUBS.h>
-//#include <TPCON.h>
-//#include <TFile.h>    // only required for Tracking function?
-//#include <TCanvas.h>
-//#include <TObjArray.h>
 #include <TLorentzVector.h>
-//#include <TObjString.h>
-//#include <TClonesArray.h>
-//#include <TSystem.h>
 #include <TVirtualMC.h>
 
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-//#include "AliConst.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
 #include "AliITShit.h"
@@ -56,31 +44,28 @@
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSsimulationSPD.h"
+#include "AliITSsimulationSPDdubna.h"
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSSD.h"
-//#include "AliITSClusterFinderSPD.h"
-//#include "AliITSClusterFinderSDD.h"
-//#include "AliITSClusterFinderSSD.h"
 
 ClassImp(AliITSvSDD03)
 
 //______________________________________________________________________
 AliITSvSDD03::AliITSvSDD03() :
-    AliITS(),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
-    fMajorVersion(11),
-    fMinorVersion(-1),
-    fEuclidGeomDet(),
-    fRead(),
-    fWrite(),
-    fDet1(0.0),
-    fDet2(0.0),
-    fChip1(0.0),
-    fChip2(0.0),
-    fIDMother(0),
-    fYear(2003){
+AliITS(),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fMajorVersion(1),
+fMinorVersion(2),
+fEuclidGeomDet(),
+fRead(),
+fWrite(),
+fDet1(300.0),
+fDet2(300.0),
+fChip1(300.0),
+fChip2(300.0),
+fIDMother(0),
+fYear(2003){
     ////////////////////////////////////////////////////////////////////////
     // Standard default constructor for the ITS SDD test beam 2002 version 1.
     // Inputs:
@@ -96,30 +81,26 @@ AliITSvSDD03::AliITSvSDD03() :
     fIdName       = 0;
     fIdSens       = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
-    fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Don't Read .det file
-    fMajorVersion = IsVersion();
-    fMinorVersion = -1;
     for(i=0;i<60;i++) fRead[i] = '\0';
     for(i=0;i<60;i++) fWrite[i] = '\0';
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //______________________________________________________________________
 AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year):
-    AliITS("ITS", title),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
-    fMajorVersion(11),
-    fMinorVersion(-1),
-    fEuclidGeomDet(),
-    fRead(),
-    fWrite(),
-    fDet1(0.0),
-    fDet2(0.0),
-    fChip1(0.0),
-    fChip2(0.0),
-    fIDMother(0),
-    fYear(2003){
+AliITS("ITS", title),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fMajorVersion(1),
+fMinorVersion(2),
+fEuclidGeomDet(),
+fRead(),
+fWrite(),
+fDet1(300.0),
+fDet2(300.0),
+fChip1(300.0),
+fChip2(300.0),
+fIDMother(0),
+fYear(2003){
     ////////////////////////////////////////////////////////////////////////
     //    Standard constructor for the ITS SDD testbeam 2002 version 1.
     // Inputs:
@@ -138,11 +119,7 @@ AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year):
     fIdName[2] = "ISNT";
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
-    fMajorVersion = IsVersion();
-    fMinorVersion = 2;
     fEuclidOut    = kFALSE; // Don't write Euclide file
-    fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Don't Read .det file
     fYear         = year;
     SetThicknessDet1();
     SetThicknessDet2();
@@ -155,21 +132,7 @@ AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year):
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
-AliITSvSDD03::AliITSvSDD03(const AliITSvSDD03 &source) : 
-    AliITS(source),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
-    fMajorVersion(11),
-    fMinorVersion(-1),
-    fEuclidGeomDet(),
-    fRead(),
-    fWrite(),
-    fDet1(0.0),
-    fDet2(0.0),
-    fChip1(0.0),
-    fChip2(0.0),
-    fIDMother(0),
-    fYear(2003){
+AliITSvSDD03::AliITSvSDD03(const AliITSvSDD03 &source) :  AliITS(source){
     ////////////////////////////////////////////////////////////////////////
     //     Copy Constructor for ITS SDD test beam 2002 version 1.
     // This class is not to be copied. Function only dummy.
@@ -704,7 +667,7 @@ void AliITSvSDD03::Init(){
     for(i=0;i<26;i++) cout << "*";
     cout << " AliITSvSDD03" << fMinorVersion << "_Init ";
     for(i=0;i<25;i++) cout << "*";cout << endl;
-//
+
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
     if(fITSgeom!=0) delete fITSgeom;
@@ -714,7 +677,7 @@ void AliITSvSDD03::Init(){
     if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
     AliITS::Init();
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
-//
+
     for(i=0;i<72;i++) cout << "*";
     cout << endl;
 }
@@ -797,47 +760,46 @@ void AliITSvSDD03::SetDefaultSimulation(){
 
     AliITSDetType *iDetType;
     AliITSsimulation *sim;
+    AliITSsegmentation *seg;
+    AliITSresponse *res;
     iDetType = DetType(kSPD);
-    sim = iDetType->GetSimulationModel();
-    if (!sim) {
-        AliITSsegmentation *seg0=
-            (AliITSsegmentation*)iDetType->GetSegmentationModel();
-        if(seg0==0) seg0 = new AliITSsegmentationSPD();
-        AliITSresponse *res0 = (AliITSresponse*)iDetType->GetResponseModel();
-        if(res0==0) res0 = new AliITSresponseSPD();
-        AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
-        SetSimulationModel(kSPD,sim0);
-    }else{ // simulation exists, make sure it is set up properly.
-        ((AliITSsimulationSPD*)sim)->Init(
-            (AliITSsegmentationSPD*) iDetType->GetSegmentationModel(),
-            (AliITSresponseSPD*) iDetType->GetResponseModel());
-    } // end if
+    if(iDetType){
+        sim = iDetType->GetSimulationModel();
+        if (!sim) {
+            seg =(AliITSsegmentation*)iDetType->GetSegmentationModel();
+            if(seg==0) seg = new AliITSsegmentationSPD();
+            res = (AliITSresponse*)iDetType->GetResponseModel();
+            if(res==0) res = new AliITSresponseSPD();
+            sim = new AliITSsimulationSPDdubna(seg,res,0);
+            SetSimulationModel(kSPD,sim);
+        }else{ // simulation exists, make sure it is set up properly.
+            sim->Init();
+        } // end if
+    } // end if iDetType
     iDetType = DetType(kSDD);
-    sim = iDetType->GetSimulationModel();
-    if (!sim) {
-        AliITSsegmentation *seg1=
-            (AliITSsegmentation*)iDetType->GetSegmentationModel();
-        AliITSresponse *res1 = (AliITSresponse*)iDetType->GetResponseModel();
-        AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
-        SetSimulationModel(kSDD,sim1);
-    }else{ // simulation exists, make sure it is set up properly.
-        ((AliITSsimulationSDD*)sim)->Init(
-            (AliITSsegmentationSDD*) iDetType->GetSegmentationModel(),
-            (AliITSresponseSDD*) iDetType->GetResponseModel());
-    } //end if
+    if(iDetType){
+        sim = iDetType->GetSimulationModel();
+        if (!sim) {
+            seg = (AliITSsegmentation*)iDetType->GetSegmentationModel();
+            res = (AliITSresponse*)iDetType->GetResponseModel();
+            sim = new AliITSsimulationSDD(seg,res);
+            SetSimulationModel(kSDD,sim);
+        }else{ // simulation exists, make sure it is set up properly.
+            sim->Init();
+        } //end if
+    } // end if iDetType
     iDetType = DetType(kSSD);
-    sim = iDetType->GetSimulationModel();
-    if (!sim) {
-        AliITSsegmentation *seg2=
-            (AliITSsegmentation*)iDetType->GetSegmentationModel();
-        AliITSresponse *res2 = (AliITSresponse*)iDetType->GetResponseModel();
-        AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
-        SetSimulationModel(kSSD,sim2);
-    }else{ // simulation exists, make sure it is set up properly.
-        ((AliITSsimulationSSD*)sim)->Init(
-            (AliITSsegmentationSSD*) iDetType->GetSegmentationModel(),
-            (AliITSresponseSSD*) iDetType->GetResponseModel());
-    } // end if
+    if(iDetType){
+        sim = iDetType->GetSimulationModel();
+        if (!sim) {
+            seg = (AliITSsegmentation*)iDetType->GetSegmentationModel();
+            res = (AliITSresponse*)iDetType->GetResponseModel();
+            sim = new AliITSsimulationSSD(seg,res);
+            SetSimulationModel(kSSD,sim);
+        }else{ // simulation exists, make sure it is set up properly.
+            sim->Init();
+        } // end if
+    } // end if iDetType
 }
 //______________________________________________________________________
 void AliITSvSDD03::DrawModule() const{

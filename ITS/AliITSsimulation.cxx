@@ -20,25 +20,64 @@
 
 ClassImp(AliITSsimulation)
 
-AliITSsimulation::AliITSsimulation(){
-    // constructor
-    fSegmentation = 0;
-    fResponse     = 0;
-    fpList        = 0;
-    fModule       = 0;
-    fEvent        = 0;
-    SetDebug(kFALSE);
+//______________________________________________________________________
+AliITSsimulation::AliITSsimulation(): TObject(),
+fResponse(0),
+fSegmentation(0),
+fpList(0),
+fModule(0),
+fEvent(0),
+fDebug(0){
+    // Default constructor
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    a default constructed AliITSsimulation class
+}
+//______________________________________________________________________
+AliITSsimulation::AliITSsimulation(AliITSsegmentation *seg,
+                                   AliITSresponse *res): TObject(),
+fResponse(res),
+fSegmentation(seg),
+fpList(0),
+fModule(0),
+fEvent(0),
+fDebug(0){
+    // Default constructor
+    // Inputs:
+    //    AliITSsegmentation *seg  Segmentation class to be used
+    //    AliITSresponse     *res  Response class to be used.
+    // Outputs:
+    //    none.
+    // Return:
+    //    a default constructed AliITSsimulation class
 }
 //__________________________________________________________________________
 AliITSsimulation::~AliITSsimulation(){
     // destructor
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
     fSegmentation = 0; // local copies of pointer, do not delete
     fResponse     = 0; // local copies of pointer, do not delete
     delete fpList;
 }
 //__________________________________________________________________________
 AliITSsimulation::AliITSsimulation(const AliITSsimulation &s) : TObject(s){
-    //     Copy Constructor 
+    //     Copy Constructor
+    // Inputs:
+    //    const AliITSsimulation &s  simulation class to copy from
+    // Outputs:
+    //    none.
+    // Return:
+    //    a standard constructed AliITSsimulation class with values the same
+    //    as that of s.
  
     *this = s;
     return;
@@ -47,6 +86,13 @@ AliITSsimulation::AliITSsimulation(const AliITSsimulation &s) : TObject(s){
 //_________________________________________________________________________
 AliITSsimulation&  AliITSsimulation::operator=(const AliITSsimulation &s){
     //    Assignment operator
+    // Inputs:
+    //    const AliITSsimulation &s  simulation class to copy from
+    // Outputs:
+    //    none.
+    // Return:
+    //    a standard constructed AliITSsimulation class with values the same
+    //    as that of s.
 
     if(&s == this) return *this;
     this->fResponse     = s.fResponse; 
@@ -59,6 +105,14 @@ AliITSsimulation&  AliITSsimulation::operator=(const AliITSsimulation &s){
 //______________________________________________________________________
 Bool_t AliITSsimulation::AddSDigitsToModule(TClonesArray *pItemA,Int_t mask ){
     // Add Summable digits to module maps.
+    // Inputs:
+    //    TClonesArray *pItemA  Array of AliITSpListItems (SDigits).
+    //    Int_t         mask    Track number off set value (see 
+    //                          AliITSpList::AddItemTo).
+    // Outputs:
+    //    none.
+    // Return:
+    //    kTRUE if there is a signal >0 else kFALSE
     Int_t nItems = pItemA->GetEntries();
     Bool_t sig = kFALSE;
  
@@ -67,11 +121,11 @@ Bool_t AliITSsimulation::AddSDigitsToModule(TClonesArray *pItemA,Int_t mask ){
         AliITSpListItem * pItem = (AliITSpListItem *)(pItemA->At( i ));
         if( pItem->GetModule() != fModule ) {
             Error( "AddSDigitsToModule","Error reading, SDigits module %d "
-		   "!= current module %d: exit",
-		   pItem->GetModule(), fModule );
+                   "!= current module %d: exit",
+                   pItem->GetModule(), fModule );
             return sig;
         } // end if
-	if(pItem->GetSignal()>0.0 ) sig = kTRUE;
+        if(pItem->GetSignal()>0.0 ) sig = kTRUE;
         fpList->AddItemTo( mask, pItem );
     } // end for i
     return sig;

@@ -41,12 +41,10 @@ SRCS = 	AliITS.cxx \
 		AliITSsegmentationSSD.cxx \
 		AliITSresponse.cxx \
 		AliITSresponseSPD.cxx \
-		AliITSresponseSPDdubna.cxx \
 		AliITSresponseSDD.cxx \
 		AliITSresponseSSD.cxx \
 		AliITSClusterFinder.cxx \
 		AliITSClusterFinderSPD.cxx \
-		AliITSClusterFinderSPDdubna.cxx \
 		AliITSClusterFinderSDD.cxx \
 		AliITSClusterFinderSSD.cxx \
 		AliITSRawData.cxx \
@@ -105,6 +103,8 @@ SRCS = 	AliITS.cxx \
 #		AliITSBaseGeometry.cxx \
 # 		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 # 		AliACORDEFunctions.cxx \
+#		AliITSresponseSPDdubna.cxx \
+#		AliITSClusterFinderSPDdubna.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)
 

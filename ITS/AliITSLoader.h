@@ -4,79 +4,129 @@
 #include <AliLoader.h>
 #include <AliESDVertex.h>
 
+class AliITS;
+class AliITSdigit;
+class TObjArray;
 
-class AliITSLoader: public AliLoader
- {
-   public:
+class AliITSLoader: public AliLoader{
+  public:
     AliITSLoader();
     AliITSLoader(const Char_t *name,const Char_t *topfoldername);
     AliITSLoader(const Char_t *name,TFolder *topfolder);
-    
+
     virtual ~AliITSLoader();
 
     void           MakeTree(Option_t* opt);
 
+    // General ITS shortcuts
+    virtual AliITS* GetITS(); // Return pointer to the ITS.
+    virtual void    SetupDigits(AliITS *its); // Sets up digit using AliITS
+    virtual void    SetupDigits(TObjArray *digPerDet,Int_t n,
+                                const Char_t **digclass); // Sets up digits
+    // Gets the AliITSdigit for a given module and a specific digit in that
+    // module. Array of digits stored in AliITS (must use 
+    // SetupDigits(AliITS *its)).
+    virtual AliITSdigit* GetDigit(AliITS *its,Int_t module,Int_t digit);
+    // Gets the AliITSdigit for a given module and a specific digit in that
+    // module. Array of digits stored in a user defined TObjArray digPerDet
+    virtual AliITSdigit* GetDigit(TObjArray *digPerDet,Int_t module,Int_t digit);
+
     //Raw Clusters
     AliDataLoader* GetRawClLoader() {return GetDataLoader("Raw Clusters");}
-    virtual void   CleanRawClusters() {GetRawClLoader()->GetBaseLoader(0)->Clean();}
-    Int_t          LoadRawClusters(Option_t* opt=""){return GetRawClLoader()->GetBaseLoader(0)->Load(opt);}
-    void           SetRawClustersFileName(const TString& fname){GetRawClLoader()->SetFileName(fname);}
-    TTree*         TreeC(){ return GetRawClLoader()->Tree();} // returns a pointer to the tree of  RawClusters
-    void           UnloadRawClusters(){GetRawClLoader()->GetBaseLoader(0)->Unload();}
-    virtual Int_t  WriteRawClusters(Option_t* opt=""){return GetRawClLoader()->GetBaseLoader(0)->WriteData(opt);}
+    virtual void   CleanRawClusters() {
+        GetRawClLoader()->GetBaseLoader(0)->Clean();}
+    Int_t          LoadRawClusters(Option_t* opt=""){
+        return GetRawClLoader()->GetBaseLoader(0)->Load(opt);}
+    void           SetRawClustersFileName(const TString& fname){
+        GetRawClLoader()->SetFileName(fname);}
+    // returns a pointer to the tree of  RawClusters
+    TTree*         TreeC(){ return GetRawClLoader()->Tree();} 
+    void           UnloadRawClusters(){
+        GetRawClLoader()->GetBaseLoader(0)->Unload();}
+    virtual Int_t  WriteRawClusters(Option_t* opt=""){
+        return GetRawClLoader()->GetBaseLoader(0)->WriteData(opt);}
 
     //Vertices
-    AliDataLoader* GetVertexDataLoader() {return GetDataLoader("Primary Vertices");}
-    virtual void   CleanVertices() {GetVertexDataLoader()->GetBaseLoader(0)->Clean();}
-    Int_t          LoadVertices(Option_t* opt=""){return GetVertexDataLoader()->GetBaseLoader(0)->Load(opt);}
-    void           SetVerticesFileName(const TString& fname){GetVertexDataLoader()->SetFileName(fname);}
-    void           UnloadVertices(){GetVertexDataLoader()->GetBaseLoader(0)->Unload();}
-    virtual Int_t  WriteVertices(Option_t* opt=""){return GetVertexDataLoader()->GetBaseLoader(0)->WriteData(opt);}
-    virtual Int_t PostVertex(AliESDVertex *ptr){return GetVertexDataLoader()->GetBaseLoader(0)->Post(ptr);}
-    //    virtual void SetVerticesContName(const char *name){GetVertexDataLoader()->GetBaseLoader(0)->SetName(name);}
-    AliESDVertex *GetVertex(){return static_cast <AliESDVertex*>(GetVertexDataLoader()->GetBaseLoader(0)->Get());}
+    AliDataLoader* GetVertexDataLoader() {
+        return GetDataLoader("Primary Vertices");}
+    virtual void   CleanVertices() {
+        GetVertexDataLoader()->GetBaseLoader(0)->Clean();}
+    Int_t          LoadVertices(Option_t* opt=""){
+        return GetVertexDataLoader()->GetBaseLoader(0)->Load(opt);}
+    void           SetVerticesFileName(const TString& fname){
+        GetVertexDataLoader()->SetFileName(fname);}
+    void           UnloadVertices(){
+        GetVertexDataLoader()->GetBaseLoader(0)->Unload();}
+    virtual Int_t  WriteVertices(Option_t* opt=""){
+        return GetVertexDataLoader()->GetBaseLoader(0)->WriteData(opt);}
+    virtual Int_t PostVertex(AliESDVertex *ptr){
+        return GetVertexDataLoader()->GetBaseLoader(0)->Post(ptr);}
+    //    virtual void SetVerticesContName(const char *name){
+    //       GetVertexDataLoader()->GetBaseLoader(0)->SetName(name);}
+    AliESDVertex *GetVertex(){
+        return static_cast <AliESDVertex*>(GetVertexDataLoader()->
+                                           GetBaseLoader(0)->Get());}
 
     //V0s
     AliDataLoader* GetV0DataLoader() {return GetDataLoader("V0 Vertices");}
     virtual void   CleanV0s() {GetV0DataLoader()->GetBaseLoader(0)->Clean();}
-    Int_t          LoadV0s(Option_t* opt=""){return GetV0DataLoader()->GetBaseLoader(0)->Load(opt);}
-    void           SetV0FileName(const TString& fname){GetV0DataLoader()->SetFileName(fname);}
+    Int_t          LoadV0s(Option_t* opt=""){
+        return GetV0DataLoader()->GetBaseLoader(0)->Load(opt);}
+    void           SetV0FileName(const TString& fname){
+        GetV0DataLoader()->SetFileName(fname);}
     void           UnloadV0s(){GetV0DataLoader()->GetBaseLoader(0)->Unload();}
-    virtual Int_t  WriteV0s(Option_t* opt=""){return GetV0DataLoader()->GetBaseLoader(0)->WriteData(opt);}
+    virtual Int_t  WriteV0s(Option_t* opt=""){
+        return GetV0DataLoader()->GetBaseLoader(0)->WriteData(opt);}
     TTree*         TreeV0(){ return GetV0DataLoader()->Tree();}
 
     //Cascades
     AliDataLoader* GetCascadeDataLoader() {return GetDataLoader("Cascades");}
-    virtual void   CleanCascades() {GetCascadeDataLoader()->GetBaseLoader(0)->Clean();}
-    Int_t          LoadCascades(Option_t* opt=""){return GetCascadeDataLoader()->GetBaseLoader(0)->Load(opt);}
-    void           SetCascadeFileName(const TString& fname){GetCascadeDataLoader()->SetFileName(fname);}
-    void           UnloadCascades(){GetCascadeDataLoader()->GetBaseLoader(0)->Unload();}
-    virtual Int_t  WriteCascades(Option_t* opt=""){return GetCascadeDataLoader()->GetBaseLoader(0)->WriteData(opt);}
+    virtual void   CleanCascades() {
+        GetCascadeDataLoader()->GetBaseLoader(0)->Clean();}
+    Int_t          LoadCascades(Option_t* opt=""){
+        return GetCascadeDataLoader()->GetBaseLoader(0)->Load(opt);}
+    void           SetCascadeFileName(const TString& fname){
+        GetCascadeDataLoader()->SetFileName(fname);}
+    void           UnloadCascades(){
+        GetCascadeDataLoader()->GetBaseLoader(0)->Unload();}
+    virtual Int_t  WriteCascades(Option_t* opt=""){
+        return GetCascadeDataLoader()->GetBaseLoader(0)->WriteData(opt);}
     TTree*         TreeX(){ return GetCascadeDataLoader()->Tree();}
 
     //Back Propagated Tracks
-    AliDataLoader* GetBackTracksDataLoader() {return GetDataLoader("Back Propagated Tracks");}
-    virtual void   CleanBackTracks() {GetBackTracksDataLoader()->GetBaseLoader(0)->Clean();}
-    Int_t          LoadBackTracks(Option_t* opt=""){return GetBackTracksDataLoader()->GetBaseLoader(0)->Load(opt);}
-    void           SetBackTracksFileName(const TString& fname){GetBackTracksDataLoader()->SetFileName(fname);}
-    TTree*         TreeB(){ return GetBackTracksDataLoader()->Tree();} // returns a pointer to the tree of  BackTracks
-    void           UnloadBackTracks(){GetBackTracksDataLoader()->GetBaseLoader(0)->Unload();}
-    virtual Int_t  WriteBackTracks(Option_t* opt=""){return GetBackTracksDataLoader()->GetBaseLoader(0)->WriteData(opt);}
-    
+    AliDataLoader* GetBackTracksDataLoader() {
+        return GetDataLoader("Back Propagated Tracks");}
+    virtual void   CleanBackTracks() {
+        GetBackTracksDataLoader()->GetBaseLoader(0)->Clean();}
+    Int_t          LoadBackTracks(Option_t* opt=""){
+        return GetBackTracksDataLoader()->GetBaseLoader(0)->Load(opt);}
+    void           SetBackTracksFileName(const TString& fname){
+        GetBackTracksDataLoader()->SetFileName(fname);}
+     // returns a pointer to the tree of  BackTracks
+    TTree*         TreeB(){ return GetBackTracksDataLoader()->Tree();}
+    void           UnloadBackTracks(){
+        GetBackTracksDataLoader()->GetBaseLoader(0)->Unload();}
+    virtual Int_t  WriteBackTracks(Option_t* opt=""){
+        return GetBackTracksDataLoader()->GetBaseLoader(0)->WriteData(opt);}
 
-   protected:
+  protected:
 
     // METHODS
     virtual void   MakeRawClustersContainer() {GetRawClLoader()->MakeTree();}
-    Int_t          PostRawClusters(){return GetRawClLoader()->GetBaseLoader(0)->Post();}
+    Int_t          PostRawClusters(){
+        return GetRawClLoader()->GetBaseLoader(0)->Post();}
 
-    virtual void   MakeBackTracksContainer() {GetBackTracksDataLoader()->MakeTree();}
-    Int_t          PostBackTracks(){return GetBackTracksDataLoader()->GetBaseLoader(0)->Post();}
+    virtual void   MakeBackTracksContainer() {
+        GetBackTracksDataLoader()->MakeTree();}
+    Int_t          PostBackTracks(){
+        return GetBackTracksDataLoader()->GetBaseLoader(0)->Post();}
     virtual void   MakeV0Container() {GetV0DataLoader()->MakeTree();}
-    Int_t          PostV0s(){return GetV0DataLoader()->GetBaseLoader(0)->Post();}
+    Int_t          PostV0s(){
+        return GetV0DataLoader()->GetBaseLoader(0)->Post();}
 
     virtual void   MakeCascadeContainer() {GetCascadeDataLoader()->MakeTree();}
-    Int_t          PostCascades(){return GetCascadeDataLoader()->GetBaseLoader(0)->Post();}
+    Int_t          PostCascades(){
+        return GetCascadeDataLoader()->GetBaseLoader(0)->Post();}
 
     // DATA
     static const TString fgkDefaultRawClustersContainerName;  //default for Raw Clusters container name
@@ -85,9 +135,7 @@ class AliITSLoader: public AliLoader
     static const TString fgkDefaultV0ContainerName;           //default for V0 container name
     static const TString fgkDefaultCascadeContainerName;      //default fo cascade container name
 
-     ClassDef(AliITSLoader,3)
- };
+    ClassDef(AliITSLoader,3) // Loader for additional ITS specific trees.
+};
  
 #endif
-
-

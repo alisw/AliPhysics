@@ -16,6 +16,7 @@
 #include <TString.h>
 #include <TObject.h>
 
+#include "AliITSgeom.h"
 #include "AliITSsegmentation.h"
 #include "AliITSresponse.h"
 
@@ -26,9 +27,17 @@ class AliITSDetType:public TObject{
 
  public:
     AliITSDetType();
+    AliITSDetType(AliITSDetector det,AliITSresponse *res,
+                  AliITSsegmentation *seg,AliITSsimulation *sim,
+                  AliITSClusterFinder *cf,const Char_t *DigClassName,
+                  const Char_t *ClustClassName);
     virtual ~AliITSDetType();
     AliITSDetType(const AliITSDetType &source); // copy constructor
     AliITSDetType& operator=(const AliITSDetType &source); // assign. operator
+    // Return the type of detector these quantities are defined for
+    AliITSDetector GetDetType(){return fDetType;}
+    // Set the type of Detector these quantities are defined for
+    void SetDetType(AliITSDetector det){fDetType = det;}
 
     // Set the defaults
     virtual void   Init() {}
@@ -84,17 +93,17 @@ class AliITSDetType:public TObject{
     TString GetDigitClassName() const { return fDigClassName;}
     // Return the Cluster Class name
     TString GetClusterClassName() const { return fClustClassName;}
-  
+
  protected:
+    AliITSDetector       fDetType;           // Type of detector
     AliITSresponse       *fResponse;         // response
     AliITSsegmentation   *fSegmentation;     // segmentation
     AliITSsimulation     *fSimulation;       // simulation
     AliITSClusterFinder  *fReconst;          // cluster finder
-
     TString              fDigClassName;      // string
     TString              fClustClassName;    // string
 
-    ClassDef(AliITSDetType,1) //Detector simulation/reconstruction class holder
+    ClassDef(AliITSDetType,2) //Detector simulation/reconstruction class holder
 
 };
 

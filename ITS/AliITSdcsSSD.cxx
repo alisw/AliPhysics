@@ -19,19 +19,19 @@ AliITSdcsSSD::AliITSdcsSSD(){
 AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp){
     // Standard constructor
 
-    fNstrips = seg->Npx();
+    fNstrips =(Float_t) (((AliITSsegmentationSSD*)seg)->Npx());
     
     fInvalidP = new TArrayS();
     fInvalidN = new TArrayS();
 
-    Int_t npar=resp->NDetParam();
+    Int_t npar=((AliITSresponseSSD*)resp)->NDetParam();
     if (npar < 6) {
 	Warning("AliITSdcsSSD","I need 6 parameters ");
 	npar=6;
     } // end if
 
-    Float_t *detpar= new Float_t[npar];
-    resp->GetDetParam(detpar);
+    Double_t *detpar= new Double_t[npar];
+    ((AliITSresponseSSD*)resp)->GetDetParam(detpar);
 
     fNInvalid = detpar[0];
     fISigma   = detpar[1];
@@ -42,7 +42,7 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp){
     fCouplingNL = detpar[5];
 
     char opt[30],dummy[20];
-    resp->ParamOptions(opt,dummy);
+    ((AliITSresponseSSD*)resp)->ParamOptions(opt,dummy);
     if (strstr(opt,"SetInvalid")) SetInvalidMC(fNInvalid,fISigma);
 
     delete [] detpar;

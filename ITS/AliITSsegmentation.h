@@ -43,7 +43,7 @@ public TObject {
     virtual void    GetPadTxz(Float_t &,Float_t &) const = 0;
     // Transformation from Geant cm detector center local coordinates
     // to detector segmentation/cell coordiantes starting from (0,0).
-    virtual void    LocalToDet(Float_t,Float_t,Int_t &,Int_t &) const = 0;
+    virtual Bool_t LocalToDet(Float_t,Float_t,Int_t &,Int_t &) const = 0;
     // Transformation from detector segmentation/cell coordiantes starting
     // from (0,0) to Geant cm detector center local coordinates.
     virtual void    DetToLocal(Int_t,Int_t,Float_t &,Float_t &) const = 0;

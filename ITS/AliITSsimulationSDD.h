@@ -27,8 +27,7 @@ class AliITSresponse;
 class AliITSresponseSDD;
 
 class AliITSsimulationSDD : public AliITSsimulation {
-
- public:
+  public:
     AliITSsimulationSDD(); // default constructor
     //Standard Constructor
     AliITSsimulationSDD(AliITSsegmentation *seg, AliITSresponse *res);
@@ -38,11 +37,16 @@ class AliITSsimulationSDD : public AliITSsimulation {
     // = opporator
     AliITSsimulationSDD& operator=(AliITSsimulationSDD &source);
     // Initilize variables for this simulation
-    void Init(AliITSsegmentationSDD *seg,AliITSresponseSDD *resp);
+    void Init();
 
     // get the address of the array mapping the signal or pointers to arrays
-//    virtual AliITSMap*  HitMap(Int_t i);
+    //virtual AliITSMap*  HitMap(Int_t i);
 
+    // Return The Responce class
+    AliITSresponseSDD* GetResp(){return (AliITSresponseSDD*)fResponse;}
+    // Return The Segmentation class
+    AliITSsegmentationSDD* GetSeg(){
+        return (AliITSsegmentationSDD*)fSegmentation;}
     // set the scale size factor for the smples in FFT
     virtual void SetScaleFourier(Int_t scale=4) {fScaleSize=scale;}
     Int_t ScaleFourier() const {return fScaleSize;} // returns the scale factor
@@ -61,7 +65,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     // retrieve compression parameters for 2D or 1D
     void CompressionParam(Int_t i, Int_t &db, Int_t &tl);
 
-    virtual Int_t Convert10to8(Int_t signal) const;// 10 to 8 bit SDD compresion
+    virtual Int_t Convert10to8(Int_t signal) const;//10 to 8 bit SDD compresion
     virtual void ZeroSuppression(const char *opt); // Apply zero suppresion
     virtual void Init2D();   // initiilzes 2D compresion algorithm
     virtual void Compress2D(); // Applies 2D compresion algorithm
@@ -70,12 +74,12 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void StoreAllDigits(); // if No compresion run this.
     virtual void ReadBaseline();  // read baseline values from a file
     // returns baseline and noise for a given anode i.
-    virtual void GetAnodeBaseline(Int_t i, Float_t &baseline, Float_t &noise);
+    virtual void GetAnodeBaseline(Int_t i,Double_t &baseline,Double_t &noise);
     // local implementation of ITS->AddDigit. Specific for SDD
     virtual void AddDigit(Int_t i, Int_t j, Int_t signal);
     // Finds clulsters of signals. Use with regards to Compresion algorithms
     virtual void  FindCluster(Int_t i, Int_t j,Int_t signal,
-			      Int_t minval,Bool_t &cond);
+                              Int_t minval,Bool_t &cond);
 
     // get parameters for 1D - this could be changed when we get more
     // input from Torino after they have a look at the code 
@@ -110,10 +114,11 @@ class AliITSsimulationSDD : public AliITSsimulation {
     // Spread charge in a SDD module
     void HitsToAnalogDigits(AliITSmodule *mod);
     // Sorts tracks for the 3 most highly contributed one to be added to digit.
-    //void SortTracks(Int_t *tracks,Float_t *charges,Int_t *hits,Int_t ntracks);
+    //void SortTracks(Int_t *tracks,Float_t *charges,Int_t *hits
+    //                Int_t ntracks);
     // collects and returns the fired SDD cells (uses AliITSMapA2...).
     //void ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,TObjArray *list,
-	//		  TClonesArray *padr);
+    //		  TClonesArray *padr);
 
     // Creates histograms of maps for debugging
     void CreateHistograms(Int_t scale);
@@ -125,8 +130,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     TObjArray*  GetHistArray() {return fHis;}
     // create a separate tree for background monitoring (2D) 
     virtual  void  MakeTreeB(Option_t *option="B") 
-	{ if(strstr(option,"B"))
-	     fTreeB = new TNtuple("ntuple", "2D backgr","nz:nl:nh:low:anode");}
+        { if(strstr(option,"B"))
+            fTreeB = new TNtuple("ntuple", "2D backgr","nz:nl:nh:low:anode");}
     // presently a dummy routine use TreeB() instead
     void GetTreeB(Int_t) { }
     // Return pointer to TreeB
@@ -145,16 +150,12 @@ class AliITSsimulationSDD : public AliITSsimulation {
     // Print SSD simulation Parameters
     virtual void Print();
 
- private:
+  private:
     // Variables and pointers for local use only. Not Streamed out.
     AliITS         *fITS;          //! local pointer to ITS
-//    AliITSMapA1    *fHitMap1;      //! local pointer to map of digits
     AliITSMapA2    *fHitMap2;      //! local pointer to map of signals
     AliITSMapA2    *fHitSigMap2;   //! local pointer to map of signals
     AliITSMapA2    *fHitNoiMap2;   //! local pointer to map of signals
-//    AliITSpList    *fpList;        //! 
-//    TObjArray      *falist;        //
-//    TClonesArray   *fpadr;         //
     AliITSInStream *fStream;       //! input file stream
     AliITSetfSDD   *fElectronics;  //! local pointer to electronics simulation
     Double_t       *fInZR;         //! [fScaleSize*fMaxNofSamples] input of the
@@ -184,10 +185,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     Int_t      fNofMaps;      // Number of anodes used ( 1-2*nanodes per wing )
     Int_t      fMaxNofSamples;// Number of time samples
     Int_t      fScaleSize;    // scale size factor for the samples in FFT
-//    Int_t      fModule;       //! in case bgr,noise,param,change module-by-mod.
-//    Int_t      fEvent;        //! solely for output from bgr monitoring of 2D
 
-  ClassDef(AliITSsimulationSDD,1)  // Simulation of SDD clusters
+    ClassDef(AliITSsimulationSDD,1)  // Simulation of SDD clusters
 
 };
 #endif

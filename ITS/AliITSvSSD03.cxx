@@ -40,7 +40,7 @@
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSsimulationSPD.h"
+#include "AliITSsimulationSPDdubna.h"
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSSD.h"
 #include "AliMC.h"
@@ -695,60 +695,59 @@ void AliITSvSSD03::SetDefaultSimulation(){
 
     AliITSDetType *iDetType;
     AliITSsimulation *sim;
+    AliITSsegmentation *seg;
+    AliITSresponse *res;
 
     iDetType=DetType(kSPD);
-    sim = iDetType->GetSimulationModel();
-    if (!sim) {
-        AliITSsegmentation *seg0=
-            (AliITSsegmentation*)iDetType->GetSegmentationModel();
-        AliITSresponse *res0 = (AliITSresponse*)iDetType->GetResponseModel();
-        AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
-        SetSimulationModel(kSPD,sim0);
-    }else{ // simulation exists, make sure it is set up properly.
-        ((AliITSsimulationSPD*)sim)->Init(
-            (AliITSsegmentationSPD*) iDetType->GetSegmentationModel(),
-            (AliITSresponseSPD*) iDetType->GetResponseModel());
+    if(!iDetType){
+        sim = iDetType->GetSimulationModel();
+        if (!sim) {
+            seg = (AliITSsegmentation*)iDetType->GetSegmentationModel();
+            res = (AliITSresponse*)iDetType->GetResponseModel();
+            sim = new AliITSsimulationSPDdubna(seg,res,1);
+            SetSimulationModel(kSPD,sim);
+        }else{ // simulation exists, make sure it is set up properly.
+            ((AliITSsimulation*)sim)->Init();
 //        if(sim->GetResponseModel()==0) sim->SetResponseModel(
 //            (AliITSresponse*)iDetType->GetResponseModel());
 //        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
 //            (AliITSsegmentation*)iDetType->GetSegmentationModel());
-    } // end if
+        } // end if
+    } // end if !iDetType
 
     iDetType=DetType(kSDD);
-    sim = iDetType->GetSimulationModel();
-    if (!sim) {
-        AliITSsegmentation *seg1=
-            (AliITSsegmentation*)iDetType->GetSegmentationModel();
-        AliITSresponse *res1 = (AliITSresponse*)iDetType->GetResponseModel();
-        AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
-        SetSimulationModel(kSDD,sim1);
-    }else{ // simulation exists, make sure it is set up properly.
-        ((AliITSsimulationSDD*)sim)->Init(
-            (AliITSsegmentationSDD*) iDetType->GetSegmentationModel(),
-            (AliITSresponseSDD*) iDetType->GetResponseModel());
+    if(!iDetType){
+        sim = iDetType->GetSimulationModel();
+        if (!sim) {
+            seg = (AliITSsegmentation*)iDetType->GetSegmentationModel();
+            res = (AliITSresponse*)iDetType->GetResponseModel();
+            sim = new AliITSsimulationSDD(seg,res);
+            SetSimulationModel(kSDD,sim);
+        }else{ // simulation exists, make sure it is set up properly.
+            ((AliITSsimulation*)sim)->Init();
 //        if(sim->GetResponseModel()==0) sim->SetResponseModel(
 //            (AliITSresponse*)iDetType->GetResponseModel());
 //        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
 //            (AliITSsegmentation*)iDetType->GetSegmentationModel());
     } //end if
+    } // end if !iDetType
 
     iDetType=DetType(kSSD);
-    sim = iDetType->GetSimulationModel();
-    if (!sim) {
-        AliITSsegmentation *seg2=
-            (AliITSsegmentation*)iDetType->GetSegmentationModel();
-        AliITSresponse *res2 = (AliITSresponse*)iDetType->GetResponseModel();
-        AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
-        SetSimulationModel(kSSD,sim2);
-    }else{ // simulation exists, make sure it is set up properly.
-        ((AliITSsimulationSSD*)sim)->Init(
-            (AliITSsegmentationSSD*) iDetType->GetSegmentationModel(),
-            (AliITSresponseSSD*) iDetType->GetResponseModel());
+    if(!iDetType){
+        sim = iDetType->GetSimulationModel();
+        if (!sim) {
+            seg = (AliITSsegmentation*)iDetType->GetSegmentationModel();
+            res = (AliITSresponse*)iDetType->GetResponseModel();
+            sim = new AliITSsimulationSSD(seg,res);
+            SetSimulationModel(kSSD,sim);
+        }else{ // simulation exists, make sure it is set up properly.
+            ((AliITSsimulation*)sim)->Init();
 //        if(sim->GetResponseModel()==0) sim->SetResponseModel(
 //            (AliITSresponse*)iDetType->GetResponseModel());
 //        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
 //            (AliITSsegmentation*)iDetType->GetSegmentationModel());
-    } // end if
+        } // end if
+    } // end if !iDetType
 }
 
 //______________________________________________________________________

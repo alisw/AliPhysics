@@ -27,6 +27,8 @@ class AliITSsimulationSPD : public AliITSsimulation {
     // assignment operator
     AliITSsimulationSPD& operator=(const AliITSsimulationSPD &source);
     // Initilizes the variables
+    void Init();
+    // Initilizes the variables with replacement segmentation/response class
     void Init(AliITSsegmentationSPD *seg, AliITSresponseSPD *resp);
 
     // Sum digitize module
@@ -105,30 +107,20 @@ class AliITSsimulationSPD : public AliITSsimulation {
  private:
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
-    Double_t GetThreshold(){Float_t a=0.0,b=0.0;
+    Double_t GetThreshold(){Double_t a=0.0,b=0.0;
     ((AliITSresponseSPD*)fResponse)->Thresholds(a,b); return a;}
     // Returns the threshold and rms noise.
-    void GetThresholds(Float_t &t,Float_t &s){
+    void GetThresholds(Double_t &t,Double_t &s){
     ((AliITSresponseSPD*)fResponse)->Thresholds(t,s);}
     // Returns the couplings Columb and Row.
-    void GetCouplings(Float_t &cc,Float_t &cr){
-	((AliITSresponseSPD*)fResponse)->GetNoiseParam(cc,cr);}
+    void GetCouplings(Double_t &cc,Double_t &cr){
+	((AliITSresponseSPD*)fResponse)->GetCouplingParam(cc,cr);}
     // Returns the number of pixels in x
     Int_t GetNPixelsX(){return ((AliITSsegmentationSPD*)fSegmentation)->Npx();}
     // Returns the number of pixels in z
     Int_t GetNPixelsZ(){return ((AliITSsegmentationSPD*)fSegmentation)->Npz();}
 
  private:
-/*    Float_t      fThresh;   //! Threshold from fResponse
-    Float_t      fSigma;    //! Noise from fResponse
-    Float_t      fCouplCol; //! Coupling along columns from fResponse
-    Float_t      fCouplRow; //! Coupling along rows from fResponse
-    Int_t        fNPixelsX; //! NPixelsX from fSegmentation
-    Int_t        fNPixelsZ; //! NPixelsZ from fSegmentation
-*/
-//    AliITSpList  *fList;    //! Internal map and sdigits
-//    Int_t         fModule;  //! Module number being simulated
-//    Int_t         fEvent;   //! Event number being simulated
     AliITSMapA2  *fMapA2;   //! MapA2 for Local internal use only
     TObjArray    *fHis;     //! just in case for histogramming for Local
                             // internal use only

@@ -23,14 +23,14 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
-const Float_t AliITSresponseSSD::fgkDiffCoeffDefault = 0.;
+const Double_t AliITSresponseSSD::fgkDiffCoeffDefault = 0.;
 const TString AliITSresponseSSD::fgkOption1Default = "";
 const TString AliITSresponseSSD::fgkOption2Default = "";
-const Float_t AliITSresponseSSD::fgkNoiseNDefault = 625.;
-const Float_t AliITSresponseSSD::fgkNoisePDefault = 420.;
+const Double_t AliITSresponseSSD::fgkNoiseNDefault = 625.;
+const Double_t AliITSresponseSSD::fgkNoisePDefault = 420.;
 const Int_t AliITSresponseSSD::fgkNParDefault = 6;
-const Float_t AliITSresponseSSD::fgkSigmaPDefault = 3.;
-const Float_t AliITSresponseSSD::fgkSigmaNDefault = 2.;
+const Double_t AliITSresponseSSD::fgkSigmaPDefault = 3.;
+const Double_t AliITSresponseSSD::fgkSigmaNDefault = 2.;
 
 ClassImp(AliITSresponseSSD)
 
@@ -60,7 +60,7 @@ AliITSresponseSSD::AliITSresponseSSD(const char *dataType){
     SetParamOptions(fgkOption1Default.Data(),fgkOption2Default.Data());
     SetNDetParam(fgkNParDefault);   // Sets fNPar=6 by default.
     SetADCpereV();
-    fDetPar = new Float_t[fNPar];
+    fDetPar = new Double_t[fNPar];
     if (fNPar==6) {
 	fDetPar[0]=10.;
 	fDetPar[1]=5.;
@@ -104,7 +104,7 @@ AliITSresponseSSD::AliITSresponseSSD(const AliITSresponseSSD &src) :
     *this = src;
 }
 //______________________________________________________________________
-void AliITSresponseSSD::SetDetParam(Float_t  *par){
+void AliITSresponseSSD::SetDetParam(Double_t  *par){
     // set det param
     Int_t i;
 
@@ -114,7 +114,7 @@ void AliITSresponseSSD::SetDetParam(Float_t  *par){
     } // end for i
 }
 //______________________________________________________________________
-void AliITSresponseSSD::GetDetParam(Float_t  *par) const {
+void AliITSresponseSSD::GetDetParam(Double_t  *par) const {
     // get det param
     Int_t i;
 

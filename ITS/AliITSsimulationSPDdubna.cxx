@@ -32,7 +32,7 @@ $Id$
 #include "AliITSpList.h"
 #include "AliITSsimulationSPDdubna.h"
 #include "AliITSsegmentationSPD.h"
-#include "AliITSresponseSPDdubna.h"
+#include "AliITSresponseSPD.h"
 
 //#define DEBUG
 
@@ -46,7 +46,11 @@ ClassImp(AliITSsimulationSPDdubna)
 //
 // AliITSsimulationSPDdubna is to do the simulation of SPDs.
 //______________________________________________________________________
-AliITSsimulationSPDdubna::AliITSsimulationSPDdubna() : AliITSsimulation(){
+AliITSsimulationSPDdubna::AliITSsimulationSPDdubna():
+AliITSsimulation(),
+fHis(0),
+fSPDname(),
+fCoupling(0){
     // Default constructor.
     // Inputs:
     //    none.
@@ -55,47 +59,57 @@ AliITSsimulationSPDdubna::AliITSsimulationSPDdubna() : AliITSsimulation(){
     // Return:
     //    A default constructed AliITSsimulationSPDdubna class.
 
-    fHis          = 0;
+    if(GetDebug(1)) Info("AliITSsimulationSPDdubda()",
+                         "Calling degault constructor");
 }
 //______________________________________________________________________
 AliITSsimulationSPDdubna::AliITSsimulationSPDdubna(AliITSsegmentation *seg,
-						   AliITSresponse *resp){
+						                 AliITSresponse *resp,Int_t cup):
+AliITSsimulation(seg,resp),
+fHis(0),
+fSPDname(),
+fCoupling(cup){
     // standard constructor
     // Inputs:
     //    AliITSsegmentation *seg  A pointer to the segmentation class
     //                             to be used for this simulation
     //    AliITSresponse     *resp A pointer to the responce class to
     //                             be used for this simulation
+    //    Int_t              cup   The type of coupling to be used
+    //                             =1 uses SetCoupling, =2 uses SetCouplingOld
+    //                             With diffusion tured off
+    //                             =3 uses SetCoupling, =4 uses SetCouplingOld
+    //                             with diffusion on other, no coupling.
     // Outputs:
     //    none.
     // Return:
     //    A default constructed AliITSsimulationSPDdubna class.
 
-    fHis = 0;
-    Init(seg,resp);
+    if(GetDebug(1)) Info("AliITSsimulationSPDdubda",
+                         "Calling degault constructor seg=%p resp=%p cup=%d",
+                         seg,resp,cup);
+    if(cup==1||cup==2){ // For the moment, remove defusion if Coupling is
+        // set.
+        resp->SetTemperature(0.0);
+        resp->SetDistanceOverVoltage(0.0);
+    } // end if
+    Init();
 }
 //______________________________________________________________________
-void AliITSsimulationSPDdubna::Init(AliITSsegmentation *seg,
-						   AliITSresponse *resp){
+void AliITSsimulationSPDdubna::Init(){
     // Initilization
     // Inputs:
-    //    AliITSsegmentation *seg  A pointer to the segmentation class
-    //                             to be used for this simulation
-    //    AliITSresponse     *resp A pointer to the responce class to
-    //                             be used for this simulation
+    //    none.
     // Outputs:
     //    none.
     // Return:
     //    none.
     const Double_t kmictocm = 1.0e-4; // convert microns to cm.
 
-    SetResponseModel(resp);
-    SetSegmentationModel(seg);
     SetModuleNumber(0);
     SetEventNumber(0);
     SetMap(new AliITSpList(GetNPixelsZ(),GetNPixelsX()));
-
-    GetResp()->SetDistanceOverVoltage(kmictocm*GetSeg()->Dy(),50.0);
+    GetResp(0,0)->SetDistanceOverVoltage(kmictocm*GetSeg()->Dy(),50.0);
 }
 //______________________________________________________________________
 AliITSsimulationSPDdubna::~AliITSsimulationSPDdubna(){
@@ -108,8 +122,8 @@ AliITSsimulationSPDdubna::~AliITSsimulationSPDdubna(){
     //     none.
 
     if (fHis) {
-	fHis->Delete(); 
-	delete fHis;     
+        fHis->Delete(); 
+        delete fHis;     
     } // end if fHis
 }
 //______________________________________________________________________
@@ -139,7 +153,9 @@ AliITSsimulationSPDdubna&  AliITSsimulationSPDdubna::operator=(const
     // Return:
 
     if(&s == this) return *this;
-    this->fHis      = s.fHis;
+    this->fHis = s.fHis;
+    fCoupling  = s.fCoupling;
+    fSPDname   = s.fSPDname;
     return *this;
 }
 //______________________________________________________________________
@@ -154,27 +170,34 @@ void AliITSsimulationSPDdubna::InitSimulationModule(Int_t module, Int_t event){
     //  Returns:
     //    none
 
+    if(GetDebug(1)) Info("InitSimulationModule","(module=%d,event=%d)",
+                         module,event);
     SetModuleNumber(module);
     SetEventNumber(event);
     ClearMap();
 }
 //_____________________________________________________________________
-void AliITSsimulationSPDdubna::SDigitiseModule(AliITSmodule *mod, Int_t mask,
-					       Int_t event){
+void AliITSsimulationSPDdubna::SDigitiseModule(AliITSmodule *mod,Int_t,
+                                               Int_t event){
     //  This function begins the work of creating S-Digits.  Inputs defined
     //  by base class.
     //  Inputs:
     //    AliITSmodule *mod  //  module
-    //    Int_t mask         //  mask to be applied to the module
-    //    Int_t event        // Event number
+    //    Int_t              //  not used
+    //    Int_t event        //  Event number
     //  Outputs:
     //    none
     //  Return:
     //    test              //  test returns kTRUE if the module contained hits
     //                      //  test returns kFALSE if it did not contain hits
 
-    mask = mod->GetNhits();
-    if(!mask) return;// if module has no hits don't create Sdigits
+    if(GetDebug(1)) Info("SDigitiseModule","(mod=%p, ,event=%d)",mod,event);
+    if(!(mod->GetNhits())){
+        if(GetDebug(1)) Info("SDigitiseModule","In event %d module %d there "
+                             "are %d hits returning.",event,
+                             mod->GetIndex(),mod->GetNhits());
+        return;// if module has no hits don't create Sdigits
+    } // end if
     SetModuleNumber(mod->GetIndex());
     SetEventNumber(event);
     HitToSDigit(mod);
@@ -193,15 +216,17 @@ void AliITSsimulationSPDdubna::WriteSDigits(){
     Int_t ix, nix, iz, niz;
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
 
+    if(GetDebug(1))Info("WriteSDigits","Writing SDigits for module %d",
+                        GetModuleNumber());
     GetMap()->GetMaxMapIndex(niz, nix);
     for(iz=0; iz<niz; iz++)for(ix=0; ix<nix; ix++){
-	if(GetMap()->GetSignalOnly(iz,ix)>0.0){
-	    aliITS->AddSumDigit(*(GetMap()->GetpListItem(iz,ix)));
-#ifdef DEBUG
-	    cout <<"SDigits " << iz << "," << ix << "," << 
-		*(GetMap()->GetpListItem(iz,ix)) << endl;
-#endif
-	} // end if GetMap()->GetSignalOnly(iz,ix)>0.0
+        if(GetMap()->GetSignalOnly(iz,ix)>0.0){
+            aliITS->AddSumDigit(*(GetMap()->GetpListItem(iz,ix)));
+            if(GetDebug(1)){
+                cout <<"AliITSsimulationSPDdubna:WriteSDigits " << iz << "," 
+                     << ix << "," << *(GetMap()->GetpListItem(iz,ix)) << endl;
+            } // end if GetDebug
+        } // end if GetMap()->GetSignalOnly(iz,ix)>0.0
     } // end for iz,ix
     return; 
 }
@@ -215,89 +240,30 @@ void AliITSsimulationSPDdubna::FinishSDigitiseModule(){
     //  Return
     //    none
 
-    SDigitsToDigits();
+    if(GetDebug(1)) Info("SDigitiseModule","()");
+    pListToDigits(); // Charge To Signal both adds noise and
+    ClearMap();
     return;
 }
 //______________________________________________________________________
-void AliITSsimulationSPDdubna::SDigitsToDigits(){
-    //  This function adds electronic noise to the S-Digits and then adds them
-    // to  a new pList
-    //  Inputs:
-    //    none.
-    //  Outputs:
-    //    none.
-    //  Return:
-    //    none
-
-    ChargeToSignal(); // Charge To Signal both adds noise and
-    ClearMap();
-}
-//______________________________________________________________________
-void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod, Int_t module,
-					      Int_t dummy){
+void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod,Int_t,
+                                              Int_t){
     //  This function creates Digits straight from the hits and then adds
     //  electronic noise to the digits before adding them to pList
     //  Each of the input variables is passed along to HitToSDigit
     //  Inputs:
     //    AliITSmodule *mod     module
-    //    Int_t        module   module number  Dummy.
-    //    Int_t        dummy
+    //    Int_t                 Dummy.
+    //    Int_t                 Dummy
     //  Outputs:
     //     none.
     //  Return:
     //    none.
 
-    //This calls the module for HitToSDigit
-    fModule = dummy = module = mod->GetIndex();
+    if(GetDebug(1)) Info("DigitiseModule","(mod=%p,,)",mod);
     HitToSDigit(mod);
-    ChargeToSignal();
+    pListToDigits();
     ClearMap();
-}
-//______________________________________________________________________
-void AliITSsimulationSPDdubna::UpdateMapSignal(Int_t iz,Int_t ix,Int_t trk,
-					       Int_t ht,Double_t signal){
-    //  This function adds a signal to the pList from the pList class
-    //  Inputs:
-    //    Int_t       iz     // row number
-    //    Int_t       ix     // column number
-    //    Int_t       trk    // track number
-    //    Int_t       ht     // hit number
-    //    Double_t    signal // signal strength
-    //  Outputs:
-    //    none.
-    //  Return:
-    //    none
-
-    GetMap()->AddSignal(iz,ix,trk,ht,GetModuleNumber(),signal);
-}
-//______________________________________________________________________
-void AliITSsimulationSPDdubna::UpdateMapNoise(Int_t iz,Int_t ix,Float_t noise){
-    //  This function adds noise to data in the MapA2 as well as the pList
-    //  Inputs:
-    //    Int_t       iz       // row number
-    //    Int_t       ix       // column number
-    //    Int_t       mod     // module number
-    //    Double_t    sig     // signal strength
-    //    Double_t    noise   // electronic noise generated by ChargeToSignal
-    //  Outputs:
-    //    All of the inputs are passed to AliITSMapA2::AddSignal or
-    //    AliITSpList::AddNoise
-    //  Return:
-    //    none
-
-    GetMap()->AddNoise(iz,ix,GetModuleNumber(),noise);
-}
-//______________________________________________________________________
-void AliITSsimulationSPDdubna::HitToDigit(AliITSmodule *mod){
-    // Standard interface to DigitiseModule
-    // Inputs:
-    //    AliITSmodule *mod  Pointer to this module
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-
-    DigitiseModule(mod,GetModuleNumber(),0);
 }
 //______________________________________________________________________
 void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod){
@@ -311,47 +277,75 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod){
     const Double_t kmictocm = 1.0e-4; // convert microns to cm.
     TObjArray *hits = mod->GetHits();
     Int_t nhits = hits->GetEntriesFast();
-    Int_t h,ix,iz;
+    Int_t h,ix,iz,i;
     Int_t idtrack;
     Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
     Double_t x,y,z,t,tp,st,dt=0.2,el,sig;
     Double_t thick = kmictocm*GetSeg()->Dy();
 
+    if(GetDebug(1)) Info("HitsToSDigits","(mod=%p) fCoupling=%d",
+                         mod,fCoupling);
     if(nhits<=0) return;
     for(h=0;h<nhits;h++){
-#ifdef DEBUG
-	cout << "Hits=" << h << "," << *(mod->GetHit(h)) << endl;
-#endif
-	if(mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)){
-	  st = TMath::Sqrt(x1*x1+y1*y1+z1*z1);
-	  if(st>0.0){
-	    st = (Double_t)((Int_t)(1.0E+04*st)); // number of microns
-	    if(st<=0.0) st = 1.0;
-	    dt = 1.0/st;
-	    for(t=0;t<1.0;t+=dt){ // Integrate over t
-	      tp  = t+0.5*dt;
-	      el  = GetResp()->GeVToCharge((Float_t)(dt*de));
-#ifdef DEBUG
-	      if(el<=0.0) cout << "el="<<el<<" dt="<<dt<<" de="<<de<<endl;
-#endif
-	      x   = x0+x1*tp;
-	      y   = y0+y1*tp;
-	      z   = z0+z1*tp;
-	      GetSeg()->LocalToDet(x,z,ix,iz);
-	      sig = GetResp()->SigmaDiffusion1D(thick + y);
-	      SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
-	    } // end for t
-	  } else { // st == 0.0 deposit it at this point
-	    el  = GetResp()->GeVToCharge((Float_t)de);
-	    x   = x0;
-	    y   = y0;
-	    z   = z0;
-	    GetSeg()->LocalToDet(x,z,ix,iz);
-	    sig = GetResp()->SigmaDiffusion1D(thick + y);
-	    SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
-	  } // end if st>0.0
-	} // end if mod->LineSegmentL...
+        if(GetDebug(1)){
+            cout << "Hits=" << h << "," << *(mod->GetHit(h)) << endl;
+        } // end if GetDebug
+        if(!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
+        st = TMath::Sqrt(x1*x1+y1*y1+z1*z1);
+        if(st>0.0){
+            st = (Double_t)((Int_t)(1.0E+04*st)); // number of microns
+            if(st<=0.0) st = 1.0;
+            dt = 1.0/st;
+            for(t=0.0;t<1.0;t+=dt){ // Integrate over t
+                tp  = t+0.5*dt;
+                x   = x0+x1*tp;
+                y   = y0+y1*tp;
+                z   = z0+z1*tp;
+                if(!(GetSeg()->LocalToDet(x,z,ix,iz))) continue; // outside
+                el  = GetResp(ix,iz)->GeVToCharge((Double_t)(dt*de));
+                if(GetDebug(1)){
+                    if(el<=0.0) cout<<"el="<<el<<" dt="<<dt
+                                    <<" de="<<de<<endl;
+                } // end if GetDebug
+                sig = GetResp(ix,iz)->SigmaDiffusion1D(thick + y);
+                SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
+            } // end for t
+        } else { // st == 0.0 deposit it at this point
+            x   = x0;
+            y   = y0;
+            z   = z0;
+            if(!(GetSeg()->LocalToDet(x,z,ix,iz))) continue; // outside
+            el  = GetResp(ix,iz)->GeVToCharge((Double_t)de);
+            sig = GetResp(ix,iz)->SigmaDiffusion1D(thick + y);
+            SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
+        } // end if st>0.0
+        // Coupling
+        switch (fCoupling) {
+        default:
+            break;
+        case 1: case 3:
+            // x is column and z is row (see AliITSsegmentationSPD::GetPadIxz)
+            for(i=0;i<GetMap()->GetEntries();i++) 
+                if(GetMap()->GetpListItem(i)==0) continue;
+                else{
+                    GetMap()->GetMapIndex(
+                              GetMap()->GetpListItem(i)->GetIndex(),iz,ix);
+                    SetCoupling(iz,ix,idtrack,h);
+                } // end for i
+            break;
+        case 2: case 4:
+            // x is column and z is row (see AliITSsegmentationSPD::GetPadIxz)
+            for(i=0;i<GetMap()->GetEntries();i++) 
+                if(GetMap()->GetpListItem(i)==0) continue;
+                else{
+                    GetMap()->GetMapIndex(
+                                GetMap()->GetpListItem(i)->GetIndex(),iz,ix);
+                    SetCouplingOld(iz,ix,idtrack,h);
+                } // end for i
+            break;
+        } // end switch
     } // Loop over all hits h
+    if(GetDebug(2))Info("HitToSDigit","Finished fCoupling=%d",fCoupling);
 }
 //______________________________________________________________________
 void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t z0,
@@ -384,381 +378,51 @@ void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t z0,
     Float_t x,z;
     Double_t x1,x2,z1,z2,s,sp;
 
-    if(sig<=0.0) {
-	GetMap()->AddSignal(iz0,ix0,t,hi,GetModuleNumber(),el);
-	return;
+    if(GetDebug(4)) Info("SpreadCharge","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,"
+                         "sig=%e,t=%d,i=%d)",x0,z0,ix0,iz0,el,sig,t,hi);
+    if(sig<=0.0) { // if sig<=0 No diffusion to simulate.
+        GetMap()->AddSignal(iz0,ix0,t,hi,GetModuleNumber(),el);
+        if(GetDebug(2)){
+            cout << "sig<=0.0=" << sig << endl;
+        } // end if GetDebug
+        return;
     } // end if
     sp = 1.0/(sig*kRoot2);
-#ifdef DEBUG
-    cout << "sig=" << sig << " sp=" << sp << endl;
-#endif
+    if(GetDebug(2)){
+        cout << "sig=" << sig << " sp=" << sp << endl;
+    } // end if GetDebug
     ixs = TMath::Max(-knx+ix0,0);
     ixe = TMath::Min(knx+ix0,GetSeg()->Npx()-1);
     izs = TMath::Max(-knz+iz0,0);
     ize = TMath::Min(knz+iz0,GetSeg()->Npz()-1);
     for(ix=ixs;ix<=ixe;ix++) for(iz=izs;iz<=ize;iz++){
-	GetSeg()->DetToLocal(ix,iz,x,z); // pixel center
-	x1  = x;
-	z1  = z;
-	x2  = x1 + 0.5*kmictocm*GetSeg()->Dpx(ix); // Upper
-	x1 -= 0.5*kmictocm*GetSeg()->Dpx(ix);  // Lower
-	z2  = z1 + 0.5*kmictocm*GetSeg()->Dpz(iz); // Upper
-	z1 -= 0.5*kmictocm*GetSeg()->Dpz(iz);  // Lower
-	x1 -= x0; // Distance from where track traveled
-	x2 -= x0; // Distance from where track traveled
-	z1 -= z0; // Distance from where track traveled
-	z2 -= z0; // Distance from where track traveled
-	s   = 0.25; // Correction based on definision of Erfc
-	s  *= TMath::Erfc(sp*x1) - TMath::Erfc(sp*x2);
-#ifdef DEBUG
-	cout << "el=" << el << " ix0=" << ix0 << " ix=" << ix << " x0="<< x <<
-	    " iz0=" << iz0 << " iz=" << iz << " z0=" << z  << 
-	    " sp*x1=" << sp*x1 <<" sp*x2=" << sp*x2 << " s=" << s;
-#endif
-	s  *= TMath::Erfc(sp*z1) - TMath::Erfc(sp*z2);
-#ifdef DEBUG
-	cout << " sp*z1=" << sp*z1 <<" sp*z2=" << sp*z2 << " s=" << s << endl;
-#endif
-	GetMap()->AddSignal(iz,ix,t,hi,GetModuleNumber(),s*el);
+        GetSeg()->DetToLocal(ix,iz,x,z); // pixel center
+        x1  = x;
+        z1  = z;
+        x2  = x1 + 0.5*kmictocm*GetSeg()->Dpx(ix); // Upper
+        x1 -= 0.5*kmictocm*GetSeg()->Dpx(ix);  // Lower
+        z2  = z1 + 0.5*kmictocm*GetSeg()->Dpz(iz); // Upper
+        z1 -= 0.5*kmictocm*GetSeg()->Dpz(iz);  // Lower
+        x1 -= x0; // Distance from where track traveled
+        x2 -= x0; // Distance from where track traveled
+        z1 -= z0; // Distance from where track traveled
+        z2 -= z0; // Distance from where track traveled
+        s   = 0.25; // Correction based on definision of Erfc
+        s  *= TMath::Erfc(sp*x1) - TMath::Erfc(sp*x2);
+        if(GetDebug(3)){
+            cout <<"el="<<el<<" ix0="<<ix0<<" ix="<<ix<<" x0="<<x<<
+                " iz0="<<iz0<<" iz="<<iz<<" z0="<<z<< 
+                " sp*x1="<<sp*x1<<" sp*x2="<<sp*x2<<" s="<<s;
+        } // end if GetDebug
+        s  *= TMath::Erfc(sp*z1) - TMath::Erfc(sp*z2);
+        if(GetDebug(3)){
+            cout<<" sp*z1="<<sp*z1<<" sp*z2="<<sp*z2<<" s="<<s<< endl;
+        } // end if GetDebug
+        GetMap()->AddSignal(iz,ix,t,hi,GetModuleNumber(),s*el);
     } // end for ix, iz
 }
 //______________________________________________________________________
-/*
-Double_t *AliITSsimulationSPDdubna::CreateFindCellEdges(Double_t x0,
-                            Double_t x1,Double_t z0,Double_t z1,Int_t &n){
-    // Note: This function is a potensial source for a memory leak. The memory
-    // pointed to in its return, must be deleted.
-    // Inputs:
-    //    Double_t x0   The starting location of the track step in x
-    //    Double_t x1   The distance allong x for the track step
-    //    Double_t z0   The starting location of the track step in z
-    //    Double_t z1   The distance allong z for the track step
-    // Output:
-    //    Int_t &n      The size of the array returned. Minimal n=2.
-    // Return:
-    //    The pointer to the array of track steps.
-    Int_t ix0,ix1,ix,iz0,iz1,iz,i;
-    Double_t x,z,lx,ux,lz,uz,a,b,c,d;
-    Double_t *t;
-
-    GetSeg()->LocalToDet(x0,z0,ix0,iz0);
-    GetSeg()->LocalToDet(x1,z1,ix1,iz1);
-    n      = 2 + TMath::Abs(ix1-ix0) + TMath::Abs(iz1-iz0);
-    t      = new Double_t[n];
-    t[0]   = 0.0;
-    t[n-1] = 1.0;
-    x      = x0;
-    z      = z0;
-    for(i=1;i<n-1;i++){
-	GetSeg()->LocalToDet(x,z,ix,iz);
-	GetSeg()->CellBoundries(ix,iz,lx,ux,lz,uz);
-	a = (lx-x0)/x1;
-	if(a<=t[i-1]) a = 1.0;
-	b = (ux-x0)/x1;
-	if(b<=t[i-1]) b = 1.0;
-	c = (lz-z0)/z1;
-	if(c<=t[i-1]) c = 1.0;
-	d = (uz-z0)/z1;
-	if(d<=t[i-1]) d = 1.0;
-	t[i] = TMath::Min(TMath::Min(TMath::Min(a,b),c),d);
-	x = x0+x1*(t[i]*1.00000001);
-	z = z0+z1*(t[i]*1.00000001);
-	i++;
-    } // end for i
-    return t;
-}
-*/
-//______________________________________________________________________
-void AliITSsimulationSPDdubna::HitToSDigitOld(AliITSmodule *mod){
-    // digitize module Old method
-    // Inputs:
-    //    AliITSmodule *mod  Pointer to this module
-    // Output:
-    //    none.
-    // Return:
-    //    none.
-    const Float_t kEnToEl = 2.778e+8; // GeV->charge in electrons 
-                                      // for 3.6 eV/pair 
-    const Float_t kconv   = 10000.;   // cm -> microns
-
-    Float_t spdLength    = GetSeg()->Dz();
-    Float_t spdWidth     = GetSeg()->Dx();
-    Float_t spdThickness = GetSeg()->Dy();
-    Float_t difCoef=GetResp()->SigmaDiffusion1D(1.0);
-    Float_t zPix0  = 1e+6;
-    Float_t xPix0  = 1e+6;
-    Float_t yPrev  = 1e+6;   
-    Float_t zPitch = GetSeg()->Dpz(0);
-    Float_t xPitch = GetSeg()->Dpx(0);
-    //  Array of pointers to the label-signal list
-    Int_t indexRange[4] = {0,0,0,0};
-
-    // Fill detector maps with GEANT hits
-    // loop over hits in the module
-    static Bool_t first;
-    Int_t lasttrack=-2;
-    Int_t hit, iZi, jz, jx;
-    Int_t idhit=-1; //!
-    TObjArray *fHits = mod->GetHits();
-    Int_t nhits      = fHits->GetEntriesFast();
-    Float_t yPix0 = -spdThickness/2; 
-    if (!nhits) return;
-#ifdef DEBUG
-    cout<<"len,wid,thickness,nx,nz,pitchx,pitchz,difcoef ="<<spdLength<<","
-	<<spdWidth<<","<<spdThickness<<","<<GetNPixelsX()<<","<<GetNPixelsZ()<<","
-	<<xPitch<<","<<zPitch<<","<<difCoef<<endl;
-    cout<<"SPDdubna: module,nhits ="<<GetModuleNumber()<<","<<nhits<<endl;
-#endif
-    for (hit=0;hit<nhits;hit++) {
-        AliITShit *iHit = (AliITShit*) fHits->At(hit);
-#ifdef DEBUG
-	cout << "Hits=" << hit << "," << *iHit << endl;
-#endif
-	//Int_t layer = iHit->GetLayer();
-
-	// work with the idtrack=entry number in the TreeH
-	//Int_t idhit,idtrack; //!
-	//mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);  //!    
-	//Int_t idtrack=mod->GetHitTrackIndex(hit);  
-        // or store straight away the particle position in the array
-	// of particles : 
-	if(iHit->StatusEntering()) idhit=hit;
-        Int_t itrack = iHit->GetTrack();
-        Int_t dray = 0;
-   
-	if (lasttrack != itrack || hit==(nhits-1)) first = kTRUE; 
-
-	//Int_t parent = iHit->GetParticle()->GetFirstMother();
-        Int_t partcode = iHit->GetParticle()->GetPdgCode();
-
-	//  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0,
-	// 211 - pi+,  310 - K0s, 321 - K+, 2112 - n, 2212 - p, 3122 - lambda
-
-	Float_t pmod = iHit->GetParticle()->P(); // total momentum at the
-	                                           // vertex
-        pmod *= 1000;
-
-        if(partcode == 11 && pmod < 6) dray = 1; // delta ray is e-
-                                                 // at p < 6 MeV/c
-
-	//  Get hit z and x(r*phi) cordinates for each module (detector)
-	//  in local system.
-
-	Float_t zPix = kconv*iHit->GetZL();
-	Float_t xPix = kconv*iHit->GetXL();
-	Float_t yPix = kconv*iHit->GetYL();
-
-	// Get track status
-	Int_t status = iHit->GetTrackStatus();      
-
-	// Check boundaries
-	if(zPix  > spdLength/2) {
-#ifdef DEBUG
-	    cout<<"!!! SPD: z outside ="<<zPix<<endl;
-#endif
-	    zPix = spdLength/2 - 10;
-	}
-	if(zPix  < 0 && zPix < -spdLength/2) {
-#ifdef DEBUG
-	    cout<<"!!! SPD: z outside ="<<zPix<<endl;
-#endif
-	    zPix = -spdLength/2 + 10;
-	}
-	if(xPix  > spdWidth/2) {
-#ifdef DEBUG
-	    cout<<"!!! SPD: x outside ="<<xPix<<endl;
-#endif
-	    xPix = spdWidth/2 - 10;
-	}
-	if(xPix  < 0 && xPix < -spdWidth/2) {
-#ifdef DEBUG
-	    cout<<"!!! SPD: x outside ="<<xPix<<endl;
-#endif
-	    xPix = -spdWidth/2 + 10;
-	}
-	Int_t trdown = 0;
-
-	// enter Si or after event in Si
-	if (status == 66 ) {  
-	    zPix0 = zPix;
-	    xPix0 = xPix;
-	    yPrev = yPix; 
-	} // end if status == 66
-
-	Float_t depEnergy = iHit->GetIonization();
-	// skip if the input point to Si       
-
-	if(depEnergy <= 0.) continue;        
-
-	// if track returns to the opposite direction:
-	if (yPix < yPrev) {
-            trdown = 1;
-	} // end if yPix < yPrev
-
-	// take into account the holes diffusion inside the Silicon
-	// the straight line between the entrance and exit points in Si is
-	// divided into the several steps; the diffusion is considered 
-	// for each end point of step and charge
-	// is distributed between the pixels through the diffusion.
-
-	//  ---------- the diffusion in Z (beam) direction -------
-	Float_t charge = depEnergy*kEnToEl;         // charge in e-
-	Float_t drPath = 0.;   
-	Float_t tang = 0.;
-	Float_t sigmaDif = 0.; 
-	Float_t zdif = zPix - zPix0;
-	Float_t xdif = xPix - xPix0;
-	Float_t ydif = TMath::Abs(yPix - yPrev);
-	Float_t ydif0 = TMath::Abs(yPrev - yPix0);
-
-	if(ydif < 1) continue; // ydif is not zero
-
-	Float_t projDif = sqrt(xdif*xdif + zdif*zdif);
-
-	Int_t ndZ = (Int_t)TMath::Abs(zdif/zPitch) + 1;
-	Int_t ndX = (Int_t)TMath::Abs(xdif/xPitch) + 1; 
-
-	// number of the steps along the track:
-	Int_t nsteps = ndZ;
-	if(ndX > ndZ) nsteps = ndX;
-	if(nsteps < 20) nsteps = 20;  // minimum number of the steps 
-
-	if (projDif < 5 ) {
-	    drPath = (yPix-yPix0)*1.e-4;  
-	    drPath = TMath::Abs(drPath);        // drift path in cm
-	    sigmaDif = difCoef*sqrt(drPath);    // sigma diffusion in cm
-	    sigmaDif = sigmaDif*kconv;         // sigma diffusion in microns
-	    nsteps = 1;
-	}  // end if projDif < 5
-
-	if(projDif > 5) tang = ydif/projDif;
-	Float_t dCharge = charge/nsteps;       // charge in e- for one step
-	Float_t dZ = zdif/nsteps;
-	Float_t dX = xdif/nsteps;
-
-	for (iZi = 1; iZi <= nsteps;iZi++) {
-	    Float_t dZn = iZi*dZ;
-	    Float_t dXn = iZi*dX;
-	    Float_t zPixn = zPix0 + dZn;
-	    Float_t xPixn = xPix0 + dXn;
-
-	    if(projDif >= 5) {
-		Float_t dProjn = sqrt(dZn*dZn+dXn*dXn);
-		drPath = dProjn*tang*1.e-4; // drift path for iZi+1 step in cm 
-		if(trdown == 0) {
-		    drPath = TMath::Abs(drPath) + ydif0*1.e-4;
-		}// end if trdow ==0
-		if(trdown == 1) {
-		    drPath = ydif0*1.e-4 - TMath::Abs(drPath);
-		    drPath = TMath::Abs(drPath);
-		} // end if trdown == 1
-		sigmaDif = difCoef*sqrt(drPath);    
-		sigmaDif = sigmaDif*kconv;       // sigma diffusion in microns
-	    } // end if projdif >= 5
-
-	    zPixn = (zPixn + spdLength/2.);  
-	    xPixn = (xPixn + spdWidth/2.);  
-            Int_t nZpix, nXpix;
-            GetSeg()->GetPadIxz(xPixn,zPixn,nXpix,nZpix);
-	    zPitch = GetSeg()->Dpz(nZpix);
-            GetSeg()->GetPadTxz(xPixn,zPixn);
-	    // set the window for the integration
-	    Int_t jzmin = 1;  
-	    Int_t jzmax = 3; 
-	    if(nZpix == 1) jzmin =2;
-	    if(nZpix == GetNPixelsZ()) jzmax = 2; 
-
-	    Int_t jxmin = 1;  
-	    Int_t jxmax = 3; 
-	    if(nXpix == 1) jxmin =2;
-	    if(nXpix == GetNPixelsX()) jxmax = 2; 
-
-	    Float_t zpix = nZpix; 
-	    Float_t dZright = zPitch*(zpix - zPixn);
-	    Float_t dZleft = zPitch - dZright;
-
-	    Float_t xpix = nXpix; 
-	    Float_t dXright = xPitch*(xpix - xPixn);
-	    Float_t dXleft = xPitch - dXright;
-
-	    Float_t dZprev = 0.;
-	    Float_t dZnext = 0.;
-	    Float_t dXprev = 0.;
-	    Float_t dXnext = 0.;
-
-	    for(jz=jzmin; jz <=jzmax; jz++) {
-	        if(jz == 1) {
-		    dZprev = -zPitch - dZleft;
-		    dZnext = -dZleft;
-		} else if(jz == 2) {
-		    dZprev = -dZleft;
-		    dZnext = dZright;
-		} else if(jz == 3) {
-		    dZprev = dZright;
-		    dZnext = dZright + zPitch;
-		} // end if jz
-		// kz changes from 1 to the fNofPixels(270)  
-		Int_t kz = nZpix + jz -2; 
-
-		Float_t zArg1 = dZprev/sigmaDif;
-		Float_t zArg2 = dZnext/sigmaDif;
-		Float_t zProb1 = TMath::Erfc(zArg1);
-		Float_t zProb2 = TMath::Erfc(zArg2);
-		Float_t dZCharge =0.5*(zProb1-zProb2)*dCharge; 
-
-
-		// ----------- holes diffusion in X(r*phi) direction  --------
-
-		if(dZCharge > 1.) { 
-		    for(jx=jxmin; jx <=jxmax; jx++) {
-			if(jx == 1) {
-			    dXprev = -xPitch - dXleft;
-			    dXnext = -dXleft;
-			} else if(jx == 2) {
-			    dXprev = -dXleft;
-			    dXnext = dXright;
-			} else if(jx == 3) {
-			    dXprev = dXright;
-			    dXnext = dXright + xPitch;
-			}  // end if jx
-			Int_t kx = nXpix + jx -2;
-			Float_t xArg1 = dXprev/sigmaDif;
-			Float_t xArg2 = dXnext/sigmaDif;
-			Float_t xProb1 = TMath::Erfc(xArg1);
-			Float_t xProb2 = TMath::Erfc(xArg2);
-			Float_t dXCharge =0.5*(xProb1-xProb2)*dZCharge;
-
-			if(dXCharge > 1.) {
-			    if (first) {
-				indexRange[0]=indexRange[1]=kz-1;
-				indexRange[2]=indexRange[3]=kx-1;
-				first=kFALSE;
-			    } // end if first
-			    indexRange[0]=TMath::Min(indexRange[0],kz-1);
-			    indexRange[1]=TMath::Max(indexRange[1],kz-1);
-			    indexRange[2]=TMath::Min(indexRange[2],kx-1);
-			    indexRange[3]=TMath::Max(indexRange[3],kx-1);
-			    // The calling sequence for UpdateMapSignal was 
-			    // moved into the (dx > 1 e-) loop because it 
-			    // needs to call signal which is defined inside 
-			    // this loop
-			    UpdateMapSignal(kz-1,kx-1,
-                             ((AliITShit*)(mod->GetHit(hit)))->GetTrack(),
-					    hit,dXCharge);
-			} // dXCharge > 1 e-
-		    } // jx loop
-		} // dZCharge > 1 e-
-	    } // jz loop
-	} // iZi loop
-        if (status == 65) {   // the step is inside of Si
-	    zPix0 = zPix;
-	    xPix0 = xPix;
-	} // end if status == 65
-	yPrev = yPix;
-    }   // hit loop inside the module
-}
-//______________________________________________________________________
-void AliITSsimulationSPDdubna::ChargeToSignal(){
+void AliITSsimulationSPDdubna::pListToDigits(){
     // add noise and electronics, perform the zero suppression and add the
     // digit to the list
     // Inputs:
@@ -768,39 +432,44 @@ void AliITSsimulationSPDdubna::ChargeToSignal(){
     // Return:
     //    none.
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
-    Float_t threshold = GetResp()->GetThreshold();
     Int_t j,ix,iz;
-    Float_t  electronics;
+    Double_t  electronics;
     Double_t sig;
     const Int_t    nmaxtrk=AliITSdigitSPD::GetNTracks();
     static AliITSdigitSPD dig;
 
+    if(GetDebug(1)) Info("pListToDigits","()");
     for(iz=0; iz<GetNPixelsZ(); iz++) for(ix=0; ix<GetNPixelsX(); ix++){
-      if(GetResp()->IsPixelDead(GetModuleNumber(),ix,iz)) continue;
-      electronics = GetResp()->ApplyBaselineAndNoise();
-      sig = GetMap()->GetSignalOnly(iz,ix);
-      UpdateMapNoise(iz,ix,electronics);
-#ifdef DEBUG
-      cout << sig << "+" << electronics <<">threshold=" << threshold  << endl;
-#endif
-      if (sig+electronics <= threshold) continue;
-      dig.SetCoord1(iz);
-      dig.SetCoord2(ix);
-      dig.SetSignal(1);
-      dig.SetSignalSPD((Int_t) GetMap()->GetSignal(iz,ix));
-      for(j=0;j<nmaxtrk;j++){
-	if (j<GetMap()->GetNEnteries()) {
-	  dig.SetTrack(j,GetMap()->GetTrack(iz,ix,j));
-	  dig.SetHit(j,GetMap()->GetHit(iz,ix,j));
-	}else { // Default values
-	  dig.SetTrack(j,-3);
-	  dig.SetHit(j,-1);
-	} // end if GetMap()
-      } // end for j
-#ifdef DEBUG
-      cout<<iz<<","<<ix<<","<<*(GetMap()->GetpListItem(iz,ix)) << endl;
-#endif
-      aliITS->AddSimDigit(0,&dig);
+        // Apply Noise/Dead channals and the like
+        if(GetResp(ix,iz)->IsPixelDead(GetModuleNumber(),ix,iz)) continue;
+        electronics = GetResp(ix,iz)->ApplyBaselineAndNoise();
+        UpdateMapNoise(ix,iz,electronics);
+        //
+        // Apply Threshold and write Digits.
+        sig = GetMap()->GetSignalOnly(iz,ix);
+        FillHistograms(ix,iz,sig+electronics);
+        if(GetDebug(3)){
+            cout<<sig<<"+"<<electronics<<">threshold("<<ix<<","<<iz
+                <<")="<<GetThreshold(ix,iz) <<endl;
+        } // end if GetDebug
+        if (sig+electronics <= GetThreshold(ix,iz)) continue;
+        dig.SetCoord1(iz);
+        dig.SetCoord2(ix);
+        dig.SetSignal(1);
+        dig.SetSignalSPD((Int_t) GetMap()->GetSignal(iz,ix));
+        for(j=0;j<nmaxtrk;j++){
+            if (j<GetMap()->GetNEnteries()) {
+                dig.SetTrack(j,GetMap()->GetTrack(iz,ix,j));
+                dig.SetHit(j,GetMap()->GetHit(iz,ix,j));
+            }else { // Default values
+                dig.SetTrack(j,-3);
+                dig.SetHit(j,-1);
+            } // end if GetMap()
+        } // end for j
+        if(GetDebug(3)){
+            cout<<iz<<","<<ix<<","<<*(GetMap()->GetpListItem(iz,ix))<<endl;
+        } // end if GetDebug
+        aliITS->AddSimDigit(0,&dig);
     } //  for ix/iz
 }
 //______________________________________________________________________
@@ -813,17 +482,31 @@ void AliITSsimulationSPDdubna::CreateHistograms(){
     // Return:
     //     none.
 
-    printf("SPD - create histograms\n");
+    if(GetDebug(1)) Info("CreateHistograms","create histograms");
 
-    fHis=new TObjArray(GetNPixelsZ());
-    TString spdName("spd_");
-    for (Int_t i=0;i<GetNPixelsZ();i++) {
-	Char_t pixelz[4];
-	sprintf(pixelz,"%d",i);
-	spdName.Append(pixelz);
-	fHis->AddAt(new TH1F(spdName.Data(),"SPD maps",
-			     GetNPixelsX(),0.,(Float_t) GetNPixelsX()), i);
+    fHis = new TObjArray(GetNPixelsZ());
+    TString fSPDname("spd_");
+    for(Int_t i=0;i<GetNPixelsZ();i++) {
+        Char_t pixelz[4];
+        sprintf(pixelz,"%d",i);
+        fSPDname.Append(pixelz);
+        fHis->AddAt(new TH1F(fSPDname.Data(),"SPD maps",
+                             GetNPixelsX(),0.,(Double_t)GetNPixelsX()),i);
     } // end for i
+}
+//______________________________________________________________________
+void AliITSsimulationSPDdubna::FillHistograms(Int_t ix,Int_t iz,Double_t v){
+    // Fill the histogram
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //     none.
+
+    if(!GetHistArray()) return; // Only fill if setup.
+    if(GetDebug(2)) Info("FillHistograms","fill histograms");
+    GetHistogram(iz)->Fill(ix,v);
 }
 //______________________________________________________________________
 void AliITSsimulationSPDdubna::ResetHistograms(){
@@ -835,8 +518,10 @@ void AliITSsimulationSPDdubna::ResetHistograms(){
     // Return:
     //     none.
 
+    if(!GetHistArray()) return; // Only fill if setup.
+    if(GetDebug(2)) Info("FillHistograms","fill histograms");
     for ( int i=0;i<GetNPixelsZ();i++ ) {
-	if (fHis->At(i))    ((TH1F*)fHis->At(i))->Reset();
+        if (fHis->At(i))    ((TH1F*)fHis->At(i))->Reset();
     } // end for i
 }
 
@@ -847,6 +532,8 @@ void AliITSsimulationSPDdubna::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
     //  The parameters probcol and probrow are the probability of the
     //  signal in one pixel shared in the two adjacent pixels along
     //  the column and row direction, respectively.
+    //  Note pList is goten via GetMap() and module is not need any more.
+    //  Otherwise it is identical to that coded by Tiziano Virgili (BSN).
     //Begin_Html
     /*
       <img src="picts/ITS/barimodel_3.gif">
@@ -863,52 +550,53 @@ void AliITSsimulationSPDdubna::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
     //    Int_t col            x cell index
     //    Int_t ntrack         track incex number
     //    Int_t idhit          hit index number
-    //    Int_t module         module number
     // Outputs:
     //    none.
     // Return:
     //     none.
     Int_t j1,j2,flag=0;
     Double_t pulse1,pulse2;
-    Float_t couplR=0.0,couplC=0.0;
+    Double_t couplR=0.0,couplC=0.0;
     Double_t xr=0.;
-    AliITSpList *pList = GetMap();
 
     GetCouplings(couplR,couplC);
+    if(GetDebug(3)) Info("SetCoupling","(row=%d,col=%d,ntrack=%d,idhit=%d) "
+                         "Calling SetCoupling couplR=%e couplC=%e",
+                         row,col,ntrack,idhit,couplR,couplC);
     j1 = row;
     j2 = col;
-    pulse1 = pList->GetSignalOnly(row,col);
+    pulse1 = GetMap()->GetSignalOnly(row,col);
     pulse2 = pulse1;
     for (Int_t isign=-1;isign<=1;isign+=2){// loop in row direction
-      do{
-	j1 += isign;
-	//   pulse1 *= couplR; 
-	xr = gRandom->Rndm();
-	//   if ((j1<0) || (j1>GetNPixelsZ()-1) || (pulse1<GetThreshold())){
-	if ((j1<0) || (j1>GetNPixelsZ()-1) || (xr>couplR)){
-	  j1 = row;
-	  flag = 1;
-	}else{
-	  UpdateMapSignal(j1,col,ntrack,idhit,pulse1);
-	  //  flag = 0;
-	  flag = 1; // only first next!!
-	} // end if
-      } while(flag == 0);
-      // loop in column direction
-      do{
-	j2 += isign;
-	// pulse2 *= couplC; 
-	xr = gRandom->Rndm();
-	//  if ((j2<0) || (j2>(GetNPixelsX()-1)) || (pulse2<GetThreshold())){
-	if ((j2<0) || (j2>GetNPixelsX()-1) || (xr>couplC)){
-	  j2 = col;
-	  flag = 1;
-	}else{
-	  UpdateMapSignal(row,j2,ntrack,idhit,pulse2);
-	  //  flag = 0;
-	  flag = 1; // only first next!!
-	} // end if
-      } while(flag == 0);
+        do{
+            j1 += isign;
+            //   pulse1 *= couplR; 
+            xr = gRandom->Rndm();
+            //if ((j1<0)||(j1>GetNPixelsZ()-1)||(pulse1<GetThreshold(j1,col))){
+            if ((j1<0) || (j1>GetNPixelsZ()-1) || (xr>couplR)){
+                j1 = row;
+                flag = 1;
+            }else{
+                UpdateMapSignal(col,j1,ntrack,idhit,pulse1);
+                //  flag = 0;
+                flag = 1; // only first next!!
+            } // end if
+        } while(flag == 0);
+        // loop in column direction
+        do{
+            j2 += isign;
+            // pulse2 *= couplC; 
+            xr = gRandom->Rndm();
+            //if((j2<0)||j2>(GetNPixelsX()-1)||pulse2<GetThreshold(row,j2)){
+            if ((j2<0) || (j2>GetNPixelsX()-1) || (xr>couplC)){
+                j2 = col;
+                flag = 1;
+            }else{
+                UpdateMapSignal(j2,row,ntrack,idhit,pulse2);
+                //  flag = 0;
+                flag = 1; // only first next!!
+            } // end if
+        } while(flag == 0);
     } // for isign
 }
 //______________________________________________________________________
@@ -941,39 +629,41 @@ void AliITSsimulationSPDdubna::SetCouplingOld(Int_t row, Int_t col,
     //     none.
     Int_t j1,j2,flag=0;
     Double_t pulse1,pulse2;
-    Float_t couplR=0.0,couplC=0.0;
-    AliITSpList *pList = GetMap();
+    Double_t couplR=0.0,couplC=0.0;
 
     GetCouplings(couplR,couplC);
+    if(GetDebug(3)) Info("SetCouplingOld","(row=%d,col=%d,ntrack=%d,idhit=%d) "
+                         "Calling SetCoupling couplR=%e couplC=%e",
+                         row,col,ntrack,idhit,couplR,couplC);
     j1 = row;
     j2 = col;
-    pulse1 = pList->GetSignalOnly(row,col);
+    pulse1 = GetMap()->GetSignalOnly(row,col);
     pulse2 = pulse1;
     for (Int_t isign=-1;isign<=1;isign+=2){// loop in row direction
-      do{
-	j1 += isign;
-	pulse1 *= couplR;
-	if ((j1<0) || (j1>GetNPixelsZ()-1) || (pulse1<GetThreshold())){
-	  pulse1 = pList->GetSignalOnly(row,col);
-	  j1 = row;
-	  flag = 1;
-	}else{
-	  UpdateMapSignal(j1,col,ntrack,idhit,pulse1);
-	  flag = 0;
-	} // end if
-      } while(flag == 0);
-      // loop in column direction
-      do{
-	j2 += isign;
-	pulse2 *= couplC;
-	if ((j2<0) || (j2>(GetNPixelsX()-1)) || (pulse2<GetThreshold())){
-	  pulse2 = pList->GetSignalOnly(row,col);
-	  j2 = col;
-	  flag = 1;
-	}else{
-	  UpdateMapSignal(row,j2,ntrack,idhit,pulse2);
-	  flag = 0;
-	} // end if
-      } while(flag == 0);
+        do{
+            j1 += isign;
+            pulse1 *= couplR;
+            if ((j1<0)||(j1>GetNPixelsZ()-1)||(pulse1<GetThreshold(j1,col))){
+                pulse1 = GetMap()->GetSignalOnly(row,col);
+                j1 = row;
+                flag = 1;
+            }else{
+                UpdateMapSignal(col,j1,ntrack,idhit,pulse1);
+                flag = 0;
+            } // end if
+        } while(flag == 0);
+        // loop in column direction
+        do{
+            j2 += isign;
+            pulse2 *= couplC;
+            if((j2<0)||(j2>(GetNPixelsX()-1))||(pulse2<GetThreshold(row,j2))){
+                pulse2 = GetMap()->GetSignalOnly(row,col);
+                j2 = col;
+                flag = 1;
+            }else{
+                UpdateMapSignal(j2,row,ntrack,idhit,pulse2);
+                flag = 0;
+            } // end if
+        } while(flag == 0);
     } // for isign
 }

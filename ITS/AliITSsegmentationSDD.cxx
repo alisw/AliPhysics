@@ -236,7 +236,8 @@ void AliITSsegmentationSDD::PrintDefaultParameters() const {
 }
 
 //______________________________________________________________________
-void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const {
+Bool_t AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,
+                                         Int_t &ix,Int_t &iz) const {
 // Transformation from Geant detector centered local coordinates (cm) to
 // time bucket numbers ix and anode number iz.
 // Input:
@@ -275,11 +276,11 @@ void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) 
     dz = -0.5*kconv*Dz(); // lower left edge in cm.
     if(x<dx || x>-dx) {
       Warning("LocalToDet","input argument %f out of range (%f, %f)",x,dx,-dx);
-      return; // outside of defined volume.
+      return kFALSE; // outside of defined volume.
     }
     if(z<dz || z>-dz) {
       Warning("LocalToDet","input argument %f out of range (%f, %f)",z,dz,-dz);
-      return; // outside of defined volume.
+      return kFALSE; // outside of defined volume.
     }
     tb = fDriftSpeed*fTimeStep*kconv; // compute size of time bin.
     if(x>0) dx = -(dx + x)/tb; // distance from + side in time bin units
@@ -288,7 +289,7 @@ void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) 
     ix = (Int_t) dx;   // time bin
     iz = (Int_t) dz;   // anode
     if(x>0) iz += Npz()/2; // if x>0 then + side anodes values.
-    return; // Found ix and iz, return.
+    return kTRUE; // Found ix and iz, return.
 }
 //______________________________________________________________________
 void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const

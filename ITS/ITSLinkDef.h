@@ -70,7 +70,7 @@
 #pragma link C++ class  AliITSsegmentationSSD+;
 #pragma link C++ class  AliITSresponse+;
 #pragma link C++ class  AliITSresponseSPD+;
-#pragma link C++ class  AliITSresponseSPDdubna+;
+//#pragma link C++ class  AliITSresponseSPDdubna+;
 #pragma link C++ class  AliITSresponseSDD+;
 #pragma link C++ class  AliITSresponseSSD+;
 #pragma link C++ class  AliITSsimulation+;
@@ -85,7 +85,7 @@
 #pragma link C++ class  AliITSsimulationFastPointsV0+;
 #pragma link C++ class  AliITSClusterFinder+;
 #pragma link C++ class  AliITSClusterFinderSPD+;
-#pragma link C++ class  AliITSClusterFinderSPDdubna+;
+//#pragma link C++ class  AliITSClusterFinderSPDdubna+;
 #pragma link C++ class  AliITSClusterFinderSDD+;
 #pragma link C++ class  AliITSClusterFinderSSD+;
 #pragma link C++ class  AliITSDetType+;

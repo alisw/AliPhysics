@@ -34,6 +34,8 @@ class AliITSRecPoint;
 class AliITSRawCluster;
 class AliITSmodule;
 class AliVertexer;
+class AliDigitizer;
+class AliRunDigitizer;
 
 const Int_t kNTYPES=3;
 
@@ -47,7 +49,7 @@ class AliITS : public AliDetector {
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(AliITS &source); // = operator. Not to be used!
     virtual Int_t IsVersion() const {return 1;}
-    virtual Int_t DistancetoPrimitive(Int_t px, Int_t py) const;
+    virtual Int_t DistancetoPrimitive(Int_t,Int_t) const{return 999;};
 
     //===================== Simulation Geometry ========================
     // get geometry version - detailed (major) or coarse (minor)
@@ -79,7 +81,8 @@ class AliITS : public AliDetector {
     // For a given branch from the treeH sets the TClonesArray address.
     virtual void SetHitsAddressBranch(TBranch *b) {b->SetAddress(&fHits);}
     // Return pointer to DetType #id
-    AliITSDetType *DetType(Int_t id);
+    AliITSDetType *DetType(Int_t id){
+        return ((AliITSDetType*) fDetTypes->At(id));};
     //Int_t           NDetTypes() {return fNDetTypes;}
     //---------- Configuration Methods (per detector type) -------------
     // Determines which ITS subdetectors will be processed. Effects
@@ -88,18 +91,23 @@ class AliITS : public AliDetector {
     // Returns the list of ITS subdetectors that will be processed.
     Option_t* GetDetectors(){return fOpt;}
     // Set response 
-    virtual void SetResponseModel(Int_t id, AliITSresponse *response);
+    virtual void SetResponseModel(Int_t id, AliITSresponse *response){
+        ((AliITSDetType*) fDetTypes->At(id))->ResponseModel(response);};
     // Set segmentation 
-    virtual void SetSegmentationModel(Int_t id, AliITSsegmentation *seg);
+    virtual void SetSegmentationModel(Int_t id, AliITSsegmentation *seg){
+        ((AliITSDetType*) fDetTypes->At(id))->SegmentationModel(seg);};
     // Set simulation - temporary 
-    virtual void SetSimulationModel(Int_t id, AliITSsimulation *sim);
+    virtual void SetSimulationModel(Int_t id, AliITSsimulation *sim){
+        ((AliITSDetType*) fDetTypes->At(id))->SimulationModel(sim);};
     // Set simulation - temporary 
     virtual AliITSsimulation* GetSimulationModel(Int_t id){
 	return ((AliITSDetType*)(fDetTypes->At(id)))->GetSimulationModel();}
     // Set reconstruction 
-    virtual void SetReconstructionModel(Int_t id, AliITSClusterFinder *rec);
+    virtual void SetReconstructionModel(Int_t id, AliITSClusterFinder *rec){
+        ((AliITSDetType*) fDetTypes->At(id))->ReconstructionModel(rec);};
     // Set class names for digit and rec point 
-    virtual void SetClasses(Int_t id, const char *digit, const char *cluster);
+    virtual void SetClasses(Int_t id, const char *digit, const char *cluster){
+        ((AliITSDetType*) fDetTypes->At(id))->ClassNames(digit,cluster);};
 
     //=================== Hits =========================================
     virtual void StepManager() {} // See Step Manager for specific geometry.
@@ -109,7 +117,7 @@ class AliITS : public AliDetector {
     virtual void FillModules(TTree *treeH, Int_t mask = 0);
     virtual void FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 			     Option_t *opt, const char *filename);
-    virtual void ClearModules();
+    virtual void ClearModules(){if(fITSmodules) fITSmodules->Delete();};
 
     //===================== Digitisation ===============================
     void MakeBranchS(const char *file);
@@ -120,7 +128,10 @@ class AliITS : public AliDetector {
 	MakeBranchInTreeD(GetLoader()->TreeD(),file);}
     void SetTreeAddressD(TTree *treeD);
     void Hits2SDigits(); // Turn hits into SDigits
-    void Hits2PreDigits(); // Turn hits into SDigits
+    void Hits2PreDigits(){ // Turn hits into SDigits
+        HitsToPreDigits(fLoader->GetEvent(),
+            /*fLoader->GetRunLoader()->GetHeader()->GetEvent(),*/
+                        0,-1," ",fOpt," ");};
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     void SDigits2Digits(){SDigitsToDigits("All");} // Turn SDigits to Digits
     void SDigitsToDigits(Option_t *opt="All"); // Turn SDigits to Digits
@@ -128,14 +139,16 @@ class AliITS : public AliDetector {
     //------------------ Internal functions ----------------------------
     // Standard Hits To SDigits function
     void HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
-                 Option_t *add, Option_t *det, const char *filename);
+                       Option_t *add, Option_t *det, const char *filename)
+        {HitsToPreDigits(evNumber,bgrev,size,add,det,filename);};
     // Standard Hits To SDigits function
     void HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, const char *filename);
     // Standard Hits To Digits function
     void HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, const char *filename);
-    void ResetSDigits();                  // Resets the Summable digits.
+    // Resets the Summable digits.
+    void ResetSDigits(){if(fSDigits) fSDigits->Clear();fNSDigits = 0;};
     void ResetDigits();                   // depending on how the
     void ResetDigits(Int_t branch);       // tree will be filled only
     void AddSumDigit(AliITSpListItem &sdig);
@@ -159,7 +172,8 @@ class AliITS : public AliDetector {
     void MakeTreeC(Option_t *option="C");
     void GetTreeC(Int_t event);
     void AddCluster(Int_t branch, AliITSRawCluster *c);
-    void ResetClusters();                 // one of the methods in 
+    // one of the methods in
+    void ResetClusters(){for(Int_t i=0;i<kNTYPES;i++ ) ResetClusters(i);}; 
     void ResetClusters(Int_t branch);     // the pair will be kept
     // Return pointers to clusters 
     TObjArray    *Ctype() {return fCtype;}
@@ -175,9 +189,9 @@ class AliITS : public AliDetector {
     void AddRecPoint(const AliITSRecPoint &p);
     void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, const char *filename);
-    void Digits2Reco();
+    void Digits2Reco(){DigitsToRecPoints(fLoader->GetEvent(),0,fOpt);};
     void DigitsToRecPoints(Int_t evNumber,Int_t lastEntry,Option_t *det);
-    void ResetRecPoints();
+    void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
 

@@ -6,9 +6,8 @@
 /*
 $Id$
 */
-
+#include "TRandom.h"
 #include "AliITSresponse.h"
-
 //----------------------------------------------
 //
 // ITS response class for SPD
@@ -18,54 +17,53 @@ class AliITSresponseSPD :  public AliITSresponse {
     AliITSresponseSPD(); // default constructor
     virtual ~AliITSresponseSPD() {} // destructror
 
-    // Implementation of virtual member functions declared in AliITSresponse 
-    // sets the diffusion coeffecient.
-    virtual  void   SetDiffCoeff(Float_t p1, Float_t /*dummy */) {fDiffCoeff=p1;}
-    // returns the diffusion coeffeciant
-    virtual  void   DiffCoeff(Float_t &p1, Float_t & /*p2 */) const 
-                             {p1 = fDiffCoeff;}
     // Set Threshold and noise + threshold fluctuations parameter values
-    virtual  void   SetThresholds(Float_t thresh, Float_t sigma)
+    virtual  void   SetThresholds(Double_t thresh, Double_t sigma)
 	{fThresh=thresh; fSigma=sigma;}
     // Get Threshold and noise + threshold fluctuations parameter values
-    virtual  void   Thresholds(Float_t &thresh, Float_t &sigma) const
+    virtual  void   Thresholds(Double_t &thresh, Double_t &sigma) const
 	{thresh=fThresh; sigma=fSigma;}
-    // set coupling parameters
-    virtual  void   SetNoiseParam(Float_t col, Float_t row)
-	{fCouplCol=col; fCouplRow=row;}   
-    // get coupling parameters
-    virtual  void   GetNoiseParam(Float_t &col, Float_t &row) const 
-	{col=fCouplCol; row=fCouplRow;}
 
-//Declaration of member functions peculiar to this class
+    // set coupling parameters
+    virtual  void   SetCouplingParam(Double_t col, Double_t row)
+        {fCouplCol=col; fCouplRow=row;}   
+    // get coupling parameters
+    virtual  void   GetCouplingParam(Double_t &col, Double_t &row) const 
+        {col=fCouplCol; row=fCouplRow;}
+
+    //Returns just baseline value
+    Double_t GetBaseline() const {return fBaseline;}
+    // Set noise and baseline in one (abstract method of AliITSresponse)
+    virtual void SetNoiseParam(Double_t n,Double_t b)
+        {fNoise = n;fBaseline = b;}
+    // Get noise and baseline in one (abstract method of AliITSresponse)
+    virtual void GetNoiseParam(Double_t &n,Double_t &b) const
+        {n =fNoise;b = fBaseline;}
+    // Returns just noise value
+    Double_t GetNoise() const {return fNoise;} 
+    //Declaration of member functions peculiar to this class
+    // Applies a random noise and addes the baseline
+    Double_t ApplyBaselineAndNoise() const {return fBaseline+
+                                               fNoise*gRandom->Gaus();}
+
+    //Declaration of member functions peculiar to this class
     // Sets the fraction of Dead SPD Pixels
-    void SetFractionDead(Float_t d=0.01){ fDeadPixels = d;}
+    void SetFractionDead(Double_t d=0.01){ fDeadPixels = d;}
     // Retruns the fraction of Dead SPD Pixels
-    Float_t GetFractionDead() const {return fDeadPixels;}
+    Double_t GetFractionDead() const {return fDeadPixels;}
+    // Returns a logical if a pixels is dead or not
+    Bool_t IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const ;
 
     //abstract methods in AliITSresponse not implemented in this class
-    virtual void    SetDriftSpeed(Float_t /* p1 */)
-      {NotImplemented("SetDriftSpeed");}
-    virtual Float_t DriftSpeed() const 
-      {NotImplemented("DrifSpeed"); return 0.;}
+    virtual void SetDiffCoeff(Double_t,Double_t)
+      {NotImplemented("GiveCompressParam");}
+    virtual void DiffCoeff(Double_t &,Double_t &)const
+      {NotImplemented("GiveCompressParam");}
     virtual void    GiveCompressParam(Int_t *) const
       {NotImplemented("GiveCompressParam");}
-    virtual void   SetElectronics(Int_t /* i */) 
-                    {NotImplemented("SetElectronics");}
-    virtual Int_t Electronics() const {NotImplemented("Electronics"); return 0;}
-    virtual void SetMaxAdc(Float_t /* adc */) {NotImplemented("SetMaxAdc");}
-    virtual Float_t MaxAdc() const {NotImplemented("MaxAdc"); return 0.;}
-    virtual void    SetDynamicRange(Float_t /*dr */) 
-      {NotImplemented("SetDynamicRange");}
-    virtual Float_t DynamicRange() const 
-      {NotImplemented("DynamicRange"); return 0.;}
-    virtual void    SetChargeLoss(Float_t /* cl */)
-      {NotImplemented("SetChargeLoss"); }
-    virtual Float_t ChargeLoss() const 
-      {NotImplemented("ChargeLoss"); return 0.;}
-    virtual  void   SetDetParam(Float_t *)
+    virtual  void   SetDetParam(Double_t *)
       {NotImplemented("SetDetParam");}
-    virtual void   GetDetParam(Float_t *) const 
+    virtual void   GetDetParam(Double_t *) const 
       {NotImplemented("GetDetParam");}
     virtual  void   SetNDetParam(Int_t /* n */)
       {NotImplemented("SetNDetParam");}
@@ -79,27 +77,28 @@ class AliITSresponseSPD :  public AliITSresponse {
       {NotImplemented("SetZeroSupp");}
     virtual const char *ZeroSuppOption() const 
       {NotImplemented("ZeroSuppression"); return "";}
-    virtual void    SetNSigmaIntegration(Float_t)
+    virtual void    SetNSigmaIntegration(Double_t)
       {NotImplemented("SetNSigmaIntegration");}
-    virtual Float_t NSigmaIntegration() const
+    virtual Double_t NSigmaIntegration() const
       {NotImplemented("NSigmaIntegration"); return 0.;}
     virtual void    SetNLookUp(Int_t) 
       {NotImplemented("SetNLookUp");}
-    virtual void    SetSigmaSpread(Float_t, Float_t) 
+    virtual void    SetSigmaSpread(Double_t, Double_t) 
       {NotImplemented("SetSigmaSpread");}
-    virtual void    SigmaSpread(Float_t & /* p1 */,Float_t & /* p2 */) const 
+    virtual void    SigmaSpread(Double_t & /* p1 */,Double_t & /* p2 */) const 
       {NotImplemented("SigmaSpread");}
 
  protected:
-    static const Float_t fgkDiffCoeffDefault; //default for fDiffCoeff
-    static const Float_t fgkThreshDefault; //default for fThresh
-    static const Float_t fgkSigmaDefault; //default for fSigma
-    Float_t fDiffCoeff;       // Sigma diffusion coefficient (not used) 
-    Float_t fThresh;          // Threshold value
-    Float_t fSigma;           // Noise + threshold fluctuations value
-    Float_t fCouplCol;        // Coupling probability along a column
-    Float_t fCouplRow;        // Coupling probability along a row
-    Float_t fDeadPixels;      // the fraction of dead pixels
+    static const Double_t fgkDiffCoeffDefault; //default for fDiffCoeff
+    static const Double_t fgkThreshDefault; //default for fThresh
+    static const Double_t fgkSigmaDefault; //default for fSigma
+    Double_t fBaseline;        // Base-line value
+    Double_t fNoise;           // Gaussian noise scale
+    Double_t fThresh;          // Threshold value
+    Double_t fSigma;           // Noise + threshold fluctuations value
+    Double_t fCouplCol;        // Coupling probability along a column
+    Double_t fCouplRow;        // Coupling probability along a row
+    Double_t fDeadPixels;      // the fraction of dead pixels
 
 
     ClassDef(AliITSresponseSPD,2) // SPD response

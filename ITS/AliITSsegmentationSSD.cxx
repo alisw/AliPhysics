@@ -212,7 +212,7 @@ void AliITSsegmentationSSD::GetPadCxz(Int_t iP,Int_t iN,Float_t &x,Float_t &z) c
     return;   
 }
 //______________________________________________________________________
-void AliITSsegmentationSSD::LocalToDet(Float_t x,Float_t z,
+Bool_t AliITSsegmentationSSD::LocalToDet(Float_t x,Float_t z,
 				       Int_t &iP,Int_t &iN) const {
     // Transformation from Geant cm detector center local coordinates
     // to detector P and N side strip numbers..
@@ -247,7 +247,7 @@ void AliITSsegmentationSSD::LocalToDet(Float_t x,Float_t z,
     // Now for N side)
     iN = (Int_t) z;
     if(iN<0 || iN>=fNstrips) iN=-1; // strip number must be in range.
-    return;
+    return kTRUE;
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::DetToLocal(Int_t ix,Int_t iPN,

@@ -379,19 +379,24 @@ Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]) con
     Zlist[7]=iZ-1;
 }
 //______________________________________________________________________
-void AliITSsegmentationSPD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const {
-// Transformation from Geant detector centered local coordinates (cm) to
-// Pixel cell numbers ix and iz.
-// Input:
-// Float_t   x        detector local coordinate x in cm with respect to the
-//                    center of the sensitive volume.
-// Float_t   z        detector local coordinate z in cm with respect to the
-//                    center of the sensitive volulme.
-// Output:
-// Int_t    ix        detector x cell coordinate. Has the range 0<=ix<fNpx.
-// Int_t    iz        detector z cell coordinate. Has the range 0<=iz<fNpz.
-//   A value of -1 for ix or iz indecates that this point is outside of the
-// detector segmentation as defined.
+Bool_t AliITSsegmentationSPD::LocalToDet(Float_t x,Float_t z,
+                                         Int_t &ix,Int_t &iz) const {
+    // Transformation from Geant detector centered local coordinates (cm) to
+    // Pixel cell numbers ix and iz.
+    // Input:
+    //    Float_t   x        detector local coordinate x in cm with respect to
+    //                       the center of the sensitive volume.
+    //    Float_t   z        detector local coordinate z in cm with respect to
+    //                       the center of the sensitive volulme.
+    // Output:
+    //    Int_t    ix        detector x cell coordinate. Has the range 
+    //                       0<=ix<fNpx.
+    //    Int_t    iz        detector z cell coordinate. Has the range 
+    //                       0<=iz<fNpz.
+    // Return:
+    //   kTRUE if point x,z is inside sensitive volume, kFALSE otherwise.
+    //   A value of -1 for ix or iz indecates that this point is outside of the
+    //   detector segmentation as defined.
     Int_t i,j;
     Float_t dx,dz;
     const Float_t kconv = 1.0E-04; // converts microns to cm.
@@ -400,21 +405,21 @@ void AliITSsegmentationSPD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) 
     dz = -0.5*kconv*Dz();
     ix = -1;
     iz = -1;
-    if(x<dx) return; // outside x range.
-    if(z<dz) return; // outside z range.
+    if(x<dx) return kFALSE; // outside x range.
+    if(z<dz) return kFALSE; // outside z range.
     for(i=0;i<Npx();i++){
 	dx += kconv*fCellSizeX[i];
 	if(x<dx) break;
     } // end for i
-    if(i>=Npx()) return; // outside x range.
+    if(i>=Npx()) return kFALSE; // outside x range.
     for(j=0;j<Npz();j++){
 	dz += kconv*fCellSizeZ[j];
 	if(z<dz) break;
     } // end for j
-    if(j>=Npz()) return; // outside z range.
+    if(j>=Npz()) return kFALSE; // outside z range.
     ix = i;
     iz = j;
-    return; // Found ix and iz, return.
+    return kTRUE; // Found ix and iz, return.
 }
 //______________________________________________________________________
 void AliITSsegmentationSPD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const

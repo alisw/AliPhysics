@@ -10,6 +10,7 @@
 //  ITS Cluster Finder Class                  //
 ////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include <TObject.h>
 #include <TClonesArray.h>
 
@@ -23,91 +24,111 @@ class AliITSRecPoint;
 
 //----------------------------------------------------------------------
 class AliITSClusterFinder :public TObject{
- public:
+  public:
     AliITSClusterFinder(); // Default constructor
+    // Standard Constructor
+    AliITSClusterFinder(AliITSsegmentation *seg, AliITSresponse *resp);
     AliITSClusterFinder(AliITSsegmentation *seg, AliITSresponse *resp,
-			TClonesArray *digits);// Standard Constructor
+                        TClonesArray *digits);// Standard+ Constructor
     virtual ~AliITSClusterFinder(); // Destructor
     AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
     // assignment operator
     AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
-    virtual void SetResponse(AliITSresponse *response) {// set response
-	fResponse=response;}
-    virtual void SetSegmentation(AliITSsegmentation *segmentation) {
-	// set segmentation
-	fSegmentation=segmentation;}
-    virtual void SetDigits(TClonesArray *ITSdigits) {// set digits
-	fDigits=ITSdigits;fNdigits = fDigits->GetEntriesFast();}
-    virtual AliITSdigit* GetDigit(Int_t i){ // Returns ith digit
-	return (AliITSdigit*) fDigits->UncheckedAt(i);}
-    virtual TClonesArray* Digits(){ // Gets fDigits
-	return fDigits;}
-    virtual Int_t   NDigits() const {// Get Number of Digits
-	return fNdigits;}
-    // Standard Getters.
-    virtual AliITSresponse * GetResp(){// Returns fResponse
-	return fResponse;}
-    virtual AliITSsegmentation * GetSeg(){// Returns fSegmentation
-	return fSegmentation;}
-    virtual Int_t GetNRawClusters() const { // returns fNRawClusters
-	return fNRawClusters;}
-    AliITSMap   *Map() {// map
-	return fMap;}
-    virtual Int_t GetNperMax() const { // returns fNperMax
-	return fNperMax;}
-    virtual Int_t GetDeclusterFlag() const { // returns fDeclusterFlag
-	return fDeclusterFlag;}
-    virtual Int_t GetClusterSize() const { // returns fClusterSize
-	return fClusterSize;}
-    virtual Int_t GetNPeaks() const { // returns fNPeaks
-	return fNPeaks;}
     //
-    virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
-    virtual void AddCluster(Int_t branch, AliITSRawCluster *c,
-			    AliITSRecPoint &rp);
+    // Do the Reconstruction.
     virtual void FindRawClusters(Int_t mod=0); // Finds cluster of digits.
+    //
+    // Sets the debug flag for debugging output
+    void SetDebug(Int_t level=1){fDebug=level;}
+    // Clears the debug flag so no debugging output will be generated
+    void SetNoDebug(){fDebug=0;}
+    // Returns the debug flag value
+    Bool_t GetDebug(Int_t level=1)const {return fDebug<=level;}
+    //
+    // Setters and Getters
+    // segmentation
+    virtual void SetSegmentation(AliITSsegmentation *segmentation) {
+        fSegmentation=segmentation;}
+    //Returns fSegmentation
+    virtual AliITSsegmentation* GetSegmentation()const{return fSegmentation;}
+    // Digit
+    virtual void SetDigits(TClonesArray *itsDigits) {// set digits
+        fDigits=itsDigits;fNdigits = fDigits->GetEntriesFast();}
+    virtual AliITSdigit* GetDigit(Int_t i){ // Returns ith digit
+        return (AliITSdigit*) fDigits->UncheckedAt(i);}
+    virtual TClonesArray* Digits(){return fDigits;}// Gets fDigits
+    virtual Int_t   NDigits() const {return fNdigits;}// Get Number of Digits
+    // Response
+    //Return Response
+    virtual AliITSresponse* GetResponse()const{return fResponse;}
+    virtual void SetResponse(AliITSresponse *response) {// set response
+        fResponse=response;}
+    // clulsters
+    // Set fClusters up
+    virtual void SetClusters(TClonesArray *itsClusters){// set clusters
+        fClusters = itsClusters;fNRawClusters = fClusters->GetEntriesFast();}
+    // Get fCluters
+    virtual TClonesArray* Clusters(){return fClusters;}
+    // Get fCluter
+    virtual AliITSRawCluster* Cluster(Int_t i){
+        return (AliITSRawCluster*)(fClusters->At(i));}
+    // Returns the present number of enteries
+    virtual Int_t NClusters()const {return fClusters->GetEntriesFast();}
+    // returns fNRawClusters
+    virtual Int_t GetNRawClusters() const {return fNRawClusters;}
     // Determins if digit i has a neighbor and if so that neighor index is j.
-    virtual Bool_t IsNeighbor(TObjArray *digs,Int_t i,Int_t j[]) const;
+    virtual void AddCluster(Int_t branch,AliITSRawCluster *c);
+    virtual void AddCluster(Int_t branch,AliITSRawCluster *c,
+                            AliITSRecPoint &rp);
+    virtual void   FillCluster(AliITSRawCluster *,Int_t) {}// fiil cluster
+    virtual void   FillCluster(AliITSRawCluster *cluster) {// fill cluster
+        FillCluster(cluster,1);}
+    virtual void FindCluster(Int_t,Int_t,AliITSRawCluster *) {}// find cluster
+    //
+    virtual void SetModule(Int_t module){fModule = module;}// Set module number
+    virtual Int_t GetModule()const{return fModule;}// Returns module number
+    //
+    // RecPoints
     // Given a cluster of digits, creates the nessesary RecPoint. May also
     // do some peak separation.
     virtual void CreateRecPoints(TObjArray *,Int_t){};
-    virtual void FindCluster(Int_t,Int_t,AliITSRawCluster *) {}// find cluster
+    // Others
+    virtual void  SetMap(AliITSMap *m) {fMap=m;}// map
+    AliITSMap* Map(){return fMap;}// map
+    virtual Int_t GetNperMax() const {return fNperMax;}// returns fNperMax
+    // returns fDeclusterFlag
+    virtual Int_t GetDeclusterFlag()const{return fDeclusterFlag;} 
+    // returns fClusterSize
+    virtual Int_t GetClusterSize() const {return fClusterSize;} 
+    virtual Int_t GetNPeaks() const {return fNPeaks;}// returns fNPeaks
+    //
+    virtual Bool_t IsNeighbor(TObjArray *digs,Int_t i,Int_t j[]) const;
     virtual void Decluster(AliITSRawCluster *) {}// Decluster
-    virtual void SetNperMax(Int_t npermax=3) {
-	// Set max. Number of cells per local cluster
-	fNperMax = npermax;
-    }
-    virtual void SetDeclusterFlag(Int_t flag=1) {
-	// Decluster ?
-	fDeclusterFlag =flag;
-    }
-    virtual void SetClusterSize(Int_t clsize=3) {
-	// Set max. cluster size ; bigger clusters will be rejected
-	fClusterSize = clsize;
-    }
-    virtual void CalibrateCOG() {
-	// Self Calibration of COG 
-    }
-    virtual void CorrectCOG(){
-	// correct COG
-    }
-    virtual Bool_t Centered(AliITSRawCluster *) const {// cluster
-	return kTRUE;
-    }
-    virtual void SplitByLocalMaxima(AliITSRawCluster *){}//split by local maxima
-    virtual void   FillCluster(AliITSRawCluster *,Int_t) {}// fiil cluster
-    virtual void   FillCluster(AliITSRawCluster *cluster) {// fill cluster
-	FillCluster(cluster,1);
-    }
-    // set the fitting methods in the derived classes
-    // data members
+    // Set max. Number of cells per local cluster
+    virtual void SetNperMax(Int_t npermax=3) {fNperMax = npermax;}
+    //Decluster
+    virtual void SetDeclusterFlag(Int_t flag=1){fDeclusterFlag=flag;}
+        // Set max. cluster size ; bigger clusters will be rejected
+    virtual void SetClusterSize(Int_t clsize=3) {fClusterSize = clsize;}
+    virtual void CalibrateCOG() {}// Self Calibration of COG 
+    virtual void CorrectCOG(){}// correct COG
+    virtual Bool_t Centered(AliITSRawCluster *) const {return kTRUE;}// cluster
+    //split by local maxima
+    virtual void SplitByLocalMaxima(AliITSRawCluster *){}
+    // IO functions
+    void Print(ostream *os); // Class ascii print function
+    void Read(istream *os);  // Class ascii read function
 
-protected:
+    // data members
+  protected:
+    Int_t              fDebug;         //! Debug flag/level
+    Int_t              fModule;        //! Module number to be reconstuctted
     TClonesArray       *fDigits;       //! digits
     Int_t              fNdigits;       //! num of digits
 
     AliITSresponse     *fResponse;     //! response
-    AliITSsegmentation *fSegmentation; //!segmentation
+    AliITSsegmentation *fSegmentation; //! segmentation
+    TClonesArray       *fClusters;     //! Array of clusters
     Int_t              fNRawClusters;  //! in case we split the cluster
                                        // and want to keep track of 
                                        // the cluster which was splitted
@@ -116,7 +137,10 @@ protected:
     Int_t              fDeclusterFlag; //! DeclusterFlag
     Int_t              fClusterSize;   //! ClusterSize
     Int_t              fNPeaks;        //! NPeaks  
-  
-    ClassDef(AliITSClusterFinder,2) //Class for clustering and reconstruction of space points
+
+    ClassDef(AliITSClusterFinder,3) //Class for clustering and reconstruction of space points
 };
+// Input and output functions for standard C++ input/output.
+ostream &operator<<(ostream &os,AliITSClusterFinder &source);
+istream &operator>>(istream &os,AliITSClusterFinder &source);
 #endif

@@ -45,7 +45,7 @@ public AliITSsegmentation {
     virtual void    GetPadTxz(Float_t &x , Float_t &z) const;
     // Transformation from Geant cm detector center local coordinates
     // to detector P and N side strip numbers..
-    virtual void    LocalToDet(Float_t x,Float_t z,Int_t &iP,Int_t &iN) const;
+    virtual Bool_t  LocalToDet(Float_t x,Float_t z,Int_t &iP,Int_t &iN) const;
     // Transformation from detector segmentation/cell coordiantes starting
     // from 0. iPN=0 for P side and 1 for N side strip. Returned is z=0.0
     // and the corresponding x value..

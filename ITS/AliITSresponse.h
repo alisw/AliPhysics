@@ -28,44 +28,22 @@ class AliITSresponse : public TObject {
     // Configuration methods
     //
 
-    // Set Electronics
-    virtual void    SetElectronics(Int_t) = 0;
-    // Get Electronics
-    virtual Int_t Electronics() const = 0;
-
-    // Set maximum Adc-count value
-    virtual void    SetMaxAdc(Float_t) = 0;
-    // Get maximum Adc-count value
-    virtual Float_t MaxAdc() const = 0;
-
-    // Set maximum Adc-top value
-    virtual void    SetDynamicRange(Float_t) = 0;
-    // Get maximum Adc-top value
-    virtual Float_t DynamicRange() const = 0;
-
-    // Set Charge Loss Linear Coefficient
-    virtual void    SetChargeLoss(Float_t) = 0;
-    // Get Charge Loss Linear Coefficient
-    virtual Float_t ChargeLoss() const = 0;
-
     // Set GeVcharge value
-    virtual void SetGeVToCharge(Float_t gc=2.778E+8){fGeVcharge = gc;}
+    virtual void SetGeVToCharge(Double_t gc=2.778E+8){fGeVcharge = gc;}
     // Returns the value fGeVcharge
-    virtual Float_t GetGeVToCharge() const {return fGeVcharge;}
+    virtual Double_t GetGeVToCharge() const {return fGeVcharge;}
     // Converts deposited energy to number of electrons liberated
-    virtual Float_t GeVToCharge(Float_t gev) const {return gev*fGeVcharge;}
+    virtual Double_t GeVToCharge(Double_t gev) const {return gev*fGeVcharge;}
 
     // Diffusion coefficient
-    virtual void    SetDiffCoeff(Float_t, Float_t) = 0;
+    virtual void    SetDiffCoeff(Double_t, Double_t) = 0;
     // Get diffusion coefficients
-    virtual void    DiffCoeff(Float_t &,Float_t &) const = 0;
+    virtual void    DiffCoeff(Double_t &,Double_t &) const = 0;
 
     // Temperature in [degree K]
-    virtual void    SetTemperature(Float_t t=300.0) {fT = t;}
+    virtual void    SetTemperature(Double_t t=300.0) {fT = t;}
     // Get temperature [degree K]
-    virtual Float_t Temperature() const {return fT;}
-    // Type of data - real or simulated
-    virtual void    SetDataType(const char *data="simulated") {fDataType=data;}
+    virtual Double_t Temperature() const {return fT;}
     // Set the impurity concentrations in [#/cm^3]
     virtual void SetImpurity(Double_t n=0.0){fN = n;}
     // Returns the impurity consentration in [#/cm^3]
@@ -77,68 +55,71 @@ class AliITSresponse : public TObject {
     virtual void SetDistanceOverVoltage(Double_t dv=0.000375){fdv = dv;}
     // Returns the ration distance/voltage
     virtual Double_t DistanceOverVoltage() const {return fdv;}
+ 
     // Get data type
     virtual const char  *DataType() const {return fDataType.Data();}
- 
+    // Type of data - real or simulated
+    virtual void    SetDataType(const char *data="simulated") {fDataType=data;}
     // Set parameters options: "same" or read from "file" or "SetInvalid" or...
     virtual void   SetParamOptions(const char*,const char*) = 0;
     // Set noise parameters 
-    virtual void   SetNoiseParam(Float_t, Float_t) = 0;
+    virtual void   SetNoiseParam(Double_t, Double_t) = 0;
     // Number of parameters to be set
     virtual  void   SetNDetParam(Int_t) = 0;
     // Set detector parameters: gain, coupling ...
-    virtual  void   SetDetParam(Float_t *) = 0;
+    virtual  void   SetDetParam(Double_t *) = 0;
 
     // Parameters options
     virtual void   ParamOptions(char *,char*) const = 0;
     virtual Int_t  NDetParam() const = 0;
-    virtual void   GetDetParam(Float_t *) const = 0;
-    virtual void   GetNoiseParam(Float_t&, Float_t&) const = 0;
+    virtual void   GetDetParam(Double_t *) const = 0;
+    virtual void   GetNoiseParam(Double_t&, Double_t&) const = 0;
 
     // Zero-suppression option - could be 1D, 2D or non-ZeroSuppressed
     virtual void   SetZeroSupp(const char*) = 0;
     // Get zero-suppression option
     virtual const char *ZeroSuppOption() const = 0;
      // Set thresholds
-    virtual void   SetThresholds(Float_t, Float_t) = 0;
-    virtual void   Thresholds(Float_t &, Float_t &) const = 0;
+    virtual void   SetThresholds(Double_t, Double_t) = 0;
+    virtual void   Thresholds(Double_t &, Double_t &) const = 0;
 
     // Set filenames
-    virtual void SetFilenames(const char *f1="",const char *f2="",const char *f3=""){
+    virtual void SetFilenames(const char *f1="",const char *f2="",
+                              const char *f3=""){
 	// Set filenames - input, output, parameters ....
 	fFileName1=f1; fFileName2=f2; fFileName3=f3;}
     // Filenames
     virtual void   Filenames(char* input,char* baseline,char* param) {
-	strcpy(input,fFileName1.Data());  strcpy(baseline,fFileName2.Data());  
-	strcpy(param,fFileName3.Data());}
+        strcpy(input,fFileName1.Data());  strcpy(baseline,fFileName2.Data());  
+        strcpy(param,fFileName3.Data());}
 
-    virtual void    SetDriftSpeed(Float_t p1) = 0;
-    virtual Float_t DriftSpeed() const = 0;
-    virtual void    SetOutputOption(Bool_t write=kFALSE) {// set output option
-	fWrite = write;}
+    virtual Double_t DriftSpeed() const {return SpeedElectron();};
+    // set output option
+    virtual void    SetOutputOption(Bool_t write=kFALSE) {fWrite = write;}
+	
     virtual Bool_t  OutputOption() const {return fWrite;}
     virtual Bool_t  Do10to8() const {return kTRUE;}
     virtual void    GiveCompressParam(Int_t *) const =0;
     //
     // Detector type response methods
     // Set number of sigmas over which cluster disintegration is performed
-    virtual void    SetNSigmaIntegration(Float_t) = 0;
+    virtual void    SetNSigmaIntegration(Double_t) = 0;
     // Get number of sigmas over which cluster disintegration is performed
-    virtual Float_t NSigmaIntegration() const = 0;
+    virtual Double_t NSigmaIntegration() const = 0;
     // Set number of bins for the gaussian lookup table
     virtual void    SetNLookUp(Int_t) = 0;
     // Get number of bins for the gaussian lookup table
     virtual Int_t GausNLookUp() const {return 0;}
     // Get scaling factor for bin i-th from the gaussian lookup table
-    virtual Float_t GausLookUp(Int_t) const {return 0.;}
+    virtual Double_t GausLookUp(Int_t) const {return 0.;}
     // Set sigmas of the charge spread function
-    virtual void    SetSigmaSpread(Float_t, Float_t) = 0;
+    virtual void    SetSigmaSpread(Double_t, Double_t) = 0;
     // Get sigmas for the charge spread
-    virtual void    SigmaSpread(Float_t &,Float_t &) const = 0;
+    virtual void    SigmaSpread(Double_t &,Double_t &) const = 0;
     // Pulse height from scored quantity (eloss)
-    virtual Float_t IntPH(Float_t) const {return 0.;}
+    virtual Double_t IntPH(Double_t) const {return 0.;}
     // Charge disintegration
-    virtual Float_t IntXZ(AliITSsegmentation *) const {return 0.;}
+    virtual Double_t IntXZ(AliITSsegmentation *) const {return 0.;}
     // Electron mobility in Si. [cm^2/(Volt Sec)]. T in degree K, N in #/cm^3
     virtual Double_t MobilityElectronSiEmp() const ;
     // Hole mobility in Si. [cm^2/(Volt Sec)]  T in degree K, N in #/cm^3

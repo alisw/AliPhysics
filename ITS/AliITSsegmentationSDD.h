@@ -43,7 +43,7 @@ public AliITSsegmentation {
     virtual void    GetPadTxz(Float_t &x ,Float_t &z) const;
     // Transformation from Geant cm detector center local coordinates
     // to detector segmentation/cell coordiantes starting from (0,0).
-    virtual void    LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const;
+    virtual Bool_t  LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const;
     // Transformation from detector segmentation/cell coordiantes starting
     // from (0,0) to Geant cm detector center local coordinates.
     virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const;

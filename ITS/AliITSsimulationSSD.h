@@ -27,7 +27,9 @@ class AliITSsimulationSSD: public AliITSsimulation {
     //Destructor
     virtual ~AliITSsimulationSSD();
     // Initilize variables for this simulation
-    void Init(AliITSsegmentationSSD *seg,AliITSresponseSSD *resp);
+    void Init();
+    // Initilize variables for this simulation
+    //void Init(AliITSsegmentationSSD *seg,AliITSresponseSSD *resp);
     // Create maps to build the lists of tracks for each summable digit
     void InitSimulationModule(Int_t module,Int_t events);
     // Digitize module from the sum of summable digits.
@@ -65,6 +67,11 @@ class AliITSsimulationSSD: public AliITSsimulation {
     void Read(istream *is);
 
  private:
+    // Return the Response class
+    AliITSresponseSSD* GetResp(){return (AliITSresponseSSD*)fResponse;}
+    // Return the Segmentation class
+    AliITSsegmentationSSD* GetSeg(){
+        return (AliITSsegmentationSSD*)fSegmentation;}
     // returns the number of steps needed to proplerly distribute the charge
     // in a step
     Int_t NumOfSteps(Double_t x,Double_t y,Double_t z,
@@ -104,9 +111,6 @@ class AliITSsimulationSSD: public AliITSsimulation {
     Double_t    fIonE;        // ionization energy of Si in GeV
     Double_t    fDifConst[2]; // Diffusion constants [h,e] in cm**2/sec
     Double_t    fDriftVel[2]; // Drift velocities [P,N sides] cm/sec
-//    Int_t       fModule;      //! Current module number
-//    Int_t       fEvent;       //! Current Event number
-//    AliITSpList *fpList;      //! Array of s digits.
 
     ClassDef(AliITSsimulationSSD,2) // SSD signal simulation class
 

@@ -32,13 +32,17 @@ class TClonesArray;
 
 class AliITSsimulation : public TObject {
 
- public:
+  public:
     AliITSsimulation(); // Default constructor
+    // Standard constructor
+    AliITSsimulation(AliITSsegmentation *seg,AliITSresponse *res);
     virtual ~AliITSsimulation(); // destructor
     // copy constructor. See detector specific implementation.
     AliITSsimulation(const AliITSsimulation &source);
     // Assignment opporator. See detector specific implementation.
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+    // Initialize simulation
+    virtual void Init() {};
 
     // *****************  Hits -> SDigits ******************
     // digitize module using the "slow" detector simulator creating
@@ -78,8 +82,12 @@ class AliITSsimulation : public TObject {
     virtual Int_t GetModuleNumber()const {return fModule;}// Gets Module number
     virtual void SetEventNumber(Int_t evnt){fEvent=evnt;} // Set Event number
     virtual Int_t GetEventNumber()const {return fEvent;}// Gets Event number
-    virtual Bool_t GetDebug() const {return fDebug;}
-    virtual void SetDebug(Bool_t db = kTRUE) {fDebug = db;}
+    // Sets the debug flag for debugging output
+    void SetDebug(Int_t level=5){fDebug=level;}
+    // Clears the debug flag so no debugging output will be generated
+    void SetNoDebug(){fDebug=0;}
+    // Returns the debug flag value
+    Bool_t GetDebug(Int_t level=1)const {return fDebug>=level;}
 
  protected:
     AliITSresponse      *fResponse;       //! response
@@ -87,9 +95,9 @@ class AliITSsimulation : public TObject {
     AliITSpList         *fpList;          //!
     Int_t                fModule;         //!
     Int_t                fEvent;          //!
-    Bool_t               fDebug;          //  debug flag
+    Int_t                fDebug;          //  debug flag
 
-  ClassDef(AliITSsimulation,2)  // Simulation base class 
+  ClassDef(AliITSsimulation,3)  // Simulation base class 
     
 };
 
