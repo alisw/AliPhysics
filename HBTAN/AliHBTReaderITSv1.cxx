@@ -9,21 +9,17 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "AliHBTReaderITSv1.h"
-#include "AliHBTEvent.h"
 #include "AliHBTRun.h"
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
 
 #include <Riostream.h>
 
-#include <TROOT.h>
-#include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TString.h>
-#include <TObjString.h>
 
 #include <AliRun.h>
 #include <AliStack.h>
@@ -34,102 +30,46 @@
 ClassImp(AliHBTReaderITSv1)
 /********************************************************************/
 
-AliHBTReaderITSv1::
-AliHBTReaderITSv1(const Char_t* tracksfilename,const Char_t* galicefilename):
-                 fITSTracksFileName(tracksfilename),fGAliceFileName(galicefilename)
- {
-     fParticles = new AliHBTRun();
-     fTracks    = new AliHBTRun();
-     fIsRead = kFALSE;
- }
+AliHBTReaderITSv1::AliHBTReaderITSv1(const Char_t* tracksfilename,const Char_t* galicefilename):
+ fITSTracksFileName(tracksfilename),
+ fGAliceFileName(galicefilename)
+{
+ //ctor
+}
 /********************************************************************/
 
-AliHBTReaderITSv1::
-AliHBTReaderITSv1(TObjArray* dirs, const Char_t* tracksfilename,const Char_t* galicefilename):
-                 AliHBTReader(dirs),
-                 fITSTracksFileName(tracksfilename),fGAliceFileName(galicefilename)
- {
-   fParticles = new AliHBTRun();
-   fTracks    = new AliHBTRun();
-   fIsRead    = kFALSE;
- }
+AliHBTReaderITSv1::AliHBTReaderITSv1(TObjArray* dirs, const Char_t* tracksfilename,const Char_t* galicefilename):
+ AliHBTReader(dirs),
+ fITSTracksFileName(tracksfilename),
+ fGAliceFileName(galicefilename)
+{
+//ctor
+}
 /********************************************************************/
 
 AliHBTReaderITSv1::~AliHBTReaderITSv1()
 {
-   delete fParticles;
-   delete fTracks;
+//dtor
 }
 /********************************************************************/
 
-AliHBTEvent* AliHBTReaderITSv1::GetParticleEvent(Int_t n)
- {
- //returns Nth event with simulated particles
-   if (!fIsRead) 
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetParticleEvent","Error in reading");
-       return 0x0;
-     }
-
-   return fParticles->GetEvent(n);
- }
-/********************************************************************/
-
-AliHBTEvent* AliHBTReaderITSv1::GetTrackEvent(Int_t n)
- {
- //returns Nth event with reconstructed tracks
-   if (!fIsRead) 
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetTrackEvent","Error in reading");
-       return 0x0;
-     }
-   return fTracks->GetEvent(n);
- }
-/********************************************************************/
-
-Int_t AliHBTReaderITSv1::GetNumberOfPartEvents()
- {
- //returns number of events of particles
-   if (!fIsRead)
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetNumberOfPartEvents","Error in reading");
-       return 0;
-     }
-   return fParticles->GetNumberOfEvents();
- }
-
-/********************************************************************/
-Int_t AliHBTReaderITSv1::GetNumberOfTrackEvents()
- {
- //returns number of events of tracks
-  if (!fIsRead) 
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetNumberOfTrackEvents","Error in reading");
-       return 0;
-     }
-  return fTracks->GetNumberOfEvents();
- }
-/********************************************************************/
 
 Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
 {
- Int_t Nevents = 0;
+//Reads data
+ Int_t nevents = 0;
  AliITSIOTrack *iotrack=new AliITSIOTrack;
  Int_t currentdir = 0;
- Int_t Ndirs;
- Int_t totalNevents = 0;
+ Int_t ndirs;
+ Int_t totalnevents = 0;
  
  if (fDirs)
   {
-    Ndirs = fDirs->GetEntries();
+    ndirs = fDirs->GetEntries();
   }
  else
   {
-    Ndirs = 0;
+    ndirs = 0;
   }
  
  do //do while is good even if 
@@ -143,9 +83,9 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
     }
    if (gAlice->TreeE())//check if tree E exists
      {
-      Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
+      nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
       cout<<"________________________________________________________\n";
-      cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
+      cout<<"Found "<<nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
       cout<<"Setting Magnetic Field. Factor is "<<gAlice->Field()->Factor()<<endl;
       AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());
      }
@@ -167,7 +107,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
    Int_t naccepted = 0;
    char tname[30];
    
-   for (Int_t currentEvent = 0; currentEvent < Nevents; currentEvent++)
+   for (Int_t currentEvent = 0; currentEvent < nevents; currentEvent++)
     { 
       cout<<"Reading Event "<<currentEvent;
       
@@ -224,12 +164,12 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
         if(Pass(track)) { delete  track;continue;}//check if meets all criteria of any of our cuts
                                                   //if it does not delete it and take next good track
 
-        particles->AddParticle(totalNevents,part);//put track and particle on the run
-        tracks->AddParticle(totalNevents,track);
+        particles->AddParticle(totalnevents,part);//put track and particle on the run
+        tracks->AddParticle(totalnevents,track);
         naccepted++;
        }//end loop over tracks in the event
 
-       totalNevents++;
+       totalnevents++;
        cout<<"  Accepted "<<naccepted<<" tracks"<<endl;
      }//end of loop over events in current directory
     
@@ -241,7 +181,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
     delete file;
     file = 0;
     currentdir++;
-   }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
+   }while(currentdir < ndirs);//end of loop over directories specified in fDirs Obj Array
 
 
   delete iotrack;
@@ -281,6 +221,7 @@ TFile* AliHBTReaderITSv1::OpenTrackFile(Int_t ndir)
 /********************************************************************/
 TFile* AliHBTReaderITSv1::OpenGAliceFile(Int_t ndir)
 {
+//Opens galice.root file
   const TString& dirname = GetDirName(ndir); 
    if (dirname == "")
     {
