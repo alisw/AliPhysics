@@ -240,12 +240,13 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 	    if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
 		// this check rejects hits in regions not covered by strips
 		// 0.5 takes into account boundaries 
-		if(k==0) cout<<"AliITSsimulationSSD::HitToDigit: "
-			     "Warning: no strip in this region of P side"
-			     <<endl;
-		else cout<<"AliITSsimulationSSD::HitToDigit: "
-			 "Warning: no strip in this region of N side"<<endl;
+		return; // There are dead region on the SSD sensitive volume.
+		/*
+		if(k==0) Warning("HitToDigit",
+		                 "no strip in this region of P side");
+		else Warning"HitToDigit","no strip in this region of N side");
 		return;
+		*/
 	    } // end if
 
 	    // sigma is the standard deviation of the diffusion gaussian

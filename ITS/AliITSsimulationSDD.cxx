@@ -520,7 +520,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits(AliITSmodule *mod,TObjArray *alst,
 	// passing through detector
 	if (!depEnergy) {
 	    Warning("HitsToAnalogDigits", 
-		    "This particle has passed without losing energy!");
+		    "fTrack = %d hit=%d module=%d This particle has"
+		    " passed without losing energy!",
+		    itrack,ii,mod->GetIndex());
 	    continue;
 	} // end if !depEnergy
 
@@ -531,7 +533,10 @@ void AliITSsimulationSDD::HitsToAnalogDigits(AliITSmodule *mod,TObjArray *alst,
 	if(drPath < 0) drPath = -drPath;
 	drPath = sddLength-drPath;
 	if(drPath < 0) {
-	    Warning("HitsToAnalogDigits","negative drift path %e",drPath);
+	    Warning("HitsToAnalogDigits",
+		    "negative drift path drPath=%e sddLength=%e dxL[0]=%e "
+		    "xL[0]=%e",
+		    drPath,sddLength,dxL[0],xL[0]);
 	    continue;
 	} // end if drPath < 0
 
@@ -559,8 +564,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits(AliITSmodule *mod,TObjArray *alst,
 	    driftPath = sddLength-driftPath;
 	    detector  = 2*(hitDetector-1) + iWing;
 	    if(driftPath < 0) {
-		Warning("HitsToAnalogDigits","Warning: negative drift path %e",
-			driftPath);
+		Warning("HitsToAnalogDigits","negative drift path "
+			"driftPath=%e sddLength=%e avDrft=%e dxL[0]=%e "
+			"xL[0]=%e",driftPath,sddLength,avDrft,dxL[0],xL[0]);
 		continue;
 	    } // end if driftPath < 0
 
@@ -580,11 +586,13 @@ void AliITSsimulationSDD::HitsToAnalogDigits(AliITSmodule *mod,TObjArray *alst,
 	    //   Anode
 	    xAnode = 10000.*(avAnode)/anodePitch + nofAnodes/2;  // +1?
 	    if(xAnode*anodePitch > sddWidth || xAnode*anodePitch < 0.) 
-	                  Warning("HitsToAnalogDigits","Z = %e",
-				  xAnode*anodePitch);
+	                  Warning("HitsToAnalogDigits",
+				  "Exceedubg sddWidth=%e Z = %e",
+				  sddWidth,xAnode*anodePitch);
 	    iAnode = (Int_t) (1.+xAnode); // xAnode?
 	    if(iAnode < 1 || iAnode > nofAnodes) {
-		Warning("HitToAnalogDigits","Wrong iAnode: %d",iAnode);
+		Warning("HitToAnalogDigits","Wrong iAnode: 1<%d>%d",
+			iAnode,nofAnodes);
 		continue;
 	    } // end if iAnode < 1 || iAnode > nofAnodes
 
