@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/05/16 13:10:41  fca
+New method IsNewTrack and fix for a problem in Father-Daughter relations
+
 Revision 1.25  2000/04/07 11:12:35  fca
 G4 compatibility changes
 
@@ -598,6 +601,7 @@ void TGeant3::LoadAddress()
   gcomad(PASSCHARD("GCNUM"), (int*&) fGcnum   PASSCHARL("GCNUM"));
   gcomad(PASSCHARD("GCSETS"),(int*&) fGcsets  PASSCHARL("GCSETS"));
   gcomad(PASSCHARD("GCPHYS"),(int*&) fGcphys  PASSCHARL("GCPHYS"));
+  gcomad(PASSCHARD("GCPHLT"),(int*&) fGcphlt  PASSCHARL("GCPHLT"));
   gcomad(PASSCHARD("GCOPTI"),(int*&) fGcopti  PASSCHARL("GCOPTI"));
   gcomad(PASSCHARD("GCTLIT"),(int*&) fGctlit  PASSCHARL("GCTLIT"));
   gcomad(PASSCHARD("GCVDMA"),(int*&) fGcvdma  PASSCHARL("GCVDMA"));
@@ -1112,6 +1116,10 @@ void    TGeant3::SetProcess(const char* flagName, Int_t flagValue)
     fGcphys->imuls=flagValue;
   else if(!strcmp(flagName,"RAYL")) 
     fGcphys->irayl=flagValue;
+  else if(!strcmp(flagName,"STRA")) 
+    fGcphlt->istra=flagValue;
+  else if(!strcmp(flagName,"SYNC")) 
+    fGcphlt->isync=flagValue;
   else  Warning("SetFlag","Flag %s not implemented\n",flagName);
 }
 
@@ -3441,6 +3449,18 @@ void TGeant3::SetRAYL(Int_t par)
   //       =1 Rayleigh.
   //  
   fGcphys->irayl = par;
+}
+ 
+//_____________________________________________________________________________
+void TGeant3::SetSTRA(Int_t par)
+{
+  //
+  //  To control energy loss fluctuations
+  //  with the PhotoAbsorption Ionisation model.
+  //   par =0 no Straggling.
+  //       =1 Straggling yes => no Delta rays.
+  //  
+  fGcphlt->istra = par;
 }
  
 //_____________________________________________________________________________

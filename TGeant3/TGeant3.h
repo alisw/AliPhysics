@@ -308,9 +308,6 @@ typedef struct {
 //     +             ,ILOSS,SLOSS,SOLOSS,STLOSS,DPHYS2
 //     +             ,IMULS,SMULS,SOMULS,STMULS,DPHYS3
 //     +             ,IRAYL,SRAYL,SLRAYL,ZINTRA,STEPRA
-//      COMMON/GCPHLT/ILABS,SLABS,SLLABS,ZINTLA,STEPLA
-//     +             ,ISYNC
-//     +             ,ISTRA
 typedef struct { 
   Int_t    ipair;
   Float_t  spair;
@@ -378,6 +375,20 @@ typedef struct {
   Float_t  zintra;
   Float_t  stepra;
 } Gcphys_t; 
+
+//----------GCPHLT
+//      COMMON/GCPHLT/ILABS,SLABS,SLLABS,ZINTLA,STEPLA
+//     +             ,ISYNC
+//     +             ,ISTRA
+typedef struct { 
+  Int_t ilabs;
+  Float_t slabs;
+  Float_t sllabs;
+  Float_t zintla;
+  Float_t stepla;
+  Int_t isync;
+  Int_t istra;
+} Gcphlt_t;
  
 //----------GCOPTI 
 //      COMMON/GCOPTI/IOPTIM
@@ -536,6 +547,7 @@ protected:
   Gcflag_t *fGcflag; 
   Gctmed_t *fGctmed; 
   Gcphys_t *fGcphys; 
+  Gcphlt_t *fGcphlt; 
   Gcking_t *fGcking; 
   Gckin2_t *fGckin2; 
   Gckin3_t *fGckin3; 
@@ -657,6 +669,7 @@ public:
   virtual Gcflag_t* Gcflag() const {return fGcflag;}
   virtual Gctmed_t* Gctmed() const {return fGctmed;}
   virtual Gcphys_t* Gcphys() const {return fGcphys;}
+  virtual Gcphlt_t* Gcphlt() const {return fGcphlt;}
   virtual Gcking_t* Gcking() const {return fGcking;}
   virtual Gckin2_t* Gckin2() const {return fGckin2;}
   virtual Gckin3_t* Gckin3() const {return fGckin3;}
@@ -825,6 +838,7 @@ public:
    virtual  void  SetPFIS(Int_t par=1);
    virtual  void  SetPHOT(Int_t par=1);
    virtual  void  SetRAYL(Int_t par=1);
+   virtual  void  SetSTRA(Int_t par=0);
    virtual  void  SetSWIT(Int_t sw, Int_t val=1);
    virtual  void  SetTRIG(Int_t nevents=1);
    virtual  void  SetUserDecay(Int_t ipart);
