@@ -55,7 +55,7 @@ AliRICHDigitizer::AliRICHDigitizer()
 AliRICHDigitizer::AliRICHDigitizer(AliRunDigitizer *pManager) 
                  :AliDigitizer(pManager)
 {//main ctor which should be used
-  if(pManager->GetDebug())Info("main ctor","Start.");
+  if(fManager->GetDebug())Info("main ctor","Start.");
   fHits = 0;
   fSDigits = 0;
   fHitMap = 0;
@@ -65,23 +65,12 @@ AliRICHDigitizer::AliRICHDigitizer(AliRunDigitizer *pManager)
 //__________________________________________________________________________________________________
 AliRICHDigitizer::~AliRICHDigitizer()
 {//dtor
-  if(GetDebug())Info("dtor","Start.");
+  if(fManager->GetDebug())Info("dtor","Start.");
   
-    if (fHits) {
-	fHits->Delete();
-	delete fHits;
-    }
-    if (fSDigits) {
-	fSDigits->Delete();
-	delete fSDigits;
-    }
-    for (Int_t i=0; i<kNCH; i++ )
-	delete fHitMap[i];
-    delete [] fHitMap;
-    if (fTDList) {
-	fTDList->Delete();
-	delete fTDList;
-  }
+  if(fHits)    {fHits->Delete();   delete fHits;}
+  if(fSDigits) {fSDigits->Delete();delete fSDigits;}
+  if(fTDList)  {fTDList->Delete(); delete fTDList;}
+  for(Int_t i=0; i<kNCH; i++) delete fHitMap[i];    delete [] fHitMap;
 }//dtor
 //__________________________________________________________________________________________________
 Bool_t AliRICHDigitizer::Exists(const AliRICHSDigit *p) 
@@ -161,6 +150,8 @@ void AliRICHDigitizer::Exec(Option_t* option)
   AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
   
   if(!pOutRL->TreeD()) pOutRL->MakeTree("D");  pRICH->MakeBranch("D");
+  
+  
   fHitMap= new AliHitMap* [kNCH];
         
   for (Int_t i =0; i<kNCH; i++) {
@@ -217,7 +208,7 @@ void AliRICHDigitizer::Exec(Option_t* option)
 	}
 	iChamber = &(pRICH->Chamber(fNch));
 	  
-	for (AliRICHSDigit* mPad=FirstPad(pHit,fSDigits);mPad;mPad=NextPad(fSDigits)){//clusters loop
+	for (AliRICHSDigit* mPad=FirstPad(pHit,fSDigits);mPad;mPad=NextPad(fSDigits)){//specials loop
 	  Int_t iqpad    = mPad->QPad();       // charge per pad
 	  fDigits[0]=mPad->PadX();
 	  fDigits[1]=mPad->PadY();
@@ -228,7 +219,7 @@ void AliRICHDigitizer::Exec(Option_t* option)
             Update(mPad);
 	  else
             CreateNew(mPad);
-	}//clusters loop
+	}//specials loop
       }//hits loop
     }//prims loop
   }//files loop
@@ -238,7 +229,7 @@ void AliRICHDigitizer::Exec(Option_t* option)
   Int_t charges[kMAXTRACKSPERRICHDIGIT];
   Int_t nentries=fTDList->GetEntriesFast();
     
-  for (Int_t nent=0;nent<nentries;nent++) {
+  for (Int_t nent=0;nent<nentries;nent++){//transient digits loop
     AliRICHTransientDigit *transDigit=(AliRICHTransientDigit*)fTDList->At(nent);
     if (transDigit==0) continue; 
     Int_t ich=transDigit->GetChamber();
@@ -277,8 +268,8 @@ void AliRICHDigitizer::Exec(Option_t* option)
 
     Int_t nptracks = transDigit->GetNTracks();  
 
-    // this was changed to accomodate the real number of tracks
-    if (nptracks > kMAXTRACKSPERRICHDIGIT) {
+    
+    if(nptracks>kMAXTRACKSPERRICHDIGIT){// this was changed to accomodate the real number of tracks
       printf("Attention - tracks > 10 %d\n",nptracks);
       nptracks=kMAXTRACKSPERRICHDIGIT;
     }
@@ -288,7 +279,6 @@ void AliRICHDigitizer::Exec(Option_t* option)
     for (Int_t tr=0;tr<nptracks;tr++) {
       tracks[tr]=transDigit->GetTrack(tr);
       charges[tr]=transDigit->GetCharge(tr);
-      //printf("%f \n",charges[tr]);
     }      //end loop over list of tracks for one pad
     if (nptracks < kMAXTRACKSPERRICHDIGIT ) {
       for (Int_t t=nptracks; t<kMAXTRACKSPERRICHDIGIT; t++) {
@@ -296,8 +286,8 @@ void AliRICHDigitizer::Exec(Option_t* option)
       charges[t]=0;
       }
     }
-    pRICH->AddDigits(ich,tracks,charges,fDigits);
-  }      
+    pRICH->AddDigitOld(ich+1,tracks,charges,fDigits);//OLD
+  }//transient digits loop      
   pOutRL->TreeD()->Fill();
 
   //pRICH->ResetDigits();
@@ -313,7 +303,7 @@ void AliRICHDigitizer::Exec(Option_t* option)
   for (Int_t k=0;k<kNCH;k++) {
     richDigits = pRICH->DigitsAddress(k);
     Int_t ndigit=richDigits->GetEntriesFast();
-    printf ("Chamber %d digits %d \n",k,ndigit);
+    printf ("Chamber %d digits %d \n",k+1,ndigit);
   }
   pRICH->ResetDigits(); /// ??? should it be here???
   
@@ -321,7 +311,8 @@ void AliRICHDigitizer::Exec(Option_t* option)
 
   delete [] fHitMap;
   delete fTDList;
-
+  pOutRL->UnloadHits();
+  pOutRL->UnloadDigits();
 //  if (fHits)    fHits->Delete();
 //  if (fSDigits) fSDigits->Delete();
   if(GetDebug())Info("Exec","Stop.");

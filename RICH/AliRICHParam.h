@@ -10,31 +10,35 @@ public:
            AliRICHParam();  
   virtual ~AliRICHParam()                    {;}  
   
-  void    Recalc();                                           //Recalculates dependent parameters after changes applied  
-  Int_t   Sector(Float_t &x,Float_t &y)const;                       //Returns sector number for given point (x,y)
-  Int_t   L2P(Float_t x,Float_t y,Int_t &padx,Int_t &pady)const;//Which pad contains point (x,y), returns sector code 
-  inline  Int_t L2Px(Float_t x,Float_t y)const;                         //Which pad contains point (x,y), returns padx
-  inline  Int_t L2Py(Float_t x,Float_t y)const;                         //Which pad contains point (x,y), returns padx
-  inline  Int_t Wire(Float_t x)const;                             //Returns wire number for local point (x,y)
+  inline  Int_t Neighbours(Int_t iPadX,Int_t iPadY,Int_t aListX[4],Int_t aListY[4])const;                      //pad->neibours
   inline  void   SigGenInit(Float_t x,Float_t y);
   inline  Bool_t SigGenCond(Float_t x,Float_t y);
+  Int_t   Local2Pad(Float_t x,Float_t y,Int_t &padx,Int_t &pady)const;               //(x,y)->(padx,pady), returns sector code 
+  Int_t   Local2PadX(Float_t x,Float_t y)    const {Int_t padx,pady;Local2Pad(x,y,padx,pady);return padx;}//(x,y)->padx
+  Int_t   Local2PadY(Float_t x,Float_t y)    const {Int_t padx,pady;Local2Pad(x,y,padx,pady);return pady;}//(x,y)->pady
+  void    Pad2Local(Int_t padx,Int_t pady,Float_t &x,Float_t &y);                                         //(padx,pady)->(x,y)
+  Int_t   LocalX2Wire(Float_t x)             const {return  Int_t((x+PcSizeX()/2)/fWirePitch)+1;}         //x->wire number
+  Float_t Wire2LocalX(Int_t iWireN)          const {return iWireN*fWirePitch-PcSizeX()/2;}                //wire number->x
+  
   Float_t Gain(Float_t y);                                 //Returns total charge induced by single photon
   Float_t TotalCharge(Int_t iPID,Float_t eloss,Float_t y); //Returns total charge induced by particle lost eloss GeV
   Float_t PadCharge(Int_t /* iPadX */,Int_t /* iPadY */) {return 0;}   //Returns charge for a given pad
   void    FirstPad(Float_t x,Float_t y);
           
-  void    Segmentation(Int_t Nx,Int_t Ny)    {fNpadsX=Nx;fNpadsY=Ny;Recalc();}
-  Int_t   NpadsX()                      const{return fNpadsX;}
-  Int_t   NpadsY()                      const{return fNpadsY;}   
-  void    DeadZone(Float_t a)                {       fDeadZone=a;Recalc();}
+  static  Int_t   NpadsX()                   {return 144;}
+  static  Int_t   NpadsY()                   {return 160;}   
+  static  Int_t   NpadsXsec()                {return NpadsX()/3;}   
+  static  Int_t   NpadsYsec()                {return NpadsY()/2;}   
+  void    DeadZone(Float_t a)                {       fDeadZone=a;}
   Float_t DeadZone()                    const{return fDeadZone;}
-  void    PadSize(Float_t x,Float_t y)       {       fPadSizeX=x;fPadSizeY=y;Recalc();} 
+  void    PadSize(Float_t x,Float_t y)       {       fPadSizeX=x;fPadSizeY=y;} 
   Float_t PadSizeX()                    const{return fPadSizeX;}
   Float_t PadSizeY()                    const{return fPadSizeY;}
-  Float_t SectorSizeX()                 const{return fSectorSizeX;}
-  Float_t SectorSizeY()                 const{return fSectorSizeY;}  
-  Float_t PcSizeX()                     const{return fPcSizeX;}
-  Float_t PcSizeY()                     const{return fPcSizeY;}
+  Float_t SectorSizeX()                 const{return NpadsX()*PadSizeX()/3;}
+  Float_t SectorSizeY()                 const{return NpadsY()*PadSizeY()/2;}  
+  Float_t PcSizeX()                     const{return NpadsX()*PadSizeX()+2*DeadZone();}
+  Float_t PcSizeY()                     const{return NpadsY()*PadSizeY()+DeadZone();}
+  Float_t WirePitch()                   const{return PadSizeX()/2;}
             
   void    Size(Float_t x,Float_t y,Float_t z){fSizeX=x;fSizeY=y;fSizeZ=z;}
   void    GeantSize(Float_t *pArr)      const{pArr[0]=fSizeX/2;pArr[1]=fSizeY/2;pArr[2]=fSizeZ/2;}  
@@ -99,12 +103,12 @@ public:
   void    Voltage(Int_t a)                   {       fVoltage=a;}       
   Float_t Voltage()                     const{return fVoltage;}       
 protected:
-  Int_t   fNpadsX;        Int_t fNpadsY;                      //number of pads along X-Y in whole chamber (6 sectors)
-  Int_t   fNpadsXsector;  Int_t fNpadsYsector;                //number of pads along X-Y in one sector
-  Float_t fDeadZone;                              //space between PC sectors, cm     
-  Float_t fPadSizeX,fPadSizeY;                    //pad size, cm
-  Float_t fSectorSizeX,fSectorSizeY;              //photocathod sector size, cm
-  Float_t fWirePitch;                             //
+  Int_t   Local2Sector(Float_t &x,Float_t &y)const; //(x,y)->sector
+  Int_t   Pad2Sector(Int_t &padx,Int_t &pady)const; //(padx,pady)->sector
+  
+  Float_t fDeadZone;                                //space between PC sectors, cm     
+  Float_t fPadSizeX,fPadSizeY;                      //pad size, cm
+  Float_t fWirePitch;                               //distance between wires along x
   
   Int_t   fCurrentPadX,fCurrentPadY;              //???
   Int_t   fCurrentWire;                           //???
@@ -121,7 +125,6 @@ protected:
   Float_t fInnerFreonLength; Float_t fInnerFreonWidth;                            //freon box inner size, cm
   Float_t fFreonThickness;                                                        //freon thickness
   Float_t fRadiatorToPads;                                                        //distance from radiator to pads, cm
-  Float_t fPcSizeX,fPcSizeY;                                                      //photocathod active area size,cm
   
   Float_t fChargeSlope;              //Slope of the charge distribution
   Float_t fChargeSpreadX;            //Width of the charge distribution in x
@@ -143,22 +146,16 @@ protected:
   ClassDef(AliRICHParam,1)    //RICH main parameters
 };
 //__________________________________________________________________________________________________
-Int_t AliRICHParam::Wire(Float_t x)const
-{
-  Int_t iWire=(x>0)?Int_t(x/fWirePitch)+1:Int_t(x/fWirePitch)-1;
-  return iWire;
-}//Int_t AliRICHParam::Wire(Float_t x, Float_t y)
-//__________________________________________________________________________________________________
 void AliRICHParam::SigGenInit(Float_t x,Float_t y)
 {//Initialises pad and wire position during stepping
-  L2P(x,y,fCurrentPadX,fCurrentPadY);
+  Local2Pad(x,y,fCurrentPadX,fCurrentPadY);
   fCurrentWire= (x>0) ? Int_t(x/fWirePitch)+1 : Int_t(x/fWirePitch)-1 ;
 }
 //__________________________________________________________________________________________________
 Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
 {//Signal will be generated if particle crosses pad boundary or boundary between two wires.
   Int_t curPadX,curPadY;
-  L2P(x,y,curPadX,curPadY);
+  Local2Pad(x,y,curPadX,curPadY);
   Int_t currentWire=(x>0) ? Int_t(x/fWirePitch)+1 : Int_t(x/fWirePitch)-1;
   if((curPadX != fCurrentPadX) || (curPadY != fCurrentPadY) || (currentWire!=fCurrentWire)) 
     return kTRUE;
@@ -166,18 +163,13 @@ Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
     return kFALSE;
 }//Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
 //__________________________________________________________________________________________________
-Int_t AliRICHParam::L2Px(Float_t x,Float_t y)const
+Int_t AliRICHParam::Neighbours(Int_t iPadX,Int_t iPadY,Int_t listX[4],Int_t listY[4])const
 {
-  Int_t padx,pady;
-  L2P(x,y,padx,pady);
-  return padx;
-}//Int_t AliRICHParam::L2Px(Float_t x,Float_t y)
-//__________________________________________________________________________________________________
-Int_t AliRICHParam::L2Py(Float_t x,Float_t y)const
-{
-  Int_t padx,pady;
-  L2P(x,y,padx,pady);
-  return pady;
-}//Int_t AliRICHParam::L2Px(Float_t x,Float_t y)
+  listX[0]=iPadX;   listY[0]=iPadY-1;       
+  listX[1]=iPadX+1; listY[1]=iPadY;       
+  listX[2]=iPadX;   listY[2]=iPadY+1;       
+  listX[3]=iPadX-1; listY[3]=iPadY;       
+  return 4;
+}
 //__________________________________________________________________________________________________
 #endif //AliRICHParam_h

@@ -1114,14 +1114,9 @@ Int_t AliRICHv3::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idv
             clhits[2] = Int_t(newclust[1][i]);//  Pad: ix
             clhits[3] = Int_t(newclust[2][i]);//  Pad: iy
             clhits[4] = Int_t(newclust[3][i]);//  Pad: chamber sector
-            AddSDigit(clhits);
+            AddSpecialOld(clhits);
         }
     }
-  
-//kir  if(fLoader->TreeS()){
-//kir    fLoader->TreeS()->Fill();
-//kir    fLoader->WriteSDigits("OVERWRITE");
-//kir  }
   return iNdigits;
 }//Int_t AliRICHv3::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
 //__________________________________________________________________________________________________

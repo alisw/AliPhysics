@@ -1,5 +1,4 @@
 #include "AliRICHParam.h"
-#include "AliRICHConst.h"
 #include <TMath.h>
 #include <TRandom.h>
  
@@ -8,11 +7,8 @@ ClassImp(AliRICHParam)
 // RICH main parameters manipulator
 //__________________________________________________________________________________________________
 AliRICHParam::AliRICHParam():
-fNpadsX(0),fNpadsY(0),fNpadsXsector(0),fNpadsYsector(0),
 fDeadZone(0),
 fPadSizeX(0),fPadSizeY(0),
-fSectorSizeX(0),fSectorSizeY(0),
-fWirePitch(0),
 fCurrentPadX(0),fCurrentPadY(0),fCurrentWire(0),
 fSizeZ(0),
 fAngleRot(0),fAngleYZ(0),fAngleXY(0),
@@ -28,8 +24,6 @@ fInnerFreonLength(0),
 fInnerFreonWidth(0),
 fFreonThickness(0),
 fRadiatorToPads(0),
-fPcSizeX(0),
-fPcSizeY(0),
 fChargeSlope(0),
 fChargeSpreadX(0),
 fChargeSpreadY(0),
@@ -47,11 +41,9 @@ fPitch(0),
 fWireSag(0),
 fVoltage(0)
 {//defines the default parameters
-  Segmentation         (144,160);           //nx,ny  for the whole chamber
-  DeadZone             (3*kcm);             //spacer between PC planes
-  PadSize              (8.4*kmm,8.0*kmm);     
-  fWirePitch=PadSizeX()/2;
-  
+  DeadZone             (3);                 //spacer between PC planes
+  PadSize              (0.84,0.80);     
+
   Size                 (132.6*kcm,26*kcm,136.7*kcm);  //full length, not GEANT half notation
   AngleRot             (-60);                         //rotation of the whole RICH around Z, deg
   Angles               (20,19.5);                     //XY angle, YZ angle  deg  
@@ -83,54 +75,76 @@ fVoltage(0)
   Pitch(0.25);
   WireSag(1);		      // 1->On, 0->Off
   Voltage(2150);	      // Should only be 2000, 2050, 2100 or 2150  
-  
-  Recalc();
 }//AliRICHParam::named ctor 
 //__________________________________________________________________________________________________
-void AliRICHParam::Recalc()
-{//recalculate  
-  fNpadsXsector=NpadsX()/3;  fNpadsYsector=NpadsY()/2;
-  fPcSizeX=NpadsX()*fPadSizeX+2*fDeadZone;
-  fPcSizeY=NpadsY()*fPadSizeY+fDeadZone;
-  fSectorSizeX=(fPcSizeX-2*fDeadZone)/3;
-  fSectorSizeY=(fPcSizeY-fDeadZone)/2;  
-}//void AliRICHParam::Recalc()
-//__________________________________________________________________________________________________
-Int_t AliRICHParam::Sector(Float_t &x, Float_t &y)const
+Int_t AliRICHParam::Local2Sector(Float_t &x, Float_t &y)const
 {//Determines sector for a given hit (x,y) and trasform this point to the local system of that sector.
-  
   Int_t sector=kBad;  
-  if(x<=-fSectorSizeX/2-fDeadZone&&x>=-fPcSizeX/2)     {sector=1;x+=fPcSizeX/2;}
-  else if(x>=-fSectorSizeX/2 && x<=fSectorSizeX/2)     {sector=2;x+=fSectorSizeX/2;}
-  else if(x>= fSectorSizeX/2+fDeadZone&&x<=fPcSizeX/2) {sector=3;x-=fSectorSizeX/2+fDeadZone;}
-  else if(x<-fPcSizeX/2||x>fPcSizeX/2)                 {Error("Sector","given x position is out of active PC area");return kBad;}
-  else                                                 {return kBad;} //in dead zone
+  Float_t x1=-0.5*PcSizeX();      Float_t x2=-0.5*SectorSizeX()-DeadZone();  Float_t x3=-0.5*SectorSizeX();
+  Float_t x4= 0.5*SectorSizeX();  Float_t x5= 0.5*SectorSizeX()+DeadZone();  Float_t x6= 0.5*PcSizeX();
 
-  if(y>=-fPcSizeY/2&&y<= -fDeadZone/2)                {y+=fPcSizeY/2;  return -sector;}
-  else if(y>-fDeadZone/2&&y<fDeadZone/2)              {return kBad;} //in dead zone
-  else if(y>=fDeadZone/2&&y<=fPcSizeY/2)              {y-=fDeadZone/2; return  sector;}
-  else                                                {Error("Sector","given y position is out of active PC area");return kBad;}
-}//Int_t AliRICHParam::Sector(Float_t x, Float_t y)
+  if     (x>=x1&&x<=x2)    {sector=1;x+=0.5*PcSizeX();}
+  else if(x>=x3&&x<=x4)    {sector=2;x+=0.5*SectorSizeX();}
+  else if(x>=x5&&x<=x6)    {sector=3;x-=0.5*SectorSizeX()+DeadZone();}
+  else if(x< x1||x> x6)    {Error("Sector","given x position is out of PC area");return kBad;}
+  else                                                        {return kBad;} //in dead zone
+
+  if     (y>=-0.5*PcSizeY()   &&y<=-0.5*DeadZone())  {y+=0.5*PcSizeY();  return -sector;}
+  else if(y> -0.5*DeadZone()  &&y<  0.5*DeadZone())  {return kBad;} //in dead zone
+  else if(y>= 0.5*DeadZone()  &&y<= 0.5*PcSizeY())   {y-=0.5*DeadZone(); return  sector;}
+  else                                            {Error("Sector","given y position is out of PC area");return kBad;}
+}//Int_t AliRICHParam::Local2Sector(Float_t x, Float_t y)
 //__________________________________________________________________________________________________
-Int_t AliRICHParam::L2P(Float_t x, Float_t y, Int_t &padx, Int_t &pady)const
+Int_t AliRICHParam::Pad2Sector(Int_t &padx, Int_t &pady)const
+{//Determines sector for a given pad (padx,pady) and trasform this point to the local system of that sector.
+  Int_t sector=kBad;      
+  if     (padx>=1            &&padx<=NpadsXsec())      {sector=1;}
+  else if(padx> NpadsXsec()  &&padx<=NpadsXsec()*2)    {sector=2;padx-=NpadsXsec();}
+  else if(padx> NpadsXsec()*2&&padx<=NpadsX())         {sector=3;padx-=NpadsXsec()*2;}
+  else                                   {Error("Sector","given padx position is out of PC area");return kBad;}
+
+  if     (pady>=1         &&pady<= NpadsYsec())     {return -sector;}
+  else if(pady>NpadsYsec()&&pady<= NpadsY())        {pady-=NpadsYsec();return sector;} 
+  else                                              {Error("Sector","given y position is out of PC area");return kBad;}
+}//Local2Sector()
+//__________________________________________________________________________________________________
+Int_t AliRICHParam::Local2Pad(Float_t x, Float_t y, Int_t &padx, Int_t &pady)const
 {//returns pad numbers (iPadX,iPadY) for given point in local coordinates (x,y) 
  //count starts in lower left corner from 1,1 to 144,180
   
   padx=pady=kBad;
-  Int_t sector=Sector(x,y);
+  Int_t sector=Local2Sector(x,y);
   if(sector==kBad) return sector;
   
-  padx=Int_t(x/fPadSizeX)+1; 
-  if(padx>fNpadsXsector)          padx=fNpadsXsector;
-  if(sector==2||sector==-2)       padx+=fNpadsXsector;
-  else if(sector==3||sector==-3)  padx+=fNpadsXsector*2;
+  padx=Int_t(x/PadSizeX())+1; 
+  if(padx>NpadsXsec())            padx= NpadsXsec();
+  if(sector==2||sector==-2)       padx+=NpadsXsec();
+  else if(sector==3||sector==-3)  padx+=NpadsXsec()*2;
   
-  pady=Int_t(y/fPadSizeY)+1;
-  if(pady>fNpadsYsector)          padx=fNpadsYsector;
-  if(sector>0)                    pady+=fNpadsYsector;    
+  pady=Int_t(y/PadSizeY())+1;
+  if(pady>NpadsYsec())            padx= NpadsYsec();
+  if(sector>0)                    pady+=NpadsYsec();    
 
   return sector;
-}//void AliRICHParam::L2P(Float_t x, Float_t y, Int_t &padx, Int_t &pady)
+}//Local2Pad()
+//__________________________________________________________________________________________________
+void AliRICHParam::Pad2Local(Int_t padx,Int_t pady,Float_t &x,Float_t &y)
+{
+  Int_t sector=Pad2Sector(padx,pady);  
+  if(sector>0)
+    y=0.5*DeadZone()+pady*PadSizeY()-0.5*PadSizeY();
+  else{
+    sector=-sector;
+    y=-0.5*PcSizeY()+pady*PadSizeY()-0.5*PadSizeY();
+  }
+  if(sector==1)
+    x=-0.5*PcSizeX()+padx*PadSizeX()-0.5*PadSizeX();
+  else if(sector==2)
+    x=-0.5*SectorSizeX()+padx*PadSizeX()-0.5*PadSizeX();
+  else
+    x= 0.5*SectorSizeX()+DeadZone()+padx*PadSizeX()-0.5*PadSizeX();
+  return;
+}//Pad2Local()
 //__________________________________________________________________________________________________
 Float_t AliRICHParam::Gain(Float_t y)
 {//Calculates the gain
@@ -159,5 +173,5 @@ Float_t AliRICHParam::TotalCharge(Int_t iPID,Float_t eloss,Float_t y)
 void AliRICHParam::FirstPad(Float_t x,Float_t y)
 {
   Int_t padx,pady;
-  L2P(x,y,padx,pady);
+  Local2Pad(x,y,padx,pady);
 }//void AliRICHParam::FirstPad(Float_t x,Float_t y)

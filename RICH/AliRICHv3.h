@@ -25,7 +25,6 @@ public:
   void     SetGeometryModel(Int_t c,AliRICHGeometry *pRICHGeo)                    {C(c)->SetGeometryModel(pRICHGeo);}
   void     SetSegmentationModel(Int_t c, AliSegmentation *pAliSeg)                {C(c)->SetSegmentationModel(pAliSeg);}
   void     SetResponseModel(Int_t c, AliRICHResponse *pRICHRes)                   {C(c)->SetResponseModel(pRICHRes);}
-  void     SetReconstructionModel(Int_t c, AliRICHClusterFinder *pRICHReco)       {C(c)->SetReconstructionModel(pRICHReco);}
   AliRICHGeometry* GetGeometryModel(Int_t c=1)                               const{return C(c)->GetGeometryModel();}    
   AliSegmentation* GetSegmentationModel(Int_t c=1)                           const{return C(c)->GetSegmentationModel();}
   AliRICHResponse* GetResponseModel(Int_t c=1)                               const{return C(c)->GetResponseModel();}

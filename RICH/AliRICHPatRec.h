@@ -4,20 +4,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
 
 ////////////////////////////////////////////////////////////////
 //   Pattern Recognition classes for set:RICH version 0       //
 ////////////////////////////////////////////////////////////////
 
-#include <TObject.h>
-#include <TMath.h>
-
-#include "AliRICH.h"
-#include "AliHitMap.h"
-
-
-class AliRICHPatRec;
+#include <TNamed.h>
 
 class AliRICHPatRec : public TNamed
 {
@@ -27,9 +19,9 @@ class AliRICHPatRec : public TNamed
   AliRICHPatRec(const char *name, const char *title);
   virtual       ~AliRICHPatRec() {}
   void   PatRec();
-  Int_t   TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t recphi);
-  //Old CERENK
-  Float_t EstimationAtLimits(Float_t lim, Float_t radius, Float_t phiphot);  
+  Int_t   TrackParam(Int_t &ich, Float_t rectheta, Float_t recphi);  
+
+  Float_t EstimationAtLimits(Float_t lim, Float_t radius, Float_t phiphot);  //Old CERENK
   //Old REC_ETAPHOT
   Float_t PhotonCerenkovAngle();
   //Old GIME_EMISSPOINT
@@ -90,7 +82,7 @@ private:
   Float_t fOnCathode[3];                 // Point of exit from photocathode 
 
 
-  ClassDef(AliRICHPatRec,1)                //Pat Rec module for :RICH version 0
+  ClassDef(AliRICHPatRec,0)                //Pat Rec module for :RICH version 0
       
 };
 

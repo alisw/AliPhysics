@@ -16,8 +16,6 @@
 #include "AliRICHGeometry.h"
 #include "AliRICHResponse.h"
 
-class AliRICHClusterFinder;
-
 typedef enum {kMip, kPhoton} ResponseType;
 class AliRICHParam;
 
@@ -75,8 +73,6 @@ public:
   AliRICHResponse*  GetResponseModel()                                     const{return fResponse;}
   void              SetSegmentationModel(AliSegmentation* pRICHSegmentation)    {fSegmentation=pRICHSegmentation;}
   AliSegmentation*  GetSegmentationModel()                                 const{return fSegmentation;}
-  void                  SetReconstructionModel(AliRICHClusterFinder *pRICHReconstruction)    {fReconstruction=pRICHReconstruction;}
-  AliRICHClusterFinder* &GetReconstructionModel()                                            {return fReconstruction;}
   void   SigGenInit(Float_t x, Float_t y, Float_t z)   {fSegmentation->SigGenInit(x, y, z) ;}
   Int_t  SigGenCond(Float_t x, Float_t y, Float_t z)   {return fSegmentation->SigGenCond(x, y, z);}
   Int_t  Sector(Float_t x, Float_t y)                  {return fSegmentation->Sector((Int_t)x, (Int_t)y);} // Returns number of sector containing (x,y) position    
@@ -94,7 +90,6 @@ protected:
   AliSegmentation               *fSegmentation;          //???Segmentation model for each chamber
   AliRICHResponse               *fResponse;              //???Response model for each chamber
   AliRICHGeometry               *fGeometry;              //???Geometry model for each chamber
-  AliRICHClusterFinder          *fReconstruction;        //???Reconstruction model for each chamber
    
   TVector3      fCenterV3;        //chamber center position in MRS (cm)
   TRotation     fRot;             //chamber rotation in MRS

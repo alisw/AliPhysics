@@ -1,56 +1,89 @@
-void Spec2D()
+void Digits2Recos()
 {
-  Info("Spec2D","Start.");    
+  AliRICHPatRec *detect = new AliRICHPatRec("RICH patrec algorithm","Reconstruction");
+    
+
+  for (int nev=0; nev<= a->GetEventsPerRun(); nev++) {    // Event Loop
+    al->GetEvent(nev);
+    cout <<endl<< "Processing event:" <<nev<<endl;
+    detect->PatRec();
+  } // event loop  
+}  
+
+
+
+void Hits2Digits()
+{
+  TStopwatch sw;TDatime time;
+  r->Hits2SDigits();r->SDigits2Digits();
+  cout<<"\nInfo in <hits->digits>: Start time: ";time.Print();
+  cout<<"Info in <hits->digits>: Stop  time: ";time.Set();  time.Print();
+  cout<<"Info in <hits->digits>: Time  used: ";sw.Print();
+}
+
+void DigitsOLD2RawClustersOLD()
+{
+  AliRICHClusterFinder *z=new AliRICHClusterFinder(r);
+  z->Exec();  
+}
+
+void Specials2DigitsOLD()
+{
+  Info("OLDspec2d","Start.");    
   
-  delete gAlice;
+//  delete gAlice;
   
   AliRunDigitizer *pManager = new AliRunDigitizer(1,1);
+  pManager->SetDebug(10);
   pManager->SetInputStream(0,"galice.root");
   new AliRICHDigitizer(pManager);
   pManager->Exec("deb");
-  Info("Spec2D","Stop.");
+  delete pManager;
+  Info("OLDspec2d","Stop.");
 }
 
-void Spec2Sd()
+void Specials2Sdigits()
 {
-  Info("Spec2Sd","Start.");
+  Info("Specials2Sdigits","Start.");
   
-  rl->LoadHits(); rl->MakeTree("S");  r->MakeBranch("S");//from to
+  rl->LoadHits(); 
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     al->GetEvent(iEventN);
-
     
+    rl->MakeTree("S");  r->MakeBranch("S");
+    r->ResetSdigits();  r->ResetSpecialsOld();
+
     for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);
       for(Int_t i=0;i<r->Specials()->GetEntries();i++){//specials loop          
         Int_t padx= ((AliRICHSDigit*)r->Specials()->At(i))->PadX();
         Int_t pady= ((AliRICHSDigit*)r->Specials()->At(i))->PadY();
         Int_t qdc=  ((AliRICHSDigit*)r->Specials()->At(i))->QPad();
-        Int_t track=((AliRICHSDigit*)r->Specials()->At(i))->HitNumber();
-        r->AddSdigit(1,padx+r->Param()->NpadsX()/2,pady+r->Param()->NpadsY()/2,qdc,track);
+        Int_t hitN= ((AliRICHSDigit*)r->Specials()->At(i))->HitNumber()-1;//!!! important -1
+        Int_t chamber=((AliRICHhit*)r->Hits()->At(hitN))->C();
+        Int_t track=((AliRICHhit*)r->Hits()->At(hitN))->GetTrack();
+        r->AddSdigit(chamber,padx+r->Param()->NpadsX()/2,pady+r->Param()->NpadsY()/2,qdc,track);
       }//specials loop
     }//prims loop
     rl->TreeS()->Fill();
     rl->WriteSDigits("OVERWRITE");
-    r->ResetSdigits();    r->ResetSpecials();
   }//events loop  
     rl->UnloadHits();     rl->UnloadSDigits();  
-  Info("Spec2Sd","Stop.");    
-}
-
-
-void H2Sd()
+  Info("Specials2Sdigits","Stop.");    
+}//Specials2Sdigits()
+//__________________________________________________________________________________________________
+void Hits2Sdigits()
 {
-  Info("H2Sd","Start.");
+  Info("Hits2Sdigits","Start.");
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     al->GetEvent(iEventN);
   
     if(!rl->TreeH()) rl->LoadHits();//from
     if(!rl->TreeS()) rl->MakeTree("S");    r->MakeBranch("S");//to
-    
-
+      
+    NOT YET DONE!
     for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);
       for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop  
@@ -65,42 +98,100 @@ void H2Sd()
   
   rl->UnloadHits();
   rl->UnloadSDigits();  
-  Info("H2Sd","Stop.");  
+  Info("Hits2Sdigits","Stop.");  
+}//Hits2Sdigits()
+//__________________________________________________________________________________________________
+void Sdigits2Digits()
+{
+  Info("Sdigits2Digits","Start.");  
+
+  rl->LoadSDigits();
+  
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    al->GetEvent(iEventN);
+    
+    rl->MakeTree("D");r->MakeBranch("D"); //create TreeD with RICH branches 
+    r->ResetSdigits();r->ResetDigits();//reset lists of sdigits and digits
+    rl->TreeS()->GetEntry(0);  
+    r->Sdigits()->Sort();
+  
+    Int_t kBad=-101;
+    Int_t chamber,x,y,qdc,tr[3],id;
+    chamber=x=y=qdc=tr[0]=tr[1]=tr[2]=id=kBad;
+    Int_t iNdigitsPerPad=kBad;//how many sdigits for a given pad
+        
+    for(Int_t i=0;i<r->Sdigits()->GetEntries();i++){//sdigits loop (sorted)
+      AliRICHdigit *pSdig=(AliRICHdigit*)r->Sdigits()->At(i);
+      if(pSdig->Id()==id){//still the same pad
+        iNdigitsPerPad++;
+        qdc+=pSdig->Qdc();
+        if(iNdigitsPerPad<=3)
+          tr[iNdigitsPerPad-1]=pSdig->T(0);
+        else
+          Info("","More then 3 sdigits for the given pad");
+      }else{//new pad, add the pevious one
+        if(id!=kBad) r->AddDigit(chamber,x,y,qdc,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
+        chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();qdc=pSdig->Qdc();tr[0]=pSdig->T(0);id=pSdig->Id();
+        iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
+      }
+    }//sdigits loop (sorted)
+  
+    r->AddDigit(chamber,x,y,qdc,tr[0],tr[1],tr[2]);//add the last digit
+        
+    rl->TreeD()->Fill();  
+    rl->WriteDigits("OVERWRITE");
+  }//events loop
+  rl->UnloadSDigits();     rl->UnloadDigits();  
+  r->ResetSdigits();r->ResetDigits();//reset lists of sdigits and digits
+  Info("Sdigits2Digits","Stop.");  
 }
 
-void Sd2D()
+
+
+void Sdigits2DigitsOLD()
 {
+  Info("Sdigits2DigitsOLD","Start.");  
+
   rl->LoadSDigits();
-  rl->MakeTree("D");r->MakeBranch("D");
   
-  rl->TreeS()->GetEntry(0);  
-  r->Sdigits()->Sort();
-  
-  Int_t chamber,x,y,qdc,tr[3],id;
-  Int_t kBad=-101;
-  chamber=x=y=qdc=tr[0]=tr[1]=tr[2]=id=kBad;
-  Int_t counter=kBad;//how many sdigits for a given pad
-  Int_t start=0,end=0;
-        
-  for(Int_t i=0;i<r->Sdigits()->GetEntries();i++){//sdigits loop (sorted)
-    AliRICHdigit *pSdig=(AliRICHdigit*)r->Sdigits()->At(i);
-    if(pSdig->Id()==id){//still the same pad
-      end++;
-    }else{//new pad, add the pevious one
-      if(id!=kBad) r->AddDigit(chamber,x,y,qdc,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
-      chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();qdc=pSdig->Qdc();tr[0]=pSdig->T(0);id=pSdig->Id();
-      start=i;
-    }
-  }//sdigits loop (sorted)
-  
-  r->AddDigits(chamber,x,y,qdc,tr[0],tr[1],tr[2]);//add the last digit
-        
-  rl->TreeD()->Fill();  
-  rl->WriteDigits("OVERWRITE");
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    al->GetEvent(iEventN);
     
-  cout<<endl;
-  r->Digits(1)->Print();
+    rl->MakeTree("D");r->MakeBranch("D"); //create TreeD with RICH branches 
+    r->ResetSdigits();r->ResetDigitsOld();//reset lists of sdigits and digits
+    rl->TreeS()->GetEntry(0);  
+    r->Sdigits()->Sort();
+  
+    Int_t kBad=-101;
+    
+    Int_t tr[3],q[3],dig[5]; for(Int_t i=0;i<3;i++) tr[i]=q[i]=kBad;    for(Int_t i=0;i<5;i++) dig[i]=kBad;        
+    Int_t chamber=kBad,id=kBad,iNdigitsPerPad=kBad;//how many sdigits for a given pad
+        
+    for(Int_t i=0;i<r->Sdigits()->GetEntries();i++){//sdigits loop (sorted)
+      AliRICHdigit *pSdig=(AliRICHdigit*)r->Sdigits()->At(i);
+      if(pSdig->Id()==id){//still the same pad
+        iNdigitsPerPad++;
+        dig[2]+=pSdig->Qdc();//sum up qdc
+        if(iNdigitsPerPad<=3)
+          tr[iNdigitsPerPad-1]=pSdig->T(0);
+        else
+          Info("","More then 3 sdigits for the given pad");
+      }else{//new pad, add the pevious one
+        if(id!=kBad) r->AddDigitOld(chamber,tr,q,dig);
+        chamber=pSdig->C();dig[0]=pSdig->X();dig[1]=pSdig->Y();dig[2]=pSdig->Qdc();tr[0]=pSdig->T(0);id=pSdig->Id();
+        iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
+      }
+    }//sdigits loop (sorted)
+    r->AddDigitOld(chamber,tr,q,dig);//add the last digit
+        
+    rl->TreeD()->Fill();  
+    rl->WriteDigits("OVERWRITE");
+  }//events loop
+  rl->UnloadSDigits();     rl->UnloadDigits();  
+  r->ResetSdigits();r->ResetDigitsOld();//reset lists of sdigits and digits
+  Info("Sdigits2DigitsOLD","Stop.");  
 }
+
 
 void Show3()
 {  
@@ -121,7 +212,7 @@ void Show3()
       iTotalCerenkovs+=r->Cerenkovs()->GetEntries();
       iTotalSpecials+=r->Specials()->GetEntries();
       TParticle *pPrim=al->Stack()->Particle(iPrimN);
-      Info("Show","Event %4i prim %4i has %4i hits %5i cerenkovs and %5i specials from %s (,%7.2f,%7.2f)",
+      Info("Show","Evt %4i prim %4i has %4i hits %5i cerenkovs and %5i specials from %s (,%7.2f,%7.2f)",
                            iEventN,
                                     iPrimN,
                                              r->Hits()->GetEntries(),
@@ -130,15 +221,17 @@ void Show3()
                                                                                          pPrim->GetName(),
                                                                                  pPrim->Theta()*r2d,pPrim->Phi()*r2d);
     }//prims loop
-    Info("Show","Event %i total:  %i particles %i primaries %i hits %i cerenkovs %i specials",
+    Info("Show-HITS","Evt %i total:  %i particles %i primaries %i hits %i cerenkovs %i specials",
                         iEventN,   iNparticles, iNprims,     iTotalHits,iTotalCerenkovs,iTotalSpecials);
     if(isSdigits){
       rl->TreeS()->GetEntry(0);
-      Info("Show","Event %i contains %5i sdigits",iEventN,r->Sdigits()->GetEntries());
+      Info("Show-SDIGITS","Evt %i contains %5i sdigits",iEventN,r->Sdigits()->GetEntries());
     }
     if(isDigits){
       rl->TreeD()->GetEntry(0);
-      Info("Show","Event %i contains %5i digits",iEventN,r->Digits(1)->GetEntries());
+      for(int i=1;i<=7;i++)
+        Info("Show-DIGITS","Evt %i chamber %i contains %5i NEW digits and %5i OLD",
+                                 iEventN,   i,           r->Digits(i)->GetEntries(),r->DigitsOld(i)->GetEntries());
     }
     cout<<endl;
   }//events loop
@@ -148,35 +241,6 @@ void Show3()
   cout<<endl;
 }//void Show()
 
-void menu()// How many events to generate.
-{ 
-   
-
-  TControlBar *pMenu = new TControlBar("vertical","RICH main");
-       
-  pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
-  pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
-  if(CheckAlice()){//it's from file, reconstruct
-    pMenu->AddButton("Show","Show3()","Shows the structure of events in files");
-    pMenu->AddButton("Hits->Sdigits",    "H2Sd()",       "Perform first phase converstion");
-    pMenu->AddButton("Specials->Sdigits","Spec2Sd()",    "Perform first phase converstion");
-    pMenu->AddButton("Sdigits->Digits",  "Sd2D()",       "Perform first phase converstion");
-    pMenu->AddButton("Digits->Clusters", "D2C()",        "Perform first phase converstion");
-
-    pMenu->AddButton("OLD: Specials->Digits",     "Spec2D()","Perform first phase converstion");
-    pMenu->AddButton("OLD: Digits->RawClusters",  "D2Rc()",  "Perform second phase converstion");
-    
-    pMenu->AddButton("RingViewer","RingViewer()","Show rings with reconstructed info");
-  }else{//it's aliroot, simulate
-    pMenu->AddButton("Run",         "a->Run(1)",       "Process!");
-  }
-  pMenu->AddButton("Geo submenu",          "Geo()",            "Shows geomentry submenu");
-  pMenu->AddButton("Test submenu",    "TestMenu()",            "Shows test submenu");
-  pMenu->AddButton("Browser",      "new TBrowser;",         "Start ROOT TBrowser");
-  pMenu->AddButton("Quit",         ".q",                    "Close session");
-  pMenu->Show();
-  a=gAlice;//for manual manipulation convinience
-}//void menu(Int_t iNevents)
 
 
 void DebugOFF()
@@ -254,25 +318,6 @@ void RingViewer()
   Int_t Nevents = gAlice->GetEventsPerRun();
 }
 //______________________________________________________________________________
-void Geo()
-{
-  TControlBar *pMenu = new TControlBar("vertical","RICH draw");
-  pMenu->AddButton("RICH Isometry", "gMC->Gdraw(\"ALIC\", 60,120,0, 10,10, 0.01,0.01)","Draws ALIC volume in isometry");
-  pMenu->AddButton("RICH Front XY", "gMC->Gdraw(\"ALIC\", 0,0,0, 10,10, 0.01,0.01)","Draws ALIC volume in XY view");
-  pMenu->AddButton("RICH Side YZ",  "gMC->Gdraw(\"ALIC\",90,180, 0, 10,10, 0.01,0.01)","Draws ALIC volume in YZ view");
-  pMenu->AddButton("RICH Top XZ",   "gMC->Gdraw(\"ALIC\",90, 90, 0, 10,10, 0.01,0.01)","Draws ALIC volume in XZ view");
-  pMenu->AddButton("Module Isometry","gMC->Gdraw(\"SRIC\", 30,60,0, 10,10, 0.1,0.1)","Draws SRIC volume in isometry");
-  pMenu->AddButton("Module Front XY","gMC->Gdraw(\"SRIC\", 0,0,0, 10,10, 0.1,0.1)","Draws SRIC volume in XY view");
-  pMenu->AddButton("Module Top XZ", "gMC->Gdraw(\"SRIC\",90, 90, 0, 10,10, 0.1,0.1)","Draws SRIC volume in XZ view");
-  pMenu->AddButton("ALICE Tree", "((TGeant3*)gMC)->Gdtree(\"ALIC\")","Draws ALICE tree");      
-  pMenu->AddButton("RICH Tree",  "((TGeant3*)gMC)->Gdtree(\"RICH\")","Draws RICH tree");      
-  pMenu->AddButton("Geo test",  "GeoTest()",   "Draw RICH geo as a macro");
-  pMenu->AddButton("Print ref", "PrintGeo()",  "Print RICH chambers default position");
-  pMenu->AddButton("AliRICH::Print", "r->Print();", "Print RICH chambers default position");
-  pMenu->AddButton("Test transform","TestTransform()","Test L2G and G2L methods");
-  pMenu->AddButton("Geo GUI", "new G3GeometryGUI;","Create instance of G4GeometryGUI"); 
-  pMenu->Show();  
-}//void Draw()
 //__________________________________________________________________________________________________
 void GeoTest()
 {
@@ -389,19 +434,7 @@ void PrintGeo(Float_t rotDeg=0)
 
 
 
-void TestMenu()
-{
-  TControlBar *pMenu = new TControlBar("vertical","RICH test");
-  pMenu->AddButton("Test segmentation",  "TestSegmentation()","Test AliRICHParam::L2P() method");
-  pMenu->AddButton("Test transform",     "TestTransform()",   "Test ALiRICHChamber::L2G() and G2L methods");
-  pMenu->AddButton("Test gain",          "TestGain()",        "Test AliRICHParam::Gain() method");
-  pMenu->AddButton("Test MIP charge",    "TestMipCharge()",   "Test AliRICHParam::TotalCharge() method");
-  pMenu->AddButton("Test Sdigits",       "TestSdigits()",     "Create test set of sdigits");
-  pMenu->AddButton("Test Digits Old",    "TestDigitsOld()",      "Create test set of digits");
-  pMenu->Show();  
-}//void Draw()
-
-
+//__________________________________________________________________________________________________
 void TestGain()
 {
   AliRICHParam *pParam=new AliRICHParam;
@@ -464,8 +497,9 @@ void TestMipCharge()
   pLegend->Draw();
 }//void TestGain()
 //__________________________________________________________________________________________________
-void TestDigitsOld()
+void TestDigitsOLD()
 {
+  Info("TestDigitsOLD","Creating test digits.");
   rl->MakeTree("D");r->MakeBranch("D");
   
   
@@ -474,19 +508,32 @@ void TestDigitsOld()
   Int_t d[5];
   t[0]=100;t[1]=200;t[2]=300;
   c[0]=10;c[1]=20;c[2]=30;
-  d[0]=0;d[1]=1;d[2]=2;d[3]=3;d[4]=4;
   
-  r->AddDigits(0,t,c,d);
-  r->AddDigits(6,t,c,d);
+  
+  d[0]=1;d[1]=1;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(1,t,c,d);
+  
+  d[0]=2;d[1]=2;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d); 
+  d[0]=2;d[1]=3;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d);
+  
+  d[0]=2;d[1]=2;d[2]=50;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d); 
+  d[0]=2;d[1]=3;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
+  d[0]=3;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
     
+  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d); 
+  d[0]=2;d[1]=3;d[2]=50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
+  d[0]=3;d[1]=2;d[2]=50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
+  d[0]=3;d[1]=3;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
+  
   rl->TreeD()->Fill();
   rl->WriteDigits("OVERWRITE");
   rl->UnloadDigits();
-  r->ResetDigits();
+  r->ResetDigitsOld();
+  Info("TestDigitsOLD","Stop.");
 }//void TestDigits()
 //__________________________________________________________________________________________________
 void TestSdigits()
 {
+  Info("TestSdigits","Creating test sdigits.");
   rl->MakeTree("S");r->MakeBranch("S");
 //totally 19 must be trasformd to 6 digits
   r->AddSdigit(1,40,40,10,40); r->AddSdigit(1,40,40,10,41); r->AddSdigit(1,40,40,10,42); r->AddSdigit(1,40,40,10,43);
@@ -507,57 +554,154 @@ void TestSdigits()
   rl->UnloadSDigits();
   cout<<endl;r->Sdigits()->Print();
   r->ResetSDigits();
-}//void TestDigits()
+  Info("TestSdigits","Stop.");
+}//void TestSdigits()
 //__________________________________________________________________________________________________
-void TestSegmentation()
+void TestClustersOLD()
 {
-  AliRICHParam *p=r->Param(); 
-  Float_t dz=p->DeadZone();
-  Float_t sx=p->SectorSizeX();Float_t sy=p->SectorSizeY();
-  Float_t px=p->PcSizeX();    Float_t py=p->PcSizeY();
-  Int_t padx,pady;
-  cout<<endl;
-  Info("  1-  1","sec=%i padx=%3i pady=%3i",p->L2P(-px/2    , -py/2        ,padx,pady),padx,pady);
-  Info(" 48-  1","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2-dz , -py/2        ,padx,pady),padx,pady);
-  Info(" 49-  1","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2    , -py/2        ,padx,pady),padx,pady);
-  Info(" 96-  1","sec=%i padx=%3i pady=%3i",p->L2P( sx/2    , -py/2        ,padx,pady),padx,pady);
-  Info(" 97-  1","sec=%i padx=%3i pady=%3i",p->L2P( sx/2+dz , -py/2        ,padx,pady),padx,pady);
-  Info("144-  1","sec=%i padx=%3i pady=%3i",p->L2P( px/2    , -py/2        ,padx,pady),padx,pady);
-  cout<<endl;
-  Info("  1- 80","sec=%i padx=%3i pady=%3i",p->L2P(-px/2    , -dz/2        ,padx,pady),padx,pady);
-  Info(" 48- 80","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2-dz , -dz/2        ,padx,pady),padx,pady);
-  Info(" 49- 80","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2    , -dz/2        ,padx,pady),padx,pady);
-  Info(" 96- 80","sec=%i padx=%3i pady=%3i",p->L2P( sx/2    , -dz/2        ,padx,pady),padx,pady);
-  Info(" 97- 80","sec=%i padx=%3i pady=%3i",p->L2P( sx/2+dz , -dz/2        ,padx,pady),padx,pady);
-  Info("144- 80","sec=%i padx=%3i pady=%3i",p->L2P( px/2    , -dz/2        ,padx,pady),padx,pady);
-  cout<<endl;
-  Info("  1- 81","sec=%i padx=%3i pady=%3i",p->L2P(-px/2    ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 48- 81","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2-dz ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 49- 81","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2    ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 96- 81","sec=%i padx=%3i pady=%3i",p->L2P( sx/2    ,  dz/2        ,padx,pady),padx,pady);
-  Info(" 97- 81","sec=%i padx=%3i pady=%3i",p->L2P( sx/2+dz ,  dz/2        ,padx,pady),padx,pady);
-  Info("144- 81","sec=%i padx=%3i pady=%3i",p->L2P( px/2    ,  dz/2        ,padx,pady),padx,pady);
-  cout<<endl;
-  Info("  1-160","sec=%i padx=%3i pady=%3i",p->L2P(-px/2    ,  py/2        ,padx,pady),padx,pady);
-  Info(" 48-160","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2-dz ,  py/2        ,padx,pady),padx,pady);
-  Info(" 49-160","sec=%i padx=%3i pady=%3i",p->L2P(-sx/2    ,  py/2        ,padx,pady),padx,pady);
-  Info(" 96-160","sec=%i padx=%3i pady=%3i",p->L2P( sx/2    ,  py/2        ,padx,pady),padx,pady);
-  Info(" 97-160","sec=%i padx=%3i pady=%3i",p->L2P( sx/2+dz ,  py/2        ,padx,pady),padx,pady);
-  Info("144-160","sec=%i padx=%3i pady=%3i",p->L2P( px/2    ,  py/2        ,padx,pady),padx,pady);  
-  cout<<endl;
-  Info(" 73-160","sec=%i padx=%3i pady=%3i",p->L2P(    0    ,  py/2      ,padx,pady),padx,pady);    
-  Info(" 73- 81","sec=%i padx=%3i pady=%3i",p->L2P(    0    ,  dz/2      ,padx,pady),padx,pady);    
-  Info(" 73- 80","sec=%i padx=%3i pady=%3i",p->L2P(    0    ,   0        ,padx,pady),padx,pady);    
-  Info("144- 81","sec=%i padx=%3i pady=%3i",p->L2P(    0    , -dz/2      ,padx,pady),padx,pady);    
-  Info("144- 81","sec=%i padx=%3i pady=%3i",p->L2P(    0    , -py/2      ,padx,pady),padx,pady);    
-}//void TestSegmentation()
-//__________________________________________________________________________________________________
-void TestClusters()
-{
+  Info("TestClusters","Creating test clusters.");
   rl->MakeTree("R");r->MakeBranch("R");
-  r->AddCluster  
+  
+  AliRICHRawCluster c;
+  r->AddClusterOld(1,c);  
   rl->TreeR()->Fill();
   rl->WriteRecPoints("OVERWRITE");
   rl->UnloadRecPoints();
-  r->ResetClusters();
-}//void TestClusters()
+  r->ResetRawClusters();
+  
+  Info("TestClusters","Stop.");
+}//void TestClustersOLD()
+//__________________________________________________________________________________________________
+void TestSeg()
+{
+  AliRICHParam *p=r->Param();
+  Int_t padx,pady;
+  Float_t x,y;
+  Float_t dz=p->DeadZone();
+  Float_t sx=p->SectorSizeX(); Float_t sy=p->SectorSizeY();  Float_t px=p->PcSizeX();    Float_t py=p->PcSizeY();
+  cout<<endl;
+  Info("  1-  1","sec=%i padx=%3i pady=%3i",p->Local2Pad(-px/2    , -py/2        ,padx,pady),padx,pady);
+  Info(" 48-  1","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2-dz , -py/2        ,padx,pady),padx,pady);
+  Info(" 49-  1","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2    , -py/2        ,padx,pady),padx,pady);
+  Info(" 96-  1","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2    , -py/2        ,padx,pady),padx,pady);
+  Info(" 97-  1","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2+dz , -py/2        ,padx,pady),padx,pady);
+  Info("144-  1","sec=%i padx=%3i pady=%3i",p->Local2Pad( px/2    , -py/2        ,padx,pady),padx,pady);
+  cout<<endl;
+  Info("  1- 80","sec=%i padx=%3i pady=%3i",p->Local2Pad(-px/2    , -dz/2        ,padx,pady),padx,pady);
+  Info(" 48- 80","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2-dz , -dz/2        ,padx,pady),padx,pady);
+  Info(" 49- 80","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2    , -dz/2        ,padx,pady),padx,pady);
+  Info(" 96- 80","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2    , -dz/2        ,padx,pady),padx,pady);
+  Info(" 97- 80","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2+dz , -dz/2        ,padx,pady),padx,pady);
+  Info("144- 80","sec=%i padx=%3i pady=%3i",p->Local2Pad( px/2    , -dz/2        ,padx,pady),padx,pady);
+  cout<<endl;
+  Info("  1- 81","sec=%i padx=%3i pady=%3i",p->Local2Pad(-px/2    ,  dz/2        ,padx,pady),padx,pady);
+  Info(" 48- 81","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2-dz ,  dz/2        ,padx,pady),padx,pady);
+  Info(" 49- 81","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2    ,  dz/2        ,padx,pady),padx,pady);
+  Info(" 96- 81","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2    ,  dz/2        ,padx,pady),padx,pady);
+  Info(" 97- 81","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2+dz ,  dz/2        ,padx,pady),padx,pady);
+  Info("144- 81","sec=%i padx=%3i pady=%3i",p->Local2Pad( px/2    ,  dz/2        ,padx,pady),padx,pady);
+  cout<<endl;
+  Info("  1-160","sec=%i padx=%3i pady=%3i",p->Local2Pad(-px/2    ,  py/2        ,padx,pady),padx,pady);
+  Info(" 48-160","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2-dz ,  py/2        ,padx,pady),padx,pady);
+  Info(" 49-160","sec=%i padx=%3i pady=%3i",p->Local2Pad(-sx/2    ,  py/2        ,padx,pady),padx,pady);
+  Info(" 96-160","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2    ,  py/2        ,padx,pady),padx,pady);
+  Info(" 97-160","sec=%i padx=%3i pady=%3i",p->Local2Pad( sx/2+dz ,  py/2        ,padx,pady),padx,pady);
+  Info("144-160","sec=%i padx=%3i pady=%3i",p->Local2Pad( px/2    ,  py/2        ,padx,pady),padx,pady);  
+  cout<<endl;
+  Info(" 73-160","sec=%i padx=%3i pady=%3i",p->Local2Pad(    0    ,  py/2      ,padx,pady),padx,pady);    
+  Info(" 73- 81","sec=%i padx=%3i pady=%3i",p->Local2Pad(    0    ,  dz/2      ,padx,pady),padx,pady);    
+  Info("0-0dead","sec=%i padx=%3i pady=%3i",p->Local2Pad(    0    ,   0        ,padx,pady),padx,pady);    
+  Info(" 73- 80","sec=%i padx=%3i pady=%3i",p->Local2Pad(    0    , -dz/2      ,padx,pady),padx,pady);    
+  Info(" 73-  1","sec=%i padx=%3i pady=%3i",p->Local2Pad(    0    , -py/2      ,padx,pady),padx,pady);    
+  cout<<endl;
+  p->Pad2Local(padx=  1,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 48,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 49,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 96,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 97,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx=144,pady=1,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  cout<<endl;
+  p->Pad2Local(padx=  1,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 48,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 49,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 96,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 97,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx=144,pady=80,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  cout<<endl;
+  p->Pad2Local(padx=  1,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 48,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 49,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 96,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 97,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx=144,pady=81,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  cout<<endl;
+  p->Pad2Local(padx=  1,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 48,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 49,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 96,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx= 97,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+  p->Pad2Local(padx=144,pady=160,x,y);  cout<<"padx="<<padx<<" pady="<<pady<<" x="<<x<<" y="<<y<<endl;
+}//void TestSeg()
+//__________________________________________________________________________________________________
+void TestMenu()
+{
+  TControlBar *pMenu = new TControlBar("vertical","RICH test");
+  pMenu->AddButton("Test segmentation",  "TestSeg()",         "Test AliRICHParam::L2P() method");
+  pMenu->AddButton("Test transform",     "TestTransform()",   "Test ALiRICHChamber::L2G() and G2L methods");
+  pMenu->AddButton("Test gain",          "TestGain()",        "Test AliRICHParam::Gain() method");
+  pMenu->AddButton("Test MIP charge",    "TestMipCharge()",   "Test AliRICHParam::TotalCharge() method");
+  pMenu->AddButton("Test Sdigits",       "TestSdigits()",     "Create test set of sdigits");
+  pMenu->AddButton("Test Digits OLD",    "TestDigitsOLD()",   "Create test set of OLD digits");
+  pMenu->AddButton("Test Clusters OLD",  "TestClustersOLD()", "Create test set of OLD clusters");
+  pMenu->Show();  
+}//TestMenu()
+//__________________________________________________________________________________________________
+void GeoMenu()
+{
+  TControlBar *pMenu = new TControlBar("vertical","RICH draw");
+  pMenu->AddButton("RICH Isometry", "gMC->Gdraw(\"ALIC\", 60,40,0, 10,10, 0.008,0.008)","Draws ALIC volume in isometry");
+  pMenu->AddButton("RICH Front XY", "gMC->Gdraw(\"ALIC\", 0,0,0, 10,10, 0.01,0.01)","Draws ALIC volume in XY view");
+  pMenu->AddButton("RICH Side YZ",  "gMC->Gdraw(\"ALIC\",90,180, 0, 10,10, 0.01,0.01)","Draws ALIC volume in YZ view");
+  pMenu->AddButton("RICH Top XZ",   "gMC->Gdraw(\"ALIC\",90, 90, 0, 10,10, 0.01,0.01)","Draws ALIC volume in XZ view");
+  pMenu->AddButton("Module Isometry","gMC->Gdraw(\"SRIC\", 30,60,0, 10,10, 0.1,0.1)","Draws SRIC volume in isometry");
+  pMenu->AddButton("Module Front XY","gMC->Gdraw(\"SRIC\", 0,0,0, 10,10, 0.1,0.1)","Draws SRIC volume in XY view");
+  pMenu->AddButton("Module Top XZ", "gMC->Gdraw(\"SRIC\",90, 90, 0, 10,10, 0.1,0.1)","Draws SRIC volume in XZ view");
+  pMenu->AddButton("ALICE Tree", "((TGeant3*)gMC)->Gdtree(\"ALIC\")","Draws ALICE tree");      
+  pMenu->AddButton("RICH Tree",  "((TGeant3*)gMC)->Gdtree(\"RICH\")","Draws RICH tree");      
+  pMenu->AddButton("Geo test",  "GeoTest()",   "Draw RICH geo as a macro");
+  pMenu->AddButton("Print ref", "PrintGeo()",  "Print RICH chambers default position");
+  pMenu->AddButton("AliRICH::Print", "r->Print();", "Print RICH chambers default position");
+  pMenu->AddButton("Test transform","TestTransform()","Test L2G and G2L methods");
+  pMenu->AddButton("Geo GUI", "new G3GeometryGUI;","Create instance of G4GeometryGUI"); 
+  pMenu->Show();  
+}//GeoMenu()
+//__________________________________________________________________________________________________
+void menu()
+{ 
+  TControlBar *pMenu = new TControlBar("vertical","RICH main");
+       
+  pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
+  pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
+  if(CheckAlice()){//it's from file, reconstruct
+    pMenu->AddButton("Hits->Sdigits->Digits","Hits2Digits()","Convert");
+    pMenu->AddButton("Digits->Recos",         "Digits2Recos()","Convert");
+    pMenu->AddButton("Show","Show3()","Shows the structure of events in files");
+    pMenu->AddButton("Hits->Sdigits",    "Hits2Sdigits()",       "Perform first phase converstion");
+    pMenu->AddButton("Specials->Sdigits","Specials2Sdigits()",    "Perform first phase converstion");
+    pMenu->AddButton("Sdigits->Digits",  "Sdigits2Digits()",       "Perform first phase converstion");
+    pMenu->AddButton("Digits->Clusters", "Digits2Clusters()",        "Perform first phase converstion");
+
+    pMenu->AddButton("Sdigits->DigitsOLD",        "Sdigits2DigitsOLD()","Perform second phase converstion");
+    pMenu->AddButton("DigitsOLD->RawClustersOLD", "DigitsOLD2RawClustersOLD()",  "Perform second phase converstion");
+    
+  }else{//it's aliroot, simulate
+    pMenu->AddButton("Run",         "a->Run(1)",       "Process!");
+  }
+  pMenu->AddButton("Geo submenu",     "GeoMenu()",            "Shows geomentry submenu");
+  pMenu->AddButton("Test submenu",    "TestMenu()",            "Shows test submenu");
+  pMenu->AddButton("Browser",         "new TBrowser;",         "Start ROOT TBrowser");
+  pMenu->AddButton("Quit",            ".q",                    "Close session");
+  pMenu->Show();
+  a=gAlice;//for manual manipulation convinience
+}//menu()
+//__________________________________________________________________________________________________

@@ -34,7 +34,6 @@ AliRICHChamber::AliRICHChamber()
     fSegmentation = 0;
     fResponse = 0;
     fGeometry = 0;
-    fReconstruction = 0;
     fTresh = 0;
     for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
@@ -198,5 +197,5 @@ void AliRICHChamber::Print(Option_t *) const
 void AliRICHChamber::SetChamberTransform(Float_t x,Float_t y,Float_t z,TRotMatrix *pRotMatrix) 
 {
   SetCenter(x,y,z);
-  fpRotMatrix=pRotMatrix;
+  fpRotMatrix=pRotMatrix;    
 }

@@ -13,25 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 
-#include "AliRICHSDigit.h"
+#include "AliRICHPatRec.h"
 #include "AliRICHDigit.h"
-#include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
 #include "AliRun.h"
-#include "AliDetector.h"
-#include "AliRICH.h"
-#include "AliRICHPoints.h"
-#include "AliSegmentation.h"
-#include "AliRICHPatRec.h"
 #include "AliRICH.h"
 #include "AliRICHConst.h"
-#include "AliRICHPoints.h"
 #include "AliConst.h"
-#include "AliHitMap.h"
-
+#include "AliRICHParam.h"
 #include <TParticle.h>
 #include <TMath.h>
 #include <TRandom.h>
@@ -60,15 +51,13 @@ void AliRICHPatRec::PatRec()
 
 // Pattern recognition algorithm
 
-  AliRICHChamber*       iChamber;
-  AliSegmentation*  segmentation;
   	
   Int_t ntracks, ndigits[kNCH];
-  Int_t itr, ich, i;
+  Int_t itr, ich=1, i;
   Int_t goodPhotons;
   Int_t x,y,q;
-  Float_t rx,ry,rz;
-  Int_t nent,status;
+  Float_t rx,ry;
+  Int_t status=1;
   Int_t padsUsedX[100];
   Int_t padsUsedY[100];
 
@@ -77,35 +66,36 @@ void AliRICHPatRec::PatRec()
   //printf("PatRec started\n");
 
   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
-  TTree *treeH = pRICH->TreeH();
+  pRICH->GetLoader()->LoadHits();
+  TTree *treeH = pRICH->GetLoader()->TreeH();
+  
+  pRICH->GetLoader()->LoadDigits();    
+  pRICH->GetLoader()->TreeD()->GetEntry(0);
 
   ntracks =(Int_t) treeH->GetEntries();
   //  ntracks = 1;
   for (itr=0; itr<ntracks; itr++) {
- 
-    status = TrackParam(itr,ich,0,0);    
+    pRICH->GetLoader()->TreeH()->GetEntry(itr); 
+    status = TrackParam(ich,0,0);    
     if(status==1) continue;
     //printf(" theta %f phi %f track \n",fTrackTheta,fTrackPhi);
     //    ring->Fill(fTrackLoc[0],fTrackLoc[1],100.);
 
-    iChamber = &(pRICH->Chamber(ich));
-    segmentation=iChamber->GetSegmentationModel();
 
-    nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(0);
-    TClonesArray *pDigitss = pRICH->DigitsAddress(ich);
-    ndigits[ich] = pDigitss->GetEntriesFast();
+    TClonesArray *pDigits = pRICH->DigitsAddress(ich);
+    ndigits[ich] = pDigits->GetEntriesFast();
     printf("Digits in chamber %d: %d\n",ich,ndigits[ich]);
-    AliRICHDigit *padI = 0;
+    AliRICHDigit *pDig = 0;
 
     goodPhotons = 0;
 
     for (Int_t dig=0;dig<ndigits[ich];dig++) {
-      padI=(AliRICHDigit*) pDigitss->UncheckedAt(dig);
-      x=padI->PadX();
-      y=padI->PadY();
-      q=padI->Signal();
-      segmentation->GetPadC(x,y,rx,ry,rz);      
+      pDig=(AliRICHDigit*) pDigits->UncheckedAt(dig);
+      pDig->Print();
+      x=pDig->PadX();
+      y=pDig->PadY();
+      q=pDig->Signal();
+      pRICH->Param()->Pad2Local(x,y,rx,ry);      
 
       //printf("Pad coordinates x:%d, Real coordinates x:%f\n",x,rx);
       //printf("Pad coordinates y:%d, Real coordinates y:%f\n",y,ry);
@@ -122,7 +112,7 @@ void AliRICHPatRec::PatRec()
       Int_t xpad;
       Int_t ypad;
 
-      segmentation->GetPadI(fXpad,fYpad,0,xpad,ypad);
+      pRICH->Param()->Local2Pad(fXpad,fYpad,xpad,ypad);
 
       padsUsedX[goodPhotons]=xpad;
       padsUsedY[goodPhotons]=ypad;
@@ -149,9 +139,11 @@ void AliRICHPatRec::PatRec()
     
     pRICH->AddRecHit1D(ich,rechit,fEtaPhotons,padsUsedX,padsUsedY);
     
-  }    
+  }//prims loop    
 
-  gAlice->TreeR()->Fill();
+  pRICH->GetLoader()->TreeR()->Fill();
+  pRICH->GetLoader()->WriteRecPoints("OVERWRITE");
+  
   TClonesArray *fRec;
   for (i=0;i<kNCH;i++) {
     fRec=pRICH->RecHitsAddress1D(i);
@@ -163,12 +155,11 @@ void AliRICHPatRec::PatRec()
 }     
 
 
-Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t recphi)
+Int_t AliRICHPatRec::TrackParam(Int_t &ich, Float_t rectheta, Float_t recphi)
 {
   // Get Local coordinates of track impact  
 
   AliRICHChamber*       iChamber;
-  AliSegmentation*      segmentation;
 
   Float_t trackglob[3];
   Float_t trackloc[3];
@@ -180,20 +171,18 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t
 
   //printf("Calling TrackParam\n");
 
-    gAlice->ResetHits();
     AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
-    TTree *treeH = pRICH->TreeH();
-    treeH->GetEvent(itr);
  
-    AliRICHhit* mHit=(AliRICHhit*)pRICH->FirstHit(-1);
-    if(mHit==0) return 1;
-    ich = mHit->Chamber()-1;
-    trackglob[0] = mHit->X();
-    trackglob[1] = mHit->Y();
-    trackglob[2] = mHit->Z();
-    pX = mHit->MomX();
-    pY = mHit->MomY();
-    pZ = mHit->MomZ();
+    AliRICHhit* pHit=(AliRICHhit*)pRICH->FirstHit(-1);
+    if(pHit==0) return 1;
+    pHit->Print();
+    ich = pHit->Chamber()-1;
+    trackglob[0] = pHit->X();
+    trackglob[1] = pHit->Y();
+    trackglob[2] = pHit->Z();
+    pX = pHit->MomX();
+    pY = pHit->MomY();
+    pZ = pHit->MomZ();
     fTrackMom = sqrt(TMath::Power(pX,2)+TMath::Power(pY,2)+TMath::Power(pZ,2));
     if(recphi!=0 || rectheta!=0)
       {
@@ -202,25 +191,22 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t
       }
     else
       {
-	thetatr = mHit->Theta()*TMath::Pi()/180;
-	phitr = mHit->Phi()*TMath::Pi()/180;
+	thetatr = pHit->Theta()*TMath::Pi()/180;
+	phitr = pHit->Phi()*TMath::Pi()/180;
       }
-    iloss = mHit->Loss();
-    part  = mHit->Particle();
+    iloss = pHit->Loss();
+    part  = pHit->Particle();
 
     iChamber = &(pRICH->Chamber(ich));
     iChamber->GlobaltoLocal(trackglob,trackloc);
 
-    segmentation=iChamber->GetSegmentationModel();
 
     // retrieve geometrical params
 
-    AliRICHGeometry* fGeometry=iChamber->GetGeometryModel();   
-    
-    fRw   = fGeometry->GetFreonThickness();
-    fQw   = fGeometry->GetQuartzThickness();
-    fTgap = fGeometry->GetGapThickness(); 
-    Float_t radiatorToPads= fGeometry->GetRadiatorToPads(); 
+    fRw   = pRICH->Param()->FreonThickness();
+    fQw   = pRICH->Param()->QuartzThickness();
+    fTgap = pRICH->Param()->GapThickness(); 
+    Float_t radiatorToPads= pRICH->Param()->RadiatorToPads(); 
       //+ fGeometry->GetProximityGapThickness();
 
     //printf("Distance to pads. From geometry:%f, From calculations:%f\n",radiatorToPads,fRw + fQw + fTgap); 

@@ -101,7 +101,7 @@ void AliRICHv1::StepManager()
 			if (ranf[0] > t) {
 			  gMC->StopTrack();
 			  ckovData[13] = 5;
-			  AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+			  //AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 			}
 			/**********************************************************************************/
 		      }    //gap
@@ -122,7 +122,7 @@ void AliRICHv1::StepManager()
 			    if (ranf[0] < t) {
 			      gMC->StopTrack();
 			      ckovData[13] = 6;
-			      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+			      //AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 				
 			      //printf("Added One (2)!\n");
 			      //printf("Lost by Fresnel\n");
@@ -165,7 +165,7 @@ void AliRICHv1::StepManager()
 			ckovData[13]=16;
 		      }
 		      gMC->StopTrack();
-		      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+		      //AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 		    } //absorption question 
 		    
 		    
@@ -173,7 +173,7 @@ void AliRICHv1::StepManager()
 		    else if (procs[i] == kPStop) {                 //is it below energy treshold?
 		      ckovData[13]=21;
 		      gMC->StopTrack();
-		      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+		      //AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 		    }	// energy treshold question	    
 		  }  //number of mechanisms cycle
 		  /**********************End of evaluation************************/
@@ -235,7 +235,7 @@ void AliRICHv1::StepManager()
           ckovData[18]=TMath::ACos(coscerenkov);//Cerenkov angle
         }
         AddHit(gAlice->GetCurrentTrackNumber(),vol,ckovData);//PHOTON HIT CF+CSI+DE
-        AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+        //AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
       }//CF+CSI+DE
     }//CF+CSI
   }/*CF*/else if(gMC->TrackCharge()){//MIP

@@ -38,7 +38,7 @@ class AliRICHDigit : public TObject {
     virtual Int_t    TrackCharge(Int_t i) {return fTcharges[i];}    
     virtual void     AddSignal(Int_t q)   {fSignal += q;}
     virtual void     AddPhysicsSignal(Int_t q)   {fPhysics += q;}	
-            void     Print(Option_t *option)const;      //virtual
+            void     Print(Option_t *option="")const;      //virtual
     
     ClassDef(AliRICHDigit,1)  //Digits for set:RICH
 };
