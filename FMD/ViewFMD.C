@@ -3,8 +3,6 @@ void ViewFMD()
   gMC->Gsatt("FMD1","seen",0);
   gMC->Gsatt("FMD2","seen",0);
   gMC->Gsatt("FMD3","seen",0);
-  gMC->Gsatt("FSSL","seen",1);
-  gMC->Gsatt("FSLL","seen",1);
 
   TString name;
   // Rings
@@ -15,17 +13,23 @@ void ViewFMD()
     case 1: c = 'O'; break;
     }
      
-    name = Form("F%cRG", c);
+    name = Form("FMD%c", c);
     gMC->Gsatt(name.Data(),"seen",0); // Ring volume	     
 
-    name = Form("F%cVF", c);
+    name = Form("F%cFV", c);
     gMC->Gsatt(name.Data(),"seen",0); // Virtual volume front
 
-    name = Form("F%cVB", c);
+    name = Form("F%cBV", c);
     gMC->Gsatt(name.Data(),"seen",0); // Virtual volume back
 
     name = Form("F%cAC", c);
     gMC->Gsatt(name.Data(),"seen",-2); // Active volume
+
+    name =  Form("F%cSL", c);
+    gMC->Gsatt(name.Data() ,"seen",1);
+
+    name =  Form("F%cLL", c);
+    gMC->Gsatt(name.Data() ,"seen",1);
 
     // name = Form("F%cAP", c);
     // gMC->Gsatt(name.Data(),"seen",-1); // Phi segmentation of active
@@ -49,16 +53,16 @@ void ViewFMD()
       case 1: c = 'O'; break;
       }
        
-      name = Form("F%d%cH", i, c);
+      name = Form("F%d%cI", i, c);
       gMC->Gsatt(name.Data(),"seen",-2); // Honeycomp top 
 
-      name = Form("F%d%cI", i, c);
+      name = Form("F%d%cJ", i, c);
       gMC->Gsatt(name.Data(),"seen",-2); // Honeycomp bottom
 
-      name = Form("F%d%cJ", i, c);
+      name = Form("F%d%cK", i, c);
       gMC->Gsatt(name.Data(),"seen",0); // Honeycomp inner top 
 
-      name = Form("F%d%cK", i, c);
+      name = Form("F%d%cL", i, c);
       gMC->Gsatt(name.Data(),"seen",0); // Honeycomp inner bottom 
     }
   }

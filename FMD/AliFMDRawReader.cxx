@@ -43,25 +43,31 @@
 //      +----------------+
 //
 #include <AliLog.h>		// ALILOG_H
-#include "AliFMD.h"		// ALIFMD_H
+#include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDRawStream.h"	// ALIFMDRAWSTREAM_H 
 #include "AliRawReader.h"	// ALIRAWREADER_H 
 #include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H 
 #include <TArrayI.h>		// ROOT_TArrayI
-// #include <TClonesArray.h>	// ROOT_TClonesArray
+#include <TTree.h>		// ROOT_TTree
+#include <TClonesArray.h>	// ROOT_TClonesArray
 
 //____________________________________________________________________
 ClassImp(AliFMDRawReader)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
-AliFMDRawReader::AliFMDRawReader(AliFMD* fmd, AliRawReader* reader) 
+AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree) 
   : TTask("FMDRawReader", "Reader of Raw ADC values from the FMD"),
-    fFMD(fmd),
-    fReader(reader)
+    fTree(tree),
+    fReader(reader), 
+    fSampleRate(1)
 {
   // Default CTOR
-  SetSampleRate(fmd->GetSampleRate());
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  fSampleRate = pars->GetSampleRate();
 }
 
 
@@ -75,11 +81,15 @@ AliFMDRawReader::Exec(Option_t*)
     return;
   }
 
+  Int_t n = 0;
+  TClonesArray* array = new TClonesArray("AliFMDDigit");
+  fTree->Branch("FMD", &array);
+
   // Use AliAltroRawStream to read the ALTRO format.  No need to
   // reinvent the wheel :-) 
   AliFMDRawStream input(fReader, fSampleRate);
   // Select FMD DDL's 
-  fReader->Select(AliFMD::kBaseDDL >> 8);
+  fReader->Select(AliFMDParameters::kBaseDDL >> 8);
   
   Int_t    oldDDL      = -1;
   Int_t    count       = 0;
@@ -109,11 +119,12 @@ AliFMDRawReader::Exec(Option_t*)
 			  input.PrevSector() , input.PrevStrip(),
 			  detector , input.Ring(), input.Sector(), 
 			  input.Strip()));
-	fFMD->AddDigit(oldDetector, 
-		       input.PrevRing(), 
-		       input.PrevSector(), 
-		       input.PrevStrip(), 
-		       counts[0], counts[1], counts[2]);
+	new ((*array)[n]) AliFMDDigit(oldDetector, 
+				      input.PrevRing(), 
+				      input.PrevSector(), 
+				      input.PrevStrip(), 
+				      counts[0], counts[1], counts[2]);
+	n++;
 #if 0
 	AliFMDDigit* digit = 
 	  static_cast<AliFMDDigit*>(fFMD->Digits()->
@@ -138,9 +149,9 @@ AliFMDRawReader::Exec(Option_t*)
 	oldDDL      = ddl;
 	// Check that we're processing a FMD detector 
 	Int_t detId = fReader->GetDetectorID();
-	if (detId != (AliFMD::kBaseDDL >> 8)) {
+	if (detId != (AliFMDParameters::kBaseDDL >> 8)) {
 	  Error("ReadAdcs", "Detector ID %d != %d",
-		detId, (AliFMD::kBaseDDL >> 8));
+		detId, (AliFMDParameters::kBaseDDL >> 8));
 	  break;
 	}
 	// Figure out what detector we're deling with 
@@ -166,6 +177,7 @@ AliFMDRawReader::Exec(Option_t*)
 		      input.Strip(), input.Count()));
     oldDetector = detector;
   }
+  fTree->Fill();
   return;
 
 }

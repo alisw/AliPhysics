@@ -18,19 +18,18 @@
 
 //____________________________________________________________________
 class AliRawReader;
-class AliFMD;
+class TTree;
 
 
 //____________________________________________________________________
 class AliFMDRawReader : public TTask 
 {
 public:
-  AliFMDRawReader(AliFMD* fmd, AliRawReader* reader);
+  AliFMDRawReader(AliRawReader* reader, TTree* array);
 
   virtual void Exec(Option_t* option="");
-  void SetSampleRate(UShort_t sampleRate=1) { fSampleRate = sampleRate; }
 protected:
-  AliFMD*       fFMD;        //! Pointer to detector description 
+  TTree*        fTree;       //! Pointer to tree to read into 
   AliRawReader* fReader;     //! Pointer to raw reader 
   UShort_t      fSampleRate; // The sample rate (if 0, inferred from data)
   ClassDef(AliFMDRawReader, 0) // Read FMD raw data into a cache 

@@ -13,6 +13,13 @@
 #pragma link C++ class  AliFMDDigit+;
 #pragma link C++ class  AliFMDSDigit+;
 #pragma link C++ class  AliFMDMap+;
+#pragma link C++ class  AliFMD1+;
+#pragma link C++ class  AliFMD2+;
+#pragma link C++ class  AliFMD3+;
+#pragma link C++ class  AliFMDRing+;
+#pragma link C++ class  AliFMDDetector+;
+#pragma link C++ class  AliFMDGeometry+;
+#pragma link C++ class  AliFMDParameters+;
 
 #else
 # error Not for compilation 

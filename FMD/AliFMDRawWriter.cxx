@@ -37,6 +37,7 @@
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliAltroBuffer.h>     // ALIALTROBUFFER_H
 #include "AliFMD.h"		// ALIFMD_H
+#include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDRawWriter.h"	// ALIFMDRAWREADER_H 
 #include <TArrayI.h>		// ROOT_TArrayI
@@ -44,15 +45,19 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDRawWriter)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd) 
   : TTask("FMDRawWriter", "Writer of Raw ADC values from the FMD"),
     fFMD(fmd)
 {
-  SetSampleRate();
-  SetThreshold();
-  SetChannelsPerAltro();
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  fSampleRate            = pars->GetSampleRate();
+  fThreshold             = pars->GetZeroSuppression();
+  fChannelsPerAltro      = pars->GetChannelsPerAltro();
 }
 
 
@@ -175,15 +180,15 @@ AliFMDRawWriter::Exec(Option_t*)
       UShort_t sector = digit->Sector();
       UShort_t strip  = digit->Strip();
       if (det != prevDetector) {
-	AliDebug(10, Form("FMD: New DDL, was %d, now %d",
-			  AliFMD::kBaseDDL + prevDetector - 1,
-			  AliFMD::kBaseDDL + det - 1));
+	AliDebug(15, Form("FMD: New DDL, was %d, now %d",
+			  AliFMDParameters::kBaseDDL + prevDetector - 1,
+			  AliFMDParameters::kBaseDDL + det - 1));
 	// If an altro exists, delete the object, flushing the data to
 	// disk, and closing the file. 
 	if (altro) { 
 	  // When the first argument is false, we write the real
 	  // header. 
-	  AliDebug(10, Form("New altro: Write channel at %d Strip: %d "
+	  AliDebug(15, Form("New altro: Write channel at %d Strip: %d "
 			    "Sector: %d  Ring: %d", 
 			    i, startStrip, prevSector, prevRing));
 	  // TPC to FMD translations 
@@ -203,12 +208,12 @@ AliFMDRawWriter::Exec(Option_t*)
 
 	prevDetector = det;
 	// Need to open a new DDL! 
-	Int_t ddlId = AliFMD::kBaseDDL + det - 1;
+	Int_t ddlId = AliFMDParameters::kBaseDDL + det - 1;
 	TString filename(Form("%s_%d.ddl", fFMD->GetName(),  ddlId));
 
-	AliDebug(10, Form("New altro buffer with DDL file %s", 
+	AliDebug(15, Form("New altro buffer with DDL file %s", 
 			  filename.Data()));
-	AliDebug(10, Form("New altro at %d", i));
+	AliDebug(15, Form("New altro at %d", i));
 	// Create a new altro buffer - a `1' as the second argument
 	// means `write mode' 
 	altro = new AliAltroBuffer(filename.Data(), 1);
@@ -235,11 +240,11 @@ AliFMDRawWriter::Exec(Option_t*)
 	       || digit->Ring() != prevRing 
 	       || digit->Sector() != prevSector) {
 	// Force a new Altro channel
-	AliDebug(10, Form("Flushing channel to disk because %s",
+	AliDebug(15, Form("Flushing channel to disk because %s",
 			  (offset == fChannelsPerAltro ? "channel is full" :
 			   (ring != prevRing ? "new ring up" :
 			    "new sector up"))));
-	AliDebug(10, Form("New Channel: Write channel at %d Strip: %d "
+	AliDebug(15, Form("New Channel: Write channel at %d Strip: %d "
 			  "Sector: %d  Ring: %d", 
 			  i, startStrip, prevSector, prevRing));
 	WriteChannel(altro, startStrip, prevSector, prevRing, channel);

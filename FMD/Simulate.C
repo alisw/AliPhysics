@@ -25,7 +25,7 @@ Simulate()
  // sim.SetMakeDigits("FMD");
  sim.SetWriteRawData("FMD");
  // sim.SetMakeDigitsFromHits("FMD");
- sim.Run(); 
+ sim.Run(2); 
 }
 
 //

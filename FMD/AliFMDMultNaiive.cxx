@@ -26,6 +26,7 @@
 // 
 #include "AliFMD.h"			// ALIFMD_H
 #include "AliFMDMultNaiive.h"		// ALIFMDMULTNAIIVE_H
+#include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
 #include "AliFMDMultStrip.h"		// ALIFMDMULTNAIIVE_H
 #include "AliFMDDigit.h"		// ALIFMDDIGIT_H
 #include <TClonesArray.h>               // ROOT_TClonesArray
@@ -33,6 +34,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDMultNaiive)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDMultNaiive::AliFMDMultNaiive()
@@ -48,8 +52,9 @@ AliFMDMultNaiive::PreRun(AliFMD* fmd)
 {
   // Initialise before a run 
   AliFMDMultAlgorithm::PreRun(fmd);
-  fEdepMip = fmd->GetEdepMip();
-  fGain = (Float_t(fmd->GetVA1MipRange()) / fmd->GetAltroChannelSize() 
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  fEdepMip = pars->GetEdepMip();
+  fGain = (Float_t(pars->GetVA1MipRange()) / pars->GetAltroChannelSize() 
 	   * fEdepMip);
 }
 

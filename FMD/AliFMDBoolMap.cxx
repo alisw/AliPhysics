@@ -24,6 +24,9 @@
 #include "AliFMDBoolMap.h"	//ALIFMDBOOLMAP_H
 //__________________________________________________________
 ClassImp(AliFMDBoolMap)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 //__________________________________________________________
 AliFMDBoolMap::AliFMDBoolMap(const AliFMDBoolMap& other)
   : AliFMDMap(other.fMaxDetectors,

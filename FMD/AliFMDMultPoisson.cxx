@@ -25,6 +25,9 @@
 // ratio of empty to full strips. 
 //
 #include "AliFMD.h"			// ALIFMD_H
+#include "AliFMDGeometry.h"		// ALIFMDGEOMETRY_H
+#include "AliFMDDetector.h"		// ALIFMDDETECTOR_H
+#include "AliFMDRing.h"			// ALIFMDRING_H
 #include "AliFMDMultPoisson.h"		// ALIFMDMULTPOISSON_H
 #include "AliFMDMultRegion.h"		// ALIFMDMULTREGION_H
 #include "AliFMDDigit.h"		// ALIFMDDIGIT_H
@@ -34,6 +37,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDMultPoisson)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDMultPoisson::AliFMDMultPoisson()
@@ -94,22 +100,14 @@ AliFMDMultPoisson::PostEvent()
 
   // Loop over the detectors 
   for (Int_t i = 1; i <= 3; i++) {
-    AliFMDSubDetector* sub = 0;
-    switch (i) {
-    case 1: sub = fFMD->GetFMD1(); break;
-    case 2: sub = fFMD->GetFMD2(); break;
-    case 3: sub = fFMD->GetFMD3(); break;
-    }
+    AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+    AliFMDDetector* sub = fmd->GetDetector(i);
     if (!sub) continue;
 	
     // Loop over the rings in the detector
     for (Int_t j = 0; j < 2; j++) {
-      Float_t     rZ = 0;
-      AliFMDRing* r  = 0;
-      switch (j) {
-      case 0: r  = sub->GetInner(); rZ = sub->GetInnerZ(); break;
-      case 1: r  = sub->GetOuter(); rZ = sub->GetOuterZ(); break;
-      }
+      AliFMDRing* r  = sub->GetRing((j == 0 ? 'I' : 'O'));
+      Float_t     rZ = sub->GetRingZ((j == 0 ? 'I' : 'O'));
       if (!r) continue;
       
       // Calculate low/high theta and eta 

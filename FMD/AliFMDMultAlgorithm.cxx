@@ -76,6 +76,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDMultAlgorithm)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDMultAlgorithm::AliFMDMultAlgorithm(const char* name, const char* title)

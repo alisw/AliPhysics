@@ -1,7 +1,7 @@
 //
 // Script to draw detail of the FMD
 //
-void DrawFMD3()
+void DrawFMD2()
 {
   // gAlice->Init("FMD/scripts/ConfigInner.C");
   gAlice->Init("$(ALICE)/FMD/Config.C");
@@ -9,14 +9,19 @@ void DrawFMD3()
   gMC->Gsatt("alic", "seen", 0);
   gROOT->LoadMacro("$(ALICE)/FMD/ViewFMD.C");
   gInterpreter->ProcessLine("ViewFMD()");
+  gMC->Gsatt("FMD3", "seen", -1);
+  gMC->Gsatt("FMD1", "seen", -1);
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("shad", "on");
   gMC->Gsatt("*", "fill", 7);
   gMC->SetClipBox(".");
   gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
   gMC->DefaultRange();
-  gMC->Gdraw("alic", 90, 0, 0, -3, 10, .25, .25);
+  // gMC->Gdraw("alic", 90, 0, 0, 28, 10, .25, .25);
+  // gMC->Gdraw("alic", 90, 0, 0, 28, 10, .25, .25);
+  gMC->Gdraw("alic", 179, 0, 0, 10, 10, .25, .25);
 
+#if 0
   TArrow* a1 = new TArrow(13.5, 16, 15, 18., .03, "<|");
   a1->SetAngle(30);
   a1->SetFillColor(1);
@@ -44,12 +49,13 @@ void DrawFMD3()
   l2->SetTextAlign(32);
   l2->Draw();
 
-  TLatex* l3 = new TLatex(3, 3, "FMD3");
+  TLatex* l3 = new TLatex(3, 3, "FMD2");
   l3->SetTextSize(.06);
   l3->SetTextFont(132);
-  l3->Draw();
-  
+  l3->Draw();  
+#endif
+
   gPad->Modified();
   gPad->cd();
-  gPad->Print("FMD3.png");
+  gPad->Print("FMD2.png");
 }

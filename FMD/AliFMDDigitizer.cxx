@@ -197,6 +197,9 @@
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
+#include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
+#include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
+#include "AliFMDRing.h"	        // ALIFMDRING_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
@@ -204,11 +207,11 @@
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
     
-//____________________________________________________________________
-ClassImp(AliFMDEdepMap)
-
 //====================================================================
 ClassImp(AliFMDBaseDigitizer)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDBaseDigitizer::AliFMDBaseDigitizer()  
@@ -340,23 +343,16 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
   // the energy signal to ADC counts, and store the created digit in
   // the digits array (AliFMD::fDigits)
   //
+  AliFMDGeometry* geometry = AliFMDGeometry::Instance();
+  
   TArrayI counts(3);
   for (UShort_t detector=1; detector <= 3; detector++) {
     // Get pointer to subdetector 
-    AliFMDSubDetector* det = 0;
-    switch (detector) {
-    case 1: det = fmd->GetFMD1(); break;
-    case 2: det = fmd->GetFMD2(); break;
-    case 3: det = fmd->GetFMD3(); break;
-    }
+    AliFMDDetector* det = geometry->GetDetector(detector);
     if (!det) continue;
     for (UShort_t ringi = 0; ringi <= 1; ringi++) {
       // Get pointer to Ring
-      AliFMDRing* r = 0;
-      switch (ringi) {
-      case 0: if (det->GetInner()) r = det->GetInner(); break;
-      case 1: if (det->GetOuter()) r = det->GetOuter(); break;
-      }
+      AliFMDRing* r = det->GetRing((ringi == 0 ? 'I' : 'O'));
       if (!r) continue;
       
       // Get number of sectors 
@@ -376,7 +372,7 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  
 	  Float_t edep = fEdep(detector, r->GetId(), sector, strip).fEdep;
 	  ConvertToCount(edep, last, r->GetSiThickness(), 
-			 fmd->GetSiDensity(), counts);
+			 geometry->GetSiDensity(), counts);
 	  last = edep;
 	  AddDigit(fmd, detector, r->GetId(), sector, strip, 
 		   edep, UShort_t(counts[0]), 

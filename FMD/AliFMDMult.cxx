@@ -28,6 +28,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDMult)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDMult::AliFMDMult(Float_t  particles, UShort_t method)

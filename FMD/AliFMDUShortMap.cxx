@@ -24,6 +24,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDUShortMap)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDUShortMap::AliFMDUShortMap(const AliFMDUShortMap& other)

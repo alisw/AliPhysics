@@ -22,7 +22,7 @@ class AliFMDv0 : public AliFMD
 public:
   AliFMDv0() {}
   AliFMDv0(const char *name, const char *title="Coarse geometry") 
-    : AliFMD(name, title, false)
+    : AliFMD(name, title)
   {}
   virtual ~AliFMDv0() 
   {}

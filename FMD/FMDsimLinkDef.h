@@ -20,13 +20,9 @@
 #pragma link C++ class  AliFMD+;
 #pragma link C++ class  AliFMDv0+;
 #pragma link C++ class  AliFMDv1+;
-#pragma link C++ class  AliFMDSubDetector+;
-#pragma link C++ class  AliFMD1+;
-#pragma link C++ class  AliFMD2+;
-#pragma link C++ class  AliFMD3+;
-#pragma link C++ class  AliFMD3Support+;
-#pragma link C++ class  AliFMDRing+;
-#pragma link C++ class  AliFMDPolygon+;
+#pragma link C++ class  AliFMDSimulator+;
+#pragma link C++ class  AliFMDGeoSimulator+;
+#pragma link C++ class  AliFMDG3Simulator+;
 #pragma link C++ class  AliFMDBaseDigitizer+;
 #pragma link C++ class  AliFMDDigitizer+;
 #pragma link C++ class  AliFMDSDigitizer+;

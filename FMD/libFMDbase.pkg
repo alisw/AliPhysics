@@ -3,7 +3,14 @@
 # $Id$
 
 SRCS	=  AliFMDDigit.cxx		\
-	   AliFMDMap.cxx		
+	   AliFMDMap.cxx		\
+	   AliFMDParameters.cxx		\
+	   AliFMDGeometry.cxx		\
+	   AliFMDRing.cxx		\
+	   AliFMDDetector.cxx		\
+	   AliFMD1.cxx			\
+	   AliFMD2.cxx			\
+	   AliFMD3.cxx
 HDRS	=  $(SRCS:.cxx=.h)
 DHDR	:= FMDbaseLinkDef.h
 

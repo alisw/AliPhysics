@@ -5,13 +5,9 @@
 SRCS		=  AliFMD.cxx 			\
 		   AliFMDv0.cxx			\
 		   AliFMDv1.cxx			\
-		   AliFMDSubDetector.cxx 	\
-		   AliFMD1.cxx 			\
-		   AliFMD2.cxx 			\
-		   AliFMD3.cxx 			\
-		   AliFMD3Support.cxx 		\
-		   AliFMDRing.cxx 		\
-		   AliFMDPolygon.cxx 		\
+		   AliFMDSimulator.cxx		\
+		   AliFMDGeoSimulator.cxx	\
+		   AliFMDG3Simulator.cxx	\
 		   AliFMDHit.cxx 		\
 		   AliFMDDigitizer.cxx		\
 		   AliFMDEdepMap.cxx		\

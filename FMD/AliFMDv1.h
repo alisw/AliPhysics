@@ -23,10 +23,10 @@
 class AliFMDv1 : public AliFMD 
 {
 public:
-  AliFMDv1() {}
+  AliFMDv1() { fDetailed = kTRUE; }
   AliFMDv1(const char *name, const char *title="Detailed geometry") 
-    : AliFMD(name, title, true) 
-  {}
+    : AliFMD(name, title) 
+  { fDetailed = kTRUE; }
   virtual ~AliFMDv1() {}
 
   // Required member functions 
@@ -38,7 +38,7 @@ protected:
   TLorentzVector fCurrentP;         // Current momentum vector 
   Int_t          fCurrentPdg;       // Current PDG code 
   
-  ClassDef(AliFMDv1,3)  // Detailed FMD geometry
+  ClassDef(AliFMDv1,4)  // Detailed FMD geometry
 };
 
 #endif

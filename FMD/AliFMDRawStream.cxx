@@ -30,6 +30,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDRawStream)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDRawStream::AliFMDRawStream(AliRawReader* reader, UShort_t sampleRate) 

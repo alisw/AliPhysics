@@ -1,25 +1,26 @@
+#ifndef ALIFMD1_H
+#define ALIFMD1_H
 //
 // $Id$
 //
-#ifndef ALIFMD1_H
-#define ALIFMD1_H
-
-#ifndef ALIFMDSUBDETECTOR_H
-# include "AliFMDSubDetector.h"
+#ifndef ALIFMDDETECTOR_H
+# include "AliFMDDetector.h"
 #endif
+class AliFMDRing;
 
-class AliFMD1 : public AliFMDSubDetector 
+//__________________________________________________________________
+/** Geometry description and parameters of the FMD1
+    detector. 
+    
+    The FMD1 only has one ring.     
+*/
+class AliFMD1 : public AliFMDDetector 
 {
 public:
-  AliFMD1();
-  virtual ~AliFMD1();
-  virtual void   SetupGeometry(Int_t airId, Int_t alId, Int_t cId=0);  
-  virtual void   Geometry(const char* mother, Int_t pbRotId, 
-			  Int_t idRotId, Double_t z=0);
-protected:
-  Int_t    fVolumeId;   // Volume ID
-  Double_t fDz;         // Half-length in Z
-  ClassDef(AliFMD1,1);  // Geometry of FMD1 
+  AliFMD1(AliFMDRing* inner);
+  virtual ~AliFMD1() {}
+  virtual void Init() { AliFMDDetector::Init(); }
+  ClassDef(AliFMD1,1)
 };
 
 #endif

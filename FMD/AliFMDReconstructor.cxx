@@ -94,7 +94,11 @@
 #include <AliHeader.h>                     // ALIHEADER_H
 #include <AliRawReader.h>                  // ALIRAWREADER_H
 #include <AliGenEventHeader.h>             // ALIGENEVENTHEADER_H
-#include "AliFMD.h"                        // ALIFMD_H
+#include "AliFMD.h"         		   // ALIFMD_H
+#include "AliFMDGeometry.h"                // ALIFMDGEOMETRY_H
+#include "AliFMDParameters.h"              // ALIFMDPARAMETERS_H
+#include "AliFMDDetector.h"                // ALIFMDDETECTOR_H
+#include "AliFMDRing.h"                    // ALIFMDRING_H
 #include "AliFMDDigit.h"                   // ALIFMDDIGIT_H
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
 #include "AliFMDRawStream.h"               // ALIFMDRAWSTREAM_H
@@ -105,6 +109,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDReconstructor)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
 AliFMDReconstructor::AliFMDReconstructor() 
@@ -114,11 +121,11 @@ AliFMDReconstructor::AliFMDReconstructor()
     fPedestalFactor(0)
 {
   // Make a new FMD reconstructor object - default CTOR.
-  SetPedestal();
-
-  fFMDLoader = 0;
-  fRunLoader = 0;
-  fFMD       = 0;
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  fPedestal       = pars->GetPedestal();
+  fPedestalWidth  = pars->GetPedestalWidth();
+  fPedestalFactor = pars->GetPedestalFactor();
+  
   fAlgorithms.Add(new AliFMDMultNaiive);
   fAlgorithms.Add(new AliFMDMultPoisson);
 }
@@ -132,11 +139,10 @@ AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other)
     fPedestalFactor(0)
 {
   // Copy constructor 
-  SetPedestal(other.fPedestal, other.fPedestalWidth, other.fPedestalFactor);
+  fPedestal       = other.fPedestal;
+  fPedestalWidth  = other.fPedestalWidth;
+  fPedestalFactor = other.fPedestalFactor;
 
-  fFMDLoader = other.fFMDLoader;
-  fRunLoader = other.fRunLoader;
-  fFMD       = other.fFMD;
   
   fAlgorithms.Delete();
   TIter next(&(other.fAlgorithms));
@@ -152,11 +158,9 @@ AliFMDReconstructor&
 AliFMDReconstructor::operator=(const AliFMDReconstructor& other) 
 {
   // Assignment operator
-  SetPedestal(other.fPedestal, other.fPedestalWidth, other.fPedestalFactor);
-
-  fFMDLoader = other.fFMDLoader;
-  fRunLoader = other.fRunLoader;
-  fFMD       = other.fFMD;
+  fPedestal       = other.fPedestal;
+  fPedestalWidth  = other.fPedestalWidth;
+  fPedestalFactor = other.fPedestalFactor;
 
   fAlgorithms.Delete();
   TIter next(&(other.fAlgorithms));
@@ -174,241 +178,95 @@ AliFMDReconstructor::~AliFMDReconstructor()
   // Destructor 
   fAlgorithms.Delete();
 }
-  
-//____________________________________________________________________
-void 
-AliFMDReconstructor::SetPedestal(Float_t mean, Float_t width, Float_t factor) 
-{
-  // Set the pedestal, and pedestal width 
-  fPedestal       = mean;
-  fPedestalWidth  = width;
-  fPedestalFactor = factor;
-}
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader, 
-				 AliRawReader* rawReader) const
-{ 
-  // Collects all digits in the same active volume into number of
-  // particles
-  //
-  // Reconstruct number of particles in given group of pads for given
-  // FMDvolume determined by numberOfVolume,
-  // numberOfMinSector, numberOfMaxSector, numberOfMinRing,
-  // numberOgMaxRing 
-  //
-  // The reconstruction method is choosen based on the number of empty
-  // strips. 
-  if (!runLoader) {
-    Error("Exec","Run Loader loader is NULL - Session not opened");
+AliFMDReconstructor::Init(AliRunLoader* runLoader) 
+{
+  // Initialize the reconstructor 
+  AliDebug(1, Form("Init called with runloader 0x%x", runLoader));
+  fCurrentVertex = 0;
+  if (!runLoader) { 
+    Warning("Init", "No run loader");
     return;
   }
-  fRunLoader = runLoader;
-  fFMDLoader = runLoader->GetLoader("FMDLoader");
-  if (!fFMDLoader) 
-    Fatal("AliFMDReconstructor","Can not find FMD (loader) "
-	  "in specified event");
-
-  // Get the AliRun object
-  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
-  
-  // Get the AliFMD object
-  fFMD = static_cast<AliFMD*>(fRunLoader->GetAliRun()->GetDetector("FMD"));
-  if (!fFMD) {
-    AliError("Can not get FMD from gAlice");
+  AliHeader* header = runLoader->GetHeader();
+  if (!header) {
+    Warning("Init", "No header");
     return;
   }
-  fFMDLoader->LoadRecPoints("RECREATE");
-
-  if (!fRunLoader->TreeE())     fRunLoader->LoadHeader();
-
-  TIter next(&fAlgorithms);
-  AliFMDMultAlgorithm* algorithm = 0;
-  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    algorithm->PreRun(fFMD);
-
-  if (rawReader) {
-    Int_t event = 0;
-    while (rawReader->NextEvent()) {
-      ProcessEvent(event, rawReader);
-      event++;
-    }
+  AliGenEventHeader* eventHeader = header->GenEventHeader();
+  if (!eventHeader) {
+    Warning("Init", "no event header");
+    return;
   }
-  else {
-    Int_t nEvents= Int_t(fRunLoader->TreeE()->GetEntries()); 
-    for(Int_t event = 0; event < nEvents; event++) 
-      ProcessEvent(event, 0);
-  }
-
-  next.Reset();
-  algorithm = 0;
-  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    algorithm->PostRun();
-
-  fFMDLoader->UnloadRecPoints();
-  fFMDLoader = 0;
-  fRunLoader = 0;
-  fFMD       = 0;
+  TArrayF vtx;
+  eventHeader->PrimaryVertex(vtx);
+  fCurrentVertex = vtx[2];
+  AliDebug(1, Form("Primary vertex Z coordinate for event # %d/%d is %f", 
+		   header->GetRun(), header->GetEvent(), fCurrentVertex));
 }
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
-{ 
-  // Collects all digits in the same active volume into number of
-  // particles
-  //
-  // Reconstruct number of particles in given group of pads for given
-  // FMDvolume determined by numberOfVolume,
-  // numberOfMinSector, numberOfMaxSector, numberOfMinRing,
-  // numberOgMaxRing 
-  //
-  // The reconstruction method is choosen based on the number of empty
-  // strips. 
-  Reconstruct(runLoader, 0);
-}
-
-
-//____________________________________________________________________
-void 
-AliFMDReconstructor::ProcessEvent(Int_t event, 
-				  AliRawReader* reader) const
+AliFMDReconstructor::ConvertDigits(AliRawReader* reader, 
+				   TTree* digitsTree) const
 {
-  // Process one event read from either a clones array or from a a raw
-  // data reader. 
-  fRunLoader->GetEvent(event) ;
-  //event z-vertex for correction eta-rad dependence      
-  AliHeader *header            = fRunLoader->GetHeader();
-  if (!header) Warning("ProcessEvent", "no AliHeader found!");
-  AliGenEventHeader* genHeader = (header ? header->GenEventHeader() : 0);
+  // Convert Raw digits to AliFMDDigit's in a tree 
+  AliFMDRawReader rawRead(reader, digitsTree);
+  // rawRead.SetSampleRate(fFMD->GetSampleRate());
+  rawRead.Exec();
+}
 
-  // Get the Z--coordinate from the event header 
-  TArrayF o(3); 
-  if (genHeader) genHeader->PrimaryVertex(o);
-  else           Warning("ProcessEvent", "No GenEventHeader Found");
-  fCurrentVertex = o.At(2);
-
-  // If the recontruction tree isn't loaded, load it
-  if(fFMDLoader->TreeR()==0) fFMDLoader->MakeTree("R");
-  
-  // Load or recreate the digits 
-  if (fFMDLoader->LoadDigits((reader ? "UPDATE" : "READ"))) {
-    if (!reader) {
-      Error("Exec","Error occured while loading digits. Exiting.");
-      return;
-    }
-  }
-  // Get the digits tree 
-  TTree* digitTree = fFMDLoader->TreeD();
-  if (!digitTree) { 
-    if (!reader) {
-      Error("Exec","Can not get Tree with Digits. "
-	    "Nothing to reconstruct - Exiting");
-      return;
-    }
-    fFMDLoader->MakeTree("D");
-    digitTree = fFMDLoader->TreeD();
-    
-  }
+//____________________________________________________________________
+void 
+AliFMDReconstructor::Reconstruct(TTree* digitsTree, 
+				 TTree* clusterTree) const 
+{
+  // Reconstruct event from digits in tree 
   // Get the FMD branch holding the digits. 
-  TBranch *digitBranch = digitTree->GetBranch("FMD");
-  TClonesArray* digits = fFMD->Digits();
-  if (!digitBranch) {
-    if (!reader) {
-      Error("Exec", "No digit branch for the FMD found");
-      return;
-    }
-    fFMD->MakeBranchInTree(digitTree, fFMD->GetName(), &(digits), 4000, 0);
-  }
-  if (!reader) digitBranch->SetAddress(&digits);
-
-  if  (reader) {
-    AliFMDRawReader rawRead(fFMD, reader);
-    AliDebug(10, Form("Making raw reader with sample rate: %d",
-		      fFMD->GetSampleRate()));
-    rawRead.SetSampleRate(fFMD->GetSampleRate());
-    rawRead.Exec();
-  }
-  else {
-    // Read the ADC values from a clones array. 
-    AliDebug(10, "Reading ADCs from Digits array");
-    // read Digits, and reconstruct the particles
-    if (!fFMDLoader->TreeD()->GetEvent(0)) return;
-  }
+  AliDebug(1, "Reconstructing from digits in a tree");
   
+  TBranch *digitBranch = digitsTree->GetBranch("FMD");
+  TClonesArray* digits = new TClonesArray("AliFMDDigit");
+  if (!digitBranch) {
+    Error("Exec", "No digit branch for the FMD found");
+    return;
+  }
+  digitBranch->SetAddress(&digits);
+
   TIter next(&fAlgorithms);
   AliFMDMultAlgorithm* algorithm = 0;
   while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
-    algorithm->PreEvent(fFMDLoader->TreeR(), fCurrentVertex);
-
+    algorithm->PreEvent(clusterTree, fCurrentVertex);
+  digitBranch->GetEntry(0);
+  
   ProcessDigits(digits);
 
   next.Reset();
   algorithm = 0;
   while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
     algorithm->PostEvent();
-  
-  if (reader) {
-    digitTree->Fill();
-    fFMDLoader->WriteDigits("OVERWRITE");
-  }
-  fFMDLoader->UnloadDigits();
-  fFMDLoader->TreeR()->Reset();
-  fFMDLoader->TreeR()->Fill(); 
-  fFMDLoader->WriteRecPoints("OVERWRITE");
+  clusterTree->Fill();
 }
-
-//____________________________________________________________________
-UShort_t
-AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
-{
-  // Member function to subtract the pedestal from a digit
-  // This implementation does nothing, but a derived class could over
-  // load this to subtract a pedestal that was given in a database or
-  // something like that. 
-
-  Int_t counts = 0;
-  Float_t ped = fPedestal + fPedestalFactor * fPedestalWidth;
-  if (digit->Count3() > 0)      counts = digit->Count3();
-  else if (digit->Count2() > 0) counts = digit->Count2();
-  else                          counts = digit->Count1();
-  counts = TMath::Max(Int_t(counts - ped), 0);
-  return  UShort_t(counts);
-}
-
+ 
 //____________________________________________________________________
 void
 AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
 {
   Int_t nDigits = digits->GetEntries();
+  AliDebug(1, Form("Got %d digits", nDigits));
   for (Int_t i = 0; i < nDigits; i++) {
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
-    AliFMDSubDetector* subDetector = 0;
-    switch (digit->Detector()) {
-    case 1: subDetector = fFMD->GetFMD1(); break;
-    case 2: subDetector = fFMD->GetFMD2(); break;
-    case 3: subDetector = fFMD->GetFMD3(); break;
-    }
+    AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+    AliFMDDetector* subDetector = fmd->GetDetector(digit->Detector());
     if (!subDetector) { 
       Warning("ProcessDigits", "Unknown detector: FMD%d" , digit->Detector());
       continue;
     }
     
-    AliFMDRing* ring  = 0;
-    Float_t     ringZ = 0;
-    switch(digit->Ring()) {
-    case 'i':
-    case 'I':  
-      ring  = subDetector->GetInner(); 
-      ringZ = subDetector->GetInnerZ();
-      break;
-    case 'o':
-    case 'O':  
-      ring  = subDetector->GetOuter(); 
-      ringZ = subDetector->GetOuterZ();
-      break;
-    }
+    AliFMDRing* ring  = subDetector->GetRing(digit->Ring());
+    Float_t     ringZ = subDetector->GetRingZ(digit->Ring());
     if (!ring) {
       Warning("ProcessDigits", "Unknown ring: FMD%d%c", digit->Detector(), 
 	      digit->Ring());
@@ -432,11 +290,29 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
   }
 }
       
- 
+//____________________________________________________________________
+UShort_t
+AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
+{
+  // Member function to subtract the pedestal from a digit
+  // This implementation does nothing, but a derived class could over
+  // load this to subtract a pedestal that was given in a database or
+  // something like that. 
+
+  Int_t counts = 0;
+  Float_t ped = fPedestal + fPedestalFactor * fPedestalWidth;
+  if (digit->Count3() > 0)      counts = digit->Count3();
+  else if (digit->Count2() > 0) counts = digit->Count2();
+  else                          counts = digit->Count1();
+  counts = TMath::Max(Int_t(counts - ped), 0);
+  return  UShort_t(counts);
+}
+
 //____________________________________________________________________
 void 
-AliFMDReconstructor::FillESD(AliRunLoader* /*fRunLoader*/, 
-			     AliESD* /*esd*/) const
+AliFMDReconstructor::FillESD(TTree*  /* digitsTree */, 
+			     TTree*  /* clusterTree */,
+			     AliESD* /* esd*/) const
 {
   // nothing to be done
 

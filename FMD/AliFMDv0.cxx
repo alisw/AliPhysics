@@ -17,42 +17,13 @@
 
 //____________________________________________________________________
 //                                                                          
-// Forward Multiplicity Detector based on Silicon wafers This class
+// Forward Multiplicity Detector based on Silicon wafers. This class
 // contains the base procedures for the Forward Multiplicity detector
-// Detector consists of 5 Si volumes covered pseudorapidity interval
-// from 1.7 to 5.1.
-// 
+// Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of
+// which has 1 or 2 rings of silicon sensors. 
+//                                                       
 // This contains the coarse version of the FMD - that is, the
 // simulation produces no hits in the FMD volumes. 
-//                                                                          
-// The actual code is done by various separate classes.   Below is
-// diagram showing the relationship between the various FMD classes
-// that handles the geometry 
-//
-//
-//       +----------+   +----------+   
-//       | AliFMDv1 |	| AliFMDv1 |   
-//       +----------+   +----------+   
-//            |              |
-//       +----+--------------+
-//       |
-//       |           +------------+ 1  +---------------+
-//       |        +- | AliFMDRing |<>--| AliFMDPolygon | 
-//       V     2  |  +------------+    +---------------+   
-//  +--------+<>--+        |
-//  | AliFMD |             ^                       
-//  +--------+<>--+        V 1..2                     
-//	       3  | +-------------------+ 
-//	          +-| AliFMDSubDetector | 
-//	  	    +-------------------+
-//                           ^              
-//                           |
-//             +-------------+-------------+
-//             |             |             |	      
-//        +---------+   +---------+   +---------+
-//        | AliFMD1 |   | AliFMD2 |   | AliFMD3 |
-//        +---------+   +---------+   +---------+
-//      
 //
 // See also the AliFMD class for a more detailed description of the
 // various components. 
@@ -62,6 +33,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDv0)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //___________________________________________________________________
 //

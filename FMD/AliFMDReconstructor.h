@@ -37,12 +37,11 @@
 #endif
 
 //____________________________________________________________________
+class TTree;
 class TClonesArray;
-class AliFMD;
-class AliLoader;
-class AliRunLoader;
 class AliFMDDigit;
 class AliRawReader;
+class AliRunLoader;
 
 //____________________________________________________________________
 class AliFMDReconstructor: public AliReconstructor 
@@ -53,22 +52,17 @@ public:
   virtual ~AliFMDReconstructor();
   AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
 
-  void         SetPedestal(Float_t mean=10, Float_t width=1, Float_t f=3);
+  virtual void   Init(AliRunLoader* runLoader);
+  virtual Bool_t HasDigitConversion() const { return kTRUE; }
+  virtual void   ConvertDigits(AliRawReader* reader, TTree* digitsTree) const;
+  virtual Bool_t HasLocalReconstruction() const { return kTRUE; }
+  virtual void   Reconstruct(TTree* digitsTree, TTree* clusterTree) const;
+  virtual void   FillESD(TTree* digitsTree, TTree* clusterTree, 
+			 AliESD* esd) const;
      
-  virtual void Reconstruct(AliRunLoader* runLoader) const;
-  virtual void Reconstruct(AliRunLoader* runLoader,  
-			   AliRawReader* rawReader) const;
-  virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-  
 protected:
-  virtual void     ProcessEvent(Int_t event, 
-				AliRawReader* rawReader) const;
   virtual void     ProcessDigits(TClonesArray* digits) const;
   virtual UShort_t SubtractPedestal(AliFMDDigit* digit) const;
-
-  mutable AliRunLoader* fRunLoader;  //! Run loader 
-  mutable AliLoader*    fFMDLoader;  //! FMD specific loader 
-  mutable AliFMD*       fFMD;        //! Pointer to FMD manager 
   
   TObjArray	        fAlgorithms;    // Array of algorithms
   Float_t               fPedestal;      // Pedestal to subtract

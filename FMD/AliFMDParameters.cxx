@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -17,34 +17,61 @@
 
 //____________________________________________________________________
 //                                                                          
-// Concrete implementation of AliFMDDetector 
+// Forward Multiplicity Detector based on Silicon wafers. 
 //
-// This implements the geometry for FMD2
-//
-#include "AliFMD2.h"		// ALIFMD2_H 
-#include "AliFMDRing.h"		// ALIFMDRING_H 
+// This class is a singleton that handles various parameters of
+// the FMD detectors.  
+//                                                       
+#include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
+#include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
+#include "AliFMDRing.h"	        // ALIFMDRING_H
+#include "AliLog.h"		// ALILOG_H
+#include <Riostream.h>
 
 //====================================================================
-ClassImp(AliFMD2)
+ClassImp(AliFMDParameters)
 #if 0
   ; // This is here to keep Emacs for indenting the next line
 #endif
 
 //____________________________________________________________________
-AliFMD2::AliFMD2(AliFMDRing* inner, AliFMDRing* outer) 
-  : AliFMDDetector(2, inner, outer)
+AliFMDParameters* AliFMDParameters::fgInstance = 0;
+
+//____________________________________________________________________
+AliFMDParameters* 
+AliFMDParameters::Instance() 
 {
-  SetInnerZ(83.4);
-  SetOuterZ(75.2);
+  // Get static instance 
+  if (!fgInstance) fgInstance = new AliFMDParameters;
+  return fgInstance;
+}
+
+//____________________________________________________________________
+AliFMDParameters::AliFMDParameters() 
+  : fSiDeDxMip(1.664)
+{
+  // Default constructor 
+  SetVA1MipRange();
+  SetAltroChannelSize();
+  SetChannelsPerAltro();
+  SetZeroSuppression();
+  SetSampleRate();
+  SetPedestal();
+  SetPedestalWidth();
+  SetPedestalFactor();
 }
 
 
-//____________________________________________________________________
-void
-AliFMD2::Init() 
-{
-  AliFMDDetector::Init();
-  SetInnerHoneyHighR(GetOuterHoneyHighR());
+
+//__________________________________________________________________
+Float_t
+AliFMDParameters::GetEdepMip() const 
+{ 
+  // Get energy deposited by a MIP in the silicon sensors
+  AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+  return (fSiDeDxMip 
+	  * fmd->GetRing('I')->GetSiThickness() 
+	  * fmd->GetSiDensity());
 }
 
 //____________________________________________________________________

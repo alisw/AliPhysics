@@ -32,6 +32,9 @@
 
 //____________________________________________________________________
 ClassImp(AliFMDMultStrip)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 
 //____________________________________________________________________

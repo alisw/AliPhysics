@@ -19,44 +19,49 @@
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. This class
 // contains the base procedures for the Forward Multiplicity detector
-// Detector consists of 5 Si volumes covered pseudorapidity interval
-// from 1.7 to 5.1.
+// Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of
+// which has 1 or 2 rings of silicon sensors. 
 //                                                       
 // This is the base class for all FMD manager classes. 
 //                    
 // The actual code is done by various separate classes.   Below is
 // diagram showing the relationship between the various FMD classes
-// that handles the geometry 
+// that handles the simulation
 //
 //
 //       +----------+   +----------+   
-//       | AliFMDv1 |	| AliFMDv1 |   
+//       | AliFMDv1 |	| AliFMDv0 |   
 //       +----------+   +----------+   
-//            |              |
-//       +----+--------------+
-//       |
-//       |           +------------+ 1  +---------------+
-//       |        +- | AliFMDRing |<>--| AliFMDPolygon | 
-//       V     2  |  +------------+    +---------------+   
-//  +--------+<>--+        |
-//  | AliFMD |             ^                       
-//  +--------+<>--+        V 1..2                     
-//	       3  | +-------------------+ 
-//	          +-| AliFMDSubDetector | 
-//	  	    +-------------------+
+//            |              |                    +-----------------+
+//       +----+--------------+                 +--| AliFMDDigitizer |
+//       |                                     |  +-----------------+
+//       |           +---------------------+   |
+//       |        +- | AliFMDBaseDigitizer |<--+
+//       V     1  |  +---------------------+   |
+//  +--------+<>--+                            |  +------------------+
+//  | AliFMD |                                 +--| AliFMDSDigitizer |    
+//  +--------+<>--+                               +------------------+       
+//	       1  | +-----------------+ 
+//	          +-| AliFMDSimulator |
+//	  	    +-----------------+
 //                           ^              
 //                           |
 //             +-------------+-------------+
-//             |             |             |	      
-//        +---------+   +---------+   +---------+
-//        | AliFMD1 |   | AliFMD2 |   | AliFMD3 |
-//        +---------+   +---------+   +---------+
+//             |                           |	      
+//    +--------------------+   +-------------------+
+//    | AliFMDGeoSimulator |   | AliFMDG3Simulator | 
+//    +--------------------+   +---------+---------+
 //      
 //
 // *  AliFMD 
 //    This defines the interface for the various parts of AliROOT that
-//    uses the FMD, like AliFMDDigitizer, AliFMDReconstructor, and so
-//    on. 
+//    uses the FMD, like AliFMDSimulator, AliFMDDigitizer, 
+//    AliFMDReconstructor, and so on. 
+//
+// *  AliFMDv0
+//    This is a concrete implementation of the AliFMD interface. 
+//    It is the responsibility of this class to create the FMD
+//    geometry.
 //
 // *  AliFMDv1 
 //    This is a concrete implementation of the AliFMD interface. 
@@ -64,99 +69,69 @@
 //    geometry, process hits in the FMD, and serve hits and digits to
 //    the various clients. 
 //  
-//    It uses the objects of class AliFMDSubDetector to do the various
-//    stuff for FMD1, 2, and 3 
-//
-// *  AliFMDRing 
-//    This class contains all stuff needed to do with a ring.  It's
-//    used by the AliFMDSubDetector objects to instantise inner and
-//    outer rings.  The AliFMDRing objects are shared by the
-//    AliFMDSubDetector objects, and owned by the AliFMDv1 object. 
-//
-// *  AliFMDPolygon 
-//    The code I lifted from TGeoPolygon to help with the geometry of
-//    the modules, as well as to decide wether a hit is actually with
-//    in the real module shape.  The point is, that the shape of the
-//    various ring modules are really polygons (much like the lid of a
-//    coffin), but it's segmented at constant radius.  That is very
-//    hard to implement using GEANT 3.21 shapes, so instead the
-//    modules are implemented as TUBS (tube sections), and in the step
-//    procedure we do the test whether the track was inside the real
-//    shape of the module.  
-//
-// *  AliFMD1, AliFMD2, and AliFMD3 
-//    These are specialisation of AliFMDSubDetector, that contains the
-//    particularities of each of the sub-detector system.  It is
-//    envisioned that the classes should also define the support
-//    volumes and material for each of the detectors.                          
+// *  AliFMDSimulator
+//    This is the base class for the FMD simulation tasks.   The
+//    simulator tasks are responsible to implment the geoemtry, and
+//    process hits. 
 //                                                                          
-// The responsible person for this module is Alla Maevskaia
-// <Alla.Maevskaia@cern.ch>.
+// *  AliFMDGeoSimulator
+//    This is a concrete implementation of the AliFMDSimulator that
+//    uses the TGeo classes directly only. 
 //
-// Many modifications by Christian Holm Christensen <cholm@nbi.dk>
+// *  AliFMDG3Simulator
+//    This is a concrete implementation of the AliFMDSimulator that
+//    uses the TVirtualMC interface with GEANT 3.21-like messages.
 //
 
 // These files are not in the same directory, so there's no reason to
 // ask the preprocessor to search in the current directory for these
 // files by including them with `#include "..."' 
+#include <math.h>               // __CMATH__
 #include <TClonesArray.h>	// ROOT_TClonesArray
 #include <TGeometry.h>		// ROOT_TGeomtry
 #include <TNode.h>		// ROOT_TNode
+#include <TXTRU.h>		// ROOT_TXTRU
+#include <TRotMatrix.h>		// ROOT_TRotMatrix
 #include <TTUBE.h>		// ROOT_TTUBE
 #include <TTree.h>		// ROOT_TTree
-#include <TVirtualMC.h>		// ROOT_TVirtualMC
 #include <TBrowser.h>		// ROOT_TBrowser
 #include <TMath.h>		// ROOT_TMath
+#include <TVirtualMC.h>		// ROOT_TVirtualMC
 
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliMC.h>		// ALIMC_H
 #include <AliLog.h>		// ALILOG_H
-#include <AliMagF.h>		// ALIMAGF_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIG_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
+#include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
+#include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
+#include "AliFMDRing.h"		// ALIFMDRING_H
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
-#include "AliFMD1.h"		// ALIFMD1_H
-#include "AliFMD2.h"		// ALIFMD2_H
-#include "AliFMD3.h"		// ALIFMD3_H
+#include "AliFMDSimulator.h"	// ALIFMDSIMULATOR_H
+#include "AliFMDG3Simulator.h"	// ALIFMDG3SIMULATOR_H
+#include "AliFMDGeoSimulator.h"	// ALIFMDGEOSIMULATOR_H
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
 
 //____________________________________________________________________
 ClassImp(AliFMD)
-
-//____________________________________________________________________
-const Char_t* AliFMD::fgkShortLegName = "FSSL";
-const Char_t* AliFMD::fgkLongLegName  = "FSLL";
+#if 0
+  ; // This is to keep Emacs from indenting the next line 
+#endif 
 
 //____________________________________________________________________
 AliFMD::AliFMD()
-  : fInner(0), 
-    fOuter(0),
-    fFMD1(0),
-    fFMD2(0), 
-    fFMD3(0), 
-    fSDigits(0), 
+  : fSDigits(0), 
     fNsdigits(0),
-    fPrintboardRotationId(0),
-    fIdentityRotationId(0),
-    fShortLegId(0),
-    fLongLegId(0),
-    fLegLength(0),
-    fLegRadius(0),
-    fModuleSpacing(0), 
-    fSiDensity(0),
-    fSiThickness(0),
-    fSiDeDxMip(1.664),
-    fVA1MipRange(0),
-    fAltroChannelSize(0),
-    fSampleRate(0)
+    fDetailed(kTRUE),
+    fSimulator(0)
 {
   //
   // Default constructor for class AliFMD
   //
-  AliDebug(0, "\tDefault CTOR");
+  AliDebug(10, "\tDefault CTOR");
   fHits     = 0;
   fDigits   = 0;
   fIshunt   = 0;
@@ -165,58 +140,26 @@ AliFMD::AliFMD()
 //____________________________________________________________________
 AliFMD::AliFMD(const AliFMD& other)
   : AliDetector(other),
-    fInner(other.fInner), 
-    fOuter(other.fOuter),
-    fFMD1(other.fFMD1),
-    fFMD2(other.fFMD2), 
-    fFMD3(other.fFMD3), 
     fSDigits(other.fSDigits), 
     fNsdigits(other.fNsdigits),
-    fPrintboardRotationId(other.fPrintboardRotationId),
-    fIdentityRotationId(other.fIdentityRotationId),
-    fShortLegId(other.fShortLegId),
-    fLongLegId(other.fLongLegId),
-    fLegLength(other.fLegLength),
-    fLegRadius(other.fLegRadius),
-    fModuleSpacing(other.fModuleSpacing), 
-    fSiDensity(other.fSiDensity),
-    fSiThickness(other.fSiThickness),
-    fSiDeDxMip(other.fSiDeDxMip),
-    fVA1MipRange(other.fVA1MipRange),
-    fAltroChannelSize(other.fAltroChannelSize),
-    fSampleRate(other.fSampleRate)
+    fDetailed(other.fDetailed),
+    fSimulator(other.fSimulator)
 {
   // Copy constructor 
 }
 
 //____________________________________________________________________
-AliFMD::AliFMD(const char *name, const char *title, bool detailed)
+AliFMD::AliFMD(const char *name, const char *title)
   : AliDetector (name, title),
-    fInner(0), 
-    fOuter(0),
-    fFMD1(0),
-    fFMD2(0), 
-    fFMD3(0),
     fSDigits(0),
     fNsdigits(0),
-    fPrintboardRotationId(0),
-    fIdentityRotationId(0),
-    fShortLegId(0),
-    fLongLegId(0),
-    fLegLength(0),
-    fLegRadius(0),
-    fModuleSpacing(0), 
-    fSiDensity(0),
-    fSiThickness(0),
-    fSiDeDxMip(1.664),
-    fVA1MipRange(0),
-    fAltroChannelSize(0),
-    fSampleRate(0)
+    fDetailed(kTRUE),
+    fSimulator(0)
 {
   //
   // Standard constructor for Forward Multiplicity Detector
   //
-  AliDebug(0, "\tStandard CTOR");
+  AliDebug(10, "\tStandard CTOR");
 
   // Initialise Hit array
   HitsArray();
@@ -230,64 +173,6 @@ AliFMD::AliFMD(const char *name, const char *title, bool detailed)
   fIshunt = 0;
   SetMarkerColor(kRed);
   SetLineColor(kYellow);
-  SetSiDensity();
-
-  // Create sub-volume managers 
-  fInner = new AliFMDRing('I', detailed);
-  fOuter = new AliFMDRing('O', detailed);
-  fFMD1  = new AliFMD1();
-  fFMD2  = new AliFMD2();
-  fFMD3  = new AliFMD3();
-
-  // Specify parameters of sub-volume managers 
-  fFMD1->SetInner(fInner);
-  fFMD1->SetOuter(0);
-
-  fFMD2->SetInner(fInner);
-  fFMD2->SetOuter(fOuter);
-  
-  fFMD3->SetInner(fInner);
-  fFMD3->SetOuter(fOuter);
-
-  SetLegLength();
-  SetLegRadius();
-  SetLegOffset();
-  SetModuleSpacing();
-  SetSiThickness();
-  SetSiDensity();
-  SetVA1MipRange();
-  SetAltroChannelSize();
-  SetSampleRate();
-  
-  fInner->SetLowR(4.3);
-  fInner->SetHighR(17.2);
-  fInner->SetWaferRadius(13.4/2);
-  fInner->SetTheta(36/2);
-  fInner->SetNStrips(512);
-  fInner->SetSiThickness(fSiThickness);
-  fInner->SetPrintboardThickness(.11);
-  fInner->SetBondingWidth(.5);
-
-  fOuter->SetLowR(15.6);
-  fOuter->SetHighR(28.0);
-  fOuter->SetWaferRadius(13.4/2);
-  fOuter->SetTheta(18/2);
-  fOuter->SetNStrips(256);
-  fOuter->SetSiThickness(fSiThickness);
-  fOuter->SetPrintboardThickness(.1);
-  fOuter->SetBondingWidth(.5);
-  
-  
-  fFMD1->SetHoneycombThickness(1);
-  fFMD1->SetInnerZ(340.0);
-  
-  fFMD2->SetHoneycombThickness(1);
-  fFMD2->SetInnerZ(83.4);
-  fFMD2->SetOuterZ(75.2);
-
-  fFMD3->SetHoneycombThickness(1);
-  fFMD3->SetInnerZ(-62.8);
-  fFMD3->SetOuterZ(-75.2);
 }
 
 //____________________________________________________________________
@@ -316,27 +201,11 @@ AliFMD&
 AliFMD::operator=(const AliFMD& other)
 {
   AliDetector::operator=(other);
-  fInner		= other.fInner; 
-  fOuter		= other.fOuter;
-  fFMD1			= other.fFMD1;
-  fFMD2			= other.fFMD2; 
-  fFMD3			= other.fFMD3; 
   fSDigits		= other.fSDigits; 
   fNsdigits		= other.fNsdigits;
-  fSiDensity		= other.fSiDensity;
-  fPrintboardRotationId	= other.fPrintboardRotationId;
-  fIdentityRotationId	= other.fIdentityRotationId;
-  fShortLegId		= other.fShortLegId;
-  fLongLegId		= other.fLongLegId;
-  fLegLength		= other.fLegLength;
-  fLegRadius		= other.fLegRadius;
-  fModuleSpacing	= other.fModuleSpacing; 
-  fSiDensity		= other.fSiDensity;
-  fSiThickness		= other.fSiThickness;
-  fVA1MipRange		= other.fVA1MipRange;
-  fAltroChannelSize	= other.fAltroChannelSize;
-  fSampleRate		= other.fSampleRate;
-
+  fDetailed		= other.fDetailed;
+  fSimulator            = other.fSimulator;
+  
   return *this;
 }
 
@@ -372,43 +241,12 @@ AliFMD::CreateGeometry()
   //   FOR subdetectors fFMD1, fFMD2, and fFMD3 DO 
   //     AliFMDSubDetector::Geomtry();
   //   END FOR
-  //   
-
-  // DebugGuard guard("AliFMD::CreateGeometry");
-  AliDebug(10, "\tCreating geometry");
-
-  fInner->Init();
-  fOuter->Init();
-
-  Double_t par[3];
-
-  Int_t airId = (*fIdtmed)[kAirId];
-  Int_t alId  = (*fIdtmed)[kAlId];
-  Int_t cId   = (*fIdtmed)[kCarbonId];
-  Int_t siId  = (*fIdtmed)[kSiId];
-  Int_t pcbId = (*fIdtmed)[kPcbId];
-  Int_t plaId = (*fIdtmed)[kPlasticId];
-  Int_t pbId  = fPrintboardRotationId;
-  Int_t idId  = fIdentityRotationId;
-  
-  par[0]      =  fLegRadius - .1;
-  par[1]      =  fLegRadius;
-  par[2]      =  fLegLength / 2;
-  fShortLegId =  gMC->Gsvolu(fgkShortLegName,"TUBE", plaId, par, 3);
-  
-  par[2]      += fModuleSpacing / 2;
-  fLongLegId  =  gMC->Gsvolu(fgkLongLegName,"TUBE", plaId, par, 3);
-
-  fInner->SetupGeometry(airId, siId, pcbId, pbId, idId);
-  fOuter->SetupGeometry(airId, siId, pcbId, pbId, idId);
-
-  fFMD1->SetupGeometry(airId, alId, cId);
-  fFMD2->SetupGeometry(airId, alId, cId);
-  fFMD3->SetupGeometry(airId, alId, cId);
-  
-  fFMD1->Geometry("ALIC", pbId, idId);
-  fFMD2->Geometry("ALIC", pbId, idId);
-  fFMD3->Geometry("ALIC", pbId, idId);    
+  //
+  if (!fSimulator) {
+    AliFatal("Simulator object not made yet!");
+    return;
+  }
+  fSimulator->DefineGeometry();
 }    
 
 //____________________________________________________________________
@@ -417,170 +255,22 @@ void AliFMD::CreateMaterials()
   // Register various materials and tracking mediums with the
   // backend.   
   // 
-  // Currently defined materials and mediums are 
-  // 
-  //    FMD Air		Normal air 
-  //    FMD Si          Active silicon of sensors 
-  //    FMD Carbon      Normal carbon used in support, etc. 
-  //    FMD Kapton      Carbon used in Honeycomb
-  //    FMD PCB         Printed circuit board material 
-  //    FMD Plastic     Material for support legs 
-  // 
-  // Also defined are two rotation matricies. 
-  //
-  // DebugGuard guard("AliFMD::CreateMaterials");
   AliDebug(10, "\tCreating materials");
-  Int_t    id;
-  Double_t a                = 0;
-  Double_t z                = 0;
-  Double_t density          = 0;
-  Double_t radiationLength  = 0;
-  Double_t absorbtionLength = 999;
-  Int_t    fieldType        = gAlice->Field()->Integ();     // Field type 
-  Double_t maxField         = gAlice->Field()->Max();     // Field max.
-  Double_t maxBending       = 0;     // Max Angle
-  Double_t maxStepSize      = 0.001; // Max step size 
-  Double_t maxEnergyLoss    = 1;     // Max Delta E
-  Double_t precision        = 0.001; // Precision
-  Double_t minStepSize      = 0.001; // Minimum step size 
- 
-  // Silicon 
-  a                = 28.0855;
-  z                = 14.;
-  density          = fSiDensity;
-  radiationLength  = 9.36;
-  maxBending       = 1;
-  maxStepSize      = .001;
-  precision        = .001;
-  minStepSize      = .001;
-  id               = kSiId;
-  AliMaterial(id, "FMD Si$", a, z, density, radiationLength, absorbtionLength);
-  AliMedium(kSiId, "FMD Si$",id,1,fieldType,maxField,maxBending,
-	    maxStepSize,maxEnergyLoss,precision,minStepSize);
 
-
-  // Carbon 
-  a                = 12.011;
-  z                = 6.;
-  density          = 2.265;
-  radiationLength  = 18.8;
-  maxBending       = 10;
-  maxStepSize      = .01;
-  precision        = .003;
-  minStepSize      = .003;
-  id               = kCarbonId;
-  AliMaterial(id, "FMD Carbon$", a, z, density, radiationLength, 
-	      absorbtionLength);
-  AliMedium(kCarbonId, "FMD Carbon$",id,0,fieldType,maxField,maxBending,
-	    maxStepSize,maxEnergyLoss,precision,minStepSize);
-
-  // Aluminum
-  a                = 26.981539;
-  z                = 13.;
-  density          = 2.7;
-  radiationLength  = 8.9;
-  id               = kAlId;
-  AliMaterial(id, "FMD Aluminum$", a, z, density, radiationLength, 
-	      absorbtionLength);
-  AliMedium(kAlId, "FMD Aluminum$", id, 0, fieldType, maxField, maxBending,
-	    maxStepSize, maxEnergyLoss, precision, minStepSize);
-  
-  
-  // Silicon chip 
-  {
-    Float_t as[] = { 12.0107,      14.0067,      15.9994,
-		     1.00794,      28.0855,     107.8682 };
-    Float_t zs[] = {  6.,           7.,           8.,
-		      1.,          14.,          47. };
-    Float_t ws[] = {  0.039730642,  0.001396798,  0.01169634,
-		      0.004367771,  0.844665,     0.09814344903 };
-    density = 2.36436;
-    maxBending       = 10;
-    maxStepSize      = .01;
-    precision        = .003;
-    minStepSize      = .003;
-    id = kSiChipId;
-    AliMixture(id, "FMD Si Chip$", as, zs, density, 6, ws);
-    AliMedium(kSiChipId, "FMD Si Chip$", id, 0, fieldType, maxField, 
-	      maxBending, maxStepSize, maxEnergyLoss, precision, minStepSize);
+  if (fSimulator) {
+    AliFatal("Simulator object already instantised!");
+    return;
   }
+  AliFMDGeometry* geometry = AliFMDGeometry::Instance();
+  geometry->Init();
+  TVirtualMC* mc = TVirtualMC::GetMC();
+  Bool_t geo = mc->IsRootGeometrySupported();
+  if (geo)
+    fSimulator = new AliFMDGeoSimulator(this, fDetailed);
+  else 
+    fSimulator = new AliFMDG3Simulator(this, fDetailed);
   
-#if 0
-  // Kaption
-  {
-    Float_t as[] = { 1.00794,  12.0107,  14.010,   15.9994};
-    Float_t zs[] = { 1.,        6.,       7.,       8.};
-    Float_t ws[] = { 0.026362,  0.69113,  0.07327,  0.209235};
-    density          = 1.42;
-    maxBending       = 1;
-    maxStepSize      = .001;
-    precision        = .001;
-    minStepSize      = .001;
-    id               = KaptionId;
-    AliMixture(id, "FMD Kaption$", as, zs, density, 4, ws);
-    AliMedium(kAlId, "FMD Kaption$",id,0,fieldType,maxField,maxBending,
-	      maxStepSize,maxEnergyLoss,precision,minStepSize);
-  }
-#endif
-
-  // Air
-  {
-    Float_t as[] = { 12.0107, 14.0067,   15.9994,  39.948 };
-    Float_t zs[] = {  6.,      7.,       8.,       18. };
-    Float_t ws[] = { 0.000124, 0.755267, 0.231781, 0.012827 }; 
-    density      = .00120479;
-    maxBending   = 1;
-    maxStepSize  = .001;
-    precision    = .001;
-    minStepSize  = .001;
-    id           = kAirId;
-    AliMixture(id, "FMD Air$", as, zs, density, 4, ws);
-    AliMedium(kAirId, "FMD Air$", id,0,fieldType,maxField,maxBending,
-	      maxStepSize,maxEnergyLoss,precision,minStepSize);
-  }
-  
-  // PCB
-  {
-    Float_t zs[] = { 14.,         20.,         13.,         12.,
-		      5.,         22.,         11.,         19.,
-		     26.,          9.,          8.,          6.,
-		      7.,          1.};
-    Float_t as[] = { 28.0855,     40.078,      26.981538,   24.305, 
-		     10.811,      47.867,      22.98977,    39.0983,
-		     55.845,      18.9984,     15.9994,     12.0107,
-		     14.0067,      1.00794};
-    Float_t ws[] = {  0.15144894,  0.08147477,  0.04128158,  0.00904554, 
-		      0.01397570,  0.00287685,  0.00445114,  0.00498089,
-		      0.00209828,  0.00420000,  0.36043788,  0.27529426,
-		      0.01415852,  0.03427566};
-    density      = 1.8;
-    maxBending   = 1;
-    maxStepSize  = .001;
-    precision    = .001;
-    minStepSize  = .001;
-    id           = kPcbId;
-    AliMixture(id, "FMD PCB$", as, zs, density, 14, ws);
-    AliMedium(kPcbId, "FMD PCB$", id,0,fieldType,maxField,maxBending,
-	      maxStepSize,maxEnergyLoss,precision,minStepSize);
-  }
-  
-  // Plastic 
-  {
-    Float_t as[] = { 1.01, 12.01 };
-    Float_t zs[] = { 1.,   6.    };
-    Float_t ws[] = { 1.,   1.    };
-    density      = 1.03;
-    maxBending   = 10;
-    maxStepSize  = .01;
-    precision    = .003;
-    minStepSize  = .003;
-    id           = kPlasticId;
-    AliMixture(id, "FMD Plastic$", as, zs, density, -2, ws);
-    AliMedium(kPlasticId, "FMD Plastic$", id,0,fieldType,maxField,maxBending,
-		maxStepSize,maxEnergyLoss,precision,minStepSize);
-  }
-  AliMatrix(fPrintboardRotationId, 90, 90, 0, 90, 90, 0);
-  AliMatrix(fIdentityRotationId, 90, 0, 90, 90, 0, 0);
+  fSimulator->DefineMaterials();
 }
 
 //____________________________________________________________________
@@ -623,11 +313,117 @@ AliFMD::BuildGeometry()
   // AliFMDSubDetector::SimpleGeometry. 
   AliDebug(10, "\tCreating a simplified geometry");
 
+  AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+  
+  static TXTRU*     innerShape = 0;
+  static TXTRU*     outerShape = 0;
+  static TObjArray* innerRot   = 0;
+  static TObjArray* outerRot   = 0;
+
+  if (!innerShape || !outerShape) {
+    // Make the shapes for the modules 
+    for (Int_t i = 0; i < 2; i++) {
+      AliFMDRing* r = 0;
+      switch (i) {
+      case 0: r = fmd->GetRing('I'); break;
+      case 1: r = fmd->GetRing('O'); break;
+      }
+      if (!r) {
+	AliError(Form("no ring found for i=%d", i));
+	return;
+      }
+      Double_t    siThick  = r->GetSiThickness();
+      const Int_t nv       = r->GetNVerticies();
+      Double_t    theta    = r->GetTheta();
+      Int_t       nmod     = r->GetNModules();
+      
+      TXTRU* shape = new TXTRU(r->GetName(), r->GetTitle(), "void", nv, 2);
+      for (Int_t j = 0; j < nv; j++) {
+	TVector2* vv = r->GetVertex(nv - 1 - j);
+	shape->DefineVertex(j, vv->X(), vv->Y());
+      }
+      shape->DefineSection(0, -siThick / 2, 1, 0, 0);
+      shape->DefineSection(1, +siThick / 2, 1, 0, 0);
+      shape->SetLineColor(GetLineColor());
+      
+      TObjArray* rots = new TObjArray(nmod);
+      for (Int_t j = 0; j < nmod; j++) {
+	Double_t th = (j + .5) * theta * 2;
+	TString name(Form("FMD_ring_%c_rot_%02d", r->GetId(), j));
+	TString title(Form("FMD Ring %c Rotation # %d", r->GetId(), j));
+	TRotMatrix* rot = new TRotMatrix(name.Data(), title.Data(),
+					 90, th, 90, fmod(90+th,360), 0, 0);
+	rots->AddAt(rot, j);
+      }
+      
+      switch (r->GetId()) {
+      case 'i':
+      case 'I': innerShape = shape; innerRot = rots; break;
+      case 'o':
+      case 'O': outerShape = shape; outerRot = rots; break;
+      }
+    }
+  }
+  
   TNode* top = gAlice->GetGeometry()->GetNode("alice");
   
-  fFMD1->SimpleGeometry(fNodes, top, GetLineColor(), 0);
-  fFMD2->SimpleGeometry(fNodes, top, GetLineColor(), 0);
-  fFMD3->SimpleGeometry(fNodes, top, GetLineColor(), 0);
+  for (Int_t i = 1; i <= 3; i++) {
+    AliFMDDetector* det = fmd->GetDetector(i);
+    if (!det) {
+      Warning("BuildGeometry", "FMD%d seems to be disabled", i);
+      continue;
+    }
+    Double_t w  = 0;
+    Double_t rh = det->GetRing('I')->GetHighR();
+    Char_t   id = 'I';
+    if (det->GetRing('O')) {
+      w  = TMath::Abs(det->GetRingZ('O') - det->GetRingZ('I'));
+      id = (TMath::Abs(det->GetRingZ('O')) 
+	    > TMath::Abs(det->GetRingZ('I')) ? 'O' : 'I');
+      rh = det->GetRing('O')->GetHighR();
+    }
+    w += (det->GetRing(id)->GetModuleSpacing() +
+	  det->GetRing(id)->GetSiThickness());
+    TShape* shape = new TTUBE(det->GetName(), det->GetTitle(), "void",
+			      det->GetRing('I')->GetLowR(), rh, w / 2);
+    Double_t z = (det->GetRingZ('I') - w / 2);
+    if (z > 0) z += det->GetRing(id)->GetModuleSpacing();
+    top->cd();
+    TNode* node = new TNode(det->GetName(), det->GetTitle(), shape, 
+			    0, 0, z, 0);
+    fNodes->Add(node);
+    
+    for (Int_t j = 0; j < 2; j++) {
+      AliFMDRing* r      = 0;
+      TShape*     rshape = 0;
+      TObjArray*  rots   = 0;
+      switch (j) {
+      case 0: 
+	r = det->GetRing('I'); rshape = innerShape; rots = innerRot; break;
+      case 1: 
+	r = det->GetRing('O'); rshape = outerShape; rots = outerRot; break;
+      }
+      if (!r) continue;
+      
+      Double_t    siThick  = r->GetSiThickness();
+      Int_t       nmod     = r->GetNModules();
+      Double_t    modspace = r->GetModuleSpacing();
+      Double_t    rz       = - (z - det->GetRingZ(r->GetId()));
+      
+      for (Int_t k = 0; k < nmod; k++) {
+	node->cd();
+	Double_t    offz    = (k % 2 == 1 ? modspace : 0);
+	TRotMatrix* rot     = static_cast<TRotMatrix*>(rots->At(k));
+	TString name(Form("%s%c_module_%02d", det->GetName(), r->GetId(),k));
+	TString title(Form("%s%c Module %d", det->GetName(), r->GetId(),k));
+	TNode* mnod = new TNode(name.Data(), title.Data(), rshape, 
+				0, 0, rz - siThick / 2 
+				+ TMath::Sign(offz,z), rot);
+	mnod->SetLineColor(GetLineColor());
+	fNodes->Add(mnod);
+      } // for (Int_t k = 0 ; ...)
+    } // for (Int_t j = 0 ; ...)
+  } // for (Int_t i = 1 ; ...)
 }
 
 //____________________________________________________________________
@@ -640,18 +436,9 @@ AliFMD::DrawDetector()
   // DebugGuard guard("AliFMD::DrawDetector");
   AliDebug(10, "\tDraw detector");
   
+#if 0
   //Set ALIC mother transparent
   gMC->Gsatt("ALIC","SEEN",0);
-  gMC->Gsatt(fgkShortLegName,"SEEN",1);
-  gMC->Gsatt(fgkLongLegName,"SEEN",1);
-
-  //Set volumes visible
-  fFMD1->Gsatt();
-  fFMD2->Gsatt();
-  fFMD3->Gsatt();
-  fInner->Gsatt();
-  fOuter->Gsatt();
-
   //
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("shad", "on");
@@ -663,6 +450,7 @@ AliFMD::DrawDetector()
   gMC->Gdhead(1111, "Forward Multiplicity Detector");
   gMC->Gdman(16, 10, "MAN");
   gMC->Gdopt("hide", "off");
+#endif
 }
 
 //____________________________________________________________________
@@ -1035,9 +823,6 @@ AliFMD::Hits2SDigits()
   // an AliFMDSDigitizer object, and executing it. 
   // 
   AliFMDSDigitizer* digitizer = new AliFMDSDigitizer("galice.root");
-  digitizer->SetSampleRate(fSampleRate);
-  digitizer->SetVA1MipRange(fVA1MipRange);
-  digitizer->SetAltroChannelSize(fAltroChannelSize);
   digitizer->Exec("");
 }
 
@@ -1048,9 +833,6 @@ AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
 {
   // Create a digitizer object 
   AliFMDDigitizer* digitizer = new AliFMDDigitizer(manager);
-  digitizer->SetSampleRate(fSampleRate);
-  digitizer->SetVA1MipRange(fVA1MipRange);
-  digitizer->SetAltroChannelSize(fAltroChannelSize);
   return digitizer;
 }
 
@@ -1067,66 +849,9 @@ AliFMD::Digits2Raw()
   // This uses the class AliFMDRawWriter to do the job.   Please refer
   // to that class for more information. 
   AliFMDRawWriter writer(this);
-  writer.SetSampleRate(fSampleRate);
   writer.Exec();
 }
 
-//==================================================================
-//
-// Various setter functions for the common paramters 
-//
-
-//__________________________________________________________________
-void 
-AliFMD::SetLegLength(Double_t length) 
-{
-  // Set lenght of plastic legs that hold the hybrid (print board and
-  // silicon sensor) onto the honeycomp support
-  //
-  AliDebug(10, Form("\tLeg length set to %lf cm", length));
-  fLegLength = length;
-  fInner->SetLegLength(fLegLength);
-  fOuter->SetLegLength(fLegLength);
-}
-
-//__________________________________________________________________
-void 
-AliFMD::SetLegOffset(Double_t offset) 
-{
-  // Set offset from edge of hybrid to plastic legs that hold the
-  // hybrid (print board and silicon sensor) onto the honeycomp
-  // support 
-  //
-  AliDebug(10, Form("\tLeg offset set to %lf cm", offset));
-  fInner->SetLegOffset(offset);
-  fOuter->SetLegOffset(offset);
-}
-
-//__________________________________________________________________
-void 
-AliFMD::SetLegRadius(Double_t radius) 
-{
-  // Set the diameter of the plastic legs that hold the hybrid (print
-  // board and silicon sensor) onto the honeycomp support
-  //
-  AliDebug(10, Form("\tLeg radius set to %lf cm", radius));
-  fLegRadius = radius;
-  fInner->SetLegRadius(fLegRadius);
-  fOuter->SetLegRadius(fLegRadius);
-}
-
-//__________________________________________________________________
-void 
-AliFMD::SetModuleSpacing(Double_t spacing) 
-{
-  // Set the distance between the front and back sensor modules
-  // (module staggering). 
-  //
-  AliDebug(10, Form("\tModule spacing set to %lf cm", spacing));  
-  fModuleSpacing = spacing;
-  fInner->SetModuleSpacing(fModuleSpacing);
-  fOuter->SetModuleSpacing(fModuleSpacing);
-}
 
 //====================================================================
 //
@@ -1140,13 +865,9 @@ AliFMD::Browse(TBrowser* b)
   //
   AliDebug(30, "\tBrowsing the FMD");
   AliDetector::Browse(b);
-  if (fInner) b->Add(fInner, "Inner Ring");
-  if (fOuter) b->Add(fOuter, "Outer Ring");
-  if (fFMD1)  b->Add(fFMD1,  "FMD1 SubDetector");
-  if (fFMD2)  b->Add(fFMD2,  "FMD2 SubDetector");
-  if (fFMD3)  b->Add(fFMD3,  "FMD3 SubDetector");
+  if (fSimulator) b->Add(fSimulator);
+  b->Add(AliFMDGeometry::Instance());
 }
-
 
 //___________________________________________________________________
 //

@@ -197,7 +197,8 @@ enum Mag_t {
 enum MC_t {
   kFLUKA, 
   kGEANT3, 
-  kGEANT4
+  kGEANT4, 
+  kGEANT3TGEO,
 };
 
 //____________________________________________________________________
@@ -220,7 +221,7 @@ Config()
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
   Int_t seed = 12345; //Set 0 to use the current time
-  MC_t  mc   = kGEANT3;
+  MC_t  mc   = kGEANT3TGEO;
   
   //____________________________________________________________________
   // Comment line 
@@ -262,6 +263,18 @@ Config()
     // GEANT 3.21 MC 
     // 
     new TGeant3("C++ Interface to Geant3");
+    break;
+  case kGEANT3TGEO:
+    //
+    // Libraries needed by GEANT 3.21 
+    //
+    gSystem->Load("libgeant321");
+    
+    // 
+    // GEANT 3.21 MC 
+    // 
+    new TGeant3TGeo("C++ Interface to Geant3");
+    Printf("Making a TGeant3TGeo objet");
     break;
   default:
     gAlice->Fatal("Config.C", "No MC type chosen");
@@ -350,7 +363,6 @@ Config()
 
   //__________________________________________________________________
   // Generator Configuration
-  gAlice->SetDebug(0);
   AliGenerator* gener = GeneratorFactory(eg, rad, comment);
   gener->SetOrigin(0, 0, 0);    // vertex position
   gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
@@ -394,27 +406,27 @@ Config()
   // 
   // Used detectors 
   // 
-  Bool_t useABSO  = kFALSE; 
-  Bool_t useCRT   = kFALSE; 
-  Bool_t useDIPO  = kFALSE; 
+  Bool_t useABSO  = kTRUE; 
+  Bool_t useCRT   = kTRUE; 
+  Bool_t useDIPO  = kTRUE; 
   Bool_t useFMD   = kTRUE; 
-  Bool_t useFRAME = kFALSE; 
-  Bool_t useHALL  = kFALSE; 
-  Bool_t useITS   = kFALSE; 
-  Bool_t useMAG   = kFALSE; 
-  Bool_t useMUON  = kFALSE; 
-  Bool_t usePHOS  = kFALSE; 
-  Bool_t usePIPE  = kFALSE; 
-  Bool_t usePMD   = kFALSE; 
-  Bool_t useRICH  = kFALSE; 
-  Bool_t useSHIL  = kFALSE; 
-  Bool_t useSTART = kFALSE; 
-  Bool_t useTOF   = kFALSE; 
-  Bool_t useTPC   = kFALSE;
-  Bool_t useTRD   = kFALSE; 
-  Bool_t useZDC   = kFALSE; 
-  Bool_t useEMCAL = kFALSE; 
-  Bool_t useVZERO = kFALSE;
+  Bool_t useFRAME = kTRUE; 
+  Bool_t useHALL  = kTRUE; 
+  Bool_t useITS   = kTRUE; 
+  Bool_t useMAG   = kTRUE; 
+  Bool_t useMUON  = kTRUE; 
+  Bool_t usePHOS  = kTRUE; 
+  Bool_t usePIPE  = kTRUE; 
+  Bool_t usePMD   = kTRUE; 
+  Bool_t useRICH  = kTRUE; 
+  Bool_t useSHIL  = kTRUE; 
+  Bool_t useSTART = kTRUE; 
+  Bool_t useTOF   = kTRUE; 
+  Bool_t useTPC   = kTRUE;
+  Bool_t useTRD   = kTRUE; 
+  Bool_t useZDC   = kTRUE; 
+  Bool_t useEMCAL = kTRUE; 
+  Bool_t useVZERO = kTRUE;
 
   cout << "\t* Creating the detectors ..." << endl;
   //=================== Alice BODY parameters =============================
@@ -607,6 +619,7 @@ Config()
   if (useFMD) {
     //=================== FMD parameters ============================
     AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+    AliLog::SetModuleDebugLevel("FMD", 10);
   }
 
   if (useMUON) {
@@ -731,12 +744,12 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
   case kParam_fmd:
     {
       comment = comment.Append("HIJINGparam N=100");
-      AliGenHIJINGpara *gener = new AliGenHIJINGpara(100);
+      AliGenHIJINGpara *gener = new AliGenHIJINGpara(500);
       gener->SetMomentumRange(0, 999999.);
       gener->SetPhiRange(0., 360.);
       // Set pseudorapidity range from -8 to 8.
-      Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
-      Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+      Float_t thmin = EtaToTheta(6);   // theta min. <---> eta max
+      Float_t thmax = EtaToTheta(2);  // theta max. <---> eta min 
       gener->SetThetaRange(thmin,thmax);
       gGener=gener;
     }

@@ -29,9 +29,6 @@ public:
   AliFMDRawWriter(AliFMD* fmd);
 
   virtual void Exec(Option_t* option="");
-  void SetSampleRate(UShort_t sampleRate=1) { fSampleRate = sampleRate; }
-  void SetChannelsPerAltro(UShort_t size=128) { fChannelsPerAltro = size; }
-  void SetThreshold(UShort_t t=0) { fThreshold = t; }
 protected:
   virtual void WriteChannel(AliAltroBuffer* altro, 
 			    UShort_t strip, UShort_t sector, Char_t ring, 

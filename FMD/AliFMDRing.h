@@ -14,125 +14,122 @@
 // This class is responsible to make the (common) rings of the three
 // sub-detectors. 
 //
-#ifndef ALIFMDPOLYGON_H
-# include "AliFMDPolygon.h"
+#ifndef ROOT_TNamed
+# include <TNamed.h>
 #endif
-#ifndef ROOT_TArrayI
-# include <TArrayI.h>
+#ifndef ROOT_TObjArray
+# include <TObjArray.h>
 #endif
 
 class TBrowser;
-class TNode;
-class TObjArray;
-class TShape;
-class TList;
+class TVector2;
 
-
-//__________________________________________________________________
-class AliFMDRing : public TObject
+/** Geometry description and parameters of a ring in the FMD
+    detector. 
+    
+    As there are only 2 kinds of rings @e Inner (@c 'I') and @e
+    Outer (@c 'O') the two objects of this class is owned by the
+    Geometry::FMD singleton object.  The 3 Geometry::FMDDetector
+    objects shares these two instances as needed. 
+*/
+class AliFMDRing : public TNamed
 {
 public:
-  AliFMDRing(Char_t id='\0', Bool_t detailed=kTRUE);
-  AliFMDRing(const AliFMDRing& other);
-  AliFMDRing& operator=(const AliFMDRing& other);
-  virtual ~AliFMDRing();
-
-  void   Init();
-  bool   IsWithin(size_t moduleNo, double x, double y) const;
-  void   SetupCoordinates();  
-  void   SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId, 
-		       Int_t pbRotId, Int_t idRotId);
-  void   Geometry(const char* mother, Int_t baseId, Double_t z, Int_t pbRotId,
-		  Int_t idRotId);
-  void   SimpleGeometry(TList* nodes, 
-			TNode* mother, 
-			Int_t colour, 
-			Double_t z, 
-			Int_t n);
-  void   Gsatt();
-  void   Draw(Option_t* opt="HOL") const; //*MENU*
-  void   Browse(TBrowser* b);
-  Bool_t IsFolder() const { return kTRUE; }
+  AliFMDRing(Char_t fId);
+  virtual ~AliFMDRing() {}
+  /** Initialize the ring geometry */
+  virtual void Init();
   
-  Char_t   GetId()                  const { return fId; }
-  Int_t    GetActiveId()	    const { return fActiveId; }
-  Int_t    GetPrintboardBottomId()  const { return fPrintboardBottomId; }
-  Int_t    GetPrintboardTopId()     const { return fPrintboardTopId; }
-  Int_t    GetRingId()		    const { return fRingId; }
-  Int_t    GetSectionId()           const { return fSectionId; }
-  Int_t    GetStripId()		    const { return fStripId; }
-  Int_t    GetVirtualBackId()	    const { return fVirtualBackId; }
-  Int_t    GetVirtualFrontId()	    const { return fVirtualFrontId; }
-  Double_t GetBondingWidth()	    const { return fBondingWidth; }
-  Double_t GetWaferRadius()	    const { return fWaferRadius; }
-  Double_t GetSiThickness()	    const { return fSiThickness; }
-  Double_t GetLowR()		    const { return fLowR; }
-  Double_t GetHighR()		    const { return fHighR; }
-  Double_t GetTheta()		    const { return fTheta; }
-  Int_t    GetNStrips()		    const { return fNStrips; }
-  Int_t    GetNSectors()	    const { return Int_t(360 / fTheta); }
-  Double_t GetLegRadius()	    const { return fLegRadius; }
-  Double_t GetLegLength()	    const { return fLegLength; }
-  Double_t GetModuleSpacing()	    const { return fModuleSpacing; }
+  /** @param x Value of The Id of this ring type */
+  void SetId(Char_t x) { fId = x; }
+  /** @param x Value of With of bonding pad on sensor */
+  void SetBondingWidth(Double_t x=.5) { fBondingWidth = x; }
+  /** @param x Value of Size of wafer the sensor was made from */
+  void SetWaferRadius(Double_t x=13.4/2) { fWaferRadius = x; }
+  /** @param x Value of Thickness of sensor */
+  void SetSiThickness(Double_t x=.03) { fSiThickness = x; }
+  /** @param x Value of Lower radius of ring */
+  void SetLowR(Double_t x) { fLowR = x; }
+  /** @param x Value of Upper radius of ring */
+  void SetHighR(Double_t x) { fHighR = x; }
+  /** @param x Value of Opening angle of the silicon wafers */
+  void SetTheta(Double_t x) { fTheta = x; }
+  /** @param x Value of Number of strips */
+  void SetNStrips(Int_t x) { fNStrips = x; }
+  /** @param x Value of How far the ring extends beyond the z value given. */
+  void SetRingDepth(Double_t x) { fRingDepth = x; }
+  /** @param x Value of Radius of support legs */
+  void SetLegRadius(Double_t x=.5) { fLegRadius = x; }
+  /** @param x Value of Radius of support legs */
+  void SetLegLength(Double_t x=1) { fLegLength = x; }
+  /** @param x Value of Radius of support legs */
+  void SetLegOffset(Double_t x=2) { fLegOffset = x; }
+  /** @param x Value of Staggering offset */
+  void SetModuleSpacing(Double_t x=1) { fModuleSpacing = x; }
+  /** @param x Value of Thickness of print board */
+  void SetPrintboardThickness(Double_t x=.1) { fPrintboardThickness = x; }
+  
+  /** @return The Id of this ring type */
+  Char_t GetId() const { return fId; }
+  /** @return With of bonding pad on sensor */
+  Double_t GetBondingWidth() const { return fBondingWidth; }
+  /** @return Size of wafer the sensor was made from */
+  Double_t GetWaferRadius() const { return fWaferRadius; }
+  /** @return Thickness of sensor */
+  Double_t GetSiThickness() const { return fSiThickness; }
+  /** @return Lower radius of ring */
+  Double_t GetLowR() const { return fLowR; }
+  /** @return Upper radius of ring */
+  Double_t GetHighR() const { return fHighR; }
+  /** @return Opening angle of the sector (half that of silicon wafers) */
+  Double_t GetTheta() const { return fTheta; }
+  /** @return Number of strips */
+  Int_t GetNStrips() const { return fNStrips; }
+  /** @return Number of sectors */
+  Int_t GetNSectors() const { return Int_t(360. / fTheta); }
+  /** @return Number of modules (2 sectors per module) */
+  Int_t GetNModules() const { return GetNSectors() / 2; }
+  /** @return How far the ring extends beyond the z value given. */
+  Double_t GetRingDepth() const { return fRingDepth; }
+  /** @return Radius of support legs */
+  Double_t GetLegRadius() const { return fLegRadius; }
+  /** @return Radius of support legs */
+  Double_t GetLegLength() const { return fLegLength; }
+  /** @return Radius of support legs */
+  Double_t GetLegOffset() const { return fLegOffset; }
+  /** @return Staggering offset */
+  Double_t GetModuleSpacing() const { return fModuleSpacing; }
+  /** @return Thickness of print board */
   Double_t GetPrintboardThickness() const { return fPrintboardThickness; }
-  Double_t GetRingDepth()           const { return fRingDepth; }
+  /** @return List of verticies */
+  const TObjArray& GetVerticies() const { return fVerticies; }
+  /** @return Number of verticies */
+  Int_t GetNVerticies() const { return fVerticies.GetEntries(); }
+  /** @param i Vertex number 
+      @return the ith vertex */
+  TVector2* GetVertex(Int_t i) const;
+     
+  void Detector2XYZ(UShort_t sector, UShort_t strip, 
+		    Double_t& x, Double_t& y, Double_t& z) const;
+  
+private: 
+  Char_t	fId;			// The Id of this ring type
+  Double_t	fBondingWidth;		// With of bonding pad on sensor
+  Double_t	fWaferRadius;		// Size of wafer sensor was made from
+  Double_t	fSiThickness;		// Thickness of sensor
+  Double_t	fLowR;			// Lower radius of ring
+  Double_t	fHighR;			// Upper radius of ring
+  Double_t	fTheta;			// Opening angle of the silicon wafers
+  Int_t		fNStrips;		// Number of strips
+  Double_t	fRingDepth;		// How far the ring extends beyond z
+  Double_t	fLegRadius;		// Radius of support legs
+  Double_t 	fLegLength;		// Radius of support legs
+  Double_t	fLegOffset;		// Radius of support legs
+  Double_t	fModuleSpacing;		// Staggering offset
+  Double_t	fPrintboardThickness;	// Thickness of print board
+  TObjArray	fVerticies;		// List of verticies
 
-  void SetBondingWidth(Double_t width)	          { fBondingWidth = width; }
-  void SetWaferRadius(Double_t radius)	          { fWaferRadius = radius; } 
-  void SetSiThickness(Double_t thickness)	  { fSiThickness = thickness; }
-  void SetLowR(Double_t lowR)		          { fLowR = lowR; }
-  void SetHighR(Double_t highR)		          { fHighR = highR; }
-  void SetTheta(Double_t theta)		          { fTheta = theta; }
-  void SetNStrips(Int_t nStrips)		  { fNStrips = nStrips; }
-  void SetLegRadius(Double_t radius)	          { fLegRadius = radius; }
-  void SetLegLength(Double_t length)	          { fLegLength = length; }
-  void SetLegOffset(Double_t offset)	          { fLegOffset = offset; }
-
-  void SetModuleSpacing(Double_t       spacing)	  { fModuleSpacing = spacing; }
-  void SetPrintboardThickness(Double_t thickness) { fPrintboardThickness = thickness; }
-
-protected:
-  Char_t   fId;			 // ID
-  Bool_t   fDetailed;            // True if a detailed geometry is made
-  Int_t    fActiveId;		 // Active volume 
-  Int_t    fPrintboardBottomId;  // Print board bottom volume
-  Int_t    fPrintboardTopId;     // Print board top volume
-  Int_t    fRingId;		 // Ring volume
-  Int_t    fSectionId;		 // Section volumes 
-  Int_t    fStripId;		 // Strip volumes 
-  Int_t    fVirtualBackId;	 // Virtual Back volume
-  Int_t    fVirtualFrontId;	 // Virtual Front volume
-
-  Double_t fBondingWidth;	 // With of bonding pad on sensor
-  Double_t fWaferRadius;	 // Size of wafer the sensor was made from 
-  Double_t fSiThickness;	 // Thickness of sensor
-  Double_t fLowR;		 // Lower radius of ring
-  Double_t fHighR;		 // Upper radius of ring
-  Double_t fTheta;		 // Opening angle of the silicon wafers
-  Int_t    fNStrips;		 // Number of strips 
-  Double_t fRingDepth;           // How far the ring extends beyond
-				 // the z value given. 
-  Double_t fLegRadius;		 // Radius of support legs 
-  Double_t fLegLength;		 // Radius of support legs 
-  Double_t fLegOffset;		 // Radius of support legs 
-
-  Double_t fModuleSpacing;	 // Staggering offset 
-  Double_t fPrintboardThickness; // Thickness of print board
-
-  TArrayI    fRotations;	 // Array of rotations
-  TShape*    fShape;             // Shape used for event display
-  TObjArray* fRotMatricies;      // Matricies used for event display
-
-  AliFMDPolygon  fPolygon;		 // Polygon shape 
-
-  static const Char_t* fgkRingFormat;       // Format for Ring names 
-  static const Char_t* fgkVirtualFormat;    // Format for Virtual names
-  static const Char_t* fgkActiveFormat;     // Format for Active names 
-  static const Char_t* fgkSectorFormat;     // Format for Sector names 
-  static const Char_t* fgkStripFormat;      // Format for Strip names 
-  static const Char_t* fgkPrintboardFormat; // Format for Printboard names 
-
-  ClassDef(AliFMDRing, 1) // FMD Ring volume parameters 
+  ClassDef(AliFMDRing, 0);
 };
 #endif 
 //____________________________________________________________________
