@@ -437,6 +437,8 @@ fInitPos[1] = fNominalPos[1]+gRandom->Gaus(0.,0.0100); // 100 micron gaussian sm
   Int_t ncombi = 0;
   AliITStrackV2 *track1;
   AliITStrackV2 *track2;
+  AliITSStrLine line1;
+  AliITSStrLine line2;
   for(Int_t i=0; i<nacc; i++){
     track1 = (AliITStrackV2*)fTrkArray.At(i);
     if(fDebug>5){
@@ -457,7 +459,8 @@ fInitPos[1] = fNominalPos[1]+gRandom->Gaus(0.,0.0100); // 100 micron gaussian sm
     Double_t pos1[3];
     Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
     track1->GetGlobalXYZat(mindist,pos1[0],pos1[1],pos1[2]);
-    AliITSStrLine *line1 = new AliITSStrLine(pos1,mom1);
+    line1.SetP0(pos1);
+    line1.SetCd(mom1);
     for(Int_t j=i+1; j<nacc; j++){
       track2 = (AliITStrackV2*)fTrkArray.At(j);
       Double_t mom2[3];
@@ -470,14 +473,15 @@ fInitPos[1] = fNominalPos[1]+gRandom->Gaus(0.,0.0100); // 100 micron gaussian sm
       Double_t pos2[3];
       mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
       track2->GetGlobalXYZat(mindist,pos2[0],pos2[1],pos2[2]);
-      AliITSStrLine *line2 = new AliITSStrLine(pos2,mom2);
+      line2.SetP0(pos2);
+      line2.SetCd(mom2);
       Double_t crosspoint[3];
-      Int_t retcode = line2->Cross(line1,crosspoint);
+      Int_t retcode = line2.Cross(&line1,crosspoint);
       if(retcode<0){
 	if(fDebug>10)cout<<" i= "<<i<<",   j= "<<j<<endl;
 	if(fDebug>10)cout<<"bad intersection\n";
-	line1->PrintStatus();
-	line2->PrintStatus();
+	line1.PrintStatus();
+	line2.PrintStatus();
       }
       else {
 	ncombi++;
@@ -486,9 +490,7 @@ fInitPos[1] = fNominalPos[1]+gRandom->Gaus(0.,0.0100); // 100 micron gaussian sm
 	if(fDebug>10)cout<<"\n Cross point: ";
 	if(fDebug>10)cout<<crosspoint[0]<<" "<<crosspoint[1]<<" "<<crosspoint[2]<<endl;
       }
-      delete line2;
     }
-    delete line1;
   }
   if(ncombi>0){
     for(Int_t jj=0;jj<3;jj++)fInitPos[jj] = aver[jj]/ncombi;
