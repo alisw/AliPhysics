@@ -1,4 +1,4 @@
-# $ Id: $
+# $Id$
 # The simplest way how to run aligeant4;
 # all detector and structure modules of the default versions
 # (excluded G3-dependent/errorneous detectors) are built;
@@ -11,15 +11,11 @@
 
 # switch off modules with errors
 /aliDet/switchOff CASTOR
-/aliDet/switchOff PMD
-/aliDet/switchOff SHIL
-
-# switch off modules with MANY
-/aliDet/switchOff DIPO
-/aliDet/switchOff MAG
-/aliDet/switchOff MUON
-/aliDet/switchOff TRD
 /aliDet/switchOff ZDC
+/aliDet/switchOff PMD
+
+# needed SHIL cvs version Log: AliSHILvF.cxx,v Revision 1.11
+#/aliDet/switchOff SHIL
 
 # set physics
 /g4mc/setHadron true
@@ -39,4 +35,4 @@
 /g4mc/rootCmd timer.Stop();
 /g4mc/rootCmd timer.Print();
 
-/control/exit
+exit
