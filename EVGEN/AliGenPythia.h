@@ -112,7 +112,12 @@ class AliGenPythia : public AliGenMC
     StrucFunc_t fStrucFunc;       //Structure Function
     Float_t     fEnergyCMS;       //Centre of mass energy
     Float_t     fKineBias;        //!Bias from kinematic selection
-    Int_t       fTrials;          //!Number of trials
+    Int_t       fTrials;          //!Number of trials for current event
+    Int_t       fTrialsRun;       //!Number of trials for run
+    Float_t     fQ;               //Mean Q
+    Float_t     fX1;              //Mean x1
+    Float_t     fX2;              //Mean x2
+    Int_t       fNev;             //Number of events 
     Int_t       fFlavorSelect;    //Heavy Flavor Selection
     Float_t     fXsection;        //Cross-section
     AliPythia   *fPythia;         //!Pythia 
@@ -151,7 +156,7 @@ class AliGenPythia : public AliGenMC
     // fCountMode = kCountTrackabless --> Only particles flagged for tracking
     //                                     are counted
     //
-    ClassDef(AliGenPythia,2) // AliGenerator interface to Pythia
+    ClassDef(AliGenPythia,3) // AliGenerator interface to Pythia
 };
 #endif
 
