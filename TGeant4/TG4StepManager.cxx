@@ -27,6 +27,7 @@ TG4StepManager* TG4StepManager::fgInstance = 0;
 
 TG4StepManager::TG4StepManager() 
   : fStep(0),
+    fStepStatus(kPreStepPoint),
     fSteppingManager(0)
 {
 // 
@@ -527,9 +528,17 @@ void TG4StepManager::TrackPosition(TLorentzVector& position) const
 // ---
 
   if (fStep) {
+  
+    // get step point    
+    G4StepPoint* stepPoint;
+    if (fStepStatus == kPreStepPoint) 
+      stepPoint = fStep->GetPreStepPoint();
+    else  
+      stepPoint = fStep->GetPostStepPoint();
+      
     // position
     G4ThreeVector positionVector
-       = fStep->GetPostStepPoint()->GetPosition();
+       = stepPoint->GetPosition();
     positionVector *= 1./(TG3Units::Length());   
      
     // local time   
@@ -637,9 +646,13 @@ Float_t TG4StepManager::TrackStep() const
 // ---
 
   if (fStep) {
-    // check
-    G4double length = fStep->GetStepLength();
-    length /= TG3Units::Length();
+    G4double length;
+    if (fStepStatus == kPreStepPoint) 
+      length = 0;
+    else {  
+      length = fStep->GetStepLength();
+      length /= TG3Units::Length();
+    }	  
     return length;
   }
   else {   
@@ -691,10 +704,14 @@ Float_t TG4StepManager::Edep() const
 // ---
 
   if (fStep) {
-    // G4double deltaEnergy = fStep->GetDeltaEnergy();
-    G4double deltaEnergy = fStep->GetTotalEnergyDeposit();
-    deltaEnergy /= TG3Units::Energy();
-    return deltaEnergy;
+    G4double energyDeposit;
+    if (fStepStatus == kPreStepPoint) 
+      energyDeposit = 0;
+    else {  
+      energyDeposit = fStep->GetTotalEnergyDeposit();
+      energyDeposit /= TG3Units::Energy();
+    }	  
+    return energyDeposit;
   } 
   else {   
     TG4Globals::Exception("TG4StepManager: Step is not defined.");
@@ -784,10 +801,17 @@ Bool_t TG4StepManager::IsTrackInside() const
 // at both pre-step and post-step points.
 // ---
 
-  if ( !(IsTrackEntering()) && !(IsTrackExiting()) )
-  { return true; }
-  else
-  { return false; }
+  G4bool inside;
+  if (fStepStatus == kPreStepPoint) {
+    inside = false;
+  }
+  else {  
+    if ( !(IsTrackEntering()) && !(IsTrackExiting()) ) 
+      inside = true; 
+    else
+      inside = false;
+  }
+  return inside;    
 }
 
 Bool_t TG4StepManager::IsTrackEntering() const
@@ -796,18 +820,10 @@ Bool_t TG4StepManager::IsTrackEntering() const
 // at pre-step point.
 // ---
 
-  if (fStep) {
-    G4StepStatus status
-       = fStep->GetPreStepPoint()->GetStepStatus();
-    if (status == fGeomBoundary)
-    { return true; }
+    if (fStepStatus == kPreStepPoint)
+      return true;  
     else
-    { return false; }
-  } 
-  else {   
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return false;
-  }
+      return false;  
 }
 
 Bool_t TG4StepManager::IsTrackExiting() const
@@ -817,13 +833,15 @@ Bool_t TG4StepManager::IsTrackExiting() const
 // ---
 
   if (fStep) {
-    // check
+    if (fStepStatus == kPreStepPoint) 
+      return false;
+      
     G4StepStatus status
        = fStep->GetPostStepPoint()->GetStepStatus();
     if (status == fGeomBoundary)
-    { return true; }
+      return true; 
     else
-    { return false; }
+      return false;
   } 
   else {   
     TG4Globals::Exception("TG4StepManager: Step is not defined.");
@@ -833,18 +851,18 @@ Bool_t TG4StepManager::IsTrackExiting() const
 
 Bool_t TG4StepManager::IsTrackOut() const
 {   
-// Returns true if particle cross the Hall frame 
+// Returns true if particle cross the world boundary
 // at post-step point.
 // ---
 
   if (fStep) {
     // check
-    G4String volName
-       = fStep->GetPostStepPoint()->GetPhysicalVolume()->GetName();
-    if (volName == "pHallFrame")
-    { return true; }
+    G4StepStatus status
+      = fStep->GetPostStepPoint()->GetStepStatus();
+    if (status == fWorldBoundary)
+      return true; 
     else
-    { return false; }
+      return false;
   } 
   else {   
     TG4Globals::Exception("TG4StepManager: Step is not defined.");
@@ -938,7 +956,8 @@ Bool_t TG4StepManager::IsNewTrack() const
 // Returns true when track performs the first step.
 // ---
 
-  if (fStep->GetTrack()->GetCurrentStepNumber() == 1)
+  if ((fStep->GetTrack()->GetCurrentStepNumber() == 1) &&
+      (fStepStatus == kPreStepPoint))
     return true;
   else  
     return false;
