@@ -120,13 +120,18 @@
 //
 // Chamber positions
 //
-const Float_t dzch = 10.;
-const Float_t zch1 =   528.0;
-const Float_t zch2 =   690.;
-const Float_t zch31 =  945.5;
-const Float_t zch32 = 1004.5;
-const Float_t zch41 = 1237.66;
-const Float_t zch42 = 1296.66;
-const Float_t zch51 = 1398.5;
-const Float_t zch52 = 1457.5;
+const Float_t zch1 =   530.0 ;
+const Float_t zch2 =   672.5 ;
+
+const Float_t zch11 =  522.5 ;
+const Float_t zch12 =  557.5 ;
+const Float_t zch21 =  662.5 ;
+const Float_t zch22 =  709.5 ;
+const Float_t zch31 =  946.  ;
+const Float_t zch32 = 1046.  ;
+const Float_t zch41 = 1238.16;
+const Float_t zch42 = 1296.16;
+const Float_t zch51 = 1399.0 ;
+const Float_t zch52 = 1457.0 ;
 #endif
+

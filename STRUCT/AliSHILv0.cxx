@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/09/12 17:00:45  morsch
 Overlaps in YMO3 and YMO4 (side-effect from last update only) corrected.
 
@@ -533,6 +536,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 // Steel envelope
 //
+// (1)
   tpar[0]=R11-dRSteel1;
   tpar[1]=R21;
   tpar[2]=2;
@@ -540,6 +544,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=-dl+tpar[2];
   gMC->Gspos("YS21", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
   dz+=tpar[2];
+// (2)
   tpar[0]=R21-dRSteel2;
   tpar[1]=R21;
   tpar[2]=(zvac6-zvac5)/2.;
@@ -547,18 +552,17 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz+=tpar[2];
   gMC->Gspos("YS22", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
   dz+=tpar[2];
-  
+// (3)  
   cpar[0]=2.;
   cpar[1]=R21-dRSteel2;
   cpar[2]=zvac6 * TMath::Tan(accMin);
   cpar[3]=cpar[1];
   cpar[4]=cpar[2]+4.*TMath::Tan(accMin);
-
   gMC->Gsvolu("YS23", "CONE", idtmed[kSteel], cpar, 5);
   dz+=cpar[0];
-  gMC->Gspos("YS23", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
+  gMC->Gspos("YS23", 1, "YGO2", 0., 0., dz, 0, "ONLY");
   dz+=cpar[0];
-
+// (4)
   cpar[0]=(zPb-zvac6-4.)/2;
   cpar[2]=cpar[4];
   cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
@@ -570,6 +574,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   gMC->Gspos("YS24", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
   dz+=cpar[0];
 
+// (5) 
   cpar[0]=(zConeE-zPb)/2;
   cpar[2]=cpar[4];
   cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
@@ -580,7 +585,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=-dlPb+cpar[0];
   gMC->Gspos("YS25", 1, "YXO2", 0., 0., dz, 0, "ONLY");  
   dz+=cpar[0];
-
+// (6)
   tpar[0]=26.;
   tpar[1]=30.;
   tpar[2]=(zvac7-zConeE)/2.;
@@ -588,8 +593,19 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   gMC->Gsvolu("YS26", "TUBE", idtmed[kSteel], tpar, 3);
   dz+=tpar[2];
   gMC->Gspos("YS26", 1, "YXO2", 0., 0., dz, 0, "ONLY");  
-  dz+=tpar[2];
+  dz = -tpar[2];
   
+// Recess in steel for station 3
+//
+  tpar[0]=29.;
+  tpar[1]=30.;
+  tpar[2]=(zch32-zch31)/2.;
+  gMC->Gsvolu("YS27", "TUBE", idtmed[kAir], tpar, 3);
+  dz+=(tpar[2]+zch31-zConeE);
+  
+  gMC->Gspos("YS27", 1, "YS26", 0., 0., dz, 0, "ONLY");  
+      
+// 
 //
 // 2nd section: vacuum system 
 //
@@ -761,14 +777,14 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   tpar[2]=dF2/2.;
   gMC->Gsvolu("YFM2", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
-  tpar[0]=rF2-dFlange;
+  tpar[0]=rF2-2.;
   tpar[1]=rF2;
   tpar[2]=dF2/2.;
   gMC->Gsvolu("YF21", "TUBE", idtmed[kSteel+40], tpar, 3);
   gMC->Gspos("YF21", 1, "YFM2", 0., 0., 0., 0, "ONLY"); 
 
   tpar[0]=rB2;
-  tpar[1]=rF2-dFlange;
+  tpar[1]=rF2-2.;
   tpar[2]=dFlange/2.;
   gMC->Gsvolu("YF22", "TUBE", idtmed[kSteel+40], tpar, 3);
   dz=-dF2/2.+tpar[2];
@@ -1016,7 +1032,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 // Shielding close to chamber
 //
-  cpar[0]=(zch1-dzch-1.-zRear)/2.;
+//
+  cpar[0]=(zch11-zRear)/2.;
   cpar[1]=R11;
   cpar[2]=zRear*TMath::Tan(accMin);
   cpar[3]=R11;
@@ -1025,7 +1042,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=zRear+cpar[0];
   gMC->Gspos("YCS1", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 
-  cpar[0]=(zvac4-(zch1+dzch+1.))/2.;
+/*
+  cpar[0]=(zvac4-zch12)/2.;
   cpar[1]=R11;
   cpar[2]=(zvac4-2.*cpar[0])*TMath::Tan(accMin);
   cpar[3]=R11;
@@ -1034,17 +1052,18 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=zvac4-cpar[0];
   gMC->Gspos("YCS2", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 
-  cpar[0]=(dzch-1.);
+
+  cpar[0]=(zch12-zch11-2.)/2.;
   cpar[1]=R11;
-  cpar[2]=(zch1-dzch+1.)*TMath::Tan(accMin);
+  cpar[2]=(zch11+2.)*TMath::Tan(accMin);
   cpar[3]=R11;
   cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
   gMC->Gsvolu("YCS3", "CONE", idtmed[kNiCuW], cpar, 5);
-  dz=zch1;
+  dz=(zch11+zch12)/2.;
   gMC->Gspos("YCS3", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+*/
 
-
-  cpar[0]=(zch2-dzch-1.-zvac4)/2.;
+  cpar[0]=(zch21-zvac4)/2.;
   cpar[1]=R21;
   cpar[2]=zvac4*TMath::Tan(accMin);
   cpar[3]=R21;
@@ -1053,8 +1072,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=zvac4+cpar[0];
   gMC->Gspos("YCS4", 1, "ALIC", 0., 0., dz, 0, "ONLY");
   
-
-  cpar[0]=(zvac6-(zch2+dzch+1.))/2.;
+/*
+  cpar[0]=(zvac6-zch22)/2.;
   cpar[1]=R21;
   cpar[2]=(zvac6-2.*cpar[0])*TMath::Tan(accMin);
   cpar[3]=R21;
@@ -1063,80 +1082,86 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=zvac6-cpar[0];
   gMC->Gspos("YCS5", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 
-  cpar[0]=(dzch-1.);
+
+  cpar[0]=(zch22-zch21-2.)/2.;
   cpar[1]=R21;
-  cpar[2]=(zch2-dzch+1.)*TMath::Tan(accMin);
+  cpar[2]=(zch21+2.)*TMath::Tan(accMin);
   cpar[3]=R21;
   cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
   gMC->Gsvolu("YCS6", "CONE", idtmed[kNiCuW], cpar, 5);
-  dz=zch2;
+  dz=(zch21+zch22)/2.;
   gMC->Gspos("YCS6", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+*/
 //
 // Outer Pb Cone
+  
   if (fPbCone) {
+
       par0[0]  = 0.;
       par0[1]  = 360.;
-      par0[2]  = 14.;
+      par0[2]  = 10.;
+/*
 //    start of cone
       par0[3]  = zConeE;
-      par0[4]  = 30.0;
+      par0[4]  = 30.;
       par0[5]  = 30.01;
 //    3rd station
       par0[6]  = zch31;
-      par0[7]  = 30.0;
-      par0[8]  = 30.-(zConeE-zch31)*TMath::Tan(thetaOpenPbO);
+      par0[7]  = 30.;
+      par0[8]  = 30.+(zch31-zConeE)*TMath::Tan(thetaOpenPbO);
 
       par0[9]   = zch31;
       par0[10]  = 30.0;
-      par0[11]  = 30.1;
+      par0[11]  = par0[8]-1.;
+      
 
       par0[12]  = zch32;
       par0[13]  = 30.0;
-      par0[14]  = 30.1;
-
-      par0[15]  = zch32;
-      par0[16]  = 30.0;
-      par0[17]  = 30.-(zConeE-zch32)*TMath::Tan(thetaOpenPbO);
+      par0[14]  = par0[11];
+*/
+      par0[ 3]  = zch32;
+      par0[ 4]  = 30.;
+      par0[ 5]  = 30.+(zch32-zConeE)*TMath::Tan(thetaOpenPbO);
 
 //    4th station
-      par0[18]  = zch41;
-      par0[19]  = 30.0;
-      par0[20]  = 30.-(zConeE-zch41)*TMath::Tan(thetaOpenPbO);
+      par0[ 6]  = zch41;
+      par0[ 7]  = 30.;
+      par0[ 8]  = 30.+(zch41-zConeE)*TMath::Tan(thetaOpenPbO);
 
-      par0[21]   = zch41;
-      par0[22]  = 30.0;
-      par0[23]  = 30.-(zConeE-zch41)*TMath::Tan(thetaOpenPbO)-7.;
+      par0[ 9]   = zch41;
+      par0[10]  = 30.;
+      par0[11]  = 37.5;  
+                                          // recess erice2000
+      par0[12]  = zch42;
+      par0[13]  = 30.;
+      par0[14]  = par0[11];
 
-      par0[24]  = zch42;
-      par0[25]  = 30.0;
-      par0[26]  = 30.-(zConeE-zch41)*TMath::Tan(thetaOpenPbO)-7.;
-
-      par0[27]  = zch42;
-      par0[28]  = 30.0;
-      par0[29]  = 30.-(zConeE-zch42)*TMath::Tan(thetaOpenPbO);
+      par0[15]  = zch42;
+      par0[16]  = 30.;
+      par0[17]  = 30.+(zch42-zConeE)*TMath::Tan(thetaOpenPbO);
 
 //    5th station
-      par0[30]  = zch51;
-      par0[31]  = 30.0;
-      par0[32]  = 30.-(zConeE-zch51)*TMath::Tan(thetaOpenPbO);
+      par0[18]  = zch51;
+      par0[19]  = 30.;
+      par0[20]  = 30.+(zch51-zConeE)*TMath::Tan(thetaOpenPbO);
 
-      par0[33]  = zch51;
-      par0[34]  = 30.0;
-      par0[35]  = 30.-(zConeE-zch51)*TMath::Tan(thetaOpenPbO)-7.;
+      par0[21]  = zch51;
+      par0[22]  = 30.;
+      par0[23]  = 37.5;                                            // recess erice2000
 
-      par0[36]  = zch52;
-      par0[37]  = 30.0;
-      par0[38]  = 30.-(zConeE-zch51)*TMath::Tan(thetaOpenPbO)-7.;
+      par0[24]  = zch52;
+      par0[25]  = 30.;
+      par0[26]  = par0[23];
 
-      par0[39]  = zch52;
-      par0[40]  = 30.0;
-      par0[41]  = 30.-(zConeE-zch52)*TMath::Tan(thetaOpenPbO);
+      par0[27]  = zch52;
+      par0[28]  = 30.;
+      par0[29]  = 30.+(zch52-zConeE)*TMath::Tan(thetaOpenPbO);
 // end of cone
-      par0[42]  = zFilterIn;
-      par0[43]  = 30.0;
-      par0[44]  = 30.-(zConeE-zFilterIn)*TMath::Tan(thetaOpenPbO);
+      par0[30]  = zFilterIn;
+      par0[31]  = 30.;
+      par0[32]  = par0[29];
 //
-      gMC->Gsvolu("YOPB", "PCON", idtmed[kPb], par0, 45);
+      gMC->Gsvolu("YOPB", "PCON", idtmed[kPb], par0, 33);
       dz=0.;
       gMC->Gspos("YOPB", 1, "ALIC", 0., 0., dz, 0, "ONLY");
   }
@@ -1159,7 +1184,3 @@ void AliSHILv0::Init()
   for(i=0;i<80;i++) printf("*");
   printf("\n");
 }
-
-
-
-
