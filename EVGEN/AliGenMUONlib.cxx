@@ -680,10 +680,25 @@ Double_t AliGenMUONlib::PtCharmCentral( Double_t *px, Double_t */*dummy*/)
 //                  y-distribution
 Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t */*dummy*/)
 {
-// Charm y
-    Double_t *dum=0;
-    return YJpsi(px,dum);
+// Charm y :: Carrer & Dainese : ALICE-INT-2003-019 v.3 (hep-ph/0311225) 
+// Pythia tuned to reproduce the distribution given by the HVQMNR program based on NLO calculations (pQCD)
+// shadowing + kt broadening 
+
+    Double_t x=px[0];
+    Double_t c[2]={-2.42985e-03,-2.31001e-04};
+    Double_t y=1+(c[0]*TMath::Power(x,2))+(c[1]*TMath::Power(x,4));
+    Double_t ycharm;
+    
+    if (TMath::Abs(x)>8) {
+      ycharm=0.;
+    }
+    else {
+      ycharm=TMath::Power(y,3);
+    }
+    
+    return ycharm;
 }
+
 
 Int_t AliGenMUONlib::IpCharm(TRandom *ran)
 {  
@@ -692,20 +707,29 @@ Int_t AliGenMUONlib::IpCharm(TRandom *ran)
     Int_t ip;
 //    411,421,431,4122
     random = ran->Rndm();
-    if (random < 0.5) {
-	ip=411;
-    } else if (random < 0.75) {
-	ip=421;
-    } else if (random < 0.90) {
-	ip=431;
+//  Taux de production Carrer & Dainese : ALICE-INT-2003-019 v.3  
+//  >>>>> cf. tab 4 p 11
+  
+    if (random < 0.30) {                       
+        ip=421;
+    } else if (random < 0.60) {
+        ip=-421;
+    } else if (random < 0.70) {
+        ip=411;
+    } else if (random < 0.80) {
+        ip=-411;
+    } else if (random < 0.86) {
+        ip=431;
+    } else if (random < 0.92) {
+        ip=-431;	
+    } else if (random < 0.96) {
+        ip=4122;
     } else {
-	ip=4122;
+        ip=-4122;
     }
-    if (ran->Rndm() < 0.5) {ip=-ip;}
     
     return ip;
 }
-
 
 //
 //                        Beauty
@@ -737,30 +761,57 @@ Double_t AliGenMUONlib::PtBeautyCentral( Double_t *px, Double_t */*dummy*/)
 //                     y-distribution
 Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t */*dummy*/)
 {
-// Beauty y
-    Double_t *dum=0;
-    return YJpsi(px,dum);
+// Beauty y :: Carrer & Dainese : ALICE-INT-2003-019 v.3 (hep-ph/0311225) 
+// Pythia tuned to reproduce the distribution given by the HVQMNR program based on NLO calculations (pQCD)
+// shadowing + kt broadening 
+
+    Double_t x=px[0];
+    Double_t c[2]={-1.27590e-02,-2.42731e-04};
+    Double_t y=1+c[0]*TMath::Power(x,2)+c[1]*TMath::Power(x,4);
+    Double_t ybeauty;
+    
+    if (TMath::Abs(x)>6) {
+      ybeauty=0.;
+    }
+    else {
+      ybeauty=TMath::Power(y,3);
+    }
+    
+    return ybeauty;
 }
+
 
 Int_t AliGenMUONlib::IpBeauty(TRandom *ran)
 {  
 // Beauty Composition
     Float_t random;
     Int_t ip;
-    random = ran->Rndm();
-    if (random < 0.5) {
-	ip=511;
-    } else if (random < 0.75) {
-	ip=521;
-    } else if (random < 0.90) {
-	ip=531;
-    } else {
-	ip=5122;
-    }
-    if (ran->Rndm() < 0.5) {ip=-ip;}
+    random = ran->Rndm(); 
     
-    return ip;
+//  Taux de production Carrer & Dainese : ALICE-INT-2003-019 v.3  
+//  >>>>> cf. tab 4 p 11
+    
+ if (random < 0.20) {                       
+        ip=511;
+    } else if (random < 0.40) {
+        ip=-511;
+    } else if (random < 0.605) {
+        ip=521;
+    } else if (random < 0.81) {
+        ip=-521;
+    } else if (random < 0.87) {
+        ip=531;
+    } else if (random < 0.93) {
+        ip=-531;	
+    } else if (random < 0.965) {
+        ip=5122;
+    } else {
+        ip=-5122;
+    }
+    
+ return ip;
 }
+
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
 GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
