@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.45  2003/02/11 16:54:07  hristov
+Updated AliTrackReference class (S.Radomski)
+
 Revision 1.44  2003/01/28 14:38:18  cblume
 Add track length to track references
 
@@ -364,23 +367,6 @@ void AliTRD::AddCluster(Float_t *pos, Int_t det, Float_t amp
 
   fRecPoints->Add(c);
 
-}
-
-//_____________________________________________________________________________
-void  AliTRD::AddTrackReference(Int_t label, TVirtualMC *vMC)
-{
-  //
-  // Add a trackrefernce to the list
-  //
-
-  if (!fTrackReferences) {
-    Error("AddTrackReference","Container fTrackRefernce not active\n");
-    return;
-  }
-
-  Int_t nref = fTrackReferences->GetEntriesFast();
-  TClonesArray &lref = *fTrackReferences;
-  new(lref[nref]) AliTrackReference(label, vMC);
 }
 
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2003/02/11 16:54:07  hristov
+Updated AliTrackReference class (S.Radomski)
+
 Revision 1.38  2003/01/31 11:41:06  cblume
 Fix bug in StepManager in treating geometry with holes
 
@@ -653,7 +656,7 @@ void AliTRDv1::StepManager()
 	  // momentum components of the particle
           if (gMC->IsTrackEntering() || gMC->IsTrackExiting()) {
             gMC->TrackMomentum(mom);
-            AddTrackReference(gAlice->CurrentTrack(),gMC);
+            AddTrackReference(gAlice->CurrentTrack());
           }
 
           // Create the hits from TR photons
