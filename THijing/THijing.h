@@ -13,6 +13,7 @@
 #ifndef ROOT_TGenerator
 #include "TGenerator.h"
 #endif
+class TObjArray;
 
 class THijing : public TGenerator {
 
@@ -30,6 +31,7 @@ public:
    virtual void        GenerateEvent();
 
    virtual Int_t       ImportParticles(TClonesArray *particles, Option_t *option="");
+   virtual TObjArray*  ImportParticles(Option_t *option="");
 
 
    //Parameters for the generation:
@@ -192,18 +194,17 @@ public:
 
    protected:
 
-    Float_t      fEfrm;  // Energy in the centre of mass (CMS) or lab-frame (LAB)
-    TString      fFrame; // Reference frame CMS or LAB
-    TString      fProj;  // Projectile name
-    TString      fTarg;  // Target name
-    Int_t        fIap;   // Atomic number of projectile
-    Int_t        fIzp;   // Charge number of projectile 
-    Int_t        fIat;   // Atomic number of target
-    Int_t        fIzt;   // Charge number of target
-    Float_t      fBmin;  // Minimum impact parameter
-    Float_t      fBmax;  // Maximum impact parameter
-
-   ClassDef(THijing,1)  //Interface to Hijing Event Generator
+    Float_t      fEfrm;     // Energy in the centre of mass (CMS) or lab-frame (LAB)
+    TString      fFrame;    // Reference frame CMS or LAB
+    TString      fProj;     // Projectile name
+    TString      fTarg;     // Target name
+    Int_t        fIap;      // Atomic number of projectile
+    Int_t        fIzp;      // Charge number of projectile 
+    Int_t        fIat;      // Atomic number of target
+    Int_t        fIzt;      // Charge number of target
+    Float_t      fBmin;     // Minimum impact parameter
+    Float_t      fBmax;     // Maximum impact parameter
+    ClassDef(THijing,1)  //Interface to Hijing Event Generator
 };
 
 #endif

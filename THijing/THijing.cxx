@@ -25,6 +25,7 @@
 
 
 #include "THijing.h"
+#include "TObjArray.h"
 #include "Hcommon.h"
 #include "TParticle.h"
 #include "TROOT.h"
@@ -98,6 +99,67 @@ THijing::~THijing()
 }
 
 
+TObjArray* THijing::ImportParticles(Option_t *option)
+{
+//
+//  Default primary creation method. It reads the /HEPEVT/ common block which
+//  has been filled by the GenerateEvent method. If the event generator does
+//  not use the HEPEVT common block, This routine has to be overloaded by
+//  the subclasses.
+//  The function loops on the generated particles and store them in
+//  the TClonesArray pointed by the argument particles.
+//  The default action is to store only the stable particles (ISTHEP = 1)
+//  This can be demanded explicitly by setting the option = "Final"
+//  If the option = "All", all the particles are stored.
+//
+    fParticles->Clear();
+    Int_t numpart = HIMAIN1.natt;
+    printf("\n THijing: HIJING stack contains %d particles.", numpart);
+    printf("\n THijing: Total energy:         %f           ", HIMAIN1.eatt);
+    printf("\n THijing: Number of hard scatterings: %d     ", HIMAIN1.jatt);
+    Int_t nump = 0;
+    if (!strcmp(option,"") || !strcmp(option,"Final")) {
+	for (Int_t i = 0; i < numpart; i++) {
+	  
+	    if (HIMAIN2.katt[3][i] == 1) {
+//
+//  Use the common block values for the TParticle constructor
+//
+		nump++;
+		TParticle* p = new TParticle(
+		    HIMAIN2.katt[0][i], HIMAIN2.katt[1][i] ,
+		    -1, -1, -1, -1,
+		    HIMAIN2.patt[0][i], HIMAIN2.patt[1][i], HIMAIN2.patt[2][i], HIMAIN2.patt[3][i] ,
+		    HIMAIN2.vatt[0][i], HIMAIN2.vatt[1][i], HIMAIN2.vatt[2][i], HIMAIN2.vatt[3][i] 
+		  );
+		fParticles->Add(p);
+	    }
+	}
+    }
+    else if (!strcmp(option,"All")) {
+	nump = numpart; 
+	for (Int_t i = 0; i < numpart; i++) {
+	    
+	    Int_t iParent = HIMAIN2.katt[2][i]-1;
+	    
+	    if (iParent >= 0) {
+		TParticle *mother = (TParticle*) (fParticles->UncheckedAt(iParent));	   
+		mother->SetLastDaughter(i);
+		if (mother->GetFirstDaughter()==-1)
+		    mother->SetFirstDaughter(i);
+	    }
+	    
+	    TParticle* p = new TParticle(
+		HIMAIN2.katt[0][i], HIMAIN2.katt[1][i], iParent,
+		-1, -1, -1,
+		HIMAIN2.patt[0][i], HIMAIN2.patt[1][i], HIMAIN2.patt[2][i], HIMAIN2.patt[3][i] ,
+		HIMAIN2.vatt[0][i], HIMAIN2.vatt[1][i], HIMAIN2.vatt[2][i], HIMAIN2.vatt[3][i]
+		);
+	    fParticles->Add(p);
+	}
+    }
+    return fParticles;
+}
 
 Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 {
