@@ -35,10 +35,17 @@ SRCS:=AliColourStore.cxx \
 
 HDRS:=$(SRCS:.cxx=.h)
 
+DHDR:= AliGeant4LinkDef.h
+
+EINCLUDE:=$(G4INSTALL)/include $(CLHEP_BASE_DIR)/include TGeant4
+
 include $(G4INSTALL)/config/G4UI_USE.gmk
 include $(G4INSTALL)/config/G4VIS_USE.gmk
 include $(G4INSTALL)/config/interactivity.gmk
 
-EINCLUDE:=$(CPPFLAGS) TGeant4 $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
+EDEFINE:=$(CPPFLAGS)
 
-#PACKCXXFLAGS:=$(CPPFLAGS)
+#ELIBSDIR:= $(G4INSTALL)/include/$(G4SYSTEM) $(CLHEP_BASE_DIR)/lib 
+#ELIBS:= CLHEP 
+
+CINTHDRS:= AliGeant4/AliRunConfiguration.h
