@@ -52,16 +52,18 @@
 
 // --- ROOT system ---
 #include "TBenchmark.h"
-#include "TRandom.h"
+		//#include "TObjectTable.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSDigit.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSSDigitizer.h"
+		//#include "AliMemoryWatcher.h"
 
 ClassImp(AliPHOSSDigitizer)
 
@@ -109,8 +111,10 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer & sd)
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::~AliPHOSSDigitizer() {
   //dtor
+  //  AliPHOSGetter * gime =
+  //  AliPHOSGetter::Instance(GetTitle(),fEventFolderName.Data());  
   AliPHOSGetter * gime =
-    AliPHOSGetter::Instance(GetTitle(),fEventFolderName.Data());  
+    AliPHOSGetter::Instance();  
   gime->PhosLoader()->CleanSDigitizer();
 }
 //____________________________________________________________________________ 
@@ -134,7 +138,7 @@ void AliPHOSSDigitizer::Init()
 
   gime->PostSDigitizer(this);
   gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
-  
+ 
 }
 
 //____________________________________________________________________________ 
@@ -166,11 +170,11 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSSDigitizer");
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ;
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 
   //switch off reloading of this task while getting event
   if (!fInit) { // to prevent overwrite existing file
-    Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
+    AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
     return ;
   }
 
@@ -181,8 +185,11 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
   Int_t ievent ;
-  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent,"H") ;
+
+  //AliMemoryWatcher memwatcher;
+
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {    
+    gime->Event(ievent,"H") ;   
     TTree * treeS = gime->TreeS(); 
     TClonesArray * hits = gime->Hits() ;
     TClonesArray * sdigits = gime->SDigits() ;
@@ -197,10 +204,10 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     for (iprim = 0 ; iprim < nPrim ; iprim ++) { 
       //=========== Get the PHOS branch from Hits Tree for the Primary iprim
       gime->Track(iprim) ;
-      Int_t i;
-      for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
-	AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
-	// Assign primary number only if contribution is significant
+     Int_t i;
+       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
+ 	AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
+ 	// Assign primary number only if contribution is significant
 	
 	if( hit->GetEnergy() > fPrimThreshold)
 	  new((*sdigits)[nSdigits]) AliPHOSDigit(hit->GetPrimary(),hit->GetId(),
@@ -210,7 +217,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 						  Digitize(hit->GetEnergy()), hit->GetTime()) ;
 	nSdigits++ ;	
 	
-      }
+       }
  
     } // loop over iprim
 
@@ -242,20 +249,27 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     //Next - SDigitizer
 
     gime->WriteSDigitizer("OVERWRITE");
-
+    //gObjectTable->Print() ; 
+  
     if(strstr(option,"deb"))
       PrintSDigits(option) ;
-  }
+      
+    //memwatcher.Watch(ievent); 
+  }// event loop
   
   Unload();
 
-  gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
+  //  gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSSDigitizer");
     Info("Exec","   took %f seconds for SDigitizing  %f seconds per event",
 	 gBenchmark->GetCpuTime("PHOSSDigitizer"), gBenchmark->GetCpuTime("PHOSSDigitizer")/nEvents) ;
   }
+  
+  //TFile f("out.root","RECREATE");
+  //memwatcher.WriteToFile(); 
+  //f.Close();
 }
 
 //__________________________________________________________________
