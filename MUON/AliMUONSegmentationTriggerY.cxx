@@ -218,7 +218,11 @@ Float_t AliMUONSegmentationTriggerY::Dpy(Int_t isec) const
   } else {
     return 0.;
   }
-
+}
+//------------------------------------------------------------------   
+void AliMUONSegmentationTriggerY::GetPadI(Float_t x, Float_t y, Float_t /*z*/, Int_t &ix, Int_t &iy) 
+{
+  GetPadI(x, y, ix, iy);
 }
 
 //------------------------------------------------------------------   
@@ -227,9 +231,13 @@ void AliMUONSegmentationTriggerY::SetHit(Float_t xhit, Float_t yhit)
 // set hits during diintegration
   AliMUONSegmentationTrigger::SetHit(xhit,yhit);
 }
-
 //------------------------------------------------------------------   
-Int_t AliMUONSegmentationTriggerY::Sector(Int_t ix, Int_t iy)
+void AliMUONSegmentationTriggerY::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
+{
+  SetHit(xhit, yhit);
+}
+//------------------------------------------------------------------   
+Int_t AliMUONSegmentationTriggerY::Sector(Int_t ix, Int_t /*iy*/)
 {
 // Returns sector number for given module
 // 

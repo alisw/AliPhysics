@@ -154,7 +154,8 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   fId=chamber;
 
 }
-
+//------------------------------------------------------------------
+void  AliMUONSegmentationTrigger::Draw(const char * /*opt*/) const {}
 //------------------------------------------------------------------
 Int_t AliMUONSegmentationTrigger::ModuleNumber(Int_t imodule){
 // returns module number (from 0 to 126) corresponding to module imodule
@@ -167,7 +168,11 @@ Int_t AliMUONSegmentationTrigger::ModuleNumber(Int_t imodule){
   }
   return imod;
 }
-
+//------------------------------------------------------------------
+void   AliMUONSegmentationTrigger::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
+{
+  SetHit(xhit, yhit);
+}
 //------------------------------------------------------------------
 Float_t AliMUONSegmentationTrigger::StripSizeX(Int_t imodule){
 // Returns x-strip size for given module imodule

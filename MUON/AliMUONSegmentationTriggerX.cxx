@@ -212,14 +212,25 @@ Float_t AliMUONSegmentationTriggerX::Dpy(Int_t isec) const
 }
 
 //------------------------------------------------------------------   
+void AliMUONSegmentationTriggerX::GetPadI(Float_t x, Float_t y, Float_t /*z*/, Int_t &ix, Int_t &iy) 
+{
+  GetPadI(x, y, ix, iy);
+}
+
+//------------------------------------------------------------------   
 void AliMUONSegmentationTriggerX::SetHit(Float_t xhit, Float_t yhit)
 { 
 // set hit during disIntegration
 AliMUONSegmentationTrigger::SetHit(xhit,yhit);
 }
+//------------------------------------------------------------------   
+void AliMUONSegmentationTriggerX::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
+{
+  SetHit(xhit, yhit);
+}
 
 //------------------------------------------------------------------   
-Int_t AliMUONSegmentationTriggerX::Sector(Int_t ix, Int_t iy) 
+Int_t AliMUONSegmentationTriggerX::Sector(Int_t ix, Int_t /*iy*/) 
 {
 // Returns sector number for given module
 // 
