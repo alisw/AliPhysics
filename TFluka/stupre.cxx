@@ -17,7 +17,12 @@
 #include "Ftrackr.h"  //(TRACKR) fluka common
 
 //Virtual MC
+#ifndef WITH_ROOT
 #include "TFluka.h"
+#else
+#include "TFlukaGeo.h"
+#endif
+
 #include "TVirtualMCStack.h"
 #include "TVirtualMCApplication.h"
 #include "TParticle.h"

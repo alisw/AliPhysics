@@ -1,6 +1,12 @@
 #include <Riostream.h>
 #include "TVirtualMCApplication.h"
+
+#ifndef WITH_ROOT
 #include "TFluka.h"
+#else
+#include "TFlukaGeo.h"
+#endif
+
 #ifndef WIN32
 # define eedraw eedraw_
 #else

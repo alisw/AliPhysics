@@ -13,7 +13,7 @@
 
 extern "C" void type_of_call magfld(double& x,   double& y,   double& z, 
 				    double& btx, double& bty, double& btz, double& b, 
-				    int&    nreg,int& idisc)
+				    int&    /*nreg*/,int& idisc)
 {
 
 /*

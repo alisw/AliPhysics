@@ -571,7 +571,7 @@ void TFluka::InitPhysics()
   TString sAliceInp = getenv("ALICE_ROOT");
   TString sAliceTmp = sAliceInp;
   sAliceInp +="/TFluka/input/";
-  sAliceTmp +="/tmp/flukaMat.inp";
+  sAliceTmp +="./flukaMat.inp";
   TString sAliceCoreInp = sAliceInp;
   sAliceInp += GetInputFileName();
   sAliceCoreInp += GetCoreInputFileName();

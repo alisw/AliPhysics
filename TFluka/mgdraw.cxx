@@ -1,7 +1,13 @@
 #include <Riostream.h>
 #include "TVirtualMCApplication.h"
 #include "TVirtualMCStack.h"
+
+#ifndef WITH_ROOT
 #include "TFluka.h"
+#else
+#include "TFlukaGeo.h"
+#endif
+
 // Fluka include
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Fdblprc.h"  //(DBLPRC) fluka common

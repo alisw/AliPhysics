@@ -1,5 +1,11 @@
 #include <Riostream.h>
+
+#ifndef WITH_ROOT
 #include "TFluka.h"
+#else
+#include "TFlukaGeo.h"
+#endif
+
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #ifndef WIN32
