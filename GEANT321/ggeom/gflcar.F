@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:48  cernlib
 * Geant
 *
@@ -95,11 +98,14 @@ C
 C
 C          ROTATE.
 C
-      JROT=LQ(JROTM-IROT)
-      XT(1)=X(1)
-      XT(2)=X(2)
-      XT(3)=X(3)
-      IF(IROT.NE.0) CALL GINROT(X,Q(JROT+1),XT)
+      IF(IROT.NE.0) THEN
+         JROT=LQ(JROTM-IROT)
+         CALL GINROT(X,Q(JROT+1),XT)
+      ELSE
+         XT(1)=X(1)
+         XT(2)=X(2)
+         XT(3)=X(3)
+      ENDIF
 C
 C          UPDATE LIMITS IF NECESSARY.
 C
@@ -119,11 +125,14 @@ C
       X(1)=0.0
       X(2)=0.0
       X(3)=1.0
-      JROT=LQ(JROTM-IROT)
-      XT(1)=X(1)
-      XT(2)=X(2)
-      XT(3)=X(3)
-      IF(IROT.NE.0) CALL GINROT(X,Q(JROT+1),XT)
+      IF(IROT.NE.0) THEN
+         JROT=LQ(JROTM-IROT)
+         CALL GINROT(X,Q(JROT+1),XT)
+      ELSE
+         XT(1)=X(1)
+         XT(2)=X(2)
+         XT(3)=X(3)
+      ENDIF
 C
 C          XT IS Z AXIS ROTATED.
 C
