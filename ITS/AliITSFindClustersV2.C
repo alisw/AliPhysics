@@ -63,7 +63,9 @@ Int_t AliITSFindClustersV2(Char_t SlowOrFast='f') {
 
    cerr<<"Number of entries: "<<nentr<<endl;
 
-   Float_t lp[5]; Int_t lab[6]; //Why can't it be inside a loop ?
+   //   Float_t lp[5]; Int_t lab[6]; //Why can't it be inside a loop ?
+   Float_t * lp = new Float_t[5]; 
+   Int_t * lab = new Int_t[6];
 
    for (Int_t i=0; i<nentr; i++) {
        points->Clear();
@@ -115,6 +117,9 @@ Int_t AliITSFindClustersV2(Char_t SlowOrFast='f') {
    cTree->Write();
 
    cerr<<"Number of clusters: "<<nclusters<<endl;
+
+   delete [] lp;
+   delete [] lab;
 
    delete cTree; delete clusters; delete points;
 
