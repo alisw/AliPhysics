@@ -57,7 +57,7 @@ class AliPHOSFastRecParticle : public TParticle {
       return kFALSE ;
   }
   
-  Bool_t IsPhotonHiPu_LoEf()  {
+  Bool_t IsPhotonHiPuLoEf()  {
     Bool_t pid=kFALSE ;
     if(TestPIDBit(8)&& //PCA
        TestPIDBit(5)&& //TOF
@@ -66,7 +66,7 @@ class AliPHOSFastRecParticle : public TParticle {
     return pid ;
   }
   
-  Bool_t IsPhotonMed_Pu_Ef(){
+  Bool_t IsPhotonMedPuEf(){
     Bool_t pid=kFALSE ;
     if(TestPIDBit(7)&& //PCA
        TestPIDBit(4)&& //TOF
@@ -75,7 +75,7 @@ class AliPHOSFastRecParticle : public TParticle {
     return pid ;
   }
   
-  Bool_t IsPhotonHiEf_LoPu()  {
+  Bool_t IsPhotonHiEfLoPu()  {
     Bool_t pid=kFALSE ;
     if(TestPIDBit(6)&& //PCA
        TestPIDBit(3)&& //TOF
@@ -85,7 +85,7 @@ class AliPHOSFastRecParticle : public TParticle {
   }
   Bool_t IsPhoton()  {
     Bool_t pid=kFALSE ;
-    if(IsPhotonHiEf_LoPu()) pid = kTRUE ;
+    if(IsPhotonHiEfLoPu()) pid = kTRUE ;
     return pid ;
   }
   

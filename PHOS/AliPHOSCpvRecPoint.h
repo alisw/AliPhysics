@@ -31,9 +31,8 @@ public:
   AliPHOSCpvRecPoint() ;
   AliPHOSCpvRecPoint(const char * opt) ;
   AliPHOSCpvRecPoint(const AliPHOSCpvRecPoint & rp) {
-    // cpy ctor requested by Coding Convention 
-    // but not yet needed
-    assert(0==1) ; 
+    // cpy ctor requested by Coding Convention but not yet needed
+    Fatal("cpy ctor", "not implemented") ;
   } 
  
   virtual ~AliPHOSCpvRecPoint() ;  
@@ -53,8 +52,7 @@ public:
 
   AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
-    return *this ; 
+    Fatal("operator =", "not implemented") ; return *this ; 
   }
 
  protected:

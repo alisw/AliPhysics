@@ -115,6 +115,7 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
 //____________________________________________________________________________
 AliPHOSPIDv1::AliPHOSPIDv1(AliPHOSPIDv1 & pid ):AliPHOSPID(pid)
 { 
+  // ctor
   InitParameters() ; 
 
   Init() ;
@@ -312,6 +313,8 @@ const Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoin
 //____________________________________________________________________________
 const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv,const Int_t EffPur, const Float_t e) const
 {
+  // return 1 if a combination of EMC and CPV is neutral rec.points matches a neutral particle
+  // return 0 otherwise
   if(EffPur>2 || EffPur<0)
     Error("GetCPVBit","Invalid Efficiency-Purity choice %d",EffPur);
   

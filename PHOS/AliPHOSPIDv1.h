@@ -86,8 +86,8 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   // Relative Distance CPV-EMC
   const Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; 
   const Int_t    GetCPVBit(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv,const Int_t EffPur, const Float_t e) const;
-  const Int_t    GetPrincipalBit   (const Double_t* P, const Int_t eff_pur, const Float_t E)const ; //Principal cut
-  const Int_t    GetPrincipalPi0Bit(const Double_t* P, const Int_t eff_pur, const Float_t E)const ; //Principal cut
+  const Int_t    GetPrincipalBit   (const Double_t* P, const Int_t effPur, const Float_t E)const ; //Principal cut
+  const Int_t    GetPrincipalPi0Bit(const Double_t* P, const Int_t effPur, const Float_t E)const ; //Principal cut
   TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void     PrintRecParticles(Option_t * option) ;
   virtual  void WriteRecParticles(Int_t event) ; 

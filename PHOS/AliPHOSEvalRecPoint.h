@@ -55,7 +55,7 @@ public:
   void RemoveFromWorkingPool(TObject* obj);
   void PrintWorkingPool();
 
-  enum RecPointType {emc,cpv};
+  enum RecPointType {kEmc,kCpv};
 
 private:
 
@@ -66,10 +66,10 @@ private:
 
 private:
 
-  Bool_t fIsEmc;
-  Bool_t fIsCpv;
-  Int_t fParent;
-  Float_t fChi2Dof;
+  Bool_t fIsEmc;    // true if EMC
+  Bool_t fIsCpv;    // true if CPV
+  Int_t fParent;    // parent
+  Float_t fChi2Dof; // chi^2 per degree of freedom
 
   ClassDef(AliPHOSEvalRecPoint,1)
 

@@ -41,7 +41,7 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
  private:
 
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
-  Bool_t fDebug ; 
+  Bool_t fDebug ;           // debug flug: silent of =0
 
   ClassDef(AliPHOSRecParticle,2)  // Reconstructed Particle
 };

@@ -19,11 +19,11 @@ class AliPHOSRecEmcManager : public AliPHOSRecManager {
   ~AliPHOSRecEmcManager(void);
 
 
-  void AG(Float_t E, Float_t dx, Float_t dy, Float_t& A, Float_t& grad_x, Float_t& grad_y );
-  Float_t Dispersion(Float_t Etot, Float_t Ai, Float_t Ei) const;
+  void AG(Float_t e, Float_t dx, Float_t dy, Float_t& a, Float_t& gradx, Float_t& grady );
+  Float_t Dispersion(Float_t eTot, Float_t ai, Float_t ei) const;
 
-  Float_t OneGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi);
-  Float_t TwoGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi)const;
+  Float_t OneGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi)const;
+  Float_t TwoGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi)const;
 
   Float_t OneGamChisqCut() const{ return fOneGamChisqCut; }
   Float_t OneGamInitialStep() const{ return fOneGamInitialStep; }
@@ -45,23 +45,21 @@ class AliPHOSRecEmcManager : public AliPHOSRecManager {
 
  private:
 
-  Float_t fOneGamChisqCut;
+  Float_t fOneGamChisqCut; // what is it ?
 
-  Float_t fOneGamInitialStep;
-  Float_t fOneGamChisqMin;
-  Float_t fOneGamStepMin;
-  Int_t fOneGamNumOfIterations;
+  Float_t fOneGamInitialStep; // what is it ?
+  Float_t fOneGamChisqMin; // what is it ?
+  Float_t fOneGamStepMin; // what is it ?
+  Int_t fOneGamNumOfIterations; // what is it ?
 
-  Float_t fTwoGamInitialStep;
-  Float_t fTwoGamChisqMin;
-  Float_t fTwoGamEmin;
-  Float_t fTwoGamStepMin;
-  Int_t fTwoGamNumOfIterations;
+  Float_t fTwoGamInitialStep; // what is it ?
+  Float_t fTwoGamChisqMin; // what is it ?
+  Float_t fTwoGamEmin; // what is it ?
+  Float_t fTwoGamStepMin; // what is it ?
+  Int_t fTwoGamNumOfIterations; // what is it ?
 
-  Float_t fThr0;
-  Float_t fSqdCut;
-
- public:
+  Float_t fThr0; // what is it ?
+  Float_t fSqdCut; // what is it ?
 
   ClassDef(AliPHOSRecEmcManager,1)        // Emc reconstruction management class 
 

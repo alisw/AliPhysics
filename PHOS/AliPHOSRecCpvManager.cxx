@@ -14,9 +14,9 @@
  **************************************************************************/
 
 
- //_________________________________________________________________________
+//_________________________________________________________________________
 // Class for the management by the CPV reconstruction.
-//                  
+////                  
 //*-- Author   : Boris Polichtchouk (IHEP, Protvino) 6 Mar 2001
 //
 // --- ROOT system ---
@@ -74,7 +74,7 @@ Float_t AliPHOSRecCpvManager::Dispersion(Float_t etot, Float_t ai, Float_t ei) c
   return kConst*ai*(1.-ai/etot);
 }
 
-Float_t AliPHOSRecCpvManager::OneGamChi2(Float_t ai, Float_t ei, Float_t etot, Float_t& Gi)
+Float_t AliPHOSRecCpvManager::OneGamChi2(Float_t ai, Float_t ei, Float_t etot, Float_t& Gi) const
 {
   //"Chi2" for one cell.
   // etot is the total "shower" energy, ai is the
@@ -161,7 +161,7 @@ Float_t AliPHOSRecCpvManager::Fcml(Float_t x, Float_t y)
     - TMath::ATan(x*y/(7*kb*TMath::Sqrt((7*kb)*(7*kb) + x*x+y*y)))
     + TMath::ATan(x*y/(9*kb*TMath::Sqrt((9*kb)*(9*kb) + x*x+y*y))); 
   
-  Float_t fcml = ka*fff/6.2831853071796;
+  Float_t fcml = ka*fff/TMath::TwoPi();
 //    Info("Fcml", "fcml: %f", fcml) ;
   return fcml;
 
@@ -183,7 +183,7 @@ Float_t AliPHOSRecCpvManager::GradX(Float_t x, Float_t y)
     - y*(1.-x*x/skv)*7*kb*TMath::Sqrt(skv)/((7*kb)*(7*kb)*skv+x*x*y*y)
     + y*(1.-x*x/skv)*9*kb*TMath::Sqrt(skv)/((9*kb)*(9*kb)*skv+x*x*y*y);
       
-  Float_t grad    = ka*gradient/6.2831853071796;
+  Float_t grad    = ka*gradient/TMath::TwoPi();
   return grad;
 }
 
@@ -192,7 +192,7 @@ Float_t AliPHOSRecCpvManager::GradY(Float_t x, Float_t y)
 {
   // Put a comment here
   
-  const Float_t a = 1.0;
+  const Float_t ka = 1.0;
   const Float_t kb = 0.70;
  
   Float_t skv      = kb*kb + x*x + y*y;
@@ -202,7 +202,7 @@ Float_t AliPHOSRecCpvManager::GradY(Float_t x, Float_t y)
     - x*(1.-y*y/skv)*7*kb*TMath::Sqrt(skv)/((7*kb)*(7*kb)*skv+x*x*y*y)
     + x*(1.-y*y/skv)*9*kb*TMath::Sqrt(skv)/((9*kb)*(9*kb)*skv+x*x*y*y);
   
-  Float_t grad    = a*gradient/6.2831853071796;
+  Float_t grad    = ka*gradient/TMath::TwoPi();
   return grad;
 }
 

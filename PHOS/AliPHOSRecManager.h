@@ -20,11 +20,11 @@ class AliPHOSRecManager : public TNamed {
   AliPHOSRecManager();
   virtual ~AliPHOSRecManager(void) {}
 
-  virtual void AG(Float_t E, Float_t dx, Float_t dy, Float_t& A, Float_t& grad_x, Float_t& grad_y ) = 0;
-  virtual Float_t Dispersion(Float_t Etot, Float_t Ai, Float_t Ei) const = 0;
+  virtual void AG(Float_t e, Float_t dx, Float_t dy, Float_t& A, Float_t& gradX, Float_t& gradY ) = 0;
+  virtual Float_t Dispersion(Float_t eTot, Float_t ai, Float_t ei) const = 0;
 
-  virtual Float_t OneGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi) = 0;
-  virtual Float_t TwoGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi) const = 0;
+  virtual Float_t OneGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi) const = 0 ;
+  virtual Float_t TwoGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi) const = 0;
 
   virtual Float_t OneGamChisqCut()const = 0 ;
   virtual Float_t OneGamInitialStep() const = 0;

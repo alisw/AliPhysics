@@ -16,7 +16,7 @@
 
 //_________________________________________________________________________
 // Class for the management by the Emc reconstruction.
-//                  
+////                  
 //*-- Author   : Boris Polichtchouk (IHEP, Protvino) 6 Mar 2001
 //
 // --- ROOT system ---
@@ -35,7 +35,7 @@ ClassImp(AliPHOSRecEmcManager)
 
   AliPHOSRecEmcManager::AliPHOSRecEmcManager()
 {
-
+  // default ctor
 //    fOneGamChisqCut = 3.;
   fOneGamChisqCut = 1.3; // bvp 31.08.2001 
 
@@ -62,88 +62,88 @@ ClassImp(AliPHOSRecEmcManager)
 
 AliPHOSRecEmcManager::~AliPHOSRecEmcManager(void) {}
 
-Float_t AliPHOSRecEmcManager::Dispersion(Float_t Etot, Float_t Ai, Float_t Ei) const
+Float_t AliPHOSRecEmcManager::Dispersion(Float_t eTot, Float_t ai, Float_t ei) const
 {
   //"Dispresion" of energy deposition in the cell.
-  // Etot is the total shower energy, Ai is the
+  // eTot is the total shower energy, ai is the
   // calculated cell response,
-  // Ei is the measured cell response.
+  // ei is the measured cell response.
 
-  return Ei;
+  return ei;
 }
 
-Float_t AliPHOSRecEmcManager::OneGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi)
+Float_t AliPHOSRecEmcManager::OneGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi) const
 {
   // Chi2 used in OneGam (one-gamma fitting).
-  // Gi is d(Chi2)/d(Ai).
+  // gi is d(Chi2)/d(ai).
 
-  Float_t da = Ai - Ei;
-  Float_t D = Ei; // we assume that sigma(E) = sqrt(E)
-  Gi = 2.*(Ai-Ei)/D;
+  Float_t da = ai - ei;
+  Float_t d = ei; // we assume that sigma(E) = sqrt(E)
+  gi = 2.*(ai-ei)/d;
 
-  return da*da/D;
-
-}
-
-Float_t AliPHOSRecEmcManager::TwoGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi) const
-{
-
-  Float_t da = Ai - Ei;
-  Float_t D = Ei; // we assume that sigma(E) = sqrt(E)
-  Gi = 2.*(Ai-Ei)/D;
-
-  return da*da/D;
+  return da*da/d;
 
 }
 
-void AliPHOSRecEmcManager::AG(Float_t Ei, Float_t Xi, Float_t Yi, Float_t& Ai, Float_t& GXi, Float_t& GYi )
+Float_t AliPHOSRecEmcManager::TwoGamChi2(Float_t ai, Float_t ei, Float_t eTot, Float_t& gi) const
 {
-  //Calculates amplitude (Ai) and gradients (GXi, GYi) of CPV pad response.
+  // calculates chi^2
+  Float_t da = ai - ei;
+  Float_t d = ei; // we assume that sigma(E) = sqrt(E)
+  gi = 2.*(ai-ei)/d;
+
+  return da*da/d;
+
+}
+
+void AliPHOSRecEmcManager::AG(Float_t ei, Float_t xi, Float_t yi, Float_t& ai, Float_t& gxi, Float_t& gyi )
+{
+  //Calculates amplitude (ai) and gradients (gxi, gyi) of CPV pad response.
   //Integrated response (total "shower energy") is E, 
-  //Xi and Yi are the distances along x and y from reference point 
+  //xi and yi are the distances along x and y from reference point 
   // to the pad center.
   //Shape of the shower is from PHOS TDR.
 
 
-  Float_t r = TMath::Sqrt(Xi*Xi + Yi*Yi);
+  Float_t r = TMath::Sqrt(xi*xi + yi*yi);
   Float_t r4    = r*r*r*r ;
   Float_t r295  = TMath::Power(r, 2.95) ;
-  Float_t shape = Ei*TMath::Exp( -r4 * (1. / (2.32 + 0.26 * r4) + 0.0316 / (1 + 0.0652 * r295) ) ) ;
-  Ai = shape;
+  Float_t shape = ei*TMath::Exp( -r4 * (1. / (2.32 + 0.26 * r4) + 0.0316 / (1 + 0.0652 * r295) ) ) ;
+  ai = shape;
 
 
-  //d(shape)/d(Xi)
-  GXi = (-(TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2)*
-       ((-0.006077944*Xi*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),
+  //d(shape)/d(xi)
+  gxi = (-(TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2)*
+       ((-0.006077944*xi*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),
              0.4750000000000001))/
-          TMath::Power(1 + 0.0652*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),1.475),2) - 
-         (1.04*Xi*(TMath::Power(Xi,2) + TMath::Power(Yi,2)))/
-          TMath::Power(2.32 + 0.26*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2),2))) - 
-    4*Xi*(TMath::Power(Xi,2) + TMath::Power(Yi,2))*
-     (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),1.475)) + 
-       1./(2.32 + 0.26*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2))))/
-  TMath::Power(TMath::E(),TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2)*
-    (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),1.475)) + 
-     1./(2.32 + 0.26*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2))));
+          TMath::Power(1 + 0.0652*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),1.475),2) - 
+         (1.04*xi*(TMath::Power(xi,2) + TMath::Power(yi,2)))/
+          TMath::Power(2.32 + 0.26*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2),2))) - 
+    4*xi*(TMath::Power(xi,2) + TMath::Power(yi,2))*
+     (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),1.475)) + 
+       1./(2.32 + 0.26*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2))))/
+  TMath::Power(TMath::E(),TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2)*
+    (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),1.475)) + 
+     1./(2.32 + 0.26*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2))));
   
-  GXi = GXi*Ei;
+  gxi = gxi*ei;
 
-  //d(shape)/d(Yi)
-  GYi = (-(TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2)*
-       ((-0.006077944*Yi*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),
+  //d(shape)/d(yi)
+  gyi = (-(TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2)*
+       ((-0.006077944*yi*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),
              0.4750000000000001))/
-          TMath::Power(1 + 0.0652*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),1.475),2) - 
-         (1.04*Yi*(TMath::Power(Xi,2) + TMath::Power(Yi,2)))/
-          TMath::Power(2.32 + 0.26*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2),2))) - 
-    4*Yi*(TMath::Power(Xi,2) + TMath::Power(Yi,2))*
-     (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),1.475)) + 
-       1./(2.32 + 0.26*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2))))/
-  TMath::Power(TMath::E(),TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2)*
-    (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),1.475)) + 
-     1./(2.32 + 0.26*TMath::Power(TMath::Power(Xi,2) + TMath::Power(Yi,2),2))));
+          TMath::Power(1 + 0.0652*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),1.475),2) - 
+         (1.04*yi*(TMath::Power(xi,2) + TMath::Power(yi,2)))/
+          TMath::Power(2.32 + 0.26*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2),2))) - 
+    4*yi*(TMath::Power(xi,2) + TMath::Power(yi,2))*
+     (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),1.475)) + 
+       1./(2.32 + 0.26*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2))))/
+  TMath::Power(TMath::E(),TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2)*
+    (0.0316/(1 + 0.0652*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),1.475)) + 
+     1./(2.32 + 0.26*TMath::Power(TMath::Power(xi,2) + TMath::Power(yi,2),2))));
 
 
-  GYi = GYi*Ei;
+  gyi = gyi*ei;
 
 }
 
