@@ -87,7 +87,7 @@ public:
   Double_t GetSigmaphi() const{return fC00;}    // gets the phi variance
   Double_t GetSigmaZ() const{return  fC11;}     // gets the Z variance
   void AddEL(AliITSRad *rl,Double_t signdE,  Bool_t flagtot, Double_t mass=0.1396);  // adds the energy loss
-  void AddMS(AliITSRad *rl);  // modify the covariance matrix to take into account the multiple scattering
+  void AddMS(AliITSRad *rl,Double_t mass=0.1396);  // modify the covariance matrix to take into account the multiple scattering
   void Correct(Double_t rk);  // correct the track to take into account the real detector geometry
   void SetDv(Double_t x) {fDv=x;}  // sets the radial impact parameter for vertex constraint 
   void SetZv(Double_t x) {fZv=x;}  // sets longitudinal impact parameter for vertex constraint
@@ -95,6 +95,7 @@ public:
   Double_t GetZv() const {return fZv;}   // gets longitudinal impact parameter for vertex constraint
   void SetsigmaDv( Double_t x) {fsigmaDv=x;} // sets sigma for Dv extraction
   void SetsigmaZv( Double_t x) {fsigmaZv=x;} // sets sigma for Zv extraction
+  void Setfnoclust() {fnoclust++;}          //modify fnoclust 
   Double_t GetsigmaDv() const {return fsigmaDv;}   // gets sigma for Dv extraction
   Double_t GetsigmaZv() const {return fsigmaZv;}   // gets sigma for Zv extraction
   void PrimaryTrack(AliITSRad *rl);   // calculation of part of covariance matrix for vertex constraint
@@ -107,7 +108,9 @@ public:
   Double_t Getd2(Int_t i){return (Double_t)fd2(i);}     // gets the i element of the vector fd2
   Double_t Gettgl2(Int_t i){return (Double_t)ftgl2(i);} // gets the i element of the vector tgl2
   Double_t Getdtgl(Int_t i){return (Double_t)fdtgl(i);} // gets the i element of the vector fdtgl
-  Double_t GetxoTPC() const {return fxoTPC;}  // gets fxoTPC
+  //Double_t GetxoTPC() const {return fxoTPC;}  // gets fxoTPC
+  Int_t  Getfnoclust() const {return fnoclust;}  //gets fnoclust 
+  Double_t GetPredChi2(Double_t m[2], Double_t sigma[2]) const; //aggiunto il 30-7-2001
  
         	        
 //////////////////////////////////////////////////////////////////////////////////////// 
@@ -146,9 +149,11 @@ public:
   TVector           ftgl2;              // C(3,3)  for primary track
   TVector           fdtgl;              // C(2,3)  for primary track
 
-  Double_t          fxoTPC;             // cohordinate xo of the helix center, got from the TPC track 
+ // Double_t          fxoTPC;             // cohordinate xo of the helix center, got from the TPC track 
+  
+  Int_t   fnoclust;  //nm of layers in which we don't add a cluster to the track
   		   
- // Int_t freq; //provvisorio	   
+  
 
  
   ClassDef(AliITSTrackV1, 1)

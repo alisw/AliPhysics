@@ -51,13 +51,17 @@ class AliITSTrackerV1 : public TObject {
     Int_t Intersection(AliITSTrackV1 &track, Int_t layer, Int_t &ladder, Int_t &detector); 
     void KalmanFilter(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
     
-    void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
+   // void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
+	void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2], Double_t chi2pred);
 	 
   private:
 
     AliITS* fITS;              // pointer to AliITS
 	 AliITSTrackV1 *fresult;    // result is a pointer to the final best track
 	 Double_t fPtref;           // transvers momentum obtained from TPC tracking
+	 Double_t fChi2max;          //  cluster with chi2>chi2max are cut. It is pt dependend.  aggiunto il 31-7-2001
+	 Double_t fepsphi;           //eps for definition window in phi    //aggiunto il 1-8-2001
+	 Double_t fepsz;             //eps for definition window in z      //aggiunto il 1-8-2001
 	 TObjArray  *frecPoints;    // pointer to RecPoints
 	 Int_t **fvettid;           // flag vector of used clusters
 	 Bool_t fflagvert;          // a flag to impose or not the vertex constraint

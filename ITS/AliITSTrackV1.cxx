@@ -33,7 +33,8 @@ AliITSTrackV1::AliITSTrackV1() {
   Int_t i;
   for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
                            (*fClusterInTrack)(i,8)=-1.;
-  frtrack=0.; 
+  frtrack=0.;
+  fnoclust=0;     
   fd2.ResizeTo(6);
   ftgl2.ResizeTo(6); 
   fdtgl.ResizeTo(6);
@@ -80,6 +81,7 @@ AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) {
   fd2=cobj.fd2;
   ftgl2=cobj.ftgl2;
   fdtgl=cobj.fdtgl;
+  fnoclust=cobj.fnoclust;   
     
   fC00=cobj.fC00; fC10=cobj.fC10; fC11=cobj.fC11; fC20=cobj.fC20; fC21=cobj.fC21;
   fC22=cobj.fC22; fC30=cobj.fC30; fC31=cobj.fC31; fC32=cobj.fC32; fC33=cobj.fC33; 
@@ -132,7 +134,8 @@ AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj)
   for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
                            (*fClusterInTrack)(i,8)=-1.;
   flistCluster = new TObjArray; 
-  fNumClustInTrack = 0; 
+  fNumClustInTrack = 0;
+  fnoclust=0;        
   LmTPC(); 
 
 }
@@ -216,7 +219,7 @@ void AliITSTrackV1::LmTPC() {
   Double_t xo,yo, signy;
   Double_t r = 1./cTPC;
   xo =  etaTPC / cTPC;
-  fxoTPC=xo;
+  //fxoTPC=xo;
   Double_t yo1, yo2, diffsq1, diffsq2;  
   yo1 = yTPC +  TMath::Sqrt(r*r - (xl-xo)*(xl-xo)); 
   yo2 = yTPC -  TMath::Sqrt(r*r - (xl-xo)*(xl-xo));   
@@ -230,6 +233,7 @@ void AliITSTrackV1::LmTPC() {
   y0m = xo * sina + yo * cosa;  
 
   frtrack=TMath::Sqrt(xm*xm+ym*ym);
+  /*
   Double_t pigre=TMath::Pi();
   Double_t phi=0.0;
   if(ym == 0. || xm == 0.) {
@@ -245,7 +249,10 @@ void AliITSTrackV1::LmTPC() {
     if (xm<0. && ym<0.) phi=pigre+TMath::ATan(ym/xm); 
     if (xm>0. && ym<0.) phi=(2*pigre)+TMath::ATan(ym/xm);     
   };
-  if(phi<0. || phi>(2*pigre)) {cout<<"attention error on phi in  AliITSTrackV1:LmTPC \n"; getchar();}  
+  if(phi<0. || phi>(2*pigre)) {cout<<"attention error on phi in  AliITSTrackV1:LmTPC \n"; getchar();}
+   */
+	
+    Double_t phi=TMath::ATan2(ym,xm);  if(phi<0) phi=2.*TMath::Pi()+phi;   //nuova def phi   
 
   fX0=phi;
   fX1=zm;
@@ -330,7 +337,8 @@ AliITSTrackV1 &AliITSTrackV1::operator=(AliITSTrackV1 obj) {
   fsigmaZv=obj.fsigmaZv;
   fd2=obj.fd2;
   ftgl2=obj.ftgl2; 
-  fdtgl=obj.fdtgl; 
+  fdtgl=obj.fdtgl;
+  fnoclust=obj.fnoclust; 
   
   fC00=obj.fC00; fC10=obj.fC10; fC11=obj.fC11; fC20=obj.fC20; fC21=obj.fC21;
   fC22=obj.fC22; fC30=obj.fC30; fC31=obj.fC31; fC32=obj.fC32; fC33=obj.fC33; 
@@ -493,8 +501,8 @@ void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double
 
   //for(int k=0; k<6; k++) cout<<s(k)<<" "; cout<<"\n";
   Int_t k;
-  for(k=0; k<6; k++) s(k)=s(k)*1.6;    //forint
- 
+  //for(k=0; k<6; k++) s(k)=s(k)*1.6;    //forint
+  for(k=0; k<6; k++) s(k)=s(k)*1.7;    //forint
   
   Double_t phi=fX0;
   
@@ -502,7 +510,7 @@ void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double
   if(phi>6.1 ) s(5)=s(5)+0.012; // to take into account rail 
   if(phi>2.96 && phi<3.31 ) s(5)=s(5)+0.012;   
   
-   
+  /* 
   Double_t tgl=fX3;
   Double_t theta=((TMath::Pi())/2.)-TMath::ATan(tgl);
   //phi*=180./TMath::Pi();
@@ -521,7 +529,7 @@ void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double
   if(i>=imax) i=imax-1;
   if(j<0) j=0;
   if(j>=jmax) j=jmax-1;
-  /*
+  
   s(0) = 0.0028/TMath::Sin(theta)+( rl->GetRadMatrix1() )(i,j);   // 0.0028 takes into account the beam pipe
   s(1) = ( rl->GetRadMatrix2() )(i,j);
   s(2) = ( rl->GetRadMatrix3() )(i,j);
@@ -538,7 +546,7 @@ void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double
   //if(theta<45 || theta>135) {cout<<" theta = "<<theta<<"\n"; getchar();}
   //cout<<" dentro AddEl: phi, theta = "<<phi<<" "<<theta<<"\n"; getchar(); 
     
-  Double_t cl=1.+fX3*fX3;  // cl=1/(cosl)**2 = 1 + (tgl)**2 
+  Double_t cl=1.+fX3*fX3;  // cl=1/(cosl)**2 = 1 + (tgl)**2
   Double_t sqcl=TMath::Sqrt(cl);
   Double_t pt=GetPt();
      
@@ -586,7 +594,7 @@ void  AliITSTrackV1::Correct(Double_t rk) {
   		
 }
 
-void AliITSTrackV1::AddMS(AliITSRad *rl) {
+void AliITSTrackV1::AddMS(AliITSRad *rl, Double_t mass) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it       
 //////////   Modification of the covariance matrix to take into account multiple scattering  ///////////     
    
@@ -597,14 +605,17 @@ void AliITSTrackV1::AddMS(AliITSRad *rl) {
 //0.00277 is added in the first layer to take into account the energy loss in the beam pipe 
 
   Int_t k;
-  for(k=0; k<6; k++) s(k)=s(k)*1.6;   // forint
+  //for(k=0; k<6; k++) s(k)=s(k)*1.6;   // forint
+  for(k=0; k<6; k++) s(k)=s(k)*1.7;   // forint
   
   Double_t phi=fX0;
  if(phi<0.174 ) s(5)=s(5)+0.012; //aggiunta provvisoria
   if(phi>6.1 ) s(5)=s(5)+0.012; //aggiunta provvisoria  
    if(phi>2.96 && phi< 3.31) s(5)=s(5)+0.012; //aggiunta provvisoria 
+  
       
   Double_t tgl=fX3;
+  /*
   Double_t theta=((TMath::Pi())/2.)-TMath::ATan(tgl);
   Double_t rad40=(TMath::Pi())*40./180.;      // rivedere
   Double_t rad100=(TMath::Pi())*100/180;
@@ -618,7 +629,7 @@ void AliITSTrackV1::AddMS(AliITSRad *rl) {
   if(i>=imax) i=imax-1;
   if(j<0) j=0;
   if(j>=jmax) j=jmax-1;
-  /*
+  
   s(0) = 0.0028/TMath::Sin(theta)+( rl->GetRadMatrix1() )(i,j);   // 0.0028 takes into account the beam pipe
   s(1) = ( rl->GetRadMatrix2() )(i,j);
   s(2) = ( rl->GetRadMatrix3() )(i,j);
@@ -626,7 +637,7 @@ void AliITSTrackV1::AddMS(AliITSRad *rl) {
   s(4) = ( rl->GetRadMatrix5() )(i,j);
   s(5) = ( rl->GetRadMatrix6() )(i,j);
    */   
-  Double_t mass=0.1396;
+  //Double_t mass=0.1396;
   Int_t layer=(Int_t)GetLayer();
   
   Double_t cosl=TMath::Cos(TMath::ATan(tgl));	
@@ -741,4 +752,39 @@ Double_t AliITSTrackV1::ArgC(Double_t rk) const {
 }
 
 
+Double_t AliITSTrackV1::GetPredChi2(Double_t m[2], Double_t sigma[2] ) const {
+//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
+// This function calculates a predicted chi2 increment.
+/*
+  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
+  r00+=fC00; r01+=fC10; r11+=fC11;
 
+  Double_t det=r00*r11 - r01*r01;
+  if (TMath::Abs(det) < 1.e-10) {
+    Int_t n=GetNumberOfClusters();
+    if (n>4) cerr<<n<<" AliKalmanTrack warning: Singular matrix !\n";
+    return 1e10;
+  }
+  Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
+  
+  Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
+  
+  return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;
+  */
+  
+  
+  Double_t r00=sigma[0], r01=0., r11=sigma[1];
+  r00+=fC00; r01+=fC10; r11+=fC11;
+  Double_t det=r00*r11-r01*r01;
+  if(TMath::Abs(det) < 1.e-15) {cout<<" Problems on matrix in GetPredChi2 "<<det<<"\n";
+  return 1e10;}
+  Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
+  Double_t dphi=m[0]-fX0; 
+  Double_t dz=m[1]-fX1;
+  Double_t chi2 = (dphi*r00*dphi +2.*r01*dphi*dz + dz*r11*dz)/det;
+  return chi2;
+  
+  
+  
+
+}
