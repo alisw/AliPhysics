@@ -3,13 +3,15 @@
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ASV
 
-#include <stream.h>
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
+#include "AliL3StandardIncludes.h"
 
+#include "AliL3Logging.h"
 #include "AliL3ModelTrack.h"
 #include "AliL3Transform.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3ModelTrack
@@ -106,7 +108,7 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
   fNClusters++;
 }
 
-Int_t AliL3ModelTrack::CheckClustersQuality(UInt_t npads=3)
+Int_t AliL3ModelTrack::CheckClustersQuality(UInt_t npads)
 {
 
   //Check the quality of clusters,- remove clusters with less than
@@ -460,7 +462,7 @@ Double_t AliL3ModelTrack::GetParSigmaZ2(Int_t row)
   
 }
 
-void AliL3ModelTrack::AssignTrackID(Float_t wrong=0.10)
+void AliL3ModelTrack::AssignTrackID(Float_t wrong)
 {
   //Assign a track ID to the track, corresponding to the MC TParticle ID.
   //Can only be done if you compiled with do_mc flag, of course.

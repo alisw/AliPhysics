@@ -3,13 +3,12 @@
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ASV
 
-#include <stdio.h>
-#include <stream.h>
-#include <stdlib.h>
+#include "AliL3StandardIncludes.h"
 #include <TH1.h>
 #include <TH2.h>
 #include <TRandom.h>
 
+#include "AliL3Logging.h"
 #include "AliL3Compress.h"
 #include "AliL3TrackArray.h"
 #include "AliL3ModelTrack.h"
@@ -385,7 +384,7 @@ void AliL3Compress::CreateDigitArray(Int_t maxnumber)
   fDPt = new AliL3RandomDigitData*[maxnumber];
 }
 
-void AliL3Compress::RestoreData(Char_t which='u')
+void AliL3Compress::RestoreData(Char_t which)
 {
   //Restore the data.
   //which == u : restore compressed data
@@ -419,7 +418,7 @@ void AliL3Compress::RestoreData(Char_t which='u')
   QSort(fDPt,0,fNDigits);
 }
 
-void AliL3Compress::PrintDigits(Int_t padrow=-1)
+void AliL3Compress::PrintDigits(Int_t padrow)
 {
   Int_t pad,time,charge,row;
   for(Int_t i=0; i<fNDigits; i++)

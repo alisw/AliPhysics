@@ -3,9 +3,7 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV
 
-#include <stream.h>
-#include <iostream.h>
-#include <math.h>
+#include "AliL3StandardIncludes.h"
 
 #include "AliL3Modeller.h"
 #include "AliL3MemHandler.h"
@@ -16,6 +14,10 @@
 #include "AliL3ModelTrack.h"
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3Modeller
@@ -48,7 +50,7 @@ AliL3Modeller::~AliL3Modeller()
     delete fTracks;
 }
 
-void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks,Bool_t binary=kTRUE)
+void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks,Bool_t binary)
 {
   fSlice = slice;
   fPatch = patch;
