@@ -50,6 +50,7 @@ public:
 
 private:
   void     Init() ;
+  void     InitParameters() ; 
   void     PrintSDigits(Option_t * option) ;
   Int_t    Layer2TowerID(Int_t,Bool_t) ;
 

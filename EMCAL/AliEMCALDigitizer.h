@@ -70,6 +70,7 @@ public:
 private:
 
   Bool_t  Init();                   
+  void    InitParameters() ; 
   Bool_t  ReadSDigits() ;            // Read sdigits for particular events
   void    WriteDigits(Int_t evt) ;            // Writes Digits for particular event
   void    PrintDigits(Option_t * option) ;

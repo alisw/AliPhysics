@@ -75,26 +75,14 @@ ClassImp(AliEMCALSDigitizer)
   AliEMCALSDigitizer::AliEMCALSDigitizer():TTask("AliEMCALSDigitizer","") 
 {
   // ctor
-  fA = fB =  fNevents = 0 ; 
-  fTowerPrimThreshold = fPreShowerPrimThreshold = fPhotonElectronFactor  = 0. ;
-  fHits = fSDigits = fSDigits = 0 ;
-  fSplitFile = 0 ; 
-  fIsInitialized = kFALSE ;
-
-
+  InitParameters() ; 
 }
 
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigitsTitle):TTask(sDigitsTitle, headerFile)
 {
   // ctor
-  fA = 0;
-  fB = 10000000.;
-  fTowerPrimThreshold = 0.01 ;
-  fPreShowerPrimThreshold = 0.0001 ; 
-  fNevents = 0 ; 
-  fPhotonElectronFactor = 5000. ; // photoelectrons per GeV 
-  fSplitFile = 0 ; 
+  InitParameters() ; 
   Init();
 }
 
@@ -102,25 +90,28 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
 AliEMCALSDigitizer::~AliEMCALSDigitizer()
 {
   // dtor
-
-  if (fSplitFile) 
-    if ( fSplitFile->IsOpen() ) 
-      fSplitFile->Close() ; 
-  // Close the root file
+  
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  gime->CloseFile() ; 
-
-  // remove the task from the folder list
-  gime->RemoveTask("S",GetName()) ;
-
-  TString name(GetName()) ; 
-  name.Remove(name.Index(":")) ; 
-
- // remove the Hits from the folder list
-  gime->RemoveObjects("H",name) ;
-
- // remove the SDigits from the folder list
-  gime->RemoveObjects("S", name) ;
+  if (gime) {
+    // remove the task from the folder list
+    gime->RemoveTask("S",GetName()) ;
+    
+    TString name(GetName()) ; 
+    if (! name.IsNull() ) 
+      if (name.Index(":") > 0)  
+	name.Remove(name.Index(":")) ; 
+    
+    // remove the Hits from the folder list
+    gime->RemoveObjects("H",name) ;
+    
+    // remove the SDigits from the folder list
+    gime->RemoveObjects("S", name) ;
+    
+    // Close the root file
+    gime->CloseFile() ; 
+    
+  }
+  fSplitFile = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -151,7 +142,20 @@ void AliEMCALSDigitizer::Init(){
   gime->PostSDigitizer(this) ;
  
  
- }
+}
+
+//____________________________________________________________________________ 
+void AliEMCALSDigitizer::InitParameters(){
+  fA = 0;
+  fB = 10000000.;
+  fTowerPrimThreshold = 0.01 ;
+  fPreShowerPrimThreshold = 0.0001 ; 
+  fNevents = 0 ; 
+  fPhotonElectronFactor = 5000. ; // photoelectrons per GeV 
+  fSplitFile = 0 ; 
+
+}
+
 //____________________________________________________________________________
 void AliEMCALSDigitizer::Exec(Option_t *option) { 
 
@@ -349,10 +353,6 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
       
   }
   
-  if (fSplitFile) 
-    if ( fSplitFile->IsOpen() ) 
-      fSplitFile->Close() ; 
-  
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALSDigitizer");
     cout << "AliEMCALSDigitizer:" << endl ;
@@ -407,9 +407,8 @@ void AliEMCALSDigitizer::SetSplitFile(const TString splitFileName)
 
   fSplitFile = gAlice->InitTreeFile("S",splitFileName.Data());
   fSplitFile->cd() ; 
-  if ( !fSplitFile->Get("gAlice") ) 
-    gAlice->Write();
-  
+  gAlice->Write(0, TObject::kOverwrite);
+ 
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
     cerr << "ERROR: AliEMCALSDigitizer::SetSPlitFile -> No TreeE found "<<endl;
@@ -417,23 +416,20 @@ void AliEMCALSDigitizer::SetSplitFile(const TString splitFileName)
   }      
   
   // copy TreeE
-  if ( !fSplitFile->Get("TreeE") ) {
-    AliHeader *header = new AliHeader();
-    treeE->SetBranchAddress("Header", &header);
-    treeE->SetBranchStatus("*",1);
-    TTree *treeENew =  treeE->CloneTree();
-    treeENew->Write();
-  }
+  
+  AliHeader *header = new AliHeader();
+  treeE->SetBranchAddress("Header", &header);
+  treeE->SetBranchStatus("*",1);
+  TTree *treeENew =  treeE->CloneTree();
+  treeENew->Write(0, TObject::kOverwrite);
   
   // copy AliceGeom
-  if ( !fSplitFile->Get("AliceGeom") ) {
-    TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-    if (!AliceGeom) {
-      cerr << "ERROR: AliEMCALSDigitizer::SetSPlitFile -> AliceGeom was not found in the input file "<<endl;
-      abort() ;
-    }
-    AliceGeom->Write();
+  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+  if (!AliceGeom) {
+    cerr << "ERROR: AliEMCALSDigitizer::SetSPlitFile -> AliceGeom was not found in the input file "<<endl;
+    abort() ;
   }
+  AliceGeom->Write(0, TObject::kOverwrite) ;
   
   gAlice->MakeTree("S",fSplitFile);
   cwd->cd() ; 

@@ -11,7 +11,7 @@
 // --- ROOT system ---
 
 #include "TTask.h" 
-
+class TFile ; 
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -49,8 +49,13 @@ public:
   virtual void SetPreShoLogWeight(Float_t w) = 0 ; 
   virtual void SetDigitsBranch(const char * title) = 0 ;
   virtual void SetRecPointsBranch(const char *title) = 0 ;
+  void SetSplitFile(const TString splitFileName = "EMCAL.RecPoints.root") ;
   virtual void SetUnfolding(Bool_t toUnfold ) = 0 ;
   virtual const char * Version() const = 0 ;  
+
+protected:
+  
+  TFile * fSplitFile ;             //! file in which RecPoints will eventually be stored
 
   ClassDef(AliEMCALClusterizer,1)  // Clusterization algorithm class 
 

@@ -87,32 +87,56 @@ ClassImp(AliEMCALDigitizer)
 {
   // ctor
 
-  fSDigitizer = 0 ;
-  fNinputs = 0 ;
-  fPinNoise = 0.0 ;
-  fTowerDigitThreshold = 0.0 ;
-  fTimeResolution     = 0. ;
-  fTimeSignalLength   = 0. ;
-  fPreShowerDigitThreshold = 0. ;
-  fADCchannelTower = 0.0;      // width of one ADC channel in GeV
-  fADCpedestalTower = 0. ;      // pedestal of ADC
-  fNADCTower = 0;  // number of channels in Tower ADC
-
-  fADCchannelPreSho  = 0.0;          // width of one ADC channel in Pre Shower
-  fADCpedestalPreSho = 0.0 ;         // pedestal of ADC
-  fNADCPreSho = 0;      // number of channels in Pre Shower ADC
-  fTimeThreshold = 0.0; //Means 1 MeV in terms of SDigits amplitude
-  fManager = 0 ;
-  fSplitFile= 0 ; 
-
-
+  InitParameters() ; 
 
 }
-//____________________________________________________________________________ 
-Bool_t AliEMCALDigitizer::Init()
-{
-  // Makes all memory allocations
 
+//____________________________________________________________________________ 
+AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *name)
+{
+  SetName(name) ;
+  SetTitle(headerFile) ;
+  fManager = 0 ;                     // We work in the standalong mode
+  fSplitFile= 0 ; 
+  InitParameters() ; 
+  Init() ;
+
+}
+
+//____________________________________________________________________________ 
+AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
+{
+  // ctor
+  SetName("");     //Will call init in the digitizing
+  SetTitle("aliroot") ;  
+}
+
+//____________________________________________________________________________ 
+  AliEMCALDigitizer::~AliEMCALDigitizer()
+{
+  // dtor
+ 
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+
+  // remove the task from the folder list
+  gime->RemoveTask("S",GetName()) ;
+  gime->RemoveTask("D",GetName()) ;
+
+  // remove the Digits from the folder list
+  gime->RemoveObjects("D", GetName()) ;
+
+  // remove the SDigits from the folder list
+  gime->RemoveSDigits() ;
+
+  // Delete gAlice
+  gime->CloseFile() ; 
+
+  fSplitFile = 0 ; 
+}
+
+//____________________________________________________________________________ 
+void AliEMCALDigitizer::InitParameters()
+{
   fSDigitizer = 0 ;
   fNinputs = 1 ;
   fPinNoise = 0.00001 ;
@@ -141,6 +165,13 @@ Bool_t AliEMCALDigitizer::Init()
   if( strcmp(GetName(), "") == 0 )
     SetName("Default") ;
   
+}
+
+//____________________________________________________________________________ 
+Bool_t AliEMCALDigitizer::Init()
+{
+  // Makes all memory allocations
+
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(), GetName(), "update") ; 
   if ( gime == 0 ) {
     cerr << "ERROR: AliEMCALDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
@@ -162,50 +193,7 @@ Bool_t AliEMCALDigitizer::Init()
     gime->PostSDigitizer(GetName(),GetTitle()) ;
   }
   return kTRUE ;
-  
- 
-  
-}
-
-//____________________________________________________________________________ 
-AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *name)
-{
-  SetName(name) ;
-  SetTitle(headerFile) ;
-  fManager = 0 ;                     // We work in the standalong mode
-  fSplitFile= 0 ; 
-  Init() ;
-  
-
-  
-}
-//____________________________________________________________________________ 
-AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
-{
-  // ctor
-  SetName("");     //Will call init in the digitizing
-  SetTitle("aliroot") ;  
-}
-
-//____________________________________________________________________________ 
-  AliEMCALDigitizer::~AliEMCALDigitizer()
-{
-  // dtor
-
-  if (fSplitFile)       
-    if ( fSplitFile->IsOpen() )
-      fSplitFile->Close() ;
-  
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  // Close the root file
-  gime->CloseFile() ; 
-  // remove the task from the folder list
-  gime->RemoveTask("S",GetName()) ;
-  // remove the Digits from the folder list
-  gime->RemoveObjects("D", GetName()) ;
- // remove the SDigits from the folder list
-  gime->RemoveSDigits() ;
-
+    
 }
 
 //____________________________________________________________________________
@@ -361,9 +349,9 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
 
 
   //remove digits below thresholds
+ 
   for(absID = 0; absID < nEMC/2 ; absID++){
-
-    if(sDigitizer->Calibrate(((AliEMCALDigit*)digits->At(absID))->GetAmp()) < fTowerDigitThreshold)
+   if(sDigitizer->Calibrate(((AliEMCALDigit*)digits->At(absID))->GetAmp()) < fTowerDigitThreshold)
       digits->RemoveAt(absID) ;
     else
       digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
@@ -503,10 +491,6 @@ if(strcmp(GetName(), "") == 0 )
     fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
   }
   
-  if (fSplitFile) 
-    if ( fSplitFile->IsOpen() ) 
-      fSplitFile->Close() ; 
-
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
     cout << "AliEMCALDigitizer:" << endl ;
@@ -716,8 +700,7 @@ void AliEMCALDigitizer::SetSplitFile(const TString splitFileName)
 
   fSplitFile = gAlice->InitTreeFile("D",splitFileName.Data());
   fSplitFile->cd() ; 
-  if ( !fSplitFile->Get("gAlice") ) 
-    gAlice->Write();
+  gAlice->Write(0, TObject::kOverwrite);
   
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
@@ -726,23 +709,19 @@ void AliEMCALDigitizer::SetSplitFile(const TString splitFileName)
   }      
   
   // copy TreeE
-  if ( !fSplitFile->Get("TreeE") ) {
-    AliHeader *header = new AliHeader();
-    treeE->SetBranchAddress("Header", &header);
-    treeE->SetBranchStatus("*",1);
-    TTree *treeENew =  treeE->CloneTree();
-    treeENew->Write();
-  }
+  AliHeader *header = new AliHeader();
+  treeE->SetBranchAddress("Header", &header);
+  treeE->SetBranchStatus("*",1);
+  TTree *treeENew =  treeE->CloneTree();
+  treeENew->Write(0, TObject::kOverwrite);
 
   // copy AliceGeom
-  if ( !fSplitFile->Get("AliceGeom") ) {
-    TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-    if (!AliceGeom) {
-      cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-      abort() ;
-    }
-    AliceGeom->Write();
+  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+  if (!AliceGeom) {
+    cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+    abort() ;
   }
+  AliceGeom->Write(0, TObject::kOverwrite);
   
   gAlice->MakeTree("D",fSplitFile);
   cwd->cd() ; 
