@@ -5,6 +5,13 @@
 
 /* $Id$ */
 
+////////////////////////////////////////////////////////////////////////////
+//  CRT digit: Id
+//
+// The digits are made in FinishEvent() by summing all the hits in a 
+// counter.
+////////////////////////////////////////////////////////////////////////////
+
 #include "AliDigit.h"
 
 class TArrayF;
@@ -13,7 +20,7 @@ class TArrayI;
 class AliCRTdigit: public AliDigit  {
 public:
   AliCRTdigit();
-  AliCRTdigit(Int_t tracknum, Int_t* vol, Float_t* digit);
+  AliCRTdigit(Int_t* tracks, Int_t* vol, Float_t* digit);
   AliCRTdigit(const AliCRTdigit& digit);
   virtual ~AliCRTdigit();
 
@@ -28,8 +35,7 @@ protected:
   Int_t     fNDigits;  // dimension of fTdc array
   TArrayF*  fTdc;     // tdc values for sdigit
   TArrayF*  fAdc;     // adc values for sdigit
-  TArrayI*  fTracks;  // contributing tracks, kMAXDIGITS entries per
-                     // 1 tdc value
+
 private:
     ClassDef(AliCRTdigit,1)  //Digit (Header) object for set : CRT (ACORDE)
 };

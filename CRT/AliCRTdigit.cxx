@@ -15,6 +15,15 @@
 
 /* $Id$ */
 
+////////////////////////////////////////////////////////////////////////////
+//  CRT digit: Id
+//
+// The digits are made in FinishEvent() by summing all the hits in a
+// counter.
+//   The main parts of the code need to be written.
+//
+////////////////////////////////////////////////////////////////////////////
+
 #include "AliCRTdigit.h"
 
 #include <TArrayF.h>
@@ -32,8 +41,7 @@ AliCRTdigit::AliCRTdigit()
     fPadz(0),
     fNDigits(0),
     fTdc(0),
-    fAdc(0),
-    fTracks(0)
+    fAdc(0)
 {
   //
   // Default constructor
@@ -41,8 +49,8 @@ AliCRTdigit::AliCRTdigit()
 }
 
 //_____________________________________________________________________________
-AliCRTdigit::AliCRTdigit(Int_t tracknum, Int_t *vol, Float_t *digit)
-  : AliDigit(),
+AliCRTdigit::AliCRTdigit(Int_t* tracks, Int_t *vol, Float_t *digit)
+  : AliDigit(tracks),
     fSector(vol[0]),
     fPlate(vol[1]),
     fStrip(vol[2]),
@@ -50,8 +58,7 @@ AliCRTdigit::AliCRTdigit(Int_t tracknum, Int_t *vol, Float_t *digit)
     fPadz(vol[4]),
     fNDigits(1),
     fTdc(new TArrayF(fNDigits)),
-    fAdc(new TArrayF(fNDigits)),
-    fTracks(new TArrayI(fNDigits))
+    fAdc(new TArrayF(fNDigits))
 {
   
   //
@@ -61,13 +68,6 @@ AliCRTdigit::AliCRTdigit(Int_t tracknum, Int_t *vol, Float_t *digit)
   //
   (*fTdc)[0] = digit[0];
   (*fAdc)[0] = digit[1];
-  //fTracks = new TArrayI(kMAXDIGITS*fNDigits);
-  (*fTracks)[0] = tracknum;
-  //for (Int_t i = 1; i <kMAXDIGITS*fNDigits; i++) {
-  for (Int_t i = 1; i <fNDigits; i++) {
-    (*fTracks)[i] = -1;
-  }
-
 }
 
 //_____________________________________________________________________________
@@ -80,8 +80,7 @@ AliCRTdigit::AliCRTdigit(const AliCRTdigit& digit)
     fPadz(digit.fPadz),
     fNDigits(digit.fNDigits),
     fTdc(digit.fTdc),  
-    fAdc(digit.fAdc),
-    fTracks(digit.fTracks)
+    fAdc(digit.fAdc)
 {
   //
   //-- Copy constructor
@@ -94,7 +93,6 @@ AliCRTdigit::~AliCRTdigit()
   //
   //
   //
-  if ( fTracks ) { delete fTracks; fTracks = 0; }
   if ( fAdc ) { delete fAdc; fAdc = 0; }
   if ( fTdc ) { delete fTdc; fTdc = 0; }
 }
@@ -113,6 +111,5 @@ AliCRTdigit& AliCRTdigit::operator=(const AliCRTdigit& digit)
   fNDigits = digit.fNDigits;
   fTdc = digit.fTdc;
   fAdc = digit.fAdc;
-  fTracks = digit.fTracks;
   return *this;
 }
