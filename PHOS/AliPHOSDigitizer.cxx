@@ -510,7 +510,7 @@ Bool_t AliPHOSDigitizer::Init()
     
   if(fManager)
     SetTitle("aliroot") ;
-  else if (!GetTitle()) 
+  else if (strcmp(GetTitle(),"")==0) 
    SetTitle("galice.root") ;
 
   if( strcmp(GetName(), "") == 0 )
