@@ -61,13 +61,9 @@ protected:
     virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz)
 	{fOsigma[0]=sx;fOsigma[1]=sy;fOsigma[2]=sz;}
     virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=1.e10)
-	{fPMin = pmin; fPMax = pmax; SetBit(kMomentumRange);
-	 printf("\n set bits p %d %d %f %f  \n \n",TestBit(kMomentumRange), TestBit(kPtRange), pmin, pmax);
-	}
+	{fPMin = pmin; fPMax = pmax; SetBit(kMomentumRange);}
     virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=1.e10)
-	{fPtMin = ptmin; fPtMax = ptmax; SetBit(kPtRange);
-	printf("\n set bits pt %d %d %f %f \n \n",TestBit(kMomentumRange), TestBit(kPtRange), ptmin, ptmax);
-	}
+	{fPtMin = ptmin; fPtMax = ptmax; SetBit(kPtRange);}
     virtual void SetPhiRange(Float_t phimin=-180., Float_t phimax=180)
 	{fPhiMin = TMath::Pi()*phimin/180;
 	fPhiMax = TMath::Pi()*phimax/180; SetBit(kPhiRange);}
