@@ -1,87 +1,52 @@
-############################### TPC Makefile ##################################
+#
+# Makefile for ROOT version of HLT code.
+#
+# Author: Anders Vestbo                       
+#
 
-# Include machine specific definitions
+CXX         = g++
+LD          = g++
+CXXFLAGS    = -O2 -Wall -fPIC
+LDFLAGS     = -O2
+SOFLAGS     = -shared
 
-include $(ALICE_ROOT)/conf/GeneralDef
-include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
+TOPDIR = $(HOME)/level3code
+OBJDIR = tgt_Linux
 
-PACKAGE = AliL3
+SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
+          AliL3ConfMapTrack.cxx AliL3ConfMapFit.cxx AliL3Track.cxx\
+          AliL3Transform.cxx AliL3TrackMerger.cxx AliL3VertexArray.cxx \
+          AliL3Vertex.cxx AliL3VertexFinder.cxx \
+          AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinderNew.cxx \
+          AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
+          AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx\
 
-# C++ sources
+DICT = AliL3Cint.cxx
+DICTH = AliL3Cint.h
+DICTO = $(OBJDIR)/AliL3Cint.o
 
+HDRS = $(SRCS:.cxx=.h) AliL3LinkDef.h
 
-SRCS	       = AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
-	         AliL3ConfMapTrack.cxx AliL3ConfMapFit.cxx AliL3Track.cxx\
-		 AliL3Transform.cxx AliL3TrackMerger.cxx AliL3VertexArray.cxx \
-                 AliL3Vertex.cxx AliL3VertexFinder.cxx \
-                 AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinder.cxx \
-                 AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
-                 AliL3MemHandler.cxx AliL3FileHandler.cxx AliL3Evaluate.cxx \
-                 AliL3Benchmark.cxx AliL3Display.cxx AliL3ClustFinderNew.cxx AliL3Fitter.cxx
-		 
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 
-# C++ Headers
+LEVELSO = $(LEVEL3)/lib_$(USERNAME)/libAliL3.so
 
-HDRS          = $(SRCS:.cxx=.h) AliL3LinkDef.h
-# Library dictionary
+all : $(OBJDIR) $(LEVELSO)
 
-DICT          = AliL3Cint.cxx
-DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
+$(LEVELSO) : $(OBJS)
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
 
-# FORTRAN Objectrs
+$(DICT) : $(HDRS)
+	@echo "Generating dictionary..."
+	@rootcint -f $(DICT) -c $(HDRS)
 
-FOBJS         = $(FSRCS:.f=.o)
+$(OBJDIR)/%.o : %.cxx 
+	$(CXX) $(CXXFLAGS) -c -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -o $@ $<
 
-# C Objects
+$(OBJDIR) : 
+	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
 
-COBJS         = $(CSRCS:.c=.o)
-
-# C++ Objects
-
-OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
-
-# C++ compilation flags
-
-CXXFLAGS      = $(CXXOPTS) -g -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/  -I$(ALICE_ROOT)/TPC  -I$(ALICE_ROOT)/CONTAINERS -I$(HOME)/level3code/hough/
-
-#CXXFLAGS      = $(CXXOPTS) -g -Wall -I$(ROOTSYS)/include -I. -I $(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/include/ -DCOMPILING
- 
-# FORTRAN compilation flags
-
-FFLAGS      = $(FOPT)
- 
-##### TARGETS #####
- 
-# Target
-
-SLIBRARY	= $(LEVEL3)/lib_$(USERNAME)/libAliL3.$(SL)
-
-default:	$(SLIBRARY)
-
-$(LEVEL3)/lib_$(USERNAME)/libAliL3.$(SL):  $(OBJS)
-
-$(DICT):		$(HDRS)
-
-depend:			$(SRCS)
-
-TOCLEAN			= $(OBJS) *Cint.h *Cint.cxx
-
-############################### General Macros ################################
-
-include $(ALICE_ROOT)/conf/GeneralMacros
-
-############################ Dependencies #####################################
-
-include tgt_$(ALICE_TARGET)/Make-depend 
-
-###########
-mrproper:
-	rm -fr tgt_Linux
-	rm -fr $(DICT) $(DICTH) $(DICTO)
-clean:
-	rm -fr tgt_Linux/*.o
-	rm -fr $(LEVEL3)/lib_$(USERNAME)/libAliL3.so
-	rm -fr $(DICT) $(DICTH) $(DICTO)
-
-wipe: clean mrproper
+clean :
+	rm -f $(OBJDIR)/*.o
+	rm -f $(LEVEL3)/lib_$(USERNAME)/libAliL3.so
+	rm $(DICT) $(DICTH) 
