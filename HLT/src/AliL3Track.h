@@ -62,12 +62,12 @@ class AliL3Track {
   
   virtual void Set(AliL3Track* track);
   virtual Int_t Compare(const AliL3Track *track) const;
+  virtual void CalculateHelix();
   
   Bool_t CalculateReferencePoint(Double_t angle);//Calculate Reference Point
   Bool_t CalculateEdgePoint(Double_t angle);//Calculate crossing point with line
   Bool_t CalculatePoint(Double_t xplane);//Calculate crossing point with X-plane
   Bool_t IsPoint() {return fIsPoint;}
-  void CalculateHelix();
   Double_t GetCrossingAngle(Int_t padrow);
   Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   Double_t GetDistance(Double_t x0,Double_t x1){return 0;}
