@@ -13,24 +13,26 @@
  * provided "as is" without express or implied warranty.                  *
  *                                                                        *
  *                                                                        *
- * /////////////////////////////////////////////////////////////////////  *
- *                                                                        *
- * This class performs a fast fit of helices going through the <=6        *
- * points of the ITS, with the goal of studying tracking and              *
- * vertexing performances.                                                *
- * Generated kinematics is used to take into account different weights    *
- * associated to points in different layers (with different multiple      *
- * scattering-originated errors).                                         *
- *                                                                        *
- *   Based on the work by A. Strandlie, R. Fruhwirth                      *
- *                                                                        *
- *   First implementation by N. Bustreo, R. Turrisi - July 2000           *
- *                                                                        *
- *   Further modifications by A. Dainese, R. Turrisi                      *
- *                                                                        *
- *   Contact: Rosario Turrisi, rosario.turrisi@pd.infn.it                 *
- *                                                                        *
- * **************************************************************************/
+ **************************************************************************/
+
+// 
+//                                                                        *
+// This class performs a fast fit of helices going through the <=6        *
+// points of the ITS, with the goal of studying tracking and              *
+// vertexing performances.                                                *
+// Generated kinematics is used to take into account different weights    *
+// associated to points in different layers (with different multiple      *
+// scattering-originated errors).                                         *
+//                                                                        *
+//   Based on the work by A. Strandlie, R. Fruhwirth                      *
+//                                                                        *
+//   First implementation by N. Bustreo, R. Turrisi - July 2000           *
+//                                                                        *
+//   Further modifications by A. Dainese, R. Turrisi                      *
+//                                                                        *
+//   Contact: Rosario Turrisi, rosario.turrisi@pd.infn.it                 *
+//                                                                        *
+// ************************************************************************
 //
 //
 //       Modified November, 7th 2001 by Rosario Turrisi 
@@ -49,6 +51,9 @@
 //
 //     "PROPER WEIGHTS":  (1+R^2)^2/(\sigma_x^2 + \sigma_y^2 + \sigma_MS^2)
 //
+
+
+
 #include <Riostream.h>
 #include "AliITS.h"
 #include "AliITSRiemannFit.h"
@@ -68,6 +73,8 @@
 #include "AliITSgeom.h"
 #include "AliITSmodule.h"
 #include "AliMC.h"
+
+
 ClassImp(AliITSRiemannFit)
 
 
@@ -88,8 +95,23 @@ AliITSRiemannFit::AliITSRiemannFit() {
   for(Int_t i=0;i<6;i++)fPLay[i] = 0;
   
 }
-//----------------------------------------------------------------------
 
+//______________________________________________________________________
+AliITSRiemannFit::AliITSRiemannFit(const AliITSRiemannFit &rf) : TObject(rf) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSRiemannFit","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSRiemannFit& AliITSRiemannFit::operator=(const AliITSRiemannFit& /* rf */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
+//______________________________________________________________________
 AliITSRiemannFit::~AliITSRiemannFit() {
   ///////////////////////////////////////////////////////////
   // Default destructor.
@@ -948,7 +970,7 @@ Int_t AliITSRiemannFit::FitHelix(Int_t NPoints, TVector3** fPointRecs,TVector3**
   //  All this stuff relies on this hypothesis !!!
   //
   Int_t ierr = 0, ierrl=0;
-  const Double_t omega = 1.0e-2;
+  const Double_t kOmega = 1.0e-2;
 
   
 
@@ -1122,7 +1144,7 @@ errors[ip]->SetXYZ(0.1*fPointRecErrors[ip]->X(),0.1*fPointRecErrors[ip]->Y(),0.1
   u0     *=  10.0;
   v0     *=  10.0;
   
-  ierrl=LinearFit(NPoints,original,linerrors,omega,u0,v0,fphi,zData,zError,corrLin);
+  ierrl=LinearFit(NPoints,original,linerrors,kOmega,u0,v0,fphi,zData,zError,corrLin);
   if(ierrl==33) return 0;
   chisql=zError.Z();
 //   fprintf(pout,"%f \n",chisql); 
@@ -1134,7 +1156,7 @@ errors[ip]->SetXYZ(0.1*fPointRecErrors[ip]->X(),0.1*fPointRecErrors[ip]->Y(),0.1
   delete [] weight;
   
   f1=fphi;
-  f2=vpar/(omega*TMath::Abs(rho));
+  f2=vpar/(kOmega*TMath::Abs(rho));
   f3=1/rho;
   delete[] ori;
   delete[] rie;
@@ -1228,32 +1250,32 @@ Int_t AliITSRiemannFit::LinearFit(Int_t npoints, TVector3 **input,
   zData.Set(z0,vpar);
   zError.SetXYZ(ez0,evpar,chisquare);
   
-  Double_t Sigmas=0.; 
-  Double_t Sigmaz=0.;
-  Double_t Avs=0.;
-  Double_t Avz=0.;
-  Double_t Avsz=0.;
+  Double_t sigmas=0.; 
+  Double_t sigmaz=0.;
+  Double_t avs=0.;
+  Double_t avz=0.;
+  Double_t avsz=0.;
 
   for(Int_t j = 0; j < npoints; j++) {
-    Avs  += s[j];
-    Avz  += z[j]; 
-    Avsz += s[j]*z[j];
+    avs  += s[j];
+    avz  += z[j]; 
+    avsz += s[j]*z[j];
   }
-    Avs  /= (Double_t)npoints;
-    Avz  /= (Double_t)npoints; 
-    Avsz /= (Double_t)npoints;
+    avs  /= (Double_t)npoints;
+    avz  /= (Double_t)npoints; 
+    avsz /= (Double_t)npoints;
 
   for(Int_t l = 0; l < npoints; l++) {
-    Sigmas += (s[l]-Avs)*(s[l]-Avs);
-    Sigmaz += (z[l]-Avz)*(z[l]-Avz);
+    sigmas += (s[l]-avs)*(s[l]-avs);
+    sigmaz += (z[l]-avz)*(z[l]-avz);
   }
-  Sigmas /=(Double_t)npoints;
-  Sigmaz /=(Double_t)npoints;
+  sigmas /=(Double_t)npoints;
+  sigmaz /=(Double_t)npoints;
 
-  Sigmas = sqrt(Sigmas);
-  Sigmaz = sqrt(Sigmaz);
+  sigmas = sqrt(sigmas);
+  sigmaz = sqrt(sigmaz);
   
-  corrLin = (Avsz-Avs*Avz)/(Sigmas*Sigmaz);
+  corrLin = (avsz-avs*avz)/(sigmas*sigmaz);
   
 
 
@@ -1273,7 +1295,7 @@ Int_t AliITSRiemannFit::LinearFit(Int_t npoints, TVector3 **input,
 //_______________________________________________________
 
 Double_t AliITSRiemannFit::Fitfunction(Double_t *x, Double_t* par){
-
+  // function used for fit
   return par[0]+(*x)*par[1];
 
 }

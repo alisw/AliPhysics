@@ -61,13 +61,17 @@ class AliITSRiemannFit : public TObject{
       void SetEta(Float_t eta=0) { fEta = eta;}
       void SetVertexPhi(Float_t vert=0) { fVertexPhi = vert;}
     private :
-      Int_t fLay,fLad,fDet,fTrack;
+      // copy constructor (NO copy ctr. allowed)
+      AliPointtl(const AliPointtl& /*ap */) {}
+    // assignment operator (NO assignment allowed)
+      AliPointtl& operator=(const AliPointtl& /* ap */) {return *this;}
+      Int_t fLay,fLad,fDet,fTrack;       // layer,ladder,detector and track
       Float_t fx,fy,fz,fr;               // global position of point 
       Float_t fdE,fdx,fdy,fdz;               // Errors
       TLorentzVector* fOrigin;    // position and momentum of 
       TLorentzVector* fMomentum;  //  particle at its origin
       Int_t fCode;                       // Geant code of particle
-      Char_t *fName;
+      Char_t *fName;                    // name
       Float_t fPt;                       // Pt at the origin
       Float_t fPhi,fEta,fVertexPhi;         // phi eta on layer and phi on vertex
   };
@@ -102,6 +106,11 @@ class AliITSRiemannFit : public TObject{
 		  Double_t &corrLin);
 
  private:
+  // copy constructor (NO copy ctr. allowed)
+ AliITSRiemannFit(const AliITSRiemannFit& rf );
+  // assignment operator (NO assignment allowed)
+ AliITSRiemannFit& operator=(const AliITSRiemannFit& /* rf */);
+
   static Double_t Fitfunction(Double_t *x, Double_t* par);
 
   Int_t fSizeEvent;      // size of array 
@@ -109,10 +118,8 @@ class AliITSRiemannFit : public TObject{
   Int_t fPoints;         // number of Reconstructed Points in the event
   Int_t fParticles;      // number of particles in the event
   Int_t fPLay[6];           // number of points in each layer
-  AliPointtl **fPointRecs;
-  //
-  // test erase
-/*    Point_tl **fspdi,**fspdo; // This are for the first two layers and vertex analysis */
+  AliPointtl **fPointRecs;    //rec points
+
   
   ClassDef(AliITSRiemannFit,1)  // Fast fit of helices on ITS RecPoints
     };
