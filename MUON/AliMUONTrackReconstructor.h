@@ -32,7 +32,7 @@ class AliMUONTrackReconstructor : public TObject {
     Double_t fSSigmaCut;      // Number of sig. delimiting the searching areas
     Double_t fSXPrec;         // Chamber precision in X (cm) 
     Double_t fSYPrec;         // Chamber precision in Y (cm)
-    Text_t *fFileName;        // ?????????
+    Text_t *fFileName;        //! ?????????
     ClassDef(AliMUONTrackReconstructor,1)  // Interface to muon tracking code
 	};
 	
