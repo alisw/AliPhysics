@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2003/05/22 13:57:48  hristov
+First implementation of ESD classes (Yu.Belikov)
+
 Revision 1.32  2003/04/10 10:36:54  hristov
 Code for unified TPC/TRD tracking (S.Radomski)
 
@@ -1157,7 +1160,7 @@ Int_t AliTPCtracker::PropagateBack(AliESD *event) {
     else if ( (status & AliESDtrack::kITSout) == 0 ) continue;
 
     Int_t nc=t.GetNumberOfClusters();
-    s.SetLabel(nc-1); //set number of the cluster to start with
+    s.SetNumber(nc); //set number of the cluster to start with
 
     //inner sectors
     fSectors=fInnerSec; fN=fkNIS;
