@@ -11,7 +11,7 @@
 
 #include <globals.hh>
 
-const G4double TG4Limits::fgkDefaultMaxStep = 10*cm;
+const G4double TG4Limits::fgkDefaultMaxStep = DBL_MAX;
 G4int          TG4Limits::fgCounter = 0;
 
 //_____________________________________________________________________________
