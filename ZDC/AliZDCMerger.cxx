@@ -26,6 +26,7 @@
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TH1.h>
+#include <TSystem.h>
 
 // --- AliRoot header files
 #include "AliZDCMerger.h"
@@ -37,7 +38,7 @@
 #include "AliDetector.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
-#include "/home/oppedisa/AliRoot/pro/EVGEN/AliGenHijingEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 
 ClassImp(AliZDCMerger)
 
@@ -48,7 +49,6 @@ AliZDCMerger::AliZDCMerger()
     fMerge       = kDigitize;
     fNEvBgr	 = 0;
     fFnBgr       = 0;
-//    fFnBgr       = "/home/oppedisa/alirun/hijing.root";
     fBgrFile     = 0;
     fTrHBgr      = 0;
     fTrSDBgr     = 0;
@@ -58,10 +58,8 @@ AliZDCMerger::AliZDCMerger()
     fFreeSpn     = 0;
     fFreeSpp     = 0;
     fFnSpecn     = 0;
-//    fFnSpecn     = "/home/oppedisa/alirun/ZNsignal.root";
     fSpecnFile   = 0;
     fFnSpecp     = 0;
-//    fFnSpecp     = "/home/oppedisa/alirun/ZPsignal.root";
     fSpecpFile   = 0;
     
 }
@@ -264,7 +262,8 @@ void AliZDCMerger::ExtractSignal(Int_t detector, Int_t quadrant,
 //           detector, quadrant);
 
     // Connect spectator n histo's file
-    fSpecnFile = TFile::Open("/home/oppedisa/alirun/ZNsignal.root");
+    fFnSpecn = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZNsignal.root");
+    fSpecnFile = TFile::Open(fFnSpecn,"R");
     fSpecnFile->cd();
 //    fSpecnFile->ls();
     TH1F *hPMQ1zn = (TH1F*) gDirectory->Get("hPMQ1zn;1");
@@ -279,7 +278,8 @@ void AliZDCMerger::ExtractSignal(Int_t detector, Int_t quadrant,
 //    printf("	hPMQ1zn -> GetRandom() = %f\n",x);
     
     // Connect spectator p histo's file
-    fSpecpFile = TFile::Open("/home/oppedisa/alirun/ZPsignal.root");
+    fFnSpecp = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZPsignal.root");
+    fSpecpFile = TFile::Open(fFnSpecp,"R");
     fSpecpFile->cd(); 
 //    fSpecpFile->ls();
     TH1F *hPMQ1zp = (TH1F*) gDirectory->Get("hPMQ1zp;1");
