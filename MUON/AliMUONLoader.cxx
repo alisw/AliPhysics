@@ -32,8 +32,7 @@ AliMUONLoader::AliMUONLoader(const Char_t * detname,TFolder* eventfolder):AliLoa
 
 AliMUONLoader::~AliMUONLoader()
 {
-//detructor
- 
+//detructor 
 }
 /*****************************************************************************/ 
 
