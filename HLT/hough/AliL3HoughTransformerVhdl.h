@@ -1,17 +1,9 @@
 #ifndef ALIL3_HOUGHTRANSFORMERVHDL
 #define ALIL3_HOUGHTRANSFORMERVDHL
 
-#include <stream.h>
-
 #include "AliL3RootTypes.h"
 #include "AliL3HoughBaseTransformer.h"
-
-#ifdef USEFFLOAT
 #include "AliL3FFloat.h"
-#else
-typedef Float_t AliL3FFloat;
-//#define AliL3FFloat float
-#endif
 
 class AliL3Histogram;
 
@@ -21,6 +13,7 @@ class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer
  private:
 
   AliL3Histogram **fParamSpace; //!
+
 #ifdef VHDLVERSION
   Int_t fMinRow;
   Int_t fMaxRow;
@@ -40,12 +33,14 @@ class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer
   //other data member. And that even in the
   //static version, where I dont use heap!!!
 #ifdef VHDLSTATIC
-  float fLUTX[32]; 
-  float fLUTY[32]; 
-  float fLUTEta[256]; 
-  float fLUTphi0[256]; 
-  float fLUT2sinphi0[256];   
-  float fLUT2cosphi0[256];
+  /*
+    AliL3FFloat fLUTX[32]; 
+    AliL3FFloat fLUTY[32]; 
+    AliL3FFloat fLUTEta[256]; 
+    AliL3FFloat fLUTphi0[256]; 
+    AliL3FFloat fLUT2sinphi0[256];   
+    AliL3FFloat fLUT2cosphi0[256];
+  */
 #else
   AliL3FFloat *fLUTX; //!
   AliL3FFloat *fLUTY; //!
@@ -54,7 +49,9 @@ class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer
   AliL3FFloat *fLUT2sinphi0; //!   
   AliL3FFloat *fLUT2cosphi0; //!
 #endif
-  
+
+
+#if 0  
   Float_t CalcRoverZ2(Float_t eta);
   Float_t CalcEta(Float_t roverz2);
   Float_t CalcX(Int_t row);
@@ -63,8 +60,8 @@ class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer
 
   Int_t FindIndex(Double_t rz2);
 #endif
+#endif
   void DeleteHistograms();
-
 
  public:
 
@@ -77,8 +74,8 @@ class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer
 			Int_t nybin,Double_t ymin,Double_t ymax);
   void Reset();
   void TransformCircle();
-  void TransformCircleC(Int_t row_range) {cerr<<"TransformCircleC is not defined!"<<endl;}
-  void TransformLine() {cerr<<"TransformLine is not defined!"<<endl;}
+  void TransformCircleC(Int_t row_range) {STDCERR<<"TransformCircleC is not defined!"<<STDENDL;}
+  void TransformLine() {STDCERR<<"TransformLine is not defined!"<<STDENDL;}
 
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);

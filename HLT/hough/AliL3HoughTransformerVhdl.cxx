@@ -3,14 +3,13 @@
 // Author: Constantin Loizides <mailto:loizides@fi.uib.no>
 //*-- Copyright&Copy CL
 
-#include <stream.h>
+#include "AliL3StandardIncludes.h"
 
-#include "AliL3MemHandler.h"
 #include "AliL3Logging.h"
+#include "AliL3MemHandler.h"
 #include "AliL3Transform.h"
 #include "AliL3DigitData.h"
 #include "AliL3Histogram.h"
-
 
 //try to be close to VHDL version (eg. LUTs)
 //VESTBO: if you switch that of, you should get your version
@@ -24,9 +23,11 @@
 //data still gets overwritten!
 #define VHDLSTATIC
 
-//switch off if you want to have floating point
-//#define USEFFLOAT
 #include "AliL3HoughTransformerVhdl.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 /** \class AliL3HoughTransformerVhdl
 // <pre>
@@ -43,9 +44,12 @@ ClassImp(AliL3HoughTransformerVhdl)
 #ifdef VHDLVERSION
 
 AliL3HoughTransformerVhdl::AliL3HoughTransformerVhdl()
-            : AliL3HoughBaseTransformer()
+  : AliL3HoughBaseTransformer()//, /*fMinRow(0),*/ fMaxRow(0)
+
 {
+  cout << "hallo" << endl;
   fParamSpace=0;
+
 #ifndef VHDLSTATIC
   fLUTX=0;
   fLUTY=0;
@@ -54,25 +58,29 @@ AliL3HoughTransformerVhdl::AliL3HoughTransformerVhdl()
   fLUT2sinphi0=0;
   fLUT2cosphi0=0;
 #endif
+  
   fMinRow=0;
   fMaxRow=0;
+
+  /*
   fNRows=0;
   fNEtas=0;
   fNPhi0=0;
   fSector=0;
   fSectorRow=0;
   fZSign=0;
-  fZLengthPlusOff=0.;
-  fTimeWidth=0.;
-  fPadPitch=0.;
-  fEtaSlice=0.;
+  fZLengthPlusOff=0;
+  fTimeWidth=0;
+  fPadPitch=0;
+  fEtaSlice=0;
+  */
 }
 
 AliL3HoughTransformerVhdl::AliL3HoughTransformerVhdl(Int_t slice,Int_t patch,Int_t n_eta_segments) 
   : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
 {
   AliL3HoughTransformerVhdl();
-
+  cout << "wiesow hier??" << endl;
   Init(slice,patch,n_eta_segments);
 }
 
@@ -89,7 +97,7 @@ AliL3HoughTransformerVhdl::~AliL3HoughTransformerVhdl()
 #endif
 }
 
-void AliL3HoughTransformerVhdl::Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100)
+void AliL3HoughTransformerVhdl::Init(Int_t slice,Int_t patch,Int_t n_eta_segments)
 {
   cout << "InitVhdl " << slice << " " << patch << " " << n_eta_segments << endl;
   AliL3HoughBaseTransformer::Init(slice,patch,n_eta_segments);
@@ -126,7 +134,7 @@ void AliL3HoughTransformerVhdl::Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_seg
   Float_t etamax_=GetEtaMax();
   Float_t etamin_=GetEtaMin();
   Float_t etaslice_=(etamax_-etamin_)/n_eta_segments;
-
+#if 0
   //lookup tables for X and Y
 #ifndef VHDLSTATIC
   fLUTX=new AliL3FFloat[n_];
@@ -148,6 +156,7 @@ void AliL3HoughTransformerVhdl::Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_seg
     //VESTBO: uncomment to see values (and compare with Print function)
     //cout << rr << ": " << fLUTEta[rr] << endl;
   }
+#endif /*uncomment arrays*/
 
   //member values
   fMinRow=minrow_;
@@ -164,6 +173,7 @@ void AliL3HoughTransformerVhdl::Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_seg
   fEtaSlice=etaslice_;
 }
 
+#if 0
 Float_t AliL3HoughTransformerVhdl::CalcRoverZ2(Float_t eta)
 {
   Float_t e=exp(2*eta);
@@ -181,23 +191,24 @@ Float_t AliL3HoughTransformerVhdl::CalcEta(Float_t roverz2)
   return ret;
 }
 
-inline Float_t AliL3HoughTransformerVhdl::CalcX(Int_t row)
+Float_t AliL3HoughTransformerVhdl::CalcX(Int_t row)
 {
   return fLUTX[row];
 }
 
-inline Float_t AliL3HoughTransformerVhdl::CalcY(Int_t pad,Int_t row)
+Float_t AliL3HoughTransformerVhdl::CalcY(Int_t pad,Int_t row)
 {
   return pad*fPadPitch-fLUTY[row];
 }
 
-inline Float_t AliL3HoughTransformerVhdl::CalcZ(Int_t time)
+Float_t AliL3HoughTransformerVhdl::CalcZ(Int_t time)
 {
   Float_t ret=time*fTimeWidth;
   if(fZSign>0) ret=fZLengthPlusOff-ret;
   else ret=ret-fZLengthPlusOff;
   return ret;
 }
+#endif
 
 void AliL3HoughTransformerVhdl::DeleteHistograms()
 {
@@ -252,16 +263,19 @@ void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Double_t xmin,Doubl
   cout << ymaxf << " " << ((ymaxf-yminf)/nybin) << endl;
   */
 
+
   fParamSpace = new AliL3Histogram*[GetNEtaSegments()];
+
   Char_t histname[256];
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     {
       sprintf(histname,"paramspace_vhdl_%d",i);
-      fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xminf,xmaxf,nybin,yminf,ymaxf);
+      fParamSpace[i] = new AliL3Histogram(histname,"id",nxbin,xminf,xmaxf,nybin,yminf,ymaxf);
     }
   
   //create lookup table for sin and cos
   fNPhi0=nybin+1;
+#if 0
 #ifndef VHDLSTATIC
   fLUTphi0=new AliL3FFloat[fNPhi0];
   fLUT2sinphi0=new AliL3FFloat[fNPhi0];
@@ -277,6 +291,7 @@ void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Double_t xmin,Doubl
     //VESTBO: uncomment to see values (and compare with Print function)
     //cout << i << ": " << fLUTphi0[i] << " " << fLUT2sinphi0[i] << " " << fLUT2cosphi0[i] << endl;
   }  
+#endif /*arrays*/
 }
 
 void AliL3HoughTransformerVhdl::Reset()
@@ -294,14 +309,15 @@ void AliL3HoughTransformerVhdl::Reset()
     fParamSpace[i]->Reset();
 }
 
-inline AliL3Histogram *AliL3HoughTransformerVhdl::GetHistogram(Int_t eta_index)
+AliL3Histogram *AliL3HoughTransformerVhdl::GetHistogram(Int_t eta_index)
 {
   if(!fParamSpace || eta_index >= GetNEtaSegments() || eta_index < 0) return 0;
   if(!fParamSpace[eta_index]) return 0;
   return fParamSpace[eta_index];
 }
 
-inline Int_t AliL3HoughTransformerVhdl::FindIndex(Double_t rz2)
+#if 0
+Int_t AliL3HoughTransformerVhdl::FindIndex(Double_t rz2)
 {
   Int_t index=0;
   while((index<fNEtas)&&(rz2<=fLUTEta[index])){
@@ -310,11 +326,13 @@ inline Int_t AliL3HoughTransformerVhdl::FindIndex(Double_t rz2)
   }
   return index;
 }
+#endif
 
 Int_t AliL3HoughTransformerVhdl::GetEtaIndex(Double_t eta)
 {
-  AliL3FFloat rz2=CalcRoverZ2(eta);
-  return FindIndex(rz2);
+  //AliL3FFloat rz2=CalcRoverZ2(eta);
+  //return FindIndex(rz2);
+  return 0;
 }
 
 Double_t AliL3HoughTransformerVhdl::GetEta(Int_t eta_index,Int_t slice){
@@ -323,7 +341,7 @@ Double_t AliL3HoughTransformerVhdl::GetEta(Int_t eta_index,Int_t slice){
       <<"Index out of range."<<ENDLOG;
     return 0.;
   }
-  return (CalcEta(fLUTEta[eta_index])-0.5*fEtaSlice);
+  return 0;//(CalcEta(fLUTEta[eta_index])-0.5*fEtaSlice);
 }
 
 void AliL3HoughTransformerVhdl::TransformCircle()
@@ -333,6 +351,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
   // 
   //kappa = 1/x * ( y/x*2*cos(phi0) - 2*sin(phi0) )
 
+#if 0
   AliL3DigitRowData *tempPt = GetDataPointer();
   if(!tempPt)
     {
@@ -392,6 +411,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
     //Move the data pointer to the next padrow:
     AliL3MemHandler::UpdateRowPointer(tempPt);
   }
+#endif 
 }
 
 void AliL3HoughTransformerVhdl::Print()
@@ -409,6 +429,7 @@ void AliL3HoughTransformerVhdl::Print()
   cout << "fZLengthPlusOff: " << fZLengthPlusOff << endl;
   cout << "fPadPitch: " << fPadPitch << endl;
   cout << "fTimeWidth: " << fTimeWidth << endl;
+#if 0
   if(!fNRows) return;
   cout << "fLUTX " << fNRows << endl;
   for(Int_t i=0;i<fNRows;i++) cout << "fLUTX[" << i << "]=" << (Float_t)fLUTX[i] << endl;
@@ -424,6 +445,7 @@ void AliL3HoughTransformerVhdl::Print()
   for(Int_t i=0;i<fNPhi0;i++) cout << "fLUT2sinphi0[" << i << "]=" << fLUT2sinphi0[i] << endl;
   cout << "fLUT2cosphi0 " << fNPhi0 << endl;
   for(Int_t i=0;i<fNPhi0;i++) cout << "fLUT2cosphi0[" << i << "]=" << fLUT2cosphi0[i] << endl;
+#endif 
 }
 
 //end vhdl version
@@ -483,12 +505,12 @@ void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Double_t xmin,Doubl
   AliL3FFloat xmaxf(xmax);
   AliL3FFloat yminf(ymin);
   AliL3FFloat ymaxf(ymax);
-  /*
+
   cout << xminf << endl;
   cout << xmaxf << " " << ((xmaxf-xminf)/nxbin) << endl;
   cout << yminf << endl;
   cout << ymaxf << " " << ((ymaxf-yminf)/nybin) << endl;
-  */
+
   
   fParamSpace = new AliL3Histogram*[GetNEtaSegments()];
   
@@ -496,7 +518,7 @@ void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Double_t xmin,Doubl
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     {
       sprintf(histname,"paramspace_vhdl_%d",i);
-      fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xminf,xmaxf,nybin,yminf,ymaxf);
+      fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xmin,xmax,nybin,ymin,ymax);
     }
 }
 
@@ -515,7 +537,7 @@ void AliL3HoughTransformerVhdl::Reset()
     fParamSpace[i]->Reset();
 }
 
-inline AliL3Histogram *AliL3HoughTransformerVhdl::GetHistogram(Int_t eta_index)
+AliL3Histogram *AliL3HoughTransformerVhdl::GetHistogram(Int_t eta_index)
 {
   if(!fParamSpace || eta_index >= GetNEtaSegments() || eta_index < 0) return 0;
   if(!fParamSpace[eta_index]) return 0;
