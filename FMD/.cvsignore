@@ -1,4 +1,8 @@
 semantic.cache
 html
 tgt_*
-
+fluka*
+geant*
+runIt.C
+runflukageo.sh
+rungeant3geo.sh

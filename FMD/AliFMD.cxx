@@ -17,11 +17,13 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          
-//  Forward Multiplicity Detector based on Silicon wafers This class
-//  contains the base procedures for the Forward Multiplicity detector
-//  Detector consists of 5 Si volumes covered pseudorapidity interval
-//  from 1.7 to 5.1.
-//                                                                           
+// Forward Multiplicity Detector based on Silicon wafers. This class
+// contains the base procedures for the Forward Multiplicity detector
+// Detector consists of 5 Si volumes covered pseudorapidity interval
+// from 1.7 to 5.1.
+//                                                       
+// This is the base class for all FMD manager classes. 
+//                    
 // The actual code is done by various separate classes.   Below is
 // diagram showing the relationship between the various FMD classes
 // that handles the geometry 
@@ -88,21 +90,11 @@
 //    envisioned that the classes should also define the support
 //    volumes and material for each of the detectors.                          
 //                                                                          
-//Begin_Html
-/*
-   </pre>
-   <br clear=left>
-   <p>
-     The responsible person for this module is
-     <a href="mailto:Alla.Maevskaia@cern.ch">Alla Maevskaia</a>.
-   </p>
-   <p>
-     Many modifications by <a href="mailto:cholm@nbi.dk">Christian
-       Holm Christensen</a>.
-   </p>
-   <pre>
-*/
-//End_Html
+// The responsible person for this module is Alla Maevskaia
+// <Alla.Maevskaia@cern.ch>.
+//
+// Many modifications by Christian Holm Christensen <cholm@nbi.dk>
+//
 
 #ifndef ROOT_TClonesArray
 #include <TClonesArray.h>
@@ -141,7 +133,7 @@
 #ifndef ALIMC_H
 # include "AliMC.h"
 #endif
-#ifndef ALILog_H
+#ifndef ALILOG_H
 # include "AliLog.h"
 #endif
 #ifndef ALIMAGF_H
@@ -304,9 +296,32 @@ AliFMD::~AliFMD ()
 void 
 AliFMD::CreateGeometry()
 {
- //
-  // Create the geometry of Forward Multiplicity Detector version 0
   //
+  // Create the geometry of Forward Multiplicity Detector.  The actual
+  // construction of the geometry is delegated to the class AliFMDRing
+  // and AliFMDSubDetector and the relevant derived classes. 
+  //
+  // The flow of this member function is:
+  //
+  //   FOR rings fInner and fOuter DO  
+  //     AliFMDRing::Init();
+  //   END FOR
+  // 
+  //   Set up hybrud card support (leg) volume shapes  
+  // 
+  //   FOR rings fInner and fOuter DO  
+  //     AliFMDRing::SetupGeometry();
+  //   END FOR
+  // 
+  //   FOR subdetectors fFMD1, fFMD2, and fFMD3 DO 
+  //     AliFMDSubDetector::SetupGeomtry();
+  //   END FOR
+  // 
+  //   FOR subdetectors fFMD1, fFMD2, and fFMD3 DO 
+  //     AliFMDSubDetector::Geomtry();
+  //   END FOR
+  //   
+
   // DebugGuard guard("AliFMD::CreateGeometry");
   AliDebug(10, "Creating geometry");
 
@@ -541,6 +556,8 @@ AliFMD::BuildGeometry()
   //
   // Build a simplified geometry of the FMD used for event display  
   // 
+  // The actual building of the TNodes is done by
+  // AliFMDSubDetector::SimpleGeometry. 
   AliDebug(10, "Creating a simplified geometry");
 
   TNode* top = gAlice->GetGeometry()->GetNode("alice");
@@ -555,7 +572,7 @@ void
 AliFMD::DrawDetector()
 {
   //
-  // Draw a shaded view of the Forward multiplicity detector version 0
+  // Draw a shaded view of the Forward multiplicity detector
   //
   // DebugGuard guard("AliFMD::DrawDetector");
   AliDebug(10, "Draw detector");
@@ -603,6 +620,13 @@ void
 AliFMD::MakeBranch(Option_t * option)
 {
   // Create Tree branches for the FMD.
+  //
+  // Options:
+  //
+  //    H          Make a branch of TClonesArray of AliFMDHit's
+  //    D          Make a branch of TClonesArray of AliFMDDigit's
+  //    S          Make a branch of TClonesArray of AliFMDSDigit's
+  // 
   const Int_t kBufferSize = 16000;
   TString branchname(GetName());
   TString opt(option);
@@ -653,6 +677,7 @@ AliFMD::SetTreeAddress()
 void 
 AliFMD::SetHitsAddressBranch(TBranch *b)
 {
+  // Set the TClonesArray to read hits into. 
   b->SetAddress(&fHits);
 }
 
@@ -678,7 +703,9 @@ AliFMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //    hits[6]	 [Float_t  ] Z-component of track's momentum	       	
   //    hits[7]	 [Float_t  ] Energy deposited by track		       	
   //    hits[8]	 [Int_t    ] Track's particle Id # 
-  //    hits[9]	 [Float_t  ] Time when the track hit 		       	
+  //    hits[9]	 [Float_t  ] Time when the track hit
+  // 
+  // 
   AddHit(track, 
 	 UShort_t(vol[0]),  // Detector # 
 	 Char_t(vol[1]),    // Ring ID
@@ -746,6 +773,10 @@ AliFMD::AddHit(Int_t    track,
 	&& hit->Sector() == sector 
 	&& hit->Strip() == strip
 	&& hit->Track() == track) {
+      Warning("AddHit", "already had a hit in FMD%d%c[%2d,%3d] for track # %d,"
+	      " adding energy (%f) to that hit (%f) -> %f", 
+	      detector, ring, sector, strip, track, edep, hit->Edep(),
+	      hit->Edep() + edep);
       hit->SetEdep(hit->Edep() + edep);
       return;
     }
@@ -858,6 +889,7 @@ AliFMD::AddSDigit(UShort_t detector,
   //    count1    ADC count (a 10-bit word)
   //    count2    ADC count (a 10-bit word), or -1 if not used
   //    count3    ADC count (a 10-bit word), or -1 if not used
+  //
   TClonesArray& a = *(SDigitsArray());
   
   new (a[fNsdigits++]) 
@@ -920,6 +952,9 @@ AliFMD::SDigitsArray()
 void 
 AliFMD::Hits2Digits() 
 {
+  // Create AliFMDDigit's from AliFMDHit's.  This is done by making a
+  // AliFMDDigitizer, and executing that code.
+  // 
   AliRunDigitizer* manager = new AliRunDigitizer(1, 1);
   manager->SetInputStream(0, "galice.root");
   manager->SetOutputFile("H2Dfile");
@@ -932,6 +967,9 @@ AliFMD::Hits2Digits()
 void 
 AliFMD::Hits2SDigits() 
 {
+  // Create AliFMDSDigit's from AliFMDHit's.  This is done by creating
+  // an AliFMDSDigitizer object, and executing it. 
+  // 
   AliDigitizer* sdig = new AliFMDSDigitizer("galice.root");
   sdig->Exec("");
 }
@@ -953,6 +991,61 @@ AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
 void 
 AliFMD::Digits2Raw() 
 {
+  // Turn digits into raw data. 
+  // 
+  // Digits are read from the Digit branch, and processed to make
+  // three DDL files, one for each of the sub-detectors FMD1, FMD2,
+  // and FMD3. 
+  //
+  // The raw data files consists of a header, followed by ALTRO
+  // formatted blocks.  
+  // 
+  //          +-------------+
+  //          | Header      |
+  //          +-------------+
+  //          | ALTRO Block |
+  //          | ...         |
+  //          +-------------+
+  //          DDL file 
+  // 
+  // An ALTRO formatted block, in the FMD context, consists of a
+  // number of counts followed by a trailer. 
+  // 
+  //          +------------------+
+  //          | Count            |
+  //          | ...              |
+  //          | possible fillers |
+  //          +------------------+
+  //          | Trailer          |
+  //          +------------------+
+  //          ALTRO block 
+  // 
+  // The counts are listed backwards, that is, starting with the
+  // latest count, and ending in the first. 
+  // 
+  // Each count consist of 1 or more ADC samples of the VA1_ALICE
+  // pre-amp. signal.  Just how many samples are used depends on
+  // whether the ALTRO over samples the pre-amp.  Each sample is a
+  // 10-bit word, and the samples are grouped into 40-bit blocks 
+  //
+  //          +------------------------------------+
+  //          |  S(n)   | S(n-1) | S(n-2) | S(n-3) |
+  //          |  ...    | ...    | ...    | ...    |
+  //          |  S(2)   | S(1)   | AA     | AA     |
+  //          +------------------------------------+
+  //          Counts + possible filler 
+  //
+  // The trailer of the number of words of signales, the starting
+  // strip number, the sector number, and the ring ID; each 10-bit
+  // words,  packed into 40-bits. 
+  // 
+  //          +------------------------------------+
+  //          | # words | start  | sector | ring   |
+  //          +------------------------------------+
+  //          Trailer
+  // 
+  // Note, that this method assumes that the digits are ordered. 
+  //
   AliFMD* fmd = static_cast<AliFMD*>(gAlice->GetDetector(GetName()));
   fLoader->LoadDigits();
   TTree* digitTree = fLoader->TreeD();
@@ -1120,11 +1213,11 @@ AliFMD::Digits2Raw()
 void 
 AliFMD::SetLegLength(Double_t length) 
 {
- // Set lenght of plastic legs that hold the hybrid (print board and
+  // Set lenght of plastic legs that hold the hybrid (print board and
   // silicon sensor) onto the honeycomp support
   //
   // DebugGuard guard("AliFMD::SetLegLength");
-   AliDebug(10, "AliFMD::SetLegLength");
+  AliDebug(10, "AliFMD::SetLegLength");
   fLegLength = length;
   fInner->SetLegLength(fLegLength);
   fOuter->SetLegLength(fLegLength);
@@ -1180,6 +1273,8 @@ AliFMD::SetModuleSpacing(Double_t spacing)
 void 
 AliFMD::Browse(TBrowser* b) 
 {
+  // Browse this object. 
+  //
   AliDebug(10, "AliFMD::Browse");
   AliDetector::Browse(b);
   if (fInner) b->Add(fInner, "Inner Ring");
@@ -1190,155 +1285,6 @@ AliFMD::Browse(TBrowser* b)
 }
 
 
-//********************************************************************
-//
-// AliFMDv0
-//
-//__________________________________________________________________
-
-ClassImp(AliFMDv0);
-
-//********************************************************************
-//
-// AliFMDv1
-//
-//__________________________________________________________________
-
-ClassImp(AliFMDv1);
-
-
-//_//____________________________________________________________________
-void 
-AliFMDv1::StepManager()
-{
-  //
-  // Called for every step in the Forward Multiplicity Detector
-  //
-  // The procedure is as follows: 
-  // 
-  //   - IF NOT track is alive THEN RETURN ENDIF
-  //   - IF NOT particle is charged THEN RETURN ENDIF
-  //   - IF NOT volume name is "STRI" or "STRO" THEN RETURN ENDIF 
-  //   - Get strip number (volume copy # minus 1)
-  //   - Get phi division number (mother volume copy #)
-  //   - Get module number (grand-mother volume copy #)
-  //   - section # = 2 * module # + phi division # - 1
-  //   - Get ring Id from volume name 
-  //   - Get detector # from grand-grand-grand-mother volume name 
-  //   - Get pointer to sub-detector object. 
-  //   - Get track position 
-  //   - IF track is entering volume AND track is inside real shape THEN
-  //   -   Reset energy deposited 
-  //   -   Get track momentum 
-  //   -   Get particle ID # 
-  ///  - ENDIF
-  //   - IF track is inside volume AND inside real shape THEN 
-  ///  -   Update energy deposited 
-  //   - ENDIF 
-  //   - IF track is inside real shape AND (track is leaving volume,
-  //         or it died, or it is stopped  THEN
-  //   -   Create a hit 
-  //   - ENDIF
-  //     
-  //
-  // DebugGuard guard("AliFMDv1::StepManager");
-  AliDebug(10, "AliFMDv1::StepManager");
-  // return;
-
-  // If the track is gone, return
-  if (!gMC->IsTrackAlive()) return;
-  
-  // Only process charged particles 
-  if(TMath::Abs(gMC->TrackCharge()) <= 0) return; 
-
-  // Only do stuff is the track is in one of the strips. 
-  TString vol(gMC->CurrentVolName());
-  if (!vol.Contains("STR")) return;
-
-
-  // Get the strip number.  Note, that GEANT numbers divisions from 1,
-  // so we subtract one 
-  Int_t strip;             
-  gMC->CurrentVolID(strip);
-  strip--;                 
-
-  // Get the phi division of the module 
-  Int_t phiDiv;                         // * The phi division number (1 or 2)
-  gMC->CurrentVolOffID(1, phiDiv);      //   in the module  
-
-  // Active volume number - not used. 
-  // Int_t active;                         
-  // gMC->CurrentVolOffID(2, active);      
-
-  // Get the module number in the ring. 
-  Int_t module;                    
-  gMC->CurrentVolOffID(3, module); 
-  
-  // Ring copy number - the same as the detector number - not used
-  // Int_t ringCopy;                       // * Ring copy number
-  // gMC->CurrentVolOffID(4, ringCopy);    //   Same as detector number 
-  
-  // Get the detector number from the path name 
-  Int_t detector = Int_t((gMC->CurrentVolOffName(5)[3]) - 48);
-
-  // The sector number, calculated from module and phi division # 
-  Int_t  sector =  2 * module + phiDiv - 1;
-
-  // The ring ID is encoded in the volume name 
-  Char_t ring = vol[3];
-
-  // Get a pointer to the sub detector structure 
-  AliFMDSubDetector* det = 0;
-  switch (detector) {
-  case 1: det = fFMD1; break;
-  case 2: det = fFMD2; break;
-  case 3: det = fFMD3; break;
-  }
-  if (!det) return;
-
-  // Get the current track position 
-  TLorentzVector v;
-  gMC->TrackPosition(v);
-  // Check that the track is actually within the active area 
-  Bool_t isWithin = det->CheckHit(ring, module, v.X(), v.Y());
-  Bool_t entering = gMC->IsTrackEntering() && isWithin;
-  Bool_t inside   = gMC->IsTrackInside()   && isWithin;
-  Bool_t out      = (gMC->IsTrackExiting() 
-		     || gMC->IsTrackDisappeared() 
-		     || gMC->IsTrackStop() 
-		     || !isWithin);
-// Reset the energy deposition for this track, and update some of
-  // our parameters.
-  if (entering) {
-    fCurrentDeltaE = 0;
-
-    // Get production vertex and momentum of the track 
-    fCurrentV = v;
-    gMC->TrackMomentum(fCurrentP);
-    fCurrentPdg = gMC->IdFromPDG(gMC->TrackPid());
-
-    // if (fAnalyser) 
-    //   fAnalyser->Update(detector, ring, isWithin, v.X(), v.Y());
-  }
-  
-  // If the track is inside, then update the energy deposition
-  if (inside && fCurrentDeltaE >= 0) 
-    fCurrentDeltaE += 1000 * gMC->Edep();
-
-  // The track exits the volume, or it disappeared in the volume, or
-  // the track is stopped because it no longer fulfills the cuts
-  // defined, then we create a hit. 
-  if (out && fCurrentDeltaE >= 0) {
-    fCurrentDeltaE += 1000 * gMC->Edep();
-
-    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),
-	   detector, ring,  sector, strip,
-	   fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z(),
-	   fCurrentP.X(), fCurrentP.Y(), fCurrentP.Z(), 
-	   fCurrentDeltaE, fCurrentPdg, fCurrentV.T());
-    fCurrentDeltaE = -1;
-  }
-}
 //___________________________________________________________________
 //
 // EOF

@@ -3,6 +3,8 @@
 # $Id$
 
 SRCS		=  AliFMD.cxx 			\
+		   AliFMDv0.cxx			\
+		   AliFMDv1.cxx			\
 		   AliFMDSubDetector.cxx 	\
 		   AliFMD1.cxx 			\
 		   AliFMD2.cxx 			\

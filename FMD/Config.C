@@ -1,5 +1,5 @@
 static Int_t    eventsPerRun = 1;
-static Int_t    nParticles   = 1000;
+static Int_t    nParticles   = 100;
 
 enum PprRun_t {
   test50,
@@ -64,7 +64,8 @@ static PprRun_t srun = kPythia6;
 static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
-static MC_t     smc  = kFLUKA;
+// static MC_t     smc  = kFLUKA;
+static MC_t     smc  = kGEANT3;
 
 // Comment line
 static TString  comment;
@@ -83,41 +84,29 @@ void Config()
 
   switch (smc) {
   case kFLUKA: 
-    {
-      // 
-      // libraries required by fluka21
-      // 
-      gSystem->Load("libGeom");
-      cout << "\t* Loading TFluka..." << endl;  
-      gSystem->Load("libTFluka");    
-      
-      // 
-      // FLUKA MC
-      //
-      cout << "\t* Instantiating TFluka..." << endl;
-      TFluka* fluka = new TFluka("C++ Interface to Fluka", 0/*verbosity*/);
-      //
-      // Use kTRUE as argument to generate alice.pemf first
-      //
-      TString alice_pemf(gSystem->Which(".", "FlukaVmc.pemf"));
-      if (!alice_pemf.IsNull()) 
-	fluka->SetGeneratePemf(kFALSE);
-      else
-	fluka->SetGeneratePemf(kTRUE);
-    }
+    // 
+    // libraries required by fluka21
+    // 
+    gSystem->Load("libGeom");
+    cout << "\t* Loading TFluka..." << endl;  
+    gSystem->Load("libTFluka");    
+    
+    // 
+    // FLUKA MC
+    //
+    cout << "\t* Instantiating TFluka..." << endl;
+    new TFluka("C++ Interface to Fluka", 0/*verbosity*/);
     break;
   case kGEANT3: 
-    {
-      //
-      // Libraries needed by GEANT 3.21 
-      //
-      gSystem->Load("libgeant321");
-      
-      // 
-      // GEANT 3.21 MC 
-      // 
-      TGeant3* geant3 = new TGeant3("C++ Interface to Geant3");
-    }
+    //
+    // Libraries needed by GEANT 3.21 
+    //
+    gSystem->Load("libgeant321");
+    
+    // 
+    // GEANT 3.21 MC 
+    // 
+    new TGeant3("C++ Interface to Geant3");
     break;
   default:
     gAlice->Fatal("Config.C", "No MC type chosen");
@@ -139,6 +128,22 @@ void Config()
   rl->SetNumberOfEventsPerFile(3);
   gAlice->SetRunLoader(rl);
 
+  switch (smc) {
+  case kFLUKA: 
+    {
+      //
+      // Use kTRUE as argument to generate alice.pemf first
+      //
+      TString alice_pemf(gSystem->Which(".", "peg/mat17.pemf"));
+      if (!alice_pemf.IsNull()) 
+	((TFluka*)gMC)->SetGeneratePemf(kFALSE);
+      else
+	((TFluka*)gMC)->SetGeneratePemf(kTRUE);
+    }
+    break;
+  }
+  
+     
   //
   // Set External decayer
   // 
