@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.23  2001/05/20 10:10:39  morsch
+- Debug output at the beginning of new event and end of run.
+- Filter out boundary loops.
+
 Revision 1.22  2001/05/11 13:22:40  morsch
 If run with debug option (from gAlice) geantinos are sent back and volume sequence forward/backward is compared.
 Can be very verbous in some cases.
@@ -148,14 +152,14 @@ AliLego::AliLego(const char *title, Int_t ntheta, Float_t thetamin,
    fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        
 			ntheta,thetamin,thetamax,nphi,phimin,phimax);
 //
-   fStepBack      = 0;
-   fStepsBackward = 0;
-   fStepsForward  = 0;
-   fStepBack      = 0;
+   fStepBack       = 0;
+   fStepsBackward  = 0;
+   fStepsForward   = 0;
+   fStepBack       = 0;
    fVolumesFwd     = new TClonesArray("AliDebugVolume",1000);
    fVolumesBwd     = new TClonesArray("AliDebugVolume",1000);
-   fDebug = gAlice->GetDebug();
-   fErrorCondition =0;   
+   fDebug          = gAlice->GetDebug();
+   fErrorCondition = 0;   
 }
 
 AliLego::AliLego(const char *title, AliLegoGenerator* generator)
@@ -186,7 +190,7 @@ AliLego::AliLego(const char *title, AliLegoGenerator* generator)
    fStepBack       = 0;
    fVolumesFwd     = new TClonesArray("AliDebugVolume",1000);
    fVolumesBwd     = new TClonesArray("AliDebugVolume",1000);
-   fDebug = gAlice->GetDebug();
+   fDebug          = gAlice->GetDebug();
    fErrorCondition =0;
 }
 
@@ -213,8 +217,7 @@ void AliLego::BeginEvent()
   fTotRadl = 0;
   fTotAbso = 0;
   fTotGcm2 = 0;
-//  printf("\n Begin Event %d", fErrorCondition);
-  
+
   if (fDebug) {
       if (fErrorCondition) DumpVolumes();
       fVolumesFwd->Delete();
@@ -337,7 +340,6 @@ void AliLego::StepManager() {
 	       fTotAbso += t/absl;
 	       fTotRadl += t/radl;
 	       fTotGcm2 += t*dens;
-
 	       if (fDebug) {
 //
 //  generate "mirror" particle flying back
@@ -360,7 +362,7 @@ void AliLego::StepManager() {
 	       
 	   } // not a new track !
 
-	   fStepBack = 1;
+	   if (fDebug) fStepBack = 1;
 	   gMC->StopTrack();
 	   return;
        } // outside scoring region ?
@@ -374,6 +376,7 @@ void AliLego::StepManager() {
        t  = fGener->PropagateCylinder(vect,dir,fGener->RadMax(),fGener->ZMax());
        
        if(step) {
+
 	   fTotAbso += step/absl;
 	   fTotRadl += step/radl;
 	   fTotGcm2 += step*dens;
