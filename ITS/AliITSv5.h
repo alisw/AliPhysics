@@ -23,7 +23,7 @@ private:
 public:
                          AliITSv5();
 			 AliITSv5(const char *name, const char *title);
-           virtual       ~AliITSv5() {}
+           virtual       ~AliITSv5() ;
            virtual void  CreateGeometry();
            virtual void  CreateMaterials();
            virtual void  Init();   

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/10/05 08:05:09  fca
+Minor corrections for uninitialised variables.
+
 Revision 1.11  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
@@ -49,7 +52,7 @@ AliITSv5::AliITSv5() {
     //
     // Standard constructor for the ITS
     //
-    fId5N = 5;
+    fId5N = 6;
     fId5Name = new char*[fId5N];
     fId5Name[0] = "ITS1";
     fId5Name[1] = "ITS2";
@@ -57,6 +60,15 @@ AliITSv5::AliITSv5() {
     fId5Name[3] = "ITS4";
     fId5Name[4] = "ITS5";
     fId5Name[5] = "ITS6";
+}
+//_____________________________________________________________________________
+AliITSv5::~AliITSv5() {
+    //
+    // Standard destructor for the ITS
+    //
+  for (Int_t i=0;i<fId5N;++i) delete [] fId5Name[i];
+  delete [] fId5Name;
+  fId5Name = 0;
 }
 //_____________________________________________________________________________
 AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
