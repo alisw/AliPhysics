@@ -227,10 +227,11 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 
 	const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
 
-	if (gDebug) 
+	if (gDebug) {
 	  Info("Exec", "id = %d energy = %f thresholdPRE = %f thresholdEC = %f thresholdHC = %f \n", 
 	       hit->GetId(), hit->GetEnergy(), fPREPrimThreshold, fECPrimThreshold, fHCPrimThreshold) ;    
-	
+	  Info("Exec", "where PRE/ECAL/HCAL %d, %d, %d",  geom->IsInPRE(hit->GetId()), geom->IsInECAL(hit->GetId()), geom->IsInHCAL(hit->GetId()) ) ;   
+	}
 	if( geom->IsInPRE(hit->GetId()) )  
 	  if( hit->GetEnergy() > fPREPrimThreshold )
 	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
