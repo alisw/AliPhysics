@@ -159,7 +159,7 @@ void AliAOD::SwapParticles(Int_t i, Int_t j)
   tmp = first;
   first = second;
   second = tmp;
-  
+  delete tmpobj;
 }
 /**************************************************************************/
 

@@ -107,7 +107,7 @@ AliAODParticle::AliAODParticle(const AliVAODParticle& in):
    fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
 {
  //Copy constructor
- Info("AliAODParticle(const AliVAODParticle& in)","");
+// Info("AliAODParticle(const AliVAODParticle& in)","");
  for(Int_t i = 0; i<in.GetNumberOfPids(); i++)
   {
     SetPIDprobability(in.GetNthPid(i),in.GetNthPidProb(i));
@@ -171,10 +171,14 @@ AliAODParticle& AliAODParticle::operator=(const AliVAODParticle& in)
 //operator=
 //  Info("operator=(const AliVAODParticle& in)","AliAODParticle");
   
+  if (&in == this) return *this;
+
   delete [] fPids;
   delete [] fPidProb;
   fPids = 0x0;
   fPidProb = 0x0;
+  fNPids = 0;
+
   Int_t npids = in.GetNumberOfPids();
   for (Int_t i = 0; i < npids; i++)
    {
@@ -182,7 +186,7 @@ AliAODParticle& AliAODParticle::operator=(const AliVAODParticle& in)
    }
    
   SetPdgCode(in.GetPdgCode(),in.GetPidProb());
-  
+
   SetUID(in.GetUID());
 
   fCalcMass = in.Mass();
@@ -216,6 +220,7 @@ AliAODParticle& AliAODParticle::operator=(const AliAODParticle& in)
 {
 //assigment operator
 //  Info("operator=(const AliAODParticle& in)","AliAODParticle");
+  if (&in == this) return *this;
   fNPids = in.fNPids;
   delete [] fPids;
   delete [] fPidProb;
@@ -271,6 +276,7 @@ void AliAODParticle::SetPIDprobability(Int_t pdg, Float_t prob)
   Float_t totprob = 0.0;//sums up probabilities
   Int_t idx = GetPidSlot(pdg);
   Int_t i;
+
   if (idx > -1) 
    {
      fPidProb[idx] = prob;

@@ -50,7 +50,7 @@ AliReaderESD::AliReaderESD(const Char_t* esdfilename, const Char_t* galfilename)
  fClusterMap(kFALSE),
  fITSTrackPoints(kFALSE),
  fMustTPC(kFALSE),
- fReadCentralBarrel(kFALSE),
+ fReadCentralBarrel(kTRUE),
  fReadMuon(kFALSE),
  fReadPHOS(kFALSE),
  fNTPCClustMin(0),
@@ -102,7 +102,7 @@ AliReaderESD::AliReaderESD(TObjArray* dirs,const Char_t* esdfilename, const Char
  fClusterMap(kFALSE),
  fITSTrackPoints(kFALSE),
  fMustTPC(kFALSE),
- fReadCentralBarrel(kFALSE),
+ fReadCentralBarrel(kTRUE),
  fReadMuon(kFALSE),
  fReadPHOS(kFALSE),
  fNTPCClustMin(0),
@@ -164,16 +164,16 @@ Int_t AliReaderESD::ReadNext()
   do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
     {
       if (fFile == 0x0)
-	{
-	  fFile = OpenFile(fCurrentDir);//rl is opened here
-	  if (fFile == 0x0)
-	    {
-	      Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
-	      fCurrentDir++;
-	      continue;
-	    }
-	  fCurrentEvent = 0;
-	}
+       {
+         fFile = OpenFile(fCurrentDir);//rl is opened here
+         if (fFile == 0x0)
+           {
+             Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
+             fCurrentDir++;
+             continue;
+           }
+         fCurrentEvent = 0;
+       }
      TString esdname = "ESD";
      esdname+=fCurrentEvent;
      AliESD* esd = dynamic_cast<AliESD*>(fFile->Get(esdname));

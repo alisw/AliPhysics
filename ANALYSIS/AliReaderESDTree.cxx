@@ -55,34 +55,36 @@ Int_t AliReaderESDTree::ReadNext()
   do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
     {
       if (fFile == 0x0)
-	{
-	  fFile = OpenFile(fCurrentDir);//rl is opened here
-	  if (fFile == 0x0)
-	    {
-	      Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
-	      fCurrentDir++;
-	      continue;
-	    }
-	  fCurrentEvent = 0;
-	}
+        {
+          fFile = OpenFile(fCurrentDir);//rl is opened here
+          if (fFile == 0x0)
+            {
+              Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
+              fCurrentDir++;
+              continue;
+            }
+          fCurrentEvent = 0;
+        }
 
       static AliESD* esd = 0x0;
       fTree->SetBranchAddress("ESD", &esd);
       Int_t status = fTree->GetEvent(fCurrentEvent);
 
       if (!status)
-	{
-	  if (AliVAODParticle::GetDebug() > 2 )
-	    {
-	      Info("ReadNext","Can not find event# %d in Tree", fCurrentEvent);
-	    }
-	  fCurrentDir++;
-	  delete fFile;//we have to assume there is no more ESD objects in the fFile
-	  fFile = 0x0;
-	  delete fRunLoader;
-	  fRunLoader = 0x0;
-	  continue;
-	}
+        {
+          if (AliVAODParticle::GetDebug() > 2 )
+            {
+              Info("ReadNext","Can not find event# %d in Tree", fCurrentEvent);
+            }
+          fCurrentDir++;
+          delete fTree;
+          fTree = 0x0;
+          delete fFile;//we have to assume there is no more ESD objects in the fFile
+          fFile = 0x0;
+          delete fRunLoader;
+          fRunLoader = 0x0;
+          continue;
+        }
 
       ReadESD(esd);
       
@@ -125,6 +127,7 @@ TFile* AliReaderESDTree::OpenFile(Int_t n)
  if (!fTree)
   {
     Error("OpenFiles","Can't open ESD Tree %s",esdname.Data());
+    delete ret;
     return 0x0;
 
   }
@@ -135,6 +138,7 @@ TFile* AliReaderESDTree::OpenFile(Int_t n)
    if (fRunLoader == 0x0)
     {
       Error("OpenFiles","Can't get RunLoader for directory %s",dirname.Data());
+      delete fTree;
       delete ret;
       return 0x0;
     }
@@ -144,6 +148,7 @@ TFile* AliReaderESDTree::OpenFile(Int_t n)
     {
       Error("Next","Error occured while loading kinematics.");
       delete fRunLoader;
+      delete fTree;
       delete ret;
       return 0x0;
     }
