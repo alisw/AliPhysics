@@ -1,6 +1,8 @@
 void Config()
 {
 
+  Int_t iField = 0;
+
   new AliGeant3("C++ Interface to Geant3");
 
   // Create the output file
@@ -13,6 +15,7 @@ void Config()
   // Set external decayer
   AliDecayer* decayer = new AliDecayerPythia();
   decayer->SetForceDecay(all);
+  //decayer->SetForceDecay(kAll);
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
 
@@ -64,20 +67,44 @@ void Config()
   gener->AddGenerator(genEl,"Electrons",1);
   gener->AddGenerator(genPi,"Pions"    ,1);
 
-  AliGenerator *gg = gener->FirstGenerator()->Generator();
-  gg->SetMomentumRange(1.0,3.0);
-  gg->SetPhiRange(75.0,95.0);
-  gg->SetThetaRange(70.0,110.0);
-  gg = gener->NextGenerator()->Generator();
-  gg->SetMomentumRange(2.5,3.0);
-  gg->SetPhiRange(75.0,95.0);
-  gg->SetThetaRange(70.0,110.0);
+  if (iField) {
 
-  gener->Init();
+    // With magnetic field on
+    AliGenerator *gg = gener->FirstGenerator()->Generator();
+    gg->SetMomentumRange(3.00,3.01);
+    gg->SetPhiRange(76.0,92.0);
+    gg->SetThetaRange(83.0,97.0);
+    gg = gener->NextGenerator()->Generator();
+    gg->SetMomentumRange(0.560,0.561);
+    gg->SetPhiRange(62.0,78.0);
+    gg->SetThetaRange(83.0,97.0);
 
-  // Specify maximum magnetic field in Tesla (neg. ==> default field)
-  // 0.4 T
-  gAlice->SetField(-999,2,2.0);    
+    gener->Init();
+
+    // Specify maximum magnetic field in Tesla (neg. ==> default field)
+    // 0.4 T
+    gAlice->SetField(-999,2,2.0);    
+
+  }
+  else {
+
+    // With magnetic field off
+    AliGenerator *gg = gener->FirstGenerator()->Generator();
+    gg->SetMomentumRange(3.00,3.01);
+    gg->SetPhiRange(82.0,98.0);
+    gg->SetThetaRange(83.0,97.0);
+    gg = gener->NextGenerator()->Generator();
+    gg->SetMomentumRange(0.560,0.561);
+    gg->SetPhiRange(82.0,98.0);
+    gg->SetThetaRange(83.0,97.0);
+
+    gener->Init();
+
+    // Specify maximum magnetic field in Tesla (neg. ==> default field)
+    // No field
+    gAlice->SetField(0);    
+
+  }
 
   Int_t iMAG   = 1;
   Int_t iITS   = 1;
@@ -138,9 +165,10 @@ void Config()
     // understandable to the CAD system EUCLID. The default (=0) means that you 
     // dont want to use this facility.
     //
-    //AliITS *ITS  = new AliITSv5("ITS","normal ITS");
+
     AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     ITS->SetEUCLID(0);
+
   }
 
   if (iTPC) {
@@ -159,21 +187,6 @@ void Config()
     //
     //
     //-----------------------------------------------------------------------------
-
-    //gROOT->LoadMacro("SetTPCParam.C");
-    //AliTPCParam *param = SetTPCParam();
-    //AliTPC *TPC  = new AliTPCv2("TPC","Default"); //v1 is default
-    //TPC->SetParam(param); // pass the parameter object to the TPC
-    //
-    // set gas mixture
-    //TPC->SetGasMixt(2,20,10,-1,0.9,0.1,0.);
-    //TPC->SetSecAL(4);
-    //TPC->SetSecAU(4);
-    //TPC->SetSecLows(1,  2,  3, 19, 20, 21);
-    //TPC->SetSecUps(37, 38, 39, 37+18, 38+18, 39+18, -1, -1, -1, -1, -1, -1);
-    //TPC->SetSens(1);
-    //
-    //if (TPC->IsVersion()==1) param->Write(param->GetTitle());
 
     AliTPC *TPC  = new AliTPCv2("TPC","Default");
     // All sectors included 
@@ -195,11 +208,17 @@ void Config()
     // The number of timebins
     TRDgeometry->SetNTimeBin(15);
 
+    // The additional timebins before and after the drift region
+    //TRDgeometry->SetExpandTimeBin(10,5);
+
     // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
     TRD->SetGasMix(1);
 
     // Set to detailed display
     TRD->SetDisplayType(1);
+
+    // Draw TR photons
+    TRD->SetDrawTR(1);
 
     // Switch on TR
     AliTRDsim *TRDsim = TRD->CreateTR();

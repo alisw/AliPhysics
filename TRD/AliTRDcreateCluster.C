@@ -11,8 +11,8 @@ Int_t AliTRDcreateCluster()
     new AliTRDclusterizerV1("clusterizer","Clusterizer class");
 
   // Set the parameter
-  Clusterizer->SetClusMaxThresh(0.0);
-  Clusterizer->SetClusSigThresh(0.0);
+  Clusterizer->SetClusMaxThresh(0);
+  Clusterizer->SetClusSigThresh(0);
   Clusterizer->Dump();
  
   // Open the file

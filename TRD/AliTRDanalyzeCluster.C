@@ -22,10 +22,14 @@ Int_t AliTRDanalyzeCluster()
   }
 
   // Define the histograms
-  TH1F *hClusAll   = new TH1F("hClusAll"  ,"Amplitude of the cluster (all)"     ,501,-0.5,500.5);
-  TH1F *hClusNoise = new TH1F("hClusNoise","Amplitude of the cluster (noise)"   ,501,-0.5,500.5);
-  TH1F *hClusEl    = new TH1F("hClusEl"   ,"Amplitude of the cluster (electron)",501,-0.5,500.5);
-  TH1F *hClusPi    = new TH1F("hClusPi"   ,"Amplitude of the cluster (pion)"    ,501,-0.5,500.5);
+  TH1F *hClusAll   = new TH1F("hClusAll"  ,"Amplitude of the cluster (all)"     
+                                          ,501,-0.5,500.5);
+  TH1F *hClusNoise = new TH1F("hClusNoise","Amplitude of the cluster (noise)"   
+                                          ,  5,-0.5,  4.5);
+  TH1F *hClusEl    = new TH1F("hClusEl"   ,"Amplitude of the cluster (electron)"
+                                          ,501,-0.5,500.5);
+  TH1F *hClusPi    = new TH1F("hClusPi"   ,"Amplitude of the cluster (pion)"    
+                                          ,501,-0.5,500.5);
 
   // Get the pointer to the geometry object
   AliTRDgeometry *TRDgeometry;
@@ -40,82 +44,91 @@ Int_t AliTRDanalyzeCluster()
 
   // Get the pointer to the hit-tree
   TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
-  TTree *RecTree = file->Get("ClusterTree");
-  if (!(RecTree)) {
-    cout << "<AliTRDanalyzeCluster> No tree with rec. points found" << endl;
+  TTree *ClusterTree = file->Get("ClusterTree");
+  if (!(ClusterTree)) {
+    cout << "<AliTRDanalyzeCluster> No tree with clusters found" << endl;
     rc = 4;
     return rc;
   }
 
   // Get the pointer to the hit container
-  TObjArray *RecPointArray = TRD->RecPoints();
-  if (!(RecPointArray)) {
-    cout << "<AliTRDanalyzeCluster> No RecPointArray found" << endl;
+  TObjArray *ClusterArray = TRD->RecPoints();
+  if (!(ClusterArray)) {
+    cout << "<AliTRDanalyzeCluster> No ClusterArray found" << endl;
     rc = 5;
     return rc;
   }
 
   // Set the branch address
-  RecTree->GetBranch("TRDrecPoints")->SetAddress(&RecPointArray);
-  Int_t nEntries = RecTree->GetEntries();
-  cout << "Number of entries in the rec. point tree = " << nEntries << endl;
+  ClusterTree->GetBranch("TRDcluster")->SetAddress(&ClusterArray);
+  Int_t nEntries = ClusterTree->GetEntries();
+  cout << "<AliTRDanalyzeCluster> Number of entries in the cluster tree = " 
+       << nEntries 
+       << endl;
 
   Int_t countCluster = 0;
+  Int_t countUnfold  = 0;
 
   // Loop through all entries in the tree
   Int_t nbytes;
   for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {
 
     // Import the tree
-    nbytes += RecTree->GetEvent(iEntry);
+    nbytes += ClusterTree->GetEvent(iEntry);
 
     // Get the number of points in the detector 
-    Int_t nRecPoint = RecPointArray->GetEntriesFast();
+    Int_t nCluster = ClusterArray->GetEntriesFast();
 
     // Loop through all TRD digits
-    for (Int_t iRecPoint = 0; iRecPoint < nRecPoint; iRecPoint++) {
+    for (Int_t iCluster = 0; iCluster < nCluster; iCluster++) {
 
       // Get the information for this digit
-      AliTRDrecPoint *RecPoint = (AliTRDrecPoint *) RecPointArray->UncheckedAt(iRecPoint);
-      Int_t    detector = RecPoint->GetDetector();      
+      AliTRDcluster *Cluster = (AliTRDcluster *) ClusterArray->UncheckedAt(iCluster);
+      Int_t    detector = Cluster->GetDetector();      
       Int_t    sector   = TRDgeometry->GetSector(detector);
       Int_t    plane    = TRDgeometry->GetPlane(detector);
       Int_t    chamber  = TRDgeometry->GetChamber(detector);
-      Int_t    energy   = RecPoint->GetEnergy();
-      TVector3 pos;
-      RecPoint->GetLocalPosition(pos);
-      Int_t    track0   = RecPoint->GetTrackIndex(0);
-      Int_t    track1   = RecPoint->GetTrackIndex(1);
+      Float_t  energy   = Cluster->GetQ();
+      Int_t    track0   = Cluster->GetTrackIndex(0);
+      Int_t    track1   = Cluster->GetTrackIndex(1);
+      Int_t    track2   = Cluster->GetTrackIndex(2);
       TParticle *Part = 0;
       if (track0 > -1) {
         Part = gAlice->Particle(track0);
       }
 
       countCluster++;
+      if (Cluster->FromUnfolding()) countUnfold++;
 
       // Total spectrum
-      hClusAll->Fill((Float_t) energy);
+      hClusAll->Fill(energy);
 
-      // Noise spectrum
-      if (track0 < 0) {
-        hClusNoise->Fill((Float_t) energy);
-      }          
+      if (!Cluster->FromUnfolding()) {
 
-      // Electron cluster
-      if ((Part) && (Part->GetPdgCode() ==   11) && (track1 < 0)) {
-        hClusEl->Fill((Float_t) energy);
-      }
+        // Noise spectrum
+        if (track0 < 0) {
+          hClusNoise->Fill(energy);
+        }          
 
-      // Pion cluster
-      if ((Part) && (Part->GetPdgCode() == -211) && (track1 < 0)) {
-        hClusPi->Fill((Float_t) energy);
+        // Electron cluster
+        if ((Part) && (Part->GetPdgCode() ==   11) && (track1 < 0)) {
+          hClusEl->Fill(energy);
+        }
+
+        // Pion cluster
+        if ((Part) && (Part->GetPdgCode() == -211) && (track1 < 0)) {
+          hClusPi->Fill(energy);
+        }
+
       }
 
     }
 
   }
 
-  cout << "<AliTRDanalyzeCluster> Found " << countCluster << " cluster in total" << endl;
+  cout << "<AliTRDanalyzeCluster> Found " << countCluster << " cluster in total"       << endl;
+  cout << "<AliTRDanalyzeCluster> Found " << countUnfold  << " cluster from unfolding" << endl;
+  cout << endl;
 
   TCanvas *cCluster = new TCanvas("cCluster","AliTRDanalyzeCluster",50,50,600,600);
   cCluster->Divide(2,2);
@@ -132,7 +145,6 @@ Int_t AliTRDanalyzeCluster()
   
   cCluster->cd(2);
   gPad->SetLogy();
-  gPad->SetLogx();
   Float_t meanNoise = hClusNoise->GetMean();
   hClusNoise->Draw();
 

@@ -15,9 +15,10 @@ Int_t AliTRDcreateDigits()
 
   // Create the TRD digitzer 
   AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
+  Digitizer->InitDetector();
 
-  // Set the parameter  
-  Digitizer->SetGasGain(3300.);
+  // Set the parameter (for TRF ~200ns)
+  Digitizer->SetGasGain(1600.);
   Digitizer->SetChipGain(8.0);
   Digitizer->SetNoise(1000.);
   Digitizer->SetADCinRange(1000.);
