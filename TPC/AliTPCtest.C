@@ -1,3 +1,7 @@
+/****************************************************************************
+ *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
+ ****************************************************************************/
+
 Int_t AliTPCtest() {
    Int_t rc=0;
 
@@ -21,8 +25,8 @@ AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
      gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCHits2Digits.C");
      if (rc=AliTPCHits2Digits()) return rc;
 
-     //     gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCDisplayDigits.C");
-     //     if (rc=AliTPCDisplayDigits(1,1)) return rc;
+     //gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCDisplayDigits.C");
+     //if (rc=AliTPCDisplayDigits(1,1)) return rc;
    }
 
 
@@ -30,8 +34,8 @@ AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
    gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCFindClusters.C");
    if (rc=AliTPCFindClusters()) return rc;
 
-   //  gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCDisplayClusters.C");
-   // if (rc=AliTPCDisplayClusters()) return rc;
+   //gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCDisplayClusters.C");
+   //if (rc=AliTPCDisplayClusters()) return rc;
 
    gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCFindTracks.C");
    if (rc=AliTPCFindTracks()) return rc;

@@ -1,3 +1,7 @@
+/****************************************************************************
+ *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
+ ****************************************************************************/
+
 #ifndef __CINT__
   #include <iostream.h>
   #include "AliTPCtracker.h"

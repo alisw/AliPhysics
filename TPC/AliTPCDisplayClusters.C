@@ -1,3 +1,23 @@
+/****************************************************************************
+ *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
+ ****************************************************************************/
+
+#ifndef __CINT__
+#include <iostream.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TCanvas.h>
+#include <TView.h>
+#include <TPolyMarker3D.h>
+#include <TNode.h>
+#include <TGeometry.h>
+
+#include "AliTPCParam.h"
+#include "AliTPCClustersArray.h"
+#include "AliTPCClustersRow.h"
+#include "AliTPCcluster.h"
+#endif
+
 Int_t AliTPCDisplayClusters(Int_t eventn=0, Int_t noiseth=15) {
    cerr<<"Displaying clusters...\n";
 
@@ -7,7 +27,7 @@ Int_t AliTPCDisplayClusters(Int_t eventn=0, Int_t noiseth=15) {
    TFile *cf=TFile::Open("AliTPCclusters.root");
    if (!cf->IsOpen()){cerr<<"Can't open AliTPCclusters.root !\n"; return 3;}
 
-   AliTPCParam *dig=(AliTPCParam *)cf->Get("75x40_100x60");
+   AliTPCParam *dig=(AliTPCParam *)cf->Get("75x40_100x60_150x60");
    if (!dig) {cerr<<"TPC parameters have not been found !\n"; return 2;}
 
    TCanvas *c1=new TCanvas("cdisplay", "Cluster display",0,0,700,730);
@@ -50,8 +70,7 @@ Int_t AliTPCDisplayClusters(Int_t eventn=0, Int_t noiseth=15) {
    cf->Close();
 
    TGeometry *geom=(TGeometry*)file->Get("AliceGeom");
-   TList *list = geom->GetListOfNodes();
-   TNode * main = (geom->GetListOfNodes())->First();
+   TNode * main = (TNode*)((geom->GetListOfNodes())->First());
    TIter next(main->GetListOfNodes());
    TNode  *module=0;
    while((module = (TNode*)next())) {

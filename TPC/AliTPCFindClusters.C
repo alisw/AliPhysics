@@ -1,3 +1,7 @@
+/****************************************************************************
+ *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
+ ****************************************************************************/
+
 #ifndef __CINT__
   #include <iostream.h>
   #include "AliRun.h"
@@ -26,16 +30,7 @@ Int_t AliTPCFindClusters(Int_t n=1) {
    Int_t ver = TPC->IsVersion(); 
    cerr<<"TPC version "<<ver<<" has been found !\n";
 
-   AliTPCParamSR *dig=(AliTPCParamSR *)in->Get("75x40_100x60");
-   if(dig){
-     cerr<<"2 pad-length geom hits with 3 pad-lengths geom digits\n";
-     delete dig;
-     dig = new AliTPCParamSR();
-   }
-   else
-   {
-     dig=(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
-   }
+   AliTPCParam *dig=(AliTPCParam *)in->Get("75x40_100x60_150x60");
    if (!dig) {cerr<<"TPC parameters have not been found !\n"; return 4;}
 
    TStopwatch timer;
