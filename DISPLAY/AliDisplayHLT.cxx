@@ -24,6 +24,13 @@
 #include "AliDisplayHLT.h"
 #include "AliDisplay2.h"
 #include "AliModuleInfo.h"
+#ifdef ALI_HLT
+#include <stdlib.h>
+#include "AliL3MemHandler.h"
+#include "AliL3SpacePointData.h"
+#include "AliL3Transform.h"
+#include "AliL3Logging.h"
+#endif
 
 ClassImp(AliDisplayHLT);
 
