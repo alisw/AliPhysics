@@ -10,7 +10,7 @@
 #define TG4V_RUN_CONFIGURATION_H
 
 class G4VUserDetectorConstruction;
-class G4VUserPhysicsList;
+class G4VModularPhysicsList;
 class G4VUserPrimaryGeneratorAction;
 class G4UserRunAction;
 class G4UserEventAction;
@@ -30,6 +30,9 @@ class TG4VRunConfiguration
     // methods
     void ConfigureRunManager(G4RunManager* runManager);
 
+    // get methods
+    G4VModularPhysicsList* GetPhysicsList() const;
+
   protected:
     TG4VRunConfiguration(const TG4VRunConfiguration& right);
 
@@ -41,7 +44,7 @@ class TG4VRunConfiguration
 
     // data members
     G4VUserDetectorConstruction*    fDetectorConstruction; //det construction
-    G4VUserPhysicsList*             fPhysicsList;          //physics list
+    G4VModularPhysicsList*          fPhysicsList;          //physics list
     G4VUserPrimaryGeneratorAction*  fPrimaryGenerator;     //primary generator
     G4UserRunAction*                fRunAction;            //run action
     G4UserEventAction*              fEventAction;          //event action
