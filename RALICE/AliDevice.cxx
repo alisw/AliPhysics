@@ -65,11 +65,11 @@
 // s.SetSignal(-1002,3);
 // m.AddHit(s);
 //
-// TObjArray ordered=m.SortHits("TOT");
-// nhits=ordered.GetEntries();
+// TObjArray* ordered=m.SortHits("TOT");
+// nhits=ordered->GetEntries();
 // for (Int_t i=0; i<nhits; i++)
 // {
-//  AliSignal* sx=(AliSignal*)ordered.At(i);
+//  AliSignal* sx=(AliSignal*)ordered->At(i);
 //  if (sx) sx->Data();
 // }
 //
@@ -85,8 +85,12 @@ ClassImp(AliDevice) // Class implementation to enable ROOT I/O
 AliDevice::AliDevice() : AliSignal()
 {
 // Default constructor.
- fHitCopy=0;
+// By default private copies of the recorded hits will be made.
+// This implies that by default the device will own the registered hits.
+// See the SetHitCopy() memberfunction for further details.
+ fHitCopy=1;
  fHits=0;
+ fOrdered=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliDevice::~AliDevice()
@@ -109,12 +113,23 @@ AliDevice::~AliDevice()
   delete fHits;
   fHits=0;
  }
+
+ if (fOrdered)
+ {
+  delete fOrdered;
+  fOrdered=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliDevice::AliDevice(const AliDevice& dev) : AliSignal(dev)
 {
 // Copy constructor.
+
+ fHits=0;
+ fOrdered=0;
+
  fHitCopy=dev.GetHitCopy();
+
  Int_t nhits=dev.GetNhits();
  if (nhits)
  {
@@ -227,6 +242,11 @@ void AliDevice::RemoveHit(AliSignal& s)
    if (fHitCopy) delete test;
   }
  }
+ if (fOrdered)
+ {
+  AliSignal* test=(AliSignal*)fOrdered->Remove(&s);
+  if (test) fOrdered->Compress();
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliDevice::RemoveHits()
@@ -236,6 +256,11 @@ void AliDevice::RemoveHits()
  {
   delete fHits;
   fHits=0;
+ }
+ if (fOrdered)
+ {
+  delete fOrdered;
+  fOrdered=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -307,7 +332,7 @@ void AliDevice::Data(TString f) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits) const
+TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits)
 {
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
@@ -322,20 +347,24 @@ TObjArray AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits) const
 // Signals which were declared as "Dead" will be rejected.
 // The gain etc... corrected signals will be used in the ordering process.
 
- TObjArray ordered;
+ if (fOrdered)
+ {
+  delete fOrdered;
+  fOrdered=0;
+ }
 
  if (!hits) hits=fHits;
  
- if (idx<=0 || abs(mode)!=1 || !hits) return ordered;
+ if (idx<=0 || abs(mode)!=1 || !hits) return fOrdered;
 
  Int_t nhits=hits->GetEntries();
  if (!nhits)
  {
-  return ordered;
+  return fOrdered;
  }
  else
  {
-  ordered.Expand(nhits);
+  fOrdered=new TObjArray(nhits);
  }
 
  Int_t nord=0;
@@ -351,7 +380,7 @@ TObjArray AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits) const
   if (nord == 0) // store the first hit with a signal at the first ordered position
   {
    nord++;
-   ordered.AddAt(s,nord-1);
+   fOrdered->AddAt(s,nord-1);
    continue;
   }
  
@@ -360,26 +389,26 @@ TObjArray AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits) const
    if (j == nord) // module has smallest (mode=-1) or largest (mode=1) signal seen so far
    {
     nord++;
-    ordered.AddAt(s,j); // add hit at the end
+    fOrdered->AddAt(s,j); // add hit at the end
     break; // go for next hit
    }
  
-   if (mode==-1 && s->GetSignal(idx,1) < ((AliSignal*)ordered.At(j))->GetSignal(idx,1)) continue;
-   if (mode==1 && s->GetSignal(idx,1) > ((AliSignal*)ordered.At(j))->GetSignal(idx,1)) continue;
+   if (mode==-1 && s->GetSignal(idx,1) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
+   if (mode==1 && s->GetSignal(idx,1) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
  
    nord++;
    for (Int_t k=nord-1; k>j; k--) // create empty position
    {
-    ordered.AddAt(ordered.At(k-1),k);
+    fOrdered->AddAt(fOrdered->At(k-1),k);
    }
-   ordered.AddAt(s,j); // put hit at empty position
+   fOrdered->AddAt(s,j); // put hit at empty position
    break; // go for next matrix module
   }
  }
- return ordered;
+ return fOrdered;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits) const
+TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits)
 {
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
@@ -394,20 +423,24 @@ TObjArray AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits) const
 // Signals which were declared as "Dead" will be rejected.
 // The gain etc... corrected signals will be used in the ordering process.
 
- TObjArray ordered;
+ if (fOrdered)
+ {
+  delete fOrdered;
+  fOrdered=0;
+ }
 
  if (!hits) hits=fHits;
  
- if (abs(mode)!=1 || !hits) return ordered;
+ if (abs(mode)!=1 || !hits) return fOrdered;
 
  Int_t nhits=hits->GetEntries();
  if (!nhits)
  {
-  return ordered;
+  return fOrdered;
  }
  else
  {
-  ordered.Expand(nhits);
+  fOrdered=new TObjArray(nhits);
  }
 
  Int_t idx=0; // The signal slotindex to perform the sorting on
@@ -428,7 +461,7 @@ TObjArray AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits) const
   if (nord == 0) // store the first hit with a signal at the first ordered position
   {
    nord++;
-   ordered.AddAt(s,nord-1);
+   fOrdered->AddAt(s,nord-1);
    continue;
   }
  
@@ -437,23 +470,23 @@ TObjArray AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits) const
    if (j == nord) // module has smallest (mode=-1) or largest (mode=1) signal seen so far
    {
     nord++;
-    ordered.AddAt(s,j); // add hit at the end
+    fOrdered->AddAt(s,j); // add hit at the end
     break; // go for next hit
    }
  
-   if (mode==-1 && s->GetSignal(idx,1) < ((AliSignal*)ordered.At(j))->GetSignal(idx,1)) continue;
-   if (mode==1 && s->GetSignal(idx,1) > ((AliSignal*)ordered.At(j))->GetSignal(idx,1)) continue;
+   if (mode==-1 && s->GetSignal(idx,1) < ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
+   if (mode==1 && s->GetSignal(idx,1) > ((AliSignal*)fOrdered->At(j))->GetSignal(idx,1)) continue;
  
    nord++;
    for (Int_t k=nord-1; k>j; k--) // create empty position
    {
-    ordered.AddAt(ordered.At(k-1),k);
+    fOrdered->AddAt(fOrdered->At(k-1),k);
    }
-   ordered.AddAt(s,j); // put hit at empty position
+   fOrdered->AddAt(s,j); // put hit at empty position
    break; // go for next matrix module
   }
  }
- return ordered;
+ return fOrdered;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliDevice::Clone(const char* name) const

@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.16 2004/05/04 15:33:04 nick Exp $
+// $Id: AliEvent.h,v 1.17 2004/06/29 11:29:37 nick Exp $
 
 #include <math.h>
  
@@ -54,8 +54,8 @@ class AliEvent : public AliVertex
   TObject* GetDevice(TString name) const; // Provide device with name "name"
   Int_t GetNhits(const char* classname);  // Provide number of hits for the specified device class
   TObjArray* GetHits(const char* classname); // Provide refs to all hits of the specified device class 
-  TObjArray SortHits(TObjArray* hits,TString name,Int_t mode=-1) const; // Sort hits by named signal value
-  TObjArray SortHits(TObjArray* hits,Int_t idx=1,Int_t mode=-1) const;  // Sort hits by indexed signal value
+  TObjArray* SortHits(TObjArray* hits,TString name,Int_t mode=-1); // Sort hits by named signal value
+  TObjArray* SortHits(TObjArray* hits,Int_t idx=1,Int_t mode=-1);  // Sort hits by indexed signal value
 
  protected:
   TTimeStamp fDaytime;                  // The date and time stamp
@@ -74,6 +74,6 @@ class AliEvent : public AliVertex
   void LoadHits(const char* classname); // Load references to the hits registered to the specified device class
   TObjArray* fHits;                     //! Temp. array to hold references to the registered AliDevice hits
 
- ClassDef(AliEvent,14) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,15) // Creation and investigation of an Alice physics event.
 };
 #endif

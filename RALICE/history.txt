@@ -522,3 +522,12 @@
                 and GetMatrixSwapMode, respectively. 
                 Examples in the AliEvent.cxx documentation updated accordingly. 
                 Backward links reset for non-owned hits in AliDevice destructor.
+06-jul-2004 NvE AliCalorimeter hit I/O only via the linear array to decrease filesize on disk
+                and improve I/O speed.
+                Internal temp. arrays used for hit sorting in AliDevice and AliEvent and array
+                pointers returned instead of the arrays themselves. This will provide more
+                flexibility in usage. 
+                Sorting and clustering procedures in AliCalorimeter modified to use TObjArray pointers
+                to enable direct use of the AliDevice linear sorting facility.
+                Default for AliDevice changed such that now all registered hits are by default owned
+                by the AliDevice object.

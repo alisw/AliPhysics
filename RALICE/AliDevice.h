@@ -27,13 +27,14 @@ class AliDevice : public AliSignal
   virtual void Reset(Int_t mode=0);                  // Reset registered hits and AliSignal attributes
   void ShowHit(Int_t j=0) const;                     // Show data of the j-th hit (j=0 means all hits)
   virtual void Data(TString f="car") const;          // Print device and all signal info for coord. frame f
-  TObjArray SortHits(TString name,Int_t mode=-1,TObjArray* hits=0) const; // Sort hits by named signal value
-  TObjArray SortHits(Int_t idx=1,Int_t mode=-1,TObjArray* hits=0) const;  // Sort hits by indexed signal value
+  TObjArray* SortHits(TString name,Int_t mode=-1,TObjArray* hits=0); // Sort hits by named signal value
+  TObjArray* SortHits(Int_t idx=1,Int_t mode=-1,TObjArray* hits=0);  // Sort hits by indexed signal value
 
  protected:
-  Int_t fHitCopy;   // Flag to denote making private copies of added hits
-  TObjArray* fHits; // Array to hold the associated hits
+  Int_t fHitCopy;      // Flag to denote making private copies of added hits
+  TObjArray* fHits;    // Array to hold the registered hits
+  TObjArray* fOrdered; //! Temp. array to hold the ordered hits
 
- ClassDef(AliDevice,2) // Signal (Hit) handling of a generic device.
+ ClassDef(AliDevice,3) // Signal (Hit) handling of a generic device.
 };
 #endif

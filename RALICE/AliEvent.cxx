@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.22 2004/06/29 11:29:37 nick Exp $
+// $Id: AliEvent.cxx,v 1.23 2004/07/01 14:28:50 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -128,22 +128,24 @@
 // Order and investigate all the hits of all the TOF devices
 //
 //        TObjArray* hits=evt.GetHits("AliTOF");
-//        TObjArray orderedtofs=evt.SortHits(hits);
-//        Int_t nhits=orderedtofs.GetEntries();
+//        TObjArray* orderedtofs=evt.SortHits(hits);
+//        Int_t nhits=0;
+//        if (orderedtofs) nhits=orderedtofs->GetEntries();
 //        for (Int_t i=0; i<nhits; i++)
 //        {
-//         AliSignal* sx=(AliSignal*)orderedtofs.At(i);
+//         AliSignal* sx=(AliSignal*)orderedtofs->At(i);
 //         if (sx) sx->Data();
 //        }
 //
 // Order and investigate all the hits of all the calorimeter devices
 //
 //        TObjArray* hits=evt.GetHits("AliCalorimeter");
-//        TObjArray orderedcals=evt.SortHits(hits);
-//        Int_t nhits=orderedcals.GetEntries();
+//        TObjArray* orderedcals=evt.SortHits(hits);
+//        Int_t nhits=0;
+//        if (orderedcals) nhits=orderedcals->GetEntries();
 //        for (Int_t i=0; i<nhits; i++)
 //        {
-//         AliSignal* sx=(AliSignal*)orderedcals.At(i);
+//         AliSignal* sx=(AliSignal*)orderedcals->At(i);
 //         if (sx) sx->Data();
 //        }
 //
@@ -242,7 +244,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2004/06/29 11:29:37 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2004/07/01 14:28:50 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -369,7 +371,7 @@ void AliEvent::Reset()
 // Reset all variables to default values
 // The max. number of tracks is set to the initial value again
 // The max. number of vertices is set to the default value again
-// Note : The CalCopy mode is maintained as it was set by the user before.
+// Note : The DevCopy mode is maintained as it was set by the user before.
 
  AliVertex::Reset();
 
@@ -728,9 +730,12 @@ void AliEvent::ShowDevices() const
    TObject* dev=GetDevice(i);
    if (dev)
    {
-    cout << " Device number : " << i
-         << " Class : " << dev->ClassName()
-         << " Name : " << dev->GetName() << endl;
+    const char* name=dev->GetName();
+    cout << " Device number : " << i;
+    cout << " Class : " << dev->ClassName();
+    if (strlen(name)) cout << " Name : " << name;
+    if (dev->InheritsFrom("AliDevice")) cout << " Nhits : " << ((AliDevice*)dev)->GetNhits();
+    cout << endl;
    }
   }
  }
@@ -795,7 +800,7 @@ void AliEvent::LoadHits(const char* classname)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray AliEvent::SortHits(TObjArray* hits,Int_t idx,Int_t mode) const
+TObjArray* AliEvent::SortHits(TObjArray* hits,Int_t idx,Int_t mode)
 {
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
@@ -808,21 +813,22 @@ TObjArray AliEvent::SortHits(TObjArray* hits,Int_t idx,Int_t mode) const
 // The default is mode=-1.
 // Signals which were declared as "Dead" will be rejected.
 // The gain etc... corrected signals will be used in the ordering process.
- 
- if (idx<=0 || abs(mode)!=1 || !hits)
+
+ if (fHits)
  {
-  TObjArray ordered;
-  return ordered;
- }
- else
- {
-  AliDevice dev;
-  TObjArray ordered=dev.SortHits(idx,mode,hits);
-  return ordered;
- }
+  delete fHits;
+  fHits=0;
+ } 
+
+ if (idx<=0 || abs(mode)!=1 || !hits) return fHits;
+
+ AliDevice dev;
+ TObjArray* ordered=dev.SortHits(idx,mode,hits);
+ if (ordered) fHits=new TObjArray(*ordered);
+ return fHits;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray AliEvent::SortHits(TObjArray* hits,TString name,Int_t mode) const
+TObjArray* AliEvent::SortHits(TObjArray* hits,TString name,Int_t mode)
 {
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
@@ -835,18 +841,19 @@ TObjArray AliEvent::SortHits(TObjArray* hits,TString name,Int_t mode) const
 // The default is mode=-1.
 // Signals which were declared as "Dead" will be rejected.
 // The gain etc... corrected signals will be used in the ordering process.
+
+ if (fHits)
+ {
+  delete fHits;
+  fHits=0;
+ } 
  
- if (abs(mode)!=1 || !hits)
- {
-  TObjArray ordered;
-  return ordered;
- }
- else
- {
-  AliDevice dev;
-  TObjArray ordered=dev.SortHits(name,mode,hits);
-  return ordered;
- }
+ if (abs(mode)!=1 || !hits) return fHits;
+
+ AliDevice dev;
+ TObjArray* ordered=dev.SortHits(name,mode,hits);
+ if (ordered) fHits=new TObjArray(*ordered);
+ return fHits;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliEvent::Clone(const char* name) const
