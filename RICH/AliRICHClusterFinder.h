@@ -4,52 +4,32 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "TObject.h"
-#include "AliRICH.h"
+#include "TTask.h"
 
+class AliRICH;
 class AliHitMap;
-class TF1;
-class TClonesArray;
-class AliSegmentation;
-class AliRICHResponse;
-class TClonesArray;
-
-class AliRICHClusterFinder : public TObject
+class AliRICHcluster;
+class AliRICHClusterFinder : public TTask
 {
 public:
+    
   AliRICHClusterFinder(AliRICH *pRICH);
-  virtual ~AliRICHClusterFinder()                                                   {;}
+  virtual ~AliRICHClusterFinder()                                          {;}
   
-  void   Exec();                                                                     //Loop on events and chambers  
-  void   FindRawClusters();                                                          //Search for clusters  
-  void   AddDigit2Cluster(Int_t i, Int_t j, AliRICHRawCluster &c);
-  void   Decluster(AliRICHRawCluster *cluster);                                      //Decluster
-  void   CalibrateCOG();                                                             //Self Calibration of COG 
-  void   SinoidalFit(Double_t x,Double_t y, TF1 *func);
-  void   CorrectCOG(){;}      
-  Bool_t Centered(AliRICHRawCluster *cluster);
-  void   SplitByLocalMaxima(AliRICHRawCluster *cluster);
-  void   FillCluster(AliRICHRawCluster *cluster, Int_t flag);
+  void   Exec();                                                              //Loop on events and chambers  
+  void   FindRawClusters(Int_t iChamber);                                                   //Find initial clusters  
+  void   FindLocalMaxima(AliRICHcluster *pCluster);                           //Find local maxima in a cluster
+  void   ResolveCluster(AliRICHcluster *pCluster);                            //Try to resolve a cluster with maxima > 2
+  void   FormRawCluster(Int_t i, Int_t j, AliRICHcluster *pCluster);          //form a raw cluster
+  void   CoG();                                                               //Evaluate the CoG as the best  
+  void   WriteRawCluster(AliRICHcluster *pRawCluster);                        //write in the list of the raw clusters  
+  AliRICH *Rich() {return fRICH;}
   
-  void   AddRawCluster(const AliRICHRawCluster c)  {c.Print("");Rich()->AddClusterOld(fChamber,c);fNRawClusters++;}
-  void   FillCluster(AliRICHRawCluster *cluster)   {FillCluster(cluster,1);}
-  void   SetNperMax(Int_t npermax=5)               {fNperMax = npermax;}     //Set max. Number of pads per local cluster
-  void   SetClusterSize(Int_t clsize=100)          {fMaxClusterSize = clsize;}//Max. cluster size; bigger clusters will be rejected
-  
-  AliRICH * Rich() {return fRICH;}
-//protected:
+  protected:
+      
   AliRICH                *fRICH;  
-  AliSegmentation        *fSegmentation;                 //Segmentation model
-  AliRICHResponse*        fResponse;                     //Response model
   AliHitMap              *fHitMap;                       //Hit Map with digit positions
-  TF1*                    fCogCorr;                      //Correction for center of gravity
-  TClonesArray*           fDigits;                       //List of digits
-  Int_t                   fNdigits;                      //Number of digits
-  Int_t                   fChamber;                      //Chamber number
-  Int_t                   fNRawClusters;                 //Number of raw clusters
-  Int_t                   fNperMax;                      //Number of pad hits per local maximum
-  Int_t                   fMaxClusterSize;               //Max size of cluster allowed
-  Int_t                   fNPeaks;                       //Number of maxima in the cluster
+
   ClassDef(AliRICHClusterFinder,0) //Class for clustering and reconstruction of space points    
 };
 #endif

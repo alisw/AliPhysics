@@ -197,24 +197,28 @@ Int_t AliRICHdigit::Compare(const TObject *pObj)const
 } 
 //__________________AliRICHcluster__________________________________________________________________
 //__________________________________________________________________________________________________
+
+enum ClusterStatus {kOK,kEdge,kShape,kSize,kRaw};
+
 //__________________________________________________________________________________________________
 class AliRICHcluster :public TObject
 {
 public:
- enum ClusterStatus {kOK,kEdge,kShape,kSize};
-
-           AliRICHcluster()                                       {fStatus=fSize=fDimXY=fChamber=fQdc=kBad;fX=fY=kBad;fDigits=0;}
+           AliRICHcluster()                                     {fSize=fQdc=0;fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;fDigits=0;}
   virtual ~AliRICHcluster() {delete fDigits;}  
-           Int_t    Size()                                        const{return fSize;}
-           Int_t    DimXY()                                       const{return fDimXY;}
-           Int_t    Chamber()                                     const{return fChamber/10;}
-           Int_t    Sector()                                      const{return fChamber-(fChamber/10)*10;} 
-           Int_t    Q()                                           const{return fQdc;}
-           Double_t X()                                           const{return fX;}
-           Double_t Y()                                           const{return fY;}
-           Int_t    Status()                                      const{return fStatus;}
-           void  Print(Option_t *option)const;                                       //virtual
+           Int_t    Size()                                      const{return fSize;}
+           Int_t    DimXY()                                     const{return fDimXY;}
+           Int_t    Chamber()                                   const{return fChamber/10;}
+           Int_t    Sector()                                    const{return fChamber-(fChamber/10)*10;} 
+           Int_t    Q()                                         const{return fQdc;}
+           Double_t X()                                         const{return fX;}
+           Double_t Y()                                         const{return fY;}
+           Int_t    Status()                                    const{return fStatus;}
+           void  SetStatus(Int_t status)                             {fStatus=status;}
+           void  Print(Option_t *option)const;                                                            //virtual
    inline  void  AddDigit(AliRICHdigit *pDig);
+   inline  void  CoG();
+   TObjArray* Digits() const{return fDigits;}
 protected:
   Int_t         fSize;        //how many digits belong to this cluster    
   Int_t         fDimXY;       //100*xdim+ydim box containing the cluster
@@ -229,7 +233,25 @@ protected:
 //__________________________________________________________________________________________________
 void AliRICHcluster::AddDigit(AliRICHdigit *pDig)
 {  
-  fSize++; fQdc+=(Int_t)pDig->Q(); fDigits->Add(pDig);
+  if(!fDigits) fDigits = new TObjArray;
+  fQdc+=(Int_t)pDig->Q(); fDigits->Add(pDig);
+  fSize++;
+}
+//__________________________________________________________________________________________________
+void AliRICHcluster::CoG()
+{
+   Int_t xmin=999,ymin=999;
+   Int_t xmax=0,ymax=0;   
+   Double_t x,y;      
+   for(Int_t iDig=0;iDig<Size();iDig++) {
+     AliRICHdigit *pDig=(AliRICHdigit*)fDigits->At(iDig);
+     Int_t padX = pDig->X();Int_t padY = pDig->Y();Double_t q=pDig->Q();
+     AliRICHParam::Pad2Loc(padX,padY,x,y);
+     fX += x*q;fY +=y*q;
+     if(padX<xmin) xmin = padX;if(padX>xmax) xmax = padX;if(padY<ymin) ymin = padY;if(padY>ymax) ymax = padY;//find box edges containing cluster
+   }
+   fX/=fQdc;fY/=fQdc;
+   fDimXY = 100*(xmax-xmin+1)+ymax-ymin+1;
 }
 //__________________AliRICH_________________________________________________________________________
 //__________________________________________________________________________________________________
