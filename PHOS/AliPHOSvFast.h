@@ -14,8 +14,6 @@
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
-#include <assert.h>
-
 // --- ROOT system ---
 #include "TClonesArray.h"
 #include "TRandom.h"
@@ -34,16 +32,13 @@ public:
 
   AliPHOSvFast() ;
   AliPHOSvFast(const char *name, const char *title="") ;
-  AliPHOSvFast(const AliPHOSvFast & fast) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    assert(0==1) ; 
-  }
+  AliPHOSvFast(const AliPHOSvFast & fast) ; 
+ 
   virtual ~AliPHOSvFast(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
     // useless since there are no hits
-    assert(0==1) ; 
+    Error("AddHit", "Not callable !")  ; 
   }
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
@@ -74,11 +69,7 @@ public:
     return TString("vFast") ; 
   }
 
-  AliPHOSvFast & operator = (const AliPHOSvFast & )  {
-    // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
-    return *this ; 
-  }
+  AliPHOSvFast & operator = (const AliPHOSvFast & )  { return *this ; }
   
 private:
   

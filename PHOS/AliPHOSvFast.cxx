@@ -91,6 +91,34 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
 }
 
 //____________________________________________________________________________
+AliPHOSvFast::AliPHOSvFast(const AliPHOSvFast & pv):
+  AliPHOS(pv.GetName(), pv.GetTitle())
+{
+  // cpy ctor
+
+  
+  // create the Getter 
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0) ; 
+  
+  SetBigBox(0, pv.fBigBoxX) ;
+  SetBigBox(1, pv.fBigBoxY) ; 
+  SetBigBox(2, pv.fBigBoxZ) ; 
+  
+  fNRecParticles = pv.fNRecParticles; 
+  fFastRecParticles = new TClonesArray( *(pv.fFastRecParticles) ) ;
+  
+  fResPara1 = pv.fResPara1 ;    
+  fResPara2 = pv.fResPara2 ; 
+  fResPara3 = pv.fResPara3 ; 
+  
+  fPosParaA0 = pv.fPosParaA0 ;    
+  fPosParaA1 = pv.fPosParaA1 ;  
+  fPosParaB0 = pv.fPosParaB0 ;   
+  fPosParaB1 = pv.fPosParaB1 ; 
+  fPosParaB2 = pv.fPosParaB2 ; 
+}
+
+//____________________________________________________________________________
 AliPHOSvFast::~AliPHOSvFast()
 {
   // dtor
@@ -350,8 +378,8 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
   else
     test = rp.GetPdgCode() ; 
 
-  Info("MakeType", "SHOULD NOT BE USED until values of probabilities are properly set ") ;
-  assert(1==0) ;    // NB: ALL VALUES SHOULD BE CHECKED !!!!
+  Fatal("MakeType", "SHOULD NOT BE USED until values of probabilities are properly set ") ;
+
   switch (test) { 
 
   case 22:    // it's a photon              // NB: ALL VALUES SHOLD BE CHECKED !!!!
