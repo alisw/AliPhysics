@@ -44,6 +44,9 @@ class AliHBTPairCut: public TObject
     void SetQSideCMSLRange(Double_t min, Double_t max);
     void SetQLongCMSLRange(Double_t min, Double_t max);
     
+    const AliHBTParticleCut* GetFirstPartCut() const {return fFirstPartCut;}
+    const AliHBTParticleCut* GetSecondPartCut() const {return fSecondPartCut;}
+    
   protected:
     AliHBTParticleCut*      fFirstPartCut;
     AliHBTParticleCut*      fSecondPartCut;
