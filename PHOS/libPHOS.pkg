@@ -32,8 +32,6 @@ EHDRS:=$(ROOTSYS)/include/TTree.h
 
 DHDR= PHOSLinkDef.h
 
-EXPORT:=AliPHOSRecParticle.h AliPHOSFastRecParticle.h
-
 
 
 
