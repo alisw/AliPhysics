@@ -164,8 +164,8 @@ class AliHbtBaseCut: public TObject
 inline Bool_t
 AliHbtBaseCut::Pass(AliHBTParticle *p)
  {
-   if ( (GetValue(p) > fMin) && (GetValue(p) <fMax ) ) return kFALSE; //accepted
-   else return kTRUE; //rejected
+   if ( (GetValue(p) < fMin) || (GetValue(p) > fMax ) ) return kTRUE; //rejected
+   else return kFALSE; //accepted
  }
 /******************************************************************/
 /******************************************************************/
