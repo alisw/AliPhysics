@@ -52,7 +52,7 @@ minicern:  lib
 
 cernlibs: geant321 pythia minicern pdf
 
-all:	default cernlibs
+all:	cernlibs default
 
 FORCE:
 
@@ -75,9 +75,9 @@ distall: AliOffline3.01.tar.gz
 
 AliOffline3.01.tar.gz: $(STRUCT_DIRS) $(ALIROOT_DIRS) $(LIBRARY_DIRS) ALIROOT
 
-distlib: AliLib3.10.tar.gz
+distlib: AliLibs3.01.tar.gz
 
-AliLib3.01.tar.gz: $(LIBRARY_DIRS)
+AliLibs3.01.tar.gz: $(LIBRARY_DIRS)
 
 AliRoot3.01.tar.gz AliLibs3.01.tar.gz AliOffline3.01.tar.gz:
 		@rm -f $(ALICE)/$@ 
