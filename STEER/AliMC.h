@@ -17,6 +17,8 @@
 #include <TLorentzVector.h>
 
 class AliMC;
+class AliDecayer;
+
 
 R__EXTERN AliMC *gMC;
 
@@ -193,6 +195,9 @@ class AliMC : public TNamed
   virtual void BuildPhysics() = 0;
   virtual void ProcessEvent() = 0;
   virtual void ProcessRun(Int_t nevent) = 0;
+  // External Decayer
+  virtual void SetExternalDecayer(AliDecayer* decayer) =0;
+  virtual AliDecayer* Decayer() const =0;
 
   private:
   static AliMC*  fgMC;    // Pointer to the virtual MonteCarlo object
