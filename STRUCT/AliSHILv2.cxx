@@ -1437,11 +1437,11 @@ void AliSHILv2::CreateGeometry()
 // Magnet element 
 //
   tpar[0]=0.;
-  tpar[1]=kR43;
+  tpar[1]= 40.;
   tpar[2]=85.;
   gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
   tpar[0]=6.3/2.;
-  tpar[1]=kR43;
+  tpar[1]=40.;
   tpar[2]=85.;
   gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
   gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
