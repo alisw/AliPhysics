@@ -421,8 +421,8 @@ void AliMUONSt1Response::ReadFiles()
     }
   }
   //book memory and fill them with .ini files
-  fPlane[0]=AliMpPlane::Create(kBendingPlane);
-  fPlane[1]=AliMpPlane::Create(kNonBendingPlane);
+  fPlane[0]=AliMpPlane::Create(kStation1, kBendingPlane);
+  fPlane[1]=AliMpPlane::Create(kStation1, kNonBendingPlane);
   for (i=0;i<2;i++){
     fPlaneSegmentation[i]= new AliMpPlaneSegmentation(fPlane[i]);
     ReadIniFile(i);

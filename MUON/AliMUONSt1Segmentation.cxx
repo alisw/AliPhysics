@@ -70,7 +70,7 @@ AliMUONSt1Segmentation::AliMUONSt1Segmentation(const AliMpPlaneType planeType)
   fCorrA(0)
 {
 // Normal constructor
-  fPlane = AliMpPlane::Create(planeType);
+  fPlane = AliMpPlane::Create(kStation1, planeType);
   fPlaneSegmentation = new AliMpPlaneSegmentation(fPlane);
 
   fCorrA = new TObjArray(3);

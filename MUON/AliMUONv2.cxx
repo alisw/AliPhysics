@@ -474,7 +474,7 @@ void AliMUONv2::CreateQuadrant(Int_t chamber)
   specialMap[1001] = AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.);
   specialMap[1002] = AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36));
   specialMap[1003] = AliMUONSt1SpecialMotif(TVector2(1.01, 0.36));
-  AliMpReader reader1(kBendingPlane);
+  AliMpReader reader1(kStation1, kBendingPlane);
   AliMpSector* sector1 = reader1.BuildSector();
 
   Bool_t reflectZ = true;
@@ -488,7 +488,7 @@ void AliMUONv2::CreateQuadrant(Int_t chamber)
   specialMap[4004] = AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08));
   specialMap[4005] = AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25));
   specialMap[4006] = AliMUONSt1SpecialMotif(TVector2(0.28, 0.21));
-  AliMpReader reader2(kNonBendingPlane);
+  AliMpReader reader2(kStation1, kNonBendingPlane);
   AliMpSector* sector2 = reader2.BuildSector();
 
   reflectZ = false;
