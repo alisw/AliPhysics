@@ -952,7 +952,11 @@ gcinit.F \
 SRCS=comad/gcadd.cxx 
  
 ifeq ($(PLATFORM),linux)
-#   PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))  
+   GCC_MAJOR    := $(shell $(CXX) -v 2>&1 | \
+                     grep version | cut -d' ' -f3  | cut -d'.' -f1)
+   ifneq ($(GCC_MAJOR),3)
+      PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
+   endif
 endif
 
 
