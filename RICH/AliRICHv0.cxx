@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2000/06/09 14:59:25  jbarbosa
+  New default version. No setters needed, no hits.
+
   Revision 1.9  2000/05/31 08:19:38  jbarbosa
   Fixed bug in StepManager
 
@@ -47,7 +50,11 @@
 #include <TRandom.h> 
 
 #include "AliRICHv0.h"
-#include "AliRICHSegResV0.h"
+#include "AliRICHSegmentation.h"
+#include "AliRICHResponse.h"
+#include "AliRICHSegmentationV0.h"
+#include "AliRICHResponseV0.h"
+#include "AliRICHGeometry.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "iostream.h"
@@ -61,6 +68,9 @@ ClassImp(AliRICHv0)
 //___________________________________________
 AliRICHv0::AliRICHv0() : AliRICH()
 {
+
+// Default constructor
+
     //fChambers = 0;
 }
 
@@ -70,59 +80,59 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
 {
     //
 // Version 0
-// Default Segmentation
-    AliRICHSegmentationV0* SegmentationV0 = new AliRICHSegmentationV0;
+// Default Segmentation, no hits
+    AliRICHSegmentationV0* segmentationV0 = new AliRICHSegmentationV0;
 //
 //  Segmentation parameters
-    SegmentationV0->SetPadSize(0.84,0.80);
-    SegmentationV0->SetDAnod(0.84/2);
+    segmentationV0->SetPadSize(0.84,0.80);
+    segmentationV0->SetDAnod(0.84/2);
 //
 //  Geometry parameters
-    AliRICHGeometry* GeometryV0 = new AliRICHGeometryV0;
-    GeometryV0->SetGapThickness(8);
-    GeometryV0->SetProximityGapThickness(.4);
-    GeometryV0->SetQuartzLength(131);
-    GeometryV0->SetQuartzWidth(126.2);
-    GeometryV0->SetQuartzThickness(.5);
-    GeometryV0->SetOuterFreonLength(131);
-    GeometryV0->SetOuterFreonWidth(40.3);
-    GeometryV0->SetInnerFreonLength(131);
-    GeometryV0->SetInnerFreonWidth(40.3);
-    GeometryV0->SetFreonThickness(1);
+    AliRICHGeometry* geometry = new AliRICHGeometry;
+    geometry->SetGapThickness(8);
+    geometry->SetProximityGapThickness(.4);
+    geometry->SetQuartzLength(131);
+    geometry->SetQuartzWidth(126.2);
+    geometry->SetQuartzThickness(.5);
+    geometry->SetOuterFreonLength(131);
+    geometry->SetOuterFreonWidth(40.3);
+    geometry->SetInnerFreonLength(131);
+    geometry->SetInnerFreonWidth(40.3);
+    geometry->SetFreonThickness(1);
 //
 //  Response parameters
-    AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
-    Rresponse0->SetSigmaIntegration(5.);
-    Rresponse0->SetChargeSlope(40.);
-    Rresponse0->SetChargeSpread(0.18, 0.18);
-    Rresponse0->SetMaxAdc(1024);
-    Rresponse0->SetAlphaFeedback(0.05);
-    Rresponse0->SetEIonisation(26.e-9);
-    Rresponse0->SetSqrtKx3(0.77459667);
-    Rresponse0->SetKx2(0.962);
-    Rresponse0->SetKx4(0.379);
-    Rresponse0->SetSqrtKy3(0.77459667);
-    Rresponse0->SetKy2(0.962);
-    Rresponse0->SetKy4(0.379);
-    Rresponse0->SetPitch(0.25);
+    AliRICHResponseV0*  responseV0   = new AliRICHResponseV0;
+    responseV0->SetSigmaIntegration(5.);
+    responseV0->SetChargeSlope(40.);
+    responseV0->SetChargeSpread(0.18, 0.18);
+    responseV0->SetMaxAdc(1024);
+    responseV0->SetAlphaFeedback(0.05);
+    responseV0->SetEIonisation(26.e-9);
+    responseV0->SetSqrtKx3(0.77459667);
+    responseV0->SetKx2(0.962);
+    responseV0->SetKx4(0.379);
+    responseV0->SetSqrtKy3(0.77459667);
+    responseV0->SetKy2(0.962);
+    responseV0->SetKy4(0.379);
+    responseV0->SetPitch(0.25);
 //
 //
 //    AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
     
-    fCkov_number=0;
-    fFreon_prod=0;
+    fCkovNumber=0;
+    fFreonProd=0;
     
-    fChambers = new TObjArray(7);
-    for (Int_t i=0; i<7; i++) {
+    fChambers = new TObjArray(kNCH);
+    for (Int_t i=0; i<kNCH; i++) {
       
       (*fChambers)[i] = new AliRICHChamber();  
       
     }
   
-    for (Int_t i=0; i<7; i++) {
-      SetGeometryModel(i,GeometryV0);
-      SetSegmentationModel(i, SegmentationV0);
-      SetResponseModel(i, Rresponse0);
+    for (Int_t i=0; i<kNCH; i++) {
+      SetGeometryModel(i,geometry);
+      SetSegmentationModel(i, segmentationV0);
+      SetResponseModel(i, responseV0);
       SetNsec(i,1);
     }
 }
@@ -149,12 +159,12 @@ void AliRICHv0::CreateGeometry()
     */
     //End_Html
 
-  AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
+  AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH"); 
   AliRICHSegmentation*  segmentation;
   AliRICHGeometry*  geometry;
   AliRICHChamber*       iChamber;
 
-  iChamber = &(RICH->Chamber(0));
+  iChamber = &(pRICH->Chamber(0));
   segmentation=iChamber->GetSegmentationModel(0);
   geometry=iChamber->GetGeometryModel();
 
@@ -411,39 +421,39 @@ void AliRICHv0::CreateMaterials()
     //               R.A. Fini  (INFN - BARI, Rosanna.Fini@ba.infn.it) 
     //               R.A. Loconsole (Bari University, loco@riscom.ba.infn.it) 
     //
-    Int_t   ISXFLD = gAlice->Field()->Integ();
-    Float_t SXMGMX = gAlice->Field()->Max();
+    Int_t   isxfld = gAlice->Field()->Integ();
+    Float_t sxmgmx = gAlice->Field()->Max();
     Int_t i;
 
     /************************************Antonnelo's Values (14-vectors)*****************************************/
     /*
     Float_t ppckov[14] = { 5.63e-9,5.77e-9,5.9e-9,6.05e-9,6.2e-9,6.36e-9,6.52e-9,
 			   6.7e-9,6.88e-9,7.08e-9,7.3e-9,7.51e-9,7.74e-9,8e-9 };
-    Float_t rindex_quarz[14] = { 1.528309,1.533333,
+    Float_t rIndexQuarz[14] = { 1.528309,1.533333,
 				 1.538243,1.544223,1.550568,1.55777,
 				 1.565463,1.574765,1.584831,1.597027,
 			       1.611858,1.6277,1.6472,1.6724 };
-    Float_t rindex_quarzo[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t rindex_methane[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t rindex_gri[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t absco_freon[14] = { 179.0987,179.0987,
+    Float_t rIndexOpaqueQuarz[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
+    Float_t rIndexMethane[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
+    Float_t rIndexGrid[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
+    Float_t abscoFreon[14] = { 179.0987,179.0987,
 				179.0987,179.0987,179.0987,142.92,56.65,13.95,10.43,7.07,2.03,.5773,.33496,0. };
-    //Float_t absco_freon[14] = { 1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,
+    //Float_t abscoFreon[14] = { 1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,
 	//			 1e-5,1e-5,1e-5,1e-5,1e-5 };
-    Float_t absco_quarz[14] = { 64.035,39.98,35.665,31.262,27.527,22.815,21.04,17.52,
+    Float_t abscoQuarz[14] = { 64.035,39.98,35.665,31.262,27.527,22.815,21.04,17.52,
 				14.177,9.282,4.0925,1.149,.3627,.10857 };
-    Float_t absco_quarzo[14] = { 1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,
+    Float_t abscoOpaqueQuarz[14] = { 1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,
 				 1e-5,1e-5,1e-5,1e-5,1e-5 };
-    Float_t absco_csi[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
+    Float_t abscoCsI[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
 			      1e-4,1e-4,1e-4,1e-4 };
-    Float_t absco_methane[14] = { 1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,
+    Float_t abscoMethane[14] = { 1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,
 				  1e6,1e6,1e6 };
-    Float_t absco_gri[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
+    Float_t abscoGrid[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
 			      1e-4,1e-4,1e-4,1e-4 };
-    Float_t effic_all[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-    Float_t effic_csi[14] = { 6e-4,.005,.0075,.01125,.045,.117,.135,.16575,
+    Float_t efficAll[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
+    Float_t efficCsI[14] = { 6e-4,.005,.0075,.01125,.045,.117,.135,.16575,
 			      .17425,.1785,.1836,.1904,.1938,.221 };
-    Float_t effic_gri[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
+    Float_t efficGrid[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
     */
    
     
@@ -462,7 +472,7 @@ void AliRICHv0::CreateMaterials()
     
     
     //Refraction index for quarz
-    Float_t rindex_quarz[26];
+    Float_t rIndexQuarz[26];
     Float_t  e1= 10.666;
     Float_t  e2= 18.125;
     Float_t  f1= 46.411;
@@ -472,24 +482,24 @@ void AliRICHv0::CreateMaterials()
 	Float_t ene=ppckov[i]*1e9;
 	Float_t a=f1/(e1*e1 - ene*ene);
 	Float_t b=f2/(e2*e2 - ene*ene);
-	rindex_quarz[i] = TMath::Sqrt(1. + a + b );
-	//printf ("Rindex_quarz: %e\n",rindex_quarz[i]);
+	rIndexQuarz[i] = TMath::Sqrt(1. + a + b );
+	//printf ("rIndexQuarz: %e\n",rIndexQuarz[i]);
     } 
     
     //Refraction index for opaque quarz, methane and grid
-    Float_t rindex_quarzo[26];
-    Float_t rindex_methane[26];
-    Float_t rindex_gri[26];
+    Float_t rIndexOpaqueQuarz[26];
+    Float_t rIndexMethane[26];
+    Float_t rIndexGrid[26];
     for (i=0;i<26;i++)
     {
-	rindex_quarzo[i]=1;
-	rindex_methane[i]=1.000444;
-	rindex_gri[i]=1;
-	//printf ("Rindex_quarzo , etc: %e, %e, %e\n",rindex_quarzo[i], rindex_methane[i], rindex_gri[i]=1);
+	rIndexOpaqueQuarz[i]=1;
+	rIndexMethane[i]=1.000444;
+	rIndexGrid[i]=1;
+	//printf ("rIndexOpaqueQuarz , etc: %e, %e, %e\n",rIndexOpaqueQuarz[i], rIndexMethane[i], rIndexGrid[i]=1);
     } 
     
     //Absorption index for freon
-    Float_t absco_freon[26] = {179.0987, 179.0987, 179.0987, 179.0987, 179.0987,  179.0987, 179.0987, 179.0987, 
+    Float_t abscoFreon[26] = {179.0987, 179.0987, 179.0987, 179.0987, 179.0987,  179.0987, 179.0987, 179.0987, 
 	 		       179.0987, 142.9206, 56.64957, 25.58622, 13.95293, 12.03905, 10.42953, 8.804196, 
 			       7.069031, 4.461292, 2.028366, 1.293013, .577267,   .40746,  .334964, 0., 0., 0.};
     
@@ -498,12 +508,12 @@ void AliRICHv0::CreateMaterials()
 	 		.906,.907,.907,.907};
     Float_t Wavl2[] = {150.,155.,160.0,165.0,170.0,175.0,180.0,185.0,190.0,195.0,200.0,205.0,210.0,
 	 	       215.0,220.0,225.0,230.0,235.0,240.0,245.0,250.0};		 		 
-    Float_t absco_quarz[31];	     
+    Float_t abscoQuarz[31];	     
     for (Int_t i=0;i<31;i++)
     {
 	Float_t Xlam = 1237.79 / (ppckov[i]*1e9);
-	if (Xlam <= 160) absco_quarz[i] = 0;
-	if (Xlam > 250) absco_quarz[i] = 1;
+	if (Xlam <= 160) abscoQuarz[i] = 0;
+	if (Xlam > 250) abscoQuarz[i] = 1;
 	else 
 	{
 	    for (Int_t j=0;j<21;j++)
@@ -513,54 +523,54 @@ void AliRICHv0::CreateMaterials()
 		{
 		    Float_t Dabs = (Qzt[j+1] - Qzt[j])/(Wavl2[j+1] - Wavl2[j]);
 		    Float_t Abso = Qzt[j] + Dabs*(Xlam - Wavl2[j]);
-		    absco_quarz[i] = -5.0/(TMath::Log(Abso));
+		    abscoQuarz[i] = -5.0/(TMath::Log(Abso));
 		} 
 	    }
 	}
-	printf ("Absco_quarz: %e Absco_freon: %e for energy: %e\n",absco_quarz[i],absco_freon[i],ppckov[i]);
+	printf ("abscoQuarz: %e abscoFreon: %e for energy: %e\n",abscoQuarz[i],abscoFreon[i],ppckov[i]);
     }*/
 
-    /*Float_t absco_quarz[31] = {49.64211, 48.41296, 47.46989, 46.50492, 45.13682, 44.47883, 43.1929 , 41.30922, 40.5943 ,
+    /*Float_t abscoQuarz[31] = {49.64211, 48.41296, 47.46989, 46.50492, 45.13682, 44.47883, 43.1929 , 41.30922, 40.5943 ,
 			       39.82956, 38.98623, 38.6247 , 38.43448, 37.41084, 36.22575, 33.74852, 30.73901, 24.25086, 
 			       17.94531, 11.88753, 5.99128,  3.83503,  2.36661,  1.53155, 1.30582, 1.08574, .8779708, 
 			       .675275, 0., 0., 0.};
     
     for (Int_t i=0;i<31;i++)
     {
-	absco_quarz[i] = absco_quarz[i]/10;
+	abscoQuarz[i] = abscoQuarz[i]/10;
     }*/
 
-    Float_t absco_quarz [26] = {105.8, 65.52, 48.58, 42.85, 35.79, 31.262, 28.598, 27.527, 25.007, 22.815, 21.004,
+    Float_t abscoQuarz [26] = {105.8, 65.52, 48.58, 42.85, 35.79, 31.262, 28.598, 27.527, 25.007, 22.815, 21.004,
 				19.266, 17.525, 15.878, 14.177, 11.719, 9.282, 6.62, 4.0925, 2.601, 1.149, .667, .3627,
 				.192, .1497, .10857};
     
     //Absorption index for methane
-    Float_t absco_methane[26];
+    Float_t abscoMethane[26];
     for (i=0;i<26;i++) 
     {
-	absco_methane[i]=AbsoCH4(ppckov[i]*1e9); 
-	//printf("Absco_methane: %e for energy: %e\n", absco_methane[i],ppckov[i]*1e9);
+	abscoMethane[i]=AbsoCH4(ppckov[i]*1e9); 
+	//printf("abscoMethane: %e for energy: %e\n", abscoMethane[i],ppckov[i]*1e9);
     }
     
     //Absorption index for opaque quarz, csi and grid, efficiency for all and grid
-    Float_t absco_quarzo[26];
-    Float_t absco_csi[26];
-    Float_t absco_gri[26];
-    Float_t effic_all[26];
-    Float_t effic_gri[26];
+    Float_t abscoOpaqueQuarz[26];
+    Float_t abscoCsI[26];
+    Float_t abscoGrid[26];
+    Float_t efficAll[26];
+    Float_t efficGrid[26];
     for (i=0;i<26;i++)
     { 
-	absco_quarzo[i]=1e-5; 
-	absco_csi[i]=1e-4; 
-	absco_gri[i]=1e-4; 
-	effic_all[i]=1; 
-	effic_gri[i]=1;
-	//printf ("All must be 1: %e,  %e,  %e,  %e,  %e\n",absco_quarzo[i],absco_csi[i],absco_gri[i],effic_all[i],effic_gri[i]);
+	abscoOpaqueQuarz[i]=1e-5; 
+	abscoCsI[i]=1e-4; 
+	abscoGrid[i]=1e-4; 
+	efficAll[i]=1; 
+	efficGrid[i]=1;
+	//printf ("All must be 1: %e,  %e,  %e,  %e,  %e\n",abscoOpaqueQuarz[i],abscoCsI[i],abscoGrid[i],efficAll[i],efficGrid[i]);
     } 
     
     //Efficiency for csi 
     
-    Float_t effic_csi[26] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983, 0.010125,
+    Float_t efficCsI[26] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983, 0.010125,
 			     0.0242999997, 0.0405000001, 0.0688500032, 0.105299994, 0.121500008, 0.141749993, 0.157949999,
 			     0.162, 0.166050002, 0.167669997, 0.174299985, 0.176789999, 0.179279998, 0.182599992, 0.18592,
 			     0.187579989, 0.189239994, 0.190899998, 0.207499996, 0.215799987};
@@ -572,7 +582,7 @@ void AliRICHv0::CreateMaterials()
 
     for (i=0;i<26;i++)
     {
-	effic_csi[i] = effic_csi[i]/(1.-Fresnel(ppckov[i]*1e9,1.,0)); 
+	efficCsI[i] = efficCsI[i]/(1.-Fresnel(ppckov[i]*1e9,1.,0)); 
 	//printf ("Fresnel result: %e for energy: %e\n",Fresnel(ppckov[i]*1e9,1.,0),ppckov[i]*1e9);
     }
 	
@@ -588,7 +598,7 @@ void AliRICHv0::CreateMaterials()
     Int_t nlmatfre;
     Float_t densquao;
     Int_t nlmatmet, nlmatqua;
-    Float_t wmatquao[2], rindex_freon[26];
+    Float_t wmatquao[2], rIndexFreon[26];
     Float_t aquao[2], epsil, stmin, zquao[2];
     Int_t nlmatquao;
     Float_t radlal, densal, tmaxfd, deemax, stemax;
@@ -601,8 +611,8 @@ void AliRICHv0::CreateMaterials()
     // --- Photon energy (GeV) 
     // --- Refraction indexes 
     for (i = 0; i < 26; ++i) {
-	rindex_freon[i] = ppckov[i] * .0172 * 1e9 + 1.177;
-	//printf ("Rindex_freon: %e \n Effic_csi: %e for energy: %e\n",rindex_freon[i], effic_csi[i], ppckov[i]);
+	rIndexFreon[i] = ppckov[i] * .0172 * 1e9 + 1.177;
+	//printf ("rIndexFreon: %e \n efficCsI: %e for energy: %e\n",rIndexFreon[i], efficCsI[i], ppckov[i]);
     }
             
     // --- Detection efficiencies (quantum efficiency for CsI) 
@@ -689,28 +699,28 @@ void AliRICHv0::CreateMaterials()
     epsil  = .001;
     stmin  = -.001;
     
-    AliMedium(1, "DEFAULT MEDIUM AIR$", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(2, "HONEYCOMB$", 6, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(3, "QUARZO$", 20, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(4, "FREON$", 30, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(5, "METANO$", 40, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(6, "CSI$", 16, 1, ISXFLD, SXMGMX,tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(7, "GRIGLIA$", 11, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(8, "QUARZOO$", 21, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(9, "GAP$", 41, 1, ISXFLD, SXMGMX,tmaxfd, .1, -deemax, epsil, -stmin);
-    AliMedium(10, "ALUMINUM$", 50, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(1, "DEFAULT MEDIUM AIR$", 1, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(2, "HONEYCOMB$", 6, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(3, "QUARZO$", 20, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(4, "FREON$", 30, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(5, "METANO$", 40, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(6, "CSI$", 16, 1, isxfld, sxmgmx,tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(7, "GRIGLIA$", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(8, "QUARZOO$", 21, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(9, "GAP$", 41, 1, isxfld, sxmgmx,tmaxfd, .1, -deemax, epsil, -stmin);
+    AliMedium(10, "ALUMINUM$", 50, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
     
 
-    geant3->Gsckov(idtmed[1000], 26, ppckov, absco_methane, effic_all, rindex_methane);
-    geant3->Gsckov(idtmed[1001], 26, ppckov, absco_methane, effic_all, rindex_methane);
-    geant3->Gsckov(idtmed[1002], 26, ppckov, absco_quarz, effic_all,rindex_quarz);
-    geant3->Gsckov(idtmed[1003], 26, ppckov, absco_freon, effic_all,rindex_freon);
-    geant3->Gsckov(idtmed[1004], 26, ppckov, absco_methane, effic_all, rindex_methane);
-    geant3->Gsckov(idtmed[1005], 26, ppckov, absco_csi, effic_csi, rindex_methane);
-    geant3->Gsckov(idtmed[1006], 26, ppckov, absco_gri, effic_gri, rindex_gri);
-    geant3->Gsckov(idtmed[1007], 26, ppckov, absco_quarzo, effic_all, rindex_quarzo);
-    geant3->Gsckov(idtmed[1008], 26, ppckov, absco_methane, effic_all, rindex_methane);
-    geant3->Gsckov(idtmed[1009], 26, ppckov, absco_gri, effic_gri, rindex_gri);
+    geant3->Gsckov(idtmed[1000], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    geant3->Gsckov(idtmed[1001], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    geant3->Gsckov(idtmed[1002], 26, ppckov, abscoQuarz, efficAll,rIndexQuarz);
+    geant3->Gsckov(idtmed[1003], 26, ppckov, abscoFreon, efficAll,rIndexFreon);
+    geant3->Gsckov(idtmed[1004], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    geant3->Gsckov(idtmed[1005], 26, ppckov, abscoCsI, efficCsI, rIndexMethane);
+    geant3->Gsckov(idtmed[1006], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
+    geant3->Gsckov(idtmed[1007], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
+    geant3->Gsckov(idtmed[1008], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    geant3->Gsckov(idtmed[1009], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
 }
 
 //___________________________________________
@@ -780,14 +790,14 @@ Float_t AliRICHv0::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
 Float_t AliRICHv0::AbsoCH4(Float_t x)
 {
 
-    //LOSCH,SCH4(9),WL(9),EM(9),ALENGTH(31)
+    //KLOSCH,SCH4(9),WL(9),EM(9),ALENGTH(31)
     Float_t sch4[9] = {.12,.16,.23,.38,.86,2.8,7.9,28.,80.};              //MB X 10^22
     //Float_t wl[9] = {153.,152.,151.,150.,149.,148.,147.,146.,145};
     Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
-    const Float_t losch=2.686763E19;                                      // LOSCHMIDT NUMBER IN CM-3
-    const Float_t igas1=100, igas2=0, oxy=10., wat=5., pre=750.,tem=283.;                                      
-    Float_t pn=pre/760.;
-    Float_t tn=tem/273.16;
+    const Float_t kLosch=2.686763E19;                                      // LOSCHMIDT NUMBER IN CM-3
+    const Float_t kIgas1=100, kIgas2=0, kOxy=10., kWater=5., kPressure=750.,kTemperature=283.;                                      
+    Float_t pn=kPressure/760.;
+    Float_t tn=kTemperature/273.16;
     
 	
 // ------- METHANE CROSS SECTION -----------------
@@ -817,7 +827,7 @@ Float_t AliRICHv0::AbsoCH4(Float_t x)
 	}
     }
     
-    Float_t dm=(igas1/100.)*(1.-((oxy+wat)/1.e6))*losch*pn/tn;
+    Float_t dm=(kIgas1/100.)*(1.-((kOxy+kWater)/1.e6))*kLosch*pn/tn;
     Float_t abslm=1./sm/dm;
     
 //    ------- ISOBUTHANE CROSS SECTION --------------
@@ -827,7 +837,7 @@ Float_t AliRICHv0::AbsoCH4(Float_t x)
     
     Float_t ai;
     Float_t absli;
-    if (igas2 != 0) 
+    if (kIgas2 != 0) 
     {
 	if (x<7.25)
 	    ai=100000000.;
@@ -838,8 +848,8 @@ Float_t AliRICHv0::AbsoCH4(Float_t x)
 	if(x>=7.375)
 	    ai=.0000000001;
 	
-	Float_t si = 1./(ai*losch*273.16/293.);                    // ISOB. CRO.SEC.IN CM2
-	Float_t di=(igas2/100.)*(1.-((oxy+wat)/1.e6))*losch*pn/tn;
+	Float_t si = 1./(ai*kLosch*273.16/293.);                    // ISOB. CRO.SEC.IN CM2
+	Float_t di=(kIgas2/100.)*(1.-((kOxy+kWater)/1.e6))*kLosch*pn/tn;
 	absli =1./si/di;
     }
     else
@@ -882,7 +892,7 @@ Float_t AliRICHv0::AbsoCH4(Float_t x)
 	    so=so*1e-18;
 	}
 	
-	Float_t dox=(oxy/1e6)*losch*pn/tn;
+	Float_t dox=(kOxy/1e6)*kLosch*pn/tn;
 	abslo=1./so/dox;
     }
     else
@@ -908,7 +918,7 @@ Float_t AliRICHv0::AbsoCH4(Float_t x)
     {    
 	Float_t sw= b0+(b1*x)+(b2*x*x)+(b3*x*x*x)+(b4*x*x*x*x);
 	sw=sw*1e-18;
-	Float_t dw=(wat/1e6)*losch*pn/tn;
+	Float_t dw=(kWater/1e6)*kLosch*pn/tn;
 	abslw=1./sw/dw;
     }
     else
@@ -942,7 +952,7 @@ void AliRICHv0::Init()
     // 
     // Initialize Tracking Chambers
     //
-    for (Int_t i=1; i<7; i++) {
+    for (Int_t i=1; i<kNCH; i++) {
 	//printf ("i:%d",i);
 	( (AliRICHChamber*) (*fChambers)[i])->Init();  
     }  
@@ -1007,44 +1017,3 @@ void AliRICHv0::StepManager()
 
   
 //___________________________________________
-Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, Response_t res)
-{
-//
-//  Calls the charge disintegration method of the current chamber and adds
-//  the simulated cluster to the root treee 
-//
-    Int_t clhits[7];
-    Float_t newclust[6][500];
-    Int_t nnew;
-    
-//
-//  Integrated pulse height on chamber
-    
-    clhits[0]=fNhits+1;
-    
-    ((AliRICHChamber*) (*fChambers)[idvol])->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
-    Int_t ic=0;
-    
-//
-//  Add new clusters
-    for (Int_t i=0; i<nnew; i++) {
-	if (Int_t(newclust[3][i]) > 0) {
-	    ic++;
-// Cathode plane
-	    clhits[1] = Int_t(newclust[5][i]);
-//  Cluster Charge
-	    clhits[2] = Int_t(newclust[0][i]);
-//  Pad: ix
-	    clhits[3] = Int_t(newclust[1][i]);
-//  Pad: iy 
-	    clhits[4] = Int_t(newclust[2][i]);
-//  Pad: charge
-	    clhits[5] = Int_t(newclust[3][i]);
-//  Pad: chamber sector
-	    clhits[6] = Int_t(newclust[4][i]);
-	    
-	    AddPadHit(clhits);
-	}
-    }
-return nnew;
-}

@@ -1,5 +1,5 @@
-#ifndef AliRICHChamber_H
-#define AliRICHChamber_H
+#ifndef ALIRICHCHAMBER_H
+#define ALIRICHCHAMBER_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -8,26 +8,22 @@
 
 #include <TObjArray.h>
 #include <TRotMatrix.h>
-#include "AliRICHSegRes.h"
 
+#include "AliRICHSegmentation.h"
+#include "AliRICHGeometry.h"
+#include "AliRICHResponse.h"
 
 class AliRICHClusterFinder;
-class AliRICHResponse;
-class AliRICHSegmentation;
-class AliRICHGeometry;
-typedef enum {mip, cerenkov} Response_t;
+
+typedef enum {kMip, kCerenkov} ResponseType;
 
 class AliRICHChamber : public TObject
 {
  public:
     
-//Rotation matrices for each chamber
-    
-    TRotMatrix *fChamberMatrix;
-    Float_t fChamberTrans[3];
-    
  public:
     AliRICHChamber();
+    AliRICHChamber(const AliRICHChamber & Chamber);
     ~AliRICHChamber(){}
 //
 // Set and get GEANT id  
@@ -227,26 +223,31 @@ class AliRICHChamber : public TObject
 	fGeometry->SetFreonThickness(thickness);
       }
 
-
+    AliRICHChamber& operator=(const AliRICHChamber& rhs);
+    
 //  
 // Cluster formation method
-    void   DisIntegration(Float_t, Float_t, Float_t, Int_t&x, Float_t newclust[6][500], Response_t res);
+    void   DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit, Int_t&x, Float_t newclust[6][500], ResponseType res);
  private:
 // GEANT volume if for sensitive volume of this
-// Maximum and Minimum Chamber size
-    Float_t frMin;    
-    Float_t frMax;
-    Int_t   fGid;
-// z-position of this chamber
-    Float_t fzPos;
+    Float_t frMin;                 // Minimum Chamber size
+    Float_t frMax;                 // Maximum Chamber size 
+    Int_t   fGid;                  // Id tag 
+    Float_t fzPos;                 // z-position of this chamber
 // The segmentation models for the cathode planes
-// fnsec=1: one plane segmented, fnsec=2: both planes are segmented.
-    Int_t   fnsec;
+    Int_t   fnsec;                 // fnsec=1: one plane segmented, fnsec=2: both planes are segmented.
     
-    AliRICHSegmentation           *fSegmentation;
-    AliRICHResponse               *fResponse;
-    AliRICHGeometry               *fGeometry;
-    AliRICHClusterFinder          *fReconstruction;
+    TRotMatrix *fChamberMatrix;          //Rotation matrices for each chamber
+    Float_t fChamberTrans[3];            //Translaction vectors for each chamber
+
+    AliRICHSegmentation           *fSegmentation;          //Segmentation model for each chamber
+    AliRICHResponse               *fResponse;              //Response model for each chamber
+    AliRICHGeometry               *fGeometry;              //Geometry model for each chamber
+    AliRICHClusterFinder          *fReconstruction;        //Reconstruction model for each chamber
     ClassDef(AliRICHChamber,1)
 };
 #endif
+
+
+
+

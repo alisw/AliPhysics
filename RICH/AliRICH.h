@@ -1,5 +1,5 @@
-#ifndef RICH_H
-#define RICH_H
+#ifndef ALIRICH_H
+#define ALIRICH_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -12,21 +12,11 @@
 ////////////////////////////////////////////////
 #include "AliDetector.h"
 #include "AliRICHConst.h"
-#include "AliRICHSegRes.h"
-#include "DataStructures.h"
 #include "AliRICHChamber.h"
-#include "AliRICHSegRes.h"
-#include <TVector.h>
-#include <TArrayF.h>
-#include <TObjArray.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TParticle.h>
-
-static const int NCH=7;
+static const int kNCH=7;
 
 
-
+class AliRICHHit;
 class AliRICHPadHit;
 class AliRICHRawCluster;
 class AliRICHRecHit;
@@ -37,18 +27,20 @@ class AliRICHCerenkov;
 class AliRICHSegmentation;
 class AliRICHResponse;
 class AliRICHEllipse;
+class AliRICHGeometry;
 
 class AliRICH : public  AliDetector {
  public:
     AliRICH();
     AliRICH(const char *name, const char *title);
+    AliRICH(const AliRICH& RICH);
     virtual       ~AliRICH();
-    virtual void   AddHit(Int_t, Int_t*, Float_t*);
-    virtual void   AddCerenkov(Int_t, Int_t*, Float_t*);
-    virtual void   AddPadHit(Int_t*);
-    virtual void   AddDigits(Int_t, Int_t*, Int_t*, Int_t*);
-    virtual void   AddRawCluster(Int_t, const AliRICHRawCluster&);
-    virtual void   AddRecHit(Int_t, Float_t*);
+    virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
+    virtual void   AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
+    virtual void   AddPadHit(Int_t *clhits);
+    virtual void   AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);
+    virtual void   AddRawCluster(Int_t id, const AliRICHRawCluster& cluster);
+    virtual void   AddRecHit(Int_t id, Float_t* rechit);
 
 
     virtual void   BuildGeometry();
@@ -66,7 +58,7 @@ class AliRICH : public  AliDetector {
     virtual void   ResetDigits();
     virtual void   ResetRawClusters();
     virtual void   ResetRecHits();
-    virtual void   FindClusters(Int_t,Int_t);
+    virtual void   FindClusters(Int_t nev,Int_t lastEntry);
     virtual void   Digitise(Int_t nev,Int_t flag,Option_t *opt=" ",Text_t *name=" ");
 // 
 // Configuration Methods (per station id)
@@ -81,12 +73,12 @@ class AliRICH : public  AliDetector {
 // Set Reconstruction Model
     virtual void   SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconstruction);
 // Response Simulation
-    virtual Int_t   MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id,Response_t res);
+    virtual Int_t   MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
 // Return reference to Chamber #id
     virtual AliRICHChamber& Chamber(Int_t id) {return *((AliRICHChamber *) (*fChambers)[id]);}
 // Retrieve pad hits for a given Hit
-    virtual AliRICHPadHit* FirstPad(AliRICHHit *, TClonesArray *);
-    virtual AliRICHPadHit* NextPad(TClonesArray *);
+    virtual AliRICHPadHit* FirstPad(AliRICHHit *hit, TClonesArray *clusters);
+    virtual AliRICHPadHit* NextPad(TClonesArray *clusters);
 // Return pointers to digits 
     TObjArray            *Dchambers() {return fDchambers;}
     Int_t                *Ndch() {return fNdch;}
@@ -97,6 +89,8 @@ class AliRICH : public  AliDetector {
     virtual TClonesArray *RecHitsAddress(Int_t id) {return ((TClonesArray *) (*fRecHits)[id]);}
 // Return pointers to reconstructed clusters
     virtual TClonesArray *RawClustAddress(Int_t id) {return ((TClonesArray *) (*fRawClusters)[id]);}    
+// Assignment operator
+    AliRICH& operator=(const AliRICH& rhs);
     
     
  protected:

@@ -15,12 +15,34 @@
 
 /*
   $Log$
-  Revision 1.4  2000/04/19 13:14:36  morsch
-  Minor changes on class names.
-
 */
 
 
-#include "AliRICHHitMap.h"
+#include "AliRICHDigit.h"
 
-ClassImp(AliRICHHitMap)
+ClassImp(AliRICHDigit)
+//_____________________________________________________________________________
+AliRICHDigit::AliRICHDigit(Int_t *digits)
+{
+    //
+    // Creates a RICH digit object to be updated
+    //
+    fPadX        = digits[0];
+    fPadY        = digits[1];
+    fSignal      = digits[2];
+    
+}
+//_____________________________________________________________________________
+AliRICHDigit::AliRICHDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
+{
+    //
+    // Creates a RICH digit object
+    //
+    fPadX        = digits[0];
+    fPadY        = digits[1];
+    fSignal      = digits[2];
+    for(Int_t i=0; i<100; i++) {
+	fTcharges[i]  = charges[i];
+	fTracks[i]    = tracks[i];
+    }
+}

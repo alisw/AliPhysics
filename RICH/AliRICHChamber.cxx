@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/05/18 13:45:57  jbarbosa
+  Fixed feedback photon origin coordinates
+
   Revision 1.1  2000/04/19 12:57:20  morsch
   Newly structured and updated version (JB, AM)
 
@@ -22,7 +25,7 @@
 
 
 #include "AliRICHChamber.h"
-#include "AliRun.h"
+
 #include <TLorentzVector.h>
 #include <TParticle.h>
 #include <TRandom.h>
@@ -31,6 +34,10 @@ ClassImp(AliRICHChamber)
     
 AliRICHChamber::AliRICHChamber() 
 {
+
+//
+// Chamber object constructor
+
     fSegmentation = 0;
     fResponse= 0;
     fGeometry= 0;
@@ -39,26 +46,35 @@ AliRICHChamber::AliRICHChamber()
     fnsec=1;
 }
 
-//  
-//  Get reference to response model
+AliRICHChamber::AliRICHChamber(const AliRICHChamber& Chamber)
+{
+// Copy Constructor
+}
+
+
 AliRICHResponse* AliRICHChamber::GetResponseModel()
 {
+//  
+//  Get reference to response model
     return fResponse;
 }
 
-// Configure response model
 void   AliRICHChamber::ResponseModel(AliRICHResponse* thisResponse)
 {
+// Configure response model
     fResponse=thisResponse;
 }
 
 void AliRICHChamber::Init()
 {
+// Initialise chambers
     fSegmentation->Init(this);
 }
 
 void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
 {
+
+// Local coordinates to global coordinates transformation
 
     Double_t *fMatrix;
     fMatrix =  fChamberMatrix->GetMatrix();
@@ -72,6 +88,8 @@ void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
 
 void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
 {
+
+// Global coordinates to local coordinates transformation
 
     Double_t *fMatrixOrig;
     TMatrix fMatrixCopy(3,3);
@@ -100,7 +118,7 @@ void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
 
 
 void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
-				    Int_t& nnew,Float_t newclust[6][500],Response_t res) 
+				    Int_t& nnew,Float_t newclust[6][500],ResponseType res) 
 {
 //    
 //  Generates pad hits (simulated cluster) 
@@ -128,17 +146,17 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 
     LocaltoGlobal(local,global);
 
-    Int_t Nfp=0;
+    Int_t nFp=0;
     
-    if (res==mip) {
+    if (res==kMip) {
 	qtot = fResponse->IntPH(eloss);
-	Nfp  = fResponse->FeedBackPhotons(global,qtot);
-    } else if (res==cerenkov) {
+	nFp  = fResponse->FeedBackPhotons(global,qtot);
+    } else if (res==kCerenkov) {
 	qtot = fResponse->IntPH();
-	Nfp  = fResponse->FeedBackPhotons(global,qtot);
+	nFp  = fResponse->FeedBackPhotons(global,qtot);
     }
 
-    //printf("Feedbacks:%d\n",Nfp);
+    //printf("Feedbacks:%d\n",nFp);
     
     //
     // Loop Over Pads
@@ -177,5 +195,11 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 }
 
 
+AliRICHChamber& AliRICHChamber::operator=(const AliRICHChamber& rhs)
+{
+// Assignment operator
+    return *this;
+    
+}
 
 

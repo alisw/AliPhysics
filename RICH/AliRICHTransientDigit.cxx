@@ -15,12 +15,25 @@
 
 /*
   $Log$
-  Revision 1.4  2000/04/19 13:14:36  morsch
-  Minor changes on class names.
-
 */
 
 
-#include "AliRICHHitMap.h"
+#include "AliRICHTransientDigit.h"
+#include <TObjArray.h>
 
-ClassImp(AliRICHHitMap)
+ClassImp(AliRICHTransientDigit)
+    
+//____________________________________________________________________________
+AliRICHTransientDigit::AliRICHTransientDigit(Int_t ich, Int_t *digits): 
+    AliRICHDigit(digits)
+{
+    //
+    // Creates a RICH digit list object
+    //
+    
+    fChamber = ich;
+    fTrackList   = new TObjArray;
+    
+}
+//_____________________________________________________________________________
+

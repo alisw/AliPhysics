@@ -1,5 +1,5 @@
-#ifndef AliRICHDisplay_H
-#define AliRICHDisplay_H
+#ifndef ALIRICHDISPLAY_H
+#define ALIRICHDISPLAY_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -35,43 +35,7 @@ class AliRICHEllipse;
 
 const Int_t kMAXZOOM = 20;
 
-class AliRICHDisplay : /*splaypublic TObject,*/ public AliDisplay {
-    
- private:
-    Int_t             fChamber;
-    Int_t             fCathode;
-    Int_t             fZoomMode;             //=1 if in zoom mode
-    
-    Bool_t            fDrawClusters;         //Flag True if Clusters to be drawn
-    Bool_t            fDrawCoG;              //Flag True if CoG to be drawn
-    Bool_t            fDrawRecHits;          //Flag True if rec hits to be drawn
-    Float_t           fTheta;                //Viewing angle theta
-    Float_t           fPhi;                  //Viewing angle phi
-    Float_t           fPsi;                  //Viewving angle psi (rotation on display)
-    Float_t           fRrange;               //Size of view in R
-    Float_t           fZrange;               //Size of view along Z
-    Float_t           fZoomX0[20];           //Low x range of zoom number i
-    Float_t           fZoomY0[20];           //Low y range of zoom number i
-    Float_t           fZoomX1[20];           //High x range of zoom number i
-    Float_t           fZoomY1[20];           //High y range of zoom number i
-    Int_t             fZooms;                //Number of zooms
-    Int_t             fHitsCuts;             //Number of hits surviving cuts
-    Int_t             fClustersCuts;         //Number of clusters surviving cuts
-    TCanvas          *fCanvas;               //Pointer to the display canvas
-    TPad             *fTrigPad;              //Pointer to the trigger pad 
-    TPad             *fColPad;               //Pointer to the colors pad 
-    TPad             *fButtons;              //Pointer to the buttons pad
-    TPad             *fPad;                  //Pointer to the event display main pad
-    TSlider          *fRangeSlider;          //Range slider
-    TButton          *fPickButton;           //Button to activate Pick mode
-    TButton          *fZoomButton;           //Button to activate Zoom mode
-    TArc             *fArcButton;            //Gren/Red button to show Pick/Zoom mode
-    TObjArray        *fPoints;               //Array of points for each cathode
-    TObjArray        *fPhits;                //Array of hit points for each chamber
-    TObjArray        *fPCerenkovs;           //Array of cerenkov hits for each chamber
-    TObjArray        *fRpoints;              //Array of cog points for each cathode 
-    TObjArray        *fRecpoints;            //Array of rec points for each cathode 
-    
+class AliRICHDisplay : public AliDisplay {
  public:
     AliRICHDisplay();
     AliRICHDisplay(Int_t size);
@@ -120,28 +84,42 @@ class AliRICHDisplay : /*splaypublic TObject,*/ public AliDisplay {
     virtual void      ResetRecpoints();
     virtual void      ResetPhits();
     virtual void      ResetPCerenkovs();
-    ClassDef(AliRICHDisplay, 0)   //Utility class to display RICH clusters...
-};
-
-
-class AliRICHEllipse :  public TPolyMarker3D {
-
-public:
-    AliRICHEllipse();
-    AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t theta, Float_t phi);
+ private:
+    Int_t             fChamber;              //Chamber number
+    Int_t             fCathode;              //Cathode number
+    Int_t             fZoomMode;             //=1 if in zoom mode
     
-    virtual          ~AliRICHEllipse();
-    virtual void CreatePoints(Int_t chamber);
-
-    Float_t fOmega;
-    Float_t fTheta;
-    Float_t fPhi;
-    Float_t fCx;
-    Float_t fCy;
-    Float_t h;
-
-    ClassDef(AliRICHEllipse, 1)   //Utility class to draw an ellipse
-};
+    Bool_t            fDrawClusters;         //Flag True if Clusters to be drawn
+    Bool_t            fDrawCoG;              //Flag True if CoG to be drawn
+    Bool_t            fDrawRecHits;          //Flag True if rec hits to be drawn
+    Float_t           fTheta;                //Viewing angle theta
+    Float_t           fPhi;                  //Viewing angle phi
+    Float_t           fPsi;                  //Viewving angle psi (rotation on display)
+    Float_t           fRrange;               //Size of view in R
+    Float_t           fZrange;               //Size of view along Z
+    Float_t           fZoomX0[20];           //Low x range of zoom number i
+    Float_t           fZoomY0[20];           //Low y range of zoom number i
+    Float_t           fZoomX1[20];           //High x range of zoom number i
+    Float_t           fZoomY1[20];           //High y range of zoom number i
+    Int_t             fZooms;                //Number of zooms
+    Int_t             fHitsCuts;             //Number of hits surviving cuts
+    Int_t             fClustersCuts;         //Number of clusters surviving cuts
+    TCanvas          *fCanvas;               //Pointer to the display canvas
+    TPad             *fTrigPad;              //Pointer to the trigger pad 
+    TPad             *fColPad;               //Pointer to the colors pad 
+    TPad             *fButtons;              //Pointer to the buttons pad
+    TPad             *fPad;                  //Pointer to the event display main pad
+    TSlider          *fRangeSlider;          //Range slider
+    TButton          *fPickButton;           //Button to activate Pick mode
+    TButton          *fZoomButton;           //Button to activate Zoom mode
+    TArc             *fArcButton;            //Gren/Red button to show Pick/Zoom mode
+    TObjArray        *fPoints;               //Array of points for each cathode
+    TObjArray        *fPhits;                //Array of hit points for each chamber
+    TObjArray        *fPCerenkovs;           //Array of cerenkov hits for each chamber
+    TObjArray        *fRpoints;              //Array of cog points for each cathode 
+    TObjArray        *fRecpoints;            //Array of rec points for each cathode 
+    ClassDef(AliRICHDisplay, 0)   //Utility class to display RICH clusters...
 	
+};
 #endif
 	

@@ -1,5 +1,5 @@
-#ifndef AliRICHPatRec_H
-#define AliRICHPatRec_H
+#ifndef ALIRICHPATREC_H
+#define ALIRICHPATREC_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -61,38 +61,38 @@ class AliRICHPatRec : public TObject {
   //new
   Float_t CherenkovRingDrawing(Float_t fixedthetacer);
 
-
-private:
-
-  Float_t fRw,fQw,fTgap;
-
-  Float_t fTrackLoc[3];
-  Float_t fTrackTheta;
-  Float_t fTrackPhi;
-  Float_t fTrackMom;
-  Float_t fXpad;
-  Float_t fYpad;
-  Int_t   fQpad;
-
-  Float_t fXshift,fYshift;
-  Float_t fEmissPoint;
-  Float_t fCerenkovAnglePad;              // Cerenkov angle of single pad
-  Float_t fPhotocatExitPhot;              
-
-
  public:
-  Int_t   fNumEtaPhotons;
+  Int_t   fNumEtaPhotons;                 // Number of photons
   Float_t fEtaPhotons[1000];              // Cerenkov angle each photon
   Float_t fWeightPhotons[1000];           // weight for each photon
-  Float_t fThetaCerenkov;
-  Float_t fThetaPeakPos;
+  Float_t fThetaCerenkov;                 // Theta angle for photon
+  Float_t fThetaPeakPos;                  // Peak position
 
   Float_t fDTheta;                        //Step for sliding window
   Float_t fWindowWidth;                   //Hough width of sliding window
 
-  ClassDef(AliRICHPatRec,1)  //Pat Rec module for :RICH version 0
+private:
+
+  Float_t fRw,fQw,fTgap;                  //  
+
+  Float_t fTrackLoc[3];                   // Position of track
+  Float_t fTrackTheta;                    // Theta angle for track (dip angle)
+  Float_t fTrackPhi;                      // Phi angle
+  Float_t fTrackMom;                      // Track momentum
+  Float_t fXpad;                          // x-position of pad hit
+  Float_t fYpad;                          // y-position of pad hit
+  Int_t   fQpad;                          // Charge deposited
+
+  Float_t fXshift,fYshift;                // Shifts in x and y
+  Float_t fEmissPoint;                    // Emission point for Cerenkov photons
+  Float_t fCerenkovAnglePad;              // Cerenkov angle of single pad
+  Float_t fPhotocatExitPhot;              // Point of exit from photocathode 
+
+
+
+  ClassDef(AliRICHPatRec,1)                //Pat Rec module for :RICH version 0
       
-	};
+};
 
 
 	

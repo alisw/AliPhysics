@@ -1,5 +1,5 @@
-#ifndef AliRICHClusterFinder_H
-#define AliRICHClusterFinder_H
+#ifndef ALIRICHCLUSTERFINDER_H
+#define ALIRICHCLUSTERFINDER_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -10,32 +10,27 @@
 ////////////////////////////////////////////////
 //  RICH Cluster Finder Class                 //
 ////////////////////////////////////////////////
-#include "AliRICHHitMap.h"
+class AliRICHHitMapA1;
+
 #include "TF1.h"
+#include "TObject.h"
+class  TClonesArray;
+class AliRICHSegmentation;
+class AliRICHRawCluster;
+class AliRICHResponse;
+class TClonesArray;
+
+
 class AliRICHClusterFinder :
  public TObject
 {
-public:
-    TClonesArray*           fDigits;
-    Int_t                   fNdigits;
-protected:
-    AliRICHSegmentation*    fSegmentation;
-    AliRICHResponse*        fResponse;
-    TClonesArray*           fRawClusters;
-    Int_t                   fChamber;
-    Int_t                   fNRawClusters;
-    AliRICHHitMapA1*        fHitMap;
-    TF1*                    fCogCorr;
-    Int_t                   fNperMax;
-    Int_t                   fDeclusterFlag;
-    Int_t                   fClusterSize;
-    Int_t                   fNPeaks; 
  public:
     AliRICHClusterFinder
 	(AliRICHSegmentation *segmentation,
 	 AliRICHResponse *response, TClonesArray *digits, Int_t chamber);
     AliRICHClusterFinder();
-    ~AliRICHClusterFinder(){delete fRawClusters;}
+    AliRICHClusterFinder(const AliRICHClusterFinder & ClusterFinder);
+    virtual ~AliRICHClusterFinder();
     virtual void SetSegmentation(
 	AliRICHSegmentation *segmentation){
 	fSegmentation=segmentation;
@@ -44,16 +39,13 @@ protected:
 	fResponse=response;
     }
 
-    virtual void SetDigits(TClonesArray *RICHdigits) {
-	fDigits=RICHdigits;
-	fNdigits = fDigits->GetEntriesFast();
-    }
+    virtual void SetDigits(TClonesArray *RICHdigits);
     
     virtual void SetChamber(Int_t ich){
 	fChamber=ich;
     }
     
-    virtual void AddRawCluster(const AliRICHRawCluster);
+    virtual void AddRawCluster(const AliRICHRawCluster c);
     // Search for raw clusters
     virtual void FindRawClusters();
     virtual void  FindCluster(Int_t i, Int_t j, AliRICHRawCluster &c);
@@ -74,11 +66,27 @@ protected:
     //
     virtual Bool_t Centered(AliRICHRawCluster *cluster);
     virtual void   SplitByLocalMaxima(AliRICHRawCluster *cluster);
-    virtual void   FillCluster(AliRICHRawCluster *cluster, Int_t);
+    virtual void   FillCluster(AliRICHRawCluster *cluster, Int_t flag);
     virtual void   FillCluster(AliRICHRawCluster *cluster) {
 	FillCluster(cluster,1);}
     TClonesArray* RawClusters(){return fRawClusters;}
+    AliRICHClusterFinder& operator=(const AliRICHClusterFinder& rhs);
     ClassDef(AliRICHClusterFinder,1) //Class for clustering and reconstruction of space points
+protected:
+    AliRICHSegmentation*    fSegmentation;                 //Segmentation model
+    AliRICHResponse*        fResponse;                     //Response model
+    TClonesArray*           fRawClusters;                  //Raw clusters list
+    Int_t                   fChamber;                      //Chamber number
+    Int_t                   fNRawClusters;                 //Number of raw clusters
+    AliRICHHitMapA1*        fHitMap;                       //Hit Map with digit positions
+    TF1*                    fCogCorr;                      //Correction for center of gravity
+    Int_t                   fNperMax;                      //Number of pad hits per local maximum
+    Int_t                   fDeclusterFlag;                //Split clusters flag
+    Int_t                   fClusterSize;                  //Size of cluster 
+    Int_t                   fNPeaks;                       //Number of maxima in the cluster
+    TClonesArray*           fDigits;                       //List of digits
+    Int_t                   fNdigits;                      //Number of digits
+
 };
 #endif
 

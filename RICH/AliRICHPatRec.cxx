@@ -15,53 +15,66 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/09 14:53:01  jbarbosa
+  Bari's pattern recognition algorithm
+
 */
 
-#include "DataStructures.h"
+#include "AliRICHHit.h"
+#include "AliRICHCerenkov.h"
+#include "AliRICHPadHit.h"
+#include "AliRICHDigit.h"
+#include "AliRICHRawCluster.h"
+#include "AliRICHRecHit.h"
 #include "AliRun.h"
 #include "AliDetector.h"
 #include "AliRICH.h"
 #include "AliRICHPoints.h"
-#include "AliRICHSegResV0.h"
+#include "AliRICHSegmentation.h"
 #include "AliRICHPatRec.h"
 #include "AliRICH.h"
 #include "AliRICHConst.h"
 #include "AliRICHPoints.h"
 #include "AliConst.h"
-#include "TParticle.h"
-#include "TMath.h"
-#include "TRandom.h"
-#include "TCanvas.h"
-#include "TH2.h"
+
+#include <TParticle.h>
+#include <TMath.h>
+#include <TRandom.h>
+#include <TCanvas.h>
+#include <TH2.h>
 
 
 ClassImp(AliRICHPatRec)
 //___________________________________________
 AliRICHPatRec::AliRICHPatRec() : TObject()
 {
+  // Default constructor
+  
     //fChambers = 0;
 }
 //___________________________________________
 AliRICHPatRec::AliRICHPatRec(const char *name, const char *title)
     : TObject()
 {
-    
+    //Constructor for Bari's pattern recogniton method object
 }
 
 void AliRICHPatRec::PatRec()
 {
 
+// Pattern recognition algorithm
+
   AliRICHChamber*       iChamber;
   AliRICHSegmentation*  segmentation;
   	
-  Int_t ntracks, ndigits[7];
+  Int_t ntracks, ndigits[kNCH];
   Int_t itr, ich, i;
-  Int_t GoodPhotons;
+  Int_t goodPhotons;
   Int_t x,y,q;
   Float_t rx,ry;
   Int_t nent,status;
 
-  Float_t gamma,MassCer,BetaCer;
+  Float_t gamma,massCer,betaCer;
 
   Float_t rechit[5];
 
@@ -76,10 +89,10 @@ void AliRICHPatRec::PatRec()
   TH1F *hough    = new TH1F("hough","hough",75,0.45,0.75);
   TH1F *mass     = new TH1F("mass","mass",100,50.,1050.); 
  
-  AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
-  TTree *TH = gAlice->TreeH();
+  AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
+  TTree *treeH = gAlice->TreeH();
 
-  ntracks =(Int_t) TH->GetEntries();
+  ntracks =(Int_t) treeH->GetEntries();
   //  ntracks = 1;
   for (itr=0; itr<ntracks; itr++) {
  
@@ -88,20 +101,20 @@ void AliRICHPatRec::PatRec()
     printf(" theta %f phi %f track \n",fTrackTheta,fTrackPhi);
     //    ring->Fill(fTrackLoc[0],fTrackLoc[1],100.);
 
-    iChamber = &(RICH->Chamber(ich));
+    iChamber = &(pRICH->Chamber(ich));
     segmentation=iChamber->GetSegmentationModel();
 
     nent=(Int_t)gAlice->TreeD()->GetEntries();
     gAlice->TreeD()->GetEvent(nent-1);
-    TClonesArray *Digits = RICH->DigitsAddress(ich);
-    ndigits[ich] = Digits->GetEntriesFast();
+    TClonesArray *pDigitss = pRICH->DigitsAddress(ich);
+    ndigits[ich] = pDigitss->GetEntriesFast();
     printf("ndigits %d in chamber %d\n",ndigits[ich],ich);
     AliRICHDigit *padI = 0;
 
-    GoodPhotons = 0;
+    goodPhotons = 0;
 
     for (Int_t dig=0;dig<ndigits[ich];dig++) {
-      padI=(AliRICHDigit*) Digits->UncheckedAt(dig);
+      padI=(AliRICHDigit*) pDigitss->UncheckedAt(dig);
       x=padI->fPadX;
       y=padI->fPadY;
       q=padI->fSignal;
@@ -120,14 +133,14 @@ void AliRICHPatRec::PatRec()
       ring->Fill(fXpad,fYpad,1.);
       cerangle->Fill(fCerenkovAnglePad,1.);
 
-      GoodPhotons++;
-      fEtaPhotons[GoodPhotons] = fCerenkovAnglePad;
+      goodPhotons++;
+      fEtaPhotons[goodPhotons] = fCerenkovAnglePad;
     }
-    fNumEtaPhotons = GoodPhotons;
+    fNumEtaPhotons = goodPhotons;
 
     BackgroundEstimation();
 
-    for(i=0;i<GoodPhotons;i++) {
+    for(i=0;i<goodPhotons;i++) {
       ceranglew->Fill(fEtaPhotons[i],fWeightPhotons[i]);
       //      printf(" Eta %f weight %f \n",fEtaPhotons[i],fWeightPhotons[i]);
     }
@@ -143,23 +156,23 @@ void AliRICHPatRec::PatRec()
 
     hough->Fill(fThetaCerenkov,1.);
     
-    RICH->AddRecHit(ich,rechit);
+    pRICH->AddRecHit(ich,rechit);
     
-    BetaCer = BetaCerenkov(1.29,fThetaCerenkov);
-    gamma  = 1./sqrt(1.-pow(BetaCer,2));
-    MassCer = fTrackMom/(BetaCer*gamma);
-    //    printf(" mass %f \n",MassCer);
-    mass->Fill(MassCer*1000,1.);
+    betaCer = BetaCerenkov(1.29,fThetaCerenkov);
+    gamma  = 1./sqrt(1.-pow(betaCer,2));
+    massCer = fTrackMom/(betaCer*gamma);
+    //    printf(" mass %f \n",massCer);
+    mass->Fill(massCer*1000,1.);
   }    
 
   gAlice->TreeR()->Fill();
   TClonesArray *fRec;
-  for (i=0;i<7;i++) {
-    fRec=RICH->RecHitsAddress(i);
+  for (i=0;i<kNCH;i++) {
+    fRec=pRICH->RecHitsAddress(i);
     int ndig=fRec->GetEntriesFast();
     printf ("Chamber %d, rings %d\n",i,ndig);
   }
-  RICH->ResetRecHits();
+  pRICH->ResetRecHits();
   
 
   c1->Divide(2,2);
@@ -193,11 +206,11 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
   printf("Calling TrackParam\n");
 
     gAlice->ResetHits();
-    TTree *TH = gAlice->TreeH();
-    TH->GetEvent(itr);
+    TTree *treeH = gAlice->TreeH();
+    treeH->GetEvent(itr);
  
-    AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
-    AliRICHHit* mHit=(AliRICHHit*)RICH->FirstHit(-1);
+    AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
+    AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1);
     if(mHit==0) return 1;
     ich = mHit->fChamber-1;
     trackglob[0] = mHit->fX;
@@ -212,7 +225,7 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
     iloss = mHit->fLoss;
     part  = mHit->fParticle;
 
-    iChamber = &(RICH->Chamber(ich));
+    iChamber = &(pRICH->Chamber(ich));
     iChamber->GlobaltoLocal(trackglob,trackloc);
 
     segmentation=iChamber->GetSegmentationModel();
@@ -242,6 +255,9 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
 Float_t AliRICHPatRec::EstimationAtLimits(Float_t lim, Float_t radius,
                                                  Float_t phiphot)
 {
+
+// Estimation of emission point
+
   Float_t nquartz = 1.585;
   Float_t ngas    = 1.;
   Float_t nfreon  = 1.295;
@@ -272,7 +288,7 @@ Float_t AliRICHPatRec::PhotonCerenkovAngle()
   Float_t eps = 0.0001;
   Int_t   niterEmiss = 0;
   Int_t   niterEmissMax = 0;
-  Float_t x1,x2,x3,p1,p2,p3;
+  Float_t x1,x2,x3=0,p1,p2,p3;
   Float_t argY,argX;
   Int_t niterFun;
 
@@ -331,119 +347,128 @@ Float_t AliRICHPatRec::PhotonCerenkovAngle()
 
 void AliRICHPatRec::EmissionPoint()
 { 
-  Float_t AbsorLength=7.83*fRw; //absorption length in the freon (cm)
+
+// Find emission point
+
+  Float_t absorbtionLength=7.83*fRw; //absorption length in the freon (cm)
   // 7.83 = -1/ln(T0) where 
   // T0->Trasmission freon at 180nm = 0.88 (Eph=6.85eV)
-  Float_t PhotonLength, PhotonLengthMin, PhotonLengthMax;
+  Float_t photonLength, photonLengthMin, photonLengthMax;
 
-  PhotonLength=exp(-fRw/(AbsorLength*cos(fCerenkovAnglePad)));
-  PhotonLengthMin=fRw*PhotonLength/(1.-PhotonLength);
-  PhotonLengthMax=AbsorLength*cos(fCerenkovAnglePad);
-  fEmissPoint = fRw + PhotonLengthMin - PhotonLengthMax;
+  photonLength=exp(-fRw/(absorbtionLength*cos(fCerenkovAnglePad)));
+  photonLengthMin=fRw*photonLength/(1.-photonLength);
+  photonLengthMax=absorbtionLength*cos(fCerenkovAnglePad);
+  fEmissPoint = fRw + photonLengthMin - photonLengthMax;
 
 }
 
 void AliRICHPatRec::PhotonSelection(Int_t track, Int_t &nphot, Float_t &thetamean)
 {
+
+// not implemented yet
+
   printf("Calling PhotonSelection\n");
 }
 
 void AliRICHPatRec::BackgroundEstimation()
 {
-  Float_t StepEta   = 0.001;  
-  Float_t EtaMinBkg = 0.72;
-  Float_t EtaMaxBkg = 0.75;
-  Float_t EtaMin    = 0.;
-  Float_t EtaMax    = 0.75;
+
+// estimate background noise
+
+  Float_t stepEta   = 0.001;  
+  Float_t etaMinBkg = 0.72;
+  Float_t etaMaxBkg = 0.75;
+  Float_t etaMin    = 0.;
+  Float_t etaMax    = 0.75;
   Float_t ngas      = 1.;
   Float_t nfreon    = 1.295;
 
-  Float_t EtaStepMin,EtaStepMax,EtaStepAvg;
+  Float_t etaStepMin,etaStepMax,etaStepAvg;
   Int_t i,ip,nstep;
-  Int_t NumPhotBkg, NumPhotonStep;
-  Float_t FunBkg,AreaBkg,NormBkg;
-  Float_t DensityBkg,StoreBkg,NumStore;
-  Float_t ThetaSig;
+  Int_t numPhotBkg, numPhotonStep;
+  Float_t funBkg,areaBkg,normBkg;
+  Float_t densityBkg,storeBkg,numStore;
+  Float_t thetaSig;
   
-  NumPhotBkg = 0;
-  AreaBkg = 0.;
+  numPhotBkg = 0;
+  areaBkg = 0.;
 
-  nstep = (int)((EtaMaxBkg-EtaMinBkg)/StepEta);
+  nstep = (int)((etaMaxBkg-etaMinBkg)/stepEta);
 
   for (i=0;i<fNumEtaPhotons;i++) {
 
-    if(fEtaPhotons[i]>EtaMinBkg && fEtaPhotons[i]<EtaMaxBkg) {
-      NumPhotBkg++;
+    if(fEtaPhotons[i]>etaMinBkg && fEtaPhotons[i]<etaMaxBkg) {
+      numPhotBkg++;
     }    
   }
-  if (NumPhotBkg == 0) {
+  if (numPhotBkg == 0) {
      for (i=0;i<fNumEtaPhotons;i++) {
         fWeightPhotons[i] = 1.;
      }
     return;
   }
 
-  //  printf(" NumPhotBkg %i ",NumPhotBkg);
+  //  printf(" numPhotBkg %i ",numPhotBkg);
 
   for (i=0;i<nstep;i++) {
-    EtaStepMin = EtaMinBkg + (Float_t)(i)*StepEta;
-    EtaStepMax = EtaMinBkg + (Float_t)(i+1)*StepEta;    
-    EtaStepAvg = 0.5*(EtaStepMax + EtaStepMin);
+    etaStepMin = etaMinBkg + (Float_t)(i)*stepEta;
+    etaStepMax = etaMinBkg + (Float_t)(i+1)*stepEta;    
+    etaStepAvg = 0.5*(etaStepMax + etaStepMin);
     /*
-    FunBkg = tan(EtaStepAvg)*pow((1.+pow(tan(EtaStepAvg),2)),
-				  5.52)-7.803 + 22.02*tan(EtaStepAvg);
+    funBkg = tan(etaStepAvg)*pow((1.+pow(tan(etaStepAvg),2)),
+				  5.52)-7.803 + 22.02*tan(etaStepAvg);
     */
-    ThetaSig = asin(nfreon/ngas*sin(EtaStepAvg));
-    FunBkg = tan(ThetaSig)*(1.+pow(tan(ThetaSig),2))*nfreon
-       /ngas*cos(EtaStepAvg)/cos(ThetaSig);
-    AreaBkg += StepEta*FunBkg;
+    thetaSig = asin(nfreon/ngas*sin(etaStepAvg));
+    funBkg = tan(thetaSig)*(1.+pow(tan(thetaSig),2))*nfreon
+       /ngas*cos(etaStepAvg)/cos(thetaSig);
+    areaBkg += stepEta*funBkg;
   }
 
-  DensityBkg = 0.95*(Float_t)(NumPhotBkg)/AreaBkg;
-  //  printf(" DensityBkg %f \n",DensityBkg);
+  densityBkg = 0.95*(Float_t)(numPhotBkg)/areaBkg;
+  //  printf(" densityBkg %f \n",densityBkg);
   
-  nstep = (int)((EtaMax-EtaMin)/StepEta); 
-  StoreBkg = 0.;
-  NumStore = 0;
+  nstep = (int)((etaMax-etaMin)/stepEta); 
+  storeBkg = 0.;
+  numStore = 0;
   for (i=0;i<nstep;i++) {
-    EtaStepMin = EtaMinBkg + (Float_t)(i)*StepEta;
-    EtaStepMax = EtaMinBkg + (Float_t)(i+1)*StepEta;    
-    EtaStepAvg = 0.5*(EtaStepMax + EtaStepMin);
+    etaStepMin = etaMinBkg + (Float_t)(i)*stepEta;
+    etaStepMax = etaMinBkg + (Float_t)(i+1)*stepEta;    
+    etaStepAvg = 0.5*(etaStepMax + etaStepMin);
     /*
-    FunBkg = tan(EtaStepAvg)*pow((1.+pow(tan(EtaStepAvg),2)),
-				  5.52)-7.803 + 22.02*tan(EtaStepAvg);
+    funBkg = tan(etaStepAvg)*pow((1.+pow(tan(etaStepAvg),2)),
+				  5.52)-7.803 + 22.02*tan(etaStepAvg);
     */
 
-    ThetaSig = asin(nfreon/ngas*sin(EtaStepAvg));
-    FunBkg = tan(ThetaSig)*(1.+pow(tan(ThetaSig),2))*nfreon
-       /ngas*cos(EtaStepAvg)/cos(ThetaSig);
+    thetaSig = asin(nfreon/ngas*sin(etaStepAvg));
+    funBkg = tan(thetaSig)*(1.+pow(tan(thetaSig),2))*nfreon
+       /ngas*cos(etaStepAvg)/cos(thetaSig);
 
-    AreaBkg = StepEta*FunBkg;
-    NormBkg = DensityBkg*AreaBkg; 
-    NumPhotonStep = 0;
+    areaBkg = stepEta*funBkg;
+    normBkg = densityBkg*areaBkg; 
+    numPhotonStep = 0;
     for (ip=0;ip<fNumEtaPhotons;ip++) {
-      if(fEtaPhotons[ip]>EtaStepMin && fEtaPhotons[ip]<EtaStepMax) {
-        NumPhotonStep++;
+      if(fEtaPhotons[ip]>etaStepMin && fEtaPhotons[ip]<etaStepMax) {
+        numPhotonStep++;
       }
     }
-    if (NumPhotonStep == 0) {
-      StoreBkg += NormBkg;
-      NumStore++;
-      if (NumStore>50) {
-        NumStore = 0;
-        StoreBkg = 0.;
+    if (numPhotonStep == 0) {
+      storeBkg += normBkg;
+      numStore++;
+      if (numStore>50) {
+        numStore = 0;
+        storeBkg = 0.;
       }
     }
-    if (NumPhotonStep == 0) continue;
+    if (numPhotonStep == 0) continue;
     for (ip=0;ip<fNumEtaPhotons;ip++) {
-      if(fEtaPhotons[ip]>EtaStepMin && fEtaPhotons[ip]<EtaStepMax) {
-        NormBkg +=StoreBkg;
-        StoreBkg = 0;
-        NumStore = 0;
-        fWeightPhotons[ip] = 1. - NormBkg/(Float_t)(NumPhotonStep);
+      if(fEtaPhotons[ip]>etaStepMin && fEtaPhotons[ip]<etaStepMax) {
+        normBkg +=storeBkg;
+        storeBkg = 0;
+        numStore = 0;
+        fWeightPhotons[ip] = 1. - normBkg/(Float_t)(numPhotonStep);
 	/*
-        printf(" NormBkg %f NumPhotonStep %i fW %f \n",
-	       NormBkg, NumPhotonStep, fWeightPhotons[ip]);
+        printf(" normBkg %f numPhotonStep %i fW %f \n",
+	       normBkg, numPhotonStep, fWeightPhotons[ip]);
 	*/
         if(fWeightPhotons[ip]<0) fWeightPhotons[ip] = 0.;
       }
@@ -454,6 +479,9 @@ void AliRICHPatRec::BackgroundEstimation()
 
 void AliRICHPatRec::FlagPhotons(Int_t track, Float_t theta)
 {
+
+// not implemented yet
+
   printf("Calling FlagPhotons\n");
 }
 
@@ -469,9 +497,9 @@ Int_t AliRICHPatRec::PhotonInBand()
   //0=label for parameters giving internal band ellipse
   //1=label for parameters giving external band ellipse  
 
-  Float_t imp[2], mass[2], Energ[2], beta[2]; 
-  Float_t EmissPointLength[2];
-  Float_t E1, E2, F1, F2;
+  Float_t imp[2], mass[2], energy[2], beta[2]; 
+  Float_t emissPointLength[2];
+  Float_t e1, e2, f1, f2;
   Float_t nfreon[2], nquartz[2]; 
   Int_t times;
 
@@ -485,8 +513,8 @@ Int_t AliRICHPatRec::PhotonInBand()
   mass[0] = 0.938; //proton mass 
   mass[1] = 0.139; //pion mass
 
-  EmissPointLength[0] = fRw-0.0001; //at the beginning of the radiator
-  EmissPointLength[1] = 0.;//at the end of radiator
+  emissPointLength[0] = fRw-0.0001; //at the beginning of the radiator
+  emissPointLength[1] = 0.;//at the end of radiator
   
   //parameters to calculate freon window refractive index vs. energy
   Float_t a = 1.177;
@@ -497,29 +525,29 @@ Int_t AliRICHPatRec::PhotonInBand()
   Energ[0]  = 5.6;
   Energ[1]  = 7.7;
   */
-  Energ[0]  = 5.0;
-  Energ[1]  = 8.0;
-  E1 = 10.666;
-  E2  = 18.125;
-  F1  = 46.411;
-  F2  = 228.71;
+  energy[0]  = 5.0;
+  energy[1]  = 8.0;
+  e1 = 10.666;
+  e2  = 18.125;
+  f1  = 46.411;
+  f2  = 228.71;
 
 
   phpad = PhiPad();  
 
   for (times=0; times<=1; times++) {
   
-    nfreon[times]   = a+b*Energ[times];
+    nfreon[times]   = a+b*energy[times];
 
-    nquartz[times] = sqrt(1+(F1/(pow(E1,2)-pow(Energ[times],2)))+
-			  (F2/(pow(E2,2)-pow(Energ[times],2))));
+    nquartz[times] = sqrt(1+(f1/(pow(e1,2)-pow(energy[times],2)))+
+			  (f2/(pow(e2,2)-pow(energy[times],2))));
 
     beta[times]  = imp[times]/sqrt(pow(imp[times],2)+pow(mass[times],2));
    
     thetacer[times] =  CherenkovAngle( nfreon[times], beta[times]);
 
     bandradius[times] = DistanceFromMip( nfreon[times], nquartz[times],
-					EmissPointLength[times], 
+					emissPointLength[times], 
                                         thetacer[times], phpad);
   }
 
@@ -533,27 +561,30 @@ Int_t AliRICHPatRec::PhotonInBand()
 }
 
 Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz, 
-		       Float_t EmissPointLength, Float_t thetacer, 
+		       Float_t emissPointLength, Float_t thetacer, 
 		       Float_t phpad)
 { 
-  Float_t DistanceValue;
 
-  TVector3 RadExitPhot(1,1,1);//photon impact at the radiator exit with respect
+// Find the distance to MIP impact
+
+  Float_t distanceValue;
+
+  TVector3 radExitPhot(1,1,1);//photon impact at the radiator exit with respect
   //to local reference sistem with the origin in the MIP entrance 
    
-  TVector3 VectEmissPointLength(1,1,1);
-  Float_t MagEmissPointLenght;
+  TVector3 vectEmissPointLength(1,1,1);
+  Float_t magEmissPointLenght;
 
-  TVector3 RadExitPhot2(1,1,1);//photon impact at the radiator exit with respect
-  Float_t MagRadExitPhot2;
+  TVector3 radExitPhot2(1,1,1);//photon impact at the radiator exit with respect
+  Float_t magRadExitPhot2;
   //to a reference sistem with origin in the photon emission point and  
   //axes parallel to the MIP reference sistem
 
-  TVector3 QuarExitPhot(1,1,1);//photon impact at the quartz exit with respect
-  Float_t MagQuarExitPhot;
+  TVector3 quarExitPhot(1,1,1);//photon impact at the quartz exit with respect
+  Float_t magQuarExitPhot;
   // 
-  TVector3 GapExitPhot(1,1,1) ;
-  Float_t MagGapExitPhot;
+  TVector3 gapExitPhot(1,1,1) ;
+  Float_t magGapExitPhot;
   //
   TVector3 fPhotocatExitPhot(1,1,1);
   Double_t theta2;
@@ -563,15 +594,15 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
 
   Float_t ngas    = 1.;
 
-  MagEmissPointLenght =  EmissPointLength/cos(fTrackTheta);
+  magEmissPointLenght =  emissPointLength/cos(fTrackTheta);
 
-  VectEmissPointLength.SetMag(MagEmissPointLenght);
-  VectEmissPointLength.SetTheta(fTrackTheta);
-  VectEmissPointLength.SetPhi(fTrackPhi);
+  vectEmissPointLength.SetMag(magEmissPointLenght);
+  vectEmissPointLength.SetTheta(fTrackTheta);
+  vectEmissPointLength.SetPhi(fTrackPhi);
 
 
-  RadExitPhot2.SetTheta(thetacer);  
-  RadExitPhot2.SetPhi(phpad); 
+  radExitPhot2.SetTheta(thetacer);  
+  radExitPhot2.SetPhi(phpad); 
 
 
   TRotation r1;
@@ -587,51 +618,54 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
   //following by a rotation about the z axis by MIP phi incidence angle; 
 
 
-  RadExitPhot2    = r * RadExitPhot2;
-  theta2          = RadExitPhot2.Theta();
-  MagRadExitPhot2 = (fRw -  VectEmissPointLength(2))/cos(theta2);
-  RadExitPhot2.SetMag(MagRadExitPhot2);
+  radExitPhot2    = r * radExitPhot2;
+  theta2          = radExitPhot2.Theta();
+  magRadExitPhot2 = (fRw -  vectEmissPointLength(2))/cos(theta2);
+  radExitPhot2.SetMag(magRadExitPhot2);
 
 
-  RadExitPhot = VectEmissPointLength + RadExitPhot2;
-  thetarad    = RadExitPhot.Theta();
+  radExitPhot = vectEmissPointLength + radExitPhot2;
+  thetarad    = radExitPhot.Theta();
 
-  phirad  =  RadExitPhot.Phi(); //check on the original file //
+  phirad  =  radExitPhot.Phi(); //check on the original file //
 
   thetaquar   = SnellAngle( nfreon, nquartz, theta2); 
-  phiquar     = RadExitPhot2.Phi(); 
+  phiquar     = radExitPhot2.Phi(); 
   if(thetaquar == 999.) return thetaquar;
-  MagQuarExitPhot    = fQw/cos(thetaquar);
-  QuarExitPhot.SetMag( MagQuarExitPhot);
-  QuarExitPhot.SetTheta(thetaquar);
-  QuarExitPhot.SetPhi(phiquar);
+  magQuarExitPhot    = fQw/cos(thetaquar);
+  quarExitPhot.SetMag( magQuarExitPhot);
+  quarExitPhot.SetTheta(thetaquar);
+  quarExitPhot.SetPhi(phiquar);
 
   thetagap = SnellAngle( nquartz, ngas, thetaquar); 
   phigap   = phiquar; 
   if(thetagap == 999.) return thetagap;
-  MagGapExitPhot    = fTgap/cos(thetagap);
-  GapExitPhot.SetMag( MagGapExitPhot);
-  GapExitPhot.SetTheta(thetagap);
-  GapExitPhot.SetPhi(phigap);
+  magGapExitPhot    = fTgap/cos(thetagap);
+  gapExitPhot.SetMag( magGapExitPhot);
+  gapExitPhot.SetTheta(thetagap);
+  gapExitPhot.SetPhi(phigap);
 
-  fPhotocatExitPhot =  RadExitPhot + QuarExitPhot + GapExitPhot; 
+  fPhotocatExitPhot =  radExitPhot + quarExitPhot + gapExitPhot; 
 
-  DistanceValue = sqrt(pow(fPhotocatExitPhot(0),2)
+  distanceValue = sqrt(pow(fPhotocatExitPhot(0),2)
                            +pow(fPhotocatExitPhot(1),2)); 
-  return  DistanceValue ;
+  return  distanceValue ;
 }
 
 Float_t AliRICHPatRec::PhiPad()
 {
+
+// ??
+
   Float_t zpad;
   Float_t thetapad, phipad;
   Float_t thetarot, phirot;
 
   zpad = fRw + fQw + fTgap;
 
-  TVector3 PhotonPad(fXpad, fYpad, zpad);
-  thetapad = PhotonPad.Theta();
-  phipad = PhotonPad.Phi();
+  TVector3 photonPad(fXpad, fYpad, zpad);
+  thetapad = photonPad.Theta();
+  phipad = photonPad.Phi();
 
   TRotation r1;
   TRotation r2;
@@ -645,15 +679,18 @@ Float_t AliRICHPatRec::PhiPad()
   r = r2 * r1;//rotation about the z axis by MIP -phi incidence angle
   //following by a rotation about the y axis by MIP -theta incidence angle; 
 
-  PhotonPad  = r * PhotonPad;
+  photonPad  = r * photonPad;
 
-  phipad = PhotonPad.Phi(); 
+  phipad = photonPad.Phi(); 
 
   return phipad;
 }
 
 Float_t AliRICHPatRec:: SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
 { 
+
+// Compute the Snell angle
+
   Float_t sinrefractangle;
   Float_t refractangle;
 
@@ -670,6 +707,9 @@ Float_t AliRICHPatRec:: SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
 
 Float_t AliRICHPatRec::CherenkovAngle(Float_t n, Float_t beta)
 { 
+
+// Compute the cerenkov angle
+
   Float_t thetacer;  
       
   if((n*beta)<1.) {
@@ -683,6 +723,9 @@ Float_t AliRICHPatRec::CherenkovAngle(Float_t n, Float_t beta)
 
 Float_t AliRICHPatRec::BetaCerenkov(Float_t n, Float_t theta)
 { 
+
+// Find beta
+
   Float_t beta;  
       
   beta = 1./(n*cos(theta));
@@ -695,162 +738,171 @@ Float_t AliRICHPatRec::BetaCerenkov(Float_t n, Float_t theta)
 void AliRICHPatRec::HoughResponse()
 
 {	
+
+// Implement Hough response pat. rec. method
+
   int 		bin=0;
   int           bin1=0;
   int           bin2=0;
-  int           i, j, k, NcorrBand;
-  int           EtaBin = 750;
-  float         HCS[750];
-  float         angle, ThetaCerMean;
+  int           i, j, k, nCorrBand;
+  int           etaBin = 750;
+  float         hcs[750];
+  float         angle, thetaCerMean;
 
-  float         EtaPeak[30];
-  float         EtaMin = 0.00;
-  float         EtaMax = 0.75;
-  float         StepEta = 0.001;
-  float         WindowEta = 0.040;
+  float         etaPeak[30];
+  float         etaMin = 0.00;
+  float         etaMax = 0.75;
+  float         stepEta = 0.001;
+  float         windowEta = 0.040;
 
-  int           Nbin;
+  int           nBin;
 
-  float EtaPeakPos  = -1;
-  Int_t   EtaPeakCount = -1;
+  float etaPeakPos  = -1;
+  Int_t   etaPeakCount = -1;
   
-  ThetaCerMean   = 0.;
+  thetaCerMean   = 0.;
   fThetaCerenkov = 0.;    
     
-  Nbin = (int)(0.5+EtaMax/(StepEta));
-  NcorrBand = (int)(0.5+ WindowEta/(2 * StepEta)); 
-  memset ((void *)HCS, 0, EtaBin*sizeof(int));
+  nBin = (int)(0.5+etaMax/(stepEta));
+  nCorrBand = (int)(0.5+ windowEta/(2 * stepEta)); 
+  memset ((void *)hcs, 0, etaBin*sizeof(int));
 
   for (k=0; k< fNumEtaPhotons; k++) {
 
     angle = fEtaPhotons[k];
 
-    if (angle>=EtaMin && angle<= EtaMax) {
-      bin = (int)(0.5+angle/(StepEta));
-      bin1= bin-NcorrBand;
-      bin2= bin+NcorrBand;
+    if (angle>=etaMin && angle<= etaMax) {
+      bin = (int)(0.5+angle/(stepEta));
+      bin1= bin-nCorrBand;
+      bin2= bin+nCorrBand;
       if (bin1<0)    bin1=0;
-      if (bin2>Nbin) bin2=Nbin;
+      if (bin2>nBin) bin2=nBin;
       
       for (j=bin1; j<bin2; j++) {
-        HCS[j] += fWeightPhotons[k]; 
+        hcs[j] += fWeightPhotons[k]; 
       }
 
-      ThetaCerMean += angle;
+      thetaCerMean += angle;
     }
   }
  
- ThetaCerMean /= fNumEtaPhotons; 
+ thetaCerMean /= fNumEtaPhotons; 
  
-  HoughFiltering(HCS);
+  HoughFiltering(hcs);
 
-  for (bin=0; bin <Nbin; bin++) {
-    angle = (bin+0.5) * (StepEta);
-    if (HCS[bin] && HCS[bin] > EtaPeakPos) {
-      EtaPeakCount = 0;
-      EtaPeakPos = HCS[bin];
-      EtaPeak[0]=angle;
+  for (bin=0; bin <nBin; bin++) {
+    angle = (bin+0.5) * (stepEta);
+    if (hcs[bin] && hcs[bin] > etaPeakPos) {
+      etaPeakCount = 0;
+      etaPeakPos = hcs[bin];
+      etaPeak[0]=angle;
     }
     else { 
-      if (HCS[bin] == EtaPeakPos) {
-	EtaPeak[++EtaPeakCount] = angle;
+      if (hcs[bin] == etaPeakPos) {
+	etaPeak[++etaPeakCount] = angle;
       }
     }
   } 
 
-  for (i=0; i<EtaPeakCount+1; i++) {
-    fThetaCerenkov += EtaPeak[i];
+  for (i=0; i<etaPeakCount+1; i++) {
+    fThetaCerenkov += etaPeak[i];
   }
-  if (EtaPeakCount>=0) {
-    fThetaCerenkov /= EtaPeakCount+1;
-    fThetaPeakPos = EtaPeakPos;
+  if (etaPeakCount>=0) {
+    fThetaCerenkov /= etaPeakCount+1;
+    fThetaPeakPos = etaPeakPos;
   }
 }
 
 
-void AliRICHPatRec::HoughFiltering(float HCS[])
+void AliRICHPatRec::HoughFiltering(float hcs[])
 {
-   float HCS_filt[750];
-   float K[5] = {0.05, 0.25, 0.4, 0.25, 0.05};
-   int nx, i, nx_dx;
+
+// hough filtering
+
+   float hcsFilt[750];
+   float k[5] = {0.05, 0.25, 0.4, 0.25, 0.05};
+   int nx, i, nxDx;
    int sizeHCS;
-   int Nbin;
+   int nBin;
 
-   int   EtaBin = 750;
-   float EtaMax = 0.75;
-   float StepEta = 0.001;
+   int   etaBin = 750;
+   float etaMax = 0.75;
+   float stepEta = 0.001;
 
-   Nbin =  (int)(1+EtaMax/StepEta); 
-   sizeHCS = EtaBin*sizeof(float);
+   nBin =  (int)(1+etaMax/stepEta); 
+   sizeHCS = etaBin*sizeof(float);
 
-   memset ((void *)HCS_filt, 0, sizeHCS); 
+   memset ((void *)hcsFilt, 0, sizeHCS); 
 
-   for (nx = 0; nx < Nbin; nx++) {
+   for (nx = 0; nx < nBin; nx++) {
       for (i = 0; i < 5; i++)	{
-        nx_dx = nx + (i-2);
-	if (nx_dx> -1 && nx_dx<Nbin)
-             HCS_filt[nx] +=  HCS[nx_dx] * K[i];
+        nxDx = nx + (i-2);
+	if (nxDx> -1 && nxDx<nBin)
+             hcsFilt[nx] +=  hcs[nxDx] * k[i];
       }      
    }
      
-   for (nx = 0; nx < Nbin; nx++) {
-     HCS[nx] = HCS_filt[nx];
+   for (nx = 0; nx < nBin; nx++) {
+     hcs[nx] = hcsFilt[nx];
    }
 }
 
 Float_t AliRICHPatRec::CherenkovRingDrawing(Float_t fixedthetacer)
-
 {
 
 //to draw Cherenkov ring by known Cherenkov angle
 
-   Int_t nmaxdegrees, nstepdegrees;
-   Float_t phpad, thetacer;
-   Float_t nfreonave, nquartzave;
-   Float_t AveEnerg;
-   Float_t Energ[2];
-   Float_t E1, E2, F1, F2;
-   Float_t bandradius;
-   Float_t CoordPadRing;
-
+    Int_t nmaxdegrees, nstepdegrees;
+    Float_t phpad, thetacer;
+    Float_t nfreonave, nquartzave;
+    Float_t aveEnerg;
+    Float_t energy[2];
+    Float_t e1, e2, f1, f2;
+    Float_t bandradius;
+    Float_t coordPadRing;
+    
 //parameters to calculate freon window refractive index vs. energy
-   Float_t a = 1.177;
-   Float_t b = 0.0172;
-
+    Float_t a = 1.177;
+    Float_t b = 0.0172;
+    
 //parameters to calculate quartz window refractive index vs. energy
 /*
    Energ[0]  = 5.6;
    Energ[1]  = 7.7;
 */	
-   Energ[0]  = 5.0;
-   Energ[1]  = 8.0;
-   E1  = 10.666;
-   E2  = 18.125;
-   F1  = 46.411;
-   F2  = 228.71;
+    energy[0]  = 5.0;
+    energy[1]  = 8.0;
+    e1  = 10.666;
+    e2  = 18.125;
+    f1  = 46.411;
+    f2  = 228.71;
+   
 
-
-   nmaxdegrees = 360;
-
+    nmaxdegrees = 360;
+    
    nstepdegrees = 36;
-
+   
    for (phpad=0; phpad<nmaxdegrees;phpad++) { 
       
-     AveEnerg =  (Energ[0]+Energ[1])/2.;
-
-     nfreonave  = a+b*AveEnerg;
-     nquartzave = sqrt(1+(F1/(pow(E1,2)-pow(AveEnerg,2)))+
-			 (F2/(pow(E2,2)-pow(AveEnerg,2))));
-
-     thetacer =  fixedthetacer;
-
-     bandradius = DistanceFromMip(nfreonave, nquartzave,
+       aveEnerg =  (energy[0]+energy[1])/2.;
+       
+       nfreonave  = a+b*aveEnerg;
+       nquartzave = sqrt(1+(f1/(pow(e1,2)-pow(aveEnerg,2)))+
+			 (f2/(pow(e2,2)-pow(aveEnerg,2))));
+       
+       thetacer =  fixedthetacer;
+       
+       bandradius = DistanceFromMip(nfreonave, nquartzave,
 				   fEmissPoint,thetacer, phpad); 
 
-     CoordPadRing=fPhotocatExitPhot;
+       coordPadRing=fPhotocatExitPhot;
+       
+       phpad = (nmaxdegrees/nstepdegrees)*phpad;
+       
+       return coordPadRing;
+   }
 
-     phpad = (nmaxdegrees/nstepdegrees)*phpad;
+    return coordPadRing;
+}
 
-     return CoordPadRing;
-										    }
- }
+

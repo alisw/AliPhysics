@@ -1,3 +1,14 @@
+// 0 = all
+// 1 = pion
+// 2 = kaon
+// 3 = proton
+// 4 = muon
+// 5 = electron
+// 6 = neutron
+
+
+Int_t particle_type=0;
+
 #include "iostream.h"
 
 void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0) 
@@ -60,7 +71,7 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
        cout << "Particles       :" <<nparticles<<endl;
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
-       if (RICH) RICH->Digitise(nev);
+       if (RICH) RICH->Digitise(nev, particle_type);
        char hname[30];
        sprintf(hname,"TreeD%d",nev);
        gAlice->TreeD()->Write(hname);

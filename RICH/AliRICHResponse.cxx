@@ -15,12 +15,7 @@
 
 /*
   $Log$
-  Revision 1.4  2000/04/19 13:14:36  morsch
-  Minor changes on class names.
-
 */
+#include "AliRICHResponse.h"
 
-
-#include "AliRICHHitMap.h"
-
-ClassImp(AliRICHHitMap)
+ClassImp(AliRICHResponse)

@@ -1,5 +1,5 @@
-#ifndef RICHv1_H
-#define RICHv1_H
+#ifndef ALIRICHV1_H
+#define ALIRICHV1_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -22,6 +22,7 @@ class AliRICHv1 : public AliRICHv0 {
 
     AliRICHv1();
     AliRICHv1(const char *name, const char *title);
+    virtual void   Init();
     virtual       ~AliRICHv1() {}
     virtual void   StepManager();
 

@@ -15,12 +15,30 @@
 
 /*
   $Log$
-  Revision 1.4  2000/04/19 13:14:36  morsch
-  Minor changes on class names.
-
 */
 
 
-#include "AliRICHHitMap.h"
-
-ClassImp(AliRICHHitMap)
+#include "AliRICHHit.h"
+ClassImp(AliRICHHit)
+//___________________________________________
+AliRICHHit::AliRICHHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
+    AliHit(shunt, track)
+{
+// Constructor
+    fChamber=vol[0];
+    fParticle=hits[0];
+    fX=hits[1];
+    fY=hits[2];
+    fZ=hits[3];
+    fTheta=hits[4];
+    fPhi=hits[5];
+    fTlength=hits[6];
+    fEloss=hits[7];
+    fPHfirst=(Int_t) hits[8];
+    fPHlast=(Int_t) hits[9];
+    fLoss=hits[13];
+    fMomX=hits[14];
+    fMomY=hits[15];
+    fMomZ=hits[16];
+    fNPads=hits[17];
+}

@@ -15,13 +15,17 @@
 
 /*
   $Log$
+  Revision 1.1  2000/04/19 13:05:14  morsch
+  J. Barbosa's spot reconstruction algorithm.
+
 */
 
 
 #include "AliRICH.h"
 #include "AliRICHPoints.h"
 #include "AliRICHDetect.h"
-#include "DataStructures.h"
+#include "AliRICHHit.h"
+#include "AliRICHDigit.h"
 #include "AliRun.h"
 #include "TParticle.h"
 #include "TMath.h"
@@ -33,6 +37,9 @@ ClassImp(AliRICHDetect)
 //___________________________________________
 AliRICHDetect::AliRICHDetect() : TObject()
 {
+
+// Default constructor 
+
     //fChambers = 0;
 }
 
@@ -41,6 +48,8 @@ AliRICHDetect::AliRICHDetect(const char *name, const char *title)
     : TObject()
 {
     
+// Constructor
+
     /*fChambers = new TObjArray(7);
     for (Int_t i=0; i<7; i++) {
     
@@ -53,6 +62,10 @@ AliRICHDetect::AliRICHDetect(const char *name, const char *title)
 void AliRICHDetect::Detect()
 {  	
     
+//
+// Detection algorithm
+
+
   //printf("Detection started!\n");
   Float_t OMEGA,steptheta,stepphi,x,y,cx,cy,l,aux1,aux2,aux3,maxi,maxj,maxk,max;
   //Float_t theta,phi,realomega,realtheta;
@@ -297,7 +310,7 @@ void AliRICHDetect::Detect()
   //TTree *TR=gAlice->TreeR();
   //Stat_t ndig=TR->GetEntries();
   TClonesArray *fRec;
-  for (i=0;i<7;i++) {
+  for (i=0;i<kNCH;i++) {
     fRec=RICH->RecHitsAddress(i);
     int ndig=fRec->GetEntriesFast();
     printf ("Chamber %d, rings %d\n",i,ndig);
@@ -312,7 +325,11 @@ void AliRICHDetect::Detect()
 
 Float_t AliRICHDetect:: Area(Float_t theta,Float_t OMEGA)
 {
-    
+
+//
+// Calculates area of an ellipse for given incidence angles    
+
+
     Float_t area;
     const Float_t h=9.25;                       //Distance from Radiator to Pads in pads
     

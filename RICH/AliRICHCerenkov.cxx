@@ -15,12 +15,32 @@
 
 /*
   $Log$
-  Revision 1.4  2000/04/19 13:14:36  morsch
-  Minor changes on class names.
-
 */
+#include "AliRICHCerenkov.h"
 
+ClassImp(AliRICHCerenkov)
+//___________________________________________
+AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
+    AliHit(shunt, track)
+{
+// Constructor for object AliRICHCerenkov
+    fChamber=vol[0];
+    fX=hits[1];
+    fY=hits[2];
+    fZ=hits[3];
+    fTheta=hits[4];
+    fPhi=hits[5];
+    fEloss=hits[7];
+    fPHfirst=(Int_t) hits[8];
+    fPHlast=(Int_t) hits[9];
+    fCMother=Int_t(hits[10]);
+    fIndex = hits[11];
+    fProduction = hits[12];  
+    fLoss=hits[13];
+    fMomX=hits[14];
+    fMomY=hits[15];
+    fMomZ=hits[16];
+    fNPads=hits[17];
+    fCerenkovAngle=hits[18];
+}
 
-#include "AliRICHHitMap.h"
-
-ClassImp(AliRICHHitMap)

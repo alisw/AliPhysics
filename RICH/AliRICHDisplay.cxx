@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/06/09 14:52:08  jbarbosa
+  New tentative ellipse drawing routine
+
   Revision 1.1  2000/04/19 13:07:45  morsch
   Digits, clusters and reconstruction results added.
 
@@ -52,6 +55,7 @@
 #include <TMath.h>
 #include <TRandom.h>
 #include <X3DBuffer.h>
+#include <TParticle.h>
 
 #include "AliRun.h"
 #include "AliPDG.h"
@@ -60,8 +64,14 @@
 #include "AliRICHConst.h"
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
-#include "TParticle.h"
 
+#include "AliRICHHit.h"
+#include "AliRICHCerenkov.h"
+#include "AliRICHPadHit.h"
+#include "AliRICHDigit.h"
+#include "AliRICHRawCluster.h"
+#include "AliRICHRecHit.h"
+#include "AliRICHEllipse.h"
 
 ClassImp(AliRICHDisplay)
     
@@ -69,6 +79,9 @@ ClassImp(AliRICHDisplay)
 //____________________________________________________________________________
 AliRICHDisplay::AliRICHDisplay()
 { 
+
+// default constructor
+
     fPoints = 0;
     fPhits = 0;
     fPCerenkovs = 0;
@@ -380,6 +393,8 @@ void AliRICHDisplay::CreateColors()
 //_____________________________________________________________________________
 void AliRICHDisplay::DisplayColorScale()
 {
+
+// Draw the color scale in the RICH display canvas
     
     Int_t i;
     Int_t color;
@@ -425,8 +440,8 @@ Int_t AliRICHDisplay::DistancetoPrimitive(Int_t px, Int_t)
     
     if (gPad == fTrigPad) return 9999;
     
-    const Int_t big = 9999;
-    Int_t dist   = big;
+    const Int_t kBig = 9999;
+    Int_t dist   = kBig;
     Float_t xmin = gPad->GetX1();
     Float_t xmax = gPad->GetX2();
     Float_t dx   = 0.02*(xmax - xmin);
@@ -457,7 +472,7 @@ void AliRICHDisplay::DrawCoG()
 
     if (!fDrawCoG) return;
     ResetRpoints();
-    for (Int_t chamber=0;chamber<7;chamber++) {
+    for (Int_t chamber=0;chamber<kNCH;chamber++) {
 	LoadCoG(chamber,1);
     }
     
@@ -480,7 +495,7 @@ void AliRICHDisplay::DrawRecHits()
 
     if (!fDrawRecHits) return;
     //ResetRecpoints();
-    for (Int_t chamber=0;chamber<7;chamber++) {
+    for (Int_t chamber=0;chamber<kNCH;chamber++) {
 	LoadRecHits(chamber,1);
     }
     
@@ -733,31 +748,31 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
    printf("Entering LoadCoG\n");
 
 
-   AliRICH *RICH  = (AliRICH*)gAlice->GetModule("RICH");
+   AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
    AliRICHChamber*  iChamber;
 
-   TClonesArray *RICHrawclust  = RICH->RawClustAddress(chamber);
-   printf ("Chamber:%d has adress:%p\n", chamber, RICHrawclust );
-   if (RICHrawclust == 0) return;
+   TClonesArray *pRICHrawclust  = pRICH->RawClustAddress(chamber);
+   printf ("Chamber:%d has adress:%p\n", chamber, pRICHrawclust );
+   if (pRICHrawclust == 0) return;
 
-   RICH->ResetRawClusters();
+   pRICH->ResetRawClusters();
 
 
    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
    gAlice->TreeR()->GetEvent(nent-1+cathode-1);
-   Int_t nrawcl = RICHrawclust->GetEntriesFast();
+   Int_t nrawcl = pRICHrawclust->GetEntriesFast();
    printf ("nrawcl:%d\n",nrawcl);
    if (nrawcl == 0) return;
    if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
    
-   iChamber = &(RICH->Chamber(chamber));
+   iChamber = &(pRICH->Chamber(chamber));
    AliRICHRawCluster  *mRaw;
    AliRICHPoints *points = 0;
    //
    //loop over all raw clusters and store their position
    points = new AliRICHPoints(nrawcl);
    for (Int_t iraw=0;iraw<nrawcl;iraw++) {
-       mRaw   = (AliRICHRawCluster*)RICHrawclust->UncheckedAt(iraw);
+       mRaw   = (AliRICHRawCluster*)pRICHrawclust->UncheckedAt(iraw);
        fRpoints->AddAt(points,iraw);
        points->SetMarkerColor(3);
        points->SetMarkerStyle(3);
@@ -766,10 +781,10 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
        points->SetHitIndex(-1);
        points->SetTrackIndex(-1);
        points->SetDigitIndex(-1);
-       Float_t  VecLoc[3]={mRaw->fX,6.276,mRaw->fY};
-       Float_t  VecGlob[3];
-       iChamber->LocaltoGlobal(VecLoc,VecGlob);
-       points->SetPoint(iraw,VecGlob[0],VecGlob[1],VecGlob[2]);
+       Float_t  vectorLoc[3]={mRaw->fX,6.276,mRaw->fY};
+       Float_t  vectorGlob[3];
+       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
+       points->SetPoint(iraw,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
    }
 }
 //___________________________________________
@@ -783,24 +798,24 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
    printf("Entering LoadRecHits\n");
 
 
-   AliRICH *RICH  = (AliRICH*)gAlice->GetModule("RICH");
+   AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
    AliRICHChamber*  iChamber;
 
-   TClonesArray *RICHrechits  = RICH->RecHitsAddress(chamber);
-   printf ("Chamber:%d has adress:%p\n", chamber, RICHrechits );
-   if (RICHrechits == 0) return;
+   TClonesArray *pRICHrechits  = pRICH->RecHitsAddress(chamber);
+   printf ("Chamber:%d has adress:%p\n", chamber, pRICHrechits );
+   if (pRICHrechits == 0) return;
 
    //RICH->ResetRecHits();
 
 
    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
    gAlice->TreeR()->GetEvent(nent-1+cathode-1);
-   Int_t nrechits = RICHrechits->GetEntriesFast();
+   Int_t nrechits = pRICHrechits->GetEntriesFast();
    printf ("nrechits:%d\n",nrechits);
    if (nrechits == 0) return;
    if (fRecpoints == 0) fRecpoints = new TObjArray(50);
    
-   iChamber = &(RICH->Chamber(chamber));
+   iChamber = &(pRICH->Chamber(chamber));
    AliRICHRecHit  *mRec;
    AliRICHPoints *points = 0;
    //AliRICHEllipse *ellipse = 0;
@@ -809,7 +824,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 
    points = new AliRICHPoints(nrechits);
    for (Int_t irec=0;irec<nrechits;irec++) {
-       mRec   = (AliRICHRecHit*)RICHrechits->UncheckedAt(irec);
+       mRec   = (AliRICHRecHit*)pRICHrechits->UncheckedAt(irec);
        fRecpoints->AddAt(points,irec);
        points->SetMarkerColor(38);
        points->SetMarkerStyle(8);
@@ -818,15 +833,15 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
        points->SetHitIndex(-1);
        points->SetTrackIndex(-1);
        points->SetDigitIndex(-1);
-       Float_t  VecLoc[3]={mRec->fX,6.276,mRec->fY};
-       Float_t  VecGlob[3];
-       iChamber->LocaltoGlobal(VecLoc,VecGlob);
-       points->SetPoint(irec,VecGlob[0],VecGlob[1],VecGlob[2]);
+       Float_t  vectorLoc[3]={mRec->fX,6.276,mRec->fY};
+       Float_t  vectorGlob[3];
+       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
+       points->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
        //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
        //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
-       //ellipse=new TEllipse(VecGlob[0],VecGlob[2],10,10,0,360,phi);
+       //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
        printf("Generating ellipse %d\n",irec);
-       AliRICHEllipse *ellipse=new AliRICHEllipse(mRec->fX,mRec->fY,mRec->Omega,mRec->Theta,mRec->Phi);
+       AliRICHEllipse *ellipse=new AliRICHEllipse(mRec->fX,mRec->fY,mRec->fOmega,mRec->fTheta,mRec->fPhi);
        ellipse->CreatePoints(chamber);
        //ellipse->SetFillStyle(1001);
        ellipse->SetMarkerColor(38);
@@ -842,30 +857,30 @@ void AliRICHDisplay::LoadDigits()
 // Loop on all detectors
     
    ResetPoints();
-   AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
+   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    AliRICHChamber*       iChamber;
    AliRICHSegmentation*  segmentation;
-   Int_t NallDigits=0;
+   Int_t nAllDigits=0;
    Int_t ich;
    
-   for (ich=0; ich<7; ich++) {
-       TClonesArray *RICHdigits  = RICH->DigitsAddress(ich);
-       if (RICHdigits == 0) continue;
+   for (ich=0; ich<kNCH; ich++) {
+       TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
+       if (pRICHdigits == 0) continue;
        gAlice->ResetDigits();
        gAlice->TreeD()->GetEvent(1);
-       Int_t ndigits = RICHdigits->GetEntriesFast();
-        NallDigits+=ndigits;
+       Int_t ndigits = pRICHdigits->GetEntriesFast();
+        nAllDigits+=ndigits;
    }
-   if (fPoints == 0) fPoints = new TObjArray(NallDigits);   
+   if (fPoints == 0) fPoints = new TObjArray(nAllDigits);   
    Int_t counter=0;
-   for (ich=0; ich<7; ich++) {
-       TClonesArray *RICHdigits  = RICH->DigitsAddress(ich);
-       if (RICHdigits == 0) continue;
+   for (ich=0; ich<kNCH; ich++) {
+       TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
+       if (pRICHdigits == 0) continue;
        gAlice->ResetDigits();
        gAlice->TreeD()->GetEvent(1);
-       Int_t ndigits = RICHdigits->GetEntriesFast();
+       Int_t ndigits = pRICHdigits->GetEntriesFast();
        if (ndigits == 0) continue;
-       iChamber = &(RICH->Chamber(ich));
+       iChamber = &(pRICH->Chamber(ich));
        segmentation=iChamber->GetSegmentationModel();
        Float_t dpx  = segmentation->Dpx();
        Float_t dpy  = segmentation->Dpy();
@@ -880,7 +895,7 @@ void AliRICHDisplay::LoadDigits()
        Int_t npoints=1;
        
        for (Int_t digit=0;digit<ndigits;digit++) {
-	   mdig    = (AliRICHDigit*)RICHdigits->UncheckedAt(digit);
+	   mdig    = (AliRICHDigit*)pRICHdigits->UncheckedAt(digit);
 	   points = new AliRICHPoints(npoints);
 	   fPoints->AddAt(points,counter);
 	   counter++;
@@ -893,19 +908,19 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetMarkerSize(0.5);
 	   Float_t xpad, ypad;
 	   segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY,xpad, ypad);
-	   Float_t VecLoc[3]={xpad,6.276,ypad};
-	   Float_t  VecGlob[3];
-	   iChamber->LocaltoGlobal(VecLoc,VecGlob);
+	   Float_t vectorLoc[3]={xpad,6.276,ypad};
+	   Float_t  vectorGlob[3];
+	   iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	   points->SetParticle(-1);
 	   points->SetHitIndex(-1);
 	   points->SetTrackIndex(-1);
 	   points->SetDigitIndex(digit);
-	   points->SetPoint(0,VecGlob[0],VecGlob[1],VecGlob[2]);
+	   points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
 	   
 	   segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY, xpad, ypad);
 	   Float_t theta = iChamber->GetRotMatrix()->GetTheta();
 	   Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
-	   marker=new TMarker3DBox(VecGlob[0],VecGlob[1],VecGlob[2],
+	   marker=new TMarker3DBox(vectorGlob[0],vectorGlob[1],vectorGlob[2],
 				   dpy/2,0,dpx/2,theta,phi);
 	   marker->SetLineColor(2);
 	   marker->SetFillStyle(1001);
@@ -927,10 +942,10 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
     fChamber=chamber; 
     ResetPhits();
     
-    AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
+    AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
     AliRICHChamber*  iChamber;
     
-    iChamber = &(RICH->Chamber(chamber-1));
+    iChamber = &(pRICH->Chamber(chamber-1));
     Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
     Int_t track;
     
@@ -940,32 +955,32 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
     //TVector *zp = new TVector(1000);
     //TVector *ptrk = new TVector(1000);
     //TVector *phit = new TVector(1000);
-    Int_t NallHits=0;
+    Int_t nAllHits=0;
     for (track=0; track<ntracks;track++) {
 	gAlice->ResetHits();
 	gAlice->TreeH()->GetEvent(track);
-	TClonesArray *RICHhits  = RICH->Hits();
-	if (RICHhits == 0) return;
-	Int_t nhits = RICHhits->GetEntriesFast();
-	NallHits+=nhits;
+	TClonesArray *pRICHhits  = pRICH->Hits();
+	if (pRICHhits == 0) return;
+	Int_t nhits = pRICHhits->GetEntriesFast();
+	nAllHits+=nhits;
     }
 
-    fPhits = new TObjArray(NallHits);
+    fPhits = new TObjArray(nAllHits);
 
     Int_t npoints=0;
     for (track=0; track<ntracks;track++) {
 	gAlice->ResetHits();
 	gAlice->TreeH()->GetEvent(track);
-	TClonesArray *RICHhits  = RICH->Hits();
-	if (RICHhits == 0) return;
-	Int_t nhits = RICHhits->GetEntriesFast();
+	TClonesArray *pRICHhits  = pRICH->Hits();
+	if (pRICHhits == 0) return;
+	Int_t nhits = pRICHhits->GetEntriesFast();
 	if (nhits == 0) continue;
 	AliRICHHit *mHit;
 	AliRICHPoints *points = 0;
 	for (Int_t hit=0;hit<nhits;hit++) {
 	    points = new AliRICHPoints(1);
 	    fPhits->AddAt(points,npoints);
-            mHit = (AliRICHHit*)RICHhits->UncheckedAt(hit);
+            mHit = (AliRICHHit*)pRICHhits->UncheckedAt(hit);
 	    TParticle *current = 
 		(TParticle*)(*gAlice->Particles())[mHit->fTrack];
 	    if (current->GetPdgCode() == 50000050) {
@@ -997,12 +1012,12 @@ void AliRICHDisplay::LoadCerenkovs(Int_t chamber)
     fChamber=chamber; 
     ResetPCerenkovs();
     
-    AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
+    AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
     AliRICHChamber*  iChamber;
     
-    iChamber = &(RICH->Chamber(chamber-1));
+    iChamber = &(pRICH->Chamber(chamber-1));
     
-    RICH->SetTreeAddress();
+    pRICH->SetTreeAddress();
     Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
     
     if (fPCerenkovs == 0) fPCerenkovs = new TObjArray(ntracks);
@@ -1014,9 +1029,9 @@ void AliRICHDisplay::LoadCerenkovs(Int_t chamber)
     for (Int_t track=0; track<ntracks;track++) {
 	gAlice->ResetHits();
 	gAlice->TreeH()->GetEvent(track);
-	TClonesArray *RICHCerenkovs  = RICH->Cerenkovs();
-	if (RICHCerenkovs == 0) return;
-	Int_t nhits = RICHCerenkovs->GetEntriesFast();
+	TClonesArray *pRICHCerenkovs  = pRICH->Cerenkovs();
+	if (pRICHCerenkovs == 0) return;
+	Int_t nhits = pRICHCerenkovs->GetEntriesFast();
 	if (nhits == 0) continue;
 	AliRICHCerenkov *mCerenkov;
 	AliRICHPoints *cpoints = 0;
@@ -1026,7 +1041,7 @@ void AliRICHDisplay::LoadCerenkovs(Int_t chamber)
 //Display Cerenkov hits in blue
 	
 	for (Int_t hit=0;hit<nhits;hit++) {
-            mCerenkov = (AliRICHCerenkov*)RICHCerenkovs->UncheckedAt(hit);
+            mCerenkov = (AliRICHCerenkov*)pRICHCerenkovs->UncheckedAt(hit);
 	    (*xp)(npoints)=mCerenkov->fX;
             (*yp)(npoints)=mCerenkov->fY;
             (*zp)(npoints)=mCerenkov->fZ;
@@ -1064,6 +1079,9 @@ void AliRICHDisplay::Paint(Option_t *)
 //_____________________________________________________________________________
 void AliRICHDisplay::SetPickMode()
 {
+
+// Toggle pick mode
+
     fZoomMode = 0;
     
     fArcButton->SetY1(fPickButton->GetYlowNDC()+0.5*fPickButton->GetHNDC());
@@ -1073,6 +1091,9 @@ void AliRICHDisplay::SetPickMode()
 //_____________________________________________________________________________
 void AliRICHDisplay::SetZoomMode()
 {
+
+// Toggle Zoom mode
+
     fZoomMode = 1;
     
     fArcButton->SetY1(fZoomButton->GetYlowNDC()+0.5*fZoomButton->GetHNDC());
@@ -1132,9 +1153,9 @@ void AliRICHDisplay::ShowNextEvent(Int_t delta)
     
     if (delta) {
 	gAlice->Clear();
-	Int_t current_event = gAlice->GetHeader()->GetEvent();
-	Int_t new_event     = current_event + delta;
-	gAlice->GetEvent(new_event);
+	Int_t currentEvent = gAlice->GetHeader()->GetEvent();
+	Int_t newEvent     = currentEvent + delta;
+	gAlice->GetEvent(newEvent);
 	if (!gAlice->TreeD()) return; 
     }
     LoadDigits();
@@ -1148,6 +1169,9 @@ void AliRICHDisplay::ShowNextEvent(Int_t delta)
 //______________________________________________________________________________
 void AliRICHDisplay::UnZoom()
 {
+
+// Return to previous zoom factor
+
     if (fZooms <= 0) return;
     fZooms--;
     TPad *pad = (TPad*)gPad->GetPadSave();
@@ -1240,120 +1264,3 @@ void AliRICHDisplay::DrawViewX3D()
    if (!view) return;
    pad->x3d();
 }
-
-
-
-
-ClassImp(AliRICHEllipse)
-
-//________________________________________________________________________________
-AliRICHEllipse::AliRICHEllipse()
-{ 
-    fCx = 0;
-    fCy = 0;
-    fOmega = 0;
-    fTheta = 0;
-    fPhi = 0;
-    h= 0;
-}
-
-//________________________________________________________________________________
-AliRICHEllipse::~AliRICHEllipse()
-{ 
-    fCx = 0;
-    fCy = 0;
-    fOmega = 0;
-    fTheta = 0;
-    fPhi = 0;
-    h= 0;
-}
-
-
-//________________________________________________________________________________
-AliRICHEllipse::AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t theta, Float_t phi)
-{ 
-    fCx = cx;
-    fCy = cy;
-    fOmega = omega;
-    fTheta = theta;
-    fPhi = phi;
-    h=11.25;
-}
-
-//________________________________________________________________________________
-void AliRICHEllipse::CreatePoints(Int_t chamber)
-{
-  Int_t s1,s2;
-  Float_t fiducial=h*TMath::Tan(fOmega+fTheta), l=h/TMath::Cos(fTheta), xtrial, y, c0, c1, c2;
-  //TRandom *random=new TRandom();
-
-  AliRICH *RICH  = (AliRICH*)gAlice->GetModule("RICH");
-  AliRICHChamber*       iChamber;
-  
-  iChamber = &(RICH->Chamber(chamber));
-  //cout<<"fiducial="<<fiducial<<endl;
-  
-  for(Float_t i=0;i<1000;i++)
-    {
-      
-      Float_t counter=0;
-      
-      c0=0;c1=0;c2=0;
-      while((c1*c1-4*c2*c0)<=0 && counter<1000)
-	{
-	  //Choose which side to go...
-	  if(i>250 && i<750) s1=1; 
-	  //if (gRandom->Rndm(1)>.5) s1=1;
-	  else s1=-1;
-	  //printf("s1:%d\n",s1);
-	  //Trial a y
-	  y=s1*i*gRandom->Rndm(Int_t(fiducial/50));
-	  //printf("Fiducial %f  for omega:%f theta:%f phi:%f\n",fiducial,fOmega,fTheta,fPhi);
-	  Float_t alfa1=fTheta;
-	  Float_t theta1=fPhi;
-	  Float_t OMEGA1=fOmega;
-	  
-	  //Solve the eq for a trial x
-	  c0=-TMath::Power(y*TMath::Cos(alfa1)*TMath::Cos(theta1),2)-TMath::Power(y*TMath::Sin(alfa1),2)+TMath::Power(l*TMath::Tan(OMEGA1),2)+2*l*y*TMath::Cos(alfa1)*TMath::Sin(theta1)*TMath::Power(TMath::Tan(OMEGA1),2)+TMath::Power(y*TMath::Cos(alfa1)*TMath::Sin(theta1)*TMath::Tan(OMEGA1),2);
-	  c1=2*y*TMath::Cos(alfa1)*TMath::Sin(alfa1)-2*y*TMath::Cos(alfa1)*TMath::Power(TMath::Cos(theta1),2)*TMath::Sin(alfa1)+2*l*TMath::Sin(alfa1)*TMath::Sin(theta1)*TMath::Power(TMath::Tan(OMEGA1),2)+2*y*TMath::Cos(alfa1)*TMath::Sin(alfa1)*TMath::Power(TMath::Sin(theta1),2)*TMath::Power(TMath::Tan(OMEGA1),2);
-	  c2=-TMath::Power(TMath::Cos(alfa1),2)-TMath::Power(TMath::Cos(theta1)*TMath::Sin(alfa1),2)+TMath::Power(TMath::Sin(alfa1)*TMath::Sin(theta1)*TMath::Tan(OMEGA1),2);
-	  //cout<<"Trial: y="<<y<<"c0="<<c0<<" c1="<<c1<<" c2="<<c2<<endl;
-	  //printf("Result:%f\n\n",c1*c1-4*c2*c0);
-	  //i+=.01;
-	  counter +=1;
-	}
-      
-      if (counter>=1000)
-	y=0; 
-
-      //Choose which side to go...
-      //if(gRandom->Rndm(1)>.5) s=1; 
-      //else s=-1;
-      if(i>500) s2=1;
-      //if (gRandom->Rndm(1)>.5) s2=1;
-      else s2=-1;
-      xtrial=fCx+(-c1+s2*TMath::Sqrt(c1*c1-4*c2*c0))/(2*c2);
-      //cout<<"x="<<xtrial<<" y="<<cy+y<<endl;
-      //printf("Coordinates: %f %f\n",xtrial,fCy+y);
-
-      Float_t VecLoc[3]={xtrial,6.276,(fCy+y)};
-      Float_t  VecGlob[3];
-      iChamber->LocaltoGlobal(VecLoc,VecGlob);
-      SetPoint(i,VecGlob[0],VecGlob[1],VecGlob[2]);
-      //printf("Coordinates: %f %f %f\n",VecGlob[0],VecGlob[1],VecGlob[2]);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-

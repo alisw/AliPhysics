@@ -15,12 +15,24 @@
 
 /*
   $Log$
-  Revision 1.4  2000/04/19 13:14:36  morsch
-  Minor changes on class names.
-
 */
 
 
-#include "AliRICHHitMap.h"
+#include "AliRICHPadHit.h"
 
-ClassImp(AliRICHHitMap)
+ClassImp(AliRICHPadHit)
+//______________________________________________________________
+AliRICHPadHit::AliRICHPadHit(Int_t *clhits)
+{
+
+// Default constructor for AliRICHPadHits
+
+  fHitNumber=clhits[0];
+  fCathode=clhits[1];
+  fQ=clhits[2];
+  fPadX=clhits[3];
+  fPadY=clhits[4];
+  fQpad=clhits[5];
+  fRSec=clhits[6];
+}
+

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.17  2000/06/09 14:58:37  jbarbosa
+  New digitisation per particle type
+
   Revision 1.16  2000/04/19 12:55:43  morsch
   Newly structured and updated version (JB, AM)
 
@@ -33,16 +36,26 @@
 #include <TVector.h>
 #include <TObjArray.h>
 #include <TArrayF.h>
+#include <TFile.h>
+#include <TParticle.h>
+#include <iostream.h>
 
 #include "AliRICH.h"
-#include "AliRICHHitMap.h"
+#include "AliRICHSegmentation.h"
+#include "AliRICHHit.h"
+#include "AliRICHCerenkov.h"
+#include "AliRICHPadHit.h"
+#include "AliRICHDigit.h"
+#include "AliRICHTransientDigit.h"
+#include "AliRICHRawCluster.h"
+#include "AliRICHRecHit.h"
+#include "AliRICHHitMapA1.h"
 #include "AliRICHClusterFinder.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliPoints.h"
-#include "iostream.h"
 #include "AliCallf77.h" 
-#include "TParticle.h"
+
 
 // Static variables for the pad-hit iterator routines
 static Int_t sMaxIterPad=0;
@@ -56,6 +69,8 @@ ClassImp(AliRICH)
 //___________________________________________
 AliRICH::AliRICH()
 {
+// Default constructor for RICH manager class
+
     fIshunt     = 0;
     fHits       = 0;
     fPadHits    = 0;
@@ -86,32 +101,32 @@ AliRICH::AliRICH(const char *name, const char *title)
     fNcerenkovs = 0;
     fIshunt     = 0;
     
-    fNdch      = new Int_t[7];
+    fNdch      = new Int_t[kNCH];
     
-    fDchambers = new TObjArray(7);
+    fDchambers = new TObjArray(kNCH);
 
-    fRecHits = new TObjArray(7);
+    fRecHits = new TObjArray(kNCH);
     
     Int_t i;
    
-    for (i=0; i<7 ;i++) {
+    for (i=0; i<kNCH ;i++) {
 	(*fDchambers)[i] = new TClonesArray("AliRICHDigit",10000); 
 	fNdch[i]=0;
     }
 
-    fNrawch      = new Int_t[7];
+    fNrawch      = new Int_t[kNCH];
     
-    fRawClusters = new TObjArray(7);
+    fRawClusters = new TObjArray(kNCH);
     //printf("Created fRwClusters with adress:%p",fRawClusters);
 
-    for (i=0; i<7 ;i++) {
+    for (i=0; i<kNCH ;i++) {
       (*fRawClusters)[i] = new TClonesArray("AliRICHRawCluster",10000); 
       fNrawch[i]=0;
     }
 
-    fNrechits      = new Int_t[7];
+    fNrechits      = new Int_t[kNCH];
     
-    for (i=0; i<7 ;i++) {
+    for (i=0; i<kNCH ;i++) {
 	(*fRecHits)[i] = new TClonesArray("AliRICHRecHit",1000); 
     }
     //printf("Created fRecHits with adress:%p",fRecHits);
@@ -120,9 +135,18 @@ AliRICH::AliRICH(const char *name, const char *title)
     SetMarkerColor(kRed);
 }
 
+AliRICH::AliRICH(const AliRICH& RICH)
+{
+// Copy Constructor
+}
+
+
 //___________________________________________
 AliRICH::~AliRICH()
 {
+
+// Destructor of RICH manager class
+
     fIshunt  = 0;
     delete fHits;
     delete fPadHits;
@@ -132,12 +156,22 @@ AliRICH::~AliRICH()
 //___________________________________________
 void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
+
+//  
+// Adds a hit to the Hits list
+//
+
     TClonesArray &lhits = *fHits;
     new(lhits[fNhits++]) AliRICHHit(fIshunt,track,vol,hits);
 }
 //_____________________________________________________________________________
 void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
 {
+
+//
+// Adds a RICH cerenkov hit to the Cerenkov Hits list
+//
+
     TClonesArray &lcerenkovs = *fCerenkovs;
     new(lcerenkovs[fNcerenkovs++]) AliRICHCerenkov(fIshunt,track,vol,cerenkovs);
     //printf ("Done for Cerenkov %d\n\n\n\n",fNcerenkovs);
@@ -145,15 +179,21 @@ void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
 //___________________________________________
 void AliRICH::AddPadHit(Int_t *clhits)
 {
+
+//
+// Add a RICH pad hit to the list
+//
+
     TClonesArray &lPadHits = *fPadHits;
     new(lPadHits[fNPadHits++]) AliRICHPadHit(clhits);
 }
 //_____________________________________________________________________________
 void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
 {
-    //
-    // Add a RICH digit to the list
-    //
+
+  //
+  // Add a RICH digit to the list
+  //
 
     TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
     new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
@@ -173,9 +213,10 @@ void AliRICH::AddRawCluster(Int_t id, const AliRICHRawCluster& c)
 //_____________________________________________________________________________
 void AliRICH::AddRecHit(Int_t id, Float_t *rechit)
 {
-    //
-    // Add a RICH reconstructed hit to the list
-    //
+  
+  //
+  // Add a RICH reconstructed hit to the list
+  //
 
     TClonesArray &lrec = *((TClonesArray*)(*fRecHits)[id]);
     new(lrec[fNrechits[id]++]) AliRICHRecHit(id,rechit);
@@ -185,138 +226,142 @@ void AliRICH::AddRecHit(Int_t id, Float_t *rechit)
 void AliRICH::BuildGeometry()
     
 {
-    //
-    // Builds a TNode geometry for event display
-    //
-    TNode *Node, *Top;
+  
+  //
+  // Builds a TNode geometry for event display
+  //
+    TNode *node, *top;
     
     const int kColorRICH = kGreen;
     //
-    Top=gAlice->GetGeometry()->GetNode("alice");
+    top=gAlice->GetGeometry()->GetNode("alice");
     
     
     new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
     
-    Top->cd();
+    top->cd();
     Float_t pos1[3]={0,471.8999,165.2599};
     //Chamber(0).SetChamberTransform(pos1[0],pos1[1],pos1[2],
     new TRotMatrix("rot993","rot993",90,0,70.69,90,19.30999,-90);
-    Node = new TNode("RICH1","RICH1","S_RICH",pos1[0],pos1[1],pos1[2],"rot993");
+    node = new TNode("RICH1","RICH1","S_RICH",pos1[0],pos1[1],pos1[2],"rot993");
     
 
-    Node->SetLineColor(kColorRICH);
-    fNodes->Add(Node);
-    Top->cd();
+    node->SetLineColor(kColorRICH);
+    fNodes->Add(node);
+    top->cd();
     
     Float_t pos2[3]={171,470,0};
     //Chamber(1).SetChamberTransform(pos2[0],pos2[1],pos2[2],
     new TRotMatrix("rot994","rot994",90,-20,90,70,0,0);
-    Node = new TNode("RICH2","RICH2","S_RICH",pos2[0],pos2[1],pos2[2],"rot994");
+    node = new TNode("RICH2","RICH2","S_RICH",pos2[0],pos2[1],pos2[2],"rot994");
     
     
-    Node->SetLineColor(kColorRICH);
-    fNodes->Add(Node);
-    Top->cd();
+    node->SetLineColor(kColorRICH);
+    fNodes->Add(node);
+    top->cd();
     Float_t pos3[3]={0,500,0};
     //Chamber(2).SetChamberTransform(pos3[0],pos3[1],pos3[2],
     new TRotMatrix("rot995","rot995",90,0,90,90,0,0);
-    Node = new TNode("RICH3","RICH3","S_RICH",pos3[0],pos3[1],pos3[2],"rot995");
+    node = new TNode("RICH3","RICH3","S_RICH",pos3[0],pos3[1],pos3[2],"rot995");
     
 
-    Node->SetLineColor(kColorRICH);
-    fNodes->Add(Node);
-    Top->cd();
+    node->SetLineColor(kColorRICH);
+    fNodes->Add(node);
+    top->cd();
     Float_t pos4[3]={-171,470,0};
     //Chamber(3).SetChamberTransform(pos4[0],pos4[1],pos4[2], 
     new TRotMatrix("rot996","rot996",90,20,90,110,0,0);  
-    Node = new TNode("RICH4","RICH4","S_RICH",pos4[0],pos4[1],pos4[2],"rot996");
+    node = new TNode("RICH4","RICH4","S_RICH",pos4[0],pos4[1],pos4[2],"rot996");
     
 
-    Node->SetLineColor(kColorRICH);
-    fNodes->Add(Node);
-    Top->cd();
+    node->SetLineColor(kColorRICH);
+    fNodes->Add(node);
+    top->cd();
     Float_t pos5[3]={161.3999,443.3999,-165.3};
     //Chamber(4).SetChamberTransform(pos5[0],pos5[1],pos5[2],
     new TRotMatrix("rot997","rot997",90,340,108.1999,70,18.2,70);
-    Node = new TNode("RICH5","RICH5","S_RICH",pos5[0],pos5[1],pos5[2],"rot997");
+    node = new TNode("RICH5","RICH5","S_RICH",pos5[0],pos5[1],pos5[2],"rot997");
     
-    Node->SetLineColor(kColorRICH);
-    fNodes->Add(Node);
-    Top->cd();
+    node->SetLineColor(kColorRICH);
+    fNodes->Add(node);
+    top->cd();
     Float_t pos6[3]={0., 471.9, -165.3,};
     //Chamber(5).SetChamberTransform(pos6[0],pos6[1],pos6[2],
     new TRotMatrix("rot998","rot998",90,0,109.3099,90,19.30999,90);
-    Node = new TNode("RICH6","RICH6","S_RICH",pos6[0],pos6[1],pos6[2],"rot998");
+    node = new TNode("RICH6","RICH6","S_RICH",pos6[0],pos6[1],pos6[2],"rot998");
     
     
-    Node->SetLineColor(kColorRICH);
-    fNodes->Add(Node);
-    Top->cd();
+    node->SetLineColor(kColorRICH);
+    fNodes->Add(node);
+    top->cd();
     Float_t pos7[3]={-161.399,443.3999,-165.3};
     //Chamber(6).SetChamberTransform(pos7[0],pos7[1],pos7[2],
     new TRotMatrix("rot999","rot999",90,20,108.1999,110,18.2,110);
-    Node = new TNode("RICH7","RICH7","S_RICH",pos7[0],pos7[1],pos7[2],"rot999");
-    Node->SetLineColor(kColorRICH);
-    fNodes->Add(Node); 
+    node = new TNode("RICH7","RICH7","S_RICH",pos7[0],pos7[1],pos7[2],"rot999");
+    node->SetLineColor(kColorRICH);
+    fNodes->Add(node); 
     
 }
 
 //___________________________________________
 Int_t AliRICH::DistancetoPrimitive(Int_t , Int_t )
 {
+
+// Default value
+
     return 9999;
 }
 
 //___________________________________________
 void AliRICH::MakeBranch(Option_t* option)
 {
-    // Create Tree branches for the RICH.
+  // Create Tree branches for the RICH.
     
-    const Int_t buffersize = 4000;
+    const Int_t kBufferSize = 4000;
     char branchname[20];
     
     
     AliDetector::MakeBranch(option);
     sprintf(branchname,"%sCerenkov",GetName());
     if (fCerenkovs   && gAlice->TreeH()) {
-	gAlice->TreeH()->Branch(branchname,&fCerenkovs, buffersize);
+	gAlice->TreeH()->Branch(branchname,&fCerenkovs, kBufferSize);
 	printf("Making Branch %s for Cerenkov Hits\n",branchname);
     }
     
     sprintf(branchname,"%sPadHits",GetName());
     if (fPadHits   && gAlice->TreeH()) {
-	gAlice->TreeH()->Branch(branchname,&fPadHits, buffersize);
+	gAlice->TreeH()->Branch(branchname,&fPadHits, kBufferSize);
 	printf("Making Branch %s for PadHits\n",branchname);
     }
     
 // one branch for digits per chamber
     Int_t i;
     
-    for (i=0; i<7 ;i++) {
+    for (i=0; i<kNCH ;i++) {
 	sprintf(branchname,"%sDigits%d",GetName(),i+1);
 	
 	if (fDchambers   && gAlice->TreeD()) {
-	    gAlice->TreeD()->Branch(branchname,&((*fDchambers)[i]), buffersize);
+	    gAlice->TreeD()->Branch(branchname,&((*fDchambers)[i]), kBufferSize);
 	    printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
 	}	
     }
 
 // one branch for raw clusters per chamber
-  for (i=0; i<7 ;i++) {
+  for (i=0; i<kNCH ;i++) {
       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
       
       if (fRawClusters   && gAlice->TreeR()) {
-	 gAlice->TreeR()->Branch(branchname,&((*fRawClusters)[i]), buffersize);
+	 gAlice->TreeR()->Branch(branchname,&((*fRawClusters)[i]), kBufferSize);
 	 printf("Making Branch %s for raw clusters in chamber %d\n",branchname,i+1);
       }	
   }
 
   // one branch for rec hits per chamber
-  for (i=0; i<7 ;i++) {
+  for (i=0; i<kNCH ;i++) {
     sprintf(branchname,"%sRecHits%d",GetName(),i+1);
     
     if (fRecHits   && gAlice->TreeR()) {
-      gAlice->TreeR()->Branch(branchname,&((*fRecHits)[i]), buffersize);
+      gAlice->TreeR()->Branch(branchname,&((*fRecHits)[i]), kBufferSize);
       printf("Making Branch %s for rec. hits in chamber %d\n",branchname,i+1);
     }	
   }
@@ -325,7 +370,7 @@ void AliRICH::MakeBranch(Option_t* option)
 //___________________________________________
 void AliRICH::SetTreeAddress()
 {
-    // Set branch address for the Hits and Digits Tree.
+  // Set branch address for the Hits and Digits Tree.
   char branchname[20];
   Int_t i;
 
@@ -348,7 +393,7 @@ void AliRICH::SetTreeAddress()
     }
     
     if (treeD) {
-	for (int i=0; i<7; i++) {
+	for (int i=0; i<kNCH; i++) {
 	    sprintf(branchname,"%sDigits%d",GetName(),i+1);
 	    if (fDchambers) {
 		branch = treeD->GetBranch(branchname);
@@ -357,7 +402,7 @@ void AliRICH::SetTreeAddress()
 	}
     }
   if (treeR) {
-      for (i=0; i<7; i++) {
+      for (i=0; i<kNCH; i++) {
 	  sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
 	  if (fRawClusters) {
 	      branch = treeR->GetBranch(branchname);
@@ -365,7 +410,7 @@ void AliRICH::SetTreeAddress()
 	  }
       }
       
-      for (i=0; i<7; i++) {
+      for (i=0; i<kNCH; i++) {
 	sprintf(branchname,"%sRecHits%d",GetName(),i+1);
 	if (fRecHits) {
 	  branch = treeR->GetBranch(branchname);
@@ -378,7 +423,7 @@ void AliRICH::SetTreeAddress()
 //___________________________________________
 void AliRICH::ResetHits()
 {
-    // Reset number of clusters and the cluster array for this detector
+  // Reset number of clusters and the cluster array for this detector
     AliDetector::ResetHits();
     fNPadHits   = 0;
     fNcerenkovs = 0;
@@ -390,10 +435,10 @@ void AliRICH::ResetHits()
 //____________________________________________
 void AliRICH::ResetDigits()
 {
-    //
-    // Reset number of digits and the digits array for this detector
-    //
-    for ( int i=0;i<7;i++ ) {
+  //
+  // Reset number of digits and the digits array for this detector
+  //
+    for ( int i=0;i<kNCH;i++ ) {
 	if ((*fDchambers)[i])   (*fDchambers)[i]->Clear();
 	if (fNdch)  fNdch[i]=0;
     }
@@ -402,10 +447,10 @@ void AliRICH::ResetDigits()
 //____________________________________________
 void AliRICH::ResetRawClusters()
 {
-    //
-    // Reset number of raw clusters and the raw clust array for this detector
-    //
-    for ( int i=0;i<7;i++ ) {
+  //
+  // Reset number of raw clusters and the raw clust array for this detector
+  //
+    for ( int i=0;i<kNCH;i++ ) {
 	if ((*fRawClusters)[i])    ((TClonesArray*)(*fRawClusters)[i])->Clear();
 	if (fNrawch)  fNrawch[i]=0;
     }
@@ -414,11 +459,11 @@ void AliRICH::ResetRawClusters()
 //____________________________________________
 void AliRICH::ResetRecHits()
 {
-    //
-    // Reset number of raw clusters and the raw clust array for this detector
-    //
+  //
+  // Reset number of raw clusters and the raw clust array for this detector
+  //
   
-  for ( int i=0;i<7;i++ ) {
+  for ( int i=0;i<kNCH;i++ ) {
 	if ((*fRecHits)[i])    ((TClonesArray*)(*fRecHits)[i])->Clear();
 	if (fNrechits)  fNrechits[i]=0;
     }
@@ -427,28 +472,54 @@ void AliRICH::ResetRecHits()
 //___________________________________________
 void   AliRICH::SetGeometryModel(Int_t id, AliRICHGeometry *geometry)
 {
+
+//
+// Setter for the RICH geometry model
+//
+
+
     ((AliRICHChamber*) (*fChambers)[id])->GeometryModel(geometry);
 }
 
 //___________________________________________
 void   AliRICH::SetSegmentationModel(Int_t id, AliRICHSegmentation *segmentation)
 {
+
+//
+// Setter for the RICH segmentation model
+//
+
     ((AliRICHChamber*) (*fChambers)[id])->SegmentationModel(segmentation);
 }
 
 //___________________________________________
 void   AliRICH::SetResponseModel(Int_t id, AliRICHResponse *response)
 {
+
+//
+// Setter for the RICH response model
+//
+
     ((AliRICHChamber*) (*fChambers)[id])->ResponseModel(response);
 }
 
 void   AliRICH::SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconst)
 {
+
+//
+// Setter for the RICH reconstruction model (clusters)
+//
+
     ((AliRICHChamber*) (*fChambers)[id])->ReconstructionModel(reconst);
 }
 
 void   AliRICH::SetNsec(Int_t id, Int_t nsec)
 {
+
+//
+// Sets the number of padplanes
+//
+
     ((AliRICHChamber*) (*fChambers)[id])->SetNsec(nsec);
 }
 
@@ -457,9 +528,12 @@ void   AliRICH::SetNsec(Int_t id, Int_t nsec)
 
 void AliRICH::StepManager()
 {
+
+// Dummy step manager (should never be called)
+
 }
 
-void AliRICH::FindClusters(Int_t nev,Int_t last_entry)
+void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 {
 
 //
@@ -468,10 +542,10 @@ void AliRICH::FindClusters(Int_t nev,Int_t last_entry)
     for (Int_t icat=1;icat<2;icat++) {
 	gAlice->ResetDigits();
 	gAlice->TreeD()->GetEvent(1); // spurious +1 ...
-	for (Int_t ich=0;ich<7;ich++) {
+	for (Int_t ich=0;ich<kNCH;ich++) {
 	  AliRICHChamber* iChamber=(AliRICHChamber*) (*fChambers)[ich];
-	  TClonesArray *RICHdigits  = this->DigitsAddress(ich);
-	  if (RICHdigits == 0)	      
+	  TClonesArray *pRICHdigits  = this->DigitsAddress(ich);
+	  if (pRICHdigits == 0)	      
 	      continue;
 	  //
 	  // Get ready the current chamber stuff
@@ -482,7 +556,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t last_entry)
 	  if (seg) {	  
 	      rec->SetSegmentation(seg);
 	      rec->SetResponse(response);
-	      rec->SetDigits(RICHdigits);
+	      rec->SetDigits(pRICHdigits);
 	      rec->SetChamber(ich);
 	      if (nev==0) rec->CalibrateCOG(); 
 	      rec->FindRawClusters();
@@ -494,7 +568,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t last_entry)
 
 	gAlice->TreeR()->Fill();
 	TClonesArray *fRch;
-	for (int i=0;i<7;i++) {
+	for (int i=0;i<kNCH;i++) {
 	    fRch=RawClustAddress(i);
 	    int nraw=fRch->GetEntriesFast();
 	    printf ("Chamber %d, raw clusters %d\n",i,nraw);
@@ -540,7 +614,7 @@ void AliRICH::Streamer(TBuffer &R__b)
 //
 	R__b >> fChambers;
 // Stream chamber related information
-	for (Int_t i =0; i<7; i++) {
+	for (Int_t i =0; i<kNCH; i++) {
 	    iChamber=(AliRICHChamber*) (*fChambers)[i];
 	    iChamber->Streamer(R__b);
 	    segmentation=iChamber->GetSegmentationModel();
@@ -565,13 +639,13 @@ void AliRICH::Streamer(TBuffer &R__b)
 	R__b << fDchambers;
 	R__b << fRawClusters;
 	R__b << fRecHits; //diff
-	R__b.WriteArray(fNdch, 7);
-	R__b.WriteArray(fNrawch, 7);
-	R__b.WriteArray(fNrechits, 7);
+	R__b.WriteArray(fNdch, kNCH);
+	R__b.WriteArray(fNrawch, kNCH);
+	R__b.WriteArray(fNrechits, kNCH);
 	//
 	R__b << fChambers;
 //  Stream chamber related information
-	for (Int_t i =0; i<7; i++) {
+	for (Int_t i =0; i<kNCH; i++) {
 	    iChamber=(AliRICHChamber*) (*fChambers)[i];
 	    iChamber->Streamer(R__b);
 	    segmentation=iChamber->GetSegmentationModel();
@@ -606,6 +680,9 @@ AliRICHPadHit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters )
 
 AliRICHPadHit* AliRICH::NextPad(TClonesArray *clusters) 
 {
+
+  // Iterates over pads
+  
     sCurIterPad++;
     if (sCurIterPad <= sMaxIterPad) {
 	return (AliRICHPadHit*) clusters->UncheckedAt(sCurIterPad-1);
@@ -621,8 +698,8 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
     // background when add! otherwise the track info for signal will be lost !
 
     static Bool_t first=kTRUE;
-    static TFile *File;
-    char *Add = strstr(option,"Add");
+    static TFile *pFile;
+    char *addBackground = strstr(option,"Add");
 
     FILE* points; //these will be the digits...
 
@@ -635,25 +712,25 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
     Int_t trk[50];
     Int_t chtrk[50];  
     TObjArray *list=new TObjArray;
-    static TClonesArray *p_adr=0;
-    if(!p_adr) p_adr=new TClonesArray("TVector",1000);
+    static TClonesArray *pAddress=0;
+    if(!pAddress) pAddress=new TClonesArray("TVector",1000);
     Int_t digits[5]; 
     
-    AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH");
-    AliRICHHitMap* HitMap[10];
+    AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
+    AliRICHHitMap* pHitMap[10];
     Int_t i;
-    for (i=0; i<10; i++) {HitMap[i]=0;}
-    if (Add ) {
+    for (i=0; i<10; i++) {pHitMap[i]=0;}
+    if (addBackground ) {
 	if(first) {
 	    fFileName=filename;
 	    cout<<"filename"<<fFileName<<endl;
-	    File=new TFile(fFileName);
+	    pFile=new TFile(fFileName);
 	    cout<<"I have opened "<<fFileName<<" file "<<endl;
 	    fHits2     = new TClonesArray("AliRICHHit",1000  );
 	    fClusters2 = new TClonesArray("AliRICHPadHit",10000);
 	    first=kFALSE;
 	}
-	File->cd();
+	pFile->cd();
 	// Get Hits Tree header from file
 	if(fHits2) fHits2->Clear();
 	if(fClusters2) fClusters2->Clear();
@@ -686,36 +763,36 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
     Int_t countadr=0;
     for (int icat=0; icat<1; icat++) { 
 	Int_t counter=0;
-	for (i =0; i<7; i++) {
+	for (i =0; i<kNCH; i++) {
 	    iChamber=(AliRICHChamber*) (*fChambers)[i];
 	    if (iChamber->Nsec()==1 && icat==1) {
 		continue;
 	    } else {
 		segmentation=iChamber->GetSegmentationModel(icat+1);
 	    }
-	    HitMap[i] = new AliRICHHitMapA1(segmentation, list);
+	    pHitMap[i] = new AliRICHHitMapA1(segmentation, list);
 	}
 //
 //   Loop over tracks
 //
 
-	TTree *TH = gAlice->TreeH();
-	Int_t ntracks =(Int_t) TH->GetEntries();
+	TTree *treeH = gAlice->TreeH();
+	Int_t ntracks =(Int_t) treeH->GetEntries();
 	for (Int_t track=0; track<ntracks; track++) {
 	    gAlice->ResetHits();
-	    TH->GetEvent(track);
+	    treeH->GetEvent(track);
 //
 //   Loop over hits
-	    for(AliRICHHit* mHit=(AliRICHHit*)RICH->FirstHit(-1); 
+	    for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
 		mHit;
-		mHit=(AliRICHHit*)RICH->NextHit()) 
+		mHit=(AliRICHHit*)pRICH->NextHit()) 
 	    {
 	      
 	      digitse=0;
 	      
 	      Int_t   nch   = mHit->fChamber-1;  // chamber number
-	      if (nch >7) continue;
-	      iChamber = &(RICH->Chamber(nch));
+	      if (nch >kNCH) continue;
+	      iChamber = &(pRICH->Chamber(nch));
 	      
 	      TParticle *current = (TParticle*)(*gAlice->Particles())[track];
 	      
@@ -759,9 +836,9 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 //
 // Loop over pad hits
 		  for (AliRICHPadHit* mPad=
-			 (AliRICHPadHit*)RICH->FirstPad(mHit,fPadHits);
+			 (AliRICHPadHit*)pRICH->FirstPad(mHit,fPadHits);
 		       mPad;
-		       mPad=(AliRICHPadHit*)RICH->NextPad(fPadHits))
+		       mPad=(AliRICHPadHit*)pRICH->NextPad(fPadHits))
 		    {
 		      Int_t cathode  = mPad->fCathode;    // cathode number
 		      Int_t ipx      = mPad->fPadX;       // pad number on X
@@ -774,8 +851,8 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		      Float_t thex, they;
 		      segmentation=iChamber->GetSegmentationModel(cathode);
 		      segmentation->GetPadCxy(ipx,ipy,thex,they);
-		      new((*p_adr)[countadr++]) TVector(2);
-		      TVector &trinfo=*((TVector*) (*p_adr)[countadr-1]);
+		      new((*pAddress)[countadr++]) TVector(2);
+		      TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
 		      trinfo(0)=(Float_t)track;
 		      trinfo(1)=(Float_t)iqpad;
 		      
@@ -785,31 +862,31 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		      
 		      AliRICHTransientDigit* pdigit;
 		      // build the list of fired pads and update the info
-		      if (!HitMap[nch]->TestHit(ipx, ipy)) {
+		      if (!pHitMap[nch]->TestHit(ipx, ipy)) {
 			list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
-			HitMap[nch]->SetHit(ipx, ipy, counter);
+			pHitMap[nch]->SetHit(ipx, ipy, counter);
 			counter++;
 			pdigit=(AliRICHTransientDigit*)list->At(list->GetLast());
 			// list of tracks
 			TObjArray *trlist=(TObjArray*)pdigit->TrackList();
 			trlist->Add(&trinfo);
 		      } else {
-			pdigit=(AliRICHTransientDigit*) HitMap[nch]->GetHit(ipx, ipy);
+			pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
 			// update charge
 			(*pdigit).fSignal+=iqpad;
 			// update list of tracks
 			TObjArray* trlist=(TObjArray*)pdigit->TrackList();
-			Int_t last_entry=trlist->GetLast();
-			TVector *ptrk_p=(TVector*)trlist->At(last_entry);
-			TVector &ptrk=*ptrk_p;
-			Int_t last_track=Int_t(ptrk(0));
-			Int_t last_charge=Int_t(ptrk(1));
-			if (last_track==track) {
-			    last_charge+=iqpad;
-			    trlist->RemoveAt(last_entry);
-			    trinfo(0)=last_track;
-			    trinfo(1)=last_charge;
-			    trlist->AddAt(&trinfo,last_entry);
+			Int_t lastEntry=trlist->GetLast();
+			TVector *ptrkP=(TVector*)trlist->At(lastEntry);
+			TVector &ptrk=*ptrkP;
+			Int_t lastTrack=Int_t(ptrk(0));
+			Int_t lastCharge=Int_t(ptrk(1));
+			if (lastTrack==track) {
+			    lastCharge+=iqpad;
+			    trlist->RemoveAt(lastEntry);
+			    trinfo(0)=lastTrack;
+			    trinfo(1)=lastCharge;
+			    trlist->AddAt(&trinfo,lastEntry);
 			} else {
 			    trlist->Add(&trinfo);
 			}
@@ -819,8 +896,8 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 			    printf("Attention - tracks:  %d (>2)\n",nptracks);
 			    //printf("cat,nch,ix,iy %d %d %d %d  \n",icat+1,nch,ipx,ipy);
 			    for (Int_t tr=0;tr<nptracks;tr++) {
-				TVector *pptrk_p=(TVector*)trlist->At(tr);
-				TVector &pptrk=*pptrk_p;
+				TVector *pptrkP=(TVector*)trlist->At(tr);
+				TVector &pptrk=*pptrkP;
 				trk[tr]=Int_t(pptrk(0));
 				chtrk[tr]=Int_t(pptrk(1));
 			    }
@@ -833,7 +910,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	
 	// open the file with background
 	
-	if (Add ) {
+	if (addBackground ) {
 	    ntracks =(Int_t)TrH1->GetEntries();
 	    //printf("background - icat,ntracks1  %d %d\n",icat,ntracks);
 	    //printf("background - Start loop over tracks \n");     
@@ -852,15 +929,15 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		    mHit=(AliRICHHit*) (*fHits2)[j];
 		    Int_t   nch   = mHit->fChamber-1;  // chamber number
 		    if (nch >6) continue;
-		    iChamber = &(RICH->Chamber(nch));
+		    iChamber = &(pRICH->Chamber(nch));
 		    Int_t rmin = (Int_t)iChamber->RInner();
 		    Int_t rmax = (Int_t)iChamber->ROuter();
 //
 // Loop over pad hits
 		    for (AliRICHPadHit* mPad=
-			     (AliRICHPadHit*)RICH->FirstPad(mHit,fClusters2);
+			     (AliRICHPadHit*)pRICH->FirstPad(mHit,fClusters2);
 			 mPad;
-			 mPad=(AliRICHPadHit*)RICH->NextPad(fClusters2))
+			 mPad=(AliRICHPadHit*)pRICH->NextPad(fClusters2))
 		    {
 			Int_t cathode  = mPad->fCathode;    // cathode number
 			Int_t ipx      = mPad->fPadX;       // pad number on X
@@ -874,22 +951,22 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 			segmentation->GetPadCxy(ipx,ipy,thex,they);
 			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
-			new((*p_adr)[countadr++]) TVector(2);
-			TVector &trinfo=*((TVector*) (*p_adr)[countadr-1]);
+			new((*pAddress)[countadr++]) TVector(2);
+			TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
 			trinfo(0)=-1;  // tag background
 			trinfo(1)=-1;
 			digits[0]=ipx;
 			digits[1]=ipy;
 			digits[2]=iqpad;
 			if (trak <4 && icat==0 && nch==0)
-			    printf("bgr - HitMap[nch]->TestHit(ipx, ipy),trak %d %d\n",
-				   HitMap[nch]->TestHit(ipx, ipy),trak);
+			    printf("bgr - pHitMap[nch]->TestHit(ipx, ipy),trak %d %d\n",
+				   pHitMap[nch]->TestHit(ipx, ipy),trak);
 			AliRICHTransientDigit* pdigit;
 			// build the list of fired pads and update the info
-			if (!HitMap[nch]->TestHit(ipx, ipy)) {
+			if (!pHitMap[nch]->TestHit(ipx, ipy)) {
 			    list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
 			    
-			    HitMap[nch]->SetHit(ipx, ipy, counter);
+			    pHitMap[nch]->SetHit(ipx, ipy, counter);
 			    counter++;
 			    printf("bgr new elem in list - counter %d\n",counter);
 			    
@@ -898,16 +975,16 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 			    TObjArray *trlist=(TObjArray*)pdigit->TrackList();
 			    trlist->Add(&trinfo);
 			} else {
-			    pdigit=(AliRICHTransientDigit*) HitMap[nch]->GetHit(ipx, ipy);
+			    pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
 			    // update charge
 			    (*pdigit).fSignal+=iqpad;
 			    // update list of tracks
 			    TObjArray* trlist=(TObjArray*)pdigit->TrackList();
-			    Int_t last_entry=trlist->GetLast();
-			    TVector *ptrk_p=(TVector*)trlist->At(last_entry);
-			    TVector &ptrk=*ptrk_p;
-			    Int_t last_track=Int_t(ptrk(0));
-			    if (last_track==-1) {
+			    Int_t lastEntry=trlist->GetLast();
+			    TVector *ptrkP=(TVector*)trlist->At(lastEntry);
+			    TVector &ptrk=*ptrkP;
+			    Int_t lastTrack=Int_t(ptrk(0));
+			    if (lastTrack==-1) {
 				continue;
 			    } else {
 				trlist->Add(&trinfo);
@@ -916,8 +993,8 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 			    Int_t nptracks=trlist->GetEntriesFast();
 			    if (nptracks > 0) {
 				for (Int_t tr=0;tr<nptracks;tr++) {
-				    TVector *pptrk_p=(TVector*)trlist->At(tr);
-				    TVector &pptrk=*pptrk_p;
+				    TVector *pptrkP=(TVector*)trlist->At(tr);
+				    TVector &pptrk=*pptrkP;
 				    trk[tr]=Int_t(pptrk(0));
 				    chtrk[tr]=Int_t(pptrk(1));
 				}
@@ -927,8 +1004,8 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		} // hit loop
 	    } // track loop
 	    TTree *fAli=gAlice->TreeK();
-	    if (fAli) File =fAli->GetCurrentFile();
-	    File->cd();
+	    if (fAli) pFile =fAli->GetCurrentFile();
+	    pFile->cd();
 	} // if Add	
 	
 	Int_t tracks[10];
@@ -948,9 +1025,9 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	    AliRICHResponse * response=iChamber->GetResponseModel();
 	    Int_t adcmax= (Int_t) response->MaxAdc();
 	    // add white noise and do zero-suppression and signal truncation (new electronics,old electronics gaus 1.2,0.2)
-	    Float_t MeanNoise = gRandom->Gaus(1.7, 0.25);
-	    Float_t Noise     = gRandom->Gaus(0, MeanNoise);
-	    q+=(Int_t)Noise;
+	    Float_t meanNoise = gRandom->Gaus(1.7, 0.25);
+	    Float_t noise     = gRandom->Gaus(0, meanNoise);
+	    q+=(Int_t)noise;
 //          magic number to be parametrised !!! 
 	    if ( q <= 6.8) continue;
 	    if ( q >= adcmax) q=adcmax;
@@ -972,8 +1049,8 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		       //icat,ich,digits[0],digits[1],q);
 	    }
 	    for (Int_t tr=0;tr<nptracks;tr++) {
-		TVector *pp_p=(TVector*)trlist->At(tr);
-		TVector &pp  =*pp_p;
+		TVector *ppP=(TVector*)trlist->At(tr);
+		TVector &pp  =*ppP;
 		tracks[tr]=Int_t(pp(0));
 		charges[tr]=Int_t(pp(1));
 	    }      //end loop over list of tracks for one pad
@@ -988,16 +1065,16 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	      fprintf(points,"%4d,      %4d,      %4d\n",digits[0],digits[1],digits[2]);
 	    
 	    // fill digits
-	    RICH->AddDigits(ich,tracks,charges,digits);
+	    pRICH->AddDigits(ich,tracks,charges,digits);
 	}
 	gAlice->TreeD()->Fill();
 
 	list->Delete();
-	for(Int_t ii=0;ii<7;++ii) {
-	    if (HitMap[ii]) {
-		hm=HitMap[ii];
+	for(Int_t ii=0;ii<kNCH;++ii) {
+	    if (pHitMap[ii]) {
+		hm=pHitMap[ii];
 		delete hm;
-		HitMap[ii]=0;
+		pHitMap[ii]=0;
 	    }
 	}
 	
@@ -1005,12 +1082,12 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	//Stat_t ndig=TD->GetEntries();
 	//cout<<"number of digits  "<<ndig<<endl;
 	TClonesArray *fDch;
-	for (int k=0;k<7;k++) {
-	    fDch= RICH->DigitsAddress(k);
+	for (int k=0;k<kNCH;k++) {
+	    fDch= pRICH->DigitsAddress(k);
 	    int ndigit=fDch->GetEntriesFast();
 	    printf ("Chamber %d digits %d \n",k,ndigit);
 	}
-	RICH->ResetDigits();
+	pRICH->ResetDigits();
     } //end loop over cathodes
     char hname[30];
     sprintf(hname,"TreeD%d",nev);
@@ -1019,9 +1096,56 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 // reset tree
 //    gAlice->TreeD()->Reset();
     delete list;
-    p_adr->Clear();
+    pAddress->Clear();
 // gObjectTable->Print();
 }
 
+AliRICH& AliRICH::operator=(const AliRICH& rhs)
+{
+// Assignment operator
+    return *this;
+    
+}
 
+Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
+{
+//
+//  Calls the charge disintegration method of the current chamber and adds
+//  the simulated cluster to the root treee 
+//
+    Int_t clhits[kNCH];
+    Float_t newclust[6][500];
+    Int_t nnew;
+    
+//
+//  Integrated pulse height on chamber
+    
+    clhits[0]=fNhits+1;
+    
+    ((AliRICHChamber*) (*fChambers)[idvol])->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
+    Int_t ic=0;
+    
+//
+//  Add new clusters
+    for (Int_t i=0; i<nnew; i++) {
+	if (Int_t(newclust[3][i]) > 0) {
+	    ic++;
+// Cathode plane
+	    clhits[1] = Int_t(newclust[5][i]);
+//  Cluster Charge
+	    clhits[2] = Int_t(newclust[0][i]);
+//  Pad: ix
+	    clhits[3] = Int_t(newclust[1][i]);
+//  Pad: iy 
+	    clhits[4] = Int_t(newclust[2][i]);
+//  Pad: charge
+	    clhits[5] = Int_t(newclust[3][i]);
+//  Pad: chamber sector
+	    clhits[6] = Int_t(newclust[4][i]);
+	    
+	    AddPadHit(clhits);
+	}
+    }
+return nnew;
+}
 

@@ -15,12 +15,23 @@
 
 /*
   $Log$
-  Revision 1.4  2000/04/19 13:14:36  morsch
-  Minor changes on class names.
-
 */
 
 
-#include "AliRICHHitMap.h"
+#include "AliRICHRecHit.h"
+ 
+ClassImp(AliRICHRecHit)
 
-ClassImp(AliRICHHitMap)
+AliRICHRecHit::AliRICHRecHit(Int_t id, Float_t *rechit)
+{
+    //
+    // Creates a RICH rec. hit object
+    //
+    fTheta        = rechit[0];
+    fPhi          = rechit[1];
+    fOmega        = rechit[2];
+    fX            = rechit[3];
+    fY            = rechit[4];
+}
+
+

@@ -380,9 +380,9 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	     {
 	       for (Int_t hit=0;hit<nrechits;hit++) {
 		 recHit = (AliRICHRecHit*) RecHits->UncheckedAt(hit);
-		 Float_t r_omega = recHit->Omega;                  // Cerenkov angle
-		 Float_t r_theta = recHit->Theta;                  // Theta angle of incidence
-		 Float_t r_phi   = recHit->Phi;                    // Phi angle if incidence
+		 Float_t r_omega = recHit->fOmega;                  // Cerenkov angle
+		 Float_t r_theta = recHit->fTheta;                  // Theta angle of incidence
+		 Float_t r_phi   = recHit->fPhi;                    // Phi angle if incidence
 		 
 		 Omega->Fill(r_omega,(float) 1);
 		 Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);

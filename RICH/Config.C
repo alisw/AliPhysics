@@ -1,7 +1,7 @@
 enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan};
 
-gentype_t gentype=box;
-ntracks=100;
+gentype_t gentype=hijing;
+ntracks=5000;
 
 void Config()
 {
@@ -234,7 +234,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //
 gener->SetVertexSmear(perTrack); 
 gener->Init();
-gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
+gAlice->SetField(0,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
 Int_t iMAG=0;
 Int_t iITS=0;
@@ -361,7 +361,7 @@ AliTOF *TOF  = new AliTOFvn("TOF","normal TOF");
 
 if(iRICH) {
 //=================== RICH parameters ===========================
-    AliRICH *RICH  = new AliRICHv0("RICH","normal RICH");
+    AliRICH *RICH  = new AliRICHv1("RICH","normal RICH");
     
 //
 // Version 0
@@ -373,7 +373,7 @@ if(iRICH) {
     SegmentationV0->SetDAnod(0.84/2);
 //
 //  Geometry parameters
-    AliRICHGeometry* GeometryV0 = new AliRICHGeometryV0;
+    AliRICHGeometry* GeometryV0 = new AliRICHGeometry;
     GeometryV0->SetGapThickness(8);
     GeometryV0->SetProximityGapThickness(.4);
     GeometryV0->SetQuartzLength(131);
@@ -388,7 +388,7 @@ if(iRICH) {
 //  Response parameters
     AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
     Rresponse0->SetSigmaIntegration(5.);
-    Rresponse0->SetChargeSlope(20.);
+    Rresponse0->SetChargeSlope(40.);
     Rresponse0->SetChargeSpread(0.18, 0.18);
     Rresponse0->SetMaxAdc(1024);
     Rresponse0->SetAlphaFeedback(0.05);

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/09 15:00:31  jbarbosa
+  New full version. All parameters configurable.
+
   Revision 1.9  2000/05/31 08:19:38  jbarbosa
   Fixed bug in StepManager
 
@@ -45,8 +48,10 @@
 #include <TTUBE.h>
 #include <TNode.h> 
 #include <TRandom.h> 
+#include <TParticle.h> 
 
 #include "AliRICHv1.h"
+#include "AliRICHHit.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "iostream.h"
@@ -60,6 +65,9 @@ ClassImp(AliRICHv1)
 //___________________________________________
 AliRICHv1::AliRICHv1() : AliRICHv0()
 {
+
+// Default constructor fo AliRICHvv1 (full version)
+
     //fChambers = 0;
 }
 
@@ -67,41 +75,120 @@ AliRICHv1::AliRICHv1() : AliRICHv0()
 AliRICHv1::AliRICHv1(const char *name, const char *title)
     : AliRICHv0(name,title)
 {
-    fCkov_number=0;
-    fFreon_prod=0;
 
-    fChambers = new TObjArray(7);
-    for (Int_t i=0; i<7; i++) {
+// Full version of RICH with hits and diagnostics
+
+    fCkovNumber=0;
+    fFreonProd=0;
+
+    fChambers = new TObjArray(kNCH);
+    for (Int_t i=0; i<kNCH; i++) {
     
 	(*fChambers)[i] = new AliRICHChamber();  
 	
     }
 }
 
+void AliRICHv1::Init()
+{
+
+  printf("*********************************** RICH_INIT ***********************************\n");
+  printf("*                                                                               *\n");
+  printf("*                    AliRICHv1 Configurable version started                     *\n");
+  printf("*                                                                               *\n");
+
+  
+  AliRICHSegmentation*  segmentation;
+  AliRICHGeometry*  geometry;
+  AliRICHResponse*  response;
+
+
+    // 
+    // Initialize Tracking Chambers
+    //
+    for (Int_t i=1; i<kNCH; i++) {
+	//printf ("i:%d",i);
+	( (AliRICHChamber*) (*fChambers)[i])->Init();  
+    }  
+    
+    //
+    // Set the chamber (sensitive region) GEANT identifier
+    
+    ((AliRICHChamber*)(*fChambers)[0])->SetGid(1);  
+    ((AliRICHChamber*)(*fChambers)[1])->SetGid(2);  
+    ((AliRICHChamber*)(*fChambers)[2])->SetGid(3);  
+    ((AliRICHChamber*)(*fChambers)[3])->SetGid(4);  
+    ((AliRICHChamber*)(*fChambers)[4])->SetGid(5);  
+    ((AliRICHChamber*)(*fChambers)[5])->SetGid(6);  
+    ((AliRICHChamber*)(*fChambers)[6])->SetGid(7); 
+
+    Float_t pos1[3]={0,471.8999,165.2599};
+    Chamber(0).SetChamberTransform(pos1[0],pos1[1],pos1[2],new TRotMatrix("rot993","rot993",90,0,70.69,90,19.30999,-90));
+
+    Float_t pos2[3]={171,470,0};
+    Chamber(1).SetChamberTransform(pos2[0],pos2[1],pos2[2],new TRotMatrix("rot994","rot994",90,-20,90,70,0,0));
+
+    Float_t pos3[3]={0,500,0};
+    Chamber(2).SetChamberTransform(pos3[0],pos3[1],pos3[2],new TRotMatrix("rot995","rot995",90,0,90,90,0,0));
+    
+    Float_t pos4[3]={-171,470,0};
+    Chamber(3).SetChamberTransform(pos4[0],pos4[1],pos4[2], new TRotMatrix("rot996","rot996",90,20,90,110,0,0));  
+
+    Float_t pos5[3]={161.3999,443.3999,-165.3};
+    Chamber(4).SetChamberTransform(pos5[0],pos5[1],pos5[2],new TRotMatrix("rot997","rot997",90,340,108.1999,70,18.2,70));
+
+    Float_t pos6[3]={0., 471.9, -165.3,};
+    Chamber(5).SetChamberTransform(pos6[0],pos6[1],pos6[2],new TRotMatrix("rot998","rot998",90,0,109.3099,90,19.30999,90));
+
+    Float_t pos7[3]={-161.399,443.3999,-165.3};
+    Chamber(6).SetChamberTransform(pos7[0],pos7[1],pos7[2],new TRotMatrix("rot999","rot999",90,20,108.1999,110,18.2,110));
+    
+    segmentation=Chamber(0).GetSegmentationModel(0);
+    geometry=Chamber(0).GetGeometryModel();
+    response=Chamber(0).GetResponseModel();
+    
+     
+    printf("*                            Pads            : %3dx%3d                          *\n",segmentation->Npx(),segmentation->Npy());
+    printf("*                            Pad size        : %5.2f x%5.2f mm2                 *\n",segmentation->Dpx(),segmentation->Dpy()); 
+    printf("*                            Gap Thickness   : %5.1f mm                         *\n",geometry->GetGapThickness());
+    printf("*                            Radiator Width  : %5.1f mm                         *\n",geometry->GetQuartzWidth());
+    printf("*                            Radiator Length : %5.1f mm                         *\n",geometry->GetQuartzLength());
+    printf("*                            Freon Thickness : %5.1f mm                         *\n",geometry->GetFreonThickness());
+    printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
+    printf("*                            Feedback Prob.  : %5.2f %%                          *\n",response->AlphaFeedback());
+    printf("*                                                                               *\n");
+    printf("*                                   Success!                                    *\n");
+    printf("*                                                                               *\n");
+    printf("*********************************************************************************\n");
+
+}
 
 //___________________________________________
 void AliRICHv1::StepManager()
 {
+
+// Full Step Manager
+
     Int_t          copy, id;
     static Int_t   idvol;
     static Int_t   vol[2];
     Int_t          ipart;
     static Float_t hits[18];
-    static Float_t Ckov_data[19];
-    TLorentzVector Position;
-    TLorentzVector Momentum;
+    static Float_t ckovData[19];
+    TLorentzVector position;
+    TLorentzVector momentum;
     Float_t        pos[3];
     Float_t        mom[4];
-    Float_t        Localpos[3];
-    Float_t        Localmom[4];
-    Float_t        Localtheta,Localphi;
+    Float_t        localPos[3];
+    Float_t        localMom[4];
+    Float_t        localTheta,localPhi;
     Float_t        theta,phi;
     Float_t        destep, step;
     Float_t        ranf[2];
-    Int_t          NPads;
+    Int_t          nPads;
     Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
-    const  Float_t big=1.e10;
+    const  Float_t kBig=1.e10;
        
     TClonesArray &lhits = *fHits;
     TGeant3 *geant3 = (TGeant3*) gMC;
@@ -115,17 +202,17 @@ void AliRICHv1::StepManager()
     
     idvol=-1;
     id=gMC->CurrentVolID(copy);
-    Float_t cherenkov_loss=0;
+    Float_t cherenkovLoss=0;
     //gAlice->KeepTrack(gAlice->CurrentTrack());
     
-    gMC->TrackPosition(Position);
-    pos[0]=Position(0);
-    pos[1]=Position(1);
-    pos[2]=Position(2);
-    Ckov_data[1] = pos[0];                 // X-position for hit
-    Ckov_data[2] = pos[1];                 // Y-position for hit
-    Ckov_data[3] = pos[2];                 // Z-position for hit
-    //Ckov_data[11] = gAlice->CurrentTrack();
+    gMC->TrackPosition(position);
+    pos[0]=position(0);
+    pos[1]=position(1);
+    pos[2]=position(2);
+    ckovData[1] = pos[0];                 // X-position for hit
+    ckovData[2] = pos[1];                 // Y-position for hit
+    ckovData[3] = pos[2];                 // Z-position for hit
+    //ckovData[11] = gAlice->CurrentTrack();
 
     //AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
     
@@ -135,10 +222,10 @@ void AliRICHv1::StepManager()
 
       //if (gMC->VolId("GAP ")==gMC->CurrentVolID(copy))
         //{                    
-	  Float_t Ckov_energy = current->Energy();
+	  Float_t ckovEnergy = current->Energy();
 	  //energy interval for tracking
-	  if  (Ckov_energy > 5.6e-09 && Ckov_energy < 7.8e-09 )       
-	    //if (Ckov_energy > 0)
+	  if  (ckovEnergy > 5.6e-09 && ckovEnergy < 7.8e-09 )       
+	    //if (ckovEnergy > 0)
 	    {
 	      if (gMC->IsTrackEntering()){                                     //is track entering?
 		if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
@@ -148,38 +235,38 @@ void AliRICHv1::StepManager()
 		      
 		      //printf("Second Mother:%d\n",current->GetSecondMother());
 		      
-		      Ckov_data[10] = mother;
-		      Ckov_data[11] = gAlice->CurrentTrack();
-		      Ckov_data[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
-		      fCkov_number++;
-		      fFreon_prod=1;
-		      //printf("Index: %d\n",fCkov_number);
+		      ckovData[10] = mother;
+		      ckovData[11] = gAlice->CurrentTrack();
+		      ckovData[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
+		      fCkovNumber++;
+		      fFreonProd=1;
+		      //printf("Index: %d\n",fCkovNumber);
 		    }    //first step question
 		  }        //freo question
 		
 		if (geant3->Gctrak()->nstep<1){                                  //is it first step?
 		  if (gMC->VolId("QUAR")==gMC->CurrentVolID(copy))             //is it in quarz?
 		    {
-		      Ckov_data[12] = 2;
+		      ckovData[12] = 2;
 		    }    //quarz question
 		}        //first step question
 		
-		//printf("Before %d\n",fFreon_prod);
+		//printf("Before %d\n",fFreonProd);
 	      }   //track entering question
 	      
-	      if (Ckov_data[12] == 1)                                        //was it produced in Freon?
-		//if (fFreon_prod == 1)
+	      if (ckovData[12] == 1)                                        //was it produced in Freon?
+		//if (fFreonProd == 1)
 		{
 		  if (gMC->IsTrackEntering()){                                     //is track entering?
 		    //printf("Got in");
 		    if (gMC->VolId("META")==gMC->CurrentVolID(copy))                //is it in gap?      
 		      {
 			//printf("Got in\n");
-			gMC->TrackMomentum(Momentum);
-			mom[0]=Momentum(0);
-			mom[1]=Momentum(1);
-			mom[2]=Momentum(2);
-			mom[3]=Momentum(3);
+			gMC->TrackMomentum(momentum);
+			mom[0]=momentum(0);
+			mom[1]=momentum(1);
+			mom[2]=momentum(2);
+			mom[3]=momentum(3);
 			// Z-position for hit
 			
 			
@@ -191,8 +278,8 @@ void AliRICHv1::StepManager()
 			//printf("grid calculation:%f\n",t);
 			if (ranf[0] > t) {
 			  //geant3->StopTrack();
-			  Ckov_data[13] = 5;
-			  AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+			  ckovData[13] = 5;
+			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 			  //printf("Lost one in grid\n");
 			}
 			/**********************************************************************************/
@@ -200,22 +287,22 @@ void AliRICHv1::StepManager()
 		    
 		    if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))             //is it in csi?      
 		      {
-			gMC->TrackMomentum(Momentum);
-			mom[0]=Momentum(0);
-			mom[1]=Momentum(1);
-			mom[2]=Momentum(2);
-			mom[3]=Momentum(3);
+			gMC->TrackMomentum(momentum);
+			mom[0]=momentum(0);
+			mom[1]=momentum(1);
+			mom[2]=momentum(2);
+			mom[3]=momentum(3);
 			
 			/********* Photons lost by Fresnel reflection have to be calculated by hand********/ 
 			/***********************Cerenkov phtons (always polarised)*************************/
 			
 			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
-			Float_t t = Fresnel(Ckov_energy*1e9,cophi,1);
+			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
 			gMC->Rndm(ranf, 1);
 			if (ranf[0] < t) {
 			  //geant3->StopTrack();
-			  Ckov_data[13] = 6;
-			  AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+			  ckovData[13] = 6;
+			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 			  //printf("Lost by Fresnel\n");
 			}
 			/**********************************************************************************/
@@ -230,46 +317,46 @@ void AliRICHv1::StepManager()
 		  for (Int_t i = 0; i < i1; ++i) {
 		    //        Reflection loss 
 		    if (geant3->Gctrak()->lmec[i] == 106) {        //was it reflected
-		      Ckov_data[13]=10;
+		      ckovData[13]=10;
 		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
-			Ckov_data[13]=1;
+			ckovData[13]=1;
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
-			Ckov_data[13]=2;
+			ckovData[13]=2;
 		      //geant3->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		    } //reflection question
 		    
 		    
 		    //        Absorption loss 
 		    else if (geant3->Gctrak()->lmec[i] == 101) {              //was it absorbed?
-		      Ckov_data[13]=20;
+		      ckovData[13]=20;
 		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
-			Ckov_data[13]=11;
+			ckovData[13]=11;
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
-			Ckov_data[13]=12;
+			ckovData[13]=12;
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("META")) 
-			Ckov_data[13]=13;
+			ckovData[13]=13;
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("GAP ")) 
-			Ckov_data[13]=13;
+			ckovData[13]=13;
 		      
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("SRIC")) 
-			Ckov_data[13]=15;
+			ckovData[13]=15;
 		      
 		      //        CsI inefficiency 
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("CSI ")) {
-			Ckov_data[13]=16;
+			ckovData[13]=16;
 		      }
 		      //geant3->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
-		      //printf("Added cerenkov %d\n",fCkov_number);
+		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      //printf("Added cerenkov %d\n",fCkovNumber);
 		    } //absorption question 
 		    
 		    
 		    //        Photon goes out of tracking scope 
 		    else if (geant3->Gctrak()->lmec[i] == 30) {                 //is it below energy treshold?
-		      Ckov_data[13]=21;
+		      ckovData[13]=21;
 		      //geant3->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		    }	// energy treshold question	    
 		  }  //number of mechanisms cycle
 		  /**********************End of evaluation************************/
@@ -289,28 +376,28 @@ void AliRICHv1::StepManager()
 	{
 	    
 	  if (gMC->Edep() > 0.){
-		gMC->TrackPosition(Position);
-		gMC->TrackMomentum(Momentum);
-		pos[0]=Position(0);
-		pos[1]=Position(1);
-		pos[2]=Position(2);
-		mom[0]=Momentum(0);
-		mom[1]=Momentum(1);
-		mom[2]=Momentum(2);
-		mom[3]=Momentum(3);
+		gMC->TrackPosition(position);
+		gMC->TrackMomentum(momentum);
+		pos[0]=position(0);
+		pos[1]=position(1);
+		pos[2]=position(2);
+		mom[0]=momentum(0);
+		mom[1]=momentum(1);
+		mom[2]=momentum(2);
+		mom[3]=momentum(3);
 		Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
 		Double_t rt = TMath::Sqrt(tc);
 		theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
 		phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
-		gMC->Gmtod(pos,Localpos,1);                                                                    
-		gMC->Gmtod(mom,Localmom,2);
+		gMC->Gmtod(pos,localPos,1);                                                                    
+		gMC->Gmtod(mom,localMom,2);
 		
 		gMC->CurrentVolOffID(2,copy);
 		vol[0]=copy;
 		idvol=vol[0]-1;
 
 		//Int_t sector=((AliRICHChamber*) (*fChambers)[idvol])
-			//->Sector(Localpos[0], Localpos[2]);
+			//->Sector(localPos[0], localPos[2]);
 		//printf("Sector:%d\n",sector);
 
 		/*if (gMC->TrackPid() == 50000051){
@@ -319,34 +406,34 @@ void AliRICHv1::StepManager()
 		}*/	
 		
 		((AliRICHChamber*) (*fChambers)[idvol])
-		    ->SigGenInit(Localpos[0], Localpos[2], Localpos[1]);
-		if(idvol<7) {	
-		    Ckov_data[0] = gMC->TrackPid();        // particle type
-		    Ckov_data[1] = pos[0];                 // X-position for hit
-		    Ckov_data[2] = pos[1];                 // Y-position for hit
-		    Ckov_data[3] = pos[2];                 // Z-position for hit
-		    Ckov_data[4] = theta;                      // theta angle of incidence
-		    Ckov_data[5] = phi;                      // phi angle of incidence 
-		    Ckov_data[8] = (Float_t) fNPadHits;      // first padhit
-		    Ckov_data[9] = -1;                       // last pad hit
-		    Ckov_data[13] = 4;                       // photon was detected
-		    Ckov_data[14] = mom[0];
-		    Ckov_data[15] = mom[1];
-		    Ckov_data[16] = mom[2];
+		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
+		if(idvol<kNCH) {	
+		    ckovData[0] = gMC->TrackPid();        // particle type
+		    ckovData[1] = pos[0];                 // X-position for hit
+		    ckovData[2] = pos[1];                 // Y-position for hit
+		    ckovData[3] = pos[2];                 // Z-position for hit
+		    ckovData[4] = theta;                      // theta angle of incidence
+		    ckovData[5] = phi;                      // phi angle of incidence 
+		    ckovData[8] = (Float_t) fNPadHits;      // first padhit
+		    ckovData[9] = -1;                       // last pad hit
+		    ckovData[13] = 4;                       // photon was detected
+		    ckovData[14] = mom[0];
+		    ckovData[15] = mom[1];
+		    ckovData[16] = mom[2];
 		    
 		    destep = gMC->Edep();
-		    gMC->SetMaxStep(big);
-		    cherenkov_loss  += destep;
-		    Ckov_data[7]=cherenkov_loss;
+		    gMC->SetMaxStep(kBig);
+		    cherenkovLoss  += destep;
+		    ckovData[7]=cherenkovLoss;
 		    
-		    NPads = MakePadHits(Localpos[0],Localpos[2],cherenkov_loss,idvol,cerenkov);
-		    if (fNPadHits > (Int_t)Ckov_data[8]) {
-			Ckov_data[8]= Ckov_data[8]+1;
-			Ckov_data[9]= (Float_t) fNPadHits;
+		    nPads = MakePadHits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);
+		    if (fNPadHits > (Int_t)ckovData[8]) {
+			ckovData[8]= ckovData[8]+1;
+			ckovData[9]= (Float_t) fNPadHits;
 		    }
 
-		    Ckov_data[17] = NPads;
-		    //printf("Npads:%d",NPads);
+		    ckovData[17] = nPads;
+		    //printf("nPads:%d",nPads);
 		    
 		    //TClonesArray *Hits = RICH->Hits();
 		    AliRICHHit *mipHit =  (AliRICHHit*) (fHits->UncheckedAt(0));
@@ -355,29 +442,29 @@ void AliRICHv1::StepManager()
 			mom[0] = current->Px();
 			mom[1] = current->Py();
 			mom[2] = current->Pz();
-			Float_t Mip_px = mipHit->fMomX;
-			Float_t Mip_py = mipHit->fMomY;
-			Float_t Mip_pz = mipHit->fMomZ;
+			Float_t mipPx = mipHit->fMomX;
+			Float_t mipPy = mipHit->fMomY;
+			Float_t mipPz = mipHit->fMomZ;
 			
 			Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
 			Float_t rt = TMath::Sqrt(r);
-			Float_t Mip_r = Mip_px*Mip_px + Mip_py*Mip_py + Mip_pz*Mip_pz;	
-			Float_t Mip_rt = TMath::Sqrt(Mip_r);
-			if ((rt*Mip_rt) > 0)
+			Float_t mipR = mipPx*mipPx + mipPy*mipPy + mipPz*mipPz;	
+			Float_t mipRt = TMath::Sqrt(mipR);
+			if ((rt*mipRt) > 0)
 			  {
-			    coscerenkov = (mom[0]*Mip_px + mom[1]*Mip_py + mom[2]*Mip_pz)/(rt*Mip_rt);
+			    coscerenkov = (mom[0]*mipPx + mom[1]*mipPy + mom[2]*mipPz)/(rt*mipRt);
 			  }
 			else
 			  {
 			    coscerenkov = 0;
 			  }
 			Float_t cherenkov = TMath::ACos(coscerenkov);
-			Ckov_data[18]=cherenkov;
+			ckovData[18]=cherenkov;
 		      }
 		    //if (sector != -1)
 		    //{
-		    AddHit(gAlice->CurrentTrack(),vol,Ckov_data);
-		    AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+		    AddHit(gAlice->CurrentTrack(),vol,ckovData);
+		    AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		    //}
 		}
 	    }
@@ -399,7 +486,7 @@ void AliRICHv1::StepManager()
 	  }*/
 	if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
 	  {
-	    fFreon_prod=1;
+	    fFreonProd=1;
 	  }
 
 	if (gMC->VolId("GAP ")== gMC->CurrentVolID(copy)) {
@@ -410,20 +497,20 @@ void AliRICHv1::StepManager()
 	    idvol=vol[0]-1;
 
 	    //Int_t sector=((AliRICHChamber*) (*fChambers)[idvol])
-			//->Sector(Localpos[0], Localpos[2]);
+			//->Sector(localPos[0], localPos[2]);
 	    //printf("Sector:%d\n",sector);
 	    
-	    gMC->TrackPosition(Position);
-	    gMC->TrackMomentum(Momentum);
-	    pos[0]=Position(0);
-	    pos[1]=Position(1);
-	    pos[2]=Position(2);
-	    mom[0]=Momentum(0);
-	    mom[1]=Momentum(1);
-	    mom[2]=Momentum(2);
-	    mom[3]=Momentum(3);
-	    gMC->Gmtod(pos,Localpos,1);                                                                    
-	    gMC->Gmtod(mom,Localmom,2);
+	    gMC->TrackPosition(position);
+	    gMC->TrackMomentum(momentum);
+	    pos[0]=position(0);
+	    pos[1]=position(1);
+	    pos[2]=position(2);
+	    mom[0]=momentum(0);
+	    mom[1]=momentum(1);
+	    mom[2]=momentum(2);
+	    mom[3]=momentum(3);
+	    gMC->Gmtod(pos,localPos,1);                                                                    
+	    gMC->Gmtod(mom,localMom,2);
 	    
 	    ipart  = gMC->TrackPid();
 	    //
@@ -441,40 +528,40 @@ void AliRICHv1::StepManager()
 		phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
 		
 
-		Double_t Localtc = Localmom[0]*Localmom[0]+Localmom[2]*Localmom[2];
-		Double_t Localrt = TMath::Sqrt(Localtc);
-		Localtheta   = Float_t(TMath::ATan2(Localrt,Double_t(Localmom[1])))*kRaddeg;                       
-		Localphi     = Float_t(TMath::ATan2(Double_t(Localmom[2]),Double_t(Localmom[0])))*kRaddeg;    
+		Double_t localTc = localMom[0]*localMom[0]+localMom[2]*localMom[2];
+		Double_t localRt = TMath::Sqrt(localTc);
+		localTheta   = Float_t(TMath::ATan2(localRt,Double_t(localMom[1])))*kRaddeg;                       
+		localPhi     = Float_t(TMath::ATan2(Double_t(localMom[2]),Double_t(localMom[0])))*kRaddeg;    
 		
 		hits[0] = Float_t(ipart);         // particle type
-		hits[1] = Localpos[0];                 // X-position for hit
-		hits[2] = Localpos[1];                 // Y-position for hit
-		hits[3] = Localpos[2];                 // Z-position for hit
-		hits[4] = Localtheta;                  // theta angle of incidence
-		hits[5] = Localphi;                    // phi angle of incidence 
+		hits[1] = localPos[0];                 // X-position for hit
+		hits[2] = localPos[1];                 // Y-position for hit
+		hits[3] = localPos[2];                 // Z-position for hit
+		hits[4] = localTheta;                  // theta angle of incidence
+		hits[5] = localPhi;                    // phi angle of incidence 
 		hits[8] = (Float_t) fNPadHits;    // first padhit
 		hits[9] = -1;                     // last pad hit
-		hits[13] = fFreon_prod;           // did id hit the freon?
+		hits[13] = fFreonProd;           // did id hit the freon?
 		hits[14] = mom[0];
 		hits[15] = mom[1];
 		hits[16] = mom[2];
 
 		tlength = 0;
 		eloss   = 0;
-		fFreon_prod = 0;
+		fFreonProd = 0;
 	
-		Chamber(idvol).LocaltoGlobal(Localpos,hits+1);
+		Chamber(idvol).LocaltoGlobal(localPos,hits+1);
 	   
 		
-		//To make chamber coordinates x-y had to pass LocalPos[0], LocalPos[2]
-		xhit    = Localpos[0];
-		yhit    = Localpos[2];
+		//To make chamber coordinates x-y had to pass localPos[0], localPos[2]
+		xhit    = localPos[0];
+		yhit    = localPos[2];
 		// Only if not trigger chamber
-		if(idvol<7) {
+		if(idvol<kNCH) {
 		    //
 		    //  Initialize hit position (cursor) in the segmentation model 
 		    ((AliRICHChamber*) (*fChambers)[idvol])
-			->SigGenInit(Localpos[0], Localpos[2], Localpos[1]);
+			->SigGenInit(localPos[0], localPos[2], localPos[1]);
 		}
 	    }
 	    
@@ -483,20 +570,20 @@ void AliRICHv1::StepManager()
 	    //
 	    // Mip left chamber ...
 	    if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
-		gMC->SetMaxStep(big);
+		gMC->SetMaxStep(kBig);
 		eloss   += destep;
 		tlength += step;
 		
 				
 		// Only if not trigger chamber
-		if(idvol<7) {
+		if(idvol<kNCH) {
 		  if (eloss > 0) 
 		    {
 		      if(gMC->TrackPid() == kNeutron)
 			printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		      NPads = MakePadHits(xhit,yhit,eloss,idvol,mip);
-		      hits[17] = NPads;
-		      //printf("Npads:%d",NPads);
+		      nPads = MakePadHits(xhit,yhit,eloss,idvol,kMip);
+		      hits[17] = nPads;
+		      //printf("nPads:%d",nPads);
 		    }
 		}
 		
@@ -516,20 +603,20 @@ void AliRICHv1::StepManager()
 		// model (boundary crossing conditions) 
 	    } else if 
 		(((AliRICHChamber*) (*fChambers)[idvol])
-		 ->SigGenCond(Localpos[0], Localpos[2], Localpos[1]))
+		 ->SigGenCond(localPos[0], localPos[2], localPos[1]))
 	    {
 		((AliRICHChamber*) (*fChambers)[idvol])
-		    ->SigGenInit(Localpos[0], Localpos[2], Localpos[1]);
+		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
 		if (eloss > 0) 
 		  {
 		    if(gMC->TrackPid() == kNeutron)
 		      printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		    NPads = MakePadHits(xhit,yhit,eloss,idvol,mip);
-		    hits[17] = NPads;
+		    nPads = MakePadHits(xhit,yhit,eloss,idvol,kMip);
+		    hits[17] = nPads;
 		    //printf("Npads:%d",NPads);
 		  }
-		xhit     = Localpos[0];
-		yhit     = Localpos[2]; 
+		xhit     = localPos[0];
+		yhit     = localPos[2]; 
 		eloss    = destep;
 		tlength += step ;
 		//
