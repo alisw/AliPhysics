@@ -29,7 +29,7 @@ good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname);
 
 extern AliRun *gAlice;
 
-Int_t AliTPCComparison() {
+Int_t AliTPCComparison(Bool_t thcut=1.0) {
 
    if (gAlice) { 
        delete gAlice->GetRunLoader();
@@ -101,16 +101,27 @@ Int_t AliTPCComparison() {
       while (in>>gt[ngood].lab>>gt[ngood].code>>
                  gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>
                  gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
-         ngood++;
-         cerr<<ngood<<'\r';
-         if (ngood==MAX) {
-            cerr<<"Too many good tracks !\n";
-            break;
-         }
+	Double_t rin = TMath::Sqrt( gt[ngood].x*gt[ngood].x+gt[ngood].y*gt[ngood].y);
+	if (rin<1) continue;
+	Double_t theta = gt[ngood].z/rin;
+	//theta =0;
+	if (TMath::Abs(theta)<thcut){ 
+	  ngood++;
+	  cerr<<ngood<<'\r';
+	  if (ngood==MAX) {
+	    cerr<<"Too many good tracks !\n";
+	    break;
+	  }	
+	//ngood++;
+        // cerr<<ngood<<'\r';
+        // if (ngood==MAX) {
+        //    cerr<<"Too many good tracks !\n";
+        //    break;
+	}
       }
       if (!in.eof()) cerr<<"Read error (good_tracks_tpc) !\n";
    } else {
-      cerr<<"Marking good tracks (this will take a while)...\n";
+     cerr<<"Marking good tracks (this will take a while)...\n";
       ngood=good_tracks_tpc(gt,MAX,"COMPARISON");
       ofstream out("good_tracks_tpc");
       if (out) {
