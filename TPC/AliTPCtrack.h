@@ -8,21 +8,19 @@
 //                    TPC Track Class
 //
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
-//-------------------------------------------------------
-
-/*****************************************************************************
- *                          December 18, 2000                                *
- *  Internal view of the TPC track parametrisation as well as the order of   *
- *           track parameters are subject for possible changes !             *
- *  Use GetExternalParameters() and GetExternalCovariance() to access TPC    *
- *      track information regardless of its internal representation.         *
- * This formation is now fixed in the following way:                         *
- *      external param0:   local Y-coordinate of a track (cm)                *
- *      external param1:   local Z-coordinate of a track (cm)                *
- *      external param2:   local sine of the track momentum azimuth angle    *
- *      external param3:   tangent of the track momentum dip angle           *
- *      external param4:   1/pt (1/(GeV/c))                                  *
- *****************************************************************************/
+//
+//                        December 18, 2000                                
+//  Internal view of the TPC track parametrisation as well as the order of   
+//           track parameters are subject for possible changes !             
+//  Use GetExternalParameters() and GetExternalCovariance() to access TPC    
+//      track information regardless of its internal representation.         
+// This formation is now fixed in the following way:                         
+//      external param0:   local Y-coordinate of a track (cm)                
+//      external param1:   local Z-coordinate of a track (cm)                
+//      external param2:   local sine of the track momentum azimuth angle    
+//      external param3:   tangent of the track momentum dip angle           
+//      external param4:   1/pt (1/(GeV/c))                                  
+//
 #include <AliKalmanTrack.h>
 #include <TMath.h>
 
@@ -78,7 +76,7 @@ public:
 
   // [SR, 01.04.2003]
 
-  void GetBarrelTrack(AliBarrelTrack *track);
+  void GetBarrelTrack(AliBarrelTrack *track)const;
 
   void ResetNWrong() {fNWrong = 0;}
   void ResetNRotation() {fNRotation = 0;}
@@ -108,18 +106,7 @@ public:
   Int_t PropagateTo(Double_t xr,Double_t x0=28.94,Double_t rho=0.9e-3);
   Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i);
   void ResetCovariance();
-  // MI addition
-  Float_t fSdEdx;           // sigma of dedx 
-  //
-  Int_t   fNFoundable;      //number of foundable clusters - dead zone taken to the account
-  Bool_t  fBConstrain;   // indicate seeding with vertex constrain
-  Int_t   fLastPoint;     // last  cluster position     
-  Int_t   fFirstPoint;    // first cluster position
-  Int_t fRemoval;         // removal factor
-  Int_t fTrackType;       // track type - 0 - normal - 1 - kink -  2 -V0  3- double found
-  Int_t fLab2;            // index of corresponding track (kink, V0, double)
-  Int_t   fNShared;       // number of shared points 
-  Float_t  fKinkPoint[12];      //radius, of kink,  dfi and dtheta 
+ 
   //
   //  TClonesArray * fHelixIn;    //array of helixes  
   //TClonesArray * fHelixOut;   //array of helixes 
@@ -154,15 +141,25 @@ protected:
   Int_t fNWrong;         // number of wrong clusters
   Int_t fNRotation;      // number of rotations
   Int_t fNumber;         // magic number used for number of clusters
+  // MI addition
+  Float_t fSdEdx;           // sigma of dedx 
+  //
+  Int_t   fNFoundable;      //number of foundable clusters - dead zone taken to the account
+  Bool_t  fBConstrain;   // indicate seeding with vertex constrain
+  Int_t   fLastPoint;     // last  cluster position     
+  Int_t   fFirstPoint;    // first cluster position
+  Int_t fRemoval;         // removal factor
+  Int_t fTrackType;       // track type - 0 - normal - 1 - kink -  2 -V0  3- double found
+  Int_t fLab2;            // index of corresponding track (kink, V0, double)
+  Int_t   fNShared;       // number of shared points 
+  Float_t  fKinkPoint[12];      //radius, of kink,  dfi and dtheta
 
   ClassDef(AliTPCtrack,1)   // Time Projection Chamber reconstructed tracks
 };
 
 inline 
 void AliTPCtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
-  //---------------------------------------------------------------------
   // This function return external TPC track representation
-  //---------------------------------------------------------------------
      xr=fX;
      x[0]=GetY(); x[1]=GetZ(); x[2]=GetSnp(); x[3]=GetTgl(); x[4]=Get1Pt();
 }

@@ -255,7 +255,18 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
   fDebug     =0;
   fEvent     =0;
 }
-
+//________________________________________________________________________
+AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):AliTracker(t){
+  //------------------------------------
+  // dummy copy constructor
+  //------------------------------------------------------------------
+}
+AliTPCtrackerMI & AliTPCtrackerMI::operator=(const AliTPCtrackerMI& /*r*/){
+  //------------------------------
+  // dummy 
+  //--------------------------------------------------------------
+  return *this;
+}
 //_____________________________________________________________________________
 AliTPCtrackerMI::~AliTPCtrackerMI() {
   //------------------------------------------------------------------
@@ -4947,7 +4958,11 @@ AliTPCseed::AliTPCseed():AliTPCtrack(){
   fCurrentSigmaY2=0;
   fCurrentSigmaZ2=0;
 }
-
+AliTPCseed::AliTPCseed(const AliTPCseed &s):AliTPCtrack(s){
+  //---------------------
+  // dummy copy constructor
+  //-------------------------
+}
 AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
   //
   //copy constructor

@@ -33,6 +33,9 @@ ClassImp(AliTPCtrack)
 //_________________________________________________________________________
 AliTPCtrack::AliTPCtrack(): AliKalmanTrack() 
 {
+  //-------------------------------------------------
+  // default constructor
+  //-------------------------------------------------
   fX = fP0 = fP1 = fP2 = fP3 = fP3 = fP4 = 0.0;
   fAlpha = fdEdx = 0.0;
   fNWrong = fNRotation = fNumber = 0;  // [SR, 01.04.2003]
@@ -207,7 +210,7 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
 }
 //_____________________________________________________________________________
 
-void  AliTPCtrack::GetBarrelTrack(AliBarrelTrack *track) {
+void  AliTPCtrack::GetBarrelTrack(AliBarrelTrack *track) const{
   //
   // Create a Barrel Track out of this track
   // Current track is propagated to the reference plane

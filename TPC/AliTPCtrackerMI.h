@@ -33,6 +33,7 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCseed();
      virtual ~AliTPCseed();
      AliTPCseed(const AliTPCtrack &t);
+     AliTPCseed(const AliTPCseed &s);
      AliTPCseed(const AliKalmanTrack &t, Double_t a);
      Int_t Compare(const TObject *o) const;
      void Reset(Bool_t all = kTRUE);
@@ -116,6 +117,8 @@ public:
     fInnerSec=fOuterSec=0; fSeeds=0; 
   }
   AliTPCtrackerMI(const AliTPCParam *par); 
+   AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
+   AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
   virtual ~AliTPCtrackerMI();
   //
   void SetIteration(Int_t iteration){fIteration = iteration;}
@@ -186,6 +189,8 @@ public:
      friend class AliTPCtrackerMI::AliTPCSector;
    public:
      AliTPCRow();
+     AliTPCRow(const AliTPCRow& r){;}           //dummy copy constructor
+     AliTPCRow &operator=(const AliTPCRow& r){return *this;} //dummy assignment operator
      ~AliTPCRow();
      void InsertCluster(const AliTPCclusterMI *c, UInt_t index);
      void ResetClusters();
@@ -213,9 +218,7 @@ private:
      // AliTPCclusterMI *fClustersArray;                     // 
      UInt_t fIndex[kMaxClusterPerRow];                  //indeces of clusters
      Double_t fX;                                 //X-coordinate of this row
-   //private:
-     AliTPCRow(const AliTPCRow& r);            //dummy copy constructor
-     AliTPCRow &operator=(const AliTPCRow& r); //dummy assignment operator
+
    };
 
 //**************** Internal tracker class ********************** 
@@ -224,6 +227,8 @@ private:
    public:
      AliTPCSector() { fN=0; fRow = 0; }
     ~AliTPCSector() { delete[] fRow; }
+     AliTPCSector(const AliTPCSector &s){;}           //dummy copy contructor 
+     AliTPCSector& operator=(const AliTPCSector &s){return *this;}//dummy assignment operator
      AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
      Int_t GetNRows() const { return fN; }
      void Setup(const AliTPCParam *par, Int_t flag);
@@ -250,9 +255,6 @@ private:
      Double_t f1PadPitchLength;           //pad pitch length
      Double_t f2PadPitchLength;           //pad pitch length
     
-   private:
-     AliTPCSector(const AliTPCSector &s);           //dummy copy contructor 
-     AliTPCSector& operator=(const AliTPCSector &s);//dummy assignment operator
    };
 
    Float_t OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &sum1, Int_t &sum2);
@@ -308,9 +310,6 @@ private:
    void SetSampledEdx(AliTPCseed *t, Float_t q, Int_t i) {;}
    Int_t UpdateTrack(AliTPCseed *t, Int_t accept); //update trackinfo
 
-
-   AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
-   AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
 
    const Int_t fkNIS;        //number of inner sectors
    AliTPCSector *fInnerSec;  //array of inner sectors;
