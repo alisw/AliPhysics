@@ -68,8 +68,18 @@ SRCS:=TG4Editor.cxx \
 
 HDRS:=$(SRCS:.cxx=.h)
 
+DHDR:= TGeant4LinkDef.h
+
+EINCLUDE:=$(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
+
 include $(G4INSTALL)/config/G4UI_USE.gmk
 include $(G4INSTALL)/config/G4VIS_USE.gmk
 include $(G4INSTALL)/config/interactivity.gmk
 
-EINCLUDE:=$(CPPFLAGS) $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
+EDEFINE:=$(CPPFLAGS)
+
+CINTHDRS:= TGeant4/TGeant4.h TGeant4/TG4VRunConfiguration.h \
+	   TGeant4/TG4Editor.h TGeant4/TG4MainFrame.h \
+	   TGeant4/TG4GeometryGUI.h TGeant4/TG4GuiVolume.h \
+	   TGeant4/TG4MaterialsFrames.h TGeant4/TG4VolumesFrames.h \
+	   TGeant4/TG4ListTreeFrame.h 
