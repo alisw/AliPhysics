@@ -311,7 +311,7 @@ void AliL3Hough::FindTrackCandidates()
   for(Int_t i=0; i<n_patches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
-      Double_t eta_slice = (tr->GetEtaMax()-tr->GetEtaMin()/tr->GetNEtaSegments());
+      Double_t eta_slice = (tr->GetEtaMax()-tr->GetEtaMin())/tr->GetNEtaSegments();
       fTracks[i]->Reset();
       for(Int_t j=0; j<fNEtaSegments; j++)
 	{
@@ -413,6 +413,8 @@ void AliL3Hough::EvaluateWithEta()
 
 void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 {
+  //Write the tracks in slice
+  
   AliL3MemHandler *mem = new AliL3MemHandler();
   Char_t fname[100];
   if(fAddHistograms)
