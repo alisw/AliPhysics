@@ -610,6 +610,10 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps() const
         path0 += "/";
 	path0 += ComposePath(geometry->GetMotherVolume(), 1);
       }  
+      if (! geometry->IsVirtual() ) {
+        path0 += "/";
+	path0 += ComposePath(geometry->GetVolume(), 1);
+      }  
        
       if (!envelope->IsVirtual()) {
          TString path = path0;
