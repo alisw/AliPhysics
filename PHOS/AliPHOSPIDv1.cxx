@@ -82,29 +82,20 @@
 #include "TROOT.h"
 #include "TTree.h"
 #include "TFile.h"
-#include "TF2.h"
-#include "TFormula.h"
-#include "TCanvas.h"
-#include "TFolder.h"
 #include "TSystem.h"
 #include "TBenchmark.h"
 #include "TMatrixD.h"
 #include "TPrincipal.h"
-#include "TSystem.h"
 
 // --- Standard library ---
 
-#include <Riostream.h>
+//#include <Riostream.h>
 
 // --- AliRoot header files ---
 
-#include "AliRun.h"
 #include "AliGenerator.h"
-#include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
-#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
-#include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h"
@@ -118,6 +109,16 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
  
   InitParameters() ; 
   fDefaultInit = kTRUE ; 
+
+}
+
+//____________________________________________________________________________
+AliPHOSPIDv1::AliPHOSPIDv1(AliPHOSPIDv1 & pid ):AliPHOSPID(pid)
+{ 
+  InitParameters() ; 
+
+  Init() ;
+  fDefaultInit = kFALSE ; 
 
 }
 
@@ -170,6 +171,7 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
 //____________________________________________________________________________
 const TString AliPHOSPIDv1::BranchName() const 
 {  
+  // gives the name of the current branch
   TString branchName(GetName() ) ;
   branchName.Remove(branchName.Index(Version())-1) ;
   return branchName ;
@@ -270,13 +272,13 @@ const Float_t  AliPHOSPIDv1::GetCpvtoEmcDistanceCut(const Float_t e, const TStri
 }
 //____________________________________________________________________________
 
-const Double_t  AliPHOSPIDv1::GetTimeGate(const Int_t Eff_Pur) const
+const Double_t  AliPHOSPIDv1::GetTimeGate(const Int_t effpur) const
 {
   // Get TimeGate parameter depending on Purity-Efficiency point 
  
-   if(Eff_Pur>2 || Eff_Pur<0)
-    Error("GetTimeGate","Invalid Efficiency-Purity choice %d",Eff_Pur);
-    return (*fParameters)(3,Eff_Pur) ; 
+   if(effpur>2 || effpur<0)
+    Error("GetTimeGate","Invalid Efficiency-Purity choice %d",effpur);
+    return (*fParameters)(3,effpur) ; 
 
 }
 //_____________________________________________________________________________
@@ -343,65 +345,65 @@ const Double_t  AliPHOSPIDv1::GetCalibratedEnergy(const Float_t e) const
 
 }
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetPrincipalBit(const Double_t* P,const Int_t eff_pur, const Float_t E)const
+const Int_t  AliPHOSPIDv1::GetPrincipalBit(const Double_t* p ,const Int_t effpur, const Float_t e)const
 {
   //Is the particle inside de PCA ellipse?
 
   Int_t    prinbit  = 0 ;
-  Double_t A        = GetEllipseParameter("a", E); 
-  Double_t B        = GetEllipseParameter("b", E);
-  Double_t C        = GetEllipseParameter("c", E);
-  Double_t X_center = GetEllipseParameter("x0", E); 
-  Double_t Y_center = GetEllipseParameter("y0", E);
+  Double_t a        = GetEllipseParameter("a", e); 
+  Double_t b        = GetEllipseParameter("b", e);
+  Double_t c        = GetEllipseParameter("c", e);
+  Double_t xCenter = GetEllipseParameter("x0", e); 
+  Double_t yCenter = GetEllipseParameter("y0", e);
   
-  Double_t R = TMath::Power((P[0] - X_center)/A,2) + 
-      TMath::Power((P[1] - Y_center)/B,2) +
-      C*(P[0] -  X_center)*(P[1] - Y_center)/(A*B) ;
+  Double_t r = TMath::Power((p[0] - xCenter)/a,2) + 
+      TMath::Power((p[1] - yCenter)/b,2) +
+     c*(p[0] -  xCenter)*(p[1] - yCenter)/(a*b) ;
   //3 different ellipses defined
-  if((eff_pur==2)&&(R <1./2.)) prinbit= 1;
-  if((eff_pur==1)&&(R <2.   )) prinbit= 1;
-  if((eff_pur==0)&&(R <9./2.)) prinbit= 1;
+  if((effpur==2)&&(r <1./2.)) prinbit= 1;
+  if((effpur==1)&&(r <2.   )) prinbit= 1;
+  if((effpur==0)&&(r <9./2.)) prinbit= 1;
 
-  if(R<0)
-    Error("GetPrincipalBit", "Negative square? R=%f \n",R) ;
+  if(r<0)
+    Error("GetPrincipalBit", "Negative square? R=%f \n",r) ;
 
   return prinbit;
 
 }
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetPrincipalPi0Bit(const Double_t* P,const Int_t eff_pur, const Float_t E)const
+const Int_t  AliPHOSPIDv1::GetPrincipalPi0Bit(const Double_t* p, const Int_t effpur, const Float_t e)const
 {
   //Is the particle inside de Pi0 PCA ellipse?
 
   Int_t    prinbit  = 0 ;
-  Double_t A        = GetEllipseParameterPi0("a", E); 
-  Double_t B        = GetEllipseParameterPi0("b", E);
-  Double_t C        = GetEllipseParameterPi0("c", E);
-  Double_t X_center = GetEllipseParameterPi0("x0", E); 
-  Double_t Y_center = GetEllipseParameterPi0("y0", E);
+  Double_t a        = GetEllipseParameterPi0("a", e); 
+  Double_t b        = GetEllipseParameterPi0("b", e);
+  Double_t c        = GetEllipseParameterPi0("c", e);
+  Double_t xCenter = GetEllipseParameterPi0("x0", e); 
+  Double_t yCenter = GetEllipseParameterPi0("y0", e);
   
-  Double_t R = TMath::Power((P[0] - X_center)/A,2) + 
-      TMath::Power((P[1] - Y_center)/B,2) +
-      C*(P[0] -  X_center)*(P[1] - Y_center)/(A*B) ;
+  Double_t r = TMath::Power((p[0] - xCenter)/a,2) + 
+      TMath::Power((p[1] - yCenter)/b,2) +
+      c*(p[0] -  xCenter)*(p[1] - yCenter)/(a*b) ;
   //3 different ellipses defined
-  if((eff_pur==2)&&(R <1./2.)) prinbit= 1;
-  if((eff_pur==1)&&(R <2.   )) prinbit= 1;
-  if((eff_pur==0)&&(R <9./2.)) prinbit= 1;
+  if((effpur==2)&&(r <1./2.)) prinbit= 1;
+  if((effpur==1)&&(r <2.   )) prinbit= 1;
+  if((effpur==0)&&(r <9./2.)) prinbit= 1;
 
-  if(R<0)
+  if(r<0)
     Error("GetPrincipalPi0Bit", "Negative square?") ;
 
   return prinbit;
 
 }
 //_____________________________________________________________________________
-void  AliPHOSPIDv1::SetCpvtoEmcDistanceCutParameters(Float_t e, Int_t Eff_Pur, TString Axis,Float_t cut) 
+void  AliPHOSPIDv1::SetCpvtoEmcDistanceCutParameters(Float_t e, Int_t effpur, TString Axis,Float_t cut) 
 {
   // Set the parameters to calculate Cpvto EmcDistanceCut depending on the cluster energy and 
   // Purity-Efficiency point 
 
-  if(Eff_Pur>2 || Eff_Pur<0)
-     Error("SetCpvtoEmcDistanceCutParameters","Invalid Efficiency-Purity choice %d",Eff_Pur);
+  if(effpur>2 || effpur<0)
+     Error("SetCpvtoEmcDistanceCutParameters","Invalid Efficiency-Purity choice %d",effpur);
 
   Int_t i = -1;
   if     (Axis.Contains("X")) i = 1;
@@ -409,17 +411,17 @@ void  AliPHOSPIDv1::SetCpvtoEmcDistanceCutParameters(Float_t e, Int_t Eff_Pur, T
   else
     Error("SetCpvtoEmcDistanceCutParameters"," Invalid axis option");
   
-  (*fParameters)(i,Eff_Pur) = cut ;
+  (*fParameters)(i,effpur) = cut ;
 }
 //_____________________________________________________________________________
-void  AliPHOSPIDv1::SetTimeGate(Int_t Eff_Pur, Float_t gate) 
+void  AliPHOSPIDv1::SetTimeGate(Int_t effpur, Float_t gate) 
 {
   // Set the parameter TimeGate depending on the cluster energy and 
   // Purity-Efficiency point 
-  if(Eff_Pur>2 || Eff_Pur<0)
-    Error("SetTimeGate","Invalid Efficiency-Purity choice %d",Eff_Pur);
+  if(effpur>2 || effpur<0)
+    Error("SetTimeGate","Invalid Efficiency-Purity choice %d",effpur);
   
-  (*fParameters)(3,Eff_Pur)= gate ; 
+  (*fParameters)(3,effpur)= gate ; 
 } 
 //_____________________________________________________________________________
 void  AliPHOSPIDv1::SetParameters() 
@@ -460,8 +462,8 @@ void  AliPHOSPIDv1::SetParameters()
 
   fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
   fParameters = new TMatrixD(14,4) ;
-  const Int_t maxLeng=255;
-  char string[maxLeng];
+  const Int_t kmaxLeng=255;
+  char string[kmaxLeng];
 
   // Open a text file with PID parameters
   FILE *fd = fopen(fFileNamePar.Data(),"r");
@@ -471,7 +473,7 @@ void  AliPHOSPIDv1::SetParameters()
 
   Int_t i=0;
   // Read parameter file line-by-line and skip empty line and comments
-  while (fgets(string,maxLeng,fd) != NULL) {
+  while (fgets(string,kmaxLeng,fd) != NULL) {
     if (string[0] == '\n' ) continue;
     if (string[0] == '!'  ) continue;
     sscanf(string, "%lf %lf %lf %lf",
@@ -574,7 +576,7 @@ const Double_t  AliPHOSPIDv1::GetParameterToCalculatePi0Ellipse(const TString Pa
 
 } 
 //____________________________________________________________________________
-void  AliPHOSPIDv1::SetCalibrationParameter(Int_t i,Double_t param) 
+void  AliPHOSPIDv1::SetCalibrationParameter(Int_t i,Double_t param) const
 {
   (*fParameters)(0,i) = param ;
 }
@@ -760,20 +762,20 @@ void  AliPHOSPIDv1::MakeRecParticles(){
       // Looking PCA. Define and calculate the data (X),
       // introduce in the function X2P that gives the components (P).  
 
-      Float_t  Spher = 0. ;
-      Float_t  Emaxdtotal = 0. ; 
+      Float_t  spher = 0. ;
+      Float_t  emaxdTotal = 0. ; 
       
       if((lambda[0]+lambda[1])!=0) 
-	Spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
+	spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
       
-      Emaxdtotal=emc->GetMaximalEnergy()/emc->GetEnergy(); 
+      emaxdTotal=emc->GetMaximalEnergy()/emc->GetEnergy(); 
       
       fX[0] = lambda[0] ;  
       fX[1] = lambda[1] ; 
       fX[2] = emc->GetDispersion() ; 
-      fX[3] = Spher ; 
+      fX[3] = spher ; 
       fX[4] = emc->GetMultiplicity() ;  
-      fX[5] = Emaxdtotal ;  
+      fX[5] = emaxdTotal ;  
       fX[6] = emc->GetCoreEnergy() ;  
       
       fPrincipal->X2P(fX,fP);
@@ -863,7 +865,7 @@ void  AliPHOSPIDv1::Print()
 //____________________________________________________________________________
 void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
 {
- 
+  // writes the reconstructed particles to file
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
 
   TClonesArray * recParticles = gime->RecParticles() ; 

@@ -32,7 +32,8 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   
   AliPHOSPIDv1() ;          // ctor            
   AliPHOSPIDv1(const char* headerFile, const char * tsBranch = "Default", const Bool_t toSplit=kFALSE) ;
-  
+  AliPHOSPIDv1(AliPHOSPIDv1 & pid) ;          // cpy ctor            
+
   virtual ~AliPHOSPIDv1() ; // dtor
   
   virtual void Exec(Option_t * option) ;
@@ -48,16 +49,16 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   const TString GetPrincipalFilePar( )const {return fFileNamePar ;}
 
   //To turn on or off the Pi0 analysis
-  const Bool_t GetPi0Analysis(){return fPi0Analysis;}
+  const Bool_t GetPi0Analysis()const {return fPi0Analysis;}
   void         SetPi0Analysis(Bool_t turnonoff){ fPi0Analysis = turnonoff; }
 
   // Set and Get all parameters necessary in the PID depending on the 
   // custer energy and Purity-Efficiency point 
-  void SetCpvtoEmcDistanceCutParameters(Float_t Cluster_En, Int_t Eff_Pur, TString Axis,Float_t cut)  ; 
-  void SetTimeGate(Int_t Eff_Pur, Float_t gate)  ; 
+  void SetCpvtoEmcDistanceCutParameters(Float_t clusterEn, Int_t effpur, TString Axis,Float_t cut)  ; 
+  void SetTimeGate(Int_t effpur, Float_t gate)  ; 
  
   const Float_t GetCpvtoEmcDistanceCut(const Float_t e, const TString Axis ) const ;
-  const Double_t GetTimeGate(const Int_t Eff_Pur)  const;
+  const Double_t GetTimeGate(const Int_t effpur)  const;
  
   void SetEllipseParameter   (TString Param, Int_t i, Double_t par)  ;
   void SetEllipseParameterPi0(TString Param, Int_t i, Double_t par)  ;
@@ -67,7 +68,7 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   const Double_t GetEllipseParameterPi0(const TString Param, Float_t E) const;
   //Get and Set energy calibration parameters
   
-  void  SetCalibrationParameter(Int_t Param,Double_t param);
+  void  SetCalibrationParameter(Int_t Param,Double_t param) const ;
   const Double_t GetCalibrationParameter(const Int_t i) const;
   const Double_t GetCalibratedEnergy(const Float_t e)   const; //Calibrates energy.
   
@@ -75,6 +76,7 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   //  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
   virtual const char * Version() const { return "pid-v1" ; }  
   
+  AliPHOSPIDv1 & operator = (const AliPHOSPIDv1 & pid) { return *this ;} 
  private:
   
   const TString BranchName() const ; 
