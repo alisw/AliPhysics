@@ -132,9 +132,14 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
     
     // =========== End of reconstruction
 
+    // Deleting fClu, fTrs, fPID et fRec
+    fClu->Delete();
+    fTrs->Delete();
+    fPID->Delete();
+    fRec->Delete();
+
     // =========== Write the root file
 
-    fRootFile->Close() ; 
   
     // =========== Finish
 
@@ -420,7 +425,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     //========== Creates the Reconstructioner  
     
     fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;
-    fRec -> SetDebugReconstruction(kTRUE);     
+    fRec -> SetDebugReconstruction(kFALSE);     
     
     //=========== Connect the various Tree's for evt
     
