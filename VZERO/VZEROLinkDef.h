@@ -14,5 +14,7 @@
 #pragma link C++ class  AliVZEROdigit+;
 #pragma link C++ class  AliVZEROLoader+;
 #pragma link C++ class  AliVZERODigitizer+;
+#pragma link C++ class  AliVZEROReconstructor+;
+#pragma link C++ class  AliVZEROBuffer+;
 
 #endif

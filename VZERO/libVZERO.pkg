@@ -6,7 +6,9 @@ AliVZEROv3.cxx \
 AliVZEROv4.cxx \
 AliVZEROhit.cxx \
 AliVZEROdigit.cxx \
-AliVZERODigitizer.cxx
+AliVZERODigitizer.cxx \
+AliVZEROReconstructor.cxx \
+AliVZEROBuffer.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
