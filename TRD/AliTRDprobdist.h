@@ -13,7 +13,7 @@
 #include "TObject.h"
 
 const Int_t kNo_Mom=7; 
-const Int_t kNo_EnBins=200;
+const Int_t kNo_EnBins=250;
 const Int_t kNo_TBins=20;
 
 class AliTRDprobdist : public TObject {
