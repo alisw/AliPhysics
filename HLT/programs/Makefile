@@ -59,7 +59,8 @@ DEFSTR += $(EXTRADEF)
 CXXFLAGS = -O2 -Wall -ggdb $(EXTRACXXFLAGS) $(INCLUDES)
 LDFLAGS  = -O2 $(EXTRALDFLAGS) $(LIBS)
 
-PRGS	= runit read speedtest convbin gettransform runvhdlcf runhough
+PRGS	= runit read  runvhdlcf runhough
+UTILS   = convbin speedtest gettransform
 
 
 all : $(PRGS)
@@ -95,4 +96,6 @@ speedtest : speedtest.cxx
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
 clean :
-	rm -f *.o $(PRGS)
+	rm -f *.o $(PRGS) $(UTILS)
+
+
