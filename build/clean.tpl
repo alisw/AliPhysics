@@ -13,11 +13,11 @@ clean-check-@MODULE@:
 ifndef ALIQUIET
 		@echo "***** Cleaning code check for @MODULE@ *****"
 endif
-		$(MUTE)rm -f @MODULE@/check/*.i @MODULE@/check/*.ii @MODULE@/check/*.viol
+		$(MUTE)rm -f `find @MODULE@/check -name '*.i'` `find @MODULE@/check -name '*.ii'` `find @MODULE@/check -name '*.viol'`
 
 clean-reveng-@MODULE@:
 ifndef ALIQUIET
 		@echo "***** Cleaning reverse engineering files for @MODULE@ *****"
 endif
-		$(MUTE)rm -f @MODULE@/check/*.dot
+		$(MUTE)rm -f `find @MODULE@/check -name '*.dot'`
 
