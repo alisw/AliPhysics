@@ -63,7 +63,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
   // ctor with all data 
 
   fNMaxPrimary = 25 ; 
-  fNMaxiparent = 50 ; 
+  fNMaxiparent = 150 ; 
   fPrimary = new Int_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
   fAmp         = DigEnergy ;
