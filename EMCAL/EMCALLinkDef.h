@@ -20,7 +20,6 @@
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALTick+;
 #pragma link C++ class AliEMCALRecPoint+;
-#pragma link C++ class AliEMCALTowerRecPoint+;
 #pragma link C++ class AliEMCALSDigitizer+;
 #pragma link C++ class AliEMCALDigitizer+;
 #pragma link C++ class AliEMCALClusterizer+;
