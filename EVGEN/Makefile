@@ -64,9 +64,14 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
+HEADERS       = AliPythia.h
+
+TOCLEAN	      = $(OBJS) *Cint.cxx *Cint.h
 
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
+
+
+
 
 ############################### General Macros ################################
 
