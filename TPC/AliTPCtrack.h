@@ -38,7 +38,7 @@ class AliTPCcluster;
 //_____________________________________________________________________________
 class AliTPCtrack : public AliKalmanTrack {
 public:
-  AliTPCtrack():AliKalmanTrack(){}
+  AliTPCtrack();
   AliTPCtrack(UInt_t index, const Double_t xx[5], 
               const Double_t cc[15], Double_t xr, Double_t alpha); 
   AliTPCtrack(const AliKalmanTrack& t, Double_t alpha);
