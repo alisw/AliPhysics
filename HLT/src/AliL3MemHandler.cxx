@@ -105,6 +105,19 @@ AliL3MemHandler::~AliL3MemHandler()
   if(fDPt) delete [] fDPt;
 }
 
+void AliL3MemHandler::Init(Int_t s,Int_t p, Int_t *r=0)
+{
+  fSlice=s;fPatch=p;
+  if(r) {
+    fRowMin=r[0];
+    fRowMax=r[1];
+  }else{
+     fRowMin=AliL3Transform::GetFirstRow(p);
+     fRowMax=AliL3Transform::GetLastRow(p); 
+  }
+  ResetROI();
+}
+
 void AliL3MemHandler::ResetROI()
 {
   //Resets the Look-up table for Region of Interest mode.
@@ -115,7 +128,6 @@ void AliL3MemHandler::ResetROI()
       fEtaMaxTimeBin[i] = 445;
     }
 }
-
 
 void AliL3MemHandler::SetROI(Float_t *eta,Int_t *slice)
 {

@@ -299,9 +299,9 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       Float_t xyz[3];      
       Float_t fpad=(Float_t)list[j].fPad/(Float_t)list[j].fTotalCharge;
       Float_t ftime=(Float_t)list[j].fTime/(Float_t)list[j].fTotalCharge;
+
       //cout<<"WriteCluster: padrow "<<fCurrentRow<<" pad "<<fpad<<" time "<<ftime<<" charge "<<list[j].fTotalCharge<<endl;
 
-      //printf("padrow %d number of pads %d totalcharge %d\n",fCurrentRow,list[j].fFlags,list[j].fTotalCharge);
       AliL3Transform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
       AliL3Transform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
       if(xyz[0]==0) LOG(AliL3Log::kError,"AliL3ClustFinder","Cluster Finder")
@@ -324,7 +324,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 #ifdef do_mc
       Int_t trackID[3];
       GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
-      //cout<<"padrow "<<fCurrentRow<<" pad "<<(Int_t)rint(fpad)<<" time "<<(Int_t)rint(ftime)<<" Trackid "<<trackID[0]<<endl;
+      cout<<"padrow "<<fCurrentRow<<" pad "<<(Int_t)rint(fpad)<<" time "<<(Int_t)rint(ftime)<<" Trackid "<<trackID[0]<<endl;
       fSpacePointData[counter].fTrackID[0] = trackID[0];
       fSpacePointData[counter].fTrackID[1] = trackID[1];
       fSpacePointData[counter].fTrackID[2] = trackID[2];

@@ -65,7 +65,6 @@ void AliL3Track::Set(AliL3Track *tpt){
   SetTgl(tpt->GetTgl());
   SetCharge(tpt->GetCharge());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
-
 }
 
 Int_t AliL3Track::Compare(const AliL3Track *track) const
@@ -84,19 +83,20 @@ Double_t AliL3Track::GetP() const
 {
   // Returns total momentum.  
   return fabs(GetPt())*sqrt(1. + GetTgl()*GetTgl());
-
 }
 
 Double_t AliL3Track::GetPseudoRapidity() const
 {
   return 0.5 * log((GetP() + GetPz()) / (GetP() - GetPz()));
 }
+
 /*
 Double_t AliL3Track::GetEta() const
 {
   return GetPseudoRapidity();
 }
 */
+
 Double_t AliL3Track::GetRapidity() const
 {
   Double_t m_pi = 0.13957;
@@ -151,7 +151,7 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
 }
 
 void AliL3Track::CalculateHelix(){
-  //Calculate Radius, CenterX and Centery from Psi, X0, Y0
+  //Calculate Radius, CenterX and CenterY from Psi, X0, Y0
   //
   
   fRadius = fPt / (BFACT*AliL3Transform::GetBField());
@@ -237,9 +237,9 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
   // Global coordinate: crossing point with y = ax+ b; a=tan(angle-AliL3Transform::Pi()/2);
   //
-  const Double_t rr=radius;//132; //position of referece plane
-  const Double_t xr = cos(angle) *rr;
-  const Double_t yr = sin(angle) *rr;
+  const Double_t rr=radius;//132; //position of reference plane
+  const Double_t xr = cos(angle) * rr;
+  const Double_t yr = sin(angle) * rr;
   
   Double_t a = tan(angle-pi/2);
   Double_t b = yr - a * xr;

@@ -22,13 +22,13 @@ class AliL3Display : public TObject {
   
  public:
   AliL3Display();
-  AliL3Display(Int_t *slice);
+  AliL3Display(Int_t *slice, Char_t *gfile="$(LEVEL3)/GEO/alice.geom");
   virtual ~AliL3Display();
 
   void Setup(Char_t *trackfile,Char_t *path);
-  void DisplayTracks(Int_t min_hits=10);
-  void DisplayAll(Int_t min_hits=10);
-  void DisplayClusters();
+  void DisplayTracks(Int_t min_hits=10,Bool_t x3don=kTRUE);
+  void DisplayAll(Int_t min_hits=10,Bool_t x3don=kTRUE);
+  void DisplayClusters(Bool_t x3don=kTRUE);
 
   void DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile,Char_t *type="hist");
   void SetTracks(AliL3TrackArray *tracks) {fTracks=tracks;}

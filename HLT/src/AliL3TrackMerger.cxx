@@ -43,7 +43,7 @@ AliL3TrackMerger::~AliL3TrackMerger(){
 }
 
 void AliL3TrackMerger::SetRows(Int_t *row){
-  for(Int_t i =0;i<fNSubSector;i++){
+  for(Int_t i=0;i<fNSubSector;i++){
     fRowMin[i]=*(row+(2*i));
     fRowMax[i]=*(row+(2*i+1));
   }

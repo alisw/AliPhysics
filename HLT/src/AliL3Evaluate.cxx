@@ -67,10 +67,8 @@ AliL3Evaluate::AliL3Evaluate(Int_t *slice)
 {
   //ctor to use if you do not need any rootfile.
 
-
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
-
 }
 
 AliL3Evaluate::~AliL3Evaluate()
@@ -100,6 +98,7 @@ AliL3Evaluate::~AliL3Evaluate()
 void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
 {
   //Read in the hit and track information from produced files.
+  AliL3Transform::Init(path);
   
   fGoodFound = 0;
   fGoodGen = 0;
@@ -142,6 +141,7 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
 void AliL3Evaluate::SetupSlow(Char_t *trackfile,Char_t *digitsfile,Char_t *path)
 {
   //Setup for using the slow simulator.
+  AliL3Transform::Init(path);
   
   fDigitsFile = new TFile(digitsfile,"READ");
   if(!fDigitsFile->IsOpen())
@@ -162,6 +162,7 @@ void AliL3Evaluate::SetupSlow(Char_t *trackfile,Char_t *digitsfile,Char_t *path)
 void AliL3Evaluate::SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path)
 {
   //Setup for using the fast simulator.
+  AliL3Transform::Init(path);
 
   fIsSlow = false;
   GetFastClusterIDs(path);
@@ -212,8 +213,6 @@ Bool_t AliL3Evaluate::InitMC()
   return true;
   
 }
-
-
 
 void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_number,Char_t *fname)
 {
@@ -576,7 +575,6 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
 
 }
 
-
 Int_t **AliL3Evaluate::GetClusterIDs(AliL3Track *track)
 {
   //Return the MC information of all clusters belonging to track.
@@ -706,6 +704,7 @@ void AliL3Evaluate::CreateHistos(Int_t nbin,Int_t xlow,Int_t xup)
   fFakeTrackEffEta = new TH1F("fFakeTrackEffEta","Efficiency for fake tracks vs eta",20,-50,50);
   printf("finished creating histos\n");
 }
+
 /*
 void AliL3Evaluate::FillEffHistos()
 {  
@@ -742,6 +741,7 @@ void AliL3Evaluate::FillEffHistos()
     }
 }
 */
+
 void AliL3Evaluate::FillEffHistos()
 {  
   //Fill the efficiency histograms.
@@ -1095,8 +1095,8 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
 {
   //Calcluate the crossing point between a generated particle and given padrow.
   
-
-  Double_t kappa = 0.2*0.0029980/part->Pt();
+  Double_t Pi = AliL3Transform::Pi();
+  Double_t kappa = AliL3Transform::GetBField()*0.0029980/part->Pt();
   
   Double_t radius = 1/fabs(kappa);
   if(part->GetPdgCode() > 0) kappa = -kappa;

@@ -58,7 +58,8 @@ SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
           AliL3Vertex.cxx AliL3VertexFinder.cxx \
           AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinderNew.cxx \
           AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
-          AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx 
+          AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx\
+          AliL3Evaluate.cxx
 
 DICT = AliL3Cint.cxx
 DICTH = AliL3Cint.h

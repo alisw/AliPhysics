@@ -61,7 +61,7 @@ class AliL3MemHandler{
   virtual ~AliL3MemHandler();
   
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
-  void Init(Int_t s,Int_t p){fSlice=s;fPatch=p;fRowMin=AliL3Transform::GetFirstRow(p);fRowMax=AliL3Transform::GetLastRow(p); ResetROI();}
+  void Init(Int_t s,Int_t p, Int_t *r=0);
 
   Bool_t SetBinaryInput(char *name);
   Bool_t SetBinaryInput(FILE *file);

@@ -42,15 +42,15 @@ AliL3Display::AliL3Display()
   fTracks = NULL;
 }
 
-AliL3Display::AliL3Display(Int_t *slice)
+AliL3Display::AliL3Display(Int_t *slice,Char_t *gfile)
 {
   //Ctor. Specify which slices you want to look at.
 
-  TFile *file = new TFile("$(LEVEL3)/GEO/alice.geom");
+  TFile *file = new TFile(gfile);
   if(!file) printf("NO FILE\n");
   if(!file->IsOpen())
     LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
-      <<"Geometry file alice.geom does not exist"<<ENDLOG;
+      <<"Geometry file " << gfile << " does not exist"<<ENDLOG;
   
   fGeom = (TGeometry*)file->Get("AliceGeom");
   fMinSlice = slice[0];
@@ -109,7 +109,7 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
 
 }
 
-void AliL3Display::DisplayTracks(Int_t min_hits)
+void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don)
 {
   //Display the found tracks.
 
@@ -118,7 +118,6 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
   
   TView *v = new TView(1);
   v->SetRange(-430,-560,-430,430,560,1710);
-  
   c1->Clear();
   c1->SetFillColor(1);
   c1->SetTheta(90.);
@@ -200,16 +199,17 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
   */
   fGeom->Draw("same");
   
-  c1->x3d();
+  if(x3don) c1->x3d();
   
 }
 
-void AliL3Display::DisplayClusters()
+void AliL3Display::DisplayClusters(Bool_t x3don)
 {
   //Display all clusters.
   
   TCanvas *c1 = new TCanvas("c1","",700,700);
   c1->cd();
+
   TView *v = new TView(1);
   v->SetRange(-430,-560,-430,430,560,1710);
   c1->Clear();
@@ -243,15 +243,14 @@ void AliL3Display::DisplayClusters()
     }
   fGeom->Draw("same");
   
-  c1->x3d(); 
+  if(x3don) c1->x3d(); 
 }
 
 
-void AliL3Display::DisplayAll(Int_t min_hits)
+void AliL3Display::DisplayAll(Int_t min_hits,Bool_t x3don)
 {
   //Display tracks & all hits.
 
-  
   TCanvas *c1 = new TCanvas("c1","",700,700);
   c1->cd();
   TView *v = new TView(1);
@@ -289,7 +288,6 @@ void AliL3Display::DisplayAll(Int_t min_hits)
   Float_t xcl[176];
   Float_t ycl[176];
   Float_t zcl[176];
-  
   
   for(Int_t j=0; j<ntracks; j++)
     {
@@ -332,7 +330,6 @@ void AliL3Display::DisplayAll(Int_t min_hits)
       current_line->Draw("same");
     }
   
-  
   Char_t fname[256];
   Int_t i;
   Int_t color = 1;
@@ -354,10 +351,8 @@ void AliL3Display::DisplayAll(Int_t min_hits)
     
   fGeom->Draw("same");
   
-  c1->x3d();
-  
+  if(x3don) c1->x3d();
 }
-
 
 void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile,Char_t *type)
 {

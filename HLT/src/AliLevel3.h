@@ -20,6 +20,7 @@ class TDirectory;
 class AliL3ClustFinderNew;
 class AliL3Merger;
 class AliL3InterMerger;
+
 #ifdef use_aliroot
 class AliL3FileHandler;
 #else
@@ -39,32 +40,40 @@ class AliLevel3 : public TObject {
   AliL3GlobalMerger *fGlobalMerger; //!
   AliL3InterMerger *fInterMerger; //!
   AliL3ClustFinderNew *fClusterFinder; //! 
-  #ifdef use_aliroot
+#ifdef use_aliroot
   AliL3FileHandler *fFileHandler; //!
-  #else
+#else
   AliL3MemHandler *fFileHandler; //!
-  #endif
+#endif
   AliL3Benchmark *fBenchmark;//!
+
+  Int_t fEvent;
   Int_t fNPatch;
   Int_t fRow[6][2];
-  Char_t fPath[256];
-  Char_t fWriteOutPath[256];
+  Float_t fEta[2];
+  
   TDirectory *savedir;
   TFile *fInputFile;
+  Char_t fPath[256];
+  Char_t fWriteOutPath[256];
+
+  Bool_t fDoRoi;
   Bool_t fFindVertex;
   Bool_t fDoNonVertex;
-  Bool_t fClusterDeconv;
-  Int_t fEvent;
-  //void Init(Int_t npatches=6);
-  void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
-                                             Int_t slice,Int_t patch);
-  void WriteResults();
-  Int_t WriteTracks(char *filename,AliL3Merger *merger,char opt='o');  
-  Float_t fEta[2];
-  Bool_t fDoRoi;
+
   Bool_t fUseBinary;
   Bool_t fWriteOut;
+
+  Float_t fXYClusterError;
+  Float_t fZClusterError;
+  Bool_t fClusterDeconv;
+
+  void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
+                                          Int_t slice,Int_t patch);
+  void WriteResults();
+  Int_t WriteTracks(char *filename,AliL3Merger *merger,char opt='o');  
   void SetPath(char *p){sprintf(fPath,"%s",p);}
+
  public:
   AliLevel3 ();
   AliLevel3(Char_t *infile);
@@ -78,19 +87,21 @@ class AliLevel3 : public TObject {
 		       Double_t min_pt_fit=0,Double_t maxangle=1.31,
 		       Double_t goodDist=5,Double_t hitChi2Cut=10,
 		       Double_t goodHitChi2=20,Double_t trackChi2Cut=50,
-		       Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1,Bool_t vertexconstraint=kTRUE);
-
+		       Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1,
+                       Bool_t vertexconstraint=kTRUE);
+  void SetClusterFinderParam(Float_t fXYError=0.2,Float_t fZError=0.3,Bool_t deconv=kTRUE);
 
   void ProcessEvent(Int_t first,Int_t last,Int_t event=0);
   void ProcessSlice(Int_t slice);
 
-  //void UseBinaryInput(char *path){SetPath(path);fUseBinary=kTRUE;}
   void DoMc(char* file="point_mc.dat");
   void DoNonVertexTracking() {fDoNonVertex=kTRUE;}
   void FindVertex() {fFindVertex=kTRUE;}
   void DoBench(char* name="benchmark");
   void DoRoi(Float_t e0=0.4,Float_t e1=0.5){fEta[0]=e0;fEta[1]=e1;fDoRoi=kTRUE;}
   void WriteFiles(Char_t *path="./"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
+  //void UseBinaryInput(char *path){SetPath(path);fUseBinary=kTRUE;}
+
   ClassDef(AliLevel3,1) //Interface class for Level3-tracking
 };
 

@@ -102,15 +102,18 @@ void AliLevel3::Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6)
   
   AliL3Transform::Init(path);//Initialize the detector parameters.
   fWriteOut = kFALSE;
-  fGlobalMerger=0;
-  fDoRoi = kFALSE;
-  fDoNonVertex = kFALSE;
-  fClusterDeconv = kTRUE;
-  fEta[0] = 0.;
-  fEta[1] = 0.9;
   fUseBinary = binary;
   SetPath(path);
-  fFindVertex =kFALSE;
+  fGlobalMerger = 0;
+
+  fDoRoi = kFALSE;
+  fDoNonVertex = kFALSE;
+  fFindVertex = kFALSE;
+  SetClusterFinderParam();
+
+  fEta[0] = 0.;
+  fEta[1] = 0.9;
+
   fEvent=0;
 
   switch(npatches){
@@ -139,7 +142,7 @@ void AliLevel3::Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6)
     fRow[4][0] = 142;
     fRow[4][1] = 175;   // last row
     break;
-  default:
+  default: //should match entries in AliL3Transform
     fNPatch = 6;        //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 31;
@@ -182,12 +185,19 @@ void AliLevel3::DoMc(char* file){
 
 AliLevel3::~AliLevel3(){
   //Destructor
-  if(fVertexFinder)  delete fVertexFinder;
-  if(fVertex)  delete fVertex;
+  if(fVertexFinder) delete fVertexFinder;
+  if(fVertex) delete fVertex;
   if(fTracker) delete fTracker;
   if(fTrackMerger) delete fTrackMerger;
   if(fInterMerger) delete fInterMerger;
   if(fFileHandler) delete fFileHandler;
+}
+
+void AliLevel3::SetClusterFinderParam(Float_t fXYError, Float_t fZError, Bool_t deconv)
+{
+  fXYClusterError=fXYError;
+  fZClusterError=fZError;
+  fClusterDeconv=deconv;
 }
 
 void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
@@ -216,7 +226,7 @@ void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
 
 void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   //Do tracking on all slices in region [first,last]
-  //Slices numbering in TPC goes from 0-35, which means that 1 slice
+  //Slices numbering in TPC goes from 0-35, which means that one slice
   //corresponds to inner+outer sector.E.g. slice 2 corresponds to
   //inner=2 + outer=38.
   fGlobalMerger= new AliL3GlobalMerger(first,last);  
@@ -252,11 +262,11 @@ void AliLevel3::ProcessSlice(Int_t slice){
   const Int_t maxpoints=100000;
   const Int_t pointsize = maxpoints * sizeof(AliL3SpacePointData);
   AliL3MemHandler *memory = new AliL3MemHandler();
-  
+
   fTrackMerger->Reset();
   fTrackMerger->SetRows(fRow[0]);
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
-    fFileHandler->Init(slice,patch);
+    fFileHandler->Init(slice,patch,&fRow[patch][0]);
     UInt_t npoints=0;
     AliL3SpacePointData *points =0;
     UInt_t ndigits=0;
@@ -353,11 +363,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
       points = (AliL3SpacePointData *) memory->Allocate(pointsize);
   
       fClusterFinder = new AliL3ClustFinderNew();
-      fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1]
-				,maxpoints);
+      fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1],maxpoints);
       fClusterFinder->SetDeconv(fClusterDeconv);
-      fClusterFinder->SetXYError(0.2);
-      fClusterFinder->SetZError(0.3);
+      fClusterFinder->SetXYError(fXYClusterError);
+      fClusterFinder->SetZError(fZClusterError);
       fClusterFinder->SetOutputArray(points);
       fClusterFinder->Read(ndigits,digits);
       fBenchmark->Start("Cluster Finder");
@@ -369,8 +378,6 @@ void AliLevel3::ProcessSlice(Int_t slice){
       fFileHandler->Free();
       LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
         <<AliL3Log::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;
-    
-    
     }//end UseCF
     else{// if not use Clusterfinder
       if(fUseBinary){//Binary to Memory
@@ -516,7 +523,6 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
   memory->CloseBinaryOutput();
   delete  memory;
 }
-
 
 Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt){
   AliL3MemHandler *memory = new AliL3MemHandler();
