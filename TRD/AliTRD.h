@@ -37,7 +37,8 @@ class AliTRD : public AliDetector {
   virtual void       AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q, Bool_t inDrift); 
   virtual void       AddCluster(Float_t *pos, Int_t det, Float_t amp, Int_t *tracks
                               , Float_t *sig, Int_t iType);
-  virtual void       AddTrackReference(Int_t label, TLorentzVector p, TLorentzVector x);
+  virtual void       AddTrackReference(Int_t label, TLorentzVector p
+                                     , TLorentzVector x, Float_t length);
   virtual void       BuildGeometry();
   virtual void       Copy(TObject &trd);
   virtual void       CreateGeometry();

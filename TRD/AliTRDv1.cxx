@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2002/11/21 22:38:47  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.35  2002/10/14 14:57:44  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -641,7 +644,7 @@ void AliTRDv1::StepManager()
 	  // momentum components of the particle
           if (gMC->IsTrackEntering() || gMC->IsTrackExiting()) {
             gMC->TrackMomentum(mom);
-            AddTrackReference(gAlice->CurrentTrack(),mom,pos);
+            AddTrackReference(gAlice->CurrentTrack(),mom,pos,gMC->TrackLength());
           }
 
           // Create the hits from TR photons

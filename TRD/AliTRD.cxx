@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.43  2002/11/21 22:38:47  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.42  2002/10/22 15:53:08  alibrary
 Introducing Riostream.h
 
@@ -361,7 +364,8 @@ void AliTRD::AddCluster(Float_t *pos, Int_t det, Float_t amp
 }
 
 //_____________________________________________________________________________
-void  AliTRD::AddTrackReference(Int_t label, TLorentzVector p, TLorentzVector x)
+void  AliTRD::AddTrackReference(Int_t label, TLorentzVector p
+                              , TLorentzVector x, Float_t length)
 {
   //
   // Add a trackrefernce to the list
@@ -378,6 +382,7 @@ void  AliTRD::AddTrackReference(Int_t label, TLorentzVector p, TLorentzVector x)
   ref->SetMomentum(p[0],p[1],p[2]);
   ref->SetPosition(x[0],x[1],x[2]);
   ref->SetTrack(label);
+  ref->SetLength(length);
 
 }
 
