@@ -19,9 +19,9 @@
 //
 // Class AliMUONSt1Segmentation
 // ------------------------------
-// Segmentation for MUON 
-// station 1 using the external 
+// Segmentation for MUON station 1 using the external 
 // mapping package
+// Included in AliRoot 2003/01/28
 
 #include <TError.h>
 #include <TF1.h>

@@ -22,6 +22,7 @@
 // Response class for station 1 including electronics and detector response. 
 // Individual pedestals or noise levels can be controlled separately. 
 // The current pulse height responses do not contain any physics
+// Included in AliRoot 2003/01/28
 
 #include <TMath.h>
 #include <TRandom.h>

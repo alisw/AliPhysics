@@ -27,6 +27,7 @@
 //
 // comment lines can be introduced if the first non-blank character
 // is either ';' or '#'
+// Included in AliRoot 2003/01/28
 
 #if !defined(__HP_aCC) && !defined(__alpha)
   #include <sstream>

@@ -27,7 +27,7 @@
 //   note :                                      |_____________________|
 //                                                         |
 //                                             this is just ONE substring.
-
+// Included in AliRoot 2003/01/28
 
 #include "AliMUONSt1Decoder.h"
 

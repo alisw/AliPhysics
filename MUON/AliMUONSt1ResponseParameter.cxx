@@ -23,6 +23,7 @@
 // in order to simulate electronics characteristics 
 // (pedestal, noise, sticky bits, etc....)
 // Threshold levels for the MANU zero supression algorithm are included.
+// Included in AliRoot 2003/01/28
 
 #include <fstream>
 

@@ -21,6 +21,7 @@
 // ----------------------------
 // Encapsulate the distance between the center of a given daughter card
 // and the pad/kapton connector.
+// Included in AliRoot 2003/01/28
 
 #include "AliMUONSt1SpecialMotif.h"
 

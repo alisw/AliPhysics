@@ -25,6 +25,7 @@
 // a range of electronic channel numbers or
 // a range of MANU numbers or, finally,
 // a range of gassiplex/MANAS numbers, in a given range of MANU addresses
+// Included in AliRoot 2003/01/28
 
 #include "AliMpPad.h"
 

@@ -3,8 +3,8 @@
 // Class AliMUONGeometryEnvelope
 // -----------------------------
 // Helper class for definititon an assembly of volumes.
-//
 // Author: Ivana Hrivnacova, IPN Orsay
+// 23/01/2004
 
 #include <TGeoMatrix.h>
 #include <TString.h>

@@ -3,8 +3,8 @@
 // Class AliMUONGeometryConstituent
 // -----------------------------
 // Helper class for definititon of an assembly of volumes.
-//
 // Author: Ivana Hrivnacova, IPN Orsay
+// 23/01/2004
 
 #include <TGeoMatrix.h>
 

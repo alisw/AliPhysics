@@ -23,6 +23,7 @@
 // A "rule" is defined as being a set of electronic filters to be applied 
 // (ie. a set of AliMUONSt1ResponseParameter) and a set of cathode pads to 
 // which these filters should be applied (set of AliMUONSt1ElectronicElement)
+// Included in AliRoot 2003/01/28
 
 #include "AliMpPad.h"
 

@@ -2,9 +2,9 @@
 //
 // Class AliMUONChamberGeometry
 // -----------------------------
-// Class for definititon of the MUON chamber positions in ALIC.
-//
+// Class for definititon of the MUON chamber positions in ALIC
 // Author: Ivana Hrivnacova, IPN Orsay
+// 23/01/2004
 
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
