@@ -30,9 +30,21 @@ ifeq ($(ALICE_TARGET),Linux)
   CXXOPTS := $(filter-out -Wall,$(CXXOPTS))
   CXXOPTS += -Wimplicit-int -Wimplicit-function-declaration\
 	     -Wimplicit -Wmain -Wreturn-type -Wcomment \
-	     -Wtrigraphs -Wformat -Wchar-subscripts -Wuninitialized \
+	     -Wtrigraphs -Wformat -Wchar-subscripts \
 	     -Wparentheses              
+  CXXOPTS := $(patsubst -O%,-O% -Wuninitialized,$(CXXOPTS))
 endif
+
+ifeq ($(ALICE_TARGET),HP-UX.aCC)
+
+# Adding options: 
+# +Onolimit - excludes warnings from G4 
+# +DAportable - necessary (if not set, run time error from object space)                         
+
+  CXXOPTS := $(patsubst -O%,-O% +Onolimit,$(CXXOPTS))
+  CXXOPTS := $(patsubst +O%,+O% +Onolimit,$(CXXOPTS))
+  CXXOPTS += +DAportable
+endif  
  
 #
 # Geant4 include paths
@@ -166,7 +178,7 @@ else
 	> $(G4INSTALL)/lib/$(G4SYSTEM)/list; fi )
 # Extra libraries to resolve remaining circular dependencies...    
   LDLIBS2 := $(shell cat $(G4INSTALL)/lib/$(G4SYSTEM)/list)	
-  LDLIBS2 += -lG4xrays -lG4optical -lG4muons
+#  LDLIBS2 += -lG4xrays -lG4optical -lG4muons
 endif	
 
 # Warning: do not add to LDLIBS2 with += becuase this causes it to be
@@ -194,13 +206,13 @@ endif
 ifdef USER_DEFINED_LDLIBS
   LDLIBS_PREFINAL := $(LDLIBS)
 else
-  LDLIBS_PREFINAL = $(LDLIBS1) $(LDLIBS2) $(LDLIBS2EXTRA) $(LDLIBS3)
+  LDLIBS_PREFINAL = $(LDLIBS1) -lG3toG4 $(LDLIBS2) $(LDLIBS2EXTRA) $(LDLIBS3)
 endif
   LDLIBS_PREFINAL += $(LDLIBS4)
 
 LDLIBS = $(LDLIBS_PREFINAL)
 
-G4LDLIBS = $(LDLIBS) -lG3toG4
+G4LDLIBS = $(LDLIBS)
 
 endif #ifdef NEED_G4_LIBS
 
