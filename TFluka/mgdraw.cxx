@@ -28,12 +28,8 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     TVirtualMCStack* cppstack = fluka->GetStack();
     
     if (TRACKR.jtrack == -1) {
-	// Optical photons
-	//
-	// Try first to get the track ID from the FLUKA stack for optical photons
-	trackId = OPPHST.LOUOPP[OPPHST.LSTOPP];
+	trackId = OPPHST.louopp[OPPHST.lstopp];
 	if (trackId == 0) {
-	    // This might be a feedback photon or similar that was put on the VMC stack first 
 	    trackId = STACK.ispark[STACK.lstack][mkbmx2-1];
 	}
     } else {
