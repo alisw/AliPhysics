@@ -7,19 +7,17 @@
 
 ClassImp(AliITSdcsSSD)
 
-
-//_____________________________________________________________________
-//
 // Constructor and Destructor
-//_____________________________________________________________________
+//______________________________________________________________________
+AliITSdcsSSD::AliITSdcsSSD(){
+    // Default Constructor
 
-
-AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp) 
-{
-  // constructor
-
-  //MI    fRandom = new TRandom();
-    fRandom = gRandom;
+    fInvalidP = 0;
+    fInvalidN = 0;
+}
+//______________________________________________________________________
+AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp){
+    // Standard constructor
 
     fNstrips = seg->Npx();
     
@@ -28,21 +26,20 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
 
     Int_t npar=resp->NDetParam();
     if (npar < 6) {
-       Warning("AliITSdcsSSD","I need 6 parameters ");
-       npar=6;
-    }
+	Warning("AliITSdcsSSD","I need 6 parameters ");
+	npar=6;
+    } // end if
 
     Float_t *detpar= new Float_t[npar];
     resp->GetDetParam(detpar);
 
     fNInvalid = detpar[0];
-    fISigma = detpar[1];
+    fISigma   = detpar[1];
 
     fCouplingPR = detpar[2];
     fCouplingPL = detpar[3];
     fCouplingNR = detpar[4];
-    fCouplingNL = detpar[5]; 
-
+    fCouplingNL = detpar[5];
 
     char opt[30],dummy[20];
     resp->ParamOptions(opt,dummy);
@@ -50,95 +47,87 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
 
     delete [] detpar;
 }
-
-//_____________________________________________________________________
-
-
+//______________________________________________________________________
 AliITSdcsSSD::~AliITSdcsSSD() {
-  // destructor
+    // destructor
+
     delete fInvalidP;
     delete fInvalidN;
 }
-
-//__________________________________________________________________________
+//______________________________________________________________________
 AliITSdcsSSD::AliITSdcsSSD(const AliITSdcsSSD &source){
-  //     Copy Constructor 
-  if(&source == this) return;
-  this->fCouplingPR = source.fCouplingPR;
-  this->fCouplingPL = source.fCouplingPL;
-  this->fCouplingNR = source.fCouplingNR;
-  this->fCouplingNL = source.fCouplingNL;
-  this->fNstrips = source.fNstrips;
-  this->fNInvalid = source.fNInvalid;
-  this->fISigma = source.fISigma;
-  this->fInvalidP = source.fInvalidP;
-  this->fInvalidN = source.fInvalidN;
-  this->fRandom = source.fRandom;
-  return;
-}
+    //     Copy Constructor 
 
+    if(&source == this) return;
+
+    this->fCouplingPR = source.fCouplingPR;
+    this->fCouplingPL = source.fCouplingPL;
+    this->fCouplingNR = source.fCouplingNR;
+    this->fCouplingNL = source.fCouplingNL;
+    this->fNstrips = source.fNstrips;
+    this->fNInvalid = source.fNInvalid;
+    this->fISigma = source.fISigma;
+    this->fInvalidP = source.fInvalidP;
+    this->fInvalidN = source.fInvalidN;
+
+    return;
+}
 //_________________________________________________________________________
-AliITSdcsSSD& 
-  AliITSdcsSSD::operator=(const AliITSdcsSSD &source) {
-  //    Assignment operator
-  if(&source == this) return *this;
-  this->fCouplingPR = source.fCouplingPR;
-  this->fCouplingPL = source.fCouplingPL;
-  this->fCouplingNR = source.fCouplingNR;
-  this->fCouplingNL = source.fCouplingNL;
-  this->fNstrips = source.fNstrips;
-  this->fNInvalid = source.fNInvalid;
-  this->fISigma = source.fISigma;
-  this->fInvalidP = source.fInvalidP;
-  this->fInvalidN = source.fInvalidN;
-  this->fRandom = source.fRandom;
-  return *this;
-}
+AliITSdcsSSD& AliITSdcsSSD::operator=(const AliITSdcsSSD &source) {
+    //    Assignment operator
 
+    if(&source == this) return *this;
+
+    this->fCouplingPR = source.fCouplingPR;
+    this->fCouplingPL = source.fCouplingPL;
+    this->fCouplingNR = source.fCouplingNR;
+    this->fCouplingNL = source.fCouplingNL;
+    this->fNstrips = source.fNstrips;
+    this->fNInvalid = source.fNInvalid;
+    this->fISigma = source.fISigma;
+    this->fInvalidP = source.fInvalidP;
+    this->fInvalidN = source.fInvalidN;
+
+    return *this;
+}
 //_____________________________________________________________________
 //
 //  Methods for creating invalid strips
 //_____________________________________________________________________
-//
-
-
 void AliITSdcsSSD::SetInvalidMC(Float_t mean, Float_t sigma) {
-  // set invalid MC
+    // set invalid MC
+
     SetInvalidParam(mean, sigma);
     SetInvalidMC();
 }
-
-//_____________________________________________________________________
-
+//______________________________________________________________________
 void AliITSdcsSSD::SetInvalidMC() {
-  // set invalid MC
+    // set invalid MC
     Int_t pside;
     Int_t nside;
     Int_t i;
     Int_t strip;
 
-    pside = (Int_t)fRandom->Gaus(fNInvalid, fISigma);
-    nside = (Int_t)fRandom->Gaus(fNInvalid, fISigma);
+    pside = (Int_t)gRandom->Gaus(fNInvalid, fISigma);
+    nside = (Int_t)gRandom->Gaus(fNInvalid, fISigma);
     
     fInvalidP->Set(pside);
     fInvalidN->Set(nside);
      
     for(i=0 ;i<pside; i++) {
-       strip = (Int_t)(fRandom->Rndm() * fNstrips);
+       strip = (Int_t)(gRandom->Rndm() * fNstrips);
        fInvalidP->AddAt(strip, i); 
-    }
+    } // end for i
     
     for(i=0 ;i<nside; i++) {
-       strip = (Int_t)(fRandom->Rndm() * fNstrips);
+       strip = (Int_t)(gRandom->Rndm() * fNstrips);
        fInvalidN->AddAt(strip, i); 
-    }  
+    } // end for i
 }
-
-//_____________________________________________________________________
-
-
+//______________________________________________________________________
 void AliITSdcsSSD::SetInvalidParam(Float_t mean, Float_t sigma) {
-  // set invalid param
+    // set invalid param
+
     fNInvalid = mean;
     fISigma = sigma;
 
@@ -148,72 +137,57 @@ void AliITSdcsSSD::SetInvalidParam(Float_t mean, Float_t sigma) {
     fISigma = (fISigma < 0)? 0 : fISigma;
     fISigma = (fISigma > fNstrips/10) ? fNstrips/10 : fISigma;
 }
-
-
-//_____________________________________________________________________
-
-
+//______________________________________________________________________
 void AliITSdcsSSD::GetInvalidParam(Float_t &mean, Float_t &sigma) {
-  // get invalid param
+    // get invalid param
+
     mean = fNInvalid;
     sigma = fISigma;
-
 }
-
-
 //_____________________________________________________________________
 //
 //  Methods for accessing to invalid strips
 //_____________________________________________________________________
-//
-
-
 Bool_t AliITSdcsSSD::IsValidP(Int_t strip) {
-  // isvalidP
+    // isvalidP
     Int_t nElem = fInvalidP->GetSize();
-    //printf("IsValidP: nElem %d\n",nElem);
-    for(Int_t i = 0; i<nElem; i++)
-       if(fInvalidP->At(i) == strip) return kFALSE;
+
+    for(Int_t i = 0; i<nElem; i++) if(fInvalidP->At(i) == strip) return kFALSE;
     return kTRUE;
 }
-
-//_____________________________________________________________________
-
+//______________________________________________________________________
 Bool_t AliITSdcsSSD::IsValidN(Int_t strip) {
-  // is valid N
+    // is valid N
     Int_t nElem = fInvalidN->GetSize();
-    //printf("IsValidN: nElem %d\n",nElem);
-    for(Int_t i = 0; i<nElem; i++)
-       if(fInvalidN->At(i) == strip) return kFALSE;
+
+    for(Int_t i = 0; i<nElem; i++) if(fInvalidN->At(i) == strip) return kFALSE;
     return kTRUE;
 }
-
-//_____________________________________________________________________
-
-
+//______________________________________________________________________
 TArrayS* AliITSdcsSSD::GetInvalidP() {
-  // get invalid P
+    // get invalid P
+
     return fInvalidP;
 }
-
+//______________________________________________________________________
 TArrayS* AliITSdcsSSD::GetInvalidN() {
-  // get invalid N
+    // get invalid N
+
     return fInvalidN;
 }
-
+//______________________________________________________________________
 Int_t AliITSdcsSSD::GetNInvalidP(){
-  // get numeber of invalid P    
+    // get numeber of invalid P
+
     return fInvalidP->GetSize();
 }
-
+//______________________________________________________________________
 Int_t AliITSdcsSSD::GetNInvalidN() {
-  // // get number of invalid N
+    // get number of invalid N
+
     return fInvalidN->GetSize();
 }
-
 //_____________________________________________________________________
-
-
 
 
 
