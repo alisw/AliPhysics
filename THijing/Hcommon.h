@@ -1,4 +1,3 @@
-
 #ifndef ROOT_HCommon
 #define ROOT_HCommon
 
@@ -353,7 +352,7 @@ COMMON_BLOCK_DEF(Himain1Common,HIMAIN1);
 typedef struct {
    Int_t    katt[4][200000];
    Float_t  patt[4][200000];
-   Float_t  vatt[4][200000];
+   Float_t  vatt[4][200000];    
 } Himain2Common;
 
 #define HIMAIN2 COMMON_BLOCK(HIMAIN2,himain2)
@@ -568,6 +567,18 @@ COMMON_BLOCK_DEF(HistrngCommon,HISTRNG);
 /*	   the projectile nucleons.					 */
 /*									 */
 /*=======================================================================*/
+
+//    COMMON/LUDAT1_HIJING/MSTU(200),PARU(200),MSTJ(200),PARJ(200) 
+//	SAVE /LUDAT1_HIJING/
+    typedef struct {
+	Int_t    mstu[200];
+	Float_t  paru[200];
+	Int_t    mstj[200];
+	Float_t  parj[200];
+} Ludat1_HijingCommon;
+
+#define LUDAT1_HIJING COMMON_BLOCK(LUDAT1_HIJING,ludat1_hijing)
+COMMON_BLOCK_DEF(Ludat1_HijingCommon,LUDAT1_HIJING);
 }
 
 #endif

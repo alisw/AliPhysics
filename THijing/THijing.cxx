@@ -1087,6 +1087,26 @@ Float_t THijing::GetPT(Int_t key1, Int_t key2) const
    return HISTRNG.pt[key2-1][key1-1];
 }
 
+void THijing::SetPARJ(Int_t key, Float_t parm) 
+{
+    if ( key < 1 || key > 200) {
+	printf("ERROR in THijing::SetPARJ(key,parm):\n");
+	printf("      key=%i is out of range [1..200]\n",key);
+    }
+    
+    LUDAT1_HIJING.parj[key-1] = parm;
+}
+
+
+void THijing::SetMSTJ(Int_t key, Int_t parm) 
+{
+    if ( key < 1 || key > 200) {
+	printf("ERROR in THijing::SetMSTJ(key,parm):\n");
+	printf("      key=%i is out of range [1..200]\n",key);
+    }
+    
+    LUDAT1_HIJING.mstj[key-1] = parm;
+}
 
 
 //====================== access to Hijing subroutines =========================

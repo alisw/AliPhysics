@@ -187,6 +187,10 @@ public:
    virtual Int_t       GetNFT(Int_t key1, Int_t key2) const;
 
    virtual Float_t     GetPT(Int_t key1, Int_t key2) const;
+
+   // common LUDAT1_HIJING common:
+   virtual void        SetPARJ(Int_t key, Float_t parm);
+   virtual void        SetMSTJ(Int_t key, Int_t   parm);   
    
    // access to HIJING routines:
 
