@@ -42,7 +42,7 @@ AliEMCALRecParticle::AliEMCALRecParticle(const AliEMCALRecParticle & rp)
 {
   // copy ctor
 
-  fEMCALTrackSegment = rp.fEMCALTrackSegment ; 
+  fEMCALRecPoint    = rp.fEMCALRecPoint ; 
   fDebug            = kFALSE ; 
   fType             = rp.fType ; 
   fIndexInList      = rp.fIndexInList ;
@@ -81,8 +81,7 @@ const Int_t AliEMCALRecParticle::GetNPrimariesToRecParticles() const
   // Returns the number of primaries at the origine of a RecParticle
   Int_t rv = 0 ;
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
-  Int_t ecaRPindex = dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex()))->GetECAIndex();
-  dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(ecaRPindex))->GetPrimaries(rv) ; 
+  dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(GetEMCALRPIndex()))->GetPrimaries(rv) ; 
   return rv ; 
 }
 
@@ -99,8 +98,7 @@ const TParticle * AliEMCALRecParticle::GetPrimary(Int_t index) const
   Int_t dummy ; 
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
 
-  Int_t ecaRPindex = dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex()))->GetECAIndex();
-  Int_t primaryindex = dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(ecaRPindex))->GetPrimaries(dummy)[index] ; 
+  Int_t primaryindex = dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(GetEMCALRPIndex()))->GetPrimaries(dummy)[index] ; 
   return gime->Primary(primaryindex) ;
 }
 

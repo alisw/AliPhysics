@@ -24,23 +24,23 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
 
  public:
   
-  AliEMCALRecParticle() { fEMCALTrackSegment = 0 ; fDebug = kFALSE ; } 
+  AliEMCALRecParticle() { fEMCALRecPoint = 0 ; fDebug = kFALSE ; } 
   AliEMCALRecParticle(const AliEMCALRecParticle & rp) ;  // ctor
   virtual ~AliEMCALRecParticle(){  }
 
-  Int_t   GetEMCALTSIndex()const {    return fEMCALTrackSegment ;  }
+  Int_t   GetEMCALRPIndex()const {    return fEMCALRecPoint ;  }
   virtual const Int_t GetNPrimariesToRecParticles() const ;
   virtual const Int_t GetNPrimaries() const ;
   virtual const TParticle * GetPrimary(Int_t index) const ;
   void    SetDebug() { fDebug = kTRUE ; } 
   void    UnsetDebug() { fDebug = kFALSE ; }
-  void    SetTrackSegment(Int_t index){fEMCALTrackSegment = index; }
+  void    SetRecPoint(Int_t index){fEMCALRecPoint = index; }
 
   typedef TClonesArray RecParticlesList ; 
   
  private:
 
-  Int_t fEMCALTrackSegment ; // pointer to the associated track segment in EMCAL  
+  Int_t fEMCALRecPoint ; // pointer to the associated track segment in EMCAL  
   Bool_t fDebug ; // to steer debug output 
 
   ClassDef(AliEMCALRecParticle,2)  // Reconstructed Particle
