@@ -117,6 +117,7 @@ void AliGenPythia::Generate()
     Float_t origin_p[3]= {0,0,0};
     Float_t origin0[3]=  {0,0,0};
     Float_t p[3], p_p[4], random[6];
+    static TClonesArray *particles;
 //  converts from mm/c to s
     const Float_t kconv=0.001/2.999792458e8;
     
@@ -126,6 +127,8 @@ void AliGenPythia::Generate()
     Int_t nt_p=0;
     Int_t jev=0;
     Int_t j;
+
+    if(!particles) particles=new TClonesArray("TParticle",1000);
     
     fTrials=0;
     for (j=0;j<3;j++) origin0[j]=fOrigin[j];
@@ -146,7 +149,7 @@ void AliGenPythia::Generate()
     {
 	fPythia->PyEvnt();
 	fTrials++;
-	TObjArray* particles = fPythia->ImportParticles();
+	fPythia->ImportParticles(particles);
 	Int_t np = particles->GetEntriesFast();
 	printf("\n **************************************************%d\n",np);
 	Int_t nc=0;

@@ -145,7 +145,9 @@ void AliGenParam::Generate()
   Int_t i, nt, j;
   Float_t  wgtp, wgtch;
   Double_t dummy;
+  static TClonesArray *particles;
   //
+  if(!particles) particles=new TClonesArray("TParticle",1000);
   //
   Float_t random[6];
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
@@ -215,7 +217,7 @@ void AliGenParam::Generate()
 	  
 //
 // select muons
-	  TObjArray* particles = fPythia->ImportParticles() ;
+	  fPythia->ImportParticles(particles) ;
 	  Int_t np = particles->GetEntriesFast();
 	  for (Int_t i = 0; i<np; i++) {
 	      TParticle *  iparticle = (TParticle *) particles->At(i);
