@@ -21,6 +21,7 @@
 class TVector;
 class TFile;
 class TTree;
+class AliMUONGeometrySegmentation;
 
 
 class AliMUONTest : public  TObject 
@@ -34,7 +35,8 @@ class AliMUONTest : public  TObject
     void DetElemTransforms();
     void PrintPadPositions1();
     void PrintPadPositions2();
-
+    void St3SlatSegmentation();
+    void DrawSegmentation(Int_t chamber, AliMUONGeometrySegmentation *seg);
   protected:
     AliMUONTest(const AliMUONTest& rhs);
     AliMUONTest& operator = (const AliMUONTest& rhs);
