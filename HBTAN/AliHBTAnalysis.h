@@ -52,7 +52,10 @@ class AliHBTAnalysis: public AliAnalysis
      Int_t ProcessEvent(AliAOD* aodrec, AliAOD* aodsim = 0x0);
      Int_t Finish();
      
-     virtual void Process(Option_t* option = "TracksAndParticles");
+     enum EProcessOption{kReconstructed,kSimulated,kSimulatedAndReconstructed};
+     void  SetProcessOption(EProcessOption option){fProcessOption = option;}//Init must be called to make effect
+     
+     virtual void Process(Option_t* option = "TracksAndParticles");//Stand alone HBT analysis 
      
      void SetGlobalPairCut(AliAODPairCut* cut);
      
@@ -103,8 +106,8 @@ class AliHBTAnalysis: public AliAnalysis
      virtual Int_t ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim);
      
      virtual Int_t ProcessRecAndSimNonId(AliAOD* aodrec, AliAOD* aodsim);
-     virtual Int_t ProcessSimNonId(AliAOD* aodrec, AliAOD* /*aodsim*/);
-     virtual Int_t ProcessRecNonId(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     virtual Int_t ProcessSimNonId(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     virtual Int_t ProcessRecNonId(AliAOD* aodrec, AliAOD* /*aodsim*/);
      
 
      // OLD legacy schema
@@ -151,6 +154,7 @@ class AliHBTAnalysis: public AliAnalysis
      AliEventBuffer* fPartBuffer;//Sim Particles event buffer
      AliEventBuffer* fTrackBuffer;//Rec Tracks event buffer
      
+     EProcessOption  fProcessOption;//Option that says waht analysis to do (Rec, Sim or SimAndRec)
      Bool_t          fNoCorrfctns;//Internal flag indicating that no cfs are set by the user (only monitor ones)
      
    private:
