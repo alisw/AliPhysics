@@ -35,7 +35,7 @@ public:
    virtual void      Clear(Option_t *option="");
    TSlider          *CutSlider() {return fCutSlider;}
    virtual void      ShowTrack(Int_t trackNumber); // *MENU*
-   virtual void      HideTrack(Int_t trackNumber); // *MENU*
+   virtual void      HideTrack(Int_t trackNumber) const; // *MENU*
            void      Copy(AliDisplay &disp) const;
    virtual void      DisableDetector(const char *name); // *MENU*
    virtual void      DisplayButtons();

@@ -5,7 +5,7 @@
 
 /* $Id$ */
 
-#include <TClassTable.h>
+#include <Rtypes.h>
 
 class AliCollisionGeometry
 {

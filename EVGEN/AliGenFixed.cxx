@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/10/30 11:27:35  morsch
+fExplicit member data correctly initialized.
+
 Revision 1.6  2001/07/27 17:09:36  morsch
 Use local SetTrack, KeepTrack and SetHighWaterMark methods
 to delegate either to local stack or to stack owned by AliRun.
@@ -58,9 +61,10 @@ All coding rule violations except RS3 corrected (AM)
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include "TPDGCode.h"
+
 #include "AliGenFixed.h"
 #include "AliRun.h"
-#include "AliPDG.h"
   
 ClassImp(AliGenFixed)
 

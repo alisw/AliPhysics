@@ -391,7 +391,8 @@ void AliDisplay::ShowTrack(Int_t idx)
 }
 
 //----------------------------------------------------------------------------
-void AliDisplay::HideTrack(Int_t idx) {
+void AliDisplay::HideTrack(Int_t idx) const
+{
   //
   // Hide track on display
   //

@@ -5,13 +5,13 @@
 
 /* $Id$ */
 
-#include <TClonesArray.h>
 #include <TArrayF.h>
 #include <TArrayI.h>
 #include <TMCProcess.h>
 #include <TStopwatch.h>
 #include <TVirtualMC.h>
 #include <TVirtualMCApplication.h>
+
 class TBranch;
 class TBrowser;
 class TDatabasePDG;
@@ -34,7 +34,6 @@ class AliMCQA;
 class AliMagF;
 class AliModule;
 class AliStack;
-
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
@@ -60,7 +59,7 @@ public:
    TObjArray     *Modules() const {return fModules;}
    Int_t          CurrentTrack() const;
    AliDisplay    *Display() { return fDisplay;}
-   virtual  Int_t DistancetoPrimitive(Int_t px, Int_t py);
+   virtual  Int_t DistancetoPrimitive(Int_t px, Int_t py) const;
    virtual  void  DumpPart (Int_t i) const;
    virtual  void  DumpPStack () const;
    virtual AliMagF *Field() const {return fField;}

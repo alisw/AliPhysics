@@ -6,9 +6,10 @@
 
 /* $Id$ */
 
+#include <TLorentzVector.h>
+
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
-#include <TLorentzVector.h>
 
 class AliGenHijingEventHeader : public AliGenEventHeader, public AliCollisionGeometry
 {

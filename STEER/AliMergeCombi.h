@@ -14,10 +14,8 @@
 ////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TNamed.h"
-#include "TObjString.h"
-#include "TArrayI.h"
-#include "TClonesArray.h"
+
+#include <TNamed.h>
 
 // --- AliRoot header files ---
 

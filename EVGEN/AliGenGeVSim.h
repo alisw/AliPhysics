@@ -59,6 +59,8 @@ class TH2D;
 class TObjArray;
 class AliGeVSimParticle;
 
+#include "AliGenerator.h"
+
 
 class AliGenGeVSim : public AliGenerator {
 

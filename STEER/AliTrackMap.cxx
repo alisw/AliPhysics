@@ -34,12 +34,7 @@
 
 #include <Riostream.h>
 
-#include "TTree.h"
-#include "TROOT.h"
-
 #include "AliTrackMap.h"
-
-#include "AliRun.h"
 
 ClassImp(AliTrackMap)
 

@@ -25,7 +25,7 @@
 
 ClassImp(AliKalmanTrack)
 
-Double_t AliKalmanTrack::fConvConst;
+Double_t AliKalmanTrack::fgConvConst;
 
 //_______________________________________________________________________
 AliKalmanTrack::AliKalmanTrack():
@@ -34,7 +34,10 @@ AliKalmanTrack::AliKalmanTrack():
   fMass(0.13957),
   fN(0)
 {
-    if (fConvConst==0) 
+  //
+  // Default constructor
+  //
+    if (fgConvConst==0) 
       Fatal("AliKalmanTrack()","The magnetic field has not been set !\n"); 
 }
 
@@ -46,7 +49,10 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   fMass(t.fMass),
   fN(t.fN)
 {
-  if (fConvConst==0) 
+  //
+  // Copy constructor
+  //
+  if (fgConvConst==0) 
     Fatal("AliKalmanTrack(const AliKalmanTrack&)",
           "The magnetic field has not been set !\n"); 
 }

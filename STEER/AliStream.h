@@ -15,10 +15,10 @@
 
 // --- ROOT system ---
 #include "TNamed.h"
+#include "TObjArray.h"
 #include "TString.h"
 
 class TFile;
-class TObjArray;
 
 // --- AliRoot header files ---
 
@@ -27,7 +27,7 @@ class AliStream: public TNamed {
 public:
   AliStream();
   AliStream(Option_t *option);
-  AliStream(const AliStream&);
+  AliStream(const AliStream& str);
   AliStream & operator=(const AliStream& str) 
     {str.Copy(*this); return (*this);}
   virtual ~AliStream();
@@ -43,9 +43,9 @@ public:
 private:  
   void Copy(AliStream& str) const;
 
-  Int_t fLastEventSerialNr;
-  Int_t fLastEventNr;
-  Int_t fCurrentFileIndex;
+  Int_t fLastEventSerialNr;     // Serial number of the last event
+  Int_t fLastEventNr;           // Number of the last event
+  Int_t fCurrentFileIndex;      // Index of the current file
   Int_t fEvents;                //! nr. of events in the current file
   TString fMode;                // = 0 for READONLY, = 1 for READWRITE
   TFile *fCurrentFile;          //! pointer to current open file

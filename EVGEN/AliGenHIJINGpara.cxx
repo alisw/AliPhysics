@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/12/11 11:58:11  morsch
+Bug in formula for pi0 energy for decay corrected.
+
 Revision 1.17  2002/12/10 17:44:57  morsch
 Correct mother child relation for pi0.
 
@@ -99,19 +102,19 @@ All coding rule violations except RS3 corrected (AM)
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-#include "AliGenHIJINGpara.h"
-#include "AliGenEventHeader.h"
-#include "AliRun.h"
+#include <TArrayF.h>
+#include <TClonesArray.h>
+#include <TDatabasePDG.h>
+#include <TF1.h>
+#include <TParticle.h>
+#include <TPDGCode.h>
+
 #include "AliConst.h"
 #include "AliDecayer.h"
 #include "AliDecayerPythia.h"
-#include "AliPDG.h"
-
-#include <TF1.h>
-#include <TArrayF.h>
-#include <TDatabasePDG.h>
-#include <TClonesArray.h>
-#include <TParticle.h>
+#include "AliGenEventHeader.h"
+#include "AliGenHIJINGpara.h"
+#include "AliRun.h"
 
 ClassImp(AliGenHIJINGpara)
 

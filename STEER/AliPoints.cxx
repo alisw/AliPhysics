@@ -116,7 +116,7 @@ Int_t AliPoints::DistancetoPrimitive(Int_t px, Int_t py)
 }
 
 //_______________________________________________________________________
-void AliPoints::DumpParticle()
+void AliPoints::DumpParticle() const
 {
   //
   //   Dump particle corresponding to this point

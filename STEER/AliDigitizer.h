@@ -33,14 +33,14 @@ class AliDigitizer: public TTask {
       {dig.Copy(*this);return *this;}
       
     virtual ~AliDigitizer();
-    virtual Bool_t Init() {return kTRUE;}
+    virtual Bool_t Init() const {return kTRUE;}
 //    virtual void Digitize() = 0;
 
 protected:
     Int_t GetNInputStreams() const;
     void Copy(AliDigitizer &dig) const;
 
-    AliRunDigitizer *fManager;
+    AliRunDigitizer *fManager;   // Pointer to the Digitizer manager
     
     ClassDef(AliDigitizer,1) // Base class for detector digitizers
 };

@@ -44,13 +44,13 @@ public:
     Int_t PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/) {return 0;}
   virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) {return 0;}
 
-  static void SetConvConst(Double_t cc) {fConvConst=cc;}
-  Double_t GetConvConst() const {return fConvConst;}
+  static void SetConvConst(Double_t cc) {fgConvConst=cc;}
+  Double_t GetConvConst() const {return fgConvConst;}
 
   static void SetMagneticField(Double_t f) {// f - Magnetic field in T
-    fConvConst=100/0.299792458/f;
+    fgConvConst=100/0.299792458/f;
   }
-  Double_t GetMagneticField() const {return 100/0.299792458/fConvConst;}
+  Double_t GetMagneticField() const {return 100/0.299792458/fgConvConst;}
 
 protected:
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
@@ -63,7 +63,7 @@ private:
   Double_t fMass;         // mass hypothesis
   Int_t fN;               // number of associated clusters
 
-  static Double_t fConvConst; //conversion constant cm -> GeV/c
+  static Double_t fgConvConst; //conversion constant cm -> GeV/c
 
   ClassDef(AliKalmanTrack,1)    // Reconstructed track
 };

@@ -17,9 +17,10 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the AliTracker class
-//
-//          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//                             Origin
+//               Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
+
 #include <TMath.h>
 
 #include "AliTracker.h"

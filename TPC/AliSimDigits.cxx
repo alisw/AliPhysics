@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/10/23 07:17:33  alibrary
+Introducing Riostream.h
+
 Revision 1.6  2002/01/21 17:15:23  kowal2
 Better protection.
 
@@ -418,9 +421,9 @@ TClonesArray *  AliSimDigits::GenerTPCClonesArray(TClonesArray * arr)
 	dig.fSignal= amp;
 	dig.fPadRow =fSegmentID;
 	dig.fSector =fSegmentID;
-	dig.fTracks[0]= GetTrackID(row,col,0);
-	dig.fTracks[1]= GetTrackID(row,col,1);
-	dig.fTracks[2]= GetTrackID(row,col,2);
+	dig.GetTracks()[0]= GetTrackID(row,col,0);
+	dig.GetTracks()[1]= GetTrackID(row,col,1);
+	dig.GetTracks()[2]= GetTrackID(row,col,2);
 	TClonesArray &ldigits = *digits;
 	new(ldigits[index++]) AliTPCdigit(dig);
       }

@@ -6,9 +6,6 @@
 /* $Id$ */
 
 #include <TArrayI.h>
-#include <TMCProcess.h>
-#include <TObject.h>
-#include <TStopwatch.h>
 #include <TVirtualMCStack.h>
 
 class AliHeader;

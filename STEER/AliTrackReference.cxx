@@ -15,9 +15,13 @@
 
 /* $Header$ */
 
+//----------------------------------------------------------------------
+//  Class containing the kinematic information of tracks at various
+//  points in the simulation to check the reconstruction
+//  Origin: M.Ivanov
+//----------------------------------------------------------------------
+
 #include "AliTrackReference.h"
-#include "TParticle.h"
-#include "AliRun.h"
 
 ClassImp(AliTrackReference)
 

@@ -133,10 +133,10 @@ Bool_t AliStream::NextEventInStream(Int_t &serialNr)
 
 //_______________________________________________________________________
 void AliStream::ChangeMode(Option_t* option)
-// set the mode to READ or UPDATE, reopen file with the new mode
-// only change from UPDATE to READ have sense in the current scheme,
-// other changes are possible but not usefull
 {
+  // set the mode to READ or UPDATE, reopen file with the new mode
+  // only change from UPDATE to READ have sense in the current scheme,
+  // other changes are possible but not usefull
   fMode = option;
   if (fCurrentFile) {
     fCurrentFile->Close();
@@ -148,6 +148,9 @@ void AliStream::ChangeMode(Option_t* option)
 //_______________________________________________________________________
 Bool_t AliStream::OpenNextFile()
 {
+  //
+  // Open the next file in the series
+  //
   if (++fCurrentFileIndex > fFileNames->GetLast()) {
     cerr<<"No more files in the stream"<<endl;
     return kFALSE;
@@ -186,6 +189,9 @@ Bool_t AliStream::OpenNextFile()
 //_______________________________________________________________________
 Bool_t AliStream::ImportgAlice()
 {
+  //
+  // Import AliRun object pointed from gAlice
+  //
   if (fFileNames->GetLast() < 0) return kFALSE;
   if (!fCurrentFile) {
     if (!OpenNextFile()) return kFALSE;
@@ -197,10 +203,10 @@ Bool_t AliStream::ImportgAlice()
 
 //_______________________________________________________________________
 TString AliStream::GetFileName(const Int_t order) const
-// returns name of the order-th file
-// returns empty string if such file does not exist
-// first file in the input stream is 0
 {
+  // returns name of the order-th file
+  // returns empty string if such file does not exist
+  // first file in the input stream is 0
   TString fileName("");
   if (order > fFileNames->GetLast()) return fileName;
   TObjString *fileNameStored = dynamic_cast<TObjString*>(fFileNames->At(order));

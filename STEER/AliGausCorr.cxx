@@ -26,8 +26,8 @@
 
 #include <Riostream.h>
 #include <TArrayD.h>
-#include <TMatrixD.h>
 #include <TRandom.h>
+
 #include "AliGausCorr.h"
 
 ClassImp(AliGausCorr)

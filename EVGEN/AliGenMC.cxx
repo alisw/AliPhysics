@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.5.4.2  2002/07/24 08:56:28  alibrary
 Updating EVGEN on TVirtulaMC
 
@@ -63,10 +66,11 @@ AliGenMC base class for AliGenParam and AliGenPythia commonalities.
 // decay products and particle selection.
 // andreas.morsch@cern.ch
 
-#include "AliGenMC.h"
-#include "AliPDG.h"
 #include <TMath.h>
+#include <TPDGCode.h>
 #include <TParticle.h>
+
+#include "AliGenMC.h"
 
  ClassImp(AliGenMC)
 

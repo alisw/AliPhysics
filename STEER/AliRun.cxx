@@ -51,9 +51,7 @@
 #include "TFile.h"
 #include "TFolder.h"
 #include "TGeometry.h"
-#include "TKey.h"
 #include "TNode.h"
-#include "TObjectTable.h"
 #include "TParticle.h"
 #include "TRandom3.h"
 #include "TROOT.h"
@@ -63,10 +61,8 @@
 #include "AliConfig.h"
 #include "AliDetector.h"
 #include "AliDisplay.h"
-#include "AliGenEventHeader.h"
 #include "AliGenerator.h"
 #include "AliHeader.h"
-#include "AliHit.h"
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
 #include "AliMCQA.h"
@@ -412,7 +408,7 @@ void AliRun::CleanDetectors()
 }
 
 //_______________________________________________________________________
-Int_t AliRun::DistancetoPrimitive(Int_t, Int_t)
+Int_t AliRun::DistancetoPrimitive(Int_t, Int_t) const
 {
   //
   // Return the distance from the mouse to the AliRun object
@@ -1691,14 +1687,17 @@ void AliRun::BeginPrimary()
 //_______________________________________________________________________
 void AliRun::PreTrack()
 {
-     TObjArray &dets = *fModules;
-     AliModule *module;
-
-     for(Int_t i=0; i<=fNdets; i++)
-       if((module = dynamic_cast<AliModule*>(dets[i])))
-	 module->PreTrack();
-
-     fMCQA->PreTrack();
+  //
+  // Method called before each track
+  //
+  TObjArray &dets = *fModules;
+  AliModule *module;
+  
+  for(Int_t i=0; i<=fNdets; i++)
+    if((module = dynamic_cast<AliModule*>(dets[i])))
+      module->PreTrack();
+  
+  fMCQA->PreTrack();
 }
 
 //_______________________________________________________________________
@@ -1732,12 +1731,15 @@ void AliRun::Stepping()
 //_______________________________________________________________________
 void AliRun::PostTrack()
 {
-     TObjArray &dets = *fModules;
-     AliModule *module;
-
-     for(Int_t i=0; i<=fNdets; i++)
-       if((module = dynamic_cast<AliModule*>(dets[i])))
-	 module->PostTrack();
+  //
+  // Called after a track has been trasported
+  //
+  TObjArray &dets = *fModules;
+  AliModule *module;
+  
+  for(Int_t i=0; i<=fNdets; i++)
+    if((module = dynamic_cast<AliModule*>(dets[i])))
+      module->PostTrack();
 }
 
 //_______________________________________________________________________
@@ -1820,18 +1822,22 @@ void AliRun::FinishEvent()
 //_______________________________________________________________________
 void AliRun::Field(const Double_t* x, Double_t *b) const
 {
-   Float_t xfloat[3];
-   for (Int_t i=0; i<3; i++) xfloat[i] = x[i]; 
-
-   if (Field()) {
-         Float_t bfloat[3];
-         Field()->Field(xfloat,bfloat);
-         for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
-   } 
-   else {
-         printf("No mag field defined!\n");
-         b[0]=b[1]=b[2]=0.;
-   }
+  //
+  // Returns the magnetic field at point x[3]
+  // Units are kGauss
+  //
+  Float_t xfloat[3];
+  for (Int_t i=0; i<3; i++) xfloat[i] = x[i]; 
+  
+  if (Field()) {
+    Float_t bfloat[3];
+    Field()->Field(xfloat,bfloat);
+    for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
+  } 
+  else {
+    printf("No mag field defined!\n");
+    b[0]=b[1]=b[2]=0.;
+  }
 
 }      
 

@@ -34,11 +34,11 @@
 //End_Html
 //                                                               //
 ///////////////////////////////////////////////////////////////////
-#include "TGenerator.h"
+#include <TGenerator.h>
 
+#include "AliCollisionGeometry.h"
 #include "AliConfig.h"
 #include "AliGenerator.h"
-#include "AliCollisionGeometry.h"
 #include "AliRun.h"
 #include "AliStack.h"
 
@@ -382,6 +382,9 @@ void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t tof, TMCProcess mech, Int_t &ntr,
                                Float_t weight, Int_t is)
 {
+  //
+  // Loads one track on the stack
+  //
 
   if (fStack)
     fStack->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
@@ -398,6 +401,9 @@ void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
                       Double_t polx, Double_t poly, Double_t polz,
                       TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 {
+  //
+  // Loads one track on the stack
+  //
   
   if (fStack)
      fStack->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
@@ -411,6 +417,9 @@ void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
 //_______________________________________________________________________
 void AliGenerator:: KeepTrack(Int_t itrack)
 {
+  //
+  // Declare a track permanent on the stack
+  //
   if (fStack)
      fStack->KeepTrack(itrack);
   else 
@@ -421,6 +430,9 @@ void AliGenerator:: KeepTrack(Int_t itrack)
 //_______________________________________________________________________
 void AliGenerator:: SetHighWaterMark(Int_t nt)
 {
+  //
+  // Internal function to set the maximum index used in the stack
+  //
   if (fStack)
      fStack->SetHighWaterMark(nt);
   else 

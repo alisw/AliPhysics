@@ -7,9 +7,10 @@
 
 /* $Id$ */
 
-#include "AliPDG.h"
-#include "TMevSimPartTypeParams.h"
+#include <TPDGCode.h>
+
 #include "TMevSimConverter.h"
+#include "TMevSimPartTypeParams.h"
 
 class AliMevSimParticle :public TMevSimPartTypeParams {
 

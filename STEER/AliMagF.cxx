@@ -15,6 +15,9 @@
 
 /* $Header$ */
 
+//
+// Basic magnetic field class
+//
 
 #include "AliMagF.h"
 

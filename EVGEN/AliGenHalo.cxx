@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.11  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.10  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -44,12 +49,13 @@ Introduction of the Copyright and cvs Log
 // for this purpose.
 // Author: andreas.morsch@cern.ch
 
-#include "AliGenHalo.h"
-#include "AliRun.h"
-#include "AliPDG.h"
+#include <stdlib.h>
 
 #include <TDatabasePDG.h>
-#include <stdlib.h>
+#include <TPDGCode.h>
+
+#include "AliGenHalo.h"
+#include "AliRun.h"
 
  ClassImp(AliGenHalo)
      AliGenHalo::AliGenHalo()

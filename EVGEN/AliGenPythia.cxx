@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.68  2002/12/11 09:16:16  morsch
+Use GetJets to fill header.
+
 Revision 1.67  2002/12/09 15:24:09  morsch
 Same trigger routine can use Pycell or Pyclus.
 
@@ -214,18 +217,18 @@ Introduction of the Copyright and cvs Log
 // andreas.morsch@cern.ch
 //
 
-
-#include "AliGenPythia.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliDecayerPythia.h"
-#include "AliRun.h"
-#include "AliPythia.h"
-#include "AliPDG.h"
-#include "AliConst.h"
+#include <TDatabasePDG.h>
 #include <TParticle.h>
+#include <TPDGCode.h>
 #include <TSystem.h>
 #include <TTree.h>
-#include <TDatabasePDG.h>
+
+#include "AliConst.h"
+#include "AliDecayerPythia.h"
+#include "AliGenPythia.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliPythia.h"
+#include "AliRun.h"
 
  ClassImp(AliGenPythia)
 

@@ -9,15 +9,8 @@
 class TArrayD;
 
 
-class AliGausCorr : public TObject {
-////////////////////////////////////////////////////////////////////////
-// Class used to generate correlated gaussian numbers with mean
-// zero and known covariance matrix.
-// Adapted from the Fortran code in Cernlib V122 (corset, corgen)
-// F. James, Monte Carlo theory and practice, 
-// Rep. Prog. Phys. 43 (1980) 1145-1189. 
-// M.Masera 14.03.2001 19:30 - last mod. 26.02.2002 17:45
-////////////////////////////////////////////////////////////////////////
+class AliGausCorr : public TObject 
+{
  public:
   //
   AliGausCorr();

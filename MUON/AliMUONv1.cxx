@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2002/11/21 17:01:56  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.37  2002/10/23 07:24:57  alibrary
 Introducing Riostream.h
 
@@ -169,11 +172,12 @@ Log messages included.
 //  Manager and hits classes for set:MUON version 0    //
 /////////////////////////////////////////////////////////
 
-#include <TTUBE.h>
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TLorentzVector.h> 
 #include <TNode.h> 
 #include <TRandom.h> 
-#include <TLorentzVector.h> 
-#include <Riostream.h>
+#include <TTUBE.h>
 
 #include "AliMUONv1.h"
 #include "AliRun.h"

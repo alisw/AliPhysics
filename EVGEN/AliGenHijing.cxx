@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.46  2003/01/07 14:12:33  morsch
+Provides collision geometry.
+
 Revision 1.45  2002/12/16 09:44:49  morsch
 Default for fRadiation is 3.
 
@@ -176,19 +179,19 @@ AliGenerator interface class to HIJING using THijing (test version)
 //
 // andreas.morsch@cern.ch
 
+#include <TArrayI.h>
+#include <TGraph.h>
+#include <THijing.h>
+#include <TLorentzVector.h>
+#include <TPDGCode.h>
+#include <TParticle.h>
+
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliRun.h"
-#include "AliPDG.h"
-
-#include <TArrayI.h>
-#include <TParticle.h>
-#include <THijing.h>
-#include <TGraph.h>
-#include <TLorentzVector.h>
 
 
- ClassImp(AliGenHijing)
+  ClassImp(AliGenHijing)
 
 AliGenHijing::AliGenHijing()
                  :AliGenMC()

@@ -28,9 +28,7 @@
 #include <Riostream.h>
 
 #include "TTree.h"
-#include "TROOT.h"
 #include "TFile.h"
-#include "TBenchmark.h"
 #include "TStopwatch.h"
 
 #include "AliDetector.h"
@@ -90,7 +88,7 @@ void AliTrackMapper::CreateMap(Int_t nEvents, Int_t firstEventNr,
 }
 
 //_______________________________________________________________________
-Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) 
+Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) const
 {
   //
   // create an AliTrackMap for a given event

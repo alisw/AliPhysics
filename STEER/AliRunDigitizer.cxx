@@ -96,13 +96,11 @@
 
 #include "TFile.h"
 #include "TList.h"
-#include "TParticle.h"
 #include "TTree.h"
 
 // AliROOT includes
 
 #include "AliDigitizer.h"
-#include "AliHeader.h"
 #include "AliMergeCombi.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
@@ -255,6 +253,9 @@ void AliRunDigitizer::AddDigitizer(AliDigitizer *digitizer)
 //_______________________________________________________________________
 void AliRunDigitizer::SetInputStream(Int_t i, const char *inputFile)
 {
+  //
+  // Sets the name of the input file
+  //
   if (i > fInputStreams->GetLast()) {
     Error("SetInputStream","Input stream number too high");
     return;
@@ -362,8 +363,8 @@ Bool_t AliRunDigitizer::InitGlobal()
 
 //_______________________________________________________________________
 void AliRunDigitizer::SetOutputFile(TString fn)
-// the output will be to separate file, not to the signal file
 {
+  // the output will be to separate file, not to the signal file
   fOutputFileName = fn;
   (static_cast<AliStream*>(fInputStreams->At(0)))->ChangeMode("READ");
   InitOutputGlobal();

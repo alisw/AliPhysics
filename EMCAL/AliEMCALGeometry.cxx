@@ -35,7 +35,9 @@
 #include <stdlib.h> 
 
 // --- AliRoot header files ---
+#include <TError.h>
 #include <TMath.h>
+#include <TVector3.h>
 
 // -- ALICE Headers.
 #include "AliConst.h"

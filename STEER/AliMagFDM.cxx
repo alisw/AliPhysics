@@ -15,6 +15,12 @@
 
 /* $Header$ */
 
+//-------------------------------------------------------------------------
+//
+//   Field with Magnetic Field map
+//
+//-------------------------------------------------------------------------
+
 #include <stdlib.h>
 
 #include "TSystem.h"
@@ -109,7 +115,7 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   // Main routine to compute the field in a point
   //
   const Double_t keps=0.1E-06;
-  const Double_t PI2=2.*TMath::Pi();
+  const Double_t kPI2=2.*TMath::Pi();
   const Double_t kone=1;
   
   const    Int_t  kiip=33; 
@@ -200,10 +206,10 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
         kcphi=777;
        } 
        ph0=TMath::ACos(cphi);
-       if (xL3[0] < 0 && yyp > 0 ) {ph0=PI2/2 - ph0;}  
-       if (xL3[0] < 0 && yyp < 0 ) {ph0=PI2/2 + ph0;} 
-       if (xL3[0] > 0 && yyp < 0 ) {ph0=PI2 - ph0;}  
-       if (ph0 > PI2) {       ph0=ph0 - PI2;}
+       if (xL3[0] < 0 && yyp > 0 ) {ph0=kPI2/2 - ph0;}  
+       if (xL3[0] < 0 && yyp < 0 ) {ph0=kPI2/2 + ph0;} 
+       if (xL3[0] > 0 && yyp < 0 ) {ph0=kPI2 - ph0;}  
+       if (ph0 > kPI2) {       ph0=ph0 - kPI2;}
        if (kcphi==777) {
         printf("xL3[0] %e, xL3[1] %e, xL3[2] %e, yyp %e, r0 %e, ph0 %e\n",xL3[0],xL3[1],xL3[2],yyp,r0,ph0);
        }  
@@ -370,7 +376,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
 
 //_______________________________________________________________________
 Int_t AliMagFDM::FZ(Double_t temp, Float_t *Ar, 
-                    Float_t delu, Int_t ik,Int_t nk)
+                    Float_t delu, Int_t ik,Int_t nk) const
 {
   //
   // Quest of a point position at x,y,z (Cartensian) and R,Phi,z (Polar) axises

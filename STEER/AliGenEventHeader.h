@@ -9,11 +9,6 @@
 #include <TNamed.h>
 #include <TArrayF.h>
 
-// Event header base class for generator. 
-// Stores as a minimum the date, run number, event number, number of particles produced  
-// and the impact parameter
-// Author: andreas.morsch@cern.ch
-
 class AliGenEventHeader : public TNamed
 {
  public:
@@ -22,7 +17,7 @@ class AliGenEventHeader : public TNamed
   AliGenEventHeader();
   virtual ~AliGenEventHeader() {}
   // Getters
-  virtual Int_t           NProduced()         {return fNProduced;}
+  virtual Int_t           NProduced()  const   {return fNProduced;}
   virtual void            PrimaryVertex(TArrayF &o) const;
   
   // Setters

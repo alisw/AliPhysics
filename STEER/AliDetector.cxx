@@ -35,12 +35,12 @@
 
 #include <assert.h>
 
+#include <Riostream.h>
 #include <TBrowser.h>
 #include <TFile.h>
 #include <TFolder.h>
 #include <TROOT.h>
 #include <TTree.h>
-#include <Riostream.h>
 
 #include "AliConfig.h"
 #include "AliDetector.h"

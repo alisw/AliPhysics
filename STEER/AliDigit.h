@@ -13,7 +13,7 @@
 #include "TObject.h"
 
 class AliDigit : public TObject {
-public:
+protected:
   Int_t     fTracks[3];   //tracks number making this digit (up to 3)
 
 public:

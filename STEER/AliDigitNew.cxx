@@ -15,6 +15,12 @@
 
 /* $Header$ */
 
+//-----------------------------------------------------------------------
+//
+//    Proposal for a new digitisation abstract class
+//
+//-----------------------------------------------------------------------
+
 #include "AliDigitNew.h"
  
 ClassImp(AliDigitNew)

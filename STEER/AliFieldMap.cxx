@@ -15,13 +15,16 @@
 
 /* $Header$ */
 
+//-----------------------------------------------------------------------
 //
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
 //
+//-----------------------------------------------------------------------
 
+#include <TSystem.h>
 #include <TVector.h>
+
 #include "AliFieldMap.h"
-#include "TSystem.h"
 
 ClassImp(AliFieldMap)
 

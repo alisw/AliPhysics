@@ -15,6 +15,13 @@
 
 /* $Header$ */
 
+//-----------------------------------------------------------------------
+//
+//    Class to debug entry and exit from a volume
+//
+//-----------------------------------------------------------------------
+
+
 #include "AliDebugVolume.h"
 
 ClassImp(AliDebugVolume)

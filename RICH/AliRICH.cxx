@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.64  2002/11/21 22:54:07  alibrary
+  Removing AliMC and AliMCProcess
+
   Revision 1.63  2002/11/04 09:02:52  morsch
   Further corrcetions on Fresnel and Grid losses.
 
@@ -181,48 +184,48 @@
 //  Manager and hits classes for set:RICH     //
 ////////////////////////////////////////////////
 
-#include <TBRIK.h>
-#include <TTUBE.h>
-#include <TNode.h> 
-#include <TRandom.h> 
-#include <TObject.h>
-#include <TVector.h>
-#include <TObjArray.h>
-#include <TArrayF.h>
-#include <TFile.h>
-#include <TParticle.h>
-#include <TGeometry.h>
-#include <TTree.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TCanvas.h>
-#include <TStyle.h>
-#include <TF1.h>
-
-#include <Riostream.h>
 #include <strings.h>
 
+#include <Riostream.h>
+#include <TArrayF.h>
+#include <TBRIK.h>
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TFile.h>
+#include <TGeometry.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TNode.h> 
+#include <TObjArray.h>
+#include <TObject.h>
+#include <TParticle.h>
+#include <TPDGCode.h>
+#include <TRandom.h> 
+#include <TStyle.h>
+#include <TTUBE.h>
+#include <TTree.h>
+#include <TVector.h>
+
+#include "AliConst.h"
+#include "AliMagF.h"
+#include "AliPoints.h"
 #include "AliRICH.h"
-#include "AliSegmentation.h"
-#include "AliRICHSegmentationV0.h"
-#include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"
-#include "AliRICHSDigit.h"
+#include "AliRICHClusterFinder.h"
 #include "AliRICHDigit.h"
-#include "AliRICHTransientDigit.h"
+#include "AliRICHDigitizer.h"
+#include "AliRICHHit.h"
+#include "AliRICHHitMapA1.h"
+#include "AliRICHMerger.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
 #include "AliRICHRecHit3D.h"
-#include "AliRICHHitMapA1.h"
-#include "AliRICHClusterFinder.h"
-#include "AliRICHMerger.h"
-#include "AliRICHDigitizer.h"
+#include "AliRICHSDigit.h"
+#include "AliRICHSegmentationV0.h"
+#include "AliRICHTransientDigit.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
-#include "AliMagF.h"
-#include "AliConst.h"
-#include "AliPDG.h"
-#include "AliPoints.h"
+#include "AliSegmentation.h"
 
 
 

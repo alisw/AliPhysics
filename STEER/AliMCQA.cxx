@@ -17,29 +17,31 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
+// Quality Assurance class                                                   //
+// Provides standard histograms for every element of the detector            //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
 #include <strings.h>
 
-#include "TObjArray.h"
-#include "TH1.h"
-#include "TList.h"
-#include "TROOT.h"
-#include "TBrowser.h"
-#include "TMath.h"
-#include "TLorentzVector.h"
-#include "TDatabasePDG.h"
-#include "TMath.h"
-#include "TPad.h"
-#include "TExec.h"
-#include "TPaveLabel.h"
-#include "TCanvas.h"
+#include <TBrowser.h>
+#include <TCanvas.h>
+#include <TDatabasePDG.h>
+#include <TExec.h>
+#include <TH1.h>
+#include <TList.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TMath.h>
+#include <TObjArray.h>
+#include <TPad.h>
+#include <TPaveLabel.h>
+#include <TROOT.h>
 
 #include "AliMCQA.h"
-#include "AliRun.h"
 #include "AliModule.h"
+#include "AliRun.h"
 
 ClassImp(AliMCQA)
 
@@ -173,7 +175,11 @@ void AliMCQA::Copy(AliMCQA &) const
 }
 
 //_______________________________________________________________________
-AliMCQA::~AliMCQA() {
+AliMCQA::~AliMCQA() 
+{
+  //
+  // Destructor
+  //
   gROOT->GetListOfBrowsables()->Remove(this);
   if (fQAList) {
     fQAList->Delete();

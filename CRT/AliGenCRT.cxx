@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/11/21 19:34:52  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.3  2002/10/23 06:47:56  alibrary
 Introducing Riostream.h
 
@@ -51,13 +54,13 @@ First version, generation of cosmic muons on the surface
 /////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-#include "TMCProcess.h"
+#include <TMCProcess.h>
+#include <TPDGCode.h>
 
-#include "AliRun.h"
+
 #include "AliConst.h"
-#include "AliPDG.h"
-
 #include "AliGenCRT.h"
+#include "AliRun.h"
 
 ClassImp(AliGenCRT)
 

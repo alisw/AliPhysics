@@ -12,14 +12,16 @@
 //                                                       //
 ///////////////////////////////////////////////////////////
 
-#include "TLorentzVector.h"
-#include "TArrayF.h"
-#include "TMCProcess.h"
-#include "AliCollisionGeometry.h"
+#include <TArrayF.h>
+#include <TLorentzVector.h>
+#include <TMCProcess.h>
+
 #include "AliRndm.h"
 
-class TGenerator;
+class AliCollisionGeometry;
 class AliStack;
+
+class TGenerator;
 
 
 
@@ -78,8 +80,8 @@ class AliGenerator : public TNamed, public AliRndm
     void SetStack (AliStack *stack) {fStack = stack;}
     AliStack* GetStack(){return fStack;}
   // Collision Geometry
-    virtual Bool_t ProvidesCollisionGeometry() {return kFALSE;}
-    virtual Bool_t NeedsCollisionGeometry()    {return kFALSE;}    
+    virtual Bool_t ProvidesCollisionGeometry() const {return kFALSE;}
+    virtual Bool_t NeedsCollisionGeometry()    const {return kFALSE;}    
     virtual AliCollisionGeometry* CollisionGeometry() {return fCollisionGeometry;}
     virtual void SetCollisionGeometry(AliCollisionGeometry* geom) {fCollisionGeometry = geom;}
  protected:

@@ -20,6 +20,7 @@
 //-------------------------------------------------------------------------
 #include <Riostream.h>
 #include <TMath.h>
+#include <TPDGCode.h>
 
 #include "AliV0vertex.h"
 #include "AliITStrackV2.h"

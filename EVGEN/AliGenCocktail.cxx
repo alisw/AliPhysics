@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.15  2003/01/07 14:13:22  morsch
+Communication between generators provising and requesting collision
+geometries.
+
 Revision 1.14  2002/02/08 16:50:50  morsch
 Add name and title in constructor.
 
@@ -59,10 +63,12 @@ Introduction of the Copyright and cvs Log
 // Author: andreas.morsch@cern.ch 
 //
 
+#include <TList.h>
+#include <TObjArray.h>
+
 #include "AliGenCocktail.h"
 #include "AliGenCocktailEntry.h"
 #include "AliRun.h"
-#include <TList.h>
 
 ClassImp(AliGenCocktail)
 

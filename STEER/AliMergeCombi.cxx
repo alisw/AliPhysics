@@ -18,8 +18,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
 // AliMergeCombi.cxx
-//
-// returns combinations of input event numbers
+// class to
+// return combinations of input event numbers
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -58,6 +58,9 @@ AliMergeCombi::~AliMergeCombi()
 //_______________________________________________________________________
 Bool_t AliMergeCombi::Combination(Int_t /* evNumber */ [], Int_t delta[])
 {
+  //
+  // Combination method
+  //
   delta[0] = 1;
   for (Int_t i=1; i<fDim; i++) {
     if (fCounter%fSperb == 0) {

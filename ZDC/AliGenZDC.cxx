@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2002/11/21 20:05:22  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.11  2001/11/11 17:27:50  hristov
 Minor corrections
 
@@ -53,15 +56,15 @@ Introduction of the Copyright and cvs Log
 */
 #include <assert.h>
 
-#include <TRandom.h>
+#include <TDatabasePDG.h>
 #include <TLorentzVector.h>
+#include <TMCProcess.h>
+#include <TPDGCode.h>
+#include <TRandom.h>
 #include <TVector3.h>
-#include "TDatabasePDG.h"
-#include "TMCProcess.h"
 
-#include "AliGenZDC.h"
 #include "AliConst.h"
-#include "AliPDG.h"
+#include "AliGenZDC.h"
 #include "AliRun.h"
  
 ClassImp(AliGenZDC)

@@ -14,11 +14,12 @@
 ////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TParticle.h"
 #include "TNamed.h"
-class TVector3;
-class TMatrix;
+
 class AliRecPoint;
+class TMatrix;
+class TParticle;
+class TVector3;
 
 class AliGeometry : public TNamed {
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.10  2002/03/13 07:55:04  jchudoba
 Correction of the errourness last commit.
 
@@ -40,23 +43,23 @@ Revision 1.1  2001/07/27 15:41:01  jchudoba
 merging/digitization classes
 
 */
-#include <TTree.h> 
-#include <TObjArray.h>
-#include <TFile.h>
-#include <TDirectory.h>
 #include <Riostream.h>
+#include <TDirectory.h>
+#include <TFile.h>
+#include <TObjArray.h>
+#include <TPDGCode.h>
+#include <TTree.h> 
 
-#include "AliMUONDigitizer.h"
-#include "AliMUONConstants.h"
-#include "AliMUONChamber.h"
-#include "AliMUONHitMapA1.h"
 #include "AliMUON.h"
-#include "AliMUONHit.h"
-#include "AliMUONPadHit.h"
+#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
+#include "AliMUONDigitizer.h"
+#include "AliMUONHit.h"
+#include "AliMUONHitMapA1.h"
+#include "AliMUONPadHit.h"
 #include "AliMUONTransientDigit.h"
 #include "AliRun.h"
-#include "AliPDG.h"
 #include "AliRunDigitizer.h"
 
 ClassImp(AliMUONDigitizer)

@@ -19,8 +19,7 @@
 
 // --- ROOT system ---
 
-#include "TString.h"
-#include "TFile.h"
+class TFile;
 
 // --- AliRoot header files ---
 
@@ -34,7 +33,7 @@ public:
   void CreateMap(Int_t nEvents, Int_t firstEventNr,
 	    const char* fnMap = "trackMap.root",
 	    const char* fnHits   ="rfio:galice.root");
-  Int_t CreateMap(Int_t eventNr, TFile* fileMap);
+  Int_t CreateMap(Int_t eventNr, TFile* fileMap) const;
   void SetDebug(Int_t level) {fDEBUG = level;}
   void CheckTrackMap(Int_t eventNr, const char* fnMap = "trackMap.root");
   AliTrackMap* LoadTrackMap(Int_t eventNr, const char* fnMap, TFile* &fileMap);
@@ -42,7 +41,7 @@ public:
     
 private:
 
-  Int_t fDEBUG;
+  Int_t fDEBUG;           // Debug flag
   
   ClassDef(AliTrackMapper,0)  // methods to create AliTrackMap
 };

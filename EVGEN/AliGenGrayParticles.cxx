@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2003/01/07 14:11:43  morsch
+Comminication with gray particle model and collision geometry added.
+
 Revision 1.4  2003/01/06 10:09:57  morsch
 Use AliGrayParticleModel.
 
@@ -39,11 +42,13 @@ Gray particle generator, first commit.
   Source is modelled by a relativistic Maxwell distributions.
   Original code by  Ferenc Sikler  <sikler@rmki.kfki.hu>
  */
+
+#include <TDatabasePDG.h>
+#include <TPDGCode.h>
+
+#include "AliCollisionGeometry.h"
 #include "AliGenGrayParticles.h"
 #include "AliGrayParticleModel.h"
-#include "AliCollisionGeometry.h"
-#include "AliPDG.h"
-#include <TDatabasePDG.h>
 
  ClassImp(AliGenGrayParticles)
     

@@ -27,7 +27,7 @@ class TTree;
 class AliDigitizer;
 class AliMergeCombi;
 
-const Int_t kMaxStreamsToMerge = 4;
+static const Int_t kMaxStreamsToMerge = 4;
 
 class AliRunDigitizer: public TTask {
 
@@ -47,7 +47,7 @@ public:
   void      SetFirstOutputEventNr(Int_t i) {fEvent = i;}
   void      SetNrOfEventsToWrite(Int_t i) {fNrOfEventsToWrite = i;}
   void      SetCopyTreesFromInput(Int_t i) {fCopyTreesFromInput = i;}
-  Int_t     GetCopyTreesFromInput() {return fCopyTreesFromInput;}
+  Int_t     GetCopyTreesFromInput() const {return fCopyTreesFromInput;}
   Int_t     GetOutputEventNr() const {return fEvent;}
   void      SetCombinationFileName(TString fn) {fCombinationFileName = fn;} 
   TString   GetCombinationFileName() const {return fCombinationFileName;}

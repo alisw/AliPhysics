@@ -5,7 +5,6 @@
 
 /* $Id$ */
 
-#include "TPDGCode.h"
 #include "TObject.h"
 
 class AliPDG : public TObject {

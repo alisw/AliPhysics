@@ -11,8 +11,9 @@
 #ifndef ALIGENHBTPROCESSOR_H
 #define ALIGENHBTPROCESSOR_H
 
+#include <TPDGCode.h>
+
 #include "AliGenerator.h"
-#include "AliPDG.h"
 
 class THBTprocessor;
 class TClonesArray;

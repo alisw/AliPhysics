@@ -32,7 +32,7 @@
 
 ClassImp(AliConfig)
 
-AliConfig* AliConfig::fInstance = 0;
+AliConfig* AliConfig::fgInstance = 0;
 
 //____________________________________________________________________________
 AliConfig* AliConfig::Instance ()
@@ -40,9 +40,9 @@ AliConfig* AliConfig::Instance ()
   //
   // Instance method for singleton class
   //
-  if(!fInstance) fInstance = new AliConfig ("Folders","Alice data exchange");
+  if(!fgInstance) fgInstance = new AliConfig ("Folders","Alice data exchange");
 
-  return fInstance;
+  return fgInstance;
 }
 
 //____________________________________________________________________________
@@ -59,7 +59,7 @@ AliConfig::AliConfig():
   //
   // Default constructor, mainly to keep coding conventions
   //
-  fInstance=0;
+  fgInstance=0;
     
   Fatal("ctor",
    "Constructor should not be called for a singleton\n");
@@ -80,7 +80,7 @@ AliConfig::AliConfig(const AliConfig& conf):
   //
   // Copy constructor, mainly to keep coding conventions
   //
-  fInstance=0;
+  fgInstance=0;
     
   Fatal("copy ctor",
    "Copy constructor should not be called for a singleton\n");
@@ -101,7 +101,7 @@ AliConfig::AliConfig(const char *name, const char *title):
   //
   // Constructor
   //
-  fInstance=this;
+  fgInstance=this;
   
   fDetectorFolder[0] = "Run/Conditions/Calibration" ;
   fDetectorFolder[1] = "Run/Event/Data" ;
@@ -161,38 +161,38 @@ AliConfig::AliConfig(const char *name, const char *title):
   subfolder =
     event->AddFolder ("RecData", "Detectors reconstucted data");
   
-  TFolder *run_mc =
+  TFolder *runMC =
     fTopFolder->AddFolder ("RunMC", "MonteCarlo run dependent folders");
   
-  TFolder *configuration_mc =
-    run_mc->AddFolder ("Configuration","MonteCarlo run configuration");
+  TFolder *configurationMC =
+    runMC->AddFolder ("Configuration","MonteCarlo run configuration");
   
   subfolder =
-    configuration_mc->AddFolder ("Generators","list of generator objects");
+    configurationMC->AddFolder ("Generators","list of generator objects");
   
   subfolder =
-    configuration_mc->AddFolder ("VirtualMC", "the Virtual MC");
+    configurationMC->AddFolder ("VirtualMC", "the Virtual MC");
   
-  TFolder *event_mc =
-    run_mc->AddFolder ("Event", "MonteCarlo event folders");
+  TFolder *eventMC =
+    runMC->AddFolder ("Event", "MonteCarlo event folders");
   
   subfolder =
-    event_mc->AddFolder ("Header", "MonteCarlo event header");
+    eventMC->AddFolder ("Header", "MonteCarlo event header");
   
   //		subfolder =
-  //		    event_mc->AddFolder ("Kinematics", "MonteCarlo generated particles");
+  //		    eventMC->AddFolder ("Kinematics", "MonteCarlo generated particles");
   
-  TFolder *data_mc =
-    event_mc->AddFolder ("Data", "MonteCarlo data");
+  TFolder *dataMC =
+    eventMC->AddFolder ("Data", "MonteCarlo data");
   
   subfolder = 
-    data_mc->AddFolder ("Hits", "MonteCarlo Hits") ; 
+    dataMC->AddFolder ("Hits", "MonteCarlo Hits") ; 
  
  subfolder = 
-    data_mc->AddFolder ("SDigits", "MonteCarlo SDigits") ; 
+    dataMC->AddFolder ("SDigits", "MonteCarlo SDigits") ; 
 
  subfolder = 
-    data_mc->AddFolder ("TrackReferences", "MonteCarlo track references") ; 
+    dataMC->AddFolder ("TrackReferences", "MonteCarlo track references") ; 
 
 
   
@@ -311,10 +311,10 @@ void    AliConfig::Add (char *list)
 {
   char *path;
   
-  const char   *conf_path = gSystem->Getenv ("ALICE_CONFIG_PATH");
-  if  (conf_path) {
-    path = new char[strlen (conf_path)];
-    strcpy (path, conf_path);
+  const char   *confPath = gSystem->Getenv ("ALICE_CONFIG_PATH");
+  if  (confPath) {
+    path = new char[strlen (confPath)];
+    strcpy (path, confPath);
   } else {
     const char   *alice = gSystem->Getenv ("ALICE_ROOT");
     path = new char[strlen (alice) + 32];

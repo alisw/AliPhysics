@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/11/21 19:34:52  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.3  2002/10/23 06:47:56  alibrary
 Introducing Riostream.h
 
@@ -60,20 +63,20 @@ First version, stand alone detector
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #include <Riostream.h>
-
-#include <TGeometry.h>
 #include <TBRIK.h>
-#include <TNode.h>
+#include <TGeometry.h>
 #include <TLorentzVector.h>
+#include <TNode.h>
+#include <TPDGCode.h>
 
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliConst.h"
-#include "AliPDG.h"
 
-#include "AliCRTv1.h"
 #include "AliCRTConstants.h"
+#include "AliCRTv1.h"
+#include "AliConst.h"
+#include "AliMagF.h"
+#include "AliRun.h"
 
 ClassImp(AliCRTv1)
  

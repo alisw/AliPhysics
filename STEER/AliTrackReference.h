@@ -14,7 +14,7 @@ public:
   virtual Int_t GetTrack() const {return fTrack;}
   virtual void SetTrack(Int_t track) {fTrack=track;}
   virtual void SetLength(Float_t length){fLength=length;}
-  virtual Float_t GetLength(){return fLength;}
+  virtual Float_t GetLength() const {return fLength;}
   virtual Float_t X() const {return fX;}
   virtual Float_t Y() const {return fY;}
   virtual Float_t Z() const {return fZ;}

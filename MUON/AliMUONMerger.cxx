@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/03/13 07:04:11  jchudoba
+Connect only MUON branches when reading the event to speed up digitisation.
+
 Revision 1.8  2002/02/22 12:14:21  morsch
 Validate pad hit before digitization.
 
@@ -42,23 +45,23 @@ AliMUONMerger prototype to be called by the merge manager.
 
 */
 
-#include <TTree.h> 
-#include <TObjArray.h>
-#include <TFile.h>
 #include <TDirectory.h>
+#include <TFile.h>
+#include <TObjArray.h>
+#include <TPDGCode.h>
+#include <TTree.h> 
 
-#include "AliMUONMerger.h"
-#include "AliMUONConstants.h"
-#include "AliMUONChamber.h"
 #include "AliHitMap.h"
-#include "AliMUONHitMapA1.h"
 #include "AliMUON.h"
-#include "AliMUONHit.h"
-#include "AliMUONPadHit.h"
+#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
+#include "AliMUONHit.h"
+#include "AliMUONHitMapA1.h"
+#include "AliMUONMerger.h"
+#include "AliMUONPadHit.h"
 #include "AliMUONTransientDigit.h"
 #include "AliRun.h"
-#include "AliPDG.h"
 
 ClassImp(AliMUONMerger)
 

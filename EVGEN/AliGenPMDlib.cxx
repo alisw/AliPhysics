@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.10.1  2002/06/10 14:57:41  hristov
 Merged with v3-08-02
 
@@ -34,9 +37,10 @@ THIS VERSION IS JUST A TEMPLATE THE PT AND Y DISTRIBUTIONS HAVE TO BE CORRECTED 
 
 */
 
+#include <TMath.h>
+#include <TPDGCode.h>
+
 #include "AliGenPMDlib.h"
-#include "AliPDG.h"
-#include "TMath.h"
 
 ClassImp(AliGenPMDlib)
 //

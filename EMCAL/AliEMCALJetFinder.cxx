@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2003/01/10 10:48:19  morsch
+SetSamplingFraction() removed from constructor.
+
 Revision 1.32  2003/01/10 10:26:40  morsch
 Sampling fraction initialized from geometry class.
 
@@ -125,39 +128,39 @@ Revision 1.3  2002/01/18 05:07:56  morsch
 
 #include <stdio.h>
 // From root ...
-#include <TROOT.h>
-#include <TClonesArray.h>
-#include <TTree.h>
+#include <TArrayF.h>
+#include <TAxis.h>
 #include <TBranchElement.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TArrayF.h>
-#include <TCanvas.h>
 #include <TList.h>
+#include <TPDGCode.h>
 #include <TPad.h>
-#include <TPaveText.h>
-#include <TAxis.h>
-#include <TStyle.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TPaveText.h>
 #include <TPythia6Calls.h>
+#include <TROOT.h>
+#include <TStyle.h>
+#include <TTree.h>
 
 // From AliRoot ...
-#include "AliEMCALJetFinder.h"
-#include "AliEMCALFast.h"
-#include "AliEMCALGeometry.h"
-#include "AliEMCALHit.h"
+#include "AliEMCAL.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALDigitizer.h"
+#include "AliEMCALFast.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALHadronCorrection.h"
+#include "AliEMCALHit.h"
+#include "AliEMCALJetFinder.h"
 #include "AliEMCALJetMicroDst.h"
-#include "AliRun.h"
+#include "AliHeader.h"
 #include "AliMagF.h"
 #include "AliMagFCM.h"
-#include "AliEMCAL.h"
-#include "AliHeader.h"
-#include "AliPDG.h"
+#include "AliRun.h"
 
 // Interface to FORTRAN
 #include "Ecommon.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2002/11/21 16:22:35  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.11  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -63,13 +66,14 @@ Generator to read beam halo file from Protvino group.
 // for this purpose.
 // Author: andreas.morsch@cern.ch
 
-#include "AliGenHaloProtvino.h"
-#include "AliRun.h"
-#include "AliPDG.h"
+#include <stdlib.h>
 
 #include <TDatabasePDG.h>
+#include <TPDGCode.h>
 #include <TSystem.h>
-#include <stdlib.h>
+
+#include "AliGenHaloProtvino.h"
+#include "AliRun.h"
 
  ClassImp(AliGenHaloProtvino)
      AliGenHaloProtvino::AliGenHaloProtvino()

@@ -33,7 +33,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 #include <TNode.h>
-#include "TSystem.h"
+#include <TObjArray.h>
+#include <TSystem.h>
 
 #include "AliModule.h"
 #include "AliRun.h"
@@ -173,7 +174,7 @@ void AliModule::Disable()
 }
 
 //_______________________________________________________________________
-Int_t AliModule::DistancetoPrimitive(Int_t, Int_t)
+Int_t AliModule::DistancetoPrimitive(Int_t, Int_t) const
 {
   //
   // Return distance from mouse pointer to object
@@ -225,7 +226,7 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
 //_______________________________________________________________________
 void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a, 
                                Float_t &z, Float_t &dens, Float_t &radl,
-                               Float_t &absl)
+                               Float_t &absl) const
 {
   //
   // Store the parameters for a material
