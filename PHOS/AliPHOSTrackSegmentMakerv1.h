@@ -28,7 +28,7 @@ class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 public:
 
   AliPHOSTrackSegmentMakerv1() ;                     
-  AliPHOSTrackSegmentMakerv1(const char* headerFile, const char* name = 0) ;                     
+  AliPHOSTrackSegmentMakerv1(const char* headerFile, const char* name = "Default") ;                     
   AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention

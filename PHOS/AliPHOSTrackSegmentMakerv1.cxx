@@ -108,6 +108,7 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   fTrackSegmentsInRun       = 0 ; 
 
   TString tempo(GetName()) ; 
+  tempo.Append(":") ;
   tempo.Append(Version()) ; 
   SetName(tempo.Data()) ; 
 
@@ -128,11 +129,13 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
 {
   // Finds first and last indexes between which 
   // clusters from one PHOS module are
- 
+
+  TString taskName(GetName()) ; 
+  taskName.Remove(taskName.Index(Version())-1) ; 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(taskName) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(taskName) ; 
 
   //First EMC clusters
   Int_t totalEmc = emcRecPoints->GetEntriesFast() ;
@@ -214,9 +217,9 @@ void  AliPHOSTrackSegmentMakerv1::Init()
     SetTitle("galice.root") ;
   
   TString taskName(GetName()) ; 
-  taskName.ReplaceAll(Version(), "") ;
+  taskName.Remove(taskName.Index(Version())-1) ;
   
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName.Data()) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName) ; 
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSTrackSegmentMakerv1::Init -> Could not obtain the Getter object !" << endl ; 
     return ;
@@ -226,12 +229,10 @@ void  AliPHOSTrackSegmentMakerv1::Init()
   fLinkUpArray  = new TClonesArray("AliPHOSLink", 1000); 
   
   //add Task to //YSAlice/tasks/Reconstructioner/PHOS
-  TTask * aliceRe  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/Reconstructioner") ; 
-  TTask * phosRe   = (TTask*)aliceRe->GetListOfTasks()->FindObject("PHOS") ;
-  phosRe->Add(this) ; 
-  // create a folder on the white board //YSAlice/WhiteBoard/RecPoints/PHOS/trackSegmentsName
+  gime->PostTrackSegmentMaker(this) ;
 
-  gime->Post(GetTitle(), "T", taskName.Data() ) ; 
+  // create a folder on the white board //YSAlice/WhiteBoard/RecPoints/PHOS/trackSegmentsName
+  gime->PostTrackSegments(taskName) ; 
 
 }
 
@@ -241,10 +242,13 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
   // Finds distances (links) between all EMC and PPSD clusters, 
   // which are not further apart from each other than fR0 
   // and sort them in accordance with this distance
+
+  TString taskName(GetName()) ; 
+  taskName.Remove(taskName.Index(Version())-1) ;
   
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(taskName) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(taskName) ; 
 
   fLinkUpArray->Clear() ;    
   fLinkLowArray->Clear() ;
@@ -299,10 +303,13 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   // unassigned RecParticles. We assign these RecPoints to TrackSegment and 
   // remove them from the list of "unassigned". 
   
+  TString taskName(GetName()) ; 
+  taskName.Remove(taskName.Index(Version())-1) ;
+
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  TClonesArray * trackSegments = gime->TrackSegments() ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(taskName) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(taskName) ; 
+  TClonesArray * trackSegments = gime->TrackSegments(taskName) ;   
   
   //Make arrays to mark clusters already chosen
   Int_t * emcExist = 0;
@@ -336,7 +343,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   AliPHOSRecPoint * nullpointer = 0 ;
 
   while ( (linkLow =  (AliPHOSLink *)nextLow() ) ){
-  
+
     if( (emcExist[linkLow->GetEmc()-fEmcFirst]> 0) && 
 	ppsdExist[linkLow->GetPpsd()-fPpsdFirst]  ){ // RecPoints not removed yet 
       new ((*trackSegments)[fNTrackSegments]) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) emcRecPoints->At(linkLow->GetEmc()), 
@@ -410,13 +417,14 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
   }
 
   //check, if the branch with name of this" already exits?
+  gAlice->GetEvent(0) ;
   TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
   TIter next(lob) ; 
   TBranch * branch = 0 ;  
   Bool_t phostsfound = kFALSE, tracksegmentmakerfound = kFALSE ; 
   
   TString taskName(GetName()) ; 
-  taskName.ReplaceAll(Version(), "") ;
+  taskName.Remove(taskName.Index(Version())-1) ;
 
   while ( (branch = (TBranch*)next()) && (!phostsfound || !tracksegmentmakerfound) ) {
     if ( (strcmp(branch->GetName(), "PHOSTS")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
@@ -432,17 +440,27 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
     return ; 
   }       
 
-  const AliPHOSGeometry * geom = AliPHOSGetter::GetInstance()->PHOSGeometry() ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
+  const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
   Int_t ievent ;
 
   for(ievent = 0; ievent < nevents; ievent++){
-    gAlice->GetEvent(ievent) ;
-    gAlice->SetEvent(ievent) ;
 
-    if(!ReadRecPoints(ievent))  //reads RecPoints for event ievent
-      continue;
-    
+    //    if(!ReadRecPoints(ievent))  //reads RecPoints for event ievent
+    //  continue;
+    gime->Event(ievent,"R") ;
+
+    //Make some initializations 
+    fNTrackSegments = 0 ;
+    fEmcFirst = 0 ;    
+    fEmcLast  = 0 ;   
+    fCpvFirst = 0 ;   
+    fCpvLast  = 0 ;   
+    fPpsdFirst= 0 ;   
+    fPpsdLast = 0 ;    
+    gime->TrackSegments(taskName)->Clear() ; 
+
     for(fModule = 1; fModule <= geom->GetNModules() ; fModule++ ){
       
       FillOneModule() ; 
@@ -588,7 +606,11 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
   // If yes - exits without writing.
   
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
-  TClonesArray * trackSegments = gime->TrackSegments() ; 
+  TString taskName(GetName()) ; 
+  taskName.Remove(taskName.Index(Version())-1) ;
+
+  TClonesArray * trackSegments = gime->TrackSegments(taskName) ; 
+  trackSegments->Expand(trackSegments->GetEntriesFast()) ;
 
   //Make branch in TreeR for TrackSegments 
   char * filename = 0;
@@ -602,7 +624,7 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
   //First TS
   Int_t bufferSize = 32000 ;    
   TBranch * tsBranch = gAlice->TreeR()->Branch("PHOSTS",&trackSegments,bufferSize);
-  tsBranch->SetTitle(fTrackSegmentsBranchTitle.Data());
+  tsBranch->SetTitle(fTrackSegmentsBranchTitle);
   if (filename) {
     tsBranch->SetFile(filename);
     TIter next( tsBranch->GetListOfBranches());
@@ -618,7 +640,7 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
   AliPHOSTrackSegmentMakerv1 * ts = this ;
   TBranch * tsMakerBranch = gAlice->TreeR()->Branch("AliPHOSTrackSegmentMaker","AliPHOSTrackSegmentMakerv1",
 					  &ts,bufferSize,splitlevel);
-  tsMakerBranch->SetTitle(fTrackSegmentsBranchTitle.Data());
+  tsMakerBranch->SetTitle(fTrackSegmentsBranchTitle);
   if (filename) {
     tsMakerBranch->SetFile(filename);
     TIter next( tsMakerBranch->GetListOfBranches());
@@ -642,8 +664,10 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
 {
   // option deb - prints # of found TrackSegments
   // option deb all - prints as well indexed of found RecParticles assigned to the TS
-
-  TClonesArray * trackSegments = AliPHOSGetter::GetInstance()->TrackSegments() ; 
+  TString taskName(GetName()) ; 
+  taskName.Remove(taskName.Index(Version())-1) ;
+  
+  TClonesArray * trackSegments = AliPHOSGetter::GetInstance()->TrackSegments(taskName) ; 
   
   cout << "AliPHOSTrackSegmentMakerv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       Found " << trackSegments->GetEntriesFast() << "  trackSegments " << endl ;
