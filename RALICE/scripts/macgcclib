@@ -28,12 +28,12 @@ rootcint -f zzzralicedict.cxx -c RALICEHeaders.h RALICELinkDef.h
 g++ $gccroot *.cxx   
 #
 # Creating ralice.so library 
-g++ -v -bundle -flat_namespace -undefined dynamic_lookup -o $lib1 *.o
+g++ -v -bundle -undefined dynamic_lookup -o $lib1 *.o
 #
 # Creating ralice.dylib library 
-g++ -v -dynamiclib -flat_namespace -undefined dynamic_lookup -single_module -o $lib2 *.o
+g++ -v -dynamiclib -undefined dynamic_lookup -single_module -o $lib2 *.o
 ### On some systems the following extra "-read_only_relocs" flag might be needed
-# g++ -v -dynamiclib -flat_namespace -undefined dynamic_lookup -single_module -read_only_relocs -o $lib2 *.o
+# g++ -v -dynamiclib -undefined dynamic_lookup -single_module -read_only_relocs -o $lib2 *.o
 #
 rm zzzralicedict.*
 rm *.o

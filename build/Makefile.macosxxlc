@@ -25,7 +25,7 @@ CXXFLAGS      = $(CXXOPT) -qpic -I/sw/include \
                 -qflttrap=overflow:zerodivide:invalid:inexact:enable
 CXXFLAGSNO    = $(CXXNOOPT) -qpic -I/sw/include \
                 -qflttrap=overflow:zerodivide:invalid:inexact:enable
-CFLAGS	      = -qpic -qextname \
+CFLAGS	      = -qpic -qextname -I/sw/include \
                 -qflttrap=overflow:zerodivide:invalid:inexact:enable
 FFLAGS        = $(CLIBFOPT)  $(FOPT) -qpic \
                 -qflttrap=overflow:zerodivide:invalid:inexact:enable
@@ -42,7 +42,7 @@ LDFLAGS       = $(OPT)
 SHLD	     := export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
 		unset LD_PREBIND ; \
 		xlC
-SOFLAGS      := -bundle -flat_namespace -undefined dynamic_lookup
+SOFLAGS      := -bundle -undefined dynamic_lookup
 #SHLIB        := -lg2c
 SHLIB        :=
 SOEXT 	     := so
@@ -50,7 +50,7 @@ SOEXT 	     := so
 DYLD	     := export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
 		unset LD_PREBIND ; \
 		xlC
-DYFLAGS       = -qmkshrobj -flat_namespace -undefined dynamic_lookup -single_module
+DYFLAGS       = -qmkshrobj -undefined dynamic_lookup -single_module
 DYLIB        :=
 DYEXT        := dylib
 

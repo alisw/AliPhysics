@@ -37,13 +37,13 @@ LD            = export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
 LDFLAGS       = $(OPT) 
 
 SHLD	     := $(LD)
-SOFLAGS      := -bundle -flat_namespace -undefined dynamic_lookup
+SOFLAGS      := -bundle -undefined dynamic_lookup
 #SHLIB        := -lg2c
 SHLIB        :=
 SOEXT 	     := so
 
 DYLD	     := $(LD)
-DYFLAGS       = -dynamiclib -flat_namespace -undefined dynamic_lookup -single_module
+DYFLAGS       = -dynamiclib -undefined dynamic_lookup -single_module
 DYLIB        :=
 DYEXT        := dylib
 
