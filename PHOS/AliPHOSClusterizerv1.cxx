@@ -546,7 +546,7 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   } 
     
   //And Finally  clusterizer branch
-  AliPHOSClusterizerv1 * cl = (AliPHOSClusterizerv1*)gime->Clusterizer(BranchName()) ;
+  AliPHOSClusterizerv1 * cl = this ;
   TBranch * clusterizerBranch = gAlice->TreeR()->Branch("AliPHOSClusterizer","AliPHOSClusterizerv1",
 					      &cl,bufferSize,splitlevel);
   clusterizerBranch->SetTitle(BranchName());

@@ -53,7 +53,7 @@ public:
   virtual void SetUnfolding(Bool_t toUnfold ){cout << "Not Defined" << endl ;}  
   virtual const char * Version() const {cout << "Not Defined" << endl ; return 0 ; }  
 
-  ClassDef(AliPHOSClusterizer,1)  // Clusterization algorithm class 
+  ClassDef(AliPHOSClusterizer,2)  // Clusterization algorithm class 
 
 } ;
 
