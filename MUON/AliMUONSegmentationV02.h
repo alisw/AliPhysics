@@ -38,7 +38,7 @@ public AliMUONSegmentationV01 {
     virtual Int_t   Npy()  const;
     // calculate sector from pad coordinates
     virtual Int_t   Sector(Int_t ix, Int_t iy);
-    virtual void Draw(const char *opt="") const {}
+    virtual void Draw(const char *opt="") const;
     //
     // Transform from pad (wire) to real coordinates and vice versa
     // Transform from pad to real coordinates
@@ -47,8 +47,7 @@ public AliMUONSegmentationV01 {
 	{z=fZ; GetPadC(ix, iy, x , y);}
     // Transform from pad to real coordinates
     virtual void    GetPadI(Float_t x ,Float_t y , Int_t &ix, Int_t &iy);
-    virtual void    GetPad(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy) 
-	{GetPadI(x, y, ix, iy);}
+    virtual void    GetPad(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
     // Set pad position
     virtual void    SetPad(Int_t ix,Int_t iy);
     // Stepper

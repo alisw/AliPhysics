@@ -38,7 +38,7 @@
 //___________________________________________
 ClassImp(AliMUONSegmentationV01)
 
-AliMUONSegmentationV01::AliMUONSegmentationV01(const AliMUONSegmentationV01& segmentation)
+  AliMUONSegmentationV01::AliMUONSegmentationV01(const AliMUONSegmentationV01& segmentation):AliMUONSegmentationV0(segmentation)
 {
 // Dummy copy constructor
 }
@@ -93,7 +93,7 @@ Float_t AliMUONSegmentationV01::Dpx(Int_t isec) const
    return dpx;
 }
 
-Float_t AliMUONSegmentationV01::Dpy(Int_t isec) const
+Float_t AliMUONSegmentationV01::Dpy(Int_t /*isec*/) const
 {
 //
 // Returns y-pad size for given sector isec
@@ -206,9 +206,8 @@ Int_t AliMUONSegmentationV01::Sector(Int_t ix, Int_t iy)
     }
     return isec;
 }
-
-void AliMUONSegmentationV01::
-GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+//______________________________________________________________________
+void AliMUONSegmentationV01::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
@@ -240,6 +239,12 @@ GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
     }
     ix = (x>0) ? ix:-ix;
 }
+//________________________________________________________________
+void AliMUONSegmentationV01::GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy) 
+{
+  GetPadI(x, y, ix, iy);
+}
+//________________________________________________________________
 
 void AliMUONSegmentationV01::
 GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
@@ -275,9 +280,8 @@ SetPad(Int_t ix, Int_t iy)
     fSector=Sector(ix,iy);
 }
 
-
-void AliMUONSegmentationV01::
-FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
+//______________________________________________________________________
+void AliMUONSegmentationV01::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 {
 // Initialises iteration over pads for charge distribution algorithm
 //
@@ -362,6 +366,12 @@ Int_t AliMUONSegmentationV01::MorePads()
     }
 */
 }
+//______________________________________________________________________
+void AliMUONSegmentationV01::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy)
+{
+  FirstPad(xhit, yhit, dx, dy);
+}
+
 
 void AliMUONSegmentationV01::
 IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)

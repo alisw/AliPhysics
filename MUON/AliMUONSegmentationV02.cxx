@@ -50,13 +50,16 @@ Int_t AliMUONSegmentationV02::Npy() const
 {return AliMUONSegmentationV01::Npx();}
 
 
-Float_t AliMUONSegmentationV02::Dpx(Int_t isec) const
+Float_t AliMUONSegmentationV02::Dpx(Int_t /*isec*/) const
 // Returns pad-size in x
 {return fDpy;}
 
 Float_t AliMUONSegmentationV02::Dpy(Int_t isec) const
 // Returns pad-size in y
 {return (*fDpxD)[isec];}
+
+void  AliMUONSegmentationV02::Draw(const char * /*opt*/) const 
+{}
 
 Int_t AliMUONSegmentationV02::Sector(Int_t ix, Int_t iy) 
 // Returns sector number for given pad position
@@ -70,6 +73,11 @@ GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 AliMUONSegmentationV01::GetPadI(y, x, iy, ix); 
 // printf("\n x,y,ix,iy %f %f %d %d", x,y,ix,iy);
+}
+
+void AliMUONSegmentationV02::GetPad(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy) 
+{
+  GetPadI(x, y, ix, iy);
 }
 
 void AliMUONSegmentationV02::
