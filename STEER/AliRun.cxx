@@ -611,6 +611,15 @@ AliModule *AliRun::GetModule(const char *name)
 }
  
 //_____________________________________________________________________________
+AliDetector *AliRun::GetDetector(const char *name)
+{
+  //
+  // Return pointer to detector from name
+  //
+  return (AliDetector*)fModules->FindObject(name);
+}
+ 
+//_____________________________________________________________________________
 Int_t AliRun::GetModuleID(const char *name)
 {
   //

@@ -81,6 +81,7 @@ public:
    void           SetRunNumber(Int_t run) {fRun=run;}
    Int_t          GetDebug() const {return fDebug;}
    AliModule     *GetModule(const char *name);
+   AliDetector   *GetDetector(const char *name);
    Int_t          GetModuleID(const char *name);
    virtual  Int_t GetEvent(Int_t event);
    TGeometry     *GetGeometry();
