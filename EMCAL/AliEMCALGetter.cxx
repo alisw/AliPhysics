@@ -317,7 +317,7 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
       fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
   }
   if (!fgObjGetter) 
-    ::Error("Instance", "Failed to create the EMCAL Getter object") ;
+    ::Error("AliEMCALGetter::Instance", "Failed to create the EMCAL Getter object") ;
   else 
     if (fgDebug)
       Print() ;
@@ -330,8 +330,8 @@ AliEMCALGetter *  AliEMCALGetter::Instance()
 {
   // Returns the pointer of the unique instance already defined
   
-  if(!fgObjGetter)
-     ::Error("Instance", "Getter not initialized") ;
+  if(!fgObjGetter && fgDebug)
+     ::Warning("AliEMCALGetter::Instance", "Getter not initialized") ;
 
    return fgObjGetter ;
            
