@@ -41,7 +41,11 @@ Double_t AliTPCpidESD::Bethe(Double_t bg) {
   // This is the Bethe-Bloch function normalised to 1 at the minimum
   //
   Double_t bg2=bg*bg;
-  Double_t bethe=(1.+ bg2)/bg2*(log(5940*bg2) - bg2/(1.+ bg2));
+  Double_t bethe;
+  if (bg<3.5e1) 
+      bethe=(1.+ bg2)/bg2*(log(5940*bg2) - bg2/(1.+ bg2));
+  else // Density effect ( approximately :) 
+      bethe=1.15*(1.+ bg2)/bg2*(log(3.5*5940*bg) - bg2/(1.+ bg2));
   return bethe/11.091;
 }
 
