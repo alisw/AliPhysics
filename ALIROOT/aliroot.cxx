@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/02/18 14:26:14  hristov
+#include <AliConfig.h> removed
+
 Revision 1.9  2002/01/09 17:05:03  morsch
 Increase memory allocated for ZEBRA.
 
@@ -74,11 +77,6 @@ int xargc=0;
 #endif 
 
 int gcbank_[4000000];
-
-//Initialise the Root environment
- extern void InitGui();
- VoidFuncPtr_t initfuncs[] = { InitGui, 0 };
- TROOT root("galice","The Alice/ROOT Interface", initfuncs);
 
 //_____________________________________________________________________________
 int main(int argc, char **argv)
