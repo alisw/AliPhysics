@@ -61,8 +61,8 @@ class AliMUONTrack : public TObject {
 
  protected:
  private:
-  static TVirtualFitter* fgFitter; // Pointer to track fitter
-  AliMUONEventReconstructor* fEventReconstructor; // Pointer to EventReconstructor
+  static TVirtualFitter* fgFitter; //!                  Pointer to track fitter
+  AliMUONEventReconstructor* fEventReconstructor; //!   Pointer to EventReconstructor
   AliMUONTrackParam fTrackParamAtVertex; // Track parameters at vertex
   TObjArray *fTrackHitsPtr; // Pointer to array of pointers to TrackHit's
   Int_t fNTrackHits; // Number of TrackHit's
@@ -71,7 +71,7 @@ class AliMUONTrack : public TObject {
   Int_t fFitStart; // 0 or 1 for fit starting from parameters at vertex (0) or at first TrackHit(1)
   Double_t fFitFMin; // minimum value of the function minimized by the fit
   
-  ClassDef(AliMUONTrack, 1) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 2) // Reconstructed track in ALICE dimuon spectrometer
     };
 	
 #endif

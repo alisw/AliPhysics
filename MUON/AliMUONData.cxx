@@ -288,7 +288,7 @@ void AliMUONData::Fill(Option_t* option)
   if ( TreeT() && cRT ) {
     sprintf(branchname,"%sTrack",GetName());  
     branch = TreeT()->GetBranch(branchname);
-    branch->Fill();
+    TreeT()->Fill();
   }
 }
 //_____________________________________________________________________________
@@ -590,6 +590,11 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     else Warning("SetTreeAddress","(%s) Failed for LocalTrigger. Can not find branch in tree.",GetName());
   }
 
+  if ( TreeT() ) {
+    if (fRecTracks == 0x0 && cRT )  {
+      fRecTracks  = new TClonesArray("AliMUONTrack",100);
+    }
+  }
   if ( TreeT() && fRecTracks && cRT ) {
     sprintf(branchname,"%sTrack",GetName());  
     branch = TreeT()->GetBranch(branchname);

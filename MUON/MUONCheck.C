@@ -44,6 +44,7 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONTrack.h"
 
 void MUONkine(char * filename="galice.root")
 {
@@ -365,6 +366,49 @@ void MUONTestTrigger (char * filename="galice.root"){
   } // end loop on event  
   MUONLoader->UnloadRecPoints();
 }
+
+
+
+void MUONRecTracks (char * filename="galice.root"){
+// reads and dumps trigger objects from MUON.RecPoints.root
+  TClonesArray * RecTracks;
+  
+  // Creating Run Loader and openning file containing Hits
+  AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
+  if (RunLoader ==0x0) {
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
+  }
+  
+  AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  MUONLoader->LoadTracks("READ");
+  // Creating MUON data container
+  AliMUONData muondata(MUONLoader,"MUON","MUON");
+  
+    Int_t ievent, nevents;
+  nevents = RunLoader->GetNumberOfEvents();
+  
+  AliMUONTrack * rectrack;
+  
+  for (ievent=0; ievent<nevents; ievent++) {
+    RunLoader->GetEvent(ievent);
+    
+    muondata.SetTreeAddress("RT");
+    muondata.GetRecTracks();
+    RecTracks = muondata.RecTracks();
+    
+    
+    Int_t nrectracks = (Int_t) RecTracks->GetEntriesFast(); //
+
+    printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
+   
+    muondata.ResetRecTracks();
+  } // end loop on event  
+  MUONLoader->UnloadTracks();
+}
+
+
+
 
 
 

@@ -67,6 +67,7 @@ class AliMUONData : public TNamed {
     void           GetRawClusters() {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
     Int_t          GetSplitLevel() {return fSplitLevel;}
+    void           GetRecTracks() {fLoader->TreeT()->GetEvent(0);}
 
     Bool_t        IsRawClusterBranchesInTree();
     Bool_t        IsTriggerBranchesInTree();
@@ -125,3 +126,4 @@ class AliMUONData : public TNamed {
     ClassDef(AliMUONData,1)
  };
 #endif
+

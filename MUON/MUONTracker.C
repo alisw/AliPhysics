@@ -77,6 +77,8 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
   if  (LastEvent>nevents) LastEvent=nevents;
   // Loop over events
   for (Int_t event = FirstEvent; event < LastEvent; event++) {
+    //MUONLoader->LoadHits("READ");
+    MUONLoader->LoadRecPoints("READ");
     cout << "Event: " << event << endl;
     RunLoader->GetEvent(event);   
     muondata->SetTreeAddress("RC");
@@ -91,12 +93,13 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
     for(Int_t i=0; i<Reco->GetNRecTracks(); i++) {
       AliMUONTrack * track = (AliMUONTrack*) Reco->GetRecTracksPtr()->At(i);
       muondata->AddRecTrack(*track);
+      //printf(">>> TEST TEST Number of hits in the track %d is %d \n",i,track->GetNTrackHits());
     }
 
     muondata->Fill("RT");
     MUONLoader->WriteTracks("OVERWRITE");
     muondata->ResetRecTracks();
+    //MUONLoader->UnloadHits();
+    MUONLoader->UnloadRecPoints();
   } // Event loop
-  MUONLoader->UnloadHits();
-  MUONLoader->UnloadRecPoints();
 }
