@@ -38,8 +38,8 @@ class AliITSGeoCable : public TObject{
   public:
     AliITSGeoCable();
     AliITSGeoCable(const char *name,const TObjArray *vect,const Double_t Rmin,
-                   const Double_t Rmax,const TVector3 ns(0.,0.,1.),
-                   const TVector3 ne(0.,0.,1.));
+                   const Double_t Rmax,const TVector3 ns = TVector3(0.,0.,1.),
+                   const TVector3 ne = TVector3(0.,0.,1.));
     virtual ~AliITSGeoCable();
     virtual Double_t GetRmin(){return fRmin;}
     virtual Double_t GetRmax(){return fRmax;}

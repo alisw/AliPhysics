@@ -127,7 +127,7 @@ AliITSMixture::AliITSMixture(const char *name,Int_t N,Double_t *w,TObjArray *m,
 //======================================================================
 ClassImp(AliITSGeoCable)
 ;
-AliITSGeoCable::AliITSGepCable(){
+AliITSGeoCable::AliITSGeoCable(){
     //
 
     fRmin = fRmax = 0.0;
@@ -137,8 +137,8 @@ AliITSGeoCable::AliITSGepCable(){
     fTranRot  = 0;
 }
 //----------------------------------------------------------------------
-AliITSGeoCable::AliITSGepCable(const char *name,TObjArray *vect,
-                               const Double_t Rmin,const Double_t Rmax
+AliITSGeoCable::AliITSGeoCable(const char *name,const TObjArray *vect,
+                               const Double_t Rmin,const Double_t Rmax,
                                const TVector3 ns,const TVector3 ne){
     //
     // Inputs:
@@ -156,27 +156,26 @@ AliITSGeoCable::AliITSGepCable(const char *name,TObjArray *vect,
     Char_t nam[500];
     Int_t i,n;
     Double_t s,th,ph;
-    TVector3 x0,x1,x2,d,t;
+    TVector3 x0,x1,x2,d,t,n0,n1;
 
     fRmin = fRmax = 0.0;
     fNs.SetXYZ(0.0,0.0,-1.0);
     fNe.SetXYZ(0.0,0.0,1.0);
-    n = vect->GetEnteries();
+    n = vect->GetEntries();
     fTubes = new TObjArray(n-1);
-    fTran  = new TObjArray(n-1);
-    fRot   = new TObjArray(n-1);
-    if(ns!=0) fNs = ns/ns.Mag();
-    if(ne!=0) fNe = ne/ne.Mag();
+    fTranRot  = new TObjArray(n-1);
+    fNs = ns*(1./ns.Mag());
+    fNe = ne*(1./ne.Mag());
     //
-    x0 = (TVector3)(*(vect->At(0)));
+    x0 = *((TVector3 *)(vect->At(0)));
     n0 = ns;
     for(i=1;i<n;i++){
-        x1 = (TVector3)(*(vect->At(i)));
+        x1 = *((TVector3 *)(vect->At(i)));
         d  = x1 - x0;
         if(i<n-1) {
-            x2 = (TVector3)(*(vect->At(i+1)));
+            x2 = *((TVector3 *)(vect->At(i+1)));
             n1 = d + (x2-x1);
-            n1 /= n1.Mag();
+            n1 *= 1./n1.Mag();
         }else{
             n1 = fNe;
         } // end if
@@ -188,18 +187,18 @@ AliITSGeoCable::AliITSGepCable(const char *name,TObjArray *vect,
         ph =  TMath::ATan2(d.y()-d.Mag(),d.x()-d.Mag());
         ph *= TMath::RadToDeg();
         sprintf(nam,"%sCombiTrans%dCable",name,i-1);
-        fTranRot[i-1] = new TCombiTrans(nam,t.x(),t.y(),t.z(),
-                                        new TGeoRotation("",ph,th,0.0);)
+        fTranRot->AddAt(new TGeoCombiTrans(nam,t.x(),t.y(),t.z(),
+					 new TGeoRotation("",ph,th,0.0)),i-1);
         s  = d.Mag();
         sprintf(nam,"%sPart%dCable",name,i-1);
-        fTubes[i-1]  = new TGeoCtub(nam,fRmin,fRmax,0.5*s,0.0,360.0,
-                                  n0.x(),n0.y(),n0.z(),n1.x(),n1.y(),n1.z());
+        fTubes->AddAt( new TGeoCtub(nam,fRmin,fRmax,0.5*s,0.0,360.0,n0.x(),
+				    n0.y(),n0.z(),n1.x(),n1.y(),n1.z()),i-1);
         n0 = -n1;
         x0 = x1;
     } // end for i
 }
 //----------------------------------------------------------------------
-AliITSGeoCable::~AliITSGepCable(){
+AliITSGeoCable::~AliITSGeoCable(){
     //
     // Inputs:
     //    none.
@@ -210,22 +209,16 @@ AliITSGeoCable::~AliITSGepCable(){
     Int_t i;
 
     if(fTubes){
-        for(i=0;i<fTubes->GetEnteries();i++) 
+        for(i=0;i<fTubes->GetEntries();i++) 
             delete (TGeoCtub*)(fTubes->At(i));
         delete fTubes;
     } // end if
     fTubes = 0;
-    if(fTran){
-        for(i=0;i<fTram->GetEnteries();i++) 
-            delete (TGeoTransofmation*)(fTran->At(i));
-        delete fTran;
+    if(fTranRot){
+        for(i=0;i<fTranRot->GetEntries();i++) 
+            delete (TGeoCombiTrans*)(fTranRot->At(i));
+        delete fTranRot;
     } // end if
-    fTran  = 0;
-    if(fRot){
-        for(i=0;i<fRot->GetEnteries();i++) 
-            delete (TGeoRotation*)(fRot->At(i));
-        delete fRot;
-    } // end if
-    fRot   = 0;
+    fTranRot  = 0;
 }
 //----------------------------------------------------------------------
