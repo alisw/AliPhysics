@@ -30,7 +30,6 @@
 #pragma link C++ class  AliMUONChamberTrigger;
 #pragma link C++ class  AliMUONPoints;
 #pragma link C++ class  AliMUONDisplay;
-#pragma link C++ class  AliMUONClusterFinder;
 #pragma link C++ class  AliMUONClusterFinderVS;
 #pragma link C++ class  AliMUONHitMap;
 #pragma link C++ class  AliMUONHitMapA1;

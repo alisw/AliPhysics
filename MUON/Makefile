@@ -19,7 +19,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationTriggerX.cxx AliMUONSegmentationTriggerY.cxx \
                AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx\
                AliMUONDisplay.cxx AliMUONPoints.cxx \
-               AliMUONClusterFinder.cxx AliMUONClusterFinderVS.cxx \
+               AliMUONClusterFinderVS.cxx \
                AliMUONHitMap.cxx AliMUONHitMapA1.cxx \
 	       AliMUONHit.cxx AliMUONPadHit.cxx AliMUONDigit.cxx \
                AliMUONTransientDigit.cxx AliMUONRawCluster.cxx \
