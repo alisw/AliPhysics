@@ -79,7 +79,7 @@ static const Double_t kDefaultSimpleBPosition = 1019.0;
 static const Int_t kDefaultRecGeantHits = 0;
 static const Double_t kDefaultEfficiency = 0.95;
 
-static const Int_t kDefaultPrintLevel = 0;
+static const Int_t kDefaultPrintLevel = -1;
 
 ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
 
