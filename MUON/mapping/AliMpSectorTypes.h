@@ -7,6 +7,7 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+
 #ifndef ALI_MP_SECTOR_TYPES_H
 #define ALI_MP_SECTOR_TYPES_H
 
