@@ -281,13 +281,12 @@ Float_t TGeant4::Xsec(char* reac, Float_t energy, Int_t part, Int_t mate) {
 
 void TGeant4::SetExternalDecayer(AliDecayer* decayer) {
 //
-  TG4Globals:: Warning("TGeant4::SetExternalDecayer() is not implemented."); 
+  fPhysicsManager->SetExternalDecayer(decayer);
 }
 
 AliDecayer* TGeant4::Decayer() const {
 //
-  TG4Globals:: Warning("TGeant4::Decayer() is not implemented.");
-  return 0; 
+  return fPhysicsManager->Decayer(); 
 }
   
 
