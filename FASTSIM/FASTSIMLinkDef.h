@@ -19,6 +19,7 @@
 #pragma link C++ class  AliMUONFastTracking+;
 #pragma link C++ class  AliMUONFastTrackingEntry+;
 #pragma link C++ class  AliFastGlauber+;
+#pragma link C++ class  AliQuenchingWeights+;
 #endif
 
 
