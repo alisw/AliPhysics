@@ -105,13 +105,13 @@ public:
   void Setdtgl(TVector &x) {for(Int_t i=0; i<6; i++){fdtgl(i)=x(i);}}  // sets the vector fdtgl
   TVector Getd2() const { return fd2;}  // gets the vector fd2
   TVector Gettgl2() const { return ftgl2;}  // gets the vector ftgl2
-  TVector Getdtgl() const { return fdtgl;}  // gets the vectoe dtgl
+  TVector Getdtgl() const { return fdtgl;}  // gets the vector dtgl
   Double_t Getd2(Int_t i){return (Double_t)fd2(i);}     // gets the i element of the vector fd2
   Double_t Gettgl2(Int_t i){return (Double_t)ftgl2(i);} // gets the i element of the vector tgl2
   Double_t Getdtgl(Int_t i){return (Double_t)fdtgl(i);} // gets the i element of the vector fdtgl
   //Double_t GetxoTPC() const {return fxoTPC;}  // gets fxoTPC
   Int_t  Getfnoclust() const {return fnoclust;}  //gets fnoclust 
-  Double_t GetPredChi2(Double_t m[2], Double_t sigma[2]) const; //aggiunto il 30-7-2001
+  Double_t GetPredChi2(Double_t m[2], Double_t sigma[2]) const; //get predicted chi2
  
         	        
 //////////////////////////////////////////////////////////////////////////////////////// 

@@ -2,7 +2,7 @@
 #include "iostream.h"
 #endif
 
-void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0,int min_t=-1, int max_t=0,Bool_t flagvert=1, Bool_t realmass=0) {
+void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0, Int_t min_t=-1, Int_t max_t=0,Bool_t flagvert=1, Bool_t realmass=0) {
 
   const char *filename="galice.root";
   
@@ -29,15 +29,15 @@ void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0,int min_t=-1, int max_t=0,B
    }
 
   AliITS* IITTSS =(AliITS *)gAlice->GetDetector("ITS");        
-  if (!IITTSS) return;                                        
-  AliITSTrackerV1* ITStracker = new AliITSTrackerV1(IITTSS,flagvert);   
+  if (!IITTSS) return;                                           
 
 //
 //   Loop over events 
 //
    Int_t Nh=0;
    Int_t Nh1=0;
-   for (int nev=0; nev<= evNumber2; nev++) {
+   for (Int_t nev=0; nev<= evNumber2; nev++) {
+	AliITSTrackerV1 *ITStracker = new AliITSTrackerV1(IITTSS,nev,flagvert);
      Int_t nparticles = gAlice->GetEvent(nev);
      cout << "nev         " << nev <<endl;
      cout << "nparticles  " << nparticles <<endl;
@@ -52,9 +52,13 @@ void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0,int min_t=-1, int max_t=0,B
      TStopwatch timer;
 	  
 	  timer.Start();
-     ITStracker->DoTracking(nev,min_t,max_t,file,realmass);    // nuova
+     ITStracker->DoTracking(nev,min_t,max_t,file,realmass);    
      timer.Stop(); timer.Print();
-   }   // event loop 
+	 AliITSgeom *g1 = IITTSS->GetITSgeom();
+    Int_t NumOfModules = g1->GetIndexMax();	   
+	  ITStracker->DelMatrix(NumOfModules);
+	  delete ITStracker;  
+   }   // event loop  
    file->Close();   
 }
 

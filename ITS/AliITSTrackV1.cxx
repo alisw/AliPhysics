@@ -33,7 +33,7 @@ AliITSTrackV1::AliITSTrackV1() {
   fClusterInTrack = new TMatrix(6,9);
   Int_t i,j;
   for(i=0; i<6; i++){
-  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
+  for(j=0; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
   } 
   frtrack=0.;
   fnoclust=0;     
@@ -60,10 +60,8 @@ AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) {
 
   fClusterInTrack = new TMatrix(6,9);
   Int_t i,j;
-  //for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
-  //                         (*fClusterInTrack)(i,8)=-1.;
   for(i=0; i<6; i++){
-  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   //modificata angela
+  for(j=0; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
   }  
   flistCluster = new TObjArray; 
   fVertex.ResizeTo(3); 
@@ -138,7 +136,7 @@ AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj)
   
   Int_t i,j;
   for(i=0; i<6; i++){
-  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
+  for(j=0; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
   }  
   flistCluster = new TObjArray; 
   fNumClustInTrack = 0;
@@ -754,24 +752,7 @@ Double_t AliITSTrackV1::ArgC(Double_t rk) const {
 Double_t AliITSTrackV1::GetPredChi2(Double_t m[2], Double_t sigma[2] ) const {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // This function calculates a predicted chi2 increment.
-/*
-  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
-  r00+=fC00; r01+=fC10; r11+=fC11;
-
-  Double_t det=r00*r11 - r01*r01;
-  if (TMath::Abs(det) < 1.e-10) {
-    Int_t n=GetNumberOfClusters();
-    if (n>4) cerr<<n<<" AliKalmanTrack warning: Singular matrix !\n";
-    return 1e10;
-  }
-  Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
-  
-  Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
-  
-  return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;
-  */
-  
-  
+ 
   Double_t r00=sigma[0], r01=0., r11=sigma[1];
   r00+=fC00; r01+=fC10; r11+=fC11;
   Double_t det=r00*r11-r01*r01;
@@ -783,7 +764,4 @@ Double_t AliITSTrackV1::GetPredChi2(Double_t m[2], Double_t sigma[2] ) const {
   Double_t chi2 = (dphi*r00*dphi +2.*r01*dphi*dz + dz*r11*dz)/det;
   return chi2;
   
-  
-  
-
 }

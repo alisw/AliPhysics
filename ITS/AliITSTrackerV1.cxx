@@ -76,17 +76,35 @@ AliITSTrackerV1::AliITSTrackerV1() {
   //Default constructor
   fITS = 0;
   fresult = 0;
+  fPtref=0.;
+  fChi2max=0.;
+  //fepsphi=0.;
+  //fepsz=0.;
   frecPoints = 0;
   fvettid = 0;
+  fflagvert=0;
   frl = 0;
+  Int_t ia;
+  for(ia=0; ia<6; ia++) {
+  fNlad[ia]=0;
+  fNdet[ia]=0;
+  fAvrad[ia]=0.;
+  fDetx[ia]=0.;
+  fDetz[ia]=0.; 
+  } // end for ia  
   fzmin = 0;
   fzmax = 0;
   fphimin = 0;
   fphimax = 0;
   fphidet = 0;
+  fNRecPoints=0;
+  fRecCylR=0;
+  fRecCylPhi=0;
+  fRecCylZ=0;
+  fFieldFactor=0;
 }
 //______________________________________________________________________
-AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
+AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag) {
     //Origin   A. Badala' and G.S. Pappalardo:  
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
     // Class constructor. It does some initializations.
@@ -94,37 +112,34 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
   //PH Initialisation taken from the default constructor
     fITS      = IITTSS;
     fresult = 0;
-    frecPoints = 0;
+    fPtref    = 0.;
+    fChi2max  =0.; 
+    frecPoints = 0;	  	 
     fvettid = 0;
+    fflagvert = flag;	 
     frl = 0;
     fzmin = 0;
     fzmax = 0;
     fphimin = 0;
     fphimax = 0;
     fphidet = 0;
-
-    fPtref    = 0.;
-    fChi2max  =0.;     
-    fflagvert =flag;
+  
     Int_t imax = 200,jmax = 450;
     frl       = new AliITSRad(imax,jmax);
 
     //////////  gets information on geometry /////////////////////////////
-    AliITSgeom *g1 = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    // Why not AliITS *g1 = fITS->GetITSgeom(); // ?? BSN
+	 AliITSgeom *g1 = fITS->GetITSgeom();  
     Int_t ll=1, dd=1;
     TVector det(9);
 
-    //cout<<" nlad ed ndet \n";
     Int_t ia;
     for(ia=0; ia<6; ia++) {
 	fNlad[ia]=g1->GetNladders(ia+1);
 	fNdet[ia]=g1->GetNdetectors(ia+1);
 	//cout<<fNlad[i]<<" "<<fNdet[i]<<"\n"; 
     } // end for ia
-    //getchar();
 
-    //cout<<" raggio medio = ";
+    //cout<<" mean radius = ";
     Int_t ib;
     for(ib=0; ib<6; ib++) {  
 	g1->GetCenterThetaPhi(ib+1,ll,dd,det);
@@ -157,6 +172,7 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
     //for(Int_t la=0; la<6; la++) cout<<"    "<<fDetx[la]<<"     "<<
     //                                 fDetz[la]<<endl;
     //getchar();
+	 
     // allocate memory and define matrices fzmin, fzmax, fphimin and fphimax //
     Double_t epsz=1.2;
     Double_t epszdrift=0.05;
@@ -198,7 +214,8 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
 	fphidet[im1] = new Double_t[im2max];
     } // end for im1
 
-    Float_t global[3],local[3];
+    //Float_t global[3],local[3];
+	 Double_t global[3],local[3];
     Double_t pigre=TMath::Pi();
     Double_t xmin,ymin,xmax,ymax;
 
@@ -227,6 +244,60 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
 	    if(fphimax[im1][im2]<0.) fphimax[im1][im2]+=2.*pigre;
 	} // end for im2
     } // end for im1
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////// allocate memory and define vector fNRecPoints and matrices fRecCylR, fRecCylPhi, fRecCylZ /////////////
+	gAlice->GetEvent(evnumber);
+  Int_t NumOfModules = g1->GetIndexMax();
+  //fRecCylR = new Float_t *[NumOfModules];
+  fRecCylR = new Double_t *[NumOfModules];
+  //fRecCylPhi = new Float_t *[NumOfModules];
+  fRecCylPhi = new Double_t *[NumOfModules]; 
+  //fRecCylZ = new Float_t *[NumOfModules];
+  fRecCylZ = new Double_t *[NumOfModules];
+  AliITSRecPoint *recp;
+  fNRecPoints = new Int_t[NumOfModules];
+   
+		 for(Int_t module=0; module<NumOfModules; module++) {				
+		  fITS->ResetRecPoints();		     
+        gAlice->TreeR()->GetEvent(module);		  
+		  frecPoints=fITS->RecPoints();
+		  Int_t nRecPoints=fNRecPoints[module]=frecPoints->GetEntries();
+		  /*
+		  fRecCylR[module] = new Float_t[nRecPoints];
+		  fRecCylPhi[module] = new Float_t[nRecPoints];
+		  fRecCylZ[module] = new Float_t[nRecPoints];
+		  */
+		  fRecCylR[module] = new Double_t[nRecPoints];
+		  fRecCylPhi[module] = new Double_t[nRecPoints];
+		  fRecCylZ[module] = new  Double_t[nRecPoints];		  
+		  Int_t ind;
+		  for(ind=0; ind<fNRecPoints[module]; ind++) {	  
+		    recp=(AliITSRecPoint*)frecPoints->UncheckedAt(ind);			 			 
+			// Float_t global[3], local[3];
+			 Double_t global[3], local[3];
+	       local[0]=recp->GetX();
+	       local[1]=0.;
+	       local[2]= recp->GetZ();			 		
+			 g1->LtoG(module,local,global);
+			 /*
+			 Float_t r = TMath::Sqrt(global[0]*global[0]+global[1]*global[1]);                     // r hit
+			 Float_t phi = TMath::ATan2(global[1],global[0]); if(phi<0.) phi+=2.*TMath::Pi();      // phi hit			
+          Float_t z = global[2];                                                               // z hit
+			 */
+			                                                                 
+			 Double_t r = TMath::Sqrt(global[0]*global[0]+global[1]*global[1]);                     // r hit
+			 Double_t phi = TMath::ATan2(global[1],global[0]); if(phi<0.) phi+=2.*TMath::Pi();      // phi hit			
+          Double_t z = global[2];                                                                // z hit
+			 																								             
+			 fRecCylR[module][ind]=r;
+			 fRecCylPhi[module][ind]=phi;
+			 fRecCylZ[module][ind]=z;			 
+		  } 		
+		}	 
+	 //}  
+  //}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	 
 
     ////////// gets magnetic field factor //////////////////////////////
 
@@ -239,8 +310,8 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
     // Origin  A. Badala' and G.S. Pappalardo:
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
     // copy constructor
-
-    *fITS = *cobj.fITS;
+	 
+	 *fITS = *cobj.fITS;
     *fresult = *cobj.fresult;
     fPtref = cobj.fPtref;
     fChi2max = cobj.fChi2max;    
@@ -291,15 +362,69 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
 	    fphidet[im1][im2]=cobj.fphidet[im1][im2];  
 	} // end for im2
     } // end for im2
+
+
+	AliITSgeom *g1 = fITS->GetITSgeom();  
+   Int_t NumOfModules = g1->GetIndexMax();
+	/*
+  fRecCylR = new Float_t *[NumOfModules];
+  fRecCylPhi = new Float_t *[NumOfModules]; 
+  fRecCylZ = new Float_t *[NumOfModules];
+  */
+  fRecCylR = new Double_t *[NumOfModules];
+  fRecCylPhi = new Double_t *[NumOfModules]; 
+  fRecCylZ = new Double_t *[NumOfModules];  
+  fNRecPoints = new Int_t[NumOfModules];	
+		for(Int_t module=0; module<NumOfModules; module++) {		
+		  Int_t nRecPoints=fNRecPoints[module]=cobj.fNRecPoints[module];
+		  /*
+		  fRecCylR[module] = new Float_t[nRecPoints];
+		  fRecCylPhi[module] = new Float_t[nRecPoints];
+		  fRecCylZ[module] = new Float_t[nRecPoints];
+		  */
+		  fRecCylR[module] = new Double_t[nRecPoints];
+		  fRecCylPhi[module] = new Double_t[nRecPoints];
+		  fRecCylZ[module] = new Double_t[nRecPoints];		  
+		  Int_t ind;	
+		  for(ind=0; ind<nRecPoints; ind++) {	    
+			 fRecCylR[module][ind]=cobj.fRecCylR[module][ind];
+			 fRecCylPhi[module][ind]=cobj.fRecCylPhi[module][ind];
+			 fRecCylZ[module][ind]=cobj.fRecCylZ[module][ind];			 
+		  } 		
+		}	 
+ 
+}
+void AliITSTrackerV1::DelMatrix(Int_t NumOfModules) { 
+  for(Int_t mod=0; mod<NumOfModules; mod++) {
+    delete fRecCylR[mod];
+	 delete fRecCylPhi[mod];
+	 delete fRecCylZ[mod];
+  }
+    delete fRecCylR;
+	 delete fRecCylPhi;
+	 delete fRecCylZ;
 }
 //______________________________________________________________________
 AliITSTrackerV1::~AliITSTrackerV1(){
     // Origin  A. Badala' and G.S. Pappalardo:
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
-    // class destructor
+    // class destructor	 
+  delete frl;
+  delete fNRecPoints;
+  for(Int_t i=0; i<6; i++) {
+    delete fzmin[i];
+	 delete fzmax[i];
+	 delete fphimin[i];
+	 delete fphimax[i];
+	 delete fphidet[i];
+  }
 
-    //delete fTimerKalman;
-    //delete fTimerIntersection;
+  delete fzmin;
+  delete fzmax;
+  delete fphimin;
+  delete fphimax;
+  delete fphidet;
+	 
 }
 //______________________________________________________________________
 AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
@@ -307,7 +432,7 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
     // assignement operator
 
-    *fITS = *obj.fITS;
+	 *fITS = *obj.fITS;
     *fresult = *obj.fresult;
     fPtref = obj.fPtref;
     fChi2max = obj.fChi2max;      
@@ -360,6 +485,36 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
 	} // end for im2
     } // end for im1
 
+	AliITSgeom *g1 = fITS->GetITSgeom();  
+   Int_t NumOfModules = g1->GetIndexMax();
+	/*
+  fRecCylR = new Float_t *[NumOfModules];
+  fRecCylPhi = new Float_t *[NumOfModules]; 
+  fRecCylZ = new Float_t *[NumOfModules];
+  */
+  fRecCylR = new Double_t *[NumOfModules];
+  fRecCylPhi = new Double_t *[NumOfModules]; 
+  fRecCylZ = new Double_t *[NumOfModules];  
+  fNRecPoints = new Int_t[NumOfModules];  
+	  for(Int_t module=0; module<NumOfModules; module++) {		  
+		  Int_t nRecPoints=fNRecPoints[module]=obj.fNRecPoints[module];
+		  /*
+		  fRecCylR[module] = new Float_t[nRecPoints];
+		  fRecCylPhi[module] = new Float_t[nRecPoints];
+		  fRecCylZ[module] = new Float_t[nRecPoints];
+		  */
+		  fRecCylR[module] = new Double_t[nRecPoints];
+		  fRecCylPhi[module] = new Double_t[nRecPoints];
+		  fRecCylZ[module] = new Double_t[nRecPoints];		  
+		  Int_t ind;
+		  for(ind=0; ind<nRecPoints; ind++) {	  
+			 fRecCylR[module][ind]=obj.fRecCylR[module][ind];
+			 fRecCylPhi[module][ind]=obj.fRecCylPhi[module][ind];
+			 fRecCylZ[module][ind]=obj.fRecCylZ[module][ind];			 
+		  } 		
+		}	 
+         
+	 
     return *this;
 }
 //______________________________________________________________________
@@ -393,7 +548,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     tracker->LoadOuterSectors();
 
     // Load tracks
-    TFile *tf=TFile::Open("AliTPCtracksSorted.root");  //modificato per hbt
+    TFile *tf=TFile::Open("AliTPCtracksSorted.root");  
     if (!tf->IsOpen()) {
 	cerr<<"Can't open AliTPCtracksSorted.root !\n";
 	return ;
@@ -478,7 +633,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	
 	
 	///////////////////////////////////////////////
-   /*
+  /*
 	//////   propagation to the end of TPC //////////////
 	Double_t xk=77.415;
 	track->PropagateTo(xk, 28.94, 1.204e-3,mass);	 //Ne    
@@ -499,11 +654,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	xk -=0.5;
 	track->PropagateTo(xk, 41.28, 0.029,mass);	 //Nomex
     ////////////////////////////////////////////////////////////////////
-    */
+   */
 	 //   new propagation to the end of TPC
-    //Double_t xk=80.;
-    //track->PropagateTo(xk,0.,0.); //Ne if it's still there
-	 Double_t xk=77.415;	 
+    Double_t xk=80.;
+   // track->PropagateTo(xk,0.,0.); //Ne if it's still there   //attenzione funziona solo se modifica in TPC
+	// Double_t xk=77.415;	 
 	 track->PropagateTo(xk, 28.94, 1.204e-3);
     xk-=0.005;
     track->PropagateTo(xk, 44.77,1.71); //Tedlar	 
@@ -517,8 +672,8 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     track->PropagateTo(xk, 44.77, 1.71); //Tedlar
 
     xk=61.;
-    //track->PropagateTo(xk,0.,0.); //C02
-	 track->PropagateTo(xk,36.2,1.98e-3); //C02	 
+   // track->PropagateTo(xk,0.,0.); //C02
+	 track->PropagateTo(xk,36.2,1.98e-3); //C02	   //attenzione funziona solo se modifica in TPC
 
     xk -=0.005;
     track->PropagateTo(xk, 24.01, 2.7);    //Al    
@@ -533,9 +688,8 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     xk -=0.005;
     track->PropagateTo(xk, 44.77, 1.71);  //Tedlar
     xk -=0.005;
-    track->PropagateTo(xk, 24.01, 2.7);    //Al    
-	 
-	 
+    track->PropagateTo(xk, 24.01, 2.7);    //Al 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////  	
 	AliITSTrackV1 trackITS(*track);     
 	trackITS.PutMass(mass);	  //new to add mass to track
 	if(fresult){ delete fresult; fresult=0;}   	 
@@ -594,7 +748,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	// if(fPtref<0.2 ) fChi2max=20.;
 	//if(fPtref<0.2 ) fChi2max=10.;
 	//if(fPtref<0.1 ) fChi2max=5.;
-	//cout << "\n Pt = " << fPtref <<"\n";  //stampa
+	cout << "\n Pt = " << fPtref <<"\n";  //stampa
 	RecursiveTracking(list);   
 	list->Delete();
 	delete list;
@@ -614,7 +768,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 		    if(pcode==11) vecLabRef(k)=p->GetFirstMother();
 		} // end if
 		itot++; vecTotLabRef(itot)=vecLabRef(k);
-		if(vecLabRef(k)==0. && clustZ == 0.) vecTotLabRef(itot) =-3.;
+		if(vecLabRef(k)==0. && clustZ == -1.) vecTotLabRef(itot) =-3.;
 	    } // end for k
 	} // end for lay
 	Long_t labref;
@@ -628,11 +782,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	// cout<<" progressive track number = "<<j<<"\r";
 	// cout<<j<<"\r";
 	Int_t numOfCluster=(*fresult).GetNumClust();  
-	//cout<<" progressive track number = "<<j<<"\n";    // stampa
+	cout<<" progressive track number = "<<j<<"\n";    // stampa
 	Long_t labITS=(*fresult).GetLabel();
-	//cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
+	cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
 	Int_t lab=track->GetLabel();		    
-	//cout << " TPC track label = " << lab <<"\n";      // stampa
+	cout << " TPC track label = " << lab <<"\n";      // stampa
 	//propagation to vertex
 
 	Double_t rbeam=3.;
@@ -804,7 +958,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 
 	    if(numClustNow<numClustRef && chi2Now>fresult->GetChi2()) continue;
 	    //cout<<" chi2Now =  "<<chi2Now<<"\n";   
-	    //  commentato il 30-7-2001   
+	      
 	    chi2Now/=numClustNow;
 	    if(fPtref > 1.0 && chi2Now > 30.) continue; 
 	    if((fPtref >= 0.6 && fPtref<=1.0) && chi2Now > 40.) continue;
@@ -821,13 +975,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	Int_t ladp, ladm, detp,detm,ladinters,detinters; 	
 	Int_t layerfin=layerInit-1;
 	// cout<<"Prima di intersection \n";
-	//if(!fTimerIntersection) fTimerIntersection = new TStopwatch();
-	// timer
-	//fTimerIntersection->Continue();
-	// timer 
 	Int_t  outinters=Intersection(*trackITS,layerfin,ladinters,detinters);
-	//fTimerIntersection->Stop();
-	// timer
 	// cout<<" outinters = "<<outinters<<"\n";
 	//  cout<<" Layer ladder detector intersection ="
 	//      <<layerfin<<" "<<ladinters<<" "<<detinters<<"\n";
@@ -866,7 +1014,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	    */
  	    Float_t epsphi=5.0, epsz=5.0;                  
 	    if(fPtref<0.2) {epsphi=3.; epsz=3.;}     
-	    // nuova definizione idetot e toucLad e toucDet to be
+	    // new definition of idetot e toucLad e toucDet to be
 	    // transformed in a method
 	    // these values could be modified
 	    Float_t pigre=TMath::Pi();
@@ -972,74 +1120,39 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 		///////////////////////////////////////////////////////
 		/*** Rec points sorted by module *****/
 		/**************************************/
-		Int_t indexmod;       //mod ott
-		// AliITSRecPoint *recp;
+		Int_t indexmod;       
 		indexmod = g1->GetModuleIndex(lycur,(Int_t)toucLad(iriv),
-					      (Int_t)toucDet(iriv));
-		//mod ott 
+					      (Int_t)toucDet(iriv)); 
 		fITS->ResetRecPoints();   
 		gAlice->TreeR()->GetEvent(indexmod); 
 		Int_t npoints=frecPoints->GetEntries();
-		/* mod ott
-		   Int_t *indlist=new Int_t[npoints+1];
-		   Int_t counter=0;
-		   Int_t ind;
-		   for (ind=0; ind<=npoints; ind++) {
-		        indlist[ind]=-1;
-			if (*(fvettid[index]+ind)==0) {
-			     indlist[counter]=ind;
-			     counter++;
-		        } // end if
-		   } // end for ind
-		   ind=-1;
-		   for(;;) { 
-		         ind++;
-			 if(indlist[ind] < 0) recp=0;
-			 else 
-			      recp = (AliITSRecPoint*)frecPoints->
-                                                    UncheckedAt(indlist[ind]);
-			if((!recp)  )  break;
-		   } // end for ;;
-		*/
-		///////////////////////// new //////////////////////////       
+       
 		Int_t indnew;
 		for(indnew=0; indnew<npoints; indnew++){
 		    if (*(fvettid[indexmod]+indnew)==0)
 			recp =(AliITSRecPoint*)frecPoints->UncheckedAt(indnew);
 		    else
 			continue;
-		    ////////////////////////////////////////////////////
 		    TVector cluster(3),vecclust(9);
-		    vecclust(6)=vecclust(7)=vecclust(8)=-1.;
-		    Double_t sigma[2];               
-		    // set veclust in global
-		    Float_t global[3], local[3];
-		    local[0]=recp->GetX();
-		    local[1]=0.;
-		    local[2]= recp->GetZ();
-		    Int_t play = lycur;
-		    Int_t plad = TMath::Nint(toucLad(iriv));   
-		    Int_t pdet = TMath::Nint(toucDet(iriv)); 		
-		    g1->LtoG(play,plad,pdet,local,global);
-		    vecclust(0)=global[0];
-		    vecclust(1)=global[1];
-		    vecclust(2)=global[2];
-
+		    //vecclust(6)=vecclust(7)=vecclust(8)=-1.;
+		    Double_t sigma[2];
+  // now vecclust is with cylindrical cohordinates
+	       vecclust(0)=(Float_t)fRecCylR[indexmod][indnew];     
+	       vecclust(1)=(Float_t)fRecCylPhi[indexmod][indnew];
+	       vecclust(2)=(Float_t)fRecCylZ[indexmod][indnew];	    			 
 		    vecclust(3) = (Float_t)recp->fTracks[0]; 
-		    //vecclust(4) = (Float_t)indlist[ind];
 		    vecclust(4) = (Float_t)indnew;			 
-		    vecclust(5) = (Float_t)indexmod;    //mod ott
+		    vecclust(5) = (Float_t)indexmod;    
 		    vecclust(6) = (Float_t)recp->fTracks[0];
 		    vecclust(7) = (Float_t)recp->fTracks[1];
 		    vecclust(8) = (Float_t)recp->fTracks[2];
 		    sigma[0] = (Double_t)  recp->GetSigmaX2();	   
 		    sigma[1] = (Double_t) recp->GetSigmaZ2();
-		    //now we are in r,phi,z in global
-		    cluster(0) = TMath::Sqrt(vecclust(0)*vecclust(0)+
-					     vecclust(1)*vecclust(1));//r hit
-		    cluster(1) = TMath::ATan2(vecclust(1),vecclust(0));
-		    if(cluster(1)<0.) cluster(1)+=2.*TMath::Pi();
-		    cluster(2) = vecclust(2);                   // z hit
+			 
+			 cluster(0)=fRecCylR[indexmod][indnew];
+          cluster(1)=fRecCylPhi[indexmod][indnew];
+			 cluster(2)=fRecCylZ[indexmod][indnew];
+			 
 		    // cout<<" layer = "<<play<<"\n";
 		    // cout<<" cluster prima = "<<vecclust(0)<<" "
 		    //     <<vecclust(1)<<" "
@@ -1089,20 +1202,16 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 		                             //matrix to the covariance matrix 
 		    (*newTrack).AddEL(frl,1.,0);
 
-		    //if(!fTimerKalman) fTimerKalman = new TStopwatch();//timer
-		    //fTimerKalman->Continue(); 	               // timer
 		    if(fflagvert){
 			KalmanFilterVert(newTrack,cluster,sigmanew);
 			//KalmanFilterVert(newTrack,cluster,sigmanew,chi2pred);
 		    }else{
 			KalmanFilter(newTrack,cluster,sigmanew);
 		    } // end if
-		    //fTimerKalman->Stop();                         // timer
 		    (*newTrack).PutCluster(layernew, vecclust);
 		    newTrack->AddClustInTrack();
 		    listoftrack.AddLast(newTrack);
 		}   // end for indnew
-		// delete [] indlist;  //mod ott
 	    }  // end of for on detectors (iriv)
 	}//end if(outinters==0)
 

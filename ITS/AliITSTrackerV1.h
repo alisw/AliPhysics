@@ -37,10 +37,11 @@ class TStopwatch;
 class AliITSTrackerV1 : public TObject {
  public:
     AliITSTrackerV1();
-    AliITSTrackerV1(AliITS* IITTSS, Bool_t flag);
+	AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag);
     AliITSTrackerV1(const AliITSTrackerV1 &cobj);
     ~AliITSTrackerV1();
     AliITSTrackerV1 &operator=(AliITSTrackerV1 obj);
+	 void DelMatrix(Int_t NumOfModules);
     void DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file, Bool_t realmass=0);
     void RecursiveTracking(TList *trackITSlist);
     Int_t Intersection(AliITSTrackV1 &track, Int_t layer,Int_t &ladder,
@@ -51,18 +52,18 @@ class AliITSTrackerV1 : public TObject {
 			  Double_t sigma[2]);
     //void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster,
     //                      Double_t sigma[2], Double_t chi2pred);
-
  private:
     AliITS* fITS;              //! pointer to AliITS
     AliITSTrackV1 *fresult;    // result is a pointer to the final best track
     Double_t fPtref;           // transvers momentum obtained from TPC tracking
     Double_t fChi2max;         //  chi2 cut  
-    Double_t fepsphi;  //eps for definition window in phi 
-    Double_t fepsz;  //eps for definition window in z 
-    TObjArray  *frecPoints;    // pointer to RecPoints
+    //Double_t fepsphi;  //eps for definition window in phi 
+   // Double_t fepsz;  //eps for definition window in z 
+    TClonesArray  *frecPoints;    // pointer to RecPoints
     Int_t **fvettid;           // flag vector of used clusters
     Bool_t fflagvert;          // a flag to impose or not the vertex constraint
     AliITSRad *frl;            // pointer to get the radiation lenght matrix
+///      To be put in a specific geometric class	 
     Int_t fNlad[6];            // Number of ladders for a given layer
     Int_t fNdet[6];            // Number of detector for a given layer
     Double_t fAvrad[6];        // Average radius for a given layer
@@ -73,10 +74,18 @@ class AliITSTrackerV1 : public TObject {
     Double_t **fphimin;// Matrix of phimin for a given layer and a given ladder
     Double_t **fphimax;// Matrix of phimax for a given layer and a given ladder
     Double_t **fphidet; // azimuthal angle for a given layer and a given ladder
-    Double_t fFieldFactor;     // Magnetic filed factor 
-    //TStopwatch *fTimerKalman;         // timer for kalman filter
-    //TStopwatch *fTimerIntersection;   // timer for Intersection 
-
+	 Int_t *fNRecPoints;        // pointer to the vector giving the number of recpoints for a given module
+	 /*
+	 Float_t **fRecCylR;        // pointer to the matrix giving the R cylindric cohordinate of a recpoint
+	 Float_t **fRecCylPhi;      // pointer to the matrix giving the Phi cylindric cohordinate of a recpoint
+	 Float_t **fRecCylZ;        // pointer to the matrix giving the Z cylindric cohordinate of a recpoint	
+	 */
+	 Double_t **fRecCylR;        // pointer to the matrix giving the R cylindric cohordinate of a recpoint
+	 Double_t **fRecCylPhi;      // pointer to the matrix giving the Phi cylindric cohordinate of a recpoint
+	 Double_t **fRecCylZ;        // pointer to the matrix giving the Z cylindric cohordinate of a recpoint		  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    Double_t fFieldFactor;     // Magnetic field factor 
+ 
     ClassDef(AliITSTrackerV1,1)  
 };
 
