@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/10/30 08:25:14  jchudoba
+Small correction to prevent crash when hit is at the edge of a slat
+
 Revision 1.15  2001/09/07 08:38:30  hristov
 Pointers initialised to 0 in the default constructors
 
@@ -187,10 +190,13 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 // Transform to local coordinate system
 
     
-    ylocal = y   -fYPosition[index];
-    xlocal = xabs-fXPosition[index];
-    islat  = index;
-    if (i >= fNSlats) {islat = -1; x=-1; y = -1;}
+    if (index >= fNSlats || index < 0 ) {
+      islat = -1; xlocal=-1; ylocal = -1; }
+    else {
+      ylocal = y   -fYPosition[index];
+      xlocal = xabs-fXPosition[index];
+      islat  = index;
+    }
 }
 
 void AliMUONSegmentationSlat::GlobalToLocal(
@@ -378,8 +384,10 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy)
     Float_t xlocal, ylocal;
     GlobalToLocal(xhit, yhit, zhit, islat, xlocal, ylocal);
     fSlatIndex=islat;
-    fCurrentSlat=Slat(islat);
-    fCurrentSlat->FirstPad(xlocal, ylocal, dx, dy);
+    if (islat>-1) {
+      fCurrentSlat=Slat(islat);
+      fCurrentSlat->FirstPad(xlocal, ylocal, dx, dy);
+    }
 
 }
 
