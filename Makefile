@@ -216,13 +216,13 @@ debug:
 ifndef ALIQUIET
 	@echo "***** Entering DEBUG mode. *****"
 endif
-	@(export ALIDEBUG=YES && $(MAKE))
+	@(export ALIDEBUG=YES && $(MAKE) aliroot)
 
 profile:
 ifndef ALIQUIET
 	@echo "***** Entering PROFILE mode. *****"
 endif
-	@(export ALIPROFILE=YES && $(MAKE))
+	@(export ALIPROFILE=YES && $(MAKE) aliroot)
 
 $(MODULES):
 ifndef ALIQUIET
