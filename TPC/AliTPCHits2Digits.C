@@ -54,7 +54,7 @@ Int_t AliTPCHits2Digits(Int_t nev=5) {
 
   for (Int_t i=0; i<nev; i++){
     printf("Processing event %d \n",i);
-    rl->GetEvent(i);
+    if(rl->GetEvent(i)) break;
     TPC->SetActiveSectors(); // all sectors set active
     TPC->Hits2Digits(i);
   }
