@@ -11,10 +11,7 @@
 #include "TG4GeometryManager.h"
 #include "TG4GeometryOutputManager.h"
 #include "TG4GeometryServices.h"
-#include "TG4G3PhysicsManager.h"
 #include "TG4G3Units.h"
-#include "TG4VSensitiveDetector.h"
-#include "TG4Limits.h"
 #include "TG4Globals.h"
 
 #include <G3toG4.hh> 
@@ -26,7 +23,6 @@
 #include <G3MedTable.hh>
 #include <G3SensVolVector.hh>
 
-#include <G4VSensitiveDetector.hh>
 #include <G4LogicalVolumeStore.hh>
 #include <G4PVPlacement.hh>
 #include <G4Material.hh>
@@ -103,88 +99,12 @@ TG4GeometryManager::operator=(const TG4GeometryManager& right)
 // private methods
 //
 //=============================================================================
-
-
-//_____________________________________________________________________________
-void TG4GeometryManager::GstparCut(G4int itmed, TG4G3Cut par, G4double parval)
-{
-// Sets special tracking medium parameter. 
-// It is applied to all logical volumes that use the specified 
-// tracking medium.
-// ---
-
-  // get medium from table
-  G3MedTableEntry* medium = G3Med.get(itmed);
-  if (!medium) {
-    G4String text = "TG4GeometryManager::GstparCut: \n";
-    text = text + "    Medium not found."; 
-    G4Exception(text);
-  }  
-
-  // get/create user limits
-  G4UserLimits* limits = medium->GetLimits();
-  TG4Limits* tg4Limits;
-  if (limits) {
-    tg4Limits = dynamic_cast<TG4Limits*> (limits);
-    if (!tg4Limits)
-      G4Exception("TG4GeometryManager::GstparCut: Wrong limits type.");
-  }    
-  else {
-    tg4Limits = new TG4Limits();
-    medium->SetLimits(tg4Limits);
-
-    // add verbose 
-    G4cout << "TG4GeometryManager::GstparCut: new TG4Limits() for medium " 
-           << itmed << " has been created." << G4endl;  
-  }	   
-  // set parameter
-  tg4Limits->SetG3Cut(par, parval*GeV);
-}
-
-
-//_____________________________________________________________________________
-void TG4GeometryManager::GstparControl(G4int itmed, TG4G3Control par, 
-                                       G4double parval)
-{
-// Sets special tracking medium parameter. 
-// It is applied to all logical volumes that use the specified 
-// tracking medium.
-// ---
-
-  // get medium from table
-  G3MedTableEntry* medium = G3Med.get(itmed);
-  if (!medium) {
-    G4String text = "TG4GeometryManager::GstparControl: \n";
-    text = text + "    Medium not found."; 
-    G4Exception(text);
-  }  
-
-  // get/create user limits
-  G4UserLimits* limits = medium->GetLimits();
-  TG4Limits* tg4Limits;
-  if (limits) {
-    tg4Limits = dynamic_cast<TG4Limits*> (limits);
-    if (!tg4Limits)
-      G4Exception("TG4GeometryManager::GstparControl: Wrong limits type.");
-  }    
-  else {     
-    tg4Limits = new TG4Limits();
-    medium->SetLimits(tg4Limits);
-
-    // add verbose 
-    G4cout << "TG4GeometryManager::GstparControl: new TG4Limits() for medium" 
-           << itmed << " has been created." << G4endl;  
-  }
-  // set parameter
-  tg4Limits->SetG3Control(par, parval);
-}
-
  
 //_____________________________________________________________________________
 void TG4GeometryManager::FillMediumIdVector()
 {
 // The second index for materials (having its origin in
-// G4 tracking media concept) is stored in a vector of G4int
+// G3 tracking media concept) is stored in a vector of G4int
 // parallel to G4MaterialTable.
 // ---
 
@@ -389,7 +309,7 @@ void TG4GeometryManager::Matrix(Int_t& krot, Float_t thetaX, Float_t phiX,
 // Single precision interface.
 // ---
 
-  TG4Globals::Warning("TG4GeometryManager::Matrix in single precision.");
+  //TG4Globals::Warning("TG4GeometryManager::Matrix in single precision.");
   
   Double_t dthetaX = thetaX;
   Double_t dphiX   = phiX; 
@@ -461,57 +381,12 @@ void TG4GeometryManager::Gfmate(Int_t imat, char *name, Float_t &a,
 void  TG4GeometryManager::Gstpar(Int_t itmed, const char *param, 
            Float_t parval) 
 { 
-// Passes the tracking medium parameter to TG4Limits.
-// The tracking medium parameter is set only in case
-// its value is different from the "global" physics setup.
-// (If: CheckCut/ControlWithG3Defaults is used checking
-//  is performed with respect to G3 default values.)
-// When any cut/control parameter is set in limits
-// the physics manager is locked and the physics setup
-// cannot be changed.
-// Applying this TG4Limits to particles and physical
-// processes is still in development.
-//
-//  Geant3 desription:
-//  ==================
-//  To change the value of cut  or mechanism "CHPAR"
-//  to a new value PARVAL  for tracking medium ITMED
-//  The  data   structure  JTMED   contains  the   standard  tracking
-//  parameters (CUTS and flags to control the physics processes)  which
-//  are used  by default  for all  tracking media.   It is  possible to
-//  redefine individually  with GSTPAR  any of  these parameters  for a
-//  given tracking medium. 
-//  ITMED     tracking medium number 
-//  CHPAR     is a character string (variable name) 
-//  PARVAL    must be given as a floating point.
+// Write token to the output file only,
+// the method is performed by TG4PhysicsManager.
 // ---
 
-  // write token to the output file
   if (fWriteGeometry) 
     fOutputManager->WriteGstpar(itmed, param, parval); 
-
-  // get G3 physics setup
-  TG4G3PhysicsManager* g3PhysicsManager = TG4G3PhysicsManager::Instance();
-
-  G4String name = fGeometryServices->CutName(param); 
-  TG4G3Cut cut;
-  if (g3PhysicsManager->CheckCutWithTheVector(name, parval, cut)) {
-      GstparCut(itmed, cut, parval);
-      g3PhysicsManager->Lock();
-  }  
-  else {
-    TG4G3Control control;
-    if (g3PhysicsManager->CheckControlWithTheVector(name, parval, control)) {
-      GstparControl(itmed, control, parval);
-      g3PhysicsManager->Lock();
-    } 
-    else if (cut==kNoG3Cuts && control==kNoG3Controls) { 
-      G4String text = "TG4GeometryManager::Gstpar:";
-      text = text + name;
-      text = text + " parameter is not yet implemented.";
-      TG4Globals::Warning(text);
-    }	
-  } 
 } 
  
  
@@ -641,7 +516,7 @@ void  TG4GeometryManager::Gsdvn2(const char *name, const char *mother,
 // Single precision interface.
 // ---
 
-    TG4Globals::Warning("TG4GeometryManager::Gsdvn2 in single precision.");
+    //TG4Globals::Warning("TG4GeometryManager::Gsdvn2 in single precision.");
 
     G4double dc0i = c0i;
     
@@ -683,7 +558,7 @@ void  TG4GeometryManager::Gsdvt(const char *name, const char *mother,
 // Single precision interface.
 // ---
 
-    TG4Globals::Warning("TG4GeometryManager::Gsdvt in single precision.");
+    //TG4Globals::Warning("TG4GeometryManager::Gsdvt in single precision.");
 
     G4double dstep = step;
 
@@ -727,7 +602,7 @@ void  TG4GeometryManager::Gsdvt2(const char *name, const char *mother,
 // Single precision interface.
 // ---
 
-    TG4Globals::Warning("TG4GeometryManager::Gsdvt2 in single precision.");
+    //TG4Globals::Warning("TG4GeometryManager::Gsdvt2 in single precision.");
     
     G4double dstep = step;
     G4double dc0   = c0;
@@ -801,7 +676,7 @@ void  TG4GeometryManager::Gspos(const char *vname, Int_t num,
 // Single precision interface.
 // ---
 
-   TG4Globals::Warning("TG4GeometryManager::Gspos in single precision.");
+   //TG4Globals::Warning("TG4GeometryManager::Gspos in single precision.");
 
    G4double dx = x; 
    G4double dy = y;
@@ -843,7 +718,7 @@ void  TG4GeometryManager::Gsposp(const char *name, Int_t nr,
 // Single precision interface.
 // ---
 
-   TG4Globals::Warning("TG4GeometryManager::Gsposp in single precision.");
+   //TG4Globals::Warning("TG4GeometryManager::Gsposp in single precision.");
 
    G4double dx = x; 
    G4double dy = y;
@@ -892,7 +767,7 @@ Int_t TG4GeometryManager::Gsvolu(const char *name, const char *shape,
 // Single precision interface.
 // ---
 
-  TG4Globals::Warning("TG4GeometryManager::Gsvolu in single precision.");
+  //TG4Globals::Warning("TG4GeometryManager::Gsvolu in single precision.");
 
   G4double* parin = fGeometryServices->CreateG4doubleArray(upar, npar); 
 
@@ -941,46 +816,6 @@ void TG4GeometryManager::WriteEuclid(const char* fileName,
 }
 
  
-//_____________________________________________________________________________
-Int_t TG4GeometryManager::VolId(const Text_t* volName) const
-{ 
-// Returns the sensitive detector identifier.
-// ---
-
-  return fGeometryServices->GetVolumeID(volName);
-}
-
-
-//_____________________________________________________________________________
-const char* TG4GeometryManager::VolName(Int_t id) const
-{
-// Returns the name of the sensitive detector with the given identifier.
-// ---
-
-  return fGeometryServices->GetVolumeName(id);
-}
-
-
-//_____________________________________________________________________________
-Int_t TG4GeometryManager::NofVolumes() const
-{
-// Returns the total number of sensitive detectors.
-// ---
-
-  return fGeometryServices->NofSensitiveDetectors();
-}
-
- 
-//_____________________________________________________________________________
-Int_t TG4GeometryManager::VolId2Mate(Int_t volumeId)  const
-{
-// Return the material number for a given volume id
-// ---
-
-  return fGeometryServices->GetMediumId(volumeId);	       	         
-}
- 
-
 //=============================================================================
 //
 // public methods - Geant4 only
