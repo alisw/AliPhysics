@@ -154,9 +154,6 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
     Info("AliEMCALJetFinderInputSimPrep","Title of the geometry is %s",pEMCAL->GetTitle());
     AliEMCALGeometry* geom =  AliEMCALGetter::Instance()->EMCALGeometry();
-//    Float_t samplingF = geom->GetSampling();
-    Float_t samplingF = 11.6;
-    Info("AliEMCALJetFinderInputSimPrep","Sampling fraction is %f",samplingF);  
     TTree *treeH = AliEMCALGetter::Instance()->TreeH();
     Int_t ntracks = (Int_t) treeH->GetEntries();
 //
@@ -186,7 +183,7 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
             Float_t theta  =    TMath::ATan2(r,z);
             Float_t eta    =   -TMath::Log(TMath::Tan(theta/2.));
             Float_t phi    =    TMath::ATan2(y,x);
-            etH = samplingF*eloss*TMath::Sin(theta);
+            etH = eloss*TMath::Sin(theta);
 	    if (fDebug > 10) Info("FillHits","Values of hit energy %i",Int_t(1e7*etH));
 	    if (geom->TowerIndexFromEtaPhi(eta,180.0/TMath::Pi()*phi) == -1) 
 	    {
