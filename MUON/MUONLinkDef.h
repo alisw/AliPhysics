@@ -54,6 +54,7 @@
 #pragma link C++ class  AliMUONRecoTrack+;
 #pragma link C++ class  AliMUONRecoDisplay+;
 #pragma link C++ class  AliMUONMerger+;
+#pragma link C++ class  AliMUONFactory+;
 #endif
 
 

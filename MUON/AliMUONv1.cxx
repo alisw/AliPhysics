@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/03/17 10:07:20  morsch
+Correct inconsistent variable name / method name / comments.
+
 Revision 1.25  2001/03/16 15:32:06  morsch
 Corrections of overlap with beam shield and dipole (A. de Falco)
 
@@ -149,6 +152,7 @@ Log messages included.
 #include "AliMUONPadHit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTriggerCircuit.h"
+#include "AliMUONFactory.h"
 
 ClassImp(AliMUONv1)
  
@@ -164,6 +168,7 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
        : AliMUON(name,title)
 {
 // Constructor
+    AliMUONFactory::Build(this, title);
 }
 
 //___________________________________________
