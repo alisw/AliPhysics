@@ -11,7 +11,6 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
 #include <TObject.h>
-#include "AliTPCClustersArray.h"
 
 class TTree;
 class AliTPCParam;
@@ -41,7 +40,7 @@ private:
   static void MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,
    AliTPCcluster &c);
 
-  AliTPCClustersArray fClusterArray;  //! container managing the clusters
+  const AliTPCParam *fPar;      //! pointer to the TPC parameters
 
   ClassDef(AliTPCclusterer,1)  // the TPC cluster finder
 };

@@ -25,10 +25,10 @@
 #include "AliTPCcluster.h"
 #include <TObjArray.h>
 #include <TFile.h>
-#include "AliTPCClustersRow.h"
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
+#include "AliTPCClustersRow.h"
 #include <TTree.h>
 
 ClassImp(AliTPCclusterer)
@@ -37,8 +37,7 @@ AliTPCclusterer::AliTPCclusterer(const AliTPCParam *par) {
 //-------------------------------------------------------
 //  The main constructor
 //-------------------------------------------------------
-  fClusterArray.Setup(par);
-  fClusterArray.SetClusterType("AliTPCcluster");
+  fPar=par;
 }
 
 void AliTPCclusterer::FindPeaks(Int_t k,Int_t max,
@@ -105,10 +104,11 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
   AliSimDigits digarr, *dummy=&digarr;
   branch->SetAddress(&dummy);
   
-  fClusterArray.MakeTree(cTree);
+  AliTPCClustersRow ddd,*clrow=&ddd;
+  clrow->SetClass("AliTPCcluster"); clrow->SetArray(1);
+  cTree->Branch("Segment","AliTPCClustersRow",&clrow,32000,200);    
 
-  AliTPCParam *par=(AliTPCParam *)fClusterArray.GetParam();
-  const Int_t kMAXZ=par->GetMaxTBin()+2;
+  const Int_t kMAXZ=fPar->GetMaxTBin()+2;
 
   Int_t nclusters=0;
 
@@ -118,23 +118,28 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
     Int_t sec, row;
     dTree->GetEvent(n);
 
-    if (!par->AdjustSectorRow(digarr.GetID(),sec,row)) {
+    if (!fPar->AdjustSectorRow(digarr.GetID(),sec,row)) {
        Error("Digits2Clusters","!nvalid segment ID ! %d",digarr.GetID());
        continue;
     }
 
-    AliTPCClustersRow *clrow=fClusterArray.CreateRow(sec,row);
+    clrow=new AliTPCClustersRow();
 
-    Float_t rx=par->GetPadRowRadii(sec,row);
+    clrow->SetClass("AliTPCcluster"); clrow->SetArray(1);
+    clrow->SetID(digarr.GetID());
+
+    cTree->GetBranch("Segment")->SetAddress(&clrow);
+
+    Float_t rx=fPar->GetPadRowRadii(sec,row);
 
     Int_t npads, sign;
     {
-       const Int_t kNIS=par->GetNInnerSector(), kNOS=par->GetNOuterSector();
+       const Int_t kNIS=fPar->GetNInnerSector(), kNOS=fPar->GetNOuterSector();
        if (sec < kNIS) {
-          npads = par->GetNPadsLow(row);
+          npads = fPar->GetNPadsLow(row);
           sign = (sec < kNIS/2) ? 1 : -1;
        } else {
-          npads = par->GetNPadsUp(row);
+          npads = fPar->GetNPadsUp(row);
           sign = ((sec-kNIS) < kNOS/2) ? 1 : -1;
        }
     }
@@ -148,7 +153,7 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
     digarr.First();
     do {
        Short_t dig=digarr.CurrentDigit();
-       if (dig<=par->GetZeroSup()) continue;
+       if (dig<=fPar->GetZeroSup()) continue;
        Int_t j=digarr.CurrentRow()+1, i=digarr.CurrentColumn()+1;
        bins[i*kMAXZ+j].SetQ(dig);
        bins[i*kMAXZ+j].SetMask(1);
@@ -196,25 +201,25 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
          c.SetZ(c.GetZ()/c.GetQ());
 
          Float_t s2 = c.GetSigmaY2()/c.GetQ() - c.GetY()*c.GetY();
-         Float_t w=par->GetPadPitchWidth(sec);
+         Float_t w=fPar->GetPadPitchWidth(sec);
          c.SetSigmaY2((s2 + 1./12.)*w*w);
          if (s2 != 0.) {
 	   c.SetSigmaY2(c.GetSigmaY2()*0.108);
-	   if (sec<par->GetNInnerSector()) c.SetSigmaY2(c.GetSigmaY2()*2.07);
+	   if (sec<fPar->GetNInnerSector()) c.SetSigmaY2(c.GetSigmaY2()*2.07);
          }
 
          s2 = c.GetSigmaZ2()/c.GetQ() - c.GetZ()*c.GetZ();
-         w=par->GetZWidth();
+         w=fPar->GetZWidth();
          c.SetSigmaZ2((s2 + 1./12.)*w*w);
          if (s2 != 0.) {
 	   c.SetSigmaZ2(c.GetSigmaZ2()*0.169);
-	   if (sec<par->GetNInnerSector()) c.SetSigmaZ2(c.GetSigmaZ2()*1.77);
+	   if (sec<fPar->GetNInnerSector()) c.SetSigmaZ2(c.GetSigmaZ2()*1.77);
          }
 
-         c.SetY((c.GetY() - 0.5 - 0.5*npads)*par->GetPadPitchWidth(sec));
-         c.SetZ(par->GetZWidth()*(c.GetZ()-1)); 
-         c.SetZ(c.GetZ() - 3.*par->GetZSigma()); // PASA delay 
-         c.SetZ(sign*(par->GetZLength() - c.GetZ()));
+         c.SetY((c.GetY() - 0.5 - 0.5*npads)*fPar->GetPadPitchWidth(sec));
+         c.SetZ(fPar->GetZWidth()*(c.GetZ()-1)); 
+         c.SetZ(c.GetZ() - 3.*fPar->GetZSigma()); // PASA delay 
+         c.SetZ(sign*(fPar->GetZLength() - c.GetZ()));
 
          if (rx<230./250.*TMath::Abs(c.GetZ())) continue;
 
@@ -232,8 +237,9 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
          clrow->InsertCluster(&c); ncl++;
       }
     }
-    fClusterArray.StoreRow(sec,row);
-    fClusterArray.ClearRow(sec,row);
+    cTree->Fill();
+
+    delete clrow;
 
     nclusters+=ncl;
 
