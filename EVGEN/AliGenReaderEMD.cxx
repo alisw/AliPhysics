@@ -27,7 +27,7 @@
 
 #include "AliGenReaderEMD.h"
 
-ClassImp(AliGenReaderEMD);
+ClassImp(AliGenReaderEMD)
 
 
   // -----------------------------------------------------------------------------------
