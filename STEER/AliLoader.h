@@ -4,7 +4,7 @@
 #include <TFolder.h>
 #include <TObjArray.h>
 
-#include <AliConfig.h>
+//#include <AliConfig.h>
 #include "AliDataLoader.h"
 
 class TString;
@@ -34,6 +34,8 @@ class AliLoader: public TNamed
     AliLoader();
     AliLoader(const Char_t *detname,const Char_t *eventfoldername); //contructor with name of the top folder of the tree
     AliLoader(const Char_t *detname,TFolder* eventfolder);
+    AliLoader(const AliLoader& source); //copy constructor
+    AliLoader& operator=(const AliLoader& source); //assignment operator
 
     virtual ~AliLoader();//----------------- 
  
@@ -72,12 +74,12 @@ class AliLoader: public TNamed
     TFolder*       GetTasksFolder();
     TFolder*       GetQAFolder();
    
-    TTask*         SDigitizer();//return detector SDigitizer()
-    AliDigitizer*  Digitizer();
-    TTask*         Reconstructioner();
-    TTask*         Tracker();
-    TTask*         PIDTask();
-    TTask*         QAtask(const char* name = 0x0);
+    TTask*         SDigitizer() const;//return detector SDigitizer()
+    AliDigitizer*  Digitizer() const;
+    TTask*         Reconstructioner() const;
+    TTask*         Tracker() const;
+    TTask*         PIDTask() const;
+    TTask*         QAtask(const char* name = 0x0) const;
 
     TObject**      SDigitizerRef();
     TObject**      DigitizerRef();
@@ -107,12 +109,18 @@ class AliLoader: public TNamed
     virtual Int_t  WriteTracker(Option_t* opt=""){return GetTracksDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
     virtual Int_t  WritePIDTask(Option_t* opt=""){return GetRecParticlesDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
 
-    TTree*         TreeH(){return GetHitsDataLoader()->Tree();}      //returns the tree from folder; shortcut method
-    TTree*         TreeS(){return GetSDigitsDataLoader()->Tree();}   //returns the tree from folder; shortcut method
-    TTree*         TreeD(){return GetDigitsDataLoader()->Tree();}    //returns the tree from folder; shortcut method
-    TTree*         TreeR(){return GetRecPointsDataLoader()->Tree();} //returns the tree from folder; shortcut method
-    TTree*         TreeT(){return GetTracksDataLoader()->Tree();}    //returns the tree from folder; shortcut method
-    TTree*         TreeP(){return GetRecParticlesDataLoader()->Tree();} //returns the tree from folder; shortcut method
+    TTree*         TreeH() const
+      {return GetHitsDataLoader()->Tree();}      //returns the tree from folder; shortcut method
+    TTree*         TreeS() const
+      {return GetSDigitsDataLoader()->Tree();}   //returns the tree from folder; shortcut method
+    TTree*         TreeD() const
+      {return GetDigitsDataLoader()->Tree();}    //returns the tree from folder; shortcut method
+    TTree*         TreeR() const
+      {return GetRecPointsDataLoader()->Tree();} //returns the tree from folder; shortcut method
+    TTree*         TreeT() const
+      {return GetTracksDataLoader()->Tree();}    //returns the tree from folder; shortcut method
+    TTree*         TreeP() const
+      {return GetRecParticlesDataLoader()->Tree();} //returns the tree from folder; shortcut method
 
     Int_t          LoadHits(Option_t* opt=""){Int_t status = GetHitsDataLoader()->Load(opt);SetTAddrInDet();return status;}
     Int_t          LoadSDigits(Option_t* opt=""){Int_t status = GetSDigitsDataLoader()->Load(opt);SetTAddrInDet(); return status;}
@@ -161,12 +169,18 @@ class AliLoader: public TNamed
     void           SetTracksFileName(const TString& fname){GetTracksDataLoader()->SetFileName(fname);}
     void           SetRecParticlesFileName(const TString& fname){GetRecParticlesDataLoader()->SetFileName(fname);}
 
-    const TString& GetHitsFileName(){return GetHitsDataLoader()->GetFileName();}
-    const TString& GetSDigitsFileName(){return GetSDigitsDataLoader()->GetFileName();}
-    const TString& GetDigitsFileName(){return GetDigitsDataLoader()->GetFileName();}
-    const TString& GetRecPointsFileName(){return GetRecPointsDataLoader()->GetFileName();}
-    const TString& GetTracksFileName(){return GetTracksDataLoader()->GetFileName();}
-    const TString& GetRecParticlesFileName(){return GetRecParticlesDataLoader()->GetFileName();}
+    const TString& GetHitsFileName() const 
+      {return GetHitsDataLoader()->GetFileName();}
+    const TString& GetSDigitsFileName() const 
+      {return GetSDigitsDataLoader()->GetFileName();}
+    const TString& GetDigitsFileName() const
+      {return GetDigitsDataLoader()->GetFileName();}
+    const TString& GetRecPointsFileName() const
+      {return GetRecPointsDataLoader()->GetFileName();}
+    const TString& GetTracksFileName() const
+      {return GetTracksDataLoader()->GetFileName();}
+    const TString& GetRecParticlesFileName() const
+      {return GetRecParticlesDataLoader()->GetFileName();}
    
     virtual void  CleanHits()     {GetHitsDataLoader()->Clean();}       //cleans hits from folder
     virtual void  CleanSDigits()  {GetSDigitsDataLoader()->Clean();}    //cleans digits from folder
@@ -204,6 +218,20 @@ class AliLoader: public TNamed
                                                           //e.g. TPC.Digits.root -> TPC.DigitsMerged.root
                                                               //made on Jiri Chudoba demand
     void Synchronize();
+
+    /**********************************************/
+    /***********     P U B L I C     **************/
+    /*********       S T A T I C       ************/
+    /*********         METHODS         ************/
+    /*********     They are used by    ************/
+    /*********** AliRunLoader as well**************/
+    /**********************************************/
+    static TDirectory* ChangeDir(TFile* file, Int_t eventno); //changes the root directory in "file" to directory corresponing to eventno
+    static Bool_t      TestFileOption(Option_t* opt);//checks is file is created from scratch
+    static Bool_t      IsOptionWritable(const TString& opt);
+    
+    static Int_t GetDebug() {return fgDebug;}
+    static void        SetDebug(Int_t deb = 1){fgDebug = deb;}//Sets debugging information
     
    protected:
 
@@ -230,7 +258,7 @@ class AliLoader: public TNamed
     void          Clean(const TString& name);//removes and deletes object from data folder 
     
     
-    TString       GetUnixDir();
+    TString       GetUnixDir() const;
     TObject*      GetDetectorData(const char* name){return GetDetectorDataFolder()->FindObject(name);}
     TObject**     GetDetectorDataRef(TObject* obj);
     
@@ -244,9 +272,8 @@ class AliLoader: public TNamed
     /*********        D A T A          ************/
     /**********************************************/
   
-    // array with data loaders each corresponds to 
-    // one data type (Hits, Digits, ...) 
-    TObjArray*    fDataLoaders; 
+    TObjArray*    fDataLoaders; // array with data loaders each corresponds to 
+                                // one data type (Hits, Digits, ...) 
 
     TString       fDetectorName;//detector name that this loader belongs to
     
@@ -274,20 +301,6 @@ class AliLoader: public TNamed
     //descendant classes should
     //use protected interface methods to access these folders
 
-    /**********************************************/
-    /***********     P U B L I C     **************/
-    /*********       S T A T I C       ************/
-    /*********         METHODS         ************/
-    /*********     They are used by    ************/
-    /*********** AliRunLoader as well**************/
-    /**********************************************/
-   public:
-    static TDirectory* ChangeDir(TFile* file, Int_t eventno); //changes the root directory in "file" to directory corresponing to eventno
-    static Bool_t      TestFileOption(Option_t* opt);//checks is file is created from scratch
-    static Bool_t      IsOptionWritable(const TString& opt);
-    
-    static Int_t GetDebug() {return fgDebug;}
-    static void        SetDebug(Int_t deb = 1){fgDebug = deb;}//Sets debugging information
     static Int_t       fgDebug; //debug flag for loaders
 
     ClassDef(AliLoader,2)

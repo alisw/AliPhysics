@@ -42,34 +42,6 @@ public:
   
   static     AliConfig* Instance();
   
-private:
-  AliConfig(const char * name, const char * title );
-  AliConfig(const AliConfig&);
-
-  void          AddInFolder (const char * dir, TObject *obj);
-  Int_t         AddSubTask(const char *taskname, const char* name, const char* title);
-  Int_t         AddSubFolder(TFolder* topfolder, const char* infoler, //helper method
-                     const char* newfoldname, const char* newfoldtitle);
-  TObject*      FindInFolder (const char *dir, const char *name);
-  
-  // folders
-  TFolder*              fTopFolder;
-  TFolder*              fTaskFolder;
-  TFolder*              fConstFolder;
-
-  static const TString  fgkPDGFolderName; 
-  static const TString  fgkGeneratorFolderName; 
-  static const TString  fgkMCFolderName;
-  static const TString  fgkModuleFolderName;
-  
-  TString              *fDetectorTask;//!array with names for detector tasks
-  TString              *fDetectorFolder;//!array with names for detector folders (where detector is going to be put)
-  
-  static AliConfig*     fInstance;
-  
-  
- public:
-
   TFolder*              BuildEventFolder(const char* name,const char* tilte);
   
   TFolder*              GetTopFolder(){return fTopFolder;}
@@ -88,33 +60,61 @@ private:
   
   const TString&        GetQAFolderName() const; //returns path to folder with QA output
   
-  const TString&        GetDataFolderName();//returns name of data folder
+  const TString&        GetDataFolderName() const;//returns name of data folder
   
   static const TString  fgkTopFolderName; //name of top AliRoot folder
  
-  static const TString  fgkDefaultEventFolderName; 
-  static const TString  fgkTasksFolderName;
-  static const TString  fgkConstantsFolderName;
+  static const TString  fgkDefaultEventFolderName; //name of event folder
+  static const TString  fgkTasksFolderName;        //name of task folder
+  static const TString  fgkConstantsFolderName;    //name of constants folder
   
-  static const TString  fgkDataFolderName;  
-  static const TString  fgkConditionsFolderName;
-  static const TString  fgkConfigurationFolderName;
-  static const TString  fgkHeaderFolderName;
+  static const TString  fgkDataFolderName;         //name of data folde
+  static const TString  fgkConditionsFolderName;   //name of conditions folder
+  static const TString  fgkConfigurationFolderName;//name of configuration foolder
+  static const TString  fgkHeaderFolderName;       //name of header folder
   
-  static const TString  fgkDigitizerTaskName;
-  static const TString  fgkSDigitizerTaskName;
-  static const TString  fgkQATaskName;
-  static const TString  fgkReconstructionerTaskName;
-  static const TString  fgkTrackerTaskName;
-  static const TString  fgkPIDTaskName;
+  static const TString  fgkDigitizerTaskName;      //name of digitizer task
+  static const TString  fgkSDigitizerTaskName;     //name of sdigitizer task
+  static const TString  fgkQATaskName;             //name of Q-A task
+  static const TString  fgkReconstructionerTaskName;//name of reconstructioner
+                                                    //task
+  static const TString  fgkTrackerTaskName;        //name of tracker task 
+  static const TString  fgkPIDTaskName;            //name of PID task
   
-  static const TString  fgkCalibrationFolderName;
-  static const TString  fgkAligmentFolderName;
-  static const TString  fgkQAFolderName;
+  static const TString  fgkCalibrationFolderName;  //name of calibration folder
+  static const TString  fgkAligmentFolderName;     //name of alignment folder
+  static const TString  fgkQAFolderName;           //name of QA folder
   
-  static const TString  fgkFieldFolderName;
-  static const TString  fgkGeneratorsFolderName;
-  static const TString  fgkVirtualMCFolderName;
+  static const TString  fgkFieldFolderName;        //name of magn.field folder
+  static const TString  fgkGeneratorsFolderName;   //name of generator folder
+  static const TString  fgkVirtualMCFolderName;    //name of virtual MC folder
+
+private:
+  AliConfig(const char * name, const char * title );
+  AliConfig(const AliConfig&);
+  AliConfig& operator=(const AliConfig&);
+
+  void          AddInFolder (const char * dir, TObject *obj);
+  Int_t         AddSubTask(const char *taskname, const char* name, const char* title);
+  Int_t         AddSubFolder(TFolder* topfolder, const char* infoler, //helper method
+                     const char* newfoldname, const char* newfoldtitle);
+  TObject*      FindInFolder (const char *dir, const char *name);
+  
+  // folders
+  TFolder*              fTopFolder;    //pointer to top folder
+  TFolder*              fTaskFolder;   //pointer to task folder
+  TFolder*              fConstFolder;  //pointer to constants folder
+
+  static const TString  fgkPDGFolderName; //name of PDG folder
+  static const TString  fgkGeneratorFolderName; //name of generator name
+  static const TString  fgkMCFolderName;        //name of MC folder
+  static const TString  fgkModuleFolderName;    //name of module folder
+  
+  TString              *fDetectorTask;//!array with names for detector tasks
+  TString              *fDetectorFolder;//!array with names for detector folders (where detector is going to be put)
+  
+  static AliConfig*     fgInstance; //pointer to the AliConfig instance
+  
   
   ClassDef(AliConfig,2) //Configuration class for AliRun
 };				// end class AliConfig

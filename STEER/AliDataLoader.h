@@ -35,6 +35,8 @@ class AliDataLoader: public TNamed
   public:
    AliDataLoader();
    AliDataLoader(const char* filename, const char* contname, const char* name, Option_t* opt = "t");
+   AliDataLoader(const AliDataLoader& source);
+   AliDataLoader& operator=(const AliDataLoader& source);
    virtual ~AliDataLoader();
 
    virtual Int_t      SetEvent();
@@ -119,7 +121,6 @@ class AliDataLoader: public TNamed
    TFolder*     fEventFolder;//!event folder
    TFolder*     fFolder;//! folder with data
    
-  public:
    ClassDef(AliDataLoader,1)
  };
 
@@ -138,6 +139,8 @@ class AliBaseLoader: public TNamed
   public:
     AliBaseLoader();
     AliBaseLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
+   AliBaseLoader(const AliBaseLoader& source);
+   AliBaseLoader& operator=(const AliBaseLoader& source);
     
     virtual ~AliBaseLoader(){};
      
@@ -154,8 +157,9 @@ class AliBaseLoader: public TNamed
     void               SetEventFolder(TFolder* /*ef*/){;}
     void               SetDoNotReload(Bool_t flag){fDoNotReload = flag;}
     Bool_t             DoNotReload() const {return fDoNotReload;}
-    TDirectory*        GetDirectory();//returns pointer to directory where data are stored. 
-    TObject*           GetFromDirectory(const char *name){return (GetDirectory())?GetDirectory()->Get(name):0x0;}    
+    TDirectory*        GetDirectory() const;//returns pointer to directory where data are stored. 
+    TObject*           GetFromDirectory(const char *name) const
+      {return (GetDirectory())?GetDirectory()->Get(name):0x0;}    
    protected:
     
     virtual Int_t      AddToBoard(TObject* obj) = 0;//add to white board - board can be TTask or TFolder
@@ -191,6 +195,8 @@ class AliObjectLoader: public AliBaseLoader
    public:
      AliObjectLoader(){};
      AliObjectLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
+     AliObjectLoader(const AliObjectLoader& source);
+     AliObjectLoader& operator=(const AliObjectLoader& source);
      virtual          ~AliObjectLoader(){};
      TObject*          Get() const;
 
@@ -216,6 +222,8 @@ class AliTreeLoader: public AliObjectLoader
    public:
      AliTreeLoader(){};
      AliTreeLoader(const TString& name, AliDataLoader* dl, Bool_t storeontop = kFALSE);
+     AliTreeLoader(const AliTreeLoader& source);
+     AliTreeLoader& operator=(const AliTreeLoader& source);
      virtual ~AliTreeLoader(){};
      
      virtual TTree*     Tree() const {return dynamic_cast<TTree*>(Get());}
@@ -238,6 +246,8 @@ class AliTaskLoader: public AliBaseLoader
   public:
     AliTaskLoader():fParentalTask(0x0){};
     AliTaskLoader(const TString& name, AliDataLoader* dl, TTask* parentaltask, Bool_t storeontop = kFALSE);
+    AliTaskLoader(const AliTaskLoader& source);
+    AliTaskLoader& operator=(const AliTaskLoader& source);
     virtual ~AliTaskLoader(){};
     
     TObject*           Get() const; 
@@ -249,7 +259,7 @@ class AliTaskLoader: public AliBaseLoader
     TTask*             GetParentalTask() const;
 
   private:
-    TTask*             fParentalTask;
+    TTask*             fParentalTask; // Parental task
 
   ClassDef(AliTaskLoader,1)    
  };

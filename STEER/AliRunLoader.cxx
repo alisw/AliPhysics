@@ -301,7 +301,7 @@ AliRunLoader* AliRunLoader::Open
 //in case of error returns NULL
  
  static const TString webaddress("http://alisoft.cern.ch/people/skowron/codedoc/split/index.html");
- if (AliLoader::fgDebug) 
+ if (AliLoader::GetDebug()) 
   ::Info("AliRunLoader::Open",
          "\n\n\nNew I/O strcture: See more info:\n %s\n\n\n",webaddress.Data());
  
@@ -378,7 +378,7 @@ AliRunLoader* AliRunLoader::Open
  //else create new AliRunLoader
  if ( AliLoader::TestFileOption(option) )
   { 
-    if (AliLoader::fgDebug) 
+    if (AliLoader::GetDebug()) 
      ::Info("AliRunLoader::Open","Reading RL from file");
     
     result = dynamic_cast<AliRunLoader*>(gAliceFile->Get(fgkRunLoaderName));//get the run Loader from the file
@@ -399,7 +399,7 @@ AliRunLoader* AliRunLoader::Open
   }
  else
   {
-    if (AliLoader::fgDebug) 
+    if (AliLoader::GetDebug()) 
       ::Info("AliRunLoader::Open","Creating new AliRunLoader. Folder name is %s",eventfoldername);
     result = new AliRunLoader(eventfoldername);
   }
@@ -416,7 +416,7 @@ AliRunLoader* AliRunLoader::Open
   }
  else dirname = fname.Remove(nsl);//slash found
  
- if (AliLoader::fgDebug) 
+ if (AliLoader::GetDebug()) 
   ::Info("AliRunLoader::Open","Dir name is : %s",dirname.Data());
  
  result->SetDirName(dirname); 
@@ -1033,10 +1033,10 @@ void AliRunLoader::CleanDetectors()
 {
 //Calls CleanFolders for all detectors
   TIter next(fLoaders);
-  AliLoader *Loader;
-  while((Loader = (AliLoader*)next())) 
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
    {
-     Loader->CleanFolders();
+     loader->CleanFolders();
    }
 }
 /**************************************************************************/
@@ -1132,25 +1132,25 @@ Int_t AliRunLoader::LoadDigits(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  TObjArray* Loaders;
+  TObjArray* loaders;
   TObjArray arr;
 
   const char* oAll = strstr(detectors,"all");
   if (oAll)
    {
-     Loaders = fLoaders;
+     loaders = fLoaders;
    }
   else
    {
      GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
-     Loaders = &arr;//get the pointer array
+     loaders = &arr;//get the pointer array
    }   
 
-  TIter next(Loaders);
-  AliLoader *Loader;
-  while((Loader = (AliLoader*)next())) 
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
    {
-    Loader->LoadDigits(opt);
+    loader->LoadDigits(opt);
    }
   return 0;
 } 
@@ -1160,25 +1160,25 @@ Int_t AliRunLoader::LoadRecPoints(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  TObjArray* Loaders;
+  TObjArray* loaders;
   TObjArray arr;
 
   const char* oAll = strstr(detectors,"all");
   if (oAll)
    {
-     Loaders = fLoaders;
+     loaders = fLoaders;
    }
   else
    {
      GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
-     Loaders = &arr;//get the pointer array
+     loaders = &arr;//get the pointer array
    }   
 
-  TIter next(Loaders);
-  AliLoader *Loader;
-  while((Loader = (AliLoader*)next())) 
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
    {
-    Loader->LoadRecPoints(opt);
+    loader->LoadRecPoints(opt);
    }
   return 0;
 } 
@@ -1188,25 +1188,25 @@ Int_t AliRunLoader::LoadRecParticles(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  TObjArray* Loaders;
+  TObjArray* loaders;
   TObjArray arr;
 
   const char* oAll = strstr(detectors,"all");
   if (oAll)
    {
-     Loaders = fLoaders;
+     loaders = fLoaders;
    }
   else
    {
      GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
-     Loaders = &arr;//get the pointer array
+     loaders = &arr;//get the pointer array
    }   
 
-  TIter next(Loaders);
-  AliLoader *Loader;
-  while((Loader = (AliLoader*)next())) 
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
    {
-    Loader->LoadRecParticles(opt);
+    loader->LoadRecParticles(opt);
    }
   return 0;
 } 
@@ -1216,25 +1216,25 @@ Int_t AliRunLoader::LoadTracks(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  TObjArray* Loaders;
+  TObjArray* loaders;
   TObjArray arr;
 
   const char* oAll = strstr(detectors,"all");
   if (oAll)
    {
-     Loaders = fLoaders;
+     loaders = fLoaders;
    }
   else
    {
      GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
-     Loaders = &arr;//get the pointer array
+     loaders = &arr;//get the pointer array
    }   
 
-  TIter next(Loaders);
-  AliLoader *Loader;
-  while((Loader = (AliLoader*)next())) 
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
    {
-    Loader->LoadTracks(opt);
+    loader->LoadTracks(opt);
    }
   return 0;
 } 
@@ -1853,10 +1853,10 @@ void AliRunLoader::SetDigitsFileNameSuffix(const TString& suffix)
 //made on Jiri Chudoba demand
 
   TIter next(fLoaders);
-  AliLoader *Loader;
-  while((Loader = (AliLoader*)next())) 
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
    {
-     Loader->SetDigitsFileNameSuffix(suffix);
+     loader->SetDigitsFileNameSuffix(suffix);
    }
 }
 /*****************************************************************************/ 

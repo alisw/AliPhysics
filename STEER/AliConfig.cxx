@@ -62,7 +62,7 @@ enum
  };
 ClassImp(AliConfig)
 
-AliConfig* AliConfig::fInstance = 0;
+AliConfig* AliConfig::fgInstance = 0;
 
 //0 level folder
 const TString AliConfig::fgkTopFolderName("Folders");
@@ -111,11 +111,11 @@ AliConfig* AliConfig::Instance ()
   //
   // Instance method for singleton class
   //
-   if(fInstance == 0) 
+   if(fgInstance == 0) 
     {
-     fInstance = new AliConfig (fgkTopFolderName,"Alice data exchange board");
+     fgInstance = new AliConfig (fgkTopFolderName,"Alice data exchange board");
     }
-   return fInstance;
+   return fgInstance;
 }
 
 //____________________________________________________________________________
@@ -129,7 +129,7 @@ AliConfig::AliConfig():
   //
   // Default constructor, mainly to keep coding conventions
   //
-  fInstance=0;//never mind, its going to exit in next step
+  fgInstance=0;//never mind, its going to exit in next step
   Fatal("ctor","Constructor should not be called for a singleton\n");
 }
 //____________________________________________________________________________
@@ -145,10 +145,23 @@ AliConfig::AliConfig(const AliConfig& conf):
   //
   // Copy constructor, mainly to keep coding conventions
   //
-  fInstance=0;
+  fgInstance=0;
     
   Fatal("copy ctor",
    "Copy constructor should not be called for a singleton\n");
+}
+//____________________________________________________________________________
+
+AliConfig& AliConfig::operator=(const AliConfig& /*conf*/)
+{
+  //
+  // Assignment, mainly to keep coding conventions
+  //
+  fgInstance=0;
+    
+  Fatal("Assignment operator",
+   "Assignment operator should not be called for a singleton\n");
+  return *this;
 }
 //____________________________________________________________________________
 
@@ -206,12 +219,13 @@ AliConfig::AliConfig(const char *name, const char *title):
   fDetectorTask[kDetTaskPID] = fgkPIDTaskName;
   fDetectorTask[kDetTaskLast] = "";
 
-  fInstance=this;
+  fgInstance=this;
 }
 
 //____________________________________________________________________________
 AliConfig::~AliConfig()
 { 
+  // destructor
   delete [] fDetectorFolder ;  
   delete [] fDetectorTask;
   if (fTopFolder)
@@ -224,6 +238,7 @@ AliConfig::~AliConfig()
 
 void AliConfig::AddInFolder (const char *dir, TObject *obj)
 {
+  // Adds object "obj" to folder "dir"
   TFolder *folder = dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
   if (folder)
     folder->Add (static_cast<TObject *>(obj));
@@ -235,12 +250,12 @@ Int_t AliConfig::AddSubTask(const char *taskname, const char* name,const char* t
 //Create new task named 'name' and titled 'title' 
 //as a subtask of the task named 'taskname'
 
-   if (AliLoader::fgDebug) Info("AddSubTask","Try to get folder named %s",taskname);
+   if (AliLoader::GetDebug()) Info("AddSubTask","Try to get folder named %s",taskname);
    TObject* obj = fTopFolder->FindObject(taskname);
    TTask * task = (obj)?dynamic_cast<TTask*>(obj):0x0;
    if (task)
      {
-      if (AliLoader::fgDebug) Info("AddSubTask","          Got");
+      if (AliLoader::GetDebug()) Info("AddSubTask","          Got");
       TTask * subtask = static_cast<TTask*>(task->GetListOfTasks()->FindObject(name));
       if (!subtask) 
         {
@@ -263,6 +278,7 @@ Int_t AliConfig::AddSubTask(const char *taskname, const char* name,const char* t
 //____________________________________________________________________________
 TObject* AliConfig::FindInFolder (const char *dir, const char *name)
 {
+  // Finds object with name "name" in folder "dir"
   if(!name) return(fTopFolder->FindObject(name));
   TFolder * folder = dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
   if (!folder) return (NULL);
@@ -272,6 +288,7 @@ TObject* AliConfig::FindInFolder (const char *dir, const char *name)
 //____________________________________________________________________________
 void    AliConfig::Add (AliGenerator * obj,const char* eventfolder)
 {
+  // Adds generator "obj" to the event folder "eventfolder"
   TString path(eventfolder);
   path = path + "/" + fgkGeneratorsFolderName;
   AddInFolder(path,obj);
@@ -280,6 +297,7 @@ void    AliConfig::Add (AliGenerator * obj,const char* eventfolder)
 //____________________________________________________________________________
 void AliConfig::Add (TVirtualMC * obj,const char* eventfolder)
 {
+  // Adds TVirtualMC object to the event folder
   TString path(eventfolder);
   path = path + "/" + fgkMCFolderName;
   AddInFolder(path, obj);
@@ -288,16 +306,17 @@ void AliConfig::Add (TVirtualMC * obj,const char* eventfolder)
 //____________________________________________________________________________
 void  AliConfig::Add (TDatabasePDG * obj)
 {
+  // Adds TDataBase object
   AddInFolder(fgkPDGFolderName, obj);
 }
 
 //____________________________________________________________________________
 void AliConfig::Add(AliModule* obj,const char* eventfolder)
 {
-  
+  // Adds module to the event folder
   TString path(eventfolder);
   path = path + "/" + fgkModuleFolderName;
-  if (AliLoader::fgDebug)
+  if (AliLoader::GetDebug())
     Info("Add(AliModule*)","module name = %s, Ev. Fold. Name is %s.",
          obj->GetName(),eventfolder);
   AddInFolder(path, obj);
@@ -340,7 +359,8 @@ Int_t AliConfig::AddDetector(const char* evntfoldername,const char *name, const 
 
 void  AliConfig::Add(AliDetector * obj,const char* eventfolder)
 {
-  if (AliLoader::fgDebug) 
+  // Adds new AliDetector objest to the correspondent event folder
+  if (AliLoader::GetDebug()) 
     Info("Add(AliDetector*)","detector name = %s, Ev. Fold. Name is %s.",
         obj->GetName(),eventfolder);
 
@@ -401,6 +421,7 @@ Int_t  AliConfig::CreateDetectorFolders(TFolder* evntfolder,const char *name, co
 //____________________________________________________________________________
 Int_t AliConfig::CreateDetectorTasks(const char *name, const char* title)
 {
+  // Creates new detector's task "name"
    Int_t i = 0;
    Int_t tmp;
    while (i < kDetTaskLast)
@@ -421,12 +442,14 @@ Int_t AliConfig::CreateDetectorTasks(const char *name, const char* title)
 //____________________________________________________________________________
 void    AliConfig::Add (char *list)
 {
+  // Adds space separated list of objects to the
+  // configuration macro (?)
   char *path;
   
-  const char   *conf_path = gSystem->Getenv ("ALICE_CONFIG_PATH");
-  if  (conf_path) {
-    path = new char[strlen (conf_path)];
-    strcpy (path, conf_path);
+  const char   *confPath = gSystem->Getenv ("ALICE_CONFIG_PATH");
+  if  (confPath) {
+    path = new char[strlen (confPath)];
+    strcpy (path, confPath);
   } else {
     const char   *alice = gSystem->Getenv ("ALICE_ROOT");
     path = new char[strlen (alice) + 32];
@@ -699,7 +722,7 @@ const TString& AliConfig::GetQAFolderName() const
 }
 /*****************************************************************************/
 
-const TString& AliConfig::GetDataFolderName()
+const TString& AliConfig::GetDataFolderName() const
 {
 //returns name of data folder path relative to event folder
  return fgkDataFolderName;

@@ -19,8 +19,11 @@ public:
     AliMC(const AliMC &mc);
     virtual ~AliMC();
     
-    AliMC operator = (const AliMC &mc) 
-        {mc.Copy(*this); return *this;}
+    AliMC& operator= (const AliMC &mc) {
+      // Assignment operator
+      mc.Copy(*this);
+      return *this;
+    }
 
 //
 //  MC Application

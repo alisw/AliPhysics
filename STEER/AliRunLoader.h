@@ -160,7 +160,36 @@ class AliRunLoader: public TNamed
     TTree*        GetTreeR(const char* detname, Bool_t maketree);
     TTree*        GetTreeT(const char* detname, Bool_t maketree);
     TTree*        GetTreeP(const char* detname, Bool_t maketree);
-    
+
+  /******************************************/
+  /*****   Public S T A T I C Stuff   *******/
+  /******************************************/
+    static AliRunLoader* GetRunLoader(const char* eventfoldername);
+    static AliRunLoader* GetRunLoader(){return fgRunLoader;}
+    static AliLoader*    GetDetectorLoader(const char* detname, const char* eventfoldername);
+    static TTree*        GetTreeH(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeS(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeD(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeR(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeT(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeP(const char* detname, Bool_t maketree, const char* eventfoldername);
+
+//    static AliRunDigitizer* GetRunDigitizer();
+//  Tasks are supposed to be singletons, that is why following methods are static
+    static TTask*           GetRunDigitizer();        //
+    static TTask*           GetRunSDigitizer();       //
+    static TTask*           GetRunReconstructioner(); //
+    static TTask*           GetRunTracker();          //
+    static TTask*           GetRunPIDTask();          // 
+    static TTask*           GetRunQATask();           //
+     
+    static const TString   fgkRunLoaderName;          //default name of the run loader
+    static const TString   fgkHeaderContainerName;    //default name of the kinematics container (TREE) name - TreeE
+    static const TString   fgkKineContainerName;      //default name of the kinematics container (TREE) name - TreeK
+    static const TString   fgkTrackRefsContainerName; //default name of the track references container (TREE) name - TreeTR
+    static const TString   fgkHeaderBranchName;       //default name of the branch containing the header
+    static const TString   fgkKineBranchName;         //default name of the branch with kinematics
+    static const TString   fgkGAliceName;             //default name for gAlice file    
   protected:
     /**********************************************/
     /************    PROTECTED      ***************/
@@ -207,38 +236,8 @@ class AliRunLoader: public TNamed
     
     Int_t SetEvent();
    
-    static AliRunLoader* fgRunLoader;
+    static AliRunLoader* fgRunLoader; //pointer to the AliRunLoader instance
 
-  public:
-  /******************************************/
-  /*****   Public S T A T I C Stuff   *******/
-  /******************************************/
-    static AliRunLoader* GetRunLoader(const char* eventfoldername);
-    static AliRunLoader* GetRunLoader(){return fgRunLoader;}
-    static AliLoader*    GetDetectorLoader(const char* detname, const char* eventfoldername);
-    static TTree*        GetTreeH(const char* detname, Bool_t maketree, const char* eventfoldername);
-    static TTree*        GetTreeS(const char* detname, Bool_t maketree, const char* eventfoldername);
-    static TTree*        GetTreeD(const char* detname, Bool_t maketree, const char* eventfoldername);
-    static TTree*        GetTreeR(const char* detname, Bool_t maketree, const char* eventfoldername);
-    static TTree*        GetTreeT(const char* detname, Bool_t maketree, const char* eventfoldername);
-    static TTree*        GetTreeP(const char* detname, Bool_t maketree, const char* eventfoldername);
-
-//    static AliRunDigitizer* GetRunDigitizer();
-//  Tasks are supposed to be singletons, that is why following methods are static
-    static TTask*           GetRunDigitizer();        //
-    static TTask*           GetRunSDigitizer();       //
-    static TTask*           GetRunReconstructioner(); //
-    static TTask*           GetRunTracker();          //
-    static TTask*           GetRunPIDTask();          // 
-    static TTask*           GetRunQATask();           //
-     
-    static const TString   fgkRunLoaderName;
-    static const TString   fgkHeaderContainerName;    //default name of the kinematics container (TREE) name - TreeE
-    static const TString   fgkKineContainerName;      //default name of the kinematics container (TREE) name - TreeK
-    static const TString   fgkTrackRefsContainerName; //default name of the track references container (TREE) name - TreeTR
-    static const TString   fgkHeaderBranchName;
-    static const TString   fgkKineBranchName;
-    static const TString   fgkGAliceName;
     
     ClassDef(AliRunLoader,1)
 };

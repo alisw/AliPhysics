@@ -24,6 +24,7 @@
 #include <AliRunDigitizer.h>
 #include <AliDigitizer.h>
 #include <AliDetector.h>
+#include "AliConfig.h"
 
 Int_t  AliLoader::fgDebug = 0;
 
@@ -111,7 +112,24 @@ AliLoader::AliLoader(const Char_t * detname,TFolder* eventfolder):
    //fileoption's don't need to initialized because default TString ctor does it correctly
 }
 /*****************************************************************************/ 
+AliLoader::AliLoader(const AliLoader& source):TNamed(source) {
+  // dummy copy constructor
+  if(&source==this)return;
+  
+  Fatal("AliLoader","Copy constructor not implemented. Aborting");
+  return;
+}
 
+/*****************************************************************************/ 
+AliLoader& AliLoader::operator=(const AliLoader& source) {
+  // dummy assignment operator
+  if(&source==this) return *this;
+  
+  Fatal("AliLoader","Assignment operator not implemented. Aborting");
+  return *this;
+}
+
+/*****************************************************************************/ 
 AliLoader::~AliLoader()
 {
 //detructor
@@ -279,6 +297,7 @@ TFolder* AliLoader::GetTasksFolder()
 
 TFolder* AliLoader::GetModulesFolder()
 {
+  //returns pointer to the folder containing modules
  if (!fModuleFolder)
   {
    fModuleFolder =  dynamic_cast<TFolder*>(GetEventFolder()->FindObjectAny(AliConfig::GetModulesFolderName()));
@@ -312,7 +331,7 @@ TFolder* AliLoader::GetQAFolder()
   
 }
 /*****************************************************************************/ 
-TTask* AliLoader::SDigitizer()
+TTask* AliLoader::SDigitizer() const
 {
 //returns SDigitizer task for this detector
   return GetSDigitsDataLoader()->GetBaseTaskLoader()->Task();
@@ -320,14 +339,14 @@ TTask* AliLoader::SDigitizer()
 }
 /*****************************************************************************/ 
 
-AliDigitizer* AliLoader::Digitizer()
+AliDigitizer* AliLoader::Digitizer() const
 {
 //returns Digitizer task for this detector
   return dynamic_cast<AliDigitizer*>(GetDigitsDataLoader()->GetBaseTaskLoader()->Task());
 }
 /*****************************************************************************/ 
 
-TTask* AliLoader::Reconstructioner()
+TTask* AliLoader::Reconstructioner() const
 {
 //returns Recontructioner (Cluster Finder, Cluster Maker, 
 //or whatever you want to call it) task for this detector
@@ -335,14 +354,14 @@ TTask* AliLoader::Reconstructioner()
 }
 /*****************************************************************************/ 
 
-TTask* AliLoader::Tracker()
+TTask* AliLoader::Tracker() const
 {
 //returns tracker
   return dynamic_cast<TTask*>(GetTracksDataLoader()->GetBaseTaskLoader()->Task());
 }
 
 /*****************************************************************************/ 
-TTask* AliLoader::PIDTask()
+TTask* AliLoader::PIDTask() const
 {
 //returns tracker
   return dynamic_cast<TTask*>(GetRecParticlesDataLoader()->GetBaseTaskLoader()->Task());
@@ -350,8 +369,9 @@ TTask* AliLoader::PIDTask()
 
 /*****************************************************************************/ 
 
-TTask* AliLoader::QAtask(const char* name)
+TTask* AliLoader::QAtask(const char* name) const
 {
+  // Returns pointer to the quality assurance task
   TTask* qat = AliRunLoader::GetRunQATask();
   if ( qat == 0x0 ) 
    {
@@ -447,7 +467,7 @@ TDirectory* AliLoader::ChangeDir(TFile* file, Int_t eventno)
 }
 /*****************************************************************************/ 
 
-TString AliLoader::GetUnixDir()
+TString AliLoader::GetUnixDir() const
  {
  //This Method will manage jumping through unix directories in case of 
  //run with more events per run than defined in gAlice
@@ -486,6 +506,7 @@ void AliLoader::MakeTree(Option_t *option)
 /*****************************************************************************/ 
 Int_t  AliLoader::WriteHits(Option_t* opt)
  {
+   // Writes hits
    AliDataLoader* dl = GetHitsDataLoader();
    Int_t ret = dl->WriteData(opt);
    return ret;
@@ -494,6 +515,7 @@ Int_t  AliLoader::WriteHits(Option_t* opt)
 
 Int_t AliLoader::WriteSDigits(Option_t* opt)
  {
+   // Writes summable digits
    AliDataLoader* dl = GetSDigitsDataLoader();
    Int_t ret = dl->WriteData(opt);
    return ret;
@@ -503,36 +525,42 @@ Int_t AliLoader::WriteSDigits(Option_t* opt)
 
 Int_t AliLoader::PostSDigitizer(TTask* sdzer)
 {
+  // Posts sdigitizer
   return GetSDigitsDataLoader()->GetBaseTaskLoader()->Post(sdzer);
 }
 /*****************************************************************************/ 
 
 Int_t AliLoader::PostDigitizer(AliDigitizer* task)
  {
+   // Posts digitizer
   return GetDigitsDataLoader()->GetBaseTaskLoader()->Post(task);
  }
 /*****************************************************************************/ 
 
 Int_t AliLoader::PostReconstructioner(TTask* task)
  {
+   // Posts Reconstructioner
   return GetRecPointsDataLoader()->GetBaseTaskLoader()->Post(task);
  }
 /*****************************************************************************/ 
 
 Int_t AliLoader::PostTracker(TTask* task)
  {
+   // Posts a tracker
   return GetTracksDataLoader()->GetBaseTaskLoader()->Post(task);
  }
 /*****************************************************************************/ 
 
 Int_t AliLoader::PostPIDTask(TTask* task)
  {
+  // Posts particle identification task
   return GetRecParticlesDataLoader()->GetBaseTaskLoader()->Post(task);
  }
 /*****************************************************************************/ 
 
 TObject** AliLoader::GetDetectorDataRef(TObject *obj)
 {
+  // Returns pointer to an entry in the list of folders pointing to "obj"
  if (obj == 0x0)
   {
     return 0x0;
@@ -543,6 +571,7 @@ TObject** AliLoader::GetDetectorDataRef(TObject *obj)
 
 TObject** AliLoader::SDigitizerRef()
 {
+  // Returns pointer to a Runloader's task-list entry pointing to SDigitizer
   TTask* rsd = AliRunLoader::GetRunSDigitizer();
   if (rsd == 0x0)
    {
@@ -554,6 +583,7 @@ TObject** AliLoader::SDigitizerRef()
 
 TObject** AliLoader::DigitizerRef()
 {
+  // Returns pointer to a Runloader's task-list entry pointing to Digitizer
  TTask* rd = AliRunLoader::GetRunDigitizer();
  if (rd == 0x0)
   {
@@ -565,6 +595,7 @@ TObject** AliLoader::DigitizerRef()
 
 TObject** AliLoader::ReconstructionerRef()
 {
+  // Returns pointer to a Runloader's task-list entry pointing to Reconstructioner
   TTask* rrec = AliRunLoader::GetRunReconstructioner();
   if (rrec == 0x0)
    {
@@ -576,6 +607,7 @@ TObject** AliLoader::ReconstructionerRef()
 
 TObject** AliLoader::TrackerRef()
 {
+  // Returns pointer to a Runloader's task-list entry pointing to Tracker
    TTask* rrec = AliRunLoader::GetRunTracker();
    if (rrec == 0x0)
     {
@@ -587,6 +619,7 @@ TObject** AliLoader::TrackerRef()
 
 TObject** AliLoader::PIDTaskRef()
 {
+  // Returns pointer to a Runloader's task-list entry pointing to PIDTask
   TTask* rrec = AliRunLoader::GetRunPIDTask();
   if (rrec == 0x0)
    {
@@ -694,6 +727,7 @@ void AliLoader::CleanPIDTask()
 
 Int_t AliLoader::ReloadAll()
 {
+  // Calling Reload function for all the data loaders
  TIter next(fDataLoaders);
  AliDataLoader* dl;
  
@@ -724,6 +758,7 @@ void AliLoader::CloseFiles()
 
 Int_t  AliLoader::SetEventFolder(TFolder* eventfolder)
 {
+  //sets the event folder
  if (eventfolder == 0x0)
   {
     Error("SetEventFolder","Stupid joke. Argument is NULL");
@@ -839,6 +874,8 @@ void AliLoader::Clean()
 
 void AliLoader::Clean(const TString& name)
 {
+  // Removes object with "name" from the detector's data folder
+  // and from the memory
   TObject* obj = GetDetectorDataFolder()->FindObject(name);
   if(obj)
    {
@@ -853,6 +890,7 @@ void AliLoader::Clean(const TString& name)
 
 Bool_t AliLoader::IsOptionWritable(const TString& opt)
 {
+  // Returns "true" if the option means also "writable"
   if (opt.CompareTo("recreate",TString::kIgnoreCase)) return kTRUE;
   if (opt.CompareTo("new",TString::kIgnoreCase)) return kTRUE;
   if (opt.CompareTo("create",TString::kIgnoreCase)) return kTRUE;

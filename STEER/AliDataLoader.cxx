@@ -86,6 +86,17 @@ AliDataLoader::AliDataLoader(const char* filename, const char* contname, const c
   
 }
 /*****************************************************************************/ 
+AliDataLoader::AliDataLoader(const AliDataLoader& source):TNamed(source) {
+  // copy constructor
+  Fatal("AliDataLoader","Copy constructor not implemented");
+}
+/*****************************************************************************/ 
+AliDataLoader& AliDataLoader::operator=(const AliDataLoader& /*source*/) {
+  // Assignment operator
+  Fatal("AliDataLoader","Assignment operator not implemented");
+  return *this;
+}
+/*****************************************************************************/ 
 
 AliDataLoader::~AliDataLoader()
 {
@@ -331,7 +342,7 @@ Int_t  AliDataLoader::SetEventFolder(TFolder* eventfolder)
 
 Int_t  AliDataLoader::SetFolder(TFolder* folder)
 {
-
+  // Sets the folder and the data loaders
  if (folder == 0x0)
   {
     Error("SetFolder","Stupid joke. Argument is NULL");
@@ -490,6 +501,7 @@ Int_t AliDataLoader::GetDebug() const
 
 void AliDataLoader::MakeTree()
 {
+  // Makes tree for the current data loader
   AliTreeLoader* tl = dynamic_cast<AliTreeLoader*>(fBaseLoaders->At(0));
   if (tl == 0x0)
    {
@@ -566,6 +578,7 @@ AliBaseLoader* AliDataLoader::GetBaseLoader(const TString& name) const
 
 AliBaseLoader* AliDataLoader::GetBaseLoader(Int_t n) const
 {
+  // Gets the n-th base loader (what is n?)
  return dynamic_cast<AliBaseLoader*>(fBaseLoaders->At(n));
 }
 /*****************************************************************************/ 
@@ -584,6 +597,7 @@ TTree* AliDataLoader::Tree() const
 
 void  AliDataLoader::SetDirName(TString& dirname)
 {
+  // Sets the directory name where the files will be stored
   if (GetDebug()>9) Info("SetDirName","FileName before %s",fFileName.Data());
 
   Int_t n = fFileName.Last('/');
@@ -601,16 +615,19 @@ void  AliDataLoader::SetDirName(TString& dirname)
 /*****************************************************************************/ 
 AliObjectLoader* AliDataLoader::GetBaseDataLoader()
 {
+  // Gets the base data loader
  return dynamic_cast<AliObjectLoader*>(GetBaseLoader(kData));
 }
 /*****************************************************************************/ 
 AliTaskLoader* AliDataLoader::GetBaseTaskLoader()
 {
+  // Gets the base task loader
  return dynamic_cast<AliTaskLoader*>(GetBaseLoader(kTask));
 }
 /*****************************************************************************/ 
 AliBaseLoader* AliDataLoader::GetBaseQALoader()
 {
+  // Gets the base QA loader
   return GetBaseLoader(kQA);
 }
 /*****************************************************************************/ 
@@ -691,6 +708,7 @@ AliBaseLoader::AliBaseLoader():
  fDoNotReload(kFALSE),
  fDataLoader(0x0)
 {
+  //default constructor
 }
 /*****************************************************************************/ 
 
@@ -701,12 +719,25 @@ AliBaseLoader::AliBaseLoader(const TString& name,  AliDataLoader* dl, Bool_t sto
  fDoNotReload(storeontop),//if stored on top of file - this object is loaded ones pe
  fDataLoader(dl)
 {
+  //constructor
 }
 
+/*****************************************************************************/ 
+AliBaseLoader::AliBaseLoader(const AliBaseLoader& source):TNamed(source) {
+  // copy constructor
+  Fatal("AliBaseLoader","Copy constructor not implemented");
+}
+/*****************************************************************************/ 
+AliBaseLoader& AliBaseLoader::operator=(const AliBaseLoader& /*source*/) {
+  // Assignment operator
+  Fatal("AliBaseLoader","Assignment operator not implemented");
+  return *this;
+}
 /*****************************************************************************/ 
 
 Int_t AliBaseLoader::Load(Option_t* opt)
 {
+  // Loads and posts the data
   if (GetDebug())
     Info("Load","data type = %s, option = %s",GetName(),opt);
 
@@ -912,6 +943,7 @@ void AliBaseLoader::Clean()
 
 void AliBaseLoader::Unload()
 {
+  // Unloads data and closes the files
   Clean();
   fIsLoaded = kFALSE;
   GetDataLoader()->CloseFile();
@@ -919,6 +951,7 @@ void AliBaseLoader::Unload()
 /*****************************************************************************/ 
 AliDataLoader* AliBaseLoader::GetDataLoader() const
 {
+  // Returns pointer to the data loader
  if (fDataLoader == 0x0) 
   {
     Fatal("GetDataLoader","Pointer to Data Loader is NULL");
@@ -929,10 +962,11 @@ AliDataLoader* AliBaseLoader::GetDataLoader() const
 
 Int_t AliBaseLoader::GetDebug() const 
 { 
- return (Int_t)AliLoader::fgDebug;
+  // Returns debug level
+ return (Int_t)AliLoader::GetDebug();
 }
 
-TDirectory* AliBaseLoader::GetDirectory()
+TDirectory* AliBaseLoader::GetDirectory() const
 {
  // returnd TDirectory where data are to be saved
  //if fStoreInTopOfFile flag is true - returns pointer to file
@@ -960,6 +994,7 @@ AliObjectLoader::AliObjectLoader(const TString& name, AliDataLoader* dl, Bool_t 
 
 TFolder* AliObjectLoader::GetFolder() const
 {
+  // Returns pointer to the object folder
   TFolder* df = GetDataLoader()->GetFolder();
   if (df == 0x0)
    {
@@ -968,14 +1003,28 @@ TFolder* AliObjectLoader::GetFolder() const
   return df;
 }
 /*****************************************************************************/ 
+AliObjectLoader::AliObjectLoader(const AliObjectLoader& source):
+  AliBaseLoader(source) {
+  // copy constructor
+  Fatal("AliObjectLoader","Copy constructor not implemented");
+}
+/*****************************************************************************/ 
+AliObjectLoader& AliObjectLoader::operator=(const AliObjectLoader& /*source*/) {
+  // Assignment operator
+  Fatal("AliObjectLoader","Assignment operator not implemented");
+  return *this;
+}
+/*****************************************************************************/ 
 
 void AliObjectLoader::RemoveFromBoard(TObject* obj)
 {
+  // Removes "obj" from the board
   GetFolder()->Remove(obj);
 }
 /*****************************************************************************/ 
 Int_t AliObjectLoader::AddToBoard(TObject* obj)
 {
+  // Adds "obj" to the board
   GetFolder()->Add(obj);
   return 0;
 }
@@ -983,6 +1032,7 @@ Int_t AliObjectLoader::AddToBoard(TObject* obj)
 
 TObject* AliObjectLoader::Get() const
 {
+  // Returns pointer to the object loader
   return (GetFolder()) ? GetFolder()->FindObject(GetName()) : 0x0;
 }
 
@@ -1003,6 +1053,18 @@ AliTreeLoader::AliTreeLoader(const TString& name, AliDataLoader* dl,Bool_t store
  AliObjectLoader(name,dl,storeontop)
 {
 //constructor
+}
+/*****************************************************************************/ 
+AliTreeLoader::AliTreeLoader(const AliTreeLoader& source):
+  AliObjectLoader(source) {
+  // copy constructor
+  Fatal("AliTreeLoader","Copy constructor not implemented");
+}
+/*****************************************************************************/ 
+AliTreeLoader& AliTreeLoader::operator=(const AliTreeLoader& /*source*/) {
+  // Assignment operator
+  Fatal("AliTreeLoader","Assignment operator not implemented");
+  return *this;
 }
 
 /*****************************************************************************/ 
@@ -1123,15 +1185,29 @@ AliTaskLoader::AliTaskLoader(const TString& name, AliDataLoader* dl, TTask* pare
 }
 
 /*****************************************************************************/ 
+AliTaskLoader::AliTaskLoader(const AliTaskLoader& source):
+  AliBaseLoader(source) {
+  // copy constructor
+  Fatal("AliTaskLoader","Copy constructor not implemented");
+}
+/*****************************************************************************/ 
+AliTaskLoader& AliTaskLoader::operator=(const AliTaskLoader& /*source*/) {
+  // Assignment operator
+  Fatal("AliTaskLoader","Assignment operator not implemented");
+  return *this;
+}
+/*****************************************************************************/ 
 
 void AliTaskLoader::RemoveFromBoard(TObject* obj)
 {
+  // Removes the task "obj" from the board
   GetParentalTask()->GetListOfTasks()->Remove(obj);
 }
 /*****************************************************************************/ 
 
 Int_t AliTaskLoader::AddToBoard(TObject* obj)
 {
+  // Adds task "obj" to the board
   TTask* task = dynamic_cast<TTask*>(obj);
   if (task == 0x0)
    {
@@ -1145,6 +1221,7 @@ Int_t AliTaskLoader::AddToBoard(TObject* obj)
 
 TObject* AliTaskLoader::Get() const
 {
+  // Returns pointer to the current task
   return (GetParentalTask()) ? GetParentalTask()->GetListOfTasks()->FindObject(GetName()) : 0x0;
 }
 /*****************************************************************************/ 

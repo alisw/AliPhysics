@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// This class is extracted from the AliRun class
+// and contains all the MC-related functionality
+// The number of dependencies has to be reduced...
+// Author: F.Carminati
+//         Federico.Carminati@cern.ch
+
 #include <TBrowser.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
@@ -48,6 +54,7 @@ AliMC::AliMC() :
   fTrackReferences(0)
 
 {
+  //default constructor
 }
 
 //_______________________________________________________________________
@@ -65,7 +72,7 @@ AliMC::AliMC(const char *name, const char *title) :
   fHitLists(new TList()),
   fTrackReferences(new TClonesArray("AliTrackReference", 100))
 {
-
+  //constructor
   // Set transport parameters
   SetTransPar();
 
@@ -98,6 +105,7 @@ AliMC::AliMC(const AliMC &mc) :
 //_______________________________________________________________________
 AliMC::~AliMC()
 {
+  //destructor
   delete fGenerator;
   delete fImedia;
   delete fMCQA;
@@ -114,6 +122,7 @@ AliMC::~AliMC()
 //_______________________________________________________________________
 void AliMC::Copy(AliMC &) const
 {
+  //dummy Copy function
   Fatal("Copy","Not implemented!\n");
 }
 
@@ -224,6 +233,7 @@ void AliMC::BeginPrimary()
 //_______________________________________________________________________
 void AliMC::PreTrack()
 {
+  // Actions before the track's transport
      TObjArray &dets = *gAlice->Modules();
      AliModule *module;
 
@@ -432,6 +442,7 @@ void AliMC::ResetHits()
 //_______________________________________________________________________
 void AliMC::PostTrack()
 {
+  // Posts tracks for each module
      TObjArray &dets = *gAlice->Modules();
      AliModule *module;
 
@@ -543,12 +554,14 @@ void AliMC::FinishEvent()
 //_______________________________________________________________________
 void AliMC::Field(const Double_t* x, Double_t* b) const
 {
+  // Calculates field "b" at point "x"
     gAlice->Field(x,b);
 }
     
 //_______________________________________________________________________
 void AliMC::Init()
 {
+  // MC initialization
 
    //=================Create Materials and geometry
    gMC->Init();
@@ -847,6 +860,8 @@ Int_t AliMC::GetPrimary(Int_t track) const
 //_______________________________________________________________________
 TParticle* AliMC::Particle(Int_t i) const
 {
+  // Returns the i-th particle from the stack taking into account
+  // the remaping done by PurifyKine
   AliRunLoader * runloader = gAlice->GetRunLoader();
   if (runloader)
    if (runloader->Stack())
