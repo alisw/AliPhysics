@@ -16,8 +16,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
 		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
 		AliGenGSIlib.cxx \
-	        AliGenHijing.cxx
-#		AliGenEventHeader.cxx AliGenHijingEventHeader.cxx \
+	        AliGenHijing.cxx \
+		AliGenEventHeader.cxx AliGenHijingEventHeader.cxx 
 # C++ Headers
 
 HDRS          = $(SRCS:.cxx=.h) EVGENLinkDef.h
