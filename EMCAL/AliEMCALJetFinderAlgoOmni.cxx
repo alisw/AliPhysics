@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.9  2004/02/23 20:37:32  mhorner
+changed geometry call
+
 Revision 1.8  2004/01/29 23:28:44  mhorner
 Jet Finder - hard coded geom parameters removed
 
@@ -184,7 +187,8 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	 numDigits = fInputPointer->GetNDigits();
 	 TParticle         *myPart;
 	 AliEMCALDigit     *myDigit;
-
+     if (!fPythiaComparison)
+     {
 	 //Fill units with Track info if appropriate
 	 if(option==kFillTracksOnly || option ==kFillAll) 
 	   {          
@@ -302,6 +306,41 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	     //	     if(i>13000) cout<<"!!!!!!!!!!!!!!!!!For unit0, eta="<<eta<<" and phi="<<phi*TMath::Pi()/180.0<<" and ID="<<fUnit[i].GetUnitID()<<endl;
 	     //  if(fUnit[i].GetUnitEnergy()>0) cout<<"Unit ID "<<fUnit[i].GetUnitID() <<"with eta="<<eta<<" and phi="<<phi*TMath::Pi()/180.0<<" has energy="<<fUnit[i].GetUnitEnergy()<<endl;
 	   }//end loop over all units in array (same as all towers in EMCAL)
+
+     }
+     if (fPythiaComparison)
+     {
+	     for(Int_t j=0; j<numTracks; j++)		                 
+	     {
+		     myPart = fInputPointer->GetTrack(j);
+		     fUnit[j].SetUnitID(j);
+		     fUnit[j].SetUnitFlag(kOutJet);
+		     fUnit[j].SetUnitEta(myPart->Eta());
+		     fUnit[j].SetUnitPhi(myPart->Phi());
+		     fUnit[j].SetUnitEnergy(myPart->Energy()*TMath::Sin(myPart->Theta()));
+		     fUnitNoCuts[j].SetUnitID(j);
+		     fUnitNoCuts[j].SetUnitFlag(kOutJet);
+		     fUnitNoCuts[j].SetUnitEta(myPart->Eta());
+		     fUnitNoCuts[j].SetUnitPhi(myPart->Phi());
+		     fUnitNoCuts[j].SetUnitEnergy(myPart->Energy()*TMath::Sin(myPart->Theta()));
+	     }
+	     for(Int_t k=numTracks; k < fNumUnits; k++)
+	     {
+		     fUnit[k].SetUnitID(k);
+		     fUnit[k].SetUnitFlag(kOutJet);
+		     fUnit[k].SetUnitEta(0.0);
+		     fUnit[k].SetUnitPhi(0.0);
+		     fUnit[k].SetUnitEnergy(0.0);		     
+		     fUnitNoCuts[k].SetUnitID(k);
+		     fUnitNoCuts[k].SetUnitFlag(kOutJet);
+		     fUnitNoCuts[k].SetUnitEta(0.0);
+		     fUnitNoCuts[k].SetUnitPhi(0.0);
+		     fUnitNoCuts[k].SetUnitEnergy(0.0);		          
+	     }
+     }
+
+
+
    }
 
 
@@ -471,7 +510,14 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	 //Loop over all unit objects in the array and find if within cone radius
 	 Float_t dEta = fUnit[i].GetUnitEta() - fJetEta;
 	 Float_t dPhi = fUnit[i].GetUnitPhi() - fJetPhi;
-	 Float_t rad = TMath::Sqrt( (dEta*dEta) + (dPhi*dPhi) );
+	 Float_t rad;
+	 if ((dEta*dEta) + (dPhi*dPhi)>1.e-7)
+	 {
+ 		 rad = TMath::Sqrt( (dEta*dEta) + (dPhi*dPhi) );
+	 }else
+	 {
+		 rad=0.0;
+	 }
 
 	 if(fUnit[i].GetUnitFlag()==kOutJet && rad<= fConeRad)
 	   {
@@ -542,7 +588,15 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
          Float_t phi = myP->Phi(); 
 	 Float_t deta = fJetEta-eta;
 	 Float_t dphi = fJetPhi -phi;
-	 Float_t rad = TMath::Sqrt( (deta*deta) + (dphi*dphi));
+	 Float_t rad ;
+	 if ((deta*deta) + (dphi*dphi)>1.e-7)
+	 {
+ 		 rad = TMath::Sqrt( (deta*deta) + (dphi*dphi) );
+	 }else
+	 {
+		 rad=0.0;
+	 }
+
 	 if(rad<=fConeRad)
 	   {
 	     pTArray[index] = myP->Pt();
@@ -575,7 +629,16 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	 geom->EtaPhiFromIndex(iID, eta, phi);
 	 Float_t deta = fJetEta-eta;
 	 Float_t dphi = fJetPhi -(TMath::Pi()/180.0)*phi;
-	 Float_t rad = TMath::Sqrt( (deta*deta) + (dphi*dphi));
+	 //Float_t rad = TMath::Sqrt( (deta*deta) + (dphi*dphi));
+	 Float_t rad ;
+	 if ((deta*deta) + (dphi*dphi)>1.e-7)
+	 {
+ 		 rad = TMath::Sqrt( (deta*deta) + (dphi*dphi) );
+	 }else
+	 {
+		 rad=0.0;
+	 }
+
 	 if(rad<=fConeRad)
 	   {
 	 Int_t amplitude = myD->GetAmp();     //Gets the integer valued amplitude of the digit
@@ -692,7 +755,13 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 			   {
 			     fDEta = fUnit[count1].GetUnitEta() - fJetEta;
 			     fDPhi = fUnit[count1].GetUnitPhi() - fJetPhi;
-			     fRad = TMath::Sqrt( (fDEta*fDEta) + (fDPhi*fDPhi) );
+			     if ( (fDEta*fDEta) + (fDPhi*fDPhi) >1.e-7)
+			     {
+				     fRad = TMath::Sqrt( (fDEta*fDEta) + (fDPhi*fDPhi) );
+			     }else
+			     {
+				     fRad=0.000;
+			     }
 			     if(fRad <= fConeRad)
 			       {
 				 FindJetEtaPhi(count1); 
@@ -702,14 +771,26 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 			     
 		      //Find the distance cone centre moved from previous cone centre
 		      if (fDebug>10) Info("FindJets","Checking if cone move small enough");
-		      fDistP = TMath::Sqrt( ((fJetEta-fEtaB)*(fJetEta-fEtaB)) + ((fJetPhi-fPhiB)*(fJetPhi-fPhiB)) );
+		      if (((fJetEta-fEtaB)*(fJetEta-fEtaB)) + ((fJetPhi-fPhiB)*(fJetPhi-fPhiB))  >1.e-7)
+		      {
+			      fDistP = TMath::Sqrt( ((fJetEta-fEtaB)*(fJetEta-fEtaB)) + ((fJetPhi-fPhiB)*(fJetPhi-fPhiB)) );
+		      }else
+		      {
+			      fDistP = 0.00;
+		      }
 		      //     if(fDistP <= fMinMove) break;
 			     
 
 		      //Find the distance cone centre is from initiator cell
 		      if (fDebug>10) Info("FindJets","Checking if cone move too large");
-		      fDistI = TMath::Sqrt( ((fJetEtaSum/fJetESum)*(fJetEtaSum/fJetESum)) + ((fJetPhiSum/fJetESum)*
+		      if ( ((fJetEtaSum)*(fJetEtaSum))+((fJetPhiSum)*(fJetPhiSum)) >1.e-4)
+		      {
+			      fDistI = TMath::Sqrt( ((fJetEtaSum/fJetESum)*(fJetEtaSum/fJetESum)) + ((fJetPhiSum/fJetESum)*
 												    (fJetPhiSum/fJetESum)));
+		      }else
+		      {
+			      fDistI = 0.00;
+		      }
 
 		      if(fDistP>fMinMove && fDistI<fMaxMove)
 			{
