@@ -7,7 +7,7 @@
 
 //-------------------------------------------------------------------------
 //                          class AliTracker
-//
+//   that is the base for AliTPCtracker, AliITStrackerV2 and AliTRDtracker
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <Rtypes.h>
@@ -34,6 +34,10 @@ public:
   Double_t GetZ() const {return fZ;}
   Int_t GetEventNumber() const {return fEventN;}
 
+  static Int_t SetFieldFactor(Char_t* fileName, Bool_t closeFile = kTRUE);
+  static Int_t SetFieldFactor(TFile* file, Bool_t deletegAlice = kTRUE);
+  static Int_t SetFieldFactor();
+  
 private:
   Int_t fEventN;//event number
 

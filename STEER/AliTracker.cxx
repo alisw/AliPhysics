@@ -26,6 +26,14 @@
 #include "AliTracker.h"
 #include "AliCluster.h"
 #include "AliKalmanTrack.h"
+#include "AliRun.h"
+#include "AliMagF.h"
+
+#include "TFile.h"
+#include "Riostream.h"
+
+
+extern AliRun* gAlice;
 
 ClassImp(AliTracker)
 
@@ -86,4 +94,44 @@ void AliTracker::UseClusters(const AliKalmanTrack *t, Int_t from) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////////
+Int_t AliTracker::SetFieldFactor() {
+//
+// Utility class to set the value of the magnetic field in the barrel
+// It supposes that the correct object gAlice is in the memory
+//
+   AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+   cout<<"Magnetic field in kGauss: "<<gAlice->Field()->SolenoidField()<<endl;
+   return 0;
+}
+////////////////////////////////////////////////////////////////////////
+Int_t AliTracker::SetFieldFactor(TFile *file, Bool_t deletegAlice) {
+//
+// Utility class to set the value of the magnetic field in the barrel
+// gAlice object is read from the file, and optionally deleted
+// 
+  if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
+    cerr<<"gAlice has not been found in file "<<file->GetName();
+    return 1;
+  }   
+  Int_t rc = SetFieldFactor();
+  if (deletegAlice) {
+    delete gAlice;  
+    gAlice = 0;
+  }
+  return rc;
+}
+////////////////////////////////////////////////////////////////////////
+Int_t AliTracker::SetFieldFactor(Char_t* fileName, Bool_t closeFile) {
+//
+// Utility class to set the value of the magnetic field in the barrel
+// gAlice object is read from the file, the file is optionally closed
+// 
+   TFile *file=TFile::Open(fileName);
+   if (!file->IsOpen()) {cerr<<"Cannnot open "<<fileName<<" !\n"; return 1;}
+   Int_t rc = SetFieldFactor(file, closeFile) ;
+   if (closeFile) file->Close();
+   return rc;
+}
+////////////////////////////////////////////////////////////////////////
 
