@@ -610,13 +610,13 @@ void AliPHOSAnalyze::DisplayRecPoints()
 	{  
 	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
 	  if (relid[0] == module)  
-	    { 
-	      if (energy > 0.025 ){
-	      nDigits++ ;
+	    {  
 	      energy = fClu->Calibrate(digit->GetAmp()) ;
-	      etot += energy ; 
-	      fGeom->RelPosInModule(relid,y,z) ;   
-	      hModule->Fill(y, z, energy) ;
+	      if (energy > 0.025 ){
+		nDigits++ ;
+		etot += energy ; 
+		fGeom->RelPosInModule(relid,y,z) ;   
+		hModule->Fill(y, z, energy) ;
 	      }
 	    } 
 	}
