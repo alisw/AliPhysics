@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2003/01/15 19:05:44  morsch
+Updated selection in ReadFromTracks()
+
 Revision 1.35  2003/01/15 04:59:38  morsch
 - TPC eff. from AliEMCALFast
 - Correction in PropagatePhi()
@@ -349,6 +352,8 @@ void AliEMCALJetFinder::Init()
     fDphi    = (fPhiMax-fPhiMin)/fNbinPhi;
     fDeta    = (fEtaMax-fEtaMin)/fNbinEta;
     fNtot    = fNbinPhi*fNbinEta;
+    fWeightingMethod = kFALSE;
+
 //
     SetCellSize(fDeta, fDphi);
 //
@@ -380,7 +385,6 @@ void AliEMCALJetFinder::Find()
     Int_t   mode     = fMode;
     Float_t prec_bg  = fPrecBg;
     Int_t   ierror;
-
     ResetJets(); // 4-feb-2002 by PAI
 
     jet_finder_ua1(fNcell, fNtot, fEtCell, fEtaCell, fPhiCell, 
@@ -391,10 +395,23 @@ void AliEMCALJetFinder::Find()
     
     for (Int_t nj=0; nj<njet; nj++)
     {
-	
+	if (fWeightingMethod)
+	{
+          fJetT[nj] = new AliEMCALJet(WeightedJetEnergy( JetEtaW(nj),JetPhiW(nj) ),
+                                      JetPhiW(nj),
+                                      JetEtaW(nj));
+
+	}else{
+		
 	fJetT[nj] = new AliEMCALJet(JetEnergy(nj),
 				    JetPhiW(nj),
 				    JetEtaW(nj));
+	}
+        fJetT[nj]->SetIsWeightedEnergy(fWeightingMethod); 
+        fJetT[nj]->SetEMCALEnergy( EMCALConeEnergy(JetEtaW(nj),JetPhiW(nj)) ); 
+        fJetT[nj]->SetTrackEnergy(TrackConeEnergy( JetEtaW(nj),JetPhiW(nj)  )); 
+        fJetT[nj]->SetHCEnergy(HCConeEnergy( JetEtaW(nj),JetPhiW(nj)  )); 
+	
     }
 
     FindTracksInJetCone();
@@ -402,6 +419,103 @@ void AliEMCALJetFinder::Find()
     fEvent++;
 }
 
+
+Float_t AliEMCALJetFinder::EMCALConeEnergy(Float_t eta, Float_t phi)
+{
+Float_t newenergy = 0.0;
+Float_t bineta,binphi;
+TAxis *x = fhLegoEMCAL->GetXaxis();
+TAxis *y = fhLegoEMCAL->GetYaxis();
+for (Int_t i = 0 ; i < fNbinEta  ; i++) // x coord
+	{
+   for (Int_t j = 0 ; j < fNbinPhi  ; j++)  // y coord
+      {
+         bineta = x->GetBinCenter(i);
+         binphi = y->GetBinCenter(j);
+       if ( (bineta-eta)*(bineta-eta) + (binphi-phi)*(binphi-phi) < fConeRadius*fConeRadius)
+      {
+           newenergy += fhLegoEMCAL->GetBinContent(i,j);
+      }
+    }
+}
+return newenergy;
+}	
+
+Float_t AliEMCALJetFinder::TrackConeEnergy(Float_t eta, Float_t phi)
+{
+Float_t newenergy = 0.0;
+Float_t bineta,binphi;
+TAxis *x = fhLegoTracks->GetXaxis();
+TAxis *y = fhLegoTracks->GetYaxis();
+for (Int_t i = 0 ; i < fNbinEta  ; i++) // x coord
+   {
+   for (Int_t j = 0 ; j < fNbinPhi  ; j++)  // y coord
+   {
+    bineta = x->GetBinCenter(i);
+    binphi = y->GetBinCenter(j);
+    if ( (bineta-eta)*(bineta-eta) + (binphi-phi)*(binphi-phi) < fConeRadius*fConeRadius)
+      {
+          newenergy += fhLegoTracks->GetBinContent(i,j);
+       }
+    }
+}
+return newenergy;
+}
+
+Float_t AliEMCALJetFinder::HCConeEnergy(Float_t eta, Float_t phi)
+{
+//Float_t newenergy = 0.0;
+//Float_t bineta,binphi;
+//TAxis *x = fhLegoTracks->GetXaxis();
+//TAxis *y = fhLegoTracks->GetYaxis();
+//for (Int_t i = 0 ; i < fNbinEta  ; i++) // x coord
+//   {
+//      for (Int_t j = 0 ; j < fNbinPhi  ; j++)  // y coord
+//      {
+//        bineta = x->GetBinCenter(i);
+//        binphi = y->GetBinCenter(j);
+//        if ( (bineta-eta)*(bineta-eta) + (binphi-phi)*(binphi-phi) < fConeRadius*fConeRadius)
+//        {
+//            newenergy += fhLegoTracks->GetBinContent(i,j);
+//         }
+//    }
+//}
+//return newenergy;
+	
+return 0.0;	
+	
+}
+
+
+
+Float_t AliEMCALJetFinder::WeightedJetEnergy(Float_t eta, Float_t phi)
+{
+
+
+Float_t newenergy = 0.0;
+Float_t bineta,binphi;
+TAxis *x = fhLegoEMCAL->GetXaxis();
+TAxis *y = fhLegoEMCAL->GetYaxis();
+
+
+for (Int_t i = 0 ; i < fNbinEta  ; i++) // x coord
+{
+   for (Int_t j = 0 ; j < fNbinPhi  ; j++)  // y coord
+   {
+      bineta = x->GetBinCenter(i);
+      binphi = y->GetBinCenter(j);
+      if ( (bineta-eta)*(bineta-eta) + (binphi-phi)*(binphi-phi) < fConeRadius*fConeRadius)
+      {
+          newenergy += (fEMCALWeight)* fhLegoEMCAL->GetBinContent(i,j) + (fTrackWeight)* fhLegoTracks->GetBinContent(i,j);
+      }
+    }
+}
+
+return newenergy;
+
+}
+
+	
 Int_t AliEMCALJetFinder::Njets()
 {
 // Get number of reconstructed jets
@@ -779,7 +893,12 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 			mpart != kK0Long) continue;
 		}
 	    }
+	} else if (ich == 2) {
+	  if (mpart == kNeutron    ||
+	      mpart == kNeutronBar ||
+	      mpart == kK0Long) continue;
 	}
+
 	if (TMath::Abs(eta)<=0.9) fNChTpc++;
 // final state only
 	if (child1 >= 0 && child1 < npart) continue;
@@ -808,7 +927,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 // Tracking Efficiency and TPC acceptance goes here ...
 	Float_t eff;
 	if (fEffic && TMath::Abs(chTmp)) {
-	    eff =  AliEMCALFast::Efficiency(2,p);
+	    eff = 0.9; //  AliEMCALFast::Efficiency(2,p);
             if(fhEff) fhEff->Fill(p, eff);
 	    if (AliEMCALFast::RandomReject(eff)) {
 		if(fDebug >= 5) printf(" reject due to unefficiency ");
@@ -843,8 +962,13 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 		
 		if (fDebug >= 7) printf(" phi %f phiHC %f eTcorr %f\n", 
 					phi, phiHC, -eTdpH); // correction is negative
-		fLego->Fill(eta, phiHC, -eTdpH );
-		fhLegoHadrCorr->Fill(eta, phiHC, eTdpH);
+		Int_t xbin,ybin;
+		xbin = fLego->GetXaxis()->FindBin(eta);
+		ybin = fLego->GetYaxis()->FindBin(phiHC);
+		cout <<"Hadron Correction affected bin - contents before correction : "<<fLego->GetBinContent(xbin,ybin)<<endl;
+		fLego->Fill(eta, phi, -fSamplingF*eTdpH );
+		cout <<"Hadron Correction affected bin - contents after  correction : "<<fLego->GetBinContent(xbin,ybin)<<endl;
+		fhLegoHadrCorr->Fill(eta, phi, fSamplingF*eTdpH);
 	    }
         }
 //
@@ -861,7 +985,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 		fTrackList[part] = 1;
 		fNtS++;
 	    }
-	} else if(ich == 1 || fK0N) {
+	} else if(ich > 0 || fK0N) {
 	    // case of n, nbar and K0L
 	    if (fDebug >= 9) printf("Neutral :  fLego->Fill(%5.2f, %5.2f, %6.2f, %d)\n",
 				    eta , phi, pT, fNtS); 
@@ -1545,7 +1669,7 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 //
   static Float_t b = 0.0, rEMCAL = -1.0;
 // Get field in kGS
-  b =  gAlice->Field()->SolenoidField();
+  b = gAlice->Field()->SolenoidField();
 // Get EMCAL radius in cm 
   rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
   Float_t dPhi = 0.;
