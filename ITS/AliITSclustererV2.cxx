@@ -36,8 +36,7 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
 
   Int_t mmax=geom->GetIndexMax();
   if (mmax>2200) {
-     Error("AliITSclustererV2","Too many ITS subdetectors !"); 
-     exit(1);
+     Fatal("AliITSclustererV2","Too many ITS subdetectors !"); 
   }
   Int_t m;
   for (m=0; m<mmax; m++) {
