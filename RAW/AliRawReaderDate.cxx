@@ -302,6 +302,7 @@ Bool_t AliRawReaderDate::ReadHeader()
   fErrorCode = 0;
 
 #ifdef ALI_DATE
+  fHeader = NULL;
   if (!fEvent) return kFALSE;
   // check whether there are sub events
   if (fEvent->eventSize <= fEvent->eventHeadSize) return kFALSE;
@@ -312,6 +313,7 @@ Bool_t AliRawReaderDate::ReadHeader()
 
     // get the first or the next equipment if at the end of an equipment
     if (!fEquipment || (fPosition >= fEnd)) {
+      fEquipment = NULL;
 
       // get the first or the next sub event if at the end of a sub event
       if (!fSubEvent || 
@@ -338,6 +340,13 @@ Bool_t AliRawReaderDate::ReadHeader()
 	  return kFALSE;
 	}
 
+	// continue if no data in the subevent
+	if (fSubEvent->eventSize == fSubEvent->eventHeadSize) {
+	  fPosition = fEnd = ((UChar_t*)fSubEvent) + fSubEvent->eventSize;
+	  fCount = 0;
+	  continue;
+	}
+
 	fEquipment = (equipmentHeaderStruct*)
 	  (((UChar_t*)fSubEvent) + fSubEvent->eventHeadSize);
 
@@ -347,13 +356,16 @@ Bool_t AliRawReaderDate::ReadHeader()
 
       fCount = 0;
       fPosition = ((UChar_t*)fEquipment) + sizeof(equipmentHeaderStruct);
-      fEnd = fPosition + fEquipment->equipmentSize;
+      if (fSubEvent->eventVersion <= 0x00030002) {
+        fEnd = fPosition + fEquipment->equipmentSize;
+      } else {
+        fEnd = ((UChar_t*)fEquipment) + fEquipment->equipmentSize;
+      }
     }
 
     // continue with the next sub event if no data left in the payload
     if (fPosition >= fEnd) continue;
 
-    fHeader = NULL;
     if (fRequireHeader) {
       // check that there are enough bytes left for the data header
       if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
@@ -395,7 +407,7 @@ Bool_t AliRawReaderDate::ReadHeader()
       fCount = fEnd - fPosition;
     }
 
-  } while (!IsSelected());
+  } while (!fEquipment || !IsSelected());
 
   return kTRUE;
 #else
