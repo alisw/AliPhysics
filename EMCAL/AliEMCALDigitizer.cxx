@@ -120,7 +120,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   SetTitle("aliroot") ;  
   fDefaultInit = kFALSE ; 
   
-  fSDigitsFileName = GetInputFileName(0, 0) ;
+  fSDigitsFileName = fManager->GetInputFileName(0, 0) ;
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance(fSDigitsFileName, GetName()) ; 
   gime->Event(0,"S") ; 
   fHitsFileName = gime->SDigitizer()->GetTitle() ; 
@@ -565,10 +565,10 @@ void AliEMCALDigitizer::Print(Option_t* option)const {
     if (nStreams) {
       Int_t index = 0 ;  
       for (index = 0 ; index < nStreams ; index++)  
-	cout << "Adding SDigits " << GetName() << " from " <<  GetInputFileName(index, 0) << endl ; 
+	cout << "Adding SDigits " << GetName() << " from " <<  fManager->GetInputFileName(index, 0) << endl ; 
       
       cout << endl ;
-      cout << "Writing digits to " <<   GetInputFileName(0, 0) << endl ;   
+      cout << "Writing digits to " <<   fManager->GetInputFileName(0, 0) << endl ;   
     } else { 
 //       AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
 //       gime->Folder("sdigits")  ;

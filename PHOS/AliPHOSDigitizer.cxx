@@ -123,7 +123,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   InitParameters() ; 
   fDefaultInit = kTRUE ; 
   
-  fSDigitsFileName = GetInputFileName(0, 0) ;
+  fSDigitsFileName = fManager->GetInputFileName(0, 0) ;
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(fSDigitsFileName, GetName()) ; 
   gime->Event(0,"S") ; 
   fHitsFileName = gime->SDigitizer()->GetTitle() ; 
@@ -679,10 +679,10 @@ void AliPHOSDigitizer::Print(Option_t* option)const {
     if (nStreams) {
       Int_t index = 0 ;  
       for (index = 0 ; index < nStreams ; index++)  
-	cout << "Adding SDigits " << GetName() << " from " <<  GetInputFileName(index, 0) << endl ; 
+	cout << "Adding SDigits " << GetName() << " from " <<  fManager->GetInputFileName(index, 0) << endl ; 
       
       cout << endl ;
-      cout << "Writing digits to " <<   GetInputFileName(0, 0) << endl ;   
+      cout << "Writing digits to " <<   fManager->GetInputFileName(0, 0) << endl ;   
     } else { 
 //       AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
 //       gime->Folder("sdigits")  ;
