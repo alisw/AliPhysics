@@ -51,6 +51,9 @@ void simu(Int_t nevents=1, TString opt="GSD", TString name="all")
   //Merging
   if ( opt.Contains("M") )
     sim.MergeWith("bgrd/galice.root") ;  
-  // to implement 
+  //Region of Interest
+  sim.SetRegionOfInterest(kFALSE) ; 
+  if ( opt.Contains("W") )
+     sim.SetWriteRawData(name.Data()) ;
   sim.Run(nevents) ;    
 }
