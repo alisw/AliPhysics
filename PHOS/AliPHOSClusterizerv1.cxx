@@ -665,6 +665,9 @@ void AliPHOSClusterizerv1::MakeUnfolding()
         fNumberOfEmcClusters -- ;
         numberofNotUnfolded-- ;
       }
+      else{
+        emcRecPoint->SetNExMax(1) ; //Only one local maximum
+      }
       
       delete[] maxAt ; 
       delete[] maxAtEnergy ; 
@@ -745,6 +748,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
   Bool_t rv = FindFit(iniEmc, maxAt, maxAtEnergy, nPar, fitparameters) ;
   if( !rv ) {
     // Fit failed, return and remove cluster
+    iniEmc->SetNExMax(-1) ;
     delete[] fitparameters ; 
     return ;
   }
@@ -806,6 +810,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
       (*emcRecPoints)[fNumberOfEmcClusters] = new AliPHOSEmcRecPoint("") ;
       emcRP = dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(fNumberOfEmcClusters) ) ;
       fNumberOfEmcClusters++ ;
+      emcRP->SetNExMax((Int_t)nPar/3) ;
     }
     else{//create new entries in fCpvRecPoints
       if(fNumberOfCpvClusters >= cpvRecPoints->GetSize())
