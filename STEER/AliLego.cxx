@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/05/30 12:18:13  morsch
+Fastidious printf commented.
+
 Revision 1.25  2001/05/23 11:59:46  morsch
 Use RemoveAt method instead of delete to remove objects from TClonesArray.
 
@@ -437,12 +440,13 @@ void AliLego::DumpVolumes()
     {
 	AliDebugVolume* tmp1 = (AliDebugVolume*) (*fVolumesFwd)[i];
 	AliDebugVolume* tmp2 = (AliDebugVolume*) (*fVolumesBwd)[i];
-	printf("\n Volume Fwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s\n"
+	if (tmp1)
+	printf("\n Volume Fwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s \n"
 	       , i, 
 	       tmp1->GetName(), tmp1->CopyNumber(), tmp1->Step(), 
 	       tmp1->X(), tmp1->Y(), tmp1->Z(), tmp1->Status());
-	
-	printf("\n Volume Bwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s\n"
+	if (tmp2 && i>= fStepsBackward)
+	printf("\n Volume Bwd: %3d: %5s (%3d) step: %12.5e (x,y,z) (%12.5e %12.5e %12.5e) status: %9s \n"
 	       , i, 
 	       tmp2->GetName(), tmp2->CopyNumber(), tmp2->Step(), 
 	       tmp2->X(), tmp2->Y(), tmp2->Z(), tmp2->Status());
