@@ -13,7 +13,9 @@ AliDetConstruction::AliDetConstruction()
   : fTopVolumeName("ALIC")
 {
   // initialize det switch vector: 
-  // moduleName nofVersions defaultVersion [type isStandalone] 
+  // moduleName nofVersions defaultVersion [type isStandalone]     
+        // det switch objects are deleted in
+	// tbe base class (AliModulesCompositions) destructor
 
   AliDetSwitch* detSwitch;
   detSwitch = new AliDetSwitch("ABSO",   1, 0, kStructure);
