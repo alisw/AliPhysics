@@ -173,7 +173,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
      ogime->MakeTree("D");
      tree  = ogime->TreeD();
    }
-  TBranch* branch = tree->Branch("Segment","AliSimDigits",&digrow);
+  tree->Branch("Segment","AliSimDigits",&digrow);
   //
 
   param->SetZeroSup(2);
@@ -283,7 +283,6 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     
     digrow->CompresBuffer(1,zerosup);
     digrow->CompresTrackBuffer(1);
-    branch->SetAddress(&digrow);
     tree->Fill();
     if (fDebug>0) cerr<<sec<<"\t"<<row<<"\n";  
    } //for (Int_t n=0; n<param->GetNRowsTotal(); n++) 
