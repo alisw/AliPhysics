@@ -23,15 +23,23 @@ protected:
   Int_t    (*fIpParaFunc )();    //! Pointer to particle type parametrisation function
     TF1* fPtPara;
     TF1* fYPara;
-    Param_t     fParam;
-    Float_t     fdNdy0;
-    Float_t     fYWgt;
-    Float_t     fPtWgt;
-    Weighting_t fAnalog;       //Flaf for anolog or pt-weighted generation
-    Float_t     fBias;
-    Int_t       fTrials;
-    Decay_t     fForceDecay;
-    Int_t       fCutOnChild;
+    Param_t     fParam;        // Parameterisation type 
+    Float_t     fdNdy0;        // central multiplicity per event
+    Float_t     fYWgt;         // Y-weight
+    Float_t     fPtWgt;        // Pt-weight
+    Weighting_t fAnalog;       // Flag for anolog or pt-weighted generation
+    Float_t     fBias;         // Biasing factor
+    Int_t       fTrials;       // Number of trials
+    Decay_t     fForceDecay;   // Decay channel forced
+    Int_t       fCutOnChild;   // Cuts on decay products (children)  are enabled/disabled
+    Float_t     fChildPtMin;   // Children minimum pT
+    Float_t     fChildPtMax;   // Children maximum pT
+    Float_t     fChildPMin;    // Children minimum p
+    Float_t     fChildPMax;    // Children maximum p
+    Float_t     fChildPhiMin;  // Children minimum phi
+    Float_t     fChildPhiMax;  // Children maximum phi
+    Float_t     fChildThetaMin;// Children minimum theta
+    Float_t     fChildThetaMax;// Children maximum theta
     TArrayI   fChildSelect;
     AliPythia *fPythia;
  private:
@@ -55,6 +63,16 @@ protected:
   virtual void SetForceDecay(Decay_t decay=dimuon) {fForceDecay=decay;}
   virtual void SetWeighting(Weighting_t flag=analog) {fAnalog=flag;}	
   virtual void SetCutOnChild(Int_t flag=0) {fCutOnChild=flag;}
+  virtual void SetChildMomentumRange(Float_t pmin=0, Float_t pmax=1.e10)
+      {fChildPMin = pmin; fChildPMax = pmax;}
+  virtual void SetChildPtRange(Float_t ptmin=0, Float_t ptmax=20.)
+      {fChildPtMin = ptmin; fChildPtMax = ptmax;}
+  virtual void SetChildPhiRange(Float_t phimin=-180., Float_t phimax=180)
+      {fChildPhiMin = TMath::Pi()*phimin/180;
+      fChildPhiMax = TMath::Pi()*phimax/180;}
+  virtual void SetChildThetaRange(Float_t thetamin=0, Float_t thetamax=180)
+      {fChildThetaMin = TMath::Pi()*thetamin/180;
+      fChildThetaMax = TMath::Pi()*thetamax/180;}
   ClassDef(AliGenParam,1) // Generator using parameterised pt- and y-distribution
 };
 #endif
