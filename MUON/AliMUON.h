@@ -156,8 +156,8 @@ class AliMUON : public  AliDetector {
    Int_t fMaxIterPad;        // Maximum pad index
    Int_t fCurIterPad;        // Current pad index
 // Background eent for event mixing
-   Text_t *fFileName;           // File with background hits
-   TTree *fTrH1;                 // Hits Tree for background event
+   Text_t *fFileName;           // ! File with background hits
+   TTree *fTrH1;                // Hits Tree for background event
    TClonesArray *fHits2;        // List of hits for one track only
    TClonesArray *fPadHits2;     // List of clusters for one track only
 
