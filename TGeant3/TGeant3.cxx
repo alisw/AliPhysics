@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  1999/12/17 09:03:12  fca
+Introduce a names array
+
 Revision 1.18  1999/11/26 16:55:39  fca
 Reimplement CurrentVolName() to avoid memory leaks
 
@@ -3843,6 +3846,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
     }
   }
   fprintf(lun,"END\n");
+  fclose(lun);
   printf(" *** GWEUCL *** file: %s is now written out\n",filext);
   printf(" *** GWEUCL *** file: %s is now written out\n",filetme);
   // Clean up
