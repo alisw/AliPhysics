@@ -303,3 +303,4 @@
 14-feb-2002 NvE Support for name tag introduced in AliSignal to indicate the kind of signal.
                 Missing comment lines added in SetName() and GetName() of AliCalorimeter and AliSignal.
 19-mar-2002 NvE AliVertex::Draw() introduced to enable 3D event display. 
+25-apr-2002 NvE Projectile and target specifications introduced in AliEvent.

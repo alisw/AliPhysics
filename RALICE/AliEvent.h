@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.1 2001/06/06 13:22:48 nick Exp $
+// $Id: AliEvent.h,v 1.2 2001/07/04 15:59:20 nick Exp $
 
 #include <iomanip.h>
 #include <math.h>
@@ -24,6 +24,14 @@ class AliEvent : public AliVertex
   void SetDayTime(TDatime& stamp);        // Set the date and time stamp
   void SetRunNumber(Int_t run);           // Set the run number
   void SetEventNumber(Int_t evt);         // Set the event number
+  void SetProjectile(Int_t a,Int_t z,Double_t pnuc); // Set projectile A, Z and momentum value per nucleon
+  Int_t GetProjectileA();                 // Provide A value of the projectile
+  Int_t GetProjectileZ();                 // Provide Z value of the projectile
+  Double_t GetProjectilePnuc();           // Provide the projectile momentum value per nucleon
+  void SetTarget(Int_t a,Int_t z,Double_t pnuc); // Set target A, Z and momentum value per nucleon
+  Int_t GetTargetA();                     // Provide A value of the target
+  Int_t GetTargetZ();                     // Provide Z value of the target
+  Double_t GetTargetPnuc();               // Provide the target momentum value per nucleon
   void Reset();                           // Reset all values
   TDatime GetDayTime();                   // Provide the date and time stamp
   Int_t GetRunNumber();                   // Provide the run number
@@ -42,10 +50,16 @@ class AliEvent : public AliVertex
   TDatime fDaytime;         // The date and time stamp
   Int_t fRun;               // The run number
   Int_t fEvent;             // The event number
+  Int_t fAproj;             // The projectile A value
+  Int_t fZproj;             // The projectile Z value
+  Double_t fPnucProj;       // The projectile momentum per nucleon
+  Int_t fAtarg;             // The target A value
+  Int_t fZtarg;             // The target Z value
+  Double_t fPnucTarg;       // The target momentum per nucleon
   Int_t fNcals;             // The number of calorimeter systems 
   TObjArray* fCalorimeters; // Array to hold the pointers to the calorimeter systems
   Int_t fCalCopy;           // Flag to denote creation of private copies in fCalorimeters
 
- ClassDef(AliEvent,1) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,2) // Creation and investigation of an Alice physics event.
 };
 #endif

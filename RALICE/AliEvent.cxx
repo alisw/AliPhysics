@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.4 2001/07/06 09:30:59 nick Exp $
+// $Id: AliEvent.cxx,v 1.5 2002/01/18 08:46:59 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -187,7 +187,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2001/07/06 09:30:59 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2002/01/18 08:46:59 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -201,6 +201,12 @@ AliEvent::AliEvent()
  fDaytime.Set();
  fRun=0;
  fEvent=0;
+ fAproj=0;
+ fZproj=0;
+ fPnucProj=0;
+ fAtarg=0;
+ fZtarg=0;
+ fPnucTarg=0;
  fNcals=0;
  fCalorimeters=0;
  fCalCopy=0;
@@ -213,6 +219,12 @@ AliEvent::AliEvent(Int_t n): AliVertex(n)
  fDaytime.Set();
  fRun=0;
  fEvent=0;
+ fAproj=0;
+ fZproj=0;
+ fPnucProj=0;
+ fAtarg=0;
+ fZtarg=0;
+ fPnucTarg=0;
  fNcals=0;
  fCalorimeters=0;
  fCalCopy=0;
@@ -236,6 +248,12 @@ void AliEvent::Reset()
  fDaytime.Set();
  fRun=0;
  fEvent=0;
+ fAproj=0;
+ fZproj=0;
+ fPnucProj=0;
+ fAtarg=0;
+ fZtarg=0;
+ fPnucTarg=0;
 
  fNcals=0;
  if (fCalorimeters)
@@ -281,6 +299,58 @@ Int_t AliEvent::GetEventNumber()
 {
 // Provide the event number for this event
  return fEvent;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::SetProjectile(Int_t a,Int_t z,Double_t pnuc)
+{
+// Set the projectile A, Z and momentum value per nucleon.
+ fAproj=a;
+ fZproj=z;
+ fPnucProj=pnuc;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetProjectileA()
+{
+// Provide the projectile A value.
+ return fAproj;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetProjectileZ()
+{
+// Provide the projectile Z value.
+ return fZproj;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliEvent::GetProjectilePnuc()
+{
+// Provide the projectile momentum value per nucleon.
+ return fPnucProj;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::SetTarget(Int_t a,Int_t z,Double_t pnuc)
+{
+// Set the target A, Z and momentum value per nucleon.
+ fAtarg=a;
+ fZtarg=z;
+ fPnucTarg=pnuc;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetTargetA()
+{
+// Provide the target A value.
+ return fAtarg;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetTargetZ()
+{
+// Provide the target Z value.
+ return fZtarg;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliEvent::GetTargetPnuc()
+{
+// Provide the target momentum value per nucleon.
+ return fPnucTarg;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::HeaderInfo()
