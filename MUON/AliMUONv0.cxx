@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/06/26 14:02:38  morsch
+Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
+
 Revision 1.9  2000/06/15 07:58:49  morsch
 Code from MUON-dev joined
 
@@ -84,8 +87,6 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
        : AliMUON(name,title)
 {
 // Constructor
-    fChambers = 0;
-
     SetIshunt(0);
     SetMaxStepGas(0.1);
     SetMaxStepAlu(0.1);
