@@ -50,5 +50,6 @@ SOFLAGS       = -Wl,-soname,$(notdir $@) -shared
 SHLIB         = -lg2c
 
 LIBS          = $(ROOTLIBS) 
-GLIBS         = $(ROOTLIBS) -L/usr/X11R6/lib -lX11 -lg2c -lcrypt
+LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
+GLIBS         = $(ROOTLIBS) -L/usr/X11R6/lib -lX11 -lg2c -lcrypt $(LIBNOVER)
 
