@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.45  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.44  2000/10/26 13:58:59  morsch
 Add possibility to choose the lego generator (of type AliGeneratorLego or derived) when running
 RunLego(). Default is the base class AliGeneratorLego.
@@ -965,7 +968,7 @@ void AliRun::InitMC(const char *setup)
 	objfirst = gDirectory->GetList()->After(objfirst);
       }
    }
-   SetTransPar(); //Read the cuts for all materials
+   ReadTransPar(); //Read the cuts for all materials
    
    MediaTable(); //Build the special IMEDIA table
    
