@@ -120,9 +120,7 @@ void AliPHOSSDigitizer::Init()
   sdname.Append(GetTitle() ) ;
   SetName(sdname) ;
   gime->PostSDigitizer(this) ;
- 
-  // create a folder on the white board //YSAlice/WhiteBoard/SDigits/PHOS/headerFile/sdigitsTitle
-    
+     
 }
 
 //____________________________________________________________________________
@@ -142,6 +140,10 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
   //Check, if this branch already exits
   gAlice->GetEvent(0) ;
+
+  TString sdname(GetName()) ;
+  sdname.Remove(sdname.Index(GetTitle())-1) ;
+  
   if(gAlice->TreeS() ) {
     TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeS()->GetListOfBranches()) ;
     TIter next(lob) ; 
@@ -163,9 +165,6 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     }   
   }  
 
-  TString sdname(GetName()) ;
-  sdname.Remove(sdname.Index(GetTitle())-1) ;
-    
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
 
   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ; 
