@@ -16,7 +16,8 @@ class AliMUONHitMapA1 :
 public AliHitMap 
 {
  public:
-    AliMUONHitMapA1(AliSegmentation *seg=0, TObjArray *dig=0);
+    AliMUONHitMapA1();
+    AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig);
     AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap);
     
     virtual ~AliMUONHitMapA1();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/06 09:05:42  morsch
+Correction on upper limits for x- and y- coordinates to make code work with slat chambers.
+
 Revision 1.5  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -47,6 +50,18 @@ Most coding rule violations corrected.
 
 ClassImp(AliMUONHitMapA1)
 
+    AliMUONHitMapA1::AliMUONHitMapA1()
+{
+    // Default constructor
+    fSegmentation = 0;
+    fNpx          = 0;
+    fNpy          = 0;
+    fMaxIndex     = 0;
+    
+    fHitMap       = 0;
+    fDigits       = 0;
+    fNdigits      = 0;
+}
 
 AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
 {
