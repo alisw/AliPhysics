@@ -97,8 +97,10 @@ void AliPHOSv0::BuildGeometry()
   //END_HTML  
 
   this->BuildGeometryforPHOS() ; 
-  if ( ( strcmp(fGeom->GetName(), "GPS2" ) == 0 ) ) 
+  if      ( ( strcmp(fGeom->GetName(), "GPS2" ) == 0 ) ) 
     this->BuildGeometryforPPSD() ;
+  else if ( ( strcmp(fGeom->GetName(), "IHEP" ) == 0 ) ) 
+    this->BuildGeometryforCPV() ;
   else
     cout << "AliPHOSv0::BuildGeometry : no charged particle identification system installed" << endl; 
 
@@ -238,9 +240,9 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
 
   // Box for a full PHOS module
 
-  new TBRIK( "PPSDBox", "PPSD box", "void",  fGeom->GetPPSDBoxSize(0)/2, 
-                                             fGeom->GetPPSDBoxSize(1)/2, 
-	                                     fGeom->GetPPSDBoxSize(2)/2 );
+  new TBRIK( "PPSDBox", "PPSD box", "void",  fGeom->GetCPVBoxSize(0)/2, 
+                                             fGeom->GetCPVBoxSize(1)/2, 
+	                                     fGeom->GetCPVBoxSize(2)/2 );
 
   // Box containing one micromegas module 
 
@@ -283,27 +285,27 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
                                                      ( fGeom->GetPPSDModuleSize(2) - fGeom->GetMicromegasWallThickness() )/2 ) ; 
  // Gap between Lead and top micromegas
 
-  new TBRIK ( "LeadToM", "Air Gap top", "void", fGeom->GetPPSDBoxSize(0)/2,
+  new TBRIK ( "LeadToM", "Air Gap top", "void", fGeom->GetCPVBoxSize(0)/2,
                                                 fGeom->GetMicro1ToLeadGap()/2,
-                                                fGeom->GetPPSDBoxSize(2)/2  ) ;  
+                                                fGeom->GetCPVBoxSize(2)/2  ) ;  
  
 // Gap between Lead and bottom micromegas
 
-  new TBRIK ( "MToLead", "Air Gap bottom", "void", fGeom->GetPPSDBoxSize(0)/2,
+  new TBRIK ( "MToLead", "Air Gap bottom", "void", fGeom->GetCPVBoxSize(0)/2,
                                                    fGeom->GetLeadToMicro2Gap()/2,
-                                                   fGeom->GetPPSDBoxSize(2)/2  ) ; 
+                                                   fGeom->GetCPVBoxSize(2)/2  ) ; 
  // Lead converter
    
-  new TBRIK ( "Lead", "Lead converter", "void", fGeom->GetPPSDBoxSize(0)/2,
+  new TBRIK ( "Lead", "Lead converter", "void", fGeom->GetCPVBoxSize(0)/2,
                                                 fGeom->GetLeadConverterThickness()/2,
-                                                fGeom->GetPPSDBoxSize(2)/2  ) ; 
+                                                fGeom->GetCPVBoxSize(2)/2  ) ; 
 
      // position PPSD into ALICE
 
   char * nodename = new char[20] ;  
   char * rotname  = new char[20] ; 
 
-  Float_t r = fGeom->GetIPtoTopLidDistance() + fGeom->GetPPSDBoxSize(1) / 2.0 ;
+  Float_t r = fGeom->GetIPtoTopLidDistance() + fGeom->GetCPVBoxSize(1) / 2.0 ;
   Int_t number = 988 ; 
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
  
@@ -321,13 +323,13 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
     ppsdboxnode->cd() ;
     // inside the PPSD box: 
     //   1.   fNumberOfModulesPhi x fNumberOfModulesZ top micromegas
-    x = ( fGeom->GetPPSDBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. ;  
+    x = ( fGeom->GetCPVBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. ;  
     {
       for ( Int_t iphi = 1; iphi <= fGeom->GetNumberOfModulesPhi(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
-	Float_t z = ( fGeom->GetPPSDBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2. ;
+	Float_t z = ( fGeom->GetCPVBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2. ;
 	TNode * micro1node ; 
 	for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { // the number of micromegas modules in z per PHOS module
-	  y = ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas1Thickness() ) / 2. ; 
+	  y = ( fGeom->GetCPVBoxSize(1) - fGeom->GetMicromegas1Thickness() ) / 2. ; 
 	  sprintf(nodename, "%s%d%d%d", "Mic1", i, iphi, iz) ;
 	  micro1node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
 	  micro1node->SetLineColor(kColorPPSD) ;  
@@ -385,7 +387,7 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
     }
     //   2. air gap      
     ppsdboxnode->cd() ;
-    y = ( fGeom->GetPPSDBoxSize(1) - 2 * fGeom->GetMicromegas1Thickness() - fGeom->GetMicro1ToLeadGap() ) / 2. ; 
+    y = ( fGeom->GetCPVBoxSize(1) - 2 * fGeom->GetMicromegas1Thickness() - fGeom->GetMicro1ToLeadGap() ) / 2. ; 
     sprintf(nodename, "%s%d", "GapUp", i) ;
     TNode * gapupnode = new TNode(nodename, nodename, "LeadToM", 0, y, 0) ;
     gapupnode->SetLineColor(kColorAir) ;  
@@ -403,13 +405,13 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
     gapdownnode->SetLineColor(kColorAir) ;  
     fNodes->Add(gapdownnode) ;        
     //    5.  fNumberOfModulesPhi x fNumberOfModulesZ bottom micromegas
-    x = ( fGeom->GetPPSDBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. - fGeom->GetPhiDisplacement() ;  
+    x = ( fGeom->GetCPVBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. - fGeom->GetPhiDisplacement() ;  
     {
       for ( Int_t iphi = 1; iphi <= fGeom->GetNumberOfModulesPhi(); iphi++ ) { 
-	Float_t z = ( fGeom->GetPPSDBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2.  - fGeom->GetZDisplacement() ;;
+	Float_t z = ( fGeom->GetCPVBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2.  - fGeom->GetZDisplacement() ;;
 	TNode * micro2node ; 
 	for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { 
-	  y = - ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas2Thickness() ) / 2. ; 
+	  y = - ( fGeom->GetCPVBoxSize(1) - fGeom->GetMicromegas2Thickness() ) / 2. ; 
 	  sprintf(nodename, "%s%d%d%d", "Mic2", i, iphi, iz) ;
 	  micro2node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
 	  micro2node->SetLineColor(kColorPPSD) ;  
@@ -473,6 +475,131 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
 }
 
 //____________________________________________________________________________
+void AliPHOSv0:: BuildGeometryforCPV(void)
+{
+  //  Build the PHOS-CPV geometry for the ROOT display
+  //  Author: Yuri Kharlov 11 September 2000
+  //
+  //BEGIN_HTML
+  /*
+    <H2>
+    CPV displayed by root
+    </H2>
+    <table width=700>
+
+    <tr>
+         <td>CPV perspective view</td>
+         <td>CPV front view      </td>
+    </tr>
+
+    <tr>
+         <td> <img height=300 width=290 src="../images/CPVRootPersp.gif"> </td>
+         <td> <img height=300 width=290 src="../images/CPVRootFront.gif"> </td>
+    </tr>
+
+    </table>
+
+  */
+  //END_HTML  
+
+  const Double_t kRADDEG         = 180.0 / kPI ;
+  const Int_t    kColorCPV       = kGreen ;
+  const Int_t    kColorFrame     = kYellow ;
+  const Int_t    kColorGassiplex = kRed;
+  const Int_t    kColorPCB       = kCyan;
+
+  // Box for a full PHOS module
+
+  new TBRIK ("CPVBox", "CPV box", "void",                   fGeom->GetCPVBoxSize(0)/2,
+                                                            fGeom->GetCPVBoxSize(1)/2,
+	                                                    fGeom->GetCPVBoxSize(2)/2 );
+  new TBRIK ("CPVFrameLR", "CPV frame Left-Right", "void",  fGeom->GetCPVFrameSize(0)/2,
+                                                            fGeom->GetCPVFrameSize(1)/2,
+	                                                    fGeom->GetCPVBoxSize(2)/2 );
+  new TBRIK ("CPVFrameUD", "CPV frame Up-Down",    "void",  fGeom->GetCPVBoxSize(0)/2 - fGeom->GetCPVFrameSize(0),
+                                                            fGeom->GetCPVFrameSize(1)/2,
+	                                                    fGeom->GetCPVFrameSize(2)/2);
+  new TBRIK ("CPVPCB",    "CPV PCB",               "void",  fGeom->GetCPVActiveSize(0)/2,
+                                                            fGeom->GetCPVTextoliteThickness()/2,
+	                                                    fGeom->GetCPVActiveSize(1)/2);
+  new TBRIK ("CPVGassiplex", "CPV Gassiplex PCB",  "void",  fGeom->GetGassiplexChipSize(0)/2,
+                                                            fGeom->GetGassiplexChipSize(1)/2,
+	                                                    fGeom->GetGassiplexChipSize(2)/2);
+
+  // position CPV into ALICE
+
+  char * nodename = new char[25] ;
+  char * rotname  = new char[25] ;
+  
+  Float_t r = fGeom->GetIPtoCPVDistance() + fGeom->GetCPVBoxSize(1) / 2.0 ;
+  Int_t number = 988 ; 
+  TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
+  for( Int_t i = 1; i <= fGeom->GetNModules(); i++ ) { // the number of PHOS modules
+
+    // One CPV module
+
+    Float_t angle = fGeom->GetPHOSAngle(i) ;
+    sprintf(rotname, "%s%d", "rotg", number++) ;
+    new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
+    top->cd();
+    sprintf(nodename, "%s%d", "CPVModule", i) ;    
+    Float_t x =  r * TMath::Sin( angle / kRADDEG ) ;
+    Float_t y = -r * TMath::Cos( angle / kRADDEG ) ;
+    Float_t z;
+    TNode * cpvBoxNode = new TNode(nodename , nodename ,"CPVBox", x, y, 0, rotname ) ;
+    cpvBoxNode->SetLineColor(kColorCPV) ;
+    fNodes->Add(cpvBoxNode) ;
+    cpvBoxNode->cd() ;
+
+    // inside each CPV box:
+
+    // Frame around CPV
+    for (Int_t j=0; j<=1; j++) {
+      sprintf(nodename, "CPVModule%d Frame%d", i, j+1) ;
+      x = TMath::Sign(1,2*j-1) * (fGeom->GetCPVBoxSize(0) - fGeom->GetCPVFrameSize(0)) / 2;
+      TNode * cpvFrameNode = new TNode(nodename , nodename ,"CPVFrameLR", x, 0, 0) ;
+      cpvFrameNode->SetLineColor(kColorFrame) ;
+      fNodes->Add(cpvFrameNode) ;
+
+      sprintf(nodename, "CPVModule%d Frame%d", i, j+3) ;
+      z = TMath::Sign(1,2*j-1) * (fGeom->GetCPVBoxSize(2) - fGeom->GetCPVFrameSize(2)) / 2;
+      cpvFrameNode = new TNode(nodename , nodename ,"CPVFrameUD", 0, 0, z) ;
+      cpvFrameNode->SetLineColor(kColorFrame) ;
+      fNodes->Add(cpvFrameNode) ;
+    }
+
+    // 4 printed circuit boards
+    for (Int_t j=0; j<4; j++) {
+      sprintf(nodename, "CPVModule%d PCB%d", i, j+1) ;
+      y = fGeom->GetCPVFrameSize(1) / 2 - fGeom->GetFTPosition(j) + fGeom->GetCPVTextoliteThickness()/2;
+      TNode * cpvPCBNode = new TNode(nodename , nodename ,"CPVPCB", 0, y, 0) ;
+      cpvPCBNode->SetLineColor(kColorPCB) ;
+      fNodes->Add(cpvPCBNode) ;
+    }
+
+    // Gassiplex chips
+    Float_t xStep = fGeom->GetCPVActiveSize(0) / (fGeom->GetNumberOfCPVChipsPhi() + 1);
+    Float_t zStep = fGeom->GetCPVActiveSize(1) / (fGeom->GetNumberOfCPVChipsZ()   + 1);
+    y = fGeom->GetCPVFrameSize(1)/2           - fGeom->GetFTPosition(0) +
+        fGeom->GetCPVTextoliteThickness() / 2 + fGeom->GetGassiplexChipSize(1) / 2 + 0.1;
+    for (Int_t ix=0; ix<fGeom->GetNumberOfCPVChipsPhi(); ix++) {
+      x = xStep * (ix+1) - fGeom->GetCPVActiveSize(0)/2;
+      for (Int_t iz=0; iz<fGeom->GetNumberOfCPVChipsZ(); iz++) {
+	z = zStep * (iz+1) - fGeom->GetCPVActiveSize(1)/2;
+	sprintf(nodename, "CPVModule%d Chip(%dx%d)", i, ix+1,iz+1) ;
+	TNode * cpvGassiplexNode = new TNode(nodename , nodename ,"CPVGassiplex", x, y, z) ;
+	cpvGassiplexNode->SetLineColor(kColorGassiplex) ;
+	fNodes->Add(cpvGassiplexNode) ;
+      }
+    }
+
+  } // PHOS modules
+ 
+  delete[] rotname ;  
+  delete[] nodename ; 
+}
+
+//____________________________________________________________________________
 void AliPHOSv0::CreateGeometry()
 {
   // Create the PHOS geometry for Geant
@@ -490,14 +617,16 @@ void AliPHOSv0::CreateGeometry()
 
   Float_t bigbox[3] ; 
   bigbox[0] =   fGeom->GetOuterBoxSize(0) / 2.0 ;
-  bigbox[1] = ( fGeom->GetOuterBoxSize(1) + fGeom->GetPPSDBoxSize(1) ) / 2.0 ;
+  bigbox[1] = ( fGeom->GetOuterBoxSize(1) + fGeom->GetCPVBoxSize(1) ) / 2.0 ;
   bigbox[2] =   fGeom->GetOuterBoxSize(2) / 2.0 ;
   
   gMC->Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
   
   this->CreateGeometryforPHOS() ; 
-  if ( strcmp( fGeom->GetName(), "GPS2") == 0  ) 
+  if      ( strcmp( fGeom->GetName(), "GPS2") == 0  ) 
     this->CreateGeometryforPPSD() ;
+  else if ( strcmp( fGeom->GetName(), "IHEP") == 0  ) 
+    this->CreateGeometryforCPV() ;
   else
     cout << "AliPHOSv0::CreateGeometry : no charged particle identification system installed" << endl; 
   
@@ -511,7 +640,7 @@ void AliPHOSv0::CreateGeometry()
     Float_t angle = fGeom->GetPHOSAngle(i) ;
     AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
  
-    Float_t r = fGeom->GetIPtoOuterCoverDistance() + ( fGeom->GetOuterBoxSize(1) + fGeom->GetPPSDBoxSize(1) ) / 2.0 ;
+    Float_t r = fGeom->GetIPtoOuterCoverDistance() + ( fGeom->GetOuterBoxSize(1) + fGeom->GetCPVBoxSize(1) ) / 2.0 ;
 
     Float_t xP1 = r * TMath::Sin( angle / kRADDEG ) ;
     Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
@@ -552,7 +681,7 @@ void AliPHOSv0::CreateGeometryforPHOS()
 
   gMC->Gsvolu("EMCA", "BOX ", idtmed[706], dphos, 3) ;
 
-  Float_t yO =  - fGeom->GetPPSDBoxSize(1)  / 2.0 ;
+  Float_t yO =  - fGeom->GetCPVBoxSize(1)  / 2.0 ;
 
   gMC->Gspos("EMCA", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
 
@@ -811,9 +940,9 @@ void AliPHOSv0::CreateGeometryforPPSD()
   
   // The box containing all ppsd's for one PHOS module filled with air 
   Float_t ppsd[3] ; 
-  ppsd[0] = fGeom->GetPPSDBoxSize(0) / 2.0 ;  
-  ppsd[1] = fGeom->GetPPSDBoxSize(1) / 2.0 ; 
-  ppsd[2] = fGeom->GetPPSDBoxSize(2) / 2.0 ;
+  ppsd[0] = fGeom->GetCPVBoxSize(0) / 2.0 ;  
+  ppsd[1] = fGeom->GetCPVBoxSize(1) / 2.0 ; 
+  ppsd[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
 
   gMC->Gsvolu("PPSD", "BOX ", idtmed[798], ppsd, 3) ;
 
@@ -931,16 +1060,16 @@ void AliPHOSv0::CreateGeometryforPPSD()
   // Position the  fNumberOfModulesPhi x fNumberOfModulesZ modules (mppsd) inside PPSD to cover a PHOS module
   // the top and bottom one's (which are assumed identical) :
 
-   Float_t yt = ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas1Thickness() ) / 2. ; 
-   Float_t yb = - ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas2Thickness() ) / 2. ; 
+   Float_t yt = ( fGeom->GetCPVBoxSize(1) - fGeom->GetMicromegas1Thickness() ) / 2. ; 
+   Float_t yb = - ( fGeom->GetCPVBoxSize(1) - fGeom->GetMicromegas2Thickness() ) / 2. ; 
 
    Int_t copyNumbertop = 0 ; 
    Int_t copyNumberbot = fGeom->GetNumberOfModulesPhi() *  fGeom->GetNumberOfModulesZ() ; 
 
-   Float_t x  = ( fGeom->GetPPSDBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. ;  
+   Float_t x  = ( fGeom->GetCPVBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. ;  
 
    for ( Int_t iphi = 1; iphi <= fGeom->GetNumberOfModulesPhi(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
-      Float_t z = ( fGeom->GetPPSDBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2. ;
+      Float_t z = ( fGeom->GetCPVBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2. ;
 
       for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { // the number of micromegas modules in z per PHOS module
 	gMC->Gspos("MPPS", ++copyNumbertop, "PPSD", x, yt, z, 0, "ONLY") ;
@@ -954,22 +1083,22 @@ void AliPHOSv0::CreateGeometryforPPSD()
    // 1. Upper air gap
 
    Float_t uappsd[3] ;
-   uappsd[0] = fGeom->GetPPSDBoxSize(0) / 2.0 ;
+   uappsd[0] = fGeom->GetCPVBoxSize(0) / 2.0 ;
    uappsd[1] = fGeom->GetMicro1ToLeadGap() / 2.0 ; 
-   uappsd[2] = fGeom->GetPPSDBoxSize(2) / 2.0 ;
+   uappsd[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
 
   gMC->Gsvolu("UAPPSD", "BOX ", idtmed[798], uappsd, 3) ; 
 
-  y0 = ( fGeom->GetPPSDBoxSize(1) - 2 * fGeom->GetMicromegas1Thickness() - fGeom->GetMicro1ToLeadGap() ) / 2. ; 
+  y0 = ( fGeom->GetCPVBoxSize(1) - 2 * fGeom->GetMicromegas1Thickness() - fGeom->GetMicro1ToLeadGap() ) / 2. ; 
 
   gMC->Gspos("UAPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
 
    // 2. Lead converter
  
   Float_t lcppsd[3] ; 
-  lcppsd[0] = fGeom->GetPPSDBoxSize(0) / 2.0 ;
+  lcppsd[0] = fGeom->GetCPVBoxSize(0) / 2.0 ;
   lcppsd[1] = fGeom->GetLeadConverterThickness() / 2.0 ; 
-  lcppsd[2] = fGeom->GetPPSDBoxSize(2) / 2.0 ;
+  lcppsd[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
  
   gMC->Gsvolu("LCPPSD", "BOX ", idtmed[712], lcppsd, 3) ; 
   
@@ -980,9 +1109,9 @@ void AliPHOSv0::CreateGeometryforPPSD()
   // 3. Lower air gap
 
   Float_t lappsd[3] ; 
-  lappsd[0] = fGeom->GetPPSDBoxSize(0) / 2.0 ; 
+  lappsd[0] = fGeom->GetCPVBoxSize(0) / 2.0 ; 
   lappsd[1] = fGeom->GetLeadToMicro2Gap() / 2.0 ; 
-  lappsd[2] = fGeom->GetPPSDBoxSize(2) / 2.0 ;
+  lappsd[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
 
   gMC->Gsvolu("LAPPSD", "BOX ", idtmed[798], lappsd, 3) ; 
     
@@ -990,6 +1119,150 @@ void AliPHOSv0::CreateGeometryforPPSD()
   
   gMC->Gspos("LAPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
    
+}
+
+
+//____________________________________________________________________________
+void AliPHOSv0::CreateGeometryforCPV()
+{
+  // Create the PHOS-CPV geometry for GEANT
+  // Author: Yuri Kharlov 11 September 2000
+
+  //BEGIN_HTML
+  /*
+    <H2>
+    Geant3 geometry of PHOS-CPV in ALICE
+    </H2>
+    <table width=700>
+
+    <tr>
+         <td>CPV perspective view</td>
+         <td>CPV front view      </td>
+    </tr>
+
+    <tr>
+         <td> <img height=300 width=290 src="../images/CPVallPersp.gif"> </td>
+         <td> <img height=300 width=290 src="../images/CPVallFront.gif"> </td>
+    </tr>
+
+    <tr>
+         <td>One CPV module, perspective view                            </td>
+         <td>One CPV module, front view (extended in vertical direction) </td>
+    </tr>
+
+    <tr>
+         <td><img height=300 width=290 src="../images/CPVmodulePers.gif"></td>
+         <td><img height=300 width=290 src="../images/CPVmoduleSide.gif"></td>
+    </tr>
+
+    </table>
+
+    <H2>
+    Geant3 geometry tree of PHOS-CPV in ALICE
+    </H2>
+    <center>
+    <img height=300 width=290 src="../images/CPVtree.gif">
+    </center>
+  */
+  //END_HTML  
+
+  Float_t par[3], x,y,z;
+
+  // Get pointer to the array containing media indexes
+  Int_t *idtmed = fIdtmed->GetArray() - 699 ;
+  
+  // The box containing all CPV for one PHOS module filled with air 
+  par[0] = fGeom->GetCPVBoxSize(0) / 2.0 ;  
+  par[1] = fGeom->GetCPVBoxSize(1) / 2.0 ; 
+  par[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
+  gMC->Gsvolu("CPV ", "BOX ", idtmed[798], par, 3) ;
+  
+  y = fGeom->GetOuterBoxSize(1) / 2.0 ;
+  gMC->Gspos("CPV ", 1, "PHOS", 0.0, y, 0.0, 0, "ONLY") ; 
+  
+  // Gassiplex board
+  
+  par[0] = fGeom->GetGassiplexChipSize(0)/2.;
+  par[1] = fGeom->GetGassiplexChipSize(1)/2.;
+  par[2] = fGeom->GetGassiplexChipSize(2)/2.;
+  gMC->Gsvolu("CPVC","BOX ",idtmed[707],par,3);
+  
+  // Cu+Ni foil covers Gassiplex board
+
+  par[1] = fGeom->GetCPVCuNiFoilThickness()/2;
+  gMC->Gsvolu("CPVD","BOX ",idtmed[710],par,3);
+  y      = -(fGeom->GetGassiplexChipSize(1)/2 - par[1]);
+  gMC->Gspos("CPVD",1,"CPVC",0,y,0,0,"ONLY");
+
+  // Position of the chip inside CPV
+
+  Float_t xStep = fGeom->GetCPVActiveSize(0) / (fGeom->GetNumberOfCPVChipsPhi() + 1);
+  Float_t zStep = fGeom->GetCPVActiveSize(1) / (fGeom->GetNumberOfCPVChipsZ()   + 1);
+  Int_t   copy  = 0;
+  y = fGeom->GetCPVFrameSize(1)/2           - fGeom->GetFTPosition(0) +
+    fGeom->GetCPVTextoliteThickness() / 2 + fGeom->GetGassiplexChipSize(1) / 2 + 0.1;
+  for (Int_t ix=0; ix<fGeom->GetNumberOfCPVChipsPhi(); ix++) {
+    x = xStep * (ix+1) - fGeom->GetCPVActiveSize(0)/2;
+    for (Int_t iz=0; iz<fGeom->GetNumberOfCPVChipsZ(); iz++) {
+      copy++;
+      z = zStep * (iz+1) - fGeom->GetCPVActiveSize(1)/2;
+      gMC->Gspos("CPVC",copy,"CPV",x,y,z,0,"ONLY");
+    }
+  }
+
+  // Foiled textolite (1 mm of textolite + 50 mkm of Cu + 6 mkm of Ni)
+  
+  par[0] = fGeom->GetCPVActiveSize(0)        / 2;
+  par[1] = fGeom->GetCPVTextoliteThickness() / 2;
+  par[2] = fGeom->GetCPVActiveSize(1)        / 2;
+  gMC->Gsvolu("CPVF","BOX ",idtmed[707],par,3);
+
+  // Argon gas volume
+
+  par[1] = (fGeom->GetFTPosition(2) - fGeom->GetFTPosition(1) - fGeom->GetCPVTextoliteThickness()) / 2;
+  gMC->Gsvolu("CPVG","BOX ",idtmed[715],par,3);
+
+  for (Int_t i=0; i<4; i++) {
+    y = fGeom->GetCPVFrameSize(1) / 2 - fGeom->GetFTPosition(i) + fGeom->GetCPVTextoliteThickness()/2;
+    gMC->Gspos("CPVF",i+1,"CPV",0,y,0,0,"ONLY");
+    if(i==1){
+      y-= (fGeom->GetFTPosition(2) - fGeom->GetFTPosition(1)) / 2;
+      gMC->Gspos("CPVG",1,"CPV ",0,y,0,0,"ONLY");
+    }
+  }
+
+  // Dummy sensitive plane in the middle of argone gas volume
+
+  par[1]=0.001;
+  gMC->Gsvolu("CPVQ","BOX ",idtmed[715],par,3);
+  gMC->Gspos ("CPVQ",1,"CPVG",0,0,0,0,"ONLY");
+
+  // Cu+Ni foil covers textolite
+
+  par[1] = fGeom->GetCPVCuNiFoilThickness() / 2;
+  gMC->Gsvolu("CPV1","BOX ",idtmed[710],par,3);
+  y = fGeom->GetCPVTextoliteThickness()/2 - par[1];
+  gMC->Gspos ("CPV1",1,"CPVF",0,y,0,0,"ONLY");
+
+  // Aluminum frame around CPV
+
+  par[0] = fGeom->GetCPVFrameSize(0)/2;
+  par[1] = fGeom->GetCPVFrameSize(1)/2;
+  par[2] = fGeom->GetCPVBoxSize(2)  /2;
+  gMC->Gsvolu("CFR1","BOX ",idtmed[701],par,3);
+
+  par[0] = fGeom->GetCPVBoxSize(0)/2 - fGeom->GetCPVFrameSize(0);
+  par[1] = fGeom->GetCPVFrameSize(1)/2;
+  par[2] = fGeom->GetCPVFrameSize(2)/2;
+  gMC->Gsvolu("CFR2","BOX ",idtmed[701],par,3);
+
+  for (Int_t j=0; j<=1; j++) {
+    x = TMath::Sign(1,2*j-1) * (fGeom->GetCPVBoxSize(0) - fGeom->GetCPVFrameSize(0)) / 2;
+    gMC->Gspos("CFR1",j+1,"CPV", x,0,0,0,"ONLY");
+    z = TMath::Sign(1,2*j-1) * (fGeom->GetCPVBoxSize(2) - fGeom->GetCPVFrameSize(2)) / 2;
+    gMC->Gspos("CFR2",j+1,"CPV",0, 0,z,0,"ONLY");
+  }
+
 }
 
 
