@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/01/26 19:56:27  hristov
+Major upgrade of AliRoot code
+
 Revision 1.11  2001/01/16 07:43:33  hristov
 Initialisation of ZDC hits
 
@@ -1238,7 +1241,7 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
   sprintf(branchname,"%s",GetName());
   char *cD = strstr(opt,"D");
 
-  if (fDigits   && gAlice->TreeD() && cD) {
+  if (gAlice->TreeD() && cD) {
 
     // Creation of the digits from hits 
 
