@@ -132,12 +132,38 @@ AliTOF *TOF  = new AliTOFv2("TOF","normal TOF");
 if(iRICH) {
 //=================== RICH parameters ===========================
 
+  AliRICH *RICH  = new AliRICHv0("RICH","normal RICH");
 
-AliRICH *RICH  = new AliRICHv1("RICH","normal RICH");
-RICH->SetSP(40);
-RICH->SetFEED(0.04);
-RICH->SetSIGM(0.18);
-RICH->SetTRIG(0);
+  RICH->SetSMAXAR(0.03);
+  RICH->SetSMAXAL(-1);
+//
+// Version 0
+// Default Segmentation
+  AliRICHsegmentationV0* RsegV0 = new AliRICHsegmentationV0;
+  RsegV0->SetPADSIZ(.8, .8);
+  RsegV0->SetDAnod(0.8/3);
+// Default response
+  AliRICHresponseV0* Rresponse0 = new AliRICHresponseV0;
+  AliRICHresponseCkv* RresponseCkv = new AliRICHresponseCkv;
+
+//------------------------Chambers 0-6 ----------------------------
+  for (Int_t i=0; i<7; i++) {
+    RICH->SetSegmentationModel(i, 1, RsegV0);
+    RICH->SetResponseModel(i, mip     , Rresponse0);
+    RICH->SetResponseModel(i, cerenkov, RresponseCkv);
+    RICH->Chamber(i).SetRSIGM(5.);
+    RICH->Chamber(i).SetMUCHSP(43.);
+    RICH->Chamber(i).SetMUSIGM(0.18, 0.18);
+    RICH->Chamber(i).SetMAXADC( 1024);
+    RICH->Chamber(i).SetSqrtKx3(0.77459667);
+    RICH->Chamber(i).SetKx2(0.962);
+    RICH->Chamber(i).SetKx4(0.379);
+    RICH->Chamber(i).SetSqrtKy3(0.77459667);
+    RICH->Chamber(i).SetKy2(0.962);
+    RICH->Chamber(i).SetKy4(0.379);
+    RICH->Chamber(i).SetPitch(0.25);
+    RICH->SetNsec(i,1);
+  }
 }
 
 if(iZDC) {
