@@ -80,32 +80,17 @@ void hits(const TString& detName, const TString& detVersion)
   // fill histograms
   AliDetector* detector;
 
-  if (detName != "PHOS") {
-    //detector = LoadDetector(g3File1Name, detName, g3);
-    //FillHitsHistogram(detector, g3, g3x, g3y, g3z); 
+  //detector = LoadDetector(g3File1Name, detName, g3);
+  //FillHistogram(detector, g3, g3x, g3y, g3z); 
 
-    detector = LoadDetector(g3File2Name, detName,  g3);
-    FillHitsHistogram(detector, g3, g3xh, g3yh, g3zh); 
+  //detector = LoadDetector(g3File2Name, detName,  g3);
+  FillHistogram(detector, g3, g3xh, g3yh, g3zh); 
 
-    detector = LoadDetector(g4File1Name, detName, g4);
-    FillHitsHistogram(detector, g4, g4x, g4y, g4z); 
+  detector = LoadDetector(g4File1Name, detName, g4);
+  FillHistogram(detector, g4, g4x, g4y, g4z); 
 
-    detector = LoadDetector(g4File2Name, detName, g4);
-    FillHitsHistogram(detector, g4, g4xh, g4yh, g4zh); 
-  }
-  else {  
-    //LoadDetector(g3File1Name, detName, g3);
-    //FillDigitsHistogram("AliPHOSHit", "PHOSCH", g3, g3x, g3y, g3z); 
-
-    LoadDetector(g3File2Name, detName, g3);
-    FillDigitsHistogram("AliPHOSHit", "PHOSCH", g3, g3xh, g3yh, g3zh); 
-
-    LoadDetector(g4File1Name, detName, g4);
-    FillDigitsHistogram("AliPHOSHit", "PHOSCH", g4, g4x, g4y, g4z); 
-
-    LoadDetector(g4File2Name, detName, g4);
-    FillDigitsHistogram("AliPHOSHit", "PHOSCH", g4, g4xh, g4yh, g4zh); 
-  }   
+  //detector = LoadDetector(g4File2Name, detName, g4);
+  FillHistogram(detector, g4, g4xh, g4yh, g4zh); 
 
   // compose picture name
   TString gifNameBase =  "hits" + detName + "v" + detVersion;
@@ -222,7 +207,7 @@ AliDetector* LoadDetector(TString& fileName, TString& detName, TString& label)
   return detector;
 }  
 
-void FillHitsHistogram(AliDetector* detector, TString& label, 
+void FillHistogram(AliDetector* detector, TString& label, 
                    TH1F* hx, TH1F* hy, TH1F* hz) 
 { 
   Int_t nofHits = 0;
@@ -242,39 +227,6 @@ void FillHitsHistogram(AliDetector* detector, TString& label,
       if (hz) hz->Fill(z);
       nofHits++;
     }
-
-  cout << label << "filled " << nofHits << " hits" << endl;
-}  
-
-void FillDigitsHistogram(TString& className, TString& branchName, 
-                   TString& label, TH1F* hx, TH1F* hy, TH1F* hz)
-{ 
-  // get number of primary tracks
-  TClonesArray* tmpHits = new TClonesArray(className, 1000) ;
-  TBranch* branch  = gAlice->TreeD()->GetBranch(branchName);
-  branch->SetAddress(&tmpHits);
-   
-  Int_t ntracks = gAlice->TreeD()->GetEntries();
-  cout << label << "got ntracks = " << ntracks << endl;
-
-  Int_t nofHits = 0;
-  // loop on tracks in the digits container
-  for (Int_t i=0; i<ntracks; i++) {
-
-    branch->GetEvent(i);
-            
-    // loop on hits    
-    for (Int_t ih=0; ih<tmpHits->GetEntriesFast(); ih++) {
-      AliHit* hit = (AliHit*) tmpHits->UncheckedAt(ih);
-      Float_t x = hit->X();
-      Float_t y = hit->Y();
-      Float_t z = hit->Z();
-      if (hx) hx->Fill(x);
-      if (hy) hy->Fill(y);
-      if (hz) hz->Fill(z);
-      nofHits++;
-    }
-  }
 
   cout << label << "filled " << nofHits << " hits" << endl;
 }  
