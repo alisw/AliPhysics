@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.13  2001/05/14 05:44:11  barbera
+Version 1.11 reput in place to avoid problem with reconstruction
+
 Revision 1.11  2001/05/03 16:12:37  nilsen
 Fixed up LocalToDet, DetToLocal, GetCrossing, GetPadTxz to work with different
 angles in layer 5 and 6.
@@ -202,7 +205,7 @@ void AliITSsegmentationSSD::GetPadCxz(Int_t iP,Int_t iN,Float_t &x,Float_t &z){
     z = (Dz*kN-xP+xN)/(kP+kN); 
     x -= Dx/2;
     z -= Dz/2;
-    if(TMath::Abs(z) > Dz/2) cout<<"Warning, wrong z local ="<<z<<endl; 
+    //if(TMath::Abs(z) > Dz/2) cout<<"Warning, wrong z local ="<<z<<endl; 
     // Check that zL is inside the detector for the 
     // correspondent xP and xN coordinates
 
