@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/03/28 10:00:36  hristov
+Some additional initialisation
+
 Revision 1.1  2002/03/25 20:01:18  cblume
 Introduce parameter class
 
@@ -541,7 +544,7 @@ void AliTRDparameter::SetNTimeBin(const Int_t nbin)
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDparameter::CrossTalk(Float_t time)
+Float_t AliTRDparameter::CrossTalk(Float_t time) const
 {
   //
   // Applies the pad-pad capacitive cross talk
@@ -576,7 +579,7 @@ Int_t AliTRDparameter::Diffusion(Float_t driftlength, Float_t *xyz)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDparameter::ExB(Float_t driftlength, Float_t *xyz)
+Int_t AliTRDparameter::ExB(Float_t driftlength, Float_t *xyz) const
 {
   //
   // Applies E x B effects to the position of a single electron
@@ -592,7 +595,7 @@ Int_t AliTRDparameter::ExB(Float_t driftlength, Float_t *xyz)
 
 //_____________________________________________________________________________
 Int_t AliTRDparameter::PadResponse(Float_t signal, Float_t dist
-                                 , Int_t plane, Float_t *pad)
+                                 , Int_t plane, Float_t *pad) const
 {
   //
   // Applies the pad response
@@ -632,7 +635,7 @@ Int_t AliTRDparameter::PadResponse(Float_t signal, Float_t dist
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDparameter::TimeResponse(Float_t time)
+Float_t AliTRDparameter::TimeResponse(Float_t time) const
 {
   //
   // Applies the preamp shaper time response
@@ -1301,9 +1304,9 @@ Float_t AliTRDparameter::GetOmegaTau(Float_t vd, Float_t b)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDparameter::LUTposition(Int_t iplane, Double_t ampL, 
-                                                    Double_t ampC,
-                                                     Double_t ampR)
+Double_t AliTRDparameter::LUTposition(Int_t iplane, Double_t ampL 
+                                                  , Double_t ampC
+                                                  , Double_t ampR) const
 {
   //
   // Calculates the cluster position using the lookup table.

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
 Revision 1.2  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -25,7 +28,8 @@ New class AliTRDpoints to display the TR photon hits
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  This class contains the TRD points for the ALICE event display           //
+//  This class contains the TRD points for the ALICE event display.          //
+//  Used to seperately display dEdx and TR photon hits.                      //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -37,14 +37,14 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual Bool_t       InitDetector();
   virtual void         Exec(Option_t* option = 0);  
   virtual Bool_t       Open(const Char_t *file, Int_t nEvent = 0);
-  virtual Bool_t       MakeBranch(const Char_t *file = 0);
+  virtual Bool_t       MakeBranch(const Char_t *file = 0) const;
   virtual Bool_t       MakeDigits();
   virtual void         AddSDigitsManager(AliTRDdigitsManager *manager);
   virtual void         DeleteSDigitsManager();
   virtual Bool_t       ConvertSDigits();
   virtual Bool_t       MergeSDigits();
   virtual Bool_t       SDigits2Digits();
-  virtual Bool_t       WriteDigits();
+  virtual Bool_t       WriteDigits() const;
 
   virtual void         SetCompress(Int_t c = 1)             { fCompress        = c;   };
   virtual void         SetDebug(Int_t v = 1)                { fDebug           = v;   };

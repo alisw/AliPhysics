@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD reconstructed point                                                  //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliRecPoint.h"
 
 class AliTRDrecPoint : public AliRecPoint {
@@ -15,7 +21,7 @@ class AliTRDrecPoint : public AliRecPoint {
   AliTRDrecPoint(const char * opt);
   virtual ~AliTRDrecPoint();
 
-  virtual void    Print(Option_t* opt) {};
+  virtual void    Print(Option_t* opt) const {};
   virtual void    AddDigit(Int_t digit);
   virtual void    AddDigit(AliDigitNew &digit) {};
 

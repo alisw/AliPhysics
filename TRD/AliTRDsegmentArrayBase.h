@@ -28,7 +28,7 @@ class AliTRDsegmentArrayBase: public TNamed {
   AliTRDsegmentArrayBase &operator=(const AliTRDsegmentArrayBase &a);
  
   const AliTRDsegmentID *At(Int_t i) const; 
-  const AliTRDsegmentID *operator[](Int_t i); 
+  const AliTRDsegmentID *operator[](Int_t i) const; 
 
           Bool_t           AddSegment(AliTRDsegmentID *segment);
           AliTRDsegmentID *AddSegment(Int_t index);  

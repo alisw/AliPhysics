@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD parameter class                                                      //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "TNamed.h"
 
 class AliTRDgeometry;
@@ -116,12 +122,12 @@ class AliTRDparameter : public TNamed {
           Int_t    LUTOn()                                  const { return fLUTOn;         };
 
   virtual Int_t    Diffusion(Float_t driftlength, Float_t *xyz);
-  virtual Int_t    ExB(Float_t driftlength, Float_t *xyz);  
+  virtual Int_t    ExB(Float_t driftlength, Float_t *xyz) const;  
   virtual Float_t  Col0Tilted(Float_t col0, Float_t rowOffset, Int_t plane);
-  virtual Int_t    PadResponse(Float_t signal, Float_t dist, Int_t plane, Float_t *pad);
-  virtual Float_t  CrossTalk(Float_t time); 
-  virtual Float_t  TimeResponse(Float_t time);  
-  virtual Double_t LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR);
+  virtual Int_t    PadResponse(Float_t signal, Float_t dist, Int_t plane, Float_t *pad) const;
+  virtual Float_t  CrossTalk(Float_t time) const; 
+  virtual Float_t  TimeResponse(Float_t time) const;  
+  virtual Double_t LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
 
  protected:
 

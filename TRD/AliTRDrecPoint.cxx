@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/12/05 15:04:34  hristov
+Changes related to the corrections of AliRecPoint
+
 Revision 1.6  2001/02/14 18:22:26  cblume
 Change in the geometry of the padplane
 
@@ -217,27 +220,27 @@ void AliTRDrecPoint::AddTrackIndex(Int_t *track)
  //  2) if two or more indexes appear equal number of times, the lowest
  //     ones are stored first;
 
-  const Int_t size = 9;
+  const Int_t kSize = 9;
 
-  Int_t entries[size][2], i, j, index;
+  Int_t entries[kSize][2], i, j, index;
 
-  Bool_t index_added;
+  Bool_t indexAdded;
 
-  for (i=0; i<size; i++) {
+  for (i=0; i<kSize; i++) {
     entries[i][0]=-1;
     entries[i][1]=0;
   }
 
 
-  for (Int_t k=0; k<size; k++) {
+  for (Int_t k=0; k<kSize; k++) {
     index=track[k];
-    index_added=kFALSE; j=0;
+    indexAdded=kFALSE; j=0;
     if (index >= 0) {
-      while ( (!index_added) && ( j < size ) ) {
+      while ( (!indexAdded) && ( j < kSize ) ) {
         if ((entries[j][0]==index) || (entries[j][1]==0)) {
           entries[j][0]=index;
           entries[j][1]=entries[j][1]+1;
-          index_added=kTRUE;
+          indexAdded=kTRUE;
         }
         j++;
       }
@@ -248,7 +251,7 @@ void AliTRDrecPoint::AddTrackIndex(Int_t *track)
   Int_t swap=1, tmp0, tmp1;
   while ( swap > 0) {
     swap=0;
-    for(i=0; i<(size-1); i++) {
+    for(i=0; i<(kSize-1); i++) {
       if ((entries[i][0] >= 0) && (entries[i+1][0] >= 0)) {
         if ((entries[i][1] < entries[i+1][1]) ||
             ((entries[i][1] == entries[i+1][1]) &&

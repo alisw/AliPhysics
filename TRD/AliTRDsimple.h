@@ -5,6 +5,12 @@
  
 /* $Id$ */
  
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Simplified TRD slow simulator                                            //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+ 
 #include <TObject.h>
 
 class AliTRDsimpleGen;
@@ -23,7 +29,7 @@ class AliTRDsimple : public TObject {
   virtual void             Copy(TObject &s);
   virtual void             ProcessEvent(Int_t ievent);
 
-  virtual AliTRDsimpleGen *GetGenerator()             { return fGenerator; };
+  virtual AliTRDsimpleGen *GetGenerator()      const { return fGenerator; };
 
  protected:
 

@@ -6,11 +6,16 @@
 
 /* $Id: AliTRDtimeBin.h,v */
 
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+//  Hit compression class                                           //
+//  Adapted from AliTPCTimeBin by Marian                            //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
+
 #include <TObject.h>
 
 class AliTRDcluster;
-
-const unsigned kMAX_CLUSTER_PER_TIME_BIN=3500; 
 
 //----------------------------------------------------------------- 
 class AliTRDtimeBin : public TObject {
@@ -21,7 +26,7 @@ public:
 
   AliTRDtimeBin();
   virtual ~AliTRDtimeBin() { };
-  void InsertCluster(AliTRDcluster*,UInt_t);
+  void InsertCluster(AliTRDcluster *c, UInt_t index);
  
   operator Int_t() const {return fN;}
   AliTRDcluster* operator[](Int_t i);
@@ -30,10 +35,12 @@ public:
   Int_t Find(Double_t y) const; 
 
 protected:
+
+  enum { kMaxClusterPerTimeBin=3500 };
  
-   UInt_t fN;
-   AliTRDcluster *fClusters[kMAX_CLUSTER_PER_TIME_BIN];
-   UInt_t fIndex[kMAX_CLUSTER_PER_TIME_BIN]; 
+   UInt_t         fN;                                 // ????
+   AliTRDcluster *fClusters[kMaxClusterPerTimeBin];   // ????
+   UInt_t         fIndex[kMaxClusterPerTimeBin];      // ????
 
   ClassDef(AliTRDtimeBin,1) // Provides tools to address clusters which lay within one time bin
 

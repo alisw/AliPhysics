@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/02/12 11:42:08  cblume
+Remove fTree from destructor
+
 Revision 1.15  2002/02/11 14:27:54  cblume
 Geometry and hit structure update
 
@@ -194,6 +197,9 @@ void AliTRDdigitsManager::CreateArrays()
 //_____________________________________________________________________________
 void AliTRDdigitsManager::SetRaw()
 {
+  //
+  // Switch on the raw digits flag
+  //
 
   fIsRaw = kTRUE;
 

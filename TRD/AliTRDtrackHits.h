@@ -4,7 +4,9 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////
-//  Manager class for TRD   hits                   //
+//                                            //
+//  Manager class for TRD   hits              //
+//                                            //
 ////////////////////////////////////////////////
 
 #include "../TPC/AliTPCTrackHitsV2.h"

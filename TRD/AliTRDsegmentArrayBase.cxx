@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2002/02/12 16:06:45  cblume
+Remove delete fTree
+
 Revision 1.11  2001/11/19 08:44:08  cblume
 Fix bugs reported by Rene
 
@@ -472,7 +475,7 @@ Bool_t  AliTRDsegmentArrayBase::MakeDictionary(Int_t size)
 }
 
 //_____________________________________________________________________________
-const AliTRDsegmentID * AliTRDsegmentArrayBase::operator[](Int_t i)
+const AliTRDsegmentID * AliTRDsegmentArrayBase::operator[](Int_t i) const
 {
   //
   // Returns a segment with the given index <i>

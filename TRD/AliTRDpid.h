@@ -5,6 +5,16 @@
 
 /* $Id$ */                   
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//   The TRD particle identification base class                              //
+//                                                                           //
+//   Its main purposes are:                                                  //
+//      - Provide I/O framework for all neccessary files                     //
+//      - Assignment of a e/pi propability to a given track                  //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include <TNamed.h>
 
 class TObjArray;
@@ -56,15 +66,15 @@ class AliTRDpid : public TNamed {
           void          SetThreePadOnly(Bool_t only)        { fThreePadOnly  = only;   };
           void          SetEvent(Int_t event)               { fEvent         = event;  };
 
-          TObjArray    *GetTrackArray()                     { return fTrackArray;      }; 
-          TObjArray    *GetClusterArray()                   { return fClusterArray;    };
+          TObjArray    *GetTrackArray()               const { return fTrackArray;      }; 
+          TObjArray    *GetClusterArray()             const { return fClusterArray;    };
 
-          Float_t       GetPIDratioMin()                    { return fPIDratioMin;     };
-          Bool_t        GetPIDpurePoints()                  { return fPIDpurePoints;   };
-          Float_t       GetPIDindexMin()                    { return fPIDindexMin;     };
-          Float_t       GetPIDindexMax()                    { return fPIDindexMax;     };
+          Float_t       GetPIDratioMin()              const { return fPIDratioMin;     };
+          Bool_t        GetPIDpurePoints()            const { return fPIDpurePoints;   };
+          Float_t       GetPIDindexMin()              const { return fPIDindexMin;     };
+          Float_t       GetPIDindexMax()              const { return fPIDindexMax;     };
 
-          Bool_t        GetThreePadOnly()                   { return fThreePadOnly;    };
+          Bool_t        GetThreePadOnly()             const { return fThreePadOnly;    };
 
  protected:
 

@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD geometry for the spaceframe without holes                            //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliTRDgeometry.h"
 
 class AliTRDgeometryFull : public AliTRDgeometry {

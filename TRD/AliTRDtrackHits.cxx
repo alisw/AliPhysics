@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+////////////////////////////////////////////////
+//                                            //
+//  Manager class for TRD   hits              //
+//                                            //
+////////////////////////////////////////////////
+
 #include "AliTRDtrackHits.h"
 #include "TClonesArray.h"    
 #include "AliTRDhit.h"    
@@ -25,6 +31,10 @@ ClassImp(AliTRDtrackHits)
 void  AliTRDtrackHits::AddHitTRD(Int_t volumeID, Int_t trackID, Double_t x, 
 		    Double_t y, Double_t z,Int_t q, Bool_t inDrift)
 {
+  //
+  // Add one TRD hit
+  //
+
   if (inDrift) q=2*q+1;
   else q=2*q;
   AddHitKartez(volumeID, trackID,x,y,z,q);

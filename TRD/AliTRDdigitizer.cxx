@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2002/03/25 20:00:44  cblume
+Introduce parameter class and regions of interest for merging
+
 Revision 1.33  2002/02/12 17:32:03  cblume
 Rearrange the deleting of the list of sdigitsmanager
 
@@ -567,7 +570,7 @@ Bool_t AliTRDdigitizer::InitDetector()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitizer::MakeBranch(const Char_t *file)
+Bool_t AliTRDdigitizer::MakeBranch(const Char_t *file) const
 {
   // 
   // Create the branches for the digits array
@@ -661,11 +664,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
   }
 
   // Get the pointer to the hit tree
-  TTree *HitTree = gAlice->TreeH();
+  TTree *hitTree = gAlice->TreeH();
 
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
-  Int_t nTrack = (Int_t) HitTree->GetEntries();
+  Int_t nTrack = (Int_t) hitTree->GetEntries();
   if (fDebug > 0) {
     printf("<AliTRDdigitizer::MakeDigits> ");
     printf("Found %d primary particles\n",nTrack);
@@ -678,7 +681,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
 
     gAlice->ResetHits();
-    nBytes += HitTree->GetEvent(iTrack);
+    nBytes += hitTree->GetEvent(iTrack);
 
     // Loop through the TRD hits
     Int_t iHit = 0;
@@ -1449,7 +1452,7 @@ Bool_t AliTRDdigitizer::CheckDetector(Int_t plane, Int_t chamber, Int_t sector)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitizer::WriteDigits()
+Bool_t AliTRDdigitizer::WriteDigits() const
 {
   //
   // Writes out the TRD-digits and the dictionaries

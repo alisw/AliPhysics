@@ -5,6 +5,18 @@
 
 /* $Id$ */
 
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//   The TRD particle identification class                                   //
+//                                                                           //
+//   Its main purposes are:                                                  //
+//      - Creation and bookkeeping of the propability distributions          //
+//      - Assignment of a e/pi propability to a given track based on         //
+//        the LQ method                                                      //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliTRDpid.h"
 
 class AliTRDpidLQ : public AliTRDpid {
@@ -26,7 +38,7 @@ class AliTRDpidLQ : public AliTRDpid {
   virtual Bool_t        FillSpectra(const AliTRDtrack *t);
 
   Int_t         GetIndex(const AliTRDtrack *t);
-  Int_t         GetIndex(const Int_t imom, const Int_t ipid);
+  Int_t         GetIndex(const Int_t imom, const Int_t ipid) const;
   Int_t         GetIndex(const Float_t mom, const Int_t ipid);
 
           TObjArray*    GetHist() const                     { return fHist;        };

@@ -4,6 +4,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
 
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//  TRD track object                                                       //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
 #include <TObject.h> 
 
 class AliTRDcluster;
@@ -36,7 +42,7 @@ public:
    Double_t GetP()     const {  
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
-   Double_t GetPredictedChi2(const AliTRDcluster*) const ;
+   Double_t GetPredictedChi2(const AliTRDcluster *c) const ;
    Double_t GetPt()    const {return 0.299792458*0.4/GetC()/100;}
    void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const ;
    Double_t GetSigmaC2()   const {return fCcc;}

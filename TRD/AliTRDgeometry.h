@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD geometry class                                                       //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliGeometry.h"
 
 class AliTRDgeometry : public AliGeometry {
@@ -16,7 +22,7 @@ class AliTRDgeometry : public AliGeometry {
   AliTRDgeometry();
   virtual ~AliTRDgeometry();
 
-  virtual void     CreateGeometry(Int_t *idtmed);
+  virtual void     CreateGeometry(Int_t *idtmed) const;
   virtual Int_t    IsVersion() const = 0;
   virtual void     Init();
   virtual Bool_t   Local2Global(Int_t d, Float_t *local, Float_t *global) const;
@@ -63,7 +69,7 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
 
-  virtual Int_t    GetDetectorSec(const Int_t p, const Int_t) const;
+  virtual Int_t    GetDetectorSec(const Int_t p, const Int_t c) const;
   virtual Int_t    GetDetector(const Int_t p, const Int_t c, const Int_t s) const;
   virtual Int_t    GetPlane(const Int_t d)   const;
   virtual Int_t    GetChamber(const Int_t d) const;

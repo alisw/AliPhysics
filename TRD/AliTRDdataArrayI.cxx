@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/02/11 14:27:54  cblume
+Geometry and hit structure update
+
 Revision 1.9  2001/05/07 08:08:05  cblume
 Update of TRD code
 
@@ -159,7 +162,7 @@ void AliTRDdataArrayI::Reset()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArrayI::GetSize()
+Int_t AliTRDdataArrayI::GetSize() const
 {
   //
   // Returns the size of the complete object
@@ -177,7 +180,7 @@ Int_t AliTRDdataArrayI::GetSize()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdataArrayI::GetDataSize()
+Int_t AliTRDdataArrayI::GetDataSize() const
 {
   //
   // Returns the size of only the data part

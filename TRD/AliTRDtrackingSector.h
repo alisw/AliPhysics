@@ -6,6 +6,12 @@
 
 /* $Id: AliTRDtrackingSector.h,v */
 
+/////////////////////////////////////////////////////////////////////////
+//                                                                     //
+//  Tracking sector                                                    //
+//                                                                     //
+/////////////////////////////////////////////////////////////////////////                       
+
 #include <TObject.h>
 
 class AliTRDtimeBin;
@@ -30,10 +36,10 @@ public:
 
 protected:
 
-  Int_t fN;
-  AliTRDgeometry          *fGeom;       // Pointer to TRD geometry
-  AliTRDtimeBin           *fTimeBin;    // Pointer to array of AliTRDtimeBin
-  Float_t                  fTimeBinSize;  // Time bin size in cm  
+  Int_t fN;                                // ???????
+  AliTRDgeometry          *fGeom;          // Pointer to TRD geometry
+  AliTRDtimeBin           *fTimeBin;       // Pointer to array of AliTRDtimeBin
+  Float_t                  fTimeBinSize;   // Time bin size in cm  
 					      
   ClassDef(AliTRDtrackingSector,1)  // Provides tools to address clusters which lay within one sector
 

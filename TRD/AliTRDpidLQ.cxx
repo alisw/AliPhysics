@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/11/07 11:04:22  hristov
+Minor corrections needed on Sun (arrays with undefined size created by new, inline decration removed when the body was hot in the header file)
+
 Revision 1.1  2001/11/06 17:19:41  cblume
 Add detailed geometry and simple simulator
 
@@ -409,7 +412,7 @@ Int_t AliTRDpidLQ::GetIndex(const Float_t mom, const Int_t ipid)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpidLQ::GetIndex(const Int_t imom, const Int_t ipid)
+Int_t AliTRDpidLQ::GetIndex(const Int_t imom, const Int_t ipid) const
 {
   //
   // Returns the histogram index

@@ -7,6 +7,13 @@
 
 #include <TObject.h>
 #include <TArrayF.h>
+ 
+/////////////////////////////////////////////////////////////
+//                                                         //
+//  Array of floats                                        //
+//  Origin M.Ivanov                                        //
+//                                                         //
+/////////////////////////////////////////////////////////////                   
 
 class AliTRDarrayF: public TObject, public TArrayF {
 

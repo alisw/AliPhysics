@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2002/03/25 20:01:49  cblume
+Introduce parameter class
+
 Revision 1.36  2002/02/11 14:25:27  cblume
 Geometry update, compressed hit structure
 
@@ -825,7 +828,7 @@ void AliTRD::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliTRD::DrawModule()
+void AliTRD::DrawModule() const
 {
   //
   // Draw a shaded view of the Transition Radiation Detector version 0
@@ -884,7 +887,7 @@ void AliTRD::DrawModule()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t )
+Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t ) const
 {
   //
   // Distance between the mouse and the TRD detector on the screen
@@ -1287,7 +1290,7 @@ AliHit* AliTRD::NextHit()
 }
 
 //_____________________________________________________________________________
-AliHit* AliTRD::FirstHit2(Int_t track)
+AliHit* AliTRD::FirstHit2(Int_t track) 
 {
   //
   // Initializes the hit iterator.
@@ -1362,14 +1365,14 @@ void AliTRD::MakeBranch2(Option_t *option, const char *file)
             ,branchname);
     }
 
-    const char folder[] = "RunMC/Event/Data";
+    const char kFolder[] = "RunMC/Event/Data";
 
     if (GetDebug()) {
       printf("<AliTRD::MakeBranch2> %15s: Publishing %s to %s\n"
-            ,ClassName(),branchname,folder);
+            ,ClassName(),branchname,kFolder);
     }
 
-    Publish(folder,&fTrackHits,branchname);
+    Publish(kFolder,&fTrackHits,branchname);
 
     if (file) {
       TBranch *b = gAlice->TreeH()->GetBranch(branchname);

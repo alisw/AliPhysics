@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD geometry with holes                                                  //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliTRDgeometry.h"
 
 class AliTRDgeometryHole : public AliTRDgeometry {

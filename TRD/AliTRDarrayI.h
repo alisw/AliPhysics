@@ -7,6 +7,13 @@
 
 #include <TObject.h>
 #include <TArrayI.h>
+ 
+/////////////////////////////////////////////////////////////
+//                                                         //
+//  Array of integers                                      //
+//  Origin M.Ivanov                                        //
+//                                                         //
+/////////////////////////////////////////////////////////////                   
 
 class AliTRDarrayI: public TObject, public TArrayI {
 

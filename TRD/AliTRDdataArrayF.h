@@ -51,8 +51,8 @@ class AliTRDdataArrayF : public AliTRDdataArray {
                                                   
   virtual Float_t GetThreshold() const            { return fThreshold;  };
 
-  virtual Int_t   GetSize();
-  virtual Int_t   GetDataSize(); 
+  virtual Int_t   GetSize() const;
+  virtual Int_t   GetDataSize() const; 
   virtual Int_t   GetOverThreshold(Float_t threshold);  
 
  protected:

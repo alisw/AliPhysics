@@ -12,7 +12,9 @@ class TObjArray;
 class AliTRDpixel;
 
 ///////////////////////////////////////////////////////
+//                                                   //
 //  Stores the pixel-information of one TRD chamber  //
+//                                                   //
 ///////////////////////////////////////////////////////
 
 class AliTRDmatrix : public TObject {

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.1  2000/10/04 16:34:58  cblume
 Replace include files by forward declarations
 
@@ -27,7 +30,9 @@ Add new TRD classes
 */
 
 ///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
 //     Base class for a detector segment                                     // 
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDsegmentID.h"

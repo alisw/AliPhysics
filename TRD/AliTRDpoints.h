@@ -5,6 +5,13 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  This class contains the TRD points for the ALICE event display.          //
+//  Used to seperately display dEdx and TR photon hits.                      //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliPoints.h"
 
 class AliTRDpoints : public AliPoints {

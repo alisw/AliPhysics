@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/02/11 14:21:16  cblume
+Update of the geometry. Get rid of MANY
+
 Revision 1.14  2001/11/06 17:19:41  cblume
 Add detailed geometry and simple simulator
 
@@ -408,7 +411,7 @@ void AliTRDgeometry::SetNTimeBin(const Int_t nbin)
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
+void AliTRDgeometry::CreateGeometry(Int_t *idtmed) const
 {
   //
   // Create TRD geometry

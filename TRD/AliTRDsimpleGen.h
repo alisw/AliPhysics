@@ -5,6 +5,12 @@
  
 /* $Id$ */
  
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Particle generator for the simplescopic TRD simulator                    //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+ 
 #include <TObject.h>
 
 class AliTRDsimpleGen : public TObject {
