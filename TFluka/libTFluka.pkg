@@ -3,7 +3,7 @@ SRCS:=  TFluka.cxx source.cxx
 FSRCS:= FLUKA_input.f
 
 # Headers
-HDRS:=  $(filter-out source.h,$(SRCS:.cxx=.h) )
+HDRS:=  TFluka.h
 
 # ROOT Dictionary
 DHDR:=  TFlukaLinkDef.h
