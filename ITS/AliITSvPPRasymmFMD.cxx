@@ -14,7 +14,6 @@
  **************************************************************************/
 
 /* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Inner Traking System version PPR  asymmetric for the FMD                 //
@@ -5336,7 +5335,6 @@ void AliITSvPPRasymmFMD::StepManager(){
 	return;
     } // end if !Active volume.
     Int_t   copy1,copy2;  
-//    Float_t hits[8];
     Int_t   vol[5];
     TClonesArray &lhits = *fHits;
     //
@@ -5413,23 +5411,13 @@ void AliITSvPPRasymmFMD::StepManager(){
     //
     gMC->TrackPosition(position);
     gMC->TrackMomentum(momentum);
-/*
-    hits[0]=position[0];
-    hits[1]=position[1];
-    hits[2]=position[2];
-    hits[3]=momentum[0];
-    hits[4]=momentum[1];
-    hits[5]=momentum[2];
-    hits[6]=gMC->Edep();
-    hits[7]=gMC->TrackTime();
-*/
     vol[4] = stat0;
     if(gMC->IsTrackEntering()){
 	position0 = position;
 	stat0 = vol[3];
+	return;
     } // end if IsEntering
     // Fill hit structure with this new hit.
-//    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,
 				   gMC->Edep(),gMC->TrackTime(),position,
 				   position0,momentum);
