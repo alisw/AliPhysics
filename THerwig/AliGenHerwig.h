@@ -7,7 +7,8 @@
 
 // Generator using HERWIG as an external generator
 // The main HERWIG options are accessable for the user through this interface.
-
+// Author Andreas Morsch
+// andreas.morsch@cern.ch
 
 #include "AliGenMC.h"
 #include <TString.h>
@@ -57,8 +58,6 @@ class AliGenHerwig : public AliGenMC
     Bool_t SelectFlavor(Int_t pid);
 
  protected:
-    TString     fProjectile;     // Projectile
-    TString     fTarget;         // Target
     TString     fAutPDF;         // PDF group
     Int_t       fModPDF;         // PDF set
     StrucFunc_t fStrucFunc;      //Structure Function
@@ -72,8 +71,6 @@ class AliGenHerwig : public AliGenMC
     Float_t     fMomentum2;      // Momentum of target
     Float_t     fKineBias;       // Bias from kinematic selection
     Int_t       fTrials;         // Number of trials
-    TArrayI     fParentSelect;   // Parent particles to be selected 
-    TArrayI     fChildSelect;    // Decay products to be selected
     Float_t     fXsection;       // Cross-section
     THerwig6    *fHerwig;        // Herwig
     Int_t       fProcess;        // Process number
