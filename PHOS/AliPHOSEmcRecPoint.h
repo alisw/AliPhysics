@@ -79,7 +79,7 @@ public:
     return kTRUE ; } 
   void        Print(Option_t * opt = "void") ; 
 
-  AliPHOSEmcRecPoint & operator = (AliPHOSEmcRecPoint const & rvalue)  {
+  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

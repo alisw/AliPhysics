@@ -59,7 +59,7 @@ public:
   AliRecPoint *         GimeRecPoint(Int_t index, TString s) ; 
   AliPHOSTrackSegment * GimeTrackSegment(Int_t index) ;
   
-  AliPHOSIndexToObject & operator = (AliPHOSIndexToObject const & rvalue) {
+  AliPHOSIndexToObject & operator = (const AliPHOSIndexToObject & rvalue) {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

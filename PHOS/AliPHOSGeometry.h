@@ -47,7 +47,7 @@ public:
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat)  ;
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)  ; 
 
-  AliPHOSGeometry & operator = (AliPHOSGeometry const & rvalue) const {
+  AliPHOSGeometry & operator = (const AliPHOSGeometry  & rvalue) const {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

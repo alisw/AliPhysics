@@ -45,7 +45,7 @@ public:
   Bool_t OpenRootFile(Text_t * name) ;      // opens the root file
   void SavingHistograms() ;                 // Save histograms in a root file
 
-  AliPHOSAnalyze & operator = (AliPHOSAnalyze const & rvalue)  {
+  AliPHOSAnalyze & operator = (const AliPHOSAnalyze & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;
