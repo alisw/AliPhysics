@@ -36,6 +36,7 @@ public:
    AliCluster *GetCluster(Int_t index) const;
    Int_t Clusters2Tracks(const TFile *in, TFile *out);
    Int_t PropagateBack(const TFile *in, TFile *out);
+   Int_t RefitInward(TFile *outTracks, TFile *inTracks);
 
    virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
 
@@ -145,9 +146,11 @@ public:
    };
 
 private:
+
    void MakeSeeds(Int_t i1, Int_t i2);
    Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0);
    Int_t FollowBackProlongation(AliTPCseed &s, const AliTPCtrack &t);
+   Int_t FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track);
 
    AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
    AliTPCtracker &operator=(const AliTPCtracker& r);//dummy assignment operator

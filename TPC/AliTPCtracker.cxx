@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2003/02/25 16:47:58  hristov
+allow back propagation for more than 1 event (J.Chudoba)
+
 Revision 1.26  2003/02/19 08:49:46  hristov
 Track time measurement (S.Radomski)
 
@@ -93,6 +96,8 @@ Splitted from AliTPCtracking
 #include "AliTPCcluster.h"
 #include "AliTPCParam.h"
 #include "AliClusters.h"
+
+#include "TVector2.h"
 
 #include <stdlib.h>
 //_____________________________________________________________________________
@@ -377,6 +382,92 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf) {
 
   return 1;
 }
+//_____________________________________________________________________________
+
+Int_t AliTPCtracker::FollowRefitInward(AliTPCseed *seed, AliTPCtrack *track) {
+  //
+  // This function propagates seed inward TPC using old clusters
+  // from track.
+  // 
+  // Sylwester Radomski, GSI
+  // 26.02.2003
+  //
+
+  Double_t alpha=seed->GetAlpha() - fSectors->GetAlphaShift();
+  TVector2::Phi_0_2pi(alpha);
+  Int_t s=Int_t(alpha/fSectors->GetAlpha())%fN;
+
+  Int_t idx=-1, sec=-1, row=-1;
+  Int_t nc = seed->GetLabel(); // index to start with
+
+  idx=track->GetClusterIndex(nc);
+  sec=(idx&0xff000000)>>24; 
+  row=(idx&0x00ff0000)>>16;
+  
+  if (fSectors==fInnerSec) { if (sec >= fkNIS) row=-1; } 
+  else { if (sec <  fkNIS) row=-1; }   
+
+  Int_t nr=fSectors->GetNRows();
+  for (Int_t i=0; i<nr; i++) {
+
+    Double_t x=fSectors->GetX(i); 
+    if (!seed->PropagateTo(x)) return 0;
+
+    // Change sector and rotate seed if necessary
+
+    Double_t ymax=fSectors->GetMaxY(i);
+    Double_t y=seed->GetY();
+
+    if (y > ymax) {
+       s = (s+1) % fN;
+       if (!seed->Rotate(fSectors->GetAlpha())) return 0;
+    } else if (y <-ymax) {
+       s = (s-1+fN) % fN;
+       if (!seed->Rotate(-fSectors->GetAlpha())) return 0;
+    }
+
+    // try to find a cluster
+    
+    AliTPCcluster *cl=0;
+    Int_t index = 0;
+    Double_t maxchi2 = kMaxCHI2;
+    
+    //cout << i << " " << row << " " << nc << endl;
+
+    if (row==i) {
+
+      // accept already found cluster
+      AliTPCcluster *c=(AliTPCcluster*)GetCluster(idx);
+      Double_t chi2 = seed->GetPredictedChi2(c);
+      
+      index=idx; 
+      cl=c; 
+      maxchi2=chi2;
+      
+      if (++nc < track->GetNumberOfClusters() ) {
+        idx=track->GetClusterIndex(nc); 
+        sec=(idx&0xff000000)>>24; 
+        row=(idx&0x00ff0000)>>16;
+      }
+            
+      if (fSectors==fInnerSec) { if (sec >= fkNIS) row=-1; }
+      else { if (sec < fkNIS) row=-1; }   
+      
+    }
+    
+    if (cl) {
+      
+      //cout << "Assigned" << endl;
+      Float_t l=fSectors->GetPadPitchWidth();
+      Float_t corr=1.; if (i>63) corr=0.67; // new (third) pad response !
+      seed->SetSampledEdx(cl->GetQ()/l*corr,seed->GetNumberOfClusters());
+      seed->Update(cl,maxchi2,index);
+    }
+  }
+
+  seed->SetLabel(nc);
+  return 1;
+}
 
 //_____________________________________________________________________________
 Int_t AliTPCtracker::FollowBackProlongation
@@ -645,7 +736,7 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
   sprintf(tname,"TreeT_TPC_%d",GetEventNumber());
   TTree tracktree(tname,"Tree with TPC tracks");
   AliTPCtrack *iotrack=0;
-  tracktree.Branch("tracks","AliTPCtrack",&iotrack,32000,0);
+  tracktree.Branch("tracks","AliTPCtrack",&iotrack,32000,3);
 
   //find track seeds
   Int_t nup=fOuterSec->GetNRows(), nlow=fInnerSec->GetNRows();
@@ -704,6 +795,93 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
 
   UnloadClusters();
   fSeeds->Clear(); delete fSeeds; fSeeds=0;
+
+  return 0;
+}
+//_____________________________________________________________________________
+
+Int_t AliTPCtracker::RefitInward(TFile *in, TFile *out) {
+  //
+  // The function propagates tracks throught TPC inward
+  // using already associated clusters.
+  //
+  // in - file with back propagated tracks
+  // outs  - file with inward propagation
+  //
+  // Sylwester Radomski, GSI
+  // 26.02.2003
+  //
+
+
+  if (!in->IsOpen()) {
+    cout << "Input File not open !\n" << endl;
+    return 1;
+  }
+  
+  if (!out->IsOpen()) {
+    cout << "Output File not open !\n" << endl;
+    return 2;
+  }
+
+  TDirectory *savedir = gDirectory; 
+  LoadClusters();
+
+  // Connect to input tree
+  in->cd();
+  TTree *inputTree = (TTree*)in->Get("seedsTPCtoTRD_0");
+  TBranch *inBranch = inputTree->GetBranch("tracks");
+  AliTPCtrack *inTrack = 0;
+  inBranch->SetAddress(&inTrack);
+
+  Int_t nTracks = (Int_t)inputTree->GetEntries();
+
+  // Create output tree
+  out->cd(); 
+  AliTPCtrack *outTrack = new AliTPCtrack();
+  TTree *outputTree = new TTree("tracksTPC_0","Refited TPC tracks");
+  outputTree->Branch("tracks", "AliTPCtrack", &outTrack, 32000, 3);
+
+  Int_t nRefited = 0;
+
+  for(Int_t t=0; t < nTracks; t++) {
+    
+    cout << t << "\r";
+
+    inputTree->GetEvent(t);
+    AliTPCseed *seed = new AliTPCseed(*inTrack, inTrack->GetAlpha());
+
+    seed->ResetCovariance();
+
+    seed->SetLabel(0);    
+    fSectors = fInnerSec;
+    Int_t res = FollowRefitInward(seed, inTrack);
+    UseClusters(seed);
+    Int_t nc = seed->GetNumberOfClusters();
+
+    fSectors = fOuterSec;
+    res = FollowRefitInward(seed, inTrack);
+    UseClusters(seed, nc);
+
+    if (res) {
+      seed->PropagateTo(fParam->GetInnerRadiusLow());
+      outTrack = (AliTPCtrack*)seed;
+      outTrack->SetLabel(inTrack->GetLabel());
+      outputTree->Fill();
+      nRefited++;
+    }
+
+    delete seed;
+  }
+
+  cout << "Refitted " << nRefited << " tracks." << endl;
+
+  outputTree->Write();
+  
+  if (inputTree) delete inputTree;
+  if (outputTree) delete outputTree;
+
+  savedir->cd();
+  UnloadClusters();
 
   return 0;
 }
@@ -843,10 +1021,11 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   
   sprintf(tName,"seedsTPCtoTRD_%d",GetEventNumber());
   TTree backTree(tName,"Tree with back propagated TPC tracks");
+
   AliTPCtrack *otrack=0;
   backTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);
 
-//*** Back propagation through inner sectors
+  //*** Back propagation through inner sectors
   fSectors=fInnerSec; fN=fkNIS;
   Int_t nseed=fSeeds->GetEntriesFast();
   for (i=0; i<nseed; i++) {
