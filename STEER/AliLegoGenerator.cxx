@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/26 14:15:54  morsch
+- Base class now
+- Change from theta, phi to general coordinates Coor1, Coor2
+- PropagateCylinder: bug in calculation of distance to limiting radius corrected.
+
 Revision 1.2  2000/07/13 16:19:09  fca
 Mainly coding conventions + some small bug fixes
 
@@ -135,7 +140,7 @@ void AliLegoGenerator::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, "LEGO ray", ntr);
+   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }
 

@@ -15,8 +15,6 @@
 
 // --- Standard library ---
 
-#include "assert.h"
-#include "iostream.h"
 
 // --- ROOT system ---
 

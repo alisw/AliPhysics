@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.11  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -50,15 +53,11 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-#include <TClass.h>
 #include <TNode.h>
-#include <TRandom.h>
 #include "TSystem.h"
 
 #include "AliModule.h"
 #include "AliRun.h"
-#include "AliHit.h"
-#include "AliPoints.h"
 #include "AliMagF.h"
 #include "AliMC.h"
 
@@ -113,6 +112,7 @@ AliModule::AliModule(const char* name,const char *title):TNamed(name,title)
   // Prepare to find the tracking media range
   fLoMedium = 65536;
   fHiMedium = 0;
+  SetDebug(gAlice->GetDebug());
 }
  
 //_____________________________________________________________________________
@@ -332,6 +332,18 @@ AliModule& AliModule::operator=(const AliModule &mod)
 {
   mod.Copy(*this);
   return (*this);
+}
+
+//_____________________________________________________________________________
+Float_t AliModule::ZMin() const
+{
+  return -500;
+}
+
+//_____________________________________________________________________________
+Float_t AliModule::ZMax() const
+{
+  return 500;
 }
 
 //_____________________________________________________________________________

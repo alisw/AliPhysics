@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/06/14 15:20:40  morsch
+Include clean-up (IH)
+
 Revision 1.10  2000/06/09 20:31:34  morsch
 All coding rule violations except RS3 corrected
 
@@ -251,13 +254,13 @@ void AliGenFLUKAsource::Generate()
 	wgt = (part == 13) ? fWgt*fAddWeight : fWgt;
 	iwgt=Int_t(wgt);
 	fwgt=wgt-Float_t(iwgt);
-	gMC->Rndm(random,2);
+	Rndm(random,2);
 	if (random[0] < fwgt) iwgt++;
 	if (part==1 && iwgt>100) iwgt=100;
 	Int_t nstack=0;
 	for (j=0; j<iwgt; j++) {
-	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,fAge,"Primary",nt);
-	    gMC->Rndm(random,2);
+	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,fAge,kPPrimary,nt);
+	    Rndm(random,2);
 	    phi=2*random[1]*TMath::Pi();
 	    Float_t pn1=p[0]*TMath::Sin(phi) - p[1]*TMath::Cos(phi);
 	    Float_t pn2=p[0]*TMath::Cos(phi) + p[1]*TMath::Sin(phi);

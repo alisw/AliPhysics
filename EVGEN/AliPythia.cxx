@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/20 06:30:06  fca
+Use version 0 to avoid streamer generation
+
 Revision 1.10  2000/10/06 14:18:44  morsch
 Upper cut of prim. pT distribution set to 5. GeV
 
@@ -41,7 +44,6 @@ Introduction of the Copyright and cvs Log
 
 
 #include "AliPythia.h"
-#include "AliRun.h"
 
 ClassImp(AliPythia)
 

@@ -15,11 +15,15 @@
 
 /*
 $Log$
+Revision 1.1  2000/09/08 15:37:58  morsch
+pt and y-parameterisations for PMD physics simulation.
+THIS VERSION IS JUST A TEMPLATE THE PT AND Y DISTRIBUTIONS HAVE TO BE CORRECTED !!!!.
+
 */
 
 #include "AliGenPMDlib.h"
-#include "AliMC.h"
 #include "AliPDG.h"
+#include "TMath.h"
 
 ClassImp(AliGenPMDlib)
 //
@@ -75,7 +79,7 @@ Double_t AliGenPMDlib::YPi0( Double_t *py, Double_t *dummy)
 
 //                 particle composition
 //
-Int_t AliGenPMDlib::IpPi0()
+Int_t AliGenPMDlib::IpPi0(TRandom *)
 {
 // Pi0
     return kPi0;
@@ -135,7 +139,7 @@ Double_t AliGenPMDlib::YEta( Double_t *py, Double_t *dummy)
 
 //                 particle composition
 //
-Int_t AliGenPMDlib::IpEta()
+Int_t AliGenPMDlib::IpEta(TRandom *)
 {
     return 221;
 }
@@ -180,7 +184,7 @@ GenFunc AliGenPMDlib::GetY(Param_t param, const char* tname)
     return func;
 
 }
-typedef Int_t (*GenFuncIp) ();
+typedef Int_t (*GenFuncIp) (TRandom *);
 GenFuncIp AliGenPMDlib::GetIp(Param_t param,  const char* tname)
 {
 // Return pointer to particle type parameterisation

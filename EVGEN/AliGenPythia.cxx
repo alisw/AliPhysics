@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2000/10/18 19:11:27  hristov
+Division by zero fixed
+
 Revision 1.24  2000/09/18 10:41:35  morsch
 Add possibility to use nuclear structure functions from PDF library V8.
 
@@ -271,7 +274,8 @@ void AliGenPythia::Generate()
 			    pP[3] = massP;
 			    gAlice->SetTrack(0,-1,-1,
 					     pP,originP,polar,
-					     0,"Hard Scat.",ntP,fParentWeight);
+					     0,kPPrimary,ntP,fParentWeight);
+//					     0,"Hard Scat.",ntP,fParentWeight);
 			    gAlice->KeepTrack(ntP);
 			}
 			nc++;
@@ -292,7 +296,7 @@ void AliGenPythia::Generate()
 			  if (fForceDecay == nodecay) trackit = 1;
 			    gAlice->SetTrack(trackit,ntP,kf,
 					     p,origin,polar,
-					     0,"Primary",nt,fParentWeight);
+					     0,kPPrimary,nt,fParentWeight);
 			    gAlice->KeepTrack(nt);
 			    Int_t iparent = nt;
 //
@@ -315,7 +319,7 @@ void AliGenPythia::Generate()
 				    Float_t tof=kconv*ichild->T();
 				    gAlice->SetTrack(fTrackIt, iparent, kf,
 						     p,origin,polar,
-						     tof,"Decay",nt,fChildWeight);
+						     tof,kPDecay,nt,fChildWeight);
 				    gAlice->KeepTrack(nt);
 				  } // select child
 				} // child loop
@@ -342,7 +346,7 @@ void AliGenPythia::Generate()
 			origin[2]=origin0[2]+iparticle->Vz()/10.;
 			Float_t tof=kconv*iparticle->T();
 			gAlice->SetTrack(fTrackIt,-1,kf,p,origin,polar,
-					 tof,"Primary",nt);
+					 tof,kPPrimary,nt);
 			gAlice->KeepTrack(nt);
 		} // select particle
 	    } // particle loop 
@@ -550,8 +554,18 @@ void AliGenPythia::Streamer(TBuffer &R__b)
 
 
 
+#ifndef WIN32
+#define pyr    pyr_
+#define pyrset pyrset_
+#define pyrget pyrget_
+#else
+#define pyr    PYR
+#define pyrset PYRSET
+#define pyrget PYRGET
+#endif
 
-
-
-
-
+extern "C" {
+  Double_t pyr(Int_t*) {return sRandom->Rndm();}
+  void pyrset(Int_t*,Int_t*) {}
+  void pyrget(Int_t*,Int_t*) {}
+}

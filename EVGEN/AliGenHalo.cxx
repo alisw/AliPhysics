@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 15:20:40  morsch
+Direct reference to default input file removed.
+
 Revision 1.7  2000/06/30 12:19:07  morsch
 Type of fFileName changed to TString, fp has been !-ed.
 
@@ -127,10 +130,12 @@ void AliGenHalo::Generate()
       p[1]=p0*ty;
       p[2]=p0*tz;
       fParentWeight=wgt;
-      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo+",nt,fParentWeight);
+      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+//      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo+",nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
-      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo-",nt,fParentWeight);
+      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+//      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo-",nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
   }

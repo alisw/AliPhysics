@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/10/27 13:54:45  morsch
+Remove explicite reference to input file from constuctor.
+
 Revision 1.11  2000/10/02 21:28:06  fca
 Removal of useless dependecies via forward declarations
 
@@ -145,7 +148,7 @@ void AliGenExtFile::Generate()
 
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
   if(fVertexSmear==kPerTrack) {
-    gMC->Rndm(random,6);
+    Rndm(random,6);
     for (j=0;j<3;j++) {
 	origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
@@ -188,14 +191,14 @@ void AliGenExtFile::Generate()
 	  p[2]=prwn*TMath::Cos(fTheta);
 	  
 	  if(fVertexSmear==kPerTrack) {
-	      gMC->Rndm(random,6);
+	      Rndm(random,6);
 	      for (j=0;j<3;j++) {
 		  origin[j]=fOrigin[j]
 		      +fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	      }
 	  }
-	  gAlice->SetTrack(fTrackIt,-1,fIdpart,p,origin,polar,0,"Primary",nt);
+	  gAlice->SetTrack(fTrackIt,-1,fIdpart,p,origin,polar,0,kPPrimary,nt);
       }
       fNcurrent++;
       nb = (Int_t)h2->GetEvent(fNcurrent); 

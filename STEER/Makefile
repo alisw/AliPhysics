@@ -16,12 +16,14 @@ SRCS          = AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
 		AliGeometry.cxx	AliRecPoint.cxx	AliSegmentation.cxx \
 	        AliHitMap.cxx	AliMagFC.cxx	AliMagFCM.cxx \
 		AliMagFDM.cxx	AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx\
-                AliLegoGeneratorEta.cxx \
-		AliKalmanTrack.cxx		AliCluster.cxx
+                AliLegoGeneratorEta.cxx 	AliRndm.cxx \
+		AliKalmanTrack.cxx		AliCluster.cxx \
+		AliMCQA.cxx
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) AliPDG.h $(ROOTSYS)/include/TH2.h STEERLinkDef.h 
+HDRS          = $(SRCS:.cxx=.h) AliPDG.h $(ROOTSYS)/include/TH2.h \
+				$(ROOTSYS)/include/TRandom.h STEERLinkDef.h 
 
 # Library dictionary
 
@@ -64,7 +66,7 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-HEADERS 	= $(SRCS:.cxx=.h) AliPDG.h AliConst.h AliCallf77.h 
+HEADERS 	= $(SRCS:.cxx=.h) AliPDG.h AliConst.h AliCallf77.h AliMCProcess.h
 
 TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.5  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -43,9 +46,8 @@ Y.Schutz new classes for reconstruction
 //*-- Author : Yves Schutz  SUBATECH 
 //////////////////////////////////////////////////////////////////////////////
 
-// --- ROOT system ---
 
-#include "TObjArray.h"
+// --- ROOT system ---
 
 // --- Standard library ---
 

@@ -6,6 +6,7 @@
 /* $Id$ */
 
 #include "AliGenLib.h"
+class TRandom;
 
 class AliGenGSIlib :public AliGenLib {
  public:
@@ -13,19 +14,19 @@ class AliGenGSIlib :public AliGenLib {
 // Upsilon RITMAN   
     static Double_t PtUpsilonRitman( Double_t *px, Double_t *dummy );
     static Double_t YUpsilonRitman(Double_t *py, Double_t *dummy);
-    static Int_t    IpUpsilonRitman();
+    static Int_t    IpUpsilonRitman(TRandom *ran);
 // Upsilon Karel
     static Double_t PtUpsilonKarel( Double_t *px, Double_t *dummy );
     static Double_t YUpsilonKarel(Double_t *py, Double_t *dummy);
-    static Int_t    IpUpsilonKarel();
+    static Int_t    IpUpsilonKarel(TRandom *ran);
 // YpsMUON
     static Double_t PtUpsilonMUON( Double_t *px, Double_t *dummy );
     static Double_t YUpsilonMUON(Double_t *py, Double_t *dummy);
-    static Int_t    IpUpsilonMUON();
+    static Int_t    IpUpsilonMUON(TRandom *ran);
 
 //
     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
-    typedef Int_t    (*GenFuncIp)();
+    typedef Int_t    (*GenFuncIp)(TRandom *ran);
     
     GenFunc   GetPt(Param_t param, const char * tname=0);
     GenFunc   GetY(Param_t param,  const char * tname=0);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/06/15 08:48:43  morsch
+AliGenGSIlib with parametersations for GSI physics simulation added (YF, MI)
+
 Revision 1.7  2000/05/02 08:12:13  morsch
 Coding rule violations corrected.
 
@@ -23,8 +26,10 @@ Introduction of the Copyright and cvs Log
 
 */
 
+#include "TMath.h"
+#include "TString.h"
+
 #include "AliGenGSIlib.h"
-#include "AliRun.h"
 #include "iostream.h"
 
 ClassImp(AliGenGSIlib)
@@ -81,7 +86,7 @@ Double_t AliGenGSIlib::YUpsilonRitman(Double_t *py, Double_t *dummy)
 }
 //                 particle composition
 //
-Int_t AliGenGSIlib::IpUpsilonRitman()
+Int_t AliGenGSIlib::IpUpsilonRitman(TRandom *)
 {
 // y composition
   if (fgDebug) cout<<"Ritman Ip paramtrisation\n";
@@ -113,7 +118,7 @@ Double_t AliGenGSIlib::YUpsilonKarel(Double_t *py, Double_t *dummy)
 //                 particle composition
 //
 
-Int_t AliGenGSIlib::IpUpsilonKarel()
+Int_t AliGenGSIlib::IpUpsilonKarel(TRandom *)
 {
   // y composition//
   //to implement
@@ -153,7 +158,7 @@ Double_t AliGenGSIlib::YUpsilonMUON(Double_t *py, Double_t *dummy)
 }
 //                 particle composition
 //
-Int_t AliGenGSIlib::IpUpsilonMUON()
+Int_t AliGenGSIlib::IpUpsilonMUON(TRandom *)
 {
 // y composition
     return 553;
@@ -162,7 +167,7 @@ Int_t AliGenGSIlib::IpUpsilonMUON()
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
 
-typedef Int_t (*GenFuncIp) ();
+typedef Int_t (*GenFuncIp) (TRandom *);
 
 
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/02 21:28:06  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.2  2000/06/09 20:37:51  morsch
 All coding rule violations except RS3 corrected
 
@@ -25,7 +28,6 @@ First commit of this file
 
 #include "AliGenDoubleScan.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
  ClassImp(AliGenDoubleScan)
     
@@ -84,7 +86,7 @@ void AliGenDoubleScan::Generate()
     for (Int_t ix=0; ix<fNx; ix++) {
       for (Int_t iy=0; iy<fNy; iy++) {
 	  for (Int_t iz=0; iz<fNz; iz++){
-	      gMC->Rndm(random,6);
+	      Rndm(random,6);
 	      origin[0]=fXmin+ix*dx+2*(random[0]-0.5)*fOsigma[0];
 	      origin[1]=fYmin+iy*dy+2*(random[1]-0.5)*fOsigma[1];
 	      origin[2]=fZmin+iz*dz+2*(random[2]-0.5)*fOsigma[2];	     
@@ -94,11 +96,11 @@ void AliGenDoubleScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,"Primary",nt);
+	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 //
 // Generate 2nd particle at distance fDistance from  the first
 //
-	      gMC->Rndm(random,6);
+	      Rndm(random,6);
 	      Float_t phi2=2.*TMath::Pi()*random[0];
 	      Float_t dx  =fDistance*TMath::Sin(phi2);
 	      Float_t dy  =fDistance*TMath::Cos(phi2);	      
@@ -110,7 +112,7 @@ void AliGenDoubleScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,"Primary",nt);
+	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 	  }
       }
   }

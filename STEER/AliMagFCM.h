@@ -6,7 +6,7 @@
 /* $Id$ */
 
 #include "AliMagF.h"
-#include "TVector.h"
+class TVector;
 
 class AliMagFCM : public AliMagF
 {

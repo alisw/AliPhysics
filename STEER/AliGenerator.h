@@ -15,10 +15,11 @@
 #include "TLorentzVector.h"
 #include "TArrayF.h"
 #include "TGenerator.h"
+#include "AliRndm.h"
 
 typedef enum { kNoSmear, kPerEvent, kPerTrack } VertexSmear_t;
 
-class AliGenerator : public TNamed
+class AliGenerator : public TNamed, public AliRndm
 {
 
  public:

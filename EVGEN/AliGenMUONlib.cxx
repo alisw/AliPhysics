@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.10  2000/06/29 21:08:27  morsch
+All paramatrisation libraries derive from the pure virtual base class AliGenLib.
+This allows to pass a pointer to a library directly to AliGenParam and avoids the
+use of function pointers in Config.C.
+
 Revision 1.9  2000/06/14 15:20:56  morsch
 Include clean-up (IH)
 
@@ -29,8 +34,10 @@ Introduction of the Copyright and cvs Log
 
 */
 
+#include "TMath.h"
+#include "TRandom.h"
+
 #include "AliGenMUONlib.h"
-#include "AliMC.h"
 
 ClassImp(AliGenMUONlib)
 //
@@ -77,12 +84,10 @@ Double_t AliGenMUONlib::YPion( Double_t *py, Double_t *dummy)
 }
 //                 particle composition
 //
-Int_t AliGenMUONlib::IpPion()
+Int_t AliGenMUONlib::IpPion(TRandom *ran)
 {
 // Pion composition 
-    Float_t random[1];
-    gMC->Rndm(random,1);
-    if (random[0] < 0.5) {
+    if (ran->Rndm() < 0.5) {
 	return  211;
     } else {
 	return -211;
@@ -137,12 +142,10 @@ Double_t AliGenMUONlib::YKaon( Double_t *py, Double_t *dummy)
 
 //                 particle composition
 //
-Int_t AliGenMUONlib::IpKaon()
+Int_t AliGenMUONlib::IpKaon(TRandom *ran)
 {
 // Kaon composition
-    Float_t random[1];
-    gMC->Rndm(random,1);
-    if (random[0] < 0.5) {
+    if (ran->Rndm() < 0.5) {
 	return  321;
     } else {
 	return -321;
@@ -183,7 +186,7 @@ Double_t AliGenMUONlib::YJpsi(Double_t *py, Double_t *dummy)
 }
 //                 particle composition
 //
-Int_t AliGenMUONlib::IpJpsi()
+Int_t AliGenMUONlib::IpJpsi(TRandom *)
 {
 // J/Psi composition
     return 443;
@@ -224,7 +227,7 @@ Double_t AliGenMUONlib::YUpsilon(Double_t *py, Double_t *dummy)
 }
 //                 particle composition
 //
-Int_t AliGenMUONlib::IpUpsilon()
+Int_t AliGenMUONlib::IpUpsilon(TRandom *)
 {
 // y composition
     return 553;
@@ -250,7 +253,7 @@ Double_t AliGenMUONlib::YPhi( Double_t *px, Double_t *dummy)
 }
 //                 particle composition
 //
-Int_t AliGenMUONlib::IpPhi()
+Int_t AliGenMUONlib::IpPhi(TRandom *)
 {
 // Phi composition
     return 41;
@@ -280,23 +283,23 @@ Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t *dummy)
     return YJpsi(px,dum);
 }
 
-Int_t AliGenMUONlib::IpCharm()
+Int_t AliGenMUONlib::IpCharm(TRandom *ran)
 {  
 // Charm composition
-    Float_t random[2];
+    Float_t random;
     Int_t ip;
 //    411,421,431,4122
-    gMC->Rndm(random,2);
-    if (random[0] < 0.5) {
+    random = ran->Rndm();
+    if (random < 0.5) {
 	ip=411;
-    } else if (random[0] < 0.75) {
+    } else if (random < 0.75) {
 	ip=421;
-    } else if (random[0] < 0.90) {
+    } else if (random < 0.90) {
 	ip=431;
     } else {
 	ip=4122;
     }
-    if (random[1] < 0.5) {ip=-ip;}
+    if (ran->Rndm() < 0.5) {ip=-ip;}
     
     return ip;
 }
@@ -326,22 +329,22 @@ Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t *dummy)
     return YJpsi(px,dum);
 }
 
-Int_t AliGenMUONlib::IpBeauty()
+Int_t AliGenMUONlib::IpBeauty(TRandom *ran)
 {  
 // Beauty Composition
-    Float_t random[2];
+    Float_t random;
     Int_t ip;
-    gMC->Rndm(random,2);
-    if (random[0] < 0.5) {
+    random = ran->Rndm();
+    if (random < 0.5) {
 	ip=511;
-    } else if (random[0] < 0.75) {
+    } else if (random < 0.75) {
 	ip=521;
-    } else if (random[0] < 0.90) {
+    } else if (random < 0.90) {
 	ip=531;
     } else {
 	ip=5122;
     }
-    if (random[1] < 0.5) {ip=-ip;}
+    if (ran->Rndm() < 0.5) {ip=-ip;}
     
     return ip;
 }
@@ -414,7 +417,7 @@ GenFunc AliGenMUONlib::GetY(Param_t param, const char* tname)
     }
     return func;
 }
-typedef Int_t (*GenFuncIp) ();
+typedef Int_t (*GenFuncIp) (TRandom *);
 GenFuncIp AliGenMUONlib::GetIp(Param_t param,  const char* tname)
 {
 // Return pointer to particle type parameterisation

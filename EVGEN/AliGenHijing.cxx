@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.13  2000/11/09 17:40:27  morsch
+Possibility to select/unselect spectator protons and neutrons.
+Method SetSpectators(Int_t spect) added. (FCA, Ch. Oppedisano)
+
 Revision 1.12  2000/10/20 13:38:38  morsch
 Debug printouts commented.
 
@@ -60,7 +64,6 @@ AliGenerator interface class to HIJING using THijing (test version)
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
 #include <TArrayI.h>
 #include <TParticle.h>
@@ -155,7 +158,7 @@ void AliGenHijing::Generate()
     fTrials=0;
     for (j=0;j<3;j++) origin0[j]=fOrigin[j];
     if(fVertexSmear==kPerEvent) {
-	gMC->Rndm(random,6);
+	Rndm(random,6);
 	for (j=0;j<3;j++) {
 	    origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
@@ -223,7 +226,7 @@ void AliGenHijing::Generate()
 //		printf("\n set track mother: %d %d %d %d %d %d ",i,imo, kf, nt+1, selected, hasSelectedDaughters);
 
 		gAlice->SetTrack(0,imo,kf,p,origin,polar,
-				 tof,"Primary",nt);
+				 tof,kPPrimary,nt);
 // ... and keep it there
 		gAlice->KeepTrack(nt);
 //
@@ -268,7 +271,8 @@ void AliGenHijing::Generate()
 		}
 // Put particle on the stack
 		gAlice->SetTrack(fTrackIt,imo,kf,p,origin,polar,
-				 tof,"Secondary",nt);
+				 tof,kPNoProcess,nt);
+//				 tof,"Secondary",nt);
 
 //		printf("\n set track final: %d %d %d",imo, kf, nt);
 		gAlice->KeepTrack(nt);
@@ -479,6 +483,30 @@ AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
 {
 // Assignment operator
     return *this;
+}
+
+#ifndef WIN32
+# define rluget_hijing rluget_hijing_
+# define rluset_hijing rluset_hijing_
+# define rlu_hijing    rlu_hijing_
+# define type_of_call
+#else
+# define rluget_hijing RLUGET_HIJING
+# define rluset_hijing RLUSET_HIJING
+# define rlu_hijing    RLU_HIJING
+# define type_of_call _stdcall
+#endif
+
+
+extern "C" {
+  void type_of_call rluget_hijing(Int_t & /*lfn*/, Int_t & /*move*/)
+  {printf("Dummy version of rluget_hijing reached\n");}
+
+  void type_of_call rluset_hijing(Int_t & /*lfn*/, Int_t & /*move*/)
+  {printf("Dummy version of rluset_hijing reached\n");}
+
+  Double_t type_of_call rlu_hijing(Int_t & /*idum*/) 
+  {return sRandom->Rndm();}
 }
 
 

@@ -10,9 +10,13 @@ class TList;
 class TTree;
 class TGeometry;
 class TDatabasePDG;
+class TRandom;
+class AliMCQA;
 #include <TArrayI.h>
+#include "TClonesArray.h"
 #include <TArrayF.h>
 #include <TStopwatch.h>
+#include "TNamed.h"
 
 class AliDetector;
 class AliModule;
@@ -22,8 +26,9 @@ class AliLego;
 class AliDisplay;
 class AliLegoGenerator;
 #include "AliHeader.h"
-#include "AliGenerator.h"
-#include "AliLegoGenerator.h"
+class AliGenerator;
+class AliLegoGenerator;
+#include "AliMCProcess.h"
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
@@ -52,6 +57,8 @@ public:
    virtual  void  DumpPStack () const;
    virtual AliMagF *Field() const {return fField;}
    virtual  void  FillTree();
+   virtual  void  PreTrack();
+   virtual  void  PostTrack();
    virtual  void  FinishPrimary();
    virtual  void  FinishEvent();
    virtual  void  FinishRun();
@@ -64,6 +71,7 @@ public:
    Int_t          GetDebug() const {return fDebug;}
    AliModule     *GetModule(const char *name) const;
    AliDetector   *GetDetector(const char *name) const;
+   AliMCQA       *GetMCQA() const {return fMCQA;}
    Int_t          GetModuleID(const char *name) const;
    virtual  Int_t GetEvent(Int_t event);
    virtual  void  SetEvent(Int_t event) {fEvent=event;}
@@ -90,6 +98,7 @@ public:
    virtual  void  ResetHits();
    virtual  void  ResetPoints();
    virtual  void  SetTransPar(char *filename="$(ALICE_ROOT)/data/galice.cuts");
+   virtual  void  ReadTransPar();
    virtual  void  ResetStack() {fCurrent=-1;fHgwmk=0;fNtrack=0;fParticles->Clear();}
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
    virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") 
@@ -105,7 +114,7 @@ public:
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, char*filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
   			       Float_t *pmom, Float_t *vpos, Float_t *polar, 
-                               Float_t tof, const char *mecha, Int_t &ntr,
+                               Float_t tof, AliMCProcess mech, Int_t &ntr,
                                Float_t weight=1);
   virtual  void  KeepTrack(const Int_t itra);
    virtual  void  MediaTable();
@@ -159,13 +168,16 @@ protected:
   TArrayF       fSummEnergy;   //Energy per event in each volume
   TArrayF       fSum2Energy;   //Energy squared per event in each volume
   TString       fConfigFunction; //Configuration file to be executed
+  TRandom      *fRandom;       // Pointer to the random number generator
+  AliMCQA      *fMCQA;         //Pointer to MC Quality assurance class
+  TString       fTransParName; // Name of the transport parameters file
 
 private:
 
    AliRun(const AliRun &) {}
    AliRun& operator = (const AliRun &) {return *this;}
 
-   ClassDef(AliRun,3)      //Supervisor class for all Alice detectors
+   ClassDef(AliRun,4)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

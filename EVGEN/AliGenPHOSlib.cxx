@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/29 21:08:27  morsch
+All paramatrisation libraries derive from the pure virtual base class AliGenLib.
+This allows to pass a pointer to a library directly to AliGenParam and avoids the
+use of function pointers in Config.C.
+
 Revision 1.4  2000/06/14 15:21:05  morsch
 Include clean-up (IH)
 
@@ -51,8 +56,10 @@ New version from G.Martinez & A.Morsch
 //     martinez@subatech.in2p3.fr
 //======================================================================
 
+#include "TMath.h"
+#include "TRandom.h"
+
 #include "AliGenPHOSlib.h"
-#include "AliMC.h"
 
 ClassImp(AliGenPHOSlib)
 
@@ -105,21 +112,20 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpPion()
+ Int_t AliGenPHOSlib::IpPion(TRandom *ran)
 {
 //                 particle composition pi+, pi0, pi-
 //
 
-    Float_t random[1];
-    gMC->Rndm(random,1);
+    Float_t random = ran->Rndm();
 
-    if ( (3.*random[0])  < 1. ) 
+    if ( (3.*random)  < 1. ) 
     {
           return 211 ;
     } 
     else
     {  
-      if ( (3.*random[0]) >= 2.)
+      if ( (3.*random) >= 2.)
       {
          return -211 ;
       }
@@ -185,17 +191,16 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpKaon()
+ Int_t AliGenPHOSlib::IpKaon(TRandom *ran)
 {
 //                 particle composition
 //
 
-    Float_t random[1],random2[1];
-    gMC->Rndm(random,1);
-    gMC->Rndm(random2,1);
-    if (random2[0] < 0.5) 
+    Float_t random = ran->Rndm();
+    Float_t random2 = ran->Rndm();
+    if (random2 < 0.5) 
     {
-      if (random[0] < 0.5) {       
+      if (random < 0.5) {       
         return  321;   //   K+
       } else {
         return -321;   // K-
@@ -203,7 +208,7 @@ ClassImp(AliGenPHOSlib)
     }
     else
     {  
-      if (random[0] < 0.5) {       
+      if (random < 0.5) {       
         return  130;   // K^0 short
       } else {  
         return  310;   // K^0 long
@@ -238,7 +243,7 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpEta()
+ Int_t AliGenPHOSlib::IpEta(TRandom *)
 {
 //                 particle composition
 //
@@ -273,7 +278,7 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpOmega()
+ Int_t AliGenPHOSlib::IpOmega(TRandom *)
 {
 //                 particle composition
 //
@@ -308,7 +313,7 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpEtaprime()
+ Int_t AliGenPHOSlib::IpEtaprime(TRandom *)
 {
 //                 particle composition
 //
@@ -343,7 +348,7 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpPhi()
+ Int_t AliGenPHOSlib::IpPhi(TRandom *)
 {
 //                 particle composition
 //
@@ -378,17 +383,16 @@ ClassImp(AliGenPHOSlib)
   return ka*TMath::Exp(-ex);
 }
 
- Int_t AliGenPHOSlib::IpBaryon()
+ Int_t AliGenPHOSlib::IpBaryon(TRandom *ran)
 {
 //                 particle composition
 //
 
-    Float_t random[1],random2[1];
-    gMC->Rndm(random,1);
-    gMC->Rndm(random2,1);
-    if (random2[0] < 0.5) 
+    Float_t random = ran->Rndm();
+    Float_t random2 = ran->Rndm();
+    if (random2 < 0.5) 
     {
-      if (random[0] < 0.5) {       
+      if (random < 0.5) {       
         return  2212;   //   p
       } else {
         return -2212;   // pbar
@@ -396,7 +400,7 @@ ClassImp(AliGenPHOSlib)
     }
     else
     {  
-      if (random[0] < 0.5) {       
+      if (random < 0.5) {       
         return  2112;   // n
       } else {  
         return -2112;   // n bar
@@ -473,7 +477,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     }
     return func;
 }
-typedef Int_t (*GenFuncIp) ();
+typedef Int_t (*GenFuncIp) (TRandom *);
  GenFuncIp AliGenPHOSlib::GetIp(Param_t param,  const char* tname)
 {
 // Return pointer to particle composition

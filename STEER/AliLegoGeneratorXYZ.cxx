@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/26 14:18:05  morsch
+Add new AliLegoGenerator classes:
+AliLegoGeneratorXYZ: carthesian binning
+AliLegoGeneratorEta: eta-phi binning
+
 */
 
 #include "AliLegoGeneratorXYZ.h"
@@ -123,7 +128,7 @@ void AliLegoGeneratorXYZ::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, "LEGO XYZ ray", ntr);
+   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }
 

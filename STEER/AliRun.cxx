@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.44  2000/10/26 13:58:59  morsch
+Add possibility to choose the lego generator (of type AliGeneratorLego or derived) when running
+RunLego(). Default is the base class AliGeneratorLego.
+
 Revision 1.43  2000/10/09 09:43:17  fca
 Special remapping of hits for TPC and TRD. End-of-primary action introduced
 
@@ -140,6 +144,10 @@ Introduction of the Copyright and cvs Log
 #include "AliMagFCM.h"
 #include "AliMagFDM.h"
 #include "AliHit.h"
+#include "TRandom3.h"
+#include "AliMCQA.h"
+#include "AliGenerator.h"
+#include "AliLegoGenerator.h"
 
 #include "AliDetector.h"
 
@@ -180,6 +188,9 @@ AliRun::AliRun()
   fPDGDB     = 0;        //Particle factory object!
   fHitLists  = 0;
   fConfigFunction    = "\0";
+  fRandom = 0;
+  fMCQA = 0;
+  fTransParName = "\0";
 }
 
 //_____________________________________________________________________________
@@ -207,6 +218,9 @@ AliRun::AliRun(const char *name, const char *title)
   fLego      = 0;
   fField     = 0;
   fConfigFunction    = "Config();";
+
+  // Set random number generator
+  gRandom = fRandom = new TRandom3();
   
   gROOT->GetListOfBrowsables()->Add(this,name);
   //
@@ -244,6 +258,8 @@ AliRun::AliRun(const char *name, const char *title)
   //
   // Create HitLists list
   fHitLists  = new TList();
+  //
+  SetTransPar();
 }
 
 
@@ -316,6 +332,7 @@ void AliRun::Browse(TBrowser *b)
   while((detector = (AliModule*)next())) {
     b->Add(detector,detector->GetName());
   }
+  b->Add(fMCQA,"AliMCQA");
 }
 
 //_____________________________________________________________________________
@@ -457,6 +474,30 @@ void AliRun::FillTree()
   if (fTreeR) fTreeR->Fill();
 }
  
+//_____________________________________________________________________________
+void AliRun::PreTrack()
+{
+     TObjArray &dets = *fModules;
+     AliModule *module;
+
+     for(Int_t i=0; i<=fNdets; i++)
+       if((module = (AliModule*)dets[i]))
+	 module->PreTrack();
+
+     fMCQA->PreTrack();
+}
+
+//_____________________________________________________________________________
+void AliRun::PostTrack()
+{
+     TObjArray &dets = *fModules;
+     AliModule *module;
+
+     for(Int_t i=0; i<=fNdets; i++)
+       if((module = (AliModule*)dets[i]))
+	 module->PostTrack();
+}
+
 //_____________________________________________________________________________
 void AliRun::FinishPrimary()
 {
@@ -907,6 +948,9 @@ void AliRun::InitMC(const char *setup)
   //=================Create Materials and geometry
   gMC->Init();
 
+  // Added also after in case of interactive initialisation of modules
+  fNdets = fModules->GetLast()+1;
+
    TIter next(fModules);
    AliModule *detector;
    while((detector = (AliModule*)next())) {
@@ -937,6 +981,8 @@ void AliRun::InitMC(const char *setup)
    fGeometry->Write();
    
    fInitDone = kTRUE;
+
+   fMCQA = new AliMCQA(fNdets);
 
    //
    // Save stuff at the beginning of the file to avoid file corruption
@@ -1026,7 +1072,13 @@ void AliRun::ResetGenerator(AliGenerator *generator)
 }
 
 //____________________________________________________________________________
-void AliRun::SetTransPar(char* filename)
+void AliRun::SetTransPar(char *filename)
+{
+  fTransParName = filename;
+}
+
+//____________________________________________________________________________
+void AliRun::ReadTransPar()
 {
   //
   // Read filename to set the transport parameters
@@ -1049,11 +1101,11 @@ void AliRun::SetTransPar(char* filename)
   FILE *lun;
   //
   // See whether the file is there
-  filtmp=gSystem->ExpandPathName(filename);
+  filtmp=gSystem->ExpandPathName(fTransParName.Data());
   lun=fopen(filtmp,"r");
   delete [] filtmp;
   if(!lun) {
-    Warning("SetTransPar","File %s does not exist!\n",filename);
+    Warning("ReadTransPar","File %s does not exist!\n",fTransParName.Data());
     return;
   }
   //
@@ -1089,7 +1141,7 @@ void AliRun::SetTransPar(char* filename)
     if(!iret) continue;
     if(iret<0) {
       //reading error
-      Warning("SetTransPar","Error reading file %s\n",filename);
+      Warning("ReadTransPar","Error reading file %s\n",fTransParName.Data());
       continue;
     }
     // Check that the module exist
@@ -1101,7 +1153,7 @@ void AliRun::SetTransPar(char* filename)
       if(0<=itmed && itmed < 100) {
 	ktmed=idtmed[itmed];
 	if(!ktmed) {
-	  Warning("SetTransPar","Invalid tracking medium code %d for %s\n",itmed,mod->GetName());
+	  Warning("ReadTransPar","Invalid tracking medium code %d for %s\n",itmed,mod->GetName());
 	  continue;
 	}
 	// Set energy thresholds
@@ -1121,11 +1173,11 @@ void AliRun::SetTransPar(char* filename)
 	  }
 	}
       } else {
-	Warning("SetTransPar","Invalid medium code %d *\n",itmed);
+	Warning("ReadTransPar","Invalid medium code %d *\n",itmed);
 	continue;
       }
     } else {
-      Warning("SetTransPar","Module %s not present\n",detName);
+      Warning("ReadTransPar","Module %s not present\n",detName);
       continue;
     }
   }
@@ -1523,7 +1575,7 @@ void AliRun::SetCurrentTrack(Int_t track)
 //_____________________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
-		      const char* /* mecha */, Int_t &ntr, Float_t weight)
+		      AliMCProcess mech, Int_t &ntr, Float_t weight)
 { 
   //
   // Load a track on the stack
@@ -1564,10 +1616,9 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   particle=new(particles[fNtrack]) TParticle(pdg,kS,parent,-1,kfirstdaughter,
 					     klastdaughter,pmom[0],pmom[1],pmom[2],
 					     e,vpos[0],vpos[1],vpos[2],tof);
-  //					     polar[0],polar[1],polar[2],tof,
-  //					     mecha,weight);
   ((TParticle*)particles[fNtrack])->SetPolarisation(TVector3(polar[0],polar[1],polar[2]));
   ((TParticle*)particles[fNtrack])->SetWeight(weight);
+  particle->SetUniqueID(mech);
   if(!done) particle->SetBit(kDoneBit);
   //Declare that the daughter information is valid
   ((TParticle*)particles[fNtrack])->SetBit(kDaughtersBit);
@@ -1616,7 +1667,10 @@ void AliRun::StepManager(Int_t id)
   
     //Call the appropriate stepping routine;
     AliModule *det = (AliModule*)fModules->At(id);
-    if(det) det->StepManager();
+    if(det) {
+      fMCQA->StepManager(id);
+      det->StepManager();
+    }
   }
 }
 
@@ -1658,6 +1712,14 @@ void AliRun::Streamer(TBuffer &R__b)
     } else {
       fConfigFunction="Config();";
     }
+    if(R__v>3) {
+      R__b >> fRandom;
+      gRandom = fRandom;
+      R__b >> fMCQA;
+    } else {
+      fRandom = gRandom = new TRandom3();
+      fMCQA = new AliMCQA();
+    }
   } else {
     R__b.WriteVersion(AliRun::IsA());
     TNamed::Streamer(R__b);
@@ -1675,5 +1737,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b << fGenerator;
     R__b << fPDGDB;        //Particle factory object!
     fConfigFunction.Streamer(R__b);
+    R__b << fRandom;
+    R__b << fMCQA;
   }
 } 

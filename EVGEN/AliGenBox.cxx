@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/02 21:28:06  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.2  2000/07/11 18:24:55  fca
 Coding convention corrections + few minor bug fixes
 
@@ -63,7 +66,6 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliPDG.h"
-#include "AliMC.h"
 
 ClassImp(AliGenBox)
 
@@ -109,14 +111,14 @@ void AliGenBox::Generate()
   //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
     if(fVertexSmear==kPerEvent) {
-	gMC->Rndm(random,6);
+	Rndm(random,6);
 	for (j=0;j<3;j++) {
 	    origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	}
     }
     for(i=0;i<fNpart;i++) {
-	gMC->Rndm(random,3);
+	Rndm(random,3);
 	theta=fThetaMin+random[0]*(fThetaMax-fThetaMin);
 	if(TestBit(kMomentumRange)) {
 	    pmom=fPMin+random[1]*(fPMax-fPMin);
@@ -132,13 +134,13 @@ void AliGenBox::Generate()
 	p[2] = pmom*TMath::Cos(theta);
 
 	if(fVertexSmear==kPerTrack) {
-	    gMC->Rndm(random,6);
+	    Rndm(random,6);
 	    for (j=0;j<3;j++) {
 		origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
 	}
-	gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,"Primary",nt);
+	gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
     }
 }
 

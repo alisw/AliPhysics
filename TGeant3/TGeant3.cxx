@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2000/10/30 15:19:06  morsch
+Xi(b) (pdg code 5232) added to Pdg data base.
+
 Revision 1.37  2000/10/02 21:28:16  fca
 Removal of useless dependecies via forward declarations
 
@@ -116,7 +119,7 @@ Introduction of the Copyright and cvs Log
 #include "AliCallf77.h" 
 #include "AliDecayer.h" 
 #include "TLorentzVector.h"
- 
+
 #ifndef WIN32 
 # define gzebra  gzebra_ 
 # define grfile  grfile_ 
@@ -387,10 +390,12 @@ extern "C"
 
   void type_of_call gtreveroot(); 
 
-  void type_of_call grndm(Float_t *, const Int_t &); 
+  void type_of_call grndm(Float_t *r, const Int_t &n)
+  {gMC->Rndm(r,n);}
 
   void type_of_call grndmq(Int_t &, Int_t &, const Int_t &,
-			   DEFCHARD DEFCHARL); 
+			   DEFCHARD DEFCHARL)
+  {/*printf("Dummy grndmq called\n");*/}
 
   void type_of_call gdtom(Float_t *, Float_t *, Int_t &); 
 
@@ -1481,34 +1486,27 @@ Int_t   TGeant3::CurrentEvent() const
 }
 
 //_____________________________________________________________________________
-const char* TGeant3::ProdProcess() const
+AliMCProcess TGeant3::ProdProcess() const
 {
   //
   // Name of the process that has produced the secondary particles
   // in the current step
   //
-  static char proc[5];
   const Int_t kIpMec[13] = { 5,6,7,8,9,10,11,12,21,23,25,105,108 };
-  Int_t mec, km, im;
+  const Int_t kIpProc[13] = { kPDecay, kPPair, kPCompton, 
+			      kPPhotoelectric, kPBrem, kPDeltaRay,
+			      kPAnnihilation, kPHadronic, 
+			      kPMuonNuclear, kPPhotoFission,
+			      kPRayleigh, kPCerenkov, kPSynchrotron};
+  Int_t km, im;
   //
-  if(fGcking->ngkine>0) {
-    for (km = 0; km < fGctrak->nmec; ++km) {
-      for (im = 0; im < 13; ++im) {
-	if (fGctrak->lmec[km] == kIpMec[im]) {
-	  mec = fGctrak->lmec[km];
-	  if (0 < mec && mec < 31) {
-	    strncpy(proc,(char *)&fGctrak->namec[mec - 1],4);
-	  } else if (mec - 100 <= 30 && mec - 100 > 0) {
-	    strncpy(proc,(char *)&fGctpol->namec1[mec - 101],4);
-	  }
-	  proc[4]='\0';
-	  return proc;
-	}
-      }
-    }
-    strcpy(proc,"UNKN");
-  } else strcpy(proc,"NONE");
-  return proc;
+  if(fGcking->ngkine>0) 
+    for (km = 0; km < fGctrak->nmec; ++km) 
+      for (im = 0; im < 13; ++im) 
+	if (fGctrak->lmec[km] == kIpMec[im]) 
+	    return (AliMCProcess) kIpProc[im];
+  //  
+  return (AliMCProcess) kPNoProcess;
 }
 
 //_____________________________________________________________________________
@@ -1787,16 +1785,6 @@ Float_t TGeant3::Etot() const
   // Return the total energy of the current track
   //
   return fGctrak->getot;
-}
-
-//_____________________________________________________________________________
-void TGeant3::Rndm(Float_t* r, const Int_t n) const
-{
-  //
-  // Return an array of n random numbers uniformly distributed 
-  // between 0 and 1 not included
-  //
-  Grndm(r,n);
 }
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -2417,17 +2405,17 @@ void  TGeant3::Grndm(Float_t *rvec, const Int_t len) const
   //
   //   To generate a vector RVECV of LEN random numbers 
   //   Copy of the CERN Library routine RANECU 
-  grndm(rvec,len);
+  Rndm(rvec,len);
 }
 
 //_____________________________________________________________________________
-void  TGeant3::Grndmq(Int_t &is1, Int_t &is2, const Int_t iseq,
-		      const Text_t *chopt)
+void  TGeant3::Grndmq(Int_t &/*is1*/, Int_t &/*is2*/, const Int_t /*iseq*/,
+		      const Text_t */*chopt*/)
 {
   //
   //  To set/retrieve the seed of the random number generator
   //
-  grndmq(is1,is2,iseq,PASSCHARD(chopt) PASSCHARL(chopt));
+  /*printf("Dummy grndmq called\n");*/
 }
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -4286,5 +4274,4 @@ void TGeant3::Streamer(TBuffer &R__b)
     R__b.WriteArray(fPDGCode, fNPDGCodes);
   }
 }
-
 

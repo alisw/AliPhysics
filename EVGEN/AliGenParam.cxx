@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/10/18 19:11:27  hristov
+Division by zero fixed
+
 Revision 1.23  2000/10/02 21:28:06  fca
 Removal of useless dependecies via forward declarations
 
@@ -65,8 +68,6 @@ Introduction of the Copyright and cvs Log
 #include "AliDecayerPythia.h"
 #include "AliGenMUONlib.h"
 #include "AliRun.h"
-#include "AliMC.h"
-#include "AliPythia.h"
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
@@ -87,7 +88,6 @@ ClassImp(AliGenParam)
 //____________________________________________________________
 //____________________________________________________________
 AliGenParam::AliGenParam()
-                 :AliGenerator()
 {
 // Deafault constructor
     fPtPara = 0;
@@ -155,7 +155,7 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param, char* tname):AliGenerator(n
 AliGenParam::AliGenParam(Int_t npart, Param_t param,
                          Double_t (*PtPara) (Double_t*, Double_t*),
                          Double_t (*YPara ) (Double_t* ,Double_t*),
-		         Int_t    (*IpPara) ())			 
+		         Int_t    (*IpPara) (TRandom *))		 
     :AliGenerator(npart)
 {
 // Constructor
@@ -306,7 +306,7 @@ void AliGenParam::Generate()
 // Calculating vertex position per event
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
   if(fVertexSmear==kPerEvent) {
-      gMC->Rndm(random,6);
+      Rndm(random,6);
       for (j=0;j<3;j++) {
 	  origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
@@ -318,12 +318,12 @@ void AliGenParam::Generate()
       while(1) {
 //
 // particle type
-	  Int_t iPart = fIpParaFunc();
+	  Int_t iPart = fIpParaFunc(fRandom);
 	  fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;	   
 	  TParticlePDG *particle = DataBase->GetParticle(iPart);
 	  Float_t am = particle->Mass();
 
-	  gMC->Rndm(random,2);
+	  Rndm(random,2);
 //
 // phi
 	  phi=fPhiMin+random[0]*(fPhiMax-fPhiMin);
@@ -355,7 +355,7 @@ void AliGenParam::Generate()
 	  p[1]=pt*TMath::Sin(phi);
 	  p[2]=pl;
 	  if(fVertexSmear==kPerTrack) {
-	      gMC->Rndm(random,6);
+	      Rndm(random,6);
 	      for (j=0;j<3;j++) {
 		  origin0[j]=
 		      fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
@@ -428,13 +428,13 @@ void AliGenParam::Generate()
 //
 // parent
 		  gAlice->
-		      SetTrack(0,-1,iPart,p,origin0,polar,0,"Primary",nt,wgtp);
+		      SetTrack(0,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
 		  iparent=nt;
 		  gAlice->KeepTrack(nt); 
 		  for (i=0; i< ncsel; i++) {
 		      gAlice->SetTrack(fTrackIt,iparent,kfch[i],
 				       &pch[i][0],och,polar,
-				       0,"Decay",nt,wgtch);
+				       0,kPDecay,nt,wgtch);
 		      gAlice->KeepTrack(nt); 
 		  }
 	      }  // Decays by Lujet
@@ -442,7 +442,7 @@ void AliGenParam::Generate()
 	  else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	  {
 	    gAlice->
-		SetTrack(fTrackIt,-1,iPart,p,origin0,polar,0,"Primary",nt,wgtp);
+		SetTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
             ipa++; 
 	  }
 	  break;

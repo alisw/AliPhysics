@@ -8,10 +8,10 @@
 
 #include "AliGenerator.h"
 #include "GenTypeDefs.h"
-#include <THijing.h>
 #include <TString.h>
 #include <TArrayI.h>
 
+class THijing;
 class TArrayI;
 class TParticle;
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/02 21:28:06  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.2  2000/07/11 18:24:55  fca
 Coding convention corrections + few minor bug fixes
 
@@ -44,8 +47,8 @@ All coding rule violations except RS3 corrected (AM)
 ///////////////////////////////////////////////////////////////////
 
 #include "AliGenHIJINGpara.h"
+#include "TF1.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 #include "AliPDG.h"
 
@@ -257,7 +260,7 @@ void AliGenHIJINGpara::Generate()
     //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
     if(fVertexSmear==kPerEvent) {
-	gMC->Rndm(random,6);
+	Rndm(random,6);
 	for (j=0;j<3;j++) {
 	    origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
@@ -265,7 +268,7 @@ void AliGenHIJINGpara::Generate()
     }
     for(i=0;i<fNpart;i++) {
 	while(1) {
-	    gMC->Rndm(random,3);
+	    Rndm(random,3);
 	    if(random[0]<kBorne) {
 		part=kPions[Int_t (random[1]*3)];
 		ptf=fPtpi;
@@ -286,13 +289,13 @@ void AliGenHIJINGpara::Generate()
 	    p[1]=pt*TMath::Sin(phi);
 	    p[2]=pl;
 	    if(fVertexSmear==kPerTrack) {
-		gMC->Rndm(random,6);
+		Rndm(random,6);
 		for (j=0;j<3;j++) {
 		    origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
 	    }
-	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,0,"Primary",nt,fParentWeight);
+	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
 	    break;
 	}
     }

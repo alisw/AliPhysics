@@ -39,6 +39,8 @@
 #pragma link C++ class  AliHitMap;
 #pragma link C++ class  AliCluster;
 #pragma link C++ class  AliKalmanTrack-;
+#pragma link C++ class  AliRndm;
+#pragma link C++ class  AliMCQA;
 #endif
 
 

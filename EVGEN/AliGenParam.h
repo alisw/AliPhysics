@@ -6,10 +6,10 @@
 /* $Id$ */
 
 #include "AliGenerator.h"
-#include "AliDecayer.h"
 #include "GenTypeDefs.h"
 #include <TArrayI.h>
 
+class AliDecayer;
 class AliPythia;
 class TParticle;
 class AliGenLib;
@@ -25,7 +25,7 @@ class AliGenParam : public AliGenerator
     AliGenParam(Int_t npart, Param_t param,
 		Double_t (*PtPara)(Double_t*, Double_t*),
 		Double_t (*YPara )(Double_t*, Double_t*),
-		Int_t    (*IpPara)()                      );
+		Int_t    (*IpPara)(TRandom*)           );
     AliGenParam(const AliGenParam &Param);
      
     virtual ~AliGenParam();
@@ -53,7 +53,7 @@ class AliGenParam : public AliGenerator
  protected:
     Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
     Double_t (*fYParaFunc )(Double_t*, Double_t*); //! Pointer to Y parametrisation function
-    Int_t    (*fIpParaFunc )();    //! Pointer to particle type parametrisation function
+    Int_t    (*fIpParaFunc )(TRandom*);    //! Pointer to particle type parametrisation function
     TF1* fPtPara;              // Transverse momentum parameterisation
     TF1* fYPara;               // Rapidity parameterisation
     Param_t     fParam;        // Parameterisation type 

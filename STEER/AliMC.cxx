@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/13 16:19:09  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.5  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -51,3 +54,5 @@ AliMC::AliMC(const char *name, const char *title) : TNamed(name,title)
     gMC=this;
   }
 }
+
+

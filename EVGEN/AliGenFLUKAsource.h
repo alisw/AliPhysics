@@ -7,7 +7,7 @@
 
 
 #include "AliGenerator.h"
-#include <TChain.h>
+class TChain;
 
 class TTree;
 

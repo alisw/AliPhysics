@@ -7,10 +7,10 @@
 
 
 #include "AliGenerator.h"
-#include "AliDecayer.h"
 #include "GenTypeDefs.h"
 #include <TArrayI.h>    
 
+class AliDecayer;
 class AliPythia;
 class TParticle;
 

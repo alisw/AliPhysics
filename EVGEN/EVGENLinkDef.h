@@ -22,7 +22,6 @@
 #pragma link C++ class  AliGenCocktail;
 #pragma link C++ class  AliGenCocktailEntry;
 #pragma link C++ class  AliGenExtFile;
-#pragma link C++ class  AliGenExtFileCH;
 #pragma link C++ class  AliGenScan;
 #pragma link C++ class  AliGenDoubleScan;
 #pragma link C++ class  AliPythia;

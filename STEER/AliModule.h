@@ -8,13 +8,15 @@
 #include "TNamed.h"
 #include "TAttLine.h"
 #include "TAttMarker.h"
+#include "AliRndm.h"
 
 //#include <TSystem.h>
 class TClonesArray;
 class TBrowser;
 class TArrayI;
 
-class AliModule : public TNamed , public TAttLine, public TAttMarker {
+class AliModule : public TNamed , public TAttLine, public TAttMarker,
+                  public AliRndm {
 public:
 
   // Creators - distructors
@@ -38,6 +40,8 @@ public:
   virtual  Bool_t        IsFolder() const {return kTRUE;}
   virtual  Int_t&        LoMedium() {return fLoMedium;}
   virtual  Int_t&        HiMedium() {return fHiMedium;}
+  virtual  Int_t         GetDebug() const {return fDebug;}
+  virtual  void          SetDebug(Int_t deb=0) {fDebug=deb;}
 
   // Module composition
   virtual void AliMaterial(Int_t imat, const char* name, Float_t a, 
@@ -93,6 +97,8 @@ public:
   virtual Float_t     GetTimeGate() const {return 1.e10;}
   virtual void        StepManager() {}
   virtual void        SetBufferSize(Int_t) {}  
+  virtual Float_t     ZMin() const;
+  virtual Float_t     ZMax() const;
   virtual void        SetEuclidFile(char *material,char *geometry=0);
   virtual void ReadEuclid(const char *filnam, char *topvol);
   virtual void ReadEuclidMedia(const char *filnam);
@@ -113,6 +119,7 @@ protected:
   Bool_t        fActive;      //Detector activity flag
   TList        *fHistograms;  //List of histograms
   TList        *fNodes;       //List of geometry nodes
+  Int_t         fDebug;       //Debug flag
 
   ClassDef(AliModule,1)  //Base class for ALICE Modules
 };

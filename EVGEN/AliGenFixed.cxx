@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/02 15:17:54  morsch
+Unused includes removed.
+
 Revision 1.1  2000/06/09 20:24:00  morsch
 Same class as previously in AliSimpleGen.cxx
 All coding rule violations except RS3 corrected (AM)
@@ -83,7 +86,7 @@ void AliGenFixed::Generate()
   Int_t i, nt;
   //
   for(i=0;i<fNpart;i++) {
-    gAlice->SetTrack(fTrackIt,-1,fIpart,p,fOrigin.GetArray(),polar,0,"Primary",nt);
+    gAlice->SetTrack(fTrackIt,-1,fIpart,p,fOrigin.GetArray(),polar,0,kPPrimary,nt);
   }
 }
   

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.19  2000/10/26 14:13:05  morsch
+- Change from coordinates theta, phi to general coordinates Coor1 and Coor2.
+- Lego generator instance can be passed in constructor.
+
 Revision 1.18  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -88,7 +92,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
-#include "AliRun.h"
 #include "AliConst.h"
 #include "AliMC.h"
 #include "TH2.h"

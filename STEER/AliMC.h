@@ -14,20 +14,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
-class TLorentzVector;
+#include <AliRndm.h>
+#include "AliMCProcess.h"
 
+class TLorentzVector;
 class AliMC;
 class AliDecayer;
 
-
 R__EXTERN AliMC *gMC;
 
-class AliMC : public TNamed 
+class AliMC : public TNamed, public AliRndm
 {
   public:
     AliMC(const char *name, const char *title);
-    AliMC() {}
-    virtual ~AliMC() {fgMC=gMC=0;}
+    AliMC() {fRandom=0;}
+    virtual ~AliMC() {fgMC=gMC=0;fRandom=0;}
   
     // static access method
     static AliMC* GetMC() { return fgMC; }
@@ -163,13 +164,12 @@ class AliMC : public TNamed
     virtual Int_t NSecondaries() const=0;
     virtual void  GetSecondary(Int_t isec, Int_t& particleId, 
                     TLorentzVector& position, TLorentzVector& momentum) =0;
-    virtual const char* ProdProcess() const =0; 
+    virtual AliMCProcess ProdProcess() const =0; 
 
     //
     // other (then geometry/step/run management) methods
     // ----------------------------------------------
     //
-    virtual void Rndm(Float_t* array, const Int_t size) const=0; 
     
     //
     // Geant3 specific methods

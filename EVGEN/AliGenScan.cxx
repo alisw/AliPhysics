@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/02 21:28:06  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.5  2000/06/09 20:37:20  morsch
 All coding rule violations except RS3 corrected
 
@@ -28,7 +31,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliGenScan.h"
 #include "AliRun.h"
-#include "AliMC.h"
 
  ClassImp(AliGenScan)
     
@@ -125,7 +127,7 @@ void AliGenScan::Generate()
   for (Int_t ix=0; ix<fNx; ix++) {
       for (Int_t iy=0; iy<fNy; iy++) {
 	  for (Int_t iz=0; iz<fNz; iz++){
-	      gMC->Rndm(random,6);
+	      Rndm(random,6);
 	      origin[0]=fXmin+ix*dx+2*(random[0]-0.5)*fOsigma[0];
 	      origin[1]=fYmin+iy*dy+2*(random[1]-0.5)*fOsigma[1];
 	      origin[2]=fZmin+iz*dz+2*(random[2]-0.5)*fOsigma[2];	     
@@ -135,7 +137,7 @@ void AliGenScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,"Primary",nt);
+	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 	  }
       }
   }

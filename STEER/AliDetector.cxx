@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -40,9 +43,7 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-#include <TClass.h>
-#include <TNode.h>
-#include <TRandom.h>
+
 #include <TTree.h>
 #include "TBrowser.h"
 

@@ -576,7 +576,7 @@ public:
   Bool_t IsTrackAlive() const;
   Int_t  NSecondaries() const;
   Int_t  CurrentEvent() const;
-  const char*  ProdProcess() const;
+  AliMCProcess  ProdProcess() const;
   void   GetSecondary(Int_t isec, Int_t& ipart, TLorentzVector &x, 
 		      TLorentzVector &p);
   void   StopTrack();
@@ -596,7 +596,6 @@ public:
   virtual Int_t GetMedium() const;
   virtual Float_t Edep() const;
   virtual Float_t Etot() const;
-  virtual void    Rndm(Float_t* r, const Int_t n) const;
 
   virtual void   Material(Int_t& kmat, const char* name, Float_t a, Float_t z,
 			   Float_t dens, Float_t radl, Float_t absl, 

@@ -6,15 +6,17 @@
 /* $Id$ */
 
 #include <TObject.h>
+
 #include "GenTypeDefs.h"
+class TRandom;
 
 class AliGenLib :
-public TObject
+  public TObject
 {
  public:
 //
     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
-    typedef Int_t    (*GenFuncIp)();    
+    typedef Int_t    (*GenFuncIp)(TRandom *);    
     virtual GenFunc   GetPt(Param_t param, const char *tname)   = 0;
     virtual GenFunc   GetY (Param_t param, const char *tname)  = 0;
     virtual GenFuncIp GetIp(Param_t param, const char *tname)  = 0;    

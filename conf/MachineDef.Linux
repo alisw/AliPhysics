@@ -4,12 +4,12 @@
 PLATFORM      = linux
 
 # The compilers
-CXX           = echo $*.cxx ; g++
+CXX           = echo $*.cxx ; g++ 
 F77	      = echo $*.F ; g77
 CC	      = echo $*.c ; gcc
 
 # Global optimisation
-OPT           = -O
+OPT           = -O -g
 
 # Shared library suffix
 SL	      = so

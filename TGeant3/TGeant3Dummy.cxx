@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/09/14 07:08:42  fca
+Introducing glvolu in the interface
+
 Revision 1.23  2000/07/12 08:56:32  fca
 Coding convention correction and warning removal
 
@@ -113,7 +116,7 @@ Bool_t  TGeant3::IsTrackOut() const {return 0;}
 Bool_t  TGeant3::IsTrackDisappeared() const {return 0;}
 Bool_t  TGeant3::IsTrackStop() const {return 0;}
 Int_t   TGeant3::NSecondaries() const {return 0;}
-const char* TGeant3::ProdProcess() const {return 0;}
+AliMCProcess TGeant3::ProdProcess() const {return kPNoProcess;}
 void    TGeant3::GetSecondary(Int_t, Int_t&, 
 			      TLorentzVector&, TLorentzVector&){}
 Float_t TGeant3::MaxStep() const {return 0;}
@@ -122,7 +125,6 @@ Int_t   TGeant3::CurrentEvent() const {return 0;}
 Int_t   TGeant3::GetMedium() const {return 0;}
 Float_t TGeant3::Edep() const {return 0;}
 Float_t TGeant3::Etot() const {return 0;}
-void    TGeant3::Rndm(Float_t*, const Int_t) const {}
 Float_t TGeant3::TrackStep() const {return 0;}
 Float_t TGeant3::TrackLength() const {return 0;}
 Float_t TGeant3::TrackTime() const {return 0;}

@@ -6,7 +6,7 @@
 /* $Id$ */
 
 #include "AliGenerator.h"
-#include "TF1.h"
+class TF1;
 
 class AliGenHIJINGpara : public AliGenerator
 {

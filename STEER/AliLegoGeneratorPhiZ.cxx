@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/27 11:40:01  morsch
+Error in printouts corrected
+
 Revision 1.1  2000/10/27 08:13:02  morsch
 Lego generator for phi-z binning.
 
@@ -77,6 +80,6 @@ void AliLegoGeneratorPhiZ::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, "LEGO ray", ntr);
+   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }

@@ -7,7 +7,7 @@ include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
 
 PACKAGE = GEANT321
 
-GDIRS = gbase gcons gdraw geocad ggeom gheisha ghits ghrout ghutils giface \
+GDIRS := gbase gcons gdraw geocad ggeom gheisha ghits ghrout ghutils giface \
         giopa gkine gparal gphys gscan gstrag gtrak matx55 miface miguti \
         neutron peanut fiface cgpack fluka block comad erdecks erpremc
 
@@ -18,9 +18,10 @@ XDIRS = gxint cdf
 SRCS          =
 ##### MACROS #####
 
-GFSRC	= $(wildcard $(patsubst %,%/*.F,$(GDIRS))) gcinit.F
-GCSRC	= $(wildcard $(patsubst %,%/*.c,$(GDIRS))) 
-GCXXSRC	= $(wildcard $(patsubst %,%/*.cxx,$(GDIRS))) 
+GFSRC	:= $(wildcard $(patsubst %,%/*.F,$(GDIRS))) gcinit.F
+GFSRC	:= $(filter-out gtrak/grndm%.F,$(GFSRC))
+GCSRC	:= $(wildcard $(patsubst %,%/*.c,$(GDIRS))) 
+GCXXSRC	:= $(wildcard $(patsubst %,%/*.cxx,$(GDIRS))) 
 
 GSRC	= $(GFSRC) $(GCSRC)
 GFOBJ	= $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(GFSRC))
@@ -46,15 +47,17 @@ ALLOBJS       = $(OBJS) $(FOBJS) $(COBJS) $(DICTO)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) $(CLIBCXXOPTS) $(CLIBDEFS) -I.
+CXXFLAGS      := $(CXXOPTS) $(CLIBCXXOPTS) $(CLIBDEFS) -I.
+CXXFLAGS      := $(filter-out -O%,$(CXXFLAGS))  
  
 # C compilation flags
 
-CFLAGS      = $(COPT) $(CLIBCOPT) $(CLIBDEFS) -I.
+CFLAGS      := $(COPT) $(CLIBCOPT) $(CLIBDEFS) -I.
  
 # FORTRAN compilation flags
 
-FFLAGS      = $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -I.
+FFLAGS      := $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -I.
+FFLAGS      := $(filter-out -O%,$(FFLAGS))  
  
 ##### TARGETS #####
  

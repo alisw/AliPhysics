@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/11/03 13:17:05  fca
+Have ProdProcess return const char*
+
 Revision 1.2  1999/09/29 09:24:19  fca
 Introduction of the Copyright and cvs Log
 
@@ -273,7 +276,7 @@ Int_t   AliGEODB::NSecondaries() const
 
 /***********************************************************************/
 
-const char* AliGEODB::ProdProcess() const 
+AliMCProcess AliGEODB::ProdProcess() const 
 {
     cout << " ProdProcess" << endl;
     return 0;

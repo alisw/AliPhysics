@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/11/10 18:09:55  fca
+New field map for the ZDC
+
 Revision 1.2  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -22,6 +25,7 @@ Revision 1.1  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
 */
+#include "TVector.h"
 
 #include "AliMagFCM.h"
 #include "TSystem.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/07/13 16:19:09  fca
 Mainly coding conventions + some small bug fixes
 
@@ -41,33 +44,25 @@ Introduction of the Copyright and cvs Log
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
 #include <TTree.h>
 #include <TButton.h>
 #include <TCanvas.h>
 #include <TView.h>
-#include <TText.h>
-#include <TPolyMarker3D.h>
 #include <TPaveLabel.h>
 #include <TPaveText.h>
-#include <TList.h>
 #include <TDiamond.h>
-#include <TNode.h>
 #include <TArc.h>
-#include <TTUBE.h>
 #include <TSlider.h>
 #include <TSliderBox.h>
 #include <TGaxis.h>
 #include <TVirtualX.h>
 #include <TMath.h>
-#include <X3DBuffer.h>
 
 #include "AliRun.h"
 #include "AliDetector.h"
 #include "AliDisplay.h"
 #include "AliPoints.h"
 #include "TParticle.h"
-#include "AliGeometry.h"
 #include "TGeometry.h"
 
 static const Float_t kptcutmax  = 2;

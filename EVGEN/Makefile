@@ -22,7 +22,9 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliDecayer.cxx AliDecayerPythia.cxx
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) EVGENLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) $(ALICE_ROOT)/include/THijing.h \
+		$(ROOTSYS)/include/TF1.h $(ROOTSYS)/include/TChain.h \
+		EVGENLinkDef.h
 
 # Library dictionary
 
