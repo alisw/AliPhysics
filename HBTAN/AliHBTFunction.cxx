@@ -395,8 +395,8 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
    {
     if ( num->GetBinContent(i) > 0.0 )
      {
-       densum = fDenominator->GetBinContent(i);
-       numsum = fNumerator->GetBinContent(i);
+       densum += fDenominator->GetBinContent(i);
+       numsum += fNumerator->GetBinContent(i);
      }
    }
   
@@ -589,8 +589,8 @@ Double_t AliHBTFunction2D::Scale()
      {
       if ( fNumerator->GetBinContent(i,j) > 0.0 )
        {
-           densum = fDenominator->GetBinContent(i,j);
-           numsum = fNumerator->GetBinContent(i,j);
+           densum += fDenominator->GetBinContent(i,j);
+           numsum += fNumerator->GetBinContent(i,j);
        }
      }
   
@@ -805,8 +805,8 @@ Double_t AliHBTFunction3D::Scale()
         if ( fNumerator->GetBinContent(i,j,k) > 0.0 )
          {
            
-           densum = fDenominator->GetBinContent(i,j,k);
-           numsum = fNumerator->GetBinContent(i,j,k);
+           densum += fDenominator->GetBinContent(i,j,k);
+           numsum += fNumerator->GetBinContent(i,j,k);
          }
        }
   
