@@ -133,7 +133,7 @@ void  TG4ParticlesManager::MapParticles()
   fParticlePDGMap.Add("He3", GetPDGEncoding("He3") );
   fParticlePDGMap.Add("opticalphoton", GetPDGEncoding("opticalphoton"));
   // fParticlePDGMap.Add("???","FeedbackPhoton");
-  fParticleNameMap.Add("geantino", GetPDGEncoding("geantino"));
+  fParticlePDGMap.Add("geantino", GetPDGEncoding("geantino"));
 
   // add verbose
   G4cout << "Particle maps have been filled." << G4endl;
