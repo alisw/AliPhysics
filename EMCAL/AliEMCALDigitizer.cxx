@@ -465,7 +465,7 @@ void AliEMCALDigitizer::InitParameters()
   fTimeResolution     = 1.0e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
 
-  fADCchannelEC    = 0.00050;                     // width of one ADC channel in GeV
+  fADCchannelEC    = 0.00305;                     // width of one ADC channel in GeV - HG fix so that we see 200 GeV gammas
   fADCpedestalEC   = 0.005 ;                       // GeV
   fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
