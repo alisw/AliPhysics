@@ -56,7 +56,7 @@ $(DICT):			$(HDRS)
 
 depend:				$(SRCS)
 
-TOCLEAN		 = $(OBSJ) *Cint.cxx *Cint.h
+TOCLEAN		 = $(OBJS) *Cint.cxx *Cint.h
 
 ############################### General Macros ################################
 
