@@ -31,6 +31,7 @@ AliEMCALParton::AliEMCALParton()
 //  fTrackPhi    = 0;
 //  fTrackPDG    = 0;
   fNTracks     = 0;
+  fPartonCode = 0;
 }
 
 AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
@@ -44,6 +45,7 @@ AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
 //  fTrackPhi    = 0;
 //  fTrackPDG    = 0;
   fNTracks     = 0;
+  fPartonCode = 0;
 }
 
 void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)

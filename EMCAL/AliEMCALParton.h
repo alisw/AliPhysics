@@ -23,7 +23,8 @@ public:
   Float_t Energy()  const {return fEnergy;}
   Float_t Phi()    const {return fPhi;}
   Float_t Eta()    const {return fEta;}
-  
+  void SetPartonCode(Int_t code){fPartonCode = code;} 
+  Int_t GetPartonCode()const{return fPartonCode;}
 protected:
   Float_t   fEnergy;   // Jet Energy
   Float_t   fEta;      // Jet Phi
@@ -33,7 +34,8 @@ protected:
   Float_t  fTrackEta[1000];     // Jet Tracks Eta
   Float_t  fTrackPhi[1000];     // Jet Tracks Phi
   Int_t    fTrackPDG[1000];     // Jet Tracks PDG code
-  ClassDef(AliEMCALParton,6) // Jet for EMCAL
+  Int_t	   fPartonCode;		// Store the type of parton
+  ClassDef(AliEMCALParton,7) // Jet for EMCAL
     
 } ;
 
