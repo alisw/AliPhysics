@@ -191,6 +191,7 @@ void AliITSv11::CreateGeometry(){
     // Return
     //   none.
     TVector3 t(0.0,0.0,0.0);
+    const Double_t kcm = 1.0;
 
     TGeoManager *mgr = gGeoManager;
     TGeoVolume *ALIC = mgr->GetTopVolume();
