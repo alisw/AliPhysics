@@ -35,6 +35,8 @@ class AliEMCALJetFinderPlots : public TObject
 	// Only consider events with only 1 jet
 	TH1F* GetFragmFcn(){return fhFragmFcn;}	
 	TH1F* GetPartonFragmFcn(){return fhPartonFragmFcn;}	
+	TH1F* GetPT(){return fhJetPT;}	
+	TH1F* GetPartonPT(){return fhPartonPT;}	
 	TH1F* GetJetJT(){return fhJetJT;}	
 	TH1F* GetPartonJT(){return fhPartonJT;}	
 	TH1F* GetJetPL(){return fhJetPL;}
@@ -53,6 +55,8 @@ class AliEMCALJetFinderPlots : public TObject
 	// Only consider events with at least 2 jets
 	TH1F* GetFragmFcn2(){return fhFragmFcn2;}	
 	TH1F* GetPartonFragmFcn2(){return fhPartonFragmFcn2;}	
+	TH1F* GetPT2(){return fhJetPT2;}	
+	TH1F* GetPartonPT2(){return fhPartonPT2;}	
 	TH1F* GetJetJT2(){return fhJetJT2;}	
 	TH1F* GetPartonJT2(){return fhPartonJT2;}	
 	TH1F* GetJetPL2(){return fhJetPL2;}
@@ -145,16 +149,15 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F				*fhRecoBinPartonPt;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
 	TH1F				*fhRecoBinJetEt;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 	TH1F				*fhRecoBinInputJetEt;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
-        TH1F* 				fhJetPT ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
-        TH1F* 				fhPartonPT ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
-        TH1F* 				fhJetPT2 ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
-        TH1F* 				fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
-        TH1F* 				fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
-        TH1F* 				fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
+    TH1F* 				fhJetPT ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+    TH1F* 				fhPartonPT ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+    TH1F* 				fhJetPT2 ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
+    TH1F* 				fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+    TH1F* 				fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+    TH1F* 				fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
         
 	TH1F* 				fhJetInvE;// new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
 	TH1F* 				fhJetInvE2;// new TH1F("fhJetInvE2","#frac{1}{E_{R}}",100,0,1);
-	
 	
 	Bool_t				fInitialised; // have histograms been initialised
 		
