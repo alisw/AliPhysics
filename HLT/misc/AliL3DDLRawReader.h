@@ -9,12 +9,12 @@
 // by D.Favretto and A.K.Mohanty
 struct AliL3DDLMiniHeader 
 {
-  UInt_t    fSize;
-  UChar_t   fDetectorID;
-  UChar_t   fMagicWord[3];
-  UChar_t   fVersion;
-  UChar_t   fCompressionFlag;
-  UShort_t  fDDLID;
+  UInt_t    fSize;           // size
+  UChar_t   fDetectorID;     // detector ID
+  UChar_t   fMagicWord[3];   // magic word
+  UChar_t   fVersion;        // version
+  UChar_t   fCompressionFlag;// compression flag
+  UShort_t  fDDLID;          // DDL ID
 };
 
 class AliL3DDLRawReader 
@@ -25,11 +25,11 @@ class AliL3DDLRawReader
 
     void Select(Int_t detectorID, Int_t minDDLID = -1, Int_t maxDDLID = -1);
 
-    inline Int_t     GetDataSize()   const {return fMiniHeader->fSize;};
-    inline Int_t     GetDetectorID() const {return fMiniHeader->fDetectorID;};
-    inline Int_t     GetDDLID()      const {return fMiniHeader->fDDLID;};
-    inline Int_t     GetVersion()    const {return fMiniHeader->fVersion;};
-    inline Bool_t    IsCompressed()  const {return fMiniHeader->fCompressionFlag != 0;};
+    Int_t     GetDataSize()   const {return fMiniHeader->fSize;};
+    Int_t     GetDetectorID() const {return fMiniHeader->fDetectorID;};
+    Int_t     GetDDLID()      const {return fMiniHeader->fDDLID;};
+    Int_t     GetVersion()    const {return fMiniHeader->fVersion;};
+    Bool_t    IsCompressed()  const {return fMiniHeader->fCompressionFlag != 0;};
 
     virtual Bool_t   ReadMiniHeader() = 0;
     virtual Bool_t   ReadNextData(UChar_t*& data) = 0;
@@ -40,9 +40,9 @@ class AliL3DDLRawReader
     virtual Bool_t   Reset() = 0;
 
   protected :
-    Bool_t           IsSelected();
+    Bool_t           IsSelected() const;
 
-    Bool_t           CheckMiniHeader();
+    Bool_t           CheckMiniHeader() const;
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
 
     AliL3DDLMiniHeader*  fMiniHeader;  // current mini header

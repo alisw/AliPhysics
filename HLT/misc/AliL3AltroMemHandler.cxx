@@ -2,12 +2,6 @@
 
 // Author: Constantin Loizides <mailto: loizides@ikf.uni-frankfurt.de>
 // *-- Copyright & copy ALICE HLT Group
-
-#include "AliL3StandardIncludes.h"
-
-#include "AliL3AltroMemHandler.h"
-#include "AliL3Logging.h"
-
 /** \class AliL3AltroMemHandler
 <pre>
 //--------------------------------------------------------------------
@@ -19,44 +13,53 @@
 </pre>
 */
 
+#include "AliL3StandardIncludes.h"
+
+#include "AliL3AltroMemHandler.h"
+#include "AliL3Logging.h"
+
 ClassImp(AliL3AltroMemHandler)
 
 AliL3AltroMemHandler::AliL3AltroMemHandler(){
+  // default constructor
   Clear();
   ClearRead();
 };
 
 void AliL3AltroMemHandler::Clear(){
-  memset(altromem,0,ALTRO_SIZE);
-  memset(times_per_pad,0,1024);
-  memset(charges_per_pad,0,1024);
-  counter=ALTRO_SIZE;
-  tcounter=0;
-  lpad=0;
-  lrow=0;
-  flag=kFALSE;
+  // clear everything
+  memset(fAltroMem,0,ALTRO_SIZE);
+  memset(fTimesPerPad,0,1024);
+  memset(fChargesPerPad,0,1024);
+  fCounter=ALTRO_SIZE;
+  fTCounter=0;
+  fLPad=0;
+  fLRow=0;
+  fFlag=kFALSE;
 };
 
 void AliL3AltroMemHandler::ClearRead(){
-  rcounter=0;
-  scounter=0;
-  rpad=0;
-  rrow=0;
-  rtime=0;
+  // clears the reading
+  fRCounter=0;
+  fSCounter=0;
+  fRPad=0;
+  fRRow=0;
+  fRTime=0;
 }
 
 void AliL3AltroMemHandler::Write(UShort_t row, UChar_t pad, UShort_t time, UShort_t charge)
 {
-  if(tcounter==0){
-    lrow=row;
-    lpad=pad;
-  } else if((lrow!=row) || (lpad!=pad)){
+  // writes packets
+  if(fTCounter==0){
+    fLRow=row;
+    fLPad=pad;
+  } else if((fLRow!=row) || (fLPad!=pad)){
     MakeAltroPackets(); //make packets
     Write();            //write packets
     Clear();            //clear up for next pad
 
-    lrow=row;
-    lpad=pad;
+    fLRow=row;
+    fLPad=pad;
   }
 
   Add(charge,time);
@@ -64,49 +67,51 @@ void AliL3AltroMemHandler::Write(UShort_t row, UChar_t pad, UShort_t time, UShor
 
 void AliL3AltroMemHandler::Add(UShort_t charge, UShort_t time)
 {
-  times_per_pad[tcounter]=time;
-  charges_per_pad[tcounter]=charge;
-  tcounter++;
+  // adds new time and charge
+  fTimesPerPad[fTCounter]=time;
+  fChargesPerPad[fTCounter]=charge;
+  fTCounter++;
 }
 
 void AliL3AltroMemHandler::MakeAltroPackets()
 {
+  // makes Altro packets
   UShort_t i=0,j=0;
   UShort_t t=0,seqlength;
   UShort_t htime,ltime;
 
-  while(t<tcounter){
-    pcounter=0;
-    altromem[--counter]=0xFFFF; //mark return
+  while(t<fTCounter){
+    fPCounter=0;
+    fAltroMem[--fCounter]=0xFFFF; //mark return
 
     //make packets
-    while((pcounter<ALTRO_SIZE) && (t<tcounter)){
+    while((fPCounter<ALTRO_SIZE) && (t<fTCounter)){
 
       //find sequence
       i=t;
-      ltime=times_per_pad[t];
+      ltime=fTimesPerPad[t];
       j=0;
-      while((i+1<tcounter)&&(times_per_pad[i+1]==ltime+j+1)){
+      while((i+1<fTCounter)&&(fTimesPerPad[i+1]==ltime+j+1)){
 	i++;
 	j++;
       }
       seqlength=j+1; //number of consecutive times   
-      htime=times_per_pad[i]; //abs. time for sequence
+      htime=fTimesPerPad[i]; //abs. time for sequence
 
       //don't store sequence if it doesn't fit into packet
-      if(pcounter+seqlength>=ALTRO_SIZE) break;
+      if(fPCounter+seqlength>=ALTRO_SIZE) break;
 
       //store charges of sequence
       for(UShort_t k=0;k<seqlength;k++){
-	altromem[--counter]=charges_per_pad[t];
-	pcounter++;
+	fAltroMem[--fCounter]=fChargesPerPad[t];
+	fPCounter++;
 	t++;
       }
 
-      altromem[--counter]=htime;       //store abs. time of sequence
-      pcounter++;
-      altromem[--counter]=seqlength+2; //store length of sequence
-      pcounter++;
+      fAltroMem[--fCounter]=htime;       //store abs. time of sequence
+      fPCounter++;
+      fAltroMem[--fCounter]=seqlength+2; //store length of sequence
+      fPCounter++;
     }
 
     AddTrailer();
@@ -115,27 +120,29 @@ void AliL3AltroMemHandler::MakeAltroPackets()
 
 void AliL3AltroMemHandler::AddTrailer()
 {
-  UShort_t savepcounter=pcounter;
+  // adds data trailer
+  UShort_t savepcounter=fPCounter;
 
-  while(pcounter%4!=0){
-    altromem[--counter]=0x2AA;
-    pcounter++;
+  while(fPCounter%4!=0){
+    fAltroMem[--fCounter]=0x2AA;
+    fPCounter++;
   } 
-  altromem[--counter]=0x2AA;
-  altromem[--counter]=savepcounter;
-  altromem[--counter]=lpad;
-  altromem[--counter]=lrow;
+  fAltroMem[--fCounter]=0x2AA;
+  fAltroMem[--fCounter]=savepcounter;
+  fAltroMem[--fCounter]=fLPad;
+  fAltroMem[--fCounter]=fLRow;
 }
 
 void AliL3AltroMemHandler::Write()
 {
-  if(counter==ALTRO_SIZE) return;
+  // default form of Write
+  if(fCounter==ALTRO_SIZE) return;
 
   //save packets (reversed) to file
-  UShort_t *ptr=altromem+counter;
-  for (int i=counter;i<ALTRO_SIZE;i++) {
+  UShort_t *ptr=fAltroMem+fCounter;
+  for (int i=fCounter;i<ALTRO_SIZE;i++) {
 
-    if(flag==kTRUE){
+    if(fFlag==kTRUE){
       if (*ptr==0xFFFF) continue; //no return for end of packet
       fwrite(ptr,sizeof(UShort_t),1,fOutBinary);
     } else {
@@ -149,7 +156,8 @@ void AliL3AltroMemHandler::Write()
 
 void AliL3AltroMemHandler::WriteFinal()
 {
-  if(tcounter>0){
+  // makes Altro packets and writes them
+  if(fTCounter>0){
     MakeAltroPackets();
     Write();
   }
@@ -157,7 +165,8 @@ void AliL3AltroMemHandler::WriteFinal()
 
 Bool_t AliL3AltroMemHandler::Read(UShort_t &row, UChar_t &pad, UShort_t &time, UShort_t &charge)
 {
-  if(flag==kTRUE) {
+  // reads the packets
+  if(fFlag==kTRUE) {
     LOG(AliL3Log::kWarning,"AliL3AltroMemHandler::Read","File Open")<<"Binary not supported!"<<ENDLOG;
     return kFALSE;
   }
@@ -169,13 +178,13 @@ Bool_t AliL3AltroMemHandler::Read(UShort_t &row, UChar_t &pad, UShort_t &time, U
 
   unsigned int dummy,dummy1;
 
-  if(rcounter==0){
+  if(fRCounter==0){
     fscanf(fInBinary,"%x",&dummy);
-    rrow=(UShort_t)dummy;
+    fRRow=(UShort_t)dummy;
     fscanf(fInBinary,"%x",&dummy);
-    rpad=(UShort_t)dummy;
+    fRPad=(UShort_t)dummy;
     fscanf(fInBinary,"%x",&dummy);
-    rcounter=(UShort_t)dummy;
+    fRCounter=(UShort_t)dummy;
     fscanf(fInBinary,"%x",&dummy);
     if(dummy!=682){
       if(feof(fInBinary)){
@@ -186,35 +195,36 @@ Bool_t AliL3AltroMemHandler::Read(UShort_t &row, UChar_t &pad, UShort_t &time, U
 	return kFALSE;
       }
     }
-    dummy1 = rcounter;
+    dummy1 = fRCounter;
     while(dummy1 % 4 != 0) {
       fscanf(fInBinary,"%x",&dummy);
       dummy1++;
     } 
   } 
-  if(scounter==0){
+  if(fSCounter==0){
     fscanf(fInBinary,"%x",&dummy);
-    scounter=(UShort_t)dummy-2;
+    fSCounter=(UShort_t)dummy-2;
     fscanf(fInBinary,"%x",&dummy);
-    rtime=(UShort_t)dummy;
-    rcounter-=2;
+    fRTime=(UShort_t)dummy;
+    fRCounter-=2;
   }
   fscanf(fInBinary,"%x",&dummy);
 
-  row=rrow;
-  pad=rpad;
-  time=rtime;
+  row=fRRow;
+  pad=fRPad;
+  time=fRTime;
   charge=(UShort_t)dummy;
 
-  scounter--;
-  rcounter--;
-  rtime--;
+  fSCounter--;
+  fRCounter--;
+  fRTime--;
   return kTRUE;
 }
 
 Bool_t AliL3AltroMemHandler::ReadSequence(UShort_t &row, UChar_t &pad, UShort_t &time, UChar_t &n, UShort_t **charges)
 {
-  if(flag==kTRUE) {
+  // reads sequence
+  if(fFlag==kTRUE) {
     LOG(AliL3Log::kWarning,"AliL3AltroMemHandler::ReadSequence","File Open")<<"Binary not supported!"<<ENDLOG;
     return kFALSE;
   }
@@ -226,13 +236,13 @@ Bool_t AliL3AltroMemHandler::ReadSequence(UShort_t &row, UChar_t &pad, UShort_t 
 
   unsigned int dummy,dummy1,dummy2;
 
-  if(rcounter==0){
+  if(fRCounter==0){
     fscanf(fInBinary,"%x",&dummy);
-    rrow=(UShort_t)dummy;
+    fRRow=(UShort_t)dummy;
     fscanf(fInBinary,"%x",&dummy);
-    rpad=(UShort_t)dummy;
+    fRPad=(UShort_t)dummy;
     fscanf(fInBinary,"%x",&dummy);
-    rcounter=(UShort_t)dummy;
+    fRCounter=(UShort_t)dummy;
     fscanf(fInBinary,"%x",&dummy);
     if(dummy!=682){
       if(feof(fInBinary)){
@@ -243,7 +253,7 @@ Bool_t AliL3AltroMemHandler::ReadSequence(UShort_t &row, UChar_t &pad, UShort_t 
 	return kFALSE;
       }
     }
-    dummy1 = rcounter;
+    dummy1 = fRCounter;
     while(dummy1 % 4 != 0) {
       fscanf(fInBinary,"%x",&dummy);
       dummy1++;
@@ -251,74 +261,78 @@ Bool_t AliL3AltroMemHandler::ReadSequence(UShort_t &row, UChar_t &pad, UShort_t 
   } 
 
   fscanf(fInBinary,"%x",&dummy);
-  scounter=(UShort_t)dummy-2;
+  fSCounter=(UShort_t)dummy-2;
   fscanf(fInBinary,"%x",&dummy);
-  rtime=(UShort_t)dummy;
-  rcounter-=2;
+  fRTime=(UShort_t)dummy;
+  fRCounter-=2;
 
-  if(n<scounter){
+  if(n<fSCounter){
     if(*charges) delete[] *charges;
-    *charges=new UShort_t[scounter];
+    *charges=new UShort_t[fSCounter];
   }
 
   dummy2=0;
-  while(dummy2<scounter){
+  while(dummy2<fSCounter){
     fscanf(fInBinary,"%x",&dummy);
     (*charges)[dummy2]=(UShort_t)dummy;
     dummy2++;
-    rcounter--;
+    fRCounter--;
   }
 
-  row=rrow;
-  pad=rpad;
-  time=rtime;
-  n=scounter;
+  row=fRRow;
+  pad=fRPad;
+  time=fRTime;
+  n=fSCounter;
   return kTRUE;
 }
 
 Bool_t AliL3AltroMemHandler::SetBinaryInput(FILE *file)
 {
+  // sets binary input
   fInBinary = file;
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3AltroMemHandler::SetBinaryInput","File Open")<<"Pointer to File = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   ClearRead();
-  flag=kTRUE;
+  fFlag=kTRUE;
   return kTRUE;
 }
 
 Bool_t AliL3AltroMemHandler::SetASCIIInput(FILE *file)
 {
+  // sets ASCII input
   fInBinary = file;
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3AltroMemHandler::SetASCIIInput","File Open")<<"Pointer to File = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   ClearRead();
-  flag=kFALSE;
+  fFlag=kFALSE;
   return kTRUE;
 }
 
 Bool_t AliL3AltroMemHandler::SetBinaryOutput(FILE *file){
+  // sets binary output
   fOutBinary = file;
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3AltroMemHandler::SetBinaryOutput","File Open") <<"Pointer to File = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   Clear();
-  flag=kTRUE;
+  fFlag=kTRUE;
   return kTRUE;
 }
 
 Bool_t AliL3AltroMemHandler::SetASCIIOutput(FILE *file){
+  // sets ASCII output
   fOutBinary = file;
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3AltroMemHandler::SetASCIIOutput","File Open") <<"Pointer to File = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   Clear();
-  flag=kFALSE;
+  fFlag=kFALSE;
   return kTRUE;
 }
 

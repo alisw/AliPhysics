@@ -41,17 +41,20 @@ ClassImp(AliL3DDLDataFileHandler)
 
 AliL3DDLDataFileHandler::AliL3DDLDataFileHandler()
 {
+  // default constructor
   fReader=0;
   fTPCStream=0;
 }
 
 AliL3DDLDataFileHandler::~AliL3DDLDataFileHandler()
 {
+  // destructor
   FreeAll();
 }
 
 void AliL3DDLDataFileHandler::FreeAll()
 {
+  // frees all heap memory
   if(fReader) delete fReader;
   if(fTPCStream) delete fTPCStream;
   fReader = 0;
@@ -62,6 +65,7 @@ void AliL3DDLDataFileHandler::FreeAll()
 #ifdef use_newio
 Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name,Int_t event)
 {
+  // sets the input of the reader
   fEvent=event;
   if(fReader) delete fReader;
   if(fTPCStream) delete fTPCStream;
@@ -79,6 +83,7 @@ Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name,Int_t event)
 #else
 Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name, Bool_t add)
 {
+  // sets the input of the reader
   if(fReader){
     LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::SetReaderInput","File Open")
       <<"Reader ptr is already in use"<<ENDLOG;
@@ -92,6 +97,7 @@ Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name, Bool_t add)
 }
 Bool_t AliL3DDLDataFileHandler::SetReaderInput(AliL3DDLRawReaderFile *rf)
 {
+  // sets the input of the reader
   if(fReader){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetReaderInput","File Open")
       <<"Reader ptr is already in use, delete it first"<<ENDLOG;
@@ -108,6 +114,7 @@ Bool_t AliL3DDLDataFileHandler::SetReaderInput(AliL3DDLRawReaderFile *rf)
 
 void AliL3DDLDataFileHandler::CloseReaderInput()
 {
+  // closes the input of the reader
   if(!fReader){
     LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::CloseReaderInput","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -121,14 +128,16 @@ void AliL3DDLDataFileHandler::CloseReaderInput()
 }
 
 #ifdef use_newio
-Bool_t AliL3DDLDataFileHandler::IsDigit(Int_t /*i*/)
+Bool_t AliL3DDLDataFileHandler::IsDigit(Int_t /*i*/) const
 {
+  // dummy
   return kTRUE;
 }
 #endif
 
 AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t event)
 {
+  // transfers the DDL data to the memory
 #ifdef use_newio
   if((fEvent>=0)&&(event!=fEvent)){
     fEvent=event;
@@ -160,7 +169,7 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
     }
   }
   
-  Int_t ddls_to_search=0;
+  Int_t ddlsToSearch=0;
   Int_t ddls[9]={-1,-1,-1,-1,-1,-1,-1,-1,-1};
   Int_t ddlid=-1,lddlid=-1;
   for(Int_t r=fRowMin;r<=fRowMax;r++){
@@ -176,21 +185,21 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
       ddlid=70+(sector-36)*4+patch;
 
     if((lddlid!=ddlid-1)&&(r==30)){ //dont forget the split row on the last ddl
-      ddls[ddls_to_search++]=ddlid-1;	
+      ddls[ddlsToSearch++]=ddlid-1;	
       lddlid=ddlid-1;
     }
     if((lddlid==-1)||(ddlid!=lddlid)){
-      ddls[ddls_to_search++]=ddlid;
+      ddls[ddlsToSearch++]=ddlid;
       lddlid=ddlid;
     }
     if((r==90)||(r==139)){ //dont forget the split row on the next ddl
-      ddls[ddls_to_search++]=ddlid+1;	
+      ddls[ddlsToSearch++]=ddlid+1;	
       lddlid=ddlid+1;
     }
   }
-  //for(Int_t i=0;i<ddls_to_search;i++) cout << ddls[i] <<endl;
+  //for(Int_t i=0;i<ddlsToSearch;i++) cout << ddls[i] <<endl;
 
-  for(Int_t i=0;i<ddls_to_search;i++){
+  for(Int_t i=0;i<ddlsToSearch;i++){
 #ifdef use_newio
     fReader->Reset();
     fReader->Select(0,ddls[i],ddls[i]+1);
@@ -321,6 +330,8 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
 
 Bool_t AliL3DDLDataFileHandler::DDLData2CompBinary(Int_t event)
 {
+  // transfers the DDL data to the memory and converts it 
+  // to comp binary 
   Bool_t out = kTRUE;
   UInt_t ndigits=0;
   AliL3DigitRowData *digits=0;

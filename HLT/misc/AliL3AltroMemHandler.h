@@ -31,23 +31,23 @@ class AliL3AltroMemHandler {
 
   private:
 
-   UShort_t altromem[ALTRO_SIZE];
-   UShort_t times_per_pad[1024];
-   UShort_t charges_per_pad[1024];
+   UShort_t fAltroMem[ALTRO_SIZE]; // Altro memoru
+   UShort_t fTimesPerPad[1024]; // time samples per pad
+   UShort_t fChargesPerPad[1024]; // charges per pad
 
-   FILE *fInBinary;  //!
-   FILE *fOutBinary; //!
-   UShort_t lrow;
-   UChar_t lpad;
-   UShort_t rrow;  //read row
-   UChar_t rpad;   //read pad
-   UShort_t rtime; //read time
-   UShort_t counter;  //total counter
-   UShort_t tcounter; //time counter
-   UShort_t pcounter; //packet counter
-   UShort_t rcounter; //read counter
-   UShort_t scounter; //sequence counter
-   Bool_t flag; //Binary File?
+   FILE *fInBinary;  //! // binary input file
+   FILE *fOutBinary; //! // binary output file
+   UShort_t fLRow;  //read row
+   UChar_t fLPad;   //read pad
+   UShort_t fRRow;  //read row
+   UChar_t fRPad;   //read pad
+   UShort_t fRTime; //read time
+   UShort_t fCounter;  //total counter
+   UShort_t fTCounter; //time counter
+   UShort_t fPCounter; //packet counter
+   UShort_t fRCounter; //read counter
+   UShort_t fSCounter; //sequence counter
+   Bool_t fFlag; //flag to indicate no return at the end of packet (binary)
 
    void Clear();
    void ClearRead();

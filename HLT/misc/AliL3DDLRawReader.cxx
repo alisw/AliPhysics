@@ -61,7 +61,7 @@ void AliL3DDLRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
   fSelectMaxDDLID = maxDDLID;
 }
 
-Bool_t AliL3DDLRawReader::IsSelected()
+Bool_t AliL3DDLRawReader::IsSelected() const
 {
   // apply the selection (if any)
 
@@ -75,7 +75,7 @@ Bool_t AliL3DDLRawReader::IsSelected()
   return kTRUE;
 }
 
-Bool_t AliL3DDLRawReader::CheckMiniHeader()
+Bool_t AliL3DDLRawReader::CheckMiniHeader() const
 {
   // check the magic number of the mini header
 

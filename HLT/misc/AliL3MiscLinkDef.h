@@ -8,8 +8,8 @@
 
 #ifndef macosx
 #pragma link C++ class AliL3TransBit; 
-#pragma link C++ class AliL3TransBit_v1; 
-#pragma link C++ class AliL3TransBit_v2; 
+#pragma link C++ class AliL3TransBitV1; 
+#pragma link C++ class AliL3TransBitV2; 
 #pragma link C++ class AliL3DataHandler;
 #endif
 #pragma link C++ class AliL3AltroMemHandler;

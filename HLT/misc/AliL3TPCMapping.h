@@ -11,30 +11,30 @@
 
 class AliL3TPCMapping {
 
- private:
-  static const Int_t fNIROC; 
-  static const Int_t fIRows[fNIROC_def];
-  static const Int_t fIPad[fNIROC_def];
-  static const Int_t fICon[fNIROC_def];
-  static const Int_t fIPin[fNIROC_def];
-  static const Int_t fIFec[fNIROC_def];
-  static const Int_t fIFecChannel[fNIROC_def];
-  static const Int_t fIFecCon[fNIROC_def];
-
-  static const Int_t fNOROC; 
-  static const Int_t fORows[fNOROC_def];
-  static const Int_t fOPad[fNOROC_def];
-  static const Int_t fOCon[fNOROC_def];
-  static const Int_t fOPin[fNOROC_def];
-  static const Int_t fOFec[fNOROC_def];
-  static const Int_t fOFecChannel[fNOROC_def];
-  static const Int_t fOFecCon[fNOROC_def];
-
  public:
   //taken from GSI TPC numbering document
   static Int_t GetRealNPads(Int_t slicerow);           //Number of pads per row
   static Double_t GetRealX(Int_t slicerow);            //Local X in cm for modules 0,36
   static Double_t GetRealY(Int_t slicerow, Int_t pad); //Local Y in cm for modules 0,36
+
+ private:
+  static const Int_t fgkNIROC; // Number of inner ROC
+  static const Int_t fgkIRows[fNIROC_def];// Inner rows
+  static const Int_t fgkIPad[fNIROC_def]; // Inner pads
+  static const Int_t fgkICon[fNIROC_def]; // Inner con(?)
+  static const Int_t fgkIPin[fNIROC_def]; // Inner pin(?)
+  static const Int_t fgkIFec[fNIROC_def]; // Inner fec(?)
+  static const Int_t fgkIFecChannel[fNIROC_def]; // Inner fec(?) channel
+  static const Int_t fgkIFecCon[fNIROC_def]; // Inner fec(?) con(?)
+
+  static const Int_t fgkNOROC; // Number of outer ROC
+  static const Int_t fgkORows[fNOROC_def]; // Outer rows
+  static const Int_t fgkOPad[fNOROC_def];  // Outer pads
+  static const Int_t fgkOCon[fNOROC_def];  // Outer con(?)
+  static const Int_t fgkOPin[fNOROC_def];  // Outer pin(?)
+  static const Int_t fgkOFec[fNOROC_def];  // Outer fec(?)
+  static const Int_t fgkOFecChannel[fNOROC_def]; // Outer fec(?) channel
+  static const Int_t fgkOFecCon[fNOROC_def]; // Outer fec(?) con(?)
 
   ClassDef(AliL3TPCMapping,1)
 };

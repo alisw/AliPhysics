@@ -18,7 +18,8 @@ using namespace std;
 
 
 Int_t AliL3TPCMapping::GetRealNPads(Int_t slicerow)
-{ //see tpc numbering doc
+{ 
+  //see tpc numbering doc
 
   if(slicerow<0 || slicerow >= AliL3Transform::GetNRows()){
     LOG(AliL3Log::kError,"AliL3TPCMapping::GetRealNPads","Slicerow")
@@ -28,54 +29,56 @@ Int_t AliL3TPCMapping::GetRealNPads(Int_t slicerow)
 
   const Float_t k1=0.293878;// == 10/6*tan(10)
   const Float_t k2=0.440817;// == 15/6*tan(10)
-  const Int_t NRowLow=AliL3Transform::GetNRowLow();
-  const Int_t NRowUp1=AliL3Transform::GetNRowUp1();
+  const Int_t knRowLow=AliL3Transform::GetNRowLow();
+  const Int_t knRowUp1=AliL3Transform::GetNRowUp1();
 
   if(slicerow==0) return 68;
-  else if(slicerow<NRowLow){
+  else if(slicerow<knRowLow){
     Double_t dummy=slicerow/3+33.67;
     return (2*Int_t(dummy));
   }
 
-  Int_t rowup=slicerow-NRowLow;
-  if(rowup<NRowUp1){
+  Int_t rowup=slicerow-knRowLow;
+  if(rowup<knRowUp1){
     Double_t dummy=k1*rowup+37.75;
     return (2*Int_t(dummy));
   }
   else
   {
-    Double_t dummy=k2*(rowup-NRowUp1+56.66);
+    Double_t dummy=k2*(rowup-knRowUp1+56.66);
     return (2*Int_t(dummy));
   }
 }
 
 Double_t AliL3TPCMapping::GetRealX(Int_t slicerow)
-{ //see tpc numbering doc
+{ 
+  //see tpc numbering doc
   if(slicerow<0 || slicerow >= AliL3Transform::GetNRows()){
     LOG(AliL3Log::kError,"AliL3TPCMapping::GetRealX","Slicerow")
       <<"Wrong slicerow "<<slicerow<<ENDLOG;
     return -1; 
   }
 
-  const Int_t NRowLow=AliL3Transform::GetNRowLow();
-  const Int_t NRowUp1=AliL3Transform::GetNRowUp1();
+  const Int_t knRowLow=AliL3Transform::GetNRowLow();
+  const Int_t knRowUp1=AliL3Transform::GetNRowUp1();
 
-  if(slicerow<NRowLow){
+  if(slicerow<knRowLow){
     return (85.225+0.75*slicerow);
   }
 
-  Int_t rowup=slicerow-NRowLow;
-  if(rowup<NRowUp1){
+  Int_t rowup=slicerow-knRowLow;
+  if(rowup<knRowUp1){
     return (rowup+135.1);
   }
   else
   {
-    return (1.5*(rowup-NRowUp1)+199.35);
+    return (1.5*(rowup-knRowUp1)+199.35);
   }
 }
 
 Double_t AliL3TPCMapping::GetRealY(Int_t slicerow, Int_t pad)
-{ //see tpc numbering doc
+{ 
+  //see tpc numbering doc
   if(slicerow<0 || slicerow >= AliL3Transform::GetNRows()){
     LOG(AliL3Log::kError,"AliL3Transform::GetRealY","Slicerow")
       <<"Wrong slicerow "<<slicerow<<ENDLOG;
@@ -89,9 +92,9 @@ Double_t AliL3TPCMapping::GetRealY(Int_t slicerow, Int_t pad)
     return 0.; 
   }
 
-  const Int_t NRowLow=AliL3Transform::GetNRowLow();
+  const Int_t knRowLow=AliL3Transform::GetNRowLow();
 
-  if(slicerow<NRowLow){
+  if(slicerow<knRowLow){
     return (0.4*pad+0.2-0.2*npads);
     //== (pad-0.5*(npads-1))*fPadPitchWidthLow;
   }
@@ -107,21 +110,26 @@ Double_t AliL3TPCMapping::GetRealY(Int_t slicerow, Int_t pad)
 #include "TPCMapping.h"
 
 TPCMapping::TPCMapping(char* file){
+  // constructor
 	fin = new ifstream();
 	ffile = file;
 	kreadfile = 0;
 }
 
 TPCMapping::~TPCMapping(){
+  // destructor
 	fin->close();
 	delete fin;
 }
 void TPCMapping::open(){
+  // opens file
 	fin->open(ffile);
 }
 void TPCMapping::isOpen(){
+  // dummy
 }
 void TPCMapping::read(){
+  // reads the RORC
 	for(int i = 0; i < 5504 ; i++){
 		for(int j = 0 ; j < 8 ; j++){
 			*fin >> fIRORC[i][j];
@@ -131,6 +139,7 @@ void TPCMapping::read(){
 	kreadfile = 1;
 }
 void TPCMapping::read(int* listofRCUs, int numofRCU){
+  // reads (?)
 	int pos = 0;
 	for(int i = 0; i < 5504 ; i++){
 		for(int j = 0 ; j < 8 ; j++){
@@ -147,18 +156,21 @@ void TPCMapping::read(int* listofRCUs, int numofRCU){
 }
 
 void TPCMapping::print(){
+  // debug printout
 	cout << " Index  |  Row  |  Pad  |Connect|  Pin  |  FEC  |channel| FECcon|AltroCH| Altro |" << endl;
 	for(int i = 0; i < fsizeoffIRORC ; i++){
 		print(i);
 	}	
 }
 void TPCMapping::print(int start, int end){
+  // debug printout
 	cout << " Index  |  Row  |  Pad  |Connect|  Pin  |  FEC  |channel| FECcon|AltroCH| Altro |" << endl;
 	for(int i = start; i <= end ; i++){
 		print(i);
 	}	
 }
 void TPCMapping::print(int index){
+  // debug printout
 	cout <<
 	getIndex(index) << "\t|" <<
 	getPadrow(index) << "\t|" <<
@@ -284,6 +296,7 @@ int TPCMapping::getAltroChannel(int index){
 	return retval;
 }
 int TPCMapping::getAltro(int index){
+  // gets Altro 
 	int retval;
 	int channel = getFECchannel(index);
 	if(kreadfile == 1)
@@ -306,6 +319,7 @@ int TPCMapping::getPadsperRow(int row){
 	return retval;
 }
 void TPCMapping::myprint(){
+  // debug printout
 	int FEC = 0;
 	int channel = 0;
 	cout << "channel Index  |  Row  |  Pad  |Connect|  Pin  |  FEC  |channel| FECcon|AltroCH| Altro |" << endl;
@@ -325,6 +339,7 @@ void TPCMapping::myprint(){
 	}
 }
 void TPCMapping::myprint1(){
+  // debug printout
 	int FEC = 0;
 	int channel = 0;
 	cout << "channel Index  |  Row  |  Pad  |Connect|  Pin  |  FEC  |channel| FECcon|AltroCH| Altro |" << endl;
@@ -343,6 +358,7 @@ void TPCMapping::myprint1(){
 	}
 }
 void TPCMapping::myprint2(){
+  // debug printout
 	int FEC = 0;
 	int channel = 0;
 	int rownum = 0;

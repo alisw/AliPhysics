@@ -36,10 +36,10 @@ using namespace std;
 // Time Projection Chamber ADC bit compresion lookup table
 //
 //  Conversion equation:
-//    For AliTransBit_v1
+//    For AliTransBitV1
 //    dy/dx= Int_t(1+x/fX0)
 //
-//    For AliTransBit_v2
+//    For AliTransBitV2
 //    y  =(2**bit0) ln(1+x/fX0) / ln(1+(2**bit1-1)/fX0)
 //
 //    where x0 is calculated in function GetOptimumX0()
@@ -48,7 +48,7 @@ using namespace std;
 //    Int_t b0=10;  // original number of bits
 //    Int_t b1=8;   // compressed
 //
-//    AliTransBit_v1 trans;
+//    AliTransBitV1 trans;
 //    Int_t x0=TMath::Nint(TMath::Exp(b0*TMath::Log(2)));
 //    Int_t x1=TMath::Nint(TMath::Exp(b1*TMath::Log(2)));
 //    trans.SetBits(b0,b1);
@@ -67,11 +67,12 @@ using namespace std;
 */
 
 ClassImp(AliL3TransBit)
-ClassImp(AliL3TransBit_v1)
-ClassImp(AliL3TransBit_v2)
+ClassImp(AliL3TransBitV1)
+ClassImp(AliL3TransBitV2)
 
 AliL3TransBit::AliL3TransBit()
 {
+  // default constructor
   fTable0 = 0;
   fTable1 = 0;
   fBit0   = 10;
@@ -81,12 +82,12 @@ AliL3TransBit::AliL3TransBit()
 
 AliL3TransBit::~AliL3TransBit() 
 {
-  //default destructor
+  // destructor
   if (fTable0!=0) delete [] fTable0;
   if (fTable1!=0) delete [] fTable1;
 }
 
-Double_t AliL3TransBit_v1::FindOptimumX0()
+Double_t AliL3TransBitV1::FindOptimumX0()
 {
   //find x0 for which derivation at xder1 is equal 1
   Int_t x0=(Int_t)rint(exp(fBit0*log(2.)));
@@ -110,7 +111,7 @@ Double_t AliL3TransBit_v1::FindOptimumX0()
   return fX0;
 }
 
-void AliL3TransBit_v1::Update()
+void AliL3TransBitV1::Update()
 {
   //construct lookup tables for loosy compression from 
   if (fX0<1) fX0 = FindOptimumX0();  
@@ -138,26 +139,26 @@ void AliL3TransBit_v1::Update()
   return;
 }
 
-Double_t AliL3TransBit_v2::FindOptimumX0()
+Double_t AliL3TransBitV2::FindOptimumX0()
 {
   //find x0 for which derivation at xder1 is equal 1
-  const Float_t xder1=1;
-  const Float_t dx=0.1;
+  const Float_t kxder1=1;
+  const Float_t kdx=0.1;
 
   Float_t x0=exp(fBit0*log(2.));
   Float_t x1=exp(fBit1*log(2.));
   Float_t deriv = 0;
   Float_t x;
-  for (x=x1;( (x>1)&&(deriv<1)) ;x-=dx)
+  for (x=x1;( (x>1)&&(deriv<1)) ;x-=kdx)
     {
-      deriv = (x1-1)/( log(1.+x0/x) *x *(1+xder1/x));
+      deriv = (x1-1)/( log(1.+x0/x) *x *(1+kxder1/x));
     }
-  x+=dx/2.;
+  x+=kdx/2.;
   fX0 = x;
   return fX0;
 }
 
-void AliL3TransBit_v2::Update()
+void AliL3TransBitV2::Update()
 {
   //construct lookup tables for loosy compresion from 
   if (fX0<1) fX0 = FindOptimumX0();  

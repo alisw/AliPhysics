@@ -16,27 +16,27 @@ class AliL3DDLTPCRawStream
     virtual Bool_t   Next();
     Bool_t SetDDLID(Int_t d); //choose ddlid to readout
 
-    inline Int_t     GetSector() const {return fSector;};
-    inline Int_t     GetPrevSector() const {return fPrevSector;};
-    inline Bool_t    IsNewSector() const {return fSector != fPrevSector;};
-    inline Int_t     GetRow() const {return fRow;};
-    inline Int_t     GetPrevRow() const {return fPrevRow;};
-    inline Bool_t    IsNewRow() const {return (fRow != fPrevRow) || IsNewSector();};
-    inline Int_t     GetPad() const {return fPad;};
-    inline Int_t     GetPrevPad() const {return fPrevPad;};
-    inline Bool_t    IsNewPad() const {return (fPad != fPrevPad) || IsNewRow();};
-    inline Int_t     GetTime() const {return fTime;};
-    inline Int_t     GetSignal() const {return fSignal;};
+    Int_t     GetSector() const {return fSector;};
+    Int_t     GetPrevSector() const {return fPrevSector;};
+    Bool_t    IsNewSector() const {return fSector != fPrevSector;};
+    Int_t     GetRow() const {return fRow;};
+    Int_t     GetPrevRow() const {return fPrevRow;};
+    Bool_t    IsNewRow() const {return (fRow != fPrevRow) || IsNewSector();};
+    Int_t     GetPad() const {return fPad;};
+    Int_t     GetPrevPad() const {return fPrevPad;};
+    Bool_t    IsNewPad() const {return (fPad != fPrevPad) || IsNewRow();};
+    Int_t     GetTime() const {return fTime;};
+    Int_t     GetSignal() const {return fSignal;};
 
   protected :
-    UShort_t         Get10BitWord(UChar_t* buffer, Int_t position);
+    UShort_t         Get10BitWord(UChar_t* buffer, Int_t position) const;
 
-    static const Int_t fkOffset  = 1;         // offset of signal
-    static const Int_t fkDataMax = 10000000;  // size of array for uncompressed raw data
+    static const Int_t fgkOffset  = 1;         // offset of signal
+    static const Int_t fgkDataMax = 10000000;  // size of array for uncompressed raw data
 
     AliL3DDLRawReader* fRawReader;  // object for reading the raw data
 
-    UShort_t*        fData;         //[fkDataMax] uncompressed raw data
+    UShort_t*        fData;         //[fgkDataMax] uncompressed raw data
     Int_t            fDataSize;     // actual size of the uncompressed raw data
     Int_t            fPosition;     // current position in fData
     Int_t            fCount;        // counter of words to be read for current trailer

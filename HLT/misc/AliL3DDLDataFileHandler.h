@@ -15,17 +15,6 @@
 
 class AliL3DDLDataFileHandler:public AliL3MemHandler{
  
-  private:
-#ifdef use_newio
-   TString          fFilename;
-   Int_t            fEvent;
-   AliRawReader    *fReader;
-   AliTPCRawStream *fTPCStream;
-#else
-   AliL3DDLRawReaderFile *fReader;
-   AliL3DDLTPCRawStream *fTPCStream;
-#endif
-
   public:
 
    AliL3DDLDataFileHandler();
@@ -33,7 +22,7 @@ class AliL3DDLDataFileHandler:public AliL3MemHandler{
 
 #ifdef use_newio
    Bool_t SetReaderInput(Char_t *name,Int_t event=0);
-   Bool_t IsDigit(Int_t i=0);
+   Bool_t IsDigit(Int_t i=0) const;
    AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t /*eventmerge*/=kFALSE){return DDLData2Memory(nrow,event);};
 #else
    Bool_t SetReaderInput(Char_t *name,Bool_t add=kTRUE);
@@ -45,6 +34,17 @@ class AliL3DDLDataFileHandler:public AliL3MemHandler{
 
    AliL3DigitRowData* DDLData2Memory(UInt_t &nrow,Int_t event=-1);
    Bool_t DDLData2CompBinary(Int_t event=-1);
+
+  private:
+#ifdef use_newio
+   TString          fFilename; // IO file name
+   Int_t            fEvent;    // event number
+   AliRawReader    *fReader;   // raw reader
+   AliTPCRawStream *fTPCStream;// TPC raw stream
+#else
+   AliL3DDLRawReaderFile *fReader; // raw reader
+   AliL3DDLTPCRawStream *fTPCStream; // TPC raw stream
+#endif
 
    ClassDef(AliL3DDLDataFileHandler,1)   //DDL Data Filehandler class
 };

@@ -63,6 +63,7 @@ ClassImp(AliL3DataHandler)
   
 AliL3DataHandler::AliL3DataHandler()
 {
+  // default constructor
   fBitTransformer = 0;
   LOG(AliL3Log::kInformational,"AliL3DataHandler::AliL3DataHandler","Data format")
     <<"8 bit data handler initialized"<<ENDLOG;
@@ -70,6 +71,7 @@ AliL3DataHandler::AliL3DataHandler()
 
 AliL3DataHandler::~AliL3DataHandler()
 {
+  // destructor
   if(fBitTransformer)
     delete fBitTransformer;
 }
@@ -93,7 +95,7 @@ void AliL3DataHandler::Convert10to8Bit()
   
   
   //Initialize the bit transformation class:
-  fBitTransformer = new AliL3TransBit_v1();
+  fBitTransformer = new AliL3TransBitV1();
   Int_t b0=10;  // original number of bits
   Int_t b1=8;   // compressed
   fBitTransformer->SetBits(b0,b1);
@@ -208,8 +210,8 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
       UShort_t value = rowPt->fRow;
       Write(comp,index,value);
       
-      UShort_t number_of_pads=0;
-      UShort_t max_pad = 0;
+      UShort_t numberOfPads=0;
+      UShort_t maxPad = 0;
       
       for(Int_t j=0; j<200; j++)
 	npads[j]=0;
@@ -222,16 +224,16 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
 	{
 	  if(npads[j])
 	    {
-	      number_of_pads++;
-	      max_pad = j;
+	      numberOfPads++;
+	      maxPad = j;
 	    }
 	}
       
       //Write the number of pads on this row:
-      Write(comp,index,number_of_pads);
+      Write(comp,index,numberOfPads);
       UInt_t digit=0;
       
-      for(UShort_t pad=0; pad <= max_pad; pad++)
+      for(UShort_t pad=0; pad <= maxPad; pad++)
 	{
 	  
 	  if(digit >= rowPt->fNDigit || rowPt->fDigitData[digit].fPad !=  pad)
@@ -249,19 +251,19 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
 		  Write(comp,index,0);
 		  
 		  //Check if we have to use more than 1 byte to write the zeros:
-		  Int_t number_of_zero_intervals=0;
+		  Int_t numberOfZeroIntervals=0;
 		  if(rowPt->fDigitData[digit].fTime >= 255)
 		    {
-		      number_of_zero_intervals++;
+		      numberOfZeroIntervals++;
 		      Write(comp,index,255);
 		      if(rowPt->fDigitData[digit].fTime >= 2*255)
 			{
 			  cerr<<"AliL3DataHandler::Memory2CompMemory : Should not happen "<<(Int_t)rowPt->fDigitData[digit].fTime<<endl;
 			  Write(comp,index,255);
-			  number_of_zero_intervals++;
+			  numberOfZeroIntervals++;
 			}
 		    }
-		  Write(comp,index,(rowPt->fDigitData[digit].fTime - number_of_zero_intervals*255));
+		  Write(comp,index,(rowPt->fDigitData[digit].fTime - numberOfZeroIntervals*255));
 		}
 	    }
 	  
@@ -292,19 +294,19 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
 		      UShort_t nzero = rowPt->fDigitData[digit+1].fTime - (rowPt->fDigitData[digit].fTime + 1);
 		      
 		      //Check if we have to use more than one byte to write the zeros:
-		      Int_t number_of_zero_intervals=0;
+		      Int_t numberOfZeroIntervals=0;
 		      if(nzero >= 255)
 			{
-			  number_of_zero_intervals++;
+			  numberOfZeroIntervals++;
 			  Write(comp,index,255);
 			  if(nzero >= 2*255)
 			    {
 			      cerr<<"AliL3DataHandler::Memory2CompMemory : Should not happen "<<(Int_t)rowPt->fDigitData[digit].fTime<<endl;
 			      Write(comp,index,255);
-			      number_of_zero_intervals++;
+			      numberOfZeroIntervals++;
 			    }
 			}
-		      Write(comp,index,(nzero - number_of_zero_intervals*255));
+		      Write(comp,index,(nzero - numberOfZeroIntervals*255));
 		    }  
 		}
 	      digit++;
@@ -344,8 +346,8 @@ UInt_t AliL3DataHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
       //Write the row number:
       index++;
       
-      UShort_t max_pad=0; 
-      UShort_t number_of_pads = 0;
+      UShort_t maxPad=0; 
+      UShort_t numberOfPads = 0;
       
       for(Int_t j=0; j<200; j++) 
 	npads[j]=0;
@@ -359,8 +361,8 @@ UInt_t AliL3DataHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
 	{ 
 	  if(npads[j])
 	    {
-	      number_of_pads++;
-	      max_pad = j;
+	      numberOfPads++;
+	      maxPad = j;
 	    }
 	}
       
@@ -368,7 +370,7 @@ UInt_t AliL3DataHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
       index++;
       
       UInt_t digit=0;
-      for(UShort_t pad=0; pad <= max_pad; pad++)
+      for(UShort_t pad=0; pad <= maxPad; pad++)
 	{
 	  if(digit>=rowPt->fNDigit || rowPt->fDigitData[digit].fPad !=  pad)
 	    continue;
@@ -506,11 +508,11 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
 		  Read(comp,index); //end of pad
 		  break;
 		}
-	      UShort_t time_shift;
-	      if( (time_shift = Read(comp,index)) == 255)
-		if( (time_shift += Read(comp,index)) == 2*255)
-		  time_shift += Read(comp,index);
-	      time += time_shift;
+	      UShort_t timeShift;
+	      if( (timeShift = Read(comp,index)) == 255)
+		if( (timeShift += Read(comp,index)) == 2*255)
+		  timeShift += Read(comp,index);
+	      time += timeShift;
 	      
 	    }
 	}

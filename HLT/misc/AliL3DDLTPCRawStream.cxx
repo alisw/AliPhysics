@@ -46,7 +46,7 @@ AliL3DDLTPCRawStream::AliL3DDLTPCRawStream(AliL3DDLRawReader* rawReader)
 
   fRawReader = rawReader;
   fRawReader->Select(0);
-  fData = new UShort_t[fkDataMax];
+  fData = new UShort_t[fgkDataMax];
   fDataSize = fPosition = 0;
   fCount = fBunchLength = 0;
 
@@ -63,6 +63,7 @@ AliL3DDLTPCRawStream::~AliL3DDLTPCRawStream()
 
 Bool_t AliL3DDLTPCRawStream::SetDDLID(Int_t d)
 {
+  // sets DDL ID
   if((d<0)||(d>216)){
     LOG(AliL3Log::kFatal,"AliL3DDLTPCRawStream::SetDDLID","DDL")
       <<AliL3Log::kDec<<"DDL number out of range "<<d<<ENDLOG;
@@ -167,14 +168,14 @@ Bool_t AliL3DDLTPCRawStream::Next()
     return kFALSE;
   }
 
-  fSignal = fData[fPosition++] + fkOffset;
+  fSignal = fData[fPosition++] + fgkOffset;
   fCount--;
   fBunchLength--;
 
   return kTRUE;
 }
 
-UShort_t AliL3DDLTPCRawStream::Get10BitWord(UChar_t* buffer, Int_t position)
+UShort_t AliL3DDLTPCRawStream::Get10BitWord(UChar_t* buffer, Int_t position) const
 {
   // return a word in a 10 bit array as an UShort_t
   Int_t iBit = position * 10;

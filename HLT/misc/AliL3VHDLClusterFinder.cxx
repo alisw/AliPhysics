@@ -2,19 +2,6 @@
 
 // Author: Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright & copy ALICE HLT Group
-
-#include "AliL3StandardIncludes.h"
-#include "AliL3RootTypes.h"
-#include "AliL3Logging.h"
-#include "AliL3AltroMemHandler.h"
-
-//#define VHDLDEBUG
-#include "AliL3VHDLClusterFinder.h"
-
-#if __GNUC__ == 3
-using namespace std;
-#endif
-
 /** \class AliL3VHDLClusterFinder
 <pre>
 //____________________________________________________
@@ -29,11 +16,24 @@ using namespace std;
 </pre> 
 */
 
+#include "AliL3StandardIncludes.h"
+#include "AliL3RootTypes.h"
+#include "AliL3Logging.h"
+#include "AliL3AltroMemHandler.h"
+
+//#define VHDLDEBUG
+#include "AliL3VHDLClusterFinder.h"
+
+#if __GNUC__ == 3
+using namespace std;
+#endif
+
 
 ClassImp(AliL3VHDLClusterFinder)
 
 AliL3VHDLClusterFinder::AliL3VHDLClusterFinder()
 {
+  // default constructor
   fMatch = 4;
   fThreshold = 10;
   fMinMerge = 1;
@@ -55,6 +55,7 @@ AliL3VHDLClusterFinder::AliL3VHDLClusterFinder()
 
 AliL3VHDLClusterFinder::~AliL3VHDLClusterFinder()
 {
+  // destructor
 #ifdef VHDLDEBUG
   fclose(fdeb);
 #endif
@@ -63,10 +64,10 @@ AliL3VHDLClusterFinder::~AliL3VHDLClusterFinder()
 void AliL3VHDLClusterFinder::ProcessDigits()
 {
   //Loop over data like the analyzer of the VHDL code
-  const UChar_t n=255;
+  const UChar_t kn=255;
   UShort_t rrow=0,rtime=0;
-  UChar_t rpad=0,i=n;
-  UShort_t *charges=new UShort_t[n];
+  UChar_t rpad=0,i=kn;
+  UShort_t *charges=new UShort_t[kn];
 
   fNClusters=0;
   fRow=0;
@@ -134,7 +135,7 @@ void AliL3VHDLClusterFinder::ProcessDigits()
 #ifdef VHDLDEBUG
     fflush(fdeb);
 #endif
-    i=n; //store size of charges array
+    i=kn; //store size of charges array
   } //loop over data
 
   //flush everything left
@@ -143,6 +144,7 @@ void AliL3VHDLClusterFinder::ProcessDigits()
 }
 
 void AliL3VHDLClusterFinder::MakeSequence(){
+  // makes the sequence
   if(!fTC) return;
 
   Int_t mp=fNPad*fTC;
@@ -165,6 +167,7 @@ void AliL3VHDLClusterFinder::MakeSequence(){
 
 void AliL3VHDLClusterFinder::ProcessSequence()
 {
+  // processes the sequence
   if(fNRow!=fRow) FlushMemory();
   else if(fNPad==fPad+1) PrepareMemory();
   else if(fNPad!=fPad) FlushMemory();
@@ -182,6 +185,7 @@ void AliL3VHDLClusterFinder::ProcessSequence()
 
 void AliL3VHDLClusterFinder::PrepareMemory()
 {
+  // prepares the memory
 #ifdef VHDLDEBUG
   fprintf(fdeb,"PrepareMemory %d %d %d\n",fRP,fEP,fWP);
 #endif
@@ -191,6 +195,7 @@ void AliL3VHDLClusterFinder::PrepareMemory()
 
 void AliL3VHDLClusterFinder::FlushMemory()
 {
+  // flushes the memory
 #ifdef VHDLDEBUG
   fprintf(fdeb,"FlushMemory %d %d %d %d\n",fFP,fRP,fEP,fWP);
 #endif
@@ -201,6 +206,7 @@ void AliL3VHDLClusterFinder::FlushMemory()
 
 void AliL3VHDLClusterFinder::CompareSeq()
 {
+  // compares sequences
   while(fRP!=fEP){
     Int_t diff=fSeqs[fPList[fRP]].fMean-fSeq.fMean;
 
@@ -220,6 +226,7 @@ void AliL3VHDLClusterFinder::CompareSeq()
 
 void AliL3VHDLClusterFinder::MergeSeq()
 {
+  // merges sequences
 #ifdef VHDLDEBUG
   fprintf(fdeb,"merged with Mean=%d TC=%d (new Merge=%d) %d %d\n",fSeqs[fPList[fRP]].fMean,fSeqs[fPList[fRP]].fTotalCharge,fSeqs[fPList[fRP]].fMerge+1,fRow,fPad);
 #endif
@@ -263,6 +270,7 @@ void AliL3VHDLClusterFinder::MergeSeq()
 
 void AliL3VHDLClusterFinder::InsertSeq()
 {
+  // inserts sequence
 #ifdef VHDLDEBUG
   fprintf(fdeb,"inserted %d %d\n",fRow,fPad);
 #endif
@@ -274,6 +282,7 @@ void AliL3VHDLClusterFinder::InsertSeq()
 
 void AliL3VHDLClusterFinder::OutputMemory()
 {
+  // output memory?
   Float_t mtime=0,mpad=0;
   Float_t mtime2=0,mpad2=0;
   UInt_t tc,row,mno;
@@ -332,12 +341,14 @@ void AliL3VHDLClusterFinder::OutputMemory()
 
 void AliL3VHDLClusterFinder::FreeSeq(UShort_t i)
 {
+  // frees the sequence
   ClearSeq(i);
   IncPointer(fLast,1,N_clmem);
 }
 
 void AliL3VHDLClusterFinder::Clear()
 {
+  // clears everything
   fFirst=0; //first list pointer
   fLast=0;  //last  list pointer
 
@@ -362,6 +373,7 @@ void AliL3VHDLClusterFinder::Clear()
 }
 
 void AliL3VHDLClusterFinder::ClearSeq(UShort_t i){
+  // clears a sequence
   fSeqs[i].fRow=0;
   fSeqs[i].fLastPad=0;
   fSeqs[i].fTotalCharge=0;
@@ -374,6 +386,7 @@ void AliL3VHDLClusterFinder::ClearSeq(UShort_t i){
 }
 
 void AliL3VHDLClusterFinder::IncPointer(UShort_t &p, Short_t add, UShort_t N){
+  // increments pointer by 'add' in a circular buffer 
   Short_t pp=p;
   pp+=add;  
   if(pp>=N) p=UShort_t(pp-N);
@@ -382,10 +395,12 @@ void AliL3VHDLClusterFinder::IncPointer(UShort_t &p, Short_t add, UShort_t N){
 }
 
 void AliL3VHDLClusterFinder::IncRPointer(){
+  // increments pointer fRP 
   IncPointer(fRP);
 }
 
 void AliL3VHDLClusterFinder::IncWPointer(){
+  // increments pointer fWP
   IncPointer(fWP);
 
   if(fWP==fOP){
@@ -395,6 +410,7 @@ void AliL3VHDLClusterFinder::IncWPointer(){
 }
 
 void AliL3VHDLClusterFinder::NextFreeIndex(){
+  // finds next free index
   IncPointer(fFirst,1,N_clmem);
   if(fFirst==fLast) {
     LOG(AliL3Log::kFatal,"AliL3VHDLClusterFinder::GetFreeIndex","Memory Check")
@@ -405,6 +421,7 @@ void AliL3VHDLClusterFinder::NextFreeIndex(){
 #if 0
 void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 {
+  // writes clusters
   Int_t thisrow,thissector;
   UInt_t counter = fNClusters;
   
