@@ -161,9 +161,9 @@ JETANEXPORTDEST:=$(patsubst %,$(EXPORTDIR)/%,$(EXPORT))
 
 #Extra include,libs, defines etc.
 
-JETANDEFINE:=$(EDEFINE)
+JETANDEFINE:=$(EDEFINE) -DNOUQHEADERINFO
 
-JETANINC:=$(patsubst %,-I%,$(EINCLUDE)) -I.
+JETANINC:=$(patsubst %,-I$(ALICE_ROOT)/%,$(EINCLUDE)) -I.
 
 JETANELIBS:=$(patsubst %,-l%,$(ELIBS))
 JETANELIBSDEP:=$(patsubst %,lib/tgt_$(ALICE_TARGET)/lib%.$(SOEXT),$(ELIBS))

@@ -126,7 +126,9 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	if(!pheader) {
 	  Warning("ReadNext","Pythia-Header not found in event %d",fCurrentEvent);
 	} else {
-	  Int_t ntruq=pheader->NUQTriggerJets();
+	  Int_t ntruq=0;
+#ifndef NOUQHEADERINFO
+	  ntruq=pheader->NUQTriggerJets();
 	  if(ntruq){
 	    Double_t x0=pheader->GetXJet();
 	    Double_t y0=pheader->GetYJet();
@@ -140,6 +142,7 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	      fEventParticles->AddUQJet(pjet);
 	    }
 	  }
+#endif
 	  //Int_t ptyp=pheader->ProcessType();
 	  Int_t ntrials=pheader->Trials();
 	  headdesc+=": Tr ";
