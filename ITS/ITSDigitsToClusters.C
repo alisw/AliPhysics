@@ -74,7 +74,14 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
    if (!res1) res1=new AliITSresponseSDD();
+
+   //res1->SetNoiseParam(noise,baseline);
+
    res1->SetNoiseParam(noise,baseline);
+   Float_t magic = res1->MagicValue();
+   Float_t top = res1->MaxAdc();
+   thres *= top/magic;
+	
    Float_t n,b;
    res1->GetNoiseParam(n,b);
     printf("SDD: noise baseline %f %f zs option %s data type %s\n",n,b,res1->ZeroSuppOption(),res1->DataType());

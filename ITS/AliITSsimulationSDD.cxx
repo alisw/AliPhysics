@@ -845,7 +845,7 @@ void AliITSsimulationSDD::ChargeToSignal() {
 	   Double_t signal = newcont*norm;
 	   if (signal >= maxadc) signal = maxadc -1;
 	   // back to analog: ?
-	   signal /=norm;
+	   //signal /=norm;
 	   fHitMap2->SetHit(i,k,signal);
 	}  
     } // loop over anodes
@@ -883,7 +883,7 @@ void AliITSsimulationSDD::ChargeToSignal() {
 	// back to analog: ?
 	// comment the line below because you want to keep the signal in ADCs
 	// convert back to nA in cluster finder
-	signal /=norm;
+	//signal /=norm;
 	fHitMap2->SetHit(i,k,signal);
       }      
   } // loop over anodes
