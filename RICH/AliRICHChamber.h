@@ -56,8 +56,16 @@ public:
   Float_t     G2Ly(Double_t x,Double_t y,Double_t z) const{TVector3 x3=G2L(x,y,z); return x3.Z();}
   void        Print(Option_t *sOption)const;//virtual      
    
-  void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);//Transformation from local to global coordinates, chamber-dependant
-  void GlobaltoLocal(Float_t pos[3],Float_t localpos[3]);//Transformation from Global to local coordinates, chamber-dependant 
+  void LocaltoGlobal(Float_t pos[3],Float_t localpos[3]) {
+    //Transformation from local to global coordinates, chamber-dependant
+    TVector3 buf = L2G(localpos[0],localpos[1],localpos[2]);
+    pos[0]=buf.X();pos[1]=buf.Y();pos[2]=buf.Z();
+  }
+  void GlobaltoLocal(Float_t pos[3],Float_t localpos[3]) {
+    //Transformation from Global to local coordinates, chamber-dependant 
+    TVector3 buf = G2L(pos[0],pos[1],pos[2]);
+    localpos[0]=buf.X();localpos[1]=buf.Y();localpos[2]=buf.Z();
+  }
   inline void SetToZenith();
   TRotMatrix *GetRotMatrix()       const{return fpRotMatrix;}  
 protected:
