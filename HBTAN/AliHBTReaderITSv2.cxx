@@ -136,7 +136,7 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
  TFile *aClustersFile;//file with clusters
  TFile *aGAliceFile;//file name with galice
 
- AliITStrackerV2 *tracker; // ITS tracker - used for cooking labels
+// AliITStrackerV2 *tracker; // ITS tracker - used for cooking labels
  TTree *tracktree; // tree for tracks
  
  Double_t xk;
@@ -211,8 +211,8 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
        Double_t orz=part->Vz();
       
        aClustersFile->cd();
-       tracker = new AliITStrackerV2(geom,currentEvent,orz);
-       
+//       tracker = new AliITStrackerV2(geom,currentEvent,orz); //<---- this is for Massimo version
+//       tracker = new AliITStrackerV2(geom,currentEvent);
        sprintf(tname,"TreeT_ITS_%d",currentEvent);
        
        tracktree=(TTree*)aTracksFile->Get(tname);
@@ -220,7 +220,7 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
          {
            Error("Read","Can't get a tree with ITS tracks"); 
            delete iotrack;
-           delete tracker;
+ //          delete tracker;
            return 4;
          }
        TBranch *tbranch=tracktree->GetBranch("tracks");
@@ -243,13 +243,13 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
              tpcfault++;
              continue;
            }
-          tracker->CookLabel(iotrack,0.);
-          Int_t itsLabel=iotrack->GetLabel();
-          if (itsLabel != label)
-           {
-            itsfault++;
-            continue; 
-           }
+//          tracker->CookLabel(iotrack,0.);
+//          Int_t itsLabel=iotrack->GetLabel();
+ //         if (itsLabel != label)
+ //          {
+ //           itsfault++;
+ //           continue; 
+ //          }
 
           TParticle *p = (TParticle*)gAlice->Particle(label);
           if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
@@ -292,15 +292,14 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
         
        aTracksFile->Delete(tname);
        aTracksFile->Delete("tracks");
-       delete tracker;
+//       delete tracker;
        
        totalNevents++;
+       CloseFiles(aTracksFile,aClustersFile,aGAliceFile);     
        cout<<"all: "<<i<<"   accepted: "<<accepted<<"   tpc faults: "<<tpcfault<<"   its faults: "<<itsfault<<endl;
      
      }//end of loop over events in current directory
      currentdir++;
-     CloseFiles(aTracksFile,aClustersFile,aGAliceFile);     
-     
    }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
 
  delete iotrack;
