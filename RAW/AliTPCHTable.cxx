@@ -23,69 +23,10 @@
 //the class AliTPCHTable represents a compression table
 
 #include <TObjArray.h>
-#include <Riostream.h>
 #include <TMath.h>
 #include "AliTPCBuffer160.h"
-#include "AliTPCHuffman.h"
-
-ClassImp(AliTPCHNode)
-
-AliTPCHNode::AliTPCHNode(){
-  //Constructor
-  fLeft=0;
-  fRight=0;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-AliTPCHNode::AliTPCHNode(Int_t sym, Double_t freq){
-  //Standard constructor
-  fSymbol=sym;
-  fFrequency=freq;
-  fLeft=0;
-  fRight=0;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-AliTPCHNode::AliTPCHNode(const AliTPCHNode &source)
-  :TObject(source){
-  //Copy Constructor 
-  if(&source == this) return;
-  this->fSymbol = source.fSymbol;
-  this->fFrequency = source.fFrequency;
-  this->fLeft = source.fLeft;
-  this->fRight = source.fRight;
-  return;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-AliTPCHNode& AliTPCHNode::operator=(const AliTPCHNode &source){
-  //Assignment operator
-  if(&source == this) return *this;
-  this->fSymbol = source.fSymbol;
-  this->fFrequency = source.fFrequency;
-  this->fLeft = source.fLeft;
-  this->fRight = source.fRight;
-  return *this;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-Int_t AliTPCHNode::Compare(const TObject *obj)const{
-  //Function called by Sort method of TObjArray
-  AliTPCHNode *node=(AliTPCHNode *)obj;
-  Double_t f=fFrequency;
-  Double_t fo=node->fFrequency;
-  if (f<fo) return 1;
-  else if (f>fo) return -1;
-  else return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
+#include "AliTPCHNode.h"
+#include "AliTPCHTable.h"
 
 ClassImp(AliTPCHTable)
   

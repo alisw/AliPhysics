@@ -3,6 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This is a class for reading raw data from a root file.
+///
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliRawReader.h"
 
 class AliRawEvent;

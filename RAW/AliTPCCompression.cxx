@@ -28,7 +28,8 @@
 #include <TMath.h>
 #include <TSystem.h>
 #include "AliTPCBuffer160.h"
-#include "AliTPCHuffman.h"
+#include "AliTPCHNode.h"
+#include "AliTPCHTable.h"
 #include "AliTPCCompression.h"
 
 ClassImp(AliTPCCompression)
@@ -269,40 +270,40 @@ Int_t AliTPCCompression::CreateTableFormula(Double_t beta,UInt_t M,Int_t dim,Int
   Double_t sum=0;
   Double_t min=10;
   Double_t alpha=0;
-  Double_t A=0;
-  AliTPCHTable *Table=new AliTPCHTable(dim);
+  Double_t a=0;
+  AliTPCHTable *table=new AliTPCHTable(dim);
   
   freq=1;
-  Double_t FreqArray[1024];
+  Double_t freqArray[1024];
   for(Int_t i=0;i<1024;i++){
-    FreqArray[i]=0;
+    freqArray[i]=0;
   }
   alpha=M*0.000000602+0.0104;
   if (fVerbose)
     cout<<"alpha "<<alpha<<endl;
   for(Int_t x=0;x<dim;x++){
     if (Type==1)
-      FreqArray[x]=TMath::Power((x+1),-beta)*TMath::Exp(-alpha*(x+1));
+      freqArray[x]=TMath::Power((x+1),-beta)*TMath::Exp(-alpha*(x+1));
     else
-      FreqArray[x]=TMath::Power((x+1),-beta);
-    sum+=FreqArray[x];
-    if (FreqArray[x]<min)min=FreqArray[x];
+      freqArray[x]=TMath::Power((x+1),-beta);
+    sum+=freqArray[x];
+    if (freqArray[x]<min)min=freqArray[x];
   }//end for
   if (fVerbose)
     cout<<"Minimun Value "<<min<<endl;
-  A=1/sum;
+  a=1/sum;
   if (fVerbose)
-    cout<<"A Value: "<<A<<endl;
+    cout<<"a Value: "<<a<<endl;
   for(Int_t x=0;x<dim;x++){
     if (Type==0)//Bunch length
       if (x>=3)//minimum bunch length
-	Table->SetValFrequency(x,A*FreqArray[x]*1000);
+	table->SetValFrequency(x,a*freqArray[x]*1000);
       else
-	Table->SetValFrequency(x,0);
+	table->SetValFrequency(x,0);
     else //Time table
-      Table->SetValFrequency(x,A*FreqArray[x]);
+      table->SetValFrequency(x,a*freqArray[x]);
   }
-  Table->BuildHTable();
+  table->BuildHTable();
   ofstream fTable;
   char filename[15];
   sprintf(filename,"Table%d.dat",Type); 
@@ -311,18 +312,18 @@ Int_t AliTPCCompression::CreateTableFormula(Double_t beta,UInt_t M,Int_t dim,Int
 #else
   fTable.open(filename);
 #endif
-  Int_t dimTable=Table->Size();
+  Int_t dimTable=table->Size();
   //Table dimension is written into a file
   fTable.write((char*)(&dimTable),sizeof(Int_t));
   //One table is written into a file
   for(Int_t i=0;i<dimTable;i++){
-    UChar_t CodeLen=Table->CodeLen()[i];
-    Double_t Code=Table->Code()[i];
-    fTable.write((char*)(&CodeLen),sizeof(UChar_t));
-    fTable.write((char*)(&Code),sizeof(Double_t));
+    UChar_t codeLen=table->CodeLen()[i];
+    Double_t code=table->Code()[i];
+    fTable.write((char*)(&codeLen),sizeof(UChar_t));
+    fTable.write((char*)(&code),sizeof(Double_t));
   } //end for
   fTable.close();
-  delete Table;
+  delete table;
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////

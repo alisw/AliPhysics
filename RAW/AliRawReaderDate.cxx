@@ -13,11 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is a class for reading a raw data from a date event and providing
-// information about digits
-//
+///
+/// This is a class for reading raw data from a date file or event.
+///
+/// The AliRawReaderDate is constructed either with a pointer to a
+/// date event or with a file name and an event number.
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReaderDate.h"

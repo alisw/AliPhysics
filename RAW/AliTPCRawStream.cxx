@@ -16,19 +16,18 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is a base class for reading TPC raw data and providing
-// information about digits
-//
-// It loops over all TPC digits in the raw data given by the AliRawReader.
-// The Next method goes to the next digit. If there are no digits left
-// it returns kFALSE.
-// Several getters provide information about the current digit.
-//
+///
+/// This class provides access to TPC digits in raw data.
+///
+/// It loops over all TPC digits in the raw data given by the AliRawReader.
+/// The Next method goes to the next digit. If there are no digits left
+/// it returns kFALSE.
+/// Several getters provide information about the current digit.
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCRawStream.h"
-#include "AliTPCHuffman.h"
+#include "AliTPCHNode.h"
 #include "AliRawReader.h"
 
 ClassImp(AliTPCRawStream)

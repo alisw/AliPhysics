@@ -13,26 +13,27 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is the base class for reading raw data and providing
-// information about digits
-//
-// The derived classes, which operate on concrete raw data formats,
-// should implement
-// - ReadHeader to read the next (data/equipment) header
-// - ReadNextData to read the next raw data block (=1 DDL)
-// - ReadNext to read a given number of bytes
-// - several getters like GetType
-//
-// Sequential access to the raw data is provided by the methods
-// ReadHeader, ReadNextData, ReadNextInt, ReadNextShort, ReadNextChar
-//
-// If only data from a specific detector (and a given range of DDL numbers)
-// should be read, this can be achieved by the Select method.
-// Several getter provide information about the current event and the
-// current type of raw data.
-//
+///
+/// This is the base class for reading raw data.
+///
+/// The derived classes, which operate on concrete raw data formats,
+/// should implement
+/// - ReadHeader to read the next (data/equipment) header
+/// - ReadNextData to read the next raw data block (=1 DDL)
+/// - ReadNext to read a given number of bytes
+/// - several getters like GetType
+///
+/// Sequential access to the raw data is provided by the methods
+/// ReadHeader, ReadNextData, ReadNextInt, ReadNextShort, ReadNextChar
+///
+/// If only data from a specific detector (and a given range of DDL numbers)
+/// should be read, this can be achieved by the Select method.
+/// Several getters provide information about the current event and the
+/// current type of raw data.
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReader.h"

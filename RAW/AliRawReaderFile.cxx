@@ -13,11 +13,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is a class for reading a raw data file and providing
-// information about digits
-//
+/// 
+/// This is a class for reading raw data files.
+///
+/// The files of one event are expected to be in one directory. The name 
+/// of the directory is "raw" + the event number. Each file contains
+/// the raw data (with data header) of one DDL. The convention for the
+/// file names is "DET_#DDL.ddl". "DET" is the name of the detector and
+/// "#DDL" is the unique equipment ID.
+///
+/// The constructor of AliRawReaderFile takes the event number or the
+/// directory name as argument.
+/// 
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReaderFile.h"

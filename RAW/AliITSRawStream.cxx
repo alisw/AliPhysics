@@ -13,18 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is a base class for reading ITS raw data files and providing
-// information about digits
-//
-// Derived class should implement the Next method.
-//
-// It loops over all ITS digits in the raw data given by the AliRawReader.
-// The Next method goes to the next digit. If there are no digits left
-// it returns kFALSE.
-// Several getters provide information about the current digit.
-//
+///
+/// This is a base class for providing access to ITS digits in raw data.
+///
+/// Derived class should implement the Next method.
+///
+/// It loops over all ITS digits in the raw data given by the AliRawReader.
+/// The Next method goes to the next digit. If there are no digits left
+/// it returns kFALSE.
+/// Several getters provide information about the current digit.
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStream.h"

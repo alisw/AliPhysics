@@ -13,11 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is a class for reading ITS SSD raw data files and providing
-// information about digits
-//
+///
+/// This class provides access to ITS SSD digits in raw data.
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStreamSSD.h"

@@ -13,11 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is a class for reading a raw data from a root file and providing
-// information about digits
-//
+///
+/// This is a class for reading raw data from a root file.
+///
+/// The root file is expected to contain a tree of name "RAW" with
+/// a branch of name "rawevent" which contains objects of type
+/// AliRawEvent.
+/// 
+/// The file name and the event number are arguments of the constructor
+/// of AliRawReaderRoot.
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TFile.h>

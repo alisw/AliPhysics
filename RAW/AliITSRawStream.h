@@ -3,6 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This is a base class for providing access to ITS digits in raw data.
+///
+///////////////////////////////////////////////////////////////////////////////
+
 #include <TObject.h>
 
 class AliRawReader;

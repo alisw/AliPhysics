@@ -3,6 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This is the base class for reading raw data.
+///
+///////////////////////////////////////////////////////////////////////////////
+
 #include <TObject.h>
 #include "AliRawDataHeader.h"
 
@@ -66,7 +74,7 @@ class AliRawReader: public TObject {
     enum {kErrMagic=1, kErrNoDataHeader=2, 
 	  kErrSize=4, kErrOutOfBounds=8};
     virtual Int_t    CheckData() const;
-    Int_t            GetErrorCode() {return fErrorCode;};
+    Int_t            GetErrorCode() const {return fErrorCode;};
 
     void             DumpData(Int_t limit = -1);
 

@@ -13,11 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This is a class for reading ITS SDD raw data files and providing
-// information about digits
-//
+///
+/// This class provides access to ITS SDD digits in raw data.
+///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStreamSDD.h"

@@ -3,6 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This class provides access to ITS SPD digits in raw data.
+///
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliITSRawStream.h"
 
 

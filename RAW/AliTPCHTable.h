@@ -6,38 +6,14 @@
 ///////////////////////////////////////////////////
 
  
-#ifndef AliTPCHUFFMAN_H
-#define AliTPCHUFFMAN_H
+#ifndef AliTPCHTABLE_H
+#define AliTPCHTABLE_H
 
-class AliTPCBuffer160;
+#include <TObject.h>
 
-class AliTPCHNode: public TObject  {
- public:
-  AliTPCHNode(); //default constructor
-  AliTPCHNode(Int_t symbol, Double_t freq);
-  virtual ~AliTPCHNode() {}
-  AliTPCHNode(const AliTPCHNode &source); // copy constructor
-  AliTPCHNode& operator=(const AliTPCHNode &source); // ass. op.
+class TObjArray;
+class AliTPCHNode;
 
-  Bool_t  IsSortable() const{return kTRUE;}
-  Int_t   Compare(const TObject *obj) const;
-  void    SetLeft(AliTPCHNode* point){fLeft=point;}
-  void    SetRight(AliTPCHNode* point){fRight=point;}
-  AliTPCHNode* GetRight()const{return fRight;}
-  AliTPCHNode* GetLeft()const{return fLeft;}
-  void     SetSymbol(Int_t sym){fSymbol=sym;}
-  void     SetFrequency(Double_t freq){fFrequency=freq;}
-  Double_t GetFrequency()const{return fFrequency;}
-  Int_t    GetSymbol()const{return fSymbol;}
-
- private:
-  Int_t         fSymbol;       // Symbols
-  Double_t      fFrequency;    // Frequency of the Symbol
-  AliTPCHNode   *fLeft;        // Pointer to the left son
-  AliTPCHNode   *fRight;       // Pointer to the right son
-  ClassDef(AliTPCHNode,1)     
-};
-/////////////////////////////////////////////////////////////////////////////////////////////////
 class AliTPCHTable: public TObject{ 
  public:
   AliTPCHTable(); 
@@ -89,4 +65,5 @@ class AliTPCHTable: public TObject{
   Int_t       fVerbose;      // if fVerbose== 0 no output messages; fVerbose!=0 output messages are printed out 
   ClassDef(AliTPCHTable,1)   //Huffman Table object for set:TPC
 };
+
 #endif
