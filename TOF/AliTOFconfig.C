@@ -27,7 +27,7 @@
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv4T0.h"
-#include "RICH/AliRICHv3.h"
+#include "RICH/AliRICHv1.h"
 #include "ZDC/AliZDCv2.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
@@ -37,7 +37,7 @@
 #include "START/AliSTARTv1.h"
 #include "EMCAL/AliEMCALv1.h"
 #include "CRT/AliCRTv0.h"
-#include "VZERO/AliVZEROv2.h"
+#include "VZERO/AliVZEROv3.h"
 #endif
 
 enum PprRun_t 
@@ -69,7 +69,8 @@ enum PprMag_t
 
 // This part for configuration    
 static PprRun_t srun = test50;
-static PprGeo_t sgeo = kHoles;
+//static PprRun_t srun = kPythia6;
+static PprGeo_t sgeo = kNoHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
 
@@ -372,13 +373,16 @@ void Config()
     }
 
 
-    if (iTOF) AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
+    if (iTOF) {
+        //=================== TOF parameters ============================
+	AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
+    }
 
 
     if (iRICH)
     {
         //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv3("RICH", "normal RICH");
+        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
 
     }
 
@@ -455,7 +459,7 @@ void Config()
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
     }
  
              
@@ -481,8 +485,8 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetMomentumRange(0, 999999.);
 	gener->SetPhiRange(0., 360.);
 	// Set pseudorapidity range from -8 to 8.
-	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
-	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+	Float_t thmin = EtaToTheta(1);   // theta min. <---> eta max
+	Float_t thmax = EtaToTheta(-1);  // theta max. <---> eta min 
 	gener->SetThetaRange(thmin,thmax);
 	gGener=gener;
       }
