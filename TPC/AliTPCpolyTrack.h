@@ -15,10 +15,12 @@ public:
   AliTPCpolyTrack();
   void Reset();
   void AddPoint(Double_t x, Double_t y, Double_t z, Double_t sy=1, Double_t sz=1);
-  void GetFitPoint(Double_t x, Double_t &y, Double_t &z);
+  inline void GetFitPoint(Double_t x, Double_t &y, Double_t &z);
+  inline void GetFitDerivation(Double_t x, Double_t &y, Double_t &z);
   void UpdateParameters();
   Int_t GetN(){return fNPoints;}
   void GetBoundaries(Double_t &xmin, Double_t &xmax){xmin = fMinX;xmax=fMaxX;}
+  void Refit(AliTPCpolyTrack & track, Double_t deltay, Double_t deltaz); 
 private: 
   void   Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
 	      Double_t fSumX,  Double_t fSumX2, Double_t fSumX3, 
@@ -59,6 +61,21 @@ private:
 
   ClassDef(AliTPCpolyTrack,1)  // Time Projection "polynomial track"
 };
+
+void AliTPCpolyTrack::GetFitPoint(Double_t x, Double_t &y, Double_t &z)
+{
+  y = fA+fB*x+fC*x*x;
+  z = fD+fE*x+fF*x*x;
+}
+
+
+void AliTPCpolyTrack::GetFitDerivation(Double_t x, Double_t &y, Double_t &z)
+{
+
+  y = fB+2.*fC*x;
+  z = fE+2.*fF*x;
+  
+}
 
 
 #endif

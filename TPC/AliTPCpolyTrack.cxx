@@ -90,12 +90,6 @@ void  AliTPCpolyTrack::UpdateParameters()
 }
 
 
-void AliTPCpolyTrack::GetFitPoint(Double_t x, Double_t &y, Double_t &z)
-{
-  y = fA+fB*x+fC*x*x;
-  z = fD+fE*x+fF*x*x;
-}
-
 
 void  AliTPCpolyTrack::Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
 	    Double_t fSumX,  Double_t fSumX2, Double_t fSumX3, 
@@ -143,3 +137,37 @@ void  AliTPCpolyTrack::Fit1(Double_t fSumY, Double_t fSumYX,
   }
 
 }
+
+void AliTPCpolyTrack::Refit(AliTPCpolyTrack &track, Double_t deltay, Double_t deltaz)
+{
+  //
+  // refit with cut on distortion
+  //
+  track.Reset();
+  //first refit to temporary
+  AliTPCpolyTrack track0;
+  track0.Reset;
+  for (Int_t i=0;i<fNPoints;i++){
+    Double_t y,z;
+    GetFitPoint(fX[i],y,z);
+    if ( (TMath::Abs(y-fY[i])<deltay)&&(TMath::Abs(z-fZ[i])<deltaz)){
+      track0.AddPoint(fX[i],y,z);
+    }
+  }
+  if (track0.GetN()>2) 
+    track0.UpdateParameters();
+  else 
+    return;
+  //
+  for (Int_t i=0;i<fNPoints;i++){
+    Double_t y,z;
+    track0.GetFitPoint(fX[i],y,z);
+    if ( (TMath::Abs(y-fY[i])<deltay)&&(TMath::Abs(z-fZ[i])<deltaz)){
+      track.AddPoint(fX[i],y,z);
+    }
+  }
+  if (track.GetN()>2) 
+    track.UpdateParameters();
+
+}
+
