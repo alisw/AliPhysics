@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/04/09 13:38:47  jchudoba
+Add const to the filename argument
+
 Revision 1.14  2002/04/04 09:28:04  jchudoba
 Change default names of TPC trees. Use update instead of recreate for the output file. Overwrite the AliRunDigitizer object in the output if it exists.
 
@@ -157,6 +160,7 @@ AliRunDigitizer::AliRunDigitizer()
 // just set all pointers - data members to 0
   fOutput = 0;
   fTreeD = 0;
+  fTreeR = 0;
   fTreeDTPC = 0;
   fTreeDTRD = 0;
   fInputStreams = 0;
@@ -205,6 +209,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
   fCombi = new AliMergeCombi(nInputStreams,sperb);
   fDebug = 0;
   fTreeD = 0;
+  fTreeR = 0;
   fTreeDTPC = 0;
   fTreeDTRD = 0;
   fTreeDTPCBaseName = "TreeD_75x40_100x60_150x60_";
@@ -391,6 +396,14 @@ void AliRunDigitizer::InitEvent()
     fTreeD->Write(0,TObject::kOverwrite);
   }
 
+// tree for ITS fast points
+  sprintf(treeName,"TreeR%d",fEvent);
+  fTreeR = static_cast<TTree*>(fOutput->Get(treeName));
+  if (!fTreeR) {
+    fTreeR = new TTree(treeName,"Reconstruction");
+    fTreeR->Write(0,TObject::kOverwrite);
+  }
+
 // special tree for TPC
   sprintf(treeName,"%s%d",fTreeDTPCBaseName,fEvent);
   fTreeDTPC = static_cast<TTree*>(fOutput->Get(treeName));
@@ -429,6 +442,10 @@ void AliRunDigitizer::FinishEvent()
   if (fTreeD) {
     delete fTreeD;
     fTreeD = 0;
+  }
+  if (fTreeR) {
+    delete fTreeR;
+    fTreeR = 0;
   }
   if (fTreeDTPC) {
     delete fTreeDTPC;
