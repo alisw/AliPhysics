@@ -4,14 +4,11 @@
 //  Manager and hits classes for set:PHOS     //
 ////////////////////////////////////////////////
  
-// --- CLHEP ---
-#include <CLHEP/Vector/ThreeVector.h>
-#include <CLHEP/Vector/LorentzVector.h>
-
 // --- ROOT system ---
 #include <TArray.h> 
 #include <TRandom.h> 
 #include <TH2.h>
+#include <TVector3.h>
 
 // --- galice header files ---
 #include "AliDetector.h"
@@ -24,28 +21,24 @@ class AliPHOSgamma : public TObject {
                         virtual ~AliPHOSgamma(void) {}
                         AliPHOSgamma(void) {}
                         AliPHOSgamma(const AliPHOSgamma &g) { *this=g; }
-                        AliPHOSgamma(Float_t X, Float_t Xsigma,
-                                     Float_t Y, Float_t Ysigma,
-                                     Float_t E, Float_t Esigma,
-                                     Float_t Px, Float_t Py, Float_t Pz) :
-                          fX(X), fXsigma(Xsigma),
-                          fY(Y), fYsigma(Ysigma),
-                          fE(E), fEsigma(Esigma),
-                          fPx(Px), fPy(Py), fPz(Pz)
+                        AliPHOSgamma(Float_t X,  Float_t Y,  Float_t E, 
+                                     Float_t Px, Float_t Py, Float_t Pz,
+                                     Int_t Ipart) :
+                          fX(X),   fY(Y),   fE(E), 
+                          fPx(Px), fPy(Py), fPz(Pz),
+                          fIpart(Ipart)
                         {}
 
     Float_t             fX;             // cm. x-coordinate (in beam direction)
-    Float_t             fXsigma;        // cm. x-coordinate error
-
     Float_t             fY;             // cm. y-coordinate (around beam)
-    Float_t             fYsigma;        // cm. y-coordinate error
 
     Float_t             fE;             // GeV. energy
-    Float_t             fEsigma;        // GeV. energy error
 
     Float_t             fPx;            // GeV. Gamma momentum Px
     Float_t             fPy;            // GeV. Gamma momentum Py
     Float_t             fPz;            // GeV. Gamma momentum Pz
+
+    Int_t               fIpart;         // Current particle number (GEANT particle code)
 
     void                Print(Option_t *options=NULL);
     AliPHOSgamma       &operator=(const AliPHOSgamma &g);
@@ -78,7 +71,7 @@ class AliPHOSCradle : public TObject {
 
   public:
 
-    virtual            ~AliPHOSCradle(void) {}
+    virtual            ~AliPHOSCradle(void);
                         AliPHOSCradle(void);
                         AliPHOSCradle(int   Geometry           ,
                                       float CrystalSideSize    ,
@@ -119,7 +112,7 @@ class AliPHOSCradle : public TObject {
 
     void                Reconstruction(Float_t signal_step, UInt_t min_signal_reject);
 
-    void                GetXY(const Hep3Vector &p,const Hep3Vector &v,float R,float &x,float &y,float &l) const;
+    void                GetXY(const TVector3 &p,const TVector3 &v,float R,float &x,float &y,float &l) const;
 
     TObjArray          &GetGammasReconstructed (void)       {return fGammasReconstructed;}
     TObjArray          &GetParticles           (void)       {return fParticles;}
@@ -183,7 +176,7 @@ class AliPHOS : public AliDetector {
   void                  FinishRun(void);
   void                  ResetDigits(void);
   void                  Print(Option_t *opt="");
-  AliPHOSCradle        *GetCradleOfTheParticle(const Hep3Vector &p,const Hep3Vector &v) const;
+  AliPHOSCradle        *GetCradleOfTheParticle(const TVector3 &p,const TVector3 &v) const;
   AliPHOSCradle        &GetCradle(int n) {return *(AliPHOSCradle*)fCradles->operator[](n);}
   //  AliPHOSCradle        &GetCradle(int n) {return *((AliPHOSCradle*) (*fCradles)[n]) ;}
   void                  Reconstruction(Float_t signal_step, UInt_t min_signal_reject);

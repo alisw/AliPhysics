@@ -9,7 +9,7 @@ PACKAGE = PHOS
 
 # C++ sources
 
-SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx
+SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx AliPHOSv3.cxx
 
 # C++ Headers
 

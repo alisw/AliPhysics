@@ -9,6 +9,7 @@
 #include "TTree.h"
 #include "TBRIK.h"
 #include "TNode.h"
+#include "TMath.h"
 
 // --- Standard library ---
 #include <stdio.h>
@@ -30,6 +31,8 @@ ClassImp(AliPHOS)
 
 AliPHOS::~AliPHOS(void)
 {
+  delete fHits;			// 28.12.1998
+  delete fTreePHOS;		// 28.12.1998
   fCradles->Delete();
   delete fCradles;
 }
@@ -404,7 +407,7 @@ void AliPHOS::SetTreeAddress(void)
 
 //______________________________________________________________________________
 
-AliPHOSCradle *AliPHOS::GetCradleOfTheParticle(const Hep3Vector &p,const Hep3Vector &v) const
+AliPHOSCradle *AliPHOS::GetCradleOfTheParticle(const TVector3 &p,const TVector3 &v) const
 {
 // For a given direction 'p' and source point 'v' returns pointer to AliPHOSCradle
 // in that direction or NULL if AliPHOSCradle was not found.
@@ -418,8 +421,8 @@ AliPHOSCradle *AliPHOS::GetCradleOfTheParticle(const Hep3Vector &p,const Hep3Vec
     const float d = cradle->GetRadius()-cradle->GetCPV_PHOS_Distance()-cradle->GetCPV_Thikness();
     cradle->GetXY(p,v,d,x,y,l);
 
-    if( l>0 && fabs(x)<cradle->GetNz  ()*cradle->GetCellSideSize()/2 
-            && fabs(y)<cradle->GetNphi()*cradle->GetCellSideSize()/2 )
+    if( l>0 && TMath::Abs(x)<cradle->GetNz  ()*cradle->GetCellSideSize()/2 
+            && TMath::Abs(y)<cradle->GetNphi()*cradle->GetCellSideSize()/2 )
       return cradle;
   }
 
@@ -632,6 +635,14 @@ AliPHOSCradle::AliPHOSCradle( int   Geometry           ,
 
 //______________________________________________________________________________
 
+AliPHOSCradle::~AliPHOSCradle(void)        // 28.12.1998
+{
+  fGammasReconstructed.Delete();
+  fParticles          .Delete();
+}
+
+//______________________________________________________________________________
+
 void AliPHOSCradle::Clear(Option_t *)
 {
 // Clear digit. information.
@@ -668,7 +679,7 @@ void AliPHOSCradle::AddCPVHit(float x,float y)
 
 //______________________________________________________________________________
 
-void AliPHOSCradle::GetXY(const Hep3Vector &p,const Hep3Vector &v,float R,float &x,float &y,float &l) const
+void AliPHOSCradle::GetXY(const TVector3 &p,const TVector3 &v,float R,float &x,float &y,float &l) const
 {
 // This function calculates hit position (x,y) in the CRADLE cells plain from particle in
 // the direction given by 'p' (not required to be normalized) and start point
@@ -681,11 +692,11 @@ void AliPHOSCradle::GetXY(const Hep3Vector &p,const Hep3Vector &v,float R,float 
 // 
 // Example:
 //   AliPHOSCradle cradle(......);
-//   Hep3Vector p(....), v(....);
+//   TVector3 p(....), v(....);
 //   Float_t x,y,l;
 //   cradle.GetXY(p,v,x,y,l);
-//   if( l<0 || fabs(x)>cradle.GetNz()  *cradle.GetCellSideSize()/2
-//           || fabs(y)>cradle.GetNphi()*cradle.GetCellSideSize()/2 )
+//   if( l<0 || TMath::Abs(x)>cradle.GetNz()  *cradle.GetCellSideSize()/2
+//           || TMath::Abs(y)>cradle.GetNphi()*cradle.GetCellSideSize()/2 )
 //     cout << "Outside the CRADLE.\n";
 
   // We have to create three vectors:
@@ -694,36 +705,36 @@ void AliPHOSCradle::GetXY(const Hep3Vector &p,const Hep3Vector &v,float R,float 
   //    n2 - second vector in CRADLE plain
   // This three vectors are orthonormalized.
 
-  double phi = fPhi/180*M_PI;
-  Hep3Vector      n1(   0        ,   0        , 1 ),   // Z direction (X)
+  double phi = fPhi/180*TMath::Pi();
+  TVector3        n1(   0.0      ,   0.0      , 1.0 ),   // Z direction (X)
                   n2(  -sin(phi) ,   cos(phi) , 0 ),   // around beam (Y)
                   s ( R*cos(phi) , R*sin(phi) , 0 );   // central point
 
   const double l1_min = 1e-2;
   double l1,
-         p_n1 = p.dot(n1),        // dot() - scalar product.
-         p_n2 = p.dot(n2),
-         v_n1 = v.dot(n1),
-         v_n2 = v.dot(n2),
-         s_n1 = s.dot(n1), // 0
-         s_n2 = s.dot(n2); // 0
+         p_n1 = p*n1,        // * - scalar product.
+         p_n2 = p*n2,
+         v_n1 = v*n1,
+         v_n2 = v*n2,
+         s_n1 = s*n1, // 0
+         s_n2 = s*n2; // 0
   
-  if      ( fabs(l1=p.x()-n1.x()*p_n1-n2.x()*p_n2)>l1_min )
-    { l = (-v.x()+s.x()+n1.x()*(v_n1-s_n1)+n2.x()*(v_n2-s_n2))/l1; }
-  else if ( fabs(l1=p.y()-n1.y()*p_n1-n2.y()*p_n2)>l1_min )
-    { l = (-v.y()+s.y()+n1.y()*(v_n1-s_n1)+n2.y()*(v_n2-s_n2))/l1; }
-  else if ( fabs(l1=p.z()-n1.z()*p_n1-n2.z()*p_n2)>l1_min )
-    { l = (-v.z()+s.z()+n1.z()*(v_n1-s_n1)+n2.z()*(v_n2-s_n2))/l1; }
+  if      ( TMath::Abs(l1=p.X()-n1.X()*p_n1-n2.X()*p_n2)>l1_min )
+    { l = (-v.X()+s.X()+n1.X()*(v_n1-s_n1)+n2.X()*(v_n2-s_n2))/l1; }
+  else if ( TMath::Abs(l1=p.Y()-n1.Y()*p_n1-n2.Y()*p_n2)>l1_min )
+    { l = (-v.Y()+s.Y()+n1.Y()*(v_n1-s_n1)+n2.Y()*(v_n2-s_n2))/l1; }
+  else if ( TMath::Abs(l1=p.Z()-n1.Z()*p_n1-n2.Z()*p_n2)>l1_min )
+    { l = (-v.Z()+s.Z()+n1.Z()*(v_n1-s_n1)+n2.Z()*(v_n2-s_n2))/l1; }
 
-//         double lx = (-v.x()+s.x()+n1.x()*(v.dot(n1)-s.dot(n1))+n2.x()*(v.dot(n2)-s.dot(n2)))/
-//                     (p.x()-n1.x()*p.dot(n1)-n2.x()*p.dot(n2)),
-//                ly = (-v.y()+s.y()+n1.y()*(v.dot(n1)-s.dot(n1))+n2.y()*(v.dot(n2)-s.dot(n2)))/
-//                     (p.y()-n1.y()*p.dot(n1)-n2.y()*p.dot(n2)),
-//                lz = (-v.z()+s.z()+n1.z()*(v.dot(n1)-s.dot(n1))+n2.z()*(v.dot(n2)-s.dot(n2)))/
-//                     (p.z()-n1.z()*p.dot(n1)-n2.z()*p.dot(n2));
-//         cout.form("x: %g %g %g %g\n",lx,-v.x()+s.x()+n1.x()*(v.dot(n1)-s.dot(n1))+n2.x()*(v.dot(n2)-s.dot(n2)),p.x()-n1.x()*p.dot(n1)-n2.x()*p.dot(n2));
-//         cout.form("y: %g %g %g %g\n",lx,-v.y()+s.y()+n1.y()*(v.dot(n1)-s.dot(n1))+n2.y()*(v.dot(n2)-s.dot(n2)),p.y()-n1.y()*p.dot(n1)-n2.y()*p.dot(n2));
-//         cout.form("z: %g %g %g %g\n",lx,-v.z()+s.z()+n1.z()*(v.dot(n1)-s.dot(n1))+n2.z()*(v.dot(n2)-s.dot(n2)),p.z()-n1.z()*p.dot(n1)-n2.z()*p.dot(n2));
+//         double lx = (-v.X()+s.X()+n1.X()*(v.dot(n1)-s.dot(n1))+n2.X()*(v.dot(n2)-s.dot(n2)))/
+//                     (p.X()-n1.X()*p.dot(n1)-n2.X()*p.dot(n2)),
+//                ly = (-v.Y()+s.Y()+n1.Y()*(v.dot(n1)-s.dot(n1))+n2.Y()*(v.dot(n2)-s.dot(n2)))/
+//                     (p.Y()-n1.Y()*p.dot(n1)-n2.Y()*p.dot(n2)),
+//                lz = (-v.Z()+s.Z()+n1.Z()*(v.dot(n1)-s.dot(n1))+n2.Z()*(v.dot(n2)-s.dot(n2)))/
+//                     (p.Z()-n1.Z()*p.dot(n1)-n2.Z()*p.dot(n2));
+//         cout.form("x: %g %g %g %g\n",lx,-v.X()+s.X()+n1.X()*(v.dot(n1)-s.dot(n1))+n2.X()*(v.dot(n2)-s.dot(n2)),p.X()-n1.X()*p.dot(n1)-n2.X()*p.dot(n2));
+//         cout.form("y: %g %g %g %g\n",lx,-v.Y()+s.Y()+n1.Y()*(v.dot(n1)-s.dot(n1))+n2.Y()*(v.dot(n2)-s.dot(n2)),p.Y()-n1.Y()*p.dot(n1)-n2.Y()*p.dot(n2));
+//         cout.form("z: %g %g %g %g\n",lx,-v.Z()+s.Z()+n1.Z()*(v.dot(n1)-s.dot(n1))+n2.Z()*(v.dot(n2)-s.dot(n2)),p.Z()-n1.Z()*p.dot(n1)-n2.Z()*p.dot(n2));
 //         cout.form("lx,ly,lz =   %g,%g,%g\n",lx,ly,lz);
 
   x = p_n1*l + v_n1 - s_n1;
@@ -1033,6 +1044,7 @@ void AliPHOSCradle::Reconstruction(Float_t signal_step, UInt_t min_signal_reject
 // signal_step=0.001  GeV (1MeV)
 // min_signal_reject = 15 or 30 MeV
 
+
   common_for_event_storing.event_number                       = 0;  // We do not know event number?
   common_for_event_storing.crystals_matrix_amount_PHOS        = 1;
   common_for_event_storing.crystal_matrix_type                = 1; // 1 - rectangular
@@ -1069,7 +1081,6 @@ void AliPHOSCradle::Reconstruction(Float_t signal_step, UInt_t min_signal_reject
   const float   stochastic_term   = 0.03,        // per cents over sqrt(E);  E in GeV
                 electronic_noise  = 0.01;        // GeV
   reconsfirst(stochastic_term,electronic_noise); // Call of reconstruction program.
-  
 
   for( int i=0; i<rcgamma.recons_gammas_amount; i++ )
   {
@@ -1089,16 +1100,13 @@ void AliPHOSCradle::Reconstruction(Float_t signal_step, UInt_t min_signal_reject
     Float_t thetta, alpha, betta, R=fRadius+rcgamma.Zgdev[i]/10;
 
     g.fX      = rcgamma.YW[i]/10;
-    g.fXsigma = 0.2;
     g.fY      = rcgamma.XW[i]/10;
-    g.fYsigma = 0.2;
     g.fE      = rcgamma.E [i];
-    g.fEsigma = 0.01*sqrt(rcgamma.E[i])+0.05;
 
     thetta      = atan(g.fX/R);
 
     alpha = atan(g.fY/R);
-    betta = fPhi/180*M_PI + alpha;
+    betta = fPhi/180*TMath::Pi() + alpha;
 
     g.fPx = g.fE * cos(thetta) * cos(betta);
     g.fPy = g.fE * cos(thetta) * sin(betta);
@@ -1125,8 +1133,8 @@ void AliPHOSgamma::Print(Option_t *)
   else
     mass = -sqrt(-mass);
 
-  printf("XY=(%+7.2f,%+7.2f)  (%+7.2f,%+7.2f,%+7.2f;%7.2f)  mass=%8.4f\n",
-          fX,fY,fPx,fPy,fPz,fE,mass);
+  printf("XY=(%+7.2f,%+7.2f)  (%+7.2f,%+7.2f,%+7.2f;%7.2f)  mass=%8.4f  Ipart=%2d\n",
+          fX,fY,fPx,fPy,fPz,fE,mass,fIpart);
 }
 
 //______________________________________________________________________________
@@ -1134,14 +1142,12 @@ void AliPHOSgamma::Print(Option_t *)
 AliPHOSgamma &AliPHOSgamma::operator=(const AliPHOSgamma &g)
 {
   fX           = g.fX;
-  fXsigma      = g.fXsigma;
   fY           = g.fY;
-  fYsigma      = g.fYsigma;
   fE           = g.fE;
-  fEsigma      = g.fEsigma;
   fPx          = g.fPx;
   fPy          = g.fPy;
   fPz          = g.fPz;
+  fIpart       = g.fIpart;
 
   return *this;
 }

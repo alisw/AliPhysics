@@ -13,7 +13,6 @@
 // --- galice header files ---
 #include "AliPHOSv0.h"
 #include "AliRun.h"
-#include "AliConst.h"
 #include "AliMC.h" 
 
 ClassImp(AliPHOSv0)
@@ -162,7 +161,7 @@ void AliPHOSv0::CreateGeometry()
     yp1   = -r * TMath::Cos(pphi * 3.);
     xp2   = -r * TMath::Sin(pphi);
     yp2   = -r * TMath::Cos(pphi);
-    pphi *= kRaddeg;
+    pphi *= 180/kPI;
     AliMatrix(idrotm[0], 90.,-3*pphi, 90., 90-3*pphi, 0., 0.);
     AliMatrix(idrotm[1], 90.,  -pphi, 90., 90-pphi,   0., 0.);
     AliMatrix(idrotm[2], 90.,   pphi, 90., 90+pphi,   0., 0.);

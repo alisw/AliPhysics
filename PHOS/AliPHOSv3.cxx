@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////
-//  Manager and hits classes for set:PHOS version 1    //
+//  Manager and hits classes for set:PHOS version 3    //
 /////////////////////////////////////////////////////////
  
 // --- ROOT system ---
@@ -9,32 +9,33 @@
 #include "TTree.h"
 #include "TBRIK.h"
 #include "TNode.h"
-#include "TMath.h"
 
 // --- galice header files ---
-#include "AliPHOSv1.h"
+#include "AliPHOSv3.h"
 #include "AliRun.h"
 #include "TGeant3.h" 
 
-ClassImp(AliPHOSv1)
+ClassImp(AliPHOSv3)
 
 //______________________________________________________________________________
 
 
-AliPHOSv1::AliPHOSv1() : AliPHOS()
+AliPHOSv3::AliPHOSv3() : AliPHOS()
 {
 }
  
 //______________________________________________________________________________
 
-AliPHOSv1::AliPHOSv1(const char *name, const char *title)
+AliPHOSv3::AliPHOSv3(const char *name, const char *title)
           : AliPHOS(name, title)
 {
 }
  
 //___________________________________________
-void AliPHOSv1::CreateGeometry()
+void AliPHOSv3::CreateGeometry()
 {
+
+  cout << "AliPHOSv3::CreateGeometry() PHOS creation\n";
 
   AliMC* pMC = AliMC::GetMC();
 
@@ -202,15 +203,20 @@ void AliPHOSv1::CreateGeometry()
   //////////////////////////////////////////////////////////////////////////////
 }
 
-void AliPHOSv1::StepManager()
+void AliPHOSv3::StepManager()
 {
   static Bool_t inwold=0;   // Status of previous ctrak->inwvol
   AliMC *MC = AliMC::GetMC();
   Int_t copy;
 
+//   if( MC->TrackEntering() ) {
+//     Int_t Volume_ID = MC->CurrentVol(Volume_name, copy);
+//     cout << "AliPHOSv3::StepManager() entered to PHOS to the volume " << Volume_name << "!\n";
+//   }
+
   int cradle_number, cell_Z, cell_Phi;  // Variables that describe cell position.
 
-  if( MC->GetMedium() == GetPHOS_IDTMED_PIN() && (MC->TrackInside() || MC->TrackExiting()==2) && inwold && MC->TrackCharge()!=0 )
+  if( MC->GetMedium()==GetPHOS_IDTMED_PIN() && MC->TrackEntering() && MC->TrackCharge()!=0 )
   {
     // GEANT particle just have entered into PIN diode.
 
@@ -222,14 +228,14 @@ void AliPHOSv1::StepManager()
     cell_Z         = copy-1;
     MC->CurrentVolOff(2,0,copy);
     cell_Phi       = copy-1;
-/*
-        cradle_number  = cvolu->number[cvolu->nlevel-5]-1;
-        cell_Z         = cvolu->number[cvolu->nlevel-2]-1;
-        cell_Phi       = cvolu->number[cvolu->nlevel-3]-1;
-*/
 
     TH2S &h = PHOS.GetCradle(cradle_number).fChargedTracksInPIN;
     h.AddBinContent(h.GetBin(cell_Z,cell_Phi));
+
+//     cout << "AliPHOSv3::StepManager() entered to PHOS pin diode\n";
+//     cout << "   cradle_nimber = " << cradle_number << endl;
+//     cout << "   cell_z        = " << cell_Z << endl;
+//     cout << "   cell_Phi      = " << cell_Phi << endl;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -246,18 +252,14 @@ void AliPHOSv1::StepManager()
     cell_Z         = copy-1;
     MC->CurrentVolOff(3,0,copy);
     cell_Phi       = copy-1;
-/*
-        cradle_number  = cvolu->number[cvolu->nlevel-6]-1;
-        cell_Z         = cvolu->number[cvolu->nlevel-3]-1;
-        cell_Phi       = cvolu->number[cvolu->nlevel-4]-1;
-*/
+
     TH2F &h = PHOS.GetCradle(cradle_number).fCellEnergy;
     h.AddBinContent(h.GetBin(cell_Z,cell_Phi),MC->Edep());
   }
 
   //////////////////////////////////////////////////////////////////////////////
 
-  if( MC->GetMedium()==GetPHOS_IDTMED_CPV() && (MC->TrackInside() || MC->TrackExiting()) && inwold )
+  if( MC->GetMedium()==GetPHOS_IDTMED_CPV() && MC->TrackEntering() )
   {
     // GEANT particle just have entered into CPV detector.
 
@@ -265,7 +267,6 @@ void AliPHOSv1::StepManager()
 
     MC->CurrentVolOff(1,0,cradle_number);
     cradle_number--;
-//        cradle_number  = cvolu->number[cvolu->nlevel-2]-1;
 
     // Save CPV x,y hits position of charged particles.
 
@@ -285,19 +286,18 @@ void AliPHOSv1::StepManager()
     // Store current particle in the list of Cradle particles.
     Float_t  pmom[4];
     MC->TrackMomentum(pmom);
-    float     Px      =       pmom[0] * pmom[3],
-              Py      =       pmom[1] * pmom[3],
-              Pz      =       pmom[2] * pmom[3];
-    Int_t     Ipart   =       MC->TrackPid();
+    Float_t Px    = pmom[0] * pmom[3],
+            Py    = pmom[1] * pmom[3],
+            Pz    = pmom[2] * pmom[3];
+    Float_t Getot = MC->Etot();
+    Int_t   Ipart = MC->TrackPid();
 
-//     TClonesArray &P=cradle.GetParticles();
-//     new( P[P.GetEntries()] ) AliPHOSgamma(x,0,y,0,ctrak->getot,0,Px,Py,Pz);
-    cradle.GetParticles().Add(new AliPHOSgamma(x,y,MC->Etot(),Px,Py,Pz,Ipart));
+    cradle.GetParticles().Add(new AliPHOSgamma(x,y,Getot,Px,Py,Pz,Ipart));
 
-    if( MC->TrackCharge()!=0 )
-      cradle.AddCPVHit(x,y);
+    //    printf ("Cradle %i, x,y = %8.3f, %8.3f cm, E,Px,Py,Pz = %8.3f, %8.3f, %8.3f GeV, %8.3f, Ipart = %i\n",
+    //       cradle_number,x,y,Getot,Px,Py,Pz,Ipart);
+
   }
 
   inwold=MC->TrackEntering();         // Save current status of GEANT variable.
 }
-
