@@ -16,12 +16,16 @@
 ClassImp(AliL3Transform);
 
 
-AliL3Transform::AliL3Transform(){
+AliL3Transform::AliL3Transform()
+{
   //constructor
+  
+  LOG(AliL3Log::kWarning,"AliL3Transform::AliL3Transform()","Init")
+    <<"You are using the _old_ version of parameter inits. V3.06 only! Use the ctor AliL3Transform(char*) instead."<<ENDLOG;
   Init();
 }
 
-AliL3Transform::AliL3Transform(const char* pathname){
+AliL3Transform::AliL3Transform(const Char_t* pathname){
   //constructor
   Init(pathname);
 }
@@ -30,10 +34,8 @@ AliL3Transform::~AliL3Transform(){
 }
 
 /// old init function used by Anders for AliRoot version 3.06
-void AliL3Transform::Init(){
-  
-  LOG(AliL3Log::kWarning,"AliL3Transform::Init()","Init")
-    <<"You are using the _old_ version of parameter inits. V3.06 only!"<<ENDLOG;
+void AliL3Transform::Init()
+{
   
   //sector:
   fNTimeBins = 446;
@@ -412,10 +414,10 @@ void AliL3Transform::Init(){
   fNPads[175] = 139;
 }
 
-void AliL3Transform::Init(const char* path){
+void AliL3Transform::Init(const Char_t* path){
   Init(); //call the old init function to have some initial values
 
-  char *pathname=new char[1024];
+  Char_t *pathname=new Char_t[1024];
   strcpy(pathname,path);
   strcat(pathname,"/l3transform.config");
 
@@ -426,9 +428,9 @@ void AliL3Transform::Init(const char* path){
     return;
   }
 
-  char d1[250], d2[100], d3[100];
-  int dummy=0;
-  double ddummy=0.0;
+  Char_t d1[250], d2[100], d3[100];
+  Int_t dummy=0;
+  Double_t ddummy=0.0;
 
   while(!feof(fptr)) {
     fscanf(fptr,"%s",d1);

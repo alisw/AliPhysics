@@ -29,7 +29,7 @@ class AliL3Transform {
   AliL3Transform(const char *pathname);
   virtual ~AliL3Transform();
   void Init(); //old init used by Anders for AliRoot <= 3.06
-  void Init(const char* path); //new init for all AliRoot versions
+  void Init(const Char_t* path); //new init for all AliRoot versions
 
   Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
   Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}

@@ -54,74 +54,61 @@
 
 ClassImp(AliLevel3)
 
-AliLevel3::AliLevel3(){
+AliLevel3::AliLevel3()
+{
   fInputFile=0;
-  fOutputFile=0;
-  Init();
 }
 
-AliLevel3::AliLevel3(Char_t *infile,Char_t *outfile){
+AliLevel3::AliLevel3(Char_t *infile)
+{
   //Constructor. Calls constructor of the tracker, vertexfinder and merger classes.
-
-  fOutputFile = new TFile(outfile,"NEW");
   
-  if(!fOutputFile->IsOpen())
-    {
-    LOG(AliL3Log::kWarning, "AliLevel3::AliLevel3","File Open")
-    <<"Delete your old "<<outfile<<" file!"<<ENDLOG;
-    }
   fInputFile = new TFile(infile,"READ");
   
   if(!fInputFile->IsOpen())
     {
-    LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-    <<"Inputfile "<<infile<<" does not exist"<<ENDLOG;
-    return;
+      LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
+	<<"Inputfile "<<infile<<" does not exist"<<ENDLOG;
+      return;
     }
   
-  Init();
 }
 
-AliLevel3::AliLevel3(TFile *in, TFile *out){
-  fOutputFile = out;
+AliLevel3::AliLevel3(TFile *in)
+{
   fInputFile  =  in;
   if(!in){
     LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
     <<"Pointer to InFile 0x0!"<<ENDLOG;
     return;
   }  
-  if(!out){
-    LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-    <<"Pointer to OutFile 0x0!"<<ENDLOG;
-    return;
-  }  
   
-  if(!fOutputFile->IsOpen())
-    {
-    LOG(AliL3Log::kWarning,"AliLevel3::AliLevel3","File Open")
-    <<"no output file!"<<ENDLOG;
-      return;
-    }
   if(!fInputFile->IsOpen())
     {
     LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
     <<"Inputfile does not exist"<<ENDLOG;
       return;
     }
-  Init();
 }
 
-void AliLevel3::Init(Int_t npatches=6){
+void AliLevel3::Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6)
+{
+  if(!binary && !fInputFile)
+    {
+      LOG(AliL3Log::kError,"AliLevel3::Init","Files")
+	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
+      return;
+    }
   fWriteOut = kFALSE;
   fGlobalMerger=0;
-  fTransformer = new AliL3Transform();
+  fTransformer = new AliL3Transform(path);
   fDoRoi = kFALSE;
   fDoNonVertex = kFALSE;
   fClusterDeconv = kTRUE;
   fEta[0] = 0.;
   fEta[1] = 0.9;
-  fUseBinary =kFALSE;
-  SetPath("");
+  fUseBinary = binary;
+  SetPath(path);
   fFindVertex =kFALSE;
   fEvent=0;
 
@@ -172,12 +159,12 @@ void AliLevel3::Init(Int_t npatches=6){
   fTracker = new AliL3ConfMapper();
   fTrackMerger = new AliL3TrackMerger(fNPatch);
   fInterMerger = new AliL3InterMerger();
-  #ifdef use_aliroot
+#ifdef use_aliroot
   fFileHandler = new AliL3FileHandler();
   fFileHandler->SetAliInput(fInputFile);
-  #else
+#else
   fFileHandler = new AliL3MemHandler();
-  #endif
+#endif
   fBenchmark = new AliL3Benchmark();
 }
 

@@ -54,12 +54,11 @@ class AliLevel3 : public TObject {
   AliL3Transform *fTransformer; //!
   TDirectory *savedir;
   TFile *fInputFile;
-  TFile *fOutputFile;
   Bool_t fFindVertex;
   Bool_t fDoNonVertex;
   Bool_t fClusterDeconv;
   Int_t fEvent;
-  void Init(Int_t npatches=6);
+  //void Init(Int_t npatches=6);
   void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
                                              Int_t slice,Int_t patch);
   void WriteResults();
@@ -71,10 +70,11 @@ class AliLevel3 : public TObject {
   void SetPath(char *p){sprintf(fPath,"%s",p);}
  public:
   AliLevel3 ();
-  AliLevel3(Char_t *infile,Char_t *outfile);
-  AliLevel3(TFile *in, TFile *out);
+  AliLevel3(Char_t *infile);
+  AliLevel3(TFile *in);
   virtual ~AliLevel3();
   
+  void Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6);
   void SetTrackerParam(Int_t phi_segments=50,Int_t eta_segments=100,
 		       Int_t trackletlength=3,Int_t tracklength=5,
 		       Int_t rowscopetracklet=2,Int_t rowscopetrack=3,
@@ -87,7 +87,7 @@ class AliLevel3 : public TObject {
   void ProcessEvent(Int_t first,Int_t last,Int_t event=0);
   void ProcessSlice(Int_t slice);
 
-  void UseBinaryInput(char *path){SetPath(path);fUseBinary=kTRUE;}
+  //void UseBinaryInput(char *path){SetPath(path);fUseBinary=kTRUE;}
   void DoMc(char* file="point_mc.dat");
   void DoNonVertexTracking() {fDoNonVertex=kTRUE;}
   void FindVertex() {fFindVertex=kTRUE;}
