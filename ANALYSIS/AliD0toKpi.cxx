@@ -26,6 +26,7 @@
 #include <TH2.h>
 #include <TCanvas.h>
 #include <TPaveLabel.h>
+#include <TVector3.h>
 
 #include "AliD0toKpi.h"
 

@@ -11,11 +11,6 @@
 //-------------------------------------------------------------------------
 
 #include <TMath.h>
-#include <TCanvas.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TPaveLabel.h>
-#include <TVector3.h>
 
 //----------------------------------------------------------------------------
 //     Some constants (masses + parameterized TOF PID)
