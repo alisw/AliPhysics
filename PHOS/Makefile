@@ -10,7 +10,8 @@ PACKAGE = PHOS
 # C++ sources
 
 SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
-                 AliPHOSv3.cxx AliPHOSv4.cxx \
+                 AliPHOSv3.cxx AliPHOSv4.cxx AliPHOSvImpacts.cxx \
+                 AliPHOSImpact.cxx \
                  AliPHOSHit.cxx \
                  AliPHOSGeometry.cxx \
 		 AliPHOSEMCAGeometry.cxx \
