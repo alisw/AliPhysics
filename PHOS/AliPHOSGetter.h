@@ -65,7 +65,7 @@ class AliPHOSGetter : public TObject {
   void CloseFile() ;  
   void ListBranches(Int_t event=0) const ;
   void NewBranch(TString name, Int_t event = 0) ; 
-  Bool_t AliPHOSGetter::NewFile(TString name) ;
+  Bool_t NewFile(TString name) ;
   const Bool_t HasFailed() const { return fFailed ; }
   Bool_t PostPrimaries(void ) const ;  
   Bool_t PostHits(void ) const ;  

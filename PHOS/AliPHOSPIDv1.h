@@ -80,7 +80,7 @@ public:
   
  private:
 
-  const TString AliPHOSPIDv1::BranchName() const ; 
+  const TString BranchName() const ; 
   virtual void Init() ;
   virtual void InitParameters() ;
   void     MakeRecParticles(void ) ;
