@@ -1,4 +1,10 @@
-void display (const char *filename="galice.root",Int_t nevent=0) {
+// This macro displays the hits belonging to a track for selected detectors
+// Input: in the tracks contains the interesting tracks
+//        ntracks is the number of interesing tracks
+//        The default values correspond to "Show everything"
+// Note: For the moment it works only with HIJING events, the PYTHIA is 
+//       still not supported 
+void display (const char *filename="galice.root",Int_t nevent=0, Int_t * tracks=0, Int_t ntracks=0) {
 // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
@@ -27,6 +33,7 @@ void display (const char *filename="galice.root",Int_t nevent=0) {
    
 // Create Event Display object
    AliDisplay *edisplay = new AliDisplay(750);
+   if (ntracks>0) edisplay->SetTracksToDisplay(tracks, ntracks);
 
 // Display the requested event
    gAlice->GetEvent(nevent);
