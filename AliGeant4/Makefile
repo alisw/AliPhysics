@@ -67,6 +67,8 @@ $(DICT):				$(DICTH)
 
 depend:					$(SRCS)
 
+clean: macroclean
+
 #HEADERS =	$(filter-out %LinkDef.h,$(HDRS))
 
 # filter-out Geant3 dependent libraries (ZDC requires symbols from G3)
@@ -77,7 +79,7 @@ ALILIBS += -lTGeant4 -lAliGeant4
 
 LIBS = $(ALILIBS) $(G4LDLIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia -lpythia -lpdf
 
-TOCLEAN	      = $(OBJS) *Cint.cxx *Cint.h
+TOCLEAN	      = $(OBJS) $(POBJ) *Cint.cxx *Cint.h
 
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
 
