@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliRunConfiguration
+// -------------------------
 // See the class description in the header file.
 
 #include "AliRunConfiguration.h"
@@ -11,11 +15,11 @@
 #include "AliRunAction.h"
 #include "AliEventAction.h"
 #include "AliTrackingAction.h"
+#include "AliSteppingAction.h"
 #include "AliStackingAction.h"
 #include "AliFiles.h"
 
 #include "TG4ModularPhysicsList.h"
-#include "TG4SteppingAction.h"
 
 //_____________________________________________________________________________
 AliRunConfiguration::AliRunConfiguration()
@@ -80,7 +84,7 @@ void AliRunConfiguration::CreateUserConfiguration()
   fRunAction = new AliRunAction();
   fEventAction = new AliEventAction();
   fTrackingAction = new AliTrackingAction();
-  fSteppingAction = new TG4SteppingAction();
+  fSteppingAction = new AliSteppingAction();
   fStackingAction = new AliStackingAction();
 }
 
