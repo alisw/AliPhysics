@@ -100,7 +100,7 @@ class AliL3MemHandler{
   Bool_t Binary2Memory(UInt_t & npoint,AliL3SpacePointData *data);
   Bool_t Transform(UInt_t npoint,AliL3SpacePointData *data,
                               Int_t slice, AliL3Transform* trans);
-  void UpdateRowPointer(AliL3DigitRowData *&tempPt);
+  static void UpdateRowPointer(AliL3DigitRowData *&tempPt);
   
   //Track IO
   Bool_t Memory2Binary(UInt_t ntrack,AliL3TrackSegmentData *data);
