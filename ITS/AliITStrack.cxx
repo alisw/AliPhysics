@@ -43,7 +43,10 @@ AliITStrack::AliITStrack(const AliITStrack &cobj) {
   fvTrack.ResizeTo(5); 
   fmCovariance = new TMatrix(5,5);
   ClusterInTrack = new TMatrix(6,9);
-  for(Int_t i=0; i<6; i++) (*ClusterInTrack)(i,6)=(*ClusterInTrack)(i,7)=
+ 
+  Int_t i;
+ 
+  for(i=0; i<6; i++) (*ClusterInTrack)(i,6)=(*ClusterInTrack)(i,7)=
                            (*ClusterInTrack)(i,8)=-1.;
   flistCluster = new TObjArray; 
   fVertex.ResizeTo(3); 
@@ -73,7 +76,6 @@ AliITStrack::AliITStrack(const AliITStrack &cobj) {
  
   *ClusterInTrack = *cobj.ClusterInTrack;
  
-  Int_t i;
   for(i=0; i<cobj.flistCluster->GetSize(); i++) 
     flistCluster->AddLast(cobj.flistCluster->At(i));
  
