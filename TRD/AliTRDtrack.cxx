@@ -13,72 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.24  2003/09/18 09:06:07  cblume
-Geometry update, Removal of compiler warnings
-
-Revision 1.23  2003/07/22 15:56:14  hristov
-Implementing ESD functionality in the NewIO (Yu.Belikov)
-
-Revision 1.20.2.1  2003/07/14 09:19:33  hristov
-TOF included in the combined PID (Yu.Belikov)
-
-Revision 1.20  2003/05/27 17:46:13  hristov
-TRD PID included in the ESD schema (T.Kuhr)
-
-Revision 1.19  2003/05/22 10:46:46  hristov
-Using access methods instead of data members
-
-Revision 1.18  2003/04/10 10:36:54  hristov
-Code for unified TPC/TRD tracking (S.Radomski)
-
-Revision 1.17  2003/02/19 09:02:28  hristov
-Track time measurement (S.Radomski)
-
-Revision 1.16  2003/02/10 14:06:10  cblume
-Add tracking without tilted pads as option
-
-Revision 1.15  2003/01/27 16:34:49  cblume
-Update of tracking by Sergei and Chuncheng
-
-Revision 1.14  2002/11/07 15:52:09  cblume
-Update of tracking code for tilted pads
-
-Revision 1.13  2002/10/22 15:53:08  alibrary
-Introducing Riostream.h
-
-Revision 1.12  2002/10/14 14:57:44  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.8.10.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-RRevision 1.11  2002/06/13 12:09:58  hristov
-Minor corrections
-
-Revision 1.10  2002/06/12 09:54:35  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.8  2001/05/30 12:17:47  hristov
-Loop variables declared once
-
-Revision 1.7  2001/05/28 17:07:58  hristov
-Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
-
-Revision 1.4  2000/12/08 16:07:02  cblume
-Update of the tracking by Sergei
-
-Revision 1.3  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.2  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.1  2000/09/22 14:47:52  cblume
-Add the tracking code
-
-*/                                                        
+/* $Id$ */
 
 #include <Riostream.h>
 #include <TObject.h>   
@@ -508,6 +443,7 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   fE+=fX*(fC-cc);    
 
   // track time measurement [SR, GSI 17.02.2002]
+  if (x1 < x2)
   if (IsStartedTimeIntegral()) {
     Double_t l2 = (fX-oldX)*(fX-oldX) + (fY-oldY)*(fY-oldY) + (fZ-oldZ)*(fZ-oldZ);
     AddTimeStep(TMath::Sqrt(l2));

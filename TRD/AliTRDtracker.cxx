@@ -13,99 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
                                                       
-/*
-$Log$
-Revision 1.31  2003/11/06 09:28:15  cblume
-Next round of coding conventions
-
-Revision 1.30  2003/09/18 09:06:07  cblume
-Geometry update, Removal of compiler warnings
-
-Revision 1.29  2003/07/22 15:56:14  hristov
-Implementing ESD functionality in the NewIO (Yu.Belikov)
-
-Revision 1.27.2.2  2003/07/14 09:19:33  hristov
-TOF included in the combined PID (Yu.Belikov)
-
-Revision 1.27.2.1  2003/07/11 10:53:01  hristov
-Inward refit for TPC and TRD in the ESD schema (T.Kuhr)
-
-Revision 1.27  2003/05/27 17:46:13  hristov
-TRD PID included in the ESD schema (T.Kuhr)
-
-Revision 1.26  2003/04/10 10:36:54  hristov
-Code for unified TPC/TRD tracking (S.Radomski)
-
-Revision 1.25  2003/03/19 17:14:11  hristov
-Load/UnloadClusters added to the base class and the derived classes changed correspondingly. Possibility to give 2 input files for ITS and TPC tracks in PropagateBack. TRD tracker uses fEventN from the base class (T.Kuhr)
-
-Revision 1.24  2003/02/19 09:02:28  hristov
-Track time measurement (S.Radomski)
-
-Revision 1.23  2003/02/10 14:06:10  cblume
-Add tracking without tilted pads as option
-
-Revision 1.22  2003/01/30 15:19:58  cblume
-New set of  parameters
-
-Revision 1.21  2003/01/27 16:34:49  cblume
-Update of tracking by Sergei and Chuncheng
-
-Revision 1.20  2002/11/07 15:52:09  cblume
-Update of tracking code for tilted pads
-
-Revision 1.19  2002/10/22 15:53:08  alibrary
-Introducing Riostream.h
-
-Revision 1.18  2002/10/14 14:57:44  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.14.6.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-Revision 1.17  2002/06/13 12:09:58  hristov
-Minor corrections
-
-Revision 1.16  2002/06/12 09:54:36  cblume
-Update of tracking code provided by Sergei
-
-Revision 1.14  2001/11/14 10:50:46  cblume
-Changes in digits IO. Add merging of summable digits
-
-Revision 1.13  2001/05/30 12:17:47  hristov
-Loop variables declared once
-
-Revision 1.12  2001/05/28 17:07:58  hristov
-Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
-
-Revision 1.8  2000/12/20 13:00:44  cblume
-Modifications for the HP-compiler
-
-Revision 1.7  2000/12/08 16:07:02  cblume
-Update of the tracking by Sergei
-
-Revision 1.6  2000/11/30 17:38:08  cblume
-Changes to get in line with new STEER and EVGEN
-
-Revision 1.5  2000/11/14 14:40:27  cblume
-Correction for the Sun compiler (kTRUE and kFALSE)
-
-Revision 1.4  2000/11/10 14:57:52  cblume
-Changes in the geometry constants for the DEC compiler
-
-Revision 1.3  2000/10/15 23:40:01  cblume
-Remove AliTRDconst
-
-Revision 1.2  2000/10/06 16:49:46  cblume
-Made Getters const
-
-Revision 1.1.2.2  2000/10/04 16:34:58  cblume
-Replace include files by forward declarations
-
-Revision 1.1.2.1  2000/09/22 14:47:52  cblume
-Add the tracking code
-
-*/   
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -1009,7 +917,7 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
 //    cout<<found<<'\r';     
 
     if(PropagateToTPC(t)) {
-      seed->UpdateTrackParams(pt, AliESDtrack::kTRDin);
+      seed->UpdateTrackParams(pt, AliESDtrack::kTRDrefit);
     }  
     delete seed2;
     delete pt;
