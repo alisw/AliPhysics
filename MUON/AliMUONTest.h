@@ -75,6 +75,8 @@ class AliMUONTest : public  TObject
                                        Int_t chamberId, Int_t cathod);
     AliMUONGeometrySegmentation* CreateSlatSegmentation(
                                        Int_t chamberId, Int_t cathod);
+        AliMUONGeometrySegmentation* CreateTriggerSegmentation(
+                                       Int_t chamberId, Int_t cathod);
 				       
     // data members
     TCanvas* fCanvas; // The canvas for drawing				       
