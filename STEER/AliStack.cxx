@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/02/20 16:14:41  hristov
+fParticleBuffer points to object which doesn't belong to AliStack, do not delete it (J.Chudoba)
+
 Revision 1.17  2001/12/05 08:51:56  hristov
 The default constructor now creates no objects (thanks to r.Brun). Some corrections required by the previous changes.
 
@@ -145,7 +148,7 @@ AliStack::~AliStack()
 //_____________________________________________________________________________
 void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
-		      AliMCProcess mech, Int_t &ntr, Float_t weight)
+		      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
   //
   // Load a track on the stack
@@ -165,7 +168,6 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   Float_t mass;
   const Int_t kfirstdaughter=-1;
   const Int_t klastdaughter=-1;
-  const Int_t kS=0;
   //  const Float_t tlife=0;
   
   //
@@ -185,7 +187,7 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   TClonesArray &particles = *fParticles;
   TParticle* particle
    = new(particles[fLoadPoint++]) 
-     TParticle(pdg, kS, parent, -1, kfirstdaughter, klastdaughter,
+     TParticle(pdg, is, parent, -1, kfirstdaughter, klastdaughter,
                pmom[0], pmom[1], pmom[2], e, vpos[0], vpos[1], vpos[2], tof);
   particle->SetPolarisation(TVector3(polar[0],polar[1],polar[2]));
   particle->SetWeight(weight);
@@ -225,7 +227,7 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   	              Double_t px, Double_t py, Double_t pz, Double_t e,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
-		      AliMCProcess mech, Int_t &ntr, Float_t weight)
+		      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
   //
   // Load a track on the stack
@@ -249,14 +251,13 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   // it is passed by argument e.
 
 
-  const Int_t kS=0;
   const Int_t kFirstDaughter=-1;
   const Int_t kLastDaughter=-1;
   
   TClonesArray &particles = *fParticles;
   TParticle* particle
     = new(particles[fLoadPoint++]) 
-      TParticle(pdg, kS, parent, -1, kFirstDaughter, kLastDaughter,
+      TParticle(pdg, is, parent, -1, kFirstDaughter, kLastDaughter,
 		px, py, pz, e, vx, vy, vz, tof);
    
   particle->SetPolarisation(polx, poly, polz);

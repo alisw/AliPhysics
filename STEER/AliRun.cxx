@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.81  2001/12/19 14:46:26  morsch
+Add possibility to disable StepManager() for each module separately.
+
 Revision 1.80  2001/10/21 18:22:55  hristov
 BranchOld replaced by Branch. It works correctly with Root 2.02.xx
 
@@ -1680,12 +1683,12 @@ void AliRun::SetCurrentTrack(Int_t track)
 //_____________________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
-		      AliMCProcess mech, Int_t &ntr, Float_t weight)
+		      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
 // Delegate to stack
 //
     fStack->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
-		     mech, ntr, weight);
+		     mech, ntr, weight, is);
 }
 
 //_____________________________________________________________________________
@@ -1693,12 +1696,12 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   	              Double_t px, Double_t py, Double_t pz, Double_t e,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
-		      AliMCProcess mech, Int_t &ntr, Float_t weight)
+		      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
   // Delegate to stack
   //
     fStack->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
-		   polx, poly, polz, mech, ntr, weight);
+		   polx, poly, polz, mech, ntr, weight, is);
     
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/02/18 19:23:00  hristov
+Put protection in the destructor
+
 Revision 1.17  2001/11/26 15:46:35  morsch
 Set default value for vertex truncation in constructor.
 
@@ -359,29 +362,29 @@ void AliGenerator::VertexInternal()
 void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t *pmom, Float_t *vpos, Float_t *polar,
                                Float_t tof, AliMCProcess mech, Int_t &ntr,
-                               Float_t weight)
+                               Float_t weight, Int_t is)
 {
 
   if (fStack)
     fStack->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
-                     mech, ntr, weight);
+                     mech, ntr, weight, is);
   else 
     gAlice->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
-                     mech, ntr, weight);
+                     mech, ntr, weight, is);
 }
 void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
                       Double_t px, Double_t py, Double_t pz, Double_t e,
                       Double_t vx, Double_t vy, Double_t vz, Double_t tof,
                       Double_t polx, Double_t poly, Double_t polz,
-                      AliMCProcess mech, Int_t &ntr, Float_t weight)
+                      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 {
   
   if (fStack)
      fStack->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
-                      polx, poly, polz, mech, ntr, weight);
+                      polx, poly, polz, mech, ntr, weight, is);
   else 
      gAlice->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
-                        polx, poly, polz, mech, ntr, weight);
+                        polx, poly, polz, mech, ntr, weight, is);
 }
 
 
