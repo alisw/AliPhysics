@@ -130,7 +130,7 @@ Bool_t AliL3FileHandler::IsDigit(){
     <<"Pointer to TFile = 0x0 "<<ENDLOG;
     return kTRUE;  //may you are use binary input which is Digits!!
   }
-  TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60");
+  TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60_0");
   if(t){
     LOG(AliL3Log::kInformational,"AliL3FileHandler::IsDigit","File Type")
     <<"Found Digit Tree -> Use Fast Cluster Finder"<<ENDLOG;
@@ -180,7 +180,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
 
   TDirectory *savedir = gDirectory;
   fInAli->cd();
-  TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60");
+  TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60_0");
   if(!t){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Binary","AliRoot")
     <<"No Digit Tree inside!"<<ENDLOG;
@@ -201,7 +201,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
       fParam->AdjustSectorRow(digarr.GetID(),sector,row);
       fTransformer->Sector2Slice(lslice,lrow,sector,row);
       if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
-//      if(fSlice != lslice) continue;
+      //      if(fSlice != lslice) continue;
 
       Float_t xyz[3];
       ndigits[lrow] = 0;
@@ -251,11 +251,13 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
       Int_t localcount=0;
       digarr.First();
       do {
-        dig=digarr.CurrentDigit();
-        if (dig<=fParam->GetZeroSup()) continue;
+        //dig=digarr.CurrentDigit();
+	//if (dig<=fParam->GetZeroSup()) continue;
         time=digarr.CurrentRow();
         pad=digarr.CurrentColumn();
-        if(time < fParam->GetMaxTBin()-1 && time > 0)
+        dig = digarr.GetDigit(time,pad);
+	if (dig <= fParam->GetZeroSup()) continue;
+	if(time < fParam->GetMaxTBin()-1 && time > 0)
           if(digarr.GetDigit(time-1,pad) <= fParam->GetZeroSup() &&
              digarr.GetDigit(time+1,pad) <= fParam->GetZeroSup()) continue;
 
@@ -266,9 +268,9 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
 
         if(localcount >= ndigits[lrow])
           LOG(AliL3Log::kFatal,"AliL3FileHandler::AliDigits2Binary","Memory")
-          <<AliL3Log::kDec<<"Mismatch: localcount "<<localcount<<" ndigits "
-          <<ndigits[lrow]<<ENDLOG;
-
+	    <<AliL3Log::kDec<<"Mismatch: localcount "<<localcount<<" ndigits "
+	    <<ndigits[lrow]<<ENDLOG;
+	
         tempPt->fDigitData[localcount].fCharge=dig;
         tempPt->fDigitData[localcount].fPad=pad;
         tempPt->fDigitData[localcount].fTime=time;
@@ -310,25 +312,55 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
   old_array->Setup(fParam);
   old_array->SetClass("AliSimDigits");
-  Bool_t ok = old_array->ConnectTree("TreeD_75x40_100x60");
+  Bool_t ok = old_array->ConnectTree("TreeD_75x40_100x60_0");
   if(!ok)
     {
       printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object\n");
       return;
     }
-    
-  TFile *digFile = new TFile(new_digitsfile,"RECREATE");
-  digFile->cd();
   
-  //setup a new one:
+  Bool_t create=kFALSE;
+  TFile *digFile;
+  
+  if(fPatch == 0)
+    {    
+      digFile = TFile::Open(new_digitsfile,"RECREATE");
+      create = kTRUE;
+      fParam->Write(fParam->GetTitle());
+    }
+  else
+    {
+      digFile = TFile::Open(new_digitsfile,"UPDATE");
+      create=kFALSE;
+    }
+  if(!digFile->IsOpen())
+    {
+      printf("AliL3FileHandler::AliDigits2RootFile : Error opening a new rootfile\n");
+      return;
+    }
+  
+  digFile->cd();
+    
+  //setup a new one, or connect it to the existing one:
   AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
   arr->SetClass("AliSimDigits");
   arr->Setup(fParam);
-  arr->MakeTree();
-  if(fRowMin !=0 || fRowMax != 175)
-    printf("\n AliL3FileHandler::AliDigits2RootFile : Rather stupid row numbers...%d %d\n\n",fRowMin,fRowMax);
+  if(create)
+    arr->MakeTree();
+  else
+    {
+      Bool_t ok = arr->ConnectTree("TreeD_75x40_100x60_0");
+      if(!ok)
+	{
+	  printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object in existing file\n");
+	  return;
+	}
+    }
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
+      
+      if(rowPt->fRow != i) printf("AliL3FileHandler::AliDigits2RootFile : Mismatching row numbering!!!\n");
+            
       Int_t sector,row;
       fTransformer->Slice2Sector(fSlice,i,sector,row);
       AliDigits * dig = arr->CreateRow(sector,row);
@@ -342,7 +374,10 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	  UShort_t charge = digPt[j].fCharge;
 	  UChar_t pad = digPt[j].fPad;
 	  UShort_t time = digPt[j].fTime;
-	  dig->SetDigitFast(charge,time,pad);
+	  
+	  if(charge == 0) //Only write the digits that has not been removed
+	    continue;
+	  dig->SetDigitFast(old_dig->GetDigit(time,pad),time,pad);
 	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,0),time,pad,0);
 	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,1),time,pad,1);
 	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,2),time,pad,2);
@@ -355,11 +390,11 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
     }
   digFile->cd();
   char treeName[100];
-  sprintf(treeName,"TreeD_%s",fParam->GetTitle());
+  sprintf(treeName,"TreeD_%s_0",fParam->GetTitle());
   arr->GetTree()->Write(treeName,TObject::kOverwrite);
-  fParam->Write(fParam->GetTitle());
   digFile->Close();
-  delete digFile;
+  //arr->GetTree()->Delete();
+  //delete arr;
 }
 
 ///////////////////////////////////////// Point IO  
