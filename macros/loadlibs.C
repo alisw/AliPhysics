@@ -15,13 +15,13 @@ void loadlibs ()
   gSystem->Load("libVMC");
 
   gSystem->Load("libEGPythia6");
+
+  gSystem->Load("libRAW");
+
   gSystem->Load("libSTEER");
   gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
   gSystem->Load("libAliPythia6");
-
-  gSystem->Load("libRAW");
-
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOS");
   gSystem->Load("libMUON");
