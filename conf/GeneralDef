@@ -62,7 +62,7 @@ ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --glibs) -lMinuit -lHtml
 
 ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
                 -lITS -lPHOSdummy -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
-                -lTGeant3 -lSTART -lCPV -lEVGEN -lSTEER
+                -lTGeant3 -lSTART -lEVGEN -lSTEER
 
 # CERN Libraries 
 

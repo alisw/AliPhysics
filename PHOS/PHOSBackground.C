@@ -139,7 +139,6 @@ Int_t iPIPE=1;
 Int_t iFMD=0;
 Int_t iMUON=0;
 Int_t iPHOS=1;
-Int_t iCPV=0;
 Int_t iPMD=0;
 Int_t iSTART=0;
 
@@ -710,14 +709,6 @@ AliPHOSv2 *PHOS  = new AliPHOSv2("PHOS","Version PHOS");
 // * KINE  700     5.    175.    0.          800. 1.5 5. 1.
 // *******************************************************************************
 }
-
-if(iCPV) {
-//=================== CPV parameters ============================
-
-  printf ("CPV in initializing\n");
-  AliCPV *CPV  = new AliCPVv0("CPV","normal CPV");
-}
-
 
 if(iPMD) {
 //=================== PMD parameters ============================

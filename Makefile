@@ -18,7 +18,7 @@ PRETTY =  awk '{print $$0 substr($(DOTS),1,79-length($$0))}'
 ##### Module libraries #####
 
 ALIROOT_DIRS		= STEER TGeant3 TRD PHOS TPC ZDC MUON PMD FMD TOF ITS \
-			  CASTOR RICH START CPV STRUCT EVGEN RALICE
+			  CASTOR RICH START STRUCT EVGEN RALICE
 
 ##### TARGETS #####
  

@@ -74,7 +74,6 @@ Int_t iPIPE=1;
 Int_t iFMD=1;
 Int_t iMUON=1;
 Int_t iPHOS=1;
-Int_t iCPV=1;
 Int_t iPMD=1;
 Int_t iSTART=0;
 
@@ -641,13 +640,6 @@ PHOS->SetFoam(214.6,  80.,  260., 467.);
 // *     Int_t               JDRY;           // Drell-Yan generation
 // * KINE  700     5.    175.    0.          800. 1.5 5. 1.
 // *******************************************************************************
-}
-
-if(iCPV) {
-//=================== CPV parameters ============================
-
-  printf ("CPV in initializing\n");
-  AliCPV *CPV  = new AliCPVv0("CPV","normal CPV");
 }
 
 
