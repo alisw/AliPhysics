@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/12/03 09:03:06  hristov
+Changes needed on Itanium (F.Carminati)
+
 Revision 1.17  2002/10/22 14:45:41  alibrary
 Introducing Riostream.h
 
@@ -308,6 +311,9 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.18  2002/12/03 09:03:06  hristov
+Changes needed on Itanium (F.Carminati)
+
 Revision 1.17  2002/10/22 14:45:41  alibrary
 Introducing Riostream.h
 
@@ -404,6 +410,9 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.18  2002/12/03 09:03:06  hristov
+Changes needed on Itanium (F.Carminati)
+
 Revision 1.17  2002/10/22 14:45:41  alibrary
 Introducing Riostream.h
 
@@ -484,8 +493,8 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75(Int_t npar,Float_t *par) :
 //    cout << "AliITSgeomSSD275and75 default creator called: start" << endl;
     AliITSgeomSSD::ResetSSD(par,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
-    delete leA;
-    delete leC;
+    delete [] leA;
+    delete [] leC;
 //    cout << "AliITSgeomSSD275and75 default creator called: end" << endl;
 }
 //________________________________________________________________________
@@ -509,6 +518,9 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.18  2002/12/03 09:03:06  hristov
+Changes needed on Itanium (F.Carminati)
+
 Revision 1.17  2002/10/22 14:45:41  alibrary
 Introducing Riostream.h
 
