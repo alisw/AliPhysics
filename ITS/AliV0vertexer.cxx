@@ -45,11 +45,11 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
    Int_t i;
    for (i=0; i<nentr; i++) {
      AliESDtrack *esd=event->GetTrack(i);
-     Int_t status=esd->GetStatus();
+     UInt_t status=esd->GetStatus();
+     UInt_t flags=AliESDtrack::kITSin|AliESDtrack::kTPCin;
 
-  if ((status&AliESDtrack::kITSrefit)==0)
-     if ((status&AliESDtrack::kITSout)!=0 || (status&AliESDtrack::kITSin)==0)
-  continue;
+     if ((status&AliESDtrack::kITSrefit)==0)
+        if ((status&flags)!=status) continue;
 
      AliITStrackV2 *iotrack=new AliITStrackV2(*esd);
      iotrack->SetLabel(i);  // now it is the index in array of ESD tracks

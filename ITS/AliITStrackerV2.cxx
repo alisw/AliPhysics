@@ -370,12 +370,13 @@ Int_t AliITStrackerV2::PropagateBack(AliESD *event) {
      ResetTrackToFollow(*t);
 
      // propagete to vertex [SR, GSI 17.02.2003]
-     fTrackToFollow.PropagateTo(3.,0.0028,65.19);
-     fTrackToFollow.PropagateToVertex();
-
-     // Start Time measurement [SR, GSI 17.02.2003]
-     fTrackToFollow.StartTimeIntegral();
-     fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
+     // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
+     if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) {
+       if (fTrackToFollow.PropagateToVertex()) {
+          fTrackToFollow.StartTimeIntegral();
+       }
+       fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
+     }
 
      fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
      if (RefitAt(49.,&fTrackToFollow,t)) {

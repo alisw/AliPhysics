@@ -50,11 +50,11 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
    TObjArray trks(ntr);
    for (i=0; i<ntr; i++) {
        AliESDtrack *esdtr=event->GetTrack(i);
-       Int_t status=esdtr->GetStatus();
+       UInt_t status=esdtr->GetStatus();
+       UInt_t flags=AliESDtrack::kITSin|AliESDtrack::kTPCin;
 
        if ((status&AliESDtrack::kITSrefit)==0)
-       if ((status&AliESDtrack::kITSout)!=0 || (status&AliESDtrack::kITSin)==0)
-           continue;
+          if ((status&flags)!=status) continue;
 
        AliITStrackV2 *iotrack=new AliITStrackV2(*esdtr);
        iotrack->SetLabel(i);  // now it is the index in array of ESD tracks
