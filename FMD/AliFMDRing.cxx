@@ -33,7 +33,7 @@
 #include <TVector2.h>		// ROOT_TVector2
 
 //====================================================================
-ClassImp(AliFMDRing);
+ClassImp(AliFMDRing)
 #if 0
   ; // This is here to keep Emacs for indenting the next line
 #endif
