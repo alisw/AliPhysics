@@ -67,9 +67,9 @@ AliMUONGeometryStore::AliMUONGeometryStore(
 }
 
 //______________________________________________________________________________
-AliMUONGeometryStore::~AliMUONGeometryStore() {
-//
-  fObjects.Delete();
+AliMUONGeometryStore::~AliMUONGeometryStore() 
+{
+
 }
 
 //______________________________________________________________________________
