@@ -7,9 +7,11 @@
 # without visualization 
 
 /aliDet/switchOn XXXNNN
+/aliDet/fieldValue 0.2 tesla
 /aliRun/initialize
-#/aliDet/body/listLong
+/aliDet/generateXML
 
+/g4mc/setHadron true
 /control/execute gen_testGGG.in
 
 #/tracking/verbose 1
