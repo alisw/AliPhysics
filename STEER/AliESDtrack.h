@@ -25,6 +25,8 @@
 #include <TBits.h>
 #include <TObject.h>
 #include "AliPID.h"
+#include <TVector3.h>
+
 class AliKalmanTrack;
 
 const Int_t kNPlane = 6;
@@ -61,7 +63,9 @@ public:
   Double_t GetMass() const;
   Double_t GetP() const;
   Bool_t GetPxPyPz(Double_t *p) const;
+  TVector3 P3() const {Double_t p[3]; GetPxPyPz(p); return TVector3(p[0],p[1],p[2]);} //running track momentum
   Bool_t GetXYZ(Double_t *r) const;
+  TVector3 X3() const {Double_t x[3]; GetXYZ(x); return TVector3(x[0],x[1],x[2]);}    //running track position 
   void GetCovariance(Double_t cov[21]) const;
   Int_t GetSign() const {return (fRp[4]>0) ? 1 : -1;} 
 
@@ -154,7 +158,7 @@ public:
     fRICHdx=dx; fRICHdy=dy;
   }
   void    GetRICHdxdy(Double_t &dx, Double_t &dy) const {
-    dx=fRICHtheta; dy=fRICHphi;
+    dx=fRICHdx; dy=fRICHdy;
   }
   
   void SetPHOSposition(const Double_t *pos)  {
