@@ -18,12 +18,12 @@
 /* $Id$ */
 
 #include <TObject.h>
+#include "AliITSpList.h"
 
 class AliITSresponse;
 class AliITSsegmentation;
 class AliITSmodule;
 class TRandom;
-class AliITSpList;
 class TClonesArray;
 
 // This is the base class for ITS detector signal simulations. Data members
@@ -70,7 +70,14 @@ class AliITSsimulation : public TObject {
     virtual AliITSsegmentation* GetSegmentationModel(){return fSegmentation;}
     // set pointer to Response model
     virtual void SetSegmentationModel(AliITSsegmentation *seg){
-	fSegmentation = seg;}
+                                                        fSegmentation = seg;}
+    virtual AliITSpList* GetMap(){return fpList;} // Returns fpList, the map.
+    virtual void SetMap(AliITSpList *p){fpList = p;} // Sets fpList, the map.
+    virtual void ClearMap(){fpList->ClearMap();} // Clear fpList, map.
+    virtual void SetModuleNumber(Int_t mod){fModule=mod;} // Set Module number
+    virtual Int_t GetModuleNumber(){return fModule;}// Gets Module number
+    virtual void SetEventNumber(Int_t evnt){fEvent=evnt;} // Set Event number
+    virtual Int_t GetEventNumber(){return fEvent;}// Gets Event number
 
  protected:
     AliITSresponse      *fResponse;       //! response

@@ -25,6 +25,8 @@ AliITSsimulation::AliITSsimulation(){
     fSegmentation = 0;
     fResponse     = 0;
     fpList        = 0;
+    fModule       = 0;
+    fEvent        = 0;
 }
 //__________________________________________________________________________
 AliITSsimulation::~AliITSsimulation(){
@@ -34,29 +36,23 @@ AliITSsimulation::~AliITSsimulation(){
     delete fpList;
 }
 //__________________________________________________________________________
-AliITSsimulation::AliITSsimulation(const AliITSsimulation &source) : 
-    TObject(source){
+AliITSsimulation::AliITSsimulation(const AliITSsimulation &s) : TObject(s){
     //     Copy Constructor 
  
-    if(&source == this) return;
-    this->fResponse     = source.fResponse;
-    this->fSegmentation = source.fSegmentation;
-    this->fModule       = source.fModule;
-    this->fEvent        = source.fEvent;
-    this->fpList        = source.fpList;
+    *this = s;
     return;
 }
 
 //_________________________________________________________________________
-AliITSsimulation&  AliITSsimulation::operator=(const AliITSsimulation &source){
+AliITSsimulation&  AliITSsimulation::operator=(const AliITSsimulation &s){
     //    Assignment operator
 
-    if(&source == this) return *this;
-    this->fResponse     = source.fResponse; 
-    this->fSegmentation = source.fSegmentation;
-    this->fModule       = source.fModule;
-    this->fEvent        = source.fEvent;
-    this->fpList        = source.fpList;
+    if(&s == this) return *this;
+    this->fResponse     = s.fResponse; 
+    this->fSegmentation = s.fSegmentation;
+    this->fModule       = s.fModule;
+    this->fEvent        = s.fEvent;
+    this->fpList        = s.fpList;
     return *this;
 }
 //______________________________________________________________________

@@ -1,7 +1,24 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 ////////////////////////////////////////////////
 //  Response class for set:ITS                //
 ////////////////////////////////////////////////
-
+#include <Riostream.h>
 #include <TMath.h>
 #include <TF1.h>
 #include <TString.h>
@@ -16,6 +33,7 @@ AliITSresponse::AliITSresponse(){
     fdv = 0.000375;  // 300 microns and 80 volts.
     fN  = 0.0;
     fT  = 300.0;
+    SetGeVToCharge();
 }
 //______________________________________________________________________
 AliITSresponse::AliITSresponse(Double_t thickness){
@@ -24,9 +42,10 @@ AliITSresponse::AliITSresponse(Double_t thickness){
     fdv = thickness/80.0;   // 80 volts.
     fN  = 0.0;
     fT  = 300.0;
+    SetGeVToCharge();
 }
 //______________________________________________________________________
-Double_t AliITSresponse::MobilityElectronSiEmp(){
+Double_t AliITSresponse::MobilityElectronSiEmp() const {
     // Computes the electron mobility in cm^2/volt-sec. Taken from SILVACO
     // International ATLAS II, 2D Device Simulation Framework, User Manual 
     // Chapter 5 Equation 5-6. An empirical function for low-field mobiliity 
@@ -59,7 +78,7 @@ Double_t AliITSresponse::MobilityElectronSiEmp(){
     return m;
 }
 //______________________________________________________________________
-Double_t AliITSresponse::MobilityHoleSiEmp(){
+Double_t AliITSresponse::MobilityHoleSiEmp() const {
     // Computes the Hole mobility in cm^2/volt-sec. Taken from SILVACO
     // International ATLAS II, 2D Device Simulation Framework, User Manual 
     // Chapter 5 Equation 5-7 An empirical function for low-field mobiliity 
@@ -93,7 +112,7 @@ Double_t AliITSresponse::MobilityHoleSiEmp(){
     return m;
 }
 //______________________________________________________________________
-Double_t AliITSresponse::DiffusionCoefficientElectron(){
+Double_t AliITSresponse::DiffusionCoefficientElectron() const {
     // Computes the Diffusion coefficient for electrons in cm^2/sec. Taken 
     // from SILVACO International ATLAS II, 2D Device Simulation Framework, 
     // User Manual Chapter 5 Equation 5-53. Einstein relations for diffusion 
@@ -114,7 +133,7 @@ Double_t AliITSresponse::DiffusionCoefficientElectron(){
     return m*kbqe*T;  // [cm^2/sec]
 }
 //______________________________________________________________________
-Double_t AliITSresponse::DiffusionCoefficientHole(){
+Double_t AliITSresponse::DiffusionCoefficientHole() const {
     // Computes the Diffusion coefficient for Holes in cm^2/sec. Taken 
     // from SILVACO International ATLAS II, 2D Device Simulation Framework, 
     // User Manual Chapter 5 Equation 5-53. Einstein relations for diffusion 
@@ -136,7 +155,7 @@ Double_t AliITSresponse::DiffusionCoefficientHole(){
     return m*kbqe*T;  // [cm^2/sec]
 }
 //______________________________________________________________________
-Double_t AliITSresponse::SpeedElectron(){
+Double_t AliITSresponse::SpeedElectron() const {
     // Computes the average speed for electrons in Si under the low-field 
     // approximation. [cm/sec].
     // Inputs:
@@ -151,7 +170,7 @@ Double_t AliITSresponse::SpeedElectron(){
     return m/fdv;  // [cm/sec]
 }
 //______________________________________________________________________
-Double_t AliITSresponse::SpeedHole(){
+Double_t AliITSresponse::SpeedHole() const {
     // Computes the average speed for Holes in Si under the low-field 
     // approximation.[cm/sec].
     // Inputs:
@@ -166,14 +185,14 @@ Double_t AliITSresponse::SpeedHole(){
     return m/fdv;  // [cm/sec]
 }
 //______________________________________________________________________
-Double_t AliITSresponse::SigmaDiffusion3D(Double_t l){
-    // Returns the Gaussian sigma^2 == <x^2+y^2+z^2> [cm^2] due to the defusion 
-    // of electrons or holes through a distance l [cm] caused by an applied
-    // voltage v [volt] through a distance d [cm] in any material at a
-    // temperature T [degree K]. The sigma diffusion when expressed in terms
-    // of the distance over which the diffusion occures, l=time/speed, is 
-    // independent of the mobility and therefore the properties of the
-    // material. The charge distributions is given by 
+Double_t AliITSresponse::SigmaDiffusion3D(Double_t l) const {
+    // Returns the Gaussian sigma^2 == <x^2+y^2+z^2> [cm^2] due to the
+    // defusion of electrons or holes through a distance l [cm] caused 
+    // by an applied voltage v [volt] through a distance d [cm] in any
+    //  material at a temperature T [degree K]. The sigma diffusion when
+    //  expressed in terms of the distance over which the diffusion 
+    // occures, l=time/speed, is independent of the mobility and therefore
+    //  the properties of the material. The charge distributions is given by 
     // n = exp(-r^2/4Dt)/(4piDt)^1.5. From this <r^2> = 6Dt where D=mkT/e
     // (m==mobility, k==Boltzman's constant, T==temparature, e==electric 
     // charge. and vel=m*v/d. consiquently sigma^2=6kTdl/ev.
@@ -188,7 +207,7 @@ Double_t AliITSresponse::SigmaDiffusion3D(Double_t l){
     return TMath::Sqrt(con*fT*fdv*l);  // [cm]
 }
 //______________________________________________________________________
-Double_t AliITSresponse::SigmaDiffusion2D(Double_t l){
+Double_t AliITSresponse::SigmaDiffusion2D(Double_t l) const {
     // Returns the Gaussian sigma^2 == <x^2+z^2> [cm^2] due to the defusion 
     // of electrons or holes through a distance l [cm] caused by an applied
     // voltage v [volt] through a distance d [cm] in any material at a
@@ -210,7 +229,7 @@ Double_t AliITSresponse::SigmaDiffusion2D(Double_t l){
     return TMath::Sqrt(con*fT*fdv*l);  // [cm]
 }
 //______________________________________________________________________
-Double_t AliITSresponse::SigmaDiffusion1D(Double_t l){
+Double_t AliITSresponse::SigmaDiffusion1D(Double_t l) const {
     // Returns the Gaussian sigma^2 == <x^2> [cm^2] due to the defusion 
     // of electrons or holes through a distance l [cm] caused by an applied
     // voltage v [volt] through a distance d [cm] in any material at a
@@ -231,3 +250,73 @@ Double_t AliITSresponse::SigmaDiffusion1D(Double_t l){
 
     return TMath::Sqrt(con*fT*fdv*l);  // [cm]
 }
+//----------------------------------------------------------------------
+void AliITSresponse::Print(ostream *os){
+  // Standard output format for this class.
+  // Inputs:
+  //    ostream *os  Pointer to the output stream
+  // Outputs:
+  //    none:
+  // Return:
+  //    none.
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << fdv << " " << fN << " " << fT << " ";
+    *os << fGeVcharge;
+//    *os << " " << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//----------------------------------------------------------------------
+void AliITSresponse::Read(istream *is){
+  // Standard input format for this class.
+  // Inputs:
+  //    ostream *os  Pointer to the output stream
+  // Outputs:
+  //    none:
+  // Return:
+  //    none.
+
+    *is >> fdv >> fN >> fT >> fGeVcharge;
+    return;
+}
+//----------------------------------------------------------------------
+ostream &operator<<(ostream &os,AliITSresponse &p){
+  // Standard output streaming function.
+  // Inputs:
+  //    ostream *os  Pointer to the output stream
+  // Outputs:
+  //    none:
+  // Return:
+  //    none.
+
+    p.Print(&os);
+    return os;
+}
+//----------------------------------------------------------------------
+istream &operator>>(istream &is,AliITSresponse &r){
+  // Standard input streaming function.
+  // Inputs:
+  //    ostream *os  Pointer to the output stream
+  // Outputs:
+  //    none:
+  // Return:
+  //    none.
+
+    r.Read(&is);
+    return is;
+}
+//----------------------------------------------------------------------
