@@ -284,15 +284,16 @@ Bool_t AliL3Track::CalculateEdgePoint(Double_t angle){
   //inside the TPC modules
   Bool_t ok0 = kFALSE;
   Bool_t ok1 = kFALSE;
+
   if(r0>rmin&&r0<rmax){
     Double_t da=atan2(y0,x0);
-    if(da<0) da+=pi;
+    if(da<0) da+=2*pi;
     if(fabs(da-angle)<0.5)
       ok0 = kTRUE;
   }
   if(r1>rmin&&r1<rmax){
-    Double_t da=atan2(y1,y1);
-    if(da<0) da+=pi;
+    Double_t da=atan2(y1,x1);
+    if(da<0) da+=2*pi;
     if(fabs(da-angle)<0.5)
       ok1 = kTRUE;
   }
