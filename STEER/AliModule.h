@@ -96,10 +96,6 @@ public:
   virtual void        SDigits2Digits() {}
   virtual void        Hits2Digits() {}
   virtual void        Digits2Reco() {}
-  virtual void        Reconstruct() const {}
-  virtual AliVertexer* CreateVertexer() const {return NULL;}
-  virtual AliTracker* CreateTracker() const {return NULL;}
-  virtual void        FillESD(AliESD* /*esd*/) const {}
   virtual void        Digits2Raw();
   virtual void        Raw2Digits() {}
   virtual void        Browse(TBrowser *) {}
