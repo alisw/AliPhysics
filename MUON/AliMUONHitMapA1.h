@@ -49,7 +49,7 @@ public AliMUONHitMap
     TObjArray *fDigits;                   // Pointer to digits
     Int_t fNdigits;                       // Number of digits
     Int_t fMaxIndex;                      // maximum index in hit map
-    Int_t *fHitMap;                       // [fMaxIndex]         
+    Int_t *fHitMap;                       // ! [fMaxIndex]         
 
     ClassDef(AliMUONHitMapA1,1) // Implements HitMap as a 1-dim array
 };
