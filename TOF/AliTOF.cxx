@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/09/27 10:39:20  vicinanz
+SDigitizer and Merger added
+
 Revision 1.25  2001/09/07 08:37:40  hristov
 Pointers initialised to 0 in the default constructor
 
@@ -863,14 +866,12 @@ Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
 // This procedure has to be optimized in the next TOF release.
 //
 
-//        Bool_t overlap = 0;
         Bool_t overlap = kFALSE;
         Int_t  vol2[5];
 
         for (Int_t ndig=0; ndig<fSDigits->GetEntries(); ndig++){
 	   AliTOFdigit* currentDigit = (AliTOFdigit*)(fSDigits->UncheckedAt(ndig));
            currentDigit->GetLocation(vol2);
-//           Bool_t idem=1;
            Bool_t idem= kTRUE;
 	   // check on digit volume
            for (Int_t i=0;i<=4;i++){
@@ -896,11 +897,10 @@ Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
 		   currentDigit->SetAdc(digit[1]);
 		  }
                   currentDigit->AddTrack(Track); // add track number in the track array
-//		  cout << "found overlap" << endl;
-//                  overlap = 1;
                   overlap = kTRUE;
-
-              } // if (TMath:: ...)
+		  return overlap;
+              } else 
+		overlap= kFALSE;
 
            } // close if (idem) -> two digits on the same TOF pad
 

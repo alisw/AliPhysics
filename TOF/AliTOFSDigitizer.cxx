@@ -168,7 +168,7 @@ void AliTOFSDigitizer::Exec(Option_t *option) {
 	        if(!overlap) 
 		  //			new ((*fSDigits)[nSdigits++]) AliTOFdigit(tracks, vol, digit);
 		  TOF->AddSDigit(tracks, vol, digit);
-     		cout << "nSdigits" << endl; 
+//		printf("Sect. %d, Plate %d, PadX %d, PadZ %d, Strip %d, Tdc %f",vol[0],vol[1],vol[2],vol[3],vol[5],digit[0]);
 	        } // end loop on hits for the current track
 
 	     } // end loop on ntracks
