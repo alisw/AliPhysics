@@ -120,6 +120,7 @@
 #pragma link C++ class  AliITSclusterSSD+;
 #pragma link C++ class  AliITSpackageSSD+;
 #pragma link C++ class  AliITSPid+;
+#pragma link C++ class  AliITSpidESD+;
 #pragma link C++ class  AliITStrackV2Pid+;
 // Classes used for Tracking
 #pragma link C++ class  AliITSTrackV1+;

@@ -22,6 +22,8 @@ public:
   Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
   void SetIntegratedLength(Double_t l) {fTrackLength=l;}
   void SetIntegratedTimes(const Double_t *times);
+  void SetESDpid(const Double_t *p);
+  void GetESDpid(Double_t *p) const;
   
   ULong_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
@@ -35,17 +37,22 @@ public:
   void GetPxPyPz(Double_t *p) const;
   void GetXYZ(Double_t *r) const;
 
+  void SetTPCpid(const Double_t *p);
+  void GetTPCpid(Double_t *p) const;
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Int_t GetTPCclusters(UInt_t *idx) const;
 
+  void SetITSpid(const Double_t *p) {;}
+  void GetITSpid(Double_t *p) const {;}
   Float_t GetITSsignal() const {return fITSsignal;}
   Int_t GetITSclusters(UInt_t *idx) const;
 
   enum {
-    kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSPID=0x0008,
-    kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCPID=0x0080,
-    kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDPID=0x0800,
-    kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFPID=0x8000,
+    kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
+    kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
+    kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
+    kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
+    kESDpid=0x40000000,
     kTIME=0x80000000
   }; 
   enum {kSPECIES=5}; // Number of particle species recognized by the PID
@@ -84,7 +91,7 @@ protected:
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
   UInt_t  fTPCindex[180];  //! indices of the assigned TPC clusters
   Float_t fTPCsignal;      // detector's PID signal
-  Float_t fTPCr[kSPECIES]; //! "detector response probabilities" (for the PID)
+  Float_t fTPCr[kSPECIES]; // "detector response probabilities" (for the PID)
 
   // TRD related track information
   // TOF related track information

@@ -82,6 +82,7 @@
 #pragma link C++ class  AliTPCKalmanSegment+;
 
 #pragma link C++ class  AliTPCPid+;
+#pragma link C++ class  AliTPCpidESD+;
 #pragma link C++ class  AliTPCtrackPid+;
 
 

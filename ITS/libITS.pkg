@@ -44,7 +44,7 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 	        AliITSFindClustersV2.cxx \
 	        AliITSRiemannFit.cxx \
 		AliITSFDigitizer.cxx \
-		AliITSDDLRawData.cxx
+		AliITSDDLRawData.cxx AliITSpidESD.cxx
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)

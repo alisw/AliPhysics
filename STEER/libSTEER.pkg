@@ -16,7 +16,7 @@ AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
 AliGausCorr.cxx AliTrackReference.cxx AliESD.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx AliBarrelTrack.cxx \
-AliESDtrack.cxx AliESDvertex.cxx
+AliESDtrack.cxx AliESDvertex.cxx AliESDpid.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

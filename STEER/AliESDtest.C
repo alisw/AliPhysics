@@ -17,10 +17,13 @@
   #include "TStopwatch.h"
 
   #include "AliESD.h"
+  #include "AliESDpid.h"
+  #include "AliTPCpidESD.h"
   #include "AliTPCParam.h"
   #include "AliTPCtracker.h"
   #include "AliITSgeom.h"
   #include "AliITStrackerV2.h"
+  #include "AliITSpidESD.h"
 #endif
 
 Int_t AliESDtest(Int_t nev=1) { 
@@ -36,6 +39,9 @@ Int_t AliESDtest(Int_t nev=1) {
    //An instance of the TPC tracker
    AliTPCtracker tpcTracker(par);
 
+   //An instance of the TPC PID maker
+   Double_t parTPC[]={47.,0.1,3.};
+   AliTPCpidESD tpcPID(parTPC);
 
    //File with the ITS clusters
    TFile *itscf=TFile::Open("AliITSclustersV2.root");
@@ -48,7 +54,11 @@ Int_t AliESDtest(Int_t nev=1) {
 
    //An instance of the ITS tracker
    AliITStrackerV2 itsTracker(geom);
-
+   
+   //An instance of the ITS PID maker
+   Double_t parITS[]={34.,0.12,3.};
+   AliITSpidESD itsPID(parITS);
+   
    TFile *ef=TFile::Open("AliESDs.root","new");
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
 
@@ -71,9 +81,14 @@ Int_t AliESDtest(Int_t nev=1) {
 
      rc+=itsTracker.PropagateBack(event); 
      itsTracker.UnloadClusters();
+     itsPID.MakePID(event);
      
      rc+=tpcTracker.PropagateBack(event);
      tpcTracker.UnloadClusters();
+     tpcPID.MakePID(event);
+
+    //Here is the combined PID
+     AliESDpid::MakePID(event);
 
      if (rc==0) {
         Char_t ename[100]; 

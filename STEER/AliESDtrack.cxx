@@ -168,3 +168,26 @@ Int_t AliESDtrack::GetTPCclusters(UInt_t *idx) const {
   for (Int_t i=0; i<fTPCncls; i++) idx[i]=fTPCindex[i];
   return fTPCncls;
 }
+
+//_______________________________________________________________________
+void AliESDtrack::SetTPCpid(const Double_t *p) {  
+  for (Int_t i=0; i<kSPECIES; i++) fTPCr[i]=p[i];
+  SetStatus(AliESDtrack::kTPCpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetTPCpid(Double_t *p) const {
+  for (Int_t i=0; i<kSPECIES; i++) p[i]=fTPCr[i];
+}
+
+//_______________________________________________________________________
+void AliESDtrack::SetESDpid(const Double_t *p) {  
+  for (Int_t i=0; i<kSPECIES; i++) fR[i]=p[i];
+  SetStatus(AliESDtrack::kESDpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetESDpid(Double_t *p) const {
+  for (Int_t i=0; i<kSPECIES; i++) p[i]=fR[i];
+}
+
