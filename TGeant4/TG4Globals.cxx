@@ -38,3 +38,22 @@ void TG4Globals::Warning(const char* string)
   {  G4cerr  << "    " << string << G4endl; }
   G4cerr << "+++++++++++++++++++++++" << G4endl;   
 }
+
+void TG4Globals::AppendNumberToString(G4String& s, G4int a)
+{
+// Appends number to string.
+// ---
+
+  const char* kpNumber="0123456789";
+  G4String p=""; G4String q="";
+  do 
+  {
+    G4int b=a/10;
+    G4int c=a%10;
+    p=kpNumber[c];
+    q=p.append(q);
+    a=b;        
+  } while (a>0);
+  s.append(q);
+}
+
