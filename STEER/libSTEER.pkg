@@ -19,13 +19,13 @@ AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliReconstructor.cxx \
-AliDetectorEventHeader.cxx
+AliDetectorEventHeader.cxx 
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= STEERLinkDef.h
 
-EINCLUDE:=RAW
+EINCLUDE:=$(ALICE)/geant3/TGeant3 RAW
 
 EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h
 
