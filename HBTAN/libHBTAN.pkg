@@ -1,22 +1,15 @@
 SRCS          =       AliHBTWeights.cxx AliHBTCrab.cxx AliHBTAnalysis.cxx  \
-AliHBTReader.cxx      AliHBTReaderKineTree.cxx \
-AliHBTReaderESD.cxx   AliHBTReaderInternal.cxx \
-AliHBTReaderTPC.cxx   \
-AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx    \
-AliHBTParticle.cxx    AliHBTParticleCut.cxx \
 AliHBTPair.cxx       \
-AliHBTEvent.cxx       AliHBTRun.cxx \
 AliHBTFunction.cxx    AliHBTCorrelFctn.cxx  \
 AliHBTMonitorFunction.cxx       AliHBTTwoTrackEffFctn.cxx \
 AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx \
 AliHBTMonDistributionFctns.cxx  AliHBTMonResolutionFctns.cxx \
 AliHBTLLWeights.cxx             AliHBTWeightFctn.cxx \
 AliHBTWeightsPID.cxx            AliHBTWeightTheorFctn.cxx \
-AliHBTPositionRandomizer.cxx    AliHBTEventBuffer.cxx \
-AliHBTCorrFitFctn.cxx \
-AliHBTCorrectQInvCorrelFctn.cxx AliHBTCorrectOSLCorrelFctn.cxx \
-AliHBTTrackPoints.cxx AliHBTClusterMap.cxx \
-AliHBTPIDPurityFctns.cxx
+AliHBTPositionRandomizer.cxx    \
+AliHBTCorrFitFctn.cxx AliHBTPIDPurityFctns.cxx \
+AliHBTCorrectQInvCorrelFctn.cxx AliHBTCorrectOSLCorrelFctn.cxx 
+
 
 FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 

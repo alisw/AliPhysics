@@ -5,11 +5,7 @@
 #pragma link off all functions;
  
 #pragma link C++ class AliHBTAnalysis+;
-#pragma link C++ class AliHBTParticle+;
 #pragma link C++ class AliHBTPair+;
-#pragma link C++ class AliHBTEvent+;
-#pragma link C++ class AliHBTRun+;
-#pragma link C++ class AliHBTEventBuffer+;
 #pragma link C++ class AliHBTFunction+;
 #pragma link C++ class AliHBTMonitorFunction+;
 
@@ -37,39 +33,6 @@
 #pragma link C++ class AliHBTMonTwoParticleFctn2D+;
 #pragma link C++ class AliHBTMonTwoParticleFctn3D+;
 
-#pragma link C++ class AliHBTParticleCut-;
-#pragma link C++ class AliHBTEmptyParticleCut-;
-#pragma link C++ class AliHbtBaseCut+;
-
-#pragma link C++ class AliHBTMomentumCut+;
-#pragma link C++ class AliHBTPtCut+;
-#pragma link C++ class AliHBTEnergyCut+;
-#pragma link C++ class AliHBTRapidityCut+;
-#pragma link C++ class AliHBTPseudoRapidityCut+;
-#pragma link C++ class AliHBTPxCut+;
-#pragma link C++ class AliHBTPyCut+;
-#pragma link C++ class AliHBTPzCut+;
-#pragma link C++ class AliHBTPhiCut+;
-#pragma link C++ class AliHBTThetaCut+;
-#pragma link C++ class AliHBTVxCut+;
-#pragma link C++ class AliHBTVyCut+;
-#pragma link C++ class AliHBTVzCut+;
-#pragma link C++ class AliHBTPIDCut+;
-#pragma link C++ class AliHBTLogicalOperCut-;
-#pragma link C++ class AliHBTAndCut+;
-#pragma link C++ class AliHBTOrCut+;
-
-#pragma link C++ class AliHBTReader+;
-#pragma link C++ class AliHBTReaderESD+;
-#pragma link C++ class AliHBTReaderTPC+;
-#pragma link C++ class AliHBTReaderITSv1+;
-#pragma link C++ class AliHBTReaderITSv2+;
-#pragma link C++ class AliHBTReaderKineTree+;
-#pragma link C++ class AliHBTReaderInternal+;
-
-#pragma link C++ class AliHBTTrackPoints+;
-#pragma link C++ class AliHBTClusterMap+;
-    
 #pragma link C++ class AliHBTQInvCorrelFctn+;
 #pragma link C++ class AliHBTOutSideLongFctn+;
 #pragma link C++ class AliHBTTwoKStarCorrelFctn+;
