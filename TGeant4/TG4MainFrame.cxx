@@ -173,11 +173,14 @@ Bool_t TG4MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
    Int_t buttons;
 //===================================================================
 //----->Editor window text
-const char *editortxt =
-"This is a to-be AG4 Geometry Browser. \n"
-"The volumes drawing coming soon.\n" ;
-
-
+G4String editortxt =
+"\n**********************************************"
+"\n**********************************************"
+"\nWelcome to ALICE Geant4 Geometry Browser. \n"
+"Clicking with the right button on a volume icon\n" 
+"will produce the volume's image. "
+"\n\n**********************************************"
+"\n**********************************************";
 //=================================================================
 //----->Process messages from widgets
     switch (GET_MSG(msg)) {
@@ -254,12 +257,32 @@ const char *editortxt =
 		      break;
 		      
 		    case 200:
-		      fmaterialsFrames->DisplayMaterialCharacteristics();
+		      fmaterialsFrames->DisplayMaterialCharacteristics( 0 );
 		      break;
 		     
                     default:
                       break;
                };
+	       
+	   case kCM_BUTTON:
+	       switch(parm1) {
+	       
+	           case 301:
+		     cout << "\n User Limits Summary button pressed " << endl;    
+                     fvolumesFrames->DisplayUserLimits();
+	             break;
+		     
+		   case 302:
+		      cout << "\n Cuts button pressed " << endl;
+		      break;
+		      
+		   case 303:
+		      cout << "\n Controls button pressed " << endl;
+		      break;
+		      
+		   default:
+		      break;
+	       };
 	       
             default:
                break;

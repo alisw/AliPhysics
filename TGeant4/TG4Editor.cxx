@@ -43,8 +43,8 @@ TG4Editor::TG4Editor(const TGWindow* main, UInt_t w, UInt_t h) :
    Window_t wdum;
    int ax, ay;
    gVirtualX->TranslateCoordinates(main->GetId(), GetParent()->GetId(),
-                          ((TGFrame *) main)->GetWidth() - (fWidth >> 1),
-                          (((TGFrame *) main)->GetHeight() - fHeight) >> 1,
+                          (((TGFrame *) main)->GetWidth() - fWidth) >> 1,
+                          ((TGFrame *) main)->GetHeight() - (fHeight >> 1),
                           ax, ay, wdum);
    Move(ax, ay);
    SetWMPosition(ax, ay);
@@ -81,15 +81,15 @@ TG4Editor::~TG4Editor()
 }
 
 void TG4Editor::SetTitle()
-{
-   // Set title in editor window.
+{   
+// Set title in editor window.
 
    TGText* txt = GetEditor()->GetText();
    Bool_t untitled = !strlen(txt->GetFileName()) ? kTRUE : kFALSE;
 
    char title[256];
    if (untitled)
-      sprintf(title, "Status Report");
+      sprintf(title, "Message Display");
    else
       sprintf(title, "Editor - %s", txt->GetFileName());
 
@@ -102,6 +102,7 @@ void TG4Editor::Popup()
    // Show editor.
 
    MapWindow();
+   fClient->WaitFor(this);
 }
 
 void TG4Editor::LoadBuffer(const char* buffer) 
