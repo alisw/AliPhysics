@@ -25,48 +25,48 @@ public:
   void Finish        ();
 
   // Setters for COMMON /GGINI/
-  void SetIPROC    (const Int_t   iproc   );
-  void SetNEVENT   (const Int_t   nevent  );
-  void SetILUMF    (const Int_t   ilumf   );
-  void SetLUMFIL   (const TString lumfil  );
-  void SetEBMN     (const Float_t ebmn    );
-  void SetIZ       (const Int_t   iz      );
-  void SetIA       (const Int_t   ia      );
-  void SetAMAS     (const Float_t amas    );
-  void SetAMIN     (const Float_t amin    );
-  void SetAMAX     (const Float_t amax    );
-  void SetYMIN     (const Float_t ymin    );
-  void SetYMAX     (const Float_t ymax    );
-  void SetNMAS     (const Int_t   nmas    );
-  void SetNY       (const Int_t   ny      );
-  void SetKFERM    (const Int_t   kferm   );
-  void SetKFONIUM  (const Int_t   kfonium );
-  void SetXMRES    (const Float_t xmres   );
-  void SetXGTRES   (const Float_t xgtres  );
-  void SetXGGRES   (const Float_t xggres  );
-  void SetMODDCY   (const Int_t   moddcy  );
-  void SetTHETAMIN (const Float_t thetamin);
-  void SetKV1      (const Int_t   kv1     );
-  void SetKV2      (const Int_t   kv2     );
+  void SetIPROC    (Int_t   iproc   );
+  void SetNEVENT   (Int_t   nevent  );
+  void SetILUMF    (Int_t   ilumf   );
+  void SetLUMFIL   (TString lumfil  );
+  void SetEBMN     (Float_t ebmn    );
+  void SetIZ       (Int_t   iz      );
+  void SetIA       (Int_t   ia      );
+  void SetAMAS     (Float_t amas    );
+  void SetAMIN     (Float_t amin    );
+  void SetAMAX     (Float_t amax    );
+  void SetYMIN     (Float_t ymin    );
+  void SetYMAX     (Float_t ymax    );
+  void SetNMAS     (Int_t   nmas    );
+  void SetNY       (Int_t   ny      );
+  void SetKFERM    (Int_t   kferm   );
+  void SetKFONIUM  (Int_t   kfonium );
+  void SetXMRES    (Float_t xmres   );
+  void SetXGTRES   (Float_t xgtres  );
+  void SetXGGRES   (Float_t xggres  );
+  void SetMODDCY   (Int_t   moddcy  );
+  void SetTHETAMIN (Float_t thetamin);
+  void SetKV1      (Int_t   kv1     );
+  void SetKV2      (Int_t   kv2     );
 
   // Getters for COMMON /GGEVNT/
-  Float_t GetWSQ  ()             ;
-  Float_t GetYGG  ()             ;
-  Float_t GetXMG1 ()             ;
-  Float_t GetXMG2 ()             ;
-  Float_t GetP2G  (const Int_t i);
-  Float_t GetPTAG1(const Int_t i);
-  Float_t GetPTAG2(const Int_t i);
-  Int_t   GetNGG  ()             ;
-  Int_t   GetKGG  (const Int_t i);
-  Float_t GetPGG  (const Int_t i, const Int_t j);
+  Float_t GetWSQ  () const;
+  Float_t GetYGG  () const;
+  Float_t GetXMG1 () const;
+  Float_t GetXMG2 () const;
+  Float_t GetP2G  (Int_t i) const;
+  Float_t GetPTAG1(Int_t i) const;
+  Float_t GetPTAG2(Int_t i) const;
+  Int_t   GetNGG  () const;
+  Int_t   GetKGG  (Int_t i) const;
+  Float_t GetPGG  (Int_t i, Int_t j) const;
 
   // Getters for COMMON /GGXS/
-  Float_t GetXSMAX0()            ;
-  Float_t GetXSCUR0()            ;
-  Float_t GetXSCUR ()            ;
-  Float_t GetXSTOT ()            ;
-  Float_t GetXSTOTE()            ;
+  Float_t GetXSMAX0() const;
+  Float_t GetXSCUR0() const;
+  Float_t GetXSCUR () const;
+  Float_t GetXSTOT () const;
+  Float_t GetXSTOTE() const;
 
   ClassDef(TPHICgen,1)  //Interface to TPHIC Event Generator
 };
