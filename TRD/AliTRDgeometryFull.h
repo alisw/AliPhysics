@@ -22,7 +22,7 @@ class AliTRDgeometryFull : public AliTRDgeometry {
           void    SetRICHhole()       { fRICHhole = kTRUE; };
 
           void    SetNRowPad();
-  virtual void    SetNRowPad(Int_t p, Int_t c, Int_t npad);
+  virtual void    SetNRowPad(const Int_t p, const Int_t c, const Int_t npad);
 
           Bool_t  GetPHOShole() const { return fPHOShole;  };
           Bool_t  GetRICHhole() const { return fRICHhole;  };

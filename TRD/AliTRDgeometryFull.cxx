@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/02/14 18:22:26  cblume
+Change in the geometry of the padplane
+
 Revision 1.5  2000/11/01 14:53:21  cblume
 Merge with TRD-develop
 
@@ -161,7 +164,7 @@ void AliTRDgeometryFull::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometryFull::SetNRowPad(Int_t p, Int_t c, Int_t npad)
+void AliTRDgeometryFull::SetNRowPad(const Int_t p, const Int_t c, const Int_t npad)
 {
   //
   // Redefines the number of pads in raw direction for

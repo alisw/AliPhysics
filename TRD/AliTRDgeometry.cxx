@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/05/07 08:08:05  cblume
+Update of TRD code
+
 Revision 1.9  2001/03/27 12:48:33  cblume
 Correct for volume overlaps
 
@@ -534,7 +537,7 @@ Bool_t AliTRDgeometry::RotateBack(Int_t d, Float_t *rot, Float_t *pos) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetDetector(Int_t p, Int_t c, Int_t s) const
+Int_t AliTRDgeometry::GetDetector(const Int_t p, const Int_t c, const Int_t s) const
 {
   //
   // Convert plane / chamber / sector into detector number
@@ -545,7 +548,7 @@ Int_t AliTRDgeometry::GetDetector(Int_t p, Int_t c, Int_t s) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetPlane(Int_t d) const
+Int_t AliTRDgeometry::GetPlane(const Int_t d) const
 {
   //
   // Reconstruct the plane number from the detector number
@@ -556,7 +559,7 @@ Int_t AliTRDgeometry::GetPlane(Int_t d) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetChamber(Int_t d) const
+Int_t AliTRDgeometry::GetChamber(const Int_t d) const
 {
   //
   // Reconstruct the chamber number from the detector number
@@ -567,7 +570,7 @@ Int_t AliTRDgeometry::GetChamber(Int_t d) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetSector(Int_t d) const
+Int_t AliTRDgeometry::GetSector(const Int_t d) const
 {
   //
   // Reconstruct the sector number from the detector number
