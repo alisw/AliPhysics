@@ -118,6 +118,8 @@ private:
   AliTracker*    fTRDTracker;         //! tracker for TRD
   AliLoader*     fTOFLoader;          //! loader for TOF
   AliTracker*    fTOFTracker;         //! tracker for TOF
+  AliLoader*     fRICHLoader;         //! loader for RICH
+  AliTracker*    fRICHTracker;        //! tracker for RICH
 
   static const Int_t fgkNDetectors = 15;   //! number of detectors
   static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors

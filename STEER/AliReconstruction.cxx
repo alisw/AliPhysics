@@ -138,6 +138,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fTRDTracker(NULL),
   fTOFLoader(NULL),
   fTOFTracker(NULL),
+  fRICHLoader(NULL),
+  fRICHTracker(NULL),
 
   fReconstructors(),
   fOptions()
@@ -170,6 +172,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fTRDTracker(NULL),
   fTOFLoader(NULL),
   fTOFTracker(NULL),
+  fRICHLoader(NULL),
+  fRICHTracker(NULL),
 
   fReconstructors(),
   fOptions()
@@ -592,6 +596,27 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
 	if (fCheckPointLevel > 1) WriteESD(esd, "TOF.back");
 	fTOFTracker->UnloadClusters();
 	fTOFLoader->UnloadDigits();
+
+	if (!fRICHTracker) {
+	  AliWarning("no RICH tracker");
+	} else {
+	  // RICH back propagation
+	  AliDebug(1, "RICH back propagation");
+	  fRICHLoader->LoadRecPoints("read");
+	  TTree* richTree = fRICHLoader->TreeR();
+	  if (!richTree) {
+	    AliError("Can't get the RICH cluster tree");
+	    return kFALSE;
+	  }
+	  fRICHTracker->LoadClusters(richTree);
+	  if (fRICHTracker->PropagateBack(esd) != 0) {
+	    AliError("RICH backward propagation failed");
+	    return kFALSE;
+	  }
+	  if (fCheckPointLevel > 1) WriteESD(esd, "RICH.back");
+	  fRICHTracker->UnloadClusters();
+	  fRICHLoader->UnloadRecPoints();
+	}
       }
 
       // TRD inward refit
@@ -809,6 +834,22 @@ Bool_t AliReconstruction::CreateTrackers()
     }
   }
 
+  fRICHTracker = NULL;
+  fRICHLoader = fRunLoader->GetLoader("RICHLoader");
+  if (!fRICHLoader) {
+    AliWarning("no RICH loader found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    AliReconstructor* tofReconstructor = GetReconstructor("RICH");
+    if (tofReconstructor) {
+      fRICHTracker = tofReconstructor->CreateTracker(fRunLoader);
+    }
+    if (!fRICHTracker) {
+      AliWarning("couldn't create a tracker for RICH");
+      if (fStopOnError) return kFALSE;
+    }
+  }
+
   return kTRUE;
 }
 
@@ -829,6 +870,8 @@ void AliReconstruction::CleanUp(TFile* file)
   fTRDTracker = NULL;
   delete fTOFTracker;
   fTOFTracker = NULL;
+  delete fRICHTracker;
+  fRICHTracker = NULL;
 
   delete fRunLoader;
   fRunLoader = NULL;
