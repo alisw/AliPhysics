@@ -126,7 +126,9 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
     //const Float_t kpid=kesdtrack->GetPID();
     const Int_t knhits=kesdtrack->GetNHits();
     const Int_t kweight=kesdtrack->GetWeight();
-    if((fMinHits>0) && (knhits<fMinHits)) continue;
+    //cout << i << " " << kweight << " " << knhits << endl;
+    if((fMinHits>0) && (knhits<fMinHits)) continue;    
+    if(kweight>1000) continue; //avoid ghosts 
     if((fMinWeight>0) && (kweight<fMinWeight)) continue;
 
     const Float_t kpx=kesdtrack->GetPx();
