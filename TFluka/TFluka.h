@@ -125,12 +125,9 @@ class TFluka : public TVirtualMC {
   //
   
   // set methods
-  virtual void     SetCut(const char* cutName, Double_t cutValue)
-    {printf("WARNING: SetCut not yet implemented !\n");}
-  virtual void     SetProcess(const char* flagName, Int_t flagValue)
-    {printf("WARNING: SetProcess not yet implemented !\n");}
-  virtual Double_t Xsec(char*, Double_t, Int_t, Int_t)
-    {printf("WARNING: Xsec not yet implemented !\n"); return -1.;}
+  virtual void     SetProcess(const char* flagName, Int_t flagValue);
+  virtual void     SetCut(const char* cutName, Double_t cutValue);
+  virtual Double_t Xsec(char*, Double_t, Int_t, Int_t);
   
   // particle table usage         
   virtual Int_t   IdFromPDG(Int_t id) const;
@@ -181,7 +178,9 @@ class TFluka : public TVirtualMC {
   // tracking particle 
   // dynamic properties
   virtual void     TrackPosition(TLorentzVector& position) const;
+  virtual void     TrackPosition(Double_t& x, Double_t& y, Double_t& z) const;
   virtual void     TrackMomentum(TLorentzVector& momentum) const;
+  virtual void     TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e) const;
   virtual Double_t TrackStep() const;
   virtual Double_t TrackLength() const;
   virtual Double_t TrackTime() const;
@@ -246,6 +245,7 @@ class TFluka : public TVirtualMC {
   //
   
   virtual void Init();
+  virtual void InitPhysics();
   virtual void FinishGeometry();
   virtual void BuildPhysics();
   virtual void ProcessEvent();
@@ -256,22 +256,46 @@ class TFluka : public TVirtualMC {
   //New Getter and Setters
   // ------------------------------------------------
   //
+  // - Core input file name
+  TString GetCoreInputFileName() const {return sCoreInputFileName;}
+  void SetCoreInputFileName(const char* n) {sCoreInputFileName = n;}
+
   // - Input file name
-  TString GetInputFileName() const {return fInputFileName;}
-  void SetInputFileName(const char* n) {fInputFileName = n;}
+  TString GetInputFileName() const {return sInputFileName;}
+  void SetInputFileName(const char* n) {sInputFileName = n;}
+
+  // - SetProcess and SetCut
+  Int_t GetProcessNb() const {return iNbOfProc;}
+  void SetProcessNb(Int_t l) {iNbOfProc = l;}
+  Int_t GetCutNb() const {return iNbOfProc;}
+  void SetCutNb(Int_t l) {iNbOfCut = l;}
+
   // - Verbosity level
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
   void SetVerbosityLevel(Int_t l) {fVerbosityLevel = l;}
 
+  // - Fluka Draw procedures identifiers
+  // bxdraw = 1  inside
+  // bxdraw = 11 entering
+  // bxdraw = 12 exiting
+  // eedraw = 2
+  // endraw = 3
+  // mgdraw = 4
+  // sodraw = 5
+  // usdraw = 6
+  Int_t GetCaller() const {return iCaller;}
+  void SetCaller(Int_t l) {iCaller = l;}
+  
   // - Fluka Draw procedures formal parameters
-  Int_t GetIcode() const {return fIcode;}
-  void SetIcode(Int_t l) {fIcode = l;}
+  Int_t GetIcode() const {return iIcode;}
+  void SetIcode(Int_t l) {iIcode = l;}
+  // in the case of sodraw iIcode=0
 
   Int_t GetMreg() const {return fCurrentFlukaRegion;}
   void SetMreg(Int_t l) {fCurrentFlukaRegion = l;}
 
-  Int_t GetNewreg() const {return fNewreg;}
-  void SetNewreg(Int_t l) {fNewreg = l;}
+  Int_t GetNewreg() const {return iNewreg;}
+  void SetNewreg(Int_t l) {iNewreg = l;}
 
   Double_t GetRull() const {return fRull;}
   void SetRull(Double_t r) {fRull = r;}
@@ -305,16 +329,26 @@ class TFluka : public TVirtualMC {
  protected:
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
 
-  TString fInputFileName; //Name of the input file (f.e. mu.inp)
+  TString sInputFileName;     //Name of the real input file (e.g. alice.inp)
+  TString sCoreInputFileName; //Name of the input file (e.g. corealice.inp)
 
-  Int_t    fIcode;  //Fluka Draw procedures formal parameter 
-  Int_t    fNewreg; //Fluka Draw procedures formal parameter
+  Int_t    iCaller; //Parameter to indicate who is the caller of the Fluka Draw
+  Int_t    iIcode;  //Fluka Draw procedures formal parameter 
+  Int_t    iNewreg; //Fluka Draw procedures formal parameter
   Double_t fRull;   //Fluka Draw procedures formal parameter
   Double_t fXsco;   //Fluka Draw procedures formal parameter
   Double_t fYsco;   //Fluka Draw procedures formal parameter
   Double_t fZsco;   //Fluka Draw procedures formal parameter
   Bool_t   fTrackIsEntering;  // Flag for track entering
   Bool_t   fTrackIsExiting;   // Flag for track exiting  
+
+  //variables for SetProcess and SetCut
+  Int_t    iNbOfProc;
+  Int_t    iProcessValue[100];
+  Char_t   sProcessFlag[100][5];
+  Int_t    iNbOfCut;
+  Double_t fCutValue[100];
+  Char_t   sCutFlag[100][7];
 
 
   //Geometry through Geant4 for the time being!!!

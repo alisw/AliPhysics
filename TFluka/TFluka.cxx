@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2003/06/05 10:22:57  morsch
+All printout under verbosity level control.
+
 Revision 1.16  2003/03/26 13:30:35  morsch
 SetTrackIsExiting, SetTrackIsEntering, SetTrackIsInside added.
 
@@ -71,7 +74,7 @@ Call to gAlice->Generator()->Generate()
 
 Revision 1.1.2.4  2002/09/26 13:22:23  iglez2
 Naive implementation of ProcessRun and ProcessEvent
-Opening/Closing of input file (fInputFileName) with FORTRAN unit 5 before/after the first call to flukam inside Init()
+Opening/Closing of input file (sInputFileName) with FORTRAN unit 5 before/after the first call to flukam inside Init()
 
 Revision 1.1.2.3  2002/09/20 15:35:51  iglez2
 Modification of LFDRTR. Value is passed to FLUKA !!!
@@ -149,7 +152,7 @@ ClassImp(TFluka)
 TFluka::TFluka()
   :TVirtualMC(),
    fVerbosityLevel(0),
-   fInputFileName(""),
+   sInputFileName(""),
    fDetector(0),
    fCurrentFlukaRegion(-1)
 { 
@@ -161,7 +164,7 @@ TFluka::TFluka()
 TFluka::TFluka(const char *title, Int_t verbosity)
   :TVirtualMC("TFluka",title),
    fVerbosityLevel(verbosity),
-   fInputFileName(""),
+   sInputFileName(""),
    fTrackIsEntering(0),
    fTrackIsExiting(0),
    fDetector(0),
@@ -213,8 +216,13 @@ TFluka::~TFluka() {
 // TFluka control methods
 //____________________________________________________________________________ 
 void TFluka::Init() {
+
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::Init() called." << endl;
+
+    cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
+    InitPhysics(); // prepare input file
+    cout << "\t* InitPhysics() - Prepare input file called" << endl; 
 
   if (fVerbosityLevel >=2)
     cout << "\t* Changing lfdrtr = (" << (GLOBAL.lfdrtr?'T':'F')
@@ -222,8 +230,8 @@ void TFluka::Init() {
   GLOBAL.lfdrtr = true;
 
   if (fVerbosityLevel >=2)
-    cout << "\t* Opening file " << fInputFileName << endl;
-  const char* fname = fInputFileName;
+    cout << "\t* Opening file " << sInputFileName << endl;
+  const char* fname = sInputFileName;
   fluka_openinp(lunin, PASSCHARA(fname));
 
   if (fVerbosityLevel >=2)
@@ -231,13 +239,13 @@ void TFluka::Init() {
   flukam(1);
 
   if (fVerbosityLevel >=2)
-    cout << "\t* Closing file " << fInputFileName << endl;
+    cout << "\t* Closing file " << sInputFileName << endl;
   fluka_closeinp(lunin);
+
+  FinishGeometry();
 
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::Init() called." << endl;
-
-  FinishGeometry();
 
 }
 
@@ -519,6 +527,7 @@ Int_t TFluka::GetMedium() const {
 
 
 //____________________________________________________________________________ 
+// particle table usage
 // ID <--> PDG transformations
 //_____________________________________________________________________________
 Int_t TFluka::IdFromPDG(Int_t pdg) const 
@@ -560,6 +569,859 @@ Int_t TFluka::PDGFromId(Int_t id) const
 }
 
 //_____________________________________________________________________________
+// methods for physics management
+//____________________________________________________________________________ 
+//
+// set methods
+//
+
+void TFluka::SetProcess(const char* flagName, Int_t flagValue)
+{
+  Int_t i;
+  if (iNbOfProc < 100) {
+    for (i=0; i<iNbOfProc; i++) {
+      if (strcmp(&sProcessFlag[i][0],flagName) == 0) {
+        iProcessValue[iNbOfProc] = flagValue;
+	goto fin;
+      }
+    }
+    strcpy(&sProcessFlag[iNbOfProc][0],flagName);
+    iProcessValue[iNbOfProc++] = flagValue;
+  }
+  else
+    cout << "Nb of SetProcess calls exceeds 100 - ignored" << endl;
+fin:
+  iNbOfProc = iNbOfProc;
+}
+
+void TFluka::SetCut(const char* cutName, Double_t cutValue)
+{
+  Int_t i;
+  if (iNbOfCut < 100) {
+    for (i=0; i<iNbOfCut; i++) {
+      if (strcmp(&sCutFlag[i][0],cutName) == 0) {
+        fCutValue[iNbOfCut] = cutValue;
+	goto fin;
+      }
+    }
+    strcpy(&sCutFlag[iNbOfCut][0],cutName);
+    fCutValue[iNbOfCut++] = cutValue;
+  }
+  else
+    cout << "Nb of SetCut calls exceeds 100 - ignored" << endl;
+fin:
+  iNbOfCut = iNbOfCut;
+}
+
+Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
+{
+  printf("WARNING: Xsec not yet implemented !\n"); return -1.;
+}
+
+
+void TFluka::InitPhysics()
+{
+// Last material number taken from the "corealice.inp" file, presently 31
+// !!! it should be available from Flugg !!!
+  Float_t fLastMaterial = 31.0;
+  Float_t fLastRegion   = 692.;
+  
+// construct file names
+  TString sAliceInp = getenv("ALICE_ROOT");
+  sAliceInp +="/TFluka/input/";
+  TString sAliceCoreInp = sAliceInp;
+  sAliceInp += GetInputFileName();
+  sAliceCoreInp += GetCoreInputFileName();
+  ifstream AliceCoreInp(sAliceCoreInp.Data());
+  ofstream AliceInp(sAliceInp.Data());
+
+// copy core input file until (not included) START card
+  Char_t sLine[255];
+  Float_t fEventsPerRun;
+  while (AliceCoreInp.getline(sLine,255)) {
+    if (strncmp(sLine,"START",5) != 0)
+      AliceInp << sLine << endl;
+    else {
+      sscanf(sLine+10,"%10f",&fEventsPerRun);
+      goto fin;
+    }
+  } //end of while
+
+fin:
+// in G3 the process control values meaning can be different for
+// different processes, but for most of them is:
+//   0  process is not activated
+//   1  process is activated WITH generation of secondaries
+//   2  process is activated WITHOUT generation of secondaries
+// if process does not generate secondaries => 1 same as 2
+//
+// Exceptions:
+//   MULS:  also 3
+//   LOSS:  also 3, 4
+//   RAYL:  only 0,1
+//   HADR:  may be > 2
+//
+ 
+// Loop over number of SetProcess calls  
+  AliceInp << "*----------------------------------------------------------------------------- "; 
+  AliceInp << endl;
+  AliceInp << "*----- The following data are generated from SetProcess and SetCut calls ----- "; 
+  AliceInp << endl;
+  AliceInp << "*----------------------------------------------------------------------------- "; 
+    AliceInp << endl;
+  for (Int_t i=0; i<iNbOfProc; i++) {
+
+    // annihilation
+    // G3 default value: 1
+    // G4 processes: G4eplusAnnihilation/G4IeplusAnnihilation
+    // Particles: e+
+    // Physics:   EM
+    // gMC ->SetProcess("ANNI",1); // EMFCUT   -1.   0.  0. 3. lastmat 0. ANNH-THR
+    if ((strncmp(&sProcessFlag[i][0],"ANNI",4) == 0) && iProcessValue[i] == 1) {
+      AliceInp << "*Kinetic energy threshold (GeV) for e+ annihilation - resets to default=0."; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('ANNI',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << -1.0; // kinetic energy threshold (GeV) for e+ annihilation (resets to default=0)
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setw(10) << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;  // step length in assigning indices
+      AliceInp << setw(8)  << "ANNH-THR"; 
+      AliceInp << endl;
+    }
+    
+    // bremsstrahlung
+    // G3 default value: 1
+    // G4 processes: G4eBremsstrahlung/G4IeBremsstrahlung,
+    //               G4MuBremsstrahlung/G4IMuBremsstrahlung,
+    //               G4LowEnergyBremstrahlung
+    // Particles: e-/e+; mu+/mu-
+    // Physics:   EM
+    // gMC ->SetProcess("BREM",1); // PAIRBREM  2.   0.  0. 3. lastmat
+                                 // EMFCUT   -1.   0.  0. 3. lastmat 0. ELPO-THR
+    else if ((strncmp(&sProcessFlag[i][0],"BREM",4) == 0) && iProcessValue[i] == 1) {
+      AliceInp << "*Bremsstrahlung by muons and charged hadrons is activated"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('BREM',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PAIRBREM  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 2.0; // bremsstrahlung by muons and charged hadrons is activated
+      AliceInp << setw(10) << 0.0; // e+, e- kinetic energy threshold (in GeV) for explicit pair production. A value of 0.0 is meaningful.
+      AliceInp << setw(10) << 0.0; // no explicit bremsstrahlung production is simulated
+      AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setw(10) << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << endl;
+      // for e+ and e-
+      AliceInp << "*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0."; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('BREM',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << -1.0; // kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setw(10) << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0; // step length in assigning indices
+      AliceInp << setw(8)  << "ELPO-THR"; 
+      AliceInp << endl;
+    }
+    
+    // Compton scattering
+    // G3 default value: 1
+    // G4 processes: G4ComptonScattering,
+    //               G4LowEnergyCompton,
+    //               G4PolarizedComptonScattering
+    // Particles: gamma
+    //                                                                               // Physics:   EM
+    // gMC ->SetProcess("COMP",1); // EMFCUT   -1.   0.  0. 3. lastmat 0. PHOT-THR
+    else if ((strncmp(&sProcessFlag[i][0],"COMP",4) == 0) && iProcessValue[i] == 1) {
+      AliceInp << "*Energy threshold (GeV) for Compton scattering - resets to default=0."; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('COMP',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << -1.0; // energy threshold (GeV) for Compton scattering - resets to default=0.
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0; // step length in assigning indices
+      AliceInp << setw(8) << "PHOT-THR"; 
+      AliceInp << endl;
+    }
+
+    // decay
+    // G3 default value: 1
+    // G4 process: G4Decay
+    // 
+    // Particles: all which decay is applicable for
+    // Physics:   General
+    //gMC ->SetProcess("DCAY",1); // not available
+    else if ((strncmp(&sProcessFlag[i][0],"DCAY",4) == 0) && iProcessValue[i] == 1) 
+      cout << "SetProcess for flag=" << &sProcessFlag[i][0] << " value=" << iProcessValue[i] << " not avaliable!" << endl;
+      
+    // delta-ray
+    // G3 default value: 2
+    // !! G4 treats delta rays in different way
+    // G4 processes: G4eIonisation/G4IeIonization,
+    //               G4MuIonisation/G4IMuIonization,
+    //               G4hIonisation/G4IhIonisation
+    //                                                                               // Particles: charged
+    // Physics:   EM
+    // gMC ->SetProcess("DRAY",0); // DELTARAY 1.E+6 0.  0. 3. lastmat 0.
+    else if ((strncmp(&sProcessFlag[i][0],"DRAY",4) == 0) && iProcessValue[i] == 0) {
+      AliceInp << "*Kinetic energy threshold (GeV) for delta ray production"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('DRAY',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "DELTARAY  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << 1.0e+6; // kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0; // ignored
+      AliceInp << setw(10) << 0.0; // ignored
+      AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setw(10) << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0; // step length in assigning indices
+      AliceInp << endl;
+    }
+    
+    // muon nuclear interaction
+    // G3 default value: 0
+    // G4 processes: G4MuNuclearInteraction,
+    // G4MuonMinusCaptureAtRest
+    // 
+    // Particles: mu
+    // Physics:   Not set
+    // gMC ->SetProcess("MUNU",1); // MUPHOTON  1.   0.  0. 3. lastmat
+    else if ((strncmp(&sProcessFlag[i][0],"MUNU",4) == 0) && iProcessValue[i] == 1) {
+      AliceInp << "*Muon nuclear interactions with production of secondary hadrons"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('MUNU',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "MUPHOTON  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 1.0;  // full simulation of muon nuclear interactions and production of secondary hadrons
+      AliceInp << setw(10) << 0.0; // ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
+      AliceInp << setw(10) << 0.0; // fraction of rho-like interactions ( must be < 1) - Default = 0.75.
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;  // step length in assigning indices
+      AliceInp << endl;
+    }
+
+    // muon nuclear interaction
+    // G3 default value: 0
+    // G4 processes: G4MuNuclearInteraction,
+    // G4MuonMinusCaptureAtRest
+    // 
+    // Particles: mu
+    // Physics:   Not set
+    // gMC ->SetProcess("MUNU",1); // MUPHOTON  1.   0.  0. 3. lastmat
+    else if ((strncmp(&sProcessFlag[i][0],"MUNU",4) == 0) && iProcessValue[i] == 2) {
+      AliceInp << "*Muon nuclear interactions without production of secondary hadrons"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('MUNU',2);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "MUPHOTON  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 2.0; // full simulation of muon nuclear interactions and production of secondary hadrons
+      AliceInp << setw(10) << 0.0; // ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
+      AliceInp << setw(10) << 0.0; // fraction of rho-like interactions ( must be < 1) - Default = 0.75.
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;  // step length in assigning indices
+      AliceInp << endl;
+    }
+
+  // pair production
+    // G3 default value: 1
+    // G4 processes: G4GammaConversion,
+    //               G4MuPairProduction/G4IMuPairProduction
+    //               G4LowEnergyGammaConversion
+    // Particles: gamma, mu
+    // Physics:   EM
+  // gMC ->SetProcess("PAIR",1); // PAIRBREM  1.   0.  0. 3. lastmat
+                                 // EMFCUT    0.   0. -1. 3. lastmat 0. PHOT-THR
+    else if ((strncmp(&sProcessFlag[i][0],"PAIR",4) == 0) && iProcessValue[i] == 1) {
+      AliceInp << "*Pair production by muons and charged hadrons is activated"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('PAIR',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PAIRBREM  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 1.0; // pair production by muons and charged hadrons is activated
+      AliceInp << setw(10) << 0.0; // e+, e- kinetic energy threshold (in GeV) for explicit pair production.
+      AliceInp << setw(10) << 0.0; // no explicit bremsstrahlung production is simulated
+      AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << endl;
+      // for e+ and e-
+      AliceInp << "*Pair production by electrons is activated"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('PAIR',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;  // ignored
+      AliceInp << setw(10) << 0.0;  // ignored
+      AliceInp << setw(10) << -1.0; // resets to default=0.
+      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;  // step length in assigning indices
+      AliceInp << setw(8) << "PHOT-THR"; 
+      AliceInp << endl;
+    }
+
+    // photofission
+    // G3 default value: 0
+    // G4 process: ??
+    //
+    // Particles: gamma
+    // Physics:   ??
+    // gMC ->SetProcess("PFIS",0); // PHOTONUC -1.   0.  0. 3. lastmat 0.
+    else if ((strncmp(&sProcessFlag[i][0],"PFIS",4) == 0) && iProcessValue[i] == 0) {
+      AliceInp << "*No photonuclear interactions";
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('PFIS',0);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PHOTONUC  "; 
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << -1.0; // no photonuclear interactions
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 3.0;  // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(2); 
+      AliceInp << setw(10) << fLastMaterial;
+      AliceInp << setprecision(1);  // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;  // step length in assigning indices
+      AliceInp << endl;
+    }
+
+    else if ((strncmp(&sProcessFlag[i][0],"PFIS",4) == 0) && iProcessValue[i] == 1) {
+      AliceInp << "*Photon nuclear interactions are activated at all energies";
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('PFIS',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PHOTONUC  "; 
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 1.0; // photonuclear interactions are activated at all energies
+      AliceInp << setw(10) << 0.0; // not used
+      AliceInp << setw(10) << 0.0; // not used
+      AliceInp << setprecision(2); 
+      AliceInp << setw(10) << 3.0; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setw(10) << fLastMaterial;
+      AliceInp << setprecision(1); // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0; // step length in assigning indices
+      AliceInp << endl;
+    }
+
+    // photo electric effect
+    // G3 default value: 1
+    // G4 processes: G4PhotoElectricEffect
+    //               G4LowEnergyPhotoElectric
+    // Particles: gamma
+    // Physics:   EM
+    // gMC ->SetProcess("PHOT",1); // EMFCUT    0.  -1.  0. 3. lastmat 0. PHOT-THR
+    else if ((strncmp(&sProcessFlag[i][0],"PHOT",4) == 0) && iProcessValue[i] == 1) {
+      AliceInp << "*Photo electric effect is activated"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('PHOT',1);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;  // ignored
+      AliceInp << setw(10) << -1.0; // resets to default=0.
+      AliceInp << setw(10) << 0.0;  // ignored
+      AliceInp << setw(10) << 3.0;  // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;  // step length in assigning indices
+      AliceInp << setw(8) << "PHOT-THR"; 
+      AliceInp << endl;
+    }
+
+    else { // processes not yet treated
+    //xx gMC ->SetProcess("AUTO",1); // ??? automatic computation of the tracking medium parameters
+	    
+    // Cerenkov photon generation
+    // G3 default value: 0
+    // G4 process: G4Cerenkov
+    // 
+    // Particles: charged
+    // Physics:   Optical
+    //xx gMC ->SetProcess("CKOV",1); // ??? Cerenkov photon generation
+	    
+    //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
+
+    // hadronic process
+    // G3 default value: 1
+    // G4 processes: all defined by TG4PhysicsConstructorHadron
+    //  
+    // Particles: hadrons
+    // Physics:   Hadron
+    // gMC ->SetProcess("HADR",1); // ??? hadronic process
+
+    // light photon absorption
+    // it is turned on when Cerenkov process is turned on
+    // G3 default value: 0
+    // G4 process: G4OpAbsorption, G4OpBoundaryProcess
+    // 
+    // Particles: optical photon
+    // Physics:   Optical
+    // gMC ->SetProcess("LABS",2); // ??? Cerenkov light absorption
+
+    // energy loss
+    // G3 default value: 2
+    // G4 processes: G4eIonisation/G4IeIonization,
+    //               G4MuIonisation/G4IMuIonization,
+    //               G4hIonisation/G4IhIonisation
+    // 
+    // Particles: charged
+    // Physics:   EM
+    // gMC ->SetProcess("LOSS",2); // ??? IONFLUCT ? energy loss
+	
+    // multiple scattering
+    // G3 default value: 1
+    // G4 process: G4MultipleScattering/G4IMultipleScattering
+    // 
+    // Particles: charged
+    // Physics:   EM
+    // gMC ->SetProcess("MULS",1); // ??? MULSOPT  ? multiple scattering
+
+    // Rayleigh scattering
+    // G3 default value: 0
+    // G4 process: G4OpRayleigh
+    // 
+    // Particles: optical photon
+    // Physics:   Optical
+    //xx gMC ->SetProcess("RAYL",1);
+	
+    //xx gMC ->SetProcess("STRA",1); // ??? energy fluctuation model
+
+    // synchrotron radiation in magnetic field
+    // G3 default value: 0
+    // G4 process: G4SynchrotronRadiation
+    // 
+    // Particles: ??
+    // Physics:   Not set
+    //xx gMC ->SetProcess("SYNC",1); // ??? synchrotron radiation generation
+
+      cout << "SetProcess for flag=" << &sProcessFlag[i][0] << " value=" << iProcessValue[i] << " not yet implemented!" << endl;
+    }
+  } //end of loop number of SetProcess calls
+
+ 
+// Loop over number of SetCut calls  
+  for (Int_t i=0; i<iNbOfCut; i++) {
+
+    // gammas
+    // G4 particles: "gamma"
+    // G3 default value: 0.001 GeV
+    //gMC ->SetCut("CUTGAM",cut); // cut for gammas
+    if (strncmp(&sCutFlag[i][0],"CUTGAM",6) == 0) {
+      AliceInp << "*Cut for gamma"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('CUTGAM',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 7.0;
+      AliceInp << endl;
+    }
+
+    // electrons
+    // G4 particles: "e-"
+    // ?? positrons
+    // G3 default value: 0.001 GeV
+    //gMC ->SetCut("CUTELE",cut); // cut for e+,e-
+    else if (strncmp(&sCutFlag[i][0],"CUTELE",6) == 0) {
+      AliceInp << "*Cut for electrons"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('CUTELE',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 3.0;
+      AliceInp << setw(10) << 4.0;
+      AliceInp << setw(10) << 1.0;
+      AliceInp << endl;
+    }
+
+    // neutral hadrons
+    // G4 particles: of type "baryon", "meson", "nucleus" with zero charge
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("CUTNEU",cut); // cut for neutral hadrons
+    else if (strncmp(&sCutFlag[i][0],"CUTNEU",6) == 0) {
+      AliceInp << "*Cut for neutral hadrons"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('CUTNEU',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 8.0; // Neutron
+      AliceInp << setw(10) << 9.0; // Antineutron
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 12.0; // Kaon zero long
+      AliceInp << setw(10) << 12.0; // Kaon zero long
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 17.0; // Lambda, 18=Antilambda
+      AliceInp << setw(10) << 19.0; // Kaon zero short
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 22.0; // Sigma zero, Pion zero, Kaon zero
+      AliceInp << setw(10) << 25.0; // Antikaon zero
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 32.0; // Antisigma zero
+      AliceInp << setw(10) << 32.0; // Antisigma zero
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 34.0; // Xi zero
+      AliceInp << setw(10) << 35.0; // AntiXi zero
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 47.0; // D zero
+      AliceInp << setw(10) << 48.0; // AntiD zero
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 53.0; // Xi_c zero
+      AliceInp << setw(10) << 53.0; // Xi_c zero
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 55.0; // Xi'_c zero
+      AliceInp << setw(10) << 56.0; // Omega_c zero
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 59.0; // AntiXi_c zero
+      AliceInp << setw(10) << 59.0; // AntiXi_c zero
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 61.0; // AntiXi'_c zero
+      AliceInp << setw(10) << 62.0; // AntiOmega_c zero
+      AliceInp << endl;
+    }
+
+    // charged hadrons
+    // G4 particles: of type "baryon", "meson", "nucleus" with non-zero charge
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("CUTHAD",cut); // cut for charged hadrons
+    else if (strncmp(&sCutFlag[i][0],"CUTHAD",6) == 0) {
+      AliceInp << "*Cut for charged hadrons"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('CUTHAD',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 1.0; // Proton
+      AliceInp << setw(10) << 2.0; // Antiproton
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 13.0; // Positive Pion, Negative Pion, Positive Kaon
+      AliceInp << setw(10) << 16.0; // Negative Kaon
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 20.0; // Negative Sigma
+      AliceInp << setw(10) << 16.0; // Positive Sigma
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 31.0; // Antisigma minus
+      AliceInp << setw(10) << 33.0; // Antisigma plus
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 2.0;  // step length
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 36.0; // Negative Xi, Positive Xi, Omega minus
+      AliceInp << setw(10) << 39.0; // Antiomega
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 45.0; // D plus
+      AliceInp << setw(10) << 46.0; // D minus
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 49.0; // D_s plus, D_s minus, Lambda_c plus
+      AliceInp << setw(10) << 52.0; // Xi_c plus
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 54.0; // Xi'_c plus
+      AliceInp << setw(10) << 60.0; // AntiXi'_c minus
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 6.0;  // step length
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(2);
+      AliceInp << setw(10) << 57.0; // Antilambda_c minus
+      AliceInp << setw(10) << 58.0; // AntiXi_c minus
+      AliceInp << endl;
+    }
+
+    // muons
+    // G4 particles: "mu+", "mu-"
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("CUTMUO",cut); // cut for mu+, mu-
+    else if (strncmp(&sCutFlag[i][0],"CUTMUO",6) == 0) {
+      AliceInp << "*Cut for muons"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('CUTMUO',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PART-THR  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << 10.0;
+      AliceInp << setw(10) << 11.0;
+      AliceInp << endl;
+    }
+
+    // electron bremsstrahlung
+    // G4 particles: "gamma"
+    // G3 default value: CUTGAM=0.001 GeV
+    //gMC ->SetCut("BCUTE",cut);  // cut for electron bremsstrahlung
+    else if (strncmp(&sCutFlag[i][0],"BCUTE",5) == 0) {
+      AliceInp << "*Cut for electron bremsstrahlung"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('BCUTE',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setw(10) << setiosflags(ios::fixed);
+      AliceInp << setw(10) << setprecision(1);
+      AliceInp << setw(10) << 0.0; // photon cut-off is unchanged
+      AliceInp << setw(10) << 0.0; // ignored
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setprecision(4);
+      AliceInp << setw(10) << fLastRegion; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0; // step length in assigning indices
+      AliceInp << endl;
+    }
+
+    // muon and hadron bremsstrahlung
+    // G4 particles: "gamma"
+    // G3 default value: CUTGAM=0.001 GeV
+    //gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung ????????????
+    else if (strncmp(&sCutFlag[i][0],"BCUTM",5) == 0) {
+      AliceInp << "*Cut for muon and hadron bremsstrahlung ????????????"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('BCUTM',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PAIRBREM  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setw(10) << 1.0;
+      AliceInp << endl;
+    }
+
+    // delta-rays by electrons
+    // G4 particles: "e-"
+    // G3 default value: 10**4 GeV
+    //gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons ???????????????
+    else if (strncmp(&sCutFlag[i][0],"DCUTE",5) == 0) {
+      AliceInp << "*Cut for deltarays by electrons ????????????"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('DCUTE',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setprecision(4);
+      AliceInp << setw(10) << fLastRegion;
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;
+      AliceInp << endl;
+    }
+    
+    // delta-rays by muons
+    // G4 particles: "e-"
+    // G3 default value: 10**4 GeV
+    //gMC ->SetCut("DCUTM",cut);  // cut for deltarays by muons
+    else if (strncmp(&sCutFlag[i][0],"DCUTM",5) == 0) {
+      AliceInp << "*Cut for deltarays by muons ????????????"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('DCUTM',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "DELTARAY  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << 3.0;
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial;
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0;
+      AliceInp << endl;
+    }
+    
+    // direct pair production by muons
+    // G4 particles: "e-", "e+"
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("PPCUTM",cut); // total energy cut for direct pair prod. by muons ?????????????????????????
+    else if (strncmp(&sCutFlag[i][0],"PPCUTM",6) == 0) {
+      AliceInp << "*Total energy cut for direct pair prod. by muons ????????????"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('PPCUTM',cut);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PAIRBREM  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << -fCutValue[i];
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setw(10) << 2.0;
+      AliceInp << setw(10) << 1.0;
+      AliceInp << endl;
+    }
+
+    // time of flight cut in seconds
+    // G4 particles: all
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("TOFMAX",tofmax); // time of flight cuts in seconds
+    else if (strncmp(&sCutFlag[i][0],"TOFMAX",6) == 0) {
+      AliceInp << "*Time of flight cuts in seconds"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetCut('TOFMAX',tofmax);"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "TIME-CUT  "; 
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << fCutValue[i]*1.e9;
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << 0.0;
+      AliceInp << setw(10) << -6.0; // lower bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << 64.0; // upper bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
+      AliceInp << setprecision(1);
+      AliceInp << setw(10) << 1.0; // step length in assigning numbers
+      AliceInp << endl;
+    }
+
+    else {
+      cout << "SetCut for flag=" << &sCutFlag[i][0] << " value=" << fCutValue[i] << " not yet implemented!" << endl;
+    }
+  } //end of loop over SeCut calls
+    
+// Add START and STOP card
+   AliceInp << setw(10) << "START     "; 
+   AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint);
+   AliceInp << setw(10) << fEventsPerRun;
+   AliceInp << endl;
+   AliceInp << setw(10) << "STOP      "; 
+   AliceInp << endl;
+
+}
+
+//_____________________________________________________________________________
 // methods for step management
 //____________________________________________________________________________ 
 //
@@ -597,14 +1459,56 @@ void TFluka::TrackPosition(TLorentzVector& position) const
 // TRACKR.xtrack = x-position of the last point
 // TRACKR.ytrack = y-position of the last point
 // TRACKR.ztrack = z-position of the last point
-  position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
-  position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
-  position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
-  position.SetT(TRACKR.atrack);
-//
-//
-//
+  Int_t caller = GetCaller();
+  if (caller == 1 || caller == 3 || caller == 6) { //bxdraw,endraw,usdraw
+    position.SetX(GetXsco());
+    position.SetY(GetYsco());
+    position.SetZ(GetZsco());
+    position.SetT(TRACKR.atrack);
+  }
+  else if (caller == 4) { // mgdraw
+    position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
+    position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
+    position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
+    position.SetT(TRACKR.atrack);
+  }
+  else if (caller == 5) { // sodraw
+    position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
+    position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
+    position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
+    position.SetT(0);
+  }
+  else
+    Warning("TrackPosition","position not available");
+}
 
+//
+void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
+{
+// Return the current position in the master reference frame of the
+// track being transported
+// TRACKR.atrack = age of the particle
+// TRACKR.xtrack = x-position of the last point
+// TRACKR.ytrack = y-position of the last point
+// TRACKR.ztrack = z-position of the last point
+  Int_t caller = GetCaller();
+  if (caller == 1 || caller == 3 || caller == 6) { //bxdraw,endraw,usdraw
+    x = GetXsco();
+    y = GetYsco();
+    z = GetZsco();
+  }
+  else if (caller == 4) { // mgdraw
+    x = TRACKR.xtrack[TRACKR.ntrack];
+    y = TRACKR.ytrack[TRACKR.ntrack];
+    z = TRACKR.ztrack[TRACKR.ntrack];
+  }
+  else if (caller == 5) { // sodraw
+    x = TRACKR.xtrack[TRACKR.ntrack];
+    y = TRACKR.ytrack[TRACKR.ntrack];
+    z = TRACKR.ztrack[TRACKR.ntrack];
+  }
+  else
+    Warning("TrackPosition","position not available");
 }
 
 void TFluka::TrackMomentum(TLorentzVector& momentum) const
@@ -617,28 +1521,71 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
 // TRACKR.etrack = total energy of the particle
 // TRACKR.jtrack = identity number of the particle
 // PAPROP.am[TRACKR.jtrack] = particle mass in gev
-  if (TRACKR.ptrack >= 0) {
-    momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
-    momentum.SetPy(TRACKR.ptrack*TRACKR.cytrck);
-    momentum.SetPz(TRACKR.ptrack*TRACKR.cztrck);
-    momentum.SetE(TRACKR.etrack);
-    return;
+  Int_t caller = GetCaller();
+  if (caller != 2) { // not eedraw 
+    if (TRACKR.ptrack >= 0) {
+      momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
+      momentum.SetPy(TRACKR.ptrack*TRACKR.cytrck);
+      momentum.SetPz(TRACKR.ptrack*TRACKR.cztrck);
+      momentum.SetE(TRACKR.etrack);
+      return;
+    }
+    else {
+      Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
+      momentum.SetPx(p*TRACKR.cxtrck);
+      momentum.SetPy(p*TRACKR.cytrck);
+      momentum.SetPz(p*TRACKR.cztrck);
+      momentum.SetE(TRACKR.etrack);
+      return;
+    }
   }
-  else {
-    Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
-    momentum.SetPx(p*TRACKR.cxtrck);
-    momentum.SetPy(p*TRACKR.cytrck);
-    momentum.SetPz(p*TRACKR.cztrck);
-    momentum.SetE(TRACKR.etrack);
-    return;
+  else
+    Warning("TrackMomentum","momentum not available");
+}
+
+void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e) const
+{
+// Return the direction and the momentum (GeV/c) of the track
+// currently being transported
+// TRACKR.ptrack = momentum of the particle (not always defined, if
+//               < 0 must be obtained from etrack) 
+// TRACKR.cx,y,ztrck = direction cosines of the current particle
+// TRACKR.etrack = total energy of the particle
+// TRACKR.jtrack = identity number of the particle
+// PAPROP.am[TRACKR.jtrack] = particle mass in gev
+  Int_t caller = GetCaller();
+  if (caller != 2) { // not eedraw 
+    if (TRACKR.ptrack >= 0) {
+      px = TRACKR.ptrack*TRACKR.cxtrck;
+      py = TRACKR.ptrack*TRACKR.cytrck;
+      pz = TRACKR.ptrack*TRACKR.cztrck;
+      e = TRACKR.etrack;
+      return;
+    }
+    else {
+      Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
+      px = p*TRACKR.cxtrck;
+      py = p*TRACKR.cytrck;
+      pz = p*TRACKR.cztrck;
+      e = TRACKR.etrack;
+      return;
+    }
   }
+  else
+    Warning("TrackMomentum","momentum not available");
 }
 
 Double_t TFluka::TrackStep() const
 {
 // Return the length in centimeters of the current step
 // TRACKR.ctrack = total curved path
+  Int_t caller = GetCaller();
+  if (caller == 1 || caller == 3 || caller == 6) //bxdraw,endraw,usdraw
+    return 0.0;
+  else if (caller == 4) //mgdraw
     return TRACKR.ctrack;
+  else
+    return -1.0;
 }
 
 Double_t TFluka::TrackLength() const
@@ -649,18 +1596,27 @@ Double_t TFluka::TrackLength() const
 // Sum of the substeps is identical to TRACKR.ctrack if the is no mag. field
 // The sum of all step length starting from the beginning of the track
 // for the time being returns only the length in centimeters of the current step
-    Double_t sum = 0;
+  Double_t sum = 0;
+  Int_t caller = GetCaller();
+  if (caller == 1 || caller == 3 || caller == 4 || caller == 6) { //bxdraw,endraw,mgdraw,usdraw
     for ( Int_t j=0;j<TRACKR.ntrack;j++) {
       sum +=TRACKR.ttrack[j];
     }
     return sum;
+  }
+  else 
+    return -1.0;
 }
 
 Double_t TFluka::TrackTime() const
 {
 // Return the current time of flight of the track being transported
 // TRACKR.atrack = age of the particle
-  return TRACKR.atrack;
+  Int_t caller = GetCaller();
+  if (caller == 1 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
+    return TRACKR.atrack;
+  else 
+    return -1;
 }
 
 Double_t TFluka::Edep() const
@@ -674,13 +1630,13 @@ Double_t TFluka::Edep() const
 // if TRACKR.ntrack > 0, TRACKR.mtrack > 0:
 // -->energy loss distributed along the track
 // TRACKR.dtrack = energy deposition of the jth deposition even
+  Double_t sum = 0;
+  for ( Int_t j=0;j<TRACKR.mtrack;j++) {
+    sum +=TRACKR.dtrack[j];  
+  }
   if (TRACKR.ntrack == 0 && TRACKR.mtrack == 0)
-    return fRull;
+    return fRull + sum;
   else {
-    Double_t sum = 0;
-    for ( Int_t j=0;j<TRACKR.mtrack;j++) {
-      sum +=TRACKR.dtrack[j];  
-    }
     return sum;
   }
 }
@@ -689,7 +1645,11 @@ Int_t TFluka::TrackPid() const
 {
 // Return the id of the particle transported
 // TRACKR.jtrack = identity number of the particle
-  return PDGFromId(TRACKR.jtrack);
+  Int_t caller = GetCaller();
+  if (caller != 2)  // not eedraw 
+    return PDGFromId(TRACKR.jtrack);
+  else
+    return -1000;
 }
 
 Double_t TFluka::TrackCharge() const
@@ -697,20 +1657,32 @@ Double_t TFluka::TrackCharge() const
 // Return charge of the track currently transported
 // PAPROP.ichrge = electric charge of the particle
 // TRACKR.jtrack = identity number of the particle
-  return PAPROP.ichrge[TRACKR.jtrack+6];
+  Int_t caller = GetCaller();
+  if (caller != 2)  // not eedraw 
+    return PAPROP.ichrge[TRACKR.jtrack+6];
+  else
+    return -1000.0;
 }
 
 Double_t TFluka::TrackMass() const
 {
 // PAPROP.am = particle mass in GeV
 // TRACKR.jtrack = identity number of the particle
-  return PAPROP.am[TRACKR.jtrack+6];
+  Int_t caller = GetCaller();
+  if (caller != 2)  // not eedraw 
+    return PAPROP.am[TRACKR.jtrack+6];
+  else
+    return -1000.0;
 }
 
 Double_t TFluka::Etot() const
 {
 // TRACKR.etrack = total energy of the particle
-  return TRACKR.etrack;
+  Int_t caller = GetCaller();
+  if (caller != 2)  // not eedraw
+    return TRACKR.etrack;
+  else
+    return -1000.0;
 }
 
 //
@@ -721,7 +1693,11 @@ Bool_t   TFluka::IsNewTrack() const
 // ???????????????,
 // True if the track is not at the boundary of the current volume
 // Not true in some cases in bxdraw - to be solved
-  return 1;
+  Int_t caller = GetCaller();
+  if (caller == 1)
+    return 1; // how to handle double step ?????????????
+  else
+    return 0; // ??????????????
 }
 
 Bool_t   TFluka::IsTrackInside() const
@@ -731,43 +1707,27 @@ Bool_t   TFluka::IsTrackInside() const
 // If the step would go behind the region of one material,
 // it will be shortened to reach only the boundary.
 // Therefore IsTrackInside() is always true.
-// Not true in some cases in bxdraw - to be solved
-  return 1;
+  Int_t caller = GetCaller();
+  if (caller == 1)  // bxdraw
+    return 0;
+  else
+    return 1;
 }
 
 Bool_t   TFluka::IsTrackEntering() const
 {
 // True if this is the first step of the track in the current volume
-// Boundary- (X) crossing
-// Icode = 19: boundary crossing - call from Kaskad
-// Icode = 29: boundary crossing - call from Emfsco
-// Icode = 39: boundary crossing - call from Kasneu
-// Icode = 49: boundary crossing - call from Kashea
-// Icode = 59: boundary crossing - call from Kasoph
-  if (fIcode == 19 ||
-      fIcode == 29 ||
-      fIcode == 39 ||
-      fIcode == 49 ||
-      fIcode == 59 ||
-      fTrackIsEntering) return 1;
+  Int_t caller = GetCaller();
+  if (caller == 11 || caller == 4)  // bxdraw entering
+    return 1;
   else return 0;
 }
 
 Bool_t   TFluka::IsTrackExiting() const
 {
-// True if this is the last step of the track in the current volume
-// Boundary- (X) crossing
-// Icode = 19: boundary crossing - call from Kaskad
-// Icode = 29: boundary crossing - call from Emfsco
-// Icode = 39: boundary crossing - call from Kasneu
-// Icode = 49: boundary crossing - call from Kashea
-// Icode = 59: boundary crossing - call from Kasoph
-  if (fIcode == 19 ||
-      fIcode == 29 ||
-      fIcode == 39 ||
-      fIcode == 49 ||
-      fIcode == 59 ||
-      fTrackIsExiting) return 1;
+  Int_t caller = GetCaller();
+  if (caller == 12)  // bxdraw exiting
+    return 1;
   else return 0;
 }
 
@@ -780,24 +1740,24 @@ Bool_t   TFluka::IsTrackOut() const
 // Icode = 32: escape - call from Kasneu
 // Icode = 40: escape - call from Kashea
 // Icode = 51: escape - call from Kasoph
-  if (fIcode == 14 ||
-      fIcode == 23 ||
-      fIcode == 32 ||
-      fIcode == 40 ||
-      fIcode == 51) return 1;
+  if (iIcode == 14 ||
+      iIcode == 23 ||
+      iIcode == 32 ||
+      iIcode == 40 ||
+      iIcode == 51) return 1;
   else return 0;
 }
 
 Bool_t   TFluka::IsTrackDisappeared() const
 {
 // means all inelastic interactions and decays
-// fIcode from usdraw
-  if (fIcode == 101 || // inelastic interaction
-      fIcode == 102 || // particle decay
-      fIcode == 214 || // in-flight annihilation
-      fIcode == 215 || // annihilation at rest
-      fIcode == 217 || // pair production
-      fIcode == 221) return 1;
+// iIcode from usdraw
+  if (iIcode == 101 || // inelastic interaction
+      iIcode == 102 || // particle decay
+      iIcode == 214 || // in-flight annihilation
+      iIcode == 215 || // annihilation at rest
+      iIcode == 217 || // pair production
+      iIcode == 221) return 1;
   else return 0;
 }
 
@@ -814,15 +1774,15 @@ Bool_t   TFluka::IsTrackStop() const
 // Icode = 33: time kill               - call from Kasneu
 // Icode = 41: time kill               - call from Kashea
 // Icode = 52: time kill               - call from Kasoph
-  if (fIcode == 12 ||
-      fIcode == 15 ||
-      fIcode == 21 ||
-      fIcode == 22 ||
-      fIcode == 24 ||
-      fIcode == 31 ||
-      fIcode == 33 ||
-      fIcode == 41 ||
-      fIcode == 52) return 1;
+  if (iIcode == 12 ||
+      iIcode == 15 ||
+      iIcode == 21 ||
+      iIcode == 22 ||
+      iIcode == 24 ||
+      iIcode == 31 ||
+      iIcode == 33 ||
+      iIcode == 41 ||
+      iIcode == 52) return 1;
   else return 0;
 }
 
@@ -842,113 +1802,106 @@ Int_t TFluka::NSecondaries() const
 // FINUC.np = number of secondaries except light and heavy ions
 // FHEAVY.npheav = number of secondaries for light and heavy secondary ions
 {
-  return FINUC.np + FHEAVY.npheav;
-}
+  Int_t caller = GetCaller();
+  if (caller == 6)  // valid only after usdraw
+    return FINUC.np + FHEAVY.npheav;
+  else
+    return 0;
+} // end of NSecondaries
 
 void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 		TLorentzVector& position, TLorentzVector& momentum)
 {
-  if (isec >= 0 && isec < FINUC.np) {
-	  // more fine condition depending on icode
-	  // icode = 100 ?
-	  // icode = 101 OK
-	  // icode = 102 OK
-	  // icode = 103 ?
-	  // icode = 104 ?
-	  // icode = 105 ?
-	  // icode = 208 ?
-	  // icode = 210 ?
-	  // icode = 212 ?
-	  // icode = 214 OK
-	  // icode = 215 OK
-	  // icode = 219 ?
-	  // icode = 221 OK
-	  // icode = 225 ?
-	  // icode = 300 ?
-	  // icode = 400 ?
-	  
-    particleId = PDGFromId(FINUC.kpart[isec]);
-    position.SetX(fXsco);
-    position.SetY(fYsco);
-    position.SetZ(fZsco);
-    position.SetT(TRACKR.atrack);
-//  position.SetT(TRACKR.atrack+FINUC.agesec[isec]); //not yet implem.
-    momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
-    momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
-    momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
-    momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
-  }
-  if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
-    Int_t jsec = isec - FINUC.np;
-    particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
-    position.SetX(fXsco);
-    position.SetY(fYsco);
-    position.SetZ(fZsco);
-    position.SetT(TRACKR.atrack);
-//  position.SetT(TRACKR.atrack+FHEAVY.agheav[jsec]); //not yet implem.
-    momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
-    momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
-    momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
-    if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
-      momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
-    else if (FHEAVY.tkheav[jsec] > 6)
-      momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+  Int_t caller = GetCaller();
+  if (caller == 6) {  // valid only after usdraw
+    if (isec >= 0 && isec < FINUC.np) {
+      particleId = PDGFromId(FINUC.kpart[isec]);
+      position.SetX(fXsco);
+      position.SetY(fYsco);
+      position.SetZ(fZsco);
+      position.SetT(TRACKR.atrack);
+//    position.SetT(TRACKR.atrack+FINUC.agesec[isec]); //not yet implem.
+      momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
+      momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
+      momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
+      momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
     }
-}
+    else if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
+      Int_t jsec = isec - FINUC.np;
+      particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
+      position.SetX(fXsco);
+      position.SetY(fYsco);
+      position.SetZ(fZsco);
+      position.SetT(TRACKR.atrack);
+//    position.SetT(TRACKR.atrack+FHEAVY.agheav[jsec]); //not yet implem.
+      momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
+      momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
+      momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
+      if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
+        momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
+      else if (FHEAVY.tkheav[jsec] > 6)
+        momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+    }
+    else
+      Warning("GetSecondary","isec out of range");
+  }
+  else
+    Warning("GetSecondary","no secondaries available");
+} // end of GetSecondary
 
 TMCProcess TFluka::ProdProcess(Int_t isec) const
 // Name of the process that has produced the secondary particles
 // in the current step
 {
-  const TMCProcess kIpNoProc = kPNoProcess;
-  const TMCProcess kIpPDecay = kPDecay;
-  const TMCProcess kIpPPair = kPPair;
-//const TMCProcess kIpPPairFromPhoton = kPPairFromPhoton;
-//const TMCProcess kIpPPairFromVirtualPhoton = kPPairFromVirtualPhoton;
-  const TMCProcess kIpPCompton = kPCompton;
-  const TMCProcess kIpPPhotoelectric = kPPhotoelectric;
-  const TMCProcess kIpPBrem = kPBrem;
-//const TMCProcess kIpPBremFromHeavy = kPBremFromHeavy;
-//const TMCProcess kIpPBremFromElectronOrPositron = kPBremFromElectronOrPositron;
-  const TMCProcess kIpPDeltaRay = kPDeltaRay;
-//const TMCProcess kIpPMoller = kPMoller;
-//const TMCProcess kIpPBhabha = kPBhabha;
-  const TMCProcess kIpPAnnihilation = kPAnnihilation;
-//const TMCProcess kIpPAnnihilInFlight = kPAnnihilInFlight;
-//const TMCProcess kIpPAnnihilAtRest = kPAnnihilAtRest;
-  const TMCProcess kIpPHadronic = kPHadronic;
-  const TMCProcess kIpPMuonNuclear = kPMuonNuclear;
-  const TMCProcess kIpPPhotoFission = kPPhotoFission;
-  const TMCProcess kIpPRayleigh = kPRayleigh;
+    const TMCProcess kIpNoProc = kPNoProcess;
+    const TMCProcess kIpPDecay = kPDecay;
+    const TMCProcess kIpPPair = kPPair;
+//  const TMCProcess kIpPPairFromPhoton = kPPairFromPhoton;
+//  const TMCProcess kIpPPairFromVirtualPhoton = kPPairFromVirtualPhoton;
+    const TMCProcess kIpPCompton = kPCompton;
+    const TMCProcess kIpPPhotoelectric = kPPhotoelectric;
+    const TMCProcess kIpPBrem = kPBrem;
+//  const TMCProcess kIpPBremFromHeavy = kPBremFromHeavy;
+//  const TMCProcess kIpPBremFromElectronOrPositron = kPBremFromElectronOrPositron;
+    const TMCProcess kIpPDeltaRay = kPDeltaRay;
+//  const TMCProcess kIpPMoller = kPMoller;
+//  const TMCProcess kIpPBhabha = kPBhabha;
+    const TMCProcess kIpPAnnihilation = kPAnnihilation;
+//  const TMCProcess kIpPAnnihilInFlight = kPAnnihilInFlight;
+//  const TMCProcess kIpPAnnihilAtRest = kPAnnihilAtRest;
+    const TMCProcess kIpPHadronic = kPHadronic;
+    const TMCProcess kIpPMuonNuclear = kPMuonNuclear;
+    const TMCProcess kIpPPhotoFission = kPPhotoFission;
+    const TMCProcess kIpPRayleigh = kPRayleigh;
 //  const TMCProcess kIpPCerenkov = kPCerenkov;
 //  const TMCProcess kIpPSynchrotron = kPSynchrotron;
 
-  Int_t mugamma = TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11;
-  if (fIcode == 102) return kIpPDecay;
-  else if (fIcode == 104 || fIcode == 217) return kIpPPair;
-//else if (fIcode == 104) return kIpPairFromPhoton;
-//else if (fIcode == 217) return kIpPPairFromVirtualPhoton;
-  else if (fIcode == 219) return kIpPCompton;
-  else if (fIcode == 221) return kIpPPhotoelectric;
-  else if (fIcode == 105 || fIcode == 208) return kIpPBrem;
-//else if (fIcode == 105) return kIpPBremFromHeavy;
-//else if (fIcode == 208) return kPBremFromElectronOrPositron;
-  else if (fIcode == 103 || fIcode == 400) return kIpPDeltaRay;
-  else if (fIcode == 210 || fIcode == 212) return kIpPDeltaRay;
-//else if (fIcode == 210) return kIpPMoller;
-//else if (fIcode == 212) return kIpPBhabha;
-  else if (fIcode == 214 || fIcode == 215) return kIpPAnnihilation;
-//else if (fIcode == 214) return kIpPAnnihilInFlight;
-//else if (fIcode == 215) return kIpPAnnihilAtRest;
-  else if (fIcode == 101) return kIpPHadronic;
-  else if (fIcode == 101) {
-    if (!mugamma) return kIpPHadronic;
-    else if (TRACKR.jtrack == 7) return kIpPPhotoFission;
-    else return kIpPMuonNuclear;
-  }
-  else if (fIcode == 225) return kIpPRayleigh;
+    Int_t mugamma = TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11;
+    if (iIcode == 102) return kIpPDecay;
+    else if (iIcode == 104 || iIcode == 217) return kIpPPair;
+//  else if (iIcode == 104) return kIpPairFromPhoton;
+//  else if (iIcode == 217) return kIpPPairFromVirtualPhoton;
+    else if (iIcode == 219) return kIpPCompton;
+    else if (iIcode == 221) return kIpPPhotoelectric;
+    else if (iIcode == 105 || iIcode == 208) return kIpPBrem;
+//  else if (iIcode == 105) return kIpPBremFromHeavy;
+//  else if (iIcode == 208) return kPBremFromElectronOrPositron;
+    else if (iIcode == 103 || iIcode == 400) return kIpPDeltaRay;
+    else if (iIcode == 210 || iIcode == 212) return kIpPDeltaRay;
+//  else if (iIcode == 210) return kIpPMoller;
+//  else if (iIcode == 212) return kIpPBhabha;
+    else if (iIcode == 214 || iIcode == 215) return kIpPAnnihilation;
+//  else if (iIcode == 214) return kIpPAnnihilInFlight;
+//  else if (iIcode == 215) return kIpPAnnihilAtRest;
+    else if (iIcode == 101) return kIpPHadronic;
+    else if (iIcode == 101) {
+      if (!mugamma) return kIpPHadronic;
+      else if (TRACKR.jtrack == 7) return kIpPPhotoFission;
+      else return kIpPMuonNuclear;
+    }
+    else if (iIcode == 225) return kIpPRayleigh;
 // Fluka codes 100, 300 and 400 still to be investigasted
-  else return kIpNoProc;
+    else return kIpNoProc;
 }
 
 //Int_t StepProcesses(TArrayI &proc) const
