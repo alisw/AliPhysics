@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.2  2000/06/14 16:48:24  kowal2
 Parameter setting improved. Removed compiler warnings
 
@@ -71,8 +74,6 @@ AliTPCParamSR::AliTPCParamSR()
   fFacSigmaPadRow = Float_t(kFacSigmaPadRow);
   fFacSigmaPad = Float_t(kFacSigmaPad);
   fFacSigmaTime = Float_t(kFacSigmaTime);
-
-
   SetDefault();
   Update();
 }
@@ -356,8 +357,7 @@ Bool_t AliTPCParamSR::Update()
   //    +fInnerPadPitchLength/2.;
   Float_t lastpad = fRInnerLastWire-(fInnerDummyWire-0.5)*fInnerWWPitch
     -fInnerPadPitchLength/2.;
-  Float_t firstpad = lastpad-Float_t(fNRowLow-1)*fInnerPadPitchLength;
-  
+  Float_t firstpad = lastpad-Float_t(fNRowLow-1)*fInnerPadPitchLength;  
   for (i = 0;i<fNRowLow;i++) 
     {
        Float_t x  = firstpad +fInnerPadPitchLength*(Float_t)i;       
@@ -384,9 +384,9 @@ Bool_t AliTPCParamSR::Update()
        fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
     }
   fNtRows = fNInnerSector*fNRowLow+fNOuterSector*fNRowUp;
+  fbStatus = kTRUE;
   return kTRUE;
 }
-
 
 
 void AliTPCParamSR::Streamer(TBuffer &R__b)
@@ -405,6 +405,10 @@ void AliTPCParamSR::Streamer(TBuffer &R__b)
       AliTPCParam::Streamer(R__b);    
    }
 }
+
+
+
+
 
 
 

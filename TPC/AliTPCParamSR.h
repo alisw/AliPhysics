@@ -60,8 +60,8 @@ protected:
   AliTPCPRF2D * fOuterPRF;         //pad response function object for inner sector  
   AliTPCRF1D  * fTimeRF;           //time response function object
   Float_t      fFacSigmaPadRow;    //factor-how many sigma of response I accept
-  Float_t      fFacSigmaPad;
-  Float_t      fFacSigmaTime; 
+  Float_t      fFacSigmaPad;       //factor-how many sigma of response I accept
+  Float_t      fFacSigmaTime;      //factor-how many sigma of response I accept
   ClassDef(AliTPCParamSR,1)  //parameter  object for set:TPC
 };
 

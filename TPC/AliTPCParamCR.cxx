@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.1  2000/06/14 16:48:24  kowal2
 Parameter setting improved. Removed compiler warnings
 
@@ -232,6 +235,7 @@ Bool_t AliTPCParamCR::Update()
        fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
     }
   fNtRows = fNInnerSector*fNRowLow+fNOuterSector*fNRowUp;
+  fbStatus = kTRUE;
   return kTRUE;
 }
 
@@ -253,6 +257,12 @@ void AliTPCParamCR::Streamer(TBuffer &R__b)
       AliTPCParam::Streamer(R__b);    
    }
 }
+
+
+
+
+
+
 
 
 
