@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/27 08:13:02  morsch
+Lego generator for phi-z binning.
+
 */
 
 #include "AliLegoGeneratorPhiZ.h"
@@ -43,7 +46,7 @@ void AliLegoGeneratorPhiZ::Generate()
        return;
      } else { 
        fCoor2Bin++;
-       printf("Generating rays in phi bin:%d\n",fCoor2Bin);
+       printf("Generating rays in z-bin:%d\n",fCoor2Bin);
        fCoor1Bin=0;
      } else fCoor1Bin++;
 
