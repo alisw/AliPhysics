@@ -776,7 +776,7 @@ void AliStack::FinishRun()
 }
 
 //_____________________________________________________________________________
-Bool_t AliStack::GetEvent(Int_t event)
+Bool_t AliStack::GetEvent(Int_t event, Int_t dummy)
 {
 //
 // Get new event from TreeK

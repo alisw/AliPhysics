@@ -32,7 +32,7 @@ class AliStack : public TObject
     void  MakeTree(Int_t event, const char *file);
     void  BeginEvent(Int_t event);
     void  FinishRun();
-    Bool_t GetEvent(Int_t nevent);
+    Bool_t GetEvent(Int_t nevent, Int_t dummy=0);
     void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
   	           Float_t *pmom, Float_t *vpos, Float_t *polar, 
                    Float_t tof, AliMCProcess mech, Int_t &ntr,
@@ -109,9 +109,4 @@ inline Int_t AliStack::CurrentTrack() const
 inline TObjArray* AliStack::Particles() const
 { return fParticleMap; }
 
-inline Int_t AliStack::GetDebug() const
-{ return fDebug; }
-
-inline void  AliStack::SetDebug(Int_t level)
-{ fDebug = level; }
 #endif //ALI_STACK_H
