@@ -8,7 +8,6 @@
 // See the class description in the header file.
 
 #include "TGeant4.h"
-#include "TG4Messenger.h"
 #include "TG4VRunConfiguration.h"
 #include "TG4GeometryManager.h" 
 #include "TG4SDManager.h" 
@@ -56,10 +55,6 @@ TGeant4::TGeant4(const char* name, const char* title,
   fVisManager = new TG4VisManager();
   fVisManager->Initialize();
 #endif
-
-  // create messenger
-  fMessenger = 
-    new TG4Messenger(fGeometryManager, fPhysicsManager, fStepManager);
 }
     
 //_____________________________________________________________________________
@@ -98,10 +93,6 @@ TGeant4::TGeant4(const char* name, const char* title,
   fVisManager = new TG4VisManager();
   fVisManager->Initialize();
 #endif
-
-  // create messenger
-  fMessenger = 
-    new TG4Messenger(fGeometryManager, fPhysicsManager, fStepManager);
 }
     
 //_____________________________________________________________________________
@@ -124,7 +115,6 @@ TGeant4::~TGeant4() {
   delete fPhysicsManager;
   delete fStepManager;
   // fVisManager is deleted with G4RunManager destructor
-  delete fMessenger;
 }
 
 // operators

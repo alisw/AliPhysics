@@ -22,7 +22,6 @@ class TG4PhysicsManager;
 class TG4StepManager;
 class TG4VisManager;
 class TG4RunManager;
-class TG4Messenger;
 
 class AliDecayer;
 
@@ -264,7 +263,6 @@ class TGeant4: public AliMC
     TG4StepManager*      fStepManager;     //step manager
     TG4VisManager*       fVisManager;      //visualization manager
     TG4RunManager*       fRunManager;      //run manager
-    TG4Messenger*        fMessenger;       //messenger
 };
 
 #ifndef __CINT__
