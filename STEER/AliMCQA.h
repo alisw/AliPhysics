@@ -21,7 +21,7 @@ class AliMCQA : public TObject
 public:
   AliMCQA();
   AliMCQA(Int_t ndets);
-  virtual ~AliMCQA() {delete fQAList;fQAList=0;}
+  virtual ~AliMCQA();
   Bool_t  IsFolder() const {return kTRUE;}
   virtual  void  Browse(TBrowser *b);
   virtual  void  PreTrack();

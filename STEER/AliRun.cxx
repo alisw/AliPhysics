@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.47  2000/12/18 10:44:01  morsch
+Possibility to set field map by passing pointer to objet of type AliMagF via
+SetField().
+Example:
+gAlice->SetField(new AliMagFCM("Map2", "$(ALICE_ROOT)/data/field01.dat",2,1.,10.));
+
 Revision 1.46  2000/12/14 19:29:27  fca
 galice.cuts was not read any more
 
@@ -297,6 +303,7 @@ AliRun::~AliRun()
   }
   delete fHitLists;
   delete fPDGDB;
+  delete fMCQA;
 }
 
 //_____________________________________________________________________________

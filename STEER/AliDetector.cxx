@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/12/12 18:19:06  alibrary
+Introduce consistency check when loading points
+
 Revision 1.8  2000/11/30 07:12:48  alibrary
 Introducing new Rndm and QA classes
 
@@ -106,9 +109,17 @@ AliDetector::~AliDetector()
   fNdigits    = 0;
   //
   // Delete space point structure
-  if (fPoints) fPoints->Delete();
-  delete fPoints;
-  fPoints     = 0;
+  if (fPoints) {
+    fPoints->Delete();
+    delete fPoints;
+    fPoints     = 0;
+  }
+  // Delete digits structure
+  if (fDigits) {
+    fDigits->Delete();
+    delete fDigits;
+    fDigits     = 0;
+  }
 }
  
 //_____________________________________________________________________________

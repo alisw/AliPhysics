@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/18 14:16:31  alibrary
+HP compatibility fix
+
 Revision 1.2  2000/12/18 11:33:48  alibrary
 New call frequence histograms per module and volume
 
@@ -145,6 +148,31 @@ AliMCQA::AliMCQA(Int_t ndets) : fMPaveLabel(0),fVPaveLabel(0)
   for(i=0;i<fNdets;++i) 
     (*fModNames)[i]=
       new TNamed(((AliModule *)(*gAlice->Modules())[i])->GetName(),"");
+}
+
+//_____________________________________________________________________________
+
+AliMCQA::~AliMCQA() {
+  if (fQAList) {
+    fQAList->Delete();
+    delete fQAList;
+    fQAList=0;
+  }
+  if (fQAHist) {
+    fQAHist->Delete();
+    delete fQAHist;
+    fQAHist=0;
+  }
+  if (fVolNames) {
+    fVolNames->Delete();
+    delete fVolNames;
+    fVolNames=0;
+  }
+  if (fModNames) {
+    fModNames->Delete();
+    delete fModNames;
+    fModNames=0;
+  }
 }
 
 //_____________________________________________________________________________
