@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2001/04/26 06:15:12  kowal2
+Corrected bug in the inner containment vessel (cones)
+
 Revision 1.35  2001/04/24 11:17:33  kowal2
 New TPC geometry.
 
@@ -875,7 +878,7 @@ void AliTPCv2::CreateGeometry()
   dm[0] += 0.01;
   dm[1] -= 0.01;
 
-  gMC->Gsvolu("TS19","TUBE",idtmed[12],dm,3); 
+  gMC->Gsvolu("TS19","TUBE",idtmed[6],dm,3); 
 
   // 19->18->17->16->15-> TICM
 
