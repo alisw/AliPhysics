@@ -167,7 +167,7 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual void         SamplePRF();
   virtual void         SampleTRF();
 
-  ClassDef(AliTRDdigitizer,5)               //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,6)               //  Produces TRD-Digits
 
 };
 
