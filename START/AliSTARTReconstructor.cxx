@@ -19,18 +19,20 @@
 
 #include <TDirectory.h>
 
-#include <AliRunLoader.h>
+#include "AliRunLoader.h"
+#include "AliRun.h"
+#include "/home/alla/AliRoot/verynew/RAW/AliRawReader.h"
 #include "AliSTARTLoader.h"
 #include "AliSTARTdigit.h"
 #include "AliSTARTReconstructor.h"
 #include <AliESD.h>
+#include "AliSTARTRecPoint.h"
 
 ClassImp(AliSTARTReconstructor)
 
-void AliSTARTReconstructor::Reconstruct(AliRunLoader* /*rl*/) const
+  void AliSTARTReconstructor::Reconstruct(/*AliRunLoader* runLoader*/) 
 {
 // nothing to be done
-
 }
 
 void AliSTARTReconstructor::FillESD(AliRunLoader* rl, AliESD *pESD) const
@@ -38,10 +40,9 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* rl, AliESD *pESD) const
   /***************************************************
   Resonstruct digits to vertex position
   ****************************************************/
-
-  Int_t timediff;
-  Float_t timePs;
   
+  Float_t c = 0.3;  //speed of light mm/ps
+  Int_t channelWigth=25; //ps
   if (!rl) {
     Error("Reconstruct", "No run loader");
     return;
@@ -59,19 +60,13 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* rl, AliESD *pESD) const
   }
 
   if (rl->GetDebug()>1) pDigits->Dump();
-
-  if(pDigits->GetTimeDiff()<TMath::Abs(1000)) {
-    timediff=pDigits->GetTimeDiff();     //time in number of channels
-    timePs=(512-timediff)*2.5;       // time in Ps channel_width =10ps
-    // Float_t c = 299792458/1.e9;  //speed of light cm/ps
-    Float_t c = 0.3;  //speed of light mm/ps
-    Float_t Zposit=timePs*c;// for 0 vertex
-    
-    if (rl->GetDebug()>1) {
-      cout << "timediff " << timediff
-	   <<" timePs " << timePs 
-	   <<" Zposit "<<Zposit<<endl;
-    }
+  if(pDigits) {
+    Int_t   besttimeright = pDigits->GetBestTimeRight();
+    Int_t besttimeleft  = pDigits->GetBestTimeLeft();
+    Float_t besttimerightPs = Float_t (besttimeright*channelWigth);
+    Float_t besttimeleftPs  = Float_t (besttimeleft*channelWigth);
+   Float_t Zposit=(c*(besttimerightPs-besttimeleftPs)-(3500.-697))/2;
+  
     
     pESD->SetT0zVertex(Zposit);
     
