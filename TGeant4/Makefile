@@ -31,7 +31,9 @@ HDRS          =  $(wildcard *.icc) $(wildcard *.h)
 
 ifneq ($(ALICE_TARGET),OSF1)
 DICT          = TGeant4Cint.cxx
-DICTH         = TGeant4.h TG4VRunConfiguration.h TGeant4LinkDef.h
+DICTH         = TGeant4.h TG4VRunConfiguration.h \
+	        TG4Editor.h TG4GUI.h TG4GeometryGUI.h TG4GuiVolume.h \
+	        TGeant4LinkDef.h
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 endif
 
