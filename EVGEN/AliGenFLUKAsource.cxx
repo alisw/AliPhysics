@@ -22,6 +22,7 @@
 // Author: andreas.morsch@cern.ch
 
 #include "TPDGCode.h"
+#include "TDatabasePDG.h"
 
 #include "AliGenFLUKAsource.h"
 #include "AliRun.h"
@@ -154,9 +155,7 @@ void AliGenFLUKAsource::Generate()
     Float_t prwn;
     Float_t wgt, fwgt;
     Float_t phi;
-    char name[100];
-    Float_t amass, charge, tlife;
-    Int_t itrtyp;
+    Float_t amass;
     Int_t iwgt;
     Int_t i, j, part, nt;
     static Int_t irwn=0;
@@ -227,8 +226,8 @@ void AliGenFLUKAsource::Generate()
 	part=kIfluge[int(ifip)-1];	
 //
 // Calculate momentum from kinetic energy and mass of the particle
-	gMC->Gfpart(part, name, itrtyp,  
-		    amass, charge, tlife); 
+	amass = (TDatabasePDG::Instance())->GetParticle(part)->Mass();
+
 	prwn=fEkin*sqrt(1. + 2.*amass/fEkin);
 
 
