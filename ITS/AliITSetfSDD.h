@@ -8,6 +8,8 @@
 static const Int_t kMaxNofPoles = 5;
 static const Int_t kMaxNofSamples = 1024;
 
+class TString;
+
 class AliITSetfSDD : public TObject {
 
 ////////////////////////////////////////////////////////////////////////
@@ -22,18 +24,19 @@ class AliITSetfSDD : public TObject {
  public:
     
   AliITSetfSDD() {};                 // default constructor
-  AliITSetfSDD(Double_t timestep);
+  AliITSetfSDD(Double_t timestep, Int_t amplif);
   ~AliITSetfSDD() {;}  
   Double_t GetWeightReal(Int_t n) { return fWR[n]; }
   Double_t GetWeightImag(Int_t n) { return fWI[n]; }
   Double_t GetTraFunReal(Int_t n) { return fTfR[n]; }
   Double_t GetTraFunImag(Int_t n) { return fTfI[n]; }
   Int_t GetSamples() { return kMaxNofSamples; }
+  Float_t GetTimeDelay() { return fTimeDelay; }
   void PrintElectronics();          // Print Electronics parameters  
 
  private:
 
-  
+  Float_t  fTimeDelay;         //  Time delay caused by the amplifier shaping
   Double_t fSamplingTime;      //
   Double_t fT0;                //
   Double_t fDf;                //
