@@ -441,7 +441,7 @@ void AliITStrack::Propagation(Double_t rk) {
   *fmCovariance = B;    
 	
 }
-void AliITStrack::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass=0.1396) {
+void AliITStrack::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 //  add energy loss
 
