@@ -1444,7 +1444,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
     if (tpcindex==-1) return 0; //track in dead zone
     if (tpcindex>0){     //
       cl = t.fClusterPointer[nr];
-      if ( (cl==0) && (index>0)) cl = GetClusterMI(tpcindex);
+      if ( (cl==0) ) cl = GetClusterMI(tpcindex);
       t.fCurrentClusterIndex1 = tpcindex; 
     }
     if (cl){      
