@@ -22,8 +22,8 @@ class AliZDCDigit : public AliDigitNew {
   virtual ~AliZDCDigit() {}
 
   // Getters 
-  virtual Float_t   GetSector(Int_t i) {return fSector[i];}
-  virtual Float_t   GetADCValue() {return fADCValue;}
+  virtual Int_t   GetSector(Int_t i) {return fSector[i];}
+  virtual Int_t   GetADCValue()      {return fADCValue;}
 
   // Operators
   Int_t operator == (AliZDCDigit &digit) {
@@ -42,12 +42,12 @@ class AliZDCDigit : public AliDigitNew {
  protected:
 
   //Data members
-  Int_t   fSector[2];         // Detecor and tower in which light is produced
-  Float_t fADCValue;          // ADC channel value
+  Int_t  fSector[2];         // Detector and tower in which light is produced
+  Int_t  fADCValue;          // ADC channel value
 
   // Print method
   virtual void Print(Option_t *) {
-     printf(" -> DIGIT: Detector =  %d Quadrant =  %d ADCCh =  %f\n ",
+     printf(" -> DIGIT: Detector =  %d Quadrant =  %d ADCCh =  %d\n ",
      fSector[0], fSector[1], fADCValue);
   }
     

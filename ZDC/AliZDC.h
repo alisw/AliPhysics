@@ -31,10 +31,12 @@ public:
   virtual void  MakeBranch(Option_t* opt, const char *file=0);
   virtual void  MakeBranchInTreeSD(TTree *treeSD, const char *file=0);
   virtual void  MakeBranchInTreeD(TTree *treeD, const char *file=0);
+  virtual void  MakeBranchInTreeR(TTree *treeD, const char *file=0);
   virtual void  Hits2SDigits();
   virtual void  SDigits2Digits();
   virtual void  Hits2Digits();
   virtual void  Digits2Reco();
+  TClonesArray  *Reconstructed()   const {return fRecPoints;}
   virtual void  SetMerger(AliZDCMerger* merger);
   virtual AliZDCMerger* Merger();
   virtual void  StepManager() {}

@@ -45,7 +45,6 @@ public:
    void SetBackgroundFileName(char* file) {fFnBgr = file;}        
    void SetBackgroundEventNum(Int_t nev)  {fNEvBgr = nev;}        
 
-private:
    //Open the background file 
    TFile *OpenBgrFile(); 
 
@@ -75,24 +74,25 @@ protected:
    
    Int_t	fNMhits;	// Number of Merged hits for background
    TClonesArray *fMHits;	// TCA for "merged" hits  
-   
-//  // *** Digits
-//  // --- Digitization parameters setters and getters
-//  // 	PM gain
-//  void SetPMGain(Int_t Det, Int_t PMDet, Int_t PMGain)
-//       {fPMGain[Det][PMDet] = PMGain;}
-//  Float_t GetPMGain(Int_t Det, Int_t PMDet)
-//       {return fPMGain[Det][PMDet];}
-//  // 	Conversion factor from charge to ADC channels
-//  //   	F = 1.6E-19 / Resolution [Coulomb/ch]
-//  void SetADCRes(Int_t ADCRes) {fADCRes =  ADCRes;}
-//  Float_t GetADCRes() {return fADCRes;}
-//
-//  // --- Parameters for conversion of light yield in ADC channels
-//  Float_t fPMGain[3][5];      // PM gain
-//  Float_t fADCRes;            // ADC conversion factor
+
+public:   
+  // *** Digits
+  // --- Parameters for conversion of light yield in ADC channels
+  Float_t fPMGain[3][5];      // PM gain
+  Float_t fADCRes;	      // ADC conversion factor
+  // --- Digitization parameters setters and getters
+  //  PM gain
+  void SetPMGain(Int_t Det, Int_t PMDet, Int_t PMGain)
+       {fPMGain[Det][PMDet] = PMGain;}
+  Float_t GetPMGain(Int_t Det, Int_t PMDet)
+       {return fPMGain[Det][PMDet];}
+  //  Conversion factor from charge to ADC channels
+  //	      F = 1.6E-19 / Resolution [Coulomb/ch]
+  void SetADCRes(Int_t ADCRes) {fADCRes =  ADCRes;}
+  Float_t GetADCRes() {return fADCRes;}
+
   
        
-    ClassDef(AliZDCMerger,0)
+    ClassDef(AliZDCMerger,1)
 };    
 #endif
