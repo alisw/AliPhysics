@@ -1070,7 +1070,7 @@ ResolvePackageBestCombin(AliITSpackageSSD *pkg)
      }
   }
 
-  Int_t** combin = new (Int_t*)[sizet]; //2D array to keep combinations in
+  Int_t **combin = new Int_t*[sizet]; //2D array to keep combinations in
 
   for(itera =0; itera <sizet;itera++) {
    combin[itera] = new Int_t[NP+1];
