@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.11  2001/10/23 13:03:35  hristov
+  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
+
   Revision 1.10  2001/02/27 15:21:58  jbarbosa
   Transition to SDigits.
 
@@ -67,7 +70,7 @@
 #include <TPad.h>
 #include <TGraph.h> 
 #include <TPostScript.h> 
-#include <TMinuit.h> 
+#include <TMinuit.h>
 
 //----------------------------------------------------------
 static AliSegmentation* gSegmentation;
@@ -855,21 +858,22 @@ CalibrateCOG()
     Float_t x[5];
     Float_t y[5];
     Int_t n, i;
-    TF1 func;
     if (fSegmentation) {
+        TF1 *func;
 	fSegmentation->GiveTestPoints(n, x, y);
 	for (i=0; i<n; i++) {
+            func = 0;
 	    Float_t xtest=x[i];
 	    Float_t ytest=y[i];	    
 	    SinoidalFit(xtest, ytest, func);
-	    fSegmentation->SetCorrFunc(i, new TF1(func));
+	    if (func) fSegmentation->SetCorrFunc(i, new TF1(*func));
 	}
     }
 }
 
 
 void AliRICHClusterFinder::
-SinoidalFit(Float_t x, Float_t y, TF1 &func)
+SinoidalFit(Float_t x, Float_t y, TF1 *func)
 {
 // Sinoidal fit
 
@@ -990,7 +994,7 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
     Double_t sinoid(Double_t *x, Double_t *par);
     new TF1("sinoidf",sinoid,0.5,0.5,5);
     graphyr->Fit("sinoidf","Q");
-    func = *((TF1*)((graphyr->GetListOfFunctions())->At(0)));
+    func = (TF1*)graphyr->GetListOfFunctions()->At(0);
 /*
     
     TCanvas *c1=new TCanvas(canvasname,canvasname,400,10,600,700);

@@ -58,7 +58,7 @@ class AliRICHClusterFinder : public TObject
     virtual void SetClusterSize(Int_t clsize=5) {fClusterSize = clsize;}
     // Self Calibration of COG 
     virtual void CalibrateCOG();
-    virtual void SinoidalFit(Float_t x, Float_t y, TF1 &func);
+    virtual void SinoidalFit(Float_t x, Float_t y, TF1 *func);
     //
     virtual void CorrectCOG(){;}
     
