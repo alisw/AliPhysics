@@ -57,7 +57,11 @@ depend:				$(SRCS)
 TOCLEAN		=	 $(OBJS) *Cint.cxx *Cint.h
 
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
+REVENGS       = $(patsubst %.cxx,check/%.ii,$(SRCS))
 
+# IRST reverse engineering
+reveng : $(REVENGS)
+	@$(REV_ENG) $(REVENGS)
 ############################### General Macros ################################
 
 include $(ALICE_ROOT)/conf/GeneralMacros
