@@ -48,6 +48,8 @@
 //    creating only one AliVertex instance in the main programme and using the
 //    AliVertex::Reset, AliVertex::AddTrack and parameter setting memberfunctions.
 //
+// See also the documentation provided for the memberfunction SetOwner(). 
+//
 // Coding example to make 3 vertices v1, v2 and v3.
 // ------------------------------------------------
 // v1 contains the tracks 1,2,3 and 4
@@ -223,6 +225,37 @@ AliVertex::~AliVertex()
   delete fLines;
   fLines=0;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliVertex::SetOwner(Bool_t own)
+{
+// Set ownership of all added objects. 
+// The default parameter is own=kTRUE.
+//
+// Invokation of this memberfunction also sets all the copy modes
+// (e.g. TrackCopy & co.) according to the value of own.
+//
+// This function (with own=kTRUE) is particularly useful when reading data
+// from a tree/file, since Reset() will then actually remove all the
+// added objects from memory irrespective of the copy mode settings
+// during the tree/file creation process. In this way it provides a nice way
+// of preventing possible memory leaks in the reading/analysis process.
+//
+// In addition this memberfunction can also be used as a shortcut to set all
+// copy modes in one go during a tree/file creation process.
+// However, in this case the user has to take care to only set/change the
+// ownership (and copy mode) for empty objects (e.g. newly created objects
+// or after invokation of the Reset() memberfunction) otherwise it will
+// very likely result in inconsistent destructor behaviour.
+
+ Int_t mode=1;
+ if (!own) mode=0;
+ if (fVertices) fVertices->SetOwner(own);
+ fVertexCopy=mode;
+ if (fJets) fJets->SetOwner(own);
+ fJetCopy=mode;
+
+ AliJet::SetOwner(own);
 }
 ///////////////////////////////////////////////////////////////////////////
 AliVertex::AliVertex(AliVertex& v)

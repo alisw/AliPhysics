@@ -15,6 +15,7 @@ class AliSignal : public TObject,public AliPosition
  public:
   AliSignal(Int_t n=1);                                 // Default constructor
   ~AliSignal();                                         // Destructor
+  AliSignal(AliSignal& s);                              // Copy constructor
   virtual void SetSignal(Double_t sig,Int_t j=1);       // Store j-th signal value
   virtual void AddSignal(Double_t sig,Int_t j=1);       // Add value to j-th signal value
   virtual Float_t GetSignal(Int_t j=1);                 // Provide j-th signal value
@@ -26,6 +27,7 @@ class AliSignal : public TObject,public AliPosition
   void Info(TString f="car");                           // Print signal info for coord. frame f
   void SetName(TString name);                           // Set the name tag to indicate the kind of signal
   TString GetName();                                    // Provide the name tag indicating the kind of signal
+  Int_t GetNvalues();                                   // Provide the number of signal values
 
  protected:
   Int_t fNvalues;    // The number of values per signal
@@ -33,6 +35,6 @@ class AliSignal : public TObject,public AliPosition
   TArrayF* fDsignal; // Errors on signal values
   TString fName;     // Name tag to identify the kind of signal
 
- ClassDef(AliSignal,2) // Handling of ALICE (extrapolated) signals.
+ ClassDef(AliSignal,3) // Handling of ALICE (extrapolated) signals.
 };
 #endif

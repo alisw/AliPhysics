@@ -20,6 +20,7 @@ class AliJet : public TObject,public Ali4Vector
   AliJet();                          // Default constructor
   AliJet(Int_t n);                   // Create a Jet to hold initially n Tracks
   ~AliJet();                         // Default destructor
+  virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   AliJet(AliJet& j);                 // Copy constructor
   void Reset();                      // Reset all values
   void AddTrack(AliTrack& t,Int_t copy=1);// Add a track to the jet
@@ -57,6 +58,6 @@ class AliJet : public TObject,public Ali4Vector
   Int_t fTrackCopy;          // Flag to denote creation of private copies in fTracks
   Int_t fUserId;             // The user defined identifier
  
- ClassDef(AliJet,1) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,2) // Creation and investigation of a jet of particle tracks.
 };
 #endif

@@ -99,7 +99,7 @@ AliCalcluster::AliCalcluster(AliCalmodule& m)
   fColdisp=0.;
   fNvetos=0;
   fVetos=0;
-}
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalcluster::GetRow()
@@ -248,12 +248,26 @@ void AliCalcluster::Add(AliCalmodule& m)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalcluster::AddVetoSignal(Float_t* r,TString f,Float_t s)
+void AliCalcluster::AddVetoSignal(AliSignal& s,Int_t extr)
 {
-// Associate an (extrapolated) AliSignal at location r as veto to the cluster.
-// The signal value s indicates the confidence level of hit association
-// and has to be provided by the user.
-// Note : The default signal value (s) is 0
+// Associate an (extrapolated) AliSignal as veto to the cluster.
+// By default a straight line extrapolation is performed which extrapolates
+// the signal position until the length of its position vector matches that
+// of the position vector of the cluster.
+// In this extrapolation procedure the error propagation is performed 
+// automatically.  
+// Based on the cluster and extrapolated veto signal (x,y) positions and
+// position errors the confidence level of association is calculated
+// and stored as an additional signal value.
+// By means of the GetVetoSignal memberfunction the confidence level of
+// association can always be updated by the user.
+// In case the user wants to invoke a more detailed extrapolation procedure,
+// the automatic extrapolation can be suppressed by setting the argument
+// extr=0. In this case it is assumed that the AliSignal as entered via
+// the argument contains already the extrapolated position vector and
+// corresponding errors. 
+// Note : Three additional values are added to the original AliSignal
+//        to hold the chi2, ndf and confidence level values of the association. 
  if (!fVetos)
  {
   fNvetos=0;
@@ -261,11 +275,61 @@ void AliCalcluster::AddVetoSignal(Float_t* r,TString f,Float_t s)
   fVetos->SetOwner();
  } 
 
- fVetos->Add(new AliSignal(1));
- fNvetos++;
+ Int_t nvalues=s.GetNvalues();
+ AliSignal* sx=new AliSignal(nvalues+3); // Additional value added
+ TString name=s.GetName();
+ name.Append(" + additional chi2, ndf and CL values");
+ sx->SetName(name);
 
- ((AliSignal*)fVetos->At(fNvetos-1))->SetPosition(r,f);
- ((AliSignal*)fVetos->At(fNvetos-1))->SetSignal(s);
+ Double_t vecc[3],vecv[3];
+ if (!extr)
+ {
+  sx->SetPosition((Ali3Vector&)s);
+ }
+ else
+ {
+  // Extrapolate the veto hit position
+  Double_t scale=1;
+  GetPosition(vecc,"sph");
+  s.GetPosition(vecv,"sph"); 
+  if (vecv[0]) scale=vecc[0]/vecv[0];
+  Ali3Vector r=s*scale;
+  sx->SetPosition(r);
+ }
+
+ Double_t sig,err;
+ for (Int_t i=1; i<=nvalues; i++)
+ {
+  sig=s.GetSignal(i);
+  err=s.GetSignalError(i);
+  sx->SetSignal(sig,i);
+  sx->SetSignalError(err,i);
+ }
+
+ // Calculate the confidence level of association
+ GetPosition(vecc,"car");
+ sx->GetPosition(vecv,"car"); 
+ Double_t dx=vecc[0]-vecv[0];
+ Double_t dy=vecc[1]-vecv[1];
+ GetPositionErrors(vecc,"car");
+ sx->GetPositionErrors(vecv,"car"); 
+ Double_t sxc2=vecc[0]*vecc[0];
+ Double_t syc2=vecc[1]*vecc[1];
+ Double_t sxv2=vecv[0]*vecv[0];
+ Double_t syv2=vecv[1]*vecv[1];
+ Double_t sumx2=sxc2+sxv2;
+ Double_t sumy2=syc2+syv2;
+ Double_t chi2=0;
+ if (sumx2>0 && sumy2>0) chi2=(dx*dx/sumx2)+(dy*dy/sumy2);
+ Int_t ndf=2;
+ AliMath m;
+ Double_t prob=m.Prob(chi2,ndf);
+ if (chi2>0) sx->SetSignal(chi2,nvalues+1);
+ if (ndf>0) sx->SetSignal(ndf,nvalues+2);
+ if (prob>0) sx->SetSignal(prob,nvalues+3);
+
+ fVetos->Add(sx);
+ fNvetos++;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalcluster::GetNvetos()
@@ -303,12 +367,19 @@ Float_t AliCalcluster::GetVetoLevel()
 // Provide the confidence level of best associated veto signal.
  Float_t cl=0;
  Float_t clmax=0;
+ AliSignal* s=0;
+ Int_t nvalues=0;
  if (fVetos)
  {
   for (Int_t i=0; i<fNvetos; i++)
   {
-   cl=((AliSignal*)fVetos->At(i))->GetSignal();
-   if (cl>clmax) clmax=cl;
+   s=((AliSignal*)fVetos->At(i));
+   if (s)
+   {
+    nvalues=s->GetNvalues();
+    cl=s->GetSignal(nvalues);
+    if (cl>clmax) clmax=cl;
+   }
   }
  }
  return clmax;
@@ -319,11 +390,18 @@ Int_t AliCalcluster::HasVetoHit(Double_t cl)
 // Investigate if cluster has an associated veto hit with conf. level > cl.
 // Returns 1 if there is such an associated veto hit, otherwise returns 0.
 // Note : This function is faster than GetVetoLevel().
+ AliSignal* s=0;
+ Int_t nvalues=0;
  if (fVetos)
  {
   for (Int_t i=0; i<fNvetos; i++)
   {
-   if (((AliSignal*)fVetos->At(i))->GetSignal() > cl) return 1;
+   s=((AliSignal*)fVetos->At(i));
+   if (s)
+   {
+    nvalues=s->GetNvalues();
+    if (s->GetSignal(nvalues) > cl) return 1;
+   }
   }
  }
  return 0;

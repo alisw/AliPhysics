@@ -53,7 +53,8 @@ class AliCalorimeter : public TObject
   AliPosition* GetPosition(Int_t row,Int_t col);   // Access to module position
   TH2F* DrawModules();                             // Draw lego plot of module signals
   TH2F* DrawClusters();                            // Draw lego plot of cluster signals
-  void AddVetoSignal(Float_t* r,TString f,Float_t s=0); // Associate (extrapolated) signal
+  void AddVetoSignal(AliSignal& s);                // Associate (extrapolated) signal
+  void AddVetoSignal(AliSignal* s) { AddVetoSignal(*s); }
   AliSignal* GetVetoSignal(Int_t j);               // Access to veto signal number j
   Int_t GetNvetos();                               // Provide the number of veto signals
   void SetName(TString name);                      // Set the name of the calorimeter system
@@ -80,6 +81,6 @@ class AliCalorimeter : public TObject
   AliPosition ***fPositions;                 //! Matrix of module position pointers for internal use
   TString fName;                             // Name of the calorimeter system
  
- ClassDef(AliCalorimeter,1) // Description of a modular calorimeter system.
+ ClassDef(AliCalorimeter,2) // Description of a modular calorimeter system.
 };
 #endif

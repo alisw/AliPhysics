@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.5 2002/01/18 08:46:59 nick Exp $
+// $Id: AliEvent.cxx,v 1.6 2002/04/26 11:23:37 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -51,6 +51,8 @@
 //    This mode will allow 'adding' many different AliCalorimeters into an AliEvent by
 //    creating only one AliCalorimeter instance in the main programme and using the
 //    AliCalorimeter::Reset() and AliCalorimeter parameter setting memberfunctions.
+//
+// See also the documentation provided for the memberfunction SetOwner(). 
 //
 // Coding example to make an event consisting of a primary vertex,
 // 2 secondary vertices and a calorimeter.
@@ -187,7 +189,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2002/01/18 08:46:59 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2002/04/26 11:23:37 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -216,6 +218,7 @@ AliEvent::AliEvent(Int_t n): AliVertex(n)
 {
 // Create an event to hold initially a maximum of n tracks
 // All variables initialised to default values
+ cout << "AliEvent init with n = " << n << endl;
  fDaytime.Set();
  fRun=0;
  fEvent=0;
@@ -245,6 +248,7 @@ void AliEvent::Reset()
 // Reset all variables to default values
 // The max. number of tracks is set to the initial value again
 // The max. number of vertices is set to the default value again
+// Note : The CalCopy mode is maintained as it was set by the user before.
  fDaytime.Set();
  fRun=0;
  fEvent=0;
@@ -263,6 +267,35 @@ void AliEvent::Reset()
  }
 
  AliVertex::Reset();
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::SetOwner(Bool_t own)
+{
+// Set ownership of all added objects. 
+// The default parameter is own=kTRUE.
+//
+// Invokation of this memberfunction also sets all the copy modes
+// (e.g. TrackCopy & co.) according to the value of own.
+//
+// This function (with own=kTRUE) is particularly useful when reading data
+// from a tree/file, since Reset() will then actually remove all the
+// added objects from memory irrespective of the copy mode settings
+// during the tree/file creation process. In this way it provides a nice way
+// of preventing possible memory leaks in the reading/analysis process.
+//
+// In addition this memberfunction can also be used as a shortcut to set all
+// copy modes in one go during a tree/file creation process.
+// However, in this case the user has to take care to only set/change the
+// ownership (and copy mode) for empty objects (e.g. newly created objects
+// or after invokation of the Reset() memberfunction) otherwise it will
+// very likely result in inconsistent destructor behaviour.
+
+ Int_t mode=1;
+ if (!own) mode=0;
+ if (fCalorimeters) fCalorimeters->SetOwner(own);
+ fCalCopy=mode;
+
+ AliVertex::SetOwner(own);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetDayTime(TDatime& stamp)

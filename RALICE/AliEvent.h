@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.2 2001/07/04 15:59:20 nick Exp $
+// $Id: AliEvent.h,v 1.3 2002/04/26 11:23:37 nick Exp $
 
 #include <iomanip.h>
 #include <math.h>
@@ -21,6 +21,7 @@ class AliEvent : public AliVertex
   AliEvent();                             // Default constructor
   AliEvent(Int_t n);                      // Create an event to hold initially n tracks
   ~AliEvent();                            // Default destructor
+  virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   void SetDayTime(TDatime& stamp);        // Set the date and time stamp
   void SetRunNumber(Int_t run);           // Set the run number
   void SetEventNumber(Int_t evt);         // Set the event number
@@ -60,6 +61,6 @@ class AliEvent : public AliVertex
   TObjArray* fCalorimeters; // Array to hold the pointers to the calorimeter systems
   Int_t fCalCopy;           // Flag to denote creation of private copies in fCalorimeters
 
- ClassDef(AliEvent,2) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,3) // Creation and investigation of an Alice physics event.
 };
 #endif

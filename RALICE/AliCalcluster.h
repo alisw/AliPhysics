@@ -13,6 +13,7 @@
 #include "TString.h"
  
 #include "AliCalmodule.h"
+#include "AliMath.h"
  
 class AliCalcluster : public TObject,public AliPosition
 {
@@ -28,7 +29,8 @@ class AliCalcluster : public TObject,public AliPosition
   Float_t GetColumnDispersion();     // Return normalised column dispersion of cluster
   void Start(AliCalmodule& m);       // Reset cluster data to start with module m
   void Add(AliCalmodule& m);         // Add module data to cluster
-  void AddVetoSignal(Float_t* r,TString f,Float_t s=0); // Associate (extrapolated) signal
+  void AddVetoSignal(AliSignal& s,Int_t extr=1); // Associate (extrapolated) signal
+  void AddVetoSignal(AliSignal* s,Int_t extr=1) { AddVetoSignal(*s,extr); }
   AliSignal* GetVetoSignal(Int_t j); // Access to veto signal number j
   Int_t GetNvetos();                 // Provide the number of veto signals
   Float_t GetVetoLevel();            // Provide confidence level of best associated veto hit
@@ -46,6 +48,6 @@ class AliCalcluster : public TObject,public AliPosition
   Int_t fNvetos;         // The number of associated veto signals
   TObjArray* fVetos;     // The array of associated veto signals
  
- ClassDef(AliCalcluster,1) // Description of a cluster of calorimeter modules.
+ ClassDef(AliCalcluster,2) // Description of a cluster of calorimeter modules.
 };
 #endif

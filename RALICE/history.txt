@@ -304,3 +304,12 @@
                 Missing comment lines added in SetName() and GetName() of AliCalorimeter and AliSignal.
 19-mar-2002 NvE AliVertex::Draw() introduced to enable 3D event display. 
 25-apr-2002 NvE Projectile and target specifications introduced in AliEvent.
+26-apr-2002 NvE AddVetoSignal(AliSignal) introduced in AliCalorimeter and AliCalcluster
+                to provide more flexibility and allow automatic calculation of
+                hit association confidence level based on position uncertainties.
+29-apr-2002 NvE Memberfunction GetNvalues() and copy constructor introduced in AliSignal.
+25-jun-2002 NvE Memberfunction SetOwner() introduced in AliJet, AliVertex and AliEvent to allow
+                to set ownership of "added objects" in the case of reading data from a file.
+                In this way possible memory leaks can always be prevented.
+                Also automatic extrapolation and confidence level calculation of associated
+                veto hits introduced in AliCalorimeter and AliCalcluster.

@@ -103,6 +103,26 @@ AliSignal::~AliSignal()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+AliSignal::AliSignal(AliSignal& s)
+{
+// Copy constructor
+ fNvalues=s.GetNvalues();
+ fSignal=0;
+ fDsignal=0;
+ fName=s.GetName();
+ 
+ SetPosition((Ali3Vector&)s);
+
+ Double_t sig,err;
+ for (Int_t i=1; i<=fNvalues; i++)
+ {
+  sig=s.GetSignal(i);
+  err=s.GetSignalError(i);
+  SetSignal(sig,i);
+  SetSignalError(err,i);
+ } 
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::Reset()
 {
 // Reset all signal and position values and errors to 0.
@@ -257,5 +277,11 @@ TString AliSignal::GetName()
 {
 // Provide the name tag indicating the kind of signal.
  return fName;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetNvalues()
+{
+// Provide the number of values for this signal.
+ return fNvalues;
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -21,6 +21,7 @@ class AliVertex : public AliJet,public AliPosition
   AliVertex();                            // Default constructor
   AliVertex(Int_t n);                     // Create a vertex to hold initially n tracks
   ~AliVertex();                           // Default destructor
+  virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   AliVertex(AliVertex& v);                // Copy constructor
   void Reset();                           // Reset all values and stored vertex and jet lists
   void ResetVertices();                   // Reset stored vertex list
@@ -64,6 +65,6 @@ class AliVertex : public AliJet,public AliPosition
  private:
   void Dump(AliVertex* v,Int_t n,TString f); // Recursively print all sec. vertices
  
- ClassDef(AliVertex,2) // Creation and investigation of an AliVertex.
+ ClassDef(AliVertex,3) // Creation and investigation of an AliVertex.
 };
 #endif
