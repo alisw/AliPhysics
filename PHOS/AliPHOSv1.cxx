@@ -688,7 +688,7 @@ void AliPHOSv1::StepManager(void)
       gMC -> Gmtod (xyze, posloc, 1);
       if (posloc[1] > fGeom->GetCrystalSize(1)/2-0.01) {
 	Int_t row,cel;
-	Float_t xyd[2]={0,0,0};
+	Float_t xyd[3]={0,0,0};
 	AliPHOSv1 &phos = *(AliPHOSv1*)gAlice->GetModule("PHOS");
 
 	Int_t moduleNumber;
