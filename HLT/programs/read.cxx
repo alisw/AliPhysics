@@ -104,7 +104,7 @@ int main(int argc,char **argv)
 	  charge = dataPt[ndig].fCharge;
 	  cout << "Padrow " << r << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
 	  //	  cout << "Padrow " << row << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
-	  if(altroout) altromem.Write(row,pad,time,charge);
+	  if(altroout) altromem.Write(r,pad,time,charge);
 	}
       
       //Move the pointer to the next padrow:
