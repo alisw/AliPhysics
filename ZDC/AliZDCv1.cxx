@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/05/02 11:54:34  enrico
+Minor change
+
 Revision 1.20  2001/05/02 10:33:11  coppedis
 Modify tmaxfd in media definition
 
@@ -1025,7 +1028,8 @@ void AliZDCv1::CreateMaterials()
   // --- Tracking media parameters 
   Float_t epsil  = .01, stmin=0.01, stemax = 1.;
   Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t fieldm = gAlice->Field()->Max();
+//  Float_t fieldm = gAlice->Field()->Max();
+  Float_t fieldm = 0;
   Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
   
   fieldm = 0.;
@@ -1063,8 +1067,22 @@ void AliZDCv1::CreateMaterials()
   gMC->Gstpar(idtmed[i], "CUTNEU", .01);
   gMC->Gstpar(idtmed[i], "CUTHAD", .01);
   
+  // Avoid too detailed showering in TDI 
+  i = 6; //copper
+  gMC->Gstpar(idtmed[i], "CUTGAM", .1);
+  gMC->Gstpar(idtmed[i], "CUTELE", .1);
+  gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
+  gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
+  
   // Avoid too detailed showering along the beam line 
   i = 7; //iron with energy loss (ZIRON)
+  gMC->Gstpar(idtmed[i], "CUTGAM", .1);
+  gMC->Gstpar(idtmed[i], "CUTELE", .1);
+  gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
+  gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
+  
+  // Avoid too detailed showering along the beam line 
+  i = 8; //iron with energy loss (ZIRONN)
   gMC->Gstpar(idtmed[i], "CUTGAM", .1);
   gMC->Gstpar(idtmed[i], "CUTELE", .1);
   gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
@@ -1099,19 +1117,19 @@ void AliZDCv1::CreateMaterials()
   gMC->Gstpar(idtmed[i], "HADR", 0.);
   
   // Avoid interaction in void 
-//  i = 10; //void
-//  gMC->Gstpar(idtmed[i], "DCAY", 0.);
-//  gMC->Gstpar(idtmed[i], "MULS", 0.);
-//  gMC->Gstpar(idtmed[i], "PFIS", 0.);
-//  gMC->Gstpar(idtmed[i], "MUNU", 0.);
-//  gMC->Gstpar(idtmed[i], "LOSS", 0.);
-//  gMC->Gstpar(idtmed[i], "PHOT", 0.);
-//  gMC->Gstpar(idtmed[i], "COMP", 0.);
-//  gMC->Gstpar(idtmed[i], "PAIR", 0.);
-//  gMC->Gstpar(idtmed[i], "BREM", 0.);
-//  gMC->Gstpar(idtmed[i], "DRAY", 0.);
-//  gMC->Gstpar(idtmed[i], "ANNI", 0.);
-//  gMC->Gstpar(idtmed[i], "HADR", 0.);
+  i = 11; //void with field
+  gMC->Gstpar(idtmed[i], "DCAY", 0.);
+  gMC->Gstpar(idtmed[i], "MULS", 0.);
+  gMC->Gstpar(idtmed[i], "PFIS", 0.);
+  gMC->Gstpar(idtmed[i], "MUNU", 0.);
+  gMC->Gstpar(idtmed[i], "LOSS", 0.);
+  gMC->Gstpar(idtmed[i], "PHOT", 0.);
+  gMC->Gstpar(idtmed[i], "COMP", 0.);
+  gMC->Gstpar(idtmed[i], "PAIR", 0.);
+  gMC->Gstpar(idtmed[i], "BREM", 0.);
+  gMC->Gstpar(idtmed[i], "DRAY", 0.);
+  gMC->Gstpar(idtmed[i], "ANNI", 0.);
+  gMC->Gstpar(idtmed[i], "HADR", 0.);
 
   //
   fMedSensZN  = idtmed[1];  // Sensitive volume: ZN passive material
@@ -1384,26 +1402,26 @@ void AliZDCv1::StepManager()
 
   if((gMC->GetMedium() == fMedSensZN) || (gMC->GetMedium() == fMedSensZP) ||
      (gMC->GetMedium() == fMedSensGR) || (gMC->GetMedium() == fMedSensF1) ||
-     (gMC->GetMedium() == fMedSensF2) || (gMC->GetMedium() == fMedSensZEM)||
-     (gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){
+     (gMC->GetMedium() == fMedSensF2) || (gMC->GetMedium() == fMedSensZEM)){
+//     (gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){
        
   // If particle interacts with beam pipe -> return
-    if((gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){ 
+//    if((gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){ 
       // If option NoShower is set -> StopTrack
-      if(fNoShower==1) {
+//      if(fNoShower==1) {
 //	if(gMC->GetMedium() == fMedSensPI) {
 //          knamed = gMC->CurrentVolName();
 //          if((!strncmp(knamed,"MQ",2)) || (!strncmp(knamed,"YM",2)))  fpLostIT += 1;
 //          if((!strncmp(knamed,"MD1",3))|| (!strncmp(knamed,"YD1",2))) fpLostD1 += 1;
 //	}
 //	if(gMC->GetMedium() == fMedSensTDI) fpLostTDI += 1;
-        gMC->StopTrack();
+//        gMC->StopTrack();
 //	printf("\n	# of p lost in Inner Triplet = %d\n",fpLostIT);
 //	printf("\n	# of p lost in D1  = %d\n",fpLostD1);
 //	printf("\n	# of p lost in TDI = %d\n",fpLostTDI);
-        return;
-      }
-    }
+//        return;
+//      }
+//    }
   
   //Particle coordinates 
     gMC->TrackPosition(s);
