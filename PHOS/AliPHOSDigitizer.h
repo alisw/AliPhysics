@@ -21,15 +21,18 @@ class TArrayI ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliDigitizer.h"
 class AliPHOSSDigitizer ;
-
+class AliRunDigitizer ;
 
 class AliPHOSDigitizer: public TTask {
 
 public:
   AliPHOSDigitizer() ;          // ctor
-  AliPHOSDigitizer(const char *headerFile, const char * name = "No Name") ; 
-  AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) {( (AliPHOSDigitizer &)dtizer ).Copy(*this) ;} // cpy ctor
+  AliPHOSDigitizer(const char *headerFile, const char * name = "Default") ; 
+  AliPHOSDigitizer(AliRunDigitizer * ard) ;
+  AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) 
+                  {( (AliPHOSDigitizer &)dtizer ).Copy(*this) ;} 
   virtual ~AliPHOSDigitizer() ;       
 
   void    Digitize(const Int_t event) ;            // Make Digits from SDigits 
@@ -47,7 +50,7 @@ public:
   //  const TArrayI      * GetCurrentEvents()const { return fIevent ;}
 
   void    MixWith(const char* HeaderFile) ; // Add another one file to mix
-  virtual void    Print(Option_t* option)const ;
+  void    Print(Option_t* option)const ;
   void    Reset() ;   //restarts starts event processing from 0 event(s)
 
   void    SetCPVNoise(Float_t CPVNoise)          {fCPVNoise = CPVNoise;}
@@ -66,9 +69,8 @@ public:
   }
 
 private:
-  void    Init() ;                   
+  Bool_t  Init() ; 
   void    PrintDigits(Option_t * option) ;
-  Bool_t  ReadSDigits(Int_t evt) ;            // Read sdigits for particular events
   void    WriteDigits(Int_t evt) ;            // Writes Digits for particular event
 
 private:
@@ -76,13 +78,14 @@ private:
   Float_t fPedestal ;                // Calibration parameters 
   Float_t fSlope ;                   // read from SDigitizer
 
+  AliRunDigitizer * fARD ;          //! Pointer to the Digitization Manager class
   Float_t fPinNoise ;               // Electronics noise in EMC
   Float_t fEMCDigitThreshold  ;     // Threshold for storing digits in EMC
   Float_t fCPVNoise ;               // Noise in CPV
   Float_t fCPVDigitThreshold  ;     // Threshold for storing digits in CPV
   Float_t fPPSDNoise ;              // Noise in PPSD
   Float_t fPPSDDigitThreshold ;     // Threshold for storing digits in PPSD
-  Int_t fDigitsInRun ;             //! Total number of digits in one run
+  Int_t fDigitsInRun ;              //! Total number of digits in one run
 
 
   ClassDef(AliPHOSDigitizer,1)  // description 
