@@ -36,7 +36,7 @@ HERWIG/module.mk:        HERWIG/libherwig.pkg HERWIG/libdummyherwig.pkg
 TFluka/module.mk:        TFluka/libTFluka.pkg
 Flugg/module.mk:         Flugg/libFlugg.pkg
 VZERO/module.mk:         VZERO/libVZERO.pkg
-EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
+EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg EPEMGEN/libdummyepemgen.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
 
 

@@ -16,6 +16,8 @@ void loadlibs ()
   gSystem->Load("libTHbtp");
   gSystem->Load("libdummymevsim");
   gSystem->Load("libTMEVSIM");
+  gSystem->Load("libdummyepemgen");
+  gSystem->Load("libTEPEMGEN");
   gSystem->Load("libEVGEN");
 
   gSystem->Load("libPhysics");
