@@ -9,6 +9,7 @@
 
 class AliITSMapA2;
 class AliITSpList;
+class AliITSTableSSD;
 class AliITSdcsSSD;
 class AliITSsegmentationSSD;
 class AliITSresponseSSD;
@@ -64,7 +65,8 @@ class AliITSsimulationSSD: public AliITSsimulation {
     Int_t NumOfSteps(Double_t x,Double_t y,Double_t z,
 		     Double_t  &dex,Double_t &dey,Double_t &dez);
     // Keepts track and orders tracks for a give strip.
-    void GetList(Int_t trk,Int_t ht,Int_t mod,AliITSpList *pLt,Int_t *indxRng);
+    void GetList(Int_t trk,Int_t ht,Int_t mod,AliITSpList *pLt,
+		 AliITSTableSSD *tav);
     // sets thresholds and fills digits
     void ChargeToSignal(AliITSpList *pList);
     // Writes Summable Digits to a root file for later use.
