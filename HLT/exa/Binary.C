@@ -24,7 +24,7 @@ Binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
 
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
-  AliL3Transform::Init(path);
+  AliL3Transform::Init(path,kTRUE);
 
   for(int slice=first; slice<=last; slice++){
     for(int patch=0;patch<npatch;patch++){
