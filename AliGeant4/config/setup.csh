@@ -35,22 +35,10 @@ setenv AG4_VISUALIZE 1
 unsetenv AG4_OPACS
 
 #
-# ====== AG4_NOPHYSICS
-# If set: only geantino or charged geantino can be shooted  
-#setenv AG4_NOPHYSICS 1
-unsetenv AG4_NOPHYSICS
-
-#
 # ====== AG4_MAKESHLIB
 # If set: shared libraris are created
 setenv AG4_MAKESHLIB 1
 #unsetenv AG4_MAKESHLIB
-
-#
-# ====== AG4_ODBMS
-# If set: the environment for using Objectivity is set. Not available on Linux?
-#setenv AG4_ODBMS 1
-unsetenv AG4_ODBMS
 
 
 #
@@ -102,10 +90,6 @@ if ( "$LOCAL" == "NO" ) then
   # ====== IRST_BASE
   # IRST code check tool base directory
   setenv IRST_BASE /afs/cern.ch/alice/offline/geant4/tools/IRST
-
-  # ====== OBJY_BASE
-  # Objectivity base directory
-  set OBJY_BASE = /afs/cern.ch/rd45/objectivity
 
 else
   # 
@@ -202,54 +186,6 @@ if ( "$VERBOSE" == "YES" ) then
 endif
 
 #
-# ODBMS Alice definitions & options
-# ==================================
-#
-if ( "$VERBOSE" == "YES" ) then
-  echo " "
-  echo "ODBMS & Objectivity"
-  echo "==================="
-endif
-if ( "$?AG4_ODBMS" == 1 ) then
-  if ( "$VERBOSE" == "YES" ) then
-    echo Setting ODBMS Alice definitions & options...
-  endif
-  setenv G4ODBMS 1
-  unsetenv AG4_VISUALIZE
-  setenv ALBOOT_DIR $AG4_INSTALL/ObjyDatabase
-  setenv ALBOOT_NAME Alice
-  setenv ALBOOT $ALBOOT_DIR/$ALBOOT_NAME
-  if ( ! -d $ALBOOT_DIR ) then
-    echo "  Making new directory $ALBOOT_DIR ..."
-    mkdir $ALBOOT_DIR
-  endif
-else
-  if ( "$VERBOSE" == "YES" ) then
-    echo Unsetting ODBMS Alice definitions \& options...
-  endif
-  unsetenv G4ODBMS
-  unsetenv ALBOOT_DIR
-  unsetenv ALBOOT_NAME
-  unsetenv ALBOOT
-endif
-#
-# Objectivity G4 options
-# according to run/example5/g4odbms_setup.sh
-#
-if ( "$?G4ODBMS" == 1 ) then
-  setenv OBJY_VERS 4.0.2
-  if ( -r $OBJY_BASE/objyenv.csh ) then
-    source $OBJY_BASE/objyenv.csh
-    if ( "$VERBOSE" == "YES" ) then
-      echo "  Environment for Objectivity has been set."
-    endif
-  endif
-  setenv HEP_ODBMS_DIR ${LHCXX_BASE}/HepODBMS/0.0
-  setenv HEP_ODBMS_INCLUDES $HEP_ODBMS_DIR/include
-endif
-
-
-#
 # Geant4  
 # ==================================
 #
@@ -305,8 +241,8 @@ endif
 # ==================================
 #
 
-if ( -d $LHCXX_BASE/CLHEP/1.5.0.0 ) then
-  setenv CLHEP_BASE_DIR $LHCXX_BASE/CLHEP/1.6.0.0
+if ( -d $LHCXX_BASE/CLHEP/1.7.0.0 ) then
+  setenv CLHEP_BASE_DIR $LHCXX_BASE/CLHEP/1.7.0.0
 else
   echo "WARNING: CLHEP has not been found in the default path."
   if ( "$VERBOSE" == "YES" ) then
@@ -727,7 +663,6 @@ setenv $SHLIBVARNAME $SHLIBVAR
 unset ALICE_BASE
 unset G4_BASE
 unset LHCXX_BASE
-unset OBJY_BASE
 unset SYSTEM
 unset NCLASSPATH
 unset SHLIBVAR

@@ -35,22 +35,10 @@ export AG4_VISUALIZE=1
 unset AG4_OPACS
 
 #
-# ====== AG4_NOPHYSICS
-# If set: only geantino or charged geantino can be shooted  
-#export AG4_NOPHYSICS=1
-unset AG4_NOPHYSICS
-
-#
 # ====== AG4_MAKESHLIB
 # If set: shared libraris are created
 export AG4_MAKESHLIB=1
 #unset AG4_MAKESHLIB
-
-#
-# ====== AG4_ODBMS
-# If set: the environment for using Objectivity is set. Not available on Linux?
-#export AG4_ODBMS=1
-unset AG4_ODBMS
 
 
 #
@@ -102,10 +90,6 @@ if [ "$LOCAL" = "NO" ]; then
   # ====== IRST_BASE
   # IRST code check tool base directory
   export IRST_BASE=/afs/cern.ch/alice/offline/geant4/tools/IRST
-
-  # ====== OBJY_BASE
-  # Objectivity base directory
-  OBJY_BASE="/afs/cern.ch/rd45/objectivity"
 
 else
   # 
@@ -202,54 +186,6 @@ if [ "$VERBOSE" = "YES" ]; then
 fi
 
 #
-# ODBMS Alice definitions & options
-# ==================================
-#
-if [ "$VERBOSE" = "YES" ]; then
-  echo " "
-  echo "ODBMS & Objectivity"
-  echo "==================="
-fi
-if [ $AG4_ODBMS ]; then
-  if [ "$VERBOSE" = "YES" ]; then
-    echo Setting ODBMS Alice definitions & options...
-  fi
-  export G4ODBMS=1
-  unset AG4_VISUALIZE
-  export ALBOOT_DIR=$AG4_INSTALL/ObjyDatabase
-  export ALBOOT_NAME=Alice
-  export ALBOOT=$ALBOOT_DIR/$ALBOOT_NAME
-  if [ ! -d $ALBOOT_DIR ]; then 
-    echo "  Making new directory $ALBOOT_DIR ..."
-    mkdir $ALBOOT_DIR
-  fi 
-else
-  if [ "$VERBOSE" = "YES" ]; then
-    echo Unsetting ODBMS Alice definitions \& options...
-  fi 
-  unset G4ODBMS
-  unset ALBOOT_DIR
-  unset ALBOOT_NAME
-  unset ALBOOT
-fi
-#
-# Objectivity G4 options
-# according to run/example5/g4odbms_setup.sh
-#
-if [ $G4ODBMS ]; then
-  export OBJY_VERS=4.0.2
-  if [ -r $OBJYDEV/objyenv.sh ]; then
-    . $OBJYDEV/objyenv.sh
-    if [ "$VERBOSE" = "YES" ]; then
-      echo "Environment for Objectivity has been set."
-    fi
-  fi
-  export HEP_ODBMS_DIR=$HEPDEV/HepODBMS/0.0
-  export HEP_ODBMS_INCLUDES=$HEP_ODBMS_DIR/include
-fi
-
-
-#
 # Geant4
 # ==================================
 #
@@ -305,8 +241,8 @@ fi
 # ==================================
 #
 
-if [ -d $LHCXX_BASE/CLHEP/1.5.0.0 ]; then
-  export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.6.0.0
+if [ -d $LHCXX_BASE/CLHEP/1.7.0.0 ]; then
+  export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.7.0.0
 else
   echo "WARNING: CLHEP has not been found in the default path."
   if [ "$VERBOSE" = "YES" ]; then
@@ -727,7 +663,6 @@ export $SHLIBVARNAME=$SHLIBVAR
 unset ALICE_BASE
 unset G4_BASE
 unset LHCXX_BASE
-unset OBJY_BASE
 unset SYSTEM
 unset NCLASSPATH
 unset SHLIBVAR
