@@ -480,10 +480,10 @@ again:
    const char *fname = GetFileName();
    if (!fname) return kFALSE;
 
-   fRawDB = TFile::Open(fname, "RECREATE",
+   fRawDB = TFile::Open(fname, "NEW",
                         Form("ALICE MDC%d raw DB", kMDC), fCompress);
    if (!fRawDB) {
-      Error("Create", "did not find right plugin to open file");
+      Error("Create", "failure to open file %s", fname);
       return kFALSE;
    }
    if (fRawDB->IsZombie()) {
@@ -1147,7 +1147,7 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
    //       (int)stats->GetFileSize());
 
 //   g->AddFile(lfn, stats->GetFileName(), (int)stats->GetFileSize());
-   Int_t result = g->AddFile(lfn, stats->GetFileName(), 
+   Int_t result = g->AddFile(lfn, stats->GetFileName(),
 			     (int)stats->GetFileSize());
    ALIDEBUG(1)
       Info("UpdateAliEn", "TGrid::AddFile returned %d\n", result);
@@ -1348,7 +1348,7 @@ Int_t AliMDC::Run()
          }
          return 1;
       }
-      ALIDEBUG(3) 
+      ALIDEBUG(3)
          header.Dump();
 
       // If we were in looping mode stop directly after a SIGUSR1 signal
@@ -1394,7 +1394,7 @@ Int_t AliMDC::Run()
       // header, something is wrong. Skip to next event...
       if (toRead < header.HeaderSize()) {
 	 ALIDEBUG(1) {
-            Warning("Run", 
+            Warning("Run",
 		    "header size (%d) exceeds number of bytes to read (%d)\n",
 		    header.HeaderSize(), toRead);
 	    header.Dump();
