@@ -233,7 +233,7 @@ void AliRICHClusterFinder::FitCoG()
   Int_t ierflag = 0;
 
 //  fRawCluster.Print();
-  if(fNlocals==0) fRawCluster.Print();
+//  if(fNlocals==0) fRawCluster.Print();
   if(fNlocals==0||fNlocals>3) {WriteRawCluster();return;}
   
   TMinuit *pMinuit = new TMinuit(3*fNlocals-1);
@@ -241,6 +241,7 @@ void AliRICHClusterFinder::FitCoG()
   
   arglist = -1;
   pMinuit->mnexcm("SET PRI",&arglist, 1, ierflag);
+  pMinuit->mnexcm("SET NOW",&arglist, 0, ierflag);
   
   TString chname;
   Int_t ierflg;
@@ -275,7 +276,6 @@ void AliRICHClusterFinder::FitCoG()
   
   arglist = -1;
   pMinuit->mnexcm("SET NOGR",&arglist, 1, ierflag);
-  pMinuit->mnexcm("SET NOW",&arglist, 1, ierflag);
   arglist = 1;
   pMinuit->mnexcm("SET ERR", &arglist, 1,ierflg);
   arglist = -1;

@@ -1824,7 +1824,7 @@ void AliTRDtracker::LoadEvent()
 
   ReadClusters(fClusters);
   Int_t ncl=fClusters->GetEntriesFast();
-  cout<<"\n LoadSectors: sorting "<<ncl<<" clusters"<<endl;
+  cout<<"LoadSectors: sorting "<<ncl<<" clusters"<<endl;
               
   UInt_t index;
   while (ncl--) {
@@ -1844,7 +1844,7 @@ void AliTRDtracker::LoadEvent()
     index=ncl;
     fTrSec[trackingSector]->GetLayer(layer)->InsertCluster(c,index);
   }    
-  printf("\r\n");
+  //  printf("\r\n");
 
 }
 
@@ -2121,12 +2121,12 @@ Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree)
   branch->SetAddress(&clusterArray); 
   
   Int_t nEntries = (Int_t) ClusterTree->GetEntries();
-  printf("found %d entries in %s.\n",nEntries,ClusterTree->GetName());
+  //  printf("found %d entries in %s.\n",nEntries,ClusterTree->GetName());
   
   // Loop through all entries in the tree
   Int_t nbytes;
   AliTRDcluster *c = 0;
-  printf("\n");
+  // printf("\n");
 
   for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {    
     

@@ -494,7 +494,7 @@ void AliMUON::Trigger(Int_t nev){
     //  fLoader->TreeR()->Reset();
   fLoader->WriteRecPoints("OVERWRITE");
   
-  printf("\n End of trigger for event %d", nev);
+  //  printf("\n End of trigger for event %d\n", nev);
 }
 
 //____________________________________________________________________
@@ -533,6 +533,7 @@ void AliMUON::FindClusters()
 	//TClonesArray *
 	muonDigits = GetMUONData()->Digits(ich); 
 	ndig=muonDigits->GetEntriesFast();
+	if(fDebug) 
 	printf("\n 1 Found %d digits in %p chamber %d", ndig, muonDigits,ich);
 	TClonesArray &lhits1 = *dig1;
 	Int_t n = 0;
@@ -545,6 +546,7 @@ void AliMUON::FindClusters()
 	GetMUONData()->GetCathode(1);
 	muonDigits =  GetMUONData()->Digits(ich);  
 	ndig=muonDigits->GetEntriesFast();
+	if(fDebug) 
 	printf("\n 2 Found %d digits in %p %d", ndig, muonDigits, ich);
 	TClonesArray &lhits2 = *dig2;
 	n=0;
@@ -770,7 +772,7 @@ void AliMUON::Reconstruct() const
 
   //   Loop over events              
   for(Int_t ievent = 0; ievent < nEvents; ievent++) {
-    printf("event %d\n",ievent);
+    printf("Event %d\n",ievent);
     runLoader->GetEvent(ievent);
 
     //---------------------------- digit2Reco & Trigger ---------------------

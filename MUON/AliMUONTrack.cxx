@@ -283,11 +283,11 @@ void AliMUONTrack::Fit()
   // choice of function to be minimized according to fFitMCS
   if (fFitMCS == 0) fgFitter->SetFCN(TrackChi2);
   else fgFitter->SetFCN(TrackChi2MCS);
-  // Batch mode
-  fgFitter->ExecuteCommand("SET BATCH", arg, 0);
   // Switch off printout
   arg[0] = -1;
   fgFitter->ExecuteCommand("SET PRINT", arg, 1); // More printing !!!!
+  // No warnings
+  fgFitter->ExecuteCommand("SET NOW", arg, 0);
   // Parameters according to "fFitStart"
   // (should be a function to be used at every place where needed ????)
   if (fFitStart == 0) trackParam = &fTrackParamAtVertex;

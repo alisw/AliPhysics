@@ -74,7 +74,7 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
   static TFile *fileLut;
   static Bool_t first=kTRUE;  
   if(first) {
-    printf(" opening MUONTriggerLut.root \n");
+    //    printf(" opening MUONTriggerLut.root \n");
     fileLut = new TFile("$(ALICE_ROOT)/MUON/MUONTriggerLut.root","READ");
     first=kFALSE;
   }

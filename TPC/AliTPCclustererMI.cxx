@@ -525,7 +525,7 @@ void AliTPCclustererMI::Digits2Clusters()
     delete[] fResBins;  
   }  
 
-  Info("Digits2Clusters", "Number of found clusters : %d\n", nclusters);
+  Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
 }
 
 void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)

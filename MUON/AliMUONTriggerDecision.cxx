@@ -205,6 +205,7 @@ void AliMUONTriggerDecision::SetBit(){
       gime->TreeD()->GetEvent(cathode-1);
       TClonesArray *muonDigits = pMUON->GetMUONData()->Digits(chamber-1);
       Int_t ndigits = muonDigits->GetEntriesFast();
+      if (fDebug>3)
       printf("\n 1 Found %d digits in %p %d \n ", ndigits, muonDigits,chamber-1);
 //    if (ndigits == 0) return;
       
@@ -217,6 +218,7 @@ void AliMUONTriggerDecision::SetBit(){
 // get the center of the pad Id 
   	Int_t ix=mdig->PadX();
   	Int_t iy=mdig->PadY();
+	if (fDebug>3)
 	printf("digits %d ix %d iy %d \n",digit,ix,iy);
 
 // get the sum of the coded charge 
@@ -1145,7 +1147,6 @@ void AliMUONTriggerDecision::GlobalTrigger(){
   }
   
   if (fDebug>=1) {
-    printf("\n");
     printf("===================================================\n");
     printf(" Global Trigger output       Low pt  High pt   All\n");
     printf(" number of Single Plus      :\t");
@@ -1164,6 +1165,7 @@ void AliMUONTriggerDecision::GlobalTrigger(){
     for (i=0; i<3; i++) printf("%i\t",fGlobalPairLike[i]);
     printf("\n");
     printf("===================================================\n");
+    printf("\n");
   }
 }
 

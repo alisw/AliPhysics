@@ -103,14 +103,14 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig)
 void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 {
 // Set the current cluster
-    printf("\n %p \n", cluster);
+    //PH printf("\n %p \n", cluster);
     fCluster=cluster;
     Float_t qtot;
     Int_t   i, cath, ix, iy;
     AliMUONDigit* digit;
     fNmul[0]=cluster->fMultiplicity[0];
     fNmul[1]=cluster->fMultiplicity[1];
-    printf("\n %p %p ", fDigits[0], fDigits[1]);
+    //PH printf("\n %p %p ", fDigits[0], fDigits[1]);
     
     for (cath=0; cath<2; cath++) {
 	qtot=0;

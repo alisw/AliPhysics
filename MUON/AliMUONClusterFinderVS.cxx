@@ -163,6 +163,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    AddRawCluster(*c);
 // If not try combined double Mathieson Fit
 	} else {
+	  if (fDebugLevel)
 	    fprintf(stderr," MAUVAIS CHI2 !!!\n");
 	    if (fNLocal[0]==1 &&  fNLocal[1]==1) {
 		fXInit[0]=fX[fIndLocal[0][1]][1];
@@ -193,12 +194,15 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 //	    chi2_2->Fill(chi2);
 	    
 // Was this any better ??
-	    fprintf(stderr," Old and new chi2 %f %f ", oldchi2, chi2);
+	    if (fDebugLevel)
+	      fprintf(stderr," Old and new chi2 %f %f ", oldchi2, chi2);
 	    if (fFitStat!=0 && chi2>0 && (2.*chi2 < oldchi2)) {
+	      if (fDebugLevel)
 		fprintf(stderr," Split\n");
 		// Split cluster into two according to fit result
 		Split(c);
 	    } else {
+	      if (fDebugLevel)
 		fprintf(stderr," Don't Split\n");
 		// Don't split
 		AddRawCluster(*c);
@@ -272,7 +276,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		accepted[ico]=kFALSE;
 	    }
 	}
-	printf("\n iacc= %d:\n", iacc);
+	if (fDebugLevel)
+	  printf("\n iacc= %d:\n", iacc);
 	if (iacc == 3) {
 	    if (accepted[0] && accepted[1]) {
 		if (dr[0] >= dr[1]) {
@@ -307,8 +312,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	}
 	
 	
-	printf("\n iacc= %d:\n", iacc);
 	if (fDebugLevel) {
+	  printf("\n iacc= %d:\n", iacc);
 	    if (iacc==2) {
 		fprintf(stderr,"\n iacc=2: No problem ! \n");
 	    } else if (iacc==4) {
@@ -1532,13 +1537,15 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
 {
 // Performs a single Mathieson fit on one cathode
 // 
+    Double_t arglist[20];
+    Int_t ierflag=0;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     
     clusterInput.Fitter()->SetFCN(fcnS1);
     clusterInput.Fitter()->mninit(2,10,7);
-    Double_t arglist[20];
-    Int_t ierflag=0;
-    arglist[0]=1;
+    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    arglist[0]=-1;
+    clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
 // Set starting values 
     static Double_t vstart[2];
     vstart[0]=c->fX[1];
@@ -1562,10 +1569,6 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
     clusterInput.Fitter()->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
     clusterInput.Fitter()->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
 // ready for minimisation	
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
-    if (fDebugLevel==0)
-	clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
@@ -1595,12 +1598,14 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*
 {
 // Perform combined Mathieson fit on both cathode planes
 //
+    Double_t arglist[20];
+    Int_t ierflag=0;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     clusterInput.Fitter()->SetFCN(fcnCombiS1);
     clusterInput.Fitter()->mninit(2,10,7);
-    Double_t arglist[20];
-    Int_t ierflag=0;
-    arglist[0]=1;
+    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    arglist[0]=-1;
+    clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
     static Double_t vstart[2];
     vstart[0]=fXInit[0];
     vstart[1]=fYInit[0];
@@ -1657,10 +1662,6 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*
     clusterInput.Fitter()->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
     clusterInput.Fitter()->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
 // ready for minimisation	
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
-    if (fDebugLevel==0)
-	clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
@@ -1693,12 +1694,14 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int
 
 //
 //  Initialise global variables for fit
+    Double_t arglist[20];
+    Int_t ierflag=0;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     clusterInput.Fitter()->SetFCN(fcnS2);
     clusterInput.Fitter()->mninit(5,10,7);
-    Double_t arglist[20];
-    Int_t ierflag=0;
-    arglist[0]=1;
+    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    arglist[0]=-1;
+    clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
 // Set starting values 
     static Double_t vstart[5];
     vstart[0]=fX[fIndLocal[0][cath]][cath];
@@ -1734,10 +1737,6 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int
     clusterInput.Fitter()->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
     clusterInput.Fitter()->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
 // ready for minimisation	
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
-    if (fDebugLevel==0)
-	clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
@@ -1768,12 +1767,14 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
 //
 // Perform combined double Mathieson fit on both cathode planes
 //
+    Double_t arglist[20];
+    Int_t ierflag=0;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     clusterInput.Fitter()->SetFCN(fcnCombiS2);
     clusterInput.Fitter()->mninit(6,10,7);
-    Double_t arglist[20];
-    Int_t ierflag=0;
-    arglist[0]=1;
+    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
+    arglist[0]=-1;
+    clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
 // Set starting values 
     static Double_t vstart[6];
     vstart[0]=fXInit[0];
@@ -1888,10 +1889,6 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
     clusterInput.Fitter()->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
     clusterInput.Fitter()->mnparm(5,"a1",vstart[5],step[5],lower[5],upper[5],ierflag);
 // ready for minimisation	
-    clusterInput.Fitter()->SetPrintLevel(-1+fDebugLevel);
-    if (fDebugLevel)
-	clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
@@ -2067,7 +2064,7 @@ void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster c)
     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
     fNRawClusters++;
-//    if (fDebugLevel)
+    if (fDebugLevel)
 	fprintf(stderr,"\nfNRawClusters %d\n",fNRawClusters);
 }
 
