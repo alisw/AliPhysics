@@ -654,7 +654,38 @@ void AliPHOSEmcRecPoint::EvalTime(TClonesArray * digits){
   
 }
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::Print(Option_t * option) 
+void AliPHOSEmcRecPoint::Purify(Float_t threshold){
+  //Removes digits below threshold
+
+  Int_t * tempo = new ( Int_t[fMaxDigit] ) ; 
+  Float_t * tempoE =  new ( Float_t[fMaxDigit] ) ;
+
+  Int_t mult = 0 ;
+  for(Int_t iDigit=0;iDigit< fMulDigit ;iDigit++){
+    if(fEnergyList[iDigit] > threshold){
+      tempo[mult] = fDigitsList[iDigit] ;
+      tempoE[mult] = fEnergyList[iDigit] ;
+      mult++ ;
+    }
+  }
+  
+  fMulDigit = mult ;
+  delete [] fDigitsList ;
+  delete [] fEnergyList ;
+  fDigitsList = new (Int_t[fMulDigit]) ;
+  fEnergyList = new ( Float_t[fMulDigit]) ;
+
+  for(Int_t iDigit=0;iDigit< fMulDigit ;iDigit++){
+      fDigitsList[iDigit] = tempo[iDigit];
+      fEnergyList[iDigit] = tempoE[iDigit] ;
+  }
+      
+  delete [] tempo ;
+  delete [] tempoE ;
+
+}
+//____________________________________________________________________________
+void AliPHOSEmcRecPoint::Print(Option_t * option) const
 {
   // Print the list of digits belonging to the cluster
   

@@ -369,7 +369,9 @@ void AliPHOSClusterizerv1::InitParameters()
   fEmcTimeGate             = 1.e-8 ; 
   
   fToUnfold                = kTRUE ;
-    
+
+  fPurifyThreshold         = 0.012 ;
+  
   TString clusterizerName( GetName()) ;
   if (clusterizerName.IsNull() ) 
     clusterizerName = "Default" ; 
@@ -493,9 +495,16 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
 
   Int_t index ;
   //Evaluate position, dispersion and other RecPoint properties...
-  for(index = 0; index < emcRecPoints->GetEntries(); index++)
-    ((AliPHOSEmcRecPoint *)emcRecPoints->At(index))->EvalAll(fW0,digits) ;
-  
+  for(index = 0; index < emcRecPoints->GetEntries(); index++){
+    AliPHOSEmcRecPoint * emcrp = static_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(index)) ;
+    emcrp->Purify(fPurifyThreshold) ; 
+    if(emcrp->GetMultiplicity())
+      emcrp->EvalAll(fW0,digits) ;
+    else
+      emcRecPoints->Remove(emcrp) ;
+ }
+
+  emcRecPoints->Compress() ;  
   emcRecPoints->Sort() ;
   for(index = 0; index < emcRecPoints->GetEntries(); index++)
     ((AliPHOSEmcRecPoint *)emcRecPoints->At(index))->SetIndexInList(index) ;

@@ -57,10 +57,12 @@ public:
   virtual Int_t GetNumberOfLocalMax(AliPHOSDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
+  //returns number of local maxima in parent cluster or -2 if unfolding failed
   Float_t     GetTime(void) const{return  fTime ; } 
   Bool_t      IsEmc(void) const { return kTRUE ; }                 // true if the recpoint is in EMC
   Bool_t      IsSortable() const {return kTRUE ; }                 // says that emcrecpoints are sortable objects 
-  void        Print(Option_t * opt = "void") ; 
+  void        Print(Option_t * opt = "void")const ; 
+  void        Purify(Float_t threshold) ;                          //Removes digits below threshold
 
   AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & rvalue)  {
     // assignement operator requested by coding convention but not needed

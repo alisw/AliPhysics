@@ -50,6 +50,7 @@ public:
   virtual Float_t GetCpvClusteringThreshold()const{ return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvLocalMaxCut()const        { return fCpvLocMaxCut;} 
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
+  virtual Float_t GetPurifyThreshold()const       {return fPurifyThreshold; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
   virtual const Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
@@ -64,7 +65,8 @@ public:
   virtual void SetCpvClusteringThreshold(Float_t cluth)  { fCpvClusteringThreshold = cluth ; }
   virtual void SetCpvLocalMaxCut(Float_t cut)            { fCpvLocMaxCut = cut ; }
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
-   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}  
+  virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}
+  virtual void SetPirifyThreshold(Float_t threshold)     {fPurifyThreshold = threshold ;}
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
@@ -111,7 +113,8 @@ private:
   Float_t fADCpedestalEmc ;         //
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
   Float_t fADCpedestalCpv ;         // 
-
+  
+  Float_t fPurifyThreshold ;         // threshold for cell energies after unfolding
   Float_t fEmcClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster
   Float_t fCpvClusteringThreshold ;  // minimum energy to include a CPV digit in a cluster
   Float_t fEmcLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
