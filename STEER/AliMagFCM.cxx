@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/05/28 14:10:35  morsch
+SetSolenoidField method to set the L3 field strength. 2 kG is default.
+
 Revision 1.7  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -55,6 +58,7 @@ AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ,
   //
   // Standard constructor
   //
+  fB=0;
   fType = kConMesh;
   fMap  = 2;
   SetSolenoidField();

@@ -13,7 +13,7 @@ class AliMagFCM : public AliMagF
   //Alice Magnetic Field with constan mesh
 
 public:
-  AliMagFCM(){}
+  AliMagFCM(){fB=0;}
   AliMagFCM(const char *name, const char *title, const Int_t integ,
 	   const Float_t factor, const Float_t fmax);
   AliMagFCM(const AliMagFCM &mag);
