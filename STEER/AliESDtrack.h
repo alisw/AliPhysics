@@ -50,6 +50,7 @@ public:
   
   ULong_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
+  void SetLabel(Int_t label) {fLabel = label;}
   Double_t GetAlpha() const {return fRalpha;}
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
