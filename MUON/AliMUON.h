@@ -74,7 +74,7 @@ class AliMUON : public  AliDetector {
     virtual void   SetSigmaIntegration(Int_t id, Float_t p1);
     virtual void   SetChargeSlope(Int_t id, Float_t p1);
     virtual void   SetChargeSpread(Int_t id, Float_t p1, Float_t p2);
-    virtual void   SetMaxAdc(Int_t id, Float_t p1);
+    virtual void   SetMaxAdc(Int_t id, Int_t p1);
 // Set Segmentation and Response Model
     virtual void   SetSegmentationModel(Int_t id, Int_t isec,
 					AliMUONSegmentation *segmentation);
