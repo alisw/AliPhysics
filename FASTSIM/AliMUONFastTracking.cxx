@@ -13,7 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/*
+$Log$
+Revision 1.2  2003/01/08 10:29:33  morsch
+Path to data file changed.
+
+Revision 1.1  2003/01/06 10:13:33  morsch
+First commit.
+
+*/
 
 #include "AliMUONFastTracking.h"
 #include "AliMUONFastTrackingEntry.h"
@@ -44,7 +52,8 @@ static Double_t FitP(Double_t *x, Double_t *par){
     Double_t fasymm = TMath::Exp(-0.5 * dx * dx / (sigma * sigma));
     Double_t sigma2 = par[1] * par[5];
     Double_t fgauss = TMath::Exp(-0.5 * dx2 * dx2 / (sigma2 * sigma2));
-    return TMath::Abs(fasymm + par[3] * fgauss);
+    Double_t value = fasymm + par[3] * fgauss; 
+    return value;
 } 
 
 AliMUONFastTracking* AliMUONFastTracking::Instance()
@@ -60,8 +69,7 @@ AliMUONFastTracking* AliMUONFastTracking::Instance()
 
 AliMUONFastTracking::AliMUONFastTracking() 
 {
-//    SetBackground();
-    
+    fClusterFinder = kOld; 
     fPrintLevel = 1;  
     // read binning; temporarily put by hand
     Float_t pmin = 0, pmax = 200;
@@ -106,13 +114,13 @@ void AliMUONFastTracking::Init(Float_t bkg)
   }
   
   char filename [100]; 
-  sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
+  if (fClusterFinder==kOld) sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
+  else sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
+
   TFile *file = new TFile(filename); 
   ReadLUT(file);
   SetBackground(bkg);
-  UseSpline(1);
-  fFitp = new TF1("fit1",FitP,-20.,20.,6);
-  fFitp->SetNpx(200);    
+  UseSpline(0);
 }
 
 
@@ -123,6 +131,8 @@ void AliMUONFastTracking::ReadLUT(TFile* file)
   TH3F *hmeanphi, *hsigmaphi, *hchi2phi;
   char tag[40], tag2[40]; 
   
+  printf ("Reading parameters from LUT file %s...\n",file->GetName());
+
   const Float_t bkg[4] = {0, 0.5, 1, 2};
   for (Int_t ibkg=0; ibkg<4; ibkg++) {
     sprintf (tag,"BKG%g",bkg[ibkg]); 
@@ -149,7 +159,6 @@ void AliMUONFastTracking::ReadLUT(TFile* file)
     hsigmaphi   = (TH3F*)gDirectory->Get("hsigmaphi");
     hchi2phi    = (TH3F*)gDirectory->Get("hchi2phi");
     
-    printf ("Reading parameters from LUT file %s...\n",file->GetName());
     for (Int_t ip=0; ip<fNbinp ;ip++) {
       for (Int_t itheta=0; itheta<fNbintheta ;itheta++) {
 	for (Int_t iphi=0; iphi<fNbinphi ;iphi++) {
@@ -245,31 +254,13 @@ void AliMUONFastTracking::GetIpIthetaIphi(Float_t p, Float_t theta, Float_t phi,
     itheta       = Int_t (( theta - fThetamin ) / fDeltaTheta);
     iphi         = Int_t (( phi - fPhimin ) / fDeltaPhi);
     
-    if (ip< 0) {
-	printf ("Warning: ip= %d. Set to 0\n",ip);
-	ip = 0;
-    } 
-    if (ip>= fNbinp) {
-      //	printf ("Warning: ip = %d. Set to %d\n",ip,fNbinp-1);
-	ip = fNbinp-1;
-    } 
-    if (itheta< 0) {
-      //	printf ("Warning: itheta= %d. Set to 0\n",itheta);
-	itheta = 0;
-    } 
-    if (itheta>= fNbintheta) {
-      //	printf ("Warning: itheta = %d. Set to %d\n",itheta,fNbintheta-1);
-	itheta = fNbintheta-1;
-    } 
+    if (ip< 0) 	ip = 0;
+    if (ip>= fNbinp) ip = fNbinp-1;
+    if (itheta< 0) itheta = 0;
+    if (itheta>= fNbintheta) itheta = fNbintheta-1;
     
-    if (iphi< 0) {
-     	printf ("Warning: iphi= %d. Set to 0\n",iphi);
-	iphi = 0;
-    } 
-    if (iphi>= fNbinphi) {
-	printf ("Warning: iphi = %d. Set to %d\n",iphi,fNbinphi-1);
-	iphi = fNbinphi-1;
-    } 
+    if (iphi< 0) iphi = 0;
+    if (iphi>= fNbinphi) iphi = fNbinphi-1;
 }
 
 void AliMUONFastTracking::GetSplit(Int_t ip, Int_t itheta, 
@@ -637,67 +628,6 @@ void AliMUONFastTracking::SetSpline(){
   printf ("...done\n");
 }
   
-void AliMUONFastTracking::SmearMuon(Float_t pgen, Float_t thetagen, Float_t phigen, 
-			    Int_t charge, Float_t &psmear, Float_t &thetasmear,
-			    Float_t &phismear, Float_t &eff, Float_t &acc){
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // IMPORTANT NOTICE TO THE USER
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // THIS METHOD HAS BEEN REPLACED BY AliFastMuonTrackingEff::Evaluate()
-  // AND WILL BE DELETED SOON
-  // DO NOT USE THIS METHOD
-  // 
-
-  printf ("AliMUONFastTracking::SmearMuon()   THIS METHOD IS OBSOLETE ");
-  printf ("PLEASE REFER TO AliFastMuonTrackingEff::Evaluate()\n");
-  // angles are in degrees   
-  
-  Double_t meanp    = MeanP  (pgen, thetagen, phigen, charge);
-  Double_t sigmap   = SigmaP (pgen, thetagen, phigen, charge);
-  Double_t sigma1p  = Sigma1P(pgen, thetagen, phigen, charge);
-  Double_t normg2   = NormG2 (pgen, thetagen, phigen, charge);
-  Double_t meang2   = MeanG2 (pgen, thetagen, phigen, charge);
-  Double_t sigmag2  = SigmaG2(pgen, thetagen, phigen, charge);
-
-  printf ("fBkg = %g    normg2 (100,5,0,1) = %g \n",fBkg,NormG2(100,5,0,1));
-  printf ("fBkg = %g    meang2 (100,5,0,1) = %g \n",fBkg,MeanG2(100,5,0,1));
-  printf ("fBkg = %g    sigmag2 (100,5,0,1) = %g \n",fBkg,SigmaG2(100,5,0,1));
-  Int_t ip,itheta,iphi;
-  GetIpIthetaIphi(pgen, thetagen, phigen, charge, ip, itheta, iphi);
-  if (sigmap == 0) {
-    if (fPrintLevel>0) {
-      printf ("WARNING!!! sigmap=0:    ");
-      printf ("ip= %d itheta = %d iphi = %d   ", ip, itheta, iphi);  
-      printf ("p= %f theta = %f phi = %f\n", pgen, thetagen, phigen);  
-    }
-  }
-  
-  if (fPrintLevel>1) printf ("setting parameters: meanp = %f sigmap = %f sigma1p = %f normg2 = %f meang2 = %f sigmag2 = %f \n",meanp,sigmap,sigma1p,normg2,meang2,sigmag2);
-  fFitp->SetParameters(meanp,sigmap,sigma1p,normg2,meang2,sigmag2);
-  
-  Double_t meantheta  = MeanTheta (pgen, thetagen, phigen, charge);
-  Double_t sigmatheta = SigmaTheta(pgen, thetagen, phigen, charge);
-  Double_t meanphi    = MeanPhi   (pgen, thetagen, phigen, charge);
-  Double_t sigmaphi   = SigmaPhi  (pgen, thetagen, phigen, charge);
-  
-  // components different from ip=0 have the RMS bigger than mean
-  Float_t ptp[3]  =  { 1.219576,-0.354764,-0.690117 };
-  Float_t ptph[3] =  { 0.977522, 0.016269, 0.023158 }; 
-  Float_t pphp[3] =  { 1.303256,-0.464847,-0.869322 };
-  psmear   = pgen + fFitp->GetRandom();
-  Float_t dp = psmear - pgen; 
-  if (ip==0) sigmaphi *= pphp[0] + pphp[1] * dp + pphp[2] * dp*dp; 
-  phismear = phigen + gRandom->Gaus(meanphi, sigmaphi);
-  Float_t dphi = phismear - phigen; 
-
-  if (ip==0) sigmatheta *= ptp[0] + ptp[1] * dp + ptp[2] * dp*dp; 
-  if (ip==0) sigmatheta *= ptph[0] + ptph[1] * dphi + ptph[2] * dphi*dphi; 
-  thetasmear = thetagen + gRandom->Gaus(meantheta,sigmatheta);
-  eff      = Efficiency(pgen, thetagen, phigen, charge);
-  acc      = Acceptance(pgen, thetagen, phigen, charge);
-}
-
 void AliMUONFastTracking::SetBackground(Float_t bkg){
   // linear interpolation of the parameters in the LUT between 2 values where
   // the background has been actually calculated
@@ -772,7 +702,14 @@ void AliMUONFastTracking::SetBackground(Float_t bkg){
   SetSpline();
 }
 
-
+TF1* AliMUONFastTracking::GetFitP(Int_t ip,Int_t itheta,Int_t iphi) { 
+  if (!fFitp[ip][itheta][iphi]) { 
+    fFitp[ip][itheta][iphi] = new TF1("fit1",FitP,-20.,20.,6);
+    fFitp[ip][itheta][iphi]->SetNpx(500);    
+    fFitp[ip][itheta][iphi]->SetParameters(0,0,0,0,0,0);    
+  }
+  return fFitp[ip][itheta][iphi]; 
+}
 
   // to guarantee a safe extrapolation for sigmag2 to 0<bkg<0.5, let's fit 
   // with a straight line sigmag2 vs bkg for bkg=0.5, 1 and 2, and put the 

@@ -12,6 +12,8 @@ class AliMUONFastTrackingEntry;
 
 #include <TObject.h>
 
+enum LUTClusterType {kOld, kNew};
+
 class AliMUONFastTracking :  public TObject {
  public:
     static  AliMUONFastTracking* Instance();
@@ -39,12 +41,10 @@ class AliMUONFastTracking :  public TObject {
 
     void SetSpline();
     Float_t GetBackground() {return fBkg;}
+    void SetLUTClusterFinder(LUTClusterType clusterFinder) { fClusterFinder = clusterFinder;}
     void SetBackground(Float_t bkg);
     void UseSpline (Int_t splineSwitch=1) {fSpline = splineSwitch;}
-    void SmearMuon(Float_t pgen, Float_t thetagen, Float_t phigen, Int_t charge,
-		   Float_t &psmear, Float_t &thetasmear, Float_t &phismear,
-		   Float_t &eff, Float_t &acc);
-    TF1* GetFitP() {return fFitp;}
+    TF1* GetFitP(Int_t ip, Int_t itheta, Int_t iphi); 
  private:
     AliMUONFastTracking();
     AliMUONFastTracking(Float_t bkg){;}
@@ -64,7 +64,7 @@ class AliMUONFastTracking :  public TObject {
     Float_t fDeltaPhi;
     Int_t   fPrintLevel;
     Float_t fBkg;
-    TF1 *fFitp;                                   // func for psmear-pgen distr
+    TF1 *fFitp[20][20][20];                    // func for psmear-pgen distr
     AliMUONFastTrackingEntry *fEntry[20][20][20][4]; // array of LUT parameters
     AliMUONFastTrackingEntry *fCurrentEntry[20][20][20]; // array of LUT parameters
  public:
@@ -76,6 +76,7 @@ class AliMUONFastTracking :  public TObject {
     TSpline3 *fSplineSigmaphi[200][3];            //!
  protected: 
     Int_t fSpline;
+    LUTClusterType fClusterFinder; 
     static AliMUONFastTracking*    fgMUONFastTracking; //!Pointer to single instance
     ClassDef(AliMUONFastTracking,1)                    // Fast MUON Tracking Data Handler
 };
