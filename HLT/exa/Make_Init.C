@@ -20,7 +20,30 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
     cerr<<"no AliTPCParam 75x40_100x60 in file: "<<file<<endl;
     return;
   }
-
+  
+  AliTPCParamSR *param=(AliTPCParamSR*)par;
+  AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter   = new AliTPCPRF2D;
+  AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
+  rf->SetGauss(param->GetZSigma(),param->GetZWidth(),1.);
+  rf->SetOffset(3*param->GetZSigma());
+  rf->Update();
+  
+  TDirectory *savedir=gDirectory;
+  TFile *if=TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
+  if (!if->IsOpen()) { 
+    cerr<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !\n" ;
+    exit(3);
+  }
+  prfinner->Read("prf_07504_Gati_056068_d02");
+  prfouter->Read("prf_10006_Gati_047051_d03");
+  if->Close();
+  savedir->cd();
+  
+  param->SetInnerPRF(prfinner);
+  param->SetOuterPRF(prfouter); 
+  param->SetTimeRF(rf);
+  
   int fNTimeBins = par->GetMaxTBin()+1;
   int fNRowLow = par->GetNRowLow();
   int fNRowUp  = par->GetNRowUp();
@@ -44,7 +67,16 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
   fprintf(f,"  fPadPitchWidthUp = %f ;\n",par->GetPadPitchWidth(fNSectorLow));
   fprintf(f,"  fZWidth = %.20f ;\n",par->GetZWidth());
   fprintf(f,"  fZSigma = %.20f ;\n",par->GetZSigma());
-
+  fprintf(f,"  fZOffset = %.20f\n",par->GetZOffset());
+  fprintf(f,"  fDiffT = %.20f ;\n",par->GetDiffT());
+  fprintf(f,"  fDiffL = %.20f ;\n",par->GetDiffL());
+  fprintf(f,"  fInnerPadLength = %f\n",par->GetInnerPadLength());
+  fprintf(f,"  fOuterPadLength = %f\n",par->GetOuterPadLength());
+  fprintf(f,"  fInnerPRFSigma = %.20f\n",param->GetInnerPRF()->GetSigmaX());
+  fprintf(f,"  fOuterPRFSigma = %.20f\n",param->GetOuterPRF()->GetSigmaX());
+  fprintf(f,"  fTimeSigma = %.20f\n",param->GetTimeRF()->GetSigma());
+  fprintf(f,"  fZLength = %f\n",par->GetZLength());
+  
   fprintf(f,"\n  //slices:\n");
   fprintf(f,"  fNSlice = %d ;\n",fNSectorLow);
   fprintf(f,"  fNRow = %d ;\n",fNRow);
