@@ -16,7 +16,7 @@
 // --- AliRoot header files ---
 #include "AliHit.h"
 
-class ostream;
+#include <iostream.h>
 
 class AliEMCALHit : public AliHit {
     friend ostream& operator << (ostream&,AliEMCALHit&);
