@@ -648,7 +648,7 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
   Int_t ievent;
   Int_t eventInMixedLoop ;
   
-  Int_t nRecParticles[nMixedEvents] ;
+  Int_t nRecParticles[4];//nMixedEvents] ;
   
   AliPHOSRecParticle::RecParticlesList * allRecParticleList  = new TClonesArray("AliPHOSRecParticle", nMixedEvents*1000) ;
   
@@ -744,7 +744,7 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 }
 
 //____________________________________________________________________________
- void AliPHOSAnalyze::ReadAndPrintEMC(Int_t EvFirst=0, Int_t EvLast=0)    
+ void AliPHOSAnalyze::ReadAndPrintEMC(Int_t EvFirst, Int_t EvLast)    
 {
   //
   // Read and print generated and reconstructed hits in EMC
