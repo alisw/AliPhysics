@@ -113,19 +113,19 @@ void AliLevel3::Init(){
   fUseBinary =kFALSE;
   SetPath("");
   fFindVertex =kTRUE;
-  if(0){
+  if(1){
     fNPatch = 1;   //number of patches change row in process
     fRow[0][0] = 0;     // first row
-    fRow[0][1] = 173;   // last row
+    fRow[0][1] = 175;   // last row
   }
   if(0){
     fNPatch = 2;   //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 54;
     fRow[1][0] = 55;
-    fRow[1][1] = 173;   // last row
+    fRow[1][1] = 175;   // last row
   }
-  if(1){
+  if(0){
     fNPatch = 5;   //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 45;
@@ -136,7 +136,7 @@ void AliLevel3::Init(){
     fRow[3][0] = 110;
     fRow[3][1] = 141;
     fRow[4][0] = 142;
-    fRow[4][1] = 173;   // last row
+    fRow[4][1] = 175;   // last row
   }
   fVertexFinder = new AliL3VertexFinder();
   fVertex = new AliL3Vertex();
@@ -393,7 +393,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }
       fTrackMerger->SetVertex(fVertex);
     }
-    fTracker->InitSector(slice,fRow[patch],fEta);
+    fTracker->InitSector(slice,fRow[patch]);//,fEta);
     fTracker->SetVertex(fVertex);
     fBenchmark->Start("Tracker Read Hits");
     fTracker->ReadHits(npoints,points);
