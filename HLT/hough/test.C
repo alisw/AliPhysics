@@ -7,15 +7,15 @@ void test(char *file="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=
   Int_t i;
   
   int slice=1,patch=0;
-
+  
   fHoughTransformer = new AliL3HoughTransformer(slice,patch,fNEtaSegments);
   fMemHandler = new AliL3FileHandler();
   fMaxFinder = new AliL3HoughMaxFinder("KappaPhi");
-
+  
   fTransform = new AliL3Transform();
-
-  fHoughTransformer->CreateHistograms();
-  fHoughTransformer->SetThreshold(3);
+  
+  fHoughTransformer->CreateHistograms();//64,0,3.1415,128,-120,120);
+  fHoughTransformer->SetThreshold(10);
   fTracks = new AliL3TrackArray("AliL3HoughTrack");
   
   
@@ -50,6 +50,8 @@ void test(char *file="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=
       fMemHandler->Init(slice,patch,NRows[patch]);
       fMemHandler->Init(fTransform);
       digits=(AliL3DigitRowData *)fMemHandler->AliDigits2Memory(ndigits); 
+      rootfile->Close();
+      delete rootfile;
     }
   fHoughTransformer->SetInputData(ndigits,digits);
   fEval = new AliL3HoughEval(fHoughTransformer);
@@ -63,24 +65,28 @@ void test(char *file="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=
     {
       printf("Transforming\n");
       double init = AliL3Benchmark::GetCpuTime();
-      fHoughTransformer->Transform();
+      fHoughTransformer->TransformCircle();
       double final = AliL3Benchmark::GetCpuTime();
       printf("done in %f ms\n",(final-init)*1000);
       
       good_count=0;
-      
+      /*
       for(Int_t e=0; e<fNEtaSegments; e++)
 	{
 	  histo = (AliL3Histogram*)fHoughTransformer->GetHistogram(e);
 	  if(!histo) continue;
 	  
 	  fMaxFinder->SetHistogram(histo);
-	  track = (AliL3HoughTrack*)fMaxFinder->FindPeak1();
-	  peaks->Fill(track->GetKappa(),track->GetPhi0(),1);
+	  Int_t n=10;
+	  Float_t x[10];
+	  Float_t y[10];
+	  fMaxFinder->FindPeak1(x,y,n);
+	  track = new AliL3HoughTrack();
+	  track->SetTrackParameters(x[0],y[0],1);
 	  
-	  if(!fEval->LookInsideRoad(track,e))
-	    continue;
-	  for(int t=0; t<175; t++)
+	  //if(!fEval->LookInsideRoad(track,e))
+	  //continue;
+	  for(int t=0; t<176; t++)
 	    {
 	      float xyz_tr[3];
 	      track->GetCrossingPoint(t,xyz_tr);
@@ -88,15 +94,15 @@ void test(char *file="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=
 	    }
 	  
 	}
-      
+      */
       break;
       if(good_count==0)
 	break;
     }
-
+  
   image = new AliL3Histogram("image","",250,0,250,250,-125,125);
   fEval->DisplayEtaSlice(eind,image);
-
+  
   c1 = new TCanvas("c1","",1000,500);
   c1->Divide(2);
   c1->cd(1);
@@ -104,8 +110,54 @@ void test(char *file="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=
   if(!histo)
     {printf("No histogram\n"); return;}
   fHoughTransformer->GetHistogram(eind)->Draw("box");
-  peaks->Draw("same");
+  //  peaks->Draw("same");
   c1->cd(2);
-  image->Draw("colz");
+  image->Draw("");
+  //road->Draw("same");
+} 
+
+void process(char *path="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=true)
+{
+  double torad = 3.1415/180;
+  a = new AliL3Hough(path,bin,1);
+  a->TransformSlice(1);
+  
+  hist = (AliL3Histogram*)a->AddHistograms();
+  
+  //hist->SetThreshold(10000);
+  
+  b = new AliL3HoughMaxFinder("KappaPhi");
+  b->SetHistogram(hist);
+  
+  Int_t xbin,ybin;
+  
+  Int_t n=10;
+  Float_t x[10];
+  Float_t y[10];
+  b->FindPeak1(x,y,n);
+  printf("peak at pt %f phi0 %f\n",0.2*0.003/x[0],y[0]/torad);
+  
+  track = new AliL3HoughTrack();
+  track->SetTrackParameters(x[0],y[0],1);
+  
+  image = new AliL3Histogram("image","",250,0,250,250,-125,125);
+  a->Evaluate(image);
+  TH2F *road = new TH2F("road","",250,0,250,250,-125,125);
+  road->SetMarkerStyle(5);
+  road->SetMarkerColor(2);
+  
+  float xyz[3];
+  for(int i=0; i<176; i++)
+    {
+      if(i%10) continue;
+      track->GetCrossingPoint(i,xyz);
+      road->Fill(xyz[0],xyz[1],1);
+    }
+  c1 = new TCanvas("c1","",1000,500);
+  c1->Divide(2);
+  c1->cd(1);
+  hist->Draw("box");
+  c1->cd(2);
+  image->Draw();
   road->Draw("same");
 }
