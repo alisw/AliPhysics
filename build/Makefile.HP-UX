@@ -10,7 +10,7 @@ CC	      = aCC
 # Global optimisation
 OPT           = -O
 
-CXXOPTS       = $(OPT) -Aa  +Z -z +W70,495,740,749,823,829 -Dextname
+CXXOPTS       = $(OPT) -Wc,-ansi_for_scope,on +Z -z +W70,495,740,749,823,829 -Dextname
 COPT          = $(OPT)
 FOPT          = $(OPT) +ppu +Z
 
