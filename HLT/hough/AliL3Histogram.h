@@ -39,8 +39,8 @@ class AliL3Histogram : public TObject {
   Int_t FindYbin(Double_t y);
   Int_t GetBin(Int_t xbin,Int_t ybin);
   Double_t GetBinContent(Int_t bin);
-  void SetBinContent(Int_t xbin,Int_t ybin);
-  void SetBinContent(Int_t bin);
+  void SetBinContent(Int_t xbin,Int_t ybin,Int_t value);
+  void SetBinContent(Int_t bin,Int_t value);
   void AddBinContent(Int_t xbin,Int_t ybin,Int_t weight);
   void AddBinContent(Int_t bin,Int_t weight);
   void Draw(Char_t *option="hist");
