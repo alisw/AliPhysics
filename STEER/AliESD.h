@@ -17,8 +17,9 @@
 #include "TClonesArray.h"
 #include  "AliESDVertex.h"
 #include  "AliESDtrack.h"
-#include  "AliESDMuonTrack.h"
 #include  "AliESDCaloTrack.h"
+#include  "AliESDMuonTrack.h"
+#include  "AliESDPmdTrack.h"
 #include  "AliESDv0.h"
 #include  "AliESDcascade.h"
 
@@ -29,6 +30,7 @@ public:
     fTracks.Delete();
     fCaloTracks.Delete();
     fMuonTracks.Delete();
+    fPmdTracks.Delete();
     fV0s.Delete();
     fCascades.Delete();
   }
@@ -48,6 +50,9 @@ public:
   AliESDMuonTrack *GetMuonTrack(Int_t i) const {
     return (AliESDMuonTrack *)fMuonTracks.UncheckedAt(i);
   }
+  AliESDPmdTrack *GetPmdTrack(Int_t i) const {
+    return (AliESDPmdTrack *)fPmdTracks.UncheckedAt(i);
+  }
 
   void AddTrack(const AliESDtrack *t) {
     new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
@@ -57,6 +62,9 @@ public:
   }
   void AddMuonTrack(const AliESDMuonTrack *t) {
     new(fMuonTracks[fMuonTracks.GetEntriesFast()]) AliESDMuonTrack(*t);
+  }
+  void AddPmdTrack(const AliESDPmdTrack *t) {
+    new(fPmdTracks[fPmdTracks.GetEntriesFast()]) AliESDPmdTrack(*t);
   }
 
   AliESDv0 *GetV0(Int_t i) const {
@@ -85,6 +93,7 @@ public:
   Int_t GetNumberOfTracks()     const {return fTracks.GetEntriesFast();}
   Int_t GetNumberOfCaloTracks() const {return fCaloTracks.GetEntriesFast();}
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks.GetEntriesFast();}
+  Int_t GetNumberOfPmdTracks() const {return fPmdTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
   
@@ -108,6 +117,7 @@ protected:
   TClonesArray  fTracks;         // ESD tracks
   TClonesArray  fCaloTracks;     // Calorimeters' ESD tracks
   TClonesArray  fMuonTracks;     // MUON ESD tracks
+  TClonesArray  fPmdTracks;      // PMD ESD tracks
   TClonesArray  fV0s;            // V0 vertices
   TClonesArray  fCascades;       // Cascade vertices
   

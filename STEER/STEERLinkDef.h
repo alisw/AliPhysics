@@ -68,6 +68,8 @@
 #pragma link C++ class  AliESDtrack+;
 #pragma link C++ class  AliESDCaloTrack+;
 #pragma link C++ class  AliESDMuonTrack+;
+#pragma link C++ class  AliESDPmdTrack+;
+#pragma link C++ class  AliReconstructor+;
 #pragma link C++ class  AliESDv0+;
 #pragma link C++ class  AliESDcascade+;
 #pragma link C++ class  AliESDVertex+;
@@ -82,7 +84,6 @@
 #pragma link C++ class  AliReconstruction+;
 #pragma link C++ class  AliVertexGenFile+;
 #pragma link C++ class  AliVertexer+;
-#pragma link C++ class  AliReconstructor+;
 #endif
 
 

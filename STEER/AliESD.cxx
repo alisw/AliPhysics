@@ -38,6 +38,7 @@ AliESD::AliESD():
   fTracks("AliESDtrack",15000),
   fCaloTracks("AliESDCaloTrack",500),
   fMuonTracks("AliESDMuonTrack",30),
+  fPmdTracks("AliESDPmdTrack",3000),
   fV0s("AliESDv0",200),
   fCascades("AliESDcascade",20)
 {
@@ -60,6 +61,7 @@ void AliESD::Print(Option_t *) const {
   printf("                 charged   %d\n",GetNumberOfTracks());
   printf("                 calo      %d\n", GetNumberOfCaloTracks());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
+  printf("                 pmd      %d\n", GetNumberOfPmdTracks());
   printf("                 v0        %d\n", GetNumberOfV0s());
   printf("                 cascades  %d\n)", GetNumberOfCascades());
 }
