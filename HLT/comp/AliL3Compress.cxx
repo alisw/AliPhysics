@@ -729,19 +729,23 @@ void AliL3Compress::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
   }
 }
 
-void AliL3Compress::WriteRootFile(Char_t *newrootfile)
+void AliL3Compress::WriteRootFile(Char_t *newrootfile,Char_t *digitfile)
 {
 #ifdef use_aliroot
   Char_t fname[100];
   AliL3MemHandler *mem = new AliL3MemHandler();
-  sprintf(fname,"%s/comp/restored_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(fname,"%s/comp/remains_%d_%d.raw",fPath,fSlice,fPatch);
+  mem->Init(fSlice,fPatch);
   mem->SetBinaryInput(fname);
   UInt_t ndigits;
   AliL3DigitRowData *rowPt = (AliL3DigitRowData*)mem->CompBinary2Memory(ndigits);
   mem->CloseBinaryInput();
   
-  sprintf(fname,"%s/digitfile.root",fPath);
-  
+  if(!digitfile)
+    sprintf(fname,"%s/digitfile.root",fPath);
+  else
+    sprintf(fname,"%s",digitfile);
+
   AliL3FileHandler *file = new AliL3FileHandler();
   if(!file->SetAliInput(fname))
     {

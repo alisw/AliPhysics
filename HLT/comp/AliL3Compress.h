@@ -44,7 +44,7 @@ class AliL3Compress {
   void ExpandFile();
   void RestoreData(Char_t which='u');
   void WriteRestoredData();
-  void WriteRootFile(Char_t *newrootfile);
+  void WriteRootFile(Char_t *newrootfile,Char_t *digitfile=0);
   void PrintDigits(Int_t padrow=-1);
   void PrintCompRatio(FILE *outfile=0);
   
