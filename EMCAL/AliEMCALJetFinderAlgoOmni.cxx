@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.6  2003/10/28 13:54:30  schutz
+Compilation warnings fixed
+
 Revision 1.5  2003/09/23 13:31:41  mhorner
 Changed coordinate system
 
@@ -147,6 +150,7 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 
  void AliEMCALJetFinderAlgoOmni::FillUnitArray(AliEMCALJetFinderAlgoUA1FillUnitFlagType_t flag)
    {
+	   // Fill the unit array 
      if (fDebug>1) Info("FillUnitArray","Beginning FillUnitArray");
          //    AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
          //   if (pEMCAL){ 
@@ -553,8 +557,8 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	 //GET DIGIT ETA, PHI so that can check if inside R!
 	 Float_t eta = 0.0;
 	 Float_t phi = 0.0;
-	 Int_t ID = myD->GetId();
-	 geom->EtaPhiFromIndex(ID, eta, phi);
+	 Int_t iID = myD->GetId();
+	 geom->EtaPhiFromIndex(iID, eta, phi);
 	 Float_t deta = fJetEta-eta;
 	 Float_t dphi = fJetPhi -(TMath::Pi()/180.0)*phi;
 	 Float_t rad = TMath::Sqrt( (deta*deta) + (dphi*dphi));

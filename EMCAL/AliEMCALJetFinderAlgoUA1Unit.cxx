@@ -18,9 +18,9 @@
 
 //_________________________________________________________________________
 //  Unit used by UA1 algorithm
-//
+// --
 //*-- Author: Sarah Blyth (LBL/UCT)
-//
+// --
 
 
 #include "AliEMCALJetFinderAlgoUA1Unit.h"
@@ -29,7 +29,8 @@
 ClassImp(AliEMCALJetFinderAlgoUA1Unit)
 
 AliEMCALJetFinderAlgoUA1Unit::AliEMCALJetFinderAlgoUA1Unit()
-    {
+{
+	// Default constructor
       fUnitEnergy         = 0.0;
       fUnitEta            = 0.0;
       fUnitPhi            = 0.0;

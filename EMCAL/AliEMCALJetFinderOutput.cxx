@@ -18,10 +18,10 @@
 
 //_________________________________________________________________________
 //  Output object for jetfinder
-//
+// --
 //*-- Author: 	Renan Cabrera (LBL)
 //		Mark Horner (LBL/UCT)
-//
+// --
 
 
 #include <stdio.h>

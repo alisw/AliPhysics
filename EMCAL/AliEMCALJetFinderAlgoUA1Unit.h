@@ -21,26 +21,26 @@ class AliEMCALJetFinderAlgoUA1Unit : public TObject
   AliEMCALJetFinderAlgoUA1Unit();
   ~AliEMCALJetFinderAlgoUA1Unit();
   void SetUnitEnergy(Float_t energy)  {fUnitEnergy = energy;}
-  const Float_t GetUnitEnergy()             { return fUnitEnergy;}
+  Float_t GetUnitEnergy() const            { return fUnitEnergy;}
   void SetUnitEta(Float_t eta)        {fUnitEta = eta;} 
-  const Float_t GetUnitEta()                {return fUnitEta;}
+  Float_t GetUnitEta() const               {return fUnitEta;}
   void SetUnitPhi(Float_t phi)        {fUnitPhi = phi;}
-  const Float_t GetUnitPhi()                {return fUnitPhi;}         
+  Float_t GetUnitPhi() const                {return fUnitPhi;}         
   void SetUnitID(Int_t id)            {fUnitID = id;}
-  const Int_t GetUnitID()                   {return fUnitID;}
+  Int_t GetUnitID() const                   {return fUnitID;}
   
   void SetUnitFlag(AliEMCALJetFinderAlgoUA1UnitFlagType_t flag)   
   {
 	  fUnitFlag = flag;
   }
   
-  const AliEMCALJetFinderAlgoUA1UnitFlagType_t GetUnitFlag()     
+  AliEMCALJetFinderAlgoUA1UnitFlagType_t GetUnitFlag() const     
   {
 	  return fUnitFlag;
   }
   
-  const Bool_t operator> ( AliEMCALJetFinderAlgoUA1Unit unit1);
-  const Bool_t operator< ( AliEMCALJetFinderAlgoUA1Unit unit1);
+  const Bool_t operator>  ( AliEMCALJetFinderAlgoUA1Unit unit1);
+  const Bool_t operator<  ( AliEMCALJetFinderAlgoUA1Unit unit1);
   const Bool_t operator== ( AliEMCALJetFinderAlgoUA1Unit unit1);
 
  protected:
@@ -50,7 +50,7 @@ class AliEMCALJetFinderAlgoUA1Unit : public TObject
   Int_t           fUnitID;            // ID of the unit
   AliEMCALJetFinderAlgoUA1UnitFlagType_t      fUnitFlag; //Flag of the unit
 
-  ClassDef(AliEMCALJetFinderAlgoUA1Unit,2)
+  ClassDef(AliEMCALJetFinderAlgoUA1Unit,3)
 };
 
 #endif

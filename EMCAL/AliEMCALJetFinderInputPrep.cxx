@@ -17,9 +17,9 @@
 
 //_________________________________________________________________________
 //  Base Class for JetFinder Input Preparation
-//
+// --
 //*-- Author: Mark Horner (LBL/UCT)
-//
+// --
 
 
 
@@ -39,6 +39,7 @@ ClassImp(AliEMCALJetFinderInputPrep)
 //________________________________________________________________________
 AliEMCALJetFinderInputPrep::AliEMCALJetFinderInputPrep()
 {
+	// Default constructor
 if (fDebug > 0) Info("AliEMCALJetFinderInputPrep","Beginning Constructor");	
   fDebug = 0;
   fInputObject.SetDebug(0);
@@ -55,7 +56,8 @@ Int_t AliEMCALJetFinderInputPrep::FillFromFile(TString * /*filename*/,
 return 0;
 }
 void AliEMCALJetFinderInputPrep::Reset(AliEMCALJetFinderResetType_t resettype)
-{
+{ 
+	//  Reset data
 if (fDebug > 1) Info("Reset","Beginning Reset");
 	
 	switch (resettype){

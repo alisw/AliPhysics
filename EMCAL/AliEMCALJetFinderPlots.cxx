@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -20,10 +19,10 @@
 
 //_________________________________________________________________________
 //  Class for Filling JetFinder Plots
-//
+// --
 //*-- Author: Mark Horner (LBL/UCT)
-//
-//
+// --
+// --
 
 
 #include "TMath.h"
@@ -33,6 +32,7 @@ ClassImp(AliEMCALJetFinderPlots)
 	
 AliEMCALJetFinderPlots::AliEMCALJetFinderPlots()
 {
+	// Constructor to initialise variables
   fInitialised = kFALSE;
   fNominalEnergy = 0.0;
   fConeRadius = 0.3;
@@ -189,8 +189,9 @@ fhEtaPhiDist2->Sumw2();
   
 }
 
-AliEMCALJetFinderPlots::~AliEMCALJetFinderPlots(){
-
+AliEMCALJetFinderPlots::~AliEMCALJetFinderPlots()
+{
+	// To ensure that all requested memory is returned
 delete    fhFragmFcn;// = new TH1F("hFragmFcn","Fragmentation Function",100,0,1);
 delete    fhPartonFragmFcn;// = new TH1F("hFragmFcn","Fragmentation Function",100,0,1);
 delete   fhPartonJT;// = new TH1F("hPartonJT","Track Momentum Perpendicular to Parton Axis",100,0.,10.);
@@ -233,6 +234,7 @@ delete 	  fhEtaPhiSpread;
 
 void AliEMCALJetFinderPlots::FillFromOutput(AliEMCALJetFinderOutput* output)
 {
+	// Fill histograms from an output object
 if (!fInitialised) InitPlots();	
   fOutput = output;
   if (!fOutput) return;

@@ -119,10 +119,10 @@ class AliEMCALJetFinderPlots : public TObject
 
 
 	
-	Bool_t				fInitialised;
+	Bool_t				fInitialised; // have histograms been initialised
 		
 	
-	ClassDef(AliEMCALJetFinderPlots,3)
+	ClassDef(AliEMCALJetFinderPlots,4)
 	
 };
 #endif

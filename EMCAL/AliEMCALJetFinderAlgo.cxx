@@ -18,9 +18,9 @@
 
 //_________________________________________________________________________
 //  Base Class for JetFinder Algorithms     
-//                  
+// --                  
 //*-- Author: Mark Horner (LBL/UCT)
-
+// --
 
 
 

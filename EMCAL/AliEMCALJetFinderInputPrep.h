@@ -27,13 +27,13 @@ class AliEMCALJetFinderInputPrep : public TTask
 	void Reset(AliEMCALJetFinderResetType_t resettype);
 	void SetDebug(Int_t debug = 0){fDebug = debug; fInputObject.SetDebug(debug-2); }
 	Int_t FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype, Int_t EventNumber);
-	AliEMCALJetFinderInput* GetJetFinderInput(){return &fInputObject;}
+	AliEMCALJetFinderInput* GetJetFinderInput()  {return &fInputObject;}
 	protected:
 	Int_t 		fDebug; // The debug flag to be used for messages
 	AliEMCALJetFinderInput 	fInputObject;	// The JetFinder input object to be filled
 	private:
 
-	ClassDef(AliEMCALJetFinderInputPrep,1)
+	ClassDef(AliEMCALJetFinderInputPrep,2)
 	
 };
 #endif
