@@ -30,7 +30,7 @@
 #include "AliMagF.h"
 
 #include "TFile.h"
-#include "Riostream.h"
+#include "TError.h"
 
 
 extern AliRun* gAlice;
@@ -100,8 +100,10 @@ Int_t AliTracker::SetFieldFactor() {
 // Utility class to set the value of the magnetic field in the barrel
 // It supposes that the correct object gAlice is in the memory
 //
-   AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
-   cout<<"Magnetic field in kGauss: "<<gAlice->Field()->SolenoidField()<<endl;
+   AliKalmanTrack::
+      SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+   Double_t field=gAlice->Field()->SolenoidField();
+   ::Info("SetFieldFactor","Magnetic field in kGauss: %f\n",field);
    return 0;
 }
 ////////////////////////////////////////////////////////////////////////
@@ -111,7 +113,8 @@ Int_t AliTracker::SetFieldFactor(TFile *file, Bool_t deletegAlice) {
 // gAlice object is read from the file, and optionally deleted
 // 
   if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
-    cerr<<"gAlice has not been found in file "<<file->GetName();
+   ::Warning
+   ("SetFieldFactor","gAlice has not been found in file %s\n",file->GetName());
     return 1;
   }   
   Int_t rc = SetFieldFactor();
@@ -128,7 +131,10 @@ Int_t AliTracker::SetFieldFactor(Char_t* fileName, Bool_t closeFile) {
 // gAlice object is read from the file, the file is optionally closed
 // 
    TFile *file=TFile::Open(fileName);
-   if (!file->IsOpen()) {cerr<<"Cannnot open "<<fileName<<" !\n"; return 1;}
+   if (!file->IsOpen()) {
+      ::Warning("AliTracker::SetFieldFactor","Cannnot open %s !\n",fileName); 
+      return 1;
+   }
    Int_t rc = SetFieldFactor(file, closeFile) ;
    if (closeFile) file->Close();
    return rc;

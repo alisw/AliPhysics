@@ -10,19 +10,22 @@
 //   that is the base for AliTPCtracker, AliITStrackerV2 and AliTRDtracker
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
-#include <Rtypes.h>
+#include <TObject.h>
 
 class AliKalmanTrack;
 class AliCluster;
 class TFile;
 
-class AliTracker {
+class AliTracker : public TObject {
 public:
-  AliTracker() { fX=fY=fZ=0.; fEventN=0; }
+  AliTracker() { fX=fY=fZ=0.; fSigmaX=fSigmaY=fSigmaZ=0.; fEventN=0; }
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(const TFile *in, TFile *out)=0;
   virtual Int_t PropagateBack(const TFile *in, TFile *out)=0;
-  void SetVertex(Double_t *xyz) { fX=xyz[0]; fY=xyz[1]; fZ=xyz[2]; }
+  void SetVertex(const Double_t *xyz, const Double_t *ers=0) { 
+     fX=xyz[0]; fY=xyz[1]; fZ=xyz[2];
+     if (ers) { fSigmaX=ers[0]; fSigmaY=ers[1]; fSigmaZ=ers[2]; } 
+  }
   void SetEventNumber(Int_t ev) { fEventN=ev; }
 
 //protected:
@@ -32,6 +35,9 @@ public:
   Double_t GetX() const {return fX;}
   Double_t GetY() const {return fY;}
   Double_t GetZ() const {return fZ;}
+  Double_t GetSigmaX() const {return fSigmaX;}
+  Double_t GetSigmaY() const {return fSigmaY;}
+  Double_t GetSigmaZ() const {return fSigmaZ;}
   Int_t GetEventNumber() const {return fEventN;}
 
   static Int_t SetFieldFactor(Char_t* fileName, Bool_t closeFile = kTRUE);
@@ -44,6 +50,10 @@ private:
   Double_t fX;  //X-coordinate of the primary vertex
   Double_t fY;  //Y-coordinate of the primary vertex
   Double_t fZ;  //Z-coordinate of the primary vertex
+
+  Double_t fSigmaX; // error of the primary vertex position in X
+  Double_t fSigmaY; // error of the primary vertex position in Y
+  Double_t fSigmaZ; // error of the primary vertex position in Z
 
   ClassDef(AliTracker,1) //abstract tracker
 };
