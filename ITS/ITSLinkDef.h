@@ -24,9 +24,9 @@
 #pragma link C++ class  AliITSvPPRsymm+;
 #pragma link C++ class  AliITSvPPRasymmFMD+;
 #pragma link C++ class  AliITSvSPD02+;
-#pragma link C++ class  AliITSv11+;
+//#pragma link C++ class  AliITSv11+;
 //
-#pragma link C++ class  AliITSMixture+;
+//#pragma link C++ class  AliITSMixture+;
 //
 #pragma link C++ class  AliITShit+;
 #pragma link C++ class  AliITSdigit+;
