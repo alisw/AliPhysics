@@ -1,22 +1,42 @@
 Instructions on how to use TFLuka
 
-1) Download Fluka from http://pcfluka.mi.infn.it/ and install it
+1) External packages needed:
 
-2) Download geant4_vmc and install it (together with Geant4, CLHEP, etc)
+  * Download Fluka from http://pcfluka.mi.infn.it/ and install it
 
-3) Set the path to Fluka in the environment variable FLUPRO
+  * Download geant4_vmc and install it (together with Geant4, CLHEP, etc)
+    NOTE: All the geant4_vmc headers are assumed to be in 
+    $ALICE/geant4_vmc/include. To put them there:
+    - Go to $ALICE/geant4_vmc
+      [host] cd $ALICE/geant4_vmc
+    - Make the include directory
+      [host] mkdir include
+    - Put links to the headers:
+      [host] cd include
+      [host] find $ALICE/geant4_vmc -name "*.h" -exec ln -s {} . \;
 
-4) In AliRoot do: 'gmake all-TFluka'
+2) Set the your environment:
 
-5) In AliRoot do: 'gmake all-Flugg'
+  * Set the path to Fluka in the environment variable FLUPRO
 
-6) replace macros/Config.C by TFluka/macro/FlukaConfig.C
+  * Set your geant4 environment in the usual way.
 
-7) Execute the TFluka/scripts/runalifluka.csh
+  * Make sure that your LD_LIBRARY_PATH includes the path to CLHEP, GEANT4 
+    and geant4_vmc libraries
 
-8) [root] .x TFluka/macro/loadlibs.C
+3) Compile TFluka and Flugg. In AliRoot do: 
 
-9) [root] gAlice->RunMC();
-....
+  * gmake all-TFluka
+
+  * gmake all-Flugg
+
+4) Run aliroot with FLUKA:
+
+  * Execute the $ALICE_ROOT/TFluka/scripts/runalifluka.csh
+
+  * [root] .x $ALICE_ROOT/TFluka/macro/loadlibs.C
+
+  * [root] gAlice->RunMC();
+
 
 This will run 50 particles from TGenerator.
