@@ -94,6 +94,8 @@
 
 // --- Standard library ---
 
+#include <Riostream.h>
+
 // --- AliRoot header files ---
 
 #include "AliRun.h"
