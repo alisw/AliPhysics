@@ -70,6 +70,17 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F* GetJetEtRatio2(){return fhJetEtRatio2;}
 	TH1F* GetEtaPhiDist2(){return fhEtaPhiDist2;}
 
+	//============================== ALL CASES ============================================
+	
+	TH2F* GetInputOutput(){return fhInputOutput;}
+	
+	//============================== Reconstruction Bin Comparison  ============================================
+	
+	TH1F* GetRecoBinPt(){return fhRecoBinPt;}	           // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	TH1F* GetRecoBinPartonPt(){return fhRecoBinPartonPt;}      // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
+	TH1F* GetRecoBinJetEt(){return fhRecoBinJetEt;}            // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
+	TH1F* GetRecoBinInputJetEt(){return fhRecoBinInputJetEt;}  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
+
 	private:
 	void InitPlots();
 	Int_t				fDebug;		// Debug value
@@ -116,13 +127,22 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F				*fhJetEtRatio2;  //("hJetEtRatio2","Ratio of Second Highest to Highest",100,0,1);
 	TH1F 				*fhEtaPhiDist2;  //("hEtaPhiDist2","Angular Distance Between First and Second",100,0,3);
 
+	//============================== ALL CASES ============================================
 
+	TH2F				*fhInputOutput;  //("hJetEtRatio2","Ratio of Second Highest to Highest",100,0,1);
 
+	//============================== Reconstruction Bin Comparison  ============================================
+	
+	TH1F				*fhRecoBinPt;	       // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	TH1F				*fhRecoBinPartonPt;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
+	TH1F				*fhRecoBinJetEt;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
+	TH1F				*fhRecoBinInputJetEt;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
+	
 	
 	Bool_t				fInitialised; // have histograms been initialised
 		
 	
-	ClassDef(AliEMCALJetFinderPlots,4)
+	ClassDef(AliEMCALJetFinderPlots,5)
 	
 };
 #endif

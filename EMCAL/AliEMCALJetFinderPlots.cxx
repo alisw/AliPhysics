@@ -73,7 +73,13 @@ fhNJets2=0;	// ("hNJets2","N Reconstructed jets",11,-0.5,10.5);
 fhJetEtSecond2=0; //("hJetEtSecond2","E_{T}^{reco}",250,0.,250.); 
 fhJetEtRatio2=0;  //("hJetEtRatio2","Ratio of Second Highest to Highest",100,0,1);
 fhEtaPhiDist2=0;  //("hEtaPhiDist2","Angular Distance Between First and Second",100,0,3);
-
+fhInputOutput=0;
+//     TH2F                            *fhInputOutput;  //("hJetEtRatio2","Ratio of Second Highest to Highest",100,0,1);
+     
+fhRecoBinPt=0;	       // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+fhRecoBinPartonPt=0;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
+fhRecoBinJetEt=0;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
+fhRecoBinInputJetEt=0;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
 }
 
 void AliEMCALJetFinderPlots::InitPlots()
@@ -184,7 +190,20 @@ fhJetEtRatio2		= new TH1F("hJetEtRatio2","Ratio of Second Highest to Highest",10
 fhJetEtRatio2->Sumw2();
 fhEtaPhiDist2		= new TH1F("hEtaPhiDist2","Angular Distance Between First and Second",100,0,3);
 fhEtaPhiDist2->Sumw2();
-  
+
+fhInputOutput=	new TH2F("hInputOutput","Input and Reconstruction Correlations;Input;Output",200,0,200,200,0,200);  //("hJetEtRatio2","Ratio of Second Highest to Highest",100,0,1);
+
+//============================== Reconstruction Bin Comparison  ============================================
+
+fhRecoBinPt =new TH1F("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+fhRecoBinPt->Sumw2();
+fhRecoBinPartonPt = new TH1F("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
+fhRecoBinPartonPt->Sumw2();
+fhRecoBinJetEt = new TH1F("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
+fhRecoBinJetEt->Sumw2();
+fhRecoBinInputJetEt = new TH1F("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
+fhRecoBinInputJetEt->Sumw2();
+                                
   fInitialised = kTRUE;	
   
 }
@@ -228,7 +247,11 @@ delete 	  fhEtaPhiSpread;
 	delete				fhJetEtRatio2;  //("hJetEtRatio2","Ratio of Second Highest to Highest",100,0,1);
 	delete 				fhEtaPhiDist2;  //("hEtaPhiDist2","Angular Distance Between First and Second",100,0,3);
 
-
+	delete fhRecoBinPt;          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	delete fhRecoBinPartonPt;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
+	delete fhRecoBinJetEt;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
+	delete fhRecoBinInputJetEt;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
+	                                
 
 }	
 
@@ -239,36 +262,63 @@ if (!fInitialised) InitPlots();
   fOutput = output;
   if (!fOutput) return;
   fhNJets->Fill(fOutput->GetNJets());
+  Bool_t doesJetMeetBinCriteria = 0;
+  AliEMCALJet* jethighest=0; 
+  AliEMCALJet* jetsecond=0; 
+  //  Find Highest and Second Highest Jet
+  
+// =========================== All cases ===================================
+  
+if (fOutput->GetNJets()>=1)
+{
+	Float_t theta = 2.0*atan(exp(-fOutput->GetParton(0)->Eta()));
+	Float_t et    = fOutput->GetParton(0)->Energy() * TMath::Sin(theta);
+	fhInputOutput->Fill(et,fOutput->GetJet(0)->Energy());
+	if (fOutput->GetNJets()>1)
+	{
+	      	for (Int_t counter = 0; counter<fOutput->GetNJets();counter++)  
+		{	  
+			if (counter==0)
+			{ 		  
+				jethighest = fOutput->GetJet(0);
+	      			jetsecond  = fOutput->GetJet(1);
+	      		}
+	      		if (counter>0)
+	      		{
+	      			Float_t energyhighest = jethighest->Energy();
+	      			Float_t energysecond = jetsecond->Energy();
+	      			
+	      			if ((fOutput->GetJet(counter))->Energy()>energyhighest) 
+	      			{
+	      				jetsecond=jethighest;
+	      				jethighest=fOutput->GetJet(counter);
+	      			}else if ((fOutput->GetJet(counter))->Energy()>energysecond) 
+	      			{
+	      				jetsecond=fOutput->GetJet(counter);
+	      			}
+	      
+			}
+	      	}
+	}else
+	{
+		jethighest=fOutput->GetJet(0);
+		jetsecond=0;
+	}
+	if ( 95.0 < jethighest->Energy() && jethighest->Energy() < 105.0  )
+	{
+		doesJetMeetBinCriteria = 1;
+		fhRecoBinJetEt->Fill(jethighest->Energy());
+		fhRecoBinInputJetEt->Fill(et);
+	}
+		
+}
+
 if (fOutput->GetNJets()>1)
 {	
 //========================= CASE 2 ===========================	
   Int_t nPartons = fOutput->GetNPartons();
   fhNJets2->Fill(fOutput->GetNJets());
   AliEMCALParton* parton;
-  AliEMCALJet* jethighest=0; 
-  AliEMCALJet* jetsecond=0; 
-  //  Find Highest and Second Highest Jet
-  for (Int_t counter = 0; counter<fOutput->GetNJets();counter++)
-  {
-	  if (counter==0){ 
-		  jethighest = fOutput->GetJet(0);
-		  jetsecond  = fOutput->GetJet(1);
-	  }
-	  if (counter>0)
-	  {
-		  Float_t energyhighest = jethighest->Energy();
-		  Float_t energysecond = jetsecond->Energy();
-		  
-		  if ((fOutput->GetJet(counter))->Energy()>energyhighest) 
-		  {
-			  jetsecond=jethighest;
-			  jethighest=fOutput->GetJet(counter);
-		  }else if ((fOutput->GetJet(counter))->Energy()>energysecond) 
-		  {
-			  jetsecond=fOutput->GetJet(counter);
-		  }
-	  }
-  }
 
   // End finding highest and second highest and continue
   fhJetEt2->Fill(jethighest->Energy());
@@ -318,7 +368,15 @@ if (fOutput->GetNJets()>1)
       Double_t crp = cos(parton->Phi());
       Double_t stp = sin(phi[iT]);
       Double_t srp = sin(parton->Phi());
-      Double_t alpha = acos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);
+      //Double_t alpha = acos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);
+	  Double_t alpha;   
+	  if (TMath::Abs(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt) > 0.9990)
+	  {
+		  alpha = 0.0;
+	  }else
+	  {
+		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
+	  }
       Double_t correctp = pt[iT]/stt; 	
       fhPartonPL2->Fill( correctp*cos(alpha));
       if ( (parton->Eta()-eta[iT])*(parton->Eta()-eta[iT]) +  
@@ -329,6 +387,10 @@ if (fOutput->GetNJets()>1)
       }else 
       {
               fhPartonFragmFcn2->Fill(correctp*sin(tt)/fNominalEnergy);
+      }    	  
+      if (doesJetMeetBinCriteria)
+      {
+	      fhRecoBinPartonPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
       }
   }// loop over tracks
 
@@ -350,7 +412,15 @@ if (fOutput->GetNJets()>1)
 	  Double_t crp = cos(jethighest->Phi());
 	  Double_t stp = sin(phi[iT]);
 	  Double_t srp = sin(jethighest->Phi());
-	  Double_t alpha = acos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
+	 // Double_t alpha = acos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
+	  Double_t alpha;   
+	  if (TMath::Abs(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt) > 0.9990)
+	  {
+		  alpha = 0.0;
+	  }else
+	  {
+		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
+	  }
 	  Double_t correctp = pt[iT]/stt;
 	  fhJetPL2->Fill( correctp*cos(alpha));      
 	  if ( (jethighest->Eta()-eta[iT])*(jethighest->Eta()-eta[iT]) +  
@@ -362,6 +432,10 @@ if (fOutput->GetNJets()>1)
 	  {
                   fhFragmFcn2->Fill(  correctp*sin(tt)/fNominalEnergy );
 	  }
+    	  if (doesJetMeetBinCriteria)
+    	  {
+	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+    	  }
   }// loop over tracks
   }
 
@@ -417,7 +491,14 @@ if (fOutput->GetNJets()>1)
       Double_t crp = cos(parton->Phi());
       Double_t stp = sin(phi[iT]);
       Double_t srp = sin(parton->Phi());
-      Double_t alpha = acos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);
+     // Double_t alpha = acos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);
+	  Double_t alpha;   
+	  if (TMath::Abs(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt) > 0.9990)
+	  {
+		  alpha = 0.0;
+	  }else
+	  {
+		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt); 	  }
       Double_t correctp = pt[iT]/stt; 	
       fhPartonPL->Fill( correctp*cos(alpha));
       if ( (parton->Eta()-eta[iT])*(parton->Eta()-eta[iT]) +  
@@ -428,6 +509,10 @@ if (fOutput->GetNJets()>1)
       }else 
       {
               fhPartonFragmFcn->Fill(correctp*sin(tt)/fNominalEnergy);
+      }
+      if (doesJetMeetBinCriteria)
+      {
+	      fhRecoBinPartonPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
       }
   }// loop over tracks
 
@@ -449,7 +534,16 @@ if (fOutput->GetNJets()>1)
 	  Double_t crp = cos(jet->Phi());
 	  Double_t stp = sin(phi[iT]);
 	  Double_t srp = sin(jet->Phi());
-	  Double_t alpha = acos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
+	  //Info("plots","acos(%1.16f)\nstt=%f\npt=%f",crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt,stt,pt[iT]);
+	  //Info("plots","diff to 1 %f",1.0-crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);
+	  Double_t alpha;   
+	  if (TMath::Abs(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt) > 0.9990)
+	  {
+		  alpha = 0.0;
+	  }else
+	  {
+		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
+	  }
 	  Double_t correctp = pt[iT]/stt;
 	  fhJetPL->Fill( correctp*cos(alpha));      
 	  if ( (jet->Eta()-eta[iT])*(jet->Eta()-eta[iT]) +  
@@ -461,6 +555,10 @@ if (fOutput->GetNJets()>1)
 	  {
                   fhFragmFcn->Fill(  correctp*sin(tt)/fNominalEnergy );
 	  }
+    	  if (doesJetMeetBinCriteria)
+    	  {
+	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+    	  }
   }// loop over tracks
   }
 }
