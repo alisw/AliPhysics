@@ -15,15 +15,11 @@
 
 //----------------------------------------------------------------------------
 //    Implementation of the D0toKpi reconstruction and analysis class
-//
 // Note: the two decay tracks are labelled: 0 (positive track)
 //                                          1 (negative track)
-//
+// An example of usage can be found in the macro AliD0toKpiTest.C
 //            Origin: A. Dainese    andrea.dainese@pd.infn.it            
 //----------------------------------------------------------------------------
-#include <Riostream.h>
-#include <TH1.h>
-#include <TH2.h>
 #include <TKey.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -431,14 +427,19 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 
   // open file with tracks
   TFile *esdFile = TFile::Open(esdName.Data());
+  AliESD* event = new AliESD;
+  TTree* tree = (TTree*) esdFile->Get("esdTree");
+  if (!tree) {
+    Error("FindCandidatesESD", "no ESD tree found");
+    return;
+  }
+  tree->SetBranchAddress("ESD", &event);
 
-  TKey *key=0;
-  TIter next(esdFile->GetListOfKeys());
   // loop on events in file
-  while ((key=(TKey*)next())!=0) {
-    AliESD *event=(AliESD*)key->ReadObj();
+  for (Int_t iEvent = evFirst; iEvent < tree->GetEntries(); iEvent++) {
+    if (iEvent > evLast) break;
+    tree->GetEvent(iEvent);
     Int_t ev = (Int_t)event->GetEventNumber();
-    if(ev<evFirst || ev>evLast) { delete event; continue; }
     printf("--- Finding D0 -> Kpi in event %d\n",ev);
 
     // retrieve primary vertex from file
@@ -591,7 +592,6 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
     delete [] trkEntryP;
     delete [] trkEntryN;
     delete trkTree;
-    delete event;
 
 
     printf(" Number of D0 candidates: %d\n",nD0rec1ev);
