@@ -77,6 +77,7 @@ fhInputOutput=0;
 //     TH2F                            *fhInputOutput;  //("hJetEtRatio2","Ratio of Second Highest to Highest",100,0,1);
      
 fhRecoBinPt=0;	       // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+fhRecoBinPtNoBg=0;	       // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
 fhRecoBinPartonPt=0;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
 fhRecoBinJetEt=0;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 fhRecoBinInputJetEt=0;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
@@ -221,6 +222,8 @@ fhInputOutput=	new TH2F("hInputOutput","Input and Reconstruction Correlations;In
 
 fhRecoBinPt =new TH1F("fhRecoBinPt","Reconstructed Pt Distribution",200,0,200);
 fhRecoBinPt->Sumw2();
+fhRecoBinPtNoBg =new TH1F("fhRecoBinPtNoBg","Reconstructed Pt Distribution Background Subtracted",200,0,200);
+fhRecoBinPtNoBg->Sumw2();
 fhRecoBinPartonPt = new TH1F("fhRecoBinPartonPt","Input Pt Distribution",200,0,200);
 fhRecoBinPartonPt->Sumw2();
 fhRecoBinFragmFcn =new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",200,0,2);
@@ -288,6 +291,7 @@ delete 	  fhEtaPhiSpread;
 	delete 				fhEtaPhiDist2;  //("hEtaPhiDist2","Angular Distance Between First and Second",100,0,3);
 
 	delete fhRecoBinPt;          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	delete fhRecoBinPtNoBg;          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
 	delete fhRecoBinPartonPt;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
 	delete fhRecoBinJetEt;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 	delete fhRecoBinInputJetEt;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
@@ -310,6 +314,15 @@ void AliEMCALJetFinderPlots::FillFromOutput(AliEMCALJetFinderOutput* output)
 if (!fInitialised) InitPlots();	
   fOutput = output;
   if (!fOutput) return;
+// Make some temporary histograms to make sure we subtract 
+  // background properly
+/*
+tempFragmFcnNoBg =new TH1F("tempFragmFcnNoBg","Reconstructed Frag. Fcn With Background Removed",200,0,2);
+tempPtNoBg =new TH1F("tempPtNoBg","Reconstructed Frag. Fcn With Background Removed",200,0,200);
+tempFragmFcnNoBg->Fill(count/(jethighest->Energy()*fScaleFactor),-fhBackHisto->GetBinContent(count));
+tempPtNoBg->AddBinContent(count,-fhBackHisto->GetBinContent(count));
+*/
+  
   fhNJets->Fill(fOutput->GetNJets());
   Bool_t doesJetMeetBinCriteria = 0;
   AliEMCALJet* jethighest=0; 
@@ -519,6 +532,7 @@ if (numappjet > 1)
     	  if (doesJetMeetBinCriteria)
     	  {
 	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	  	  fhRecoBinPtNoBg->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
 		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
 		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
     	  }
@@ -636,7 +650,7 @@ if (numappjet > 1)
 	  Double_t correctp = pt[iT]/stt;
 	  fhJetPL->Fill( correctp*cos(alpha));      
 	  if ( (jet->Eta()-eta[iT])*(jet->Eta()-eta[iT]) +  
-			  (jet->Phi()-phi[iT])*(jet->Phi()-phi[iT]) < 0.2*0.2 )   
+	       (jet->Phi()-phi[iT])*(jet->Phi()-phi[iT]) < 0.2*0.2 )   
 		  fhJetJT->Fill( correctp*sin(alpha));
 	  fhJetPT->Fill(correctp*sin(tt));
 	  if (fNominalEnergy==0.0){
@@ -648,17 +662,19 @@ if (numappjet > 1)
     	  if (doesJetMeetBinCriteria)
     	  {
 	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	  	  fhRecoBinPtNoBg->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
 		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
 		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
     	  }
   }// loop over tracks
   }
 
-if (numappjet>=1 && fhBackHisto != 0)
+if (numappjet>=1 && fhBackHisto != 0 && doesJetMeetBinCriteria)
   {
     for (Int_t count=1;count<=100;count++)
     {
-	fhRecoBinFragmFcnNoBg->AddBinContent(count,-fhBackHisto->GetBinContent(count));
+	fhRecoBinFragmFcnNoBg->Fill( ((Float_t)count)/(jethighest->Energy()*fScaleFactor),-fhBackHisto->GetBinContent(count));
+	fhRecoBinPtNoBg->AddBinContent(count,-fhBackHisto->GetBinContent(count));
     } 
   }
 

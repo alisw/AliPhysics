@@ -93,6 +93,7 @@ class AliEMCALJetFinderPlots : public TObject
 	//============================== Reconstruction Bin Comparison  ============================================
 	
 	TH1F* GetRecoBinPt(){return fhRecoBinPt;}	           // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	TH1F* GetRecoBinPtNoBg(){return fhRecoBinPtNoBg;}	           // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
 	TH1F* GetRecoBinPartonPt(){return fhRecoBinPartonPt;}      // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
 	TH1F* GetRecoBinJetEt(){return fhRecoBinJetEt;}            // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 	TH1F* GetRecoBinInputJetEt(){return fhRecoBinInputJetEt;}  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);
@@ -152,6 +153,7 @@ class AliEMCALJetFinderPlots : public TObject
 	//============================== Reconstruction Bin Comparison  ============================================
 	
 	TH1F				*fhRecoBinPt;	       // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	TH1F				*fhRecoBinPtNoBg;	       // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
 	TH1F				*fhRecoBinPartonPt;    // ("fhRecoBinPartonPt","Input Pt Distribution",100,0,1);
 	TH1F				*fhRecoBinJetEt;       // ("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 	TH1F				*fhRecoBinInputJetEt;  // ("fhRecoInputJetEt","E_{T}^{reco}",250,0.,250.);

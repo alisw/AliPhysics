@@ -110,17 +110,32 @@ if (fDebug > 1) Info("Reset","Beginning Reset");
 
 }
 
-Int_t AliEMCALJetFinderInputSimPrep::FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber)
+Int_t AliEMCALJetFinderInputSimPrep::FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber,TString data="H")
 {
 if (fDebug > 1) Info("FillFromFile","Beginning FillFromFile");
    fFileType = filetype;	
    AliEMCALGetter *gime = AliEMCALGetter::Instance(filename->Data());
    if (fDebug > 1) Info("FillFromFile","Instantiated Getter with %s as the file",filename->Data());
-   gime->Event(EventNumber,"XH") ;
+   if (data.Contains("S"))
+   {
+	   gime->Event(EventNumber,"XS") ;
+   }else
+   {
+   	   gime->Event(EventNumber,"XH") ;
+   }
    if (fDebug > 1) Info("FillFromFile","Got event %i with option \"XH\"",EventNumber);
 
    if (	fEMCALType == kHits ||
-	fEMCALType == kTimeCut )  FillHits();
+	fEMCALType == kTimeCut )  
+   {
+	   if (data.Contains("S"))
+	   {
+		   FillSDigits();
+	   }else
+	   {
+                   FillHits();
+	   }
+   }
    if ( fTrackType != kNoTracks  )  FillTracks();	
    if ( fFileType  != kData){
 	   FillPartons();
@@ -573,6 +588,18 @@ if (fDebug > 1) Info("FillParticles","Beginning FillParticles");
 void AliEMCALJetFinderInputSimPrep::FillDigits()  
 {
 	// Fill digits to input object
+
+}
+void AliEMCALJetFinderInputSimPrep::FillSDigits()  
+{
+Info("FillSDigits","Beginning FillSDigits");
+	AliEMCALGetter *gime = AliEMCALGetter::Instance();
+	 
+	// Fill digits to input object
+	for (Int_t towerid=0; towerid < gime->SDigits()->GetEntries(); towerid++)
+	{
+		fInputObject.AddEnergyToDigit(gime->SDigit(towerid)->GetId(), gime->SDigit(towerid)->GetAmp());
+	}
 
 }
 

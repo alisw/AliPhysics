@@ -26,14 +26,15 @@ class AliEMCALJetFinderInputSimPrep : public AliEMCALJetFinderInputPrep
 	void Reset(AliEMCALJetFinderResetType_t resettype);
         void SetEMCALType(AliEMCALJetFinderEMCALType_t emcaltype )  {fEMCALType = emcaltype;}
 	//void SetDebug(Int_t debug = 0)  {fDebug = debug;}
-        void SetSmearingType(AliEMCALJetFinderSmearingType_t smeartype )  {fSmearType = smeartype;}
+        void SetSmearingType(AliEMCALJetFinderSmearingType_t smeartype ) {fSmearType = smeartype;}
 	void SetTrackType(AliEMCALJetFinderTrackType_t tracktype){fTrackType = tracktype;}  
-	void SetEfficiency(Float_t efficiency)  {fEfficiency = efficiency; }
+	void SetEfficiency(Float_t efficiency)  {fEfficiency = efficiency;}
 	void SetTimeCut(Float_t timecut)  {fTimeCut = timecut; fEMCALType = kTimeCut;}
-	Int_t FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber);
+	Int_t FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype,Int_t EventNumber,TString data);
 	AliEMCALJetFinderInput* GetJetFinderInput(){return &fInputObject;}
 	private:
 	void FillHits();		// Fill from the hits to input object from simulation
+	void FillSDigits();		// Fill from the hits to input object from simulation
 	void FillTracks();		// Fill from particles simulating a TPC to input object from simulation
 	void Smear(TParticle *particle);
 	Bool_t Efficiency();
