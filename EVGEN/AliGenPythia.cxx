@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.50  2002/03/03 13:48:50  morsch
+Option  kPyCharmPbMNR added. Produce charm pairs in agreement with MNR
+NLO calculations (Nicola Carrer).
+
 Revision 1.49  2002/02/08 16:50:50  morsch
 Add name and title in constructor.
 
@@ -334,7 +338,7 @@ void AliGenPythia::Generate()
 	Int_t* pParent   = new Int_t[np];
 	Int_t* pSelected = new Int_t[np];
 	Int_t* trackIt   = new Int_t[np];
-	for (i=0; i< np-1; i++) {
+	for (i=0; i< np; i++) {
 	    pParent[i]   = -1;
 	    pSelected[i] =  0;
 	}
@@ -342,7 +346,7 @@ void AliGenPythia::Generate()
 	Int_t nc = 0;
 	if (fProcess != kPyMb && fProcess != kPyJets && fProcess != kPyDirectGamma) {
 	    
-	    for (i = 0; i<np-1; i++) {
+	    for (i = 0; i<np; i++) {
 		iparticle = (TParticle *) fParticles->At(i);
 		Int_t ks = iparticle->GetStatusCode();
 		kf = CheckPDGCode(iparticle->GetPdgCode());
@@ -433,7 +437,7 @@ void AliGenPythia::Generate()
 
   	    } // particle selection loop
 	    if (nc > -1) {
-		for (i = 0; i<np-1; i++) {
+		for (i = 0; i<np; i++) {
 		    if (!pSelected[i]) continue;
 		    TParticle *  iparticle = (TParticle *) fParticles->At(i);
 		    kf = CheckPDGCode(iparticle->GetPdgCode());
@@ -455,6 +459,10 @@ void AliGenPythia::Generate()
   	} else {
 	    nc = GenerateMB();
 	} // mb ?
+
+	if (pParent)   delete[] pParent;
+	if (pSelected) delete[] pSelected;
+	if (trackIt)   delete[] trackIt;
 
 	if (nc > 0) {
 	    jev+=nc;
@@ -485,14 +493,14 @@ Int_t  AliGenPythia::GenerateMB()
     
     Int_t np = fParticles->GetEntriesFast();
     Int_t* pParent = new Int_t[np];
-    for (i=0; i< np-1; i++) pParent[i] = -1;
+    for (i=0; i< np; i++) pParent[i] = -1;
     if (fProcess == kPyJets || fProcess == kPyDirectGamma) {
 	TParticle* jet1 = (TParticle *) fParticles->At(6);
 	TParticle* jet2 = (TParticle *) fParticles->At(7);
 	if (!CheckTrigger(jet1, jet2)) return 0;
     }
     
-    for (i = 0; i<np-1; i++) {
+    for (i = 0; i<np; i++) {
 	Int_t trackIt = 0;
 	TParticle *  iparticle = (TParticle *) fParticles->At(i);
 	kf = CheckPDGCode(iparticle->GetPdgCode());
