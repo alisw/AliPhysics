@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/12 06:59:16  fca
+Fixing dimension of hits array
+
 Revision 1.2  2000/07/11 11:12:34  fca
 Some syntax corrections for non standard HP aCC
 
@@ -115,7 +118,7 @@ void AliZDCv1::CreateBeamLine()
   conpar[0] = 0.;
   conpar[1] = 360.;
   conpar[2] = 2.;
-  conpar[3] = 1921.6;
+  conpar[3] = 805.;
   conpar[4] = 0.;
   conpar[5] = 55.;
   conpar[6] = 13060.;
