@@ -162,6 +162,7 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
 //
 //
 // if (GetDebug()>1)
+    
  AliDebug(2,Form("Making Branch %s",name));
  if (tree == 0x0) 
   {
@@ -181,7 +182,7 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
   } 
  else 
   {
-    branch = tree->Branch(name,address,size);
+    branch = tree->Bronch(name, "TClonesArray", address, size, splitlevel);
   }
  AliDebug(2,Form("Branch %s returning branch %#x",name,branch));
  return branch;
