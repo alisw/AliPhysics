@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.47  2001/03/20 06:36:29  alibrary
+100 parameters now allowed for geant shapes
+
 Revision 1.46  2000/12/21 17:35:05  morsch
 Last updates on the right version (1.44).
 (1.45) does not compile.
@@ -23,6 +26,9 @@ Revision 1.45  2000/12/21 16:49:56  morsch
 Adding particles to the PDG database delegated to AliPDG.
 
 $Log$
+Revision 1.47  2001/03/20 06:36:29  alibrary
+100 parameters now allowed for geant shapes
+
 Revision 1.46  2000/12/21 17:35:05  morsch
 Last updates on the right version (1.44).
 (1.45) does not compile.
@@ -913,6 +919,7 @@ void TGeant3::DefineParticles()
   Gspart(38, "ANTI D 0", 3, 1.865, 0., 4.2e-13);
   fPDGCode[fNPDGCodes++]=-421;  // 38 = D0 bar
 
+
   fPDGCode[fNPDGCodes++]=-99;  // 39 = unassigned
 
   fPDGCode[fNPDGCodes++]=-99;  // 40 = unassigned
@@ -987,10 +994,10 @@ void TGeant3::DefineParticles()
   fPDGCode[fNPDGCodes++]=-521;         //61 = B-
 
   Gspart(62, "Bs",     3, 5.3693, +0., 1.54e-12);
-  fPDGCode[fNPDGCodes++]=521;          //62 = B_s
+  fPDGCode[fNPDGCodes++]=531;          //62 = B_s
 
   Gspart(63, "Bs bar", 3, 5.3693, -0., 1.54e-12);
-  fPDGCode[fNPDGCodes++]=-521;         //63 = B_s bar
+  fPDGCode[fNPDGCodes++]=-531;         //63 = B_s bar
 
   Gspart(64, "Lambda_b",     3, 5.624, +0., 1.24e-12);
   fPDGCode[fNPDGCodes++]=5122;         //64 = Lambda_b
@@ -998,20 +1005,32 @@ void TGeant3::DefineParticles()
   Gspart(65, "Lambda_b bar", 3, 5.624, -0., 1.24e-12);
   fPDGCode[fNPDGCodes++]=-5122;        //65 = Lambda_b bar
 
-  Gspart(66, "J/Psi", 3.09688, 3, 0., 0.);
+  Gspart(66, "J/Psi",       3, 3.09688, 0., 0.);
   fPDGCode[fNPDGCodes++]=443;          // 66 = J/Psi
 
-  Gspart(67, "Psi Prime", 3, 3.686, 0., 0.);
+  Gspart(67, "Psi Prime",   3, 3.686,   0., 0.);
   fPDGCode[fNPDGCodes++]=20443;        // 67 = Psi prime
 
-  Gspart(68, "Upsilon(1S)", 9.46037, 3, 0., 0.);
+  Gspart(68, "Upsilon(1S)", 3, 9.46037, 0., 0.);
   fPDGCode[fNPDGCodes++]=553;          // 68 = Upsilon(1S)
 
-  Gspart(69, "Upsilon(2S)", 10.0233, 3, 0., 0.);
+  Gspart(69, "Upsilon(2S)", 3, 10.0233, 0., 0.);
   fPDGCode[fNPDGCodes++]=20553;        // 69 = Upsilon(2S)
 
-  Gspart(70, "Upsilon(3S)", 10.3553, 3, 0., 0.);
+  Gspart(70, "Upsilon(3S)", 3, 10.3553, 0., 0.);
   fPDGCode[fNPDGCodes++]=30553;        // 70 = Upsilon(3S)
+
+  Gspart(71, "Neutrino (mu)",      3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=14;        // 71 = muon neutrino 
+
+  Gspart(72, "Anti Neutrino (mu)", 3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=-14;       // 72 = anti muon neutrino
+
+  Gspart(73, "Neutrino (tau)",     3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=16;        // 73 = tau neutrino 
+
+  Gspart(74, "Anti Neutrino (tau)",3, 0., 0., 1.e20);
+  fPDGCode[fNPDGCodes++]=-16;        // 74 = anti tau neutrino
 
 /* --- Define additional decay modes --- */
 /* --- omega(783) --- */
