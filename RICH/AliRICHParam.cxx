@@ -12,7 +12,7 @@ AliRICHParam::AliRICHParam()
   PadSize              (8.4*mm,8.0*mm);     
   
   Size                 (80*cm,7*cm,60*cm);  //full length, not GEANT half notation
-  AngleRot             (-60);               //rotation of the whole RICH around Z, deg
+  AngleRot             (60);                //rotation of the whole RICH around Z, deg
   Angles               (20,19.5);           //XY angle, YZ angle  deg  
   Offset               (490*cm+1.267*cm);   //1.267???????cm distance from IP to the center of module 
   GapThickness         (8*cm);              

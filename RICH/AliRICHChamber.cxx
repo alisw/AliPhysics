@@ -45,47 +45,47 @@ AliRICHChamber::AliRICHChamber()
 //______________________________________________________________________________
 AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
 {//named ctor. Defines all geometry parameters for the given module.
- // 4 5 6 |----> X
- // 1 2 3 | 
- //   0   V Z  
-  SetCenter(0,pParam->Offset(),0);//put to 2 position   
+ //   6 7 |----> X
+ // 3 4 5 | 
+ // 1 2   V Z  
+  SetCenter(0,pParam->Offset()-pParam->GapThickness()/2,0);//put to up position   
   switch(iModuleN){
-    case 0:
-      RotateX(pParam->AngleYZ());
-      fName="RICHc0";fTitle="RICH chamber 0";
-      break;      
     case 1:
-      RotateZ(pParam->AngleXY());      
+      RotateX(-pParam->AngleYZ());  //порядок важен, поворот не комутативен    
+      RotateZ(-pParam->AngleXY());      
       fName="RICHc1";fTitle="RICH chamber 1";
       break;      
     case 2:
+      RotateZ(-pParam->AngleXY());      
       fName="RICHc2";fTitle="RICH chamber 2";
       break;      
     case 3:
-      RotateZ(-pParam->AngleXY());      
+      RotateX(-pParam->AngleYZ());
       fName="RICHc3";fTitle="RICH chamber 3";
       break;      
-    case 4:
-      RotateX(-pParam->AngleYZ());  //порядок важен, поворот не комутативен    
-      RotateZ( pParam->AngleXY());      
-      fName="RICHc4";fTitle="RICH chamber 4";
+    case 4:          
+      fName="RICHc4";fTitle="RICH chamber 4";  //no turns
       break;      
     case 5:
-      RotateX(-pParam->AngleYZ());
+      RotateX(pParam->AngleYZ());
       fName="RICHc5";fTitle="RICH chamber 5";
       break;      
     case 6:
-      RotateX(-pParam->AngleYZ());            
-      RotateZ(-pParam->AngleXY());      
+      RotateZ(pParam->AngleXY());      
       fName="RICHc6";fTitle="RICH chamber 6";
+      break;      
+    case 7:
+      RotateX(pParam->AngleYZ());            
+      RotateZ(pParam->AngleXY());      
+      fName="RICHc7";fTitle="RICH chamber 7";
       break;      
     default:
       Fatal("named ctor","Wrong chamber number %i, check muster class ctor",iModuleN);
   }//switch(iModuleN)
   RotateZ(pParam->AngleRot());//apply common rotation  
-  new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*r2d, Rot().PhiX()*r2d,
-                                          Rot().ThetaY()*r2d, Rot().PhiY()*r2d,
-                                          Rot().ThetaZ()*r2d, Rot().PhiZ()*r2d);
+  fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*r2d, Rot().PhiX()*r2d,
+                                                      Rot().ThetaY()*r2d, Rot().PhiY()*r2d,
+                                                      Rot().ThetaZ()*r2d, Rot().PhiZ()*r2d);
   fpParam=pParam;
 }
 //______________________________________________________________________________
@@ -122,83 +122,60 @@ void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
 } 
 
 void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
-				    Int_t& nnew,Float_t newclust[5][500],ResponseType res) 
-{
-//  Generates pad hits (simulated cluster) 
-//  using the segmentation and the response model
+				    Int_t& iNpads,Float_t cluster[5][500],ResponseType res) 
+{//Generates pad hits (simulated cluster) using the segmentation and the response model
     
-    Float_t dx, dy;
-    Float_t local[3];
-    //Float_t source[3];
-    Float_t global[3];
-    //
-    // Width of the integration area
-    //
-    dx=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadX());
-    dy=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadY());
-    //
-    // Get pulse height from energy loss and generate feedback photons
-    Float_t qtot=0;
+  Float_t local[3];
+  Float_t global[3];
+// Width of the integration area
+  Float_t dx=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadX());
+  Float_t dy=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadY());
+// Get pulse height from energy loss and generate feedback photons
+  Float_t qtot=0;
+  local[0]=xhit;
+//z-position of the wires relative to the RICH mother volume (2 mm before CsI) old value: 6.076 ???????
+  local[1]=1.276 + fGeometry->GetGapThickness()/2  - .2;
+  local[2]=yhit;
 
-    local[0]=xhit;
-    // z-position of the wires relative to the RICH mother volume 
-    // (2 mmm before CsI) old value: 6.076
-    local[1]=1.276 + fGeometry->GetGapThickness()/2  - .2;
-    //printf("AliRICHChamber feedback origin:%f",local[1]);
-    local[2]=yhit;
+  LocaltoGlobal(local,global);
 
-    LocaltoGlobal(local,global);
-
-    Int_t nFp=0;
+  Int_t nFp=0;
     
-
-    // To calculate wire sag, the origin of y-position must be the middle of the photcathode
-    AliRICHSegmentationV0* segmentation = (AliRICHSegmentationV0*) GetSegmentationModel();
-    Float_t newy;
-    if (yhit>0)
-      newy = yhit - segmentation->GetPadPlaneLength()/2;
-    else
-      newy = yhit + segmentation->GetPadPlaneLength()/2;
+//To calculate wire sag, the origin of y-position must be the middle of the photcathode
+  AliRICHSegmentationV0* segmentation = (AliRICHSegmentationV0*) GetSegmentationModel();
+  Float_t newy;
+  if (yhit>0)
+    newy = yhit - segmentation->GetPadPlaneLength()/2;
+  else
+    newy = yhit + segmentation->GetPadPlaneLength()/2;
     
-    if (res==kMip) {
-	qtot = fResponse->IntPH(eloss, newy);
-	nFp  = fResponse->FeedBackPhotons(global,qtot);
-	//printf("feedbacks:%d\n",nFp);
-    } else if (res==kCerenkov) {
-	qtot = fResponse->IntPH(newy);
-	nFp  = fResponse->FeedBackPhotons(global,qtot);
-	//printf("feedbacks:%d\n",nFp);
-    }
+  if(res==kMip){
+    qtot = fResponse->IntPH(eloss, newy);
+    nFp  = fResponse->FeedBackPhotons(global,qtot);
+  }else if(res==kCerenkov){
+    qtot = fResponse->IntPH(newy);
+    nFp  = fResponse->FeedBackPhotons(global,qtot);
+  }
 
-    //printf("Feedbacks:%d\n",nFp);
-    
-    //
     // Loop Over Pads
     
-    Float_t qcheck=0, qp=0;
+  Float_t qcheck=0, qp=0;
     
-    nnew=0;
-    for (fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); 
-	 fSegmentation->MorePads(); 
-	 fSegmentation->NextPad()) 
-      {
-	qp= fResponse->IntXY(fSegmentation);
-	qp= TMath::Abs(qp);
-	
-	//printf("Qp:%f Qtot %f\n",qp,qtot);
-	
-	if (qp > 1.e-4) {
-	  qcheck+=qp;
-	  //
-	  // --- store signal information
-	  newclust[0][nnew]=qp*qtot;
-	  newclust[1][nnew]=fSegmentation->Ix();
-	  newclust[2][nnew]=fSegmentation->Iy();
-	  newclust[3][nnew]=fSegmentation->ISector();
-	  nnew++;	
-	  //printf("Newcluster:%d\n",i);
-	}
-      } // Pad loop
+  iNpads=0;
+  for(fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); 
+      fSegmentation->MorePads(); 
+      fSegmentation->NextPad()) {
+    qp= fResponse->IntXY(fSegmentation);
+    qp= TMath::Abs(qp);
+    if(qp >1.e-4){
+      qcheck+=qp;
+      cluster[0][iNpads]=qp*qtot;// --- store signal information
+      cluster[1][iNpads]=fSegmentation->Ix();
+      cluster[2][iNpads]=fSegmentation->Iy();
+      cluster[3][iNpads]=fSegmentation->ISector();
+      iNpads++;	
+    }
+  }//pad loop
 }//void AliRICHChamber::DisIntegration(...
 //______________________________________________________________________________
 void AliRICHChamber::GenerateTresholds()
@@ -217,6 +194,7 @@ void AliRICHChamber::GenerateTresholds()
 //______________________________________________________________________________
 void AliRICHChamber::Print(Option_t *) const
 {
-  Info(fName.Data(),"r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                     Rho(), Theta()*r2d,Phi()*r2d ,   X(),    Y(),    Z());
+  Info(fName.Data(),"r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f\n %5.2f,%5.2f %5.2f,%5.2f %5.2f,%5.2f",
+                     Rho(), Theta()*r2d,Phi()*r2d ,   X(),    Y(),    Z(),
+                     ThetaXd(),PhiXd(),ThetaYd(),PhiYd(),ThetaZd(),PhiZd());
 }//void AliRICHChamber::Print(Option_t *option)const

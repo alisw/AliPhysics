@@ -19,7 +19,6 @@ static const int kNCH=7;
 
 class TFile;
 
-class AliRICHSDigit;
 class AliRICHRawCluster;
 class AliRICHRecHit1D;
 class AliRICHRecHit3D;
@@ -201,6 +200,9 @@ AliRICHdigit::AliRICHdigit(Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t
 //______________________________________________________________________________
 //______________________________________________________________________________
 //______________________________________________________________________________
+class AliRICHParam;
+class AliRICHSDigit;
+
 class AliRICH : public AliDetector 
 {
 public:
@@ -210,35 +212,41 @@ public:
   virtual  ~AliRICH();                                            
           
   AliRICH&  operator=(const AliRICH&)                 {return *this;}
-  virtual Int_t  IsVersion() const =0;
-          
+  virtual Int_t  IsVersion()const =0;            
+  AliRICHParam *Param()                               {return fpParam;}
   inline  void  AddHit(Int_t track, Int_t *vol, Float_t *hits);//virtual
   inline  void  AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
   inline  void  AddSDigit(Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t iT1=-1,Int_t iT2=-1);
-          void  AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);
-          void  AddRawCluster(Int_t id, const AliRICHRawCluster& cluster);
-          void  AddRecHit1D(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
-          void  AddRecHit3D(Int_t id, Float_t* rechit, Float_t omega, Float_t theta, Float_t phi);
   inline  void  ResetHits();    //virtual
   inline  void  ResetSDigits(); //virtual
-          void  ResetDigits();  //virtual
-          void  ResetRawClusters();
-          void  ResetRecHits1D();
-          void  ResetRecHits3D();
-  virtual void  FindClusters(Int_t nev);
           void  Hits2SDigits(); //virtual 
-          void  Hits2SDigits(Int_t iEventN);
-          void  Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
-  virtual void  SDigits2Digits();
-  virtual void  Digits2Reco();
-
+          
+  TClonesArray  *SDigits()                       const{return fSDigits;}
+  TClonesArray  *Cerenkovs()                     const{return fCerenkovs;}
+          void    CreateChambers();         
   virtual void    CreateMaterials(); //GEANT materials definition
           Float_t AbsoCH4(Float_t x);
           Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola);
   virtual void    BuildGeometry();   //TNode ROOT variant for event display
   virtual void    CreateGeometry();  //GEANT volumes tree for simulation  
   virtual void    StepManager()=0;
-   
+  
+  AliRICHChamber* C(Int_t i)        const{return (AliRICHChamber*)fChambers->At(i);}//return pointer to requested chamber
+  AliRICHChamber& Chamber(Int_t id)      {return *((AliRICHChamber *) (*fChambers)[id]);}
+  TObjArray*      Chambers()        const{return fChambers;}
+  
+        void  AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);
+          void  AddRawCluster(Int_t id, const AliRICHRawCluster& cluster);
+          void  AddRecHit1D(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
+          void  AddRecHit3D(Int_t id, Float_t* rechit, Float_t omega, Float_t theta, Float_t phi);
+          void  ResetDigits();  //virtual
+          void  ResetRawClusters();
+          void  ResetRecHits1D();
+          void  ResetRecHits3D();
+  virtual void  FindClusters(Int_t nev);
+          Int_t Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);//kir ????? to be  removed
+  virtual void  SDigits2Digits();
+  virtual void  Digits2Reco();   
           Int_t    DistancetoPrimitive(Int_t /*px*/, Int_t /*py*/)      {return 9999;}
    
   virtual void   MakeBranch(Option_t *opt=" ");
@@ -251,17 +259,15 @@ public:
   AliRICHSDigit* NextPad(TClonesArray *clusters);
    
 
-  void     SetGeometryModel(Int_t iChamberN, AliRICHGeometry *pRICHGeo)    {       GetChamber(iChamberN)->SetGeometryModel(pRICHGeo);}
-  AliRICHGeometry* GetGeometryModel(Int_t iChamberN=0)                        const{return GetChamber(iChamberN)->GetGeometryModel();}    
-  void     SetSegmentationModel(Int_t iChamberN, AliSegmentation *pAliSeg) {       GetChamber(iChamberN)->SetSegmentationModel(pAliSeg);}
-  AliSegmentation* GetSegmentationModel(Int_t iChamberN=0)                    const{return GetChamber(iChamberN)->GetSegmentationModel();}
-  void     SetResponseModel(Int_t iChamberN, AliRICHResponse *pRICHRes)    {       GetChamber(iChamberN)->SetResponseModel(pRICHRes);}
-  AliRICHResponse* GetResponseModel(Int_t iChamberN)                          const{return GetChamber(iChamberN)->GetResponseModel();}
-  void     SetReconstructionModel(Int_t iChamberN, AliRICHClusterFinder *pRICHReco){GetChamber(iChamberN)->SetReconstructionModel(pRICHReco);}
+  void     SetGeometryModel(Int_t iC,AliRICHGeometry *pRICHGeo)                    {C(iC)->SetGeometryModel(pRICHGeo);}
+  void     SetSegmentationModel(Int_t iC, AliSegmentation *pAliSeg)                {C(iC)->SetSegmentationModel(pAliSeg);}
+  void     SetResponseModel(Int_t iC, AliRICHResponse *pRICHRes)                   {C(iC)->SetResponseModel(pRICHRes);}
+  void     SetReconstructionModel(Int_t iC, AliRICHClusterFinder *pRICHReco)       {C(iC)->SetReconstructionModel(pRICHReco);}
+  AliRICHGeometry* GetGeometryModel(Int_t iC=0)                               const{return C(iC)->GetGeometryModel();}    
+  AliSegmentation* GetSegmentationModel(Int_t iC=0)                           const{return C(iC)->GetSegmentationModel();}
+  AliRICHResponse* GetResponseModel(Int_t iC)                                 const{return C(iC)->GetResponseModel();}
 
 //kir  virtual void   SetMerger(AliRICHMerger* thisMerger) {fMerger=thisMerger;}  
-  AliRICHChamber& Chamber(Int_t id) {return *((AliRICHChamber *) (*fChambers)[id]);}
-  AliRICHChamber* GetChamber(Int_t iChamberN)     const{return (AliRICHChamber*) (*fChambers)[iChamberN];}
   
   TObjArray     *Dchambers()                     {return fDchambers;}
   TObjArray     *RecHits3D()                const{return fRecHits3D;}
@@ -269,8 +275,6 @@ public:
   Int_t         *Ndch()                          {return fNdch;}
   Int_t         *Nrechits1D()                    {return fNrechits1D;} 
   Int_t         *Nrechits3D()                    {return fNrechits3D;} 
-  TClonesArray  *SDigits()                  const{return fSDigits;}
-  TClonesArray  *Cerenkovs()                const{return fCerenkovs;}
   TClonesArray  *DigitsAddress(Int_t id)         {return ((TClonesArray *) (*fDchambers)[id]);}
   TClonesArray  *RecHitsAddress1D(Int_t id) const{return ((TClonesArray *) (*fRecHits1D)[id]);}
   TClonesArray  *RecHitsAddress3D(Int_t id) const{return ((TClonesArray *) (*fRecHits3D)[id]);}
@@ -282,6 +286,7 @@ public:
   virtual void Print(Option_t *option)const; // Prints debug information
     
 protected:
+  AliRICHParam         *fpParam;              //main RICH parametrization     
   TObjArray            *fChambers;           //! List of RICH chambers
   Int_t                 fNsdigits;           //Current number of sdigits
   Int_t                 fNcerenkovs;         //Current number of cerenkovs

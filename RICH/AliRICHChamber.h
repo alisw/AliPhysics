@@ -10,6 +10,7 @@
 #include <TVector3.h>
 #include <TMath.h>
 #include <TRotation.h>
+#include "AliRICHConst.h"
 
 #include "AliRICHTresholdMap.h"
 #include "AliSegmentation.h"
@@ -29,11 +30,11 @@ public:
    AliRICHTresholdMap*  fTresh;          //map of tresholds
 
 public:
-           AliRICHChamber();                                        //default ctor
+           AliRICHChamber();
            AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam);
-           AliRICHChamber(const AliRICHChamber &chamber ) : TNamed(chamber) {}//copy ctor 
-  virtual ~AliRICHChamber()                               {;}//dtor
-  AliRICHChamber& operator=(const AliRICHChamber&){return *this;}
+           AliRICHChamber(const AliRICHChamber &chamber):TNamed(chamber) {;}
+  virtual ~AliRICHChamber()                                              {;}
+  AliRICHChamber& operator=(const AliRICHChamber&)                       {return *this;}
   void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);//Transformation from local to global coordinates, chamber-dependant
   void GlobaltoLocal(Float_t pos[3],Float_t localpos[3]);//Transformation from Global to local coordinates, chamber-dependant 
   void GenerateTresholds();                              //Generate pad dependent tresholds
@@ -86,10 +87,16 @@ public:
   void  SetFreonThickness(Float_t thickness)                       {fGeometry->SetFreonThickness(thickness);}
   TRotMatrix* RotMatrix()          const{return fpRotMatrix;}
   const char* RotMatrixName()      const{return "rot"+fName;}
-  TRotation   Rot()                const{return fRot;}
+  TRotation   Rot()                     {return fRot;}
   Double_t    Rho()                const{return fCenterV3.Mag();} 
   Double_t    Theta()              const{return fCenterV3.Theta();}    
   Double_t    Phi()                const{return fCenterV3.Phi();}    
+  Double_t    ThetaXd()            const{return fRot.ThetaX()*r2d;}    
+  Double_t    PhiXd()              const{return fRot.PhiX()*r2d;}    
+  Double_t    ThetaYd()            const{return fRot.ThetaY()*r2d;}    
+  Double_t    PhiYd()              const{return fRot.PhiY()*r2d;}    
+  Double_t    ThetaZd()            const{return fRot.ThetaZ()*r2d;}    
+  Double_t    PhiZd()              const{return fRot.PhiZ()*r2d;}    
   void        RotateX(Double_t a)       {fRot.RotateX(a);fCenterV3.RotateX(a);}
   void        RotateY(Double_t a)       {fRot.RotateY(a);fCenterV3.RotateY(a);}
   void        RotateZ(Double_t a)       {fRot.RotateZ(a);fCenterV3.RotateZ(a);}

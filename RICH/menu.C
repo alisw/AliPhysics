@@ -108,22 +108,22 @@ Bool_t GetAlice()
 void RingViewer()
 {
   gStyle->SetPalette(1);
-  TCanvas *view=new TCanvas("Display","ALICE RICH Display",0,0,1200,750);
+  TCanvas *view=new TCanvas("Display","ALICE RICH Display",0,0,600,600);
   
-  TH2F *pH2=new TH2F("pH2F","RICH DISPLAY",160,0,160,144,0,144);
+  TH2F *pH2=new TH2F("pH2F","RICH DISPLAY",r->Param()->Nx(),0,r->Param()->Nx(),r->Param()->Ny(),0,r->Param()->Ny());
   pH2->SetStats(0);
   pH2->SetMaximum(100);
 
   Int_t Nevents = gAlice->GetEventsPerRun();
 }
-
 //______________________________________________________________________________
 void Geo()
 {
   TControlBar *pMenu = new TControlBar("vertical","RICH draw");
-  pMenu->AddButton("Draw Front", "gMC->Gdraw(\"ALIC\", 0,0,0, 10,10, 0.01,0.01)","Draws ALIC volume in XY view");
-  pMenu->AddButton("Draw Side",  "gMC->Gdraw(\"ALIC\",90,180, 0, 10,10, 0.01,0.01)","Draws ALIC volume in YZ view");
-  pMenu->AddButton("Draw Top",   "gMC->Gdraw(\"ALIC\",90, 90, 0, 10,10, 0.03,0.03)","Draws ALIC volume in XZ view");
+  pMenu->AddButton("Draw Isometry", "gMC->Gdraw(\"ALIC\", 60,120,0, 10,10, 0.01,0.01)","Draws ALIC volume in isometry");
+  pMenu->AddButton("Draw Front XY", "gMC->Gdraw(\"ALIC\", 0,0,0, 10,10, 0.01,0.01)","Draws ALIC volume in XY view");
+  pMenu->AddButton("Draw Side YZ",  "gMC->Gdraw(\"ALIC\",90,180, 0, 10,10, 0.01,0.01)","Draws ALIC volume in YZ view");
+  pMenu->AddButton("Draw Top XZ",   "gMC->Gdraw(\"ALIC\",90, 90, 0, 10,10, 0.01,0.01)","Draws ALIC volume in XZ view");
   pMenu->AddButton("ALICE Tree", "((TGeant3*)gMC)->Gdtree(\"ALIC\")","Draws ALICE tree");      
   pMenu->AddButton("RICH Tree",  "((TGeant3*)gMC)->Gdtree(\"RICH\")","Draws RICH tree");      
   pMenu->AddButton("Geo test",  "GeoTest()",   "Draw RICH geo as a macro");
@@ -131,12 +131,12 @@ void Geo()
   pMenu->AddButton("Print act", "r->Print();", "Print RICH chambers default position");
   pMenu->Show();  
 }//void Draw()
-
+//______________________________________________________________________________
 void GeoTest()
 {
 
-   TBRIK *pAliceBRIK=new TBRIK("aliceBRIK","ALICE mother volume","void",500,500,500);
-   TBRIK *pArmBRIK=new TBRIK("armBRIK","RICH arm1","void",pRICH->GetSizeX(),pRICH->GetSizeY(),pRICH->GetSizeZ());
+  TBRIK *pAliceBRIK=new TBRIK("aliceBRIK","ALICE mother volume","void",500,500,500);
+  TBRIK *pArmBRIK=new TBRIK("armBRIK","RICH arm1","void",pRICH->GetSizeX(),pRICH->GetSizeY(),pRICH->GetSizeZ());
    
    TNode *pAliceNode=new TNode("aliceNode","Mother volume","aliceBRIK");
    pAliceNode->cd();
@@ -162,9 +162,9 @@ void GeoTest()
    TVector3  v2(0,pRICH->GetOffset(),0);
    
          
-   rot2.RotateX(pRICH->GetYZAngle()*kDegrad);        v2.RotateX(pRICH->GetYZAngle()*kDegrad);
-   rot2.RotateZ(-pRICH->GetXYAngle()*kDegrad);        v2.RotateZ(-pRICH->GetXYAngle()*kDegrad);
-   rot2.RotateZ(pRICH->GetRotAngle()*kDegrad);        v2.RotateZ(pRICH->GetRotAngle()*kDegrad);
+   rot2.RotateX( pRICH->YZAngle()*kDegrad);        v2.RotateX(pRICH->GetYZAngle()*kDegrad);
+   rot2.RotateZ(-pRICH->XYAngle()*kDegrad);        v2.RotateZ(-pRICH->GetXYAngle()*kDegrad);
+   rot2.RotateZ( pRICH->RotAngle()*kDegrad);        v2.RotateZ(pRICH->GetRotAngle()*kDegrad);
          
    TRotMatrix *pArm2RotMatrix=new TRotMatrix("rotArm2","rotArm2",rot2.ThetaX()*kRaddeg, rot2.PhiX()*kRaddeg,
                                                                  rot2.ThetaY()*kRaddeg, rot2.PhiY()*kRaddeg,
@@ -190,43 +190,35 @@ void PrintGeo(Float_t rotDeg=0)
     kRot=rotDeg*deg;
         
   cout<<endl;
-  Double_t phi=90*deg+kRot,theta=90*deg-kT;    
-  Info("   menu for          0","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                               r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-  
-  phi=90*deg+kRot+kP,theta=90*deg;
+  Double_t  phi=90*deg+kRot+kP,theta=90*deg+kT;
   Info("   menu for          1","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
                                  r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
   
-  phi=90*deg+kRot,theta=90*deg;
+  phi=90*deg+kRot+kP,theta=90*deg;
   Info("   menu for          2","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
                                  r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
-
   
-  phi=90*deg+kRot-kP,theta=90*deg;
+  phi=90*deg+kRot,theta=90*deg-kT;    
   Info("   menu for          3","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
                                  r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
-
-
-  phi=90*deg+kRot+kP,theta=90*deg+kT;
+  
+  
+  phi=90*deg+kRot,theta=90*deg;
   Info("   menu for          4","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
                                  r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
-  
+
   
   phi=90*deg+kRot,theta=90*deg+kT;
   Info("   menu for          5","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
@@ -235,8 +227,16 @@ void PrintGeo(Float_t rotDeg=0)
                                                                        r*sin(theta)*sin(phi),
                                                                                r*cos(theta));
   
-  phi=90*deg+kRot-kP,theta=90*deg+kT;
+  
+  phi=90*deg+kRot-kP,theta=90*deg;
   Info("   menu for          6","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
+                                 r,      theta*r2d,  phi*r2d,  
+                                                               r*sin(theta)*cos(phi),
+                                                                       r*sin(theta)*sin(phi),
+                                                                               r*cos(theta));
+  
+  phi=90*deg+kRot-kP,theta=90*deg+kT;
+  Info("   menu for          7","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
                                  r,      theta*r2d,  phi*r2d,  
                                                                r*sin(theta)*cos(phi),
                                                                        r*sin(theta)*sin(phi),
