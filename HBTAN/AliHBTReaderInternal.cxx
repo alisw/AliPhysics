@@ -57,7 +57,7 @@ AliHBTReaderInternal::~AliHBTReaderInternal()
 
 AliHBTEvent* AliHBTReaderInternal::GetParticleEvent(Int_t n)
  {
- //returns Nth event with simulated particles
+ //returns nth event with simulated particles
    if (!fIsRead) 
     if(Read(fParticles,fTracks))
      {
@@ -70,7 +70,7 @@ AliHBTEvent* AliHBTReaderInternal::GetParticleEvent(Int_t n)
 
 AliHBTEvent* AliHBTReaderInternal::GetTrackEvent(Int_t n)
  {
- //returns Nth event with reconstructed tracks
+ //returns nth event with reconstructed tracks
    if (!fIsRead) 
     if(Read(fParticles,fTracks))
      {
@@ -121,14 +121,21 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
   Int_t counter;
   TFile *aFile;//file with tracks
   AliHBTParticle* tpart = 0x0, *ttrack = 0x0;
-  
+  TDatabasePDG* pdgdb = TDatabasePDG::Instance();  
+  if (pdgdb == 0x0)
+   {
+     Error("Read","Can not get PDG Particles Data Base");
+     return 1;
+   }
   if (!particles) //check if an object is instatiated
    {
      Error("Read"," particles object must instatiated before passing it to the reader");
+     return 1;
    }
   if (!tracks)  //check if an object is instatiated
    {
      Error("Read"," tracks object must instatiated before passing it to the reader");
+     return 1;
    }
   particles->Reset();//clear runs == delete all old events
   tracks->Reset();
@@ -152,8 +159,9 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
     
     if( (i=OpenFile(aFile, currentdir)) )
      {
-       Error("Read","Exiting due to problems with opening files. Errorcode %d",i);
-       return i;
+       Error("Read","Skippimg directory due to problems with opening files. Errorcode %d",i);
+       currentdir++;
+       continue;
      }
    /***************************/
    /***************************/
@@ -163,7 +171,8 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
      if (tree == 0x0)
       {
        Error("Read","Can not get the tree");
-       return 1;
+       currentdir++;
+       continue;
       }
      
      TBranch *trackbranch=tree->GetBranch("tracks");//get the branch with tracks
@@ -204,14 +213,31 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
                ttrack =  dynamic_cast<AliHBTParticle*>(tbuffer->At(i));
 
                if( tpart == 0x0 ) continue; //if returned pointer is NULL
-               if( tpart->GetPDG()==0x0 ) continue; //if particle has crezy PDG code (not known to our database)
-               if( Pass(tpart) ) continue; //check if we are intersted with particles of this type 
-                                                          //if not take next partilce
-               AliHBTParticle* part = new AliHBTParticle(*tpart);
-               AliHBTParticle* track = new AliHBTParticle(*ttrack);
-               particles->AddParticle(totalnevents,part);//put track and particle on the run
-               tracks->AddParticle(totalnevents,track);
-               counter++;
+               
+               if (ttrack->GetUID() != tpart->GetUID())
+                 {
+                   Error("Read","Sth. is wrong: Track and Particle has different UID.");
+                   Error("Read","They probobly do not correspond to each other.");
+                 }
+               
+               for (Int_t s = 0; s < tpart->GetNumberOfPids(); s++)
+                {
+                  if( pdgdb->GetParticle(tpart->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
+                  if( Pass(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+                                              //if not take next partilce
+                  AliHBTParticle* part = new AliHBTParticle(*tpart);
+                  part->SetPdgCode(tpart->GetNthPid(s),tpart->GetNthPidProb(s));
+                  if( Pass(part) )
+                    {
+	  delete part;
+	  continue; 
+ 	}
+                  AliHBTParticle* track = new AliHBTParticle(*ttrack);
+                  
+                  particles->AddParticle(totalnevents,part);//put track and particle on the run
+                  tracks->AddParticle(totalnevents,track);
+                  counter++;
+                }
              }
             Info("Read","   Read: %d particles and tracks.",counter);
         }
@@ -224,12 +250,22 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
              { 
                tpart = dynamic_cast<AliHBTParticle*>(pbuffer->At(i));
                if(tpart == 0x0) continue; //if returned pointer is NULL
-               if(tpart->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
-               if(Pass(tpart)) continue; //check if we are intersted with particles of this type 
-                                         //if not take next partilce
-               AliHBTParticle* part = new AliHBTParticle(*tpart);
-               particles->AddParticle(totalnevents,part);//put track and particle on the run
-               counter++;
+               
+               for (Int_t s = 0; s < tpart->GetNumberOfPids(); s++)
+                {
+                  if( pdgdb->GetParticle(tpart->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
+                  if( Pass(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+               
+                  AliHBTParticle* part = new AliHBTParticle(*tpart);
+                  part->SetPdgCode(tpart->GetNthPid(s),tpart->GetNthPidProb(s));
+                  if( Pass(part) )
+                    {
+	  delete part;
+	  continue; 
+ 	}
+                  particles->AddParticle(totalnevents,part);//put track and particle on the run
+                  counter++;
+                }
              }
             Info("Read","   Read: %d particles.",counter);
           }
@@ -241,12 +277,21 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
              {
                tpart = dynamic_cast<AliHBTParticle*>(tbuffer->At(i));
                if(tpart == 0x0) continue; //if returned pointer is NULL
-               if(tpart->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
-               if(Pass(tpart)) continue; //check if we are intersted with particles of this type 
-                                                   //if not take next partilce
-               AliHBTParticle* part = new AliHBTParticle(*tpart);
-               tracks->AddParticle(totalnevents,part);//put track and particle on the run
-               counter++;
+               for (Int_t s = 0; s < tpart->GetNumberOfPids(); s++)
+                {
+                  if( pdgdb->GetParticle(tpart->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
+                  if( Pass(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+               
+                  AliHBTParticle* part = new AliHBTParticle(*tpart);
+                  part->SetPdgCode(tpart->GetNthPid(s),tpart->GetNthPidProb(s));
+                  if( Pass(part) )
+                    {
+	  delete part;
+	  continue; 
+ 	}
+                  tracks->AddParticle(totalnevents,part);//put track and particle on the run
+                  counter++;
+                }
              }
             Info("Read","   Read: %d tracks",counter);
           }
@@ -271,7 +316,6 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
   fIsRead = kTRUE;
   return 0;
 }
-
 /********************************************************************/
 
 Int_t AliHBTReaderInternal::OpenFile(TFile*& aFile,Int_t event)
@@ -300,9 +344,14 @@ Int_t AliHBTReaderInternal::OpenFile(TFile*& aFile,Int_t event)
 }
 /********************************************************************/
 
-Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
+Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile, Bool_t multcheck)
  {
   //reads tracks from reader and writes runs to file
+  //reader - provides data for writing in internal format
+  //name of output file
+  //multcheck - switches of checking if particle was stored with other incarnation
+  // usefull e.g. when using kine data, where all particles have 100% pid prob.and saves a lot of time
+  
   Int_t i,j;
   
   ::Info("AliHBTReaderInternal::Write","________________________________________________________");
@@ -329,48 +378,80 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
     
   TString name("Tracks");
   
-  Int_t NT = reader->GetNumberOfTrackEvents();
-  Int_t NP = reader->GetNumberOfPartEvents();
+  Int_t nt = reader->GetNumberOfTrackEvents();
+  Int_t np = reader->GetNumberOfPartEvents();
   
-  Bool_t trck = (NT > 0) ? kTRUE : kFALSE;
-  Bool_t part = (NP > 0) ? kTRUE : kFALSE;
+  if (AliHBTParticle::GetDebug() > 0)
+   ::Info("Write","Reader has %d track events and %d particles events.",nt,np);
+   
+  Bool_t trck = (nt > 0) ? kTRUE : kFALSE;
+  Bool_t part = (np > 0) ? kTRUE : kFALSE;
 
   TBranch *trackbranch = 0x0, *partbranch = 0x0;
   
   if (trck) trackbranch = tracktree->Branch("tracks",&tbuffer,32000,0);
   if (part) partbranch = tracktree->Branch("particles",&pbuffer,32000,0);
   
-  if ( (trck) && (part) && (NP != NT))
+  if ( (trck) && (part) && (np != nt))
    {
      ::Warning("AliHBTReaderInternal::Write","Number of track and particle events is different");
    }
   
-  Int_t N;
-  if (NT >= NP ) N = NT; else N = NP;
+  Int_t n;
+  if (nt >= np ) n = nt; else n = np;
+  
+  if (AliHBTParticle::GetDebug() > 0)
+   ::Info("Write","Will loop over %d events",n);
 
-  for ( i =0;i< N; i++)
+  for ( i =0;i< n; i++)
     {
       ::Info("AliHBTReaderInternal::Write","Event %d",i+1);
-      if (trck && (i<=NT))
-       {
+      Int_t counter = 0;
+      if (trck && (i<=nt))
+       { 
          AliHBTEvent* trackev = reader->GetTrackEvent(i);
          for ( j = 0; j< trackev->GetNumberOfParticles();j++)
           {
-            const AliHBTParticle& t= *(trackev->GetParticle(j));
-            new (tracks[j]) AliHBTParticle(t);
+            const AliHBTParticle& t = *(trackev->GetParticle(j));
+            if (multcheck)
+             {
+              if (FindIndex(tbuffer,t.GetUID())) 
+               {
+                 if (AliHBTParticle::GetDebug()>4)
+                  { 
+                   ::Info("Write","Track with Event UID %d already stored",t.GetUID());
+                  }
+                 continue; //not to write the same particles with other incarnations
+               }
+             }
+            new (tracks[counter++]) AliHBTParticle(t);
           }
-         ::Info("AliHBTReaderInternal::Write","    Tracks: %d",j);
+         ::Info("AliHBTReaderInternal::Write","    Tracks: %d",tracks.GetEntries());
        }else ::Info("AliHBTReaderInternal::Write","NO TRACKS");
       
-      if (part && (i<=NP))
+      counter = 0;
+      if (part && (i<=np))
        {
+//        ::Warning("AliHBTReaderInternal::Write","Find index switched off!!!");
+
         AliHBTEvent* partev = reader->GetParticleEvent(i);
         for ( j = 0; j< partev->GetNumberOfParticles();j++)
          {
            const AliHBTParticle& part= *(partev->GetParticle(j));
-           new (particles[j]) AliHBTParticle(part);
+            if (multcheck)
+             {
+              if (FindIndex(pbuffer,part.GetUID())) 
+               {
+                 if (AliHBTParticle::GetDebug()>4)
+                  { 
+                   ::Info("Write","Particle with Event UID %d already stored",part.GetUID());
+                  }
+                 continue; //not to write the same particles with other incarnations
+               }
+             } 
+           new (particles[counter++]) AliHBTParticle(part);
          }
-         ::Info("AliHBTReaderInternal::Write","    Particles: %d",j);
+         ::Info("AliHBTReaderInternal::Write","    Particles: %d",particles.GetEntries());
        }else ::Info("AliHBTReaderInternal::Write","NO PARTICLES");
 
       histoOutput->cd();
@@ -392,3 +473,21 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
   histoOutput->Close();
   return 0;
  }
+/********************************************************************/
+
+Bool_t AliHBTReaderInternal::FindIndex(TClonesArray* arr,Int_t idx)
+{
+//Checks if in the array exists already partilce with Unique ID idx
+  if (arr == 0x0)
+   {
+     ::Error("FindIndex","Array is 0x0");
+     return kTRUE;
+   }
+  TIter next(arr);
+  AliHBTParticle* p;
+  while (( p = (AliHBTParticle*)next()))
+   {
+     if (p->GetUID() == idx) return kTRUE;
+   }
+  return kFALSE;
+}

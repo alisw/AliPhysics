@@ -13,6 +13,7 @@
 
 #include <TString.h>
 class TFile;
+class TClonesArray;
 
 class AliHBTReaderInternal: public AliHBTReader
 {
@@ -23,7 +24,7 @@ class AliHBTReaderInternal: public AliHBTReader
     virtual ~AliHBTReaderInternal();
     
     Int_t Read(AliHBTRun* particles, AliHBTRun *tracks);//reads tracks and particles and puts them in runs
-    static Int_t Write(AliHBTReader* reader,const char* outfile = "data.root");//reads tracks from runs and writes them to file
+    static Int_t Write(AliHBTReader* reader,const char* outfile = "data.root", Bool_t multcheck = kFALSE);//reads tracks from runs and writes them to file
     
     AliHBTEvent* GetParticleEvent(Int_t);//returns pointer to event with particles
     AliHBTEvent* GetTrackEvent(Int_t);//returns pointer to event with particles 
@@ -36,9 +37,9 @@ class AliHBTReaderInternal: public AliHBTReader
     Bool_t     fIsRead;//!flag indicating if the data are already read    
     TString    fFileName;//name of the file with tracks
 
-    Int_t OpenFile(TFile*& aFile,Int_t event);//opens file to be read for given event 
-
- public:
-  ClassDef(AliHBTReaderInternal,1)
+    Int_t      OpenFile(TFile*& aFile,Int_t event);//opens file to be read for given event 
+    static Bool_t FindIndex(TClonesArray* arr,Int_t idx);
+    
+    ClassDef(AliHBTReaderInternal,1)
 };
 #endif 
