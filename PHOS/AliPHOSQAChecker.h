@@ -18,8 +18,6 @@ class TString ;
 
 // --- Standard library ---
 
-#include <assert.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSQAVirtualCheckable.h"
@@ -33,14 +31,14 @@ public:
     fCheckable = 0;
   } ;          // default ctor (not to be used)
   AliPHOSQAChecker(const char * name, const char * title) ; // ctor
-  AliPHOSQAChecker(AliPHOSQAChecker& obj) {assert(0==1);}
+  AliPHOSQAChecker(AliPHOSQAChecker& qac) {Fatal("AliPHOSQAChecker", "Copy CTOR not implemented") ; } 
   virtual ~AliPHOSQAChecker() ; // dtor
 
   void Alarms() { ExecuteTask("A") ; }  
   virtual TString CheckingOperation(){ return TString(""); } // where the checking operation must be implemented
   void CheckIt() ; 
   void CheckIt(AliPHOSQAVirtualCheckable *ca)  ;
-  void Delete() { delete this ; } // Hara-Kiri
+  void Delete() const { delete this ; } // Hara-Kiri
   TList * GetListOfCheckables() const { return fCheckablesList ; } 
   virtual void  Exec(Option_t *option) ;   
   virtual void Print() ;
@@ -53,6 +51,7 @@ public:
   friend void AliPHOSQAVirtualCheckable::AddChecker(AliPHOSQAChecker * ch) ;
   friend AliPHOSQAVirtualCheckable::AliPHOSQAVirtualCheckable(const char * name) ;
 
+  AliPHOSQAChecker & operator = (AliPHOSQAChecker & qac) { return *this ; } 
 
  private:
 

@@ -36,7 +36,7 @@ public:
 
 private:
   
-  Float_t fValue ; 
+  Float_t fValue ; // the value of the checkable  
 
   ClassDef(AliPHOSQAFloatCheckable,1)  // description 
 

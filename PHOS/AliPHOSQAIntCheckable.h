@@ -36,7 +36,7 @@ public:
 
 private:
   
-  Int_t fValue ; 
+  Int_t fValue ; // the value of the checkable
 
   ClassDef(AliPHOSQAIntCheckable,1)  // description 
 

@@ -23,7 +23,6 @@
 
 // --- ROOT system ---
 #include "TROOT.h"
-#include "TFolder.h" 
 
 // --- Standard library ---
 

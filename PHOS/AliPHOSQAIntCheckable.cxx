@@ -17,13 +17,13 @@
 
 //_________________________________________________________________________
 // Class for a QA checkable that is an Int  
-//
+// To be used with AliPHOSChecker
+// or any derived class
+// ..
 //*-- Author :  Yves Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-
-#include "TClass.h"
 
 // --- Standard library ---
 
