@@ -16,7 +16,6 @@
 #include <TClonesArray.h>
 #include <TObject.h>
 
-#include "AliESDCaloTrack.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDPmdTrack.h"
 #include "AliESDVertex.h"
@@ -38,9 +37,7 @@ public:
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks.UncheckedAt(i);
   }
-  AliESDCaloTrack *GetCaloTrack(Int_t i) const {
-    return (AliESDCaloTrack *)fCaloTracks.UncheckedAt(i);
-  }
+
   AliESDMuonTrack *GetMuonTrack(Int_t i) const {
     return (AliESDMuonTrack *)fMuonTracks.UncheckedAt(i);
   }
@@ -51,9 +48,7 @@ public:
   void AddTrack(const AliESDtrack *t) {
     new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
   }
-  void AddCaloTrack(const AliESDCaloTrack *t) {
-    new(fCaloTracks[fCaloTracks.GetEntriesFast()]) AliESDCaloTrack(*t);
-  }
+
   void AddMuonTrack(const AliESDMuonTrack *t) {
     new(fMuonTracks[fMuonTracks.GetEntriesFast()]) AliESDMuonTrack(*t);
   }
@@ -85,7 +80,6 @@ public:
   Long_t GetTrigger() const {return fTrigger;}
   
   Int_t GetNumberOfTracks()     const {return fTracks.GetEntriesFast();}
-  Int_t GetNumberOfCaloTracks() const {return fCaloTracks.GetEntriesFast();}
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks.GetEntriesFast();}
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
@@ -109,7 +103,6 @@ protected:
   AliESDVertex  fPrimaryVertex;  // Primary vertex estimated by the ITS
 
   TClonesArray  fTracks;         // ESD tracks
-  TClonesArray  fCaloTracks;     // Calorimeters' ESD tracks
   TClonesArray  fMuonTracks;     // MUON ESD tracks
   TClonesArray  fPmdTracks;      // PMD ESD tracks
   TClonesArray  fV0s;            // V0 vertices

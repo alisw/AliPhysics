@@ -36,7 +36,6 @@ AliESD::AliESD():
   fT0zVertex(0),
   fPrimaryVertex(),
   fTracks("AliESDtrack",15000),
-  fCaloTracks("AliESDCaloTrack",500),
   fMuonTracks("AliESDMuonTrack",30),
   fPmdTracks("AliESDPmdTrack",3000),
   fV0s("AliESDv0",200),
@@ -51,7 +50,6 @@ AliESD::~AliESD()
   // Standard destructor
   //
   fTracks.Delete();
-  fCaloTracks.Delete();
   fMuonTracks.Delete();
   fPmdTracks.Delete();
   fV0s.Delete();
@@ -78,7 +76,6 @@ void AliESD::Print(Option_t *) const
   printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
   printf("                 charged   %d\n",GetNumberOfTracks());
-  printf("                 calo      %d\n", GetNumberOfCaloTracks());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
   printf("                 pmd      %d\n", GetNumberOfPmdTracks());
   printf("                 v0        %d\n", GetNumberOfV0s());

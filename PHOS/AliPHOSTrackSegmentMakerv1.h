@@ -13,6 +13,7 @@
 //*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
 
 // --- ROOT system ---
+#include <TVector3.h>
 
 // --- Standard library ---
 
