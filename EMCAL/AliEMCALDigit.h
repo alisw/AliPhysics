@@ -49,7 +49,6 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t   GetIparent(Int_t index) const ;
   const Float_t GetPhi() const;
   Float_t GetTime(void) const {return fTime ;}
-  const Bool_t IsInPreShower() const ;
   Bool_t  IsSortable() const { 
     // says that AliEMCALDigits are sortable (needed for Sort method
     return kTRUE ; }

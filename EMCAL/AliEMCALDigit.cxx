@@ -194,16 +194,6 @@ Int_t AliEMCALDigit::GetIparent(Int_t index) const
   
 }
 
-//______________________________________________________________________
-const Bool_t AliEMCALDigit::IsInPreShower() const 
-{
-  Bool_t rv = kFALSE ;
-  const AliEMCALGeometry * geom = AliEMCALGetter::GetInstance()->EMCALGeometry() ;
-  if( GetId() > (geom->GetNZ() * geom->GetNPhi() )) 
-    rv = kTRUE; 
-  return rv; 
-} 
-
 //____________________________________________________________________________
 void AliEMCALDigit::ShiftPrimary(Int_t shift){
   //shifts primary nimber to BIG offset, to separate primary in different TreeK
