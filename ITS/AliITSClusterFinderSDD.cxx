@@ -206,6 +206,7 @@ void AliITSClusterFinderSDD::Find1DClusters()
 
 	 // cluster charge
 	 Int_t tstart = it-1;
+	 if( tstart<0 ) tstart = 0;
 	
 	 Bool_t ilcl = 0;
 	 if(lthrt >= lthrmint && lthra >= lthrmina) ilcl = 1;
