@@ -18,6 +18,7 @@ AliL3HoughTrack::AliL3HoughTrack()
   fDLine = 0;
   fPsiLine = 0;
   fIsHelix = true;
+  fEtaIndex = -1;
 }
 
 
@@ -32,6 +33,9 @@ void AliL3HoughTrack::Set(AliL3Track *track)
 {
 
   AliL3HoughTrack *tpt = (AliL3HoughTrack*)track;
+  SetTrackParameters(tpt->GetKappa(),tpt->GetPhi0(),tpt->GetWeight());
+  SetEtaIndex(tpt->GetEtaIndex());
+  return;
 
   fWeight = tpt->GetWeight();
   fDLine = tpt->GetDLine();

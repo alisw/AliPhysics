@@ -12,6 +12,7 @@ class AliL3HoughTrack : public AliL3Track {
   AliL3Transform *fTransform; //!
   Double_t fMinDist;
   Int_t fWeight;
+  Int_t fEtaIndex;
 
   Double_t fDLine;
   Double_t fPsiLine;
@@ -30,13 +31,14 @@ class AliL3HoughTrack : public AliL3Track {
   Double_t GetPsiLine() {return fPsiLine;}
   Double_t GetDLine() {return fDLine;}
 
+  Int_t GetEtaIndex() {return fEtaIndex;}
   void GetLineCrossingPoint(Int_t padrow,Double_t *xy);
   //Bool_t GetCrossingPoint(Int_t slice,Int_t padrow,Float_t *xyz);
   
   //Double_t GetCrossingAngle(Int_t padrow);
   //Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   
-
+  void SetEtaIndex(Int_t f) {fEtaIndex = f;}
   void SetBestMCid(Int_t f,Double_t min_dist);
   void SetDLine(Double_t f) {fDLine=f;}
   void SetPsiLine(Double_t f) {fPsiLine=f;}
