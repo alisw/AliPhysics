@@ -35,7 +35,7 @@ TG4ModularPhysicsList::TG4ModularPhysicsList()
 //
   defaultCutValue = fgkDefaultCutValue;
 
-  SetVerboseLevel(2);
+  SetVerboseLevel(1);
 }
 
 //_____________________________________________________________________________
