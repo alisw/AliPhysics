@@ -32,12 +32,13 @@ class AliPHOS : public AliDetector {
   AliPHOS(const AliPHOS & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    abort() ; 
+    Fatal("cpy ctor", "not implemented") ;
   }
   virtual ~AliPHOS() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     // do not use this definition but the one below
-    abort() ; 
+    Fatal("AddHit(Int_t, Int_t*, Float_t *)", "do not use") ;
+    
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;   
@@ -53,7 +54,7 @@ class AliPHOS : public AliDetector {
   AliPHOS & operator = (const AliPHOS & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
  

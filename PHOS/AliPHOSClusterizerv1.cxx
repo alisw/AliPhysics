@@ -554,8 +554,7 @@ void AliPHOSClusterizerv1::MakeClusters()
   
   TClonesArray * digits = gime->Digits() ; 
    if ( !digits ) {
-    Error("MakeClusters", "Digits with name %s not found !") ; 
-    abort() ; 
+   Fatal("MakeClusters", "Digits with name %s not found !", BranchName().Data() ) ;  
   } 
   TClonesArray * digitsC =  (TClonesArray*)digits->Clone() ;
   
@@ -1079,6 +1078,7 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   
       Int_t * primaries; 
       Int_t nprimaries ; 
+      primaries = rp->GetPrimaries(nprimaries);
       message += "\n" ; 
       message += rp->GetIndexInList() ;
       message += " " ;  

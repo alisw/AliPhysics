@@ -54,7 +54,7 @@ public:
 
   AliPHOSAnalyze & operator = (const AliPHOSAnalyze & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
  

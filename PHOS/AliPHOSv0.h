@@ -27,7 +27,7 @@ class AliPHOSv0 : public AliPHOS {
   AliPHOSv0(const AliPHOSv0 & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    abort() ; 
+    Fatal("cpy ctor", "not implemented") ;
   } 
   virtual ~AliPHOSv0(void){
     // dtor
@@ -35,7 +35,7 @@ class AliPHOSv0 : public AliPHOS {
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
     // useless since there are no hits
-    abort() ; 
+    Fatal("AddHit", "not to be used with v0") ;
   }
   virtual void   BuildGeometry(void) ;             // creates the geometry for the ROOT display
   void           BuildGeometryforEMC(void) ;      // creates the PHOS geometry for the ROOT display
@@ -61,7 +61,7 @@ class AliPHOSv0 : public AliPHOS {
   
   AliPHOSv0 & operator = (const AliPHOSv0 & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
   

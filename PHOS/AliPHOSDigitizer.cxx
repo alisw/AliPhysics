@@ -165,8 +165,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   // get first the sdigitizer from the tasks list (must have same name as the digitizer)
   const AliPHOSSDigitizer * sDigitizer = gime->SDigitizer(GetName()); 
   if ( !sDigitizer) {
-    Error("Digitize", "SDigitizer with name %s not found", GetName() ) ; 
-    abort() ; 
+    Fatal("Digitize", "SDigitizer with name %s not found", GetName() ) ; 
   }
     
   // loop through the sdigits posted to the White Board and add them to the noise

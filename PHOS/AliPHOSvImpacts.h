@@ -30,7 +30,7 @@ public:
   AliPHOSvImpacts(const AliPHOSvImpacts & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    abort() ; 
+    Fatal("cpy ctor", "not implemented") ;
   }
   virtual ~AliPHOSvImpacts(void) ;
 
@@ -50,7 +50,7 @@ public:
 
   AliPHOSvImpacts & operator = (const AliPHOSvImpacts & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
 

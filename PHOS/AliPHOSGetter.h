@@ -51,18 +51,17 @@ class AliPHOSGetter : public TObject {
  public:
   
   AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
-    Error("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
-    abort() ; 
+    Fatal("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
   } 
   AliPHOSGetter(const AliPHOSGetter & obj) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed
-    abort() ; 
+    Fatal("cpy ctor", "not implemented") ;
   } 
   
   AliPHOSGetter & operator = (const AliPHOSGetter & ) {
     // assignement operator requested by coding convention, but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
   virtual ~AliPHOSGetter() ; 

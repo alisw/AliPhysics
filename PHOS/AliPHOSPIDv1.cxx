@@ -636,8 +636,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
   if ( !emcRecPoints || !cpvRecPoints || !trackSegments ) {
-    Error("MakeRecParticles", "RecPoints or TrackSegments not found !") ;  
-    abort() ; 
+    Fatal("MakeRecParticles", "RecPoints or TrackSegments not found !") ;  
   }
   TClonesArray * recParticles  = gime->RecParticles() ; 
   recParticles->Clear();
@@ -668,8 +667,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     
     // YK: check if (emc != 0) !!!
     if (!emc) {
-      Error("MakeRecParticles", "-> emc(%d) = %d", ts->GetEmcIndex(), emc ) ;
-      abort();
+      Fatal("MakeRecParticles", "-> emc(%d) = %d", ts->GetEmcIndex(), emc ) ;
     }
     Float_t    e = emc->GetEnergy() ;   
     Int_t cluster = GetClusterOption(e) ;// Gives value to cluster that defines the energy range parameter to be used in de RCPV, TOF and used in the PCA.

@@ -94,7 +94,6 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
       Warning("GetPrimary", "%d is larger that the number of primaries %d", index, GetNPrimaries()) ;
-    return 0 ; 
   } else { 
     Int_t dummy ; 
     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;

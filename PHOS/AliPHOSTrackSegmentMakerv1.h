@@ -32,8 +32,8 @@ public:
   AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    abort() ; 
-  }
+    Fatal("cpy ctor", "not implemented") ;
+}
    
   virtual ~ AliPHOSTrackSegmentMakerv1() ; // dtor
   
@@ -57,7 +57,7 @@ public:
 
   AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & )  {
     // assignement operator requested by coding convention but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
 

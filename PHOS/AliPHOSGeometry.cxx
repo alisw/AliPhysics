@@ -70,8 +70,7 @@ void AliPHOSGeometry::Init(void)
   
   TString test(GetName()) ; 
   if (test != "IHEP" && test != "GPS2" && test != "MIXT") {
-    Error("Init", "%s is not a known geometry (choose among IHEP, GPS2 and MIXT)", test.Data() ) ; 
-    abort() ;
+    Fatal("Init", "%s is not a known geometry (choose among IHEP, GPS2 and MIXT)", test.Data() ) ; 
   }
 
   fgInit     = kTRUE ; 
