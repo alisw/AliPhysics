@@ -117,10 +117,9 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(const AliMUONTriggerSegme
 AliMUONTriggerSegmentation::~AliMUONTriggerSegmentation() 
 {
   // Destructor
-/*  if (fNDiv) delete fNDiv;
+  if (fNDiv) delete fNDiv;
   if (fDpxD) delete fDpxD;
   if (fDpyD) delete fDpyD;
-*/
 }
 //----------------------------------------------------------------------
 AliMUONTriggerSegmentation& AliMUONTriggerSegmentation::operator=(const AliMUONTriggerSegmentation& rhs)
