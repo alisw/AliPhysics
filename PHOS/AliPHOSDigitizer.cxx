@@ -16,14 +16,10 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// This is a TTask that constructs SDigits out of Hits
-// A Summable Digits is the sum of all hits in a cell
-// A threshold is applied 
-//
 //*-- Author :  Dmitri Peressounko (SUBATECH & Kurchatov Institute) 
 //////////////////////////////////////////////////////////////////////////////
 // Class performs digitization of Summable digits (in the PHOS case this is just
-// sum of contributions of all primary particles into give cell). 
+// sum of contributions of all primary particles into given cell). 
 // In addition it performs mixing of summable digits from different events.
 // Examples of use:
 // root[0] AliPHOSDigitizer * d = new AliPHOSDigitizer() ;
@@ -32,33 +28,47 @@
 //                       //Digitizes SDigitis in all events found in file galice.root 
 //                       //Depending on variable "CONFIG_SPLIT_FILE" reads branches stored in galice.root
 //                       //or in PHOS.SDigits.root
-// root[2] AliPHOSDigitizer * d1 = new AliPHOSDigitizer("galice1.root") ;  // Will read sdigits from galice1.root
-// root[3] d1->MixWith("galice2.root",1)       // Reads another portion of sdigits from galice2.root
-//                                             // says, that this will be output file
+// root[2] AliPHOSDigitizer * d1 = new AliPHOSDigitizer("galice1.root") ;  
+//                       // Will read sdigits from galice1.root
+// root[3] d1->MixWith("galice2.root")       
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-// root[3] d1->MixWith("galice3.root",1)       // Reads another portion of sdigits from galice3.root
-//                                             // overwrides previous definition of output file
-// root[4] d->ExecuteTask()    // Reads SDigits from files galice1.root, galice2.root ....
-//                             // mixes them and stores produced Digits in file galice3.root          
+//                       // Reads another portion of sdigits from galice2.root
+// root[3] d1->MixWith("galice3.root")       
+//                       // Reads another portion of sdigits from galice3.root
+// root[4] d->ExecuteTask("deb timing")    
+//                       // Reads SDigits from files galice1.root, galice2.root ....
+//                       // mixes them and stores produced Digits in file galice1.root          
+//                       // deb - prints number of produced digits
+//                       // deb all - prints list of produced digits
+//                       // timing  - prints time used for digitization
 //
+// For each event two branches are created in TreeD:
+//   "PHOS" - list of digits
+//   "AliPHOSDigitizer" - AliPHOSDigitizer with all parameters used in digitization
 //
-// 
+// Note, that one can specify new file name for digits branch, and repeat digitization with
+// another set of parameters.
 
 // --- ROOT system ---
-#include "TTask.h"
+#include "TFile.h"
 #include "TTree.h"
 #include "TSystem.h"
+#include "TROOT.h"
+#include "TFolder.h"
+#include "TObjString.h"
+#include "TBenchmark.h"
 // --- Standard library ---
+#include <iomanip.h>
 
 // --- AliRoot header files ---
 
+#include "AliRun.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSv1.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
-#include "TROOT.h"
-#include "TFolder.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSDigitizer)
 
@@ -77,124 +87,134 @@ ClassImp(AliPHOSDigitizer)
   fPPSDNoise = 0.0000001;
   fPPSDDigitThreshold = 0.0000002 ;
   fInitialized = kFALSE ;
-  // add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
+
+  fHeaderFiles = 0;
+  fSDigitsTitles = 0;
+  fSDigits  = 0 ;
+  fDigits = 0;
 
 }
 //____________________________________________________________________________ 
-void AliPHOSDigitizer::Init(Int_t isOutFile){
+void AliPHOSDigitizer::Init(){
 // Mades all memory allocations and defiles, 
 // whether first (default) file will be output file (isOutFile !=0) 
 
   if(!fInitialized){
+    
+    cout << "In Init" << endl ;
 
     fHeaderFiles  = new TClonesArray("TObjString",1) ;
     new((*fHeaderFiles)[0]) TObjString("galice.root") ;
-    TFile * file ;
-
-    if(isOutFile)
+    
+    //Test, if this file already open
+    
+    TFile *file = (TFile*) gROOT->GetFile(((TObjString *) fHeaderFiles->At(0))->GetString() ) ;
+    
+    if(file == 0){
       file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;
+      gAlice = (AliRun *) file->Get("gAlice") ;
+    }
     else
       file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString()) ;
-
+    
     file->cd() ;
-  
-    fSDigitsFiles = new TClonesArray("TObjString",1);
-    if(gSystem->Getenv("CONFIG_SPLIT_FILE")) 
-      new((*fSDigitsFiles)[0]) TObjString("./PHOS.SDigits.root") ;   
-    else
-      new((*fSDigitsFiles)[0]) TObjString("") ;   
+    
+    fSDigitsTitles = new TClonesArray("TObjString",1);
+    new((*fSDigitsTitles)[0]) TObjString("") ;   
     
     fSDigits      = new TClonesArray("TClonesArray",1) ;
     new((*fSDigits)[0]) TClonesArray("AliPHOSDigit",1000) ;
+
+    fDigitsTitle = "" ;
     
     fDigits = new TClonesArray("AliPHOSDigit",200000) ;
     
     fIevent    = new TArrayI(1) ;
     fIevent->AddAt(-1,0 ) ; 
     fIeventMax = new TArrayI(1) ;
-
-    //Store digits in this file
-    if(isOutFile){
-      gAlice = (AliRun *) file->Get("gAlice") ;
-      fIeventMax->AddAt((Int_t) gAlice->TreeE()->GetEntries(), 0 );
-      fOutFileNumber = 0 ;
-    }
-    else{
-      TTree * te = (TTree *) file->Get("TE") ;
-      fIeventMax->AddAt((Int_t) te->GetEntries(), 0 );
-      fOutFileNumber = -1 ;
-    }
-
+    
+    fIeventMax->AddAt((Int_t) gAlice->TreeE()->GetEntries(), 0 );
+    
+    // add Task to //root/Tasks folder
+    TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
+    roottasks->Add(this) ; 
+    
     fInitialized = kTRUE ;
   }
-
+  
 }
 
-
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(char *HeaderFile,char *DigitsFile):TTask("AliPHOSDigitizer","")
+AliPHOSDigitizer::AliPHOSDigitizer(const char *HeaderFile,const char *sDigitsTitle):
+  TTask("AliPHOSDigitizer","")
 {
   // ctor
-  fHeaderFiles  = new TClonesArray("TFile",1) ;          
+  fHeaderFiles  = new TClonesArray("TObjString",1) ;          
   new((*fHeaderFiles)[0]) TObjString(HeaderFile) ;
-  TFile * file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;      // Header file, where result will be stored
-
+  
+  // Header file, where result will be stored
+  TFile * file = (TFile*) gROOT->GetFile(((TObjString *) fHeaderFiles->At(0))->GetString() ) ;
+  if(file==0){
+    file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;      
+    gAlice = (AliRun *) file->Get("gAlice") ;  //If not read yet
+  }
+  
   file->cd() ;
   
-  fSDigitsFiles = new TClonesArray("TObjString",1);         // File name of the SDigits branch
-  if(DigitsFile)
-    new((*fSDigitsFiles)[0]) TObjString(DigitsFile) ;   
-  else
-    if(gSystem->Getenv("CONFIG_SPLIT_FILE")) 
-      new((*fSDigitsFiles)[0]) TObjString("./PHOS.SDigits.root") ;   
-    else
-      new((*fSDigitsFiles)[0]) TObjString("") ;   
+  fSDigitsTitles = new TClonesArray("TObjString",1);         // Title name of the SDigits branch
+  new((*fSDigitsTitles)[0]) TObjString(sDigitsTitle) ;  
     
   fSDigits      = new TClonesArray("TClonesArray",1) ;      // here list of SDigits wil be stored
   new((*fSDigits)[0]) TClonesArray("AliPHOSDigit",1000) ;
     
   fDigits = new TClonesArray("AliPHOSDigit",200000) ;
-  fDigitsFile="PHOS.Digits" ; 
-    
+  
+  fDigitsTitle = "" ; 
+  
   fIevent    = new TArrayI(1) ;
   fIevent->AddAt(-1,0 ) ; 
   fIeventMax = new TArrayI(1) ;
-  //Should be check whether gAlice in memory is the same as in file
-  //However, there is no such method (?) ==> we are forced to read it
-  // if(gAlice->TreeE()==0)
-
-  gAlice = (AliRun *) file->Get("gAlice") ;  //If not read yet
-
+  
   // Get number of events to process
   fIeventMax->AddAt((Int_t) gAlice->TreeE()->GetEntries(), 0 );
-  fOutFileNumber = 0 ;
-
+  
   fNinputs = 1 ;
-
+  
   fPinNoise = 0.01 ;
   fEMCDigitThreshold = 0.01 ;
   fCPVNoise = 0.01;
   fCPVDigitThreshold = 0.09 ;
   fPPSDNoise = 0.0000001;
   fPPSDDigitThreshold = 0.0000002 ;  
-
+  
   // add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
   roottasks->Add(this) ; 
   fInitialized = kTRUE ;
-    
+  
 }
 
 //____________________________________________________________________________ 
   AliPHOSDigitizer::~AliPHOSDigitizer()
 {
   // dtor
-  delete fHeaderFiles ;
-  delete fSDigitsFiles ;
-  delete fSDigits ;
-  delete fDigits ;
+
+  if(fHeaderFiles)  delete fHeaderFiles ;
+  if(fSDigitsTitles) delete fSDigitsTitles ;
+  if(fSDigits)      delete fSDigits ;
+  if(fDigits)       delete fDigits ;
+}
+//____________________________________________________________________________
+void AliPHOSDigitizer::Reset() { 
+  //sets current event number to the beginning
+
+  if(!fInitialized)
+    Init() ;
+
+  Int_t inputs ;
+  for(inputs = 0; inputs < fNinputs ;inputs++)
+      fIevent->AddAt(-1, inputs ) ;
+  
 }
 //____________________________________________________________________________
 Bool_t AliPHOSDigitizer::Combinator() { 
@@ -206,7 +226,7 @@ Bool_t AliPHOSDigitizer::Combinator() {
   //realizing "One-to-One" option...
 
   if(!fInitialized)
-    Init(1) ;
+    Init() ;
 
   Int_t inputs ;
   Bool_t endNotReached = kTRUE ;
@@ -215,10 +235,14 @@ Bool_t AliPHOSDigitizer::Combinator() {
     if(fIevent->At(inputs)+1 < fIeventMax->At(inputs))
       fIevent->AddAt(fIevent->At(inputs)+1, inputs ) ;
     else
-      endNotReached = kFALSE ;
+      if(inputs == 0)
+	endNotReached = kFALSE ;
+      else //for inputs other than base one start from the beginning
+	fIevent->AddAt(0, inputs ) ;
+    
   }
   return endNotReached ;
-
+  
 }
 
 //____________________________________________________________________________
@@ -227,11 +251,7 @@ void AliPHOSDigitizer::Digitize(Option_t *option) {
   //Makes the digitization of the collected summable digits
 
   if(!fInitialized)
-    Init(1) ;
-
-  //Collects all hits in the same active volume into digit
-  //if(option == "raw")    // add simulated data to row data -- to be implemented
-
+    Init() ;
 
   fDigits->Clear() ;
 
@@ -257,6 +277,10 @@ void AliPHOSDigitizer::Digitize(Option_t *option) {
       geom->GetNumberOfPadsPhi()*geom->GetNumberOfPadsZ() ;
   else
     nPPSD = nCPV; 
+
+
+  fDigits->Expand(nPPSD) ;
+
   
   for(absID = 1; absID <= nEMC; absID++){
     Float_t noise = gRandom->Gaus(0., fPinNoise) ; 
@@ -283,6 +307,7 @@ void AliPHOSDigitizer::Digitize(Option_t *option) {
     
     TClonesArray * sdigits= (TClonesArray *)fSDigits->At(inputs) ;
     Int_t isdigit ;
+
     Int_t nSDigits = sdigits->GetEntries() ;     
     for(isdigit=0;isdigit< nSDigits; isdigit++){
       curSDigit = (AliPHOSDigit *)sdigits->At(isdigit) ;
@@ -292,7 +317,6 @@ void AliPHOSDigitizer::Digitize(Option_t *option) {
       *digit = *digit + *curSDigit ;
     }  
   }
-
 
 
   //remove digits below thresholds
@@ -308,7 +332,8 @@ void AliPHOSDigitizer::Digitize(Option_t *option) {
   
   fDigits->Compress() ;  
   
-  Int_t ndigits = fDigits->GetEntries() ;
+  Int_t ndigits = fDigits->GetEntriesFast() ;
+
   fDigits->Expand(ndigits) ;
 
 
@@ -324,47 +349,100 @@ void AliPHOSDigitizer::WriteDigits(){
 
   //Made TreeD in the output file if necessary and writes digiths there.
 
-  gAlice->GetEvent(fIevent->At(fOutFileNumber)) ;  // Suitable only for One-To-One mixing
-  gAlice->SetEvent(fIevent->At(fOutFileNumber)) ;  // for all-to-all will produce a lot of branches in TreeD
+  gAlice->GetEvent(fIevent->At(0)) ;  // Suitable only for One-To-One mixing
+  gAlice->SetEvent(fIevent->At(0)) ;  // for all-to-all will produce a lot of branches in TreeD
 
   if(gAlice->TreeD()==0)
     gAlice->MakeTree("D") ;
-  
-  //Make branches in TreeD for digits and Digitizer
-  char branchname[20];
-  sprintf(branchname,"PHOS");  
 
-  Int_t bufferSize = 16000 ;
-  char * filename = 0;
-  if(!fDigitsFile.IsNull())
-    filename = (char*) fDigitsFile.Data() ; //ievent ;
-  else
-    if(gSystem->Getenv("CONFIG_SPLIT_FILE")!=0){ //generating file name
-      filename = new char[30] ;
-      //	sprintf(filename,"PHOS.Digits%d.root",ievent) ;
-      sprintf(filename,"PHOS.Digits.root") ;
-    }
-    else
-      filename = 0 ;
   
-  //Link digits  
-  gAlice->MakeBranchInTree(gAlice->TreeD(),branchname,&fDigits,bufferSize,filename);  
-  //Link Digitizer
-  AliPHOSDigitizer * d = this ;
+  //Check, if this branch already exits?
+  TBranch * digitsBranch = 0;
+  TBranch * digitizerBranch = 0;
+  
+  TObjArray * branches = gAlice->TreeD()->GetListOfBranches() ;
+  Int_t ibranch;
+  Bool_t phosNotFound = kTRUE ;
+  Bool_t digitizerNotFound = kTRUE ;
+  
+  for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+    
+    if(phosNotFound){
+      digitsBranch=(TBranch *) branches->At(ibranch) ;
+      if( (strcmp("PHOS",digitsBranch->GetName())==0 ) &&
+	  (fDigitsTitle.CompareTo(digitsBranch->GetTitle()) == 0) )
+	phosNotFound = kFALSE ;
+    }
+    if(digitizerNotFound){
+      digitizerBranch = (TBranch *) branches->At(ibranch) ;
+      if( (strcmp(digitizerBranch->GetName(),"AliPHOSDigitizer") == 0) &&
+	  (fDigitsTitle.CompareTo(digitizerBranch->GetTitle()) == 0))
+	digitizerNotFound = kFALSE ;
+    }
+  }
+  
+  
+  if(!(digitizerNotFound && phosNotFound)){ 
+    cout << "AliPHOSDigitizer error: " << endl ;
+    cout << "       can not update/overwrite existing branches "<< endl ;
+    cout << "       do not write " << endl ;
+    return ;
+  }
+
+  // create new branches
+
+  //First generate file name
+  char * file =0;
+  if(gSystem->Getenv("CONFIG_SPLIT_FILE")){ //generating file name
+    file = new char[strlen(gAlice->GetBaseFile())+20] ;
+    sprintf(file,"%s/PHOS.Digits.root",gAlice->GetBaseFile()) ;
+  }
+  
+  TDirectory *cwd = gDirectory;
+  
+  //First create list of sdigits
+  Int_t bufferSize = 32000 ;    
+  digitsBranch = gAlice->TreeD()->Branch("PHOS",&fDigits,bufferSize);
+  digitsBranch->SetTitle(fDigitsTitle.Data());
+  if (file) {
+    digitsBranch->SetFile(file);
+    TIter next( digitsBranch->GetListOfBranches());
+    while ((digitsBranch=(TBranch*)next())) {
+      digitsBranch->SetFile(file);
+    }   
+    cwd->cd();
+  } 
+    
+  //second - create Digitizer
   Int_t splitlevel = 0 ;
-  sprintf(branchname,"AliPHOSDigitizer");   
-  gAlice->MakeBranchInTree(gAlice->TreeD(),branchname,"AliPHOSDigitizer",&d, bufferSize, splitlevel,filename); 
+  AliPHOSDigitizer * d = this ;
+  digitizerBranch = gAlice->TreeD()->Branch("AliPHOSDigitizer","AliPHOSDigitizer",
+					    &d,bufferSize,splitlevel); 
+  digitizerBranch->SetTitle(fDigitsTitle.Data());
+  if (file) {
+    digitizerBranch->SetFile(file);
+    TIter next( digitizerBranch->GetListOfBranches());
+    while ((digitizerBranch=(TBranch*)next())) {
+      digitizerBranch->SetFile(file);
+    }   
+    cwd->cd();
+  }
 
   gAlice->TreeD()->Fill() ;
-   
+  
   gAlice->TreeD()->Write(0,kOverwrite) ;  
 }
 
 //____________________________________________________________________________
 void AliPHOSDigitizer::Exec(Option_t *option) { 
   //manager
+  if(!fInitialized)    Init() ;
 
-  if(!fInitialized)    Init(1) ;
+  if(strstr(option,"tim"))
+    gBenchmark->Start("PHOSDigitizer");
+
+  //reset events numbers to start from the beginnig
+  Reset() ;
   
   while(Combinator()){  
     
@@ -373,15 +451,19 @@ void AliPHOSDigitizer::Exec(Option_t *option) {
     
     Digitize(option) ; //Add prepared SDigits to digits and add the noise
     WriteDigits() ;
+    
+    if(strstr(option,"deb"))
+      PrintDigits(option);
+
   }
 
-//   //Close all opened files
-//   Int_t input ;
-//   for(input = 0; input < fNinputs ; input ++){
-//     TFile * file = (TFile*) gROOT->GetFile(((TObjString *) fHeaderFiles->At(input))->GetString() ) ;
-//     file->Close() ;
-//   }
-
+  if(strstr(option,"tim")){
+    gBenchmark->Stop("PHOSDigitizer");
+    cout << "AliPHOSDigitizer:" << endl ;
+    cout << "  took " << gBenchmark->GetCpuTime("PHOSDigitizer") << " seconds for SDigitizing " 
+	 <<  gBenchmark->GetCpuTime("PHOSDigitizer")/(fIeventMax->At(0)) << " seconds per event " << endl ;
+    cout << endl ;
+  }
   
 }
 
@@ -389,7 +471,7 @@ void AliPHOSDigitizer::Exec(Option_t *option) {
 Bool_t AliPHOSDigitizer::ReadSDigits(){
 // Reads summable digits from the opened files for the particular set of events given by fIevent
 
-  if(!fInitialized)    Init(1) ;
+  if(!fInitialized)    Init() ;
 
   Int_t inputs ;
   for(inputs = fNinputs-1; inputs >= 0; inputs --){
@@ -419,45 +501,41 @@ Bool_t AliPHOSDigitizer::ReadSDigits(){
     Bool_t sdigitizerNotFound = kTRUE ;
   
     for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
-
+            
       if(phosNotFound){
 	sdigitsBranch=(TBranch *) branches->At(ibranch) ;
-	if( ((TObjString*)fSDigitsFiles->At(inputs))->GetString().CompareTo(sdigitsBranch->GetFileName())==0 ){
-	  if( strcmp(sdigitsBranch->GetName(),"PHOS") == 0) {
-	    phosNotFound = kFALSE ;
-	  }
-	}
-      }
-
-      if(sdigitizerNotFound){
-	sdigitizerBranch = (TBranch *) branches->At(ibranch) ;
-	if( ((TObjString*)fSDigitsFiles->At(inputs))->GetString().CompareTo(sdigitizerBranch->GetFileName()) == 0){
-	  if( strcmp(sdigitizerBranch->GetName(),"AliPHOSSDigitizer") == 0) {
-	    sdigitizerNotFound = kFALSE ;
-	  }
-	}
+	if(( strcmp("PHOS",sdigitsBranch->GetName())==0 ) &&
+	   ((TObjString*) fSDigitsTitles->At(inputs))->GetString().CompareTo(sdigitsBranch->GetTitle())== 0 )
+	      phosNotFound = kFALSE ;
+	
       }
       
+      if(sdigitizerNotFound){
+	sdigitizerBranch = (TBranch *) branches->At(ibranch) ;
+	if(( strcmp(sdigitizerBranch->GetName(),"AliPHOSSDigitizer") == 0) &&
+	   ((TObjString*) fSDigitsTitles->At(inputs))->GetString().CompareTo(sdigitizerBranch->GetTitle())== 0 )
+	      sdigitizerNotFound = kFALSE ;
+	
+      }
     }
-
+    
     if(sdigitizerNotFound || phosNotFound){
       cout << "Can't find Branch with sdigits or SDigitizer in the file " ;
-      if( ((TObjString*)fSDigitsFiles->At(inputs))->GetString().IsNull() )
+      if( ((TObjString*)fSDigitsTitles->At(inputs))->GetString().IsNull() )
 	cout << file->GetName() << endl ;	
       else
-	cout << ((TObjString*)fSDigitsFiles->At(inputs))->GetString().Data() << endl ;
+	cout << ((TObjString*)fSDigitsTitles->At(inputs))->GetString().Data() << endl ;
       cout << "Do nothing" <<endl  ;
       return kFALSE ;
     }
-
-
+    
     TClonesArray * sdigits = (TClonesArray*) fSDigits->At(inputs) ;  
     sdigitsBranch->SetAddress(&sdigits) ;
     
     AliPHOSSDigitizer *sDigitizer = new AliPHOSSDigitizer();
     sdigitizerBranch->SetAddress(&sDigitizer) ;
     treeS->GetEvent(0) ;
-
+    
     if(fSDigitizer == 0)
       fSDigitizer = sDigitizer ;
     else
@@ -470,20 +548,19 @@ Bool_t AliPHOSDigitizer::ReadSDigits(){
       }
     
   }
+  fPedestal = fSDigitizer->GetPedestalParameter() ;
+  fSlope    = fSDigitizer->GetCalibrationParameter() ;
   
-
   return kTRUE ;
 
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::MixWith(char* HeaderFile,Int_t isOutFile, char* SDigitsFile){
+void AliPHOSDigitizer::MixWith(char* HeaderFile, char* sDigitsTitle){
 //
 
   if(!fInitialized)
-    if(isOutFile)
-      Init(0) ;     //Do not read gAlice from Background file
-    else
-      Init(1) ;     //read gAlice from background file
+    Init() ;
+
 
   if(HeaderFile == 0){
     cout << "Specify at least header file to merge"<< endl ;
@@ -493,81 +570,113 @@ void AliPHOSDigitizer::MixWith(char* HeaderFile,Int_t isOutFile, char* SDigitsFi
   Int_t inputs ;
   for(inputs = 0; inputs < fNinputs ; inputs++){
     if(strcmp(((TObjString *)fHeaderFiles->At(inputs))->GetString(),HeaderFile) == 0 ){
-      if(SDigitsFile == 0){ 
-	if(((TObjString*)fSDigitsFiles->At(inputs))->GetString().CompareTo("")  == 0){
+      if(sDigitsTitle == 0){ 
+	if(((TObjString*)fSDigitsTitles->At(inputs))->GetString().CompareTo("")  == 0){
 	  cout << "Entry already exists, do not add" << endl ;
 	  return ;
 	}
       }
       else
-	if(((TObjString*)fSDigitsFiles->At(inputs))->GetString().CompareTo(SDigitsFile) == 0){
-	cout << "Entry already exists, do not add" << endl ;
-	return;
-      }
+	if(((TObjString*)fSDigitsTitles->At(inputs))->GetString().CompareTo(sDigitsTitle)){
+	  cout << "Entry already exists, do not add" << endl ;
+	  return;
+	}
     }	
   }  
   
   fHeaderFiles->Expand(fNinputs+1) ;
   new((*fHeaderFiles)[fNinputs]) TObjString(HeaderFile) ;
-
   
-  TFile * file ;
-  if(isOutFile)
-    file = new TFile(((TObjString *) fHeaderFiles->At(fNinputs))->GetString(),"update") ;  
-  else
-    file = new TFile(((TObjString *) fHeaderFiles->At(fNinputs))->GetString()) ;  
-
+  
+  TFile * file = new TFile(((TObjString *) fHeaderFiles->At(fNinputs))->GetString()) ;  
+  
   file->cd() ;
-
-  fSDigitsFiles->Expand(fNinputs+1) ;
-  new((*fSDigitsFiles)[fNinputs]) TObjString(SDigitsFile) ;
-
+  
+  fSDigitsTitles->Expand(fNinputs+1) ;
+  new((*fSDigitsTitles)[fNinputs]) TObjString(sDigitsTitle) ;
+  
   fSDigits->Expand(fNinputs+1) ;
   new((*fSDigits)[fNinputs]) TClonesArray("AliPHOSDigit",1000) ;
-
+  
   fIevent->Set(fNinputs+1) ;
   fIevent->AddAt(-1, fNinputs) ;
-
+  
   fIeventMax->Set(fNinputs+1) ;  
-
-  if(isOutFile){
-    gAlice = (AliRun*) file->Get("gAlice") ;
-    fIeventMax->AddAt((Int_t) gAlice->TreeE()->GetEntries(), fNinputs );
-    fOutFileNumber = fNinputs ;
-  }
-  else{
-    TTree * te = (TTree *) file->Get("TE") ;
-    fIeventMax->AddAt((Int_t) te->GetEntries(), fNinputs );
-  }
-
+  
+  TTree * te = (TTree *) file->Get("TE") ;
+  fIeventMax->AddAt((Int_t) te->GetEntries(), fNinputs );
+  
   fNinputs++ ;
+  
+}
+//__________________________________________________________________
+void AliPHOSDigitizer::Print(Option_t* option)const {
+  
+  if(fInitialized){
+    
+    cout << "------------------- "<< GetName() << " -------------" << endl ;
+    cout << "Digitizing sDigits from file(s): " <<endl ;
+    Int_t input ;
+    for(input = 0; input < fNinputs ; input++) {
+      cout << "          " << ((TObjString *) fHeaderFiles->At(input))->GetString() << 
+	"   Branch title:" << ((TObjString *) fSDigitsTitles->At(input))->GetString() << endl ;
+    }
+    cout << endl ;
+    cout << "Writing digits to " << ((TObjString *) fHeaderFiles->At(0))->GetString() << endl ;
+    
+    cout << endl ;
+    cout << "With following parameters: " << endl ;
+    cout << "     Electronics noise in EMC (fPinNoise) = " << fPinNoise << endl ;
+    cout << "  Threshold  in EMC  (fEMCDigitThreshold) = " << fEMCDigitThreshold  << endl ; ;
+    cout << "                 Noise in CPV (fCPVNoise) = " << fCPVNoise << endl ; 
+    cout << "    Threshold in CPV (fCPVDigitThreshold) = " << fCPVDigitThreshold << endl ; 
+    cout << "               Noise in PPSD (fPPSDNoise) = " << fPPSDNoise << endl ;
+    cout << "  Threshold in PPSD (fPPSDDigitThreshold) = " << fPPSDDigitThreshold << endl ;
+    cout << "---------------------------------------------------" << endl ;
+  }
+  else
+    cout << "AliPHOSDigitizer not initialized " << endl ;
+  
+}
+//__________________________________________________________________
+void AliPHOSDigitizer::PrintDigits(Option_t * option){
+    
+  cout << "AliPHOSDigitiser:"<< endl ;
+  cout << "       Number of entries in Digits list " << fDigits->GetEntriesFast() << endl ;
+  cout << endl ;
+  if(strstr(option,"all")){
+    
+    //loop over digits
+    AliPHOSDigit * digit;
+    cout << "Digit Id " << " Amplitude " <<  " Index "  <<  " Nprim " << " Primaries list " <<  endl;      
+    Int_t index ;
+    for (index = 0 ; index < fDigits->GetEntries() ; index++) {
+      digit = (AliPHOSDigit * )  fDigits->At(index) ;
+      cout << setw(8)  <<  digit->GetId() << " "  << 	setw(3)  <<  digit->GetAmp() <<   "  "  
+	   << setw(6)  <<  digit->GetIndexInList() << "  "   
+	   << setw(5)  <<  digit->GetNprimary() <<"  ";
+      
+      Int_t iprimary;
+      for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
+	cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << " ";
+      cout << endl;  	 
+    }
+    
+  }
+}
+//__________________________________________________________________
+void AliPHOSDigitizer::SetSDigitsBranch(const char* title){
+  // we set name of the SDigits branch file in the first! header file
+  if(!fInitialized)    Init() ;
+
+  ((TObjString*) fSDigitsTitles->At(0) )->SetString((char*)title) ;
 
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::Print(Option_t* option){
-
-  if(!fInitialized)    Init(1) ;
-
-  cout << "------------------- "<< GetName() << " -------------" << endl ;
-  cout << "Digitizing sDigits from file(s): " <<endl ;
-  Int_t input ;
-  for(input = 0; input < fNinputs ; input++) {
-    cout << "          " << ((TObjString *) fHeaderFiles->At(input))->GetString() << 
-      "   Branch: " << ((TObjString *) fSDigitsFiles->At(input))->GetString() << endl ;
-  }
-  cout << endl ;
-  cout << "Writing digits to " << ((TObjString *) fHeaderFiles->At(fOutFileNumber))->GetString() << endl ;
-
-  cout << endl ;
-  cout << "With following parameters: " << endl ;
-  cout << "     Electronics noise in EMC (fPinNoise) = " << fPinNoise << endl ;
-  cout << "  Threshold  in EMC  (fEMCDigitThreshold) = " << fEMCDigitThreshold  << endl ; ;
-  cout << "                 Noise in CPV (fCPVNoise) = " << fCPVNoise << endl ; 
-  cout << "    Threshold in CPV (fCPVDigitThreshold) = " << fCPVDigitThreshold << endl ; 
-  cout << "               Noise in PPSD (fPPSDNoise) = " << fPPSDNoise << endl ;
-  cout << "  Threshold in PPSD (fPPSDDigitThreshold) = " << fPPSDDigitThreshold << endl ;
-  cout << "---------------------------------------------------" << endl ;
- 
-
+void AliPHOSDigitizer::SetDigitsBranch(const char* title){
+  //Sets the name of the file to which Digits branch will be diverted 
+  if(!fInitialized)    Init() ;
+  
+  fDigitsTitle = title ;
 
 }
