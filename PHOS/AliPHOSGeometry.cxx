@@ -521,3 +521,12 @@ void AliPHOSGeometry:: SetPHOSAngles()
  } 
 }
 
+//____________________________________________________________________________
+void AliPHOSGeometry::SetLeadConverterThickness(Float_t e) 
+{
+  // should ultimately disappear 
+  cout << " AliPHOSGeometry WARNING : You have changed LeadConverterThickness from " 
+       << fLeadConverterThickness << " to " << e << endl ;
+
+  fLeadConverterThickness = e ; 
+}

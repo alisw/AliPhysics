@@ -125,6 +125,8 @@ public:
   Float_t GetPPSDBoxSize(Int_t index)      const { return fPPSDBoxSize[index] ; }
   Float_t GetPPSDModuleSize(Int_t index)   const { return fPPSDModuleSize[index] ; } 
   Float_t GetZDisplacement(void)           const { return fZDisplacement ; }                           
+ 
+  void SetLeadConverterThickness(Float_t e) ; // should ultimately disappear 
 
 private:
   
