@@ -70,17 +70,31 @@ const Int_t AliMonitorProcess::fgkPort = 9327;
 
 
 //_____________________________________________________________________________
-AliMonitorProcess::AliMonitorProcess(const char* alienDir,
+AliMonitorProcess::AliMonitorProcess(
+#if ROOT_VERSION_CODE <= 199169   // 3.10/01
+				     const char* /*alienHost*/,
+#else
+				     const char* alienHost,
+#endif
+				     const char* alienDir,
 				     const char* fileNameGalice)
 {
 // initialize the monitoring process and the monitor histograms
 
+#if ROOT_VERSION_CODE <= 199169   // 3.10/01
   fGrid = TGrid::Connect("alien", gSystem->Getenv("USER"));
+#else
+  fGrid = TGrid::Connect(alienHost, gSystem->Getenv("USER"));
+#endif
   if (!fGrid || fGrid->IsZombie() || !fGrid->IsConnected()) {
     delete fGrid;
     Fatal("AliMonitorProcess", "could not connect to alien");
   }
+#if ROOT_VERSION_CODE <= 199169   // 3.10/01
   fGrid->cd(alienDir);
+#else
+  fAlienDir = alienDir;
+#endif
   fLogicalFileName = "";
   fFileName = "";
 
@@ -185,7 +199,9 @@ AliMonitorProcess::~AliMonitorProcess()
   fSockets.Delete();
   delete fDisplaySocket;
 
+#if ROOT_VERSION_CODE <= 199169   // 3.10/01
   fGrid->Close();
+#endif
   delete fGrid;
 
   fFile->Close();
@@ -280,12 +296,27 @@ Bool_t AliMonitorProcess::CheckForNewFile()
 {
 // check whether a new file was registered in alien
 
+#if ROOT_VERSION_CODE <= 199169   // 3.10/01
   TGridResult* result = fGrid->Ls();
+#else
+  Grid_ResultHandle_t handle = fGrid->OpenDir(fAlienDir);
+  if (!handle) {
+    Error("CheckForNewFile", "could not open alien directory %s", 
+	  fAlienDir.Data());
+    return kFALSE;
+  }
+  TGridResult* result = fGrid->CreateGridResult(handle);
+#endif
   Long_t maxDate = -1;
   Long_t maxTime = -1;
   TString fileName;
 
+#if ROOT_VERSION_CODE <= 199169   // 3.10/01
   while (const char* entry = result->Next()) {
+#else
+  while (Grid_Result_t* resultEntry = result->Next()) {
+    const char* entry = resultEntry->name.c_str();
+#endif
     // entry = host_date_time.root
     TString entryCopy(entry);
     char* p = const_cast<char*>(entryCopy.Data());
@@ -304,12 +335,31 @@ Bool_t AliMonitorProcess::CheckForNewFile()
     }
   }
 
+  delete result;
   if (maxDate < 0) return kFALSE;  // no files found
   if (fLogicalFileName.CompareTo(fileName) == 0) return kFALSE;  // no new file
 
   fLogicalFileName = fileName;
-  TGridResult* result2 = fGrid->GetPhysicalFileNames(fLogicalFileName.Data());
-  fFileName = result2->Next();
+#if ROOT_VERSION_CODE <= 199169   // 3.10/01
+  result = fGrid->GetPhysicalFileNames(fLogicalFileName.Data());
+  fFileName = result->Next();
+#else
+  handle = fGrid->GetPhysicalFileNames(fLogicalFileName.Data());
+  if (!handle) {
+    Error("CheckForNewFile", "could not get physical file names for %s", 
+	  fLogicalFileName.Data());
+    return kFALSE;
+  }
+  result = fGrid->CreateGridResult(handle);
+  Grid_Result_t* resultEntry = result->Next();
+  if (!resultEntry) {
+    Error("CheckForNewFile", "could not get physical file names for %s", 
+	  fLogicalFileName.Data());
+    return kFALSE;
+  }
+  fFileName = resultEntry->name.c_str();
+#endif
+  delete result;
 
   return kTRUE;
 }

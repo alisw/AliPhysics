@@ -28,7 +28,8 @@ class AliL3Hough;
 
 class AliMonitorProcess : public TObject {
 public:
-  AliMonitorProcess(const char* alienDir,
+  AliMonitorProcess(const char* alienHost,
+		    const char* alienDir,
 		    const char* fileNameGalice = "galice.root");
   AliMonitorProcess(const AliMonitorProcess& process);
   AliMonitorProcess& operator = (const AliMonitorProcess& process);
@@ -90,6 +91,7 @@ private:
   static const Int_t fgkPort;          // port number for client connections
 
   TGrid*           fGrid;               // pointer to AliEn
+  TString          fAlienDir;           // name of alien directory
   AliRunLoader*    fRunLoader;          // the current run loader
   AliTPCParam*     fTPCParam;           // TPC parameters
   AliITSgeom*      fITSgeom;            // ITS parameters
