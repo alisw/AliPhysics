@@ -76,7 +76,8 @@ AliHBTAnalysis::~AliHBTAnalysis()
  //note that we do not delete functions itself
  // they should be deleted by whom where created
  //we only store pointers, and we use "new" only for pointers array
-   if (fIsOwner) DeleteFunctions();
+   if (fIsOwner) 
+    DeleteFunctions();
    delete [] fTrackFunctions;
    delete [] fParticleFunctions;
    delete [] fParticleAndTrackFunctions;
@@ -97,7 +98,7 @@ void AliHBTAnalysis::DeleteFunctions()
                 
  for(ii = 0;ii<fNTrackFunctions;ii++)
    delete fTrackFunctions[ii];
-                 
+
  for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
    delete fParticleAndTrackFunctions[ii];
  
@@ -295,6 +296,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
        }
     }
 
+  /***************************************/
   /***** Filling denominators    *********/
   /***************************************/
   if (fBufferSize != 0)
@@ -966,6 +968,8 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
          }//while event2
        }//for over particles in event1
      
+     if ( fBufferSize == 0) continue;//do not mix diff histograms-> do not add to buffer list
+     Info("ProcessTracksAndParticlesNonIdentAnal","Adding Event2's to lists and setting to null");
      pbuffer.AddFirst(partEvent2);
      tbuffer.AddFirst(trackEvent2);
      partEvent2 = 0x0;
@@ -975,8 +979,15 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
   }//end of loop over events (1)
  pbuffer.SetOwner();  //to clean stored events by the way of buffer destruction
  tbuffer.SetOwner();  
- delete partEvent2;
- delete trackEvent2;
+ delete partEvent1;
+ delete trackEvent1;
+ delete partpair;
+ delete trackpair;
+ if ( fBufferSize == 0)
+  {//in that case we did not add these events to list
+    delete partEvent2;
+    delete trackEvent2;
+  }
 
 }
 /*************************************************************************************/  
@@ -1093,11 +1104,16 @@ void AliHBTAnalysis::ProcessTracksNonIdentAnal()
          }//while event2
        }//for over particles in event1
      
+     if ( fBufferSize == 0) continue;//do not mix diff histograms     
      tbuffer.AddFirst(trackEvent2);
+     trackEvent2 = 0x0;
      ninbuffer++;
 
   }//end of loop over events (1)
-  
+
+ delete trackpair;
+ delete trackEvent1;
+ if (fBufferSize == 0) delete trackEvent2;
  tbuffer.SetOwner();  
 }
 /*************************************************************************************/  
@@ -1134,16 +1150,17 @@ void AliHBTAnalysis::ProcessParticlesNonIdentAnal()
       /********************************/
       /*      Filtering out           */
       /********************************/
-      if ((ninbuffer > fBufferSize) && (fBufferSize > 0))
-       {//if we have in buffer desired number of events, use the last. If fBufferSize<0 mix all events for background
-        partEvent2  = (AliHBTEvent*)pbuffer.Remove(pbuffer.Last()); //remove from the end to be reset, filled and put on the beginning
-        ninbuffer--;
-       }
-      else
-       {
-        partEvent2  = new AliHBTEvent();
-        partEvent2->SetOwner(kFALSE);
-       }
+      if ( (fBufferSize != 0) || ( partEvent2==0x0) )//in case fBufferSize == 0 and pointers are created do not eneter
+       if ((ninbuffer > fBufferSize) && (fBufferSize > 0))
+        {//if we have in buffer desired number of events, use the last. If fBufferSize<0 mix all events for background
+         partEvent2  = (AliHBTEvent*)pbuffer.Remove(pbuffer.Last()); //remove from the end to be reset, filled and put on the beginning
+         ninbuffer--; 
+        }
+       else
+        {
+         partEvent2  = new AliHBTEvent();
+         partEvent2->SetOwner(kFALSE);
+        }
       FilterOut(partEvent1, partEvent2, rawpartEvent);
       
       for (Int_t j = 0; j<partEvent1->GetNumberOfParticles() ; j++)
@@ -1180,6 +1197,7 @@ void AliHBTAnalysis::ProcessParticlesNonIdentAnal()
                 }
              }
            }
+     if ( fBufferSize == 0) continue;//do not mix diff histograms
      /***************************************/
      /***** Filling denominators    *********/
      /***************************************/
@@ -1212,12 +1230,15 @@ void AliHBTAnalysis::ProcessParticlesNonIdentAnal()
            }// for particles event2
          }//while event2
        }//for over particles in event1
-     
+     if ( fBufferSize == 0) continue;//do not mix diff histograms
      pbuffer.AddFirst(partEvent2);
+     partEvent2 = 0x0; 
      ninbuffer++;
 
   }//end of loop over events (1)
-
+ delete partpair;
+ delete partEvent1;
+ if ( fBufferSize == 0) delete partEvent2;
  pbuffer.SetOwner();//to delete stered events.
 }
 
