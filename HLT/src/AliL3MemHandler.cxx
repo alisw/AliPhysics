@@ -1182,6 +1182,7 @@ Bool_t AliL3MemHandler::TrackArray2Binary(AliL3TrackArray *array)
     return kFALSE;
   }
   AliL3TrackSegmentData *data = (AliL3TrackSegmentData *)Allocate(array);
+
   UInt_t ntrack;
   TrackArray2Memory(ntrack,data,array);
   Memory2Binary(ntrack,data);
@@ -1224,6 +1225,7 @@ Bool_t AliL3MemHandler::TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData 
     <<"Pointer to AliL3TrackArray = 0x0 "<<ENDLOG;
     return kFALSE;
   }
+
   array->WriteTracks(ntrack,data);
   return kTRUE;
 }

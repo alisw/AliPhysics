@@ -367,6 +367,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
       fClusterFinder->SetDeconv(fClusterDeconv);
       fClusterFinder->SetXYError(fXYClusterError);
       fClusterFinder->SetZError(fZClusterError);
+      if((fXYClusterError>0)&&(fZClusterError>0))
+	fClusterFinder->SetCalcErr(kFALSE);
       fClusterFinder->SetOutputArray(points);
       fClusterFinder->Read(ndigits,digits);
       fBenchmark->Start("Cluster Finder");
@@ -374,7 +376,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       fBenchmark->Stop("Cluster Finder");
       npoints = fClusterFinder->GetNumberOfClusters();
       delete fClusterFinder;
-      fClusterFinder =0;
+      fClusterFinder = 0;
       fFileHandler->Free();
       LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
         <<AliL3Log::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;

@@ -359,30 +359,30 @@ Double_t AliL3Merger::TrackDiff(AliL3Track *innertrack,AliL3Track *outertrack){
   return diff; 
 }
 
-
-
-void AliL3Merger::PrintDiff(AliL3Track *innertrack,AliL3Track *outertrack){
+void AliL3Merger::PrintDiff(AliL3Track *innertrack,AliL3Track *outertrack)
+{
   if(!innertrack->IsPoint()||!outertrack->IsPoint()){
-    cerr<<"AliL3Merger::PrintDiff: No Points"<<endl;
-    cerr<<"---------------------------"<<endl;
+    LOG(AliL3Log::kInformational,"AliL3Merger::PrintDiff","No Points")<<ENDLOG;
+    //cerr<<"AliL3Merger::PrintDiff: No Points"<<endl;
+    //cerr<<"---------------------------"<<endl;
     return;
   } 
+
   Double_t dx = innertrack->GetPointX()-outertrack->GetPointX();
   Double_t dy = innertrack->GetPointY()-outertrack->GetPointY();
   Double_t dz = innertrack->GetPointZ()-outertrack->GetPointZ();
   Double_t dk = innertrack->GetKappa()-outertrack->GetKappa();
-    Double_t dpsi= innertrack->GetPointPsi() - outertrack->GetPointPsi();
-    if(dpsi>PI) dpsi-=2*PI;
-    if(dpsi<-PI)dpsi+=2*PI;
-//  Double_t dpsi = GetAngle(innertrack->GetPointPsi(),outertrack->GetPointPsi());
+  Double_t dpsi= innertrack->GetPointPsi() - outertrack->GetPointPsi();
+  if(dpsi>PI) dpsi-=2*PI;
+  if(dpsi<-PI)dpsi+=2*PI;
+  //Double_t dpsi = GetAngle(innertrack->GetPointPsi(),outertrack->GetPointPsi());
   Double_t dtgl= innertrack->GetTgl()-outertrack->GetTgl();
   Double_t dq =innertrack->GetCharge()-outertrack->GetCharge();
 
-  fprintf(stderr,"dx: %4f dy: %4f dz: %4f dk: %4f dpsi: %4f dtgl: %4f dq: %4f\n",
-      dx,dy,dz,dk,dpsi,dtgl,dq);
-cerr<<"---------------------------"<<endl;
-//  cerr<<endl; 
-
+  LOG(AliL3Log::kInformational,"AliL3Merger::PrintDiff","Points") <<"dx: "<<dx<<" dy: "<<dy<<" dz: "<<dz<<" dk: "<<dk<<" dpsi: "<<dpsi<<" dtgl: "<<dtgl<<" dq: "<<dq<<ENDLOG;
+  //fprintf(stderr,"dx: %4f dy: %4f dz: %4f dk: %4f dpsi: %4f dtgl: %4f dq: %4f\n",dx,dy,dz,dk,dpsi,dtgl,dq);
+  //cerr<<"---------------------------"<<endl;
+  
 }
 
 void AliL3Merger::Print(){
@@ -403,12 +403,13 @@ void AliL3Merger::Print(){
 //      PrintTrack(track);
 //      track->CalculateReferencePoint(PI/180.);
       track->CalculateReferencePoint(0.001);
-      fprintf(stderr,"npt: %3d dx: %8.5f dy: %8.5f dz: %8.5f\n",
-        track->GetNHits(),(float)track->GetPointX()-track->GetPointX(),
-                          (float)track->GetPointY()-track->GetPointY(),
-                          (float)track->GetPointZ()-track->GetPointZ());
+      Float_t dx=(float)track->GetPointX()-track->GetPointX();
+      Float_t dy=(float)track->GetPointY()-track->GetPointY();
+      Float_t dz=(float)track->GetPointZ()-track->GetPointZ();
+      LOG(AliL3Log::kInformational,"AliL3Merger::Print","RefPoint") <<"npt: "<<track->GetNHits()<<" dx: "<<dx<<" dy: "<<dy<<" dz: "<<dz<<ENDLOG;
 
-      cerr<<"---------------------------"<<endl;
+      //fprintf(stderr,"npt: %3d dx: %8.5f dy: %8.5f dz: %8.5f\n",track->GetNHits(),dx,dy,dz);
+      //cerr<<"---------------------------"<<endl;
       }
     }  
   }
@@ -430,7 +431,3 @@ void AliL3Merger::PrintTrack(AliL3Track *track){
       track->GetPointPsi());
   }
 }
-
-
-
-

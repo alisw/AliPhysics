@@ -11,7 +11,7 @@
 #include "AliL3SpacePointData.h"
 
 //
-// AliL3ClustFinder
+// AliL3ClusterFinder
 //
 
 
@@ -43,10 +43,10 @@ AliL3ClustFinder::~AliL3ClustFinder()
 }
 
 
-  void AliL3ClustFinder::SetTransformer( AliL3Transform *transform )
-    {
-    fTransform = transform;
-    }
+void AliL3ClustFinder::SetTransformer( AliL3Transform *transform )
+{
+  fTransform = transform;
+}
 
 
 void AliL3ClustFinder::InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_t lastrow,Int_t nmaxpoints)

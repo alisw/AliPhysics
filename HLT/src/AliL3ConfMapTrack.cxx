@@ -26,7 +26,6 @@ AliL3ConfMapTrack::AliL3ConfMapTrack()
 
   fChiSq[0] = 0.;
   fChiSq[1] = 0.;
-
 }
 
 AliL3ConfMapTrack::~AliL3ConfMapTrack()
@@ -102,7 +101,6 @@ void AliL3ConfMapTrack::Reset()
   fChiSq[1] = 0; 
   SetLength(0);
   SetNHits(0);
-  
 }
 
 void AliL3ConfMapTrack::UpdateParam(AliL3ConfMapPoint *thisHit)
@@ -153,7 +151,6 @@ void AliL3ConfMapTrack::UpdateParam(AliL3ConfMapPoint *thisHit)
     a1Sz  = ( g1Sz * s22Sz - g2Sz * s12Sz ) / ddSz ;
     a2Sz  = ( g2Sz * s11Sz - g1Sz * s12Sz ) / ddSz ;
   }
-      
 }
 
 
@@ -185,7 +182,6 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
       LOG(AliL3Log::kError,"AliL3ConfMapTrack::Fill","Tracks")<<AliL3Log::kDec<<
 	"Track with pt<max_Dca :"<<GetPt()<<ENDLOG;
     }
-  
 }
 
 void AliL3ConfMapTrack::UpdateToFirstPoint()

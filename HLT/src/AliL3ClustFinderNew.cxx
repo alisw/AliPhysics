@@ -29,6 +29,7 @@ AliL3ClustFinderNew::AliL3ClustFinderNew()
   fDeconvPad = kTRUE;
   fDeconvTime = kTRUE;
   fstdout = kFALSE;
+  fcalcerr = kTRUE;
 }
 
 AliL3ClustFinderNew::~AliL3ClustFinderNew()
@@ -43,8 +44,6 @@ void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_
   fCurrentPatch = patch;
   fFirstRow = firstrow;
   fLastRow = lastrow;
-  //fDeconvTime = kTRUE;
-  //fDeconvPad = kTRUE;
 }
 
 void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
@@ -116,7 +115,6 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	    {
 	      currentPt = pad1;
 	      previousPt = pad2;
-	      
 	    }
 	  else 
 	    {
@@ -134,7 +132,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	}
 
       Bool_t new_cluster = kTRUE;
-      UInt_t seq_charge=0,seq_average=0;
+      UInt_t seq_charge=0,seq_average=0,seq_error=0;
       UInt_t last_charge=0,last_was_falling=0;
       Int_t new_bin=-1;
 
@@ -181,7 +179,8 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	  //Sum the total charge of this sequence
 	  seq_charge += charge;
 	  seq_average += data[bin].fTime*charge;
-	  
+	  seq_error += data[bin].fTime*data[bin].fTime*charge;
+
 	  //Check where to stop:
 	  if(data[bin+1].fPad != data[bin].fPad) //new pad
 	    break; 
@@ -205,6 +204,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
       
       //Calculate mean in pad direction:
       Int_t pad_mean = seq_charge*data[bin].fPad;
+      Int_t pad_error = data[bin].fPad*pad_mean;
 
       //Compare with results on previous pad:
       for(UInt_t p=0; p<n_previous; p++)
@@ -213,7 +213,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	  if(difference < -fMatch)
 	    break;
 
-	  if(difference <= fMatch)//There is a match here!!
+	  if(difference <= fMatch) //There is a match here!!
 	    {
 	      
 	      ClusterData *local = previousPt[p];
@@ -221,9 +221,9 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 		{
 		  if(seq_charge > local->fLastCharge)
 		    {
-		      if(local->fChargeFalling)//The previous pad was falling
+		      if(local->fChargeFalling) //The previous pad was falling
 			{			
-			  break;//create a new cluster
+			  break; //create a new cluster
 			}		    
 		    }
 		  else
@@ -239,7 +239,9 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	      
 	      local->fTotalCharge += seq_charge;
 	      local->fPad += pad_mean;
+	      local->fPad2 += pad_error;
 	      local->fTime += seq_average;
+	      local->fTime2 += seq_error;
 	      local->fMean = seq_mean;
 	      local->fFlags++; //means we have more than one pad 
 	      
@@ -247,8 +249,8 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	      n_current++;
 	      
 	      break;
-	    }//Checking for match at previous pad
-	}//Loop over results on previous pad.
+	    } //Checking for match at previous pad
+	} //Loop over results on previous pad.
       
       if(new_cluster)
 	{
@@ -260,7 +262,9 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	  ClusterData *tmp = &clusterlist[n_total];
 	  tmp->fTotalCharge = seq_charge;
 	  tmp->fPad = pad_mean;
+	  tmp->fPad2 = pad_error;
 	  tmp->fTime = seq_average;
+	  tmp->fTime2 = seq_error;
 	  tmp->fMean = seq_mean;
 	  tmp->fFlags = 0;  //flags for 1 pad clusters
 	  if(fDeconvPad)
@@ -293,11 +297,20 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       if(list[j].fTotalCharge < fThreshold) continue; //noise cluster
 
       Float_t xyz[3];      
-      Float_t fpad=(Float_t)list[j].fPad/(Float_t)list[j].fTotalCharge;
-      Float_t ftime=(Float_t)list[j].fTime/(Float_t)list[j].fTotalCharge;
+      Float_t fpad =(Float_t)list[j].fPad /(Float_t)list[j].fTotalCharge;
+      Float_t fpad2=fXYErr;
+      Float_t ftime =(Float_t)list[j].fTime /(Float_t)list[j].fTotalCharge;
+      Float_t ftime2=fZErr;
 
+      if(fcalcerr) {
+	fpad2=(Float_t)list[j].fPad2/(Float_t)list[j].fTotalCharge - fpad*fpad;
+	fpad2 = sqrt(fpad2);
+	ftime2=(Float_t)list[j].fTime2/(Float_t)list[j].fTotalCharge - ftime*ftime;
+	ftime2 = sqrt(ftime2); 
+      }
+       
       if(fstdout==kTRUE)
-	cout<<"WriteCluster: padrow "<<fCurrentRow<<" pad "<<fpad<<" time "<<ftime<<" charge "<<list[j].fTotalCharge<<endl;
+	cout<<"WriteCluster: padrow "<<fCurrentRow<<" pad "<<fpad << "+-"<<fpad2<<" time "<<ftime<<"+-"<<ftime2<<" charge "<<list[j].fTotalCharge<<endl;
 
       AliL3Transform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
       AliL3Transform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
@@ -314,8 +327,8 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       fSpacePointData[counter].fY = xyz[1];
       fSpacePointData[counter].fZ = xyz[2];
       fSpacePointData[counter].fPadRow = fCurrentRow;
-      fSpacePointData[counter].fXYErr = fXYErr;
-      fSpacePointData[counter].fZErr = fZErr;
+      fSpacePointData[counter].fXYErr = fpad2;
+      fSpacePointData[counter].fZErr  = ftime2;
       fSpacePointData[counter].fID = counter
 	+((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);//Uli
 #ifdef do_mc

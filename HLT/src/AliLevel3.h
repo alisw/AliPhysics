@@ -64,14 +64,16 @@ class AliLevel3 : public TObject {
   Bool_t fUseBinary;
   Bool_t fWriteOut;
 
+  Bool_t fClusterDeconv;
   Float_t fXYClusterError;
   Float_t fZClusterError;
-  Bool_t fClusterDeconv;
+
 
   void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
                                           Int_t slice,Int_t patch);
-  void WriteResults();
   Int_t WriteTracks(char *filename,AliL3Merger *merger,char opt='o');  
+  void WriteResults();
+
   void SetPath(char *p){sprintf(fPath,"%s",p);}
 
  public:
@@ -106,3 +108,8 @@ class AliLevel3 : public TObject {
 };
 
 #endif
+
+
+
+
+

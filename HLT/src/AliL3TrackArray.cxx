@@ -66,7 +66,6 @@ AliL3TrackArray::AliL3TrackArray(char* tracktype){
   SetSize();
 }
 
-
 AliL3TrackArray::~AliL3TrackArray(){
   //Destructor
   DeleteArray();
@@ -268,6 +267,7 @@ UInt_t AliL3TrackArray::WriteTracks(AliL3TrackSegmentData* tr){
     tP->fTgl = track->GetTgl();
     tP->fCharge = track->GetCharge();
     tP->fNPoints = track->GetNHits();
+
     pP = (UInt_t*)track->GetHitNumbers();
     for (UInt_t j=0;j<tP->fNPoints;j++){
       tP->fPointIDs[j] = pP[j];
@@ -326,7 +326,6 @@ void AliL3TrackArray::AddLast(AliL3Track *track)
   tpt->Set(track);
   
 }
-
 
 void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old,Int_t slice)
 {

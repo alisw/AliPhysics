@@ -9,6 +9,8 @@ struct ClusterData
   UInt_t fTotalCharge;
   UInt_t fPad;
   UInt_t fTime;
+  UInt_t fPad2;  //for error in XY direction
+  UInt_t fTime2; //for error in Z  direction
   UInt_t fMean;
   UInt_t fFlags;
   UInt_t fChargeFalling; //for deconvolution
@@ -27,6 +29,9 @@ class AliL3ClustFinderNew {
   AliL3SpacePointData *fSpacePointData; //!
   Bool_t fDeconvTime;
   Bool_t fDeconvPad;
+  Bool_t fstdout;
+  Bool_t fcalcerr;
+
   UInt_t fNDigitRowData;
   Int_t fFirstRow;
   Int_t fLastRow;
@@ -39,7 +44,6 @@ class AliL3ClustFinderNew {
   Int_t fMaxNClusters;
   Float_t fXYErr;
   Float_t fZErr;
-  Bool_t fstdout;
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
@@ -63,6 +67,7 @@ class AliL3ClustFinderNew {
   void SetThreshold(UInt_t i) {fThreshold=i;}
   void SetMatchWidth(UInt_t i) {fMatch=i;}
   void SetSTDOutput(Bool_t f=kFALSE) {fstdout=f;}  
+  void SetCalcErr(Bool_t f=kTRUE) {fcalcerr=f;}
 
   Int_t GetNumberOfClusters() {return fNClusters;}
   
@@ -71,4 +76,3 @@ class AliL3ClustFinderNew {
 };
 
 #endif
-
