@@ -125,9 +125,16 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
 // Event Loop
 //
 
+   if(!gAlice->TreeR()) gAlice->MakeTree("R");
+   //make branch
+   ITS->MakeBranch("R");
+
    for (int nev=evNumber1; nev<= evNumber2; nev++) {
        if(nev>0) {
 	 nparticles = gAlice->GetEvent(nev);
+	 gAlice->SetEvent(nev);
+	 if(!gAlice->TreeR()) gAlice-> MakeTree("R");
+	 ITS->MakeBranch("R");
        }     
        cout << "nev         " <<nev<<endl;
        cout << "nparticles  " <<nparticles<<endl;
@@ -136,7 +143,7 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
 
        TTree *TD = gAlice->TreeD();
        Int_t nent=TD->GetEntries();
-       printf("Found %d entries in the tree (must be one per module per event!)\n",nent);
+       printf("Found %d entries in the treeD (must be one per module per event!)\n",nent);
        //Int_t nmodules=geom->GetLastSSD();
        //Int_t last_entry=nent-nmodules;
        //Int_t last_entry=1;
