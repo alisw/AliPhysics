@@ -13,6 +13,7 @@
 #include "AliTrackingAction.h"
 #include "AliStackingAction.h"
 #include "AliSteppingAction.h"
+#include "AliFiles.h"
 
 #ifdef ALICE_EMPTY_PHYSICS_LIST
 #include "AliEmptyPhysicsList.h"
@@ -23,6 +24,7 @@
 AliRunConfiguration::AliRunConfiguration(){
 //
   fRunMessenger = new AliRunMessenger();
+  fFiles = new AliFiles();
  
   CreateUserConfiguration();
 }
@@ -36,6 +38,7 @@ AliRunConfiguration::AliRunConfiguration(const AliRunConfiguration& right)
 AliRunConfiguration::~AliRunConfiguration() {
 //
   delete fRunMessenger;
+  delete fFiles;
 
   // all user action data members are deleted 
   // in G4RunManager::~G4RunManager()
@@ -82,3 +85,20 @@ void AliRunConfiguration::CreateUserConfiguration()
   fStackingAction = new AliStackingAction();
 #endif
 }
+
+// public methods
+
+void AliRunConfiguration::SetConfigName(const char* name)
+{
+// Sets the configuration macro name 
+// ---
+  fFiles->SetMacroName(name);
+}  
+
+void AliRunConfiguration::SetG3CallsName(const char* name)
+{
+// Sets the configuration macro name 
+// ---
+  fFiles->SetG3CallsName(name);
+}  
+
