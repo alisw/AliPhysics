@@ -6,6 +6,8 @@
 //uncomment the line below for running with V1 cluster finder classes 
 //#define V1
 
+#include <stdlib.h>
+
 #include "AliRun.h"
 
 #include "AliITSclustererV2.h"
