@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/02/27 22:13:34  jbarbosa
+Implementing merger class.
+
 */
 
 #include <TTree.h> 
@@ -169,9 +172,9 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 
   Int_t particle;
 
-  FILE* points; //these will be the digits...
+  //FILE* points; //these will be the digits...
   
-  points=fopen("points.dat","w");
+  //points=fopen("points.dat","w");
   
   AliRICHChamber*       iChamber;
   AliSegmentation*  segmentation;
@@ -191,7 +194,7 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     
     if (fMerge ) {
       fBgrFile->cd();
-      fBgrFile->ls();
+      //fBgrFile->ls();
       //
       // Get Hits Tree header from file
       if(fHitsBgr) fHitsBgr->Clear();
@@ -215,7 +218,7 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 	if (branch) branch->SetAddress(&fHitsBgr);
       }
       if (fTrH1 && fSDigitsBgr) {
-	branch = fTrH1->GetBranch("MUONCluster");
+	branch = fTrH1->GetBranch("RICHSDigits");
 	if (branch) branch->SetAddress(&fSDigitsBgr);
       }
     }
@@ -501,8 +504,8 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 	}
       }
       //write file
-      if (ich==2)
-	fprintf(points,"%4d,      %4d,      %4d\n",digits[0],digits[1],digits[2]);
+      //if (ich==2)
+	//fprintf(points,"%4d,      %4d,      %4d\n",digits[0],digits[1],digits[2]);
       
       // fill digits
       pRICH->AddDigits(ich,tracks,charges,digits);
