@@ -108,7 +108,7 @@ private:
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
     
-  ClassDef(AliEMCALClusterizerv1,2)   // Clusterizer implementation version 1
+  ClassDef(AliEMCALClusterizerv1,3)   // Clusterizer implementation version 1
 
 };
 
