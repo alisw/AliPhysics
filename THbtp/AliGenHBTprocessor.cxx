@@ -69,7 +69,7 @@
 
 ClassImp(AliGenHBTprocessor)
 
-
+static TRandom* sRandom;
 
 AliGenCocktailAfterBurner*  GetGenerator();
 /*******************************************************************/

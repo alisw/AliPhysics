@@ -13,177 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2003/04/08 10:23:03  morsch
-Rapidity shift calculated in AliGenMC::Init()
-
-Revision 1.2  2003/04/04 08:14:02  morsch
-Boost() moved to AliGenMC
-
-Revision 1.1  2003/03/15 14:45:57  morsch
-Classes imported from EVGEN
-
-Revision 1.47  2003/01/14 10:50:18  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.46  2003/01/07 14:12:33  morsch
-Provides collision geometry.
-
-Revision 1.45  2002/12/16 09:44:49  morsch
-Default for fRadiation is 3.
-
-Revision 1.44  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.42.4.1  2002/08/28 15:06:50  alibrary
-Updating to v3-09-01
-
-Revision 1.43  2002/08/09 12:09:52  morsch
-Direct gamma trigger correctly included.
-
-Revision 1.42  2002/03/12 11:07:08  morsch
-Add status code of particle to SetTrack call.
-
-Revision 1.41  2002/03/05 11:25:33  morsch
-- New quenching options
-- Correction in CheckTrigger()
-
-Revision 1.40  2002/02/12 11:05:53  morsch
-Get daughter indices right.
-
-Revision 1.39  2002/02/12 09:16:39  morsch
-Correction in SelectFlavor()
-
-Revision 1.38  2002/02/12 08:53:21  morsch
-SetNoGammas can be used to inhibit writing of gammas and pi0.
-
-Revision 1.37  2002/02/08 16:50:50  morsch
-Add name and title in constructor.
-
-Revision 1.36  2002/01/31 20:17:55  morsch
-Allow for triggered jets with simplified topology: Exact pT, back-to-back
-
-Revision 1.35  2001/12/13 07:56:25  hristov
-Set pointers to zero in the default constructor
-
-Revision 1.34  2001/12/11 16:55:42  morsch
-Correct initialization for jet phi-range.
-
-Revision 1.33  2001/12/05 10:18:51  morsch
-Possibility of kinematic biasing of jet phi range. (J. Klay)
-
-Revision 1.32  2001/11/28 13:51:11  morsch
-Introduce kinematic biasing (etamin, etamax) of jet trigger. Bookkeeping
-(number of trials) done in AliGenHijingEventHeader.
-
-Revision 1.31  2001/11/06 12:30:34  morsch
-Add Boost() method to boost all particles to LHC lab frame. Needed for asymmetric collision systems.
-
-Revision 1.30  2001/10/21 18:35:56  hristov
-Several pointers were set to zero in the default constructors to avoid memory management problems
-
-Revision 1.29  2001/10/15 08:12:24  morsch
-- Vertex smearing with truncated gaussian.
-- Store triggered jet info before and after final state radiation into mc-heade
-
-Revision 1.28  2001/10/08 11:55:25  morsch
-Store 4-momenta of trigegred jets in event header.
-Possibility to switch of initial and final state radiation.
-
-Revision 1.27  2001/10/08 07:13:14  morsch
-Add setter for minimum transverse momentum of triggered jet.
-
-Revision 1.26  2001/10/04 08:12:24  morsch
-Redefinition of stable condition.
-
-Revision 1.25  2001/07/27 17:09:36  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.24  2001/07/20 09:34:56  morsch
-Count the number of spectator neutrons and protons and add information
-to the event header. (Chiara Oppedisano)
-
-Revision 1.23  2001/07/13 17:30:22  morsch
-Derive from AliGenMC.
-
-Revision 1.22  2001/06/11 13:09:23  morsch
-- Store cross-Section and number of binary collisions as a function of impact parameter
-- Pass AliGenHijingEventHeader to gAlice.
-
-Revision 1.21  2001/02/28 17:35:24  morsch
-Consider elastic interactions (ks = 1 and ks = 11) as spectator (Chiara Oppedisano)
-
-Revision 1.20  2001/02/14 15:50:40  hristov
-The last particle in event marked using SetHighWaterMark
-
-Revision 1.19  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.18  2000/12/06 17:46:30  morsch
-Avoid random numbers 1 and 0.
-
-Revision 1.17  2000/12/04 11:22:03  morsch
-Init of sRandom as in 1.15
-
-Revision 1.16  2000/12/02 11:41:39  morsch
-Use SetRandom() to initialize random number generator in constructor.
-
-Revision 1.15  2000/11/30 20:29:02  morsch
-Initialise static variable sRandom in constructor: sRandom = fRandom;
-
-Revision 1.14  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.13  2000/11/09 17:40:27  morsch
-Possibility to select/unselect spectator protons and neutrons.
-Method SetSpectators(Int_t spect) added. (FCA, Ch. Oppedisano)
-
-Revision 1.12  2000/10/20 13:38:38  morsch
-Debug printouts commented.
-
-Revision 1.11  2000/10/20 13:22:26  morsch
-- skip particle type 92 (string)
-- Charmed and beauty baryions (5122, 4122) are considered as stable consistent with
-  mesons.
-
-Revision 1.10  2000/10/17 15:10:20  morsch
-Write first all the parent particles to the stack and then the final state particles.
-
-Revision 1.9  2000/10/17 13:38:59  morsch
-Protection against division by zero in EvaluateCrossSection() and KinematicSelection(..)     (FCA)
-
-Revision 1.8  2000/10/17 12:46:31  morsch
-Protect EvaluateCrossSections() against division by zero.
-
-Revision 1.7  2000/10/02 21:28:06  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.6  2000/09/11 13:23:37  morsch
-Write last seed to file (fortran lun 50) and reed back from same lun using calls to
-luget_hijing and luset_hijing.
-
-Revision 1.5  2000/09/07 16:55:40  morsch
-fHijing->Initialize(); after change of parameters. (Dmitri Yurevitch Peressounko)
-
-Revision 1.4  2000/07/11 18:24:56  fca
-Coding convention corrections + few minor bug fixes
-
-Revision 1.3  2000/06/30 12:08:36  morsch
-In member data: char* replaced by TString, Init takes care of resizing the strings to
-8 characters required by Hijing.
-
-Revision 1.2  2000/06/15 14:15:05  morsch
-Add possibility for heavy flavor selection: charm and beauty.
-
-Revision 1.1  2000/06/09 20:47:27  morsch
-AliGenerator interface class to HIJING using THijing (test version)
-
-*/
-
-
+/* $Id$ */
 
 // Generator using HIJING as an external generator
 // The main HIJING options are accessable for the user through this interface.
@@ -201,9 +31,9 @@ AliGenerator interface class to HIJING using THijing (test version)
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliRun.h"
+#include "AliHijingRndm.h"
 
-
-  ClassImp(AliGenHijing)
+ClassImp(AliGenHijing)
 
 AliGenHijing::AliGenHijing()
                  :AliGenMC()
@@ -213,6 +43,7 @@ AliGenHijing::AliGenHijing()
     fHijing    = 0;
     fDsigmaDb  = 0;
     fDnDb      = 0;
+    AliHijingRndm::SetHijingRandom(GetRandom());
 }
 
 AliGenHijing::AliGenHijing(Int_t npart)
@@ -250,7 +81,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fParticles = new TClonesArray("TParticle",10000);    
 //
 // Set random number generator   
-    sRandom = fRandom;
+    AliHijingRndm::SetHijingRandom(GetRandom());
     fHijing = 0;
 
 }
@@ -770,30 +601,3 @@ AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
     return *this;
 }
 
-#ifndef WIN32
-# define rluget_hijing rluget_hijing_
-# define rluset_hijing rluset_hijing_
-# define rlu_hijing    rlu_hijing_
-# define type_of_call
-#else
-# define rluget_hijing RLUGET_HIJING
-# define rluset_hijing RLUSET_HIJING
-# define rlu_hijing    RLU_HIJING
-# define type_of_call _stdcall
-#endif
-
-
-extern "C" {
-  void type_of_call rluget_hijing(Int_t & /*lfn*/, Int_t & /*move*/)
-  {printf("Dummy version of rluget_hijing reached\n");}
-
-  void type_of_call rluset_hijing(Int_t & /*lfn*/, Int_t & /*move*/)
-  {printf("Dummy version of rluset_hijing reached\n");}
-
-  Double_t type_of_call rlu_hijing(Int_t & /*idum*/) 
-  {
-      Float_t r;
-      do r=sRandom->Rndm(); while(0 >= r || r >= 1);
-      return r;
-  }
-}

@@ -32,17 +32,16 @@ ClassImp(AliRndm)
 
 //_______________________________________________________________________
 AliRndm::AliRndm():
-  fRandom(0)
+  fRandom(gRandom)
 {
   // 
   // Default ctor
   //
-  SetRandom();
 }
 
 //_______________________________________________________________________
 AliRndm::AliRndm(const AliRndm& rn):
-  fRandom(0)
+  fRandom(gRandom)
 {
   //
   // Copy constructor

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/04/08 10:22:05  morsch
+Rapidity shift calculated in Init().
+
 Revision 1.15  2003/04/04 08:13:26  morsch
 Boost method added.
 
@@ -360,7 +363,7 @@ void AliGenMC::Boost()
     Double_t gamma = 1./TMath::Sqrt(1.-beta*beta);
     Double_t gb    = gamma * beta;
 
-    printf("\n Boosting particles to lab frame %f %f %f", fDyBoost, beta, gamma);
+    //    printf("\n Boosting particles to lab frame %f %f %f", fDyBoost, beta, gamma);
     
     Int_t i;
     Int_t np = fParticles->GetEntriesFast();
