@@ -23,8 +23,10 @@
 //   C.A.Salgado and U.A.Wiedemann, Phys.Rev.D68 (2003) 014008 [hep-ph/0302184]
 //   A.Dainese, Eur.Phys.J.C, in press, [nucl-ex/0312005]             
 //
+//
 //            Origin:  C. Loizides   constantinos.loizides@cern.ch
 //                     A. Dainese    andrea.dainese@pd.infn.it            
+//
 //----------------------------------------------------------------------------
 
 #include <Riostream.h>
@@ -40,17 +42,19 @@
 ClassImp(AliQuenchingWeights)
 
 // conversion from fm to GeV^-1: 1 fm = fmGeV GeV^-1
-const Double_t AliQuenchingWeights::gkConvFmToInvGeV = 1./0.197; 
+const Double_t AliQuenchingWeights::fgkConvFmToInvGeV = 1./0.197; 
 
 // maximum value of R
-const Double_t AliQuenchingWeights::gkRMax = 40000.; 
+const Double_t AliQuenchingWeights::fgkRMax = 1.e6; 
 
 // counter for histogram labels
-Int_t AliQuenchingWeights::gCounter = 0; 
+Int_t AliQuenchingWeights::fgCounter = 0; 
 
 AliQuenchingWeights::AliQuenchingWeights() 
                    : TObject()
 {
+  //default constructor 
+
   fTablesLoaded=kFALSE;
   fMultSoft=kTRUE; 
   fHistos=0;
@@ -59,12 +63,14 @@ AliQuenchingWeights::AliQuenchingWeights()
   SetECMethod();
   SetLengthMax();
   fLengthMaxOld=0;
-  fInstanceNumber=gCounter++;
+  fInstanceNumber=fgCounter++;
 }
 
 AliQuenchingWeights::AliQuenchingWeights(const AliQuenchingWeights& a) 
                    : TObject()
 {
+  //copy constructor 
+
   fTablesLoaded=kFALSE;
   fHistos=0;
   fLengthMaxOld=0;
@@ -73,7 +79,7 @@ AliQuenchingWeights::AliQuenchingWeights(const AliQuenchingWeights& a)
   fQTransport=a.GetQTransport();
   fECMethod=(kECMethod)a.GetECMethod();
   fLengthMax=a.GetLengthMax();
-  fInstanceNumber=gCounter++;
+  fInstanceNumber=fgCounter++;
   //Missing in the class is the pathname
   //to the tables, can be added if needed
 }
@@ -85,6 +91,8 @@ AliQuenchingWeights::~AliQuenchingWeights()
 
 void AliQuenchingWeights::Reset()
 {
+  //reset tables if there were used
+
   if(!fHistos) return;
   for(Int_t l=0;l<fLengthMaxOld;l++){
     delete fHistos[0][l];
@@ -97,6 +105,8 @@ void AliQuenchingWeights::Reset()
 
 void AliQuenchingWeights::SetECMethod(kECMethod type)
 {
+  //set energy constraint method
+
   fECMethod=type;
   if(fECMethod==kDefault)
     Info("SetECMethod","Energy Constraint Method set to DEFAULT:\nIf (sampled energy loss > parton energy) then sampled energy loss = parton energy.");
@@ -125,15 +135,11 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   Int_t nn=0; //quarks
   while(fincont>>fxx[nn]>>fcaq[0][nn]>>fcaq[1][nn]>>fcaq[2][nn]>>fcaq[3][nn]>>
 	fcaq[4][nn]>>fcaq[5][nn]>>fcaq[6][nn]>>fcaq[7][nn]>>fcaq[8][nn]>>
-	fcaq[9][nn]>>fcaq[10][nn]>>fcaq[11][nn]>>fcaq[12][nn]>>
-	fcaq[13][nn]>>
-	fcaq[14][nn]>>fcaq[15][nn]>>fcaq[16][nn]>>fcaq[17][nn]>>
-	fcaq[18][nn]>>
-	fcaq[19][nn]>>fcaq[20][nn]>>fcaq[21][nn]>>fcaq[22][nn]>>
-	fcaq[23][nn]>>
-	fcaq[24][nn]>>fcaq[25][nn]>>fcaq[26][nn]>>fcaq[27][nn]>>
-	fcaq[28][nn]>>
-	fcaq[29][nn]) 
+	fcaq[9][nn]>>fcaq[10][nn]>>fcaq[11][nn]>>fcaq[12][nn]>>fcaq[13][nn]>>
+	fcaq[14][nn]>>fcaq[15][nn]>>fcaq[16][nn]>>fcaq[17][nn]>>fcaq[18][nn]>>
+	fcaq[19][nn]>>fcaq[20][nn]>>fcaq[21][nn]>>fcaq[22][nn]>>fcaq[23][nn]>>
+	fcaq[24][nn]>>fcaq[25][nn]>>fcaq[26][nn]>>fcaq[27][nn]>>fcaq[28][nn]>>
+	fcaq[29][nn]>>fcaq[30][nn]>>fcaq[31][nn]>>fcaq[32][nn]>>fcaq[33][nn]) 
     {
       nn++;
       if(nn==261) break;
@@ -142,15 +148,12 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   nn=0;       //gluons
   while(fincont>>fxxg[nn]>>fcag[0][nn]>>fcag[1][nn]>>fcag[2][nn]>>fcag[3][nn]>>
 	fcag[4][nn]>>fcag[5][nn]>>fcag[6][nn]>>fcag[7][nn]>>fcag[8][nn]>>
-	fcag[9][nn]>>fcag[10][nn]>>fcag[11][nn]>>fcag[12][nn]>>
-	fcag[13][nn]>>
-	fcag[14][nn]>>fcag[15][nn]>>fcag[16][nn]>>fcag[17][nn]>>
-	fcag[18][nn]>>
-	fcag[19][nn]>>fcag[20][nn]>>fcag[21][nn]>>fcag[22][nn]>>
-	fcag[23][nn]>>
-	fcag[24][nn]>>fcag[25][nn]>>fcag[26][nn]>>fcag[27][nn]>>
-	fcag[28][nn]>>
-	fcag[29][nn]) {
+	fcag[9][nn]>>fcag[10][nn]>>fcag[11][nn]>>fcag[12][nn]>>fcag[13][nn]>>
+        fcag[14][nn]>>fcag[15][nn]>>fcag[16][nn]>>fcag[17][nn]>>fcag[18][nn]>>
+	fcag[19][nn]>>fcag[20][nn]>>fcag[21][nn]>>fcag[22][nn]>>fcag[23][nn]>>
+	fcag[24][nn]>>fcag[25][nn]>>fcag[26][nn]>>fcag[27][nn]>>fcag[28][nn]>>
+	fcag[29][nn]>>fcag[30][nn]>>fcag[31][nn]>>fcag[32][nn]>>fcag[33][nn]) 
+  {
     nn++;
     if(nn==261) break;
   }
@@ -168,12 +171,12 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   nn=0; //quarks
   while(findisc>>frrr[nn]>>fdaq[nn]) {
     nn++;
-    if(nn==30) break;
+    if(nn==34) break;
   }
   nn=0; //gluons
   while(findisc>>frrrg[nn]>>fdag[nn]) {
     nn++;
-    if(nn==30) break;
+    if(nn==34) break;
   }
   findisc.close();
   fTablesLoaded = kTRUE;
@@ -210,18 +213,18 @@ C   using swqmult.
 C
 C   Please, send us any comment:
 C
-C	urs.wiedemann@cern.ch 
-C	carlos.salgado@cern.ch 
-C 
-C 
+C	urs.wiedemann@cern.ch
+C	carlos.salgado@cern.ch
+C
+C
 C-------------------------------------------------------------------
 
       SUBROUTINE swqmult(ipart,rrrr,xxxx,continuous,discrete)
 *
-      REAL*8           xx(400), daq(30), caq(30,261), rrr(30)
+      REAL*8           xx(400), daq(34), caq(34,261), rrr(34)
       COMMON /dataqua/    xx, daq, caq, rrr
 *
-      REAL*8           xxg(400), dag(30), cag(30,261), rrrg(30)
+      REAL*8           xxg(400), dag(34), cag(34,261), rrrg(34)
       COMMON /dataglu/    xxg, dag, cag, rrrg
 
       REAL*8           rrrr,xxxx, continuous, discrete
@@ -231,15 +234,14 @@ C-------------------------------------------------------------------
       REAL*8           xfraclow, xfrachigh
       REAL*8           clow, chigh
 *
+
+      continuous=0.d0
+      discrete=0.d0
+
       rrin = rrrr
       xxin = xxxx
 *
-      nxlow = int(xxin/0.005) + 1
-      nxhigh = nxlow + 1
-      xfraclow = (xx(nxhigh)-xxin)/0.005
-      xfrachigh = (xxin - xx(nxlow))/0.005
-*
-      do 666, nr=1,30
+      do 666, nr=1,34
          if (rrin.lt.rrr(nr)) then
             rrhigh = rrr(nr)
          else
@@ -254,6 +256,31 @@ C-------------------------------------------------------------------
 *
       rfraclow = (rrhigh-rrin)/(rrhigh-rrlow)
       rfrachigh = (rrin-rrlow)/(rrhigh-rrlow)
+      if (rrin.gt.10000d0) then
+         rfraclow = dlog(rrhigh/rrin)/dlog(rrhigh/rrlow)
+         rfrachigh = dlog(rrin/rrlow)/dlog(rrhigh/rrlow)
+      endif
+*
+      if (ipart.eq.1.and.rrin.ge.rrr(1)) then
+         nrlow=1
+         nrhigh=1
+         rfraclow=1
+         rfrachigh=0
+      endif
+
+      if (ipart.ne.1.and.rrin.ge.rrrg(1)) then
+         nrlow=1
+         nrhigh=1
+         rfraclow=1
+         rfrachigh=0
+      endif
+
+      if (xxxx.ge.xx(261)) go to 245
+
+      nxlow = int(xxin/0.01) + 1
+      nxhigh = nxlow + 1
+      xfraclow = (xx(nxhigh)-xxin)/0.01
+      xfrachigh = (xxin - xx(nxlow))/0.01
 *
       if(ipart.eq.1) then
       clow = xfraclow*caq(nrlow,nxlow)+xfrachigh*caq(nrlow,nxhigh)
@@ -265,6 +292,8 @@ C-------------------------------------------------------------------
 
       continuous = rfraclow*clow + rfrachigh*chigh
 
+245   continue
+
       if(ipart.eq.1) then
       discrete = rfraclow*daq(nrlow) + rfrachigh*daq(nrhigh)
       else
@@ -274,13 +303,13 @@ C-------------------------------------------------------------------
       END
 
       subroutine initmult
-      REAL*8           xxq(400), daq(30), caq(30,261), rrr(30)
+      REAL*8           xxq(400), daq(34), caq(34,261), rrr(34)
       COMMON /dataqua/    xxq, daq, caq, rrr
 *
-      REAL*8           xxg(400), dag(30), cag(30,261), rrrg(30)
+      REAL*8           xxg(400), dag(34), cag(34,261), rrrg(34)
       COMMON /dataglu/    xxg, dag, cag, rrrg
 *
-      OPEN(UNIT=20,FILE='cont.all',STATUS='OLD',ERR=90)
+      OPEN(UNIT=20,FILE='contnew.all',STATUS='OLD',ERR=90)
       do 110 nn=1,261
       read (20,*) xxq(nn), caq(1,nn), caq(2,nn), caq(3,nn),
      +     caq(4,nn), caq(5,nn), caq(6,nn), caq(7,nn), caq(8,nn),
@@ -292,7 +321,8 @@ C-------------------------------------------------------------------
      +     caq(23,nn),
      +     caq(24,nn), caq(25,nn), caq(26,nn), caq(27,nn), 
      +     caq(28,nn),
-     +     caq(29,nn), caq(30,nn)
+     +     caq(29,nn), caq(30,nn), caq(31,nn), caq(32,nn), 
+     +     caq(33,nn), caq(34,nn)
  110     continue
       do 111 nn=1,261
       read (20,*) xxg(nn), cag(1,nn), cag(2,nn), cag(3,nn),
@@ -305,15 +335,16 @@ C-------------------------------------------------------------------
      +     cag(23,nn),
      +     cag(24,nn), cag(25,nn), cag(26,nn), cag(27,nn), 
      +     cag(28,nn),
-     +     cag(29,nn), cag(30,nn)
+     +     cag(29,nn), cag(30,nn), cag(31,nn), cag(32,nn), 
+     +     cag(33,nn), cag(34,nn)
  111     continue
       close(20)
 *
-      OPEN(UNIT=21,FILE='disc.all',STATUS='OLD',ERR=91)
-      do 112 nn=1,30
+      OPEN(UNIT=21,FILE='discnew.all',STATUS='OLD',ERR=91)
+      do 112 nn=1,34
       read (21,*) rrr(nn), daq(nn)
  112     continue
-      do 113 nn=1,30
+      do 113 nn=1,34
       read (21,*) rrrg(nn), dag(nn)
  113     continue
       close(21)
@@ -325,10 +356,12 @@ C-------------------------------------------------------------------
 
       end
 
+
 =======================================================================
 
    Adapted to ROOT macro by A. Dainese - 13/07/2003
-   ported to class by C. Loizides - 12/02/2004
+   Ported to class by C. Loizides - 12/02/2004
+   New version for extended R values added - 06/03/2004 
 */
 
 Int_t AliQuenchingWeights::CalcMult(Int_t ipart, Double_t rrrr,Double_t xxxx,
@@ -337,6 +370,10 @@ Int_t AliQuenchingWeights::CalcMult(Int_t ipart, Double_t rrrr,Double_t xxxx,
   // Calculate Multiple Scattering approx. 
   // weights for given parton type, 
   // rrrr=0.5*q*L^3 and xxxx=w/wc, wc=0.5*q*L^2
+
+  //set result to zero
+  continuous=0.;
+  discrete=0.;
 
   // read-in data before first call
   if(!fTablesLoaded){
@@ -351,18 +388,19 @@ Int_t AliQuenchingWeights::CalcMult(Int_t ipart, Double_t rrrr,Double_t xxxx,
   Double_t rrin = rrrr;
   Double_t xxin = xxxx;
 
+  if(xxin>fxx[260]) return -1;
   Int_t nxlow     = (Int_t)(xxin/0.01) + 1;
   Int_t nxhigh    = nxlow + 1;
   Double_t xfraclow  = (fxx[nxhigh-1]-xxin)/0.01;
   Double_t xfrachigh = (xxin - fxx[nxlow-1])/0.01;
 
   //why this?
-  if(rrin<=frrr[29]) rrin = 1.05*frrr[29]; // AD
+  if(rrin<=frrr[33]) rrin = 1.05*frrr[33]; // AD
   if(rrin>=frrr[0])  rrin = 0.95*frrr[0];  // AD
 
   Int_t nrlow=0,nrhigh=0;
   Double_t rrhigh=0,rrlow=0;
-  for(Int_t nr=1; nr<=30; nr++) {
+  for(Int_t nr=1; nr<=34; nr++) {
     if(rrin<frrr[nr-1]) {
       rrhigh = frrr[nr-1];
     } else {
@@ -378,6 +416,25 @@ Int_t AliQuenchingWeights::CalcMult(Int_t ipart, Double_t rrrr,Double_t xxxx,
 
   Double_t rfraclow  = (rrhigh-rrin)/(rrhigh-rrlow);
   Double_t rfrachigh = (rrin-rrlow)/(rrhigh-rrlow);
+
+  if(rrin>1.e4){
+    rfraclow = TMath::Log2(rrhigh/rrin)/TMath::Log2(rrhigh/rrlow);    
+    rfrachigh = TMath::Log2(rrin/rrlow)/TMath::Log2(rrhigh/rrlow);
+  }
+  if((ipart==1) && (rrin>=frrr[0]))
+  {
+    nrlow=1;
+    nrhigh=1;
+    rfraclow=1.;
+    rfrachigh=0.;
+  }
+  if((ipart==2) && (rrin>=frrrg[0]))
+  {
+    nrlow=1;
+    nrhigh=1;
+    rfraclow=1.;
+    rfrachigh=0.;
+  }
 
   //printf("R = %f,\nRlow = %f, Rhigh = %f,\nRfraclow = %f, Rfrachigh = %f\n",rrin,rrlow,rrhigh,rfraclow,rfrachigh); // AD
 
@@ -708,6 +765,10 @@ Int_t AliQuenchingWeights::CalcMult(Int_t ipart,
                               Double_t w,Double_t qtransp,Double_t length,
                               Double_t &continuous,Double_t &discrete) const
 {
+  // Calculate Multiple Scattering approx. 
+  // weights for given parton type, 
+  // rrrr=0.5*q*L^3 and xxxx=w/wc, wc=0.5*q*L^2
+
   Double_t wc=CalcWC(qtransp,length);
   Double_t rrrr=CalcR(wc,length);
   Double_t xxxx=w/wc;
@@ -718,6 +779,10 @@ Int_t AliQuenchingWeights::CalcSingleHard(Int_t ipart,
                                     Double_t w,Double_t mu,Double_t length,
                                     Double_t &continuous,Double_t &discrete) const
 {
+  // calculate Single Hard approx. 
+  // weights for given parton type, 
+  // rrrr=0.5*mu^2*L^2 and xxxx=w/wc, wc=0.5*mu^2*L
+
   Double_t wcbar=CalcWCbar(mu,length);
   Double_t rrrr=CalcR(wcbar,length);
   Double_t xxxx=w/wcbar;
@@ -726,9 +791,12 @@ Int_t AliQuenchingWeights::CalcSingleHard(Int_t ipart,
 
 Double_t AliQuenchingWeights::CalcR(Double_t wc, Double_t l) const 
 { 
-  Double_t R = wc*l*gkConvFmToInvGeV;
-  if(R>gkRMax) {
-    Warning("CalcR","Value of R = %.2f; should be less than %.2f",R,gkRMax);
+  //calculate R value and 
+  //check if it is less then maximum
+
+  Double_t R = wc*l*fgkConvFmToInvGeV;
+  if(R>fgkRMax) {
+    Warning("CalcR","Value of R = %.2f; should be less than %.2f",R,fgkRMax);
     return -R;
   }  
   return R;
@@ -788,6 +856,11 @@ Double_t AliQuenchingWeights::CalcQuenchedEnergy(Int_t ipart, Double_t length, D
 
 Double_t AliQuenchingWeights::GetELossRandom(Int_t ipart, TH1F *hell, Double_t e) const
 {
+  // return DeltaE for MS or SH scattering
+  // for given parton type, length distribution and energy
+  // Dependant on ECM (energy constraint method)
+  // e is used to determine where to set bins to zero.
+
   if(!hell){
     Warning("GetELossRandom","Pointer to length distribution is NULL.");
     return 0.;
@@ -827,7 +900,7 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
   if(fMultSoft) {
     Int_t lmax=CalcLengthMax(fQTransport);
     if(fLengthMax>lmax){
-      Info("SampleEnergyLoss","Maximum length changed from %d to %d;\nin order to have R < %.f",fLengthMax,lmax,gkRMax);
+      Info("SampleEnergyLoss","Maximum length changed from %d to %d;\nin order to have R < %.f",fLengthMax,lmax,fgkRMax);
       fLengthMax=lmax;
     }
   } else {
@@ -888,6 +961,9 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
 
 const TH1F* AliQuenchingWeights::GetHisto(Int_t ipart,Int_t l) const
 {
+  //return quenching histograms 
+  //for ipart and length
+
   if(!fHistos){
     Fatal("GetELossRandom","Call SampleEnergyLoss method before!");
     return 0;
@@ -1006,6 +1082,9 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t 
 
 TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,Double_t l,Double_t e) const
 {
+  //compute energy loss histogram for 
+  //parton type, medium value, length and energy
+
   AliQuenchingWeights *dummy=new AliQuenchingWeights(*this);
   if(fMultSoft){
     dummy->SetQTransport(medval);
@@ -1041,6 +1120,10 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,Double_
 
 TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *hEll,Double_t e) const
 {
+  //compute energy loss histogram for 
+  //parton type, medium value, 
+  //length distribution and energy
+
   AliQuenchingWeights *dummy=new AliQuenchingWeights(*this);
   if(fMultSoft){
     dummy->SetQTransport(medval);
@@ -1076,6 +1159,8 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *h
 
 void AliQuenchingWeights::PlotDiscreteWeights(Int_t len) const
 {
+  //plot discrete weights for given length
+
   TCanvas *c; 
   if(fMultSoft) 
     c = new TCanvas("cdiscms","Discrete Weight for Multiple Scattering",0,0,500,400);
@@ -1143,6 +1228,9 @@ void AliQuenchingWeights::PlotDiscreteWeights(Int_t len) const
 
 void AliQuenchingWeights::PlotContWeights(Int_t itype,Int_t ell) const
 {
+  //plot continous weights for 
+  //given parton type and length
+
   Float_t medvals[3];
   Char_t title[1024];
   Char_t name[1024];
@@ -1209,6 +1297,9 @@ void AliQuenchingWeights::PlotContWeights(Int_t itype,Int_t ell) const
 
 void AliQuenchingWeights::PlotContWeights(Int_t itype,Double_t medval) const
 {
+  //plot continous weights for 
+  //given parton type and medium value
+
   Char_t title[1024];
   Char_t name[1024];
   if(fMultSoft) {
@@ -1263,6 +1354,9 @@ void AliQuenchingWeights::PlotContWeights(Int_t itype,Double_t medval) const
 
 void AliQuenchingWeights::PlotAvgELoss(Int_t len,Double_t e)  const
 {
+  //plot average energy loss for given length
+  //and parton energy 
+
   if(!fTablesLoaded){
     Error("CalcMult","Tables are not loaded.");
     return;
@@ -1326,6 +1420,9 @@ void AliQuenchingWeights::PlotAvgELoss(Int_t len,Double_t e)  const
 
 void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
 {
+  //plot average energy loss for given
+  //length distribution and parton energy
+
   if(!fTablesLoaded){
     Error("CalcMult","Tables are not loaded.");
     return;
@@ -1389,6 +1486,9 @@ void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
 
 void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,Int_t len) const
 {
+  //plot relative energy loss for given
+  //length and parton energy versus pt
+
   if(!fTablesLoaded){
     Error("CalcMult","Tables are not loaded.");
     return;
@@ -1449,6 +1549,9 @@ void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,Int_t len) const
 
 void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,TH1F *hEll) const
 {
+  //plot relative energy loss for given
+  //length distribution and parton energy versus pt
+
   if(!fTablesLoaded){
     Error("CalcMult","Tables are not loaded.");
     return;

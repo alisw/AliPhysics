@@ -55,10 +55,10 @@ class AliQuenchingWeights : public TObject {
                        Double_t &continuous,Double_t &discrete) const;
 
   Double_t CalcWC(Double_t q, Double_t l) const 
-    {return 0.5*q*l*l*gkConvFmToInvGeV;}
+    {return 0.5*q*l*l*fgkConvFmToInvGeV;}
 
   Double_t CalcWCbar(Double_t mu, Double_t l) const 
-    {return 0.5*mu*mu*l*gkConvFmToInvGeV;}
+    {return 0.5*mu*mu*l*fgkConvFmToInvGeV;}
 
   Double_t CalcWC(Double_t l) const 
     {if(fMultSoft) return CalcWC(fQTransport,l);
@@ -67,7 +67,7 @@ class AliQuenchingWeights : public TObject {
   Double_t CalcR(Double_t wc, Double_t l) const; 
 
   Int_t CalcLengthMax(Double_t q) const
-    {Double_t l3max=gkRMax/.5/q/gkConvFmToInvGeV/gkConvFmToInvGeV;
+    {Double_t l3max=fgkRMax/.5/q/fgkConvFmToInvGeV/fgkConvFmToInvGeV;
      return (Int_t)TMath::Power(l3max,1./3.);} 
 
   const TH1F* GetHisto(Int_t ipart,Int_t l) const;
@@ -98,10 +98,10 @@ class AliQuenchingWeights : public TObject {
   void PlotAvgELossVsPt(Double_t medval,TH1F *hEll) const;
 
  protected:
-  static const Double_t gkConvFmToInvGeV; 
-  static const Double_t gkRMax; 
-  static Int_t gCounter;//static instance counter
-  Int_t fInstanceNumber;//instance number of class
+  static const Double_t fgkConvFmToInvGeV; //conversion factor
+  static const Double_t fgkRMax; //max. tabled value of R
+  static Int_t fgCounter;//static instance counter
+  Int_t fInstanceNumber; //instance number of class
 
   Bool_t fMultSoft;     //approximation type
   Bool_t fECMethod;     //energy constraint method
@@ -115,15 +115,15 @@ class AliQuenchingWeights : public TObject {
   TH1F ***fHistos; //!
 
   // data strucs for tables
-  Double_t fxx[400];
-  Double_t fxxg[400];
-  Double_t fdaq[30];
-  Double_t fdag[30];
-  Double_t fcaq[30][261];
-  Double_t fcag[30][261];  
-  Double_t frrr[30];
-  Double_t frrrg[30];
-  Bool_t fTablesLoaded;
+  Double_t fxx[400];      //sampled energy quark
+  Double_t fxxg[400];     //sampled energy gluon
+  Double_t fdaq[34];      //discrete weight quark
+  Double_t fdag[34];      //discrete weight gluon
+  Double_t fcaq[34][261]; //continuous weights quarks
+  Double_t fcag[34][261]; //continuous weights gluons  
+  Double_t frrr[34];      //r value quark
+  Double_t frrrg[34];     //r value gluon
+  Bool_t fTablesLoaded;   //tables loaded
 
   ClassDef(AliQuenchingWeights,1)    // Base class for Quenching Weights
 };
