@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliL3Hough; 
 #pragma link C++ class AliL3HoughTransformer; 
+#pragma link C++ class AliL3HoughTransformerVhdl; 
 #pragma link C++ class AliL3HoughBaseTransformer; 
 #pragma link C++ class AliL3HoughTrack; 
 #pragma link C++ class AliL3HoughMaxFinder;

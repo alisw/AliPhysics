@@ -251,10 +251,10 @@ void AliL3Histogram::Draw(Char_t *option)
       fRootHisto->AddBinContent(bin,GetBinContent(bin));
     }
   
+  fRootHisto->SetStats(kFALSE);
   fRootHisto->Draw(option);
   return;
 #endif
   cerr<<"AliL3Histogram::Draw : You need to compile with ROOT in order to draw histogram"<<endl;
   
 }
-

@@ -145,7 +145,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	      if(pixel_index != eta_index) break;
 	      total_charge += digPt[j].fCharge;
 	      if(remove)
-		digPt[j].fCharge = 0; //Erease the track from image
+		digPt[j].fCharge = 0; //Erase the track from image
 	      npixs++;
 	    }
 	}

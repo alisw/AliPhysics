@@ -25,6 +25,8 @@ class AliL3Hough {
   Bool_t fUse8bits;
   Int_t fNEtaSegments;
   Int_t fNPatches;
+  Int_t fversion;
+
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
@@ -39,6 +41,7 @@ class AliL3Hough {
  public:
   
   AliL3Hough(); 
+  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Int_t tversion=0);
   virtual ~AliL3Hough();
   
   void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE);
@@ -74,7 +77,6 @@ class AliL3Hough {
   AliL3HoughMaxFinder *GetMaxFinder() {return fPeakFinder;}
 
   ClassDef(AliL3Hough,1) //Hough transform base class
-
 };
 
 #endif

@@ -41,7 +41,7 @@ void AliL3HoughTrack::Set(AliL3Track *track)
 {
   
   AliL3HoughTrack *tpt = (AliL3HoughTrack*)track;
-  SetTrackParameters(tpt->GetKappa(),tpt->GetPhi0(),tpt->GetWeight());
+  SetTrackParameters(tpt->GetKappa(),tpt->GetPsi(),tpt->GetWeight());
   SetEtaIndex(tpt->GetEtaIndex());
   SetEta(tpt->GetEta());
   SetTgl(tpt->GetTgl());
@@ -129,7 +129,7 @@ void AliL3HoughTrack::UpdateToFirstRow()
   }
   
   //Find intersection
-  Double_t fac2   = ( radius*radius + fac1 - rc*rc) / (2.00 * radius * sfac ) ;
+  Double_t fac2   = (radius*radius + fac1 - rc*rc) / (2.00 * radius * sfac ) ;
   Double_t phi    = atan2(yc,xc) + GetCharge()*acos(fac2) ;
   Double_t td     = atan2(radius*sin(phi) - yc,radius*cos(phi) - xc) ;
   
@@ -168,7 +168,7 @@ void AliL3HoughTrack::UpdateToFirstRow()
   //printf("last point %f %f %f\n",xyz[0],xyz[1],xyz[2]);
 }
 
-void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weight)
+void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t eangle,Int_t weight)
 {
 
   fWeight = weight;
@@ -179,11 +179,11 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   Double_t radius = 1/fabs(kappa);
   SetRadius(radius);
   SetFirstPoint(0,0,0);
-  SetPsi(phi); 
+  SetPsi(eangle); //Psi = emission angle when first point is vertex
+  SetPhi0(0);     //not defined for vertex reference point
   SetR0(0);
   Double_t charge = -1.*kappa;
   SetCharge((Int_t)copysign(1.,charge));
-  
   Double_t trackPhi0 = GetPsi() + charge*0.5*AliL3Transform::Pi()/fabs(charge);
   Double_t xc = GetFirstPointX() - GetRadius() * cos(trackPhi0) ;
   Double_t yc = GetFirstPointY() - GetRadius() * sin(trackPhi0) ;
@@ -191,8 +191,6 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   SetCenterY(yc);
   SetNHits(1); //just for the trackarray IO
   fIsHelix = true;
-  
-  
 }
 
 void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t ref_row)
