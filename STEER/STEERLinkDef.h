@@ -57,8 +57,8 @@
 #pragma link C++ class  AliGausCorr+;
 #pragma link C++ class  AliTrackReference+;
 #pragma link C++ class  AliESD+;
-#pragma link C++ class  AliESDTrack+;
-#pragma link C++ class  AliESDVertex+;
+#pragma link C++ class  AliESDtrack+;
+#pragma link C++ class  AliESDvertex+;
 #pragma link C++ class  AliTrackMap+;
 #pragma link C++ class  AliTrackMapper+;
 #pragma link C++ class  AliCollisionGeometry+;

@@ -236,20 +236,6 @@ Double_t AliKalmanTrack::P() const
   return 1. / TMath::Abs(par[4] * TMath::Sin(TMath::ATan(par[3])));
 }
 //_______________________________________________________________________
-TVector3 AliKalmanTrack::Momentum() const
-{
-// return track momentum vector
-
-  Double_t par[5];
-  Double_t localX = GetX();
-  GetExternalParameters(localX, par);
-  Double_t phi = TMath::ASin(par[2]) + GetAlpha();
-  return TVector3(TMath::Cos(phi) / TMath::Abs(par[4]),
-		  TMath::Sin(phi) / TMath::Abs(par[4]),
-		  par[3] / TMath::Abs(par[4]));
-}
-
-//_______________________________________________________________________
 void AliKalmanTrack::StartTimeIntegral() 
 {
   // Sylwester Radomski, GSI
@@ -350,6 +336,15 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
   Warning(":GetIntegratedTime","Particle type [%d] not found", pdg);
   return 0;
 }
+
+void AliKalmanTrack::GetIntegratedTimes(Double_t *times) const {
+  for (Int_t i=0; i<fgkTypes; i++) times[i]=fIntegratedTime[i];
+}
+
+void AliKalmanTrack::SetIntegratedTimes(const Double_t *times) {
+  for (Int_t i=0; i<fgkTypes; i++) fIntegratedTime[i]=times[i];
+}
+
 //_______________________________________________________________________
 
 void AliKalmanTrack::PrintTime() const

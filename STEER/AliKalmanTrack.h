@@ -13,7 +13,6 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
-#include <TVector3.h>
 
 class AliCluster;
 
@@ -34,6 +33,10 @@ public:
     Warning("GetClusterIndex(Int_t)","Method must be overloaded !\n");
     return 0;
   } 
+  virtual Double_t GetPIDsignal() const {
+    Warning("GetPIDsignal()","Method must be overloaded !\n");
+    return 0.;
+  }
 
   virtual Double_t GetDCA(const AliKalmanTrack *,Double_t &,Double_t &) const; 
   virtual 
@@ -75,7 +78,6 @@ public:
   virtual Double_t Pt() const;
   virtual Double_t SigmaPt() const;
   virtual Double_t P() const;
-  virtual TVector3 Momentum() const;
 
   virtual Double_t GetPredictedChi2(const AliCluster *) const {return 0.;}
   virtual 
@@ -92,19 +94,23 @@ public:
 
   // Time integration (S.Radomski@gsi.de)
   void   StartTimeIntegral();
+  void SetIntegratedLength(Double_t l) {fIntegratedLength=l;}
+  void SetIntegratedTimes(const Double_t *times);
+
   Bool_t IsStartedTimeIntegral() const {return fStartTimeIntegral;}
   void     AddTimeStep(Double_t length);
+  void GetIntegratedTimes(Double_t *times) const;
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
   void PrintTime() const;
   
 
 protected:
-
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
   void SetMass(Double_t mass) {fMass=mass;}
   void SetNumberOfClusters(Int_t n) {fN=n;} 
 
+ private:
   Int_t fLab;             // track label
   Double_t fChi2;         // total chi2 value for this track
   Double_t fMass;         // mass hypothesis
@@ -115,10 +121,8 @@ protected:
   // variables for time integration (S.Radomski@gsi.de)
   static const Int_t fgkTypes = 5;  // Number of track types (e,mu,pi,k,p)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
-  Float_t fIntegratedTime[5];       // intgrated time
+  Float_t fIntegratedTime[5];       // integrated time
   Float_t fIntegratedLength;        // integrated length
-
- public:
   
   ClassDef(AliKalmanTrack,2)    // Reconstructed track
 };

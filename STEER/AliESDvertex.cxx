@@ -15,26 +15,39 @@
 
 /* $Id$ */
 
-//-----------------------------------------------------------------
-//           Implementation of the ESD class
-//   This is the class to deal with during the phisical analysis of data
-//
-//      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
-//-----------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////
+//                                                                     //
+//       Prototype ESD class                                           //
+//                                                                     //
+/////////////////////////////////////////////////////////////////////////
 
-#include "AliESD.h"
+#include "Riostream.h"
 
-ClassImp(AliESD)
+#include "AliESDvertex.h"
+
+ClassImp(AliESDvertex)
 
 //_______________________________________________________________________
-AliESD::AliESD():
-  fEventNumber(0),
-  fRunNumber(0),
-  fTrigger(0),
-  fRecoVersion(0),
-  fTracks("AliESDtrack",15000)
-  //fV0s("AliV0vertex",200),
-  //fCascades("AliCascadeVertex",20)
+AliESDvertex::AliESDvertex():
+  fNPrimary(0),
+  fCoordinates(3),
+  fErrorMatrix(6),
+  fPrimaryTracks(0),
+  fEffectiveMass(0),
+  fEffectiveMassError(0)
+{
+  cout << "ESDvertex def ctor" << endl;
+}
+
+//_______________________________________________________________________
+AliESDvertex::AliESDvertex(const AliESDvertex &esdv):
+  TObject(esdv),
+  fNPrimary(0),
+  fCoordinates(0),
+  fErrorMatrix(0),
+  fPrimaryTracks(0),
+  fEffectiveMass(0),
+  fEffectiveMassError(0)
 {
 }
 
