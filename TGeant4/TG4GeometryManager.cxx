@@ -123,9 +123,10 @@ void TG4GeometryManager::GstparCut(G4int itmed, TG3Cut par, G4double parval)
     if (!tg4Limits)
       G4Exception("TG4GeometryManager::GstparCut: Wrong limits type.");
   }    
-  else {     
+  else {
     tg4Limits = new TG4Limits();
     medium->SetLimits(tg4Limits);
+
     // add verbose 
     G4cout << "TG4GeometryManager::GstparCut: new TG4Limits() for medium " 
            << itmed << " has been created." << G4endl;  
@@ -161,6 +162,7 @@ void TG4GeometryManager::GstparFlag(G4int itmed, TG3Flag par, G4double parval)
   else {     
     tg4Limits = new TG4Limits();
     medium->SetLimits(tg4Limits);
+
     // add verbose 
     G4cout << "TG4GeometryManager::GstparFlag: new TG4Limits() for medium " 
            << itmed << " has been created." << G4endl;  
