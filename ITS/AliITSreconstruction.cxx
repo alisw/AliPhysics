@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.5  2002/05/13 14:27:57  hristov
+TreeC created once per event (M.Masera)
+
 Revision 1.4  2002/05/10 22:31:30  nilsen
 Changes by Massimo Masera to allow Recpoints and Clusters to be written
 to separate files.
@@ -70,6 +73,28 @@ AliITSreconstruction::AliITSreconstruction(){
     fITS      = 0;
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fInit     = kFALSE;
+    fArp      = 0;
+    fDfArp    = kFALSE;
+}
+//______________________________________________________________________
+AliITSreconstruction::AliITSreconstruction(AliRun *ar){
+    // Standard constructor.
+    // Inputs:
+    //  AliRun *ar   Pointer to an existing AliRun object. Assumed that
+    //               this AliRun object will not be deleted by this distructor.
+    // Outputs:
+    //   none.
+    // Return:
+    //    A standardly constructed AliITSreconstruction class.
+
+    fFilename = "";
+    fFile     = 0;
+    fFile2    = 0;
+    fITS      = 0;
+    fDet[0] = fDet[1] = fDet[2] = kTRUE;
+    fInit     = kFALSE;
+    fDfArp    = kFALSE;
+    fArp      = ar;
 }
 //______________________________________________________________________
 AliITSreconstruction::AliITSreconstruction(const char* filename){
@@ -88,20 +113,22 @@ AliITSreconstruction::AliITSreconstruction(const char* filename){
     fFilename = filename;
     fFile2 = 0;
     fFile = 0;
+    fArp      = 0;
+    fDfArp    = kTRUE;
     if(filename){
 	fFile = (TFile*)gROOT->GetListOfFiles()->FindObject(fFilename.Data());
 	if(fFile) fFile->Close();
 	fFile = new TFile(fFilename.Data(),"UPDATE");
-    if(gAlice) {
-      delete gAlice;
-      gAlice = 0;
+    if(fArp) {
+      delete fArp;
+      fArp = 0;
     }
-	gAlice = (AliRun*)fFile->Get("gAlice");
-	if(!gAlice) {
+	fArp = (AliRun*)fFile->Get("gAlice");
+	if(!fArp) {
 	    cout << "gAlice not found on file. Aborting." << endl;
 	    fInit = kFALSE;
 	    return;
-	} // end if !gAlice
+	} // end if !fArp
     } // end if !filename.
 }
 //______________________________________________________________________
@@ -117,7 +144,9 @@ AliITSreconstruction::~AliITSreconstruction(){
     if(fFile) fFile->Close();
     fFile     = 0;
     fITS      = 0;
-    
+    if(fDfArp){
+	if(fArp) delete fArp;
+    } // end if
 }
 //______________________________________________________________________
 Bool_t AliITSreconstruction::Init(){
@@ -129,7 +158,7 @@ Bool_t AliITSreconstruction::Init(){
     // Return:
     //    kTRUE if no errors initilizing this class occurse else kFALSE
     Int_t nparticles;
-    fITS = (AliITS*) gAlice->GetDetector("ITS");
+    fITS = (AliITS*) fArp->GetDetector("ITS");
     if(!fITS){
 	cout << "ITS not found aborting. fITS=" << fITS << endl;
 	fInit = kFALSE;
@@ -144,9 +173,9 @@ Bool_t AliITSreconstruction::Init(){
 
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
-    fEnt  = gAlice->GetEventsPerRun();
+    fEnt  = fArp->GetEventsPerRun();
     fITS->MakeTreeC();
-    nparticles = gAlice->GetEvent(fEnt0);
+    nparticles = fArp->GetEvent(fEnt0);
     
     // finished init.
     fInit = InitRec();
@@ -233,14 +262,14 @@ void AliITSreconstruction::Exec(const Option_t *opt){
     TDirectory *curr = gDirectory;
     if(fFile2)fFile2->cd();
     for(evnt=0;evnt<fEnt;evnt++){
-      nparticles = gAlice->GetEvent(evnt);
-      gAlice->SetEvent(evnt);
-      if(!gAlice->TreeR()){
+      nparticles = fArp->GetEvent(evnt);
+      fArp->SetEvent(evnt);
+      if(!fArp->TreeR()){
         if(fFile2){
-          gAlice->MakeTree("R",fFile2);
+          fArp->MakeTree("R",fFile2);
         }
         else {
-          gAlice->MakeTree("R");
+          fArp->MakeTree("R");
         }
       }
       fITS->MakeBranch("R");
@@ -253,7 +282,7 @@ void AliITSreconstruction::Exec(const Option_t *opt){
 void AliITSreconstruction::SetOutputFile(TString filename){
   // Set a file name for recpoints. Used only if this file is not the file
   // containing digits. This obj is deleted by AliRun.
-  fFile2 = gAlice->InitTreeFile("R",filename);
+  fFile2 = fArp->InitTreeFile("R",filename);
 }
 
 

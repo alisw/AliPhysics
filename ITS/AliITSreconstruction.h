@@ -9,6 +9,7 @@
 
 #include <TTask.h>
 
+class AliRun;
 class TString;
 class AliITS;
 
@@ -16,6 +17,7 @@ class AliITSreconstruction : public TTask{
  public:
     AliITSreconstruction(); // default constructor
     AliITSreconstruction(const char *filename); // standard constructor
+    AliITSreconstruction(AliRun *ar); // standard constructor
     virtual ~AliITSreconstruction();//Destructor
     virtual Bool_t Init();
     virtual void Exec(const Option_t *opt="ALL");
@@ -33,6 +35,8 @@ class AliITSreconstruction : public TTask{
     Int_t   fEnt;      //! Number of events to processevent index.
     Int_t   fEnt0;     //! first event to process, default 0.
     AliITS  *fITS;     //! Local pointer to ITS class.
+    AliRun  *fArp;     //! Local pointer to AliRun or gAlice
+    Bool_t  fDfArp;    //! if True then delete fArp in destructor.
 
     ClassDef(AliITSreconstruction,2) // Task to Reconstruct ITS from Digits.
 
