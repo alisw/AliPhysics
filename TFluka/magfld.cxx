@@ -36,8 +36,8 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
     Double_t bc[3];
     Double_t xc[3];
     
-    xc[1] = x;
-    xc[0] = y;
+    xc[0] = x;
+    xc[1] = y;
     xc[2] = z;
     
     
