@@ -33,8 +33,7 @@ class TG4IntMap
     G4bool IsDefined(const G4String& first);
   
     // data members
-    G4std::map<G4String, G4int, G4std::less<G4String> > fMap;
-                                  //map container
+    G4std::map<G4String, G4int, G4std::less<G4String> > fMap; //map container
 };
 
 #endif //TG4_NAME_MAP_H

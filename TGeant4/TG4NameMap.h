@@ -41,8 +41,7 @@ class TG4NameMap
     static G4String fgUndefined;  //the value of undefined second
 
     // data members
-    G4std::map<G4String, G4String, G4std::less<G4String> > fMap;
-                                  //map container
+    G4std::map<G4String, G4String, G4std::less<G4String> > fMap; //map container
     G4String  fSecond;            //the current second
 };
 
