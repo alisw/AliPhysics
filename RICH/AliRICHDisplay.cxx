@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.14  2001/05/16 14:57:20  alibrary
+  New files for folders and Stack
+
   Revision 1.13  2001/05/10 12:35:16  jbarbosa
   Removed hit display, added rec. ring properties.
 
@@ -242,7 +245,6 @@ AliRICHDisplay::AliRICHDisplay(Int_t size)
     Float_t dxtr     = 0.15;
     Float_t dytr     = 0.45;
     fTrigPad = new TPad("trigger", "range and mode pad",0,0,dxtr,dytr);
-    fTrigPad->SetEditable(kFALSE);
     fTrigPad->Draw();
     fTrigPad->cd();
     fTrigPad->SetFillColor(22);
@@ -267,6 +269,8 @@ AliRICHDisplay::AliRICHDisplay(Int_t size)
     button->Draw();
     AppendPad(); // append display object as last object to force selection
     
+    fTrigPad->SetEditable(kFALSE);
+    fButtons->SetEditable(kFALSE);
     fCanvas->cd();
     fCanvas->Update();
 }
@@ -310,7 +314,6 @@ void AliRICHDisplay::DisplayButtons()
     
     
     fButtons = new TPad("buttons", "newpad",0,0.45,0.15,1);
-    fButtons->SetEditable(kFALSE);
     fButtons->Draw();
     fButtons->SetFillColor(38);
     fButtons->SetBorderSize(2);
