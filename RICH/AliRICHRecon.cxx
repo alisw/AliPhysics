@@ -89,7 +89,7 @@ static Int_t NevTOT = 0;
 
 TMinuit *gMyMinuit ;
 
-void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+void fcnrecon(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
 // Float_t fEmissionPoint;
 // Float_t fTrackTheta;
@@ -2081,7 +2081,7 @@ void AliRICHRecon::Minimization()
 
   gMyMinuit = new TMinuit(2);
   gMyMinuit->SetObjectFit((TObject *)this);
-  gMyMinuit->SetFCN(fcn);
+  gMyMinuit->SetFCN(fcnrecon);
   gMyMinuit->mninit(5,10,7);
 
   vstart[0] = (Double_t)GetTrackTheta();
@@ -2206,7 +2206,7 @@ void AliRICHRecon::EstimationOfTheta()
   SetEstimationOfThetaRMS(RMS);
 }
 
-void fcn(Int_t& /*npar*/, Double_t* /*gin*/, Double_t &f, Double_t *par, Int_t iflag)
+void fcnrecon(Int_t& /*npar*/, Double_t* /*gin*/, Double_t &f, Double_t *par, Int_t iflag)
 {
   AliRICHRecon *gMyRecon = (AliRICHRecon*)gMyMinuit->GetObjectFit();
 
