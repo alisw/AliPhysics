@@ -270,10 +270,10 @@ in the macro ITSHitsToDigits.C. If you want to create digits only for
 one type of subdectors you have to substitute the string "All" in the above 
 function call with "SPD", "SDD", or "SSD". Normal users are, however, strongly
 encouraged to run the ITS digitization for all subdetectors at once not
-touching the macro ITSHitsToDigits.C. By default the so-called "Dubna
-simulation" of the pixel detectors is performed. In order to run the "Bari
-simulation" of the pixel detectors (waiting for the merging of the two) you
-have to use the macro ITSHitsToDigitsBari.C.
+touching the macro ITSHitsToDigits.C. By default the so-called "Bari/Salerno
+simulation" of the pixel detectors is performed. In order to run the "Dubna
+simulation" of the pixel detectors you have to use the macro 
+ITSHitsToDigitsDubna.C.
 
 
 6. Cluster finding (slow)
@@ -301,10 +301,10 @@ in the macro ITSDigitsToClusters.C. If you want to create slow points only for
 one type of subdectors you have to substitute the string "All" in the above 
 function call with "SPD", "SDD", or "SSD". Normal users are, however, strongly
 encouraged to create the slow points for all subdetectors at once not touching
-the macro ITSDigitsToClusters.C. By default the so-called "Dubna
-reconstruction" of the pixel detectors is performed. In order to run the "Bari
-reconstruction" of the pixel detectors (waiting for the merging of the two) you
-have to use the macro ITSDigitsToClustersBari.C.
+the macro ITSDigitsToClusters.C. By default the so-called "Bari/Salerno
+reconstruction" of the pixel detectors is performed. In order to run the
+"Dubna reconstruction" of the pixel detectors you have to use the macro 
+ITSDigitsToClustersDubna.C.
 
 
 7. Useful test macros
@@ -326,17 +326,17 @@ that root file. Data kept in TTrees can be histogramed symply by double cliking
 on the appropreate data member. Other parts of the root file can also be
 inspected in a simular way, right butting cliking for example.
 
-- SPDclusterTest.C:
+- SPDclusterTestDubna.C:
   This macro opens the galice.root file, reads the reconstructed points and
 plots the SPD resolution both for layer 1 and 2, in Z and Rphi
-direction. Moreover, it creates the Root file SPD_his.root which contains
-some useful histograms and nt-uples which can be read back with the macro
-SPD_ntuple.C. 
+direction following the Dubna model. Moreover, it creates the Root file 
+SPD_his.root which contains some useful histograms and nt-uples which can be 
+read back with the macro SPD_ntuple_dubna.C. 
 
-- SPDclusterTestBari.C:
+- SPDclusterTest.C:
   This macro opens the galice.root file, reads the reconstructed points and
-plots several distributions relative to the Bari simulation of the SPD. 
-Moreover, it creates the Root file SPD_his_bari.root which contains some useful
+plots several distributions relative to the Bari/Salerno simulation of the SPD. 
+Moreover, it creates the Root file SPD_his.root which contains some useful
 histograms and nt-uples. This macro should also work with both SPD simulations.
 
 - ITSreadClustTestSPD.C:
