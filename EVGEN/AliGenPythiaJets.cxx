@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2003/02/26 10:26:32  morsch
+AliGenPythiaJets: jets centered on EMCAL
+
 Revision 1.1  2003/01/17 04:10:31  morsch
 First commit.
 */
@@ -33,6 +36,8 @@ First commit.
 
 #include "AliGenPythiaJets.h"
 #include "AliRun.h"
+#include <TParticle.h>
+
 ClassImp(AliGenPythiaJets)
 
 AliGenPythiaJets::AliGenPythiaJets()
