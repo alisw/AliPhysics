@@ -39,6 +39,8 @@ public:
   virtual void RemapTrackHitIDs(Int_t *map);
   virtual void FinishPrimary();
   virtual const TString Version(void)const {return TString("v0");}
+  virtual void SetTimeCut(Float_t tc){ fTimeCut = tc;}
+  virtual Float_t GetTimeCut(){return fTimeCut;}
   // assignement operator requested by coding convention but not needed  
   AliEMCALv1 & operator = (const AliEMCALv0 & /*rvalue*/){
     Fatal("operator =", "not implemented") ;  
@@ -49,8 +51,9 @@ private:
   Int_t fCurPrimary;
   Int_t fCurParent;
   Int_t fCurTrack;
+  Float_t fTimeCut;       // Cut to remove the background from the ALICE system
 
-  ClassDef(AliEMCALv1,7)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+  ClassDef(AliEMCALv1,8)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
     
 };
 
