@@ -1065,7 +1065,7 @@ void AliPHOSv0::FinishEvent()
 	deja = kTRUE ; 
       }
     }
-    if ( !deja && (newdigit->GetAmp() > fDigitThreshold) ) {
+    if ( !deja ) {
       new(lDigits[fNdigits]) AliPHOSDigit(* newdigit) ;
       fNdigits++ ;  
     }
