@@ -38,7 +38,7 @@ AliITSTrackV1::AliITSTrackV1() {
   for( ia=0; ia<4; ia++) fcor[ia]=0.;  // oggi
   
 }
-AliITSTrackV1::AliITSTrackV1(const char *opt, Double_t fieldfactor) {
+AliITSTrackV1::AliITSTrackV1(Double_t fieldfactor) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 // default constructor   
  
@@ -76,7 +76,7 @@ AliITSTrackV1::AliITSTrackV1(const char *opt, Double_t fieldfactor) {
 
 
  
-AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) {
+AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) : TObject(cobj) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // copy constructor    
 
@@ -516,9 +516,10 @@ void AliITSTrackV1::Propagation(Double_t rk) {
   
 }
 
-void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double_t mass) {
+void AliITSTrackV1::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 //  add energy loss
+// AliITSRad *rl was passed as argument. Now rl has been commented out
 
   mass=fMass;  
   
@@ -715,7 +716,7 @@ void AliITSTrackV1::PrimaryTrack(AliITSRad *rl) {
 
   fC00=fC10=fC11=fC20=fC21=fC22=fC30=fC31=fC32=fC33=fC40=fC41=fC42=fC43=0.;
 
-  AddEL(rl,1.,1);
+  AddEL(1.,1);
   fLayer=0;
   Int_t i;
   for (i=0; i<6; i++) {
@@ -725,7 +726,7 @@ void AliITSTrackV1::PrimaryTrack(AliITSRad *rl) {
     ftgl2(i)=fC33;
     fdtgl(i)=fC32; 
     AddMS(rl);    
-    AddEL(rl,-1,0); 	   
+    AddEL(-1,0); 	   
   } 		
 }	
  

@@ -282,7 +282,7 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag) {
    // cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
 }
 //______________________________________________________________________
-AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
+AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) : TObject(cobj) {
     // Origin  A. Badala' and G.S. Pappalardo:
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
     // copy constructor
@@ -1213,7 +1213,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 		    if(iriv == 0) flaghit=1;
 		    (*newTrack).AddMS(frl);  // add the multiple scattering 
 		                             //matrix to the covariance matrix 
-		    (*newTrack).AddEL(frl,1.,0);
+		    (*newTrack).AddEL(1.,0);
 
 		    if(fflagvert){
 			KalmanFilterVert(newTrack,cluster,sigmanew);
@@ -1234,7 +1234,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	    //(*newTrack).SetLayer((*trackITS).GetLayer()-1); 
 	    (*newTrack).AddMS(frl);  // add the multiple scattering matrix
 	                             // to the covariance matrix  
-	    (*newTrack).AddEL(frl,1.,0);
+	    (*newTrack).AddEL(1.,0);
 	    listoftrack.AddLast(newTrack);
 	} // end if
 

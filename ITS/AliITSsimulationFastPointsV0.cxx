@@ -36,6 +36,7 @@ AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0()
 }
 AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const char *dataType){
   //constructor
+  Info("AliITSsimulationFastPointsV0","Standard constructor %s",dataType);
   fSx = new AliITSstatistics(2);
   fSz = new AliITSstatistics(2);
 }

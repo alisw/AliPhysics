@@ -18,7 +18,7 @@ public:
 
   AliITSTrackV1();  // default constructor
   //AliITSTrackV1(const char *opt);  // Standard constructor
-  AliITSTrackV1(const char *opt, Double_t fieldfactor);  // Standard constructor
+  AliITSTrackV1(Double_t fieldfactor);  // Standard constructor
   //AliITSTrackV1(AliTPCtrack &obj);  // Standard constructor
   AliITSTrackV1(AliTPCtrack &obj, Double_t fieldfactor);  // Standard constructor
   AliITSTrackV1(const AliITSTrackV1 &cobj);  // copy constructor
@@ -94,7 +94,7 @@ public:
 
   Double_t GetSigmaphi() const{return fC00;}    // gets the phi variance
   Double_t GetSigmaZ() const{return  fC11;}     // gets the Z variance
-  void AddEL(AliITSRad *rl,Double_t signdE,  Bool_t flagtot, Double_t mass=0.1396);  // adds the energy loss
+  void AddEL(Double_t signdE,  Bool_t flagtot, Double_t mass=0.1396);  // adds the energy loss
   void AddMS(AliITSRad *rl,Double_t mass=0.1396);  // modify the covariance matrix to take into account the multiple scattering
   void Correct(Double_t rk);  // correct the track to take into account the real detector geometry
   void SetDv(Double_t x) {fDv=x;}  // sets the radial impact parameter for vertex constraint 
