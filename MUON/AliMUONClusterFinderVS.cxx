@@ -173,8 +173,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
 	c->SetX(1,fXFit[0]);
 	c->SetY(1,fYFit[0]);
-	c->fChi2[0]=chi2;
-	c->fChi2[1]=chi2;
+	c->SetChi2(0,chi2);
+	c->SetChi2(1,chi2);
         // Force on anod
 	c->SetX(0, fSeg[0]->GetAnod(c->GetX(0)));
 	c->SetX(1, fSeg[1]->GetAnod(c->GetX(1)));
@@ -595,10 +595,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    // fChi2[1]=sChi2[0]=chi2s;
 
 	    if (chi2f<=fGhostChi2Cut && chi2s<=fGhostChi2Cut)
-		c->fGhost=1;
+		c->SetGhost(1);
 	    if	 (chi2f>fGhostChi2Cut && chi2s>fGhostChi2Cut) {
 		// we keep the ghost
-		c->fGhost=2;
+		c->SetGhost(2);
 		chi2s=-1;
 		chi2f=-1;
 	    }
@@ -614,7 +614,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		}
 		Split(c);
   	    }
-	    c->fGhost=0;
+	    c->SetGhost(0);
 	}
 
     } else if (fNLocal[0]==2 &&  fNLocal[1]==1) {
@@ -1495,7 +1495,7 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    c.SetTrack(1, dig->Track(0));
 	    c.SetTrack(2, dig->Track(1));
 	    // tag the beginning of cluster list in a raw cluster
-	    c.fNcluster[0]=-1;
+	    c.SetNcluster(0,-1);
 	    Float_t xcu, ycu;
 	    fSeg[cath]->GetPadC(i,j,xcu, ycu, fZPlane);
 	    fSector= fSeg[cath]->Sector(i,j)/100;
@@ -1529,7 +1529,7 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //      Analyse cluster and decluster if necessary
 //	
 	ncls++;
-	c.fNcluster[1]=fNRawClusters;
+	c.SetNcluster(1,fNRawClusters);
 	c.SetClusterType(c.PhysicsContribution());
 
 	fNPeaks=0;
@@ -1949,17 +1949,17 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     for (j=0; j<2; j++) {
 	AliMUONRawCluster cnew;
-	cnew.fGhost=c->fGhost;
+	cnew.SetGhost(c->GetGhost());
 	for (cath=0; cath<2; cath++) {
-	    cnew.fChi2[cath]=fChi2[0];
+	    cnew.SetChi2(cath,fChi2[0]);
 	    // ?? why not cnew.fChi2[cath]=fChi2[cath];
 	    
 	    if (fNPeaks == 0) {
-		cnew.fNcluster[0]=-1;
-		cnew.fNcluster[1]=fNRawClusters;
+		cnew.SetNcluster(0,-1);
+		cnew.SetNcluster(1,fNRawClusters);
 	    } else {
-		cnew.fNcluster[0]=fNPeaks;
-		cnew.fNcluster[1]=0;
+		cnew.SetNcluster(0,fNPeaks);
+		cnew.SetNcluster(1,0);
 	    }
 	    cnew.SetMultiplicity(cath,0);
 	    cnew.SetX(cath, Float_t(fXFit[j]));

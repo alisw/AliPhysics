@@ -42,6 +42,9 @@ public:
    Int_t        GetPeakSignal(Int_t i) const;
    Int_t        GetMultiplicity(Int_t i) const;
    Int_t        GetClusterType() const;
+   Int_t        GetGhost() const;
+   Int_t        GetNcluster(Int_t i) const;
+   Float_t      GetChi2(Int_t i) const;
 
    Int_t        SetCharge(Int_t i,Int_t Q);
    Int_t        SetX(Int_t i, Float_t X);
@@ -51,19 +54,15 @@ public:
    Int_t        SetPeakSignal(Int_t i, Int_t peaksignal);
    Int_t        SetMultiplicity(Int_t i, Int_t mul);
    Int_t        SetClusterType(Int_t type);
+   Int_t        SetGhost(Int_t ghost);
+   Int_t        SetNcluster(Int_t i, Int_t ncluster);
+   Int_t        SetChi2(Int_t i, Float_t chi2);
 
    Int_t       fIndexMap[50][2];  // indeces of digits
    Int_t       fOffsetMap[50][2]; // Emmanuel special
    Float_t     fContMap[50][2];   // Contribution from digit
    Int_t       fPhysicsMap[50];   // Distinguish signal and background contr.
-   Int_t       fNcluster[2];      // Number of clusters
- 
-   Float_t     fChi2[2];          // Chi**2 of fit
-   Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
-                                  // >0 if ghost problem remains because
-                                  // 1 both (true and ghost) satify 
-                                  //   charge chi2 compatibility
-                                  // 2 none give satisfactory chi2
+  
 private:
    Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
    Float_t     fX[2]  ;           // X of cluster
@@ -73,6 +72,13 @@ private:
    Int_t       fPeakSignal[2];    // Peak signal 
    Int_t       fMultiplicity[2];  // Cluster multiplicity
    Int_t       fClusterType;      // Cluster type
+   Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
+                                  // >0 if ghost problem remains because
+                                  // 1 both (true and ghost) satify 
+                                  //   charge chi2 compatibility
+                                  // 2 none give satisfactory chi2
+   Int_t       fNcluster[2];      // Number of clusters
+   Float_t     fChi2[2];          // Chi**2 of fit
 
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };

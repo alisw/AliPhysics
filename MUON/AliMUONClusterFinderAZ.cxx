@@ -2305,8 +2305,8 @@ void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t fmin
     cnew.SetCharge(cath, 100);
     cnew.SetPeakSignal(cath,20);
     cnew.SetMultiplicity(cath, 5);
-    cnew.fNcluster[cath] = 1;
-    cnew.fChi2[cath] = fmin; //0.1;
+    cnew.SetNcluster(cath, 1);
+    cnew.SetChi2(cath, fmin); //0.1;
     /*
     cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
     for (i=0; i<fMul[cath]; i++) {
