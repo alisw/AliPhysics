@@ -77,15 +77,19 @@ class AliITSresponseSSD : public AliITSresponse {
 	// Get sigmas for the charge spread 
 	sP=fSigmaP; sN=fSigmaN;
     }
-    virtual void SetADCpereV(Float_t a=50./30000.0){ // Sets eV to ADC value
+    virtual void SetADCpereV(Float_t a=50./30000.0){ // Sets electron-hole
+	// pairs to ADC value conversion factor are rather arbitrary
+	// (need tuning) minimum ionizing particle--> ~30000 pairs--> ADC
+	// channel 50
 	fADCpereV = a;
     }
-    virtual Double_t DEvToADC(Double_t eV){ // Converts eV to ADC value
-	// conversion factor are rather arbitrary (need tuning)
+    virtual Double_t DEvToADC(Double_t eV){ // Converts electron-hole pairs to
+	// ADC value conversion factor are rather arbitrary (need tuning)
 	// minimum ionizing particle--> ~30000 pairs--> ADC channel 50
 	return eV*fADCpereV;
     }
-    virtual Int_t IEvToADC(Double_t eV){ // Converts eV to ADC value
+    virtual Int_t IEvToADC(Double_t eV){ // Converts electron-hole pairs to
+	// ADC value
 	return ((Int_t) DEvToADC(eV));
     }
   

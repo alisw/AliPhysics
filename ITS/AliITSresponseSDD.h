@@ -19,7 +19,7 @@ public:
   virtual ~AliITSresponseSDD();
 
   void SetElectronics(Int_t p1=1) {
-    // Electronics: Pascal or OLA
+    // Electronics: Pascal (1) or OLA (2)
     fElectronics=p1;
   }
   
@@ -37,8 +37,8 @@ public:
     return fMaxAdc;
   }                       
   
-  void    SetChargeLoss(Float_t p1=0.01) {
-    // Set Linear Charge Loss Steepness  
+  void    SetChargeLoss(Float_t p1=0.0) {
+    // Set Linear Charge Loss Steepness  // 0.01 for 20%
     fChargeLoss=p1;
   }
   Float_t ChargeLoss()  {
@@ -102,12 +102,12 @@ public:
     strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());
   }
   
-  void  SetNoiseParam(Float_t n=8.3, Float_t b=20.){
-    // Noise and baseline
+  void  SetNoiseParam(Float_t n=0., Float_t b=20.){
+    // Noise and baseline  // 8.3 for ALICE with beam test measurements
     fNoise=n; fBaseline=b;
   }   
-  void  SetNoiseAfterElectronics(Float_t n=1.6){
-    // Noise after electronics (ADC units)
+  void  SetNoiseAfterElectronics(Float_t n=0.){
+    // Noise after electronics (ADC units) // 1.6 for ALICE from beam test measurements
     fNoiseAfterEl=n;
   }   
   void  GetNoiseParam(Float_t &n, Float_t &b) {
@@ -205,6 +205,8 @@ public:
     if(i<0 || i>=fNcomps) return 0.;
     return fGaus->At(i);
   }
+  void SetDeadChannels(Int_t nmodules=0, Int_t nchips=0, Int_t nchannels=0);
+  void    PrintGains();
   void    Print();
 
 
@@ -215,6 +217,11 @@ private:
     
 protected:
   
+  static const Int_t fModules = 520;     // Total number of SDD modules
+  static const Int_t fChips = 4;        // Number of chips/module
+  static const Int_t fChannels = 64;    // Number of channels/chip
+  Float_t   fGain[fModules][fChips][fChannels];   // Array for channel gains
+
   Int_t     fCPar[8];        // Hardware compression parameters
   Float_t   fNoise;          // Noise
   Float_t   fBaseline;       // Baseline
