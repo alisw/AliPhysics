@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/12/02 11:41:39  morsch
+Use SetRandom() to initialize random number generator in constructor.
+
 Revision 1.15  2000/11/30 20:29:02  morsch
 Initialise static variable sRandom in constructor: sRandom = fRandom;
 
@@ -104,7 +107,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fSpectators=1;
 //
 // Set random number generator   
-    SetRandom();
+    sRandom = fRandom;
 }
 
 AliGenHijing::AliGenHijing(const AliGenHijing & Hijing)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2000/12/02 11:41:39  morsch
+Use SetRandom() to initialize random number generator in constructor.
+
 Revision 1.27  2000/11/30 20:29:02  morsch
 Initialise static variable sRandom in constructor: sRandom = fRandom;
 
@@ -110,7 +113,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetEnergyCMS();
     fDecayer = new AliDecayerPythia();
     // Set random number generator 
-    SetRandom();
+    sRandom=fRandom;
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
