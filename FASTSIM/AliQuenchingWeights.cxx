@@ -114,8 +114,13 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   
   Char_t fname[1024];
   sprintf(fname,"%s",gSystem->ExpandPathName(contall));
-  ifstream fincont(fname);
+  //PH  ifstream fincont(fname);
+  fstream fincont(fname,ios::in);
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fincont.rdbuf()->is_open()) return -1;
+#else
   if(!fincont.is_open()) return -1;
+#endif
 
   Int_t nn=0; //quarks
   while(fincont>>fxx[nn]>>fcaq[0][nn]>>fcaq[1][nn]>>fcaq[2][nn]>>fcaq[3][nn]>>
@@ -152,8 +157,13 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   fincont.close();
 
   sprintf(fname,"%s",gSystem->ExpandPathName(discall));
-  ifstream findisc(fname); 
+  //PH  ifstream findisc(fname); 
+  fstream findisc(fname,ios::in); 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!findisc.rdbuf()->is_open()) return -1;
+#else
   if(!findisc.is_open()) return -1;
+#endif
 
   nn=0; //quarks
   while(findisc>>frrr[nn]>>fdaq[nn]) {
@@ -403,8 +413,13 @@ Int_t AliQuenchingWeights::InitSingleHard(const Char_t *contall,const Char_t *di
   
   Char_t fname[1024];
   sprintf(fname,"%s",gSystem->ExpandPathName(contall));
-  ifstream fincont(fname);
+  //PH  ifstream fincont(fname);
+  fstream fincont(fname,ios::in);
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fincont.rdbuf()->is_open()) return -1;
+#else
   if(!fincont.is_open()) return -1;
+#endif
 
   Int_t nn=0; //quarks
   while(fincont>>fxx[nn]>>fcaq[0][nn]>>fcaq[1][nn]>>fcaq[2][nn]>>fcaq[3][nn]>>
@@ -441,8 +456,13 @@ Int_t AliQuenchingWeights::InitSingleHard(const Char_t *contall,const Char_t *di
   fincont.close();
 
   sprintf(fname,"%s",gSystem->ExpandPathName(discall));
-  ifstream findisc(fname); 
+  //PH  ifstream findisc(fname); 
+  fstream findisc(fname,ios::in); 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!findisc.rdbuf()->is_open()) return -1;
+#else
   if(!findisc.is_open()) return -1;
+#endif
 
   nn=0; //quarks
   while(findisc>>frrr[nn]>>fdaq[nn]) {
