@@ -61,6 +61,7 @@ class AliPHOSGetter : public TObject {
   
   virtual ~AliPHOSGetter() ; 
   
+  const Bool_t HasFailed() const { return fFailed ; }
   Bool_t PostPrimaries(void ) const ;  
   Bool_t PostHits(void ) const ;  
   Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
@@ -223,6 +224,7 @@ private:
   TString        fDigitsTitle ;       //!
   TString        fSDigitsTitle ;      //!
 
+  Bool_t         fFailed ;            //! set if file not opend or galice not found
   Int_t          fDebug ;             // Debug level
 
   Int_t          fNPrimaries ;        //! # of primaries

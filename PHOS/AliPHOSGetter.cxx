@@ -104,11 +104,12 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   fQAFolder        = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
   fTasksFolder     = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
 
+  fFailed = kFALSE ; 
+
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
 
     //open headers file
     TFile * file = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
-    
     if(file == 0){    //if file was not opened yet, read gAlice
       if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
 	file =	TFile::Open(fHeaderFile.Data(),"update") ;
@@ -117,7 +118,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
       
       if (!file->IsOpen()) {
 	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
-	abort() ; 
+	fFailed = kTRUE ;
+        return ;  
       }
       
       gAlice = static_cast<AliRun *>(file->Get("gAlice")) ;
@@ -126,7 +128,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 
   if (!gAlice) {
     cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
-    abort() ; 
+    fFailed = kTRUE ;
+    return ; 
   }
   if (!PHOS()) {
     if (fDebug)
