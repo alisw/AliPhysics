@@ -39,9 +39,9 @@ class AliEMCALJetFinderAlgoUA1Unit : public TObject
 	  return fUnitFlag;
   }
   
-  const Bool_t operator>  ( AliEMCALJetFinderAlgoUA1Unit unit1);
-  const Bool_t operator<  ( AliEMCALJetFinderAlgoUA1Unit unit1);
-  const Bool_t operator== ( AliEMCALJetFinderAlgoUA1Unit unit1);
+  Bool_t operator>  ( AliEMCALJetFinderAlgoUA1Unit unit1) const;
+  Bool_t operator<  ( AliEMCALJetFinderAlgoUA1Unit unit1) const;
+  Bool_t operator== ( AliEMCALJetFinderAlgoUA1Unit unit1) const;
 
  protected:
   Float_t         fUnitEnergy;        // Energy of the unit 

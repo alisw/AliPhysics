@@ -51,7 +51,7 @@ public:
 
   virtual Float_t GetTimeGate() const            { return fTimeGate ; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
-  virtual const Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
+  virtual Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
   void    Exec(Option_t *option);                // Does the job
 

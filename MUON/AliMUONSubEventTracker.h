@@ -40,7 +40,7 @@ public:
    Bool_t  IsSortable() const {return kTRUE;}
    Int_t   Compare(const TObject *obj) const;
 
-   const Int_t GetHeaderLength() const {return fgkHeaderLength;}
+   Int_t GetHeaderLength() const {return fgkHeaderLength;}
 
    Int_t* GetAddress() {return &fTotalLength;}
 

@@ -31,8 +31,8 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   virtual ~AliPHOSRecParticle(){  }
 
   Int_t   GetPHOSTSIndex()const {    return fPHOSTrackSegment ;  }
-  virtual const Int_t GetNPrimariesToRecParticles() const ;
-  virtual const Int_t GetNPrimaries() const ;
+  virtual Int_t GetNPrimariesToRecParticles() const ;
+  virtual Int_t GetNPrimaries() const ;
   TVector3 GetPos() const { return fPos ; } 
   virtual const TParticle * GetPrimary(Int_t index) const ;
   virtual const TParticle * GetPrimary() const ;

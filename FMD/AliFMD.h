@@ -52,7 +52,7 @@ public:
   // Graphics and event display 
   virtual        void   BuildGeometry();
   virtual        void   DrawDetector();
-  virtual const  Int_t  DistanceToPrimitive(Int_t px, Int_t py);
+  virtual        Int_t  DistanceToPrimitive(Int_t px, Int_t py);
 
   // Hit and digit management 
   virtual void          MakeBranch(Option_t *opt=" ");

@@ -31,7 +31,7 @@ public:
    void    SetGlobalOutput(Int_t out) {fGlobalOutput = out;}
    void    SetEoD(Int_t e) {fEndOfDDL = e;}  
 
-   const Int_t GetHeaderLength() const {return fgkHeaderLength;}
+   Int_t GetHeaderLength() const {return fgkHeaderLength;}
 
 
    UInt_t* GetEnhancedHeader() {return &fddlWord;}

@@ -86,105 +86,105 @@ AliCRTConstants::~AliCRTConstants()
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::CageLenght() const
+Float_t AliCRTConstants::CageLenght() const
 {
   // Module lenght
   return fgkCageLenght;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::CageWidth() const
+Float_t AliCRTConstants::CageWidth() const
 {
   // Module width
   return fgkCageWidth;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::CageHeight() const
+Float_t AliCRTConstants::CageHeight() const
 {
   // Module height
   return fgkCageHeight;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::SinglePaletteLenght() const
+Float_t AliCRTConstants::SinglePaletteLenght() const
 {
   // Lenght of the scintillator active zone for a single counter
   return fgkSinglePaletteLenght;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::SinglePaletteWidth() const
+Float_t AliCRTConstants::SinglePaletteWidth() const
 {
   // Width of the scintillator active zone for a single counter
   return fgkSinglePaletteWidth;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::SinglePaletteHeight() const
+Float_t AliCRTConstants::SinglePaletteHeight() const
 {
   // Height of the scintillator active zone for a single counter
   return fgkSinglePaletteHeight;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::ActiveAreaGap() const
+Float_t AliCRTConstants::ActiveAreaGap() const
 { 
   // Gap betwen scintillators
   return fgkActiveAreaGap;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::ActiveAreaLenght() const
+Float_t AliCRTConstants::ActiveAreaLenght() const
 {
   // Lenght of the scintillator active zone
   return fgkActiveAreaLenght;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::ActiveAreaWidth() const
+Float_t AliCRTConstants::ActiveAreaWidth() const
 {
   // Width of the scintillator active zone
   return fgkActiveAreaWidth;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::ActiveAreaHeight() const
+Float_t AliCRTConstants::ActiveAreaHeight() const
 {
   // Height of the scintillator active zone
   return fgkActiveAreaHeight;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::MagnetWidth() const
+Float_t AliCRTConstants::MagnetWidth() const
 {
   // Magnet  width
   return fgkMagnetWidth;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::MagnetLenght() const
+Float_t AliCRTConstants::MagnetLenght() const
 {
   // Magnet lenght
   return fgkMagnetLenght;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::MagMinRadius() const
+Float_t AliCRTConstants::MagMinRadius() const
 {
   // Magnet Inner radius
   return fgkMagMinRadius;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::MagMaxRadius() const
+Float_t AliCRTConstants::MagMaxRadius() const
 {
   // Magnet outer radius
   return fgkMagMaxRadius;
 }
 
 //_____________________________________________________________________________
-const Float_t AliCRTConstants::Depth() const
+Float_t AliCRTConstants::Depth() const
 {
   // Alice IP depth
   return fgkDepth;

@@ -31,8 +31,8 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
   virtual ~AliEMCALRecParticle(){  }
 
   Int_t   GetEMCALRPIndex()const {    return fEMCALRecPoint ;  }
-  virtual const Int_t GetNPrimariesToRecParticles() const ;
-  virtual const Int_t GetNPrimaries() const ;
+  virtual Int_t GetNPrimariesToRecParticles() const ;
+  virtual Int_t GetNPrimaries() const ;
   TVector3 GetPos() const { return fPos ; } 
   virtual const TParticle * GetPrimary(Int_t index) const ;
   const Double_t *GetPID();

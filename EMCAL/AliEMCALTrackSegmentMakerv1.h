@@ -35,7 +35,7 @@ public:
    
   virtual ~ AliEMCALTrackSegmentMakerv1() ; // dtor
   
-  virtual const Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
+  virtual Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
 
   virtual void   Exec(Option_t * option) ;
   Float_t HowClose(AliEMCALRecPoint * ec, AliEMCALRecPoint * rp, Bool_t &toofar) const ;

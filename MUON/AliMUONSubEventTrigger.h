@@ -44,7 +44,7 @@ public:
    void    SetRegInput(UInt_t in, Int_t n) {fRegInput[n] = in;}
    void    SetLocalData(UInt_t d, Int_t n) {fLocalData[n] = d;}
    
-   const Int_t GetRegHeaderLength() const {return fgkRegHeaderLength;}
+   Int_t GetRegHeaderLength() const {return fgkRegHeaderLength;}
    UInt_t* GetAddress() {return &fRegWord;}
 
  private:

@@ -34,7 +34,7 @@ public:
   virtual ~ AliEMCALTrackSegmentMaker() ;
 
   virtual void    Exec(Option_t *) = 0;
-  virtual const Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
+  virtual Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
 
   virtual void    Print(Option_t *) = 0;
   virtual const char * Version() const {Warning("Version", "Not Defined" ) ; return 0 ; }   

@@ -26,15 +26,15 @@ class AliMUONRecoTrack : public TObject
     AliMUONRecoTrack() { }
     AliMUONRecoTrack(Bool_t active);
     virtual        ~AliMUONRecoTrack() { }	//desctructor
-    const Double_t GetChi2r() const {return fChi2r;};
-    const Double_t GetMomReconstr(Int_t axis) const {return fPr[axis];};
-    const Int_t    GetSign() const {return fSign;};
-    const Double_t GetPosX(Int_t chamber) const {return fPosX[chamber];};
-    const Double_t GetPosY(Int_t chamber) const {return fPosY[chamber];};
-    const Double_t GetPosZ(Int_t chamber) const {return fPosZ[chamber];};
-    const Double_t GetVertexPos() const { return fZvr;};
-    const Double_t P() {return TMath::Sqrt(fPr[0]*fPr[0] + fPr[1]*fPr[1] + fPr[2]*fPr[2]);};
-    const Double_t Phi();
+    Double_t GetChi2r() const {return fChi2r;};
+    Double_t GetMomReconstr(Int_t axis) const {return fPr[axis];};
+    Int_t    GetSign() const {return fSign;};
+    Double_t GetPosX(Int_t chamber) const {return fPosX[chamber];};
+    Double_t GetPosY(Int_t chamber) const {return fPosY[chamber];};
+    Double_t GetPosZ(Int_t chamber) const {return fPosZ[chamber];};
+    Double_t GetVertexPos() const { return fZvr;};
+    Double_t P() const {return TMath::Sqrt(fPr[0]*fPr[0] + fPr[1]*fPr[1] + fPr[2]*fPr[2]);};
+    Double_t Phi() const;
     void           SetChi2r(Double_t chi) { fChi2r = chi;};
     void           SetHitPosition(Int_t chamber, Double_t x, Double_t y, Double_t z);
     void           SetMomReconstr(Double_t px, Double_t py, Double_t pz);
@@ -42,7 +42,7 @@ class AliMUONRecoTrack : public TObject
     void           SetVertexPos(Double_t zvr) {fZvr = zvr;};
     void           SetFlag(Int_t flag)  {fFlag = flag;};
 
-    const Double_t Theta();
+    Double_t Theta() const;
     void           TrackInfo();
 
   private:

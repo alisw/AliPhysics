@@ -575,7 +575,7 @@ AliFMD::DrawDetector()
 }
 
 //____________________________________________________________________
-const Int_t 
+Int_t 
 AliFMD::DistanceToPrimitive(Int_t, Int_t)
 {
   //

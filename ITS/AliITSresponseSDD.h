@@ -113,9 +113,9 @@ class AliITSresponseSDD : public AliITSresponse {
     Double_t Gain(Int_t mod,Int_t chip,Int_t ch)const 
         {return fGain[mod][chip][ch]; }
     // these functions should be move to AliITSsegmentationSDD
-    const Int_t Modules()const{return fgkModules;}//Total number of SDD modules
-    const Int_t Chips() const{return fgkChips;} // Number of chips/module
-    const Int_t Channels() const{ return fgkChannels;}//Number of channels/chip
+    Int_t Modules()const{return fgkModules;}//Total number of SDD modules
+    Int_t Chips() const{return fgkChips;} // Number of chips/module
+    Int_t Channels() const{ return fgkChannels;}//Number of channels/chip
     //********
     void    PrintGains();
     void    Print();

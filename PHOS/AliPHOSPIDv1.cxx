@@ -384,7 +384,7 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
 }
 
 //________________________________________________________________________
-const Double_t  AliPHOSPIDv1::GausF(Double_t  x, Double_t  y, Double_t * par)
+Double_t  AliPHOSPIDv1::GausF(Double_t  x, Double_t  y, Double_t * par)
 {
   //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
   //this method returns a density probability of this parameter, given by a gaussian 
@@ -403,7 +403,7 @@ const Double_t  AliPHOSPIDv1::GausF(Double_t  x, Double_t  y, Double_t * par)
  
 }
 //________________________________________________________________________
-const Double_t  AliPHOSPIDv1::GausPol2(Double_t  x, Double_t y, Double_t * par)
+Double_t  AliPHOSPIDv1::GausPol2(Double_t  x, Double_t y, Double_t * par)
 {
   //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
   //this method returns a density probability of this parameter, given by a gaussian 
@@ -747,7 +747,7 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
 }
 
 //________________________________________________________________________
-const Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
+Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
 {
   //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
   //this method returns a density probability of this parameter, given by a landau 
@@ -765,7 +765,7 @@ const Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
 
 }
 //________________________________________________________________________
-const Double_t  AliPHOSPIDv1::LandauPol2(Double_t  x, Double_t y, Double_t * par)
+Double_t  AliPHOSPIDv1::LandauPol2(Double_t  x, Double_t y, Double_t * par)
 {
 
   //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 

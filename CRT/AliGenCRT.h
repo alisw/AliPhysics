@@ -31,14 +31,14 @@ class AliGenCRT : public AliGenerator {
   void SetAzimuthalAngleRange(Float_t min, Float_t max=0) {fAzimuthMin=min;fAzimuthMax=max;}
 
   void SetGridRange(Int_t nx,Float_t xwidth, Int_t nz, Float_t zwidth);
-  const Float_t GetMomentumResolution() const {return fPResolution;}
+  Float_t GetMomentumResolution() const {return fPResolution;}
 
   void SetMomentumDistrubutionFunction(TF1 *func) {fMomentumDist=func;}
   void SetZenithalDistributionFunction(TF1 *func) {fZenithDist = func;}
   void SetMomentumResolution(Float_t res=1.) {fPResolution=res;}
 
-  const Float_t GetMomentum() const;
-  const Float_t GetZenithAngle(Float_t mom) const;
+  Float_t GetMomentum() const;
+  Float_t GetZenithAngle(Float_t mom) const;
 
   // The following methods are for testing pourpuses
   TF1* GetMomentumDistibution() const {return fMomentumDist;}

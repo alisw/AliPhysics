@@ -37,7 +37,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
   
   virtual void Exec(Option_t * option) ;
 
-  virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
+  virtual Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
   Float_t  GetCalibratedEnergy    (Float_t e)                 const;
   TVector3 GetMomentumDirection(AliEMCALRecPoint * emc)const ;
 

@@ -31,7 +31,7 @@ public:
   virtual const char* GetSubsystem(void)const{return "PHOS" ;}
   virtual const char* GetVersion(void)  const{return fVersion ;}
   virtual const char* GetCategory(void) const {return fCategory ;} 
-  virtual const void  GetValidityRange(Int_t &begin,Int_t &end) const {begin=fBegin;end=fEnd ;}
+  virtual void  GetValidityRange(Int_t &begin,Int_t &end) const {begin=fBegin;end=fEnd ;}
   
   Float_t Data(Int_t channel)const ;
   Float_t DataCheck(Int_t channel) const ;

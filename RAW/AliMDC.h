@@ -51,15 +51,15 @@ public:
 
    enum {kMDC = 6};  // Which MDC is this...
 
-   static const char* const Fifo() {return fgkFifo;}
-   static const char* const RawDBFS(Int_t i) {return fgkRawDBFS[i];}
-   static const char* const TagDBFS() {return fgkTagDBFS;}
-   static const char* const RunDBFS() {return fgkRunDBFS;}
-   static const char* const RFIOFS() {return fgkRFIOFS;}
-   static const char* const CastorFS() {return fgkCastorFS;}
-   static const char* const RootdFS() {return fgkRootdFS;}
-   static const char* const AlienHost() {return fgkAlienHost;}
-   static const char* const AlienDir() {return fgkAlienDir;}
+   static const char* Fifo() {return fgkFifo;}
+   static const char* RawDBFS(Int_t i) {return fgkRawDBFS[i];}
+   static const char* TagDBFS() {return fgkTagDBFS;}
+   static const char* RunDBFS() {return fgkRunDBFS;}
+   static const char* RFIOFS() {return fgkRFIOFS;}
+   static const char* CastorFS() {return fgkCastorFS;}
+   static const char* RootdFS() {return fgkRootdFS;}
+   static const char* AlienHost() {return fgkAlienHost;}
+   static const char* AlienDir() {return fgkAlienDir;}
 
 private:
    class AliMDCInterruptHandler : public TSignalHandler {

@@ -79,13 +79,13 @@
 }
 
 //____________________________________________________________________________
-const Int_t AliPHOSRecParticle::GetNPrimaries() const  
+Int_t AliPHOSRecParticle::GetNPrimaries() const  
 { 
   return -1;
 }
 
 //____________________________________________________________________________
-const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const  
+Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const  
 { 
   // Get the number of primaries at the origine of the RecParticle
   Int_t rv = 0 ;

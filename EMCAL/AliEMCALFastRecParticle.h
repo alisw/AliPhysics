@@ -38,9 +38,9 @@ class AliEMCALFastRecParticle : public TParticle {
     // returns the index of this in the list
     return fIndexInList ; 
   } 
-  virtual const Int_t GetNPrimaries() const {return 0 ;}
+  virtual Int_t GetNPrimaries() const {return 0 ;}
   virtual const TParticle * GetPrimary(Int_t /*index=0*/) const  {return 0 ;} 
-  const Int_t GetType() const { 
+  Int_t GetType() const { 
     // returns the type of the particle
     return fType ; 
   } 

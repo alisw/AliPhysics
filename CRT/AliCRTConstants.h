@@ -32,25 +32,25 @@ public:
 
   static AliCRTConstants* Instance();
 
-  const Float_t CageLenght() const;
-  const Float_t CageWidth() const;
-  const Float_t CageHeight() const;
+  Float_t CageLenght() const;
+  Float_t CageWidth() const;
+  Float_t CageHeight() const;
 
-  const Float_t SinglePaletteLenght() const;
-  const Float_t SinglePaletteWidth() const;
-  const Float_t SinglePaletteHeight() const;
+  Float_t SinglePaletteLenght() const;
+  Float_t SinglePaletteWidth() const;
+  Float_t SinglePaletteHeight() const;
 
-  const Float_t ActiveAreaGap() const;
-  const Float_t ActiveAreaLenght() const;
-  const Float_t ActiveAreaWidth() const;
-  const Float_t ActiveAreaHeight() const;
+  Float_t ActiveAreaGap() const;
+  Float_t ActiveAreaLenght() const;
+  Float_t ActiveAreaWidth() const;
+  Float_t ActiveAreaHeight() const;
 
-  const Float_t MagnetWidth() const;
-  const Float_t MagnetLenght() const;
-  const Float_t MagMinRadius() const;
-  const Float_t MagMaxRadius() const;
+  Float_t MagnetWidth() const;
+  Float_t MagnetLenght() const;
+  Float_t MagMinRadius() const;
+  Float_t MagMaxRadius() const;
 
-  const Float_t Depth() const;
+  Float_t Depth() const;
 
 protected:
   AliCRTConstants();

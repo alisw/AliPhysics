@@ -517,7 +517,7 @@ void AliGenCRT::InitZenithalAngleGeneration()
 }
 
 //____________________________________________________________________________
-const Float_t AliGenCRT::GetZenithAngle(Float_t mom) const
+Float_t AliGenCRT::GetZenithAngle(Float_t mom) const
 {
 
   Float_t zenith = 0.;
@@ -556,7 +556,7 @@ const Float_t AliGenCRT::GetZenithAngle(Float_t mom) const
 }
 
 //_____________________________________________________________________________
-const Float_t AliGenCRT::GetMomentum() const
+Float_t AliGenCRT::GetMomentum() const
 {
   //
   //

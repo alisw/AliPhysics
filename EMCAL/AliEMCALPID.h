@@ -36,7 +36,7 @@ class AliEMCALPID : public TTask {
   virtual ~AliEMCALPID() ; // dtor
 
   virtual void Exec(Option_t *) = 0;
-  virtual const Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
+  virtual Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
   virtual void Print() const { Warning("Print", "not defined" ) ;}
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }

@@ -52,14 +52,14 @@ AliMUONRecoTrack::AliMUONRecoTrack(Bool_t active)
 }
 
 //-------------------------------------------------------------------
-const Double_t AliMUONRecoTrack::Phi()
+Double_t AliMUONRecoTrack::Phi() const
 {
 // Return trach phi angle
 	return TMath::ATan2(fPr[2], fPr[1]);
 }
 
 //-------------------------------------------------------------------
-const Double_t AliMUONRecoTrack::Theta()
+Double_t AliMUONRecoTrack::Theta() const
 {
 // Return trach theta angle
    return TMath::ACos(fPr[2] / P());

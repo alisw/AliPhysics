@@ -43,7 +43,7 @@ AliEMCALJetFinderAlgoUA1Unit::~AliEMCALJetFinderAlgoUA1Unit()
 
 }
 	
-const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator>(AliEMCALJetFinderAlgoUA1Unit unit)
+Bool_t AliEMCALJetFinderAlgoUA1Unit::operator>(AliEMCALJetFinderAlgoUA1Unit unit) const
 {
 	// Greater than operator used by sort
   if( fUnitEnergy > unit.GetUnitEnergy())
@@ -52,7 +52,7 @@ const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator>(AliEMCALJetFinderAlgoUA1Uni
     return kFALSE;
 }
 
-const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator<( AliEMCALJetFinderAlgoUA1Unit unit)
+Bool_t AliEMCALJetFinderAlgoUA1Unit::operator<( AliEMCALJetFinderAlgoUA1Unit unit) const
 {
 	// Less than operator used by sort
   if( fUnitEnergy < unit.GetUnitEnergy())
@@ -61,7 +61,7 @@ const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator<( AliEMCALJetFinderAlgoUA1Un
      return kFALSE;
 }
 
-const Bool_t AliEMCALJetFinderAlgoUA1Unit::operator==( AliEMCALJetFinderAlgoUA1Unit unit)
+Bool_t AliEMCALJetFinderAlgoUA1Unit::operator==( AliEMCALJetFinderAlgoUA1Unit unit) const
     {
 	    // equality operator used by sort
       if( fUnitEnergy == unit.GetUnitEnergy())

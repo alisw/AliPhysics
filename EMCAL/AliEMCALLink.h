@@ -30,9 +30,9 @@ public:
     // dtor
   }
   Int_t   Compare(const TObject * obj) const ;
-  const Int_t   GetECA(void) const { return fECAN ; }  
-  const Int_t   GetOther(void) const { return fOtherN ; } 
-  const Float_t GetProd(void) const { return fProd ; }   
+  Int_t   GetECA(void) const { return fECAN ; }  
+  Int_t   GetOther(void) const { return fOtherN ; } 
+  Float_t GetProd(void) const { return fProd ; }   
   Bool_t        IsSortable() const{ return kTRUE; }
   
 private:

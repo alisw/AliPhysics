@@ -80,13 +80,13 @@ AliEMCALRecParticle::AliEMCALRecParticle(const AliEMCALRecParticle & rp)
 }
 
 //____________________________________________________________________________
-const Int_t AliEMCALRecParticle::GetNPrimaries() const  
+Int_t AliEMCALRecParticle::GetNPrimaries() const  
 {   
   return -1;
 }
 
 //____________________________________________________________________________
-const Int_t AliEMCALRecParticle::GetNPrimariesToRecParticles() const  
+Int_t AliEMCALRecParticle::GetNPrimariesToRecParticles() const  
 { 
   // Returns the number of primaries at the origine of a RecParticle
   Int_t rv = 0 ;

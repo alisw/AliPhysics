@@ -38,7 +38,7 @@ public:
   
   //  virtual char*  GetRecPointsBranch    (void)const{return (char*)fRecPointsBranchTitle.Data() ;}
   //  virtual char*  GetTrackSegmentsBranch(void)const{return (char*)fTrackSegmentsBranchTitle.Data() ;}
-  virtual const Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
+  virtual Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
 
   virtual void   Exec(Option_t *option); // Does the job
           void   FillOneModule() ;       // Finds range in which RecPoints belonging current PHOS module are

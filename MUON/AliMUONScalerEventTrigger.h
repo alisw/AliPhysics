@@ -56,10 +56,10 @@ public:
    UInt_t* GetDarcScalers()   {return &fDarcL0R;} 
 
    // get scaler length
-   const Int_t GetLocalScalerLength()  const {return fgkLocalScalerLength;} 
-   const Int_t GetRegScalerLength()    const {return fgkRegScalerLength;}   
-   const Int_t GetGlobalScalerLength() const {return fgkGlobalScalerLength;}
-   const Int_t GetDarcScalerLength()   const {return fgkDarcScalerLength;} 
+   Int_t GetLocalScalerLength()  const {return fgkLocalScalerLength;} 
+   Int_t GetRegScalerLength()    const {return fgkRegScalerLength;}   
+   Int_t GetGlobalScalerLength() const {return fgkGlobalScalerLength;}
+   Int_t GetDarcScalerLength()   const {return fgkDarcScalerLength;} 
 
  private:
 

@@ -19,8 +19,8 @@ public:
    Int_t   GetBlkLength()      const {return fBlkLength;}
    Int_t   GetDspId()          const {return fDSPId;}
    Int_t   GetBlkTriggerWord(Int_t n) const {return fBlkTriggerWord[n];}
-   const Int_t   GetPadding()  const {return fPadding;}
-   const Int_t   GetBlkHeaderLength() const {return fgkBlkHeaderLength;}
+   Int_t   GetPadding()  const {return fPadding;}
+   Int_t   GetBlkHeaderLength() const {return fgkBlkHeaderLength;}
 
    void    SetTotalBlkLength(Int_t l) {fTotalBlkLength = l;}
    void    SetBlkLength(Int_t l)      {fBlkLength = l;}
@@ -39,7 +39,7 @@ public:
    void    SetDSPId1(Int_t d)         {fDSPId1 = d;}  
    void    SetDspTriggerWord(Int_t w, Int_t n) {fDspTriggerWord[n] = w;}
    void    SetEventWord(Int_t w)      {fEventWord = w;}
-   const Int_t   GetDspHeaderLength() const {return fgkDspHeaderLength;}
+   Int_t   GetDspHeaderLength() const {return fgkDspHeaderLength;}
 
    Int_t* GetBlkHeader() {return &fTotalBlkLength;}
    Int_t* GetDspHeader() {return &fTotalDspLength;}
@@ -47,7 +47,7 @@ public:
    AliRawDataHeader GetHeader(){return fHeader;}
    Int_t GetHeaderSize() {return sizeof(AliRawDataHeader)/4;} // in words
 
-   const Int_t   GetEoD()      const {return fgkEndOfDDL;}  
+   Int_t   GetEoD()      const {return fgkEndOfDDL;}  
 
  private:
 

@@ -142,13 +142,13 @@ class AliL3Transform {
 
   //getters
   static const Char_t* GetParamName() {return "75x40_100x60_150x60";}
-  static const Double_t Pi()     {return fgkPi;}
-  static const Double_t PiHalf() {return fgkPi2;}
-  static const Double_t TwoPi()  {return fgk2Pi;}
-  static const Double_t GetAnodeWireSpacing() {return fgkAnodeWireSpacing;}
-  static const Double_t GetBFact() {return fgkBFACT;}
-  static const Double_t ToRad() {return 1./fgkToDeg;}
-  static const Double_t ToDeg() {return fgkToDeg;}
+  static Double_t Pi()     {return fgkPi;}
+  static Double_t PiHalf() {return fgkPi2;}
+  static Double_t TwoPi()  {return fgk2Pi;}
+  static Double_t GetAnodeWireSpacing() {return fgkAnodeWireSpacing;}
+  static Double_t GetBFact() {return fgkBFACT;}
+  static Double_t ToRad() {return 1./fgkToDeg;}
+  static Double_t ToDeg() {return fgkToDeg;}
 
   static Int_t GetFirstRow(Int_t patch);
   static Int_t GetLastRow(Int_t patch);
