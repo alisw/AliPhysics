@@ -23,13 +23,15 @@ class AliHBTEvent: public TObject
                         Double_t vx, Double_t vy, Double_t vz, Double_t time);
     
     Int_t   GetNumberOfParticles() const;
-    void   Reset(); //deletes all entries
+    void    Reset(); //deletes all entries
+    void    SetOwner(Bool_t owns = kTRUE){ fOwner = owns; }
+    Bool_t  IsOwner() {return fOwner;}
   protected:
     AliHBTParticle ** fParticles; //!array of pointers to the particles
-    Int_t fNParticles; //!number of particles in Event
-    Int_t fSize;       //!current size of the array
-    
-    void  Expand();    //expands the array if necessary
+    Int_t  fNParticles; //!number of particles in Event
+    Int_t  fSize;       //!current size of the array
+    Bool_t fOwner;      //flag if that event owns the 
+    void   Expand();    //expands the array if necessary
   private:
     
   public:

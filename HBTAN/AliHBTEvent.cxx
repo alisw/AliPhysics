@@ -21,6 +21,7 @@ AliHBTEvent::AliHBTEvent()
     fSize=fgkInitEventSize;
     fParticles = new AliHBTParticle* [fSize];
     fNParticles = 0;
+    fOwner = kTRUE;
  }
 /**************************************************************************/ 
 
@@ -37,7 +38,7 @@ AliHBTEvent::~AliHBTEvent()
 void  AliHBTEvent::Reset()
 {
   //deletes all particles from the event
-  if(fParticles)
+  if(fParticles && fOwner)
     {
       for(Int_t i =0; i<fNParticles; i++)
         delete fParticles[i];
