@@ -25,19 +25,17 @@ class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS {
   void     FindRawClusters(); // the same interface as for old cluster finder
   void     EventLoop(Int_t nev, Int_t ch); // first event 
   Bool_t   TestTrack(Int_t t); // test if track was selected
-
-  static   AliMUONClusterFinderAZ* fgClusterFinder;
  
 protected:
-
- 
- 
+  AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs);
+  AliMUONClusterFinderAZ& operator=(const AliMUONClusterFinderAZ& rhs);
 
  private:
   // Some constants
   static const Int_t fgkDim = 2000; // array size
   static const Double_t fgkCouplMin; // threshold on coupling 
 
+  static  AliMUONClusterFinderAZ* fgClusterFinder; // the ClusterFinderAZ instance
 
   Int_t      fnPads[2];        // ! number of pads in the cluster on 2 cathodes
   Float_t    fXyq[6][fgkDim];    // ! pad information
@@ -89,5 +87,6 @@ protected:
   void  fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
   ClassDef(AliMUONClusterFinderAZ,0) // cluster finder in MUON arm of ALICE
-    };
+};
+
 #endif

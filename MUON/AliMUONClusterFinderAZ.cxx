@@ -40,6 +40,7 @@ ClassImp(AliMUONClusterFinderAZ)
 
 //_____________________________________________________________________________
 AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw=0, Int_t iReco=0)
+  : AliMUONClusterFinderVS()
 {
 // Constructor
   for (Int_t i=0; i<4; i++) {fHist[i] = 0;}
@@ -63,6 +64,15 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw=0, Int_t iReco=0)
 }
 
 //_____________________________________________________________________________
+AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs)
+  : AliMUONClusterFinderVS(rhs)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONClusterFinderAZModule", "Not implemented.");
+}
+
+//_____________________________________________________________________________
 AliMUONClusterFinderAZ::~AliMUONClusterFinderAZ()
 {
   // Destructor
@@ -83,6 +93,19 @@ AliMUONClusterFinderAZ::~AliMUONClusterFinderAZ()
   */
 }
 
+//_____________________________________________________________________________
+AliMUONClusterFinderAZ&  
+AliMUONClusterFinderAZ::operator=(const AliMUONClusterFinderAZ& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::FindRawClusters()
 {
