@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/06/15 09:40:31  morsch
 Obsolete typedef keyword removed
 
@@ -106,15 +109,35 @@ void AliABSOv0::CreateGeometry()
 
     enum {kC=1605, kAl=1608, kFe=1609, kCu=1610, kW=1611, kPb=1612,
 		  kNiCuW=1620, kVacuum=1615, kAir=1614, kConcrete=1616,
-		  kPolyCH2=1617, kSteel=1609, kInsulation=1613};	  
+		  kPolyCH2=1617, kSteel=1609, kInsulation=1613, kPolyCc=1619};	  
     
     Int_t *idtmed = fIdtmed->GetArray()-1599;
     
     Float_t par[24], cpar[5], cpar0[5], pcpar[12], tpar[3], tpar0[3]; 
     Float_t dz;
-
 #include "ABSOSHILConst.h"
 #include "ABSOConst.h"
+//
+// Structure of Tracking Region
+//
+  Float_t dzFe = 25.;
+
+// 3 < theta < 9
+    fNLayers[0] = 5; 
+    fMLayers[0][0]  = kAir;              fZLayers[0][0] = zAbsStart;
+    fMLayers[0][1]  = kC;                fZLayers[0][1] = zAbsCc;             
+    fMLayers[0][2]  = kConcrete;         fZLayers[0][2] = zRear-dRear-dzFe;
+    fMLayers[0][3]  = kFe;               fZLayers[0][3] = zRear-dRear;
+    fMLayers[0][4]  = kCu;               fZLayers[0][4] = zRear;
+// 2 < theta < 3
+    fNLayers[1] = 5; 
+    fMLayers[1][0] = fMLayers[0][0];      fZLayers[1][0] = fZLayers[0][0];
+    fMLayers[1][1] = fMLayers[0][1];      fZLayers[1][1] = fZLayers[0][1];
+    fMLayers[1][2] = fMLayers[0][2];      fZLayers[1][2] = fZLayers[0][2];
+    fMLayers[1][3] = fMLayers[0][3];      fZLayers[1][3] = fZLayers[0][3];
+    fMLayers[1][4] = kNiCuW;              fZLayers[1][4] = fZLayers[0][4];
+//    
+
     Float_t dTube=0.1;                     // tube thickness
     Float_t dInsu=0.5;                     // insulation thickness
     Float_t dEnve=0.1;                     // protective envelope thickness
@@ -222,7 +245,7 @@ void AliABSOv0::CreateGeometry()
 
   //     Inner tracking region
   //
-  //     mother volume: Pb
+  //     mother volume: Cu
   //
   pcpar[0]  = 0.;
   pcpar[1]  = 360.;
@@ -236,7 +259,7 @@ void AliABSOv0::CreateGeometry()
   pcpar[9]  = -pcpar[3];
   pcpar[10] = zRear * TMath::Tan(accMin);
   pcpar[11] = zRear * TMath::Tan(accMax);
-  gMC->Gsvolu("AITR", "PCON", idtmed[kPb], pcpar, 12);
+  gMC->Gsvolu("AITR", "PCON", idtmed[fMLayers[0][4]], pcpar, 12);
   //
   // special Pb medium for last 5 cm of Pb
   Float_t zr=zRear-2.-0.001;
@@ -245,7 +268,7 @@ void AliABSOv0::CreateGeometry()
   cpar[2] = zr * TMath::Tan(accMax);
   cpar[3] = cpar[1] + TMath::Tan(thetaR) * 2;
   cpar[4] = cpar[2] + TMath::Tan(accMax) * 2;
-  gMC->Gsvolu("ARPB", "CONE", idtmed[kPb], cpar, 5);
+  gMC->Gsvolu("ARPB", "CONE", idtmed[fMLayers[0][4]], cpar, 5);
   dz=(zRear-zAbsStart)/2.-cpar[0]-0.001;
   gMC->Gspos("ARPB", 1, "AITR", 0., 0., dz, 0, "ONLY");
   //
@@ -254,15 +277,32 @@ void AliABSOv0::CreateGeometry()
   pcpar[9]  = pcpar[3]+(zRear-dRear-zAbsStart);
   pcpar[10] = (zRear-dRear) * TMath::Tan(accMin);
   pcpar[11] = (zRear-dRear) * TMath::Tan(accMax);
-  gMC->Gsvolu("ACON", "PCON", idtmed[kConcrete+40], pcpar, 12);
+  gMC->Gsvolu("ACON", "PCON", idtmed[fMLayers[0][2]+40], pcpar, 12);
   gMC->Gspos("ACON", 1, "AITR", 0., 0., 0., 0, "ONLY");
+//
+//    Fe Cone 
+//
+  zr = zRear-dRear-dzFe;
+  cpar[0]  = dzFe/2.;
+  cpar[1] = zr * TMath::Tan(accMin);
+  cpar[2] = zr * TMath::Tan(accMax);
+  cpar[3] = cpar[1] + TMath::Tan(thetaR) * dzFe;
+  cpar[4] = cpar[2] + TMath::Tan(accMax) * dzFe;
+  gMC->Gsvolu("ACFE", "CONE",idtmed[fMLayers[0][3]], cpar, 5);
+
+  dz = (zRear-zAbsStart)/2.-dRear-dzFe/2.;
+
+  gMC->Gspos("ACFE", 1, "ACON", 0., 0., dz, 0, "ONLY");
+
+  
+  //
   //
   //     carbon cone: carbon
   //
   pcpar[9]  = pcpar[3]+(zAbsCc-zAbsStart);
   pcpar[10]  = zAbsCc * TMath::Tan(accMin);
   pcpar[11]  = zAbsCc * TMath::Tan(accMax);
-  gMC->Gsvolu("ACAR", "PCON", idtmed[kC+40], pcpar, 12);
+  gMC->Gsvolu("ACAR", "PCON", idtmed[fMLayers[0][1]+40], pcpar, 12);
   gMC->Gspos("ACAR", 1, "ACON", 0., 0., 0., 0, "ONLY");
  //
  //     carbon cone outer region
@@ -273,7 +313,7 @@ void AliABSOv0::CreateGeometry()
   cpar[3]  = rAbs;
   cpar[4]  = cpar[2]+2. * cpar[0] * TMath::Tan(accMax);
 
-  gMC->Gsvolu("ACAO", "CONE", idtmed[kC], cpar, 5);
+  gMC->Gsvolu("ACAO", "CONE", idtmed[fMLayers[0][1]], cpar, 5);
   dz=-(zRear-zAbsStart)/2.+cpar[0];
   gMC->Gspos("ACAO", 1, "ACAR", 0., 0., dz, 0, "ONLY");
   //
@@ -287,7 +327,7 @@ void AliABSOv0::CreateGeometry()
   cpar[2] = zr * TMath::Tan(thetaR*repsi);
   cpar[3] = cpar[1] + TMath::Tan(accMin) * (dRear-epsi);
   cpar[4] = cpar[2] + TMath::Tan(thetaR*repsi) * (dRear-epsi);
-  gMC->Gsvolu("ARW0", "CONE", idtmed[kNiCuW+40], cpar, 5);
+  gMC->Gsvolu("ARW0", "CONE", idtmed[fMLayers[1][4]+40], cpar, 5);
   dz=(zRear-zAbsStart)/2.-cpar[0];
   gMC->Gspos("ARW0", 1, "AITR", 0., 0., dz, 0, "ONLY");
   //
@@ -298,14 +338,14 @@ void AliABSOv0::CreateGeometry()
   cpar[2] = zr * TMath::Tan(thetaR*repsi);
   cpar[3] = cpar[1] + TMath::Tan(accMin) * 5.;
   cpar[4] = cpar[2] + TMath::Tan(thetaR*repsi) * 5.;
-  gMC->Gsvolu("ARW1", "CONE", idtmed[kNiCuW+20], cpar, 5);
+  gMC->Gsvolu("ARW1", "CONE", idtmed[fMLayers[1][4]+20], cpar, 5);
   dz=(dRear-epsi)/2.-cpar[0];
   gMC->Gspos("ARW1", 1, "ARW0", 0., 0., dz, 0, "ONLY");
   //
-  // PolyEthylene Layers
+  // Cu
   Float_t drMin=TMath::Tan(thetaR) * 5;
   Float_t drMax=TMath::Tan(accMax) * 5;
-  gMC->Gsvolu("ARPE", "CONE", idtmed[kPolyCH2], cpar, 0);
+  gMC->Gsvolu("ARPE", "CONE", idtmed[fMLayers[0][4]], cpar, 0);
   cpar[0]=2.5;
   { // Begin local scope for i
       for (Int_t i=0; i<3; i++) {
@@ -383,6 +423,34 @@ void AliABSOv0::CreateGeometry()
   
   dz=(zRear-zAbsStart)/2.-cpar0[0]-dRear;
   gMC->Gspos("AV21", 1, "ABSM", 0., 0., dz, 0, "ONLY"); 
+//
+// Support cone 
+
+  par[0]  = 0.;
+  par[1]  = 360.;
+  par[2]  = 4.;
+    
+  par[3]  = zRear;
+  par[4]  = 100.;
+  par[5]  = 170.;
+  
+  par[6]  = zRear+2.;
+  par[7]  = 100.;
+  par[8]  = 170.;
+
+  par[9]  = zRear+2.;
+  par[10] = 168.;
+  par[11] = 170.;
+
+  par[12]  = 600.;
+  par[13] = 168.;
+  par[14] = 170.;
+  
+
+  gMC->Gsvolu("ASSS", "PCON", idtmed[kSteel], par, 25);
+  gMC->Gspos("ASSS", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+
+
 }
 
 //_____________________________________________________________________________
