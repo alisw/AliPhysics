@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/10/21 18:38:43  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.7  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -66,6 +69,24 @@ ClassImp(AliRecPoint)
 //____________________________________________________________________________
 AliRecPoint::AliRecPoint()
 {
+  // default ctor  
+  fGeom = 0;
+  fAmp = 0.0 ; 
+  
+  fLocPos.SetXYZ(0., 0., 0.) ;
+  fLocPosM     = 0 ;
+  fMaxDigit    = 100 ; 
+  fMulDigit    = 0 ; 
+  fDigitsList  = 0 ; 
+  fMaxTrack    = 5 ; 
+  fMulTrack    = 0 ; 
+  fTracksList  = 0 ; 
+  fIndexInList = -1 ; // to be set when the point is already stored
+}
+
+//____________________________________________________________________________
+AliRecPoint::AliRecPoint(const char * opt)
+{
   // ctor  
   fGeom = 0;
   fAmp = 0.0 ; 
@@ -74,7 +95,7 @@ AliRecPoint::AliRecPoint()
   fLocPosM     = new TMatrix(3,3) ;
   fMaxDigit    = 100 ; 
   fMulDigit    = 0 ; 
-  fDigitsList  = new int[fMaxDigit]; ; 
+  fDigitsList  = new int[fMaxDigit]; 
   fMaxTrack    = 5 ; 
   fMulTrack    = 0 ; 
   fTracksList  = new int[fMaxTrack]; ; 
@@ -96,10 +117,8 @@ AliRecPoint::~AliRecPoint()
   // dtor
   
   delete fLocPosM ; 
-  if ( fDigitsList )    
-    delete fDigitsList ; 
-  if ( fTracksList )    
-    delete fTracksList ;  
+  delete [] fDigitsList ; 
+  delete [] fTracksList ;  
   
 }
   

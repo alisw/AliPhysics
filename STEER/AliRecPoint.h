@@ -32,6 +32,7 @@ class AliRecPoint : public TObject {
 public:
 
   AliRecPoint() ;                   // ctor            
+  AliRecPoint(const char * opt) ;                   // ctor            
   AliRecPoint(const AliRecPoint &recp);  // copy ctor
   virtual ~AliRecPoint() ;          // dtor
  
