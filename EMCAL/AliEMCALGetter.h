@@ -159,7 +159,7 @@ class AliEMCALGetter : public TObject {
   //========== RecParticles ===========
 
   TClonesArray *         RecParticles() const ;
-  AliEMCALRecParticle *   RecPaticles(Int_t index) const { return static_cast<AliEMCALRecParticle *>(RecParticles()->At(index)) ;} 
+  AliEMCALRecParticle *  RecParticle(Int_t index) const { return static_cast<AliEMCALRecParticle *>(RecParticles()->At(index)) ;} 
   TTree *               TreeP() const ;
   AliEMCALPID * PID() ;
   TString               GetRecParticlesFileName() const { return EmcalLoader()->GetRecParticlesFileName() ; } 
