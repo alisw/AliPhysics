@@ -953,8 +953,8 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
     for(Int_t j = fN1PeaksPrevEtaSlice; j < fN2PeaksPrevEtaSlice; j++) {
       if(fWeight[j] < 0) continue;
       if((fENDETAPeaks[j]-fSTARTETAPeaks[j]) >= 1) continue;
-      if((maxima[i].start_x >= fSTARTXPeaks[j]-1 && maxima[i].start_x <= fENDXPeaks[j]+1) || (maxima[i].end_x <= fENDXPeaks[j]+1 && maxima[i].end_x >= fSTARTXPeaks[j]-1)) {
-	if((maxima[i].start_y >= fSTARTYPeaks[j]-1 && maxima[i].start_y <= fENDYPeaks[j]+1) || (maxima[i].end_y <= fENDYPeaks[j]+1 && maxima[i].end_y >= fSTARTYPeaks[j]-1)) {
+      if((maxima[i].start_x <= fENDXPeaks[j]+1) && (maxima[i].end_x >= fSTARTXPeaks[j]-1)) {
+	if((maxima[i].start_y <= fENDYPeaks[j]+1) && (maxima[i].end_y >= fSTARTYPeaks[j]-1)) {
 	  //merge
 	  merged = kTRUE;
 	  fXPeaks[fNPeaks] = (hist->GetPreciseBinCenterX(maxima[i].x)+(fENDETAPeaks[j]-fSTARTETAPeaks[j]+1)*fXPeaks[j])/(fENDETAPeaks[j]-fSTARTETAPeaks[j]+2);
