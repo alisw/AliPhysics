@@ -45,7 +45,6 @@ AliRunAnalysis::AliRunAnalysis():
 AliRunAnalysis::~AliRunAnalysis()
 {
   //dtor
-  delete fEventCut;
   delete fReader;
   delete fEventCut;
 }
@@ -111,6 +110,16 @@ void  AliRunAnalysis::Add(AliAnalysis* a)
   //adds a to the list of analysis
   fAnalysies.Add(a);
 }
+/*********************************************************/
+
+void AliRunAnalysis::SetEventCut(AliEventCut* evcut)
+{
+//Sets event -  makes a private copy
+  delete fEventCut;
+  if (evcut) fEventCut = (AliEventCut*)evcut->Clone();
+  else fEventCut = 0x0;
+}
+
 /*********************************************************/
 
 Bool_t AliRunAnalysis::Pass(AliAOD* recevent, AliAOD* simevent)

@@ -31,6 +31,9 @@ class AliRunAnalysis: public TTask
     void          SetReader(AliReader* reader){fReader = reader;}
     
     const char*   GetName(){return "RunAnalysis";}
+    void          EventCutOnRec(Bool_t flag){fCutOnRec = flag;}
+    void          EventCutOnSim(Bool_t flag){fCutOnSim = flag;}
+    void          SetEventCut(AliEventCut* evcut);
     
   protected:
     TObjArray     fAnalysies;//arry with analysies
