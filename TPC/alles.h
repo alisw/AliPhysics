@@ -17,6 +17,8 @@
 #include <TText.h>
 #include <TTree.h>
 #include <TBranch.h>
+#include <TH1F.h>
+#include <TH2F.h>
 
 
 //ALIROOT headers
