@@ -103,7 +103,7 @@ AliFastGlauber::AliFastGlauber() : fName()
 AliFastGlauber::~AliFastGlauber()
 {
   fgCounter--;
-  //  if(fgCounter==0) Reset();
+  //if(fgCounter==0) Reset();
 }
 
 void AliFastGlauber::SetAuAuRhic()
@@ -111,7 +111,7 @@ void AliFastGlauber::SetAuAuRhic()
   //Set all parameters for RHIC
   SetWoodSaxonParametersAu();
   SetHardCrossSection();
-  SetNNCrossSection(40);
+  SetNNCrossSection(42);
   SetNucleus(197);
   SetFileName("$(ALICE_ROOT)/FASTSIM/data/glauberAuAu.root");
 }
@@ -292,7 +292,7 @@ void AliFastGlauber::Reset()
   if(fgWParticipants)  delete fgWParticipants;
 }
 
-void AliFastGlauber::DrawWSb()
+void AliFastGlauber::DrawWSb() const
 {
   //
   //  Draw Wood-Saxon Nuclear Density Function
@@ -323,7 +323,7 @@ void AliFastGlauber::DrawWSb()
   c1->Update();
 }
 
-void AliFastGlauber::DrawOverlap()
+void AliFastGlauber::DrawOverlap() const
 {
   //
   //  Draw Overlap Function
@@ -339,7 +339,7 @@ void AliFastGlauber::DrawOverlap()
   fgWStaa->Draw("same");
 }
 
-void AliFastGlauber::DrawParticipants()
+void AliFastGlauber::DrawParticipants() const
 {
   //
   //  Draw Number of Participants Npart
@@ -363,7 +363,7 @@ void AliFastGlauber::DrawParticipants()
   c3->Update();
 }
 
-void AliFastGlauber::DrawThickness()
+void AliFastGlauber::DrawThickness() const
 {
   //
   //  Draw Thickness Function
@@ -379,7 +379,7 @@ void AliFastGlauber::DrawThickness()
   fgWSta->Draw("same");
 }
 
-void AliFastGlauber::DrawGeo()
+void AliFastGlauber::DrawGeo() const
 {
   //
   //  Draw Geometrical Cross-Section
@@ -403,7 +403,7 @@ void AliFastGlauber::DrawGeo()
   c5->Update();
 }
 
-void AliFastGlauber::DrawBinary()
+void AliFastGlauber::DrawBinary() const
 {
   //
   //  Draw Binary Cross-Section
@@ -427,7 +427,7 @@ void AliFastGlauber::DrawBinary()
   c6->Update();
 }
 
-void AliFastGlauber::DrawN()
+void AliFastGlauber::DrawN() const
 {
   //
   //  Draw Binaries per event (Ncoll)
@@ -453,7 +453,7 @@ void AliFastGlauber::DrawN()
   c7->Update();
 }
 
-void AliFastGlauber::DrawKernel(Double_t b)
+void AliFastGlauber::DrawKernel(Double_t b) const
 {
   //
   //  Draw Kernel
@@ -477,7 +477,7 @@ void AliFastGlauber::DrawKernel(Double_t b)
   c8->Update();
 }
 
-void AliFastGlauber::DrawAlmond(Double_t b)
+void AliFastGlauber::DrawAlmond(Double_t b) const
 {
   //
   //  Draw Interaction Almond
@@ -501,7 +501,7 @@ void AliFastGlauber::DrawAlmond(Double_t b)
   c9->Update();
 }
 
-void AliFastGlauber::DrawEnergyDensity()
+void AliFastGlauber::DrawEnergyDensity() const
 {
   //
   //  Draw energy density
@@ -519,7 +519,7 @@ void AliFastGlauber::DrawEnergyDensity()
   c10->Update();
 }
 
-void AliFastGlauber::DrawPathLength0(Double_t b, Int_t iopt)
+void AliFastGlauber::DrawPathLength0(Double_t b, Int_t iopt) const
 {
   //
   //  Draw Path Length
@@ -538,7 +538,7 @@ void AliFastGlauber::DrawPathLength0(Double_t b, Int_t iopt)
   fgWPathLength0->Draw("same");
 }
 
-void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni, Int_t iopt)
+void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni, Int_t iopt) const
 {
   //
   //  Draw Path Length
@@ -559,7 +559,7 @@ void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni, Int_t iopt)
   fgWPathLength->Draw("same");
 }
 
-void AliFastGlauber::DrawIntRadius(Double_t b)
+void AliFastGlauber::DrawIntRadius(Double_t b) const
 {
   //
   //  Draw Interaction Radius
@@ -583,12 +583,12 @@ Double_t AliFastGlauber::WSb(Double_t* x, Double_t* par)
   //  Woods-Saxon Parameterisation
   //  as a function of radius (xx)
   //
-  const Double_t xx  = x[0];   //fm
-  const Double_t r0  = par[0]; //fm
-  const Double_t d   = par[1]; //fm   
-  const Double_t w   = par[2]; //no units
-  const Double_t n   = par[3]; //fm^-3 (used to normalize integral to one)
-  const Double_t y  = n * (1.+w*(xx/r0)*(xx/r0))/(1.+TMath::Exp((xx-r0)/d));
+  const Double_t kxx  = x[0];   //fm
+  const Double_t kr0  = par[0]; //fm
+  const Double_t kd   = par[1]; //fm   
+  const Double_t kw   = par[2]; //no units
+  const Double_t kn   = par[3]; //fm^-3 (used to normalize integral to one)
+  Double_t y   = kn * (1.+kw*(kxx/kr0)*(kxx/kr0))/(1.+TMath::Exp((kxx-kr0)/kd));
   return y; //fm^-3
 }
 
@@ -598,14 +598,14 @@ Double_t AliFastGlauber::WSbz(Double_t* x, Double_t* par)
   //  Wood Saxon Parameterisation
   //  as a function of z and  b
   //
-  const Double_t bb  = x[0];   //fm
-  const Double_t zz  = x[1];   //fm
-  const Double_t r0  = par[0]; //fm
-  const Double_t d   = par[1]; //fm
-  const Double_t w   = par[2]; //no units
-  const Double_t n   = par[3]; //fm^-3 (used to normalize integral to one)
-  const Double_t xx  = TMath::Sqrt(bb*bb+zz*zz);
-  const Double_t y  = n * (1.+w*(xx/r0)*(xx/r0))/(1.+TMath::Exp((xx-r0)/d));
+  const Double_t kbb  = x[0];   //fm
+  const Double_t kzz  = x[1];   //fm
+  const Double_t kr0  = par[0]; //fm
+  const Double_t kd   = par[1]; //fm
+  const Double_t kw   = par[2]; //no units
+  const Double_t kn   = par[3]; //fm^-3 (used to normalize integral to one)
+  const Double_t kxx  = TMath::Sqrt(kbb*kbb+kzz*kzz);
+  Double_t y  = kn * (1.+kw*(kxx/kr0)*(kxx/kr0))/(1.+TMath::Exp((kxx-kr0)/kd));
   return y; //fm^-3
 }
 
@@ -615,14 +615,14 @@ Double_t AliFastGlauber::WSz(Double_t* x, Double_t* par)
   //  Wood Saxon Parameterisation
   //  as a function of z for fixed b
   //
-  const Double_t zz  = x[0];   //fm
-  const Double_t r0  = par[0]; //fm
-  const Double_t d   = par[1]; //fm
-  const Double_t w   = par[2]; //no units
-  const Double_t n   = par[3]; //fm^-3 (used to normalize integral to one)
-  const Double_t bb  = par[4]; //fm
-  const Double_t xx  = TMath::Sqrt(bb*bb+zz*zz);
-  const Double_t y  = n * (1.+w*(xx/r0)*(xx/r0))/(1.+TMath::Exp((xx-r0)/d));
+  const Double_t kzz  = x[0];   //fm
+  const Double_t kr0  = par[0]; //fm
+  const Double_t kd   = par[1]; //fm
+  const Double_t kw   = par[2]; //no units
+  const Double_t kn   = par[3]; //fm^-3 (used to normalize integral to one)
+  const Double_t kbb  = par[4]; //fm
+  const Double_t kxx  = TMath::Sqrt(kbb*kbb+kzz*kzz);
+  Double_t y  = kn * (1.+kw*(kxx/kr0)*(kxx/kr0))/(1.+TMath::Exp((kxx-kr0)/kd));
   return y; //fm^-3
 }
 
@@ -632,9 +632,9 @@ Double_t AliFastGlauber::WSta(Double_t* x, Double_t* /*par*/)
   //  Thickness function T_A
   //  as a function of b
   //
-  const Double_t b  = x[0];
-  fgWSz->SetParameter(4, b);
-  const Double_t y  = 2. * fgWSz->Integral(0., fgBMax);
+  const Double_t kb  = x[0];
+  fgWSz->SetParameter(4, kb);
+  Double_t y  = 2. * fgWSz->Integral(0., fgBMax);
   return y; //fm^-2
 }
 
@@ -643,11 +643,11 @@ Double_t AliFastGlauber::WStarfi(Double_t* x, Double_t* par)
   //
   //  Kernel for overlap function: T_A(s)*T_A(s-b)
   //  as a function of r and phi
-  const Double_t r1   = x[0];
-  const Double_t phi  = x[1];
-  const Double_t b    = par[0];
-  const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
-  const Double_t y    = r1 * fgWSta->Eval(r1) * fgWSta->Eval(r2);
+  const Double_t kr1  = x[0];
+  const Double_t kphi = x[1];
+  const Double_t kb   = par[0];
+  const Double_t kr2  = TMath::Sqrt(kr1*kr1 + kb*kb - 2.*kr1*kb*TMath::Cos(kphi)); 
+  Double_t y = kr1 * fgWSta->Eval(kr1) * fgWSta->Eval(kr2);
   return y; //fm^-3
 }
 
@@ -659,9 +659,9 @@ Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* par)
   //  as a function of b
   // (normalized to fA*fB)
   //
-  const Double_t b = x[0];
-  const Double_t A = par[0];
-  fgWStarfi->SetParameter(0, b);
+  const Double_t kb  = x[0];
+  const Double_t ka = par[0];
+  fgWStarfi->SetParameter(0, kb);
 
   // root integration seems to fail
   /* 
@@ -683,12 +683,12 @@ Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* par)
   Double_t y = 0;
   for (Int_t i = 0; i < fgkMCInts; i++)
     {
-      const Double_t phi = TMath::Pi() * gRandom->Rndm();
-      const Double_t b1  = fgBMax      * gRandom->Rndm();	
-      y += fgWStarfi->Eval(b1, phi);
+      const Double_t kphi = TMath::Pi() * gRandom->Rndm();
+      const Double_t kb1  = fgBMax      * gRandom->Rndm();	
+      y += fgWStarfi->Eval(kb1, kphi);
     }
   y *= 2. * TMath::Pi() * fgBMax / fgkMCInts; //fm^-2
-  y *= A * A * 0.1; //mbarn^-1
+  y *= ka * ka * 0.1; //mbarn^-1
   return y;
 }
 
@@ -698,26 +698,26 @@ Double_t AliFastGlauber::WKParticipants(Double_t* x, Double_t* par)
   //  Kernel for number of participants
   //  as a function of r and phi
   //
-  const Double_t r1   = x[0];
-  const Double_t phi  = x[1];
-  const Double_t b    = par[0]; //fm
-  const Double_t sig  = par[1]; //mbarn
-  const Double_t A    = par[2]; //mass number
-  const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
-  const Double_t xsi  = fgWSta->Eval(r2) * sig * 0.1;
+  const Double_t kr1   = x[0];
+  const Double_t kphi  = x[1];
+  const Double_t kb    = par[0]; //fm
+  const Double_t ksig  = par[1]; //mbarn
+  const Double_t ka    = par[2]; //mass number
+  const Double_t kr2   = TMath::Sqrt(kr1*kr1 +kb*kb - 2.*kr1*kb*TMath::Cos(kphi)); 
+  const Double_t kxsi  = fgWSta->Eval(kr2) * ksig * 0.1; //no units
   /*
-    Double_t y=(1-TMath::Power((1-xsi),A))
+    Double_t y=(1-TMath::Power((1-xsi),aa))
    */
-  Double_t a = A;
-  Double_t sum = a * xsi;
+  Double_t a   = ka;
+  Double_t sum = ka * kxsi;
   Double_t y   = sum;
-  for (Int_t i = 1; i <= A; i++)
+  for (Int_t i = 1; i <= ka; i++)
     {
       a--;
-      sum *= (-xsi) * a / Float_t(i+1);
+      sum *= (-kxsi) * a / Float_t(i+1);
       y  += sum;
     }
-  y    = r1 * fgWSta->Eval(r1) * y;
+  y *= kr1 * fgWSta->Eval(kr1);
   return y; //fm^-1
 }
 
@@ -727,12 +727,12 @@ Double_t AliFastGlauber::WParticipants(Double_t* x, Double_t* par)
   //  Number of Participants as 
   //  a function of b
   //
-  const Double_t b = x[0];
-  const Double_t sig  = par[0]; //mbarn
-  const Double_t A    = par[1]; //mass number
-  fgWKParticipants->SetParameter(0, b);
-  fgWKParticipants->SetParameter(1, sig);
-  fgWKParticipants->SetParameter(2, A);
+  const Double_t kb = x[0];
+  const Double_t ksig  = par[0]; //mbarn
+  const Double_t ka   = par[1];  //mass number
+  fgWKParticipants->SetParameter(0, kb);
+  fgWKParticipants->SetParameter(1, ksig);
+  fgWKParticipants->SetParameter(2, ka);
 
   //
   //  MC Integration
@@ -740,11 +740,11 @@ Double_t AliFastGlauber::WParticipants(Double_t* x, Double_t* par)
   Double_t y = 0;
   for (Int_t i = 0; i < fgkMCInts; i++)
     {
-      Double_t phi = TMath::Pi() * gRandom->Rndm();
-      Double_t b1  = fgBMax      * gRandom->Rndm();	
-      y += fgWKParticipants->Eval(b1, phi);
+      const Double_t kphi = TMath::Pi() * gRandom->Rndm();
+      const Double_t kb1  = fgBMax      * gRandom->Rndm();	
+      y += fgWKParticipants->Eval(kb1, kphi);
     }
-  y *= 2. *  A * 2. * TMath::Pi() * fgBMax / fgkMCInts;
+  y *= 2. *  ka * 2. * TMath::Pi() * fgBMax / fgkMCInts;
   return y; //no units
 }
 
@@ -754,23 +754,23 @@ Double_t AliFastGlauber::WSgeo(Double_t* x, Double_t* par)
   //  Geometrical Cross-Section
   //  as a function of b
   //
-  const Double_t b     = x[0];             //fm
-  const Double_t sigNN = par[0];           //mbarn
-  const Double_t taa   = fgWStaa->Eval(b); //mbarn^-1
-  Double_t y     = 2. * TMath::Pi() * b * (1. - TMath::Exp(- sigNN * taa)); 
+  const Double_t kb     = x[0];              //fm
+  const Double_t ksigNN = par[0];            //mbarn
+  const Double_t ktaa   = fgWStaa->Eval(kb); //mbarn^-1
+  Double_t y     = 2. * TMath::Pi() * kb * (1. - TMath::Exp(- ksigNN * ktaa)); 
   return y; //fm
 }
 
 Double_t AliFastGlauber::WSbinary(Double_t* x, Double_t* par)
 {
   //
-  //  Number of binary collisions
+  //  Number of binary hard collisions
   //  as a function of b
   //
-  const Double_t b     = x[0];             //fm
-  const Double_t sig   = par[0];           //mbarn
-  const Double_t taa   = fgWStaa->Eval(b); //mbarn^-1
-  const Double_t y    = 2. * TMath::Pi() * b * sig * taa; 
+  const Double_t kb     = x[0];              //fm
+  const Double_t ksig   = par[0];            //mbarn
+  const Double_t ktaa   = fgWStaa->Eval(kb); //mbarn^-1
+  Double_t y = 2. * TMath::Pi() * kb * ksig * ktaa; 
   return y; //fm
 }
 
@@ -779,8 +779,8 @@ Double_t AliFastGlauber::WSN(Double_t* x, Double_t* /*par*/)
   //
   //  Number of hard processes per event
   //  as a function of b
-  const Double_t b     = x[0];
-  const Double_t y     = fgWSbinary->Eval(b)/fgWSgeo->Eval(b);
+  const Double_t kb = x[0];
+  Double_t y = fgWSbinary->Eval(kb)/fgWSgeo->Eval(kb);
   return y; //no units
 }
 
@@ -790,16 +790,16 @@ Double_t AliFastGlauber::WEnergyDensity(Double_t* x, Double_t* par)
   //  Initial energy density 
   //  as a function of the impact parameter
   //
-  const Double_t b     = x[0];
-  const Double_t rA    = par[0];
+  const Double_t kb     = x[0];
+  const Double_t krA    = par[0];
   //
   //  Attention: area of transverse reaction zone in hard-sphere approximation !     
-  const Double_t rA2=rA*rA;
-  const Double_t b2=b*b;  
-  Double_t saa   = (TMath::Pi() - 2. * TMath::ASin(b/ 2./ rA)) * rA2 
-                  - b * TMath::Sqrt(rA2 - b2/ 4.); //fm^2
-  Double_t taa   = fgWStaa->Eval(b); //mbarn^-1
-  Double_t y=taa/saa*10;
+  const Double_t krA2=krA*krA;
+  const Double_t kb2=kb*kb;  
+  const Double_t ksaa = (TMath::Pi() - 2. * TMath::ASin(kb/ 2./ krA)) * krA2 
+                      - kb * TMath::Sqrt(krA2 - kb2/ 4.); //fm^2
+  const Double_t ktaa = fgWStaa->Eval(kb); //mbarn^-1
+  Double_t y=ktaa/ksaa*10;
   return y; //fm^-4
 }
 
@@ -809,16 +809,16 @@ Double_t AliFastGlauber::WAlmond(Double_t* x, Double_t* par)
   //  Almond shaped interaction region
   //  as a function of cartesian x,y.
   //
-  const Double_t b    = par[0];
-  const Double_t xx   = x[0] + b/2.;
-  const Double_t yy   = x[1];
-  const Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
-  const Double_t phi  = TMath::ATan2(yy,xx);
-  const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
+  const Double_t kb    = par[0];
+  const Double_t kxx   = x[0] + kb/2.;
+  const Double_t kyy   = x[1];
+  const Double_t kr1   = TMath::Sqrt(kxx*kxx + kyy*kyy);
+  const Double_t kphi  = TMath::ATan2(kyy,kxx);
+  const Double_t kr2   = TMath::Sqrt(kr1*kr1 + kb*kb - 2.*kr1*kb*TMath::Cos(kphi)); 
   //
   //  Interaction probability calculated as product of thicknesses
   //
-  const Double_t y    = fgWSta->Eval(r1) * fgWSta->Eval(r2);
+  Double_t y    = fgWSta->Eval(kr1) * fgWSta->Eval(kr2);
   return y; //fm^-4
 }
 
@@ -829,21 +829,21 @@ Double_t AliFastGlauber::WIntRadius(Double_t* x, Double_t* par)
   //  at which interaction takes place
   //  as a function of radius
   //
-  const Double_t r    = x[0];
-  const Double_t b    = par[0];
-  fgWAlmond->SetParameter(0, b);
+  const Double_t kr    = x[0];
+  const Double_t kb    = par[0];
+  fgWAlmond->SetParameter(0, kb);
   //  Average over phi in small steps   
-  const Double_t dphi = 2. * TMath::Pi() / 100.;
+  const Double_t kdphi = 2. * TMath::Pi() / 100.;
   Double_t phi  = 0.;
   Double_t y    = 0.;
   for (Int_t i = 0; i < 100; i++) {
-    const Double_t xx = r * TMath::Cos(phi);
-    const Double_t yy = r * TMath::Sin(phi);
-    y   += fgWAlmond->Eval(xx,yy);
-    phi += dphi;
+    const Double_t kxx = kr * TMath::Cos(phi);
+    const Double_t kyy = kr * TMath::Sin(phi);
+    y   += fgWAlmond->Eval(kxx,kyy);
+    phi += kdphi;
   } // phi loop
   // Result multiplied by Jacobian (2 pi r)     
-  y *= 2. * TMath::Pi() * r / 100.;
+  y *= 2. * TMath::Pi() * kr / 100.;
   return y; //fm^-3
 }
 
@@ -855,10 +855,10 @@ Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
   //  as a function of phi-direction
   //
   //  Phi direction in Almond
-  const Double_t phi0   = x[0];
-  const Double_t b      = par[0];
+  const Double_t kphi0   = x[0];
+  const Double_t kb      = par[0];
   //  Path Length definition
-  const Int_t    iopt   = Int_t(par[1]);
+  const Int_t    kiopt   = Int_t(par[1]);
 
   //  Step along radial direction phi   
   const Int_t    kNp  = 100; // Steps in r 
@@ -870,25 +870,25 @@ Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
     //
     //  Transform into target frame
     //
-    const Double_t xx   = r * TMath::Cos(phi0) + b / 2.;
-    const Double_t yy   = r * TMath::Sin(phi0);
-    const Double_t phi  = TMath::ATan2(yy, xx);
-    const Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+    const Double_t kxx   = r * TMath::Cos(kphi0) + kb / 2.;
+    const Double_t kyy   = r * TMath::Sin(kphi0);
+    const Double_t kphi  = TMath::ATan2(kyy, kxx);
+    const Double_t kr1   = TMath::Sqrt(kxx*kxx + kyy*kyy);
     // Radius in projectile frame
-    const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
-    const Double_t y    = fgWSta->Eval(r1) * fgWSta->Eval(r2);
+    const Double_t kr2   = TMath::Sqrt(kr1*kr1 + kb*kb - 2.*kr1*kb*TMath::Cos(kphi)); 
+    const Double_t ky    = fgWSta->Eval(kr1) * fgWSta->Eval(kr2);
 
-    rw += y * r;
-    w  += y;
+    rw += ky * r;
+    w  += ky;
     r  += kDr;
   } // radial steps
 
   Double_t y=0.;
-  if (!iopt)  // My length definition (is exact for hard disk)
+  if (!kiopt)  // My length definition (is exact for hard disk)
     if(w) y= 2. * rw / w; 
   else {
-    const Double_t norm=fgWSta->Eval(0.01);
-    if(norm) y =  TMath::Sqrt(2. * rw * kDr /norm /norm);
+    const Double_t knorm=fgWSta->Eval(1e-4);
+    if(knorm) y =  TMath::Sqrt(2. * rw * kDr / knorm / knorm);
   }
   return y; //fm
 }
@@ -899,11 +899,11 @@ Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
   //  Path Length as a function of phi 
   //  Interaction point from random distribution
   //  as a function of the phi-direction
-  const Double_t phi0   = x[0];
-  const Double_t b      = par[0];
-  fgWAlmond->SetParameter(0, b); 
-  const Int_t    kNpi  = Int_t (par[1]); //Number of interactions
-  const Int_t    iopt   = Int_t(par[2]); //Path Length definition 
+  const Double_t kphi0   = x[0];
+  const Double_t kb      = par[0];
+  fgWAlmond->SetParameter(0, kb); 
+  const Int_t    kNpi    = Int_t (par[1]); //Number of interactions
+  const Int_t    kiopt   = Int_t(par[2]);  //Path Length definition 
 
   //
   //  r-steps
@@ -918,42 +918,42 @@ Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
     Double_t x0, y0;
     fgWAlmond->GetRandom2(x0, y0);
     // Initial radius
-    const Double_t r0  = TMath::Sqrt(x0 * x0 + y0 * y0);
-    const Int_t    nps = Int_t ((fgBMax - r0)/kDr) - 1;
+    const Double_t kr0  = TMath::Sqrt(x0*x0 + y0*y0);
+    const Int_t    knps = Int_t ((fgBMax - kr0)/kDr) - 1;
 	
     // Radial steps
     Double_t r  = 0.;
-    for (Int_t i = 0; (i < nps ); i++) {
+    for (Int_t i = 0; (i < knps ); i++) {
       // Transform into target frame
-      const Double_t xx   = x0 + r * TMath::Cos(phi0) + b / 2.;
-      const Double_t yy   = y0 + r * TMath::Sin(phi0);
-      const Double_t phi  = TMath::ATan2(yy, xx);
-      const Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+      const Double_t kxx   = x0 + r * TMath::Cos(kphi0) + kb / 2.;
+      const Double_t kyy   = y0 + r * TMath::Sin(kphi0);
+      const Double_t kphi  = TMath::ATan2(kyy, kxx);
+      const Double_t kr1   = TMath::Sqrt(kxx*kxx + kyy*kyy);
       // Radius in projectile frame
-      const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
-      const Double_t y    = fgWSta->Eval(r1) * fgWSta->Eval(r2);
+      const Double_t kr2   = TMath::Sqrt(kr1*kr1 + kb*kb - 2.*kr1*kb*TMath::Cos(kphi)); 
+      const Double_t ky    = fgWSta->Eval(kr1) * fgWSta->Eval(kr2);
 	    
-      rw += y * r;
-      w  += y;
+      rw += ky * r;
+      w  += ky;
       r  += kDr;
     } // steps
     // Average over interactions
-    if (!iopt) {
+    if (!kiopt) {
       if(w) l += (2. * rw / w);
     } else {
-      const Double_t norm=fgWSta->Eval(0.01);
-      if(norm) l+= 2. * rw * kDr / norm / norm;
+      const Double_t knorm=fgWSta->Eval(1e-4);
+      if(knorm) l+= 2. * rw * kDr / knorm / knorm;
     }
   } // interactions
   Double_t ret=0;
-  if (!iopt) 
+  if (!kiopt) 
     ret= l / kNpi;
   else 
     ret=TMath::Sqrt( l / kNpi);
   return ret; //fm
 }
 
-Double_t AliFastGlauber::CrossSection(Double_t b1, Double_t b2)
+Double_t AliFastGlauber::CrossSection(Double_t b1, Double_t b2) const
 {
   //
   // Return the geometrical cross-section integrated from b1 to b2 
@@ -961,7 +961,7 @@ Double_t AliFastGlauber::CrossSection(Double_t b1, Double_t b2)
   return fgWSgeo->Integral(b1, b2)*10.; //mbarn
 }
 
-Double_t AliFastGlauber::HardCrossSection(Double_t b1, Double_t b2)
+Double_t AliFastGlauber::HardCrossSection(Double_t b1, Double_t b2) const
 {
   //
   // Return the hard cross-section integrated from b1 to b2 
@@ -969,7 +969,7 @@ Double_t AliFastGlauber::HardCrossSection(Double_t b1, Double_t b2)
   return fgWSbinary->Integral(b1, b2)*10.; //mbarn
 }
 
-Double_t AliFastGlauber::FractionOfHardCrossSection(Double_t b1, Double_t b2)
+Double_t AliFastGlauber::FractionOfHardCrossSection(Double_t b1, Double_t b2) const
 {
   //
   // Return raction of hard cross-section integrated from b1 to b2 
@@ -977,25 +977,25 @@ Double_t AliFastGlauber::FractionOfHardCrossSection(Double_t b1, Double_t b2)
   return fgWSbinary->Integral(b1, b2)/fgWSbinary->Integral(0., 100.);
 }
 
-Double_t AliFastGlauber::Binaries(Double_t b)
+Double_t AliFastGlauber::Binaries(Double_t b) const
 {
   //
-  // Return number of binary collisions normalized to 1 at b=0
+  // Return number of binary hard collisions normalized to 1 at b=0
   //
   if(b==0) b=1e-4;
   return fgWSN->Eval(b)/fgWSN->Eval(1e-4);
 }
 
-Double_t AliFastGlauber::GetNumberofBinaries(Double_t b)
+Double_t AliFastGlauber::GetNumberOfBinaries(Double_t b) const
 {
   //
-  // Return number of binary collisions at b
+  // Return number of binary hard collisions at b
   //
   if(b==0) b=1e-4;
   return fgWSN->Eval(b);
 }
 
-Double_t AliFastGlauber::Participants(Double_t  b)
+Double_t AliFastGlauber::Participants(Double_t  b) const
 {
   //
   // Return the number of participants normalized to 1 at b=0
@@ -1004,13 +1004,22 @@ Double_t AliFastGlauber::Participants(Double_t  b)
   return (fgWParticipants->Eval(b)/fgWParticipants->Eval(1e-4));
 }
 
-Double_t AliFastGlauber::GetNumberOfParticipants(Double_t  b)
+Double_t AliFastGlauber::GetNumberOfParticipants(Double_t  b) const
 {
   //
   // Return the number of participants for impact parameter b
   //
   if(b==0) b=1e-4;
   return (fgWParticipants->Eval(b));
+}
+
+Double_t AliFastGlauber::GetNumberOfCollisions(Double_t  b) const
+{
+  //
+  // Return the number of collisions for impact parameter b
+  //
+  if(b==0) b=1e-4;
+  return (fgWStaa->Eval(b)*fSigmaNN);
 }
 
 void AliFastGlauber::SimulateTrigger(Int_t n)
@@ -1065,9 +1074,9 @@ void AliFastGlauber::GetRandom(Float_t& b, Float_t& p, Float_t& mult)
   // Gives back a random impact parameter, hard trigger probability and multiplicity
   //
   b = fgWSgeo->GetRandom();
-  const Float_t mu = fgWSN->Eval(b);
-  p = 1.-TMath::Exp(-mu);
-  mult = 6000./fgWSN->Eval(1.) * mu;
+  const Float_t kmu = fgWSN->Eval(b);
+  p = 1.-TMath::Exp(-kmu);
+  mult = 6000./fgWSN->Eval(1.) * kmu;
 }
 
 void AliFastGlauber::GetRandom(Int_t& bin, Bool_t& hard)
@@ -1075,25 +1084,25 @@ void AliFastGlauber::GetRandom(Int_t& bin, Bool_t& hard)
   //
   // Gives back a random impact parameter bin, and hard trigger decission
   //
-  const Float_t b  = fgWSgeo->GetRandom();
-  const Float_t mu = fgWSN->Eval(b) * fSigmaHard;
-  const Float_t p  = 1.-TMath::Exp(-mu);
-  if (b < 5.) {
+  const Float_t kb  = fgWSgeo->GetRandom();
+  const Float_t kmu = fgWSN->Eval(kb) * fSigmaHard;
+  const Float_t kp  = 1.-TMath::Exp(-kmu);
+  if (kb < 5.) {
     bin = 1;
-  } else if (b <  8.6) {
+  } else if (kb <  8.6) {
     bin = 2;
-  } else if (b < 11.2) {
+  } else if (kb < 11.2) {
     bin = 3;
-  } else if (b < 13.2) {
+  } else if (kb < 13.2) {
     bin = 4;
-  } else if (b < 15.0) {
+  } else if (kb < 15.0) {
     bin = 5;
   } else {
     bin = 6;
   }
   hard = kFALSE;
-  const Float_t r = gRandom->Rndm();
-  if (r < p) hard = kTRUE;
+  const Float_t kr = gRandom->Rndm();
+  if (kr < kp) hard = kTRUE;
 }
 
 Double_t  AliFastGlauber::GetRandomImpactParameter(Double_t bmin, Double_t bmax)
@@ -1107,7 +1116,7 @@ Double_t  AliFastGlauber::GetRandomImpactParameter(Double_t bmin, Double_t bmax)
   return b;
 }
 
-void AliFastGlauber::StoreFunctions()
+void AliFastGlauber::StoreFunctions() const
 {
   //
   // Store in file functions
@@ -1121,26 +1130,7 @@ void AliFastGlauber::StoreFunctions()
 
 //=================== Added by A. Dainese 11/02/04 ===========================
 
-void AliFastGlauber::PlotAlmonds()
-{
-  //
-  // Plot almonds for some impact parameters
-  //
-  TCanvas *c = new TCanvas("c","Almonds",0,0,500,500);
-  gStyle->SetPalette(1,0);
-  c->Divide(2,2);
-  c->cd(1);
-  fgWAlmondFixedB[0].Draw("cont1");
-  c->cd(2);
-  fgWAlmondFixedB[10].Draw("cont1");
-  c->cd(3);
-  fgWAlmondFixedB[20].Draw("cont1");
-  c->cd(4);
-  fgWAlmondFixedB[30].Draw("cont1");
-  return;
-}
-
-void AliFastGlauber::StoreAlmonds()
+void AliFastGlauber::StoreAlmonds() const
 {
   //
   // Store in file 
@@ -1172,20 +1162,22 @@ void AliFastGlauber::SetCentralityClass(Double_t xsecFrLow,Double_t xsecFrUp)
 
   Double_t bLow=0.,bUp=0.;
   Double_t xsecFr=0.;
-  const Double_t norm=fgWSgeo->Integral(0.,100.);
+  const Double_t knorm=fgWSgeo->Integral(0.,100.);
   while(xsecFr<xsecFrLow) {
-    xsecFr = fgWSgeo->Integral(0.,bLow)/norm;
+    xsecFr = fgWSgeo->Integral(0.,bLow)/knorm;
     bLow += 0.1;
   }
   bUp = bLow;
   while(xsecFr<xsecFrUp) {
-    xsecFr = fgWSgeo->Integral(0.,bUp)/norm;
+    xsecFr = fgWSgeo->Integral(0.,bUp)/knorm;
     bUp += 0.1;
   }
 
-  Info("SetCentralityClass", "Centrality class: %4.2f-%4.2f; %4.1f < b < %4.1f fm\n",
+  Info("SetCentralityClass", "Centrality class: %4.2f-%4.2f; %4.1f < b < %4.1f fm",
 	 xsecFrLow,xsecFrUp,bLow,bUp);
   fgWSbinary->SetRange(bLow,bUp);
+  fBmin=bLow;
+  fBmax=bUp;
   return;
 }
 
@@ -1242,25 +1234,25 @@ Double_t AliFastGlauber::CalculateLength(Double_t b,Double_t x0,Double_t y0,Doub
     //
 
     // Initial radius
-    const Double_t r0  = TMath::Sqrt(x0 * x0 + y0 * y0);
-    const Int_t nps = Int_t ((fgBMax - r0)/kDl) - 1;
+    const Double_t kr0 = TMath::Sqrt(x0*x0 + y0*y0);
+    const Int_t knps = Int_t ((fgBMax - kr0)/kDl) - 1;
     Double_t l  = 0.;
     Double_t integral1 = 0.;
     Double_t integral2 = 0.;
     // Radial steps
-    for (Int_t i = 0; i < nps; i++) {
+    for (Int_t i = 0; i < knps; i++) {
       
       // Transform into target frame
-      const Double_t xx   = x0 + l * TMath::Cos(phi0) + b / 2.;
-      const Double_t yy   = y0 + l * TMath::Sin(phi0);
-      const Double_t phi  = TMath::ATan2(yy, xx);
-      const Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+      const Double_t kxx   = x0 + l * TMath::Cos(phi0) + b / 2.;
+      const Double_t kyy   = y0 + l * TMath::Sin(phi0);
+      const Double_t kphi  = TMath::ATan2(kyy, kxx);
+      const Double_t kr1   = TMath::Sqrt(kxx*kxx + kyy*kyy);
       // Radius in projectile frame
-      const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
-      const Double_t prodTATB = fgWSta->Eval(r1) * fgWSta->Eval(r2);
+      const Double_t kr2   = TMath::Sqrt(kr1*kr1 + b*b - 2.*kr1*b*TMath::Cos(kphi)); 
+      const Double_t kprodTATB = fgWSta->Eval(kr1) * fgWSta->Eval(kr2);
       
-      integral1 += prodTATB * l * kDl;
-      integral2 += prodTATB * kDl;
+      integral1 += kprodTATB * l * kDl;
+      integral2 += kprodTATB * kDl;
       l  += kDl;
     } // steps
     
@@ -1277,22 +1269,22 @@ Double_t AliFastGlauber::CalculateLength(Double_t b,Double_t x0,Double_t y0,Doub
     //
 
     // Initial radius
-    const Double_t r0  = TMath::Sqrt(x0 * x0 + y0 * y0);
-    const Int_t nps = Int_t ((fgBMax - r0)/kDl) - 1;
-    const Double_t prodTATBHalfMax = 0.5*fgWAlmondCurrent->Eval(0.,0.);
+    const Double_t kr0  = TMath::Sqrt(x0*x0 + y0*y0);
+    const Int_t knps = Int_t ((fgBMax - kr0)/kDl) - 1;
+    const Double_t kprodTATBHalfMax = 0.5*fgWAlmondCurrent->Eval(0.,0.);
     // Radial steps
     Double_t l  = 0.;
     Double_t integral = 0.;
-    for (Int_t i = 0; i < nps; i++) {
+    for (Int_t i = 0; i < knps; i++) {
       // Transform into target frame
-      const Double_t xx   = x0 + l * TMath::Cos(phi0) + b / 2.;
-      const Double_t yy   = y0 + l * TMath::Sin(phi0);
-      const Double_t phi  = TMath::ATan2(yy, xx);
-      const Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+      const Double_t kxx   = x0 + l * TMath::Cos(phi0) + b / 2.;
+      const Double_t kyy   = y0 + l * TMath::Sin(phi0);
+      const Double_t kphi  = TMath::ATan2(kyy, kxx);
+      const Double_t kr1   = TMath::Sqrt(kxx*kxx + kyy*kyy);
       // Radius in projectile frame
-      const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
-      const Double_t prodTATB = fgWSta->Eval(r1) * fgWSta->Eval(r2);
-      if(prodTATB>prodTATBHalfMax) integral += kDl;
+      const Double_t kr2   = TMath::Sqrt(kr1*kr1 + b*b - 2.*kr1*b*TMath::Cos(kphi)); 
+      const Double_t kprodTATB = fgWSta->Eval(kr1) * fgWSta->Eval(kr2);
+      if(kprodTATB>kprodTATBHalfMax) integral += kDl;
       l  += kDl;
     } // steps
     Double_t ell = integral;
@@ -1325,9 +1317,9 @@ void AliFastGlauber::GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,Double_t
   if(b<0.) GetRandomBHard(b);
   GetRandomXY(x0,y0);
   GetRandomPhi(phi0);
-  const Double_t phi0plusPi = phi0+TMath::Pi();
+  const Double_t kphi0plusPi = phi0+TMath::Pi();
   ell1 = CalculateLength(b,x0,y0,phi0);
-  ell2 = CalculateLength(b,x0,y0,phi0plusPi);
+  ell2 = CalculateLength(b,x0,y0,kphi0plusPi);
   return;
 }
 
@@ -1370,7 +1362,7 @@ void AliFastGlauber::PlotLengthDistr(Int_t n,Bool_t save,Char_t *fname)
   // Plot length distribution
   //
   Double_t ell;
-  TH1F *hEll = new TH1F("hEll","Length distribution",16,-0.5,15.5); 
+  TH1F *hEll = new TH1F("hEll","Length distribution",64,-0.5,15); 
   hEll->SetXTitle("Transverse path length, L [fm]");
   hEll->SetYTitle("Probability");
   hEll->SetFillColor(2);
@@ -1417,11 +1409,30 @@ void AliFastGlauber::PlotLengthB2BDistr(Int_t n,Bool_t save,Char_t *fname)
   return;
 }
 
+void AliFastGlauber::PlotAlmonds() const
+{
+  //
+  // Plot almonds for some impact parameters
+  //
+  TCanvas *c = new TCanvas("c","Almonds",0,0,500,500);
+  gStyle->SetPalette(1,0);
+  c->Divide(2,2);
+  c->cd(1);
+  fgWAlmondFixedB[0].Draw("cont1");
+  c->cd(2);
+  fgWAlmondFixedB[10].Draw("cont1");
+  c->cd(3);
+  fgWAlmondFixedB[20].Draw("cont1");
+  c->cd(4);
+  fgWAlmondFixedB[30].Draw("cont1");
+  return;
+}
+
 //=================== Added by A. Dainese 05/03/04 ===========================
 
 void AliFastGlauber::CalculateI0I1(Double_t& integral0,Double_t& integral1,
 				   Double_t b,Double_t x0,Double_t y0,
-                                   Double_t phi0,Double_t ellCut)
+                                   Double_t phi0,Double_t ellCut) const
 {
   // 
   // Calculate integrals: 
@@ -1438,25 +1449,25 @@ void AliFastGlauber::CalculateI0I1(Double_t& integral0,Double_t& integral1,
   const Double_t kDl  = fgBMax/Double_t(kNp);
     
   // Initial radius
-  const Double_t r0  = TMath::Sqrt(x0 * x0 + y0 * y0);
-  const Int_t nps = Int_t ((fgBMax - r0)/kDl) - 1;
+  const Double_t kr0  = TMath::Sqrt(x0 * x0 + y0 * y0);
+  const Int_t knps = Int_t ((fgBMax - kr0)/kDl) - 1;
     
   // Radial steps
   Double_t l  = 0.;
   integral0 = 0.;
   integral1 = 0.;
   Int_t i = 0;
-  while((i < nps) && (l < ellCut)) {
+  while((i < knps) && (l < ellCut)) {
     // Transform into target frame
-    const Double_t xx   = x0 + l * TMath::Cos(phi0) + b / 2.;
-    const Double_t yy   = y0 + l * TMath::Sin(phi0);
-    const Double_t phi  = TMath::ATan2(yy, xx);
-    const Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+    const Double_t kxx   = x0 + l * TMath::Cos(phi0) + b / 2.;
+    const Double_t kyy   = y0 + l * TMath::Sin(phi0);
+    const Double_t kphi  = TMath::ATan2(kyy, kxx);
+    const Double_t kr1   = TMath::Sqrt(kxx*kxx + kyy*kyy);
     // Radius in projectile frame
-    const Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
-    const Double_t prodTATB = fgWSta->Eval(r1) * fgWSta->Eval(r2);
-    integral0 += prodTATB * kDl;
-    integral1 += prodTATB * l * kDl;
+    const Double_t kr2   = TMath::Sqrt(kr1*kr1 + b*b - 2.*kr1*b*TMath::Cos(kphi)); 
+    const Double_t kprodTATB = fgWSta->Eval(kr1) * fgWSta->Eval(kr2);
+    integral0 += kprodTATB * kDl;
+    integral1 += kprodTATB * l * kDl;
     l  += kDl;
     i++;
   } // steps
@@ -1488,9 +1499,9 @@ void AliFastGlauber::GetI0I1BackToBack(Double_t& integral01,Double_t& integral11
   if(b<0.) GetRandomBHard(b);
   GetRandomXY(x0,y0);
   GetRandomPhi(phi0);
-  const Double_t phi0plusPi = phi0+TMath::Pi();
+  const Double_t kphi0plusPi = phi0+TMath::Pi();
   CalculateI0I1(integral01,integral11,b,x0,y0,phi0,ellCut);
-  CalculateI0I1(integral02,integral12,b,x0,y0,phi0plusPi,ellCut);
+  CalculateI0I1(integral02,integral12,b,x0,y0,kphi0plusPi,ellCut);
   return;
 }
 
@@ -1617,3 +1628,4 @@ void AliFastGlauber::PlotI0I1B2BDistr(Int_t n,Double_t ellCut,
   }
   return;
 }
+
