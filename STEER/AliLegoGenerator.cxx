@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/07/13 16:19:09  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.1  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -48,7 +51,6 @@ Correct logics for Lego StepManager
 
 Revision 1.7  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
-
 */
 
 #include "AliLegoGenerator.h"
@@ -57,52 +59,64 @@ Introduction of the Copyright and cvs Log
 ClassImp(AliLegoGenerator)
 
 //___________________________________________
-AliLegoGenerator::AliLegoGenerator(Int_t ntheta, Float_t themin,
-				   Float_t themax, Int_t nphi, 
-				   Float_t phimin, Float_t phimax,
+
+AliLegoGenerator::AliLegoGenerator()
+{
+  //
+  // Default Constructor
+  //
+  SetName("Lego");
+
+  fCoor1Bin  =  fCoor2Bin = -1;
+  fCurCoor1  =  fCurCoor2 =  0;
+}
+
+AliLegoGenerator::AliLegoGenerator(Int_t nc1, Float_t c1min,
+				   Float_t c1max, Int_t nc2, 
+				   Float_t c2min, Float_t c2max,
 				   Float_t rmin, Float_t rmax, Float_t zmax) :
-  AliGenerator(0), fRadMin(rmin), fRadMax(rmax), fZMax(zmax), fNtheta(ntheta),
-  fNphi(nphi), fThetaBin(ntheta), fPhiBin(-1), fCurTheta(0), fCurPhi(0)
+  AliGenerator(0), fRadMin(rmin), fRadMax(rmax), fZMax(zmax), fNCoor1(nc1),
+  fNCoor2(nc2), fCoor1Bin(nc1), fCoor2Bin(-1), fCurCoor1(0), fCurCoor2(0)
   
 {
   //
   // Standard generator for Lego rays
   //
-  SetPhiRange(phimin,phimax);
-  SetThetaRange(themin,themax);
+  SetCoor1Range(nc1, c1min, c1max);
+  SetCoor2Range(nc2, c2min, c2max);
   SetName("Lego");
 }
-
 
 //___________________________________________
 void AliLegoGenerator::Generate()
 {
-// Create a geantino with kinematics corresponding to the current
-// bins in theta and phi.
+// Create a geantino with kinematics corresponding to the current bins
+// Here: Coor1 =  theta 
+//       Coor2 =  phi.
    
   //
   // Rootinos are 0
    const Int_t kMpart = 0;
    Float_t orig[3], pmom[3];
    Float_t t, cost, sint, cosp, sinp;
-   
+   if (fCoor1Bin==-1) fCoor1Bin=fNCoor1;
    // Prepare for next step
-   if(fThetaBin>=fNtheta-1)
-     if(fPhiBin>=fNphi-1) {
+   if(fCoor1Bin>=fNCoor1-1)
+     if(fCoor2Bin>=fNCoor2-1) {
        Warning("Generate","End of Lego Generation");
        return;
      } else { 
-       fPhiBin++;
-       printf("Generating rays in phi bin:%d\n",fPhiBin);
-       fThetaBin=0;
-     } else fThetaBin++;
+       fCoor2Bin++;
+       printf("Generating rays in phi bin:%d\n",fCoor2Bin);
+       fCoor1Bin=0;
+     } else fCoor1Bin++;
 
-   fCurTheta = (fThetaMin+(fThetaBin+0.5)*(fThetaMax-fThetaMin)/fNtheta);
-   fCurPhi   = (fPhiMin+(fPhiBin+0.5)*(fPhiMax-fPhiMin)/fNphi);
-   cost      = TMath::Cos(fCurTheta);
-   sint      = TMath::Sin(fCurTheta);
-   cosp      = TMath::Cos(fCurPhi);
-   sinp      = TMath::Sin(fCurPhi);
+   fCurCoor1 = (fCoor1Min+(fCoor1Bin+0.5)*(fCoor1Max-fCoor1Min)/fNCoor1);
+   fCurCoor2 = (fCoor2Min+(fCoor2Bin+0.5)*(fCoor2Max-fCoor2Min)/fNCoor2);
+   cost      = TMath::Cos(fCurCoor1 * TMath::Pi()/180.);
+   sint      = TMath::Sin(fCurCoor1 * TMath::Pi()/180.);
+   cosp      = TMath::Cos(fCurCoor2 * TMath::Pi()/180.);
+   sinp      = TMath::Sin(fCurCoor2 * TMath::Pi()/180.);
    
    pmom[0] = cosp*sint;
    pmom[1] = sinp*sint;
@@ -112,17 +126,17 @@ void AliLegoGenerator::Generate()
    orig[0] = orig[1] = orig[2] = 0;
    Float_t dalicz = 3000;
    if (fRadMin > 0) {
-     t = PropagateCylinder(orig,pmom,fRadMin,dalicz);
-     orig[0] = pmom[0]*t;
-     orig[1] = pmom[1]*t;
-     orig[2] = pmom[2]*t;
-     if (TMath::Abs(orig[2]) > fZMax) return;
+       t = PropagateCylinder(orig,pmom,fRadMin,dalicz);
+       orig[0] = pmom[0]*t;
+       orig[1] = pmom[1]*t;
+       orig[2] = pmom[2]*t;
+       if (TMath::Abs(orig[2]) > fZMax) return;
    }
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
    gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, "LEGO ray", ntr);
-
+   
 }
 
 //___________________________________________
@@ -165,10 +179,11 @@ Float_t AliLegoGenerator::PropagateCylinder(Float_t *x, Float_t *v, Float_t r, F
       t2 = x[0]*d[0] + x[1]*d[1];
       t3 = x[0]*x[0] + x[1]*x[1];
       // ---> It should be positive, but there may be numerical problems
-      sr = (t2 +TMath::Sqrt(TMath::Max(t2*t2-(t3-r*r)*t1,0.)))/t1;
+      sr = (-t2 +TMath::Sqrt(TMath::Max(t2*t2-(t3-r*r)*t1,0.)))/t1;
       // ---> Find minimum distance between planes and cylinder
       t  = TMath::Min(sz,sr);
    }
    return t;
 }
+
 
