@@ -1,7 +1,8 @@
 #include "AliL3Logging.h"
-#ifdef use_logging
 #include "AliL3Logger.h"
 #include <fstream.h>
+
+#ifdef use_logging
 
 int AliL3Logger::kAll= AliL3Log::kAll;
 int AliL3Logger::kDebug = AliL3Log::kDebug;
@@ -64,6 +65,26 @@ void AliL3Logger::NotUseStream(){
   if(sm) {gLog.DelServer(sm);delete sm;sm=0;}
   if(of) {of->close();delete of;of=0;}
 }
+#else
 
+int AliL3Logger::kAll= AliL3Log::kAll;
+int AliL3Logger::kDebug = AliL3Log::kDebug;
+int AliL3Logger::kInformational = AliL3Log::kInformational;
+int AliL3Logger::kWarning = AliL3Log::kWarning;
+int AliL3Logger::kError = AliL3Log::kError;
+int AliL3Logger::kFatal = AliL3Log::kFatal;
+
+AliL3Logger::AliL3Logger(){;}
+AliL3Logger::~AliL3Logger(){;}
+void AliL3Logger::Set(int l){;}
+void AliL3Logger::UnSet(int l){;}
+void AliL3Logger::UseDevNull(){;}
+void AliL3Logger::UseStdout(){;}
+void AliL3Logger::UseStderr(){;}
+void AliL3Logger::UseStream(char *name){;}
+void AliL3Logger::NotUseDevNull(){;}
+void AliL3Logger::NotUseStdout(){;}
+void AliL3Logger::NotUseStderr(){;}
+void AliL3Logger::NotUseStream(){;}
 #endif
 

@@ -1,7 +1,7 @@
 #ifndef ALIL3LOGGING_H
 #define ALIL3LOGGING_H
 
-#define use_logging
+//#define use_logging
 
 #ifdef use_logging
 

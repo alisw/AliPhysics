@@ -221,7 +221,7 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last){
 
 void AliLevel3::ProcessSlice(Int_t slice){
   char name[256];
-  Bool_t UseCF = kTRUE;
+  Bool_t UseCF = kFALSE;
 #ifdef use_aliroot
   UseCF = fFileHandler->IsDigit();
 #endif
@@ -239,18 +239,58 @@ void AliLevel3::ProcessSlice(Int_t slice){
     AliL3SpacePointData *points =0;
     UInt_t ndigits=0;
     AliL3DigitRowData *digits =0;
-    if(fUseBinary){
-      if(!fDoRoi){ 
-        if(0){     //Binary to Memory
-          fFileHandler->Free();
-          sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-          fFileHandler->SetBinaryInput(name);
-          digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
-          fFileHandler->CloseBinaryInput(); 
+    if(UseCF){
+      if(fUseBinary){
+        if(!fDoRoi){ 
+          if(0){     //Binary to Memory
+            fFileHandler->Free();
+            sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+            fFileHandler->SetBinaryInput(name);
+            digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
+            fFileHandler->CloseBinaryInput(); 
+          }
+
+          if(0){     //Binary to Memory with Benchmark 
+            fFileHandler->Free();
+            sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+            memory->SetBinaryInput(name);
+            UInt_t compsize=memory->GetFileSize();
+            UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
+            memory->CompBinary2CompMemory(ndigits,comp);
+            memory->CloseBinaryInput();
+            UInt_t datasize=memory->GetMemorySize(ndigits,comp);
+            digits=(AliL3DigitRowData *)fFileHandler->Allocate(datasize);
+            fBenchmark->Start("Unpacker"); 
+            fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
+            fBenchmark->Stop("Unpacker");
+            memory->Free();
+          }
+  
+          if(1){     //Binary to Memory with Random
+            fFileHandler->Free();
+            fFileHandler->ResetRandom();
+            fFileHandler->SetRandomCluster(100);
+            fFileHandler->SetNGenerate(100);
+            sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+            memory->SetBinaryInput(name);
+            UInt_t compsize=memory->GetFileSize();
+            UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
+            memory->CompBinary2CompMemory(ndigits,comp);
+            memory->CloseBinaryInput();
+            UInt_t dsize=memory->GetMemorySize(ndigits,comp);
+            UInt_t rsize=fFileHandler->GetRandomSize();       
+            digits=(AliL3DigitRowData*)fFileHandler->Allocate(dsize+rsize);
+            fBenchmark->Start("Unpacker");
+            fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
+            fBenchmark->Stop("Unpacker");
+            memory->Free();
+          }
         }
 
-        if(1){     //Binary to Memory with Benchmark 
+        else{     //Binary to Memory with Roi
           fFileHandler->Free();
+          Int_t sli[2]={0,0};
+          fFileHandler->SetROI(fEta,sli);
           sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
           memory->SetBinaryInput(name);
           UInt_t compsize=memory->GetFileSize();
@@ -260,53 +300,13 @@ void AliLevel3::ProcessSlice(Int_t slice){
           UInt_t datasize=memory->GetMemorySize(ndigits,comp);
           digits=(AliL3DigitRowData *)fFileHandler->Allocate(datasize);
           fBenchmark->Start("Unpacker"); 
-          fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
-          fBenchmark->Stop("Unpacker");
+          datasize = fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
+          fBenchmark->Stop("Unpacker"); 
           memory->Free();
         }
-  
-        if(0){     //Binary to Memory with Random
-          fFileHandler->Free();
-          fFileHandler->ResetRandom();
-          fFileHandler->SetRandomCluster(100);
-          fFileHandler->SetNGenerate(100);
-          sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-          memory->SetBinaryInput(name);
-          UInt_t compsize=memory->GetFileSize();
-          UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
-          memory->CompBinary2CompMemory(ndigits,comp);
-          memory->CloseBinaryInput();
-          UInt_t dsize=memory->GetMemorySize(ndigits,comp);
-          UInt_t rsize=fFileHandler->GetRandomSize();       
-          digits=(AliL3DigitRowData*)fFileHandler->Allocate(dsize+rsize);
-          fBenchmark->Start("Unpacker");
-          fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
-          fBenchmark->Stop("Unpacker");
-          memory->Free();
-        }
-      }
-
-      else{     //Binary to Memory with Roi
-        fFileHandler->Free();
-        Int_t sli[2]={0,0};
-        fFileHandler->SetROI(fEta,sli);
-        sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
-        memory->SetBinaryInput(name);
-        UInt_t compsize=memory->GetFileSize();
-        UInt_t *comp=(UInt_t *)memory->Allocate(compsize);
-        memory->CompBinary2CompMemory(ndigits,comp);
-        memory->CloseBinaryInput();
-        UInt_t datasize=memory->GetMemorySize(ndigits,comp);
-        digits=(AliL3DigitRowData *)fFileHandler->Allocate(datasize);
-        fBenchmark->Start("Unpacker"); 
-        datasize = fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
-        fBenchmark->Stop("Unpacker"); 
-        memory->Free();
-      }
-    }//end UseBinary
-    else{
+      }//end UseBinary
+      else{
 #ifdef use_aliroot
-      if(UseCF){
         fBenchmark->Start("Dummy Unpacker");
         sprintf(name,"digits_%d_%d.raw",slice,patch);
         fBenchmark->Stop("Dummy Unpacker");
@@ -325,11 +325,9 @@ void AliLevel3::ProcessSlice(Int_t slice){
             fFileHandler->CloseBinaryOutput();
           }
         }
-      }
 #endif
-    }
+      }//end else UseBinary
 
-    if(UseCF){
       points = (AliL3SpacePointData *) memory->Allocate(pointsize);
   
       fClusterFinder = new AliL3ClustFinder(fTransformer);
@@ -346,20 +344,32 @@ void AliLevel3::ProcessSlice(Int_t slice){
       delete fClusterFinder;
       fClusterFinder =0;
       fFileHandler->Free();
-    LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
-      <<AliL3Log::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;
-    }
+      LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
+        <<AliL3Log::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;
     
+    
+    }//end UseCF
+    else{// if not use Clusterfinder
+      if(fUseBinary){//Binary to Memory
+        memory->Free();
+        sprintf(name,"/%spoints_%d_%d.raw",fPath,slice,patch);
+        memory->SetBinaryInput(name);
+        points = (AliL3SpacePointData *) memory->Allocate();
+        memory->Binary2Memory(npoints,points);
+        memory->CloseBinaryInput();
+        LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Read Cluster")
+        <<AliL3Log::kDec<<"Found "<<npoints<<" Points in File"<<ENDLOG;
+      }
 #ifdef use_aliroot
-    // if not use Clusterfinder
-    if(!UseCF){
-      points = fFileHandler->AliPoints2Memory(npoints);
-        fBenchmark->Start("Dummy Unpacker");
-        fBenchmark->Stop("Dummy Unpacker");
-        fBenchmark->Start("Dummy CF");
-        fBenchmark->Stop("Dummy CF");
-    }
+      else{
+        points = fFileHandler->AliPoints2Memory(npoints);
+      }
 #endif
+      fBenchmark->Start("Dummy Unpacker");
+      fBenchmark->Stop("Dummy Unpacker");
+      fBenchmark->Start("Dummy CF");
+      fBenchmark->Stop("Dummy CF");
+    }
    
     if(patch == fNPatch-1){
       // Vertex
@@ -383,7 +393,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }
       fTrackMerger->SetVertex(fVertex);
     }
-    fTracker->InitSector(slice,fRow[patch]);
+    fTracker->InitSector(slice,fRow[patch],fEta);
     fTracker->SetVertex(fVertex);
     fBenchmark->Start("Tracker Read Hits");
     fTracker->ReadHits(npoints,points);
@@ -450,7 +460,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
   }
   fBenchmark->Start("Patch Merger");
 //  fTrackMerger->SlowMerge();
-  fTrackMerger->Merge();
+  fTrackMerger->AddAllTracks();
+//  fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
   //write merged tracks
   if(fWriteOut){
@@ -504,4 +515,5 @@ void AliLevel3::WriteResults()
 {
   //Write the resulting tracks to outputfile
   WriteTracks("tracks.raw",fGlobalMerger,'a');
+  WriteTracks("tracks_gl.raw",fGlobalMerger,'o');
 }
