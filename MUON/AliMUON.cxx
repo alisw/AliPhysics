@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.27  2000/07/22 16:36:50  morsch
+Change order of indices in creation (new) of xhit and yhit
+
 Revision 1.26  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -975,7 +978,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 
 	Float_t ** xhit = new Float_t * [AliMUONConstants::NCh()];
 	for (jj=0; jj<AliMUONConstants::NCh(); jj++) xhit[jj] = new Float_t[2];
-	Float_t ** yhit = new Float_t * [2];
+	Float_t ** yhit = new Float_t * [AliMUONConstants::NCh()];
 	for (jj=0; jj<AliMUONConstants::NCh(); jj++) yhit[jj] = new Float_t[2];
 
 	for (Int_t track=0; track<ntracks; track++) {
