@@ -13,6 +13,7 @@
 //_________________________________________________________________________ 
 
 
+#include <stdlib.h>
 // --- ROOT system ---
 
 #include "TObjString.h"
@@ -38,7 +39,7 @@ public:
   void    Digitize(const Int_t);            // Make Digits from SDigits stored in fSDigits
   void    Exec(Option_t *option);                // Supervising method
 
-  const Float_t GetEMCThreshold() const { return fEMCDigitThreshold;}
+  const Float_t GetTowerThreshold() const { return fTowerDigitThreshold;}
   const Float_t GetPedestal()     const { return fPedestal; }
   const Float_t GetPinNoise()     const { return fPinNoise;}
   const Float_t GetSlope()        const { return fSlope; }
@@ -52,7 +53,7 @@ public:
   virtual void    Print(Option_t* option)const ;
   void    Reset() ;   //restarts starts event processing from 0 event(s)
   const Int_t   GetDigitsInRun()  const { return fDigitsInRun; } ;
-  void    SetEMCThreshold(Float_t EMCThreshold)  {fEMCDigitThreshold = EMCThreshold;}
+  void    SetTowerThreshold(Float_t EMCThreshold)  {fTowerDigitThreshold = EMCThreshold;}
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   void    SetSDigitsBranch(const char* file) ;
@@ -86,7 +87,7 @@ private:
   Float_t fSlope ;                   // read from SDigitizer
 
   Float_t fPinNoise ;               // Electronics noise in EMC
-  Float_t fEMCDigitThreshold  ;     // Threshold for storing digits in EMC
+  Float_t fTowerDigitThreshold  ;     // Threshold for storing digits in EMC
   Float_t fPreShowerDigitThreshold ; // Threshold for Preshower digits
 
   Float_t fTimeResolution ;         // Time resolution of FEE electronics

@@ -87,18 +87,18 @@ ClassImp(AliEMCALDigitizer)
 
   fSDigitizer = 0 ;
   fNinputs = 1 ;
-  fPinNoise = 0.01 ;
-  fEMCDigitThreshold = 0.01 ;
+  fPinNoise = 0.00001 ;
+  fTowerDigitThreshold = 0.001 ;
   fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
-  fPreShowerDigitThreshold = fEMCDigitThreshold/100. ;
-  fADCchannelTower = 0.0030;        // width of one ADC channel in GeV
+  fPreShowerDigitThreshold = fTowerDigitThreshold/25. ;
+  fADCchannelTower = 0.003;        // width of one ADC channel in GeV
   fADCpedestalTower = 0.005 ;      // pedestal of ADC
   fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelPreSho = 0.0030 ;          // width of one ADC channel in Pre Shower
+  fADCchannelPreSho  = 0.0003 ;          // width of one ADC channel in Pre Shower
   fADCpedestalPreSho = 0.005 ;         // pedestal of ADC
-  fNADCPreSho = (Int_t) TMath::Power(2,16);      // number of channels in Pre Shower ADC
+  fNADCPreSho = (Int_t) TMath::Power(2,12);      // number of channels in Pre Shower ADC
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
   fManager = 0 ;
 
@@ -112,19 +112,19 @@ Bool_t AliEMCALDigitizer::Init()
 
   fSDigitizer = 0 ;
   fNinputs = 1 ;
-  fPinNoise = 0.01 ;
-  fEMCDigitThreshold = 0.01 ;
+  fPinNoise = 0.00001 ;
+  fTowerDigitThreshold = 0.001 ;
   fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
-  fPreShowerDigitThreshold = fEMCDigitThreshold/100. ;
+  fPreShowerDigitThreshold = fTowerDigitThreshold/25. ;
   fInitialized = kFALSE ;
-  fADCchannelTower = 0.0030;        // width of one ADC channel in GeV
-  fADCpedestalTower = 0.005 ;      //
+  fADCchannelTower = 0.003;        // width of one ADC channel in GeV
+  fADCpedestalTower = 0.005 ;      // GeV
   fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelPreSho = 0.0030 ;          // width of one ADC channel in Pre Shower
+  fADCchannelPreSho = 0.0003 ;          // width of one ADC channel in Pre Shower
   fADCpedestalPreSho = 0.005 ;         // 
-  fNADCPreSho = (Int_t) TMath::Power(2,16);      // number of channels in Pre ShowerADC
+  fNADCPreSho = (Int_t) TMath::Power(2,12);      // number of channels in Pre ShowerADC
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
  
@@ -246,7 +246,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
       input++ ;
     }
 
-  //Find the first crystall with signal
+  //Find the first tower with signal
   Int_t nextSig = 200000 ; 
   Int_t i;
   for(i=0; i<input; i++){
@@ -268,7 +268,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
 
   //Put Noise contribution
   for(absID = 1; absID <= nEMC; absID++){
-    Float_t noise = gRandom->Gaus(0., fPinNoise) ; 
+    Float_t noise = gRandom->Gaus(0., fPinNoise); 
     new((*digits)[absID-1]) AliEMCALDigit( -1, -1, absID,sDigitizer->Digitize(noise), TimeOfNoise() ) ;
     //look if we have to add signal?
     if(absID==nextSig){
@@ -342,7 +342,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
 
   //remove digits below thresholds
   for(absID = 0; absID < nEMC/2 ; absID++){
-    if(sDigitizer->Calibrate(((AliEMCALDigit*)digits->At(absID))->GetAmp()) < fEMCDigitThreshold)
+    if(sDigitizer->Calibrate(((AliEMCALDigit*)digits->At(absID))->GetAmp()) < fTowerDigitThreshold)
       digits->RemoveAt(absID) ;
     else
       digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
@@ -556,7 +556,7 @@ void AliEMCALDigitizer::Print(Option_t* option)const {
       cout << endl ;
       cout << "With following parameters: " << endl ;
       cout << "     Electronics noise in EMC (fPinNoise) = " << fPinNoise << endl ;
-      cout << "  Threshold  in EMC  (fEMCDigitThreshold) = " << fEMCDigitThreshold  << endl;
+      cout << "  Threshold  in EMC  (fTowerDigitThreshold) = " << fTowerDigitThreshold  << endl;
       cout << "  Threshold  in PreShower  (fPreShowerDigitThreshold) = " << fPreShowerDigitThreshold  << endl ; ;
       cout << "---------------------------------------------------" << endl ;
     }
