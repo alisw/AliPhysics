@@ -36,7 +36,7 @@ class AliSTARTdigit: public TObject  {
     TArrayI *fTime;    // array's TDC
     TArrayI *fADC;    // array's ADC
 
-    ClassDef(AliSTARTdigit,1)  //Digit (Header) object for set:START
+    ClassDef(AliSTARTdigit,2)  //Digit (Header) object for set:START
 };
 
 
