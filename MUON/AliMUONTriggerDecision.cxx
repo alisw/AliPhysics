@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.5  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.4  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -248,13 +254,13 @@ void AliMUONTriggerDecision::SetBit(){
       for (Int_t digit=0; digit<ndigits; digit++) {
 	mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
 // get the center of the pad Id 
-  	Int_t ix=mdig->fPadX;
-  	Int_t iy=mdig->fPadY;
+  	Int_t ix=mdig->PadX();
+  	Int_t iy=mdig->PadY();
 // get the sum of the coded charge 
 // see coding convention in AliMUONChamberTrigger::DisIntegration 	
 	Int_t sumCharge=0;
 	for (Int_t icharge=0; icharge<10; icharge++) {
-	  sumCharge=sumCharge+mdig->fTcharges[icharge];
+	  sumCharge=sumCharge+mdig->TrackCharge(icharge);
 	}
 // apply condition on soft background	
 	Int_t testCharge=sumCharge-(Int_t(sumCharge/10))*10;
