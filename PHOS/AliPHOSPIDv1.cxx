@@ -184,7 +184,7 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
   // for the event range from fFirstEvent to fLastEvent.
   // This range is optionally set by SetEventRange().
   // if fLastEvent=-1 (by default), then process events until the end.
-
+  
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSPID");
   
@@ -223,7 +223,6 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
 	 gBenchmark->GetCpuTime("PHOSPID"),  
 	 gBenchmark->GetCpuTime("PHOSPID")/nEvents) ;
   }
- 
   Unload();
 }
 
@@ -475,7 +474,7 @@ Int_t  AliPHOSPIDv1::GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const
     TMath::Exp(-TMath::Power(e-GetParameterPhotonBoundary(1),2)/2.0/
 	        TMath::Power(GetParameterPhotonBoundary(2),2)) +
     GetParameterPhotonBoundary(3);
-  Info("GetHardPhotonBit","E=%f, m2x=%f, boundary=%f",e,m2x,m2xBoundary);
+  //Info("GetHardPhotonBit","E=%f, m2x=%f, boundary=%f",e,m2x,m2xBoundary);
   if (m2x < m2xBoundary)
     return 1;// A hard photon
   else
@@ -493,7 +492,7 @@ Int_t  AliPHOSPIDv1::GetHardPi0Bit(AliPHOSEmcRecPoint * emc) const
   Float_t m2x = emc->GetM2x();
   Float_t m2xBoundary = GetParameterPi0Boundary(0) +
                     e * GetParameterPi0Boundary(1);
-  Info("GetHardPi0Bit","E=%f, m2x=%f, boundary=%f",e,m2x,m2xBoundary);
+  //Info("GetHardPi0Bit","E=%f, m2x=%f, boundary=%f",e,m2x,m2xBoundary);
   if (m2x > m2xBoundary)
     return 1;// A hard pi0
   else
