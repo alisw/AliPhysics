@@ -325,10 +325,9 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
 	(ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
       cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
     
-    //=========== Connects the various Tree's for evt
-    Int_t tracks = gAlice->GetEvent(ievent);
+    fPHOS->Enable() ;
     
-    fPHOS->Hit2Digit(tracks) ;
+    gAlice->Hits2Digits() ;
     
     //=========== Do the reconstruction
     fPHOS->Reconstruction(fRec);    
@@ -428,183 +427,183 @@ void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
 //____________________________________________________________________________
 void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 {
-  //
-  // Analyzes CPV characteristics
-  // Author: Yuri Kharlov
-  // 9 October 2000
-  //
+//   //
+//   // Analyzes CPV characteristics
+//   // Author: Yuri Kharlov
+//   // 9 October 2000
+//   //
 
-  // Book histograms
+//   // Book histograms
 
-  TH1F *hDx   = new TH1F("hDx"  ,"CPV x-resolution@reconstruction",100,-5. , 5.);
-  TH1F *hDz   = new TH1F("hDz"  ,"CPV z-resolution@reconstruction",100,-5. , 5.);
-  TH1F *hDr   = new TH1F("hDr"  ,"CPV r-resolution@reconstruction",100, 0. , 5.);
-  TH1S *hNrp  = new TH1S("hNrp" ,"CPV rec.point multiplicity",      21,-0.5,20.5);
-  TH1S *hNrpX = new TH1S("hNrpX","CPV rec.point Phi-length"  ,      21,-0.5,20.5);
-  TH1S *hNrpZ = new TH1S("hNrpZ","CPV rec.point Z-length"    ,      21,-0.5,20.5);
+//   TH1F *hDx   = new TH1F("hDx"  ,"CPV x-resolution@reconstruction",100,-5. , 5.);
+//   TH1F *hDz   = new TH1F("hDz"  ,"CPV z-resolution@reconstruction",100,-5. , 5.);
+//   TH1F *hDr   = new TH1F("hDr"  ,"CPV r-resolution@reconstruction",100, 0. , 5.);
+//   TH1S *hNrp  = new TH1S("hNrp" ,"CPV rec.point multiplicity",      21,-0.5,20.5);
+//   TH1S *hNrpX = new TH1S("hNrpX","CPV rec.point Phi-length"  ,      21,-0.5,20.5);
+//   TH1S *hNrpZ = new TH1S("hNrpZ","CPV rec.point Z-length"    ,      21,-0.5,20.5);
 
-  cout << "Start CPV Analysis"<< endl ;
-  for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
+//   cout << "Start CPV Analysis"<< endl ;
+//   for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
       
-    //========== Event Number>         
-//      if ( (ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
-      cout << endl <<  "==== AnalyzeCPV ====> Event is " << ievent+1 << endl ;
+//     //========== Event Number>         
+// //      if ( (ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
+//       cout << endl <<  "==== AnalyzeCPV ====> Event is " << ievent+1 << endl ;
     
-    //=========== Connects the various Tree's for evt
-    Int_t ntracks = gAlice->GetEvent(ievent);
+//     //=========== Connects the various Tree's for evt
+//     Int_t ntracks = gAlice->GetEvent(ievent);
     
-    //========== Creating branches ===================================
-    AliPHOSRecPoint::RecPointsList ** emcRecPoints = fPHOS->EmcRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , emcRecPoints  ) ;
+//     //========== Creating branches ===================================
+//     AliPHOSRecPoint::RecPointsList ** emcRecPoints = fPHOS->EmcRecPoints() ;
+//     gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , emcRecPoints  ) ;
     
-    AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->PpsdRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", cpvRecPoints ) ;
+//     AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->PpsdRecPoints() ;
+//     gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", cpvRecPoints ) ;
 
-    // Create and fill arrays of hits for each CPV module
+//     // Create and fill arrays of hits for each CPV module
       
-    Int_t nOfModules = fGeom->GetNModules();
-    TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
-    Int_t iModule = 0; 	
-    for (iModule=0; iModule < nOfModules; iModule++)
-      hitsPerModule[iModule] = new TClonesArray("AliPHOSCPVHit",100);
+//     Int_t nOfModules = fGeom->GetNModules();
+//     TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
+//     Int_t iModule = 0; 	
+//     for (iModule=0; iModule < nOfModules; iModule++)
+//       hitsPerModule[iModule] = new TClonesArray("AliPHOSCPVHit",100);
 
-    AliPHOSCPVModule cpvModule;
-    TClonesArray    *cpvHits;
-    Int_t           nCPVhits;
-    AliPHOSCPVHit   *cpvHit;
-    TLorentzVector   p;
-    Float_t          xzgen[2];
-    Int_t            ipart;
+//     AliPHOSCPVModule cpvModule;
+//     TClonesArray    *cpvHits;
+//     Int_t           nCPVhits;
+//     AliPHOSCPVHit   *cpvHit;
+//     TLorentzVector   p;
+//     Float_t          xzgen[2];
+//     Int_t            ipart;
 
-    // First go through all primary tracks and fill the arrays
-    // of hits per each CPV module
+//     // First go through all primary tracks and fill the arrays
+//     // of hits per each CPV module
 
-    for (Int_t itrack=0; itrack<ntracks; itrack++) {
-      // Get the Hits Tree for the Primary track itrack
-      gAlice->ResetHits();
-      gAlice->TreeH()->GetEvent(itrack);
-      for (Int_t iModule=0; iModule < nOfModules; iModule++) {
-	cpvModule = fPHOS->GetCPVModule(iModule);
-	cpvHits   = cpvModule.Hits();
-	nCPVhits  = cpvHits->GetEntriesFast();
-	for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
-	  cpvHit   = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
-	  p        = cpvHit->GetMomentum();
-	  xzgen[0] = cpvHit->X();
-	  xzgen[1] = cpvHit->Y();
-	  ipart    = cpvHit->GetIpart();
-	  TClonesArray &lhits = *(TClonesArray *)hitsPerModule[iModule];
-	  new(lhits[hitsPerModule[iModule]->GetEntriesFast()]) AliPHOSCPVHit(*cpvHit);
-	}
-	cpvModule.Clear();
-      }
-    }
-    for (iModule=0; iModule < nOfModules; iModule++) {
-      Int_t nsum = hitsPerModule[iModule]->GetEntriesFast();
-      printf("Module %d has %d hits\n",iModule,nsum);
-    }
+//     for (Int_t itrack=0; itrack<ntracks; itrack++) {
+//       // Get the Hits Tree for the Primary track itrack
+//       gAlice->ResetHits();
+//       gAlice->TreeH()->GetEvent(itrack);
+//       for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+// 	cpvModule = fPHOS->GetCPVModule(iModule);
+// 	cpvHits   = cpvModule.Hits();
+// 	nCPVhits  = cpvHits->GetEntriesFast();
+// 	for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
+// 	  cpvHit   = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
+// 	  p        = cpvHit->GetMomentum();
+// 	  xzgen[0] = cpvHit->X();
+// 	  xzgen[1] = cpvHit->Y();
+// 	  ipart    = cpvHit->GetIpart();
+// 	  TClonesArray &lhits = *(TClonesArray *)hitsPerModule[iModule];
+// 	  new(lhits[hitsPerModule[iModule]->GetEntriesFast()]) AliPHOSCPVHit(*cpvHit);
+// 	}
+// 	cpvModule.Clear();
+//       }
+//     }
+//     for (iModule=0; iModule < nOfModules; iModule++) {
+//       Int_t nsum = hitsPerModule[iModule]->GetEntriesFast();
+//       printf("Module %d has %d hits\n",iModule,nsum);
+//     }
 
-    // Then go through reconstructed points and for each find
-    // the closeset hit
-    // The distance from the rec.point to the closest hit
-    // gives the coordinate resolution of the CPV
+//     // Then go through reconstructed points and for each find
+//     // the closeset hit
+//     // The distance from the rec.point to the closest hit
+//     // gives the coordinate resolution of the CPV
 
-    // Get the Reconstruction Tree
-    gAlice->TreeR()->GetEvent(0) ;
-    TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
-    AliPHOSCpvRecPoint *cpvRecPoint ;
-    Float_t xgen, zgen;
-    while( ( cpvRecPoint = (AliPHOSCpvRecPoint *)nextRP() ) ) {
-      TVector3  locpos;
-      cpvRecPoint->GetLocalPosition(locpos);
-      Int_t phosModule = cpvRecPoint->GetPHOSMod();
-      Int_t rpMult     = cpvRecPoint->GetDigitsMultiplicity();
-      Int_t rpMultX, rpMultZ;
-      cpvRecPoint->GetClusterLengths(rpMultX,rpMultZ);
-      Float_t xrec  = locpos.X();
-      Float_t zrec  = locpos.Z();
-      Float_t dxmin = 1.e+10;
-      Float_t dzmin = 1.e+10;
-      Float_t r2min = 1.e+10;
-      Float_t r2;
+//     // Get the Reconstruction Tree
+//     gAlice->TreeR()->GetEvent(0) ;
+//     TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
+//     AliPHOSCpvRecPoint *cpvRecPoint ;
+//     Float_t xgen, zgen;
+//     while( ( cpvRecPoint = (AliPHOSCpvRecPoint *)nextRP() ) ) {
+//       TVector3  locpos;
+//       cpvRecPoint->GetLocalPosition(locpos);
+//       Int_t phosModule = cpvRecPoint->GetPHOSMod();
+//       Int_t rpMult     = cpvRecPoint->GetDigitsMultiplicity();
+//       Int_t rpMultX, rpMultZ;
+//       cpvRecPoint->GetClusterLengths(rpMultX,rpMultZ);
+//       Float_t xrec  = locpos.X();
+//       Float_t zrec  = locpos.Z();
+//       Float_t dxmin = 1.e+10;
+//       Float_t dzmin = 1.e+10;
+//       Float_t r2min = 1.e+10;
+//       Float_t r2;
 
-      cpvHits = hitsPerModule[phosModule-1];
-      Int_t nCPVhits  = cpvHits->GetEntriesFast();
-      for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
-	cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
-	xgen   = cpvHit->X();
-	zgen   = cpvHit->Y();
-	r2 = TMath::Power((xgen-xrec),2) + TMath::Power((zgen-zrec),2);
-	if ( r2 < r2min ) {
-	  r2min = r2;
-	  dxmin = xgen - xrec;
-	  dzmin = zgen - zrec;
-	}
-      }
-      hDx  ->Fill(dxmin);
-      hDz  ->Fill(dzmin);
-      hDr  ->Fill(TMath::Sqrt(r2min));
-      hNrp ->Fill(rpMult);
-      hNrpX->Fill(rpMultX);
-      hNrpZ->Fill(rpMultZ);
-    }
-    delete [] hitsPerModule;
-  }
-  // Save histograms
+//       cpvHits = hitsPerModule[phosModule-1];
+//       Int_t nCPVhits  = cpvHits->GetEntriesFast();
+//       for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
+// 	cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
+// 	xgen   = cpvHit->X();
+// 	zgen   = cpvHit->Y();
+// 	r2 = TMath::Power((xgen-xrec),2) + TMath::Power((zgen-zrec),2);
+// 	if ( r2 < r2min ) {
+// 	  r2min = r2;
+// 	  dxmin = xgen - xrec;
+// 	  dzmin = zgen - zrec;
+// 	}
+//       }
+//       hDx  ->Fill(dxmin);
+//       hDz  ->Fill(dzmin);
+//       hDr  ->Fill(TMath::Sqrt(r2min));
+//       hNrp ->Fill(rpMult);
+//       hNrpX->Fill(rpMultX);
+//       hNrpZ->Fill(rpMultZ);
+//     }
+//     delete [] hitsPerModule;
+//   }
+//   // Save histograms
 
-  Text_t outputname[80] ;
-  sprintf(outputname,"%s.analyzed",fRootFile->GetName());
-  TFile output(outputname,"RECREATE");
-  output.cd();
+//   Text_t outputname[80] ;
+//   sprintf(outputname,"%s.analyzed",fRootFile->GetName());
+//   TFile output(outputname,"RECREATE");
+//   output.cd();
 
-  hDx  ->Write() ;
-  hDz  ->Write() ;
-  hDr  ->Write() ;
-  hNrp ->Write() ;
-  hNrpX->Write() ;
-  hNrpZ->Write() ;
+//   hDx  ->Write() ;
+//   hDz  ->Write() ;
+//   hDr  ->Write() ;
+//   hNrp ->Write() ;
+//   hNrpX->Write() ;
+//   hNrpZ->Write() ;
 
-  // Plot histograms
+//   // Plot histograms
 
-  TCanvas *cpvCanvas = new TCanvas("CPV","CPV analysis",20,20,800,400);
-  gStyle->SetOptStat(111111);
-  gStyle->SetOptFit(1);
-  gStyle->SetOptDate(1);
-  cpvCanvas->Divide(3,2);
+//   TCanvas *cpvCanvas = new TCanvas("CPV","CPV analysis",20,20,800,400);
+//   gStyle->SetOptStat(111111);
+//   gStyle->SetOptFit(1);
+//   gStyle->SetOptDate(1);
+//   cpvCanvas->Divide(3,2);
 
-  cpvCanvas->cd(1);
-  gPad->SetFillColor(10);
-  hNrp->SetFillColor(16);
-  hNrp->Draw();
+//   cpvCanvas->cd(1);
+//   gPad->SetFillColor(10);
+//   hNrp->SetFillColor(16);
+//   hNrp->Draw();
 
-  cpvCanvas->cd(2);
-  gPad->SetFillColor(10);
-  hNrpX->SetFillColor(16);
-  hNrpX->Draw();
+//   cpvCanvas->cd(2);
+//   gPad->SetFillColor(10);
+//   hNrpX->SetFillColor(16);
+//   hNrpX->Draw();
 
-  cpvCanvas->cd(3);
-  gPad->SetFillColor(10);
-  hNrpZ->SetFillColor(16);
-  hNrpZ->Draw();
+//   cpvCanvas->cd(3);
+//   gPad->SetFillColor(10);
+//   hNrpZ->SetFillColor(16);
+//   hNrpZ->Draw();
 
-  cpvCanvas->cd(4);
-  gPad->SetFillColor(10);
-  hDx->SetFillColor(16);
-  hDx->Fit("gaus");
-  hDx->Draw();
+//   cpvCanvas->cd(4);
+//   gPad->SetFillColor(10);
+//   hDx->SetFillColor(16);
+//   hDx->Fit("gaus");
+//   hDx->Draw();
 
-  cpvCanvas->cd(5);
-  gPad->SetFillColor(10);
-  hDz->SetFillColor(16);
-  hDz->Fit("gaus");
-  hDz->Draw();
+//   cpvCanvas->cd(5);
+//   gPad->SetFillColor(10);
+//   hDz->SetFillColor(16);
+//   hDz->Fit("gaus");
+//   hDz->Draw();
 
-  cpvCanvas->cd(6);
-  gPad->SetFillColor(10);
-  hDr->SetFillColor(16);
-  hDr->Draw();
+//   cpvCanvas->cd(6);
+//   gPad->SetFillColor(10);
+//   hDr->SetFillColor(16);
+//   hDr->Draw();
 
-  cpvCanvas->Print("CPV.ps");
+//   cpvCanvas->Print("CPV.ps");
 
 }
 
@@ -723,257 +722,257 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 //____________________________________________________________________________
  void AliPHOSAnalyze::ReadAndPrintEMC(Int_t EvFirst, Int_t EvLast)    
 {
-  //
-  // Read and print generated and reconstructed hits in EMC
-  // for events from EvFirst to Nevent.
-  // If only EvFirst is defined, print only this one event.
-  // Author: Yuri Kharlov
-  // 24 November 2000
-  //
+//   //
+//   // Read and print generated and reconstructed hits in EMC
+//   // for events from EvFirst to Nevent.
+//   // If only EvFirst is defined, print only this one event.
+//   // Author: Yuri Kharlov
+//   // 24 November 2000
+//   //
 
-  if (EvFirst!=0 && EvLast==0) EvLast=EvFirst;
-  Int_t ievent;
-  for (ievent=EvFirst; ievent<=EvLast; ievent++) {  
+//   if (EvFirst!=0 && EvLast==0) EvLast=EvFirst;
+//   Int_t ievent;
+//   for (ievent=EvFirst; ievent<=EvLast; ievent++) {  
     
-    //========== Event Number>
-    cout << endl <<  "==== ReadAndPrintEMC ====> Event is " << ievent+1 << endl ;
+//     //========== Event Number>
+//     cout << endl <<  "==== ReadAndPrintEMC ====> Event is " << ievent+1 << endl ;
 
-    //=========== Connects the various Tree's for evt
-    Int_t ntracks = gAlice->GetEvent(ievent);
-    fPHOS->SetTreeAddress() ;
+//     //=========== Connects the various Tree's for evt
+//     Int_t ntracks = gAlice->GetEvent(ievent);
+//     fPHOS->SetTreeAddress() ;
     
-    gAlice->TreeD()->GetEvent(0) ;
-    gAlice->TreeR()->GetEvent(0) ;
+//     gAlice->TreeD()->GetEvent(0) ;
+//     gAlice->TreeR()->GetEvent(0) ;
 
-    // Loop over reconstructed particles
+//     // Loop over reconstructed particles
       
-    TClonesArray ** recParticleList  = fPHOS->RecParticles() ;     
-    AliPHOSRecParticle * recParticle ;
-    Int_t iRecParticle ;
-    Int_t *primList;
-    Int_t nPrimary;
-    for(iRecParticle = 0; iRecParticle < (*recParticleList)->GetEntries() ;iRecParticle++ ) {
-      recParticle = (AliPHOSRecParticle *) (*recParticleList)->At(iRecParticle) ;
-      Float_t recE = recParticle->Energy();
-      primList     = recParticle->GetPrimaries(nPrimary);
-      Int_t moduleNumberRec ;
-      Double_t recX, recZ ;
-      fGeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
-      printf("Rec point: module %d, (X,Z) = (%8.4f,%8.4f) cm, E = %.3f GeV, primary = %d\n",
-	     moduleNumberRec,recX,recZ,recE,*primList);
-    }
+//     TClonesArray ** recParticleList  = fPHOS->RecParticles() ;     
+//     AliPHOSRecParticle * recParticle ;
+//     Int_t iRecParticle ;
+//     Int_t *primList;
+//     Int_t nPrimary;
+//     for(iRecParticle = 0; iRecParticle < (*recParticleList)->GetEntries() ;iRecParticle++ ) {
+//       recParticle = (AliPHOSRecParticle *) (*recParticleList)->At(iRecParticle) ;
+//       Float_t recE = recParticle->Energy();
+//       primList     = recParticle->GetPrimaries(nPrimary);
+//       Int_t moduleNumberRec ;
+//       Double_t recX, recZ ;
+//       fGeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+//       printf("Rec point: module %d, (X,Z) = (%8.4f,%8.4f) cm, E = %.3f GeV, primary = %d\n",
+// 	     moduleNumberRec,recX,recZ,recE,*primList);
+//     }
 
-    // Read and print EMC hits from EMCn branches
+//     // Read and print EMC hits from EMCn branches
       
-    AliPHOSCPVModule emcModule;
-    TClonesArray    *emcHits;
-    Int_t           nEMChits;
-    AliPHOSCPVHit   *emcHit;
-    TLorentzVector   p;
-    Float_t          xgen, zgen;
-    Int_t            ipart, primary;
-    Int_t            nGenHits = 0;
-    for (Int_t itrack=0; itrack<ntracks; itrack++) {
-      //=========== Get the Hits Tree for the Primary track itrack
-      gAlice->ResetHits();
-      gAlice->TreeH()->GetEvent(itrack);
-      Int_t iModule = 0 ;
-      for (iModule=0; iModule < fGeom->GetNModules(); iModule++) {
-	emcModule = fPHOS->GetEMCModule(iModule);
-	emcHits   = emcModule.Hits();
-	nEMChits  = emcHits->GetEntriesFast();
-	for (Int_t ihit=0; ihit<nEMChits; ihit++) {
-	  nGenHits++;
-	  emcHit = (AliPHOSCPVHit*)emcHits->UncheckedAt(ihit);
-	  p      = emcHit->GetMomentum();
-	  xgen   = emcHit->X();
-	  zgen   = emcHit->Y();
-	  ipart  = emcHit->GetIpart();
-	  primary= emcHit->GetTrack();
-	  printf("EMC hit A: module %d, ",iModule+1);
-	  printf("    p = (%f .4, %f .4, %f .4, %f .4) GeV,\n",
-		 p.Px(),p.Py(),p.Pz(),p.Energy());
-	  printf("                     (X,Z) = (%8.4f, %8.4f) cm, ipart = %d, primary = %d\n",
-		 xgen,zgen,ipart,primary);
-	}
-      }
-    }
+//     AliPHOSCPVModule emcModule;
+//     TClonesArray    *emcHits;
+//     Int_t           nEMChits;
+//     AliPHOSCPVHit   *emcHit;
+//     TLorentzVector   p;
+//     Float_t          xgen, zgen;
+//     Int_t            ipart, primary;
+//     Int_t            nGenHits = 0;
+//     for (Int_t itrack=0; itrack<ntracks; itrack++) {
+//       //=========== Get the Hits Tree for the Primary track itrack
+//       gAlice->ResetHits();
+//       gAlice->TreeH()->GetEvent(itrack);
+//       Int_t iModule = 0 ;
+//       for (iModule=0; iModule < fGeom->GetNModules(); iModule++) {
+// 	emcModule = fPHOS->GetEMCModule(iModule);
+// 	emcHits   = emcModule.Hits();
+// 	nEMChits  = emcHits->GetEntriesFast();
+// 	for (Int_t ihit=0; ihit<nEMChits; ihit++) {
+// 	  nGenHits++;
+// 	  emcHit = (AliPHOSCPVHit*)emcHits->UncheckedAt(ihit);
+// 	  p      = emcHit->GetMomentum();
+// 	  xgen   = emcHit->X();
+// 	  zgen   = emcHit->Y();
+// 	  ipart  = emcHit->GetIpart();
+// 	  primary= emcHit->GetTrack();
+// 	  printf("EMC hit A: module %d, ",iModule+1);
+// 	  printf("    p = (%f .4, %f .4, %f .4, %f .4) GeV,\n",
+// 		 p.Px(),p.Py(),p.Pz(),p.Energy());
+// 	  printf("                     (X,Z) = (%8.4f, %8.4f) cm, ipart = %d, primary = %d\n",
+// 		 xgen,zgen,ipart,primary);
+// 	}
+//       }
+//     }
 
-//      // Read and print EMC hits from PHOS branch
+// //      // Read and print EMC hits from PHOS branch
 
-//      for (Int_t itrack=0; itrack<ntracks; itrack++) {
-//        //=========== Get the Hits Tree for the Primary track itrack
-//        gAlice->ResetHits();
-//        gAlice->TreeH()->GetEvent(itrack);
-//        TClonesArray *hits = fPHOS->Hits();
-//        AliPHOSHit   *hit ;
-//        Int_t ihit;
-//        for ( ihit = 0 ; ihit < hits->GetEntries() ; ihit++ ) {
-//  	hit = (AliPHOSHit*)hits->At(ihit) ;
-//  	Float_t hitXYZ[3];
-//  	hitXYZ[0]   = hit->X();
-//  	hitXYZ[1]   = hit->Y();
-//  	hitXYZ[2]   = hit->Z();
-//  	ipart       = hit->GetPid();
-//  	primary     = hit->GetPrimary();
-//  	Int_t absId = hit->GetId();
-//  	Int_t relId[4];
-//  	fGeom->AbsToRelNumbering(absId, relId) ;
-//  	Int_t module = relId[0];
-//  	if (relId[1]==0 && !(hitXYZ[0]==0 && hitXYZ[2]==0))
-//  	  printf("EMC hit B: module %d, (X,Z) = (%8.4f, %8.4f) cm, ipart = %d, primary = %d\n",
-//  		 module,hitXYZ[0],hitXYZ[2],ipart,primary);
-//        }
-//      }
+// //      for (Int_t itrack=0; itrack<ntracks; itrack++) {
+// //        //=========== Get the Hits Tree for the Primary track itrack
+// //        gAlice->ResetHits();
+// //        gAlice->TreeH()->GetEvent(itrack);
+// //        TClonesArray *hits = fPHOS->Hits();
+// //        AliPHOSHit   *hit ;
+// //        Int_t ihit;
+// //        for ( ihit = 0 ; ihit < hits->GetEntries() ; ihit++ ) {
+// //  	hit = (AliPHOSHit*)hits->At(ihit) ;
+// //  	Float_t hitXYZ[3];
+// //  	hitXYZ[0]   = hit->X();
+// //  	hitXYZ[1]   = hit->Y();
+// //  	hitXYZ[2]   = hit->Z();
+// //  	ipart       = hit->GetPid();
+// //  	primary     = hit->GetPrimary();
+// //  	Int_t absId = hit->GetId();
+// //  	Int_t relId[4];
+// //  	fGeom->AbsToRelNumbering(absId, relId) ;
+// //  	Int_t module = relId[0];
+// //  	if (relId[1]==0 && !(hitXYZ[0]==0 && hitXYZ[2]==0))
+// //  	  printf("EMC hit B: module %d, (X,Z) = (%8.4f, %8.4f) cm, ipart = %d, primary = %d\n",
+// //  		 module,hitXYZ[0],hitXYZ[2],ipart,primary);
+// //        }
+// //      }
 
-  }
+//   }
 }
 
 //____________________________________________________________________________
  void AliPHOSAnalyze::AnalyzeEMC(Int_t Nevents)
 {
-  //
-  // Read generated and reconstructed hits in EMC for Nevents events.
-  // Plots the coordinate and energy resolution histograms.
-  // Coordinate resolution is a difference between the reconstructed
-  // coordinate and the exact coordinate on the face of the PHOS
-  // Author: Yuri Kharlov
-  // 27 November 2000
-  //
+//   //
+//   // Read generated and reconstructed hits in EMC for Nevents events.
+//   // Plots the coordinate and energy resolution histograms.
+//   // Coordinate resolution is a difference between the reconstructed
+//   // coordinate and the exact coordinate on the face of the PHOS
+//   // Author: Yuri Kharlov
+//   // 27 November 2000
+//   //
 
-  // Book histograms
+//   // Book histograms
 
-  TH1F *hDx1   = new TH1F("hDx1"  ,"EMC x-resolution", 100,-5. , 5.);
-  TH1F *hDz1   = new TH1F("hDz1"  ,"EMC z-resolution", 100,-5. , 5.);
-  TH1F *hDE1   = new TH1F("hDE1"  ,"EMC E-resolution", 100,-2. , 2.);
+//   TH1F *hDx1   = new TH1F("hDx1"  ,"EMC x-resolution", 100,-5. , 5.);
+//   TH1F *hDz1   = new TH1F("hDz1"  ,"EMC z-resolution", 100,-5. , 5.);
+//   TH1F *hDE1   = new TH1F("hDE1"  ,"EMC E-resolution", 100,-2. , 2.);
 
-  TH2F *hDx2   = new TH2F("hDx2"  ,"EMC x-resolution", 100, 0., 10., 100,-5. , 5.);
-  TH2F *hDz2   = new TH2F("hDz2"  ,"EMC z-resolution", 100, 0., 10., 100,-5. , 5.);
-  TH2F *hDE2   = new TH2F("hDE2"  ,"EMC E-resolution", 100, 0., 10., 100, 0. , 5.);
+//   TH2F *hDx2   = new TH2F("hDx2"  ,"EMC x-resolution", 100, 0., 10., 100,-5. , 5.);
+//   TH2F *hDz2   = new TH2F("hDz2"  ,"EMC z-resolution", 100, 0., 10., 100,-5. , 5.);
+//   TH2F *hDE2   = new TH2F("hDE2"  ,"EMC E-resolution", 100, 0., 10., 100, 0. , 5.);
 
-  cout << "Start EMC Analysis"<< endl ;
-  for (Int_t ievent=0; ievent<Nevents; ievent++) {  
+//   cout << "Start EMC Analysis"<< endl ;
+//   for (Int_t ievent=0; ievent<Nevents; ievent++) {  
       
-    //========== Event Number>         
-    if ( (ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
-      cout << "==== AnalyzeEMC ====> Event is " << ievent+1 << endl ;
+//     //========== Event Number>         
+//     if ( (ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
+//       cout << "==== AnalyzeEMC ====> Event is " << ievent+1 << endl ;
     
-    //=========== Connects the various Tree's for evt
-    Int_t ntracks = gAlice->GetEvent(ievent);
+//     //=========== Connects the various Tree's for evt
+//     Int_t ntracks = gAlice->GetEvent(ievent);
 
-    fPHOS->SetTreeAddress() ;
+//     fPHOS->SetTreeAddress() ;
     
-    gAlice->TreeD()->GetEvent(0) ;
-    gAlice->TreeR()->GetEvent(0) ;
+//     gAlice->TreeD()->GetEvent(0) ;
+//     gAlice->TreeR()->GetEvent(0) ;
 
-    // Create and fill arrays of hits for each EMC module
+//     // Create and fill arrays of hits for each EMC module
       
-    Int_t nOfModules = fGeom->GetNModules();
-    TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
-    Int_t iModule;
-    for (iModule=0; iModule < nOfModules; iModule++)
-      hitsPerModule[iModule] = new TClonesArray("AliPHOSCPVHit",100);
+//     Int_t nOfModules = fGeom->GetNModules();
+//     TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
+//     Int_t iModule;
+//     for (iModule=0; iModule < nOfModules; iModule++)
+//       hitsPerModule[iModule] = new TClonesArray("AliPHOSCPVHit",100);
 
-    AliPHOSCPVModule emcModule;
-    TClonesArray    *emcHits;
-    Int_t           nEMChits;
-    AliPHOSCPVHit   *emcHit;
+//     AliPHOSCPVModule emcModule;
+//     TClonesArray    *emcHits;
+//     Int_t           nEMChits;
+//     AliPHOSCPVHit   *emcHit;
 
-    // First go through all primary tracks and fill the arrays
-    // of hits per each EMC module
+//     // First go through all primary tracks and fill the arrays
+//     // of hits per each EMC module
 
-    for (Int_t itrack=0; itrack<ntracks; itrack++) {
-      // Get the Hits Tree for the Primary track itrack
-      gAlice->ResetHits();
-      gAlice->TreeH()->GetEvent(itrack);
-      for (Int_t iModule=0; iModule < nOfModules; iModule++) {
-	emcModule = fPHOS->GetEMCModule(iModule);
-	emcHits   = emcModule.Hits();
-	nEMChits  = emcHits->GetEntriesFast();
-	for (Int_t ihit=0; ihit<nEMChits; ihit++) {
-	  emcHit   = (AliPHOSCPVHit*)emcHits->UncheckedAt(ihit);
-	  TClonesArray &lhits = *(TClonesArray *)hitsPerModule[iModule];
-	  new(lhits[hitsPerModule[iModule]->GetEntriesFast()]) AliPHOSCPVHit(*emcHit);
-	}
-	emcModule.Clear();
-      }
-    }
+//     for (Int_t itrack=0; itrack<ntracks; itrack++) {
+//       // Get the Hits Tree for the Primary track itrack
+//       gAlice->ResetHits();
+//       gAlice->TreeH()->GetEvent(itrack);
+//       for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+// 	emcModule = fPHOS->GetEMCModule(iModule);
+// 	emcHits   = emcModule.Hits();
+// 	nEMChits  = emcHits->GetEntriesFast();
+// 	for (Int_t ihit=0; ihit<nEMChits; ihit++) {
+// 	  emcHit   = (AliPHOSCPVHit*)emcHits->UncheckedAt(ihit);
+// 	  TClonesArray &lhits = *(TClonesArray *)hitsPerModule[iModule];
+// 	  new(lhits[hitsPerModule[iModule]->GetEntriesFast()]) AliPHOSCPVHit(*emcHit);
+// 	}
+// 	emcModule.Clear();
+//       }
+//     }
 
-    // Loop over reconstructed particles
+//     // Loop over reconstructed particles
       
-    TClonesArray ** recParticleList  = fPHOS->RecParticles() ;     
-    AliPHOSRecParticle * recParticle ;
-    Int_t nEMCrecs = (*recParticleList)->GetEntries();
-    if (nEMCrecs == 1) {
-      recParticle = (AliPHOSRecParticle *) (*recParticleList)->At(0) ;
-      Float_t recE = recParticle->Energy();
-      Int_t phosModule;
-      Double_t recX, recZ ;
-      fGeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), phosModule, recX, recZ) ;
+//     TClonesArray ** recParticleList  = fPHOS->RecParticles() ;     
+//     AliPHOSRecParticle * recParticle ;
+//     Int_t nEMCrecs = (*recParticleList)->GetEntries();
+//     if (nEMCrecs == 1) {
+//       recParticle = (AliPHOSRecParticle *) (*recParticleList)->At(0) ;
+//       Float_t recE = recParticle->Energy();
+//       Int_t phosModule;
+//       Double_t recX, recZ ;
+//       fGeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), phosModule, recX, recZ) ;
 
-      // for this rec.point take the hit list in the same PHOS module
+//       // for this rec.point take the hit list in the same PHOS module
 
-      emcHits = hitsPerModule[phosModule-1];
-      Int_t nEMChits  = emcHits->GetEntriesFast();
-      if (nEMChits == 1) {
-	Float_t genX, genZ, genE;
-	for (Int_t ihit=0; ihit<nEMChits; ihit++) {
-	  emcHit = (AliPHOSCPVHit*)emcHits->UncheckedAt(ihit);
-	  genX   = emcHit->X();
-	  genZ   = emcHit->Y();
-	  genE   = emcHit->GetMomentum().E();
-	}
-	Float_t dx = recX - genX;
-	Float_t dz = recZ - genZ;
-	Float_t de = recE - genE;
-	hDx1  ->Fill(dx);
-	hDz1  ->Fill(dz);
-	hDE1  ->Fill(de);
-	hDx2  ->Fill(genE,dx);
-	hDz2  ->Fill(genE,dz);
-	hDE2  ->Fill(genE,recE);
-      }
-    }
-    delete [] hitsPerModule;
-  }
-  // Save histograms
+//       emcHits = hitsPerModule[phosModule-1];
+//       Int_t nEMChits  = emcHits->GetEntriesFast();
+//       if (nEMChits == 1) {
+// 	Float_t genX, genZ, genE;
+// 	for (Int_t ihit=0; ihit<nEMChits; ihit++) {
+// 	  emcHit = (AliPHOSCPVHit*)emcHits->UncheckedAt(ihit);
+// 	  genX   = emcHit->X();
+// 	  genZ   = emcHit->Y();
+// 	  genE   = emcHit->GetMomentum().E();
+// 	}
+// 	Float_t dx = recX - genX;
+// 	Float_t dz = recZ - genZ;
+// 	Float_t de = recE - genE;
+// 	hDx1  ->Fill(dx);
+// 	hDz1  ->Fill(dz);
+// 	hDE1  ->Fill(de);
+// 	hDx2  ->Fill(genE,dx);
+// 	hDz2  ->Fill(genE,dz);
+// 	hDE2  ->Fill(genE,recE);
+//       }
+//     }
+//     delete [] hitsPerModule;
+//   }
+//   // Save histograms
 
-  Text_t outputname[80] ;
-  sprintf(outputname,"%s.analyzed",fRootFile->GetName());
-  TFile output(outputname,"RECREATE");
-  output.cd();
+//   Text_t outputname[80] ;
+//   sprintf(outputname,"%s.analyzed",fRootFile->GetName());
+//   TFile output(outputname,"RECREATE");
+//   output.cd();
 
-  hDx1  ->Write() ;
-  hDz1  ->Write() ;
-  hDE1  ->Write() ;
-  hDx2  ->Write() ;
-  hDz2  ->Write() ;
-  hDE2  ->Write() ;
+//   hDx1  ->Write() ;
+//   hDz1  ->Write() ;
+//   hDE1  ->Write() ;
+//   hDx2  ->Write() ;
+//   hDz2  ->Write() ;
+//   hDE2  ->Write() ;
 
-  // Plot histograms
+//   // Plot histograms
 
-  TCanvas *emcCanvas = new TCanvas("EMC","EMC analysis",20,20,700,300);
-  gStyle->SetOptStat(111111);
-  gStyle->SetOptFit(1);
-  gStyle->SetOptDate(1);
-  emcCanvas->Divide(3,1);
+//   TCanvas *emcCanvas = new TCanvas("EMC","EMC analysis",20,20,700,300);
+//   gStyle->SetOptStat(111111);
+//   gStyle->SetOptFit(1);
+//   gStyle->SetOptDate(1);
+//   emcCanvas->Divide(3,1);
 
-  emcCanvas->cd(1);
-  gPad->SetFillColor(10);
-  hDx1->SetFillColor(16);
-  hDx1->Draw();
+//   emcCanvas->cd(1);
+//   gPad->SetFillColor(10);
+//   hDx1->SetFillColor(16);
+//   hDx1->Draw();
 
-  emcCanvas->cd(2);
-  gPad->SetFillColor(10);
-  hDz1->SetFillColor(16);
-  hDz1->Draw();
+//   emcCanvas->cd(2);
+//   gPad->SetFillColor(10);
+//   hDz1->SetFillColor(16);
+//   hDz1->Draw();
 
-  emcCanvas->cd(3);
-  gPad->SetFillColor(10);
-  hDE1->SetFillColor(16);
-  hDE1->Draw();
+//   emcCanvas->cd(3);
+//   gPad->SetFillColor(10);
+//   hDE1->SetFillColor(16);
+//   hDE1->Draw();
 
-  emcCanvas->Print("EMC.ps");
+//   emcCanvas->Print("EMC.ps");
 
 }
 

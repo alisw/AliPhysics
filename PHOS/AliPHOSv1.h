@@ -39,23 +39,30 @@ public:
   }
   virtual ~AliPHOSv1(void) ;
 
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid) ; 
-  Int_t          Digitize(Float_t Energy);
-  virtual void   Hit2Digit(Int_t event) ;
-  virtual Int_t  IsVersion(void) const {
-    // Gives the version number 
-    return 1 ; 
-  }
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid, TLorentzVector p, Float_t *pos) ; 
+  Float_t        Calibrate(Int_t amp){ return (amp - fDigitizeA)/fDigitizeB ; }
+  Int_t          Digitize(Float_t Energy){ return (Int_t ) (fDigitizeA + Energy*fDigitizeB); }
+  //  virtual void   Hit2Digit(Int_t event) ;
+  virtual void   Hits2SDigits() ;
   virtual void   MakeBranch(Option_t* opt, char *file=0 ) ;
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   ResetHits() ; 
+  virtual void   SDigits2Digits() ;  
+  virtual Int_t  IsVersion(void) const {
+    // Gives the version number 
+    return 1 ; 
+  }
+
   virtual void   ResetReconstruction() ; // Reset reconstructed objects
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
     // sets the reconstructionner object to be used
     fReconstructioner = &Reconstructioner ;
   }  
   void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
+  void           SetPpsdEnergyThreshold(Float_t enth)      { fPpsdEnergyThreshold = enth ; } 
+  void           SetCpvEnergyThreshold(Float_t enth)       { fCpvEnergyThreshold = enth ; } 
+
   virtual void   SetTreeAddress(); 
   virtual void   StepManager(void) ;                              
   virtual TString Version(void){ 
@@ -71,8 +78,8 @@ public:
 
   // IHEP's CPV specific functions
 
-  AliPHOSCPVModule &GetEMCModule(int n) { return *(AliPHOSCPVModule*)fEMCModules->operator[](n); }
-  AliPHOSCPVModule &GetCPVModule(int n) { return *(AliPHOSCPVModule*)fCPVModules->operator[](n); }
+  //  AliPHOSCPVModule &GetEMCModule(int n) { return *(AliPHOSCPVModule*)fEMCModules->operator[](n); }
+  //  AliPHOSCPVModule &GetCPVModule(int n) { return *(AliPHOSCPVModule*)fCPVModules->operator[](n); }
 
   void       CPVDigitize (TLorentzVector p, Float_t *xy, Int_t moduleNumber, TClonesArray *digits) ;
   Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
@@ -81,11 +88,16 @@ public:
 protected:
 
   Float_t fDigitThreshold ;                       // Threshold for the digit registration 
+  Float_t fPpsdEnergyThreshold;                   //PPSD
+  Float_t fCpvEnergyThreshold;                    //CPV  
   Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
-  AliPHOSReconstructioner  * fReconstructioner ;  // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
+  Float_t fDigitizeA ;                            //Parameters of the 
+  Float_t fDigitizeB ;                            //digitization 
+  Int_t   fnSdigits ; 
+  AliPHOSReconstructioner  * fReconstructioner ;  // Clusterization and subtracking procedures
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
-  TClonesArray             * fEMCModules;         // Array of EMC modules
-  TClonesArray             * fCPVModules;         // Array of CPV modules for the IHEP's version of CPV
+  //  TClonesArray             * fEMCModules;         // Array of EMC modules
+  //  TClonesArray             * fCPVModules;         // Array of CPV modules for the IHEP's version of CPV
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

@@ -70,7 +70,7 @@ class AliPHOS : public AliDetector {
   }
  
 protected:
-  
+  TClonesArray                           *fSDigits      ; // List of summable digits
   AliPHOSRecPoint::RecPointsList         *fEmcRecPoints ; // The RecPoints (clusters) list in EMC 
   AliPHOSRecPoint::RecPointsList         *fPpsdRecPoints ;// The RecPoints (clusters) list in PPSD (veto)
   AliPHOSTrackSegment::TrackSegmentsList *fTrackSegments ;// The TrackSegment list in PHOS

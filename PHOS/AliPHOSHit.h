@@ -20,6 +20,8 @@
 
 #include <iostream.h>
 
+class TLorentzVector ;
+
 class AliPHOSHit : public AliHit {
 
   friend ostream& operator << (ostream&, const AliPHOSHit&) ;
@@ -30,7 +32,7 @@ class AliPHOSHit : public AliHit {
     // default ctor 
   }
   AliPHOSHit(const AliPHOSHit & hit) ; 
-  AliPHOSHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t id, Float_t *hits, Int_t pid) ;
+  AliPHOSHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t id, Float_t *hits, Int_t pid, TLorentzVector p, Float_t *xy);
   virtual ~AliPHOSHit(void) {
     // dtor 
   }  
@@ -51,6 +53,8 @@ class AliPHOSHit : public AliHit {
     // returns the primary particle id at the origine of this hit 
     return fPrimary ; 
   }
+  TLorentzVector GetMomentum()  { return  fMomentum; }   
+    // momentum of the particle which initiated this hit
 
   Bool_t operator == (AliPHOSHit const &rValue) const ;
   AliPHOSHit operator + (const AliPHOSHit& rValue) const ;
@@ -58,10 +62,12 @@ class AliPHOSHit : public AliHit {
 
  private:
 
-  Int_t     fId ;        // Absolute Id number of PHOS Xtal or PPSD pad
-  Float_t   fELOS ;      // Energy deposited
-  Int_t     fPid ;       // type of the particle that initiates that hit 
-  Int_t     fPrimary ;   // Primary particles at the origine of the hit
+  Int_t          fId ;        // Absolute Id number of PHOS Xtal or PPSD pad
+  Float_t        fELOS ;      // Energy deposited
+  Int_t          fPid ;       // type of the particle that initiates that hit 
+  Int_t          fPrimary ;   // Primary particles at the origine of the hit
+
+  TLorentzVector fMomentum;   // 4-momentum of the particle
 
   ClassDef(AliPHOSHit,1)  // Hit for PHOS
 

@@ -69,13 +69,13 @@ AliPHOSv2::~AliPHOSv2()
 }
 
 //____________________________________________________________________________
-void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t pid)
+void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t pid, TLorentzVector p, Float_t * lpos)
 {
   // Add a hit to the hit list.
 
   AliPHOSHit *newHit ;
 
-  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, pid) ;
+  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, pid, p, lpos) ;
 
   new((*fHits)[fNhits]) AliPHOSHit(*newHit) ;    
   fNhits++ ;

@@ -54,27 +54,30 @@ AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit)
 } 
 
 //____________________________________________________________________________
-AliPHOSHit::AliPHOSHit(Int_t Shunt, Int_t primary, Int_t Track, Int_t id, Float_t *hits, Int_t pid) : AliHit(Shunt, Track)
+AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid, TLorentzVector p, Float_t *xy): AliHit(shunt, track)
 {
-  // ctor
-  
-   fId         = id ;
-   fX          = hits[0] ;
-   fY          = hits[1] ;
-   fZ          = hits[2] ;
-   fELOS       = hits[3] ;
-   fPrimary    = primary ;
-   fPid        = pid ; 
+  //
+  // Create a CPV hit object
+  //
+
+  fId         = id ;
+  fELOS       = hits[3] ;
+  fPrimary    = primary ;
+  fPid        = pid ; 
+  fMomentum  = p;
+  fX         = xy[0];  //position of particle first entering cristall/pad
+  fY         = xy[1];
+  fZ         = 9999.;  //Fake Z to avoid FPE
 }
 
 //____________________________________________________________________________
 Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 { 
-  // Two hits are identical if they have the same Id and originate from the same primary
+  // Two hits are identical if they have the same Id and originate from the same primary 
 
   Bool_t rv = kFALSE ; 
 
-  if ( fId == rValue.GetId() && fPrimary == rValue.GetPrimary() )
+  if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetPrimary() ) && (fPid*rValue.fPid ! = 0) )
     rv = kTRUE;
   
   return rv;
@@ -94,6 +97,8 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue) const
 
    added.fELOS += rValue.GetEnergy() ;
     
+   if(fPid == 0) fPid = rValue.fPid ;
+
    return added;
 
 }

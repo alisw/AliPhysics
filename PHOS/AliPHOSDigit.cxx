@@ -95,7 +95,7 @@ AliPHOSDigit::~AliPHOSDigit()
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSDigit::Compare(TObject * obj)
+Int_t AliPHOSDigit::Compare(const TObject * obj) const
 {
   // Compares two digits with respect to its Id
   // to sort according increasing Id

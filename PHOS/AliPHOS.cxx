@@ -32,6 +32,7 @@ class TFile;
 
 // --- Standard library ---
 
+#include <strstream.h>
 // --- AliRoot header files ---
 
 #include "AliPHOS.h"
@@ -348,10 +349,21 @@ void AliPHOS::CreateMaterials()
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
+
   // TBranch *branch;
   AliDetector::SetTreeAddress();
 
   TBranch * branch ;
+
+  if(fSDigits)
+    fSDigits->Clear();
+  else
+    fSDigits = new TClonesArray("AliPHOSDigit",1) ;
+
+  if (gAlice->TreeS()  && fSDigits ) {
+    branch = gAlice->TreeS()->GetBranch("PHOS");
+    if (branch) branch->SetAddress(&fSDigits) ;
+  } 
 
   if(fDigits)
     fDigits->Clear();

@@ -24,7 +24,7 @@ public:
   AliPHOSv2(const char *name, const char *title="") ;
   virtual ~AliPHOSv2(void) ;
 
-  virtual void    AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid ) ; 
+  virtual void    AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid, TLorentzVector p, Float_t *pos ) ; 
   virtual Int_t   IsVersion(void) const { 
     // Gives the version number 
     return 2 ; 

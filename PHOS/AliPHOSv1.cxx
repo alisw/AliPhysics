@@ -67,16 +67,18 @@ AliPHOSv1::AliPHOSv1()
  
   fReconstructioner  = 0;
   fTrackSegmentMaker = 0;
- 
-  if ( 0==(fEMCModules=new TClonesArray("AliPHOSCPVModule",0)) ) {
-    Error("AliPHOSv1","Can not create array of EMC modules");
-    exit(1);
-  }
 
-  if ( 0==(fCPVModules=new TClonesArray("AliPHOSCPVModule",0)) ) {
-    Error("AliPHOSv1","Can not create array of CPV modules");
-    exit(1);
-  }
+  fHits = new TClonesArray("AliPHOSHit",1000) ;
+ 
+  //  if ( 0==(fEMCModules=new TClonesArray("AliPHOSCPVModule",0)) ) {
+  //    Error("AliPHOSv1","Can not create array of EMC modules");
+  //    exit(1);
+  //  }
+
+  //  if ( 0==(fCPVModules=new TClonesArray("AliPHOSCPVModule",0)) ) {
+  //    Error("AliPHOSv1","Can not create array of CPV modules");
+  //    exit(1);
+  //  }
 
 }
 
@@ -96,7 +98,10 @@ AliPHOSv0(name,title)
   //
 
   fPinElectronicNoise = 0.010 ;
-  fDigitThreshold      = 0.1 ;   // 1 GeV 
+  fDigitThreshold      = 0.01 ;   // 1 GeV 
+  fDigitizeA= 0. ;             
+  fDigitizeB = 10000000. ;    
+
 
   // We do not want to save in TreeH the raw hits
   // But save the cumulated hits instead (need to create the branch myself)
@@ -114,32 +119,32 @@ AliPHOSv0(name,title)
   
   // Create array of EMC modules of the size of PHOS modules number
   
-  if ( 0==(fEMCModules=new TClonesArray("AliPHOSCPVModule",fGeom->GetNModules())) ) {
-    Error("AliPHOSv1","Can not create array of EMC modules");
-    exit(1);
-  }
-  TClonesArray &lemcmodule = *fEMCModules;
-  for (Int_t i=0; i<fGeom->GetNModules(); i++) new(lemcmodule[i]) AliPHOSCPVModule();
+//  if ( 0==(fEMCModules=new TClonesArray("AliPHOSCPVModule",fGeom->GetNModules())) ) {
+//    Error("AliPHOSv1","Can not create array of EMC modules");
+//    exit(1);
+//  }
+//  TClonesArray &lemcmodule = *fEMCModules;
+//  for (Int_t i=0; i<fGeom->GetNModules(); i++) new(lemcmodule[i]) AliPHOSCPVModule();
 
   // Create array of CPV modules for the IHEP's version of CPV
 
-  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-    // Create array of CPV modules of the size of PHOS modules number
+//  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
+//    // Create array of CPV modules of the size of PHOS modules number
 
-    if ( 0==(fCPVModules=new TClonesArray("AliPHOSCPVModule",fGeom->GetNCPVModules())) ) {
-      Error("AliPHOSv1","Can not create array of CPV modules");
-      exit(1);
-    }
-    TClonesArray &lcpvmodule = *fCPVModules;
-    for (Int_t i=0; i<fGeom->GetNCPVModules(); i++) new(lcpvmodule[i]) AliPHOSCPVModule();
-  }
-  else {
-    // Create an empty array of AliPHOSCPVModule to satisfy
-    // AliPHOSv1::Streamer when writing root file
+//    if ( 0==(fCPVModules=new TClonesArray("AliPHOSCPVModule",fGeom->GetNCPVModules())) ) {
+//      Error("AliPHOSv1","Can not create array of CPV modules");
+//      exit(1);
+//    }
+//    TClonesArray &lcpvmodule = *fCPVModules;
+//    for (Int_t i=0; i<fGeom->GetNCPVModules(); i++) new(lcpvmodule[i]) AliPHOSCPVModule();
+//  }
+//  else {
+//    // Create an empty array of AliPHOSCPVModule to satisfy
+//    // AliPHOSv1::Streamer when writing root file
 
-    fCPVModules=new TClonesArray("AliPHOSCPVModule",0);
+//    fCPVModules=new TClonesArray("AliPHOSCPVModule",0);
 
-  }
+//  }
 }
 
 //____________________________________________________________________________
@@ -194,6 +199,12 @@ AliPHOSv1::~AliPHOSv1()
     fHits = 0 ; 
   }
 
+  if ( fSDigits) {
+    fSDigits->Delete() ; 
+    delete fSDigits ;
+    fSDigits = 0 ; 
+  }
+
   if ( fDigits) {
     fDigits->Delete() ; 
     delete fDigits ;
@@ -221,7 +232,7 @@ AliPHOSv1::~AliPHOSv1()
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t trackpid)
+void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t trackpid, TLorentzVector p, Float_t * lpos)
 {
   // Add a hit to the hit list.
   // A PHOS hit is the sum of all hits in a single crystal
@@ -232,7 +243,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   AliPHOSHit *curHit ;
   Bool_t deja = kFALSE ;
 
-  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, trackpid) ;
+  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, trackpid, p, lpos) ;
 
   for ( hitCounter = 0 ; hitCounter < fNhits && !deja ; hitCounter++ ) {
     curHit = (AliPHOSHit*) (*fHits)[hitCounter] ;
@@ -250,49 +261,26 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   delete newHit;
 }
 
-//___________________________________________________________________________
-Int_t AliPHOSv1::Digitize(Float_t Energy)
-{
-  // Applies the energy calibration
-  
-  Float_t fB = 10000000. ;
-  Float_t fA = 0. ;
-  Int_t chan = Int_t(fA + Energy*fB ) ;
-  return chan ;
-}
-
 //____________________________________________________________________________
-void AliPHOSv1::Hit2Digit(Int_t ntracks){
-  //Collects all hits in the same active volume into digits
-  
-  if(fDigits!= 0)
-    fDigits->Clear() ;
-  else
-    fDigits = new TClonesArray("AliPHOSDigit",1000) ;
-  
-  // Branch address for digit tree
-  char branchname[20];
-  sprintf(branchname,"%s",GetName());
-  gAlice->TreeD()->Branch(branchname,&fDigits,fBufferSize);  
-  
-  gAlice->TreeD()->GetEvent(0);
+void AliPHOSv1::Hits2SDigits(){
+  //Collects all hits in the same active volume into digit
 
-  
   Int_t i ;
-  Int_t relid[4];
   Int_t j ; 
   AliPHOSHit   * hit ;
   AliPHOSDigit * newdigit ;
   AliPHOSDigit * curdigit ;
   Bool_t deja = kFALSE ; 
   
+
   Int_t itrack ;
-  for (itrack=0; itrack<ntracks; itrack++){
-    
+  for (itrack=0; itrack<gAlice->GetNtrack(); itrack++){
+        
     //=========== Get the Hits Tree for the Primary track itrack
     gAlice->ResetHits();    
     gAlice->TreeH()->GetEvent(itrack);
       
+
     for ( i = 0 ; i < fHits->GetEntries() ; i++ ) {
       hit = (AliPHOSHit*)fHits->At(i) ;
     
@@ -303,9 +291,8 @@ void AliPHOSv1::Hit2Digit(Int_t ntracks){
 	newdigit = new AliPHOSDigit( -1               , hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
       deja =kFALSE ;
 
-
-      for ( j = 0 ; j < fNdigits ;  j++) { 
-	curdigit = (AliPHOSDigit*) fDigits->At(j) ;
+      for ( j = 0 ; j < fnSdigits ;  j++) { 
+	curdigit = (AliPHOSDigit*) fSDigits->At(j) ;
 	if ( *curdigit == *newdigit) {
 	  *curdigit = *curdigit + *newdigit ; 
 	  deja = kTRUE ; 
@@ -313,43 +300,121 @@ void AliPHOSv1::Hit2Digit(Int_t ntracks){
       }
 
       if ( !deja ) {
-	new((*fDigits)[fNdigits]) AliPHOSDigit(* newdigit) ;
-	fNdigits++ ;  
+	new((*fSDigits)[fnSdigits]) AliPHOSDigit(* newdigit) ;
+	fnSdigits++ ;  
       }
       
       delete newdigit ;    
     } 
 
   } // loop over tracks
-    
-  // Noise induced by the PIN diode of the PbWO crystals
-  
-  Float_t energyandnoise ;
-  for ( i = 0 ; i < fNdigits ; i++ ) {
-    newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
-    
-    fGeom->AbsToRelNumbering(newdigit->GetId(), relid) ;
-    
-    if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
-      energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPinElectronicNoise)) ;
-      
-      if (energyandnoise < 0 ) 
-	energyandnoise = 0 ;
-	
-      if ( newdigit->GetAmp() < fDigitThreshold ) // if threshold not surpassed, remove digit from list
-	fDigits->RemoveAt(i) ; 
-    }
+
+  fSDigits->Sort() ;
+
+  fnSdigits = fSDigits->GetEntries() ;
+  fSDigits->Expand(fnSdigits) ;
+
+  for (i = 0 ; i < fnSdigits ; i++) { 
+    AliPHOSDigit * digit = (AliPHOSDigit *) fSDigits->At(i) ; 
+    digit->SetIndexInList(i) ;     
   }
+
+  gAlice->TreeS()->Fill() ;
+  
+  TTree *ts = gAlice->TreeS();
+  TDirectory *dir = ts->GetDirectory() ; 
+  cout << "dir name is " << dir->GetName() << endl ;  
+  //  ts->Write(0,TObject::kOverwrite) ;
+
+gAlice->TreeS()->GetBranch("PHOS")->Fill();
+gAlice->TreeS()->GetBranch("PHOS")->Write();
+
+
+}
+//____________________________________________________________________________
+void AliPHOSv1::SDigits2Digits(){
+  //Adds noise to the summable digits and removes everething below thresholds
+  //Note, that sDigits should be SORTED in accordance with abs ID.
+
+
+  gAlice->TreeS()->GetEvent(0) ;
+
+  cout << "fSdigits " <<  fSDigits << " " << fSDigits->GetEntries() << endl ;
+  
+
+  // Noise induced by the PIN diode of the PbWO crystals
+  Int_t iCurSDigit = 0 ;
+  //we assume, that there is al least one EMC digit...
+  Int_t idCurSDigit = ((AliPHOSDigit *)fSDigits->At(0))->GetId() ;
+
+  cout << "fDigits " << fDigits << " " <<idCurSDigit<<  endl ;
+
+  Int_t absID ;
+  for(absID = 1; absID < fGeom->GetNModules()*fGeom->GetNPhi()*fGeom->GetNZ(); absID++){
+    
+    cout << "absID " << absID << " " << idCurSDigit << endl ; 
+
+    Float_t noise = gRandom->Gaus(0., fPinElectronicNoise) ; 
+    if(absID < idCurSDigit ){ 
+      cout << "In < idC  " << noise << " " << fDigitThreshold << endl ;
+      if(noise >fDigitThreshold ){
+	cout << "noise " << absID << " " << noise << endl;
+	new((*fDigits)[fNdigits]) AliPHOSDigit( -1,absID,Digitize(noise) ) ;
+	cout << "FN " << fNdigits << endl ;
+	fNdigits++ ;  
+      }
+    }
+    else{ //add noise and may be remove the true hit
+      cout << "correcting digit " << iCurSDigit << endl ;
+      Float_t signal = noise + Calibrate(((AliPHOSDigit *)fSDigits->At(iCurSDigit))->GetAmp()) ;
+      cout << "signal " << signal << endl ;
+      if( signal >fDigitThreshold ){
+	cout << "signal " << signal << endl ;
+	AliPHOSDigit * digit = (AliPHOSDigit*) fSDigits->At(iCurSDigit) ;
+	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
+	((AliPHOSDigit *)fDigits->At(fNdigits))->SetAmp(Digitize(signal));
+	cout << "fNdigits " << fNdigits << endl ;
+	fNdigits++ ;  
+      }
+
+      if(iCurSDigit < fSDigits->GetEntries()-1){
+	iCurSDigit++ ;
+	idCurSDigit = ((AliPHOSDigit*)fSDigits->At(iCurSDigit))->GetId() ;
+      }
+      else
+	idCurSDigit = 10000000; //no real hits left    
+    }
+    
+  }  
+
+  //remove PPSD/CPV digits below thresholds
+  Int_t idigit ;
+  for(idigit = iCurSDigit; idigit < fSDigits->GetEntries() ; idigit++){  //loop over CPV/PPSD digits
+    
+    AliPHOSDigit * digit = (AliPHOSDigit *) fSDigits->At(idigit) ; 
+    Float_t ene = Calibrate(digit->GetAmp()) ;
+    
+    Int_t relid[4] ; 
+    fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
+    if ( relid[0] > fGeom->GetNCPVModules() ){ //ppsd
+      if ( ( (relid[1] > 0) && (ene > fPpsdEnergyThreshold)) ||    //PPSD digit
+	   ( (relid[1] < 0) && (ene > fCpvEnergyThreshold ) ) )	   //CPV digit 
+	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
+	fNdigits++ ;
+    }
+  }    
     
   fDigits->Compress() ;  
   
   fNdigits = fDigits->GetEntries() ;
   fDigits->Expand(fNdigits) ;
 
+  Int_t i ;
   for (i = 0 ; i < fNdigits ; i++) { 
-    newdigit = (AliPHOSDigit *) fDigits->At(i) ; 
-    newdigit->SetIndexInList(i) ;     
+    AliPHOSDigit * digit = (AliPHOSDigit *) fDigits->At(i) ; 
+    digit->SetIndexInList(i) ;     
   }
+
 
   gAlice->TreeD()->Fill() ;
 
@@ -359,20 +424,81 @@ void AliPHOSv1::Hit2Digit(Int_t ntracks){
 
 //___________________________________________________________________________
 void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
-{  
+{ 
+
+
+  char *cH ; 
   // Create new branche in the current Root Tree in the digit Tree
   AliDetector::MakeBranch(opt) ;
-  
-  // Create new branches EMC<i> for hits in EMC modules
-  
-  for( Int_t i=0; i<fGeom->GetNModules(); i++ ) GetEMCModule(i).MakeBranch("EMC",i+1,file);
-  
-  // Create new branches CPV<i> for hits in CPV modules for IHEP geometry
-  
-  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-    for( Int_t i=0; i<fGeom->GetNCPVModules(); i++ ) GetCPVModule(i).MakeBranch("CPV",i+1,file);
+
+
+  cH = strstr(opt,"S");
+  //Create a branch for SDigits
+  if( cH ){
+    char branchname[20];
+    sprintf(branchname,"%s",GetName());  
+    if(fSDigits)
+      fSDigits->Clear();
+    else
+      fSDigits = new TClonesArray("AliPHOSDigit",1000);
+    fnSdigits = 0 ;
+    cout << " AliPHOSv1::MakeBranch : " << file << endl ; 
+    gAlice->MakeBranchInTree(gAlice->TreeS(),branchname,&fSDigits,fBufferSize,file);  
   }
   
+  cH = strstr(opt,"D");
+  //Create a branch for Digits
+  if( cH ){
+    char branchname[20];
+    sprintf(branchname,"%s",GetName());  
+    if(fSDigits)
+      fDigits->Clear();
+    else
+      fDigits = new TClonesArray("AliPHOSDigit",1000);
+    fNdigits = 0 ;
+    
+    gAlice->MakeBranchInTree(gAlice->TreeD(),branchname,&fSDigits,fBufferSize,file);  
+  }
+
+  cH = strstr(opt,"R");
+  //Create a branch for Reconstruction
+  if( cH ){
+    char branchname[20];
+
+    Int_t splitlevel = 0 ; 
+    
+    fEmcRecPoints->Delete() ; 
+
+    if ( fEmcRecPoints && gAlice->TreeR() ) {
+      sprintf(branchname,"%sEmcRP",GetName()) ;
+      gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcRecPoints, fBufferSize, splitlevel) ; 
+    }
+
+    fPpsdRecPoints->Delete() ; 
+
+    if ( fPpsdRecPoints && gAlice->TreeR() ) {
+      sprintf(branchname,"%sPpsdRP",GetName()) ;
+      gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
+    }
+
+    fTrackSegments->Delete() ; 
+    
+    if ( fTrackSegments && gAlice->TreeR() ) { 
+      sprintf(branchname,"%sTS",GetName()) ;
+      gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize) ;
+    }
+    
+    fRecParticles->Delete() ; 
+    
+    if ( fRecParticles && gAlice->TreeR() ) { 
+      sprintf(branchname,"%sRP",GetName()) ;
+      gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
+    }
+    
+  }
+
+
+
 }
 
 //_____________________________________________________________________________
@@ -385,41 +511,12 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   // 5. Write the Tree to File
   
   fReconstructioner = Reconstructioner ;
-  
-  char branchname[10] ;
-  
+    
   // 1.
 
   //  gAlice->MakeTree("R") ; 
-  Int_t splitlevel = 0 ; 
   
-  fEmcRecPoints->Delete() ; 
-
-  if ( fEmcRecPoints && gAlice->TreeR() ) {
-    sprintf(branchname,"%sEmcRP",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcRecPoints, fBufferSize, splitlevel) ; 
-  }
-
-  fPpsdRecPoints->Delete() ; 
-
-  if ( fPpsdRecPoints && gAlice->TreeR() ) {
-    sprintf(branchname,"%sPpsdRP",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
-  }
-
-  fTrackSegments->Delete() ; 
-
-  if ( fTrackSegments && gAlice->TreeR() ) { 
-    sprintf(branchname,"%sTS",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize) ;
-  }
-
-  fRecParticles->Delete() ; 
-
-  if ( fRecParticles && gAlice->TreeR() ) { 
-    sprintf(branchname,"%sRP",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
-  }
+  MakeBranch("R") ;
   
   // 3.
 
@@ -462,10 +559,10 @@ void AliPHOSv1::ResetHits()
   // Yuri Kharlov, 28 September 2000
 
   AliDetector::ResetHits();
-  for (Int_t i=0; i<fGeom->GetNModules(); i++) ((AliPHOSCPVModule*)(*fEMCModules)[i]) -> Clear();
-  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-    for (Int_t i=0; i<fGeom->GetNCPVModules(); i++) ((AliPHOSCPVModule*)(*fCPVModules)[i]) -> Clear();
-  }
+  //  for (Int_t i=0; i<fGeom->GetNModules(); i++) ((AliPHOSCPVModule*)(*fEMCModules)[i]) -> Clear();
+  //  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
+  //    for (Int_t i=0; i<fGeom->GetNCPVModules(); i++) ((AliPHOSCPVModule*)(*fCPVModules)[i]) -> Clear();
+  //  }
   
 }  
 //____________________________________________________________________________
@@ -479,6 +576,12 @@ void AliPHOSv1::ResetReconstruction()
   if ( fRecParticles  )  fRecParticles ->Delete();
   
 }
+
+//____________________________________________________________________________
+//void AliPHOSv1::SDigits2Digits() {
+//  // Adds the noise to the summable digits and keeps digits above a threshold 
+//  // To make a digit
+//}
 
 //____________________________________________________________________________
 void AliPHOSv1::SetTreeAddress()
@@ -496,14 +599,14 @@ void AliPHOSv1::SetTreeAddress()
   // Set branch address for the Hits Tree for hits in EMC modules
   // Yuri Kharlov, 23 November 2000.
 
-  for( Int_t i=0; i<fGeom->GetNModules(); i++ ) GetEMCModule(i).SetTreeAddress("EMC",i+1);
+  //  for( Int_t i=0; i<fGeom->GetNModules(); i++ ) GetEMCModule(i).SetTreeAddress("EMC",i+1);
 
   // Set branch address for the Hits Tree for hits in CPV modules for IHEP geometry
   // Yuri Kharlov, 28 September 2000.
 
-  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-    for( Int_t i=0; i<fGeom->GetNCPVModules(); i++ ) GetCPVModule(i).SetTreeAddress("CPV",i+1);
-  }
+  //  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
+  //    for( Int_t i=0; i<fGeom->GetNCPVModules(); i++ ) GetCPVModule(i).SetTreeAddress("CPV",i+1);
+  //  }
 
 }
 
@@ -522,13 +625,43 @@ void AliPHOSv1::StepManager(void)
   Int_t          absid    ;      // absolute cell ID number
   Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
   TLorentzVector pos      ;      // Lorentz vector of the track current position
+  TLorentzVector pmom     ;      //momentum of the particle initiated hit
+  Float_t        xyd[2]   ;      //local posiiton of the entering
+  Bool_t         entered = kFALSE    ;  
   Int_t          copy     ;
-  Int_t          i        ;
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name      =  fGeom->GetName() ; 
-  Int_t trackpid    =  gMC->TrackPid() ; 
+  Int_t trackpid    =  0  ; 
+
+  if( gMC->IsTrackEntering() ){ // create hit with position and momentum of new particle, 
+                                // but may be without energy deposition
+
+    // Current position of the hit in the local ref. system
+      gMC -> TrackPosition(pos);
+      Float_t xyzm[3], xyzd[3] ;
+      Int_t i;
+      for (i=0; i<3; i++) xyzm[i] = pos[i];
+      gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
+      xyd[0]  = xyzd[0];
+      xyd[1]  =-xyzd[2];
+      
+      // Current momentum of the hit's track in the local ref. system
+      gMC -> TrackMomentum(pmom);
+      Float_t pm[3], pd[3];
+      for (i=0; i<3; i++) pm[i]   = pmom[i];
+      gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
+      pmom[0] = pd[0];
+      pmom[1] =-pd[1];
+      pmom[2] =-pd[2];
+
+      trackpid = gMC->TrackPid();
+      entered = kTRUE ;      // Mark to create hit even withou energy deposition
+
+  }
+
+
   if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
 
     if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
@@ -539,7 +672,7 @@ void AliPHOSv1::StepManager(void)
       xyze[2] = pos[2] ;
       xyze[3] = gMC->Edep() ; 
 
-      if ( xyze[3] != 0 ) { // there is deposited energy 
+      if ( (xyze[3] != 0) || entered ) { // there is deposited energy or new particle entering  PPSD
        	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
 	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
 	  relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();
@@ -555,7 +688,8 @@ void AliPHOSv1::StepManager(void)
        	fGeom->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
-	AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid);
+	  AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid, pmom, xyd);
+
 
       } // there is deposited energy 
     } // We are inside the gas of the CPV  
@@ -566,57 +700,18 @@ void AliPHOSv1::StepManager(void)
     // Yuri Kharlov, 28 September 2000
 
     if( gMC->CurrentVolID(copy) == gMC->VolId("CPVQ") &&
-	gMC->IsTrackEntering() &&
-	gMC->TrackCharge() != 0) {
-
-      // Charged track has just entered to the CPV sensitive plane
+	entered &&
+	gMC->TrackCharge() != 0) {      
       
-      AliPHOSv1 &phos = *(AliPHOSv1*)gAlice->GetModule("PHOS");
-      
-      Int_t moduleNumber;
-      gMC->CurrentVolOffID(3,moduleNumber);
-      moduleNumber--;
-      
-      // Current position of the hit in the CPV module ref. system
-
-      gMC -> TrackPosition(pos);
-      Float_t xyzm[3], xyzd[3], xyd[3]={0,0,0};
-      Int_t i;
-      for (i=0; i<3; i++) xyzm[i] = pos[i];
-      gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
-      xyd[0]  = xyzd[0];
-      xyd[1]  =-xyzd[2];
-      
-      // Current momentum of the hit's track in the CPV module ref. system
-      
-      TLorentzVector  pmom;
-      gMC -> TrackMomentum(pmom);
-      Float_t pm[3], pd[3];
-      for (i=0; i<3; i++) pm[i]   = pmom[i];
-      gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
-      pmom[0] = pd[0];
-      pmom[1] =-pd[1];
-      pmom[2] =-pd[2];
-
-      // Current particle type of the hit's track
-
-      Int_t ipart = gMC->TrackPid();
-
-      // Add the current particle in the list of the CPV hits.
-
-      phos.GetCPVModule(moduleNumber).AddHit(fIshunt,primary,pmom,xyd,ipart);
-
-      if (fDebug == 1) {
-	printf("CPV hit added to module #%2d: p = (% .4f, % .4f, % .4f, % .4f) GeV,\n",
-	       moduleNumber+1,pmom.Px(),pmom.Py(),pmom.Pz(),pmom.E());
-	printf( "                            xy = (%8.4f, %8.4f) cm, ipart = %d, primary = %d\n",
-		xyd[0],xyd[1],ipart,primary);
-      }
-
       // Digitize the current CPV hit:
 
       // 1. find pad response and
       
+      Int_t moduleNumber;
+      gMC->CurrentVolOffID(3,moduleNumber);
+      moduleNumber--;
+
+
       TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
       CPVDigitize(pmom,xyd,moduleNumber,cpvDigits);
       
@@ -664,7 +759,7 @@ void AliPHOSv1::StepManager(void)
 	xyze[2] = 0. ;
 	xyze[3] = cpvDigit->GetQpad() ;                           // amplitude in a pad
 	primary = -1;                                             // No need in primary for CPV
-	AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid);
+	AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid, pmom, xyd);
 
 	if (cpvDigit->GetQpad() > 0.02) {
 	  xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
@@ -676,6 +771,7 @@ void AliPHOSv1::StepManager(void)
     }
   } // end of IHEP configuration
   
+
   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") ) { //  We are inside a PBWO crystal
     gMC->TrackPosition(pos) ;
     xyze[0] = pos[0] ;
@@ -683,62 +779,11 @@ void AliPHOSv1::StepManager(void)
     xyze[2] = pos[2] ;
     xyze[3] = gMC->Edep() ;
 
-    // Track enters to the crystal from the top edge
+  
+    if ( (xyze[3] != 0) || entered ) {  // Track is inside the crystal and deposits some energy or just entered 
 
-    if (gMC->IsTrackEntering()) {
-      Float_t posloc[3];
-      gMC -> Gmtod (xyze, posloc, 1);
-      if (posloc[1] > fGeom->GetCrystalSize(1)/2-0.01) {
-	Int_t row,cel;
-	Float_t xyd[3]={0,0,0};
-	AliPHOSv1 &phos = *(AliPHOSv1*)gAlice->GetModule("PHOS");
-
-	Int_t moduleNumber;
-	gMC->CurrentVolOffID(10,moduleNumber);
-
-	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	  moduleNumber += fGeom->GetNModules() - fGeom->GetNPPSDModules();
-	moduleNumber--;
-
-	gMC->CurrentVolOffID(4, row) ; // get the row  number inside the module
-	gMC->CurrentVolOffID(3, cel) ; // get the cell number inside the module
-	xyd[0] = -(posloc[2] + (cel-0.5-fGeom->GetNZ()  /2) *
-	  (fGeom->GetCrystalSize(2) + 2 * fGeom->GetGapBetweenCrystals()));
-	xyd[1] =   posloc[0] + (row-0.5-fGeom->GetNPhi()/2) *
-	  (fGeom->GetCrystalSize(0) + 2 * fGeom->GetGapBetweenCrystals());
-
-	// Current momentum of the hit's track in the CPV module ref. system
-	
-	TLorentzVector  pmom;
-	gMC -> TrackMomentum(pmom);
-	Float_t pm[3], pd[3];
-	for (i=0; i<3; i++) pm[i]   = pmom[i];
-	gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
-	pmom[0] = pd[0];
-	pmom[1] =-pd[1];
-	pmom[2] =-pd[2];
-	
-	// Current particle type of the hit's track
-	
-	Int_t ipart = gMC->TrackPid();
-
-	// Add the current particle in the list of the EMC hits.
-
-	phos.GetEMCModule(moduleNumber).AddHit(fIshunt,primary,pmom,xyd,ipart);
-
-	if (fDebug == 1) {
-	  printf("EMC hit added to module #%2d: p = (% .4f, % .4f, % .4f, % .4f) GeV,\n",
-		 moduleNumber+1,pmom.Px(),pmom.Py(),pmom.Pz(),pmom.E());
-	  printf( "                            xy = (%8.4f, %8.4f) cm, ipart = %d, primary = %d\n",
-		  xyd[0],xyd[1],ipart,primary);
-	}
-      }
-    }
-
-    // Track is inside the crystal and deposits some energy
-
-    if ( xyze[3] != 0 ) {
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
+
       if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
 	relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();      
 
@@ -750,10 +795,13 @@ void AliPHOSv1::StepManager(void)
       fGeom->RelToAbsNumbering(relid, absid) ; 
 
       // add current hit to the hit list
-      AddHit(fIshunt, primary,tracknumber, absid, xyze, trackpid);
+	AddHit(fIshunt, primary,tracknumber, absid, xyze, trackpid,pmom, xyd);
+
 
     } // there is deposited energy
   } // we are inside a PHOS Xtal
+
+
 }
 
 //____________________________________________________________________________

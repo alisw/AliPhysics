@@ -39,7 +39,7 @@ class AliPHOSDigit : public AliDigitNew {
   Bool_t operator==(const AliPHOSDigit &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
     
-  Int_t   Compare(TObject * obj) ;  
+  Int_t   Compare(const TObject * obj) const ;  
   Int_t   GetNprimary() const { 
     // returns the number of primaries
     return fNprimary ; }
