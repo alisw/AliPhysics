@@ -92,7 +92,7 @@ void MUONhits (Int_t evNumber1=0,Int_t evNumber2=0, Int_t ic=1)
  
     TH1F *emult   =  new TH1F("emult","Event Multiplicity",100,0,1000);   
     AliMUONChamber*  iChamber;
-    AliMUONSegmentation* seg;
+    AliSegmentation* seg;
     
 //
 //   Loop over events 
