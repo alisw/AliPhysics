@@ -127,7 +127,16 @@ Bool_t AliStream::NextEventInStream(Int_t &serialNr)
   if (fLastEventSerialNr+1 >= fEvents) {
     if (!OpenNextFile()) return kFALSE;
   }
-  serialNr = ++fLastEventSerialNr;
+
+  fLastEventSerialNr++;
+// in some cases the serial number does not start from 0, find the 
+// number of the next event
+  char name[20];
+  sprintf(name, "TreeS%d", ++fLastEventNr);
+  while (!fCurrentFile->Get(name) && fLastEventNr < fEvents)
+    sprintf(name, "TreeS%d", ++fLastEventNr);
+  serialNr = fLastEventNr;
+  
   return kTRUE;
 }
 
@@ -183,6 +192,7 @@ Bool_t AliStream::OpenNextFile()
   }
   fEvents = static_cast<Int_t>(te->GetEntries());
   fLastEventSerialNr = -1;
+  fLastEventNr = -1;
   return kTRUE;
 }
 
