@@ -4,7 +4,8 @@
 // -----------------------------
 // MUON Station3 geometry construction class.
 //
-// Author: Eric Dumonteil, Philippe Crochet
+// Author: Eric Dumonteil (dumontei@cea.fr)
+
 
 #ifndef ALI_MUON_SLAT_GEOMETRY_BUILDER_H
 #define ALI_MUON_SLAT_GEOMETRY_BUILDER_H
