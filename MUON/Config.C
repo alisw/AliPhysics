@@ -145,7 +145,6 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(0,360);
      gener->SetYRange(2.5,4);
-     gener->SetThetaRange(2,9);
      gener->SetPtRange(0,10);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
