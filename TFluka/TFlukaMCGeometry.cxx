@@ -14,15 +14,23 @@
  **************************************************************************/
 
 // $Id$
+
+// Class TFlukaMCGeometry
+// --------------------
+// Implementation of the TVirtualMCGeometry interface
+// for defining and using TGeo geometry with FLUKA.
+// This allows the FLUKA MonteCarlo to run with the TGeo 
+// geometrical modeller
 // Author: Andrei Gheata 10/07/2003
 
-#include "TObjString.h"
+#include "Riostream.h"
+
+#include "TCallf77.h"
 #include "TFluka.h"
 #include "TFlukaMCGeometry.h"
 #include "TGeoManager.h" 
 #include "TGeoVolume.h" 
-
-#include "TCallf77.h"
+#include "TObjString.h"
 
 #ifndef WIN32 
 # define idnrwr idnrwr_

@@ -15,10 +15,6 @@
 #include "TNamed.h"
 #endif
 
-#ifndef ROOT_Riostream
-#include "Riostream.h"
-#endif
-
 class TFlukaMCGeometry :public TNamed {
 
   public:
