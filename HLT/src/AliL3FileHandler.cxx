@@ -385,6 +385,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	  return;
 	}
     }
+  Int_t digcounter=0;
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
       
@@ -398,6 +399,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	printf("AliL3FileHandler::AliDigits2RootFile : No padrow %d %d\n",sector,row);
       
       AliL3DigitData *digPt = rowPt->fDigitData;
+      digcounter=0;
       for(UInt_t j=0; j<rowPt->fNDigit; j++)
 	{
 	  UShort_t charge = digPt[j].fCharge;
@@ -406,12 +408,15 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	  
 	  if(charge == 0) //Only write the digits that has not been removed
 	    continue;
-	  dig->SetDigitFast(old_dig->GetDigit(time,pad),time,pad);
+	  //dig->SetDigitFast(old_dig->GetDigit(time,pad),time,pad);
+	  digcounter++;
+	  dig->SetDigitFast(charge,time,pad);
 	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,0),time,pad,0);
 	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,1),time,pad,1);
 	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,2),time,pad,2);
 	  
 	}
+      //cout<<"Wrote "<<digcounter<<" on row "<<i<<endl;
       UpdateRowPointer(rowPt);
       arr->StoreRow(sector,row);
       arr->ClearRow(sector,row);  
