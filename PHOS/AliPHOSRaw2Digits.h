@@ -28,6 +28,7 @@ class AliPHOSRaw2Digits : public TTask {
 public:
   AliPHOSRaw2Digits() ;          // ctor
   AliPHOSRaw2Digits(const char * inputFileName,Bool_t toSplit = kTRUE) ;         
+  AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d) ;          // cpy ctor
   virtual ~AliPHOSRaw2Digits() ; // dtor
 
   void Exec(Option_t *option) ;
@@ -46,7 +47,8 @@ public:
   void SetConTableDB(AliPHOSConTableDB * ctdb){fctdb = ctdb ;}
   void SetMaxEventsPerFile(Int_t nev=20000){fMaxPerFile = nev ;}
   void Print(Option_t *option="")const ;
-
+  AliPHOSRaw2Digits & operator = ( AliPHOSRaw2Digits & r2d ) { return *this ; } 
+  
 private:
   Bool_t StartRootFiles(void) ;
   Bool_t CloseRootFiles(void) ;

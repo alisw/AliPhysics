@@ -68,21 +68,23 @@ ClassImp(AliPHOSConTableDB)
   fGeom = AliPHOSGeometry::GetInstance("IHEP","") ;
 
 }
+
 //____________________________________________________________________________ 
-  AliPHOSConTableDB::AliPHOSConTableDB(const AliPHOSConTableDB* cdb){
-//Copy constructor
-
-  fProtoRaws=cdb->fProtoRaws ;        //  Parameters
-  fProtoColumns=cdb->fProtoColumns ;     //  used to calculate
-  fRawOffset=cdb->fRawOffset ;        //  correspondance
-  fColOffset=cdb->fColOffset ;        //  map
-  fNcrInProto=cdb->fNcrInProto ;       //Number of channels in prototype
-  fMinAbsId=cdb->fMinAbsId ;         //Minimal AbsId, corresponding to some prototype cristall.
-  fMaxAbsId=cdb->fMaxAbsId ;         //Maximal AbsId, corresponding to some prototype cristall
-  fAbsIdMap=new TArrayS(*(cdb->fAbsIdMap)) ;         //Map of correspondance between Raw and PHOS ID
-  fRawIdMap=new TArrayS(*(cdb->fRawIdMap)) ;         //Map of correspondance between AbsId and Raw
-
+AliPHOSConTableDB::AliPHOSConTableDB(const AliPHOSConTableDB& cdb):TNamed(cdb.GetName(), cdb.GetTitle()) 
+{
+  //Copy constructor
+  
+  fProtoRaws=cdb.fProtoRaws ;        //  Parameters
+  fProtoColumns=cdb.fProtoColumns ;     //  used to calculate
+  fRawOffset=cdb.fRawOffset ;        //  correspondance
+  fColOffset=cdb.fColOffset ;        //  map
+  fNcrInProto=cdb.fNcrInProto ;       //Number of channels in prototype
+  fMinAbsId=cdb.fMinAbsId ;         //Minimal AbsId, corresponding to some prototype cristall.
+  fMaxAbsId=cdb.fMaxAbsId ;         //Maximal AbsId, corresponding to some prototype cristall
+  fAbsIdMap=new TArrayS(*(cdb.fAbsIdMap)) ;         //Map of correspondance between Raw and PHOS ID
+  fRawIdMap=new TArrayS(*(cdb.fRawIdMap)) ;         //Map of correspondance between AbsId and Raw
 }
+
 //____________________________________________________________________________ 
   AliPHOSConTableDB::~AliPHOSConTableDB()
 {

@@ -57,18 +57,11 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TSystem.h"
-#include "Bytes.h"
+//#include "Bytes.h"
 
 // --- Standard library ---
-#include <sys/stat.h>
-#include <fcntl.h>
+
 #include <unistd.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <netinet/in.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSDigit.h"
@@ -85,7 +78,7 @@ ClassImp(AliPHOSRaw2Digits)
 //____________________________________________________________________________ 
   AliPHOSRaw2Digits::AliPHOSRaw2Digits():TTask() 
 {
-//As one can easily see, this is constructor.
+  //As one can easily see, this is constructor.
   fInName="";  
   fMK1 = 0x0123CDEF ;
   fMK2 = 0x80708070 ;
@@ -109,7 +102,7 @@ ClassImp(AliPHOSRaw2Digits)
 //____________________________________________________________________________ 
   AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename,Bool_t toSplit):TTask("Default","") 
 {
-//this constructor should be normally used. Parameters: imput file and should we produce output in split mode.
+  //this constructor should be normally used. Parameters: imput file and should we produce output in split mode.
   fInName=filename;
   fToSplit = toSplit ;
   TString outname("") ;
@@ -141,6 +134,31 @@ ClassImp(AliPHOSRaw2Digits)
   fEvent = 0 ;
   fctdb = 0;
 }
+//____________________________________________________________________________ 
+AliPHOSRaw2Digits::AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d):TTask(r2d.GetName(), r2d.GetTitle()) 
+{
+  fInName=r2d.fInName ;
+  fToSplit = r2d.fToSplit ;
+
+  fMK1 =  r2d.fMK1 ;
+  fMK2 =  r2d.fMK2 ;
+  fMK3 =  r2d.fMK3 ;
+  fMK4 =  r2d.fMK4 ;
+  fCKW =  r2d.fCKW ;
+  fDebug =  kFALSE;             //  Debug flag
+  fIsInitialized =  kFALSE ;
+  fTarget[0] = r2d.fTarget[0] ;
+  fTarget[1] = r2d.fTarget[1] ;
+  fTarget[2] = r2d.fTarget[2] ;
+  fDigits = r2d.fDigits ;
+  fPHOSHeader = r2d.fPHOSHeader  ;
+  fHeaderFile = new TFile( (r2d.fHeaderFile)->GetName(), "new" ) ;
+  fDigitsFile = new TFile( (r2d.fDigitsFile)->GetName(), "new" ) ;
+  fMaxPerFile = r2d.fMaxPerFile ;
+  fEvent = r2d.fEvent ;
+  fctdb =  new AliPHOSConTableDB( *(r2d.fctdb) ) ;
+}
+
 //____________________________________________________________________________ 
 AliPHOSRaw2Digits::~AliPHOSRaw2Digits()
 {
@@ -540,8 +558,10 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
   fStatus = 1 ;  
   return kTRUE ;  
 }
+
 //____________________________________________________________________________ 
-void AliPHOSRaw2Digits::Swab4(void *from, void *to, size_t nwords)const{
+void AliPHOSRaw2Digits::Swab4(void *from, void *to, size_t nwords)const
+{
   // The function swaps 4 bytes: byte#3<-->byte#0, byte#2<-->byte#1 
   register char *pf=static_cast<char*>(from) ;
   register char *pt=static_cast<char*>(to) ;
@@ -561,7 +581,7 @@ void AliPHOSRaw2Digits::Swab4(void *from, void *to, size_t nwords)const{
 //____________________________________________________________________________ 
 void AliPHOSRaw2Digits::Swab2(void *from, void *to, size_t nwords)const
 { 
-//The function swaps 2x2 bytes: byte#0<-->byte#1, byte#2<-->byte#3 
+  //The function swaps 2x2 bytes: byte#0<-->byte#1, byte#2<-->byte#3 
   register char *pf=static_cast<char*>(from) ;
   register char *pt=static_cast<char*>(to);
   register char c;   

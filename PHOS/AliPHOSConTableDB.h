@@ -26,7 +26,8 @@ class AliPHOSConTableDB: public TNamed {
 public:
   AliPHOSConTableDB() ;          // ctor
   AliPHOSConTableDB(const char * title) ;          // ctor
-  AliPHOSConTableDB(const AliPHOSConTableDB * cdb) ;          // ctor
+
+  AliPHOSConTableDB(const AliPHOSConTableDB & cdb) ;   // cpy ctor
   virtual ~AliPHOSConTableDB() ; // dtor
 
   //Calculate table from known number of raws/columns 
