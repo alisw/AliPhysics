@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.18  2001/08/24 21:06:37  nilsen
+Added more documentation, fixed up some coding violations, and some
+forward declorations.
+
 Revision 1.17  2001/07/27 08:06:48  hristov
 Use global gRandom generator (M.Ivanov)
 
@@ -293,7 +297,8 @@ AliITSgeom::~AliITSgeom(){
     // TObjArray fShape is, by default, handled by the TObjArray destructor.
 
    if(fGm!=0){
-      for(Int_t i=0;i<fNlayers;i++) delete fGm->At(i);
+     //for(Int_t i=0;i<fNlayers;i++) delete fGm->At(i);
+      fGm->Delete();
       delete fGm;
    } // end if fGm!=0
    if(fNlad!=0) delete[] fNlad;
