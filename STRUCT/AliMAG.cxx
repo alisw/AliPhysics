@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2002/11/01 10:59:49  hristov
+Correcting geometry (corresponds to version 1.9)
+
 Revision 1.11  2002/10/17 16:33:07  hristov
 Corrected check of the MC type
 
@@ -219,7 +222,7 @@ void AliMAG::CreateGeometry()
   gMC->Gspos("L3FX", 1, "L3DX", 0., 0., 0., 0, "MANY");
   gMC->Gspos("L3IX", 1, "L3DX", 0., 0., 0., 0, "MANY");
 
-  if(strcmp(gMC->GetName(),"TGeant3")) {
+  if(!strcmp(gMC->GetName(),"TGeant3")) {
 
     gMC->Gspos("L3O1", 1, "L3FR", 0., 30., 0., 0, "MANY");
     gMC->Gspos("L3O2", 1, "L3IR", 0., 30., 0., 0, "MANY");
