@@ -44,7 +44,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("RICH",   3, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("START",  1, 0);
+  detSwitch = new AliDetSwitch("START",  2, 0);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("TOF",    5, 1, kDetector, false);
   AddDetSwitch(detSwitch); 
