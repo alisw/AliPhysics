@@ -82,8 +82,8 @@ protected:
   TArrayI *fClusterNIndexes;
   TArrayI *fClusterPIndexes;
 
-  static const Bool_t fgkSIDEP=kTRUE;
-  static const Bool_t fgkSIDEN=kFALSE;
+  static const Bool_t fgkSIDEP;
+  static const Bool_t fgkSIDEN;
 
 
 /***************/

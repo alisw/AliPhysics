@@ -5,6 +5,9 @@
 
 #include <TObject.h>
 
+static const Int_t kMaxNofPoles = 5;
+static const Int_t kMaxNofSamples = 1024;
+
 class AliITSetfSDD : public TObject {
 
 ////////////////////////////////////////////////////////////////////////
@@ -25,28 +28,26 @@ class AliITSetfSDD : public TObject {
   Double_t GetWeightImag(Int_t n) { return fWI[n]; }
   Double_t GetTraFunReal(Int_t n) { return fTfR[n]; }
   Double_t GetTraFunImag(Int_t n) { return fTfI[n]; }
-  Int_t GetSamples() { return fkMaxNofSamples; }
+  Int_t GetSamples() { return kMaxNofSamples; }
   void PrintElectronics();          // Print Electronics parameters  
 
  private:
 
-  static const Int_t fkMaxNofPoles = 5;
-  static const Int_t fkMaxNofSamples = 1024;
   
   Double_t fSamplingTime;      //
   Double_t fT0;                //
   Double_t fDf;                //
   Double_t fA0;                //
-  Double_t fZeroM[fkMaxNofPoles];  // 
-  Double_t fZeroR[fkMaxNofPoles];  // 
-  Double_t fZeroI[fkMaxNofPoles];  // 
-  Double_t fPoleM[fkMaxNofPoles];  // 
-  Double_t fPoleR[fkMaxNofPoles];  // 
-  Double_t fPoleI[fkMaxNofPoles];  // 
-  Double_t fTfR[fkMaxNofSamples];     // Transfer function (real part)
-  Double_t fTfI[fkMaxNofSamples];     // Transfer function (imaginary part)
-  Double_t fWR[fkMaxNofSamples];     // Fourier Weights (real part)
-  Double_t fWI[fkMaxNofSamples];     // Fourier Weights (imaginary part)
+  Double_t fZeroM[kMaxNofPoles];  // 
+  Double_t fZeroR[kMaxNofPoles];  // 
+  Double_t fZeroI[kMaxNofPoles];  // 
+  Double_t fPoleM[kMaxNofPoles];  // 
+  Double_t fPoleR[kMaxNofPoles];  // 
+  Double_t fPoleI[kMaxNofPoles];  // 
+  Double_t fTfR[kMaxNofSamples];     // Transfer function (real part)
+  Double_t fTfI[kMaxNofSamples];     // Transfer function (imaginary part)
+  Double_t fWR[kMaxNofSamples];     // Fourier Weights (real part)
+  Double_t fWI[kMaxNofSamples];     // Fourier Weights (imaginary part)
   
   ClassDef(AliITSetfSDD,1)  // Class for SDD electornics
     };

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/07/10 16:07:18  fca
+Release version of ITS code
+
 Revision 1.9.2.3  2000/02/02 13:42:09  barbera
 fixed AliITS.cxx for new AliRun structure. Added ITS hits list to list of hits which will have their track numbers updated
 
@@ -104,7 +107,7 @@ the AliITS class.
 #include "AliITSsegmentationSSD.h"
 #include "AliITSresponseSSD.h"
 
-
+const Int_t AliITS::fgkNTYPES=3;
 
 ClassImp(AliITS)
  

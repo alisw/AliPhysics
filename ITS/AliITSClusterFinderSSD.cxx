@@ -18,6 +18,8 @@
 Adding rekonstruction facilities
 Piotr Krzysztof Skowronski 
 December 1999.
+
+$Log$
 */
 
 /*
@@ -35,7 +37,10 @@ Automatic combination routines improved (traps)
 #include "AliITSpackageSSD.h"
  
 
-const Int_t debug=0;
+const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
+const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
+
+static const Int_t debug=0;
 
 ClassImp(AliITSClusterFinderSSD)
 

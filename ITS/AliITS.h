@@ -134,7 +134,7 @@ class AliITS : public AliDetector {
 
  protected:
 
-    static const Int_t fgkNTYPES=3;          // Number of detector types
+    static const Int_t fgkNTYPES;          // Number of detector types
 
     AliITSgeom  *fITSgeom;                   // Pointer to ITS geometry
     TObjArray   *fITSmodules;                // Pointer to ITS modules

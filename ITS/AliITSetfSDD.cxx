@@ -23,6 +23,8 @@
 // November 23 1999
 //
 //_____________________________________________________________________________
+
+
 ClassImp(AliITSetfSDD)
 
 Int_t ppower(Int_t b, Int_t e) {
@@ -38,11 +40,11 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep)
   fSamplingTime = timestep;
 
   fT0 = 0.;
-  fDf = ppower(10,9)/(fkMaxNofSamples*fSamplingTime);
+  fDf = ppower(10,9)/(kMaxNofSamples*fSamplingTime);
   fA0 = 9000.;
 
   Int_t i,j;
-  for(i=0; i<fkMaxNofPoles; i++) {
+  for(i=0; i<kMaxNofPoles; i++) {
     fZeroM[i] = 0.;
     fZeroR[i] = 0.;
     fZeroI[i] = 0.;
@@ -60,11 +62,11 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep)
    // Compute Transfer Function
 
   Double_t PI = acos(-1.);
-  for(i=0; i<=fkMaxNofSamples/2; i++) {
+  for(i=0; i<=kMaxNofSamples/2; i++) {
     Double_t frequency = fDf*i;
     Double_t VM = fA0;
     Double_t VA = 0.;
-    for(Int_t k=0; k<fkMaxNofPoles; k++) {
+    for(Int_t k=0; k<kMaxNofPoles; k++) {
       if(fZeroM[k]) {
         Double_t VZR = -fZeroR[k];
         Double_t VZI = frequency - fZeroI[k];
@@ -105,20 +107,20 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep)
       //cout << "fTfR[" << i << "] = " << fTfR[i] << endl;
       //cout << "fTfI[" << i << "] = " << fTfI[i] << endl;
       if(i) {
-        fTfR[fkMaxNofSamples-i] = fTfR[i];
-        fTfI[fkMaxNofSamples-i] = -fTfI[i];
+        fTfR[kMaxNofSamples-i] = fTfR[i];
+        fTfI[kMaxNofSamples-i] = -fTfI[i];
       }
     }
   }
   
   // Compute Fourier Weights
 
-  for(i=0; i<=fkMaxNofSamples/2; i++) {
-    fWR[i] = cos(-2.*PI*i/fkMaxNofSamples);
-    fWI[i] = sin(-2.*PI*i/fkMaxNofSamples);
+  for(i=0; i<=kMaxNofSamples/2; i++) {
+    fWR[i] = cos(-2.*PI*i/kMaxNofSamples);
+    fWI[i] = sin(-2.*PI*i/kMaxNofSamples);
     if(i) {
-      fWR[fkMaxNofSamples-i] = fWR[i];
-      fWI[fkMaxNofSamples-i] = -fWI[i];
+      fWR[kMaxNofSamples-i] = fWR[i];
+      fWI[kMaxNofSamples-i] = -fWI[i];
     }
   }
 
@@ -127,7 +129,7 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep)
 void AliITSetfSDD::PrintElectronics()
 {
   cout << "Sampling Time " << fSamplingTime << endl;
-  cout << "Number of Time Samples " << fkMaxNofSamples << endl;
+  cout << "Number of Time Samples " << kMaxNofSamples << endl;
   cout << "fT0 " << fT0 << endl;
   cout << "fDf " << fDf << endl;
   cout << "fA0 " << fA0 << endl;
@@ -135,29 +137,29 @@ void AliITSetfSDD::PrintElectronics()
   cout << "Zero's and Pole's" << endl;
   cout << "fZeroM " << endl;
   Int_t i;
-  for(i=0; i<fkMaxNofPoles; i++) cout << fZeroM[i] << endl;
+  for(i=0; i<kMaxNofPoles; i++) cout << fZeroM[i] << endl;
   cout << "fZero_R " << endl;
-  for(i=0; i<fkMaxNofPoles; i++) cout << fZeroR[i] << endl;
+  for(i=0; i<kMaxNofPoles; i++) cout << fZeroR[i] << endl;
   cout << "fZeroI " << endl;
-  for(i=0; i<fkMaxNofPoles; i++) cout << fZeroI[i] << endl;
+  for(i=0; i<kMaxNofPoles; i++) cout << fZeroI[i] << endl;
   cout << "fPoleM " << endl;
-  for(i=0; i<fkMaxNofPoles; i++) cout << fPoleM[i] << endl;
+  for(i=0; i<kMaxNofPoles; i++) cout << fPoleM[i] << endl;
   cout << "fPoleR " << endl;
-  for(i=0; i<fkMaxNofPoles; i++) cout << fPoleR[i] << endl;
+  for(i=0; i<kMaxNofPoles; i++) cout << fPoleR[i] << endl;
   cout << "fPoleI " << endl;
-  for(i=0; i<fkMaxNofPoles; i++) cout << fPoleI[i] << endl;
+  for(i=0; i<kMaxNofPoles; i++) cout << fPoleI[i] << endl;
 
   cout << "Transfer function" << endl;
   cout << "Real Part" << endl;
-  for(i=0; i<fkMaxNofSamples; i++) cout << fTfR[i] << endl;
+  for(i=0; i<kMaxNofSamples; i++) cout << fTfR[i] << endl;
   cout << "Imaginary Part " << endl;
-  for(i=0; i<fkMaxNofSamples; i++) cout << fTfI[i] << endl;
+  for(i=0; i<kMaxNofSamples; i++) cout << fTfI[i] << endl;
 
   cout << "Fourier Weights" << endl;
   cout << "Real Part" << endl;
-  for(i=0; i<fkMaxNofSamples; i++) cout << fWR[i] << endl;
+  for(i=0; i<kMaxNofSamples; i++) cout << fWR[i] << endl;
   cout << "Imaginary Part " << endl;
-  for(i=0; i<fkMaxNofSamples; i++) cout << fWI[i] << endl;
+  for(i=0; i<kMaxNofSamples; i++) cout << fWI[i] << endl;
 }
 
 
