@@ -1,0 +1,260 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+  $Log$
+*/
+
+
+#include "AliRICHSegRes.h"
+#include "AliRICHSegResV1.h"
+
+
+//--------------------------------------------------------
+ClassImp(AliRICHSegmentationV1)
+
+//________________________________________________________________________________
+AliRICHSegmentationV1::AliRICHSegmentationV1()
+{ 
+  fNpx=160;
+  fNpy=144;
+  //fNpx=80;
+  //fNpy=48;
+  fSector=-1;
+}
+
+//________________________________________________________________________________
+AliRICHSegmentationV1::~AliRICHSegmentationV1()
+{ 
+}
+
+
+// calculate sector from x-y coordinates
+
+Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
+{
+
+  fSector=-1;
+  
+  if (x<-1.3)
+    {
+      if (y>22.75)
+	{
+	  if (y<63.1)
+	    fSector=0;
+	}
+      if (y<20.15)
+	{
+	  if (y>(-20.15))
+	    fSector=2;
+	}
+      if (y<(-22.75))
+	{
+	  if (y>(-63.1))
+	    fSector=4;
+	}
+    }
+  else if (x>1.3)
+    {
+      if (y>22.75)
+	{
+	  if (y<63.1)
+	    fSector=1;
+	}
+      if (y<20.15)
+	{
+	  if (y>(-20.15))
+	    fSector=3;
+	}
+      if (y<(-22.75))
+	{
+	  if (y>(-63.1))
+	    fSector=5;
+	}
+    }
+  
+  //if (fSector==2)
+    //printf("x:%f, y:%f, sector:%d\n",x,y,fSector);
+
+  return fSector;
+}
+
+
+void AliRICHSegmentationV1::GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+{
+//  returns pad coordinates (ix,iy) for given real coordinates (x,y)
+//
+// Please check origin of pad numbering !!!
+
+  Int_t sector=Sector(x,y);
+
+  //printf("Sector: %d\n",sector);
+
+
+  if (sector==0)
+    {
+      //ix = (x>0)? Int_t(x/fDpx)+1 : Int_t(x/fDpx);
+      //iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy);
+      ix = Int_t (x/fDpx+1.3);
+      iy = Int_t (y/fDpy-2.6);
+    }
+  if (sector==1)
+    {
+      ix = Int_t (x/fDpx-1.3);
+      iy = Int_t (y/fDpy-2.6);
+    }
+  if (sector==2)
+    {
+      ix = Int_t (x/fDpx+1.3);
+      iy = Int_t (y/fDpy);
+    }
+  if (sector==3)
+    {
+      ix = Int_t (x/fDpx-1.3);
+      iy = Int_t (y/fDpy);
+    }
+  if (sector==4)
+    {
+      ix = Int_t (x/fDpx+1.3);
+      iy = Int_t (y/fDpy+2.6);
+    }
+  if (sector==5)
+    {
+      ix = Int_t (x/fDpx-1.3);
+      iy = Int_t (y/fDpy+2.6);
+    }
+  
+  //ix = Int_t (x/fDpx);
+  //iy = Int_t (y/fDpy);
+
+  //ix = (x>0)? Int_t(x/fDpx)+1 : Int_t(x/fDpx);
+  //iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy);
+
+  if (sector==-1)
+    {
+      ix = fixmax;
+      iy = fiymax;
+    }
+
+  if (iy >  fNpy) iy= fNpy;
+  if (iy < -fNpy) iy=-fNpy;
+  if (ix >  fNpx) ix= fNpx;
+  if (ix < -fNpx) ix=-fNpx;
+}
+
+void AliRICHSegmentationV1::
+GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+{
+//  returns real coordinates (x,y) for given pad coordinates (ix,iy)
+//
+
+  //Int_t sector=Sector(ix*.8,iy*.84);
+
+  Int_t sector=-1;
+
+  if (ix<=0)
+    {
+      if (iy<=72)
+	{
+	  if (iy>24)
+	    sector=0;
+	}
+      if (iy<=24)
+	{
+	  if (iy>-24)
+	    sector=2;
+	}
+      if (iy<=-24)
+	{
+	  if (iy>-72)
+	    sector=4;
+	}
+    }
+  if (ix>0)
+    {
+      if (iy<=72)
+	{
+	  if (iy>24)
+	    sector=1;
+	}
+      if (iy<=24)
+	{
+	  if (iy>-24)
+	    sector=3;
+	}
+      if (iy<=-24)
+	{
+	  if (iy>-72)
+	    sector=5;
+	}
+    }
+  
+
+  if (sector==0)
+    {
+      //x = (ix>0) ? Float_t(ix*fDpx)-fDpx/2. : Float_t(ix*fDpx)-fDpx/2.;
+      //y = (iy>0) ? Float_t(iy*fDpy)-fDpy/2. : Float_t(iy*fDpy)-fDpy/2.;
+      x = Float_t(ix*fDpx)-fDpx/2.-1.3;
+      y = Float_t(iy*fDpy)-fDpy/2.+2.6;
+    }
+  if (sector==1)
+    {
+      x = Float_t(ix*fDpx)-fDpx/2.+1.3;
+      y = Float_t(iy*fDpy)-fDpy/2.+2.6;
+    }
+  if (sector==2)
+    {
+      x = Float_t(ix*fDpx)-fDpx/2.-1.3;
+      y = Float_t(iy*fDpy)-fDpy/2.;
+    }
+  if (sector==3)
+    {
+      x = Float_t(ix*fDpx)-fDpx/2.+1.3;
+      y = Float_t(iy*fDpy)-fDpy/2.;
+    }
+  if (sector==4)
+    {
+      x = Float_t(ix*fDpx)-fDpx/2.-1.3;
+      y = Float_t(iy*fDpy)-fDpy/2.-2.6;
+    }
+  if (sector==5)
+    {
+      x = Float_t(ix*fDpx)-fDpx/2.+1.3;
+      y = Float_t(iy*fDpy)-fDpy/2.-2.6;
+    }
+  
+  //if (sector==2)
+    //printf("fSector:%d x:%f y:%f\n",fSector,x,y);
+  
+}
+
+void AliRICHSegmentationV1::
+IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
+{
+/*
+  x1=fxt-fx-fDpx/2.;
+  x2=x1+fDpx;
+  y1=fyt-fy-fDpy/2.;
+  y2=y1+fDpy;    
+*/
+  //Int_t sector=Sector(fx,fy);
+
+  //printf("Sector:%d\n",sector);
+
+  x1=fxhit-fx-fDpx/2.;
+  x2=x1+fDpx;
+  y1=fyhit-fy-fDpy/2.;
+  y2=y1+fDpy;
+}
