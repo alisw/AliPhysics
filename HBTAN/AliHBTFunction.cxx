@@ -450,8 +450,7 @@ ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 }
 /******************************************************************/
 
-void AliHBTTwoPairFctn1D::
-ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
   trackpair = CheckPair(trackpair);
@@ -462,6 +461,58 @@ ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
    }
 
 }
+/******************************************************************/
+Double_t AliHBTTwoPairFctn1D::Scale()
+{
+  if (gDebug>0) cout<<"Enetered Scale()"<<endl;
+  if(!fNumerator) 
+   {
+     Error("Scale","No numerator");
+     return 0.0;
+   }
+  if(!fDenominator) 
+   {
+     Error("Scale","No denominator");
+     return 0.0;
+   }
+  
+  if(fNBinsToScale < 1) 
+   {
+    return 0.0;
+    Error("Scale","Number of bins for scaling is smaller thnan 1");
+   }
+  Int_t nbins = fNumerator->GetNbinsX();
+  if (fNBinsToScale > nbins) 
+   {
+    Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
+    return 0.0;
+   }
+  if (gDebug>0) cout<<"No errors detected"<<endl;
+
+  Double_t ratio;
+  Double_t sum = 0;
+  Int_t N = 0;
+  
+  Int_t offset = nbins - fNBinsToScale - 1; 
+  Int_t i;
+  for ( i = offset; i< nbins; i++)
+   {
+    if ( fNumerator->GetBinContent(i) > 0.0 )
+     {
+       ratio = fDenominator->GetBinContent(i)/fNumerator->GetBinContent(i);
+       sum += ratio;
+       N++;
+     }
+   }
+  
+  if(gDebug > 0) cout<<"sum="<<sum<<" fNBinsToScale="<<fNBinsToScale<<" N="<<N<<endl;
+  
+  if (N == 0) return 0.0;
+  Double_t ret = sum/((Double_t)N);
+
+  if(gDebug > 0) cout<<"Scale() returning "<<ret<<endl;
+  return ret;
+} 
 
 /******************************************************************/
 /******************************************************************/

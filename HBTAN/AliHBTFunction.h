@@ -199,13 +199,18 @@ class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn
   
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+  
+  Double_t Scale();  
+  void SetNumberOfBinsToScale(Int_t n = 30){fNBinsToScale = n;} 
  
  protected:
   virtual Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
 
   TH1D* fNumerator;
   TH1D* fDenominator;
-  
+
+  Int_t fNBinsToScale;
+
  public:
   ClassDef(AliHBTTwoPairFctn1D,1)
 };
