@@ -63,7 +63,7 @@ Int_t AliRunAnalysis::Run()
   }
  TDirectory* cwd = gDirectory; 
  Int_t nanal = fAnalysies.GetEntries();
- if (AliVAODParticle::GetDebug()) Info("Run","There is %d analysies",nanl);
+ if (AliVAODParticle::GetDebug()) Info("Run","There is %d analysies",nanal);
  /******************************/ 
  /*  Init Event                */ 
  /******************************/ 
