@@ -34,14 +34,10 @@ public:
   UInt_t GetNHit(void) const {return fNHit;}
   void SetNHit(UInt_t NHit) {fNHit = NHit;}
 
-  Float_t GetX11() const {return fX11;}
-  void SetX11(Float_t X11) {fX11 = X11;}
-  Float_t GetY11() const {return fY11;}
-  void SetY11(Float_t Y11) {fY11 = Y11;}
-  Float_t GetThetaX11() const {return fThetaX11;}
-  void SetThetaX11(Float_t ThetaX) {fThetaX11 = ThetaX;}
-  Float_t GetThetaY11() const {return fThetaY11;}    
-  void SetThetaY11(Float_t ThetaY) {fThetaY11 = ThetaY;}
+  Bool_t GetMatchTrigger() const {return fMatchTrigger;}
+  void SetMatchTrigger(Bool_t MatchTrigger) {fMatchTrigger = MatchTrigger;}
+  Double_t GetChi2MatchTrigger() const {return fChi2MatchTrigger;}
+  void SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger;}
 
 protected:
   // tracking chamber
@@ -54,13 +50,12 @@ protected:
   Double_t fChi2;             // chi2 in the MUON track fit
   UInt_t   fNHit;              // number of hit in the track
 
-  // trigger chamber
-  Float_t fX11;    // x position of fired Y strip in MC11
-  Float_t fY11;    // y position of fired X strip in MC11
-  Float_t fThetaX11; // track theta angle in X   
-  Float_t fThetaY11; // track theta angle in Y
+  // trigger matching
+  Bool_t   fMatchTrigger; // 1 if track matches with trigger track, 0 if not
+  Double_t fChi2MatchTrigger; // chi2 of trigger/track matching 
 
-  ClassDef(AliESDMuonTrack,1)  //MUON ESD track class 
+
+  ClassDef(AliESDMuonTrack,2)  //MUON ESD track class 
 };
 
 #endif 
