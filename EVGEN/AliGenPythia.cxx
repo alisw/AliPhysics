@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.56  2002/04/26 10:30:01  morsch
+Option kPyBeautyPbMNR added. (N. Carrer).
+
 Revision 1.55  2002/04/17 10:23:56  morsch
 Coding Rule violations corrected.
 
@@ -293,7 +296,7 @@ void AliGenPythia::Init()
 	break;
     case kPyD0PbMNR:
 	fParentSelect[0] =   421;
-	fFlavorSelect    =  4;	
+	fFlavorSelect    =   4;	
 	break;
     case kPyBeauty:
     case kPyBeautyPbMNR:
@@ -321,6 +324,7 @@ void AliGenPythia::Init()
 	fParentSelect[0] = 443;
 	break;
     case kPyMb:
+    case kPyMbNonDiffr:
     case kPyJets:
     case kPyDirectGamma:
 	break;
@@ -391,7 +395,8 @@ void AliGenPythia::Generate()
 	Int_t nc = 0;        // Total n. of selected particles
 	Int_t nParents = 0;  // Selected parents
 	Int_t nTkbles = 0;   // Trackable particles
-	if (fProcess != kPyMb && fProcess != kPyJets && fProcess != kPyDirectGamma) {
+	if (fProcess != kPyMb && fProcess != kPyJets && fProcess != kPyDirectGamma &&
+	    fProcess != kPyMbNonDiffr) {
 	    
 	    for (i = 0; i<np; i++) {
 		iparticle = (TParticle *) fParticles->At(i);
