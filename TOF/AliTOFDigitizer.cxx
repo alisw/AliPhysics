@@ -159,7 +159,7 @@ void AliTOFDigitizer::CreateDigits()
   // loop on sdigits container to fill the AliTOFdigit TClonesArray
   // start digitizing all the collected sdigits 
 
-  Int_t ndump=15; // dump the first ndump created digits for each event
+  Int_t ndump=0; // dump the first ndump created digits for each event
 
   // get the total number of collected sdigits
   Int_t ndig = fSDigitsArray->GetEntriesFast();

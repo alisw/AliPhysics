@@ -236,7 +236,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
    cout<<" Make branch "<<brD<<endl;
 
    treeD->Fill();  //this operator does not work for events >1
-   treeD->Print();
+   //PH   treeD->Print();
    outgime->WriteDigits("OVERWRITE");
   
    gAlice->ResetDigits();
