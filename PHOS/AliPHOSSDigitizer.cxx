@@ -52,21 +52,14 @@
 
 // --- ROOT system ---
 #include "TFile.h"
-#include "TTask.h"
-#include "TTree.h"
-#include "TSystem.h"
 #include "TROOT.h"
-#include "TFolder.h"
 #include "TBenchmark.h"
-#include "TGeometry.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliRun.h"
-#include "AliHeader.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSSDigitizer.h"
@@ -91,6 +84,18 @@ TTask(sDigitsTitle, headerFile)
   fToSplit = toSplit ;
   Init();
   fDefaultInit = kFALSE ; 
+}
+
+//____________________________________________________________________________ 
+AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) {
+  //cpy ctor 
+
+  fA             = sd.fA ;
+  fB             = sd.fB ;
+  fPrimThreshold = sd.fPrimThreshold ;
+  fSDigitsInRun  = sd.fSDigitsInRun ;
+  fSplitFile     = new TFile( (sd.fSplitFile)->GetName(), "new")  ; 
+  fToSplit       = sd.fToSplit ;
 }
 
 //____________________________________________________________________________ 
@@ -155,6 +160,7 @@ void AliPHOSSDigitizer::Init()
 //____________________________________________________________________________ 
 void AliPHOSSDigitizer::InitParameters()
 { 
+  // initializes the parameters for difitization
   fA             = 0;
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;

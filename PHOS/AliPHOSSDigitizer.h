@@ -15,8 +15,7 @@
 
 // --- ROOT system ---
 #include "TTask.h"
-#include "TString.h"
-  class TFile ;
+class TFile ;
 
 // --- Standard library ---
 
@@ -27,6 +26,7 @@ class AliPHOSSDigitizer: public TTask {
 public:
   AliPHOSSDigitizer() ;          // ctor
   AliPHOSSDigitizer(const char* headerFile, const char *sdigitsTitle = "Default", const Bool_t toSplit = kFALSE) ; 
+  AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) ; // cpy ctor
   virtual ~AliPHOSSDigitizer() ; // dtor
 
   Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
@@ -38,7 +38,8 @@ public:
   void SetSDigitsBranch(const char * title ) ;
   void UseHitsFrom(const char * filename) ;      
   Bool_t operator == (const AliPHOSSDigitizer & sd) const ;
-
+  AliPHOSSDigitizer & operator = (const AliPHOSSDigitizer & sd) {return *this ; } 
+  
 private:
   void     Init() ;
   void     InitParameters() ;
