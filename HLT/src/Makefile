@@ -17,7 +17,7 @@ SRCS	       = AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
                  AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinder.cxx \
                  AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
                  AliL3MemHandler.cxx AliL3FileHandler.cxx AliL3Evaluate.cxx \
-                 AliL3Benchmark.cxx AliL3Display.cxx
+                 AliL3Benchmark.cxx AliL3Display.cxx AliL3ClustFinderNew.cxx
 		 
 
 # C++ Headers
