@@ -8,6 +8,9 @@
 #
 # modification history
 # $Log$
+# Revision 1.6  2003/07/13 09:26:14  hristov
+# Transition to NewIO
+#
 # Revision 1.5  2003/05/02 15:11:52  hristov
 # Changes to avoid warnings (I.Hrivnacova)
 #
@@ -41,7 +44,7 @@
 #
 # This scipts is called with a primary command and a commandparameter. It generates output on stdout, so normally it is called with a redirection like
 #
-#   alibtool mkmoudle STEER > STEER/module.mk
+#   alibtool mkmodule STEER > STEER/module.mk
 #
 # The command is one of the following
 #
@@ -51,7 +54,7 @@
 # dependF
 #        Makes the dependencies for the file specified as second argument (fortran files)
 #
-# mkmoudle
+# mkmodule
 #        Creates the module.mk for the the given directory specified as the second argument.
 #
 # MKMOUDLE
@@ -79,16 +82,11 @@
 
 MkDepend()
 {
-IPATH="-I$ROOTSYS/cint/include"
-IPATH=$IPATH" -I/usr/include/g++-2"                   #Linux gcc 2.x
-IPATH=$IPATH" -I/opt/SUNWspro/WS6U1/include/CC/Cstd"  #Sun CC5
-IPATH=$IPATH" -I/usr/include/cxx"                     #DEC cxx
-IPATH=$IPATH" -I/opt/aCC/include"                     #HP-UX aCC
-rmkdepend -f- -w 3000 -- $IPATH $* | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
+rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
 }
 MkDependF()
 {
-rmkdepend -f- -Y -w 3000 -- $* | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
+rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
 }
 
 MkModule()
