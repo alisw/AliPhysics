@@ -56,13 +56,26 @@ void AliL3DDLDataFileHandler::FreeAll()
 {
   // frees all heap memory
   if(fReader) delete fReader;
-  if(fTPCStream) delete fTPCStream;
   fReader = 0;
+  if(fTPCStream) delete fTPCStream;
   fTPCStream = 0;
 }
 
 
 #ifdef use_newio
+Bool_t AliL3DDLDataFileHandler::SetReaderInput(AliRawEvent *rawevent)
+{
+  // sets the input of the reader
+  fEvent=-1;
+  fFilename="";
+  if(fReader) delete fReader;
+  fReader=new AliRawReaderRoot(rawevent);
+  if(fTPCStream) delete fTPCStream;
+  fTPCStream=new AliTPCRawStream(fReader);
+
+  return kTRUE;
+}
+
 Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name,Int_t event)
 {
   // sets the input of the reader

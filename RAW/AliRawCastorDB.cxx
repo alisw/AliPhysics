@@ -34,8 +34,16 @@ ClassImp(AliRawCastorDB)
 
 
 //______________________________________________________________________________
-AliRawCastorDB::AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compress)
-   : AliRawDB(event, maxsize, compress, kFALSE)
+AliRawCastorDB::AliRawCastorDB(AliRawEvent *event,
+#ifdef USE_HLT
+			       AliESD *esd,
+#endif
+			       Double_t maxsize, Int_t compress)
+   : AliRawDB(event,
+#ifdef USE_HLT
+	      esd,
+#endif
+	      maxsize, compress, kFALSE)
 {
    // Create a new raw DB that will be accessed via CASTOR and rootd.
 

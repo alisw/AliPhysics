@@ -59,6 +59,15 @@
 #include "libDateEb.h"
 #endif
 
+#ifdef USE_HLT
+#include <AliL3StandardIncludes.h>
+#include "AliL3Logging.h"
+#include <AliL3Transform.h>
+#include "AliRawReaderRoot.h"
+#include <AliL3Hough.h>
+#include <AliESD.h>
+#endif
+
 #include "AliRawEvent.h"
 #include "AliRawEventHeader.h"
 #include "AliRawEquipment.h"
@@ -228,19 +237,36 @@ Int_t AliMDC::Run()
 
    // Event object used to store event data.
    AliRawEvent *event = new AliRawEvent;
+#ifdef USE_HLT
+   //Init HLT
+   AliL3Log::fgLevel=AliL3Log::kError;
+   ALIDEBUG(1)
+     AliL3Log::fgLevel=AliL3Log::kWarning;
+   ALIDEBUG(2)
+     AliL3Log::fgLevel=AliL3Log::kWarning;
+   ALIDEBUG(3)
+     AliL3Log::fgLevel=AliL3Log::kNone;
+
+   if (!AliL3Transform::Init("./", kFALSE)) {
+     Error("Run","HLT initialization failed!");
+     return 1;
+   }
+
+   AliESD *esd = new AliESD;
+#endif
 
    // Create new raw DB.
    AliRawDB *rawdb;
    if (fWriteMode == kRFIO)
-      rawdb = new AliRawRFIODB(event, fMaxFileSize, fCompress);
+      rawdb = new AliRawRFIODB(event, esd, fMaxFileSize, fCompress);
    else if (fWriteMode == kROOTD)
-      rawdb = new AliRawRootdDB(event, fMaxFileSize, fCompress);
+      rawdb = new AliRawRootdDB(event, esd, fMaxFileSize, fCompress);
    else if (fWriteMode == kCASTOR)
-      rawdb = new AliRawCastorDB(event, fMaxFileSize, fCompress);
+      rawdb = new AliRawCastorDB(event, esd, fMaxFileSize, fCompress);
    else if (fWriteMode == kDEVNULL)
-      rawdb = new AliRawNullDB(event, fMaxFileSize, fCompress);
+      rawdb = new AliRawNullDB(event, esd, fMaxFileSize, fCompress);
    else
-      rawdb = new AliRawDB(event, fMaxFileSize, fCompress);
+      rawdb = new AliRawDB(event, esd, fMaxFileSize, fCompress);
 
    if (rawdb->IsZombie()) return 1;
    printf("Filling raw DB %s\n", rawdb->GetDBName());
@@ -310,9 +336,8 @@ Int_t AliMDC::Run()
 
       // Check if event has any hard track flagged
       Bool_t callFilter = kFALSE;
-      // This needs to be re-engineered for the next ADC...
-      //if (fUseFilter && TEST_USER_ATTRIBUTE(header.GetTypeAttribute(), 0))
-      //   callFilter = kTRUE;
+      if (fUseFilter)
+	callFilter = kTRUE;
 
       // Check event type and skip "Start of Run", "End of Run",
       // "Start of Run Files" and "End of Run Files"
@@ -432,8 +457,10 @@ Int_t AliMDC::Run()
 
                // Read equipment raw data
                AliRawData &subRaw = *equipment.GetRawData();
-	       Int_t eqSize = equipmentHeader.GetEquipmentSize() -
-                              equipHeaderSize;
+	       // To be checked !
+	       //	       Int_t eqSize = equipmentHeader.GetEquipmentSize() -
+	       //                              equipHeaderSize;
+	       Int_t eqSize = equipmentHeader.GetEquipmentSize();
                if ((status = ReadRawData(subRaw, eqSize, ebdata)) != eqSize) {
                   if (status == 0) {
                      Error("Run", "unexpected EOF reading sub-event raw data");
@@ -444,16 +471,6 @@ Int_t AliMDC::Run()
                toRead  -= eqSize;
                rawSize -= eqSize;
 
-               if (callFilter) {
-#ifdef ALI_DATE
-                  if (TEST_USER_ATTRIBUTE(subHeader.GetTypeAttribute(), 0))
-                     Filter(subRaw);
-                  else {
-                     // set size of all sectors without hard track flag to 0
-                     subRaw.SetSize(0);
-                  }
-#endif
-               }
 	    }
 
          } else {  // Read only raw data but no equipment header
@@ -468,19 +485,22 @@ Int_t AliMDC::Run()
             }
             toRead  -= rawSize;
 
-            if (callFilter) {
-#ifdef ALI_DATE
-               if (TEST_USER_ATTRIBUTE(subHeader.GetTypeAttribute(), 0))
-                  Filter(subRaw);
-               else {
-                  // set size of all sectors without hard track flag to 0
-                  subRaw.SetSize(0);
-               }
-#endif
-            }
 	 }
 
          nsub++;
+      }
+
+      //HLT
+      if (callFilter) {
+#ifdef ALI_DATE
+	if(header.GetType() == AliRawEventHeader::kPhysicsEvent ||
+	   header.GetType() == AliRawEventHeader::kCalibrationEvent)
+	  Filter(
+#ifdef USE_HLT
+		 event,esd
+#endif
+		 );
+#endif
       }
 
       // Set stat info for first event of this file
@@ -542,7 +562,11 @@ Int_t AliMDC::Run()
       // Make top event object ready for next event data
       //printf("Event %d has %d sub-events\n", fNumEvents, event->GetNSubEvents());
       event->Reset();
-
+#ifdef USE_HLT
+      // Clean up HLT ESD for the next event
+      // Probably we could add esd->Reset() method to AliESD?
+      esd->Reset();
+#endif
 #ifdef USE_EB
       if (!ebReleaseEvent(ebvec)) {
          Error("Run", "problem releasing event (%s)", ebGetLastError());
@@ -740,22 +764,92 @@ Int_t AliMDC::DumpEvent(Int_t toRead)
 }
 
 //______________________________________________________________________________
-Int_t AliMDC::Filter(AliRawData &raw)
+Int_t AliMDC::Filter(
+#ifdef USE_HLT
+		     AliRawEvent *event,AliESD *esd
+#endif
+		     )
 {
-   // Call 3rd level filter for this raw data segment.
+  // Call 3rd level filter for this raw data event.
 
 #ifdef USE_HLT
 
-   // Add HLT code here
+  // Run the HLT code
+  {
+    TStopwatch timer;
+    timer.Start();
+
+    AliL3Hough *hough1 = new AliL3Hough();
+    
+    hough1->SetThreshold(4);
+    hough1->SetTransformerParams(76,140,0.4,-1);
+    hough1->SetPeakThreshold(70,-1);
+    // Attention Z of the vertex to be taken from the event head!
+    // So far for debug purposes it is fixed by hand...
+    hough1->Init(100,4,event,3.82147);
+    hough1->SetAddHistograms();
+
+    AliL3Hough *hough2 = new AliL3Hough();
+
+    hough2->SetThreshold(4);
+    hough2->SetTransformerParams(76,140,0.4,-1);
+    hough2->SetPeakThreshold(70,-1);
+    hough2->Init(100,4,event,3.82147);
+    hough2->SetAddHistograms();
+
+    Int_t nglobaltracks = 0;
+    /* In case we run HLT code in 2 threads */
+    hough1->StartProcessInThread(0,17);
+    hough2->StartProcessInThread(18,35);
+
+    if(hough1->WaitForThreadFinish())
+      ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+    if(hough2->WaitForThreadFinish())
+      ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+
+    /* In case we run HLT code in the main thread
+    for(Int_t slice=0; slice<=17; slice++)
+      {
+	hough1->ReadData(slice,0);
+	hough1->Transform();
+	hough1->AddAllHistogramsRows();
+	hough1->FindTrackCandidatesRow();
+	hough1->AddTracks();
+      }
+    for(Int_t slice=18; slice<=35; slice++)
+      {
+	hough2->ReadData(slice,0);
+	hough2->Transform();
+	hough2->AddAllHistogramsRows();
+	hough2->FindTrackCandidatesRow();
+	hough2->AddTracks();
+      }
+    */
+
+    nglobaltracks += hough1->FillESD(esd);
+    nglobaltracks += hough2->FillESD(esd);
+
+    /* In case we want to debug the ESD
+    gSystem->MakeDirectory("hough1");
+    hough1->WriteTracks("./hough1");
+    gSystem->MakeDirectory("hough2");
+    hough2->WriteTracks("./hough2");
+    */
+
+    delete hough1;
+    delete hough2;
+
+    printf("Filter called for event %d\n", fNumEvents);
+    printf("Filter has found %d TPC tracks in %f seconds\n", nglobaltracks,timer.RealTime());
+  }
 
 #else
 
-   raw.GetSize();
-   printf("Filter called for event %d\n", fNumEvents);
+  printf("Filter called for event %d\n", fNumEvents);
 
 #endif
 
-   return 0;
+  return 0;
 }
 
 //______________________________________________________________________________

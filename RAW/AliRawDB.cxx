@@ -34,6 +34,10 @@
 #include "AliRawEventHeader.h"
 #include "AliMDC.h"
 
+#ifdef USE_HLT
+#include "AliESD.h"
+#endif
+
 #include "AliRawDB.h"
 
 
@@ -41,12 +45,17 @@ ClassImp(AliRawDB)
 
 
 //______________________________________________________________________________
-AliRawDB::AliRawDB(AliRawEvent *event, Double_t maxsize, Int_t compress,
+AliRawDB::AliRawDB(AliRawEvent *event,
+#ifdef USE_HLT
+		   AliESD *esd, 
+#endif
+		   Double_t maxsize, Int_t compress,
                    Bool_t create)
 {
    // Create a new raw DB containing at most maxsize bytes.
 
    fEvent    = event;
+   fESD      = esd;
    fMaxSize  = maxsize;
    fCompress = compress;
 
@@ -228,6 +237,16 @@ void AliRawDB::MakeTree()
    //Int_t split   = 1;
    Int_t split   = 0;
    fTree->Branch("rawevent", "AliRawEvent", &fEvent, bufsize, split);
+
+#ifdef USE_HLT
+   // Create tree which will contain the HLT ESD information
+
+   fESDTree = new TTree("esdTree", Form("ALICE MDC%d HLT ESD tree", AliMDC::kMDC));
+   fESDTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
+   split   = 99;
+   fESDTree->Branch("ESD", "AliESD", &fESD, bufsize, split);
+#endif
+
 }
 
 //______________________________________________________________________________
@@ -241,6 +260,7 @@ void AliRawDB::Close()
 
    // Write the tree.
    fTree->Write();
+   fESDTree->Write();
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();

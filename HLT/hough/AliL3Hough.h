@@ -18,9 +18,13 @@ class AliL3HoughGlobalMerger;
 class AliL3Benchmark;
 
 #include "TThread.h"
-//class TThread;
 #ifdef use_newio
 #include <AliRunLoader.h>
+#include <../RAW/AliRawEvent.h>
+#endif
+#ifdef use_aliroot
+#include <AliESD.h>
+#include <AliESDHLTtrack.h>
 #endif
 
 class AliL3Hough {
@@ -34,6 +38,7 @@ class AliL3Hough {
   void SetRunLoader(AliRunLoader *runloader) {fRunLoader = runloader;}
 #endif
 
+  void Init(Int_t netasegments,Int_t tv,AliRawEvent *rawevent,Float_t zvertex=0.0);
   void Init(Char_t *path,Bool_t binary,Int_t netasegments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0,Float_t zvertex=0.0);
   void Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE);
 
@@ -55,6 +60,9 @@ class AliL3Hough {
   void EvaluatePatch(Int_t i,Int_t roadwidth,Int_t nrowstomiss);
   void WriteTracks(Int_t slice,Char_t *path="./");
   void WriteTracks(Char_t *path);
+#ifdef use_aliroot
+  Int_t FillESD(AliESD *esd);
+#endif
   void WriteDigits(Char_t *outfile="output_digits.root");
   void InitEvaluate();
   void DoBench(Char_t *filename);
@@ -96,6 +104,7 @@ class AliL3Hough {
  private:
   Char_t *fInputFile;//!
   Char_t *fInputPtr;//!
+  AliRawEvent *fRawEvent;//!
   Char_t fPath[1024]; // Path to the files
   Bool_t fBinary; // Is input binary
   Bool_t fAddHistograms; // Add all patch histograms at the end or not

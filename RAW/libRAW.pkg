@@ -1,3 +1,10 @@
+include HLT/hlt.conf
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
 SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
 	AliStats.cxx AliRawDB.cxx \
@@ -17,7 +24,9 @@ HDRS:= $(SRCS:.cxx=.h)
 
 EHDRS:=$(ROOTSYS)/include/TH1F.h
 
-EDEFINE:= -DUSE_RDM
+EINCLUDE:=HLT/src HLT/hough HLT/comp
+
+EDEFINE+= -DUSE_RDM -DUSE_HLT
 
 DHDR:= RAWLinkDef.h 
 

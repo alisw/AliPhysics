@@ -59,7 +59,7 @@ $(ALIMDC):      $(MAINO) $(DICT) $(OBJS)
 
 $(DICT):        $(HDRS)
 		@echo "Generating dictionary ..."
-		rootcint -f $(DICT) -c $(ROOTH) $(HDRS)
+		rootcint -f $(DICT) -c $(CXXFLAGS) $(ROOTH) $(HDRS)
 
 $(DICTO):       $(DICT)
 		$(CXX) $(NOOPT) $(CXXFLAGS) -c $(DICT)

@@ -29,11 +29,18 @@
 class AliRawEvent;
 class TFile;
 
+#ifdef USE_HLT
+class AliESD;
+#endif
 
 class AliRawDB : public TObject {
 
 public:
-   AliRawDB(AliRawEvent *event, Double_t maxsize, Int_t compress,
+   AliRawDB(AliRawEvent *event,
+#ifdef USE_HLT
+	    AliESD *esd,
+#endif
+	    Double_t maxsize, Int_t compress,
             Bool_t create = kTRUE);
    virtual ~AliRawDB() { Close(); }
 
@@ -41,7 +48,7 @@ public:
    virtual Int_t       GetNetopt() const { return 0; }
    virtual Bool_t      Create();
    virtual void        Close();
-   void                Fill() { fTree->Fill(); }
+   void                Fill() { fTree->Fill(); fESDTree->Fill(); }
    Bool_t              FileFull() { return (fRawDB->GetBytesWritten() > fMaxSize) ?
                                     kTRUE : kFALSE; }
 
@@ -59,6 +66,10 @@ protected:
    TFile         *fRawDB;         // DB to store raw data
    TTree         *fTree;          // tree used to store raw data
    AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
+#ifdef USE_HLT
+   TTree         *fESDTree;       // tree for storing HLT ESD information
+   AliESD        *fESD;           // pointer to HLT ESD object
+#endif
    Int_t          fCompress;      // compression mode (1 default)
    Double_t       fMaxSize;       // maximum size in bytes of the raw DB
 

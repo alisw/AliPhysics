@@ -484,7 +484,7 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 	      //	      cout<<" fTrackNRows "<<(Int_t)fInitialGapCount[xbin + ybin*nxbins]<<" "<<xbin<<" "<<ybin<<" "<<(Int_t)fTrackNRows[xbin + ybin*nxbins]<<" "<<(Int_t)fTrackFirstRow[xbin + ybin*nxbins]<<" "<<(Int_t)fTrackLastRow[xbin + ybin*nxbins]<<" "<<endl;
 	    }
 	}
-      delete tracklength;
+      delete [] tracklength;
     }
 
   if(!fStartPadParams)

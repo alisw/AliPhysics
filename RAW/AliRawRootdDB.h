@@ -18,7 +18,11 @@
 class AliRawRootdDB : public AliRawDB {
 
 public:
-   AliRawRootdDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
+   AliRawRootdDB(AliRawEvent *event,
+#ifdef USE_HLT
+		 AliESD *esd,
+#endif
+		 Double_t maxsize, Int_t compress);
    ~AliRawRootdDB() { Close(); }
 
    void Close();

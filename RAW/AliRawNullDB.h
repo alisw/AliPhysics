@@ -18,7 +18,11 @@
 class AliRawNullDB : public AliRawDB {
 
 public:
-   AliRawNullDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
+   AliRawNullDB(AliRawEvent *event,
+#ifdef USE_HLT
+		AliESD *esd,
+#endif
+		Double_t maxsize, Int_t compress);
    ~AliRawNullDB() { Close(); }
 
    void Close();

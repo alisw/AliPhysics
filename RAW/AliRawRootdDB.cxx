@@ -33,8 +33,16 @@ ClassImp(AliRawRootdDB)
 
 
 //______________________________________________________________________________
-AliRawRootdDB::AliRawRootdDB(AliRawEvent *event, Double_t maxsize, Int_t compress)
-   : AliRawDB(event, maxsize, compress, kFALSE)
+AliRawRootdDB::AliRawRootdDB(AliRawEvent *event,
+#ifdef USE_HLT
+			     AliESD *esd,
+#endif
+			     Double_t maxsize, Int_t compress)
+   : AliRawDB(event,
+#ifdef USE_HLT
+	      esd,
+#endif
+	      maxsize, compress, kFALSE)
 {
    // Create a new raw DB that will be accessed via rootd daemon.
 

@@ -18,7 +18,11 @@
 class AliRawCastorDB : public AliRawDB {
 
 public:
-   AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
+   AliRawCastorDB(AliRawEvent *event,
+#ifdef USE_HLT
+		  AliESD *esd,
+#endif
+		  Double_t maxsize, Int_t compress);
    ~AliRawCastorDB() { Close(); }
 
    const char *GetOpenOption() const { return "-RECREATE"; }

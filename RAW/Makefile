@@ -48,14 +48,15 @@ LIBS     += -L$(EBDIR)/Linux -L$(BMDIR)/Linux -L$(DBMDIR)/Linux \
 endif
 
 ifneq ($(findstring hlt,$(MAKECMDGOALS)),)
-CXXFLAGS += -DUSE_HLT -I$(ALITPC)
-LIBS     += -L$(ALITPC) -lSTEER -lTPC
+include ../HLT/hlt.conf
+CXXFLAGS += -DUSE_HLT ${HLTDEFS} -I${ALICE_ROOT}/include -I../HLT/src -I../HLT/hough -I../HLT/comp
+LIBS     += -lEG -lVMC -lGeom -lThread -L../lib/tgt_linuxDEBUG -lSTEER -lRAW -lTPCbase -lTPCsim -lTPCrec -lCONTAINERS -lAliL3Src -lAliL3Misc -lAliL3Hough -lAliL3Comp
 endif
 
 ##### DATE #####
 
 ifdef DATE_ROOT
-DATEFLAGS = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} -Dlong64=${DATE_LONG64} -DdatePointer=${DATE_POINTER} -I${DATE_COMMON_DEFS}
+DATEFLAGS = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} -Dlong64='${DATE_LONG64}' -DdatePointer=${DATE_POINTER} -I${DATE_COMMON_DEFS}
 CXXFLAGS += $(DATEFLAGS)
 endif
 
@@ -66,4 +67,4 @@ include Make-macros
 
 ##### DEPENDENCIES #####
 
-include Make-depend
+#include Make-depend

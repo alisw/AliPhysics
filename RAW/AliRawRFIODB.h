@@ -18,7 +18,11 @@
 class AliRawRFIODB : public AliRawDB {
 
 public:
-   AliRawRFIODB(AliRawEvent *event, Double_t maxsize, Int_t compress);
+   AliRawRFIODB(AliRawEvent *event,
+#ifdef USE_HLT
+		AliESD *esd,
+#endif
+		Double_t maxsize, Int_t compress);
    ~AliRawRFIODB() { Close(); }
 
    void Close();

@@ -25,6 +25,7 @@ class AliL3RandomDigitData;
 
 #ifdef use_newio
 class AliRunLoader;
+class AliRawEvent;
 #endif
 class AliTPCRawStream;
 
@@ -155,6 +156,7 @@ class AliL3MemHandler {
 
   //AliL3DDLDataFileHandler
 #ifdef use_newio
+  virtual Bool_t SetReaderInput(AliRawEvent */*rawevent*/){fDummy=0; return 0;}
   virtual Bool_t SetReaderInput(Char_t */*name*/,Int_t /*event*/=0){fDummy=0; return 0;}
 #else
   virtual Bool_t SetReaderInput(Char_t */*name*/,Bool_t /*add*/=kTRUE){fDummy=0; return 0;}

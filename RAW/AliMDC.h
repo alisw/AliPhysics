@@ -21,10 +21,13 @@
 #endif
 
 // Forward class declarations
+class AliRawEvent;
 class AliRawEventHeader;
 class AliRawEquipmentHeader;
 class AliRawData;
-
+#ifdef USE_HLT
+class AliESD;
+#endif
 
 class AliMDC : public TObject {
 
@@ -113,7 +116,11 @@ private:
                                  Bool_t isSwapped, void *eb = 0);
    Int_t     ReadRawData(AliRawData &raw, Int_t size, void *eb = 0);
    Int_t     DumpEvent(Int_t toRead);
-   Int_t     Filter(AliRawData &raw);
+   Int_t     Filter(
+#ifdef USE_HLT
+		    AliRawEvent *event,AliESD *esd
+#endif
+		    );
 
    ClassDef(AliMDC,0)  // MDC processor
 };

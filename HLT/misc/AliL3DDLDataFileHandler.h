@@ -4,6 +4,7 @@
 #define ALIL3DDLDATAFILEHANDLER_H
 
 #ifdef use_newio
+#include "../RAW/AliRawEvent.h"
 #include "../RAW/AliRawReader.h"
 #include "../RAW/AliTPCRawStream.h"
 #include <TString.h>
@@ -21,6 +22,7 @@ class AliL3DDLDataFileHandler:public AliL3MemHandler{
    virtual ~AliL3DDLDataFileHandler();
 
 #ifdef use_newio
+   Bool_t SetReaderInput(AliRawEvent *rawevent);
    Bool_t SetReaderInput(Char_t *name,Int_t event=0);
    Bool_t IsDigit(Int_t i=0) const;
    AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t /*eventmerge*/=kFALSE){return DDLData2Memory(nrow,event);};

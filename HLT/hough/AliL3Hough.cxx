@@ -91,6 +91,7 @@ AliL3Hough::AliL3Hough()
   fPeakRatio   = 0.5;
   fInputFile   = 0;
   fInputPtr    = 0;
+  fRawEvent    = 0;
   
   SetTransformerParams();
   SetThreshold();
@@ -199,6 +200,17 @@ void AliL3Hough::CleanUp()
   //cout << "Cleaned class mem " << endl;
 }
 
+void AliL3Hough::Init(Int_t netasegments,Int_t tv,AliRawEvent *rawevent,Float_t zvertex)
+{
+  //Normal constructor
+  fNEtaSegments  = netasegments;
+  fVersion       = tv;
+  fRawEvent      = rawevent;
+  fZVertex       = zvertex;
+
+  Init();
+}
+
 void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t netasegments,Bool_t bit8,Int_t tv,Char_t *infile,Char_t *ptr,Float_t zvertex)
 {
   //Normal init of the AliL3Hough
@@ -282,35 +294,42 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
       else
 #ifdef use_aliroot
       	{
-	  if(!fInputFile) {
-	    if(!fInputPtr) {
-	      /* In case of reading digits file */
-	      fMemHandler[i] = new AliL3FileHandler(kTRUE); //use static index
-	      if(!fBinary) {
+	  if(!fRawEvent) {
+	    if(!fInputFile) {
+	      if(!fInputPtr) {
+		/* In case of reading digits file */
+		fMemHandler[i] = new AliL3FileHandler(kTRUE); //use static index
+		if(!fBinary) {
 #if use_newio
-		if(!fRunLoader) {
+		  if(!fRunLoader) {
 #endif
-		  Char_t filename[1024];
-		  sprintf(filename,"%s/digitfile.root",fPath);
-		  fMemHandler[i]->SetAliInput(filename);
+		    Char_t filename[1024];
+		    sprintf(filename,"%s/digitfile.root",fPath);
+		    fMemHandler[i]->SetAliInput(filename);
 #if use_newio
-		}
-		else {
-		  fMemHandler[i]->SetAliInput(fRunLoader);
-		}
+		  }
+		  else {
+		    fMemHandler[i]->SetAliInput(fRunLoader);
+		  }
 #endif
+		}
+	      }
+	      else {
+		/* In case of reading from DATE */
+		fMemHandler[i] = new AliL3DDLDataFileHandler();
+		fMemHandler[i]->SetReaderInput(fInputPtr,-1);
 	      }
 	    }
 	    else {
-	      /* In case of reading from DATE */
+	      /* In case of reading rawdata from ROOT file */
 	      fMemHandler[i] = new AliL3DDLDataFileHandler();
-	      fMemHandler[i]->SetReaderInput(fInputPtr,-1);
+	      fMemHandler[i]->SetReaderInput(fInputFile);
 	    }
 	  }
 	  else {
-	    /* In case of reading rawdata from ROOT file */
+	    /* In case of reading rawdata using AliRawEvent */
 	    fMemHandler[i] = new AliL3DDLDataFileHandler();
-	    fMemHandler[i]->SetReaderInput(fInputFile);
+	    fMemHandler[i]->SetReaderInput(fRawEvent);
 	  }
 	}
 #else
@@ -1210,6 +1229,41 @@ void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 	}
     }
 }
+
+#ifdef use_aliroot
+Int_t AliL3Hough::FillESD(AliESD *esd)
+{
+  if(!fGlobalTracks) return 0;
+  Int_t nglobaltracks = 0;
+  for(Int_t i=0; i<fGlobalTracks->GetNTracks(); i++)
+    {
+      AliL3HoughTrack *tpt = (AliL3HoughTrack *)fGlobalTracks->GetCheckedTrack(i);
+      if(!tpt) continue; 
+      
+      AliESDHLTtrack *esdtrack = new AliESDHLTtrack(); 
+
+      esdtrack->SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
+      esdtrack->SetNHits(tpt->GetNHits());
+      esdtrack->SetFirstPoint(tpt->GetFirstPointX(),tpt->GetFirstPointY(),tpt->GetFirstPointZ());
+      esdtrack->SetLastPoint(tpt->GetLastPointX(),tpt->GetLastPointY(),tpt->GetLastPointZ());
+      esdtrack->SetPt(tpt->GetPt());
+      esdtrack->SetPsi(tpt->GetPsi());
+      esdtrack->SetTgl(tpt->GetTgl());
+      esdtrack->SetCharge(tpt->GetCharge());
+      esdtrack->SetMCid(tpt->GetMCid());
+      esdtrack->SetWeight(tpt->GetWeight());
+      esdtrack->SetSector(tpt->GetSector());
+      esdtrack->SetBinXY(tpt->GetBinX(),tpt->GetBinY(),tpt->GetSizeX(),tpt->GetSizeY());
+      esdtrack->SetPID(tpt->GetPID());
+      esdtrack->ComesFromMainVertex(tpt->ComesFromMainVertex());
+
+      esd->AddHLTHoughTrack(esdtrack);
+      nglobaltracks++;
+      delete esdtrack;
+    }
+  return nglobaltracks;
+}
+#endif
 
 void AliL3Hough::WriteDigits(Char_t *outfile)
 {
