@@ -1,13 +1,14 @@
 FLUGGDUMMYSRCS := G4SDManager.cxx G4VUserDetectorConstruction.cxx \
 	          G4FastSimulationManager.cxx
-FLUGGDUMMYHDRS := $(filter-out source.h,$(FLUGGDUMMYSRCS:.cxx=.hh) )
+FLUGGDUMMYHDRS := $(FLUGGDUMMYSRCS:.cxx=.hh)
 FLUGGWRAPSRCS := FGeometryInit.cxx WrapDN.cxx WrapG1.cxx WrapG1RT.cxx \
 		 WrapIncrHist.cxx WrapIniHist.cxx WrapInit.cxx WrapLookDB.cxx \
 		 WrapLookFX.cxx WrapLookMG.cxx WrapLookZ.cxx WrapMag.cxx \
 		 WrapNorml.cxx WrapReg.cxx WrapSavHist.cxx WrapUtils.cxx
 FLUGGWRAPHDRS := WrapUtils.hh Wrappers.hh NavHistWithCount.hh
-FLUGGOTHERSRCS := FluggNavigator.cxx
-FLUGGOTHERHDRS := $(filter-out source.h,$(FLUGGOTHERSRCS:.cxx=.hh) )
+FLUGGOTHERSRCS := FluggNavigator.cxx FlukaMaterial.cxx FlukaCompound.cxx \
+		  FlukaLowMat.cxx
+FLUGGOTHERHDRS := $(FLUGGOTHERSRCS:.cxx=.hh)
 
 
 # Sources

@@ -181,83 +181,17 @@ G4std::ostream& PrintHeader(G4std::ostream& os, const char* title) {
 }
 
 ////////////////////////////////////////////////////////////////////////
-// PrintMaterial
+// ToFlukaString converts an string to something usefull in FLUKA:
+// * Capital letters
+// * Only 8 letters
+// * Replace ' ' by '_'
 ////////////////////////////////////////////////////////////////////////
-G4std::ostream& PrintMaterial(G4std::ostream& os, const char* title,
-		       G4double Z, G4double A,
-		       G4double density,
-		       G4double index,
-		       G4double N,
-		       const char* name) {
-
-  os << setw10 << title;
-
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
-  if (Z < 0)
-    os << setw10 << " ";
-  else
-    os << setw10 
-       << setfixed
-       << G4std::setprecision(1) 
-       << Z;
-  
-  if (A < 0)
-    os << setw10 << " ";
-  else
-    os << setw10 << G4std::setprecision(3)
-       << A;
-
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
-  os << setw10 
-     << setscientific
-     << G4std::setprecision(3) 
-     << density;
-
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
-  os << setw10 
-     << setfixed
-     << G4std::setprecision(1) 
-     << index;
-
-  os << setw10 << " ";
-
-  if (N < 0)
-    os << setw10 << " ";
-  else
-    os << setw10 << N;
-
-  os << name << G4endl;
-
-  return os;
-}
-
-
-////////////////////////////////////////////////////////////////////////
-// PrintCompund
-////////////////////////////////////////////////////////////////////////
-G4std::ostream& PrintCompound(G4std::ostream& os, const char* title,
-		       G4int count,
-		       const char* name,
-		       G4double fraction,
-		       G4double index) {
-
-  
-  if(count==3) {
-    os << name << G4endl;
-    os << setw10 << "COMPOUND  ";
+G4String ToFlukaString(G4String str) {
+  str = str.substr(0,8);
+  str.toUpper();
+  for (unsigned int i = 0; i < str.length(); i++) {
+    if (str.at(i) == ' ')
+      str.replace(i,1,"_",1);
   }
-  
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
-  os << setw10
-     << setscientific
-     << G4std::setprecision(2)
-     << fraction;
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
-  os << setw10
-     << setfixed
-     << G4std::setprecision(1)
-     << index;
-
-  return os;
+  return str;
 }
-

@@ -7,6 +7,8 @@
 #include "FGeometryInit.hh"
 #include "FluggNavigator.hh"
 #include "WrapUtils.hh"
+#include "FlukaMaterial.hh"
+#include "FlukaCompound.hh"
 
 FGeometryInit * FGeometryInit::flagInstance=0;
 
@@ -277,7 +279,6 @@ void FGeometryInit::UpdateHistories(const G4NavigationHistory * history,
 
 //*****************************************************************************
 
-
 void FGeometryInit::createFlukaMatFile() {
   // last modification Sara Vanini 1/III/99
   // NAMES OF ELEMENTS AND COMPOUNDS: the names must be written in upper case,
@@ -291,469 +292,447 @@ void FGeometryInit::createFlukaMatFile() {
   G4cout << "==> Flugg FGeometryInit::createFlukaMatFile()" << G4endl;
   G4cout << "================== FILEWR =================" << G4endl;
 #endif 
-  
-  //open file for output
-  G4std::ofstream fout("flukaMat.inp");  
-  
-  //PhysicalVolumeStore, Volume and MaterialTable pointers
+
+
+  //Regions map
+  BuildRegionsMap();
+  G4std::ofstream vos("Volumes_index.inp");
+  PrintRegionsMap(vos);
+  vos.close();
+
+  //Materials and compounds
+  BuildMaterialTables();
+  G4std::ofstream fos("flukaMat.inp");  
+  PrintMaterialTables(fos);
+  PrintAssignmat(fos);
+  PrintMagneticField(fos);
+  fos.close();
+
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::createFlukaMatFile()" << G4endl;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////
+// 
+void FGeometryInit::BuildRegionsMap() {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::BuildRegionsMap()" << G4endl;
+#endif
+
+  //Find number of Volumes in physical volume store
   G4PhysicalVolumeStore * pVolStore = G4PhysicalVolumeStore::GetInstance();
-  unsigned int  numVol = pVolStore->size();
-  
-  G4int* indexMatFluka = 0; 
-  static G4Material * ptrMat = 0;
-  unsigned int x = 0;
+  unsigned int numVol = pVolStore->size();
 
-  //Find a volume with a material associated
-  while(!ptrMat && x<numVol) {
-    G4VPhysicalVolume * ptrVol = (*pVolStore)[x];
-    G4LogicalVolume * ptrLogVol = ptrVol->GetLogicalVolume();
-    ptrMat = ptrLogVol->GetMaterial();
-    x++;
+  G4cout << "\t* G4PhysicalVolumeStore (" << pVolStore 
+	 << ") has " << numVol << " volumes. Iterating..." 
+	 << G4endl;
+
+  for(unsigned int l=0; l < numVol; l++) {
+    //Get each of the physical volumes
+    G4VPhysicalVolume * physicalvolume = (*pVolStore)[l];
+    G4int iFlukaRegion = l+1;
+    fRegionVolumeMap[physicalvolume] = iFlukaRegion;
   }
-  
-  if(ptrMat) {
-    static const G4MaterialTable * ptrMatTab = G4Material::GetMaterialTable();
-    
-    //number of materials, elements, variable initialisations
-    static size_t totNumMat = G4Material::GetNumberOfMaterials();
+
+
+
 #ifdef G4GEOMETRY_DEBUG
-    G4cout << "Number of materials: " << totNumMat << G4endl;
-#endif 
+  G4cout << "==> Flugg FGeometryInit::BuildRegionsMap()" << G4endl;
+#endif
+}
 
-    static size_t totNumElem = G4Element::GetNumberOfElements();
+void FGeometryInit::PrintRegionsMap(G4std::ostream& os) {
 #ifdef G4GEOMETRY_DEBUG
-    G4cout << "Number of elements: " << totNumMat << G4endl;
-#endif 
+  G4cout << "==> Flugg FGeometryInit::PrintRegionsMap()" << G4endl;
+#endif
 
+  //Print some header
+  PrintHeader(os, "GEANT4 VOLUMES");
 
-    G4int * elemIndexInMATcard = new G4int[totNumElem];
-    for(unsigned int t=0; t<totNumElem; t++) 
-      elemIndexInMATcard[t] = 0;
-    static const G4IsotopeTable * ptrIsotTab = 0;
-    G4int initIsot = 0;
-    static size_t totNumIsot;
-    G4int* isotIndexInMATcard = 0;
-    G4int isotPresence = 0; 
+  //Iterate over all volumes in the map
+  for (RegionIterator i = fRegionVolumeMap.begin(); 
+       i != fRegionVolumeMap.end(); 
+       i++) {
     
-    
-    // title
-    PrintHeader(fout,"GEANT4 ELEMENTS AND COMPOUNDS");
-    
-    // *** loop over G4Materials to assign Fluka index 
-    G4int indexCount = 3;
-    indexMatFluka = new G4int[totNumMat];
-    for(unsigned int i=0; i<totNumMat; i++) {
-      //pointer material, state 
-      ptrMat = (*ptrMatTab)[i];
-      G4double denMat = ptrMat->GetDensity();
-      G4String nameMat = ptrMat->GetName();
-      // Fluka index: bh=1, vacuum=2, others=3,4..
-      if(denMat<=1.00e-10*g/cm3)
-	//N.B. fluka density limit decided on XI-`98  
-	indexMatFluka[i]=2;	
-      else {  
-	indexMatFluka[i]=indexCount;
-	indexCount++;
-      }
-      
-      // *** write single-element material MATERIAL card
-      size_t numElem = ptrMat->GetNumberOfElements();
-      if(numElem==1) {
-	G4int index = indexMatFluka[i];
-	const G4Element * ptrElem = ptrMat->GetElement(0);
-	size_t indElemTab = ptrElem->GetIndex();
-	size_t numIsot = ptrElem->GetNumberOfIsotopes();
-	G4double A = (ptrElem->GetA())/(g);
-	if(!numIsot) {
-	  if(index!=2 && !elemIndexInMATcard[indElemTab]) {
-	    G4double Z = ptrElem->GetZ();
-	    elemIndexInMATcard[indElemTab] = index;
-	    G4String nameEl = ptrElem->GetName();
-	    nameEl.toUpper();
+    //Get info in the map
+    G4VPhysicalVolume* ptrVol = (*i).first;
+    int index = (*i).second;
 
-	    //write on file MATERIAL card of element
-	    PrintMaterial(fout, "MATERIAL  ",
-			  Z, A,
-			  denMat/(g/cm3),
-			  index,
-			  -1,
-			  nameEl);
-	  }
-	}
-	if(numIsot==1) {
-	  // G4Isotope pointer 
-	  const G4Isotope* ptrIsot = ptrElem->GetIsotope(0);
-	  size_t indIsotTab = ptrIsot->GetIndex();
-	  //initialize variables
-	  if(!initIsot) {
-	    totNumIsot = ptrIsot->GetNumberOfIsotopes();
-	    ptrIsotTab = ptrIsot->GetIsotopeTable(); 
-	    isotIndexInMATcard = new G4int[totNumIsot];
-	    for(unsigned int t=0; t<totNumIsot; t++) 
-	      isotIndexInMATcard[t] = 0;
-	    initIsot = 1;
-	  }
-	  if(!isotIndexInMATcard[indIsotTab]) {
-	    //compute physical data and counters
-	    G4int ZIs = ptrIsot->GetZ();
-	    G4double AIs = (ptrIsot->GetA())/(g);
-	    G4int NIs = ptrIsot->GetN();
-	    G4String nameIsot = ptrIsot->GetName();
-	    nameIsot.toUpper();
-	    isotIndexInMATcard[indIsotTab] = index;
-	    
-	    //write on file MATERIAL card of isotope
-	    PrintMaterial(fout, "MATERIAL  ",
-			  G4double(ZIs),
-			  AIs,
-			  denMat/(g/cm3),
-			  G4double(index),
-			  G4double(NIs),
-			  nameIsot);
-	  }
-	}// end if(numIsot==1)
-      }// end if(numElem==1)
-    }// end for loop
-    
-    
-    // *** material definitions: elements, compound made of G4Elements
-    // or made of G4Materials
-    for(unsigned int j=0; j<totNumMat; j++) {
-      //pointer material, and material data 
-      ptrMat = (*ptrMatTab)[j];
-      size_t numElem = ptrMat->GetNumberOfElements();
-      G4double densityMat = (ptrMat->GetDensity())/(g/cm3);
-      G4String nameMat = ptrMat->GetName();
-      nameMat.toUpper();
-      isotPresence = 0;
-      
-      //fraction vector of compounds of the material
-      const G4double* ptrFracVect = ptrMat->GetFractionVector();
-      
-      //loop on elements of the material
-      for(unsigned int el=0; el<numElem; el++) {
-	//compute physical data, initialize variables
-	const G4Element * ptrElem = ptrMat->GetElement(el);
-	size_t indElemTab = ptrElem->GetIndex();
-	G4String nameElem = ptrElem->GetName();
-	nameElem.toUpper();
-	size_t numIsot = ptrElem->GetNumberOfIsotopes();
-	G4double A = (ptrElem->GetA())/(g);
-	
-	if(!numIsot) {
-	  if(!elemIndexInMATcard[indElemTab]) {
-	    G4double Z = ptrElem->GetZ();
-	    G4double density = ptrFracVect[el]*densityMat;
-	    elemIndexInMATcard[indElemTab] = indexCount;
-	    
-	    //write on file MATERIAL card of element
-	    PrintMaterial(fout, "MATERIAL  ",
-			  Z, A,
-			  density,
-			  G4double(indexCount),
-			  -1,
-			  nameElem);
-	  }
-	}
-	
-	else {
-	  if(numIsot>=2) 
-	    isotPresence = 1;
-				//loop on isotopes
-	  for(unsigned int nis=0; nis<numIsot; nis++) {
-	    // G4Isotope pointer 
-	    const G4Isotope* ptrIsot = ptrElem->GetIsotope(nis);
-	    size_t indIsotTab = ptrIsot->GetIndex();
-	    //initialize variables
-	    if(!initIsot) {
-	      totNumIsot = ptrIsot->GetNumberOfIsotopes();
-	      ptrIsotTab = ptrIsot->GetIsotopeTable(); 
-	      isotIndexInMATcard = new G4int[totNumIsot];
-	      for(unsigned int t=0; t<totNumIsot; t++) 
-		isotIndexInMATcard[t] = 0;
-	      initIsot = 1;
-	    }
-	    if(!isotIndexInMATcard[indIsotTab]) {
-	      //compute physical data and counters
-	      G4int ZIs = ptrIsot->GetZ();
-	      G4double AIs = (ptrIsot->GetA())/(g);
-	      G4int NIs = ptrIsot->GetN();
-	      G4String nameIsot = ptrIsot->GetName();
-	      nameIsot.toUpper();
-	      G4double* ptrRelAbVect = ptrElem->GetRelativeAbundanceVector();
-	      G4double density = 
-		ptrFracVect[el]*densityMat*ptrRelAbVect[nis]*AIs/A;
-	      G4int index = indexCount;
-	      isotIndexInMATcard[indIsotTab] = indexCount;
-	      indexCount+=1;
-	      
-	      //write on file MATERIAL card of isotope
-	      PrintMaterial(fout, "MATERIAL  ",
-			    G4double(ZIs), AIs,
-			    density,
-			    G4double(index),
-			    NIs,
-			    nameIsot);
-	    }
-	  }
-	}
-	
-      }
-      
-      if(numElem>1 || isotPresence==1) { 
-	// write MATERIAL+COMPOUND card specifing the compound
-	
-	//flags for writing COMPOUND card
-	G4int treCount=0;
-	
-	//make MATERIAL card for compound, start COMPOUND card
-	fout <<"*"<<G4endl;
-	fout <<"*   Define GEANT4 compound " << nameMat << G4endl;
-	PrintMaterial(fout, "MATERIAL  ",
-		      -1, -1,
-		      densityMat,
-		      G4double(indexMatFluka[j]),
-		      -1,
-		      nameMat);
-  	fout << setw10 << "COMPOUND  ";
-	
-	
-	//write elements in COMPOUND card
-	for(unsigned int h=0; h<numElem; h++) {
-	  const G4Element * ptrElemMat = ptrMat->GetElement(h);
-	  size_t indexElemMat = ptrElemMat->GetIndex();
-	  size_t numIsotElem = ptrElemMat->GetNumberOfIsotopes();
-	  if(!numIsotElem) {
-	    PrintCompound(fout, "COMPOUND  ",
-			  treCount,
-			  nameMat,
-			  -ptrFracVect[h],
-			  G4double(elemIndexInMATcard[indexElemMat]));
+    //Print index and region name in some fixed format
+    os.setf(G4std::ios::left, G4std::ios::adjustfield);
+    os << setw10 << index;
+    os << G4std::setw(20) << ptrVol->GetName() << G4std::setw(20) << "";
 
-	    if(treCount==3)
-	      treCount=0;
-	    treCount+=1;
-	  }
-	  else {
-	    G4double * ptrIsotAbbVect = 
-	      ptrElemMat->GetRelativeAbundanceVector();
-	    
-	    for(unsigned int iso=0; iso<numIsotElem; iso++) {
-	      const G4Isotope * ptrIsotElem =ptrElemMat->GetIsotope(iso);
-	      size_t indexIsotMat = ptrIsotElem->GetIndex();
-	      G4double isotAbundPerVol = 
-		ptrIsotAbbVect[iso]*Avogadro*densityMat*
-		ptrFracVect[h]/(ptrElemMat->GetA()/(g));
-	      
-	      PrintCompound(fout, "COMPOUND  ",
-			    treCount,
-			    nameMat,
-			    isotAbundPerVol,
-			    G4double(isotIndexInMATcard[indexIsotMat]));
-	      if(treCount==3)
-		treCount=0;
-	      treCount+=1;
-	    }
-	  }
-	}
-	
-	//end COMPOUND card
-	if(treCount==1) 
-	  fout << setw10 << " " << setw10 << " "
-	       << setw10 << " " << setw10 << " "
-	       << nameMat << G4endl;
-	if(treCount==2) 
-	  fout << setw10 << " " << setw10 << " "
-	       << nameMat << G4endl;
-	if(treCount==3) 
-	  fout << nameMat << G4endl;
-	fout << "*" << G4endl;
-      }
-      
-      
-    } // end for loop
-    delete elemIndexInMATcard;
-    if(initIsot) 
-      delete isotIndexInMATcard;
-
-  } // end if (ptrMat)
-  
-  // *** material-volume correspondence
-  PrintHeader(fout,"GEANT4 MATERIAL ASSIGNMENTS");
-  
-  //initializations
-  G4int indexMatOld = 0;
-  G4int indexRegFlukaFrom = 0;
-  G4int indexRegFlukaTo = 0;
-  G4int existTo = 0;
-  G4int flagField = 0;
-  G4int lastFlagField = 0;
-  
-  //open file for volume-index correspondence
-  G4std::ofstream vout("Volumes_index.inp");
-  
-  //... and write title
-  vout << "*" << G4endl;
-  vout << "********************  GEANT4 VOLUMES *******************\n";
-  vout << "*" << G4endl;
-  
-  //loop over all volumes...
-  for(unsigned int l=0;l<numVol;l++) {
-    //index of the region
-    G4VPhysicalVolume * ptrVol = (*pVolStore)[l];
-    G4LogicalVolume * ptrLogVol = ptrVol->GetLogicalVolume();
-    G4int indexRegFluka = l+1;
-    
-    
-    //write index volume and name on file Volumes_index.inp
-    vout.setf(G4std::ios::left,G4std::ios::adjustfield);
-    vout << setw10 << indexRegFluka;
-    vout << G4std::setw(20) << ptrVol->GetName() << G4std::setw(20) << "";
+    //If volume is a replica... print some more stuff
     if(ptrVol->IsReplicated()) {
       EAxis axis;
-      G4int nRep;
-      G4double width;
-      G4double offset;
-      G4bool consum;
-      ptrVol->GetReplicationData(axis,nRep,width,offset,consum);
-      vout.setf(G4std::ios::left,G4std::ios::adjustfield);
-      vout << setw10 << "Repetion Nb: " << G4std::setw(3) << nRep;
+      G4int nRep = -1;
+      G4double width = -1;
+      G4double offset = -1;
+      G4bool consum = false;
+      ptrVol->GetReplicationData(axis, nRep, width, offset, consum);
+      os.setf(G4std::ios::left, G4std::ios::adjustfield);
+      os << setw10 << "Repetion Nb: " << G4std::setw(3) << nRep;
     }
-    vout << G4endl;
+    os << G4endl;
     
-    //check if Magnetic Field is present in the region
-    G4FieldManager * pMagFieldMan = ptrLogVol->GetFieldManager();
-    const G4Field * pMagField = 0;
-    if(pMagFieldMan) 
-      pMagField = pMagFieldMan->GetDetectorField();
-    if(pMagField)	  
-      flagField = 1;
-    else 	  
-      flagField = 0;
+  }
+  
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::PrintRegionsMap()" << G4endl;
+#endif
+}
 
+////////////////////////////////////////////////////////////////////////
+// 
+void FGeometryInit::BuildMaterialTables() {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::BuildMaterialTables()" << G4endl;
+#endif
 
-    //index of material in the region
-    G4Material * ptrMat = ptrLogVol->GetMaterial();
-    G4int indexMat; 
-    if(ptrMat) {
-      size_t indexMatGeant = ptrMat->GetIndex();
-      indexMat = indexMatFluka[indexMatGeant];
+  //some terminal printout also
+  G4cout << "\t* Storing information..." << G4endl;
+
+  //The logic is the folloing:
+  //Get the Material Table and:
+  // 1) For materials with density <= 1.00e-10*g/cm3 assign vacuum
+  // 2) For each single element material build a material equivalent
+  // 3) For the rest:
+  //   3.a) Build materials for each not already known element
+  //   3.b) Build the compound out of them
+
+  //Get the Material Table and iterate
+  const G4MaterialTable* matTable = G4Material::GetMaterialTable();
+  for (MatTableIterator i = matTable->begin(); i != matTable->end(); i++) {
+
+    //Get some basic material information
+    G4Material* material = (*i);
+    G4String matName = material->GetName();
+    const G4double matDensity = material->GetDensity();
+    const G4int nMatElements  = material->GetNumberOfElements();
+
+    G4cout << "\t\t+ " << matName 
+	   << ": dens. = " << matDensity/(g/cm3) << "g/cm3"
+	   << ", nElem = " << nMatElements << G4endl;
+
+    // 1) For materials with density <= 1.00e-10*g/cm3 assign vacuum
+    //    FlukaMaterial* is 0 in that case
+    if (matDensity <= 1.00e-10*g/cm3) {
+      G4FlukaMaterialMap[material] = 0;
+      G4cout << "\t\t  Stored as vacuum" << G4endl;
     }
-    else 
-      indexMat = 2;
-	
-    //if materials are repeated
-    if(indexMat==indexMatOld && flagField==lastFlagField) {
-      indexRegFlukaTo=indexRegFluka;
-      existTo=1; 
-      if((l+1)==numVol) {	
-	fout << setw10 << G4double(indexRegFlukaTo);
-	fout << setw10 << "0.0";
-	fout << setw10 << G4double(flagField);
-	fout << setw10 << "0.0" << G4endl;
-      }
+    // 2) For each single element material build a material equivalent
+    else if (nMatElements == 1) {
       
+      FlukaMaterial *flukamat = 
+	BuildFlukaMaterialFromElement(material->GetElement(0),
+				      matDensity);
+      
+      G4FlukaMaterialMap[material] = flukamat;
+      G4cout << "\t\t  Stored as " << flukamat->GetRealName() << G4endl;
+      
+    } //else if (material->GetNumberOfElements() == 1)
+    
+    // 3) For the rest:
+    //   3.a) Build materials for each not already known element
+    //   3.b) Build the compound out of them
+    else {
+      FlukaCompound* flukacomp = 
+	BuildFlukaCompoundFromMaterial(material);
+      G4FlukaCompoundMap[material] = flukacomp;
+      G4cout << "\t\t  Stored as " << flukacomp->GetRealName() << G4endl;
+    } //else for case 3)
+  } //for (materials)
+  
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::BuildMaterialTables()" << G4endl;
+#endif
+}
+
+FlukaMaterial* 
+FGeometryInit::BuildFlukaMaterialFromElement(const G4Element* element,
+					     G4double matDensity) {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::BuildFlukaMaterialFromElement()" 
+	 << G4endl;
+#endif
+
+  //Get element and its properties
+  G4String elemName(ToFlukaString(element->GetName()));
+
+  FlukaMaterial* flukamat = FlukaMaterial::GetFlukaMaterial(elemName);
+  if (matDensity != 0 || (matDensity == 0 && flukamat == 0)) {
+    //Check for isotopes
+    G4int nIsotopes = element->GetNumberOfIsotopes();
+    if (nIsotopes == 0) {
+      G4double elemA = element->GetA()/g;
+      G4double elemZ = element->GetZ();
+      
+      if (elemA != G4int(elemA) && elemZ != G4int(elemZ)) {
+	G4cout << "WARNING: Element \'" << elemName 
+	       << "\' has non integer Z (" << elemZ << ") or A (" 
+	       << elemA << ")"
+	       << G4endl;
+      }
+    
+      flukamat = new FlukaMaterial(elemName,
+				   G4int(elemZ),
+				   elemA,
+				   matDensity/(g/cm3));
+    }
+    else if (nIsotopes == 1) {
+      const G4Isotope* isotope = element->GetIsotope(0);
+      flukamat = BuildFlukaMaterialFromIsotope(isotope, matDensity);
     }
     else {
-      //write on file ASSIGNMAT card 
-      
-      //first complete last material card
-      if(!existTo) {
-	if(l) {
-	  fout << setw10 << "0.0";
-	  fout << setw10 << "0.0";
-	  fout << setw10 << G4double(lastFlagField);
-	  fout << setw10 << "0.0" << G4endl;
-	}
-      }
-      else {
-	fout << setw10 <<  G4double(indexRegFlukaTo);
-	fout << setw10 << "0.0";
-	fout << setw10 << G4double(lastFlagField);
-	fout << setw10 << "0.0" << G4endl;
-      }
-      
-      // begin material card		
-      fout << setw10 << "ASSIGNMAT ";
-      fout.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);	
-      fout << setw10 << setfixed
-	   << G4std::setprecision(1) << G4double(indexMat);
-      fout << setw10 << G4double(indexRegFluka);
-      
-      existTo=0;
-      indexRegFlukaFrom=indexRegFluka;
-      
-      if((l+1)==numVol) {	
-	fout << setw10 << "0.0";
-	fout << setw10 << "0.0";
-	fout << setw10 << G4double(flagField);
-	fout << setw10 << "0.0" << G4endl;
-      }
+      FlukaCompound *flucomp = BuildFlukaCompoundFromElement(element,
+							     matDensity);
+      flukamat = flucomp->GetFlukaMaterial();      
     }
-    lastFlagField = flagField;
-    indexMatOld = indexMat; 
-  } // end of loop 
+  }
+#ifdef G4GEOMETRY_DEBUG
+  else {
+    G4cout << "INFO: Element \'" << elemName 
+	   << "\' already exists in the DB. It will not be recreated."
+	   << G4endl;
+  }
+#endif
+
+  return flukamat;
   
-  //assign material 1 to black-hole=n.vol+1
-  fout << setw10 << "ASSIGNMAT ";
-  fout << setw10 << "1.0";
-  fout << setw10 << G4double(numVol+1);
-  fout << setw10 << "0.0";
-  fout << setw10 << "0.0";
-  fout << setw10 << "0.0";
-  fout << setw10 << "0.0" << G4endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::BuildFlukaMaterialFromElement()" 
+	 << G4endl;
+#endif
+}
+
+FlukaMaterial* 
+FGeometryInit::BuildFlukaMaterialFromIsotope(const G4Isotope* isotope,
+					     G4double matDensity) {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::BuildFlukaMaterialFromIsotope()" 
+	 << G4endl;
+#endif
+  G4String isoName(ToFlukaString(isotope->GetName()));
+  FlukaMaterial* flukamat = FlukaMaterial::GetFlukaMaterial(isoName);
+  if (matDensity != 0 || (matDensity == 0 && flukamat == 0)) {
+    G4int isoZ = isotope->GetZ();
+    G4double isoA = (isotope->GetA())/(g);
+    G4int isoN = isotope->GetN();
+    flukamat = new FlukaMaterial(isoName,
+				 isoZ,
+				 isoA,
+				 matDensity/(g/cm3),
+				 isoN);
+  }
+
+  return flukamat;
+
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::BuildFlukaMaterialFromIsotope()" 
+	 << G4endl;
+#endif
+}
+
+FlukaCompound* 
+FGeometryInit::BuildFlukaCompoundFromMaterial(const G4Material* material) {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::BuildFlukaCompoundFromMaterial()" 
+	 << G4endl;
+#endif
+  //Material properties
+  const G4double* elemFractions = material->GetFractionVector();
+  const G4int nMatElements  = material->GetNumberOfElements();
+  const G4double matDensity = material->GetDensity();
+  G4String matName(ToFlukaString(material->GetName()));
+  FlukaCompound* flukacomp = new FlukaCompound(matName, matDensity/(g/cm3),
+					       nMatElements);
+  for (G4int i = 0; i < nMatElements; i++) {
+    FlukaMaterial *flukamat = 
+      BuildFlukaMaterialFromElement(material->GetElement(i), 0.0);
+    
+    flukacomp->AddElement(flukamat->GetIndex(), -elemFractions[i]);
+    
+  } //for (elements)
+
+  return flukacomp;
+
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::BuildFlukaCompoundFromMaterial()" 
+	 << G4endl;
+#endif
+}
+
+FlukaCompound* 
+FGeometryInit::BuildFlukaCompoundFromElement(const G4Element* element,
+					     G4double matDensity) {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::BuildFlukaCompoundFromElement()" 
+	 << G4endl;
+#endif
+  G4int nIsotopes = element->GetNumberOfIsotopes();
+  //fraction of nb of atomes per volume (= volume fraction?)
+  const G4double* isoAbundance =  element->GetRelativeAbundanceVector();
+  G4String elemName(ToFlukaString(element->GetName()));
+
+  //Material properties
+  FlukaCompound* flukacomp = new FlukaCompound(elemName, matDensity/(g/cm3),
+					       nIsotopes);
+  for (G4int i = 0; i < nIsotopes; i++) {
+    FlukaMaterial *flukamat = 
+      BuildFlukaMaterialFromIsotope(element->GetIsotope(i), 0.0);
+    
+    flukacomp->AddElement(flukamat->GetIndex(), isoAbundance[i]);
+    
+  } //for (elements)
+
+  return flukacomp;
+
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::BuildFlukaCompoundFromElement()" 
+	 << G4endl;
+#endif
+}
+
+void FGeometryInit::PrintMaterialTables(G4std::ostream& os) {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::PrintMaterialTables()" << G4endl;
+#endif
+  //Print Header
+  PrintHeader(os, "GEANT4 MATERIALS AND COMPOUNDS");
   
-  // *** magnetic field ***
+  //And some more stuff  
+  size_t nIsotopes = G4Isotope::GetNumberOfIsotopes();
+  size_t nElements = G4Element::GetNumberOfElements();
+  size_t nMaterials = G4Material::GetNumberOfMaterials();
+
+  os << "* In Geant4 there are " << nMaterials << " materials" << endl;
+  os << "* In Geant4 there are " << nElements  << " elements"  << endl;
+  os << "* In Geant4 there are " << nIsotopes  << " isotopes"  << endl;
+
+  //Materials
+  G4cout << "\t* Printing FLUKA materials..." << G4endl;
+  FlukaMaterial::PrintMaterialsByIndex(os);
+  //FlukaMaterial::PrintMaterialsByName(os);
+
+  //Compounds
+  G4cout << "\t* Printing FLUKA compounds..." << G4endl;
+  FlukaCompound::PrintCompounds(os);
+
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::PrintMaterialTables()" << G4endl;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////
+// 
+void FGeometryInit::PrintAssignmat(G4std::ostream& os) {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::PrintAssignmat()" << G4endl;
+#endif
+
+  //Find number of Volumes in physical volume store
+  G4PhysicalVolumeStore * pVolStore = G4PhysicalVolumeStore::GetInstance();
+  unsigned int numVol = pVolStore->size();
+
+  G4cout << "\t* G4PhysicalVolumeStore (" << pVolStore 
+	 << ") has " << numVol << " volumes. " << G4endl;
+
+  G4cout << "\t* Printing ASSIGNMAT..." << G4endl;
+
+
+  PrintHeader(os,"GEANT4 MATERIAL ASSIGNMENTS");
+  for(unsigned int l=0; l < numVol; l++) {
+
+    //Get each of the physical volumes
+    G4VPhysicalVolume * physicalvol = (*pVolStore)[l];
+
+    //Get index for that volume
+    G4int iFlukaRegion = fRegionVolumeMap[physicalvol];
+
+    //Find G4 material and navigate to its fluka compound/material
+    G4LogicalVolume * logicalVol = physicalvol->GetLogicalVolume();
+    G4Material* material = logicalVol->GetMaterial();
+    G4int matIndex = 2;
+    if (G4FlukaCompoundMap[material])
+      matIndex = G4FlukaCompoundMap[material]->GetIndex();
+    if (G4FlukaMaterialMap[material])
+      matIndex = G4FlukaMaterialMap[material]->GetIndex();
+
+    //Find if there is a magnetic field in the region
+    //check if Magnetic Field is present in the region
+    G4double flagField = 0.0;
+    G4FieldManager * pMagFieldMan = logicalVol->GetFieldManager();
+    if(pMagFieldMan && pMagFieldMan->GetDetectorField())
+      flagField = 1.0;
+    
+    //Print card
+    os << setw10 << "ASSIGNMAT ";
+    os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+    os << setw10 << setfixed << G4double(matIndex);
+    os << setw10 << setfixed << G4double(iFlukaRegion);
+    os << setw10 << "0.0";
+    os << setw10 << setfixed << flagField;
+    os << G4endl;
+  }
+
+
+
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::PrintAssignmat()" << G4endl;
+#endif
+}
+
+
+void FGeometryInit::PrintMagneticField(G4std::ostream& os) {
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::PrintMagneticField()" << G4endl;
+#endif
+
+  G4cout << "\t* Printing Magnetic Field..." << G4endl;
+
   if(fTransportationManager->GetFieldManager()->DoesFieldExist()) {
-    PrintHeader(fout,"GEANT4 MAGNETIC FIELD");
     
     //get magnetic field pointer
     const G4Field * pMagField = 
       fTransportationManager->GetFieldManager()->GetDetectorField();     
     
-    //if uniform magnetic field, get value
-    G4double Bx=0.0;
-    G4double By=0.0;
-    G4double Bz=0.0;
     
     if(pMagField) {
-      //G4ThreeVector* Field = new G4ThreeVector(1.,2.,3.);
+      //Check if it can be made a uniform magnetic field
       const G4UniformMagField *pUnifMagField = 
 	dynamic_cast<const G4UniformMagField*>(pMagField);
       if(pUnifMagField) {
-	G4double *pFieldValue = 0;
-	G4double *point = new G4double[3];
-	point[0] = 0.;
-	point[1] = 0.;
-	point[2] = 0.;
-	pUnifMagField->GetFieldValue(point,pFieldValue);
-	//non capisco perche' l'instruzione seguente non fa linkare. Indaga!!
-	//per ora posso usare GetFieldValue: va bene lo stesso. 
-	//G4ThreeVector FieldValue = pUnifMagField->GetConstantFieldValue();
-	Bx = pFieldValue[0];
-	By = pFieldValue[1];
-	Bz = pFieldValue[2];
+	G4double B[3];
+	G4double point[4]; //it is not really used
+	pUnifMagField->GetFieldValue(point,B);
+
+	//write MGNFIELD card 
+	PrintHeader(os,"GEANT4 MAGNETIC FIELD");
+	os << setw10 << "MGNFIELD  ";
+	os << setw10 << "";
+	os << setw10 << "";
+	os << setw10 << "";
+	os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+	os << setw10 << setfixed
+	   << G4std::setprecision(4) << B[0]
+	   << setw10 << B[1]
+	   << setw10 << B[2]
+	   << G4endl;
       }
-      
+      else {
+	G4cout << "WARNING: No Uniform Magnetic Field found." << G4endl;
+	G4cout << "         Manual intervention might be needed." << G4endl;
+      }
     }
-    
-    //write MGNFIELD card 
-    fout << setw10 << "MGNFIELD  ";
-    fout << setw10 << "";
-    fout << setw10 << "";
-    fout << setw10 << "";
-    fout.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
-    fout << setw10 << setfixed
-	 << G4std::setprecision(4) << Bx
-	 << setw10 << By
-	 << setw10 << Bz 
-	 << G4endl;
+    else
+      G4cout << "\t  No detector field found... " << G4endl;
   } // end if magnetic field
-  
-  vout.close();
-  fout.close();
-  delete [] indexMatFluka;
+  else
+    G4cout << "\t  No field found... " << G4endl;
+
 #ifdef G4GEOMETRY_DEBUG
-  G4cout << "<== Flugg FGeometryInit::createFlukaMatFile()" << G4endl;
+  G4cout << "<== Flugg FGeometryInit::PrintMagneticField()" << G4endl;
 #endif
 }
