@@ -1,10 +1,6 @@
 enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan, hijing_g};
 
-gentype_t gentype=scan;
-// Int_t ntracks=6407;
-// Int_t ntracks=12000;
-// Int_t ntracks=28380;
-// Int_t ntracks=19900;
+gentype_t gentype=param;
 Int_t ntracks=1;
 
 void Config()
@@ -197,7 +193,7 @@ position
      gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);
-     gener->SetChildThetaRange(2,9);
+     gener->SetChildThetaRange(2.0,9);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetForceDecay(dimuon);
@@ -266,10 +262,10 @@ gAlice->SetField(2,1);    //Specify maximum magnetic field in Tesla (neg. ==> de
 Int_t iFRAME  =0;
 Int_t iMAG    =0;
 Int_t iITS    =0;
-Int_t iABSO   =1;
+Int_t iABSO   =0;
 Int_t iDIPO   =0;
 Int_t iHALL   =0;
-Int_t iSHIL   =1;
+Int_t iSHIL   =0;
 Int_t iPIPE   =0;
 Int_t iFMD    =0;
 Int_t iMUON   =1;
@@ -310,7 +306,7 @@ if(iHALL) {
 if(iSHIL) {
 //=================== SHIL parameters ============================
 //    AliSHIL *SHIL  = new AliSAROV("SHIL","Shielding");
-    AliSHILv0 *SHIL  = new AliSHILvF("SHIL","Shielding");
+    AliSHILvF *SHIL  = new AliSHILvF("SHIL","Shielding");
     SHIL->SetPbCone(1);
 //    AliSAROV *SHIL  = new AliSAROV("SHIL","Shielding");
 }
@@ -330,7 +326,7 @@ if(iFMD) {
 if(iMUON) {
 //=================== MUON parameters ===========================
 
-AliMUON *MUON  = new AliMUONvTemp("MUON","normal MUON");
+AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetIshunt(1);
  MUON->SetMaxStepGas(0.1);
  MUON->SetMaxStepAlu(0.1);
@@ -483,18 +479,20 @@ AliMUON *MUON  = new AliMUONvTemp("MUON","normal MUON");
 //--------------------------------------------------------
 // Configuration for Chamber TC5/6  (Station 3) ----------          
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- Int_t   nseg3[3]={4, 4, 2};
- Int_t   npcb5[28] = {0,0,3,0,
-		      0,1,3,0,
-		      0,2,2,0,
-		      0,1,2,0, 
-		      0,2,2,0, 
-		      0,1,3,0, 
-		      0,0,3,0};
+ Int_t   nseg3[4]={4, 4, 2, 1};
+ Int_t   npcb5[36] = {0,0,2,0,
+                      0,0,3,0,
+                      0,1,3,0,
+                      0,2,2,0,
+                      0,1,2,0, 
+                      0,2,2,0, 
+                      0,1,3,0, 
+                      0,0,3,0,
+                      0,0,2,0};
 
  Float_t shift = 1.5/2.;
-
- Float_t xpos5[7]    = {2., 2., 2.,32., 2., 2., 2.};
+ // Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
+ Float_t xpos5[9]    = {2., 2., 2., 2.,32., 2., 2., 2., 2.};
  Float_t ypos5       = -(20.+4.*(40.-2.*shift));
 
  chamber=5;
@@ -520,7 +518,7 @@ AliMUON *MUON  = new AliMUONvTemp("MUON","normal MUON");
  seg52->SetDAnod(0.25);
  seg52->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 2, seg52);
- MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->SetResponseModel(chamber-1, response0);      
  MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
  chamber=6;
@@ -546,7 +544,7 @@ AliMUON *MUON  = new AliMUONvTemp("MUON","normal MUON");
  seg62->SetDAnod(0.25);
  seg62->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 2, seg62);
- MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->SetResponseModel(chamber-1, response0);      
  MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
 //--------------------------------------------------------
