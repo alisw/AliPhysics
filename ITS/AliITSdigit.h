@@ -84,6 +84,7 @@ class AliITSdigitSPD: public AliITSdigit {
     Int_t fTracks[3]; // tracks making this digit 
     Int_t fHits[3];   // hits associated to the tracks
                       // 3 hits temporarily - it will be only 1
+    Int_t fSignalSPD; // Signal in electrons
 
     ClassDef(AliITSdigitSPD,1)   // Simulated digit object for SPD
 
