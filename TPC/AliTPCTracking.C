@@ -21,12 +21,15 @@
 //
 // History:
 //
+//     20.11.2002 ... Changes due to a changed interface of AliTPCtracker. 
+//                    Use Riostream.h instead of iostream.h
+//
 //     22.08.2002 ... first version
 //
 ////////////////////////////////////////////////////////////////////////
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "iostream.h"
+#include "Riostream.h"
 #include "TTree.h"
 #include "TSystem.h"
 #include "TArrayF.h"
@@ -170,7 +173,8 @@ Int_t TPCFindTracks(Int_t nEvents, Int_t firstEvent,
 
   for (Int_t iEvent = firstEvent; iEvent < firstEvent+nEvents; iEvent++){
     if (gDEBUG > 2) cout<<"TPCFindTracks: event "<<iEvent<<endl;
-    AliTPCtracker *tracker = new AliTPCtracker(paramTPC,iEvent);
+    AliTPCtracker *tracker = new AliTPCtracker(paramTPC);
+    tracker->SetEventNumber(iEvent);
     Double_t vertex[3];
     FindVertex(iEvent,vertex);
     tracker->SetVertex(vertex);
