@@ -930,8 +930,8 @@ Double_t AliQuenchingWeights::GetELossRandomK(Int_t ipart, Double_t I0, Double_t
     return -1000.;
   }
 
-  Double_t R=CalcRk(I0,I1);
-  if(R<0.){
+  Double_t r=CalcRk(I0,I1);
+  if(r<0.){
     Fatal("GetELossRandomK","R should not be negative");
     return -1000.;
   }
@@ -940,7 +940,7 @@ Double_t AliQuenchingWeights::GetELossRandomK(Int_t ipart, Double_t I0, Double_t
     Fatal("GetELossRandomK","wc should be greater than zero");
     return -1000.;
   }
-  if(SampleEnergyLoss(ipart,R)!=0){
+  if(SampleEnergyLoss(ipart,r)!=0){
     Fatal("GetELossRandomK","Could not sample energy loss");
     return -1000.;
   }
@@ -984,8 +984,8 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
   // all parameters are well within the bounds.
   // read-in data tables before first call 
 
-  Double_t R=CalcRk(I0,I1);
-  if(R<=0.){
+  Double_t r=CalcRk(I0,I1);
+  if(r<=0.){
     return 0.;
   }
 
@@ -994,10 +994,10 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
     return 0.;
   }
 
-  return GetELossRandomKFastR(ipart,R,wc,e);
+  return GetELossRandomKFastR(ipart,r,wc,e);
 }
 
-Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Double_t wc, Double_t e)
+Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t r, Double_t wc, Double_t e)
 {
   // return DeltaE for new dynamic version
   // for given parton type, R and wc value and energy
@@ -1007,8 +1007,8 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Doub
   // all parameters are well within the bounds.
   // read-in data tables before first call 
 
-  if(R>=fgkRMax) {
-    R=fgkRMax-1;
+  if(r>=fgkRMax) {
+    r=fgkRMax-1;
   }  
   
   Double_t discrete=0.;
@@ -1016,9 +1016,9 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Doub
   Int_t bin=1;
   Double_t xxxx = fHisto->GetBinCenter(bin);
   if(fMultSoft)
-    CalcMult(ipart,R,xxxx,continuous,discrete);
+    CalcMult(ipart,r,xxxx,continuous,discrete);
   else
-    CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+    CalcSingleHard(ipart,r,xxxx,continuous,discrete);
 
   if(discrete>=1.0) {
     return 0.; //no energy loss
@@ -1032,13 +1032,13 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Doub
   if(fMultSoft) {
     for(Int_t bin=2; bin<=kbinmax; bin++) {
       xxxx = fHisto->GetBinCenter(bin);
-      CalcMult(ipart,R,xxxx,continuous,discrete);
+      CalcMult(ipart,r,xxxx,continuous,discrete);
       fHisto->SetBinContent(bin,continuous);
     }
   } else {
     for(Int_t bin=2; bin<=kbinmax; bin++) {
       xxxx = fHisto->GetBinCenter(bin);
-      CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+      CalcSingleHard(ipart,r,xxxx,continuous,discrete);
       fHisto->SetBinContent(bin,continuous);
     }
   }
@@ -1079,19 +1079,19 @@ Double_t AliQuenchingWeights::GetDiscreteWeight(Int_t ipart, Double_t I0, Double
 {
   // return discrete weight
 
-  Double_t R=CalcRk(I0,I1);
-  if(R<=0.){
+  Double_t r=CalcRk(I0,I1);
+  if(r<=0.){
     return 1.;
   }
-  return GetDiscreteWeightR(ipart,R);
+  return GetDiscreteWeightR(ipart,r);
 }
 
-Double_t AliQuenchingWeights::GetDiscreteWeightR(Int_t ipart, Double_t R)
+Double_t AliQuenchingWeights::GetDiscreteWeightR(Int_t ipart, Double_t r)
 {
   // return discrete weight
 
-  if(R>=fgkRMax) {
-    R=fgkRMax-1;
+  if(r>=fgkRMax) {
+    r=fgkRMax-1;
   }  
 
   Double_t discrete=0.;
@@ -1099,32 +1099,36 @@ Double_t AliQuenchingWeights::GetDiscreteWeightR(Int_t ipart, Double_t R)
   Int_t bin=1;
   Double_t xxxx = fHisto->GetBinCenter(bin);
   if(fMultSoft)
-    CalcMult(ipart,R,xxxx,continuous,discrete);
+    CalcMult(ipart,r,xxxx,continuous,discrete);
   else
-    CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+    CalcSingleHard(ipart,r,xxxx,continuous,discrete);
   return discrete;
 }
 
-void AliQuenchingWeights::GetZeroLossProb(Double_t &p,Double_t &prw,Double_t &prw_cont,
+void AliQuenchingWeights::GetZeroLossProb(Double_t &p,Double_t &prw,Double_t &prwcont,
 					  Int_t ipart,Double_t I0,Double_t I1,Double_t e)
 {
-  p=1.;prw=1.;prw_cont=1.;
-  Double_t R=CalcRk(I0,I1);
-  if(R<=0.){
+  //calculate the probabilty that there is no energy
+  //loss for different ways of energy constraint
+  p=1.;prw=1.;prwcont=1.;
+  Double_t r=CalcRk(I0,I1);
+  if(r<=0.){
     return;
   }
   Double_t wc=CalcWCk(I1);
   if(wc<=0.){
     return;
   }
-  GetZeroLossProbR(p,prw,prw_cont,ipart,R,wc,e);
+  GetZeroLossProbR(p,prw,prwcont,ipart,r,wc,e);
 }
 
-void AliQuenchingWeights::GetZeroLossProbR(Double_t &p,Double_t &prw,Double_t &prw_cont,
-					   Int_t ipart, Double_t R,Double_t wc,Double_t e)
+void AliQuenchingWeights::GetZeroLossProbR(Double_t &p,Double_t &prw,Double_t &prwcont,
+					   Int_t ipart, Double_t r,Double_t wc,Double_t e)
 {
-  if(R>=fgkRMax) {
-    R=fgkRMax-1;
+  //calculate the probabilty that there is no energy
+  //loss for different ways of energy constraint
+  if(r>=fgkRMax) {
+    r=fgkRMax-1;
   }  
 
   Double_t discrete=0.;
@@ -1135,13 +1139,13 @@ void AliQuenchingWeights::GetZeroLossProbR(Double_t &p,Double_t &prw,Double_t &p
   if(fMultSoft) {
     for(Int_t bin=1; bin<=kbinmax; bin++) {
       Double_t xxxx = fHisto->GetBinCenter(bin);
-      CalcMult(ipart,R,xxxx,continuous,discrete);
+      CalcMult(ipart,r,xxxx,continuous,discrete);
       fHisto->SetBinContent(bin,continuous);
     }
   } else {
     for(Int_t bin=1; bin<=kbinmax; bin++) {
       Double_t xxxx = fHisto->GetBinCenter(bin);
-      CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+      CalcSingleHard(ipart,r,xxxx,continuous,discrete);
       fHisto->SetBinContent(bin,continuous);
     }
   }
@@ -1159,12 +1163,12 @@ void AliQuenchingWeights::GetZeroLossProbR(Double_t &p,Double_t &prw,Double_t &p
   prw=fHisto->GetBinContent(1)/hint;
 
   Double_t xxxx = fHisto->GetBinCenter(1);
-  CalcMult(ipart,R,xxxx,continuous,discrete);
+  CalcMult(ipart,r,xxxx,continuous,discrete);
   fHisto->SetBinContent(1,continuous);
   hint=fHisto->Integral(1,kbinmax);
   fHisto->Scale(1./hint*(1-discrete));
   fHisto->Fill(0.,discrete);
-  prw_cont=fHisto->GetBinContent(1);
+  prwcont=fHisto->GetBinContent(1);
 }
 
 Int_t AliQuenchingWeights::SampleEnergyLoss() 
@@ -1251,7 +1255,7 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
   return 0;
 }
 
-Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t R)
+Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t r)
 {
   // Sample energy loss directly for one particle type
   // choses R (safe it and keep it until next call of function)
@@ -1267,9 +1271,9 @@ Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t R)
   Int_t bin=1;
   Double_t xxxx = fHisto->GetBinCenter(bin);
   if(fMultSoft)
-    CalcMult(ipart,R,xxxx,continuous,discrete);
+    CalcMult(ipart,r,xxxx,continuous,discrete);
   else
-    CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+    CalcSingleHard(ipart,r,xxxx,continuous,discrete);
 
   if(discrete>=1.) {
     fHisto->SetBinContent(1,1.);
@@ -1282,9 +1286,9 @@ Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t R)
   for(Int_t bin=2; bin<=fgkBins; bin++) {
     xxxx = fHisto->GetBinCenter(bin);
     if(fMultSoft)
-      CalcMult(ipart,R,xxxx,continuous,discrete);
+      CalcMult(ipart,r,xxxx,continuous,discrete);
     else
-      CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+      CalcSingleHard(ipart,r,xxxx,continuous,discrete);
     fHisto->SetBinContent(bin,continuous);
   }
 
@@ -1412,7 +1416,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t 
   return histx;
 }
 
-TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t R) const 
+TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t r) const 
 {
   // compute P(E) distribution for
   // given ipart = 1 for quark, 2 for gluon 
@@ -1426,7 +1430,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t R) const
   }
 
   Char_t hname[100];
-  sprintf(hname,"hQWHistox_%s_%d_%.2f",meddesc,ipart,R);
+  sprintf(hname,"hQWHistox_%s_%d_%.2f",meddesc,ipart,r);
   TH1F *histx = new TH1F("histx",hname,fgkBins,0.,fgkMaxBin);
   histx->SetXTitle("x = #Delta E/#omega_{c}");
   if(fMultSoft)
@@ -1435,7 +1439,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t R) const
     histx->SetYTitle("p(#Delta E/#bar#omega_{c})");
   histx->SetLineColor(4);
 
-  Double_t rrrr = R;
+  Double_t rrrr = r;
   Double_t continuous=0.,discrete=0.;
   //loop on histogram channels
   for(Int_t bin=1; bin<=fgkBins; bin++) {
@@ -1537,16 +1541,16 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *h
   return h;
 }
 
-TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t R) const 
+TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t r) const 
 {
   // compute energy loss histogram for 
   // parton type and given R
 
-  TH1F *dummy = ComputeQWHistoX(ipart,R);
+  TH1F *dummy = ComputeQWHistoX(ipart,r);
   if(!dummy) return 0;
 
   Char_t hname[100];
-  sprintf(hname,"hELossHistox_%d_%.2f",ipart,R);
+  sprintf(hname,"hELossHistox_%d_%.2f",ipart,r);
   TH1F *histx = new TH1F("histxr",hname,fgkBins,0.,fgkMaxBin);
   for(Int_t i=0;i<100000;i++){
     //if(i % 1000 == 0) cout << "." << flush;
@@ -1582,12 +1586,12 @@ Double_t AliQuenchingWeights::GetMeanELoss(Int_t ipart,Double_t medval,TH1F *hEl
   return ret;
 }
 
-Double_t  AliQuenchingWeights::GetMeanELoss(Int_t ipart,Double_t R) const 
+Double_t  AliQuenchingWeights::GetMeanELoss(Int_t ipart,Double_t r) const 
 {
   // compute average energy loss over wc 
   // for parton type and given R
 
-  TH1F *dummy = ComputeELossHisto(ipart,R);
+  TH1F *dummy = ComputeELossHisto(ipart,r);
   if(!dummy) return 0;
   Double_t ret=dummy->GetMean();
   delete dummy;
@@ -2158,6 +2162,7 @@ void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,TH1F *hEll) const
 
 Int_t AliQuenchingWeights::GetIndex(Double_t len) const
 {
+  //get the index according to length
   if(len>fLengthMax) len=fLengthMax;
 
   Int_t l=Int_t(len/0.25);

@@ -26,11 +26,13 @@ class AliQuenchingWeights : public TObject {
 
   AliQuenchingWeights();
   AliQuenchingWeights(const AliQuenchingWeights& a);
+  AliQuenchingWeights& operator=(const AliQuenchingWeights& a)
+      {a.Copy(*this); return(*this);}
   virtual ~AliQuenchingWeights();
 
   void Reset();
   Int_t SampleEnergyLoss();
-  Int_t SampleEnergyLoss(Int_t ipart, Double_t R);
+  Int_t SampleEnergyLoss(Int_t ipart, Double_t r);
 
   Double_t GetELossRandom(Int_t ipart, Double_t length, Double_t e=1.e10) const;
   Double_t CalcQuenchedEnergy(Int_t ipart, Double_t length, Double_t e)  const;
@@ -39,15 +41,15 @@ class AliQuenchingWeights : public TObject {
   Double_t GetELossRandomK(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
   Double_t CalcQuenchedEnergyK(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
   Double_t GetELossRandomKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
-  Double_t GetELossRandomKFastR(Int_t ipart, Double_t R, Double_t wc, Double_t e=1.e10);
+  Double_t GetELossRandomKFastR(Int_t ipart, Double_t r, Double_t wc, Double_t e=1.e10);
   Double_t CalcQuenchedEnergyKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
 
   Double_t GetDiscreteWeight(Int_t ipart, Double_t I0, Double_t I1);
-  Double_t GetDiscreteWeightR(Int_t ipart, Double_t R);
-  void GetZeroLossProb(Double_t &p,Double_t &prw,Double_t &prw_cont,
+  Double_t GetDiscreteWeightR(Int_t ipart, Double_t r);
+  void GetZeroLossProb(Double_t &p,Double_t &prw,Double_t &prwcont,
 		       Int_t ipart,Double_t I0,Double_t I1,Double_t e=1.e10);
-  void GetZeroLossProbR(Double_t &p,Double_t &prw, Double_t &prw_cont,
-			Int_t ipart,Double_t R,Double_t wc,Double_t e=1.e10);
+  void GetZeroLossProbR(Double_t &p,Double_t &prw, Double_t &prwcont,
+			Int_t ipart,Double_t r,Double_t wc,Double_t e=1.e10);
 
   //multiple soft scattering approximation
   Int_t InitMult(const Char_t *contall="$(ALICE_ROOT)/FASTSIM/data/cont_mult.all",
@@ -124,14 +126,14 @@ class AliQuenchingWeights : public TObject {
 
   TH1F* ComputeQWHisto (Int_t ipart,Double_t medval,Double_t length)  const; 
   TH1F* ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t length)  const; 
-  TH1F* ComputeQWHistoX(Int_t ipart,Double_t R)                       const; 
+  TH1F* ComputeQWHistoX(Int_t ipart,Double_t r)                       const; 
   TH1F* ComputeELossHisto(Int_t ipart,Double_t medval,Double_t l,Double_t e=1.e10) const; 
   TH1F* ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *hEll,Double_t e=1.e10) const; 
-  TH1F* ComputeELossHisto(Int_t ipart,Double_t R)                                  const; 
+  TH1F* ComputeELossHisto(Int_t ipart,Double_t r)                                  const; 
 
   Double_t GetMeanELoss(Int_t ipart,Double_t medval,Double_t l) const;
   Double_t GetMeanELoss(Int_t ipart,Double_t medval,TH1F *hEll) const; 
-  Double_t GetMeanELoss(Int_t ipart,Double_t R) const; 
+  Double_t GetMeanELoss(Int_t ipart,Double_t r) const; 
   
   void PlotDiscreteWeights(Double_t len=4)             const; 
   void PlotContWeights(Int_t itype,Double_t len)       const;
