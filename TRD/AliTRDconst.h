@@ -1,3 +1,5 @@
+#ifndef ALITRDCONST_H
+#define ALITRDCONST_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -63,3 +65,5 @@ const Float_t kCoZpos  =  1.3175;             // PE of the cooling device
 const Float_t kWaZpos  =  1.3325;             // Cooling Water
 
 //_____________________________________________________________________________
+#endif
+
