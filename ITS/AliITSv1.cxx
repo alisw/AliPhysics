@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/10/02 21:28:08  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.19  2000/07/10 16:07:19  fca
 Release version of ITS code
 
@@ -825,6 +828,7 @@ void AliITSv1::StepManager(){
 //    Called for every step in the ITS, then calles the AliITShit class
 // creator with the information to be recoreded about that hit.
 ////////////////////////////////////////////////////////////////////////
+/*
   Int_t         copy, id;
   Float_t       hits[8];
   Int_t         vol[4];
@@ -889,6 +893,7 @@ void AliITSv1::StepManager(){
     hits[6]=gMC->Edep();
     hits[7]=gMC->TrackTime();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+*/
 }
 //____________________________________________________________________________
 void AliITSv1::Streamer(TBuffer &R__b){
