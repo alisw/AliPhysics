@@ -221,6 +221,7 @@ void AliPHOS::CreateMaterials()
   wGM[1] = 1. - arContent ;
   dGM    = wGM[0] * dAr + wGM[1] * dCO;
 
+  
   AliMixture(16, "ArCO2$", aGM, zGM, dGM,  2, wGM) ;
 
   // --- Stainless steel (let it be pure iron) ---
@@ -246,12 +247,14 @@ void AliPHOS::CreateMaterials()
   AliMixture(19, "Cables  $", aCA, zCA, dCA, -4, wCA) ;
 
 
-
- 
   // --- Air ---
-  AliMaterial(99, "Air$", 14.61, 7.3, 0.001205, 30420., 67500., 0, 0) ;
-  
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
  
+  AliMixture(99, "Air$", aAir, zAir, dAir, 4, wAir) ;
+
   // DEFINITION OF THE TRACKING MEDIA
 
   // for PHOS: idtmed[699->798] equivalent to fIdtmed[0->100]
