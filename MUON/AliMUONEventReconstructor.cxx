@@ -1467,7 +1467,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
       // after going through the first station
       if (station == 0) {
 	trackParamVertex = *trackParam1;
-	(&trackParamVertex)->ExtrapToVertex();
+	(&trackParamVertex)->ExtrapToVertex(0.,0.,0.);
 	track->SetTrackParamAtVertex(&trackParamVertex);
 	if (fPrintLevel >= 1) {
 	  cout << "FollowTracks: track candidate(0..): " << trackIndex

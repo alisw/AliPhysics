@@ -306,7 +306,8 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     // reading info from tracks
     recTrack = (AliMUONTrack*) recTracksArray->At(iRecTracks);
 
-    trackParam = recTrack->GetTrackParamAtVertex();
+    trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
+    trackParam->ExtrapToVertex(vertex[0],vertex[1],vertex[2]);
 
     bendingSlope            = trackParam->GetBendingSlope();
     nonBendingSlope         = trackParam->GetNonBendingSlope();
@@ -324,9 +325,9 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     theESDTrack->SetInverseBendingMomentum(inverseBendingMomentum);
     theESDTrack->SetThetaX(TMath::ATan(nonBendingSlope));
     theESDTrack->SetThetaY(TMath::ATan(bendingSlope));
-    theESDTrack->SetZ(vertex[2]);
-    theESDTrack->SetBendingCoor(vertex[1]); // calculate vertex at ESD or Tracking level ?
-    theESDTrack->SetNonBendingCoor(vertex[0]);
+    theESDTrack->SetZ(zRec);
+    theESDTrack->SetBendingCoor(yRec); // calculate vertex at ESD or Tracking level ?
+    theESDTrack->SetNonBendingCoor(xRec);
     theESDTrack->SetChi2(fitFmin);
     theESDTrack->SetNHit(nTrackHits);
     theESDTrack->SetMatchTrigger(matchTrigger);

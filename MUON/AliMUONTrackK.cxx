@@ -1064,7 +1064,7 @@ void AliMUONTrackK::Branson(void)
   trackParam->SetInverseBendingMomentum((*fTrackPar)(4,0)/TMath::Cos((*fTrackPar)(3,0)));
   trackParam->SetZ(fPosition);
 
-  trackParam->ExtrapToVertex();
+  trackParam->ExtrapToVertex(0.,0.,0.);
 
   (*fTrackPar)(0,0) = trackParam->GetBendingCoor();
   (*fTrackPar)(1,0) = trackParam->GetNonBendingCoor();

@@ -250,7 +250,7 @@ void AliMUONTrackParam::ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackP
 }
 
   //__________________________________________________________________________
-void AliMUONTrackParam::ExtrapToVertex()
+void AliMUONTrackParam::ExtrapToVertex(Double_t xVtx, Double_t yVtx, Double_t zVtx)
 {
   // Extrapolation to the vertex.
   // Returns the track parameters resulting from the extrapolation,
@@ -262,7 +262,7 @@ void AliMUONTrackParam::ExtrapToVertex()
   // Extrapolates track parameters upstream to the "Z" end of the front absorber
   ExtrapToZ(zAbsorber); // !!!
   // Makes Branson correction (multiple scattering + energy loss)
-  BransonCorrection();
+  BransonCorrection(xVtx,yVtx,zVtx);
   // Makes a simple magnetic field correction through the absorber
   FieldCorrection(zAbsorber);
 }
@@ -375,7 +375,7 @@ void AliMUONTrackParam::ExtrapToVertex()
 //   fZ= 0;
 // }
 
-void AliMUONTrackParam::BransonCorrection()
+void AliMUONTrackParam::BransonCorrection(Double_t xVtx,Double_t yVtx,Double_t zVtx)
 {
   // Branson correction of track parameters
   // the entry parameters have to be calculated at the end of the absorber
@@ -385,6 +385,8 @@ void AliMUONTrackParam::BransonCorrection()
   // Would it be possible to calculate all that from Geant configuration ????
   // and to get the Branson parameters from a function in ABSO module ????
   // with an eventual contribution from other detectors like START ????
+  //change to take into account the vertex postition (real, reconstruct,....)
+
   Double_t  zBP, xBP, yBP;
   Double_t  pYZ, pX, pY, pZ, pTotal, xEndAbsorber, yEndAbsorber, radiusEndAbsorber2, pT, theta;
   Int_t sign;
@@ -423,11 +425,12 @@ void AliMUONTrackParam::BransonCorrection()
 
   // new parameters after Branson and energy loss corrections
 //   Float_t zSmear = zBP - gRandom->Gaus(0.,2.);  // !!! possible smearing of Z vertex position
-  Float_t zSmear = zBP;
+
+  Float_t zSmear = zBP ;
   
-  pZ = pTotal * zSmear / TMath::Sqrt(xBP * xBP + yBP * yBP + zSmear * zSmear);
-  pX = pZ * xBP / zSmear;
-  pY = pZ * yBP / zSmear;
+   pZ = pTotal * (zSmear-zVtx) / TMath::Sqrt((xBP-xVtx) * (xBP-xVtx) + (yBP-yVtx) * (yBP-yVtx) +( zSmear-zVtx) * (zSmear-zVtx) );
+   pX = pZ * (xBP - xVtx)/ (zSmear-zVtx);
+   pY = pZ * (yBP - yVtx) / (zSmear-zVtx);
   fBendingSlope = pY / pZ;
   fNonBendingSlope = pX / pZ;
 
@@ -444,9 +447,11 @@ void AliMUONTrackParam::BransonCorrection()
 
   // vertex position at (0,0,0)
   // should be taken from vertex measurement ???
-  fBendingCoor = 0.0;
-  fNonBendingCoor = 0;
-  fZ= 0;
+
+  fBendingCoor = xVtx;
+  fNonBendingCoor = yVtx;
+  fZ= zVtx;
+
 }
 
   //__________________________________________________________________________
