@@ -43,6 +43,7 @@ class AliAODPair: public TObject
    virtual Double_t GetQLongLCMS(); //returns Q Long CMS longitudionally co-moving
    virtual Double_t GetQtLCMS(); //returns Q transverse CMS longitudionally co-moving
    
+   virtual Double_t GetQt(); //returns Q transverse to Kt
    
    
    virtual Double_t GetKt();  //returns K transverse
@@ -82,8 +83,12 @@ class AliAODPair: public TObject
    Double_t fQLongLCMS; //value of Q long CMS longitudially co-moving
    Bool_t   fQLongLCMSNotCalc;//flag indicating if fQLongLCMS is already calculated for this pair
    
-   Double_t fQtLCMS; //value of Q long CMS longitudially co-moving
+   Double_t fQtLCMS; //value of Qt CMS longitudially co-moving (hypot(qsidelcms,qoutlcms))
    Bool_t   fQtLCMSNotCalc;//flag indicating if fQLongLCMS is already calculated for this pair
+
+   Double_t fQt; //value of Qt, projection of 3-mom diff to Kt
+   Bool_t   fQtNotCalc;//flag indicating if fQt is already calculated for this pair
+   
 /************************************************************/
 /************************************************************/
    Double_t fQInv;  //half of differnece of 4-momenta
@@ -173,6 +178,8 @@ void AliAODPair::Changed()
  fQSideLCMSNotCalc = kTRUE;
  fQOutLCMSNotCalc  = kTRUE;
  fQLongLCMSNotCalc = kTRUE;
+ fQtLCMSNotCalc    = kTRUE;
+ fQtNotCalc        = kTRUE;
  fKtNotCalc         = kTRUE;
  fKStarNotCalc      = kTRUE;
  fQInvLNotCalc      = kTRUE;

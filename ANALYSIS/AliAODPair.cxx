@@ -29,6 +29,8 @@ AliAODPair::AliAODPair(Bool_t rev):
  fQLongLCMSNotCalc(kTRUE),
  fQtLCMS(0.0),
  fQtLCMSNotCalc(kTRUE),
+ fQt(0.0),
+ fQtNotCalc(kTRUE),
  fQInv(0.0),
  fQInvNotCalc(kTRUE),
  fInvMass(0.0),
@@ -314,6 +316,28 @@ Double_t AliAODPair::GetQtLCMS()
   }
  return fQtLCMS; 
 }
+/************************************************************************/
+
+Double_t AliAODPair::GetQt()
+{
+ //returns Q transverse CMS longitudionally co-moving
+ if (fQtNotCalc)
+  {
+    Double_t dotprod = fPxSum*fPxDiff + fPySum*fPyDiff + fPzSum*fPzDiff;
+    Double_t klen =    fPxSum*fPxSum  + fPySum*fPySum  + fPzSum*fPzSum;
+    klen = TMath::Sqrt(klen);
+    Double_t qlen =    fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff;
+    qlen = TMath::Sqrt(qlen);
+    
+    Double_t cosopenangle = dotprod/(klen*qlen);
+    Double_t sinopenangle = TMath::Sqrt(1.0 - cosopenangle*cosopenangle);
+    
+    fQt = sinopenangle*qlen;
+    fQtNotCalc = kFALSE;
+  }
+ return fQt; 
+}
+/************************************************************************/
 
 Double_t AliAODPair::GetKt()
 {
