@@ -167,9 +167,10 @@ Log messages included.
 ClassImp(AliMUONv1)
  
 //___________________________________________
-AliMUONv1::AliMUONv1()
+AliMUONv1::AliMUONv1() : AliMUON()
 {
 // Constructor
+    fChambers = 0;
 }
  
 //___________________________________________
@@ -177,7 +178,6 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
        : AliMUON(name,title)
 {
 // Constructor
-//  this->SetDebug(2);
     AliMUONFactory::Build(this, title);
 }
 

@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*$Id$*/
+/*$Id $*/
 
 #include <TObject.h>
 
@@ -31,7 +31,7 @@ class AliMUONConstants : public TObject {
     AliMUONConstants(){}
     virtual ~AliMUONConstants(){}
  private:
-    static const Int_t  fgNCh;                //  Number of Chambers    
+    static Int_t  fgNCh;                //  Number of Chambers    
     static Int_t  fgNTrackingCh;        //  Number of Tracking Chambers
     static Int_t  fgNTriggerCh;         //  Number of Trigger Chambers
     static Int_t  fgNTriggerCircuit;    //  Number of Trigger Circuits

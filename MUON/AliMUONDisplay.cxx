@@ -929,10 +929,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
 	if (mdig->Cathode() != cathode-1) continue;
 
-// debug hit numbers
-//	printf("  Chamber, cathode, digit, hit: %3d, %3d, %3d, %3d \n",
-//	       chamber,cathode,digit,mdig->Hit());
-
         //
         // First get all needed parameters
         //
@@ -1093,7 +1089,7 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
 	    fPhits->AddAt(points,nhold+hit);
             points->SetMarkerColor(kRed);
             points->SetMarkerStyle(5);
-            points->SetMarkerSize(2.); // JCH change
+            points->SetMarkerSize(1.);
             points->SetParticle(mHit->Track());
             points->SetHitIndex(hit);
             points->SetTrackIndex(track);

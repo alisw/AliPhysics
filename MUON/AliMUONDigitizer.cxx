@@ -274,7 +274,6 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	    fMask = fManager->GetMask(inputFile);
 	    fDigits[0] = ipx;
 	    fDigits[1] = ipy;
-	    if (!(fHitMap[fNch]->ValidateHit(fDigits[0], fDigits[1]))) continue;
 	    fDigits[2] = icat;
 	    fDigits[3] = iqpad;
 	    if (inputFile == 0) {

@@ -49,7 +49,7 @@ Add class AliMUONConstants with MUON specific constants using static memeber dat
 
 ClassImp(AliMUONConstants)
 
-const Int_t   AliMUONConstants::fgNCh = 14;
+Int_t   AliMUONConstants::fgNCh = 14;
 Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;

@@ -34,8 +34,6 @@ Was before in DataStructures.cxx
 
 #include "AliMUONDigit.h"
 
-#include <iostream.h>
-
 ClassImp(AliMUONDigit)
 //_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit(Int_t *digits)
@@ -74,14 +72,3 @@ AliMUONDigit::~AliMUONDigit()
 {
     // Destructor 
 }
-
-////////////////////////////////////////////////////////////////////////
-void AliMUONDigit::Print(Option_t *option) const 
-{
-  // print
-  cout<<"fPadX, fPadY, fCathode, fSignal, fPhysics, fHit: \n";
-  cout<<"   "<<fPadX<<" "<<fPadY<<" "<<fCathode<<" "
-      <<fSignal<<" "<<fPhysics<<" "<<fHit<<endl;
-}
-
-////////////////////////////////////////////////////////////////////////
