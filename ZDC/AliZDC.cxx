@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/11/30 17:21:03  coppedis
+Introduce hit array fStHits reset only at the end of the event (for digitization)
+
 Revision 1.10  2000/11/22 11:32:58  coppedis
 Major code revision
 
@@ -63,6 +66,7 @@ AliZDC::AliZDC()
   //
   // Default constructor for the Zero Degree Calorimeter base class
   //
+  
   fIshunt = 1;
 
   fHits = 0;
@@ -81,6 +85,14 @@ AliZDC::AliZDC(const char *name, const char *title)
   //
   // Standard constructor for the Zero Degree Calorimeter base class
   //
+
+  // Check that DIPO is there (otherwise tracking is wrong!!!)
+  
+  AliModule* DIPO=gAlice->GetModule("DIPO");
+  if(!DIPO) {
+    Error("Constructor","ZDC needs DIPO!!!\n");
+    exit(1);
+  } 
 
   //
   // Allocate the array of hits
