@@ -120,7 +120,7 @@ AliMUONSegmentIndex *  AliMUONSegmentationDetectionElement::FindIndexFromPositio
       yt = y + ((Float_t)iy)*AliMUONSegmentPosition::GetUnit();
       segmentindex = GetIndexFromPosition( xt, yt, cathode);
       if ( segmentindex ) {
-	// segmentindex->Print();
+	// segmentindex->Print();	
 	segmentposition = GetPosition(segmentindex->GetName());
 	if ( segmentposition->Distance(x_wire, y) < distance ) {     
 	  //printf("adfafa xt %f yt %f distance %f \n", xt, yt, segmentposition->Distance(xt,yt) );	
@@ -193,7 +193,7 @@ void  AliMUONSegmentationDetectionElement::GetPadI(Float_t x, Float_t y, Int_t c
 
   if (segmentindex) {
     padx = segmentindex->GetPadX();
-    pady = segmentindex->GetPadX();
+    pady = segmentindex->GetPadY();
   }
   else {
     Warning("GetPadI","Not found Index for position x=%5.2f y=%5.2f \n",x,y);
