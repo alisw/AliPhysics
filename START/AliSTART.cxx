@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/03/12 17:46:43  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.17  2001/01/26 19:59:53  hristov
 Major upgrade of AliRoot code
 
@@ -174,15 +177,15 @@ void AliSTART::BuildGeometry()
   // START define the different volumes
   new TRotMatrix("rot999","rot999",  90,0,90,90,180,0);
 
-  new TTUBE("S_STR1","START  volume 1","void",5.,10.7,5.3);
+  new TTUBE("S_0ST1","START  volume 1","void",5.,10.7,5.3);
   top->cd();
-  node = new TNode("STR1","STR1","S_STR1",0,0,75.,"");
+  node = new TNode("0ST1","0ST01","S_0ST1",0,0,75.,"");
   node->SetLineColor(kColorSTART);
   fNodes->Add(node);
 
-  new TTUBE("S_STR2","START volume 2","void",5.,10.7,5.3);
+  new TTUBE("S_0ST2","START volume 2","void",5.,10.7,5.3);
   top->cd();
-  node = new TNode("STR2","STR2","S_STR2",0,0,-75,"rot999");
+  node = new TNode("0ST2","0ST2","S_0ST2",0,0,-75,"rot999");
   node->SetLineColor(kColorSTART);
   fNodes->Add(node);
 }
@@ -213,10 +216,6 @@ void AliSTART::Init()
   // Here the START initialisation code (if any!)
   for(i=0;i<80;i++) printf("*");
   printf("\n");
-  //
-  //
-  //  fIdSensRad=gMC->VolId("PTOP");
-  //  fIdSensPC =gMC->VolId("T0PC");
 
 }
 
