@@ -19,8 +19,8 @@ public:
 
   AliCRTv0& operator=(const AliCRTv0& crt);
 
-  virtual TString Version();
-  virtual Int_t   IsVersion() const;
+  //  virtual TString Version();
+  //  virtual Int_t   IsVersion() const;
 
   virtual void    CreateGeometry();
   virtual void    BuildGeometry();
@@ -34,9 +34,9 @@ private:
   ClassDef(AliCRTv0,1) // Cosmic Ray Trigger (ACORDE).
 };
 
-inline TString AliCRTv0::Version()
-{ return TString("v0"); }
+// inline TString AliCRTv0::Version()
+// { return TString("v0"); }
 
-inline Int_t AliCRTv0::IsVersion() const
-{ return 0; }
+// inline Int_t AliCRTv0::IsVersion() const
+// { return 0; }
 #endif // ALICRTV0_H

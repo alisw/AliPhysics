@@ -37,6 +37,7 @@
 #include <TNode.h>
 #include <TTUBE.h>
 #include <TLorentzVector.h>
+#include <TVirtualMC.h>
 
 #include "AliFMDv0.h"
 #include "AliMagF.h"

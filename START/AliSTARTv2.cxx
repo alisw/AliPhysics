@@ -45,6 +45,7 @@
 #include "AliRun.h"
 #include "AliSTARThit.h"
 #include "AliSTARTv2.h"
+#include "AliMC.h"
 //#include "AliSTARThitPhoton.h"
 //#include "TGeant3.h"
 
@@ -372,7 +373,7 @@ void AliSTARTv2::StepManager()
 	   hitPhoton[4] = 1e9 * gMC->TrackTime();
 	   hitPhoton[5] = 1e9 * gMC->Etot();
 	   
-	   AddHitPhoton (gAlice->GetCurrentTrackNumber(), vol, hitPhoton);
+	   AddHitPhoton (gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hitPhoton);
 	}
 	gMC->StopTrack();
      }
@@ -436,7 +437,7 @@ void AliSTARTv2::StepManager()
       //	 printf(" HITS on START Exit %f\n",hits[i]); } 
       //for (i=0; i<=1; i++) { printf("START vol %d\n",vol[i]);}
      
-      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);      
+      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);      
     }
   }
 

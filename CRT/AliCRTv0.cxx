@@ -48,6 +48,7 @@
 #include <TGeometry.h>
 #include <TBRIK.h>
 #include <TNode.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliConst.h"

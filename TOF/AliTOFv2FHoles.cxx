@@ -58,6 +58,7 @@
 #include "AliRun.h"
 #include "AliTOFv2FHoles.h"
 #include "AliTOFConstants.h" // AdC
+#include "AliMC.h"
  
 ClassImp(AliTOFv2FHoles)
  
@@ -1171,6 +1172,6 @@ void AliTOFv2FHoles::StepManager()
     vol[3]= padx;
     vol[4]= padz;
     
-    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
   }
 }

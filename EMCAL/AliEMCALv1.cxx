@@ -38,6 +38,7 @@
 #include "TTree.h"
 #include "TGeometry.h"
 #include "TParticle.h"
+#include "TVirtualMC.h"
 
 // --- Standard library ---
 
@@ -55,6 +56,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliConst.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliEMCALv1)
 
@@ -71,7 +73,7 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
     // Standard Creator.
 
     fHits= new TClonesArray("AliEMCALHit",1000);
-    gAlice->AddHitList(fHits);
+    gAlice->GetMCApp()->AddHitList(fHits);
 
     fNhits = 0;
     fIshunt     =  2; // All hits are associated with particles entering the calorimeter
@@ -130,7 +132,7 @@ void AliEMCALv1::StepManager(void){
   Float_t        pmom[4]={0.,0.,0.,0.};
   TLorentzVector pos; // Lorentz vector of the track current position.
   TLorentzVector mom; // Lorentz vector of the track current momentum.
-  Int_t tracknumber =  gAlice->GetCurrentTrackNumber();
+  Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
   Int_t primary = 0;
   static Int_t iparent = 0;
   static Float_t ienergy = 0;
@@ -152,7 +154,7 @@ void AliEMCALv1::StepManager(void){
       Int_t parent = iparent ;
       while ( parent != -1 ) { // <------------- flags this particle to be kept and
 	//all the ancestors of this particle
-	part = gAlice->Particle(parent) ;
+	part = gAlice->GetMCApp()->Particle(parent) ;
 	part->SetBit(kKeepBit);
 	parent = part->GetFirstMother() ;
       }
@@ -196,7 +198,7 @@ void AliEMCALv1::StepManager(void){
 					     ;
       xyzte[4] = lightYield  ;
    
-      primary = gAlice->GetPrimary(tracknumber);
+      primary = gAlice->GetMCApp()->GetPrimary(tracknumber);
 
       if (gDebug == 2) 
 	Info("StepManager", "id0 = %d, id1 = %d, absid = %d tower = %d layer = %d energy = %f\n", id[0], id[1], absid, tower, layer, xyzte[4]) ;

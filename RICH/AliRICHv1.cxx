@@ -24,6 +24,7 @@
 #include <AliConst.h>
 #include <AliPDG.h>
 #include <AliRun.h>
+#include <AliMC.h>
 
 ClassImp(AliRICHv1)    
 //______________________________________________________________________________
@@ -59,7 +60,7 @@ void AliRICHv1::StepManager()
   static Float_t eloss,  tlength;
   const  Float_t kBig=1.e10;
        
-  TParticle *current = (TParticle*)(*gAlice->Particles())[gAlice->GetCurrentTrackNumber()];
+  TParticle *current = (TParticle*)(*gAlice->GetMCApp()->Particles())[gAlice->GetMCApp()->GetCurrentTrackNumber()];
 
     
  
@@ -80,7 +81,7 @@ void AliRICHv1::StepManager()
           if(gMC->IsNewTrack()){//C+E+enter+FRE+new
             Int_t mother=current->GetFirstMother(); 
             ckovData[10]=mother;
-            ckovData[11]=gAlice->GetCurrentTrackNumber();
+            ckovData[11]=gAlice->GetMCApp()->GetCurrentTrackNumber();
             ckovData[12]=1;             //Media where photon was produced 1->Freon, 2->Quarz
             fCkovNumber++;
             fFreonProd=1;
@@ -234,7 +235,7 @@ void AliRICHv1::StepManager()
             coscerenkov = 0;
           ckovData[18]=TMath::ACos(coscerenkov);//Cerenkov angle
         }
-        AddHit(gAlice->GetCurrentTrackNumber(),vol,ckovData);//PHOTON HIT CF+CSI+DE
+        AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,ckovData);//PHOTON HIT CF+CSI+DE
         //AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
       }//CF+CSI+DE
     }//CF+CSI
@@ -285,7 +286,7 @@ void AliRICHv1::StepManager()
           hits[8]= hits[8]+1;
           hits[9]= (Float_t) fNsdigits;
         }
-	AddHit(gAlice->GetCurrentTrackNumber(),vol,hits);//MIP HIT MIP+GAP+Exit
+	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);//MIP HIT MIP+GAP+Exit
 	eloss = 0; 
       }/*MIP+GAP+Exit*/else if(Param()->SigGenCond(localPos[0], localPos[2])){//MIP+GAP+Spec
         Param()->SigGenInit(localPos[0], localPos[2]);

@@ -51,6 +51,7 @@
 #include "AliPHOSQAMeanChecker.h"
 #include "AliPHOSv1.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliPHOSv1)
 
@@ -94,7 +95,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   // and the TreeD at the end of the event (branch is set in FinishEvent() ). 
   
   fHits= new TClonesArray("AliPHOSHit",1000) ;
-  gAlice->AddHitList(fHits) ; 
+  gAlice->GetMCApp()->AddHitList(fHits) ; 
 
   fNhits = 0 ;
 
@@ -280,7 +281,7 @@ void AliPHOSv1::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
+  Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber() ; 
   TString name      =  GetGeometry()->GetName() ; 
 
   Int_t moduleNumber ;
@@ -400,9 +401,9 @@ void AliPHOSv1::StepManager(void)
       gMC -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system    
       if (xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2.+0.001){   //Entered close to forward surface  
 	TParticle * part = 0 ; 
-	Int_t parent = gAlice->GetCurrentTrackNumber() ; 
+	Int_t parent = gAlice->GetMCApp()->GetCurrentTrackNumber() ; 
 	while ( parent != -1 ) {
-	  part = gAlice->Particle(parent) ; 
+	  part = gAlice->GetMCApp()->Particle(parent) ; 
 	  part->SetBit(kKeepBit);
 	  parent = part->GetFirstMother() ; 
 	}
@@ -438,17 +439,17 @@ void AliPHOSv1::StepManager(void)
       
       Int_t primary =-1 ;
       if(fIshunt == 1)
-	 primary  =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
+	 primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
       else if(fIshunt == 2){
-         primary = gAlice->GetCurrentTrackNumber() ;
-         TParticle * part = gAlice->Particle(primary) ;
+         primary = gAlice->GetMCApp()->GetCurrentTrackNumber() ;
+         TParticle * part = gAlice->GetMCApp()->Particle(primary) ;
          while ( !part->TestBit(kKeepBit) ) {
            primary = part->GetFirstMother() ;
            if(primary == -1) break ; //there is a possibility that particle passed e.g. thermal isulator and hits a side 
                                      //surface of the crystal. In this case it may have no primary at all. 
                                      //We can not easily separate this case from the case when this is part of the shower, 
                                      //developed in the neighboring crystal.
-           part = gAlice->Particle(primary) ;
+           part = gAlice->GetMCApp()->Particle(primary) ;
          }
       }
 

@@ -41,6 +41,7 @@
 #include "AliRICHRawCluster.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRecHit1D.h"
+#include "AliMC.h"
 
 
 ClassImp(AliRICHv3)
@@ -112,7 +113,7 @@ void AliRICHv3::StepManager()
     const  Float_t kBig=1.e10;
        
     TClonesArray &lhits = *fHits;
-    TParticle *current = (TParticle*)(*gAlice->Particles())[gAlice->GetCurrentTrackNumber()];
+    TParticle *current = (TParticle*)(*gAlice->GetMCApp()->Particles())[gAlice->GetMCApp()->GetCurrentTrackNumber()];
 
  //if (current->Energy()>1)
    //{
@@ -163,7 +164,7 @@ void AliRICHv3::StepManager()
 		      //printf("Second Mother:%d\n",current->GetSecondMother());
 		      
 		      ckovData[10] = mother;
-		      ckovData[11] = gAlice->GetCurrentTrackNumber();
+		      ckovData[11] = gAlice->GetMCApp()->GetCurrentTrackNumber();
 		      ckovData[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
 		      //printf("Produced in FREO\n");
 		      fCkovNumber++;
@@ -207,7 +208,7 @@ void AliRICHv3::StepManager()
 			if (ranf[0] > t) {
 			  gMC->StopTrack();
 			  ckovData[13] = 5;
-			  AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+			  AddCerenkov(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,ckovData);
 			  //printf("Added One (1)!\n");
 			  //printf("Lost one in grid\n");
 			}
@@ -237,7 +238,7 @@ void AliRICHv3::StepManager()
 			    if (ranf[0] < t) {
 			      gMC->StopTrack();
 			      ckovData[13] = 6;
-			      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+			      AddCerenkov(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,ckovData);
 				
 			      //printf("Added One (2)!\n");
 			      //printf("Lost by Fresnel\n");
@@ -285,7 +286,7 @@ void AliRICHv3::StepManager()
 			ckovData[13]=16;
 		      }
 		      gMC->StopTrack();
-		      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+		      AddCerenkov(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,ckovData);
 		      //printf("Added One (3)!\n");
 		      //printf("Added cerenkov %d\n",fCkovNumber);
 		    } //absorption question 
@@ -295,7 +296,7 @@ void AliRICHv3::StepManager()
 		    else if (procs[i] == kPStop) {                 //is it below energy treshold?
 		      ckovData[13]=21;
 		      gMC->StopTrack();
-		      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+		      AddCerenkov(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,ckovData);
 		      //printf("Added One (4)!\n");
 		    }	// energy treshold question	    
 		  }  //number of mechanisms cycle
@@ -421,8 +422,8 @@ void AliRICHv3::StepManager()
 		      }
 		    //if (sector != -1)
 		    //{
-		    AddHit(gAlice->GetCurrentTrackNumber(),vol,ckovData);
-		    AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+		    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,ckovData);
+		    AddCerenkov(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,ckovData);
 		    //printf("Added One (5)!\n");
 		    //}
 		}
@@ -566,7 +567,7 @@ void AliRICHv3::StepManager()
 		}
 		
 		//if(sector !=-1)
-		new(lhits[fNhits++]) AliRICHhit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+		new(lhits[fNhits++]) AliRICHhit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
 		eloss = 0; 
 		//
 		// Check additional signal generation conditions 
@@ -714,7 +715,7 @@ void AliRICHv3::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
 	       Float_t PTfinal;
 	       Float_t PTvertex;
 
-	      TParticle *current = gAlice->Particle(index);
+	      TParticle *current = gAlice->GetMCApp()->Particle(index);
 	      
 	      //Float_t energy=current->Energy(); 
 

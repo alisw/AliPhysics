@@ -46,6 +46,7 @@
 #include "AliITShit.h"
 #include "AliITSvtest.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliITSvtest)
  
@@ -411,7 +412,7 @@ void AliITSvtest::StepManager(){
   hits[6]=gMC->Edep();
   hits[7]=gMC->TrackTime();
   // Fill hit structure with this new hit.
-  new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+  new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
   return;
 }
 

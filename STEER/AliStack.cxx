@@ -32,6 +32,7 @@
 #include "AliHit.h"
 #include "AliModule.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
 
@@ -359,7 +360,7 @@ void AliStack::PurifyKine()
   }
   
   // Now loop on all registered hit lists
-  TList* hitLists = gAlice->GetHitLists();
+  TList* hitLists = gAlice->GetMCApp()->GetHitLists();
   TIter next(hitLists);
   TCollection *hitList;
   while((hitList = dynamic_cast<TCollection*>(next()))) {
@@ -383,7 +384,7 @@ void AliStack::PurifyKine()
      detector->RemapTrackReferencesIDs(map.GetArray());
    }
    //
-   gAlice->RemapTrackReferencesIDs(map.GetArray());
+   gAlice->GetMCApp()->RemapTrackReferencesIDs(map.GetArray());
 
    // Now the output bit, from fHgwmk to nkeep we write everything and we erase
    if(nkeep>fParticleFileMap.GetSize()) fParticleFileMap.Set(Int_t (nkeep*1.5));

@@ -58,6 +58,7 @@
 #include "AliITSTrackerV1.h"
 #include "AliITSVertex.h"
 #include "AliITSPid.h"
+#include "AliMC.h"
 
 ClassImp(AliITSTrackerV1)
  //______________________________________________________________________
@@ -720,7 +721,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	    for(k=0; k<3; k++){  
 		Int_t lpp=(Int_t)vecLabRef(k);
 		if(lpp>=0) {
-		    TParticle *p=(TParticle*) gAlice->Particle(lpp);
+		    TParticle *p=(TParticle*) gAlice->GetMCApp()->Particle(lpp);
 		    Int_t pcode=p->GetPdgCode();
 		    if(pcode==11) vecLabRef(k)=p->GetFirstMother();
 		} // end if

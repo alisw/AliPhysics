@@ -16,7 +16,8 @@ AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
 AliGausCorr.cxx AliTrackReference.cxx AliESD.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx AliBarrelTrack.cxx \
-AliESDtrack.cxx AliESDv0.cxx AliESDcascade.cxx AliESDvertex.cxx AliESDpid.cxx
+AliESDtrack.cxx AliESDv0.cxx AliESDcascade.cxx AliESDvertex.cxx AliESDpid.cxx \
+AliMC.cxx
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= STEERLinkDef.h

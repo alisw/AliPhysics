@@ -33,6 +33,7 @@
 #include "AliVZEROLoader.h"
 #include "AliVZEROdigit.h"
 #include "AliVZEROhit.h"
+#include "AliMC.h"
 
 ClassImp(AliVZERO)
  
@@ -50,7 +51,7 @@ AliVZERO::AliVZERO(const char *name, const char *title)
   fHits         =  new TClonesArray("AliVZEROhit", 400);
   fDigits       =  new TClonesArray("AliVZEROdigit",400); 
    
-  gAlice->AddHitList(fHits);
+  gAlice->GetMCApp()->AddHitList(fHits);
 
   fThickness    =  4.1;   // total thickness of the V0R box
   fThickness1   =  0.7;   // thickness of the thickest cell (2.5 in version 0)

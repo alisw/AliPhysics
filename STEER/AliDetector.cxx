@@ -48,6 +48,7 @@
 #include "AliPoints.h"
 #include "AliLoader.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 
 // Static variables for the hit iterator routines
@@ -288,7 +289,7 @@ void AliDetector::LoadPoints(Int_t)
 //    Error("LoadPoints","nhits == 0. Name is %s",GetName());
     return;
    }
-  Int_t tracks = gAlice->GetNtrack();
+  Int_t tracks = gAlice->GetMCApp()->GetNtrack();
   if (fPoints == 0) fPoints = new TObjArray(tracks);
   AliHit *ahit;
   //

@@ -104,6 +104,7 @@ the AliITS class.
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSSD.h"
+#include "AliMC.h"
 
 ClassImp(AliITS)
 
@@ -175,7 +176,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
 
     fIshunt     = 0;  // not zeroed in AliDetector
     fHits       = new TClonesArray("AliITShit", 1560);//not done in AliDetector
-    gAlice->AddHitList(fHits);  // Not done in AliDetector.
+    gAlice->GetMCApp()->AddHitList(fHits);  // Not done in AliDetector.
 
     fEuclidOut  = 0;
     fITSgeom    = 0;

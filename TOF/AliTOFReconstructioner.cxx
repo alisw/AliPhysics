@@ -74,6 +74,7 @@
 #include "AliTOFv3.h"
 #include "AliTOFv4.h"
 #include "AliTOFv4T0.h"
+#include "AliMC.h"
 
 // #include "../TPC/AliTPC.h"
 // AliTPChit class or somewhere
@@ -1701,7 +1702,7 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits,
       ipart    = tofHit->GetTrack();
       if(ipart>=fMaxAllTracks) break;
       Float_t geantTime= tofHit->GetTof(); // it is given in [s]
-      particle = (TParticle*)gAlice->Particle(ipart);
+      particle = (TParticle*)gAlice->GetMCApp()->Particle(ipart);
 
       Int_t pdgCode=particle->GetPdgCode();
       // Only high momentum tracks (see fPBound value)
@@ -3020,7 +3021,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
     //Test
     if(PRINT) {
       if(iTOFpixel[ipart] && match!=3) {
-	particle = (TParticle*)gAlice->Particle(ipart);  //for V3.05
+	particle = (TParticle*)gAlice->GetMCApp()->Particle(ipart);  //for V3.05
 
 	printf("          ipixel=%i (Sector=%i, Plate=%i, Strip=%i, Pixel=%i), fired by %i track\n",iTOFpixel[ipart],
 			pixelArray[iTOFpixel[ipart]-1].GetSector(),pixelArray[iTOFpixel[ipart]-1].GetPlate(),
@@ -3171,7 +3172,7 @@ void AliTOFReconstructioner::FillNtuple(Int_t ntracks, AliTOFTrack* trackArray, 
     cout << "particle " << i << endl;
     cout << "total " << numberOfParticles << endl;
     */
-    TParticle *part = (TParticle *) gAlice->Particle(i);
+    TParticle *part = (TParticle *) gAlice->GetMCApp()->Particle(i);
     if(charge[PDGtoGeantCode(part->GetPdgCode())-1]) {
       icharge++;
       /*

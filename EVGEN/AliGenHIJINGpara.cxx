@@ -43,6 +43,7 @@
 #include <TF1.h>
 #include <TParticle.h>
 #include <TPDGCode.h>
+#include <TVirtualMC.h>
 
 #include "AliConst.h"
 #include "AliDecayer.h"

@@ -27,6 +27,7 @@
 #include "AliConst.h"
 #include "AliGenZDC.h"
 #include "AliRun.h"
+#include "AliMC.h"
  
 ClassImp(AliGenZDC)
  
@@ -154,7 +155,7 @@ void AliGenZDC::Generate()
   }
       
   Float_t polar[3] = {0,0,0};
-  gAlice->PushTrack(fTrackIt,-1,fIpart,fPTrack,fOrigin.GetArray(),polar,0,
+  gAlice->GetMCApp()->PushTrack(fTrackIt,-1,fIpart,fPTrack,fOrigin.GetArray(),polar,0,
   		   kPPrimary,nt);
   if(fDebugOpt == 1){
     printf("\n\n		Track momentum:\n");

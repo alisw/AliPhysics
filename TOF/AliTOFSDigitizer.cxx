@@ -55,6 +55,7 @@
 #include "AliTOFv2.h"
 #include "AliTOFv3.h"
 #include "AliTOFv4.h"
+#include "AliMC.h"
 
 ClassImp(AliTOFSDigitizer)
 
@@ -272,7 +273,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
       gAlice->ResetHits();
       //PH      TH->GetEvent(track);
       tofHitsBranch->GetEvent(track);
-      particle = gAlice->Particle(track);
+      particle = gAlice->GetMCApp()->Particle(track);
       Int_t nhits = TOFhits->GetEntriesFast();
       // cleaning all hits of the same track in the same pad volume
       // it is a rare event, however it happens

@@ -53,6 +53,7 @@
 #include "AliTOFTrackV2.h"
 #include "AliTOFdigit.h"
 #include "AliTOFhitT0.h"
+#include "AliMC.h"
 
 ClassImp(AliTOFReconstructionerV2)
 
@@ -991,7 +992,7 @@ void AliTOFReconstructionerV2::Comparison(Int_t* rtIndex)
          if(ipart >= 80000) continue;
          if(rtIndex[ipart] < 0) continue; 
 
-	 TParticle *part = gAlice->Particle(ipart);
+	 TParticle *part = gAlice->GetMCApp()->Particle(ipart);
 	 
 	 // get first the pdg code
 	 Int_t pdgCode=part->GetPdgCode();

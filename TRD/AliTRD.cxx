@@ -55,6 +55,7 @@
 #include "AliTRDrecPoint.h"
 #include "AliTRDtrackHits.h"  
 #include "AliTrackReference.h"
+#include "AliMC.h"
 
 ClassImp(AliTRD)
  
@@ -118,7 +119,7 @@ AliTRD::AliTRD(const char *name, const char *title)
 
   // Allocate the hit array
   fHits           = new TClonesArray("AliTRDhit"     ,405);
-  gAlice->AddHitList(fHits);
+  gAlice->GetMCApp()->AddHitList(fHits);
 
   // Allocate the digits array
   fDigits         = 0;
@@ -844,7 +845,7 @@ void AliTRD::LoadPoints(Int_t )
   } 
   if (nhits == 0) return;
 
-  Int_t tracks = gAlice->GetNtrack();
+  Int_t tracks = gAlice->GetMCApp()->GetNtrack();
   if (fPoints == 0) fPoints = new TObjArray(tracks);
 
   AliTRDhit *ahit;
@@ -1292,13 +1293,13 @@ void AliTRD::AddHit2(Int_t track, Int_t det, Float_t *hits, Int_t q
   Int_t rtrack;
 
   if (fIshunt) {
-    Int_t primary = gAlice->GetPrimary(track);
-    gAlice->Particle(primary)->SetBit(kKeepBit);
+    Int_t primary = gAlice->GetMCApp()->GetPrimary(track);
+    gAlice->GetMCApp()->Particle(primary)->SetBit(kKeepBit);
     rtrack = primary;
   } 
   else {
     rtrack = track;
-    gAlice->FlagTrack(track);
+    gAlice->GetMCApp()->FlagTrack(track);
   }
 
   if ((fTrackHits) && (fHitType > 0)) {

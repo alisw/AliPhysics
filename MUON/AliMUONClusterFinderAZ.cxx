@@ -23,6 +23,7 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONPixel.h"
+#include "AliMC.h"
 
 // This function is used for fitting
 void fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
@@ -110,7 +111,7 @@ newev:
   AliLoader * gime  = rl->GetLoader("MUONLoader");
 
   if (!fReco) nparticles = rl->GetEvent(nev);
-  else nparticles = gAlice->GetNtrack();
+  else nparticles = gAlice->GetMCApp()->GetNtrack();
   cout << "nev         " << nev <<endl;
   cout << "nparticles  " << nparticles <<endl;
   if (nparticles <= 0) return;

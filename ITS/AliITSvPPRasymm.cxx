@@ -72,6 +72,7 @@
 #include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSvPPRasymm.h"
+#include "AliMC.h"
 
 
 ClassImp(AliITSvPPRasymm)
@@ -29197,7 +29198,7 @@ void AliITSvPPRasymm::StepManager(){
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->GetCurrentTrackNumber());
+	new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;
@@ -29286,7 +29287,7 @@ void AliITSvPPRasymm::StepManager(){
 	return;
     } // end if IsEntering
     // Fill hit structure with this new hit.
-    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,
+    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,
 				   gMC->Edep(),gMC->TrackTime(),position,
 				   position0,momentum);
     //

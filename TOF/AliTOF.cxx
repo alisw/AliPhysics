@@ -69,6 +69,7 @@
 #include "AliTOFdigit.h"
 #include "AliTOFhit.h"
 #include "AliTOFhitT0.h"
+#include "AliMC.h"
  
 ClassImp(AliTOF)
  
@@ -120,8 +121,8 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   if (gAlice==0) {
      Fatal("AliTOF","gAlice==0 !");
   }
-  if (gAlice->GetHitLists())
-     gAlice->AddHitList(fHits);
+  if (gAlice->GetMCApp()->GetHitLists())
+     gAlice->GetMCApp()->AddHitList(fHits);
   else Error("AliTOF","gAlice->GetHitLists()==0");
 
   fIshunt  = 0;

@@ -37,10 +37,12 @@
 #include <TPad.h>
 #include <TPaveLabel.h>
 #include <TROOT.h>
+#include <TVirtualMC.h>
 
 #include "AliMCQA.h"
 #include "AliModule.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliMCQA)
 
@@ -147,9 +149,10 @@ AliMCQA::AliMCQA(Int_t ndets):
   //
   // Build list of volume names
   //
+  AliMC * mc = gAlice->GetMCApp();
   for(i=0;i<fNvolumes;++i) {
     AliModule *mod = dynamic_cast<AliModule*>
-      ((*gAlice->Modules())[gAlice->DetFromMate(gMC->VolId2Mate(i+1))]);
+      ((*gAlice->Modules())[mc->DetFromMate(gMC->VolId2Mate(i+1))]);
     (*fVolNames)[i]=new TNamed(gMC->VolName(i+1),mod->GetName());
   }
 

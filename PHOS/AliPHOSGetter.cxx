@@ -56,6 +56,7 @@
 // #include "AliPHOSRaw2Digits.h"
 //#include "AliPHOSCalibrationDB.h"
 #include "AliPHOSBeamTestEvent.h"
+#include "AliMC.h"
 
 ClassImp(AliPHOSGetter)
   
@@ -585,7 +586,7 @@ TParticle * AliPHOSGetter::Secondary(const TParticle* p, const Int_t index) cons
   if(p) {
   Int_t daughterIndex = p->GetDaughter(index-1) ; 
   AliRunLoader * rl = AliRunLoader::GetRunLoader(PhosLoader()->GetTitle());
-  return  rl->GetAliRun()->Particle(daughterIndex) ; 
+  return  rl->GetAliRun()->GetMCApp()->Particle(daughterIndex) ; 
   }
   else
     return 0 ;

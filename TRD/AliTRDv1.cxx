@@ -44,6 +44,7 @@
 #include "AliTRDmatrix.h"
 #include "AliTRDsim.h"
 #include "AliTRDv1.h"
+#include "AliMC.h"
 
 ClassImp(AliTRDv1)
  
@@ -264,7 +265,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
 
       // Add the hit to the array. TR photon hits are marked 
       // by negative charge
-      AddHit(gAlice->GetCurrentTrackNumber(),det,posHit,-q,kTRUE); 
+      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,posHit,-q,kTRUE); 
 
     }
 
@@ -553,7 +554,7 @@ void AliTRDv1::StepManager()
 	  // momentum components of the particle
           if (gMC->IsTrackEntering() || gMC->IsTrackExiting()) {
             gMC->TrackMomentum(mom);
-            AddTrackReference(gAlice->GetCurrentTrackNumber());
+            AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
           }
 
           // Create the hits from TR photons
@@ -570,10 +571,10 @@ void AliTRDv1::StepManager()
 
 	// Create a new dEdx hit
         if (drRegion) {
-          AddHit(gAlice->GetCurrentTrackNumber(),det,hits,qTot,kTRUE);       
+          AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,hits,qTot,kTRUE);       
 	}
         else {
-          AddHit(gAlice->GetCurrentTrackNumber(),det,hits,qTot,kFALSE);      
+          AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,hits,qTot,kFALSE);      
 	}
 
         // Calculate the maximum step size for the next tracking step

@@ -39,6 +39,7 @@
 #include <TTree.h>
 #include <TSystem.h>
 #include <TDirectory.h>
+#include <TVirtualMC.h>
 
 #include "AliConfig.h"
 #include "AliLoader.h"
@@ -46,6 +47,7 @@
 #include "AliModule.h"
 #include "AliRun.h"
 #include "AliTrackReference.h"
+#include "AliMC.h"
 
 ClassImp(AliModule)
  
@@ -699,7 +701,7 @@ AliTrackReference* AliModule::FirstTrackReference(Int_t track)
    {
      AliRunLoader* rl = AliRunLoader::GetRunLoader();
 
-     rl->GetAliRun()->ResetTrackReferences();
+     rl->GetAliRun()->GetMCApp()->ResetTrackReferences();
      rl->TreeTR()->GetEvent(track);
      if (rl == 0x0)
        Fatal("FirstTrackReference","AliRunLoader not initialized. Can not proceed");

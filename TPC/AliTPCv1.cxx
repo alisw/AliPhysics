@@ -46,6 +46,7 @@
 #include "AliTPCParamSR.h"
 #include "AliTPCv1.h"
 #include "TLorentzVector.h"
+#include "AliMC.h"
 
 ClassImp(AliTPCv1)
 
@@ -1768,7 +1769,7 @@ void AliTPCv1::StepManager()
         hits[3]=0.; // this hit has no energy loss
 	// new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-        AddHit(gAlice->GetCurrentTrackNumber(), vol,hits); // M.I. 
+        AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
         gMC->TrackPosition(p);
         hits[0]=p[0];
@@ -1777,7 +1778,7 @@ void AliTPCv1::StepManager()
         hits[3]=0.; // this hit has no energy loss
         // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-	AddHit(gAlice->GetCurrentTrackNumber(), vol,hits); // M.I. 
+	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
       } 
 
@@ -1786,7 +1787,7 @@ void AliTPCv1::StepManager()
       hits[3]=1; //I'd like to have something positive here (I.Belikov)
       // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-      AddHit(gAlice->GetCurrentTrackNumber(), vol,hits); // M.I. 
+      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
     }
 

@@ -31,6 +31,7 @@
 
 #include "AliDimuCombinator.h" 
 #include "AliRun.h" 
+#include "AliMC.h"
 
 //
 ClassImp(AliDimuCombinator)
@@ -66,7 +67,7 @@ AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)
 // 
 TParticle* AliDimuCombinator::Particle(Int_t i)
 {
-    return gAlice->Particle(i);
+    return gAlice->GetMCApp()->Particle(i);
 }
 
 TParticle* AliDimuCombinator::FirstMuon()

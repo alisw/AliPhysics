@@ -35,6 +35,7 @@
 #include "AliDetector.h"
 #include "AliPoints.h"
 #include "AliRun.h"
+#include "AliMC.h"
  
 ClassImp(AliPoints)
 
@@ -174,8 +175,8 @@ TParticle *AliPoints::GetParticle() const
   //
   //   Returns pointer to particle index in AliRun::fParticles
   //
-  if (fIndex < 0 || fIndex >= gAlice->GetNtrack()) return 0;
-  else return gAlice->Particle(fIndex);
+  if (fIndex < 0 || fIndex >= gAlice->GetMCApp()->GetNtrack()) return 0;
+  else return gAlice->GetMCApp()->Particle(fIndex);
 }
 
 //_______________________________________________________________________
@@ -200,7 +201,7 @@ void AliPoints::Propagate()
   //  
   TIter next(gAlice->Detectors());
   AliDetector *detector;
-  while((detector = dynamic_cast<AliDetector*>(next()))) {
+  while((detector = (AliDetector*)(next()))) {
     if (!detector->IsActive()) continue;
     points = detector->Points();
     if (!points) continue;

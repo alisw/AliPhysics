@@ -236,8 +236,8 @@ public:
   AliRICHChamber* C(Int_t iC)           const{return (AliRICHChamber*)fChambers->At(iC-1);}
   AliRICHParam*   Param()               const{return fpParam;}
   
-  AliRICHhit*     FirstHit(Int_t iTrkN)      {return (AliRICHhit*)AliDetector::FirstHit(iTrkN);}                   //virtual
-  AliRICHhit*     NextHit()                  {return (AliRICHhit*)AliDetector::NextHit();}                         //virtual 
+  //  AliRICHhit*     FirstHit(Int_t iTrkN)      {return (AliRICHhit*)AliDetector::FirstHit(iTrkN);}                   //virtual
+  //  AliRICHhit*     NextHit()                  {return (AliRICHhit*)AliDetector::NextHit();}                         //virtual 
   
           void    CreateChambers();         
           void    CreateMaterials(); //virtual

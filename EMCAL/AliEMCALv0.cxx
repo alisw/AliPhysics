@@ -35,6 +35,7 @@
 #include "TNode.h"
 #include "TRandom.h"
 #include "TGeometry.h"
+#include "TVirtualMC.h"
 
 // --- Standard library ---
 

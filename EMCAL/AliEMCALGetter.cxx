@@ -57,6 +57,7 @@
 #include "AliRunLoader.h"
 #include "AliStack.h"  
 #include "AliEMCALLoader.h"
+#include "AliMC.h"
 
 ClassImp(AliEMCALGetter)
   
@@ -602,7 +603,7 @@ TParticle * AliEMCALGetter::Secondary(const TParticle* p, const Int_t index) con
   if(p) {
   Int_t daughterIndex = p->GetDaughter(index-1) ; 
   AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
-  return  rl->GetAliRun()->Particle(daughterIndex) ; 
+  return  rl->GetAliRun()->GetMCApp()->Particle(daughterIndex) ; 
   }
   else
     return 0 ;

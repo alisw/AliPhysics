@@ -24,6 +24,7 @@
 #include <RVersion.h>
 #include "TPDGCode.h"
 #include "TDatabasePDG.h"
+#include <TVirtualMC.h>
 
 #include "AliGenFLUKAsource.h"
 #include "AliRun.h"

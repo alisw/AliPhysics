@@ -27,6 +27,7 @@
 #include "THerwig6.h"
 
 #include "Riostream.h"
+#include "AliMC.h"
 
 ClassImp(AliGenHerwig)
 
@@ -204,7 +205,7 @@ void AliGenHerwig::Generate()
 		Float_t tof = kconv*iparticle->T();
 		Int_t   iparent = (imo > -1) ? newPos[imo] : -1;
 		Int_t   trackIt = (ks == 1) && fTrackIt;
-		gAlice->PushTrack(trackIt, iparent, kf,
+		gAlice->GetMCApp()->PushTrack(trackIt, iparent, kf,
 				 p[0], p[1], p[2], p[3],
 				 origin[0], origin[1], origin[2], 
 				 tof,
@@ -239,9 +240,9 @@ void AliGenHerwig::AdjustWeights()
 {
 // Adjust the weights after generation of all events
     TParticle *part;
-    Int_t ntrack=gAlice->GetNtrack();
+    Int_t ntrack=gAlice->GetMCApp()->GetNtrack();
     for (Int_t i=0; i<ntrack; i++) {
-        part= gAlice->Particle(i);
+        part= gAlice->GetMCApp()->Particle(i);
         part->SetWeight(part->GetWeight()*fKineBias);
     }
 }

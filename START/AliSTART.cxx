@@ -55,6 +55,7 @@
 #include "AliSTARThit.h"
 #include "AliSTARThitPhoton.h"
 #include "AliSTARTvertex.h"
+#include "AliMC.h"
 
 ClassImp(AliSTART)
 
@@ -84,10 +85,10 @@ AliSTART::AliSTART(const char *name, const char *title)
   //
   // Initialise Hit array
   fHits       = new TClonesArray("AliSTARThit",  405);
-  gAlice->AddHitList(fHits);
+  gAlice->GetMCApp()->AddHitList(fHits);
 
   fPhotons  = new TClonesArray("AliSTARThitPhoton", 10000);
-  gAlice->AddHitList (fPhotons);
+  gAlice->GetMCApp()->AddHitList (fPhotons);
   
   fIshunt     =  1;
   fIdSens   =  0;

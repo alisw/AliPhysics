@@ -43,6 +43,7 @@
 #include "AliTPCParamSR.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv2.h"
+#include "AliMC.h"
 
 ClassImp(AliTPCv2)
  
@@ -1858,7 +1859,7 @@ void AliTPCv2::StepManager()
   if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting()) &&
        ((id == fIdLSec) || (id == fIdUSec)) ) {
 
-    AddTrackReference(gAlice->GetCurrentTrackNumber());
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
   }
 
   if(id == fIdLSec){
@@ -1904,7 +1905,7 @@ void AliTPCv2::StepManager()
       hits[3]=0.; // this hit has no energy loss
       // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-      AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change
+      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  //MI change
 
     }
 
@@ -1915,7 +1916,7 @@ void AliTPCv2::StepManager()
      hits[3]=0.; // this hit has no energy loss
      // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-     AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change    
+     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  //MI change    
 
   }
   else return;
@@ -1944,7 +1945,7 @@ void AliTPCv2::StepManager()
       Float_t precision =   (momentum>0.1) ? 0.002 :0.01;
       fTrackHits->SetHitPrecision(precision);
     }
-    AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change 
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  //MI change 
     
   } 
   

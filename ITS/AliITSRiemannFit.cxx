@@ -69,6 +69,7 @@
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
 #include "AliITSmodule.h"
+#include "AliMC.h"
 
 ClassImp(AliITSRiemannFit)
 
@@ -258,7 +259,7 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
       if(track <0 ) continue;
       xcluster=recp->GetX();     // x on cluster
       zcluster=recp->GetZ();     // z on cluster
-      part   = (TParticle*) gAlice->Particle(track);    
+      part   = (TParticle*) gAlice->GetMCApp()->Particle(track);    
       part->ProductionVertex(OT);  // set the vertex 
       part->Momentum(PE);          // set the vertex momentum
       name      = part->GetName();

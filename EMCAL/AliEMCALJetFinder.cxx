@@ -59,6 +59,7 @@
 #include "AliEMCALGetter.h"
 // Interface to FORTRAN
 #include "Ecommon.h"
+#include "AliMC.h"
 
 
 ClassImp(AliEMCALJetFinder)
@@ -780,7 +781,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 
     // this is for Pythia ??
     for (Int_t part = 0; part < npart; part++) {
-	TParticle *MPart = gAlice->Particle(part);
+	TParticle *MPart = gAlice->GetMCApp()->Particle(part);
 	Int_t mpart   = MPart->GetPdgCode();
 	Int_t child1  = MPart->GetFirstDaughter();
 	Float_t pT    = MPart->Pt();
@@ -1157,7 +1158,7 @@ void AliEMCALJetFinder::FillFromHitFlaggedTracks(Int_t flag)
     fNtS  = 0;
     
     for (Int_t track = 0; track < ntracks; track++) {
-	  TParticle *MPart = gAlice->Particle(track);
+	  TParticle *MPart = gAlice->GetMCApp()->Particle(track);
 	  Float_t pT    = MPart->Pt();
 	  Float_t phi   = MPart->Phi();
 	  Float_t eta   = MPart->Eta();
@@ -1207,7 +1208,7 @@ void AliEMCALJetFinder::FillFromParticles()
 
 	fTrackList[part] = 0;
 
-	MPart   = gAlice->Particle(part);
+	MPart   = gAlice->GetMCApp()->Particle(part);
 	mpart   = MPart->GetPdgCode();
 	child1  = MPart->GetFirstDaughter();
 	child2  = MPart->GetLastDaughter();
@@ -1291,7 +1292,7 @@ void AliEMCALJetFinder::FillFromPartons()
 //  Go through the partons
     Int_t statusCode=0;
     for (Int_t part = 8; part < npart; part++) {
-	TParticle *MPart = gAlice->Particle(part);
+	TParticle *MPart = gAlice->GetMCApp()->Particle(part);
 	Int_t mpart   = MPart->GetPdgCode();
 	//	Int_t child1  = MPart->GetFirstDaughter();
 	Float_t pT    = MPart->Pt();
@@ -1367,7 +1368,7 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 		Int_t   idprim =    mHit->GetPrimary();  // primary particle
 		
 		//Determine the origin point of this particle - it made a hit in the EMCAL
-		TParticle 	  *trkPart = gAlice->Particle(iTrk);
+		TParticle 	  *trkPart = gAlice->GetMCApp()->Particle(iTrk);
 		TParticlePDG  *trkPdg  = trkPart->GetPDG();
 		Int_t	   trkCode = trkPart->GetPdgCode();
 		Double_t 	   trkChg;
@@ -1384,7 +1385,7 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 		//Loop through the ancestry of the EMCAL entrance particles
 		Int_t ancestor = trkPart->GetFirstMother();  //Get track's Mother
 		while (ancestor != -1) {
-		    TParticle     *ancPart = gAlice->Particle(ancestor);  //get particle info on ancestor
+		    TParticle     *ancPart = gAlice->GetMCApp()->Particle(ancestor);  //get particle info on ancestor
 		    TParticlePDG  *ancPdg  = ancPart->GetPDG();
 		    Int_t	      ancCode = ancPart->GetPdgCode();
 		    Double_t       ancChg;
@@ -1401,7 +1402,7 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 		}
 		
 		//Determine the origin point of the primary particle associated with the hit
-		TParticle     *primPart = gAlice->Particle(idprim);
+		TParticle     *primPart = gAlice->GetMCApp()->Particle(idprim);
 		TParticlePDG  *primPdg  = primPart->GetPDG();
 		Int_t	   primCode = primPart->GetPdgCode();
 		Double_t 	   primChg;

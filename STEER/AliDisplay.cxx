@@ -45,6 +45,7 @@
 #include "AliStack.h"
 #include "TGeometry.h"
 #include "TParticle.h"
+#include "AliMC.h"
 
 static const Float_t kptcutmax  = 2;
 static const Float_t ketacutmax = 1.5;
@@ -369,7 +370,7 @@ void AliDisplay::ShowTrack(Int_t idx)
 //       fPad->Modified();
 	 //         TClonesArray *particles=gAlice->Particles();
 	 //         TParticle *p = (TParticle*)particles->UncheckedAt(idx);
-	 TParticle *p = gAlice->Particle(idx);
+	 TParticle *p = gAlice->GetMCApp()->Particle(idx);
          printf("\nTrack index %d\n",idx);
          printf("Particle ID %d\n",p->GetPdgCode());
          printf("Parent %d\n",p->GetFirstMother());
@@ -646,7 +647,7 @@ void AliDisplay::DrawTitle(Option_t *option)
       char ptitle[100];
       sprintf(ptitle,"Alice event: %d, Run:%d",gAlice->GetHeader()->GetEvent(), gAlice->GetHeader()->GetRun());
       title->AddText(ptitle);
-      Int_t nparticles = gAlice->Particles()->GetEntriesFast();
+      Int_t nparticles = gAlice->GetMCApp()->Particles()->GetEntriesFast();
       sprintf(ptitle,"Nparticles = %d  Nhits = %d",nparticles, fHitsCuts);
       title->AddText(ptitle);
    } else {
@@ -809,7 +810,7 @@ void AliDisplay::LoadPoints()
    gAlice->ResetPoints();
    TIter next(gAlice->Modules());
    AliModule *module;
-   Int_t ntracks = gAlice->GetNtrack();
+   Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
 
    while((module = (AliModule*)next())) 
     {
@@ -825,14 +826,14 @@ void AliDisplay::LoadPoints()
       for (Int_t track=0; track<fNTracksToDisplay;track++) 
        {
         gAlice->ResetHits();
-        Int_t nev = nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]);
+        Int_t nev = nprim-1-gAlice->GetMCApp()->GetPrimary(fTracksToDisplay[track]);
         while((module = (AliModule*)next())) 
          {
           AliDetector* detector = dynamic_cast<AliDetector*>(module);
           if(detector)
            {
             detector->TreeH()->GetEvent(nev);
-            module->LoadPoints(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
+            module->LoadPoints(nprim-1-gAlice->GetMCApp()->GetPrimary(fTracksToDisplay[track]));
            }
          }
         next.Reset();

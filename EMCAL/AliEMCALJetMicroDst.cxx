@@ -31,6 +31,7 @@
 #include <TBrowser.h>
 #include <TString.h>
 #include <TParticle.h>
+#include "AliMC.h"
 
 ClassImp(AliEMCALJetMicroDst)
 
@@ -337,7 +338,7 @@ void AliEMCALJetMicroDst::FillPartons()
   TParticle *MPart;
   Int_t ind;
   for(Int_t i=6; i<8; i++){
-     MPart = gAlice->Particle(i);
+     MPart = gAlice->GetMCApp()->Particle(i);
      ind   = i-6;
      xpt[ind]  = MPart->Pt();
      xeta[ind] = MPart->Eta();

@@ -21,8 +21,10 @@
 // Author: A.Morsch
 //-------------------------------------------------------------------------
 
+#include <TVirtualMC.h>
+#include <TArrayI.h>
+
 #include "AliSHILv2.h"
-#include "AliRun.h"
 #include "AliConst.h"
 #include "AliALIFE.h"
 

@@ -37,6 +37,7 @@
 #include "AliMUONv0.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliMUONv0)
  
@@ -214,7 +215,7 @@ void AliMUONv0::StepManager()
       hits[13] = mom[2];                    // Pz
       hits[14] = gMC->TrackTime();          // time of flight
       new(lhits[fNhits++]) 
-	  AliMUONHit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+	  AliMUONHit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
 
   }
 //  if( gMC->IsTrackExiting()) gMC->StopTrack(); 

@@ -24,6 +24,7 @@
 #include "AliFRAMEv0.h"
 #include "AliRun.h"
 #include "TSystem.h"
+#include <TVirtualMC.h>
  
 ClassImp(AliFRAMEv0)
  

@@ -29,10 +29,12 @@
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
 #include <TLorentzVector.h>
+#include <TVirtualMC.h>
 
 #include <TF1.h>
 #include <TCanvas.h>
 #include <TH1.h>
+#include "AliMC.h"
 
 ClassImp(AliGenParam)
 
@@ -442,7 +444,7 @@ void AliGenParam::Generate()
 	  } // kinematic selection
 	  else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	  {
-	    gAlice->
+	    gAlice->GetMCApp()->
 		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
             ipa++; 
 	  }

@@ -32,6 +32,7 @@
 #include "AliPMDdigit.h"
 #include "AliPMDDigitizer.h"
 #include "AliPMDClustering.h"
+#include "AliMC.h"
 
 ClassImp(AliPMDDigitizer)
 //
@@ -150,7 +151,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  Particles = gAlice->Particles();
+  Particles = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
@@ -189,7 +190,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
 	      //  get kinematics of the particles
 	      
-	      particle = gAlice->Particle(trackno);
+	      particle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = particle->GetPdgCode();
 
 	      Int_t igatr = -999;
@@ -212,7 +213,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      while((imo = mparticle->GetFirstMother()) >= 0)
 		{
 		  igen++;
-		  mparticle =  gAlice->Particle(imo);
+		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  id_mo = mparticle->GetPdgCode();
 		  
 		  vx = mparticle->Vx();
@@ -385,7 +386,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  Particles = gAlice->Particles();
+  Particles = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
@@ -429,7 +430,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      
 	      //  get kinematics of the particles
 	      
-	      particle = gAlice->Particle(trackno);
+	      particle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = particle->GetPdgCode();
 
 	      Int_t igatr = -999;
@@ -452,7 +453,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      while((imo = mparticle->GetFirstMother()) >= 0)
 		{
 		  igen++;
-		  mparticle =  gAlice->Particle(imo);
+		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  id_mo = mparticle->GetPdgCode();
 		  
 		  vx = mparticle->Vx();

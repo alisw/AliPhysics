@@ -42,6 +42,7 @@
 #include "AliTRDtrack.h"
 #include "AliTRDtracker.h"
 #include "AliTRDgeometry.h"
+#include "AliMC.h"
 
 ClassImp(AliTRDpid)
 
@@ -471,7 +472,7 @@ Int_t AliTRDpid::MCpid(const AliTRDtrack *t)
       }
       if (accept) {
 
-        particle = gAlice->Particle(track0);
+        particle = gAlice->GetMCApp()->Particle(track0);
         if (particle->GetFirstMother() == -1) {
           switch (TMath::Abs(particle->GetPdgCode())) {
           case kPdgEl:
@@ -577,7 +578,7 @@ Int_t AliTRDpid::MCpid(const AliTRDtrack *t, Int_t *pdg
 
       Int_t trackIndex = cluster->GetLabel(iTrack);
       if (trackIndex >= 0) {
-        particle = gAlice->Particle(trackIndex);
+        particle = gAlice->GetMCApp()->Particle(trackIndex);
         Int_t  pdgCode = particle->GetPdgCode(); 
         Bool_t newPart = kTRUE;
         for (iPart = 0; iPart < nPart; iPart++) {

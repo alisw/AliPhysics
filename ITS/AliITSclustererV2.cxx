@@ -20,6 +20,7 @@
 #include <TClonesArray.h>
 #include "AliITSgeom.h"
 #include "AliITSdigit.h"
+#include "AliMC.h"
 
 ClassImp(AliITSclustererV2)
 
@@ -222,7 +223,7 @@ static void CheckLabels(Int_t lab[3]) {
   //------------------------------------------------------------
     Int_t label=lab[0];
     if (label>=0) {
-       TParticle *part=(TParticle*)gAlice->Particle(label);
+       TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
        label=-3;
        while (part->P() < 0.005) {
           Int_t m=part->GetFirstMother();
@@ -235,7 +236,7 @@ static void CheckLabels(Int_t lab[3]) {
              break;
           }
           label=m;
-          part=(TParticle*)gAlice->Particle(label);
+          part=(TParticle*)gAlice->GetMCApp()->Particle(label);
         }
         if      (lab[1]<0) lab[1]=label;
         else if (lab[2]<0) lab[2]=label;

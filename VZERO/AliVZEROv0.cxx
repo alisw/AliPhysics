@@ -53,6 +53,7 @@
 #include "AliVZEROdigit.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROv0.h"
+#include "AliMC.h"
 
 ClassImp(AliVZEROv0)
 
@@ -1493,7 +1494,7 @@ void AliVZEROv0::StepManager()
 	 hits[13] = mom[2];
 	 
 
-         AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
+         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	 
 	 }
      

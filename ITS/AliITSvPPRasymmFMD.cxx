@@ -74,6 +74,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTrackReference.h"
+#include "AliMC.h"
 
 #define GEANTGEOMETRY kTRUE
 
@@ -5351,7 +5352,7 @@ void AliITSvPPRasymmFMD::StepManager(){
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->GetCurrentTrackNumber());
+	new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
     } // if Outer ITS mother Volume
 
 
@@ -5439,7 +5440,7 @@ void AliITSvPPRasymmFMD::StepManager(){
 	return;
     } // end if IsEntering
     // Fill hit structure with this new hit.
-    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,
+    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,
 				   gMC->Edep(),gMC->TrackTime(),position,
 				   position0,momentum);
     //

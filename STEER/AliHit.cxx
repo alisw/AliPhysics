@@ -26,6 +26,7 @@
 
 #include "AliHit.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliHit)
 
@@ -52,8 +53,8 @@ AliHit::AliHit(Int_t shunt, Int_t track):
   // Standard constructor
   //
   if(shunt == 1) {
-    int primary = gAlice->GetPrimary(track);
-    gAlice->Particle(primary)->SetBit(kKeepBit);
+    int primary = gAlice->GetMCApp()->GetPrimary(track);
+    gAlice->GetMCApp()->Particle(primary)->SetBit(kKeepBit);
     fTrack=primary;
   } 
 
@@ -67,7 +68,7 @@ AliHit::AliHit(Int_t shunt, Int_t track):
     Int_t parent=track;
     while (1) {
       current=parent;
-      part = gAlice->Particle(current);
+      part = gAlice->GetMCApp()->Particle(current);
       parent=part->GetFirstMother();    
       if(parent<0 || part->TestBit(kKeepBit))
 	break;
@@ -77,6 +78,6 @@ AliHit::AliHit(Int_t shunt, Int_t track):
 
   else {
     fTrack=track;
-    gAlice->FlagTrack(fTrack);
+    gAlice->GetMCApp()->FlagTrack(fTrack);
   }
 }

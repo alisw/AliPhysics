@@ -86,6 +86,7 @@
 #include "AliTOFT0.h"
 #include "AliTOFhitT0.h"
 #include "AliTOFv4T0.h"
+#include "AliMC.h"
 
 ClassImp(AliTOFT0)
 
@@ -254,7 +255,7 @@ void AliTOFT0::Exec(Option_t *option)
       
       gAlice->ResetHits();
       TH->GetEvent(track);
-      particle = gAlice->Particle(track);
+      particle = gAlice->GetMCApp()->Particle(track);
       Int_t nhits = TOFhits->GetEntriesFast();
 
       for (Int_t hit = 0; hit < nhits; hit++)
@@ -266,7 +267,7 @@ void AliTOFT0::Exec(Option_t *option)
 
 	if (ipart != ipartold){
 	  
-	  particle = (TParticle*)gAlice->Particle(ipart);
+	  particle = (TParticle*)gAlice->GetMCApp()->Particle(ipart);
 	  
 	  Float_t idealtime=tofHit->GetTof();
 	  //	   Float_t time=idealtime;

@@ -53,6 +53,7 @@
 #include "AliLoader.h"
 #include "AliMUONTrackK.h" //AZ
 #include <TMatrixD.h> //AZ
+#include "AliMC.h"
 
 //************* Defaults parameters for reconstruction
 static const Double_t kDefaultMinBendingMomentum = 3.0;
@@ -1457,7 +1458,7 @@ void AliMUONEventReconstructor::EventDump(void)
 	     z, x, y, pX, pY, pZ, c);
   }
   // informations about generated particles
-  np = gAlice->GetNtrack();
+  np = gAlice->GetMCApp()->GetNtrack();
   printf(" **** number of generated particles: %d  \n", np);
   
 //    for (Int_t iPart = 0; iPart < np; iPart++) {

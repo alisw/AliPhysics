@@ -30,6 +30,7 @@
 #include "AliGenCocktailEntry.h"
 #include "AliCollisionGeometry.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliGenCocktail)
 
@@ -129,7 +130,7 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
     AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
 
-    TObjArray *partArray = gAlice->Particles();
+    TObjArray *partArray = gAlice->GetMCApp()->Particles();
 
 //
 //  Generate the vertex position used by all generators

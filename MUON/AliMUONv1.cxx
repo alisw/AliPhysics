@@ -40,6 +40,7 @@
 #include "AliMUONv1.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliMUONv1)
  
@@ -1742,7 +1743,7 @@ void AliMUONv1::StepManager()
     
     
     // One hit per chamber
-    GetMUONData()->AddHit(fIshunt, gAlice->GetCurrentTrackNumber(), iChamber, ipart, 
+    GetMUONData()->AddHit(fIshunt, gAlice->GetMCApp()->GetCurrentTrackNumber(), iChamber, ipart, 
 			  fTrackPosition.X(), fTrackPosition.Y()+YAngleEffect, fTrackPosition.Z(), 0.0, 
 			  fTrackMomentum.P(),theta, phi, fStepSum[idvol], fDestepSum[idvol],
 			  fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z());
@@ -1903,7 +1904,7 @@ void AliMUONv1::StepManagerOld()
 //    new hit 
       
       new(lhits[fNhits++]) 
-	  AliMUONHit(fIshunt, gAlice->GetCurrentTrackNumber(), vol,hits);
+	  AliMUONHit(fIshunt, gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
       eloss = 0; 
       //
       // Check additional signal generation conditions 

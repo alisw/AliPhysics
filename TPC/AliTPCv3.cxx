@@ -44,6 +44,7 @@
 #include "AliTPCParamSR.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv3.h"
+#include "AliMC.h"
 
 ClassImp(AliTPCv3)
 //_____________________________________________________________________________
@@ -1680,7 +1681,7 @@ void AliTPCv3::StepManager()
     
     // Add this hit
    
-    AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  //MI change
     
   } 
   

@@ -50,12 +50,14 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TPDGCode.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliConst.h"
 
 #include "AliCRThit.h"
 #include "AliCRTConstants.h"
+#include "AliMC.h"
 
 ClassImp(AliCRTv1)
  
@@ -85,7 +87,7 @@ AliCRTv1::AliCRTv1(const char *name, const char *title)
   fIshunt =  1; // All hits are associated with primary particles  
 
   fHits =  new TClonesArray("AliCRThit",400);
-  gAlice->AddHitList(fHits);
+  gAlice->GetMCApp()->AddHitList(fHits);
 
   SetMarkerColor(7);
   SetMarkerStyle(2);
@@ -585,7 +587,7 @@ void AliCRTv1::StepManager()
     else                                                  vol[0] = -1;// ?
     //vol[0]  = gMC->GetMedium();  //layer(flay)
 
-    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
 
     // Reset the deposited energy only when you reach the Magnet
     if ( (strcmp(gMC->CurrentVolName(),"CRT4")==0) ) eloss = 0;

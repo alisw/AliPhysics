@@ -19,6 +19,7 @@
 #include "AliRICHConst.h" 
 #include <AliRun.h>
 #include <TLorentzVector.h>
+#include "AliMC.h"
 
 ClassImp(AliRICHv0)
 
@@ -45,7 +46,7 @@ void AliRICHv0::StepManager()
   Info("","event=%i hunt=%i tid=%i pid=%i(%s) m=%f q=%3.1f",
                             gMC->CurrentEvent(),
                             fIshunt,
-                            gAlice->GetCurrentTrackNumber(),
+                            gAlice->GetMCApp()->GetCurrentTrackNumber(),
                             gMC->TrackPid(),
                             sParticle,
                             gMC->TrackMass(),

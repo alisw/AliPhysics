@@ -51,6 +51,7 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
  
 ClassImp(AliZDC)
@@ -93,7 +94,7 @@ AliZDC::AliZDC(const char *name, const char *title)
 
   // Allocate the hits array  
   fHits   = new TClonesArray("AliZDCHit",1000);
-  gAlice->AddHitList(fHits);
+  gAlice->GetMCApp()->AddHitList(fHits);
   // Allocate the merged hits array  
   fMergedHits = new TClonesArray("AliZDCMergedHit",1000);
 
@@ -135,7 +136,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   
   if(fNhits==0){
       // First hit -> setting flag for primary or secondary particle
-      Int_t primary = gAlice->GetPrimary(track);     
+      Int_t primary = gAlice->GetMCApp()->GetPrimary(track);     
       if(track != primary){
         newquad->fSFlag = 1;  // SECONDARY particle entering the ZDC
       }

@@ -21,8 +21,8 @@ public:
   AliCRT& operator=(const AliCRT& crt);
   virtual void CreateMaterials();
 
-  virtual Int_t IsVersion() const;
-  virtual TString Version();
+//   virtual Int_t IsVersion() const;
+//   virtual TString Version();
 
   virtual void SetTreeAddress();
 
@@ -30,9 +30,9 @@ private:
   ClassDef(AliCRT, 1) // Cosmic Ray Trigger (ACORDE) base class
 };
 
-inline Int_t AliCRT::IsVersion() const
-{ return 0; }
+// inline Int_t AliCRT::IsVersion() const
+// { return 0; }
 
-inline TString AliCRT::Version()
-{ return TString(""); }
+// inline TString AliCRT::Version()
+// { return TString(""); }
 #endif // ALICRT_H

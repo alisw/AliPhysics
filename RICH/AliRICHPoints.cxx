@@ -42,6 +42,7 @@
 #include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
+#include "AliMC.h"
 
 const Int_t kMaxNipx=400, kMaxNipy=800;
  
@@ -139,8 +140,8 @@ TParticle *AliRICHPoints::GetParticle() const
   //
   //   Returns pointer to particle index in AliRun::fParticles
   //
-  if (fIndex < 0 || fIndex >= gAlice->GetNtrack()) return 0;
-  return gAlice->Particle(fIndex);
+  if (fIndex < 0 || fIndex >= gAlice->GetMCApp()->GetNtrack()) return 0;
+  return gAlice->GetMCApp()->Particle(fIndex);
 }
 
 //_____________________________________________________________________________
@@ -251,7 +252,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
 	if (marker)
 	  marker->Draw();
       }
-      TParticle *p = gAlice->Particle(fIndex);
+      TParticle *p = gAlice->GetMCApp()->Particle(fIndex);
       printf("\nTrack index %d\n",fTrackIndex);
       printf("Particle ID %d\n",p->GetPdgCode());
       printf("Parent %d\n",p->GetFirstMother());

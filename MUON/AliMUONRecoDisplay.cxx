@@ -61,6 +61,7 @@
 
 #include "AliMUONRecoEvent.h"
 #include "AliMUONRecoDisplay.h"
+#include "AliMC.h"
 
 ClassImp(AliMUONRecoDisplay)
 
@@ -183,7 +184,7 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
    for (Int_t track=0; track<ntracks; track++) {
       hit = (AliMUONHit *) pMUON->FirstHit(track);
       if (!hit) continue;
-      particle = gAlice->Particle(hit->Track());
+      particle = gAlice->GetMCApp()->Particle(hit->Track());
       if (IsReconstructible(track) && TMath::Abs(particle->GetPdgCode())==13) {
          gtrack = fEvGen->AddEmptyTrack();
 	 gtrack->SetSign(TMath::Sign((Int_t)1, -particle->GetPdgCode()));

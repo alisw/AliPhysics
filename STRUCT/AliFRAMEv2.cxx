@@ -22,11 +22,13 @@
 //------------------------------------------------------------------------
 
 #include <TSystem.h>
+#include <TVirtualMC.h>
 
 #include "AliFRAMEv2.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliMC.h"
  
 ClassImp(AliFRAMEv2)
  
@@ -1351,7 +1353,7 @@ void AliFRAMEv2::StepManager()
   //
   // Add the reference track
   //
-  AddTrackReference(gAlice->GetCurrentTrackNumber());
+  AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 }
 
   

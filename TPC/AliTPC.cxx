@@ -74,6 +74,7 @@
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCcluster.h"
 #include "AliTrackReference.h"
+#include "AliMC.h"
 
 
 ClassImp(AliTPC) 
@@ -138,7 +139,7 @@ AliTPC::AliTPC(const char *name, const char *title)
   //
   // Initialise arrays of hits and digits 
   fHits     = new TClonesArray("AliTPChit",  176);
-  gAlice->AddHitList(fHits); 
+  gAlice->GetMCApp()->AddHitList(fHits); 
   fDigitsArray = 0;
   fClustersArray= 0;
   fDefaults = 0;
@@ -965,7 +966,7 @@ void AliTPC::Hits2Clusters(Int_t /*eventn*/)
 	 continue; 
        }
 	ipart=tpcHit->Track();
-	particle=gAlice->Particle(ipart);
+	particle=gAlice->GetMCApp()->Particle(ipart);
 	pl=particle->Pz();
 	pt=particle->Pt();
 	if(pt < 1.e-9) pt=1.e-9;
@@ -1082,7 +1083,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
   SetTreeAddress();
 
   Stat_t ntracks = tH->GetEntries();
-  Int_t npart = gAlice->GetNtrack();
+  Int_t npart = gAlice->GetMCApp()->GetNtrack();
   //MI change
   TBranch * branch=0;
   if (fHitType>1) branch = tH->GetBranch("TPC2");
@@ -1119,7 +1120,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
       }
 
       ipart=tpcHit->Track();
-      if (ipart<npart) particle=gAlice->Particle(ipart);
+      if (ipart<npart) particle=gAlice->GetMCApp()->Particle(ipart);
       
       //find row number
 
@@ -2529,12 +2530,12 @@ void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
   // add hit to the list  
   Int_t rtrack;
   if (fIshunt) {
-    int primary = gAlice->GetPrimary(track);
-    gAlice->Particle(primary)->SetBit(kKeepBit);
+    int primary = gAlice->GetMCApp()->GetPrimary(track);
+    gAlice->GetMCApp()->Particle(primary)->SetBit(kKeepBit);
     rtrack=primary;
   } else {
     rtrack=track;
-    gAlice->FlagTrack(track);
+    gAlice->GetMCApp()->FlagTrack(track);
   }  
   //AliTPChit *hit = (AliTPChit*)fHits->UncheckedAt(fNhits-1);
   //if (hit->fTrack!=rtrack)
@@ -2709,7 +2710,7 @@ void AliTPC::LoadPoints2(Int_t)
   if (fHitType&2) nhits = fTrackHitsOld->GetEntriesFast();
   
   if (nhits == 0) return;
-  Int_t tracks = gAlice->GetNtrack();
+  Int_t tracks = gAlice->GetMCApp()->GetNtrack();
   if (fPoints == 0) fPoints = new TObjArray(tracks);
   AliHit *ahit;
   //
@@ -2784,7 +2785,7 @@ void AliTPC::LoadPoints3(Int_t)
   //
   Int_t nhits = fTrackHits->GetEntriesFast();
   if (nhits == 0) return;
-  Int_t tracks = gAlice->GetNtrack();
+  Int_t tracks = gAlice->GetMCApp()->GetNtrack();
   if (fPoints == 0) fPoints = new TObjArray(2*tracks);
   fPoints->Expand(2*tracks);
   AliHit *ahit;

@@ -30,6 +30,7 @@
 #include "AliITSFindClustersV2.h"
 #include "AliITSclusterV2.h"
 #include "AliITSgeom.h"
+#include "AliMC.h"
 
 ClassImp(AliITSFindClustersV2)
 
@@ -338,7 +339,7 @@ void AliITSFindClustersV2::Exec(const Option_t *opt){
 	    lab[3] = i;
 	    lad = lab[0];
 	    if(lad>=0){
-		part = (TParticle*) fAr->Particle(lad);
+		part = (TParticle*) fAr->GetMCApp()->Particle(lad);
 		lad = -3;
 		while(part->P() < 0.005){
 		    if(part->GetFirstMother()<0){
@@ -346,7 +347,7 @@ void AliITSFindClustersV2::Exec(const Option_t *opt){
 			break;
 		    } // end if part->GetFirstMother()<0
 		    lad = part->GetFirstMother();
-		    part = (TParticle*) fAr->Particle(lad);
+		    part = (TParticle*) fAr->GetMCApp()->Particle(lad);
 		} // end while part->P() < 0.005
 		if(lab[1]<0) lab[1] = lad;
 		else if(lab[2]<0) lab[2] = lad;

@@ -29,6 +29,7 @@
 #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITShit.h"
+#include "AliMC.h"
 
 
 ClassImp(AliITShit)
@@ -560,7 +561,7 @@ TParticle * AliITShit::GetParticle(){
 // this hit. From the TParticle all kinds of information about this 
 // particle can be found. See the TParticle class.
 ////////////////////////////////////////////////////////////////////////
-    return gAlice->Particle(GetTrack());
+    return gAlice->GetMCApp()->Particle(GetTrack());
 }  
 //----------------------------------------------------------------------
 void AliITShit::Print(ostream *os){

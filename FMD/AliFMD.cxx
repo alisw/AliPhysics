@@ -63,6 +63,7 @@
 #include "AliLoader.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp (AliFMD)
   //_____________________________________________________________________________
@@ -91,7 +92,7 @@ AliDetector (name, title)
   // Digits for each Si disk
   fDigits = new TClonesArray ("AliFMDdigit", 1000);
   fReconParticles=new TClonesArray("AliFMDReconstParticles",1000); 
-  gAlice->AddHitList (fHits);
+  gAlice->GetMCApp()->AddHitList (fHits);
 
   fIshunt = 0;
   //  fMerger = 0;

@@ -31,6 +31,7 @@
 #include "AliTRDsimpleMC.h"
 #include "AliTRDv1.h"
 #include "AliTRDparameter.h"
+#include "AliMC.h"
  
 ClassImp(AliTRDsimpleMC)
  
@@ -202,7 +203,7 @@ void AliTRDsimpleMC::NewTrack(Int_t iTrack, Int_t pdg
   fTrackY    = 0.0;
   fTrackZ    = 0.0;
 
-  gAlice->SetCurrentTrack(0);
+  gAlice->GetMCApp()->SetCurrentTrack(0);
 
 }
                                                                                 

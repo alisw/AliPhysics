@@ -57,6 +57,7 @@
 #include "AliRun.h"
 #include "AliTOFv0.h"
 #include "AliTOFConstants.h" // AdC
+#include "AliMC.h"
  
 ClassImp(AliTOFv0)
  
@@ -1052,7 +1053,7 @@ void AliTOFv0::StepManager()
     vol[3]= padx;
     vol[4]= padz;
 
-    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
   }
 }
 

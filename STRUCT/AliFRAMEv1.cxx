@@ -22,6 +22,7 @@
 //-------------------------------------------------------------------------
 
 #include <TSystem.h>
+#include <TVirtualMC.h>
 
 #include "AliFRAMEv1.h"
 #include "AliRun.h"

@@ -37,6 +37,7 @@
 #include "AliMagF.h" 
 #include "AliPMDv0.h"
 #include "AliRun.h"
+#include "AliMC.h"
  
 static Int_t   kdet, ncell_sm, ncell_hole;
 static Float_t zdist, zdist1;
@@ -998,7 +999,7 @@ void AliPMDv0::StepManager()
 
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
-    AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
   }
 }
 

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.29  2003/10/13 05:28:59  bnandi
+gaspmd[2] value changed 0.25->7.0 because of overlap
+
 Revision 1.28  2003/10/08 12:59:08  bnandi
 zpos is positive
 
@@ -55,6 +58,7 @@ June 2003
 #include "AliMagF.h" 
 #include "Riostream.h"
 #include <TVirtualMC.h>
+#include "AliMC.h"
  
 static Int_t     ncol_um1,ncol_um2, nrow_um1, nrow_um2;
 static Int_t     kdet;
@@ -887,7 +891,7 @@ void AliPMDv1::StepManager()
     
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
-    AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 
   }
 }

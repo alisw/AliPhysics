@@ -51,6 +51,7 @@
 #include "AliPMD.h"
 #include "AliPMDRecPoint.h"
 #include "AliRun.h"
+#include "AliMC.h"
   
 ClassImp(AliPMD)
  
@@ -77,7 +78,7 @@ AliPMD::AliPMD(const char *name, const char *title)
   // 
   // Allocate the array of hits
   fHits   = new TClonesArray("AliPMDhit",  405);
-  gAlice->AddHitList(fHits);
+  gAlice->GetMCApp()->AddHitList(fHits);
 
   fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
   fNRecPoints = 0;

@@ -66,6 +66,7 @@
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
+#include "AliMC.h"
 // to manage the same zoom on both cathodes
 
 
@@ -638,7 +639,7 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
 		fChamber,
 		fCathode);
 	title->AddText(ptitle);
-	Int_t nparticles = gAlice->Particles()->GetEntriesFast();
+	Int_t nparticles = gAlice->GetMCApp()->Particles()->GetEntriesFast();
 	sprintf(ptitle,"Nparticles = %d Nhits = %d Npads fired = %d",
 		nparticles, fHitsCuts,fClustersCuts);
 	title->AddText(ptitle);

@@ -41,6 +41,7 @@
 #include "AliGenerator.h"
 #include "AliRun.h"
 #include "AliStack.h"
+#include "AliMC.h"
 
 ClassImp(AliGenerator)
 
@@ -80,7 +81,8 @@ AliGenerator::AliGenerator():
     if (gAlice) {
 	if (gAlice->GetDebug()>0)
 	    printf("\n AliGenerator Default Constructor\n\n");
-	gAlice->SetGenerator(this);
+	AliMC * mc = gAlice->GetMCApp();
+	if (mc) mc->SetGenerator(this);
     }
 
     SetThetaRange(); ResetBit(kThetaRange);
@@ -136,7 +138,8 @@ AliGenerator::AliGenerator(Int_t npart):
     if (gAlice) {
 	if (gAlice->GetDebug()>0)
 	    printf("\n AliGenerator Constructor initializing number of particles \n\n");
-	gAlice->SetGenerator(this);
+	AliMC * mc = gAlice->GetMCApp();
+	if (mc) mc->SetGenerator(this);
     }
     
     SetThetaRange(); ResetBit(kThetaRange);
@@ -402,7 +405,7 @@ void  AliGenerator::PushTrack(Int_t done, Int_t parent, Int_t pdg,
     fStack->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
                      mech, ntr, weight, is);
   else 
-    gAlice->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
+    gAlice->GetMCApp()->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
                      mech, ntr, weight, is);
 }
 
@@ -421,7 +424,7 @@ void  AliGenerator::PushTrack(Int_t done, Int_t parent, Int_t pdg,
      fStack->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                       polx, poly, polz, mech, ntr, weight, is);
   else 
-     gAlice->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
+     gAlice->GetMCApp()->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                         polx, poly, polz, mech, ntr, weight, is);
 }
 
@@ -435,7 +438,7 @@ void AliGenerator:: KeepTrack(Int_t itrack)
   if (fStack)
      fStack->KeepTrack(itrack);
   else 
-     gAlice->KeepTrack(itrack);
+     gAlice->GetMCApp()->KeepTrack(itrack);
    
 }
 
@@ -448,7 +451,7 @@ void AliGenerator:: SetHighWaterMark(Int_t nt)
   if (fStack)
      fStack->SetHighWaterMark(nt);
   else 
-     gAlice->SetHighWaterMark(nt);
+     gAlice->GetMCApp()->SetHighWaterMark(nt);
    
 }
 void AliGenerator::FinishRun()

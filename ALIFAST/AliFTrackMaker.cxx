@@ -60,6 +60,7 @@
 #include "AliFTrackMaker.h"
 #include "AliFTrack.h"
 #include "AliFDet.h"
+#include "AliMC.h"
 
 const Double_t kPi       = TMath::Pi();
 const Double_t k2Pi      = 2*kPi;
@@ -200,10 +201,10 @@ void AliFTrackMaker::Make()
      Int_t idPart, idTrack;
      Double_t  charge, pT, eta, phi;
      TParticle *part;
-     Int_t  nparticles = gAlice->GetNtrack();
+     Int_t  nparticles = gAlice->GetMCApp()->GetNtrack();
      printf("%10s%10d\n","nparticles",nparticles);
      for(Int_t ind=0;ind<nparticles;ind++) {       
-       part = gAlice->Particle(ind);
+       part = gAlice->GetMCApp()->Particle(ind);
        idPart  = part->GetPdgCode();
        charge  = part->GetPDG()->Charge();
        pT      = part->Pt();  

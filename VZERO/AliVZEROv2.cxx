@@ -58,6 +58,7 @@
 #include "AliVZEROdigit.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROv2.h"
+#include "AliMC.h"
 
 ClassImp(AliVZEROv2)
 
@@ -1052,7 +1053,7 @@ void AliVZEROv2::StepManager()
 	    hits[12] = mom[1];
 	    hits[13] = mom[2];
 	    
-	    TParticle *par = gAlice->Particle(gAlice->GetCurrentTrackNumber());
+	    TParticle *par = gAlice->GetMCApp()->Particle(gAlice->GetMCApp()->GetCurrentTrackNumber());
             hits[14] = par->Vx();
             hits[15] = par->Vy();
             hits[16] = par->Vz();
@@ -1067,7 +1068,7 @@ void AliVZEROv2::StepManager()
 	 hits[17] =   eloss;
 	 hits[18] = tlength;
 	 
-         AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
+         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	 	 
 	 tlength  = 0.0;
 	 eloss    = 0.0; 

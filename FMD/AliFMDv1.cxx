@@ -48,6 +48,7 @@
 #include "AliFMDv1.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliFMDv1)
 
@@ -414,7 +415,7 @@ void AliFMDv1::StepManager()
 	  gMC->IsTrackStop())
 	 {
 	     hits[6]=de+1000.*gMC->Edep();
-      new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+      new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
 	 } // IsTrackExiting()
      }
   }

@@ -46,6 +46,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenerator.h"
 #include "AliHeader.h"
+#include "AliMC.h"
 
 
 ClassImp(AliEMCALJetFinderInputSimPrep)
@@ -221,7 +222,7 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()	// Fill from particles simulati
     if (fDebug > 1) Info("FillTracks","Starting particle loop");
 	    
     for (Int_t part = 0; part < npart; part++) {
-	MPart = gAlice->Particle(part);
+	MPart = gAlice->GetMCApp()->Particle(part);
 	//if (part%10) gObjectTable->Print();
 	pdgP = MPart->GetPDG();
 
@@ -410,7 +411,7 @@ if (fDebug > 1) Info("FillParticles","Beginning FillParticles");
     TParticlePDG* pdgP = 0;
  
     for (Int_t part = 0; part < npart; part++) {
-	TParticle *MPart = gAlice->Particle(part);
+	TParticle *MPart = gAlice->GetMCApp()->Particle(part);
 	pdgP = MPart->GetPDG();
 	
 	if (fDebug > 10) Info("FillParticles","Checking if particle is a primary");
@@ -523,7 +524,7 @@ void AliEMCALJetFinderInputSimPrep::FillPartonTracks(AliEMCALParton *parton)
 	TParticle *tempPart;
 	for (Int_t part = 0; part < npart; part++)
 	{
-		tempPart = gAlice->Particle(part);
+		tempPart = gAlice->GetMCApp()->Particle(part);
 		if (tempPart->GetStatusCode() != 1) continue;
 		if (tempPart->Eta() > fEtaMax || tempPart->Eta() < fEtaMin || 
 		    tempPart->Phi() > fPhiMax || tempPart->Phi() < fPhiMin ){
@@ -545,7 +546,7 @@ void AliEMCALJetFinderInputSimPrep::FillPartonTracks(AliEMCALParton *parton)
 	ntracks=0;
 	for (Int_t part = 0; part < npart; part++)
 	{
-		tempPart = gAlice->Particle(part);
+		tempPart = gAlice->GetMCApp()->Particle(part);
 		if (tempPart->GetStatusCode() != 1) continue;
 		if (tempPart->Eta() > fEtaMax || tempPart->Eta() < fEtaMin ||
  		    tempPart->Phi() > fPhiMax || tempPart->Phi() < fPhiMin ){ 

@@ -64,6 +64,7 @@
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
+#include "AliMC.h"
 
 ClassImp(AliRICHDisplay)
     
@@ -611,7 +612,7 @@ void AliRICHDisplay::DrawTitle(Option_t *option)
 	sprintf(ptitle,"Alice event: %d, Run:%d",
 		gAlice->GetHeader()->GetEvent(), gAlice->GetHeader()->GetRun());
 	title->AddText(ptitle);
-	Int_t nparticles = gAlice->Particles()->GetEntriesFast();
+	Int_t nparticles = gAlice->GetMCApp()->Particles()->GetEntriesFast();
 	sprintf(ptitle,"Nparticles = %d Nhits = %d Npads fired = %d",
 		nparticles, fHitsCuts,fClustersCuts);
 	title->AddText(ptitle);
@@ -981,7 +982,7 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	    points = new AliRICHPoints(1);
 	    fPhits->AddAt(points,npoints);
             mHit = (AliRICHhit*)pRICHhits->UncheckedAt(hit);
-	    TParticle *current = (TParticle*)gAlice->Particle(mHit->Track());
+	    TParticle *current = (TParticle*)gAlice->GetMCApp()->Particle(mHit->Track());
 	    if (current->GetPdgCode() == 50000050) {
 		points->SetMarkerColor(kBlue);
 	    } else if (current->GetPdgCode() == 50000051) {

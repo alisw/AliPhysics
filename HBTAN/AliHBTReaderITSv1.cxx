@@ -20,6 +20,7 @@
 #include <AliMagF.h>
 #include <AliKalmanTrack.h>
 #include <AliITSIOTrack.h>
+#include "AliMC.h"
 
 ClassImp(AliHBTReaderITSv1)
 /********************************************************************/
@@ -170,7 +171,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
       
       gAliceFile->cd();
       gAlice->GetEvent(currentEvent);
-      gAlice->Particles();
+      gAlice->GetMCApp()->Particles();
 
       Int_t nentr=(Int_t)tracktree->GetEntries();
       
@@ -188,7 +189,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
            continue;
          }
 
-        TParticle *p = (TParticle*)gAlice->Particle(label);
+        TParticle *p = (TParticle*)gAlice->GetMCApp()->Particle(label);
         if(!p)
          {
            Warning("Read","Can not get particle with label &d",label);

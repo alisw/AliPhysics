@@ -40,6 +40,7 @@
 #include "AliPHOSImpact.h"
 #include "AliPHOSvImpacts.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliPHOSvImpacts)
 
@@ -191,8 +192,8 @@ void AliPHOSvImpacts::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
+  Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber() ; 
+  Int_t primary     =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
   TString name      =  GetGeometry()->GetName() ; 
 
   // Add impact to EMC

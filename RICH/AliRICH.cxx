@@ -26,6 +26,8 @@
 #include "AliRICHRecHit1D.h"
 #include <AliRun.h>
 #include <AliRunDigitizer.h>
+#include "AliMC.h"
+#include <TVirtualMC.h>
  
 ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
@@ -77,12 +79,12 @@ AliRICH::AliRICH(const char *name, const char *title)
   fpParam     =   new AliRICHParam;
   fChambers = 0;  CreateChambers();
 //AliDetector ctor deals with Hits and Digits (reset them to 0, does not create them)
-  fHits=       0;     CreateHits();          gAlice->AddHitList(fHits);
+  fHits=       0;     CreateHits();          gAlice->GetMCApp()->AddHitList(fHits);
   fSdigits=    0;
   fDigitsNew=  0;
   fClusters=   0;
   
-  fCerenkovs=  0;     CreateCerenkovsOld();  gAlice->AddHitList(fCerenkovs);
+  fCerenkovs=  0;     CreateCerenkovsOld();  gAlice->GetMCApp()->AddHitList(fCerenkovs);
   fSpecials=   0;     CreateSpecialsOld();   
   fDchambers=  0;   //CreateDigitsOld();
   fRawClusters=0;   //CreateRawClustersOld();
@@ -997,8 +999,8 @@ void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
     for(j=0;j<3;j++) pol[j]=e1[j]*TMath::Sin(phi)+e2[j]*TMath::Cos(phi);
     gMC->Gdtom(pol, pol, 2);
     Int_t outputNtracksStored;    
-    gAlice->PushTrack(1,                             //do not transport
-                     gAlice->GetCurrentTrackNumber(),//parent track 
+    gAlice->GetMCApp()->PushTrack(1,                 //do not transport
+                     gAlice->GetMCApp()->GetCurrentTrackNumber(),//parent track 
                      kFeedback,                      //PID
 		     mom[0],mom[1],mom[2],mom[3],    //track momentum  
                      x4.X(),x4.Y(),x4.Z(),x4.T(),    //track origin 

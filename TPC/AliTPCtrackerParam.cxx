@@ -78,6 +78,7 @@
 #include "AliTPCtrack.h"
 #include "AliTrackReference.h"
 #include "AliTPCtrackerParam.h"
+#include "AliMC.h"
 //-----------------------------
 
 Double_t RegFunc(Double_t *x,Double_t *par) {
@@ -305,7 +306,7 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
 
     // loop on particles and store pdg codes
     for(Int_t l=0; l<nParticles; l++) {
-      Part        = (TParticle*)gAlice->Particle(l);
+      Part        = (TParticle*)gAlice->GetMCApp()->Particle(l);
       pdgCodes[l] = Part->GetPdgCode();
       ptkine[l]   = Part->Pt();
       pzkine[l]   = Part->Pz();
@@ -1197,7 +1198,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
       geatree->GetEvent(j);
       
       label = geatrack->GetLabel();
-      Part = (TParticle*)gAlice->Particle(label);
+      Part = (TParticle*)gAlice->GetMCApp()->Particle(label);
       
       // use only injected tracks with fixed values of pT
       ptgener = Part->Pt();

@@ -41,6 +41,7 @@
 #include "AliRun.h"
 #include "AliSTARThit.h"
 #include "AliSTARTv1.h"
+#include "AliMC.h"
 
 ClassImp(AliSTARTv1)
 
@@ -612,7 +613,7 @@ void AliSTARTv1::StepManager()
       Float_t de=gMC->Edep(); 
       edep=edep+de;
       hits[3]=edep*1e3;
-      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);      
+      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);      
     }
   }
 //---------------------------------------------------------------------

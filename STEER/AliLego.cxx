@@ -49,12 +49,14 @@
 #include "TH2.h"
 #include "TMath.h"
 #include "TString.h"
+#include "TVirtualMC.h"
 
 #include "AliConst.h"
 #include "AliDebugVolume.h"
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliLego)
 
@@ -220,7 +222,7 @@ void AliLego::BeginEvent()
     fStepsForward    = 0;
     fStepsBackward   = 0;		  
     fErrorCondition  = 0;
-    if (gAlice->GetCurrentTrackNumber() == 0) fStepBack = 0;
+    if (gAlice->GetMCApp()->GetCurrentTrackNumber() == 0) fStepBack = 0;
   }
 }
 
@@ -349,7 +351,7 @@ void AliLego::StepManager()
           orig[1] =  vect[1];	   
           orig[2] =  vect[2];
           
-          gAlice->PushTrack(1, gAlice->GetCurrentTrackNumber(), 
+          gAlice->GetMCApp()->PushTrack(1, gAlice->GetMCApp()->GetCurrentTrackNumber(), 
                            0, pmom, orig, polar, 0., kPNoProcess, ntr);
         } // debug
         

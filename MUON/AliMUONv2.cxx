@@ -31,6 +31,7 @@
 #include <TArrayI.h>
 #include <Riostream.h>
 #include <TSystem.h>
+#include <TVirtualMC.h>
 
 #include "AliMpFiles.h"
 #include "AliMpReader.h"

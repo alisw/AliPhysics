@@ -24,6 +24,7 @@
 
 #include "AliLegoGenerator.h"
 #include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliLegoGenerator)
 
@@ -125,7 +126,7 @@ void AliLegoGenerator::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->PushTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
+   gAlice->GetMCApp()->PushTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }
 
