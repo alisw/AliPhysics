@@ -125,17 +125,16 @@ void AliSTARTv1::CreateGeometry()
 	y=6.5*TMath::Cos(is*dang1);
 	z=-pstart[2]+pinstart[2];
 	gMC->Gspos("0INS",is,"0STA",x,y,z,idrotm[901+is],"ONLY");
-	printf("z PMT %f\n",z);
 
-	
-	x=0;
-	y=0;
-	z=-pinstart[2]+ppmt[2];
-	printf(" is %d, z Divider %f\n",is,z);
-	gMC->Gspos("0PMT",is,"0INS",x,y,z,0,"ONLY");
-	z=pinstart[2]-pdivider[2];
-	gMC->Gspos("0DIV",is,"0INS",x,y,z,0,"ONLY");
-      }
+      }	
+    x=0;
+    y=0;
+    z=-pinstart[2]+ppmt[2];
+    printf(" is %d, z Divider %f\n",is,z);
+    gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
+    z=pinstart[2]-pdivider[2];
+    gMC->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
+      
      /*  
 //second ring: 20 units of Scintillator+PMT+divider
       Double_t dang2 = 2*TMath::Pi()/26;

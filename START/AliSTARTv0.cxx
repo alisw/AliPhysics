@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/04/04 12:10:18  alla
+changes according Coding Convension
+
 Revision 1.10  2000/12/04 08:48:19  alibrary
 Fixing problems in the HEAD
 
@@ -172,7 +175,7 @@ void AliSTARTv0::CreateGeometry()
     gMC->Gsvolu("0UO","TUBE",idtmed[6],pglass,3);
     z=ppmt[2]-pglass[2];
     //      printf("Z glass %f\n",z);
-    gMC->Gspos("0OU",1,"0PMT",0,0,z,0,"ONLY");
+    gMC->Gspos("0UO",1,"0PMT",0,0,z,0,"ONLY");
     //PMT electrodes support structure
     gMC->Gsvolu("0CE","TUBE",idtmed[4],pcer,3);
     gMC->Gsvolu("0IR","TUBE",idtmed[8],psteel,3);
