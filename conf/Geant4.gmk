@@ -46,6 +46,18 @@ ifeq ($(ALICE_TARGET),HP-UX.aCC)
   CXXOPTS += +DAportable
 endif  
  
+ifeq ($(ALICE_TARGET),OSF1)
+
+  CXXOPTS := $(filter-out -nostdnew,$(CXXOPTS))
+  CXXOPTS := $(filter-out -nortti,$(CXXOPTS))
+  CXXOPTS += -ieee -timplicit_local
+  ifndef G4NO_STD_NAMESPACE
+    G4USE_STD_NAMESPACE := yes
+    CXXOPTS += -std strict_ansi
+  endif
+
+endif  
+
 #
 # Geant4 include paths
 #
