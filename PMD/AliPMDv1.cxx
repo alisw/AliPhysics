@@ -37,12 +37,13 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
+////
 #include "AliPMDv1.h"
 #include "AliRun.h"
 #include "AliMC.h" 
-#include "AliMagF.h" 
 #include "AliConst.h" 
+#include "AliMagF.h"
+
  
 static Int_t maxbox, kdet;
 static Float_t thmin,thmax,zdist,zdist1,thlow,thhigh;
@@ -97,23 +98,27 @@ void AliPMDv1::CreateInside()
   // -- Modified:    P.V.K.S.Baba(JU), 15-12-97. 
 // Sipmd, the dimension of TUBE mother volume of PMD, other dimensions
 // like sip01.. are to place more tubes in the volume at different eta bins.  
-  Float_t sipmd[3] = { 40.,270.,15.};
-  Float_t sip01[3] = { 10.,57.89,25.};
-  Float_t sip02[3] = { 10.,64.03,25.};
-  Float_t sip03[3] = { 10.,70.80,25.};
-  Float_t sip04[3] = { 10.,78.32,25.};
-  Float_t sip05[3] = { 10.,86.68,25.};
-  Float_t sip06[3] = { 10.,95.91,25.};
-  Float_t sip07[3] = { 10.,106.14,25.};
-  Float_t sip08[3] = { 10.,117.48,25.};
-  Float_t sip09[3] = { 10.,130.18,25.};
-  Float_t sip10[3] = { 10.,144.18,25.};
-  Float_t sip11[3] = { 10.,159.87,25.};
-  Float_t sip12[3] = { 10.,177.43,25.};
-  Float_t sip13[3] = { 10.,197.11,25.};
-  Float_t sip14[3] = { 10.,219.28,25.};
-  Float_t sipmdl[5] = { 10.,310.,25.,90.,270. };
-  Float_t sipmdr[5] = { 10.,310.,25.,270.,90. };
+  
+//  Float_t sipmd[3] = { 40.,270.,15.};
+// ORG  Float_t sipmd[3] = { 0.,130.,15.};
+  Float_t sipmd[3] = { 0.,150.,15.};
+
+  //  Float_t sip01[3] = { 10.,57.89,25.};
+  //Float_t sip02[3] = { 10.,64.03,25.};
+  //Float_t sip03[3] = { 10.,70.80,25.};
+  //Float_t sip04[3] = { 10.,78.32,25.};
+  //Float_t sip05[3] = { 10.,86.68,25.};
+  //Float_t sip06[3] = { 10.,95.91,25.};
+  //Float_t sip07[3] = { 10.,106.14,25.};
+  //Float_t sip08[3] = { 10.,117.48,25.};
+  //Float_t sip09[3] = { 10.,130.18,25.};
+  //Float_t sip10[3] = { 10.,144.18,25.};
+  //Float_t sip11[3] = { 10.,159.87,25.};
+  //Float_t sip12[3] = { 10.,177.43,25.};
+  //Float_t sip13[3] = { 10.,197.11,25.};
+  //Float_t sip14[3] = { 10.,219.28,25.};
+  //Float_t sipmdl[5] = { 10.,310.,25.,90.,270. };
+  //Float_t sipmdr[5] = { 10.,310.,25.,270.,90. };
   
   const Float_t root3_4 = TMath::Sqrt(3.)/4.;
   const Float_t root3_2 = TMath::Sqrt(3.)/2.;
@@ -124,19 +129,7 @@ void AliPMDv1::CreateInside()
   //  Int_t idrotm[100];
   Int_t num_mod;
   Int_t jhrotc,jhrotac;
-//  const Float_t delx=78.8;
-  const Float_t delx=76.75;
-  //  const Float_t dely=delx*root3_2;
-//  const Float_t delz=1.6/2.;
-  AliMatrix(jhrotc, 90., 30.,   90.,  120., 0., 0.);
-  AliMatrix(jhrotac, 90., 330., 90., 240., 0., 0.);
-  Float_t x1= delx*root3_4;
-  Float_t x2= delx*root3_4 + delx*root3_2;
-  Float_t x3= delx*root3_4 + 2*delx*root3_2;
- Float_t xpos[13]={-x1,-x1,-x1,-x1,-x2,-x2,-x2,-x2,-x2,-x3,-x3,-x3,-x3};
-  Float_t x4=delx/4.; 
- Float_t ypos[13]={(-70.-x4-delx),-(70.+x4),(70.+x4),(70.+x4+delx),-x4+2*delx,-x4+delx,-x4,-x4-delx,-x4-2*delx,-3*x4-delx,-x4-delx/2.,-3*x4+delx,-3*x4+2*delx};
-// Float_t ypos[13]={(-70.-x4-delx),-(70.+x4),(70.+x4),(70.+x4+delx),(4*dely),(2*dely),0.,-(2*dely),-(4*dely),-3*x4-delx,-x4-delx/2.,-3*x4+delx,-3*x4+2*delx};
+
   Int_t *idtmed = fIdtmed->GetArray()-599;
   
   //  VOLUMES Names : begining with D for all PMD volumes, 
@@ -153,46 +146,126 @@ void AliPMDv1::CreateInside()
   // *** Define the  DPMD   Volume and fill with air *** 
 
   gMC->Gsvolu("DPMD", "TUBE", idtmed[698], sipmd, 3);
-  gMC->Gsvolu("PM01", "TUBE", idtmed[698], sip01, 3);
-  gMC->Gsvolu("PM02", "TUBE", idtmed[698], sip02, 3);
-  gMC->Gsvolu("PM03", "TUBE", idtmed[698], sip03, 3);
-  gMC->Gsvolu("PM04", "TUBE", idtmed[698], sip04, 3);
-  gMC->Gsvolu("PM05", "TUBE", idtmed[698], sip05, 3);
-  gMC->Gsvolu("PM06", "TUBE", idtmed[698], sip06, 3);
-  gMC->Gsvolu("PM07", "TUBE", idtmed[698], sip07, 3);
-  gMC->Gsvolu("PM08", "TUBE", idtmed[698], sip08, 3);
-  gMC->Gsvolu("PM09", "TUBE", idtmed[698], sip09, 3);
-  gMC->Gsvolu("PM10", "TUBE", idtmed[698], sip10, 3);
-  gMC->Gsvolu("PM11", "TUBE", idtmed[698], sip11, 3);
-  gMC->Gsvolu("PM12", "TUBE", idtmed[698], sip12, 3);
-  gMC->Gsvolu("PM13", "TUBE", idtmed[698], sip13, 3);
-  gMC->Gsvolu("PM14", "TUBE", idtmed[698], sip14, 3);
-  gMC->Gsvolu("PMDL", "TUBS", idtmed[698], sipmdl, 5);
-  gMC->Gsvolu("PMDR", "TUBS", idtmed[698], sipmdr, 5);
+  gMC->Gsatt("DPMD", "SEEN", 0);
+
+
+  //  gMC->Gsvolu("PM01", "TUBE", idtmed[698], sip01, 3);
+  //gMC->Gsvolu("PM02", "TUBE", idtmed[698], sip02, 3);
+  //gMC->Gsvolu("PM03", "TUBE", idtmed[698], sip03, 3);
+  //gMC->Gsvolu("PM04", "TUBE", idtmed[698], sip04, 3);
+  //gMC->Gsvolu("PM05", "TUBE", idtmed[698], sip05, 3);
+  //gMC->Gsvolu("PM06", "TUBE", idtmed[698], sip06, 3);
+  //gMC->Gsvolu("PM07", "TUBE", idtmed[698], sip07, 3);
+  //gMC->Gsvolu("PM08", "TUBE", idtmed[698], sip08, 3);
+  //gMC->Gsvolu("PM09", "TUBE", idtmed[698], sip09, 3);
+  //gMC->Gsvolu("PM10", "TUBE", idtmed[698], sip10, 3);
+  //gMC->Gsvolu("PM11", "TUBE", idtmed[698], sip11, 3);
+  //gMC->Gsvolu("PM12", "TUBE", idtmed[698], sip12, 3);
+  //gMC->Gsvolu("PM13", "TUBE", idtmed[698], sip13, 3);
+  //gMC->Gsvolu("PM14", "TUBE", idtmed[698], sip14, 3);
+  //gMC->Gsvolu("PMDL", "TUBS", idtmed[698], sipmdl, 5);
+  //gMC->Gsvolu("PMDR", "TUBS", idtmed[698], sipmdr, 5);
 //  
   const Int_t npad2=72; 
-  Float_t hexd1[10] = {0.,360.,6,2,-0.4,0.,0.53,0.4,0.,0.53};
+  const Float_t boundary=0.0;
+  const Float_t offset=0.05;
+
+  // hexd1 array contains parameters of unit cell (polygon with 6 sides)
+  // new cells having 64 sq.mm. area
+  Float_t hexd1[10] = {0.,360.,6,2,-0.25,0.,0.25,0.25,0.,0.25};
+  //  Float_t hexd1[10] = {0.,360.,6,2,-0.4,0.,0.40,0.4,0.,0.40};
+  // dpara_sm array contains parameters of Supermodule rhombus
   Float_t dpara_sm[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_sm[0]=(npad2+0.25)*hexd1[6] + 1.2;
+  //suprmodule side is 2*7 mm bigger than the total size of 72 cells array.
+  dpara_sm[0]=(npad2+0.25)*hexd1[6] + boundary; 
   dpara_sm[1] = dpara_sm[0] *root3_2;
+  //dpara_dm11 array contains parameters of the imaginary volume DM11, this is just a
+  // little more than the side of a supermodule. total side = 2*39 cm.
   Float_t dpara_dm11[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_dm11[0]=dpara_sm[0]+.01;
+  dpara_dm11[0]=dpara_sm[0] + offset;
   dpara_dm11[1] = dpara_dm11[0] *root3_2;
   dpara_dm11[2]= 6.2/2.;
 //
-    for (i = 0; i < 2; ++i) {
-        num_mod=i+1;
-  gMC->Gsposp("DM11", num_mod, "DPMD", xpos[i],ypos[i],0., jhrotac, "ONLY", dpara_dm11, 6);
-  gMC->Gsposp("DM11", num_mod+13, "DPMD", TMath::Abs(xpos[i]),ypos[i],0., jhrotc, "ONLY", dpara_dm11, 6);
-    printf("Num_mod %d\n",num_mod);
-	}
-   maxbox=13;
-    for (i = 2; i < maxbox; ++i) {
+  Float_t dpara_hole[6] = {12.5,12.5,0.8,30.,0.,0.};
+  dpara_hole[0]=dpara_dm11[0]/3.;
+  dpara_hole[1] = dpara_hole[0] *root3_2;
+  dpara_hole[2]= 6.2/2.;
+  gMC->Gsvolu("HOLE", "PARA", idtmed[698], dpara_hole, 6);
+  gMC->Gsatt("HOLE", "SEEN", 1);
+
+//
+
+  AliMatrix(jhrotc, 90., 30.,   90.,  120., 0., 0.);
+  AliMatrix(jhrotac, 90., 330., 90., 240., 0., 0.);
+
+  // delx = full side of the supermodule 78 cm.
+  Float_t delx=2*dpara_dm11[0];
+  Float_t x1= delx*root3_4;
+  Float_t x2= delx*root3_4 + delx*root3_2;
+  Float_t x3= delx*root3_4 + 2*delx*root3_2;
+  // xpos are the x-coordinates of the centres of 13 supermodules on the left half of the 
+  // PMD. Numbering of the boxes are : 
+  // starting from the bottom part of the first column
+  // 1,2,3,4,5,6 (going downwards), then second column from bottom, 7,8,9,10,11
+  // then third 
+  // cloumn from top 12,13,14,15.
+
+  Float_t xpos[15]={-x1,-x1,-x1,-x1,-x1,-x1,-x2,-x2,-x2,-x2,-x2,-x3,-x3,-x3,-x3};
+
+  Float_t x4=delx/4.; 
+
+  // ypos are the y-coordinates of the 13 supermodules (identical for both halves).
+
+  //  Float_t ypos[15]={(x4+2*delx),(x4+delx),x4,(x4-delx),x4-2*delx,
+  //x4-3*delx,-x4,-x4-delx,-x4-2*delx,-3*x4-delx,-x4-delx/2.,-3*x4+delx,-3*x4+2  //*delx};
+
+  Float_t ypos[15];
+  ypos[2]=x4;
+  ypos[1]=ypos[2]+delx;
+  ypos[0]=ypos[1]+delx;
+
+  ypos[3]=ypos[2]-delx;
+  ypos[4]=ypos[3]-delx;
+  ypos[5]=ypos[4]-delx;
+
+  ypos[6]=ypos[5]+delx/2;
+  ypos[7]=ypos[6]+delx;
+  ypos[8]=ypos[7]+delx;
+  ypos[9]=ypos[8]+delx;
+  ypos[10]=ypos[9]+delx;
+
+  ypos[11]=ypos[1];
+  ypos[12]=ypos[2];
+  ypos[13]=ypos[3];
+  ypos[14]=ypos[4];
+
+
+  //    for (i = 0; i < 2; ++i) {
+  //      num_mod=i+1;
+  //gMC->Gsposp("DM11", num_mod, "DPMD", xpos[i],ypos[i],0., jhrotac, "ONLY", dpara_dm11, 6);
+  // gMC->Gsposp("DM11", num_mod+13, "DPMD", TMath::Abs(xpos[i]),ypos[i],0., jhrotc, "ONLY", dpara_dm11, 6);
+  //printf("Num_mod %d\n",num_mod);
+  //	}
+
+   maxbox=15;
+    for (i = 0; i < maxbox; ++i) {
         num_mod=i+1;
   gMC->Gsposp("DM11", num_mod, "DPMD", xpos[i],ypos[i],0., jhrotc, "ONLY", dpara_dm11, 6);
-  gMC->Gsposp("DM11", num_mod+13, "DPMD", TMath::Abs(xpos[i]),ypos[i],0., jhrotac, "ONLY", dpara_dm11, 6);
+  gMC->Gsposp("DM11", num_mod+15, "DPMD", TMath::Abs(xpos[i]),ypos[i],0., jhrotac, "ONLY", dpara_dm11, 6);
     printf("Num_mod %d\n",num_mod);
 	}
+
+    // place four unit modules to create a hole of air.
+    Float_t xhole = dpara_hole[0]*root3_2;
+    Float_t yhole = dpara_hole[0]/2;
+  gMC->Gsposp("HOLE", 1, "DPMD", -xhole, yhole, 0., jhrotc, "ONLY", dpara_hole, 6);
+  gMC->Gsposp("HOLE", 3, "DPMD", xhole, yhole ,0., jhrotac, "ONLY", dpara_hole, 6);
+  yhole=yhole-dpara_hole[0]*2;
+
+  gMC->Gsposp("HOLE", 2, "DPMD", -xhole, yhole, 0., jhrotc, "ONLY", dpara_hole, 6);
+  gMC->Gsposp("HOLE", 4, "DPMD", xhole, yhole ,0., jhrotac, "ONLY", dpara_hole, 6);
+
+
 //  gMC->Gspos("PM01", 1, "DPMD", 0.,0.,0., 0, "ONLY");
 //  gMC->Gspos("PM02", 1, "DPMD", 0.,0.,0., 0, "ONLY");
 //  gMC->Gspos("PM03", 1, "DPMD", 0.,0.,0., 0, "ONLY");
@@ -247,9 +320,9 @@ void AliPMDv1::CreatePads()
 // 
   
   const Int_t npad2 = 72;
-  Float_t hexd1[10] = {0.,360.,6,2,-0.4,0.,0.53,0.4,0.,0.53};
+  Float_t hexd1[10] = {0.,360.,6,2,-0.25,0.,0.25,0.25,0.,0.25};
 //total wall thickness=0.2*2
-  Float_t hexd2[10] = {0.,360.,6,2,-0.4,0.,0.51,0.4,0.,0.51};
+  Float_t hexd2[10] = {0.,360.,6,2,-0.25,0.,0.23,0.25,0.,0.23};
   Int_t i, j;
   Float_t xb, yb, zb;//, sw[3];
   Int_t number;
@@ -276,31 +349,34 @@ void AliPMDv1::CreatePads()
 //
 // Inner hex filled with gas
   gMC->Gsvolu("DP11", "PGON", idtmed[604], hexd2,10);
-  gMC->Gsatt("DP11", "SEEN", 1);
+  gMC->Gsatt("DP11", "SEEN", 0);
 
 // Outer hex filled with Plastic
 //plastic  gMC->Gsvolu("DS11", "PGON", idtmed[616], hexd1,10);
 // Iron
-  gMC->Gsvolu("DS11", "PGON", idtmed[601], hexd1,10);
-  gMC->Gsatt("DS11", "SEEN", 1);
+  gMC->Gsvolu("DS11", "PGON", idtmed[614], hexd1,10);
+  gMC->Gsatt("DS11", "SEEN", 0);
 // --- place  inner hex inside outer hex 
     gMC->Gsposp("DP11", 1, "DS11", 0., 0., 0., 0, "ONLY", hexd2, 10);
 // Rhombus shaped supermodules (defined by PARA)
 // volume for SUPERMODULE 
+  const Float_t boundary=0.0;
+  const Float_t offset=0.05;
+
   Float_t dpara_sm[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_sm[0]=(npad2+0.25)*hexd1[6] + 1.2;
+  dpara_sm[0]=(npad2+0.25)*hexd1[6] + boundary;
   dpara_sm[1] = dpara_sm[0] *root3_cons;
 //  
   gMC->Gsvolu("SUPR","PARA", idtmed[607], dpara_sm, 6);
-  gMC->Gsatt("SUPR", "SEEN", 1);
+  gMC->Gsatt("SUPR", "SEEN", 0);
 //  SS 
   Float_t dpara_ss[6] = {12.5,12.5,8.,30.,0.,0.};
   dpara_ss[0]= dpara[0];
   dpara_ss[1]= dpara[1];
-  dpara_ss[2]= 0.3/2.;
+  dpara_ss[2]= 0.15/2.;
 //
   gMC->Gsvolu("SMSS","PARA", idtmed[601], dpara_ss, 6);
-  gMC->Gsatt("SMSS", "SEEN", 1);
+  gMC->Gsatt("SMSS", "SEEN", 0);
 // Air 
   Float_t dpara_air[6] = {12.5,12.5,8.,30.,0.,0.};
   dpara_air[0]= dpara[0] - 0.5;
@@ -308,13 +384,13 @@ void AliPMDv1::CreatePads()
   dpara_air[2]= 0.1/2.;
 //  gMC->Gsvolu("SMAR","PARA", idtmed[604], dpara_air, 6);
   gMC->Gsvolu("SMAR","PARA", idtmed[698], dpara_air, 6);
-  gMC->Gsatt("SMAR", "SEEN", 1);
+  gMC->Gsatt("SMAR", "SEEN", 0);
 //  
 // volume for gas chamber (DW11)
 //  
 //  gMC->Gsvolu("DW11","PARA", idtmed[604], dpara, 6);
   gMC->Gsvolu("DW11","PARA", idtmed[698], dpara, 6);
-  gMC->Gsatt("DW11", "SEEN", 1);
+  gMC->Gsatt("DW11", "SEEN", 0);
 // Place outer hex inside DW11
   yb = -dpara[1] + (1./root3_cons)*hexd1[6];
   zb = 0.;
@@ -337,9 +413,9 @@ void AliPMDv1::CreatePads()
     gMC->Gspos("SMSS", 1, "SUPR", 0., 0., z_ss, 0, "ONLY");
     z_air1=z_ss+dpara_ss[2] +dpara_air[2]; 
     gMC->Gspos("SMAR", 1, "SUPR", 0., 0., z_air1, 0, "ONLY");
-    z_gas=z_air1+dpara_air[2]+dpara[2]+0.1; 
+    z_gas=z_air1+dpara_air[2]+dpara[2]+0.05; 
     gMC->Gspos("DW11", 1, "SUPR", 0., 0., z_gas, 0, "ONLY");
-    z_air2=z_gas+dpara[2]+0.1+dpara_air[2]; 
+    z_air2=z_gas+dpara[2]+0.05+dpara_air[2]; 
     gMC->Gspos("SMAR", 2, "SUPR", 0., 0., z_air2, 0, "ONLY");
   
 // --- DEFINE MODules, iron, and lead voLUMES 
@@ -350,20 +426,28 @@ void AliPMDv1::CreatePads()
   Float_t dpara_pb[6] = {12.5,12.5,8.,30.,0.,0.};
   dpara_pb[0]=dpara_sm[0];
   dpara_pb[1]=dpara_sm[1];
-//  dpara_pb[2]=1.1/2.;
   dpara_pb[2]=1.5/2.;
+//  dpara_pb[2]=1.0/2.;
   gMC->Gsvolu("SUPB","PARA", idtmed[600], dpara_pb, 6);
-  gMC->Gsatt("SUPB", "SEEN", 1);
+  //---  gMC->Gsvolu("SUPB","PARA", idtmed[698], dpara_pb, 6);
+  gMC->Gsatt("SUPB", "SEEN", 0);
+//   tungsten 
+  Float_t dpara_tg[6] = {12.5,12.5,8.,30.,0.,0.};
+  dpara_tg[0]=dpara_sm[0];
+  dpara_tg[1]=dpara_sm[1];
+  dpara_tg[2]=1.0/2.;
+  gMC->Gsvolu("SUTG","PARA", idtmed[606], dpara_tg, 6);
+  gMC->Gsatt("SUTG", "SEEN", 0);
 //   Fe 
   Float_t dpara_fe[6] = {12.5,12.5,8.,30.,0.,0.};
   dpara_fe[0]=dpara_sm[0];
   dpara_fe[1]=dpara_sm[1];
   dpara_fe[2]=0.5/2.;
   gMC->Gsvolu("SUFE","PARA", idtmed[601], dpara_fe, 6);
-  gMC->Gsatt("SUFE", "SEEN", 1);
+  gMC->Gsatt("SUFE", "SEEN", 0);
 // volume for DM11 
   Float_t dpara_dm11[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_dm11[0]=dpara_sm[0]+.01;
+  dpara_dm11[0]=dpara_sm[0]+offset;
   dpara_dm11[1] = dpara_dm11[0] *root3_cons;
   dpara_dm11[2]= 6.2/2.;
 
@@ -373,13 +457,13 @@ void AliPMDv1::CreatePads()
 // position super module inside DM11
  Float_t z_ps,z_pb,z_fe,z_cv; 
   z_ps=-dpara_dm11[2]+dpara_sm[2];
-  gMC->Gspos("SUPR", 1, "DM11", 0., 0., z_ps, irotdm, "ONLY");
+  gMC->Gspos("SUPR", 2, "DM11", 0., 0., z_ps, irotdm, "ONLY");
   z_pb=z_ps+dpara_sm[2]+dpara_pb[2];
   gMC->Gspos("SUPB", 1, "DM11", 0., 0., z_pb, 0, "ONLY");
   z_fe=z_pb+dpara_pb[2]+dpara_fe[2];
   gMC->Gspos("SUFE", 1, "DM11", 0., 0., z_fe, 0, "ONLY");
   z_cv=z_fe+dpara_fe[2]+dpara_sm[2];
-  gMC->Gspos("SUPR", 2, "DM11", 0., 0., z_cv, 0, "ONLY");
+  gMC->Gspos("SUPR", 1, "DM11", 0., 0., z_cv, 0, "ONLY");
 // 
 }
  
@@ -396,9 +480,10 @@ void AliPMDv1::DrawModule()
   // Set the visibility of the components
   // 
   gMC->Gsatt("DP11","seen",0);
-  gMC->Gsatt("DS11","seen",1);
+  gMC->Gsatt("DS11","seen",0);
   gMC->Gsatt("DW11","seen",0);
   gMC->Gsatt("DM11","seen",1);
+  gMC->Gsatt("HOLE","seen",1);
   gMC->Gsatt("DPMD","seen",0);
   //
   gMC->Gdopt("hide", "on");
@@ -437,6 +522,8 @@ void AliPMDv1::CreateMaterials()
   Float_t absl, radl, a, d, z;
   Float_t dg;
   Float_t x0ar;
+  Float_t x0xe=2.4;
+  Float_t dxe=0.005858;
   Float_t buf[1];
   Int_t nbuf;
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
@@ -461,6 +548,7 @@ void AliPMDv1::CreateMaterials()
   AliMaterial(15, "Cu   $", 63.54, 29., 8.96, 1.43, 15.);
   AliMaterial(16, "C    $", 12.01, 6., 2.265, 18.8, 49.9);
   AliMaterial(17, "POLYCARBONATE    $", 20., 10., 1.2, 34.6, 999.);
+  // AliMaterial(31, "Xenon$", 131.3, 54., dxe, x0xe, 6.5e4);
   
   AliMaterial(96, "MYLAR$", 8.73, 4.55, 1.39, 28.7, 62.);
   AliMaterial(97, "CONCR$", 20., 10., 2.5, 10.7, 40.);
@@ -491,6 +579,7 @@ void AliPMDv1::CreateMaterials()
   AliMedium(15, "Cu      $", 15, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
   AliMedium(16, "C       $", 16, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
   AliMedium(17, "PLOYCARB$", 17, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
+  //  AliMedium(31, "Xenon   $", 31,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
   
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
   gMC->Gstpar(idtmed[600], "LOSS", 3.);
