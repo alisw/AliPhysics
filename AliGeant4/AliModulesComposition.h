@@ -56,13 +56,11 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void SetProcessConfigToModules(G4bool processConfig);
     
     // get methods
-    const G4RWTPtrOrderedVector<AliDetSwitch>& GetDetSwitchVector() const;
     G4String GetSwitchedDetsList() const;
     G4String GetAvailableDetsList() const;
     G4String GetAvailableDetsListWithCommas() const;
     G4String GetDetNamesList() const;
     G4String GetDetNamesListWithCommas() const;
-    //G4ThreeVector GetMagField() const;
     
   protected:
     AliModulesComposition(const AliModulesComposition& right);
@@ -78,6 +76,12 @@ class AliModulesComposition : public G4VUserDetectorConstruction
                                      AliModuleType moduleType = kDetector);
     void ConstructModules();
 
+    // get methods
+    AliDetSwitch* GetDetSwitch(const G4String& detName);
+
+    // data members
+    AliDetSwitchRWVector  fDetSwitchVector; //vector of AliDetSwitch
+    
   private:    
     // methods
     void SetReadGeometryToModules(G4bool readGeometry);
@@ -85,8 +89,6 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void SetAllLVSensitiveToModules(G4bool allSensitive);
 
     // data members
-    AliDetSwitchRWVector                fDetSwitchVector;          //..         
-                                          //vector of AliDetSwitch
     AliSingleModuleConstructionRWVector fModuleConstructionVector; //..
 				          //vector of 
 					  //AliSingleModuleConstruction 
