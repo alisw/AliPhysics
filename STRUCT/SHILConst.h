@@ -49,11 +49,18 @@
 // flange length
   const Float_t dF1=2.*3.9;
 // bellow length
-  const Float_t dB1=18.482-dF1/2-dr11;
+//
+  const Float_t rB1=5.5;
+  const Float_t hB1=2.25;
+  const Float_t lB1=0.77;
+  const Float_t eB1=0.04;
+//
+
+  const Float_t dB1=12.*lB1/2.;
 // Flange position
-  const Float_t zvac2=518.;
-  const Float_t zvac1=zvac2-dF1/2-dB1-dr11-dr12;
-  const Float_t zvac3=zvac2+dF1/2+dB1+dr12+dr13;
+  const Float_t zvac2=507.;
+  const Float_t zvac1=zvac2-dB1-dr11/2.-dr12;
+  const Float_t zvac3=zvac2+dB1+dF1+dr13+6.;
   const Float_t zvac4=558.;
 // Outer shield dimensions
   const Float_t R11=15.45;
@@ -96,12 +103,7 @@
 // Vacuum System
 //
 
-// Bellow1
-//
-  const Float_t rB1=5.5;
-  const Float_t hB1=2.25;
-  const Float_t lB1=0.77;
-  const Float_t eB1=0.04;
+
 //
 // Flange1
 //
