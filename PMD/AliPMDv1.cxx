@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.27  2003/10/08 12:56:58  bnandi
+gaspmd[2] value changed from 7.0 to 0.25
+
 Revision 1.26  2003/10/03 06:04:10  bnandi
 z_psa and z_psb bugs fixed
 
@@ -922,6 +925,6 @@ void AliPMDv1::GetParameters()
     th_lead=1.5;
     th_steel=0.5;
     
-    zdist1 = -361.5;
+    zdist1 = 361.5;
 
 }
