@@ -450,10 +450,8 @@ void AliRunDigitizer::FinishGlobal()
      Error("FinishGlobal","Can not get RunLoader from Output Stream folder");
      return;
    }
-  TFile* file = TFile::Open(fOutputDirName + "/digitizer.root", "recreate");
-  this->Write();
-  file->Close();
-  delete file;
+  GetOutRunLoader()->CdGAFile();
+  this->Write(NULL, TObject::kOverwrite);
   if (fOutRunLoader)
    {
      fOutRunLoader->WriteHeader("OVERWRITE");
