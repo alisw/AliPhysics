@@ -1,6 +1,16 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include HLT/hlt.conf
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
 SRCS:=monitorCheck.cxx
 
-EINCLUDE+=TPC CONTAINERS ITS RAW
+EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
 
 
 ifdef DATE_ROOT

@@ -34,12 +34,10 @@
 #include "AliRawReaderDate.h"
 #include "event.h"
 #include "monitor.h"
-#ifdef ALI_HLT
 #include <AliLevel3.h>
 #include <AliL3Transform.h>
 #include <AliL3MemHandler.h>
 #include <AliL3TrackArray.h>
-#endif
 #endif
 
 
@@ -69,11 +67,7 @@ int main(int argc, char** argv)
   gROOT->SetBatch();   
 
   // open a log file
-#ifdef ALI_HLT
   FILE* file = fopen("monitorGDC.log", "w");
-#else
-  FILE* file = NULL;
-#endif
   TDatime time;
 
   // get data from a file or online from this node
@@ -94,12 +88,10 @@ int main(int argc, char** argv)
   status = monitorDeclareMp("GDC physics monitoring");
   if (status) ::Fatal("monitorDeclareMp", monitorDecodeError(status));
 
-#ifdef ALI_HLT
   // initialize HLT transformations
   if (!AliL3Transform::Init("./", kFALSE)) {
     ::Fatal("AliL3Transform::Init", "HLT initialization failed");
   }
-#endif
 
   // create the signal handler
   AliGDCInterruptHandler* handler = new AliGDCInterruptHandler;
@@ -119,8 +111,18 @@ int main(int argc, char** argv)
       continue;
     }
 
-#ifdef ALI_HLT
+    // read run, event, detector, DDL numbers and data size
     AliRawReaderDate rawReader(ptr);
+    time.Set();
+    printf("\n%s\n", time.AsString());
+    printf("run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
+	   rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
+    while (rawReader.ReadHeader()) {
+      printf(" detector: %d   DDL: %d  size: %d\n", 
+	     rawReader.GetDetectorID(), rawReader.GetDDLID(), 
+	     rawReader.GetDataSize());
+    }
+
     if ((rawReader.GetAttributes()[0] & 0x02) != 0) {
 
       Int_t errorCode = rawReader.CheckData();
@@ -202,21 +204,6 @@ int main(int argc, char** argv)
 	delete hlt;
       }
     }
-
-#else
-    // read run, event, detector, DDL numbers and data size
-    AliRawReaderDate rawReader(ptr);
-    time.Set();
-    printf("\n%s\n", time.AsString());
-    printf("run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
-	   rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
-    while (rawReader.ReadMiniHeader()) {
-      printf(" detector: %d   DDL: %d  size: %d\n", 
-	     rawReader.GetDetectorID(), rawReader.GetDDLID(), 
-	     rawReader.GetDataSize());
-    }
-
-#endif
 
     gSystem->Sleep(100);   // sleep for 0.1 second
     free(ptr);

@@ -26,7 +26,6 @@
 #include "AliMonitorTrend.h"
 #include "AliTPCParam.h"
 #include <TFolder.h>
-#ifdef ALI_HLT
 #include <stdlib.h>
 #include "AliL3MemHandler.h"
 #include "AliL3SpacePointData.h"
@@ -34,7 +33,6 @@
 #include "AliL3Track.h"
 #include "AliL3Transform.h"
 #include "AliL3Vertex.h"
-#endif
 
 //_____________________________________________________________________________
 AliMonitorHLT::AliMonitorHLT(AliTPCParam* param)
@@ -151,10 +149,6 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
 {
 // fill the HLT monitor histogrms
 
-#ifndef ALI_HLT
-  Warning("FillHistos", "the code was compiled without HLT support");
-
-#else
   AliL3MemHandler clusterHandler[36];
   AliL3SpacePointData *clusters[36];
   for (Int_t iSector = 0; iSector < fParam->GetNInnerSector(); iSector++) {
@@ -256,5 +250,4 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
 
   delete tracks;
   memHandler.CloseBinaryInput();
-#endif
 }

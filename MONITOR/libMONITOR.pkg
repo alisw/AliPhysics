@@ -1,3 +1,13 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include HLT/hlt.conf
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
 SRCS:=  AliMonitorPlot.cxx AliMonitorHisto.cxx AliMonitorTrend.cxx \
 	AliMonitor.cxx \
 	AliMonitorTPC.cxx AliMonitorITS.cxx AliMonitorV0s.cxx \
@@ -10,4 +20,4 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MONITORLinkDef.h
 
-EINCLUDE:=TPC CONTAINERS ITS RAW
+EINCLUDE:=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp

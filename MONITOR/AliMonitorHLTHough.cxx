@@ -26,14 +26,12 @@
 #include "AliMonitorTrend.h"
 #include "AliTPCParam.h"
 #include <TFolder.h>
-#ifdef ALI_HLT
 #include <stdlib.h>
 #include <AliL3MemHandler.h>
 #include <AliL3TrackArray.h>
 #include <AliL3SpacePointData.h>
 #include <AliL3HoughTrack.h>
 #include <AliL3Transform.h>
-#endif
 
 //_____________________________________________________________________________
 AliMonitorHLTHough::AliMonitorHLTHough(AliTPCParam* param)
@@ -134,10 +132,6 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
 {
 // fill the HLT Hough transform monitor histograms
 
-#ifndef ALI_HLT
-  Warning("FillHistos", "the code was compiled without HLT support");
-
-#else
   AliL3MemHandler clusterHandler[36][6];
   AliL3SpacePointData *clusters[36][6];
   for (Int_t iSector = 0; iSector < fParam->GetNInnerSector(); iSector++) {
@@ -243,6 +237,4 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
 
   delete tracks;
   memHandler.CloseBinaryInput();
-
-#endif
 }

@@ -1,18 +1,23 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include HLT/hlt.conf
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
 SRCS:=monitorGDC.cxx
 
-EINCLUDE+=TPC CONTAINERS ITS RAW
+EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
 
 
 ifdef DATE_ROOT
 
 ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS}
-ELIBS:= STEER RAW monitor shift pythia6 pdf microcern
+ELIBS:=STEER RAW TPC CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp monitor shift pythia6 pdf microcern
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
-
-ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
-ELIBSDIR+=${ALIHLT_LIBDIR}
-ELIBS+= AliL3Src AliL3Misc AliL3Hough AliL3Comp TPC CONTAINERS
-endif
 
 else
 

@@ -35,7 +35,6 @@
 
 #include "AliESD.h"
 #include "AliITS.h"
-#include "AliITSLoader.h"
 #include "AliITSclustererV2.h"
 #include "AliITStrackerV2.h"
 #include "AliLoader.h"
@@ -52,20 +51,18 @@
 #include "AliTPCtrackerMI.h"
 #include "AliV0vertexer.h"
 
-#ifdef ALI_HLT
+#include <AliL3StandardIncludes.h>
+#include <AliL3MemHandler.h>
 #include <AliL3ClusterFitter.h>
-#include <AliL3DDLDataFileHandler.h>
 #include <AliL3Fitter.h>
 #include <AliL3Hough.h>
 #include <AliL3HoughBaseTransformer.h>
-#include <AliL3HoughMaxFinder.h>
 #include <AliL3StandardIncludes.h>
 #include <AliL3Track.h>
 #include <AliL3TrackArray.h>
 #include <AliL3Transform.h>
 #include <AliL3Vertex.h>
 #include <AliLevel3.h>
-#endif
 
 ClassImp(AliMonitorProcess) 
 
@@ -81,9 +78,42 @@ AliMonitorProcess::AliMonitorProcess(
 				     const char* alienHost,
 #endif
 				     const char* alienDir,
-				     const char* fileNameGalice)
+				     const char* selection,
+				     const char* fileNameGalice):
+  fSelection(selection),
+  fGrid(NULL),
+  fAlienDir(alienDir),
+  fRunLoader(NULL),
+  fTPCParam(NULL),
+  fITSgeom(NULL),
+  fLogicalFileName(""),
+  fFileName(""),
+  fHLT(NULL),
+  fHLTHough(NULL),
+
+  fRunNumber(0),
+  fSubRunNumber(0),
+  fNEvents(0),
+  fNEventsMin(1),
+  fWriteHistoList(kFALSE),
+
+  fTopFolder(NULL),
+  fMonitors(),
+  fFile(NULL),
+  fTree(NULL),
+
+  fServerSocket(NULL),
+  fSockets(),
+  fDisplaySocket(NULL),
+
+  fStatus(kStopped),
+  fStopping(kFALSE),
+
+  fInterruptHandler(NULL)
 {
 // initialize the monitoring process and the monitor histograms
+
+  fSelection = selection;
 
 #if ROOT_VERSION_CODE <= 199169   // 3.10/01
   fGrid = TGrid::Connect("alien", gSystem->Getenv("USER"));
@@ -96,11 +126,7 @@ AliMonitorProcess::AliMonitorProcess(
   }
 #if ROOT_VERSION_CODE <= 199169   // 3.10/01
   fGrid->cd(alienDir);
-#else
-  fAlienDir = alienDir;
 #endif
-  fLogicalFileName = "";
-  fFileName = "";
 
   fRunLoader = AliRunLoader::Open(fileNameGalice);
   if (!fRunLoader) Fatal("AliMonitorProcess", 
@@ -119,31 +145,20 @@ AliMonitorProcess::AliMonitorProcess(
   fITSgeom = its->GetITSgeom();
   if (!fITSgeom) Fatal("AliMonitorProcess", "could not load ITS geometry");
 
-#ifdef ALI_HLT
-// Init TPC parameters for HLT
+  // Init TPC parameters for HLT
   Bool_t isinit=AliL3Transform::Init(const_cast<char*>(fileNameGalice),kTRUE);
   if(!isinit){
-    cerr << "Could not create transform settings, please check log for error messages!" << endl;
-    return;
+    Fatal("AliMonitorProcess", "Could not create transform settings, please check log for error messages!");
   }
-#endif
-
-  fRunNumber = 0;
-  fSubRunNumber = 0;
-  fNEvents = 0;
-  fNEventsMin = 1;
-  fWriteHistoList = kFALSE;
 
   fTopFolder = new TFolder("Monitor", "monitor histograms");
   fTopFolder->SetOwner(kTRUE);
 
-  fMonitors.Add(new AliMonitorTPC(fTPCParam));
-  fMonitors.Add(new AliMonitorITS(fITSgeom));
-  fMonitors.Add(new AliMonitorV0s);
-#ifdef ALI_HLT
-  fMonitors.Add(new AliMonitorHLT(fTPCParam));
-  fMonitors.Add(new AliMonitorHLTHough(fTPCParam));
-#endif
+  if (IsSelected("TPC")) fMonitors.Add(new AliMonitorTPC(fTPCParam));
+  if (IsSelected("ITS")) fMonitors.Add(new AliMonitorITS(fITSgeom));
+  if (IsSelected("V0s")) fMonitors.Add(new AliMonitorV0s);
+  if (IsSelected("HLTConfMap")) fMonitors.Add(new AliMonitorHLT(fTPCParam));
+  if (IsSelected("HLTHough")) fMonitors.Add(new AliMonitorHLTHough(fTPCParam));
 
   for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
     ((AliMonitor*) fMonitors[iMonitor])->CreateHistos(fTopFolder);
@@ -165,14 +180,7 @@ AliMonitorProcess::AliMonitorProcess(
 
   fServerSocket = new TServerSocket(fgkPort, kTRUE);
   fServerSocket->SetOption(kNoBlock, 1);
-  fDisplaySocket = NULL;
   CheckForConnections();
-#ifdef ALI_HLT
-  fHLT = NULL;
-#endif
-
-  SetStatus(kStopped);
-  fStopping = kFALSE;
 
   fInterruptHandler = new AliMonitorInterruptHandler(this);
   gSystem->AddSignalHandler(fInterruptHandler);
@@ -180,7 +188,39 @@ AliMonitorProcess::AliMonitorProcess(
 
 //_____________________________________________________________________________
 AliMonitorProcess::AliMonitorProcess(const AliMonitorProcess& process) :
-  TObject(process)
+  TObject(process),
+
+  fSelection(""),
+  fGrid(NULL),
+  fAlienDir(""),
+  fRunLoader(NULL),
+  fTPCParam(NULL),
+  fITSgeom(NULL),
+  fLogicalFileName(""),
+  fFileName(""),
+  fHLT(NULL),
+  fHLTHough(NULL),
+
+  fRunNumber(0),
+  fSubRunNumber(0),
+  fNEvents(0),
+  fNEventsMin(1),
+  fWriteHistoList(kFALSE),
+
+  fTopFolder(NULL),
+  fMonitors(),
+  fFile(NULL),
+  fTree(NULL),
+
+  fServerSocket(NULL),
+  fSockets(),
+  fDisplaySocket(NULL),
+
+  fStatus(kStopped),
+  fStopping(kFALSE),
+
+  fInterruptHandler(NULL)
+
 {
   Fatal("AliMonitorProcess", "copy constructor not implemented");
 }
@@ -215,10 +255,8 @@ AliMonitorProcess::~AliMonitorProcess()
   delete fFile;
   gSystem->Unlink("monitor_tree.root");
 
-#ifdef ALI_HLT
   delete fHLT;
   delete fHLTHough;
-#endif
 
   gSystem->RemoveSignalHandler(fInterruptHandler);
   delete fInterruptHandler;
@@ -393,10 +431,8 @@ Bool_t AliMonitorProcess::ProcessFile()
   if (nEvents <= 0) return kFALSE;
   Info("ProcessFile", "found %d event(s) in file %s", 
        nEvents, fFileName.Data());
-#ifdef ALI_HLT
-  CreateHLT(fFileName);
-  CreateHLTHough(fFileName);
-#endif
+  if (IsSelected("HLTConfMap")) CreateHLT(fFileName);
+  if (IsSelected("HLTHough")) CreateHLTHough(fFileName);
 
   // loop over the events
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
@@ -422,21 +458,31 @@ Bool_t AliMonitorProcess::ProcessFile()
 	 rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
 
     AliESD esd;
-    CheckForConnections();
-    if (!ReconstructTPC(&rawReader, &esd)) return kFALSE;
-    if (fStopping) break;
-    CheckForConnections();
-    if (!ReconstructITS(&rawReader, &esd)) return kFALSE;
-    if (fStopping) break;
-    CheckForConnections();
-    if (!ReconstructV0s(&esd)) return kFALSE;
-    if (fStopping) break;
-    CheckForConnections();
-    if (!ReconstructHLT(iEvent)) return kFALSE;
-    if (fStopping) break;
-    CheckForConnections();
-    if (!ReconstructHLTHough(iEvent)) return kFALSE;
-    if (fStopping) break;
+    if (IsSelected("TPC")) {
+      CheckForConnections();
+      if (!ReconstructTPC(&rawReader, &esd)) return kFALSE;
+      if (fStopping) break;
+    }
+    if (IsSelected("ITS")) {
+      CheckForConnections();
+      if (!ReconstructITS(&rawReader, &esd)) return kFALSE;
+      if (fStopping) break;
+    }
+    if (IsSelected("V0s")) {
+      CheckForConnections();
+      if (!ReconstructV0s(&esd)) return kFALSE;
+      if (fStopping) break;
+    }
+    if (IsSelected("HLTConfMap")) {
+      CheckForConnections();
+      if (!ReconstructHLT(iEvent)) return kFALSE;
+      if (fStopping) break;
+    }
+    if (IsSelected("HLTHough")) {
+      CheckForConnections();
+      if (!ReconstructHLTHough(iEvent)) return kFALSE;
+      if (fStopping) break;
+    }
 
     if (fDisplaySocket) fDisplaySocket->Send("new event");
 
@@ -475,10 +521,14 @@ Bool_t AliMonitorProcess::ProcessFile()
     if (fStopping) break;
   }
 
-#ifdef ALI_HLT
-  delete fHLT;
-  fHLT = NULL;
-#endif
+  if (fHLT) {
+    delete fHLT;
+    fHLT = NULL;
+  }
+  if (fHLTHough) {
+    delete fHLTHough;
+    fHLTHough = NULL;
+  }
 
   return kTRUE;
 }
@@ -630,7 +680,6 @@ Bool_t AliMonitorProcess::ReconstructV0s(AliESD* esd)
 }
 
 //_____________________________________________________________________________
-#ifdef ALI_HLT
 void AliMonitorProcess::CreateHLT(const char* fileName)
 {
 
@@ -688,26 +737,14 @@ void AliMonitorProcess::CreateHLTHough(const char* fileName)
   //  fHLTHough->GetMaxFinder()->SetThreshold(14000);
 
 }
-#endif
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructHLT(
-#ifdef ALI_HLT
-  Int_t iEvent
-#else
-  Int_t /* iEvent */
-#endif
-)
+Bool_t AliMonitorProcess::ReconstructHLT(Int_t iEvent)
 {
 // run the HLT cluster and track finder
 
   SetStatus(kRecHLT);
 
-#ifndef ALI_HLT
-  Warning("ReconstructHLT", "the code was compiled without HLT support");
-  return kTRUE;
-
-#else
   gSystem->Exec("rm -rf hlt");
   gSystem->MakeDirectory("hlt");
   if (!fHLT) return kFALSE;
@@ -725,27 +762,15 @@ Bool_t AliMonitorProcess::ReconstructHLT(
   sprintf(command, "rename tracks_%d tracks hlt/*.raw", iEvent);
   gSystem->Exec(command);
   return kTRUE;
-#endif
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructHLTHough(
-#ifdef ALI_HLT
-  Int_t iEvent
-#else
-  Int_t /* iEvent */
-#endif
-)
+Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
 {
 // run the HLT Hough transformer
 
   SetStatus(kRecHLT);
 
-#ifndef ALI_HLT
-  Warning("ReconstructHLTHough", "the code was compiled without HLT support");
-  return kTRUE;
-
-#else
   gSystem->Exec("rm -rf hlt/hough");
   gSystem->MakeDirectory("hlt/hough");
   gSystem->Exec("rm -rf hlt/fitter");
@@ -834,7 +859,6 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
   sprintf(command, "rename points_%d points hlt/fitter/*.raw", iEvent);
   gSystem->Exec(command);
   return kTRUE;
-#endif
 }
 
 //_____________________________________________________________________________

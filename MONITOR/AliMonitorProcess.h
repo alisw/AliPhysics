@@ -23,19 +23,16 @@ class AliITSgeom;
 class AliRawReader;
 class AliRunLoader;
 class AliTPCParam;
-#ifdef ALI_HLT
 class AliLevel3;
 class AliL3Hough;
-#endif
 
 
 class AliMonitorProcess : public TObject {
 public:
   AliMonitorProcess(const char* alienHost,
 		    const char* alienDir,
+		    const char* selection = "ALL",
 		    const char* fileNameGalice = "galice.root");
-  AliMonitorProcess(const AliMonitorProcess& process);
-  AliMonitorProcess& operator = (const AliMonitorProcess& process);
   virtual ~AliMonitorProcess();
 
   static const char* GetRevision();
@@ -71,16 +68,17 @@ public:
   static Int_t     GetPort() {return fgkPort;};
   
 private:
+  AliMonitorProcess(const AliMonitorProcess& process);
+  AliMonitorProcess& operator = (const AliMonitorProcess& process);
+
   Bool_t           CheckForNewFile();
   Bool_t           ProcessFile();
   Int_t            GetNumberOfEvents(const char* fileName) const;
   Bool_t           ReconstructTPC(AliRawReader* rawReader, AliESD* esd);
   Bool_t           ReconstructITS(AliRawReader* rawReader, AliESD* esd);
   Bool_t           ReconstructV0s(AliESD* esd);
-#ifdef ALI_HLT
   void             CreateHLT(const char* fileName);
   void             CreateHLTHough(const char* fileName);
-#endif
   Bool_t           ReconstructHLT(Int_t iEvent);
   Bool_t           ReconstructHLTHough(Int_t iEvent);
 
@@ -90,9 +88,12 @@ private:
   void             CheckForConnections();
   void             BroadcastHistos(TSocket* toSocket = NULL);
   void             SetStatus(EStatus status);
+  Bool_t           IsSelected(const char* name) const
+    {return (fSelection.Contains(name) || fSelection.Contains("ALL"));}
 
   static const Int_t fgkPort;          // port number for client connections
 
+  TString          fSelection;          // selection of monitor histograms
   TGrid*           fGrid;               // pointer to AliEn
   TString          fAlienDir;           // name of alien directory
   AliRunLoader*    fRunLoader;          // the current run loader
@@ -100,10 +101,8 @@ private:
   AliITSgeom*      fITSgeom;            // ITS parameters
   TString          fLogicalFileName;    // logical AliEn file name
   TString          fFileName;           // physical file name
-#ifdef ALI_HLT
   AliLevel3*       fHLT;                // the HLT tracker
   AliL3Hough*      fHLTHough;           // the HLT hough transformer
-#endif
 
   UInt_t           fRunNumber;          // current run number
   UInt_t           fSubRunNumber;       // current part (=resets per run)
