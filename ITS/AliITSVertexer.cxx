@@ -2,6 +2,8 @@
 #include <AliITSVertexer.h>
 #include <AliRunLoader.h>
 #include <AliITSLoader.h>
+#include <AliITSRecPoint.h>
+#include <AliITSclusterV2.h>
 
 ClassImp(AliITSVertexer)
 
@@ -13,13 +15,9 @@ ClassImp(AliITSVertexer)
 //////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
-AliITSVertexer::AliITSVertexer() {
+AliITSVertexer::AliITSVertexer():AliVertexer() {
   // Default Constructor
-
-    fCurrentVertex  = 0;
-    SetDebug();
-    SetFirstEvent(0);
-    SetLastEvent(0);
+  SetUseV2Clusters(kTRUE);
 }
 
 AliITSVertexer::AliITSVertexer(TString filename) {
@@ -38,17 +36,18 @@ AliITSVertexer::AliITSVertexer(TString filename) {
   rl->LoadHeader();
   AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   if(!filename.Contains("default"))itsLoader->SetVerticesFileName(filename);
-  itsLoader->LoadVertices("recreate");
+  if(!filename.Contains("null"))itsLoader->LoadVertices("recreate");
   itsLoader->LoadRecPoints();
   Int_t lst;
   if(rl->TreeE()){
     lst = static_cast<Int_t>(rl->TreeE()->GetEntries());
     SetLastEvent(lst-1);
   }
+  SetUseV2Clusters(kTRUE);
 }
 
 //______________________________________________________________________
-AliITSVertexer::AliITSVertexer(const AliITSVertexer &vtxr) : TObject(vtxr) {
+AliITSVertexer::AliITSVertexer(const AliITSVertexer &vtxr) : AliVertexer(vtxr) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Error("AliITSVertexer","Copy constructor not allowed\n");
@@ -62,14 +61,6 @@ AliITSVertexer& AliITSVertexer::operator=(const AliITSVertexer& /* vtxr */){
   return *this;
 }
 
-//______________________________________________________________________
-AliITSVertexer::~AliITSVertexer() {
-  // Default Destructor
-  // The objects pointed by the following pointers are not owned
-  // by this class and are not deleted
-
-    fCurrentVertex  = 0;
-}
 
 //______________________________________________________________________
 void AliITSVertexer::WriteCurrentVertex(){
@@ -81,4 +72,52 @@ void AliITSVertexer::WriteCurrentVertex(){
   //  itsLoader->SetVerticesContName(name);
   Int_t rc = itsLoader->PostVertex(fCurrentVertex);
   rc = itsLoader->WriteVertices();
+}
+
+//______________________________________________________________________
+void AliITSVertexer::Clusters2RecPoints
+(const TClonesArray *clusters, Int_t idx, TClonesArray *points) {
+  //------------------------------------------------------------
+  // Conversion AliITSclusterV2 -> AliITSRecPoints for the ITS
+  // module "idx" (entry in the tree with the clusters).
+  // Simplified version, supposed to work with the pixels only !
+  //------------------------------------------------------------
+  const Int_t lastSPD1=79; //let's hope the number of the SPDs will not change
+  const Int_t lastSPD2=239;//let's hope the number of the SPDs will not change
+
+  Float_t yshift = 0; //see AliITSclustererV2.cxx about these shifts
+  Float_t zshift[4] = {-10.708000, -3.536000, 3.536000, 10.708000}; //let's hope the positioning of the SPDs will not change
+
+  if (idx<=lastSPD1) {
+    yshift=0.248499;  //let's hope the positioning of the SPDs will not change
+  } else if (idx<=lastSPD2) {
+    yshift=3.096207;  //let's hope the positioning of the SPDs will not change
+  } else {
+    Fatal("Clusters2RecPoints","This is not an SPD module ! %d",idx);
+  }
+
+  TClonesArray &pn=*points;
+  Int_t ncl=clusters->GetEntriesFast();
+  for (Int_t i=0; i<ncl; i++) {
+    AliITSRecPoint p;
+    AliITSclusterV2 *c = (AliITSclusterV2 *)clusters->UncheckedAt(i);
+
+    Float_t x=c->GetY();  if (idx<=lastSPD1) x=-x;
+    x+=yshift;
+
+    Float_t z=c->GetZ();
+    z=-z; z+=zshift[idx%4];
+
+    p.SetX(x);
+    p.SetZ(z);
+    p.SetQ(c->GetQ());
+    p.SetSigmaX2(c->GetSigmaY2());
+    p.SetSigmaZ2(c->GetSigmaZ2());
+    p.SetLabel(0,c->GetLabel(0));
+    p.SetLabel(1,c->GetLabel(1));
+    p.SetLabel(2,c->GetLabel(2));
+
+    new (pn[i]) AliITSRecPoint(p);
+  }
+
 }

@@ -135,12 +135,12 @@ void AliESDVertex::SetToZero() {
     fTruePos[i] = 0;
     fSNR[i] = 0.;
   }
-  fCovXX         = 0;
+  fCovXX         = 0.005*0.005;
   fCovXY         = 0;
-  fCovYY         = 0;
+  fCovYY         = 0.005*0.005;
   fCovXZ         = 0;
   fCovYZ         = 0;
-  fCovZZ         = 0;
+  fCovZZ         = 5.3*5.3;
 
   fChi2          = 0;
   fNContributors = 0;

@@ -32,10 +32,9 @@ class AliITSclusterTable : public TObject {
 
   AliITSclusterTable();
   AliITSclusterTable(AliITSgeom* geom, AliITStrackerSA* tracker, Double_t* primaryVertex);
-  void FillArray(TTree* clusterTree,Int_t evnumber=0);
-  void FillArrayLabel(Int_t numberofparticles,TTree* clusterTree,
-		      Int_t evnumber=0);
-  void FillArrayCoorAngles(TTree* clusterTree, Int_t evnumber=0);
+  void FillArray(TTree* clusterTree);
+  void FillArrayLabel(Int_t numberofparticles);
+  void FillArrayCoorAngles();
   void GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z);
   void GetCoorErrors(AliITSclusterV2* cl, Int_t module,Double_t &sx,Double_t &sy, Double_t &sz);
   virtual ~AliITSclusterTable();

@@ -391,7 +391,6 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
   TString outName1=outName;
   TString outName2("nTotEvents.dat");
 
-  Double_t covV1[6];
   Int_t    nTotEv=0,nD0rec=0,nD0rec1ev=0;
   Double_t dca;
   Double_t v2[3],mom[6],d0[2];
@@ -447,7 +446,7 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
     //AliESDVertex *vertex1stored = (AliESDVertex*)trkFile->Get(vtxName);
     //vertex1stored->GetXYZ(fV1);
     //delete vertex1stored;
-    event->GetVertex(fV1,covV1);
+    event->GetVertex()->GetXYZ(fV1);
 
     trkEntries = event->GetNumberOfTracks();
     printf(" Number of tracks: %d\n",trkEntries);

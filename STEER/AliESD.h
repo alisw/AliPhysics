@@ -15,6 +15,7 @@
 
 #include "TObject.h"
 #include "TClonesArray.h"
+#include  "AliESDVertex.h"
 #include  "AliESDtrack.h"
 #include  "AliESDMuonTrack.h"
 #include  "AliESDCaloTrack.h"
@@ -34,6 +35,7 @@ public:
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}
+  void SetTrigger(Long_t n) {fTrigger=n;}
   void SetMagneticField(Float_t mf){fMagneticField = mf;}
   Float_t GetMagneticField() const {return fMagneticField;}
   
@@ -71,8 +73,10 @@ public:
     new(fCascades[fCascades.GetEntriesFast()]) AliESDcascade(*c);
   }
 
-  void SetVertex(const Double_t *vtx, const Double_t *cvtx=0);
-  void GetVertex(Double_t *vtx, Double_t *cvtx) const;
+  void SetVertex(AliESDVertex* vertex) {
+    new(&fPrimaryVertex) AliESDVertex(*vertex);
+  }
+  const AliESDVertex* GetVertex() const {return &fPrimaryVertex;};
 
   Int_t  GetEventNumber() const {return fEventNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
@@ -95,8 +99,7 @@ protected:
   Int_t        fRecoVersion;     // Version of reconstruction 
   Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
 
-  Double_t fVtx[3];              // Primary vertex position
-  Double_t fCovVtx[6];           // Cov. matrix of the primary vertex position
+  AliESDVertex  fPrimaryVertex;  // Primary vertex
 
   TClonesArray  fTracks;         // ESD tracks
   TClonesArray  fCaloTracks;     // Calorimeters' ESD tracks
@@ -104,7 +107,7 @@ protected:
   TClonesArray  fV0s;            // V0 vertices
   TClonesArray  fCascades;       // Cascade vertices
   
-  ClassDef(AliESD,2)  //ESD class 
+  ClassDef(AliESD,3)  //ESD class 
                       //ver. 2: Magnetic Field Added; skowron
 };
 

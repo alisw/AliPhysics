@@ -51,6 +51,10 @@ AliITSclusterTable::AliITSclusterTable(){
   fLambdaList = 0;
   fXList = 0;
   fYList =0;
+  fZList =0;
+  fSxList = 0;
+  fSyList =0;
+  fSzList =0;
   for(Int_t i=0;i<3;i++){fPrimaryVertex[i]=0;}
 }
 
@@ -69,6 +73,10 @@ AliITSclusterTable::AliITSclusterTable(AliITSgeom* geom, AliITStrackerSA* tracke
   fLambdaList = 0;
   fXList = 0;
   fYList = 0;
+  fZList =0;
+  fSxList = 0;
+  fSyList =0;
+  fSzList =0;
 }
 
 //______________________________________________________________________
@@ -96,25 +104,37 @@ AliITSclusterTable::~AliITSclusterTable(){
     for (Int_t i=0; i<nm; i++){
       delete fDet[i];
     }
-    delete fDet;
+    delete[] fDet;
   }
-  if (fLbl)delete [] fLbl;
+  if (fLbl)delete [] fLbl; // memory leak!
   if (fNCl)delete [] fNCl;
-  if (fPhiList)delete [] fPhiList;
-  if (fLambdaList) delete [] fLambdaList;
-  if (fXList) delete [] fXList;
-  if (fYList) delete [] fYList;
+  for (Int_t i = 0; i < fGeom->GetNlayers(); i++) {
+    if (fPhiList) delete fPhiList[i];
+    if (fLambdaList) delete fLambdaList[i];
+    if (fXList) delete fXList[i];
+    if (fYList) delete fYList[i];
+    if (fZList) delete fZList[i];
+    if (fSxList) delete fSxList[i];
+    if (fSyList) delete fSyList[i];
+    if (fSzList) delete fSzList[i];
+  }
+  if (fPhiList) delete[] fPhiList;
+  if (fLambdaList) delete[] fLambdaList;
+  if (fXList) delete[] fXList;
+  if (fYList) delete[] fYList;
+  if (fZList) delete[] fZList;
+  if (fSxList) delete[] fSxList;
+  if (fSyList) delete[] fSyList;
+  if (fSzList) delete[] fSzList;
 }
 
 //__________________________________________________________
 
-void AliITSclusterTable::FillArray(TTree* clusterTree,Int_t evnumber){
+void AliITSclusterTable::FillArray(TTree* clusterTree){
   
   //
   Int_t nm = fGeom->GetIndexMax();
   fDet = new TArrayI*[nm];
-  fTracker->SetEventNumber(evnumber);
-  fTracker->LoadClusters(clusterTree);
 
   TArrayI** vect = new TArrayI*[fGeom->GetNlayers()];
   
@@ -145,7 +165,7 @@ void AliITSclusterTable::FillArray(TTree* clusterTree,Int_t evnumber){
     Int_t nlr = FindIndex(fGeom->GetNlayers(),firstmod,mod);
     if(nlr<0){
       Fatal("FillArray","Wrong module number %d . Limits: %d , %d",mod,firstmod[0],firstmod[fGeom->GetNlayers()+1]);
-      return;
+      exit(1);
     }
     else {
       for(Int_t n=0;n<vect[nlr]->GetSize();n++){
@@ -156,21 +176,19 @@ void AliITSclusterTable::FillArray(TTree* clusterTree,Int_t evnumber){
   }
 
 
-  fTracker->UnloadClusters();
-
+  clus->Delete();
+  delete clus;
   for(Int_t n=0;n<fGeom->GetNlayers();n++)delete vect[n];
-  delete vect;
+  delete [] vect;
   delete [] firstmod;
 }
 
 //_________________________________________________________________
-void AliITSclusterTable::FillArrayLabel(Int_t numberofparticles,TTree* clusterTree,Int_t evnumber){
+void AliITSclusterTable::FillArrayLabel(Int_t numberofparticles){
   //
 
 
   fLbl = new TArrayI*[numberofparticles];
-  fTracker->SetEventNumber(evnumber);
-  fTracker->LoadClusters(clusterTree);
   const Int_t knm =fGeom->GetNlayers();
   for(Int_t nlab=0;nlab<numberofparticles;nlab++){
     fLbl[nlab] = new TArrayI(knm);
@@ -192,7 +210,6 @@ void AliITSclusterTable::FillArrayLabel(Int_t numberofparticles,TTree* clusterTr
     delete [] nn;
   }
 
-  fTracker->UnloadClusters();
 }
 
 //_______________________________________________________________
@@ -226,7 +243,7 @@ Int_t AliITSclusterTable::FindIndex(Int_t ndim, Int_t *ptr, Int_t value){
   return retval;
 }
 
-void AliITSclusterTable::FillArrayCoorAngles(TTree* clusterTree,Int_t evnumber){
+void AliITSclusterTable::FillArrayCoorAngles(){
   //Fill arrays with phi,lambda and indices of clusters for each layer
   Info("FillArrayCoorAngles","Filling Array...");
 
@@ -239,8 +256,6 @@ void AliITSclusterTable::FillArrayCoorAngles(TTree* clusterTree,Int_t evnumber){
   fSyList = new TArrayD*[fGeom->GetNlayers()];
   fSzList = new TArrayD*[fGeom->GetNlayers()];
 
-  fTracker->SetEventNumber(evnumber);
-  fTracker->LoadClusters(clusterTree);
   Int_t * firstmod = new Int_t[fGeom->GetNlayers()+1];
   firstmod[fGeom->GetNlayers()]=fGeom->GetIndexMax();  // upper limit
 
@@ -277,7 +292,6 @@ void AliITSclusterTable::FillArrayCoorAngles(TTree* clusterTree,Int_t evnumber){
     
   }
   
-  fTracker->UnloadClusters();
   delete [] firstmod;
 }
 

@@ -33,31 +33,13 @@ AliESD::AliESD():
   fTrigger(0),
   fRecoVersion(0),
   fMagneticField(0),
+  fPrimaryVertex(),
   fTracks("AliESDtrack",15000),
   fCaloTracks("AliESDCaloTrack",500),
   fMuonTracks("AliESDMuonTrack",30),
   fV0s("AliESDv0",200),
   fCascades("AliESDcascade",20)
 {
-  Int_t i;
-  for (i=0; i<3; i++) fVtx[i]=0.;
-  for (i=0; i<6; i++) fCovVtx[i]=0.;
-}
-
-void AliESD::SetVertex(const Double_t *vtx, const Double_t *cvtx) {
-  //Save the primary vertex position
-  Int_t i;
-  for (i=0; i<3; i++) fVtx[i]=vtx[i];
-  if (cvtx)
-  for (i=0; i<6; i++) fCovVtx[i]=cvtx[i];   
-}
-
-void AliESD::GetVertex(Double_t *vtx, Double_t *cvtx) const {
-  //Get the primary vertex position
-  Int_t i;
-  for (i=0; i<3; i++) vtx[i]=fVtx[i];
-  if (cvtx)
-  for (i=0; i<6; i++) cvtx[i]=fCovVtx[i];   
 }
 
 void AliESD::Print(Option_t *) const {
@@ -68,6 +50,10 @@ void AliESD::Print(Option_t *) const {
 	 GetRunNumber(),
 	 GetTrigger(),
 	 GetMagneticField() );
+  printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
+	 fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),
+	 fPrimaryVertex.GetYv(), fPrimaryVertex.GetYRes(),
+	 fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
   printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
   printf("                 charged   %d\n",GetNumberOfTracks());

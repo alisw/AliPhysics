@@ -18,6 +18,7 @@ class AliITSclusterTable;
 class AliITStrackSA;
 class AliESDVertex;
 class AliITSVertexer;
+class TTree;
 
 class AliITStrackerSA : public AliITStrackerV2 {
 
@@ -25,19 +26,23 @@ class AliITStrackerSA : public AliITStrackerV2 {
  public:
 
   AliITStrackerSA();
+  AliITStrackerSA(AliITSgeom *geom);
   AliITStrackerSA(AliITSgeom *geom,AliESDVertex *vert);
   AliITStrackerSA(AliITSgeom *geom,AliITSVertexer *vertexer);
   AliITStrackerSA(AliITStrackerSA& tracker);
   virtual ~AliITStrackerSA();  
-  void     FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber=0,
-                      char *opt="6/6");
-  void     FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumber=0,
-		      char *opt="6/6");
+  virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerV2::Clusters2Tracks(event); if(!rc)rc=FindTracks(event); return rc;}
+  Int_t FindTracks(AliESD* event);
+  void  FindTracks(TTree *out,Int_t evnumber=0);
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,
-                          Double_t *errorprimvert,char *opt="6/6");
+                          Double_t *errorprimvert);
 
   AliITStrackV2* FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
+  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerV2::LoadClusters(cf); SetClusterTree(cf); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
+  void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
+  void SetSixPoints(Bool_t sp = kTRUE){fSixPoints = sp;}
+  Bool_t GetSixPoints() const {return fSixPoints;}
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
   void UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* clustertree);
   void UseFoundTracksV2(Int_t evnum,AliESD *event, TTree* clustertree);
@@ -95,7 +100,9 @@ class AliITStrackerSA : public AliITStrackerV2 {
   AliESDVertex *fVert;        //! primary vertex
   AliITSVertexer *fVertexer;  //! vertexer 
   AliITSgeom *fGeom;          //! ITS geometry
+  TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Int_t fFlagLoad;            //  flag for loaded clusters (1==already loaded)
+  Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
   AliITSclusterTable* fTable; //  table with clusters
   ClassDef(AliITStrackerSA,1)
 };

@@ -272,17 +272,10 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
   Int_t entries = fTrackHypothesys.GetEntriesFast();
   for (Int_t ientry=0;ientry<entries;ientry++){
     TObjArray * array =(TObjArray*)fTrackHypothesys.UncheckedAt(ientry);
-    if (array){
-      Int_t arrayentries = array->GetEntriesFast();
-      for (Int_t j=0;j<arrayentries;j++){
-	AliITStrackV2 * track = (AliITStrackV2*)array->UncheckedAt(j);
-	if (track){
-	  delete array->RemoveAt(j);
-	}
-      }
-      delete fTrackHypothesys.RemoveAt(ientry); 
-    }
+    if (array) array->Delete();
+    delete fTrackHypothesys.RemoveAt(ientry); 
   }
+
   fTrackHypothesys.Delete();
   Info("Clusters2Tracks","Number of prolonged tracks: %d\n",ntrk);
 
@@ -459,7 +452,7 @@ Int_t AliITStrackerV2::RefitInward(AliESD *event) {
     if ((esd->GetStatus()&AliESDtrack::kITSout) == 0) continue;
     if (esd->GetStatus()&AliESDtrack::kITSrefit) continue;
     if (esd->GetStatus()&AliESDtrack::kTPCout)
-    if ((esd->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
+      if ((esd->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
 
     AliITStrackV2 *t=0;
     try {
@@ -479,6 +472,9 @@ Int_t AliITStrackerV2::RefitInward(AliESD *event) {
 
     ResetTrackToFollow(*t);
     fTrackToFollow.ResetClusters();
+
+    if ((esd->GetStatus()&AliESDtrack::kTPCin)==0)
+      fTrackToFollow.ResetCovariance();
 
     //Refitting...
     if (RefitAt(3.7, &fTrackToFollow, t)) {
@@ -1159,7 +1155,7 @@ void AliITStrackerV2::AddTrackHypothesys(AliITStrackV2 * track, Int_t esdindex)
 
   if (esdindex>=fTrackHypothesys.GetEntriesFast()) fTrackHypothesys.Expand(esdindex*2+10);
   //
-  TObjArray * array = (TObjArray*) fTrackHypothesys.UncheckedAt(esdindex);
+  TObjArray * array = (TObjArray*) fTrackHypothesys.At(esdindex);
   if (!array) {
     array = new TObjArray(10);
     fTrackHypothesys.AddAt(array,esdindex);
@@ -1173,18 +1169,21 @@ void AliITStrackerV2::CompressTrackHypothesys(Int_t esdindex, Int_t maxsize)
   // compress array of track hypothesys
   // keep only maxsize best hypothesys
   //-------------------------------------------------------------------
-  if (! (fTrackHypothesys.UncheckedAt(esdindex)) ) return;
-  TObjArray * array = (TObjArray*) fTrackHypothesys.UncheckedAt(esdindex);
+  if (esdindex>fTrackHypothesys.GetEntriesFast()) return;
+  if (! (fTrackHypothesys.At(esdindex)) ) return;
+  TObjArray * array = (TObjArray*) fTrackHypothesys.At(esdindex);
   Int_t entries = array->GetEntries();
   if (entries<maxsize) return;
-  Float_t chi2[entries];
-  Int_t index[entries];
+  Float_t * chi2 = new Float_t[entries];
+  Int_t * index = new Int_t[entries];
   Int_t current=0;
   //
   for (Int_t i=0;i<array->GetEntriesFast();i++){
-    AliITStrackV2 * track = (AliITStrackV2*)array->UncheckedAt(i);
-    if (!track) continue;
-    chi2[current] = track->GetNumberOfClusters()+0.001+track->GetChi2()/track->GetNumberOfClusters();
+    AliITStrackV2 * track = (AliITStrackV2*)array->At(i);
+    if (track)
+      chi2[current] = track->GetNumberOfClusters()+0.001+track->GetChi2()/track->GetNumberOfClusters();
+    else
+      chi2[current] = 100000000;
     current++;
   }
   TMath::Sort(current,chi2,index,kFALSE);
@@ -1194,8 +1193,11 @@ void AliITStrackerV2::CompressTrackHypothesys(Int_t esdindex, Int_t maxsize)
     newarray->AddLast(array->RemoveAt(index[i]));
   }
   array->Delete();
-  delete array;
+  delete fTrackHypothesys.RemoveAt(esdindex);
   fTrackHypothesys.AddAt(newarray,esdindex);
+
+  delete [] chi2;
+  delete [] index;
 
 }
 

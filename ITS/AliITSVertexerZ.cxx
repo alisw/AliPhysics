@@ -110,8 +110,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  itsLoader->ReloadRecPoints();
-
+  itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
 
   if(!fITS)  {
@@ -133,8 +132,18 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
-  itsRec  = fITS->RecPoints();
-  TBranch *branch = tR->GetBranch("ITSRecPoints");
+  itsRec = fITS->RecPoints();
+
+  //cout<<"Address of itsRec = "<<itsRec<<endl;
+  TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
+  TBranch *branch;
+  if(fUseV2Clusters){
+    branch = tR->GetBranch("Clusters");
+    branch->SetAddress(&clusters);
+  }
+  else {
+    branch = tR->GetBranch("ITSRecPoints");
+  }
 
   Int_t nbinfine = static_cast<Int_t>((fHighLim-fLowLim)/fStepFine);
   Int_t nbincoarse = static_cast<Int_t>((fHighLim-fLowLim)/fStepCoarse);
@@ -147,18 +156,24 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t nrpL2 = 0;
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(module%4==0 || module%4==3)continue;
+    //   cout<<"Procesing module "<<module<<" ";
     branch->GetEvent(module);
+    //    cout<<"Number of clusters "<<clusters->GetEntries()<<endl;
+    if(fUseV2Clusters){
+      Clusters2RecPoints(clusters,module,itsRec);
+    }
     nrpL1+= itsRec->GetEntries();
     fITS->ResetRecPoints();
   }
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
     branch->GetEvent(module);
+    if(fUseV2Clusters){
+      Clusters2RecPoints(clusters,module,itsRec);
+    }
     nrpL2+= itsRec->GetEntries();
     fITS->ResetRecPoints();
   }
-  cout<<"nrpL1 = "<<nrpL1<<"; nrpL2= "<<nrpL2<<endl;
   if(nrpL1 == 0 || nrpL2 == 0){
-    cout<<"achi, achi\n";
     ResetHistograms();
     return fCurrentVertex;
   }
@@ -174,6 +189,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(module%4==0 || module%4==3)continue;
     branch->GetEvent(module);
+    if(fUseV2Clusters){
+      Clusters2RecPoints(clusters,module,itsRec);
+    }
     Int_t nrecp1 = itsRec->GetEntries();
     for(Int_t j=0;j<nrecp1;j++){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
@@ -194,6 +212,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   ind = 0;
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
     branch->GetEvent(module);
+    if(fUseV2Clusters){
+      Clusters2RecPoints(clusters,module,itsRec);
+    }
     Int_t nrecp2 = itsRec->GetEntries();
     for(Int_t j=0;j<nrecp2;j++){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
@@ -237,9 +258,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
     ResetHistograms();
     return fCurrentVertex;
   }
-  else {
-    cout<<"Number of entries in hist. "<<fZCombc->GetEntries()<<endl;
-  }
+  //  else {
+  //    cout<<"Number of entries in hist. "<<fZCombc->GetEntries()<<endl;
+  //  }
   Int_t bi = fZCombc->GetMaximumBin();
   Float_t centre = fZCombc->GetBinCenter(bi);
   Int_t n1 = static_cast<Int_t>((centre-fZCombc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fZCombf->GetBinWidth(0));
@@ -266,7 +287,6 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       fZFound/=num;
     }
     goon = TMath::Abs(TMath::Abs(fZFound-fZCombf->GetBinCenter(n1))-TMath::Abs(fZFound-fZCombf->GetBinCenter(n2)))>fTolerance;
-    cout<<"Simmetria "<<TMath::Abs(TMath::Abs(fZFound-fZCombf->GetBinCenter(n1))-TMath::Abs(fZFound-fZCombf->GetBinCenter(n2)))<<endl;
     n1 = static_cast<Int_t>((fZFound-fZCombc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fZCombf->GetBinWidth(0));
     n2 = static_cast<Int_t>((fZFound+fZCombc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fZCombf->GetBinWidth(0));
     niter++;
@@ -275,7 +295,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       Warning("FindVertexForCurrentEvent","The procedure dows not converge\n");
     }
   }
-  cout<<"Numer of Iterations "<<niter<<endl<<endl;
+  //  cout<<"Numer of Iterations "<<niter<<endl<<endl;
   fCurrentVertex = new AliESDVertex(fZFound,fZsig,num);
   fCurrentVertex->SetTitle("vertexer: B");
   ResetHistograms();

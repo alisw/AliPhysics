@@ -46,6 +46,15 @@ AliITStrackerSA::AliITStrackerSA():AliITStrackerV2(){
   Init();
 }
 //____________________________________________________________________________
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerV2(geom) 
+{
+  // Standard constructor (Vertex is known and passed to this obj.)
+  Init();
+  fVert = 0;
+  fGeom = geom;
+}
+
+//____________________________________________________________________________
 AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerV2(geom) 
 {
   // Standard constructor (Vertex is known and passed to this obj.)
@@ -145,6 +154,8 @@ void AliITStrackerSA::Init(){
     fFlagLoad = 0;
     SetWindowSizes();
     fTable = 0;
+    fITSclusters = 0;
+    SetSixPoints();
 }
 //_______________________________________________________________________
 void AliITStrackerSA::ResetForFinding(){
@@ -160,26 +171,24 @@ void AliITStrackerSA::ResetForFinding(){
     fPointc[1]=0;
 }
 //____________________________________________________________________________
-void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,char *opt){
+void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
 
   /**************************************************************************
    * This function finds primary tracks.
-   * Options: to use only ITS execute FindTracks                            *
-   *          to define good tracks with 6 points out of 6 in the ITS write *
-   *          *opt="6/6". The default is *opt="6/6"                         *
    *                                                                        * 
    *                                                                        *
    * Example: to execute function with only the ITS (no combined tracking   *
    *          with TPC+ITS) and requiring 5/6 points to define a good track *
-   *          use: FindTracks(treein,treeout,evnumber,"5/6")                *
-   *          to execute combined tracking, before using FindTracks use     *
+   *          call SetSixPoinbts(kFALSE) in advance and then                *
+   *          use: FindTracks(treein,treeout,evnumber)                      *
+   *          to execute combined tracking, before using FindTracks, use    *
    *          UseFoundTracksV2                                              *
    *************************************************************************/
 
-  //options
-  TString choice(opt);
-  Bool_t sixpoints= choice.Contains("6/6");
-
+  if(!fITSclusters){
+    Fatal("FindTracks","ITS cluster tree is not accessed - Abort!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
+    exit(1);
+  }
   //Get primary vertex
   if(fVertexer){
     if(fVert)delete fVert;
@@ -207,12 +216,10 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
   //Fill array with cluster indices for each module
   if(!fTable){
     fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
-    fTable->FillArray(clusterTree,evnumber);
-    fTable->FillArrayCoorAngles(clusterTree,evnumber); 
+    fTable->FillArray(fITSclusters);
+    fTable->FillArrayCoorAngles(); 
   }
 
-  SetEventNumber(evnumber);
-  if(GetFlagLoadedClusters()==0) LoadClusters(clusterTree);
    
 //Fill tree for found tracks
   AliITStrackV2* outrack=0;
@@ -244,8 +251,8 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
       AliITStrackSA* trs = new AliITStrackSA();      
       fPoint1[0]=primaryVertex[0];
       fPoint1[1]=primaryVertex[1];
-      fPoint2[0]=fTable->GetXCluster(0,ncl);;
-      fPoint2[1]=fTable->GetYCluster(0,ncl);;
+      fPoint2[0]=fTable->GetXCluster(0,ncl);
+      fPoint2[1]=fTable->GetYCluster(0,ncl);
       
       Int_t * nn = new Int_t[fGeom->GetNlayers()];//counter for clusters on each layer
       for(Int_t i=0;i<fGeom->GetNlayers();i++){ nn[i]=0;}
@@ -277,13 +284,13 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
 
       Int_t layOK=0;
       Int_t numberofpoints;
-      if(sixpoints) numberofpoints=6;  //check of the candidate track
+      if(fSixPoints) numberofpoints=6;  //check of the candidate track
       else numberofpoints=5;           //if track is good (with the required number        
       for(Int_t nnp=0;nnp<fGeom->GetNlayers();nnp++){    //of points) it is written on file
         if(nn[nnp]!=0) layOK+=1;
       }
       if(layOK>=numberofpoints){
-        AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert,opt);
+        AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert);
         if(tr2==0){
           Int_t nct = trs->GetNumberOfClustersSA();
           while(nct--){
@@ -323,7 +330,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
   //from second layer, to find tracks with point of 
   //layer 1 missing
    
-  if(!sixpoints){
+  if(!fSixPoints){
     //   counter for clusters on each layer  
     Int_t * nn = new Int_t[fGeom->GetNlayers()-1];      
     for(Int_t nloop=0;nloop<fNloop;nloop++){
@@ -359,7 +366,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
           if(nn[nnp]!=0) fl+=1;
         }
         if(fl>=5){  // 5/6       
-          AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert,opt);
+          AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert);
           if(tr2==0){
             Int_t nct = trs->GetNumberOfClustersSA();
             while(nct--){
@@ -392,63 +399,40 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
       }//end loop on clusters of layer2
     }
     delete [] nn;
-  }  //end opt="5/6"  
+  }  // if(!fSixPoints....  
 
   delete [] firstmod;
-
-  UnloadClusters();
+  delete fTable;
 }
 
-//______________________________________________________________________
-void AliITStrackerSA::FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumber,char *opt){
-  /**************************************************************************
-   * Options: to use only ITS execute FindTracks                            *
-   *          to define good tracks with 6 points out of 6 in the ITS write *
-   *          *opt="6/6". The default is *opt="6/6"                         *
-   *                                                                        * 
-   *                                                                        *
-   * Example: to execute function with only the ITS (no combined tracking   *
-   *          with TPC+ITS) and requiring 5/6 points to define a good track *
-   *          use: FindTracks(treein,treeout,evnumber,"5/6")                *
-   *          to execute combined tracking, before using FindTracks use     *
-   *          UseFoundTracksV2                                              *
-   *************************************************************************/
 
-  //options
-  TString choice(opt);
-  Bool_t sixpoints= choice.Contains("6/6");
+//______________________________________________________________________
+Int_t AliITStrackerSA::FindTracks(AliESD* event){
+
+  // Track finder using the ESD object
+
+  if(!fITSclusters){
+    Fatal("FindTracks","ITS cluster tree is not accessed - Abort!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
+    return -1;
+  }
+ 
   //Get primary vertex
-  if(fVertexer){
-    if(fVert)delete fVert;
-    fVert = fVertexer->FindVertexForCurrentEvent(evnumber);
-  }
-  else {
-    gAlice->GetEvent(evnumber);
-    if(!fVert){
-      Fatal("FindTracks","Vertex is missing\n");
-      return;
-    }
-  }
-  Double_t primaryVertex[3];
   Double_t errorsprimvert[3];
-  fVert->GetXYZ(primaryVertex);
-  fVert->GetSigmaXYZ(errorsprimvert);
+  Double_t primaryVertex[3];
+  event->GetVertex()->GetXYZ(primaryVertex);
+  event->GetVertex()->GetSigmaXYZ(errorsprimvert);
+
   if(errorsprimvert[0]==0 || errorsprimvert[1]==0){
-    Warning("FindTracks","Set errors on vertex positions x and y at 0.0001");
-    errorsprimvert[0]=0.0001;
-    errorsprimvert[1]=0.0001;
+    //    Warning("FindTracks","Set errors on vertex positions x and y at 0.005");
+    errorsprimvert[0]=0.005;
+    errorsprimvert[1]=0.005;
   }
-  fVert->PrintStatus();
 
   //Fill array with cluster indices for each module
-  if(!fTable){
-    fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
-    fTable->FillArray(clusterTree,evnumber);   
-    fTable->FillArrayCoorAngles(clusterTree,evnumber); 
- }
+  fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
+  fTable->FillArray(fITSclusters);
+  fTable->FillArrayCoorAngles();
   
-  SetEventNumber(evnumber);
-  if(GetFlagLoadedClusters()==0) LoadClusters(clusterTree);
 
   Int_t * firstmod = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
@@ -507,13 +491,13 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumb
 
       Int_t layOK=0;
       Int_t numberofpoints;
-      if(sixpoints) numberofpoints=6;  //check of the candidate track
+      if(fSixPoints) numberofpoints=6;  //check of the candidate track
       else numberofpoints=5;           //if track is good (with the required number        
       for(Int_t nnp=0;nnp<fGeom->GetNlayers();nnp++){    //of points) it is written on file
         if(nn[nnp]!=0) layOK+=1;
       }
       if(layOK>=numberofpoints){
-        AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert,opt);
+        AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert);
         if(tr2==0){
           Int_t nct = trs->GetNumberOfClustersSA();
           while(nct--){
@@ -545,6 +529,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumb
         }
       }
       delete trs;
+      delete[] nn;
 
     }//end loop on clusters of layer1
 
@@ -554,7 +539,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumb
   //from second layer, to find tracks with point of 
   //layer 1 missing
    
-  if(!sixpoints){
+  if(!fSixPoints){
     //   counter for clusters on each layer  
     Int_t * nn = new Int_t[fGeom->GetNlayers()-1];      
     for(Int_t nloop=0;nloop<fNloop;nloop++){
@@ -589,7 +574,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumb
           if(nn[nnp]!=0) fl+=1;
         }
         if(fl>=5){  // 5/6       
-          AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert,opt);
+          AliITStrackV2* tr2 = FitTrack(trs,primaryVertex,errorsprimvert);
           if(tr2==0){
 	    ntrack++;
             Int_t nct = trs->GetNumberOfClustersSA();
@@ -630,21 +615,18 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumb
 
   delete [] firstmod;
   delete fTable;   
-  UnloadClusters();
   Info("FindTracks","Number of found tracks: %d",event->GetNumberOfTracks());
 
-
+  return 0;
 
 }
+
+
 //________________________________________________________________________
 
-AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVertex,Double_t *errorsprimvert,char *opt){
+AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVertex,Double_t *errorsprimvert){
   //fit of the found track
 
- 
-//options
-  TString choice(opt);
-  Bool_t sixpoints= choice.Contains("6/6");
   
   Int_t * firstmod = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
@@ -876,7 +858,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     labl[2]=-1;
   }
   Int_t numberofpoints;
-  if(sixpoints) numberofpoints=6;
+  if(fSixPoints) numberofpoints=6;
   else numberofpoints=5;
   Int_t label =  Label(cl0->GetLabel(0),cl1->GetLabel(0), 
                        cl2->GetLabel(0),cl3->GetLabel(0),
@@ -921,8 +903,8 @@ void AliITStrackerSA::UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* cluster
 
   if(!fTable){
     fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
-    fTable->FillArray(clustertree,evnum);
-    fTable->FillArrayCoorAngles(clustertree,evnum);
+    fTable->FillArray(fITSclusters);
+    fTable->FillArrayCoorAngles();
   }
   SetEventNumber(evnum);
   if(GetFlagLoadedClusters()==0) LoadClusters(clustertree);
@@ -968,8 +950,8 @@ clustertree){
 
   if(!fTable){
     fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
-    fTable->FillArray(clustertree,evnum);
-    fTable->FillArrayCoorAngles(clustertree,evnum); 
+    fTable->FillArray(fITSclusters);
+    fTable->FillArrayCoorAngles(); 
   }
   SetEventNumber(evnum);
   if(GetFlagLoadedClusters()==0) LoadClusters(clustertree);
@@ -1006,7 +988,10 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
     Float_t cx1,cx2,cy1,cy2;
     FindEquation(fPoint1[0],fPoint1[1],fPoint2[0],fPoint2[1],fPoint3[0],fPoint3[1],fCoef1,fCoef2,fCoef3);
     Int_t fun = FindIntersection(fCoef1,fCoef2,fCoef3,-(lay.GetR()*lay.GetR()),cx1,cy1,cx2,cy2);
-    if(fun==0) return 0;
+    if(fun==0) {
+      delete[] firstmod;
+      return 0;
+    }
     Double_t fi1 =TMath::ATan2(cy1,cx1);
     Double_t fi2 =TMath::ATan2(cy2,cx2);
     fPhiEstimate = ChoosePoint(fi1,fi2,fPhic);
@@ -1017,20 +1002,23 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   Double_t zed2  =  TMath::Tan(fLambdac-lambdawindow)*lay.GetR()+zvertex;
   
   Double_t fi = fPhiEstimate;
-  Int_t nmod  = lay.FindDetectorIndex(fi,zed)+firstmod[layer];
+  Int_t nmod  = lay.FindDetectorIndex(fi,zed);
+  if (nmod < 0) {
+    delete[] firstmod;
+    return 0;
+  }
+  nmod += firstmod[layer];
  
   Int_t nm[8]={0,0,0,0,0,0,0,0};
-  nm[0] = lay.FindDetectorIndex(fi+phiwindow,zed)+firstmod[layer];
-  nm[1] = lay.FindDetectorIndex(fi-phiwindow,zed)+firstmod[layer];
-  nm[2]  = lay.FindDetectorIndex(fi,zed1)+firstmod[layer];
-  nm[3]  = lay.FindDetectorIndex(fi,zed2)+firstmod[layer];
-  nm[4]  = lay.FindDetectorIndex(fi+phiwindow,zed1)+firstmod[layer];
-  nm[5]  = lay.FindDetectorIndex(fi-phiwindow,zed1)+firstmod[layer];
-  nm[6]  = lay.FindDetectorIndex(fi+phiwindow,zed2)+firstmod[layer];
-  nm[7]  = lay.FindDetectorIndex(fi-phiwindow,zed2)+firstmod[layer];
+  nm[0] = lay.FindDetectorIndex(fi+phiwindow,zed);
+  nm[1] = lay.FindDetectorIndex(fi-phiwindow,zed);
+  nm[2]  = lay.FindDetectorIndex(fi,zed1);
+  nm[3]  = lay.FindDetectorIndex(fi,zed2);
+  nm[4]  = lay.FindDetectorIndex(fi+phiwindow,zed1);
+  nm[5]  = lay.FindDetectorIndex(fi-phiwindow,zed1);
+  nm[6]  = lay.FindDetectorIndex(fi+phiwindow,zed2);
+  nm[7]  = lay.FindDetectorIndex(fi-phiwindow,zed2);
 
- 
-   if(nmod<0) return 0;
   Int_t nn=0;
   TArrayI* array =(TArrayI*)table->GetListOfClusters(nmod);
   TArrayI* list = new TArrayI(array->GetSize());
@@ -1040,9 +1028,10 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
     nn++;
   }
   
+//  Info("SearchClusters", "layer %d, module %d", layer, nmod);
   for(Int_t ii=0;ii<8;ii++){
     if(nm[ii]!=nmod && nm[ii]>=0){
-      TArrayI* ar =(TArrayI*)table->GetListOfClusters(nm[ii]);
+      TArrayI* ar =(TArrayI*)table->GetListOfClusters(nm[ii]+firstmod[layer]);
       list->Set(list->GetSize()+ar->GetSize());
       for(Int_t j=0;j<ar->GetSize();j++){
         Int_t in=(Int_t)ar->At(j);
@@ -1064,6 +1053,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
       nc+=1;
       fLambdac = lambda;
       if(trs->GetNumberOfClustersSA()==20){
+	delete[] firstmod;
         delete list;
         return 0;
       }

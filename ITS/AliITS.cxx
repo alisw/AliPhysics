@@ -112,8 +112,13 @@ the AliITS class.
 #include "AliITSDigitizer.h"
 #include "AliITSclustererV2.h"
 #include "AliITStrackerV2.h"
+#include "AliITStrackerSA.h"
 #include "AliITSpidESD.h"
 #include "AliV0vertexer.h"
+#include "AliITSVertexerPPZ.h"
+#include "AliITSVertexerFast.h"
+#include "AliITSVertexerZ.h"
+#include "AliITSVertexerIons.h"
 #include "AliCascadeVertexer.h"
 #include "AliESD.h"
 #include "AliRun.h"
@@ -164,6 +169,7 @@ AliITS::AliITS() : AliDetector() {
     fNRecPoints = 0;
 
     SetMarkerColor(kRed);
+    SelectVertexer(" ");
 }
 //______________________________________________________________________
 AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
@@ -222,7 +228,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
     } // end for i
 
     SetMarkerColor(kRed);
-
+    SelectVertexer(" ");
 }
 //______________________________________________________________________
 AliITS::~AliITS(){
@@ -1813,7 +1819,29 @@ AliTracker* AliITS::CreateTracker() const
 {
 // create an ITS tracker
 
-  return new AliITStrackerV2(GetITSgeom());
+  return new AliITStrackerSA(GetITSgeom());
+}
+//_____________________________________________________________________________
+AliVertexer* AliITS::CreateVertexer() const
+{
+  // create a ITS vertexer
+
+  if(fSelectedVertexer.Contains("ions") || fSelectedVertexer.Contains("IONS")){
+    Info("CreateVertexer","a AliITSVertexerIons object has been selected\n");
+    return new AliITSVertexerIons("null");
+  }
+  if(fSelectedVertexer.Contains("smear") || fSelectedVertexer.Contains("SMEAR")){
+    Double_t smear[3]={0.005,0.005,0.01};
+    Info("CreateVertexer","a AliITSVertexerFast object has been selected\n"); 
+    return new AliITSVertexerFast(smear);
+  }
+  if(fSelectedVertexer.Contains("ppz") || fSelectedVertexer.Contains("PPZ")){
+    Info("CreateVertexer","a AliITSVertexerPPZ object has been selected\n");
+    return new AliITSVertexerPPZ("null");
+  }
+  // by default an AliITSVertexerZ object is instatiated
+  Info("CreateVertexer","a AliITSVertexerZ object has been selected\n");
+  return new AliITSVertexerZ("null");
 }
 
 //_____________________________________________________________________________
@@ -1836,7 +1864,8 @@ void AliITS::FillESD(AliESD* esd) const
   };
   AliV0vertexer vtxer(cuts);
   Double_t vtx[3], cvtx[6];
-  esd->GetVertex(vtx, cvtx);
+  esd->GetVertex()->GetXYZ(vtx);
+  esd->GetVertex()->GetSigmaXYZ(cvtx);
   vtxer.SetVertex(vtx);
   vtxer.Tracks2V0vertices(esd);
 

@@ -33,6 +33,7 @@ class AliITSdigit;
 class AliITSRecPoint;
 class AliITSRawCluster;
 class AliITSmodule;
+class AliVertexer;
 
 const Int_t kNTYPES=3;
 
@@ -146,6 +147,7 @@ class AliITS : public AliDetector {
     Int_t        *Ndtype() {return fNdtype;}
     TClonesArray *DigitsAddress(Int_t id)
 	{return ((TClonesArray *) (*fDtype)[id]);}
+    void SelectVertexer(TString sel=" "){fSelectedVertexer = sel;}
 
     //===================== Raw Data IO ================================
     // Write digits into raw data format
@@ -182,6 +184,7 @@ class AliITS : public AliDetector {
 
     virtual void Reconstruct() const;
     virtual AliTracker* CreateTracker() const;
+    virtual AliVertexer* CreateVertexer() const;
     virtual void FillESD(AliESD* esd) const;
      
  protected:
@@ -209,8 +212,9 @@ class AliITS : public AliDetector {
 
     TClonesArray *fRecPoints;  //! List of reconstructed points
     Int_t         fNRecPoints; // Number of rec points
+    TString fSelectedVertexer; // Vertexer selected in CreateVertexer
 
-    ClassDef(AliITS,3) // Base class for ITS
+    ClassDef(AliITS,4) // Base class for ITS
 };
 
 #endif

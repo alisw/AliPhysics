@@ -45,6 +45,7 @@ AliITSVertexerFast::AliITSVertexerFast(Double_t *smear):AliITSVertexer() {
   // Standard constructor
   fSmear = new Double_t[3];
   for(Int_t i=0;i<3;i++)fSmear[i]=smear[i];
+  Info("AliITSVertexerFast","Gaussian smaring of the generated vertex. Parameters %f12.5 , %f12.5 , %f12.5 \n",fSmear[0],fSmear[1],fSmear[2]);
 }
 
 //______________________________________________________________________

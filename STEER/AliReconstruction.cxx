@@ -75,6 +75,8 @@
 #include "AliDetector.h"
 #include "AliTracker.h"
 #include "AliESD.h"
+#include "AliESDVertex.h"
+#include "AliVertexer.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliESDpid.h"
@@ -93,6 +95,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   TNamed(name, title),
 
   fRunReconstruction("ALL"),
+  fRunVertexFinder(kTRUE),
   fRunTracking(kTRUE),
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
@@ -101,6 +104,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 
   fRunLoader(NULL),
   fITSLoader(NULL),
+  fITSVertexer(NULL),
   fITSTracker(NULL),
   fTPCLoader(NULL),
   fTPCTracker(NULL),
@@ -118,6 +122,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   TNamed(rec),
 
   fRunReconstruction(rec.fRunReconstruction),
+  fRunVertexFinder(rec.fRunVertexFinder),
   fRunTracking(rec.fRunTracking),
   fFillESD(rec.fFillESD),
   fGAliceFileName(rec.fGAliceFileName),
@@ -126,6 +131,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fRunLoader(NULL),
   fITSLoader(NULL),
+  fITSVertexer(NULL),
   fITSTracker(NULL),
   fTPCLoader(NULL),
   fTPCTracker(NULL),
@@ -195,7 +201,15 @@ Bool_t AliReconstruction::Run()
       if (fStopOnError) {CleanUp(); return kFALSE;}
     }
   }
-  if (!fRunTracking && fFillESD.IsNull()) return kTRUE;
+  if (!fRunVertexFinder && !fRunTracking && fFillESD.IsNull()) return kTRUE;
+
+  // get vertexer
+  if (fRunVertexFinder && !CreateVertexer()) {
+    if (fStopOnError) {
+      CleanUp(); 
+      return kFALSE;
+    }
+  }
 
   // get loaders and trackers
   if (fRunTracking && !CreateTrackers()) {
@@ -226,6 +240,16 @@ Bool_t AliReconstruction::Run()
     esd->SetRunNumber(aliRun->GetRunNumber());
     esd->SetEventNumber(aliRun->GetEvNumber());
     esd->SetMagneticField(aliRun->Field()->SolenoidField());
+
+    // vertex finder
+    if (fRunVertexFinder) {
+      if (!ReadESD(esd, "vertex")) {
+	if (!RunVertexFinder(esd)) {
+	  if (fStopOnError) {CleanUp(file); return kFALSE;}
+	}
+	if (fCheckPointLevel > 0) WriteESD(esd, "vertex");
+      }
+    }
 
     // barrel tracking
     if (fRunTracking) {
@@ -305,28 +329,64 @@ Bool_t AliReconstruction::RunReconstruction(const TString& detectors)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunTracking(AliESD*& esd)
+Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
 {
 // run the barrel tracking
 
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  // get the primary vertex (from MC for the moment)
-  TArrayF vertex(3);     
-  fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vertex);
-  Double_t vtxPos[3] = {vertex[0], vertex[1], vertex[2]};
-  Double_t vtxCov[6] = {
-    0.005,
-    0.000, 0.005,
-    0.000, 0.000, 0.010
-  };
-  Double_t vtxErr[3] = {vtxCov[0], vtxCov[2], vtxCov[5]}; // diag. elements
-  esd->SetVertex(vtxPos, vtxCov);
+  AliESDVertex* vertex = NULL;
+  Double_t vtxPos[3] = {0, 0, 0};
+  Double_t vtxErr[3] = {0.07, 0.07, 0.1};
+  TArrayF mcVertex(3); 
+  fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
+  for (Int_t i = 0; i < 3; i++) vtxPos[i] = mcVertex[i];
+
+  if (fITSVertexer) {
+    Info("RunVertexFinder", "running the ITS vertex finder");
+    fITSVertexer->SetDebug(1);
+    vertex = fITSVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
+    if(!vertex){
+      Warning("RunVertexFinder","Vertex not found \n");
+      vtxErr[2]=10000.;
+      vertex = new AliESDVertex(vtxPos, vtxErr);
+    }
+    else {
+      vertex->SetTruePos(vtxPos);  // store also the vertex from MC
+    }
+
+  } else {
+    Info("RunVertexFinder", "getting the primary vertex from MC");
+    vertex = new AliESDVertex(vtxPos, vtxErr);
+  }
+
+  if (vertex) {
+    vertex->GetXYZ(vtxPos);
+    vertex->GetSigmaXYZ(vtxErr);
+  } else {
+    Warning("RunVertexFinder", "no vertex reconstructed");
+    vertex = new AliESDVertex(vtxPos, vtxErr);
+  }
+  esd->SetVertex(vertex);
   if (fITSTracker) fITSTracker->SetVertex(vtxPos, vtxErr);
   if (fTPCTracker) fTPCTracker->SetVertex(vtxPos, vtxErr);
   if (fTRDTracker) fTRDTracker->SetVertex(vtxPos, vtxErr);
-  if (fCheckPointLevel > 1) WriteESD(esd, "vertex");
+  delete vertex;
+
+  Info("RunVertexFinder", "execution time:");
+  stopwatch.Print();
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::RunTracking(AliESD*& esd)
+{
+// run the barrel tracking
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   if (!fTPCTracker) {
     Error("RunTracking", "no TPC tracker");
@@ -535,6 +595,24 @@ Bool_t AliReconstruction::IsSelected(TString detName, TString& detectors) const
 }
 
 //_____________________________________________________________________________
+Bool_t AliReconstruction::CreateVertexer()
+{
+// create the vertexer
+
+  fITSVertexer = NULL;
+  AliRun* aliRun = fRunLoader->GetAliRun();
+  if (aliRun->GetDetector("ITS")) {
+    fITSVertexer = aliRun->GetDetector("ITS")->CreateVertexer();
+  }
+  if (!fITSVertexer) {
+    Warning("CreateVertexer", "couldn't create a vertexer for ITS");
+    if (fStopOnError) return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliReconstruction::CreateTrackers()
 {
 // get the loaders and create the trackers
@@ -609,6 +687,8 @@ void AliReconstruction::CleanUp(TFile* file)
 {
 // delete trackers and the run loader and close and delete the file
 
+  delete fITSVertexer;
+  fITSVertexer = NULL;
   delete fITSTracker;
   fITSTracker = NULL;
   delete fTPCTracker;

@@ -347,7 +347,7 @@ AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
   if(nTrks < fMinTracks) { TooFewTracks(); return fCurrentVertex; }
 
   // Set initial vertex position from ESD
-  esdEvent->GetVertex(vtx,cvtx);
+  esdEvent->GetVertex()->GetXYZ(vtx);
   SetVtxStart(vtx[0],vtx[1]);
 
   // VERTEX FINDER
@@ -361,7 +361,7 @@ AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
   // store vertex information in ESD
   fCurrentVertex->GetXYZ(vtx);
   fCurrentVertex->GetCovMatrix(cvtx);
-  esdEvent->SetVertex(vtx,cvtx);
+  esdEvent->SetVertex(fCurrentVertex);
 
   cout<<"Vertex: "<<vtx[0]<<", "<<vtx[1]<<", "<<vtx[2]<<endl;
   return fCurrentVertex;
