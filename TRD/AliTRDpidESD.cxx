@@ -102,8 +102,9 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=event->GetTrack(i);
     if ((t->GetStatus()&AliESDtrack::kTRDin)==0)
-       if ((t->GetStatus()&AliESDtrack::kTRDout)==0)
-          if ((t->GetStatus()&AliESDtrack::kTRDrefit)==0) continue;
+      if ((t->GetStatus()&AliESDtrack::kTRDout)==0)
+	if ((t->GetStatus()&AliESDtrack::kTRDrefit)==0) continue;
+    if(t->GetTRDsignal()==0) continue;
     //    Int_t ns=AliESDtrack::kSPECIES;
     Int_t ns=AliPID::kSPECIES;
     Double_t p[10];
