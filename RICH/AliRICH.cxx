@@ -15,6 +15,10 @@
 
 /*
   $Log$
+  Revision 1.42  2001/02/13 20:07:23  jbarbosa
+  Parametrised definition of photcathode dimensions. New spacers. New data members in AliRICHHit to store particle momentum
+  when entering the freon. Corrected calls to particle stack.
+
   Revision 1.41  2001/01/26 20:00:20  hristov
   Major upgrade of AliRoot code
 
@@ -238,7 +242,6 @@ AliRICH::AliRICH(const char *name, const char *title)
       (*fChambers)[i] = new AliRICHChamber();*/  
     
     fFileName = 0;
-
 }
 
 AliRICH::AliRICH(const AliRICH& RICH)
@@ -654,8 +657,8 @@ void AliRICH::CreateGeometry()
   //Float_t csi_length = 160*.8 + 2.6;
   //Float_t csi_width = 144*.84 + 2*2.6;
 
-  Float_t csi_length = segmentation->Npx()*segmentation->Dpx() + segmentation->DeadZone();
-  Float_t csi_width = segmentation->Npy()*segmentation->Dpy() + 2*segmentation->DeadZone();
+  Float_t csi_width = segmentation->Npx()*segmentation->Dpx() + segmentation->DeadZone();
+  Float_t csi_length = segmentation->Npy()*segmentation->Dpy() + 2*segmentation->DeadZone();
   
   //printf("\n\n\n\n\n In CreateGeometry() npx: %d, npy: %d, dpx: %f, dpy:%f  deadzone: %f \n\n\n\n\n\n",segmentation->Npx(),segmentation->Npy(),segmentation->Dpx(),segmentation->Dpy(),segmentation->DeadZone());
   
@@ -997,6 +1000,7 @@ void AliRICH::CreateGeometry()
     for (i = nspacers/3; i < (nspacers*2)/3; i++) {
 	zs = -11.6/2 + (nspacers/3 + TMath::Abs(nspacers/6) - i) * 12.2;
 	gMC->Gspos("SPAC", i, "FRE1", 0, 0., zs, idrotm[1019], "ONLY");  //Original settings 
+	printf("Spacer in %f\n", zs);
     }
     
     for (i = (nspacers*2)/3; i < nspacers; ++i) {
@@ -1023,6 +1027,7 @@ void AliRICH::CreateGeometry()
     gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2 + 2, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
+    printf("Opaque quartz in SRIC %f\n", 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2);
     gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");          //Original settings 
     gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2) - 2, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
     //gMC->Gspos("BARR", 1, "QUAR", - geometry->GetInnerFreonWidth()/2 - oqua_thickness, 0., 0., 0, "ONLY");           //Original settings (-21.65) 
@@ -2148,10 +2153,13 @@ void AliRICH::StepManager()
 		    ckovData[7]=cherenkovLoss;
 		    
 		    nPads = MakePadHits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);
+		    		    
 		    if (fNPadHits > (Int_t)ckovData[8]) {
 			ckovData[8]= ckovData[8]+1;
 			ckovData[9]= (Float_t) fNPadHits;
 		    }
+
+		    //printf("Cerenkov loss: %f\n", cherenkovLoss);
 
 		    ckovData[17] = nPads;
 		    //printf("nPads:%d",nPads);
@@ -2887,7 +2895,7 @@ Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol,
 //  Integrated pulse height on chamber
     
     clhits[0]=fNhits+1;
-    
+
     ((AliRICHChamber*) (*fChambers)[idvol])->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
     Int_t ic=0;
     
@@ -2904,6 +2912,8 @@ Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol,
 	    clhits[3] = Int_t(newclust[2][i]);
 //  Pad: chamber sector
 	    clhits[4] = Int_t(newclust[3][i]);
+
+	    //printf(" %d %d %d %d %d\n",  clhits[0],  clhits[1],  clhits[2],  clhits[3],  clhits[4]);
 	    
 	    AddPadHit(clhits);
 	}
