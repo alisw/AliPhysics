@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/10 10:42:49  nilsen
+Fixed bug in copy and operator =.
+
 
 */
 
@@ -38,6 +41,7 @@ const Int_t   knbinx = 256;    // number of pixels along x direction.
 const Float_t kbinz0 = 0.0425; // cm; Standard pixel size in z direction.
 const Float_t kbinz1 = 0.0625; // cm; Special pixel size in z direction.
 const Int_t   knbinz = 197;    // number of pixels along z direction.
+    Int_t i;
 
     fdx = kdx;  // default value.
     fdy = kdy;  // default value.
@@ -46,9 +50,9 @@ const Int_t   knbinz = 197;    // number of pixels along z direction.
     fNbinz = knbinz; // default number of bins in z.
 
     fBinSizeX = new Float_t[fNbinx]; // array of bin sizes along x.
-    for(Int_t i=0;i<fNbinx;i++) fBinSizeX[i] = kbinx0; // default x bin size.
+    for(i=0;i<fNbinx;i++) fBinSizeX[i] = kbinx0; // default x bin size.
     fBinSizeZ = new Float_t[fNbinz]; // array of bin sizes along z.
-    for(Int_t i=0;i<fNbinz;i++) fBinSizeZ[i] = kbinz0; // default z bin size.
+    for(i=0;i<fNbinz;i++) fBinSizeZ[i] = kbinz0; // default z bin size.
     fBinSizeZ[ 31] = kbinz1;
     fBinSizeZ[ 32] = kbinz1;
 
@@ -66,10 +70,10 @@ const Int_t   knbinz = 197;    // number of pixels along z direction.
 
     // correct detector size for bin size.
     fdx = 0.0;
-    for(Int_t i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
+    for(i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
     fdx *= 0.5;
     fdz = 0.0;
-    for(Int_t i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
+    for(i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
     fdz *= 0.5;
 
     fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
@@ -81,6 +85,7 @@ AliITSgeomSPD425::AliITSgeomSPD425(Float_t dy,Int_t nx,Float_t *bx,
 ////////////////////////////////////////////////////////////////////////
 //    default constructor, for a User modified TDR based geometry.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
     fdx = 0.0;
     fdy =  dy;
     fdz = 0.0;
@@ -88,14 +93,14 @@ AliITSgeomSPD425::AliITSgeomSPD425(Float_t dy,Int_t nx,Float_t *bx,
     fNbinz = nz; // new number of bins in z.
 
     fBinSizeX = new Float_t[fNbinx]; // array of bin sizes along x.
-    for(Int_t i=0;i<fNbinx;i++) fBinSizeX[i] = bx[i]; // new x bin size.
+    for(i=0;i<fNbinx;i++) fBinSizeX[i] = bx[i]; // new x bin size.
     fBinSizeZ = new Float_t[fNbinz]; // array of bin sizes along z.
-    for(Int_t i=0;i<fNbinz;i++) fBinSizeZ[i] = bz[i]; // new z bin size.
+    for(i=0;i<fNbinz;i++) fBinSizeZ[i] = bz[i]; // new z bin size.
 
     // correct detector size for bin size.
-    for(Int_t i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
+    for(i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
     fdx *= 0.5;
-    for(Int_t i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
+    for(i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
     fdz *= 0.5;
 
     fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
@@ -104,6 +109,7 @@ AliITSgeomSPD425::AliITSgeomSPD425(Float_t dy,Int_t nx,Float_t *bx,
 //______________________________________________________________________
 AliITSgeomSPD425::AliITSgeomSPD425(AliITSgeomSPD425 &source){
   // copy constructor
+    Int_t i;
     if(&source == this) return;
     this->fShapeSPD = new TBRIK(*(source.fShapeSPD));
     this->fdx = source.fdx;
@@ -115,12 +121,13 @@ AliITSgeomSPD425::AliITSgeomSPD425(AliITSgeomSPD425 &source){
     this->fBinSizeX = new Float_t[this->fNbinx];
     this->fNbinz = source.fNbinz;
     this->fBinSizeZ = new Float_t[this->fNbinz];
-    for(Int_t i=0;i<fNbinx;i++) this->fBinSizeX[i] = source.fBinSizeX[i];
-    for(Int_t i=0;i<fNbinz;i++) this->fBinSizeZ[i] = source.fBinSizeZ[i];
+    for(i=0;i<fNbinx;i++) this->fBinSizeX[i] = source.fBinSizeX[i];
+    for(i=0;i<fNbinz;i++) this->fBinSizeZ[i] = source.fBinSizeZ[i];
 }
 //______________________________________________________________________
 AliITSgeomSPD425& AliITSgeomSPD425::operator=(AliITSgeomSPD425 &source){
   // = operator
+    Int_t i;
     if(&source == this) return *this;
     this->fShapeSPD = new TBRIK(*(source.fShapeSPD));
     this->fdx = source.fdx;
@@ -132,8 +139,8 @@ AliITSgeomSPD425& AliITSgeomSPD425::operator=(AliITSgeomSPD425 &source){
     this->fBinSizeX = new Float_t[this->fNbinx];
     this->fNbinz = source.fNbinz;
     this->fBinSizeZ = new Float_t[this->fNbinz];
-    for(Int_t i=0;i<fNbinx;i++) this->fBinSizeX[i] = source.fBinSizeX[i];
-    for(Int_t i=0;i<fNbinz;i++) this->fBinSizeZ[i] = source.fBinSizeZ[i];
+    for(i=0;i<fNbinx;i++) this->fBinSizeX[i] = source.fBinSizeX[i];
+    for(i=0;i<fNbinz;i++) this->fBinSizeZ[i] = source.fBinSizeZ[i];
     return *this;
 }
 //______________________________________________________________________
@@ -149,6 +156,7 @@ void AliITSgeomSPD425::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
 ////////////////////////////////////////////////////////////////////////
 //    default constructor, for a User modified TDR based geometry.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
     fdx = 0.0;
     fdy =  dy;
     fdz = 0.0;
@@ -157,15 +165,15 @@ void AliITSgeomSPD425::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
 
     if(fBinSizeX!=0) delete[] fBinSizeX;
     fBinSizeX = new Float_t[fNbinx]; // array of bin sizes along x.
-    for(Int_t i=0;i<fNbinx;i++) fBinSizeX[i] = bx[i]; // new x bin size.
+    for(i=0;i<fNbinx;i++) fBinSizeX[i] = bx[i]; // new x bin size.
     if(fBinSizeZ!=0) delete[] fBinSizeZ;
     fBinSizeZ = new Float_t[fNbinz]; // array of bin sizes along z.
-    for(Int_t i=0;i<fNbinz;i++) fBinSizeZ[i] = bz[i]; // new z bin size.
+    for(i=0;i<fNbinz;i++) fBinSizeZ[i] = bz[i]; // new z bin size.
 
     // correct detector size for bin size.
-    for(Int_t i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
+    for(i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
     fdx *= 0.5;
-    for(Int_t i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
+    for(i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
     fdz *= 0.5;
 
     fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
