@@ -90,6 +90,21 @@ class AliHBTQLongLCMSCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrel
 };
 /*************************************************************************************/ 
 
+class AliHBTQtLCMSCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
+{
+//Q LongLCMSaraint Correlation Function
+//1D two particle function 
+ public:
+   AliHBTQtLCMSCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+   virtual ~AliHBTQtLCMSCorrelFctn(){};
+   TH1* GetResult();
+ protected:
+   Double_t GetValue(AliHBTPair * pair) const {return pair->GetQtLCMS();}
+ private:  
+    ClassDef(AliHBTQtLCMSCorrelFctn,2)
+};
+/*************************************************************************************/ 
+
 class AliHBTQSideLCMSCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
 {
 //Q SideLCMSaraint Correlation Function
