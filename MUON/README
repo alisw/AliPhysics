@@ -145,6 +145,24 @@ the gas mixture medium  is then defined in the galice.cuts file
 in the data directory. In particular ILOSS parameter MUST be
 equal unity (1) in order simulate a realistic energy loss
 distribution (mean value and fluctuations) in the active gas.
+
+============================================================
+ Tracking of particle in the magnetic field
+============================================================
+GEANT has two ways for tracking charged particles in the 
+magnetic field: HELIX et RKUTA.
+HELIX is faster and works well if the gradient of magnetic 
+field is small. 
+For MUON, HELIX is a not a good approximation and we must 
+use RKUTA to get the optimal mass resolution of the 
+spectrometer. The choice of HELIX or RKUTA is done in the
+config file when the magnetic field is defined:
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", TRACKING, FACTOR, MAXB, AliMagFMaps::k4kG);
+  gAlice->SetField(field);
+TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX))
+FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.
+MAXB is the maximum magnetic field which is 10.T
+
 ===========================================================
  Still working ..............
 ===========================================================

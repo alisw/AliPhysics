@@ -122,7 +122,7 @@ void Config(char directory[100]="", char option[6]="box")
      
   //============================================================= 
   // Field (L3 0.4 T)
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k4kG);
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
   gAlice->SetField(field);
 
   //=================== Alice BODY parameters =============================
