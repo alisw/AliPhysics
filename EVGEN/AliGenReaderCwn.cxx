@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/10/21 09:20:51  alibrary
+Introduce Riostream.h and remove unused variables
+
 Revision 1.2  2001/11/12 14:31:00  morsch
 Memory leaks fixed. (M. Bondila)
 
@@ -102,9 +105,8 @@ Int_t AliGenReaderCwn::NextEvent()
 	}    
 	fNparticleMax = nTracks;
 	return nTracks;
-    } else {
-	return 0;
     }
+
     return 0;
 }
 

@@ -15,6 +15,9 @@
   
 /*
 $Log$
+Revision 1.7  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.5.10.1  2002/06/10 14:57:41  hristov
 Merged with v3-08-02
 
@@ -1039,120 +1042,120 @@ GenFunc AliGenGSIlib::GetPt(Int_t param, const char * tname) const
     {
     case kUpsilon:
       if (sname=="FLAT"){
-	func= PtUpsilonFlat;
-	break;
+        func= PtUpsilonFlat;
+        break;
       }
       if (sname=="MUON"){
-	func= PtUpsilonMUON;
-	break;
+        func= PtUpsilonMUON;
+        break;
       }
       if (sname=="RITMAN"){
-	func=PtUpsilonRitman;
-	break;
+        func=PtUpsilonRitman;
+        break;
       }
       if (sname=="KAREL"){
-	func=PtUpsilonKarel;
-	break;
+        func=PtUpsilonKarel;
+        break;
       }
+      func=0;
+      printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
       break;
-       func=0;
-        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
 
     case kJPsi:
       if (sname=="FLAT"){
-	func= PtJpsiFlat;
-	break;
+        func= PtJpsiFlat;
+        break;
       }
       if (sname=="MUON"){
-	func= PtJpsiMUON;
-	break;
+        func= PtJpsiMUON;
+        break;
       }
       //      if (sname=="SERGEI"){
       //	func= PtJpsi;
       //	break;
       //     }
+      func=0;
+      printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
       break;
-        func=0;
-        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
 
     case kCharm: 
       if (sname=="FLAT"){
-	func= PtCharmFlat;
-	break;
+        func= PtCharmFlat;
+        break;
       }
 
       if (sname=="MUON"){
-	func= PtCharmMUON;
-	break;
+        func= PtCharmMUON;
+        break;
       }
 
       if (sname=="GSI"){
-	func= PtCharmGSI;
-	break;
+        func= PtCharmGSI;
+        break;
       }
+      func=0;
+      printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
       break;
-       func=0;
-        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
 
     case kBeauty: 
       if (sname=="FLAT"){
-	func= PtBeautyFlat;
-	break;
+        func= PtBeautyFlat;
+        break;
       }
       if (sname=="MUON"){
-	func= PtBeautyMUON;
-	break;
+        func= PtBeautyMUON;
+        break;
       }
       if (sname=="GSI"){
-	func= PtBeautyGSI;
-	break;
+        func= PtBeautyGSI;
+        break;
       }
+      func=0;
+      printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
       break;
-       func=0;
-        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
 
 
     case kEta:
-         func=PtEtaPHOS;
-         break;
+      func=PtEtaPHOS;
+      break;
 
     case kEtaprime:
-         func=PtEtaprimePHOS;
-         break;
+      func=PtEtaprimePHOS;
+      break;
 
     case kOmega:
-         func=PtOmega;
-         break;
+      func=PtOmega;
+      break;
 
     case kRho:
-	 func=PtRho;
-	 break;
+      func=PtRho;
+      break;
 
     case kKaon:
-         func=PtKaonPHOS;
-         break;
+      func=PtKaonPHOS;
+      break;
 
     case kPion:
-         func=PtPion;
-         break;
+      func=PtPion;
+      break;
 
     case kPhi:
-         func=PtPhiPHOS;
-         break;
+      func=PtPhiPHOS;
+      break;
 
 	 //    case kLambda:
 	 //         func=PtLambda;
 	 //         break;
 
     case kBaryons:
-         func=PtBaryons;
-         break;
+      func=PtBaryons;
+      break;
 
     default:
-        func=0;
-        printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
+      func=0;
+      printf("<AliGenGSIlib::GetPt> unknown parametrisation\n");
     }
-    return func;
+   return func;
 }
 
 GenFunc AliGenGSIlib::GetY(Int_t param, const char * tname) const
