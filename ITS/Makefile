@@ -47,6 +47,7 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx \
 		AliCascadeVertex.cxx AliCascadeVertexer.cxx \
 		AliITSglobalRecPoint.cxx AliITSneuralTrack.cxx \
 		AliITSneuralTracker.cxx AliITSRiemannFit.cxx \
+		AliITSFindClustersV2.cxx \
 		AliITSFDigitizer.cxx
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 

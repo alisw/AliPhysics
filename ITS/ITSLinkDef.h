@@ -143,4 +143,5 @@
 #pragma link C++ class AliITSsDigitize+;
 #pragma link C++ class AliITSDigitizer+;
 #pragma link C++ class AliITSFDigitizer+;
+#pragma link C++ class AliITSFindClustersV2+;
 #endif
