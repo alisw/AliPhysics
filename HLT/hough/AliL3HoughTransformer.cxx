@@ -9,7 +9,6 @@
 
 #include "AliL3Defs.h"
 #include "AliL3Transform.h"
-#include "AliL3HoughPixel.h"
 #include "AliL3HoughTransformer.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackArray.h"
