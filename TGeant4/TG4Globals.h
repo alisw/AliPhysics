@@ -18,7 +18,6 @@
 class G4Material;
 class G4Element;
 
-//typedef G4RWTValOrderedVector<G4bool>   TG4boolVector;
 typedef vector<G4bool>   TG4boolVector;
 typedef G4RWTValOrderedVector<G4double> TG4doubleVector;
 typedef G4RWTValOrderedVector<G4String> TG4StringVector;
