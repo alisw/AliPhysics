@@ -42,7 +42,7 @@ alilibs:  lib
 	   ${MAKE} -C $$i ; \
 	done
 
-aliroot geant321 minicern pdf pythia hijing: FORCE
+aliroot geant321 minicern pdf pythia6 hijing: FORCE
 	@DIR=`echo $@ | $(AWK) '{print toupper($$0)}'` ; \
 	echo "Making dependencies in $$DIR" | $(PRETTY); \
 	${MAKE} -C $$DIR depend;\
@@ -56,7 +56,7 @@ TGeant4 AliGeant4: FORCE
 	echo "Making in $$DIR" | $(PRETTY); \
 	${MAKE} -C $$DIR
 
-cernlibs: geant321 pythia minicern pdf hijing
+cernlibs: geant321 pythia6 minicern pdf hijing
 
 geant4: TGeant4 AliGeant4
 
