@@ -117,6 +117,26 @@ MUONrecpoints()
 To print trigger : (default file is galice.root)
 MUONTestTrigger()
 
+
+============================================================
+ How to check the Geometry
+============================================================
+gAlice->Init("$ALICE_ROOT/MUON/Config_MUON_test.C");
+.L $ALICE/geant3/TGeant3/G3GUI.C
+G3GUI()
+
+
+============================================================
+ Tracking parameters, cuts, energy loss and physics processes
+============================================================
+Tracking parameters in MUON are automatically defined by GEANT
+MUON takes the default values of CUTs  and physics processes
+defined by the Config files, except for the gas mixture medium 
+of the tracking chambers. The CUT's and physics processes of
+the gas mixture medium  is then defined in the galice.cuts file
+in the data directory. In particular ILOSS parameter MUST be
+equal unity (1) in order simulate a realistic energy loss
+distribution (mean value and fluctuations) in the active gas.
 ===========================================================
  Still working ..............
 ===========================================================
