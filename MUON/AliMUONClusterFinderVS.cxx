@@ -46,7 +46,7 @@ void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 
 ClassImp(AliMUONClusterFinderVS)
 
-    AliMUONClusterFinderVS::AliMUONClusterFinderVS()
+AliMUONClusterFinderVS::AliMUONClusterFinderVS()
 {
 // Default constructor
     fInput=AliMUONClusterInput::Instance();
@@ -61,7 +61,18 @@ ClassImp(AliMUONClusterFinderVS)
       for (Int_t j=0; j<2; j++) {
         fDig[i][j] = 0;
       }
-    }
+    } 
+    fRawClusters = new TClonesArray("AliMUONRawCluster",1000);
+    fNRawClusters = 0;
+
+
+}
+ //____________________________________________________________________________
+AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
+{
+  // Reset tracks information
+   fNRawClusters = 0;
+   if (fRawClusters) fRawClusters->Delete();
 }
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & clusterFinder):TObject(clusterFinder)
@@ -69,13 +80,20 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & cl
 // Dummy copy Constructor
     ;
 }
-
+//____________________________________________________________________________
+void AliMUONClusterFinderVS::ResetRawClusters()
+{
+  // Reset tracks information
+  fNRawClusters = 0;
+  if (fRawClusters) fRawClusters->Clear();
+}
+//____________________________________________________________________________
 void AliMUONClusterFinderVS::Decluster(AliMUONRawCluster *cluster)
 {
 // Decluster by local maxima
     SplitByLocalMaxima(cluster);
 }
-
+//____________________________________________________________________________
 void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 {
 // Split complex cluster by local maxima 
@@ -1435,6 +1453,7 @@ void AliMUONClusterFinderVS::FindRawClusters()
   // fills the tree with raw clusters
   //
 
+    ResetRawClusters();
 //  Return if no input datad available
     if (!fInput->NDigits(0) && !fInput->NDigits(1)) return;
 
@@ -1574,7 +1593,7 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
     
     clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
     clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
+    //    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
     Double_t fmin, fedm, errdef;
     Int_t   npari, nparx, istat;
       
@@ -1667,7 +1686,7 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*
     
     clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
     clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
+    //    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
     Double_t fmin, fedm, errdef;
     Int_t   npari, nparx, istat;
       
@@ -1742,7 +1761,7 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int
     
     clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
     clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
+    //    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
 // Get fitted parameters
     Double_t xrec[2], yrec[2], qfrac;
     TString chname;
@@ -1894,7 +1913,7 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
     
     clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
     clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
-    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
+    //    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
 // Get fitted parameters
     TString chname;
     Double_t epxz, b1, b2;
@@ -2056,14 +2075,19 @@ void fcnCombiS2(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par
     f=chisq;
 }
 
-void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster c)
+void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster& c)
 {
   //
   // Add a raw cluster copy to the list
   //
-    AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
-    pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
-    fNRawClusters++;
+
+//     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
+//     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
+//     fNRawClusters++;
+
+  
+    TClonesArray &lrawcl = *fRawClusters;
+    new(lrawcl[fNRawClusters++]) AliMUONRawCluster(c);
     if (fDebugLevel)
 	fprintf(stderr,"\nfNRawClusters %d\n",fNRawClusters);
 }

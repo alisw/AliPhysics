@@ -25,7 +25,7 @@ class AliMUONClusterFinderVS : public TObject
  public:
     AliMUONClusterFinderVS();
     AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);
-    virtual ~AliMUONClusterFinderVS(){;}
+    virtual ~AliMUONClusterFinderVS();
 // Decluster ?
     virtual void SetDeclusterFlag(Int_t flag=1) {fDeclusterFlag =flag;}
 // Set max. cluster size ; bigger clusters will deconvoluted
@@ -52,7 +52,7 @@ class AliMUONClusterFinderVS : public TObject
     virtual void   FillCluster(AliMUONRawCluster *cluster, Int_t cath);
     virtual void   FillCluster(AliMUONRawCluster *cluster) {FillCluster(cluster,1,0);}
 // Add a new raw cluster    
-    virtual void AddRawCluster(const AliMUONRawCluster cluster);
+    virtual void AddRawCluster(const AliMUONRawCluster& cluster);
 //  Set tracks for debugging    
     virtual void SetTracks(Int_t t1, Int_t t2) {fTrack[0]=t1; fTrack[1]=t2;}
     virtual Bool_t TestTrack(Int_t t);
@@ -61,6 +61,10 @@ class AliMUONClusterFinderVS : public TObject
 //  debug level
     void SetDebugLevel(Int_t level) {fDebugLevel = level;}
     void SetGhostChi2Cut(Float_t cut) {fGhostChi2Cut = cut;}
+// get raw cluster pointer 
+    TClonesArray*  GetRawClusters() {return fRawClusters;}
+// reset raw clusters
+    void ResetRawClusters();
 
  protected:
     AliMUONClusterInput*    fInput;              // ! AliMUONClusterInput instance
@@ -78,6 +82,8 @@ class AliMUONClusterFinderVS : public TObject
     Int_t                   fMul[2];             // current multiplicity
     Int_t                   fNPeaks;             // number of local maxima
     Int_t                   fNRawClusters;       // Number of Raw Clusters
+    TClonesArray*           fRawClusters;        // array of cluster per ch.
+
 // Local data store    
     AliMUONDigit*           fDig[100][2];        // current list of digits 
     Int_t                   fIx[100][2];         // current list of x-pad-coord.
@@ -107,7 +113,7 @@ class AliMUONClusterFinderVS : public TObject
     Int_t                    fDebugLevel;      // prinout control
 
 //  Return pointer to raw clusters    
-    ClassDef(AliMUONClusterFinderVS,1) //Class for clustering and reconstruction of space points
+    ClassDef(AliMUONClusterFinderVS,2) //Class for clustering and reconstruction of space points
 };
 #endif
 
