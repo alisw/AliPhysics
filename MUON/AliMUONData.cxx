@@ -431,7 +431,8 @@ void AliMUONData::MakeBranch(Option_t* option)
 
     if (fHits == 0x0)  {
 	fHits = new TClonesArray("AliMUONHit",1000);
-	gAlice->GetMCApp()->AddHitList (fHits);
+	if (gAlice->GetMCApp())
+	  gAlice->GetMCApp()->AddHitList (fHits);
     }
 	    
     fNhits = 0;
@@ -669,7 +670,8 @@ void AliMUONData::SetTreeAddress(Option_t* option)
   if ( TreeH() && cH ) {
       if (fHits == 0x0) {
 	fHits     = new TClonesArray("AliMUONHit",1000);
-	gAlice->GetMCApp()->AddHitList (fHits);
+	if (gAlice->GetMCApp())
+	  gAlice->GetMCApp()->AddHitList (fHits);
     }
     fNhits =0;
   } 
