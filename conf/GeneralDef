@@ -57,7 +57,11 @@ tgt_$(ALICE_TARGET)/%.o : %.f
 tgt_$(ALICE_TARGET)/%.o : %.F
 	@echo $*.F
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+ifeq ($(CXXVERBOSE),)
 	@$(F77) $(FFLAGS) -c $*.F -o tgt_$(ALICE_TARGET)/$*.o
+else
+	$(F77) $(FFLAGS) -c $*.F -o tgt_$(ALICE_TARGET)/$*.o
+endif
 
 # Needed binary directories
 LIBDIR = $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
