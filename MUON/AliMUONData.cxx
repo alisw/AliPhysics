@@ -48,26 +48,39 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
   TNamed(name,title)
 {
   fLoader        = loader;
-  fHits          = new TClonesArray("AliMUONHit",1000);
+  fHits          = 0x0;    // One event in treeH per primary track
+  fDigits        = 0x0;  // One event in treeH per detection plane
+  fNdigits       = 0x0;
+  fRawClusters   = 0x0; //One event in TreeR/RawclusterBranch per tracking detection plane
+  fGlobalTrigger = 0x0; //! List of Global Trigger 1st event in TreeR/GlobalTriggerBranch
+  fLocalTrigger  = 0x0;  //! List of Local Trigger, 1st event in TreeR/LocalTriggerBranch
+  fRecTracks     = 0x0;    
   fNhits         = 0;
-  fDigits        = new TObjArray(AliMUONConstants::NCh());
-  fNdigits       = new Int_t[AliMUONConstants::NCh()];
-  for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NCh() ;iDetectionPlane++) {
-    fDigits->AddAt(new TClonesArray("AliMUONDigit",10000),iDetectionPlane); 
-    fNdigits[iDetectionPlane]=0;
-  }
-  fRawClusters   = new TObjArray(AliMUONConstants::NTrackingCh());
-  fNrawclusters  = new Int_t[AliMUONConstants::NTrackingCh()];
-  for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NTrackingCh();iDetectionPlane++) {
-    fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",10000),iDetectionPlane); 
-    fNrawclusters[iDetectionPlane]=0;
-  }
-  fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1);    
   fNglobaltrigger =0;
-  fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);   
   fNlocaltrigger = 0;
-  fRecTracks     = new TClonesArray("AliMUONTrack", 10);
-  fNrectracks    = 0; // really needed or GetEntriesFast sufficient ????
+  fNrectracks    = 0; 
+//   fHits          = new TClonesArray("AliMUONHit",1000);
+//   fNhits         = 0;
+//   fDigits        = new TObjArray(AliMUONConstants::NCh());
+//   fNdigits       = new Int_t[AliMUONConstants::NCh()];
+//   for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NCh() ;iDetectionPlane++) {
+//     fDigits->AddAt(new TClonesArray("AliMUONDigit",10000),iDetectionPlane); 
+//     fNdigits[iDetectionPlane]=0;
+//   }
+//   fRawClusters   = new TObjArray(AliMUONConstants::NTrackingCh());
+//   fNrawclusters  = new Int_t[AliMUONConstants::NTrackingCh()];
+//   for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NTrackingCh();iDetectionPlane++) {
+//     fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",10000),iDetectionPlane); 
+//     fNrawclusters[iDetectionPlane]=0;
+//   }
+//   fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1);    
+//   fNglobaltrigger =0;
+//   fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);   
+//   fNlocaltrigger = 0;
+//   fRecTracks     = new TClonesArray("AliMUONTrack", 10);
+//   fNrectracks    = 0; // really needed or GetEntriesFast sufficient ????
+
+
   //default constructor
 }
 //_____________________________________________________________________________
