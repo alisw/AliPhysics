@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.17  2001/09/24 13:11:50  morsch
+Ion pump and bellows moved out by 15 cm to make space for forward
+detectors.
+
 Revision 1.16  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -76,6 +80,7 @@ ClassImp(AliPIPEv0)
 AliPIPEv0::AliPIPEv0()
 {
 // Constructor
+    SetPipeMaterial();
 }
 
 //_____________________________________________________________________________
@@ -83,6 +88,7 @@ AliPIPEv0::AliPIPEv0(const char *name, const char *title)
   : AliPIPE(name,title)
 {
 // Constructor
+    SetPipeMaterial();
 }
 
  
@@ -109,7 +115,6 @@ void AliPIPEv0::CreateGeometry()
     Float_t ppcon[84], ptube[3], pbox[3];
     Int_t i=0;
     
-    enum {kC=6, kAlu=9, kInox=19, kGetter=20, kBe=5, kVac=16, kAir=15, kAlBe=21};
     
     Int_t   idrotm[2099];  
     AliMatrix(idrotm[2001],90.,240.,  0.,  0., 90.,150.);
@@ -190,11 +195,11 @@ void AliPIPEv0::CreateGeometry()
     ppcon[37] =    0;
     ppcon[38] =    4.22;
 //  13 
-    ppcon[39] =   28.+dbe1+5.5;
+    ppcon[39] =   28.+dbe1+6.0;
     ppcon[40] =    0;
     ppcon[41] =    4.22;
 //  14
-    ppcon[42] =   28.+dbe1+5.5;
+    ppcon[42] =   28.+dbe1+6.0;
     ppcon[43] =    0;
     ppcon[44] =    3.2;
 //  15 
@@ -202,7 +207,7 @@ void AliPIPEv0::CreateGeometry()
     ppcon[46] =    0;
     ppcon[47] =    3.2;
 //  16
-    ppcon[48] =  250;
+    ppcon[48] =  250.;
     ppcon[49] =    0;
     ppcon[50] =    5;
 //  17
@@ -214,27 +219,27 @@ void AliPIPEv0::CreateGeometry()
     ppcon[55] =    0.;
     ppcon[56] =    3.2;
 //  19
-    ppcon[57] =   350.4;
+    ppcon[57] =   365.4;
     ppcon[58] =    0;
     ppcon[59] =    3.2;
 //  20
-    ppcon[60] =   350.4;
+    ppcon[60] =   365.4;
     ppcon[61] =    0;
     ppcon[62] =    5.;
 //  21
-    ppcon[63] =   380.;
+    ppcon[63] =   390.;
     ppcon[64] =    0;
     ppcon[65] =    5.;
 //  22
-    ppcon[66] =  380.;
+    ppcon[66] =  390.;
     ppcon[67] =    0.;
     ppcon[68] =   56.;
 //  23
-    ppcon[69] =  420.;
+    ppcon[69] =  435.;
     ppcon[70] =    0.;
     ppcon[71] =   56.;
 //  24
-    ppcon[72] =  420.;
+    ppcon[72] =  435.;
     ppcon[73] =    0.;
     ppcon[74] =   5.;
 //  25
@@ -259,12 +264,11 @@ void AliPIPEv0::CreateGeometry()
     //half-lengths of various beam pipe sections
     Float_t hlenQbbe = 43.3;
     Float_t hlenQbt1 = 5.5/2.;
-    Float_t hlenQbab = (286.6+15.)/2.;
-    Float_t hlenQb10 = (286.6+15.)/2.;
+    Float_t hlenQbab = (286.6+30.)/2.;
     Float_t hlenQb29 = 4.4/2.;
     Float_t hlenQbe0 = (2.* dzb + dzbb)/2.;
     Float_t hlenQb26 = 20./2.;
-    Float_t hlenQb28 = (400.6-15.)/2.;
+    Float_t hlenQb28 = (400.6-30.)/2.;
 
 // Be Pipe in central Alice : length 43.3 * 2
     ptube[0] =  2.90;
@@ -340,13 +344,6 @@ void AliPIPEv0::CreateGeometry()
 
 
 //
-// 1st section Alu non-absorber side
-    ptube[0] = 2.9;
-    ptube[1] = 3.0;
-    ptube[2] = hlenQb10;
-    
-    gMC->Gsvolu("QB10","TUBE", idtmed[kAlu], ptube, 3);
-//
 // Support rollers: non absorber side
 //
 //  Mother volume
@@ -402,11 +399,20 @@ void AliPIPEv0::CreateGeometry()
 
 //  Al-Be (40-60 wgt%, rho=2.7 g/cm**3) beam pipe
 //
-    ptube[0] =   2.90;
-    ptube[1] =   3.05;
+// This section is under study (A.M. 1/2/2002)
+//
+
+    ptube[0] = 2.9;
+    if (fPipeMaterial == kAlu) {
+	ptube[1] = 3.0;
+    } else if (fPipeMaterial == kBe) {
+	ptube[1] = 3.02;
+    } else if (fPipeMaterial == kInox){
+	ptube[1] = 2.98;
+    }
     ptube[2] =   hlenQbab;    
 
-    gMC->Gsvolu("QBAB","TUBE", idtmed[kAlBe], ptube, 3);
+    gMC->Gsvolu("QBAB","TUBE", idtmed[fPipeMaterial], ptube, 3);
 
     
 //
@@ -834,7 +840,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] =  2.15;
     gMC->Gsvolu("QI35","TUBE", idtmed[kInox], ptube, 3);
 // <-
-    Float_t zPump = 400.;
+    Float_t zPump = 415.;
     gMC->Gspos("QI32", 1, "QBPM", 0.0, -44.25, zPump, 0, "ONLY");
     gMC->Gspos("QI33", 1, "QBPM", 0.0, -35.00, zPump,idrotm[2002], "ONLY");
     gMC->Gspos("QI34", 1, "QBPM", 0.0, -17.90, zPump,idrotm[2002], "ONLY");
