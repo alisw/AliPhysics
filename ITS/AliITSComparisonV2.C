@@ -120,7 +120,10 @@ Int_t AliITSComparisonV2() {
      Int_t ntrk=event->GetNumberOfTracks();
      for (Int_t i=0; i<ntrk; i++) {
         AliESDtrack *t=event->GetTrack(i);
-        if ((t->GetStatus()&AliESDtrack::kITSin)==0) continue;
+	UInt_t status=t->GetStatus();
+	UInt_t flags=AliESDtrack::kTPCin|AliESDtrack::kITSin;
+        if ((status&AliESDtrack::kITSrefit)==0)
+           if ((status&flags)!=status) continue;
         AliITStrackV2 *iotrack=new AliITStrackV2(*t);
         tarray.AddLast(iotrack);
      }
