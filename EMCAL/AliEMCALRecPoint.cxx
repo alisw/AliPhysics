@@ -564,7 +564,7 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
       Int_t newparent = newparentarray[jndex] ;
       Int_t kndex ;
       Bool_t already = kFALSE ;
-      for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
+      for ( kndex = 0 ; kndex < fMulParent ; kndex++ ) { //check if not already stored
 	if ( newparent == tempo[kndex] ){
 	  already = kTRUE ;
 	  break ;
