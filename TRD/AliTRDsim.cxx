@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/21 16:45:47  hristov
+Last minute changes (C.Blume)
+
 Revision 1.8  2001/01/26 19:56:57  hristov
 Major upgrade of AliRoot code
 
@@ -130,8 +133,8 @@ AliTRDsim::~AliTRDsim()
   // AliTRDsim destructor
   //
 
-  if (fSpectrum) delete fSpectrum;
-  if (fSigma)    delete fSigma;
+  //  if (fSpectrum) delete fSpectrum;
+  if (fSigma)    delete [] fSigma;
 
 }
 
@@ -172,7 +175,7 @@ void AliTRDsim::Copy(TObject &s)
   ((AliTRDsim &) s).fSpLower    = fSpLower;
   ((AliTRDsim &) s).fSpUpper    = fSpUpper;
 
-  if (((AliTRDsim &) s).fSigma) delete ((AliTRDsim &) s).fSigma;
+  if (((AliTRDsim &) s).fSigma) delete [] ((AliTRDsim &) s).fSigma;
   ((AliTRDsim &) s).fSigma = new Double_t[fSpNBins];
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
     ((AliTRDsim &) s).fSigma[iBin] = fSigma[iBin];
@@ -339,7 +342,7 @@ void AliTRDsim::SetSigma()
   // Sets the absorbtion crosssection for the energies of the TR spectrum
   //
 
-  if (fSigma) delete fSigma;
+  if (fSigma) delete [] fSigma;
   fSigma = new Double_t[fSpNBins];
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
     Double_t energykeV = iBin * fSpBinWidth + 1.0;
