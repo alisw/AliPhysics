@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/11/22 11:32:58  coppedis
+Major code revision
+
 Revision 1.9  2000/10/02 21:28:20  fca
 Removal of useless dependecies via forward declarations
 
@@ -31,18 +34,22 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Zero Degree Calorimeter                                                  //
-//  This class contains the basic functions for the Time Of Flight           //
-//  detector. Functions specific to one particular geometry are              //
+//  This class contains the basic functions for the ZDCs                     //
+//  Functions specific to one particular geometry are      	             //
 //  contained in the derived classes                                         //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+// --- ROOT system
 #include <TBRIK.h>
 #include <TNode.h>
 #include "TGeometry.h"
 
+// --- AliRoot header files
 #include "AliZDC.h"
+#include "AliZDCHit.h"
 #include "AliRun.h"
+#include "AliDetector.h"
 #include "AliCallf77.h"
 #include "AliConst.h"
 #include "AliMC.h"
@@ -57,7 +64,14 @@ AliZDC::AliZDC()
   // Default constructor for the Zero Degree Calorimeter base class
   //
   fIshunt = 1;
+
   fHits = 0;
+  fNhits = 0;
+
+  fStHits = 0;
+  fNStHits = 0;
+
+  fNPrimaryHits = 0;
 }
  
 //_____________________________________________________________________________
@@ -70,8 +84,15 @@ AliZDC::AliZDC(const char *name, const char *title)
 
   //
   // Allocate the array of hits
-  fHits   = new TClonesArray("AliZDChit",  405);
+
+  fHits   = new TClonesArray("AliZDCHit",1000);
   gAlice->AddHitList(fHits);
+  
+  fStHits = new TClonesArray("AliZDCHit",1000);
+
+  fNStHits = 0;
+
+  fNPrimaryHits = 0;
   
   fIshunt =  1;
   
@@ -140,33 +161,55 @@ AliZDC::~AliZDC()
 
   fIshunt   = 0;
   delete fHits;
+  if(fStHits){
+    fStHits->Delete();
+    delete fStHits;
+    fNStHits = 0;
+  }
+  delete fDigits;
 }
 //_____________________________________________________________________________
 void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
   //
-  // Add a ZDC hit
+  // 		Add a ZDC hit to the hit list.
+  // -> We make use of 2 array of hits:
+  // [1]  fHits (the usual one) that contains hits for each PRIMARY
+  // [2]  fStHits that contains hits for each EVENT and is used to
+  //	  obtain digits at the end of each event
   //
+  
   static Float_t primKinEn, xImpact, yImpact, sFlag;
 
+  TClonesArray &lsthits = *fStHits;
   TClonesArray &lhits = *fHits;
 
-  AliZDChit *newquad, *curquad;
-  newquad = new AliZDChit(fIshunt, track, vol, hits);
-  Int_t i;
-  for(i=0; i<fNhits; i++){
-    // If the hits are equal (same track, same volume), sum them.
-     curquad=(AliZDChit*) lhits[i];
-     if(*curquad==*newquad){
-        *curquad = *curquad+*newquad;
-        delete newquad;
-//        fHits->Print("");
-	return;
-      }
-   }
+
+  AliZDCHit *newquad, *curevquad, *curprimquad;
+  newquad = new AliZDCHit(fIshunt, track, vol, hits);
    
-   //Otherwise create a new hit.
-   if(fNhits==0){
+  Int_t i,j,kStHit = 1;
+  for(i=0; i<fNStHits; i++){
+    // If the hits are equal (same track, same volume), sum them.
+     curevquad = (AliZDCHit*) lsthits[i];
+     kStHit = 1;
+     if(*curevquad == *newquad){
+        *curevquad = *curevquad+*newquad;
+        kStHit = 0;
+     } 
+  }
+
+  for(j=0; j<fNhits; j++){
+    // If the hits are equal (same track, same volume), sum them.
+     curprimquad = (AliZDCHit*) lhits[j];
+     if(*curprimquad == *newquad){
+        *curprimquad = *curprimquad+*newquad;
+	delete newquad;
+	return;
+     } 
+  }
+  
+  if(fNhits==0){
       // First hit -> setting flag for primary or secondary particle
       Int_t primary = gAlice->GetPrimary(track);     
       if(track != primary){
@@ -175,6 +218,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       else if(track == primary){
         newquad->fSFlag = 0;  // Hit created by PRIMARY particle entering the ZDC
       }  
+      fNPrimaryHits = fNPrimaryHits + 1;
       sFlag = newquad->fSFlag;
       primKinEn = newquad->fPrimKinEn;
       xImpact = newquad->fXImpact;
@@ -186,9 +230,21 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       newquad->fYImpact = yImpact;
       newquad->fSFlag = sFlag;
    }
-//    printf("\n");  
+
+    //Otherwise create a new hit
+    new(lhits[fNhits]) AliZDCHit(newquad);
+    fNhits++;
+    
+    if(kStHit){
+      new(lsthits[fNStHits]) AliZDCHit(newquad);
+      fNStHits++;
+    }
+ 
+//    printf("\nPrimary Hits --------------------------------------------------------\n");
 //    fHits->Print("");
-    new(lhits[fNhits++]) AliZDChit(newquad);
+//    printf("\n  Event Hits --------------------------------------------------------\n");
+//    fStHits->Print("");
+
     delete newquad;
   }
   
@@ -198,8 +254,27 @@ void AliZDC::ResetHits()
   //
   // Reset number of hits and the hits array
   //
+    
+//    fStHits->Clear();
+//    fNStHits = 0;
+    
     AliDetector::ResetHits();
 }
+  
+//_____________________________________________________________________________
+void AliZDC::ResetDigits()
+{
+  //
+  // Reset number of digits and the digits array
+  //
+    
+    AliDetector::ResetDigits();
+    if(fStHits){
+      fStHits->Delete();
+      fNStHits = 0;
+    }
+}
+
 //_____________________________________________________________________________
 void AliZDC::BuildGeometry()
 {
@@ -240,27 +315,4 @@ void AliZDC::StepManager()
   //
   // Routine called at every step in the Zero Degree Calorimeter
   //
-}
-
-ClassImp(AliZDChit)
-  
-//_____________________________________________________________________________
-AliZDChit::AliZDChit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
-{
-  //
-  // Add a ZDC hit
-  //
-  Int_t i;
-  for(i=0; i<2; i++) fVolume[i] = vol[i];
-  fX = hits[0];
-  fY = hits[1];
-  fZ = hits[2];
-  fPrimKinEn = hits[3];
-  fXImpact = hits[4];
-  fYImpact = hits[5];
-  fSFlag = hits[6];
-  fLightPMQ = hits[7];
-  fLightPMC = hits[8];
-  fEnergy = hits[9]; 
 }
