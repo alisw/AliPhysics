@@ -4,21 +4,25 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
-#include "AliRawReader.h"
+
+class AliRawReader;
 
 
 class AliITSRawStream: public TObject {
   public :
     AliITSRawStream(AliRawReader* rawReader);
+    AliITSRawStream(const AliITSRawStream& stream);
+    AliITSRawStream& operator = (const AliITSRawStream& stream);
+    virtual ~AliITSRawStream() {};
 
     virtual Bool_t   Next() = 0;
 
-    inline Int_t     GetModuleID() const {return fModuleID;};
-    inline Int_t     GetPrevModuleID() const {return fPrevModuleID;};
-    inline Bool_t    IsNewModule() const {return fModuleID != fPrevModuleID;};
-    inline Int_t     GetCoord1() const {return fCoord1;};
-    inline Int_t     GetCoord2() const {return fCoord2;};
-    inline Int_t     GetSignal() const {return fSignal;};
+    Int_t            GetModuleID() const {return fModuleID;};
+    Int_t            GetPrevModuleID() const {return fPrevModuleID;};
+    Bool_t           IsNewModule() const {return fModuleID != fPrevModuleID;};
+    Int_t            GetCoord1() const {return fCoord1;};
+    Int_t            GetCoord2() const {return fCoord2;};
+    Int_t            GetSignal() const {return fSignal;};
 
   protected :
     AliRawReader*    fRawReader;    // object for reading the raw data

@@ -15,15 +15,17 @@ class fstream;
 class AliRawReaderFile: public AliRawReader {
   public :
     AliRawReaderFile(const char* fileName, Bool_t addNumber = kTRUE);
+    AliRawReaderFile(const AliRawReaderFile& rawReader);
+    AliRawReaderFile& operator = (const AliRawReaderFile& rawReader);
     virtual ~AliRawReaderFile();
 
-    virtual UInt_t   GetType() {return 0;};
-    virtual UInt_t   GetRunNumber() {return 0;};
-    virtual const UInt_t* GetEventId() {return 0;};
-    virtual const UInt_t* GetTriggerPattern() {return 0;};
-    virtual const UInt_t* GetDetectorPattern() {return 0;};
-    virtual const UInt_t* GetAttributes() {return 0;};
-    virtual UInt_t   GetGDCId() {return 0;};
+    virtual UInt_t   GetType() const {return 0;};
+    virtual UInt_t   GetRunNumber() const {return 0;};
+    virtual const UInt_t* GetEventId() const {return 0;};
+    virtual const UInt_t* GetTriggerPattern() const {return 0;};
+    virtual const UInt_t* GetDetectorPattern() const {return 0;};
+    virtual const UInt_t* GetAttributes() const {return 0;};
+    virtual UInt_t   GetGDCId() const {return 0;};
 
 
     virtual Bool_t   ReadMiniHeader();

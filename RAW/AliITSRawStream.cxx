@@ -18,6 +18,13 @@
 // This is a base class for reading ITS raw data files and providing
 // information about digits
 //
+// Derived class should implement the Next method.
+//
+// It loops over all ITS digits in the raw data given by the AliRawReader.
+// The Next method goes to the next digit. If there are no digits left
+// it returns kFALSE.
+// Several getters provide information about the current digit.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStream.h"
@@ -32,3 +39,17 @@ AliITSRawStream::AliITSRawStream(AliRawReader* rawReader)
   fRawReader = rawReader;
   fModuleID = fPrevModuleID = fCoord1 = fCoord2 = fSignal = -1;
 }
+
+AliITSRawStream::AliITSRawStream(const AliITSRawStream& stream) :
+  TObject(stream)
+{
+  Fatal("AliITSRawStream", "copy constructor not implemented");
+}
+
+AliITSRawStream& AliITSRawStream::operator = (const AliITSRawStream& 
+					      /* stream */)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
+

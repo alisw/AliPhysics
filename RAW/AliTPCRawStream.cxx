@@ -13,15 +13,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // This is a base class for reading TPC raw data and providing
 // information about digits
 //
+// It loops over all TPC digits in the raw data given by the AliRawReader.
+// The Next method goes to the next digit. If there are no digits left
+// it returns kFALSE.
+// Several getters provide information about the current digit.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCRawStream.h"
 #include "AliTPCHuffman.h"
+#include "AliRawReader.h"
 
 ClassImp(AliTPCRawStream)
 
@@ -35,16 +43,29 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader)
 
   fRawReader = rawReader;
   fRawReader->Select(0);
-  fData = new UShort_t[kDataMax];
+  fData = new UShort_t[fgkDataMax];
   fDataSize = fPosition = 0;
   fCount = fBunchLength = 0;
 
   if (!fgRootNode) {
-    fgRootNode = new AliTPCHNode*[kNumTables];
-    fCompression.CreateTreesFromFile(fgRootNode, kNumTables);
+    fgRootNode = new AliTPCHNode*[fgkNumTables];
+    fCompression.CreateTreesFromFile(fgRootNode, fgkNumTables);
   }
 
   fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = fTime = fSignal = -1;
+}
+
+AliTPCRawStream::AliTPCRawStream(const AliTPCRawStream& stream) :
+  TObject(stream)
+{
+  Fatal("AliTPCRawStream", "copy constructor not implemented");
+}
+
+AliTPCRawStream& AliTPCRawStream::operator = (const AliTPCRawStream& 
+					      /* stream */)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
 }
 
 AliTPCRawStream::~AliTPCRawStream()
@@ -73,7 +94,7 @@ Bool_t AliTPCRawStream::Next()
 
       if (fRawReader->IsCompressed()) {  // compressed data
 	UInt_t size = 0;
-	fCompression.Decompress(fgRootNode, kNumTables, 
+	fCompression.Decompress(fgRootNode, fgkNumTables, 
 				(char*) data, fRawReader->GetDataSize(),
 				fData, size);
 	fDataSize = size;
@@ -139,7 +160,7 @@ Bool_t AliTPCRawStream::Next()
     Error("Next", "could not read sample amplitude");
     return kFALSE;
   }
-  fSignal = fData[fPosition++] + kOffset;
+  fSignal = fData[fPosition++] + fgkOffset;
   fCount--;
   fBunchLength--;
 
@@ -147,9 +168,10 @@ Bool_t AliTPCRawStream::Next()
 }
 
 
-UShort_t AliTPCRawStream::Get10BitWord(UChar_t* buffer, Int_t position)
-// return a word in a 10 bit array as an UShort_t
+UShort_t AliTPCRawStream::Get10BitWord(UChar_t* buffer, Int_t position) const
 {
+// return a word in a 10 bit array as an UShort_t
+
   Int_t iBit = position * 10;
   Int_t iByte = iBit / 8;
   Int_t shift = iBit % 8;

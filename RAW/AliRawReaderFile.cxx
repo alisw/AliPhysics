@@ -49,6 +49,19 @@ AliRawReaderFile::AliRawReaderFile(const char* fileName, Bool_t addNumber)
   fBufferSize = 0;
 }
 
+AliRawReaderFile::AliRawReaderFile(const AliRawReaderFile& rawReader) :
+  AliRawReader(rawReader)
+{
+  Fatal("AliRawReaderFile", "copy constructor not implemented");
+}
+
+AliRawReaderFile& AliRawReaderFile::operator = (const AliRawReaderFile& 
+					      /* rawReader */)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
+
 AliRawReaderFile::~AliRawReaderFile()
 {
 // close the input file
@@ -68,6 +81,9 @@ AliRawReaderFile::~AliRawReaderFile()
 
 Bool_t AliRawReaderFile::OpenNextFile()
 {
+// open the next file
+// returns kFALSE if the current file is the last one
+
   if (fStream) {
 #if defined(__HP_aCC) || defined(__DECCXX)
     if (fStream->rdbuf()->is_open()) fStream->close();

@@ -9,11 +9,12 @@
 class AliITSRawStreamSPD: public AliITSRawStream {
   public :
     AliITSRawStreamSPD(AliRawReader* rawReader);
+    virtual ~AliITSRawStreamSPD() {};
 
     virtual Bool_t   Next();
 
-    inline Int_t     GetRow() const {return fCoord1;};
-    inline Int_t     GetColumn() const {return fCoord2;};
+    Int_t            GetRow() const {return fCoord1;};
+    Int_t            GetColumn() const {return fCoord2;};
 
   private :
     UShort_t         fData;         // data read for file

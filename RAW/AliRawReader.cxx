@@ -18,6 +18,21 @@
 // This is the base class for reading raw data and providing
 // information about digits
 //
+// The derived classes, which operate on concrete raw data formats,
+// should implement
+// - ReadMiniHeader to read the next mini header
+// - ReadNextData to read the next raw data block (=1 DDL)
+// - ReadNext to read a given number of bytes
+// - several getters like GetType
+//
+// Sequential access to the raw data is provided by the methods
+// ReadMiniHeader, ReadNextData, ReadNextInt, ReadNextShort, ReadNextChar
+//
+// If only data from a specific detector (and a given range of DDL numbers)
+// should be read, this can be achieved by the Select method.
+// Several getter provide information about the current event and the
+// current type of raw data.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReader.h"
@@ -28,12 +43,41 @@ ClassImp(AliRawReader)
 
 AliRawReader::AliRawReader()
 {
+// default constructor: initialize data members
+
   fMiniHeader = NULL;
   fCount = 0;
 
   fSelectDetectorID = -1;
   fSelectMinDDLID = -1;
   fSelectMaxDDLID = -1;
+}
+
+AliRawReader::AliRawReader(const AliRawReader& rawReader) :
+  TObject(rawReader)
+{
+// copy constructor
+
+  fMiniHeader = rawReader.fMiniHeader;
+  fCount = rawReader.fCount;
+
+  fSelectDetectorID = rawReader.fSelectDetectorID;
+  fSelectMinDDLID = rawReader.fSelectMinDDLID;
+  fSelectMaxDDLID = rawReader.fSelectMaxDDLID;
+}
+
+AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
+{
+// assignment operator
+
+  fMiniHeader = rawReader.fMiniHeader;
+  fCount = rawReader.fCount;
+
+  fSelectDetectorID = rawReader.fSelectDetectorID;
+  fSelectMinDDLID = rawReader.fSelectMinDDLID;
+  fSelectMaxDDLID = rawReader.fSelectMaxDDLID;
+
+  return *this;
 }
 
 
@@ -48,7 +92,7 @@ void AliRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
   fSelectMaxDDLID = maxDDLID;
 }
 
-Bool_t AliRawReader::IsSelected()
+Bool_t AliRawReader::IsSelected() const
 {
 // apply the selection (if any)
 
@@ -63,7 +107,7 @@ Bool_t AliRawReader::IsSelected()
 }
 
 
-Bool_t AliRawReader::CheckMiniHeader()
+Bool_t AliRawReader::CheckMiniHeader() const
 {
 // check the magic number of the mini header
 

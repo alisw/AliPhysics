@@ -3,25 +3,28 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TObject.h>
-#include <Riostream.h>
-#include "AliRawEvent.h"
 #include "AliRawReader.h"
+
+class AliRawEvent;
+class AliRawData;
+class TFile;
 
 
 class AliRawReaderRoot: public AliRawReader {
   public :
     AliRawReaderRoot(const char* fileName, Int_t eventNumber);
     AliRawReaderRoot(AliRawEvent* event);
+    AliRawReaderRoot(const AliRawReaderRoot& rawReader);
+    AliRawReaderRoot& operator = (const AliRawReaderRoot& rawReader);
     virtual ~AliRawReaderRoot();
 
-    virtual UInt_t   GetType();
-    virtual UInt_t   GetRunNumber();
-    virtual const UInt_t* GetEventId();
-    virtual const UInt_t* GetTriggerPattern();
-    virtual const UInt_t* GetDetectorPattern();
-    virtual const UInt_t* GetAttributes();
-    virtual UInt_t   GetGDCId();
+    virtual UInt_t   GetType() const;
+    virtual UInt_t   GetRunNumber() const;
+    virtual const UInt_t* GetEventId() const;
+    virtual const UInt_t* GetTriggerPattern() const;
+    virtual const UInt_t* GetDetectorPattern() const;
+    virtual const UInt_t* GetAttributes() const;
+    virtual UInt_t   GetGDCId() const;
 
     virtual Bool_t   ReadMiniHeader();
     virtual Bool_t   ReadNextData(UChar_t*& data);

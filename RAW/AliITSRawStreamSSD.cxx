@@ -21,13 +21,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStreamSSD.h"
+#include "AliRawReader.h"
 
 ClassImp(AliITSRawStreamSSD)
 
 
-const Int_t AliITSRawStreamSSD::kDDLsNumber;
-const Int_t AliITSRawStreamSSD::kModulesPerDDL;
-const Int_t AliITSRawStreamSSD::kDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
+const Int_t AliITSRawStreamSSD::fgkDDLsNumber;
+const Int_t AliITSRawStreamSSD::fgkModulesPerDDL;
+const Int_t AliITSRawStreamSSD::fgkDDLModuleMap[fgkDDLsNumber][fgkModulesPerDDL] = {
     //104
     //DDL[32][]=
     { 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510,
@@ -225,7 +226,7 @@ Bool_t AliITSRawStreamSSD::Next()
   if (!fRawReader->ReadNextInt(fData)) return kFALSE;
   
   UInt_t relModuleID = (fData >> 21) & 0x000007FF;
-  fModuleID = kDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
+  fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
   fCoord1 = (fData >> 20) & 0x00000001;
   fCoord2 = (fData >> 10) & 0x000003FF;
   fSignal = (fData & 0x000003FF) + 1;

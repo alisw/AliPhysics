@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStreamSPD.h"
+#include "AliRawReader.h"
 
 ClassImp(AliITSRawStreamSPD)
 

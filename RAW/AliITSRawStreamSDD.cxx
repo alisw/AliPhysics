@@ -21,13 +21,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStreamSDD.h"
+#include "AliRawReader.h"
 
 ClassImp(AliITSRawStreamSDD)
 
 
-const Int_t AliITSRawStreamSDD::kDDLsNumber;
-const Int_t AliITSRawStreamSDD::kModulesPerDDL;
-const Int_t AliITSRawStreamSDD::kDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
+const Int_t AliITSRawStreamSDD::fgkDDLsNumber;
+const Int_t AliITSRawStreamSDD::fgkModulesPerDDL;
+const Int_t AliITSRawStreamSDD::fgkDDLModuleMap[fgkDDLsNumber][fgkModulesPerDDL] = {
   {240,241,242,246,247,248,252,253,254,258,259,260,264,265,266,270,271,272,276,277,278,-1},
   {243,244,245,249,250,251,255,256,257,261,262,263,267,268,269,273,274,275,279,280,281,-1},
   {282,283,284,288,289,290,294,295,296,300,301,302,306,307,308,312,313,314,318,319,320,-1},
@@ -58,9 +59,9 @@ Bool_t AliITSRawStreamSDD::Next()
 
   fPrevModuleID = fModuleID;
   if (!fRawReader->ReadNextInt(fData)) return kFALSE;
-  
+
   UInt_t relModuleID = (fData >> 25) & 0x0000007F;
-  fModuleID = kDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
+  fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
   fCoord1 = (fData >> 16) & 0x000001FF;
   fCoord2 = (fData >> 8) & 0x000000FF;
   fSignal = fData & 0x000000FF;
