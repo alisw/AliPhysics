@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/11/28 11:38:53  morsch
+Typo corrected.
+
 Revision 1.14  2002/11/26 17:12:36  morsch
 Decay pi0 if requested.
 
@@ -388,10 +391,15 @@ void AliGenHIJINGpara::Generate()
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
 	    }
-	    SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+	    if (part == kPi0 && fPi0Decays){
 //
 //          Decay pi0 if requested
-	    if (part == kPi0 && fPi0Decays) DecayPi0(origin, p);
+		SetTrack(0,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+		DecayPi0(origin, p);
+	    } else {
+		SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+	    }
+
 	    break;
 	}
     }
