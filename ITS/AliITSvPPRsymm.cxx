@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/04/04 07:02:16  barbera
+Position of the cylinders holding rails corrected
+
 Revision 1.14  2001/03/29 22:02:30  barbera
 Some changes to the services due to the new drawings from the engineers.
 
@@ -1219,9 +1222,9 @@ void AliITSvPPRsymm::CreateGeometry(){
      gMC->Gsvolu("I103", "BOX ", idtmed[254], di103, 3); // contains det and chip  
                                                          // layer 1
      dits[0] = 0.793;
-     dits[1] = 0.015;
+     dits[1] = 0.475;  //0.685; 0.015
      dits[2] = 2.5;
-     gMC->Gsvolu("I105", "BOX ", idtmed[201], dits, 3);  
+     gMC->Gsvolu("I105", "BOX ", idtmed[290], dits, 3);  
 
      di104[0] = 0.843;
      di104[1] = dbus;
@@ -1633,9 +1636,9 @@ void AliITSvPPRsymm::CreateGeometry(){
      gMC->Gsvolu("I124", "TUBS", idtmed[253], dits, 5);  
 
      dits[0] = 0.793;
-     dits[1] = 0.015 ;
+     dits[1] = 0.475;  //0.685; 0.015
      dits[2] = 2.5;
-     gMC->Gsvolu("I105", "BOX ", idtmed[201], dits, 3);  
+     gMC->Gsvolu("I105", "BOX ", idtmed[290], dits, 3);  
 
      di107[0] = 0.793;
      di107[1] = ddet1+dchip1;
@@ -4650,7 +4653,7 @@ void AliITSvPPRsymm::CreateMaterials(){
   AliMaterial(90,"SPD shield$", 12.011, 6., 1.93/10. , 22.1*10., 999);
   AliMedium(90,"SPD shield$",90, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
 
-  AliMaterial(91, "SPD End ladder$", 55.845, 26., 7.87/10., 1.76*10., 999); 
+  AliMaterial(91, "SPD End ladder$", 47.0447, 21.7963, 3.6374, 4.4711, 999); 
   AliMedium(91, "SPD End ladder$",91, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
 
   AliMaterial(92, "SPD cone$",28.0855, 14., 2.33, 9.36, 999);    
