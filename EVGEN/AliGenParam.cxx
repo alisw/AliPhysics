@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2002/05/30 14:59:12  morsch
+Check geometrical acceptance. (G. Martinez)
+
 Revision 1.37  2002/04/17 10:20:44  morsch
 Coding Rule violations corrected.
 
@@ -337,8 +340,7 @@ void AliGenParam::Generate()
   //
   if(!particles) particles = new TClonesArray("TParticle",1000);
   
-  static TDatabasePDG *pDataBase = new TDatabasePDG();
-  if(!pDataBase) pDataBase = new TDatabasePDG();
+  TDatabasePDG *pDataBase = TDatabasePDG::Instance();
   //
   Float_t random[6];
  
@@ -427,7 +429,6 @@ void AliGenParam::Generate()
 	      //  Selecting  GeometryAcceptance for particles fPdgCodeParticleforAcceptanceCut;
 	      if (fGeometryAcceptance) 
 		if (!CheckAcceptanceGeometry(np,particles)) continue;
-	      
 	      Int_t ncsel=0;
 	      Int_t* pFlag      = new Int_t[np];
 	      Int_t* pParent    = new Int_t[np];
