@@ -1,6 +1,6 @@
 # Makefile for ALICE MDC program for Linux
 
-include $(ROOTSYS)/test/Makefile
+include $(ROOTSYS)/test/Makefile.arch
 
 LDFLAGS      += -Wl,-rpath,/ROOT/Linux/CurrentRelease/root/lib \
                 -Wl,-rpath,/date/smi/linux \
@@ -59,4 +59,4 @@ include Make-macros
 
 ##### DEPENDENCIES #####
 
--include Make-depend
+include Make-depend
