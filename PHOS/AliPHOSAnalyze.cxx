@@ -327,7 +327,7 @@ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)
 	  fClu->SetEmcClusteringThreshold(0.20) ; 
 	  fClu->SetPpsdEnergyThreshold    (0.0000001) ; 
 	  fClu->SetPpsdClusteringThreshold(0.0000001) ;
-	  fClu->SetLocalMaxCut(0.02) ;
+	  fClu->SetLocalMaxCut(0.03) ;
 	  fClu->SetCalibrationParameters(0., 0.00000001) ; 
 	  
 	  //========== Creates the track segment maker
@@ -578,7 +578,7 @@ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)
 	  Double_t RecX, RecZ ;
 	  fGeom->ImpactOnEmc(RecParticle->Theta(), RecParticle->Phi(), ModuleNumberRec, RecX, RecZ) ;
 	  
-	  Double_t MinDistance = 5. ;
+	  Double_t MinDistance = 2. ;
 	  Int_t ClosestPrimary = -1 ;
 	  
 	  Int_t numberofprimaries ;
@@ -607,6 +607,8 @@ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)
 	    Int_t PrimaryType = ((TParticle *)PrimaryList->At(ClosestPrimary))->GetPdgCode() ;
 	    TParticlePDG* PDGparticle = ((TParticle *)PrimaryList->At(ClosestPrimary))->GetPDG();
 	    Double_t charge =  PDGparticle->Charge() ;
+// 	    if(charge)
+// 	      cout <<"Primary " <<PrimaryType << " E " << ((TParticle *)PrimaryList->At(ClosestPrimary))->Energy() << endl ;
 	    Int_t PrimaryCode ;
 	    switch(PrimaryType)
 	      {
@@ -633,11 +635,20 @@ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)
 	      case 130 :
 		PrimaryCode = 4;  //K0l
 		break;
+	      case 211 :
+		PrimaryCode = 2;  //K0l
+		break;
+	      case -211 :
+		PrimaryCode = 2;  //K0l
+		break;
+	      case 2212 :
+		PrimaryCode = 2;  //K0l
+		break;
+	      case -2212 :
+		PrimaryCode = 2;  //K0l
+		break;
 	      default:
-		if(charge)
-		  PrimaryCode = 2; //Charged hadron
-		else
-		  PrimaryCode = 3; //Neutral hadron
+		PrimaryCode = 3; //ELSE
 		break;
 	      }
 	    
