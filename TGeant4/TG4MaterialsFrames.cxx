@@ -30,6 +30,8 @@ TG4MaterialsFrames::TG4MaterialsFrames( TGCompositeFrame* Parent, TGMainFrame* A
 //---> creates the materials properties display frame
 //---> and plunges it into the main frame
    fCapFrame = new TGCompositeFrame(Parent, 60, 20, kHorizontalFrame);
+   ULong_t back= TGFrame::GetBlackPixel(); 
+   fCapFrame->ChangeBackground(back);   
    fMatSubframe1 = new TGCompositeFrame(fCapFrame, 60, 20, kVerticalFrame);
    fMatFrameLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5);
 
@@ -179,9 +181,9 @@ void TG4MaterialsFrames::DisplayMaterialCharacteristics()
      G4cout << lvMaterial->GetName() << "  "
 	    << lvMaterial->GetNumberOfElements() << "  "
 	    << (*allElements )[0]->GetName() << "...  "
-	    << lvMaterial->GetDensity() << "  "
+	    << lvMaterial->GetDensity()/(g/cm3) << "  "
 	    << lvMaterial->GetState() << "  "
-	    << lvMaterial->GetRadlen() << "  "
+	    << lvMaterial->GetRadlen()/(cm) << "  "
 	    << G4endl;
 	  
    char buff[200];
@@ -209,12 +211,12 @@ void TG4MaterialsFrames::DisplayMaterialCharacteristics()
 
     sprintf(buff, " Multi element material" );
     if( noe < 2 )
-        sprintf(buff, "%10.2e", lvMaterial->GetA() );
+        sprintf(buff, "%10.2e", lvMaterial->GetA()/(g) );
     fMatTextBuff[3]->Clear();
     fMatTextBuff[3]->AddText(0, buff);
     gClient->NeedRedraw(fMatTextEntry[3]);
     
-    sprintf(buff, "%10.2e", lvMaterial->GetDensity() );
+    sprintf(buff, "%10.2e", lvMaterial->GetDensity()/(g/cm3) );
     fMatTextBuff[4]->Clear();
     fMatTextBuff[4]->AddText(0, buff);
     gClient->NeedRedraw(fMatTextEntry[4]);
@@ -224,7 +226,7 @@ void TG4MaterialsFrames::DisplayMaterialCharacteristics()
     fMatTextBuff[5]->AddText(0, buff);
     gClient->NeedRedraw(fMatTextEntry[5]);
     
-    sprintf(buff,"%10.2e", lvMaterial->GetRadlen());
+    sprintf(buff,"%10.2e", lvMaterial->GetRadlen()/(cm));
     fMatTextBuff[6]->Clear();
     fMatTextBuff[6]->AddText(0, buff);
     gClient->NeedRedraw(fMatTextEntry[6]);
