@@ -105,7 +105,7 @@ AliL3MemHandler::~AliL3MemHandler()
   if(fDPt) delete [] fDPt;
 }
 
-void AliL3MemHandler::Init(Int_t s,Int_t p, Int_t *r=0)
+void AliL3MemHandler::Init(Int_t s,Int_t p, Int_t *r)
 {
   fSlice=s;fPatch=p;
   if(r) {

@@ -3,11 +3,13 @@
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ASV
 
+#ifndef no_root
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TClonesArray.h>
 #include <TStopwatch.h>
 #include <iostream.h>
+#endif
 
 #include "AliL3Logging.h"
 #include "AliLevel3.h"
@@ -59,6 +61,21 @@ AliLevel3::AliLevel3()
   fInputFile=0;
 }
 
+#ifdef no_root
+AliLevel3::AliLevel3(Char_t *infile)
+{
+  //Constructor. Calls constructor of the tracker, vertexfinder and merger classes.
+  
+  fInputFile = fopen(infile,"r");
+  
+  if(!fInputFile)
+    {
+      LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
+	<<"Inputfile "<<infile<<" does not exist!"<<ENDLOG;
+      return;
+    }
+}
+#else
 AliLevel3::AliLevel3(Char_t *infile)
 {
   //Constructor. Calls constructor of the tracker, vertexfinder and merger classes.
@@ -68,12 +85,13 @@ AliLevel3::AliLevel3(Char_t *infile)
   if(!fInputFile->IsOpen())
     {
       LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-	<<"Inputfile "<<infile<<" does not exist"<<ENDLOG;
+	<<"Inputfile "<<infile<<" does not exist!"<<ENDLOG;
       return;
     }
-  
 }
+#endif
 
+#ifndef no_root
 AliLevel3::AliLevel3(TFile *in)
 {
   fInputFile  =  in;
@@ -90,6 +108,7 @@ AliLevel3::AliLevel3(TFile *in)
       return;
     }
 }
+#endif
 
 void AliLevel3::Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6)
 {

@@ -1,8 +1,10 @@
 #ifndef ALILEVEL3_H
 #define ALILEVEL3_H
 
+#ifndef no_root
 #include <TObject.h>
 #include <TFile.h>
+#endif
 
 #include "AliL3DigitData.h"
 #include "AliL3RootTypes.h"
@@ -16,7 +18,9 @@ class AliL3Vertex;
 class AliL3VertexFinder;
 class AliL3TrackMerger;
 class AliL3GlobalMerger;
+#ifndef no_root
 class TDirectory;
+#endif
 class AliL3ClustFinderNew;
 class AliL3Merger;
 class AliL3InterMerger;
@@ -28,7 +32,11 @@ class AliL3MemHandler;
 #endif
 class AliL3Benchmark;
 
+#ifdef no_root
+class AliLevel3 {
+#else
 class AliLevel3 : public TObject {
+#endif
 
  private:
   UInt_t fNTrackData;
@@ -52,8 +60,13 @@ class AliLevel3 : public TObject {
   Int_t fRow[6][2];
   Float_t fEta[2];
   
+#ifdef no_root
+  FILE *fInputFile;
+#else
   TDirectory *savedir;
   TFile *fInputFile;
+#endif
+
   Char_t fPath[256];
   Char_t fWriteOutPath[256];
 
@@ -79,7 +92,9 @@ class AliLevel3 : public TObject {
  public:
   AliLevel3 ();
   AliLevel3(Char_t *infile);
+#ifndef no_root
   AliLevel3(TFile *in);
+#endif
   virtual ~AliLevel3();
   
   void Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6);

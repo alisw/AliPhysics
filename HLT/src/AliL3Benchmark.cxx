@@ -2,22 +2,28 @@
 //*-- Copyright &copy Uli
 
 #include <time.h>
+#ifndef no_root
 #include <TFile.h>
-#include "TGraphAsymmErrors.h"
-#include "TString.h"
-#include "TStopwatch.h"
+#include <TGraphAsymmErrors.h>
+#include <TString.h>
+#include <TStopwatch.h>
+#include <TMath.h>
+#endif
+
 #include "AliL3Benchmark.h"
-#include "TStopwatch.h"
-#include "TMath.h"
 #include "AliL3Logging.h"
 
 
+/**
+// \class AliL3Benchmark
 //_____________________________________________________________
+//
+// AliL3Benchmark
 //
 //   Benchmark class for level3 code
 //  
-//
-//
+//</pre>
+*/
 
 ClassImp(AliL3Benchmark)
 AliL3Benchmark::AliL3Benchmark()
@@ -25,14 +31,14 @@ AliL3Benchmark::AliL3Benchmark()
   //Constructor
 
   fNbench = 0;
-   fNmax   = 20;
-   fNames  = 0;
-   fTimer  = 0;
-   fSum    = 0;
-   fMin    = 0;
-   fMax    = 0;
-   fCount  = 0;
-//   fStopwatch = 0;
+  fNmax   = 20;
+  fNames  = 0;
+  fTimer  = 0;
+  fSum    = 0;
+  fMin    = 0;
+  fMax    = 0;
+  fCount  = 0;
+  //fStopwatch = 0;
 }
 
 AliL3Benchmark::~AliL3Benchmark()
@@ -44,7 +50,7 @@ AliL3Benchmark::~AliL3Benchmark()
    if (fMin)    {delete [] fMin;   fMin   = 0;}
    if (fMax)    {delete [] fMax;   fMax   = 0;}
    if (fCount)  {delete [] fCount; fCount =0;}
-//   if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
+   //if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
 }
 
 Int_t AliL3Benchmark::GetBench(const char *name)
@@ -59,39 +65,50 @@ Int_t AliL3Benchmark::GetBench(const char *name)
 void AliL3Benchmark::Start(const char *name)
 {
    if (!fNbench) {
-      fNames = new TString[fNmax];
-      fTimer = new TStopwatch[fNmax];
-      fSum   = new Float_t[fNmax];
-      fMin   = new Float_t[fNmax];
-      fMax   = new Float_t[fNmax];
-      fCount = new Int_t[fNmax];
-      for(Int_t i =0;i<fNmax;i++){
-         fSum[i]=0;
-         fMin[i]=0;
-         fMax[i]=0;
-         fCount[i]=0;
-      }
+#ifdef no_root
+     fNames=new Char_t*[fNmax];
+     fTimer = new AliL3Stopwatch[fNmax];
+#else
+     fNames = new TString[fNmax];
+     fTimer = new TStopwatch[fNmax];
+#endif
+
+     fSum   = new Float_t[fNmax];
+     fMin   = new Float_t[fNmax];
+     fMax   = new Float_t[fNmax];
+     fCount = new Int_t[fNmax];
+     for(Int_t i =0;i<fNmax;i++){
+       fSum[i]=0;
+       fMin[i]=0;
+       fMax[i]=0;
+       fCount[i]=0;
+     }
    }
    Int_t bench = GetBench(name);
    if (bench < 0 && fNbench < fNmax ) {
-   // define a new benchmark to Start
+      // define a new benchmark to Start
+#ifdef no_root
+     fNames[fNbench]=new Char_t[strlen(name)+1];
+     strcpy(fNames[fNbench],name);
+#else
       fNames[fNbench] = name;
+#endif
       bench = fNbench;
       fNbench++;
       fTimer[bench].Reset();
       fTimer[bench].Start();
-//      if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
-//      fStopwatch = new TStopwatch();
-//      fStopwatch->Reset();
-//      fStopwatch->Start();
+      //if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
+      //fStopwatch = new TStopwatch();
+      //fStopwatch->Reset();
+      //fStopwatch->Start();
    } else if (bench >=0) {
-   // Resume the existen benchmark
+   // Resume the existent benchmark
       fTimer[bench].Reset();
       fTimer[bench].Start();
-//      if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
-//      fStopwatch = new TStopwatch();
-//      fStopwatch->Reset();
-//      fStopwatch->Start();
+      //if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
+      //fStopwatch = new TStopwatch();
+      //fStopwatch->Reset();
+      //fStopwatch->Start();
    }
    else
      LOG(AliL3Log::kWarning,"AliL3Benchmark::Start","Start")
@@ -105,8 +122,8 @@ void AliL3Benchmark::Stop(const char *name)
 
    fTimer[bench].Stop();
    Float_t val = fTimer[bench].CpuTime();
-//   fStopwatch->Stop();
-//   Float_t val = fStopwatch->CpuTime();
+   //fStopwatch->Stop();
+   //Float_t val = fStopwatch->CpuTime();
    
    fSum[bench] += val; 
    fCount[bench]++;
@@ -135,7 +152,11 @@ void AliL3Benchmark::Analyze(const char* name){
     y[i]=av*1000;
     eyl[i]=(av-fMin[i])*1000;
     eyh[i]=(fMax[i]-av)*1000;
+#ifdef no_root
+    fprintf(f,"%2d. %s: ",i+1,fNames[i]);
+#else
     fprintf(f,"%2d. %s: ",i+1,fNames[i].Data());
+#endif
     fprintf(f,"%4.0f ms\n",av*1000);
   }
   fclose(f);
@@ -148,6 +169,7 @@ void AliL3Benchmark::Analyze(const char* name){
   for (Int_t i=0;i<fNbench;i++) fprintf(f2,"%f ",eyh[i]); fprintf(f2,"\n");
   fclose(f2);
 */
+#ifndef no_root
   sprintf(filename,"%s.root",name);
   TFile *file = new TFile(filename,"RECREATE");
   TGraphAsymmErrors *gr = new TGraphAsymmErrors(fNbench,x,y,0,0,eyl,eyh);
@@ -159,6 +181,7 @@ void AliL3Benchmark::Analyze(const char* name){
   file->Close();
   delete file; 
   file=0;
+#endif
   delete[] x;
   delete[] y;
   delete[] eyl;
