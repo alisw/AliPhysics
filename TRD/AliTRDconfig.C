@@ -15,10 +15,22 @@ void Config()
   // Define the monte carlo
   TGeant3 *geant3 = (TGeant3*) gMC;
 
+  AliRunLoader* rl=0x0;
+  cout << "AliTRDconfig.C: Creating Run Loader ..." <<endl;
+  rl = AliRunLoader::Open("TRD_test.root"
+                         ,AliConfig::fgkDefaultEventFolderName
+                         ,"recreate");
+  if (rl == 0x0) {
+    gAlice->Fatal("AliTRDconfig.C","Can not instatiate the Run Loader");
+    return;
+  }
+  rl->SetCompressionLevel(2);
+  rl->SetNumberOfEventsPerFile(3);
+  gAlice->SetRunLoader(rl);
+
   // Set external decayer
-  AliDecayer* decayer = new AliDecayerPythia();
+  TVirtualMCDecayer *decayer = new AliDecayerPythia();
   decayer->SetForceDecay(kAll);
-  //decayer->SetForceDecay(kAll);
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
 
@@ -119,6 +131,8 @@ void Config()
   Int_t iFRAME = 1;
   Int_t iSHIL  = 1;
   Int_t iPIPE  = 1;
+
+  rl->CdGAFile();
 
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");

@@ -16,9 +16,9 @@ Int_t AliTRDtest()
   gAlice->SetDebug(2);
   gAlice->Run(1);
 
-  if (gAlice) delete gAlice;
-  file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
-  gAlice = (AliRun *) file->Get("gAlice");
+  //if (gAlice) delete gAlice;
+  //file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  //gAlice = (AliRun *) file->Get("gAlice");
 
   // Analyze the TRD hits
   if (rc = AliTRDanalyzeHits()) return rc;
@@ -26,22 +26,22 @@ Int_t AliTRDtest()
   // Run the digitization
   if (rc = AliTRDcreateDigits()) return rc;
 
-  if (gAlice) delete gAlice;
-  file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
-  gAlice = (AliRun *) file->Get("gAlice");
+//    if (gAlice) delete gAlice;
+//    file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+//    gAlice = (AliRun *) file->Get("gAlice");
 
-  // Analyze the digits
-  if (rc = AliTRDanalyzeDigits()) return rc;
+//    // Analyze the digits
+//    if (rc = AliTRDanalyzeDigits()) return rc;
 
-  // Create the cluster
-  if (rc = AliTRDcreateCluster()) return rc;
+//    // Create the cluster
+//    if (rc = AliTRDcreateCluster()) return rc;
 
-  if (gAlice) delete gAlice;
-  file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
-  gAlice = (AliRun *) file->Get("gAlice");
+//    if (gAlice) delete gAlice;
+//    file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+//    gAlice = (AliRun *) file->Get("gAlice");
 
-  // Analyze the cluster
-  if (rc = AliTRDanalyzeCluster()) return rc;
+//    // Analyze the cluster
+//    if (rc = AliTRDanalyzeCluster()) return rc;
 
   //file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
   //file->Close();
@@ -62,12 +62,22 @@ Int_t AliTRDanalyzeHits()
 
   Int_t rc = 0;
 
-  if (!gAlice) {
-    cout << "<AliTRDanalyzeHits> No AliRun object found" << endl;
+  AliRunLoader *rl = gAlice->GetRunLoader();
+  if (!rl) {
+    cout << "<AliTRDanalyzeHits> No RunLoader found" << endl;
     rc = 1;
     return rc;
   }
-  gAlice->GetEvent(0);
+
+  // Import the Trees for the event nEvent in the file
+  rl->GetEvent(0);
+  
+  AliLoader* loader = rl->GetLoader("TRDLoader");
+  if (!loader) {
+    cout << "<AliTRDanalyzeHits> No TRDLoader found" << endl;
+    rc = 2;
+    return rc;
+  }
 
   // Get the pointer to the TRD detector 
   AliTRD *trd = (AliTRD *) gAlice->GetDetector("TRD");
@@ -117,7 +127,7 @@ Int_t AliTRDanalyzeHits()
                                     ,50,0.0,1000.0);
 
   // Get the pointer hit tree
-  TTree *hitTree = gAlice->TreeH();  
+  TTree *hitTree = loader->TreeH();  
   if (!hitTree) {
     cout << "<AliTRDanalyzeHits> No hit tree found" << endl;
     rc = 4;
@@ -171,25 +181,26 @@ Int_t AliTRDanalyzeHits()
         hQtr->Fill(TMath::Abs(q));
       }
 
-      TParticle *part = gAlice->Particle(track);
+//        printf("Getting TParticle for track %d\n",track);
+//        TParticle *part = gAlice->Particle(track);
 
-      if ((plane == 0) && (q > 0)) {
+//        if ((plane == 0) && (q > 0)) {
 
-        // 3 GeV electrons
-        if ((part->GetPdgCode() ==   11) && 
-            (part->P()          >   2.9)) {
-          nPrimE++;
-          nTotE += ((Int_t) q);
-        }
+//          // 3 GeV electrons
+//          if ((part->GetPdgCode() ==   11) && 
+//              (part->P()          >   2.9)) {
+//            nPrimE++;
+//            nTotE += ((Int_t) q);
+//          }
 
-        // MIP pions
-        if ((part->GetPdgCode() == -211) &&
-            (part->P()          >   0.5)) {
-          nPrimP++;
-          nTotP += ((Int_t) q);
-        }
+//          // MIP pions
+//          if ((part->GetPdgCode() == -211) &&
+//              (part->P()          >   0.5)) {
+//            nPrimP++;
+//            nTotP += ((Int_t) q);
+//          }
 
-      }
+//        }
 
       hit = (AliTRDhit *) trd->NextHit();         
 
@@ -262,7 +273,9 @@ Int_t AliTRDcreateDigits()
   // Create the TRD digitzer 
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
                                                   ,"TRD digitizer class");
+  digitizer->Open("TRD_test.root");
   digitizer->InitDetector();
+  digitizer->InitOutput(0);
 
   // Set the parameter
   digitizer->SetDebug(1);
@@ -281,10 +294,10 @@ Int_t AliTRDcreateDigits()
   }
 
   // Write the digits into the input file
-  if (!(digitizer->MakeBranch())) {
-    rc = 3;
-    return rc;
-  }
+  //if (!(digitizer->MakeBranch())) {
+  //  rc = 3;
+  //  return rc;
+  //}
 
   // Write the digits into the input file
   if (!(digitizer->WriteDigits())) {
