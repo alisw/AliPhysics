@@ -158,9 +158,10 @@ void AliMagFCM::Field(Float_t *x, Float_t *b)
   if(-700<x[2] && x[2]<fZbeg && x[0]*x[0]+(x[1]+30)*(x[1]+30) < 560*560) {
     b[2]=2;
   } else  {
-    if(fZbeg<=x[2] && x[2]<fZbeg+fZdel*(fZn-1)
+    Bool_t infield=(fZbeg<=x[2] && x[2]<fZbeg+fZdel*(fZn-1)
        &&  ( fXbeg <= TMath::Abs(x[0]) && TMath::Abs(x[0]) < fXbeg+fXdel*(fXn-1) )
-       &&  ( fYbeg <= TMath::Abs(x[1]) && TMath::Abs(x[1]) < fYbeg+fYdel*(fYn-1) )) {
+       &&  ( fYbeg <= TMath::Abs(x[1]) && TMath::Abs(x[1]) < fYbeg+fYdel*(fYn-1) ));
+      if(infield) {
       xl[0]=TMath::Abs(x[0])-fXbeg;
       xl[1]=TMath::Abs(x[1])-fYbeg;
       xl[2]=x[2]-fZbeg;

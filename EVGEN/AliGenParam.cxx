@@ -240,10 +240,12 @@ void AliGenParam::Generate()
 		    Float_t PChild=TMath::Sqrt(PtChild*PtChild+pc[2]*pc[2]);
 		    Float_t ThetaChild=TMath::ATan2(PtChild,pc[2]);
 		    Float_t PhiChild=TMath::ATan2(pc[1],pc[0])+TMath::Pi();
-		    if ((PtChild   > fPtMin   && PtChild   <fPtMax)      &&
+		    Bool_t childok = 
+		      ((PtChild   > fPtMin   && PtChild   <fPtMax)      &&
 			(PChild    > fPMin    && PChild    <fPMax)       &&
 			(ThetaChild>fThetaMin && ThetaChild<fThetaMax)   &&
-			(PhiChild  >  fPhiMin && PhiChild  <fPhiMax))
+			(PhiChild  >  fPhiMin && PhiChild  <fPhiMax));
+		    if(childok)
 		      {
 			pch[ncsel][0]=pc[0];
 			pch[ncsel][1]=pc[1];
