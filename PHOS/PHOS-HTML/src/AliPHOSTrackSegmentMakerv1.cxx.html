@@ -1,0 +1,619 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:51 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSTrackSegmentMakerv1 - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>// Implementation version 1 of algorithm class to construct PHOS track segments</b>
+<b>// Associates EMC and PPSD clusters</b>
+<b>// Unfolds the EMC cluster   </b>
+<b>//                  </b>
+<b>//*-- Author: Dmitri Peressounko (RRC Ki &amp; SUBATECH)</b>
+<b>//</b>
+
+<b>// --- ROOT system ---</b>
+
+#include "TObjArray.h"
+#include "TClonesArray.h"
+#include "TObjectTable.h"
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+#include &lt;cassert&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSTrackSegmentMakerv1.h">AliPHOSTrackSegmentMakerv1.h</a>"
+#include "<a href="../AliPHOSTrackSegment.h">AliPHOSTrackSegment.h</a>"
+#include "<a href="../AliPHOSLink.h">AliPHOSLink.h</a>"
+#include "<a href="../AliPHOSv0.h">AliPHOSv0.h</a>"
+#include "AliRun.h"
+
+extern void UnfoldingChiSquare(Int_t &amp;nPar, Double_t *Grad, Double_t &amp; fret, Double_t *x, Int_t iflag) ; 
+
+ClassImp( AliPHOSTrackSegmentMakerv1) 
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:AliPHOSTrackSegmentMakerv1"> </a> <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:AliPHOSTrackSegmentMakerv1">AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1</a>() 
+{
+<b>  // ctor</b>
+
+  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fR0">fR0</a> = 4. ;   
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+<b>  //clusters are sorted in "rows" and "columns" of width geom-&gt;GetCrystalSize(0),</b>
+  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fDelta">fDelta</a> = <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fR0">fR0</a> + geom-&gt;GetCrystalSize(0) ;
+  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fMinuit">fMinuit</a> = new TMinuit(100) ;
+  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fUnfoldFlag">fUnfoldFlag</a> = kTRUE ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:~AliPHOSTrackSegmentMakerv1"> </a> <a href=".././AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a>::~<a href=".././AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a>()
+{ 
+<b>  // dtor</b>
+ 
+   delete <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fMinuit">fMinuit</a> ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:FindFit"> </a><a href="../ListOfTypes.html#Bool_t">Bool_t</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:FindFit">AliPHOSTrackSegmentMakerv1::FindFit</a>(<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emcRP, <a href="../ListOfTypes.html#int">int</a> * maxAt, <a href="../ListOfTypes.html#Float_t">Float_t</a> * maxAtEnergy,
+				    <a href="../ListOfTypes.html#Int_t">Int_t</a> nPar, <a href="../ListOfTypes.html#Float_t">Float_t</a> * fitparameters)
+{ 
+<b>  // Calls TMinuit to fit the energy distribution of a cluster with several maxima </b>
+
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+
+  gMinuit-&gt;SetPrintLevel(-1) ;           // No Printout
+  gMinuit-&gt;SetFCN(UnfoldingChiSquare) ;  // To set the address of the minimization function 
+  gMinuit-&gt;SetObjectFit(emcRP) ;         // To tranfer pointer to UnfoldingChiSquare
+
+<b>  // filling initial values for fit parameters</b>
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> ierflg  = 0; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> index   = 0 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> nDigits = (<a href="../ListOfTypes.html#Int_t">Int_t</a>) nPar / 3 ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iDigit ;
+
+
+  for(iDigit = 0; iDigit &lt; nDigits; iDigit++){
+    digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *) maxAt[iDigit]; 
+
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> x ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> z ;
+    geom-&gt;AbsToRelNumbering(digit-&gt;GetId(), relid) ;
+    geom-&gt;RelPosInModule(relid, x, z) ;
+
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> energy = maxAtEnergy[iDigit] ;
+
+    gMinuit-&gt;mnparm(index, "x",  x, 0.1, 0, 0, ierflg) ;
+    index++ ;   
+    if(ierflg != 0){ 
+      cout &lt;&lt; "PHOS Unfolding&gt;  Unable to set initial value for fit procedure : x = " &lt;&lt; x &lt;&lt; endl ;
+      return kFALSE;
+    }
+    gMinuit-&gt;mnparm(index, "z",  z, 0.1, 0, 0, ierflg) ;
+    index++ ;   
+    if(ierflg != 0){
+      cout &lt;&lt; "PHOS Unfolding&gt;  Unable to set initial value for fit procedure : z = " &lt;&lt; z &lt;&lt; endl ;
+      return kFALSE;
+    }
+    gMinuit-&gt;mnparm(index, "Energy",  energy , 0.05*energy, 0., 4.*energy, ierflg) ;
+    index++ ;   
+    if(ierflg != 0){
+      cout &lt;&lt; "PHOS Unfolding&gt;  Unable to set initial value for fit procedure : energy = " &lt;&lt; energy &lt;&lt; endl ;      
+      return kFALSE;
+    }
+  }
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> p0 = 0.1 ; // "Tolerance" Evaluation stops when EDM = 0.0001*p0 ; The number of function call slightly
+<b>                      //  depends on it. </b>
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> p1 = 1.0 ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> p2 = 0.0 ;
+
+  gMinuit-&gt;mnexcm("SET STR", &amp;p2, 0, ierflg) ;   // force TgMinuit to reduce function calls  
+  gMinuit-&gt;mnexcm("SET GRA", &amp;p1, 1, ierflg) ;   // force TMinuit to use my gradient  
+  gMinuit-&gt;SetMaxIterations(5);
+  gMinuit-&gt;mnexcm("SET NOW", &amp;p2 , 0, ierflg) ;  // No Warnings
+  gMinuit-&gt;mnexcm("MIGRAD", &amp;p0, 0, ierflg) ;    // minimize 
+  if(ierflg == 4){  // Minimum not found   
+    cout &lt;&lt; "PHOS Unfolding&gt;  Fit not converged, cluster abandoned "&lt;&lt; endl ;      
+    return kFALSE ;
+  }            
+  for(index = 0; index &lt; nPar; index++){
+    <a href="../ListOfTypes.html#Double_t">Double_t</a> err ;
+    <a href="../ListOfTypes.html#Double_t">Double_t</a> val ;
+    gMinuit-&gt;GetParameter(index, val, err) ;    // Returns value and error of parameter index
+    fitparameters[index] = val ;
+   }
+  return kTRUE;
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:FillOneModule"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:FillOneModule">AliPHOSTrackSegmentMakerv1::FillOneModule</a>(<a href="../ListOfTypes.html#DigitsList">DigitsList</a> * Dl, <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * emcIn, TObjArray * emcOut, 
+					<a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdIn, TObjArray * ppsdOutUp,
+					TObjArray * ppsdOutLow, <a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; phosmod, <a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; emcStopedAt, 
+					<a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; ppsdStopedAt)
+{
+<b>  // Unfold clusters and fill xxxOut arrays with clusters from one PHOS module</b>
+ 
+  <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *  emcRecPoint  ; 
+  <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdRecPoint ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> index ;
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> nEmcUnfolded = emcIn-&gt;GetEntries() ;
+  for(index = emcStopedAt; index &lt; nEmcUnfolded; index++){
+    emcRecPoint = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *) (*emcIn)[index] ;
+
+    if(emcRecPoint-&gt;GetPHOSMod() != phosmod )  
+       break ;
+    
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> nMultipl = emcRecPoint-&gt;GetMultiplicity() ; 
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> maxAt[nMultipl] ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> maxAtEnergy[nMultipl] ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> nMax = emcRecPoint-&gt;GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
+
+    if(nMax &lt;= 1 )     // if cluster is very flat (no pronounced maximum) then nMax = 0 
+      emcOut-&gt;Add(emcRecPoint) ;
+    else if (<a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fUnfoldFlag">fUnfoldFlag</a>) {
+      <a href="#AliPHOSTrackSegmentMakerv1:UnfoldClusters">UnfoldClusters</a>(Dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy, emcOut) ;
+      emcIn-&gt;Remove(emcRecPoint); 
+      emcIn-&gt;Compress() ;
+      nEmcUnfolded-- ;
+      index-- ;
+    }
+  }
+  emcStopedAt = index ;
+
+  for(index = ppsdStopedAt; index &lt; ppsdIn-&gt;GetEntries(); index++){
+    ppsdRecPoint = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *) (*ppsdIn)[index] ;
+    if(ppsdRecPoint-&gt;GetPHOSMod() != phosmod )   
+      break ;
+    if(ppsdRecPoint-&gt;GetUp() ) 
+      ppsdOutUp-&gt;Add(ppsdRecPoint) ;
+    else  
+      ppsdOutLow-&gt;Add(ppsdRecPoint) ;
+  }
+  ppsdStopedAt = index ;
+   
+  emcOut-&gt;Sort() ;
+  ppsdOutUp-&gt;Sort() ;
+  ppsdOutLow-&gt;Sort() ;   
+}
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:GetDistanceInPHOSPlane"> </a><a href="../ListOfTypes.html#Float_t">Float_t</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:GetDistanceInPHOSPlane">AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane</a>(<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emcclu,<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * PpsdClu, <a href="../ListOfTypes.html#Bool_t">Bool_t</a> &amp;toofar)
+{
+<b>  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint</b>
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fR0">fR0</a> ;
+ 
+  TVector3 vecEmc ;
+  TVector3 vecPpsd ;
+  
+  emcclu-&gt;GetLocalPosition(vecEmc) ;
+  PpsdClu-&gt;GetLocalPosition(vecPpsd)  ; 
+  if(emcclu-&gt;GetPHOSMod() == PpsdClu-&gt;GetPHOSMod()){ 
+    if(vecPpsd.X() &gt;= vecEmc.X() - <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fDelta">fDelta</a> ){ 
+      if(vecPpsd.Z() &gt;= vecEmc.Z() - <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fDelta">fDelta</a> ){
+	<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+<b>	// Correct to difference in CPV and EMC position due to different distance to center.</b>
+<b>	// we assume, that particle moves from center</b>
+	<a href="../ListOfTypes.html#Float_t">Float_t</a> dCPV = geom-&gt;GetIPtoOuterCoverDistance();
+	<a href="../ListOfTypes.html#Float_t">Float_t</a> dEMC = geom-&gt;GetIPtoCrystalSurface() ;
+	dEMC         = dEMC / dCPV ;
+        vecPpsd = dEMC * vecPpsd  - vecEmc ; 
+        r = vecPpsd.Mag() ;
+      } // if  zPpsd &gt;= zEmc - <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fDelta">fDelta</a>
+      toofar = kFALSE ;
+    } // if  xPpsd &gt;= xEmc - <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fDelta">fDelta</a>
+    else 
+      toofar = kTRUE ;
+  } 
+  else 
+    toofar = kTRUE ;
+  
+  return r ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:MakeLinks"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:MakeLinks">AliPHOSTrackSegmentMakerv1::MakeLinks</a>(TObjArray * emcRecPoints, TObjArray * ppsdRecPointsUp, 
+				     TObjArray * ppsdRecPointsLow, TClonesArray * linklowArray, 
+				     TClonesArray *linkupArray) 
+{ 
+<b>  // Finds distances (links) between all EMC and PPSD clusters, which are not further apart from each other than <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fR0">fR0</a> </b>
+  
+  TIter nextEmc(emcRecPoints) ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iEmcClu = 0 ; 
+  
+  <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdlow ; 
+  <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdup ;
+  <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emcclu ;
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iLinkLow = 0 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iLinkUp  = 0 ;
+  
+  while( (emcclu = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>*)nextEmc() ) ) {
+    <a href="../ListOfTypes.html#Bool_t">Bool_t</a> toofar ;
+    TIter nextPpsdLow(ppsdRecPointsLow ) ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> iPpsdLow = 0 ;
+    
+    while( (ppsdlow = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>*)nextPpsdLow() ) ) { 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href="#AliPHOSTrackSegmentMakerv1:GetDistanceInPHOSPlane">GetDistanceInPHOSPlane</a>(emcclu, ppsdlow, toofar) ;
+      
+      if(toofar) 
+	break ;	 
+      if(r &lt; <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fR0">fR0</a>) 
+	new( (*linklowArray)[iLinkLow++]) <a href=".././AliPHOSLink.html">AliPHOSLink</a>(r, iEmcClu, iPpsdLow) ;
+      
+      iPpsdLow++ ;
+      
+    }
+    
+    TIter nextPpsdUp(ppsdRecPointsUp ) ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> iPpsdUp = 0 ;
+    
+    while( (ppsdup = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>*)nextPpsdUp() ) ) { 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href="#AliPHOSTrackSegmentMakerv1:GetDistanceInPHOSPlane">GetDistanceInPHOSPlane</a>(emcclu, ppsdup, toofar) ;
+      
+      if(toofar)
+	break ;	 
+      if(r &lt; <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fR0">fR0</a>) 
+	new( (*linkupArray)[iLinkUp++]) <a href=".././AliPHOSLink.html">AliPHOSLink</a>(r, iEmcClu, iPpsdUp) ;
+      
+      iPpsdUp++ ;
+      
+    }
+    
+    iEmcClu++ ; 
+    
+  } // while nextEmC
+  
+  linklowArray-&gt;Sort() ; //first links with smallest distances
+  linkupArray-&gt;Sort() ;
+}
+    
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:MakePairs"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:MakePairs">AliPHOSTrackSegmentMakerv1::MakePairs</a>(TObjArray * emcRecPoints, TObjArray * ppsdRecPointsUp, 
+				    TObjArray * ppsdRecPointsLow, TClonesArray * linklowArray, 
+				    TClonesArray * linkupArray, <a href="../ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsl) 
+{ 
+
+<b>  // Finds the smallest links and makes pairs of PPSD and EMC clusters with smallest distance </b>
+  
+  TIter nextLow(linklowArray) ;
+  TIter nextUp(linkupArray) ;
+  
+  <a href=".././AliPHOSLink.html">AliPHOSLink</a> * linkLow ;
+  <a href=".././AliPHOSLink.html">AliPHOSLink</a> * linkUp ;
+
+  <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emc ;
+  <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdLow ;
+  <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdUp ;
+
+  <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> * nullpointer = 0 ;
+
+  while ( (linkLow =  (<a href=".././AliPHOSLink.html">AliPHOSLink</a> *)nextLow() ) ){
+    emc = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *) emcRecPoints-&gt;At(linkLow-&gt;GetEmc()) ;
+    ppsdLow = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *) ppsdRecPointsLow-&gt;At(linkLow-&gt;GetPpsd()) ;
+    if( (emc) &amp;&amp; (ppsdLow) ){ // RecPoints not removed yet 
+	 ppsdUp = 0 ;
+	 
+	 while ( (linkUp =  (<a href=".././AliPHOSLink.html">AliPHOSLink</a> *)nextUp() ) ){  
+	   if(linkLow-&gt;GetEmc() == linkUp-&gt;GetEmc() ){
+	     ppsdUp = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *) ppsdRecPointsUp-&gt;At(linkUp-&gt;GetPpsd()) ;
+	     break ;
+	   }
+	
+	 } // while nextUp
+	 
+	 nextUp.Reset();
+         <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * subtr = new <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>(emc, ppsdUp, ppsdLow ) ;
+	 trsl-&gt;Add(subtr) ;  
+	 emcRecPoints-&gt;AddAt(nullpointer,linkLow-&gt;GetEmc()) ;	  
+	 ppsdRecPointsLow-&gt;AddAt(nullpointer,linkLow-&gt;GetPpsd()) ;
+	 
+	 if(ppsdUp)  
+	   ppsdRecPointsUp-&gt;AddAt(nullpointer,linkUp-&gt;GetPpsd()) ;
+	 
+    } 
+  } 
+   
+  TIter nextEmc(emcRecPoints) ;          
+  nextEmc.Reset() ;
+
+  while( (emc = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>*)nextEmc()) ){ //to create pairs if no ppsdlow
+    ppsdLow = 0 ; 
+    ppsdUp  = 0 ;
+    
+    while ( (linkUp =  (<a href=".././AliPHOSLink.html">AliPHOSLink</a> *)nextUp() ) ){
+      
+      if(emcRecPoints-&gt;IndexOf(emc) == linkUp-&gt;GetEmc() ){
+	ppsdUp = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *) ppsdRecPointsUp-&gt;At(linkUp-&gt;GetPpsd()) ;
+	break ;
+      }
+      
+    }
+    <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * subtr = new <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>(emc, ppsdUp, ppsdLow ) ;
+    trsl-&gt;Add(subtr) ;   
+ 
+    if(ppsdUp)  
+      ppsdRecPointsUp-&gt;AddAt(nullpointer,linkUp-&gt;GetPpsd()) ;
+  }
+     
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:MakeTrackSegments"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:MakeTrackSegments">AliPHOSTrackSegmentMakerv1::MakeTrackSegments</a>(<a href="../ListOfTypes.html#DigitsList">DigitsList</a> * DL, <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * emcl, 
+					<a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdl, <a href="../ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsl)
+{
+<b>  // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list</b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> phosmod      = 1 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> emcStopedAt  = 0 ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> ppsdStopedAt = 0 ; 
+  
+  TObjArray * emcRecPoints     = new TObjArray(100) ;  // these arrays keep pointers 
+  TObjArray * ppsdRecPointsUp  = new TObjArray(100) ;  // to RecPoints, which are 
+  TObjArray * ppsdRecPointsLow = new TObjArray(100) ;  // kept in TClonesArray's emcl and ppsdl
+  
+  
+  TClonesArray * linklowArray = new TClonesArray("<a href=".././AliPHOSLink.html">AliPHOSLink</a>", 100);
+  TClonesArray * linkupArray  = new TClonesArray("<a href=".././AliPHOSLink.html">AliPHOSLink</a>", 100); 
+  
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+  
+  while(phosmod &lt;= geom-&gt;GetNModules() ){
+    
+    <a href="#AliPHOSTrackSegmentMakerv1:FillOneModule">FillOneModule</a>(DL, emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;
+
+    <a href="#AliPHOSTrackSegmentMakerv1:MakeLinks">MakeLinks</a>(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray) ; 
+
+    <a href="#AliPHOSTrackSegmentMakerv1:MakePairs">MakePairs</a>(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray, trsl) ;
+ 
+    emcRecPoints-&gt;Clear() ;
+ 
+    ppsdRecPointsUp-&gt;Clear() ;
+  
+    ppsdRecPointsLow-&gt;Clear() ;
+
+    linkupArray-&gt;Clear() ;
+   
+    linklowArray-&gt;Clear() ;
+   
+    phosmod++ ; 
+  }
+  delete emcRecPoints ; 
+  emcRecPoints = 0 ; 
+
+  delete ppsdRecPointsUp ; 
+  ppsdRecPointsUp = 0 ; 
+
+  delete ppsdRecPointsLow ; 
+  ppsdRecPointsLow = 0 ; 
+
+  delete linkupArray ; 
+  linkupArray = 0  ; 
+
+  delete linklowArray ; 
+  linklowArray = 0 ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:ShowerShape"> </a><a href="../ListOfTypes.html#Double_t">Double_t</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:ShowerShape">AliPHOSTrackSegmentMakerv1::ShowerShape</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> r)
+{ 
+<b>  // Shape of the shower (see PHOS TDR)</b>
+<b>  // If you change this function, change also the gradien evaluation  in ChiSquare()</b>
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> r4    = r*r*r*r ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> r295  = TMath::Power(r, 2.95) ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> shape = TMath::Exp( -r4 * (1. / (2.32 + 0.26 * r4) + 0.0316 / (1 + 0.0652 * r295) ) ) ;
+  return shape ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegmentMakerv1:UnfoldClusters"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:UnfoldClusters">AliPHOSTrackSegmentMakerv1::UnfoldClusters</a>(<a href="../ListOfTypes.html#DigitsList">DigitsList</a> * DL, <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * emcIn,  <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * iniEmc, 
+					 <a href="../ListOfTypes.html#Int_t">Int_t</a> nMax, <a href="../ListOfTypes.html#int">int</a> * maxAt, <a href="../ListOfTypes.html#Float_t">Float_t</a> * maxAtEnergy, TObjArray * emcList)
+{ 
+<b>  // Performs the unfolding of a cluster with nMax overlapping showers </b>
+<b>  // This is time consuming (use the (Un)SetUnfolFlag()  )</b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> nPar = 3 * nMax ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> fitparameters[nPar] ;
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> rv = <a href="#AliPHOSTrackSegmentMakerv1:FindFit">FindFit</a>(iniEmc, maxAt, maxAtEnergy, nPar, fitparameters) ;
+  if( !rv )  // Fit failed, return and remove cluster
+    return ;
+  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xDigit ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zDigit ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> nDigits = iniEmc-&gt;GetMultiplicity() ;  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xpar  ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zpar  ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> epar  ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> distance ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> ratio ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> efit[nDigits] ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iparam ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iDigit ;
+  
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ;
+  <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emcRP ;  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * emcDigits = iniEmc-&gt;GetDigitsList() ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> * emcEnergies = iniEmc-&gt;GetEnergiesList() ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iRecPoint = emcIn-&gt;GetEntries() ;
+
+  for(iDigit = 0 ; iDigit &lt; nDigits ; iDigit ++){
+    digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *) emcDigits[iDigit];
+    geom-&gt;AbsToRelNumbering(digit-&gt;GetId(), relid) ;
+    geom-&gt;RelPosInModule(relid, xDigit, zDigit) ;
+    efit[iDigit] = 0;
+    iparam = 0 ;
+    
+    while(iparam &lt; nPar ){
+      xpar = fitparameters[iparam] ;
+      zpar = fitparameters[iparam+1] ;
+      epar = fitparameters[iparam+2] ;
+      iparam += 3 ;
+      distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
+      distance =  TMath::Sqrt(distance) ;
+      efit[iDigit] += epar * <a href="#AliPHOSTrackSegmentMakerv1:ShowerShape">ShowerShape</a>(distance) ;
+    }
+  }
+
+  iparam = 0 ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> eDigit ;
+
+  while(iparam &lt; nPar ){
+    xpar = fitparameters[iparam] ;
+    zpar = fitparameters[iparam+1] ;
+    epar = fitparameters[iparam+2] ;
+    iparam += 3 ;
+    new ((*emcIn)[iRecPoint]) <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>( iniEmc-&gt;GetLogWeightCut(), iniEmc-&gt;GetLocMaxCut() ) ;
+    emcRP = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *) emcIn-&gt;At(iRecPoint++);
+
+    for(iDigit = 0 ; iDigit &lt; nDigits ; iDigit ++){
+      digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *) emcDigits[iDigit];
+      geom-&gt;AbsToRelNumbering(digit-&gt;GetId(), relid) ;
+      geom-&gt;RelPosInModule(relid, xDigit, zDigit) ;
+      distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
+      distance =  TMath::Sqrt(distance) ;
+      ratio = epar * <a href="#AliPHOSTrackSegmentMakerv1:ShowerShape">ShowerShape</a>(distance) / efit[iDigit] ; 
+      eDigit = emcEnergies[iDigit] * ratio ;
+      emcRP-&gt;AddDigit( *digit, eDigit ) ;
+    }
+
+    emcList-&gt;Add(emcRP) ;
+
+  }
+}
+
+<b>//______________________________________________________________________________</b>
+<a href="../ListOfTypes.html#void">void</a> UnfoldingChiSquare(<a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; nPar, <a href="../ListOfTypes.html#Double_t">Double_t</a> * Grad, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; fret, <a href="../ListOfTypes.html#Double_t">Double_t</a> * x, <a href="../ListOfTypes.html#Int_t">Int_t</a> iflag)
+{
+<b>  // Calculates th Chi square for the cluster unfolding minimization</b>
+<b>  // Number of parameters, Gradient, Chi squared, parameters, what to do</b>
+
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+
+  <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emcRP = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *) gMinuit-&gt;GetObjectFit() ; // EmcRecPoint to fit
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * emcDigits     = emcRP-&gt;GetDigitsList() ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> * emcEnergies = emcRP-&gt;GetEnergiesList() ;
+  fret = 0. ;     
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iparam ;
+
+  if(iflag == 2)
+    for(iparam = 0 ; iparam &lt; nPar ; iparam++)    
+      Grad[iparam] = 0 ; // Will evaluate gradient
+  
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> efit ;  
+  
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iDigit = 0 ;
+
+  while ( (digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)emcDigits[iDigit] )){
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> xDigit ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> zDigit ;
+    geom-&gt;AbsToRelNumbering(digit-&gt;GetId(), relid) ;
+    geom-&gt;RelPosInModule(relid, xDigit, zDigit) ;
+    
+     if(iflag == 2){  // calculate gradient
+       <a href="../ListOfTypes.html#Int_t">Int_t</a> iParam = 0 ;
+       efit = 0 ;
+       while(iParam &lt; nPar ){
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> distance = (xDigit - x[iParam]) * (xDigit - x[iParam]) ;
+	 iParam++ ; 
+	 distance += (zDigit - x[iParam]) * (zDigit - x[iParam]) ; 
+	 distance = TMath::Sqrt( distance ) ; 
+	 iParam++ ; 	 
+	 efit += x[iParam] * <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:ShowerShape">AliPHOSTrackSegmentMakerv1::ShowerShape</a>(distance) ;
+	 iParam++ ;
+       }
+       <a href="../ListOfTypes.html#Double_t">Double_t</a> sum = 2. * (efit - emcEnergies[iDigit]) / emcEnergies[iDigit] ; // Here we assume, that sigma = sqrt(E) 
+       iParam = 0 ;
+       while(iParam &lt; nPar ){
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> xpar = x[iParam] ;
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> zpar = x[iParam+1] ;
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> epar = x[iParam+2] ;
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> dr = TMath::Sqrt( (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar) );
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> shape = sum * <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:ShowerShape">AliPHOSTrackSegmentMakerv1::ShowerShape</a>(dr) ;
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> r4 = dr*dr*dr*dr ;
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> r295 = TMath::Power(dr,2.95) ;
+	 <a href="../ListOfTypes.html#Double_t">Double_t</a> deriv =-4. * dr*dr * ( 2.32 / ( (2.32 + 0.26 * r4) * (2.32 + 0.26 * r4) ) +
+					 0.0316 * (1. + 0.0171 * r295) / ( ( 1. + 0.0652 * r295) * (1. + 0.0652 * r295) ) ) ;
+	 
+	 Grad[iParam] += epar * shape * deriv * (xpar - xDigit) ;  // Derivative over x    
+	 iParam++ ; 
+	 Grad[iParam] += epar * shape * deriv * (zpar - zDigit) ;  // Derivative over z         
+	 iParam++ ; 
+	 Grad[iParam] += shape ;                                  // Derivative over energy     	
+	 iParam++ ; 
+       }
+     }
+     efit = 0;
+     iparam = 0 ;
+     while(iparam &lt; nPar ){
+       <a href="../ListOfTypes.html#Double_t">Double_t</a> xpar = x[iparam] ;
+       <a href="../ListOfTypes.html#Double_t">Double_t</a> zpar = x[iparam+1] ;
+       <a href="../ListOfTypes.html#Double_t">Double_t</a> epar = x[iparam+2] ;
+       iparam += 3 ;
+       <a href="../ListOfTypes.html#Double_t">Double_t</a> distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
+       distance =  TMath::Sqrt(distance) ;
+       efit += epar * <a href=".././AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:ShowerShape">AliPHOSTrackSegmentMakerv1::ShowerShape</a>(distance) ;
+     }
+     fret += (efit-emcEnergies[iDigit])*(efit-emcEnergies[iDigit])/emcEnergies[iDigit] ; 
+<b>     // Here we assume, that sigma = sqrt(E)</b>
+     iDigit++ ;
+  }
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:47 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOS</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOS</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOS:description>class description</a> - <a href="src/AliPHOS.cxx.html">source file</a> - <a href="AliPHOS_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOS" href="AliPHOS.h">AliPHOS</a> : public AliDetector</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOS:~AliPHOS">~AliPHOS</a><!--PLAIN-->()
+<!--TAB6-->                       TClass* <!--TAB--><!--BOLD--><a href="#AliPHOS:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOS:CreateMaterials">CreateMaterials</a><!--PLAIN-->()
+<!--TAB6-->      virtual <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a href="#AliPHOS:GetGeometry">GetGeometry</a><!--PLAIN-->()
+<!--TAB6-->               virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOS:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOS:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOS:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOS:Data Members">Data Members</a></h3>
+</pre>
+<!--END-->
+<br><hr>
+<!--SEE ALSO--><h2>See also</h2><dl><dd>
+<a href="./AliPHOSv0.html">AliPHOSv0</a>, <a href="./AliPHOSvFast.html">AliPHOSvFast</a></dl>
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOS:description">Class Description</a></h2>
+<pre> Base Class for PHOS description:
+   PHOS consists of a PbWO4 calorimeter (EMCA) and a gazeous charged
+    particles detector (CPV or PPSD).
+   The only provided method here is CreateMaterials,
+    which defines the materials common to all PHOS versions.
+
+*-- Author: Laurent Aphecetche &amp; Yves Schutz (SUBATECH)
+
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOS:~AliPHOS" href="src/AliPHOS.cxx.html#AliPHOS:~AliPHOS">~AliPHOS</a>()
+<br>
+<hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOS:CreateMaterials" href="src/AliPHOS.cxx.html#AliPHOS:CreateMaterials">CreateMaterials</a>()
+<br>
+<pre> Definitions of materials to build PHOS and associated tracking media.
+ media number in idtmed are 699 to 798.
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <a name="AliPHOS:GetGeometry" href="AliPHOS.h">GetGeometry</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                 TClass* <a name="AliPHOS:Class" href="AliPHOS.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                 TClass* <a name="AliPHOS:IsA" href="AliPHOS.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                    <a href="ListOfTypes.html#void">void</a> <a name="AliPHOS:ShowMembers" href="AliPHOS.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                    <a href="ListOfTypes.html#void">void</a> <a name="AliPHOS:Streamer" href="AliPHOS.h">Streamer</a>(TBuffer&amp; b)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

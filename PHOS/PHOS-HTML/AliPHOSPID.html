@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:50 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSPID</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSPID</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSPID:description>class description</a> - <a href="src/AliPHOSPID.cxx.html">source file</a> - <a href="AliPHOSPID_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSPID" href="AliPHOSPID.h">AliPHOSPID</a> : public TObject</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->           <a href="./AliPHOSPID.html">AliPHOSPID</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:AliPHOSPID">AliPHOSPID</a><!--PLAIN-->()
+<!--TAB6-->           <a href="./AliPHOSPID.html">AliPHOSPID</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:AliPHOSPID">AliPHOSPID</a><!--PLAIN-->(<a href="./AliPHOSPID.html">AliPHOSPID</a>&amp;)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:~AliPHOSPID">~AliPHOSPID</a><!--PLAIN-->()
+<!--TAB6-->              TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSPID:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->      virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSPID:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:MakeParticles">MakeParticles</a><!--PLAIN-->(<a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* trsl, <a href="ListOfTypes.html#RecParticlesList">RecParticlesList</a>* rpl)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:SetDispersionCutOff">SetDispersionCutOff</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a>)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:SetShowerProfileCuts">SetShowerProfileCuts</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a>, <a href="ListOfTypes.html#Float_t">Float_t</a>, <a href="ListOfTypes.html#Float_t">Float_t</a>, <a href="ListOfTypes.html#Float_t">Float_t</a>)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPID:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSPID:Data Members">Data Members</a></h3>
+</pre>
+<!--END-->
+<br><hr>
+<!--SEE ALSO--><h2>See also</h2><dl><dd>
+<a href="./AliPHOSPIDv1.html">AliPHOSPIDv1</a></dl>
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSPID:description">Class Description</a></h2>
+<pre>  Algorithm class for the identification of particles detected in PHOS
+  base  class
+
+*-- Author: Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSPID:AliPHOSPID" href="src/AliPHOSPID.cxx.html#AliPHOSPID:AliPHOSPID">AliPHOSPID</a>()
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSPID:~AliPHOSPID" href="src/AliPHOSPID.cxx.html#AliPHOSPID:~AliPHOSPID">~AliPHOSPID</a>()
+<br>
+<pre> dtor
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPID:MakeParticles" href="AliPHOSPID.h">MakeParticles</a>(<a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* trsl, <a href="ListOfTypes.html#RecParticlesList">RecParticlesList</a>* rpl)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPID:SetShowerProfileCuts" href="AliPHOSPID.h">SetShowerProfileCuts</a>(<a href="ListOfTypes.html#Float_t">Float_t</a>, <a href="ListOfTypes.html#Float_t">Float_t</a>, <a href="ListOfTypes.html#Float_t">Float_t</a>, <a href="ListOfTypes.html#Float_t">Float_t</a>)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPID:SetDispersionCutOff" href="AliPHOSPID.h">SetDispersionCutOff</a>(<a href="ListOfTypes.html#Float_t">Float_t</a>)
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSPID:Class" href="AliPHOSPID.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSPID:IsA" href="AliPHOSPID.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPID:ShowMembers" href="AliPHOSPID.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPID:Streamer" href="AliPHOSPID.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->         <a href="./AliPHOSPID.html">AliPHOSPID</a> <a name="AliPHOSPID:AliPHOSPID" href="AliPHOSPID.h">AliPHOSPID</a>(<a href="./AliPHOSPID.html">AliPHOSPID</a>&amp;)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

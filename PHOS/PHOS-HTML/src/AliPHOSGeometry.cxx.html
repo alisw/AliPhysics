@@ -1,0 +1,585 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:49 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSGeometry - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>// Geometry class  for PHOS : singleton  </b>
+<b>// The EMC modules are parametrized so that any configuration can be easily implemented </b>
+<b>// The title is used to identify the type of CPV used. So far only PPSD implemented</b>
+<b>//                  </b>
+<b>//*-- Author: Yves Schutz (SUBATECH)</b>
+
+<b>// --- ROOT system ---</b>
+
+#include "TVector3.h"
+#include "TRotation.h" 
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSGeometry.h">AliPHOSGeometry.h</a>"
+#include "<a href="../AliPHOSPpsdRecPoint.h">AliPHOSPpsdRecPoint.h</a>"
+#include "AliConst.h"
+
+ClassImp(AliPHOSGeometry)
+
+  AliPHOSGeometry * AliPHOSGeometry::fGeom = 0 ;
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:~AliPHOSGeometry"> </a><a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a>::~<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // dtor</b>
+
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fRotMatrixArray">fRotMatrixArray</a>-&gt;Delete() ; 
+  delete <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fRotMatrixArray">fRotMatrixArray</a> ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:AbsToRelNumbering"> </a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:AbsToRelNumbering">AliPHOSGeometry::AbsToRelNumbering</a>(const <a href="../ListOfTypes.html#Int_t">Int_t</a> AbsId, <a href="../ListOfTypes.html#Int_t">Int_t</a> * relid)
+{
+<b>  // Converts the absolute numbering into the following array/</b>
+<b>  //  relid[0] = PHOS Module number 1:<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> </b>
+<b>  //  relid[1] = 0 if PbW04</b>
+<b>  //           = PPSD Module number 1:<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesPhi">fNumberOfModulesPhi</a>*<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesZ">fNumberOfModulesZ</a>*2 (2-&gt;up and bottom level)</b>
+<b>  //  relid[2] = Row number inside a PHOS or PPSD module</b>
+<b>  //  relid[3] = Column number inside a PHOS or PPSD module</b>
+
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> rv  = kTRUE ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> id = AbsId ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> phosmodulenumber = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)TMath:: Ceil( id / ( <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * <a href="#AliPHOSGeometry:GetNZ">GetNZ</a>() ) ) ; 
+  
+  if ( phosmodulenumber &gt;  <a href="#AliPHOSGeometry:GetNModules">GetNModules</a>() ) { // its a PPSD pad
+
+    id -=  <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * <a href="#AliPHOSGeometry:GetNZ">GetNZ</a>() *  <a href="#AliPHOSGeometry:GetNModules">GetNModules</a>() ; 
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> tempo = 2 *  <a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() * <a href="#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>() *  <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>() * <a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>() ; 
+    relid[0] = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)TMath::Ceil( id / tempo ) ; 
+    id -= ( relid[0] - 1 ) * tempo ;
+    relid[1] = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)TMath::Ceil( id / ( <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>() * <a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>() ) ) ; 
+    id -= ( relid[1] - 1 ) * <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>() * <a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>() ;
+    relid[2] = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)TMath::Ceil( id / <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>() ) ;
+    relid[3] = (<a href="../ListOfTypes.html#Int_t">Int_t</a>) ( id - ( relid[2] - 1 )  * <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>() ) ; 
+  } 
+  else { // its a PW04 crystal
+
+    relid[0] = phosmodulenumber ;
+    relid[1] = 0 ;
+    id -= ( phosmodulenumber - 1 ) *  <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * <a href="#AliPHOSGeometry:GetNZ">GetNZ</a>() ; 
+    relid[2] = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)TMath::Ceil( id / <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() ) ;
+    relid[3] = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( id - ( relid[2] - 1 ) * <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() ) ; 
+  } 
+  return rv ; 
+}
+<b>//____________________________________________________________________________  </b>
+<a name="AliPHOSGeometry:EmcModuleCoverage"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcModuleCoverage">AliPHOSGeometry::EmcModuleCoverage</a>(const <a href="../ListOfTypes.html#Int_t">Int_t</a> mod, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; tm, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; tM, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; pm, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; pM, <a href="../ListOfTypes.html#Option_t">Option_t</a> * opt) 
+{
+<b>  // calculates the angular coverage in theta and phi of a EMC module</b>
+
+ <a href="../ListOfTypes.html#Double_t">Double_t</a> conv ; 
+  if ( opt == kRadian ) 
+    conv = 1. ; 
+  else if ( opt == kDegre )
+    conv = 180. / TMath::Pi() ; 
+  else {
+    cout &lt;&lt; "&lt;I&gt;  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcXtalCoverage">AliPHOSGeometry::EmcXtalCoverage</a> : " &lt;&lt; opt &lt;&lt; " unknown option; result in radian " &lt;&lt; endl ; 
+    conv = 1. ;
+      }
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> phi =  <a href="#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>(mod) *  (TMath::Pi() / 180.)  ;  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> y0  =  <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + <a href="#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>()
+		  + <a href="#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + <a href="#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>()  ;  
+  
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> angle = TMath::ATan( <a href="#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0)*<a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() / (2 * y0) ) ;
+  phi = phi + 1.5 * TMath::Pi() ; // to follow the convention of the particle generator(PHOS is between 230 and 310 deg.)
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> max  = phi - angle ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> min   = phi + angle ;
+  pM = TMath::Max(max, min) * conv ;
+  pm = TMath::Min(max, min) * conv ; 
+  
+  angle =  TMath::ATan( <a href="#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2)*<a href="#AliPHOSGeometry:GetNZ">GetNZ</a>() / (2 * y0) ) ;
+  max  = TMath::Pi() / 2.  + angle ; // to follow the convention of the particle generator(PHOS is at 90 deg.)
+  min  = TMath::Pi() / 2.  - angle ;
+  tM = TMath::Max(max, min) * conv ;
+  tm = TMath::Min(max, min) * conv ; 
+ 
+}
+
+<b>//____________________________________________________________________________  </b>
+<a name="AliPHOSGeometry:EmcXtalCoverage"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcXtalCoverage">AliPHOSGeometry::EmcXtalCoverage</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; theta, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; phi, <a href="../ListOfTypes.html#Option_t">Option_t</a> * opt) 
+{
+<b>  // calculates the angular coverage in theta and phi of a single crystal in a EMC module</b>
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> conv ; 
+  if ( opt == kRadian ) 
+    conv = 1. ; 
+  else if ( opt == kDegre )
+    conv = 180. / TMath::Pi() ; 
+  else {
+    cout &lt;&lt; "&lt;I&gt;  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcXtalCoverage">AliPHOSGeometry::EmcXtalCoverage</a> : " &lt;&lt; opt &lt;&lt; " unknown option; result in radian " &lt;&lt; endl ; 
+    conv = 1. ;
+      }
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> y0   =  <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + <a href="#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>()
+    + <a href="#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + <a href="#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>()  ;  
+  theta = 2 * TMath::ATan( <a href="#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) / (2 * y0) ) * conv ;
+  phi   = 2 * TMath::ATan( <a href="#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) / (2 * y0) ) * conv ;
+}
+ 
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:ImpactOnEmc"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:ImpactOnEmc">AliPHOSGeometry::ImpactOnEmc</a>(const <a href="../ListOfTypes.html#Double_t">Double_t</a> theta, const <a href="../ListOfTypes.html#Double_t">Double_t</a> phi, <a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; ModuleNumber, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; z, <a href="../ListOfTypes.html#Double_t">Double_t</a> &amp; x) 
+{
+<b>  // calculates the impact coordinates of a neutral particle  </b>
+<b>  // emitted in direction theta and phi in ALICE</b>
+
+<b>  // searches for the PHOS EMC module</b>
+  ModuleNumber = 0 ; 
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> tm, tM, pm, pM ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> index = 1 ; 
+  while ( ModuleNumber == 0 &amp;&amp; index &lt;= <a href="#AliPHOSGeometry:GetNModules">GetNModules</a>() ) { 
+    <a href="#AliPHOSGeometry:EmcModuleCoverage">EmcModuleCoverage</a>(index, tm, tM, pm, pM) ; 
+    if ( (theta &gt;= tm &amp;&amp; theta &lt;= tM) &amp;&amp; (phi &gt;= pm &amp;&amp; phi &lt;= pM ) ) 
+      ModuleNumber = index ; 
+    index++ ;    
+  }
+  if ( ModuleNumber != 0 ) {
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> phi0 =  <a href="#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>(ModuleNumber) *  (TMath::Pi() / 180.) + 1.5 * TMath::Pi()  ;  
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> y0  =  <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + <a href="#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>()
+      + <a href="#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + <a href="#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>()  ;   
+    <a href="../ListOfTypes.html#Double_t">Double_t</a> angle = phi - phi0; 
+    x = y0 * TMath::Tan(angle) ; 
+    angle = theta - TMath::Pi() / 2 ; 
+    z = y0 * TMath::Tan(angle) ; 
+  }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:GetGlobal"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGlobal">AliPHOSGeometry::GetGlobal</a>(const AliRecPoint* RecPoint, TVector3 &amp; gpos, TMatrix &amp; gmat)
+{
+<b>  // Calculates the ALICE global coordinates of a RecPoint and the error matrix</b>
+ 
+  <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> * tmpPHOS = (<a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> *) RecPoint ;  
+  TVector3 localposition ;
+
+  tmpPHOS-&gt;GetLocalPosition(gpos) ;
+
+
+  if ( tmpPHOS-&gt;IsEmc() ) // it is a EMC crystal 
+    {  gpos.SetY( -(<a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + <a href="#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() +
+		    <a href="#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + <a href="#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>()) ) ;  
+
+    }
+  else
+    { // it is a PPSD pad
+      <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * tmpPpsd = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *) RecPoint ;
+      if (tmpPpsd-&gt;GetUp() ) // it is an upper module
+	{
+	  gpos.SetY(-( <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href="#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() - 
+		       <a href="#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a>() - <a href="#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() -  
+		       <a href="#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() - <a href="#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() / 2.0 )  ) ; 
+	} 
+      else // it is a lower module
+	gpos.SetY(-( <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href="#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() / 2.0) ) ; 
+    }  
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> phi           = <a href="#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>( tmpPHOS-&gt;GetPHOSMod()) ; 
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> rphi          = phi / kRADDEG ; 
+  
+  TRotation rot ;
+  rot.RotateZ(-rphi) ; // a rotation around Z by angle  
+  
+  TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
+  gpos.Transform(rot) ; // rotate the baby 
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:GetGlobal"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGlobal">AliPHOSGeometry::GetGlobal</a>(const AliRecPoint* RecPoint, TVector3 &amp; gpos)
+{
+<b>  // Calculates the ALICE global coordinates of a RecPoint </b>
+
+  <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> * tmpPHOS = (<a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> *) RecPoint ;  
+  TVector3 localposition ;
+  tmpPHOS-&gt;GetLocalPosition(gpos) ;
+
+
+  if ( tmpPHOS-&gt;IsEmc() ) // it is a EMC crystal 
+    {  gpos.SetY( -(<a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + <a href="#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() +
+		    <a href="#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + <a href="#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>()) ) ;  
+    }
+  else
+    { // it is a PPSD pad
+      <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * tmpPpsd = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *) RecPoint ;
+      if (tmpPpsd-&gt;GetUp() ) // it is an upper module
+	{
+	  gpos.SetY(-( <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href="#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() - 
+		       <a href="#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a>() - <a href="#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() -  
+		       <a href="#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() - <a href="#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() / 2.0 )  ) ; 
+	} 
+      else // it is a lower module
+	gpos.SetY(-( <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href="#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() / 2.0) ) ; 
+    }  
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> phi           = <a href="#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>( tmpPHOS-&gt;GetPHOSMod()) ; 
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> rphi          = phi / kRADDEG ; 
+  
+  TRotation rot ;
+  rot.RotateZ(-rphi) ; // a rotation around Z by angle  
+  
+  TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
+  gpos.Transform(rot) ; // rotate the baby 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:Init"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:Init">AliPHOSGeometry::Init</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // Initializes the PHOS parameters</b>
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fRotMatrixArray">fRotMatrixArray</a> = new TObjArray(<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a>) ; 
+
+  cout &lt;&lt; "PHOS geometry setup: parameters for option " &lt;&lt; fName &lt;&lt; " " &lt;&lt; fTitle &lt;&lt; endl ;
+  if ( ((strcmp( fName, "default" )) == 0)  || ((strcmp( fName, "GPS2" )) == 0) ) {
+    <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fInit">fInit</a>     = kTRUE ; 
+    this-&gt;<a href="#AliPHOSGeometry:InitPHOS">InitPHOS</a>() ; 
+    this-&gt;<a href="#AliPHOSGeometry:InitPPSD">InitPPSD</a>() ;
+    this-&gt;<a href="#AliPHOSGeometry:SetPHOSAngles">SetPHOSAngles</a>() ; 
+  }
+ else {
+   <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fInit">fInit</a> = kFALSE ; 
+   cout &lt;&lt; "PHOS Geometry setup: option not defined " &lt;&lt; fName &lt;&lt; endl ; 
+ }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:InitPHOS"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:InitPHOS">AliPHOSGeometry::InitPHOS</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // Initializes the EMC parameters</b>
+
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNPhi">fNPhi</a>     = 64 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNZ">fNZ</a>       = 64 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> =  5 ; 
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPHOSAngle">fPHOSAngle</a>[0] = 0.0 ; // Module position angles are set in CreateGeometry()
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPHOSAngle">fPHOSAngle</a>[1] = 0.0 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPHOSAngle">fPHOSAngle</a>[2] = 0.0 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPHOSAngle">fPHOSAngle</a>[3] = 0.0 ;
+ 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fXtlSize">fXtlSize</a>[0] =  2.2 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fXtlSize">fXtlSize</a>[1] = 18.0 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fXtlSize">fXtlSize</a>[2] =  2.2 ;
+
+<b>  // all these numbers coming next are subject to changes</b>
+
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[0] = 2.8 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[1] = 5.0 ;      
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[2] = 5.0 ;
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fUpperPlateThickness">fUpperPlateThickness</a>  = 4.0 ;
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fSecondUpperPlateThickness">fSecondUpperPlateThickness</a> = 5.0 ; 
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCrystalSupportHeight">fCrystalSupportHeight</a>   = 6.95 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCrystalWrapThickness">fCrystalWrapThickness</a>   = 0.01 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCrystalHolderThickness">fCrystalHolderThickness</a> = 0.005 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fModuleBoxThickness">fModuleBoxThickness</a>     = 2.0 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fIPtoOuterCoverDistance">fIPtoOuterCoverDistance</a> = 447.0 ;      
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fIPtoCrystalSurface">fIPtoCrystalSurface</a>     = 460.0 ;  
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPinDiodeSize">fPinDiodeSize</a>[0] = 1.71 ;   //Values given by Odd Harald feb 2000  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPinDiodeSize">fPinDiodeSize</a>[1] = 0.0280 ; // 0.0280 is the depth of active layer in the silicon     
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPinDiodeSize">fPinDiodeSize</a>[2] = 1.61 ;    
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fUpperCoolingPlateThickness">fUpperCoolingPlateThickness</a>   = 0.06 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fSupportPlateThickness">fSupportPlateThickness</a>        = 10.0 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLowerThermoPlateThickness">fLowerThermoPlateThickness</a>    =  3.0 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLowerTextolitPlateThickness">fLowerTextolitPlateThickness</a>  =  1.0 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGapBetweenCrystals">fGapBetweenCrystals</a>           = 0.03 ;
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[0] = 1.5 ;  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[1] = 0.0 ;   
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[2] = 3.0 ; 
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirThickness">fAirThickness</a>[0] =  1.56   ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirThickness">fAirThickness</a>[1] = 20.5175 ;  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirThickness">fAirThickness</a>[2] =  2.48   ;  
+  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtalModulePhiSize =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNPhi">fNPhi</a> * ( <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fXtlSize">fXtlSize</a>[0] + 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGapBetweenCrystals">fGapBetweenCrystals</a> ) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtalModuleZSize   =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNZ">fNZ</a> * ( <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fXtlSize">fXtlSize</a>[2] + 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGapBetweenCrystals">fGapBetweenCrystals</a> ) ;
+  
+<b>  // The next dimensions are calculated from the above parameters</b>
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize</a>[0] =  xtalModulePhiSize + 2 * ( <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirThickness">fAirThickness</a>[0] + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fModuleBoxThickness">fModuleBoxThickness</a>
+						+ <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[0] + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[0] ) ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize</a>[1] = ( <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fXtlSize">fXtlSize</a>[1] + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCrystalSupportHeight">fCrystalSupportHeight</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCrystalWrapThickness">fCrystalWrapThickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCrystalHolderThickness">fCrystalHolderThickness</a> )
+    + 2 * (<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirThickness">fAirThickness</a>[1] +  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fModuleBoxThickness">fModuleBoxThickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[1] + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[1] ) ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize</a>[2] =  xtalModuleZSize +  2 * ( <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirThickness">fAirThickness</a>[2] + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fModuleBoxThickness">fModuleBoxThickness</a> 
+					       + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[2] + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[2] ) ; 
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxSize">fTextolitBoxSize</a>[0]  = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize</a>[0] - 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[0] ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxSize">fTextolitBoxSize</a>[1]  = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize</a>[1] -  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[1] - <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fUpperPlateThickness">fUpperPlateThickness</a> ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxSize">fTextolitBoxSize</a>[2]  = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize</a>[2] - 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness</a>[2] ;
+  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirFilledBoxSize">fAirFilledBoxSize</a>[0] =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxSize">fTextolitBoxSize</a>[0] - 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[0] ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirFilledBoxSize">fAirFilledBoxSize</a>[1] =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxSize">fTextolitBoxSize</a>[1] - <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fSecondUpperPlateThickness">fSecondUpperPlateThickness</a> ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAirFilledBoxSize">fAirFilledBoxSize</a>[2] =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxSize">fTextolitBoxSize</a>[2] - 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness</a>[2] ; 
+  
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:InitPPSD"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:InitPPSD">AliPHOSGeometry::InitPPSD</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // Initializes the PPSD parameters</b>
+    
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAnodeThickness">fAnodeThickness</a>           = 0.0009 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAvalancheGap">fAvalancheGap</a>             = 0.01 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCathodeThickness">fCathodeThickness</a>         = 0.0009 ;
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCompositeThickness">fCompositeThickness</a>       = 0.3 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fConversionGap">fConversionGap</a>            = 0.6 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLeadConverterThickness">fLeadConverterThickness</a>   = 0.56 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLeadToMicro2Gap">fLeadToMicro2Gap</a>          = 0.1 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLidThickness">fLidThickness</a>             = 0.2 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicro1ToLeadGap">fMicro1ToLeadGap</a>          = 0.1 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicromegasWallThickness">fMicromegasWallThickness</a>  = 0.6 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesPhi">fNumberOfModulesPhi</a>       = 4 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesZ">fNumberOfModulesZ</a>         = 4 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfPadsPhi">fNumberOfPadsPhi</a>          = 24 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfPadsZ">fNumberOfPadsZ</a>            = 24 ;   
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPCThickness">fPCThickness</a>              = 0.1 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPhiDisplacement">fPhiDisplacement</a>          = 0.8 ;  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fZDisplacement">fZDisplacement</a>            = 0.8 ;  
+
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicromegas1Thickness">fMicromegas1Thickness</a>   = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLidThickness">fLidThickness</a> + 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCompositeThickness">fCompositeThickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fCathodeThickness">fCathodeThickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPCThickness">fPCThickness</a> 
+                              + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAnodeThickness">fAnodeThickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fConversionGap">fConversionGap</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fAvalancheGap">fAvalancheGap</a> ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicromegas2Thickness">fMicromegas2Thickness</a>   = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicromegas1Thickness">fMicromegas1Thickness</a> ; 
+
+
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDModuleSize">fPPSDModuleSize</a>[0] = 38.0 ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDModuleSize">fPPSDModuleSize</a>[1] = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicromegas1Thickness">fMicromegas1Thickness</a> ; 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDModuleSize">fPPSDModuleSize</a>[2] = 38.0 ; 
+ 
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDBoxSize">fPPSDBoxSize</a>[0] = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesPhi">fNumberOfModulesPhi</a> * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDModuleSize">fPPSDModuleSize</a>[0] + 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPhiDisplacement">fPhiDisplacement</a> ;  
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDBoxSize">fPPSDBoxSize</a>[1] = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicromegas2Thickness">fMicromegas2Thickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicromegas2Thickness">fMicromegas2Thickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLeadConverterThickness">fLeadConverterThickness</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fMicro1ToLeadGap">fMicro1ToLeadGap</a> + <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLeadToMicro2Gap">fLeadToMicro2Gap</a> ;    
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDBoxSize">fPPSDBoxSize</a>[2] = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesZ">fNumberOfModulesZ</a> *  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDModuleSize">fPPSDModuleSize</a>[2] + 2 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fZDisplacement">fZDisplacement</a> ;
+
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fIPtoTopLidDistance">fIPtoTopLidDistance</a>     = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fIPtoOuterCoverDistance">fIPtoOuterCoverDistance</a> -  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPPSDBoxSize">fPPSDBoxSize</a>[1] - 1. ;  
+  
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:GetInstance"> </a><a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> *  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() 
+{ 
+<b>  // Returns the pointer of the unique instance</b>
+  
+  return (<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> *) <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGeom">fGeom</a> ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:GetInstance"> </a><a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> *  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>(const <a href="../ListOfTypes.html#Text_t">Text_t</a>* name, const <a href="../ListOfTypes.html#Text_t">Text_t</a>* title) 
+{
+<b>  // Returns the pointer of the unique instance</b>
+
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * rv = 0  ; 
+  if ( <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGeom">fGeom</a> == 0 ) {
+    <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGeom">fGeom</a> = new <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a>(name, title) ; 
+    rv = (<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * ) <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGeom">fGeom</a> ; 
+  }
+  else {
+    if ( strcmp(<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGeom">fGeom</a>-&gt;GetName(), name) != 0 ) {
+      cout &lt;&lt; "<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> &lt;E&gt; : current geometry is " &lt;&lt; <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGeom">fGeom</a>-&gt;GetName() &lt;&lt; endl
+	   &lt;&lt; "                      you cannot call     " &lt;&lt; name &lt;&lt; endl ; 
+    }
+    else
+      rv = (<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> *) <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fGeom">fGeom</a> ; 
+  } 
+  return rv ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:RelToAbsNumbering"> </a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:RelToAbsNumbering">AliPHOSGeometry::RelToAbsNumbering</a>(const <a href="../ListOfTypes.html#Int_t">Int_t</a> * relid, <a href="../ListOfTypes.html#Int_t">Int_t</a> &amp;  AbsId)
+{
+<b>  // Converts the relative numbering into the absolute numbering</b>
+<b>  //  AbsId = 1:<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNPhi">fNPhi</a> * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNZ">fNZ</a>  -&gt; PbWO4</b>
+<b>  //  AbsId = 1:<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> * 2 * (<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesPhi">fNumberOfModulesPhi</a> * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesZ">fNumberOfModulesZ</a>) * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfPadsPhi">fNumberOfPadsPhi</a> * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfPadsZ">fNumberOfPadsZ</a> -&gt; PPSD</b>
+
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> rv = kTRUE ; 
+ 
+  if ( relid[1] &gt; 0 ) { // its a PPSD pad
+
+    AbsId =    <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * <a href="#AliPHOSGeometry:GetNZ">GetNZ</a>() *  <a href="#AliPHOSGeometry:GetNModules">GetNModules</a>()                          // the offset to separate emcal crystals from PPSD pads
+      + ( relid[0] - 1 ) * <a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() * <a href="#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>()   // the pads offset of PHOS modules 
+                         * <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>() * <a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>() * 2
+      + ( relid[1] - 1 ) * <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>() * <a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>()         // the pads offset of PPSD modules 
+      + ( relid[2] - 1 ) * <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>()                              // the pads offset of a PPSD row
+      + relid[3] ;                                                           // the column number
+  } 
+  else {
+    if ( relid[1] == 0 ) { // its a Phos crystal
+      AbsId =  ( relid[0] - 1 ) *  <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * <a href="#AliPHOSGeometry:GetNZ">GetNZ</a>() // the offset of PHOS modules
+        + ( relid[2] - 1 ) * <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>()                 // the offset of a xtal row
+        + relid[3] ;                                   // the column number
+    }
+  }
+
+  return rv ; 
+}
+
+<b>//____________________________________________________________________________</b>
+
+<a name="AliPHOSGeometry:RelPosInAlice"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:RelPosInAlice">AliPHOSGeometry::RelPosInAlice</a>(const <a href="../ListOfTypes.html#Int_t">Int_t</a> id, TVector3 &amp; pos ) 
+{
+<b>  // Converts the absolute numbering into the global ALICE coordinates</b>
+  
+   if (id &gt; 0) { 
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ;
+ 
+  <a href="#AliPHOSGeometry:AbsToRelNumbering">AbsToRelNumbering</a>(id , relid) ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> phosmodule = relid[0] ; 
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> y0 = 0 ; 
+
+  if ( relid[1] == 0 ) // it is a PbW04 crystal 
+  {  y0 =  -(<a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + <a href="#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>()
+      + <a href="#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + <a href="#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>())  ;  
+  }
+  if ( relid[1] &gt; 0 ) { // its a PPSD pad
+    if ( relid[1] &gt;  <a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() *  <a href="#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>() ) // its an bottom module
+     {
+       y0 = -( <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href="#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() / 2.0)  ;
+     } 
+    else // its an upper module
+      y0 = -( <a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href="#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() - <a href="#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a>()
+	-  <a href="#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() -  <a href="#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() - <a href="#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() / 2.0) ; 
+  }
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> x, z ; 
+  <a href="#AliPHOSGeometry:RelPosInModule">RelPosInModule</a>(relid, x, z) ; 
+
+  pos.SetX(x) ;
+  pos.SetZ(z) ;
+  pos.SetY( TMath::Sqrt(x*x + z*z + y0*y0) ) ; 
+
+
+
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> phi           = <a href="#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>( phosmodule) ; 
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> rphi          = phi / kRADDEG ; 
+
+   TRotation rot ;
+   rot.RotateZ(-rphi) ; // a rotation around Z by angle  
+  
+   TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
+  
+   pos.Transform(rot) ; // rotate the baby 
+  }
+  else {
+ pos.SetX(0.);
+ pos.SetY(0.);
+ pos.SetZ(0.);
+       }
+} 
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:RelPosInModule"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:RelPosInModule">AliPHOSGeometry::RelPosInModule</a>(const <a href="../ListOfTypes.html#Int_t">Int_t</a> * relid, <a href="../ListOfTypes.html#Float_t">Float_t</a> &amp; x, <a href="../ListOfTypes.html#Float_t">Float_t</a> &amp; z) 
+{
+<b>  // Converts the relative numbering into the local PHOS-module (x, z) coordinates</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> ppsdmodule  ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> row        = relid[2] ; //offset along z axiz
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> column     = relid[3] ; //offset along x axiz
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> padsizeZ = <a href="#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2)/ <a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>();
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> padsizeX = <a href="#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0)/ <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>();
+
+  if ( relid[1] == 0 ) { // its a PbW04 crystal 
+    x = -( <a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a>()/2. - row   + 0.5 ) *  <a href="#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ; // position ox Xtal with respect
+    z = ( <a href="#AliPHOSGeometry:GetNZ">GetNZ</a>() /2. - column + 0.5 ) *  <a href="#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ; // of center of PHOS module  
+   }  
+   else  {    
+    if ( relid[1] &gt;  <a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() *  <a href="#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>() )
+       ppsdmodule =  relid[1]-<a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() *  <a href="#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>(); 
+    else ppsdmodule =  relid[1] ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> modrow = 1+(<a href="../ListOfTypes.html#Int_t">Int_t</a>)TMath::Ceil( (<a href="../ListOfTypes.html#Float_t">Float_t</a>)ppsdmodule / <a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>()-1. ) ; 
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> modcol = ppsdmodule -  ( modrow - 1 ) * <a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() ;     
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> x0 = (  <a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() / 2.  - modrow  + 0.5 ) * <a href="#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> z0 = (  <a href="#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>() / 2.  - modcol  + 0.5 ) * <a href="#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2)  ;     
+    x = - ( <a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>()/2. - row - 0.5 ) * padsizeX + x0 ; // position of pad  with respect
+    z = ( <a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>()/2.   - column - 0.5 ) * padsizeZ - z0 ; // of center of PHOS module  
+         }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:SetPHOSAngles"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:SetPHOSAngles">AliPHOSGeometry::SetPHOSAngles</a>() 
+{ 
+<b>  // Calculates the position in ALICE of the PHOS modules</b>
+  
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> pphi =  TMath::ATan( <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize</a>[0]  / ( 2.0 * <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fIPtoOuterCoverDistance">fIPtoOuterCoverDistance</a> ) ) ;
+  pphi *= kRADDEG ;
+  
+  for( <a href="../ListOfTypes.html#Int_t">Int_t</a> i = 1; i &lt;= <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> ; i++ ) {
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> angle = pphi * 2 * ( i - <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> / 2.0 - 0.5 ) ;
+    <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fPHOSAngle">fPHOSAngle</a>[i-1] = -  angle ;
+  } 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSGeometry:SetLeadConverterThickness"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:SetLeadConverterThickness">AliPHOSGeometry::SetLeadConverterThickness</a>(<a href="../ListOfTypes.html#Float_t">Float_t</a> e) 
+{
+<b>  // should ultimately disappear </b>
+  
+  cout &lt;&lt; " <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> WARNING : You have changed LeadConverterThickness from " 
+       &lt;&lt; <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLeadConverterThickness">fLeadConverterThickness</a> &lt;&lt; " to " &lt;&lt; e &lt;&lt; endl ;
+
+  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:fLeadConverterThickness">fLeadConverterThickness</a> = e ; 
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

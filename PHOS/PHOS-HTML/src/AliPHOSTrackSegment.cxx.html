@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:56 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSTrackSegment - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  Track segment in PHOS</b>
+<b>//  Can be : 1 EmcRecPoint</b>
+<b>//           1 EmcRecPoint + 1 PPSD</b>
+<b>//           1 EmcRecPoint + 1 PPSD + 1 PPSD     </b>
+<b>//                  </b>
+<b>//*-- Author:  Dmitri Peressounko (RRC KI &amp; SUBATECH)</b>
+
+<b>// --- ROOT system ---</b>
+ 
+#include "TVector3.h"
+#include "TPad.h"
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSTrackSegment.h">AliPHOSTrackSegment.h</a>" 
+#include "<a href="../AliPHOSv0.h">AliPHOSv0.h</a>"
+
+ClassImp(AliPHOSTrackSegment)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:AliPHOSTrackSegment"> </a><a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:AliPHOSTrackSegment">AliPHOSTrackSegment::AliPHOSTrackSegment</a>( <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emc , <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdRP1,
+                  <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdRP2  ) 
+{
+<b>  // ctor</b>
+
+  if( emc )   
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a> =  emc ;
+
+  if( ppsdRP1 )  
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a> = ppsdRP1 ;
+
+  if( ppsdRP2  ) 
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a> = ppsdRP2 ;
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:AliPHOSTrackSegment"> </a><a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:AliPHOSTrackSegment">AliPHOSTrackSegment::AliPHOSTrackSegment</a>( const <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> &amp; ts) 
+{
+<b>  // Copy ctor</b>
+
+  ( (<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> &amp;)ts ).<a href="#AliPHOSTrackSegment:Copy">Copy</a>(*this) ; 
+}
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:Copy"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:Copy">AliPHOSTrackSegment::Copy</a>(TObject &amp; obj) 
+{
+<b>  // Copy of a track segment into another track segment</b>
+
+   TObject::<a href="#AliPHOSTrackSegment:Copy">Copy</a>(obj) ;
+   ( (<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> &amp;)obj ).<a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a> = <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a> ; 
+   ( (<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> &amp;)obj ).<a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>     = <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a> ; 
+   ( (<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> &amp;)obj ).<a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a>      = <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a> ; 
+}
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:DistancetoPrimitive"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:DistancetoPrimitive">AliPHOSTrackSegment::DistancetoPrimitive</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> px, <a href="../ListOfTypes.html#Int_t">Int_t</a> py)
+{
+<b>  // Compute distance from point px,py to  a <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> considered as a Tmarker</b>
+<b>  // Compute the closest distance of approach from point px,py to this marker.</b>
+<b>  // The distance is computed in pixels units.</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> div = 1 ;  
+  TVector3 pos(0.,0.,0.) ;
+  
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;<a href=".././AliPHOSEmcRecPoint.html#AliPHOSEmcRecPoint:GetLocalPosition">GetLocalPosition</a>( pos) ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> x =  pos.X() ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> y =  pos.Z() ;
+  if ( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a> ) {
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>-&gt;<a href=".././AliPHOSPpsdRecPoint.html#AliPHOSPpsdRecPoint:GetLocalPosition">GetLocalPosition</a>( pos ) ;
+    x +=  pos.X() ;
+    y +=  pos.Z() ;
+    div++ ; 
+  }
+  if ( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a> ) {
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a>-&gt;<a href=".././AliPHOSPpsdRecPoint.html#AliPHOSPpsdRecPoint:GetLocalPosition">GetLocalPosition</a>( pos ) ;
+    x +=  pos.X() ;
+    y +=  pos.Z() ;
+    div++ ; 
+  }
+  x /= div ; 
+  y /= div ; 
+
+   const <a href="../ListOfTypes.html#Int_t">Int_t</a> kMaxDiff = 10;
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> pxm  = gPad-&gt;XtoAbsPixel(x);
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> pym  = gPad-&gt;YtoAbsPixel(y);
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
+
+   if (dist &gt; kMaxDiff) return 9999;
+   return dist;
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:Draw"> </a> <a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:Draw">AliPHOSTrackSegment::Draw</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a> *option)
+ {
+<b>   // Draw this <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> with its current attribute</b>
+   
+   AppendPad(option);
+ }
+
+<b>//______________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:ExecuteEvent"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:ExecuteEvent">AliPHOSTrackSegment::ExecuteEvent</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> event, <a href="../ListOfTypes.html#Int_t">Int_t</a> px, <a href="../ListOfTypes.html#Int_t">Int_t</a> py)
+{
+<b>  // Execute action corresponding to one event</b>
+<b>  //  This member function is called when a <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> is clicked with the locator</b>
+<b>  //</b>
+<b>  //  If Left button is clicked on <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a>, the digits are switched on    </b>
+<b>  //  and switched off when the mouse button is released.</b>
+ 
+  static TPaveText* textTS = 0 ;
+  
+  if (!gPad-&gt;IsEditable()) 
+    return;
+  
+  switch (event) {
+    
+  case kButton1Down:{
+    
+    if (!textTS) {
+      
+      TVector3 pos(0.,0.,0.) ;
+      <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;<a href=".././AliPHOSEmcRecPoint.html#AliPHOSEmcRecPoint:GetLocalPosition">GetLocalPosition</a>(pos) ;
+      textTS = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+5,pos.Z()+15,"") ;
+      <a href="../ListOfTypes.html#Text_t">Text_t</a>  line1[40] ;
+      sprintf(line1,"See RecParticle for ID") ;
+      textTS -&gt;AddText(line1) ;
+      textTS -&gt;<a href="#AliPHOSTrackSegment:Draw">Draw</a>("");
+      gPad-&gt;Update() ; 
+    }
+  }
+  
+  break;
+  
+  case kButton1Up:
+    if (textTS) {
+      delete textTS ;
+      textTS = 0 ;
+    }
+    break;  
+  }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:GetDistanceInPHOSPlane"> </a><a href="../ListOfTypes.html#Float_t">Float_t</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:GetDistanceInPHOSPlane">AliPHOSTrackSegment::GetDistanceInPHOSPlane</a>()
+{
+<b>  // Calculates the distance between the EMC RecPoint and PPSD RecPoint</b>
+  
+  TVector3 vecEmc ;
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;<a href=".././AliPHOSEmcRecPoint.html#AliPHOSEmcRecPoint:GetLocalPosition">GetLocalPosition</a>(vecEmc) ;
+  
+  TVector3 vecPpsd ;
+  if( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>-&gt;<a href=".././AliPHOSPpsdRecPoint.html#AliPHOSPpsdRecPoint:GetMultiplicity">GetMultiplicity</a>() )  
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>-&gt;<a href=".././AliPHOSPpsdRecPoint.html#AliPHOSPpsdRecPoint:GetLocalPosition">GetLocalPosition</a>(vecPpsd)  ; 
+  else { 
+    vecPpsd.SetX(10000.) ;
+  } 
+  vecEmc -= vecPpsd ;
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> r = vecEmc.Mag();;
+
+  return r ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:GetMomentumDirection"> </a>TVector3 <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:GetMomentumDirection">AliPHOSTrackSegment::GetMomentumDirection</a>() 
+{ 
+<b>  // Calculates the momentum direction:</b>
+<b>  //   1. if only a EMC RecPoint, direction is given by IP and this RecPoint</b>
+<b>  //   2. if a EMC RecPoint and one PPSD RecPoint, direction is given by the line through the 2 recpoints </b>
+<b>  //   3. if a EMC RecPoint and two PPSD RecPoints, dirrection is given by the average line through </b>
+<b>  //      the 2 pairs of recpoints  </b>
+<b>  // However because of the poor position resolution of PPSD the direction is always taken as if we were </b>
+<b>  //  in case 1.</b>
+
+  TVector3 dir(0,0,0) ; 
+  TMatrix mdummy ;
+
+  TVector3 posEmc ;
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;GetGlobalPosition(posEmc, mdummy) ;
+
+<b>  // Correction for the depth of the shower starting point (TDR p 127) </b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> energy = <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;<a href="#AliPHOSTrackSegment:GetEnergy">GetEnergy</a>() ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> para = 0.925 ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> parb = 6.52 ; 
+
+  TVector3 localpos ; 
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;<a href=".././AliPHOSEmcRecPoint.html#AliPHOSEmcRecPoint:GetLocalPosition">GetLocalPosition</a>(localpos) ; 
+
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> radius = geom-&gt;GetIPtoOuterCoverDistance() + geom-&gt;GetOuterBoxSize(1) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> incidencephi = TMath::ATan(localpos.X() / radius) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> incidencetheta = TMath::ATan(localpos.Z() / radius) ;
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> depthx =  ( para * TMath::Log(energy) + parb ) * TMath::Sin(incidencephi) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> depthz =  ( para * TMath::Log(energy) + parb ) * TMath::Sin(incidencetheta) ; 
+  
+  localpos.SetX(localpos.X() - depthx ) ;
+  localpos.SetZ(localpos.Z() - depthz ) ;
+ 
+  TVector3 emcglobalpos ;
+  TMatrix  dummy ;
+
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;GetGlobalPosition(emcglobalpos, dummy) ;
+
+  emcglobalpos.SetX( emcglobalpos.X() - depthx ) ;  
+  emcglobalpos.SetZ( emcglobalpos.Z() - depthz ) ;   
+  
+<b>  // The following commeneted code becomes valid once the PPSD provides </b>
+<b>  // a reasonable position resolution, at least as good as EMC !</b>
+ 
+<b>//   TVector3 ppsdlglobalpos ;</b>
+<b>//   TVector3 ppsduglobalpos ;</b>
+
+<b>//   if( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a> ){ // certainly a photon that has concerted</b>
+        
+<b>//     <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>-&gt;GetGlobalPosition(ppsdlglobalpos, mdummy) ; </b>
+<b>//     dir = emcglobalpos -  ppsdlglobalpos ; </b>
+     
+<b>//     if( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a> ){ // nop looks like a charged</b>
+       
+<b>//        <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a>-&gt;GetGlobalPosition(ppsduglobalpos, mdummy) ; </b>
+<b>//        dir = ( dir +  emcglobalpos -  ppsduglobalpos ) * 0.5 ; </b>
+<b>//      }</b>
+<b>//   }</b>
+ 
+<b>//   else { // looks like a neutral</b>
+
+    dir = emcglobalpos ;  
+<b>//  }</b>
+
+  dir.SetZ( -dir.Z() ) ;   // why ?  
+  dir.SetMag(1.) ;
+    
+  return dir ;  
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:GetPrimariesEmc"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> *  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:GetPrimariesEmc">AliPHOSTrackSegment::GetPrimariesEmc</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+{ 
+<b>  // Retrieves the primary particle(s) at the origin of the EMC RecPoint</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * rv = 0 ; 
+  number = 0 ;
+  if ( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a> )
+    rv =  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;GetPrimaries(number) ; 
+
+  return rv ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:GetPrimariesPpsdLow"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> *  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:GetPrimariesPpsdLow">AliPHOSTrackSegment::GetPrimariesPpsdLow</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+{ 
+<b>  // Retrieves the primary particle(s) at the origin of the lower PPSD RecPoint</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * rv = 0 ; 
+  number = 0 ;
+  if ( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a> )
+    rv =  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>-&gt;GetPrimaries(number) ; 
+
+  return rv ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:GetPrimariesPpsdUp"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> *  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:GetPrimariesPpsdUp">AliPHOSTrackSegment::GetPrimariesPpsdUp</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+{ 
+<b>  // Retrieves the primary particle(s) at the origin of the upper PPSD  RecPoint</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * rv = 0 ; 
+  number = 0 ;
+  if ( <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a> )
+    rv =  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a>-&gt;GetPrimaries(number) ; 
+
+  return rv ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:GetPosition"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:GetPosition">AliPHOSTrackSegment::GetPosition</a>( TVector3 &amp; pos ) 
+{  
+<b>  // Returns position of the EMC RecPoint</b>
+
+  TMatrix dummy ;
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;GetGlobalPosition(pos, dummy) ;
+}
+
+
+<b>//______________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:Paint"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:Paint">AliPHOSTrackSegment::Paint</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a> *)
+{
+<b>  // Paint this ALiPHOSTrackSegment as a TMarker  with its current attributes</b>
+
+  TVector3 posemc(999., 999., 999.) ;
+  TVector3 posppsdl(999., 999., 999.) ;
+  TVector3 posppsdu(999., 999., 999.) ;
+  
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;<a href=".././AliPHOSEmcRecPoint.html#AliPHOSEmcRecPoint:GetLocalPosition">GetLocalPosition</a>(posemc) ;
+  if (<a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a> !=0 ) 
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>-&gt;<a href=".././AliPHOSPpsdRecPoint.html#AliPHOSPpsdRecPoint:GetLocalPosition">GetLocalPosition</a>(posppsdl) ;
+  if (<a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a> !=0 ) 
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a>-&gt;<a href=".././AliPHOSPpsdRecPoint.html#AliPHOSPpsdRecPoint:GetLocalPosition">GetLocalPosition</a>(posppsdu) ;
+  
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> xemc   = posemc.X() ;
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> yemc   = posemc.Z() ;
+  
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> yppsdl = posppsdl.Z() ;
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> xppsdl = posppsdl.X() ;
+  
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> yppsdu = posppsdu.Z() ;
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> xppsdu = posppsdu.X() ;
+  
+  <a href="../ListOfTypes.html#Color_t">Color_t</a> markercolor = 1 ;
+  <a href="../ListOfTypes.html#Size_t">Size_t</a>  markersize  = 1.5 ;
+  <a href="../ListOfTypes.html#Style_t">Style_t</a> markerstyle = 20 ;
+  
+  if (!gPad-&gt;IsBatch()) {
+    gVirtualX-&gt;SetMarkerColor(markercolor) ;
+    gVirtualX-&gt;SetMarkerSize (markersize)  ;
+    gVirtualX-&gt;SetMarkerStyle(markerstyle) ;
+  }
+  gPad-&gt;SetAttMarkerPS(markercolor,markerstyle,markersize) ;
+  gPad-&gt;PaintPolyMarker(1, &amp;xemc, &amp;yemc, "") ;
+  
+  if (xppsdl != 999. &amp;&amp; yppsdl != 999. ) {
+    
+    markercolor = 2 ;
+    markersize  = 1.25 ;
+    markerstyle = 21 ;
+    
+    if (!gPad-&gt;IsBatch()) {
+      gVirtualX-&gt;SetMarkerColor(markercolor) ;
+      gVirtualX-&gt;SetMarkerSize (markersize)  ;
+      gVirtualX-&gt;SetMarkerStyle(markerstyle) ;
+    }
+    gPad-&gt;SetAttMarkerPS(markercolor,markerstyle,markersize) ;
+    gPad-&gt;PaintPolyMarker(1, &amp;xppsdl, &amp;yppsdl, "") ;
+  }
+  
+  if (xppsdu != 999. &amp;&amp; yppsdu != 999. ) {
+    
+    markercolor = 3 ;
+    markersize  = 1. ;
+    markerstyle = 22 ;
+    
+    if (!gPad-&gt;IsBatch()) {
+      gVirtualX-&gt;SetMarkerColor(markercolor) ;
+      gVirtualX-&gt;SetMarkerSize (markersize)  ;
+      gVirtualX-&gt;SetMarkerStyle(markerstyle) ;
+    }
+    gPad-&gt;SetAttMarkerPS(markercolor,markerstyle,markersize) ;
+    gPad-&gt;PaintPolyMarker(1, &amp;xppsdu, &amp;yppsdu, "") ;
+  }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSTrackSegment:Print"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:Print">AliPHOSTrackSegment::Print</a>()
+{
+<b>  // Print all information on this track Segment</b>
+  
+  cout &lt;&lt; "--------<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>-------- "&lt;&lt;endl ;
+  cout &lt;&lt; "EMC Reconstructed Point: " &lt;&lt; <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a> &lt;&lt; endl;
+  
+  TVector3 pos ;
+  TMatrix dummy ;  
+
+  <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;GetGlobalPosition( pos, dummy ) ;
+ 
+  cout &lt;&lt; "    position " &lt;&lt; pos.X() &lt;&lt; "   " &lt;&lt; pos.Y() &lt;&lt; "  " &lt;&lt; pos.Z() &lt;&lt; "      Energy " &lt;&lt; <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a>-&gt;<a href=".././AliPHOSEmcRecPoint.html#AliPHOSEmcRecPoint:GetTotalEnergy">GetTotalEnergy</a>() &lt;&lt; endl ;
+  cout &lt;&lt; "PPSD Low Reconstructed Point: " &lt;&lt; endl;
+  
+  if(<a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>){
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a>-&gt;GetGlobalPosition( pos , dummy ) ;
+    cout &lt;&lt; "    position " &lt;&lt; pos.X() &lt;&lt; "   " &lt;&lt; pos.Y() &lt;&lt; "  " &lt;&lt; pos.Z() &lt;&lt; endl ;
+  }
+
+  cout &lt;&lt; "PPSD Up Reconstructed Point: " &lt;&lt; endl;
+  
+  if(<a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a> ){
+    <a href=".././AliPHOSTrackSegment.html#AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a>-&gt;GetGlobalPosition( pos, dummy ) ;
+    cout &lt;&lt; "    position " &lt;&lt; pos.X() &lt;&lt; "   " &lt;&lt; pos.Y() &lt;&lt; "  " &lt;&lt; pos.Z()  &lt;&lt; endl ;
+  }
+
+}
+
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

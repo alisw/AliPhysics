@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:48 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSDigit</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSDigit</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSDigit:description>class description</a> - <a href="src/AliPHOSDigit.cxx.html">source file</a> - <a href="AliPHOSDigit_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSDigit" href="AliPHOSDigit.h">AliPHOSDigit</a> : public AliDigitNew</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->         <a href="./AliPHOSDigit.html">AliPHOSDigit</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit</a><!--PLAIN-->()
+<!--TAB6-->         <a href="./AliPHOSDigit.html">AliPHOSDigit</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> primary, <a href="ListOfTypes.html#Int_t">Int_t</a> id, <a href="ListOfTypes.html#Int_t">Int_t</a> DigEnergy)
+<!--TAB6-->         <a href="./AliPHOSDigit.html">AliPHOSDigit</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit</a><!--PLAIN-->(const <a href="./AliPHOSDigit.html">AliPHOSDigit</a>&amp; digit)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:~AliPHOSDigit">~AliPHOSDigit</a><!--PLAIN-->()
+<!--TAB6-->              TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->        virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:Compare">Compare</a><!--PLAIN-->(TObject* obj)
+<!--TAB6-->                <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:GetNprimary">GetNprimary</a><!--PLAIN-->() const
+<!--TAB6-->                <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:GetPrimary">GetPrimary</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->      virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->       virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:IsSortable">IsSortable</a><!--PLAIN-->() const
+<!--TAB6-->        <a href="./AliPHOSDigit.html">AliPHOSDigit</a>&amp; <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:operator+">operator+</a><!--PLAIN-->(<a href="./AliPHOSDigit.html">AliPHOSDigit</a> const&amp; rValue)
+<!--TAB6-->               <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:operator==">operator==</a><!--PLAIN-->(<a href="./AliPHOSDigit.html">AliPHOSDigit</a> const&amp; rValue) const
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:SetAmp">SetAmp</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> Amp)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSDigit:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSDigit:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->      <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSDigit:fPrimary1">fPrimary1</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPrimary1">first primary (because I do not know how to stream *fPrimary) </a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSDigit:fPrimary2">fPrimary2</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPrimary2">second primary (because I do not know how to stream *fPrimary) </a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSDigit:fPrimary3">fPrimary3</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPrimary3">third primary (because I do not know how to stream *fPrimary) </a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSDigit:fNprimary">fNprimary</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fNprimary">Number of primaries</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSDigit:description">Class Description</a></h2>
+<pre>  PHOS digit: Id
+              energy
+              3 identifiers for the primary particle(s) at the origine of the digit
+  The digits are made in FinishEvent() by summing all the hits in a single PHOS crystal or PPSD gas cell
+  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,
+   it is not possible to stream such an array... (beyond my understqnding!)
+
+*-- Author: Laurent Aphecetche &amp; Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSDigit:AliPHOSDigit" href="src/AliPHOSDigit.cxx.html#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit</a>() 
+<br>
+<pre> default ctor
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSDigit:AliPHOSDigit" href="src/AliPHOSDigit.cxx.html#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> primary, <a href="ListOfTypes.html#Int_t">Int_t</a> id, <a href="ListOfTypes.html#Int_t">Int_t</a> DigEnergy) 
+<br>
+<pre> ctor with all data
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSDigit:AliPHOSDigit" href="src/AliPHOSDigit.cxx.html#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit</a>(const <a href="./AliPHOSDigit.html">AliPHOSDigit</a> &amp; digit) 
+<br>
+<pre> copy ctor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSDigit:Compare" href="src/AliPHOSDigit.cxx.html#AliPHOSDigit:Compare">Compare</a>(TObject * obj)
+<br>
+<pre> Compares two digits with respect to its Id
+ to sort according increasing Id
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSDigit:GetPrimary" href="src/AliPHOSDigit.cxx.html#AliPHOSDigit:GetPrimary">GetPrimary</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<br>
+<pre> Returns the primary particle id index =1,2,3
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSDigit:operator==" href="AliPHOSDigit.h">operator==</a>(<a href="./AliPHOSDigit.html">AliPHOSDigit</a> const&amp; rValue) const
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSDigit.html">AliPHOSDigit</a>&amp; <a name="AliPHOSDigit:operator+" href="AliPHOSDigit.h">operator+</a>(<a href="./AliPHOSDigit.html">AliPHOSDigit</a> const&amp; rValue)
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSDigit:GetNprimary" href="AliPHOSDigit.h">GetNprimary</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSDigit:IsSortable" href="AliPHOSDigit.h">IsSortable</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSDigit:SetAmp" href="AliPHOSDigit.h">SetAmp</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> Amp)
+<!--INLINE FUNCTION--><!--TAB6-->              TClass* <a name="AliPHOSDigit:Class" href="AliPHOSDigit.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->              TClass* <a name="AliPHOSDigit:IsA" href="AliPHOSDigit.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSDigit:ShowMembers" href="AliPHOSDigit.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSDigit:Streamer" href="AliPHOSDigit.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSDigit:~AliPHOSDigit" href="AliPHOSDigit.h">~AliPHOSDigit</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:48 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSEmcRecPoint</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSEmcRecPoint</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSEmcRecPoint:description>class description</a> - <a href="src/AliPHOSEmcRecPoint.cxx.html">source file</a> - <a href="AliPHOSEmcRecPoint_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSEmcRecPoint" href="AliPHOSEmcRecPoint.h">AliPHOSEmcRecPoint</a> : public <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a></h2>
+<pre>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->      <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:AreNeighbours">AreNeighbours</a><!--PLAIN-->(<a href="./AliPHOSDigit.html">AliPHOSDigit</a>* digit1, <a href="./AliPHOSDigit.html">AliPHOSDigit</a>* digit2)
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->      <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:AliPHOSEmcRecPoint">AliPHOSEmcRecPoint</a><!--PLAIN-->()
+<!--TAB6-->      <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:AliPHOSEmcRecPoint">AliPHOSEmcRecPoint</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> W0, <a href="ListOfTypes.html#Float_t">Float_t</a> LocMaxCut)
+<!--TAB6-->      <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:AliPHOSEmcRecPoint">AliPHOSEmcRecPoint</a><!--PLAIN-->(<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>&amp;)
+<!--TAB6-->            virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:~AliPHOSEmcRecPoint">~AliPHOSEmcRecPoint</a><!--PLAIN-->()
+<!--TAB6-->            virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:AddDigit">AddDigit</a><!--PLAIN-->(AliDigitNew&amp; digit, <a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<!--TAB6-->                 TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:Compare">Compare</a><!--PLAIN-->(TObject* obj)
+<!--TAB6-->            virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:ExecuteEvent">ExecuteEvent</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> event, <a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<!--TAB6-->                 <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetDelta">GetDelta</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetDispersion">GetDispersion</a><!--PLAIN-->()
+<!--TAB6-->                    <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetElipsAxis">GetElipsAxis</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a>* lambda)
+<!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetEnergiesList">GetEnergiesList</a><!--PLAIN-->()
+<!--TAB6-->            virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetLocalPosition">GetLocalPosition</a><!--PLAIN-->(TVector3&amp; Lpos)
+<!--TAB6-->                 <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetLocMaxCut">GetLocMaxCut</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetLogWeightCut">GetLogWeightCut</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetMaximalEnergy">GetMaximalEnergy</a><!--PLAIN-->()
+<!--TAB6-->                   <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetMaximumMultiplicity">GetMaximumMultiplicity</a><!--PLAIN-->()
+<!--TAB6-->                   <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetMultiplicity">GetMultiplicity</a><!--PLAIN-->() const
+<!--TAB6-->                   <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetMultiplicityAtLevel">GetMultiplicityAtLevel</a><!--PLAIN-->(const <a href="ListOfTypes.html#Float_t">Float_t</a> level)
+<!--TAB6-->                   <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetNumberOfLocalMax">GetNumberOfLocalMax</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a>* maxAt, <a href="ListOfTypes.html#Float_t">Float_t</a>* maxAtEnergy)
+<!--TAB6-->                 <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:GetTotalEnergy">GetTotalEnergy</a><!--PLAIN-->() const
+<!--TAB6-->         virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->          virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:IsEmc">IsEmc</a><!--PLAIN-->()
+<!--TAB6-->          virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:IsSortable">IsSortable</a><!--PLAIN-->() const
+<!--TAB6-->            virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:Print">Print</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt = <a href="ListOfTypes.html#void">void</a>)
+<!--TAB6-->            virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->            virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSEmcRecPoint:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSEmcRecPoint:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->       <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSEmcRecPoint:fDelta">fDelta</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fDelta">parameter used to sort the clusters    </a></i>
+<!--TAB6-->       <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSEmcRecPoint:fLocMaxCut">fLocMaxCut</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fLocMaxCut">minimum energy difference to distinguish two maxima </a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a>* <!--TAB--><!--BOLD--><a name="AliPHOSEmcRecPoint:fEnergyList">fEnergyList</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fEnergyList">energy of digits</a></i>
+<!--TAB6-->       <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSEmcRecPoint:fW0">fW0</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fW0">logarithmic weight factor for center of gravity calculation</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSEmcRecPoint:description">Class Description</a></h2>
+<pre>  RecPoint implementation for PHOS-EMC
+  An EmcRecPoint is a cluster of digits
+
+*-- Author: Dmitri Peressounko (RRC KI &amp; SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSEmcRecPoint:AliPHOSEmcRecPoint" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:AliPHOSEmcRecPoint">AliPHOSEmcRecPoint</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> W0, <a href="ListOfTypes.html#Float_t">Float_t</a> LocMaxCut)
+  : <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a>()
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:AddDigit" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:AddDigit">AddDigit</a>(AliDigitNew &amp; digit, <a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<br>
+<pre> Adds a digit to the RecPoint
+  and accumulates the total amplitude and the multiplicity
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSEmcRecPoint:AreNeighbours" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:AreNeighbours">AreNeighbours</a>(<a href="./AliPHOSDigit.html">AliPHOSDigit</a> * digit1, <a href="./AliPHOSDigit.html">AliPHOSDigit</a> * digit2 ) 
+<br>
+<pre> Tells if (true) or not (false) two digits are neighbors)
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSEmcRecPoint:Compare" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:Compare">Compare</a>(TObject * obj)
+<br>
+<pre> Compares two RecPoints according to their position in the PHOS modules
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:ExecuteEvent" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:ExecuteEvent">ExecuteEvent</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> event, <a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<br>
+<pre> Execute action corresponding to one event
+  This member function is called when a <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a> is clicked with the locator
+
+  If Left button is clicked on <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a>, the digits are switched on
+  and switched off when the mouse button is released.
+
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSEmcRecPoint:GetDispersion" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:GetDispersion">GetDispersion</a>() 
+<br>
+<pre> Calculates the dispersion of the shower at the origine of the RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:GetElipsAxis" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:GetElipsAxis">GetElipsAxis</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> * lambda)
+<br>
+<pre> Calculates the axis of the shower ellipsoid
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:GetLocalPosition" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:GetLocalPosition">GetLocalPosition</a>(TVector3 &amp;LPos)
+<br>
+<pre> Calculates the center of gravity in the local PHOS-module coordinates
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSEmcRecPoint:GetMaximalEnergy" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:GetMaximalEnergy">GetMaximalEnergy</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Finds the maximum energy in the cluster
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSEmcRecPoint:GetMultiplicityAtLevel" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:GetMultiplicityAtLevel">GetMultiplicityAtLevel</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> H) 
+<br>
+<pre> Calculates the multiplicity of digits with energy larger than H*energy
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSEmcRecPoint:GetNumberOfLocalMax" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:GetNumberOfLocalMax">GetNumberOfLocalMax</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> *  maxAt, <a href="ListOfTypes.html#Float_t">Float_t</a> * maxAtEnergy) 
+<br>
+<pre> Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
+  energy difference between two local maxima
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:Print" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:Print">Print</a>(<a href="ListOfTypes.html#Option_t">Option_t</a> * option) 
+<br>
+<pre> Print the list of digits belonging to the cluster
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:Streamer" href="src/AliPHOSEmcRecPoint.cxx.html#AliPHOSEmcRecPoint:Streamer">Streamer</a>(TBuffer &amp;R__b)
+<br>
+<pre> Stream an object of class <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>.
+ Needed because of the array <a href="./AliPHOSEmcRecPoint.html#AliPHOSEmcRecPoint:fEnergyList">fEnergyList</a>
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> <a name="AliPHOSEmcRecPoint:AliPHOSEmcRecPoint" href="AliPHOSEmcRecPoint.h">AliPHOSEmcRecPoint</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> W0, <a href="ListOfTypes.html#Float_t">Float_t</a> LocMaxCut)
+<!--INLINE FUNCTION--><!--TAB6-->                   <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSEmcRecPoint:GetDelta" href="AliPHOSEmcRecPoint.h">GetDelta</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Float_t">Float_t</a>* <a name="AliPHOSEmcRecPoint:GetEnergiesList" href="AliPHOSEmcRecPoint.h">GetEnergiesList</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                   <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSEmcRecPoint:GetLocMaxCut" href="AliPHOSEmcRecPoint.h">GetLocMaxCut</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                   <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSEmcRecPoint:GetLogWeightCut" href="AliPHOSEmcRecPoint.h">GetLogWeightCut</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSEmcRecPoint:GetMaximumMultiplicity" href="AliPHOSEmcRecPoint.h">GetMaximumMultiplicity</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSEmcRecPoint:GetMultiplicity" href="AliPHOSEmcRecPoint.h">GetMultiplicity</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                   <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSEmcRecPoint:GetTotalEnergy" href="AliPHOSEmcRecPoint.h">GetTotalEnergy</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                    <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSEmcRecPoint:IsEmc" href="AliPHOSEmcRecPoint.h">IsEmc</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                    <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSEmcRecPoint:IsSortable" href="AliPHOSEmcRecPoint.h">IsSortable</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                   TClass* <a name="AliPHOSEmcRecPoint:Class" href="AliPHOSEmcRecPoint.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                   TClass* <a name="AliPHOSEmcRecPoint:IsA" href="AliPHOSEmcRecPoint.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:ShowMembers" href="AliPHOSEmcRecPoint.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> <a name="AliPHOSEmcRecPoint:AliPHOSEmcRecPoint" href="AliPHOSEmcRecPoint.h">AliPHOSEmcRecPoint</a>(<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>&amp;)
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSEmcRecPoint:~AliPHOSEmcRecPoint" href="AliPHOSEmcRecPoint.h">~AliPHOSEmcRecPoint</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

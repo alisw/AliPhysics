@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:56 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSRecPoint</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSRecPoint</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSRecPoint:description>class description</a> - <a href="src/AliPHOSRecPoint.cxx.html">source file</a> - <a href="AliPHOSRecPoint_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSRecPoint" href="AliPHOSRecPoint.h">AliPHOSRecPoint</a> : public AliRecPoint</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:~AliPHOSRecPoint">~AliPHOSRecPoint</a><!--PLAIN-->()
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:AddDigit">AddDigit</a><!--PLAIN-->(AliDigitNew&amp; digit, <a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<!--TAB6-->              TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->        virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:Compare">Compare</a><!--PLAIN-->(TObject* obj)
+<!--TAB6-->        virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:DistancetoPrimitive">DistancetoPrimitive</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:Draw">Draw</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* option)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:ExecuteEvent">ExecuteEvent</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> event, <a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<!--TAB6-->        virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:GetPHOSMod">GetPHOSMod</a><!--PLAIN-->()
+<!--TAB6-->       virtual <a href="ListOfTypes.html#Int_t">Int_t</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:GetPrimaries">GetPrimaries</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a>&amp; number)
+<!--TAB6-->      virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->       virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:IsEmc">IsEmc</a><!--PLAIN-->()
+<!--TAB6-->       virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:IsSortable">IsSortable</a><!--PLAIN-->() const
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:Paint">Paint</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* option)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:Print">Print</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt = <a href="ListOfTypes.html#void">void</a>)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecPoint:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSRecPoint:Data Members">Data Members</a></h3>
+
+<!--TAB4-->    <b>protected:</b><br>
+<!--TAB6-->      <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSRecPoint:fPHOSMod">fPHOSMod</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPHOSMod">PHOS Module number in which the RecPoint is found</a></i>
+</pre>
+<!--END-->
+<br><hr>
+<!--SEE ALSO--><h2>See also</h2><dl><dd>
+<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>, <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a></dl>
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSRecPoint:description">Class Description</a></h2>
+<pre>  Base Class for PHOS Reconstructed Points
+
+*-- Author: Gines Martinez (SUBATECH)
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSRecPoint:DistancetoPrimitive" href="src/AliPHOSRecPoint.cxx.html#AliPHOSRecPoint:DistancetoPrimitive">DistancetoPrimitive</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<br>
+<pre> Compute distance from point px,py to  a <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a> considered as a Tmarker
+ Compute the closest distance of approach from point px,py to this marker.
+ The distance is computed in pixels units.
+</pre><hr>
+<!--FUNCTION--> <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:Draw" href="src/AliPHOSRecPoint.cxx.html#AliPHOSRecPoint:Draw">Draw</a>(<a href="ListOfTypes.html#Option_t">Option_t</a> *option)
+ <br>
+<pre> Draw this <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a> with its current attributes
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:ExecuteEvent" href="src/AliPHOSRecPoint.cxx.html#AliPHOSRecPoint:ExecuteEvent">ExecuteEvent</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> event, <a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<br>
+<pre> Execute action corresponding to one event
+ This member function is called when a <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a> is clicked with the locator
+
+ If Left button is clicked on <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a>, the digits are switched on
+ and switched off when the mouse button is released.
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSRecPoint:GetPHOSMod" href="src/AliPHOSRecPoint.cxx.html#AliPHOSRecPoint:GetPHOSMod">GetPHOSMod</a>()
+<br>
+<pre> Returns the PHOS module in which the RecPoint is found
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a>* <a name="AliPHOSRecPoint:GetPrimaries" href="src/AliPHOSRecPoint.cxx.html#AliPHOSRecPoint:GetPrimaries">GetPrimaries</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> &amp; number)
+<br>
+<pre> Constructs the list of primary particles which have contributed to this RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:Paint" href="src/AliPHOSRecPoint.cxx.html#AliPHOSRecPoint:Paint">Paint</a>(<a href="ListOfTypes.html#Option_t">Option_t</a> *)
+<br>
+<pre> Paint this ALiRecPoint as a TMarker  with its current attributes
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:AddDigit" href="AliPHOSRecPoint.h">AddDigit</a>(AliDigitNew&amp; digit, <a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<!--INLINE FUNCTION--><!--TAB6-->             <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSRecPoint:IsEmc" href="AliPHOSRecPoint.h">IsEmc</a>()
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:Print" href="AliPHOSRecPoint.h">Print</a>(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt = <a href="ListOfTypes.html#void">void</a>)
+<!--INLINE FUNCTION--><!--TAB6-->              <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSRecPoint:Compare" href="AliPHOSRecPoint.h">Compare</a>(TObject* obj)
+<!--INLINE FUNCTION--><!--TAB6-->             <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSRecPoint:IsSortable" href="AliPHOSRecPoint.h">IsSortable</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSRecPoint:Class" href="AliPHOSRecPoint.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSRecPoint:IsA" href="AliPHOSRecPoint.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:ShowMembers" href="AliPHOSRecPoint.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:Streamer" href="AliPHOSRecPoint.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecPoint:~AliPHOSRecPoint" href="AliPHOSRecPoint.h">~AliPHOSRecPoint</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

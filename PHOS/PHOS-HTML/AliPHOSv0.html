@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:57 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSv0</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSv0</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSv0:description>class description</a> - <a href="src/AliPHOSv0.cxx.html">source file</a> - <a href="AliPHOSv0_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSv0" href="AliPHOSv0.h">AliPHOSv0</a> : public <a href="./AliPHOS.html">AliPHOS</a></h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->                     <a href="./AliPHOSv0.html">AliPHOSv0</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:AliPHOSv0">AliPHOSv0</a><!--PLAIN-->()
+<!--TAB6-->                     <a href="./AliPHOSv0.html">AliPHOSv0</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:AliPHOSv0">AliPHOSv0</a><!--PLAIN-->(const <a href="ListOfTypes.html#char">char</a>* name, const <a href="ListOfTypes.html#char">char</a>* title)
+<!--TAB6-->                     <a href="./AliPHOSv0.html">AliPHOSv0</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:AliPHOSv0">AliPHOSv0</a><!--PLAIN-->(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>* Reconstructioner, const <a href="ListOfTypes.html#char">char</a>* name, const <a href="ListOfTypes.html#char">char</a>* title)
+<!--TAB6-->                     <a href="./AliPHOSv0.html">AliPHOSv0</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:AliPHOSv0">AliPHOSv0</a><!--PLAIN-->(<a href="./AliPHOSv0.html">AliPHOSv0</a>&amp;)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:~AliPHOSv0">~AliPHOSv0</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:AddHit">AddHit</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> primary, <a href="ListOfTypes.html#Int_t">Int_t</a> id, <a href="ListOfTypes.html#Float_t">Float_t</a>* hits)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:BuildGeometry">BuildGeometry</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:BuildGeometryforPHOS">BuildGeometryforPHOS</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:BuildGeometryforPPSD">BuildGeometryforPPSD</a><!--PLAIN-->()
+<!--TAB6-->                       TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSv0:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:CreateGeometry">CreateGeometry</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:CreateGeometryforPHOS">CreateGeometryforPHOS</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:CreateGeometryforPPSD">CreateGeometryforPPSD</a><!--PLAIN-->()
+<!--TAB6-->                         <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:Digitize">Digitize</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<!--TAB6-->                <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSv0:EmcClusters">EmcClusters</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:FinishEvent">FinishEvent</a><!--PLAIN-->()
+<!--TAB6-->      virtual <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSv0:GetGeometry">GetGeometry</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:Init">Init</a><!--PLAIN-->()
+<!--TAB6-->               virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSv0:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->                 virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:IsVersion">IsVersion</a><!--PLAIN-->() const
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:MakeBranch">MakeBranch</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt)
+<!--TAB6-->                <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSv0:PpsdClusters">PpsdClusters</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:Reconstruction">Reconstruction</a><!--PLAIN-->(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>* Reconstructioner)
+<!--TAB6-->             <a href="ListOfTypes.html#RecParticlesList">RecParticlesList</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSv0:RecParticles">RecParticles</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:ResetClusters">ResetClusters</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:SetDigitThreshold">SetDigitThreshold</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> th)
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:SetReconstructioner">SetReconstructioner</a><!--PLAIN-->(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>&amp; Reconstructioner)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:StepManager">StepManager</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv0:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+<!--TAB6-->            <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSv0:TrackSegments">TrackSegments</a><!--PLAIN-->()
+
+<h3><!--TAB2-->  <a name="AliPHOSv0:Data Members">Data Members</a></h3>
+
+<!--TAB4-->    <b>protected:</b><br>
+<!--TAB6-->                        <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv0:fDigitThreshold">fDigitThreshold</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fDigitThreshold">Threshold for the digit registration </a></i>
+<!--TAB6-->                 <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fEmcClusters">fEmcClusters</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fEmcClusters">The RecPoints (clusters) list in EMC </a></i>
+<!--TAB6-->               <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fGeom">fGeom</a><!--PLAIN-->                <!--TAB--><i><a name="Title:fGeom">Geometry definition</a></i>
+<!--TAB6-->                          <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv0:fNTmpHits">fNTmpHits</a><!--PLAIN-->            <!--TAB--><i><a name="Title:fNTmpHits">!  Used internally for digitalization</a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv0:fPinElectronicNoise">fPinElectronicNoise</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPinElectronicNoise">Electronic Noise in the PIN</a></i>
+<!--TAB6-->                 <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fPpsdClusters">fPpsdClusters</a><!--PLAIN-->        <!--TAB--><i><a name="Title:fPpsdClusters">The RecPoints (clusters) list in PPSD </a></i>
+<!--TAB6-->       <a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fReconstructioner">fReconstructioner</a><!--PLAIN-->    <!--TAB--><i><a name="Title:fReconstructioner">Reconstrutioner of the PHOS event: Clusterization and subtracking procedures</a></i>
+<!--TAB6-->                  TClonesArray* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fTmpHits">fTmpHits</a><!--PLAIN-->             <!--TAB--><i><a name="Title:fTmpHits">!  Used internally for digitalization </a></i>
+<!--TAB6-->      <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fTrackSegmentMaker">fTrackSegmentMaker</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fTrackSegmentMaker">Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC</a></i>
+<!--TAB6-->             <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fTrackSegments">fTrackSegments</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fTrackSegments">The TrackSegment list in PHOS</a></i>
+<!--TAB6-->              <a href="ListOfTypes.html#RecParticlesList">RecParticlesList</a>* <!--TAB--><!--BOLD--><a name="AliPHOSv0:fRecParticles">fRecParticles</a><!--PLAIN-->        <!--TAB--><i><a name="Title:fRecParticles">The reconstructed particles list in PHOS</a></i>
+</pre>
+<!--END-->
+<br><hr>
+<!--SEE ALSO--><h2>See also</h2><dl><dd>
+<a href="./AliPHOSv1.html">AliPHOSv1</a></dl>
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSv0:description">Class Description</a></h2>
+<pre> Implementation version v0 of PHOS Manager class
+ Layout EMC + PPSD has name GPS2
+
+*-- Author: Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSv0:AliPHOSv0" href="src/AliPHOSv0.cxx.html#AliPHOSv0:AliPHOSv0">AliPHOSv0</a>()
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSv0:AliPHOSv0" href="src/AliPHOSv0.cxx.html#AliPHOSv0:AliPHOSv0">AliPHOSv0</a>(const <a href="ListOfTypes.html#char">char</a> *name, const <a href="ListOfTypes.html#char">char</a> *title):
+  <a href="./AliPHOS.html">AliPHOS</a>(name,title)
+<br>
+<pre> ctor : title is used to identify the layout
+        GPS2 = 5 modules (EMC + PPSD)
+ We use 2 arrays of hits :
+
+   - fHits (the "normal" one), which retains the hits associated with
+     the current primary particle being tracked
+     (this array is reset after each primary has been tracked).
+
+   - <a href="./AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>, which retains all the hits of the current event. It
+     is used for the digitization part.
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSv0:AliPHOSv0" href="src/AliPHOSv0.cxx.html#AliPHOSv0:AliPHOSv0">AliPHOSv0</a>(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> * Reconstructioner, const <a href="ListOfTypes.html#char">char</a> *name, const <a href="ListOfTypes.html#char">char</a> *title):
+  <a href="./AliPHOS.html">AliPHOS</a>(name,title)
+<br>
+<pre> ctor : title is used to identify the layout
+        GPS2 = 5 modules (EMC + PPSD)
+ We use 2 arrays of hits :
+
+   - fHits (the "normal" one), which retains the hits associated with
+     the current primary particle being tracked
+     (this array is reset after each primary has been tracked).
+
+   - <a href="./AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>, which retains all the hits of the current event. It
+     is used for the digitization part.
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSv0:~AliPHOSv0" href="src/AliPHOSv0.cxx.html#AliPHOSv0:~AliPHOSv0">~AliPHOSv0</a>()
+<br>
+<pre> dtor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:AddHit" href="src/AliPHOSv0.cxx.html#AliPHOSv0:AddHit">AddHit</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> primary, <a href="ListOfTypes.html#Int_t">Int_t</a> Id, <a href="ListOfTypes.html#Float_t">Float_t</a> * hits)
+<br>
+<pre> Add a hit to the hit list.
+ A PHOS hit is the sum of all hits in a single crystal
+   or in a single PPSD gas cell
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:BuildGeometry" href="src/AliPHOSv0.cxx.html#AliPHOSv0:BuildGeometry">BuildGeometry</a>()
+<br>
+<pre> Build the PHOS geometry for the ROOT display
+
+  /*
+    <H2>
+     PHOS in ALICE displayed by root
+    </H2>
+    <UL>
+    <LI> All Views
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="All Views" SRC="../images/AliPHOSv0AllViews.gif"> 
+    </CENTER></P></LI>
+    <LI> Front View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="Front View" SRC="../images/AliPHOSv0FrontView.gif"> 
+    </CENTER></P></LI>
+     <LI> 3D View 1
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="3D View 1" SRC="../images/AliPHOSv03DView1.gif"> 
+    </CENTER></P></LI>
+    <LI> 3D View 2
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="3D View 2" SRC="../images/AliPHOSv03DView2.gif"> 
+    </CENTER></P></LI>
+    </UL>
+  */
+
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:BuildGeometryforPHOS" href="src/AliPHOSv0.cxx.html#AliPHOSv0:BuildGeometryforPHOS">BuildGeometryforPHOS</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Build the PHOS-EMC geometry for the ROOT display
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:BuildGeometryforPPSD" href="src/AliPHOSv0.cxx.html#AliPHOSv0:BuildGeometryforPPSD">BuildGeometryforPPSD</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre>  Build the PHOS-PPSD geometry for the ROOT display
+
+  /*
+    <H2>
+     PPSD displayed by root
+    </H2>
+    <UL>
+    <LI> Zoom on PPSD: Front View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="PPSD Front View" SRC="../images/AliPHOSv0PPSDFrontView.gif"> 
+    </CENTER></P></LI>
+    <LI> Zoom on PPSD: Perspective View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="PPSD Prespective View" SRC="../images/AliPHOSv0PPSDPerspectiveView.gif"> 
+    </CENTER></P></LI>
+    </UL>
+  */
+
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:CreateGeometry" href="src/AliPHOSv0.cxx.html#AliPHOSv0:CreateGeometry">CreateGeometry</a>()
+<br>
+<pre> Create the PHOS geometry for Geant
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:CreateGeometryforPHOS" href="src/AliPHOSv0.cxx.html#AliPHOSv0:CreateGeometryforPHOS">CreateGeometryforPHOS</a>()
+<br>
+<pre> Create the PHOS-EMC geometry for GEANT
+
+  /*
+    <H2>
+    Geant3 geometry tree of PHOS-EMC in ALICE
+    </H2>
+    <P><CENTER>
+    <IMG Align=BOTTOM ALT="EMC geant tree" SRC="../images/EMCinAlice.gif"> 
+    </CENTER><P>
+  */
+
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:CreateGeometryforPPSD" href="src/AliPHOSv0.cxx.html#AliPHOSv0:CreateGeometryforPPSD">CreateGeometryforPPSD</a>()
+<br>
+<pre> Create the PHOS-PPSD geometry for GEANT
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSv0:Digitize" href="src/AliPHOSv0.cxx.html#AliPHOSv0:Digitize">Digitize</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<br>
+<pre> Applies the energy calibration
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:FinishEvent" href="src/AliPHOSv0.cxx.html#AliPHOSv0:FinishEvent">FinishEvent</a>()
+<br>
+<pre> Makes the digits from the sum of summed hit in a single crystal or PPSD gas cell
+ Adds to the energy the electronic noise
+ Keeps digits with energy above <a href="./AliPHOSv0.html#AliPHOSv0:fDigitThreshold">fDigitThreshold</a>
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:Init" href="src/AliPHOSv0.cxx.html#AliPHOSv0:Init">Init</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Just prints an information message
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:MakeBranch" href="src/AliPHOSv0.cxx.html#AliPHOSv0:MakeBranch">MakeBranch</a>(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt)
+<br>
+<pre> Create new branche in the current Root Tree in the digit Tree
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:Reconstruction" href="src/AliPHOSv0.cxx.html#AliPHOSv0:Reconstruction">Reconstruction</a>(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> * Reconstructioner)
+<br>
+<pre> 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and
+ 2. Creates a branch in TreeR for each list
+ 3. Steers the reconstruction processes
+ 4. Saves the 3 lists in TreeR
+ 5. Write the Tree to File
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:StepManager" href="src/AliPHOSv0.cxx.html#AliPHOSv0:StepManager">StepManager</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Accumulates hits as <a href="ListOfTypes.html#long">long</a> as the track stays in a single crystal or PPSD gas Cell
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->            <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* <a name="AliPHOSv0:EmcClusters" href="AliPHOSv0.h">EmcClusters</a>()
+<!--INLINE FUNCTION--><!--TAB6-->          <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <a name="AliPHOSv0:GetGeometry" href="AliPHOSv0.h">GetGeometry</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSv0:IsVersion" href="AliPHOSv0.h">IsVersion</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->            <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* <a name="AliPHOSv0:PpsdClusters" href="AliPHOSv0.h">PpsdClusters</a>()
+<!--INLINE FUNCTION--><!--TAB6-->         <a href="ListOfTypes.html#RecParticlesList">RecParticlesList</a>* <a name="AliPHOSv0:RecParticles" href="AliPHOSv0.h">RecParticles</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:ResetClusters" href="AliPHOSv0.h">ResetClusters</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:SetReconstructioner" href="AliPHOSv0.h">SetReconstructioner</a>(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>&amp; Reconstructioner)
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:SetDigitThreshold" href="AliPHOSv0.h">SetDigitThreshold</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> th)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* <a name="AliPHOSv0:TrackSegments" href="AliPHOSv0.h">TrackSegments</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                   TClass* <a name="AliPHOSv0:Class" href="AliPHOSv0.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                   TClass* <a name="AliPHOSv0:IsA" href="AliPHOSv0.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:ShowMembers" href="AliPHOSv0.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv0:Streamer" href="AliPHOSv0.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->                 <a href="./AliPHOSv0.html">AliPHOSv0</a> <a name="AliPHOSv0:AliPHOSv0" href="AliPHOSv0.h">AliPHOSv0</a>(<a href="./AliPHOSv0.html">AliPHOSv0</a>&amp;)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

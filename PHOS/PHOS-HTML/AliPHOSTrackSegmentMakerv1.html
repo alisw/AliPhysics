@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:51 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSTrackSegmentMakerv1</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSTrackSegmentMakerv1</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSTrackSegmentMakerv1:description>class description</a> - <a href="src/AliPHOSTrackSegmentMakerv1.cxx.html">source file</a> - <a href="AliPHOSTrackSegmentMakerv1_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSTrackSegmentMakerv1" href="AliPHOSTrackSegmentMakerv1.h">AliPHOSTrackSegmentMakerv1</a> : public <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a></h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->      <a href="./AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:AliPHOSTrackSegmentMakerv1">AliPHOSTrackSegmentMakerv1</a><!--PLAIN-->()
+<!--TAB6-->      <a href="./AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:AliPHOSTrackSegmentMakerv1">AliPHOSTrackSegmentMakerv1</a><!--PLAIN-->(<a href="./AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a>&amp;)
+<!--TAB6-->                    virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:~AliPHOSTrackSegmentMakerv1">~AliPHOSTrackSegmentMakerv1</a><!--PLAIN-->()
+<!--TAB6-->                         TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->                            <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:FillOneModule">FillOneModule</a><!--PLAIN-->(<a href="ListOfTypes.html#DigitsList">DigitsList</a>* Dl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* emcIn, TObjArray* emcOut, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* ppsdIn, TObjArray* ppsdOutUp, TObjArray* ppsdOutLow, <a href="ListOfTypes.html#Int_t">Int_t</a>&amp; PHOSModule, <a href="ListOfTypes.html#Int_t">Int_t</a>&amp; emcStopedAt, <a href="ListOfTypes.html#Int_t">Int_t</a>&amp; ppsdStopedAt)
+<!--TAB6-->                          <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:FindFit">FindFit</a><!--PLAIN-->(<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>* emcRP, <a href="ListOfTypes.html#int">int</a>* MaxAt, <a href="ListOfTypes.html#Float_t">Float_t</a>* maxAtEnergy, <a href="ListOfTypes.html#Int_t">Int_t</a> NPar, <a href="ListOfTypes.html#Float_t">Float_t</a>* FitParametres)
+<!--TAB6-->                         <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:GetDistanceInPHOSPlane">GetDistanceInPHOSPlane</a><!--PLAIN-->(<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>* EmcClu, <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* Ppsd, <a href="ListOfTypes.html#Bool_t">Bool_t</a>&amp; TooFar)
+<!--TAB6-->                 virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->                            <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:MakeLinks">MakeLinks</a><!--PLAIN-->(TObjArray* EmcRecPoints, TObjArray* PpsdRecPointsUp, TObjArray* PpsdRecPointsLow, TClonesArray* LinkLowArray, TClonesArray* LinkUpArray)
+<!--TAB6-->                            <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:MakePairs">MakePairs</a><!--PLAIN-->(TObjArray* EmcRecPoints, TObjArray* PpsdRecPointsUp, TObjArray* PpsdRecPointsLow, TClonesArray* LinkLowArray, TClonesArray* LinkUpArray, <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* trsl)
+<!--TAB6-->                    virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:MakeTrackSegments">MakeTrackSegments</a><!--PLAIN-->(<a href="ListOfTypes.html#DigitsList">DigitsList</a>* DL, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* emcl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* ppsdl, <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* trsl)
+<!--TAB6-->                    virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:SetMaxEmcPpsdDistance">SetMaxEmcPpsdDistance</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> r)
+<!--TAB6-->                    virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:SetUnfoldFlag">SetUnfoldFlag</a><!--PLAIN-->()
+<!--TAB6-->                        <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:ShowerShape">ShowerShape</a><!--PLAIN-->(<a href="ListOfTypes.html#Double_t">Double_t</a> r)
+<!--TAB6-->                    virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->                    virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+<!--TAB6-->                            <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:UnfoldClusters">UnfoldClusters</a><!--PLAIN-->(<a href="ListOfTypes.html#DigitsList">DigitsList</a>* DL, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* emcIn, <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>* iniEmc, <a href="ListOfTypes.html#Int_t">Int_t</a> Nmax, <a href="ListOfTypes.html#int">int</a>* maxAt, <a href="ListOfTypes.html#Float_t">Float_t</a>* maxAtEnergy, TObjArray* emclist)
+<!--TAB6-->                    virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegmentMakerv1:UnsetUnfoldFlag">UnsetUnfoldFlag</a><!--PLAIN-->()
+
+<h3><!--TAB2-->  <a name="AliPHOSTrackSegmentMakerv1:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->       <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSTrackSegmentMakerv1:fDelta">fDelta</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fDelta">parameter used for sorting</a></i>
+<!--TAB6-->      TMinuit* <!--TAB--><!--BOLD--><a name="AliPHOSTrackSegmentMakerv1:fMinuit">fMinuit</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fMinuit">Minuit object needed by cluster unfolding</a></i>
+<!--TAB6-->       <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSTrackSegmentMakerv1:fR0">fR0</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fR0">Maximum distance between a EMC RecPoint and a PPSD RecPoint   </a></i>
+<!--TAB6-->        <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSTrackSegmentMakerv1:fUnfoldFlag">fUnfoldFlag</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fUnfoldFlag">Directive to unfold or not the clusters in case of multiple maxima</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSTrackSegmentMakerv1:description">Class Description</a></h2>
+<pre> Implementation version 1 of algorithm class to construct PHOS track segments
+ Associates EMC and PPSD clusters
+ Unfolds the EMC cluster
+
+*-- Author: Dmitri Peressounko (RRC Ki &amp; SUBATECH)
+
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSTrackSegmentMakerv1:AliPHOSTrackSegmentMakerv1" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:AliPHOSTrackSegmentMakerv1">AliPHOSTrackSegmentMakerv1</a>() 
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSTrackSegmentMakerv1:~AliPHOSTrackSegmentMakerv1" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:~AliPHOSTrackSegmentMakerv1">~AliPHOSTrackSegmentMakerv1</a>()
+<br>
+<pre> dtor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSTrackSegmentMakerv1:FindFit" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:FindFit">FindFit</a>(<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emcRP, <a href="ListOfTypes.html#int">int</a> * maxAt, <a href="ListOfTypes.html#Float_t">Float_t</a> * maxAtEnergy,
+				    <a href="ListOfTypes.html#Int_t">Int_t</a> nPar, <a href="ListOfTypes.html#Float_t">Float_t</a> * fitparameters)
+<br>
+<pre> Calls TMinuit to fit the energy distribution of a cluster with several maxima
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:FillOneModule" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:FillOneModule">FillOneModule</a>(<a href="ListOfTypes.html#DigitsList">DigitsList</a> * Dl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * emcIn, TObjArray * emcOut, 
+					<a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdIn, TObjArray * ppsdOutUp,
+					TObjArray * ppsdOutLow, <a href="ListOfTypes.html#Int_t">Int_t</a> &amp; phosmod, <a href="ListOfTypes.html#Int_t">Int_t</a> &amp; emcStopedAt, 
+					<a href="ListOfTypes.html#Int_t">Int_t</a> &amp; ppsdStopedAt)
+<br>
+<pre> Unfold clusters and fill xxxOut arrays with clusters from one PHOS module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSTrackSegmentMakerv1:GetDistanceInPHOSPlane" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:GetDistanceInPHOSPlane">GetDistanceInPHOSPlane</a>(<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emcclu,<a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * PpsdClu, <a href="ListOfTypes.html#Bool_t">Bool_t</a> &amp;toofar)
+<br>
+<pre> Calculates the distance between the EMC RecPoint and the PPSD RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:MakeLinks" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:MakeLinks">MakeLinks</a>(TObjArray * emcRecPoints, TObjArray * ppsdRecPointsUp, 
+				     TObjArray * ppsdRecPointsLow, TClonesArray * linklowArray, 
+				     TClonesArray *linkupArray) 
+<br>
+<pre> Finds distances (links) between all EMC and PPSD clusters, which are not further apart from each other than <a href="./AliPHOSTrackSegmentMakerv1.html#AliPHOSTrackSegmentMakerv1:fR0">fR0</a>
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:MakePairs" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:MakePairs">MakePairs</a>(TObjArray * emcRecPoints, TObjArray * ppsdRecPointsUp, 
+				    TObjArray * ppsdRecPointsLow, TClonesArray * linklowArray, 
+				    TClonesArray * linkupArray, <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsl) 
+<br>
+<hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:MakeTrackSegments" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:MakeTrackSegments">MakeTrackSegments</a>(<a href="ListOfTypes.html#DigitsList">DigitsList</a> * DL, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * emcl, 
+					<a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdl, <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsl)
+<br>
+<pre> Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Double_t">Double_t</a> <a name="AliPHOSTrackSegmentMakerv1:ShowerShape" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:ShowerShape">ShowerShape</a>(<a href="ListOfTypes.html#Double_t">Double_t</a> r)
+<br>
+<pre> Shape of the shower (see PHOS TDR)
+ If you change this function, change also the gradien evaluation  in ChiSquare()
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:UnfoldClusters" href="src/AliPHOSTrackSegmentMakerv1.cxx.html#AliPHOSTrackSegmentMakerv1:UnfoldClusters">UnfoldClusters</a>(<a href="ListOfTypes.html#DigitsList">DigitsList</a> * DL, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * emcIn,  <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * iniEmc, 
+					 <a href="ListOfTypes.html#Int_t">Int_t</a> nMax, <a href="ListOfTypes.html#int">int</a> * maxAt, <a href="ListOfTypes.html#Float_t">Float_t</a> * maxAtEnergy, TObjArray * emcList)
+<br>
+<pre> Performs the unfolding of a cluster with nMax overlapping showers
+ This is time consuming (use the (Un)SetUnfolFlag()  )
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->                              <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:SetMaxEmcPpsdDistance" href="AliPHOSTrackSegmentMakerv1.h">SetMaxEmcPpsdDistance</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> r)
+<!--INLINE FUNCTION--><!--TAB6-->                              <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:SetUnfoldFlag" href="AliPHOSTrackSegmentMakerv1.h">SetUnfoldFlag</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                              <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:UnsetUnfoldFlag" href="AliPHOSTrackSegmentMakerv1.h">UnsetUnfoldFlag</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                           TClass* <a name="AliPHOSTrackSegmentMakerv1:Class" href="AliPHOSTrackSegmentMakerv1.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                           TClass* <a name="AliPHOSTrackSegmentMakerv1:IsA" href="AliPHOSTrackSegmentMakerv1.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                              <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:ShowMembers" href="AliPHOSTrackSegmentMakerv1.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                              <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegmentMakerv1:Streamer" href="AliPHOSTrackSegmentMakerv1.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a> <a name="AliPHOSTrackSegmentMakerv1:AliPHOSTrackSegmentMakerv1" href="AliPHOSTrackSegmentMakerv1.h">AliPHOSTrackSegmentMakerv1</a>(<a href="./AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a>&amp;)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

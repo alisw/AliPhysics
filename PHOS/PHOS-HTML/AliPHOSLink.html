@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:49 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSLink</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSLink</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSLink:description>class description</a> - <a href="src/AliPHOSLink.cxx.html">source file</a> - <a href="AliPHOSLink_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSLink" href="AliPHOSLink.h">AliPHOSLink</a> : public TObject</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->          <a href="./AliPHOSLink.html">AliPHOSLink</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:AliPHOSLink">AliPHOSLink</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> r, <a href="ListOfTypes.html#Int_t">Int_t</a> EMC, <a href="ListOfTypes.html#Int_t">Int_t</a> PPSD)
+<!--TAB6-->          <a href="./AliPHOSLink.html">AliPHOSLink</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:AliPHOSLink">AliPHOSLink</a><!--PLAIN-->(<a href="./AliPHOSLink.html">AliPHOSLink</a>&amp;)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:~AliPHOSLink">~AliPHOSLink</a><!--PLAIN-->()
+<!--TAB6-->              TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSLink:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->        virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:Compare">Compare</a><!--PLAIN-->(TObject* obj)
+<!--TAB6-->                <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:GetEmc">GetEmc</a><!--PLAIN-->()
+<!--TAB6-->                <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:GetPpsd">GetPpsd</a><!--PLAIN-->()
+<!--TAB6-->              <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:GetR">GetR</a><!--PLAIN-->()
+<!--TAB6-->      virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSLink:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->       virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:IsSortable">IsSortable</a><!--PLAIN-->() const
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSLink:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSLink:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSLink:fEmcN">fEmcN</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fEmcN">Emc index</a></i>
+<!--TAB6-->        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSLink:fPpsdN">fPpsdN</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPpsdN">Ppsd index </a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSLink:fR">fR</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fR">Distance between EMC and PPSD RecPoints in a track segment </a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSLink:description">Class Description</a></h2>
+<pre>  Algorithm class used only by <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>
+
+*-- Author: Dmitri Peressounko (SUBATECH)
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSLink:AliPHOSLink" href="src/AliPHOSLink.cxx.html#AliPHOSLink:AliPHOSLink">AliPHOSLink</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> r, <a href="ListOfTypes.html#Int_t">Int_t</a> Emc, <a href="ListOfTypes.html#Int_t">Int_t</a> Ppsd)
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSLink:Compare" href="src/AliPHOSLink.cxx.html#AliPHOSLink:Compare">Compare</a>(TObject * obj)
+<br>
+<pre> Compare according to the distance between EMC and PPSD RecPoints in a track segment
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->              <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSLink:GetEmc" href="AliPHOSLink.h">GetEmc</a>()
+<!--INLINE FUNCTION--><!--TAB6-->              <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSLink:GetPpsd" href="AliPHOSLink.h">GetPpsd</a>()
+<!--INLINE FUNCTION--><!--TAB6-->            <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSLink:GetR" href="AliPHOSLink.h">GetR</a>()
+<!--INLINE FUNCTION--><!--TAB6-->             <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSLink:IsSortable" href="AliPHOSLink.h">IsSortable</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSLink:Class" href="AliPHOSLink.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSLink:IsA" href="AliPHOSLink.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSLink:ShowMembers" href="AliPHOSLink.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSLink:Streamer" href="AliPHOSLink.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSLink.html">AliPHOSLink</a> <a name="AliPHOSLink:AliPHOSLink" href="AliPHOSLink.h">AliPHOSLink</a>(<a href="./AliPHOSLink.html">AliPHOSLink</a>&amp;)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSLink:~AliPHOSLink" href="AliPHOSLink.h">~AliPHOSLink</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

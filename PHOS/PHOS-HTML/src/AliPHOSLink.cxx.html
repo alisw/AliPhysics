@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:49 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSLink - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  Algorithm class used only by <a href=".././AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a> </b>
+<b>//                  </b>
+<b>//*-- Author: Dmitri Peressounko (SUBATECH)</b>
+
+<b>// --- ROOT system ---</b>
+
+<b>// --- Standard library ---</b>
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSLink.h">AliPHOSLink.h</a>"
+
+ClassImp(AliPHOSLink)
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSLink:AliPHOSLink"> </a>  <a href=".././AliPHOSLink.html#AliPHOSLink:AliPHOSLink">AliPHOSLink::AliPHOSLink</a>(<a href="../ListOfTypes.html#Float_t">Float_t</a> r, <a href="../ListOfTypes.html#Int_t">Int_t</a> Emc, <a href="../ListOfTypes.html#Int_t">Int_t</a> Ppsd)
+{
+<b>  // ctor</b>
+
+  <a href=".././AliPHOSLink.html#AliPHOSLink:fR">fR</a>     = r ;  
+  <a href=".././AliPHOSLink.html#AliPHOSLink:fEmcN">fEmcN</a>  = Emc ;
+  <a href=".././AliPHOSLink.html#AliPHOSLink:fPpsdN">fPpsdN</a> = Ppsd ;   
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSLink:Compare"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSLink.html#AliPHOSLink:Compare">AliPHOSLink::Compare</a>(TObject * obj)
+{
+<b>  // Compare according to the distance between EMC and PPSD RecPoints in a track segment </b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> rv ;
+
+  <a href=".././AliPHOSLink.html">AliPHOSLink</a> * link = (<a href=".././AliPHOSLink.html">AliPHOSLink</a> *) obj ;
+
+  if(this-&gt;<a href=".././AliPHOSLink.html#AliPHOSLink:fR">fR</a> &lt; link-&gt;<a href="#AliPHOSLink:GetR">GetR</a>() ) 
+    rv = -1 ;
+  else 
+    rv = 1 ;
+
+  return rv ;
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

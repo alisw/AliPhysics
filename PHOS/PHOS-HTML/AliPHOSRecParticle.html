@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:56 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSRecParticle</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSRecParticle</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSRecParticle:description>class description</a> - <a href="src/AliPHOSRecParticle.cxx.html">source file</a> - <a href="AliPHOSRecParticle_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSRecParticle" href="AliPHOSRecParticle.h">AliPHOSRecParticle</a> : public <a href="./AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a></h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->        <a href="./AliPHOSRecParticle.html">AliPHOSRecParticle</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:AliPHOSRecParticle">AliPHOSRecParticle</a><!--PLAIN-->()
+<!--TAB6-->        <a href="./AliPHOSRecParticle.html">AliPHOSRecParticle</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:AliPHOSRecParticle">AliPHOSRecParticle</a><!--PLAIN-->(<a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>* ts)
+<!--TAB6-->        <a href="./AliPHOSRecParticle.html">AliPHOSRecParticle</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:AliPHOSRecParticle">AliPHOSRecParticle</a><!--PLAIN-->(const <a href="./AliPHOSRecParticle.html">AliPHOSRecParticle</a>&amp; rp)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:~AliPHOSRecParticle">~AliPHOSRecParticle</a><!--PLAIN-->()
+<!--TAB6-->                   TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->      <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:GetPHOSTrackSegment">GetPHOSTrackSegment</a><!--PLAIN-->() const
+<!--TAB6-->            virtual <a href="ListOfTypes.html#Int_t">Int_t</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:GetPrimaries">GetPrimaries</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a>&amp; number)
+<!--TAB6-->           virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSRecParticle:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSRecParticle:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->      <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>* <!--TAB--><!--BOLD--><a name="AliPHOSRecParticle:fPHOSTrackSegment">fPHOSTrackSegment</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPHOSTrackSegment">pointer to the associated track segment in PHOS  </a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSRecParticle:description">Class Description</a></h2>
+<pre>  A Reconstructed Particle in PHOS
+  To become a general class of AliRoot ?
+
+*-- Author: Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSRecParticle:AliPHOSRecParticle" href="src/AliPHOSRecParticle.cxx.html#AliPHOSRecParticle:AliPHOSRecParticle">AliPHOSRecParticle</a>(<a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * ts)
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSRecParticle:AliPHOSRecParticle" href="src/AliPHOSRecParticle.cxx.html#AliPHOSRecParticle:AliPHOSRecParticle">AliPHOSRecParticle</a>(const <a href="./AliPHOSRecParticle.html">AliPHOSRecParticle</a> &amp; rp)
+<br>
+<pre> copy ctor
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSRecParticle:~AliPHOSRecParticle" href="src/AliPHOSRecParticle.cxx.html#AliPHOSRecParticle:~AliPHOSRecParticle">~AliPHOSRecParticle</a>()
+<br>
+<pre> dtor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a>* <a name="AliPHOSRecParticle:GetPrimaries" href="src/AliPHOSRecParticle.cxx.html#AliPHOSRecParticle:GetPrimaries">GetPrimaries</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+<br>
+<pre> Retrieves all the primary particles at the origine of this reconstructed particle
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->          <a href="./AliPHOSRecParticle.html">AliPHOSRecParticle</a> <a name="AliPHOSRecParticle:AliPHOSRecParticle" href="AliPHOSRecParticle.h">AliPHOSRecParticle</a>(const <a href="./AliPHOSRecParticle.html">AliPHOSRecParticle</a>&amp; rp)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>* <a name="AliPHOSRecParticle:GetPHOSTrackSegment" href="AliPHOSRecParticle.h">GetPHOSTrackSegment</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                     TClass* <a name="AliPHOSRecParticle:Class" href="AliPHOSRecParticle.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     TClass* <a name="AliPHOSRecParticle:IsA" href="AliPHOSRecParticle.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecParticle:ShowMembers" href="AliPHOSRecParticle.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSRecParticle:Streamer" href="AliPHOSRecParticle.h">Streamer</a>(TBuffer&amp; b)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

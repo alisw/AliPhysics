@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:48 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSDigit - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  PHOS digit: Id</b>
+<b>//              energy</b>
+<b>//              3 identifiers for the primary particle(s) at the origine of the digit</b>
+<b>//  The digits are made in FinishEvent() by summing all the hits in a single PHOS crystal or PPSD gas cell</b>
+<b>//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,</b>
+<b>//   it is not possible to stream such an array... (beyond my understqnding!)</b>
+<b>//</b>
+<b>//*-- Author: Laurent Aphecetche &amp; Yves Schutz (SUBATECH)</b>
+
+
+<b>// --- ROOT system ---</b>
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSDigit.h">AliPHOSDigit.h</a>"
+
+
+ClassImp(AliPHOSDigit)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSDigit:AliPHOSDigit"> </a>  <a href=".././AliPHOSDigit.html#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit::AliPHOSDigit</a>() 
+{
+<b>  // default ctor </b>
+
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> = 0 ;  
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> = -1 ; 
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> = -1 ; 
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> = -1 ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSDigit:AliPHOSDigit"> </a><a href=".././AliPHOSDigit.html#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit::AliPHOSDigit</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> primary, <a href="../ListOfTypes.html#Int_t">Int_t</a> id, <a href="../ListOfTypes.html#Int_t">Int_t</a> DigEnergy) 
+{  
+<b>  // ctor with all data </b>
+
+  fId         = id ;
+  fAmp        = DigEnergy ;
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a>   = primary ;
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a>   = 1 ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSDigit:AliPHOSDigit"> </a><a href=".././AliPHOSDigit.html#AliPHOSDigit:AliPHOSDigit">AliPHOSDigit::AliPHOSDigit</a>(const <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> &amp; digit) 
+{
+<b>  // copy ctor</b>
+  
+  fId       = digit.fId;
+  fAmp      = digit.fAmp ;
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> ;
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> ;
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> ;
+  <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSDigit:Compare"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSDigit.html#AliPHOSDigit:Compare">AliPHOSDigit::Compare</a>(TObject * obj)
+{
+<b>  // Compares two digits with respect to its Id</b>
+<b>  // to sort according increasing Id</b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> rv ; 
+
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)obj ; 
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> iddiff = fId - digit-&gt;GetId() ; 
+
+  if ( iddiff &gt; 0 ) 
+    rv = 1 ;
+  else if ( iddiff &lt; 0 )
+    rv = -1 ; 
+  else
+    rv = 0 ;
+  
+  return rv ; 
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSDigit:GetPrimary"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSDigit.html#AliPHOSDigit:GetPrimary">AliPHOSDigit::GetPrimary</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> index) const
+{
+<b>  // Returns the primary particle id index =1,2,3</b>
+ 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> rv = -1 ; 
+  if ( index &gt; 3 )
+    cout &lt;&lt; "<a href=".././AliPHOSDigit.html">AliPHOSDigit</a>  ERROR &gt; only 3 primaries allowed" &lt;&lt; endl ; 
+  else {
+    switch (index) {  
+    case 1 :
+      rv = <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> ; 
+      break ; 
+    case 2 :
+      rv = <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> ; 
+      break ; 
+    case 3 :
+      rv = <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> ; 
+      break ; 
+    }
+  } 
+
+  return rv ; 
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href=".././AliPHOSDigit.html#AliPHOSDigit:operator">AliPHOSDigit::operator</a>==(<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> const &amp; digit) const 
+{
+<b>  // Two digits are equal if they have the same Id</b>
+  
+  if ( fId == digit.fId ) 
+    return kTRUE ;
+  else 
+    return kFALSE ;
+}
+ 
+<b>//____________________________________________________________________________</b>
+<a href=".././AliPHOSDigit.html">AliPHOSDigit</a>&amp; <a href=".././AliPHOSDigit.html#AliPHOSDigit:operator">AliPHOSDigit::operator</a>+(<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> const &amp; digit) 
+{
+<b>  // Adds the amplitude of digits and completes the list of primary particles</b>
+  
+  fAmp += digit.fAmp ;
+ 
+<b>  // Here comes something crummy ... but I do not know how to stream pointers</b>
+<b>  // because <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> is in a TCLonesArray</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> tempo1[3] ; 
+  tempo1[0] = <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> ; 
+  tempo1[1] = <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> ; 
+  tempo1[2] = <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> ; 
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> tempo2[3] ; 
+  tempo2[0] = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> ; 
+  tempo2[1] = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> ; 
+  tempo2[2] = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> ; 
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> max1 = <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> max2 = digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> ; 
+ 
+  if ( <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> &gt;= 3 ) {
+    cout &lt;&lt; "<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> + operator  ERROR &gt; too many primaries, modify <a href=".././AliPHOSDigit.html">AliPHOSDigit</a>" &lt;&lt; endl ; 
+  } 
+  else {
+    <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> += digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> ; 
+    if ( <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> &gt; 3 ) {
+      cout &lt;&lt; "<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> + operator  ERROR &gt; too many primaries, modify <a href=".././AliPHOSDigit.html">AliPHOSDigit</a>" &lt;&lt; endl ; 
+      <a href=".././AliPHOSDigit.html#AliPHOSDigit:fNprimary">fNprimary</a> = 3 ;
+    }
+    
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> tempo3[3] ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> index ; 
+    for (index = 0 ; index &lt; max1 ; index++)
+      tempo3[index] = tempo1[index] ;
+    for (index = 0 ; index &lt; max2 ; index++)
+      tempo3[index+max1] = tempo2[index] ; 
+    
+    <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> = tempo3[0] ; 
+    <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> = tempo3[1] ; 
+    <a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> = tempo3[2] ; 
+
+  }
+<b> // end of crummy stuff      </b>
+
+  return *this ;
+}
+
+<b>//____________________________________________________________________________</b>
+ostream&amp; operator &lt;&lt; ( ostream&amp; out , const <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> &amp; digit)
+{
+<b>  // Prints the data of the digit</b>
+  
+  out &lt;&lt; "ID " &lt;&lt; digit.fId &lt;&lt; " Energy = " &lt;&lt; digit.fAmp &lt;&lt; endl 
+      &lt;&lt; "Primary 1 = " &lt;&lt; digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary1">fPrimary1</a> &lt;&lt; endl 
+      &lt;&lt; "Primary 2 = " &lt;&lt; digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary2">fPrimary2</a> &lt;&lt; endl 
+      &lt;&lt; "Primary 3 = " &lt;&lt; digit.<a href=".././AliPHOSDigit.html#AliPHOSDigit:fPrimary3">fPrimary3</a> &lt;&lt; endl ;
+
+  return out ;
+}
+
+
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

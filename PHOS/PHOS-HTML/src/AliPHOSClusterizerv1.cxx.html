@@ -1,0 +1,314 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:48 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSClusterizerv1 - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  Implementation version 1 of the clusterization algorithm </b>
+<b>// </b>
+<b>//*-- Author: Yves Schutz (SUBATECH) </b>
+<b>//////////////////////////////////////////////////////////////////////////////</b>
+
+<b>// --- ROOT system ---</b>
+
+#include "TMath.h" 
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSClusterizerv1.h">AliPHOSClusterizerv1.h</a>"
+#include "<a href="../AliPHOSDigit.h">AliPHOSDigit.h</a>"
+#include "<a href="../AliPHOSEmcRecPoint.h">AliPHOSEmcRecPoint.h</a>"
+#include "<a href="../AliPHOSPpsdRecPoint.h">AliPHOSPpsdRecPoint.h</a>"
+#include "<a href="../AliPHOSv0.h">AliPHOSv0.h</a>" 
+#include "AliRun.h" 
+
+ClassImp(AliPHOSClusterizerv1)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSClusterizerv1:AliPHOSClusterizerv1"> </a><a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:AliPHOSClusterizerv1">AliPHOSClusterizerv1::AliPHOSClusterizerv1</a>()
+{
+<b>  // default ctor (to be used)</b>
+
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fA">fA</a>                       = 0.;
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fB">fB</a>                       = 0.01 ;
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfEmcClusters">fNumberOfEmcClusters</a>     = 0 ; 
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfPpsdClusters">fNumberOfPpsdClusters</a>    = 0 ; 
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fEmcClusteringThreshold">fEmcClusteringThreshold</a>  = 0.1;   
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fEmcEnergyThreshold">fEmcEnergyThreshold</a>      = 0.01;    
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fPpsdClusteringThreshold">fPpsdClusteringThreshold</a> = 0.00000015; 
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fPpsdEnergyThreshold">fPpsdEnergyThreshold</a>     = 0.0000001;  
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fW0">fW0</a>                      = 4.5 ;
+  <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fLocMaxCut">fLocMaxCut</a>               = 0.06 ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSClusterizerv1:AreNeighbours"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:AreNeighbours">AliPHOSClusterizerv1::AreNeighbours</a>(<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * d1, <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * d2)
+{
+<b>  // Gives the neighbourness of two digits = 0 are not neighbour but continue searching </b>
+<b>  //                                       = 1 are neighbour</b>
+<b>  //                                       = 2 are not neighbour but do not continue searching</b>
+<b>  // neighbours are defined as digits having at least common vertex</b>
+<b>  // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster </b>
+<b>  //                                      which is compared to a digit (d2)  not yet in a cluster  </b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> rv = 0 ; 
+
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid1[4] ; 
+  geom-&gt;AbsToRelNumbering(d1-&gt;GetId(), relid1) ; 
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid2[4] ; 
+  geom-&gt;AbsToRelNumbering(d2-&gt;GetId(), relid2) ; 
+ 
+  if ( (relid1[0] == relid2[0]) &amp;&amp; (relid1[1]==relid2[1]) ) { // inside the same PHOS module and the same PPSD Module 
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> coldiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
+    
+    if (( coldiff &lt;= 1 )  &amp;&amp; ( rowdiff &lt;= 1 )){
+      rv = 1 ; 
+    }
+    else {
+      if((relid2[2] &gt; relid1[2]) &amp;&amp; (relid2[3] &gt; relid1[3]+1)) 
+	rv = 2; //  Difference in row numbers is too large to look further 
+    }
+
+  } 
+  else {
+    
+    if( (relid1[0] &lt; relid2[0]) || (relid1[1] &lt; relid2[1]) )  
+      rv=2 ;
+
+  }
+  
+  return rv ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSClusterizerv1:FillandSort"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:FillandSort">AliPHOSClusterizerv1::FillandSort</a>(const <a href="../ListOfTypes.html#DigitsList">DigitsList</a> * dl, TObjArray * tl) 
+{
+<b>  // Copies the digits with energy above thershold and sorts the list</b>
+<b>  // according to increasing Id number</b>
+
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ;  
+  
+  TIter next(dl) ; 
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ;
+  
+ 
+ 
+
+  while ( (digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)next()) ) { 
+
+<b>//     cout &lt;&lt; " clusterizerv1 " &lt;&lt; endl ;</b>
+<b>//     <a href="../ListOfTypes.html#int">int</a> nprim = digit-&gt;GetNprimary() ;</b>
+<b>//     <a href="../ListOfTypes.html#int">int</a> * aprim = digit-&gt;GetPrimary() ;</b>
+<b>//     for ( <a href="../ListOfTypes.html#int">int</a> ii = 0 ; ii &lt; nprim ; ii++)</b>
+<b>//       cout &lt;&lt; ii &lt;&lt; " prim = " &lt;&lt; aprim[ii] &lt;&lt; endl ;</b>
+
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> id    = digit-&gt;GetId() ; 
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> ene = <a href="#AliPHOSClusterizerv1:Calibrate">Calibrate</a>(digit-&gt;GetAmp()) ; 
+    geom-&gt;AbsToRelNumbering(id, relid) ;
+    if(relid[1]==0){ // EMC
+      if ( ene &gt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fEmcEnergyThreshold">fEmcEnergyThreshold</a> )
+	tl-&gt;Add(digit) ;
+    }
+
+    else { //Ppsd
+      if ( ene &gt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fPpsdEnergyThreshold">fPpsdEnergyThreshold</a> )
+	tl-&gt;Add(digit) ; 
+    }
+
+  }
+  tl-&gt;Sort() ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSClusterizerv1:GetNumberOfClustersFound"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:GetNumberOfClustersFound">AliPHOSClusterizerv1::GetNumberOfClustersFound</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> * numb) 
+{
+<b>  // Fills numb with the number of EMC  (numb[0]) clusters found</b>
+<b>  //                               PPSD (numb[1]) clusters found</b>
+
+  numb[0] = <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfEmcClusters">fNumberOfEmcClusters</a> ; 
+  numb[1] = <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfPpsdClusters">fNumberOfPpsdClusters</a> ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSClusterizerv1:IsInEmc"> </a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:IsInEmc">AliPHOSClusterizerv1::IsInEmc</a>(<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit) 
+{
+<b>  // Tells if (true) or not (false) the digit is in a PHOS-EMC module</b>
+ 
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> rv = kFALSE ; 
+
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * geom = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;  
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ; 
+  geom-&gt;AbsToRelNumbering(digit-&gt;GetId(), relid) ; 
+
+  if ( relid[1] == 0  )
+    rv = kTRUE; 
+
+  return rv ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSClusterizerv1:MakeClusters"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:MakeClusters">AliPHOSClusterizerv1::MakeClusters</a>(const <a href="../ListOfTypes.html#DigitsList">DigitsList</a> * dl, <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * emcl, <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdl)
+{
+<b>  // Steering method to construct the clusters stored in a list of Reconstructed Points</b>
+<b>  // A cluster is defined as a list of neighbour digits</b>
+  
+<b>  // Fill and sort the working digits list</b>
+  TObjArray tempodigitslist( dl-&gt;GetEntries() ) ;
+  <a href="#AliPHOSClusterizerv1:FillandSort">FillandSort</a>(dl, &amp;tempodigitslist) ; 
+
+<b>  // Clusterization starts  </b>
+  TIter nextdigit(&amp;tempodigitslist) ; 
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ; 
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> notremoved = kTRUE ;
+
+
+  while ( (digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)nextdigit()) ) { // scan over the list of digits
+    <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> * clu ; 
+   
+    <a href="../ListOfTypes.html#int">int</a> * clusterdigitslist[dl-&gt;GetEntries()] ;   
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> index ;
+    if (( ( <a href="#AliPHOSClusterizerv1:IsInEmc">IsInEmc</a>(digit) ) &amp;&amp; ( <a href="#AliPHOSClusterizerv1:Calibrate">Calibrate</a>(digit-&gt;GetAmp() ) &gt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fEmcClusteringThreshold">fEmcClusteringThreshold</a> ) ) || 
+        ( ( !<a href="#AliPHOSClusterizerv1:IsInEmc">IsInEmc</a>(digit) ) &amp;&amp; ( <a href="#AliPHOSClusterizerv1:Calibrate">Calibrate</a>(digit-&gt;GetAmp() ) &gt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fPpsdClusteringThreshold">fPpsdClusteringThreshold</a> ) ) ) {
+  
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> iDigitInCluster = 0 ; 
+
+      if  ( <a href="#AliPHOSClusterizerv1:IsInEmc">IsInEmc</a>(digit) ) {   
+        new ((*emcl)[<a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfEmcClusters">fNumberOfEmcClusters</a>]) <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>(<a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fW0">fW0</a>, <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fLocMaxCut">fLocMaxCut</a>) ; // start a new EMC RecPoint
+	clu = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *) (*emcl)[<a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfEmcClusters">fNumberOfEmcClusters</a>] ; 
+	<a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfEmcClusters">fNumberOfEmcClusters</a>++ ; 
+	clu-&gt;AddDigit(*digit, <a href="#AliPHOSClusterizerv1:Calibrate">Calibrate</a>(digit-&gt;GetAmp())) ; 
+
+	clusterdigitslist[iDigitInCluster] = (<a href="../ListOfTypes.html#int">int</a>* ) digit ;	
+	iDigitInCluster++ ; 
+	tempodigitslist.Remove(digit) ; 
+
+
+      }
+
+      else { 
+	new ((*ppsdl)[<a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfPpsdClusters">fNumberOfPpsdClusters</a>]) <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>() ; // start a new PPSD cluster
+	clu =  (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *) ppsdl-&gt;At(<a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfPpsdClusters">fNumberOfPpsdClusters</a>)  ;  
+	<a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fNumberOfPpsdClusters">fNumberOfPpsdClusters</a>++ ; 
+	clu-&gt;AddDigit(*digit, <a href="#AliPHOSClusterizerv1:Calibrate">Calibrate</a>(digit-&gt;GetAmp()) ) ;	
+	clusterdigitslist[iDigitInCluster] = (<a href="../ListOfTypes.html#int">int</a>* ) digit ;	
+	iDigitInCluster++ ; 
+	tempodigitslist.Remove(digit) ; 
+        nextdigit.Reset() ;
+	
+<b>	// Here we remove resting EMC digits, which cannot make cluster</b>
+
+        if( notremoved ) { 
+	  
+	  while( ( digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)nextdigit() ) ) {
+	    
+            if( <a href="#AliPHOSClusterizerv1:IsInEmc">IsInEmc</a>(digit) ) 
+	      tempodigitslist.Remove(digit) ;
+            else 
+	      break ;
+	  
+	  } // while digit  
+	  
+	} // if notremoved 
+	
+      } // else        
+      
+      nextdigit.Reset() ;
+
+      <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digitN ; 
+      index = 0 ;
+      while (index &lt; iDigitInCluster){ // scan over digits already in cluster 
+	digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *) clusterdigitslist[index]  ;      
+	index++ ; 
+        while ( (digitN = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)nextdigit()) ) { // scan over the reduced list of digits 
+	  <a href="../ListOfTypes.html#Int_t">Int_t</a> ineb = <a href="#AliPHOSClusterizerv1:AreNeighbours">AreNeighbours</a>(digit, digitN);   //  call (digit,digitN) in THAT oder !!!!!
+          switch (ineb ) {
+          case 0 :   // not a neighbour
+	    break ;	 
+	  case 1 :   // are neighbours 
+	    clu-&gt;AddDigit( *digitN, <a href="#AliPHOSClusterizerv1:Calibrate">Calibrate</a>( digitN-&gt;GetAmp() ) ) ;
+	    clusterdigitslist[iDigitInCluster] =(<a href="../ListOfTypes.html#int">int</a>*) digitN ; 
+	    iDigitInCluster++ ; 
+	    tempodigitslist.Remove(digitN) ;
+	    break ;
+          case 2 :   // too far from each other
+	    goto endofloop;   
+	  } // switch
+	  
+	} // while digitN
+
+      endofloop: ;
+	nextdigit.Reset() ; 
+	
+      } // loop over cluster     
+ 
+   }  //below energy theshold  
+  
+  } // while digit
+
+  tempodigitslist.Clear() ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSClusterizerv1:PrintParameters"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:PrintParameters">AliPHOSClusterizerv1::PrintParameters</a>() 
+{
+<b>  // Print the energy thresholds </b>
+
+  cout &lt;&lt; "PHOS Clusterizer version 1 :" &lt;&lt; endl 
+       &lt;&lt; "                       EMC  Clustering threshold = " &lt;&lt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fEmcClusteringThreshold">fEmcClusteringThreshold</a> &lt;&lt; endl
+       &lt;&lt; "                       EMC  Energy threshold     = " &lt;&lt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fEmcEnergyThreshold">fEmcEnergyThreshold</a> &lt;&lt; endl                  
+       &lt;&lt; "                      PPSD  Clustering threshold = " &lt;&lt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fPpsdClusteringThreshold">fPpsdClusteringThreshold</a> &lt;&lt; endl
+       &lt;&lt; "                      PPSD  Energy threshold     = " &lt;&lt; <a href=".././AliPHOSClusterizerv1.html#AliPHOSClusterizerv1:fPpsdEnergyThreshold">fPpsdEnergyThreshold</a> &lt;&lt; endl ;                
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

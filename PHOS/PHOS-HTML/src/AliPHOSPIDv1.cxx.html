@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:50 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSPIDv1 - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>// Implementation version v1 of the PHOS particle identifier </b>
+<b>// Identification is based on information from PPSD and EMC</b>
+<b>//                  </b>
+<b>//*-- Author: Yves Schutz (SUBATECH)</b>
+
+
+<b>// --- ROOT system ---</b>
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSPIDv1.h">AliPHOSPIDv1.h</a>"
+#include "<a href="../AliPHOSTrackSegment.h">AliPHOSTrackSegment.h</a>"
+#include "<a href="../AliPHOSRecParticle.h">AliPHOSRecParticle.h</a>"
+
+ClassImp( AliPHOSPIDv1) 
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSPIDv1:MakeParticles"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:MakeParticles">AliPHOSPIDv1::MakeParticles</a>(<a href="../ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsl, <a href="../ListOfTypes.html#RecParticlesList">RecParticlesList</a> * rpl)
+{
+<b>  // Makes a RecParticle out of a TrackSegment</b>
+
+  TIter next(trsl) ; 
+  <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * tracksegment ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> index = 0 ; 
+  <a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a> * rp ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> type ; 
+
+  while ( (tracksegment = (<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> *)next()) ) {
+    new( (*rpl)[index] ) <a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a>(tracksegment) ;
+    rp = (<a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a> *)(*rpl)[index] ; 
+
+<b>    // try to figure out the type of particle:</b>
+<b>    //    1. just looking at the PPSD information </b>
+    if( tracksegment-&gt;GetPpsdUp() == 0 ) {     // Neutral
+      
+      if( tracksegment-&gt;GetPpsdLow() == 0 )    // Neutral  
+	type = kNEUTRAL ;   
+      else {    // check the shower profile       
+	<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * recp = tracksegment-&gt;GetEmcRecPoint() ; 
+	<a href="../ListOfTypes.html#Float_t">Float_t</a> * lambda = new <a href="../ListOfTypes.html#Float_t">Float_t</a>[2]; 
+	recp-&gt;GetElipsAxis(lambda) ; 
+	if ( ( lambda[0] &gt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1m">fLambda1m</a> &amp;&amp; lambda[0] &lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1M">fLambda1M</a> ) &amp;&amp; // shower profile cut
+	     ( lambda[1] &gt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2m">fLambda2m</a> &amp;&amp; lambda[1] &lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2M">fLambda2M</a> ) )	
+	  type = kGAMMA ;                      // a well identified photon 
+	else 
+	  type = kGAMMAHADRON ;                // looks like a photon but is a hadron (most likely)  
+      }
+    } // Neutral
+    else                            // Charged           
+      type = kCHARGED ;   
+
+<b>    //   2. from the shower profile analysis</b>
+    if ( type == kNEUTRAL ) { 
+      <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * recp = tracksegment-&gt;GetEmcRecPoint() ; 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> * lambda = new <a href="../ListOfTypes.html#Float_t">Float_t</a>[2]; 
+      recp-&gt;GetElipsAxis(lambda) ; 
+      if ( ( lambda[0] &gt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1m">fLambda1m</a> &amp;&amp; lambda[0] &lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1M">fLambda1M</a> ) &amp;&amp; // shower profile cut
+	   ( lambda[1] &gt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2m">fLambda2m</a> &amp;&amp; lambda[1] &lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2M">fLambda2M</a> ) )
+	type = kNEUTRALEM ; 
+      else 
+	type = kNEUTRALHADRON ; 
+      delete lambda ; 
+   }
+
+<b>    //   3. from the shower dispersion </b>
+    if (type == kCHARGED) { 
+      if( tracksegment-&gt;GetEmcRecPoint()-&gt;GetDispersion() &gt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fCutOnDispersion">fCutOnDispersion</a>)  // shower dispersion cut
+	type = kCHARGEDHADRON ;
+      else  
+	type = kELECTRON ; 
+    } 
+    rp-&gt;SetType(type) ; 
+    index++ ; 
+  }
+    
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSPIDv1:Print"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:Print">AliPHOSPIDv1::Print</a>() 
+{
+<b>  // Print the parameters used for the particle type identification</b>
+  
+  cout &lt;&lt; "<a href=".././AliPHOSPIDv1.html">AliPHOSPIDv1</a> : cuts for the particle idendification based on the shower profile " &lt;&lt; endl 
+       &lt;&lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1m">fLambda1m</a> &lt;&lt; " &lt; value1 &lt; " &lt;&lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1M">fLambda1M</a> &lt;&lt; endl 
+       &lt;&lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2m">fLambda2m</a> &lt;&lt; " &lt; value2 &lt; " &lt;&lt; <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2M">fLambda2M</a> &lt;&lt; endl ;  
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSPIDv1:SetShowerProfileCuts"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:SetShowerProfileCuts">AliPHOSPIDv1::SetShowerProfileCuts</a>(<a href="../ListOfTypes.html#Float_t">Float_t</a> l1m, <a href="../ListOfTypes.html#Float_t">Float_t</a> l1M, <a href="../ListOfTypes.html#Float_t">Float_t</a> l2m, <a href="../ListOfTypes.html#Float_t">Float_t</a> l2M)
+{
+<b>  // Modifies the parameters used for the particle type identification</b>
+
+  <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1m">fLambda1m</a> = l1m ; 
+  <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda1M">fLambda1M</a> = l1M ; 
+  <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2m">fLambda2m</a> = l2m ; 
+  <a href=".././AliPHOSPIDv1.html#AliPHOSPIDv1:fLambda2M">fLambda2M</a> = l2M ; 
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:56 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSTrackSegment</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSTrackSegment</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSTrackSegment:description>class description</a> - <a href="src/AliPHOSTrackSegment.cxx.html">source file</a> - <a href="AliPHOSTrackSegment_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSTrackSegment" href="AliPHOSTrackSegment.h">AliPHOSTrackSegment</a> : public TObject</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->       <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:AliPHOSTrackSegment">AliPHOSTrackSegment</a><!--PLAIN-->()
+<!--TAB6-->       <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:AliPHOSTrackSegment">AliPHOSTrackSegment</a><!--PLAIN-->(<a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>* EmcRecPoint, <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* PpsdUp, <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* PpsdLow)
+<!--TAB6-->       <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:AliPHOSTrackSegment">AliPHOSTrackSegment</a><!--PLAIN-->(const <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>&amp; ts)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:~AliPHOSTrackSegment">~AliPHOSTrackSegment</a><!--PLAIN-->()
+<!--TAB6-->                   TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:Copy">Copy</a><!--PLAIN-->(TObject&amp; obj)
+<!--TAB6-->             virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:DistancetoPrimitive">DistancetoPrimitive</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:Draw">Draw</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* option)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:ExecuteEvent">ExecuteEvent</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> event, <a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<!--TAB6-->                   <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetDistanceInPHOSPlane">GetDistanceInPHOSPlane</a><!--PLAIN-->()
+<!--TAB6-->       <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetEmcRecPoint">GetEmcRecPoint</a><!--PLAIN-->() const
+<!--TAB6-->                   <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetEnergy">GetEnergy</a><!--PLAIN-->()
+<!--TAB6-->                  TVector3 <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetMomentumDirection">GetMomentumDirection</a><!--PLAIN-->()
+<!--TAB6-->             virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetPHOSMod">GetPHOSMod</a><!--PLAIN-->()
+<!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetPosition">GetPosition</a><!--PLAIN-->(TVector3&amp; pos)
+<!--TAB6-->      <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetPpsdLow">GetPpsdLow</a><!--PLAIN-->() const
+<!--TAB6-->      <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetPpsdUp">GetPpsdUp</a><!--PLAIN-->() const
+<!--TAB6-->                    <a href="ListOfTypes.html#Int_t">Int_t</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetPrimariesEmc">GetPrimariesEmc</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a>&amp; number)
+<!--TAB6-->                    <a href="ListOfTypes.html#Int_t">Int_t</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetPrimariesPpsdLow">GetPrimariesPpsdLow</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a>&amp; number)
+<!--TAB6-->                    <a href="ListOfTypes.html#Int_t">Int_t</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:GetPrimariesPpsdUp">GetPrimariesPpsdUp</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a>&amp; number)
+<!--TAB6-->           virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:Paint">Paint</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* option)
+<!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:Print">Print</a><!--PLAIN-->()
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSTrackSegment:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSTrackSegment:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->       <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>* <!--TAB--><!--BOLD--><a name="AliPHOSTrackSegment:fEmcRecPoint">fEmcRecPoint</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fEmcRecPoint">The EMC reconstructed point</a></i>
+<!--TAB6-->      <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* <!--TAB--><!--BOLD--><a name="AliPHOSTrackSegment:fPpsdLow">fPpsdLow</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fPpsdLow">The PPSD reconstructed point from the lower layer</a></i>
+<!--TAB6-->      <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* <!--TAB--><!--BOLD--><a name="AliPHOSTrackSegment:fPpsdUp">fPpsdUp</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fPpsdUp">The PPSD reconstructed point from the upper layer</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSTrackSegment:description">Class Description</a></h2>
+<pre>  Track segment in PHOS
+  Can be : 1 EmcRecPoint
+           1 EmcRecPoint + 1 PPSD
+           1 EmcRecPoint + 1 PPSD + 1 PPSD
+
+*-- Author:  Dmitri Peressounko (RRC KI &amp; SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSTrackSegment:AliPHOSTrackSegment" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:AliPHOSTrackSegment">AliPHOSTrackSegment</a>( <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emc , <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdRP1,
+                  <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsdRP2  ) 
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSTrackSegment:AliPHOSTrackSegment" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:AliPHOSTrackSegment">AliPHOSTrackSegment</a>( const <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> &amp; ts) 
+<br>
+<pre> Copy ctor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:Copy" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:Copy">Copy</a>(TObject &amp; obj) 
+<br>
+<pre> Copy of a track segment into another track segment
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSTrackSegment:DistancetoPrimitive" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:DistancetoPrimitive">DistancetoPrimitive</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<br>
+<pre> Compute distance from point px,py to  a <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> considered as a Tmarker
+ Compute the closest distance of approach from point px,py to this marker.
+ The distance is computed in pixels units.
+</pre><hr>
+<!--FUNCTION--> <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:Draw" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:Draw">Draw</a>(<a href="ListOfTypes.html#Option_t">Option_t</a> *option)
+ <br>
+<pre> Draw this <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> with its current attribute
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:ExecuteEvent" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:ExecuteEvent">ExecuteEvent</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> event, <a href="ListOfTypes.html#Int_t">Int_t</a> px, <a href="ListOfTypes.html#Int_t">Int_t</a> py)
+<br>
+<pre> Execute action corresponding to one event
+  This member function is called when a <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> is clicked with the locator
+
+  If Left button is clicked on <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a>, the digits are switched on
+  and switched off when the mouse button is released.
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSTrackSegment:GetDistanceInPHOSPlane" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:GetDistanceInPHOSPlane">GetDistanceInPHOSPlane</a>()
+<br>
+<pre> Calculates the distance between the EMC RecPoint and PPSD RecPoint
+</pre><hr>
+<!--FUNCTION-->TVector3 <a name="AliPHOSTrackSegment:GetMomentumDirection" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:GetMomentumDirection">GetMomentumDirection</a>() 
+<br>
+<pre> Calculates the momentum direction:
+   1. if only a EMC RecPoint, direction is given by IP and this RecPoint
+   2. if a EMC RecPoint and one PPSD RecPoint, direction is given by the line through the 2 recpoints
+   3. if a EMC RecPoint and two PPSD RecPoints, dirrection is given by the average line through
+      the 2 pairs of recpoints
+ However because of the poor position resolution of PPSD the direction is always taken as if we were
+  in case 1.
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a>* <a name="AliPHOSTrackSegment:GetPrimariesEmc" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:GetPrimariesEmc">GetPrimariesEmc</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+<br>
+<pre> Retrieves the primary particle(s) at the origin of the EMC RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a>* <a name="AliPHOSTrackSegment:GetPrimariesPpsdLow" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:GetPrimariesPpsdLow">GetPrimariesPpsdLow</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+<br>
+<pre> Retrieves the primary particle(s) at the origin of the lower PPSD RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a>* <a name="AliPHOSTrackSegment:GetPrimariesPpsdUp" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:GetPrimariesPpsdUp">GetPrimariesPpsdUp</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+<br>
+<pre> Retrieves the primary particle(s) at the origin of the upper PPSD  RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:GetPosition" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:GetPosition">GetPosition</a>( TVector3 &amp; pos ) 
+<br>
+<pre> Returns position of the EMC RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:Paint" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:Paint">Paint</a>(<a href="ListOfTypes.html#Option_t">Option_t</a> *)
+<br>
+<pre> Paint this ALiPHOSTrackSegment as a TMarker  with its current attributes
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:Print" href="src/AliPHOSTrackSegment.cxx.html#AliPHOSTrackSegment:Print">Print</a>()
+<br>
+<pre> Print all information on this track Segment
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->         <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> <a name="AliPHOSTrackSegment:AliPHOSTrackSegment" href="AliPHOSTrackSegment.h">AliPHOSTrackSegment</a>(const <a href="./AliPHOSTrackSegment.html">AliPHOSTrackSegment</a>&amp; ts)
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSTrackSegment:GetEnergy" href="AliPHOSTrackSegment.h">GetEnergy</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                       <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSTrackSegment:GetPHOSMod" href="AliPHOSTrackSegment.h">GetPHOSMod</a>()
+<!--INLINE FUNCTION--><!--TAB6-->         <a href="./AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>* <a name="AliPHOSTrackSegment:GetEmcRecPoint" href="AliPHOSTrackSegment.h">GetEmcRecPoint</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* <a name="AliPHOSTrackSegment:GetPpsdLow" href="AliPHOSTrackSegment.h">GetPpsdLow</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>* <a name="AliPHOSTrackSegment:GetPpsdUp" href="AliPHOSTrackSegment.h">GetPpsdUp</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                     TClass* <a name="AliPHOSTrackSegment:Class" href="AliPHOSTrackSegment.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     TClass* <a name="AliPHOSTrackSegment:IsA" href="AliPHOSTrackSegment.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:ShowMembers" href="AliPHOSTrackSegment.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:Streamer" href="AliPHOSTrackSegment.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSTrackSegment:~AliPHOSTrackSegment" href="AliPHOSTrackSegment.h">~AliPHOSTrackSegment</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

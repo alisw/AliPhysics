@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:53 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSv1</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSv1</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSv1:description>class description</a> - <a href="src/AliPHOSv1.cxx.html">source file</a> - <a href="AliPHOSv1_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSv1" href="AliPHOSv1.h">AliPHOSv1</a> : public <a href="./AliPHOSv0.html">AliPHOSv0</a></h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->            <a href="./AliPHOSv1.html">AliPHOSv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:AliPHOSv1">AliPHOSv1</a><!--PLAIN-->()
+<!--TAB6-->            <a href="./AliPHOSv1.html">AliPHOSv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:AliPHOSv1">AliPHOSv1</a><!--PLAIN-->(const <a href="ListOfTypes.html#char">char</a>* name, const <a href="ListOfTypes.html#char">char</a>* title)
+<!--TAB6-->            <a href="./AliPHOSv1.html">AliPHOSv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:AliPHOSv1">AliPHOSv1</a><!--PLAIN-->(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>* Reconstructioner, const <a href="ListOfTypes.html#char">char</a>* name, const <a href="ListOfTypes.html#char">char</a>* title)
+<!--TAB6-->            <a href="./AliPHOSv1.html">AliPHOSv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:AliPHOSv1">AliPHOSv1</a><!--PLAIN-->(<a href="./AliPHOSv1.html">AliPHOSv1</a>&amp;)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:~AliPHOSv1">~AliPHOSv1</a><!--PLAIN-->()
+<!--TAB6-->              TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSv1:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->      virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSv1:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:StepManager">StepManager</a><!--PLAIN-->()
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSv1:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSv1:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv1:fLightYieldMean">fLightYieldMean</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fLightYieldMean">Mean lightyield in the PbOW4 xtal per GeV (Poisson distribution)</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv1:fIntrinsicPINEfficiency">fIntrinsicPINEfficiency</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fIntrinsicPINEfficiency">Photo efficiency of the PIN diode   </a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv1:fLightYieldAttenuation">fLightYieldAttenuation</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fLightYieldAttenuation">Attenuation of the light through the crystal</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv1:fRecalibrationFactor">fRecalibrationFactor</a><!--PLAIN-->     <!--TAB--><i><a name="Title:fRecalibrationFactor">Recalibration factor</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSv1:fElectronsPerGeV">fElectronsPerGeV</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fElectronsPerGeV">Number of electrons per GeV created in the PIN by a ionizing particle</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSv1:description">Class Description</a></h2>
+<pre> Implementation version v0 of PHOS Manager class
+ Layout EMC + PPSD has name GPS2
+ The main goal of this version of <a href="./AliPHOS.html">AliPHOS</a> is to calculte the
+  induced charged in the PIN diode, taking into account light
+  tracking in the PbWO4 crystal, induced signal in the
+  PIN due to MIPS particle and electronic noise.
+ This is done in the StepManager
+
+*-- Author:  Odd Harald Oddland &amp; Gines Martinez (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSv1:AliPHOSv1" href="src/AliPHOSv1.cxx.html#AliPHOSv1:AliPHOSv1">AliPHOSv1</a>(const <a href="ListOfTypes.html#char">char</a> *name, const <a href="ListOfTypes.html#char">char</a> *title):
+  <a href="./AliPHOSv0.html">AliPHOSv0</a>(name,title)
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSv1:AliPHOSv1" href="src/AliPHOSv1.cxx.html#AliPHOSv1:AliPHOSv1">AliPHOSv1</a>(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> * Reconstructioner, const <a href="ListOfTypes.html#char">char</a> *name, const <a href="ListOfTypes.html#char">char</a> *title):
+  <a href="./AliPHOSv0.html">AliPHOSv0</a>(Reconstructioner,name,title)
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv1:StepManager" href="src/AliPHOSv1.cxx.html#AliPHOSv1:StepManager">StepManager</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Accumulates hits as <a href="ListOfTypes.html#long">long</a> as the track stays in a single crystal or PPSD gas Cell
+ Adds the energy deposited in the PIN diode
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->          <a href="./AliPHOSv1.html">AliPHOSv1</a> <a name="AliPHOSv1:AliPHOSv1" href="AliPHOSv1.h">AliPHOSv1</a>(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>* Reconstructioner, const <a href="ListOfTypes.html#char">char</a>* name, const <a href="ListOfTypes.html#char">char</a>* title)
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSv1:Class" href="AliPHOSv1.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSv1:IsA" href="AliPHOSv1.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv1:ShowMembers" href="AliPHOSv1.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv1:Streamer" href="AliPHOSv1.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->          <a href="./AliPHOSv1.html">AliPHOSv1</a> <a name="AliPHOSv1:AliPHOSv1" href="AliPHOSv1.h">AliPHOSv1</a>(<a href="./AliPHOSv1.html">AliPHOSv1</a>&amp;)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSv1:~AliPHOSv1" href="AliPHOSv1.h">~AliPHOSv1</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

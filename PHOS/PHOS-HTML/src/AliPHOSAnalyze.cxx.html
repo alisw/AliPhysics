@@ -1,0 +1,933 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:54 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSAnalyze - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>// Algorythm class to analyze PHOSv0 events:</b>
+<b>// Construct histograms and displays them.</b>
+<b>// Use the macro EditorBar.C for best access to the functionnalities</b>
+<b>//</b>
+<b>//*-- Author: Y. Schutz (SUBATECH) </b>
+<b>//////////////////////////////////////////////////////////////////////////////</b>
+
+<b>// --- ROOT system ---</b>
+
+#include "TFile.h"
+#include "TH1.h"
+#include "TPad.h"
+#include "TH2.h"
+#include "TParticle.h"
+#include "TClonesArray.h"
+#include "TTree.h"
+#include "TMath.h"
+#include "TCanvas.h" 
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+#include &lt;cstdio&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "AliRun.h"
+#include "<a href="../AliPHOSAnalyze.h">AliPHOSAnalyze.h</a>"
+#include "<a href="../AliPHOSClusterizerv1.h">AliPHOSClusterizerv1.h</a>"
+#include "<a href="../AliPHOSTrackSegmentMakerv1.h">AliPHOSTrackSegmentMakerv1.h</a>"
+#include "<a href="../AliPHOSPIDv1.h">AliPHOSPIDv1.h</a>"
+#include "<a href="../AliPHOSReconstructioner.h">AliPHOSReconstructioner.h</a>"
+#include "<a href="../AliPHOSDigit.h">AliPHOSDigit.h</a>"
+#include "<a href="../AliPHOSTrackSegment.h">AliPHOSTrackSegment.h</a>"
+#include "<a href="../AliPHOSRecParticle.h">AliPHOSRecParticle.h</a>"
+
+ClassImp(AliPHOSAnalyze)
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:AliPHOSAnalyze"> </a>  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:AliPHOSAnalyze">AliPHOSAnalyze::AliPHOSAnalyze</a>()
+{
+<b>  // default ctor (useless)</b>
+  
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a> = 0 ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:AliPHOSAnalyze"> </a><a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:AliPHOSAnalyze">AliPHOSAnalyze::AliPHOSAnalyze</a>(<a href="../ListOfTypes.html#Text_t">Text_t</a> * name)
+{
+<b>  // ctor: analyze events from root file: name</b>
+  
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> ok = <a href="#AliPHOSAnalyze:OpenRootFile">OpenRootFile</a>(name)  ; 
+  if ( !ok ) {
+    cout &lt;&lt; " <a href=".././AliPHOSAnalyze.html">AliPHOSAnalyze</a> &gt; Error opening " &lt;&lt; name &lt;&lt; endl ; 
+  }
+  else { 
+    gAlice = (AliRun*) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>-&gt;Get("gAlice");
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>  = (<a href=".././AliPHOSv0.html">AliPHOSv0</a> *)gAlice-&gt;GetDetector("PHOS") ;
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>  = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>( <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:GetGeometry">GetGeometry</a>()-&gt;GetName(), <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:GetGeometry">GetGeometry</a>()-&gt;GetTitle() ) ;
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> = -999 ; 
+  }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:~AliPHOSAnalyze"> </a><a href=".././AliPHOSAnalyze.html">AliPHOSAnalyze</a>::~<a href=".././AliPHOSAnalyze.html">AliPHOSAnalyze</a>()
+{
+<b>  // dtor</b>
+
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>-&gt;Close() ; 
+  delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a> ; 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a> = 0 ; 
+
+  delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a> ; 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a> = 0 ; 
+
+  delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a> ; 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a> = 0 ;
+
+  delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a> ; 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a> = 0 ;
+
+  delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a> ; 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a> = 0 ;
+
+  delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a> ; 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a> = 0 ;
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:AnalyzeOneEvent"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:AnalyzeOneEvent">AliPHOSAnalyze::AnalyzeOneEvent</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> evt)
+{
+<b>  // analyze one single event with id=evt</b>
+
+  TStopwatch ts ; 
+  ts.Start() ; 
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> ok = <a href="#AliPHOSAnalyze:Init">Init</a>(evt) ; 
+  
+  if ( ok ) {
+<b>    //=========== Get the number of entries in the Digits array</b>
+    
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> nId = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;Digits()-&gt;GetEntries();    
+    printf("AnalyzeOneEvent &gt; Number of entries in the Digit array is %d n",nId);
+    
+<b>    //=========== Do the reconstruction</b>
+    
+    cout &lt;&lt; "AnalyzeOneEvent &gt; Found  " &lt;&lt; nId &lt;&lt; "  digits in PHOS"   &lt;&lt; endl ;  
+    
+   
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:Reconstruction">Reconstruction</a>(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a>);  
+    
+<b>    // =========== End of reconstruction</b>
+
+<b>    // =========== Write the root file</b>
+
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>-&gt;Write() ;
+    
+<b>    // =========== Finish</b>
+
+    cout &lt;&lt; "AnalyzeOneEvent &gt; event # " &lt;&lt; <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> &lt;&lt; " processed" &lt;&lt; endl ;   
+  } // ok
+  else
+    cout &lt;&lt; "AnalyzeOneEvent &gt; filed to process event # " &lt;&lt; evt &lt;&lt; endl ;   
+  
+  ts.Stop() ;   cout &lt;&lt; "CPU  time = " &lt;&lt; ts.CpuTime()   &lt;&lt; endl ; 
+  cout &lt;&lt; "Real time = " &lt;&lt; ts.RealTime()  &lt;&lt; endl ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:AnalyzeManyEvents"> </a> <a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:AnalyzeManyEvents">AliPHOSAnalyze::AnalyzeManyEvents</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> Nevents, <a href="../ListOfTypes.html#Int_t">Int_t</a> module)    
+{
+<b>  // analyzes Nevents events in a single PHOS module  </b>
+
+  if ( <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a> == 0 ) 
+    cout &lt;&lt; "AnalyzeManyEvents &gt; " &lt;&lt; "Root File not openned" &lt;&lt; endl ;  
+  else
+    {
+<b>      //========== Get AliRun object from file </b>
+      gAlice = (AliRun*) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>-&gt;Get("gAlice") ;
+<b>      //=========== Get the PHOS object and associated geometry from the file      </b>
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>  = (<a href=".././AliPHOSv0.html">AliPHOSv0</a> *)gAlice-&gt;GetDetector("PHOS") ;
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>  = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>( <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:GetGeometry">GetGeometry</a>()-&gt;GetName(), <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:GetGeometry">GetGeometry</a>()-&gt;GetTitle() );
+<b>      //========== Booking Histograms</b>
+      cout &lt;&lt; "AnalyzeManyEvents &gt; " &lt;&lt; "Booking Histograms" &lt;&lt; endl ; 
+      <a href="#AliPHOSAnalyze:BookingHistograms">BookingHistograms</a>();
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> ievent;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ; 
+      <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ;
+      <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emc ;
+      <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsd ;
+<b>      //      <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * tracksegment ;</b>
+      <a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a> * recparticle;
+      for ( ievent=0; ievent&lt;Nevents; ievent++)
+	{  
+          if (ievent==0)  cout &lt;&lt; "AnalyzeManyEvents &gt; " &lt;&lt; "Starting Analyzing " &lt;&lt; endl ; 
+<b>	  //========== Create the Clusterizer</b>
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a> = new <a href=".././AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a>() ; 
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetEmcEnergyThreshold">SetEmcEnergyThreshold</a>(0.025) ; 
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetEmcClusteringThreshold">SetEmcClusteringThreshold</a>(0.50) ; 
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetPpsdEnergyThreshold">SetPpsdEnergyThreshold</a>    (0.0000002) ; 
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetPpsdClusteringThreshold">SetPpsdClusteringThreshold</a>(0.0000001) ; 
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetLocalMaxCut">SetLocalMaxCut</a>(0.03) ;
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetCalibrationParameters">SetCalibrationParameters</a>(0., 0.00000001) ;  
+<b>	  //========== Creates the track segment maker</b>
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a> = new <a href=".././AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a>()  ;
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a>-&gt;<a href=".././AliPHOSTrackSegmentMaker.html#AliPHOSTrackSegmentMaker:UnsetUnfoldFlag">UnsetUnfoldFlag</a>() ; 
+<b>	  //========== Creates the particle identifier</b>
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a> = new <a href=".././AliPHOSPIDv1.html">AliPHOSPIDv1</a>() ;
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a>-&gt;<a href=".././AliPHOSPID.html#AliPHOSPID:SetShowerProfileCuts">SetShowerProfileCuts</a>(0.3, 1.8, 0.3, 1.8 ) ; 
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a>-&gt;Print() ; 	    
+<b>	  //========== Creates the Reconstructioner  </b>
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a> = new <a href=".././AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>, <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a>, <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a>) ; 
+<b>	  //========== Event Number</b>
+	  if ( ( log10(ievent+1) - (<a href="../ListOfTypes.html#Int_t">Int_t</a>)(log10(ievent+1)) ) == 0. ) cout &lt;&lt;  "AnalyzeManyEvents &gt; " &lt;&lt; "Event is " &lt;&lt; ievent &lt;&lt; endl ;  
+<b>	  //=========== Connects the various Tree's for evt</b>
+	  gAlice-&gt;GetEvent(ievent);
+<b>	  //=========== Gets the Digit TTree</b>
+	  gAlice-&gt;TreeD()-&gt;GetEvent(0) ;
+<b>	  //=========== Gets the number of entries in the Digits array </b>
+	  TIter nextdigit(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;Digits()) ;
+	  while( ( digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)nextdigit() ) )
+	    {
+	      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:AbsToRelNumbering">AbsToRelNumbering</a>(digit-&gt;GetId(), relid) ;         
+	      if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:IsInEmc">IsInEmc</a>(digit)) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcDigit">fhEmcDigit</a>-&gt;Fill(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:Calibrate">Calibrate</a>(digit-&gt;GetAmp())) ; 
+	      else    
+		{  
+		  if (relid[1]&lt;17) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoDigit">fhVetoDigit</a>-&gt;Fill(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:Calibrate">Calibrate</a>(digit-&gt;GetAmp())); 
+		  if (relid[1]&gt;16) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorDigit">fhConvertorDigit</a>-&gt;Fill(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:Calibrate">Calibrate</a>(digit-&gt;GetAmp()));
+		}
+	    }
+<b>	  //=========== Do the reconstruction</b>
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:Reconstruction">Reconstruction</a>(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a>);
+<b>	  //=========== Cluster in module</b>
+	  TIter nextEmc(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:EmcClusters">EmcClusters</a>()  ) ;
+	  while((emc = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *)nextEmc())) 
+	    {
+	      if ( emc-&gt;GetPHOSMod() == module )
+		{  
+		  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcCluster">fhEmcCluster</a>-&gt;Fill(  emc-&gt;GetTotalEnergy()  ); 
+		  TIter nextPpsd( <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:PpsdClusters">PpsdClusters</a>()) ;
+		  while((ppsd = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *)nextPpsd())) 
+		    {
+		      if ( ppsd-&gt;GetPHOSMod() == module )
+			{ 			  
+			  if (!ppsd-&gt;GetUp()) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorEmc">fhConvertorEmc</a>-&gt;Fill(emc-&gt;GetTotalEnergy(),ppsd-&gt;GetTotalEnergy()) ;
+			}
+		    } 
+		}
+	    }
+<b>	  //=========== Cluster in module PPSD Down</b>
+	  TIter nextPpsd(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:PpsdClusters">PpsdClusters</a>() ) ;
+	  while((ppsd = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *)nextPpsd())) 
+	    {
+	      if ( ppsd-&gt;GetPHOSMod() == module )
+		{ 
+		  if (!ppsd-&gt;GetUp()) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorCluster">fhConvertorCluster</a>-&gt;Fill(ppsd-&gt;GetTotalEnergy()) ;
+		  if (ppsd-&gt;GetUp())  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoCluster">fhVetoCluster</a>     -&gt;Fill(ppsd-&gt;GetTotalEnergy()) ;
+		}
+	    }
+<b>	  //========== TRackSegments in the event</b>
+	  TIter nextRecParticle(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:RecParticles">RecParticles</a>() ) ; 
+	  while((recparticle = (<a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a> *)nextRecParticle())) 
+	    {
+	      if ( recparticle-&gt;GetPHOSTrackSegment()-&gt;GetPHOSMod() == module )
+		{ 
+		  cout &lt;&lt; "Particle type is " &lt;&lt; recparticle-&gt;GetType() &lt;&lt; endl ; 
+		  <a href="../ListOfTypes.html#Int_t">Int_t</a> numberofprimaries = 0 ;
+		  <a href="../ListOfTypes.html#Int_t">Int_t</a> * listofprimaries = recparticle-&gt;GetPrimaries(numberofprimaries) ;
+		  cout &lt;&lt; "Number of primaries = " &lt;&lt; numberofprimaries &lt;&lt; endl ; 
+		  <a href="../ListOfTypes.html#Int_t">Int_t</a> index ;
+		  for ( index = 0 ; index &lt; numberofprimaries ; index++)
+		    cout &lt;&lt; "    primary # " &lt;&lt; index &lt;&lt; " =  " &lt;&lt; listofprimaries[index] &lt;&lt; endl ;  
+		  switch(recparticle-&gt;GetType())
+		    {
+		    case kGAMMA:
+		      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonEnergy">fhPhotonEnergy</a>-&gt;Fill(recparticle-&gt;Energy() ) ; 
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionX">fhPhotonPositionX</a>-&gt;Fill(recpart. ) ;</b>
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionY">fhPhotonPositionY</a>-&gt;Fill(recpart. ) ;                 </b>
+		      cout &lt;&lt; "PHOTON" &lt;&lt; endl;
+		      break;
+		    case kELECTRON:
+		      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronEnergy">fhElectronEnergy</a>-&gt;Fill(recparticle-&gt;Energy() ) ; 
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionX">fhElectronPositionX</a>-&gt;Fill(recpart. ) ;</b>
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionY">fhElectronPositionY</a>-&gt;Fill(recpart. ) ; </b>
+		      cout &lt;&lt; "ELECTRON" &lt;&lt; endl;
+		      break;
+		    case kNEUTRALHADRON:
+		      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronEnergy">fhNeutralHadronEnergy</a>-&gt;Fill(recparticle-&gt;Energy() ) ; 
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionX">fhNeutralHadronPositionX</a>-&gt;Fill(recpart. ) ;</b>
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionY">fhNeutralHadronPositionY</a>-&gt;Fill(recpart. ) ; </b>
+		      cout &lt;&lt; "NEUTRAl HADRON" &lt;&lt; endl;
+		      break ;
+		    case kNEUTRALEM:
+		      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMEnergy">fhNeutralEMEnergy</a>-&gt;Fill(recparticle-&gt;Energy() ) ; 
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionX">fhNeutralEMPositionX</a>-&gt;Fill(recpart. ) ;</b>
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionY">fhNeutralEMPositionY</a>-&gt;Fill(recpart. ) ; </b>
+<b>		      //cout &lt;&lt; "NEUTRAL EM" &lt;&lt; endl;</b>
+		      break ;
+		    case kCHARGEDHADRON:
+		      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronEnergy">fhChargedHadronEnergy</a>-&gt;Fill(recparticle-&gt;Energy() ) ; 
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionX">fhChargedHadronPositionX</a>-&gt;Fill(recpart. ) ;</b>
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionY">fhChargedHadronPositionY</a>-&gt;Fill(recpart. ) ; </b>
+		      cout &lt;&lt; "CHARGED HADRON" &lt;&lt; endl;
+		      break ;
+		    case kGAMMAHADRON:
+		      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronEnergy">fhPhotonHadronEnergy</a>-&gt;Fill(recparticle-&gt;Energy() ) ; 
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionX">fhPhotonHadronPositionX</a>-&gt;Fill(recpart. ) ;</b>
+<b>		      //<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionY">fhPhotonHadronPositionY</a>-&gt;Fill(recpart. ) ; </b>
+		      cout &lt;&lt; "PHOTON HADRON" &lt;&lt; endl;
+		      break ;		      
+		    }
+		}
+	    }
+<b>	  // Deleting <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>, <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a>, <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a> et <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a></b>
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;Delete();
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a>-&gt;Delete();
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a>-&gt;Delete();
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a>-&gt;Delete();
+
+	}   // endfor
+      <a href="#AliPHOSAnalyze:SavingHistograms">SavingHistograms</a>();
+    }       // endif
+}           // endfunction
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:BookingHistograms"> </a><a href="../ListOfTypes.html#void">void</a>  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:BookingHistograms">AliPHOSAnalyze::BookingHistograms</a>()
+{
+<b>  // Books the histograms where the results of the analysis are stored (to be changed)</b>
+
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcDigit">fhEmcDigit</a> )         
+    delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcDigit">fhEmcDigit</a>  ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoDigit">fhVetoDigit</a> )     
+    delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoDigit">fhVetoDigit</a>  ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorDigit">fhConvertorDigit</a> ) 
+    delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorDigit">fhConvertorDigit</a>   ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcCluster">fhEmcCluster</a>   )  
+    delete  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcCluster">fhEmcCluster</a>   ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoCluster">fhVetoCluster</a> )     
+    delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoCluster">fhVetoCluster</a>   ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorCluster">fhConvertorCluster</a> )
+    delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorCluster">fhConvertorCluster</a>  ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorEmc">fhConvertorEmc</a> )    
+    delete <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorEmc">fhConvertorEmc</a>  ;
+ 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcDigit">fhEmcDigit</a>                = new TH1F("hEmcDigit",      "hEmcDigit",         1000,  0. ,  25.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoDigit">fhVetoDigit</a>               = new TH1F("hVetoDigit",     "hVetoDigit",         500,  0. ,  3.e-5);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorDigit">fhConvertorDigit</a>          = new TH1F("hConvertorDigit","hConvertorDigit",    500,  0. ,  3.e-5);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcCluster">fhEmcCluster</a>              = new TH1F("hEmcCluster",    "hEmcCluster",       1000,  0. ,  30.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoCluster">fhVetoCluster</a>             = new TH1F("hVetoCluster",   "hVetoCluster",       500,  0. ,  3.e-5);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorCluster">fhConvertorCluster</a>        = new TH1F("hConvertorCluster","hConvertorCluster",500,  0. ,  3.e-5);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorEmc">fhConvertorEmc</a>            = new TH2F("hConvertorEmc",  "hConvertorEmc",      200,  1. ,  3., 200, 0., 3.e-5);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonEnergy">fhPhotonEnergy</a>            = new TH1F("hPhotonEnergy",  "hPhotonEnergy",     1000,  0. ,  30.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronEnergy">fhElectronEnergy</a>          = new TH1F("hElectronEnergy","hElectronEnergy",   1000,  0. ,  30.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronEnergy">fhNeutralHadronEnergy</a>     = new TH1F("hNeutralHadronEnergy", "hNeutralHadronEnergy",    1000,  0. ,  30.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMEnergy">fhNeutralEMEnergy</a>         = new TH1F("hNeutralEMEnergy", "hNeutralEMEnergy",    1000,  0. ,  30.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronEnergy">fhChargedHadronEnergy</a>     = new TH1F("hChargedHadronEnergy", "hChargedHadronEnergy",    1000,  0. ,  30.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronEnergy">fhPhotonHadronEnergy</a>      = new TH1F("hPhotonHadronEnergy","hPhotonHadronEnergy",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionX">fhPhotonPositionX</a>         = new TH1F("hPhotonPositionX","hPhotonPositionX",   500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionX">fhElectronPositionX</a>       = new TH1F("hElectronPositionX","hElectronPositionX",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionX">fhNeutralHadronPositionX</a>  = new TH1F("hNeutralHadronPositionX","hNeutralHadronPositionX",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionX">fhNeutralEMPositionX</a>      = new TH1F("hNeutralEMPositionX","hNeutralEMPositionX",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionX">fhChargedHadronPositionX</a>  = new TH1F("hChargedHadronPositionX","hChargedHadronPositionX",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionX">fhPhotonHadronPositionX</a>   = new TH1F("hPhotonHadronPositionX","hPhotonHadronPositionX",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionY">fhPhotonPositionY</a>         = new TH1F("hPhotonPositionY","hPhotonPositionY",   500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionY">fhElectronPositionY</a>       = new TH1F("hElectronPositionY","hElectronPositionY",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionY">fhNeutralHadronPositionY</a>  = new TH1F("hNeutralHadronPositionY","hNeutralHadronPositionY",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionY">fhNeutralEMPositionY</a>      = new TH1F("hNeutralEMPositionY","hNeutralEMPositionY",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionY">fhChargedHadronPositionY</a>  = new TH1F("hChargedHadronPositionY","hChargedHadronPositionY",500,-80. , 80.);
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionY">fhPhotonHadronPositionY</a>   = new TH1F("hPhotonHadronPositionY","hPhotonHadronPositionY",500,-80. , 80.);
+
+
+}
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:Init"> </a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:Init">AliPHOSAnalyze::Init</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> evt)
+{
+<b>  // Do a few initializations: open the root file</b>
+<b>  //                           get the AliRun object</b>
+<b>  //                           defines the clusterizer, tracksegment maker and particle identifier</b>
+<b>  //                           sets the associated parameters</b>
+
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> ok = kTRUE ; 
+  
+<b>   //========== Open galice root file  </b>
+
+  if ( <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a> == 0 ) {
+    <a href="../ListOfTypes.html#Text_t">Text_t</a> * name  = new <a href="../ListOfTypes.html#Text_t">Text_t</a>[80] ; 
+    cout &lt;&lt; "AnalyzeOneEvent &gt; Enter file root file name : " ;  
+    cin &gt;&gt; name ; 
+    <a href="../ListOfTypes.html#Bool_t">Bool_t</a> ok = <a href="#AliPHOSAnalyze:OpenRootFile">OpenRootFile</a>(name) ; 
+    if ( !ok )
+      cout &lt;&lt; " <a href=".././AliPHOSAnalyze.html">AliPHOSAnalyze</a> &gt; Error opening " &lt;&lt; name &lt;&lt; endl ; 
+    else { 
+<b>      //========== Get AliRun object from file </b>
+      
+      gAlice = (AliRun*) <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>-&gt;Get("gAlice") ;
+      
+<b>      //=========== Get the PHOS object and associated geometry from the file </b>
+      
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>  = (<a href=".././AliPHOSv0.html">AliPHOSv0</a> *)gAlice-&gt;GetDetector("PHOS") ;
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>  = <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>( <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:GetGeometry">GetGeometry</a>()-&gt;GetName(), <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:GetGeometry">GetGeometry</a>()-&gt;GetTitle() );
+    } // else !ok
+  } // if <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>
+  
+  if ( ok ) {
+    
+<b>    //========== Create the Clusterizer</b>
+
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a> =  new <a href=".././AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a>() ; 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetEmcEnergyThreshold">SetEmcEnergyThreshold</a>(0.030) ; 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetEmcClusteringThreshold">SetEmcClusteringThreshold</a>(1.0) ; 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetPpsdEnergyThreshold">SetPpsdEnergyThreshold</a>    (0.0000002) ; 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetPpsdClusteringThreshold">SetPpsdClusteringThreshold</a>(0.0000001) ; 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetLocalMaxCut">SetLocalMaxCut</a>(0.03) ;
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:SetCalibrationParameters">SetCalibrationParameters</a>(0., 0.00000001) ;  
+    cout &lt;&lt;  "AnalyzeOneEvent &gt; using clusterizer " &lt;&lt; <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;GetName() &lt;&lt; endl ; 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:PrintParameters">PrintParameters</a>() ; 
+    
+<b>    //========== Creates the track segment maker</b>
+    
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a> = new <a href=".././AliPHOSTrackSegmentMakerv1.html">AliPHOSTrackSegmentMakerv1</a>() ;
+    cout &lt;&lt;  "AnalyzeOneEvent &gt; using tack segment maker " &lt;&lt; <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a>-&gt;GetName() &lt;&lt; endl ; 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a>-&gt;<a href=".././AliPHOSTrackSegmentMaker.html#AliPHOSTrackSegmentMaker:UnsetUnfoldFlag">UnsetUnfoldFlag</a>() ;
+    
+<b>    //========== Creates the particle identifier</b>
+    
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a> = new <a href=".././AliPHOSPIDv1.html">AliPHOSPIDv1</a>() ;
+    cout &lt;&lt;  "AnalyzeOneEvent &gt; using particle identifier " &lt;&lt; <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a>-&gt;GetName() &lt;&lt; endl ; 
+    
+<b>    //========== Creates the Reconstructioner  </b>
+    
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRec">fRec</a> = new <a href=".././AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>, <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fTrs">fTrs</a>, <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPID">fPID</a>) ;     
+    
+<b>    //=========== Connect the various Tree's for evt</b>
+    
+    if ( evt == -999 ) {
+      cout &lt;&lt;  "AnalyzeOneEvent &gt; Enter event number : " ; 
+      cin &gt;&gt; evt ;  
+      cout &lt;&lt; evt &lt;&lt; endl ; 
+    }
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> = evt ; 
+    gAlice-&gt;GetEvent(evt);
+    
+<b>    //=========== Get the Digit TTree</b>
+    
+    gAlice-&gt;TreeD()-&gt;GetEvent(0) ;     
+    
+  } // ok
+  
+  return ok ; 
+}
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:DisplayKineEvent"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:DisplayKineEvent">AliPHOSAnalyze::DisplayKineEvent</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> evt)
+{
+<b>  // Display particles from the Kine Tree in global Alice (theta, phi) coordinates. </b>
+<b>  // One PHOS module at the time.</b>
+<b>  // The particle type can be selected.</b>
+  
+  if (evt == -999) 
+    evt = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> module ; 
+  cout &lt;&lt;  "DisplayKineEvent &gt; which module (1-5,  -1: all) ? " ; 
+  cin &gt;&gt; module ; cout &lt;&lt; module &lt;&lt; endl ; 
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> testparticle ; 
+  cout &lt;&lt; " 22      : PHOTON " &lt;&lt; endl 
+       &lt;&lt; " (-)11   : (POSITRON)ELECTRON " &lt;&lt; endl 
+       &lt;&lt; " (-)2112 : (ANTI)NEUTRON " &lt;&lt; endl  
+       &lt;&lt; " -999    : Everything else " &lt;&lt; endl ; 
+  cout  &lt;&lt;  "DisplayKineEvent &gt; enter PDG particle code to display " ; 
+  cin &gt;&gt; testparticle ; cout &lt;&lt; testparticle &lt;&lt; endl ; 
+
+  <a href="../ListOfTypes.html#Text_t">Text_t</a> histoname[80] ;
+  sprintf(histoname,"Event %d: Incident particles in module %d", evt, module) ; 
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> tm, tM, pm, pM ; // min and Max theta and phi covered by module   
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcModuleCoverage">EmcModuleCoverage</a>(module, tm, tM, pm, pM, kDegre) ;
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> theta, phi ; 
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcXtalCoverage">EmcXtalCoverage</a>(theta, phi, kDegre) ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> tdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( (tM - tm) / theta ) ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> pdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( (pM - pm) / phi ) ; 
+
+  tm -= theta ; 
+  tM += theta ; 
+  pm -= phi ; 
+  pM += phi ; 
+
+  TH2F * histoparticle = new TH2F("histoparticle",  histoname, 
+				 	  pdim, pm, pM, tdim, tm, tM) ; 
+  histoparticle-&gt;SetStats(kFALSE) ;
+
+<b>  // Get pointers to Alice Particle TClonesArray</b>
+
+  TParticle * particle;
+  TClonesArray * particlearray  = gAlice-&gt;Particles();    
+
+  <a href="../ListOfTypes.html#Text_t">Text_t</a> canvasname[80];
+  sprintf(canvasname,"Particles incident in PHOS/EMC module # %d",module) ;
+  TCanvas * kinecanvas = new TCanvas("kinecanvas", canvasname, 650, 500) ; 
+
+<b>  // get the KINE Tree</b>
+
+  TTree * kine =  gAlice-&gt;TreeK() ; 
+  <a href="../ListOfTypes.html#Stat_t">Stat_t</a> nParticles =  kine-&gt;GetEntries() ; 
+  cout &lt;&lt; "DisplayKineEvent &gt; events in kine " &lt;&lt; nParticles &lt;&lt; endl ; 
+  
+<b>  // loop over particles</b>
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> kRADDEG = 180. / TMath::Pi() ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> index1 ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> nparticlein = 0 ; 
+  for (index1 = 0 ; index1 &lt; nParticles ; index1++){
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> nparticle = particlearray-&gt;GetEntriesFast() ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> index2 ; 
+    for( index2 = 0 ; index2 &lt; nparticle ; index2++) {         
+      particle            = (TParticle*)particlearray-&gt;UncheckedAt(index2) ;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a>  particletype = particle-&gt;GetPdgCode() ;
+      if (testparticle == -999 || testparticle == particletype) { 
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> phi        = particle-&gt;Phi() ;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> theta      = particle-&gt;Theta() ;
+	<a href="../ListOfTypes.html#Int_t">Int_t</a> mod ; 
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> x, z ; 
+	<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:ImpactOnEmc">ImpactOnEmc</a>(theta, phi, mod, z, x) ;
+	if ( mod == module ) {
+	  nparticlein++ ; 
+	  if (particle-&gt;Energy() &gt;  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:GetEmcClusteringThreshold">GetEmcClusteringThreshold</a>()  )
+	    histoparticle-&gt;Fill(phi*kRADDEG, theta*kRADDEG, particle-&gt;Energy() ) ; 
+	} 
+      } 
+    }
+  }
+  kinecanvas-&gt;Draw() ; 
+  histoparticle-&gt;Draw("color") ; 
+  TPaveText *  pavetext = new TPaveText(294, 100, 300, 101); 
+  <a href="../ListOfTypes.html#Text_t">Text_t</a> text[40] ; 
+  sprintf(text, "Particles: %d ", nparticlein) ;
+  pavetext-&gt;AddText(text) ; 
+  pavetext-&gt;Draw() ; 
+  kinecanvas-&gt;Update(); 
+
+}
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:DisplayRecParticles"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:DisplayRecParticles">AliPHOSAnalyze::DisplayRecParticles</a>()
+{
+<b>  // Display reconstructed particles in global Alice(theta, phi) coordinates. </b>
+<b>  // One PHOS module at the time.</b>
+<b>  // Click on symbols indicate the reconstructed particle type. </b>
+
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> == -999) {
+    cout &lt;&lt; "DisplayRecParticles &gt; Analyze an event first ... (y/n) " ; 
+    <a href="../ListOfTypes.html#Text_t">Text_t</a> answer[1] ; 
+    cin &gt;&gt; answer ; cout &lt;&lt; answer ; 
+    if ( answer == "y" ) 
+      <a href="#AliPHOSAnalyze:AnalyzeOneEvent">AnalyzeOneEvent</a>() ;
+  } 
+    if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> != -999) {
+      
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> module ; 
+      cout &lt;&lt;  "DisplayRecParticles &gt; which module (1-5,  -1: all) ? " ; 
+      cin &gt;&gt; module ; cout &lt;&lt; module &lt;&lt; endl ;
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> histoname[80] ; 
+      sprintf(histoname,"Event %d: Reconstructed particles in module %d", <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a>, module) ; 
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> tm, tM, pm, pM ; // min and Max theta and phi covered by module   
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcModuleCoverage">EmcModuleCoverage</a>(module, tm, tM, pm, pM, kDegre) ;
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> theta, phi ; 
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcXtalCoverage">EmcXtalCoverage</a>(theta, phi, kDegre) ;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> tdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( (tM - tm) / theta ) ; 
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> pdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( (pM - pm) / phi ) ; 
+      tm -= theta ; 
+      tM += theta ; 
+      pm -= phi ; 
+      TH2F * histoRparticle = new TH2F("histoRparticle",  histoname, 
+				       pdim, pm, pM, tdim, tm, tM) ; 
+      histoRparticle-&gt;SetStats(kFALSE) ;
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> canvasname[80] ; 
+      sprintf(canvasname, "Reconstructed particles in PHOSmodule # %d", module) ;
+      TCanvas * rparticlecanvas = new TCanvas("RparticleCanvas", canvasname, 650, 500) ; 
+      <a href="../ListOfTypes.html#RecParticlesList">RecParticlesList</a> * rpl = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:RecParticles">RecParticles</a>() ; 
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> nRecParticles = rpl-&gt;GetEntries() ; 
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> nRecParticlesInModule = 0 ; 
+      TIter nextRecPart(rpl) ; 
+      <a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a> * rp ; 
+      cout &lt;&lt; "DisplayRecParticles &gt; " &lt;&lt; nRecParticles &lt;&lt; " reconstructed particles " &lt;&lt; endl ; 
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> kRADDEG = 180. / TMath::Pi() ; 
+      while ( (rp = (<a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a> *)nextRecPart() ) ) {
+	<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * ts = rp-&gt;GetPHOSTrackSegment() ; 
+	if ( ts-&gt;GetPHOSMod() == module ) {
+	  <a href="../ListOfTypes.html#Int_t">Int_t</a> numberofprimaries = 0 ;
+	  <a href="../ListOfTypes.html#Int_t">Int_t</a> * listofprimaries = rp-&gt;GetPrimaries(numberofprimaries) ;
+	  cout &lt;&lt; "Number of primaries = " &lt;&lt; numberofprimaries &lt;&lt; endl ; 
+	  <a href="../ListOfTypes.html#Int_t">Int_t</a> index ;
+	  for ( index = 0 ; index &lt; numberofprimaries ; index++)
+	    cout &lt;&lt; "    primary # " &lt;&lt; index &lt;&lt; " =  " &lt;&lt; listofprimaries[index] &lt;&lt; endl ;  
+	  
+	  nRecParticlesInModule++ ; 
+	  <a href="../ListOfTypes.html#Double_t">Double_t</a> theta = rp-&gt;Theta() * kRADDEG ;
+	  <a href="../ListOfTypes.html#Double_t">Double_t</a> phi   = rp-&gt;Phi() * kRADDEG ;
+	  <a href="../ListOfTypes.html#Double_t">Double_t</a> energy = rp-&gt;Energy() ; 
+	  histoRparticle-&gt;Fill(phi, theta, energy) ;
+	}
+      }
+      histoRparticle-&gt;Draw("color") ; 
+
+      nextRecPart.Reset() ; 
+      while ( (rp = (<a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a> *)nextRecPart() ) ) {
+	<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * ts = rp-&gt;GetPHOSTrackSegment() ; 
+	if ( ts-&gt;GetPHOSMod() == module )  
+	  rp-&gt;Draw("P") ; 
+      }
+
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> text[80] ; 
+      sprintf(text, "reconstructed particles: %d", nRecParticlesInModule) ;
+      TPaveText *  pavetext = new TPaveText(292, 100, 300, 101); 
+      pavetext-&gt;AddText(text) ; 
+      pavetext-&gt;Draw() ; 
+      rparticlecanvas-&gt;Update() ; 
+    }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:DisplayRecPoints"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:DisplayRecPoints">AliPHOSAnalyze::DisplayRecPoints</a>()
+{
+<b>  // Display reconstructed points in local PHOS-module (x, z) coordinates. </b>
+<b>  // One PHOS module at the time.</b>
+<b>  // Click on symbols displays the EMC cluster, or PPSD information.</b>
+
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> == -999) {
+    cout &lt;&lt; "DisplayRecPoints &gt; Analyze an event first ... (y/n) " ; 
+    <a href="../ListOfTypes.html#Text_t">Text_t</a> answer[1] ; 
+    cin &gt;&gt; answer ; cout &lt;&lt; answer ; 
+    if ( answer == "y" ) 
+      <a href="#AliPHOSAnalyze:AnalyzeOneEvent">AnalyzeOneEvent</a>() ;
+  } 
+    if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> != -999) {
+      
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> module ; 
+      cout &lt;&lt;  "DisplayRecPoints &gt; which module (1-5,  -1: all) ? " ; 
+      cin &gt;&gt; module ; cout &lt;&lt; module &lt;&lt; endl ; 
+
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> canvasname[80];
+      sprintf(canvasname,"Digits in PHOS/EMC module # %d",module) ;
+      TCanvas * modulecanvas = new TCanvas("module", canvasname, 650, 500) ; 
+      modulecanvas-&gt;Draw() ;
+
+<b>      //=========== Creating 2d-histogram of the PHOS module</b>
+<b>      // a little bit junkie but is used to test Geom functinalities</b>
+
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> tm, tM, pm, pM ; // min and Max theta and phi covered by module   
+      
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcModuleCoverage">EmcModuleCoverage</a>(module, tm, tM, pm, pM); 
+<b>      // convert angles into coordinates local to the EMC module of interest</b>
+
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> emcModuleNumber ;
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> emcModulexm, emcModulezm ; // minimum local coordinate in a given EMCA module
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> emcModulexM, emcModulezM ; // maximum local coordinate in a given EMCA module
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:ImpactOnEmc">ImpactOnEmc</a>(tm, pm, emcModuleNumber, emcModulezm, emcModulexm) ;
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:ImpactOnEmc">ImpactOnEmc</a>(tM, pM, emcModuleNumber, emcModulezM, emcModulexM) ;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> xdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( ( emcModulexM - emcModulexm ) / <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ) ;  
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> zdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( ( emcModulezM - emcModulezm ) / <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ) ;
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> xmin = emcModulexm - <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ; 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> xMax = emcModulexM + <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ; 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> zmin = emcModulezm - <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ; 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> zMax = emcModulezM + <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ;     
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> histoname[80];
+      sprintf(histoname,"Event %d: Digits and RecPoints in module %d", <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a>, module) ;
+      TH2F * hModule = new TH2F("HistoReconstructed", histoname,
+				xdim, xmin, xMax, zdim, zmin, zMax) ;  
+      hModule-&gt;SetMaximum(2.0);
+      hModule-&gt;SetMinimum(0.0);
+      hModule-&gt;SetStats(kFALSE); 
+
+      TIter next(<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;Digits()) ;
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> energy, y, z;
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> etot=0.;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4]; <a href="../ListOfTypes.html#Int_t">Int_t</a> nDigits = 0 ;
+      <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ; 
+
+<b>      // Making 2D histogram of the EMC module</b>
+      while((digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *)next())) 
+	{  
+	  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:AbsToRelNumbering">AbsToRelNumbering</a>(digit-&gt;GetId(), relid) ;
+	  if (relid[0] == module &amp;&amp; relid[1] == 0)  
+	    {  
+	      energy = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:Calibrate">Calibrate</a>(digit-&gt;GetAmp()) ;
+              cout &lt;&lt; "Energy is " &lt;&lt; energy &lt;&lt; " and threshold is " &lt;&lt; <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:GetEmcEnergyThreshold">GetEmcEnergyThreshold</a>() &lt;&lt; endl; 
+	      if (energy &gt;  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fClu">fClu</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:GetEmcEnergyThreshold">GetEmcEnergyThreshold</a>()  ){
+		nDigits++ ;
+		etot += energy ; 
+		<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:RelPosInModule">RelPosInModule</a>(relid,y,z) ;   
+		hModule-&gt;Fill(y, z, energy) ;
+	      }
+	    } 
+	}
+      cout &lt;&lt;"DrawRecPoints &gt;  Found in module " 
+	   &lt;&lt; module &lt;&lt; " " &lt;&lt; nDigits &lt;&lt; "  digits with total energy " &lt;&lt; etot &lt;&lt; endl ;
+      hModule-&gt;Draw("col2") ;
+
+<b>      //=========== Cluster in module</b>
+
+      TClonesArray * emcRP = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:EmcClusters">EmcClusters</a>() ;
+      etot = 0.; 
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> totalnClusters = 0 ; 
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> nClusters = 0 ;
+      TIter nextemc(emcRP) ;
+      <a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> * emc ;
+      while((emc = (<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a> *)nextemc())) 
+	{
+<b>	  //	  <a href="../ListOfTypes.html#Int_t">Int_t</a> numberofprimaries ;</b>
+<b>	  //	  <a href="../ListOfTypes.html#Int_t">Int_t</a> * primariesarray = new <a href="../ListOfTypes.html#Int_t">Int_t</a>[10] ;</b>
+<b>	  //	  emc-&gt;GetPrimaries(numberofprimaries, primariesarray) ;</b>
+	  totalnClusters++ ;
+	  if ( emc-&gt;GetPHOSMod() == module )
+	    { 
+	      nClusters++ ; 
+	      energy = emc-&gt;GetTotalEnergy() ;   
+	      etot+= energy ;  
+	      emc-&gt;Draw("M") ;
+	    }
+	}
+      cout &lt;&lt; "DrawRecPoints &gt; Found " &lt;&lt; totalnClusters &lt;&lt; " EMC Clusters in PHOS" &lt;&lt; endl ; 
+      cout &lt;&lt; "DrawRecPoints &gt; Found in module " &lt;&lt; module &lt;&lt; "  " &lt;&lt; nClusters &lt;&lt; " EMC Clusters " &lt;&lt; endl ;
+      cout &lt;&lt; "DrawRecPoints &gt; total energy  " &lt;&lt; etot &lt;&lt; endl ; 
+
+      TPaveText *  pavetext = new TPaveText(22, 80, 83, 90); 
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> text[40] ; 
+      sprintf(text, "digits: %d;  clusters: %d", nDigits, nClusters) ;
+      pavetext-&gt;AddText(text) ; 
+      pavetext-&gt;Draw() ; 
+      modulecanvas-&gt;Update(); 
+ 
+<b>      //=========== Cluster in module PPSD Down</b>
+
+      TClonesArray * ppsdRP = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:PpsdClusters">PpsdClusters</a>() ;
+      etot = 0.; 
+      TIter nextPpsd(ppsdRP) ;
+      <a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> * ppsd ;
+      while((ppsd = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *)nextPpsd())) 
+	{
+	  totalnClusters++ ;
+	  if ( ppsd-&gt;GetPHOSMod() == module )
+	    { 
+	      nClusters++ ; 
+	      energy = ppsd-&gt;GetEnergy() ;   
+	      etot+=energy ;  
+	      if (!ppsd-&gt;GetUp()) ppsd-&gt;Draw("P") ;
+	    }
+	}
+      cout &lt;&lt; "DrawRecPoints &gt; Found " &lt;&lt; totalnClusters &lt;&lt; " Ppsd Down Clusters in PHOS" &lt;&lt; endl ; 
+      cout &lt;&lt; "DrawRecPoints &gt; Found in module " &lt;&lt; module &lt;&lt; "  " &lt;&lt; nClusters &lt;&lt; " Ppsd Down Clusters " &lt;&lt; endl ;
+      cout &lt;&lt; "DrawRecPoints &gt; total energy  " &lt;&lt; etot &lt;&lt; endl ; 
+
+<b>      //=========== Cluster in module PPSD Up</b>
+  
+      ppsdRP = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:PpsdClusters">PpsdClusters</a>() ;
+      etot = 0.; 
+      TIter nextPpsdUp(ppsdRP) ;
+      while((ppsd = (<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> *)nextPpsdUp())) 
+	{
+	  totalnClusters++ ;
+	  if ( ppsd-&gt;GetPHOSMod() == module )
+	    { 
+	      nClusters++ ; 
+	      energy = ppsd-&gt;GetEnergy() ;   
+	      etot+=energy ;  
+	      if (ppsd-&gt;GetUp()) ppsd-&gt;Draw("P") ;
+	    }
+	}
+  cout &lt;&lt; "DrawRecPoints &gt; Found " &lt;&lt; totalnClusters &lt;&lt; " Ppsd Up Clusters in PHOS" &lt;&lt; endl ; 
+  cout &lt;&lt; "DrawRecPoints &gt; Found in module " &lt;&lt; module &lt;&lt; "  " &lt;&lt; nClusters &lt;&lt; " Ppsd Up Clusters " &lt;&lt; endl ;
+  cout &lt;&lt; "DrawRecPoints &gt; total energy  " &lt;&lt; etot &lt;&lt; endl ; 
+    
+    } // if !-999
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:DisplayTrackSegments"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:DisplayTrackSegments">AliPHOSAnalyze::DisplayTrackSegments</a>()
+{
+<b>  // Display track segments in local PHOS-module (x, z) coordinates. </b>
+<b>  // One PHOS module at the time.</b>
+<b>  // One symbol per PHOS subsystem: EMC, upper PPSD, lower PPSD.</b>
+
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> == -999) {
+    cout &lt;&lt; "DisplayTrackSegments &gt; Analyze an event first ... (y/n) " ; 
+    <a href="../ListOfTypes.html#Text_t">Text_t</a> answer[1] ; 
+    cin &gt;&gt; answer ; cout &lt;&lt; answer ; 
+    if ( answer == "y" ) 
+      <a href="#AliPHOSAnalyze:AnalyzeOneEvent">AnalyzeOneEvent</a>() ;
+  } 
+    if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a> != -999) {
+
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> module ; 
+      cout &lt;&lt;  "DisplayTrackSegments &gt; which module (1-5,  -1: all) ? " ; 
+      cin &gt;&gt; module ; cout &lt;&lt; module &lt;&lt; endl ; 
+<b>      //=========== Creating 2d-histogram of the PHOS module</b>
+<b>      // a little bit junkie but is used to test Geom functinalities</b>
+      
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> tm, tM, pm, pM ; // min and Max theta and phi covered by module   
+      
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:EmcModuleCoverage">EmcModuleCoverage</a>(module, tm, tM, pm, pM); 
+<b>      // convert angles into coordinates local to the EMC module of interest</b>
+      
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> emcModuleNumber ;
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> emcModulexm, emcModulezm ; // minimum local coordinate in a given EMCA module
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> emcModulexM, emcModulezM ; // maximum local coordinate in a given EMCA module
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:ImpactOnEmc">ImpactOnEmc</a>(tm, pm, emcModuleNumber, emcModulezm, emcModulexm) ;
+      <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:ImpactOnEmc">ImpactOnEmc</a>(tM, pM, emcModuleNumber, emcModulezM, emcModulexM) ;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> xdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( ( emcModulexM - emcModulexm ) / <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ) ;  
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> zdim = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)( ( emcModulezM - emcModulezm ) / <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ) ;
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> xmin = emcModulexm - <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ; 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> xMax = emcModulexM + <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ; 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> zmin = emcModulezm - <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ; 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> zMax = emcModulezM + <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ;     
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> histoname[80];
+      sprintf(histoname,"Event %d: Track Segments in module %d", <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fEvt">fEvt</a>, module) ; 
+      TH2F * histotrack = new TH2F("histotrack",  histoname, 
+				   xdim, xmin, xMax, zdim, zmin, zMax) ;  
+      histotrack-&gt;SetStats(kFALSE); 
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> canvasname[80];
+      sprintf(canvasname,"Track segments in PHOS/EMC-PPSD module # %d", module) ;
+      TCanvas * trackcanvas = new TCanvas("TrackSegmentCanvas", canvasname, 650, 500) ; 
+      histotrack-&gt;Draw() ; 
+
+      <a href="../ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsegl = <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fPHOS">fPHOS</a>-&gt;<a href=".././AliPHOSv0.html#AliPHOSv0:TrackSegments">TrackSegments</a>() ;
+      <a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * trseg ;
+ 
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> nTrackSegments = trsegl-&gt;GetEntries() ;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> index ;
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> etot = 0 ;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> nTrackSegmentsInModule = 0 ; 
+      for(index = 0; index &lt; nTrackSegments ; index++){
+	trseg = (<a href=".././AliPHOSTrackSegment.html">AliPHOSTrackSegment</a> * )trsegl-&gt;At(index) ;
+	etot+= trseg-&gt;GetEnergy() ;
+	if ( trseg-&gt;GetPHOSMod() == module ) { 
+	  nTrackSegmentsInModule++ ; 
+	  trseg-&gt;Draw("P");
+	}
+      } 
+      <a href="../ListOfTypes.html#Text_t">Text_t</a> text[80] ; 
+      sprintf(text, "track segments: %d", nTrackSegmentsInModule) ;
+      TPaveText *  pavetext = new TPaveText(22, 80, 83, 90); 
+      pavetext-&gt;AddText(text) ; 
+      pavetext-&gt;Draw() ; 
+      trackcanvas-&gt;Update() ; 
+      cout &lt;&lt; "DisplayTrackSegments &gt; Found " &lt;&lt; trsegl-&gt;GetEntries() &lt;&lt; " Track segments with total energy "&lt;&lt; etot &lt;&lt; endl ;
+    
+   }
+}
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:OpenRootFile"> </a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:OpenRootFile">AliPHOSAnalyze::OpenRootFile</a>(<a href="../ListOfTypes.html#Text_t">Text_t</a> * name)
+{
+<b>  // Open the root file named "name"</b>
+  
+  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>   = new TFile(name, "update") ;
+  return  <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>-&gt;IsOpen() ; 
+}
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSAnalyze:SavingHistograms"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:SavingHistograms">AliPHOSAnalyze::SavingHistograms</a>()
+{
+<b>  // Saves the histograms in a root file named "name.analyzed" </b>
+
+  <a href="../ListOfTypes.html#Text_t">Text_t</a> outputname[80] ;
+  sprintf(outputname,"%s.analyzed",<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fRootFile">fRootFile</a>-&gt;GetName());
+  TFile output(outputname,"RECREATE");
+  output.cd();
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcDigit">fhEmcDigit</a> )         
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcDigit">fhEmcDigit</a>-&gt;Write()  ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoDigit">fhVetoDigit</a> )  
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoDigit">fhVetoDigit</a>-&gt;Write()  ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorDigit">fhConvertorDigit</a> ) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorDigit">fhConvertorDigit</a>-&gt;Write()   ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcCluster">fhEmcCluster</a>   )
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhEmcCluster">fhEmcCluster</a>-&gt;Write()   ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoCluster">fhVetoCluster</a> ) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhVetoCluster">fhVetoCluster</a>-&gt;Write()   ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorCluster">fhConvertorCluster</a> )
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorCluster">fhConvertorCluster</a>-&gt;Write()  ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorEmc">fhConvertorEmc</a> ) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhConvertorEmc">fhConvertorEmc</a>-&gt;Write()  ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonEnergy">fhPhotonEnergy</a>)    
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonEnergy">fhPhotonEnergy</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionX">fhPhotonPositionX</a>)  
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionX">fhPhotonPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionY">fhPhotonPositionY</a>)  
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonPositionX">fhPhotonPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronEnergy">fhElectronEnergy</a>)  
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronEnergy">fhElectronEnergy</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionX">fhElectronPositionX</a>)
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionX">fhElectronPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionY">fhElectronPositionY</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhElectronPositionX">fhElectronPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronEnergy">fhNeutralHadronEnergy</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronEnergy">fhNeutralHadronEnergy</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionX">fhNeutralHadronPositionX</a>)
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionX">fhNeutralHadronPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionY">fhNeutralHadronPositionY</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralHadronPositionX">fhNeutralHadronPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMEnergy">fhNeutralEMEnergy</a>)   
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMEnergy">fhNeutralEMEnergy</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionX">fhNeutralEMPositionX</a>)
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionX">fhNeutralEMPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionY">fhNeutralEMPositionY</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhNeutralEMPositionX">fhNeutralEMPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronEnergy">fhChargedHadronEnergy</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronEnergy">fhChargedHadronEnergy</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionX">fhChargedHadronPositionX</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionX">fhChargedHadronPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionY">fhChargedHadronPositionY</a>)
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhChargedHadronPositionX">fhChargedHadronPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronEnergy">fhPhotonHadronEnergy</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronEnergy">fhPhotonHadronEnergy</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionX">fhPhotonHadronPositionX</a>) 
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionX">fhPhotonHadronPositionX</a>-&gt;Write() ;
+  if (<a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionY">fhPhotonHadronPositionY</a>)
+    <a href=".././AliPHOSAnalyze.html#AliPHOSAnalyze:fhPhotonHadronPositionX">fhPhotonHadronPositionX</a>-&gt;Write() ;
+
+  output.Write();
+  output.Close();
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:48 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSClusterizerv1</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSClusterizerv1</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSClusterizerv1:description>class description</a> - <a href="src/AliPHOSClusterizerv1.cxx.html">source file</a> - <a href="AliPHOSClusterizerv1_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSClusterizerv1" href="AliPHOSClusterizerv1.h">AliPHOSClusterizerv1</a> : public <a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a></h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->      <a href="./AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:AliPHOSClusterizerv1">AliPHOSClusterizerv1</a><!--PLAIN-->()
+<!--TAB6-->      <a href="./AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:AliPHOSClusterizerv1">AliPHOSClusterizerv1</a><!--PLAIN-->(<a href="./AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a>&amp;)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:~AliPHOSClusterizerv1">~AliPHOSClusterizerv1</a><!--PLAIN-->()
+<!--TAB6-->                     <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:AreNeighbours">AreNeighbours</a><!--PLAIN-->(<a href="./AliPHOSDigit.html">AliPHOSDigit</a>* d1, <a href="./AliPHOSDigit.html">AliPHOSDigit</a>* d2)
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:Calibrate">Calibrate</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> Amp)
+<!--TAB6-->                   TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->                      <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:FillandSort">FillandSort</a><!--PLAIN-->(const <a href="ListOfTypes.html#DigitsList">DigitsList</a>* dl, TObjArray* tl)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetCalibrationParameters">GetCalibrationParameters</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a>&amp; A, <a href="ListOfTypes.html#Float_t">Float_t</a>&amp; B)
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetEmcClusteringThreshold">GetEmcClusteringThreshold</a><!--PLAIN-->()
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetEmcEnergyThreshold">GetEmcEnergyThreshold</a><!--PLAIN-->()
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetLocalMaxCut">GetLocalMaxCut</a><!--PLAIN-->()
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetLogWeightCut">GetLogWeightCut</a><!--PLAIN-->()
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetNumberOfClustersFound">GetNumberOfClustersFound</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a>* numb)
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetPpsdClusteringThreshold">GetPpsdClusteringThreshold</a><!--PLAIN-->()
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:GetPpsdEnergyThreshold">GetPpsdEnergyThreshold</a><!--PLAIN-->()
+<!--TAB6-->           virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->            virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:IsInEmc">IsInEmc</a><!--PLAIN-->(<a href="./AliPHOSDigit.html">AliPHOSDigit</a>* digit)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:MakeClusters">MakeClusters</a><!--PLAIN-->(const <a href="ListOfTypes.html#DigitsList">DigitsList</a>* dl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* emcl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* ppsdl)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:PrintParameters">PrintParameters</a><!--PLAIN-->()
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:SetCalibrationParameters">SetCalibrationParameters</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> A, <a href="ListOfTypes.html#Float_t">Float_t</a> B)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:SetEmcClusteringThreshold">SetEmcClusteringThreshold</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> cluth)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:SetEmcEnergyThreshold">SetEmcEnergyThreshold</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> enth)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:SetLocalMaxCut">SetLocalMaxCut</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> cut)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:SetLogWeightCut">SetLogWeightCut</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> w)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:SetPpsdClusteringThreshold">SetPpsdClusteringThreshold</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> cluth)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:SetPpsdEnergyThreshold">SetPpsdEnergyThreshold</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> enth)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->              virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSClusterizerv1:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSClusterizerv1:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fA">fA</a><!--PLAIN-->                        <!--TAB--><i><a name="Title:fA">offset of the energy calibration</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fB">fB</a><!--PLAIN-->                        <!--TAB--><i><a name="Title:fB">gain of the energy calibration</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fEmcClusteringThreshold">fEmcClusteringThreshold</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fEmcClusteringThreshold">minimum energy to include a EMC digit in a cluster</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fEmcEnergyThreshold">fEmcEnergyThreshold</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fEmcEnergyThreshold">minimum energy of EMC digit to be considered</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fLocMaxCut">fLocMaxCut</a><!--PLAIN-->                <!--TAB--><i><a name="Title:fLocMaxCut">minimum energy difference to distinguish local maxima in a cluster</a></i>
+<!--TAB6-->        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fNumberOfEmcClusters">fNumberOfEmcClusters</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fNumberOfEmcClusters">number of EMC clusters found </a></i>
+<!--TAB6-->        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fNumberOfPpsdClusters">fNumberOfPpsdClusters</a><!--PLAIN-->     <!--TAB--><i><a name="Title:fNumberOfPpsdClusters">number of PPSD clusters found</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fPpsdClusteringThreshold">fPpsdClusteringThreshold</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPpsdClusteringThreshold">minimum energy to include a PPSD digit in a cluster</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fPpsdEnergyThreshold">fPpsdEnergyThreshold</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fPpsdEnergyThreshold">minimum energy of PPSD digit to be considered</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSClusterizerv1:fW0">fW0</a><!--PLAIN-->                       <!--TAB--><i><a name="Title:fW0">logarithmic weight for the cluster center of gravity calculation</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSClusterizerv1:description">Class Description</a></h2>
+<pre>  Implementation version 1 of the clusterization algorithm
+
+*-- Author: Yves Schutz (SUBATECH)
+
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSClusterizerv1:AliPHOSClusterizerv1" href="src/AliPHOSClusterizerv1.cxx.html#AliPHOSClusterizerv1:AliPHOSClusterizerv1">AliPHOSClusterizerv1</a>()
+<br>
+<pre> default ctor (to be used)
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSClusterizerv1:AreNeighbours" href="src/AliPHOSClusterizerv1.cxx.html#AliPHOSClusterizerv1:AreNeighbours">AreNeighbours</a>(<a href="./AliPHOSDigit.html">AliPHOSDigit</a> * d1, <a href="./AliPHOSDigit.html">AliPHOSDigit</a> * d2)
+<br>
+<pre> Gives the neighbourness of two digits = 0 are not neighbour but continue searching
+                                       = 1 are neighbour
+                                       = 2 are not neighbour but do not continue searching
+ neighbours are defined as digits having at least common vertex
+ The order of d1 and d2 is important: first (d1) should be a digit already in a cluster
+                                      which is compared to a digit (d2)  not yet in a cluster
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:FillandSort" href="src/AliPHOSClusterizerv1.cxx.html#AliPHOSClusterizerv1:FillandSort">FillandSort</a>(const <a href="ListOfTypes.html#DigitsList">DigitsList</a> * dl, TObjArray * tl) 
+<br>
+<pre> Copies the digits with energy above thershold and sorts the list
+ according to increasing Id number
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:GetNumberOfClustersFound" href="src/AliPHOSClusterizerv1.cxx.html#AliPHOSClusterizerv1:GetNumberOfClustersFound">GetNumberOfClustersFound</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> * numb) 
+<br>
+<pre> Fills numb with the number of EMC  (numb[0]) clusters found
+                               PPSD (numb[1]) clusters found
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSClusterizerv1:IsInEmc" href="src/AliPHOSClusterizerv1.cxx.html#AliPHOSClusterizerv1:IsInEmc">IsInEmc</a>(<a href="./AliPHOSDigit.html">AliPHOSDigit</a> * digit) 
+<br>
+<pre> Tells if (true) or not (false) the digit is in a PHOS-EMC module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:MakeClusters" href="src/AliPHOSClusterizerv1.cxx.html#AliPHOSClusterizerv1:MakeClusters">MakeClusters</a>(const <a href="ListOfTypes.html#DigitsList">DigitsList</a> * dl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * emcl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdl)
+<br>
+<pre> Steering method to construct the clusters stored in a list of Reconstructed Points
+ A cluster is defined as a list of neighbour digits
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:PrintParameters" href="src/AliPHOSClusterizerv1.cxx.html#AliPHOSClusterizerv1:PrintParameters">PrintParameters</a>() 
+<br>
+<pre> Print the energy thresholds
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSClusterizerv1:Calibrate" href="AliPHOSClusterizerv1.h">Calibrate</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> Amp)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:GetCalibrationParameters" href="AliPHOSClusterizerv1.h">GetCalibrationParameters</a>(<a href="ListOfTypes.html#Float_t">Float_t</a>&amp; A, <a href="ListOfTypes.html#Float_t">Float_t</a>&amp; B)
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSClusterizerv1:GetEmcClusteringThreshold" href="AliPHOSClusterizerv1.h">GetEmcClusteringThreshold</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSClusterizerv1:GetEmcEnergyThreshold" href="AliPHOSClusterizerv1.h">GetEmcEnergyThreshold</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSClusterizerv1:GetLocalMaxCut" href="AliPHOSClusterizerv1.h">GetLocalMaxCut</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSClusterizerv1:GetLogWeightCut" href="AliPHOSClusterizerv1.h">GetLogWeightCut</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSClusterizerv1:GetPpsdClusteringThreshold" href="AliPHOSClusterizerv1.h">GetPpsdClusteringThreshold</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSClusterizerv1:GetPpsdEnergyThreshold" href="AliPHOSClusterizerv1.h">GetPpsdEnergyThreshold</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:SetCalibrationParameters" href="AliPHOSClusterizerv1.h">SetCalibrationParameters</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> A, <a href="ListOfTypes.html#Float_t">Float_t</a> B)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:SetEmcClusteringThreshold" href="AliPHOSClusterizerv1.h">SetEmcClusteringThreshold</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> cluth)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:SetEmcEnergyThreshold" href="AliPHOSClusterizerv1.h">SetEmcEnergyThreshold</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> enth)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:SetLocalMaxCut" href="AliPHOSClusterizerv1.h">SetLocalMaxCut</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> cut)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:SetLogWeightCut" href="AliPHOSClusterizerv1.h">SetLogWeightCut</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> w)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:SetPpsdClusteringThreshold" href="AliPHOSClusterizerv1.h">SetPpsdClusteringThreshold</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> cluth)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:SetPpsdEnergyThreshold" href="AliPHOSClusterizerv1.h">SetPpsdEnergyThreshold</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> enth)
+<!--INLINE FUNCTION--><!--TAB6-->                     TClass* <a name="AliPHOSClusterizerv1:Class" href="AliPHOSClusterizerv1.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     TClass* <a name="AliPHOSClusterizerv1:IsA" href="AliPHOSClusterizerv1.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:ShowMembers" href="AliPHOSClusterizerv1.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:Streamer" href="AliPHOSClusterizerv1.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a> <a name="AliPHOSClusterizerv1:AliPHOSClusterizerv1" href="AliPHOSClusterizerv1.h">AliPHOSClusterizerv1</a>(<a href="./AliPHOSClusterizerv1.html">AliPHOSClusterizerv1</a>&amp;)
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSClusterizerv1:~AliPHOSClusterizerv1" href="AliPHOSClusterizerv1.h">~AliPHOSClusterizerv1</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

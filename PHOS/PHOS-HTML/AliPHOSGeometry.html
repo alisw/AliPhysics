@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:49 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSGeometry</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSGeometry</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSGeometry:description>class description</a> - <a href="src/AliPHOSGeometry.cxx.html">source file</a> - <a href="AliPHOSGeometry_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSGeometry" href="AliPHOSGeometry.h">AliPHOSGeometry</a> : public AliGeometry</h2>
+<pre>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->      <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:SetPHOSAngles">SetPHOSAngles</a><!--PLAIN-->()
+
+<!--TAB4-->    <b>protected:</b><br>
+<!--TAB6-->      <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:AliPHOSGeometry">AliPHOSGeometry</a><!--PLAIN-->(const <a href="ListOfTypes.html#Text_t">Text_t</a>* name, const <a href="ListOfTypes.html#Text_t">Text_t</a>* title)
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:Init">Init</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:InitPHOS">InitPHOS</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:InitPPSD">InitPPSD</a><!--PLAIN-->()
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->       <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:AliPHOSGeometry">AliPHOSGeometry</a><!--PLAIN-->()
+<!--TAB6-->       <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:AliPHOSGeometry">AliPHOSGeometry</a><!--PLAIN-->(<a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>&amp;)
+<!--TAB6-->          virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:~AliPHOSGeometry">~AliPHOSGeometry</a><!--PLAIN-->()
+<!--TAB6-->                <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:AbsToRelNumbering">AbsToRelNumbering</a><!--PLAIN-->(const <a href="ListOfTypes.html#Int_t">Int_t</a> AbsId, <a href="ListOfTypes.html#Int_t">Int_t</a>* RelId)
+<!--TAB6-->               TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:EmcModuleCoverage">EmcModuleCoverage</a><!--PLAIN-->(const <a href="ListOfTypes.html#Int_t">Int_t</a> m, <a href="ListOfTypes.html#Double_t">Double_t</a>&amp; tm, <a href="ListOfTypes.html#Double_t">Double_t</a>&amp; tM, <a href="ListOfTypes.html#Double_t">Double_t</a>&amp; pm, <a href="ListOfTypes.html#Double_t">Double_t</a>&amp; pM, <a href="ListOfTypes.html#Option_t">Option_t</a>* opt = kRadian)
+<!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:EmcXtalCoverage">EmcXtalCoverage</a><!--PLAIN-->(<a href="ListOfTypes.html#Double_t">Double_t</a>&amp; theta, <a href="ListOfTypes.html#Double_t">Double_t</a>&amp; phi, <a href="ListOfTypes.html#Option_t">Option_t</a>* opt = kRadian)
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetConversionGap">GetConversionGap</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetCrystalHolderThickness">GetCrystalHolderThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetGapBetweenCrystals">GetGapBetweenCrystals</a><!--PLAIN-->() const
+<!--TAB6-->          virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetGlobal">GetGlobal</a><!--PLAIN-->(const AliRecPoint* RecPoint, TVector3&amp; gpos, TMatrix&amp; gmat)
+<!--TAB6-->          virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetGlobal">GetGlobal</a><!--PLAIN-->(const AliRecPoint* RecPoint, TVector3&amp; gpos)
+<!--TAB6-->      <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetInstance">GetInstance</a><!--PLAIN-->(const <a href="ListOfTypes.html#Text_t">Text_t</a>* name, const <a href="ListOfTypes.html#Text_t">Text_t</a>* title)
+<!--TAB6-->      <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetInstance">GetInstance</a><!--PLAIN-->()
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetIPtoTopLidDistance">GetIPtoTopLidDistance</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetLidThickness">GetLidThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetLowerTextolitPlateThickness">GetLowerTextolitPlateThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetLowerThermoPlateThickness">GetLowerThermoPlateThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a><!--PLAIN-->() const
+<!--TAB6-->                 <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetNModules">GetNModules</a><!--PLAIN-->() const
+<!--TAB6-->                 <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetNPhi">GetNPhi</a><!--PLAIN-->() const
+<!--TAB6-->                 <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a><!--PLAIN-->() const
+<!--TAB6-->                 <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a><!--PLAIN-->() const
+<!--TAB6-->                 <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a><!--PLAIN-->() const
+<!--TAB6-->                 <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a><!--PLAIN-->() const
+<!--TAB6-->                 <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetNZ">GetNZ</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetOuterBoxThickness">GetOuterBoxThickness</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetPCThickness">GetPCThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetPhiDisplacement">GetPhiDisplacement</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetPinDiodeSize">GetPinDiodeSize</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetSupportPlateThickness">GetSupportPlateThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetTextolitBoxThickness">GetTextolitBoxThickness</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:GetZDisplacement">GetZDisplacement</a><!--PLAIN-->() const
+<!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:ImpactOnEmc">ImpactOnEmc</a><!--PLAIN-->(const <a href="ListOfTypes.html#Double_t">Double_t</a> theta, const <a href="ListOfTypes.html#Double_t">Double_t</a> phi, <a href="ListOfTypes.html#Int_t">Int_t</a>&amp; ModuleNumber, <a href="ListOfTypes.html#Double_t">Double_t</a>&amp; x, <a href="ListOfTypes.html#Double_t">Double_t</a>&amp; z)
+<!--TAB6-->       virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->                <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:IsInitialized">IsInitialized</a><!--PLAIN-->() const
+<!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:RelPosInAlice">RelPosInAlice</a><!--PLAIN-->(const <a href="ListOfTypes.html#Int_t">Int_t</a> AbsId, TVector3&amp; pos)
+<!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:RelPosInModule">RelPosInModule</a><!--PLAIN-->(const <a href="ListOfTypes.html#Int_t">Int_t</a>* RelId, <a href="ListOfTypes.html#Float_t">Float_t</a>&amp; y, <a href="ListOfTypes.html#Float_t">Float_t</a>&amp; z)
+<!--TAB6-->                <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:RelToAbsNumbering">RelToAbsNumbering</a><!--PLAIN-->(const <a href="ListOfTypes.html#Int_t">Int_t</a>* RelId, <a href="ListOfTypes.html#Int_t">Int_t</a>&amp; AbsId)
+<!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:SetLeadConverterThickness">SetLeadConverterThickness</a><!--PLAIN-->(<a href="ListOfTypes.html#Float_t">Float_t</a> e)
+<!--TAB6-->          virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->          virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSGeometry:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSGeometry:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fAirFilledBoxSize">fAirFilledBoxSize[3]</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fAirFilledBoxSize">Air filled box containing one module</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fAirThickness">fAirThickness[3]</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fAirThickness">Space filled with air between the module box and the Textolit box</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fCrystalSupportHeight">fCrystalSupportHeight</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fCrystalSupportHeight">Height of the support of the crystal    </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fCrystalWrapThickness">fCrystalWrapThickness</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fCrystalWrapThickness">Thickness of Tyvek wrapping the crystal</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fCrystalHolderThickness">fCrystalHolderThickness</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fCrystalHolderThickness">Titanium holder of the crystal</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fGapBetweenCrystals">fGapBetweenCrystals</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fGapBetweenCrystals">Total Gap between two adjacent crystals </a></i>
+<!--TAB6-->                       <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fInit">fInit</a><!--PLAIN-->                         <!--TAB--><i><a name="Title:fInit">Tells if geometry has been succesfully set up </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fIPtoOuterCoverDistance">fIPtoOuterCoverDistance</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fIPtoOuterCoverDistance">Distances from interaction point to outer cover </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fIPtoCrystalSurface">fIPtoCrystalSurface</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fIPtoCrystalSurface">Distances from interaction point to Xtal surface</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fModuleBoxThickness">fModuleBoxThickness</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fModuleBoxThickness">Thickness of the thermo insulating box containing one crystals module </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fLowerTextolitPlateThickness">fLowerTextolitPlateThickness</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fLowerTextolitPlateThickness">Thickness of lower textolit plate</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fLowerThermoPlateThickness">fLowerThermoPlateThickness</a><!--PLAIN-->    <!--TAB--><i><a name="Title:fLowerThermoPlateThickness">Thickness of lower thermo insulating plate</a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fNModules">fNModules</a><!--PLAIN-->                     <!--TAB--><i><a name="Title:fNModules">Number of modules constituing PHOS</a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fNPhi">fNPhi</a><!--PLAIN-->                         <!--TAB--><i><a name="Title:fNPhi">Number of crystal units in X (phi) direction</a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fNZ">fNZ</a><!--PLAIN-->                           <!--TAB--><i><a name="Title:fNZ">Number of crystal units in Z direction</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fOuterBoxSize">fOuterBoxSize[3]</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fOuterBoxSize">Size of the outer  thermo insulating foam box</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fOuterBoxThickness">fOuterBoxThickness[3]</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fOuterBoxThickness">Thickness of the outer thermo insulating foam box</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fPHOSAngle">fPHOSAngle[4]</a><!--PLAIN-->                 <!--TAB--><i><a name="Title:fPHOSAngle">Position angles of modules</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fPinDiodeSize">fPinDiodeSize[3]</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fPinDiodeSize">Size of the PIN Diode </a></i>
+<!--TAB6-->                   TObjArray* <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fRotMatrixArray">fRotMatrixArray</a><!--PLAIN-->               <!--TAB--><i><a name="Title:fRotMatrixArray">Liste of rotation matrices (one per phos module)</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fSecondUpperPlateThickness">fSecondUpperPlateThickness</a><!--PLAIN-->    <!--TAB--><i><a name="Title:fSecondUpperPlateThickness">Thickness of  upper polystyrene foam plate</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fSupportPlateThickness">fSupportPlateThickness</a><!--PLAIN-->        <!--TAB--><i><a name="Title:fSupportPlateThickness">Thickness of the Aluminium support plate  </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fUpperCoolingPlateThickness">fUpperCoolingPlateThickness</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fUpperCoolingPlateThickness">Thickness of the upper cooling plate </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fUpperPlateThickness">fUpperPlateThickness</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fUpperPlateThickness">Thickness of the uper thermo insulating foam plate </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fTextolitBoxSize">fTextolitBoxSize[3]</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fTextolitBoxSize">Size of the Textolit box inside the insulating foam box</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fTextolitBoxThickness">fTextolitBoxThickness[3]</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fTextolitBoxThickness">Thicknesses of th Textolit box</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fXtlSize">fXtlSize[3]</a><!--PLAIN-->                   <!--TAB--><i><a name="Title:fXtlSize">PWO4 crystal dimensions</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fAnodeThickness">fAnodeThickness</a><!--PLAIN-->               <!--TAB--><i><a name="Title:fAnodeThickness">Thickness of the copper layer which makes the anode </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fAvalancheGap">fAvalancheGap</a><!--PLAIN-->                 <!--TAB--><i><a name="Title:fAvalancheGap">Thickness of the gas in the avalanche stage</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fCathodeThickness">fCathodeThickness</a><!--PLAIN-->             <!--TAB--><i><a name="Title:fCathodeThickness">Thickeness of composite material ensuring rigidity of cathode</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fCompositeThickness">fCompositeThickness</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fCompositeThickness">Thickeness of composite material ensuring rigidity of anode</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fConversionGap">fConversionGap</a><!--PLAIN-->                <!--TAB--><i><a name="Title:fConversionGap">Thickness of the gas in the conversion stage</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fIPtoTopLidDistance">fIPtoTopLidDistance</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fIPtoTopLidDistance">Distance from interaction point to top lid of PPSD</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fLeadConverterThickness">fLeadConverterThickness</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fLeadConverterThickness">Thickness of the Lead converter </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fLeadToMicro2Gap">fLeadToMicro2Gap</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fLeadToMicro2Gap">Thickness of the air gap between the Lead and Micromegas 2        </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fLidThickness">fLidThickness</a><!--PLAIN-->                 <!--TAB--><i><a name="Title:fLidThickness">Thickness of top lid </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fMicromegas1Thickness">fMicromegas1Thickness</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fMicromegas1Thickness">Thickness of the first downstream Micromegas </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fMicromegas2Thickness">fMicromegas2Thickness</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fMicromegas2Thickness">Thickness of the second downstream Micromegas </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fMicromegasWallThickness">fMicromegasWallThickness</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fMicromegasWallThickness">Thickness of the Micromegas leak tight box</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fMicro1ToLeadGap">fMicro1ToLeadGap</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fMicro1ToLeadGap">Thickness of the air gap between Micromegas 1 and the Lead</a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fNumberOfPadsPhi">fNumberOfPadsPhi</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fNumberOfPadsPhi">Number of pads on a micromegas module ;  </a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fNumberOfPadsZ">fNumberOfPadsZ</a><!--PLAIN-->                <!--TAB--><i><a name="Title:fNumberOfPadsZ">Number of pads on a micromegas module ;  </a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fNumberOfModulesPhi">fNumberOfModulesPhi</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fNumberOfModulesPhi">Number of micromegas modules in phi</a></i>
+<!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fNumberOfModulesZ">fNumberOfModulesZ</a><!--PLAIN-->             <!--TAB--><i><a name="Title:fNumberOfModulesZ">Number of micromegas modules in z</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fPCThickness">fPCThickness</a><!--PLAIN-->                  <!--TAB--><i><a name="Title:fPCThickness">Thickness of the printed circuit board of the anode   </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fPhiDisplacement">fPhiDisplacement</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fPhiDisplacement">Phi displacement of micromegas1 with respect to micromegas2  </a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fPPSDBoxSize">fPPSDBoxSize[3]</a><!--PLAIN-->               <!--TAB--><i><a name="Title:fPPSDBoxSize">Size of large box which contains PPSD; matches PHOS module size</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fPPSDModuleSize">fPPSDModuleSize[3]</a><!--PLAIN-->            <!--TAB--><i><a name="Title:fPPSDModuleSize">Size of an individual micromegas module</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fZDisplacement">fZDisplacement</a><!--PLAIN-->                <!--TAB--><i><a name="Title:fZDisplacement">Z displacement of micromegas1 with respect to micromegas2  </a></i>
+<!--TAB6-->      static <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a name="AliPHOSGeometry:fGeom">fGeom</a><!--PLAIN-->                         <!--TAB--><i><a name="Title:fGeom">pointer to the unique instance of the singleton </a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSGeometry:description">Class Description</a></h2>
+<pre> Geometry class  for PHOS : singleton
+ The EMC modules are parametrized so that any configuration can be easily implemented
+ The title is used to identify the type of CPV used. So far only PPSD implemented
+
+*-- Author: Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSGeometry:~AliPHOSGeometry" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:~AliPHOSGeometry">~AliPHOSGeometry</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> dtor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSGeometry:AbsToRelNumbering" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:AbsToRelNumbering">AbsToRelNumbering</a>(const <a href="ListOfTypes.html#Int_t">Int_t</a> AbsId, <a href="ListOfTypes.html#Int_t">Int_t</a> * relid)
+<br>
+<pre> Converts the absolute numbering into the following array
+  relid[0] = PHOS Module number 1:<a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a>
+  relid[1] = 0 if PbW04
+           = PPSD Module number 1:<a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesPhi">fNumberOfModulesPhi</a>*<a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesZ">fNumberOfModulesZ</a>*2 (2-&gt;up and bottom level)
+  relid[2] = Row number inside a PHOS or PPSD module
+  relid[3] = Column number inside a PHOS or PPSD module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:EmcModuleCoverage" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:EmcModuleCoverage">EmcModuleCoverage</a>(const <a href="ListOfTypes.html#Int_t">Int_t</a> mod, <a href="ListOfTypes.html#Double_t">Double_t</a> &amp; tm, <a href="ListOfTypes.html#Double_t">Double_t</a> &amp; tM, <a href="ListOfTypes.html#Double_t">Double_t</a> &amp; pm, <a href="ListOfTypes.html#Double_t">Double_t</a> &amp; pM, <a href="ListOfTypes.html#Option_t">Option_t</a> * opt) 
+<br>
+<pre> calculates the angular coverage in theta and phi of a EMC module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:EmcXtalCoverage" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:EmcXtalCoverage">EmcXtalCoverage</a>(<a href="ListOfTypes.html#Double_t">Double_t</a> &amp; theta, <a href="ListOfTypes.html#Double_t">Double_t</a> &amp; phi, <a href="ListOfTypes.html#Option_t">Option_t</a> * opt) 
+<br>
+<pre> calculates the angular coverage in theta and phi of a single crystal in a EMC module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:ImpactOnEmc" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:ImpactOnEmc">ImpactOnEmc</a>(const <a href="ListOfTypes.html#Double_t">Double_t</a> theta, const <a href="ListOfTypes.html#Double_t">Double_t</a> phi, <a href="ListOfTypes.html#Int_t">Int_t</a> &amp; ModuleNumber, <a href="ListOfTypes.html#Double_t">Double_t</a> &amp; z, <a href="ListOfTypes.html#Double_t">Double_t</a> &amp; x) 
+<br>
+<pre> calculates the impact coordinates of a neutral particle
+ emitted in direction theta and phi in ALICE
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:GetGlobal" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:GetGlobal">GetGlobal</a>(const AliRecPoint* RecPoint, TVector3 &amp; gpos, TMatrix &amp; gmat)
+<br>
+<pre> Calculates the ALICE global coordinates of a RecPoint and the error matrix
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:GetGlobal" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:GetGlobal">GetGlobal</a>(const AliRecPoint* RecPoint, TVector3 &amp; gpos)
+<br>
+<pre> Calculates the ALICE global coordinates of a RecPoint
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:Init" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:Init">Init</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Initializes the PHOS parameters
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:InitPHOS" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:InitPHOS">InitPHOS</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Initializes the EMC parameters
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:InitPPSD" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:InitPPSD">InitPPSD</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Initializes the PPSD parameters
+</pre><hr>
+<!--FUNCTION--><a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <a name="AliPHOSGeometry:GetInstance" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:GetInstance">GetInstance</a>() 
+<br>
+<pre> Returns the pointer of the unique instance
+</pre><hr>
+<!--FUNCTION--><a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <a name="AliPHOSGeometry:GetInstance" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:GetInstance">GetInstance</a>(const <a href="ListOfTypes.html#Text_t">Text_t</a>* name, const <a href="ListOfTypes.html#Text_t">Text_t</a>* title) 
+<br>
+<pre> Returns the pointer of the unique instance
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSGeometry:RelToAbsNumbering" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:RelToAbsNumbering">RelToAbsNumbering</a>(const <a href="ListOfTypes.html#Int_t">Int_t</a> * relid, <a href="ListOfTypes.html#Int_t">Int_t</a> &amp;  AbsId)
+<br>
+<pre> Converts the relative numbering into the absolute numbering
+  AbsId = 1:<a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> * <a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNPhi">fNPhi</a> * <a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNZ">fNZ</a>  -&gt; PbWO4
+  AbsId = 1:<a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNModules">fNModules</a> * 2 * (<a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesPhi">fNumberOfModulesPhi</a> * <a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfModulesZ">fNumberOfModulesZ</a>) * <a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfPadsPhi">fNumberOfPadsPhi</a> * <a href="./AliPHOSGeometry.html#AliPHOSGeometry:fNumberOfPadsZ">fNumberOfPadsZ</a> -&gt; PPSD
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:RelPosInAlice" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:RelPosInAlice">RelPosInAlice</a>(const <a href="ListOfTypes.html#Int_t">Int_t</a> id, TVector3 &amp; pos ) 
+<br>
+<pre> Converts the absolute numbering into the global ALICE coordinates
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:RelPosInModule" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:RelPosInModule">RelPosInModule</a>(const <a href="ListOfTypes.html#Int_t">Int_t</a> * relid, <a href="ListOfTypes.html#Float_t">Float_t</a> &amp; x, <a href="ListOfTypes.html#Float_t">Float_t</a> &amp; z) 
+<br>
+<pre> Converts the relative numbering into the local PHOS-module (x, z) coordinates
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:SetPHOSAngles" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:SetPHOSAngles">SetPHOSAngles</a>() 
+<br>
+<pre> Calculates the position in ALICE of the PHOS modules
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:SetLeadConverterThickness" href="src/AliPHOSGeometry.cxx.html#AliPHOSGeometry:SetLeadConverterThickness">SetLeadConverterThickness</a>(<a href="ListOfTypes.html#Float_t">Float_t</a> e) 
+<br>
+<pre> should ultimately disappear
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a> <a name="AliPHOSGeometry:AliPHOSGeometry" href="AliPHOSGeometry.h">AliPHOSGeometry</a>()
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a> <a name="AliPHOSGeometry:AliPHOSGeometry" href="AliPHOSGeometry.h">AliPHOSGeometry</a>(const <a href="ListOfTypes.html#Text_t">Text_t</a>* name, const <a href="ListOfTypes.html#Text_t">Text_t</a>* title)
+<!--INLINE FUNCTION--><!--TAB6-->                 <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSGeometry:IsInitialized" href="AliPHOSGeometry.h">IsInitialized</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetAirFilledBoxSize" href="AliPHOSGeometry.h">GetAirFilledBoxSize</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetCrystalHolderThickness" href="AliPHOSGeometry.h">GetCrystalHolderThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetCrystalSize" href="AliPHOSGeometry.h">GetCrystalSize</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetCrystalSupportHeight" href="AliPHOSGeometry.h">GetCrystalSupportHeight</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetCrystalWrapThickness" href="AliPHOSGeometry.h">GetCrystalWrapThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetGapBetweenCrystals" href="AliPHOSGeometry.h">GetGapBetweenCrystals</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetIPtoCrystalSurface" href="AliPHOSGeometry.h">GetIPtoCrystalSurface</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetIPtoOuterCoverDistance" href="AliPHOSGeometry.h">GetIPtoOuterCoverDistance</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetIPtoTopLidDistance" href="AliPHOSGeometry.h">GetIPtoTopLidDistance</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetLowerThermoPlateThickness" href="AliPHOSGeometry.h">GetLowerThermoPlateThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetLowerTextolitPlateThickness" href="AliPHOSGeometry.h">GetLowerTextolitPlateThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetModuleBoxThickness" href="AliPHOSGeometry.h">GetModuleBoxThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSGeometry:GetNPhi" href="AliPHOSGeometry.h">GetNPhi</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSGeometry:GetNZ" href="AliPHOSGeometry.h">GetNZ</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSGeometry:GetNModules" href="AliPHOSGeometry.h">GetNModules</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetOuterBoxSize" href="AliPHOSGeometry.h">GetOuterBoxSize</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetOuterBoxThickness" href="AliPHOSGeometry.h">GetOuterBoxThickness</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetPHOSAngle" href="AliPHOSGeometry.h">GetPHOSAngle</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetPinDiodeSize" href="AliPHOSGeometry.h">GetPinDiodeSize</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetSecondUpperPlateThickness" href="AliPHOSGeometry.h">GetSecondUpperPlateThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetSupportPlateThickness" href="AliPHOSGeometry.h">GetSupportPlateThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetTextolitBoxSize" href="AliPHOSGeometry.h">GetTextolitBoxSize</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetTextolitBoxThickness" href="AliPHOSGeometry.h">GetTextolitBoxThickness</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetUpperPlateThickness" href="AliPHOSGeometry.h">GetUpperPlateThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetUpperCoolingPlateThickness" href="AliPHOSGeometry.h">GetUpperCoolingPlateThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetAnodeThickness" href="AliPHOSGeometry.h">GetAnodeThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetAvalancheGap" href="AliPHOSGeometry.h">GetAvalancheGap</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetCathodeThickness" href="AliPHOSGeometry.h">GetCathodeThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetCompositeThickness" href="AliPHOSGeometry.h">GetCompositeThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetConversionGap" href="AliPHOSGeometry.h">GetConversionGap</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetLeadConverterThickness" href="AliPHOSGeometry.h">GetLeadConverterThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetLeadToMicro2Gap" href="AliPHOSGeometry.h">GetLeadToMicro2Gap</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetLidThickness" href="AliPHOSGeometry.h">GetLidThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetMicromegas1Thickness" href="AliPHOSGeometry.h">GetMicromegas1Thickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetMicromegas2Thickness" href="AliPHOSGeometry.h">GetMicromegas2Thickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetMicromegasWallThickness" href="AliPHOSGeometry.h">GetMicromegasWallThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetMicro1ToLeadGap" href="AliPHOSGeometry.h">GetMicro1ToLeadGap</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSGeometry:GetNumberOfPadsPhi" href="AliPHOSGeometry.h">GetNumberOfPadsPhi</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSGeometry:GetNumberOfPadsZ" href="AliPHOSGeometry.h">GetNumberOfPadsZ</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSGeometry:GetNumberOfModulesPhi" href="AliPHOSGeometry.h">GetNumberOfModulesPhi</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSGeometry:GetNumberOfModulesZ" href="AliPHOSGeometry.h">GetNumberOfModulesZ</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetPCThickness" href="AliPHOSGeometry.h">GetPCThickness</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetPhiDisplacement" href="AliPHOSGeometry.h">GetPhiDisplacement</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetPPSDBoxSize" href="AliPHOSGeometry.h">GetPPSDBoxSize</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetPPSDModuleSize" href="AliPHOSGeometry.h">GetPPSDModuleSize</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index) const
+<!--INLINE FUNCTION--><!--TAB6-->                <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSGeometry:GetZDisplacement" href="AliPHOSGeometry.h">GetZDisplacement</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                TClass* <a name="AliPHOSGeometry:Class" href="AliPHOSGeometry.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                TClass* <a name="AliPHOSGeometry:IsA" href="AliPHOSGeometry.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                   <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:ShowMembers" href="AliPHOSGeometry.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                   <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSGeometry:Streamer" href="AliPHOSGeometry.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a> <a name="AliPHOSGeometry:AliPHOSGeometry" href="AliPHOSGeometry.h">AliPHOSGeometry</a>(<a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>&amp;)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

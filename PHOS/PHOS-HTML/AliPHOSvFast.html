@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:48:27 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSvFast</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSvFast</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSvFast:description>class description</a> - <a href="src/AliPHOSvFast.cxx.html">source file</a> - <a href="AliPHOSvFast_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSvFast" href="AliPHOSvFast.h">AliPHOSvFast</a> : public <a href="./AliPHOS.html">AliPHOS</a></h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->                  <a href="./AliPHOSvFast.html">AliPHOSvFast</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:AliPHOSvFast">AliPHOSvFast</a><!--PLAIN-->()
+<!--TAB6-->                  <a href="./AliPHOSvFast.html">AliPHOSvFast</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:AliPHOSvFast">AliPHOSvFast</a><!--PLAIN-->(const <a href="ListOfTypes.html#char">char</a>* name, const <a href="ListOfTypes.html#char">char</a>* title)
+<!--TAB6-->                  <a href="./AliPHOSvFast.html">AliPHOSvFast</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:AliPHOSvFast">AliPHOSvFast</a><!--PLAIN-->(<a href="./AliPHOSvFast.html">AliPHOSvFast</a>&amp;)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:~AliPHOSvFast">~AliPHOSvFast</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:AddRecParticle">AddRecParticle</a><!--PLAIN-->(const <a href="./AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a>&amp; rp)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:BuildGeometry">BuildGeometry</a><!--PLAIN-->()
+<!--TAB6-->                       TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:CreateGeometry">CreateGeometry</a><!--PLAIN-->()
+<!--TAB6-->         <a href="ListOfTypes.html#FastRecParticlesList">FastRecParticlesList</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:FastRecParticles">FastRecParticles</a><!--PLAIN-->()
+<!--TAB6-->                       <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:GetBigBox">GetBigBox</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index)
+<!--TAB6-->      virtual <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:GetGeometry">GetGeometry</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:Init">Init</a><!--PLAIN-->()
+<!--TAB6-->               virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->                 virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:IsVersion">IsVersion</a><!--PLAIN-->() const
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:MakeBranch">MakeBranch</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt)
+<!--TAB6-->                      <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:MakeEnergy">MakeEnergy</a><!--PLAIN-->(const <a href="ListOfTypes.html#Double_t">Double_t</a> energy)
+<!--TAB6-->                      TVector3 <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:MakePosition">MakePosition</a><!--PLAIN-->(const <a href="ListOfTypes.html#Double_t">Double_t</a> energy, const TVector3 pos, const <a href="ListOfTypes.html#Double_t">Double_t</a> th, const <a href="ListOfTypes.html#Double_t">Double_t</a> ph)
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:MakeRecParticle">MakeRecParticle</a><!--PLAIN-->(const <a href="ListOfTypes.html#Int_t">Int_t</a> modid, const TVector3 pos, <a href="./AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a>&amp; rp)
+<!--TAB6-->                         <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:MakeType">MakeType</a><!--PLAIN-->(<a href="./AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a>&amp; rp)
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:ResetFastRecParticles">ResetFastRecParticles</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:ResetPoints">ResetPoints</a><!--PLAIN-->()
+<!--TAB6-->                          <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:SetBigBox">SetBigBox</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> index, <a href="ListOfTypes.html#Float_t">Float_t</a> value)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->                      <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:SigmaE">SigmaE</a><!--PLAIN-->(<a href="ListOfTypes.html#Double_t">Double_t</a> energy)
+<!--TAB6-->                      <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:SigmaP">SigmaP</a><!--PLAIN-->(<a href="ListOfTypes.html#Double_t">Double_t</a> energy, <a href="ListOfTypes.html#Int_t">Int_t</a> inc)
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:StepManager">StepManager</a><!--PLAIN-->()
+<!--TAB6-->                  virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSvFast:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSvFast:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->                    <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fBigBoxX">fBigBoxX</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fBigBoxX">main box containing all PHOS (EMC+PPSD)</a></i>
+<!--TAB6-->                    <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fBigBoxY">fBigBoxY</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fBigBoxY">main box containing all PHOS (EMC+PPSD)</a></i>
+<!--TAB6-->                    <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fBigBoxZ">fBigBoxZ</a><!--PLAIN-->           <!--TAB--><i><a name="Title:fBigBoxZ">main box containing all PHOS (EMC+PPSD)</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#FastRecParticlesList">FastRecParticlesList</a>* <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fFastRecParticles">fFastRecParticles</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fFastRecParticles">list of particles modified by the response function </a></i>
+<!--TAB6-->           <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fGeom">fGeom</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fGeom">geometry definition</a></i>
+<!--TAB6-->                      <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fNRecParticles">fNRecParticles</a><!--PLAIN-->     <!--TAB--><i><a name="Title:fNRecParticles">number of detected particles</a></i>
+<!--TAB6-->                    TRandom <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fRan">fRan</a><!--PLAIN-->               <!--TAB--><i><a name="Title:fRan">random number generator</a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fResPara1">fResPara1</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fResPara1">parameter for the energy resolution dependence  </a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fResPara2">fResPara2</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fResPara2">parameter for the energy resolution dependence  </a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fResPara3">fResPara3</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fResPara3">parameter for the energy resolution dependence </a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fPosParaA0">fPosParaA0</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fPosParaA0">parameter for the position resolution</a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fPosParaA1">fPosParaA1</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fPosParaA1">parameter for the position resolution </a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fPosParaB0">fPosParaB0</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fPosParaB0">parameter for the position resolution </a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fPosParaB1">fPosParaB1</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fPosParaB1">parameter for the position resolution </a></i>
+<!--TAB6-->                   <a href="ListOfTypes.html#Double_t">Double_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSvFast:fPosParaB2">fPosParaB2</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fPosParaB2">parameter for the position resolution</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSvFast:description">Class Description</a></h2>
+<pre> Implementation of the PHOS manager class for fast simulations
+ Tracks particles until the reach a grossly designed PHOS module
+ Modify the particles property (momentum, energy, type) according to
+  the PHOS response function. The result is called a virtual reconstructed
+  particle.
+
+*-- Author: Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSvFast:AliPHOSvFast" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:AliPHOSvFast">AliPHOSvFast</a>()
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSvFast:AliPHOSvFast" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:AliPHOSvFast">AliPHOSvFast</a>(const <a href="ListOfTypes.html#char">char</a> *name, const <a href="ListOfTypes.html#char">char</a> *title):
+  <a href="./AliPHOS.html">AliPHOS</a>(name,title)
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSvFast:~AliPHOSvFast" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:~AliPHOSvFast">~AliPHOSvFast</a>()
+<br>
+<pre> dtor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:AddRecParticle" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:AddRecParticle">AddRecParticle</a>(const <a href="./AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; rp)
+<br>
+<pre> Add a virtually reconstructed particle to the list
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:BuildGeometry" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:BuildGeometry">BuildGeometry</a>()
+<br>
+<pre> Build the PHOS geometry for the ROOT display
+
+  /*
+    <H2>
+     PHOS FAST in ALICE displayed by root
+    </H2>
+    <H4> All Views </H4>
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="Fast All Views" SRC="../images/AliPHOSvFastAllViews.gif"> 
+    </CENTER></P>
+    <H4> Front View </H4>
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="Fast Front View" SRC="../images/AliPHOSvFastFrontView.gif"> 
+    </CENTER></P>
+  */
+
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:CreateGeometry" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:CreateGeometry">CreateGeometry</a>()
+<br>
+<pre> Create the geometry for GEANT
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:Init" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:Init">Init</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Prints out an information message
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSvFast:GetBigBox" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:GetBigBox">GetBigBox</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index)
+<br>
+<pre> Get the X, Y or Z dimension of the box describing a PHOS module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:MakeBranch" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:MakeBranch">MakeBranch</a>(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt)
+<br>
+<pre> Create new branch in the current reconstructed Root Tree
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Double_t">Double_t</a> <a name="AliPHOSvFast:MakeEnergy" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:MakeEnergy">MakeEnergy</a>(const <a href="ListOfTypes.html#Double_t">Double_t</a> energy)
+<br>
+<pre> Smears the energy according to the energy dependent energy resolution.
+ A gaussian distribution is assumed
+</pre><hr>
+<!--FUNCTION-->TVector3 <a name="AliPHOSvFast:MakePosition" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:MakePosition">MakePosition</a>(const <a href="ListOfTypes.html#Double_t">Double_t</a> energy, const TVector3 pos, const <a href="ListOfTypes.html#Double_t">Double_t</a> theta, const <a href="ListOfTypes.html#Double_t">Double_t</a> phi)
+<br>
+<pre> Smears the impact position according to the energy dependent position resolution
+ A gaussian position distribution is assumed
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:MakeRecParticle" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:MakeRecParticle">MakeRecParticle</a>(const <a href="ListOfTypes.html#Int_t">Int_t</a> modid, const TVector3 pos, <a href="./AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; rp)
+<br>
+<pre> Modify the primary particle properties according
+  1. the response function of PHOS
+  2. the performance of the EMC+PPSD setup
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSvFast:MakeType" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:MakeType">MakeType</a>(<a href="./AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; rp )
+<br>
+<pre> Generate a particle type using the performance of the EMC+PPSD setup
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:ResetPoints" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:ResetPoints">ResetPoints</a>()
+<br>
+<pre> This overloads the method in AliDetector
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:ResetFastRecParticles" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:ResetFastRecParticles">ResetFastRecParticles</a>()
+<br>
+<pre> Resets the list of virtual reconstructed particles
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:SetBigBox" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:SetBigBox">SetBigBox</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> index, <a href="ListOfTypes.html#Float_t">Float_t</a> value)
+<br>
+<pre> Set the size of the Box describing a PHOS module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Double_t">Double_t</a> <a name="AliPHOSvFast:SigmaE" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:SigmaE">SigmaE</a>(<a href="ListOfTypes.html#Double_t">Double_t</a> energy)
+<br>
+<pre> Calculates the energy dependent energy resolution
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Double_t">Double_t</a> <a name="AliPHOSvFast:SigmaP" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:SigmaP">SigmaP</a>(<a href="ListOfTypes.html#Double_t">Double_t</a> energy, <a href="ListOfTypes.html#Int_t">Int_t</a> incidence)
+<br>
+<pre> Calculates the energy dependent position resolution
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:StepManager" href="src/AliPHOSvFast.cxx.html#AliPHOSvFast:StepManager">StepManager</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> Only verifies if the particle reaches PHOS and stops the tracking
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->             <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <a name="AliPHOSvFast:GetGeometry" href="AliPHOSvFast.h">GetGeometry</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                        <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSvFast:IsVersion" href="AliPHOSvFast.h">IsVersion</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="ListOfTypes.html#FastRecParticlesList">FastRecParticlesList</a>* <a name="AliPHOSvFast:FastRecParticles" href="AliPHOSvFast.h">FastRecParticles</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                      TClass* <a name="AliPHOSvFast:Class" href="AliPHOSvFast.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                      TClass* <a name="AliPHOSvFast:IsA" href="AliPHOSvFast.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                         <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:ShowMembers" href="AliPHOSvFast.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                         <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSvFast:Streamer" href="AliPHOSvFast.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->                 <a href="./AliPHOSvFast.html">AliPHOSvFast</a> <a name="AliPHOSvFast:AliPHOSvFast" href="AliPHOSvFast.h">AliPHOSvFast</a>(<a href="./AliPHOSvFast.html">AliPHOSvFast</a>&amp;)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

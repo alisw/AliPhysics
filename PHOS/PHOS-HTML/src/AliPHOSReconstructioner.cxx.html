@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:50 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSReconstructioner - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  Algorithm class for the reconstruction: clusterizer</b>
+<b>//                                          track segment maker</b>
+<b>//                                          particle identifier   </b>
+<b>//                  </b>
+<b>//*-- Author: Gines Martinez &amp; Yves Schutz (SUBATECH)</b>
+
+
+<b>// --- ROOT system ---</b>
+
+#include "TClonesArray.h"
+
+<b>// --- Standard library ---</b>
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSReconstructioner.h">AliPHOSReconstructioner.h</a>"
+#include "<a href="../AliPHOSClusterizer.h">AliPHOSClusterizer.h</a>"
+
+ClassImp(AliPHOSReconstructioner)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSReconstructioner:AliPHOSReconstructioner"> </a><a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:AliPHOSReconstructioner">AliPHOSReconstructioner::AliPHOSReconstructioner</a>(<a href=".././AliPHOSClusterizer.html">AliPHOSClusterizer</a> * Clusterizer, 
+						 <a href=".././AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a> * Tracker,
+						 <a href=".././AliPHOSPID.html">AliPHOSPID</a> * Pid)
+{
+<b>  // ctor</b>
+  
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fClusterizer">fClusterizer</a>        = Clusterizer ;
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fTrackSegmentMaker">fTrackSegmentMaker</a>  = Tracker ;
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fPID">fPID</a>                = Pid ; 
+} 
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSReconstructioner:Init"> </a> <a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:Init">AliPHOSReconstructioner::Init</a>(<a href=".././AliPHOSClusterizer.html">AliPHOSClusterizer</a> * Clusterizer, 
+						 <a href=".././AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a> * Tracker,
+						 <a href=".././AliPHOSPID.html">AliPHOSPID</a> * Pid)
+{
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fClusterizer">fClusterizer</a>        = Clusterizer ;
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fTrackSegmentMaker">fTrackSegmentMaker</a>  = Tracker ;
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fPID">fPID</a>                = Pid ; 
+} 
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSReconstructioner:Make"> </a> <a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:Make">AliPHOSReconstructioner::Make</a>(TClonesArray * dl, <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * emccl, <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdl, 
+				     <a href="../ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsl, <a href="../ListOfTypes.html#RecParticlesList">RecParticlesList</a> * rpl)
+{
+<b>  // Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)</b>
+<b>  //                                                      Make the track segments </b>
+<b>  //                                                      Make the reconstructed particles</b>
+
+  cout &lt;&lt; "Start making reconstructed points (clusterizing)" &lt;&lt; endl;
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fClusterizer">fClusterizer</a>-&gt;<a href=".././AliPHOSClusterizer.html#AliPHOSClusterizer:MakeClusters">MakeClusters</a>(dl, emccl, ppsdl);
+
+  cout &lt;&lt; "Start making track segments" &lt;&lt; endl;
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fTrackSegmentMaker">fTrackSegmentMaker</a>-&gt;<a href=".././AliPHOSTrackSegmentMaker.html#AliPHOSTrackSegmentMaker:MakeTrackSegments">MakeTrackSegments</a>(dl, emccl, ppsdl, trsl) ;
+
+  cout &lt;&lt; "Start making reconstructed particles" &lt;&lt; endl;
+  <a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:fPID">fPID</a>-&gt;<a href=".././AliPHOSPID.html#AliPHOSPID:MakeParticles">MakeParticles</a>(trsl, rpl) ; 
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:49 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSHit - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  Hits class for PHOS     </b>
+<b>//  A hit in PHOS is the sum of all hits in a single crystal</b>
+<b>//               </b>
+<b>//*-- Author: Maxime Volkov (RRC KI) &amp; Yves Schutz (SUBATECH)</b>
+
+<b>// --- ROOT system ---</b>
+
+<b>// --- Standard library ---</b>
+#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;cstdlib&gt;
+#include &lt;strstream&gt;
+
+<b>// --- AliRoot header files ---</b>
+#include "<a href="../AliPHOSHit.h">AliPHOSHit.h</a>"
+#include "AliRun.h"
+#include "AliConst.h"
+
+
+ClassImp(AliPHOSHit)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSHit:AliPHOSHit"> </a><a href=".././AliPHOSHit.html#AliPHOSHit:AliPHOSHit">AliPHOSHit::AliPHOSHit</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> primary, <a href="../ListOfTypes.html#Int_t">Int_t</a> id, <a href="../ListOfTypes.html#Float_t">Float_t</a> *hits)
+{
+<b>  // ctor</b>
+  
+   <a href=".././AliPHOSHit.html#AliPHOSHit:fId">fId</a>         = id ;
+   fX          = hits[0] ;
+   fY          = hits[1] ;
+   fZ          = hits[2] ;
+   <a href=".././AliPHOSHit.html#AliPHOSHit:fELOS">fELOS</a>       = hits[3] ;
+   <a href=".././AliPHOSHit.html#AliPHOSHit:fPrimary">fPrimary</a>    = primary ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href=".././AliPHOSHit.html#AliPHOSHit:operator">AliPHOSHit::operator</a>==(<a href=".././AliPHOSHit.html">AliPHOSHit</a> const &amp;rValue) const
+{ 
+<b>  // Two hits are identical if they have the same Id and originate from the same primary</b>
+
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> rv = kFALSE ; 
+
+  if ( <a href=".././AliPHOSHit.html#AliPHOSHit:fId">fId</a> == rValue.<a href="#AliPHOSHit:GetId">GetId</a>() &amp;&amp; <a href=".././AliPHOSHit.html#AliPHOSHit:fPrimary">fPrimary</a> == rValue.<a href="#AliPHOSHit:GetPrimary">GetPrimary</a>() ) 
+    rv = kTRUE;
+  
+  return rv;
+}
+
+<b>//____________________________________________________________________________</b>
+<a href=".././AliPHOSHit.html">AliPHOSHit</a> <a href=".././AliPHOSHit.html#AliPHOSHit:operator">AliPHOSHit::operator</a>+(const <a href=".././AliPHOSHit.html">AliPHOSHit</a> &amp;rValue) const
+{
+<b>  // Add the energy of the hit</b>
+  
+  <a href=".././AliPHOSHit.html">AliPHOSHit</a> added(*this);
+
+   added.fX    = rValue.fX  ;
+   added.fY    = rValue.fY ;
+   added.fZ    = rValue.fZ ;
+
+   added.<a href=".././AliPHOSHit.html#AliPHOSHit:fELOS">fELOS</a> += rValue.<a href="#AliPHOSHit:GetEnergy">GetEnergy</a>() ;
+    
+   return added;
+
+}
+
+<b>//____________________________________________________________________________</b>
+ostream&amp; operator &lt;&lt; (ostream&amp; out, const <a href=".././AliPHOSHit.html">AliPHOSHit</a>&amp; hit) 
+{
+<b>  // Print out Id and energy </b>
+  
+  out &lt;&lt; "<a href=".././AliPHOSHit.html">AliPHOSHit</a> = " &lt;&lt; hit.<a href="#AliPHOSHit:GetId">GetId</a>() &lt;&lt; " " &lt;&lt; hit.<a href="#AliPHOSHit:GetEnergy">GetEnergy</a>() &lt;&lt; endl ;
+  return out ;
+}
+
+
+
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

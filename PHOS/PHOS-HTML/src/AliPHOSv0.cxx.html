@@ -1,0 +1,1399 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:57 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSv0 - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>// Implementation version v0 of PHOS Manager class </b>
+<b>// Layout EMC + PPSD has name GPS2  </b>
+<b>//                  </b>
+<b>//*-- Author: Yves Schutz (SUBATECH)</b>
+
+
+<b>// --- ROOT system ---</b>
+
+#include "TBRIK.h"
+#include "TNode.h"
+#include "TRandom.h"
+
+<b>// --- Standard library ---</b>
+
+#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;cstdlib&gt;
+#include &lt;strstream&gt;
+#include &lt;cassert&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSv0.h">AliPHOSv0.h</a>"
+#include "<a href="../AliPHOSHit.h">AliPHOSHit.h</a>"
+#include "<a href="../AliPHOSDigit.h">AliPHOSDigit.h</a>"
+#include "<a href="../AliPHOSReconstructioner.h">AliPHOSReconstructioner.h</a>"
+#include "AliRun.h"
+#include "AliConst.h"
+
+ClassImp(AliPHOSv0)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:AliPHOSv0"> </a><a href=".././AliPHOSv0.html#AliPHOSv0:AliPHOSv0">AliPHOSv0::AliPHOSv0</a>()
+{
+<b>  // ctor</b>
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a> = 0 ; 
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>  = 0 ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:AliPHOSv0"> </a><a href=".././AliPHOSv0.html#AliPHOSv0:AliPHOSv0">AliPHOSv0::AliPHOSv0</a>(const <a href="../ListOfTypes.html#char">char</a> *name, const <a href="../ListOfTypes.html#char">char</a> *title):
+  <a href=".././AliPHOS.html">AliPHOS</a>(name,title)
+{
+<b>  // ctor : title is used to identify the layout</b>
+<b>  //        GPS2 = 5 modules (EMC + PPSD)   </b>
+<b>  // We use 2 arrays of hits :</b>
+<b>  //</b>
+<b>  //   - fHits (the "normal" one), which retains the hits associated with</b>
+<b>  //     the current primary particle being tracked</b>
+<b>  //     (this array is reset after each primary has been tracked).</b>
+<b>  //</b>
+<b>  //   - <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>, which retains all the hits of the current event. It </b>
+<b>  //     is used for the digitization part.</b>
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fPinElectronicNoise">fPinElectronicNoise</a> = 0.010 ;
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fDigitThreshold">fDigitThreshold</a>      = 1. ;   // 1 GeV 
+
+  fHits   = new TClonesArray("<a href=".././AliPHOSHit.html">AliPHOSHit</a>",100) ;
+  gAlice-&gt;AddHitList(fHits) ; 
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>= new TClonesArray("<a href=".././AliPHOSHit.html">AliPHOSHit</a>",100) ;
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a> = fNhits = 0 ;
+
+  fDigits = new TClonesArray("<a href=".././AliPHOSDigit.html">AliPHOSDigit</a>",100) ;
+
+
+  fIshunt     =  1 ; // All hits are associated with primary particles
+ 
+<b>  // gets an instance of the geometry parameters class  </b>
+   
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a> =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>(title, "") ; 
+
+  if (<a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:IsInitialized">IsInitialized</a>() ) 
+    cout &lt;&lt; "<a href=".././AliPHOSv0.html">AliPHOSv0</a> : PHOS geometry intialized for " &lt;&lt; <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;GetName() &lt;&lt; endl ;
+  else
+   cout &lt;&lt; "<a href=".././AliPHOSv0.html">AliPHOSv0</a> : PHOS geometry initialization failed !" &lt;&lt; endl ;   
+}
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:AliPHOSv0"> </a><a href=".././AliPHOSv0.html#AliPHOSv0:AliPHOSv0">AliPHOSv0::AliPHOSv0</a>(<a href=".././AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> * Reconstructioner, const <a href="../ListOfTypes.html#char">char</a> *name, const <a href="../ListOfTypes.html#char">char</a> *title):
+  <a href=".././AliPHOS.html">AliPHOS</a>(name,title)
+{
+<b>  // ctor : title is used to identify the layout</b>
+<b>  //        GPS2 = 5 modules (EMC + PPSD)   </b>
+<b>  // We use 2 arrays of hits :</b>
+<b>  //</b>
+<b>  //   - fHits (the "normal" one), which retains the hits associated with</b>
+<b>  //     the current primary particle being tracked</b>
+<b>  //     (this array is reset after each primary has been tracked).</b>
+<b>  //</b>
+<b>  //   - <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>, which retains all the hits of the current event. It </b>
+<b>  //     is used for the digitization part.</b>
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fPinElectronicNoise">fPinElectronicNoise</a> = 0.010 ;
+  fHits   = new TClonesArray("<a href=".././AliPHOSHit.html">AliPHOSHit</a>",100) ;
+  fDigits = new TClonesArray("<a href=".././AliPHOSDigit.html">AliPHOSDigit</a>",100) ;
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>= new TClonesArray("<a href=".././AliPHOSHit.html">AliPHOSHit</a>",100) ;
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a> = fNhits = 0 ;
+
+  fIshunt     =  1 ; // All hits are associated with primary particles
+ 
+<b>  // gets an instance of the geometry parameters class  </b>
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a> =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>(title, "") ; 
+
+  if (<a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:IsInitialized">IsInitialized</a>() ) 
+    cout &lt;&lt; "<a href=".././AliPHOSv0.html">AliPHOSv0</a> : PHOS geometry intialized for " &lt;&lt; <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;GetName() &lt;&lt; endl ;
+  else
+   cout &lt;&lt; "<a href=".././AliPHOSv0.html">AliPHOSv0</a> : PHOS geometry initialization failed !" &lt;&lt; endl ;   
+
+<b>  // Defining the PHOS Reconstructioner</b>
+ 
+ <a href=".././AliPHOSv0.html#AliPHOSv0:fReconstructioner">fReconstructioner</a> = Reconstructioner ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:~AliPHOSv0"> </a><a href=".././AliPHOSv0.html">AliPHOSv0</a>::~<a href=".././AliPHOSv0.html">AliPHOSv0</a>()
+{
+<b>  // dtor</b>
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>-&gt;Delete() ; 
+  delete <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a> ;
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a> = 0 ; 
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a>-&gt;Delete() ; 
+  delete <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a> ; 
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a> = 0 ; 
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a>-&gt;Delete() ;
+  delete <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a> ;
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a> = 0 ; 
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a>-&gt;Delete() ; 
+  delete <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a> ;
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a> = 0 ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:AddHit"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:AddHit">AliPHOSv0::AddHit</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> primary, <a href="../ListOfTypes.html#Int_t">Int_t</a> Id, <a href="../ListOfTypes.html#Float_t">Float_t</a> * hits)
+{
+<b>  // Add a hit to the hit list.</b>
+<b>  // A PHOS hit is the sum of all hits in a single crystal</b>
+<b>  //   or in a single PPSD gas cell</b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> hitCounter ;
+  TClonesArray &amp;ltmphits = *<a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a> ;
+  <a href=".././AliPHOSHit.html">AliPHOSHit</a> *newHit ;
+  <a href=".././AliPHOSHit.html">AliPHOSHit</a> *curHit ;
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> deja = kFALSE ;
+
+<b>  // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")</b>
+
+  newHit = new <a href=".././AliPHOSHit.html">AliPHOSHit</a>(primary, Id, hits) ;
+
+  for ( hitCounter = 0 ; hitCounter &lt; <a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a> &amp;&amp; !deja ; hitCounter++ ) {
+    curHit = (<a href=".././AliPHOSHit.html">AliPHOSHit</a>*) ltmphits[hitCounter] ;
+    if( *curHit == *newHit ) {
+     *curHit = *curHit + *newHit ;
+      deja = kTRUE ;
+    }
+  }
+       
+  if ( !deja ) {
+    new(ltmphits[<a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a>]) <a href=".././AliPHOSHit.html">AliPHOSHit</a>(*newHit) ;
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a>++ ;
+  }
+
+<b>  // Please note that the <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a> array must survive up to the</b>
+<b>  // end of the events, so it does not appear e.g. in ResetHits() (</b>
+<b>  // which is called at the end of each primary).  </b>
+
+<b>  //  if (IsTreeSelected('H')) {</b>
+<b>    // And, if we really want raw hits tree, have the fHits array filled also</b>
+<b>  //    TClonesArray &amp;lhits = *fHits;</b>
+<b>  //    new(lhits[fNhits]) <a href=".././AliPHOSHit.html">AliPHOSHit</a>(*newHit) ;</b>
+<b>  //    fNhits++ ;</b>
+<b>  //  }</b>
+
+  delete newHit;
+
+}
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:BuildGeometry"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:BuildGeometry">AliPHOSv0::BuildGeometry</a>()
+{
+<b>  // Build the PHOS geometry for the ROOT display</b>
+<b>  //</b>
+  /*
+    <H2>
+     PHOS in ALICE displayed by root
+    </H2>
+    <UL>
+    <LI> All Views
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="All Views" SRC="../images/AliPHOSv0AllViews.gif"> 
+    </CENTER></P></LI>
+    <LI> Front View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="Front View" SRC="../images/AliPHOSv0FrontView.gif"> 
+    </CENTER></P></LI>
+     <LI> 3D View 1
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="3D View 1" SRC="../images/AliPHOSv03DView1.gif"> 
+    </CENTER></P></LI>
+    <LI> 3D View 2
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="3D View 2" SRC="../images/AliPHOSv03DView2.gif"> 
+    </CENTER></P></LI>
+    </UL>
+  */
+<b>  //  </b>
+
+  this-&gt;<a href="#AliPHOSv0:BuildGeometryforPHOS">BuildGeometryforPHOS</a>() ; 
+  if ( ( strcmp(<a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;GetName(), "GPS2" ) == 0 ) ) 
+    this-&gt;<a href="#AliPHOSv0:BuildGeometryforPPSD">BuildGeometryforPPSD</a>() ;
+  else
+    cout &lt;&lt; "<a href=".././AliPHOSv0.html#AliPHOSv0:BuildGeometry">AliPHOSv0::BuildGeometry</a> : no charged particle identification system installed" &lt;&lt; endl; 
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:BuildGeometryforPHOS"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:BuildGeometryforPHOS">AliPHOSv0::BuildGeometryforPHOS</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b> // Build the PHOS-EMC geometry for the ROOT display</b>
+
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kColorPHOS = kRed ;
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kColorXTAL = kBlue ;
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+ 
+  new TBRIK( "OuterBox", "PHOS box", "<a href="../ListOfTypes.html#void">void</a>", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(0)/2, 
+                                             <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(1)/2, 
+                                             <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(2)/2 );
+
+<b>  // Textolit Wall box, position inside PHOS </b>
+  
+  new TBRIK( "TextolitBox", "PHOS Textolit box ", "<a href="../ListOfTypes.html#void">void</a>", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(0)/2, 
+                                                          <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(1)/2, 
+                                                          <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(2)/2);
+
+<b>  // Polystyrene Foam Plate</b>
+
+  new TBRIK( "UpperFoamPlate", "PHOS Upper foam plate", "<a href="../ListOfTypes.html#void">void</a>", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(0)/2, 
+                                                                <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>()/2, 
+                                                                <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(2)/2 ) ; 
+
+<b>  // Air Filled Box</b>
+ 
+  new TBRIK( "AirFilledBox", "PHOS air filled box", "<a href="../ListOfTypes.html#void">void</a>", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(0)/2, 
+                                                            <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1)/2, 
+                                                            <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(2)/2 );
+
+<b>  // Crystals Box</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtlX = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtlY = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(1) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtlZ = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ; 
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xl =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * ( xtlX + 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGapBetweenCrystals">GetGapBetweenCrystals</a>() ) / 2.0 + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> yl =  ( xtlY + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalHolderThickness">GetCrystalHolderThickness</a>() ) / 2.0 
+             + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() / 2.0 ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zl =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNZ">GetNZ</a>() * ( xtlZ + 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGapBetweenCrystals">GetGapBetweenCrystals</a>() ) / 2.0 +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() ;
+  
+  new TBRIK( "CrystalsBox", "PHOS crystals box", "<a href="../ListOfTypes.html#void">void</a>", xl, yl, zl ) ;
+
+<b>// position PHOS into ALICE</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(1) / 2.0 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> number = 988 ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> pphi =  TMath::ATan( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(0)  / ( 2.0 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() ) ) ;
+  pphi *= kRADDEG ;
+  TNode * top = gAlice-&gt;GetGeometry()-&gt;GetNode("alice") ;
+ 
+  <a href="../ListOfTypes.html#char">char</a> * nodename = new <a href="../ListOfTypes.html#char">char</a>[20] ;  
+  <a href="../ListOfTypes.html#char">char</a> * rotname  = new <a href="../ListOfTypes.html#char">char</a>[20] ; 
+
+  for( <a href="../ListOfTypes.html#Int_t">Int_t</a> i = 1; i &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNModules">GetNModules</a>(); i++ ) { 
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> angle = pphi * 2 * ( i - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNModules">GetNModules</a>() / 2.0 - 0.5 ) ;
+   sprintf(rotname, "%s%d", "rot", number++) ;
+   new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
+   top-&gt;cd();
+   sprintf(nodename,"%s%d", "Module", i) ;    
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> x =  r * TMath::Sin( angle / kRADDEG ) ;
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> y = -r * TMath::Cos( angle / kRADDEG ) ;
+   TNode * outerboxnode = new TNode(nodename, nodename, "OuterBox", x, y, 0, rotname ) ;
+   outerboxnode-&gt;SetLineColor(kColorPHOS) ;
+   fNodes-&gt;Add(outerboxnode) ;
+   outerboxnode-&gt;cd() ; 
+<b>   // now inside the outer box the textolit box</b>
+   y = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxThickness">GetOuterBoxThickness</a>(1) -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() ) / 2.  ;
+   sprintf(nodename,"%s%d", "TexBox", i) ;  
+   TNode * textolitboxnode = new TNode(nodename, nodename, "TextolitBox", 0, y, 0) ; 
+   textolitboxnode-&gt;SetLineColor(kColorPHOS) ;
+   fNodes-&gt;Add(textolitboxnode) ;
+<b>   // upper foam plate inside outre box</b>
+   outerboxnode-&gt;cd() ; 
+   sprintf(nodename, "%s%d", "UFPlate", i) ;
+   y =  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() ) / 2.0 ;
+   TNode * upperfoamplatenode = new TNode(nodename, nodename, "UpperFoamPlate", 0, y, 0) ; 
+   upperfoamplatenode-&gt;SetLineColor(kColorPHOS) ;
+   fNodes-&gt;Add(upperfoamplatenode) ;  
+<b>   // air filled box inside textolit box (not drawn)</b>
+   textolitboxnode-&gt;cd();
+   y = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) ) / 2.0 -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() ;
+   sprintf(nodename, "%s%d", "AFBox", i) ;
+   TNode * airfilledboxnode = new TNode(nodename, nodename, "AirFilledBox", 0, y, 0) ; 
+   fNodes-&gt;Add(airfilledboxnode) ; 
+<b>   // crystals box inside air filled box</b>
+   airfilledboxnode-&gt;cd() ; 
+   y = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) / 2.0 - yl 
+       - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() 
+       -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() ) ; 
+   sprintf(nodename, "%s%d", "XTBox", i) ; 
+   TNode * crystalsboxnode = new TNode(nodename, nodename, "CrystalsBox", 0, y, 0) ;    
+   crystalsboxnode-&gt;SetLineColor(kColorXTAL) ; 
+   fNodes-&gt;Add(crystalsboxnode) ; 
+  }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:BuildGeometryforPPSD"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:BuildGeometryforPPSD">AliPHOSv0::BuildGeometryforPPSD</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b> //  Build the PHOS-PPSD geometry for the ROOT display</b>
+<b> //</b>
+  /*
+    <H2>
+     PPSD displayed by root
+    </H2>
+    <UL>
+    <LI> Zoom on PPSD: Front View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="PPSD Front View" SRC="../images/AliPHOSv0PPSDFrontView.gif"> 
+    </CENTER></P></LI>
+    <LI> Zoom on PPSD: Perspective View
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="PPSD Prespective View" SRC="../images/AliPHOSv0PPSDPerspectiveView.gif"> 
+    </CENTER></P></LI>
+    </UL>
+  */
+<b>  //  </b>
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kColorPHOS = kRed ;
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kColorPPSD = kGreen ;
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kColorGas  = kBlue ;  
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kColorAir  = kYellow ; 
+
+<b>  // Box for a full PHOS module</b>
+
+  new TBRIK( "PPSDBox", "PPSD box", "<a href="../ListOfTypes.html#void">void</a>",  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0)/2, 
+                                             <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1)/2, 
+	                                     <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2)/2 );
+
+<b>  // Box containing one micromegas module </b>
+
+  new TBRIK( "PPSDModule", "PPSD module", "<a href="../ListOfTypes.html#void">void</a>",  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0)/2, 
+                                                   <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(1)/2, 
+	                                           <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2)/2 );
+<b> // top lid</b>
+
+  new TBRIK ( "TopLid", "Micromegas top lid", "<a href="../ListOfTypes.html#void">void</a>",  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0)/2,
+                                                       <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>()/2,
+                                                       <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2)/2 ) ; 
+<b> // composite panel (top and bottom)</b>
+
+  new TBRIK ( "TopPanel", "Composite top panel", "<a href="../ListOfTypes.html#void">void</a>",  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2,
+                                                            <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>()/2,
+                                                          ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2 ) ;  
+  
+  new TBRIK ( "BottomPanel", "Composite bottom panel", "<a href="../ListOfTypes.html#void">void</a>",  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2,
+                                                                  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>()/2,
+                                                                ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2 ) ; 
+<b> // gas gap (conversion and avalanche)</b>
+
+  new TBRIK ( "GasGap", "gas gap", "<a href="../ListOfTypes.html#void">void</a>",  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2,
+	                                    ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetConversionGap">GetConversionGap</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() )/2,
+                                            ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2 ) ; 
+
+<b> // anode and cathode </b>
+
+  new TBRIK ( "Anode", "Anode", "<a href="../ListOfTypes.html#void">void</a>",  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2,
+                                           <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>()/2,
+                                         ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2 ) ; 
+
+  new TBRIK ( "Cathode", "Cathode", "<a href="../ListOfTypes.html#void">void</a>",  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2,
+                                               <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>()/2,
+                                             ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2 ) ; 
+<b> // PC  </b>
+
+  new TBRIK ( "PCBoard", "Printed Circuit", "<a href="../ListOfTypes.html#void">void</a>",  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2,
+                                                       <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>()/2,
+                                                     ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() )/2 ) ; 
+<b> // Gap between Lead and top micromegas</b>
+
+  new TBRIK ( "LeadToM", "Air Gap top", "<a href="../ListOfTypes.html#void">void</a>", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0)/2,
+                                                <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>()/2,
+                                                <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2)/2  ) ;  
+ 
+<b>// Gap between Lead and bottom micromegas</b>
+
+  new TBRIK ( "MToLead", "Air Gap bottom", "<a href="../ListOfTypes.html#void">void</a>", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0)/2,
+                                                   <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a>()/2,
+                                                   <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2)/2  ) ; 
+<b> // Lead converter</b>
+   
+  new TBRIK ( "Lead", "Lead converter", "<a href="../ListOfTypes.html#void">void</a>", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0)/2,
+                                                <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>()/2,
+                                                <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2)/2  ) ; 
+
+<b>     // position PPSD into ALICE</b>
+
+  <a href="../ListOfTypes.html#char">char</a> * nodename = new <a href="../ListOfTypes.html#char">char</a>[20] ;  
+  <a href="../ListOfTypes.html#char">char</a> * rotname  = new <a href="../ListOfTypes.html#char">char</a>[20] ; 
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoTopLidDistance">GetIPtoTopLidDistance</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) / 2.0 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> number = 988 ; 
+  TNode * top = gAlice-&gt;GetGeometry()-&gt;GetNode("alice") ;
+ 
+  for( <a href="../ListOfTypes.html#Int_t">Int_t</a> i = 1; i &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNModules">GetNModules</a>(); i++ ) { // the number of PHOS modules
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> angle = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>(i) ;
+    sprintf(rotname, "%s%d", "rotg", number++) ;
+    new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
+    top-&gt;cd();
+    sprintf(nodename, "%s%d", "Moduleg", i) ;    
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> x =  r * TMath::Sin( angle / kRADDEG ) ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> y = -r * TMath::Cos( angle / kRADDEG ) ;
+    TNode * ppsdboxnode = new TNode(nodename , nodename ,"PPSDBox", x, y, 0, rotname ) ;
+    ppsdboxnode-&gt;SetLineColor(kColorPPSD) ;
+    fNodes-&gt;Add(ppsdboxnode) ;
+    ppsdboxnode-&gt;cd() ;
+<b>    // inside the PPSD box: </b>
+<b>    //   1.   fNumberOfModulesPhi x fNumberOfModulesZ top micromegas</b>
+    x = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) ) / 2. ;  
+    for ( <a href="../ListOfTypes.html#Int_t">Int_t</a> iphi = 1; iphi &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> z = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) ) / 2. ;
+      TNode * micro1node ; 
+      for ( <a href="../ListOfTypes.html#Int_t">Int_t</a> iz = 1; iz &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>(); iz++ ) { // the number of micromegas modules in z per PHOS module
+	y = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() ) / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "Mic1", i, iphi, iz) ;
+	micro1node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
+	micro1node-&gt;SetLineColor(kColorPPSD) ;  
+	fNodes-&gt;Add(micro1node) ; 
+<b>	// inside top micromegas</b>
+	micro1node-&gt;cd() ; 
+<b>	//      a. top lid</b>
+	y = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>() ) / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "Lid", i, iphi, iz) ;
+	TNode * toplidnode = new TNode(nodename, nodename, "TopLid", 0, y, 0) ;
+	toplidnode-&gt;SetLineColor(kColorPPSD) ;  
+	fNodes-&gt;Add(toplidnode) ; 
+<b>	//      b. composite panel</b>
+	y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "CompU", i, iphi, iz) ;
+	TNode * compupnode = new TNode(nodename, nodename, "TopPanel", 0, y, 0) ;
+	compupnode-&gt;SetLineColor(kColorPPSD) ;  
+	fNodes-&gt;Add(compupnode) ; 
+<b>	//      c. anode</b>
+	y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>()  / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "Ano", i, iphi, iz) ;
+	TNode * anodenode = new TNode(nodename, nodename, "Anode", 0, y, 0) ;
+	anodenode-&gt;SetLineColor(kColorPHOS) ;  
+	fNodes-&gt;Add(anodenode) ; 
+<b>	//      d.  gas </b>
+	y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>() / 2. - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetConversionGap">GetConversionGap</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() ) / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "GGap", i, iphi, iz) ;
+	TNode * ggapnode = new TNode(nodename, nodename, "GasGap", 0, y, 0) ;
+	ggapnode-&gt;SetLineColor(kColorGas) ;  
+	fNodes-&gt;Add(ggapnode) ;          
+<b>	  //      f. cathode</b>
+	y = y - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetConversionGap">GetConversionGap</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() ) / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>()  / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "Cathode", i, iphi, iz) ;
+	TNode * cathodenode = new TNode(nodename, nodename, "Cathode", 0, y, 0) ;
+	cathodenode-&gt;SetLineColor(kColorPHOS) ;  
+	fNodes-&gt;Add(cathodenode) ;        
+<b>	//      g. printed circuit</b>
+	y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>()  / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "PC", i, iphi, iz) ;
+	TNode * pcnode = new TNode(nodename, nodename, "PCBoard", 0, y, 0) ;
+	pcnode-&gt;SetLineColor(kColorPPSD) ;  
+	fNodes-&gt;Add(pcnode) ;        
+<b>	//      h. composite panel</b>
+	y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>()  / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "CompDown", i, iphi, iz) ;
+	TNode * compdownnode = new TNode(nodename, nodename, "BottomPanel", 0, y, 0) ;
+	compdownnode-&gt;SetLineColor(kColorPPSD) ;  
+	fNodes-&gt;Add(compdownnode) ;   
+	z = z - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) ;
+	ppsdboxnode-&gt;cd() ;
+      } // end of Z module loop     
+      x = x -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) ; 
+      ppsdboxnode-&gt;cd() ;
+    } // end of phi module loop
+<b>    //   2. air gap      </b>
+    ppsdboxnode-&gt;cd() ;
+    y = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) - 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() ) / 2. ; 
+    sprintf(nodename, "%s%d", "GapUp", i) ;
+    TNode * gapupnode = new TNode(nodename, nodename, "LeadToM", 0, y, 0) ;
+    gapupnode-&gt;SetLineColor(kColorAir) ;  
+    fNodes-&gt;Add(gapupnode) ;        
+<b>    //   3. lead converter</b>
+    y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() / 2. ; 
+    sprintf(nodename, "%s%d", "LeadC", i) ;
+    TNode * leadcnode = new TNode(nodename, nodename, "Lead", 0, y, 0) ;
+    leadcnode-&gt;SetLineColor(kColorPPSD) ;  
+    fNodes-&gt;Add(leadcnode) ;        
+<b>    //   4. air gap</b>
+    y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a>()  / 2. ; 
+    sprintf(nodename, "%s%d", "GapDown", i) ;
+    TNode * gapdownnode = new TNode(nodename, nodename, "MToLead", 0, y, 0) ;
+    gapdownnode-&gt;SetLineColor(kColorAir) ;  
+    fNodes-&gt;Add(gapdownnode) ;        
+<b>    //    5.  fNumberOfModulesPhi x fNumberOfModulesZ bottom micromegas</b>
+    x = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) ) / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPhiDisplacement">GetPhiDisplacement</a>() ;  
+    for ( <a href="../ListOfTypes.html#Int_t">Int_t</a> iphi = 1; iphi &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>(); iphi++ ) { 
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> z = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) ) / 2.  - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetZDisplacement">GetZDisplacement</a>() ;;
+      TNode * micro2node ; 
+      for ( <a href="../ListOfTypes.html#Int_t">Int_t</a> iz = 1; iz &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>(); iz++ ) { 
+	y = - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() ) / 2. ; 
+	sprintf(nodename, "%s%d%d%d", "Mic2", i, iphi, iz) ;
+	micro2node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
+	micro2node-&gt;SetLineColor(kColorPPSD) ;  
+	fNodes-&gt;Add(micro2node) ; 
+<b>	// inside bottom micromegas</b>
+	micro2node-&gt;cd() ; 
+<b>	  //      a. top lid</b>
+	  y = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>() ) / 2. ; 
+	  sprintf(nodename, "%s%d", "Lidb", i) ;
+	  TNode * toplidbnode = new TNode(nodename, nodename, "TopLid", 0, y, 0) ;
+	  toplidbnode-&gt;SetLineColor(kColorPPSD) ;  
+	  fNodes-&gt;Add(toplidbnode) ; 
+<b>	  //      b. composite panel</b>
+	  y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2. ; 
+	  sprintf(nodename, "%s%d", "CompUb", i) ;
+	  TNode * compupbnode = new TNode(nodename, nodename, "TopPanel", 0, y, 0) ;
+	  compupbnode-&gt;SetLineColor(kColorPPSD) ;  
+	  fNodes-&gt;Add(compupbnode) ; 
+<b>	  //      c. anode</b>
+	  y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>()  / 2. ; 
+	  sprintf(nodename, "%s%d", "Anob", i) ;
+	  TNode * anodebnode = new TNode(nodename, nodename, "Anode", 0, y, 0) ;
+	  anodebnode-&gt;SetLineColor(kColorPPSD) ;  
+	  fNodes-&gt;Add(anodebnode) ; 
+<b>	  //      d. conversion gas</b>
+	  y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>() / 2. - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetConversionGap">GetConversionGap</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() )  / 2. ; 
+	  sprintf(nodename, "%s%d", "GGapb", i) ;
+	  TNode * ggapbnode = new TNode(nodename, nodename, "GasGap", 0, y, 0) ;
+	  ggapbnode-&gt;SetLineColor(kColorGas) ;  
+	  fNodes-&gt;Add(ggapbnode) ;           
+<b>	  //      f. cathode</b>
+	  y = y - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetConversionGap">GetConversionGap</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() ) / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>()  / 2. ; 
+	  sprintf(nodename, "%s%d", "Cathodeb", i) ;
+	  TNode * cathodebnode = new TNode(nodename, nodename, "Cathode", 0, y, 0) ;
+	  cathodebnode-&gt;SetLineColor(kColorPPSD) ;  
+	  fNodes-&gt;Add(cathodebnode) ;        
+<b>	  //      g. printed circuit</b>
+	  y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>()  / 2. ; 
+	  sprintf(nodename, "%s%d", "PCb", i) ;
+	  TNode * pcbnode = new TNode(nodename, nodename, "PCBoard", 0, y, 0) ;
+	  pcbnode-&gt;SetLineColor(kColorPPSD) ;  
+	  fNodes-&gt;Add(pcbnode) ;        
+<b>	  //      h. composite pane</b>
+	  y = y - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>()  / 2. ; 
+	  sprintf(nodename, "%s%d", "CompDownb", i) ;
+	  TNode * compdownbnode = new TNode(nodename, nodename, "BottomPanel", 0, y, 0) ;
+	  compdownbnode-&gt;SetLineColor(kColorPPSD) ;  
+	  fNodes-&gt;Add(compdownbnode) ;        
+       	  z = z - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) ;
+	  ppsdboxnode-&gt;cd() ;
+	} // end of Z module loop     
+	x = x -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) ; 
+	ppsdboxnode-&gt;cd() ;
+       } // end of phi module loop
+     } // PHOS modules
+ delete rotname ; 
+ delete nodename ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:CreateGeometry"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:CreateGeometry">AliPHOSv0::CreateGeometry</a>()
+{
+<b>  // Create the PHOS geometry for Geant</b>
+
+  <a href=".././AliPHOSv0.html">AliPHOSv0</a> *phostmp = (<a href=".././AliPHOSv0.html">AliPHOSv0</a>*)gAlice-&gt;GetModule("PHOS") ;
+
+  if ( phostmp == NULL ) {
+    
+    fprintf(stderr, "PHOS detector not found!n") ;
+    return;
+    
+  }
+<b>  // Get pointer to the array containing media indeces</b>
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> *idtmed = fIdtmed-&gt;GetArray() - 699 ;
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> bigbox[3] ; 
+  bigbox[0] =   <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(0) / 2.0 ;
+  bigbox[1] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(1) + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) ) / 2.0 ;
+  bigbox[2] =   <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(2) / 2.0 ;
+  
+  gMC-&gt;Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
+  
+  this-&gt;<a href="#AliPHOSv0:CreateGeometryforPHOS">CreateGeometryforPHOS</a>() ; 
+  if ( strcmp( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;GetName(), "GPS2") == 0  ) 
+    this-&gt;<a href="#AliPHOSv0:CreateGeometryforPPSD">CreateGeometryforPPSD</a>() ;
+  else
+    cout &lt;&lt; "<a href=".././AliPHOSv0.html#AliPHOSv0:CreateGeometry">AliPHOSv0::CreateGeometry</a> : no charged particle identification system installed" &lt;&lt; endl; 
+  
+<b>  // --- Position  PHOS mdules in ALICE setup ---</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> idrotm[99] ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+  
+  for( <a href="../ListOfTypes.html#Int_t">Int_t</a> i = 1; i &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNModules">GetNModules</a>(); i++ ) {
+    
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> angle = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>(i) ;
+    AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
+ 
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() + ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(1) + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) ) / 2.0 ;
+
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> xP1 = r * TMath::Sin( angle / kRADDEG ) ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
+
+    gMC-&gt;Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
+ 
+  } // for GetNModules
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:CreateGeometryforPHOS"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:CreateGeometryforPHOS">AliPHOSv0::CreateGeometryforPHOS</a>()
+{
+<b>  // Create the PHOS-EMC geometry for GEANT</b>
+<b>    //</b>
+  /*
+    <H2>
+    Geant3 geometry tree of PHOS-EMC in ALICE
+    </H2>
+    <P><CENTER>
+    <IMG Align=BOTTOM ALT="EMC geant tree" SRC="../images/EMCinAlice.gif"> 
+    </CENTER><P>
+  */
+<b>  //  </b>
+  
+<b>  // Get pointer to the array containing media indexes</b>
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> *idtmed = fIdtmed-&gt;GetArray() - 699 ;
+
+<b>  // ---</b>
+<b>  // --- Define PHOS box volume, fPUFPill with thermo insulating foam ---</b>
+<b>  // --- Foam Thermo Insulating outer cover dimensions ---</b>
+<b>  // --- Put it in bigbox = PHOS</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dphos[3] ; 
+  dphos[0] =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(0) / 2.0 ;
+  dphos[1] =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(1) / 2.0 ;
+  dphos[2] =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("EMCA", "BOX ", idtmed[706], dphos, 3) ;
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> yO =  - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1)  / 2.0 ;
+
+  gMC-&gt;Gspos("EMCA", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
+
+<b>  // ---</b>
+<b>  // --- Define Textolit Wall box, position inside EMCA ---</b>
+<b>  // --- Textolit Wall box dimentions ---</b>
+ 
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dptxw[3];
+  dptxw[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(0) / 2.0 ;
+  dptxw[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(1) / 2.0 ;
+  dptxw[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("PTXW", "BOX ", idtmed[707], dptxw, 3);
+
+  yO =   (  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxThickness">GetOuterBoxThickness</a>(1) -   <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() ) / 2.  ;
+   
+  gMC-&gt;Gspos("PTXW", 1, "EMCA", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // --- </b>
+<b>  // --- Define Upper Polystyrene Foam Plate, place inside PTXW ---</b>
+<b>  // --- immediately below Foam Thermo Insulation Upper plate ---</b>
+
+<b>  // --- Upper Polystyrene Foam plate thickness ---</b>
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a>  dpufp[3] ;
+  dpufp[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(0) / 2.0 ; 
+  dpufp[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() / 2. ;
+  dpufp[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(2) /2.0 ; 
+
+  gMC-&gt;Gsvolu("PUFP", "BOX ", idtmed[703], dpufp, 3) ;
+  
+  yO = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(1) -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() ) / 2.0 ;
+  
+  gMC-&gt;Gspos("PUFP", 1, "PTXW", 0.0, yO, 0.0, 0, "ONLY") ;
+  
+<b>  // ---</b>
+<b>  // --- Define air-filled box, place inside PTXW ---</b>
+<b>  // --- Inner AIR volume dimensions ---</b>
+ 
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a>  dpair[3] ;
+  dpair[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(0) / 2.0 ;
+  dpair[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) / 2.0 ;
+  dpair[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("PAIR", "BOX ", idtmed[798], dpair, 3) ;
+  
+  yO = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetTextolitBoxSize">GetTextolitBoxSize</a>(1) -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) ) / 2.0 -   <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() ;
+  
+  gMC-&gt;Gspos("PAIR", 1, "PTXW", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>// --- Dimensions of PbWO4 crystal ---</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtlX =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(0) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtlY =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(1) ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> xtlZ =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSize">GetCrystalSize</a>(2) ; 
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dptcb[3] ;  
+  dptcb[0] =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * ( xtlX + 2 *  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGapBetweenCrystals">GetGapBetweenCrystals</a>() ) / 2.0 + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() ;
+  dptcb[1] = ( xtlY +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalHolderThickness">GetCrystalHolderThickness</a>() ) / 2.0 
+             + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() / 2.0 ;
+  dptcb[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNZ">GetNZ</a>() * ( xtlZ + 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGapBetweenCrystals">GetGapBetweenCrystals</a>() ) / 2.0 +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() ;
+  
+  gMC-&gt;Gsvolu("PTCB", "BOX ", idtmed[706], dptcb, 3) ;
+
+  yO =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) / 2.0 - dptcb[1] 
+       - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() 
+       -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() ) ;
+  
+  gMC-&gt;Gspos("PTCB", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define Crystal BLock filled with air, position it inside PTCB ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dpcbl[3] ; 
+  
+  dpcbl[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNPhi">GetNPhi</a>() * ( xtlX + 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGapBetweenCrystals">GetGapBetweenCrystals</a>() ) / 2.0 ;
+  dpcbl[1] = ( xtlY + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalHolderThickness">GetCrystalHolderThickness</a>() ) / 2.0 ;
+  dpcbl[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNZ">GetNZ</a>() * ( xtlZ + 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetGapBetweenCrystals">GetGapBetweenCrystals</a>() ) / 2.0 ;
+  
+  gMC-&gt;Gsvolu("PCBL", "BOX ", idtmed[798], dpcbl, 3) ;
+  
+<b>  // --- Divide PCBL in X (phi) and Z directions --</b>
+  gMC-&gt;Gsdvn("PROW", "PCBL", <a href="../ListOfTypes.html#Int_t">Int_t</a> (<a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNPhi">GetNPhi</a>()), 1) ;
+  gMC-&gt;Gsdvn("PCEL", "PROW", <a href="../ListOfTypes.html#Int_t">Int_t</a> (<a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNZ">GetNZ</a>()), 3) ;
+
+  yO = -<a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>() / 2.0 ;
+  
+  gMC-&gt;Gspos("PCBL", 1, "PTCB", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define STeel (actually, it's titanium) Cover volume, place inside PCEL</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a>  dpstc[3] ; 
+  
+  dpstc[0] = ( xtlX + 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ) / 2.0 ;
+  dpstc[1] = ( xtlY + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalHolderThickness">GetCrystalHolderThickness</a>() ) / 2.0 ;
+  dpstc[2] = ( xtlZ + 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>()  + 2 *  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalHolderThickness">GetCrystalHolderThickness</a>() ) / 2.0 ;
+  
+  gMC-&gt;Gsvolu("PSTC", "BOX ", idtmed[704], dpstc, 3) ;
+
+  gMC-&gt;Gspos("PSTC", 1, "PCEL", 0.0, 0.0, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define Tyvek volume, place inside PSTC ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a>  dppap[3] ;
+
+  dppap[0] = xtlX / 2.0 + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ;
+  dppap[1] = ( xtlY + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ) / 2.0 ;
+  dppap[2] = xtlZ / 2.0 + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ;
+  
+  gMC-&gt;Gsvolu("PPAP", "BOX ", idtmed[702], dppap, 3) ;
+  
+  yO = ( xtlY + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ) / 2.0 
+              - ( xtlY +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalHolderThickness">GetCrystalHolderThickness</a>() ) / 2.0 ;
+   
+  gMC-&gt;Gspos("PPAP", 1, "PSTC", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define PbWO4 crystal volume, place inside PPAP ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a>  dpxtl[3] ; 
+
+  dpxtl[0] = xtlX / 2.0 ;
+  dpxtl[1] = xtlY / 2.0 ;
+  dpxtl[2] = xtlZ / 2.0 ;
+  
+  gMC-&gt;Gsvolu("PXTL", "BOX ", idtmed[699], dpxtl, 3) ;
+
+  yO = ( xtlY + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ) / 2.0 - xtlY / 2.0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ;
+  
+  gMC-&gt;Gspos("PXTL", 1, "PPAP", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define crystal support volume, place inside PPAP ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dpsup[3] ; 
+
+  dpsup[0] = xtlX / 2.0 + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>()  ;
+  dpsup[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() / 2.0 ;
+  dpsup[2] = xtlZ / 2.0 +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ;
+
+  gMC-&gt;Gsvolu("PSUP", "BOX ", idtmed[798], dpsup, 3) ;
+
+  yO =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() / 2.0 - ( xtlY +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalWrapThickness">GetCrystalWrapThickness</a>() ) / 2.0 ;
+
+  gMC-&gt;Gspos("PSUP", 1, "PPAP", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define PIN-diode volume and position it inside crystal support ---</b>
+<b>  // --- right behind PbWO4 crystal</b>
+
+<b>  // --- PIN-diode dimensions ---</b>
+
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dppin[3] ;
+  dppin[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPinDiodeSize">GetPinDiodeSize</a>(0) / 2.0 ;
+  dppin[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPinDiodeSize">GetPinDiodeSize</a>(1) / 2.0 ;
+  dppin[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPinDiodeSize">GetPinDiodeSize</a>(2) / 2.0 ;
+ 
+  gMC-&gt;Gsvolu("PPIN", "BOX ", idtmed[705], dppin, 3) ;
+ 
+  yO = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCrystalSupportHeight">GetCrystalSupportHeight</a>() / 2.0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPinDiodeSize">GetPinDiodeSize</a>(1) / 2.0 ;
+ 
+  gMC-&gt;Gspos("PPIN", 1, "PSUP", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define Upper Cooling Panel, place it on top of PTCB ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dpucp[3] ;
+<b> // --- Upper Cooling Plate thickness ---</b>
+ 
+  dpucp[0] = dptcb[0] ;
+  dpucp[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>() ;
+  dpucp[2] = dptcb[2] ;
+  
+  gMC-&gt;Gsvolu("PUCP", "BOX ", idtmed[701], dpucp,3) ;
+  
+  yO = (  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>() ) / 2. 
+       - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetModuleBoxThickness">GetModuleBoxThickness</a>()
+           - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperCoolingPlateThickness">GetUpperCoolingPlateThickness</a>() ) ; 
+  
+  gMC-&gt;Gspos("PUCP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define Al Support Plate, position it inside PAIR ---</b>
+<b>  // --- right beneath PTCB ---</b>
+<b> // --- Al Support Plate thickness ---</b>
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dpasp[3] ;
+  dpasp[0] =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(0) / 2.0 ;
+  dpasp[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSupportPlateThickness">GetSupportPlateThickness</a>() / 2.0 ;
+  dpasp[2] =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(2) / 2.0 ;
+  
+  gMC-&gt;Gsvolu("PASP", "BOX ", idtmed[701], dpasp, 3) ;
+  
+  yO = (  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSupportPlateThickness">GetSupportPlateThickness</a>() ) / 2. 
+       -  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>()
+           - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + dpcbl[1] * 2 ) ;
+  
+  gMC-&gt;Gspos("PASP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define Thermo Insulating Plate, position it inside PAIR ---</b>
+<b>  // --- right beneath PASP ---</b>
+<b>  // --- Lower Thermo Insulating Plate thickness ---</b>
+  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dptip[3] ;
+  dptip[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(0) / 2.0 ;
+  dptip[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLowerThermoPlateThickness">GetLowerThermoPlateThickness</a>() / 2.0 ;
+  dptip[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("PTIP", "BOX ", idtmed[706], dptip, 3) ;
+
+  yO =  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLowerThermoPlateThickness">GetLowerThermoPlateThickness</a>() ) / 2. 
+       -  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() 
+            - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + dpcbl[1] * 2 + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSupportPlateThickness">GetSupportPlateThickness</a>() ) ;
+
+  gMC-&gt;Gspos("PTIP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
+
+<b>  // ---</b>
+<b>  // --- Define Textolit Plate, position it inside PAIR ---</b>
+<b>  // --- right beneath PTIP ---</b>
+<b>  // --- Lower Textolit Plate thickness ---</b>
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dptxp[3] ;
+  dptxp[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(0) / 2.0 ;
+  dptxp[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLowerTextolitPlateThickness">GetLowerTextolitPlateThickness</a>() / 2.0 ;
+  dptxp[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("PTXP", "BOX ", idtmed[707], dptxp, 3) ;
+
+  yO =  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAirFilledBoxSize">GetAirFilledBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLowerTextolitPlateThickness">GetLowerTextolitPlateThickness</a>() ) / 2. 
+       -  ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoOuterCoverDistance">GetIPtoOuterCoverDistance</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetUpperPlateThickness">GetUpperPlateThickness</a>() 
+            - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSecondUpperPlateThickness">GetSecondUpperPlateThickness</a>() + dpcbl[1] * 2 + <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetSupportPlateThickness">GetSupportPlateThickness</a>() 
+            +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLowerThermoPlateThickness">GetLowerThermoPlateThickness</a>() ) ;
+
+  gMC-&gt;Gspos("PTXP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:CreateGeometryforPPSD"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:CreateGeometryforPPSD">AliPHOSv0::CreateGeometryforPPSD</a>()
+{
+<b>  // Create the PHOS-PPSD geometry for GEANT</b>
+
+<b>  //</b>
+  /*
+    <H2>
+    Geant3 geometry tree of PHOS-PPSD in ALICE
+    </H2>
+    <P><CENTER>
+    <IMG Align=BOTTOM ALT="PPSD geant tree" SRC="../images/PPSDinAlice.gif"> 
+    </CENTER><P>
+  */
+<b>  //  </b>
+
+<b>  // Get pointer to the array containing media indexes</b>
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> *idtmed = fIdtmed-&gt;GetArray() - 699 ;
+  
+<b>  // The box containing all ppsd's for one PHOS module filled with air </b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> ppsd[3] ; 
+  ppsd[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0) / 2.0 ;  
+  ppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) / 2.0 ; 
+  ppsd[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("PPSD", "BOX ", idtmed[798], ppsd, 3) ;
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> yO =  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(1) / 2.0 ;
+
+  gMC-&gt;Gspos("PPSD", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
+
+<b>  // Now we build a micromegas module</b>
+<b>  // The box containing the whole module filled with epoxy (FR4)</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> mppsd[3] ;  
+  mppsd[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) / 2.0 ;  
+  mppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(1) / 2.0 ;  
+  mppsd[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("MPPS", "BOX ", idtmed[708], mppsd, 3) ;  
+ 
+<b>  // Inside mppsd :</b>
+<b>  // 1. The Top Lid made of epoxy (FR4) </b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> tlppsd[3] ; 
+  tlppsd[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) / 2.0 ; 
+  tlppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>() / 2.0 ;
+  tlppsd[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("TLPS", "BOX ", idtmed[708], tlppsd, 3) ; 
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a>  y0 = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>() ) / 2. ; 
+
+  gMC-&gt;Gspos("TLPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+ 
+<b>  // 2. the upper panel made of composite material</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> upppsd[3] ; 
+  upppsd[0] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ;
+  upppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2.0 ;
+  upppsd[2] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ;
+ 
+  gMC-&gt;Gsvolu("UPPS", "BOX ", idtmed[709], upppsd, 3) ; 
+  
+  y0 = y0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLidThickness">GetLidThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2. ; 
+
+  gMC-&gt;Gspos("UPPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+<b>  // 3. the anode made of Copper</b>
+  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> anppsd[3] ; 
+  anppsd[0] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ; 
+  anppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>() / 2.0 ; 
+  anppsd[2] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0  ; 
+
+  gMC-&gt;Gsvolu("ANPS", "BOX ", idtmed[710], anppsd, 3) ; 
+  
+  y0 = y0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>()  / 2. ; 
+  
+  gMC-&gt;Gspos("ANPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+<b>  // 4. the conversion gap + avalanche gap filled with gas</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> ggppsd[3] ; 
+  ggppsd[0] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ;
+  ggppsd[1] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetConversionGap">GetConversionGap</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() ) / 2.0 ; 
+  ggppsd[2] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ;
+
+  gMC-&gt;Gsvolu("GGPS", "BOX ", idtmed[715], ggppsd, 3) ; 
+  
+<b>  // --- Divide GGPP in X (phi) and Z directions --</b>
+  gMC-&gt;Gsdvn("GROW", "GGPS", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfPadsPhi">GetNumberOfPadsPhi</a>(), 1) ;
+  gMC-&gt;Gsdvn("GCEL", "GROW", <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfPadsZ">GetNumberOfPadsZ</a>() , 3) ;
+
+  y0 = y0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAnodeThickness">GetAnodeThickness</a>() / 2.  - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetConversionGap">GetConversionGap</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() ) / 2. ; 
+
+  gMC-&gt;Gspos("GGPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+
+<b>  // 6. the cathode made of Copper</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> cappsd[3] ;
+  cappsd[0] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ;
+  cappsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>() / 2.0 ; 
+  cappsd[2] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0  ;
+
+  gMC-&gt;Gsvolu("CAPS", "BOX ", idtmed[710], cappsd, 3) ; 
+
+  y0 = y0 - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() +  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetAvalancheGap">GetAvalancheGap</a>() ) / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>()  / 2. ; 
+
+  gMC-&gt;Gspos("CAPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+<b>  // 7. the printed circuit made of G10       </b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> pcppsd[3] ; 
+  pcppsd[0] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2,.0 ; 
+  pcppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>() / 2.0 ; 
+  pcppsd[2] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ;
+
+  gMC-&gt;Gsvolu("PCPS", "BOX ", idtmed[711], cappsd, 3) ; 
+
+  y0 = y0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCathodeThickness">GetCathodeThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>()  / 2. ; 
+
+  gMC-&gt;Gspos("PCPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+<b>  // 8. the lower panel made of composite material</b>
+						    
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> lpppsd[3] ; 
+  lpppsd[0] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ; 
+  lpppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>() / 2.0 ; 
+  lpppsd[2] = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegasWallThickness">GetMicromegasWallThickness</a>() ) / 2.0 ;
+
+  gMC-&gt;Gsvolu("LPPS", "BOX ", idtmed[709], lpppsd, 3) ; 
+ 
+  y0 = y0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPCThickness">GetPCThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetCompositeThickness">GetCompositeThickness</a>()  / 2. ; 
+
+  gMC-&gt;Gspos("LPPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+<b>  // Position the  fNumberOfModulesPhi x fNumberOfModulesZ modules (mppsd) inside PPSD to cover a PHOS module</b>
+<b>  // the top and bottom one's (which are assumed identical) :</b>
+
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> yt = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() ) / 2. ; 
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> yb = - ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas2Thickness">GetMicromegas2Thickness</a>() ) / 2. ; 
+
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> copyNumbertop = 0 ; 
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> copyNumberbot = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>() *  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>() ; 
+
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> x  = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) ) / 2. ;  
+
+   for ( <a href="../ListOfTypes.html#Int_t">Int_t</a> iphi = 1; iphi &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
+      <a href="../ListOfTypes.html#Float_t">Float_t</a> z = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2) - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) ) / 2. ;
+
+      for ( <a href="../ListOfTypes.html#Int_t">Int_t</a> iz = 1; iz &lt;= <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>(); iz++ ) { // the number of micromegas modules in z per PHOS module
+	gMC-&gt;Gspos("MPPS", ++copyNumbertop, "PPSD", x, yt, z, 0, "ONLY") ;
+	gMC-&gt;Gspos("MPPS", ++copyNumberbot, "PPSD", x, yb, z, 0, "ONLY") ; 
+	z = z - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(2) ;
+      } // end of Z module loop   
+      x = x -  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDModuleSize">GetPPSDModuleSize</a>(0) ; 
+    } // end of phi module loop
+
+<b>   // The Lead converter between two air gaps</b>
+<b>   // 1. Upper air gap</b>
+
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> uappsd[3] ;
+   uappsd[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0) / 2.0 ;
+   uappsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() / 2.0 ; 
+   uappsd[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("UAPPSD", "BOX ", idtmed[798], uappsd, 3) ; 
+
+  y0 = ( <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) - 2 * <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicromegas1Thickness">GetMicromegas1Thickness</a>() - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() ) / 2. ; 
+
+  gMC-&gt;Gspos("UAPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+<b>   // 2. Lead converter</b>
+ 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> lcppsd[3] ; 
+  lcppsd[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0) / 2.0 ;
+  lcppsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() / 2.0 ; 
+  lcppsd[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2) / 2.0 ;
+ 
+  gMC-&gt;Gsvolu("LCPPSD", "BOX ", idtmed[712], lcppsd, 3) ; 
+  
+  y0 = y0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetMicro1ToLeadGap">GetMicro1ToLeadGap</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() / 2. ; 
+
+  gMC-&gt;Gspos("LCPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+<b>  // 3. Lower air gap</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> lappsd[3] ; 
+  lappsd[0] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(0) / 2.0 ; 
+  lappsd[1] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a>() / 2.0 ; 
+  lappsd[2] = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(2) / 2.0 ;
+
+  gMC-&gt;Gsvolu("LAPPSD", "BOX ", idtmed[798], lappsd, 3) ; 
+    
+  y0 = y0 - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadConverterThickness">GetLeadConverterThickness</a>() / 2. - <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetLeadToMicro2Gap">GetLeadToMicro2Gap</a>()  / 2. ; 
+  
+  gMC-&gt;Gspos("LAPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
+   
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSv0:Digitize"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSv0.html#AliPHOSv0:Digitize">AliPHOSv0::Digitize</a>(<a href="../ListOfTypes.html#Float_t">Float_t</a> Energy)
+{
+<b>  // Applies the energy calibration</b>
+  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> fB = 100000000. ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> fA = 0. ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> chan = <a href="../ListOfTypes.html#Int_t">Int_t</a>(fA + Energy*fB ) ;
+  return chan ;
+}
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSv0:FinishEvent"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:FinishEvent">AliPHOSv0::FinishEvent</a>()
+{
+<b>  // Makes the digits from the sum of summed hit in a single crystal or PPSD gas cell</b>
+<b>  // Adds to the energy the electronic noise</b>
+<b>  // Keeps digits with energy above <a href=".././AliPHOSv0.html#AliPHOSv0:fDigitThreshold">fDigitThreshold</a></b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> i ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4];
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> j ; 
+  TClonesArray &amp;lDigits = *fDigits ;
+  <a href=".././AliPHOSHit.html">AliPHOSHit</a>  * hit ;
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * newdigit ;
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * curdigit ;
+  <a href="../ListOfTypes.html#Bool_t">Bool_t</a> deja = kFALSE ; 
+  
+  for ( i = 0 ; i &lt; <a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a> ; i++ ) {
+    hit = (<a href=".././AliPHOSHit.html">AliPHOSHit</a>*)<a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>-&gt;At(i) ;
+    newdigit = new <a href=".././AliPHOSDigit.html">AliPHOSDigit</a>( hit-&gt;GetPrimary(), hit-&gt;GetId(), <a href="#AliPHOSv0:Digitize">Digitize</a>( hit-&gt;GetEnergy() ) ) ;
+    deja =kFALSE ;
+    for ( j = 0 ; j &lt; fNdigits ;  j++) { 
+      curdigit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a>*) lDigits[j] ;
+      if ( *curdigit == *newdigit) {
+	*curdigit = *curdigit + *newdigit ; 
+	deja = kTRUE ; 
+      }
+    }
+    if ( !deja ) {
+      new(lDigits[fNdigits]) <a href=".././AliPHOSDigit.html">AliPHOSDigit</a>(* newdigit) ;
+      fNdigits++ ;  
+    }
+ 
+    delete newdigit ;    
+  } 
+  
+<b>  // Noise induced by the PIN diode of the PbWO crystals</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> energyandnoise ;
+  for ( i = 0 ; i &lt; fNdigits ; i++ ) {
+    newdigit =  (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * ) fDigits-&gt;At(i) ;
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:AbsToRelNumbering">AbsToRelNumbering</a>(newdigit-&gt;GetId(), relid) ;
+
+    if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
+      energyandnoise = newdigit-&gt;GetAmp() + <a href="#AliPHOSv0:Digitize">Digitize</a>(gRandom-&gt;Gaus(0., <a href=".././AliPHOSv0.html#AliPHOSv0:fPinElectronicNoise">fPinElectronicNoise</a>)) ;
+
+      if (energyandnoise &lt; 0 ) 
+	energyandnoise = 0 ;
+
+      newdigit-&gt;SetAmp(energyandnoise) ;
+
+      if ( newdigit-&gt;GetAmp() &lt; <a href=".././AliPHOSv0.html#AliPHOSv0:fDigitThreshold">fDigitThreshold</a> ) // if threshold not surpassed, remove digit from list
+	fDigits-&gt;RemoveAt(i) ; 
+    }
+  }
+  fDigits-&gt;Compress() ; 
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fNTmpHits">fNTmpHits</a> = 0 ;
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTmpHits">fTmpHits</a>-&gt;Delete();
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:Init"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:Init">AliPHOSv0::Init</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // Just prints an information message</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> i;
+
+  printf("n");
+  for(i=0;i&lt;35;i++) printf("*");
+  printf(" PHOS_INIT ");
+  for(i=0;i&lt;35;i++) printf("*");
+  printf("n");
+
+<b>  // Here the PHOS initialisation code (if any!)</b>
+
+  for(i=0;i&lt;80;i++) printf("*");
+  printf("n");
+  
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSv0:MakeBranch"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:MakeBranch">AliPHOSv0::MakeBranch</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a>* opt)
+{  
+<b>  // Create new branche in the current Root Tree in the digit Tree</b>
+
+  AliDetector::<a href="#AliPHOSv0:MakeBranch">MakeBranch</a>(opt) ;
+  
+  <a href="../ListOfTypes.html#char">char</a> branchname[10];
+  sprintf(branchname,"%s",GetName());
+  <a href="../ListOfTypes.html#char">char</a> *cdD = strstr(opt,"D");
+  
+  if (fDigits &amp;&amp; gAlice-&gt;TreeD() &amp;&amp; cdD) {
+    gAlice-&gt;TreeD()-&gt;Branch(branchname,&amp;fDigits, fBufferSize);
+  }
+}
+
+<b>//_____________________________________________________________________________</b>
+<a name="AliPHOSv0:Reconstruction"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:Reconstruction">AliPHOSv0::Reconstruction</a>(<a href=".././AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> * Reconstructioner)
+{ 
+<b>  // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and </b>
+<b>  // 2. Creates a branch in TreeR for each list</b>
+<b>  // 3. Steers the reconstruction processes</b>
+<b>  // 4. Saves the 3 lists in TreeR</b>
+<b>  // 5. Write the Tree to File</b>
+  
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fReconstructioner">fReconstructioner</a> = Reconstructioner ;
+  
+  <a href="../ListOfTypes.html#char">char</a> branchname[10] ;
+
+<b>  // 1.</b>
+  
+  if (<a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a>) { 
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a>-&gt;Delete() ; 
+    delete <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a> ;
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a> = 0 ; 
+  }
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a>= new <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a>("<a href=".././AliPHOSEmcRecPoint.html">AliPHOSEmcRecPoint</a>", 100) ;
+  if ( <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a> &amp;&amp; gAlice-&gt;TreeR() ) {
+    sprintf(branchname,"%sERP",GetName()) ;
+    gAlice-&gt;TreeR()-&gt;Branch(branchname, &amp;<a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a>, fBufferSize);
+  }
+
+  if (<a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a>) { 
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a>-&gt;Delete() ; 
+    delete <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a> ; 
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a> = 0 ; 
+  }
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a> = new <a href="../ListOfTypes.html#RecPointsList">RecPointsList</a>("<a href=".././AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>", 100) ;
+  if ( <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a> &amp;&amp; gAlice-&gt;TreeR() ) {
+     sprintf(branchname,"%sPRP",GetName()) ;
+     gAlice-&gt;TreeR()-&gt;Branch(branchname, &amp;<a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a>, fBufferSize);
+ }
+
+  if (<a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a>) { 
+   <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a>-&gt;Delete() ; 
+    delete <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a> ; 
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a> = 0 ; 
+  }
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a> = new <a href="../ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>(100) ;
+<b>//   if ( <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a> &amp;&amp; gAlice-&gt;TreeR() ) { </b>
+<b>//     sprintf(branchname,"%sTS",GetName()) ;</b>
+<b>//     gAlice-&gt;TreeR()-&gt;Branch(branchname, &amp;<a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a>, fBufferSize);</b>
+<b>//   }</b>
+
+ if (<a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a>) {  
+   <a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a>-&gt;Delete() ; 
+    delete <a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a> ; 
+    <a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a> = 0 ; 
+  }
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a> = new <a href="../ListOfTypes.html#RecParticlesList">RecParticlesList</a>("<a href=".././AliPHOSRecParticle.html">AliPHOSRecParticle</a>", 100) ;
+  if ( <a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a> &amp;&amp; gAlice-&gt;TreeR() ) { 
+    sprintf(branchname,"%sRP",GetName()) ;
+    gAlice-&gt;TreeR()-&gt;Branch(branchname, &amp;<a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a>, fBufferSize);
+  }
+  
+<b>  // 3.</b>
+
+  <a href=".././AliPHOSv0.html#AliPHOSv0:fReconstructioner">fReconstructioner</a>-&gt;<a href=".././AliPHOSReconstructioner.html#AliPHOSReconstructioner:Make">Make</a>(fDigits, <a href=".././AliPHOSv0.html#AliPHOSv0:fEmcClusters">fEmcClusters</a>, <a href=".././AliPHOSv0.html#AliPHOSv0:fPpsdClusters">fPpsdClusters</a>, <a href=".././AliPHOSv0.html#AliPHOSv0:fTrackSegments">fTrackSegments</a>, <a href=".././AliPHOSv0.html#AliPHOSv0:fRecParticles">fRecParticles</a>);
+
+<b>  // 4.</b>
+
+  gAlice-&gt;TreeR()-&gt;Fill() ;
+ 
+<b>  // 5.</b>
+
+  gAlice-&gt;TreeR()-&gt;Write() ;
+  
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSv0:StepManager"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSv0.html#AliPHOSv0:StepManager">AliPHOSv0::StepManager</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // Accumulates hits as <a href="../ListOfTypes.html#long">long</a> as the track stays in a single crystal or PPSD gas Cell</b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a>          relid[4] ;      // (box, layer, row, column) indices
+  <a href="../ListOfTypes.html#Float_t">Float_t</a>        xyze[4] ;       // position wrt MRS and energy deposited
+  TLorentzVector pos ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> copy ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> primary =  gAlice-&gt;GetPrimary( gAlice-&gt;CurrentTrack() ); 
+  TString name = <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;GetName() ; 
+  if ( name == "GPS2" ) { // the CPV is a PPSD
+    if( gMC-&gt;CurrentVolID(copy) == gMC-&gt;VolId("GCEL") ) // We are inside a gas cell 
+    {
+      gMC-&gt;TrackPosition(pos) ;
+      xyze[0] = pos[0] ;
+      xyze[1] = pos[1] ;
+      xyze[2] = pos[2] ;
+      xyze[3] = gMC-&gt;Edep() ; 
+
+      if ( xyze[3] != 0 ) { // there is deposited energy 
+       	gMC-&gt;CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
+       	gMC-&gt;CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
+<b>      // 1-&gt; Geom-&gt;GetNumberOfModulesPhi() *  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>() upper                         </b>
+<b>      //  &gt;  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesPhi">GetNumberOfModulesPhi</a>()  *  <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNumberOfModulesZ">GetNumberOfModulesZ</a>() lower</b>
+       	gMC-&gt;CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
+        gMC-&gt;CurrentVolID(relid[3]) ;        // get the column number 
+
+<b>	// get the absolute Id number</b>
+
+	<a href="../ListOfTypes.html#Int_t">Int_t</a> absid ; 
+       	<a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:RelToAbsNumbering">RelToAbsNumbering</a>(relid, absid) ; 
+
+<b>	// add current hit to the hit list      </b>
+	<a href="#AliPHOSv0:AddHit">AddHit</a>(primary, absid, xyze);
+
+      } // there is deposited energy 
+     } // We are inside the gas of the CPV  
+   } // GPS2 configuration
+  
+   if(gMC-&gt;CurrentVolID(copy) == gMC-&gt;VolId("PXTL") )  //  We are inside a PBWO crystal
+     {
+       gMC-&gt;TrackPosition(pos) ;
+       xyze[0] = pos[0] ;
+       xyze[1] = pos[1] ;
+       xyze[2] = pos[2] ;
+       xyze[3] = gMC-&gt;Edep() ;
+
+       if ( xyze[3] != 0 ) {
+          gMC-&gt;CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
+          relid[1] = 0   ;                    // means PBW04
+          gMC-&gt;CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
+          gMC-&gt;CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
+
+<b>      // get the absolute Id number</b>
+
+          <a href="../ListOfTypes.html#Int_t">Int_t</a> absid ; 
+          <a href=".././AliPHOSv0.html#AliPHOSv0:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:RelToAbsNumbering">RelToAbsNumbering</a>(relid, absid) ; 
+ 
+<b>      // add current hit to the hit list</b>
+
+          <a href="#AliPHOSv0:AddHit">AddHit</a>(primary, absid, xyze);
+    
+       } // there is deposited energy
+    } // we are inside a PHOS Xtal
+}
+
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

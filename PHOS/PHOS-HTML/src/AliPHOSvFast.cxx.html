@@ -1,0 +1,533 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:48:27 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSvFast - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>// Implementation of the PHOS manager class for fast simulations     </b>
+<b>// Tracks particles until the reach a grossly designed PHOS module</b>
+<b>// Modify the particles property (momentum, energy, type) according to</b>
+<b>//  the PHOS response function. The result is called a virtual reconstructed</b>
+<b>//  particle.                </b>
+<b>//</b>
+<b>//*-- Author: Yves Schutz (SUBATECH)</b>
+
+<b>// --- ROOT system ---</b>
+
+#include "TBRIK.h"
+#include "TNode.h"
+#include "TParticle.h"
+
+<b>// --- Standard library ---</b>
+
+#include &lt;cstdio&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSvFast.h">AliPHOSvFast.h</a>"
+#include "AliRun.h"
+#include "AliConst.h"
+
+ClassImp(AliPHOSvFast)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:AliPHOSvFast"> </a><a href=".././AliPHOSvFast.html#AliPHOSvFast:AliPHOSvFast">AliPHOSvFast::AliPHOSvFast</a>()
+{
+<b>  // ctor</b>
+
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a> = 0 ; 
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fNRecParticles">fNRecParticles</a> = 0 ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:AliPHOSvFast"> </a><a href=".././AliPHOSvFast.html#AliPHOSvFast:AliPHOSvFast">AliPHOSvFast::AliPHOSvFast</a>(const <a href="../ListOfTypes.html#char">char</a> *name, const <a href="../ListOfTypes.html#char">char</a> *title):
+  <a href=".././AliPHOS.html">AliPHOS</a>(name,title)
+{
+<b>  // ctor</b>
+
+<b>  // gets an instance of the geometry parameters class  </b>
+   
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a> =  <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>(title, "") ; 
+
+  if (<a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:IsInitialized">IsInitialized</a>() ) 
+    cout &lt;&lt; "<a href=".././AliPHOSvFast.html">AliPHOSvFast</a> : PHOS geometry intialized for " &lt;&lt; <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;GetName() &lt;&lt; endl ;
+  else
+    cout &lt;&lt; "<a href=".././AliPHOSvFast.html">AliPHOSvFast</a> : PHOS geometry initialization failed !" &lt;&lt; endl ;   
+  
+  <a href="#AliPHOSvFast:SetBigBox">SetBigBox</a>(0, <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(0) ) ;
+  <a href="#AliPHOSvFast:SetBigBox">SetBigBox</a>(1, <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(1) + <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPPSDBoxSize">GetPPSDBoxSize</a>(1) ) ; 
+  <a href="#AliPHOSvFast:SetBigBox">SetBigBox</a>(2, <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetOuterBoxSize">GetOuterBoxSize</a>(0) ); 
+
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fNRecParticles">fNRecParticles</a> = 0 ; 
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a> = new <a href="../ListOfTypes.html#FastRecParticlesList">FastRecParticlesList</a>("<a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a>", 100) ;
+
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fResPara1">fResPara1</a> = 0.030 ;    // GeV
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fResPara2">fResPara2</a> = 0.00003 ; 
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fResPara3">fResPara3</a> = 0.00001 ; 
+
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaA0">fPosParaA0</a> = 2.87 ;    // mm
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaA1">fPosParaA1</a> = -0.0975 ;  
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaB0">fPosParaB0</a> = 0.257 ;   
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaB1">fPosParaB1</a> = 0.137 ; 
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaB2">fPosParaB2</a> = 0.00619 ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:~AliPHOSvFast"> </a><a href=".././AliPHOSvFast.html">AliPHOSvFast</a>::~<a href=".././AliPHOSvFast.html">AliPHOSvFast</a>()
+{
+<b>  // dtor</b>
+ 
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a>-&gt;Delete() ; 
+  delete <a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a> ;
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a> = 0 ; 
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:AddRecParticle"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:AddRecParticle">AliPHOSvFast::AddRecParticle</a>(const <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; rp)
+{  
+<b>  // Add a virtually reconstructed particle to the list </b>
+
+  new( (*<a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a>)[<a href=".././AliPHOSvFast.html#AliPHOSvFast:fNRecParticles">fNRecParticles</a>] ) <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a>(rp) ;
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fNRecParticles">fNRecParticles</a>++ ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:BuildGeometry"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:BuildGeometry">AliPHOSvFast::BuildGeometry</a>()
+{
+<b>  // Build the PHOS geometry for the ROOT display</b>
+<b>   //</b>
+  /*
+    <H2>
+     PHOS FAST in ALICE displayed by root
+    </H2>
+    <H4> All Views </H4>
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="Fast All Views" SRC="../images/AliPHOSvFastAllViews.gif"> 
+    </CENTER></P>
+    <H4> Front View </H4>
+    <P>
+    <CENTER>
+    <IMG Align=BOTTOM ALT="Fast Front View" SRC="../images/AliPHOSvFastFrontView.gif"> 
+    </CENTER></P>
+  */
+<b>  //  </b>
+ 
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kColorPHOS = kRed ;
+  
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+  
+  new TBRIK( "BigBox", "PHOS box", "<a href="../ListOfTypes.html#void">void</a>", <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(0)/2, 
+	     <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(1)/2, 
+	     <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(2)/2 );
+  
+<b>  // position PHOS into ALICE</b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() + <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(1) / 2.0 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> number = 988 ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> pphi =  TMath::ATan( <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(0)  / ( 2.0 * <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() ) ) ;
+  pphi *= kRADDEG ;
+  TNode * top = gAlice-&gt;GetGeometry()-&gt;GetNode("alice") ;
+ 
+  <a href="../ListOfTypes.html#char">char</a> * nodename = new <a href="../ListOfTypes.html#char">char</a>[20] ;  
+  <a href="../ListOfTypes.html#char">char</a> * rotname  = new <a href="../ListOfTypes.html#char">char</a>[20] ; 
+
+  for( <a href="../ListOfTypes.html#Int_t">Int_t</a> i = 1; i &lt;= <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNModules">GetNModules</a>(); i++ ) { 
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> angle = pphi * 2 * ( i - <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNModules">GetNModules</a>() / 2.0 - 0.5 ) ;
+   sprintf(rotname, "%s%d", "rot", number++) ;
+   new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
+   top-&gt;cd();
+   sprintf(nodename,"%s%d", "Module", i) ;    
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> x =  r * TMath::Sin( angle / kRADDEG ) ;
+   <a href="../ListOfTypes.html#Float_t">Float_t</a> y = -r * TMath::Cos( angle / kRADDEG ) ;
+   TNode * bigboxnode = new TNode(nodename, nodename, "BigBox", x, y, 0, rotname ) ;
+   bigboxnode-&gt;SetLineColor(kColorPHOS) ;
+   fNodes-&gt;Add(bigboxnode) ;
+  }
+  delete[] nodename ; 
+  delete[] rotname ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:CreateGeometry"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:CreateGeometry">AliPHOSvFast::CreateGeometry</a>()
+{
+<b>  // Create the geometry for GEANT</b>
+  
+  <a href=".././AliPHOSvFast.html">AliPHOSvFast</a> *phostmp = (<a href=".././AliPHOSvFast.html">AliPHOSvFast</a>*)gAlice-&gt;GetModule("PHOS") ;
+  
+  if ( phostmp == NULL ) {
+    
+    fprintf(stderr, "PHOS detector not found!n") ;
+    return ;
+    
+  }
+
+<b>  // Get pointer to the array containing media indeces</b>
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> *idtmed = fIdtmed-&gt;GetArray() - 699 ;
+  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> bigbox[3] ; 
+  bigbox[0] =   <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(0) / 2.0 ;
+  bigbox[1] =   <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(1) / 2.0 ;
+  bigbox[2] =   <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(2) / 2.0 ;
+  
+  gMC-&gt;Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
+  
+<b>  // --- Position  PHOS mdules in ALICE setup ---</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> idrotm[99] ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> const kRADDEG = 180.0 / kPI ;
+  
+  for( <a href="../ListOfTypes.html#Int_t">Int_t</a> i = 1; i &lt;= <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetNModules">GetNModules</a>(); i++ ) {
+    
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> angle = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>(i) ;
+    AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
+ 
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> r = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetIPtoCrystalSurface">GetIPtoCrystalSurface</a>() + <a href="#AliPHOSvFast:GetBigBox">GetBigBox</a>(1) / 2.0 ;
+
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> xP1 = r * TMath::Sin( angle / kRADDEG ) ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
+    gMC-&gt;Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
+ 
+  } // for GetNModules
+
+}
+
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:Init"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:Init">AliPHOSvFast::Init</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // Prints out an information message</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> i;
+
+  printf("n");
+  for(i=0;i&lt;35;i++) printf("*");
+  printf(" FAST PHOS_INIT ");
+  for(i=0;i&lt;35;i++) printf("*");
+  printf("n");
+
+<b>  // Here the PHOS initialisation code (if any!)</b>
+
+  for(i=0;i&lt;80;i++) printf("*");
+  printf("n");
+  
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSvFast:GetBigBox"> </a><a href="../ListOfTypes.html#Float_t">Float_t</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:GetBigBox">AliPHOSvFast::GetBigBox</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> index)
+{
+<b>  // Get the X, Y or Z dimension of the box describing a PHOS module</b>
+  
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> rv = 0 ; 
+
+  switch (index) {
+  case 0:
+    rv = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fBigBoxX">fBigBoxX</a> ; 
+    break ; 
+  case 1:
+     rv = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fBigBoxY">fBigBoxY</a> ; 
+    break ; 
+  case 2:
+     rv = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fBigBoxZ">fBigBoxZ</a> ; 
+    break ; 
+ }
+  return rv ; 
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSvFast:MakeBranch"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:MakeBranch">AliPHOSvFast::MakeBranch</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a>* opt)
+{  
+<b>  // Create new branch in the current reconstructed Root Tree</b>
+ 
+  AliDetector::<a href="#AliPHOSvFast:MakeBranch">MakeBranch</a>(opt) ;
+  
+  <a href="../ListOfTypes.html#char">char</a> branchname[10];
+  sprintf(branchname,"%s",GetName());
+  <a href="../ListOfTypes.html#char">char</a> *cd = strstr(opt,"R");
+  
+  if (<a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a> &amp;&amp; gAlice-&gt;TreeR() &amp;&amp; cd) {
+    gAlice-&gt;TreeR()-&gt;Branch(branchname, &amp;<a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a>, fBufferSize);
+  }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:MakeEnergy"> </a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:MakeEnergy">AliPHOSvFast::MakeEnergy</a>(const <a href="../ListOfTypes.html#Double_t">Double_t</a> energy)
+{  
+<b>  // Smears the energy according to the energy dependent energy resolution.</b>
+<b>  // A gaussian distribution is assumed</b>
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> sigma  = <a href="#AliPHOSvFast:SigmaE">SigmaE</a>(energy) ; 
+  return  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Gaus(energy, sigma) ;   
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:MakePosition"> </a>TVector3 <a href=".././AliPHOSvFast.html#AliPHOSvFast:MakePosition">AliPHOSvFast::MakePosition</a>(const <a href="../ListOfTypes.html#Double_t">Double_t</a> energy, const TVector3 pos, const <a href="../ListOfTypes.html#Double_t">Double_t</a> theta, const <a href="../ListOfTypes.html#Double_t">Double_t</a> phi)
+{
+<b>  // Smears the impact position according to the energy dependent position resolution</b>
+<b>  // A gaussian position distribution is assumed</b>
+
+  TVector3 newpos ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> sigma = <a href="#AliPHOSvFast:SigmaP">SigmaP</a>( energy, theta*180./TMath::Pi() ) ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> x = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Gaus( pos.X(), sigma ) ;
+  sigma = <a href="#AliPHOSvFast:SigmaP">SigmaP</a>( energy, phi*180./TMath::Pi() ) ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> z = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Gaus( pos.Z(), sigma ) ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> y = pos.Y() ; 
+  
+  newpos.SetX(x) ; 
+  newpos.SetY(y) ; 
+  newpos.SetZ(z) ; 
+	      
+  return newpos ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:MakeRecParticle"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:MakeRecParticle">AliPHOSvFast::MakeRecParticle</a>(const <a href="../ListOfTypes.html#Int_t">Int_t</a> modid, const TVector3 pos, <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; rp)
+{
+<b>  // Modify the primary particle properties according</b>
+<b>  //  1. the response function of PHOS</b>
+<b>  //  2. the performance of the EMC+PPSD setup</b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> type = <a href="#AliPHOSvFast:MakeType">MakeType</a>( rp ) ;
+  rp.SetType(type) ;
+
+  
+<b>  // get the detected energy</b>
+
+  TLorentzVector momentum ;  
+  rp.Momentum(momentum) ; 
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> kineticenergy = TMath::Sqrt( TMath::Power(momentum.E(), 2) - TMath::Power(rp.GetMass(), 2) ) ; 
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> modifiedkineticenergy = <a href="#AliPHOSvFast:MakeEnergy">MakeEnergy</a>(kineticenergy ) ;
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> modifiedenergy = TMath::Sqrt( TMath::Power(modifiedkineticenergy, 2)  
+					 + TMath::Power( rp.GetMass(), 2) ) ;
+ 
+<b>  // get the angle of incidence </b>
+  
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> incidencetheta = 90. * TMath::Pi() /180 - rp.Theta() ; 
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> incidencephi   = ( 270 + <a href=".././AliPHOSvFast.html#AliPHOSvFast:fGeom">fGeom</a>-&gt;<a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetPHOSAngle">GetPHOSAngle</a>(modid) ) * TMath::Pi() / 180. - rp.Phi() ;   
+
+<b>  // get the detected direction</b>
+  
+  TVector3 modifiedposition = <a href="#AliPHOSvFast:MakePosition">MakePosition</a>(kineticenergy, pos, incidencetheta, incidencephi) ; 
+  modifiedposition *= modifiedkineticenergy / modifiedposition.Mag() ; 
+
+<b>  // Set the modified 4-momentum of the reconstructed particle</b>
+
+  rp.SetMomentum(modifiedposition.X(), modifiedposition.Y(), modifiedposition.Z(), modifiedenergy) ; 
+
+ }
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:MakeType"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:MakeType">AliPHOSvFast::MakeType</a>(<a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; rp )
+{
+<b>  // Generate a particle type using the performance of the EMC+PPSD setup</b>
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> rv =  kUNDEFINED ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> charge = (<a href="../ListOfTypes.html#Int_t">Int_t</a>)rp.GetPDG()-&gt;Charge() ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> test ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> ran ; 
+  if ( charge != 0 &amp;&amp; ( TMath::Abs(rp.GetPdgCode()) != 11 ) ) 
+    test = - 1 ;
+  else
+    test = rp.GetPdgCode() ; 
+
+  switch (test) { 
+
+  case 22:    // it's a photon
+    ran = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Rndm() ; 
+    if ( ran &lt;= 0.5 )  // 50 % 
+      rv = kGAMMA ; 
+    else {
+      ran = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Rndm() ; 
+      if( ran &lt;= 0.9498 )
+	rv = kNEUTRALEM ; 
+      else
+	rv = kNEUTRALHADRON ; 
+    }     
+    break ; 
+
+  case 2112:  // it's a neutron
+    ran = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Rndm() ; 
+    if ( ran &lt;= 0.9998 )
+      rv = kNEUTRALHADRON ; 
+    else 
+      rv = kNEUTRALEM ; 
+    break ; 
+
+  case -2112: // it's a anti-neutron
+    ran = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Rndm() ; 
+    if ( ran &lt;= 0.9984 )
+      rv = kNEUTRALHADRON ; 
+    else 
+      rv = kNEUTRALEM ; 
+    break ; 
+    
+  case 11:    // it's a electron
+    ran = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Rndm() ; 
+    if ( ran &lt;= 0.9996 )
+      rv = kELECTRON ; 
+    else 
+      rv = kCHARGEDHADRON ; 
+    break; 
+
+  case -11:   // it's a positon
+    ran = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Rndm() ; 
+    if ( ran &lt;= 0.9996 )
+      rv = kELECTRON ; 
+    else 
+      rv = kCHARGEDHADRON ; 
+    break; 
+
+  case -1:    // it's a charged
+    ran = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fRan">fRan</a>.Rndm() ; 
+    if ( ran &lt;= 0.9996 )
+      rv = kCHARGEDHADRON ; 
+    else 
+      rv = kGAMMA ; 
+
+    break ; 
+  }
+    
+  
+  return rv ;
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSvFast:ResetPoints"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:ResetPoints">AliPHOSvFast::ResetPoints</a>()
+{
+<b>  // This overloads the method in AliDetector</b>
+  
+  <a href="#AliPHOSvFast:ResetFastRecParticles">ResetFastRecParticles</a>() ; 
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSvFast:ResetFastRecParticles"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:ResetFastRecParticles">AliPHOSvFast::ResetFastRecParticles</a>()
+{
+<b>  // Resets the list of virtual reconstructed particles</b>
+ 
+  if (<a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a>) 
+    <a href=".././AliPHOSvFast.html#AliPHOSvFast:fFastRecParticles">fFastRecParticles</a>-&gt;Clear() ;
+  <a href=".././AliPHOSvFast.html#AliPHOSvFast:fNRecParticles">fNRecParticles</a> = 0 ; 
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSvFast:SetBigBox"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:SetBigBox">AliPHOSvFast::SetBigBox</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> index, <a href="../ListOfTypes.html#Float_t">Float_t</a> value)
+{
+<b>  // Set the size of the Box describing a PHOS module</b>
+  
+  switch (index) {
+  case 0:
+    <a href=".././AliPHOSvFast.html#AliPHOSvFast:fBigBoxX">fBigBoxX</a> = value ; 
+    break ; 
+  case 1:
+    <a href=".././AliPHOSvFast.html#AliPHOSvFast:fBigBoxY">fBigBoxY</a> = value ; 
+    break ; 
+  case 2:
+    <a href=".././AliPHOSvFast.html#AliPHOSvFast:fBigBoxZ">fBigBoxZ</a> = value ; 
+    break ; 
+ }
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:SigmaE"> </a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:SigmaE">AliPHOSvFast::SigmaE</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> energy)
+{
+<b>  // Calculates the energy dependent energy resolution</b>
+  
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> rv = -1 ; 
+  
+  rv = TMath::Sqrt( TMath::Power(<a href=".././AliPHOSvFast.html#AliPHOSvFast:fResPara1">fResPara1</a>/energy, 2) 
+	       + TMath::Power(<a href=".././AliPHOSvFast.html#AliPHOSvFast:fResPara2">fResPara2</a>/TMath::Sqrt(energy), 2) 
+	       + TMath::Power(<a href=".././AliPHOSvFast.html#AliPHOSvFast:fResPara3">fResPara3</a>, 2) ) ;  
+
+  return rv * energy ; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:SigmaP"> </a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:SigmaP">AliPHOSvFast::SigmaP</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> energy, <a href="../ListOfTypes.html#Int_t">Int_t</a> incidence)
+{
+<b>  // Calculates the energy dependent position resolution </b>
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> paraA = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaA0">fPosParaA0</a> + <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaA1">fPosParaA1</a> * incidence ; 
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> paraB = <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaB0">fPosParaB0</a> + <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaB1">fPosParaB1</a> * incidence + <a href=".././AliPHOSvFast.html#AliPHOSvFast:fPosParaB2">fPosParaB2</a> * incidence * incidence ; 
+
+  return ( paraA / TMath::Sqrt(energy) + paraB ) * 0.1   ; // in cm  
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSvFast:StepManager"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSvFast.html#AliPHOSvFast:StepManager">AliPHOSvFast::StepManager</a>(<a href="../ListOfTypes.html#void">void</a>)
+{
+<b>  // Only verifies if the particle reaches PHOS and stops the tracking </b>
+  
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> primary =  gAlice-&gt;GetPrimary( gAlice-&gt;CurrentTrack() ); 
+  TLorentzVector lv ; 
+  gMC-&gt;TrackPosition(lv) ;
+  TVector3 pos = lv.Vect() ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> modid  ; 
+  gMC-&gt;CurrentVolID(modid);
+  
+<b>  // Makes a reconstructed particle from the primary particle</b>
+
+  TClonesArray * particlelist = gAlice-&gt;Particles() ;
+  TParticle * part = (TParticle *)particlelist-&gt;At(primary) ;  
+
+  <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> rp(*part) ;
+  rp.SetPrimary(primary) ; 
+
+<b>  // Adds the response of PHOS to the particle</b>
+
+  <a href="#AliPHOSvFast:MakeRecParticle">MakeRecParticle</a>(modid, pos, rp) ;
+  
+<b>  // add the primary particle to the FastRecParticles list</b>
+  
+  <a href="#AliPHOSvFast:AddRecParticle">AddRecParticle</a>(rp) ;
+
+<b>  // stop the track as soon PHOS is reached</b>
+  
+  gMC-&gt;StopTrack() ; 
+
+}
+
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

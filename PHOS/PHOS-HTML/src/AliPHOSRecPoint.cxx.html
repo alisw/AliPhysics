@@ -1,0 +1,269 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:56 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSRecPoint - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  Base Class for PHOS Reconstructed Points  </b>
+<b>//                  </b>
+<b>//*-- Author: Gines Martinez (SUBATECH)</b>
+
+<b>// --- ROOT system ---</b>
+#include "TPad.h"
+
+<b>// --- Standard library ---</b>
+#include &lt;iostream&gt;
+#include &lt;cstdio&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSGeometry.h">AliPHOSGeometry.h</a>"
+#include "<a href="../AliPHOSDigit.h">AliPHOSDigit.h</a>"
+#include "<a href="../AliPHOSRecPoint.h">AliPHOSRecPoint.h</a>"
+
+
+
+ClassImp(AliPHOSRecPoint)
+
+
+<b>//____________________________________________________________________________</b>
+<a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:AliPHOSRecPoint">AliPHOSRecPoint::AliPHOSRecPoint</a>()
+  : AliRecPoint()
+{
+<b>  // ctor</b>
+
+  fGeom =   <a href=".././AliPHOSGeometry.html#AliPHOSGeometry:GetInstance">AliPHOSGeometry::GetInstance</a>() ;
+  <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:fPHOSMod">fPHOSMod</a> = 0;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSRecPoint:DistancetoPrimitive"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:DistancetoPrimitive">AliPHOSRecPoint::DistancetoPrimitive</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> px, <a href="../ListOfTypes.html#Int_t">Int_t</a> py)
+{
+<b>  // Compute distance from point px,py to  a <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> considered as a Tmarker</b>
+<b>  // Compute the closest distance of approach from point px,py to this marker.</b>
+<b>  // The distance is computed in pixels units.</b>
+
+  TVector3 pos(0.,0.,0.) ;
+  GetLocalPosition( pos) ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> x =  pos.X() ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> y =  pos.Z() ;
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kMaxDiff = 10;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> pxm  = gPad-&gt;XtoAbsPixel(x);
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> pym  = gPad-&gt;YtoAbsPixel(y);
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
+  
+  if (dist &gt; kMaxDiff) return 9999;
+  return dist;
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSRecPoint:Draw"> </a> <a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:Draw">AliPHOSRecPoint::Draw</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a> *option)
+ {
+<b>   // Draw this <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> with its current attributes</b>
+   
+   AppendPad(option);
+ }
+
+<b>//______________________________________________________________________________</b>
+<a name="AliPHOSRecPoint:ExecuteEvent"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:ExecuteEvent">AliPHOSRecPoint::ExecuteEvent</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> event, <a href="../ListOfTypes.html#Int_t">Int_t</a> px, <a href="../ListOfTypes.html#Int_t">Int_t</a> py)
+{
+<b>  // Execute action corresponding to one event</b>
+<b>  // This member function is called when a <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a> is clicked with the locator</b>
+<b>  //</b>
+<b>  // If Left button is clicked on <a href=".././AliPHOSRecPoint.html">AliPHOSRecPoint</a>, the digits are switched on    </b>
+<b>  // and switched off when the mouse button is released.</b>
+
+<b>  //  static <a href="../ListOfTypes.html#Int_t">Int_t</a> pxold, pyold;</b>
+
+  static TGraph *  digitgraph = 0 ;
+  static TPaveText* clustertext = 0 ;
+  
+  if (!gPad-&gt;IsEditable()) return;
+  
+  switch (event) {
+    
+    
+  case kButton1Down:{
+    <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ;
+    <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * phosgeom =  (<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> *) fGeom ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> iDigit;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> xi[fMulDigit] ;
+    <a href="../ListOfTypes.html#Float_t">Float_t</a> zi[fMulDigit] ;
+    
+    for(iDigit=0; iDigit&lt;fMulDigit; iDigit++) {
+      digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *) fDigitsList[iDigit];
+      phosgeom-&gt;AbsToRelNumbering(digit-&gt;GetId(), relid) ;
+      phosgeom-&gt;RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;
+    }
+    
+    if (!digitgraph) {
+      digitgraph = new TGraph(fMulDigit,xi,zi);
+      digitgraph-&gt; SetMarkerStyle(5) ; 
+      digitgraph-&gt; SetMarkerSize(1.) ;
+      digitgraph-&gt; SetMarkerColor(1) ;
+      digitgraph-&gt; <a href="#AliPHOSRecPoint:Draw">Draw</a>("P") ;
+    }
+    if (!clustertext) {
+      
+      TVector3 pos(0.,0.,0.) ;
+      GetLocalPosition(pos) ;
+      clustertext = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
+      <a href="../ListOfTypes.html#Text_t">Text_t</a>  line1[40] ;
+      <a href="../ListOfTypes.html#Text_t">Text_t</a>  line2[40] ;
+      sprintf(line1,"Energy=%1.2f GeV",GetEnergy()) ;
+      sprintf(line2,"%d Digits",GetDigitsMultiplicity()) ;
+      clustertext -&gt;AddText(line1) ;
+      clustertext -&gt;AddText(line2) ;
+      clustertext -&gt;<a href="#AliPHOSRecPoint:Draw">Draw</a>("");
+    }
+    gPad-&gt;Update() ; 
+    <a href="#AliPHOSRecPoint:Print">Print</a>() ;
+  }
+  
+  break;
+  
+  case kButton1Up:
+    if (digitgraph) {
+      delete digitgraph  ;
+      digitgraph = 0 ;
+    }
+    if (clustertext) {
+      delete clustertext ;
+      clustertext = 0 ;
+    }
+    
+    break;
+    
+  }
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSRecPoint:GetPHOSMod"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:GetPHOSMod">AliPHOSRecPoint::GetPHOSMod</a>()
+{
+<b>  // Returns the PHOS module in which the RecPoint is found</b>
+ 
+  if(<a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:fPHOSMod">fPHOSMod</a> &gt; 0) 
+    return <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:fPHOSMod">fPHOSMod</a> ;
+
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> relid[4] ;
+  
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit   ;
+  digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *) fDigitsList[0] ;
+  <a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> * phosgeom =  (<a href=".././AliPHOSGeometry.html">AliPHOSGeometry</a> *) fGeom ;
+
+  phosgeom-&gt;AbsToRelNumbering(digit-&gt;GetId(), relid) ;
+  <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:fPHOSMod">fPHOSMod</a> = relid[0];
+  return <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:fPHOSMod">fPHOSMod</a> ;
+}
+
+<b>//______________________________________________________________________________</b>
+<a name="AliPHOSRecPoint:GetPrimaries"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> * <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:GetPrimaries">AliPHOSRecPoint::GetPrimaries</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; number)
+{
+<b>  // Constructs the list of primary particles which have contributed to this RecPoint</b>
+  
+  <a href=".././AliPHOSDigit.html">AliPHOSDigit</a> * digit ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> index ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> maxcounter = 10 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> counter    = 0 ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * tempo    = new <a href="../ListOfTypes.html#Int_t">Int_t</a>[maxcounter] ;
+  
+  for ( index = 0 ; index &lt; GetDigitsMultiplicity() ; index++ ) { // all digits
+    digit = (<a href=".././AliPHOSDigit.html">AliPHOSDigit</a> *) fDigitsList[index] ; 
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> nprimaries = digit-&gt;GetNprimary() ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> * newprimaryarray = new <a href="../ListOfTypes.html#Int_t">Int_t</a>[nprimaries] ;
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> ii ; 
+    for ( ii = 0 ; ii &lt; nprimaries ; ii++)
+      newprimaryarray[ii] = digit-&gt;GetPrimary(ii+1) ; 
+    <a href="../ListOfTypes.html#Int_t">Int_t</a> jndex ;
+    for ( jndex = 0 ; jndex &lt; nprimaries ; jndex++ ) { // all primaries in digit
+      if ( counter &gt; maxcounter ) {
+	number = - 1 ;
+	cout &lt;&lt; "<a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:GetNprimaries">AliPHOSRecPoint::GetNprimaries</a> ERROR &gt; increase maxcounter " &lt;&lt; endl ;
+	break ;
+      }
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> newprimary = newprimaryarray[jndex] ;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> kndex ;
+      <a href="../ListOfTypes.html#Bool_t">Bool_t</a> already = kFALSE ;
+      for ( kndex = 0 ; kndex &lt; counter ; kndex++ ) { //check if not already stored
+	if ( newprimary == tempo[kndex] ){
+	  already = kTRUE ;
+	  break ;
+	}
+      } // end of check
+      if ( !already) { // store it
+	tempo[counter] = newprimary ; 
+	counter++ ;
+      } // store it
+    } // all primaries in digit
+    delete newprimaryarray ; 
+  } // all digits
+
+  number = counter ; 
+  return tempo ; 
+}
+
+<b>//______________________________________________________________________________</b>
+<a name="AliPHOSRecPoint:Paint"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSRecPoint.html#AliPHOSRecPoint:Paint">AliPHOSRecPoint::Paint</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a> *)
+{
+<b>  // Paint this ALiRecPoint as a TMarker  with its current attributes</b>
+  
+  TVector3 pos(0.,0.,0.)  ;
+  GetLocalPosition(pos)   ;
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> x = pos.X()     ;
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> y = pos.Z()     ;
+  <a href="../ListOfTypes.html#Color_t">Color_t</a> markercolor = 1 ;
+  <a href="../ListOfTypes.html#Size_t">Size_t</a>  markersize = 1. ;
+  <a href="../ListOfTypes.html#Style_t">Style_t</a> markerstyle = 5 ;
+  
+  if (!gPad-&gt;IsBatch()) {
+    gVirtualX-&gt;SetMarkerColor(markercolor) ;
+    gVirtualX-&gt;SetMarkerSize (markersize)  ;
+    gVirtualX-&gt;SetMarkerStyle(markerstyle) ;
+  }
+  gPad-&gt;SetAttMarkerPS(markercolor,markerstyle,markersize) ;
+  gPad-&gt;PaintPolyMarker(1,&amp;x,&amp;y,"") ;
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:55 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSFastRecParticle - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>//  A  Particle modified by PHOS response and produced by <a href=".././AliPHOSvFast.html">AliPHOSvFast</a></b>
+<b>//  To become a general class of AliRoot ?    </b>
+<b>//               </b>
+<b>//*-- Author: Yves Schutz (SUBATECH)</b>
+
+<b>// --- ROOT system ---</b>
+
+<b>// --- Standard library ---</b>
+
+#include &lt;iostream&gt;
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOSFastRecParticle.h">AliPHOSFastRecParticle.h</a>"
+#include "TPad.h"
+#include "TPaveText.h"
+
+ClassImp(AliPHOSFastRecParticle)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:AliPHOSFastRecParticle"> </a> <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:AliPHOSFastRecParticle">AliPHOSFastRecParticle::AliPHOSFastRecParticle</a>(const <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; rp)
+{
+<b>  // copy ctor</b>
+
+  <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:fType">fType</a>        = rp.<a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:fType">fType</a> ; 
+  fPdgCode     = rp.fPdgCode;
+  fStatusCode  = rp.fStatusCode;
+  fMother[0]   = rp.fMother[0];
+  fMother[1]   = rp.fMother[1];
+  fDaughter[0] = rp.fDaughter[0];
+  fDaughter[1] = rp.fDaughter[1];
+  fWeight      = rp.fWeight;
+  fCalcMass    = rp.fCalcMass;
+  fPx          = rp.fPx;
+  fPy          = rp.fPy;
+  fPz          = rp.fPz;
+  fE           = rp.fE;
+  fVx          = rp.fVx;
+  fVy          = rp.fVy;
+  fVz          = rp.fVz;
+  fVt          = rp.fVt;
+  fPolarTheta  = rp.fPolarTheta;
+  fPolarPhi    = rp.fPolarPhi;
+  fParticlePDG = rp.fParticlePDG; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:AliPHOSFastRecParticle"> </a> <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:AliPHOSFastRecParticle">AliPHOSFastRecParticle::AliPHOSFastRecParticle</a>(const TParticle &amp; pp)
+{
+<b>  // ctor from a TParticle (crummy?!)</b>
+ 
+  TParticle &amp; pnoconst = const_cast&lt;TParticle &amp;&gt;(pp) ;
+  <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &amp; p = static_cast&lt;<a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a>&amp;&gt;(pnoconst) ;
+
+  fPdgCode     = p.fPdgCode;
+  fStatusCode  = p.fStatusCode;
+  fMother[0]   = p.fMother[0];
+  fMother[1]   = p.fMother[1];
+  fDaughter[0] = p.fDaughter[0];
+  fDaughter[1] = p.fDaughter[1];
+  fWeight      = p.fWeight;
+  fCalcMass    = p.fCalcMass;
+  fPx          = p.fPx;
+  fPy          = p.fPy;
+  fPz          = p.fPz;
+  fE           = p.fE;
+  fVx          = p.fVx;
+  fVy          = p.fVy;
+  fVz          = p.fVz;
+  fVt          = p.fVt;
+  fPolarTheta  = p.fPolarTheta;
+  fPolarPhi    = p.fPolarPhi;
+  fParticlePDG = p.fParticlePDG; 
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:DistancetoPrimitive"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:DistancetoPrimitive">AliPHOSFastRecParticle::DistancetoPrimitive</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> px, <a href="../ListOfTypes.html#Int_t">Int_t</a> py)
+{
+<b>  //  Compute distance from point px,py to a <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> considered as a Tmarker</b>
+<b>  //  Compute the closest distance of approach from point px,py to this marker.</b>
+<b>  //  The distance is computed in pixels units.</b>
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> kRADDEG = 180. / TMath::Pi() ; 
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> x = Phi() * kRADDEG     ;
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> y = Theta() * kRADDEG     ;
+  const <a href="../ListOfTypes.html#Int_t">Int_t</a> kMaxDiff = 10;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> pxm  = gPad-&gt;XtoAbsPixel(x);
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> pym  = gPad-&gt;YtoAbsPixel(y);
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
+  
+  if (dist &gt; kMaxDiff) return 9999;
+  return dist;
+}
+
+<b>//___________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:Draw"> </a> <a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:Draw">AliPHOSFastRecParticle::Draw</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a> *option)
+ {
+<b>   // Draw this <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> with its current attributes</b>
+    
+   AppendPad(option);
+ }
+
+<b>//______________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:ExecuteEvent"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:ExecuteEvent">AliPHOSFastRecParticle::ExecuteEvent</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> event, <a href="../ListOfTypes.html#Int_t">Int_t</a> px, <a href="../ListOfTypes.html#Int_t">Int_t</a> py)
+{
+<b>  //  Execute action corresponding to one event</b>
+<b>  //  This member function is called when a <a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> is clicked with the locator</b>
+     
+  if (!gPad-&gt;IsEditable()) 
+    return ;
+
+  static TPaveText * clustertext = 0 ; 
+
+  switch (event) {
+    
+  case kButton1Down: {
+    <a href="../ListOfTypes.html#Double_t">Double_t</a> kRADDEG = 180. / TMath::Pi() ; 
+    <a href="../ListOfTypes.html#Coord_t">Coord_t</a> x = Phi() * kRADDEG     ;
+    <a href="../ListOfTypes.html#Coord_t">Coord_t</a> y = Theta() * kRADDEG     ;
+    clustertext = new TPaveText(x-1, y+1, x+5, y+3, "") ;
+    <a href="../ListOfTypes.html#Text_t">Text_t</a>  line1[40] ;
+    <a href="../ListOfTypes.html#Text_t">Text_t</a>  line2[40] ;
+    sprintf( line1, "PID: %s ", (const <a href="../ListOfTypes.html#char">char</a>*)<a href="#AliPHOSFastRecParticle:Name">Name</a>() ) ;
+    sprintf( line2, "ENERGY: %f ", Energy() ) ;
+    clustertext -&gt;AddText(line1) ;
+    clustertext -&gt;AddText(line2) ;
+    clustertext -&gt;<a href="#AliPHOSFastRecParticle:Draw">Draw</a>("");   
+    gPad-&gt;Update() ; 
+    break ;
+  }
+  
+  case kButton1Up: {
+    delete clustertext ; 
+    clustertext = 0 ; 
+    gPad-&gt;Update() ; 
+   break ;
+  }
+  
+  }
+
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:GetPrimaries"> </a><a href="../ListOfTypes.html#Int_t">Int_t</a> * <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:GetPrimaries">AliPHOSFastRecParticle::GetPrimaries</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> &amp; number) 
+{
+<b>  // Retrieves the unique primary particle at the origine of the present reconstruced particle</b>
+
+  number = 1 ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * list = new <a href="../ListOfTypes.html#Int_t">Int_t</a>[1] ;
+  list[0] = <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:fPrimary">fPrimary</a> ; 
+  
+  return list ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:Name"> </a>TString <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:Name">AliPHOSFastRecParticle::Name</a>()
+{
+<b>  // Returns the name of the particle type</b>
+  
+  TString  name ; 
+  switch (<a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:fType">fType</a>) {
+  case kGAMMA:
+    name = "PHOTON" ;
+    break ; 
+   case kELECTRON:
+     name = "ELECTRON" ;
+    break ; 
+  case kNEUTRAL:
+    name = "NEUTRAL" ;
+    break ; 
+   case kCHARGEDHADRON:
+    name = "CHARGED HADRON" ;
+    break ; 
+  case kNEUTRALHADRON:
+    name = "NEUTRAL HADRON" ; 
+    break ; 
+  case kNEUTRALEM:
+    name = "NEUTRAL EM" ; 
+    break ; 
+  case kGAMMAHADRON:
+    name = "PHOTON HADRON" ; 
+    break ; 
+
+  }
+  return name ; 
+}
+
+<b>//______________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:Paint"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:Paint">AliPHOSFastRecParticle::Paint</a>(<a href="../ListOfTypes.html#Option_t">Option_t</a> *)
+{
+<b>  // Paint this ALiRecParticle in theta,phi coordinate as a TMarker  with its current attributes</b>
+
+  <a href="../ListOfTypes.html#Double_t">Double_t</a> kRADDEG = 180. / TMath::Pi() ; 
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> x = Phi() * kRADDEG     ;
+  <a href="../ListOfTypes.html#Coord_t">Coord_t</a> y = Theta() * kRADDEG     ;
+  <a href="../ListOfTypes.html#Color_t">Color_t</a> markercolor = 1 ;
+  <a href="../ListOfTypes.html#Size_t">Size_t</a>  markersize  = 1. ;
+  <a href="../ListOfTypes.html#Style_t">Style_t</a> markerstyle = 5 ;
+  
+  if (!gPad-&gt;IsBatch()) {
+    gVirtualX-&gt;SetMarkerColor(markercolor) ;
+    gVirtualX-&gt;SetMarkerSize (markersize)  ;
+    gVirtualX-&gt;SetMarkerStyle(markerstyle) ;
+  }
+  gPad-&gt;SetAttMarkerPS(markercolor,markerstyle,markersize) ;
+  gPad-&gt;PaintPolyMarker(1,&amp;x,&amp;y,"") ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOSFastRecParticle:Print"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOSFastRecParticle.html#AliPHOSFastRecParticle:Print">AliPHOSFastRecParticle::Print</a>()
+{
+<b>  // Print the typr, energy and momentum</b>
+  
+  cout &lt;&lt; "<a href=".././AliPHOSFastRecParticle.html">AliPHOSFastRecParticle</a> &gt; " &lt;&lt; "type is  " &lt;&lt; <a href="#AliPHOSFastRecParticle:Name">Name</a>() &lt;&lt; endl 
+       &lt;&lt; "                     " &lt;&lt; "Energy = " &lt;&lt; fE &lt;&lt; endl 
+       &lt;&lt; "                     " &lt;&lt; "Px     = " &lt;&lt; fPx &lt;&lt; endl 
+       &lt;&lt; "                     " &lt;&lt; "Py     = " &lt;&lt; fPy &lt;&lt; endl 
+       &lt;&lt; "                     " &lt;&lt; "Pz     = " &lt;&lt; fPz &lt;&lt; endl ; 
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:50 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSReconstructioner</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSReconstructioner</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSReconstructioner:description>class description</a> - <a href="src/AliPHOSReconstructioner.cxx.html">source file</a> - <a href="AliPHOSReconstructioner_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSReconstructioner" href="AliPHOSReconstructioner.h">AliPHOSReconstructioner</a> : public TObject</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->      <a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:AliPHOSReconstructioner">AliPHOSReconstructioner</a><!--PLAIN-->()
+<!--TAB6-->      <a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:AliPHOSReconstructioner">AliPHOSReconstructioner</a><!--PLAIN-->(<a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a>* Clusterizer, <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>* Tracker, <a href="./AliPHOSPID.html">AliPHOSPID</a>* Identifier)
+<!--TAB6-->      <a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:AliPHOSReconstructioner">AliPHOSReconstructioner</a><!--PLAIN-->(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>&amp;)
+<!--TAB6-->                 virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:~AliPHOSReconstructioner">~AliPHOSReconstructioner</a><!--PLAIN-->()
+<!--TAB6-->                      TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->          <a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a>* <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:GetClusterizer">GetClusterizer</a><!--PLAIN-->()
+<!--TAB6-->                         <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:Init">Init</a><!--PLAIN-->(<a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a>* Clusterizer, <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>* Tracker, <a href="./AliPHOSPID.html">AliPHOSPID</a>* Identifier)
+<!--TAB6-->              virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->                         <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:Make">Make</a><!--PLAIN-->(TClonesArray* DL, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* emccl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a>* ppsdl, <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a>* trsl, <a href="ListOfTypes.html#RecParticlesList">RecParticlesList</a>* rpl)
+<!--TAB6-->                 virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->                 virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSReconstructioner:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSReconstructioner:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->            <a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a>* <!--TAB--><!--BOLD--><a name="AliPHOSReconstructioner:fClusterizer">fClusterizer</a><!--PLAIN-->        <!--TAB--><i><a name="Title:fClusterizer">Method for clusterization </a></i>
+<!--TAB6-->      <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>* <!--TAB--><!--BOLD--><a name="AliPHOSReconstructioner:fTrackSegmentMaker">fTrackSegmentMaker</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fTrackSegmentMaker">Method for track segments finding</a></i>
+<!--TAB6-->                    <a href="./AliPHOSPID.html">AliPHOSPID</a>* <!--TAB--><!--BOLD--><a name="AliPHOSReconstructioner:fPID">fPID</a><!--PLAIN-->                <!--TAB--><i><a name="Title:fPID">Method for identifying the type of particle</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSReconstructioner:description">Class Description</a></h2>
+<pre>  Algorithm class for the reconstruction: clusterizer
+                                          track segment maker
+                                          particle identifier
+
+*-- Author: Gines Martinez &amp; Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSReconstructioner:AliPHOSReconstructioner" href="src/AliPHOSReconstructioner.cxx.html#AliPHOSReconstructioner:AliPHOSReconstructioner">AliPHOSReconstructioner</a>(<a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a> * Clusterizer, 
+						 <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a> * Tracker,
+						 <a href="./AliPHOSPID.html">AliPHOSPID</a> * Pid)
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--> <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSReconstructioner:Init" href="src/AliPHOSReconstructioner.cxx.html#AliPHOSReconstructioner:Init">Init</a>(<a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a> * Clusterizer, 
+						 <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a> * Tracker,
+						 <a href="./AliPHOSPID.html">AliPHOSPID</a> * Pid)
+<br>
+<hr>
+<!--FUNCTION--> <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSReconstructioner:Make" href="src/AliPHOSReconstructioner.cxx.html#AliPHOSReconstructioner:Make">Make</a>(TClonesArray * dl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * emccl, <a href="ListOfTypes.html#RecPointsList">RecPointsList</a> * ppsdl, 
+				     <a href="ListOfTypes.html#TrackSegmentsList">TrackSegmentsList</a> * trsl, <a href="ListOfTypes.html#RecParticlesList">RecParticlesList</a> * rpl)
+<br>
+<pre> Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)
+                                                      Make the track segments
+                                                      Make the reconstructed particles
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> <a name="AliPHOSReconstructioner:AliPHOSReconstructioner" href="AliPHOSReconstructioner.h">AliPHOSReconstructioner</a>(<a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a>* Clusterizer, <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>* Tracker, <a href="./AliPHOSPID.html">AliPHOSPID</a>* Identifier)
+<!--INLINE FUNCTION--><!--TAB6-->            <a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a>* <a name="AliPHOSReconstructioner:GetClusterizer" href="AliPHOSReconstructioner.h">GetClusterizer</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                        TClass* <a name="AliPHOSReconstructioner:Class" href="AliPHOSReconstructioner.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                        TClass* <a name="AliPHOSReconstructioner:IsA" href="AliPHOSReconstructioner.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                           <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSReconstructioner:ShowMembers" href="AliPHOSReconstructioner.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                           <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSReconstructioner:Streamer" href="AliPHOSReconstructioner.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a> <a name="AliPHOSReconstructioner:AliPHOSReconstructioner" href="AliPHOSReconstructioner.h">AliPHOSReconstructioner</a>(<a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>&amp;)
+<!--INLINE FUNCTION--><!--TAB6-->                           <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSReconstructioner:~AliPHOSReconstructioner" href="AliPHOSReconstructioner.h">~AliPHOSReconstructioner</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

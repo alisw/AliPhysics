@@ -1,0 +1,334 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:47 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOS - source file</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+<b>//_________________________________________________________________________</b>
+<b>// Base Class for PHOS description:</b>
+<b>//   PHOS consists of a PbWO4 calorimeter (EMCA) and a gazeous charged </b>
+<b>//    particles detector (CPV or PPSD).</b>
+<b>//   The only provided method here is CreateMaterials, </b>
+<b>//    which defines the materials common to all PHOS versions.   </b>
+<b>// </b>
+<b>//*-- Author: Laurent Aphecetche &amp; Yves Schutz (SUBATECH) </b>
+<b>//////////////////////////////////////////////////////////////////////////////</b>
+
+<b>// --- ROOT system ---</b>
+
+<b>// --- Standard library ---</b>
+
+<b>// --- AliRoot header files ---</b>
+
+#include "<a href="../AliPHOS.h">AliPHOS.h</a>"
+#include "AliMC.h"
+#include "AliRun.h"
+
+ClassImp(AliPHOS)
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOS:~AliPHOS"> </a><a href=".././AliPHOS.html">AliPHOS</a>::~<a href=".././AliPHOS.html">AliPHOS</a>()
+{
+  delete fHits ;
+  delete fDigits ;
+}
+
+<b>//____________________________________________________________________________</b>
+<a name="AliPHOS:CreateMaterials"> </a><a href="../ListOfTypes.html#void">void</a> <a href=".././AliPHOS.html#AliPHOS:CreateMaterials">AliPHOS::CreateMaterials</a>()
+{
+<b>  // Definitions of materials to build PHOS and associated tracking media.</b>
+<b>  // media number in idtmed are 699 to 798.</b>
+
+<b>  // --- The PbWO4 crystals ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aX[3] = {207.19, 183.85, 16.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zX[3] = {82.0, 74.0, 8.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wX[3] = {1.0, 1.0, 4.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dX = 8.28 ;
+
+  AliMixture(0, "PbWO4$", aX, zX, dX, -3, wX) ;
+
+
+<b>  // --- The polysterene scintillator (CH) ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aP[2] = {12.011, 1.00794} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zP[2] = {6.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wP[2] = {1.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dP = 1.032 ;
+
+  AliMixture(1, "Polystyrene$", aP, zP, dP, -2, wP) ;
+
+<b>  // --- Aluminium ---</b>
+  AliMaterial(2, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
+<b>  // ---         Absorption length is ignored ^</b>
+
+<b> // --- Tyvek (CnH2n) ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aT[2] = {12.011, 1.00794} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zT[2] = {6.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wT[2] = {1.0, 2.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dT = 0.331 ;
+
+  AliMixture(3, "Tyvek$", aT, zT, dT, -2, wT) ;
+
+<b>  // --- Polystyrene foam ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aF[2] = {12.011, 1.00794} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zF[2] = {6.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wF[2] = {1.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dF = 0.12 ;
+
+  AliMixture(4, "Foam$", aF, zF, dF, -2, wF) ;
+
+<b> // --- Titanium ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aTIT[3] = {47.88, 26.98, 54.94} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zTIT[3] = {22.0, 13.0, 25.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wTIT[3] = {69.0, 6.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dTIT = 4.5 ;
+
+  AliMixture(5, "Titanium$", aTIT, zTIT, dTIT, -3, wTIT);
+
+<b> // --- Silicon ---</b>
+  AliMaterial(6, "Si$", 28.0855, 14., 2.33, 9.36, 42.3, 0, 0) ;
+
+
+
+<b>  // --- Foam thermo insulation ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aTI[2] = {12.011, 1.00794} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zTI[2] = {6.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wTI[2] = {1.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dTI = 0.1 ;
+
+  AliMixture(7, "Thermo Insul.$", aTI, zTI, dTI, -2, wTI) ;
+
+<b>  // --- Textolitn ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aTX[4] = {16.0, 28.09, 12.011, 1.00794} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zTX[4] = {8.0, 14.0, 6.0, 1.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wTX[4] = {292.0, 68.0, 462.0, 736.0} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dTX    = 1.75 ;
+
+  AliMixture(8, "Textolit$", aTX, zTX, dTX, -4, wTX) ;
+
+<b>  //--- FR4  ---</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aFR[3] = {28.0855, 15.9994, 17.749} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zFR[3] = {14., 8., 8.875} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wFR[3] = {.28, .32, .4} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dFR = 1.8 ; 
+
+  AliMixture(9, "FR4$", aFR, zFR, dFR, -3, wFR) ;
+
+<b>  // --- The Composite Material for  micromegas (so far polyetylene) ---                                       </b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aCM[2] = {12.01, 1.} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zCM[2] = {6., 1.} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wCM[2] = {1., 2.} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dCM = 0.935 ; 
+
+  AliMixture(10, "Compo Mat$", aCM, zCM, dCM, -2, wCM) ;
+
+<b>  // --- Copper ---                                                                    </b>
+  AliMaterial(11, "Cu$", 63.546, 29, 8.96, 1.43, 14.8, 0, 0) ;
+ 
+<b>  // --- G10 : Printed Circuit material ---                                                  </b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aG10[4] = { 12., 1., 16., 28.} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zG10[4] = { 6., 1., 8., 14.} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wG10[4] = { .259, .288, .248, .205} ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dG10  = 1.7 ;
+  
+  AliMixture(12, "G10$", aG10, zG10, dG10, -4, wG10);
+
+<b>  // --- Lead ---                                                                     </b>
+  AliMaterial(13, "Pb$", 207.2, 82, 11.35, 0.56, 0., 0, 0) ;
+
+<b> // --- The gas mixture ---                                                                </b>
+<b> // Co2</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aCO[2] = {12.0, 16.0} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zCO[2] = {6.0, 8.0} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wCO[2] = {1.0, 2.0} ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dCO = 0.001977 ; 
+
+  AliMixture(14, "CO2$", aCO, zCO, dCO, -2, wCO);
+
+<b> // Ar</b>
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dAr = 0.001782 ; 
+  AliMaterial(15, "Ar$", 39.948, 18.0, dAr, 14.0, 0., 0, 0) ;   
+ 
+<b> // ArCo2</b>
+  <a href="../ListOfTypes.html#Char_t">Char_t</a> namate[21];
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> aGM[2] ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> zGM[2] ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> wGM[2] ; 
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> dGM ; 
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> absL, radL, density ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> buf[1] ;
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> nbuf ;
+
+  gMC-&gt;Gfmate((*fIdmate)[15], namate, aGM[0], zGM[0], density, radL, absL, buf, nbuf) ; // Get properties of Ar 
+  gMC-&gt;Gfmate((*fIdmate)[14], namate, aGM[1], zGM[1], density, radL, absL, buf, nbuf) ; // Get properties of CO2 
+
+
+<b>  // Create gas mixture </b>
+
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> arContent    = 0.80 ;  // Ar-content of the Ar/CO2-mixture (80% / 20%) 
+ 
+  wGM[0] = arContent;
+  wGM[1] = 1. - arContent ;
+  dGM    = wGM[0] * dAr + wGM[1] * dCO;
+
+  AliMixture(16, "ArCO2$", aGM, zGM, dGM,  2, wGM) ;
+
+ 
+<b>  // --- Air ---</b>
+  AliMaterial(99, "Air$", 14.61, 7.3, 0.001205, 30420., 67500., 0, 0) ;
+  
+ 
+<b>  // DEFINITION OF THE TRACKING MEDIA</b>
+
+<b>  // for PHOS: idtmed[699-&gt;798] equivalent to fIdtmed[0-&gt;100]</b>
+  <a href="../ListOfTypes.html#Int_t">Int_t</a> * idtmed = fIdtmed-&gt;GetArray() - 699 ; 
+  <a href="../ListOfTypes.html#Int_t">Int_t</a>   isxfld = gAlice-&gt;Field()-&gt;Integ() ;
+  <a href="../ListOfTypes.html#Float_t">Float_t</a> sxmgmx = gAlice-&gt;Field()-&gt;Max() ;
+
+<b>  // The scintillator of the calorimeter made of PBW04                              -&gt; idtmed[699]</b>
+  AliMedium(0, "PHOS Xtal    $", 0, 1,
+	    isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+<b>  // The scintillator of the CPV made of Polystyrene scintillator                   -&gt; idtmed[700]</b>
+  AliMedium(1, "CPV scint.   $", 1, 1,
+	    isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+<b>  // Various Aluminium parts made of Al                                             -&gt; idtmed[701]</b>
+  AliMedium(2, "Al parts     $", 2, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+
+<b>  // The Tywek which wraps the calorimeter crystals                                 -&gt; idtmed[702]</b>
+  AliMedium(3, "Tyvek wrapper$", 3, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+
+<b>  // The Polystyrene foam around the calorimeter module                             -&gt; idtmed[703]</b>
+  AliMedium(4, "Polyst. foam $", 4, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+<b>  // The Titanium around the calorimeter crystal                                    -&gt; idtmed[704]</b>
+  AliMedium(5, "Titan. cover $", 5, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.0001, 0.0001, 0, 0) ;
+
+<b>  // The Silicon of the pin diode to read out the calorimeter crystal               -&gt; idtmed[705] </b>
+ AliMedium(6, "Si PIN       $", 6, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.01, 0.01, 0, 0) ;
+
+<b> // The thermo insulating material of the box which contains the calorimeter module -&gt; idtmed[706]</b>
+  AliMedium(7, "Thermo Insul.$", 7, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+<b>  // The Textolit which makes up the box which contains the calorimeter module      -&gt; idtmed[707]</b>
+  AliMedium(8, "Textolit     $", 8, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+<b>  // FR4: The Plastic which makes up the frame of micromegas                        -&gt; idtmed[708]</b>
+  AliMedium(9, "FR4 $", 9, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ; 
+
+
+<b>  // The Composite Material for  micromegas                                         -&gt; idtmed[709]</b>
+  AliMedium(10, "CompoMat   $", 10, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+<b>  // Copper                                                                         -&gt; idtmed[710]</b>
+  AliMedium(11, "Copper     $", 11, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ;
+
+<b>  // G10: Printed Circuit material                                                  -&gt; idtmed[711]</b>
+ 
+  AliMedium(12, "G10        $", 12, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
+
+<b>  // The Lead                                                                       -&gt; idtmed[712]</b>
+ 
+  AliMedium(13, "Lead      $", 13, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+<b>  // The gas mixture: ArCo2                                                         -&gt; idtmed[715]</b>
+ 
+  AliMedium(16, "ArCo2      $", 16, 1,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
+ 
+<b>  // Air                                                                            -&gt; idtmed[798] </b>
+  AliMedium(99, "Air          $", 99, 0,
+	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
+
+<b>  // --- Set decent energy thresholds for gamma and electron tracking</b>
+
+<b>  // Tracking threshold for photons and electrons in the scintillator crystal </b>
+  gMC-&gt;Gstpar(idtmed[699], "CUTGAM",0.5E-4) ; 
+  gMC-&gt;Gstpar(idtmed[699], "CUTELE",1.0E-4) ;
+ 
+<b>  // --- Generate explicitly delta rays in the titan cover ---</b>
+  gMC-&gt;Gstpar(idtmed[704], "LOSS",3.) ;
+  gMC-&gt;Gstpar(idtmed[704], "DRAY",1.) ;
+<b>  // --- and in aluminium parts ---</b>
+  gMC-&gt;Gstpar(idtmed[701], "LOSS",3.) ;
+  gMC-&gt;Gstpar(idtmed[701], "DRAY",1.) ;
+<b>  // --- and in PIN diode</b>
+  gMC-&gt;Gstpar(idtmed[705], "LOSS",3) ;
+  gMC-&gt;Gstpar(idtmed[705], "DRAY",1) ;
+<b>  // --- and in the passive convertor</b>
+  gMC-&gt;Gstpar(idtmed[712], "LOSS",3) ;
+  gMC-&gt;Gstpar(idtmed[712], "DRAY",1) ;
+<b>  // Tracking threshold for photons and electrons in the gas ArC02 </b>
+  gMC-&gt;Gstpar(idtmed[715], "CUTGAM",5.E-7) ; 
+  gMC-&gt;Gstpar(idtmed[715], "CUTELE",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "CUTNEU",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "CUTHAD",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "CUTMUO",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "BCUTE",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "BCUTM",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "DCUTE",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "DCUTM",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "PPCUTM",5.E-7) ;
+  gMC-&gt;Gstpar(idtmed[715], "LOSS",2.) ;
+  gMC-&gt;Gstpar(idtmed[715], "DRAY",0.) ;
+  gMC-&gt;Gstpar(idtmed[715], "STRA",2.) ;
+
+  
+ 
+
+}
+</pre>
+
+<!--SIGNATURE-->
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="../ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

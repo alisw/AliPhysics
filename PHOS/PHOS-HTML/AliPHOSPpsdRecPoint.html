@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:50 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSPpsdRecPoint</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSPpsdRecPoint</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSPpsdRecPoint:description>class description</a> - <a href="src/AliPHOSPpsdRecPoint.cxx.html">source file</a> - <a href="AliPHOSPpsdRecPoint_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSPpsdRecPoint" href="AliPHOSPpsdRecPoint.h">AliPHOSPpsdRecPoint</a> : public <a href="./AliPHOSRecPoint.html">AliPHOSRecPoint</a></h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->      <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:AliPHOSPpsdRecPoint">AliPHOSPpsdRecPoint</a><!--PLAIN-->()
+<!--TAB6-->      <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:AliPHOSPpsdRecPoint">AliPHOSPpsdRecPoint</a><!--PLAIN-->(<a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>&amp;)
+<!--TAB6-->             virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:~AliPHOSPpsdRecPoint">~AliPHOSPpsdRecPoint</a><!--PLAIN-->()
+<!--TAB6-->             virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:AddDigit">AddDigit</a><!--PLAIN-->(AliDigitNew&amp; digit, <a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<!--TAB6-->                  TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->            virtual <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:Compare">Compare</a><!--PLAIN-->(TObject* obj)
+<!--TAB6-->                  <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:GetDelta">GetDelta</a><!--PLAIN-->()
+<!--TAB6-->             virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:GetLocalPosition">GetLocalPosition</a><!--PLAIN-->(TVector3&amp; LPos)
+<!--TAB6-->                    <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:GetMaximumMultiplicity">GetMaximumMultiplicity</a><!--PLAIN-->()
+<!--TAB6-->                    <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:GetMultiplicity">GetMultiplicity</a><!--PLAIN-->() const
+<!--TAB6-->                  <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:GetTotalEnergy">GetTotalEnergy</a><!--PLAIN-->() const
+<!--TAB6-->                   <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:GetUp">GetUp</a><!--PLAIN-->()
+<!--TAB6-->          virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:IsEmc">IsEmc</a><!--PLAIN-->()
+<!--TAB6-->           virtual <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:IsSortable">IsSortable</a><!--PLAIN-->() const
+<!--TAB6-->             virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:Paint">Paint</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* option)
+<!--TAB6-->             virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:Print">Print</a><!--PLAIN-->(<a href="ListOfTypes.html#Option_t">Option_t</a>* opt = <a href="ListOfTypes.html#void">void</a>)
+<!--TAB6-->             virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->             virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSPpsdRecPoint:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSPpsdRecPoint:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSPpsdRecPoint:fDelta">fDelta</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fDelta">parameter used for sorting</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSPpsdRecPoint:description">Class Description</a></h2>
+<pre>  A RecPoint (cluster) in the PPSD
+  A PPSD RecPoint ends up to be a single digit
+
+*--  Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSPpsdRecPoint:AliPHOSPpsdRecPoint" href="src/AliPHOSPpsdRecPoint.cxx.html#AliPHOSPpsdRecPoint:AliPHOSPpsdRecPoint">AliPHOSPpsdRecPoint</a>(<a href="ListOfTypes.html#void">void</a>)
+<br>
+<pre> ctor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPpsdRecPoint:AddDigit" href="src/AliPHOSPpsdRecPoint.cxx.html#AliPHOSPpsdRecPoint:AddDigit">AddDigit</a>(AliDigitNew &amp; digit, <a href="ListOfTypes.html#Float_t">Float_t</a> Energy)
+<br>
+<pre> adds a digit to the digits list
+ and accumulates the total amplitude and the multiplicity
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSPpsdRecPoint:Compare" href="src/AliPHOSPpsdRecPoint.cxx.html#AliPHOSPpsdRecPoint:Compare">Compare</a>(TObject * obj)
+<br>
+<pre> Compares according to the position
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPpsdRecPoint:GetLocalPosition" href="src/AliPHOSPpsdRecPoint.cxx.html#AliPHOSPpsdRecPoint:GetLocalPosition">GetLocalPosition</a>(TVector3 &amp;LPos)
+<br>
+<pre> Calculates the local position in the PHOS-PPSD-module corrdinates
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSPpsdRecPoint:GetUp" href="src/AliPHOSPpsdRecPoint.cxx.html#AliPHOSPpsdRecPoint:GetUp">GetUp</a>() 
+<br>
+<hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPpsdRecPoint:Paint" href="src/AliPHOSPpsdRecPoint.cxx.html#AliPHOSPpsdRecPoint:Paint">Paint</a>(<a href="ListOfTypes.html#Option_t">Option_t</a> *)
+<br>
+<pre>*-*-*-*-*-*-*-*-*-*-*Paint this ALiRecPoint as a TMarker  with its current attributes*-*-*-*-*-*-*
+*-*                  =============================================
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPpsdRecPoint:Print" href="src/AliPHOSPpsdRecPoint.cxx.html#AliPHOSPpsdRecPoint:Print">Print</a>(<a href="ListOfTypes.html#Option_t">Option_t</a> * option) 
+<br>
+<pre> Print the digits information
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->                    <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSPpsdRecPoint:GetDelta" href="AliPHOSPpsdRecPoint.h">GetDelta</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSPpsdRecPoint:GetMultiplicity" href="AliPHOSPpsdRecPoint.h">GetMultiplicity</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                      <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSPpsdRecPoint:GetMaximumMultiplicity" href="AliPHOSPpsdRecPoint.h">GetMaximumMultiplicity</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                    <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSPpsdRecPoint:GetTotalEnergy" href="AliPHOSPpsdRecPoint.h">GetTotalEnergy</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSPpsdRecPoint:IsEmc" href="AliPHOSPpsdRecPoint.h">IsEmc</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                     <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSPpsdRecPoint:IsSortable" href="AliPHOSPpsdRecPoint.h">IsSortable</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                    TClass* <a name="AliPHOSPpsdRecPoint:Class" href="AliPHOSPpsdRecPoint.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->                    TClass* <a name="AliPHOSPpsdRecPoint:IsA" href="AliPHOSPpsdRecPoint.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                       <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPpsdRecPoint:ShowMembers" href="AliPHOSPpsdRecPoint.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                       <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPpsdRecPoint:Streamer" href="AliPHOSPpsdRecPoint.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a> <a name="AliPHOSPpsdRecPoint:AliPHOSPpsdRecPoint" href="AliPHOSPpsdRecPoint.h">AliPHOSPpsdRecPoint</a>(<a href="./AliPHOSPpsdRecPoint.html">AliPHOSPpsdRecPoint</a>&amp;)
+<!--INLINE FUNCTION--><!--TAB6-->                       <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSPpsdRecPoint:~AliPHOSPpsdRecPoint" href="AliPHOSPpsdRecPoint.h">~AliPHOSPpsdRecPoint</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

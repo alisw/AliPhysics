@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Sun Mar 12 00:45:54 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSAnalyze</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSAnalyze</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSAnalyze:description>class description</a> - <a href="src/AliPHOSAnalyze.cxx.html">source file</a> - <a href="AliPHOSAnalyze_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSAnalyze" href="AliPHOSAnalyze.h">AliPHOSAnalyze</a> : public TObject</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->       <a href="./AliPHOSAnalyze.html">AliPHOSAnalyze</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:AliPHOSAnalyze">AliPHOSAnalyze</a><!--PLAIN-->()
+<!--TAB6-->       <a href="./AliPHOSAnalyze.html">AliPHOSAnalyze</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:AliPHOSAnalyze">AliPHOSAnalyze</a><!--PLAIN-->(<a href="ListOfTypes.html#Text_t">Text_t</a>* name)
+<!--TAB6-->       <a href="./AliPHOSAnalyze.html">AliPHOSAnalyze</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:AliPHOSAnalyze">AliPHOSAnalyze</a><!--PLAIN-->(<a href="./AliPHOSAnalyze.html">AliPHOSAnalyze</a>&amp;)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:~AliPHOSAnalyze">~AliPHOSAnalyze</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:AnalyzeManyEvents">AnalyzeManyEvents</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> Nevtents = 100, <a href="ListOfTypes.html#Int_t">Int_t</a> Module = 0)
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:AnalyzeOneEvent">AnalyzeOneEvent</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> evt = -999)
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:BookingHistograms">BookingHistograms</a><!--PLAIN-->()
+<!--TAB6-->              TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:DisplayKineEvent">DisplayKineEvent</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> evt = -999)
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:DisplayRecParticles">DisplayRecParticles</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:DisplayRecPoints">DisplayRecPoints</a><!--PLAIN-->()
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:DisplayTrackSegments">DisplayTrackSegments</a><!--PLAIN-->()
+<!--TAB6-->               <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:Init">Init</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> evt)
+<!--TAB6-->      virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:OpenRootFile">OpenRootFile</a><!--PLAIN-->(<a href="ListOfTypes.html#Text_t">Text_t</a>* name)
+<!--TAB6-->                 <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:SavingHistograms">SavingHistograms</a><!--PLAIN-->()
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSAnalyze:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSAnalyze:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->            <a href="./AliPHOSClusterizer.html">AliPHOSClusterizer</a>* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fClu">fClu</a><!--PLAIN-->                      <!--TAB--><i><a name="Title:fClu">a clusterizer </a></i>
+<!--TAB6-->                          <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fEvt">fEvt</a><!--PLAIN-->                      <!--TAB--><i><a name="Title:fEvt">the evt number being processed </a></i>
+<!--TAB6-->               <a href="./AliPHOSGeometry.html">AliPHOSGeometry</a>* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fGeom">fGeom</a><!--PLAIN-->                     <!--TAB--><i><a name="Title:fGeom">the PHOS Geometry object</a></i>
+<!--TAB6-->                     <a href="./AliPHOSv0.html">AliPHOSv0</a>* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fPHOS">fPHOS</a><!--PLAIN-->                     <!--TAB--><i><a name="Title:fPHOS">the PHOS object from the root file </a></i>
+<!--TAB6-->                    <a href="./AliPHOSPID.html">AliPHOSPID</a>* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fPID">fPID</a><!--PLAIN-->                      <!--TAB--><i><a name="Title:fPID">a particle identifier</a></i>
+<!--TAB6-->       <a href="./AliPHOSReconstructioner.html">AliPHOSReconstructioner</a>* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fRec">fRec</a><!--PLAIN-->                      <!--TAB--><i><a name="Title:fRec">a reconstructioner  </a></i>
+<!--TAB6-->                         TFile* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fRootFile">fRootFile</a><!--PLAIN-->                 <!--TAB--><i><a name="Title:fRootFile">the root file that contains the data</a></i>
+<!--TAB6-->      <a href="./AliPHOSTrackSegmentMaker.html">AliPHOSTrackSegmentMaker</a>* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fTrs">fTrs</a><!--PLAIN-->                      <!--TAB--><i><a name="Title:fTrs">a tracksegmentmaker ;</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhEmcDigit">fhEmcDigit</a><!--PLAIN-->                <!--TAB--><i><a name="Title:fhEmcDigit">Histo of digit energies in the Emc </a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhVetoDigit">fhVetoDigit</a><!--PLAIN-->               <!--TAB--><i><a name="Title:fhVetoDigit">Histo of digit energies in the Veto </a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhConvertorDigit">fhConvertorDigit</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fhConvertorDigit">Histo of digit energies in the Convertor</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhEmcCluster">fhEmcCluster</a><!--PLAIN-->              <!--TAB--><i><a name="Title:fhEmcCluster">Histo of Cluster energies in Emc</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhVetoCluster">fhVetoCluster</a><!--PLAIN-->             <!--TAB--><i><a name="Title:fhVetoCluster">Histo of Cluster energies in Veto</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhConvertorCluster">fhConvertorCluster</a><!--PLAIN-->        <!--TAB--><i><a name="Title:fhConvertorCluster">Histo of Cluster energies in Convertor</a></i>
+<!--TAB6-->                          TH2F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhConvertorEmc">fhConvertorEmc</a><!--PLAIN-->            <!--TAB--><i><a name="Title:fhConvertorEmc">2d Convertor versus Emc energies</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhPhotonEnergy">fhPhotonEnergy</a><!--PLAIN-->            <!--TAB--><i><a name="Title:fhPhotonEnergy">Spectrum of detected photons</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhElectronEnergy">fhElectronEnergy</a><!--PLAIN-->          <!--TAB--><i><a name="Title:fhElectronEnergy">Spectrum of detected electrons</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhNeutralHadronEnergy">fhNeutralHadronEnergy</a><!--PLAIN-->     <!--TAB--><i><a name="Title:fhNeutralHadronEnergy">Spectrum of detected neutral hadron</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhNeutralEMEnergy">fhNeutralEMEnergy</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fhNeutralEMEnergy">Spectrum of detected neutral EM</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhChargedHadronEnergy">fhChargedHadronEnergy</a><!--PLAIN-->     <!--TAB--><i><a name="Title:fhChargedHadronEnergy">Spectrum of detected charged</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhPhotonHadronEnergy">fhPhotonHadronEnergy</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fhPhotonHadronEnergy">Spectrum of detected Photon-Hadron</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhPhotonPositionX">fhPhotonPositionX</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fhPhotonPositionX">X distribution of detected photons</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhElectronPositionX">fhElectronPositionX</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fhElectronPositionX">X distribution of detected electrons</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhNeutralHadronPositionX">fhNeutralHadronPositionX</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fhNeutralHadronPositionX">X distribution of detected neutral hadron</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhNeutralEMPositionX">fhNeutralEMPositionX</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fhNeutralEMPositionX">X distribution of detected neutral EM</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhChargedHadronPositionX">fhChargedHadronPositionX</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fhChargedHadronPositionX">X distribution of detected charged</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhPhotonHadronPositionX">fhPhotonHadronPositionX</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fhPhotonHadronPositionX">X distribution of detected Photon-Hadron</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhPhotonPositionY">fhPhotonPositionY</a><!--PLAIN-->         <!--TAB--><i><a name="Title:fhPhotonPositionY">Y distribution of detected photons</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhElectronPositionY">fhElectronPositionY</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fhElectronPositionY">Y distribution of detected electrons</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhNeutralHadronPositionY">fhNeutralHadronPositionY</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fhNeutralHadronPositionY">Y distribution of detected neutral hadron</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhNeutralEMPositionY">fhNeutralEMPositionY</a><!--PLAIN-->      <!--TAB--><i><a name="Title:fhNeutralEMPositionY">Y distribution of detected neutral EM</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhChargedHadronPositionY">fhChargedHadronPositionY</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fhChargedHadronPositionY">Y distribution of detected charged</a></i>
+<!--TAB6-->                          TH1F* <!--TAB--><!--BOLD--><a name="AliPHOSAnalyze:fhPhotonHadronPositionY">fhPhotonHadronPositionY</a><!--PLAIN-->   <!--TAB--><i><a name="Title:fhPhotonHadronPositionY">Y distribution of detected Photon-Hadron</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSAnalyze:description">Class Description</a></h2>
+<pre> Algorythm class to analyze PHOSv0 events:
+ Construct histograms and displays them.
+ Use the macro EditorBar.C for best access to the functionnalities
+
+*-- Author: Y. Schutz (SUBATECH)
+
+</pre><hr>
+<!--FUNCTION-->  <a name="AliPHOSAnalyze:AliPHOSAnalyze" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:AliPHOSAnalyze">AliPHOSAnalyze</a>()
+<br>
+<pre> default ctor (useless)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSAnalyze:AliPHOSAnalyze" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:AliPHOSAnalyze">AliPHOSAnalyze</a>(<a href="ListOfTypes.html#Text_t">Text_t</a> * name)
+<br>
+<pre> ctor: analyze events from root file: name
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSAnalyze:~AliPHOSAnalyze" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:~AliPHOSAnalyze">~AliPHOSAnalyze</a>()
+<br>
+<pre> dtor
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:AnalyzeOneEvent" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:AnalyzeOneEvent">AnalyzeOneEvent</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> evt)
+<br>
+<pre> analyze one single event with id=evt
+</pre><hr>
+<!--FUNCTION--> <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:AnalyzeManyEvents" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:AnalyzeManyEvents">AnalyzeManyEvents</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> Nevents, <a href="ListOfTypes.html#Int_t">Int_t</a> module)    
+<br>
+<pre> analyzes Nevents events in a single PHOS module
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:BookingHistograms" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:BookingHistograms">BookingHistograms</a>()
+<br>
+<pre> Books the histograms where the results of the analysis are stored (to be changed)
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSAnalyze:Init" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:Init">Init</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> evt)
+<br>
+<pre> Do a few initializations: open the root file
+                           get the AliRun object
+                           defines the clusterizer, tracksegment maker and particle identifier
+                           sets the associated parameters
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:DisplayKineEvent" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:DisplayKineEvent">DisplayKineEvent</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> evt)
+<br>
+<pre> Display particles from the Kine Tree in global Alice (theta, phi) coordinates.
+ One PHOS module at the time.
+ The particle type can be selected.
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:DisplayRecParticles" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:DisplayRecParticles">DisplayRecParticles</a>()
+<br>
+<pre> Display reconstructed particles in global Alice(theta, phi) coordinates.
+ One PHOS module at the time.
+ Click on symbols indicate the reconstructed particle type.
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:DisplayRecPoints" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:DisplayRecPoints">DisplayRecPoints</a>()
+<br>
+<pre> Display reconstructed points in local PHOS-module (x, z) coordinates.
+ One PHOS module at the time.
+ Click on symbols displays the EMC cluster, or PPSD information.
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:DisplayTrackSegments" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:DisplayTrackSegments">DisplayTrackSegments</a>()
+<br>
+<pre> Display track segments in local PHOS-module (x, z) coordinates.
+ One PHOS module at the time.
+ One symbol per PHOS subsystem: EMC, upper PPSD, lower PPSD.
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSAnalyze:OpenRootFile" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:OpenRootFile">OpenRootFile</a>(<a href="ListOfTypes.html#Text_t">Text_t</a> * name)
+<br>
+<pre> Open the root file named "name"
+</pre><hr>
+<!--FUNCTION--><a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:SavingHistograms" href="src/AliPHOSAnalyze.cxx.html#AliPHOSAnalyze:SavingHistograms">SavingHistograms</a>()
+<br>
+<pre> Saves the histograms in a root file named "name.analyzed"
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->               TClass* <a name="AliPHOSAnalyze:Class" href="AliPHOSAnalyze.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->               TClass* <a name="AliPHOSAnalyze:IsA" href="AliPHOSAnalyze.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:ShowMembers" href="AliPHOSAnalyze.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->                  <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSAnalyze:Streamer" href="AliPHOSAnalyze.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->        <a href="./AliPHOSAnalyze.html">AliPHOSAnalyze</a> <a name="AliPHOSAnalyze:AliPHOSAnalyze" href="AliPHOSAnalyze.h">AliPHOSAnalyze</a>(<a href="./AliPHOSAnalyze.html">AliPHOSAnalyze</a>&amp;)
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>

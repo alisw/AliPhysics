@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-// IETF/DTD HTML 2.0// EN">
+<html>
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@hpsalo.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Mar  9 00:11:49 2000            -->
+<!--                                             -->
+<head>
+<title>AliPHOSHit</title>
+<link rev=made href="mailto:rootdev@root.cern.ch">
+<meta name="rating" content="General">
+<meta name="objecttype" content="Manual">
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, motif, windows nt, c++, html, rene brun, fons rademakers">
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis.">
+</head>
+<body BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#551a8b" ALINK="#ff0000" TEXT="#000000">
+<a name="TopOfPage"></a>
+<!--BEGIN-->
+<center>
+<h1>AliPHOSHit</h1>
+<hr width=300>
+<!--SDL--><em><a href=#AliPHOSHit:description>class description</a> - <a href="src/AliPHOSHit.cxx.html">source file</a> - <a href="AliPHOSHit_Tree.ps">inheritance tree</a></em>
+<hr width=300>
+</center>
+<h2>class <a name="AliPHOSHit" href="AliPHOSHit.h">AliPHOSHit</a> : public AliHit</h2>
+<pre>
+
+<!--TAB4-->    <b>public:</b><br>
+<!--TAB6-->           <a href="./AliPHOSHit.html">AliPHOSHit</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:AliPHOSHit">AliPHOSHit</a><!--PLAIN-->()
+<!--TAB6-->           <a href="./AliPHOSHit.html">AliPHOSHit</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:AliPHOSHit">AliPHOSHit</a><!--PLAIN-->(<a href="ListOfTypes.html#Int_t">Int_t</a> primary, <a href="ListOfTypes.html#Int_t">Int_t</a> id, <a href="ListOfTypes.html#Float_t">Float_t</a>* hits)
+<!--TAB6-->           <a href="./AliPHOSHit.html">AliPHOSHit</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:operator+">operator+</a><!--PLAIN-->(const <a href="./AliPHOSHit.html">AliPHOSHit</a>&amp; rValue) const
+<!--TAB6-->           <a href="./AliPHOSHit.html">AliPHOSHit</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:AliPHOSHit">AliPHOSHit</a><!--PLAIN-->(<a href="./AliPHOSHit.html">AliPHOSHit</a>&amp;)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:~AliPHOSHit">~AliPHOSHit</a><!--PLAIN-->()
+<!--TAB6-->              TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSHit:Class">Class</a><!--PLAIN-->()
+<!--TAB6-->              <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:GetEnergy">GetEnergy</a><!--PLAIN-->() const
+<!--TAB6-->                <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:GetId">GetId</a><!--PLAIN-->() const
+<!--TAB6-->                <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:GetPrimary">GetPrimary</a><!--PLAIN-->() const
+<!--TAB6-->      virtual TClass* <!--TAB--><!--BOLD--><a href="#AliPHOSHit:IsA">IsA</a><!--PLAIN-->() const
+<!--TAB6-->               <a href="ListOfTypes.html#Bool_t">Bool_t</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:operator==">operator==</a><!--PLAIN-->(<a href="./AliPHOSHit.html">AliPHOSHit</a> const&amp; rValue) const
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:ShowMembers">ShowMembers</a><!--PLAIN-->(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--TAB6-->         virtual <a href="ListOfTypes.html#void">void</a> <!--TAB--><!--BOLD--><a href="#AliPHOSHit:Streamer">Streamer</a><!--PLAIN-->(TBuffer&amp; b)
+
+<h3><!--TAB2-->  <a name="AliPHOSHit:Data Members">Data Members</a></h3>
+<!--TAB4-->    <b>private:</b><br>
+<!--TAB6-->        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSHit:fId">fId</a><!--PLAIN-->       <!--TAB--><i><a name="Title:fId">Absolute Id number of PHOS Xtal or PPSD pad</a></i>
+<!--TAB6-->      <a href="ListOfTypes.html#Float_t">Float_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSHit:fELOS">fELOS</a><!--PLAIN-->     <!--TAB--><i><a name="Title:fELOS">Energy deposited</a></i>
+<!--TAB6-->        <a href="ListOfTypes.html#Int_t">Int_t</a> <!--TAB--><!--BOLD--><a name="AliPHOSHit:fPrimary">fPrimary</a><!--PLAIN-->  <!--TAB--><i><a name="Title:fPrimary">Primary particles at the origine of the hit</a></i>
+</pre>
+<!--END-->
+<hr>
+<!--DESCRIPTION--><h2><a name="AliPHOSHit:description">Class Description</a></h2>
+<pre>  Hits class for PHOS
+  A hit in PHOS is the sum of all hits in a single crystal
+
+*-- Author: Maxime Volkov (RRC KI) &amp; Yves Schutz (SUBATECH)
+</pre><hr>
+<!--FUNCTION--> <a name="AliPHOSHit:AliPHOSHit" href="src/AliPHOSHit.cxx.html#AliPHOSHit:AliPHOSHit">AliPHOSHit</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> primary, <a href="ListOfTypes.html#Int_t">Int_t</a> id, <a href="ListOfTypes.html#Float_t">Float_t</a> *hits)
+<br>
+<pre> ctor
+</pre><br><br><br>
+<h3>Inline Functions</h3>
+<hr>
+<pre>
+<!--INLINE FUNCTION--><!--TAB6-->         <a href="./AliPHOSHit.html">AliPHOSHit</a> <a name="AliPHOSHit:AliPHOSHit" href="AliPHOSHit.h">AliPHOSHit</a>(<a href="ListOfTypes.html#Int_t">Int_t</a> primary, <a href="ListOfTypes.html#Int_t">Int_t</a> id, <a href="ListOfTypes.html#Float_t">Float_t</a>* hits)
+<!--INLINE FUNCTION--><!--TAB6-->            <a href="ListOfTypes.html#Float_t">Float_t</a> <a name="AliPHOSHit:GetEnergy" href="AliPHOSHit.h">GetEnergy</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->              <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSHit:GetId" href="AliPHOSHit.h">GetId</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->              <a href="ListOfTypes.html#Int_t">Int_t</a> <a name="AliPHOSHit:GetPrimary" href="AliPHOSHit.h">GetPrimary</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->             <a href="ListOfTypes.html#Bool_t">Bool_t</a> <a name="AliPHOSHit:operator==" href="AliPHOSHit.h">operator==</a>(<a href="./AliPHOSHit.html">AliPHOSHit</a> const&amp; rValue) const
+<!--INLINE FUNCTION--><!--TAB6-->         <a href="./AliPHOSHit.html">AliPHOSHit</a> <a name="AliPHOSHit:operator+" href="AliPHOSHit.h">operator+</a>(const <a href="./AliPHOSHit.html">AliPHOSHit</a>&amp; rValue) const
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSHit:Class" href="AliPHOSHit.h">Class</a>()
+<!--INLINE FUNCTION--><!--TAB6-->            TClass* <a name="AliPHOSHit:IsA" href="AliPHOSHit.h">IsA</a>() const
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSHit:ShowMembers" href="AliPHOSHit.h">ShowMembers</a>(TMemberInspector&amp; insp, <a href="ListOfTypes.html#char">char</a>* parent)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSHit:Streamer" href="AliPHOSHit.h">Streamer</a>(TBuffer&amp; b)
+<!--INLINE FUNCTION--><!--TAB6-->         <a href="./AliPHOSHit.html">AliPHOSHit</a> <a name="AliPHOSHit:AliPHOSHit" href="AliPHOSHit.h">AliPHOSHit</a>(<a href="./AliPHOSHit.html">AliPHOSHit</a>&amp;)
+<!--INLINE FUNCTION--><!--TAB6-->               <a href="ListOfTypes.html#void">void</a> <a name="AliPHOSHit:~AliPHOSHit" href="AliPHOSHit.h">~AliPHOSHit</a>()
+</pre>
+
+<hr><br>
+<!--SIGNATURE-->
+<em>Copyright (c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *</em><br>
+<br>
+<address>
+<hr>
+<center>
+<a href="http://root.cern.ch/root/Welcome.html">ROOT page</a> - <a href="ClassIndex.html">Class index</a> - <a href="#TopOfPage">Top of the page</a><br>
+</center>
+<hr>This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</address>
+</body>
+</html>
