@@ -89,19 +89,19 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   
   //we want have only low pt pi+ so set a cut to reader
   AliHBTParticleCut* readerpartcut= new AliHBTParticleCut();
-//  readerpartcut->SetPtRange(0.0,1.5);
+  readerpartcut->SetPtRange(0.0,1.5);
   readerpartcut->SetPID(kPiPlus);
   reader->AddParticleCut(readerpartcut);//read this particle type with this cut
   
   analysis->SetReader(reader);
   /************************************************************/
   
-  AliHBTPairCut *paircut = new AliHBTPairCut();
-  paircut->SetQInvRange(0.0,0.20);  
-  analysis->SetGlobalPairCut(paircut);
+//  AliHBTPairCut *paircut = new AliHBTPairCut();
+//  paircut->SetQInvRange(0.0,0.20);  
+//  analysis->SetGlobalPairCut(paircut);
 
-  AliHBTQInvCorrelFctn * qinvcfT= new AliHBTQInvCorrelFctn(500,3.);
-  AliHBTQInvCorrelFctn * qinvcfP= new AliHBTQInvCorrelFctn(500,3.);
+  AliHBTQInvCorrelFctn * qinvcfT= new AliHBTQInvCorrelFctn();
+  AliHBTQInvCorrelFctn * qinvcfP= new AliHBTQInvCorrelFctn();
   
   analysis->AddTrackFunction(qinvcfT);
   analysis->AddParticleFunction(qinvcfP);
@@ -117,7 +117,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   
   delete qinvcfP;
   delete qinvcfT;
-  delete paircut;
+//  delete paircut;
   delete readerpartcut;
   if (dirs) 
    {
