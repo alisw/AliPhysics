@@ -16,7 +16,7 @@ void Config()
   //
   // Set External decayer
   AliDecayer* decayer = new AliDecayerPythia();
-  decayer->SetForceDecay(all);
+  decayer->SetForceDecay(kAll);
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
   //
