@@ -45,6 +45,9 @@ void Config()
   else 
     cout << "Monte Carlo has been already created." << endl;
     
+  // Switch on hadron physics
+  geant4->ProcessGeantCommand("/mcPhysics/setHadron true");  
+
   // Switch on special cuts process
   geant4->ProcessGeantCommand("/mcPhysics/setSpecialCuts true");  
 
