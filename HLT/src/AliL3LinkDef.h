@@ -22,7 +22,6 @@
 #pragma link C++ class AliL3GlobalMerger;
 #pragma link C++ class AliL3InterMerger;
 #pragma link C++ class AliLevel3;
-#pragma link C++ class AliL3ClustFinder;
 #pragma link C++ class AliL3TrackArray;
 #pragma link C++ class AliL3Logger;
 #pragma link C++ class AliL3MemHandler;
@@ -30,7 +29,6 @@
 #pragma link C++ class AliL3Evaluate; 
 #pragma link C++ class AliL3Display; 
 #pragma link C++ class AliL3ClustFinderNew;
-#pragma link C++ class AliL3Fitter; 
 
 #endif
 
