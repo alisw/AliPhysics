@@ -21,10 +21,12 @@ class AliDimuCombinator:
     public TObject 
 {
 public:
-    AliDimuCombinator(TClonesArray* Partarray);
+    AliDimuCombinator();
     void  Copy(AliDimuCombinator &combi) const;
 //    
 //  Iterators
+//  Access to particle stack
+    TParticle* Particle(Int_t i);
 //  Single muons
     TParticle* FirstMuon();
     TParticle* NextMuon();
@@ -76,7 +78,6 @@ public:
     AliDimuCombinator & operator=(const AliDimuCombinator & rhs);
 
  private:
-    TClonesArray *fPartArray;      // MC Event
     Int_t fNParticle;              // Number of particles
     Int_t fImuon1;                 // Index of first muon
     Int_t fImuon2;                 // Index of second muon

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.7  2000/10/02 15:16:37  morsch
 Correct coding rule violation for member data names of type fi -> fI.
 
@@ -43,31 +46,31 @@ Introduction of the Copyright and cvs Log
 
 #include "AliDimuCombinator.h" 
 #include "AliPDG.h" 
+#include "AliRun.h" 
 #include <TRandom.h>
 #include <TClonesArray.h>
 #include <TParticle.h>
+#include <TTree.h>
 
 //
 ClassImp(AliDimuCombinator)
-    AliDimuCombinator::AliDimuCombinator(TClonesArray* Partarray) 
+    AliDimuCombinator::AliDimuCombinator() 
 {
 // Constructor
-    fPartArray=Partarray;
-    fNParticle=fPartArray->GetEntriesFast();
-    
-    fImuon1 =0;
-    fImuon2 =0;
-    fMuon1  =0;
-    fMuon2  =0;
+    fNParticle = (Int_t) (gAlice->TreeK())->GetEntries();
+    fImuon1 = 0;
+    fImuon2 = 0;
+    fMuon1  = 0;
+    fMuon2  = 0;
     fImin1  = 0;
     fImin2  = 0;
     fImax1  = fNParticle;
     fImax2  = fNParticle;
-    fPtMin  =0;
-    fEtaMin =-10;
-    fEtaMax =-10;
-    fRate1=1.;
-    fRate2=1.;
+    fPtMin  = 0;
+    fEtaMin = -10;
+    fEtaMax = -10;
+    fRate1  = 1.;
+    fRate2  = 1.;
 }
 
 AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)
@@ -79,15 +82,20 @@ AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)
 //
 //                       Iterators
 // 
+TParticle* AliDimuCombinator::Particle(Int_t i)
+{
+    return gAlice->Particle(i);
+}
+
 TParticle* AliDimuCombinator::FirstMuon()
 {
 // Single muon iterator: initialisation
-    fImuon1=fImin1;
-    fMuon1 = (TParticle*) fPartArray->UncheckedAt(fImuon1);
-    while(Type(fMuon1)!=kMuonPlus && Type(fMuon1)!=kMuonMinus) {
+    fImuon1 = fImin1;
+    fMuon1  = Particle(fImuon1);
+    while(Type(fMuon1) != kMuonPlus && Type(fMuon1) != kMuonMinus) {
 	fImuon1++;
-	if (fImuon1 >= fImax1) {fMuon1=0; break;}
-	fMuon1 = (TParticle*) fPartArray->UncheckedAt(fImuon1);
+	if (fImuon1 >= fImax1) {fMuon1 = 0; break;}
+	fMuon1 = Particle(fImuon1);
     }
     return fMuon1;
 }
@@ -95,8 +103,8 @@ TParticle* AliDimuCombinator::FirstMuon()
 TParticle* AliDimuCombinator::FirstMuonSelected()
 {
 // Single selected muon iterator: initialisation
-    TParticle * muon=FirstMuon();
-    while(muon!=0 && !Selected(muon)) {muon=NextMuon();}
+    TParticle* muon = FirstMuon();
+    while(muon != 0 && !Selected(muon)) {muon = NextMuon();}
     return muon;
 }
 
@@ -105,13 +113,13 @@ TParticle* AliDimuCombinator::NextMuon()
 {
 // Single muon iterator: increment
     fImuon1++;
-    if (fImuon1>=fNParticle) {fMuon1 = 0; return fMuon1;}
+    if (fImuon1 >= fNParticle) {fMuon1 = 0; return fMuon1;}
     
-    fMuon1 = (TParticle*) fPartArray->UncheckedAt(fImuon1);
-    while(Type(fMuon1)!=kMuonPlus && Type(fMuon1)!=kMuonMinus) {
+    fMuon1 = Particle(fImuon1);
+    while(Type(fMuon1) != kMuonPlus && Type(fMuon1) != kMuonMinus) {
 	fImuon1++;
-	if (fImuon1>=fImax1) {fMuon1 = 0; break;}
-	fMuon1 = (TParticle*) fPartArray->UncheckedAt(fImuon1);
+	if (fImuon1 >= fImax1) {fMuon1 = 0; break;}
+	fMuon1 = Particle(fImuon1);
     }
     return fMuon1;
 }
@@ -119,8 +127,8 @@ TParticle* AliDimuCombinator::NextMuon()
 TParticle* AliDimuCombinator::NextMuonSelected()
 {
 // Single selected muon iterator: increment
-    TParticle * muon=NextMuon();
-    while(muon !=0 && !Selected(muon)) {muon=NextMuon();}
+    TParticle * muon = NextMuon();
+    while(muon !=0 && !Selected(muon)) {muon = NextMuon();}
     return muon;
 }
 
@@ -128,17 +136,17 @@ TParticle* AliDimuCombinator::NextMuonSelected()
 void AliDimuCombinator::FirstPartner()
 {
 // Helper for  dimuon iterator: initialisation
-    if (fImin1==fImin2) {
-	fImuon2=fImuon1+1;
+    if (fImin1 == fImin2) {
+	fImuon2 = fImuon1+1;
     } else {
-	fImuon2=fImin2;
+	fImuon2 = fImin2;
     }
-    if (fImuon2 >= fImax2) {fMuon2=0; return;}
-    fMuon2 = (TParticle*) fPartArray->UncheckedAt(fImuon2);
-    while(Type(fMuon2)!=kMuonPlus && Type(fMuon2)!=kMuonMinus) {
+    if (fImuon2 >= fImax2) {fMuon2 = 0; return;}
+    fMuon2 = Particle(fImuon2);
+    while(Type(fMuon2) != kMuonPlus && Type(fMuon2) != kMuonMinus) {
 	fImuon2++;
-	if (fImuon2 >= fImax2) {fMuon2=0; break;}
-	fMuon2 = (TParticle*) fPartArray->UncheckedAt(fImuon2);
+	if (fImuon2 >= fImax2) {fMuon2 = 0; break;}
+	fMuon2 = Particle(fImuon2);
     }
 }
 
@@ -154,15 +162,15 @@ void AliDimuCombinator::NextPartner()
 {
 // Helper for dimuon iterator: increment    
     fImuon2++;
-    if (fImuon2>=fImax2) {fMuon2 = 0; return;}
+    if (fImuon2 >= fImax2) {fMuon2 = 0; return;}
     
     
-    fMuon2 = (TParticle*) fPartArray->UncheckedAt(fImuon2);
+    fMuon2 = Particle(fImuon2);
     
-    while(Type(fMuon2)!=kMuonPlus && Type(fMuon2)!=kMuonMinus) {
+    while(Type(fMuon2) != kMuonPlus && Type(fMuon2) != kMuonMinus) {
 	fImuon2++;
-	if (fImuon2>=fImax2) {fMuon2 = 0; break;}
-	fMuon2 = (TParticle*) fPartArray->UncheckedAt(fImuon2);
+	if (fImuon2 >= fImax2) {fMuon2 = 0; break;}
+	fMuon2 = Particle(fImuon2);
     }
 }
 
@@ -185,8 +193,8 @@ void AliDimuCombinator::FirstMuonPair(TParticle* & muon1, TParticle* & muon2)
 // Dimuon iterator: initialisation
     FirstMuon();
     FirstPartner();
-    muon1=fMuon1;
-    muon2=fMuon2;	 
+    muon1 = fMuon1;
+    muon2 = fMuon2;	 
 }
 
 void AliDimuCombinator::NextMuonPair(TParticle* & muon1, TParticle* & muon2)
@@ -197,8 +205,8 @@ void AliDimuCombinator::NextMuonPair(TParticle* & muon1, TParticle* & muon2)
 	NextMuon();
 	FirstPartner();
     }
-    muon1=fMuon1;
-    muon2=fMuon2;	 
+    muon1 = fMuon1;
+    muon2 = fMuon2;	 
 }
 void AliDimuCombinator::FirstMuonPairSelected(TParticle* & muon1, 
 					      TParticle* & muon2)
@@ -206,8 +214,8 @@ void AliDimuCombinator::FirstMuonPairSelected(TParticle* & muon1,
 // Selected dimuon iterator: initialisation    
     FirstMuonSelected();
     FirstPartnerSelected();
-    muon1=fMuon1;
-    muon2=fMuon2;	 
+    muon1 = fMuon1;
+    muon2 = fMuon2;	 
 }
 
 void AliDimuCombinator::NextMuonPairSelected(TParticle* & muon1, 
@@ -219,31 +227,31 @@ void AliDimuCombinator::NextMuonPairSelected(TParticle* & muon1,
 	NextMuonSelected();
 	FirstPartnerSelected();
     }
-    muon1=fMuon1;
-    muon2=fMuon2;	 
+    muon1 = fMuon1;
+    muon2 = fMuon2;	 
 }
 
 void AliDimuCombinator::ResetRange()
 {
 // Reset index ranges for single muons
-    fImin1=fImin2=0;
-    fImax1=fImax2=fNParticle;
+    fImin1 = fImin2 = 0;
+    fImax1 = fImax2 = fNParticle;
 }
 
 void AliDimuCombinator::SetFirstRange(Int_t from, Int_t to)
 {
 // Reset index range for first muon
-    fImin1=from;
-    fImax1=to;
-    if (fImax1 > fNParticle) fImax1=fNParticle;
+    fImin1 = from;
+    fImax1 = to;
+    if (fImax1 > fNParticle) fImax1 = fNParticle;
 }
 
 void AliDimuCombinator::SetSecondRange(Int_t from, Int_t to)
 {
 // Reset index range for second muon
-    fImin2=from;
-    fImax2=to;
-    if (fImax2 > fNParticle) fImax2=fNParticle;
+    fImin2 = from;
+    fImax2 = to;
+    if (fImax2 > fNParticle) fImax2 = fNParticle;
 }
 //
 //                       Selection
@@ -253,9 +261,9 @@ Bool_t AliDimuCombinator::Selected(TParticle* part)
 {
 // Selection cut for single muon 
 //
-    if (part==0) {return 0;}
+    if (part == 0) {return 0;}
     
-    if (part->Pt() > fPtMin && part->Eta()>fEtaMin && part->Eta()<fEtaMax) {
+    if (part->Pt() > fPtMin && part->Eta() > fEtaMin && part->Eta() < fEtaMax) {
 	return 1;
     } else {
 	return 0;
@@ -276,11 +284,11 @@ Float_t AliDimuCombinator::Mass(TParticle* part1, TParticle* part2)
 // Invariant mass
 //
     Float_t px,py,pz,e;
-    px=part1->Px()+part2->Px();
-    py=part1->Py()+part2->Py();
-    pz=part1->Pz()+part2->Pz();    
-    e =part1->Energy()+part2->Energy();
-    Float_t p=px*px+py*py+pz*pz;
+    px = part1->Px()+part2->Px();
+    py = part1->Py()+part2->Py();
+    pz = part1->Pz()+part2->Pz();    
+    e  = part1->Energy()+part2->Energy();
+    Float_t p = px*px+py*py+pz*pz;
     if (e*e < p) {
 	return -1; 
     } else {
@@ -293,8 +301,8 @@ Float_t AliDimuCombinator::PT(TParticle* part1, TParticle* part2)
 // Transverse momentum of dimuons
 //
     Float_t px,py;
-    px=part1->Px()+part2->Px();
-    py=part1->Py()+part2->Py();
+    px = part1->Px()+part2->Px();
+    py = part1->Py()+part2->Py();
     return TMath::Sqrt(px*px+py*py);
 }
 
@@ -310,8 +318,8 @@ Float_t AliDimuCombinator::Y(TParticle* part1, TParticle* part2)
 // Rapidity of dimuon system
 //
     Float_t pz,e;
-    pz=part1->Pz()+part2->Pz();
-    e =part1->Energy()+part2->Energy();
+    pz = part1->Pz()+part2->Pz();
+    e  = part1->Energy()+part2->Energy();
     return 0.5*TMath::Log((e+pz)/(e-pz));
 }
 //                  Response
@@ -331,13 +339,13 @@ Float_t AliDimuCombinator::DecayProbability(TParticle* part)
 // 
     Float_t d, h, theta, cTau;
     TParticle* parent = Parent(part);
-    Int_t ipar=Type(parent);
-    if (ipar==kPiPlus || ipar==kPiMinus) {
+    Int_t ipar = Type(parent);
+    if (ipar == kPiPlus || ipar == kPiMinus) {
 	cTau=780.4;
-    } else if (ipar==kKPlus || ipar==kKMinus) {
-	cTau=370.9;
+    } else if (ipar == kKPlus || ipar == kKMinus) {
+	cTau = 370.9;
     } else {
-	cTau=0;
+	cTau = 0;
     }
     
     
@@ -345,8 +353,8 @@ Float_t AliDimuCombinator::DecayProbability(TParticle* part)
 //
 // this part is still very ALICE muon-arm specific
 //
-    theta=parent->Theta();
-    h=90*TMath::Tan(theta);
+    theta = parent->Theta();
+    h = 90*TMath::Tan(theta);
     
     if (h<4) {
 	d=4/TMath::Sin(theta);
@@ -365,7 +373,7 @@ Float_t AliDimuCombinator::Weight(TParticle* part1, TParticle* part2)
 {
 // Dimuon weight
 
-    Float_t wgt=(part1->GetWeight())*(part2->GetWeight());
+    Float_t wgt = (part1->GetWeight())*(part2->GetWeight());
     
     if (Correlated(part1, part2)) {
 	return wgt/(Parent(part1)->GetWeight())*fRate1;
@@ -396,7 +404,7 @@ TParticle* AliDimuCombinator::Parent(TParticle* part)
 {
 // Return pointer to parent
 //
-    return (TParticle*) (fPartArray->UncheckedAt(part->GetFirstMother()));
+    return Particle(part->GetFirstMother());
 }
 
 Int_t AliDimuCombinator::Origin(TParticle* part)
@@ -407,11 +415,11 @@ Int_t AliDimuCombinator::Origin(TParticle* part)
     if (iparent < 0) return iparent;
     Int_t ip;
     while(1) {
-	ip=((TParticle*) fPartArray->UncheckedAt(iparent))->GetFirstMother();
+	ip = (Particle(iparent))->GetFirstMother();
 	if (ip < 0) {
 	    break;
 	} else {
-	    iparent=ip;
+	    iparent = ip;
 	}
     }
     return iparent;
