@@ -67,7 +67,8 @@ AliFMD::AliFMD(const char *name, const char *title)
   //
   // Initialise Hit array
   fHits     = new TClonesArray("AliFMDhit", 1000);
-  
+  gAlice->AddHitList(fHits);
+
   fIshunt     =  0;
   fIdSens1    =  0;
 
