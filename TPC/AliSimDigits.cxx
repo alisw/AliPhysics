@@ -201,6 +201,7 @@ void  AliSimDigits::ExpandTrackBuffer1()
     Int_t num = fTracks->At(i);
     if (num<0) row-=num;   //negative number mean number of zeroes (no tracks of gibven level no need to write to array) 
     else {
+      num %= 10000000; //PH: take into account the case of underlying events
       i++;
       Int_t id =  fTracks->At(i);
       for (j = 0; j<num; j++,row++) (*buf)[level*all+col*fNrows+row]=id;       
