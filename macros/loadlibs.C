@@ -31,4 +31,6 @@ void loadlibs ()
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCRT");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTART");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libEMCAL");
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummyherwig");
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTHerwig");
 }
