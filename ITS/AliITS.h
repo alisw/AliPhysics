@@ -9,26 +9,27 @@
 //           Manager class for set: ITS                               //
 ////////////////////////////////////////////////////////////////////////
 
-#include <TObjArray.h>
-#include <TBranch.h>
-#include <TString.h>
-#include <TTree.h>
-#include <TFile.h>
-#include <TObjectTable.h>
 
 #include "AliDetector.h"
-#include "AliITSgeom.h"
-#include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
-#include "AliITShit.h"
-#include "AliITSdigit.h"
-#include "AliITSmodule.h"
-#include "AliITSRecPoint.h"
-#include "AliITSRawCluster.h"
+
 
 class AliITSDetType;
 class AliITSsimulation;
 class AliITSClusterFinder;
+class AliITSsegmentation;
+class AliITSresponse;
+class AliITShit;
+class AliITSgeom;
+class AliITSdigit;
+class AliITSRecPoint;
+class AliITSRawCluster;
+class AliITSmodule;
+
+class TObjArray;
+class TString;
+class TTree;
+
+
 
 class AliITS : public AliDetector {
 
