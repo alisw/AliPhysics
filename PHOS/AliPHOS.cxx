@@ -297,7 +297,79 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[715], "DRAY",0.) ;
   gMC->Gstpar(idtmed[715], "STRA",2.) ;
 
-  
- 
+}
 
+//____________________________________________________________________________
+RecPointsList * AliPHOS::EmcRecPoints(Int_t evt) 
+{
+  // returns the pointer to the EMCA RecPoints list
+  // if the list is empty, get it from TreeR on the disk file
+
+  RecPointsList * rv = 0 ; 
+  
+  if ( fEmcRecPoints ) 
+    rv = fEmcRecPoints ; 
+
+  else {
+    fEmcRecPoints = new TClonesArray("AliPHOSEmcRecPoint", 100) ; 
+    gAlice->GetEvent(evt) ; 
+    TTree * fReconstruct = gAlice->TreeR() ; 
+    fReconstruct->SetBranchAddress( "PHOSEmcRP", &fEmcRecPoints) ;
+    fReconstruct->GetEvent(0) ;
+    fEmcRecPoints->Expand( fEmcRecPoints->GetEntries() ) ; 
+    rv =  fEmcRecPoints ;
+  }
+    
+  return rv ; 
+  
+}
+
+//____________________________________________________________________________
+RecParticlesList * AliPHOS::RecParticles(Int_t evt) 
+{
+  // returns the pointer to the RecParticles list
+  // if the list is empty, get it from TreeR on the disk file
+
+  RecParticlesList * rv = 0 ; 
+  
+  if ( fRecParticles ) 
+    rv = fRecParticles ; 
+
+  else {
+    fRecParticles = new TClonesArray("AliPHOSRecParticle", 100) ; 
+    gAlice->GetEvent(evt) ; 
+    TTree * fReconstruct = gAlice->TreeR() ; 
+    fReconstruct->SetBranchAddress( "PHOSRP", &fRecParticles) ;
+    fReconstruct->GetEvent(0) ;
+    fRecParticles->Expand( fRecParticles->GetEntries() ) ; 
+    rv =  fRecParticles ;
+  }
+ 
+  return rv ; 
+  
+}
+
+//____________________________________________________________________________
+RecParticlesList * AliPHOS::TrackSegments(Int_t evt) 
+{
+  // returns the pointer to the TrackSegments list
+  // if the list is empty, get it from TreeR on the disk file
+
+  TrackSegmentsList * rv = 0 ; 
+  
+  if ( fTrackSegments ) 
+    rv = fTrackSegments ; 
+
+  else {
+    fTrackSegments = new TClonesArray("AliPHOSTrackSegment", 100) ; 
+    gAlice->GetEvent(evt) ; 
+    TTree * fReconstruct = gAlice->TreeR() ; 
+    fReconstruct->SetBranchAddress( "PHOSTS", &fTrackSegments) ;
+    fReconstruct->GetEvent(0) ;
+    fTrackSegments->Expand( fTrackSegments->GetEntries() ) ; 
+    rv =  fTrackSegments ;
+  }
+ 
+  return rv ; 
+  
 }

@@ -11,6 +11,7 @@
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
+#include "TString.h"
 
 // --- AliRoot header files ---
 
@@ -28,16 +29,17 @@ class AliPHOS : public AliDetector {
   AliPHOS() : AliDetector() {} 
   virtual ~AliPHOS() ; 
  
-  virtual void CreateMaterials() ;               // defines the material of the detector
+  virtual void CreateMaterials() ;                     // defines the material of the detector
   virtual AliPHOSGeometry * GetGeometry() = 0 ;  
-  RecPointsList* EmcRecPoints() {return fEmcClusters;}               // gets Array of cluster in the crystals 
-  RecParticlesList * RecParticles() { return fRecParticles ; }      // gets Array of reconstructed particles
-  TrackSegmentsList *    TrackSegments(){return fTrackSegments ;} // gets Array of track segments
-  virtual RecPointsList* PpsdRecPoints() = 0 ;        // gets Array of clusters in the PPSD 
+  RecPointsList* EmcRecPoints(Int_t evt=0) ;           // gets Array of cluster in the crystals 
+  RecParticlesList * RecParticles(Int_t evt = 0) ;     // gets Array of reconstructed particles
+  TrackSegmentsList * TrackSegments(Int_t evt=0) ;     // gets Array of track segments
+  virtual RecPointsList* PpsdRecPoints(Int_t evt=0)=0; // gets Array of clusters in the PPSD 
+  virtual TString Version() {return TString(" ") ; } 
 
  protected:
   
-  RecPointsList * fEmcClusters ;                  // The RecPoints (clusters) list in EMC 
+  RecPointsList * fEmcRecPoints ;                 // The RecPoints (clusters) list in EMC 
   TrackSegmentsList * fTrackSegments ;            // The TrackSegment list in PHOS
   RecParticlesList * fRecParticles ;              // The reconstructed particles list in PHOS
 
