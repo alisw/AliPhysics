@@ -57,11 +57,14 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TBenchmark.h"
+#include "TGeometry.h"
+
 // --- Standard library ---
 #include <iomanip.h>
 
 // --- AliRoot header files ---
 #include "AliRun.h"
+#include "AliHeader.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h"
@@ -89,7 +92,7 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * headerFile, const char * sDigi
   fA             = 0;
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;
-  fSDigitsInRun  = 0 ; 
+  fSDigitsInRun  = 0 ;
   Init();
 }
 
@@ -120,7 +123,6 @@ void AliPHOSSDigitizer::Init()
   sdname.Append(GetTitle() ) ;
   SetName(sdname) ;
   gime->PostSDigitizer(this) ;
-     
 }
 
 //____________________________________________________________________________
@@ -212,32 +214,14 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
       AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
       digit->SetIndexInList(i) ;     
     }
-
+    
     if(gAlice->TreeS() == 0)
-      gAlice->MakeTree("S") ;
-    
-    //Make (if necessary) branches    
-    char * file =0;
-    if(gSystem->Getenv("CONFIG_SPLIT_FILE")){ //generating file name
-      file = new char[strlen(gAlice->GetBaseFile())+20] ;
-      sprintf(file,"%s/PHOS.SDigits.root",gAlice->GetBaseFile()) ;
-    }
-    
-    TDirectory *cwd = gDirectory;
-    
+	gAlice->MakeTree("S") ;
+        
     //First list of sdigits
     Int_t bufferSize = 32000 ;    
     TBranch * sdigitsBranch = gAlice->TreeS()->Branch("PHOS",&sdigits,bufferSize);
     sdigitsBranch->SetTitle(sdname);
-    if (file) {
-      sdigitsBranch->SetFile(file);
-      TIter next( sdigitsBranch->GetListOfBranches());
-      TBranch * subbr;
-      while ((subbr=static_cast<TBranch*>(next()))) {
-	subbr->SetFile(file);
-      }   
-      cwd->cd();
-    } 
       
     //Next - SDigitizer
     Int_t splitlevel = 0 ;
@@ -245,18 +229,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     TBranch * sdigitizerBranch = gAlice->TreeS()->Branch("AliPHOSSDigitizer","AliPHOSSDigitizer",
 					       &sd,bufferSize,splitlevel); 
     sdigitizerBranch->SetTitle(sdname);
-    if (file) {
-      sdigitizerBranch->SetFile(file);
-      TIter next( sdigitizerBranch->GetListOfBranches());
-      TBranch * subbr ;
-      while ((subbr=static_cast<TBranch*>(next()))) {
-	subbr->SetFile(file);
-      }   
-      cwd->cd();
-      delete [] file;
-    }
-
     sdigitsBranch->Fill() ; 
+
     gAlice->TreeS()->AutoSave() ;
     
     if(strstr(option,"deb"))
@@ -274,6 +248,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   
   
 }
+
 //__________________________________________________________________
 void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
 {
@@ -300,6 +275,41 @@ void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
   // Post to the WhiteBoard
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   gime->PostSDigits( title, GetTitle()) ; 
+}
+
+//__________________________________________________________________
+void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName) const
+{
+  // Diverts the SDigits in a file separate from the hits file
+  
+  TDirectory * cwd = gDirectory ;
+  TFile * splitFile = gAlice->InitTreeFile("S",splitFileName.Data());
+  splitFile->cd() ; 
+  gAlice->Write();
+  
+  TTree *treeE  = gAlice->TreeE();
+  if (!treeE) {
+    cerr<<"No TreeE found "<<endl;
+    abort() ;
+  }      
+  
+  // copy TreeE
+  AliHeader *header = new AliHeader();
+  treeE->SetBranchAddress("Header", &header);
+  treeE->SetBranchStatus("*",1);
+  TTree *treeENew =  treeE->CloneTree();
+  treeENew->Write();
+  
+  // copy AliceGeom
+  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+  if (!AliceGeom) {
+    cerr<<"AliceGeom was not found in the input file "<<endl;
+    abort() ;
+  }
+  AliceGeom->Write();
+  cwd->cd() ; 
+  gAlice->MakeTree("S",splitFile);
+  cout << "INFO: AliPHOSSDigitizer::SetSPlitMode -> SDigits will be stored in " << splitFileName.Data() << endl ; 
 }
 
 //__________________________________________________________________

@@ -36,7 +36,7 @@ public:
   Float_t  GetPedestalParameter()const {return fA;}
   Float_t  GetCalibrationParameter()const{return fB;}
   char *   GetSDigitsBranch()const{return (char*) fSDigitsTitle.Data();}  
-
+  void     SetSplitFile(const TString splitFileName = "EMCAL.SDigits.root" ) const ;
   virtual void Print(Option_t* option) const ;
 
   void     SetPedestalParameter(Float_t A){fA = A ;}
@@ -52,6 +52,7 @@ private:
   void     Init() ;
   void     PrintSDigits(Option_t * option) ;
   Int_t    Layer2TowerID(Int_t,Bool_t) ;
+
 private:
   Float_t fA ;              //Pedestal parameter
   Float_t fB ;              //Slope Digitizition parameters
