@@ -531,3 +531,4 @@
                 to enable direct use of the AliDevice linear sorting facility.
                 Default for AliDevice changed such that now all registered hits are by default owned
                 by the AliDevice object.
+06-oct-2004 NvE Full support for data access via slotname specification introduced in AliAttrib and AliSignal.

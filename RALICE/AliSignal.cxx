@@ -294,7 +294,7 @@ void AliSignal::DeleteSignals(Int_t mode)
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignal(Double_t sig,Int_t j)
 {
-// Store value in the j-th (default j=1) signal slot.
+// Store signal value for the j-th (default j=1) slot.
 // Note : The first signal slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal values, the number of reserved slots for the
@@ -316,9 +316,23 @@ void AliSignal::SetSignal(Double_t sig,Int_t j)
  fSignals->AddAt(float(sig),j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetSignal(Double_t sig,TString name)
+{
+// Store signal value for the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetSignal(sig,j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::AddSignal(Double_t sig,Int_t j)
 {
-// Add value to the j-th (default j=1) signal slot.
+// Add value to the signal of the j-th (default j=1) slot.
 // Note : The first signal slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal values, the number of reserved slots for the
@@ -341,9 +355,23 @@ void AliSignal::AddSignal(Double_t sig,Int_t j)
  fSignals->AddAt(sum,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::AddSignal(Double_t sig,TString name)
+{
+// Add value to the signal of the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) AddSignal(sig,j);
+}
+///////////////////////////////////////////////////////////////////////////
 Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 {
-// Provide value of the j-th (default j=1) signal slot.
+// Provide signal value of the j-th (default j=1) slot.
 // Note : The first signal slot is at j=1.
 // In case no signal is present or the argument j is invalid, 0 is returned.
 // The parameter "mode" allows for automatic gain etc... correction of the signal.
@@ -395,9 +423,40 @@ Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
  return sig;
 }
 ///////////////////////////////////////////////////////////////////////////
+Float_t AliSignal::GetSignal(TString name,Int_t mode) const
+{
+// Provide signal value of the name-specified slot.
+// In case no signal is present, 0 is returned.
+// The parameter "mode" allows for automatic gain etc... correction of the signal.
+//
+// mode = 0 : Just the j-th signal is returned.
+//        1 : The j-th signal is corrected for the gain, offset, dead flag etc...
+//            In case the gain value was not set, gain=1 will be assumed.
+//            In case the gain value was 0, a signal value of 0 is returned.
+//            In case the offset value was not set, offset=0 will be assumed.
+//            In case the j-th slot was marked dead, 0 is returned.
+//
+// The corrected signal (sigc) is determined as follows :
+//
+//              sigc=(signal/gain)-offset 
+//
+// The default is mode=0.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Float_t val=0;
+ if (j>0) val=GetSignal(j,mode);
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignalError(Double_t dsig,Int_t j)
 {
-// Store error for the j-th (default j=1) signal slot.
+// Store error on the signal for the j-th (default j=1) slot.
 // Note : The first signal slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal error values, the number of reserved slots for the
@@ -419,9 +478,23 @@ void AliSignal::SetSignalError(Double_t dsig,Int_t j)
  fDsignals->AddAt(float(dsig),j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetSignalError(Double_t dsig,TString name)
+{
+// Store error on the signal for the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetSignalError(dsig,j);
+}
+///////////////////////////////////////////////////////////////////////////
 Float_t AliSignal::GetSignalError(Int_t j) const
 {
-// Provide error of the j-th (default j=1) signal slot.
+// Provide error on the signal of the j-th (default j=1) slot.
 // Note : The first signal slot is at j=1.
 // In case no signal is present or the argument j is invalid, 0 is returned.
  Float_t err=0;
@@ -437,6 +510,22 @@ Float_t AliSignal::GetSignalError(Int_t j) const
   } 
  }
  return err;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliSignal::GetSignalError(TString name) const
+{
+// Provide error on the signal of the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Float_t val=0;
+ if (j>0) val=GetSignalError(j);
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::Data(TString f) const
@@ -578,6 +667,20 @@ void AliSignal::List(Int_t j) const
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::List(TString name) const
+{
+// Provide signal information for the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) List(j);
+}
+///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetNvalues() const
 {
 // Provide the number of values for this signal.
@@ -604,15 +707,31 @@ Int_t AliSignal::GetNwaveforms() const
 ///////////////////////////////////////////////////////////////////////////
 TH1F* AliSignal::GetWaveform(Int_t j) const
 {
-// Provide pointer to the j-th waveform histogram.
+// Provide pointer to the waveform histogram of the j-th slot.
  TH1F* waveform=0;
  if (j <= GetNwaveforms()) waveform=(TH1F*)fWaveforms->At(j-1);
  return waveform;
 }
 ///////////////////////////////////////////////////////////////////////////
+TH1F* AliSignal::GetWaveform(TString name) const
+{
+// Provide pointer to the waveform histogram of the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ TH1F* waveform=0;
+ if (j>0) waveform=GetWaveform(j);
+ return waveform;
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetWaveform(TH1F* waveform,Int_t j)
 {
-// Set the 1D waveform histogram corresponding to the j-th signal value.
+// Set the 1D waveform histogram for the j-th slot.
 //
 // Notes :
 //  The waveform of the first signal value is at j=1.
@@ -658,9 +777,23 @@ void AliSignal::SetWaveform(TH1F* waveform,Int_t j)
  } 
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetWaveform(TH1F* waveform,TString name)
+{
+// Set the 1D waveform histogram corresponding for the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetWaveform(waveform,j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetWaveform(Int_t j)
 {
-// Reset the waveform of the j-th (default j=1) signal value.
+// Reset the waveform of the j-th (default j=1) slot.
 // This memberfunction invokes TH1F::Reset() for the corresponding waveform(s).
 // To actually delete the histograms from memory, use DeleteWaveform().
 // Notes : The first signal value is at j=1.
@@ -693,9 +826,23 @@ void AliSignal::ResetWaveform(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetWaveform(TString name)
+{
+// Reset the waveform of the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) ResetWaveform(j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::DeleteWaveform(Int_t j)
 {
-// Delete the waveform of the j-th (default j=1) signal value.
+// Delete the waveform of the j-th (default j=1) slot.
 // Notes : The first signal value is at j=1.
 //         j=0 ==> All waveforms will be deleted.
  
@@ -727,6 +874,20 @@ void AliSignal::DeleteWaveform(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::DeleteWaveform(TString name)
+{
+// Delete the waveform of the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) DeleteWaveform(j);
+}
+///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetNlinks(TObject* obj,Int_t j) const
 {
 // Provide the number of links to the specified object for the j-th slot.
@@ -753,6 +914,23 @@ Int_t AliSignal::GetNlinks(TObject* obj,Int_t j) const
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetNlinks(TObject* obj,TString name) const
+{
+// Provide the number of links to the specified object for the name-spec. slot.
+// If obj=0 all encountered objects for the specified slot will be counted.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t n=0;
+ if (j>0) n=GetNlinks(obj,j);
+ return n;
+}
+///////////////////////////////////////////////////////////////////////////
 TObject* AliSignal::GetLink(Int_t j,Int_t k) const
 {
 // Provide pointer of the object linked to the j-th slot at position k.
@@ -760,6 +938,22 @@ TObject* AliSignal::GetLink(Int_t j,Int_t k) const
  TObject* obj=0;
  // Note : In the internal storage matrix slots=columns positions=rows 
  if (fLinks) obj=fLinks->GetObject(k,j);
+ return obj;
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliSignal::GetLink(TString name,Int_t k) const
+{
+// Provide pointer of the object linked to the name-spec. slot at position k.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ TObject* obj=0;
+ if (j>0) obj=GetLink(j,k);
  return obj;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -807,6 +1001,23 @@ void AliSignal::SetLink(TObject* obj,Int_t j,Int_t k)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetLink(TObject* obj,TString name,Int_t k)
+{
+// Introduce a link (=pointer) to an object for the name-spec. slot at position k.
+// Only the pointer values are stored for (backward) reference, meaning
+// that the objects of which the pointers are stored are NOT owned
+// by the AliSignal object.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetLink(obj,j,k);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::AddLink(TObject* obj,Int_t j)
 {
 // Introduce a link (=pointer) to an object for the j-th slot at the first
@@ -852,6 +1063,24 @@ void AliSignal::AddLink(TObject* obj,Int_t j)
  SetLink(obj,j,pos);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::AddLink(TObject* obj,TString name)
+{
+// Introduce a link (=pointer) to an object for the name-spec slot at the first
+// free position.
+// Only the pointer values are stored for (backward) reference, meaning
+// that the objects of which the pointers are stored are NOT owned
+// by the AliSignal object.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) AddLink(obj,j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetLink(Int_t j,Int_t k)
 {
 // Reset the link of the j-th slot at position k.
@@ -877,6 +1106,23 @@ void AliSignal::ResetLink(Int_t j,Int_t k)
  
  // Note : In the internal storage matrix slots=columns positions=rows 
  if (fLinks) fLinks->RemoveObject(k,j);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetLink(TString name,Int_t k)
+{
+// Reset the link of the name-specified slot at position k.
+//
+// This memberfunction is intended to reset only 1 specified link location.
+// For extended functionality, please refer to the memberfuction ResetLinks().
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) ResetLink(j,k);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetLinks(TObject* obj,Int_t j,Int_t k)
@@ -933,6 +1179,29 @@ void AliSignal::ResetLinks(TObject* obj,Int_t j,Int_t k)
   // Note : In the internal storage matrix slots=columns positions=rows 
   fLinks->RemoveObjects(obj,k,j);
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetLinks(TObject* obj,TString name,Int_t k)
+{
+// Reset single or multiple link(s) according to user specified selections.
+//
+// A link is only reset if the stored reference matches the argument "obj".
+// In case obj=0 no check on the matching of the stored reference is performed
+// and the stored link is always reset in accordance with the other
+// selection criteria.
+//
+// In case the position argument "k" is specified, only the links from that
+// specified position will be deleted.
+// In case k=0 (default) no checking on the position index is performed.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) ResetLinks(obj,j,k);
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,TArrayI& ks) const
@@ -1003,6 +1272,29 @@ Int_t AliSignal::GetIndices(TObject* obj,Int_t j,TArrayI& ks) const
  // Note : In the internal storage matrix slots=columns positions=rows 
  if (fLinks) nrefs=fLinks->GetIndices(obj,ks,j);
  return nrefs;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetIndices(TObject* obj,TString name,TArrayI& ks) const
+{
+// Provide the position indices of all the storage locations of the
+// specified object in the name-specified slot of this AliSignal.
+// The position indices are returned in the TArrayI array.
+// The integer return argument represents the number of storage locations which
+// were encountered for the specified object in the j-th slot.
+//
+// If obj=0 no object selection is performed and all position indices
+// of the stored references for all objects of the j-th slot are returned.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t n=0;
+ if (j>0) n=GetIndices(obj,j,ks);
+ return n;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,Int_t k) const

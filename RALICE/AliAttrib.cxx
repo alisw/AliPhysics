@@ -188,6 +188,20 @@ void AliAttrib::SetGain(Double_t gain,Int_t j)
  SetCalFlags(1,oflag,j);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetGain(Double_t gain,TString name)
+{
+// Store gain value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetGain(gain,j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetOffset(Double_t off,Int_t j)
 {
 // Store offset value of the j-th (default j=1) attribute slot.
@@ -219,6 +233,20 @@ void AliAttrib::SetOffset(Double_t off,Int_t j)
  Int_t gflag=GetGainFlag(j);
 
  SetCalFlags(gflag,1,j);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetOffset(Double_t off,TString name)
+{
+// Store offset value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetOffset(off,j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetCalFlags(Int_t gainflag,Int_t offsetflag,Int_t j)
@@ -284,6 +312,26 @@ Int_t AliAttrib::GetGainFlag(Int_t j) const
  return gflag;
 }
 ///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetGainFlag(TString name) const
+{
+// Provide gain flag of the name-specified attribute slot.
+//
+// flag = 1 : Gain was set
+//        0 : Gain was not set
+//
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t flag=0;
+ if (j>0) flag=GetGainFlag(j);
+ return flag;
+}
+///////////////////////////////////////////////////////////////////////////
 Int_t AliAttrib::GetOffsetFlag(Int_t j) const
 {
 // Provide offset flag of the j-th (default j=1) attribute slot.
@@ -312,6 +360,26 @@ Int_t AliAttrib::GetOffsetFlag(Int_t j) const
  return oflag;
 }
 ///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetOffsetFlag(TString name) const
+{
+// Provide ofset flag of the name-specified attribute slot.
+//
+// flag = 1 : Offset was set
+//        0 : Offset was not set
+//
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t flag=0;
+ if (j>0) flag=GetOffsetFlag(j);
+ return flag;
+}
+///////////////////////////////////////////////////////////////////////////
 Float_t AliAttrib::GetGain(Int_t j) const
 {
 // Provide gain value of the j-th (default j=1) attribute slot.
@@ -336,6 +404,22 @@ Float_t AliAttrib::GetGain(Int_t j) const
  return gain;
 }
 ///////////////////////////////////////////////////////////////////////////
+Float_t AliAttrib::GetGain(TString name) const
+{
+// Provide gain value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Float_t gain=0;
+ if (j>0) gain=GetGain(j);
+ return gain;
+}
+///////////////////////////////////////////////////////////////////////////
 Float_t AliAttrib::GetOffset(Int_t j) const
 {
 // Provide offset value of the j-th (default j=1) attribute slot.
@@ -357,6 +441,22 @@ Float_t AliAttrib::GetOffset(Int_t j) const
    if (GetOffsetFlag(j)) offset=fOffsets->At(j-1);
   }
  }
+ return offset;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliAttrib::GetOffset(TString name) const
+{
+// Provide offset value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Float_t offset=0;
+ if (j>0) offset=GetOffset(j);
  return offset;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -395,6 +495,20 @@ void AliAttrib::ResetGain(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::ResetGain(TString name)
+{
+// Reset the gain value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) ResetGain(j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::ResetOffset(Int_t j)
 {
 // Reset the offset value of the j-th (default j=1) attribute slot.
@@ -428,6 +542,20 @@ void AliAttrib::ResetOffset(Int_t j)
   cout << " *AliAttrib::ResetOffset* Index j = " << j << " invalid." << endl;
   return;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::ResetOffset(TString name)
+{
+// Reset the offset value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) ResetOffset(j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliAttrib::DeleteCalibrations(Int_t mode)
@@ -531,6 +659,20 @@ void AliAttrib::SetDead(Int_t j)
  fCalflags->AddAt(word,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetDead(TString name)
+{
+// Set the dead flag to 1 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetDead(j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetAlive(Int_t j)
 {
 // Set the dead flag to 0 for the j-th (default j=1) attribute slot.
@@ -557,6 +699,20 @@ void AliAttrib::SetAlive(Int_t j)
  fCalflags->AddAt(word,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetAlive(TString name)
+{
+// Set the dead flag to 0 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetAlive(j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetEdgeOn(Int_t j)
 {
 // Set the edge value to 1 for the j-th (default j=1) attribute slot.
@@ -573,6 +729,20 @@ void AliAttrib::SetEdgeOn(Int_t j)
  }
 
  SetEdgeValue(1,j);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetEdgeOn(TString name)
+{
+// Set the edge value to 1 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetEdgeOn(j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetEdgeOff(Int_t j)
@@ -592,6 +762,20 @@ void AliAttrib::SetEdgeOff(Int_t j)
  if (!fCalflags || j>fCalflags->GetSize()) return;
 
  SetEdgeValue(0,j);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetEdgeOff(TString name)
+{
+// Set the edge value to 0 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetEdgeOff(j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetEdgeValue(Int_t val,Int_t j)
@@ -631,6 +815,20 @@ void AliAttrib::SetEdgeValue(Int_t val,Int_t j)
  fCalflags->AddAt(word,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::SetEdgeValue(Int_t val,TString name)
+{
+// Set the edge value to "val" for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) SetEdgeValue(val,j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::IncreaseEdgeValue(Int_t j)
 {
 // Increase the edge value by 1 for the j-th (default j=1) attribute slot.
@@ -650,6 +848,20 @@ void AliAttrib::IncreaseEdgeValue(Int_t j)
  SetEdgeValue(edge+1,j);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::IncreaseEdgeValue(TString name)
+{
+// Increase the edge value by 1 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) IncreaseEdgeValue(j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::DecreaseEdgeValue(Int_t j)
 {
 // Decrease the edge value by 1 for the j-th (default j=1) attribute slot.
@@ -667,6 +879,20 @@ void AliAttrib::DecreaseEdgeValue(Int_t j)
 
  Int_t edge=GetEdgeValue();
  SetEdgeValue(edge-1,j);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::DecreaseEdgeValue(TString name)
+{
+// Decrease the edge value by 1 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) DecreaseEdgeValue(j);
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliAttrib::GetEdgeValue(Int_t j) const
@@ -693,6 +919,22 @@ Int_t AliAttrib::GetEdgeValue(Int_t j) const
  return edge;
 }
 ///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetEdgeValue(TString name) const
+{
+// Provide edge value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t val=0;
+ if (j>0) val=GetEdgeValue(j);
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
 Int_t AliAttrib::GetDeadValue(Int_t j) const
 {
 // Provide dead value of the j-th (default j=1) attribute slot.
@@ -716,6 +958,22 @@ Int_t AliAttrib::GetDeadValue(Int_t j) const
   }
  }
  return dead;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetDeadValue(TString name) const
+{
+// Provide dead value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t val=0;
+ if (j>0) val=GetDeadValue(j);
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetSlotName(TString s,Int_t j)
@@ -842,6 +1100,20 @@ void AliAttrib::List(Int_t j) const
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::List(TString name) const
+{
+// Provide attribute information for the name-specified slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) List(j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::Load(AliAttrib& a,Int_t j)
 {
 // Load attributes of the j-th slot of the input AliAttrib into this AliAttrib object.
@@ -956,5 +1228,20 @@ void AliAttrib::Load(AliAttrib& a,Int_t j)
    }
   }
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::Load(AliAttrib& a,TString name)
+{
+// Load attributes of the name-specified slot of the input AliAttrib into
+// this AliAttrib object.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) Load(a,j);
 }
 ///////////////////////////////////////////////////////////////////////////
