@@ -120,7 +120,9 @@ void AliMUONRecoCheck::MakeTrackRef()
     
     iHitMin = 0;
     isNewTrack = kTRUE;
-
+    
+    if (!trackRefs->GetEntries()) continue;
+    
     while (isNewTrack) {
 
       for (Int_t iHit = iHitMin; iHit < trackRefs->GetEntries(); iHit++) {
