@@ -21,6 +21,8 @@
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
 
+#include <new>
+
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom.h>
