@@ -40,6 +40,7 @@
 ClassImp(AliPHOSGeometry) ;
 
 AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
+Bool_t            AliPHOSGeometry::fgInit = kFALSE ;
 
 //____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
@@ -254,18 +255,17 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)
 void AliPHOSGeometry::Init(void)
 {
   // Initializes the PHOS parameters
-  
-  fRotMatrixArray = new TObjArray(fNModules) ; 
 
   cout << "PHOS geometry setup: parameters for option " << fName << " " << fTitle << endl ;
   if ( ((strcmp( fName, "default" )) == 0)  || ((strcmp( fName, "GPS2" )) == 0) ) {
-    fInit     = kTRUE ; 
+    fgInit     = kTRUE ; 
     this->InitPHOS() ; 
     this->InitPPSD() ;
     this->SetPHOSAngles() ; 
+    fRotMatrixArray = new TObjArray(fNModules) ; 
   }
  else {
-   fInit = kFALSE ; 
+   fgInit = kFALSE ; 
    cout << "PHOS Geometry setup: option not defined " << fName << endl ; 
  }
 }
@@ -401,8 +401,14 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
     if ( strcmp(name,"") == 0 ) 
       rv = 0 ;
     else {    
-      fgGeom = new AliPHOSGeometry(name, title) ; 
-      rv = (AliPHOSGeometry * ) fgGeom ; 
+      fgGeom = new AliPHOSGeometry(name, title) ;
+      if ( fgInit )
+	rv = (AliPHOSGeometry * ) fgGeom ;
+      else {
+	rv = 0 ; 
+	delete fgGeom ; 
+	fgGeom = 0 ; 
+      }
     }
   }
   else {

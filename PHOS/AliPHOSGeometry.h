@@ -42,7 +42,7 @@ public:
   } 
   
   virtual ~AliPHOSGeometry(void) ; 
-  static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title) ; 
+  static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
   static AliPHOSGeometry * GetInstance() ; 
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat)  ;
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)  ; 
@@ -88,7 +88,7 @@ public:
 
   Bool_t     IsInitialized(void)                  const { 
     // 
-    return fInit ; }  
+    return fgInit ; }  
   Float_t    GetAirFilledBoxSize(Int_t index)     const { 
     // Getter
     return fAirFilledBoxSize[index] ;}
@@ -263,7 +263,6 @@ private:
   Float_t fCrystalWrapThickness ;         // Thickness of Tyvek wrapping the crystal
   Float_t fCrystalHolderThickness ;       // Titanium holder of the crystal
   Float_t fGapBetweenCrystals ;           // Total Gap between two adjacent crystals 
-  Bool_t  fInit ;                         // Tells if geometry has been succesfully set up 
   Float_t fIPtoOuterCoverDistance ;       // Distances from interaction point to outer cover 
   Float_t fIPtoCrystalSurface ;           // Distances from interaction point to Xtal surface
   Float_t fModuleBoxThickness ;           // Thickness of the thermo insulating box containing one crystals module 
@@ -312,6 +311,7 @@ private:
   Float_t fZDisplacement ;                // Z displacement of micromegas1 with respect to micromegas2  
 
   static AliPHOSGeometry * fgGeom ; // pointer to the unique instance of the singleton 
+  static Bool_t  fgInit ;            // Tells if geometry has been succesfully set up 
 
   ClassDef(AliPHOSGeometry,1)  // PHOS geometry class 
 
