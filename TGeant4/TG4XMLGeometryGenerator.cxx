@@ -200,15 +200,15 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
     if (pvd) {
       // placement
       G4ThreeVector  position = vpvd->GetTranslation();
-      const G4RotationMatrix* kMatrix = vpvd->GetObjectRotation();      
 
-      if (!kMatrix) {
+      if (!vpvd->GetRotation()) {
   	fConvertor->WritePosition(lvName, position);
         // if volume is not leaf node place its logical volume
         if (nd>0) 
     	  fConvertor->WritePosition(compName, position);
       }	  
       else {  
+        const G4RotationMatrix* kMatrix = vpvd->GetObjectRotation();      
   	fConvertor->WritePositionWithRotation(lvName, position, kMatrix);
         if (nd>0) 
       	   fConvertor->WritePositionWithRotation(compName, position, kMatrix);
