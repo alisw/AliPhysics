@@ -1,5 +1,5 @@
-//Author:        Uli Frankenfeld
-//Last Modified: 06.12.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy ULI
 
 #include <math.h>
 #include <string.h>
@@ -11,9 +11,11 @@
 #include "AliL3TrackSegmentData.h"
 #include "AliL3Transform.h"
 #include "AliL3ConfMapPoint.h"
+
 //_____________________________________________________________
+// AliL3TrackArray
 //
-// The L3 TrackArray 
+// Track array class 
 //
 
 ClassImp(AliL3TrackArray)
@@ -309,7 +311,8 @@ void AliL3TrackArray::AddLast(AliL3Track *track)
 }
 
 
-void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old){
+void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old,Int_t slice)
+{
   if(GetTrackType() != newtrack->GetTrackType() && GetTrackType()!='t')
     {
       LOG(AliL3Log::kError,"AliL3TrackArray::AddTracks","Track types")
@@ -325,6 +328,8 @@ void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old){
       newtrack->Remove(i);
     AliL3Track *track = NextTrack();
     track->Set(tpt);
+    if(slice>=0)
+      track->Rotate(slice); //Rotate track to global coordinates
     /*
       AliL3Track *track;
       if(GetTrackType()=='h')

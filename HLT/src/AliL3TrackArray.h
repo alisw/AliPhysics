@@ -54,10 +54,10 @@ class AliL3TrackArray{
   UInt_t WriteTracks(UInt_t & ntracks,AliL3TrackSegmentData* tr); //Write tracks
   UInt_t GetOutSize();
   UInt_t GetOutCount(){return (UInt_t) GetNPresent();}
-  void AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old=kTRUE);//add all Tracks to this 
+  void AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old=kTRUE,Int_t slice=-1);//add all Tracks to this 
   void AddLast(AliL3Track *track);
 
-  ClassDef(AliL3TrackArray,1) 
+  ClassDef(AliL3TrackArray,1) //Track array class
 };
 
 #endif
