@@ -33,10 +33,13 @@ public:
   Double_t GetD(Double_t x0=0.,Double_t y0=0.,Double_t z0=0.) const;
   Int_t GetNindex() const {return fNidx;}
   Int_t GetPindex() const {return fPidx;}
+  void SetDcaDaughters(Double_t rDcaDaughters=0.);
+  Double_t GetDcaDaughters() {return fDcaDaughters;}
 
 protected: 
   Int_t fPdgCode;           // reconstructed V0's type (PDG code)
   Double_t fEffMass;        // reconstructed V0's effective mass
+  Double_t fDcaDaughters;   // dca between V0's daughters
   Double_t fChi2;           // V0's chi2 value
   Double_t fPos[3];         // V0's position (global)
   Double_t fPosCov[6];      // covariance matrix of the vertex position
@@ -60,6 +63,11 @@ px=fNmom[0]; py=fNmom[1]; pz=fNmom[2];
 inline 
 void AliESDv0::GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
 px=fPmom[0]; py=fPmom[1]; pz=fPmom[2];
+}
+
+inline
+void AliESDv0::SetDcaDaughters(Double_t rDcaDaughters){
+  fDcaDaughters=rDcaDaughters;
 }
 
 #endif
