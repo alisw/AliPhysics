@@ -70,6 +70,8 @@
 
 #include "AliRun.h"
 #include "AliHeader.h"
+#include "AliStream.h"
+#include "AliRunDigitizer.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALTick.h"
@@ -78,7 +80,6 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALGetter.h"
-#include "AliRunDigitizer.h"
 ClassImp(AliEMCALDigitizer)
 
 
@@ -545,31 +546,48 @@ if( strcmp(GetName(), "") == 0 )
  
 //__________________________________________________________________
 void AliEMCALDigitizer::Print(Option_t* option)const {
+ 
   if( strcmp(GetName(), "") != 0) {
     
     cout << "------------------- "<< GetName() << " -------------" << endl ;
-    cout << "Digitizing sDigits from file(s): " <<endl ;
-    
-  TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("Folders/RunMC/Event/Data/EMCAL/SDigits"))->GetListOfFolders() ; 
-    TIter next(folderslist) ; 
-    TFolder * folder = 0 ;
-    while ( (folder = (TFolder*)next()) ) 
-      if ( folder->FindObject(GetName())  ) 
-	{
-	cout << "Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
+    const AliRunDigitizer * rd = Manager() ; 
+    if (rd) {
+      Int_t ninput = rd->GetInputStreams()->GetEntries() ;
+      Int_t index = 0 ; 
+      const AliStream * st = 0 ; 
+      TString out("") ; 
+      for (index = 0 ; index < ninput ; index++) { 
+	st = static_cast<AliStream*>(rd->GetInputStreams()->At(index))  ;
+	if (index == 0 ) 
+	  out = st->GetFileNames()->At(0)->GetName() ; 
+	cout << "Adding SDigits " << GetName() << " from " << 	st->GetFileNames()->At(0)->GetName() << endl ; 
+      }
+      cout << endl ;
+      cout << "Writing digits to " <<  out.Data() << endl ;   
+    } else { 
+      AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
+      gime->Folder("sdigits")  ;
+      cout << "Digitizing sDigits from file(s): " <<endl ;
+      TCollection * folderslist = gime->Folder("sdigits")->GetListOfFolders() ; 
+      TIter next(folderslist) ; 
+      TFolder * folder = 0 ; 
+      
+      while ( (folder = (TFolder*)next()) ) {
+	if ( folder->FindObject(GetName())  ) 
+	  cout << "Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
+      }
       cout << endl ;
       cout << "Writing digits to " << GetTitle() << endl ;
-      
-      cout << endl ;
-      cout << "With following parameters: " << endl ;
-      cout << "     Electronics noise in EMC (fPinNoise) = " << fPinNoise << endl ;
-      cout << "  Threshold  in EMC  (fTowerDigitThreshold) = " << fTowerDigitThreshold  << endl;
-      cout << "  Threshold  in PreShower  (fPreShowerDigitThreshold) = " << fPreShowerDigitThreshold  << endl ; ;
-      cout << "---------------------------------------------------" << endl ;
-    }
-    else
-      cout << "AliEMCALDigitizer not initialized " << endl ;
-    }
+    }       
+    cout << endl ;
+    cout << "With following parameters: " << endl ;
+    cout << "     Electronics noise in EMC (fPinNoise) = " << fPinNoise << endl ;
+    cout << "  Threshold  in EMC  (fTowerDigitThreshold) = " << fTowerDigitThreshold  << endl;
+    cout << "  Threshold  in PreShower  (fPreShowerDigitThreshold) = " << fPreShowerDigitThreshold  << endl ; ;
+    cout << "---------------------------------------------------" << endl ;
+  }
+  else
+    cout << "AliEMCALDigitizer not initialized " << endl ;
 }
 
 //__________________________________________________________________

@@ -71,6 +71,7 @@
 
 #include "AliRun.h"
 #include "AliHeader.h"
+#include "AliStream.h"
 #include "AliRunDigitizer.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOS.h"
@@ -96,6 +97,7 @@ ClassImp(AliPHOSDigitizer)
 AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
 {
   // ctor
+
   SetTitle(headerFile) ;
   SetName(name) ;
   fManager = 0 ;                     // We work in the standalong mode
@@ -113,7 +115,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   SetTitle("aliroot") ;
   SetName("Default") ;
   InitParameters() ; 
-  fDefaultInit = kFALSE ; 
+  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________ 
@@ -124,7 +126,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   
   if (!fDefaultInit) {
     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-    
+ 
    // remove the task from the folder list
    gime->RemoveTask("S",GetName()) ;
    gime->RemoveTask("D",GetName()) ;
@@ -654,19 +656,36 @@ void AliPHOSDigitizer::Print(Option_t* option)const {
   if( strcmp(GetName(), "") != 0 ){
     
     cout << "------------------- "<< GetName() << " -------------" << endl ;
-    cout << "Digitizing sDigits from file(s): " <<endl ;
-    
-    TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("Folders/RunMC/Event/Data/SDigits/PHOS"))->GetListOfFolders() ; 
-    TIter next(folderslist) ; 
-    TFolder * folder = 0 ; 
-    
-    while ( (folder = (TFolder*)next()) ) {
-      if ( folder->FindObject(GetName())  ) 
-	cout << "Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
+    const AliRunDigitizer * rd = Manager() ; 
+    if (rd) {
+      Int_t ninput = rd->GetInputStreams()->GetEntries() ;
+      Int_t index = 0 ; 
+      const AliStream * st = 0 ; 
+      TString out("") ; 
+      for (index = 0 ; index < ninput ; index++) { 
+	st = static_cast<AliStream*>(rd->GetInputStreams()->At(index))  ;
+	if (index == 0 ) 
+	  out = st->GetFileNames()->At(0)->GetName() ; 
+	cout << "Adding SDigits " << GetName() << " from " << 	st->GetFileNames()->At(0)->GetName() << endl ; 
+      }
+      cout << endl ;
+      cout << "Writing digits to " <<  out.Data() << endl ;   
     }
-    cout << endl ;
-    cout << "Writing digits to " << GetTitle() << endl ;
-    
+    else { 
+      AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
+      gime->Folder("sdigits")  ;
+      cout << "Digitizing sDigits from file(s): " <<endl ;
+      TCollection * folderslist = gime->Folder("sdigits")->GetListOfFolders() ; 
+      TIter next(folderslist) ; 
+      TFolder * folder = 0 ; 
+      
+      while ( (folder = (TFolder*)next()) ) {
+	if ( folder->FindObject(GetName())  ) 
+	  cout << "Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
+      }
+      cout << endl ;
+      cout << "Writing digits to " << GetTitle() << endl ;
+    }    
     cout << endl ;
     cout << "With following parameters: " << endl ;
     cout << "     Electronics noise in EMC (fPinNoise) = " << fPinNoise << endl ;
