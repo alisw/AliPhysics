@@ -10,6 +10,7 @@
 
 #include <TTask.h>
 #include "AliEMCALJet.h"
+#include <TString.h>
 
 class TClonesArray;
 class TH2F;
@@ -89,12 +90,13 @@ class AliEMCALJetFinder : public TTask {
     TH1F*   GetTrackPtBcut() {return fhTrackPtBcut;}
     TList*  GetHistsList() {return fHistsList;}
     Int_t   GetNChTpc() {return fNChTpc;}
-    Bool_t GetEnergyWeightingFlag() {return fWeightingMethod ;}
+    Bool_t  GetEnergyWeightingFlag() {return fWeightingMethod ;}
     Float_t GetEMCALWeight() {return fEMCALWeight;}
     Float_t GetTrackWeight() {return fTrackWeight;}
     void    DrawLego(Char_t *opt="lego");         // *MENU*
     void    DrawLegoEMCAL(Char_t *opt="lego");    // *MENU*
     void    DrawLegos();                          // *MENU*
+    void    DrawLegoBackground(Char_t *opt="lego"); // *MENU*
     Bool_t  IsThisPartonsOrDiQuark(Int_t pdg);
     // I/O
     virtual void SetOutputFileName(char* name) {fOutFileName = name;}
@@ -105,12 +107,16 @@ class AliEMCALJetFinder : public TTask {
     virtual void FillFromParticles();
     virtual void FillFromPartons();
 
-    virtual void SaveBackgroundEvent();
+    virtual void SaveBackgroundEvent(Char_t *name="");
     virtual void InitFromBackground();
     virtual void AddJet(const AliEMCALJet& jet);
     virtual void WriteJets();
     virtual void ResetJets();
     virtual TClonesArray* Jets() {return fJets;}
+    const Char_t* GetNameOfVariant();
+
+    virtual Bool_t  IsFolder() const;
+    virtual void Browse(TBrowser* b);
  private:
     virtual void BookLego();
     Float_t WeightedJetEnergy(Float_t eta, Float_t phi);
@@ -136,6 +142,7 @@ class AliEMCALJetFinder : public TTask {
     TH1F*                          fhTrackPt;        //! Pt distr. for charge particles
     TH1F*                          fhTrackPtBcut;    //! Pt distr. for charge particles + cut due to magnetic field
     TH1F*                          fhChPartMultInTpc;//! Ch. part. multiplicity in TPC acceptance
+    TH1F*                          fhSinTheta;       //! sin(theta)
     TCanvas*                       fC1;              //! first canvas for drawing
     TList*                         fHistsList;       //! List of hists - 4-mar-2002
     AliEMCALJet*                   fJetT[10];        //! Jet temporary storage
@@ -194,10 +201,14 @@ class AliEMCALJetFinder : public TTask {
     TFile*                         fOutFile;         //! Output file
     TFile*                         fInFile;          //! Output file
     Int_t                          fEvent;           //! Processed event
+
+ public:
+    TString fBGFileName;
     Float_t			   fEMCALWeight;
     Float_t			   fTrackWeight;
     Bool_t                         fRandomBg;        //  Flag for Random Background 
-    ClassDef(AliEMCALJetFinder,3)        // JetFinder for EMCAL
+
+    ClassDef(AliEMCALJetFinder,3)                    // JetFinder for EMCAL
 }
 ;
 #endif // ALIEMCALJetFinder_H

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2003/01/28 16:08:11  morsch
+Particle loading according to generator type.
+
 Revision 1.37  2003/01/23 11:50:04  morsch
 - option for adding energy of all particles (ich == 2)
 - provisions for principle component analysis
@@ -161,6 +164,7 @@ Revision 1.3  2002/01/18 05:07:56  morsch
 #include <TROOT.h>
 #include <TStyle.h>
 #include <TTree.h>
+#include <TBrowser.h>
 
 // From AliRoot ...
 #include "AliEMCAL.h"
@@ -712,15 +716,15 @@ void AliEMCALJetFinder::WriteJets()
 void AliEMCALJetFinder::BookLego()
 {
 //
-//  Book histo for discretisation
+//  Book histo for discretization
 //
 
 //
 //  Don't add histos to the current directory
     if(fDebug) printf("\n AliEMCALJetFinder::BookLego() \n");
  
-    TH2::AddDirectory(0);
-    TH1::AddDirectory(0);
+    //    TH2::AddDirectory(0); // hists wil be put to the list from gROOT
+    //    TH1::AddDirectory(0);
     gROOT->cd();
 //    
 //  Signal map
@@ -762,8 +766,15 @@ void AliEMCALJetFinder::BookLego()
     fhChPartMultInTpc = new TH1F("hChPartMultInTpc",
     "Charge partilcle multiplicity in |%eta|<0.9", 2000, 0, 20000);
 
-            //! first canvas for drawing
-    fHistsList=AliEMCALJetMicroDst::MoveHistsToList("Hists from AliEMCALJetFinder", kTRUE);
+    fhSinTheta = new TH1F("fhSinTheta","sin(theta)", fNbinEta, fEtaMin, fEtaMax);
+    TAxis *xax = fhSinTheta->GetXaxis();
+    for(Int_t i=1; i<=fNbinEta; i++) {
+      Double_t eta = xax->GetBinCenter(i);
+      fhSinTheta->Fill(eta, 1./TMath::CosH(eta)); // cosh(eta) = 1./sin(theta)
+    }
+    
+    //! first canvas for drawing
+    fHistsList=AliEMCALJetMicroDst::MoveHistsToList("Hists from AliEMCALJetFinder", kFALSE);
 }
 
 void AliEMCALJetFinder::DumpLego()
@@ -854,7 +865,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 // Access particle information    
     Int_t npart = (gAlice->GetHeader())->GetNprimary();
     Int_t ntr   = (gAlice->GetHeader())->GetNtrack();
-    printf(" : #primary particles %i # tracks %i \n", npart, ntr);
+    printf(" : #primary particles %i # tracks %i : (before) Sum.Et %f\n", 
+    npart, ntr, fLego->Integral());
  
 // Create track list
 //
@@ -890,7 +902,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	Float_t eta   = -100.;
 	if(pT > 0.001) eta   = MPart->Eta();
 	Float_t theta = MPart->Theta();	
-        if  (fDebug>=2) { 
+        if  (fDebug>=2 && MPart->GetStatusCode()==1) { 
 	   printf("ind %7i part %7i -> child1 %5i child2 %5i Status %5i\n", 
            part, mpart, child1, MPart->GetLastDaughter(), MPart->GetStatusCode());
         }
@@ -1040,7 +1052,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	if (etc > fMinCellEt) etsum += etc;
     }
     
-    printf("\nFillFromTracks: Sum above threshold %f %f \n \n", fMinCellEt, etsum);
+    printf("FillFromTracks: Sum above threshold %f -> %f (%f)\n", fMinCellEt, etsum, fLego->Integral());
+    printf("                Track selected(fNtS) %i \n", fNtS);
 
     DumpLego();
 }
@@ -1074,7 +1087,7 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 //   Loop over tracks
 //
     Int_t nbytes = 0;
-    Double_t etH = 0.0;
+    //    Double_t etH = 0.0;
 
     for (Int_t track=0; track<ntracks;track++) {
 	gAlice->ResetHits();
@@ -1096,27 +1109,34 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 	    Float_t eta    =   -TMath::Log(TMath::Tan(theta/2.));
 	    Float_t phi    =    TMath::ATan2(y,x);
 
-	    if (fDebug >= 11) printf("\n Hit %f %f %f %f %f %f %f %f", x, y, z, eloss, r, eta, phi, fSamplingF);
-//	    printf("\n Hit %f %f %f %f", x, y, z, eloss);
+	    if (fDebug >= 21) printf("\n Hit %f %f %f %f %f %f %f %f", x, y, z, eloss, r, eta, phi, fSamplingF);
 	    
-            etH = fSamplingF*eloss*TMath::Sin(theta);
-	    fLego->Fill(eta, phi, etH);
-	    //	    fhLegoEMCAL->Fill(eta, phi, etH);
+	    //            etH = fSamplingF*eloss*TMath::Sin(theta);
+	    fLego->Fill(eta, phi, eloss);
 	} // Hit Loop
     } // Track Loop
-    // copy content of fLego to fhLegoEMCAL (fLego and fhLegoEMCAL are identical)
-    Float_t etsum = 0;
-    
-    for(Int_t i=0; i<fLego->GetSize(); i++) {
-	(*fhLegoEMCAL)[i] = (*fLego)[i];
-	Float_t etc =  (*fLego)[i];
-	if (etc > fMinCellEt) etsum += etc;
+
+    // Transition from deposit energy to eT (eT = de*SF*sin(theta))
+    Double_t etsum = 0;    
+    for(Int_t i=1; i<=fLego->GetNbinsX(); i++){   // eta
+       Double_t sinTheta = fhSinTheta->GetBinContent(i), eT=0;
+       for(Int_t j=1; j<=fLego->GetNbinsY(); j++){ // phi
+	  eT = fLego->GetBinContent(i,j)*fSamplingF*sinTheta;
+	  fLego->SetBinContent(i,j,eT);
+    // copy content of fLego to fhLegoEMCAL (fLego and fhLegoEMCAL are identical)    
+          fhLegoEMCAL->SetBinContent(i,j,eT);
+	  if (eT > fMinCellEt) etsum += eT;
+       }
     }
+
+    //    for(Int_t i=0; i<fLego->GetSize(); i++) {
+    //	(*fhLegoEMCAL)[i] = (*fLego)[i];
+    //	Float_t etc =  (*fLego)[i];
+    //	if (etc > fMinCellEt) etsum += etc;
+    //    }
     
-    printf("\nFillFromHits: Sum above threshold %f %f \n \n", fMinCellEt, etsum);
-    
+    printf("FillFromHits: Sum above threshold %f -> %f \n ", fMinCellEt, etsum);
     //    DumpLego(); ??
-    
 }
 
 void AliEMCALJetFinder::FillFromDigits(Int_t flag)
@@ -1530,14 +1550,14 @@ Int_t AliEMCALJetFinder
 
 
 
-void AliEMCALJetFinder::SaveBackgroundEvent()
+void AliEMCALJetFinder::SaveBackgroundEvent(Char_t *name)
 {
-// Saves the eta-phi lego and the tracklist
+// Saves the eta-phi lego and the tracklist and name of file with BG events
 //
     if (fLegoB) {
        fLegoB->Reset();
        (*fLegoB) = (*fLegoB) + (*fLego); 
-       if(fDebug) 
+       //       if(fDebug) 
        printf("\n AliEMCALJetFinder::SaveBackgroundEvent() (fLegoB) %f = %f(fLego) \n", 
        fLegoB->Integral(), fLego->Integral()); 
     }
@@ -1566,7 +1586,20 @@ void AliEMCALJetFinder::SaveBackgroundEvent()
 	fNtB++;
     }
     fBackground = 1;
-    printf(" fNtB %i => fNtS %i #particles %i \n", fNtB, fNtS, fNt); 
+    printf(" fNtB %i => fNtS %i #particles %i \n", fNtB, fNtS, fNt);
+
+    if(strlen(name) == 0) {
+       TSeqCollection *li = gROOT->GetListOfFiles();
+       TString nf;
+       for(Int_t i=0; i<li->GetSize(); i++) {
+          nf = ((TFile*)li->At(i))->GetName();
+          if(nf.Contains("backgorund")) break;
+       }
+       fBGFileName = nf;
+    } else {
+       fBGFileName = name;
+    }
+    printf("BG file name is \n %s\n", fBGFileName.Data());
 }
 
 void AliEMCALJetFinder::InitFromBackground()
@@ -1579,7 +1612,7 @@ void AliEMCALJetFinder::InitFromBackground()
 	fLego->Reset(); 
 	(*fLego) = (*fLego) + (*fLegoB);
 	if(fDebug) 
-	    printf("\n AliEMCALJetFinder::SaveBackgroundEvent() (fLego) %f = %f(fLegoB) \n", 
+	    printf("\n AliEMCALJetFinder::InitBackgroundEvent() (fLego) %f = %f(fLegoB) \n", 
 		   fLego->Integral(), fLegoB->Integral()); 
     } else {
 	printf(" => fLego undefined \n");
@@ -1742,10 +1775,13 @@ void hf1(Int_t& id, Float_t& x, Float_t& wgt)
 }
 
 void AliEMCALJetFinder::DrawLego(Char_t *opt) 
-{fLego->Draw(opt);}
+{if(fLego) fLego->Draw(opt);}
+
+void  AliEMCALJetFinder::DrawLegoBackground(Char_t *opt="lego") 
+{if(fLegoB) fLegoB->Draw(opt);}
 
 void AliEMCALJetFinder::DrawLegoEMCAL(Char_t *opt) 
-{fhLegoEMCAL->Draw(opt);}
+{if(fhLegoEMCAL) fhLegoEMCAL->Draw(opt);}
 
 void AliEMCALJetFinder::DrawHistsForTuning(Int_t mode)
 { 
@@ -1796,6 +1832,7 @@ void AliEMCALJetFinder::PrintParameters(Int_t mode)
     if(file==0) file = stdout; 
   }
   fprintf(file,"====   Filling lego   ==== \n");
+  fprintf(file,"Sampling fraction %6.3f  ", fSamplingF);
   fprintf(file,"Smearing          %6i  ", fSmear);
   fprintf(file,"Efficiency        %6i\n", fEffic);
   fprintf(file,"Hadr.Correct.     %6i  ", fHCorrection);
@@ -1813,6 +1850,8 @@ void AliEMCALJetFinder::PrintParameters(Int_t mode)
     fprintf(file,"%% change for BG %6.4f\n", fPrecBg);
   } else
   fprintf(file,"==== No Bg subtraction     ==== \n");
+  // 
+  printf("BG file name is %s \n", fBGFileName.Data());
   if(file != stdout) fclose(file); 
 }
 
@@ -2023,4 +2062,34 @@ void AliEMCALJetFinder::FindChargedJet()
     EMCALJETS.njet = njets;
     if (fWrite) WriteJets();
     fEvent++;
+}
+// 16-jan-2003 - just for convenience
+void AliEMCALJetFinder::Browse(TBrowser* b)
+{
+   if(fHistsList)  b->Add((TObject*)fHistsList);
+}
+
+Bool_t AliEMCALJetFinder::IsFolder() const
+{
+  if(fHistsList) return kTRUE;
+  else           return kFALSE;
+}
+
+const Char_t* AliEMCALJetFinder::GetNameOfVariant()
+{// generate the literal string with info about jet finder
+  Char_t name[200];
+  sprintf(name, "jF_R%3.2fMinCell%4.1fPtCut%4.1fEtSeed%4.1fMinEt%4.1fBGSubtr%iSF%4.1f",
+	  fConeRadius,fMinCellEt,fPtCut,fEtSeed,fMinJetEt, fMode, fSamplingF);
+  TString nt(name);
+  nt.ReplaceAll(" ","");
+  if(fBGFileName.Length()) {
+     Int_t i1 = fBGFileName.Index("kBackground");
+     Int_t i2 = fBGFileName.Index("/0000") - 1;
+     if(i1>=0 && i2>=0) {
+        TString bg(fBGFileName(i1,i2-i1+1));
+        nt += bg;
+     }
+  }
+  printf("<I> Name of variant %s \n", nt.Data());
+  return nt.Data();
 }
