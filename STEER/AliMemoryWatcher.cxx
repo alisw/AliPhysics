@@ -70,7 +70,8 @@ AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize)
   fTimer=0;
 }
 //_____________________________________________________________________________
-AliMemoryWatcher::AliMemoryWatcher(AliMemoryWatcher& mw)
+AliMemoryWatcher::AliMemoryWatcher(const AliMemoryWatcher& mw):
+  TObject(mw)
 {
   //copy ctor
   fMAXSIZE = mw.fMAXSIZE ;

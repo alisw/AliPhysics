@@ -148,7 +148,7 @@ class AliBaseLoader: public TNamed
     virtual TObject*   Get() const = 0; 
     Bool_t             IsLoaded()const{return fIsLoaded;}
     void               SetDataLoader(AliDataLoader* dl){fDataLoader = dl;}
-    void               SetEventFolder(TFolder* ef){;}
+    void               SetEventFolder(TFolder* /*ef*/){;}
     void               SetDoNotReload(Bool_t flag){fDoNotReload = flag;}
     Bool_t             DoNotReload() const {return fDoNotReload;}
     TDirectory*        GetDirectory();//returns pointer to directory where data are stored. 

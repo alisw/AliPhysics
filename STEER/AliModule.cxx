@@ -736,7 +736,7 @@ void AliModule::ResetTrackReferences()
  
 //_____________________________________________________________________________
 
-AliLoader*  AliModule::MakeLoader(const char* topfoldername) 
+AliLoader*  AliModule::MakeLoader(const char* /*topfoldername*/) 
  {
    return 0x0;
  }//skowron   
@@ -790,7 +790,7 @@ void  AliModule::AddTrackReference(Int_t label){
 
 
 //_____________________________________________________________________________
-void AliModule::MakeBranchTR(Option_t *option)
+void AliModule::MakeBranchTR(Option_t */*option*/)
 { 
     //
     // Makes branch in treeTR

@@ -135,6 +135,7 @@ AliConfig::AliConfig():
 //____________________________________________________________________________
 
 AliConfig::AliConfig(const AliConfig& conf):
+  TNamed(conf),
   fTopFolder(0x0),
   fTaskFolder(0x0),
   fConstFolder(0x0),

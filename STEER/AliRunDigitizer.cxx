@@ -185,6 +185,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
 //_______________________________________________________________________
 
 AliRunDigitizer::AliRunDigitizer(const AliRunDigitizer& dig):
+ TTask(dig),
  fkMASKSTEP(0),
  fOutputFileName(0),
  fOutputDirName(0),
@@ -497,7 +498,7 @@ Int_t  AliRunDigitizer::GetNParticles(Int_t event) const
 }
 //_______________________________________________________________________
 
-Int_t  AliRunDigitizer::GetNParticles(Int_t event, Int_t input) const
+Int_t  AliRunDigitizer::GetNParticles(Int_t /*event*/, Int_t /*input*/) const
 {
 // return number of particles in input file input for a given
 // event (as numbered in this input file)
@@ -523,7 +524,7 @@ Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event) const
   return a;
 }
 //_______________________________________________________________________
-Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t input) const
+Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t /*input*/) const
 {
 // return an event number of an eventInput from input file input
 // which was merged to create output event event
@@ -542,7 +543,7 @@ TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t event) const
 }
 
 //_______________________________________________________________________
-TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t input, Int_t event) const
+TParticle* AliRunDigitizer::GetParticle(Int_t /*i*/, Int_t /*input*/, Int_t /*event*/) const
 {
 // return pointer to particle with index i in the input file input
 // (index without mask)

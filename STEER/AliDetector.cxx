@@ -142,7 +142,7 @@ AliDetector::~AliDetector()
 }
 
 //_______________________________________________________________________
-void AliDetector::Publish(const char *dir, void *address, const char *name)
+void AliDetector::Publish(const char */*dir*/, void */*address*/, const char */*name*/)
 {
 //
 // Register pointer to detector objects. 
@@ -163,7 +163,7 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
 TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name, 
                                        const char *classname, 
                                        void* address,Int_t size, 
-                                       Int_t splitlevel, const char *file)
+                                       Int_t splitlevel, const char */*file*/)
 { 
 //
 // Makes branch in given tree and diverts them to a separate file

@@ -709,7 +709,7 @@ AliRun* AliRunLoader::GetAliRun() const
 }
 /**************************************************************************/
 
-Int_t AliRunLoader::WriteGeometry(Option_t* opt)
+Int_t AliRunLoader::WriteGeometry(Option_t* /*opt*/)
 {
 //writes geometry to the file
   fGAFile->cd();
@@ -761,7 +761,7 @@ Int_t AliRunLoader::WriteHeader(Option_t* opt)
 }
 /**************************************************************************/
 
-Int_t AliRunLoader::WriteAliRun(Option_t* opt)
+Int_t AliRunLoader::WriteAliRun(Option_t* /*opt*/)
 {
 //writes AliRun object to the file
   fGAFile->cd();
@@ -885,7 +885,7 @@ Int_t AliRunLoader::WriteTracks(Option_t* opt)
 }
 /**************************************************************************/
 
-Int_t AliRunLoader::WriteRunLoader(Option_t* opt)
+Int_t AliRunLoader::WriteRunLoader(Option_t* /*opt*/)
 {
 //Writes itself to the file
   CdGAFile();

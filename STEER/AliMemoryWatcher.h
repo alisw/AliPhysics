@@ -44,11 +44,7 @@ class AliMemoryWatcher : public TObject
 {
 public:
   AliMemoryWatcher(UInt_t maxsize=10000);
-  AliMemoryWatcher(AliMemoryWatcher& mw);
-  AliMemoryWatcher(const AliMemoryWatcher & watcher) {
-    // copy ctor: no implementation yet
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliMemoryWatcher(const AliMemoryWatcher& mw);
   ~AliMemoryWatcher() ;
   void Watch(Int_t x);
   
