@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.16  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.15  2000/10/02 15:54:55  jbarbosa
   New default version (15 mm freon).
 
@@ -225,8 +228,6 @@ void AliRICHv0::Init()
     printf("*                            Freon Thickness : %5.1f cm                         *\n",geometry->GetFreonThickness());
     printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
     printf("*                            Feedback Prob.  : %5.2f %%                         *\n",response->AlphaFeedback()*100);
-    printf("*                                                                               *\n");
-    printf("*                                   Success!                                    *\n");
     printf("*                                                                               *\n");
     printf("*********************************************************************************\n");
 

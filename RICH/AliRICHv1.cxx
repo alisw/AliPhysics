@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2000/11/01 15:39:00  jbarbosa
+  Updated default geometry.
+
   Revision 1.7  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -231,8 +234,6 @@ void AliRICHv1::Init()
     printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
     printf("*                            Feedback Prob.  : %5.2f %%                         *\n",response->AlphaFeedback()*100);
     printf("*                            Debug Level     : %3d                              *\n",GetDebugLevel());
-    printf("*                                                                               *\n");
-    printf("*                                   Success!                                    *\n");
     printf("*                                                                               *\n");
     printf("*********************************************************************************\n");
 

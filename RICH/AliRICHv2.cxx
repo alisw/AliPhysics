@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.2  2000/07/10 15:28:39  fca
   Correction of the inheritance scheme
 
@@ -172,8 +175,6 @@ void AliRICHv2::Init()
     printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
     printf("*                            Feedback Prob.  : %5.2f %%                         *\n",response->AlphaFeedback()*100);
     printf("*                            Debug Level     : %3d                              *\n",GetDebugLevel());
-    printf("*                                                                               *\n");
-    printf("*                                   Success!                                    *\n");
     printf("*                                                                               *\n");
     printf("*********************************************************************************\n");
 
