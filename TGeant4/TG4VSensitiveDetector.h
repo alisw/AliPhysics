@@ -1,5 +1,5 @@
 // $Id$
-// Category: geometry
+// Category: digits+hits
 //
 // This class adds integer identifier data member to G4VSensitiveDetector.
 // It also takes care of setting step status (kBoundary, kNormalStep)
