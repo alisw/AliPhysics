@@ -43,31 +43,31 @@ class TStopwatch;
 class AliPHOSMemoryWatcher : public TObject 
 {
 public:
-  AliPHOSMemoryWatcher(unsigned int maxsize=10000);
+  AliPHOSMemoryWatcher(UInt_t maxsize=10000);
   ~AliPHOSMemoryWatcher();
-  void watch(int x);
+  void Watch(Int_t x);
   
-  unsigned int size(void) const { return fSize; }
-  int X(int n) const { return fX[n]; }
-  int VSIZE(int n) const { return fVSIZE[n]; }
-  int RSSIZE(int n) const { return fRSSIZE[n]; }
-  double TIME(int n) const { return fTIME[n]; }
-  TGraph* graphVSIZE(void);
-  TGraph* graphRSSIZE(void);
-  TGraph* graphTIME(void);
-  TH2* frame(void);
-  void write(void);
+  UInt_t size(void) const { return fSize; }
+  Int_t X(Int_t n) const { return fX[n]; }
+  Int_t VSIZE(Int_t n) const { return fVSIZE[n]; }
+  Int_t RSSIZE(Int_t n) const { return fRSSIZE[n]; }
+  Double_t TIME(Int_t n) const { return fTIME[n]; }
+  TGraph* GraphVSIZE(void);
+  TGraph* GraphRSSIZE(void);
+  TGraph* GraphTIME(void);
+  TH2* Frame(void) const ;
+  void Write(void);
 private:
-  int fPID;
+  Int_t fPID;
   char fCmd[1024];
-  unsigned int fMAXSIZE;
-  unsigned int fSize;
-  int* fX;
-  int* fVSIZE;
-  int* fRSSIZE;
-  double* fTIME;
+  UInt_t fMAXSIZE;
+  UInt_t fSize;
+  Int_t* fX;
+  Int_t* fVSIZE;
+  Int_t* fRSSIZE;
+  Double_t* fTIME;
   TStopwatch* fTimer;
-  bool fDisabled;
+  Bool_t fDisabled;
 
   ClassDef(AliPHOSMemoryWatcher,1) // General purpose memory watcher
 

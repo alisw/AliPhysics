@@ -46,9 +46,7 @@
 */             
 //*-- Author: Laurent Aphecetche(SUBATECH)
 // --- std system ---
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+class assert ; 
 // --- AliRoot header files ---
 #include "AliPHOSMemoryWatcher.h"
 // --- ROOT system ---
@@ -60,15 +58,16 @@
 ClassImp(AliPHOSMemoryWatcher)
 
 //_____________________________________________________________________________
-AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(unsigned int maxsize)
+AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(UInt_t maxsize)
 {
+  //ctor
   fMAXSIZE=maxsize;
   fPID = gSystem->GetPid();
   sprintf(fCmd,"ps -h -p %d -o vsize,rssize",fPID);
-  fX = new int[fMAXSIZE];
-  fVSIZE = new int[fMAXSIZE];
-  fRSSIZE = new int[fMAXSIZE];
-  fTIME = new double[fMAXSIZE];
+  fX = new Int_t[fMAXSIZE];
+  fVSIZE = new Int_t[fMAXSIZE];
+  fRSSIZE = new Int_t[fMAXSIZE];
+  fTIME = new Double_t[fMAXSIZE];
   fSize=0;
   fDisabled=false;
   fTimer=0;
@@ -83,8 +82,9 @@ AliPHOSMemoryWatcher::~AliPHOSMemoryWatcher()
   delete fTimer;
 }
 //_____________________________________________________________________________
-void AliPHOSMemoryWatcher::watch(int x)
+void AliPHOSMemoryWatcher::Watch(Int_t x)
 {
+  // Sets the point where CPU parameters have to be monitored
   if ( !fDisabled && fSize < fMAXSIZE ) {
     if ( fSize==0 ) {
       assert(fTimer==0);
@@ -92,7 +92,7 @@ void AliPHOSMemoryWatcher::watch(int x)
       fTimer->Start(true);
       fTimer->Stop();
     }
-    static int vsize, rssize;
+    static Int_t vsize, rssize;
     static FILE* pipe = 0;
     pipe = popen(fCmd,"r");
     if ( pipe ) {
@@ -115,13 +115,15 @@ void AliPHOSMemoryWatcher::watch(int x)
 }
 //_____________________________________________________________________________
 TGraph*
-AliPHOSMemoryWatcher::graphVSIZE(void)
+AliPHOSMemoryWatcher::GraphVSIZE(void)
 {
+  // Fills the graph with the virtual memory sized used
   TGraph* g = 0;
   if ( size() )
     {
       g = new TGraph(size());
-      for (int i=0; i < g->GetN(); i++ ) {
+      Int_t i ; 
+      for (i=0; i < g->GetN(); i++ ) {
         g->SetPoint(i,X(i),VSIZE(i));
       }
     }
@@ -129,13 +131,15 @@ AliPHOSMemoryWatcher::graphVSIZE(void)
 }
 //_____________________________________________________________________________
 TGraph*
-AliPHOSMemoryWatcher::graphRSSIZE(void)
+AliPHOSMemoryWatcher::GraphRSSIZE(void)
 {
+  // Fills the graph with the real memory sized used
   TGraph* g = 0;
   if ( size() ) 
     {
       g = new TGraph(size());
-      for (int i=0; i < g->GetN(); i++ ) {
+      Int_t i ; 
+      for (i=0; i < g->GetN(); i++ ) {
         g->SetPoint(i,X(i),RSSIZE(i));
       }
     }
@@ -143,13 +147,15 @@ AliPHOSMemoryWatcher::graphRSSIZE(void)
 }
 //_____________________________________________________________________________
 TGraph*
-AliPHOSMemoryWatcher::graphTIME(void)
+AliPHOSMemoryWatcher::GraphTIME(void)
 {
+  // Fills the raph with the used CPU time
   TGraph* g = 0;
   if ( size() ) 
     {
       g = new TGraph(size());
-      for (int i=0; i < g->GetN(); i++ ) {
+      Int_t i ; 
+      for (i=0; i < g->GetN(); i++ ) {
         g->SetPoint(i,X(i),TIME(i));
       }
     }
@@ -157,16 +163,18 @@ AliPHOSMemoryWatcher::graphTIME(void)
 }
 //_____________________________________________________________________________
 TH2*
-AliPHOSMemoryWatcher::frame(void)
+AliPHOSMemoryWatcher::Frame(void) const
 {
-  double xmin=1E30;
-  double xmax=0;
-  double ymin=1;
-  double ymax=0;
-  for (unsigned int i=0; i < size() ; i++ ) {
+  //creates the frame histo in which the graphs will be plotted 
+  Double_t xmin=1E30;
+  Double_t xmax=0;
+  Double_t ymin=1;
+  Double_t ymax=0;
+  UInt_t i ; 
+  for (i=0; i < size() ; i++ ) {
     if ( X(i) < xmin ) xmin = X(i);
     if ( X(i) > xmax ) xmax = X(i);
-    double y = VSIZE(i)+RSSIZE(i);
+    Double_t y = VSIZE(i)+RSSIZE(i);
     if ( y > ymax ) ymax = y;
     if ( VSIZE(i) < ymin ) ymin = VSIZE(i);
     if ( RSSIZE(i) < ymin ) ymin = RSSIZE(i);
@@ -176,9 +184,10 @@ AliPHOSMemoryWatcher::frame(void)
 }
 //_____________________________________________________________________________
 void 
-AliPHOSMemoryWatcher::write(void)
+AliPHOSMemoryWatcher::Write(void)
 {
-  if ( graphVSIZE() ) graphVSIZE()->Write("VSIZE",TObject::kOverwrite);
-  if ( graphRSSIZE() ) graphRSSIZE()->Write("RSSIZE",TObject::kOverwrite);
-  if ( graphTIME() ) graphTIME()->Write("TIME",TObject::kOverwrite);
+  // Stores the graphs in a file 
+  if ( GraphVSIZE() ) GraphVSIZE()->Write("VSIZE",TObject::kOverwrite);
+  if ( GraphRSSIZE() ) GraphRSSIZE()->Write("RSSIZE",TObject::kOverwrite);
+  if ( GraphTIME() ) GraphTIME()->Write("TIME",TObject::kOverwrite);
 }
