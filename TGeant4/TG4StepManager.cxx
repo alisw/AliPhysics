@@ -7,6 +7,7 @@
 #include "TG4GeometryServices.h"
 #include "TG4PhysicsManager.h"
 #include "TG4VSensitiveDetector.h"
+#include "TG4Limits.h"
 #include "TG4Globals.h"
 #include "TG3Units.h"
 
@@ -180,20 +181,25 @@ void TG4StepManager::StopEvent()
 void TG4StepManager::SetMaxStep(Float_t step)
 {
 // Maximum step allowed in the current logical volume.
-// The maximum value is kept for following tracks - is it ok ??
 // ---
 
-  // check this
   G4LogicalVolume* curLogVolume 
     = GetCurrentPhysicalVolume()->GetLogicalVolume();
   G4UserLimits* userLimits 
     = curLogVolume->GetUserLimits();
+
   if (userLimits == 0) {
-    userLimits = new G4UserLimits(step); 
-    curLogVolume->SetUserLimits(userLimits);
+    // create new limits
+    userLimits = new TG4Limits();
+    
+    // set limits to all logical volumes
+    // corresponding to the current "G3" volume 
+    TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
+    G4int nofLV = geometryServices->SetUserLimits(userLimits, curLogVolume);
   }
-  else
-    userLimits->SetMaxAllowedStep(step);
+
+  // set max step
+  userLimits->SetMaxAllowedStep(step*TG3Units::Length());
 }
 
 void TG4StepManager::SetMaxNStep(Int_t maxNofSteps)
