@@ -365,6 +365,22 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
 	   break;
 	   case kNoTracks:
 	   break;
+	   case kEMChargedPi0:
+		if (pdgP->Charge() != 0 || mPart->GetPdgCode() == kPi0  ||
+			mPart->GetPdgCode() == kGamma     )
+		{
+			if (fDebug > 5) Info("FillTracks","Storing charged track");
+			if (fSmearType == kSmear ||
+	                    fSmearType == kSmearEffic ){
+				Smear(mPart);/*
+				TParticle *tmp = Smear(MPart);
+    				fInputObject.AddTrack(tmp);
+				delete tmp;*/
+	                }else{
+	                 fInputObject.AddTrack(*mPart);
+	                }
+		}
+	   break;
 	   default:
 	   break;
 	   delete mPart;
@@ -485,6 +501,22 @@ if (fDebug > 1) Info("FillParticles","Beginning FillParticles");
 		}
 	   break;
 	   case kNoTracks:
+	   break;
+	   case kEMChargedPi0:
+		if (pdgP->Charge() != 0 || mPart->GetPdgCode() == kPi0  ||
+			mPart->GetPdgCode() == kGamma     )
+		{
+			if (fDebug > 5) Info("FillTracks","Storing charged track");
+			if (fSmearType == kSmear ||
+	                    fSmearType == kSmearEffic ){
+				Smear(mPart);/*
+				TParticle *tmp = Smear(MPart);
+    				fInputObject.AddTrack(tmp);
+				delete tmp;*/
+	                }else{
+	                 fInputObject.AddTrack(*mPart);
+	                }
+		}
 	   break;
 	   default:
 	   break;
