@@ -5,8 +5,10 @@
 # Author: Anders Vestbo   #                    
 ###########################
 
-USEPACKAGE = ROOT
-#USEPACKAGE = ALIROOT
+#USEPACKAGE = ROOT
+USEPACKAGE = ALIROOT
+
+DEFSTR = -Dno_root
 
 CXX         = g++
 LD          = g++
@@ -18,13 +20,19 @@ TOPDIR = $(HOME)/level3code
 OBJDIR = lib
 LIBDIR = $(LEVEL3)/lib_$(USERNAME)
 
+
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
+DEFSTR = -Duse_root
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
+DEFSTR = -Duse_aliroot -Duse_root
 endif
+
+#Save the particle id's
+#DEFSTR += -Ddo_mc
 
 SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
           AliL3ConfMapTrack.cxx AliL3ConfMapFit.cxx AliL3Track.cxx\
@@ -32,7 +40,7 @@ SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
           AliL3Vertex.cxx AliL3VertexFinder.cxx \
           AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinderNew.cxx \
           AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
-          AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx\
+          AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx \
 
 DICT = AliL3Cint.cxx
 DICTH = AliL3Cint.h
@@ -44,8 +52,8 @@ OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
-HDRS = $(SRCS:.cxx=.h) AliL3FileHandler.h AliL3LinkDef.h
-OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/AliL3FileHandler.o $(DICTO)
+HDRS = $(SRCS:.cxx=.h) AliL3FileHandler.h AliL3Evaluate.h AliL3LinkDef.h
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/AliL3FileHandler.o $(OBJDIR)/AliL3Evaluate.o $(DICTO)
 endif
 
 LEVELSO = $(LIBDIR)/libAliL3.so
@@ -60,7 +68,7 @@ $(DICT) : $(HDRS)
 	@rootcint -f $(DICT) -c $(INCLUDES) $(HDRS)
 
 $(OBJDIR)/%.o : %.cxx 
-	$(CXX) $(CXXFLAGS) -c $(INCLUDES) -o $@ $<
+	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
