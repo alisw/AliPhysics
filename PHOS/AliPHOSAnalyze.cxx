@@ -274,37 +274,37 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		    cout << "    primary # " << index << " =  " << listofprimaries[index] << endl ;  
 		  switch(recparticle->GetType())
 		    {
-		    case kGAMMA:
+		    case AliPHOSFastRecParticle::kGAMMA:
 		      fhPhotonEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhPhotonPositionX->Fill(recpart. ) ;
 		      //fhPhotonPositionY->Fill(recpart. ) ;                 
 		      cout << "PHOTON" << endl;
 		      break;
-		    case kELECTRON:
+		    case  AliPHOSFastRecParticle::kELECTRON:
 		      fhElectronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhElectronPositionX->Fill(recpart. ) ;
 		      //fhElectronPositionY->Fill(recpart. ) ; 
 		      cout << "ELECTRON" << endl;
 		      break;
-		    case kNEUTRALHA:
+		    case  AliPHOSFastRecParticle::kNEUTRALHA:
 		      fhNeutralHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralHadronPositionX->Fill(recpart. ) ;
 		      //fhNeutralHadronPositionY->Fill(recpart. ) ; 
 		      cout << "NEUTRAl HADRON" << endl;
 		      break ;
-		    case kNEUTRALEM:
+		    case  AliPHOSFastRecParticle::kNEUTRALEM:
 		      fhNeutralEMEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralEMPositionX->Fill(recpart. ) ;
 		      //fhNeutralEMPositionY->Fill(recpart. ) ; 
 		      //cout << "NEUTRAL EM" << endl;
 		      break ;
-		    case kCHARGEDHA:
+		    case  AliPHOSFastRecParticle::kCHARGEDHA:
 		      fhChargedHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhChargedHadronPositionX->Fill(recpart. ) ;
 		      //fhChargedHadronPositionY->Fill(recpart. ) ; 
 		      cout << "CHARGED HADRON" << endl;
 		      break ;
-		    case kGAMMAHA:
+		    case  AliPHOSFastRecParticle::kGAMMAHA:
 		      fhPhotonHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhPhotonHadronPositionX->Fill(recpart. ) ;
 		      //fhPhotonHadronPositionY->Fill(recpart. ) ; 
@@ -488,10 +488,10 @@ void AliPHOSAnalyze::DisplayKineEvent(Int_t evt)
   sprintf(histoname,"Event %d: Incident particles in module %d", evt, module) ; 
 
   Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
-  fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, kDegre) ;
+  fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, AliPHOSGeometry::kDegre) ;
 
   Double_t theta, phi ; 
-  fGeom->EmcXtalCoverage(theta, phi, kDegre) ;
+  fGeom->EmcXtalCoverage(theta, phi, AliPHOSGeometry::kDegre) ;
 
   Int_t tdim = (Int_t)( (tM - tm) / theta ) ; 
   Int_t pdim = (Int_t)( (pM - pm) / phi ) ; 
@@ -577,9 +577,9 @@ void AliPHOSAnalyze::DisplayRecParticles()
       Text_t histoname[80] ; 
       sprintf(histoname,"Event %d: Reconstructed particles in module %d", fEvt, module) ; 
       Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
-      fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, kDegre) ;
+      fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, AliPHOSGeometry::kDegre) ;
       Double_t theta, phi ; 
-      fGeom->EmcXtalCoverage(theta, phi, kDegre) ;
+      fGeom->EmcXtalCoverage(theta, phi, AliPHOSGeometry::kDegre) ;
       Int_t tdim = (Int_t)( (tM - tm) / theta ) ; 
       Int_t pdim = (Int_t)( (pM - pm) / phi ) ; 
       tm -= theta ; 

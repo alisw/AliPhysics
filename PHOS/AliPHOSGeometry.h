@@ -39,8 +39,8 @@ public:
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat)  ;
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)  ; 
 
-  static TString kDegre ; 
-  static TString kRadian ; 
+   const static TString kDegre ; 
+   const static TString kRadian ; 
 
 protected:
 

@@ -20,17 +20,6 @@
 
 // --- AliRoot header files ---
 
-const static Int_t kUNDEFINED =-1 ;
-const static Int_t kNEUTRALEM = 0 ;
-const static Int_t kNEUTRALHA = 1 ;
-const static Int_t kGAMMA     = 2 ; 
-const static Int_t kGAMMAHA   = 3 ; 
-const static Int_t kABSURDEM  = 4 ;
-const static Int_t kABSURDHA  = 5 ;
-const static Int_t kELECTRON  = 6 ;
-const static Int_t kCHARGEDHA = 7 ;
-
-
 class AliPHOSFastRecParticle : public TParticle {
 
  public:
@@ -70,6 +59,9 @@ class AliPHOSFastRecParticle : public TParticle {
     // sets the value of the index in the list 
     fIndexInList = val ; 
   } 
+
+  enum EParticleType { kUNDEFINED=-1, kNEUTRALEM,  kNEUTRALHA,  kGAMMA , kGAMMAHA , 
+		       kABSURDEM,  kABSURDHA ,  kELECTRON, kCHARGEDHA } ; 
 
  protected:
 

@@ -35,6 +35,7 @@
 
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSClusterizer.h"
+#include "AliPHOSFastRecParticle.h"
 
 ClassImp(AliPHOSReconstructioner)
 
@@ -288,28 +289,28 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
       primaries = (rp->GetPHOSTrackSegment())->GetPrimariesEmc(nprimaries);
       switch(rp->GetType())
 	{
-	case kNEUTRALEM:
+	case  AliPHOSFastRecParticle::kNEUTRALEM:
 	  strcpy( particle, "NEUTRAL_EM");
 	  break;
-	case kNEUTRALHA:
+	case  AliPHOSFastRecParticle::kNEUTRALHA:
 	  strcpy(particle, "NEUTRAL_HA");
 	  break;
-	case kGAMMA:
+	case  AliPHOSFastRecParticle::kGAMMA:
 	  strcpy(particle, "GAMMA");
 	  break ;
-	case kGAMMAHA: 
+	case  AliPHOSFastRecParticle::kGAMMAHA: 
 	  strcpy(particle, "GAMMA_H");
 	  break ;
-	case kABSURDEM:
+	case  AliPHOSFastRecParticle::kABSURDEM:
 	  strcpy(particle, "ABSURD_EM") ;
 	  break ;
-	case kABSURDHA:
+	case  AliPHOSFastRecParticle::kABSURDHA:
 	  strcpy(particle, "ABSURD_HA") ;
 	  break ;	
-	case kELECTRON:
+	case  AliPHOSFastRecParticle::kELECTRON:
 	  strcpy(particle, "ELECTRON") ;
 	  break ;
-	case kCHARGEDHA:
+	case  AliPHOSFastRecParticle::kCHARGEDHA:
 	  strcpy(particle, "CHARGED_HA") ;
 	  break ; 
 	}

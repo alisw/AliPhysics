@@ -334,7 +334,7 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
 {
   // Generate a particle type using the performance of the EMC+PPSD setup
 
-  Int_t rv =  kUNDEFINED ;
+  Int_t rv =   AliPHOSFastRecParticle::kUNDEFINED ;
   Int_t charge = (Int_t)rp.GetPDG()->Charge() ;
   Int_t test ; 
   Float_t ran ; 
@@ -348,54 +348,54 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
   case 22:    // it's a photon
     ran = fRan.Rndm() ; 
     if ( ran <= 0.5 )  // 50 % 
-      rv = kGAMMA ; 
+      rv =  AliPHOSFastRecParticle::kGAMMA ; 
     else {
       ran = fRan.Rndm() ; 
       if( ran <= 0.9498 )
-	rv = kNEUTRALEM ; 
+	rv =  AliPHOSFastRecParticle::kNEUTRALEM ; 
       else
-	rv = kNEUTRALHA ; 
+	rv =  AliPHOSFastRecParticle::kNEUTRALHA ; 
     }     
     break ; 
 
   case 2112:  // it's a neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9998 )
-      rv = kNEUTRALHA ; 
+      rv =  AliPHOSFastRecParticle::kNEUTRALHA ; 
     else 
-      rv = kNEUTRALEM ; 
+      rv = AliPHOSFastRecParticle::kNEUTRALEM ; 
     break ; 
 
   case -2112: // it's a anti-neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9984 )
-      rv = kNEUTRALHA ; 
+      rv =  AliPHOSFastRecParticle::kNEUTRALHA ; 
     else 
-      rv = kNEUTRALEM ; 
+      rv =  AliPHOSFastRecParticle::kNEUTRALEM ; 
     break ; 
     
   case 11:    // it's a electron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv = kELECTRON ; 
+      rv =  AliPHOSFastRecParticle::kELECTRON ; 
     else 
-      rv = kCHARGEDHA ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDHA ; 
     break; 
 
   case -11:   // it's a positon
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv = kELECTRON ; 
+      rv =  AliPHOSFastRecParticle::kELECTRON ; 
     else 
-      rv = kCHARGEDHA ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDHA ; 
     break; 
 
   case -1:    // it's a charged
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv = kCHARGEDHA ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDHA ; 
     else 
-      rv = kGAMMA ; 
+      rv =  AliPHOSFastRecParticle::kGAMMA ; 
 
     break ; 
   }

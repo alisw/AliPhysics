@@ -37,9 +37,12 @@
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliConst.h"
 
-ClassImp(AliPHOSGeometry)
+ClassImp(AliPHOSGeometry) ;
 
-  AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
+AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
+
+const TString AliPHOSGeometry::kDegre  = "deg" ; 
+const TString AliPHOSGeometry::kRadian = "rad" ; 
 
 //____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
@@ -254,9 +257,6 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)
 void AliPHOSGeometry::Init(void)
 {
   // Initializes the PHOS parameters
-  
-  kDegre  = "deg" ; 
-  kRadian = "rad" ; 
   
   fRotMatrixArray = new TObjArray(fNModules) ; 
 
