@@ -143,9 +143,9 @@ AliITSVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
    
   if(hITSz1->GetMean()<0) vzero[2] = -vzero[2];
    
-  /*cout << "\nXvzero: " << vzero[0] << " cm" << "";
-    cout << "\nYvzero: " << vzero[1] << " cm" << "";
-    cout << "\nZvzero: " << vzero[2] << " cm" << "\n";*/
+  //cout << "\nXvzero: " << vzero[0] << " cm" << "";
+  //cout << "\nYvzero: " << vzero[1] << " cm" << "";
+  //cout << "\nZvzero: " << vzero[2] << " cm" << "\n";
 
   delete hITSz1;
 
@@ -161,11 +161,11 @@ AliITSVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   for(Int_t okm=0;okm<3;okm++) origin[okm]=0;
   gAlice->Field()->Field(origin,mag);
 
-  deltaPhiZ = deltaPhiZ*mag[2]/2;
+  deltaPhiZ = deltaPhiZ*TMath::Abs(mag[2])/2;
   Double_t deltaPhiXY = 1.0;   
 
-  //   cout << "\ndeltaPhiZ: " << deltaPhiZ << " deg" << "\n";   
-  //   cout << "deltaPhiXY: " << deltaPhiXY << " deg" << "\n";   
+  //cout << "\ndeltaPhiZ: " << deltaPhiZ << " deg" << "\n";   
+  //cout << "deltaPhiXY: " << deltaPhiXY << " deg" << "\n";   
    
   Double_t *z1, *z2, *y1, *y2, *x1, *x2, *phi1, *phi2, *r1, *r2;
   z1=new Double_t[nopoints1];
@@ -194,7 +194,7 @@ AliITSVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   TH1D *hITSXv         = new TH1D("hITSXv","",nbinxy,-3,3);
   TH1D *hITSYv         = new TH1D("hITSYv","",nbinxy,-3,3);
 
-  //   cout << "deltaZeta: " << deltaZ << " cm" << "\n";   
+  //cout << "deltaZeta: " << deltaZ << " cm" << "\n";   
    
    
  start:   
