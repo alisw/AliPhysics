@@ -33,7 +33,6 @@ class AliESDtrack;
 
 //_____________________________________________________________________________
 class AliITStrackV2 : public AliKalmanTrack {
-  friend class AliITStrackerV2;
 public:
   AliITStrackV2();
   AliITStrackV2(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
@@ -52,7 +51,23 @@ public:
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
   void UpdateESDtrack(ULong_t flags);
   void SetConstrainedESDtrack(Double_t chi2); 
-  
+
+  void SetReconstructed(Bool_t sr=kTRUE){fReconstructed = sr;}
+  Bool_t GetReconstructed() const {return fReconstructed;}
+  void SetChi2MIP(Int_t i,Float_t val){fChi2MIP[i]=val;}
+  Float_t GetChi2MIP(Int_t i) const {return fChi2MIP[i];}  
+  void IncrementNSkipped(){fNSkipped++;} // increment by 1 the # of skipped cls
+  Int_t GetNSkipped() const {return fNSkipped;}
+  void IncrementNUsed(){fNUsed++;} // increment by 1 the # of shared clusters
+  Int_t GetNUsed() const {return fNUsed;}
+  AliESDtrack *GetESDtrack() const {return fESDtrack;}
+  Double_t GetCov33() const {return fC33;} // cov. matrix el. 3,3
+  Double_t GetCov44() const {return fC44;} // cov. matrix el. 4,4
+  Float_t GetDy(Int_t i) const {return fDy[i];}
+  Float_t GetDz(Int_t i) const {return fDz[i];}
+  Float_t GetSigmaY(Int_t i) const {return fSigmaY[i];}
+  Float_t GetSigmaZ(Int_t i) const {return fSigmaZ[i];}
+
   Int_t GetDetectorIndex() const {return GetLabel();}
   Double_t GetX()    const {return fX;}
   Double_t GetAlpha()const {return fAlpha;}
@@ -78,6 +93,10 @@ public:
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
   Int_t Invariant() const;
  
+  AliITStrackV2& operator=(const AliITStrackV2& /*t*/) {
+    Error("operator=","Assignment is not allowed !"); return *this;
+  }
+
 protected:
   Double_t fX;              // X-coordinate of this track (reference plane)
   Double_t fAlpha;          // rotation angle

@@ -18,6 +18,8 @@
 //
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
+//    The class is used by AliITStrackerV2 and AliITStrackerSA classes
+//  (for the meaning of the track parametrization see AliITStrackV2.h) 
 //-------------------------------------------------------------------------
 
 #include <TMatrixD.h>
@@ -28,9 +30,9 @@
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
 
-ClassImp(AliITStrackV2)
+#define kWARN 5
 
-const Int_t kWARN=5;
+ClassImp(AliITStrackV2)
 
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
@@ -62,6 +64,9 @@ AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
   fReconstructed(kFALSE),			       
   fESDtrack(0)
   {
+  //------------------------------------------------------------------
+  // The default constructor
+  //------------------------------------------------------------------
   for(Int_t i=0; i<kMaxLayer; i++) fIndex[i]=0;
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
   for(Int_t i=0; i<6; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fChi2MIP[i]=0;}
