@@ -5,4 +5,5 @@ CSRCS= geteni.c fchput.c fchtak.c
 
 EINCLUDE:= 
 
+PACKFFLAGS := $(FFLAGS) -IMICROCERN/kerngen
 
