@@ -221,13 +221,13 @@ Float_t AliMUONSegmentationTriggerY::Dpx(Int_t isec) const
 { 
 // returns x size of y strips for sector isec
   if (isec==1) {
-    return 2.125*fZscale;
+    return AliMUONTriggerConstants::StripWidth(1)*fZscale;
   } else if (isec==2) {
-    return 2.125*fZscale;
+    return AliMUONTriggerConstants::StripWidth(1)*fZscale;
   } else if (isec==3) {
-    return 2.125*fZscale;
+    return AliMUONTriggerConstants::StripWidth(1)*fZscale;
   } else if (isec==4) {
-    return 4.25*fZscale;
+    return AliMUONTriggerConstants::StripWidth(2)*fZscale;
   } else {
     return 0.;	
   }       
@@ -238,15 +238,15 @@ Float_t AliMUONSegmentationTriggerY::Dpy(Int_t isec) const
 { 
 // returns y size of y strips for sector isec
   if (isec==1) {
-    return 68.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(3)*fZscale;
   } else if (isec==2) {
-    return 51.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(2)*fZscale;
   } else if (isec==3) {
-    return 68.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(3)*fZscale;
   } else if (isec==4) {
-    return 68.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(3)*fZscale;
   } else if (isec==5) {
-    return 68.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(3)*fZscale;
   } else {
     return 0.;
   }

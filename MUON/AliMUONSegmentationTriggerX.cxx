@@ -181,17 +181,17 @@ Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec) const
 // returns x size of x strips for sector isec
     
   if (isec==1) {
-    return 17.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(0)*fZscale;
   } else if (isec==2) {
-    return 34.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(1)*fZscale;
   } else if (isec==3) {
-    return 34.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(1)*fZscale;
   } else if (isec==4) {
-    return 34.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(1)*fZscale;
   } else if (isec==5) {
-    return 34.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(1)*fZscale;
   } else if (isec==6) {
-    return 51.0*fZscale;
+    return AliMUONTriggerConstants::StripLength(2)*fZscale;
   } else {
     return 0.;
   }
@@ -203,17 +203,17 @@ Float_t AliMUONSegmentationTriggerX::Dpy(Int_t isec) const
 // returns y size of x strips for sector isec
 
   if (isec==1) {
-    return 1.0625*fZscale;
+    return AliMUONTriggerConstants::StripWidth(0)*fZscale;
   } else if (isec==2) {
-    return 1.0625*fZscale;
+    return AliMUONTriggerConstants::StripWidth(0)*fZscale;
   } else if (isec==3) {
-    return 1.0625*fZscale;
+    return AliMUONTriggerConstants::StripWidth(0)*fZscale;
   } else if (isec==4) {
-    return 2.125*fZscale;
+    return AliMUONTriggerConstants::StripWidth(1)*fZscale;
   } else if (isec==5) {
-    return 4.25*fZscale;
+    return AliMUONTriggerConstants::StripWidth(2)*fZscale;
   } else if (isec==6) {
-    return 4.25*fZscale;
+    return AliMUONTriggerConstants::StripWidth(2)*fZscale;
   } else {
     return 0.;	
   }   

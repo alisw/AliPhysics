@@ -22,6 +22,7 @@
 
 #include "AliMUONSegmentationTrigger.h"
 #include "AliMUONTriggerConstants.h"
+#include "AliMUONConstants.h"
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
@@ -47,15 +48,13 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Module Geometry\n",ClassName());
 
   Float_t zPos=iChamber->Z();
-  Float_t z1Pos=-1603.5;
-  fZscale = zPos/z1Pos;
+  Float_t z1Pos=AliMUONConstants::DefaultChamberZ(10); //cp changed
+  fZscale = zPos/z1Pos;  
 
   Float_t y1Cmin[126];
   Float_t y1Cmax[126];
 
   Float_t dz=7.2;
-//  Float_t z1PosPlus=z1Pos+dz/2.;
-// Float_t z1PosMinus=z1Pos-dz/2.;
   Float_t z1PosPlus=z1Pos-dz/2.;
   Float_t z1PosMinus=z1Pos+dz/2.;
 
@@ -191,7 +190,7 @@ Float_t AliMUONSegmentationTrigger::StripSizeX(Int_t imodule){
   Int_t absimodule=TMath::Abs(imodule); 
   Int_t moduleNum=ModuleNumber(imodule);
   if (absimodule==51) {
-    return 0; 
+    return 0.; 
   } else {
     return TMath::Abs((fYcmax[moduleNum]-fYcmin[moduleNum])/
 		      AliMUONTriggerConstants::NstripX(moduleNum));
@@ -205,13 +204,13 @@ Float_t AliMUONSegmentationTrigger::StripSizeY(Int_t imodule, Int_t istrip){
   Int_t absimodule=TMath::Abs(imodule); 
   Int_t moduleNum=ModuleNumber(imodule);
   if (absimodule==51) {
-      return 0;
+      return 0.;
   } else if (TMath::Abs(imodule-10*Int_t(imodule/10.))==7) {
       if (istrip<8) {
-	  return 4.25;
+	  return AliMUONTriggerConstants::StripWidth(2);
       }
       else if (istrip>7) {	      
-	  return 2.125;
+	  return AliMUONTriggerConstants::StripWidth(1);
       } 
       else {
 	  return 0.;

@@ -171,7 +171,11 @@ const Int_t AliMUONTriggerConstants::fgkCircuitId[234]=
  -811, -812, -821, -822, -831, -832, -841, -842, -851, -852, -861, -862, -871,
  -911, -921, -931, -941, -951, -961, -971};
 
+//----------------------------------------------------------------------  
+const Float_t AliMUONTriggerConstants::fgkStripWidth[3]={1.0625, 2.125, 4.25};
 
+//----------------------------------------------------------------------  
+const Float_t AliMUONTriggerConstants::fgkStripLength[4]={17., 34., 51., 68.};
 
 //----------------------------------------------------------------------
 // methods which returns public static const data
@@ -217,8 +221,18 @@ Int_t AliMUONTriggerConstants::CircuitId(Int_t icircuit)
 // returns fgkCircuitId
     return fgkCircuitId[icircuit];
 }
-
-
+//----------------------------------------------------------------------
+Float_t AliMUONTriggerConstants::StripWidth(Int_t istrip)
+{
+// returns fgkStripWidth
+    return fgkStripWidth[istrip];
+}
+//----------------------------------------------------------------------
+Float_t AliMUONTriggerConstants::StripLength(Int_t istrip)
+{
+// returns fgkStripLength
+    return fgkStripLength[istrip];
+}
 
 
 

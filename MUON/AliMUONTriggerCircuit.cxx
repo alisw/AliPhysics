@@ -23,6 +23,7 @@
 #include "AliMUONTriggerConstants.h"
 #include "AliSegmentation.h"
 #include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMUONTriggerCircuit)
 
@@ -384,7 +385,9 @@ Float_t AliMUONTriggerCircuit::PtCal(Int_t istripX, Int_t idev, Int_t istripY){
   Float_t yPosX2=fYpos21[istripX2];
   Float_t xPosY1=fXpos11[istripY];
   
-  Float_t zf=975., z1=1603.5, z2=1703.5;
+  Float_t zf=975.;
+  Float_t z1=AliMUONConstants::DefaultChamberZ(10);
+  Float_t z2=AliMUONConstants::DefaultChamberZ(12);
   Float_t thetaDev=(1./zf)*(yPosX1*z2-yPosX2*z1)/(z2-z1);
   Float_t xf=xPosY1*zf/z1; 
   Float_t yf=yPosX2-((yPosX2-yPosX1)*(z2-zf))/(z2-z1);

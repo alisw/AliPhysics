@@ -23,6 +23,8 @@ public:
   static Float_t XcMin(Int_t imodule); 
   static Float_t XcMax(Int_t imodule);
   static Int_t CircuitId(Int_t icircuit);
+  static Float_t StripWidth(Int_t istrip);
+  static Float_t StripLength(Int_t istrip);
   
 private:
   static const Int_t fgkNmodule;        // total number of module
@@ -31,7 +33,9 @@ private:
   static const Int_t fgkNstripY[126];   // number of Y strips 
   static const Float_t fgkXcMin[126];   // min X pos of module
   static const Float_t fgkXcMax[126];   // max X poa of module 
-  static const Int_t fgkCircuitId[234]; // circuit Id. number   
+  static const Int_t fgkCircuitId[234]; // circuit Id. number
+  static const Float_t fgkStripWidth[3]; // strip width
+  static const Float_t fgkStripLength[4]; // strip length
   
   ClassDef(AliMUONTriggerConstants,1) // Trigger Constants class
 
