@@ -66,8 +66,8 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
   fHits = 0;
   fdigits = 0;
 
-  ftimeTDC = new TArrayI(24); 
-  fADC = new TArrayI(24); 
+  ftimeTDC = new TArrayI(36); 
+  fADC = new TArrayI(36); 
 
   TFile* file = TFile::Open("$ALICE_ROOT/START/PMTefficiency.root");
   fEff = (TH1F*) file->Get("hEff")->Clone();
@@ -125,12 +125,12 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   //
   Int_t hit, nhits;
   Float_t meanTime;
-  Int_t countE[24];
+  Int_t countE[36];
   Int_t volume,pmt,tr,sumRight;
   Int_t  bestRightTDC,bestLeftTDC;
-  Float_t time[24]={24*0};
-  Float_t besttime[24]={24*0};
-  Float_t timeGaus[37]={24*0};
+  Float_t time[36]={36*0};
+  Float_t besttime[36]={36*0};
+  Float_t timeGaus[36]={36*0};
   Float_t channelWidth=25.; //ps
   
   AliSTARThit  *startHit;
@@ -152,7 +152,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     Float_t besttimeleft=9999.;
     Float_t timeDiff;
     sumRight=0;
-    for (Int_t i0=0; i0<24; i0++)
+    for (Int_t i0=0; i0<36; i0++)
       {
 	time[i0]=9999;  besttime[i0]=9999;	countE[i0]=0;
       }
@@ -188,15 +188,18 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  }
 	  pmt=startHit->Pmt();
 	  Int_t numpmt=pmt-1;
-	  Float_t e=startHit->Etot();
+	  Double_t e=startHit->Etot();
+	  //	  cout<<"AliSTARTDigitizer::Exec >> e "<<e<<" time "<< startHit->Time()<<endl;
 	  volume = startHit->Volume();
-	  if(RegisterPhotoE(e)) countE[numpmt]++;
-	  besttime[numpmt] = startHit->Time();
-	  if(besttime[numpmt]<time[numpmt])
-	    {
-	      time[numpmt]=besttime[numpmt];
-	    }
 	  
+	   if(e>0 && RegisterPhotoE(e)) {
+	     countE[numpmt]++;
+	     besttime[numpmt] = startHit->Time();
+	     if(besttime[numpmt]<time[numpmt])
+	       {
+		 time[numpmt]=besttime[numpmt];
+	       }
+	   }
 	} //hits loop
     } //track loop
     
@@ -206,7 +209,8 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],0.025);
 	if(timeGaus[ipmt]<besttimeleft) besttimeleft=timeGaus[ipmt]; //timeleft
       }
-    for ( Int_t ipmt=12; ipmt<24; ipmt++)
+    //    for ( Int_t ipmt=12; ipmt<36; ipmt++)
+    for ( Int_t ipmt=12; ipmt<36; ipmt++)
       {
    	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],0.025);
 	if(timeGaus[ipmt]<besttimeright)  besttimeright=timeGaus[ipmt]; //timeright
@@ -224,7 +228,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     Float_t ds=(c*(besttimeright-besttimeleftR)-(350.-69.7))/2;
     AliDebug(2,Form(" timediff in ns %f  z= %f real point%f",timeDiff,timeDiff*c,ds));
 
- 
+  
     // Time to TDC signal
     Int_t iTimeAv=Int_t (meanTime*1000/channelWidth); 
     // time  channel numbres 
@@ -235,7 +239,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     
     //ADC features
   
-    for (Int_t i=0; i<24; i++)
+    for (Int_t i=0; i<36; i++)
       {
 
 	//  fill TDC
@@ -261,13 +265,14 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 
 
 //------------------------------------------------------------------------
-Bool_t AliSTARTDigitizer::RegisterPhotoE(Float_t e)
+Bool_t AliSTARTDigitizer::RegisterPhotoE(Double_t energy)
 {
 
   
   //  Float_t hc=197.326960*1.e6; //mev*nm
-  Float_t hc=1.973*1.e-6; //gev*nm
-  Float_t lambda=hc/e;
+  Double_t hc=1.973*1.e-6; //gev*nm
+  //  cout<<"AliSTARTDigitizer::RegisterPhotoE >> energy "<<energy<<endl;
+  Float_t lambda=hc/energy;
   Int_t bin=  fEff->GetXaxis()->FindBin(lambda);
   Float_t eff=fEff->GetBinContent(bin);
   Double_t  p = gRandom->Rndm();

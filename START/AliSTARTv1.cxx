@@ -87,13 +87,13 @@ void AliSTARTv1::CreateGeometry()
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
 
-  Float_t preg[3]={0.,0.875,0.005}; //dobavil bogdanov
+  Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
 
   Float_t pdivider[3]={0.,1.2,1.75};
   Float_t pdiv2[3]={0.,1.2,1.25};
   Float_t pdiv1[3]={0.6,1.2,0.5};
-  //  Float_t ptop[3]={0.,1.3,1.5};
-  Float_t ptop[3]={0.,1.0,1.5};
+  //  Float_t ptop[3]={0.,1.0,1.5};
+  Float_t ptop[3]={0., 1.0, 1.5};
   Float_t pbot[3]={0.6,1.2,0.1};
   Float_t pglass[3]={1.2,1.3,2.};
   Float_t pcer[3]={0.9,1.1,0.09};
@@ -108,7 +108,7 @@ void AliSTARTv1::CreateGeometry()
   Float_t psupport1[3] = {4.51,4.6,4.0};//C kozhuh vnutri
   Float_t psupport2[3] = {9.4,9.5,4.0};// snaruzhi  C
   Float_t psupport3[3] = {4.51,9.5,0.05};//kryshki  C
-   Float_t psupport5[3] = {1.44,1.5,6.5}; // stakanchik dlai feu  C
+  Float_t psupport5[3] = {1.44,1.5,6.5}; // stakanchik dlai feu  C
   Float_t psupport6[3] = {0,1.5,0.05}; //kryshechka stakanchika  Al
   Float_t psupport7[3] = {1.5,1.6,0.6}; //kolechko snaruzhu stakanchika Al
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
@@ -217,6 +217,7 @@ void AliSTARTv1::CreateGeometry()
        
 // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetRight);
+  printf(" theta %f", theta);
   Float_t angle  = 2 * TMath::Pi() / 12;
   Float_t phi[3];
     
@@ -238,12 +239,12 @@ void AliSTARTv1::CreateGeometry()
 	z=-pstart[2]+pinstart[2]+0.2;
 	gMC->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
 	gMC->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "ONLY");
-	/*	
-	x = 9 * TMath::Sin(angle/2+is * angle);
-	y = 9 * TMath::Cos(angle/2+is * angle);
+			
+	x = 9. * TMath::Sin(angle/2+is * angle);
+	y = 9. * TMath::Cos(angle/2+is * angle);
 
 	gMC->Gspos ("0INS", is + 25, "0STL", x, y, z, 0, "ONLY");
-	*/	
+			
       }	
    
       
@@ -528,31 +529,39 @@ void AliSTARTv1::CreateMaterials()
 
 // Definition Cherenkov parameters
    int i;
-   const Int_t kNbins=30;
+   //   const Int_t kNbins=30;
+   const Int_t kNbins=27;
    
-   Float_t aPckov[kNbins]; 
+   //  Float_t aPckov[kNbins]; 
    Float_t aRindexSiO2[kNbins], rindexAir[kNbins], efficAll[kNbins], absorAir[kNbins];
+       
+   // quartz 20mm
+   Float_t aAbsSiO2[kNbins]={28.3, 27.7, 27.3, 26.7, 26.4, 
+			     25.9, 25.3, 24.9, 24.5, 23.7, 23.2,
+			     22.8, 22.4, 21.8, 21.3, 22.8, 
+			     22.1, 21.7, 21.2, 20.5, 19.9, 
+			     19.3, 18.7, 18.0, 17.1, 16.3, 15.3   };
    
-   Float_t aAbsSiO2[kNbins]={//New values from A.DiMauro 28.10.03 total 31
-     34.4338, 30.5424, 30.2584, 31.4928, 31.7868, 17.8397, 9.3410, 6.4492, 6.1128, 5.8128,
-     5.5589,  5.2877,  5.0162,  4.7999,  4.5734,  4.2135, 3.7471, 2.6033, 1.5223, 0.9658,
-     0.4242,  0.2500,  0.1426,  0.0863,  0.0793,  0.0724, 0.0655, 0.0587, 0.0001, 0.0001};
-   
-
- //  Float_t aAbsSiO2[kNbins]={30*2000.};
+   Float_t aPckov[kNbins]  ={4.02, 4.11, 4.19, 4.29, 4.38,
+			     4.48, 4.58, 4.69, 4.81, 4.93, 
+			     5.05, 5.19, 5.33, 5.48, 5.63,
+			     5.8,  5.97, 6.16, 6.36, 6.57, 
+			     6.8,  7.04, 7.3,  7.58, 7.89, 8.22, 8.57};  
+    
+   //   Float_t aAbsSiO2[kNbins];
   for(i=0;i<kNbins;i++)
     {
-      aPckov[i]=(0.1*i+5.5)*1e-9;//Photons energy bins 5.5 eV - 8.5 eV step 0.1 eV   
+      //      aPckov[i]=(0.1*i+5.5)*1e-9;//Photons energy bins 5.5 eV - 8.5 eV step 0.1 eV   
+      aPckov[i]=aPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV   
       aRindexSiO2[i]=1.458; //refractive index for qwarts
       rindexAir[i]=1.;
       efficAll[i]=1.;
-      
+      //  aAbsSiO2[i]=28.5; //quartz 30mm
       absorAir[i]=1.e-5;
     }
  
    gMC->SetCerenkov (idtmed[kOpGlass], kNbins, aPckov, aAbsSiO2, efficAll, aRindexSiO2 );
-   gMC->SetCerenkov (idtmed[kOpAir], kNbins , aPckov, absorAir, efficAll, 
-rindexAir);
+   gMC->SetCerenkov (idtmed[kOpAir], kNbins , aPckov, absorAir, efficAll, rindexAir);
    if(fDebug) cout<<ClassName()<<": ++++++++++++++Medium set++++++++++"<<endl;
 
 }
@@ -626,11 +635,12 @@ void AliSTARTv1::StepManager()
 	  vol[1]=copy;
 	  gMC->CurrentVolOffID(3,copy1);
 	  vol[0]=copy1;
-	  
 	  gMC->TrackPosition(pos);
 	  hits[0] = pos[0];
 	  hits[1] = pos[1];
 	  hits[2] = pos[2];
+	  //	  printf(" pmt %i ", vol[1]);
+	  //  printf(" x %f y %f z %f \n", pos[0],pos[1],pos[2]);
 	  if(pos[2]<0) vol[0]=2;
 	  if(pos[2]>=0) vol[0]=1;
 	  
@@ -639,7 +649,7 @@ void AliSTARTv1::StepManager()
 	  Int_t iPart= gMC->TrackPid();
 	  Int_t partID=gMC->IdFromPDG(iPart);
 	  hits[4]=partID;
-	  //     if (partID!=50) cout<<partID<<endl;
+	  //    if (partID!=50) cout<<partID<<endl;
 	  Float_t ttime=gMC->TrackTime();
 	  hits[5]=ttime*1e9;
 	}

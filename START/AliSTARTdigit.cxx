@@ -43,8 +43,8 @@ ClassImp(AliSTARTdigit)
   fTimeBestLeft=9999;
   fSumADCRight=0;
 
-  fTime = new TArrayI(24);  
-  fADC  = new TArrayI(24);  
+  fTime = new TArrayI(36);  
+  fADC  = new TArrayI(36);  
 }
 //-----------------------------------
 AliSTARTdigit::~AliSTARTdigit() {
@@ -56,10 +56,10 @@ AliSTARTdigit::~AliSTARTdigit() {
 void AliSTARTdigit::SetTime (TArrayI &o)
 {
   ////////////////////////////////////////
-  fTime = new TArrayI(24);  
+  fTime = new TArrayI(36);  
 
   Int_t i;
-  for (i=0; i<24; i++)
+  for (i=0; i<36; i++)
     {
       Int_t buf=o.At(i);
       fTime->AddAt(buf,i);
@@ -70,7 +70,7 @@ void AliSTARTdigit::GetTime (TArrayI &o)
 {
   //
   Int_t i;
-  for (i=0; i<24; i++)
+  for (i=0; i<36; i++)
     {
       o[i]=fTime->At(i);
     }
@@ -80,7 +80,7 @@ void AliSTARTdigit::GetADC (TArrayI &o)
 {
   //
   Int_t i;
-  for (i=0; i<24; i++)
+  for (i=0; i<36; i++)
     {
       o[i]=fADC->At(i);
     }
@@ -89,10 +89,10 @@ void AliSTARTdigit::GetADC (TArrayI &o)
 void AliSTARTdigit::SetADC (TArrayI &o)
 {
   //
-  fADC  = new TArrayI(24);  
+  fADC  = new TArrayI(36);  
   Int_t i;
   //  Float_t fProcessKoef=1; // for pb 0.001
-  for (i=0; i<24; i++)
+  for (i=0; i<36; i++)
     {
       Int_t buf=(o.At(i));
       fADC->AddAt(buf,i);
