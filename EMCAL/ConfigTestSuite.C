@@ -114,7 +114,7 @@ void Config()
     AliGenBox *gener = new AliGenBox(1);
     gener->SetMomentumRange(10,11.);
     gener->SetPhiRange(60.0,180.0);
-    gener->SetEtaRange(-0.7,0.7);
+    gener->SetThetaRange(EtaToTheta(-0.7), EtaToTheta(0.7));
 
     gener->SetOrigin(0,0,0);        //vertex position
     gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
@@ -391,7 +391,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19_104_14");
     }
 
      if (iCRT)
