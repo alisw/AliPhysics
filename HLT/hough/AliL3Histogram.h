@@ -77,6 +77,8 @@ class AliL3Histogram {
   Double_t GetYmax() const {return fYmax;}
   virtual Double_t GetBinCenterX(Int_t xbin) const;
   virtual Double_t GetBinCenterY(Int_t ybin) const;
+  Double_t GetPreciseBinCenterX(Float_t xbin) const;
+  Double_t GetPreciseBinCenterY(Float_t ybin) const;
   Double_t GetBinWidthX() const {return fBinwidthX;}
   Double_t GetBinWidthY() const {return fBinwidthY;}
   Int_t GetFirstXbin() const {return fFirstXbin;}

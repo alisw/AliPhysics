@@ -33,7 +33,7 @@ class AliL3Logger{
   MLUCLogServer *so; //!
   MLUCLogServer *se; //!
   MLUCLogServer *sm; //!
-#if GCCVERSION == 3
+#if __GNUC__ == 3
   std::ofstream *of; //!
 #else  
   ofstream *of; //!

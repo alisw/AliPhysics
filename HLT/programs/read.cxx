@@ -14,7 +14,7 @@
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #else
 #include <stream.h>

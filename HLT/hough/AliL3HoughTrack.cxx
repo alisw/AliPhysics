@@ -9,14 +9,19 @@
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 
+/** \class AliL3HoughTrack
+<pre>
 //_____________________________________________________________
 // AliL3HoughTrack
 //
 // Track class for Hough tracklets
+//
+</pre>
+*/
 
 ClassImp(AliL3HoughTrack)
 
@@ -34,14 +39,12 @@ AliL3HoughTrack::AliL3HoughTrack()
   fEta = 0;
 }
 
-
 AliL3HoughTrack::~AliL3HoughTrack()
 {
 }
 
 void AliL3HoughTrack::Set(AliL3Track *track)
 {
-  
   AliL3HoughTrack *tpt = (AliL3HoughTrack*)track;
   SetTrackParameters(tpt->GetKappa(),tpt->GetPsi(),tpt->GetWeight());
   SetEtaIndex(tpt->GetEtaIndex());
@@ -56,14 +59,17 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
   SetSlice(tpt->GetSlice());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
-  return;
-
-  fWeight = tpt->GetWeight();
-  fDLine = tpt->GetDLine();
-  fPsiLine = tpt->GetPsiLine();
-  SetNHits(tpt->GetWeight());
-  SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
-  fIsHelix = false;
+#ifdef ROWHOUGH
+  SetMCid(tpt->GetMCid());
+#endif
+  /*
+    fWeight = tpt->GetWeight();
+    fDLine = tpt->GetDLine();
+    fPsiLine = tpt->GetPsiLine();
+    SetNHits(tpt->GetWeight());
+    SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
+    fIsHelix = false;
+  */
 }
 
 Int_t AliL3HoughTrack::Compare(const AliL3Track *tpt) const
@@ -84,7 +90,6 @@ void AliL3HoughTrack::SetEta(Double_t f)
   Double_t tgl = tan(dipangle);
   SetTgl(tgl);
 }
-
 
 void AliL3HoughTrack::UpdateToFirstRow()
 {
@@ -164,7 +169,6 @@ void AliL3HoughTrack::UpdateToFirstRow()
 
 void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t eangle,Int_t weight)
 {
-
   fWeight = weight;
   fMinDist = 100000;
   SetKappa(kappa);
@@ -202,23 +206,19 @@ void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int
   SetNHits(1);
   SetRowRange(rowrange[0],rowrange[1]);
   fIsHelix = false;
-
 }
 
 void AliL3HoughTrack::SetBestMCid(Int_t mcid,Double_t min_dist)
 {
-  
   if(min_dist < fMinDist)
     {
       fMinDist = min_dist;
       SetMCid(mcid);
     }
-  
 }
 
 void AliL3HoughTrack::GetLineCrossingPoint(Int_t padrow,Float_t *xy)
 {
-  
   if(fIsHelix)
     {
       printf("AliL3HoughTrack::GetLineCrossingPoint : Track is not a line\n");
@@ -231,5 +231,4 @@ void AliL3HoughTrack::GetLineCrossingPoint(Int_t padrow,Float_t *xy)
   Float_t yhit = a*xhit + b;
   xy[0] = xhit;
   xy[1] = yhit;
-
 }

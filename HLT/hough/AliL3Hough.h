@@ -21,7 +21,7 @@ class AliL3Hough {
   
  private:
   Char_t *fInputFile;//!
-
+  Char_t *fInputPtr;//!
   Char_t fPath[1024];
   Bool_t fBinary;
   Bool_t fAddHistograms;
@@ -48,6 +48,8 @@ class AliL3Hough {
   Int_t fKappaSpread;
   Float_t fPeakRatio;
 
+  Float_t fZVertex;
+
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
@@ -65,10 +67,10 @@ class AliL3Hough {
  public:
   
   AliL3Hough(); 
-  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0);
+  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0);
   virtual ~AliL3Hough();
   
-  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0);
+  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0,Float_t zvertex=0.0);
   void Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE);
 
   void Process(Int_t minslice,Int_t maxslice);
@@ -82,6 +84,7 @@ class AliL3Hough {
 
   void FindTrackCandidates();
   void AddAllHistograms();
+  void AddAllHistogramsRows();
   Int_t Evaluate(Int_t road_width=1,Int_t nrowstomiss=1);
   void EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss);
   void WriteTracks(Int_t slice,Char_t *path="./");

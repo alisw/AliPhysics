@@ -10,7 +10,7 @@
 
 //Standalone program to run the track follower for benchmark tests.
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #else
 #include <stream.h>

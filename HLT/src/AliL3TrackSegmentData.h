@@ -17,6 +17,10 @@ struct AliL3TrackSegmentData
 	Double_t fPsi;
         Double_t fTgl;
         Int_t fCharge;
+#ifdef ROWHOUGH
+        UInt_t  fWeight;
+        Int_t  fTrackID;
+#endif
 	UInt_t  fNPoints;
 	UInt_t  fPointIDs[0];
     };

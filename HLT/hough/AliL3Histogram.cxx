@@ -8,14 +8,22 @@
 #include "AliL3Logging.h"
 #include "AliL3Histogram.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 
+/** \class AliL3Histogram
+<pre>
 //_____________________________________________________________
 // AliL3Histogram
 //
 // 2D histogram class
+//
+</pre>
+*/
+
+//uncomment if you want overflow checks
+//#define _IFON_
 
 ClassImp(AliL3Histogram)
 
@@ -293,6 +301,30 @@ Double_t AliL3Histogram::GetBinCenterY(Int_t ybin) const
       return -1;
     }
 
+  return fYmin + (ybin-0.5) * fBinwidthY;
+}
+
+Double_t AliL3Histogram::GetPreciseBinCenterX(Float_t xbin) const
+{
+  if(xbin < fFirstXbin || xbin > fLastXbin)
+    {
+      LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterX","xbin")
+	<<"Bin-value out of range "<<xbin<<ENDLOG;
+      return -1;
+    }
+  //  return fXmin + (xbin-1) * fBinwidthX + 0.5*fBinwidthX;
+  return fXmin + (xbin-0.5) * fBinwidthX;
+}
+
+Double_t AliL3Histogram::GetPreciseBinCenterY(Float_t ybin) const
+{
+  if(ybin < fFirstYbin || ybin > fLastYbin)
+    {
+      LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterY","ybin")
+	<<"Bin-value out of range "<<ybin<<ENDLOG;
+      return -1;
+    }
+  //  return fYmin + (ybin-1) * fBinwidthY + 0.5*fBinwidthY;
   return fYmin + (ybin-0.5) * fBinwidthY;
 }
 

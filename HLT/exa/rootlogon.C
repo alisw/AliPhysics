@@ -62,6 +62,7 @@
       gSystem->Load("MakePileup_C.so");
       gSystem->Load("Read_C.so");
       gSystem->Load("runhough_C.so");
+      gSystem->Load("runrowhough_C.so");
       gSystem->Load("deconvclusters_C.so");
       gSystem->Load("runtracker_C.so");
       gErrorIgnoreLevel=saveErrIgLevel;

@@ -182,10 +182,7 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
       AliL3ConfMapPoint *fHit = (AliL3ConfMapPoint*)firstHit;
       SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
       
-      if(AliLevel3::IsTracksAtFirstPoint())//Set the track fit parameter at the innermost most point
-	{
-	  UpdateToFirstPoint();
-	}
+      UpdateToFirstPoint();
       
       delete fit;
     }

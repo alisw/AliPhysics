@@ -75,13 +75,9 @@ DEFSTR += -D$(ARCH) $(EXTRADEF)
 
 CXX          = g++
 LD           = $(CXX)
-GCCVERSION   = $(shell $(CXX) --version | head -n 1 | cut -d" " -f 3 | cut -d. -f 1 | cut -d" " -f1)
-
-CXXGCC3FLAGS = -DGCCVERSION=$(GCCVERSION)
 #CXXGCC3FLAGS += -pedantic
 #CXXGCC3FLAGS += -Wno-deprecated
 #CXXGCC3FLAGS += -Woverloaded-virtual
-
 CXXFLAGS       = -O2 -Wall -ggdb $(CXXGCC3FLAGS) $(EXTRACXXFLAGS) 
 LDFLAGS        = -O2 $(EXTRALDFLAGS) $(LIBS)
 STATICLDFLAGS  = -O2 $(PROFILEFLAGS) $(EXTRALDFLAGS) $(STATICLIBS)

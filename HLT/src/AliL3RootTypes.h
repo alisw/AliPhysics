@@ -16,7 +16,7 @@
 
 #else
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 #include <cstdio>
 #include <cmath>
 #else

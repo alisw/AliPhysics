@@ -45,6 +45,10 @@ ifeq ($(DOMC),1)
 DEFSTR += -Ddo_mc
 endif
 
+ifeq ($(USEROWHOUGH),1)
+DEFSTR += -DROWHOUGH
+endif
+
 ifneq ($(NOLOGGING),1)
 DEFSTR += -Duse_logging
 ifdef ALIHLT_MLUCDIR
@@ -96,7 +100,7 @@ $(ALIHLT_STATIC): $(STATICOBJS)
 
 $(DICT): $(HDRS)
 	@echo "Generating dictionary..."
-	rootcint -f $(DICT) -c $(CINTCXXFLAGS) $(INCLUDES) -DGCCVERSION=$(GCCVERSION) \
+	rootcint -f $(DICT) -c $(CINTCXXFLAGS) $(INCLUDES) \
                     $(DEFSTR) -include AliL3StandardIncludes.h $(HDRS)
 
 $(OBJDIR)/%.o: %.cxx 
@@ -124,6 +128,7 @@ print:
 	@echo "ALIHLT_NOLOGGING  = $(ALIHLT_NOLOGGING)"
 	@echo "ALIHLT_DOMC       = $(ALIHLT_DOMC)"
 	@echo "ALIHLT_ALIDETECT  = $(ALIHLT_ALIDETECT)"
+	@echo "ALIHLT_ROWHOUGH   = $(ALIHLT_ROWHOUGH)"
 	@echo "ROOTSTR           = $(ROOTSTR)"
 	@echo "ALIROOTSTR        = $(ALIROOTSTR)"
 

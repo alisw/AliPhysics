@@ -9,6 +9,10 @@
 
 #include "AliL3DDLRawReaderFile.h"
 
+#if __GNUC__ == 3
+using namespace std;
+#endif
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -35,9 +39,7 @@
 </pre>
 */
 
-
 ClassImp(AliL3DDLRawReaderFile)
-
 
 AliL3DDLRawReaderFile::AliL3DDLRawReaderFile(const Char_t* name, Bool_t addnum)
 {

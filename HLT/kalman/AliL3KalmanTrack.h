@@ -24,6 +24,11 @@
 
 #include "AliL3RootTypes.h"
 #include "AliL3Track.h"
+
+// includes for offline comparison, will be removed
+#include "AliTPCtrack.h"
+// includes for offline comparison, will be removed
+
 class AliL3SpacePointData;
 
 class AliL3KalmanTrack : public AliL3Track {
@@ -54,10 +59,9 @@ class AliL3KalmanTrack : public AliL3Track {
 
   AliL3KalmanTrack();
   virtual ~AliL3KalmanTrack();
-  Int_t Init(AliL3Track *track, AliL3SpacePointData *points, UInt_t pos);
-  Int_t MakeTrackSeed(AliL3SpacePointData *points1, UInt_t pos1, AliL3SpacePointData *points2, UInt_t pos2, AliL3SpacePointData *points3, UInt_t pos3);
-  Int_t Propagate(AliL3SpacePointData *points, UInt_t pos);
-  Int_t UpdateTrack(AliL3SpacePointData *points, UInt_t pos);
+  Int_t Init(AliL3Track *track, AliL3SpacePointData *points, UInt_t pos,Int_t slice);
+  Int_t Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t slice);
+  Int_t UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int_t slice);
   Int_t UpdateTrackII(AliL3SpacePointData *points, UInt_t pos);
   void AddTrack();
   //  Float_t GetStateVector(Float_t xx[5]) const {
@@ -91,6 +95,7 @@ class AliL3KalmanTrack : public AliL3Track {
   Float_t GetC13() {return fC43;}
   Float_t GetC14() {return fC44;}
 
+  void SetX(Float_t f) {fX = f;}
   void SetX0(Float_t f) {fP0 = f;}
   void SetX1(Float_t f) {fP1 = f;}
   void SetX2(Float_t f) {fP2 = f;}
@@ -132,7 +137,8 @@ class AliL3KalmanTrack : public AliL3Track {
   fC44 = f[14];}
   void SetChisq(Float_t f) {fChisq = f;}
   void SetMaxChi2(Float_t f) {fMaxChi2 = f;}
-  Float_t GetChisqIncrement(AliL3SpacePointData *points, UInt_t pos);
+  //Float_t GetChisqIncrement(AliL3SpacePointData *points, UInt_t pos);
+  Float_t GetChisqIncrement(Float_t y, Float_t error_y, Float_t z, Float_t error_z);
   Float_t f2(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
   Float_t f3(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t z1,Float_t z2);
   Float_t f4(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
@@ -140,6 +146,10 @@ class AliL3KalmanTrack : public AliL3Track {
 
   Int_t GetNHits() const {return fNHits;}
   void SetNHits(Int_t f) {fNHits = f;}
+
+  Int_t PropagateOfflineTrack(Double_t x, Double_t y, Double_t z, Double_t ey, Double_t ez);
+  Int_t UpdateOfflineTrack(Double_t x, Double_t y, Double_t z, Double_t ey, Double_t ez);
+  Float_t GetChisqIncrementOfflineTrack(Double_t y, Double_t z, Double_t ey, Double_t ez);
 };
 
 #endif

@@ -34,28 +34,46 @@ const Double_t kBz = 0.4;
 // primary vertex
 Double_t primaryvertex[3] = {0.,0.,0,};
 
+//sec. vertex
+double v2[3]={0,0,0};
+
 // sigle track cuts
-const Double_t kPtCut = 0.5;      // GeV/c
-const Double_t kd0Cut = 50.;      // micron
+const Double_t kPtCut = 0.5;  // GeV/c
+const Double_t kd0Cut = 50.; // micron
 const Double_t kd0CutHigh = 200.; // micron
 
 
 //cuts for combined tracks
-const Double_t cuts[5] = {0.005,  // cuts[0] = lowest V0 cut  (cm)
-			  200,    // cuts[1] = highest V0 cut (cm) //0.02
-			  0.1,    // cuts[2] = inv. mass cut (diferense) (Gev/c)
-			  0.95,   // cuts[3] = max cosine value for pointing angle
-                          -5000}; // cuts[4] = max cosine value for pointing angle
+const Double_t cuts[7] = {0.005,     // cuts[0] = lowest V0 cut  (cm)
+			  0.015,     // cuts[1] = highest V0 cut (cm)
+			  0.05,      // cuts[2] = inv. mass cut (diferense) (Gev/c)
+			  0.95,      // cuts[3] = max cosine value for pointing angle
+			  -5000,     // cuts[4] = d0d0
+			  0.8,       // cuts[5] = costhetastar
+			  0.5};      // cuts[6] = ptchild
+//cut for distance of closest aprach
+double cutDCA=0.01;
+
+// this function applies single track cuts
+Bool_t TrkCuts(const AliITStrackV2& trk);
+
+// this function creates TObjArrays with positive and negative tracks
+void   SelectTracks(TTree& itsTree,
+                      TObjArray& trksP,Int_t* itsEntryP,Int_t& nTrksP,
+                      TObjArray& trksN,Int_t* itsEntryN,Int_t& nTrksN);
+
+//void GetPrimaryVertex(int i,Char_t* path="./");
 
 Int_t iTrkP,iTrkN,itsEntries;
 Char_t trksName[100];
 Int_t nTrksP=0,nTrksN=0;
 Int_t nD0=0;
 int ev=0;
+double mom[6];
 
-void RunD0Trigger(Int_t evFirst=0,Int_t evLast=1,Char_t* path="./") {
+void RunD0offline(Int_t evFirst=0,Int_t evLast=1,Char_t* path="./") {
 
-  const Char_t *name="AliD0Trigger";
+  const Char_t *name="AliD0offline";
   cerr<<'\n'<<name<<"...\n";
   gBenchmark->Start(name); 
 
@@ -87,23 +105,74 @@ void RunD0Trigger(Int_t evFirst=0,Int_t evLast=1,Char_t* path="./") {
   cout<<"#pos: "<<nTrksP<<endl;
   cout<<"#neg: "<<nTrksN<<endl;
 
+  //the offline stuff
+  // define the cuts for vertexing
+  Double_t vtxcuts[]={33., // max. allowed chi2
+		      0.0, // min. allowed negative daughter's impact param 
+		      0.0, // min. allowed positive daughter's impact param 
+		      1.0, // max. allowed DCA between the daughter tracks
+        	     -1.0, // min. allowed cosine of V0's pointing angle
+		      0.0, // min. radius of the fiducial volume
+		      2.9};// max. radius of the fiducial volume
+  
+  // create the AliV0vertexer object
+  AliV0vertexer *vertexer2 = new AliV0vertexer(vtxcuts);
+
   AliD0Trigger * D0 = new AliD0Trigger(cuts,kBz,primaryvertex);
+
+  double ptP,alphaP,phiP,ptN,alphaN,phiN,dca;
 
   for(iTrkP=0; iTrkP<nTrksP; iTrkP++) {
     postrack = (AliITStrackV2*)trksP.At(iTrkP);
     for(iTrkN=0; iTrkN<nTrksN; iTrkN++) {
       negtrack = (AliITStrackV2*)trksN.At(iTrkN);
       D0.SetTracks(postrack,negtrack);
-      if(D0.FindV0()){
-	D0.FindMomentaAtVertex();
-	if(D0.FindInvMass()){
-	  if(D0.PointingAngle()){
-	    nD0++;
+      //
+      // ----------- DCA MINIMIZATION ------------------
+      //
+      // find the DCA and propagate the tracks to the DCA 
+      double dca = vertexer2->PropagateToDCA(negtrack,postrack);
+  
+      if(dca<cutDCA){
+	// define the AliV0vertex object
+	AliV0vertex *vertex2 = new AliV0vertex(*negtrack,*postrack);
+	// get position of the vertex
+	vertex2->GetXYZ(v2[0],v2[1],v2[2]);
+	delete vertex2;	
+	if(D0.pTchild()){
+	  if(D0.d0d0()){
+	    if(D0.FindV0offline(v2)){
+	      
+	      // momenta of the tracks at the vertex
+	      ptP = 1./TMath::Abs(postrack->Get1Pt());
+	      alphaP = postrack->GetAlpha();
+	      phiP = alphaP+TMath::ASin(postrack->GetSnp());
+	      mom[0] = ptP*TMath::Cos(phiP); 
+	      mom[1] = ptP*TMath::Sin(phiP);
+	      mom[2] = ptP*postrack->GetTgl();
+	      
+	      ptN = 1./TMath::Abs(negtrack->Get1Pt());
+	      alphaN = negtrack->GetAlpha();
+	      phiN = alphaN+TMath::ASin(negtrack->GetSnp());
+	      mom[3] = ptN*TMath::Cos(phiN); 
+	      mom[4] = ptN*TMath::Sin(phiN);
+	      mom[5] = ptN*negtrack->GetTgl();
+	      
+	      D0.SetMomenta(mom);
+	      
+	      if(D0.FindInvMass()){
+		if(D0.CosThetaStar()){
+		  if(D0.PointingAngle()){
+		    nD0++;
+		  }
+		}
+	      }
+	    } 
 	  }
 	}
-      } 
+      }
     }
-  }
+  } 
   cout<<"#D0: "<<nD0<<endl;
   gBenchmark->Stop(name);
   gBenchmark->Show(name);

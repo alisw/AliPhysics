@@ -24,7 +24,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 
@@ -74,9 +74,7 @@ using namespace std;
 </pre>
 */
 
-
 ClassImp(AliL3Transform)
-
 
 const Double_t AliL3Transform::fAnodeWireSpacing = 0.25; //Taken from the TDR
 const Double_t AliL3Transform::fBFACT = 0.0029980;       //Conversion Factor
@@ -1708,7 +1706,7 @@ void AliL3Transform::Global2HLT(Float_t *xyz,Int_t slice,Int_t slicerow)
 
 void AliL3Transform::PrintCompileOptions()
 {
-  cout << "Compiler (g++) version used: " << GCCVERSION << endl;
+  cout << "Compiler (g++) version used: " << __GNUC__ << endl;
 
 #ifdef no_root
   cout << "STANDALONE version: -Dno_root was given." << endl;
@@ -1739,9 +1737,22 @@ void AliL3Transform::PrintCompileOptions()
   cout << "NOT using Monte Carlo Info: -Ddo_mc was not given." << endl;
 #endif
 
+#ifdef ROWHOUGH
+  cout << "Using row transformer version: -DROWHOUGH was given." << endl;
+#else
+  cout << "NOT using row transformer version: -DROWHOUGH was not given." << endl;
+#endif
+
+#ifdef use_newio
+  cout << "Using NEWIO version: -Duse_newio was given." << endl;
+#else
+  cout << "NOT using NEWIO version: -Duse_newio was not given." << endl;
+#endif
+
 #ifdef use_logging
   cout << "Using logging classes (MLUC): -Duse_logging was given." << endl;
 #else
   cout << "NOT using logging classes (MLUC): -Duse_logging not was given." << endl;
 #endif
+
 }

@@ -10,7 +10,7 @@
 #include "AliL3StandardIncludes.h"
 #include "AliL3RootTypes.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 

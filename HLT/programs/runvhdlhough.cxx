@@ -13,7 +13,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Logger.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #else
 #include <stream.h>

@@ -50,7 +50,7 @@ class AliL3ClusterFitter : public AliL3Modeller {
   
   void Init(Int_t slice,Int_t patch,Int_t *rowrange,AliL3TrackArray *tracks);
   void Init(Int_t slice,Int_t patch);
-  void LoadSeeds(Int_t *rowrange,Bool_t offline=kTRUE,Int_t eventnr=0);
+  void LoadSeeds(Int_t *rowrange,Bool_t offline=kTRUE,Int_t eventnr=0,Float_t zvertex=0.0);
   void LoadLocalSegments();
   void FindClusters();
   void AddClusters();
@@ -65,7 +65,6 @@ class AliL3ClusterFitter : public AliL3Modeller {
   Float_t GetYWidthFactor() {return fCurrentPadRow < AliL3Transform::GetLastRow(1) ? fYInnerWidthFactor : fYOuterWidthFactor;}
   Float_t GetZWidthFactor() {return fCurrentPadRow < AliL3Transform::GetLastRow(1) ? fZInnerWidthFactor : fZOuterWidthFactor;}
   AliL3TrackArray *GetSeeds() {return fSeeds;}
-  
   
   ClassDef(AliL3ClusterFitter,1) 
 

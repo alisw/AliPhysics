@@ -41,6 +41,7 @@ print:
 	@echo "ALIHLT_NOLOGGING  = $(ALIHLT_NOLOGGING)"
 	@echo "ALIHLT_DOMC       = $(ALIHLT_DOMC)"
 	@echo "ALIHLT_ALIDETECT  = $(ALIHLT_ALIDETECT)"
+	@echo "ALIHLT_ROWHOUGH   = $(ALIHLT_ROWHOUGH)"
 
 help:
 	cat doc/README

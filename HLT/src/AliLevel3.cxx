@@ -55,7 +55,6 @@
 
 ClassImp(AliLevel3)
 
-Bool_t AliLevel3::fSetTracks2FirstPoint = kTRUE;//Define track parameters at first point
 Bool_t AliLevel3::fDoVertexFit = kTRUE;//Include the vertex in the final track fit
 
 AliLevel3::AliLevel3()
@@ -567,8 +566,7 @@ void AliLevel3::FitGlobalTracks()
       AliL3Track *tr = tracks->GetCheckedTrack(i);
       if(!tr) continue;
       fitter->FitHelix(tr);
-      if(AliLevel3::IsTracksAtFirstPoint())
-	tr->UpdateToFirstPoint();
+      tr->UpdateToFirstPoint();
     }
   fBenchmark->Stop("Global track fitter");
   delete fitter;

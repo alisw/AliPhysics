@@ -6,10 +6,15 @@
 #include "AliL3RootTypes.h"
 
 #ifdef do_mc
-const UInt_t MaxTrack=35;
+const UInt_t MaxTrack=100;
 struct TrackIndex {
   Int_t fLabel[MaxTrack];
+#ifdef ROWHOUGH
+  UChar_t fNHits[MaxTrack];
+  UChar_t fCurrentRow[MaxTrack];
+#else
   Int_t fNHits[MaxTrack];
+#endif
 };
 typedef struct TrackIndex TrackIndex;
 #endif
@@ -30,11 +35,13 @@ class AliL3HoughBaseTransformer {
   Int_t fUpperThreshold;
   
   AliL3DigitRowData *fDigitRowData; //!
-  
+
+  Float_t fZVertex;
+
  public:
 
   AliL3HoughBaseTransformer(); 
-  AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments);
+  AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Float_t zvertex=0.0);
   virtual ~AliL3HoughBaseTransformer();
   
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr) {fDigitRowData = ptr;}
@@ -66,7 +73,8 @@ class AliL3HoughBaseTransformer {
   Int_t GetUpperThreshold() {return fUpperThreshold;}
   Double_t GetEtaMin() {return fEtaMin;}
   Double_t GetEtaMax() {return fEtaMax;}
-  
+  Float_t GetZVertex() {return fZVertex;}
+
   AliL3DigitRowData *GetDataPointer() {return fDigitRowData;}
  
   virtual Int_t GetEtaIndex(Double_t eta) = 0;

@@ -103,8 +103,9 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
       //a->DoMc();     /*do monte carlo identification*/
       a->WriteFiles(opath); /*enable output*/
       a->ProcessEvent(minslice,maxslice);
-      a->DoBench("benchmark_0");
-
+      Char_t bname[100];
+      sprintf(bname,"benchmark_tracker_%d",ev);
+      a->DoBench(bname);
       delete a;
     } // event loop
 }

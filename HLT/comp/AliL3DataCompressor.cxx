@@ -40,7 +40,7 @@
 #include "AliL3DataCompressorHelper.h"
 #include "AliL3DataCompressor.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 

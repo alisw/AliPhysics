@@ -451,43 +451,20 @@ Int_t AliL3Fitter::FitCircle()
 
   fTrack->SetCharge(q);
   
-//
-//    Get other track parameters
-//
-  Double_t x0, y0,phi0,r0,psi,pt ;
-  if ( fVertexConstraint == kTRUE)
-    {
-      //flag = 1 ; // primary track flag
-      x0   = fVertex->GetX() ;
-      y0   = fVertex->GetY() ;
-      phi0 = fVertex->GetPhi() ;
-      r0   = fVertex->GetR() ;
-      fTrack->SetPhi0(phi0);
-      fTrack->SetR0(r0);
-    } 
-  else 
-    {
-      Int_t lastid=fTrack->GetNHits()-1;
-      UInt_t id = hitnum[lastid];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;
-      AliL3SpacePointData *points = fClusters[slice][patch];
-      
-      //flag =  0 ; // primary track flag
-      x0   =  points[pos].fX;
-      y0   =  points[pos].fY;
-      phi0 =  atan2(points[pos].fY,points[pos].fX);
-      if ( phi0 < 0 ) phi0 += 2*AliL3Transform::Pi();
-      r0   =  sqrt ( points[pos].fX * points[pos].fX + points[pos].fY*points[pos].fY);
-      fTrack->SetPhi0(phi0);
-      fTrack->SetR0(r0);
-    }
-  
   //Set the first point on the track to the space point coordinates of the innermost track
   //This will be updated to lie on the fit later on (AliL3Track::UpdateToFirstPoint).
+  Double_t x0,y0,psi,pt ;
+  Int_t lastid=fTrack->GetNHits()-1;
+  UInt_t id = hitnum[lastid];
+  Int_t slice = (id>>25) & 0x7f;
+  Int_t patch = (id>>22) & 0x7;
+  UInt_t pos = id&0x3fffff;
+  AliL3SpacePointData *points = fClusters[slice][patch];
+  x0   =  points[pos].fX;
+  y0   =  points[pos].fY;
   fTrack->SetFirstPoint(x0,y0,0); //Z-value is set in FitLine
-
+  
+  //Set the remaining fit parameters
   psi  = (Double_t)atan2(bcent-y0,acent-x0) ;
   psi  = psi + q * 0.5F * AliL3Transform::Pi() ;
   if ( psi < 0 ) psi = psi + 2*AliL3Transform::Pi();
@@ -532,7 +509,7 @@ Int_t AliL3Fitter::FitLine ( )
   Double_t fS[(fTrack->GetNHits())];
   Double_t *fZWeight = new Double_t[fTrack->GetNHits()];
   UInt_t *hitnum = fTrack->GetHitNumbers();
-  if (fVertexConstraint==kTRUE)
+  if (0)//fVertexConstraint==kTRUE)
     {
       UInt_t id = hitnum[0];
       Int_t slice = (id>>25) & 0x7f;

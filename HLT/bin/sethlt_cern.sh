@@ -13,7 +13,7 @@ export ALIHLT_LIBDIR=$ALIHLT_TOPDIR/lib_$ALIHLT_USEPACKAGE
 export ALIHLT_NOLOGGING=true
 export ALIHLT_DOMC=true
 export ALIHLT_ALIDETECT=false
-
+export ALIHLT_ROWHOUGH=true
 #export ALIHLT_MLUCDIR=/usr/local/kip/MLUC
 
 #export ALIHLT_DATADIR=/mnt/local/alidata/head

@@ -21,14 +21,19 @@
 #include "AliL3Histogram.h"
 #include "AliL3Histogram1D.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 
+/** /class AliL3HoughEval
+//<pre>
 //_____________________________________________________________
 // AliL3HoughEval
 //
 // Evaluation class for tracklets produced by the Hough transform.
+//
+</pre>
+*/
 
 ClassImp(AliL3HoughEval)
 
@@ -63,6 +68,7 @@ void AliL3HoughEval::InitTransformer(AliL3HoughBaseTransformer *transformer)
   fNEtaSegments = fHoughTransformer->GetNEtaSegments();
   fEtaMin = fHoughTransformer->GetEtaMin();
   fEtaMax = fHoughTransformer->GetEtaMax();
+  fZVertex = fHoughTransformer->GetZVertex();
   GenerateLUT();
 }
 
@@ -302,6 +308,7 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	  Int_t sector,row;
 	  AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
 	  AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+	  xyz[2] -= fZVertex;
 	  Double_t eta = AliL3Transform::GetEta(xyz);
 	  Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);//(Int_t)(eta/etaslice);
 	  if(pixel_index != eta_index) continue;

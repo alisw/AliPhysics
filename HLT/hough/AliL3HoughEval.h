@@ -25,6 +25,7 @@ class AliL3HoughEval {
   Int_t fNumOfPadsToLook;
   Int_t fNumOfRowsToMiss;
   AliL3Histogram1D **fEtaHistos; //!
+  Float_t fZVertex;
 
   //Flags
   Bool_t fRemoveFoundTracks;
@@ -53,6 +54,7 @@ class AliL3HoughEval {
   void SetNumOfRowsToMiss(Int_t i) {fNumOfRowsToMiss = i;}
   void SetNumOfPadsToLook(Int_t i) {fNumOfPadsToLook = i;}
   void SetSlice(Int_t i) {fSlice=i;}
+  void SetZVertex(Float_t zvertex) {fZVertex=zvertex;}
 
   ClassDef(AliL3HoughEval,1) //Hough transform verfication class
 

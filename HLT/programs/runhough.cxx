@@ -31,7 +31,7 @@
 #include <TGraphErrors.h>
 #endif
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 

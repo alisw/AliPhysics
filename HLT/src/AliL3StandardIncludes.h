@@ -3,7 +3,7 @@
 #ifndef ALIL3STANDARDINCLUDESH
 #define ALIL3STANDARDINCLUDESH
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 #include <iostream>
 #include <fstream>
 
@@ -35,7 +35,7 @@ eg. in inline functions defined in header files */
 #define STDCERR cerr
 #define STDENDL endl
 
-#endif //GCCVERSION
+#endif //__GNUC__
 
 #endif
 

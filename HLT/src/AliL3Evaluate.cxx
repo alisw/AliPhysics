@@ -20,7 +20,7 @@
 #include <AliComplexCluster.h>
 #include <AliStack.h>
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 #include <fstream>
 #include <iosfwd>
 #else
@@ -35,7 +35,7 @@
 #include "AliL3TrackArray.h"
 #include "AliL3Evaluate.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 

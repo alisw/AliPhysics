@@ -16,15 +16,18 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3Compress.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 
+/** /class AliL3ClusterFitter
+//<pre>
 //_____________________________________________________________
 //
 //  AliL3ClusterFitter
 //
-
+</pre>
+*/
 
 ClassImp(AliL3ClusterFitter)
 
@@ -217,10 +220,9 @@ void AliL3ClusterFitter::LoadLocalSegments()
     }
 }
 
-void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr)
+void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr,Float_t zvertex)
 {
   //Function assumes _global_ tracks written to a single file.
-  
   cout<<"Loading the seeds"<<endl;
   Char_t fname[1024];
   fEvent = eventnr;
@@ -293,6 +295,7 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr)
 	      //exit(5);
 	    }
 	  Float_t xyz_cross[3] = {track->GetPointX(),track->GetPointY(),track->GetPointZ()};
+	  xyz_cross[2] += zvertex;
 	  
 	  Int_t sector,row;
 	  AliL3Transform::Slice2Sector(slice,j,sector,row);
@@ -340,6 +343,7 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr)
 	      xyz_cross[0] = track->GetPointX();
 	      xyz_cross[1] = track->GetPointY();
 	      xyz_cross[2] = track->GetPointZ();
+	      xyz_cross[2] += zvertex;
 	      Int_t sector,row;
 	      AliL3Transform::Slice2Sector(slice,j,sector,row);
 	      AliL3Transform::Global2Raw(xyz_cross,sector,row);
@@ -1248,4 +1252,3 @@ void AliL3ClusterFitter::WriteClusters(Bool_t global)
   fClusters=0;
   fNClusters=0;
 }
-

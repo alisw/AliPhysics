@@ -20,13 +20,12 @@ export ALIHLT_LIBDIR=$ALIHLT_TOPDIR/lib_$ALIHLT_USEPACKAGE
 export ALIHLT_NOLOGGING=false
 export ALIHLT_DOMC=true
 export ALIHLT_ALIDETECT=true
-
+export ALIHLT_ROWHOUGH=false
 export ALIHLT_MLUCDIR=/usr/local/kip/MLUC
 
 #export ALIHLT_DATADIR=/mnt/local/alidata/head
 #export ALIHLT_TRANSFORMFILE=$ALIHLT_DATADIR/l3transform.config
 #export ALIHLT_GEOPATH=$ALIDATADIR
-
 
 if test -z "$LD_LIBRARY_PATH"; then
   export LD_LIBRARY_PATH=$ALIHLT_MLUCDIR/lib:$ALIHLT_LIBDIR

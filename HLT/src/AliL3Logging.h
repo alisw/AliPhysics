@@ -25,7 +25,7 @@ class AliL3Log{
   enum TLogCmd { kEnd, kPrec, kHex, kDec };
 };
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 #define LOG( lvl, origin, keyword ) std::cerr<<"["<<origin<<": "<<keyword<<"] "
 #define ENDLOG std::endl
 #else

@@ -342,37 +342,13 @@ Int_t AliL3ConfMapFit::FitCircle()
 
   fTrack->SetCharge(q);
   
-//
-//    Get other track parameters
-//
-  Double_t x0, y0,phi0,r0,psi,pt ;
-  if ( fTrack->ComesFromMainVertex() == true ) 
-    {
-      //flag = 1 ; // primary track flag
-      x0   = fVertex->GetX() ;
-      y0   = fVertex->GetY() ;
-      phi0 = fVertex->GetPhi() ;
-      r0   = fVertex->GetR() ;
-      fTrack->SetPhi0(phi0);
-      fTrack->SetR0(r0);
-    } 
-  else 
-    {
-      //AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)hits->Last();
-      AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)fTrack->lastHit;
-      //flag =  0 ; // primary track flag
-      x0   =  lHit->GetX()  ;
-      y0   =  lHit->GetY()  ;
-      phi0 =  atan2(lHit->GetY(),lHit->GetX());
-      if ( phi0 < 0 ) phi0 += AliL3Transform::TwoPi();
-      r0   =  sqrt ( lHit->GetX() * lHit->GetX() + lHit->GetY() * lHit->GetY() )  ;
-      fTrack->SetPhi0(phi0);
-      fTrack->SetR0(r0);
-
-    }
   
   //Set the first point on the track to the space point coordinates of the innermost track
   //This will be updated to lie on the fit later on (AliL3Track::UpdateToFirstPoint).
+  Double_t x0,y0,psi,pt ;
+  AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)fTrack->lastHit;
+  x0 = lHit->GetX();
+  y0 = lHit->GetY();
   fTrack->SetFirstPoint(x0,y0,0); //Z-value is set in FitLine
 
   psi  = (Double_t)atan2(bcent-y0,acent-x0) ;
@@ -418,7 +394,7 @@ Int_t AliL3ConfMapFit::FitLine ( )
   //TObjArray *hits = fTrack->GetHits();
   //Int_t num_of_hits = fTrack->GetNumberOfPoints();
 
-  if ( fTrack->ComesFromMainVertex() == true ) 
+  if (0)// fTrack->ComesFromMainVertex() == true ) 
     {
       dx = ((AliL3ConfMapPoint*)fTrack->firstHit)->GetX() - fVertex->GetX();
       dy = ((AliL3ConfMapPoint*)fTrack->firstHit)->GetY() - fVertex->GetY() ;

@@ -12,7 +12,7 @@
 #pragma link C++ class AliL3HoughTransformerLUT;
 #pragma link C++ class AliL3HoughTransformerVhdl;
 #pragma link C++ class AliL3HoughTransformerNew;
-#pragma link C++ class AliL3HoughTransformerGap;
+#pragma link C++ class AliL3HoughTransformerRow;
 #ifndef Darwin
 #pragma link C++ class AliL3HoughTrack;
 #endif
@@ -35,4 +35,3 @@
 #endif
 
 #endif
-

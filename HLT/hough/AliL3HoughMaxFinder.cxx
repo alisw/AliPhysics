@@ -16,14 +16,19 @@
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 
+/** \class AliL3HoughMaxFinder
+<pre>
 //_____________________________________________________________
 // AliL3HoughMaxFinder
 //
 // Maximum finder
+//
+</pre>
+*/
 
 ClassImp(AliL3HoughMaxFinder)
 
@@ -43,7 +48,6 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder()
   fNtuppel = 0;
 #endif
 }
-
 
 AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histogram *hist)
 {
@@ -67,7 +71,6 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histo
 #endif
   fThreshold=0;
 }
-
 
 AliL3HoughMaxFinder::~AliL3HoughMaxFinder()
 {
@@ -211,7 +214,6 @@ void AliL3HoughMaxFinder::FindBigMaxima()
 		  value[bin_index]=hist->GetBinContent(bin[bin_index]);
 		  bin_index++;
 		}
-	      
 	    }
 	  if(value[12]==0) continue;
 	  Int_t b=0;
@@ -369,12 +371,13 @@ void AliL3HoughMaxFinder::FindAdaptedPeaks(Int_t kappawindow,Float_t cut_ratio)
   
   if(hist->GetNEntries() == 0)
     return;
-  
+
   Int_t xmin = hist->GetFirstXbin();
   Int_t xmax = hist->GetLastXbin();
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();
-  
+
+
   //Start by looking for pre-peaks:
   
   Window **local_maxima = new Window*[hist->GetNbinsY()];
@@ -618,6 +621,189 @@ void AliL3HoughMaxFinder::FindAdaptedPeaks(Int_t kappawindow,Float_t cut_ratio)
   delete [] maxs;
 }
 
+struct PreYPeak 
+{
+  Int_t start_position;
+  Int_t end_position;
+  Int_t value;
+  Int_t prev_value;
+};
+
+struct Pre2DPeak 
+{
+  Int_t start_x_position;
+  Int_t end_x_position;
+  Int_t start_y_position;
+  Int_t end_y_position;
+  Int_t value;
+};
+
+void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_t ysize)
+{
+  
+  AliL3Histogram *hist = fCurrentHisto;
+  
+  if(!hist)
+    {
+      cerr<<"AliL3HoughMaxFinder : No histogram!"<<endl;
+      return;
+    }
+  
+  if(hist->GetNEntries() == 0)
+    return;
+  
+  Int_t xmin = hist->GetFirstXbin();
+  Int_t xmax = hist->GetLastXbin();
+  Int_t ymin = hist->GetFirstYbin();
+  Int_t ymax = hist->GetLastYbin();
+  
+  //Start by looking for pre-peaks:
+  
+  PreYPeak **local_maxima = new PreYPeak*[hist->GetNbinsY()];
+  
+  Short_t *nmaxs = new Short_t[hist->GetNbinsY()];
+  Int_t n2dmax = 0;
+  Int_t last_value,value;
+  for(Int_t ybin=ymin; ybin<=ymax; ybin++)
+    {
+      local_maxima[ybin-ymin] = new PreYPeak[hist->GetNbinsX()];
+      nmaxs[ybin-ymin] = 0;
+      last_value = 0;
+      Bool_t found = 0;
+      for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+	{
+	  value = hist->GetBinContent(hist->GetBin(xbin,ybin));
+	  if(value >= fThreshold)
+	    {
+	      if(value > last_value)
+	      //	      if(value > (last_value + 1))
+		{
+		  local_maxima[ybin-ymin][nmaxs[ybin-ymin]].start_position = xbin;
+		  local_maxima[ybin-ymin][nmaxs[ybin-ymin]].end_position = xbin;
+		  local_maxima[ybin-ymin][nmaxs[ybin-ymin]].value = value;
+		  local_maxima[ybin-ymin][nmaxs[ybin-ymin]].prev_value = 0;
+		  found = 1;
+		}
+	      if(value == last_value)
+		//	      if(abs(value - last_value) <= 1)
+		if(found)
+		  local_maxima[ybin-ymin][nmaxs[ybin-ymin]].end_position = xbin;
+	    }
+
+	  if((value < fThreshold) || (value < last_value))
+	    //	  if((value < fThreshold) || (value < (last_value - 1)))
+	    {
+	      if(found)
+		{
+		  nmaxs[ybin-ymin]++;
+		  found = 0;
+		}
+	    }
+	  last_value = value;
+	      
+	}
+      n2dmax += nmaxs[ybin-ymin];
+    }
+  
+  //  Pre2DPeak *maxima = new Pre2DPeak[n2dmax];
+  for(Int_t ybin=ymax; ybin >= ymin; ybin--)
+    {
+      for(Int_t i=0; i<nmaxs[ybin-ymin]; i++)
+	{
+	  Int_t local_value = local_maxima[ybin-ymin][i].value;
+	  Int_t local_prev_value = local_maxima[ybin-ymin][i].prev_value;
+	  Int_t local_next_value = 0;
+
+	  if(local_value<0)
+	    continue; //already used
+
+	  //start expanding in the psi-direction:
+
+	  Int_t local_x_start = local_maxima[ybin-ymin][i].start_position;
+	  Int_t local_x_end = local_maxima[ybin-ymin][i].end_position;
+	  Int_t temp_x_start = local_maxima[ybin-ymin][i].start_position;
+	  Int_t temp_x_end = local_maxima[ybin-ymin][i].end_position;
+
+	  Int_t local_y=ybin-1,nybins=1;
+	  
+	  while(local_y >= ymin)
+	    {
+	      Bool_t found=0;
+	      for(Int_t j=0; j<nmaxs[local_y-ymin]; j++)
+		{
+		  Int_t adapted_kappawindow;
+		  Float_t adapted_x,adapted_y;
+		  adapted_x = ((Float_t)local_x_start+(Float_t)local_x_end)/2.0;
+		  adapted_y = ((Float_t)ybin+(Float_t)(local_y+1))/2.0;
+		  //		  if(adapted_y<(-0.46*adapted_x+86) && adapted_y>(-0.46*adapted_x+56) && adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40))
+		  //		  if(adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40))
+		  //		  if((adapted_y<(-0.46*adapted_x+86) && adapted_y>(-0.46*adapted_x+56)) && !(adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40)))
+		  if(((adapted_y<(-0.46*adapted_x+86) && adapted_y>(-0.46*adapted_x+56)) && !(adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40))) || 
+		     ((adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40))&& !(adapted_y<(-0.46*adapted_x+86) && adapted_y>(-0.46*adapted_x+56))))
+		    adapted_kappawindow = 1;
+		  else
+		    adapted_kappawindow = 0;
+		  //temprorary here
+		  //		  adapted_kappawindow = 0;
+		  
+		  if( (local_maxima[local_y-ymin][j].start_position <= (temp_x_end + kappawindow + adapted_kappawindow)) && (local_maxima[local_y-ymin][j].end_position >= temp_x_start)) 
+		    {
+		      if( local_maxima[local_y-ymin][j].value == local_value )
+			{
+			  local_x_end = local_maxima[local_y-ymin][j].end_position;
+			  temp_x_start = local_maxima[local_y-ymin][j].start_position;
+			  temp_x_end = local_maxima[local_y-ymin][j].end_position;
+			  local_maxima[local_y-ymin][j].value = -1;
+			  found = 1;
+			  nybins++;
+			  break;
+			}
+		      else
+			{
+			  local_maxima[local_y-ymin][j].prev_value = local_value;
+			  local_next_value = local_maxima[local_y-ymin][j].value;
+			}
+		    }
+		}
+	      if(!found || local_y == ymin)//no more local maximas to be matched, so write the final peak and break the expansion:
+		{
+		  Int_t adapted_xsize;
+		  Float_t adapted_x,adapted_y;
+		  adapted_x = ((Float_t)local_x_start+(Float_t)local_x_end)/2.0;
+		  adapted_y = ((Float_t)ybin+(Float_t)(local_y+1))/2.0;
+		  //		  if(adapted_y<(-0.46*adapted_x+86) && adapted_y>(-0.46*adapted_x+56) && adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40))
+		  //		  if(adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40))
+		  if((adapted_y<(-0.46*adapted_x+86) && adapted_y>(-0.46*adapted_x+56)) && !(adapted_y<(-0.215*adapted_x+68) && adapted_y>(-0.215*adapted_x+40)))
+		    adapted_xsize = 1;
+		  else
+		    adapted_xsize = 2;
+		  //temprorary here
+		  //		  adapted_xsize = 1;
+		  if((nybins > ysize) && ((local_x_end-local_x_start+1) > adapted_xsize) && (local_value > local_prev_value) && (local_value > local_next_value))
+		    {
+		      fXPeaks[fNPeaks] = hist->GetPreciseBinCenterX(adapted_x);
+		      fYPeaks[fNPeaks] = hist->GetPreciseBinCenterY(adapted_y);
+		      fWeight[fNPeaks] = local_value;
+#ifdef do_mc
+		      cout<<"Peak found at: "<<((Float_t)local_x_start+(Float_t)local_x_end)/2.0<<" "<<((Float_t)ybin+(Float_t)(local_y+1))/2.0<<" "<<fXPeaks[fNPeaks]<<" "<<fYPeaks[fNPeaks]<<" with weight "<<fWeight[fNPeaks]<<" and size "<<local_x_end-local_x_start+1<<" by "<<nybins<<endl;
+#endif
+		      fNPeaks++;
+		    }
+		  break;
+		}
+	      else
+		local_y--;//Search continues...
+	    }
+	}
+    }
+
+  for(Int_t i=0; i<hist->GetNbinsY(); i++)
+    delete local_maxima[i];
+
+  delete [] local_maxima;
+  delete [] nmaxs;
+  //delete [] maxima;
+}
 
 void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
 {
@@ -781,7 +967,6 @@ void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
     delete windowPt[i];
   delete [] windowPt;
   delete [] anotherPt;
-  
 }
 
 void AliL3HoughMaxFinder::SortPeaks(struct AxisWindow **a,Int_t first,Int_t last)
@@ -831,7 +1016,6 @@ Int_t AliL3HoughMaxFinder::PeakCompare(struct AxisWindow *a,struct AxisWindow *b
   if(a->weight < b->weight) return 1;
   if(a->weight > b->weight) return -1;
   return 0;
-
 }
 
 void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3)
@@ -1012,7 +1196,5 @@ void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3)
   delete [] m_up;
   
   //return track;
-
-    
 }
 

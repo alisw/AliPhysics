@@ -11,7 +11,8 @@
 #include "AliL3Histogram.h"
 #include "AliL3HoughBaseTransformer.h"
 
-
+/** \class AliL3HoughBaseTransformer
+<pre>
 //_____________________________________________________________
 // AliL3HoughBaseTransformer
 //
@@ -19,6 +20,9 @@
 //
 // This is an abstract class, and is only meant to provide the interface
 // to the different implementations.
+//
+</pre>
+*/
 
 ClassImp(AliL3HoughBaseTransformer)
 
@@ -34,9 +38,10 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
   fEtaMax = 0;
   fLowerThreshold = 0;
   fUpperThreshold = 1023;
+  fZVertex = 0.0;
 }
 
-AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments)
+AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Float_t zvertex)
 {
   fDigitRowData = 0;
 
@@ -47,6 +52,7 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int
   fEtaMax = 0;
   fLowerThreshold = 3;
   fUpperThreshold = 1023;
+  fZVertex = zvertex;
 
   Init(slice,patch,n_eta_segments);
 }

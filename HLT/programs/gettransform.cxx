@@ -17,7 +17,7 @@
 #include <AliL3MemHandler.h>
 #include <AliL3HoughTransformerVhdl.h>
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #endif
 
@@ -48,7 +48,7 @@ int main(Int_t argc,Char_t **argv)
   }
 
   AliL3Transform::Init(path);
-  //cerr << "Transform version: " << AliL3Transform::GetVersion() << endl;
+  cerr << "Transform version: " << AliL3Transform::GetVersion() << endl;
 
   AliL3HoughTransformerVhdl vtest(slice,patch,100,10);
   vtest.CreateHistograms(64,0.1,64,-30,30);

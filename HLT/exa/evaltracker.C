@@ -16,38 +16,58 @@
    and written to file.
 */
 
-void evaltracker(char *path,char *trackpath,char *offlinepath,int nevent=1)
+#ifndef __CINT__
+#include "AliL3Logger.h"
+#include "AliL3Evaluate.h"
+#include "AliL3FileHandler.h"
+#include "AliL3DigitData.h"
+#include "AliL3Transform.h"
+#include "AliLevel3.h"
+#include <TROOT.h>
+#include <TNtuple.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TStyle.h>
+#include <TFile.h>
+#include <TGraphErrors.h>
+#include <TCanvas.h>
+#include <TF1.h>
+#include <stdio.h>
+#include <iostream.h>
+#include <time.h>
+#endif
+
+void evaltracker(Char_t *path="./",Char_t *trackpath="./tracker/",char *offlinepath="./",int nevent=1)
 {
   //Make sure you got the correct parameters:
   AliL3Transform::Init(path,kTRUE);
   
   //Define which slices to include:
-  int slicerange[2]={0,35};
+  Int_t slicerange[2]={0,35};
   
   //Define which padrows to include (should normally be all)
-  int rowrange[2]={AliL3Transform::GetFirstRow(-1),AliL3Transform::GetLastRow(-1)};
+  //Int_t rowrange[2]={AliL3Transform::GetFirstRow(-1),AliL3Transform::GetLastRow(-1)};
   
   //Define the minimum number of clusters on a simulated track to be found:
-  int good = (int)(0.4*AliL3Transform::GetNRows());
+  Int_t good = (Int_t)(0.4*AliL3Transform::GetNRows());
   
   //Define the minumum number of clusters on a found track to be found (should normally be the same as above)
-  int nclusters = (int)(0.4*AliL3Transform::GetNRows());
+  Int_t nclusters = (Int_t)(0.4*AliL3Transform::GetNRows());
   
   //Define which pt range to include
-  float ptmin = 0.1;
-  float ptmax = 4.;
+  Float_t ptmin = 0.1;
+  Float_t ptmax = 4.;
   
   //Define the maximum ratio of false clusters which are allowed on a found track (default=0.1 -> 10%)
-  float maxfalseratio = 0.1;
+  Float_t maxfalseratio = 0.1;
   
-  a = new AliL3Evaluate(trackpath,nclusters,good,ptmin,ptmax,slicerange);
-  
+  AliL3Evaluate *a = new AliL3Evaluate(trackpath,nclusters,good,ptmin,ptmax,slicerange);
   a->CreateHistos(20,0.1,4.1);//(nbins in pt,minpt,maxpt) -> the same as used by standard offline
   a->SetMaxFalseClusters(maxfalseratio);
   //a->SetStandardComparison(kFALSE); //use AliTPCComparison_HLT
 
   //Loop over the number of events:
-  for(int event=0; event<nevent; event++)
+  for(Int_t event=0; event<nevent; event++)
     {
       cout<<"Processing event "<<event<<endl;      
       
@@ -73,24 +93,20 @@ void evaltracker(char *path,char *trackpath,char *offlinepath,int nevent=1)
   
 }
 
-void ploteff(char *rootfile="hlt_efficiencies.root")
+void ploteff(Char_t *rootfile="hlt_efficiencies.root")
 {
   //Plot the efficiency vs pt.
   
   gStyle->SetOptStat(0);
-  char filename[1024];
   
-  double hltx[22];
-  double hlty[22];
-  double hltxerr[22];
-  double hltyerr[22];
-  int i;
-  
-  file = TFile::Open(rootfile);
-  
-  int hltcounter=0;
-  h = (TH1*)fTrackEffPt;
-  for(i=0; i<22; i++)
+  Double_t hltx[22];
+  Double_t hlty[22];
+  Double_t hltxerr[22];
+  Double_t hltyerr[22];
+  TFile *file = TFile::Open(rootfile);
+  Int_t hltcounter=0;
+  TH1* h = (TH1*)file->Get("fTrackEffPt");
+  for(Int_t i=0; i<22; i++)
     {
       if(h->GetBinContent(i)==0) continue;
       hltx[hltcounter] = h->GetBinCenter(i);
@@ -101,10 +117,10 @@ void ploteff(char *rootfile="hlt_efficiencies.root")
     }
   file->Close();
   
-  gr1 = new TGraphErrors(hltcounter,hltx,hlty,hltxerr,hltyerr);
+  TGraphErrors *gr1 = new TGraphErrors(hltcounter,hltx,hlty,hltxerr,hltyerr);
   
-  c1 = new TCanvas("c1","",1);
-  hist = c1->DrawFrame(0.1,0,3,1.4);
+  TCanvas *c1 = new TCanvas("c1","",1);
+  TH1F *hist = c1->DrawFrame(0.1,0,3,1.4);
   c1->SetGridx();
   c1->SetGridy();
   gr1->SetTitle("");
@@ -114,31 +130,28 @@ void ploteff(char *rootfile="hlt_efficiencies.root")
   gr1->SetMarkerStyle(20);
   gr1->SetLineWidth(2);
   gr1->SetMarkerSize(1.3);
-  
 }
 
-void plotptres(char *rootfile="hlt_efficiencies.root")
+void plotptres(Char_t *rootfile="hlt_efficiencies.root")
 {
   //Plot the relative pt resolution vs pt.
   
-  const int n=5;
+  const Int_t n=15;
   
-  double hltx[15] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0};
-  double hlty[n];
-  double hltyerr[n];
-  int i;
+  Double_t hltx[15] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0};
+  Double_t hlty[n];
+  Double_t hltyerr[n];
+  Char_t string[1024];
   
-  char string[1024];
+  TFile *file = TFile::Open(rootfile);
+  TH1F *hist = new TH1F("hist","",100,-10,10);
+  TNtuple *fNtuppel=(TNtuple*)file->Get("fNtuppel");
   
-  file = TFile::Open(rootfile);
-  
-  hist = new TH1F("hist","",100,-10,10);
-  
-  for(i=0; i<n; i++)
+  for(Int_t i=0; i<n; i++)
     {
       sprintf(string,"pt_gen > %f && pt_gen <= %f && nHits>63",hltx[i]-0.1,hltx[i]+0.1);
       fNtuppel->Draw("(pt_found-pt_gen)/pt_gen*100>>hist",string,"goff");
-      f1 = new TF1("f1","gaus");
+      TF1 *f1 = new TF1("f1","gaus");
       hist->Fit("f1","QN");
       hlty[i] = f1->GetParameter(2);
       hltyerr[i] = f1->GetParError(2);
@@ -148,10 +161,9 @@ void plotptres(char *rootfile="hlt_efficiencies.root")
   delete hist;
   file->Close();
 
-  gr1 = new TGraphErrors(n,hltx,hlty,0,hltyerr);
-  
-  c1 = new TCanvas("c1","",1);
-  hist = c1->DrawFrame(0.1,0,3,5);
+  TGraphErrors *gr1 = new TGraphErrors(n,hltx,hlty,0,hltyerr);
+  TCanvas *c1 = new TCanvas("c1","",1);
+  hist = c1->DrawFrame(0.1,0,3,15);
   c1->SetGridx();
   c1->SetGridy();
   gr1->SetTitle("");
@@ -161,5 +173,4 @@ void plotptres(char *rootfile="hlt_efficiencies.root")
   gr1->SetMarkerSize(1.3);
   hist->SetXTitle("p_{t} [GeV]");
   hist->SetYTitle("#Delta P_{T} / P_{T} [%]");
-  
 }

@@ -15,7 +15,7 @@
 #include "AliL3AltroMemHandler.h"
 
 
-#if GCCVERSION == 3
+#if __GNUC__ == 3
 using namespace std;
 #else
 #include <stream.h>
