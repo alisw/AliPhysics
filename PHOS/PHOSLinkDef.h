@@ -64,6 +64,6 @@
 #pragma link C++ class AliPHOSJet+;
 #pragma link C++ class AliPHOSJetFinder+;
 #pragma link C++ class AliPHOSGammaJet+;
-#pragma link C++ class AliPHOSAliEnFile+;
+#pragma link C++ class AliPHOSGridFile+;
 
 #endif
