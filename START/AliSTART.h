@@ -11,6 +11,11 @@
  
 #include "AliDetector.h"
 #include "AliHit.h"
+#include "TNamed.h"
+#include "TTree.h"
+class TDirectory;
+R__EXTERN TDirectory *  gDirectory;
+ 
  
  
 class AliSTART : public AliDetector {
@@ -20,38 +25,32 @@ public:
   AliSTART(const char *name, const char *title);
   virtual       ~AliSTART() {}
   virtual void   AddHit(Int_t, Int_t*, Float_t*);
+  virtual void   AddDigit( Int_t*, Int_t*);
   virtual void   BuildGeometry();
-  virtual void   CreateGeometry()=0;
-  virtual void   CreateMaterials()=0; 
+  virtual void   CreateGeometry() = 0;
+  virtual void   CreateMaterials() = 0;
   virtual Int_t  DistanceToPrimitive(Int_t px, Int_t py);
-  virtual Int_t  IsVersion() const =0;
+  virtual Int_t  IsVersion() const = 0;
   virtual void   Init();
   virtual void   MakeBranch(Option_t *opt=" ");
-  virtual void   DrawModule()=0;
-  virtual void   StepManager()=0;
-  
- protected:
+  virtual void   DrawModule() = 0;
+  virtual void   StepManager() = 0;
+
+  void   Hit2digit(Int_t iEventNum);
+  void   Hit2digit(){return;}
+public:
+  TTree   *fTreeD;        //tree
+  TTree * GetTree() { return fTreeD;}
+  //return refeence to actual tree 
+  Bool_t  SetTree(Int_t nevent=0, TDirectory *dir = gDirectory);
+  //map tree from given directory
+  Bool_t  MakeTree(Int_t nevent=0);
+  //map tree from given directory
+protected:
   Int_t fIdSens1;
   ClassDef(AliSTART,1)  //Class for the START detector
 };
 
-//_____________________________________________________________________________
- 
-class AliSTARThit : public AliHit {
-public:
-  Int_t      fVolume;
-  Int_t      fPmt;
-  Int_t      fParticle;     //Particle identificator
-  Float_t    fEdep;    //Energy deposition
-  Float_t    fEtot;    //Energy of particle 
-  Float_t    fTime;    //Time of flight 
- 
-public:
-  AliSTARThit() {}
-  AliSTARThit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  virtual ~AliSTARThit() {}
-  
-  ClassDef(AliSTARThit,1)  //Hits for detector START
-};
+//____________________________________________________________
 
 #endif

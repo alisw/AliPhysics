@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/01/19 17:17:15  fca
+Introducing a list of lists of hits -- more hits allowed for detector now
+
 Revision 1.4  1999/11/12 15:04:00  fca
 Modifications from A.Maevskaya
 
@@ -44,17 +47,20 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-#include <stdlib.h>
 
-#include <TTUBE.h>
-#include <TNode.h>
-#include <TGeometry.h>
-#include "AliRun.h"
-#include "AliSTART.h"
 #include <iostream.h>
 #include <fstream.h>
+
+#include "TMath.h"
+#include "TTUBE.h"
+#include "TNode.h"
+#include "TGeometry.h"
+#include "AliRun.h"
+#include "AliSTART.h"
+#include "AliSTARTdigit.h"
 #include "AliMC.h"
- 
+#include "AliSTARThit.h"
+
 ClassImp(AliSTART)
  
 //_____________________________________________________________________________
@@ -64,6 +70,8 @@ AliSTART::AliSTART()
   // Default constructor for class AliSTART
   //
   fIshunt   = 0;
+  fHits     = 0;
+  fDigits   = 0;
 }
  
 //_____________________________________________________________________________
@@ -73,7 +81,7 @@ AliSTART::AliSTART(const char *name, const char *title)
   //
   // Standard constructor for START Detector
   //
- 
+
   AliModule *fmd = gAlice->GetModule("FMD");
   if(fmd) {
     Int_t fmdversion = fmd->IsVersion();
@@ -82,10 +90,12 @@ AliSTART::AliSTART(const char *name, const char *title)
       exit(1);
     }
   }
+ 
   //
   // Initialise Hit array
-  fHits   = new TClonesArray("AliSTARThit",  405);
+  fHits       = new TClonesArray("AliSTARThit",  405);
   gAlice->AddHitList(fHits);
+  fDigits     = new TClonesArray("AliSTARTdigit",500);
   
   fIshunt     =  0;
   fIdSens1    =  0;
@@ -101,6 +111,16 @@ void AliSTART::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliSTARThit(fIshunt,track,vol,hits);
+}
+
+//_____________________________________________________________________________
+void AliSTART::AddDigit(Int_t *tracks,Int_t *digits)
+{
+  //
+  // Add a START digit to the list
+  //
+  TClonesArray &ldigits = *fDigits;
+  new(ldigits[fNdigits++]) AliSTARTdigit(tracks,digits);
 }
  
 //_____________________________________________________________________________
@@ -140,8 +160,6 @@ Int_t AliSTART::DistanceToPrimitive(Int_t px, Int_t py)
   return 9999;
 }
  
-//_____________________________________________________________________________
-
 //-------------------------------------------------------------------------
 void AliSTART::Init()
 {
@@ -158,9 +176,9 @@ void AliSTART::Init()
   // Here the START initialisation code (if any!)
   for(i=0;i<80;i++) printf("*");
   printf("\n");
- //
- //
- fIdSens1=gMC->VolId("PTOP");
+  //
+  //
+  fIdSens1=gMC->VolId("PTOP");
 
 }
 
@@ -183,32 +201,151 @@ void AliSTART::MakeBranch(Option_t* option)
   }
   
 }    
+
+//_____________________________________________________________________________
+void AliSTART::Hit2digit(Int_t evnum) 
+{
+  
+  Float_t x,y,e;
+  Int_t nbytes = 0;
+  Int_t hit,i;
+  Int_t nhits;
+  Int_t volume,pmt;
+  char nameTH[8];
+  Float_t timediff,timeright,timeleft,t1,t2,timeav;
+  Float_t besttimeright,besttimeleft;
+  Float_t pp_bunch=25;
+  Int_t channel_width=10;
+  Int_t digits[3];
+  Int_t tracks[2];
+
+  TParticle *particle;
+
+  AliSTARThit  *startHit;
+
+
+  // Event ------------------------- LOOP  
+ //   for (evnum=0; evnum<=9; evnum++){
+
+    besttimeright=9999.;
+    besttimeleft=9999.;
+
+    Int_t nparticles = gAlice->GetEvent(evnum);
+    if (nparticles <= 0) return;
+    printf("\n nparticles %d\n",nparticles);
+    
+    TClonesArray *Particles = gAlice->Particles();
+    
+    sprintf(nameTH,"TreeH%d",evnum);
+    printf("%s\n",nameTH);
+    TTree *TH = gAlice->TreeH();
+    Int_t ntracks    = (Int_t) TH->GetEntries();
+    if (ntracks<=0) return;
+    // Start loop on tracks in the hits containers
+    for (Int_t track=0; track<ntracks;track++) {
+      gAlice->ResetHits();
+      nbytes += TH->GetEvent(track);
+      particle=(TParticle*)Particles->UncheckedAt(track);
+      nhits = fHits->GetEntriesFast();
+           
+      for (hit=0;hit<nhits;hit++) {
+	startHit   = (AliSTARThit*)fHits->UncheckedAt(hit);
+	pmt=startHit->fPmt;
+	e=startHit->fEtot;
+	x=startHit->fX;
+	y=startHit->fY;
+	volume = startHit->fVolume;
+	if(volume==1){
+	  timeright = startHit->fTime;
+	  if(timeright<besttimeright) {
+	    besttimeright=timeright;
+	    tracks[0]=track;
+	  } //timeright
+	}//time for right shoulder
+	if(volume==2){            
+	  timeleft = startHit->fTime;
+	  //                printf("timeleft %f\n",timeleft);
+	  if(timeleft<besttimeleft) {
+	    besttimeleft=timeleft;
+	    tracks[1]=track;
+	  } //timeleftbest
+	}//time for left shoulder
+      } //hit loop
+    } //track loop
+    printf("\n----time1stright %f \n",besttimeright);     
+    printf("----time1stleft %f \n",besttimeleft);     
+    timediff=besttimeright-besttimeleft;
+    if (timediff!=0 && TMath::Abs(timediff)<100) {
+      //we assume centre of bunch is 5ns after TTS signal
+      //TOF values are relative of the end of bunch
+      pp_bunch=pp_bunch-10/2;
+      t1=besttimeleft+pp_bunch;
+      t2=besttimeright+pp_bunch;
+      t1=1000*t1/channel_width; //time in ps to channel_width
+      t2=1000*t2/channel_width; //time in ps to channel_width
+      printf(" t1= %f t2= %f\n",t1,t2);
+
+      timeav=(t1+t2)/2.;
+      printf("timediff= %f timeav= %f\n",timediff,timeav);
+
+      // Time to TDC signal
+      // 1024 channels for timediff, range 1ns
+      
+     timediff=512+1000*timediff/channel_width; // time in ps
+     printf("timediff= %f timeav= %f\n",timediff,timeav);
+
+
+     digits[0]=evnum;
+     digits[1]=(Int_t)(timeav);   // time in ps
+     digits[2]=(Int_t)(timediff); // time in ps
+     //  new(ldigits[fNdigits++]) AliSTARTdigit(track,digits);
  
-ClassImp(AliSTARThit)
+    
+     for (i=0; i<3; i++){
+       printf(" DIGITS on START  %d\n",digits[i]); } 
+     for (i=0; i<=1; i++) { printf("START track %d\n",tracks[i]);}
+     AddDigit(tracks,digits);
+     //     sprintf(nameTD,"TreeD%d",evnum);
+     //    gAlice->TreeD()->Fill();
+     //gAlice->TreeD()->Write();
+     //printf("%s\n",nameTD);
+     MakeTree(evnum);
+     if (fTreeD!=0) fTreeD->Fill();    
+     if (fTreeD!=0) fTreeD->Write();    
+    } // if timediff !=0
+    
+    //   } // event loop
+    
+} // end of mcro
  
 //_____________________________________________________________________________
-AliSTARThit::AliSTARThit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
+Bool_t  AliSTART::SetTree(Int_t nevent, TDirectory *dir )
 {
-  //
-  // Add a START hit
-  //
-  
-//  Int_t i;
-  fVolume = vol[0];
-  fPmt=vol[1];
-//printf("fvolume %d\n",fVolume);
-//printf("fpmt %d\n",fPmt);
-
-  fX=hits[0];
-  fY=hits[1];
-  fZ=hits[2];
-  fEdep=hits[3];
-  fEtot=hits[4];
-  fParticle=Int_t (hits[5]);
-  fTime=hits[6];
-
-//for (i=0; i<=6; i++) {printf("Hits up %f\n",hits[i]);} 
+  char treeName[100];
+  // Get Hits Tree header from file
+  sprintf(treeName,"TreeD%d",nevent);
+  fTreeD = (TTree*)dir->Get(treeName);
+  if (fTreeD == 0) return kFALSE;
+  //set Digit branch 
+  TBranch *b = fTreeD->GetBranch("Digits");
+  if (b==0) return kFALSE;
+  b->SetAddress(&fDigits);
+  return kTRUE;
 }
 
-// ClassImp(AliSTARTdigit)
+
+//_____________________________________________________________________________
+Bool_t  AliSTART::MakeTree(Int_t nevent)
+{
+  char treeName[100];
+  // Get Hits Tree header from file
+  sprintf(treeName,"TreeD%d",nevent);
+  fTreeD =  new TTree(treeName,treeName);
+  if (fTreeD == 0) return kFALSE;
+  //set Digit branch 
+  TBranch *b = fTreeD->Branch("Digits",&fDigits,40000);
+  if (b==0) return kFALSE;
+  b->SetAddress(&fDigits);
+ 
+  return kTRUE;
+}
