@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2003/10/17 12:28:02  kowal2
+Removed "always true" comparison
+
 Revision 1.16  2003/10/17 12:01:16  kowal2
 Removed compiler warning.
 
@@ -1712,10 +1715,10 @@ Int_t AliTPCtrackerMI::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
 	t.fRemoval =10;
 	return 0;
       }
-    }
-    
-    /*if (accept<3) */ UpdateTrack(&t,accept);
-   
+    }   
+
+    if (accept<3)  UpdateTrack(&t,accept);  
+ 
   } else {
     if (fIteration==0){
       if ( ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16)&& t.GetNumberOfClusters()>18) t.fRemoval=10;      
