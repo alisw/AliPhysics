@@ -17,7 +17,7 @@ class AliHBTashbtCorrFctn: public AliHBTOnePairFctn1D
 {
   public:
    AliHBTashbtCorrFctn(const char* name = "asejdzbitiCF", 
-                         const char* title= "asHBT Correlation Function"){}
+                         const char* title= "asHBT Correlation Function"){Info("AliHBTashbtCorrFctn","%s %s",name,title);}
 
    virtual ~AliHBTashbtCorrFctn(){}
 
