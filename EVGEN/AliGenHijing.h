@@ -60,7 +60,8 @@ class AliGenHijing : public AliGenMC
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     virtual void    SetPtJet(Float_t ptmin)           {fPtMinJet   = ptmin;}
     virtual void    SetSimpleJets(Int_t flag=0)       {fSimpleJet  = flag;}
-   
+    virtual void    SetNoGammas(Int_t flag=0)         {fNoGammas   = flag;}
+	    
     virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
@@ -117,6 +118,7 @@ class AliGenHijing : public AliGenMC
     Float_t     fPhiMaxJet;      // phi range
     Int_t       fRadiation;      // Flag to switch on/off initial and final state radiation
     Int_t       fSimpleJet;      // Flag to produce simple tiggered jet topology
+    Int_t       fNoGammas;       // Don't write gammas if flag "on"
     
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
     Int_t 	fSpecn;		 // Num. of spectator neutrons

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2002/02/08 16:50:50  morsch
+Add name and title in constructor.
+
 Revision 1.36  2002/01/31 20:17:55  morsch
 Allow for triggered jets with simplified topology: Exact pT, back-to-back
 
@@ -200,6 +203,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fEventVertex.Set(3);
 //
     SetSimpleJets();
+    SetNoGammas();
     
 //
 // Set random number generator   
@@ -339,7 +343,8 @@ void AliGenHijing::Generate()
         ks        = iparticle->GetStatusCode();
         if (kf == 92) continue;
 	    
-        if (!fSelectAll) selected = KinematicSelection(iparticle, 0)&&SelectFlavor(kf);
+        if (!fSelectAll) selected = KinematicSelection(iparticle, 0) && 
+			     SelectFlavor(kf);
         hasSelectedDaughters = DaughtersSelection(iparticle, particles);
 //
 // Put particle on the stack if it is either selected or it is the mother of at least one seleted particle
@@ -545,17 +550,21 @@ Bool_t AliGenHijing::SelectFlavor(Int_t pid)
 // 0: all
 // 4: charm and beauty
 // 5: beauty
-    if (fFlavor == 0) return kTRUE;
+    Bool_t res = 0;
     
-    Int_t ifl = TMath::Abs(pid/100);
+    if (fFlavor == 0) res = kTRUE;
+     Int_t ifl = TMath::Abs(pid/100);
     if (ifl > 10) ifl/=10;
-    return (fFlavor == ifl);
+    res = (fFlavor == ifl);
+    if (fNoGammas) res = res && (pid != kGamma && pid != kPi0);
+    return res;
 }
 
 Bool_t AliGenHijing::Stable(TParticle*  particle)
 {
 // Return true for a stable particle
 //
+    
     if (particle->GetFirstDaughter() < 0 )
     {
 	return kTRUE;
