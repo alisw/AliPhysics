@@ -939,7 +939,7 @@ void AliFTrackMaker::MakeTest(Int_t n)
   Double_t isum,fm;
   Double_t pTotal,partMassSQ,beta,lambda;
   Double_t dPop,dLop,dDip,dPhi,rho12,rho13,rho23;
-  Double_t dPPStrag,dPPTot;
+  Double_t dPPStrag,dPPTot=0;
   //  Double_t resol1[1001][11],resol2[10001][11],resol3[1001][11],
   //           resol4[1001][11],resol5[10001][11]
   Double_t store1[1001],store2[10001],store3[1001],
