@@ -47,7 +47,18 @@ void AliMUONSegmentationTriggerX::Init(Int_t chamber)
       
       fYofxsmin[imodule][istrip] = (fYcmin[imodule]+width*(istrip))*fZscale;
       fYofxsmax[imodule][istrip] = (fYcmin[imodule]+width*(istrip+1))*fZscale;
-    }
+/*
+      if (TMath::Abs(AliMUONTriggerConstants::ModuleId(imodule))==11) {
+	  printf("module Id istrip fXofxsmin fXofxsmax fYofxsmin fYofxsmax %d %d %f %f %f %f \n",
+		 AliMUONTriggerConstants::ModuleId(imodule),
+		 istrip,
+		 fXofxsmin[imodule][istrip],
+		 fXofxsmax[imodule][istrip],
+		 fYofxsmin[imodule][istrip],
+		 fYofxsmax[imodule][istrip]);
+      }
+*/
+    }    
   }
 }
 
@@ -180,7 +191,7 @@ Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec) const
   } else if (isec==5) {
     return 34.0*fZscale;
   } else if (isec==6) {
-    return 68.0*fZscale;
+    return 51.0*fZscale;
   } else {
     return 0.;
   }

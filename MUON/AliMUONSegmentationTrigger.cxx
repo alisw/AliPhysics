@@ -163,10 +163,6 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
 
 // Set parent chamber number
   fChamber=&(pMUON->Chamber(chamber));
-  fRmin=fChamber->RInner();
-  fRmax=fChamber->ROuter();    
-  fCorr=0;
-  fZ=fChamber->Z();
   fId=chamber;
 }
 //------------------------------------------------------------------
@@ -203,13 +199,23 @@ Float_t AliMUONSegmentationTrigger::StripSizeX(Int_t imodule){
 }
 
 //------------------------------------------------------------------
-Float_t AliMUONSegmentationTrigger::StripSizeY(Int_t imodule){
+Float_t AliMUONSegmentationTrigger::StripSizeY(Int_t imodule, Int_t istrip){
 // Returns y-strip size for given module imodule
         
   Int_t absimodule=TMath::Abs(imodule); 
   Int_t moduleNum=ModuleNumber(imodule);
   if (absimodule==51) {
-    return 0;
+      return 0;
+  } else if (TMath::Abs(imodule-10*Int_t(imodule/10.))==7) {
+      if (istrip<8) {
+	  return 4.25;
+      }
+      else if (istrip>7) {	      
+	  return 2.125;
+      } 
+      else {
+	  return 0.;
+      }      
   } else {
       return TMath::Abs((AliMUONTriggerConstants::XcMax(moduleNum) - 
 			 AliMUONTriggerConstants::XcMin(moduleNum)) / 

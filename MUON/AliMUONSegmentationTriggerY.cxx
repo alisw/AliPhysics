@@ -37,29 +37,56 @@ void AliMUONSegmentationTriggerY::Init(Int_t chamber)
 // intialize Y segmentation 
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
   if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Geometry Y\n",ClassName());
-  AliMUONSegmentationTrigger::Init(chamber);
-    
+  AliMUONSegmentationTrigger::Init(chamber);  
+
 // calculate x & y position of Y strips
   Int_t nModule=AliMUONTriggerConstants::Nmodule();  
-  for (Int_t imodule=0; imodule<nModule; imodule++) {    
-    Float_t width=StripSizeY(AliMUONTriggerConstants::ModuleId(imodule));
-    Int_t nStrip=AliMUONTriggerConstants::NstripY(imodule);    
-    for (Int_t istrip=0; istrip<nStrip; istrip++){
-      if (imodule<63) {
-	fXofysmin[imodule][istrip]=
-	    (AliMUONTriggerConstants::XcMin(imodule)+width*(istrip))*fZscale;
-	fXofysmax[imodule][istrip]=
-	    (AliMUONTriggerConstants::XcMin(imodule)+width*(istrip+1))*fZscale;
-      } else {	
-	fXofysmin[imodule][istrip]=-1.*fXofysmax[imodule-63][istrip];
-	fXofysmax[imodule][istrip]=-1.*fXofysmin[imodule-63][istrip];
-      }      
-      fYofysmin[imodule][istrip] = fYcmin[imodule]*fZscale;
-      fYofysmax[imodule][istrip] = fYcmax[imodule]*fZscale;
-    }
-  }
+  for (Int_t imodule=0; imodule<nModule; imodule++) { 
+      Int_t moduleId=AliMUONTriggerConstants::ModuleId(imodule);      
+      Int_t nStrip=AliMUONTriggerConstants::NstripY(imodule);
+      for (Int_t istrip=0; istrip<nStrip; istrip++){
+	  Float_t width=StripSizeY(moduleId,istrip);
+
+	  if (imodule<63) {
+	      if (moduleId-10*Int_t(moduleId/10.)==7&&istrip>7) {
+		  fXofysmin[imodule][istrip]=
+		      ( AliMUONTriggerConstants::XcMin(imodule)+
+			(width*2.)*8 + width*(istrip-8) )*fZscale;
+		  fXofysmax[imodule][istrip]=
+		      ( AliMUONTriggerConstants::XcMin(imodule)+
+			(width*2.)*8 + width*(istrip-7) )*fZscale;
+	      } else {	      
+		  fXofysmin[imodule][istrip]=
+		      (AliMUONTriggerConstants::XcMin(imodule)
+		       +width*(istrip))*fZscale;
+		  fXofysmax[imodule][istrip]=
+		      (AliMUONTriggerConstants::XcMin(imodule)
+		       +width*(istrip+1))*fZscale;
+		  
+	      }
+	      
+	  } else {	
+	      fXofysmin[imodule][istrip]=-1.*fXofysmax[imodule-63][istrip];
+	      fXofysmax[imodule][istrip]=-1.*fXofysmin[imodule-63][istrip];
+	  }      
+	  fYofysmin[imodule][istrip] = fYcmin[imodule]*fZscale;
+	  fYofysmax[imodule][istrip] = fYcmax[imodule]*fZscale;
+      }
+  }  
+/*
+	  if (TMath::Abs(AliMUONTriggerConstants::ModuleId(imodule))==11) {
+	      printf("module Id istrip fXofxsmin fXofxsmax fYofxsmin fYofxsmax %d %d %f %f %f %f \n",
+		     AliMUONTriggerConstants::ModuleId(imodule),
+		     istrip,
+		     fXofysmin[imodule][istrip],
+		     fXofysmax[imodule][istrip],
+		     fYofysmin[imodule][istrip],
+		     fYofysmax[imodule][istrip]);
+	  }
+*/
 
 }
+
 
 //------------------------------------------------------------------
 void AliMUONSegmentationTriggerY::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &iy) 
@@ -242,12 +269,12 @@ void AliMUONSegmentationTriggerY::SetHit(Float_t xhit, Float_t yhit, Float_t /*z
   SetHit(xhit, yhit);
 }
 //------------------------------------------------------------------   
-Int_t AliMUONSegmentationTriggerY::Sector(Int_t ix, Int_t /*iy*/)
+Int_t AliMUONSegmentationTriggerY::Sector(Int_t ix, Int_t iy)
 {
 // Returns sector number for given module
 // 
   Int_t absix=TMath::Abs(ix);
-  Int_t iwidth=Int_t(StripSizeY(absix));
+  Int_t iwidth=Int_t(StripSizeY(absix,iy));
 
   if (absix==52) {
     return 1;
@@ -259,7 +286,8 @@ Int_t AliMUONSegmentationTriggerY::Sector(Int_t ix, Int_t /*iy*/)
     return 4;
   } else {
     return 0;
-  }
+  }      
+
 }
 
 //------------------------------------------------------------------   

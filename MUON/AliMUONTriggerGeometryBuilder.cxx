@@ -109,9 +109,10 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 // main distances for chamber definition in first plane/first station
     const Float_t kXMIN=34.;       
     const Float_t kXMED=51.;                                
-    const Float_t kXMAX=272.; 
-// kXMAX will become 255. in real life. segmentation to be updated accordingly
+    const Float_t kXMAX=255.; 
+// 090704 kXMAX changed from 272 to 255.
 // (see fig.2-4 & 2-5 of Local Trigger Board PRR)
+// segmentation updated accordingly
     const Float_t kYMIN=34.;                              
     const Float_t kYMAX=51.;                              
 // inner/outer radius of flange between beam shield. and chambers (1/station)

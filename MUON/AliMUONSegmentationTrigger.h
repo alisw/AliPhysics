@@ -36,7 +36,7 @@ class AliMUONSegmentationTrigger : public AliMUONSegmentationV0
 
  protected:
     Float_t StripSizeX(Int_t imodule);
-    Float_t StripSizeY(Int_t imodule);    
+    Float_t StripSizeY(Int_t imodule, Int_t istrip);
  protected:
     Float_t fYcmin[126];       // y min position of modules
     Float_t fYcmax[126];       // y max position of modules
