@@ -13,6 +13,7 @@
 #include <G4LogicalVolume.hh>
 #include <G4VPhysicalVolume.hh>
 #include <G4PVPlacement.hh>
+#include <G4PVReplica.hh>
 #include <G4ThreeVector.hh>
 #include <G4RotationMatrix.hh>
 
@@ -180,9 +181,6 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   name.append("_comp");
   fConvertor->OpenComposition(name);
   
-  if (lvName == "FTOC" ) 
-    G4cout << "FTOC daughters: " << nofDaughters;
-     
   // write positions  
   G4int i;
   for (i=0; i<nofDaughters; i++) {
@@ -192,19 +190,17 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
     G4VPhysicalVolume* vpvd = lv->GetDaughter(i);
     G4LogicalVolume* lvd = vpvd->GetLogicalVolume();
       
-    if (lvName == "FTOC" ) 
-      G4cout << vpvd << " " << lvd << "; ";
+    // get parameters
+    G4String lvName = lvd->GetName();
+    G4String compName = lvd->GetName();
+    compName.append("_comp");      
+    G4int nd = lvd->GetNoDaughters(); 
 
-
-    // only placements are processed
     G4PVPlacement* pvd = dynamic_cast<G4PVPlacement*>(vpvd);
     if (pvd) {
-      G4String lvName = lvd->GetName();
-      G4String compName = lvd->GetName();
-      compName.append("_comp");      
-      G4int nd = lvd->GetNoDaughters(); 
+      // placement
       G4ThreeVector  position = vpvd->GetTranslation();
-      const G4RotationMatrix* kMatrix = vpvd->GetRotation();      
+      const G4RotationMatrix* kMatrix = vpvd->GetObjectRotation();      
 
       if (!kMatrix) {
   	fConvertor->WritePosition(lvName, position);
@@ -216,21 +212,27 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   	fConvertor->WritePositionWithRotation(lvName, position, kMatrix);
         if (nd>0) 
       	   fConvertor->WritePositionWithRotation(compName, position, kMatrix);
-      }   
-	   
+      }
     }
     else {
-      G4String text = "TG4XMLGeometryGenerator::ProcessLogicalVolume: \n";
-      text = text + "    Limitation: \n";
-      text = text + "    Other physical volumes than PVPlacement";
-      text = text + " are not implemented.";
-      TG4Globals::Warning(text);
-    }
+      G4PVReplica* pvr = dynamic_cast<G4PVReplica*>(vpvd);
+      if (pvr) {
+        // replica
+    	fConvertor->WriteReplica(lvName, pvr);
+        // if volume is not leaf node place its logical volume
+        if (nd>0) 
+      	  fConvertor->WriteReplica(compName, pvr);
+      }
+      else {
+        G4String text = "TG4XMLGeometryGenerator::ProcessLogicalVolume: \n";
+        text = text + "    Limitation: \n";
+        text = text + "    Other physical volumes than PVPlacement and PVReplica";
+        text = text + " are not implemented.";
+        TG4Globals::Exception(text);
+      }
+    }  
   }  
 
-  if (lvName == "FTOC" ) 
-    G4cout << G4endl;
-     
   // close composition
   fConvertor->CloseComposition();	
   fConvertor->WriteEmptyLine();
@@ -242,9 +244,6 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   for (i=0; i<nofDaughters; i++) {
     G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
     G4String lvdName = lvd->GetName();
-
-    if (lvdName == "FTOC" ) 
-      G4cout << "*****************Daughter FTOC:" << lvd << " in " << lvName << G4endl;
 
     if (fVolumeNames.find(lvdName) == fVolumeNames.end()) {
       // process lvd only if it was not yet processed
@@ -334,8 +333,6 @@ void TG4XMLGeometryGenerator::OpenFile(G4String filePath)
 // Opens output file.
 // ---
 
-  G4cout << "TG4XMLGeometryGenerator::OpenFile: " << filePath << G4endl;
-  
   fOutFile.open(filePath, G4std::ios::out); 
   
   if (!fOutFile) {
