@@ -107,6 +107,10 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 //   ex macro for tracking ITS
 
+  //Loop variables
+
+  Int_t i;
+
   printf("begin DoTracking - file %p\n",file);
   
 ///////////////////////////////////////  gets information on geometry ///////////////////////////////////  
@@ -118,7 +122,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile
   TVector det(9);
   
   //cout<<" nlad ed ndet \n";
-  for(Int_t i=0; i<6; i++) {
+  for(i=0; i<6; i++) {
     geoinfo->Nlad[i]=g1->GetNladders(i+1);
     geoinfo->Ndet[i]=g1->GetNdetectors(i+1);
 	 //cout<<geoinfo->Nlad[i]<<" "<<geoinfo->Ndet[i]<<"\n"; 
@@ -126,7 +130,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile
   //getchar();
 
   //cout<<" raggio medio = ";
-  for(Int_t i=0; i<6; i++) {  
+  for(i=0; i<6; i++) {  
     g1->GetCenterThetaPhi(i+1,ll,dd,det);
     geoinfo->Avrad[i]=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
 	 //cout<<geoinfo->Avrad[i]<<" ";
@@ -237,7 +241,6 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile
   //////////////////////////////  good tracks definition in TPC  ////////////////////////////////
       
   ofstream out1 ("AliITSTrag.out");
-  Int_t i;
   for (i=0; i<ngood; i++) out1 << gt[i].ptg << "\n";
   out1.close();
 

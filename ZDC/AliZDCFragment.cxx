@@ -62,6 +62,10 @@ AliZDCFragment::AliZDCFragment(Float_t b)
 //_____________________________________________________________________________
 void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
 {
+
+   // Loop variables
+  Int_t i,j;
+
    // Coefficients of polynomial for average number of IMF
    const Float_t  ParamNimf[5]={0.011236,1.8364,56.572,-116.24,58.289}; 
    // Coefficients of polynomial for fluctuations on average number of IMF
@@ -213,10 +217,10 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    // Extract randomly the charge of the fragments from the distribution
  
    Float_t * zz = new Float_t[fNimf];
-   for(Int_t j=0; j<fNimf; j++){
+   for(j=0; j<fNimf; j++){
       zz[j] =0;
    }
-   for(Int_t i=0; i<fNimf; i++){
+   for(i=0; i<fNimf; i++){
       zz[i] = Float_t(funTau->GetRandom());
 //      printf("\n	zz[%d] = %f \n",i,zz[i]);
    }
@@ -231,7 +235,7 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
 //   }
    
    // Rescale the maximum charge to fZmax
-   for(Int_t j=0; j<fNimf; j++){
+   for(j=0; j<fNimf; j++){
      fZZ[j] = Int_t (zz[j]*fZmax/zz[fNimf-1]);
      if(fZZ[j]<3) fZZ[j] = 3;
 //     printf("\n 	fZZ[%d] = %d \n",j,fZZ[j]);
@@ -247,7 +251,7 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    
    Int_t k = 0;
    if(SumZ>ZbFrag){
-     for(Int_t i=0; i< fNimf; i++){
+     for(i=0; i< fNimf; i++){
        k += 1;
        SumZ -= fZZ[i];
        if(SumZ<=ZbFrag){
@@ -269,13 +273,13 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    }
 
    fNimf += k;
-   for(Int_t i=0; i<fNimf; i++){
+   for(i=0; i<fNimf; i++){
      fZZ[i] = fZZ[i+k];
    }
    fNimf -= k;
    
    SumZ=0;
-   for(Int_t i=0; i<fNimf; i++){
+   for(i=0; i<fNimf; i++){
      SumZ += fZZ[i];
    }
    
