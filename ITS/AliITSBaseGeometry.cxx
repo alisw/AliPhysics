@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2003/03/25 23:27:19  nilsen
+ITS new Geometry files. Not yet ready for uses, committed to allow additional
+development.
+
 Revision 1.1  2003/02/10 17:03:52  nilsen
 New version and structure of ITS V11 geometry. Work still in progress.
 
@@ -55,6 +59,9 @@ Created February 2003.
 
 ClassImp(AliITSBaseGeometry)
 
+const Double_t AliITSBaseGeometry::fAlpha = 7.297352533e-3;
+const Double_t AliITSBaseGeometry::fRe = 2.81794028e-13;
+const Double_t AliITSBaseGeometry::fNa = 6.02214199e+23;
 Int_t    AliITSBaseGeometry::fNCreates    = 0;
 Int_t*   AliITSBaseGeometry::fidrot       = 0;
 Int_t    AliITSBaseGeometry::fidrotsize   = 0;

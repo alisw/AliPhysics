@@ -436,9 +436,9 @@ class AliITSBaseGeometry : public TObject {
  protected:
     static Int_t fNCreates; //! Counts the number of time this class has
     // been created.
-    static const Double_t fAlpha = 7.297352533e-3; //! find structure constant
-    static const Double_t fRe = 2.81794028e-13; //![cm]classical elect. radius
-    static const Double_t fNa = 6.02214199e+23; //! [#/mole] Avogadro's number
+    static const Double_t fAlpha; //! find structure constant
+    static const Double_t fRe; //![cm]classical elect. radius
+    static const Double_t fNa; //! [#/mole] Avogadro's number
     static Int_t *fidrot;
     static Int_t fidrotsize;
     static Int_t fidrotlast;
