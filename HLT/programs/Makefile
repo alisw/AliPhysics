@@ -29,11 +29,11 @@ endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
 DEFSTR = -Duse_aliroot -Duse_root
-ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lCONTAINERS -lTPC -lSTEER
+ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lTPC -lCONTAINERS -lSTEER
 #ALICELIBS := $(shell aliroot-config --libs)
 INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 RLIBS = $(ROOTLIBS) -lMinuit -lEG
-LIBS += $(ALICELIBS)
+LIBS += $(ALICELIBS) $(RLIBS)
 endif
 
 ifdef DO_MC
@@ -59,7 +59,7 @@ DEFSTR += $(EXTRADEF)
 CXXFLAGS = -O2 -Wall -ggdb $(EXTRACXXFLAGS) $(INCLUDES)
 LDFLAGS  = -O2 $(EXTRALDFLAGS) $(LIBS)
 
-PRGS	= runit read  runvhdlcf runhough
+PRGS	= runit read  runvhdlcf runhough runvhdlhough
 UTILS   = convbin speedtest gettransform
 
 
@@ -77,11 +77,11 @@ runvhdlcf : runvhdlcf.o
 runit : runit.o
 	$(LD) $< $(LDFLAGS) -o $@
 
-convbin : ali2raw.o
-	$(LD) $< $(LDFLAGS) -o $@
-
 #read l3 raw data, print it and convert to altro data
 read : read.o
+	$(LD) $< $(LDFLAGS) -o $@
+
+convbin : ali2raw.o
 	$(LD) $< $(LDFLAGS) -o $@
 
 gettransform : gettransform.o
@@ -93,7 +93,7 @@ speedtest : speedtest.cxx
 	# cxx -O -Wall -fPIC  -lm  $(CXXFLAGS) speedtest.cxx -o speedtest 
 
 %.o : %.cxx 
-	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
+	$(CXX) $(CXXFLAGS) $(CXXGCC3FLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
 clean :
 	rm -f *.o $(PRGS) $(UTILS)

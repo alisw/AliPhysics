@@ -2,10 +2,11 @@
 
 // Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
 
-#include <stream.h>
-#include <libgen.h>
+#include <AliL3StandardIncludes.h>
 
 #include <AliL3RootTypes.h>
+#include <AliL3Logging.h>
+#include <AliL3Logger.h>
 #include <AliL3Transform.h>
 #include <AliL3Track.h>
 #include <AliL3TrackArray.h>
@@ -13,14 +14,13 @@
 #include <AliL3ClustFinderNew.h>
 #include <AliL3MemHandler.h>
 #include <AliL3SpacePointData.h>
-#include <AliL3Logging.h>
-#include <AliL3Logger.h>
 #include <AliL3HoughBaseTransformer.h>
-#include <AliL3HoughTransformerVhdl.h>
 #include <AliL3HoughTransformer.h>
-#include <AliL3Hough.h>
-//#include <AliL3FFloat.h>
+#include <AliL3HoughTransformerLUT.h>
+#include <AliL3HoughTransformerVhdl.h>
 #include <AliL3HoughMaxFinder.h>
+//#include <AliL3FFloat.h>
+#include <AliL3Hough.h>
 #ifndef no_root
 #include <TROOT.h>
 #include <TApplication.h>
@@ -30,6 +30,9 @@
 #include <TGraphErrors.h>
 #endif
 
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 int main(int argc,char **argv)
 {
@@ -64,26 +67,16 @@ int main(int argc,char **argv)
 
 #if 0
   runhough(sl,sh,path,segs);
-#else
-  //VESTBO: Look here, init of six trafos
-  AliL3HoughBaseTransformer **fHoughTransformer = new AliL3HoughBaseTransformer*[6];
+#else //do some comparison tests
 
-  for(int i=0;i<6;i++){
-    cout << "----------------------------- " << i << "----------------------------- " << endl;
+  AliL3HoughBaseTransformer *fh1 = new AliL3HoughTransformerVhdl(0,0,segs);
+  AliL3HoughBaseTransformer *fh2 = new AliL3HoughTransformerLUT(0,0,segs);
 
-    //VESTBO: init one of them
-    fHoughTransformer[i] = new AliL3HoughTransformerVhdl(0,i,segs);
-    //VESTBO: Print parameters
-    fHoughTransformer[i]->Print();
+  fh1->CreateHistograms(64,0.1,64,-30,30);
+  fh2->CreateHistograms(64,0.1,64,-30,30);
 
-    //VESTBO: Play around with combinations of creating histos or/and init values.
-    fHoughTransformer[i]->CreateHistograms(64,0.1,64,-30,30);
-    //fHoughTransformer[i]->Init(sl,i,segs);
+  fh1->Print();
 
-    //VESTBO: Print parameters. Error should happen here: crash or be in endless loop, that means 
-    //somehow data members get overwritten!!
-    fHoughTransformer[i]->Print();
-  }
 #endif
 
   //AliL3FFloat::PrintStat();

@@ -19,7 +19,7 @@
 /**
  Example program how to run the "standalone" clusterfinder.
 
- Import: give patch=-1 for one-patch slices.
+ Important: give patch=-1 for one-patch slices.
 */
 
 int main(int argc,char **argv)
