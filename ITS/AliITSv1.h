@@ -16,7 +16,7 @@ public:
   virtual void   CreateMaterials();
   virtual void   Init(); 
   virtual Int_t  IsVersion() const {return 1;}
-  virtual void   DrawDetector();
+  virtual void   DrawModule();
   virtual void   StepManager();
   
    ClassDef(AliITSv1,1)  //Hits manager for set:ITS version 1

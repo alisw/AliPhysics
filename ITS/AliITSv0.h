@@ -14,7 +14,7 @@ public:
    virtual       ~AliITSv0() {}
    virtual void   CreateGeometry();
    virtual Int_t  IsVersion() const {return 0;}
-   virtual void   DrawDetector();
+   virtual void   DrawModule();
    virtual void   StepManager();
    
    ClassDef(AliITSv0,1)  //Hits manager for set:ITS version 0

@@ -445,7 +445,7 @@ void AliITSv0::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliITSv0::DrawDetector()
+void AliITSv0::DrawModule()
 {
   //
   // Draw a shaded view of the FMD version 1

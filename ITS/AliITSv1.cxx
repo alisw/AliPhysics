@@ -462,7 +462,7 @@ void AliITSv1::Init()
 }  
  
 //_____________________________________________________________________________
-void AliITSv1::DrawDetector()
+void AliITSv1::DrawModule()
 { 
   //
   // Draw a shaded view of the FMD version 1
