@@ -44,7 +44,7 @@ using namespace std;
 //_____________________________________________________________
 // AliL3Evaluate
 //
-// Evaluation class for tracking. Plots efficiencies etc..
+// Evaluation class for tracking; plots, efficiencies etc..
 //
 </pre>
 */
@@ -53,34 +53,12 @@ ClassImp(AliL3Evaluate)
 
 AliL3Evaluate::AliL3Evaluate()
 {
-  fTracks = 0;
-  fNFastPoints = 0;
-  fMcIndex = 0;
-  fMcId = 0;
-  fMinSlice=0;
-  fMaxSlice=0;
-  fGoodTracks=0;
-  fNtupleRes=0;
-  fDigitsTree=0;
-  fPtRes=0;
-  fNGoodTracksPt=0;
-  fNFoundTracksPt=0;
-  fNFakeTracksPt=0;
-  fTrackEffPt=0;
-  fFakeTrackEffPt=0;
-  fNGoodTracksEta=0;
-  fNFoundTracksEta=0;
-  fNFakeTracksEta=0;
-  fTrackEffEta=0;
-  fFakeTrackEffEta=0;
-  fMcIndex=0;
-  fMcId=0;
-  fNtuppel=0;
-  fStandardComparison=kTRUE;
+  Clear();
 }
 
 AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,Double_t minpt,Double_t maxpt,Int_t *slice)
 {
+  Clear();
 
   if(slice)
     {
@@ -92,40 +70,87 @@ AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,D
       fMinSlice=0;
       fMaxSlice=35;
     }
+
   sprintf(fPath,"%s",datapath);
-  fMaxFalseClusters = 0.1;
-  fGoodFound = 0;
-  fGoodGen = 0;
   fMinPointsOnTrack = min_clusters;
   fMinHitsFromParticle = minhits;
   fMinGoodPt = minpt;
   fMaxGoodPt = maxpt;
-  memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
-  fTracks=0;
-  fGoodTracks=0;
-  fNtupleRes=0;
-  fDigitsTree=0;
-  fPtRes=0;
-  fNGoodTracksPt=0;
-  fNFoundTracksPt=0;
-  fNFakeTracksPt=0;
-  fTrackEffPt=0;
-  fFakeTrackEffPt=0;
-  fNGoodTracksEta=0;
-  fNFoundTracksEta=0;
-  fNFakeTracksEta=0;
-  fTrackEffEta=0;
-  fFakeTrackEffEta=0;
-  fMcIndex=0;
-  fMcId=0;
+}
+
+AliL3Evaluate::~AliL3Evaluate()
+{
+  if(fGoodTracks) delete[] fGoodTracks;
+  if(fTracks) delete fTracks;
+  if(fPtRes) delete fPtRes;
+  if(fNGoodTracksPt) delete fNGoodTracksPt;
+  if(fNFoundTracksPt) delete fNFoundTracksPt;
+  if(fNFakeTracksPt) delete fNFakeTracksPt;
+  if(fTrackEffPt) delete fTrackEffPt;
+  if(fFakeTrackEffPt) delete fFakeTrackEffPt;
+  if(fNGoodTracksEta) delete fNGoodTracksEta;
+  if(fNFoundTracksEta) delete fNFoundTracksEta;
+  if(fNFakeTracksEta) delete fNFakeTracksEta;
+  if(fTrackEffEta) delete fTrackEffEta;
+  if(fFakeTrackEffEta) delete fFakeTrackEffEta;
+  if(fMcIndex) delete [] fMcIndex;
+  if(fMcId)    delete [] fMcId;
+  if(fNtuppel) delete fNtuppel;
+  if(fNtupleRes) delete fNtupleRes;
+
+  for(Int_t s=0; s<=35; s++)
+    for(Int_t p=0; p<6; p++)
+      {
+	//cout << s << " " << p <<endl;
+	if(fClustersFile[s][p]) delete fClustersFile[s][p];
+	fClusters[s][p]=0;
+      }
+}
+
+void AliL3Evaluate::Clear()
+{
+  fTracks = 0;
+  fMinSlice=0;
+  fMaxSlice=0;
+  fNFastPoints = 0;
+  fMcIndex = 0;
+  fMcId = 0;
+  fGoodFound = 0;
+  fGoodGen = 0;
+  fMinGoodPt = 0;
+  fMaxGoodPt = 0;
+  fMinPointsOnTrack = 0;  
+  fMinHitsFromParticle = 0;
+  fGoodTracks = 0;
+  fMaxFalseClusters = 0.1;
+
   fNtuppel=0;
+  fPtRes=0;
+  fNGoodTracksPt = 0;
+  fNFoundTracksPt = 0;
+  fNFakeTracksPt = 0;
+  fTrackEffPt = 0;
+  fFakeTrackEffPt = 0;
+  fNGoodTracksEta = 0;
+  fNFoundTracksEta = 0;
+  fNFakeTracksEta = 0;
+  fTrackEffEta = 0;
+  fFakeTrackEffEta = 0;
+  fNtupleRes = 0;
+
   fStandardComparison=kTRUE;
+  for(Int_t s=0; s<=35; s++)
+    for(Int_t p=0; p<6; p++){
+      fClusters[s][p]=0;
+      fClustersFile[s][p]=0;
+    }
+  sprintf(fPath,"./");
 }
 
 void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
 {
   Char_t fname[1024];
-  AliL3FileHandler *clusterfile[36][6];
+
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
       for(Int_t p=0; p<AliL3Transform::GetNPatches(); p++)
@@ -136,25 +161,25 @@ void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
 	  else
 	    patch=p;
 	  
-	  if(fClusters[s][p])
-	    delete fClusters[s][p];
+	  if(fClustersFile[s][p])
+	    delete fClustersFile[s][p];
 	  fClusters[s][p] = 0;
-	  clusterfile[s][p] = new AliL3FileHandler();
+	  fClustersFile[s][p] = new AliL3FileHandler();
 	  if(event<0)
 	    sprintf(fname,"%s/points_%d_%d.raw",fPath,s,patch);
 	  else
 	    sprintf(fname,"%s/points_%d_%d_%d.raw",fPath,event,s,patch);
-	  if(!clusterfile[s][p]->SetBinaryInput(fname))
+	  if(!fClustersFile[s][p]->SetBinaryInput(fname))
 	    {
 	      LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
 		<<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
-              delete clusterfile[s][p];
-              clusterfile[s][p] = 0; 
+              delete fClustersFile[s][p];
+              fClustersFile[s][p] = 0; 
 	      continue;
 	    }
-	  fClusters[s][p] = (AliL3SpacePointData*)clusterfile[s][p]->Allocate();
-	  clusterfile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
-	  clusterfile[s][p]->CloseBinaryInput();
+	  fClusters[s][p] = (AliL3SpacePointData*)fClustersFile[s][p]->Allocate();
+	  fClustersFile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
+	  fClustersFile[s][p]->CloseBinaryInput();
 	  if(sp==kTRUE)
 	    break;
 	}
@@ -172,38 +197,13 @@ void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
   fTracks = new AliL3TrackArray();
   tfile->Binary2TrackArray(fTracks);
   tfile->CloseBinaryInput();
-  delete tfile;
   fTracks->QSort();
-}
-
-
-AliL3Evaluate::~AliL3Evaluate()
-{
-  if(fGoodTracks) delete fGoodTracks;
-  if(fDigitsTree) fDigitsTree->Delete();
-  if(fTracks) delete fTracks;
-  if(fPtRes) delete fPtRes;
-  if(fNGoodTracksPt) delete fNGoodTracksPt;
-  if(fNFoundTracksPt) delete fNFoundTracksPt;
-  if(fNFakeTracksPt) delete fNFakeTracksPt;
-  if(fTrackEffPt) delete fTrackEffPt;
-  if(fFakeTrackEffPt) delete fFakeTrackEffPt;
-  if(fNGoodTracksEta) delete fNGoodTracksEta;
-  if(fNFoundTracksEta) delete fNFoundTracksEta;
-  if(fNFakeTracksEta) delete fNFakeTracksEta;
-  if(fTrackEffEta) delete fTrackEffEta;
-  if(fFakeTrackEffEta) delete fFakeTrackEffEta;
-  if(fMcIndex) delete [] fMcIndex;
-  if(fMcId)    delete [] fMcId;
-  if(fNtuppel) delete fNtuppel;
-  if(fNtupleRes) delete fNtupleRes;
-  for(Int_t s=0; s<=35; s++)
-    for(Int_t p=0; p<6; p++)
-      if(fClusters[s][p]) delete fClusters[s][p];
+  delete tfile;
 }
 
 void AliL3Evaluate::AssignPIDs()
 {
+  if(!fTracks) return;
   fTracks->QSort();
   LOG(AliL3Log::kDebug,"AliL3Evaluate::AssignPIDs","Track Loop")
     <<"Assigning pid to the found tracks...."<<ENDLOG;
@@ -227,6 +227,7 @@ void AliL3Evaluate::AssignIDs()
   cerr<<"AliL3Evaluate::AssignIDs() : You need to compile with the do_mc flag!"<<endl;
   return;
 #endif
+  if(!fTracks) return;
   fGoodFound=0;
   fTracks->QSort();
   LOG(AliL3Log::kDebug,"AliL3Evaluate::AssignIDs","Track Loop")
@@ -394,6 +395,7 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
 	  UInt_t pos = id&0x3fffff;	      
 	  
 	  AliL3SpacePointData *points = fClusters[slice][patch];
+	  if(!points) continue;
 	  if(lab == abs(points[pos].fTrackID[0]) ||
 	     lab == abs(points[pos].fTrackID[1]) ||
 	     lab == abs(points[pos].fTrackID[2])) max++;
@@ -411,9 +413,9 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
 void AliL3Evaluate::GetFastClusterIDs(Char_t *path)
 {
   //Get the MC id of space points in case of using the fast simulator. 
-  char fname[256];
-  sprintf(fname,"%s/point_mc.dat",path);
-  FILE *infile = fopen(fname,"r");
+  char name[256];
+  sprintf(name,"%s/point_mc.dat",path);
+  FILE *infile = fopen(name,"r");
   if(!infile) return;
   Int_t hitid,hitmc,i;
   
@@ -519,6 +521,8 @@ void AliL3Evaluate::FillEffHistos()
       cerr<<"AliL3Evaluate::FillEffHistos : No good tracks"<<endl;
       return;
     }
+  if(!fTracks) return;
+
   //cout<<"Comparing "<<fGoodGen<<" good tracks ..."<<endl;
   for(Int_t i=0; i<fGoodGen; i++)
     {
@@ -646,7 +650,6 @@ void AliL3Evaluate::CalcEffHistos()
   fFakeTrackEffEta->SetFillStyle(3013);
   fTrackEffEta->SetLineColor(4);
   fFakeTrackEffEta->SetFillColor(2);
-       
 }
 
 void AliL3Evaluate::Write2File(Char_t *outputfile)
@@ -676,7 +679,6 @@ void AliL3Evaluate::Write2File(Char_t *outputfile)
   fFakeTrackEffEta->Write();
   
   of->Close();
-
 }
 
 TNtuple *AliL3Evaluate::GetNtuple()
@@ -717,7 +719,6 @@ void AliL3Evaluate::CalculateResiduals()
 	  //if(slice<18) continue;
 	  
 	  AliL3SpacePointData *points = fClusters[slice][patch];
-	  
 	  if(!points) 
 	    {
 	      LOG(AliL3Log::kError,"AliL3Evaluate::CalculateResiduals","Clusterarray")

@@ -37,16 +37,18 @@ class TTree;
 class AliSimDigits;
 class TObjArray;
 class TParticle;
+class AliL3FileHandler;
 
 class AliL3Evaluate {
 
  private:
 
   AliL3TrackArray *fTracks; //!
-  AliTPCParam *fParam;
+  //AliTPCParam *fParam;
   AliL3SpacePointData *fClusters[36][6]; //!
-  TTree *fDigitsTree;
-  AliSimDigits *fDigits;
+  AliL3FileHandler *fClustersFile[36][6]; //!
+  //TTree *fDigitsTree;
+  //AliSimDigits *fDigits;
   Char_t fPath[1024];
   Int_t fMinSlice;
   Int_t fMaxSlice;
@@ -81,6 +83,7 @@ class AliL3Evaluate {
   TNtuple *fNtupleRes;
   Bool_t fStandardComparison;
   
+  void Clear();
  public:
   AliL3Evaluate();
   AliL3Evaluate(Char_t *path,Int_t min_clusters,Int_t minhits,Double_t minpt=0.1,Double_t maxpt=4.,Int_t *slice=0);
