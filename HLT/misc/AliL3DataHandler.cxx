@@ -53,6 +53,8 @@ ClassImp(AliL3DataHandler)
 AliL3DataHandler::AliL3DataHandler()
 {
   fBitTransformer = 0;
+  LOG(AliL3Log::kInformational,"AliL3DataHandler::AliL3DataHandler","Data format")
+    <<"8 bit data handler initialized"<<ENDLOG;
 }
 
 AliL3DataHandler::~AliL3DataHandler()
@@ -560,7 +562,6 @@ UInt_t AliL3DataHandler::GetMemorySize(UInt_t nrow,Byte_t *comp)
 Bool_t AliL3DataHandler::CompBinary2CompMemory(UInt_t &nrow,Byte_t *comp)
 {
   //Read RLE data from binary file into array comp.
-
   rewind(fInBinary);
   UInt_t size = GetFileSize() - 2;
   Byte_t type;
