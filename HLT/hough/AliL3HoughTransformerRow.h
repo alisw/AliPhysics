@@ -21,7 +21,7 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   virtual ~AliL3HoughTransformerRow();
 
   //void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t ptres,Int_t nybin,Float_t psi);
-  void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax)
+  void CreateHistograms(Int_t /*nxbin*/,Float_t /*ptmin*/,Int_t /*nybin*/,Float_t /*phimin*/,Float_t /*phimax*/)
   {STDCERR<<"This method for creation of parameter space histograms is not supported for this Transformer!"<<STDENDL;}
   void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
 			Int_t nybin,Float_t ymin,Float_t ymax);
