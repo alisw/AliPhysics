@@ -734,10 +734,19 @@ void AliVZEROv4::CreateMaterials()
     Float_t wscin[2] = {1.,1.};
     Float_t denscin  = 1.032;
     
+// AIR
+
+    Float_t aAir[4]={12.,14.,16.,36.};
+    Float_t zAir[4]={6.,7.,8.,18.};
+    Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+    Float_t dAir = 1.20479E-3;
+    
 //  Definition of materials :
-       
-    AliMaterial( 1, "AIR A$", 14.61, 7.3, .001205, 30420., 67500, 0, 0);
-    AliMaterial(11, "AIR I$", 14.61, 7.3, .001205, 30420., 67500, 0, 0);
+
+// AIR
+
+    AliMixture( 1, "AIR A$", aAir,zAir,dAir,4,wAir);
+    AliMixture(11, "AIR I$", aAir,zAir,dAir,4,wAir);
     AliMaterial( 2, "CARBON$"  , 12.01, 6.0, 2.265, 18.8, 49.9, 0, 0);
     AliMixture(  3, "QUA", aqua, zqua, densqua, nlmatqua, wmatqua);
     AliMaterial( 4, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2, 0, 0);
