@@ -65,10 +65,10 @@ AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesA
 //Standard constructor
 
     fSegmentation=seg;
-    fDigits=digits;
+    this->SetDigits(digits);
     fRecPoints=recp;
     
-    fMap = new AliITSMapA1(fSegmentation,fDigits);  
+    fMap = new AliITSMapA1(fSegmentation,Digits());  
   
     fITS=(AliITS*)gAlice->GetModule("ITS");
     
@@ -194,11 +194,11 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits()
    Int_t currentstripNo;
    Int_t *dbuffer = new Int_t [300];   //buffer for strip numbers
    Int_t dnumber;    //curent number of digits in buffer
-   TArrayI &lDigitsIndexP = *fDigitsIndexP;
-   TArrayI &lDigitsIndexN = *fDigitsIndexN;
-   TObjArray &lDigits=*fDigits;
-   TClonesArray &lClusterP = *fClusterP;
-   TClonesArray &lClusterN = *fClusterN;
+   TArrayI      &lDigitsIndexP = *fDigitsIndexP;
+   TArrayI      &lDigitsIndexN = *fDigitsIndexN;
+   TObjArray    &lDigits       = *(Digits());
+   TClonesArray &lClusterP     = *fClusterP;
+   TClonesArray &lClusterN     = *fClusterN;
   
    //process P side 
    dnumber = 1;
@@ -213,12 +213,12 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits()
            ==  (currentstripNo-1) ) dbuffer[dnumber++]=lDigitsIndexP[i];
      else  { 
        //create a new one side cluster
-       new(lClusterP[fNClusterP++]) AliITSclusterSSD(dnumber,dbuffer,fDigits,fgkSIDEP); 
+       new(lClusterP[fNClusterP++]) AliITSclusterSSD(dnumber,dbuffer,Digits(),fgkSIDEP); 
        dbuffer[0]=lDigitsIndexP[i];
        dnumber = 1;
      }
    } // end loop over fNDigitsP
-   new(lClusterP[fNClusterP++]) AliITSclusterSSD(dnumber,dbuffer,fDigits,fgkSIDEP);
+   new(lClusterP[fNClusterP++]) AliITSclusterSSD(dnumber,dbuffer,Digits(),fgkSIDEP);
 
 
    //process N side 
@@ -232,12 +232,12 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits()
      if ( (((AliITSdigitSSD*)lDigits[lDigitsIndexN[i-1]])->GetStripNumber()) 
            == (currentstripNo-1) ) dbuffer[dnumber++]=lDigitsIndexN[i];
      else {
-       new(lClusterN[fNClusterN++]) AliITSclusterSSD(dnumber,dbuffer,fDigits,fgkSIDEN);
+       new(lClusterN[fNClusterN++]) AliITSclusterSSD(dnumber,dbuffer,Digits(),fgkSIDEN);
        dbuffer[0]=lDigitsIndexN[i];
        dnumber = 1;
      }
    } // end loop over fNDigitsN
-   new(lClusterN[fNClusterN++]) AliITSclusterSSD(dnumber,dbuffer,fDigits,fgkSIDEN);
+   new(lClusterN[fNClusterN++]) AliITSclusterSSD(dnumber,dbuffer,Digits(),fgkSIDEN);
    delete [] dbuffer; 
  
  } // end condition on  NDigits 
@@ -337,7 +337,7 @@ void AliITSClusterFinderSSD::SplitCluster(TArrayI *list, Int_t nsplits, Int_t in
      curentcluster =((AliITSclusterSSD*)((*fClusterP)[index])) ;
      for (i = nsplits; i>0 ;i--) {  
          NN=curentcluster->SplitCluster((*list)[(i-1)],tmpdigits);
-         new ((*fClusterP)[fNClusterP]) AliITSclusterSSD(NN,tmpdigits,fDigits,side);
+         new ((*fClusterP)[fNClusterP]) AliITSclusterSSD(NN,tmpdigits,Digits(),side);
 	 ( (AliITSclusterSSD*)((*fClusterP)[fNClusterP]) )->
                                                       SetLeftNeighbour(kTRUE);
          //if left cluster had neighbour on the right before split 
@@ -352,7 +352,7 @@ void AliITSClusterFinderSSD::SplitCluster(TArrayI *list, Int_t nsplits, Int_t in
      curentcluster =((AliITSclusterSSD*)((*fClusterN)[index]));
      for (i = nsplits; i>0 ;i--) {  
          NN=curentcluster->SplitCluster((*list)[(i-1)],tmpdigits);
-	 new ((*fClusterN)[fNClusterN]) AliITSclusterSSD(NN,tmpdigits,fDigits,side);
+	 new ((*fClusterN)[fNClusterN]) AliITSclusterSSD(NN,tmpdigits,Digits(),side);
 	 ((AliITSclusterSSD*)((*fClusterN)[fNClusterN]))->
                                                     SetRightNeighbour(kTRUE);
 	 if (curentcluster->GetRightNeighbour())
@@ -383,8 +383,8 @@ Int_t AliITSClusterFinderSSD::SortDigitsP(Int_t start, Int_t end)
     }
   else
    { 
-    left =  ((AliITSdigitSSD*)((*fDigits)[(*fDigitsIndexP)[start]]))->GetStripNumber();
-    right= ((AliITSdigitSSD*)((*fDigits)[(*fDigitsIndexP)[end]]))->GetStripNumber();  
+    left =  ((AliITSdigitSSD*)((*(Digits()))[(*fDigitsIndexP)[start]]))->GetStripNumber();
+    right= ((AliITSdigitSSD*)((*(Digits()))[(*fDigitsIndexP)[end]]))->GetStripNumber();  
     if( left > right )
      {
        Int_t tmp = (*fDigitsIndexP)[start];
@@ -413,8 +413,8 @@ Int_t AliITSClusterFinderSSD::SortDigitsN(Int_t start, Int_t end)
     }
   else 
    {
-    left =((AliITSdigitSSD*)((*fDigits)[(*fDigitsIndexN)[start]]))->GetStripNumber(); 
-    right=((AliITSdigitSSD*)((*fDigits)[(*fDigitsIndexN)[end]]))->GetStripNumber();
+    left =((AliITSdigitSSD*)((*(Digits()))[(*fDigitsIndexN)[start]]))->GetStripNumber(); 
+    right=((AliITSdigitSSD*)((*(Digits()))[(*fDigitsIndexN)[end]]))->GetStripNumber();
     if ( left > right )
       {
         Int_t tmp = (*fDigitsIndexN)[start];
@@ -436,7 +436,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex()
  Int_t N;
  Int_t i;
  
- N = fDigits->GetEntriesFast();
+ N = NDigits();
 
  Int_t* PSidx = new Int_t [N*sizeof(Int_t)];
  Int_t* NSidx = new Int_t [N*sizeof(Int_t)]; 
@@ -446,7 +446,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex()
  AliITSdigitSSD *dig; 
  
  for ( i = 0 ; i< N; i++ ) {
-      dig=(AliITSdigitSSD*)fDigits->UncheckedAt(i);
+      dig = (AliITSdigitSSD*)GetDigit(i);
       if(dig->IsSideP()) { 
            bit=1;
            tmp=dig->GetStripNumber();

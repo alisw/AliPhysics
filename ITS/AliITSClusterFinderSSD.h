@@ -104,49 +104,47 @@ public:
 
   // Data memebers
 
-  AliITS             *fITS;         //Pointer to AliITS object
-  TClonesArray       *fDigits;      //Pointer to TClonesArray of digits
+  AliITS          *fITS;          //!Pointer to AliITS object
 
-  TClonesArray       *fRecPoints;   //Pointer to TClonesArray of rec points
-  
+  TClonesArray    *fRecPoints;    //!Pointer to TClonesArray of rec points  
 	
-  TClonesArray    *fClusterP;    //
-  Int_t            fNClusterP;   //Number of P side clusters in the array
+  TClonesArray    *fClusterP;     //!
+  Int_t            fNClusterP;    //!Number of P side clusters in the array
 		
-  TClonesArray    *fClusterN;    //Number of N side clusters in the array
-  Int_t            fNClusterN; 
+  TClonesArray    *fClusterN;     //!Number of N side clusters in the array
+  Int_t            fNClusterN;    //!
     
-  TClonesArray    *fPackages;    //packages  
-  Int_t            fNPackages;
+  TClonesArray    *fPackages;     //!packages  
+  Int_t            fNPackages;    //!
     
-  TArrayI         *fDigitsIndexP;       //Digits on P side
-  Int_t            fNDigitsP;           //Number of Digits on P side
+  TArrayI         *fDigitsIndexP; //!Digits on P side
+  Int_t            fNDigitsP;      //!Number of Digits on P side
 		
-  TArrayI         *fDigitsIndexN;       //Digits on N side
-  Int_t            fNDigitsN;           //Number of Digits on N side
+  TArrayI         *fDigitsIndexN;  //!Digits on N side
+  Int_t            fNDigitsN;      //!Number of Digits on N side
 
 
-  Float_t          fPitch;              //Strip pitch
-  Float_t          fTanP;               //Pside stereo angle tangent
-  Float_t          fTanN;               //Nside stereo angle tangent
+  Float_t          fPitch;         //!Strip pitch
+  Float_t          fTanP;          //!Pside stereo angle tangent
+  Float_t          fTanN;          //!Nside stereo angle tangent
 
 /*************************************************/
 /**  parameters for reconstruction            ****/
 /**  to be tune when slow simulation raliable ****/
 /*************************************************/ 
   
-  Float_t fAlpha1; 
-  Float_t fAlpha2;
-  Float_t fAlpha3;
-  Float_t fPNsignalRatio;
+  Float_t fAlpha1;         //!
+  Float_t fAlpha2;         //!
+  Float_t fAlpha3;         //!
+  Float_t fPNsignalRatio;  //!
 
     
-  static const Bool_t fgkSIDEP;
-  static const Bool_t fgkSIDEN;
+  static const Bool_t fgkSIDEP;  //!
+  static const Bool_t fgkSIDEN;  //!
 
 
-  Int_t fSFF;              //forward stepping factor 
-  Int_t fSFB;              //backward stepping factor 
+  Int_t fSFF;              //!forward stepping factor 
+  Int_t fSFB;              //!backward stepping factor 
 
 public:
     ClassDef(AliITSClusterFinderSSD, 1) //Class for clustering and reconstruction of space points in SSDs 
