@@ -49,15 +49,17 @@ public:
   RecParticlesList * RecParticles() { return fRecParticles ; }      // gets TClonesArray of reconstructed particles
   void           ResetClusters(){} ;
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
+  void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
   TrackSegmentsList *    TrackSegments(){return fTrackSegments ;}
   
 protected:
 
-  Float_t fPINElectronicNoise  ;        // Electronic Noise in the PIN
+  Float_t fDigitThreshold ;             // Threshold for the digit registration 
   RecPointsList * fEmcClusters ;        // The RecPoints (clusters) list in EMC 
   AliPHOSGeometry * fGeom ;             // geometry definition
   Int_t fNTmpHits ;                     //!  used internally for digitalization
+  Float_t fPinElectronicNoise  ;       // Electronic Noise in the PIN
   RecPointsList * fPpsdClusters ;       // The RecPoints (clusters) list in PPSD 
   AliPHOSReconstructioner * fReconstructioner ; // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   TClonesArray * fTmpHits ;             //!  used internally for digitalization 

@@ -64,7 +64,8 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   //   - fTmpHits, which retains all the hits of the current event. It 
   //     is used for the digitization part.
 
-  fPINElectronicNoise = 0.010 ;
+  fPinElectronicNoise = 0.010 ;
+  fDigitThreshold      = 1. ;   // 1 GeV 
 
   fHits   = new TClonesArray("AliPHOSHit",100) ;
   gAlice->AddHitList(fHits) ; 
@@ -100,7 +101,7 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *nam
   //
   //   - fTmpHits, which retains all the hits of the current event. It 
   //     is used for the digitization part.
-  fPINElectronicNoise = 0.010 ;
+  fPinElectronicNoise = 0.010 ;
   fHits   = new TClonesArray("AliPHOSHit",100) ;
   fDigits = new TClonesArray("AliPHOSDigit",100) ;
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
@@ -1064,7 +1065,7 @@ void AliPHOSv0::FinishEvent()
 	deja = kTRUE ; 
       }
     }
-    if ( !deja ) {
+    if ( !deja && (newdigit->GetAmp() > fDigitThreshold) ) {
       new(lDigits[fNdigits]) AliPHOSDigit(* newdigit) ;
       fNdigits++ ;  
     }
@@ -1079,7 +1080,7 @@ void AliPHOSv0::FinishEvent()
     newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
     fGeom->AbsToRelNumbering(newdigit->GetId(), relid) ;
     if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
-      energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPINElectronicNoise)) ;
+      energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPinElectronicNoise)) ;
       if (energyandnoise < 0 ) 
 	energyandnoise = 0 ;
       newdigit->SetAmp(energyandnoise) ;
