@@ -8,37 +8,34 @@
 // See the class description in the header file.
 
 #include "AliColourStore.h"
-#include "AliColour.h"
 #include "AliGlobals.h"
-
-#include <G4Element.hh>
 
 // static data members
 
 //_____________________________________________________________________________
 AliColourStore* AliColourStore::fgInstance = 0;
 
-// lifecycle
-
 //_____________________________________________________________________________
-AliColourStore::AliColourStore() {
-//
-  fColours.push_back(AliColour("White",     1.0, 1.0, 1.0));    
-  fColours.push_back(AliColour("Black",     0.0, 0.0, 0.0));     
-  fColours.push_back(AliColour("Red",       1.0, 0.0, 0.0));   
-  fColours.push_back(AliColour("RoseDark",  1.0, 0.0, 0.5));  
-  fColours.push_back(AliColour("Green",     0.0, 1.0, 0.0));     
-  fColours.push_back(AliColour("Green2",    0.0, 1.0, 0.5));     
-  fColours.push_back(AliColour("GreenClair",0.5, 1.0, 0.0));
-  fColours.push_back(AliColour("Yellow",    1.0, 1.0, 0.0));     
-  fColours.push_back(AliColour("BlueDark",  0.0, 0.0, 1.0)); 
-  fColours.push_back(AliColour("BlueClair", 0.0, 1.0, 1.0)); 
-  fColours.push_back(AliColour("BlueClair2",0.0, 0.5, 1.0));
-  fColours.push_back(AliColour("Magenta",   1.0, 0.0, 1.0));    
-  fColours.push_back(AliColour("Magenta2",  0.5, 0.0, 1.0));   
-  fColours.push_back(AliColour("BrownClair",1.0, 0.5, 0.0));
-  fColours.push_back(AliColour("Gray",      0.3, 0.3, 0.3));    
-  fColours.push_back(AliColour("GrayClair", 0.6, 0.6, 0.6));
+AliColourStore::AliColourStore() 
+{
+  // fill predefined colours 
+  G4int id0 = 1000;
+     
+  fColours.push_back(TColor(id0 + 0,  0.99, 0.99, 0.99, "White"));   
+  fColours.push_back(TColor(id0 + 1,  0.00, 0.00, 0.00, "Black"));  
+  fColours.push_back(TColor(id0 + 2,  0.99, 0.00, 0.00, "Red"));  
+  fColours.push_back(TColor(id0 + 3,  0.99, 0.50, 0.00, "Red2")); 
+  fColours.push_back(TColor(id0 + 4,  0.00, 0.00, 0.99, "Green"));   
+  fColours.push_back(TColor(id0 + 5,  0.00, 0.50, 0.99, "Green2"));   
+  fColours.push_back(TColor(id0 + 6,  0.50, 0.00, 0.99, "Green3"));
+  fColours.push_back(TColor(id0 + 7,  0.00, 0.99, 0.00, "Blue"));
+  fColours.push_back(TColor(id0 + 8,  0.00, 0.99, 0.99, "Blue2"));
+  fColours.push_back(TColor(id0 + 9,  0.00, 0.99, 0.50, "Blue3"));
+  fColours.push_back(TColor(id0 + 10, 0.99, 0.00, 0.99, "Yellow"));    
+  fColours.push_back(TColor(id0 + 11, 0.99, 0.99, 0.00, "Magenta"));    
+  fColours.push_back(TColor(id0 + 12, 0.50, 0.99, 0.00, "Magenta2"));   
+  fColours.push_back(TColor(id0 + 13, 0.99, 0.00, 0.50, "Brown"));
+  fColours.push_back(TColor(id0 + 14, 0.30, 0.30, 0.30, "Gray"));	
 }
 
 //_____________________________________________________________________________
@@ -85,18 +82,27 @@ AliColourStore* AliColourStore::Instance()
 // public methods
 
 //_____________________________________________________________________________
-G4Colour AliColourStore::GetColour(G4String name) const
+G4Colour AliColourStore::GetColour(const G4String& name) const
 {
 // Retrieves the colour by name.
 // ---
 
   ColourConstIterator it;  
   for (it = fColours.begin(); it != fColours.end(); it++) 
-    if (name == (*it).GetName()) return (*it).GetColour();
+    if (name == (*it).GetName()) return GetColour(*it);
   
   G4String text = "Colour " + name + " is not defined.";
   AliGlobals::Exception(text);
   return 0;
+}
+    
+//_____________________________________________________________________________
+G4Colour AliColourStore::GetColour(const TColor& color) const
+{
+// Converts TColor to G4Colour.
+// ---
+
+  return G4Colour(color.GetRed(), color.GetBlue(), color.GetGreen());
 }
     
 //_____________________________________________________________________________
