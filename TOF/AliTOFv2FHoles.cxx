@@ -443,9 +443,8 @@ void AliTOFv2FHoles::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   Float_t t = zFLTC+zFLTB+zFLTA*0.5+ 2*db;//Half Width of Barrel
 
-  //  Float_t gap  = fGapA; //cm  distance between the strip axis
-  // to avoid overlaps
-  Float_t gap  = fGapA+1.; //cm  distance between the strip axis
+  Float_t gap  = fGapA+1.; //cm  updated distance between the strip axis
+  // 1 cm is a special value exclusively for AliTOFv2FHoles geometry
   Float_t zpos = 0;
   Float_t ang  = 0;
   Int_t i=1,j=1;
@@ -572,16 +571,18 @@ void AliTOFv2FHoles::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 
   ycoor = -hTof*0.5+ kspace ; //2 cm over front plate
   zpos = zpos - zSenStrip/TMath::Cos(ang);
-
+  // this avoid overlaps in between outer strips in plate B
+  Float_t deltaMovingUp=0.8;    // [cm]
+  //Float_t deltaMovingDown=-0.0; // [cm] special value for AliTOFv2FHoles
+  
   do {
-    ycoor+=0.6; // fp to avoid overlaps
      ang = atan(zpos/radius);
      ang *= kRaddeg;
      AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 270.);
      ang /= kRaddeg;
-     //     zcoor = zpos+(zFLTB/2+zFLTA/2+db)+1.; // fp to avoid overlaps
      zcoor = zpos+(zFLTB/2+zFLTA/2+db);
-     gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
+     gMC->Gspos("FSTR",i, "FLTB", 0., ycoor+deltaMovingUp, zcoor,idrotm[nrot], "ONLY");
+     deltaMovingUp+=0.8; // update delta moving toward the end of the plate
      zpos = zpos - zSenStrip/TMath::Cos(ang);
      if(fDebug) {
        printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
@@ -590,7 +591,7 @@ void AliTOFv2FHoles::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      i++;
 
   }  while (zpos-stripWidth*0.5/TMath::Cos(ang)>-t+zFLTC+db);
-
+  
   // Plate  C
   
   zpos = zpos + zSenStrip/TMath::Cos(ang);
@@ -601,7 +602,8 @@ void AliTOFv2FHoles::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 
   nrot = 0;
   i=0;
-  ycoor= -hTof*0.5+kspace+gap;
+  Float_t deltaGap=-2.5; // [cm] update distance from strip center and plate
+  ycoor= -hTof*0.5+kspace+gap+deltaGap;
 
   do {
      i++;

@@ -132,16 +132,16 @@ void AliTOFSDigit::GetLocation(Int_t *Loc) const
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliTOFSDigit::Update(Int_t tdc, Int_t adc, Int_t track)
+void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
 {
   //
   // Add charge and track
   //
   
   Int_t sameTime = -1;
-  
+  Float_t tdcwindow=((Float_t)AliTOFConstants::fgkTimeDiff)/tdcbin;
   for (Int_t i = 0; i < fNDigits; i++) {
-    if (TMath::Abs(tdc-fTdc->At(i)) < AliTOFConstants::fgkTimeDiff) {
+    if (TMath::Abs(tdc-fTdc->At(i)) < tdcwindow) {
       sameTime = i;
       break;
     }
@@ -198,33 +198,24 @@ Int_t AliTOFSDigit::GetTotPad() const
   // starting from the digits data.
   //
   
-  AliTOF* tof;
-  
-  if(gAlice){
-    tof =(AliTOF*) gAlice->GetDetector("TOF");
-  }else{
-    printf("AliTOFSDigit::GetTotPad - No AliRun object present, exiting");
-    return 0;
-  }
-  
-  Int_t pad = fPadx+tof->GetNpadX()*(fPadz-1);
+  Int_t pad = fPadx+AliTOFConstants::fgkNpadX*(fPadz-1);
   Int_t before=0;
   
   switch(fPlate){ 
   case 1: before = 0;
     break;
-  case 2: before = tof->GetNStripC();
+  case 2: before = AliTOFConstants::fgkNStripC;
     break;
-  case 3: before = tof->GetNStripB() + tof->GetNStripC();
+  case 3: before = AliTOFConstants::fgkNStripB + AliTOFConstants::fgkNStripC;
     break;
-  case 4: before = tof->GetNStripA() + tof->GetNStripB() + tof->GetNStripC();
+  case 4: before = AliTOFConstants::fgkNStripA + AliTOFConstants::fgkNStripB + AliTOFConstants::fgkNStripC;
     break;
-  case 5: before = tof->GetNStripA() + 2*tof->GetNStripB() + tof->GetNStripC();
+  case 5: before = AliTOFConstants::fgkNStripA + 2*AliTOFConstants::fgkNStripB + AliTOFConstants::fgkNStripC;
     break;
   }
   
   Int_t strip = fStrip+before;
-  Int_t padTot = tof->GetPadXStr()*(strip-1)+pad;
+  Int_t padTot = AliTOFConstants::fgkPadXStrip*(strip-1)+pad;
   return padTot;
 }
 

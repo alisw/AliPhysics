@@ -344,18 +344,18 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
   Float_t katrack=0, kamag=0, kageom=0;
   Float_t prtrack=0, prmag=0, prgeom=0;
   Float_t pif=0, kaf=0, prf=0, pin=0, kan=0, prn=0;
-  Float_t px, py, pz, x, y, z, pdgcode, mass;
-  Int_t event, matc, imam;
+  Float_t px, py, pz, x, y, z, mass;
+  Int_t event, matc, imam, pdgcode;
   Int_t indexOfFile=0, numfile=0;
   //////// Loop over tracks (particles)///////////////////////
   
   for (Int_t i=0; i < nparticles; i++) {
     fNtuple->GetEvent(i);
-    event=fNtuple->GetLeaf("event")->GetValue();
-    pdgcode=fNtuple->GetLeaf("ipart")->GetValue();
+    event=(Int_t)(fNtuple->GetLeaf("event")->GetValue());
+    pdgcode=(Int_t)(fNtuple->GetLeaf("ipart")->GetValue());
     mass=fNtuple->GetLeaf("mext")->GetValue(0);
-    matc=fNtuple->GetLeaf("matc")->GetValue(0);
-    imam=fNtuple->GetLeaf("imam")->GetValue(0);
+    matc=(Int_t)(fNtuple->GetLeaf("matc")->GetValue(0));
+    imam=(Int_t)(fNtuple->GetLeaf("imam")->GetValue(0));
     px=fNtuple->GetLeaf("pxvtx")->GetValue(0);
     py=fNtuple->GetLeaf("pyvtx")->GetValue(0);
     pz=fNtuple->GetLeaf("pzvtx")->GetValue(0);

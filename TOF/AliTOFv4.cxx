@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/11/22 11:22:51  hristov
+Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
+
 Revision 1.13  2001/09/27 10:39:21  vicinanz
 SDigitizer and Merger added
 
@@ -485,7 +488,7 @@ void AliTOFv4::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   Float_t t = zFLTC+zFLTB+zFLTA*0.5+ 2*db;//Half Width of Barrel
 
-  Float_t gap  = fGapA; //cm  distance between the strip axis
+  Float_t gap  = fGapA+0.5; //cm  updated distance between the strip axis
   Float_t zpos = 0;
   Float_t ang  = 0;
   Int_t i=1,j=1;
@@ -584,8 +587,10 @@ void AliTOFv4::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      ang *= kRaddeg;
      AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 270.);
      ang /= kRaddeg;
-     ycoor = -hTof*0.5+ kspace ; //2 cm over front plate
-     ycoor += (1-(upDown+1)/2)*gap;
+     Float_t deltaSpaceinB=-0.5; // [cm] to avoid overlaps with the end of freon frame
+     Float_t deltaGapinB=0.5;    // [cm] to avoid overlaps in between initial strips
+     ycoor = -hTof*0.5+ kspace+deltaSpaceinB ; //2 cm over front plate
+     ycoor += (1-(upDown+1)/2)*(gap+deltaGapinB);
      zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
      gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
      if(fDebug) {
@@ -599,6 +604,9 @@ void AliTOFv4::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 
   ycoor = -hTof*0.5+ kspace ; //2 cm over front plate
   zpos = zpos - zSenStrip/TMath::Cos(ang);
+  // this avoid overlaps in between outer strips in plate B
+  Float_t deltaMovingUp=0.8;    // [cm]
+  Float_t deltaMovingDown=-0.5; // [cm]
 
   do {
      ang = atan(zpos/radius);
@@ -606,7 +614,8 @@ void AliTOFv4::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 270.);
      ang /= kRaddeg;
      zcoor = zpos+(zFLTB/2+zFLTA/2+db);
-     gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
+     gMC->Gspos("FSTR",i, "FLTB", 0., ycoor+deltaMovingDown+deltaMovingUp, zcoor,idrotm[nrot], "ONLY");
+     deltaMovingUp+=0.8; // update delta moving toward the end of the plate
      zpos = zpos - zSenStrip/TMath::Cos(ang);
      if(fDebug) {
        printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
@@ -626,7 +635,8 @@ void AliTOFv4::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 
   nrot = 0;
   i=0;
-  ycoor= -hTof*0.5+kspace+gap;
+  Float_t deltaGap=-2.5; // [cm] update distance from strip center and plate
+  ycoor= -hTof*0.5+kspace+gap+deltaGap;
 
   do {
      i++;

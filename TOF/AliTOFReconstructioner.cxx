@@ -33,13 +33,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 
-#include "TTask.h"
-#include "TBenchmark.h"
-#include "TTree.h"
-#include "TSystem.h"
-#include "TFile.h"
-#include "TParticle.h"
-
 #include "AliConst.h"
 #include "AliRun.h"
 #include "AliTOFConstants.h"
@@ -64,14 +57,16 @@
 #include "AliDetector.h"
 #include "AliMC.h"
 
-#include <TClonesArray.h>
-#include "../TGeant3/TGeant3.h"
-#include "TFile.h"
-#include <TF1.h>
-#include <TF2.h>
 #include "TTask.h"
+#include "TBenchmark.h"
 #include "TTree.h"
 #include "TSystem.h"
+#include "TFile.h"
+#include "TParticle.h"
+#include <TClonesArray.h>
+#include "../TGeant3/TGeant3.h"
+#include <TF1.h>
+#include <TF2.h>
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TNtuple.h"
@@ -1655,15 +1650,18 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClones
 	Float_t x = tofHit->X(); tofpos[0]=x;
 	Float_t y = tofHit->Y(); tofpos[1]=y;
 	Float_t z = tofHit->Z(); tofpos[2]=z;
-	
+	/* var used for QA
 	Float_t tofradius = TMath::Sqrt(x*x+y*y); // radius cilindrical coordinate of the TOF hit
+	*/
 	// momentum components (cosine) when striking the TOF
 	Float_t pxtof = tofHit->GetPx();
 	Float_t pytof = tofHit->GetPy();
 	Float_t pztof = tofHit->GetPz();
 	// scalar product indicating the direction of the particle when striking the TOF 
+	/* var used for QA
 	// (>0 for outgoing particles)
 	Float_t isGoingOut = (x*pxtof+y*pytof+z*pztof)/TMath::Sqrt(x*x+y*y+z*z);
+	*/
 	Float_t momtof = tofHit->GetMom();
 	// now momentum components when striking the TOF
 	pxtof *= momtof;
@@ -1954,7 +1952,7 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
 	}
       }
 
-      istrip=(Int_t)(zNoise-zLen[iplate-1])/((zLen[iplate]-zLen[iplate-1])/zStrips[iplate-1]); //the strip number in the plate
+      istrip=(Int_t)((zNoise-zLen[iplate-1])/((zLen[iplate]-zLen[iplate-1])/zStrips[iplate-1])); //the strip number in the plate
       istrip++;
 
       ipadAlongX = (Int_t)(AliTOFConstants::fgkNpadX*gRandom->Rndm())+1;
@@ -2349,27 +2347,33 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
     Float_t x=trackArray[itrack-1].GetRxTPC();
     Float_t y=trackArray[itrack-1].GetRyTPC();
     Float_t z=trackArray[itrack-1].GetRzTPC();
+    /* vars used for QA
     Float_t RxTPC=x;
     Float_t RyTPC=y;
     Float_t RzTPC=z;
+    */
     Float_t Wx=x;
     Float_t Wy=y;
     Float_t Wz=z;
     Float_t px=trackArray[itrack-1].GetPxTPC();
     Float_t py=trackArray[itrack-1].GetPyTPC();
     Float_t pz=trackArray[itrack-1].GetPzTPC();
+    /* vars used for QA
     Float_t pxTPC=px;
     Float_t pyTPC=py;
     Float_t pzTPC=pz;
-
+    */
     Float_t p = TMath::Sqrt(px*px+py*py+pz*pz);
+    /* var used for QA
     Float_t pTPC=p;
-
+    */
     Float_t rho = TMath::Sqrt(x*x+y*y);
     Float_t phi=0.;
     if(TMath::Abs(x)>0. || TMath::Abs(y)>0.) phi=TMath::ATan2(y,x);
     if(phi<0.) phi=phi+2.*TMath::Pi();
+    /* var used for QA
     Float_t phiTPC=phi*kRaddeg;
+    */
     if(fSigmavsp) {
       if(p==0) printf(" p=%f in g=0.022/p\n",p);
       g=0.022/p;
@@ -2382,7 +2386,9 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
     }
     x=rho*TMath::Cos(phi);
     y=rho*TMath::Sin(phi);
+    /* var used for QA
     Float_t zTPC=z;
+    */
     if(fSigmavsp) {
       if(p==0) printf(" p=%f in g=0.0275/p\n",p);
       g=0.0275/p;

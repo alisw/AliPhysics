@@ -271,9 +271,9 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 	  
 	  Bool_t isCloneOfThePrevious=dummy && ((vol[3]==previousPadX) && (vol[4]==previousPadZ));
 	  
-	  // much stronger check to be inserted here
+	  Bool_t isNeighOfThePrevious=dummy && ((((vol[3]==previousPadX-1) || (vol[3]==previousPadX+1)) && (vol[4]==previousPadZ)) || ((vol[3]==previousPadX) && ((vol[4]==previousPadZ+1) || (vol[4]==previousPadZ-1))));
 	  
-	  if(!isCloneOfThePrevious){
+	  if(!isCloneOfThePrevious && !isNeighOfThePrevious){
 	    // update "previous" values
 	    // in fact, we are yet in the future, so the present is past
 	    previousTrack=tracknum;
@@ -311,7 +311,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 		  
 		  if(timediff>=0.2) nlargeTofDiff++;
 		  
-		  digit[0] = (Int_t) ((tofAfterSimul[indexOfPad]*1.e+03)/fTdcBin); // TDC bin number (each bin -> 25. ps)
+		  digit[0] = (Int_t) ((tofAfterSimul[indexOfPad]*1.e+03)/fTdcBin); // TDC bin number (each bin -> 50. ps)
 		  
 		  Float_t landauFactor = gRandom->Landau(fAdcMean, fAdcRms); 
 		  digit[1] = (Int_t) (qInduced[indexOfPad] * landauFactor); // ADC bins (each bin -> 0.25 (or 0.03) pC)
@@ -328,7 +328,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 		    AliTOFSDigit *sdig = static_cast<AliTOFSDigit*>(hitMap->GetHit(vol));
 		    Int_t tdctime = (Int_t) digit[0];
 		    Int_t adccharge = (Int_t) digit[1];
-		    sdig->Update(tdctime,adccharge,tracknum);
+		    sdig->Update(fTdcBin,tdctime,adccharge,tracknum);
 		    ntotalupdatesinEv++;
 		    ntotalupdates++;
 		  } else {
