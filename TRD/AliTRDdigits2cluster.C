@@ -16,21 +16,21 @@ void AliTRDdigits2cluster()
 
   // Input and output file names
   Char_t *infile  = "galice.root";
-  Char_t *outfile = "TRDclusters.root";
+  Char_t *outfile = "AliTRDclusters.root";
 
   // Create the clusterizer
   AliTRDclusterizerV1 *clusterizer = 
     new AliTRDclusterizerV1("clusterizer","Clusterizer class"); 
 
-  // Set the parameter
-  clusterizer->SetClusMaxThresh(0);
-  clusterizer->SetClusSigThresh(0);
-  //clusterizer->SetVerbose(1);
-  clusterizer->Dump();
+  // Define the parameter object
+  // If no external parameter object is defined, 
+  // default parameter will be used
+  AliTRDparameter *parameter = new AliTRDparameter("TRDparameter"
+						  ,"TRD parameter class");
+  clusterizer->SetParameter(parameter);
 
   // Open the AliRoot file 
-  clusterizer->Open(infile,0);
-  //clusterizer->Open(infile,outfile,0);
+  clusterizer->Open(infile,outfile,0);
 
   // Load the digits
   clusterizer->ReadDigits();
