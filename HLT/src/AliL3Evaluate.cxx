@@ -97,26 +97,26 @@ AliL3Evaluate::~AliL3Evaluate()
     delete fFakeTrackEffEta;
 }
 
-void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *clustfile)
+void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
 {
-  //Setup for using the slow simulator.
   //Read in the hit and track information from produced files.
   
-  fIsSlow = true;
-
   Char_t fname[256];
   AliL3FileHandler *clusterfile[36][5];
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
       for(Int_t p=0; p<5; p++)
 	{
+          fClusters[s][p] = 0;
 	  clusterfile[s][p] = new AliL3FileHandler();
-	  sprintf(fname,"points_%d_%d.raw",s,p);
+	  sprintf(fname,"%s/points_%d_%d.raw",path,s,p);
 	  if(!clusterfile[s][p]->SetBinaryInput(fname))
 	    {
 	      LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
 		<<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
-	      return;
+              delete clusterfile[s][p];
+              clusterfile[s][p] = 0; 
+	      continue;
 	    }
 	  fClusters[s][p] = (AliL3SpacePointData*)clusterfile[s][p]->Allocate();
 	  clusterfile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
@@ -126,27 +126,33 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *clustfile)
   
   
   AliL3FileHandler *tfile = new AliL3FileHandler();
-  if(!tfile->SetBinaryInput(trackfile))
-    {
-      LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
-	<<"Inputfile "<<trackfile<<" does not exist"<<ENDLOG; 
-      return;
-    }
+  if(!tfile->SetBinaryInput(trackfile)){
+    LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
+    <<"Inputfile "<<trackfile<<" does not exist"<<ENDLOG; 
+    return;
+  }
   fTracks = new AliL3TrackArray();
   tfile->Binary2TrackArray(fTracks);
   tfile->CloseBinaryInput();
   delete tfile;
-  
-  if(!SetDigitsTree())
-    LOG(AliL3Log::kError,"AliL3Evaluation::Setup","Digits Tree")
-      <<"Error setting up digits tree"<<ENDLOG;
-  if(!SetMCParticleArray())
-    LOG(AliL3Log::kError,"AliL3Evaluation::Setup","Particle array")
-      <<"Error setting up particle array"<<ENDLOG;
-  
 }
 
-void AliL3Evaluate::SetupFast(Char_t *trackfile,Char_t *clustfile,Char_t *mcClusterfile)
+void AliL3Evaluate::SetupSlow(Char_t *trackfile,Char_t *path)
+{
+  //Setup for using the slow simulator.
+  
+  fIsSlow = true;
+  Setup(trackfile,path);
+  
+  if(!SetDigitsTree())
+    LOG(AliL3Log::kError,"AliL3Evaluation::SetupSlow","Digits Tree")
+    <<"Error setting up digits tree"<<ENDLOG;
+  if(!SetMCParticleArray())
+    LOG(AliL3Log::kError,"AliL3Evaluation::Setup","Particle array")
+    <<"Error setting up particle array"<<ENDLOG;
+}
+
+void AliL3Evaluate::SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path)
 {
   //Setup for using the fast simulator.
 
@@ -157,39 +163,8 @@ void AliL3Evaluate::SetupFast(Char_t *trackfile,Char_t *clustfile,Char_t *mcClus
     LOG(AliL3Log::kError,"AliL3Evaluation::SetupFast","File Open")
       <<"Inputfile "<<mcClusterfile<<" does not exist"<<ENDLOG; 
 
-  Char_t fname[256];
-  AliL3FileHandler *clusterfile[36][5];
-  for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
-    {
-      for(Int_t p=0; p<5; p++)
-	{
-	  clusterfile[s][p] = new AliL3FileHandler();
-	  sprintf(fname,"points_%d_%d.raw",s,p);
-	  if(!clusterfile[s][p]->SetBinaryInput(fname))
-	    {
-	      LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
-		<<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
-	      return;
-	    }
-	  fClusters[s][p] = (AliL3SpacePointData*)clusterfile[s][p]->Allocate();
-	  clusterfile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
-	  clusterfile[s][p]->CloseBinaryInput();
-	}
-    }
-  
-  
-  AliL3FileHandler *tfile = new AliL3FileHandler();
-  if(!tfile->SetBinaryInput(trackfile))
-    {
-      LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
-	<<"Inputfile "<<trackfile<<" does not exist"<<ENDLOG; 
-      return;
-    }
-  fTracks = new AliL3TrackArray();
-  tfile->Binary2TrackArray(fTracks);
-  tfile->CloseBinaryInput();
-  delete tfile;
-  
+  Setup(trackfile,path);
+
   if(!SetMCParticleArray())
     LOG(AliL3Log::kError,"AliL3Evaluation::SetupFast","Particle array")
       <<"Error setting up particle array"<<ENDLOG;
@@ -285,8 +260,8 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
       if(!clusterok) 
 	LOG(AliL3Log::kError,"AliL3Evaluate::DefineGoodTracks","Cluster Array")
 	  <<"Error loading clusters from rootfile"<<ENDLOG;
-      
-      for(Int_t i=padrow[0]; i<=padrow[1]; i++)
+            
+      for(Int_t i=0; i<carray.GetTree()->GetEntries(); i++)  
 	{
 	  Int_t sec,row,sl,lr;
 	  AliSegmentID *s = carray.LoadEntry(i);
@@ -294,7 +269,8 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
 	  fTransform->Sector2Slice(sl,lr,sec,row);
 	  
 	  if(sl != slice) {carray.ClearRow(sec,row); continue;}
-	  if(lr != i) {carray.ClearRow(sec,row); continue;}
+	  if(lr < padrow[0]) {carray.ClearRow(sec,row); continue;}
+	  if(lr > padrow[1]) {carray.ClearRow(sec,row); continue;}
 	  AliTPCClustersRow *cRow = carray.GetRow(sec,row);
 	  for(Int_t j=0; j<cRow->GetArray()->GetEntriesFast(); j++)
 	    {
@@ -373,6 +349,10 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
      particle_id[entries] = i;
    }
   delete [] good;
+  LOG(AliL3Log::kInformational,"AliL3Evaluate::DefineGoodTracks","NPart")
+  <<AliL3Log::kDec<<"Found "<<good_part->GetEntriesFast()
+  <<" good Particles (Tracks) out of "<<fParticles->GetEntriesFast()<<ENDLOG;
+
   return good_part;
 }
 
@@ -385,7 +365,9 @@ void AliL3Evaluate::EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t
   TObjArray *good_particles = DefineGoodTracks(slice,row[patch],good_number,particle_id);
   SetMinPoints(min_points);
   AssignIDs();
+  CreateHistos();
   FillEffHistos(good_particles,particle_id);
+  CalcEffHistos();
   delete good_particles;
   delete [] particle_id;
 }
@@ -396,33 +378,38 @@ void AliL3Evaluate::EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number
   //min_points = minimum points on track to be considered for evaluation
   //good_number = minimum hits (padrows) produced by simulated track for consideration.
 
-  Int_t row[174] = {0,173};
+  Int_t row[2] = {0,173};
   Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
   TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
   SetMinPoints(min_points);
   AssignIDs();
+  CreateHistos();
   FillEffHistos(good_particles,particle_id);
+  CalcEffHistos();
   delete good_particles;
   delete [] particle_id;
 }
 
-void AliL3Evaluate::EvaluateGlobal()
+void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number)
 {
   //Make efficiency plots for tracking on several slices.
-  /*
-  Int_t row[174] = {0,173};
-  TObjArray *good_particles = DefineGoodTracks(slice,row,good_number);
-  FillEffHistos(good_particles);
-  delete good_particles;
-  */
+  
+  Int_t row[2] = {0,173};
+  Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
+  SetMinPoints(min_points);
+  AssignIDs();
+  CreateHistos();
+  for(Int_t slice=fMinSlice;slice<=fMaxSlice;slice++){
+    TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
+    FillEffHistos(good_particles,particle_id);
+    delete good_particles;
+  }
+  CalcEffHistos();
 }
 
 void AliL3Evaluate::FillEffHistos(TObjArray *good_particles,Int_t *particle_id)
 {  
   //Fill the efficiency histograms.
-
-  
-  CreateHistos();
 
   for(Int_t i=0; i<good_particles->GetEntriesFast(); i++)
     {
@@ -452,7 +439,9 @@ void AliL3Evaluate::FillEffHistos(TObjArray *good_particles,Int_t *particle_id)
 	  
 	}
     }
-  
+}
+
+void AliL3Evaluate::CalcEffHistos(){  
   
   Stat_t ngood=fNGoodTracksPt->GetEntries();
   Stat_t nfound=fNFoundTracksPt->GetEntries();
@@ -524,12 +513,8 @@ void AliL3Evaluate::AssignIDs()
       printf("track %i id %d\n",i,tID);
     }
   
-  if(!fIsSlow)
-    {
-      delete [] pID;
-      delete [] index;
-    }
- 
+  if(pID)   delete [] pID;
+  if(index) delete [] index;
 }
 
 

@@ -55,6 +55,7 @@ class AliL3Evaluate : public TObject {
   TH1F *fFakeTrackEffEta;
   
   void FillEffHistos(TObjArray *good_particles,Int_t *particle_id);
+  void CalcEffHistos();
   void AssignIDs();
   Bool_t SetDigitsTree();
   Bool_t SetMCParticleArray();
@@ -62,19 +63,20 @@ class AliL3Evaluate : public TObject {
   Int_t GetMCTrackLabel(AliL3Track *track,UInt_t *index=0,Int_t *pID=0,Int_t npoints=0);
   Int_t **GetClusterIDs(AliL3Track *track,UInt_t *index=0,Int_t *pID=0,Int_t npoints=0);
   Int_t *GetFastIDs(UInt_t &tmp_ind,Int_t &npoints);
- 
+  void Setup(Char_t *trackfile,Char_t *path);
+
  public:
   AliL3Evaluate();
   AliL3Evaluate(Char_t *mcfile,Int_t *slice);
 
   virtual ~AliL3Evaluate();
 
-  void Setup(Char_t *trackfile,Char_t *clustfile);
-  void SetupFast(Char_t *trackfile,Char_t *clustfile,Char_t *mcClusterfile);
+  void SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path="./");
+  void SetupSlow(Char_t *trackfile,Char_t *path="./");
   void CreateHistos(Int_t nbin=20,Int_t xlow=0,Int_t xup=4);
   void EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t good_number);
   void EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number);
-  void EvaluateGlobal();
+  void EvaluateGlobal(Int_t min_points,Int_t good_number);
   void Write2File(Char_t *outputfile);
     
   TH1F *GetTrackEffPt() {return fTrackEffPt;}
