@@ -8,7 +8,7 @@
  ****************************************************************************/
 
 #ifndef __CINT__
-  #include <iostream.h>
+  #include <Riostream.h>
   #include <fstream.h>
 
   #include "TH1.h"

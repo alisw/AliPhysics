@@ -3,7 +3,7 @@
  ****************************************************************************/
 
 #ifndef __CINT__
-  #include <iostream.h>
+  #include <Riostream.h>
   #include "AliRun.h"
   #include "AliTPCv1.h"
   #include "AliTPCv2.h"
@@ -18,9 +18,6 @@ Int_t AliTPCFindClusters(Int_t n=1) {
    if (!out->IsOpen()) {cerr<<"Delete old AliTPCclusters.root !\n"; return 1;}
    TFile *in=TFile::Open("rfio:galice.root");
    if (!in->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
-
-   TFile *ind=TFile::Open("galice.root");
-   if (!ind->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
 
    if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
      cerr<<"gAlice have not been found on galice.root !\n";
@@ -56,7 +53,7 @@ Int_t AliTPCFindClusters(Int_t n=1) {
       {
 	// delete gAlice; gAlice=0;
        AliTPCv2 tpc; 
-       tpc.SetParam(dig); timer.Start(); ind->cd();  
+       tpc.SetParam(dig); timer.Start(); cwd->cd();  
        for (Int_t i=0;i<n;i++){
 	 printf("Processing event %d\n",i);
          tpc.Digits2Clusters(out,i);

@@ -1,5 +1,5 @@
 #ifndef __CINT__
-  #include <iostream.h>
+  #include <Riostream.h>
   #include <fstream.h>
 
   #include "AliRun.h"

@@ -3,7 +3,7 @@
  ****************************************************************************/
 
 #ifndef __CINT__
-#include <iostream.h>
+#include <Riostream.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TCanvas.h>
