@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.4  2000/11/20 21:44:17  pcrochet
 some modifications to account for the new class AliMUONResponseTriggerV1
 
@@ -45,7 +48,8 @@ Int_t AliMUONResponseTrigger::SetGenerCluster(){
 } 
 
 //------------------------------------------------------------------   
-Int_t AliMUONResponseTrigger::DigitResponse(Int_t digit){
+Int_t AliMUONResponseTrigger::DigitResponse(Int_t digit, 
+					    AliMUONTransientDigit* where){
 //  only digital (0/1) information available
   if (digit) digit=1;
   return digit;

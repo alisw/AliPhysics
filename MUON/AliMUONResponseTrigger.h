@@ -13,7 +13,7 @@ public AliMUONResponseV0 {
   AliMUONResponseTrigger(){};
   virtual ~AliMUONResponseTrigger(){} 
 
-  virtual Int_t    DigitResponse(Int_t digit);    
+  virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);
 
   // Set the GenerCluster parameter       
   virtual Int_t SetGenerCluster();
