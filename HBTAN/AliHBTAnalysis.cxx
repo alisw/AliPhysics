@@ -104,8 +104,13 @@ AliHBTAnalysis::~AliHBTAnalysis()
  //note that we do not delete functions itself
  // they should be deleted by whom where created
  //we only store pointers, and we use "new" only for pointers array
-   if (fIsOwner) 
-    DeleteFunctions();
+    
+   if (fIsOwner)
+    {
+      if (AliHBTParticle::GetDebug()>5)Info("~AliHBTAnalysis","Is Owner: Attempting to delete functions");
+      DeleteFunctions();
+      if (AliHBTParticle::GetDebug()>5)Info("~AliHBTAnalysis","Delete functions done");
+    }
    delete [] fTrackFunctions;
    delete [] fParticleFunctions;
    delete [] fParticleAndTrackFunctions;
@@ -124,27 +129,54 @@ void AliHBTAnalysis::DeleteFunctions()
  //Deletes all functions added to analysis
  UInt_t ii;
  for(ii = 0;ii<fNParticleFunctions;ii++)
-   delete fParticleFunctions[ii];
+  { 
+    if (AliHBTParticle::GetDebug()>5)
+      Info("DeleteFunctions","Deleting ParticleFunction %s",fParticleFunctions[ii]->Name());
+    delete fParticleFunctions[ii];
+  } 
  fNParticleFunctions = 0;
                 
  for(ii = 0;ii<fNTrackFunctions;ii++)
-   delete fTrackFunctions[ii];
+  { 
+    if (AliHBTParticle::GetDebug()>5)
+     {
+       Info("DeleteFunctions","Deleting TrackFunction %#x",fParticleFunctions[ii]);
+       Info("DeleteFunctions","Deleting TrackFunction %s",fParticleFunctions[ii]->Name());
+     }
+    delete fTrackFunctions[ii];
+  }  
  fNTrackFunctions = 0;
  
  for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
-   delete fParticleAndTrackFunctions[ii];
+  { 
+    if (AliHBTParticle::GetDebug()>5)
+      Info("DeleteFunctions","Deleting ParticleAndTrackFunction %s",fParticleFunctions[ii]->Name());
+    delete fParticleAndTrackFunctions[ii];
+  }  
  fNParticleAndTrackFunctions = 0;
  
  for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
-   delete fParticleMonitorFunctions[ii];
+  { 
+    if (AliHBTParticle::GetDebug()>5)
+      Info("DeleteFunctions","Deleting ParticleMonitorFunction %s",fParticleFunctions[ii]->Name());
+    delete fParticleMonitorFunctions[ii];
+  } 
  fNParticleMonitorFunctions = 0;
    
  for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
-   delete fTrackMonitorFunctions[ii];
+  { 
+    if (AliHBTParticle::GetDebug()>5)
+      Info("DeleteFunctions","Deleting TrackMonitorFunction %s",fParticleFunctions[ii]->Name());
+    delete fTrackMonitorFunctions[ii];
+  } 
  fNTrackMonitorFunctions = 0;
    
  for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
-   delete fParticleAndTrackMonitorFunctions[ii];
+  { 
+    if (AliHBTParticle::GetDebug()>5)
+      Info("DeleteFunctions","Deleting ParticleAndTrackMonitorFunction %s",fParticleFunctions[ii]->Name());
+    delete fParticleAndTrackMonitorFunctions[ii];
+  } 
  fNParticleAndTrackMonitorFunctions = 0;
  
 }
