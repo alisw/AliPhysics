@@ -7,8 +7,7 @@
 
 // include files and class forward declarations
 
-#include "TH2.h"
-#include "TMatrix.h" 
+#include "TH2.h" 
 
 class TMatrix;
 class TH1F;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.2  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -42,11 +45,7 @@ Revision 1.1.4.2  2000/04/10 11:32:37  kowal2
 #include "TClonesArray.h"
 #include "AliTPC.h"
 #include "TRandom.h"
-#include "AliCluster.h"
 #include "AliTPCClusterFinder.h"
-//*KEEP,TMath.
-
-// other include files follow here
 
 
 ClassImp(AliH2F)
