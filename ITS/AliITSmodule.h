@@ -87,25 +87,30 @@ class AliITSmodule:public TObject{
     // Adds pointer of hit belonging to this module
     // and returns number of hits in this module
     Int_t  AddHit(AliITShit *hit,Int_t TrackIndex,Int_t HitIndex);
-    void MedianHitG(Int_t index, Float_t hitx1,Float_t hity1,Float_t hitz1, 
-                    Float_t hitx2,Float_t hity2,Float_t hitz2, Float_t &xMg, 
-                    Float_t &yMg, Float_t &zMg);
-    void MedianHitL(Int_t index, AliITShit *itsHit1, AliITShit *itsHit2, 
-                    Float_t &xMl, Float_t &yMl, Float_t &zMl);
-    Double_t PathLength(Int_t index, AliITShit *itsHit1, AliITShit *itsHit2);
-    Int_t GetHitTrackIndex(Int_t i) { 
-      // get hit track index
-      return fTrackIndex->At(i);
-    }
+    Int_t GetHitTrackIndex(Int_t i) {// get hit track index
+	return fTrackIndex->At(i);}
     Int_t GetHitHitIndex(Int_t i) { 
-      // return the hit index number in TreeH for the given sorted hit in the module.
-      return fHitIndex->At(i);
-    }
+	// return the hit index number in TreeH for the given sorted hit in
+	// the module.
+	return fHitIndex->At(i);}
     void GetHitTrackAndHitIndex(Int_t i,Int_t &TrackIndex,Int_t &HitIndex) {
     // return the hit index number for the given hit. Hits are kept on
     // file according to their track index and hit index numbers.
-      TrackIndex = fTrackIndex->At(i);HitIndex = fHitIndex->At(i);
-    }
+      TrackIndex = fTrackIndex->At(i);HitIndex = fHitIndex->At(i);}
+    // Computes mean global location from hits that make up a track passing
+    // through a volume.
+    Bool_t MedianHitG(AliITShit *h1,AliITShit *h2,
+		      Float_t &x,Float_t &y,Float_t &z);
+    void MedianHitG(Int_t index, Float_t hitx1,Float_t hity1,Float_t hitz1, 
+                    Float_t hitx2,Float_t hity2,Float_t hitz2, Float_t &xMg, 
+                    Float_t &yMg, Float_t &zMg);
+    // Computes mean local location from hits that make up a track passing
+    // through a volume.
+    Bool_t MedianHitL(AliITShit *h1,AliITShit *h2,
+		      Float_t &x,Float_t &y,Float_t &z);
+    void MedianHitL(Int_t index, AliITShit *itsHit1, AliITShit *itsHit2, 
+                    Float_t &xMl, Float_t &yMl, Float_t &zMl);
+    Double_t PathLength(Int_t index, AliITShit *itsHit1, AliITShit *itsHit2);
     // returns both the track and hit index numbers for the given hit. Hits
     // are kept on file according to their track index and hit index numbers.
     void MedianHit(Int_t index, Float_t xg,Float_t yg,Float_t zg,

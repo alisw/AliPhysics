@@ -7,6 +7,7 @@
 
 #include "AliHit.h" 
 #include <iostream.h>
+#include <TLorentzVector.h>
 
 class TParticle;
 
@@ -97,14 +98,21 @@ class AliITShit : public AliHit {
     // Float_t fZ;   // defined in AliHit
 
  public:
-    AliITShit() {}// Default consrtructor
+    AliITShit();// Default consrtructor
+    // Old Standard Constructor
     AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
+    // New Standard Constructor
+    AliITShit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,
+	      TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p);
+    // Default destructor
     virtual ~AliITShit() {}
     // Get Hit information functions.
     // virtual int GetTrack() const {return fTrack;} // define in AliHit
     // virtual void SetTrack(int track) const {fTrack=track;) // AliHit
     virtual Int_t GetTrackStatus() const {//returns the status code
 	return fStatus;}
+    virtual Int_t GetTrackStatus0() const {//returns the status code
+	return fStatus0;}
     virtual Int_t GetLayer() const {// returns the layer number
 	return fLayer;}
     virtual Int_t GetLadder() const {// returns the ladder number
@@ -144,6 +152,11 @@ class AliITShit : public AliHit {
     virtual Float_t GetZG()const {// Returns particle Z position at this hit
 	// in global coordinates.
 	return fZ;}
+    // Returns particle 3 position at this hit in global coordinates.
+    virtual void GetPositionG0(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
+	const {// returns the initial position in the Global frame and the
+	// time of flight
+	x=fx0;y=fy0;z=fz0,tof=fTof;return;};
     virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z);
     // Returns particle 3 position at this hit in local coordinates.
     virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof);
@@ -217,8 +230,13 @@ class AliITShit : public AliHit {
     Float_t   fPz;     // PZ of particle at the point of the hit
     Float_t   fDestep; // Energy deposited in the current step
     Float_t   fTof;    // Time of flight at the point of the hit
+    Int_t     fStatus0;// Track Status of Starting point
+    Float_t   fx0;     // Starting point of this step
+    Float_t   fy0;     // Starting point of this step
+    Float_t   fz0;     // Starting point of this step
+    Float_t   ft0;     // Starting point of this step
 
-    ClassDef(AliITShit,1)  //Hits object for set:ITS
+    ClassDef(AliITShit,2)  //Hits object for set:ITS
 	 
 }; 
 // Input and output function for standard C++ input/output.

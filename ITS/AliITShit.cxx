@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/05/19 18:17:03  hristov
+Changes needed by ICC/IFC compiler (Intel)
+
 Revision 1.13  2002/03/09 18:35:35  nilsen
 Added functions to print out Hit data members.
 
@@ -230,6 +233,71 @@ ClassImp(AliITShit)
 //
 ////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
+AliITShit::AliITShit():AliHit(){
+    // Default Constructor
+    // Zero data member just to be safe.
+    // Intputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    A default created AliITShit class.
+
+    fStatus = 0; // Track Status
+    fLayer  = 0;  // Layer number
+    fLadder = 0; // Ladder number
+    fDet    = 0;    // Detector number  
+    fPx     = 0.0;     // PX of particle at the point of the hit
+    fPy     = 0.0;     // PY of particle at the point of the hit
+    fPz     = 0.0;     // PZ of particle at the point of the hit
+    fDestep = 0.0; // Energy deposited in the current step
+    fTof    = 0.0;    // Time of flight at the point of the hit
+    fx0     = 0.0;     // Starting point of this step
+    fy0     = 0.0;     // Starting point of this step
+    fz0     = 0.0;     // Starting point of this step
+    ft0     = 0.0;     // Starting point of this step
+}
+AliITShit::AliITShit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,
+		     Float_t tof,TLorentzVector &x,TLorentzVector &x0,
+		     TLorentzVector &p) : AliHit(shunt, track){
+////////////////////////////////////////////////////////////////////////
+// Create ITS hit
+//     The creator of the AliITShit class. The variables shunt and
+// track are passed to the creator of the AliHit class. See the AliHit
+// class for a full description. In the units of the Monte Carlo
+////////////////////////////////////////////////////////////////////////
+    // Intputs:
+    //    Int_t shunt   See AliHit
+    //    Int_t track   Track number, see AliHit
+    //    Int_t *vol     Array of integer hit data,
+    //                     vol[0] Layer where the hit is, 1-6 typicaly
+    //                     vol[1] Ladder where the hit is.
+    //                     vol[2] Detector number where the hit is
+    //                     vol[3] Set of status bits
+    //                     vol[4] Set of status bits at start
+    // Outputs:
+    //    none.
+    // Return:
+    //    A default created AliITShit class.
+
+    fLayer      = vol[0];  // Layer number
+    fLadder     = vol[2];  // Ladder number
+    fDet        = vol[1];  // Detector number
+    fStatus     = vol[3];  // Track status flags
+    fStatus0    = vol[4];  // Track status flag for start position.
+    fX          = x.X();   // Track X global position
+    fY          = x.Y();   // Track Y global position
+    fZ          = x.Z();   // Track Z global position
+    fPx         = p.Px();  // Track X Momentum
+    fPy         = p.Py();  // Track Y Momentum
+    fPz         = p.Pz();  // Track Z Momentum
+    fDestep     = edep;    // Track dE/dx for this step
+    fTof        = tof   ;  // Track Time of Flight for this step
+    fx0         = x0.X();  // Track X global position
+    fy0         = x0.Y();  // Track Y global position
+    fz0         = x0.Z();  // Track Z global position
+}
+//______________________________________________________________________
 AliITShit::AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
     AliHit(shunt, track){
 ////////////////////////////////////////////////////////////////////////
@@ -242,13 +310,34 @@ AliITShit::AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
 // fZ = hits[2], fPx = hits[3], fPy = hits[4], fPz = hits[5],
 // fDestep = hits[6], and fTof = hits[7]. In the units of the Monte Carlo
 ////////////////////////////////////////////////////////////////////////
+    // Intputs:
+    //    Int_t shunt   See AliHit
+    //    Int_t track   Track number, see AliHit
+    //    Int_t *vol     Array of integer hit data,
+    //                     vol[0] Layer where the hit is, 1-6 typicaly
+    //                     vol[1] Ladder where the hit is.
+    //                     vol[2] Detector number where the hit is
+    //                     vol[3] Set of status bits
+    //    Float_t *hits   Array of hit information
+    //                     hits[0] X global position of this hit
+    //                     hits[1] Y global position of this hit
+    //                     hits[2] Z global position of this hit
+    //                     hits[3] Px global position of this hit
+    //                     hits[4] Py global position of this hit
+    //                     hits[5] Pz global position of this hit
+    //                     hits[6] Energy deposited by this step
+    //                     hits[7] Time of flight of this particle at this step
+    // Outputs:
+    //    none.
+    // Return:
+    //    A standard created AliITShit class.
   fLayer      = vol[0];   // Layer number
   fLadder     = vol[2];   // Ladder number
   fDet        = vol[1];   // Detector number
   fStatus     = vol[3];   // Track status flags
-  fX          = hits[0];  // Track X position
-  fY          = hits[1];  // Track Y position
-  fZ          = hits[2];  // Track Z position
+  fX          = hits[0];  // Track X global position
+  fY          = hits[1];  // Track Y global position
+  fZ          = hits[2];  // Track Z global position
   fPx         = hits[3];  // Track X Momentum
   fPy         = hits[4];  // Track Y Momentum
   fPz         = hits[5];  // Track Z Momentum
@@ -504,6 +593,7 @@ void AliITShit::Print(ostream *os){
     *os << fLayer << " " << fLadder << " " << fDet << " ";;
     *os << fPx << " " << fPy << " " << fPz << " ";
     *os << fDestep << " " << fTof;
+    *os << " " << fx0 << " " << fy0 << " " << fz0 << " ";
     *os << endl;
     os->flags(fmt); // reset back to old formating.
     return;
@@ -518,6 +608,7 @@ void AliITShit::Read(istream *is){
     *is >> fTrack >> fX >> fY >> fZ;
     *is >> fStatus >> fLayer >> fLadder >> fDet >> fPx >> fPy >> fPz >>
 	   fDestep >> fTof;
+    *is >> fx0 >> fy0 >> fz0;
     return;
 }
 //----------------------------------------------------------------------
