@@ -127,10 +127,10 @@ AliD0toKpi::AliD0toKpi( const AliD0toKpi& d0toKpi):TObject(d0toKpi) {
   // dummy copy constructor
 }
 //----------------------------------------------------------------------------
-void AliD0toKpi::ApplyPID(TString pidScheme) {
+void AliD0toKpi::ApplyPID(const Char_t * pidScheme) {
   // Applies particle identification
-  const char *tofparampbpb = strstr(pidScheme.Data(),"TOFparamPbPb");
-  const char *tofparampp   = strstr(pidScheme.Data(),"TOFparamPP");
+  const char *tofparampbpb = strstr(pidScheme,"TOFparamPbPb");
+  const char *tofparampp   = strstr(pidScheme,"TOFparamPP");
 
   if((tofparampbpb || tofparampp) && fPdg[0]==0) {
     printf("AliD0toKpi::ApplyPID :\n Warning: TOF parameterized PID can be used only for simulation!\n"); 
@@ -496,11 +496,11 @@ void AliD0toKpi::SetPIDresponse(Double_t resp0[5],Double_t resp1[5]) {
   return;
 } 
 //-----------------------------------------------------------------------------
-void AliD0toKpi::DrawPIDinTOF(TString pidScheme) const {
+void AliD0toKpi::DrawPIDinTOF(const Char_t * pidScheme) const {
   // Draw parameterized PID probabilities in TOF
 
-  const char *tofparampbpb = strstr(pidScheme.Data(),"TOFparamPbPb");
-  const char *tofparampp = strstr(pidScheme.Data(),"TOFparamPP");
+  const char *tofparampbpb = strstr(pidScheme,"TOFparamPbPb");
+  const char *tofparampp = strstr(pidScheme,"TOFparamPP");
 
   TH2F* framePi = new TH2F("framePi","Tag probabilities for PIONS",2,0,2.5,2,0,1);
   framePi->SetXTitle("p [GeV/c]"); 

@@ -10,16 +10,10 @@
 //         Origin: A. Dainese    andrea.dainese@pd.infn.it                  
 //-------------------------------------------------------------------------
 
-#include <Riostream.h>
 #include <TString.h>
 #include <TNamed.h>
 #include "AliESD.h"
 #include "AliITStrackV2.h"
-#include "AliITSVertexerTracks.h"
-#include "AliESDVertex.h"
-#include "AliV0vertexer.h"
-#include "AliV0vertex.h"
-#include "AliD0toKpi.h"
 
 //-----------------------------------------------------------------------------
 class AliD0toKpiAnalysis : public TNamed {
@@ -35,20 +29,20 @@ class AliD0toKpiAnalysis : public TNamed {
   void FindCandidatesESD(Int_t evFirst=0,Int_t evLast=0,
   			 const Char_t *outName="AliD0toKpi.root");
   void PrintStatus() const;
-  void SetBz(Double_t bz=-9999.) { fBz=bz; return; }
-  void SetVertexOnTheFly() { fVertexOnTheFly=kTRUE; return; }
-  void SetSimulation() { fSim=kTRUE; return; }
-  void SetOnlySignal() { fOnlySignal=kTRUE; return; }
-  void SetPtCut(Double_t pt=0.) { fPtCut=pt; return; }
-  void Setd0Cut(Double_t d0=0.) { fd0Cut=d0; return; } 
-  void SetMassCut(Double_t deltaM=1000.) { fMassCut=deltaM; return; }
+  void SetBz(Double_t bz=-9999.) { fBz=bz; }
+  void SetVertexOnTheFly() { fVertexOnTheFly=kTRUE; }
+  void SetSimulation() { fSim=kTRUE; }
+  void SetOnlySignal() { fOnlySignal=kTRUE; }
+  void SetPtCut(Double_t pt=0.) { fPtCut=pt; }
+  void Setd0Cut(Double_t d0=0.) { fd0Cut=d0; } 
+  void SetMassCut(Double_t deltaM=1000.) { fMassCut=deltaM; }
   void SetD0Cuts(Double_t cut0=1000.,Double_t cut1=100000.,
 		 Double_t cut2=1.1,Double_t cut3=0.,Double_t cut4=0.,
 		 Double_t cut5=100000.,Double_t cut6=100000.,
 		 Double_t cut7=100000000.,Double_t cut8=-1.1); 
   void SetD0Cuts(const Double_t cuts[9]); 
-  void SetPID(TString pid="TOFparam_PbPb") { fPID=pid; return; }
-  void SetDebug() { fDebug=kTRUE; return; }
+  void SetPID(const Char_t * pid="TOFparam_PbPb") { fPID=pid; }
+  void SetDebug() { fDebug=kTRUE; }
   //
  private:
   //
@@ -81,16 +75,16 @@ class AliD0toKpiAnalysis : public TNamed {
   void     MakeTracksRefFileESD() const;
   Bool_t   SelectInvMass(const Double_t p[6]) const;
   void     SelectTracks(TTree &trkTree,
-		      TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
-		      TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const; 
+			TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
+			TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const;
   void     SelectTracksESD(AliESD &event,
-       TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
-       TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const; 
+			   TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
+			   TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const;
   void     SelectTracksESDvtx(AliESD &event,TTree *trkTree,
-       TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
-       TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const; 
+			      TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
+			      TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const;
   void     SetVertex1(Double_t x=0.,Double_t y=0.,Double_t z=0.) 
-    { fV1[0]=x;fV1[1]=y;fV1[2]=z; return; }
+    { fV1[0]=x;fV1[1]=y;fV1[2]=z; }
   void     SimulationInfo(TTree *treeD0in,TTree *treeD0out) const;
   Bool_t   SingleTrkCuts(const AliITStrackV2& trk) const;
   //

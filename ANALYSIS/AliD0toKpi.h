@@ -10,6 +10,7 @@
 //         Origin: A. Dainese    andrea.dainese@pd.infn.it                  
 //-------------------------------------------------------------------------
 
+#include <TObject.h>
 #include <TMath.h>
 
 //----------------------------------------------------------------------------
@@ -83,7 +84,7 @@ class AliD0toKpi : public TObject {
   AliD0toKpi(const AliD0toKpi& d0toKpi);
 
   Double_t Alpha() const { return (Ql(0)-Ql(1))/(Ql(0)+Ql(1)); }
-  void     ApplyPID(TString pidScheme="TOFparamPbPb");
+  void     ApplyPID(const Char_t * pidScheme="TOFparamPbPb");
   Double_t ChildrenRelAngle() const; 
   void     ComputeWgts();
   void     CorrectWgt4BR(Double_t factor);
@@ -102,9 +103,9 @@ class AliD0toKpi : public TObject {
   Int_t    GetPdgMum(Int_t child) const {return fMum[child]; }
   void     GetWgts(Double_t &WgtD0,Double_t &WgtD0bar,TString sample) const;
   void     GetPrimaryVtx(Double_t vtx[3]) const 
-    { vtx[0]=fV1x; vtx[1]=fV1y; vtx[2]=fV1z; return; }
+    { vtx[0]=fV1x; vtx[1]=fV1y; vtx[2]=fV1z; }
   void     GetSecondaryVtx(Double_t vtx[3]) const 
-    { vtx[0]=fV2x; vtx[1]=fV2y; vtx[2]=fV2z; return; }
+    { vtx[0]=fV2x; vtx[1]=fV2y; vtx[2]=fV2z; }
 
   void     InvMass(Double_t &mD0,Double_t &mD0bar) const;
   Bool_t   IsSignal() const { if(fSignal) return kTRUE; return kFALSE; } 
@@ -124,15 +125,15 @@ class AliD0toKpi : public TObject {
   Double_t Rapidity() const { return 0.5*TMath::Log((Energy()+Pz())/(Energy()-Pz()+1.e-13)); }
   Bool_t   Select(const Double_t* cuts,Int_t& okD0,Int_t& okD0bar) const;
   void     SetPrimaryVtx(Double_t vtx[3]) 
-    { fV1x=vtx[0]; fV1y=vtx[1]; fV1z=vtx[2]; return; }
-  void     SetSignal() { fSignal =  kTRUE; return; }
+    { fV1x=vtx[0]; fV1y=vtx[1]; fV1z=vtx[2]; }
+  void     SetSignal() { fSignal =  kTRUE; }
   void     SetTOFmasses(Double_t mass[2]) 
-    { fTOFmass[0]=mass[0]; fTOFmass[1]=mass[1]; return; }
+    { fTOFmass[0]=mass[0]; fTOFmass[1]=mass[1]; }
   void     SetPIDresponse(Double_t resp0[5],Double_t resp1[5]); 
-  void     SetPdgCodes(Int_t pdg[2]) {fPdg[0]=pdg[0];fPdg[1]=pdg[1];return;}
-  void     SetMumPdgCodes(Int_t mum[2]) {fMum[0]=mum[0];fMum[1]=mum[1];return;}
+  void     SetPdgCodes(Int_t pdg[2]) {fPdg[0]=pdg[0];fPdg[1]=pdg[1]; }
+  void     SetMumPdgCodes(Int_t mum[2]) {fMum[0]=mum[0];fMum[1]=mum[1]; }
 
-  void     DrawPIDinTOF(TString pidScheme="TOFparamPbPb") const;
+  void     DrawPIDinTOF(const Char_t * pidScheme="TOFparamPbPb") const;
   Double_t LinearInterpolation(Double_t p,Int_t nBins,Double_t Bin,
 			       const Double_t *values) const;
   //  void     SetPtWgts4pp();
