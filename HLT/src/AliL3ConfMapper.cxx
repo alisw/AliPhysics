@@ -88,7 +88,7 @@ void AliL3ConfMapper::InitVolumes()
   memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer));
   
   Int_t max_num_of_tracks = 1000;
-  Int_t max_num_of_hits = 50000;
+  Int_t max_num_of_hits = 80000;
   
   if(fHit)
     delete [] fHit;
@@ -122,7 +122,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   if(etarange)
     {
       fEtaMin = etarange[0];
-      fEtaMax = etarange[1];
+      fEtaMax = sector < 18 ? etarange[1] : -etarange[1];
     }
   else
     {
