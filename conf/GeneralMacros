@@ -37,10 +37,10 @@ $(DICT):
 		@echo "$@ done"
  
 depend:
-		@$(MAKEDEPEND) -fMake-depend -- $(CXXFLAGS) $(DEPINC) -- $^
+		@$(MAKEDEPEND) -ftgt_$(ALICE_TARGET)/Make-depend -ptgt_$(ALICE_TARGET)/ -- $(CXXFLAGS) $(DEPINC) -- $^
 
-Make-depend:
-		@cp $(ALICE_ROOT)/conf/Makedepend ./Make-depend
+tgt_$(ALICE_TARGET)/Make-depend:
+		@cp $(ALICE_ROOT)/conf/Makedepend $@
 
 macroclean:
 		@rm -f $(TOCLEAN) *~ \#*
