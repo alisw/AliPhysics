@@ -76,105 +76,66 @@ ClassImp(AliRICH)
 //End_Html
 
 AliRICH::AliRICH()
-{
-// Default ctor should not contain any new operators
-
-    fIshunt     = 0;
-    fHits       = 0;
-    fSDigits    = 0;
-    fNSDigits   = 0;
-    fNcerenkovs = 0;
-    fDchambers  = 0;
-    fRecHits1D = 0;
-    fRecHits3D = 0;
-    fRawClusters = 0;
-    fChambers = 0;
-    fCerenkovs  = 0;
-    for (Int_t i=0; i<7; i++){
-	fNdch[i]       = 0;
-	fNrawch[i]     = 0;
-	fNrechits1D[i] = 0;
-	fNrechits3D[i] = 0;
-    }
-
-    fFileName = 0;
-    fMerger = 0;
+{//Default ctor should not contain any new operators
+  fIshunt     = 0;
+  fHits       = 0;
+  fSDigits    = 0;
+  fNSDigits   = 0;
+  fNcerenkovs = 0;
+  fDchambers  = 0;
+  fRecHits1D = 0;
+  fRecHits3D = 0;
+  fRawClusters = 0;
+  fChambers = 0;
+  fCerenkovs  = 0;
+  for (Int_t i=0; i<kNCH; i++){
+      fNdch[i]       = 0;
+      fNrawch[i]     = 0;
+      fNrechits1D[i] = 0;
+      fNrechits3D[i] = 0;
+  }
+  fFileName = 0;
+  fMerger = 0;
 }//AliRICH::AliRICH()
-
+//______________________________________________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
-    : AliDetector(name,title)
-{
-// Named ctor
-   cout<<ClassName()<<"::named ctor(sName,sTitle)>\n"; // no way to control it as ctor is called before call to SetDebugXXXX()
-          
-    fHits       = new TClonesArray("AliRICHHit",1000  );
-    gAlice->AddHitList(fHits);
-    fSDigits    = new TClonesArray("AliRICHSDigit",100000);
-    fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
-    gAlice->AddHitList(fCerenkovs);
-    fNSDigits   = 0;
-    fNcerenkovs = 0;
-    fIshunt     = 0;
-    
-    //fNdch      = new Int_t[kNCH];
-    
-    fDchambers = new TObjArray(kNCH);
-
-    fRecHits1D = new TObjArray(kNCH);
-    fRecHits3D = new TObjArray(kNCH);
-    
-    Int_t i;
-   
-    for (i=0; i<kNCH ;i++) {
-      //PH	(*fDchambers)[i] = new TClonesArray("AliRICHDigit",10000); 
-       fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
-       fNdch[i]=0;
-    }
-
-    //fNrawch      = new Int_t[kNCH];
-    
-    fRawClusters = new TObjArray(kNCH);
-    //printf("Created fRwClusters with adress:%p",fRawClusters);
-
-    for (i=0; i<kNCH ;i++) {
-      //PH      (*fRawClusters)[i] = new TClonesArray("AliRICHRawCluster",10000); 
-      fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
-      fNrawch[i]=0;
-    }
-
-    //fNrechits      = new Int_t[kNCH];
-    
-    for (i=0; i<kNCH ;i++) {
-      //PH      (*fRecHits1D)[i] = new TClonesArray("AliRICHRecHit1D",1000);
-      fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
-    }
-    for (i=0; i<kNCH ;i++) {
-      //PH      (*fRecHits3D)[i] = new TClonesArray("AliRICHRecHit3D",1000);
-      fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
-    }
-    //printf("Created fRecHits with adress:%p",fRecHits);
-
-        
-    SetMarkerColor(kRed);
-    
-    /*fChambers = new TObjArray(kNCH);
-    for (i=0; i<kNCH; i++) 
-      (*fChambers)[i] = new AliRICHChamber();*/  
-    
-    fFileName = 0;
-    fMerger = 0;
-}
-
-AliRICH::AliRICH(const AliRICH& RICH)
-{
-// Copy ctor
-}
-
-
+        :AliDetector(name,title)
+{//Named ctor
+  if(GetDebug())Info("named ctor","Start.");
+  fHits       = new TClonesArray("AliRICHHit",1000  );
+  fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
+  fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+  gAlice->AddHitList(fHits);
+  gAlice->AddHitList(fCerenkovs);
+  fNSDigits   = 0;
+  fNcerenkovs = 0;
+  fIshunt     = 0;
+  fDchambers  =new TObjArray(kNCH);
+  fRawClusters=new TObjArray(kNCH);
+  fRecHits1D  =new TObjArray(kNCH);
+  fRecHits3D  =new TObjArray(kNCH);
+  for (int i=0; i<kNCH ;i++) {
+    fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+    fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
+    fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
+    fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
+    fNdch[i]=0;
+    fNrawch[i]=0;
+  }
+  SetMarkerColor(kRed);
+  
+  /*fChambers = new TObjArray(kNCH);
+  for (i=0; i<kNCH; i++) 
+    (*fChambers)[i] = new AliRICHChamber();*/  
+  
+  fFileName = 0;
+  fMerger = 0;
+  if(GetDebug())Info("named ctor","Stop.");
+}//AliRICH::AliRICH(const char *name, const char *title)
+//______________________________________________________________________________
 AliRICH::~AliRICH()
-{
-// Dtor of RICH manager class
-   if(IsDebugStart()) cout<<ClassName()<<"::default dtor()>\n";
+{//dtor
+  if(GetDebug()) Info("dtor","Start.");
 
     fIshunt  = 0;
     delete fHits;
@@ -202,16 +163,14 @@ AliRICH::~AliRICH()
       fRecHits3D->Delete();
       delete fRecHits3D;
     }                     
-    
-}
-
-
+  if(GetDebug()) Info("dtor","Stop.");    
+}//AliRICH::~AliRICH()
 //_____________________________________________________________________________
 Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
 {
 //  Calls the charge disintegration method of the current chamber and adds
 //  the simulated cluster to the root tree 
-   if(IsDebugHit()||IsDebugDigit()) cout<<ClassName()<<"::Hits2SDigits(...)>\n";
+  if(GetDebug()) Info("Hits2SDigits","Start.");
    
    Int_t clhits[5];
    Float_t newclust[4][500];
@@ -245,35 +204,28 @@ Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol
 	}
     }
     
-   if (gAlice->TreeS()){
+   if(gAlice->TreeS()){
 	gAlice->TreeS()->Fill();
 	gAlice->TreeS()->Write(0,TObject::kOverwrite);
 	//printf("Filled SDigits...\n");
    }
-    
+  if(GetDebug()) Info("Hits2SDigits","Stop.");    
    return nnew;
 }//Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
 
 void AliRICH::Hits2SDigits()
-{
-// Dummy: sdigits are created during transport.
-// Called from alirun.   
-   if(IsDebugHit()||IsDebugDigit()) cout<<ClassName()<<"::Hits2SDigits()>\n";
-
+{//Dummy: sdigits are created during transport. Called from alirun.   
+  if(GetDebug()) Info("Hit2SDigits","Start.");
 
   int nparticles = gAlice->GetNtrack();
   cout << "Particles (RICH):" <<nparticles<<endl;
   if (nparticles > 0) printf("SDigits were already generated.\n");
 
 }
-
-//___________________________________________
-void AliRICH::SDigits2Digits(Int_t nev, Int_t flag)
-{
-// Generate digits.
-// Called from macro. Multiple events, more functionality.   
-   if(IsDebugDigit()) cout<<ClassName()<<"::SDigits2Digits()>\n";
-
+//______________________________________________________________________________
+void AliRICH::SDigits2Digits()
+{//Generate digits from sdigits.
+  if(GetDebug()) Info("SDigits2Digits","Start.");
    //AliRICHChamber*       iChamber;
   
    //printf("Generating tresholds...\n");
@@ -298,31 +250,23 @@ void AliRICH::SDigits2Digits(Int_t nev, Int_t flag)
    manager->SetInputStream(0,"galice.root");
    //AliRICHDigitizer *dRICH  = new AliRICHDigitizer(manager);
    manager->Exec("deb");
-
-}
-//___________________________________________
-void AliRICH::SDigits2Digits()
-{
-  SDigits2Digits(0,0);
-}
-//___________________________________________
+  if(GetDebug()) Info("SDigits2Digits","Stop.");
+}//void AliRICH::SDigits2Digits()
+//______________________________________________________________________________
 void AliRICH::Digits2Reco()
 {
 // Generate clusters
 // Called from alirun, single event only.     
-   if(IsDebugDigit()||IsDebugReco()) cout<<ClassName()<<"::Digits2Reco()>\n";
-
+  if(GetDebug()) Info("Digits2Reco","Start.");
 
   int nparticles = gAlice->GetNtrack();
   cout << "Particles (RICH):" <<nparticles<<endl;
   if (nparticles > 0) FindClusters(0,0);
 
-}  
-
+}//void AliRICH::Digits2Reco()  
+//______________________________________________________________________________
 void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
-{
-// Adds the current hit to the RICH hits list
-   if(IsDebugHit()) cout<<ClassName()<<"::AddHit(...)>\n";
+{// Adds the current hit to the RICH hits list
 
     TClonesArray &lhits = *fHits;
     new(lhits[fNhits++]) AliRICHHit(fIshunt,track,vol,hits);
@@ -331,16 +275,13 @@ void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
 {
 // Adds a RICH cerenkov hit to the Cerenkov Hits list   
-   if(IsDebugHit()) cout<<ClassName()<<"::AddCerenkov()>\n";
 
     TClonesArray &lcerenkovs = *fCerenkovs;
     new(lcerenkovs[fNcerenkovs++]) AliRICHCerenkov(fIshunt,track,vol,cerenkovs);
 }
 
 void AliRICH::AddSDigit(Int_t *aSDigit)
-{
-// Adds the current S digit to the RICH list of S digits   
-   if(IsDebugDigit()) cout<<ClassName()<<"::AddSDigit()>\n";
+{// Adds the current S digit to the RICH list of S digits   
 
   TClonesArray &lSDigits = *fSDigits;
   new(lSDigits[fNSDigits++]) AliRICHSDigit(aSDigit);
@@ -348,56 +289,37 @@ void AliRICH::AddSDigit(Int_t *aSDigit)
 
 
 void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
-{
-// Add a RICH digit to the list   
-   if(IsDebugDigit()) cout<<ClassName()<<"::AddDigit()>\n";
+{// Add a RICH digit to the list   
 
    TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(id));
    new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
 }
 
 void AliRICH::AddRawCluster(Int_t id, const AliRICHRawCluster& c)
-{
-// Add a RICH digit to the list
+{// Add a RICH digit to the list
    
-   if(IsDebugStart())
-      cout<<ClassName()<<"::AddRawCluster()>\n";
-
-  //PH    TClonesArray &lrawcl = *((TClonesArray*)(*fRawClusters)[id]);
     TClonesArray &lrawcl = *((TClonesArray*)fRawClusters->At(id));
     new(lrawcl[fNrawch[id]++]) AliRICHRawCluster(c);
 }
-
 //_____________________________________________________________________________
 void AliRICH::AddRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *padsx, Int_t* padsy)
-{
-  
-  //
-  // Add a RICH reconstructed hit to the list
-  //
+{// Add a RICH reconstructed hit to the list
 
-  //PH    TClonesArray &lrec1D = *((TClonesArray*)(*fRecHits1D)[id]);
     TClonesArray &lrec1D = *((TClonesArray*)fRecHits1D->At(id));
     new(lrec1D[fNrechits1D[id]++]) AliRICHRecHit1D(id,rechit,photons,padsx,padsy);
 }
-
 //_____________________________________________________________________________
 void AliRICH::AddRecHit3D(Int_t id, Float_t *rechit, Float_t omega, Float_t theta, Float_t phi)
-{
-// Add a RICH reconstructed hit to the list
+{// Add a RICH reconstructed hit to the list
 
     TClonesArray &lrec3D = *((TClonesArray*)fRecHits3D->At(id));
     new(lrec3D[fNrechits3D[id]++]) AliRICHRecHit3D(id,rechit,omega,theta,phi);
 }
-
-//___________________________________________
-void AliRICH::BuildGeometry()
-    
-{
+//______________________________________________________________________________
+void AliRICH::BuildGeometry() 
+{// Builds a TNode geometry for event display
+  if(GetDebug())Info("BuildGeometry","Start.");
   
-  //
-  // Builds a TNode geometry for event display
-  //
     TNode *node, *subnode, *top;
     
     const int kColorRICH = kRed;
@@ -644,13 +566,11 @@ void AliRICH::BuildGeometry()
     subnode->SetLineColor(kGreen);
     fNodes->Add(subnode);
     fNodes->Add(node); 
-    
-}
-
-//___________________________________________
+  if(GetDebug())Info("BuildGeometry","Stop.");    
+}//void AliRICH::BuildGeometry()
+//______________________________________________________________________________
 void AliRICH::CreateGeometry()
 {
-    //
     // Create the geometry for RICH version 1
     //
     // Modified by:  N. Colonna (INFN - BARI, Nicola.Colonna@ba.infn.it) 
@@ -1141,9 +1061,7 @@ void AliRICH::CreateGeometry()
     gMC->Gspos("RICH", 7, "ALIC", -(offset)*sinphi  , offset*costheta*cosphi, -offset*sinphi,idrotm[1006], "ONLY");
     
 }
-
-
-//___________________________________________
+//______________________________________________________________________________
 void AliRICH::CreateMaterials()
 {
     //
@@ -1466,9 +1384,7 @@ void AliRICH::CreateMaterials()
     gMC->SetCerenkov(idtmed[1009], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
     gMC->SetCerenkov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
 }
-
-//___________________________________________
-
+//______________________________________________________________________________
 Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
 {
 
@@ -1676,834 +1592,48 @@ Float_t AliRICH::AbsoCH4(Float_t x)
 
 
 //___________________________________________
-Int_t AliRICH::DistancetoPrimitive(Int_t , Int_t )
-{
-
-// Default value
-
-    return 9999;
-}
-
-//___________________________________________
-void AliRICH::MakeBranch(Option_t* option)
-{
-  // Create Tree branches for the RICH.
-    
- const Int_t kBufferSize = 4000;
- char branchname[20];
-      
-   
- const char *cH = strstr(option,"H");
- const char *cD = strstr(option,"D");
- const char *cR = strstr(option,"R");
- const char *cS = strstr(option,"S");
-
-
-
- if (cH  && TreeH()) {
-  sprintf(branchname,"%sCerenkov",GetName());
-  if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
-  MakeBranchInTree(TreeH(),branchname, &fCerenkovs, kBufferSize, 0) ;
-
-  sprintf(branchname,"%sSDigits",GetName());
-  if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
-  MakeBranchInTree(TreeH(),branchname, &fSDigits, kBufferSize, 0) ;
-    //branch->SetAutoDelete(kFALSE);
-    //printf("Making branch %sSDigits in TreeH\n",GetName());
-  if (fHits == 0x0) fHits       = new TClonesArray("AliRICHHit",1000  );
-
-  }   
-  //this is after cH because we need to guarantee that fHits array is created
-  AliDetector::MakeBranch(option);
-      
-  if (cS && fLoader->TreeS()) {  
-    sprintf(branchname,"%sSDigits",GetName());
-    if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
-    MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, 0) ;
-  }
-   
- if (cD && fLoader->TreeD()) 
-   {
-    //
-    // one branch for digits per chamber
-    //
-    Int_t i;
-    if (fDchambers == 0x0) 
-      {
-         fDchambers = new TObjArray(kNCH);
-         for (i=0; i<kNCH ;i++) 
-           {
-             fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
-           }
-      }
-    for (i=0; i<kNCH ;i++) 
-      {
-        sprintf(branchname,"%sDigits%d",GetName(),i+1);	
-        MakeBranchInTree(fLoader->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, 0);
-      }
-   }
-
- if (cR && gAlice->TreeR()) 
-  {
-    //
-    // one branch for raw clusters per chamber
-    //
-    Int_t i;
-    if (fRawClusters == 0x0 ) 
-     {
-       fRawClusters = new TObjArray(kNCH);
-       for (i=0; i<kNCH ;i++) 
-         {
-           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
-         }
-     }
-     
-    if (fRecHits1D == 0x0) 
-     {
-        fRecHits1D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
-         }
-     }
-
-    if (fRecHits3D == 0x0) 
-     {
-        fRecHits3D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
-         }
-     }
-       
-    for (i=0; i<kNCH ;i++) 
-     {
-       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
-       MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, 0);
-       sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
-       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, 0);
-       sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);  
-       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, 0);
-     }
-   }//if (cR && gAlice->TreeR())
-}
-
-//___________________________________________
-void AliRICH::SetTreeAddress()
-{
-  // Set branch address for the Hits and Digits Tree.
-  char branchname[20];
-  Int_t i;
-
-    
-  TBranch *branch;
-  TTree *treeH = fLoader->TreeH();
-  TTree *treeD = fLoader->TreeD();
-  TTree *treeR = fLoader->TreeR();
-  TTree *treeS = fLoader->TreeS();
-    
-  if (treeH) 
-   {
-     branch = treeH->GetBranch("RICHCerenkov");
-     if (branch) 
-      {
-        if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000); 
-        branch->SetAddress(&fCerenkovs);
-      }
-       
-     branch = treeH->GetBranch("RICHSDigits");
-     if (branch) 
-      {
-        if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
-        branch->SetAddress(&fSDigits);
-         //printf("Setting sdigits branch address at %p in TreeH\n",&fSDigits);
-      }
-     if (fHits == 0x0) fHits       = new TClonesArray("AliRICHHit",1000  ); 
-    }
- 
-   //this is after TreeH because we need to guarantee that fHits array is created
-   AliDetector::SetTreeAddress();
-    
-   if (treeS) {
-      branch = treeS->GetBranch("RICHSDigits");
-      if (branch) 
-        {
-          if (fSDigits == 0x0) fSDigits = new TClonesArray("AliRICHSDigit",100000);
-          branch->SetAddress(&fSDigits);
-          //printf("Setting sdigits branch address at %p in TreeS\n",&fSDigits);
-        }
-    }
-    
-    
-   if (treeD) 
-    {
-      if (fDchambers == 0x0) 
-        {
-           fDchambers = new TObjArray(kNCH);
-           for (i=0; i<kNCH ;i++) 
-             {
-               fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
-             }
-        }
-      
-      for (i=0; i<kNCH; i++) {
-        sprintf(branchname,"%sDigits%d",GetName(),i+1);
-        if (fDchambers) {
-           branch = treeD->GetBranch(branchname);
-           if (branch) branch->SetAddress(&((*fDchambers)[i]));
-        }
-      }
-    }
-    
-  if (treeR) {
-    
-    if (fRawClusters == 0x0 ) 
-     {
-       fRawClusters = new TObjArray(kNCH);
-       for (i=0; i<kNCH ;i++) 
-         {
-           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
-         }
-     }
-     
-    if (fRecHits1D == 0x0) 
-     {
-        fRecHits1D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
-         }
-     }
-
-    if (fRecHits3D == 0x0) 
-     {
-        fRecHits3D = new TObjArray(kNCH);
-        for (i=0; i<kNCH ;i++) 
-         {
-          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
-         }
-     }
-    
-    for (i=0; i<kNCH; i++) {
-	  sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
-	  if (fRawClusters) {
-	      branch = treeR->GetBranch(branchname);
-	      if (branch) branch->SetAddress(&((*fRawClusters)[i]));
-	  }
-    }
-      
-    for (i=0; i<kNCH; i++) {
-	sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
-	if (fRecHits1D) {
-	  branch = treeR->GetBranch(branchname);
-	  if (branch) branch->SetAddress(&((*fRecHits1D)[i]));
-	  }
-     }
-      
-     for (i=0; i<kNCH; i++) {
-	sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
-	if (fRecHits3D) {
-	  branch = treeR->GetBranch(branchname);
-	  if (branch) branch->SetAddress(&((*fRecHits3D)[i]));
-	  }
-      } 
-      
-  }
-}
-//___________________________________________
 void AliRICH::ResetHits()
-{
-  // Reset number of clusters and the cluster array for this detector
-    AliDetector::ResetHits();
-    fNSDigits   = 0;
-    fNcerenkovs = 0;
-    if (fSDigits)  fSDigits->Clear();
-    if (fCerenkovs) fCerenkovs->Clear();
+{// Reset number of clusters and the cluster array for this detector
+  AliDetector::ResetHits();
+  fNSDigits   = 0;
+  fNcerenkovs = 0;
+  if (fSDigits)  fSDigits->Clear();
+  if (fCerenkovs) fCerenkovs->Clear();
 }
-
-
 //____________________________________________
 void AliRICH::ResetDigits()
-{
-  //
-  // Reset number of digits and the digits array for this detector
-  //
-    for ( int i=0;i<kNCH;i++ ) {
-      //PH	if (fDchambers && (*fDchambers)[i])   (*fDchambers)[i]->Clear();
-	if (fDchambers && fDchambers->At(i))   fDchambers->At(i)->Clear();
-	if (fNdch)  fNdch[i]=0;
-    }
+{//Reset number of digits and the digits array for this detector
+  for ( int i=0;i<kNCH;i++ ) {
+    if (fDchambers && fDchambers->At(i))   fDchambers->At(i)->Clear();
+    if (fNdch)  fNdch[i]=0;
+  }
 }
-
 //____________________________________________
 void AliRICH::ResetRawClusters()
-{
-  //
-  // Reset number of raw clusters and the raw clust array for this detector
-  //
-    for ( int i=0;i<kNCH;i++ ) {
-      //PH	if ((*fRawClusters)[i])    ((TClonesArray*)(*fRawClusters)[i])->Clear();
-	if (fRawClusters->At(i))    ((TClonesArray*)fRawClusters->At(i))->Clear();
-	if (fNrawch)  fNrawch[i]=0;
-    }
+{//Reset number of raw clusters and the raw clust array for this detector
+  for ( int i=0;i<kNCH;i++ ) {
+    if (fRawClusters->At(i))    ((TClonesArray*)fRawClusters->At(i))->Clear();
+    if (fNrawch)  fNrawch[i]=0;
+  }
 }
-
 //____________________________________________
 void AliRICH::ResetRecHits1D()
-{
-  //
-  // Reset number of raw clusters and the raw clust array for this detector
-  //
-  
+{//Reset number of raw clusters and the raw clust array for this detector
   for ( int i=0;i<kNCH;i++ ) {
-    //PH	if ((*fRecHits1D)[i])    ((TClonesArray*)(*fRecHits1D)[i])->Clear();
-	if (fRecHits1D->At(i))    ((TClonesArray*)fRecHits1D->At(i))->Clear();
-	if (fNrechits1D)  fNrechits1D[i]=0;
-    }
+    if (fRecHits1D->At(i))    ((TClonesArray*)fRecHits1D->At(i))->Clear();
+    if (fNrechits1D)  fNrechits1D[i]=0;
+  }
 }
 
 //____________________________________________
 void AliRICH::ResetRecHits3D()
-{
-  //
-  // Reset number of raw clusters and the raw clust array for this detector
-  //
-  
+{// Reset number of raw clusters and the raw clust array for this detector
   for ( int i=0;i<kNCH;i++ ) {
-    //PH	if ((*fRecHits3D)[i])    ((TClonesArray*)(*fRecHits3D)[i])->Clear();
-	if (fRecHits3D->At(i))    ((TClonesArray*)fRecHits3D->At(i))->Clear();
-	if (fNrechits3D)  fNrechits3D[i]=0;
-    }
+    if (fRecHits3D->At(i))    ((TClonesArray*)fRecHits3D->At(i))->Clear();
+    if (fNrechits3D)  fNrechits3D[i]=0;
+  }
 }
-
-
-//___________________________________________
-void AliRICH::StepManager()
-{
-// Full Step Manager
-
-    Int_t          copy, id;
-    static Int_t   idvol;
-    static Int_t   vol[2];
-    Int_t          ipart;
-    static Float_t hits[22];
-    static Float_t ckovData[19];
-    TLorentzVector position;
-    TLorentzVector momentum;
-    Float_t        pos[3];
-    Float_t        mom[4];
-    Float_t        localPos[3];
-    Float_t        localMom[4];
-    Float_t        localTheta,localPhi;
-    Float_t        theta,phi;
-    Float_t        destep, step;
-    Double_t        ranf[2];
-    Int_t          nPads;
-    Float_t        coscerenkov;
-    static Float_t eloss, xhit, yhit, tlength;
-    const  Float_t kBig=1.e10;
-       
-    TClonesArray &lhits = *fHits;
-    TParticle *current = (TParticle*)(*gAlice->Particles())[gAlice->CurrentTrack()];
-
- //if (current->Energy()>1)
-   //{
-        
-    // Only gas gap inside chamber
-    // Tag chambers and record hits when track enters 
-    
- 
-    id=gMC->CurrentVolID(copy);
-    idvol = copy-1;
-    Float_t cherenkovLoss=0;
-    //gAlice->KeepTrack(gAlice->CurrentTrack());
-    
-    gMC->TrackPosition(position);
-    pos[0]=position(0);
-    pos[1]=position(1);
-    pos[2]=position(2);
-    //bzero((char *)ckovData,sizeof(ckovData)*19);
-    ckovData[1] = pos[0];                 // X-position for hit
-    ckovData[2] = pos[1];                 // Y-position for hit
-    ckovData[3] = pos[2];                 // Z-position for hit
-    ckovData[6] = 0;                      // dummy track length
-    //ckovData[11] = gAlice->CurrentTrack();
-    
-    //printf("\n+++++++++++\nTrack: %d\n++++++++++++\n",gAlice->CurrentTrack());
-
-    //AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
-    
-    /********************Store production parameters for Cerenkov photons************************/ 
-//is it a Cerenkov photon? 
-    if (gMC->TrackPid() == 50000050) { 
-
-      //if (gMC->VolId("GAP ")==gMC->CurrentVolID(copy))
-        //{                    
-	  Float_t ckovEnergy = current->Energy();
-	  //energy interval for tracking
-	  if  (ckovEnergy > 5.6e-09 && ckovEnergy < 7.8e-09 )       
-	    //if (ckovEnergy > 0)
-	    {
-	      if (gMC->IsTrackEntering()){        //is track entering?
-		//printf("Track entered (1)\n");
-		if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
-		  {                                                          //is it in freo?
-		    if (gMC->IsNewTrack()){                          //is it the first step?
-		      //printf("I'm in!\n");
-		      Int_t mother = current->GetFirstMother(); 
-		      
-		      //printf("Second Mother:%d\n",current->GetSecondMother());
-		      
-		      ckovData[10] = mother;
-		      ckovData[11] = gAlice->CurrentTrack();
-		      ckovData[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
-		      //printf("Produced in FREO\n");
-		      fCkovNumber++;
-		      fFreonProd=1;
-		      //printf("Index: %d\n",fCkovNumber);
-		    }    //first step question
-		  }        //freo question
-		
-		if (gMC->IsNewTrack()){                                  //is it first step?
-		  if (gMC->VolId("QUAR")==gMC->CurrentVolID(copy))             //is it in quarz?
-		    {
-		      ckovData[12] = 2;
-		      //printf("Produced in QUAR\n");
-		    }    //quarz question
-		}        //first step question
-		
-		//printf("Before %d\n",fFreonProd);
-	      }   //track entering question
-	      
-	      if (ckovData[12] == 1)                                        //was it produced in Freon?
-		//if (fFreonProd == 1)
-		{
-		  if (gMC->IsTrackEntering()){                                     //is track entering?
-		    //printf("Track entered (2)\n");
-		    //printf("Current volume (should be META): %s\n",gMC->CurrentVolName());
-		    //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("META"),gMC->CurrentVolID(copy));
-		    if (gMC->VolId("META")==gMC->CurrentVolID(copy))                //is it in gap?      
-		      {
-			//printf("Got in META\n");
-			gMC->TrackMomentum(momentum);
-			mom[0]=momentum(0);
-			mom[1]=momentum(1);
-			mom[2]=momentum(2);
-			mom[3]=momentum(3);
-			
-			gMC->Gmtod(mom,localMom,2);
-			Float_t cophi = TMath::Cos(TMath::ATan2(localMom[0], localMom[1]));
-			Float_t t = (1. - .025 / cophi) * (1. - .05 /  cophi);
-			/**************** Photons lost in second grid have to be calculated by hand************/ 
-			gMC->GetRandom()->RndmArray(1,ranf);
-			if (ranf[0] > t) {
-			  gMC->StopTrack();
-			  ckovData[13] = 5;
-			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
-			  //printf("Added One (1)!\n");
-			  //printf("Lost one in grid\n");
-			}
-			/**********************************************************************************/
-		      }    //gap
-		    
-		    //printf("Current volume (should be CSI) (1): %s\n",gMC->CurrentVolName());
-		    //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("CSI "),gMC->CurrentVolID(copy));
-		    if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))             //is it in csi?      
-		      {
-			//printf("Got in CSI\n");
-			gMC->TrackMomentum(momentum);
-			mom[0]=momentum(0);
-			mom[1]=momentum(1);
-			mom[2]=momentum(2);
-			mom[3]=momentum(3);
-
-			gMC->Gmtod(mom,localMom,2);
-			/********* Photons lost by Fresnel reflection have to be calculated by hand********/ 
-			/***********************Cerenkov phtons (always polarised)*************************/
-			Double_t localTc = localMom[0]*localMom[0]+localMom[2]*localMom[2];
-			Double_t localRt = TMath::Sqrt(localTc);
-			localTheta   = Float_t(TMath::ATan2(localRt,Double_t(localMom[1])));
-			Double_t cotheta = TMath::Abs(cos(localTheta));
-			Float_t t = Fresnel(ckovEnergy*1e9,cotheta,1);
-			    gMC->GetRandom()->RndmArray(1,ranf);
-			    if (ranf[0] < t) {
-			      gMC->StopTrack();
-			      ckovData[13] = 6;
-			      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
-				
-			      //printf("Added One (2)!\n");
-			      //printf("Lost by Fresnel\n");
-			    }
-			    /**********************************************************************************/
-		      }
-		  } //track entering?
-		  
-		  
-		  /********************Evaluation of losses************************/
-		  /******************still in the old fashion**********************/
-		  
-		  TArrayI procs;
-		  Int_t i1 = gMC->StepProcesses(procs);            //number of physics mechanisms acting on the particle
-		  for (Int_t i = 0; i < i1; ++i) {
-		    //        Reflection loss 
-		    if (procs[i] == kPLightReflection) {        //was it reflected
-		      ckovData[13]=10;
-		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
-			ckovData[13]=1;
-		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
-			ckovData[13]=2;
-		      //gMC->StopTrack();
-		      //AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
-		    } //reflection question
-		     
-		    //        Absorption loss 
-		    else if (procs[i] == kPLightAbsorption) {              //was it absorbed?
-		      //printf("Got in absorption\n");
-		      ckovData[13]=20;
-		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
-			ckovData[13]=11;
-		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
-			ckovData[13]=12;
-		      if (gMC->CurrentVolID(copy) == gMC->VolId("META")) 
-			ckovData[13]=13;
-		      if (gMC->CurrentVolID(copy) == gMC->VolId("GAP ")) 
-			ckovData[13]=13;
-		      
-		      if (gMC->CurrentVolID(copy) == gMC->VolId("SRIC")) 
-			ckovData[13]=15;
-		      
-		      //        CsI inefficiency 
-		      if (gMC->CurrentVolID(copy) == gMC->VolId("CSI ")) {
-			ckovData[13]=16;
-		      }
-		      gMC->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
-		      //printf("Added One (3)!\n");
-		      //printf("Added cerenkov %d\n",fCkovNumber);
-		    } //absorption question 
-		    
-		    
-		    //        Photon goes out of tracking scope 
-		    else if (procs[i] == kPStop) {                 //is it below energy treshold?
-		      ckovData[13]=21;
-		      gMC->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
-		      //printf("Added One (4)!\n");
-		    }	// energy treshold question	    
-		  }  //number of mechanisms cycle
-		  /**********************End of evaluation************************/
-		} //freon production question
-	    } //energy interval question
-	//}//inside the proximity gap question
-    } //cerenkov photon question
-      
-    /**************************************End of Production Parameters Storing*********************/ 
-    
-    
-    /*******************************Treat photons that hit the CsI (Ckovs and Feedbacks)************/ 
-    
-    if (gMC->TrackPid() == 50000050 || gMC->TrackPid() == 50000051) {
-      //printf("Cerenkov\n");
-      
-      //if (gMC->TrackPid() == 50000051)
-	//printf("Tracking a feedback\n");
-      
-      if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))
-	{
-	  //printf("Current volume (should be CSI) (2): %s\n",gMC->CurrentVolName());
-	  //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("CSI "),gMC->CurrentVolID(copy));
-	  //printf("Got in CSI\n");
-	  //printf("Tracking a %d\n",gMC->TrackPid());
-	  if (gMC->Edep() > 0.){
-		gMC->TrackPosition(position);
-		gMC->TrackMomentum(momentum);
-		pos[0]=position(0);
-		pos[1]=position(1);
-		pos[2]=position(2);
-		mom[0]=momentum(0);
-		mom[1]=momentum(1);
-		mom[2]=momentum(2);
-		mom[3]=momentum(3);
-		Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
-		Double_t rt = TMath::Sqrt(tc);
-		theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
-		phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
-		
-		gMC->CurrentVolOffID(2,copy);
-		vol[0]=copy;
-		idvol=vol[0]-1;
-		
-
-		gMC->Gmtod(pos,localPos,1);
-
-		//Chamber(idvol).GlobaltoLocal(pos,localPos);
-                                                                    
-		gMC->Gmtod(mom,localMom,2);
-
-		//Chamber(idvol).GlobaltoLocal(mom,localMom);
-		
-		gMC->CurrentVolOffID(2,copy);
-		vol[0]=copy;
-		idvol=vol[0]-1;
-
-		//Int_t sector=((AliRICHChamber*) (*fChambers)[idvol])
-			//->Sector(localPos[0], localPos[2]);
-		//printf("Sector:%d\n",sector);
-
-		/*if (gMC->TrackPid() == 50000051){
-		  fFeedbacks++;
-		  printf("Feedbacks:%d\n",fFeedbacks);
-		}*/	
-		
-        //PH		((AliRICHChamber*) (*fChambers)[idvol])
-		((AliRICHChamber*)fChambers->At(idvol))
-		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
-		if(idvol<kNCH) {	
-		    ckovData[0] = gMC->TrackPid();        // particle type
-		    ckovData[1] = pos[0];                 // X-position for hit
-		    ckovData[2] = pos[1];                 // Y-position for hit
-		    ckovData[3] = pos[2];                 // Z-position for hit
-		    ckovData[4] = theta;                      // theta angle of incidence
-		    ckovData[5] = phi;                      // phi angle of incidence 
-		    ckovData[8] = (Float_t) fNSDigits;      // first sdigit
-		    ckovData[9] = -1;                       // last pad hit
-		    ckovData[13] = 4;                       // photon was detected
-		    ckovData[14] = mom[0];
-		    ckovData[15] = mom[1];
-		    ckovData[16] = mom[2];
-		    
-		    destep = gMC->Edep();
-		    gMC->SetMaxStep(kBig);
-		    cherenkovLoss  += destep;
-		    ckovData[7]=cherenkovLoss;
-		    
-		    nPads = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);
-		    		    
-		    if (fNSDigits > (Int_t)ckovData[8]) {
-			ckovData[8]= ckovData[8]+1;
-			ckovData[9]= (Float_t) fNSDigits;
-		    }
-
-		    //printf("Cerenkov loss: %f\n", cherenkovLoss);
-
-		    ckovData[17] = nPads;
-		    //printf("nPads:%d",nPads);
-		    
-		    //TClonesArray *Hits = RICH->Hits();
-		    AliRICHHit *mipHit =  (AliRICHHit*) (fHits->UncheckedAt(0));
-		    if (mipHit)
-		      {
-			mom[0] = current->Px();
-			mom[1] = current->Py();
-			mom[2] = current->Pz();
-			Float_t mipPx = mipHit->MomX();
-			Float_t mipPy = mipHit->MomY();
-			Float_t mipPz = mipHit->MomZ();
-			
-			Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
-			Float_t rt = TMath::Sqrt(r);
-			Float_t mipR = mipPx*mipPx + mipPy*mipPy + mipPz*mipPz;	
-			Float_t mipRt = TMath::Sqrt(mipR);
-			if ((rt*mipRt) > 0)
-			  {
-			    coscerenkov = (mom[0]*mipPx + mom[1]*mipPy + mom[2]*mipPz)/(rt*mipRt);
-			  }
-			else
-			  {
-			    coscerenkov = 0;
-			  }
-			Float_t cherenkov = TMath::ACos(coscerenkov);
-			ckovData[18]=cherenkov;
-		      }
-		    //if (sector != -1)
-		    //{
-		    AddHit(gAlice->CurrentTrack(),vol,ckovData);
-		    AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
-		    //printf("Added One (5)!\n");
-		    //}
-		}
-	    }
-	}
-    }
-    
-    /***********************************************End of photon hits*********************************************/
-    
-
-    /**********************************************Charged particles treatment*************************************/
-
-    else if (gMC->TrackCharge())
-    //else if (1 == 1)
-      {
-//If MIP
-	/*if (gMC->IsTrackEntering())
-	  {                
-	    hits[13]=20;//is track entering?
-	  }*/
-	if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
-	  {
-	    gMC->TrackMomentum(momentum);
-	    mom[0]=momentum(0);
-	    mom[1]=momentum(1);
-	    mom[2]=momentum(2);
-	    mom[3]=momentum(3);
-	    hits [19] = mom[0];
-	    hits [20] = mom[1];
-	    hits [21] = mom[2];
-	    fFreonProd=1;
-	  }
-
-	if (gMC->VolId("GAP ")== gMC->CurrentVolID(copy)) {
-// Get current particle id (ipart), track position (pos)  and momentum (mom)
-	    
-	    gMC->CurrentVolOffID(3,copy);
-	    vol[0]=copy;
-	    idvol=vol[0]-1;
-
-	    //Int_t sector=((AliRICHChamber*) (*fChambers)[idvol])
-			//->Sector(localPos[0], localPos[2]);
-	    //printf("Sector:%d\n",sector);
-	    
-	    gMC->TrackPosition(position);
-	    gMC->TrackMomentum(momentum);
-	    pos[0]=position(0);
-	    pos[1]=position(1);
-	    pos[2]=position(2);
-	    mom[0]=momentum(0);
-	    mom[1]=momentum(1);
-	    mom[2]=momentum(2);
-	    mom[3]=momentum(3);
-
-	    gMC->Gmtod(pos,localPos,1);
-	    
-	    //Chamber(idvol).GlobaltoLocal(pos,localPos);
-                                                                    
-	    gMC->Gmtod(mom,localMom,2);
-
-	    //Chamber(idvol).GlobaltoLocal(mom,localMom);
-	    
-	    ipart  = gMC->TrackPid();
-	    //
-	    // momentum loss and steplength in last step
-	    destep = gMC->Edep();
-	    step   = gMC->TrackStep();
-  
-	    //
-	    // record hits when track enters ...
-	    if( gMC->IsTrackEntering()) {
-//		gMC->SetMaxStep(fMaxStepGas);
-		Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
-		Double_t rt = TMath::Sqrt(tc);
-		theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
-		phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
-		
-
-		Double_t localTc = localMom[0]*localMom[0]+localMom[2]*localMom[2];
-		Double_t localRt = TMath::Sqrt(localTc);
-		localTheta   = Float_t(TMath::ATan2(localRt,Double_t(localMom[1])))*kRaddeg;                       
-		localPhi     = Float_t(TMath::ATan2(Double_t(localMom[2]),Double_t(localMom[0])))*kRaddeg;    
-		
-		hits[0] = Float_t(ipart);         // particle type
-		hits[1] = localPos[0];                 // X-position for hit
-		hits[2] = localPos[1];                 // Y-position for hit
-		hits[3] = localPos[2];                 // Z-position for hit
-		hits[4] = localTheta;                  // theta angle of incidence
-		hits[5] = localPhi;                    // phi angle of incidence 
-		hits[8] = (Float_t) fNSDigits;    // first sdigit
-		hits[9] = -1;                     // last pad hit
-		hits[13] = fFreonProd;           // did id hit the freon?
-		hits[14] = mom[0];
-		hits[15] = mom[1];
-		hits[16] = mom[2];
-		hits[18] = 0;               // dummy cerenkov angle
-
-		tlength = 0;
-		eloss   = 0;
-		fFreonProd = 0;
-	
-		Chamber(idvol).LocaltoGlobal(localPos,hits+1);
-	   
-		
-		//To make chamber coordinates x-y had to pass localPos[0], localPos[2]
-		xhit    = localPos[0];
-		yhit    = localPos[2];
-		// Only if not trigger chamber
-		if(idvol<kNCH) {
-		    //
-		    //  Initialize hit position (cursor) in the segmentation model 
-          //PH		    ((AliRICHChamber*) (*fChambers)[idvol])
-		    ((AliRICHChamber*)fChambers->At(idvol))
-			->SigGenInit(localPos[0], localPos[2], localPos[1]);
-		}
-	    }
-	    
-	    // 
-	    // Calculate the charge induced on a pad (disintegration) in case 
-	    //
-	    // Mip left chamber ...
-	    if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
-		gMC->SetMaxStep(kBig);
-		eloss   += destep;
-		tlength += step;
-		
-				
-		// Only if not trigger chamber
-		if(idvol<kNCH) {
-		  if (eloss > 0) 
-		    {
-		      if(gMC->TrackPid() == kNeutron)
-			printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		      nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);
-		      hits[17] = nPads;
-		      //printf("nPads:%d",nPads);
-		    }
-		}
-		
-		hits[6]=tlength;
-		hits[7]=eloss;
-		if (fNSDigits > (Int_t)hits[8]) {
-		    hits[8]= hits[8]+1;
-		    hits[9]= (Float_t) fNSDigits;
-		}
-		
-		//if(sector !=-1)
-		new(lhits[fNhits++]) AliRICHHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-		eloss = 0; 
-		//
-		// Check additional signal generation conditions 
-		// defined by the segmentation
-		// model (boundary crossing conditions) 
-	    } else if 
-          //PH		(((AliRICHChamber*) (*fChambers)[idvol])
-		(((AliRICHChamber*)fChambers->At(idvol))
-		 ->SigGenCond(localPos[0], localPos[2], localPos[1]))
-	    {
-          //PH		((AliRICHChamber*) (*fChambers)[idvol])
-		((AliRICHChamber*)fChambers->At(idvol))
-		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
-		if (eloss > 0) 
-		  {
-		    if(gMC->TrackPid() == kNeutron)
-		      printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		    nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);
-		    hits[17] = nPads;
-		    //printf("Npads:%d",NPads);
-		  }
-		xhit     = localPos[0];
-		yhit     = localPos[2]; 
-		eloss    = destep;
-		tlength += step ;
-		//
-		// nothing special  happened, add up energy loss
-	    } else {        
-		eloss   += destep;
-		tlength += step ;
-	    }
-	}
-      }
-    /*************************************************End of MIP treatment**************************************/
-   //}
-}//void AliRICH::StepManager()
-
+//______________________________________________________________________________
 void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 {
 
@@ -2553,16 +1683,12 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
     char hname[30];
     sprintf(hname,"TreeR%d",nev);
     gAlice->TreeR()->Write(hname,kOverwrite,0);
-    gAlice->TreeR()->Reset();
-    
+    gAlice->TreeR()->Reset();    
     //gObjectTable->Print();
-}
-
+}//void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
+//______________________________________________________________________________
 AliRICHSDigit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters ) 
-{
-//
-    // Initialise the pad iterator
-    // Return the address of the first sdigit for hit
+{// Initialise the pad iterator Return the address of the first sdigit for hit
     TClonesArray *theClusters = clusters;
     Int_t nclust = theClusters->GetEntriesFast();
     if (nclust && hit->PHlast() > 0) {
@@ -2574,11 +1700,9 @@ AliRICHSDigit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters )
     }
     
 }
-
+//______________________________________________________________________________
 AliRICHSDigit* AliRICH::NextPad(TClonesArray *clusters) 
-{
-
-  // Iterates over pads
+{// Iterates over pads
   
     sCurIterPad++;
     if (sCurIterPad <= sMaxIterPad) {
@@ -2588,12 +1712,6 @@ AliRICHSDigit* AliRICH::NextPad(TClonesArray *clusters)
     }
 }
 
-AliRICH& AliRICH::operator=(const AliRICH& rhs)
-{
-// Assignment operator
-    return *this;
-    
-}
 
 void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
 {
@@ -3112,11 +2230,8 @@ void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
  
   printf("\nEnd of analysis\n");
    
-}
-
-//_________________________________________________________________________________________________
-
-
+}//void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
+//______________________________________________________________________________
 void AliRICH::DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2)
 {
 
@@ -4316,14 +3431,11 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    //printf("The total number of pads which give a signal: %d %d\n",Nh,Nh1);
    printf("\nEnd of analysis\n");
    printf("**********************************\n");
-}
-
-////////////////////////////////////////////////////////////////////////
+}//void AliRICH::DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2)
+//______________________________________________________________________________
 void AliRICH::MakeBranchInTreeD(TTree *treeD, const char *file)
-{
-    //
-    // Create TreeD branches for the RICH.
-    //
+{// Create TreeD branches for the RICH.
+  if(GetDebug())Info("MakeBranchInTreeD","Start.");
 
   const Int_t kBufferSize = 4000;
   char branchname[30];
@@ -4334,10 +3446,223 @@ void AliRICH::MakeBranchInTreeD(TTree *treeD, const char *file)
   for (Int_t i=0; i<kNCH ;i++) {
     sprintf(branchname,"%sDigits%d",GetName(),i+1);	
     if (fDchambers && treeD) {
-      MakeBranchInTree(treeD, 
-		       branchname, &((*fDchambers)[i]), kBufferSize, file);
+      MakeBranchInTree(treeD,branchname, &((*fDchambers)[i]), kBufferSize, file);
 //      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
     }
   }
 }
-////////////////////////////////////////////////////////////////////////
+//______________________________________________________________________________
+void AliRICH::MakeBranch(Option_t* option)
+{//Create Tree branches for the RICH.
+  if(GetDebug())Info("MakeBranch","Start with option= %s.",option);
+    
+  const Int_t kBufferSize = 4000;
+  char branchname[20];
+      
+   
+  const char *cH = strstr(option,"H");
+  const char *cD = strstr(option,"D");
+  const char *cR = strstr(option,"R");
+  const char *cS = strstr(option,"S");
+
+
+  if(cH&&TreeH()){
+    if(!fHits) fHits=new TClonesArray("AliRICHHit",1000  );
+    if(!fCerenkovs) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
+    MakeBranchInTree(TreeH(),"RICHCerenkov", &fCerenkovs, kBufferSize, 0) ;
+
+    //kir if(!fSDigits) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+    //kir MakeBranchInTree(TreeH(),"RICHSDigits", &fSDigits, kBufferSize, 0) ;
+  }     
+  AliDetector::MakeBranch(option);//this is after cH because we need to guarantee that fHits array is created
+      
+  if(cS&&fLoader->TreeS()){  
+    if(!fSDigits) fSDigits=new TClonesArray("AliRICHSDigit",100000);
+    MakeBranchInTree(gAlice->TreeS(),"RICHSDigits",&fSDigits,kBufferSize,0) ;
+  }
+   
+  int i;
+  if (cD&&fLoader->TreeD()){
+    if(!fDchambers){
+      fDchambers=new TObjArray(kNCH);    // one branch for digits per chamber
+      for(i=0;i<kNCH;i++){ 
+        fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+      }       
+    }
+    for (i=0; i<kNCH ;i++) 
+      {
+        sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+        MakeBranchInTree(fLoader->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, 0);
+      }
+   }
+
+  if (cR&&gAlice->TreeR()){//one branch for raw clusters per chamber
+    Int_t i;
+    if (fRawClusters == 0x0 ) 
+     {
+       fRawClusters = new TObjArray(kNCH);
+       for (i=0; i<kNCH ;i++) 
+         {
+           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
+         }
+     }
+     
+    if (fRecHits1D == 0x0) 
+     {
+        fRecHits1D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
+         }
+     }
+
+    if (fRecHits3D == 0x0) 
+     {
+        fRecHits3D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
+         }
+     }
+       
+    for (i=0; i<kNCH ;i++){
+       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
+       MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, 0);
+       sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
+       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, 0);
+       sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);  
+       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, 0);
+     }
+   }//if (cR && gAlice->TreeR())
+  if(GetDebug())Info("MakeBranch","Stop.");   
+}
+//______________________________________________________________________________
+void AliRICH::SetTreeAddress()
+{//Set branch address for the Hits and Digits Tree.
+  if(GetDebug())Info("SetTreeAddress","Start.");
+  
+  char branchname[20];
+  Int_t i;
+
+    
+  TBranch *branch;
+  TTree *treeH = fLoader->TreeH();
+  TTree *treeD = fLoader->TreeD();
+  TTree *treeR = fLoader->TreeR();
+  TTree *treeS = fLoader->TreeS();
+    
+  if(treeH){
+    branch = treeH->GetBranch("RICHCerenkov");
+    if(branch){
+      if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000); 
+        branch->SetAddress(&fCerenkovs);
+    }
+       
+     branch = treeH->GetBranch("RICHSDigits");
+     if (branch) 
+      {
+        if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHSDigit",100000);
+        branch->SetAddress(&fSDigits);
+         //printf("Setting sdigits branch address at %p in TreeH\n",&fSDigits);
+      }
+     if (fHits == 0x0) fHits       = new TClonesArray("AliRICHHit",1000  ); 
+    }
+ 
+   //this is after TreeH because we need to guarantee that fHits array is created
+   AliDetector::SetTreeAddress();
+    
+   if (treeS) {
+      branch = treeS->GetBranch("RICHSDigits");
+      if (branch) 
+        {
+          if (fSDigits == 0x0) fSDigits = new TClonesArray("AliRICHSDigit",100000);
+          branch->SetAddress(&fSDigits);
+          //printf("Setting sdigits branch address at %p in TreeS\n",&fSDigits);
+        }
+    }
+    
+    
+   if (treeD) 
+    {
+      if (fDchambers == 0x0) 
+        {
+           fDchambers = new TObjArray(kNCH);
+           for (i=0; i<kNCH ;i++) 
+             {
+               fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+             }
+        }
+      
+      for (i=0; i<kNCH; i++) {
+        sprintf(branchname,"%sDigits%d",GetName(),i+1);
+        if (fDchambers) {
+           branch = treeD->GetBranch(branchname);
+           if (branch) branch->SetAddress(&((*fDchambers)[i]));
+        }
+      }
+    }
+    
+  if (treeR) {
+    
+    if (fRawClusters == 0x0 ) 
+     {
+       fRawClusters = new TObjArray(kNCH);
+       for (i=0; i<kNCH ;i++) 
+         {
+           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
+         }
+     }
+     
+    if (fRecHits1D == 0x0) 
+     {
+        fRecHits1D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
+         }
+     }
+
+    if (fRecHits3D == 0x0) 
+     {
+        fRecHits3D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
+         }
+     }
+    
+    for (i=0; i<kNCH; i++) {
+	  sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
+	  if (fRawClusters) {
+	      branch = treeR->GetBranch(branchname);
+	      if (branch) branch->SetAddress(&((*fRawClusters)[i]));
+	  }
+    }
+      
+    for (i=0; i<kNCH; i++) {
+	sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
+	if (fRecHits1D) {
+	  branch = treeR->GetBranch(branchname);
+	  if (branch) branch->SetAddress(&((*fRecHits1D)[i]));
+	  }
+     }
+      
+     for (i=0; i<kNCH; i++) {
+	sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
+	if (fRecHits3D) {
+	  branch = treeR->GetBranch(branchname);
+	  if (branch) branch->SetAddress(&((*fRecHits3D)[i]));
+	  }
+      } 
+      
+  }
+  if(GetDebug())Info("SetTreeAddress","Stop.");
+}//void AliRICH::SetTreeAddress()
+//______________________________________________________________________________
+void AliRICH::Print(Option_t *option)const
+{
+  TObject::Print(option);
+  GetGeometryModel(0)->Print(option);
+  GetSegmentationModel(0)->Print(option);
+  GetResponseModel(0)->Print(option);
+}//void AliRICH::Print(Option_t *option)const
