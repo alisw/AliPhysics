@@ -1,8 +1,9 @@
 void loadlibs () 
 {
   gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
 
-  // Uncomment the following line for Darwin
+  // Uncomment the following line for macosx
   // Waiting for a better solution
   // gSystem->Load("libg2c_sh");
   gSystem->Load("libmicrocern");
@@ -16,6 +17,7 @@ void loadlibs ()
   gSystem->Load("libEGPythia6");
   gSystem->Load("libSTEER");
   gSystem->Load("libEVGEN");
+  gSystem->Load("libFASTSIM");
   gSystem->Load("libAliPythia6");
 
   gSystem->Load("libRAW");
@@ -35,9 +37,15 @@ void loadlibs ()
 
   // The following lines have to be commented on Darwin
   // for the moment due to cross dependencies
-  gSystem->Load("libTPC");
+  gSystem->Load("libTPCbase");
+  gSystem->Load("libTPCrec");
+  gSystem->Load("libTPCsim");
+  gSystem->Load("libTPCfast");
   gSystem->Load("libITS");
   gSystem->Load("libTPCBarrel");
-  gSystem->Load("libTRD");
+  gSystem->Load("libTRDbase");
+  gSystem->Load("libTRDsim");
+  gSystem->Load("libTRDrec");
+  gSystem->Load("libTRDfast");
   gSystem->Load("libTOF");
 }
