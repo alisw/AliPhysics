@@ -61,7 +61,7 @@ AliGenCocktail::~AliGenCocktail()
 }
 
 void AliGenCocktail::
-AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
+AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 {
 //
 // Add a generator to the list 

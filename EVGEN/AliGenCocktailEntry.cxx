@@ -43,7 +43,7 @@ AliGenCocktailEntry::AliGenCocktailEntry()
 }
 
 AliGenCocktailEntry:: AliGenCocktailEntry
-(AliGenerator* Generator, char * Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry")
+(AliGenerator* Generator, const char * Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry")
 {
 // Constructor using generator type, name and rate per event
     fGenerator=Generator;

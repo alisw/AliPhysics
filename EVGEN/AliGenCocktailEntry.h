@@ -20,7 +20,7 @@ class AliGenCocktailEntry : public TNamed
     AliGenCocktailEntry();
     AliGenCocktailEntry(const AliGenCocktailEntry &entry);
     AliGenCocktailEntry
-	(AliGenerator* Generator, char* Name, Float_t RateExp);
+	(AliGenerator* Generator, const char* Name, Float_t RateExp);
     ~AliGenCocktailEntry(){;}
     AliGenerator* Generator() {return fGenerator;}
     void SetGenerator(AliGenerator* generator){fGenerator=generator;}
