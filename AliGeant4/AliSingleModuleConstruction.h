@@ -14,6 +14,7 @@
 
 class AliSingleModuleConstructionMessenger;
 class AliSDManager;
+class AliFiles;
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -37,7 +38,7 @@ class AliSingleModuleConstruction : public AliModuleConstruction
     static G4VPhysicalVolume* GetWorld();
 
     // methods
-    void Configure();    
+    void Configure(const AliFiles& files);    
     virtual void Construct();
 
     // set methods
