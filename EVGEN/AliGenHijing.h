@@ -10,7 +10,6 @@
 // andreas.morsch@cern.ch
 
 #include "AliGenerator.h"
-#include "GenTypeDefs.h"
 #include <TString.h>
 #include <TArrayI.h>
 
@@ -82,7 +81,6 @@ class AliGenHijing : public AliGenerator
     Int_t       fEvaluate;       // Evaluate total and partial cross-sections
     Int_t       fSelectAll;      // Flag to write the full event
     Int_t       fFlavor;         // Selected particle flavor 4: charm+beauty 5: beauty
-    Decay_t     fForceDecay;     // Decay channel  are forced
     Float_t     fEnergyCMS;      // Centre of mass energy
     Float_t     fKineBias;       // Bias from kinematic selection
     Int_t       fTrials;         // Number of trials
