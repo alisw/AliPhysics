@@ -15,6 +15,14 @@ void ITSreadRecPointsTest (Int_t evNumber1=0,Int_t evNumber2=0)
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
    }
+     // Anyway, this macro needs to read a gAlice file, so it
+  // clears the gAlice object if there is already one in memory...
+  else {
+		if(gAlice){
+			delete gAlice;
+			gAlice = 0;
+		}
+	}
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
 
