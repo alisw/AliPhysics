@@ -34,7 +34,9 @@ public:
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}
-
+  void SetMagneticField(Float_t mf){fMagneticField = mf;}
+  Float_t GetMagneticField() const {return fMagneticField;}
+  
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks.UncheckedAt(i);
   }
@@ -89,6 +91,7 @@ protected:
   Int_t        fRunNumber;       // Run Number
   Long_t       fTrigger;         // Trigger Type
   Int_t        fRecoVersion;     // Version of reconstruction 
+  Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
 
   Double_t fVtx[3];              // Primary vertex position
   Double_t fCovVtx[6];           // Cov. matrix of the primary vertex position
@@ -99,7 +102,8 @@ protected:
   TClonesArray  fV0s;            // V0 vertices
   TClonesArray  fCascades;       // Cascade vertices
   
-  ClassDef(AliESD,1)  //ESD class 
+  ClassDef(AliESD,2)  //ESD class 
+                      //ver. 2: Magnetic Field Added; skowron
 };
 
 #endif 

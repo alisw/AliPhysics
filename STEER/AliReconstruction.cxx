@@ -66,6 +66,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliESDpid.h"
+#include "AliMagF.h"
 #include <TArrayF.h>
 
 
@@ -238,6 +239,7 @@ Bool_t AliReconstruction::Run()
     fRunLoader->GetEvent(iEvent);
     esd->SetRunNumber(gAlice->GetRunNumber());
     esd->SetEventNumber(gAlice->GetEvNumber());
+    esd->SetMagneticField(fRunLoader->GetAliRun()->Field()->SolenoidField());
 
     // barrel tracking
     if (fRunTracking) {

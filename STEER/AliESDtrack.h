@@ -10,6 +10,7 @@
 //         Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include "TObject.h"
+#include <TBits.h>
 
 class AliKalmanTrack;
 
@@ -50,7 +51,11 @@ public:
 
   void GetInnerPxPyPz(Double_t *p) const;
   void GetInnerXYZ(Double_t *r) const;
-
+  void GetInnerExternalParameters(Double_t &x, Double_t p[5]) const;//skowron
+  void GetInnerExternalCovariance(Double_t cov[15]) const;//skowron
+  Double_t GetInnerAlpha() const {return fIalpha;}
+  
+  
   void GetOuterPxPyPz(Double_t *p) const;
   void GetOuterXYZ(Double_t *r) const;
 
@@ -65,7 +70,8 @@ public:
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Float_t GetTPCchi2() const {return fTPCchi2;}
   Int_t GetTPCclusters(Int_t *idx) const;
-
+  const TBits& GetTPCClusterMap(){return fTPCClusterMap;}
+  
   void SetTRDpid(const Double_t *p);
   void GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
@@ -129,6 +135,7 @@ protected:
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
   UInt_t  fTPCindex[180];  //! indices of the assigned TPC clusters
+  TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[kSPECIES]; // "detector response probabilities" (for the PID)
 

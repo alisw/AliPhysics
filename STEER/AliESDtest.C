@@ -227,7 +227,8 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      AliESD *event=new AliESD(); 
      event->SetRunNumber(run);
      event->SetEventNumber(i);
-
+     event->SetMagneticField(gAlice->Field()->SolenoidField());
+     
      rl->GetEvent(i);
  
 //***** Primary vertex reconstruction (MC vertex position, for the moment)

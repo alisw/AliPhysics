@@ -32,6 +32,7 @@ AliESD::AliESD():
   fRunNumber(0),
   fTrigger(0),
   fRecoVersion(0),
+  fMagneticField(0),
   fTracks("AliESDtrack",15000),
   fCaloTracks("AliESDCaloTrack",500),
   fMuonTracks("AliESDMuonTrack",30),

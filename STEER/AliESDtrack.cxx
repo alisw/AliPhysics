@@ -36,12 +36,19 @@ fTrackLength(0),
 fStopVertex(0),
 fRalpha(0),
 fRx(0),
+fCalpha(0),
+fCx(0),
 fCchi2(1e10),
+fIalpha(0),
+fIx(0),
+fOalpha(0),
+fOx(0),
 fITSchi2(0),
 fITSncls(0),
 fITSsignal(0),
 fTPCchi2(0),
 fTPCncls(0),
+fTPCClusterMap(159),//number of padrows
 fTPCsignal(0),
 fTRDchi2(0),
 fTRDncls(0),
@@ -62,10 +69,11 @@ fTOFsignal(-1)
     fTOFr[i]=0;
   }
   Int_t i;
-  for (i=0; i<5; i++)   fRp[i]=0.;
-  for (i=0; i<15; i++)  fRc[i]=0.;
-  for (i=0; i<6; i++)   fITSindex[i]=0;
-  for (i=0; i<180; i++) fTPCindex[i]=0;
+  for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.;}
+  for (i=0; i<15; i++) { fRc[i]=0.; fCc[i]=0.; fIc[i]=0.; fOc[i]=0.;   }
+  for (i=0; i<6; i++)  { fITSindex[i]=0; }
+  for (i=0; i<180; i++){ fTPCindex[i]=0; }
+  for (i=0; i<90; i++) { fTRDindex[i]=0; }
 }
 
 //_______________________________________________________________________
@@ -121,14 +129,64 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
       for (i=0; i<15;i++) fIc[i]=fRc[i];
     }
   case kTPCout:
+  
     fTPCncls=t->GetNumberOfClusters();
     fTPCchi2=t->GetChi2();
-    for (Int_t i=0;i<fTPCncls;i++) fTPCindex[i]=t->GetClusterIndex(i);
+    
+     {//prevrow must be declared in separate namespace, otherwise compiler cries:
+      //"jump to case label crosses initialization of `Int_t prevrow'"
+       Int_t prevrow = -1;
+       for (Int_t i=0;i<fTPCncls;i++) 
+        {
+          fTPCindex[i]=t->GetClusterIndex(i);
+
+          // Piotr's Cluster Map for HBT  
+          // ### please change accordingly if cluster array is changing 
+          // to "New TPC Tracking" style (with gaps in array) 
+          Int_t idx = fTPCindex[i];
+          Int_t sect = (idx&0xff000000)>>24;
+          Int_t row = (idx&0x00ff0000)>>16;
+          if (sect > 18) row +=63; //if it is outer sector, add number of inner sectors
+
+          fTPCClusterMap.SetBitNumber(row,kTRUE);
+
+          //Fill the gap between previous row and this row with 0 bits
+          //In case  ###  pleas change it as well - just set bit 0 in case there 
+          //is no associated clusters for current "i"
+          if (prevrow < 0) 
+           {
+             prevrow = row;//if previous bit was not assigned yet == this is the first one
+           }
+          else
+           { //we don't know the order (inner to outer or reverse)
+             //just to be save in case it is going to change
+             Int_t n = 0, m = 0;
+             if (prevrow < row)
+              {
+                n = prevrow;
+                m = row;
+              }
+             else
+              {
+                n = row;
+                m = prevrow;
+              }
+
+             for (Int_t j = n+1; j < m; j++)
+              {
+                fTPCClusterMap.SetBitNumber(j,kFALSE);
+              }
+             prevrow = row; 
+           }
+          // End Of Piotr's Cluster Map for HBT
+        }
+     }
     fTPCsignal=t->GetPIDsignal();
     {Double_t mass=t->GetMass();    // preliminary mass setting 
     if (mass>0.5) fR[4]=1.;         //        used by
     else if (mass<0.4) fR[2]=1.;    // the ITS reconstruction
-    else fR[3]=1.;}                 //
+    else fR[3]=1.;}
+                     //
     break;
 
   case kTRDout:
@@ -178,11 +236,11 @@ void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
   for (Int_t i=0; i<5; i++) p[i]=fRp[i];
 }
 //_______________________________________________________________________
-void AliESDtrack::GetExternalCovariance(Double_t c[15]) const {
+void AliESDtrack::GetExternalCovariance(Double_t cov[15]) const {
   //---------------------------------------------------------------------
   // This function returns external representation of the cov. matrix
   //---------------------------------------------------------------------
-  for (Int_t i=0; i<15; i++) c[i]=fRc[i];
+  for (Int_t i=0; i<15; i++) cov[i]=fRc[i];
 }
 
 
@@ -267,6 +325,25 @@ void AliESDtrack::GetInnerXYZ(Double_t *xyz) const {
   Double_t phi=TMath::ATan2(fIp[0],fIx) + fIalpha;
   Double_t r=TMath::Sqrt(fIx*fIx + fIp[0]*fIp[0]);
   xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fIp[1]; 
+}
+
+void AliESDtrack::GetInnerExternalParameters(Double_t &x, Double_t p[5]) const 
+{
+  //skowron
+ //---------------------------------------------------------------------
+  // This function returns external representation of the track parameters at Inner Layer of TPC
+  //---------------------------------------------------------------------
+  x=fIx;
+  for (Int_t i=0; i<5; i++) p[i]=fIp[i];
+}
+void AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const
+{
+ //skowron
+ //---------------------------------------------------------------------
+ // This function returns external representation of the cov. matrix at Inner Layer of TPC
+ //---------------------------------------------------------------------
+ for (Int_t i=0; i<15; i++) cov[i]=fIc[i];
+ 
 }
 
 void AliESDtrack::GetOuterPxPyPz(Double_t *p) const {
