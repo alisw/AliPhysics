@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  1999/09/29 07:50:40  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1451,7 +1454,8 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
   Float_t par[50];
   Float_t teta1, phi1, teta2, phi2, teta3, phi3, orig, step;
   Float_t xo, yo, zo;
-  Int_t idrot[5000],istop[7000];
+  const Int_t maxrot=5000;
+  Int_t idrot[maxrot],istop[7000];
   FILE *lun;
   //
   // *** The input filnam name will be with extension '.euc'
@@ -1464,6 +1468,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
   }
   //* --- definition of rotation matrix 0 ---  
   TArrayI &idtmed = *(det->GetIdtmed());
+  for(i=1; i<maxrot; ++i) idrot[i]=-99;
   idrot[0]=0;
   nvol=0;
  L10:
@@ -1476,16 +1481,28 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
   key[4]='\0';
   if (!strcmp(key,"TMED")) {
     sscanf(&card[5],"%d '%[^']'",&itmed,natmed);
+    if( itmed<0 || itmed>=100 ) {
+      Error("ReadEuclid","TMED illegal medium number %d for %s\n",itmed,natmed);
+      exit(1);
+    }
     //Pad the string with blanks
     i=-1;
     while(natmed[++i]);
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //
+    if( idtmed[itmed]<=0 ) {
+      Error("ReadEuclid","TMED undefined medium number %d for %s\n",itmed,natmed);
+      exit(1);
+    }
     gMC->Gckmat(idtmed[itmed],natmed);
     //*
   } else if (!strcmp(key,"ROTM")) {
     sscanf(&card[4],"%d %f %f %f %f %f %f",&irot,&teta1,&phi1,&teta2,&phi2,&teta3,&phi3);
+    if( irot<=0 || irot>=maxrot ) {
+      Error("ReadEuclid","ROTM rotation matrix number %d illegal\n",irot);
+      exit(1);
+    }
     det->AliMatrix(idrot[irot],teta1,phi1,teta2,phi2,teta3,phi3);
     //*
   } else if (!strcmp(key,"VOLU")) {
@@ -1517,6 +1534,14 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
     //*
   } else if (!strcmp(key,"POSI")) {
     sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']'", name, &nr, mother, &xo, &yo, &zo, &irot, konly);
+    if( irot<0 || irot>=maxrot ) {
+      Error("ReadEuclid","POSI %s#%d rotation matrix number %d illegal\n",name,nr,irot);
+      exit(1);
+    }
+    if( idrot[irot] == -99) {
+      Error("ReadEuclid","POSI %s#%d undefined matrix number %d\n",name,nr,irot);
+      exit(1);
+    }
     //*** volume name cannot be the top volume
     for(i=1;i<=nvol;i++) {
       if (!strcmp(volst[i],name)) istop[i]=0;
@@ -1526,6 +1551,14 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
     //*
   } else if (!strcmp(key,"POSP")) {
     sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']' %d", name, &nr, mother, &xo, &yo, &zo, &irot, konly, &npar);
+    if( irot<0 || irot>=maxrot ) {
+      Error("ReadEuclid","POSP %s#%d rotation matrix number %d illegal\n",name,nr,irot);
+      exit(1);
+    }
+    if( idrot[irot] == -99) {
+      Error("ReadEuclid","POSP %s#%d undefined matrix number %d\n",name,nr,irot);
+      exit(1);
+    }
     if (npar > 0) {
       for(i=0;i<npar;i++) fscanf(lun,"%f",&par[i]);
       fscanf(lun,"%*c");
