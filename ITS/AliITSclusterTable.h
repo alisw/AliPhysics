@@ -31,7 +31,7 @@ class AliITSclusterTable : public TObject {
   AliITSclusterTable();
   AliITSclusterTable(AliITSgeom* geom, AliITStrackerSA* tracker);
   void FillArray(TTree* clusterTree,Int_t evnumber=0);
-  void FillArrayLabel(const Int_t numberofparticles,TTree* clusterTree,
+  void FillArrayLabel(Int_t numberofparticles,TTree* clusterTree,
 		      Int_t evnumber=0);
   virtual ~AliITSclusterTable();
 

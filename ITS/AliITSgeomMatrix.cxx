@@ -100,7 +100,7 @@ void AliITSgeomMatrix::operator=(const AliITSgeomMatrix &sourse){
 	}// end for i
 }
 //----------------------------------------------------------------------
-AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
+AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt,const Int_t id[3],
 		   const Double_t rot[3],const Double_t tran[3]){
 ////////////////////////////////////////////////////////////////////////
 // This is a constructor for the AliITSgeomMatrix class. The matrix is
@@ -132,7 +132,7 @@ AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
     this->MatrixFromAngle();
 }
 //----------------------------------------------------------------------
-AliITSgeomMatrix::AliITSgeomMatrix(const Int_t idt, const Int_t id[3],
+AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt, const Int_t id[3],
                                    Double_t matrix[3][3],
                                    const Double_t tran[3]){
 ////////////////////////////////////////////////////////////////////////
@@ -243,7 +243,7 @@ void AliITSgeomMatrix::MatrixFromSixAngles(const Double_t *ang){
 }
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const Double_t rotd[6]/*degrees*/,
-                                   const Int_t idt,const Int_t id[3],
+                                   Int_t idt,const Int_t id[3],
 		                   const Double_t tran[3]){
 ////////////////////////////////////////////////////////////////////////
 // This is a constructor for the AliITSgeomMatrix class. The matrix is

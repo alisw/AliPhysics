@@ -153,7 +153,7 @@ void AliITSclusterTable::FillArray(TTree* clusterTree,Int_t evnumber){
 }
 
 //_________________________________________________________________
-void AliITSclusterTable::FillArrayLabel(const Int_t numberofparticles,TTree* clusterTree,Int_t evnumber){
+void AliITSclusterTable::FillArrayLabel(Int_t numberofparticles,TTree* clusterTree,Int_t evnumber){
   //
 
 

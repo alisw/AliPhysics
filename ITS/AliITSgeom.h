@@ -226,7 +226,7 @@ class AliITSgeom : public TObject {
     // detector type based on AliITSDetector value. This will return a pointer
     // to one of the classes AliITSgeomSPD, AliITSgeomSDD, or AliITSgeomSSD,
     // for example.
-    virtual TObject *GetShape(const AliITSDetector idet)
+    virtual TObject *GetShape(AliITSDetector idet)
 	{return fShape->At((Int_t)idet);};
     //     This function returns a pointer to the class describing the
     // detector for a particular module index. This will return a pointer
@@ -250,14 +250,14 @@ class AliITSgeom : public TObject {
     //     Sets the rotation angles and matrix for a give module index
     // via the 3 floating precision variables rx, ry, and rz [radians].
     void SetByAngles(Int_t index,
-		     const Float_t rx,const Float_t ry,const Float_t rz) {
+		     Float_t rx, Float_t ry, Float_t rz) {
                      Double_t a[3];a[0] = rx;a[1] = ry;a[2] = rz;
                      GetGeomMatrix(index)->SetAngles(a);}
     //     Sets the rotation angles and matrix for a give layer, ladder,
     // and detector numbers via the 3 floating precision variables rx,
     // ry, and rz [radians].
     void SetByAngles(Int_t lay,Int_t lad,Int_t det,
-                     const Float_t rx,const Float_t ry,const Float_t rz) {
+                     Float_t rx, Float_t ry, Float_t rz) {
                      SetByAngles(GetModuleIndex(lay,lad,det),rx,ry,rz);}
 //
     //     Sets the rotation angles and matrix for a give module index

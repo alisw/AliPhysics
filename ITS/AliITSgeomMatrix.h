@@ -17,14 +17,14 @@ class AliITSgeomMatrix : public TObject {
  public:
 	AliITSgeomMatrix(); // Default constructor
 	// Standard constructor #1
-	AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
+	AliITSgeomMatrix(Int_t idt,const Int_t id[3],
 			 const Double_t rot[3],const Double_t tran[3]);
 	// Standard constructor #2
-        AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
+        AliITSgeomMatrix(Int_t idt,const Int_t id[3],
 		         Double_t matrix[3][3],const Double_t tran[3]);
 	// Standard constructor #3
         AliITSgeomMatrix(const Double_t rotd[6]/*degrees GEANT angles*/,
-                         const Int_t idt,const Int_t id[3],
+                         Int_t idt,const Int_t id[3],
                          const Double_t tran[3]);
 	// Copy operator
 	AliITSgeomMatrix(const AliITSgeomMatrix &source);
@@ -56,7 +56,7 @@ class AliITSgeomMatrix : public TObject {
 	void SetMatrix(Double_t matrix[3][3]){ for(Int_t i=0;i<3;i++)
 	 for(Int_t j=0;j<3;j++) fm[i][j]=matrix[i][j];this->AngleFromMatrix();}
 	// Sets the detector index value
-	void SetDetectorIndex(const Int_t idt) {fDetectorIndex = idt;}
+	void SetDetectorIndex(Int_t idt) {fDetectorIndex = idt;}
 	// Sets the detector layer, ladder, detector (id) values.
 	void SetIndex(const Int_t id[3]){
 	                   for(Int_t i=0;i<3;i++) fid[i] = id[i];}

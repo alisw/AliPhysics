@@ -148,7 +148,7 @@ AliITSpackageSSD::operator=( const AliITSpackageSSD & package)
 
 /*******************************************************/
 
-Int_t AliITSpackageSSD::GetNSideClusterIdx(const Int_t index) const
+Int_t AliITSpackageSSD::GetNSideClusterIdx(Int_t index) const
 {
   // get N-side cluster
   // 
@@ -163,7 +163,7 @@ Int_t AliITSpackageSSD::GetNSideClusterIdx(const Int_t index) const
 /*******************************************************/
 
 
-Int_t AliITSpackageSSD::GetPSideClusterIdx(const Int_t index) const
+Int_t AliITSpackageSSD::GetPSideClusterIdx(Int_t index) const
 {
   // get P-side cluster
   //
@@ -177,7 +177,7 @@ Int_t AliITSpackageSSD::GetPSideClusterIdx(const Int_t index) const
 }
 /*******************************************************/
 AliITSclusterSSD*  
-AliITSpackageSSD::GetPSideCluster(const Int_t index)
+AliITSpackageSSD::GetPSideCluster(Int_t index)
 {
   // get Pside cluster from the TClonesArray of SSD clusters
   //
@@ -187,7 +187,7 @@ AliITSpackageSSD::GetPSideCluster(const Int_t index)
 /*******************************************************/
 
 AliITSclusterSSD*  
-AliITSpackageSSD::GetNSideCluster(const Int_t index)
+AliITSpackageSSD::GetNSideCluster(Int_t index)
 {
   // get Nside cluster from the TClonesArray of SSD clusters
   //
@@ -501,7 +501,7 @@ void  AliITSpackageSSD::MakeCombin
 }
 
 /**********************************************/
-Bool_t  AliITSpackageSSD::IsFree(const Int_t idx, const Int_t nn, const Int_t *lis) const
+Bool_t  AliITSpackageSSD::IsFree(Int_t idx, Int_t nn, const Int_t *lis) const
 {
   // 
   for (Int_t i=0;i<nn;i++)

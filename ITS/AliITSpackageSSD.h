@@ -37,13 +37,13 @@ class AliITSpackageSSD : public TObject
                    clindex:(*fClusterPIndexes)[fNclustersP++]=clindex;}
   	
 //Returns index of one side cluster in TClonesArray, NOT AliITSclusterSSD
-  Int_t    GetNSideClusterIdx(const Int_t index) const; //input index is number of cluster in this package 
-  Int_t    GetPSideClusterIdx(const Int_t index) const; //returns index in TClonesArray
+  Int_t    GetNSideClusterIdx(Int_t index) const; //input index is number of cluster in this package 
+  Int_t    GetPSideClusterIdx(Int_t index) const; //returns index in TClonesArray
   Int_t    GetClusterIdx(Int_t index,Bool_t side) const 
 	        {return (side)?GetPSideClusterIdx(index):GetNSideClusterIdx(index);}
  
-  AliITSclusterSSD*    GetNSideCluster(const Int_t index);
-  AliITSclusterSSD*    GetPSideCluster(const Int_t index); //index is 
+  AliITSclusterSSD*    GetNSideCluster(Int_t index);
+  AliITSclusterSSD*    GetPSideCluster(Int_t index); //index is 
   AliITSclusterSSD*    GetCluster(Int_t index, Bool_t side)
 	        {return (side)?GetPSideCluster(index):GetNSideCluster(index);}
 			
@@ -55,7 +55,7 @@ class AliITSpackageSSD : public TObject
   Int_t    GetNumOfClustersN() const {return fNclustersN;}  
   Int_t    GetNumOfClustersP() const {return fNclustersP;}   
   Int_t    GetNumOfClusters() const {return fNclustersP+fNclustersN;}  
-  Int_t    GetNumOfClusters(const Bool_t side) const {return (side)?fNclustersP:fNclustersN;}
+  Int_t    GetNumOfClusters(Bool_t side) const {return (side)?fNclustersP:fNclustersN;}
   
   //returns number of clusters belonging to package,
   //that crosses with only one cluster on the other side 
@@ -96,7 +96,7 @@ protected:
 
   
   void    MakeCombin(Int_t**arr, Int_t& nu, Int_t np, Int_t *occup,Int_t size);
-  Bool_t  IsFree(const Int_t idx, const Int_t nn, const Int_t *lis) const;
+  Bool_t  IsFree(Int_t idx, Int_t nn, const Int_t *lis) const;
   
 
 		 
