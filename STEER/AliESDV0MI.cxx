@@ -133,7 +133,8 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   Double_t phase[2][2],radius[2];
   Int_t  points = phelix.GetRPHIintersections(mhelix, phase, radius,200);
   Double_t delta1=10000,delta2=10000;  
-  
+
+  if (points<=0) return;
   if (points>0){
     phelix.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
     phelix.LinearDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
@@ -151,6 +152,7 @@ void  AliESDV0MI::Update(Float_t vertex[3])
   points = phelix.GetRPHIintersections(mhelix, phase, radius);
   delta1=10000,delta2=10000;  
   Double_t d1=1000.,d2=10000.;
+  if (points<=0) return;
   if (points>0){
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
