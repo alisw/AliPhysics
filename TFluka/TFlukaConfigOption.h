@@ -75,7 +75,7 @@ public:
  protected:
     Double_t fCutValue[11];            // User cut
     Int_t    fProcessFlag[15];         // User flag assigned to processes
-    Int_t    fMedium;                  // Materials assigned to user settings
+    Int_t    fMedium;                  // Material assigned to user settings
     Float_t  fCMatMin;                 // Minimum material number used for current card 
     Float_t  fCMatMax;                 // Maximum material number used for current card
     

@@ -785,7 +785,9 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       }   
 
       Float_t hasfield  = (vol->GetMedium()->GetParam(1) > 0) ? flagfield : 0.;
-      
+      out << "* Assigning material:   " << vol->GetMedium()->GetMaterial()->GetName() << "   to Volume: " << vol->GetName();
+      out << endl;
+
       out << setw(10) << "ASSIGNMAT ";
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
       out << setw(10) << setiosflags(ios::fixed) << Double_t(idmat);

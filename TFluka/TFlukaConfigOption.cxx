@@ -97,7 +97,22 @@ void TFlukaConfigOption::WriteFlukaInputCards()
     //
     //
     if (fMedium > -1) {
-	fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d \n", fMedium);
+	TFluka* fluka = (TFluka*) gMC;
+	TObjArray *matList = fluka->GetFlukaMaterials();
+	Int_t nmaterial =  matList->GetEntriesFast();
+	TGeoMaterial* material = 0;
+	for (Int_t im = 0; im < nmaterial; im++)
+	{
+	    material = dynamic_cast<TGeoMaterial*> (matList->At(im));
+	    Int_t idmat = material->GetIndex();
+	    if (idmat == fMedium) break;	    
+	}
+	
+	
+//
+// Check if global option
+
+	fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d %s\n", fMedium, material->GetName());
 	fCMatMin = fMedium;
 	fCMatMax = fMedium;
     } else {
@@ -553,7 +568,7 @@ void TFlukaConfigOption::ProcessCUTNEU()
 	Float_t neutronCut = cut;
 	if (neutronCut < 0.0196) {
 	    neutronCut = 0.0196;
-	    printf("Cut on neutron lower than upper limit if first energy group.\n");
+	    printf("Cut on neutron lower than upper limit of first energy group.\n");
 	    printf("Cut reset to 19.6 MeV !\n");
 	}
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -neutronCut,  8.0,  9.0);
