@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.44  2001/04/26 22:44:01  nilsen
+Removed dependence on layer 5/6 in AliITS::HitsToDigits. This will be
+done properly in AliITSv???.cxx via SetDefaults.
+
 Revision 1.43  2001/04/26 13:22:52  barbera
 TMatrix and TVector elimininated to speed up the code
 
@@ -713,7 +717,7 @@ void AliITS::MakeTreeC(Option_t *option)
 {
   // create a separate tree to store the clusters
 
-  cout << "AliITS::MakeTreeC" << endl;
+//  cout << "AliITS::MakeTreeC" << endl;
 
      const char *optC = strstr(option,"C");
      if (optC && !fTreeC) fTreeC = new TTree("TC","Clusters in ITS");
@@ -738,8 +742,8 @@ void AliITS::MakeTreeC(Option_t *option)
 	else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	if (fCtype   && fTreeC) {
 	   TreeC()->Branch(branchname,&((*fCtype)[i]), buffersize);
-	   cout << "Making Branch " << branchname;
-	   cout << " for Clusters of detector type " << i+1 << endl;
+//	   cout << "Making Branch " << branchname;
+//	   cout << " for Clusters of detector type " << i+1 << endl;
 	}	
      }
 
@@ -749,7 +753,7 @@ void AliITS::MakeTreeC(Option_t *option)
 void AliITS::GetTreeC(Int_t event)
 {
 
-  cout << "AliITS::GetTreeC" << endl;
+//  cout << "AliITS::GetTreeC" << endl;
 
   // get the clusters tree for this event and set the branch address
     char treeName[20];
@@ -822,8 +826,8 @@ void AliITS::MakeBranch(Option_t* option, char *file)
       if (fDtype && gAlice->TreeD()) {
         gAlice->MakeBranchInTree(gAlice->TreeD(), 
                          branchname, &((*fDtype)[i]), buffersize, file);
-	    cout << "Making Branch " << branchname;
-	    cout << " for digits of type "<< i+1 << endl;
+//	    cout << "Making Branch " << branchname;
+//	    cout << " for digits of type "<< i+1 << endl;
       }	
     }
   }
@@ -839,8 +843,8 @@ void AliITS::MakeBranch(Option_t* option, char *file)
     if (fRecPoints && gAlice->TreeR()) {
       gAlice->MakeBranchInTree(gAlice->TreeR(), 
                                branchname, &fRecPoints, buffersize, file) ;
-      cout << "Making Branch " << branchname;
-      cout << " for reconstructed space points" << endl;
+//      cout << "Making Branch " << branchname;
+//      cout << " for reconstructed space points" << endl;
     }
   }	
 }
@@ -935,9 +939,9 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
 
     if (addBgr ) {
 	if(first) {
-	    cout<<"filename "<<filename<<endl;
+//	    cout<<"filename "<<filename<<endl;
 	    file=new TFile(filename);
-	    cout<<"I have opened "<<filename<<" file "<<endl;
+//	    cout<<"I have opened "<<filename<<" file "<<endl;
 	    fHits2     = new TClonesArray("AliITShit",1000  );
 	}	    
 	first=kFALSE;
@@ -1118,12 +1122,12 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 
    const char *all = strstr(opt,"All");
    const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
-   cout<<" 1 AliITS "<<endl;
+//   cout<<" 1 AliITS "<<endl;
    Int_t nmodules;
    InitModules(size,nmodules); 
-   cout<<" 2 AliITS "<<endl;
+//   cout<<" 2 AliITS "<<endl;
    FillModules(evNumber,bgrev,nmodules,option,filename);
-   cout<<" 3 AliITS "<<endl;
+//   cout<<" 3 AliITS "<<endl;
 
    //TBranch *branch;
    AliITSsimulation* sim;
@@ -1131,7 +1135,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
    AliITSgeom *geom = GetITSgeom();
 
    Int_t id,module;
-   Int_t lay, lad, detect;
+//   Int_t lay, lad, detect;
    Int_t first,last;
    for (id=0;id<kNTYPES;id++) {
         if (!all && !det[id]) continue;
@@ -1149,12 +1153,12 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 	  first = geom->GetStartDet(id);
 	  last = geom->GetLastDet(id);
 	} else first=last=0;
-	cout << "det type " << id << " first, last "<< first << last << endl;
+//	cout << "det type " << id << " first, last "<< first << last << endl;
 	for(module=first;module<=last;module++) {
 	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
-
+/*
 	    geom->GetModuleId(module,lay, lad, detect);
-/*            if ( lay == 6 )
+            if ( lay == 6 )
 	      ((AliITSsegmentationSSD*)(((AliITSsimulationSSD*)sim)->GetSegmentation()))->SetLayer(6);
 	    if ( lay == 5 )
 	      ((AliITSsegmentationSSD*)(((AliITSsimulationSSD*)sim)->GetSegmentation()))->SetLayer(5);
@@ -1171,8 +1175,9 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 
    ClearModules();
 
-   Int_t nentries=(Int_t)gAlice->TreeD()->GetEntries();
-   cout << "nentries in TreeD" << nentries << endl;
+//   Int_t nentries=(Int_t)
+   gAlice->TreeD()->GetEntries();
+//   cout << "nentries in TreeD" << nentries << endl;
 
    char hname[30];
    sprintf(hname,"TreeD%d",evNumber);
@@ -1236,7 +1241,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
               if (all) gAlice->TreeD()->GetEvent(lastentry+module);
 	      else gAlice->TreeD()->GetEvent(lastentry+(module-first));
 	      Int_t ndigits = itsDigits->GetEntriesFast();
-	      if (ndigits) rec->FindRawClusters();
+	      if (ndigits) rec->FindRawClusters(module);
 	      gAlice->TreeR()->Fill(); 
 	      ResetRecPoints();
 	      treeC->Fill();
@@ -1248,9 +1253,11 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
    } // loop over detector types
 
 
-   Int_t nentries=(Int_t)gAlice->TreeR()->GetEntries();
-   Int_t ncentries=(Int_t)treeC->GetEntries();
-   cout << " nentries ncentries " << nentries << ncentries <<  endl;
+//   Int_t nentries=(Int_t)
+   gAlice->TreeR()->GetEntries();
+//   Int_t ncentries=(Int_t)
+   treeC->GetEntries();
+//   cout << " nentries ncentries " << nentries << ncentries <<  endl;
 
    char hname[30];
    sprintf(hname,"TreeR%d",evNumber);
@@ -1349,7 +1356,7 @@ AliITStrack  AliITS::Tracking(AliITStrack &track, AliITStrack *reference,TObjArr
   list->AddLast(&tr);
   
   Double_t Pt=(tr).GetPt();
-  cout << "\n Pt = " << Pt <<"\n";  //stampa
+//  cout << "\n Pt = " << Pt <<"\n";  //stampa
 
   AliITStracking obj(list, reference, this, fastpoints,TMath::Abs(Pt),vettid, flagvert, rl);
   list->Delete();
@@ -1647,11 +1654,11 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
     // cout<<" progressive track number = "<<j<<"\r";
    // cout<<j<<"\r";
     Int_t NumofCluster=result.GetNumClust();  
-    cout<<" progressive track number = "<<j<<"\n";    // stampa
+//    cout<<" progressive track number = "<<j<<"\n";    // stampa
     Long_t labITS=result.GetLabel();
-    cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
+//    cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
     int lab=track->GetLabel();		    
-    cout << " TPC track label = " << lab <<"\n";      // stampa
+//    cout << " TPC track label = " << lab <<"\n";      // stampa
 	 
 	     
 //propagation to vertex
