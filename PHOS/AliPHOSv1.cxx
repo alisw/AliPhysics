@@ -14,10 +14,12 @@
  **************************************************************************/
 
 /* $Id$ */
+
 //_________________________________________________________________________
-// Version of AliPHOSv0 which allows for keeping all hits in TreeH
-//                  
-//*-- Author: Gines MARTINEZ (SUBATECH)
+// Implementation version v1 of PHOS Manager class 
+// Layout EMC + PPSD has name GPS2  
+// Produces cumulated hits (no hits) and digits                  
+//*-- Author: Yves Schutz (SUBATECH)
 
 
 // --- ROOT system ---
@@ -25,6 +27,7 @@
 #include "TBRIK.h"
 #include "TNode.h"
 #include "TRandom.h"
+
 
 // --- Standard library ---
 
@@ -47,7 +50,7 @@ ClassImp(AliPHOSv1)
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1()
 {
-  // default ctor
+  // ctor
   fNTmpHits = 0 ; 
   fTmpHits  = 0 ; 
 }
@@ -56,67 +59,142 @@ AliPHOSv1::AliPHOSv1()
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   AliPHOSv0(name,title)
 {
-  // ctor
-   fHits= new TClonesArray("AliPHOSHit",1000) ;
+  // ctor : title is used to identify the layout
+  //        GPS2 = 5 modules (EMC + PPSD)   
+  // We use 2 arrays of hits :
+  //
+  //   - fHits (the "normal" one), which retains the hits associated with
+  //     the current primary particle being tracked
+  //     (this array is reset after each primary has been tracked).
+  //
+  //   - fTmpHits, which retains all the hits of the current event. It 
+  //     is used for the digitization part.
+
+  fPinElectronicNoise = 0.010 ;
+  fDigitThreshold      = 1. ;   // 1 GeV 
+
+  // We do not want to save in TreeH the raw hits
+  // But save the cumulated hits instead (need to create the branch myself)
+  // It is put in the Digit Tree because the TreeH is filled after each primary
+ // and the TreeD at the end of the event (branch is set in FinishEvent() ).
+  
+  fTmpHits= new TClonesArray("AliPHOSHit",1000) ;
+
+  fNTmpHits = fNhits = 0 ;
+
+  fDigits = new TClonesArray("AliPHOSDigit",1000) ;
+
+
+  fIshunt     =  1 ; // All hits are associated with primary particles
+    
+}
+
+//____________________________________________________________________________
+AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
+  AliPHOSv0(name,title)
+{
+  // ctor : title is used to identify the layout
+  //        GPS2 = 5 modules (EMC + PPSD)   
+  // We use 2 arrays of hits :
+  //
+  //   - fHits (the "normal" one), which retains the hits associated with
+  //     the current primary particle being tracked
+  //     (this array is reset after each primary has been tracked).
+  //
+  //   - fTmpHits, which retains all the hits of the current event. It 
+  //     is used for the digitization part.
+
+  fPinElectronicNoise = 0.010 ;
+
+  // We do not want to save in TreeH the raw hits
+  //fHits   = new TClonesArray("AliPHOSHit",100) ;
+
+  fDigits = new TClonesArray("AliPHOSDigit",1000) ;
+  fTmpHits= new TClonesArray("AliPHOSHit",1000) ;
+
+  fNTmpHits = fNhits = 0 ;
+
+  fIshunt     =  1 ; // All hits are associated with primary particles
+ 
+  // gets an instance of the geometry parameters class  
+  fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
+
+  if (fGeom->IsInitialized() ) 
+    cout << "AliPHOSv1 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+  else
+   cout << "AliPHOSv1 : PHOS geometry initialization failed !" << endl ;   
+
+  // Defining the PHOS Reconstructioner
+ 
+ fReconstructioner = Reconstructioner ;
+
+
 }
 
 //____________________________________________________________________________
 AliPHOSv1::~AliPHOSv1()
 {
   // dtor
+
   if ( fTmpHits) {
     fTmpHits->Delete() ; 
     delete fTmpHits ;
     fTmpHits = 0 ; 
   }
-  
-  if ( fEmcRecPoints ) { 
+
+  if ( fEmcRecPoints ) {
     fEmcRecPoints->Delete() ; 
     delete fEmcRecPoints ; 
     fEmcRecPoints = 0 ; 
   }
-  
+
   if ( fPpsdRecPoints ) { 
     fPpsdRecPoints->Delete() ;
     delete fPpsdRecPoints ;
     fPpsdRecPoints = 0 ; 
   }
- 
+  
   if ( fTrackSegments ) {
     fTrackSegments->Delete() ; 
     delete fTrackSegments ;
     fTrackSegments = 0 ; 
   }
+
 }
 
 //____________________________________________________________________________
 void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
-  // In this version of AliPHOSv0, a PHOS hit is real geant 
-  // hits in a single crystal or in a single PPSD gas cell
+  // A PHOS hit is the sum of all hits in a single crystal
+  //   or in a single PPSD gas cell
 
-  // cout << "Primary is " << primary << endl;
-  //cout << "Tracknumber is " << tracknumber << endl;
-  //cout << "Vol Id is " << Id << endl;
-  //cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
-
-  //  cout << " Adding a hit number " << fNhits << endl ;
-
-  TClonesArray &ltmphits = *fHits ;
+  Int_t hitCounter ;
+  TClonesArray &ltmphits = *fTmpHits ;
   AliPHOSHit *newHit ;
+  AliPHOSHit *curHit ;
+  Bool_t deja = kFALSE ;
 
-  //  fHits->Print("");
+  // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
 
   newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
 
-  // We DO want to save in TreeH the raw hits 
+  // We do not want to save in TreeH the raw hits 
   //  TClonesArray &lhits = *fHits;
-  //  cout << " Adding a hit to fHits TCloneArray number " << fNhits << endl ;     
-  new(ltmphits[fNhits]) AliPHOSHit(*newHit) ;
-  fNhits++ ;
 
-  // cout << " Added a hit to fHits TCloneArray number " << fNhits << endl ; 
+  for ( hitCounter = 0 ; hitCounter < fNTmpHits && !deja ; hitCounter++ ) {
+    curHit = (AliPHOSHit*) ltmphits[hitCounter] ;
+  if( *curHit == *newHit ) {
+    *curHit = *curHit + *newHit ;
+    deja = kTRUE ;
+    }
+  }
+         
+  if ( !deja ) {
+    new(ltmphits[fNTmpHits]) AliPHOSHit(*newHit) ;
+    fNTmpHits++ ;
+  }
+
   // We do not want to save in TreeH the raw hits 
   //   new(lhits[fNhits]) AliPHOSHit(*newHit) ;    
   //   fNhits++ ;
@@ -129,8 +207,16 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 
 }
 
-
-
+//___________________________________________________________________________
+Int_t AliPHOSv1::Digitize(Float_t Energy)
+{
+  // Applies the energy calibration
+  
+  Float_t fB = 100000000. ;
+  Float_t fA = 0. ;
+  Int_t chan = Int_t(fA + Energy*fB ) ;
+  return chan ;
+}
 
 //___________________________________________________________________________
 void AliPHOSv1::FinishEvent()
@@ -143,6 +229,7 @@ void AliPHOSv1::FinishEvent()
   // It is put in the Digit Tree because the TreeH is filled after each primary
   // and the TreeD at the end of the event.
   
+  
   Int_t i ;
   Int_t relid[4];
   Int_t j ; 
@@ -152,8 +239,8 @@ void AliPHOSv1::FinishEvent()
   AliPHOSDigit * curdigit ;
   Bool_t deja = kFALSE ; 
   
-  for ( i = 0 ; i < fNhits ; i++ ) {
-    hit = (AliPHOSHit*)fHits->At(i) ;
+  for ( i = 0 ; i < fNTmpHits ; i++ ) {
+    hit = (AliPHOSHit*)fTmpHits->At(i) ;
     newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
     deja =kFALSE ;
     for ( j = 0 ; j < fNdigits ;  j++) { 
@@ -196,8 +283,178 @@ void AliPHOSv1::FinishEvent()
     newdigit = (AliPHOSDigit *) fDigits->At(i) ; 
     newdigit->SetIndexInList(i) ; 
   }
+  
+}
+
+//___________________________________________________________________________
+void AliPHOSv1::MakeBranch(Option_t* opt)
+{  
+  // Create new branche in the current Root Tree in the digit Tree
+
+  AliDetector::MakeBranch(opt) ;
+  
+  char branchname[10];
+  sprintf(branchname,"%s",GetName());
+  char *cdD = strstr(opt,"D");
+  if (fDigits && gAlice->TreeD() && cdD) {
+    gAlice->TreeD()->Branch(branchname, &fDigits, fBufferSize);
+  }
+
+  // Create new branche PHOSCH in the current Root Tree in the digit Tree for accumulated Hits
+  if ( ! (gAlice->IsLegoRun()) ) { // only when not in lego plot mode 
+    if ( fTmpHits && gAlice->TreeD()  && cdD) {
+      char branchname[10] ;
+      sprintf(branchname, "%sCH", GetName()) ;
+      gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ;
+    }   
+  }
 
 }
+
+
+//_____________________________________________________________________________
+void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
+{ 
+  // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and 
+  // 2. Creates TreeR with a branch for each list
+  // 3. Steers the reconstruction processes
+  // 4. Saves the 3 lists in TreeR
+  // 5. Write the Tree to File
+  
+  fReconstructioner = Reconstructioner ;
+  
+  char branchname[10] ;
+  
+  // 1.
+
+  //  gAlice->MakeTree("R") ; 
+  Int_t splitlevel = 0 ; 
+  
+  if (fEmcRecPoints) { 
+    fEmcRecPoints->Delete() ; 
+    delete fEmcRecPoints ;
+    fEmcRecPoints = 0 ; 
+  }
+
+  //  fEmcRecPoints= new AliPHOSRecPoint::RecPointsList("AliPHOSEmcRecPoint", 1000) ; if TClonesArray
+  fEmcRecPoints= new AliPHOSRecPoint::RecPointsList(2000) ; 
+
+  if ( fEmcRecPoints && gAlice->TreeR() ) {
+    sprintf(branchname,"%sEmcRP",GetName()) ;
+    
+    // gAlice->TreeR()->Branch(branchname, &fEmcRecPoints, fBufferSize); if TClonesArray
+    gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcRecPoints, fBufferSize, splitlevel) ; 
+  }
+
+  if (fPpsdRecPoints) { 
+    fPpsdRecPoints->Delete() ; 
+    delete fPpsdRecPoints ; 
+    fPpsdRecPoints = 0 ; 
+  }
+
+  //  fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList("AliPHOSPpsdRecPoint", 1000) ; if TClonesArray
+  fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList(2000) ;
+
+  if ( fPpsdRecPoints && gAlice->TreeR() ) {
+    sprintf(branchname,"%sPpsdRP",GetName()) ;
+     
+     // gAlice->TreeR()->Branch(branchname, &fPpsdRecPoints, fBufferSize); if TClonesArray
+    gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
+  }
+
+  if (fTrackSegments) { 
+   fTrackSegments->Delete() ; 
+    delete fTrackSegments ; 
+    fTrackSegments = 0 ; 
+  }
+
+  fTrackSegments = new AliPHOSTrackSegment::TrackSegmentsList("AliPHOSTrackSegment", 2000) ;
+  if ( fTrackSegments && gAlice->TreeR() ) { 
+    sprintf(branchname,"%sTS",GetName()) ;
+    gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize) ;
+  }
+
+  if (fRecParticles) {  
+    fRecParticles->Delete() ; 
+    delete fRecParticles ; 
+    fRecParticles = 0 ; 
+  }
+  fRecParticles = new AliPHOSRecParticle::RecParticlesList("AliPHOSRecParticle", 2000) ;
+  if ( fRecParticles && gAlice->TreeR() ) { 
+     sprintf(branchname,"%sRP",GetName()) ;
+     gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
+  }
+  
+  // 3.
+
+  fReconstructioner->Make(fDigits, fEmcRecPoints, fPpsdRecPoints, fTrackSegments, fRecParticles);
+
+  // 4. Expand or Shrink the arrays to the proper size
+  
+  Int_t size ;
+  
+  size = fEmcRecPoints->GetEntries() ;
+  fEmcRecPoints->Expand(size) ;
+ 
+  size = fPpsdRecPoints->GetEntries() ;
+  fPpsdRecPoints->Expand(size) ;
+
+  size = fTrackSegments->GetEntries() ;
+  fTrackSegments->Expand(size) ;
+
+  size = fRecParticles->GetEntries() ;
+  fRecParticles->Expand(size) ;
+
+  gAlice->TreeR()->Fill() ;
+  cout << "filled" << endl ;
+  // 5.
+
+  gAlice->TreeR()->Write() ;
+  cout << "writen" << endl ;
+ 
+  // Deleting reconstructed objects
+  ResetReconstruction();
+  
+}
+
+//____________________________________________________________________________
+void AliPHOSv1::ResetDigits() 
+{ 
+  // May sound strange, but cumulative hits are store in digits Tree
+  AliDetector::ResetDigits();
+  if(  fTmpHits ) {
+    fTmpHits->Delete();
+    fNTmpHits = 0 ;
+  }
+}  
+//____________________________________________________________________________
+void AliPHOSv1::ResetReconstruction() 
+{ 
+  // Deleting reconstructed objects
+
+  if ( fEmcRecPoints )   fEmcRecPoints->Delete();
+  if ( fPpsdRecPoints )  fPpsdRecPoints->Delete();
+  if ( fTrackSegments )  fTrackSegments->Delete();
+  if ( fRecParticles )   fRecParticles->Delete();
+  
+}
+//____________________________________________________________________________
+
+//____________________________________________________________________________
+void AliPHOSv1::SetTreeAddress()
+{ 
+  //  TBranch *branch;
+  AliPHOS::SetTreeAddress();
+
+ //  //Branch address for TreeR: RecPpsdRecPoint
+//   TTree *treeR = gAlice->TreeR();
+//   if ( treeR && fPpsdRecPoints ) {
+//     branch = treeR->GetBranch("PHOSPpsdRP");
+//     if (branch) branch->SetAddress(&fPpsdRecPoints) ;
+  //  }
+}
+
+//____________________________________________________________________________
 
 void AliPHOSv1::StepManager(void)
 {
@@ -209,8 +466,7 @@ void AliPHOSv1::StepManager(void)
   Int_t copy ;
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() );
-
+  Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name = fGeom->GetName() ; 
   if ( name == "GPS2" ) { // the CPV is a PPSD
     if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
@@ -255,16 +511,16 @@ void AliPHOSv1::StepManager(void)
           gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
           gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
 
-      // get the absolute Id number
-
+	  // get the absolute Id number
+	  
           Int_t absid ; 
           fGeom->RelToAbsNumbering(relid, absid) ; 
  
-      // add current hit to the hit list
+	  // add current hit to the hit list
 
-          AddHit(fIshunt, primary,tracknumber, absid, xyze);
-    
+	  AddHit(fIshunt, primary,tracknumber, absid, xyze);
+	  
        } // there is deposited energy
-    } // we are inside a PHOS Xtal
+     } // we are inside a PHOS Xtal
 }
 

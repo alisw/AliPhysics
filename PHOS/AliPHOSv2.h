@@ -1,51 +1,36 @@
 #ifndef ALIPHOSV2_H
 #define ALIPHOSV2_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-1999-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
 //_________________________________________________________________________
-// Implementation version v0 of PHOS Manager class 
-// Layout EMC + PPSD has name GPS2  
-// The main goal of this version of AliPHOS is to calculte the 
-//  induced charged in the PIN diode, taking into account light
-//  tracking in the PbWO4 crystal, induced signal in the 
-//  PIN due to MIPS particle and electronic noise.
-// This is done in the StepManager 
+// Version of AliPHOSv0 which keeps all hits in TreeH
+//  This version is NOT recommended for Reconstruction analysis
 //                  
-//*-- Author:  Odd Harald Oddland & Gines Martinez (SUBATECH)
+//*-- Author: Gines MARTINEZ (SUBATECH)
 
 // --- ROOT system ---
-
+#include "TClonesArray.h"
 
 // --- AliRoot header files ---
-#include "AliPHOSv0.h"
+#include "AliPHOSv1.h"
+#include "AliPHOSReconstructioner.h"
 
-
-class AliPHOSv2 : public AliPHOSv0 {
+class AliPHOSv2 : public AliPHOSv1 {
 
 public:
 
-  AliPHOSv2(void) : AliPHOSv0() {
-    // ctor
-  }
+  AliPHOSv2(void) ;
   AliPHOSv2(const char *name, const char *title="") ;
-  AliPHOSv2(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
-  virtual ~AliPHOSv2(void) {
-    // dtor
-  } 
-                            
-  virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
- 
-  
-private:
-  
-  Float_t fLightYieldMean ;         // Mean lightyield in the PbOW4 xtal per GeV (Poisson distribution)
-  Float_t fIntrinsicPINEfficiency ; // Photo efficiency of the PIN diode   
-  Float_t fLightYieldAttenuation ;  // Attenuation of the light through the crystal
-  Float_t fRecalibrationFactor ;    // Recalibration factor
-  Float_t fElectronsPerGeV ;        // Number of electrons per GeV created in the PIN by a ionizing particle
+  virtual ~AliPHOSv2(void) ;
 
-  ClassDef(AliPHOSv2,1)  // Implementation of PHOS manager class for layout EMC+PPSD with light transport, MIPS in PIN and electronic noise
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) ; 
+// adds a hit to the hit tree (any pre=digitalization is done here (so large root file !!) 
+  virtual void    FinishEvent(void) ;          // makes the digits from the hits 
+  virtual void    StepManager(void) ;  // StepManager to keep current tack number in the hit
+
+protected:
+
+  ClassDef(AliPHOSv2,1)  // Class AliPHOSv0 which allows to write ond disk al the information of the hits. 
 
 };
 

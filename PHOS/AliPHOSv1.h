@@ -1,19 +1,23 @@
 #ifndef ALIPHOSV1_H
 #define ALIPHOSV1_H
-/* Copyright(c) 1998-1999-2000, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
 //_________________________________________________________________________
-// Version of AliPHOSv0 which allows for keeping all hits in TreeH
-//  This version is NOT recommended for Reconstruction analysis
+// Implementation version v1 of PHOS Manager class 
+// Layout EMC + PPSD has name GPS2  
 //                  
-//*-- Author: Gines MARTINEZ (SUBATECH)
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 #include "TClonesArray.h"
 
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
+#include "AliPHOSGeometry.h"
 #include "AliPHOSReconstructioner.h"
+#include "AliPHOSTrackSegmentMaker.h"
+#include "AliPHOSPID.h"
 
 class AliPHOSv1 : public AliPHOSv0 {
 
@@ -21,16 +25,53 @@ public:
 
   AliPHOSv1(void) ;
   AliPHOSv1(const char *name, const char *title="") ;
+  AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
+  AliPHOSv1(const AliPHOSv1 & phos) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    assert(0==1) ; 
+  }
+ 
   virtual ~AliPHOSv1(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) ; 
-// adds a hit to the hit tree (any pre=digitalization is done here (so large root file !!) 
-  void            FinishEvent(void) ;          // makes the digits from the hits 
-  virtual void    StepManager(void) ;  // StepManager to keep current tack number in the hit
+         // adds a pre-digitilized hit to the hit tree 
+  Int_t          Digitize(Float_t Energy);
+  virtual void   FinishEvent(void) ;                                // makes the digits from the hits 
+  Int_t IsVersion(void) const { return 1 ; }
+  virtual void   MakeBranch(Option_t* opt) ;
+  virtual  AliPHOSRecPoint::RecPointsList *  PpsdRecPoints() {
+    // Getting list of PPSD RecPoints
+    return fPpsdRecPoints ;
+  }
+  void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
+  void           ResetClusters(){} ;
+  virtual void   ResetDigits() ; 
+  virtual void   ResetReconstruction() ; // Reset reconstructed objects
+  void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
+  void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
+  virtual void   SetTreeAddress(); 
+  virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
+  virtual TString Version(void){ return TString("v1"); }
+
+  AliPHOSv1 & operator = (const AliPHOSv1 & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
 
 protected:
 
-  ClassDef(AliPHOSv1,1)  // Class AliPHOSv0 which allows to write ond disk al the information of the hits. 
+  Float_t fDigitThreshold ;                       // Threshold for the digit registration 
+  Int_t fNTmpHits ;                               //!  Used internally for digitalization
+  Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
+  AliPHOSRecPoint::RecPointsList * fPpsdRecPoints ; // The RecPoints (clusters) list in PPSD 
+  AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
+  TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
+  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
+
+  ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 
 };
 

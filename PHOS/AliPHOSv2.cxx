@@ -14,20 +14,17 @@
  **************************************************************************/
 
 /* $Id$ */
-
 //_________________________________________________________________________
-// Implementation version v0 of PHOS Manager class 
-// Layout EMC + PPSD has name GPS2  
-// The main goal of this version of AliPHOS is to calculte the 
-//  induced charged in the PIN diode, taking into account light
-//  tracking in the PbWO4 crystal, induced signal in the 
-//  PIN due to MIPS particle and electronic noise.
-// This is done in the StepManager 
+// Version of AliPHOSv1 which keeps all hits in TreeH
+// AddHit, StepManager,and FinishEvent are redefined 
 //                  
-//*-- Author:  Odd Harald Oddland & Gines Martinez (SUBATECH)
+//*-- Author: Gines MARTINEZ (SUBATECH)
 
 
 // --- ROOT system ---
+
+#include "TBRIK.h"
+#include "TNode.h"
 #include "TRandom.h"
 
 // --- Standard library ---
@@ -42,74 +39,166 @@
 #include "AliPHOSv2.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSDigit.h"
+#include "AliPHOSReconstructioner.h"
 #include "AliRun.h"
 #include "AliConst.h"
 
 ClassImp(AliPHOSv2)
 
 //____________________________________________________________________________
+AliPHOSv2::AliPHOSv2()
+{
+  // default ctor
+  fNTmpHits = 0 ; 
+  fTmpHits  = 0 ; 
+}
+
+//____________________________________________________________________________
 AliPHOSv2::AliPHOSv2(const char *name, const char *title):
-  AliPHOSv0(name,title)
+  AliPHOSv1(name,title)
 {
-  // ctor 
-
-  // Number of electrons created in the PIN due to light collected in the PbWo4 crystal is calculated using 
-  // following formula
-  // NumberOfElectrons = EnergyLost * LightYield * PINEfficiency * 
-  //                     exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit) *
-  //                     RecalibrationFactor ;
-  // LightYield is obtained as a Poissonian distribution with a mean at 700000 photons per GeV fromValery Antonenko
-  // PINEfficiency is 0.1875 from Odd Harald Odland work
-  // k_0 is 0.0045 from Valery Antonenko 
-
-  fLightYieldMean = 700000. ;
-  fIntrinsicPINEfficiency = 0.1875 ;
-  fLightYieldAttenuation = 0.0045 ;
-  fRecalibrationFactor = 6.2 / fLightYieldMean ;
-  fElectronsPerGeV = 2.77e+8 ; 
+  // ctor
+   fHits= new TClonesArray("AliPHOSHit",1000) ;
 }
 
 //____________________________________________________________________________
-AliPHOSv2::AliPHOSv2(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
-  AliPHOSv0(Reconstructioner,name,title)
+AliPHOSv2::~AliPHOSv2()
 {
-  // ctor 
-
-  // Number of electrons created in the PIN due to light collected in the PbWo4 crystal is calculated using 
-  // following formula
-  // NumberOfElectrons = EnergyLost * LightYield * PINEfficiency * 
-  //                     exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit) *
-  //                     RecalibrationFactor ;
-  // LightYield is obtained as a Poissonian distribution with a mean at 700000 photons per GeV fromValery Antonenko
-  // PINEfficiency is 0.1875 from Odd Harald Odland work
-  // k_0 is 0.0045 from Valery Antonenko 
-
-  fLightYieldMean = 700000.;
-  fIntrinsicPINEfficiency = 0.1875 ;
-  fLightYieldAttenuation = 0.0045 ;
-  fRecalibrationFactor = 6.2 / fLightYieldMean ;
-  fElectronsPerGeV = 2.77e+8 ;
+  // dtor
+  if ( fTmpHits) {
+    fTmpHits->Delete() ; 
+    delete fTmpHits ;
+    fTmpHits = 0 ; 
+  }
+  
+  if ( fEmcRecPoints ) { 
+    fEmcRecPoints->Delete() ; 
+    delete fEmcRecPoints ; 
+    fEmcRecPoints = 0 ; 
+  }
+  
+  if ( fPpsdRecPoints ) { 
+    fPpsdRecPoints->Delete() ;
+    delete fPpsdRecPoints ;
+    fPpsdRecPoints = 0 ; 
+  }
+ 
+  if ( fTrackSegments ) {
+    fTrackSegments->Delete() ; 
+    delete fTrackSegments ;
+    fTrackSegments = 0 ; 
+  }
 }
 
 //____________________________________________________________________________
+void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
+{
+  // Add a hit to the hit list.
+  // In this version of AliPHOSv1, a PHOS hit is real geant 
+  // hits in a single crystal or in a single PPSD gas cell
+
+  TClonesArray &ltmphits = *fHits ;
+  AliPHOSHit *newHit ;
+  
+  //  fHits->Print("");
+  
+  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
+  
+  // We DO want to save in TreeH the raw hits 
+  new(ltmphits[fNhits]) AliPHOSHit(*newHit) ;
+  fNhits++ ;
+
+  // Please note that the fTmpHits array must survive up to the
+  // end of the events, so it does not appear e.g. in ResetHits() (
+  // which is called at the end of each primary).  
+
+  delete newHit;
+
+}
+
+
+
+
+//___________________________________________________________________________
+void AliPHOSv2::FinishEvent()
+{
+  // Makes the digits from the sum of summed hit in a single crystal or PPSD gas cell
+  // Adds to the energy the electronic noise
+  // Keeps digits with energy above fDigitThreshold
+
+  // Save the cumulated hits instead of raw hits (need to create the branch myself)
+  // It is put in the Digit Tree because the TreeH is filled after each primary
+  // and the TreeD at the end of the event.
+  
+  Int_t i ;
+  Int_t relid[4];
+  Int_t j ; 
+  TClonesArray &lDigits = *fDigits ;
+  AliPHOSHit  * hit ;
+  AliPHOSDigit * newdigit ;
+  AliPHOSDigit * curdigit ;
+  Bool_t deja = kFALSE ; 
+  
+  for ( i = 0 ; i < fNhits ; i++ ) {
+    hit = (AliPHOSHit*)fHits->At(i) ;
+    newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+    deja =kFALSE ;
+    for ( j = 0 ; j < fNdigits ;  j++) { 
+      curdigit = (AliPHOSDigit*) lDigits[j] ;
+      if ( *curdigit == *newdigit) {
+	*curdigit = *curdigit + *newdigit ; 
+	deja = kTRUE ; 
+      }
+    }
+    if ( !deja ) {
+      new(lDigits[fNdigits]) AliPHOSDigit(* newdigit) ;
+      fNdigits++ ;  
+    }
+ 
+    delete newdigit ;    
+  } 
+  
+  // Noise induced by the PIN diode of the PbWO crystals
+
+  Float_t energyandnoise ;
+  for ( i = 0 ; i < fNdigits ; i++ ) {
+    newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
+    fGeom->AbsToRelNumbering(newdigit->GetId(), relid) ;
+
+    if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
+      energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPinElectronicNoise)) ;
+
+      if (energyandnoise < 0 ) 
+	energyandnoise = 0 ;
+
+      if ( newdigit->GetAmp() < fDigitThreshold ) // if threshold not surpassed, remove digit from list
+	fDigits->RemoveAt(i) ; 
+    }
+  }
+  
+  fDigits->Compress() ;  
+
+  fNdigits =  fDigits->GetEntries() ; 
+  for (i = 0 ; i < fNdigits ; i++) { 
+    newdigit = (AliPHOSDigit *) fDigits->At(i) ; 
+    newdigit->SetIndexInList(i) ; 
+  }
+
+}
+
 void AliPHOSv2::StepManager(void)
 {
   // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
-  // Adds the energy deposited in the PIN diode
 
   Int_t          relid[4] ;      // (box, layer, row, column) indices
   Float_t        xyze[4] ;       // position wrt MRS and energy deposited
   TLorentzVector pos ;
-  Int_t copy;
-  Float_t        lightyield ;   // Light Yield per GeV
-  Float_t        nElectrons ;   // Number of electrons in the PIN diode
+  Int_t copy ;
+
+  Int_t tracknumber =  gAlice->CurrentTrack() ; 
+  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() );
+
   TString name = fGeom->GetName() ; 
-  Float_t        global[3] ;
-  Float_t        local[3] ;
-  Float_t        lostenergy ;
-
-  Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
-
   if ( name == "GPS2" ) { // the CPV is a PPSD
     if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
     {
@@ -117,8 +206,7 @@ void AliPHOSv2::StepManager(void)
       xyze[0] = pos[0] ;
       xyze[1] = pos[1] ;
       xyze[2] = pos[2] ;
-      xyze[3] = gMC->Edep() ;
-
+      xyze[3] = gMC->Edep() ; 
 
       if ( xyze[3] != 0 ) { // there is deposited energy 
        	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
@@ -131,81 +219,39 @@ void AliPHOSv2::StepManager(void)
 	// get the absolute Id number
 
 	Int_t absid ; 
-       	fGeom->RelToAbsNumbering(relid,absid) ; 
-	
+       	fGeom->RelToAbsNumbering(relid, absid) ; 
 
-	AddHit(primary, absid, xyze );
+	// add current hit to the hit list      
+	AddHit(fIshunt, primary, tracknumber, absid, xyze);
 
       } // there is deposited energy 
      } // We are inside the gas of the CPV  
    } // GPS2 configuration
   
-  if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") )//  We are inside a PBWO crystal 
+   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") )  //  We are inside a PBWO crystal
      {
        gMC->TrackPosition(pos) ;
        xyze[0] = pos[0] ;
        xyze[1] = pos[1] ;
        xyze[2] = pos[2] ;
-       lostenergy = gMC->Edep() ; 
        xyze[3] = gMC->Edep() ;
-
-       global[0] = pos[0] ;
-       global[1] = pos[1] ;
-       global[2] = pos[2] ;
 
        if ( xyze[3] != 0 ) {
           gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
-          relid[1] = 0   ;                    // means PW04
+          relid[1] = 0   ;                    // means PBW04
           gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
           gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
 
       // get the absolute Id number
 
           Int_t absid ; 
-          fGeom->RelToAbsNumbering(relid,absid) ; 
-	  gMC->Gmtod(global, local, 1) ;
-	  
-	  // calculating number of electrons in the PIN diode asociated to this hit
-	  lightyield = gRandom->Poisson(fLightYieldMean) ;
-	  nElectrons = lostenergy * lightyield * fIntrinsicPINEfficiency *
-	    exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
+          fGeom->RelToAbsNumbering(relid, absid) ; 
+ 
+      // add current hit to the hit list
 
-	  xyze[3] = nElectrons * fRecalibrationFactor ;
-	  // add current hit to the hit list
-          AddHit(primary, absid, xyze);
+          AddHit(fIshunt, primary,tracknumber, absid, xyze);
     
        } // there is deposited energy
     } // we are inside a PHOS Xtal
-
-   if(gMC->CurrentVolID(copy) == gMC->VolId("PPIN") ) // We are inside de PIN diode 
-     {
-       gMC->TrackPosition(pos) ;
-       xyze[0] = pos[0] ;
-       xyze[1] = pos[1] ;
-       xyze[2] = pos[2] ;
-       lostenergy = gMC->Edep() ;
-       xyze[3] = gMC->Edep() ;
-
-       if ( xyze[3] != 0 ) {
-          gMC->CurrentVolOffID(11, relid[0]) ; // get the PHOS module number ;
-          relid[1] = 0   ;                    // means PW04 and PIN
-          gMC->CurrentVolOffID(5, relid[2]) ; // get the row number inside the module
-          gMC->CurrentVolOffID(4, relid[3]) ; // get the cell number inside the module
-
-      // get the absolute Id number
-
-          Int_t absid ; 
-          fGeom->RelToAbsNumbering(relid,absid) ;
-	  
-	  // calculating number of electrons in the PIN diode asociated to this hit
-	  nElectrons = lostenergy * fElectronsPerGeV ;
-	  xyze[3] = nElectrons * fRecalibrationFactor ;
-
-	  // add current hit to the hit list
-          AddHit(primary, absid, xyze);
-	  //printf("PIN volume is  %d, %d, %d, %d \n",relid[0],relid[1],relid[2],relid[3]);
-	  //printf("Lost energy in the PIN is %f \n",lostenergy) ;
-       } // there is deposited energy
-    } // we are inside a PHOS XtalPHOS PIN diode
 }
 

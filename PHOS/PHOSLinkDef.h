@@ -20,6 +20,8 @@
 #pragma link C++ class AliPHOSv0 ;
 #pragma link C++ class AliPHOSv1 ;
 #pragma link C++ class AliPHOSv2 ;
+#pragma link C++ class AliPHOSv3 ;
+#pragma link C++ class AliPHOSv4 ;
 #pragma link C++ class AliPHOSTrackSegment ;
 #pragma link C++ class AliPHOSTrackSegmentMaker ;
 #pragma link C++ class AliPHOSTrackSegmentMakerv1 ;
@@ -27,6 +29,5 @@
 #pragma link C++ class AliPHOSPID ;
 #pragma link C++ class AliPHOSPIDv1 ;
 #pragma link C++ class AliPHOSAnalyze ;
-#pragma link C++ class AliPHOSvFast ;
 
 #endif

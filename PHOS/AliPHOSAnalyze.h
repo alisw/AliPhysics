@@ -6,7 +6,7 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Algorithm class to analyze PHOSv0 events    
+//  Algorithm class to analyze PHOSv1 events    
 //*-- Author : Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
@@ -19,7 +19,7 @@
 
 // --- AliRoot header files ---
 
-#include "AliPHOSv0.h"
+#include "AliPHOSv1.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSPID.h"
 #include "AliPHOSIndexToObject.h"
@@ -58,7 +58,7 @@ public:
   Int_t fEvt ;                        // the evt number being processed 
   AliPHOSGeometry * fGeom ;           // the PHOS Geometry object
   AliPHOSIndexToObject * fObjGetter ; // provides methods to retrieve objects from their index in a list
-  AliPHOSv0 * fPHOS ;                 // the PHOS object from the root file 
+  AliPHOSv1 * fPHOS ;                 // the PHOS object from the root file 
   AliPHOSPID * fPID ;                 // a particle identifier
   AliPHOSReconstructioner * fRec ;    // a reconstructioner  
   TFile * fRootFile ;                 // the root file that contains the data
@@ -90,7 +90,7 @@ public:
   TH1F * fhPhotonHadronPositionY ;  // Y distribution of detected Photon-Hadron
 
 
-ClassDef(AliPHOSAnalyze,1)  // PHOSv0 event analyzis algorithm
+ClassDef(AliPHOSAnalyze,1)  // PHOSv1 event analyzis algorithm
 
 };
 

@@ -16,7 +16,7 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Algorythm class to analyze PHOSv0 events:
+// Algorythm class to analyze PHOSv1 events:
 // Construct histograms and displays them.
 // Use the macro EditorBar.C for best access to the functionnalities
 //
@@ -75,7 +75,7 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
   }
   else { 
     gAlice = (AliRun*) fRootFile->Get("gAlice");
-    fPHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+    fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
     fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() ) ;
     fEvt = -999 ; 
   }
@@ -179,7 +179,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
       //========== Get AliRun object from file 
       gAlice = (AliRun*) fRootFile->Get("gAlice") ;
       //=========== Get the PHOS object and associated geometry from the file      
-      fPHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+      fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
       fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
       //========== Booking Histograms
       cout << "AnalyzeManyEvents > " << "Booking Histograms" << endl ; 
@@ -399,7 +399,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
       
       //=========== Get the PHOS object and associated geometry from the file 
       
-      fPHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+      fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
       fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
 
     } // else !ok
