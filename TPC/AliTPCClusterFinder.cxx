@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/10/21 19:07:24  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.5  2001/01/26 19:57:22  hristov
 Major upgrade of AliRoot code
 
@@ -61,6 +64,7 @@ replacing AliClusterFinder
 #include "AliComplexCluster.h"
 #include "AliTPCClusterFinder.h"
 #include <fstream.h>
+#include <iostream.h>
 
 //direction constants possible direction in 8 different sectors
 //
@@ -217,7 +221,7 @@ void AliTPCClusterFinder::GetHisto(TH2F * his2)
 	Int_t index = his2->GetBin(i+1,j+1);
 	//AliCell * cell = GetCell(i,j);
 	//if (cell!=0) cell->SetSignal(his2->GetBinContent(index));
-	SetSignal(his2->GetBinContent(index),i,j);
+    SetSignal(static_cast<int>(his2->GetBinContent(index)),i,j);
       }
    
 }

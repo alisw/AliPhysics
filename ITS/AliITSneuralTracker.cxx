@@ -19,7 +19,7 @@
  * and it must be read by groups of six entries at a time                 *
  **************************************************************************/
 
-
+#include <iostream.h>
 #include <fstream.h>
 #include <stdlib.h>
 

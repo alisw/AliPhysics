@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/11/02 07:33:48  kowal2
+Automatic streamer generation.
+
 Revision 1.10  2000/07/10 20:57:39  hristov
 Update of TPC code and macros by M.Kowalski
 
@@ -436,7 +439,7 @@ void AliTPCParam::SetDefault()
   //set response  parameters  
   //
   SetNResponseMax(kNResponseMax); 
-  SetResponseThreshold(kResponseThreshold);
+  SetResponseThreshold(static_cast<int>(kResponseThreshold));
 }
 
           
