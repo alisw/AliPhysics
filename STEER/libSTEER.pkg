@@ -18,6 +18,7 @@ AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
+AliMetaData.cxx AliRunData.cxx AliRunDataStorage.cxx AliRunDataFile.cxx \
 AliReconstructor.cxx \
 AliDetectorEventHeader.cxx TTreeStream.cxx
 

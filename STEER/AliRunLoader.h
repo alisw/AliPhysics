@@ -70,6 +70,8 @@ class AliRunLoader: public TNamed
     
     Int_t       GetNumberOfEvents();
     
+    const TObject* GetRunObject(const char* name) const;
+
     void        MakeTree(Option_t *option);
     void        MakeHeader();
     void        MakeStack();
