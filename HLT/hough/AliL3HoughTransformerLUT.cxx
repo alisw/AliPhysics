@@ -47,6 +47,10 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT() : AliL3HoughBaseTransformer
   fLUTphi0=0;
   fLUT2sinphi0=0;
   fLUT2cosphi0=0;
+  fLUTKappa=0;
+
+  fLastPad=0;
+  fLastIndex=0;
 }
 
 AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t n_eta_segments) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
@@ -71,6 +75,10 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t
   fLUTphi0=0;
   fLUT2sinphi0=0;
   fLUT2cosphi0=0;
+  fLUTKappa=0;
+
+  fLastPad=0;
+  fLastIndex=0;
 
   Init(slice,patch,n_eta_segments);
 }
@@ -109,10 +117,12 @@ void AliL3HoughTransformerLUT::DeleteHistograms()
     delete[] fLUT2sinphi0;
     delete[] fLUT2cosphi0;
     delete[] fLUTphi0;
+    delete[] fLUTKappa;
     fNPhi0=0;
     fLUTphi0=0;
     fLUT2sinphi0=0;
     fLUT2cosphi0=0;
+    fLUTKappa=0;
   }
 
   if(!fParamSpace){
@@ -229,6 +239,7 @@ void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Double_t xmin,Double
   fLUTphi0=new Float_t[fNPhi0];
   fLUT2sinphi0=new Float_t[fNPhi0];
   fLUT2cosphi0=new Float_t[fNPhi0];
+  fLUTKappa=new Float_t[fNPhi0];
   Float_t diff=(ymax-ymin)/nybin;
   Float_t phi0=ymin-0.5*diff;
   for(Int_t i=0; i<fNPhi0; i++){
@@ -236,6 +247,7 @@ void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Double_t xmin,Double
     fLUTphi0[i]=phi0;
     fLUT2sinphi0[i]=2.*sin(phi0);
     fLUT2cosphi0[i]=2.*cos(phi0);
+    fLUTKappa[i]=0.;
     //cout << i << ": " << fLUTphi0[i] << " " << fLUT2sinphi0[i] << " " << fLUT2cosphi0[i] << endl;
   }  
 }
@@ -272,13 +284,22 @@ Int_t AliL3HoughTransformerLUT::GetEtaIndex(Double_t eta)
   return FindIndex(rz2);
 }
 
-Int_t AliL3HoughTransformerLUT::FindIndex(Float_t rz2)
+Int_t AliL3HoughTransformerLUT::FindIndex(Float_t rz2, Int_t start)
 {
-  Int_t index=0; //could improve search through devide and conquere strategy
-  while((index<fNEtas)&&(rz2<=fLUTEta[index])){
-    index++;
-    //cout << index << ": " << rz2 << " " << fLUTEta[index] << endl;
+  //could improve search through devide and conquere strategy
+  
+  Int_t index=start; 
+  if(index==-100){
+    index=0;
+    while((index<fNEtas)&&(rz2<=fLUTEta[index])){
+      index++;
+    }
+  } else {
+    while((index>=0)&&(rz2>fLUTEta[index])){
+      index--;
+    }
   }
+  //cout << start << " - " << index << ": " << rz2 << " " << fLUTEta[index] << endl;
   return index;
 }
 
@@ -373,6 +394,13 @@ void AliL3HoughTransformerLUT::TransformCircle()
 	  continue;
 	}
 
+      Float_t x = CalcX(row);
+      Float_t x2=x*x;
+      Float_t y=0,y2=0;
+      Float_t r2=0;
+      Float_t R2=0;
+      fLastPad=-1;
+
       //Loop over the data on this padrow:
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	{
@@ -385,14 +413,25 @@ void AliL3HoughTransformerLUT::TransformCircle()
 	  UChar_t pad = digPt[j].fPad;
 	  UShort_t time = digPt[j].fTime;
 
-	  Float_t x = CalcX(row);
-	  Float_t y = CalcY(pad,row);
+	  if(fLastPad!=pad){ //only update if necessary
+	    fLastIndex=fNEtas-1;   
+	    y = CalcY(pad,row);
+	    y2 = y*y;
+	    r2 = x2 + y2;
+	    R2 = 1. / r2;
+	    for(Int_t b=0; b<fNPhi0; b++)
+	      fLUTKappa[b]=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+
+	    fLastPad=pad;
+	  }
+
 	  Float_t z = CalcZ(time);
 
 	  //find eta slice
-	  Float_t rz2 = 1 + (x*x+y*y)/(z*z);
-	  Int_t eta_index = FindIndex(rz2);
-
+	  Float_t rz2 = 1 + r2/(z*z);
+	  Int_t eta_index = FindIndex(rz2,fLastIndex);
+	  //cout << row << " " << (int)pad << " " << (int)time << " " << eta_index <<" " <<fLastIndex<< endl;
+	  fLastIndex=eta_index;
 	  if(eta_index < 0 || eta_index >= fNEtas){
 	    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerLUT::TransformCircle","Histograms")<<"No histograms corresponding to eta index value of "<<eta_index<<"."<<ENDLOG;
 	    continue;
@@ -406,10 +445,10 @@ void AliL3HoughTransformerLUT::TransformCircle()
 	  }
 
 	  //Fill the histogram along the phirange
-	  Float_t R2=1/(x*x+y*y);
-	  for(Int_t b=0; b<fNPhi0; b++){
-	    Float_t kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
 
+	  for(Int_t b=0; b<fNPhi0; b++){
+	    //Float_t kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+	    Float_t kappa=fLUTKappa[b];
 	    hist->Fill(kappa,fLUTphi0[b],charge);
 	    //cout << kappa << " " << fLUTphi0[b] << " " << charge << endl;
 

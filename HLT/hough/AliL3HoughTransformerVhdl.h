@@ -13,6 +13,13 @@ class AliL3HoughTransformerVhdl : public AliL3HoughTransformerLUT
   Float_t fCosEpsilon;
   Int_t fIts;
 
+  Int_t fNxbin;
+  Float_t fXmin;
+  Float_t fXmax;
+  Int_t fNybin;
+  Float_t fYmin;
+  Float_t fYmax;
+
  public:
 
   AliL3HoughTransformerVhdl(); 
@@ -24,22 +31,10 @@ class AliL3HoughTransformerVhdl : public AliL3HoughTransformerLUT
 			Int_t nybin,Double_t ymin,Double_t ymax);
 
   void TransformCircle();
-#if 0
 
-
-  void Reset();
-
-  void TransformCircleC(Int_t row_range) {STDCERR<<"TransformCircleC is not defined!"<<STDENDL;}
-  void TransformLine() {STDCERR<<"TransformLine is not defined!"<<STDENDL;}
-
-  Int_t GetEtaIndex(Double_t eta);
-  AliL3Histogram *GetHistogram(Int_t eta_index);
-  Double_t GetEta(Int_t eta_index,Int_t slice);
-
-
-#endif
   void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100,Int_t n_its=-1);
   void Print();
+  void PrintVhdl();
 
   ClassDef(AliL3HoughTransformerVhdl,1) //Normal Hough transformation class
 

@@ -37,14 +37,18 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
   Float_t *fLUTphi0; //!
   Float_t *fLUT2sinphi0; //!   
   Float_t *fLUT2cosphi0; //!
+  Float_t *fLUTKappa; //!
   
+  Int_t fLastPad;
+  Int_t fLastIndex;
+
   Float_t CalcRoverZ2(Float_t eta);
   Float_t CalcEta(Float_t roverz2);
   Float_t CalcX(Int_t row);
   Float_t CalcY(Int_t pad, Int_t row);
   Float_t CalcZ(Int_t time);  
 
-  Int_t FindIndex(Float_t rz2);
+  Int_t FindIndex(Float_t rz2, Int_t start=-100);
 
  public:
 
@@ -73,7 +77,3 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
 };
 
 #endif
-
-
-
-
