@@ -92,8 +92,8 @@ AliL3HoughTransformerRow::AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t
 AliL3HoughTransformerRow::~AliL3HoughTransformerRow()
 {
   //Destructor
-  DeleteHistograms();
   if(fLastTransformer) return;
+  DeleteHistograms();
 #ifdef do_mc
   if(fTrackID)
     {
@@ -259,6 +259,10 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
   //nxbin = #bins in X
   //nybin = #bins in Y
   //xmin xmax ymin ymax = histogram limits in X and Y
+  if(fLastTransformer) {
+    SetTransformerArrays((AliL3HoughTransformerRow *)fLastTransformer);
+    return;
+  }
   fParamSpace = new AliL3Histogram*[GetNEtaSegments()];
   
   Char_t histname[256];
@@ -267,11 +271,6 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
       sprintf(histname,"paramspace_%d",i);
       fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xmin,xmax,nybin,ymin,ymax);
     }
-
-  if(fLastTransformer) {
-    SetTransformerArrays((AliL3HoughTransformerRow *)fLastTransformer);
-    return;
-  }
 #ifdef do_mc
   {
     AliL3Histogram *hist = fParamSpace[0];
@@ -385,64 +384,73 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 		    Float_t psi = atan((xtrack-ytrack)/(fgBeta1-fgBeta2));
 		    Float_t kappa = 2.0*(xtrack*cos(psi)-fgBeta1*sin(psi));
 		    track.SetTrackParameters(kappa,psi,1);
-		    Bool_t firstrow = kFALSE;
-		    UInt_t curfirstrow = 0;
-		    UInt_t curlastrow = 0;
-
-		    Double_t centerx = track.GetCenterX();
-		    Double_t centery = track.GetCenterY();
-		    Double_t radius = track.GetRadius();
-
-		    for(Int_t j=AliL3Transform::GetFirstRow(0); j<=AliL3Transform::GetLastRow(5); j++)
-		      {
-			Float_t hit[3];
-			//		      if(!track.GetCrossingPoint(j,hit)) continue;
-			hit[0] = AliL3Transform::Row2X(j);
-			Double_t aa = (hit[0] - centerx)*(hit[0] - centerx);
-			Double_t r2 = radius*radius;
-			if(aa > r2)
-			  continue;
-
-			Double_t aa2 = sqrt(r2 - aa);
-			Double_t y1 = centery + aa2;
-			Double_t y2 = centery - aa2;
-			hit[1] = y1;
-			if(fabs(y2) < fabs(y1)) hit[1] = y2;
- 
-			hit[2] = 0;
-			
-			AliL3Transform::LocHLT2Raw(hit,0,j);
-			hit[1] += 0.5;
-			if(hit[1]>=0 && hit[1]<AliL3Transform::GetNPads(j))
-			  {
-			    if(!firstrow) {
-			      curfirstrow = j;
-			      firstrow = kTRUE;
-			    }
-			    curlastrow = j;
-			  }
-			else {
-			  if(firstrow) {
-			    firstrow = kFALSE;
-			    if((curlastrow-curfirstrow) >= (maxlastrow-maxfirstrow)) {
-			      maxfirstrow = curfirstrow;
-			      maxlastrow = curlastrow;
-			    }
-			  }
-			}
-		      }
-		    if((curlastrow-curfirstrow) >= (maxlastrow-maxfirstrow)) {
-		      maxfirstrow = curfirstrow;
-		      maxlastrow = curlastrow;
-		    }
-
 		    maxtrackpt = track.GetPt();
+		    if(maxtrackpt < 0.9*0.1*AliL3Transform::GetSolenoidField())
+		      {
+			maxfirstrow = maxlastrow = 0;
+			curtracklength->fIsFilled = kTRUE;
+			curtracklength->fFirstRow = maxfirstrow;
+			curtracklength->fLastRow = maxlastrow;
+			curtracklength->fTrackPt = maxtrackpt;
+		      }
+		    else
+		      {
+			Bool_t firstrow = kFALSE;
+			UInt_t curfirstrow = 0;
+			UInt_t curlastrow = 0;
 
-		    curtracklength->fIsFilled = kTRUE;
-		    curtracklength->fFirstRow = maxfirstrow;
-		    curtracklength->fLastRow = maxlastrow;
-		    curtracklength->fTrackPt = maxtrackpt;
-		    
+			Double_t centerx = track.GetCenterX();
+			Double_t centery = track.GetCenterY();
+			Double_t radius = track.GetRadius();
+
+			for(Int_t j=AliL3Transform::GetFirstRow(0); j<=AliL3Transform::GetLastRow(5); j++)
+			  {
+			    Float_t hit[3];
+			    //		      if(!track.GetCrossingPoint(j,hit)) continue;
+			    hit[0] = AliL3Transform::Row2X(j);
+			    Double_t aa = (hit[0] - centerx)*(hit[0] - centerx);
+			    Double_t r2 = radius*radius;
+			    if(aa > r2)
+			      continue;
+
+			    Double_t aa2 = sqrt(r2 - aa);
+			    Double_t y1 = centery + aa2;
+			    Double_t y2 = centery - aa2;
+			    hit[1] = y1;
+			    if(fabs(y2) < fabs(y1)) hit[1] = y2;
+ 
+			    hit[2] = 0;
+			
+			    AliL3Transform::LocHLT2Raw(hit,0,j);
+			    hit[1] += 0.5;
+			    if(hit[1]>=0 && hit[1]<AliL3Transform::GetNPads(j))
+			      {
+				if(!firstrow) {
+				  curfirstrow = j;
+				  firstrow = kTRUE;
+				}
+				curlastrow = j;
+			      }
+			    else {
+			      if(firstrow) {
+				firstrow = kFALSE;
+				if((curlastrow-curfirstrow) >= (maxlastrow-maxfirstrow)) {
+				  maxfirstrow = curfirstrow;
+				  maxlastrow = curlastrow;
+				}
+			      }
+			    }
+			  }
+			if((curlastrow-curfirstrow) >= (maxlastrow-maxfirstrow)) {
+			  maxfirstrow = curfirstrow;
+			  maxlastrow = curlastrow;
+			}
+
+			curtracklength->fIsFilled = kTRUE;
+			curtracklength->fFirstRow = maxfirstrow;
+			curtracklength->fLastRow = maxlastrow;
+			curtracklength->fTrackPt = maxtrackpt;
+		      }
 		  }
 		  if((maxlastrow-maxfirstrow) < fTrackNRows[xbin + ybin*nxbins]) {
 		    fTrackNRows[xbin + ybin*nxbins] = maxlastrow-maxfirstrow;
@@ -616,7 +624,7 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 void AliL3HoughTransformerRow::Reset()
 {
   //Reset all the histograms. Should be done when processing new slice
-
+  if(fLastTransformer) return;
   if(!fParamSpace)
     {
       LOG(AliL3Log::kWarning,"AliL3HoughTransformer::Reset","Histograms")
@@ -1268,6 +1276,8 @@ void AliL3HoughTransformerRow::SetTransformerArrays(AliL3HoughTransformerRow *tr
     fLUTforwardZ2 = tr->fLUTforwardZ2;
     fLUTbackwardZ = tr->fLUTbackwardZ;
     fLUTbackwardZ2 = tr->fLUTbackwardZ2;
+
+    fParamSpace = tr->fParamSpace;
 
     return;
 }

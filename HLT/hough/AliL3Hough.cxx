@@ -338,8 +338,14 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
     }
 
   fPeakFinder = new AliL3HoughMaxFinder("KappaPhi",50000);
-  fMerger = new AliL3HoughMerger(fNPatches);
-  fInterMerger = new AliL3HoughIntMerger();
+  if(fVersion!=4) {
+    fMerger = new AliL3HoughMerger(fNPatches);
+    fInterMerger = new AliL3HoughIntMerger();
+  }
+  else {
+    fMerger = 0;
+    fInterMerger = 0;
+  }
   fGlobalMerger = 0;
   fBenchmark = new AliL3Benchmark();
 }
