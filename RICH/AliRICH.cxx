@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.32  2000/11/01 15:32:55  jbarbosa
+  Updated to handle both reconstruction algorithms.
+
   Revision 1.31  2000/10/26 20:18:33  jbarbosa
   Supports for methane and freon vessels
 
@@ -133,6 +136,10 @@ AliRICH::AliRICH()
     fNPadHits   = 0;
     fNcerenkovs = 0;
     fDchambers  = 0;
+    fRecHits1D = 0;
+    fRecHits3D = 0;
+    fRawClusters = 0;
+    fChambers = 0;
     fCerenkovs  = 0;
     for (Int_t i=0; i<7; i++)
       {
@@ -141,6 +148,8 @@ AliRICH::AliRICH()
 	fNrechits1D[i] = 0;
 	fNrechits3D[i] = 0;
       }
+
+    fFileName = 0;
 }
 
 //___________________________________________
@@ -199,6 +208,13 @@ AliRICH::AliRICH(const char *name, const char *title)
 
         
     SetMarkerColor(kRed);
+    
+    fChambers = new TObjArray(kNCH);
+    for (i=0; i<kNCH; i++) 
+      (*fChambers)[i] = new AliRICHChamber();  
+    
+    fFileName = 0;
+
 }
 
 AliRICH::AliRICH(const AliRICH& RICH)
