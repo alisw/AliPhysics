@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/10/04 15:20:12  fca
+Correct syntax accepted by g++ but not standard for static members, remove minor warnings
+
 Revision 1.2  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
@@ -153,6 +156,7 @@ AliITSgeom::AliITSgeom(const char *filename){
       g->fx0   = x;
       g->fy0   = y;
       g->fz0   = z;
+//
       si    = sin(oor);if(o== 90.0) si = +1.0;
                       if(o==270.0) si = -1.0;
                       if(o==  0.0||o==180.) si = 0.0;
@@ -161,6 +165,7 @@ AliITSgeom::AliITSgeom(const char *filename){
       lr[2] = cos(oor);if(o== 90.0||o==270.) lr[2] = 0.0;
                       if(o== 0.0)           lr[2] = +1.0;
                       if(o==180.0)          lr[2] = -1.0;
+//
       si    =  sin(qr);if(q== 90.0) si = +1.0; 
                        if(q==270.0) si = -1.0;
                        if(q==  0.0||q==180.) si = 0.0;
@@ -169,14 +174,15 @@ AliITSgeom::AliITSgeom(const char *filename){
       lr[5] = cos(qr);if(q== 90.0||q==270.) lr[5] = 0.0;
                       if(q==  0.0)          lr[5] = +1.0;
                       if(q==180.0)          lr[5] = -1.0;
-      si    = sin(sr);if(r== 90.0) si = +1.0;
-                      if(r==270.0) si = -1.0;
-                      if(r==  0.0||r==180.) si = 0.0;
+//
+      si    = sin(sr);if(s== 90.0) si = +1.0;
+                      if(s==270.0) si = -1.0;
+                      if(s==  0.0||s==180.) si = 0.0;
       lr[6] = si * cos(tr);
       lr[7] = si * sin(tr);
-      lr[8] = cos(sr);if(r== 90.0||r==270.0) lr[8] =  0.0;
-                      if(r==  0.0)           lr[8] = +1.0;
-                      if(r==180.0)           lr[8] = -1.0;
+      lr[8] = cos(sr);if(s== 90.0||s==270.0) lr[8] =  0.0;
+                      if(s==  0.0)           lr[8] = +1.0;
+                      if(s==180.0)           lr[8] = -1.0;
       // Normalize these elements
       for(a=0;a<3;a++){// reuse float si and integers a and d.
          si = 0.0;
@@ -489,14 +495,14 @@ void AliITSgeom::GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det){
     j = 0;
     for(k=0;k<fNlayers;k++){
 	j += fNdet[k]*fNlad[k];
-	if(index>j)break;
+	if(j>index)break;
     } // end for k
     lay = k+1;
     i = index -j + fNdet[k]*fNlad[k];
     j = 0;
     for(k=0;k<fNlad[lay-1];k++){
-	j += fNdet[k];
-	if(i>fNdet[k])break;
+	j += fNdet[lay-1];
+	if(j>i)break;
     } // end for k
     lad = k+1;
     det = 1+i-fNdet[lay-1]*k;
