@@ -15,7 +15,7 @@ TFile *rootfile = new TFile("galice.root","recreate");
 rootfile->SetCompressionLevel(2);
 TGeant3 *geant3 = (TGeant3*)gMC;
 
-geant3->Grndmq(0,0,5," ");
+geant3->Grndmq(0,0,1," ");
  
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
@@ -59,7 +59,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenFixed *gener = new AliGenFixed(ntracks);
      gener->SetMomentum(3);
-     gener->SetPhiRange(92);
+     gener->SetPhiRange(75);
      gener->SetThetaRange(90);
      gener->SetOrigin(0,0,0);                 //vertex position
      gener->SetPart(kPiPlus);                 //GEANT particle type
@@ -70,8 +70,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenBox *gener = new AliGenBox(ntracks);
      gener->SetMomentumRange(3,3);
-     gener->SetPhiRange(85,95);
-     gener->SetThetaRange(85,95);
+     gener->SetPhiRange(85,85);
+     gener->SetThetaRange(85,85);
      gener->SetOrigin(0,0,0);   
      gener->SetVertexSmear(kPerTrack); 
      //vertex position
@@ -85,11 +85,11 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      AliGenScan *gener = new AliGenScan(-1);
      gener->SetMomentumRange(3,3);
      gener->SetPhiRange(90,90);
-     gener->SetThetaRange(90,90);
+     gener->SetThetaRange(95,95);
      //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kPiPlus); 
-     gener->SetRange(5, -80, 60, 1, 480, 480, 5, -80, 60);
+     gener->SetRange(1, 0, 0, 1, 480, 480, 1, 0, 0);
      break;
  case doublescan:  
 //*********************************************
@@ -240,14 +240,14 @@ gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==>
 Int_t iMAG=1;
 Int_t iITS=1;
 Int_t iTPC=1;
-Int_t iTOF=1;
+Int_t iTOF=0;
 Int_t iRICH=1;
 Int_t iZDC=0;
 Int_t iCASTOR=0;
 Int_t iTRD=1;
 Int_t iABSO=1;
-Int_t iDIPO=0;
-Int_t iHALL=0;
+Int_t iDIPO=1;
+Int_t iHALL=1;
 Int_t iFRAME=1;
 Int_t iSHIL=0;
 Int_t iPIPE=1;
@@ -367,51 +367,49 @@ if(iRICH) {
 //
 // Version 0
 // Default Segmentation
-    AliRICHSegmentationV1* SegmentationV0 = new AliRICHSegmentationV1;
+    AliRICHSegmentationV1* Segmentation = new AliRICHSegmentationV1;
 //
 //  Segmentation parameters
-    SegmentationV0->SetPadSize(0.84,0.80);
-    SegmentationV0->SetDAnod(0.84/2);
+    Segmentation->SetPadSize(0.84,0.8);
+    Segmentation->SetDAnod(0.84/2);
 
 //  Geometry parameters
-    AliRICHGeometry* GeometryV0 = new AliRICHGeometry;
-    GeometryV0->SetGapThickness(8);
-    GeometryV0->SetProximityGapThickness(.4);
-    GeometryV0->SetQuartzLength(133);
-    GeometryV0->SetQuartzWidth(127.9);
-    GeometryV0->SetQuartzThickness(.5);
-    GeometryV0->SetOuterFreonLength(133);
-    GeometryV0->SetOuterFreonWidth(41.3);
-    GeometryV0->SetInnerFreonLength(133);
-    GeometryV0->SetInnerFreonWidth(41.3);
-    GeometryV0->SetFreonThickness(1.5);
+    AliRICHGeometry* Geometry = new AliRICHGeometry;
+    Geometry->SetGapThickness(8);
+    Geometry->SetProximityGapThickness(.4);
+    Geometry->SetQuartzLength(133);
+    Geometry->SetQuartzWidth(127.9);
+    Geometry->SetQuartzThickness(.5);
+    Geometry->SetOuterFreonLength(133);
+    Geometry->SetOuterFreonWidth(41.3);
+    Geometry->SetInnerFreonLength(133);
+    Geometry->SetInnerFreonWidth(41.3);
+    Geometry->SetFreonThickness(1.5);
 
 //  Response parameters
-    AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
-    Rresponse0->SetSigmaIntegration(5.);
-    Rresponse0->SetChargeSlope(27.);
-    Rresponse0->SetChargeSpread(0.18, 0.18);
-    Rresponse0->SetMaxAdc(4096);
-    Rresponse0->SetAlphaFeedback(0.036);
-    Rresponse0->SetEIonisation(26.e-9);
-    Rresponse0->SetSqrtKx3(0.77459667);
-    Rresponse0->SetKx2(0.962);
-    Rresponse0->SetKx4(0.379);
-    Rresponse0->SetSqrtKy3(0.77459667);
-    Rresponse0->SetKy2(0.962);
-    Rresponse0->SetKy4(0.379);
-    Rresponse0->SetPitch(0.25);
+    AliRICHResponseV0*  Response   = new AliRICHResponseV0;
+    Response->SetSigmaIntegration(5.);
+    Response->SetChargeSlope(27.);
+    Response->SetChargeSpread(0.18, 0.18);
+    Response->SetMaxAdc(4096);
+    Response->SetAlphaFeedback(0.036);
+    Response->SetEIonisation(26.e-9);
+    Response->SetSqrtKx3(0.77459667);
+    Response->SetKx2(0.962);
+    Response->SetKx4(0.379);
+    Response->SetSqrtKy3(0.77459667);
+    Response->SetKy2(0.962);
+    Response->SetKy4(0.379);
+    Response->SetPitch(0.25);
 
       
   for (Int_t i=0; i<7; i++) {
-    RICH->SetGeometryModel(i,GeometryV0);
-    RICH->SetSegmentationModel(i, SegmentationV0);
-    RICH->SetResponseModel(i, Rresponse0);
-    RICH->SetNsec(i,1);
+    RICH->SetGeometryModel(i,Geometry);
+    RICH->SetSegmentationModel(i, Segmentation);
+    RICH->SetResponseModel(i, Response);
   }  
   RICH->SetDebugLevel(0);
 }
-
 
 if(iZDC) {
 //=================== ZDC parameters ============================
@@ -430,12 +428,13 @@ if(iTRD) {
 
 AliTRD *TRD  = new AliTRDv0("TRD","TRD version 0");
 // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
-TRD->SetGasMix(1);
-// With hole in front of PHOS
- TRD->SetPHOShole();
- // With hole in front of RICH
- TRD->SetRICHhole();
+TRD->SetGasMix(1);  
+ 
+// With hole in front of PHOS 
+TRD->SetPHOShole();  
 
+// With hole in front of RICH
+TRD->SetRICHhole();  
 }
 
 if(iFMD) {
@@ -476,15 +475,3 @@ AliSTART *START  = new AliSTARTv0("START","START Detector");
 
          
 }
-
-
-
-
-
-
-
-
-
-
-
-
