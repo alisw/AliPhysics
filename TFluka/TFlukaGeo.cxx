@@ -543,13 +543,12 @@ void TFluka::InitPhysics()
 // !!! it should be available from Flugg !!!
   Int_t i, j, k;
   Double_t fCut;
-  Float_t fLastMaterial = 31.0;
- 
+  Float_t fLastMaterial = fGeom->GetLastMaterialIndex();
+  printf("   last FLUKA material is %g\n", fLastMaterial);
 // construct file names
   TString sAliceInp = getenv("ALICE_ROOT");
-  TString sAliceTmp = sAliceInp;
   sAliceInp +="/TFluka/input/";
-  sAliceTmp +="/tmp/flukaMat.inp";
+  TString sAliceTmp ="./flukaMat.inp";
   TString sAliceCoreInp = sAliceInp;
   sAliceInp += GetInputFileName();
   sAliceCoreInp += GetCoreInputFileName();
