@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.11  2000/06/27 07:31:07  morsch
 fChambers = 0; deleted from constructor.
 
@@ -420,8 +423,6 @@ void AliMUONv0::CreateGeometry()
 	     sprintf(gas,"CG%2d",ch);	 
 	 }
 //
-	 printf("\n %d,  %s,  %s \n ", ch, alu, gas);
-	 
 	 tpar[0] = iChamber->RInner(); 
 	 tpar[1] = iChamber->ROuter();
 	 tpar[2] = (dAlu+0.2)/2.;
@@ -436,7 +437,6 @@ void AliMUONv0::CreateGeometry()
 	 }
 	 gMC->Gspos(gas, 1, alu,  0., 0., 0., 0, "ONLY");
 	 gMC->Gspos(alu, 1, "ALIC", 0., 0., zpos, 0, "ONLY");
-	 iChamber->SetGid(gMC->VolId(gas));
      }
 }
 
@@ -468,11 +468,21 @@ void AliMUONv0::Init()
    // 
    // Initialize Tracking Chambers
    //
-
-   printf("\n\n\n Start Init for version 0 - CPC chamber type\n\n\n");
-   for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
-       ( (AliMUONChamber*) (*fChambers)[i])->Init();
-   }
+    char vName[8];
+    printf("\n\n\n Start Init for version 0 - CPC chamber type\n\n\n");
+    for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
+// Initialise chamber
+	((AliMUONChamber*) (*fChambers)[i])->Init();
+// Set sensitive volume Id
+	if (i < AliMUONConstants::NTrackingCh()) {
+	    // tracking chambers
+	    sprintf(vName,"CG0%1d",i);	 
+	} else {
+	    // trigger chambers
+	    sprintf(vName,"CG%2d",i);	 
+	}
+	((AliMUONChamber*) (*fChambers)[i])->SetGid(gMC->VolId(vName));
+    }
 }
 
 void AliMUONv0::StepManager()
