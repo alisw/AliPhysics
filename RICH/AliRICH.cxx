@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.57  2001/11/09 17:29:31  dibari
+  Setters fro models moved to header
+
   Revision 1.56  2001/11/02 15:37:25  hristov
   Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
 
@@ -195,16 +198,24 @@
 #include "AliCallf77.h" 
 
 
-// Static variables for the pad-hit iterator routines
-static Int_t sMaxIterPad=0;
+
+static Int_t sMaxIterPad=0;    // Static variables for the pad-hit iterator routines
 static Int_t sCurIterPad=0;
  
 ClassImp(AliRICH)
     
 //___________________________________________
+// RICH manager class   
+//Begin_Html
+/*
+  <img src="gif/alirich.gif">
+*/
+//End_Html
+
 AliRICH::AliRICH()
 {
-// Default constructor for RICH manager class
+// Default ctor should not contain any new operators
+   cout<<ClassName()<<"::named ctor(sName,sTitle)>\n"; // no way to control it as ctor is called before call to SetDebugXXXX()
 
     fIshunt     = 0;
     fHits       = 0;
@@ -217,34 +228,28 @@ AliRICH::AliRICH()
     fRawClusters = 0;
     fChambers = 0;
     fCerenkovs  = 0;
-    for (Int_t i=0; i<7; i++)
-      {
+    for (Int_t i=0; i<7; i++){
 	fNdch[i]       = 0;
 	fNrawch[i]   = 0;
 	fNrechits1D[i] = 0;
 	fNrechits3D[i] = 0;
-      }
+    }
 
     fFileName = 0;
     fMerger = 0;
-}
+}//AliRICH::AliRICH()
 
-//___________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
     : AliDetector(name,title)
 {
-//Begin_Html
-/*
-  <img src="gif/alirich.gif">
-*/
-//End_Html
-    
+// Named ctor
+   cout<<ClassName()<<"::named ctor(sName,sTitle)>\n"; // no way to control it as ctor is called before call to SetDebugXXXX()
+          
     fHits       = new TClonesArray("AliRICHHit",1000  );
     gAlice->AddHitList(fHits);
     fSDigits    = new TClonesArray("AliRICHSDigit",100000);
     fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
     gAlice->AddHitList(fCerenkovs);
-    //gAlice->AddHitList(fHits);
     fNSDigits   = 0;
     fNcerenkovs = 0;
     fIshunt     = 0;
@@ -300,15 +305,14 @@ AliRICH::AliRICH(const char *name, const char *title)
 
 AliRICH::AliRICH(const AliRICH& RICH)
 {
-// Copy Constructor
+// Copy ctor
 }
 
 
-//___________________________________________
 AliRICH::~AliRICH()
 {
-
-// Destructor of RICH manager class
+// Dtor of RICH manager class
+   if(IsDebugStart()) cout<<ClassName()<<"::default dtor()>\n";
 
     fIshunt  = 0;
     delete fHits;
@@ -343,20 +347,19 @@ AliRICH::~AliRICH()
 //_____________________________________________________________________________
 Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
 {
-//
 //  Calls the charge disintegration method of the current chamber and adds
-//  the simulated cluster to the root treee 
-//
-    Int_t clhits[5];
-    Float_t newclust[4][500];
-    Int_t nnew;
+//  the simulated cluster to the root tree 
+   if(IsDebugHit()||IsDebugDigit()) cout<<ClassName()<<"::Hits2SDigits(...)>\n";
+   
+   Int_t clhits[5];
+   Float_t newclust[4][500];
+   Int_t nnew;
     
 //
 //  Integrated pulse height on chamber
     
     clhits[0]=fNhits+1;
 
-    //PH    ((AliRICHChamber*) (*fChambers)[idvol])->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
     ((AliRICHChamber*)fChambers->At(idvol))->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
     Int_t ic=0;
     
@@ -380,21 +383,21 @@ Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol
 	}
     }
     
-    if (gAlice->TreeS())
-      {
+   if (gAlice->TreeS()){
 	gAlice->TreeS()->Fill();
 	gAlice->TreeS()->Write(0,TObject::kOverwrite);
 	//printf("Filled SDigits...\n");
-      }
+   }
     
-return nnew;
-}
-//___________________________________________
+   return nnew;
+}//Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
+
 void AliRICH::Hits2SDigits()
 {
-
 // Dummy: sdigits are created during transport.
-// Called from alirun.
+// Called from alirun.   
+   if(IsDebugHit()||IsDebugDigit()) cout<<ClassName()<<"::Hits2SDigits()>\n";
+
 
   int nparticles = gAlice->GetNtrack();
   cout << "Particles (RICH):" <<nparticles<<endl;
@@ -405,10 +408,9 @@ void AliRICH::Hits2SDigits()
 //___________________________________________
 void AliRICH::SDigits2Digits(Int_t nev, Int_t flag)
 {
-
-//
 // Generate digits.
-// Called from macro. Multiple events, more functionality.
+// Called from macro. Multiple events, more functionality.   
+   if(IsDebugDigit()) cout<<ClassName()<<"::SDigits2Digits()>\n";
 
   AliRICHChamber*       iChamber;
   
@@ -436,9 +438,10 @@ void AliRICH::SDigits2Digits()
 //___________________________________________
 void AliRICH::Digits2Reco()
 {
-
 // Generate clusters
-// Called from alirun, single event only.  
+// Called from alirun, single event only.     
+   if(IsDebugDigit()||IsDebugReco()) cout<<ClassName()<<"::Digits2Reco()>\n";
+
 
   int nparticles = gAlice->GetNtrack();
   cout << "Particles (RICH):" <<nparticles<<endl;
@@ -446,60 +449,49 @@ void AliRICH::Digits2Reco()
 
 }  
 
-//___________________________________________
 void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
-
-//  
-// Adds a hit to the Hits list
+// Adds the current hit to the RICH hits list
+   if(IsDebugHit()) cout<<ClassName()<<"::AddHit(...)>\n";
 
     TClonesArray &lhits = *fHits;
     new(lhits[fNhits++]) AliRICHHit(fIshunt,track,vol,hits);
 }
-//_____________________________________________________________________________
+
 void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
 {
-
-//
-// Adds a RICH cerenkov hit to the Cerenkov Hits list
-//
+// Adds a RICH cerenkov hit to the Cerenkov Hits list   
+   if(IsDebugHit()) cout<<ClassName()<<"::AddCerenkov()>\n";
 
     TClonesArray &lcerenkovs = *fCerenkovs;
     new(lcerenkovs[fNcerenkovs++]) AliRICHCerenkov(fIshunt,track,vol,cerenkovs);
-    //printf ("Done for Cerenkov %d\n\n\n\n",fNcerenkovs);
 }
-//___________________________________________
-void AliRICH::AddSDigit(Int_t *clhits)
+
+void AliRICH::AddSDigit(Int_t *aSDigit)
 {
+// Adds the current S digit to the RICH list of S digits   
+   if(IsDebugDigit()) cout<<ClassName()<<"::AddSDigit()>\n";
 
-//
-// Add a RICH pad hit to the list
-//
-
-  //printf("fsdigits:%p, data: %d\n",fSDigits,clhits[2]);
   TClonesArray &lSDigits = *fSDigits;
-  new(lSDigits[fNSDigits++]) AliRICHSDigit(clhits);
+  new(lSDigits[fNSDigits++]) AliRICHSDigit(aSDigit);
 } 
-//_____________________________________________________________________________
+
+
 void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
 {
+// Add a RICH digit to the list   
+   if(IsDebugDigit()) cout<<ClassName()<<"::AddDigit()>\n";
 
-  //
-  // Add a RICH digit to the list
-  //
-
-  //printf("fdigits:%p, data: %d\n",((TClonesArray*)(*fDchambers)[id]),digits[0]);
-  //PH  TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
-  TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(id));
-  new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
+   TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(id));
+   new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
 }
 
-//_____________________________________________________________________________
 void AliRICH::AddRawCluster(Int_t id, const AliRICHRawCluster& c)
 {
-    //
-    // Add a RICH digit to the list
-    //
+// Add a RICH digit to the list
+   
+   if(IsDebugStart())
+      cout<<ClassName()<<"::AddRawCluster()>\n";
 
   //PH    TClonesArray &lrawcl = *((TClonesArray*)(*fRawClusters)[id]);
     TClonesArray &lrawcl = *((TClonesArray*)fRawClusters->At(id));
@@ -522,12 +514,8 @@ void AliRICH::AddRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *pa
 //_____________________________________________________________________________
 void AliRICH::AddRecHit3D(Int_t id, Float_t *rechit)
 {
-  
-  //
-  // Add a RICH reconstructed hit to the list
-  //
+// Add a RICH reconstructed hit to the list
 
-  //PH    TClonesArray &lrec3D = *((TClonesArray*)(*fRecHits3D)[id]);
     TClonesArray &lrec3D = *((TClonesArray*)fRecHits3D->At(id));
     new(lrec3D[fNrechits3D[id]++]) AliRICHRecHit3D(id,rechit);
 }
@@ -552,7 +540,7 @@ void AliRICH::BuildGeometry()
     AliRICHGeometry*  geometry;
  
     iChamber = &(pRICH->Chamber(0));
-    segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
+    segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel();
     geometry=iChamber->GetGeometryModel();
     
     new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
@@ -816,7 +804,7 @@ void AliRICH::CreateGeometry()
   AliRICHChamber*       iChamber;
 
   iChamber = &(pRICH->Chamber(0));
-  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
+  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel();
   geometry=iChamber->GetGeometryModel();
 
   Float_t distance;
@@ -2071,7 +2059,6 @@ void AliRICH::ResetRecHits3D()
 //___________________________________________
 void AliRICH::StepManager()
 {
-
 // Full Step Manager
 
     Int_t          copy, id;
@@ -2575,7 +2562,7 @@ void AliRICH::StepManager()
       }
     /*************************************************End of MIP treatment**************************************/
    //}
-}
+}//void AliRICH::StepManager()
 
 void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 {
@@ -3194,7 +3181,7 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    AliRICHChamber*       chamber;
    
    chamber = &(pRICH->Chamber(0));
-   segmentation=(AliRICHSegmentationV0*) chamber->GetSegmentationModel(0);
+   segmentation=(AliRICHSegmentationV0*) chamber->GetSegmentationModel();
 
    Int_t NpadX = segmentation->Npx();                 // number of pads on X
    Int_t NpadY = segmentation->Npy();                 // number of pads on Y
