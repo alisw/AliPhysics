@@ -40,7 +40,6 @@
 #include "START/AliSTARTv1.h"
 #include "EMCAL/AliEMCALv1.h"
 #include "CRT/AliCRTv1.h"
-#include "VZERO/AliVZEROv2.h"
 #endif
 
 void Config()

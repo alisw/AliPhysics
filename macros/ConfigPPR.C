@@ -37,7 +37,7 @@
 #include "START/AliSTARTv1.h"
 #include "EMCAL/AliEMCALv1.h"
 #include "CRT/AliCRTv0.h"
-#include "VZERO/AliVZEROv2.h"
+#include "VZERO/AliVZEROv3.h"
 #endif
 
 enum PprRun_t 
@@ -459,7 +459,7 @@ void Config()
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
     }
  
              
