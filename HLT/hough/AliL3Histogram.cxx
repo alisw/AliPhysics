@@ -46,7 +46,9 @@ AliL3Histogram::AliL3Histogram(Char_t *name,Char_t *id,
   fFirstYbin = 1;
   fLastXbin = nxbin;
   fLastYbin = nybin;
+#ifdef use_root
   fRootHisto = 0;
+#endif
   fThreshold = 0;
 
   fContent = new Double_t[fNcells];
@@ -58,8 +60,12 @@ AliL3Histogram::~AliL3Histogram()
   //Destructor
   if(fContent)
     delete [] fContent;
+
+#ifdef use_root
   if(fRootHisto)
     delete fRootHisto;
+#endif
+
 }
 
 
@@ -229,7 +235,7 @@ Double_t AliL3Histogram::GetBinCenterY(Int_t ybin)
   
 }
 
-
+#ifdef use_root
 void AliL3Histogram::Draw(Char_t *option)
 {
   fRootHisto = new TH2F(fName,"",fNxbins,fXmin,fXmax,fNybins,fYmin,fYmax);
@@ -241,3 +247,4 @@ void AliL3Histogram::Draw(Char_t *option)
   fRootHisto->Draw(option);
   
 }
+#endif

@@ -25,9 +25,11 @@ class AliL3Histogram {
   Double_t fYmin;
   Double_t fXmax;
   Double_t fYmax;
-  
+
+#ifdef use_root
   TH2F *fRootHisto;
-  
+#endif  
+
  public:
   AliL3Histogram();
   AliL3Histogram(Char_t *name,Char_t *id,Int_t nxbin,Double_t xmin,Double_t xmax,Int_t nybin,Double_t ymin,Double_t ymax);
@@ -45,10 +47,13 @@ class AliL3Histogram {
   void AddBinContent(Int_t xbin,Int_t ybin,Int_t weight);
   void AddBinContent(Int_t bin,Int_t weight);
   void Add(AliL3Histogram *h1,Double_t weight=1);
-  void Draw(Char_t *option="hist");
   void SetThreshold(Int_t i) {fThreshold = i;}
 
+#ifdef use_root
+  void Draw(Char_t *option="hist");
   TH2F *GetRootHisto() {return fRootHisto;}
+#endif
+    
   Double_t GetXmin() {return fXmin;}
   Double_t GetXmax() {return fXmax;}
   Double_t GetYmin() {return fYmin;}
