@@ -31,8 +31,8 @@ class AliITSgeomSPD : public TObject {
     virtual Float_t GetDz() const {// Get TBRIK Dz
         if(fShapeSPD!=0) return fShapeSPD->GetDz();
         else return 0.0;}
-    virtual Int_t GetNbinxX() const {return fNbinx-1;} // returns the number of bins x
-    virtual Int_t GetNbinxZ() const {return fNbinz-1;} // returns the number of bins z
+    virtual Int_t GetNbinsX() const {return fNbinx-1;} // returns the number of bins x
+    virtual Int_t GetNbinsZ() const {return fNbinz-1;} // returns the number of bins z
     virtual Float_t GetBinSizeX(Int_t i) const
 	{if(i<fNbinx-1&&i>=0) return fLowBinEdgeX[i+1]-fLowBinEdgeX[i];
 	else return 0.0;}; // give size of bin i in x.
