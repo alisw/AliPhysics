@@ -51,8 +51,8 @@ AliEMCALTowerRecPoint::AliEMCALTowerRecPoint() : AliEMCALRecPoint()
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
-  fTime = -1. ;
-  fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
+  fTime = 0. ;
+  fLocPos.SetX(0.)  ;      //Local position should be evaluated
    
 }
 

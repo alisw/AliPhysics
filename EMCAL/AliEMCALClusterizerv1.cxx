@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
 
 /* $Log:
@@ -89,21 +88,21 @@ ClassImp(AliEMCALClusterizerv1)
   
   fNumberOfPreShoClusters = fNumberOfTowerClusters = 0 ; 
   
-  fPreShoClusteringThreshold = 0.00005;
-  fTowerClusteringThreshold  = 0.00005;
+  fPreShoClusteringThreshold = 0.0;
+  fTowerClusteringThreshold  = 0.0;
   
-  fTowerLocMaxCut  = 0.03 ;
-  fPreShoLocMaxCut = 0.03 ;
+  fTowerLocMaxCut  = 0.0 ;
+  fPreShoLocMaxCut = 0.0 ;
   
-  fW0     = 4.5 ;
-  fW0CPV  = 4.0 ;
+  fW0     = 0.0 ;
+  fW0CPV  = 0.0 ;
 
-  fTimeGate = 1.e-8 ; 
+  fTimeGate = 0.0 ; 
 
-  fToUnfold = kFALSE ;
+  fToUnfold = 0 ;
 
-  fHeaderFileName = fDigitsBranchTitle  = "" ;
-  fRecPointsInRun          = 0 ;   
+  fHeaderFileName = "" ;
+  fRecPointsInRun = 0 ;   
 }
 
 //____________________________________________________________________________

@@ -44,9 +44,9 @@ AliEMCALRecPoint::AliEMCALRecPoint()
 {
   // ctor
 
-  fMaxTrack = 200 ;
+  fMaxTrack = 0 ;
   fTheta = fPhi = 0. ; 
-  fEMCALArm = 1;
+  fEMCALArm = 0;
 
 }
 
