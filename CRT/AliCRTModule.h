@@ -19,34 +19,34 @@ public:
 
   AliCRTModule& operator=(const AliCRTModule& mod);
 
-  void SetScintillatorThickness(const Float_t thickness);
-  void SetScintillatorWidth(const Float_t width);
-  void SetScintillatorLenght(const Float_t length);
+  void SetScintillatorThickness(Float_t thickness);
+  void SetScintillatorWidth(Float_t width);
+  void SetScintillatorLenght(Float_t length);
 
-  void SetFrameThickness(const Float_t thickness);
-  void SetFrameWidth(const Float_t width);
-  void SetFrameLength(const Float_t length);
+  void SetFrameThickness(Float_t thickness);
+  void SetFrameWidth(Float_t width);
+  void SetFrameLength(Float_t length);
 
-  void SetNumberOfColumns(const Int_t ncols);
-  void SetNumberOfRows(const Int_t nrows);
+  void SetNumberOfColumns(Int_t ncols);
+  void SetNumberOfRows(Int_t nrows);
 
-  void SetZGap(const Float_t zgap);
-  void SetXGap(const Float_t xgap);
+  void SetZGap(Float_t zgap);
+  void SetXGap(Float_t xgap);
 
-  const Float_t ScintillatorThickness() const;
-  const Float_t ScintillatorWidth() const;
-  const Float_t ScintillatorLenght() const;
+  Float_t ScintillatorThickness() const;
+  Float_t ScintillatorWidth() const;
+  Float_t ScintillatorLenght() const;
 
-  const Float_t FrameThickness() const;
-  const Float_t FrameWidth() const;
-  const Float_t FrameLength() const;
+  Float_t FrameThickness() const;
+  Float_t FrameWidth() const;
+  Float_t FrameLength() const;
 
-  const Int_t NumberOfModules() const;
-  const Int_t NumberOfColumns() const;
-  const Int_t NumberOfRows() const;
+  Int_t NumberOfModules() const;
+  Int_t NumberOfColumns() const;
+  Int_t NumberOfRows() const;
 
-  const Float_t ZGap() const;
-  const Float_t XGap() const;
+  Float_t ZGap() const;
+  Float_t XGap() const;
 
 private:
   Float_t fScintillatorThickness; // Scintillator thickness
@@ -62,66 +62,66 @@ private:
   ClassDef(AliCRTModule, 1)// CRT module geometry manager
 };
 
-inline void AliCRTModule::SetScintillatorThickness(const Float_t thick)
+inline void AliCRTModule::SetScintillatorThickness(Float_t thick)
 { fScintillatorThickness = thick; }
 
-inline void AliCRTModule::SetScintillatorWidth(const Float_t width)
+inline void AliCRTModule::SetScintillatorWidth(Float_t width)
 { fScintillatorWidth = width; }
 
-inline void AliCRTModule::SetScintillatorLenght(const Float_t length)
+inline void AliCRTModule::SetScintillatorLenght(Float_t length)
 { fScintillatorLength = length; }
 
-inline void AliCRTModule::SetFrameThickness(const Float_t thick)
+inline void AliCRTModule::SetFrameThickness(Float_t thick)
 { fFrameThickness = thick; }
 
-inline void AliCRTModule::SetFrameWidth(const Float_t width)
+inline void AliCRTModule::SetFrameWidth(Float_t width)
 { fFrameWidth = width; }
 
-inline void AliCRTModule::SetFrameLength(const Float_t length)
+inline void AliCRTModule::SetFrameLength(Float_t length)
 { fFrameLength = length; }
 
-inline void AliCRTModule::SetNumberOfColumns(const Int_t ncols)
+inline void AliCRTModule::SetNumberOfColumns(Int_t ncols)
 { fNColumns = ncols; }
 
-inline void AliCRTModule::SetNumberOfRows(const Int_t nrows)
+inline void AliCRTModule::SetNumberOfRows(Int_t nrows)
 { fNRows = nrows; }
 
-inline void AliCRTModule::SetZGap(const Float_t zgap)
+inline void AliCRTModule::SetZGap(Float_t zgap)
 { fZGap = zgap; }
 
-inline void AliCRTModule::SetXGap(const Float_t xgap)
+inline void AliCRTModule::SetXGap(Float_t xgap)
 { fXGap = xgap; }
 
-inline const Float_t AliCRTModule::ScintillatorThickness() const
+inline Float_t AliCRTModule::ScintillatorThickness() const
 { return fScintillatorThickness; }
 
-inline const Float_t AliCRTModule::ScintillatorWidth() const
+inline Float_t AliCRTModule::ScintillatorWidth() const
 { return fScintillatorWidth; }
 
-inline const Float_t AliCRTModule::ScintillatorLenght() const
+inline Float_t AliCRTModule::ScintillatorLenght() const
 { return fScintillatorLength; }
 
-inline const Float_t AliCRTModule::FrameThickness() const
+inline Float_t AliCRTModule::FrameThickness() const
 { return fFrameThickness; }
 
-inline const Float_t AliCRTModule::FrameWidth() const
+inline Float_t AliCRTModule::FrameWidth() const
 { return fFrameWidth; }
 
-inline const Float_t AliCRTModule::FrameLength() const
+inline Float_t AliCRTModule::FrameLength() const
 { return fFrameLength; }
 
-inline const Int_t AliCRTModule::NumberOfModules() const
+inline Int_t AliCRTModule::NumberOfModules() const
 { return fNColumns*fNRows; }
 
-inline const Int_t AliCRTModule::NumberOfColumns() const
+inline Int_t AliCRTModule::NumberOfColumns() const
 { return fNColumns; }
 
-inline const Int_t AliCRTModule::NumberOfRows() const
+inline Int_t AliCRTModule::NumberOfRows() const
 { return fNRows; }
 
-inline const Float_t AliCRTModule::ZGap() const
+inline Float_t AliCRTModule::ZGap() const
 { return fZGap; }
 
-inline const Float_t AliCRTModule::XGap() const
+inline Float_t AliCRTModule::XGap() const
 { return fXGap; }
 #endif // ALICRTMODULE_H
