@@ -10,9 +10,12 @@
 #include "AliMagneticField.h"
 #include "AliGlobals.h"
 
+#include "TG4XMLGeometryGenerator.h"
+
 #include <G4UniformMagField.hh>
 #include <G4FieldManager.hh>
 #include <G4TransportationManager.hh>
+#include <G4Material.hh>
 
 AliModulesComposition::AliModulesComposition()
   : fAllLVSensitive(false),
@@ -104,6 +107,9 @@ void AliModulesComposition::ConstructModules()
   // one module constructions
   G4int nofDets = fModuleConstructionVector.entries();
   for (G4int i=0; i<nofDets; i++) {
+    fModuleConstructionVector[i]->Configure();
+  }  
+  for (G4int i=0; i<nofDets; i++) {
     G4cout << "Module " << fModuleConstructionVector[i]->GetDetName()
            << " will be constructed now." << G4endl;
     fModuleConstructionVector[i]->Construct();
@@ -112,6 +118,7 @@ void AliModulesComposition::ConstructModules()
   // more modules construction
   G4int nofModules = fMoreModulesConstruction->GetNofModules();
   if (nofModules>0) {
+    fMoreModulesConstruction->Configure();
     G4cout << "Dependent modules will be constructed now." << G4endl;
     fMoreModulesConstruction->Construct();
   }  
@@ -312,6 +319,63 @@ void AliModulesComposition::PrintAvailableDets() const
   G4cout << "---------------------------" << G4endl;
   G4cout << avList << G4endl;
 }
+
+void AliModulesComposition::PrintMaterials() const
+{
+// Prints all materials.
+// ---
+
+  const G4MaterialTable* matTable = G4Material::GetMaterialTable();
+  G4cout << *matTable;
+}
+
+void AliModulesComposition::GenerateXMLGeometry() const 
+{
+// Generates XML geometry file from the top volume.
+// The file name is set according the last switched detector
+// registered in the det switch vector.
+// ---
+
+  G4VPhysicalVolume* world = AliSingleModuleConstruction::GetWorld();
+
+  // set filename
+  G4String detName;
+  G4String version = "v";
+  G4String filePath= getenv("AG4_INSTALL");   
+  filePath = filePath + "/xml/";  
+  for (G4int i=fDetSwitchVector.entries()-1; i>=0; i--) {
+    G4int versionNumber = fDetSwitchVector[i]->GetSwitchedVersion();
+    if (versionNumber > -1) {
+      detName = fDetSwitchVector[i]->GetDetName();
+      AliGlobals::AppendNumberToString(version, versionNumber); 
+      filePath = filePath + detName + version + ".xml";
+      break;
+    }  
+  }  
+  
+  // set top volume name
+  G4String topName = world->GetName() + "_comp";
+  
+  // generate XML
+  
+  TG4XMLGeometryGenerator xml;
+  xml.OpenFile(filePath);
+
+  // generate materials 
+  // not yet implemented
+  // xml.GenerateMaterials(version, "today", "Generated from G4",
+  //                     "v4", world->GetLogicalVolume());
+
+  // generate volumes tree
+  xml.GenerateSection(detName, version, "today", "Generated from Geant4",
+                      topName, world->GetLogicalVolume());
+  xml.CloseFile();
+  
+  // set verbose
+  G4cout << "File " << detName << version << ".xml has been generated." 
+         << G4endl;
+}  
+
 
 G4String AliModulesComposition::GetSwitchedDetsList() const
 { 
