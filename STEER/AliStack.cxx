@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/08/30 09:44:06  hristov
+VertexSource_t added to avoid the warnings
+
 Revision 1.13  2001/08/29 13:31:42  morsch
 Protection against (fTreeK == 0) in destructor.
 
@@ -189,8 +192,13 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 
   if(parent>=0) {
     particle = (TParticle*) fParticleMap->At(parent);
-    particle->SetLastDaughter(fNtrack);
-    if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
+    if (particle) {
+      particle->SetLastDaughter(fNtrack);
+      if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
+    }
+    else {
+      printf("Error in AliStack::SetTrack: Parent %d does not exist\n",parent);
+    }
   } 
   else { 
     //
@@ -256,8 +264,13 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg,
 
   if(parent>=0) {
     particle = (TParticle*) fParticleMap->At(parent);
-    particle->SetLastDaughter(fNtrack);
-    if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
+    if (particle) {
+      particle->SetLastDaughter(fNtrack);
+      if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
+    }
+    else {
+      printf("Error in AliStack::SetTrack: Parent %d does not exist\n",parent);
+    }
   } 
   else { 
     //
