@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/05/16 14:57:23  alibrary
+New files for folders and Stack
+
 Revision 1.15  2001/03/20 06:28:49  alibrary
 New detector loop split in 2
 
@@ -454,15 +457,22 @@ void gudcay()
 // Fetch Particles
     Int_t np = geant3->Decayer()->ImportParticles(particles);
     if (np <=1) return;
-    
-    for (Int_t i=0; i< np; i++) 
+
+    TParticle *  iparticle = (TParticle *) particles->At(0);
+    Int_t ichF = iparticle->GetFirstDaughter();
+    Int_t ichL = iparticle->GetLastDaughter();    
+
+    for (Int_t i=ichF-1; i < ichL; i++) 
     {
-	TParticle *  iparticle = (TParticle *) particles->At(i);
-	Int_t ks = iparticle->GetStatusCode();
+	iparticle = (TParticle *) particles->At(i);
+	Int_t kf = iparticle->GetPdgCode();
+//	Int_t ks = iparticle->GetStatusCode();
+//	printf("\n %d %d %d %d %d %d", i, np, kf, ks, ichL, ichF);
 // Final state particles only
-	if (ks < 1 || ks >  10) continue;
+//	if (ks < 1 || ks >  10) continue;
 // Skip neutrinos
-	Int_t  kf=iparticle->GetPdgCode();
+
+
 	if (kf==12 || kf ==-12) continue;
 	if (kf==14 || kf ==-14) continue;
 	if (kf==16 || kf ==-16) continue;
