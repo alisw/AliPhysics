@@ -97,8 +97,9 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        TH2F *h = new TH2F("h","Detector hit distribution",150,-300,300,150,-300,300); 
        TH1F *hitsX = new TH1F("digitsX","Distribution of hits along x-axis",200,-300,300);
        TH1F *hitsY = new TH1F("digitsY","Distribution of hits along z-axis",200,-300,300);
-       
      }
+   
+
 
    TH2F *hc1 = new TH2F("hc1","Chamber 1 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
    TH2F *hc2 = new TH2F("hc2","Chamber 2 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
@@ -138,7 +139,6 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
    TH1F *Omega3D = new TH1F("omega","Reconstructed Cerenkov angle per track",200,.5,1);
    TH1F *PhotonCer = new TH1F("photoncer","Reconstructed Cerenkov angle per photon",200,.5,1);
    TH2F *PadsUsed = new TH2F("padsused","Pads Used for Reconstruction",100,-30,30,100,-30,30);
-   
 
 //   Start loop over events 
 
@@ -231,16 +231,17 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
 	      //printf("Debug Level:%d\n",RICH->GetDebugLevel());
 
-	      /*if (TMath::Abs(particle) < 50000000)
+	      if (TMath::Abs(particle) < 10000000)
 		{
 		  mip->Fill(x,y,(float) 1);
+		  //printf("adding mip\n");
 		  if (current->Energy() - current->GetCalcMass()>1 && freon==1)
 		    {
 		      hitsPhi->Fill(phi,(float) 1);
 		      //hitsTheta->Fill(theta,(float) 1);
 		      //printf("Theta:%f, Phi:%f\n",theta,phi);
 		    }
-		}*/
+		}
 	      
 	      if (TMath::Abs(particle)==211 || TMath::Abs(particle)==111)
 		{
@@ -391,6 +392,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 		       nraw++;
 		       if (mult<4) Clcharge->Fill(qtot,(float) 1);
 		     }
+		     
 		   }
 	       }
 	   }
@@ -459,7 +461,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
 	   TClonesArray *Digits  = RICH->DigitsAddress(2);
 	   Int_t ndigits = Digits->GetEntriesFast();
-	   printf("Digits          :%d\n",ndigits);
+	   printf("Digits          : %d\n",ndigits);
 	   padsev->Fill(ndigits,(float) 1);
 	   for (Int_t hit=0;hit<ndigits;hit++) {
 	     dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
@@ -482,7 +484,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	       if (ndigits) {
 		 for (Int_t hit=0;hit<ndigits;hit++) {
 		   dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
-		   //Int_t nchamber = padHit->fChamber;     // chamber number
+		   //Int_t nchamber = dHit->fChamber;     // chamber number
 		   //Int_t nhit = dHit->fHitNumber;          // hit number
 		   Int_t qtot = dHit->fSignal;                // charge
 		   Int_t ipx  = dHit->fPadX;               // pad number on X
@@ -609,9 +611,12 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	 //c3->SetFillColor(42);
 	 
 	 c3->cd(1);
-	 c3->SetLogy(1);
+	 c3_1->SetLogy();
 	 Clcharge->SetFillColor(5);
-	 Clcharge->SetXTitle("ADC units");
+	 Clcharge->SetXTitle("ADC counts");
+	 Clcharge->Fit("expo");
+	 expo->SetLineColor(2);
+	 expo->SetLineWidth(3);
 	 Clcharge->Draw();
 	 
 	 c3->cd(2);
@@ -622,6 +627,9 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	 c3->cd(3);
 	 clusev->SetFillColor(5);
 	 clusev->SetXTitle("(counts)");
+	 clusev->Fit("gaus");
+	 gaus->SetLineColor(2);
+	 gaus->SetLineWidth(3);
 	 clusev->Draw();
 
 	 c3->cd(4);
@@ -629,7 +637,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	 padsmip->SetXTitle("(counts)");
 	 padsmip->Draw(); 
        }
-
+       
        if (nev<1)
 	 {
 	   TCanvas *c11 = new TCanvas("c11","Cherenkov per Mip",400,10,600,700);
@@ -645,21 +653,33 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        c7->cd(1);
        totalphotonsevent->SetFillColor(5);
        totalphotonsevent->SetXTitle("Photons (counts)");
+       totalphotonsevent->Fit("gaus");
+       gaus->SetLineColor(2);
+       gaus->SetLineWidth(3);
        totalphotonsevent->Draw();
        
        c7->cd(2);
        photev->SetFillColor(5);
        photev->SetXTitle("(counts)");
+       photev->Fit("gaus");
+       gaus->SetLineColor(2);
+       gaus->SetLineWidth(3);
        photev->Draw();
        
        c7->cd(3);
        feedev->SetFillColor(5);
        feedev->SetXTitle("(counts)");
+       feedev->Fit("gaus");
+       gaus->SetLineColor(2);
+       gaus->SetLineWidth(3);
        feedev->Draw();
 
        c7->cd(4);
        padsev->SetFillColor(5);
        padsev->SetXTitle("(counts)");
+       padsev->Fit("gaus");
+       gaus->SetLineColor(2);
+       gaus->SetLineWidth(3);
        padsev->Draw();
 
        break;
@@ -725,6 +745,8 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
      case 5:
        
+       printf("Drawing histograms.../n");
+
        //if (ndigits)
 	 //{
        TCanvas *c1 = new TCanvas("c1","Alice RICH digits",50,50,1200,700);
@@ -798,8 +820,6 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        hitsY->SetXTitle("(cm)");
        hitsY->Draw();
        
-
-
        break;
        
      }
