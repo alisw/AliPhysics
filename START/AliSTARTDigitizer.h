@@ -29,13 +29,13 @@ class AliSTARTDigitizer : public AliDigitizer {
 
 private:
 
-  AliSTART *fSTART;
-  TClonesArray *fPhotons   ; //Number of Cherenkov photons		      
-  TClonesArray *fHits      ; // List of hits
-  AliSTARTdigit *fdigits   ; // digits
-  TArrayI *ftimeTDC    ; //array of TDC signal from right side
-  TArrayI *fADC     ;//array of ADC signal from left sida
-  TH1*     fEff;    // efficiency histogram
+  AliSTART *fSTART;          //!
+  TClonesArray *fPhotons   ; //! Number of Cherenkov photons		      
+  TClonesArray *fHits      ; //! List of hits
+  AliSTARTdigit *fdigits   ; //! digits
+  TArrayI *ftimeTDC    ; //! array of TDC signal from right side
+  TArrayI *fADC     ;//! array of ADC signal from left sida
+  TH1*     fEff;    //! efficiency histogram
   
     ClassDef(AliSTARTDigitizer,1)
 };    

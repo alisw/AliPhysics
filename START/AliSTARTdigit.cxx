@@ -41,9 +41,16 @@ ClassImp(AliSTARTdigit)
   fTimeAverage=9999;
   fTimeBestRight=9999;
   fTimeBestLeft=9999;
+  fSumADCRight=0;
 
   fTime = new TArrayI(24);  
   fADC  = new TArrayI(24);  
+}
+//-----------------------------------
+AliSTARTdigit::~AliSTARTdigit() {
+  // destructor
+  delete fTime;
+  delete fADC;
 }
 //-----------------------------------
 void AliSTARTdigit::SetTime (TArrayI &o)

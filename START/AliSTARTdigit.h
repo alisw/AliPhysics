@@ -12,7 +12,7 @@ class AliSTARTdigit: public TObject  {
 ////////////////////////////////////////////////////////////////////////
  public:
     AliSTARTdigit();
-    virtual ~AliSTARTdigit() {}
+    virtual ~AliSTARTdigit();
     void SetMeanTime(Int_t time) {fTimeAverage=time;}
     Int_t  GetMeanTime() {return fTimeAverage;}
     Int_t  GetBestTimeRight() {return fTimeBestRight ;}

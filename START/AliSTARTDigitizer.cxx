@@ -48,12 +48,23 @@ ClassImp(AliSTARTDigitizer)
 
 //___________________________________________
 AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager) 
-    :AliDigitizer(manager) 
+  :AliDigitizer(manager),
+   fSTART(0),
+   fHits(0),
+   fdigits(0),
+   ftimeTDC(0),
+   fADC(0),
+   fEff(0)
 {
   //	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
 // ctor which should be used
 
   AliDebug(1,"processed");
+
+  fSTART = 0;
+  fPhotons = 0;
+  fHits = 0;
+  fdigits = 0;
 
   ftimeTDC = new TArrayI(24); 
   fADC = new TArrayI(24); 
@@ -70,7 +81,8 @@ AliSTARTDigitizer::~AliSTARTDigitizer()
 {
 // Destructor
 
-  AliDebug(1,"START"); 
+  AliDebug(1,"START");
+
   delete ftimeTDC;
   delete fADC;
   delete fEff;
