@@ -27,7 +27,7 @@ FOPT	      = $(OPT) -KPIC
 CLIBDEFS      = -DCERNLIB_SUN -DCERNLIB_BLDLIB -DCERNLIB_CZ
 CLIBCXXOPTS   = 
 CLIBCOPT      = 
-CLIBFOPT      =
+CLIBFOPT      = -xpp=cpp
 
 # Additional directories for dependencies
 
