@@ -11,12 +11,12 @@
 class AliRICHv1 : public AliRICH 
 {
 public:
-  inline                AliRICHv1():AliRICH()                           {;}
-                        AliRICHv1(const char *name, const char *title);
-  inline virtual       ~AliRICHv1()                                     {;}
-         virtual void   Init();
-  inline virtual Int_t  IsVersion()                                const{return 1;}
-         virtual void StepManager();
+                 AliRICHv1():AliRICH()                           {;}
+                 AliRICHv1(const char *name, const char *title);
+  virtual       ~AliRICHv1()                                     {;}
+  virtual void   Init();
+  virtual Int_t  IsVersion()                                const{return 1;}
+  virtual void   StepManager();
 private:
   ClassDef(AliRICHv1,1)//RICH full version for simulation
 };
