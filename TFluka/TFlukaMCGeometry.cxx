@@ -75,9 +75,9 @@ extern "C"
    void  type_of_call   lkwr(Double_t & /*pSx*/, Double_t & /*pSy*/, Double_t & /*pSz*/,
                              Double_t * /*pV*/, const Int_t & /*oldReg*/, const Int_t & /*oldLttc*/,
 	                          Int_t & /*newReg*/, Int_t & /*flagErr*/, Int_t & /*newLttc*/);
-   void  type_of_call magfld(const Double_t & /*pX*/, const Double_t & /*pY*/, const Double_t & /*pZ*/,
-                             Double_t & /*cosBx*/, Double_t & /*cosBy*/, Double_t & /*cosBz*/, 
-                             Double_t & /*Bmag*/, Int_t & /*reg*/, Int_t & /*idiscflag*/);	    
+//   void  type_of_call magfld(const Double_t & /*pX*/, const Double_t & /*pY*/, const Double_t & /*pZ*/,
+//                             Double_t & /*cosBx*/, Double_t & /*cosBy*/, Double_t & /*cosBz*/, 
+//                             Double_t & /*Bmag*/, Int_t & /*reg*/, Int_t & /*idiscflag*/);	    
    void  type_of_call nrmlwr(Double_t & /*pSx*/, Double_t & /*pSy*/, Double_t & /*pSz*/,
                              Double_t & /*pVx*/, Double_t & /*pVy*/, Double_t & /*pVz*/,
 	                          Double_t * /*norml*/, const Int_t & /*oldReg*/, 
@@ -102,6 +102,7 @@ TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title)
   //
   // Standard constructor
   //
+  fLastMaterial = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
 }
@@ -113,6 +114,7 @@ TFlukaMCGeometry::TFlukaMCGeometry()
   //
   // Default constructor
   //
+  fLastMaterial = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
 }
@@ -829,7 +831,7 @@ void TFlukaMCGeometry::Gmtod(Double_t *xm, Double_t *xd, Int_t iflag)
 }
    
 //_____________________________________________________________________________
-void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
+void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
 {
   // ==== from FLUGG ====
   // NAMES OF ELEMENTS AND COMPOUNDS: the names must be written in upper case,
@@ -880,19 +882,24 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
    Double_t  zel, ael, wel, rho;
    char elname[8] = {' ',' ','_', 'E','L','E','M','\0'}; 
    char digit[3];
+   Bool_t found = kFALSE;
    
    printf("Creating materials and compounds\n");
    for (i=0; i<nmater; i++) {
       mat = (TGeoMaterial*)matlist->At(i);
-      printf("material: %s index=%i\n", mat->GetName(), mat->GetIndex());
+      if (mat->GetZ()<1E-1) {
+         mat->SetIndex(2); // vacuum, built-in inside FLUKA
+         continue;
+      }     
+//      printf("material: %s index=%i: Z=%f A=%f rho=%f\n", mat->GetName(), mat->GetIndex(),mat->GetZ(),mat->GetA(),mat->GetDensity());
       matorig = gGeoManager->FindDuplicateMaterial(mat);
       if (matorig) {
          idmat = matorig->GetIndex();
          mat->SetIndex(idmat);
-         printf(" -> found a duplicate: %s with index %i\n", matorig->GetName(), idmat);
+//         printf(" -> found a duplicate: %s with index %i\n", matorig->GetName(), idmat);
          matorig = 0;
       } else  {
-         printf(" Adding to temp list with index %i\n", nfmater+3);
+//         printf(" Adding to temp list with index %i\n", nfmater+3);
          listfluka->Add(mat);
          mat->SetIndex(nfmater+3);
          matorig = mat;
@@ -935,32 +942,40 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
                }    
             }     
          } 
-         printf(" newmat name: %s\n", matname.Data());                               
+//         printf(" newmat name: %s\n", matname.Data());                               
       }
       // now we have unique materials with unique names in the lists
-         
          
       if (matorig && matorig->IsMixture()) {
       // create dummy materials for elements
          rho = 0.999;
          mix = (TGeoMixture*)matorig;
          nelem = mix->GetNelements();
-         printf(" material is a MIXTURE with %i elements:\n", nelem);
+//         printf(" material is a MIXTURE with %i elements:\n", nelem);
          for (j=0; j<nelem; j++) {
+            found = kFALSE;
             zel = (mix->GetZmixt())[j];
-            printf("   Zelem[%i] = %g\n",j,zel);
+            ael = (mix->GetAmixt())[j];
+//            printf("   Zelem[%i] = %g\n",j,zel);
             if ((zel-Int_t(zel))>0.01) {
-               Warning("CreateFlukaMatFile", "element with Z=%f\n", zel);
+               TGeoMaterial *mat1;
+               for (Int_t imat=0; imat<nfmater; imat++) {
+                  mat1 = (TGeoMaterial*)listfluka->At(imat);
+                  if (TMath::Abs(mat1->GetZ()-zel)>1E-4) continue;
+                  if (TMath::Abs(mat1->GetA()-ael)>1E-4) continue;
+                  found = kTRUE;
+                  break;
+               }      
+               if (!found) Warning("CreateFlukaMatFile", "element with Z=%f\n", zel);
             }   
-            if (!zelem[Int_t(zel)]) {
+            if (!zelem[Int_t(zel)] && !found) {
                // write fluka element
                memcpy(elname, &elNames[2*Int_t(zel-1)], 2);
                zelem[Int_t(zel)] = 1;
-               ael = (mix->GetAmixt())[j];
                mat = new TGeoMaterial(elname, ael, zel, rho);
                mat->SetIndex(nfmater+3);
-               printf("  element not in list: new material %s at index=%i, Z=%g, A=%g, dummyrho=%g\n",
-                       elname,nfmater+3,zel,ael,rho);
+//               printf("  element not in list: new material %s at index=%i, Z=%g, A=%g, dummyrho=%g\n",
+//                       elname,nfmater+3,zel,ael,rho);
                listfluka->Add(mat);
                objstr = new TObjString(elname);
                listflukanames->Add(objstr);
@@ -970,7 +985,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
       }      
    }
    // now dump materials in the file   
-   printf("DUMPING %i materials\n", nfmater);
+//   printf("DUMPING %i materials\n", nfmater);
    for (i=0; i<nfmater; i++) {
       mat = (TGeoMaterial*)listfluka->At(i);
       out << setw(10) << "MATERIAL  ";
@@ -978,6 +993,10 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
       matname = mat->GetName();
       ToFlukaString(matname);
       zmat = mat->GetZ();
+      if (zmat-Int_t(zmat)>0.01) {
+         if (zmat-Int_t(zmat)>0.5) zmat = Int_t(zmat)+1.;
+         else zmat = Int_t(zmat);
+      }   
       amat = mat->GetA();
       rhomat = mat->GetDensity();
       // write material card
@@ -994,11 +1013,8 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
       out << setw(10) << setiosflags(ios::fixed) << setprecision(1) << Double_t(i+3);   
       out << setw(10) << " ";
-      if (mat->IsMixture()) 
-         out << setw(10) << mix->GetNelements();   
-      else
-         out << setw(10) << " ";
-      out << setw(10) << matname.Data() << endl;
+      out << setw(10) << " ";
+      out << setw(8) << matname.Data() << endl;
    } 
    // write mixture header           
    PrintHeader(out, "COMPOUNDS");   
@@ -1013,21 +1029,35 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
       nelem = mix->GetNelements();
       objstr = (TObjString*)listflukanames->At(i);
       matname = objstr->GetString();
-      printf("MIXTURE %s with index %i having %i elements\n", matname.Data(), mat->GetIndex(),nelem);
+//      printf("MIXTURE %s with index %i having %i elements\n", matname.Data(), mat->GetIndex(),nelem);
       for (j=0; j<nelem; j++) {
          // dump mixture cards
-         printf(" #elem %i: Z=%g, A=%g, W=%g\n", j, (mix->GetZmixt())[j], 
-                (mix->GetAmixt())[j],(mix->GetWmixt())[j]); 
+//         printf(" #elem %i: Z=%g, A=%g, W=%g\n", j, (mix->GetZmixt())[j], 
+//                (mix->GetAmixt())[j],(mix->GetWmixt())[j]); 
          wel = (mix->GetWmixt())[j];
          zel = (mix->GetZmixt())[j];       
-         memcpy(elname, &elNames[2*Int_t(zel-1)], 2);
-         element = (TGeoMaterial*)listfluka->FindObject(elname);
+         ael = (mix->GetAmixt())[j];
+         if (zel-Int_t(zel)>0.01) {
+            // loop the temporary list
+            element = 0;
+            TGeoMaterial *mat1;
+            for (Int_t imat=0; imat<i; imat++) {
+               mat1 = (TGeoMaterial*)listfluka->At(imat);
+               if (TMath::Abs(mat1->GetZ()-zel)>1E-4) continue;
+               if (TMath::Abs(mat1->GetA()-ael)>1E-4) continue;
+               element = mat1;
+               break;
+            }      
+         } else {
+            memcpy(elname, &elNames[2*Int_t(zel-1)], 2);
+            element = (TGeoMaterial*)listfluka->FindObject(elname);
+         }   
          if (!element) {
             Error("CreateFlukaMatFile", "Element Z=%g %s not found", zel, elname);
             return;
          }
          idmat = element->GetIndex();
-         printf("element %s , index=%i\n", element->GetName(), idmat);
+//         printf("element %s , index=%i\n", element->GetName(), idmat);
          out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
          out << setw(10) << setiosflags(ios::fixed) << setprecision(6) << -wel;   
          out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
@@ -1082,6 +1112,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname) const
    listflukanames->Delete();
    delete listflukanames;   
    out.close();
+   fLastMaterial = nfmater+2;
 }
 
 //_____________________________________________________________________________
@@ -1140,17 +1171,6 @@ void TFlukaMCGeometry::Vname(const char *name, char *vname) const
 // FLUKA GEOMETRY WRAPPERS - to replace FLUGG wrappers
 
 //_____________________________________________________________________________
-void  jomiwr(const Int_t & /*nge*/, const Int_t & /*lin*/, const Int_t & /*lou*/,
-             Int_t &flukaReg)
-{
-// Geometry initialization wrapper called by FLUKAM. Provides to FLUKA the
-// number of regions (volumes in TGeo)
-   // build application geometry
-   printf("=> Inside JOMIWR\n");
-   flukaReg = gGeoManager->GetListOfUVolumes()->GetEntries()+1;
-}   
-             
-//_____________________________________________________________________________
 Int_t idnrwr(const Int_t & /*nreg*/, const Int_t & /*mlat*/)
 {
 //   from FLUGG:
@@ -1160,28 +1180,8 @@ Int_t idnrwr(const Int_t & /*nreg*/, const Int_t & /*mlat*/)
 // card in fluka input), returns 1 if user wants Fluka always to 
 // use DNEAR (in this case, be sure that GEANT4 DNEAR is unique, 
 // coming from all directions!!!)
+   printf("=> Inside IDNRWR\n");
    return 0;
-}
-
-//_____________________________________________________________________________
-Int_t isvhwr(const Int_t &check, const Int_t & intHist)
-{
-//   from FLUGG:
-// Wrapper for saving current navigation history (fCheck=default) 
-// and returning its pointer. If fCheck=-1 copy of history pointed 
-// by intHist is made in NavHistWithCount object, and its pointer 
-// is returned. fCheck=1 and fCheck=2 cases are only in debugging 
-// version: an array is created by means of FGeometryInit functions
-// (but could be a static int * ptrArray = new int[10000] with 
-// file scope as well) that stores a flag for deleted/undeleted 
-// histories and at the end of event is checked to verify that 
-// all saved history objects have been deleted.
-
-// For TGeo, just return the current node ID. No copy need to be made.
-
-   if (check<0) return intHist;
-   Int_t histInt = gGeoManager->GetCurrentNodeId();
-   return histInt;
 }
 
 //_____________________________________________________________________________
@@ -1196,6 +1196,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 // particle and all variables that fluka G1 computes.
 
    // Initialize current point/direction
+   printf("=> Inside G1WR\n");
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pV);
    
@@ -1208,7 +1209,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    Int_t oldregion = (oldvol)?(mcgeom->NofVolumes()+1):oldvol->GetNumber(); // should it be 0?
    if (oldregion != oldReg) {
       while (lttcFlag>=0) {
-         gGeoManager->CdNode(jrLt[lttcFlag]);
+         gGeoManager->CdNode(jrLt[lttcFlag]-1);
          oldvol = (gGeoManager->IsOutside())?0:gGeoManager->GetCurrentVolume();
          oldregion = (oldvol)?(mcgeom->NofVolumes()+1):oldvol->GetNumber();
          if (oldregion == oldReg) break;
@@ -1285,6 +1286,154 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       }      
    }   
 }
+
+//_____________________________________________________________________________
+void g1rtwr()
+{
+   printf("=> Inside G1RTWR\n");
+} 
+
+//_____________________________________________________________________________
+void conhwr(Int_t & /*intHist*/, Int_t * /*incrCount*/)
+{
+   printf("=> Inside CONHWR\n");
+}
+
+//_____________________________________________________________________________
+void inihwr(Int_t & /*intHist*/)
+{
+   printf("=> Inside INIHWR\n");
+}
+
+//_____________________________________________________________________________
+void  jomiwr(const Int_t & /*nge*/, const Int_t & /*lin*/, const Int_t & /*lou*/,
+             Int_t &flukaReg)
+{
+// Geometry initialization wrapper called by FLUKAM. Provides to FLUKA the
+// number of regions (volumes in TGeo)
+   // build application geometry
+   printf("=> Inside JOMIWR\n");
+   flukaReg = gGeoManager->GetListOfUVolumes()->GetEntriesFast()+1;
+}   
+
+//_____________________________________________________________________________
+void lkdbwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
+            Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
+            Int_t &newReg, Int_t &flagErr, Int_t &newLttc)             
+{
+   printf("=> Inside LKDBWR\n");
+   printf("Locate :(%f, %f, %f)\n", pSx, pSy, pSz);
+//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
+   if (gGeoManager->IsOutside()) {
+      newReg = mcgeom->NofVolumes()+1;
+      newLttc = gGeoManager->GetCurrentNodeId();
+   } 
+   newReg = node->GetVolume()->GetNumber();
+   newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   flagErr = newReg;
+   printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+}
+
+//_____________________________________________________________________________
+void lkfxwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
+            Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
+            Int_t &newReg, Int_t &flagErr, Int_t &newLttc)
+{
+   printf("=> Inside LKFXWR\n");
+   printf("Locate :(%f, %f, %f)\n", pSx, pSy, pSz);
+//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
+   if (gGeoManager->IsOutside()) {
+      newReg = mcgeom->NofVolumes()+1;
+      newLttc = gGeoManager->GetCurrentNodeId();
+   } 
+   newReg = node->GetVolume()->GetNumber();
+   newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   flagErr = newReg;
+   printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+}
+
+//_____________________________________________________________________________
+void lkmgwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
+            Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
+		      Int_t &flagErr, Int_t &newReg, Int_t &newLttc)
+{
+   printf("=> Inside LKMGWR\n");
+   printf("Locate :(%f, %f, %f)\n", pSx, pSy, pSz);
+//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
+   if (gGeoManager->IsOutside()) {
+      newReg = mcgeom->NofVolumes()+1;
+      newLttc = gGeoManager->GetCurrentNodeId();
+   } 
+   newReg = node->GetVolume()->GetNumber();
+   newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   flagErr = newReg;
+   printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+}
+
+//_____________________________________________________________________________
+void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
+          Double_t * /*pV*/, const Int_t &oldReg, const Int_t &oldLttc,
+	       Int_t &newReg, Int_t &flagErr, Int_t &newLttc)
+{
+   printf("=> Inside LKWR\n");
+   printf("Locate :(%f, %f, %f)\n", pSx, pSy, pSz);
+//   printf("   in: pV=(%f, %f, %f)\n", pV[0], pV[1], pV[2]);
+   printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
+   TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
+   if (gGeoManager->IsOutside()) {
+      newReg = mcgeom->NofVolumes()+1;
+      newLttc = gGeoManager->GetCurrentNodeId();
+   } 
+   newReg = node->GetVolume()->GetNumber();
+   newLttc = gGeoManager->GetCurrentNodeId()+1; 
+   flagErr = newReg;
+   printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+}
+
+//_____________________________________________________________________________
+void nrmlwr(Double_t & /*pSx*/, Double_t & /*pSy*/, Double_t & /*pSz*/,
+            Double_t & /*pVx*/, Double_t & /*pVy*/, Double_t & /*pVz*/,
+	         Double_t * /*norml*/, const Int_t & /*oldReg*/, 
+	         const Int_t & /*newReg*/, Int_t & /*flagErr*/)
+{
+   printf("=> Inside NRMLWR\n");
+}
+
+//_____________________________________________________________________________
+void rgrpwr(const Int_t & /*flukaReg*/, const Int_t & /*ptrLttc*/, Int_t & /*g4Reg*/,
+            Int_t * /*indMother*/, Int_t * /*repMother*/, Int_t & /*depthFluka*/)
+{
+   printf("=> Inside RGRPWR\n");
+}
+
+//_____________________________________________________________________________
+Int_t isvhwr(const Int_t &check, const Int_t & intHist)
+{
+//   from FLUGG:
+// Wrapper for saving current navigation history (fCheck=default) 
+// and returning its pointer. If fCheck=-1 copy of history pointed 
+// by intHist is made in NavHistWithCount object, and its pointer 
+// is returned. fCheck=1 and fCheck=2 cases are only in debugging 
+// version: an array is created by means of FGeometryInit functions
+// (but could be a static int * ptrArray = new int[10000] with 
+// file scope as well) that stores a flag for deleted/undeleted 
+// histories and at the end of event is checked to verify that 
+// all saved history objects have been deleted.
+
+// For TGeo, just return the current node ID. No copy need to be made.
+
+   printf("=> Inside ISVHWR\n");
+   if (check<0) return intHist;
+   Int_t histInt = gGeoManager->GetCurrentNodeId();
+   return histInt;
+}
+
 
 
    
