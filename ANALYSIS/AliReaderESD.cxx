@@ -31,7 +31,6 @@
 #include "AliAOD.h"
 #include "AliAODParticle.h"
 #include "AliAODParticleCut.h"
-#include "AliTrackPoints.h"
 #include "AliClusterMap.h"
 
 ClassImp(AliReaderESD)
@@ -49,6 +48,7 @@ AliReaderESD::AliReaderESD(const Char_t* esdfilename, const Char_t* galfilename)
  fdR(0.0),
  fClusterMap(kFALSE),
  fITSTrackPoints(kFALSE),
+ fITSTrackPointsType(AliTrackPoints::kITS),
  fMustTPC(kFALSE),
  fReadCentralBarrel(kTRUE),
  fReadMuon(kFALSE),
@@ -101,6 +101,7 @@ AliReaderESD::AliReaderESD(TObjArray* dirs,const Char_t* esdfilename, const Char
  fdR(0.0),
  fClusterMap(kFALSE),
  fITSTrackPoints(kFALSE),
+ fITSTrackPointsType(AliTrackPoints::kITS),
  fMustTPC(kFALSE),
  fReadCentralBarrel(kTRUE),
  fReadMuon(kFALSE),
@@ -246,7 +247,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
   if ( (mf == 0.0) && ((fNTrackPoints > 0) || fITSTrackPoints) )
    {
       Error("ReadESD","Magnetic Field is 0 and Track Points Demended. Skipping to next event.");
-      return 1;
+
    }
 
   if (fITSTrackPoints)
@@ -409,7 +410,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
       AliTrackPoints* itstpts = 0x0;
       if (fITSTrackPoints) 
        {
-         itstpts = new AliTrackPoints(AliTrackPoints::kITS,esdtrack,mf*10.0);
+         itstpts = new AliTrackPoints(fITSTrackPointsType,esdtrack,mf*10.0);
 //         itstpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
 

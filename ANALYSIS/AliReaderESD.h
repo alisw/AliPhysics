@@ -13,6 +13,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "AliReader.h"
+#include "AliTrackPoints.h"
 #include <TString.h>
 class TFile;
 class AliRunLoader;
@@ -51,7 +52,8 @@ class AliReaderESD: public AliReader
     void          SetNumberOfTrackPoints(Int_t n = 5,Float_t dr = 30.0) {fNTrackPoints = n; fdR = dr;}
     Int_t         GetNumberOfTrackPoints() const {return fNTrackPoints;}
     void          SetClusterMap(Bool_t flag = kTRUE){fClusterMap = flag;}
-    void          SetITSTrackPoints(Bool_t flag = kTRUE){fITSTrackPoints = flag;}
+    void          SetITSTrackPoints(Bool_t flag, AliTrackPoints::ETypes type)
+                                   {fITSTrackPoints = flag; fITSTrackPointsType = type;}
     void          MustTPC(Bool_t flag){fMustTPC = flag;}
 
     void          SetReadCentralBarrel(Bool_t flag){fReadCentralBarrel = flag;}
@@ -88,10 +90,12 @@ class AliReaderESD: public AliReader
     Bool_t        fClusterMap;//Flag indicating if Claster Map should be created for each track
                               //Claster map is needed for Anti-Splitting Cut
 
-    Bool_t        fITSTrackPoints;//Flag indicalting if track positions in ITS are to be read
+    
+    Bool_t        fITSTrackPoints; //Flag indicalting if track positions in ITS are to be read
                                   //currently we use only position at first pixels wich are
 	              //used by anti-merging cut in non-id analysis
-
+    AliTrackPoints::ETypes  fITSTrackPointsType;//defines the way track points are calculated
+    
     Bool_t        fMustTPC;// must be reconstructed in TPC -> reject tracks reconstructed ITS stand alone
 
     Bool_t        fReadCentralBarrel; // Flag for reading ESD central track 
