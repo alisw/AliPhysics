@@ -41,7 +41,7 @@ AliL3HoughDisplay::~AliL3HoughDisplay()
 
 void AliL3HoughDisplay::Init()
 {
-  TFile *file = TFile::Open("/prog/alice/data/GEO/alice.geom");
+  TFile *file = TFile::Open("$(LEVEL3)/GEO/alice.geom");
   if(!file->IsOpen())
     cerr<<"AliL3HoughDisplay::AliL3HoughDisplay : Geometry file alice.geom does not exist"<<endl;
   fGeom = (TGeometry*)file->Get("AliceGeom");

@@ -22,14 +22,11 @@ class AliL3Hough {
   Bool_t fAddHistograms;
   Bool_t fDoIterative;
   Bool_t fWriteDigits;
+  Bool_t fUse8bits;
   Int_t fNEtaSegments;
   Int_t fNPatches;
   Int_t fPeakThreshold;
-#ifdef use_aliroot
-  AliL3FileHandler **fMemHandler; //!
-#else
   AliL3MemHandler **fMemHandler; //!
-#endif
   AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
   AliL3HoughMaxFinder *fPeakFinder; //!
@@ -39,14 +36,13 @@ class AliL3Hough {
   AliL3HoughGlobalMerger *fGlobalMerger; //!
 
   void CleanUp();
-  void Init();
   
  public:
   
   AliL3Hough(); 
-  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100);
   virtual ~AliL3Hough();
   
+  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE);
   void Process(Int_t minslice,Int_t maxslice);
   void ReadData(Int_t slice);
   void Transform(Int_t row_range = -1);
@@ -78,11 +74,8 @@ class AliL3Hough {
   AliL3HoughEval *GetEval(Int_t i) {if(!fEval[i]) return 0; return fEval[i];}
   AliL3HoughMerger *GetMerger() {if(!fMerger) return 0; return fMerger;}
   AliL3HoughIntMerger *GetInterMerger() {if(!fInterMerger) return 0; return fInterMerger;}
-#ifdef use_aliroot
-  AliL3FileHandler *GetMemHandler(Int_t i) {if(!fMemHandler[i]) return 0; return fMemHandler[i];}
-#else
   AliL3MemHandler *GetMemHandler(Int_t i) {if(!fMemHandler[i]) return 0; return fMemHandler[i];}
-#endif
+
 
   ClassDef(AliL3Hough,1) //Hough transform base class
 

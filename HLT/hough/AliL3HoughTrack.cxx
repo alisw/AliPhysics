@@ -172,13 +172,12 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   fWeight = weight;
   fMinDist = 100000;
   SetKappa(kappa);
-  SetPhi0(phi);
   Double_t pt = fabs(BFACT*AliL3Transform::GetBField()/kappa);
   SetPt(pt);
   Double_t radius = 1/fabs(kappa);
   SetRadius(radius);
   SetFirstPoint(0,0,0);
-  SetPsi(phi); //Psi = Phi when first point is vertex
+  SetPsi(phi); 
   SetR0(0);
   Double_t charge = -1.*kappa;
   SetCharge((Int_t)copysign(1.,charge));

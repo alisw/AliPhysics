@@ -134,7 +134,7 @@ void AliL3HoughTransformer::TransformCircle()
       AliL3DigitData *digPt = tempPt->fDigitData;
       if(i != (Int_t)tempPt->fRow)
 	{
-	  printf("AliL3HoughTransform::TransformCircle : Mismatching padrow numbering\n");
+	  cerr<<"AliL3HoughTransform::TransformCircle : Mismatching padrow numbering "<<i<<" "<<(Int_t)tempPt->fRow<<endl;
 	  continue;
 	}
 
