@@ -3,6 +3,7 @@
 
 #include "AliL3Track.h"
 #include "AliL3Models.h"
+#include "AliL3Defs.h"
 
 class AliL3ModelTrack : public AliL3Track {
 
@@ -12,9 +13,15 @@ class AliL3ModelTrack : public AliL3Track {
   AliL3ClusterModel *fClusters; //!
   AliL3TrackModel *fTrackModel; //!
   Short_t fNClusters;
-  Int_t fOverlap;
+  Int_t *fOverlap; //!
   Float_t fXYResidualQ; //Quantization steps.
   Float_t fZResidualQ;
+  Float_t fXYResolution;
+  Float_t fZResolution;
+  Float_t fXYWidthQ;
+  Float_t fZWidthQ;
+  Int_t fSlice;
+  Int_t fPatch;
   
   //Crossing points with padrows
   Float_t *fPad; //!
@@ -25,20 +32,28 @@ class AliL3ModelTrack : public AliL3Track {
   virtual ~AliL3ModelTrack();
   
   void Init(Int_t slice,Int_t patch);
-  void SetCluster(Float_t dpad,Float_t dtime,Float_t charge,Float_t sigmaY2,Float_t sigmaZ2);
+  void SetCluster(Int_t row,Float_t dpad,Float_t dtime,Float_t charge,Float_t sigmaY2,Float_t sigmaZ2);
   void FillModel();
+  void FillTrack();
   void Print();
   
-  void SetPadHit(Int_t row,Float_t f) {fPad[row]=f;}
-  void SetTimeHit(Int_t row,Float_t f) {fTime[row]=f;}
-  void SetOverlap(Int_t i) {fOverlap=i;}
+  void SetPadHit(Int_t row,Float_t f);
+  void SetTimeHit(Int_t row,Float_t f);
+  void SetOverlap(Int_t row,Int_t id);
+  void SetXYResolution(Float_t f) {fXYResolution=f;}
+  void SetZResolution(Float_t f) {fZResolution=f;}
   
   AliL3ClusterModel *GetClusters() {return fClusters;}
-  AliL3ClusterModel *GetClusterModel(Int_t i) {if(!fClusters) return 0; return &fClusters[i];}
   AliL3TrackModel *GetModel() {return fTrackModel;}
-  Int_t GetOverlap() {return fOverlap;}
-  Float_t GetPadHit(Int_t row) {return fPad[row];}
-  Float_t GetTimeHit(Int_t row) {return fTime[row];}
+  AliL3ClusterModel *GetClusterModel(Int_t row);
+  Int_t GetOverlap(Int_t row);
+  Float_t GetPadHit(Int_t row);
+  Float_t GetTimeHit(Int_t row);
+  Bool_t GetPad(Int_t row,Float_t &pad);
+  Bool_t GetTime(Int_t row,Float_t &time);
+  Bool_t GetClusterCharge(Int_t row,Int_t &charge);
+  Bool_t GetXYWidth(Int_t row,Float_t &width);
+  Bool_t GetZWidth(Int_t row,Float_t &width);
   Bool_t GetPadResidual(Int_t row,Float_t &res);
   Bool_t GetTimeResidual(Int_t row,Float_t &res);
   Int_t GetNClusters() {return fNClusters;}
