@@ -49,7 +49,7 @@ enum PprRun_t
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
-    kHijing_pA, kPythia6, kPythia6Jets
+    kHijing_pA, kPythia6, kPythia6Jets, kD0PbPb5500
 };
 
 enum PprGeo_t 
@@ -495,7 +495,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetThetaRange(thmin,thmax);
 	gGener=gener;
       }
-	break;
+      break;
     case kParam_8000:
       {
 	comment = comment.Append(":HIJINGparam N=8000");
@@ -508,7 +508,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetThetaRange(thmin,thmax);
 	gGener=gener;
       }
-	break;
+      break;
     case kParam_4000:
       {
 	comment = comment.Append("HIJINGparam N=4000");
@@ -534,7 +534,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetThetaRange(thmin,thmax);
 	gGener=gener;
       }
-	break;
+      break;
 //
 //  Hijing Central
 //
@@ -546,7 +546,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(0., 5.);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_cent2:
       {
 	comment = comment.Append("HIJING cent2");
@@ -554,8 +554,8 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 // impact parameter range
 	gener->SetImpactParameterRange(0., 2.);
 	gGener=gener;
-	break;
       }
+      break;
 //
 // Hijing Peripheral 
 //
@@ -567,7 +567,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(5., 8.6);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per2:
       {
 	comment = comment.Append("HIJING per2");
@@ -576,7 +576,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(8.6, 11.2);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per3:
       {
 	comment = comment.Append("HIJING per3");
@@ -585,7 +585,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(11.2, 13.2);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per4:
       {
 	comment = comment.Append("HIJING per4");
@@ -594,7 +594,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(13.2, 15.);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per5:
       {
 	comment = comment.Append("HIJING per5");
@@ -603,7 +603,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(15., 100.);
 	gGener=gener;
       }
-	break;
+      break;
 //
 //  Jet-Jet
 //
@@ -622,7 +622,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_jj50:
       {
@@ -656,7 +656,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_jj100:
       {
@@ -673,7 +673,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_jj200:
       {
@@ -690,7 +690,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 //
 // Gamma-Jet
 //
@@ -709,7 +709,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj50:
       {
@@ -726,7 +726,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj75:
       {
@@ -743,7 +743,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj100:
       {
@@ -760,7 +760,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj200:
       {
@@ -777,7 +777,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_pA:
       {
 	comment = comment.Append("HIJING pA");
@@ -818,7 +818,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->AddGenerator(gray,  "Gray Particles",1);
 	gGener=gener;
       }
-	break;
+      break;
     case kPythia6:
       {
         comment = comment.Append(":Pythia p-p @ 14 TeV");
@@ -833,9 +833,11 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetEnergyCMS(14000.);
 	gGener=gener;
       }
+      break;
     case kPythia6Jets:
       {
-        gener = new AliGenPythia(-1);
+        comment = comment.Append(":Pythia jets @ 5.5 TeV");
+        AliGenPythia * gener = new AliGenPythia(-1);
 	gener->SetEnergyCMS(5500.);//        Centre of mass energy
 	gener->SetProcess(kPyJets);//        Process type
 	gener->SetJetEtaRange(-0.5, 0.5);//  Final state kinematic cuts
@@ -850,7 +852,19 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetForceDecay(kAll);//  Decay type (semielectronic, etc.)
 	gGener=gener;
       }
-    break;
+      break;
+    case kD0PbPb5500:
+      {
+	comment = comment.Append(" D0 in Pb-Pb at 5.5 TeV");
+	AliGenPythia * gener = new AliGenPythia(10);
+	gener->SetProcess(kPyD0PbPbMNR);
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetPtHard(2.1,-1.0);
+	gener->SetEnergyCMS(5500.);
+	gener->SetNuclei(208,208);
+	gGener=gener;
+      }
+      break;
     }
     return gGener;
 }
