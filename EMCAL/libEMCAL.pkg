@@ -20,6 +20,7 @@ AliEMCALClusterizer.cxx \
 AliEMCALClusterizerv1.cxx \
 AliEMCALHadronCorrection.cxx \
 AliEMCALHadronCorrectionv0.cxx \
+AliEMCALHadronCorrectionv1.cxx \
 AliEMCALJetMicroDst.cxx \
 AliEMCALParton.cxx \
 AliEMCALReconstructioner.cxx \
