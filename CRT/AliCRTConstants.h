@@ -44,10 +44,10 @@ class AliCRTConstants {
   static const Float_t fgMagnetWidth; // 
   static const Float_t fgMagnetLenght; // 
   
- private:
   AliCRTConstants() {}
   virtual ~AliCRTConstants() {}
 
+ private:
   ClassDef(AliCRTConstants, 0)   // CRT(ACORDE) global constants
 };
     
