@@ -15,12 +15,16 @@ class AliESD;
 
 class AliReconstructor: public TObject {
 public:
+  virtual ~AliReconstructor() {};
+
   virtual void         Reconstruct(AliRunLoader* runLoader) const = 0;
   virtual AliVertexer* CreateVertexer(AliRunLoader* /*runLoader*/) const 
     {return NULL;}
   virtual AliTracker*  CreateTracker(AliRunLoader* /*runLoader*/) const 
     {return NULL;}
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const = 0;
+
+  virtual const char*  GetDetectorName() const;
 
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };

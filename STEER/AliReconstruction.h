@@ -8,6 +8,8 @@
 #include <TNamed.h>
 #include <TString.h>
 #include <TObjArray.h>
+#include "AliReconstructor.h"
+#include "AliDetector.h"
 
 class AliRunLoader;
 class AliLoader;
@@ -42,12 +44,33 @@ public:
   virtual Bool_t Run();
 
 private:
+  class AliDummyReconstructor: public AliReconstructor {
+  public:
+    AliDummyReconstructor(AliDetector* detector) {fDetector = detector;};
+    virtual ~AliDummyReconstructor() {};
+
+    virtual void         Reconstruct(AliRunLoader* /*runLoader*/) const
+      {fDetector->Reconstruct();};
+    virtual AliVertexer* CreateVertexer(AliRunLoader* /*runLoader*/) const 
+      {return fDetector->CreateVertexer();}
+    virtual AliTracker*  CreateTracker(AliRunLoader* /*runLoader*/) const 
+      {return fDetector->CreateTracker();}
+    virtual void         FillESD(AliRunLoader* /*runLoader*/, AliESD* esd) const
+      {fDetector->FillESD(esd);};
+
+    virtual const char*  GetDetectorName() const
+      {return fDetector->GetName();};
+  private:
+    AliDetector*         fDetector;   // detector object
+  };
+
   Bool_t         RunLocalReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESD*& esd);
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
+  AliReconstructor* GetReconstructor(const char* detName) const;
   Bool_t         CreateVertexer();
   Bool_t         CreateTrackers();
   void           CleanUp(TFile* file = NULL);
@@ -74,6 +97,8 @@ private:
   AliLoader*     fTOFLoader;          //! loader for TOF
   AliTracker*    fTOFTracker;         //! tracker for TOF
 
+  static const Int_t fgkNDetectors = 14;   //! number of detectors
+  static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
   TObjArray      fReconstructors;     //! array of reconstructor objects
 
   ClassDef(AliReconstruction, 1)      // class for running the reconstruction

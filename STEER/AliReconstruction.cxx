@@ -77,9 +77,6 @@
 #include "AliReconstruction.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
-#include "AliModule.h"
-#include "AliDetector.h"
-#include "AliReconstructor.h"
 #include "AliTracker.h"
 #include "AliESD.h"
 #include "AliESDVertex.h"
@@ -91,6 +88,9 @@
 
 ClassImp(AliReconstruction)
 
+
+//_____________________________________________________________________________
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT"};
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename,
@@ -200,21 +200,30 @@ Bool_t AliReconstruction::Run()
 
   // load the reconstructor objects
   TPluginManager* pluginManager = gROOT->GetPluginManager();
-  if (!pluginManager->FindHandler("AliReconstructor", "TPC")) {
-    pluginManager->AddHandler("AliReconstructor", "TPC", 
-			      "AliTPCReconstructor", "TPC", 
-			      "AliTPCReconstructor()");
-  }
-  TObjArray* detArray = fRunLoader->GetAliRun()->Detectors();
-  for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
-    AliModule* det = (AliModule*) detArray->At(iDet);
-    if (!det || !det->IsActive()) continue;
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    TString detName = fgkDetectorName[iDet];
+    TString recName = "Ali" + detName + "Reconstructor";
+    if (!gAlice->GetDetector(detName)) continue;
+
+    AliReconstructor* reconstructor = NULL;
+    // first check if a plugin is defined for the reconstructor
     TPluginHandler* pluginHandler = 
-      pluginManager->FindHandler("AliReconstructor", det->GetName());
-    if (!pluginHandler) continue;
-    if (pluginHandler->LoadPlugin() != 0) continue;
-    AliReconstructor* reconstructor = 
-      (AliReconstructor*) pluginHandler->ExecPlugin(0);
+      pluginManager->FindHandler("AliReconstructor", detName);
+    // if not, but the reconstructor class is implemented, add a plugin for it
+    if (!pluginHandler && gROOT->GetClass(recName.Data())) {
+      Info("Run", "defining plugin for %s", recName.Data());
+      pluginManager->AddHandler("AliReconstructor", detName, 
+				recName, detName, recName + "()");
+      pluginHandler = pluginManager->FindHandler("AliReconstructor", detName);
+    }
+    if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
+      reconstructor = (AliReconstructor*) pluginHandler->ExecPlugin(0);
+    }
+    // if there is no reconstructor class for the detector use the dummy one
+    if (!reconstructor) {
+      Info("Run", "using dummy reconstructor for %s", detName.Data());
+      reconstructor = new AliDummyReconstructor(gAlice->GetDetector(detName));
+    }
     if (reconstructor) fReconstructors.Add(reconstructor);
   }
 
@@ -324,24 +333,17 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
   stopwatch.Start();
 
   TString detStr = detectors;
-  TObjArray* detArray = fRunLoader->GetAliRun()->Detectors();
-  for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
-    AliModule* det = (AliModule*) detArray->At(iDet);
-    if (!det || !det->IsActive()) continue;
-    if (IsSelected(det->GetName(), detStr)) {
+  for (Int_t iDet = 0; iDet < fReconstructors.GetEntriesFast(); iDet++) {
+    AliReconstructor* reconstructor = 
+      (AliReconstructor*) fReconstructors[iDet];
+    TString detName = reconstructor->GetDetectorName();
+    if (IsSelected(detName, detStr)) {
       Info("RunReconstruction", "running reconstruction for %s", 
-	   det->GetName());
+	   detName.Data());
       TStopwatch stopwatchDet;
       stopwatchDet.Start();
-      AliReconstructor* reconstructor = (AliReconstructor*) 
-	fReconstructors.FindObject("Ali" + TString(det->GetName()) + 
-				   "Reconstructor");
-      if (reconstructor) {
-	reconstructor->Reconstruct(fRunLoader);
-      } else {
-	det->Reconstruct();
-      }
-      Info("RunReconstruction", "execution time for %s:", det->GetName());
+      reconstructor->Reconstruct(fRunLoader);
+      Info("RunReconstruction", "execution time for %s:", detName.Data());
       stopwatchDet.Print();
     }
   }
@@ -563,23 +565,15 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
   stopwatch.Start();
 
   TString detStr = detectors;
-  TObjArray* detArray = fRunLoader->GetAliRun()->Detectors();
-  for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
-    AliModule* det = (AliModule*) detArray->At(iDet);
-    if (!det || !det->IsActive()) continue;
-    if (IsSelected(det->GetName(), detStr)) {
-      if (!ReadESD(esd, det->GetName())) {
-	Info("FillESD", "filling ESD for %s", 
-	     det->GetName());
-	AliReconstructor* reconstructor = (AliReconstructor*) 
-	  fReconstructors.FindObject("Ali" + TString(det->GetName()) +
-				     "Reconstructor");
-	if (reconstructor) {
-	  reconstructor->FillESD(fRunLoader, esd);
-	} else {
-	  det->FillESD(esd);
-	}
-	if (fCheckPointLevel > 2) WriteESD(esd, det->GetName());
+  for (Int_t iDet = 0; iDet < fReconstructors.GetEntriesFast(); iDet++) {
+    AliReconstructor* reconstructor = 
+      (AliReconstructor*) fReconstructors[iDet];
+    TString detName = reconstructor->GetDetectorName();
+    if (IsSelected(detName, detStr)) {
+      if (!ReadESD(esd, detName.Data())) {
+	Info("FillESD", "filling ESD for %s", detName.Data());
+	reconstructor->FillESD(fRunLoader, esd);
+	if (fCheckPointLevel > 2) WriteESD(esd, detName.Data());
       }
     }
   }
@@ -631,20 +625,29 @@ Bool_t AliReconstruction::IsSelected(TString detName, TString& detectors) const
 }
 
 //_____________________________________________________________________________
+AliReconstructor* AliReconstruction::GetReconstructor(const char* detName) const
+{
+// get the reconstructor object for a detector
+
+  for (Int_t iDet = 0; iDet < fReconstructors.GetEntriesFast(); iDet++) {
+    AliReconstructor* reconstructor = 
+      (AliReconstructor*) fReconstructors[iDet];
+    if (strcmp(reconstructor->GetDetectorName(), detName) == 0) {
+      return reconstructor;
+    }
+  }
+  return NULL;
+}
+
+//_____________________________________________________________________________
 Bool_t AliReconstruction::CreateVertexer()
 {
 // create the vertexer
 
   fITSVertexer = NULL;
-  AliReconstructor* itsReconstructor = (AliReconstructor*) 
-    fReconstructors.FindObject("AliITSReconstructor");
+  AliReconstructor* itsReconstructor = GetReconstructor("ITS");
   if (itsReconstructor) {
     fITSVertexer = itsReconstructor->CreateVertexer(fRunLoader);
-  } else {
-    AliRun* aliRun = fRunLoader->GetAliRun();
-    if (aliRun->GetDetector("ITS")) {
-      fITSVertexer = aliRun->GetDetector("ITS")->CreateVertexer();
-    }
   }
   if (!fITSVertexer) {
     Warning("CreateVertexer", "couldn't create a vertexer for ITS");
@@ -659,22 +662,15 @@ Bool_t AliReconstruction::CreateTrackers()
 {
 // get the loaders and create the trackers
 
-  AliRun* aliRun = fRunLoader->GetAliRun();
-
   fITSTracker = NULL;
   fITSLoader = fRunLoader->GetLoader("ITSLoader");
   if (!fITSLoader) {
     Warning("CreateTrackers", "no ITS loader found");
     if (fStopOnError) return kFALSE;
   } else {
-    AliReconstructor* itsReconstructor = (AliReconstructor*) 
-      fReconstructors.FindObject("AliITSReconstructor");
+    AliReconstructor* itsReconstructor = GetReconstructor("ITS");
     if (itsReconstructor) {
       fITSTracker = itsReconstructor->CreateTracker(fRunLoader);
-    } else {
-      if (aliRun->GetDetector("ITS")) {
-	fITSTracker = aliRun->GetDetector("ITS")->CreateTracker();
-      }
     }
     if (!fITSTracker) {
       Warning("CreateTrackers", "couldn't create a tracker for ITS");
@@ -688,14 +684,9 @@ Bool_t AliReconstruction::CreateTrackers()
     Error("CreateTrackers", "no TPC loader found");
     if (fStopOnError) return kFALSE;
   } else {
-    AliReconstructor* tpcReconstructor = (AliReconstructor*) 
-      fReconstructors.FindObject("AliTPCReconstructor");
+    AliReconstructor* tpcReconstructor = GetReconstructor("TPC");
     if (tpcReconstructor) {
       fTPCTracker = tpcReconstructor->CreateTracker(fRunLoader);
-    } else {
-      if (aliRun->GetDetector("TPC")) {
-	fTPCTracker = aliRun->GetDetector("TPC")->CreateTracker();
-      }
     }
     if (!fTPCTracker) {
       Error("CreateTrackers", "couldn't create a tracker for TPC");
@@ -709,14 +700,9 @@ Bool_t AliReconstruction::CreateTrackers()
     Warning("CreateTrackers", "no TRD loader found");
     if (fStopOnError) return kFALSE;
   } else {
-    AliReconstructor* trdReconstructor = (AliReconstructor*) 
-      fReconstructors.FindObject("AliTRDReconstructor");
+    AliReconstructor* trdReconstructor = GetReconstructor("TRD");
     if (trdReconstructor) {
       fTRDTracker = trdReconstructor->CreateTracker(fRunLoader);
-    } else {
-      if (aliRun->GetDetector("TRD")) {
-	fTRDTracker = aliRun->GetDetector("TRD")->CreateTracker();
-      }
     }
     if (!fTRDTracker) {
       Warning("CreateTrackers", "couldn't create a tracker for TRD");
@@ -730,14 +716,9 @@ Bool_t AliReconstruction::CreateTrackers()
     Warning("CreateTrackers", "no TOF loader found");
     if (fStopOnError) return kFALSE;
   } else {
-    AliReconstructor* tofReconstructor = (AliReconstructor*) 
-      fReconstructors.FindObject("AliTOFReconstructor");
+    AliReconstructor* tofReconstructor = GetReconstructor("TOF");
     if (tofReconstructor) {
       fTOFTracker = tofReconstructor->CreateTracker(fRunLoader);
-    } else {
-      if (aliRun->GetDetector("TOF")) {
-	fTOFTracker = aliRun->GetDetector("TOF")->CreateTracker();
-      }
     }
     if (!fTOFTracker) {
       Warning("CreateTrackers", "couldn't create a tracker for TOF");

@@ -19,7 +19,8 @@
 //                                                                           //
 // base class for reconstruction algorithms                                  //
 //                                                                           //
-// Derived classes should implement the virtual methods                      //
+// Derived classes should implement a default constructor and                //
+// the virtual methods                                                       //
 // - Reconstruct : to perform the local reconstruction for all events        //
 // - FillESD     : to fill the ESD for the current event                     //
 //                                                                           //
@@ -34,6 +35,20 @@
 
 
 #include "AliReconstructor.h"
+#include <TString.h>
 
 
 ClassImp(AliReconstructor)
+
+
+//_____________________________________________________________________________
+const char* AliReconstructor::GetDetectorName() const
+{
+// get the name of the detector
+
+  static TString detName;
+  detName = GetName();
+  detName.Remove(0, 3);
+  detName.Remove(detName.Index("Reconstructor"));
+  return detName.Data();
+}
