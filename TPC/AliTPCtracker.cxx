@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.18  2002/05/13 07:33:52  kowal2
+Added protection in Int_t AliTPCtracker::AliTPCRow::Find(Double_t y) const
+in the case of defined region of interests.
+
 Revision 1.17  2002/03/18 17:59:13  kowal2
 Chnges in the pad geometry - 3 pad lengths introduced.
 
@@ -353,7 +357,8 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf) {
     }
     if (cl) {
       Float_t l=fSectors->GetPadPitchWidth();
-      t.SetSampledEdx(cl->GetQ()/l,t.GetNumberOfClusters());
+      Float_t corr=1.; if (nr>63) corr=0.67; // new (third) pad response !
+      t.SetSampledEdx(cl->GetQ()/l*corr,t.GetNumberOfClusters());
       if (!t.Update(cl,maxchi2,index)) {
          if (!tryAgain--) return 0;
       } else tryAgain=kSKIP;
@@ -460,7 +465,8 @@ Int_t AliTPCtracker::FollowBackProlongation
 
     if (cl) {
       Float_t l=fSectors->GetPadPitchWidth();
-      seed.SetSampledEdx(cl->GetQ()/l,seed.GetNumberOfClusters());
+      Float_t corr=1.; if (i>63) corr=0.67; // new (third) pad response !
+      seed.SetSampledEdx(cl->GetQ()/l*corr,seed.GetNumberOfClusters());
       seed.Update(cl,maxchi2,index);
     }
 
@@ -537,7 +543,8 @@ void AliTPCtracker::MakeSeeds(Int_t i1, Int_t i2) {
 
         Double_t sy1=kr1[is]->GetSigmaY2(), sz1=kr1[is]->GetSigmaZ2();
         Double_t sy2=kcl->GetSigmaY2(),     sz2=kcl->GetSigmaZ2();
-	Double_t sy3=400*3./12., sy=0.1, sz=0.1;
+	//Double_t sy3=400*3./12., sy=0.1, sz=0.1;
+        Double_t sy3=25000*x[4]*x[4]+0.1, sy=0.1, sz=0.1;
 
 	Double_t f40=(f1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
 	Double_t f42=(f1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
@@ -922,7 +929,8 @@ void AliTPCtracker::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
      fAlpha=par->GetInnerAngle();
      fAlphaShift=par->GetInnerAngleShift();
      fPadPitchWidth=par->GetInnerPadPitchWidth();
-     fPadPitchLength=par->GetInnerPadPitchLength();
+     f1PadPitchLength=par->GetInnerPadPitchLength();
+     f2PadPitchLength=f1PadPitchLength;
 
      fN=par->GetNRowLow();
      fRow=new AliTPCRow[fN];
@@ -1002,14 +1010,15 @@ void AliTPCtracker::AliTPCseed::CookdEdx(Double_t low, Double_t up) {
   //Very rough PID
   Double_t p=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt()));
 
+  Double_t log1=TMath::Log(p+0.45), log2=TMath::Log(p+0.12);
   if (p<0.6) {
-    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return;}
-    if (dedx < 39.+ 12./p/p) { SetMass(0.49368); return;}
+    if (dedx < 34 + 30/(p+0.45)/(p+0.45) + 24*log1) {SetMass(0.13957); return;}
+    if (dedx < 34 + 30/(p+0.12)/(p+0.12) + 24*log2) {SetMass(0.49368); return;}
     SetMass(0.93827); return;
   }
 
   if (p<1.2) {
-    if (dedx < 39.+ 12./(p+0.25)/(p+0.25)) { SetMass(0.13957); return;}
+    if (dedx < 34 + 30/(p+0.12)/(p+0.12) + 24*log2) {SetMass(0.13957); return;}
     SetMass(0.93827); return;
   }
 

@@ -2,10 +2,9 @@
  *           Very important, delicate and rather obscure macro.             *
  *                                                                          *
  *               Creates list of "trackable" tracks,                        *
- *             sorts tracks for matching with the ITS,                      *
  *             calculates efficiency, resolutions etc.                      *
  *                                                                          *
- *           Origin: J.Belikov, CERN, Jouri.Belikov@cern.ch                 *
+ *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
  * with several nice improvements by: M.Ivanov, GSI, m.ivanov@gsi.de        *
  ****************************************************************************/
 
@@ -292,18 +291,20 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
    Int_t ver = TPC->IsVersion(); 
    cerr<<"TPC version "<<ver<<" has been found !\n";
 
-   AliTPCParamSR *digp=(AliTPCParamSR*)file->Get("75x40_100x60");
-   if(digp){
-    cerr<<"2 pad-lenght geom hits with 3 pad-length geom digits...\n";
-    delete digp;
-    digp = new AliTPCParamSR();
-   }
-   else
-   {
-     digp =(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
-   }
+    AliTPCParamSR *digp=(AliTPCParamSR*)file->Get("75x40_100x60");
+    if(digp){
+     cerr<<"2 pad-lenght geom hits with 3 pad-length geom digits...\n";
+     delete digp;
+     digp = new AliTPCParamSR();
+    }
+    else
+    {
+      digp =(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
+    }
    if (!digp) { cerr<<"TPC parameters have not been found !\n"; exit(6); }
    TPC->SetParam(digp);
+
+   
 
    Int_t nrow_up=digp->GetNRowUp();
    Int_t nrows=digp->GetNRowLow()+nrow_up;
@@ -425,8 +426,15 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
 
       Int_t j=p->GetFirstMother();
       if (j>=0) {
-         TParticle *pp = (TParticle*)gAlice->Particle(j);
-         if (pp->GetFirstMother()>=0) continue;//only one decay is allowed
+        TParticle *pp = (TParticle*)gAlice->Particle(j);
+        if (pp->GetFirstMother()>=0) continue;//only one decay is allowed
+	/*  for cascade hyperons only
+        Int_t jj=pp->GetFirstMother();
+        if (jj>=0) {
+          TParticle *ppp = (TParticle*)gAlice->Particle(jj);
+          if (ppp->GetFirstMother()>=0) continue;//two decays are allowed
+        }
+	*/
       }
 
       gt[nt].lab=i;

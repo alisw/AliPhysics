@@ -22,7 +22,8 @@ Int_t AliTPCPropagateBack() {
    if (!file->IsOpen()) {
       cerr<<"Can't open AliTPCclusters.root !\n";return 3;
    }
-   AliTPCParam *param=(AliTPCParam*)file->Get("75x40_100x60");
+   AliTPCParam *param=(AliTPCParam*)file->Get("75x40_100x60_150x60");
+   if (!param) {cerr<<"Can't get TPC parameters !\n"; return 4;}
 
    TStopwatch timer;
    AliTPCtracker *tracker=new AliTPCtracker(param);

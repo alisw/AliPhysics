@@ -121,8 +121,10 @@ Int_t AliTPCtrack::Compare(const TObject *o) const {
   // This function compares tracks according to the their curvature
   //-----------------------------------------------------------------
   AliTPCtrack *t=(AliTPCtrack*)o;
-  Double_t co=TMath::Abs(t->Get1Pt());
-  Double_t c =TMath::Abs(Get1Pt());
+  //Double_t co=TMath::Abs(t->Get1Pt());
+  //Double_t c =TMath::Abs(Get1Pt());
+  Double_t co=t->GetSigmaY2()*t->GetSigmaZ2();
+  Double_t c =GetSigmaY2()*GetSigmaZ2();
   if (c>co) return 1;
   else if (c<co) return -1;
   return 0;
@@ -224,8 +226,8 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fP0)*(y1-fP0)+(z1-fP1)*(z1-fP1));
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
-  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
-  //Double_t theta2=1.0259e-6*10*10/20/(beta2*p2)*d*rho;
+  //Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
+  Double_t theta2=1.0259e-6*10*10/20/(beta2*p2)*d*rho;
 
   Double_t ey=fP4*fX - fP2, ez=fP3;
   Double_t xz=fP4*ez, zz1=ez*ez+1, xy=fP2+ey;
