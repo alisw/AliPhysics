@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/09/29 09:24:31  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -123,7 +126,7 @@ static Int_t npid = 0;
 static char cpar[1200];
 static TGeant3 *geant3=(TGeant3*)gMC;
 
-THIGZ *higz = 0;
+THIGZ *gHigz = 0;
 
 ClassImp(THIGZ)
    
@@ -137,7 +140,7 @@ THIGZ::THIGZ()
 THIGZ::THIGZ(Int_t size)
       :TCanvas("higz","higz",size,size)
 {
-   higz = this;
+   gHigz = this;
    Reset();
    SetFillColor(10);
 }
@@ -369,7 +372,7 @@ extern "C" void type_of_call iacwk(Int_t &)
 extern "C" void type_of_call iclrwk(Int_t &,Int_t &)
 {
 //   printf("iclrwk called\n");
-   higz->Clear();
+   gHigz->Clear();
 }
 
 //_______________________________________________________________
@@ -388,9 +391,9 @@ extern "C" void type_of_call idawk(Int_t &)
 //_______________________________________________________________
 extern "C" void type_of_call ifa(Int_t &n,Float_t *x, Float_t *y)
 {
-//   printf("ifa called, n=%d, pname=%s, pid=%d, x1=%f, y1=%f,x2=%f, y2=%f, x3=%f, y3=%f\n",n,higz->fPname.Data(),higz->fPID,x[0],y[0],x[1],y[1],x[2],y[2]);
+//   printf("ifa called, n=%d, pname=%s, pid=%d, x1=%f, y1=%f,x2=%f, y2=%f, x3=%f, y3=%f\n",n,gHigz->fPname.Data(),gHigz->fPID,x[0],y[0],x[1],y[1],x[2],y[2]);
    TGraph *gr = new TGraph(n,x,y);
-   gr->SetFillColor(higz->fFACI);
+   gr->SetFillColor(gHigz->fFACI);
    gr->Draw("f");
 }
 
@@ -399,9 +402,9 @@ extern "C" void type_of_call igbox(Float_t &x1,Float_t &x2,Float_t &y1,Float_t &
 {
    printf("igbox called, x1=%f, y1=%f, x2=%f, y2=%f\n",x1,y1,x2,y2);
    TBox *box = new TBox(x1,y1,x2,y2);
-   box->SetLineColor(higz->fPLCI);
-   box->SetFillColor(higz->fFACI);
-   box->SetFillStyle(higz->fFASI);
+   box->SetLineColor(gHigz->fPLCI);
+   box->SetFillColor(gHigz->fFACI);
+   box->SetFillStyle(gHigz->fFASI);
    box->Draw();
 }
 
@@ -417,14 +420,14 @@ extern "C" void type_of_call ightor(Float_t &h,Float_t &l,Float_t &s,Float_t &r,
 extern "C" void type_of_call igpave(Float_t &x1,Float_t &x2,Float_t &yy1,Float_t &yy2,Float_t &,Int_t &isbox,Int_t &isfram,const char *, const Int_t)
 {
    char text[5];
-   strncpy(text,(char*)&higz->fPID,4);
+   strncpy(text,(char*)&gHigz->fPID,4);
    text[4] = 0;
    Float_t y1 = yy1;
    Float_t y2 = yy2;
    if (y1 > y2) { y1 = yy2; y2 = yy1;}
    Float_t y = 0.5*(y1+y2);
-   Float_t dymax = 0.06*(higz->GetY2()-higz->GetY1());
-   Float_t dymin = -higz->PixeltoY(12);
+   Float_t dymax = 0.06*(gHigz->GetY2()-gHigz->GetY1());
+   Float_t dymin = -gHigz->PixeltoY(12);
    if (y2-y1 > dymax) {
       y1 = y - 0.5*dymax;
       y2 = y + 0.5*dymax;
@@ -438,7 +441,7 @@ extern "C" void type_of_call igpave(Float_t &x1,Float_t &x2,Float_t &yy1,Float_t
    pt->SetFillColor(isbox%1000);
    pt->SetLineColor(isfram%1000);
    pt->Draw();
-//   printf("igpave called, text=%s, Pname=%s, x1=%f, y1=%f, x2=%f, y2=%f, isbox=%d, isfram=%d\n",text,higz->fPname.Data(),x1,y1,x2,y2,isbox,isfram);
+//   printf("igpave called, text=%s, Pname=%s, x1=%f, y1=%f, x2=%f, y2=%f, isbox=%d, isfram=%d\n",text,gHigz->fPname.Data(),x1,y1,x2,y2,isbox,isfram);
 }
 
 //_______________________________________________________________
@@ -451,11 +454,11 @@ extern "C" void type_of_call igpid(Int_t &,const char *name,const Int_t l1, Int_
    npid++;
 //   if(npid&100 == 0) printf("igpid called, npid=%d\n",npid);
    strncpy(cpar,name,l1); cpar[l1] = 0;
-   higz->fPname = cpar;
-   higz->fPID = pid;
+   gHigz->fPname = cpar;
+   gHigz->fPID = pid;
       
 //   char text[5];
-//   strncpy(text,(char*)&higz->fPID,4);
+//   strncpy(text,(char*)&gHigz->fPID,4);
 //   text[4] = 0;
 //   printf("igpid called, level=%d, name=%s, pid=%d, cpid=%s\n",level,cpar,pid,text);
 }
@@ -469,14 +472,14 @@ extern "C" void type_of_call igq(const char *name,const Int_t l1, Float_t &rval)
 {
    strncpy(cpar,name,l1); cpar[l1] = 0;
 //   printf("igq called, name=%s\n",cpar);
-   rval = higz->Get(cpar);
+   rval = gHigz->Get(cpar);
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call igrng(Float_t &xsize,Float_t &ysize)
 {
 //   printf("igrng called, xsize=%f, ysize=%f\n",xsize,ysize);
-   higz->Range(0,0,xsize,ysize);
+   gHigz->Range(0,0,xsize,ysize);
 }
 
 //_______________________________________________________________
@@ -494,7 +497,7 @@ extern "C" void type_of_call igset(const char *name, const Int_t l1,Float_t &rva
 {
    strncpy(cpar,name,l1); cpar[l1] = 0;
 //   printf("igset called, name=%s, rval=%f\n",cpar,rval);
-   higz->Set(cpar,rval);
+   gHigz->Set(cpar,rval);
 }
 
 //_______________________________________________________________
@@ -515,15 +518,15 @@ extern "C" void type_of_call ipl(Int_t &n,Float_t *x,Float_t *y)
 //   printf("ipl called, n=%d, x[0]=%f,y[0]=%f, x[1]=%f, y[1]=%f\n",n,x[0],y[0],x[1],y[1]);
    if (n <= 2) {
       TLine *l = new TLine(x[0],y[0],x[1],y[1]);
-      l->SetLineColor(higz->fPLCI);
-      l->SetLineStyle(higz->fLTYP);
-      l->SetLineWidth(Short_t(higz->fLWID));
+      l->SetLineColor(gHigz->fPLCI);
+      l->SetLineStyle(gHigz->fLTYP);
+      l->SetLineWidth(Short_t(gHigz->fLWID));
       l->Draw();
    } else {
       TPolyLine *pl = new TPolyLine(n,x,y);
-      pl->SetLineColor(higz->fPLCI);
-      pl->SetLineStyle(higz->fLTYP);
-      pl->SetLineWidth(Short_t(higz->fLWID));
+      pl->SetLineColor(gHigz->fPLCI);
+      pl->SetLineStyle(gHigz->fLTYP);
+      pl->SetLineWidth(Short_t(gHigz->fLWID));
       pl->Draw();
    }
 }
@@ -533,9 +536,9 @@ extern "C" void type_of_call ipm(Int_t &n,Float_t *x,Float_t *y)
 {
    printf("ipm called, n=%d\n",n);
    TPolyMarker *pm = new TPolyMarker(n,x,y);
-   pm->SetMarkerColor(higz->fPMCI);
-   pm->SetMarkerStyle(higz->fMTYP);
-   pm->SetMarkerSize(higz->fMSCF);
+   pm->SetMarkerColor(gHigz->fPMCI);
+   pm->SetMarkerStyle(gHigz->fMTYP);
+   pm->SetMarkerSize(gHigz->fMSCF);
    pm->Draw();
 }
 
@@ -567,35 +570,35 @@ extern "C" void type_of_call isfaci(Int_t &col)
 //   printf("isfaci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   higz->fFACI = color;
+   gHigz->fFACI = color;
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call isfais(Int_t &is)
 {
 //   printf("isfais called, is=%d\n",is);
-   higz->fFAIS = is;
+   gHigz->fFAIS = is;
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call isln(Int_t &ln)
 {
 //   printf("isln called, ln=%d\n",ln);
-   higz->fLTYP = ln;
+   gHigz->fLTYP = ln;
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call ismk(Int_t &mk)
 {
 //   printf("ismk called, mk=%d\n",mk);
-   higz->fMTYP = mk;
+   gHigz->fMTYP = mk;
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call islwsc(Float_t &wl)
 {
 //   printf("islwsc called, wl=%f\n",wl);
-   higz->fLWID = wl;
+   gHigz->fLWID = wl;
 }
 
 //_______________________________________________________________
@@ -604,7 +607,7 @@ extern "C" void type_of_call isplci(Int_t &col)
 //   printf("isplci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   higz->fPLCI = color;
+   gHigz->fPLCI = color;
 }
 
 //_______________________________________________________________
@@ -613,7 +616,7 @@ extern "C" void type_of_call ispmci(Int_t &col)
 //   printf("ispmci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   higz->fPMCI = color;
+   gHigz->fPMCI = color;
 }
 
 //_______________________________________________________________
@@ -622,7 +625,7 @@ extern "C" void type_of_call istxci(Int_t &col)
 //   printf("istxci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   higz->fTXCI = color;
+   gHigz->fTXCI = color;
 }
 
 //_______________________________________________________________
@@ -636,13 +639,13 @@ extern "C" void type_of_call iswn(Int_t &,Float_t &x1,Float_t &x2,Float_t &y1,Fl
 
 {
 //   printf("iswn called, nt=%d, x1=%f, y1=%f, x2=%f, y2=%f\n",nt,x1,y1,x2,y2);
-   higz->Range(x1,y1,x2,y2);
+   gHigz->Range(x1,y1,x2,y2);
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call itx(Float_t &x,Float_t &y,const char *ptext, const Int_t l1p)
 {
-   if (higz->fPname == "Tree") return;
+   if (gHigz->fPname == "Tree") return;
    Int_t l1=l1p;
    strncpy(cpar,ptext,l1); cpar[l1] = 0;
 //printf("itx called, x=%f, y=%f, text=%s, l1=%d\n",x,y,cpar,l1);
@@ -657,11 +660,11 @@ extern "C" void type_of_call itx(Float_t &x,Float_t &y,const char *ptext, const 
       small++;
    }
    TText *text = new TText(x,y,cpar);
-   text->SetTextColor(higz->fTXCI);
-   text->SetTextSize(higz->fCHHE);
-   text->SetTextFont(higz->fTXFP);
-   text->SetTextAlign(higz->fTXAL);
-   text->SetTextAngle(higz->fTANG);
+   text->SetTextColor(gHigz->fTXCI);
+   text->SetTextSize(gHigz->fCHHE);
+   text->SetTextFont(gHigz->fTXFP);
+   text->SetTextAlign(gHigz->fTXAL);
+   text->SetTextAngle(gHigz->fTANG);
    text->Draw();   
 }
 
@@ -682,8 +685,8 @@ extern "C" void type_of_call hplend()
 extern "C" void type_of_call hplfra(Float_t &x1,Float_t &x2,Float_t &y1, Float_t &y2,const char *, const Int_t)
 {
 //   printf("hplfra called, x1=%f, y1=%f, x2=%f, y2=%f\n",x1,y1,x2,y2);
-   higz->Clear();
-   higz->Range(x1,y1,x2,y2);
+   gHigz->Clear();
+   gHigz->Range(x1,y1,x2,y2);
 }
 
 //_______________________________________________________________
@@ -710,6 +713,6 @@ extern "C" void type_of_call igqwk(Int_t &, const char *name, Float_t &rval, con
 {
    strncpy(cpar,name,l1); cpar[l1] = 0;
 //   printf("igqwk called, wid=%d, pname=%s\n",wid,cpar);
-   rval = higz->Get(cpar);
+   rval = gHigz->Get(cpar);
 }
  

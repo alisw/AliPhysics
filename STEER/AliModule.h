@@ -91,7 +91,7 @@ public:
   virtual void        StepManager() {}
   //virtual AliHit*     FirstHit(Int_t) {return 0;}
   //virtual AliHit*     NextHit() {return 0;}
-  virtual void        SetBufferSize(Int_t bufsiz) {}  
+  virtual void        SetBufferSize(Int_t) {}  
   virtual void        SetEuclidFile(char *material,char *geometry=0);
   virtual void ReadEuclid(const char *filnam, char *topvol);
   virtual void ReadEuclidMedia(const char *filnam);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.3  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -28,11 +31,17 @@ ClassImp(AliHit)
 
 AliHit::AliHit()
 {
-	fTrack=0;	
+  //
+  // Default constructor
+  //
+  fTrack=0;	
 }
 
 AliHit::AliHit(Int_t shunt, Int_t track)
 {
+  //
+  // Standard constructor
+  //
   TClonesArray &particles = *(gAlice->Particles());
   if(shunt) {
     int primary = gAlice->GetPrimary(track);

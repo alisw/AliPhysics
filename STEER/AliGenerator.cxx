@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.5  2000/06/08 13:34:50  fca
 Better control of momentum range in GenBox
 
@@ -125,7 +128,7 @@ AliGenerator & AliGenerator::operator=(const AliGenerator &gen)
 }
 
 //____________________________________________________________
-void AliGenerator::Copy(AliGenerator &gen) const
+void AliGenerator::Copy(AliGenerator &/* gen */) const
 {
   //
   // Copy *this onto gen

@@ -25,6 +25,9 @@ class AliMC : public TNamed
   public:
     AliMC(const char *name, const char *title);
     AliMC() {}
+    AliMC(const AliMC &mc) {mc.Copy(*this);}
+    virtual void Copy(AliMC &mc) const;
+    virtual AliMC & operator=(const AliMC &mc) {mc.Copy(*this);return (*this);}
     virtual ~AliMC() {fgMC=gMC=0;}
   
     // static access method

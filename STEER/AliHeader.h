@@ -1,5 +1,5 @@
-#ifndef AliHeader_H
-#define AliHeader_H
+#ifndef ALIHEADER_H
+#define ALIHEADER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -8,17 +8,10 @@
 #include "TObject.h"
  
 class AliHeader : public TObject {
-protected:
-  Int_t         fRun;         //Run number
-  Int_t         fNvertex;     //Number of vertices
-  Int_t         fNprimary;    //Number of primary tracks
-  Int_t         fNtrack;      //Number of tracks
-  Int_t         fEvent;       //Event number
-
 public:
   AliHeader();
   AliHeader(Int_t run, Int_t event);
-  ~AliHeader() {;}
+  virtual ~AliHeader() {}
 
   virtual void Reset(Int_t run, Int_t event);
 
@@ -39,6 +32,13 @@ public:
 
   virtual void Dump();
   
+protected:
+  Int_t         fRun;         //Run number
+  Int_t         fNvertex;     //Number of vertices
+  Int_t         fNprimary;    //Number of primary tracks
+  Int_t         fNtrack;      //Number of tracks
+  Int_t         fEvent;       //Event number
+
   ClassDef(AliHeader,1) //Alice event header
     
 };

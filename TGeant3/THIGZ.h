@@ -69,7 +69,7 @@ public:
    ClassDef(THIGZ,1)  //Emulation of HIGZ for Root
 }; 
 
-   R__EXTERN THIGZ *higz;
+   R__EXTERN THIGZ *gHigz;
 
 inline void THIGZ::Divide(Int_t, Int_t, Float_t, Float_t, Int_t) { }
 inline void THIGZ::SetGrid(Int_t, Int_t) { }

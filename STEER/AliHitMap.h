@@ -13,6 +13,8 @@ typedef enum {kEmpty, kUsed, kUnused} FlagType;
 class AliHitMap :
 public TObject {
  public:
+    // Virtual destructor -- it is necessary
+    virtual ~AliHitMap() {}
     // Fill hits from list of digits into hit map
     virtual  void  FillHits()                                      =0;
     // Clear the hit map

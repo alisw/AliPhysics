@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliDigit.h"
@@ -23,10 +26,16 @@ ClassImp(AliDigit)
 
 AliDigit::AliDigit()
 {
+  //
+  // Default constructor
+  //
 }
 
 AliDigit::AliDigit(Int_t *tracks)
 {
+  //
+  // Standard constructor
+  //
   fTracks[0] = tracks[0];
   fTracks[1] = tracks[1];
   fTracks[2] = tracks[2];

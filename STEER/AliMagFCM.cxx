@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 */
 
 #include "AliMagFCM.h"
@@ -225,10 +228,10 @@ void AliMagFCM::ReadField()
 }
 
 //________________________________________
-void AliMagFCM::Copy(AliMagFCM &magf) const
+void AliMagFCM::Copy(AliMagFCM & /* magf */) const
 {
   //
-  // Copy *this onto magf
+  // Copy *this onto magf -- Not implemented
   //
   Fatal("Copy","Not implemented!\n");
 }

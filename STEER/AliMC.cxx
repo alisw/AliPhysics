@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.3  2000/03/22 18:08:07  fca
 Rationalisation of the virtual MC interfaces
 
@@ -44,5 +47,13 @@ AliMC::AliMC(const char *name, const char *title) : TNamed(name,title)
     fgMC=this;
     gMC=this;
   }
+}
+
+void AliMC::Copy(AliMC &mc) const
+{
+  //
+  // Copy *this onto mc -- not implemented
+  //
+  Fatal("Copy","Not implemented~\n");
 }
 

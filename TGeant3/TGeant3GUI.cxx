@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/28 21:27:45  morsch
+Most coding rule violations corrected.
+Still to do: Split the file (on file per class) ? Avoid the global variables.
+Copy constructors and assignment operators (dummy ?)
+
 Revision 1.6  2000/04/14 11:07:46  morsch
 Correct volume to medium assignment in case several media are asigned to the
 same material.
@@ -807,9 +812,9 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
 //
    fTab = new TGTab(this, 400, 400);
    TGCompositeFrame *tf = fTab->AddTab("Volumes");
-   TGLayoutHints *fLTab = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
+   TGLayoutHints *lTab = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
                                           kLHintsExpandY, 2, 2, 5, 1);
-   AddFrame(fTab, fLTab);
+   AddFrame(fTab, lTab);
 
 // Create TGCanvas and a canvas container which uses a tile layout manager
    fCanvasWindow = new TGCanvas(tf, 400, 240);
@@ -848,7 +853,8 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
        new TGLayoutHints(kLHintsLeft | kLHintsExpandX );
    fF21 = new TGCompositeFrame(fF2, 60, 20, kVerticalFrame);
    fF2->AddFrame(fF21,fL2);
-   for (Int_t i=0; i<6; i++) {
+   { //Begin local scope for i
+     for (Int_t i=0; i<6; i++) {
        Int_t idT=i+1;       
        fHframe[i] = new TGHorizontalFrame(fF21, 400, 100, kFixedWidth);
        fF21->AddFrame(fHframe[i], bly);
@@ -858,11 +864,12 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
        fLabel[i] = new TGLabel(fHframe[i], labelText[i]);
        fHframe[i]->AddFrame(fLabel[i], bFly1);
        fHframe[i]->AddFrame(fTeh[i], bFly1);
-   }
-  tf->AddFrame(fF2, fL2);
-  fMaterialCombo->Resize(200, 20);
-  fMaterialCombo->Associate(this);
-
+     }
+   } //End local scope for i
+   tf->AddFrame(fF2, fL2);
+   fMaterialCombo->Resize(200, 20);
+   fMaterialCombo->Associate(this);
+   
 
 // Media Combo
 //   
@@ -899,9 +906,9 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
        fHframeM[i]->AddFrame(fTehM[i], bFly1);
      }
    } //End local scope for i
-  tf->AddFrame(fF3, fL2);
-  fMediaCombo->Resize(200, 20);
-  fMediaCombo->Associate(this);
+   tf->AddFrame(fF3, fL2);
+   fMediaCombo->Resize(200, 20);
+   fMediaCombo->Associate(this);
 //
 // Processes
    tf = fTab->AddTab("Processes");
@@ -1046,10 +1053,12 @@ void AliGuiGeomMain::Plot()
     tmp[4]='\0';
     Int_t kdim=fNbins;
     Float_t de=(fEmax-fEmin)/fNbins;
-    for (Int_t i=0; i<kdim; i++) {
+    { //Begin local scope for i
+      for (Int_t i=0; i<kdim; i++) {
 	tkin[i]=fEmin+Float_t(i)*de;
 	value[i]=0.;
-    }
+      }
+    } //End local scope for i
     if (kChMeca!="MUON") {
 	((TGeant3*) gMC)->Gftmat(imate, ipart, tmp, kdim, tkin, value, pcut, ixst);
     } else {
@@ -1276,14 +1285,14 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 //
 // Handle mouse click 
 	case kCT_ITEMCLICK:
-	    TGListTreeItem *item;
 //
 // Button 1: Select volume
 	    if (parm1 == kButton1) {
-		if ((item = fLt->GetSelected())) 
+	      TGListTreeItem *item;
+	      if ((item = fLt->GetSelected())) 
 		{
-		    gCurrentVolume=((AliDrawVolume *) item->GetUserData());
-		    Update();
+		  gCurrentVolume=((AliDrawVolume *) item->GetUserData());
+		  Update();
 		}
 	    }
 //

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliHeader.h"
@@ -24,6 +27,9 @@ ClassImp(AliHeader)
 
 AliHeader::AliHeader()
 {
+  //
+  // Default constructor
+  //
   fRun=0;	
   fNvertex=0;
   fNprimary=0;
@@ -33,6 +39,9 @@ AliHeader::AliHeader()
 
 AliHeader::AliHeader(Int_t run, Int_t event)
 {
+  //
+  // Standard constructor
+  //
   fRun=run;	
   fNvertex=0;
   fNprimary=0;
@@ -42,6 +51,9 @@ AliHeader::AliHeader(Int_t run, Int_t event)
 
 void AliHeader::Reset(Int_t run, Int_t event)
 {
+  //
+  // Resets the header with new run and event number
+  //
   fRun=run;	
   fNvertex=0;
   fNprimary=0;
@@ -51,6 +63,9 @@ void AliHeader::Reset(Int_t run, Int_t event)
 
 void AliHeader::Dump()
 {
+  //
+  // Dumps header content
+  //
   printf(
 "\n=========== Header for run %d Event %d = beginning ======================================\n",
   fRun,fEvent);

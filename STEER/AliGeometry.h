@@ -40,8 +40,6 @@ protected:
 
   AliGeometry(const Text_t* name, const Text_t* title) : TNamed (name,title) {}                                   
 
-public:
-
   ClassDef(AliGeometry,1)  // description , version 1
 
 };

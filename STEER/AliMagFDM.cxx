@@ -15,7 +15,12 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 */
+
+#include <stdlib.h>
 
 #include "AliMagFDM.h"
 #include "TSystem.h"
@@ -360,29 +365,34 @@ void AliMagFDM::FRfuncBi(Int_t *kai,Double_t *za1, Double_t *za2, Double_t *al1,
   alf2=*al2;
   alf3=*al3; 
   
-  if (kaai==0 ) {
+  switch (kaai) {
+  case 0:
     fa11 = fdBpx[kaa][0][0];
     fa12 = fdBpx[kaa][0][maa];
     fa13 = fdBpx[kaa][0][maa+1];
     fa21 = fdBpx[kaa+1][0][0];
     fa22 = fdBpx[kaa+1][0][maa];               
     fa23 = fdBpx[kaa+1][0][maa+1]; 
-  }
-  if (kaai==1 ) {
+    break;
+  case 1:
     fa11 = fdBpy[kaa][0][0];
     fa12 = fdBpy[kaa][0][maa];
     fa13 = fdBpy[kaa][0][maa+1];
     fa21 = fdBpy[kaa+1][0][0];
     fa22 = fdBpy[kaa+1][0][maa];               
     fa23 = fdBpy[kaa+1][0][maa+1]; 
-  }
-  if (kaai==2 ) {
+    break;
+  case 2:
     fa11 = fdBpz[kaa][0][0];
     fa12 = fdBpz[kaa][0][maa];
     fa13 = fdBpz[kaa][0][maa+1];
     fa21 = fdBpz[kaa+1][0][0];
     fa22 = fdBpz[kaa+1][0][maa];               
     fa23 = fdBpz[kaa+1][0][maa+1]; 
+    break;
+  default:
+    Fatal("FRfuncBi","Invalid value of kaai %d\n",kaai);
+    exit(1);
   }                            
   faY1=alf1*fa11+alf2*fa12+alf3*fa13;
   faY2=alf1*fa21+alf2*fa22+alf3*fa23;
@@ -423,7 +433,8 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
   
   /*-----------------Polar part ------------------*/
   
-  if(kv==0) {
+  switch (kv) {
+  case 0:
     bf11=fdBpx[k][l][m];
     bf12=fdBpx[k+1][l][m];
     bf21=fdBpx[k+1][l+1][m];
@@ -433,8 +444,9 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
     bg12=fdBpx[k+1][l][m+1];
     bg21=fdBpx[k+1][l+1][m+1];
     bg22=fdBpx[k][l+1][m+1];
-  }
-  if(kv==1) {
+    break;
+
+  case 1:
     bf11=fdBpy[k][l][m];
     bf12=fdBpy[k+1][l][m];
     bf21=fdBpy[k+1][l+1][m];
@@ -444,9 +456,9 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
     bg12=fdBpy[k+1][l][m+1];
     bg21=fdBpy[k+1][l+1][m+1];
     bg22=fdBpy[k][l+1][m+1];
-  }  
-  
-  if(kv==2) {
+    break;
+
+  case 2:
     bf11=fdBpz[k][l][m];
     bf12=fdBpz[k+1][l][m];
     bf21=fdBpz[k+1][l+1][m];
@@ -455,11 +467,11 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
     bg11=fdBpz[k][l][m+1];
     bg12=fdBpz[k+1][l][m+1];
     bg21=fdBpz[k+1][l+1][m+1];
-    bg22=fdBpz[k][l+1][m+1];           
-  } 
+    bg22=fdBpz[k][l+1][m+1]; 
+    break;
   /*-----------------Cartensian part ---------------*/ 
   
-  if(kv==3) {
+  case 3:
     bf11=fdBcx[k][l][m];
     bf12=fdBcx[k+1][l][m];
     bf21=fdBcx[k+1][l+1][m];
@@ -469,9 +481,9 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
     bg12=fdBcx[k+1][l][m+1];
     bg21=fdBcx[k+1][l+1][m+1];
     bg22=fdBcx[k][l+1][m+1];
-  }          
-  
-  if(kv==4) {
+    break;
+
+  case 4:
     bf11=fdBcy[k][l][m];
     bf12=fdBcy[k+1][l][m];
     bf21=fdBcy[k+1][l+1][m];
@@ -481,8 +493,9 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
     bg12=fdBcy[k+1][l][m+1];
     bg21=fdBcy[k+1][l+1][m+1];
     bg22=fdBcy[k][l+1][m+1];
-  }          
-  if(kv==5) {
+    break;
+
+  case 5:
     bf11=fdBcz[k][l][m];
     bf12=fdBcz[k+1][l][m];
     bf21=fdBcz[k+1][l+1][m];
@@ -492,6 +505,11 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
     bg12=fdBcz[k+1][l][m+1];
     bg21=fdBcz[k+1][l+1][m+1];
     bg22=fdBcz[k][l+1][m+1];
+    break;
+
+  default:
+    Fatal("FGfuncBi","Invalid value of kv %d\n",kv);
+    exit(1);
   }  
   
   

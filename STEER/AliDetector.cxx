@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,6 +117,15 @@ void AliDetector::Browse(TBrowser *b)
     sprintf(name,"%s_%d",obj->GetName(),i);
     b->Add(obj, &name[0]);
   }
+}
+
+//_____________________________________________________________________________
+void AliDetector::Copy(AliDetector &det) const
+{
+  //
+  // Copy *this onto det -- not implemented
+  //
+  Fatal("Copy","Not implemented~\n");
 }
 
 //_____________________________________________________________________________
@@ -242,9 +254,9 @@ void AliDetector::MakeBranch(Option_t *option)
   sprintf(branchname,"%s",GetName());
   //
   // Get the pointer to the header
-  char *H = strstr(option,"H");
+  char *cH = strstr(option,"H");
   //
-  if (fHits   && gAlice->TreeH() && H) {
+  if (fHits   && gAlice->TreeH() && cH) {
     gAlice->TreeH()->Branch(branchname,&fHits, fBufferSize);
     printf("* AliDetector::MakeBranch * Making Branch %s for hits\n",branchname);
   }	

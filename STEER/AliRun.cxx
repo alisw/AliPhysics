@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.38  2000/06/20 13:05:45  fca
 Writing down the TREE headers before job starts
 
@@ -1473,7 +1476,7 @@ void AliRun::SetCurrentTrack(Int_t track)
 //_____________________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
-		      const char *mecha, Int_t &ntr, Float_t weight)
+		      const char* /* mecha */, Int_t &ntr, Float_t weight)
 { 
   //
   // Load a track on the stack
@@ -1582,7 +1585,7 @@ AliRun& AliRun::operator = (const AliRun &run)
 
 
 //_____________________________________________________________________________
-void AliRun::Copy(AliRun &run) const
+void AliRun::Copy(AliRun &/* run */) const
 {
   //
   // Copy *this onto run, not implemented for AliRun

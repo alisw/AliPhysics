@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.9  2000/05/16 08:45:08  fca
 Correct dtor, thanks to J.Belikov
 
@@ -111,7 +114,7 @@ AliModule::AliModule(const AliModule &mod)
   //
   // Copy constructor
   //
-  Copy(*this);
+  mod.Copy(*this);
 }
 
 //_____________________________________________________________________________
@@ -134,7 +137,7 @@ AliModule::~AliModule()
 }
  
 //_____________________________________________________________________________
-void AliModule::Copy(AliModule &mod) const
+void AliModule::Copy(AliModule & /* mod */) const
 {
   //
   // Copy *this onto mod, not implemented for AliModule

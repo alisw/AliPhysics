@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2000/07/11 18:25:00  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.21  2000/06/27 09:26:18  fca
 Adding dummy SetSTRA
 
@@ -158,10 +161,10 @@ void  TGeant3::Gfpart(Int_t, char*, Int_t&, Float_t&, Float_t&, Float_t&){}
 //___________________________________________
 void  TGeant3::Gftmed(Int_t, char*, Int_t&, Int_t&, Int_t&, Float_t&, Float_t&,
                     Float_t&, Float_t&, Float_t&, Float_t&, Float_t*, Int_t*){}
-void  TGeant3::Gftmat(Int_t imate, Int_t ipart, char *chmeca, Int_t kdim,
-			 Float_t* tkin, Float_t* value, Float_t* pcut, Int_t &ixst){}
-Float_t TGeant3::Gbrelm(Float_t z, Float_t t, Float_t cut){return (Float_t) 0;}
-Float_t TGeant3::Gprelm(Float_t z, Float_t t, Float_t cut){return (Float_t) 0;}
+void  TGeant3::Gftmat(Int_t, Int_t, char*, Int_t, Float_t*, Float_t*, 
+		      Float_t*, Int_t&){}
+Float_t TGeant3::Gbrelm(Float_t, Float_t, Float_t){return (Float_t) 0;}
+Float_t TGeant3::Gprelm(Float_t, Float_t, Float_t){return (Float_t) 0;}
 
 
 //___________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.28  2000/06/29 10:51:55  morsch
 Add some charmed and bottom baryons to the particle list (TDatabasePDG). This
 is needed by Hijing. Should be part of a future review of TDatabasePDG.
@@ -563,11 +566,11 @@ void TGeant3::DefaultRange()
   //
   // Set range of current drawing pad to 20x20 cm
   //
-  if (!higz) {
+  if (!gHigz) {
     new THIGZ(defSize); 
     gdinit();
   }
-  higz->Range(0,0,20,20);
+  gHigz->Range(0,0,20,20);
 }
 
 //____________________________________________________________________________ 
@@ -576,7 +579,7 @@ void TGeant3::InitHIGZ()
   //
   // Initialise HIGZ
   //
-  if (!higz) {
+  if (!gHigz) {
     new THIGZ(defSize); 
     gdinit();
   }
@@ -1124,9 +1127,8 @@ const char* TGeant3::VolName(Int_t id) const
   //
   // Return the volume name given the volume identifier
   //
-  const char name[5]="NULL";
   if(id<1 || id > fGcnum->nvolum || fGclink->jvolum<=0) 
-    return name;
+    return fVolNames[fGcnum->nvolum];
   else
     return fVolNames[id-1];
 }
@@ -1196,9 +1198,9 @@ void    TGeant3::SetProcess(const char* flagName, Int_t flagValue)
 }
 
 //_____________________________________________________________________________
-Float_t TGeant3::Xsec(char* reac, Float_t energy, Int_t part, Int_t mate)
+Float_t TGeant3::Xsec(char* reac, Float_t /* energy */, 
+		      Int_t part, Int_t /* mate */)
 {
-  Int_t gpart = IdFromPDG(part);
   if(!strcmp(reac,"PHOT"))
   {
     if(part!=22) {
@@ -1746,12 +1748,13 @@ void  TGeant3::Ggclos()
   //
   ggclos(); 
   // Create internal list of volumes
-  fVolNames = new char[fGcnum->nvolum][5];
+  fVolNames = new char[fGcnum->nvolum+1][5];
   Int_t i;
   for(i=0; i<fGcnum->nvolum; ++i) {
     strncpy(fVolNames[i], (char *) &fZiq[fGclink->jvolum+i+1], 4);
     fVolNames[i][4]='\0';
   }
+  strcpy(fVolNames[fGcnum->nvolum],"NULL");
 } 
  
 //_____________________________________________________________________________
@@ -2830,7 +2833,7 @@ void TGeant3::Gdopen(Int_t iview)
   //  with solid colours can now be stored in a view bank or in 'PICTURE FILES'
   //
   InitHIGZ();
-  higz->Clear();
+  gHigz->Clear();
   gdopen(iview);
 }
  
@@ -2935,7 +2938,7 @@ void TGeant3::Gdraw(const char *name,Float_t theta, Float_t phi, Float_t psi,
   //  string for the NAME of the volume can be found using the command DTREE).
   //
   InitHIGZ();
-  higz->Clear();
+  gHigz->Clear();
   char vname[5];
   Vname(name,vname);
   if (fGcvdma->raytra != 1) {
@@ -2966,7 +2969,7 @@ void TGeant3::Gdrawc(const char *name,Int_t axis, Float_t cut,Float_t u0,
   //  the CVOL/BOX function.
   //  
   InitHIGZ();
-  higz->Clear();
+  gHigz->Clear();
   char vname[5];
   Vname(name,vname);
   gdrawc(PASSCHARD(vname), axis,cut,u0,v0,ul,vl PASSCHARL(vname)); 
@@ -2995,7 +2998,7 @@ void TGeant3::Gdrawx(const char *name,Float_t cutthe, Float_t cutphi,
   //  The resulting picture is seen from the viewing angles theta,phi.
   //
   InitHIGZ();
-  higz->Clear();
+  gHigz->Clear();
   char vname[5];
   Vname(name,vname);
   gdrawx(PASSCHARD(vname), cutthe,cutphi,cutval,theta,phi,u0,v0,ul,vl
@@ -3066,7 +3069,7 @@ void TGeant3::Gdspec(const char *name)
   //  volume.
   //  
   InitHIGZ();
-  higz->Clear();
+  gHigz->Clear();
   char vname[5];
   Vname(name,vname);
   gdspec(PASSCHARD(vname) PASSCHARL(vname)); 
@@ -3079,11 +3082,11 @@ void TGeant3::DrawOneSpec(const char *name)
   //  Function called when one double-clicks on a volume name
   //  in a TPavelabel drawn by Gdtree.
   //
-  THIGZ *higzSave = higz;
+  THIGZ *higzSave = gHigz;
   higzSave->SetName("higzSave");
   THIGZ *higzSpec = (THIGZ*)gROOT->FindObject("higzSpec");
-  //printf("DrawOneSpec, higz=%x, higzSpec=%x\n",higz,higzSpec);
-  if (higzSpec) higz     = higzSpec;
+  //printf("DrawOneSpec, gHigz=%x, higzSpec=%x\n",gHigz,higzSpec);
+  if (higzSpec) gHigz     = higzSpec;
   else          higzSpec = new THIGZ(defSize);
   higzSpec->SetName("higzSpec");
   higzSpec->cd();
@@ -3094,7 +3097,7 @@ void TGeant3::DrawOneSpec(const char *name)
   higzSpec->Update();
   higzSave->cd();
   higzSave->SetName("higz");
-  higz = higzSave;
+  gHigz = higzSave;
 } 
 
 //_____________________________________________________________________________
@@ -3114,11 +3117,11 @@ void TGeant3::Gdtree(const char *name,Int_t levmax, Int_t isel)
   //    - drawing tree of parent
   //  
   InitHIGZ();
-  higz->Clear();
+  gHigz->Clear();
   char vname[5];
   Vname(name,vname);
   gdtree(PASSCHARD(vname), levmax, isel PASSCHARL(vname)); 
-  higz->fPname = "";
+  gHigz->fPname = "";
 } 
 
 //_____________________________________________________________________________
@@ -3132,7 +3135,7 @@ void TGeant3::GdtreeParent(const char *name,Int_t levmax, Int_t isel)
   //  This function draws the logical tree of the parent of name.
   //  
   InitHIGZ();
-  higz->Clear();
+  gHigz->Clear();
   // Scan list of volumes in JVOLUM
   char vname[5];
   Int_t gname, i, jvo, in, nin, jin, num;
@@ -3148,7 +3151,7 @@ void TGeant3::GdtreeParent(const char *name,Int_t levmax, Int_t isel)
 	strncpy(vname,(char*)&fZiq[fGclink->jvolum+i],4);
 	vname[4] = 0;           
 	gdtree(PASSCHARD(vname), levmax, isel PASSCHARL(vname)); 
-	higz->fPname = "";
+	gHigz->fPname = "";
 	return;
       }
     }
