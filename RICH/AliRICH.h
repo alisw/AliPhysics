@@ -75,7 +75,7 @@ protected:
 class AliRICHcluster :public TObject
 {
 public:
-  enum ClusterStatus {kEdge,kShape,kSize,kRaw,kResolved,kEmpty=kBad};
+  enum ClusterStatus {kEdge,kShape,kSize,kRaw,kResolved,kEmpty}; 
                     AliRICHcluster():TObject(),fCFM(0),fSize(0),fShape(0),fQdc(0),fChamber(0),fX(0),fY(0),fStatus(kEmpty),fDigits(0) {}    
   virtual          ~AliRICHcluster()                 {AliDebug(1,"Start");/*Reset();*/}  
          void       Reset()                          {DeleteDigits();fCFM=fSize=fShape=fQdc=fChamber=0;fX=fY=0;fStatus=kEmpty;} //cleans the cluster
@@ -167,6 +167,7 @@ class AliESD;
 class AliRICH : public AliDetector 
 {
 public:
+//ctor & dtor    
             AliRICH();                                            
             AliRICH(const char *name, const char *title);
             AliRICH(const AliRICH& RICH):AliDetector(RICH) {;}  //copy ctor 
@@ -178,16 +179,19 @@ public:
   virtual void          StepManager()                               =0;                                  //interface from AliMC
   virtual void          Hits2SDigits();                                                                  //interface from AliSimulation
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* man) const {return new AliRICHDigitizer(man);}  //interface from AliSimulation
-//  virtual void          Reconstruct()                         const;                                     //interface from AliReconstruction
-//  virtual void          FillESD(AliESD *pESD)                 const;                                     //interface from AliReconstruction          
   virtual void          SetTreeAddress();                                                                //interface from AliLoader
   virtual void          MakeBranch(Option_t *opt=" ");                                                   //interface from AliLoader
   virtual void          CreateMaterials();                                                               //interface from AliMC
   virtual void          CreateGeometry();                                                                //interface from AliMC
+          void          GeomPadPanelFrame();                                                             //defines PPF geometry
+          void          GeomAmpGap();                                                                    //defines gap geometry + anod wires
+          void          GeomRadiators();                                                                 //defines radiators geometry
+          void          GeomSandBox();                                                                   //defines sandbox geometry
+          void          GeomRadioSrc();                                                                  //defines radio source geometry
+          void          GeomAerogel();                                                                   //defines aerogel geometry
   virtual void          BuildGeometry();                                                                 //interface 
 //private part  
-          Float_t AbsoCH4(Float_t x)const;                               //calculates absorption length for methane
-          Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)const;  //deals with Fresnel absorption
+  static  Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola);       //deals with Fresnel absorption
   inline  void    CreateHits();                                          //create hits container as a simple list
   inline  void    CreateSDigits();                                       //create sdigits container as a simple list
   inline  void    CreateDigits();                                        //create digits container as 7 lists, one per chamber
@@ -199,42 +203,44 @@ public:
   TClonesArray*   SDigits()             const{return fSdigits;}
   TClonesArray*   Digits(Int_t iC)      const{if(fDigitsNew) return (TClonesArray *)fDigitsNew->At(iC-1);else return 0;}
   TClonesArray*   Clusters(Int_t iC)    const{if(fClusters)  return (TClonesArray *)fClusters->At(iC-1);else return 0;}
-  AliRICHChamber* C(Int_t iC)           const{return fpParam->C(iC);}                       //provides pointer to a given chamber
-  AliRICHParam*   P()                   const{return fpParam;}                              //provides pointer to a RICH params
-  AliRICH*        R()                        {return this;}                                 //provides pointer to RICH main object
-  TVector         Counters()            const{return fCounters;}                            //provides a set of counters
-  void            ControlPlots();                                                           //utility
-  virtual void    Print(Option_t *option="")               const;                           //prints current RICH status
-  void            PrintHits    (Int_t iEvent=0);                                            //utility
-  void            PrintSDigits (Int_t iEvent=0);                                            //utility
-  void            PrintDigits  (Int_t iEvent=0);                                            //utility
-  void            PrintClusters(Int_t iEvent=0);                                            //utility
-  void            PrintTracks  (Int_t iEvent=0);                                            //utility
+  AliRICHChamber* C(Int_t iC)           const{return fpParam->C(iC);}   //provides pointer to a given chamber
+  AliRICHParam*   P()                   const{return fpParam;}          //provides pointer to a RICH params
+  AliRICH*        R()                        {return this;}             //provides pointer to RICH main object
+  TVector         Counters()            const{return fCounters;}        //provides a set of counters
+  void            ControlPlots();                                       //creates ~/RCP.root with a set of QA plots
+  virtual void    Print(Option_t *option="")               const;       //prints current RICH status
+  void            PrintHits    (Int_t iEvent=0);                        //prints a list of hits for a given event
+  void            PrintSDigits (Int_t iEvent=0);                        //prints a list of sdigits for a given event
+  void            PrintDigits  (Int_t iEvent=0);                        //prints a list of digits for a given event
+  void            PrintClusters(Int_t iEvent=0);                        //prints a list of clusters for a given event
+  void            PrintTracks  (Int_t iEvent=0);                        //prints a list of tracks for a given event
+  static Int_t    Nparticles   (Int_t iPID,Int_t iEvent=0,AliRunLoader *p=0); //returns a number of particles 
+  AliRICHhit*     Hit(Int_t tid);                                       //returns pointer of the first RICH hit created by a given particle 
             
-  void AddHit(Int_t c,Int_t tid,TVector3 i3,TVector3 o3,Double_t eloss=0){TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(c,tid,i3,o3,eloss);}
-  inline void AddSDigit(Int_t c,TVector pad,Double_t q,Int_t pid,Int_t tid); 
-  void AddDigit(int c,TVector pad,int q,int cfm,int *tid)//Add simulated digit
-       {TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,pad,q,cfm,tid[0],tid[1],tid[2]);}  
-  void AddDigit(Int_t c,TVector pad,Int_t q)//for real data digits
-       {TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(0));new(tmp[fNdigitsNew[0]++])AliRICHdigit(c,pad,q,0,-1,-1,-1);}  
-  void AddCluster(AliRICHcluster &cl)                     
-       {Int_t c=cl.C()-1;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));new(tmp[fNclusters[c]++])AliRICHcluster(cl);}
-  AliRICHhit* Hit(Int_t tid);           //returns pointer ot RICH hit for a given tid
+  inline void AddHit(Int_t chamber,Int_t tid,TVector3 in3,TVector3 out3,Double_t eloss=0);           //add new hit
+  inline void AddSDigit(Int_t c,TVector pad,Double_t q,Int_t pid,Int_t tid);                         //add new sdigit
+  inline void AddDigit(int c,TVector pad,int q,int cfm,int *tid);                                    //add new digit
+//  void AddDigit(Int_t c,TVector pad,Int_t q)//for real data digits
+//       {TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(0));new(tmp[fNdigitsNew[0]++])AliRICHdigit(c,pad,q,0,-1,-1,-1);}  
+  inline void AddCluster(AliRICHcluster &cl);                                                        //add new cluster                        
 protected:  
-  enum                  {kAir=1,kRoha,kSiO2,kC6F14,kCH4,kCsI,kGridCu,kOpSiO2,kGap,kAl,kGlass,kCu,kW,kSteel,kPerpex,kSr90};
-  AliRICHParam         *fpParam;             //main RICH parametrization     
-                                             //fHits and fDigits belong to AliDetector
-  TClonesArray         *fSdigits;            //! list of sdigits  
-  Int_t                 fNsdigits;           //! current number of sdigits
+  enum                  EMedia {kAir=1,kRoha,kSiO2,kC6F14,kCH4,kCsI,kGridCu,kOpSiO2,kGap,kAl,kGlass,kCu,kW
+                                      ,kSteel,kPerpex,kSr90,kMylar,kGel,kReflector};
+  enum                  ECounters {kStepManager=0,kCerProdTot,kCerProdRad,kCerKillTot,kCerKillRad,kCerKillRef,kEleProdTot};
+  AliRICHParam         *fpParam;                   //main RICH parametrization     
+                                                   //fHits and fDigits belong to AliDetector
+  TClonesArray         *fSdigits;                  //! list of sdigits  
+  Int_t                 fNsdigits;                 //! current number of sdigits
   
-  TObjArray            *fDigitsNew;          //! each chamber holds it's one lists of digits
-  Int_t                 fNdigitsNew[kNchambers];   //! array of current numbers of digits
+  TObjArray            *fDigitsNew;                //! each chamber holds it's one lists of digits
+  Int_t                 fNdigitsNew[7];            //! array of current numbers of digits
   
-  TObjArray            *fClusters;           //! each chamber holds it's one lists of clusters 
-  Int_t                 fNclusters[kNchambers];    //! array of current numbers of raw clusters
+  TObjArray            *fClusters;                 //! each chamber holds it's one lists of clusters 
+  Int_t                 fNclusters[7];             //! array of current numbers of raw clusters
   
-  TVector               fCounters;           //Photon history conters, explanation in StepManager() 
-  ClassDef(AliRICH,7)                        //Main RICH class 
+  TVector               fCounters;                 //Particle history counters, explanation in StepManager() 
+  
+  ClassDef(AliRICH,7)                              //Main RICH class 
 };//class AliRICH  
 
 //__________________________________________________________________________________________________
@@ -268,6 +274,13 @@ void AliRICH::CreateClusters()
   for(Int_t i=0;i<kNchambers;i++) {fClusters->AddAt(new TClonesArray("AliRICHcluster",10000), i); fNclusters[i]=0;}
 }
 //__________________________________________________________________________________________________
+void AliRICH::AddHit(Int_t c,Int_t tid,TVector3 i3,TVector3 o3,Double_t eloss)
+{
+//add new RICH hit to the list of hits  
+  TClonesArray &tmp=*fHits;
+  new(tmp[fNhits++])AliRICHhit(c,tid,i3,o3,eloss);
+}//AddHit()
+//__________________________________________________________________________________________________
 void AliRICH::AddSDigit(Int_t c,TVector pad,Double_t q,Int_t pid,Int_t tid) 
 { 
   Int_t cfm;  
@@ -279,4 +292,15 @@ void AliRICH::AddSDigit(Int_t c,TVector pad,Double_t q,Int_t pid,Int_t tid)
   TClonesArray &tmp=*fSdigits; new(tmp[fNsdigits++])AliRICHdigit(c,pad,q,cfm,tid,kBad,kBad);
 }
 //__________________________________________________________________________________________________
+void AliRICH::AddDigit(int c,TVector pad,int q,int cfm,int *tid)
+{
+  TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));
+  new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,pad,q,cfm,tid[0],tid[1],tid[2]);
+}    
+//__________________________________________________________________________________________________
+void AliRICH::AddCluster(AliRICHcluster &cl)                     
+{
+  Int_t c=cl.C()-1;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));
+  new(tmp[fNclusters[c]++])AliRICHcluster(cl);
+}
 #endif//#ifndef AliRICH_h

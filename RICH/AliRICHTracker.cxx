@@ -13,18 +13,19 @@ ClassImp(AliRICHTracker)
 //__________________________________________________________________________________________________
 Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
 {
-  //invoked by AliRecontruction for RICH
-  //if ESD doesn't contain tracks, try to reconstruct with particle from STACK 
-  //(this case is just to forsee a standalone RICH simulation
-  TNtupleD *hn=0;
+// Interface callback methode invoked by AliRecontruction during tracking after TOF
+// It steers to different way to provide the final reconstructed information sutable for analisys:
+// 1. AliESD  - reconstructed tracks are used     
+// 2. RICH private ntuple for debug- stack particles used instead of reconstructed tracks     
   AliDebug(1,"Start pattern recognition");
-  if(pESD->GetNumberOfTracks()) RecWithESD(pESD);
+  if(pESD->GetNumberOfTracks())
+    RecWithESD(pESD);
   else
-    RecWithStack(hn);
+    RecWithStack(0);
   AliDebug(1,"Stop pattern recognition");
 
   return 0; // error code: 0=no error;
-} //pure virtual from AliTracker
+}//PropagateBack()
 //__________________________________________________________________________________________________
 void AliRICHTracker::RecWithESD(AliESD *pESD)
 {
@@ -57,15 +58,17 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
     for(Int_t iClusN=0;iClusN<pRich->Clusters(iChamber)->GetEntries();iClusN++){//clusters loop for intersected chamber
       AliRICHcluster *pClus=(AliRICHcluster*)pRich->Clusters(iChamber)->UncheckedAt(iClusN);//get pointer to current cluster
       Double_t distCurrent=pClus->DistTo(helix.PosPc());//ditance between current cluster and helix intersection with PC
-      if(distCurrent<distMip){distMip=distCurrent;iMipId=iClusN;}//find cluster nearest to the track 
-      
+      if(distCurrent<distMip){
+        distMip=distCurrent;
+        iMipId=iClusN;
+      }//find cluster nearest to the track       
       AliDebug(1,Form("Ploc (%f,%f,%f) dist= %f",helix.Ploc().Mag(),helix.Ploc().Theta()*TMath::RadToDeg(),
-                                                                    helix.Ploc().Phi()*TMath::RadToDeg(),pClus->DistTo(helix.PosPc())));
-    }////clusters loop for intersected chamber
+                                       helix.Ploc().Phi()*TMath::RadToDeg(),pClus->DistTo(helix.PosPc())));
+    }//clusters loop for intersected chamber
     
     AliDebug(1,Form("Min distance cluster: %i dist is %f",iMipId,distMip));
     
-    AliRICHRecon recon(&helix,pRich->Clusters(iChamber),iMipId);
+    AliRICHRecon recon(&helix,pRich->Clusters(iChamber),iMipId); //create reconstruction object for helix, list of clusters
     Double_t thetaCerenkov=recon.ThetaCerenkov(); //search for mean Cerenkov angle for this track
     AliDebug(1,Form("FINAL Theta Cerenkov=%f",thetaCerenkov));
     pTrack->SetRICHsignal(thetaCerenkov);
@@ -80,8 +83,7 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
 //__________________________________________________________________________________________________
 void AliRICHTracker::RecWithStack(TNtupleD *hn)
 {
-  // reconstruction for particles from STACK
-  //
+// Reconstruction for particles from STACK
   AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));
   
 //  pRich->GetLoader()->GetRunLoader()->LoadHeader();
@@ -101,7 +103,7 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
   if(pRich->GetLoader()->LoadRecPoints()) {AliDebug(1,Form("No clusters found in RICH"));return;}
   pRich->GetLoader()->TreeR()->GetEntry(0);
 
-  for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
+  for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//stack particles loop
     TParticle *pParticle = pStack->Particle(iTrackN);
     if(!pParticle) {AliDebug(1,Form("Not a valid TParticle pointer. Track skipped"));continue;}
     AliDebug(1,Form(" PDG code : %i",pParticle->GetPdgCode()));
@@ -150,7 +152,7 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
       
       AliDebug(1,Form("Ploc (%f,%f,%f) dist= %f",helix.Ploc().Mag(),helix.Ploc().Theta()*TMath::RadToDeg(),
                                                                     helix.Ploc().Phi()*TMath::RadToDeg(),pClus->DistTo(helix.PosPc())));
-    }////clusters loop for intersected chamber
+    }//clusters loop for intersected chamber
     
     AliDebug(1,Form("Min distance cluster: %i dist is %f",iMipId,distMip));
     hnvec[6]=mipX;hnvec[7]=mipY;
@@ -164,32 +166,27 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
     hnvec[13]=(Double_t)pParticle->GetPdgCode();
     if(hn) hn->Fill(hnvec);
     AliDebug(1,Form("FINAL Theta Cerenkov=%f",thetaCerenkov));
-//    pTrack->SetRICHsignal(thetaCerenkov);
-
-//    Double_t richPID[5]={0.2,0.2,0.2,0.2,0.2}; //start with equal probs for (e,mu,pi,k,p)
-//    CalcProb(thetaCerenkov,p0.Mag(),richPID);
-    
-  }//ESD tracks loop
+  }//stack particles loop
   
   pRich->GetLoader()->UnloadRecPoints();
-
   AliDebug(1,"Stop.");  
-} //RecWithStack
-
+}//RecWithStack
+//__________________________________________________________________________________________________
 Int_t AliRICHTracker::LoadClusters(TTree *pTree)
 {
 // Load clusters for RICH
   AliDebug(1,"Start.");  pTree->GetEntry(0);  AliDebug(1,"Stop."); return 0;
 }
-
 //__________________________________________________________________________________________________
 void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *richPID)
 {
-// 
+// Calculates probability to be a electron-muon-pion-kaon-proton 
+// from the given Cerenkov angle and momentum assuming no initial particle composition
+// (i.e. apriory probability to be the particle of the given sort is the same for all sorts)  
   Double_t height[AliPID::kSPECIES];Double_t totalHeight=0;
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
     Double_t mass = AliPID::ParticleMass(iPart);
-    Double_t refIndex=AliRICHParam::IndOfRefC6F14(6.755);
+    Double_t refIndex=AliRICHParam::RefIdxC6F14(6.755);
     Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(refIndex*pmod);
     if(cosThetaTh>=1) {break;}
     Double_t thetaTh = TMath::ACos(cosThetaTh);
@@ -200,3 +197,4 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *richPID
   }
   for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;    
 }//CalcProb
+//__________________________________________________________________________________________________

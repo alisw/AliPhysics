@@ -9,8 +9,8 @@
 class AliRICHv0 : public AliRICH 
 {    
 public:
-  AliRICHv0():AliRICH()                                              {;}                      //default ctor
-  AliRICHv0(const char *name, const char *title):AliRICH(name,title) {;}                      //named ctor
+                 AliRICHv0():AliRICH()                                              {;}       //default ctor
+                 AliRICHv0(const char *name, const char *title):AliRICH(name,title) {;}       //named ctor
   virtual       ~AliRICHv0()                                         {;}                      //dtor
   virtual void   Init()                                              {;}                      //interface from AliRICH
   virtual Int_t  IsVersion()                                    const{return 0;}              //interface from AliRICH

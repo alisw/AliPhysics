@@ -10,13 +10,13 @@ void ps(Int_t event=0)  {r->PrintSDigits(event);} //utility print sdigits
 void pd(Int_t event=0)  {r->PrintDigits(event);}  //utility print digits
 void pc(Int_t event=0)  {r->PrintClusters(event);}//utility print clusters
 void pt(Int_t event=0)  {r->PrintTracks(event);}  //utility print tracks
-Int_t ne(Int_t event=0) {r->Nparticles(kElectron,event);}   //utility number of electrons
-Int_t npi0(Int_t event=0) {r->Nparticles(kPi0,event);}   //utility number of electrons
-Int_t npip(Int_t event=0) {r->Nparticles(kPiPlus,event);}   //utility number of electrons
-Int_t npim(Int_t event=0) {r->Nparticles(kPiMinus,event);}   //utility number of electrons
-Int_t nk0(Int_t event=0) {r->Nparticles(kK0,event);}   //utility number of electrons
-Int_t nkp(Int_t event=0) {r->Nparticles(kKPlus,event);}   //utility number of electrons
-Int_t nkm(Int_t event=0) {r->Nparticles(kKMinus,event);}   //utility number of electrons
+Int_t ne(Int_t event=0)   {AliRICH::Nparticles(kElectron,event,al);} //utility number of electrons
+Int_t npi0(Int_t event=0) {AliRICH::Nparticles(kPi0,event,al);}      //utility number of electrons
+Int_t npip(Int_t event=0) {AliRICH::Nparticles(kPiPlus,event,al);}   //utility number of electrons
+Int_t npim(Int_t event=0) {AliRICH::Nparticles(kPiMinus,event,al);}  //utility number of electrons
+Int_t nk0(Int_t event=0)  {AliRICH::Nparticles(kK0,event,al);}       //utility number of electrons
+Int_t nkp(Int_t event=0)  {AliRICH::Nparticles(kKPlus,event,al);}    //utility number of electrons
+Int_t nkm(Int_t event=0)  {AliRICH::Nparticles(kKMinus,event,al);}   //utility number of electrons
 //__________________________________________________________________________________________________
 void pp(int tid)
 {
@@ -61,7 +61,7 @@ Int_t prim(Int_t tid)
 //__________________________________________________________________________________________________
 void Show()
 {  
-//  CreateHists();
+  CreateHists();
   Info("","\n\n\n");
 //load all trees  
   al->LoadHeader(); 
@@ -104,7 +104,6 @@ void Show()
     }//TreeH loop
     Info("Show-HIT","Evt %i->   %i particles %i primaries  %i entries in TreeH %i hits",
                      iEventN,   iNparticles,    iNprims,      iNentries,         iHitsCounter);
-    FillContribs(pPart->GetPdgCode(),pHit->C(),kTRUE);
     
     if(isSdigits){
       rl->TreeS()->GetEntry(0);

@@ -16,6 +16,7 @@
 #include "AliRICHChamber.h"
 #include <TRotMatrix.h>
 #include <AliLog.h>
+#include "AliRICHParam.h"
 
 ClassImp(AliRICHChamber)	
 //______________________________________________________________________________
@@ -26,39 +27,42 @@ AliRICHChamber::AliRICHChamber(Int_t iChamber):TNamed()
 // 5 4 3   |      
 //   2 1   |
 // <-----z y   . x     
-//  horizontal angle between chambers  19.5 grad
-//  vertical angle between chambers    20   grad     
-  RotY(90);//rotate around y
-  fCenterX3.SetXYZ(490,0,0);fPcX3.SetXYZ(490+8-0.2,0,0);fRadX3.SetXYZ(490-2,0,0); //shift center along x by 490 cm
+  if(iChamber!=0){ //if iChamber=0 then special test config: chamber without any shift and rotation
+    const Double_t kAngHor=19.5; //  horizontal angle between chambers  19.5 grad
+    const Double_t kAngVer=20;   //  vertical angle between chambers    20   grad     
+    const Double_t kAngCom=30;   //  common RICH rotation with respect to x axis  20   grad     
   
-  switch(iChamber){
-    case 0:                    //special test beam configuration without rotation.
-      break;
-    case 1:        
-      RotY(19.5); RotZ(-20);   //right and down 
-      break;      
-    case 2:
-      RotZ(-20);              //down
-      break;      
-    case 3:
-      RotY(19.5);             //right 
-      break;      
-    case 4:          
-      break;                  //no rotation
-    case 5:
-      RotY(-19.5);            //left   
-      break;      
-    case 6:
-      RotZ(20);               //up
-      break;      
-    case 7:
-      RotY(-19.5); RotZ(20);  //left and up 
-      break;      
-    default:
-      Fatal("named ctor","Wrong chamber number %i, check CreateChamber ctor",iChamber);
-  }//switch(iModuleN)
+    RotY(90);//rotate around y since initila position is in XY plane
+    fCenterX3.SetXYZ(490,0,0);  //shift center along x by 490 cm
+    fPcX3.SetXYZ(490+8-0.2,0,0);//position of the center of apmlification gap (anod wires plane)
+    fRadX3.SetXYZ(490-2,0,0);   //position of the entrance to freon
+    switch(iChamber){
+      case 1:        
+        RotY(kAngHor);  RotZ(-kAngVer);   //right and down 
+        break;      
+      case 2:
+                        RotZ(-kAngVer);   //down
+        break;      
+      case 3:
+        RotY(kAngHor);                   //right 
+        break;      
+      case 4:          
+        break;                           //no rotation
+      case 5:
+        RotY(-kAngHor);                  //left   
+        break;      
+      case 6:
+                        RotZ(kAngVer);     //up
+        break;      
+      case 7:
+        RotY(-kAngHor); RotZ(kAngVer);  //left and up 
+        break;      
+      default:
+        Fatal("named ctor","Wrong chamber number %i, check CreateChamber ctor",iChamber);
+    }//switch(iChamber)
+    RotZ(kAngCom);     //apply common rotation  
+  }//if(iChamber
   fName=Form("RICHc%i",iChamber);fTitle=Form("RICH chamber %i",iChamber);
-  RotZ(30);     //apply common rotation  
   fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*TMath::RadToDeg(), Rot().PhiX()*TMath::RadToDeg(),
                                                       Rot().ThetaY()*TMath::RadToDeg(), Rot().PhiY()*TMath::RadToDeg(),
                                                       Rot().ThetaZ()*TMath::RadToDeg(), Rot().PhiZ()*TMath::RadToDeg());
@@ -67,6 +71,7 @@ AliRICHChamber::AliRICHChamber(Int_t iChamber):TNamed()
 void AliRICHChamber::Print(Option_t *opt) const
 {
 // Debug printout
-  ToAliInfo(fCenterX3.Print(opt));
+  TNamed::Print(opt);
+  fCenterX3.Print(opt);
 }//Print()
 //__________________________________________________________________________________________________

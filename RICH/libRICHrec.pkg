@@ -1,0 +1,4 @@
+SRCS:=  AliRICHReconstructor.cxx AliRICHClusterFinder.cxx AliRICHTracker.cxx AliRICHRecon.cxx AliRICHHelix.cxx AliRICHMap.cxx 
+
+HDRS:= $(SRCS:.cxx=.h)
+DHDR:= RICHrecLinkDef.h

@@ -102,8 +102,7 @@ void AliRICHv0::StepManager()
   }
   Info("Medium","id=%i (%s)",iTmedId,sTmed);
   
-  TLorentzVector x4;
-  gMC->TrackPosition(x4);
+  TLorentzVector x4; gMC->TrackPosition(x4);
   Float_t glo[3],loc[3];
   glo[0]=x4.X();glo[1]=x4.Y();glo[2]=x4.Z();  
   gMC->Gmtod(glo,loc,1);
@@ -119,4 +118,3 @@ void AliRICHv0::StepManager()
   }
   Info(Form("Step %i",iStepN++),"end of current step\n");
 }//StepManager()
-

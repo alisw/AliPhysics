@@ -4,30 +4,30 @@ void Opticals()
   gROOT->Reset();
 #endif   
   int i;
-  const Int_t kNbins=30;
+  const Int_t kNbins=30;//number of photon energy points
   
-  Float_t aPckov[kNbins];  for(i=0;i<kNbins;i++) aPckov[i]=(0.1*i+5.5)*1e-9;//Photons energy bins 5.5 eV - 8.5 eV step 0.1 eV
+  Float_t aPckov[kNbins];  for(i=0;i<kNbins;i++) aPckov[i]=1e-9*AliRICHParam::PhotonEnergy(i);
     
   
-  Float_t aIdxC6F14[kNbins];  
-  Float_t aIdxCH4[kNbins];
-  Float_t aIdxGrid[kNbins];
-  Float_t aIdxSiO2[kNbins];
-  Float_t aIdxOpSiO2[kNbins];
+  Float_t aIdxC6F14[kNbins];  //Freon ref index
+  Float_t aIdxCH4[kNbins];    //Methane ref index
+  Float_t aIdxSiO2[kNbins];   //Quartz ref index
+  Float_t aIdxMetal[kNbins];  //Metal ref index always 0
+  Float_t aIdxGel[kNbins];    //Aerogel ref index
         
   for (i=0;i<kNbins;i++){
-    aIdxC6F14[i] = (Float_t)AliRICHParam::IndOfRefC6F14(aPckov[i]*1e9);
-    aIdxSiO2[i]  = (Float_t)AliRICHParam::IndOfRefSiO2(aPckov[i]*1e9);
-    aIdxCH4[i]   = (Float_t)AliRICHParam::IndOfRefCH4();
-    aIdxGrid[i]    =1;
-    aIdxOpSiO2[i]  =1;
+    aIdxC6F14[i] = AliRICHParam::RefIdxC6F14(aPckov[i]*1e9);
+    aIdxSiO2[i]  = AliRICHParam::RefIdxSiO2(aPckov[i]*1e9);
+    aIdxCH4[i]   = AliRICHParam::RefIdxCH4(5.5);
+    aIdxGel[i]   = AliRICHParam::RefIdxGel(5.5);
+    aIdxMetal[i]  =0;//metal
   } 
     
-  Float_t aAbsC6F14[kNbins]={//New values from A.DiMauro 28.10.03 total 31
+  Float_t aAbsC6F14[kNbins]={//New values from A.DiMauro 28.10.03 total 30
     32701.4219, 17996.1141, 10039.7281, 1799.1230, 1799.1231, 1799.1231, 1241.4091, 179.0987, 179.0986, 179.0987,
       179.0987,   118.9800,    39.5058,   23.7244,   11.1283,    7.1573,    3.6249,   2.1236,   0.7362,   0.5348,
         0.3387,     0.3074,     0.3050,    0.0001,    0.0001,    0.0001,    0.0001,   0.0001,   0.0001,   0.0001};    
-  Float_t aAbsSiO2[kNbins]={//New values from A.DiMauro 28.10.03 total 31
+  Float_t aAbsSiO2[kNbins]={//New values from A.DiMauro 28.10.03 total 30
        34.4338, 30.5424, 30.2584, 31.4928, 31.7868, 17.8397, 9.3410, 6.4492, 6.1128, 5.8128,
         5.5589,  5.2877,  5.0162,  4.7999,  4.5734,  4.2135, 3.7471, 2.6033, 1.5223, 0.9658,
         0.4242,  0.2500,  0.1426,  0.0863,  0.0793,  0.0724, 0.0655, 0.0587, 0.0001, 0.0001};
@@ -36,11 +36,16 @@ void Opticals()
   Float_t aAbsCH4[kNbins];
   Float_t aAbsGrid[kNbins];
   Float_t aAbsCsI[kNbins];
+  Float_t aAbsGel[kNbins];
+  Float_t aAbsRef[kNbins];//abs prob on reflector
+  
     for (i=0;i<kNbins;i++){
-      aAbsCH4[i]         =AbsoCH4(aPckov[i]*1e9); 
+      aAbsCH4[i]         =AliRICHParam::AbsCH4(AliRICHParam::PhotonEnergy(i)); 
       aAbsOpSiO2[i]      =1e-5; 
       aAbsCsI[i]         =1e-4; 
-      aAbsGrid[i]        =1e-4; 
+      aAbsGrid[i]        =1e-4;       
+      aAbsGel[i]         =AliRICHParam::AbsGel(AliRICHParam::PhotonEnergy(i)); 
+      aAbsRef[i]         =0.01;//1% reflector abs prob 
     }
     
   Float_t aQeCsI[kNbins] = {//New values from A.DiMauro 28.10.03 total 31
@@ -52,7 +57,7 @@ void Opticals()
   
   Float_t aQeAll[kNbins];
   for(i=0;i<kNbins;i++){
-    aQeCsI[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI[i]/= (1.0-Fresnel(AliRICHParam::PhotonEnergy(i),1.0,0)); //FRESNEL LOSS CORRECTION
     aQeAll[i]=1; //QE for all other materials except for PC must be 1.
   }
        
@@ -73,84 +78,98 @@ void Opticals()
     0.1859, 0.1876, 0.1892, 0.1909, 0.2075, 0.2158, 0.0001, 0.0001, 0.0001, 0.0001 };      
 
 //Now plot all the thigs  
-//Freon, Quartz, Opaque ,Methane,CsI,Grid   
-  const Int_t kC6F14M= 24; const Int_t kC6F14C=kRed;  
-  const Int_t kCH4M= 25;   const Int_t kCH4Color=kGreen;  
-  const Int_t kSiO2M= 26;  const Int_t kSiO2C=kBlue;  
-  const Int_t kCsIMarker = 2;   const Int_t kCsIColor =kMagenta;  
+//Markers and colors for different curves:
+    
+  const Double_t kWidth=0.25,kHeight=0.2;  
+  const Int_t kC6F14Marker=24 , kC6F14Color=kRed;  
+  const Int_t kCH4Marker  =25 , kCH4Color  =kGreen;  
+  const Int_t kSiO2M      =26 , kSiO2Color =kBlue;  
+  const Int_t kCsIMarker  = 2 , kCsIColor  =kMagenta;  
+  const Int_t kGelMarker  =27 , kGelColor  =46;  
+  const Int_t kRefMarker  =28 , kRefColor  =47;  
   
   TCanvas *pC=new TCanvas("c1","RICH optics to check",1100,900);
 
   pC->Divide(3,2);           
-           
+//Ref index           
   pC->cd(1);                 
-  TGraph *pIdxC6F14G=new TGraph(kNbins,aPckov,aIdxC6F14);pIdxC6F14G->SetMarkerStyle(kC6F14M); pIdxC6F14G->SetMarkerColor(kC6F14C);
-  TGraph *pIdxSiO2G =new TGraph(kNbins,aPckov,aIdxSiO2); pIdxSiO2G->SetMarkerStyle(kSiO2M);   pIdxSiO2G->SetMarkerColor(kSiO2C);  
-  TGraph *pIdxCH4G  =new TGraph(kNbins,aPckov,aIdxCH4);  pIdxCH4G->SetMarkerStyle(kCH4M);     pIdxCH4G->SetMarkerColor(kCH4Color);
-  TMultiGraph *pIdxMG=new TMultiGraph();  TLegend *pIdxLe=new TLegend(0.6,0.2,0.85,0.4);
-  pIdxMG->Add(pIdxC6F14G);     pIdxLe->AddEntry(pIdxC6F14G,   "C6F14","p");            
-  pIdxMG->Add(pIdxSiO2G);      pIdxLe->AddEntry(pIdxSiO2G,    "SiO2","p");          
-  pIdxMG->Add(pIdxCH4G);       pIdxLe->AddEntry(pIdxCH4G,     "CH4","p");          
-  pIdxMG->Draw("APL");pIdxMG->GetXaxis()->SetTitle("ref index versus energy, GeV");pIdxMG->Draw("APL");
+  TGraph *pIdxC6F14=new TGraph(kNbins,aPckov,aIdxC6F14);pIdxC6F14->SetMarkerStyle(kC6F14Marker);pIdxC6F14->SetMarkerColor(kC6F14Color);
+  TGraph *pIdxSiO2 =new TGraph(kNbins,aPckov,aIdxSiO2); pIdxSiO2 ->SetMarkerStyle(kSiO2M)      ;pIdxSiO2 ->SetMarkerColor(kSiO2Color);  
+  TGraph *pIdxCH4  =new TGraph(kNbins,aPckov,aIdxCH4);  pIdxCH4  ->SetMarkerStyle(kCH4Marker)       ;pIdxCH4  ->SetMarkerColor(kCH4Color);
+  TGraph *pIdxGel  =new TGraph(kNbins,aPckov,aIdxGel);  pIdxGel  ->SetMarkerStyle(kGelMarker)  ;pIdxGel  ->SetMarkerColor(kGelColor);
+  
+  TMultiGraph *pIdxMG=new TMultiGraph();  TLegend *pIdxLe=new TLegend(0.5,0.21,0.5+kWidth,0.21+kHeight);
+  pIdxMG->Add(pIdxC6F14); pIdxLe->AddEntry(pIdxC6F14,"C6F14"  ,"p");            
+  pIdxMG->Add(pIdxSiO2) ; pIdxLe->AddEntry(pIdxSiO2 ,"SiO2"   ,"p");          
+  pIdxMG->Add(pIdxCH4)  ; pIdxLe->AddEntry(pIdxCH4  ,"CH4"    ,"p");          
+  pIdxMG->Add(pIdxGel)  ; pIdxLe->AddEntry(pIdxGel  ,"Aerogel","p");          
+  pIdxMG->Draw("APL");
+  pIdxMG->SetTitle("Refractive index");  pIdxMG->GetXaxis()->SetTitle("energy, GeV");
+  pIdxMG->Draw("APL");
   pIdxLe->Draw();      
-
-
+//Absorbtion
   pC->cd(2);
-  TGraph *pAbsC6F14G=new TGraph(kNbins,aPckov,aAbsC6F14);pAbsC6F14G->SetMarkerStyle(kC6F14M); pAbsC6F14G->SetMarkerColor(kC6F14C);
-  TGraph *pAbsSiO2G =new TGraph(kNbins,aPckov,aAbsSiO2); pAbsSiO2G->SetMarkerStyle(kSiO2M);   pAbsSiO2G->SetMarkerColor(kSiO2C);
-  TMultiGraph *pAbsMG=new TMultiGraph();  TLegend *pAbsLegend=new TLegend(0.6,0.3,0.85,0.5);
-  pAbsMG->Add(pAbsC6F14G);      pAbsLegend->AddEntry(pAbsC6F14G,  "C6F14","p"); 
-  pAbsMG->Add(pAbsSiO2G);       pAbsLegend->AddEntry(pAbsSiO2G,  "SiO2", "p"); 
-  pAbsMG->Draw("APL"); pAbsMG->GetXaxis()->SetTitle("absorbtion length, cm versus energy, GeV");  pAbsMG->Draw("APL");
-  pAbsLegend->Draw();   
-
-  pC->cd(3);      
-  TGraph *pAbsCH4Gr=new TGraph(kNbins,aPckov,aAbsCH4);
-  pAbsCH4Gr->SetMarkerStyle(kCH4M); pAbsCH4Gr->SetMarkerColor(kCH4Color);
-  pAbsCH4Gr->Draw("APL");
-  pAbsCH4Gr->GetXaxis()->SetTitle("energy, GeV");
-  pAbsCH4Gr->SetTitle("CH4 absorption length, cm");
-  pAbsCH4Gr->Draw("APL");
+  gPad->SetLogy();
+  TGraph *pAbsC6F14=new TGraph(kNbins,aPckov,aAbsC6F14);pAbsC6F14->SetMarkerStyle(kC6F14Marker); pAbsC6F14->SetMarkerColor(kC6F14Color);
+  TGraph *pAbsSiO2 =new TGraph(kNbins,aPckov,aAbsSiO2) ;pAbsSiO2 ->SetMarkerStyle(kSiO2M)      ; pAbsSiO2 ->SetMarkerColor(kSiO2Color);
+  TGraph *pAbsCH4  =new TGraph(kNbins,aPckov,aAbsCH4)  ;pAbsCH4  ->SetMarkerStyle(kCH4Marker)  ; pAbsCH4  ->SetMarkerColor(kCH4Color);
+  TGraph *pAbsGel  =new TGraph(kNbins,aPckov,aAbsGel)  ;pAbsGel  ->SetMarkerStyle(kGelMarker)  ; pAbsGel  ->SetMarkerColor(kGelColor);
+  TGraph *pAbsRef  =new TGraph(kNbins,aPckov,aAbsRef)  ;pAbsRef  ->SetMarkerStyle(kRefMarker)  ; pAbsRef  ->SetMarkerColor(kRefColor);
   
+  TMultiGraph *pAbsMG=new TMultiGraph();  TLegend *pAbsLe=new TLegend(0.2,0.15,0.2+kWidth,0.15+kHeight);
+  pAbsMG->Add(pAbsC6F14);      pAbsLe->AddEntry(pAbsC6F14,  "C6F14"    ,"p"); 
+  pAbsMG->Add(pAbsSiO2);       pAbsLe->AddEntry(pAbsSiO2 ,  "SiO2"     ,"p"); 
+  pAbsMG->Add(pAbsCH4);        pAbsLe->AddEntry(pAbsCH4  ,  "CH4"      ,"p"); 
+  pAbsMG->Add(pAbsGel);        pAbsLe->AddEntry(pAbsGel  ,  "Aerogel"  ,"p"); 
+  pAbsMG->Add(pAbsRef);        pAbsLe->AddEntry(pAbsRef  ,  "Reflector","p"); 
+  pAbsMG->Draw("APL"); 
+  pAbsMG->SetTitle("Absorbtion length,cm"); pAbsMG->GetXaxis()->SetTitle("energy, GeV");  
+  pAbsMG->Draw("APL");
+  pAbsLe->Draw();   
+//QE  
   pC->cd(4);
-  TGraph *pQeCsIG=new TGraph(kNbins,aPckov,aQeCsI);
-  pQeCsIG->SetMarkerStyle(kCsIMarker); pQeCsIG->SetMarkerColor(kCsIColor);
-  pQeCsIG->Draw("APL");
-  pQeCsIG->GetXaxis()->SetTitle("energy, GeV");
-  pQeCsIG->SetTitle("QE");
-  pQeCsIG->Draw("APL");
-  
+  TGraph *pQeCsI=new TGraph(kNbins,aPckov,aQeCsI); pQeCsI->SetMarkerStyle(kCsIMarker); pQeCsI->SetMarkerColor(kCsIColor);
+  pQeCsI->Draw("APL");
+  pQeCsI->SetTitle("QE");  pQeCsI->GetXaxis()->SetTitle("energy, GeV");
+  pQeCsI->Draw("APL");  
 //transmission  
   pC->cd(5);
   Float_t mm =0.1;Float_t cm=1.; 
   Float_t aTrC6F14[kNbins],aTrSiO2[kNbins],aTrCH4[kNbins];
   Float_t aTotTr[kNbins];
-  for(Int_t i=0;i<kNbins;i++){
+  for(Int_t i=0;i<kNbins;i++){//calculate probability for photon to survive during transversing a volume of material with absorption length  
     aTrC6F14[i]=TMath::Exp(-15*mm/(aAbsC6F14[i]+0.0001));
     aTrSiO2[i] =TMath::Exp(-5*mm/(aAbsSiO2[i] +0.0001));
     aTrCH4[i]  =TMath::Exp(-8*cm/(aAbsCH4[i]  +0.0001));    
     aTotTr[i]    =aTrC6F14[i]*aTrSiO2[i]*aTrCH4[i]*aQeCsI[i];
   }
-  TGraph *pTrC6F14G=new TGraph(kNbins,aPckov,aTrC6F14);pTrC6F14G->SetMarkerStyle(kC6F14M);pTrC6F14G->SetMarkerColor(kC6F14C);  
-  TGraph *pTrSiO2G=new TGraph(kNbins,aPckov,aTrSiO2);pTrSiO2G->SetMarkerStyle(kSiO2M); pTrSiO2G->SetMarkerColor(kSiO2C);  
-  TGraph *pTrCH4G=new TGraph(kNbins,aPckov,aTrCH4);pTrCH4G->SetMarkerStyle(kCH4M); pTrCH4G->SetMarkerColor(kCH4Color);   
-  TGraph *pTotTrG=new TGraph(kNbins,aPckov,aTotTr);pTotTrG->SetMarkerStyle(30);pTotTrG->SetMarkerColor(kYellow);
-  TMultiGraph *pTrMG=new TMultiGraph();
-  TLegend *pTrLegend=new TLegend(0.2,0.4,0.35,0.6);
-  pTrMG->Add(pQeCsIG);       pTrLegend->AddEntry(pQeCsIG,   "CsI QE", "p");  
-  pTrMG->Add(pTrC6F14G);     pTrLegend->AddEntry(pTrC6F14G, "C6F14", "p");  
-  pTrMG->Add(pTrSiO2G);      pTrLegend->AddEntry(pTrSiO2G,  "SiO2",  "p");          
-  pTrMG->Add(pTrCH4G);       pTrLegend->AddEntry(pTrCH4G,   "CH4",   "p");          
-  pTrMG->Add(pTotTrG);       pTrLegend->AddEntry(pTotTrG,   "total", "p");          
-  pTrMG->Draw("APL");pTrMG->GetXaxis()->SetTitle("transmission versus energy, GeV");pTrMG->Draw("APL");
-  pTrLegend->Draw();      
-
-  pC->cd(6);
+  TGraph *pTrC6F14=new TGraph(kNbins,aPckov,aTrC6F14);pTrC6F14->SetMarkerStyle(kC6F14Marker);pTrC6F14->SetMarkerColor(kC6F14Color);  
+  TGraph *pTrSiO2 =new TGraph(kNbins,aPckov,aTrSiO2) ;pTrSiO2 ->SetMarkerStyle(kSiO2M)      ;pTrSiO2 ->SetMarkerColor(kSiO2Color);  
+  TGraph *pTrCH4  =new TGraph(kNbins,aPckov,aTrCH4)  ;pTrCH4  ->SetMarkerStyle(kCH4Marker)  ;pTrCH4  ->SetMarkerColor(kCH4Color);   
+  TGraph *pTotTr  =new TGraph(kNbins,aPckov,aTotTr)  ;pTotTr  ->SetMarkerStyle(30)          ;pTotTr  ->SetMarkerColor(kYellow);
   
-  TMultiGraph *pCompMG=new TMultiGraph;
-  pCompMG->Add(pQeCsIG);
-  pCompMG->Add(new TGraph(kNbins,aPckov,aQeCsIold));
-  pCompMG->Draw("APL");pCompMG->GetXaxis()->SetTitle("comparison of QE versus energy, GeV");pCompMG->Draw("APL");
+  TMultiGraph *pTrMG=new TMultiGraph();  TLegend *pTrLe=new TLegend(0.2,0.4,0.2+kWidth,0.4+kHeight);
+  pTrMG->Add(pQeCsI);       pTrLe->AddEntry(pQeCsI,   "CsI QE", "p");  
+  pTrMG->Add(pTrC6F14);     pTrLe->AddEntry(pTrC6F14, "C6F14", "p");  
+  pTrMG->Add(pTrSiO2);      pTrLe->AddEntry(pTrSiO2,  "SiO2",  "p");          
+  pTrMG->Add(pTrCH4);       pTrLe->AddEntry(pTrCH4,   "CH4",   "p");          
+  pTrMG->Add(pTotTr);       pTrLe->AddEntry(pTotTr,   "total", "p");          
+  pTrMG->Draw("APL");
+  pTrMG->SetTitle("Transmission");  pTrMG->GetXaxis()->SetTitle("energy, GeV");
+  pTrMG->Draw("APL");
+  pTrLe->Draw();      
+//comparison of new and old staff
+  pC->cd(6);
+  TGraph *pQeCsIold=new TGraph(kNbins,aPckov,aQeCsIold); pQeCsIold->SetMarkerStyle(kC6F14Marker);pQeCsIold->SetMarkerColor(kC6F14Color);  
+  
+  TMultiGraph *pCompMG=new TMultiGraph;  TLegend *pCompLe=new TLegend(0.2,0.6,0.2+kWidth,0.6+kHeight);
+  pCompMG->Add(pQeCsI);       pCompLe->AddEntry(pQeCsI,    "QE new 30.10.03", "p");  
+  pCompMG->Add(pQeCsIold);    pCompLe->AddEntry(pQeCsIold, "QE old 01.01.02", "p");
+  pCompMG->Draw("APL");
+  pCompMG->SetTitle("Comparison of new and old staff");
+  pCompMG->GetXaxis()->SetTitle("energy, GeV");
+  pCompMG->Draw("APL");
+  pCompLe->Draw();      
     
   return;
   TCanvas *pQeC=new TCanvas("pQeC","CsI QE currently all the same",800,900); 
@@ -172,38 +191,6 @@ void Opticals()
     pQeCsIGr->Draw("APL");
   }
 }//main
-
-//__________________________________________________________________________________________________
-Float_t AbsoCH4(Float_t x)
-{//Evaluate the absorbtion lenght of CH4
-  Float_t sch4[9] = {.12,.16,.23,.38,.86,2.8,7.9,28.,80.};              //MB X 10^22
-  Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
-  const Float_t kLoschmidt=2.686763e19;                                      // LOSCHMIDT NUMBER IN CM-3
-  const Float_t kPressure=750.,kTemperature=283.;                                      
-  const Float_t pn=kPressure/760.;
-  const Float_t tn=kTemperature/273.16;
-  const Float_t c0=-1.655279e-1;
-  const Float_t c1=6.307392e-2;
-  const Float_t c2=-8.011441e-3;
-  const Float_t c3=3.392126e-4;
-    		
-  Float_t crossSection=0;                        
-  if (x<7.75) 
-    crossSection=.06e-22;
-  else if(x>=7.75 && x<=8.1){                 //------ METHANE CROSS SECTION cm-2 ASTROPH. J. 214, L47 (1978)                                               
-	crossSection=(c0+c1*x+c2*x*x+c3*x*x*x)*1.e-18;
-  }else if (x> 8.1){
-    Int_t j=0;
-    while (x<=em[j] || x>=em[j+1]){
-      j++;
-      Float_t a=(sch4[j+1]-sch4[j])/(em[j+1]-em[j]);
-      crossSection=(sch4[j]+a*(x-em[j]))*1e-22;
-    }
-  }//if
-    
-    Float_t density=kLoschmidt*pn/tn; //CH4 molecular density 1/cm-3
-    return 1./(density*crossSection);
-}//AbsoCH4()
 //__________________________________________________________________________________________________
 Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
 {//ENE(EV), PDOTI=COS(INC.ANG.), PDOTR=COS(POL.PLANE ROT.ANG.)
