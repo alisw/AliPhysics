@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/10/23 13:03:35  hristov
+The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
+
 Revision 1.4  2001/10/21 18:31:24  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -29,7 +32,7 @@ Revision 1.1  2001/02/27 22:13:34  jbarbosa
 Implementing merger class.
 
 */
-#include <iostream> 
+#include <iostream.h> 
 
 #include <TTree.h> 
 #include <TVector.h>
