@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.2  2000/06/15 07:58:49  morsch
 Code from MUON-dev joined
 
@@ -137,12 +140,12 @@ Float_t type_of_call rndm() {return gRandom->Rndm();}
 void type_of_call fit_trace(Float_t &, Float_t &, Float_t &, Float_t &, Float_t &, Float_t &, Int_t &, Int_t &, Int_t &, Int_t &);
 }
 
-static TTree *pNtupleGlobal;
-static TFile *pHfileGlobal;
-static TTree *treeK1;
-static TTree *TrH1;
-static TClonesArray *fHits2;        //List of hits for one track only
-static TClonesArray *fParticles2;   //List of particles in the Kine tree
+static TTree *gAliNtupleGlobal;
+static TFile *gAliFileGlobal;
+static TTree *gAliTreeK1;
+static TTree *gAliTrH1;
+static TClonesArray *gAliHits2;        //List of hits for one track only
+static TClonesArray *gAliParticles2;   //List of particles in the Kine tree
 
 
 // variables of the tracking ntuple 
@@ -166,6 +169,8 @@ ClassImp(AliMUONTrackReconstructor)
 //___________________________________________________
 AliMUONTrackReconstructor::AliMUONTrackReconstructor()
 {
+// Constructor
+//
    fSPxzCut   = 3.0;
    fSSigmaCut = 4.0;
    fSXPrec    = 0.01; 
@@ -175,11 +180,13 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor()
 //_____________________________________________________________________________
 void AliMUONTrackReconstructor::Reconst2(Int_t &ifit, Int_t &idebug, Int_t &nev)
 {
+//
+//
     reconstmuon2(ifit,idebug,nev);
 }
 
 //_____________________________________________________________________________
-void AliMUONTrackReconstructor::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgd_ev, Int_t &nev, Int_t &idres, Int_t &ireadgeant, Option_t *option,Text_t *filename)
+void AliMUONTrackReconstructor::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgdEvent, Int_t &nev, Int_t &idres, Int_t &ireadgeant, Option_t *option,Text_t *filename)
 {
   //
   // open kine and hits tree of background file for reconstruction of geant hits 
@@ -194,45 +201,45 @@ void AliMUONTrackReconstructor::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgd_ev
       cout<<"filename  "<<fFileName<<endl;
       pFile=new TFile(fFileName);
       cout<<"I have opened "<<fFileName<<" file "<<endl;
-      fHits2     = new TClonesArray("AliMUONHit",1000);
-      fParticles2 = new TClonesArray("TParticle",1000);
+      gAliHits2     = new TClonesArray("AliMUONHit",1000);
+      gAliParticles2 = new TClonesArray("TParticle",1000);
       first=kFALSE;
     }
     pFile->cd();
-    if(fHits2) fHits2->Clear();
-    if(fParticles2) fParticles2->Clear();
-    if(TrH1) delete TrH1;
-    TrH1=0;
-    if(treeK1) delete treeK1;
-    treeK1=0;
+    if(gAliHits2) gAliHits2->Clear();
+    if(gAliParticles2) gAliParticles2->Clear();
+    if(gAliTrH1) delete gAliTrH1;
+    gAliTrH1=0;
+    if(gAliTreeK1) delete gAliTreeK1;
+    gAliTreeK1=0;
     // Get Hits Tree header from file
     char treeName[20];
-    sprintf(treeName,"TreeH%d",bgd_ev);
-    TrH1 = (TTree*)gDirectory->Get(treeName);
-    //     printf("TrH1 %p of treename %s for event %d \n",TrH1,treeName,bgd_ev);
-    if (!TrH1) {
-      printf("ERROR: cannot find Hits Tree for event:%d\n",bgd_ev);
+    sprintf(treeName,"TreeH%d",bgdEvent);
+    gAliTrH1 = (TTree*)gDirectory->Get(treeName);
+    //     printf("gAliTrH1 %p of treename %s for event %d \n",gAliTrH1,treeName,bgdEvent);
+    if (!gAliTrH1) {
+      printf("ERROR: cannot find Hits Tree for event:%d\n",bgdEvent);
     }
     // set branch addresses
     TBranch *branch;
     char branchname[30];
     AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON");  
     sprintf(branchname,"%s",pMUON->GetName());       
-    if (TrH1 && fHits2) {
-      branch = TrH1->GetBranch(branchname);
-      if (branch) branch->SetAddress(&fHits2);
+    if (gAliTrH1 && gAliHits2) {
+      branch = gAliTrH1->GetBranch(branchname);
+      if (branch) branch->SetAddress(&gAliHits2);
     }
-    TrH1->GetEntries();
+    gAliTrH1->GetEntries();
     // get the Kine tree
-    sprintf(treeName,"TreeK%d",bgd_ev);
-    treeK1 = (TTree*)gDirectory->Get(treeName);
-    if (!treeK1) {
-      printf("ERROR: cannot find Kine Tree for event:%d\n",bgd_ev);
+    sprintf(treeName,"TreeK%d",bgdEvent);
+    gAliTreeK1 = (TTree*)gDirectory->Get(treeName);
+    if (!gAliTreeK1) {
+      printf("ERROR: cannot find Kine Tree for event:%d\n",bgdEvent);
     }
     // set branch addresses
-    if (treeK1) 
-      treeK1->SetBranchAddress("Particles", &fParticles2);
-    treeK1->GetEvent(0);
+    if (gAliTreeK1) 
+      gAliTreeK1->SetBranchAddress("Particles", &gAliParticles2);
+    gAliTreeK1->GetEvent(0);
     
     // get back to the first file
     TTree *treeK = gAlice->TreeK();
@@ -262,6 +269,7 @@ void AliMUONTrackReconstructor::Init(Double_t &seff, Double_t &sb0, Double_t &sb
 //__________________________________________
 void AliMUONTrackReconstructor::FinishEvent()
 {
+// Finish
     TTree *treeK = gAlice->TreeK();
     TFile *file1 = 0;
     if (treeK) file1 = treeK->GetCurrentFile();
@@ -316,21 +324,21 @@ void hist_create()
   // Create an output file ("reconst.root")
   // Create some histograms and an ntuple
 
-    pHfileGlobal = new TFile("reconst.root","RECREATE","Ntuple - reconstruction");
+    gAliFileGlobal = new TFile("reconst.root","RECREATE","Ntuple - reconstruction");
 
-   pNtupleGlobal = new TTree("ntuple","Reconst ntuple");
-   pNtupleGlobal->Branch("ievr",&NtupleSt.ievr,"ievr/I");
-   pNtupleGlobal->Branch("ntrackr",&NtupleSt.ntrackr,"ntrackr/I");
-   pNtupleGlobal->Branch("istatr",&NtupleSt.istatr[0],"istatr[500]/I");
-   pNtupleGlobal->Branch("isignr",&NtupleSt.isignr[0],"isignr[500]/I");
-   pNtupleGlobal->Branch("pxr",&NtupleSt.pxr[0],"pxr[500]/F");
-   pNtupleGlobal->Branch("pyr",&NtupleSt.pyr[0],"pyr[500]/F");
-   pNtupleGlobal->Branch("pzr",&NtupleSt.pzr[0],"pzr[500]/F");
-   pNtupleGlobal->Branch("zvr",&NtupleSt.zvr[0],"zvr[500]/F");
-   pNtupleGlobal->Branch("chi2r",&NtupleSt.chi2r[0],"chi2r[500]/F");
-   pNtupleGlobal->Branch("pxv",&NtupleSt.pxv[0],"pxv[500]/F");
-   pNtupleGlobal->Branch("pyv",&NtupleSt.pyv[0],"pyv[500]/F");
-   pNtupleGlobal->Branch("pzv",&NtupleSt.pzv[0],"pzv[500]/F");
+   gAliNtupleGlobal = new TTree("ntuple","Reconst ntuple");
+   gAliNtupleGlobal->Branch("ievr",&NtupleSt.ievr,"ievr/I");
+   gAliNtupleGlobal->Branch("ntrackr",&NtupleSt.ntrackr,"ntrackr/I");
+   gAliNtupleGlobal->Branch("istatr",&NtupleSt.istatr[0],"istatr[500]/I");
+   gAliNtupleGlobal->Branch("isignr",&NtupleSt.isignr[0],"isignr[500]/I");
+   gAliNtupleGlobal->Branch("pxr",&NtupleSt.pxr[0],"pxr[500]/F");
+   gAliNtupleGlobal->Branch("pyr",&NtupleSt.pyr[0],"pyr[500]/F");
+   gAliNtupleGlobal->Branch("pzr",&NtupleSt.pzr[0],"pzr[500]/F");
+   gAliNtupleGlobal->Branch("zvr",&NtupleSt.zvr[0],"zvr[500]/F");
+   gAliNtupleGlobal->Branch("chi2r",&NtupleSt.chi2r[0],"chi2r[500]/F");
+   gAliNtupleGlobal->Branch("pxv",&NtupleSt.pxv[0],"pxv[500]/F");
+   gAliNtupleGlobal->Branch("pyv",&NtupleSt.pyv[0],"pyv[500]/F");
+   gAliNtupleGlobal->Branch("pzv",&NtupleSt.pzv[0],"pzv[500]/F");
 
    // test aliroot
 
@@ -698,7 +706,7 @@ void chfnt(Int_t &ievr, Int_t &ntrackr, Int_t *istatr, Int_t *isignr, Float_t *p
 	NtupleSt.pyv[i]    = pyv[i];
 	NtupleSt.pzv[i]    = pzv[i];
     }
-    pNtupleGlobal->Fill();   
+    gAliNtupleGlobal->Fill();   
 }
 
 //________________
@@ -706,7 +714,7 @@ void hist_closed()
 {
   //
   // write histos and ntuple to "reconst.root" file
-  pHfileGlobal->Write();
+  gAliFileGlobal->Write();
 }
 
 //________________________________________________________________________
@@ -753,7 +761,7 @@ void trackf_read_fit(Int_t &ievr, Int_t &nev, Int_t &nhittot1, Int_t *izch, Doub
   } // track loop
 
   ievr=nev;
-  pHfileGlobal->cd();    
+  gAliFileGlobal->cd();    
 }
 
 //______________________________________________________________________________
@@ -873,21 +881,21 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 //      } // if pMUON
   } // track loop first file
 
-  if (TrH1 && fHits2 ) { // if background file
-    ntracks =(Int_t)TrH1->GetEntries();
+  if (gAliTrH1 && gAliHits2 ) { // if background file
+    ntracks =(Int_t)gAliTrH1->GetEntries();
     printf("Trackf_read - 2-nd file - ntracks %d\n",ntracks);
 
     //  Loop over tracks
     for (Int_t track=0; track<ntracks; track++) {
       
-      if (fHits2) fHits2->Clear();
-      TrH1->GetEvent(track);
+      if (gAliHits2) gAliHits2->Clear();
+      gAliTrH1->GetEvent(track);
 
       //  Loop over hits
       AliMUONHit *mHit;
-      for (int i=0;i<fHits2->GetEntriesFast();i++) 
+      for (int i=0;i<gAliHits2->GetEntriesFast();i++) 
 	{
-	  mHit=(AliMUONHit*) (*fHits2)[i];
+	  mHit=(AliMUONHit*) (*gAliHits2)[i];
 	  if (mHit->fChamber > 10) continue;
 	  if (maxidg<=20000) {
 	    
@@ -908,7 +916,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	    Int_t id1  = ftrack;                   // track number 
 	    Int_t idum = track+1;
 	    
-	    TClonesArray *fPartArray = fParticles2;
+	    TClonesArray *fPartArray = gAliParticles2;
 //	    TParticle *Part=NULL;
 	    Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
 	    if (id==kMuonPlus||id==kMuonMinus) {
@@ -929,7 +937,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	  } // check limits (maxidg)
 	} // hit loop 
     } // track loop
-  } // if TrH1
+  } // if gAliTrH1
 
   ievr = nev;
   nhittot1 = maxidg ;
@@ -939,7 +947,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
   if (nres>=19) nbres++;
   printf("nres, nbres %d %d \n",nres,nbres);
 
-  pHfileGlobal->cd();      
+  gAliFileGlobal->cd();      
 
 }
 
@@ -1031,7 +1039,7 @@ void trackf_read_spoint(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *
 	
 	treeR->Reset();
 
-	pHfileGlobal->cd();
+	gAliFileGlobal->cd();
 
     } // if pMUON
 }

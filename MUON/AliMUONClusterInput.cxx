@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/06 09:04:50  morsch
+
+- Dummy z-arguments in GetPadI, SetHit, FirstPad replaced by real z-coordinate
+        to make code work with slat chambers.
+
 Revision 1.5  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -228,5 +233,11 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
    return value;
 }
 
+AliMUONClusterInput& AliMUONClusterInput
+::operator = (const AliMUONClusterInput& rhs)
+{
+// Dummy assignment operator
+    return *this;
+}
 
 

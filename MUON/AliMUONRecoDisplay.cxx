@@ -15,9 +15,15 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/21 17:51:54  morsch
+RN3 violations corrected
+
 Revision 1.2  2000/11/23 10:09:39  gosset
 Bug correction in AliMUONRecoDisplay.
-Copyright, $Log$, $Id$, comments at the right place for automatic documentation,
+Copyright, $Log$
+Copyright, Revision 1.3  2000/12/21 17:51:54  morsch
+Copyright, RN3 violations corrected
+Copyright,, $Id$, comments at the right place for automatic documentation,
 in AliMUONRecoEvent and AliMUONRecoDisplay
 
 */
@@ -125,6 +131,7 @@ AliMUONRecoDisplay::~AliMUONRecoDisplay()
 //-------------------------------------------------------------------
 Bool_t AliMUONRecoDisplay::Event(Int_t nevent)
 {
+// Go to event nevent
    fEvent = nevent;
    for (Int_t entry=0; entry<fTree->GetEntries(); entry++) {
       fTree->GetEntry(entry);
@@ -165,10 +172,10 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
    if (fEvGen) fEvGen->Clear();
    fEvGen->SetNoEvent(nevent);
    // get list of particles
-   TClonesArray *Particles = gAlice->Particles();
+   TClonesArray *particles = gAlice->Particles();
    // connect MUON module
-   AliDetector *MUON = gAlice->GetDetector("MUON");
-   if (!MUON) {
+   AliDetector *pMUON = gAlice->GetDetector("MUON");
+   if (!pMUON) {
       cout << "MUON module not present.\n";
       gApplication->Terminate(0);
    }
@@ -181,18 +188,18 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
    Int_t ch;
    // loop all tracks
    for (Int_t track=0; track<ntracks; track++) {
-      hit = (AliMUONHit *) MUON->FirstHit(track);
+      hit = (AliMUONHit *) pMUON->FirstHit(track);
       if (!hit) continue;
-      particle = (TParticle *) Particles->UncheckedAt(hit->Track());
+      particle = (TParticle *) particles->UncheckedAt(hit->Track());
       if (IsReconstructible(track) && TMath::Abs(particle->GetPdgCode())==13) {
          gtrack = fEvGen->AddEmptyTrack();
 	 gtrack->SetSign(TMath::Sign((Int_t)1, -particle->GetPdgCode()));
 	 // reset hits
 	 for (ch=0; ch<10; ch++) gtrack->SetHitPosition(ch,0,0,0);
 	 // loop all hits
-	 for (AliMUONHit *muonHit=(AliMUONHit*)MUON->FirstHit(track);
+	 for (AliMUONHit *muonHit=(AliMUONHit*)pMUON->FirstHit(track);
 	      muonHit;
-	      muonHit=(AliMUONHit*)MUON->NextHit()) {
+	      muonHit=(AliMUONHit*)pMUON->NextHit()) {
 	    ch = muonHit->fChamber - 1;
 	    if (ch<0 || ch>9) continue;
 	    gtrack->SetHitPosition(ch, muonHit->X(),  muonHit->Y(),  muonHit->Z());
@@ -425,14 +432,14 @@ Bool_t AliMUONRecoDisplay::IsReconstructible(Int_t track)
 // true if at least three hits in first 2 stations, 3 in last 2 stations
 // and one in station 3
    if (fEmpty) return kFALSE;
-   AliDetector *MUON = gAlice->GetDetector("MUON");
+   AliDetector *pMUON = gAlice->GetDetector("MUON");
    Bool_t chHit[10];
    Int_t ch;
    for (ch=0; ch<10; ch++) chHit[ch] = kFALSE;
    //loop hits
-   for (AliMUONHit *muonHit=(AliMUONHit*)MUON->FirstHit(track);
+   for (AliMUONHit *muonHit=(AliMUONHit*)pMUON->FirstHit(track);
         muonHit;
-	muonHit=(AliMUONHit*)MUON->NextHit()) {
+	muonHit=(AliMUONHit*)pMUON->NextHit()) {
       ch = muonHit->fChamber - 1;
       if (ch<0 || ch>9) continue;
       chHit[ch] = kTRUE;

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.14  2000/10/23 16:03:45  morsch
+Correct z-position of all clusters created "on the flight".
+
 Revision 1.13  2000/10/23 13:38:23  morsch
 Set correct z-coordinate when cluster is split.
 
@@ -1894,7 +1897,7 @@ void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     f=chisq;
 }
 
-void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster c)
+void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster &c)
 {
   //
   // Add a raw cluster copy to the list
@@ -1906,6 +1909,7 @@ void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster c)
 }
 
 Bool_t AliMUONClusterFinderVS::TestTrack(Int_t t) {
+// Test if track was user selected
     if (fTrack[0]==-1 || fTrack[1]==-1) {
 	return kTRUE;
     } else if (t==fTrack[0] || t==fTrack[1]) {

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 22:02:45  morsch
 Was before in DataStructures.cxx
 
@@ -27,6 +30,7 @@ ClassImp(AliMUONPadHit)
 //___________________________________________
 AliMUONPadHit::AliMUONPadHit(Int_t *clhits)
 {
+// Constructor
    fHitNumber=clhits[0];
    fCathode=clhits[1];
    fQ=clhits[2];
