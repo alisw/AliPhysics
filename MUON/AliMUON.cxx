@@ -364,7 +364,7 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
         "Creating standard getter for detector %s. Top folder is %s.",
          GetName(),topfoldername);
      
- fLoader   = new AliMUONLoader(GetName(),topfoldername);
+ fLoader   = new AliLoader(GetName(),topfoldername);
  fMUONData = new AliMUONData(fLoader,GetName(),GetName()); 
  return fLoader;
 }
