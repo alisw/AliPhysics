@@ -12,6 +12,7 @@
 
 #include <globals.hh>
 #include <g4std/vector>
+#include <g4std/set>
 #include <g4rw/tvordvec.h>
 #include <g4rw/tpordvec.h>
 
@@ -20,6 +21,7 @@ class G4Element;
 
 typedef G4std::vector<G4bool>  TG4boolVector;
 typedef G4std::vector<G4int>   TG4intVector;
+typedef G4std::set <G4String, G4std::less<G4String> > TG4StringSet; 
 typedef G4RWTValOrderedVector<G4double> TG4doubleVector;
 typedef G4RWTValOrderedVector<G4String> TG4StringVector;
 typedef G4RWTValOrderedVector<TG3FlagValue> TG3FlagVector;
