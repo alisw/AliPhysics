@@ -11,7 +11,7 @@
 #include <Rtypes.h>
 
 //namespace AliITSreco {    
-   const Int_t kMaxClusterPerLayer=3500*10;
+   const Int_t kMaxClusterPerLayer=7000*10;
    const Int_t kMaxDetectorPerLayer=1000;
    const Int_t kLayersToSkip=0;
 
