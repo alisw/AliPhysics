@@ -378,7 +378,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
       // 68  - for exiting hit,
       // 33  - for stopping hit.
 
-      Int_t status = hit->GetTrackStatus(); 
+      //Int_t status = hit->GetTrackStatus(); 
       Int_t status1 = 0;
       Int_t hitDetector = hit->GetDetector();
       Float_t depEnergy = 0.;
