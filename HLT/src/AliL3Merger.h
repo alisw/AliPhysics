@@ -19,7 +19,8 @@ class AliL3Merger {
   Double_t fMaxTgl;
   void SetArray(Int_t nin);
   void DeleteArray();
-
+  Char_t fTrackType;
+  
   AliL3TrackArray **fInTrack;//!
   Int_t fNIn;
 
@@ -35,7 +36,7 @@ class AliL3Merger {
 
  public:
   AliL3Merger();
-  AliL3Merger(Int_t ntrackarrays);
+  AliL3Merger(Int_t ntrackarrays,Char_t *tracktype="AliL3Track");
   virtual ~AliL3Merger();
 
   Int_t GetNIn(){return fNIn;}
@@ -58,9 +59,9 @@ class AliL3Merger {
   void SortGlobalTracks(AliL3Track **tracks, Int_t ntrack);
   void SortTracks(AliL3Track **tracks, Int_t ntrack);
   void AddTrack(AliL3TrackArray *mergedtrack,AliL3Track *track);
-  AliL3Track * MultiMerge(AliL3TrackArray *mergedtrack,AliL3Track **tracks, Int_t ntrack);
+  virtual AliL3Track * MultiMerge(AliL3TrackArray *mergedtrack,AliL3Track **tracks, Int_t ntrack);
   AliL3Track * MergeTracks(AliL3TrackArray *mergedtrack,AliL3Track *t0,AliL3Track *t1);
-  Bool_t IsTrack(AliL3Track *innertrack,AliL3Track *outertrack);
+  virtual Bool_t IsTrack(AliL3Track *innertrack,AliL3Track *outertrack);
   Bool_t IsRTrack(AliL3Track *innertrack,AliL3Track *outertrack);
   Double_t TrackDiff(AliL3Track *innertrack,AliL3Track *outertrack);
   void Print();

@@ -30,10 +30,18 @@ AliL3Merger::AliL3Merger(){
 }
 
 
-AliL3Merger::AliL3Merger(Int_t ntrackarrays){
+AliL3Merger::AliL3Merger(Int_t ntrackarrays,Char_t *tracktype){
   //Constructor.
+  
+  if(strcmp(tracktype,"AliL3Track")==0) fTrackType='t';
+  else if(strcmp(tracktype,"AliL3ConfMapTrack")==0) fTrackType='c';
+  else if(strcmp(tracktype,"AliL3HoughTrack")==0) fTrackType='h';
+  else
+    LOG(AliL3Log::kError,"AliL3Merger::AliL3Merger","Track types")
+      <<"Unknown tracktype"<<ENDLOG;
   SetArray(ntrackarrays);
   fCurrentTracks=0;
+
 }
 
 AliL3Merger::~AliL3Merger(){
@@ -52,9 +60,16 @@ void AliL3Merger::SetArray(Int_t nin){
   fNIn = nin;
   fInTrack = (AliL3TrackArray **) new Byte_t[fNIn*sizeof(AliL3TrackArray *)];
   for(Int_t i=0; i<fNIn;i++){
-    fInTrack[i] = new AliL3TrackArray();
+    if(fTrackType=='h')
+      fInTrack[i] = new AliL3TrackArray("AliL3HoughTrack");
+    else
+      fInTrack[i] = new AliL3TrackArray("AliL3Track");
+    
   }
-  fOutTrack= new AliL3TrackArray();
+  if(fTrackType=='h')
+    fOutTrack= new AliL3TrackArray("AliL3HoughTrack");
+  else
+    fOutTrack= new AliL3TrackArray("AliL3Track");
 }
 
 void AliL3Merger::Reset(){
