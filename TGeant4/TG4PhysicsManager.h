@@ -25,6 +25,7 @@ class TG4FlagVector;
 class TG4PhysicsList;
 
 class G4ParticleDefinition;
+class G4VProcess;
 
 class TG4PhysicsManager
 {
@@ -57,7 +58,7 @@ class TG4PhysicsManager
     void Lock();     
     void SetProcessActivation();  
     G4int GetPDGEncodingFast(G4ParticleDefinition* particle);
-    AliMCProcess GetMCProcess(const G4String& g4ProcessName);
+    AliMCProcess GetMCProcess(const G4VProcess* process);
     G4bool CheckCutWithCutVector(
              G4String name, G4double value, TG3Cut& cut);   
     G4bool CheckFlagWithFlagVector(
