@@ -35,6 +35,7 @@ class AliMoreModulesConstruction
     // methods
     void AddModule(G4String moduleName, G4int version, 
                    AliModuleType moduleType);
+    void Configure();
     void Construct();
     
     // get methods
