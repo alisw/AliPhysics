@@ -246,7 +246,7 @@ class TGeant4: public AliMC
 
         // get methods
     virtual Int_t CurrentEvent() const; 
-    virtual AliMCType GetMCType() const { return kGeant4; }
+    virtual AliMCGeomType GetMCGeomType() const { return kGeant4; }
 
   protected:
     TGeant4();
@@ -263,6 +263,8 @@ class TGeant4: public AliMC
     TG4StepManager*      fStepManager;     //step manager
     TG4VisManager*       fVisManager;      //visualization manager
     TG4RunManager*       fRunManager;      //run manager
+
+  ClassDef(TGeant4,0) // Geant4 implementation of the MonteCarlo interface 
 };
 
 #ifndef __CINT__
