@@ -32,14 +32,12 @@ class AliTRDpidLQ : public AliTRDpid {
   virtual void          Copy(TObject &p);
   virtual Bool_t        Init();
   virtual Bool_t        AssignLikelihood(AliTRDtrack *t);
-  virtual Bool_t        CreateHistograms(const Int_t   nmom
-                                       , const Float_t minmom
-                                       , const Float_t maxmom);
+  virtual Bool_t        CreateHistograms(Int_t nmom, Float_t minmom, Float_t maxmom);
   virtual Bool_t        FillSpectra(const AliTRDtrack *t);
 
   Int_t         GetIndex(const AliTRDtrack *t);
-  Int_t         GetIndex(const Int_t imom, const Int_t ipid);
-  Int_t         GetIndex(const Float_t mom, const Int_t ipid);
+  Int_t         GetIndex(Int_t imom, Int_t ipid);
+  Int_t         GetIndex(Float_t mom, Int_t ipid);
 
           TObjArray*    GetHist() const                     { return fHist;        };
 
@@ -50,12 +48,12 @@ class AliTRDpidLQ : public AliTRDpid {
           Float_t       GetMinLh() const                    { return fMinLh;       };
           Float_t       GetMaxLh() const                    { return fMaxLh;       };
 
-          void          SetChargeMin(const Float_t min)     { fChargeMin   = min;  };
-          void          SetNClusterMin(const Int_t min)     { fNClusterMin = min;  };
+          void          SetChargeMin(Float_t min)     { fChargeMin   = min;  };
+          void          SetNClusterMin(Int_t min)     { fNClusterMin = min;  };
 
-          void          SetNLh(const Int_t n)               { fNLh         = n;    };
-          void          SetMinLh(const Float_t min)         { fMinLh       = min;  };
-          void          SetMaxLh(const Float_t max)         { fMaxLh       = max;  };
+          void          SetNLh(Int_t n)               { fNLh         = n;    };
+          void          SetMinLh(Float_t min)         { fMinLh       = min;  };
+          void          SetMaxLh(Float_t max)         { fMaxLh       = max;  };
 
  protected:
 

@@ -259,9 +259,7 @@ Bool_t AliTRDpidLQ::AssignLikelihood(AliTRDtrack *t)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpidLQ::CreateHistograms(const Int_t   nmom
-                                   , const Float_t minmom
-                                   , const Float_t maxmom)
+Bool_t AliTRDpidLQ::CreateHistograms(Int_t   nmom, Float_t minmom, Float_t maxmom)
 {
   //
   // Creates the histograms
@@ -391,7 +389,7 @@ Int_t AliTRDpidLQ::GetIndex(const AliTRDtrack *t)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpidLQ::GetIndex(const Float_t mom, const Int_t ipid)
+Int_t AliTRDpidLQ::GetIndex(Float_t mom, Int_t ipid)
 {
   //
   // Returns the histogram index
@@ -404,7 +402,7 @@ Int_t AliTRDpidLQ::GetIndex(const Float_t mom, const Int_t ipid)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpidLQ::GetIndex(const Int_t imom, const Int_t ipid)
+Int_t AliTRDpidLQ::GetIndex(Int_t imom, Int_t ipid)
 {
   //
   // Returns the histogram index

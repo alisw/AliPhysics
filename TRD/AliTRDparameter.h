@@ -32,10 +32,10 @@ class AliTRDparameter : public TNamed {
   virtual void     ReInit();
  
   virtual void     SetNRowPad();
-  virtual void     SetNRowPad(const Int_t p, const Int_t c, const Int_t npad);
-  virtual void     SetColPadSize(const Int_t p, const Float_t s);
-  virtual void     SetNTimeBin(const Int_t nbin);
-  virtual void     SetExpandTimeBin(const Int_t nbefore, const Int_t nafter)
+  virtual void     SetNRowPad(Int_t p, Int_t c, Int_t npad);
+  virtual void     SetColPadSize(Int_t p, Float_t s);
+  virtual void     SetNTimeBin(Int_t nbin);
+  virtual void     SetExpandTimeBin(Int_t nbefore, Int_t nafter)
                                                                   { fTimeBefore = nbefore;
                                                                     fTimeAfter  = nafter; };
 
@@ -67,9 +67,9 @@ class AliTRDparameter : public TNamed {
   virtual void     SetClusMaxThresh(Int_t thresh)                 { fClusMaxThresh  = thresh;   };
   virtual void     SetClusSigThresh(Int_t thresh)                 { fClusSigThresh  = thresh;   };
   
-          Int_t    GetRowMax(const Int_t p, const Int_t c, const Int_t s)     
+          Int_t    GetRowMax(Int_t p, Int_t c, Int_t s)     
                                                             const { return fRowMax[p][c][s]; };
-          Int_t    GetColMax(const Int_t p)                 const { return fColMax[p];       };
+          Int_t    GetColMax(Int_t p)                 const { return fColMax[p];       };
           Int_t    GetTimeMax()                             const { return fTimeMax;         };
           Int_t    GetTimeBefore()                          const { return fTimeBefore;      }; 
           Int_t    GetTimeAfter()                           const { return fTimeAfter;       }; 
@@ -77,14 +77,14 @@ class AliTRDparameter : public TNamed {
                                                                          + fTimeBefore 
                                                                          + fTimeAfter; };
 
-          Float_t  GetRow0(const Int_t p, const Int_t c, const Int_t s)       
+          Float_t  GetRow0(Int_t p, Int_t c, Int_t s)       
                                                             const { return fRow0[p][c][s]; };
-          Float_t  GetCol0(const Int_t p)                   const { return fCol0[p];       };
-          Float_t  GetTime0(const Int_t p)                  const { return fTime0[p];      };
+          Float_t  GetCol0(Int_t p)                   const { return fCol0[p];       };
+          Float_t  GetTime0(Int_t p)                  const { return fTime0[p];      };
 
-          Float_t  GetRowPadSize(const Int_t p, const Int_t c, const Int_t s) 
+          Float_t  GetRowPadSize(Int_t p, Int_t c, Int_t s) 
                                                             const { return fRowPadSize[p][c][s]; };
-          Float_t  GetColPadSize(const Int_t p)             const { return fColPadSize[p];       };
+          Float_t  GetColPadSize(Int_t p)             const { return fColPadSize[p];       };
           Float_t  GetTimeBinSize()                         const { return fTimeBinSize;         };
 
           Float_t  GetGasGain()                             const { return fGasGain;       };

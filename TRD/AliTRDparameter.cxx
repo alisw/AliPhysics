@@ -448,7 +448,7 @@ void AliTRDparameter::ReInit()
 }
 
 //_____________________________________________________________________________
-void AliTRDparameter::SetNRowPad(const Int_t p, const Int_t c, const Int_t npad)
+void AliTRDparameter::SetNRowPad(Int_t p, Int_t c, Int_t npad)
 {
   //
   // Redefines the number of pads in raw direction for
@@ -512,7 +512,7 @@ void AliTRDparameter::SetNRowPad()
 }
 
 //_____________________________________________________________________________
-void AliTRDparameter::SetColPadSize(const Int_t p, const Float_t s)
+void AliTRDparameter::SetColPadSize(Int_t p, Float_t s)
 {
   //
   // Redefines the pad size in column direction
@@ -527,7 +527,7 @@ void AliTRDparameter::SetColPadSize(const Int_t p, const Float_t s)
 }
 
 //_____________________________________________________________________________
-void AliTRDparameter::SetNTimeBin(const Int_t nbin)
+void AliTRDparameter::SetNTimeBin(Int_t nbin)
 {
   //
   // Redefines the number of time bins in the drift region.

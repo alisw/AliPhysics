@@ -70,14 +70,14 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
   virtual Bool_t   IsHole(Int_t /*iplan*/, Int_t /*icham*/, Int_t /*isect*/) const {return kFALSE;}
-  virtual Int_t    GetDetectorSec(const Int_t p, const Int_t c) const;
-  virtual Int_t    GetDetector(const Int_t p, const Int_t c, const Int_t s) const;
-  virtual Int_t    GetPlane(const Int_t d)   const;
-  virtual Int_t    GetChamber(const Int_t d) const;
-  virtual Int_t    GetSector(const Int_t d)  const;
+  virtual Int_t    GetDetectorSec(Int_t p, Int_t c) const;
+  virtual Int_t    GetDetector(Int_t p, Int_t c, Int_t s) const;
+  virtual Int_t    GetPlane(Int_t d)   const;
+  virtual Int_t    GetChamber(Int_t d) const;
+  virtual Int_t    GetSector(Int_t d)  const;
 
-          Float_t  GetChamberWidth(const Int_t p)                 const { return fCwidth[p];     };
-          Float_t  GetChamberLength(const Int_t p, const Int_t c) const { return fClength[p][c]; }; 
+          Float_t  GetChamberWidth(Int_t p) const { return fCwidth[p];     };
+          Float_t  GetChamberLength(Int_t p, Int_t c) const { return fClength[p][c]; }; 
 
   virtual void     GetGlobal(const AliRecPoint* , TVector3& , TMatrix& ) const { }; 
   virtual void     GetGlobal(const AliRecPoint* , TVector3& ) const { };
