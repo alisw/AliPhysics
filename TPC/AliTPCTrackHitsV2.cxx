@@ -428,7 +428,12 @@ void AliTPCTrackHitsV2::AddHit(Int_t volumeID, Int_t trackID,
     ddz2*=ddz2;
     ratio = TMath::Sqrt(1.+ dfi2+ ddz2);  
   }
-  dl = fStep * Short_t(TMath::Nint(drhit*ratio/fStep));
+  //
+  //  dl = fStep * Short_t(TMath::Nint(drhit*ratio/fStep));   // MI change - range check
+  dl = drhit*ratio/fStep;
+  if (TMath::Abs(dl)>32765) dl =0;
+  dl = fStep * Short_t(TMath::Nint(dl));
+  //
   ddl = dl - drhit*ratio; 
   fTempInfo->fOldR += dl/ratio; 
 
