@@ -27,10 +27,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliMonitorTrend.h"
 #include <TH1.h>
 #include <TVirtualPad.h>
 #include <TLine.h>
+
+#include "AliLog.h"
+
+#include "AliMonitorTrend.h"
 
 
 ClassImp(AliMonitorTrend) 
@@ -214,7 +217,7 @@ Bool_t AliMonitorTrend::ComparePlot()
   if (fRefSigma < 0) return kTRUE;
   if (fgThreshold <= 0) return kTRUE;
   if (!fHistoDraw) {
-    Info("Compare", "no data trend available for comparison\ncall DrawSum or DrawRaw before calling Compare");
+    AliWarning("no data trend available for comparison\ncall DrawSum or DrawRaw before calling Compare");
     return kTRUE;
   }
 
@@ -253,8 +256,8 @@ Bool_t AliMonitorTrend::GetSum(Int_t number)
 // get the monitor trend for the last  "number" events
 
   if (number > fNumberOfEvents) {
-    Info("GetSum", "requested number of events (%d) exceeds range of available events (%d)\nusing last %d event(s)", 
-	  number, fNumberOfEvents, fNumberOfEvents);
+    AliError(Form("requested number of events (%d) exceeds range of available events (%d)\nusing last %d event(s)", 
+	  number, fNumberOfEvents, fNumberOfEvents));
     number = fNumberOfEvents;
   }
   if (number <= 0) return kFALSE;

@@ -25,6 +25,7 @@
 #include "AliMonitorV0s.h"
 #include "AliMonitorHisto.h"
 #include "AliESD.h"
+#include "AliLog.h"
 #include <TFolder.h>
 #include <TPDGCode.h>
 
@@ -43,13 +44,13 @@ AliMonitorV0s::AliMonitorV0s()
 AliMonitorV0s::AliMonitorV0s(const AliMonitorV0s& monitor) :
   AliMonitor(monitor)
 {
-  Fatal("AliMonitorV0s", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorV0s& AliMonitorV0s::operator = (const AliMonitorV0s& /*monitor*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 

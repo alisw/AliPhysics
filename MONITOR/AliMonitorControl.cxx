@@ -24,6 +24,7 @@
 
 #include "AliMonitorControl.h"
 #include "AliMonitorHisto.h"
+#include "AliLog.h"
 #include <TGNumberEntry.h>
 #include <TGTextView.h>
 #include <TGMsgBox.h>
@@ -301,14 +302,14 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
 AliMonitorControl::AliMonitorControl(const AliMonitorControl& control) :
   TObject(control)
 {
-  Fatal("AliMonitorControl", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorControl& AliMonitorControl::operator = (const AliMonitorControl& 
 						  /*control*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 

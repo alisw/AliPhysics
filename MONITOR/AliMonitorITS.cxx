@@ -25,6 +25,7 @@
 #include <TTree.h>
 #include <TVector3.h>
 
+#include "AliLog.h"
 #include "AliESD.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
@@ -51,13 +52,13 @@ AliMonitorITS::AliMonitorITS(AliITSgeom* geom)
 AliMonitorITS::AliMonitorITS(const AliMonitorITS& monitor) :
   AliMonitor(monitor)
 {
-  Fatal("AliMonitorITS", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorITS& AliMonitorITS::operator = (const AliMonitorITS& /*monitor*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 

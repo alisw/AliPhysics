@@ -25,6 +25,7 @@
 #include "AliMonitorHisto.h"
 #include "AliMonitorTrend.h"
 #include "AliTPCParam.h"
+#include "AliLog.h"
 #include <TFolder.h>
 #include <stdlib.h>
 #include <AliL3MemHandler.h>
@@ -45,14 +46,14 @@ AliMonitorHLTHough::AliMonitorHLTHough(AliTPCParam* param)
 AliMonitorHLTHough::AliMonitorHLTHough(const AliMonitorHLTHough& monitor) :
   AliMonitor(monitor)
 {
-  Fatal("AliMonitorHLTHough", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorHLTHough& AliMonitorHLTHough::operator = (const AliMonitorHLTHough& 
 						    /*monitor*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 
@@ -139,7 +140,7 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
       char fileName[256];
       sprintf(fileName, "hlt/fitter/points_%d_%d.raw", iSector,iPatch);
       if (!clusterHandler[iSector][iPatch].SetBinaryInput(fileName)) {
-	Warning("FillHistos", "could not open file %s", fileName);
+	AliWarning(Form("could not open file %s", fileName));
 	continue;
       }
       clusters[iSector][iPatch] = (AliL3SpacePointData*) clusterHandler[iSector][iPatch].Allocate();
@@ -166,7 +167,7 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
   char fileName[256];
   sprintf(fileName, "hlt/fitter/tracks.raw");
   if (!memHandler.SetBinaryInput(fileName)) {
-    Warning("FillHistos", "could not open file hlt/fitter/tracks.raw");
+    AliWarning("could not open file hlt/fitter/tracks.raw");
     return;
   }
   AliL3TrackArray* tracks = new AliL3TrackArray;

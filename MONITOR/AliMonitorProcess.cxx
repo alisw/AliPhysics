@@ -33,6 +33,7 @@
 #include <TServerSocket.h>
 #include <TSocket.h>
 
+#include "AliLog.h"
 #include "AliESD.h"
 #include "AliITS.h"
 #include "AliITSclustererV2.h"
@@ -122,33 +123,32 @@ AliMonitorProcess::AliMonitorProcess(
 #endif
   if (!fGrid || fGrid->IsZombie() || !fGrid->IsConnected()) {
     delete fGrid;
-    Fatal("AliMonitorProcess", "could not connect to alien");
+    AliFatal("could not connect to alien");
   }
 #if ROOT_VERSION_CODE <= 199169   // 3.10/01
   fGrid->cd(alienDir);
 #endif
 
   fRunLoader = AliRunLoader::Open(fileNameGalice);
-  if (!fRunLoader) Fatal("AliMonitorProcess", 
-			 "could not get run loader from file %s", 
-			 fileNameGalice);
+  if (!fRunLoader) AliFatal(Form("could not get run loader from file %s", 
+				 fileNameGalice));
 
   fRunLoader->CdGAFile();
   fTPCParam = AliTPC::LoadTPCParam(gFile);
-  if (!fTPCParam) Fatal("AliMonitorProcess", "could not load TPC parameters");
+  if (!fTPCParam) AliFatal("could not load TPC parameters");
 
   fRunLoader->LoadgAlice();
   gAlice = fRunLoader->GetAliRun();
-  if (!gAlice) Fatal("AliMonitorProcess", "no gAlice object found");
+  if (!gAlice) AliFatal("no gAlice object found");
   AliITS* its = (AliITS*) gAlice->GetModule("ITS");
-  if (!its) Fatal("AliMonitorProcess", "no ITS detector found");
+  if (!its) AliFatal("no ITS detector found");
   fITSgeom = its->GetITSgeom();
-  if (!fITSgeom) Fatal("AliMonitorProcess", "could not load ITS geometry");
+  if (!fITSgeom) AliFatal("could not load ITS geometry");
 
   // Init TPC parameters for HLT
   Bool_t isinit=AliL3Transform::Init(const_cast<char*>(fileNameGalice),kTRUE);
   if(!isinit){
-    Fatal("AliMonitorProcess", "Could not create transform settings, please check log for error messages!");
+    AliFatal("Could not create transform settings, please check log for error messages!");
   }
 
   fTopFolder = new TFolder("Monitor", "monitor histograms");
@@ -170,7 +170,7 @@ AliMonitorProcess::AliMonitorProcess(
 
   fFile = TFile::Open("monitor_tree.root", "RECREATE");
   if (!fFile || !fFile->IsOpen()) {
-    Fatal("AliMonitorProcess", "could not open file for tree");
+    AliFatal("could not open file for tree");
   }
   fTree = new TTree("MonitorTree", "tree for monitoring");
   for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
@@ -222,14 +222,14 @@ AliMonitorProcess::AliMonitorProcess(const AliMonitorProcess& process) :
   fInterruptHandler(NULL)
 
 {
-  Fatal("AliMonitorProcess", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorProcess& AliMonitorProcess::operator = (const AliMonitorProcess& 
 						  /*process*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 
@@ -324,8 +324,8 @@ void AliMonitorProcess::ProcessFile(const char* fileName)
 // create a file with monitor histograms for a single file
 
   if (GetStatus() != kStopped) {
-    Error("ProcessFile", "ProcessFile can not be called"
-	  " while the monitor process is running");
+    AliError("ProcessFile can not be called"
+	     " while the monitor process is running");
     return;
   }
 
@@ -354,8 +354,8 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   sprintf(findName, "*.root");
   Grid_ResultHandle_t handle = fGrid->Find(dirName, findName);
   if (!handle) {
-    Error("CheckForNewFile", "could not open alien directory %s", 
-	  dirName);
+    AliError(Form("could not open alien directory %s", 
+		  dirName));
     return kFALSE;
   }
   TGridResult* result = fGrid->CreateGridResult(handle);
@@ -401,16 +401,16 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   fileName = dirName + ("/" + fLogicalFileName);
   handle = fGrid->GetPhysicalFileNames(fileName.Data());
   if (!handle) {
-    Error("CheckForNewFile", "could not get physical file names for %s", 
-	  fileName.Data());
+    AliError(Form("could not get physical file names for %s", 
+		  fileName.Data()));
     return kFALSE;
   }
   result = fGrid->CreateGridResult(handle);
   result->Reset();
   Grid_Result_t* resultEntry = result->Next();
   if (!resultEntry) {
-    Error("CheckForNewFile", "could not get physical file names for %s", 
-	  fileName.Data());
+    AliError(Form("could not get physical file names for %s", 
+		  fileName.Data()));
     return kFALSE;
   }
   fFileName = resultEntry->name2.c_str();
@@ -429,8 +429,8 @@ Bool_t AliMonitorProcess::ProcessFile()
 
   Int_t nEvents = GetNumberOfEvents(fFileName);
   if (nEvents <= 0) return kFALSE;
-  Info("ProcessFile", "found %d event(s) in file %s", 
-       nEvents, fFileName.Data());
+  AliDebug(1, Form("found %d event(s) in file %s", 
+		   nEvents, fFileName.Data()));
   if (IsSelected("HLTConfMap")) CreateHLT(fFileName);
   if (IsSelected("HLTHough")) CreateHLTHough(fFileName);
 
@@ -454,8 +454,8 @@ Bool_t AliMonitorProcess::ProcessFile()
     // monitor only central physics events
     if (rawReader.GetType() != 7) continue;
     if ((rawReader.GetAttributes()[0] & 0x02) == 0) continue;
-    Info("ProcessFile", "run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
-	 rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
+    AliInfo(Form("run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
+		 rawReader.GetEventId()[0], rawReader.GetEventId()[1]));
 
     AliESD esd;
     if (IsSelected("TPC")) {
@@ -486,7 +486,7 @@ Bool_t AliMonitorProcess::ProcessFile()
 
     if (fDisplaySocket) fDisplaySocket->Send("new event");
 
-    Info("ProcessFile", "filling histograms...");
+    AliDebug(1, "filling histograms...");
     for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
       CheckForConnections();
       SetStatus(kFilling);
@@ -496,7 +496,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     }
     if (fStopping) break;
 
-    Info("ProcessFile", "updating histograms...");
+    AliDebug(1, "updating histograms...");
     CheckForConnections();
     SetStatus(kUpdating);
     TIterator* iFolder = fTopFolder->GetListOfFolders()->MakeIterator();
@@ -510,10 +510,10 @@ Bool_t AliMonitorProcess::ProcessFile()
     delete iFolder;
     if (fStopping) break;
 
-    Info("ProcessFile", "filling the tree...");
+    AliDebug(1, "filling the tree...");
     fTree->Fill();
 
-    Info("ProcessFile", "broadcasting histograms...");
+    AliDebug(1, "broadcasting histograms...");
     CheckForConnections();
     BroadcastHistos();
 
@@ -578,14 +578,14 @@ Int_t AliMonitorProcess::GetNumberOfEvents(const char* fileName) const
 
   TFile* file = TFile::Open(fileName);
   if (!file || !file->IsOpen()) {
-    Error("GetNumberOfEvents", "could not open file %s", fileName);
+    AliError(Form("could not open file %s", fileName));
     if (file) delete file;
     return -1;
   }
 
   TTree* tree = (TTree*) file->Get("RAW");
   if (!tree) {
-    Error("GetNumberOfEvents", "could not find tree with raw data");
+    AliError("could not find tree with raw data");
   } else {
     nEvents = (Int_t) tree->GetEntries();
   }
@@ -604,13 +604,13 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader, AliESD* esd)
 
   AliLoader* tpcLoader = fRunLoader->GetLoader("TPCLoader");
   if (!tpcLoader) {
-    Error("ReconstructTPC", "no TPC loader found");
+    AliError("no TPC loader found");
     return kFALSE;
   }
   gSystem->Unlink("TPC.RecPoints.root");
 
   // cluster finder
-  Info("ReconstructTPC", "reconstructing clusters...");
+  AliDebug(1, "reconstructing clusters...");
   tpcLoader->LoadRecPoints("recreate");
   AliTPCclustererMI clusterer(fTPCParam);
   tpcLoader->MakeRecPointsContainer();
@@ -619,7 +619,7 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader, AliESD* esd)
   tpcLoader->WriteRecPoints("OVERWRITE");
 
   // track finder
-  Info("ReconstructTPC", "reconstructing tracks...");
+  AliDebug(1, "reconstructing tracks...");
   AliTPCtrackerMI tracker(fTPCParam);
   tracker.LoadClusters(tpcLoader->TreeR());
   tracker.Clusters2Tracks(esd);
@@ -638,20 +638,20 @@ Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader, AliESD* esd)
 
   AliLoader* itsLoader = fRunLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
-    Error("ReconstructITS", "no ITS loader found");
+    AliError("no ITS loader found");
     return kFALSE;
   }
   gSystem->Unlink("ITS.RecPoints.root");
 
   // cluster finder
-  Info("ReconstructITS", "reconstructing clusters...");
+  AliDebug(1, "reconstructing clusters...");
   itsLoader->LoadRecPoints("recreate");
   AliITSclustererV2 clusterer(fITSgeom);
   itsLoader->MakeRecPointsContainer();
   clusterer.Digits2Clusters(rawReader);
 
   // track finder
-  Info("ReconstructITS", "reconstructing tracks...");
+  AliDebug(1, "reconstructing tracks...");
   AliITStrackerV2 tracker(fITSgeom);
   tracker.LoadClusters(itsLoader->TreeR());
   tracker.Clusters2Tracks(esd);
@@ -669,7 +669,7 @@ Bool_t AliMonitorProcess::ReconstructV0s(AliESD* esd)
   SetStatus(kRecV0s);
 
   // V0 finder
-  Info("ReconstructV0s", "reconstructing V0s...");
+  AliDebug(1, "reconstructing V0s...");
   AliV0vertexer vertexer;
   Double_t vtx[3];
   esd->GetVertex()->GetXYZ(vtx);
@@ -889,7 +889,7 @@ Bool_t AliMonitorProcess::WriteHistos()
 
   fFile = TFile::Open("monitor_tree.root", "RECREATE");
   if (!fFile || !fFile->IsOpen()) {
-    Fatal("WriteHistos", "could not open file for tree");
+    AliFatal("could not open file for tree");
   }
   fTree = new TTree("MonitorTree", "tree for monitoring");
   for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
@@ -919,7 +919,7 @@ Bool_t AliMonitorProcess::WriteHistos()
   }
   TFile* file = TFile::Open(fileName, "recreate");
   if (!file || !file->IsOpen()) {
-    Error("WriteHistos", "could not open file %s", fileName);
+    AliError(Form("could not open file %s", fileName));
     result = kFALSE;
   } else {
     fTopFolder->Write();
@@ -963,9 +963,9 @@ void AliMonitorProcess::CheckForConnections()
       gSystem->Sleep(1000);
       if (socket->Recv(socketType, 255) <= 0) {
 	TInetAddress adr = socket->GetInetAddress();
-	Error("CheckForConnections", "no socket type received - "
-	      "disconnect client:\n %s (%s), port %d\n",
-	      adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+	AliError(Form("no socket type received - "
+		      "disconnect client: %s (%s), port %d",
+		      adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
 	delete socket;
 	continue;
       }
@@ -973,8 +973,8 @@ void AliMonitorProcess::CheckForConnections()
     if (strcmp(socketType, "client") == 0) {
       fSockets.Add(socket);
       TInetAddress adr = socket->GetInetAddress();
-      Info("CheckForConnections", "new client:\n %s (%s), port %d\n",
-	   adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliInfo(Form("new client: %s (%s), port %d",
+		   adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       if (fNEvents > 0) BroadcastHistos(socket);
     } else if (strcmp(socketType, "display") == 0) {
       if (fDisplaySocket) {
@@ -983,13 +983,13 @@ void AliMonitorProcess::CheckForConnections()
       }
       fDisplaySocket = socket;
       TInetAddress adr = socket->GetInetAddress();
-      Info("CheckForConnections", "new display:\n %s (%s), port %d\n",
-	   adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliInfo(Form("new display: %s (%s), port %d",
+		   adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
     } else {
       TInetAddress adr = socket->GetInetAddress();
-      Error("CheckForConnections", "unknown socket type %s - "
-	    "disconnect client:\n %s (%s), port %d\n", socketType,
-	    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliError(Form("unknown socket type %s - "
+		    "disconnect client: %s (%s), port %d", socketType,
+		    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       delete socket;
       continue;
     }
@@ -1003,9 +1003,8 @@ void AliMonitorProcess::CheckForConnections()
     if (socket->Recv(controlMessage, 255)) {
       if (strcmp(controlMessage, "disconnect") == 0) {
 	TInetAddress adr = socket->GetInetAddress();
-	Info("CheckForConnections",
-	     "disconnect client:\n %s (%s), port %d\n",
-	     adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+	AliInfo(Form("disconnect client: %s (%s), port %d",
+		     adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
 	delete fSockets.RemoveAt(iSocket);
 	continue;
       }
@@ -1013,9 +1012,8 @@ void AliMonitorProcess::CheckForConnections()
     if (!socket->IsValid()) {
       // remove invalid sockets from the list
       TInetAddress adr = socket->GetInetAddress();
-      Error("CheckForConnections", 
-	    "disconnect invalid client:\n %s (%s), port %d\n",
-	    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliError(Form("disconnect invalid client: %s (%s), port %d",
+		    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       delete fSockets.RemoveAt(iSocket);
     }
   }
@@ -1039,9 +1037,9 @@ void AliMonitorProcess::BroadcastHistos(TSocket* toSocket)
     // send control message
     if (!socket->IsValid() || (socket->Send("histograms") <= 0)) {
       TInetAddress adr = socket->GetInetAddress();
-      Error("BroadcastHistos", "connection to client failed - "
-	    "disconnect client:\n %s (%s), port %d\n",
-	    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliError(Form("connection to client failed - "
+		    "disconnect client: %s (%s), port %d",
+		    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       delete fSockets.RemoveAt(iSocket);
     }
 
@@ -1054,17 +1052,17 @@ void AliMonitorProcess::BroadcastHistos(TSocket* toSocket)
     }
     if (result <= 0) {
       TInetAddress adr = socket->GetInetAddress();
-      Error("BroadcastHistos", "no response from client - "
-	    "disconnect client:\n %s (%s), port %d\n",
-	    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliError(Form("no response from client - "
+		    "disconnect client: %s (%s), port %d",
+		    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       delete fSockets.RemoveAt(iSocket);
       continue;
     }
     if (strcmp(controlMessage, "ok") != 0) {
       TInetAddress adr = socket->GetInetAddress();
-      Error("BroadcastHistos", "no \"ok\" message from client - "
-	    "disconnect client:\n %s (%s), port %d\n",
-	    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliError(Form("no \"ok\" message from client - "
+		    "disconnect client: %s (%s), port %d",
+		    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       delete fSockets.RemoveAt(iSocket);
       continue;
     }
@@ -1073,9 +1071,9 @@ void AliMonitorProcess::BroadcastHistos(TSocket* toSocket)
     if (socket->Send(message) < 0) {
       // remove the socket from the list if there was an error
       TInetAddress adr = socket->GetInetAddress();
-      Error("BroadcastHistos", "sending histograms failed - "
-	    "disconnect client:\n %s (%s), port %d\n",
-	    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliError(Form("sending histograms failed - "
+		    "disconnect client: %s (%s), port %d",
+		    adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       delete fSockets.RemoveAt(iSocket);
     } else {
       gSystem->Sleep(100);
@@ -1102,7 +1100,7 @@ AliMonitorProcess::AliMonitorInterruptHandler::AliMonitorInterruptHandler
 {
 // copy constructor
 
-  Fatal("AliMonitorInterruptHandler", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
@@ -1112,7 +1110,7 @@ AliMonitorProcess::AliMonitorInterruptHandler&
 {
 // assignment operator
 
-  Fatal("operator =", "assignment operator not implemented"); 
+  AliFatal("assignment operator not implemented"); 
   return *this;
 }
 
@@ -1121,7 +1119,7 @@ Bool_t AliMonitorProcess::AliMonitorInterruptHandler::Notify()
 {
 // interrupt signal -> stop process
 
-  Info("Notify", "the monitoring process will be stopped.");
+  AliInfo("the monitoring process will be stopped.");
   fProcess->Stop(); 
   return kTRUE;
 }

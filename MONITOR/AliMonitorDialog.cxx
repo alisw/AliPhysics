@@ -23,6 +23,7 @@
 
 
 #include "AliMonitorDialog.h"
+#include "AliLog.h"
 #include <TGFrame.h>
 #include <TGButton.h>
 
@@ -85,14 +86,14 @@ AliMonitorDialog::AliMonitorDialog(TGFrame* main, Int_t width, Int_t height,
 AliMonitorDialog::AliMonitorDialog(const AliMonitorDialog& dlg) :
   TObject(dlg)
 {
-  Fatal("AliMonitorDialog", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorDialog& AliMonitorDialog::operator = (const AliMonitorDialog& 
 						/*dlg*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 

@@ -26,6 +26,7 @@
 
 #include "AliMonitorClient.h"
 #include "AliMonitorProcess.h"
+#include "AliLog.h"
 #include <TGMsgBox.h>
 #include <TGFileDialog.h>
 #include <TMessage.h>
@@ -459,14 +460,14 @@ AliMonitorClient::AliMonitorClient():
 AliMonitorClient::AliMonitorClient(const AliMonitorClient& client) :
   TGMainFrame(client)
 {
-  Fatal("AliMonitorClient", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorClient& AliMonitorClient::operator = (const AliMonitorClient& 
 						/*client*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 
@@ -1025,8 +1026,8 @@ Bool_t AliMonitorClient::ConnectToServer()
 			      "OnNewData()");
       fSocketHandler->Add();
       TInetAddress adr = fSocket->GetInetAddress();
-      Info("ConnectToServer", "connected to server:\n %s (%s), port %d\n",
-	   adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+      AliInfo(Form("connected to server: %s (%s), port %d",
+		   adr.GetHostName(), adr.GetHostAddress(), adr.GetPort()));
       fMenuFile->HideEntry(kMenuFileConnect);
       fMenuFile->HideEntry(kMenuFileOpen);
       fMenuFile->EnableEntry(kMenuFileDisconnect);
@@ -1351,8 +1352,7 @@ Bool_t AliMonitorClient::SaveFavorites()
   }
 
   fclose(file);
-  Info("SaveFavorites", "favorites saved to file %s", 
-       fFavoritesFileName.Data());
+  AliInfo(Form("favorites saved to file %s", fFavoritesFileName.Data()));
   return kTRUE;
 }
 
@@ -1558,8 +1558,8 @@ Bool_t AliMonitorClient::SaveReference()
   fReference->Write();
   file->Close();
   delete file;
-  Info("SaveReference", "reference histograms saved to file %s", 
-       fReferenceFileName.Data());
+  AliInfo(Form("reference histograms saved to file %s", 
+	       fReferenceFileName.Data()));
   return kTRUE;
 }
 
@@ -1666,7 +1666,7 @@ void AliMonitorClient::LoadSettings()
   }
 
   fclose(file);
-  Info("LoadSettings", "settings from file %s applied", fileName);
+  AliDebug(1, Form("settings from file %s applied", fileName));
   free(fileName);
 }
 
@@ -1719,7 +1719,7 @@ void AliMonitorClient::SaveSettings()
 	  fMenuOptions->IsEntryChecked(kMenuOptSaveOnExit));
 
   fclose(file);
-  Info("SaveSettings", "settings saved to file %s", fileName);
+  AliInfo(Form("settings saved to file %s", fileName));
   free(fileName);
 }
 

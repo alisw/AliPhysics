@@ -28,11 +28,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliMonitor.h"
-#include "AliMonitorTrend.h"
 #include <TFolder.h>
 #include <TH1.h>
 #include <TH2.h>
+
+#include "AliLog.h"
+#include "AliMonitorTrend.h"
+
+#include "AliMonitor.h"
 
 
 ClassImp(AliMonitor) 
@@ -48,13 +51,13 @@ AliMonitor::AliMonitor()
 AliMonitor::AliMonitor(const AliMonitor& monitor) :
   TObject(monitor)
 {
-  Fatal("AliMonitor", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitor& AliMonitor::operator = (const AliMonitor& /*monitor*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 

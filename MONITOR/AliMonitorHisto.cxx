@@ -27,10 +27,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliMonitorHisto.h"
 #include <TProfile.h>
 #include <TH2.h>
 #include <TVirtualPad.h>
+
+#include "AliLog.h"
+
+#include "AliMonitorHisto.h"
 
 
 ClassImp(AliMonitorHisto) 
@@ -115,7 +118,7 @@ AliMonitorHisto::AliMonitorHisto(TH1* histo, ENorm norm) :
 // create a monitor histogram from the given histogram
 
   if (histo->GetDimension() > 2) {
-    Fatal("AliMonitorHisto", "3 dimensional histograms are not supported");
+    AliFatal("3 dimensional histograms are not supported");
   }
 
   histo->SetDirectory(NULL);
@@ -196,7 +199,7 @@ void AliMonitorHisto::Fill(Axis_t x, Axis_t y, Stat_t w)
   } else if (fHisto->InheritsFrom(TProfile::Class())) {
     ((TProfile*)fHisto)->Fill(x, y, w);
   } else {
-    Error("Fill", "trying to fill x and y of a 1 dimensinal histogram");
+    AliError("trying to fill x and y of a 1 dimensinal histogram");
     return;
   }
 }
@@ -325,7 +328,7 @@ Bool_t AliMonitorHisto::ComparePlot()
   if (!fHistoRef) return kTRUE;
   if (fgThreshold <= 0) return kTRUE;
   if (!fHistoDraw) {
-    Info("Compare", "no data histogram available for comparison\ncall DrawEvent, DrawSum or DrawRaw before calling Compare");
+    AliWarning("no data histogram available for comparison\ncall DrawEvent, DrawSum or DrawRaw before calling Compare");
     return kTRUE;
   }
   if (fHistoCompare) delete fHistoCompare;
@@ -365,12 +368,12 @@ Bool_t AliMonitorHisto::GetEvent(Int_t number)
 // get the normalized monitor histogram for the "number"th last event
 
   if (fNHistos == 0) {
-    Info("GetEvent", "there are no histograms for single events available");
+    AliWarning("there are no histograms for single events available");
     return kFALSE;
   }
   if (number > fNHistos) {
-    Error("GetEvent", "requested event number (%d) exceeds range of available events (%d)\n", 
-	  number, fNHistos);
+    AliError(Form("requested event number (%d) exceeds range of available events (%d)", 
+		  number, fNHistos));
     return kFALSE;
   }
   if (number <= 0) return kFALSE;
@@ -397,12 +400,12 @@ Bool_t AliMonitorHisto::GetSum(Int_t number)
 // "number" events
 
   if (fNHistos == 0) {
-    Info("GetSum", "there are no histograms for single events available");
+    AliWarning("there are no histograms for single events available");
     return kFALSE;
   }
   if (number > fNHistos) {
-    Info("GetSum", "requested number of events (%d) exceeds range of available events (%d)\nusing last %d event(s)", 
-	  number, fNHistos, fNHistos);
+    AliError(Form("requested number of events (%d) exceeds range of available events (%d)\nusing last %d event(s)", 
+		  number, fNHistos, fNHistos));
     number = fNHistos;
   }
   if (number <= 0) return kFALSE;

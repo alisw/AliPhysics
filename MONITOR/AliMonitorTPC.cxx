@@ -25,6 +25,7 @@
 #include <TTree.h>
 #include <TVector3.h>
 
+#include "AliLog.h"
 #include "AliESD.h"
 #include "AliMonitorDataTPC.h"
 #include "AliMonitorHisto.h"
@@ -53,13 +54,13 @@ AliMonitorTPC::AliMonitorTPC(AliTPCParam* param)
 AliMonitorTPC::AliMonitorTPC(const AliMonitorTPC& monitor) :
   AliMonitor(monitor)
 {
-  Fatal("AliMonitorTPC", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorTPC& AliMonitorTPC::operator = (const AliMonitorTPC& /*monitor*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 

@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#include "AliLog.h"
 #include "AliMonitorDataTPC.h"
 
 
@@ -41,14 +42,14 @@ AliMonitorDataTPC::AliMonitorDataTPC()
 AliMonitorDataTPC::AliMonitorDataTPC(const AliMonitorDataTPC& data) :
   TObject(data)
 {
-  Fatal("AliMonitorDataTPC", "copy constructor not implemented");
+  AliFatal("copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
 AliMonitorDataTPC& AliMonitorDataTPC::operator = (const AliMonitorDataTPC& 
 						  /*data*/)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("assignment operator not implemented");
   return *this;
 }
 
@@ -104,7 +105,7 @@ void AliMonitorDataTPC::SetData(Int_t i, Float_t pt, Float_t eta, Float_t phi)
 // set the data of the i-th track
 
   if ((i < 0) || (i >= fSize)) {
-    Error("SetData", "index %d out of range (0-%d)", i, fSize);
+    AliError(Form("index %d out of range (0-%d)", i, fSize));
     return;
   }
   fPt[i] = pt;
