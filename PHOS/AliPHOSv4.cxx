@@ -50,8 +50,9 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
 
   // gets an instance of the geometry parameters class  
    
-  fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
-
+  if ( strcmp(title, "") != 0 ) 
+    fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
+  
   if (fGeom != 0 ) {
     cout << "AliPHOSv4 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
     
