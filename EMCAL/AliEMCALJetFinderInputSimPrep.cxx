@@ -267,7 +267,7 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
         switch(fTrackType)
         {
 
-	   case kAll:  // All Stable particles to be included
+	   case kAllP:  // All Stable particles to be included
 		if (fDebug > 5) Info("FillTracks","Storing track");
 		if (fSmearType == kSmear ||
 		    fSmearType == kSmearEffic ){
@@ -480,7 +480,7 @@ if (fDebug > 1) Info("FillParticles","Beginning FillParticles");
         switch(fTrackType)
         {
 
-	   case kAll:  // All Stable particles to be included
+	   case kAllP:  // All Stable particles to be included
 		if (fDebug > 5) Info("FillParticles","Storing particle");
 		fInputObject.AddParticle(mPart);
 	   break;

@@ -39,7 +39,7 @@
 
 #ifndef  ALIEMCALJETFINDERTRACKTYPE_T
 #define  ALIEMCALJETFINDERTRACKTYPE_T
-	typedef enum {	kAll, kEM, kCharged, kNeutral, kHadron, kChargedHadron, kNoTracks, kEMChargedPi0, kNoNeutronNeutrinoKlong
+	typedef enum {	kAllP, kEM, kCharged, kNeutral, kHadron, kChargedHadron, kNoTracks, kEMChargedPi0, kNoNeutronNeutrinoKlong
 	} AliEMCALJetFinderTrackType_t;
 #endif
 
