@@ -1,7 +1,7 @@
 #ifndef ALIHBTREADER_H
 #define ALIHBTREADER_H
 
-#include <TObject.h>
+#include <TNamed.h>
 
 //Reader Base class (reads particles and tracks and
 //puts it to the AliHBTRun objects
@@ -14,8 +14,7 @@ class TObjArray;
 class AliHBTParticle;
 class TString;
 
-class AliHBTReader: public TObject
-
+class AliHBTReader: public TNamed
 {
   public:
     AliHBTReader();
@@ -46,7 +45,8 @@ class AliHBTReader: public TObject
   private:
   
   public:
-    ClassDef(AliHBTReader,1)
+    ClassDef(AliHBTReader,2)//version 2 - TNamed as parental class
+    
 };
 
 #endif
