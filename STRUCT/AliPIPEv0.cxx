@@ -91,11 +91,18 @@ void AliPIPEv0::CreateGeometry()
 //  Bellow
 //
 //  distance between bellows
-    const Float_t kdzbb =  9.0;
 //  total size of bellow section
     const Float_t kdzb  = 15.0;
 //  size of undulated region 
-    const Float_t kdzub =  2.0;
+//  
+//  Absorber side
+//   
+//  distance between bellows
+    const Float_t kdzbbA =  5.0;
+//  total size of bellow section
+    const Float_t kdzbA  = 15.0;
+//  size of undulated region 
+    const Float_t kdzubA =  3.75;
 
 // half-lengths of various beam pipe sections
 // central Be-Pipe
@@ -113,7 +120,7 @@ void AliPIPEv0::CreateGeometry()
     Float_t hlenQb29 = 11.5/2.+1.75 + 5.0;
 //
 //  Bellow element 
-    Float_t hlenQbe0 = kdzb;
+    Float_t hlenQbe0 = kdzbA;
 //
 //  Inox pipe between Be and Bellow (absorber side)
     Float_t hlenQb24[3] = {10.5/2., 1.8, 3.3};
@@ -126,11 +133,11 @@ void AliPIPEv0::CreateGeometry()
 //
 //  Inner beam pipe radius
     const Float_t kRinBe = 2.9;
-    const Float_t kRinSt = 2.92;
+    const Float_t kRinSt = 2.98;
 //
 //
     const Float_t kRoutBe = 2.98;
-    const Float_t kRoutSt = 3.00;
+    const Float_t kRoutSt = 3.06;
 
 
 //
@@ -164,7 +171,7 @@ void AliPIPEv0::CreateGeometry()
     ppcon[16] =   0.;
     ppcon[17] =   4.1;
 //  6 
-    ppcon[18] = ppcon[15] + 2. + 2.*kdzub+0.2; 
+    ppcon[18] = ppcon[15] + 2.5 + 2.*kdzubA+0.2; 
     ppcon[19] =   0.;
     ppcon[20] =   4.1;
 //  7 
@@ -172,7 +179,7 @@ void AliPIPEv0::CreateGeometry()
     ppcon[22] =   0.;
     ppcon[23] =   3.2;
 //  8 
-    ppcon[24] = ppcon[21] + 2.* kdzbb-0.4; 
+    ppcon[24] = ppcon[21] + 2.* kdzbbA-0.4; 
     ppcon[25] =   0.;
     ppcon[26] =   3.2;
 //  9
@@ -186,11 +193,11 @@ void AliPIPEv0::CreateGeometry()
 //  11
     ppcon[33] = -44.;
     ppcon[34] =    0;
-    ppcon[35] =    3.0;
+    ppcon[35] =    3.06;
 //  12
     ppcon[36] =  38.;
     ppcon[37] =    0;
-    ppcon[38] =    3.0;
+    ppcon[38] =    3.06;
 //  13
     ppcon[39] =  38.;
     ppcon[40] =    0;
@@ -335,7 +342,7 @@ void AliPIPEv0::CreateGeometry()
     gMC->Gspos("QF29", 1, "QB29", 0.0, 0.0, -hlenQb29+1.75, 0, "ONLY");
 //    Pipe
     ptube[0] = kRinSt;
-    ptube[1] = 3.0;
+    ptube[1] = 3.06;
     ptube[2] = hlenQb29;
     gMC->Gsvolu("QS29","TUBE", idtmed[kInox], ptube, 3);
     gMC->Gspos("QS29", 1, "QB29", 0.0, 0.0, 0., 0, "ONLY");
@@ -364,7 +371,7 @@ void AliPIPEv0::CreateGeometry()
 
     ptube[0] = kRinBe;
     if (fPipeMaterial == kAlu) {
-	ptube[1] = 3.0;
+	ptube[1] = 3.06;
     } else if (fPipeMaterial == kBe) {
 	ptube[1] = kRoutBe;
     } else if (fPipeMaterial == kInox){
@@ -390,62 +397,63 @@ void AliPIPEv0::CreateGeometry()
     Float_t pconQBE0[33];
     pconQBE0[ 0]= 0;
     pconQBE0[ 1]= 360;
-    pconQBE0[ 2]= 10;
+    pconQBE0[ 2]=  10;
 //  1
-    pconQBE0[ 3]= -kdzb;
-    pconQBE0[ 4]= kRinSt;
-    pconQBE0[ 5]= kRoutSt;
-//  2    
-    pconQBE0[ 6]= -kdzb+2.;
-    pconQBE0[ 7]= kRinSt;
-    pconQBE0[ 8]= kRoutSt;
+    pconQBE0[ 3] = -kdzbA;
+    pconQBE0[ 4] = kRinSt;
+    pconQBE0[ 5] = kRoutSt;
+//
+    pconQBE0[ 6] = -kdzbA+2.5;
+    pconQBE0[ 7] = kRinSt;
+    pconQBE0[ 8] = kRoutSt;
+//  2
+    pconQBE0[ 9] = -kdzbA+2.5;
+    pconQBE0[10] = kRinSt;
+    pconQBE0[11] = 3.60;
 //  3
-    pconQBE0[ 9]= -kdzb+2.;
-    pconQBE0[10]= kRinSt;
-    pconQBE0[11]= 4.00;
+    pconQBE0[12] = -kdzbA+2.5+2.*kdzubA;
+    pconQBE0[13] = kRinSt;
+    pconQBE0[14] = 3.60;
 //  4
-    pconQBE0[12]= -kdzb+2.+2.*kdzub;
-    pconQBE0[13]= kRinSt;
-    pconQBE0[14]= 4.00;
-//  5
-    pconQBE0[15]= -kdzb+2.+2.*kdzub;
-    pconQBE0[16]= kRinSt;
-    pconQBE0[17]= kRoutSt;
+    pconQBE0[15] = -kdzbA+2.5+2.*kdzubA;
+    pconQBE0[16] = kRinSt;
+    pconQBE0[17] = kRoutSt;
+//  5    
+    pconQBE0[18] = -kdzbA+2.5+2.*kdzubA+2.*kdzbbA;
+    pconQBE0[19] = kRinSt;
+    pconQBE0[20] = kRoutSt;
 //  6    
-    pconQBE0[18]= -kdzb+2.+2.*kdzub+2.*kdzbb;
-    pconQBE0[19]= kRinSt;
-    pconQBE0[20]= kRoutSt;
-//  7    
-    pconQBE0[21]= -kdzb+2.+2.*kdzub+2.*kdzbb;
-    pconQBE0[22]= kRinSt;
-    pconQBE0[23]= 4.00;
+    pconQBE0[21] = -kdzbA+2.5+2.*kdzubA+2.*kdzbbA;
+    pconQBE0[22] = kRinSt;
+    pconQBE0[23] = 3.60;
+//  7
+    pconQBE0[24] = -kdzbA+2.5+4.*kdzubA+2.*kdzbbA;
+    pconQBE0[25] = kRinSt;
+    pconQBE0[26] = 3.60;
 //  8
-    pconQBE0[24]= -kdzb+2.+4.*kdzub+2.*kdzbb;
-    pconQBE0[25]= kRinSt;
-    pconQBE0[26]= 4.00;
-//  9
-    pconQBE0[27]= -kdzb+2.+4.*kdzub+2.*kdzbb;
-    pconQBE0[28]= kRinSt;
-    pconQBE0[29]= kRoutSt;
-//  10 
-    pconQBE0[30]= +kdzb;
-    pconQBE0[31]= kRinSt;
-    pconQBE0[32]= kRoutSt;
+    pconQBE0[27] = -kdzbA+2.5+4.*kdzubA+2.*kdzbbA;
+    pconQBE0[28] = kRinSt;
+    pconQBE0[29] = kRoutSt;
+// 9
+    pconQBE0[30] = -kdzbA+5.0+4.*kdzubA+2.*kdzbbA;
+    pconQBE0[31] = kRinSt;
+    pconQBE0[32] = kRoutSt;
+
     gMC->Gsvolu("QBE0", "PCON", idtmed[kAir], pconQBE0, 33);
 //
 //  Undulated piece mother
     ptube[0] =  kRinSt;
-    ptube[1] =  4.00;
-    ptube[2] =  kdzub;
+    ptube[1] =  3.60;
+    ptube[2] =  kdzubA;
     gMC->Gsvolu("QBEM","TUBE", idtmed[kAir], ptube, 3);
-    dz = -kdzb+2.+kdzub;
+    dz = -kdzbA+kdzubA+2.5;
     gMC->Gspos("QBEM", 2 ,"QBE0", 0.0, 0.0,   dz, 0 , "ONLY");
     gMC->Gspos("QBEM", 1 ,"QBE0", 0.0, 0.0,  -dz, idrotm[2012], "ONLY");
 //  
     Float_t pund[30];
     Float_t uw = 0.02;
-    Float_t ur = 2.*kdzub-12.*uw;
-    Float_t uz = ur/13.;
+    Float_t ur = 2.*kdzubA-36.*uw;
+    Float_t uz = ur/37.;
     Float_t ut = uz+uw;
     
     pund[ 0] = 0;
@@ -462,14 +470,14 @@ void AliPIPEv0::CreateGeometry()
     
     pund[ 9] = pund[6];
     pund[10] = pund[4];
-    pund[11] = 4.0;
+    pund[11] = 3.6;
     
     pund[12] = pund[9]+uw;
     pund[13] = pund[10];
     pund[14] = pund[11];
     
     pund[15] = pund[12];
-    pund[16] = 4.0-uw;
+    pund[16] = 3.6-uw;
     pund[17] = pund[14];
     
     pund[18] = pund[12]+uz;
@@ -486,29 +494,28 @@ void AliPIPEv0::CreateGeometry()
 
     gMC->Gsvolu("QBEU", "PCON", idtmed[kInox], pund, 27);
 
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 18; i++)
     {
-	dz = -kdzub+(1+2*i)*ut;
+	dz = -kdzubA+(1+2*i)*ut;
 	gMC->Gspos("QBEU", i+1 ,"QBEM", 0.0, 0.0,   dz, 0 , "ONLY");
     }
     ptube[0] =  kRinSt;
     ptube[1] =  kRinSt+uw;
     ptube[2] =  uz;
     gMC->Gsvolu("QBEW","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QBEW", 1 ,"QBEM", 0.0, 0.0,   kdzub-uz, 0 , "ONLY");
+    gMC->Gspos("QBEW", 1 ,"QBEM", 0.0, 0.0,   kdzubA-uz, 0 , "ONLY");
+
 //
 //  BeamPipe
     gMC->Gsvolu("QBEP","TUBE", idtmed[kInox], ptube, 0);
     ptube[0] =  kRinSt;
     ptube[1] =  kRoutSt;
-    ptube[2] =  1.;
-    gMC->Gsposp("QBEP", 1 ,"QBE0", 0.0, 0.0, -kdzb+1., 0 , "ONLY", ptube, 3);
-    gMC->Gsposp("QBEP", 2 ,"QBE0", 0.0, 0.0,  kdzb-1., 0 , "ONLY", ptube, 3);    
-    ptube[2] = kdzbb;
+    ptube[2] =  1.25;
+    gMC->Gsposp("QBEP", 1 ,"QBE0", 0.0, 0.0, -kdzbA+1.25, 0 , "ONLY", ptube, 3);
+    gMC->Gsposp("QBEP", 2 ,"QBE0", 0.0, 0.0,  kdzbA-1.25, 0 , "ONLY", ptube, 3);    
+    ptube[2] = kdzbbA;
     gMC->Gsposp("QBEP", 3 ,"QBE0", 0.0, 0.0,  0., 0 , "ONLY", ptube, 3);    
 //  
-//  End undulated part
-//
 //
 //  ----> End Bellow
 //
@@ -626,7 +633,7 @@ void AliPIPEv0::CreateGeometry()
     gMC->Gsposp("QB24", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
 //
 // Bellow on absorber side
-    dz = dz+hlenQb24[0] + kdzb;
+    dz = dz+hlenQb24[0] + kdzbA;
     gMC->Gspos("QBE0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
 //
     ptube[2] = hlenQb24[1];
@@ -695,12 +702,12 @@ void AliPIPEv0::CreateGeometry()
 // 
 // Connecting tube ->
     ptube[0] =  0.0;
-    ptube[1] =  5.4;
+    ptube[1] =  4.9;
     ptube[2] = 14.6;
     gMC->Gsvolu("QI34","TUBE", idtmed[kInox], ptube, 3);
     
     ptube[0] =  0.0;
-    ptube[1] =  4.8;
+    ptube[1] =  4.3;
     ptube[2] = 14.6;
     gMC->Gsvolu("QI44","TUBE", idtmed[kAir], ptube, 3);
     gMC->Gspos("QI44", 1, "QI34", 0.0, 0.0, 0.0, 0, "ONLY");
