@@ -59,17 +59,8 @@
 	  Double_t Dr=iotrack->GetStateD();		  
 	  Double_t C=iotrack->GetStateC();
 	  
-	  Double_t C00,C10,C11,C20,C21,C22,C30,C31,C32,C33,C40,C41,C42,C43,C44;
-	 
-          iotrack->GetCovMatrix(C00,C10,C11,C20,C21,C22,C30,C31,C32,C33,C40,C41,C42,C43,C44);
-	  
-	  
-	  cout<<"\n"<<C00<<" "<<C10<<" "<<C11<<" "<<C20<<" "<<C21<<" "<<C22<<" "
-	  <<C30<<" "<<C31<<" "<<C32<<" "<<C33<<" "<<C40<<" "<<C41<<" "<<C42<<" "
-	  <<C43<<" "<<C44<<"\n\n\n";
-	  
-      cout<<" label = "<<label<<"\n";
-      cout<< " phi z D tgl C = "<<phistate<<" "<<Zstate<<" "<<Dr<<" "<<tgl<<" "<<C<<"\n";  getchar();	  
+      cout<<" track label = "<<label<<"\n";
+      cout<<" phi z D tanl C = "<<phistate<<" "<<Zstate<<" "<<Dr<<" "<<tgl<<" "<<C<<"\n"; 	  
 	  
 	  		  		    
 	    
