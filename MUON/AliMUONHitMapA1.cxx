@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.4  2000/07/13 16:19:44  fca
 Mainly coding conventions + some small bug fixes
 
@@ -49,8 +52,8 @@ AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
 {
 // Constructor
     fSegmentation = seg;
-    fNpx  = fSegmentation->Npx();
-    fNpy  = fSegmentation->Npy();
+    fNpx  = fSegmentation->Npx()+1;
+    fNpy  = fSegmentation->Npy()+1;
     fMaxIndex=2*(fNpx+1)*2*(fNpy+1)+2*fNpy;
     
     fHitMap = new Int_t[fMaxIndex];
@@ -84,7 +87,8 @@ Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 // Return checked indices ix, iy
     Int_t index=2*fNpy*(ix+fNpx)+(iy+fNpy);
     if (index > fMaxIndex) {
-	printf("\n \n \n Try to read/write outside array !!!! \n \n %d %d %d %d %d %d",ix,iy, fMaxIndex, index, fNpx, fNpy);
+	printf("\n \n \n Try to read/write outside array !!!! \n \n %d %d %d %d %d %d",
+	       ix,iy, fMaxIndex, index, fNpx, fNpy);
 	return  fMaxIndex-1;
     } else {
 	return index;
@@ -161,5 +165,8 @@ AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & rhs)
 // Dummy assignment operator
     return *this;
 }
+
+
+
 
 
