@@ -4,6 +4,7 @@
 #include <TObject.h>
 #include <TH1.h>
 #include <TTree.h>
+#include <TNtuple.h>
 #include "AliSimDigits.h"
 
 class AliL3Track;
@@ -42,6 +43,7 @@ class AliL3Evaluate : public TObject {
   Int_t *fMcId;//!
   
   //Histograms
+  TNtuple *fNtuppel;
   TH1F *fPtRes;
   TH1F *fNGoodTracksPt;
   TH1F *fNFoundTracksPt;
@@ -63,16 +65,18 @@ class AliL3Evaluate : public TObject {
   Int_t GetMCTrackLabel(AliL3Track *track);
   Int_t **GetClusterIDs(AliL3Track *track);
   void GetFastClusterIDs(Char_t *path);
-  void Setup(Char_t *trackfile,Char_t *path);
+  //void Setup(Char_t *trackfile,Char_t *path);
 
  public:
   AliL3Evaluate();
   AliL3Evaluate(Char_t *mcfile,Int_t *slice);
+  AliL3Evaluate(Int_t *slice);
 
   virtual ~AliL3Evaluate();
 
   void SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path=".");
   void SetupSlow(Char_t *trackfile,Char_t *path=".");
+  void Setup(Char_t *trackfile,Char_t *path);
   void CreateHistos(Int_t nbin=20,Int_t xlow=0,Int_t xup=4);
   void EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t good_number);
   void EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number);
@@ -84,7 +88,10 @@ class AliL3Evaluate : public TObject {
   TH1F *GetPtRes() {return fPtRes;}
 
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
-
+  
+  TNtuple *CalculateResiduals();
+  
+  
   ClassDef(AliL3Evaluate,1) 
 };
 

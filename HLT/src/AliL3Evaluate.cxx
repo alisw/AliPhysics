@@ -16,6 +16,7 @@
 #include "AliTPCcluster.h"
 #include "AliTPCParam.h"
 
+#include "AliL3Defs.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3Track.h"
@@ -37,6 +38,8 @@ AliL3Evaluate::AliL3Evaluate()
   fNFastPoints = 0;
   fMcIndex = 0;
   fMcId = 0;
+  fMinSlice=0;
+  fMaxSlice=0;
 }
 
 AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
@@ -57,6 +60,15 @@ AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
   
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
+
+}
+
+AliL3Evaluate::AliL3Evaluate(Int_t *slice)
+{
+
+  fMinSlice = slice[0];
+  fMaxSlice = slice[1];
+  fTransform = new AliL3Transform();
 
 }
 
@@ -82,6 +94,7 @@ AliL3Evaluate::~AliL3Evaluate()
   if(fFakeTrackEffEta) delete fFakeTrackEffEta;
   if(fMcIndex) delete [] fMcIndex;
   if(fMcId)    delete [] fMcId;
+  if(fNtuppel) delete fNtuppel;
 }
 
 void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
@@ -94,7 +107,7 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
     {
       for(Int_t p=0; p<5; p++)
 	{
-          fClusters[s][p] = 0;
+	  fClusters[s][p] = 0;
 	  clusterfile[s][p] = new AliL3FileHandler();
 	  sprintf(fname,"%s/points_%d_%d.raw",path,s,p);
 	  if(!clusterfile[s][p]->SetBinaryInput(fname))
@@ -110,8 +123,7 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
 	  clusterfile[s][p]->CloseBinaryInput();
 	}
     }
-  
-  
+    
   AliL3FileHandler *tfile = new AliL3FileHandler();
   if(!tfile->SetBinaryInput(trackfile)){
     LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
@@ -577,6 +589,8 @@ void AliL3Evaluate::CreateHistos(Int_t nbin,Int_t xlow,Int_t xup)
 {
   //Create the histograms 
   
+  fNtuppel = new TNtuple("fNtuppel","Pt resolution","pt_gen:pt_found:nHits");
+
   fPtRes = new TH1F("fPtRes","Relative Pt resolution",30,-10.,10.); 
   fNGoodTracksPt = new TH1F("fNGoodTracksPt","Good tracks vs pt",nbin,xlow,xup);    
   fNFoundTracksPt = new TH1F("fNFoundTracksPt","Found tracks vs pt",nbin,xlow,xup);
@@ -619,6 +633,7 @@ void AliL3Evaluate::FillEffHistos(TObjArray *good_particles,Int_t *particle_id)
 	  else {fNFakeTracksPt->Fill(ptg); fNFakeTracksEta->Fill(dipangle);}
 	  Float_t pt=track->GetPt();
 	  fPtRes->Fill((pt-ptg)/ptg*100.);
+	  fNtuppel->Fill(ptg,pt,nHits);
 	  break;
 	  
 	}
@@ -675,6 +690,7 @@ void AliL3Evaluate::Write2File(Char_t *outputfile)
     }
   
   of->cd();
+  fNtuppel->Write();
   fPtRes->Write();
   fNGoodTracksPt->Write();
   fNFoundTracksPt->Write();
@@ -690,5 +706,84 @@ void AliL3Evaluate::Write2File(Char_t *outputfile)
   of->Close();
   delete of;
 
+}
+
+TNtuple *AliL3Evaluate::CalculateResiduals()
+{
+
+  TNtuple *ntuppel=new TNtuple("ntuppel","Residuals","residual_trans:residual_long:zHit:pt:dipangle:beta:padrow:nHits");
+  
+  for(int f=fMinSlice; f<=fMaxSlice; f++)
+    {
+      AliL3FileHandler *tfile = new AliL3FileHandler();
+      char fname[256];
+      sprintf(fname,"tracks_tr_%d_0.raw",f);
+      if(!tfile->SetBinaryInput(fname)){
+	LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
+	  <<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
+	return 0;
+      }
+      fTracks = new AliL3TrackArray();
+      tfile->Binary2TrackArray(fTracks);
+      tfile->CloseBinaryInput();
+      delete tfile;
+      
+      
+      for(Int_t i=0; i<fTracks->GetNTracks(); i++)
+	{
+	  
+	  AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(i);
+	  if(!track) continue;
+	  
+	  track->CalculateHelix();
+	  UInt_t *hitnum = track->GetHitNumbers();
+	  UInt_t id;
+	  
+	  Float_t xyz[3];
+	  Int_t padrow;
+	  for(Int_t j=0; j<track->GetNumberOfPoints(); j++)
+	    {
+	      id = hitnum[j];
+	      Int_t slice = (id>>25) & 0x7f;
+	      Int_t patch = (id>>22) & 0x7;
+	      UInt_t pos = id&0x3fffff;	      
+	      
+	      AliL3SpacePointData *points = fClusters[slice][patch];
+	      
+	      if(!points) 
+		{
+		  LOG(AliL3Log::kError,"AliL3Evaluate::CalculateResiduals","Clusterarray")
+		    <<"No points at slice "<<slice<<" patch "<<patch<<" pos "<<pos<<ENDLOG;
+		  continue;
+		}
+	      if(pos>=fNcl[slice][patch]) 
+		{
+		  LOG(AliL3Log::kError,"AliL3Evaluate::CalculateResiduals","Clusterarray")
+		    <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
+		  continue;
+		}
+	      
+	      xyz[0] = points[pos].fX;
+	      xyz[1] = points[pos].fY;
+	      xyz[2] = points[pos].fZ;
+	      padrow = points[pos].fPadRow;
+	      fTransform->Global2Local(xyz,slice);
+	      
+	      Float_t xyz_cross[3];
+	      track->GetCrossingPoint(padrow,xyz_cross);
+	      Double_t beta = track->GetCrossingAngle(padrow);
+	      
+	      Double_t yres = xyz_cross[1] - xyz[1];
+	      Double_t zres = xyz_cross[2] - xyz[2];
+	      
+	      Double_t dipangle = atan(track->GetTgl());
+	      ntuppel->Fill(yres,zres,xyz_cross[2],track->GetPt(),dipangle,beta,padrow,track->GetNumberOfPoints());
+	      
+	    }
+	}
+      if(fTracks)
+	delete fTracks;
+    }
+  return ntuppel;
 }
 
