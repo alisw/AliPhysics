@@ -44,7 +44,7 @@ public:
   void GetCovariance(Double_t cov[21]) const;
   Int_t GetSign() const {return (fRp[4]>0) ? 1 : -1;} 
 
-  void SetConstrainedTrackParams(AliKalmanTrack *t, Double_t chi2);
+  void SetConstrainedTrackParams(const AliKalmanTrack *t, Double_t chi2);
 
   Double_t GetConstrainedAlpha() const {return fCalpha;}
   Double_t GetConstrainedChi2() const {return fCchi2;}

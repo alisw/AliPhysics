@@ -367,7 +367,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
 
 //_______________________________________________________________________
 void 
-AliESDtrack::SetConstrainedTrackParams(AliKalmanTrack *t, Double_t chi2) {
+AliESDtrack::SetConstrainedTrackParams(const AliKalmanTrack *t, Double_t chi2) {
   //
   // This function sets the constrained track parameters 
   //
