@@ -79,7 +79,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
     {
       cout << ">>>>>>>>>>>>>>>>>>>>>> DebugReconstruction  <<<<<<<<<<<<<<<<<<<<<<<<<<"  << endl ;
       cout << "DebugReconstruction>>> Digit list entries is " <<    dl->GetEntries() << endl ;
-      AliPHOSDigit * Digit;
+      AliPHOSDigit * digit;
       cout << "DebugReconstruction>>>    Vol Id " << 
 	  " Energy (MeV) "             <<                         
 	  " Index "                    << 
@@ -89,24 +89,73 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 	  " Prim3 "                      <<  endl;  
 
       for (index = 0 ; index < dl->GetEntries() ; index++) {
-	Digit = (AliPHOSDigit * )  dl->At(index) ;
+	digit = (AliPHOSDigit * )  dl->At(index) ;
 	cout << "DebugReconstruction>>>  " << 
-	  setw(8) <<Digit->GetId() << "  "  << 
-	  setw(10) << 1000.*fClusterizer->Calibrate(Digit->GetAmp()) <<       "  "  <<                   
-	  setw(6) <<  Digit->GetIndexInList() << "  "  << 
-	  setw(5) <<  Digit->GetNprimary() <<"  "  << 
-	  setw(5) <<  Digit->GetPrimary(1) <<"  "  << 
-	  setw(5) <<  Digit->GetPrimary(2) <<"  "  << 
-	  setw(5) <<  Digit->GetPrimary(3) << endl;  	 
-  }
+	  setw(8) << digit->GetId() << "  "  << 
+	  setw(10) << 1000.*fClusterizer->Calibrate(digit->GetAmp()) <<       "  "  <<                   
+	  setw(6) <<  digit->GetIndexInList() << "  "  << 
+	  setw(5) <<  digit->GetNprimary() <<"  "  << 
+	  setw(5) <<  digit->GetPrimary(1) <<"  "  << 
+	  setw(5) <<  digit->GetPrimary(2) <<"  "  << 
+	  setw(5) <<  digit->GetPrimary(3) << endl;  	 
+      }
 
     }
 
 
-  if  (fDebugReconstruction)  cout << "DebugReconstruction > Start making reconstructed points (clusterizing)" << endl;
+
+  // Making Clusters
+  if  (fDebugReconstruction)  cout << "DebugReconstruction>>>> Start making reconstructed points (clusterizing)" << endl;
   fClusterizer->MakeClusters(dl, emccl, ppsdl);
 
-  cout << "Emccl list entries is " << emccl->GetEntries() << endl ;
+
+  if  (fDebugReconstruction) 
+    {
+      cout << ">>>>>>>>>>>>>>>>>>>>>> DebugReconstruction  <<<<<<<<<<<<<<<<<<<<<<<<<<"  << endl ;
+      cout << "DebugReconstruction>>> Cluster list entries is " <<    emccl->GetEntries() << endl ;
+      AliPHOSEmcRecPoint * recpoint;
+      cout << "DebugReconstruction>>> Module" << 
+	  "Energy(MeV)"             <<                         
+	  "Index "                    << 
+	  "Multi "                    << 
+	  "   X     "                      << 
+	  "   Y     "                      << 
+	  "   Z    "                      << 
+	  " Lambda 1   "                     <<  
+	  " Lambda 2   "                     <<
+  	  "MaxEnergy(MeV) "                 <<
+	"Nprim "                 <<
+	"Prim1 "                 <<
+	"Prim2 "                 <<
+	"Prim3 "                 <<
+endl;  
+      for (index = 0 ; index < emccl->GetEntries() ; index++) {
+	recpoint = (AliPHOSEmcRecPoint * )emccl->At(index) ; 
+	TVector3  locpos;  recpoint->GetLocalPosition(locpos);
+	Float_t lambda[2]; recpoint->GetElipsAxis(lambda);
+	Int_t * primaries; 
+	Int_t nprimaries;
+	primaries = recpoint->GetPrimaries(nprimaries);
+	cout << "DebugReconstruction>>>  " << 
+	  setw(2) <<recpoint->GetPHOSMod() << " "  << 
+	  setw(9) << 1000.*recpoint->GetTotalEnergy() <<       " "  <<                   
+	  setw(6) <<  recpoint->GetIndexInList() << " "  << 
+	  setw(5) <<  recpoint->GetMultiplicity() <<" "  << 
+	  setw(8) <<  locpos.X() <<" "  << 
+	  setw(8) <<  locpos.Y() <<" "  << 
+	  setw(8) <<  locpos.Z() << " " <<
+	  setw(10) << lambda[0] << "  " <<
+	  setw(10) << lambda[1] << "  " <<
+	  setw(9) << 1000*recpoint->GetMaximalEnergy() << "  " << 
+	  setw(9) << nprimaries << "  "  <<
+	  setw(4) << primaries[0] << "  "  <<
+	  setw(4) << primaries[1] << "  "  <<
+	  setw(4) << primaries[2] << "  "  << endl;
+	   	 
+      }
+
+    }
+  
   cout << "Ppsdl list entries is " << emccl->GetEntries() << endl ;
 
 
