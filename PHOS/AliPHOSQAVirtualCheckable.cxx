@@ -56,6 +56,7 @@ ClassImp(AliPHOSQAVirtualCheckable)
   fAlarms->SetOwner() ;
   //  add the alarms list to //Folders/Run/Conditions/QA/PHOS
   TObjArray * alarms = new TObjArray() ; // deleted when fAlarms is deleted
+  alarms->SetOwner() ; 
   alarms->SetName(name) ; 
   fAlarms->Add(alarms) ; 
   fChecker = 0 ; 
@@ -64,7 +65,9 @@ ClassImp(AliPHOSQAVirtualCheckable)
 //____________________________________________________________________________ 
   AliPHOSQAVirtualCheckable::~AliPHOSQAVirtualCheckable()
 {
-  // ctor 
+  // dtor 
+
+  fAlarms->Clear() ; 
   delete fAlarms ; 
 }
 
