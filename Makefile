@@ -199,7 +199,7 @@ else
 alilibs: $(LIBPATH) modules $(ALLLIBS)
 endif
 
-aliroot: $(BINPATH) $(ALLEXECS) alilibs
+aliroot: alilibs $(BINPATH) $(ALLEXECS) 
 
 #-------------------------------------------------------------------------------
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
