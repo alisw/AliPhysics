@@ -6,8 +6,8 @@ void loadlibs ()
   // (commented libraries are already loaded in prevoius sequence)
 
   gSystem->Load("libmicrocern");
-  gSystem->Load("libSTEER");
   gSystem->Load("libEG"); 
+  gSystem->Load("libSTEER");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libdummypythia6");
   gSystem->Load("libdummyhijing");
@@ -15,7 +15,7 @@ void loadlibs ()
   gSystem->Load("libdummyHBTP");
   gSystem->Load("libTHbtp");
   gSystem->Load("libdummymevsim");
-  gSystem->Load("libTMevSim");
+  gSystem->Load("libTMEVSIM");
   gSystem->Load("libEVGEN");
 
   gSystem->Load("libPhysics");
@@ -27,9 +27,9 @@ void loadlibs ()
   gSystem->Load("libPMD");
   gSystem->Load("libRICH");
   gSystem->Load("libSTRUCT");
-  gSystem->Load("libTOF");
   gSystem->Load("libTPC");
   gSystem->Load("libTRD");
+  gSystem->Load("libTOF");
   gSystem->Load("libZDC");
   gSystem->Load("libITS");
   gSystem->Load("libCRT");
