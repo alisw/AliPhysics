@@ -23,6 +23,7 @@
 #include <AliRunLoader.h>
 #include <AliStack.h>
 #include <AliESDtrack.h>
+#include <AliKalmanTrack.h>
 #include <AliESD.h>
 
 #include "AliAnalysis.h"
@@ -47,6 +48,8 @@ AliReaderESD::AliReaderESD(const Char_t* esdfilename, const Char_t* galfilename)
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
+ fITSTrackPoints(kFALSE),
+ fMustTPC(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
@@ -94,6 +97,8 @@ AliReaderESD::AliReaderESD(TObjArray* dirs,const Char_t* esdfilename, const Char
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
+ fITSTrackPoints(kFALSE),
+ fMustTPC(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
@@ -258,12 +263,18 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
    
   Float_t mf = esd->GetMagneticField(); 
 
-  if ( (mf == 0.0) && (fNTrackPoints > 0) )
+  if ( (mf == 0.0) && ((fNTrackPoints > 0) || fITSTrackPoints) )
    {
       Error("ReadESD","Magnetic Field is 0 and Track Points Demended. Skipping to next event.");
       return 1;
    }
 
+  if (fITSTrackPoints)
+   {
+     Info("ReadESD","Magnetic Field is %f",mf/10.);
+     AliKalmanTrack::SetMagneticField(mf/10.);
+   }
+ 
   AliStack* stack = 0x0;
   if (fReadSim && fRunLoader)
    {
@@ -310,6 +321,16 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
         continue;
       }
 
+     if (fMustTPC)
+      {
+       if ((esdtrack->GetStatus() & AliESDtrack::kTPCin) == kFALSE)
+        {
+          if (AliVAODParticle::GetDebug() > 2) 
+            Info("ReadNext","Particle skipped: Was not reconstructed in TPC.");
+          continue;
+        }
+      }     
+
      if ((esdtrack->GetStatus() & AliESDtrack::kESDpid) == kFALSE) 
       {
         if (AliVAODParticle::GetDebug() > 2) 
@@ -348,12 +369,16 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
            Error("ReadNext","Can not find track with such label.");
            continue;
          }
-        if(Pass(p->GetPdgCode())) 
+         
+        if (fCheckParticlePID)
          {
-           if ( AliVAODParticle::GetDebug() > 5 )
-             Info("ReadNext","Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode());
-           continue; //check if we are intersted with particles of this type 
-         }
+           if(Pass(p->GetPdgCode())) 
+            {
+              if ( AliVAODParticle::GetDebug() > 5 )
+                Info("ReadNext","Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode());
+              continue; //check if we are intersted with particles of this type 
+            }
+         }  
 //           if(p->GetPdgCode()<0) charge = -1;
         particle = new AliAODParticle(*p,i);
 
@@ -398,6 +423,14 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
       if (fNTrackPoints > 0) 
        {
          tpts = new AliTrackPoints(fNTrackPoints,esdtrack,mf,fdR);
+         tpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
+       }
+
+      AliTrackPoints* itstpts = 0x0;
+      if (fITSTrackPoints) 
+       {
+         itstpts = new AliTrackPoints(AliTrackPoints::kITS,esdtrack);
+         itstpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
 
       AliClusterMap* cmap = 0x0; 
@@ -477,6 +510,11 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
          {
            track->SetTPCTrackPoints(tpts);
          }
+         
+        if (itstpts)
+         {
+           track->SetITSTrackPoints(itstpts); 
+         }
 
         if (cmap) 
          { 
@@ -500,8 +538,23 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
       {
         delete particle;//particle was not stored in event
         delete tpts;
+        delete itstpts;
         delete cmap;
       }
+     else
+      {
+        if (particle->P() < 0.00001)
+         {
+           Info("ReadNext","###################################");
+           Info("ReadNext","###################################");
+           Info("ReadNext","Track Label %d",esdtrack->GetLabel());
+           TParticle *p = stack->Particle(esdtrack->GetLabel());
+           Info("ReadNext","");
+           p->Print();
+           Info("ReadNext","");
+           particle->Print();
+         }
+      } 
 
    }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
 

@@ -51,6 +51,8 @@ class AliReaderESD: public AliReader
     void          SetNumberOfTrackPoints(Int_t n = 5,Float_t dr = 30.0) {fNTrackPoints = n; fdR = dr;}
     Int_t         GetNumberOfTrackPoints() const {return fNTrackPoints;}
     void          SetClusterMap(Bool_t flag = kTRUE){fClusterMap = flag;}
+    void          SetITSTrackPoints(Bool_t flag = kTRUE){fITSTrackPoints = flag;}
+    void          MustTPC(Bool_t flag){fMustTPC = flag;}
 
     
     enum ESpecies {kESDElectron = 0, kESDMuon, kESDPion, kESDKaon, kESDProton, kNSpecies};
@@ -78,6 +80,12 @@ class AliReaderESD: public AliReader
     Bool_t        fClusterMap;//Flag indicating if Claster Map should be created for each track
                               //Claster map is needed for Anti-Splitting Cut
 
+    Bool_t        fITSTrackPoints;//Flag indicalting if track positions in ITS are to be read
+                                  //currently we use only position at first pixels wich are
+	              //used by anti-merging cut in non-id analysis
+
+    Bool_t        fMustTPC;// must be reconstructed in TPC -> reject tracks reconstructed ITS stand alone
+    
     //Cut Parameters specific to TPC tracks
         
     Int_t         fNTPCClustMin;//Number of clusters min value
