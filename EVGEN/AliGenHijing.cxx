@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2002/02/12 09:16:39  morsch
+Correction in SelectFlavor()
+
 Revision 1.38  2002/02/12 08:53:21  morsch
 SetNoGammas can be used to inhibit writing of gammas and pi0.
 
@@ -318,9 +321,14 @@ void AliGenHijing::Generate()
       Int_t nc = 0;
       if (np == 0 ) continue;
       Int_t i;
-      Int_t * newPos = new Int_t[np];
+      Int_t* newPos     = new Int_t[np];
+      Int_t* pSelected  = new Int_t[np];
 
-      for (i = 0; i < np; i++) *(newPos+i) = i;
+      for (i = 0; i < np; i++) {
+	  newPos[i]    = i;
+	  pSelected[i] = 0;
+      }
+      
 //      Get event vertex
 //
       TParticle *  iparticle = (TParticle *) particles->At(0);
@@ -329,112 +337,101 @@ void AliGenHijing::Generate()
       fEventVertex[2] = origin0[2];
       
 //
-//      First write parent particles
+//      First select parent particles
 //
 
       for (i = 0; i < np; i++) {
-	  iparticle       = (TParticle *) particles->At(i);
+	  iparticle = (TParticle *) particles->At(i);
 // Is this a parent particle ?
 	  if (Stable(iparticle)) continue;
 //
-        Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
-        Bool_t  selected             =  kTRUE;
-        Bool_t  hasSelectedDaughters =  kFALSE;
+	  Bool_t  selected             =  kTRUE;
+	  Bool_t  hasSelectedDaughters =  kFALSE;
+	  
+	  
+	  kf        = iparticle->GetPdgCode();
+	  ks        = iparticle->GetStatusCode();
+	  if (kf == 92) continue;
 	    
-	    
-        kf        = iparticle->GetPdgCode();
-        ks        = iparticle->GetStatusCode();
-        if (kf == 92) continue;
-	    
-        if (!fSelectAll) selected = KinematicSelection(iparticle, 0) && 
-			     SelectFlavor(kf);
-        hasSelectedDaughters = DaughtersSelection(iparticle, particles);
+	  if (!fSelectAll) selected = KinematicSelection(iparticle, 0) && 
+			       SelectFlavor(kf);
+	  hasSelectedDaughters = DaughtersSelection(iparticle, particles);
 //
-// Put particle on the stack if it is either selected or it is the mother of at least one seleted particle
+// Put particle on the stack if it is either selected or 
+// it is the mother of at least one seleted particle
 //
-        if (selected || hasSelectedDaughters) {
-	    nc++;
-	    p[0] = iparticle->Px();
-	    p[1] = iparticle->Py();
-	    p[2] = iparticle->Pz();
-	    origin[0] = origin0[0]+iparticle->Vx()/10;
-	    origin[1] = origin0[1]+iparticle->Vy()/10;
-	    origin[2] = origin0[2]+iparticle->Vz()/10;
-	    tof = kconv*iparticle->T();
-	    imo = -1;
-	    TParticle* mother = 0;
-	    if (hasMother) {
-		imo = iparticle->GetFirstMother();
-		mother = (TParticle *) particles->At(imo);
-		imo = (mother->GetPdgCode() != 92) ? imo =* (newPos+imo) : -1;
-		
-	    }
-// Put particle on the stack ... 
-// printf("\n set track mother: %d %d %d %d %d %d ",
-// i,imo, kf, nt+1, selected, hasSelectedDaughters);
-	    
-	    SetTrack(0,imo,kf,p,origin,polar, tof,kPPrimary,nt);
-// ... and keep it there
-	    KeepTrack(nt);
-//
-	    *(newPos+i)=nt;
-        } // selected
+	  if (selected || hasSelectedDaughters) {
+	      nc++;
+	      pSelected[i] = 1;
+	  } // selected
       } // particle loop parents
 //
-// Now write the final state particles
+// Now select the final state particles
 //
 
       for (i = 0; i<np; i++) {
-        TParticle *  iparticle       = (TParticle *) particles->At(i);
+	  TParticle *  iparticle = (TParticle *) particles->At(i);
 // Is this a final state particle ?
-        if (!Stable(iparticle)) continue;
-
-        Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
-        Bool_t  selected             =  kTRUE;
-        kf        = iparticle->GetPdgCode();
-        ks        = iparticle->GetStatusCode();
+	  if (!Stable(iparticle)) continue;
+      
+	  Bool_t  selected             =  kTRUE;
+	  kf        = iparticle->GetPdgCode();
+	  ks        = iparticle->GetStatusCode();
 // --------------------------------------------------------------------------
 // Count spectator neutrons and protons
-        if(ks == 0 || ks == 1 || ks == 10 || ks == 11){
-	  if(kf == kNeutron) fSpecn += 1;
-	  if(kf == kProton)  fSpecp += 1;
-	}
+	  if(ks == 0 || ks == 1 || ks == 10 || ks == 11){
+	      if(kf == kNeutron) fSpecn += 1;
+	      if(kf == kProton)  fSpecp += 1;
+	  }
 // --------------------------------------------------------------------------
 //	    
-        if (!fSelectAll) {
-	    selected = KinematicSelection(iparticle,0)&&SelectFlavor(kf);
-	    if (!fSpectators && selected) selected = (ks != 0 && ks != 1 && ks != 10
-						      && ks != 11);
-        }
+	  if (!fSelectAll) {
+	      selected = KinematicSelection(iparticle,0)&&SelectFlavor(kf);
+	      if (!fSpectators && selected) selected = (ks != 0 && ks != 1 && ks != 10
+							&& ks != 11);
+	  }
 //
 // Put particle on the stack if selected
 //
-        if (selected) {
-	    nc++;
-	    p[0] = iparticle->Px();
-	    p[1] = iparticle->Py();
-	    p[2] = iparticle->Pz();
-	    origin[0] = origin0[0]+iparticle->Vx()/10;
-	    origin[1] = origin0[1]+iparticle->Vy()/10;
-	    origin[2] = origin0[2]+iparticle->Vz()/10;
-	    tof = kconv*iparticle->T();
-	    imo = -1;
-	    TParticle* mother = 0;
-	    if (hasMother) {
-		imo = iparticle->GetFirstMother();
-		mother = (TParticle *) particles->At(imo);
-		imo = (mother->GetPdgCode() != 92) ? imo=*(newPos+imo) : -1;
-	    }   
-// Put particle on the stack
-	    SetTrack(fTrackIt,imo,kf,p,origin,polar,
-		     tof,kPNoProcess,nt);
-	    KeepTrack(nt);
-	    *(newPos+i)=nt;
-        } // selected
+	  if (selected) {
+	      nc++;
+	      pSelected[i] = 1;
+	  } // selected
       } // particle loop final state
- 
-      delete[] newPos;
+//
+// Write particles to stack
+//
+      for (i = 0; i<np; i++) {
+	  TParticle *  iparticle = (TParticle *) particles->At(i);
+	  Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
+	  Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
 
+	  if (pSelected[i]) {
+	      kf   = iparticle->GetPdgCode();
+	      p[0] = iparticle->Px();
+	      p[1] = iparticle->Py();
+	      p[2] = iparticle->Pz();
+	      origin[0] = origin0[0]+iparticle->Vx()/10;
+	      origin[1] = origin0[1]+iparticle->Vy()/10;
+	      origin[2] = origin0[2]+iparticle->Vz()/10;
+	      tof = kconv*iparticle->T();
+	      imo = -1;
+	      TParticle* mother = 0;
+	      if (hasMother) {
+		  imo = iparticle->GetFirstMother();
+		  mother = (TParticle *) particles->At(imo);
+		  imo = (mother->GetPdgCode() != 92) ? imo = newPos[imo] : -1;
+	      } // if has mother   
+	      Bool_t tFlag = (fTrackIt && !hasDaughter);
+	      SetTrack(tFlag,imo,kf,p,origin,polar,
+		       tof,kPNoProcess,nt);
+	      KeepTrack(nt);
+	      newPos[i] = nt;
+	  } // if selected
+      } // particle loop
+      delete[] newPos;
+      delete[] pSelected;
+      
       printf("\n I've put %i particles on the stack \n",nc);
       if (nc > 0) {
 	  jev += nc;
@@ -446,7 +443,6 @@ void AliGenHijing::Generate()
       }
   } // event loop
   MakeHeader();
-  
   SetHighWaterMark(nt);
 }
 
