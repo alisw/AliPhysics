@@ -31,18 +31,38 @@
 #endif
 
 Int_t AliTPCFindClustersMI(Int_t n=1) {
-   TFile *out=TFile::Open("AliTPCclusters.root","new");
-   if (!out->IsOpen()) {cerr<<"Delete old AliTPCclusters.root !\n"; return 1;}
-   TFile *in=TFile::Open("rfio:galice.root");
-   if (!in->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
+   
+   AliRunLoader* rl = AliRunLoader::Open("rfio:./galice.root");
+   if (rl == 0x0) {
+      cerr<<"Can not open session"<<endl;
+      return 1;
+   }
+   
+   AliTPCLoader *tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   if (tpcl == 0x0) {
+      cerr<<"Can not get TPC Loader"<<endl;
+      return 1;
+   }
 
-   TFile *ind=TFile::Open("rfio:digits.root");
-   if (!ind->IsOpen()) {cerr<<"Can't open digits file !\n"; return 2;}
+   if (tpcl->LoadDigits()) {
+      cerr<<"Error occured while loading digits"<<endl;
+      return 1;
+   }
 
-
-   if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
-     cerr<<"gAlice have not been found on galice.root !\n";
-     return 3;
+   if (tpcl->LoadRecPoints("recreate")) {
+      cerr<<"Error occured while loading digits"<<endl;
+      return 1;
+   }
+   
+   if (rl->LoadgAlice()) {
+      cerr<<"Error occured while l"<<endl;
+      return 1;
+   }
+   
+   gAlice=rl->GetAliRun();
+   if (!gAlice) {
+      cerr<<"Can't get gAlice !\n";
+      return 1;
    }
 
    TDirectory *cwd = gDirectory;
@@ -50,8 +70,10 @@ Int_t AliTPCFindClustersMI(Int_t n=1) {
    AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC"); 
    Int_t ver = TPC->IsVersion(); 
    cerr<<"TPC version "<<ver<<" has been found !\n";
-
-   AliTPCParam *dig=(AliTPCParam *)in->Get("75x40_100x60_150x60");
+   
+   rl->CdGAFile();
+   
+   AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
    if (!dig) {cerr<<"TPC parameters have not been found !\n"; return 4;}
 
    TStopwatch timer;
@@ -76,23 +98,37 @@ Int_t AliTPCFindClustersMI(Int_t n=1) {
        AliTPCv2 tpc; 
        tpc.SetParam(dig); timer.Start(); cwd->cd();  
        
-       
-       for (Int_t i=0;i<n;i++){ 
-	 AliTPCclustererMI clusterer;
-	 char dname[100];
-	 char cname[100];
-	 sprintf(dname,"TreeD_75x40_100x60_150x60_%d",i);
-	 sprintf(cname,"TreeC_TPC_%d",i);
-	 TTree * input = (TTree*)ind->Get(dname);
-	 out->cd();
-	 TTree * output = new TTree(cname,cname); 
-	 
-	 printf("Processing event %d\n",i); 
-	 clusterer.SetInput(input);
-	 clusterer.SetOutput(output);
-	 clusterer.Digits2Clusters(dig, i);
-         //tpc.Digits2Clusters(out,i);
-	 //	 AliTPCclusterer::Digits2Clusters(dig, out, i);
+       n = rl->GetNumberOfEvents();
+       for (Int_t i=0;i<n;i++)
+        { 
+          rl->GetEvent(i);
+          AliTPCclustererMI clusterer(dig);
+          
+          TTree * input = tpcl->TreeD();
+          if (input == 0x0)
+           {
+             cerr << "Can not get TreeD for event " << i <<endl;
+             continue;
+           }
+          
+          TTree * output = tpcl->TreeR();
+          if (output == 0x0)
+           {
+             tpcl->MakeTree("R");
+             output = tpcl->TreeR();
+             if (output == 0x0)
+              {
+                cerr << "Problems with output tree (TreeR) for event " << i <<endl;
+                continue;
+              }
+           }
+
+          printf("Processing event %d\n",i); 
+          clusterer.SetInput(input);
+          clusterer.SetOutput(output);
+          clusterer.Digits2Clusters();
+          
+          tpcl->WriteRecPoints("OVERWRITE");
        }
      }
      break;
@@ -103,11 +139,7 @@ Int_t AliTPCFindClustersMI(Int_t n=1) {
    
    timer.Stop(); timer.Print();
    
-   delete gAlice; gAlice=0;
-
-   out->Close();
-
-   in->Close();
+   delete rl;//cleans everything
 
    return 0;
 }
