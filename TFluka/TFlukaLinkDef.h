@@ -12,6 +12,7 @@
 #pragma link C++ class  TFlukaMCGeometry+;
 #pragma link C++ class  TFlukaCerenkov+;
 #pragma link C++ class  TFlukaConfigOption+;
+#pragma link C++ class  TFlukaScoringOption+;
 #endif
 
 
