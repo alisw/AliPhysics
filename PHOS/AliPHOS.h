@@ -45,12 +45,13 @@ class AliPHOS : public AliDetector {
     assert(0==1) ; 
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
-  virtual  void  CreateMaterials() ;                     
+  virtual void   CreateMaterials() ;                     
   virtual  AliPHOSRecPoint::RecPointsList *  EmcRecPoints() {
     // Getting list of RecPoints
     return fEmcRecPoints ;
   }
-  virtual  AliPHOSGeometry * GetGeometry() = 0 ;  
+  virtual  AliPHOSGeometry * GetGeometry() = 0 ;
+  virtual Int_t   IsVersion(void) const { return -1 ; } 
   virtual  AliPHOSRecPoint::RecPointsList * PpsdRecPoints() {
     // to be redefined when ppsd is present
     return 0 ;
