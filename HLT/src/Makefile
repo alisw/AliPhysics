@@ -34,13 +34,13 @@ SRCS += $(EXTRA_SRCS)
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
 SRCS += AliL3Display.cxx
-HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
+HDRS = $(SRCS:.cxx=.h) AliL3SpacePointData.h $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
 SRCS += AliL3Display.cxx AliL3FileHandler.cxx AliL3Evaluate.cxx AliHLTReconstructor.cxx
-HDRS = $(SRCS:.cxx=.h)  $(MODNAME)LinkDef.h
+HDRS = $(SRCS:.cxx=.h) AliL3SpacePointData.h $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 
