@@ -45,6 +45,7 @@ AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename, const Char_t* galfil
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
+ fMustTPC(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
@@ -91,6 +92,7 @@ AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename, cons
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
+ fMustTPC(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
  fTPCChi2PerClustMin(0.0),
@@ -307,6 +309,15 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
         continue;
       }
 
+     if (fMustTPC)
+      {
+       if ((esdtrack->GetStatus() & AliESDtrack::kTPCin) == kFALSE)
+        {
+          if (AliHBTParticle::GetDebug() > 2) 
+            Info("ReadNext","Particle skipped: Was not reconstructed in TPC.");
+          continue;
+        }
+      }     
      if ((esdtrack->GetStatus() & AliESDtrack::kESDpid) == kFALSE) 
       {
         if (AliHBTParticle::GetDebug() > 2) 

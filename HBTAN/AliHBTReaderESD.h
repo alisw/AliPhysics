@@ -50,7 +50,7 @@ class AliHBTReaderESD: public AliHBTReader
     void          SetNumberOfTrackPoints(Int_t n = 5,Float_t dr = 30.0) {fNTrackPoints = n; fdR = dr;}
     Int_t         GetNumberOfTrackPoints() const {return fNTrackPoints;}
     void          SetClusterMap(Bool_t flag = kTRUE){fClusterMap = flag;}
-
+    void          MustTPC(Bool_t flag){fMustTPC = flag;}
     
     enum ESpecies {kESDElectron = 0, kESDMuon, kESDPion, kESDKaon, kESDProton, kNSpecies};
     static Int_t  GetSpeciesPdgCode(ESpecies spec);//skowron
@@ -77,6 +77,8 @@ class AliHBTReaderESD: public AliHBTReader
     Bool_t        fClusterMap;//Flag indicating if Claster Map should be created for each track
                               //Claster map is needed for Anti-Splitting Cut
 
+    Bool_t        fMustTPC;// must be reconstructed in TPC -> reject tracks reconstructed ITS stand alone
+    
     //Cut Parameters specific to TPC tracks
         
     Int_t         fNTPCClustMin;//Number of clusters min value
