@@ -81,7 +81,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Opti
       rl->LoadgAlice();
       gAlice = rl->GetAliRun(); // should be removed
     }
-  }
+  } 
   fgEmcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetLoader("EMCALLoader"));
   if ( !fgEmcalLoader ) 
     Error("AliEMCALGetter", "Could not find EMCALLoader") ; 
@@ -460,13 +460,13 @@ Int_t AliEMCALGetter::ReadTreeD()
 {
   // Read the Digits
   
-  
-  // gets TreeD from the root file (EMCAL.SDigits.root)
-  if ( !IsLoaded("D") ) {
+   EmcalLoader()->CleanDigits() ; 
+  // gets TreeD from the root file (EMCAL.Digits.root)
+  //if ( !IsLoaded("D") ) {
     EmcalLoader()->LoadDigits("UPDATE") ;
     EmcalLoader()->LoadDigitizer("UPDATE") ;
-    SetLoaded("D") ; 
-  } 
+    //  SetLoaded("D") ; 
+    //} 
   return Digits()->GetEntries() ; 
 }
 
@@ -474,12 +474,12 @@ Int_t AliEMCALGetter::ReadTreeD()
 Int_t AliEMCALGetter::ReadTreeH()
 {
   // Read the Hits
-    
+  EmcalLoader()->CleanHits() ; 
   // gets TreeH from the root file (EMCAL.Hit.root)
-  if ( !IsLoaded("H") ) {
+  //if ( !IsLoaded("H") ) {
     EmcalLoader()->LoadHits("READ") ;
     SetLoaded("H") ; 
-  }  
+    //}  
   return Hits()->GetEntries() ; 
 }
 
@@ -487,14 +487,14 @@ Int_t AliEMCALGetter::ReadTreeH()
 Int_t AliEMCALGetter::ReadTreeR()
 {
   // Read the RecPoints
-  
-  
+
+   EmcalLoader()->CleanRecPoints() ; 
   // gets TreeR from the root file (EMCAL.RecPoints.root)
-  if ( !IsLoaded("R") ) {
+  //if ( !IsLoaded("R") ) {
     EmcalLoader()->LoadRecPoints("UPDATE") ;
     EmcalLoader()->LoadClusterizer("UPDATE") ;
-    SetLoaded("R") ; 
-  }
+    //  SetLoaded("R") ; 
+    //}
 
   return ECARecPoints()->GetEntries() ; 
 }
@@ -504,28 +504,28 @@ Int_t AliEMCALGetter::ReadTreeT()
 {
   // Read the TrackSegments
   
-  
+  EmcalLoader()->CleanTracks() ; 
   // gets TreeT from the root file (EMCAL.TrackSegments.root)
-  if ( !IsLoaded("T") ) {
+  //if ( !IsLoaded("T") ) {
     EmcalLoader()->LoadTracks("UPDATE") ;
     EmcalLoader()->LoadTrackSegmentMaker("UPDATE") ;
-    SetLoaded("T") ; 
-  }
+    //  SetLoaded("T") ; 
+    //}
 
   return TrackSegments()->GetEntries() ; 
 }
 //____________________________________________________________________________ 
 Int_t AliEMCALGetter::ReadTreeP()
 {
-  // Read the TrackSegments
+  // Read the RecParticles
   
-  
-  // gets TreeT from the root file (EMCAL.TrackSegments.root)
-  if ( !IsLoaded("P") ) {
+  EmcalLoader()->CleanRecParticles() ; 
+  // gets TreeP from the root file (EMCAL.RecParticles.root)
+  //  if ( !IsLoaded("P") ) {
     EmcalLoader()->LoadRecParticles("UPDATE") ;
     EmcalLoader()->LoadPID("UPDATE") ;
-    SetLoaded("P") ; 
-  }
+    //  SetLoaded("P") ; 
+    // }
 
   return RecParticles()->GetEntries() ; 
 }
@@ -534,13 +534,13 @@ Int_t AliEMCALGetter::ReadTreeS()
 {
   // Read the SDigits
   
-  
+  //  EmcalLoader()->CleanSDigits() ; 
   // gets TreeS from the root file (EMCAL.SDigits.root)
-   if ( !IsLoaded("S") ) {
+  // if ( !IsLoaded("S") ) {
     EmcalLoader()->LoadSDigits("READ") ;
     EmcalLoader()->LoadSDigitizer("READ") ;
-    SetLoaded("S") ; 
-  }
+    //  SetLoaded("S") ; 
+    //}
 
   return SDigits()->GetEntries() ; 
 }
