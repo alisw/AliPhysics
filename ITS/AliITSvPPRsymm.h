@@ -22,9 +22,10 @@ class AliITSvPPRsymm : public AliITS {
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
-    virtual void   Init(); 
     virtual Int_t  IsVersion() const {// returns the ITS version number 
 	return 9;} 
+    virtual void   Init(); 
+    virtual void   SetDefaults();
     virtual void   DrawModule();
     virtual void   StepManager();
     virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write

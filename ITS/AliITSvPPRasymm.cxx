@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2001/04/22 13:48:09  barbera
+New values of media parameters and thickness of SPD end-ladder electronics as given by Fabio Formenti
+
 Revision 1.31  2001/04/04 07:02:16  barbera
 Position of the cylinders holding rails corrected
 
@@ -150,6 +153,16 @@ New ITS detailed geometry to be used for the PPR
 #include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSSD.h"
+#include "AliITSDetType.h"
+#include "AliITSresponseSPD.h"
+#include "AliITSresponseSDD.h"
+#include "AliITSresponseSSD.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSSD.h"
+#include "AliITSClusterFinderSPD.h"
+#include "AliITSClusterFinderSDD.h"
+#include "AliITSClusterFinderSSD.h"
 
 
 ClassImp(AliITSvPPRasymm)
@@ -4889,6 +4902,113 @@ void AliITSvPPRasymm::Init(){
 //
     for(i=0;i<72;i++) cout << "*";
     cout << endl;
+}
+//_____________________________________________________________________________
+void AliITSvPPRasymm::SetDefaults(){
+    // sets the default segmentation, response, digit and raw cluster classes
+    const Float_t kconv = 1.0e+04; // convert cm to microns
+
+    cout << "AliITSvPPRasymm::SetDefaults" << endl;
+
+    AliITSDetType *iDetType;
+    AliITSgeomSPD  *s0;
+    AliITSgeomSDD  *s1;
+    AliITSgeomSSD  *s2;
+    Int_t i;
+    Float_t bx[256],bz[280];
+
+    //SPD
+    iDetType=DetType(0);
+    s0 = (AliITSgeomSPD*) fITSgeom->GetShape(kSPD);// Get shape info. Do it this way for now.
+    AliITSresponse *resp0=new AliITSresponseSPD();
+    SetResponseModel(0,resp0);
+    AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(fITSgeom);
+    seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
+		     s0->GetDz()*2.*kconv, // for now.
+		     s0->GetDy()*2.*kconv); // x,z,y full width in microns.
+    seg0->SetNPads(160,256);// Number of Bins in x and z
+    for(i=000;i<256;i++) bx[i] =  50.0; // in x all are 50 microns.
+    for(i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
+    for(i=160;i<280;i++) bz[i] =   0.0; // Outside of detector.
+    bz[ 31] = bz[ 32] = 625.0; // first chip boundry
+    bz[ 63] = bz[ 64] = 625.0; // first chip boundry
+    bz[ 95] = bz[ 96] = 625.0; // first chip boundry
+    bz[127] = bz[128] = 625.0; // first chip boundry
+    seg0->SetBinSize(bx,bz); // Based on AliITSgeomSPD for now.
+    SetSegmentationModel(0,seg0);
+    // set digit and raw cluster classes to be used
+    const char *kData0=(iDetType->GetResponseModel())->DataType();
+    if (strstr(kData0,"real")) iDetType->ClassNames("AliITSdigit",
+						    "AliITSRawClusterSPD");
+    else iDetType->ClassNames("AliITSdigitSPD","AliITSRawClusterSPD");
+    //iDetType->SimulationModel(new AliITSsimulationSPD(seg0,resp0));
+    //iDetType->ReconstructionModel(new AliITSClusterFinderSPD());
+
+    // SDD
+    iDetType=DetType(1);
+    s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);// Get shape info. Do it this way for now.
+    AliITSresponse *resp1=new AliITSresponseSDD();
+    SetResponseModel(1,resp1);
+    AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
+    seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
+		     s1->GetDz()*2.*kconv, // for now.
+		     s1->GetDy()*2.*kconv); // x,z,y full width in microns.
+    bx[0] = 1000./((s1->GetDx()*kconv/seg1->Dpx(0))/resp1->DriftSpeed()); // clock in Mhz
+    seg1->SetNPads(256,bx[0]);// Use AliITSgeomSDD for now
+    SetSegmentationModel(1,seg1);
+    const char *kData1=(iDetType->GetResponseModel())->DataType();
+    const char *kopt=iDetType->GetResponseModel()->ZeroSuppOption();
+    if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
+	iDetType->ClassNames("AliITSdigit","AliITSRawClusterSDD");
+    } else iDetType->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
+    //iDetType->SimulationModel(new AliITSsimulationSDD(seg1,resp1));
+    //iDetType->ReconstructionModel(new AliITSClusterFinderSDD());
+
+    // SSD  Layer 5
+    iDetType=DetType(2);
+    s2 = (AliITSgeomSSD*) fITSgeom->GetShape(kSSD);// Get shape info. Do it this way for now.
+    AliITSresponse *resp2=new AliITSresponseSSD();
+    SetResponseModel(2,resp2);
+    AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(fITSgeom);
+    seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
+		     s2->GetDz()*2.*kconv, // for now.
+		     s2->GetDy()*2.*kconv); // x,z,y full width in microns.
+    seg2->SetPadSize(95.,0.); // strip x pitch in microns
+    seg2->SetNPads(768,0); // number of strips on each side.
+    seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
+    SetSegmentationModel(2,seg2); 
+    const char *kData2=(iDetType->GetResponseModel())->DataType();
+    if(strstr(kData2,"real") ) iDetType->ClassNames("AliITSdigit",
+						    "AliITSRawClusterSSD");
+    else iDetType->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
+    //iDetType->SimulationModel(new AliITSsimulationSSD(seg2,resp2));
+    //iDetType->ReconstructionModel(new AliITSClusterFinderSSD());
+/*
+    // SSD Layer 6
+    iDetType=DetType(3);
+    s3 = (AliITSgeomSSD*) fITSgeom->GetShape(kSSDp);// Get shape info. Do it this way for now.
+    AliITSresponse *resp3=new AliITSresponseSSD();
+    SetResponseModel(3,resp3);
+    AliITSsegmentationSSD *seg3=new AliITSsegmentationSSD(fITSgeom);
+    seg3->SetDetSize(s3->GetDx()*2.*kconv, // base this on AliITSgeomSSD
+		     s3->GetDz()*2.*kconv, // for now.
+		     s3->GetDy()*2.*kconv); // x,z,y full width in microns.
+    seg3->SetPadSize(95.,0.); // strip x pitch in microns
+    seg3->SetNPads(768,0); // number of strips on each side.
+    set3->SetAngles(0.0275,0.0075); // strip angels rad P and N side.
+    SetSegmentationModel(3,seg3); 
+    const char *kData3=(iDetType->GetResponseModel())->DataType();
+    if(strstr(kData3,"real") ) iDetType->ClassNames("AliITSdigitp",
+						    "AliITSRawClusterSSDp");
+    else iDetType->ClassNames("AliITSdigitSSDp","AliITSRawClusterSSDp");
+    //iDetType->SimulationModel(new AliITSsimulationSSD(seg3,resp3));
+    //iDetType->ReconstructionModel(new AliITSClusterFinderSSD());
+*/
+    if(kNTYPES>4){
+	Warning("SetDefaults",
+		"Only the four basic detector types are initialised!");
+    }// end if
+    return;
 }
 //______________________________________________________________________
 void AliITSvPPRasymm::DrawModule(){
