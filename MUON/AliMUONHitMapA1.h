@@ -35,6 +35,8 @@ public AliHitMap
     virtual TObject*  GetHit(Int_t ix, Int_t iy) const;
     // Flag a hit as used
     virtual  void  FlagHit(Int_t ix, Int_t iy);
+    // Validate
+    virtual  Bool_t ValidateHit(Int_t ix, Int_t iy);
     // Test hit status
     virtual FlagType TestHit(Int_t ix, Int_t iy);
     // Assignment operator
