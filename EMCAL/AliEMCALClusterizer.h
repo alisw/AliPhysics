@@ -43,13 +43,16 @@ public:
   virtual void MakeClusters() {Warning("MakeClusters", "Not Defined") ; }
   virtual void Print(Option_t * option)const {Warning("Print", "Not Defined") ; }
 
-  virtual void SetTowerClusteringThreshold(Float_t cluth) {Warning("SetTowerClusteringThreshold", "Not Defined") ; }
-  virtual void SetTowerLocalMaxCut(Float_t cut) {Warning("SetTowerLocalMaxCut", "Not Defined") ; }
-  virtual void SetTowerLogWeight(Float_t w) {Warning("SetTowerLogWeight", "Not Defined") ; }
+  virtual void SetECClusteringThreshold(Float_t cluth) {Warning("SetECClusteringThreshold", "Not Defined") ; }
+  virtual void SetECLocalMaxCut(Float_t cut) {Warning("SetECLocalMaxCut", "Not Defined") ; }
+  virtual void SetECLogWeight(Float_t w) {Warning("SetECLogWeight", "Not Defined") ; }
+  virtual void SetHCClusteringThreshold(Float_t cluth) {Warning("SetHCLogWeight", "Not Defined") ; }
+  virtual void SetHCLocalMaxCut(Float_t cut)            {Warning("SetHCLogWeight", "Not Defined") ; }
+  virtual void SetHCLogWeight(Float_t w)                {Warning("SetHCLogWeight", "Not Defined") ; }
   virtual void SetTimeGate(Float_t gate) {Warning("SetTimeGate", "Not Defined") ; }
-  virtual void SetPreShoClusteringThreshold(Float_t cluth) {Warning("SetPreShoClusteringThreshold", "Not Defined") ; }
-  virtual void SetPreShoLocalMaxCut(Float_t cut) {Warning("SetPreShoLocalMaxCut", "Not Defined") ; }
-  virtual void SetPreShoLogWeight(Float_t w) {Warning("SetPreShoLogWeight", "Not Defined") ; }
+  virtual void SetPREShoClusteringThreshold(Float_t cluth) {Warning("SetPREyShoClusteringThreshold", "Not Defined") ; }
+  virtual void SetPREShoLocalMaxCut(Float_t cut) {Warning("SetPREShoLocalMaxCut", "Not Defined") ; }
+  virtual void SetPREShoLogWeight(Float_t w) {Warning("SetPREShoLogWeight", "Not Defined") ; }
   virtual void SetDigitsBranch(const char * title) {Warning("SetDigitsBranch", "Not Defined") ; }
   virtual void SetRecPointsBranch(const char *title) {Warning("SetRecPointsBranch", "Not Defined") ; } 
   virtual void SetUnfolding(Bool_t toUnfold ) {Warning("SetUnfolding", "Not Defined") ; }
