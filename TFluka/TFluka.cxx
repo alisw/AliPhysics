@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/10/14 14:57:40  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.1.2.8  2002/10/08 16:33:17  iglez2
 LSOUIT is set to true before the second call to flukam.
 
@@ -46,7 +49,7 @@ First commit of Fluka interface.
 
 */
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "TFluka.h"
 #include "TCallf77.h"      //For the fortran calls

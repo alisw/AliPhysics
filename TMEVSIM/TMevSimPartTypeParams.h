@@ -15,7 +15,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif

@@ -3,7 +3,7 @@
 #include <TParticle.h>
 #include <TMath.h>
 
-#include <iostream.h>
+#include <Riostream.h>
 #ifndef WIN32
 # define hbtprocessor hbtprocessor_
 # define ctest ctest_

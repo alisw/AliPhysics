@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/09/28 16:27:03  hristov
+A pointer is initialised to zero
+
 Revision 1.2  2001/03/28 07:32:51  hristov
 Loop variables declared only once, old style include (HP,Sun)
 
@@ -401,8 +404,7 @@ Root interface to MevSim code as TGenerator realisation (Sylwester Radomski et a
 
 
 
-#include <fstream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include "TMevSim.h"
 
 #include "MevSimCommon.h"
