@@ -64,8 +64,7 @@ ClassImp(AliMUONClusterFinderVS)
     }
 }
 
-AliMUONClusterFinderVS::AliMUONClusterFinderVS(
-    const AliMUONClusterFinderVS & clusterFinder)
+AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & clusterFinder):TObject(clusterFinder)
 {
 // Dummy copy Constructor
     ;
@@ -947,7 +946,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
     }
 }
 
-void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* c)
+void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 {
 // Find all local maxima of a cluster
     if (fDebugLevel)
@@ -1589,7 +1588,7 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
     return fmin;
 }
 
-Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster *c)
+Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*/)
 {
 // Perform combined Mathieson fit on both cathode planes
 //
@@ -1684,7 +1683,7 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster *c)
     return fmin;
 }
 
-Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster *c, Int_t cath)
+Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int_t cath)
 {
 // Performs a double Mathieson fit on one cathode
 // 
@@ -1761,7 +1760,7 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster *c, Int_t ca
     return kTRUE;
 }
 
-Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster *c)
+Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*/)
 {
 //
 // Perform combined double Mathieson fit on both cathode planes
@@ -1971,7 +1970,7 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 //
 // Minimisation functions
 // Single Mathieson
-void fcnS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void fcnS1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i;
@@ -1991,7 +1990,7 @@ void fcnS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
     f=chisq;
 }
 
-void fcnCombiS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void fcnCombiS1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i, cath;
@@ -2014,7 +2013,7 @@ void fcnCombiS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 }
 
 // Double Mathieson
-void fcnS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void fcnS2(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i;
@@ -2036,7 +2035,7 @@ void fcnS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 }
 
 // Double Mathieson
-void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void fcnCombiS2(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i, cath;
@@ -2081,7 +2080,7 @@ Bool_t AliMUONClusterFinderVS::TestTrack(Int_t t) {
 }
 
 AliMUONClusterFinderVS& AliMUONClusterFinderVS
-::operator = (const AliMUONClusterFinderVS& rhs)
+::operator = (const AliMUONClusterFinderVS& /*rhs*/)
 {
 // Dummy assignment operator
     return *this;
