@@ -33,10 +33,6 @@ class AliRICHSegmentationV1 : public AliRICHSegmentationV0 {
     // Current integration limits
     virtual void IntegrationLimits (Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     
- protected:
-
-    Float_t fDeadZone;               //width of dead zones between CsI photocathodes
-    
  private:
     ClassDef(AliRICHSegmentationV1,1)
 };
