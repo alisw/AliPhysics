@@ -8,13 +8,13 @@
 #include <TObject.h>
 //*-- Author: Andreas Morsch (CERN)
 
-
 class AliEMCALFast : public TObject {
  public:
     virtual ~AliEMCALFast(){;}
-    static Float_t SmearMomentum(Int_t ind, Float_t p);
-    static Float_t Efficiency   (Int_t ind, Float_t p);
-    
+    static Float_t SmearMomentum  (Int_t ind,   Float_t p);
+    static Float_t Efficiency     (Int_t ind,   Float_t p);
+    static Bool_t  EmcalAcceptance(Float_t eta, Float_t phi);
+    static Bool_t  RandomReject   (Float_t eff);    
  protected:
   ClassDef(AliEMCALFast,1) // Jet for EMCAL
 };
