@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31.4.2  2002/07/24 10:07:21  alibrary
+Updating VirtualMC
+
 Revision 1.33  2002/07/23 10:02:46  morsch
 All volume names start with "S".
 
@@ -439,6 +442,12 @@ void AliMUONv1::CreateGeometry()
      gMC->Gsvolu("S04M", "TUBE", idAir, tpar, 3);
      gMC->Gspos("S03M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
      gMC->Gspos("S04M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
+     gMC->Gsbool("S03M", "L3DO");
+     gMC->Gsbool("S03M", "L3O1");
+     gMC->Gsbool("S03M", "L3O2");
+     gMC->Gsbool("S04M", "L3DO");
+     gMC->Gsbool("S04M", "L3O1");
+     gMC->Gsbool("S04M", "L3O2");
 
 // // Aluminium frames
 // // Outer frames
@@ -1417,7 +1426,9 @@ void AliMUONv1::CreateGeometry()
    
      gMC->Gsvolu("SF1A", "TUBE", idAlu1, tpar, 3);     //Al
      gMC->Gspos("SF1A", 1, "SM11", 0., 0., 0., 0, "MANY");
-     gMC->Gspos("SF1A", 2, "SM12", 0., 0., 0., 0, "MANY");
+      
+     gMC->Gsvolu("SF3A", "TUBE", idAlu1, tpar, 3);     //Al
+     gMC->Gspos("SF3A", 1, "SM12", 0., 0., 0., 0, "MANY");
 
 
 // FIRST PLANE OF STATION 1
@@ -1457,6 +1468,7 @@ void AliMUONv1::CreateGeometry()
 
      gMC->Gsposp("SC1A", 1, "SM11",kXMC1A,kYMC1Am,kZMCm, 0, "ONLY", tpar, 3);
      gMC->Gsposp("SC1A", 2, "SM11",-kXMC1A,kYMC1Ap,kZMCp, 0, "ONLY", tpar, 3);
+     gMC->Gsbool("SC1A", "SF1A");
      
 //  chamber type B    
      Float_t tpar1save=tpar[1];
@@ -1577,6 +1589,7 @@ void AliMUONv1::CreateGeometry()
 
      gMC->Gsposp("SC2A", 1, "SM12",kXMC2A,kYMC2Am,kZMCm, 0, "ONLY", tpar, 3);
      gMC->Gsposp("SC2A", 2, "SM12",-kXMC2A,kYMC2Ap,kZMCp, 0, "ONLY", tpar, 3);
+     gMC->Gsbool("SC2A", "SF3A");
      
 
 //  chamber type B    
@@ -1677,7 +1690,9 @@ void AliMUONv1::CreateGeometry()
    
      gMC->Gsvolu("SF2A", "TUBE", idAlu1, tpar, 3);            //Al
      gMC->Gspos("SF2A", 1, "SM21", 0., 0., 0., 0, "MANY");
-     gMC->Gspos("SF2A", 2, "SM22", 0., 0., 0., 0, "MANY");
+
+     gMC->Gsvolu("SF4A", "TUBE", idAlu1, tpar, 3);            //Al
+     gMC->Gspos("SF4A", 1, "SM22", 0., 0., 0., 0, "MANY");
     
 
 
@@ -1713,6 +1728,7 @@ void AliMUONv1::CreateGeometry()
      tpar[1] = kYMC1MIN*kZ13;
      gMC->Gsposp("SC3A", 1, "SM21",kXMC3A,kYMC3Am,kZMCm, 0, "ONLY", tpar, 3);
      gMC->Gsposp("SC3A", 2, "SM21",-kXMC3A,kYMC3Ap,kZMCp, 0, "ONLY", tpar, 3);
+     gMC->Gsbool("SC3A", "SF2A");
 
      
 //  chamber type B    
@@ -1810,6 +1826,7 @@ void AliMUONv1::CreateGeometry()
      tpar[1] = kYMC1MIN*kZ14;
      gMC->Gsposp("SC4A", 1, "SM22",kXMC4A,kYMC4Am,kZMCm, 0, "ONLY", tpar, 3);
      gMC->Gsposp("SC4A", 2, "SM22",-kXMC4A,kYMC4Ap,kZMCp, 0, "ONLY", tpar, 3);
+     gMC->Gsbool("SC4A", "SF4A");
      
 
 //  chamber type B    
