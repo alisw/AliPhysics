@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.9.2.15  2000/10/04 16:56:40  nilsen
+Needed to include stdlib.h
+
+=======
+Revision 1.22  2000/10/04 19:45:52  barbera
+Corrected by F. Carminati for v3.04
+
 Revision 1.21  2000/10/02 21:28:08  fca
 Removal of useless dependecies via forward declarations
 
@@ -99,7 +106,7 @@ the AliITS class.
 // futher information.
 //
 ///////////////////////////////////////////////////////////////////////////////
- 
+#include <stdlib.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TBranch.h>
@@ -119,6 +126,7 @@ the AliITS class.
 #include "AliITSDetType.h"
 #include "AliITSClusterFinder.h"
 #include "AliITSsimulation.h"
+#include "AliITSresponse.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSresponseSPD.h"
 #include "AliITSsegmentationSDD.h"
@@ -264,7 +272,8 @@ AliITS::~AliITS(){
   delete fHits;
   delete fDigits;
   delete fRecPoints;
-  if(fIdName!=0) delete[] fIdName;
+//  delete fIdName;        // TObjArray of TObjStrings
+  if(fIdName!=0) delete[] fIdName;  // Array of TStrings
   if(fIdSens!=0) delete[] fIdSens;
   if(fITSmodules!=0) {
       this->ClearModules();
@@ -532,16 +541,18 @@ void AliITS::Init(){
   // and sets the default segmentation, response, digit and raw cluster classes
   // Therefore it should be called after a call to CreateGeometry.
   //
-
-
-  SetDefaults();
-
   Int_t i;
+
   cout << endl;
   for(i=0;i<30;i++) cout << "*";cout << " ITS_INIT ";
   for(i=0;i<30;i++) cout << "*";cout << endl;
+//
+  SetDefaults();
+// TObjArray of TObjStrings
+//  for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId((fIdName->At(i))->GetName());
+// Array of TStrings
   for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
-  //
+//
   for(i=0;i<70;i++) cout << "*";
   cout << endl;
 }
@@ -557,46 +568,62 @@ void AliITS::SetDefaults()
 
   //SPD 
 
-  AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(fITSgeom);
-  AliITSresponseSPD *resp0=new AliITSresponseSPD();
-  iDetType=DetType(0); 
-  if (!iDetType->GetSegmentationModel()) SetSegmentationModel(0,seg0); 
-  if (!iDetType->GetResponseModel()) SetResponseModel(0,resp0); 
+  iDetType = DetType(0);
+  AliITSresponseSPD *resp0 = (AliITSresponseSPD*) iDetType->GetResponseModel();
+  if (!iDetType->GetSegmentationModel()) {
+    AliITSsegmentationSPD *seg0 = new AliITSsegmentationSPD(fITSgeom);
+    SetSegmentationModel(0,seg0);
+  } // end if 
+  if (!resp0){
+    resp0 = new AliITSresponseSPD();
+    SetResponseModel(0,resp0);
+  } // end if
   // set digit and raw cluster classes to be used
-  const char *kData0=resp0->DataType();
+
+  const char *kData0 = resp0->DataType();
   if (strstr(kData0,"real")) {
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSPD");
   } else iDetType->ClassNames("AliITSdigitSPD","AliITSRawClusterSPD");
 
-  // SDD					  //
-  AliITSresponseSDD *resp1=new AliITSresponseSDD();
-  AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
-  iDetType=DetType(1); 
+  // SDD
+  iDetType = DetType(1);
+  AliITSresponseSDD *resp1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
   //printf("SetDefaults: iDetType %p\n",iDetType);
-  if (!iDetType->GetSegmentationModel()) SetSegmentationModel(1,seg1); 
+  if (!iDetType->GetSegmentationModel()) {
+    AliITSsegmentationSDD *seg1 = new AliITSsegmentationSDD(fITSgeom,resp1);
+    SetSegmentationModel(1,seg1); 
+  } // end if
   //printf("SetDefaults: segm %p\n",iDetType->GetSegmentationModel());
-  if (!iDetType->GetResponseModel()) SetResponseModel(1,resp1); 
+  if (!resp1) {
+    resp1 = new AliITSresponseSDD();
+    SetResponseModel(1,resp1); 
+  }
   //printf("SetDefaults: resp %p\n",iDetType->GetResponseModel());
-  const char *kData1=resp1->DataType();
-  const char *kopt=resp1->ZeroSuppOption();
+  const char *kData1 = resp1->DataType();
+  const char *kopt = resp1->ZeroSuppOption();
   if ((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ) {
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSDD");
   } else iDetType->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
 
   // SSD
-  AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(fITSgeom);
-  AliITSresponseSSD *resp2=new AliITSresponseSSD();
-  iDetType=DetType(2); 
-  if (!iDetType->GetSegmentationModel()) SetSegmentationModel(2,seg2); 
-  if (!iDetType->GetResponseModel()) SetResponseModel(2,resp2); 
-  const char *kData2=resp2->DataType();
+  iDetType = DetType(2); 
+  AliITSresponseSSD *resp2 = (AliITSresponseSSD*)iDetType->GetResponseModel();
+  if (!iDetType->GetSegmentationModel()) {
+    AliITSsegmentationSSD *seg2 = new AliITSsegmentationSSD(fITSgeom);
+    SetSegmentationModel(2,seg2); 
+  } // end if
+  if (!resp2) {
+    resp2 = new AliITSresponseSSD();
+    SetResponseModel(2,resp2); 
+  } // end if
+  const char *kData2 = resp2->DataType();
   if (strstr(kData2,"real")) {
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSSD");
   } else iDetType->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
 
   if (fgkNTYPES>3) {
     Warning("SetDefaults","Only the three basic detector types are initialised!");
-  } 
+  } // end if
 
 }
 //_____________________________________________________________________________
@@ -1166,6 +1193,8 @@ void AliITS::Streamer(TBuffer &R__b){
 	  AliDetector::Streamer(R__b);
 	  R__b >> fIdN;
 	  R__b.ReadArray(fIdSens); 
+  	  if(fIdName!=0) delete[] fIdName;  // Array of TStrings
+    	  fIdName    = new TString[fIdN];
 	  for(i=0;i<fIdN;i++) fIdName[i].Streamer(R__b);
 	  R__b >> fITSgeom;
 	  R__b >> fITSmodules;
@@ -1207,5 +1236,3 @@ void AliITS::Streamer(TBuffer &R__b){
    } // end if
 
 }
-
-
