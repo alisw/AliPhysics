@@ -1,50 +1,71 @@
-void ViewUTD()
+void ViewTRD()
 {
-   gMC->Gsatt("TRD ","seen",0);
+gMC->Gsatt("B077","seen",0);
+//gMC->Gsatt("B076","seen",1);
+gMC->Gsatt("B071","seen",0);
+gMC->Gsatt("B074","seen",0);
+gMC->Gsatt("B075","seen",0);
+/*gMC->Gsatt("B080","seen",0);
+gMC->Gsatt("B042","seen",0);
+gMC->Gsatt("B045","seen",0);
+gMC->Gsatt("B047","seen",0);
+gMC->Gsatt("B051","seen",0);
+gMC->Gsatt("B049","seen",0);
+gMC->Gsatt("B039","seen",0);
+gMC->Gsatt("B033","seen",0);
+gMC->Gsatt("B063","seen",0);
+gMC->Gsatt("B065","seen",0);
+gMC->Gsatt("B067","seen",0);
+gMC->Gsatt("B069","seen",0);
+gMC->Gsatt("B056","seen",0);
+gMC->Gsatt("B059","seen",0);
+gMC->Gsatt("B072","seen",0);
+*/
+gMC->Gsatt("BTR1","seen",0);
+gMC->Gsatt("BTO1","seen",0);
+gMC->Gsatt("BTR2","seen",0);
+gMC->Gsatt("BTO2","seen",0);
+gMC->Gsatt("BTR3","seen",0);
+gMC->Gsatt("BTO3","seen",0);
+/*
+gMC->Gsatt("B043","seen",0);
+gMC->Gsatt("B046","seen",0);
+gMC->Gsatt("B048","seen",0);
+gMC->Gsatt("B052","seen",0);
+gMC->Gsatt("B050","seen",0);
+gMC->Gsatt("B034","seen",0);
+gMC->Gsatt("B064","seen",0);
+gMC->Gsatt("B066","seen",0);
+gMC->Gsatt("B068","seen",0);
+gMC->Gsatt("B070","seen",0);
+gMC->Gsatt("B062","seen",0);
+gMC->Gsatt("B073","seen",0);
+*/
 
-   gMC->Gsatt("UTRL","seen",0);
-   gMC->Gsatt("UTSL","seen",0);
-   gMC->Gsatt("UTFI","seen",0);
-   gMC->Gsatt("UTFO","seen",0);
-   gMC->Gsatt("UTCI","seen",0);
-   gMC->Gsatt("UTCO","seen",0);
-   gMC->Gsatt("UTII","seen",0);
-   gMC->Gsatt("UTIO","seen",0);
-   gMC->Gsatt("UTMI","seen",0);
-   gMC->Gsatt("UTMO","seen",0);
-
-   gMC->Gsatt("UTRS","seen",0);
-   gMC->Gsatt("UTSS","seen",0);
-   gMC->Gsatt("UTFS","seen",0);
-   gMC->Gsatt("UTCS","seen",0);
-   gMC->Gsatt("UTIS","seen",0);
-   gMC->Gsatt("UTMS","seen",0);
-
-   gMC->Gsatt("UT1S","seen",1);
-   gMC->Gsatt("UT2S","seen",1);
-   gMC->Gsatt("UT3S","seen",1);
-   gMC->Gsatt("UT4S","seen",1);
-   gMC->Gsatt("UT5S","seen",1);
-   gMC->Gsatt("UT6S","seen",1);
-   gMC->Gsatt("UT7S","seen",1);
-   gMC->Gsatt("UT8S","seen",1);
-
-   gMC->Gsatt("UT1I","seen",1);
-   gMC->Gsatt("UT2I","seen",1);
-   gMC->Gsatt("UT3I","seen",1);
-   gMC->Gsatt("UT4I","seen",1);
-   gMC->Gsatt("UT5I","seen",1);
-   gMC->Gsatt("UT6I","seen",1);
-   gMC->Gsatt("UT7I","seen",1);
-   gMC->Gsatt("UT8I","seen",1);
-
-   gMC->Gsatt("UT1O","seen",1);
-   gMC->Gsatt("UTIO","seen",1);
-   gMC->Gsatt("UT3O","seen",1);
-   gMC->Gsatt("UT4O","seen",1);
-   gMC->Gsatt("UT5O","seen",1);
-   gMC->Gsatt("UT6O","seen",1);
-   gMC->Gsatt("UT7O","seen",1);
-   gMC->Gsatt("UT8O","seen",1);
-
-   }
+gMC->Gsatt("UAFI","seen",1);
+gMC->Gsatt("UAFM","seen",1);
+gMC->Gsatt("UAFO","seen",1);
+gMC->Gsatt("UAII","seen",0);
+gMC->Gsatt("UAIM","seen",0);
+gMC->Gsatt("UAIO","seen",0);
+gMC->Gsatt("UCFI","seen",0);
+gMC->Gsatt("UCFM","seen",0);
+gMC->Gsatt("UCFO","seen",0);
+gMC->Gsatt("UCII","seen",0);
+gMC->Gsatt("UCIM","seen",0);
+gMC->Gsatt("UCIO","seen",0);
+gMC->Gsatt("UL01","seen",1);
+gMC->Gsatt("UL02","seen",1);
+gMC->Gsatt("UL03","seen",1);
+gMC->Gsatt("UL04","seen",1);
+gMC->Gsatt("UL05","seen",1);
+gMC->Gsatt("UL06","seen",1);
+gMC->Gsatt("UL07","seen",1);
+gMC->Gsatt("UL08","seen",1);
+gMC->Gsatt("UL09","seen",1);
+gMC->Gsatt("UL10","seen",1);
+gMC->Gsatt("UL11","seen",1);
+gMC->Gsatt("TRD1","seen",0);
+gMC->Gsatt("TRD2","seen",0);
+gMC->Gsatt("TRD3","seen",0);
+}

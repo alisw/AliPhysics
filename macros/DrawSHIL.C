@@ -10,7 +10,7 @@ void DrawSHIL()
    gMC->SetClipBox(".");
    gMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
    gMC->DefaultRange();
-   gMC->Gdraw("alic", 30, 30, 0, 26.5, 18, .03, .03);
+   gMC->Gdraw("alic", 30, 30, 0, 25, 18, .025, .025);
    gMC->Gdhead(1111, "Muon Shield");
    gMC->Gdman(16, 6, "MAN");
 }
