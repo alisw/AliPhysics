@@ -74,6 +74,9 @@ class AliMUONSegmentationSlatModule : public AliMUONSegmentationV0
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     //
     virtual void SetId(Int_t id) {fId=id;}
+
+    // Not implemented
+    virtual void Draw(const char */*opt*/ = "") {}
     
  protected:
     AliMUONSegmentationSlatModule(const AliMUONSegmentationSlatModule& rhs);

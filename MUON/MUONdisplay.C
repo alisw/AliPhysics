@@ -1,9 +1,9 @@
 MUONdisplay (Int_t nevent=0, TString fileName="galice.root") {
  
   // Getting runloader 
-  AliRunLoader * RunLoader = AliRunLoader::Open(fileName,"MUONFolder","READ");
+  AliRunLoader * RunLoader = AliRunLoader::Open(fileName.Data(),"MUONFolder","READ");
   if (RunLoader == 0x0) {
-    Error("MUONdisplay","Inut file %s error!",fileName);
+    Error("MUONdisplay","Inut file %s error!",fileName.Data());
     return;   
   }
   RunLoader->LoadHeader();

@@ -163,8 +163,11 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
 
 // Set parent chamber number
   fChamber=&(pMUON->Chamber(chamber));
+  fRmin=fChamber->RInner();
+  fRmax=fChamber->ROuter();    
+  fCorr=0;
+  fZ=fChamber->Z();
   fId=chamber;
-
 }
 //------------------------------------------------------------------
 void  AliMUONSegmentationTrigger::Draw(const char * /*opt*/) {}

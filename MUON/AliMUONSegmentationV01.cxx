@@ -139,6 +139,7 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 //  vice versa.
 //  This version approximates concentric segmentation zones
 //
+
     Int_t isec;
     //printf("\n Initialise Segmentation V01\n");
 
@@ -191,9 +192,13 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 	    }
 	} // y-pad loop
     } // sector loop
+
 // reference to chamber
     AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
     fChamber=&(pMUON->Chamber(chamber));
+    fRmin=fChamber->RInner();
+    fRmax=fChamber->ROuter();    
+    fCorr=0;
     fZ = fChamber->Z();
     fId=chamber;
 }
@@ -552,7 +557,7 @@ void AliMUONSegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) co
     y[2]=x[2];
 }
 
-void AliMUONSegmentationV01::Draw(const char* opt) const
+void AliMUONSegmentationV01::Draw(const char* opt)
 {
  
 // Draws the segmentation zones

@@ -227,17 +227,20 @@ void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
 
   fGeometryBuilders->Add(geomBuilder);
 }
+
 //____________________________________________________________________
 void AliMUON::BuildGeometry()
 {
 // Geometry for event display
-//   for (Int_t i=0; i<7; i++) {
-//     for (Int_t j=0; j<2; j++) {
-//       Int_t id=2*i+j+1;
-//       this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");
-//     }
-//   }
+
+   for (Int_t i=0; i<7; i++) {
+     for (Int_t j=0; j<2; j++) {
+       Int_t id=2*i+j+1;
+       this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");
+     }
+   }
 }
+
 //__________________________________________________________________
 void  AliMUON::SetTreeAddress()
 {

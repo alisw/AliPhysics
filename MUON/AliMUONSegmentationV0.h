@@ -41,7 +41,7 @@ class AliMUONSegmentationV0 : public AliSegmentation
 	{z=fZ; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
-    virtual void Init(Int_t chamber);
+    // virtual void Init(Int_t chamber);
     //
     // Get member data
     //
@@ -102,7 +102,7 @@ dummy);
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     // Draw segmentation zones
-    virtual void Draw(const char *opt="");
+    // virtual void Draw(const char *opt="");
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t dum, TF1* func);

@@ -40,11 +40,16 @@ AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmen
   Fatal("AliMUONSegmentationV0", "Not implemented.");
 }
 
-    void AliMUONSegmentationV0::Init(Int_t  chamber)
+
+/*
+// Commented out - not used
+
+void AliMUONSegmentationV0::Init(Int_t  chamber)
 {
 //  Initialises member data of the segmentation from geometry data 
 //  owned by Chamber
 //
+
     AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
     fChamber=&(pMUON->Chamber(chamber));
     
@@ -58,7 +63,7 @@ AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmen
     fZ=fChamber->Z();
     fId=chamber;
 }
-
+*/
 
 Float_t AliMUONSegmentationV0::GetAnod(Float_t xhit) const
 {
@@ -307,6 +312,9 @@ void  AliMUONSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) co
     y[0]=x[0];
 }
 
+/*
+// Commented out - not used
+
 void AliMUONSegmentationV0::Draw(const char *)
 {
 // Draws the segmentation zones
@@ -323,6 +331,7 @@ void AliMUONSegmentationV0::Draw(const char *)
     circle->SetFillColor(1);
     circle->Draw();
 }
+*/
 
 AliMUONSegmentationV0& 
 AliMUONSegmentationV0::operator =(const AliMUONSegmentationV0 & rhs)
