@@ -37,11 +37,18 @@ void AliPMDDigits2Recpoints(Int_t nevt=1)
   clus->SetDebug(1);
   clus->Load();
 
+
+
   for (Int_t ievt = 0; ievt < nevt; ievt++)
     {
-      clus->Digits2RecPoints(ievt);
+      // from digits data
+      //      clus->Digits2RecPoints(ievt);
+
+      // from raw data
+      AliRawReaderFile reader(ievt);
+      clus->Digits2RecPoints(ievt, &reader);
     }
-  clus->UnLoad("R");
+  clus->UnLoad();
 
   timer.Stop();
   timer.Print();
