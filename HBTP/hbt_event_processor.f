@@ -4882,7 +4882,7 @@ C-------------------------------------
 
         If(ALICE .eq. 1) Then
            Call AliHbtp_SetActiveEventNumber(ievent-1)
-           write(*,*) 'NEXT EVENT:', ievent
+C           write(*,*) 'NEXT EVENT:', ievent
         End If
         Call read_data(7)
         if(n_part_tot_trk .gt. 0) then
