@@ -520,6 +520,7 @@ void TFlukaConfigOption::ProcessCUTGAM()
     if (fMedium == -1) {
 	fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 
 		0., fCutValue[kCUTGAM], 0., 0., Float_t(fgGeom->NofVolumes()), 1.);
+
     } else {
 	Int_t nreg, *reglist;
 	Float_t ireg;
@@ -530,6 +531,8 @@ void TFlukaConfigOption::ProcessCUTGAM()
 	    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 0.,fCutValue[kCUTGAM], 0., ireg, ireg, 1.);
 	}
     }
+    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
+	    0., fCutValue[kCUTGAM], 0., fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTELE()
@@ -550,6 +553,8 @@ void TFlukaConfigOption::ProcessCUTELE()
 	    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -fCutValue[kCUTELE], 0., 0., ireg, ireg, 1.);
 	}
     }
+    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
+	    -fCutValue[kCUTELE], 0., 0., fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTNEU()
