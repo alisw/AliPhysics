@@ -116,6 +116,7 @@ void MUONhits(char * filename="galice.root", Int_t event2Check=0)
       for(ihit=0; ihit<nhits; ihit++) {
 	mHit = static_cast<AliMUONHit*>(muondata.Hits()->At(ihit));
   	Int_t Nch      = mHit->Chamber();  // chamber number
+	Int_t detele   = mHit-> DetElemId(); // Detection element if defined
 	Int_t hittrack = mHit->Track();
 	Float_t x      = mHit->X();
   	Float_t y      = mHit->Y();
@@ -124,8 +125,8 @@ void MUONhits(char * filename="galice.root", Int_t event2Check=0)
   	Float_t theta  = mHit->Theta();
   	Float_t phi    = mHit->Phi();
   	Float_t momentum = mHit->Momentum();
-  	printf(">>> Hit %2d Chamber %2d Track %4d x %6.3f y %6.3f z %7.3f elos %g theta %6.3f phi %5.3f momentum %5.3f\n",
-	       ihit, Nch,hittrack,x,y,z,elos,theta,phi, momentum);
+  	printf(">>> Hit %2d Chamber %2d DetEle %4d Track %4d x %6.3f y %6.3f z %7.3f elos %g  momentum %5.3f\n",
+	       ihit, Nch, detele, hittrack,x,y,z,elos,momentum);
       }
       muondata.ResetHits();
     } // end track loop
