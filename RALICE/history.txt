@@ -574,3 +574,5 @@
                 This implies that to restore the original event date/time, the data files have to
                 be re-created. This I/O backward incompatibility could not be avoided in the
                 effort of eliminating the TTimeStamp restrictions.
+04-mar-2005 NvE Installation scripts named amdgcclib.sh introduced in all /scripts directories to enable
+                shared library creation on AMD 64 (Athlon and Opteron) machines.
