@@ -22,7 +22,9 @@ AliHBTReaderInternal::AliHBTReaderInternal():
  fPartBranch(0x0),
  fTrackBranch(0x0),
  fTree(0x0),
- fFile(0x0)
+ fFile(0x0),
+ fPartBuffer(0x0),
+ fTrackBuffer(0x0)
 {
 //Defalut constructor
 }
@@ -33,7 +35,9 @@ AliHBTReaderInternal::AliHBTReaderInternal(const char *filename):
  fPartBranch(0x0),
  fTrackBranch(0x0),
  fTree(0x0),
- fFile(0x0)
+ fFile(0x0),
+ fPartBuffer(0x0),
+ fTrackBuffer(0x0)
 { 
 //constructor 
 //filename - name of file to open
@@ -46,7 +50,9 @@ AliHBTReaderInternal::AliHBTReaderInternal(TObjArray* dirs, const char *filename
  fPartBranch(0x0),
  fTrackBranch(0x0),
  fTree(0x0),
- fFile(0x0)
+ fFile(0x0),
+ fPartBuffer(0x0),
+ fTrackBuffer(0x0)
 { 
 //ctor
 //dirs contains strings with directories to look data in

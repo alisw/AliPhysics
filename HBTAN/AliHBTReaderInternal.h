@@ -1,17 +1,23 @@
 #ifndef ALIHBTREADERINTERNAL_H
 #define ALIHBTREADERINTERNAL_H
+//_________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// class AliHBTReaderInternal                                            //
+//                                                                       //
+// Multi file reader for Internal Data Format                            //
+//                                                                       //
+// This reader reads data created by itself                              //
+//   (method AliHBTReaderInternal::Write)                                //
+//                                                                       //
+// Piotr.Skowronski@cern.ch                                              //
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html  //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliHBTReader.h"
-
-//Multi file reader for Internal Data Format
-//
-//This reader reads data created by
-//                  
-//Piotr.Skowronski@cern.ch
-//more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
-
-
 #include <TString.h>
+
 class TFile;
 class TTree;
 class TBranch;
