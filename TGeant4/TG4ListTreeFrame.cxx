@@ -177,11 +177,11 @@ void  TG4ListTreeFrame::DrawSelectedVolume(TGListTreeItem* item)
       lCommand += "  -1";
       G4cout << "!!!!ADD VOLUME COMMAND IS!!!!   " << lCommand << G4endl;
       G4UImanager::GetUIpointer()->ApplyCommand( lCommand );
-      G4UImanager::GetUIpointer()->ApplyCommand(
-	          "/control/execute vis_cont.mac");
+      G4UImanager::GetUIpointer()->ApplyCommand("/vis/sceneHandler/attach");
+      G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/refresh");
       ii++;
       };
-      
+    G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/update");
 }
 
 
