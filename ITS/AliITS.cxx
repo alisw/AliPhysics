@@ -4,7 +4,7 @@
 // and analysis is show in the figure below.
 //Begin_Html
 /*
-<img src="figures/ITS_Analysis_schema.gif">
+<img src="picts/ITS/ITS_Analysis_schema.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -20,7 +20,7 @@
 //
 //Begin_Html
 /*
-<img src="figures/AliITS_Class_Diagram.gif">
+<img src="picts/ITS/AliITS_Class_Diagram.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>

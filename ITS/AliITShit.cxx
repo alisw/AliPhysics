@@ -28,7 +28,7 @@ ClassImp(AliITShit)
 //
 //Begin_Html
 /*
-<img src="figures/AliITShit_Class_Diagram.gif">
+<img src="picts/ITS/AliITShit_Class_Diagram.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>

@@ -87,20 +87,20 @@ void AliITSv5::CreateGeometry(){
 //  the following figures.
 //Begin_Html
 /*
-<img src="figures/its1+2_convention_front_5.gif">
+<img src="picts/ITS/its1+2_convention_front_5.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
 <p>This shows the front view of the SPDs.
 </font>
 <pre>
-<img src="figures/its1+2_convention_side_5.gif">
+<img src="picts/ITS/its1+2_convention_side_5.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
 <p>This shows the perspective view of the SPDs.
 </font>
-<img src="figures/its1+2_tree.gif">
+<img src="picts/ITS/its1+2_tree.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -109,20 +109,20 @@ void AliITSv5::CreateGeometry(){
 <pre>
 
 <pre>
-<img src="figures/its3+4_convention_front_5.gif">
+<img src="picts/ITS/its3+4_convention_front_5.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
 <p>This shows the front view of the SDDs.
 </font>
 <pre>
-<img src="figures/its3+4_convention_side_5.gif">
+<img src="picts/ITS/its3+4_convention_side_5.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
 <p>This shows the perspective view of the SDDs.
 </font>
-<img src="figures/its3+4_tree.gif">
+<img src="picts/ITS/its3+4_tree.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -131,21 +131,21 @@ void AliITSv5::CreateGeometry(){
 <pre>
 
 <pre>
-<img src="figures/its5+6_convention_front_5.gif">
+<img src="picts/ITS/its5+6_convention_front_5.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
 <p>This shows the front view of the SSDs.
 </font>
 <pre>
-<img src="figures/its5+6_convention_side_5.gif">
+<img src="picts/ITS/its5+6_convention_side_5.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
 <p>This shows the perspective view of the SSDs.
 </font>
 <pre>
-<img src="figures/its5+6_tree.gif">
+<img src="picts/ITS/its5+6_tree.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -154,7 +154,7 @@ void AliITSv5::CreateGeometry(){
 <pre>
 
 
-<img src="figures/its_layer1-6_2.gif">
+<img src="picts/ITS/its_layer1-6_2.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -162,7 +162,7 @@ void AliITSv5::CreateGeometry(){
 </font>
 <pre>
 
-<img src="figures/its_layer1-6_1.gif">
+<img src="picts/ITS/its_layer1-6_1.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -170,7 +170,7 @@ void AliITSv5::CreateGeometry(){
 </font>
 <pre>
 
-<img src="figures/its1-6_tree.gif">
+<img src="picts/ITS/its1-6_tree.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -186,7 +186,7 @@ void AliITSv5::CreateGeometry(){
 // that make up the ITS supports and services.
 //Begin_Html
 /*
-<img src="figures/supports_tree.gif">
+<img src="picts/ITS/supports_tree.gif">
  */
 //End_Html
 //     What follows are a number of figures showing what these support
@@ -194,7 +194,7 @@ void AliITSv5::CreateGeometry(){
 //Begin_Html
 /*
 
-<img src="figures/supports_3.gif">
+<img src="picts/ITS/supports_3.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -202,7 +202,7 @@ void AliITSv5::CreateGeometry(){
 </font>
 <pre>
 
-<img src="figures/supports_2.gif">
+<img src="picts/ITS/supports_2.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -210,7 +210,7 @@ void AliITSv5::CreateGeometry(){
 </font>
 <pre>
 
-<img src="figures/supports_1.gif">
+<img src="picts/ITS/supports_1.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -218,7 +218,7 @@ void AliITSv5::CreateGeometry(){
 </font>
 <pre>
 
-<img src="figures/suppssd.gif">
+<img src="picts/ITS/suppssd.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -226,7 +226,7 @@ void AliITSv5::CreateGeometry(){
 </font>
 <pre>
 
-<img src="figures/suppsdd.gif">
+<img src="picts/ITS/suppsdd.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
