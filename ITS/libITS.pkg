@@ -87,6 +87,7 @@ SRCS = 	AliITS.cxx \
 		AliITSNeuralPoint.cxx \
 		AliITSNeuralTrack.cxx \
 		AliITSNeuralTracker.cxx \
+		AliITStrackerANN.cxx \
 		AliITSVertexerFast.cxx \
 		AliITSDDLRawData.cxx \
 		AliITSpidESD.cxx \
