@@ -35,61 +35,68 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-
 #include <TMCProcess.h>
 #include <TPDGCode.h>
+#include <TClonesArray.h>
+#include <TF1.h>
 
-
-#include "AliConst.h"
-#include "AliGenCRT.h"
 #include "AliRun.h"
+#include "AliConst.h"
+
+#include "AliGenCRT.h"
 
 ClassImp(AliGenCRT)
 
 //_____________________________________________________________________________
-AliGenCRT::AliGenCRT() : AliGenerator(-1)
+AliGenCRT::AliGenCRT()
+  : AliGenerator(),
+    fIpart(0),
+    fCRMode(kSingleMuons),
+    fCRModeName(0),
+    fXwidth(0),
+    fNx(1),
+    fZwidth(0),
+    fNz(1),
+    fMuonGrid(kFALSE),
+    fZenithMin(0),
+    fZenithMax(0),
+    fAzimuthMin(0),
+    fAzimuthMax(0),
+    fPRange(0),
+    fPResolution(1),
+    fAp(0),
+    fMomentumDist(0),
+    fUnfoldedMomentumDist(0),
+    fZenithDist(0),
+    fPDist(0)
 {
   //
   // Default ctor.
   //
-  fIpart = 0;
-
-  fXwidth=0;
-  fNx=1;
-  fZwidth=0;
-  fNz=1;
-  fMuonGrid = kFALSE;
-
-
-  // Set the origin above the vertex, on the surface.
-  fOrigin[0] = 0.;
-  fOrigin[1] = 0.;
-  fOrigin[2] = 0.;
-
-  fZenithMin = 0.; 
-  fZenithMax = 0.;
-
-  fAzimuthMin = 0.;
-  fAzimuthMax = 0.;
-
-  fPResolution = 1.;
-  fPRange = 0.;
-
-  fMomentumDist = 0;
-  fZenithDist = 0;
-
-  fPDist = 0;
-
-  fAp = 0;
-  fUnfoldedMomentumDist = 0;
-
-  fCRModeName = 0;
 }
 
 //_____________________________________________________________________________
 AliGenCRT::AliGenCRT(Int_t npart) 
-  : AliGenerator(npart)
+  : AliGenerator(npart),
+    fIpart(kMuonMinus),
+    fCRMode(kSingleMuons),
+    fCRModeName(0),
+    fXwidth(0),
+    fNx(1),
+    fZwidth(0),
+    fNz(1),
+    fMuonGrid(kFALSE),
+    fZenithMin(0),
+    fZenithMax(0),
+    fAzimuthMin(0),
+    fAzimuthMax(0),
+    fPRange(0),
+    fPResolution(1),
+    fAp(0),
+    fMomentumDist(0),
+    fUnfoldedMomentumDist(0),
+    fZenithDist(0),
+    fPDist(0)
 {
   //
   // Standard ctor.
@@ -97,54 +104,27 @@ AliGenCRT::AliGenCRT(Int_t npart)
   fName = "CRT";
   fTitle = "Cosmic Muons generator";
 
-  // Generate Muon- by default
-  fIpart = kMuonMinus;
-
-  fXwidth=0;
-  fNx=1;
-  fZwidth=0;
-  fNz=1;
-  fMuonGrid = kFALSE;
-
   // Set the origin above the vertex, on the surface.
   fOrigin[0] = 0.;
   fOrigin[1] = AliCRTConstants::fgDepth; // At the surface by default.
   fOrigin[2] = 0.;
-
-  fZenithMin = 0.; // Generate veritcals by default.
-  fZenithMax = 0.;
-
-  fAzimuthMin = 0.;
-  fAzimuthMax = 0.;
-
-  fPResolution = 1.; // 1 GeV by default.
-  fPRange = 0.;      // 0 GeV by default.
-
-  fMomentumDist = 0;
-  fZenithDist = 0;
-
-  fPDist = 0;
-
-  fAp = 0;
-  fUnfoldedMomentumDist = 0;
-
-  fCRModeName = 0;
 }
 
 //_____________________________________________________________________________
-AliGenCRT::AliGenCRT(const AliGenCRT& gen) : AliGenerator()
+AliGenCRT::AliGenCRT(const AliGenCRT& gen)
+  : AliGenerator(gen)
 {
   //
-  // Copy ctor.
+  // Copy constructor
   //
   gen.Copy(*this);
 }
 
 //_____________________________________________________________________________
-AliGenCRT& AliGenCRT::operator= (const AliGenCRT& gen)
+AliGenCRT& AliGenCRT::operator=(const AliGenCRT& gen)
 {
   //
-  // Asingment ctor.
+  // Asingment operator
   //
   gen.Copy(*this);
   return *this;
@@ -156,11 +136,11 @@ AliGenCRT::~AliGenCRT()
   //
   // Default dtor.
   //
-  if ( fAp )           delete fAp;
-  if ( fMomentumDist ) delete fMomentumDist;
+  if ( fPDist ) {fPDist->Delete(); delete fPDist; fPDist = 0;}
   if ( fUnfoldedMomentumDist ) delete fUnfoldedMomentumDist;
-  if ( fZenithDist )   delete fZenithDist;
-  if ( fPDist )        delete fPDist;
+  if ( fMomentumDist ) delete fMomentumDist;
+  if ( fAp )           delete fAp;
+  if ( fCRModeName )   delete fCRModeName;
 }
 
 //_____________________________________________________________________________
@@ -168,143 +148,25 @@ void AliGenCRT::Generate()
 {
   //
   // Generate on one trigger
-  //
+  // Call the respective method inside the loop for the number
+  // of tracks per trigger.
 
-  Float_t polar[3]= {0,0,0}; // Polarization parameters
-  //
-  Float_t origin[3];
-  Float_t p[3];
-  Int_t i, j, nt;
-  Float_t pmom, pt;
-  Float_t zenith, azimuth;
-  //
-  Float_t random[6];
+  for (Int_t i = 0; i < fNpart; i++ ) {
 
+    if ( fCRMode == kMuonBundle ) {
+      this->GenerateOneMuonBundle();
 
-  // Check if you need to use a distribution function for the momentum
-  if ( fMomentumDist ) {
-    pmom = - this->GetMomentum(); // Always downwards.
+    } else if ( fCRMode == kSingleMuons ) {
+      this->GenerateOneSingleMuon(kTRUE);
 
-  } else {
-    pmom = -fPMin;
-
-  }
-  
-  zenith = this->GetZenithAngle(pmom);  // In degrees
-  
-  // Take the azimuth random.
-  Rndm(random, 2);
-  azimuth = (fAzimuthMin + (fAzimuthMax-fAzimuthMin)*random[0]); // In degrees
-  
-  origin[0] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
-    TMath::Sin(azimuth*kDegrad);
-  origin[1] = AliCRTConstants::fgDepth;
-  origin[2] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
-    TMath::Cos(azimuth*kDegrad);
-  
-  if ( fVertexSmear == kPerEvent ) {
-    Rndm(random,6);
-    for (j=0;j<3;j++) {
-      if ( j == 1 ) {
-	// Don't smear the vertical position.
-	origin[j] = AliCRTConstants::fgDepth;
-      } else {
-	origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-	  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-      }
-    }
-  }
-
-
-  if ( fCRMode == kSingleMuons ) {
-
-    //
-    // Generate kinematics a la AliGenBox
-    //
-
-    for(i=0;i<fNpart;i++) {
-      Rndm(random,3);
-
-      if(TestBit(kMomentumRange)) {
-	pmom = -( fPMin + random[1]*(fPMax - fPMin) ); // always downwards.
-	pt=pmom*TMath::Sin(zenith*kDegrad);
-      } else {
-
-      	pt= -(fPtMin+random[1]*(fPtMax-fPtMin)); // always downwards.
-	pmom=pt/TMath::Sin(zenith*kDegrad);
-      }
-      
-      p[0] = pt*TMath::Sin(azimuth*kDegrad);
-      p[1] = pmom*TMath::Cos(zenith*kDegrad);
-      p[2] = pt*TMath::Cos(azimuth*kDegrad);
-      
-      if(fVertexSmear==kPerTrack) {
-	Rndm(random,6);
-	for (j=0;j<3;j++) {
-	  if ( j == 1 ) {
-	    origin[j] = AliCRTConstants::fgDepth;
-	  } else {
-	    origin[j]=fOrigin[j]+fOsigma[j]*
-	      TMath::Cos(2*random[2*j]*TMath::Pi())*
-	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	  }
-	}
-      }
-
-    }
-    
-    // End of generation a la AliGenBox
-    
-  } else if ( fCRMode == kMuonBundle ) {
-
-    //
-    // Generate kinematics a la AliGenScan
-    //
-    Float_t dx,dz;
-    //
-    if (fNx > 0) {
-      dx=fXwidth/fNx;
     } else {
-      dx=1e10;
-    }
-    
-    if (fNz > 0) {
-      dz=fZwidth/fNz;
-    } else {
-      dz=1e10;
+      // Generate only single muons but following the parametrizations
+      // for atmospheric muons.
+      this->GenerateOneSingleMuon();
+
     }
 
-    for (Int_t ix=0; ix<fNx; ix++) {
-      for (Int_t iz=0; iz<fNz; iz++){
-	Rndm(random,6);
-	origin[0]+=ix*dx+2*(random[0]-0.5)*fOsigma[0];
-	origin[2]+=iz*dz+2*(random[1]-0.5)*fOsigma[2];	     
-
-	pmom = -(fPMin + random[3] *(fPMax - fPMax) ); // Always downward.
-	p[0] = TMath::Sin(zenith*kDegrad)*TMath::Sin(azimuth*kDegrad)*pmom;
-	p[1] = TMath::Cos(zenith*kDegrad)*pmom;
-	p[2] = TMath::Sin(zenith*kDegrad)*TMath::Cos(azimuth*kDegrad)*pmom;
-	
-      }
-    }
-
-    // End of generation a la AliGenScan
-
-  } else if ( fCRMode == kMuonFlux ) {
-    
-    // Always generate the things downwards.
-    p[0] = TMath::Sin(zenith*kDegrad)*TMath::Sin(azimuth*kDegrad)*pmom;
-    p[1] = TMath::Cos(zenith*kDegrad)*pmom;
-    p[2] = TMath::Sin(zenith*kDegrad)*TMath::Cos(azimuth*kDegrad)*pmom;
-
-  } else {
-    Error("Generate", "Generation Mode unknown!\n");
   }
-
-  // Put the track on the stack.
-  PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
-
-
 }
 
 //_____________________________________________________________________________
@@ -337,6 +199,146 @@ void AliGenCRT::Init()
     
   } else {
     Fatal("Generate", "Generation Mode unknown!\n");
+
+  }
+
+}
+
+//____________________________________________________________________________
+void AliGenCRT::GenerateOneSingleMuon(Bool_t withFlatMomentum)
+{
+  //
+  // Generate One Single Muon
+  // This method will generate only one muon.
+  // The momentum will be randomly flat distributed if
+  // the paremeter "withFlatMomentum" is set to kTRUE,
+  // otherwise the momentum will generate acordingly the parametrization
+  // given by 
+  // and adpted from Bruno Alessandro's implementation with the
+  // CERNLIB to AliRoot.
+  // The "withFlatMomentum" parameter also will be used to generate
+  // the muons with a flat Zenithal angle distribution.
+  // Do the smearing here, so that means per track.
+
+  Float_t polar[3]= {0,0,0}; // Polarization parameters
+  Float_t origin[3];
+  Int_t nt;
+  Float_t p[3];
+  Float_t pmom, pt;
+  Float_t random[6];
+
+  // Take the azimuth random.
+  Rndm(random, 2);
+  Float_t azimuth = fAzimuthMin + (fAzimuthMax-fAzimuthMin)*random[0];
+  Float_t zenith = fZenithMin + (fZenithMax - fZenithMin)*random[1];
+
+  if ( withFlatMomentum ) {
+    Rndm(random,3);
+    if(TestBit(kMomentumRange)) {
+      pmom = -( fPMin + random[0]*(fPMax - fPMin) ); // always downwards.
+      pt = pmom*TMath::Sin(zenith*kDegrad);
+    } else {
+      pt = -( fPtMin + random[1]*(fPtMax - fPtMin)); // always downwards.
+      pmom = pt/TMath::Sin(zenith*kDegrad);
+    }
+
+  } else {
+    if ( fMomentumDist ) {
+      pmom = -this->GetMomentum(); // Always downwards.
+    } else {
+      pmom = -fPMin;
+    }
+    zenith = this->GetZenithAngle(pmom);  // In degrees
+    pt = pmom*TMath::Sin(zenith*kDegrad);
+  }
+
+  p[0] = pt*TMath::Sin(azimuth*kDegrad);
+  p[1] = pmom*TMath::Cos(zenith*kDegrad);
+  p[2] = pt*TMath::Cos(azimuth*kDegrad);
+
+  // Finaly the origin, with the smearing
+  Rndm(random,6);
+  origin[0] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
+    TMath::Sin(azimuth*kDegrad);
+  // + fOsigma[0]* TMath::Cos(2*random[0]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[1]));
+
+  origin[1] = AliCRTConstants::fgDepth;
+
+  origin[2] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
+    TMath::Cos(azimuth*kDegrad);
+  // + fOsigma[2]* TMath::Cos(2*random[2]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[3]));;
+
+  // Put the track on the stack.
+  PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+
+}
+
+//____________________________________________________________________________
+void AliGenCRT::GenerateOneMuonBundle()
+{
+  //
+  // Generate One Muon Bundle method
+  // This method will generate a bunch of muons following the
+  // procedure of the AliGenScan class.
+  // These muons will be generated with flat momentum.
+
+  Float_t polar[3]= {0,0,0}; // Polarization parameters
+  Float_t origin[3];
+  Float_t p[3];
+  Int_t nt;
+  Float_t pmom;
+  Float_t random[6];
+
+  Rndm(random, 3);
+  //Float_t zenith = fZenithMin + (fZenithMax - fZenithMin)*random[1];
+  //Float_t azimuth = fAzimuthMin + (fAzimuthMax-fAzimuthMin)*random[2];
+  Float_t zenith = 10;
+  Float_t azimuth = 30;
+
+  // Generate the kinematics a la AliGenScan (Andreas Morchs)
+  Float_t dx, dz;
+  if ( fNx > 0 ) {
+    dx = fXwidth/fNx;
+  } else {
+    dx = 1e10;
+    //dx = 100.;
+  }
+
+  if ( fNz > 0 ) {
+    dz = fZwidth/fNz;
+  } else {
+    dz = 1e10;
+    //dz = 100.;
+  }
+
+  //origin[0] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
+  origin[0] = 0.;
+    //TMath::Sin(azimuth*kDegrad);
+  //origin[1] = AliCRTConstants::fgDepth;
+  origin[1] = 900;
+  //origin[2] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
+  origin[2] = 0.;
+    //TMath::Cos(azimuth*kDegrad);
+
+  for (Int_t ix = 0; ix < fNx; ix++ ) {
+    for (Int_t iz = 0; iz < fNz; iz++ ) {
+      Rndm(random,6);
+      origin[0]+=ix*dx+2*(random[1]-0.5)*fOsigma[0];
+      origin[2]+=iz*dz+2*(random[2]-0.5)*fOsigma[2];
+      if ( random[4] < 0.5 ) {
+        origin[0] = -1*origin[0];
+      }
+      if ( random[5] < 0.5 ) {
+        origin[2] = -1*origin[2];
+      }
+
+      pmom = -(fPMin + random[3] *(fPMax - fPMax) ); // Always downwards
+      p[0] = TMath::Sin(zenith*kDegrad)*TMath::Sin(azimuth*kDegrad)*pmom;
+      p[1] = TMath::Cos(zenith*kDegrad)*pmom;
+      p[2] = TMath::Sin(zenith*kDegrad)*TMath::Cos(azimuth*kDegrad)*pmom;
+
+      PushTrack(fTrackIt, -1, fIpart, p, origin, polar, 0, kPPrimary, nt);
+    }
 
   }
 
@@ -516,7 +518,10 @@ const Float_t AliGenCRT::GetZenithAngle(Float_t mom)
     if ( fPDist ) {
       Int_t pIndex = TMath::Abs(TMath::Nint(mom));
       TF1* zenithAngle = (TF1*)fPDist->UncheckedAt(pIndex);
-      zenith = zenithAngle->GetRandom();
+
+      Float_t tmpzenith = TMath::Cos(zenithAngle->GetRandom()*kDegrad);
+      // Correct the value
+      zenith = kRaddeg*TMath::ACos(1 - (tmpzenith - 1)/fAp->At(pIndex));
       return zenith;
     } else {
 
@@ -538,9 +543,15 @@ const Float_t AliGenCRT::GetZenithAngle(Float_t mom)
   } else {
     zenith = fZenithDist->GetRandom();
   }
-     
+
   return zenith;
-  
 }
 
-//____________________________________________________________________________
+//_____________________________________________________________________________
+const Float_t AliGenCRT::GetMomentum()
+{
+  //
+  //
+  //
+  return fMomentumDist->GetRandom();
+}
