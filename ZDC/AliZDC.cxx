@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/03/16 16:18:03  coppedis
+Correction for superposition of ZDC volumes with MUON arm one
+
 Revision 1.16  2001/03/15 16:01:11  coppedis
 Code review
 
@@ -104,10 +107,12 @@ AliZDC::AliZDC(const char *name, const char *title)
 
   // Check that DIPO is there (otherwise tracking is wrong!!!)
   
+  AliModule* PIPE=gAlice->GetModule("PIPE");
+  AliModule* ABSO=gAlice->GetModule("ABSO");
   AliModule* DIPO=gAlice->GetModule("DIPO");
   AliModule* SHIL=gAlice->GetModule("SHIL");
-  if((!DIPO) || (!SHIL)) {
-    Error("Constructor","ZDC needs DIPO and SHIL for tracking!!!\n");
+  if((!PIPE) || (!ABSO) || (!DIPO) || (!SHIL)) {
+    Error("Constructor","ZDC needs PIPE, ABSO, DIPO and SHIL!!!\n");
     exit(1);
   } 
 
