@@ -119,8 +119,7 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     Float_t * zi = new Float_t [kMulDigit] ;
     
     for(iDigit = 0; iDigit < kMulDigit; iDigit++) {
-      cout << " AliPHOSRecPoint::ExecuteEvent -> Something wromg with the code" << endl ; 
-      abort() ; 
+      Fatal("AliPHOSRecPoint::ExecuteEvent", "-> Something wrong with the code"); 
       digit = 0 ; //dynamic_cast<AliPHOSDigit *>((fDigitsList)[iDigit]);
       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;
