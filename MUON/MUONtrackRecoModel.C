@@ -1,4 +1,4 @@
-{
+void MUONtrackRecoModel() {
 //////////////////////////////////////////////////////////
 //   This file has been automatically generated 
 //     (Thu Sep 21 14:53:11 2000 by ROOT version2.25/02)

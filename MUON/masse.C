@@ -1,4 +1,4 @@
-{
+void masse() {
 //////////////////////////////////////////////////////////
 //   This file has been automatically generated 
 //     (Wed Jun 16 15:35:08 1999 by ROOT version 2.21/07)
