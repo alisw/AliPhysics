@@ -429,21 +429,21 @@ void AliABSOv0::CreateGeometry()
   par[2]  =   8.0;
   par[3]  =   4.0;
     
-  par[4]  = - kZRear;
-  par[5]  = 100.;
-  par[6]  = 180.;
+  par[13]  = - kZRear;
+  par[14]  = 100.;
+  par[15]  = 180.;
   
-  par[7]  = - kZRear - 20.;
-  par[8]  = 100.;
-  par[9]  = 180.;
+  par[10]  = - kZRear - 20.;
+  par[11]  = 100.;
+  par[12]  = 180.;
 
-  par[10] = - kZRear - 20.;
-  par[11] = 178.;
-  par[12] = 180.;
+  par[7] = - kZRear - 20.;
+  par[8] = 178.;
+  par[9] = 180.;
 
-  par[13] = - 600.;
-  par[14] = 178.;
-  par[15] = 180.;
+  par[4] = - 600.;
+  par[5] = 178.;
+  par[6] = 180.;
   
 
   gMC->Gsvolu("ASSS", "PGON", idtmed[kAl], par, 16);
