@@ -14,7 +14,6 @@
 
 # detectors with temporary problem
 /aliDet/switchOff MUON
-/aliDet/switchOff PHOS
 
 /aliRun/initialize
 /aliRun/beamOn 1
