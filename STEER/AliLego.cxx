@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.17  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -106,31 +109,47 @@ AliLego::AliLego()
 }
 
 //___________________________________________
-AliLego::AliLego(const char *title, Int_t ntheta, Float_t themin, 
-		 Float_t themax, Int_t nphi, Float_t phimin, Float_t phimax,
+AliLego::AliLego(const char *title, Int_t ntheta, Float_t thetamin, 
+		 Float_t thetamax, Int_t nphi, Float_t phimin, Float_t phimax,
 		 Float_t rmin, Float_t rmax, Float_t zmax)
   : TNamed("Lego Generator",title)
 {
   //
   // specify the angular limits and the size of the rectangular box
   //
-   fGener = new AliLegoGenerator(ntheta, themin, themax,
+   fGener = new AliLegoGenerator(ntheta, thetamin, thetamax,
 		       nphi, phimin, phimax, rmin, rmax, zmax);
    
-   gAlice->ResetGenerator(fGener);
 
-   Float_t etamin = -TMath::Log(TMath::Tan(TMath::Min((Double_t)themax*kDegrad/2,TMath::Pi()/2-1.e-10)));
-   Float_t etamax = -TMath::Log(TMath::Tan(TMath::Max((Double_t)themin*kDegrad/2,              1.e-10)));
+   
+   fHistRadl = new TH2F("hradl","Radiation length map",    
+			ntheta,thetamin,thetamax,nphi,phimin,phimax);
+   fHistAbso = new TH2F("habso","Interaction length map",  
+			ntheta,thetamin,thetamax,nphi,phimin,phimax);
+   fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        
+			ntheta,thetamin,thetamax,nphi,phimin,phimax);
+}
+
+AliLego::AliLego(const char *title, AliLegoGenerator* generator)
+  : TNamed("Lego Generator",title)
+{
+  //
+  // specify the angular limits and the size of the rectangular box
+  //
+   fGener = generator;
+   Float_t c1min, c1max, c2min, c2max;
+   Int_t n1 = fGener->NCoor1();
+   Int_t n2 = fGener->NCoor2();
+   
+   fGener->Coor1Range(c1min, c1max);
+   fGener->Coor2Range(c2min, c2max);   
 
    fHistRadl = new TH2F("hradl","Radiation length map",    
-			nphi,phimin,phimax,ntheta,themin,themax);
+			n1, c1min, c1max, n2, c2min, c2max);
    fHistAbso = new TH2F("habso","Interaction length map",  
-			nphi,phimin,phimax,ntheta,themin,themax);
+			n1, c1min, c1max, n2, c2min, c2max);
    fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        
-			nphi,phimin,phimax,ntheta,themin,themax);
-   fHistReta = new TH2F("hetar","Radiation length vs. eta",
-			nphi,phimin,phimax,ntheta,etamin,etamax);
-
+			n1, c1min, c1max, n2, c2min, c2max);
 }
 
 //___________________________________________
@@ -142,8 +161,6 @@ AliLego::~AliLego()
   delete fHistRadl;
   delete fHistAbso;
   delete fHistGcm2;
-  delete fHistReta;
-  gAlice->ResetGenerator(0);
   delete fGener;
 }
 
@@ -164,17 +181,12 @@ void AliLego::FinishEvent()
   //
   // Finish the event and update the histos
   //
-  Double_t thed, phid, eta;
-  thed = fGener->CurTheta()*kRaddeg;
-  phid = fGener->CurPhi()*kRaddeg;
-  eta  = -TMath::Log(TMath::Tan(TMath::Max(
-	     TMath::Min((Double_t)(fGener->CurTheta())/2,
-			TMath::Pi()/2-1.e-10),1.e-10)));
-
-  fHistRadl->Fill(phid,thed,fTotRadl);
-  fHistAbso->Fill(phid,thed,fTotAbso);
-  fHistGcm2->Fill(phid,thed,fTotGcm2);
-  fHistReta->Fill(phid,eta,fTotRadl);
+  Double_t c1, c2;
+  c1 = fGener->CurCoor1();
+  c2 = fGener->CurCoor2();
+  fHistRadl->Fill(c1,c2,fTotRadl);
+  fHistAbso->Fill(c1,c2,fTotAbso);
+  fHistGcm2->Fill(c1,c2,fTotGcm2);
 }
 
 //___________________________________________
@@ -186,14 +198,11 @@ void AliLego::FinishRun()
   fHistRadl->Write();
   fHistAbso->Write();
   fHistGcm2->Write();
-  fHistReta->Write();
 
   // Delete histograms from memory
   fHistRadl->Delete(); fHistRadl=0;
   fHistAbso->Delete(); fHistAbso=0;
   fHistGcm2->Delete(); fHistGcm2=0;
-  fHistReta->Delete(); fHistReta=0;
-
 }
 
 //___________________________________________
@@ -234,6 +243,12 @@ void AliLego::StepManager()
        fTotAbso += t/absl;
        fTotRadl += t/radl;
        fTotGcm2 += t*dens;
+//       Int_t copy;
+//       Int_t id = gMC->CurrentVolID(copy);
+//       char* vol = gMC->VolName(id);
+       
+//       printf("\n %f %f %f %f %s  ", fTotRadl, vect[0], vect[1], vect[2], vol);
+
      }
      gMC->StopTrack();
      return;
@@ -251,6 +266,14 @@ void AliLego::StepManager()
      fTotAbso += step/absl;
      fTotRadl += step/radl;
      fTotGcm2 += step*dens;
+//     Int_t copy;
+//     Int_t id = gMC->CurrentVolID(copy);
+//     char* vol = gMC->VolName(id);
+//     printf("\n %f %f %f %f %s %f ", fTotRadl, vect[0], vect[1], vect[2], vol, t);
    }
 }
+
+
+
+
 
