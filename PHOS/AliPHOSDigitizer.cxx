@@ -90,7 +90,7 @@ ClassImp(AliPHOSDigitizer)
   fEMCDigitThreshold  = 0.01 ;
   fCPVNoise           = 0.01;
   fCPVDigitThreshold  = 0.09 ;
-  fTimeResolution     = 1.0e-9 ;
+  fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
   fDigitsInRun  = 0 ; 
   fADCchanelEmc = 0.0015;        // width of one ADC channel in GeV
@@ -198,8 +198,6 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   Int_t i;
   for(i=0; i<input; i++){
     sdigits = (TClonesArray *)sdigArray->At(i) ;
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // if there are no SDigits in this event ===> Dmitri should check
     if ( !sdigits->GetEntries() )
       continue ; 
     Int_t curNext = ((AliPHOSDigit *)sdigits->At(0))->GetId() ;
@@ -207,7 +205,6 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
        nextSig = curNext ;
   }
 
-  cout << " AliPHOSDigitizer::Digitize 2" << endl ;  
   TArrayI index(input) ;
   index.Reset() ;  //Set all indexes to zero
 
@@ -336,10 +333,14 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   
   
   //remove digits below thresholds
-  for(absID = 0; absID < nEMC ; absID++)
-    if(sDigitizer->Calibrate(((AliPHOSDigit*)digits->At(absID))->GetAmp()) < fEMCDigitThreshold)
+  for(absID = 0; absID < nEMC ; absID++){
+    digit = (AliPHOSDigit*) digits->At(absID) ;
+    if(sDigitizer->Calibrate( digit->GetAmp() ) < fEMCDigitThreshold)
       digits->RemoveAt(absID) ;
-  
+    else
+      digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
+  }
+
   for(absID = nEMC; absID < nCPV ; absID++)
     if(sDigitizer->Calibrate(((AliPHOSDigit*)digits->At(absID))->GetAmp()) < fCPVDigitThreshold)
       digits->RemoveAt(absID) ;
@@ -497,7 +498,7 @@ Bool_t AliPHOSDigitizer::Init()
   fEMCDigitThreshold  = 0.01 ;
   fCPVNoise           = 0.01;
   fCPVDigitThreshold  = 0.09 ;
-  fTimeResolution     = 1.0e-9 ;
+  fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
   fDigitsInRun  = 0 ; 
   fADCchanelEmc = 0.0015;        // width of one ADC channel in GeV
