@@ -1,3 +1,30 @@
+#define __NOCOMPILED__
+#ifdef __COMPILED__
+#include<iostream.h>
+#include<TROOT.h>
+#include<TArrayI.h>
+#include<TCanvas.h>
+#include<TClassTable.h>
+#include<TClonesArray.h>
+#include<TFile.h>
+#include<TH1.h>
+#include<TH2.h>
+#include<TObject.h>
+#include<TObjArray.h>
+#include<TTree.h>
+#include <AliRun.h>
+#include <AliITS.h>
+#include <AliITSgeom.h>
+#include <AliITSDetType.h>
+#include <AliITSRecPoint.h>
+#include <AliITSdigit.h>
+#include <AliITShit.h>
+#include <AliITSmodule.h> 
+#include <AliITSsegmentation.h>
+#include <AliITSsegmentationSPD.h> 
+#include <AliITSsegmentationSDD.h>
+#include <AliITSsegmentationSSD.h>
+#endif
 Int_t ITSgeoplot (char *opt="All+Rec", char *filename="galice.root") {
   /*******************************************************************
    *  This macro displays geometrical information related to the
@@ -23,31 +50,46 @@ Int_t ITSgeoplot (char *opt="All+Rec", char *filename="galice.root") {
    *          digits on p and n side originating from the same track, when
    *          possible. This (mis)use of DIGITS is tolerated for debugging 
    *          purposes only !!!!  The pairing in real life should be done
-   *          starting from info really available...  
+   *          starting from info really available... 
+   * 
+   *  COMPILATION: this macro can be compiled. 
+   *      1)       Change the first line above from its default 
+   *               value (#define __NOCOMPILED__) to
+   *               #define __COMPILED__
+   *      2)       You need to set your include path with
+   * gSystem->SetIncludePath("-I- -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -g");
+   *      3)       If you are using root instead of aliroot you need to
+   *               execute the macro loadlibs.C in advance
+   *      4)       To compile this macro from root (or aliroot):
+   *                 ---  .L ITSgeoplot.C++
+   *                 ---  ITSgeoplot("ListOfParametersIfAny");
    *     
-   *  M.Masera  19/3/2001 18:45
+   *  M.Masera  04/05/2001 19:00
    ********************************************************************/
 
   extern void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t verb);
   extern Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
   extern void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, Int_t mod, Bool_t verbose, TObjArray & histos);
-
   //Options
   TString choice(opt);
   Bool_t All = choice.Contains("All");
   Bool_t verbose=choice.Contains("Verbose");
   Bool_t userec=choice.Contains("Rec");
   Int_t retcode=1; //return code
+#ifdef __NOCOMPILED__
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
     loadlibs();
   }
   else {
+#endif
     if(gAlice){
       delete gAlice;
       gAlice=0;
     }
+#ifdef __NOCOMPILED__
   }
+#endif
   // Connect the Root input  file containing Geometry, Kine and Hits
   // galice.root file by default
 
@@ -174,6 +216,7 @@ Int_t ITSgeoplot (char *opt="All+Rec", char *filename="galice.root") {
   // Loop on subdetectors
   // 
   AliITSgeom *geom = ITS->GetITSgeom();
+  TString detna; // subdetector name
   for(Int_t subd=0;subd<3;subd++){
     if(All || (choice.Contains("SPD") && subd==0) || (choice.Contains("SDD") && subd==1) || (choice.Contains("SSD") && subd==2)){
       // Prepare array for the digits
@@ -187,7 +230,6 @@ Int_t ITSgeoplot (char *opt="All+Rec", char *filename="galice.root") {
       }
       // Get segmentation model
       AliITSDetType *iDetType=ITS->DetType(subd);
-      TString detna; // subdetector name 
       if(subd==0)detna="SPD";
       if(subd==1)detna="SDD";
       if(subd==2)detna="SSD";
@@ -372,6 +414,13 @@ Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h
 void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, Int_t mod, Bool_t verbose, TObjArray & histos){
   AliITSsegmentation *seg = (AliITSsegmentation*)tmps;
   AliITSgeom *geom = (AliITSgeom*)ge;
+  Int_t layer;
+  Int_t ladder;
+  Int_t detec;
+  if(subd==2){
+    geom->GetModuleId(mod,layer,ladder,detec);
+    seg->SetLayer(layer);
+  }
   Float_t lcoor[3]; for(Int_t j=0; j<3; j++) lcoor[j]=0.;  //local coord dig.
   Float_t gcoor[3]; for(Int_t j=0; j<3; j++) gcoor[j]=0.; // global coo. dig.
   Float_t ragdig; // Radius digit
@@ -413,7 +462,7 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
           for(Int_t digi2=0;digi2<ndigits;digi2++){
             if(ssdone[digi2]==0 && impaired){
               AliITSdigitSSD *dig2=(AliITSdigitSSD*)ITSdigits->UncheckedAt(digi2);
-              if(dig2->fCoord1 != iz && dig2->GetTracks()[0]==digs->GetTracks()[0]){
+              if(dig2->fCoord1 != iz && dig2->GetTracks()[0]==digs->GetTracks()[0] && dig2->GetTracks()[0]>0){
                 ssdone[digi2]=2;
                 pair[digit]=digi2;
                 if(pside)nstrip=dig2->fCoord2;
