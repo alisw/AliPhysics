@@ -149,7 +149,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
     ingime = inRL->GetLoader("STARTLoader");
     ingime->LoadHits("READ");//probably it is necessary to load them before
-    ingime->LoadDigits("UPDATE");//probably it is necessary to load them before
+    outgime->LoadDigits("UPDATE");//probably it is necessary to load them before
     //use if Cherenkov photons
     //  TClonesArray *STARThitsPhotons = START->Photons ();
     TClonesArray *fHits = START->Hits ();
