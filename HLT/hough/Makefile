@@ -51,11 +51,11 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(LEVEL3)/$(USERNAME)_lib/libAliL3Hough.$(SL)
+SLIBRARY	= $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.$(SL)
 
 default:	$(SLIBRARY)
 
-$(LEVEL3)/$(USERNAME)_lib/libAliL3Hough.$(SL):  $(OBJS)
+$(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.$(SL):  $(OBJS)
 
 $(DICT):		$(HDRS)
 
@@ -73,8 +73,8 @@ include tgt_$(ALICE_TARGET)/Make-depend
 
 ###########
 so:
-	rm -fr $(LEVEL3)/$(USERNAME)_lib/libAliL3Hough.so
+	rm -fr $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
 clean:
 	rm -fr tgt_Linux/*.o
-	rm -fr $(LEVEL3)/$(USERNAME)_lib/libAliL3Hough.so
+	rm -fr $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
 	rm -fr $(DICT) $(DICTH) $(DICTO)

@@ -55,11 +55,11 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(LEVEL3)/$(USERNAME)_lib/libAliL3.$(SL)
+SLIBRARY	= $(LEVEL3)/lib_$(USERNAME)/libAliL3.$(SL)
 
 default:	$(SLIBRARY)
 
-$(LEVEL3)/$(USERNAME)_lib/libAliL3.$(SL):  $(OBJS)
+$(LEVEL3)/lib_$(USERNAME)/libAliL3.$(SL):  $(OBJS)
 
 $(DICT):		$(HDRS)
 
@@ -81,7 +81,7 @@ mrproper:
 	rm -fr $(DICT) $(DICTH) $(DICTO)
 clean:
 	rm -fr tgt_Linux/*.o
-	rm -fr $(LEVEL3)/$(USERNAME)_lib/libAliL3.so
+	rm -fr $(LEVEL3)/lib_$(USERNAME)/libAliL3.so
 	rm -fr $(DICT) $(DICTH) $(DICTO)
 
 wipe: clean mrproper
