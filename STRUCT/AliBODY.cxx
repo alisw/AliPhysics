@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/06/20 15:33:13  morsch
+Larger BOX in case CRT is present.
+
 Revision 1.8  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -127,9 +130,9 @@ void AliBODY::CreateGeometry()
     // If the Cosmic Ray Trigger  is present we need a large box
     // 
     //
-    dALIC[0]=5000.;
+    dALIC[0]=13000.;
     dALIC[1]=5000.;
-    dALIC[2]=15000.;
+    dALIC[2]=13000.;
     gMC->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
       
   } else {
