@@ -19,15 +19,12 @@ new AliGeant3("C++ Interface to Geant3");
  rootfile->SetCompressionLevel(2);
  TGeant3 *geant3 = (TGeant3*)gMC;
  AliDecayer* decayer = new AliDecayerPythia();
- decayer->SetForceDecay(all);
+ decayer->SetForceDecay(kAll);
  decayer->Init();
  gMC->SetExternalDecayer(decayer);
 
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
- geant3->fGctrak->maxnst=1000000;
- geant3->fGcflag->nrndm[0]=10;
- geant3->fGcflag->nrndm[1]=11; 
 geant3->SetTRIG(1);          //Number of events to be processed 
 geant3->SetSWIT(4,100);
 geant3->SetDEBU(0,0,1);
@@ -53,7 +50,7 @@ Float_t tofmax = 1.e10;
 //              GAM    ELEC   NHAD   CHAD   MUON  EBREM  MUHAB EDEL MUDEL MUPA TOFMAX
 geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1.e-5);
 
- gAlice->TrackingLimits( 700, 2000);
+gAlice->TrackingLimits(700, 2000);
  
 //
 //=======================================================================
@@ -96,7 +93,6 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1
      gener->SetMomentumRange(20,20);
      gener->SetPhiRange(90,90);
      gener->SetThetaRange(0,0);
-
      //vertex position
      gener->SetSigma(1,1,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kMuonMinus); 
@@ -149,8 +145,6 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1
      gener->SetPhiRange(-180,180);
      gener->SetThetaRange(0.104,90.0);
 //     gener->SetFlavor(4);
-     
-     
      gener->SetOrigin(0., 0.0 ,0);
      gener->SetSigma(0,0,5.3);
      gener->SetVertexSmear(kPerEvent); 
@@ -172,8 +166,8 @@ AliGenPythia *gener = new AliGenPythia(ntracks);
      //gener->SetVertexSmear(kPerEvent);
      //gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP
 position
-     gener->SetStrucFunc(DO_Set_1);
-     gener->SetProcess(charm);
+     gener->SetStrucFunc(kDO_Set_1);
+     gener->SetProcess(kPyCharm);
      gener->SetEnergyCMS(5500.);
      break;              
 /*
@@ -196,17 +190,17 @@ position
  */   
  case param:
 //*******************************************************
-// Example for J/psi  Production from  Parameterisation *
+// Example for J/psi or Upsilon Production from  Parameterisation *
 //*******************************************************
-     AliGenParam *gener = new AliGenParam(ntracks,upsilon_p);
+     AliGenParam *gener = new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);
-     gener->SetChildThetaRange(2,9);
+     gener->SetChildThetaRange(2.0,9);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetForceDecay(dimuon);
+     gener->SetForceDecay(kDiMuon);
      gener->SetTrackingFlag(1);
 
      break;
@@ -258,8 +252,8 @@ position
      gener->SetPhiRange(0,360);
      gener->SetThetaRange(2.,9.);
      gener->SetTrackingFlag(0);
-     AliGenParam *Pi0 = new AliGenParam(100, new AliGenPMDlib(), Pion);
-     AliGenParam *Eta = new AliGenParam( 10, new AliGenPMDlib(), Eta);
+     AliGenParam *Pi0 = new AliGenParam(100, new AliGenPMDlib(), AliGenPMDlib::kPion);
+     AliGenParam *Eta = new AliGenParam( 10, new AliGenPMDlib(), AliGenPMDlib::kEta);
      gener->AddGenerator(Pi0, "neutral pions"  , 1.);
      gener->AddGenerator(Eta, "neutral etas"  ,  1.);
      break;
@@ -272,10 +266,10 @@ gAlice->SetField(2,1);    //Specify maximum magnetic field in Tesla (neg. ==> de
 Int_t iFRAME  =0;
 Int_t iMAG    =0;
 Int_t iITS    =0;
-Int_t iABSO   =0;
+Int_t iABSO   =1;
 Int_t iDIPO   =1;
 Int_t iHALL   =0;
-Int_t iSHIL   =0;
+Int_t iSHIL   =1;
 Int_t iPIPE   =0;
 Int_t iFMD    =0;
 Int_t iMUON   =1;
@@ -316,7 +310,7 @@ if(iHALL) {
 if(iSHIL) {
 //=================== SHIL parameters ============================
 //    AliSHIL *SHIL  = new AliSAROV("SHIL","Shielding");
-    AliSHILv0 *SHIL  = new AliSHILv0("SHIL","Shielding");
+    AliSHILvF *SHIL  = new AliSHILvF("SHIL","Shielding");
     SHIL->SetPbCone(1);
 //    AliSAROV *SHIL  = new AliSAROV("SHIL","Shielding");
 }
@@ -390,28 +384,23 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //^^^^^^^^^
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationV01 *seg11=new AliMUONSegmentationV01;
+ AliMUONSegmentationV01 *seg11=new AliMUONSegmentationV01(4);
  
  seg11->SetSegRadii(rseg1);
-//  seg11->SetPadSize(3, 0.5);
  seg11->SetPadSize(2.4, 0.4); // smaller pad size
-//  seg11->SetDAnod(3.0/3./4);
  seg11->SetDAnod(0.20); // smaller distance between anode wires
  seg11->SetPadDivision(nseg1);
  
  MUON->SetSegmentationModel(chamber-1, 1, seg11);
-//
- AliMUONSegmentationV02 *seg12=new AliMUONSegmentationV02;
+
+ AliMUONSegmentationV02 *seg12=new AliMUONSegmentationV02(4);
  seg12->SetSegRadii(rseg1); 
-//  seg12->SetPadSize(0.75, 2.0);
  seg12->SetPadSize(0.6, 1.6); // smaller pad size
-//  seg12->SetDAnod(3.0/3./4);
  seg12->SetDAnod(0.20); // smaller distance between anode wires
  seg12->SetPadDivision(nseg1);
 
  MUON->SetSegmentationModel(chamber-1, 2, seg12);
 
-//  MUON->SetResponseModel(chamber-1, response0);	    
  MUON->SetResponseModel(chamber-1, responseSt1); // special response	    
  MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 
@@ -420,25 +409,20 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationV01 *seg21=new AliMUONSegmentationV01;
+ AliMUONSegmentationV01 *seg21=new AliMUONSegmentationV01(4);
  seg21->SetSegRadii(rseg1);
-//  seg21->SetPadSize(3, 0.5);
  seg21->SetPadSize(2.4, 0.4); // smaller pad size
-//  seg21->SetDAnod(3.0/3./4);
  seg21->SetDAnod(0.20); // smaller distance between anode wires
  seg21->SetPadDivision(nseg1);
  MUON->SetSegmentationModel(chamber-1, 1, seg21);
 //
- AliMUONSegmentationV02 *seg22=new AliMUONSegmentationV02;
+ AliMUONSegmentationV02 *seg22=new AliMUONSegmentationV02(4);
  seg22->SetSegRadii(rseg1); 
-//  seg22->SetPadSize(0.75, 2.);
  seg22->SetPadSize(0.6, 1.6); // smaller pad size
-//  seg22->SetDAnod(3.0/3./4);
  seg22->SetDAnod(0.20); // smaller distance between anode wires
  seg22->SetPadDivision(nseg1);
  MUON->SetSegmentationModel(chamber-1, 2, seg22);
 
-//  MUON->SetResponseModel(chamber-1, response0);	    
  MUON->SetResponseModel(chamber-1, responseSt1); // special response
  MUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	    
@@ -454,14 +438,14 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //^^^^^^^^^
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationV01 *seg31=new AliMUONSegmentationV01;
+ AliMUONSegmentationV01 *seg31=new AliMUONSegmentationV01(4);
  seg31->SetSegRadii(rseg2);
  seg31->SetPadSize(3.0, 0.5);
  seg31->SetDAnod(3.0/3./4);
  seg31->SetPadDivision(nseg2);
  MUON->SetSegmentationModel(chamber-1, 1, seg31);
 //
- AliMUONSegmentationV02 *seg32=new AliMUONSegmentationV02;
+ AliMUONSegmentationV02 *seg32=new AliMUONSegmentationV02(4);
  seg32->SetSegRadii(rseg2); 
  seg32->SetPadSize(0.75, 2.0);
  seg32->SetPadDivision(nseg2);
@@ -477,14 +461,14 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationV01 *seg41=new AliMUONSegmentationV01;
+ AliMUONSegmentationV01 *seg41=new AliMUONSegmentationV01(4);
  seg41->SetSegRadii(rseg2);
  seg41->SetPadSize(3.0, 0.5);
  seg41->SetDAnod(3.0/3./4);
  seg41->SetPadDivision(nseg2);
  MUON->SetSegmentationModel(chamber-1, 1, seg41);
 //
- AliMUONSegmentationV02 *seg42=new AliMUONSegmentationV02;
+ AliMUONSegmentationV02 *seg42=new AliMUONSegmentationV02(4);
  seg42->SetSegRadii(rseg2); 
  seg42->SetPadSize(0.75, 2.0);
  seg42->SetPadDivision(nseg2);
@@ -511,13 +495,12 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
                       0,0,2,0};
 
  Float_t shift = 1.5/2.;
- // Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
  Float_t xpos5[9]    = {2., 2., 2., 2.,33., 2., 2., 2., 2.};
  Float_t ypos5       = -(20.+4.*(40.-2.*shift));
 
  chamber=5;
  MUON->SetNsec(chamber-1,2);
- AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat;
+ AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat(4);
  seg51->SetNSlats(9); 
  seg51->SetShift(shift);  
  seg51->SetNPCBperSector(npcb5); 
@@ -528,7 +511,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg51->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 1, seg51);
 
- AliMUONSegmentationSlatN *seg52=new AliMUONSegmentationSlatN;
+ AliMUONSegmentationSlatN *seg52=new AliMUONSegmentationSlatN(4);
  seg52->SetNSlats(9); 
  seg52->SetShift(shift);  
  seg52->SetNPCBperSector(npcb5); 
@@ -543,7 +526,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
  chamber=6;
  MUON->SetNsec(chamber-1,2);
- AliMUONSegmentationSlat *seg61=new AliMUONSegmentationSlat;
+ AliMUONSegmentationSlat *seg61=new AliMUONSegmentationSlat(4);
  seg61->SetNSlats(9); 
  seg61->SetShift(shift);  
  seg61->SetNPCBperSector(npcb5); 
@@ -554,7 +537,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg61->SetPadDivision(nseg3);
  MUON->SetSegmentationModel(chamber-1, 1, seg61);
 
- AliMUONSegmentationSlatN *seg62=new AliMUONSegmentationSlatN;
+ AliMUONSegmentationSlatN *seg62=new AliMUONSegmentationSlatN(4);
  seg62->SetNSlats(9); 
  seg62->SetShift(shift);  
  seg62->SetNPCBperSector(npcb5); 
@@ -578,7 +561,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat;
+ AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat(4);
  Int_t npcb7[44] = {0,0,0,3,
 		    0,0,2,2,
 		    0,0,3,2,
@@ -604,7 +587,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg71->SetPadDivision(nseg4);
  MUON->SetSegmentationModel(chamber-1, 1, seg71);
 
- AliMUONSegmentationSlatN *seg72=new AliMUONSegmentationSlatN;
+ AliMUONSegmentationSlatN *seg72=new AliMUONSegmentationSlatN(4);
 
  MUON->SetSegmentationModel(chamber-1, 2, seg72);
  seg72->SetNSlats(11);  
@@ -623,7 +606,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //^^^^^^^^^
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationSlat *seg81=new AliMUONSegmentationSlat;
+ AliMUONSegmentationSlat *seg81=new AliMUONSegmentationSlat(4);
 
  seg81->SetNSlats(11);  
  seg81->SetShift(shift);  
@@ -635,7 +618,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg81->SetPadDivision(nseg4);
  MUON->SetSegmentationModel(chamber-1, 1, seg81);
 
- AliMUONSegmentationSlat *seg82=new AliMUONSegmentationSlatN;
+ AliMUONSegmentationSlat *seg82=new AliMUONSegmentationSlatN(4);
 
  MUON->SetSegmentationModel(chamber-1, 2, seg82);
  seg82->SetNSlats(11);  
@@ -659,7 +642,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat;
+ AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat(4);
  Int_t   npcb9[52] = {0,0,0,3,
 		      0,0,0,4,
 		      0,0,2,3,
@@ -674,7 +657,6 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		      0,0,0,4, 
 		      0,0,0,3};   
 
- // Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5 , 2., 2., 2., 2., 2., 2.};
  Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2., 2.};
  Float_t ypos9       = -(20.+6.*(40.-2.*shift));
 
@@ -688,7 +670,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg91->SetPadDivision(nseg4);
  MUON->SetSegmentationModel(chamber-1, 1, seg91);
 
- AliMUONSegmentationSlatN *seg92=new AliMUONSegmentationSlatN;
+ AliMUONSegmentationSlatN *seg92=new AliMUONSegmentationSlatN(4);
 
  MUON->SetSegmentationModel(chamber-1, 2, seg92);
  seg92->SetNSlats(13);  
@@ -707,7 +689,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //^^^^^^^^^
  MUON->SetNsec(chamber-1,2);
 //
- AliMUONSegmentationSlat *seg101=new AliMUONSegmentationSlat;
+ AliMUONSegmentationSlat *seg101=new AliMUONSegmentationSlat(4);
  
  seg101->SetNSlats(13);  
  seg101->SetShift(shift);  
@@ -719,7 +701,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  seg101->SetPadDivision(nseg4);
  MUON->SetSegmentationModel(chamber-1, 1, seg101);
 
- AliMUONSegmentationSlatN *seg102=new AliMUONSegmentationSlatN;
+ AliMUONSegmentationSlatN *seg102=new AliMUONSegmentationSlatN(4);
 
  MUON->SetSegmentationModel(chamber-1, 2, seg102);
  seg102->SetNSlats(13);  
@@ -781,9 +763,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 
  MUON->SetResponseModel(chamber-1, responseTrigger0); 
  MUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
-
 }
- 
 }
 
 		

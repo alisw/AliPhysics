@@ -46,7 +46,7 @@ Float_t tofmax = 1.e10;
 //              GAM    ELEC   NHAD   CHAD   MUON  EBREM  MUHAB EDEL MUDEL MUPA TOFMAX
 geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1.e-5);
 
- gAlice->TrackingLimits( 700, 2000);
+gAlice->TrackingLimits(700, 2000);
  
 //
 //=======================================================================
@@ -92,7 +92,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1
      //vertex position
      gener->SetSigma(1,1,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kMuonMinus); 
-     gener->SetRange(60, -300, 300, 60, -300., 300., 1, 900, 900);
+     gener->SetRange(100, -300., 300., 100, -300., 300., 1, 900, 900);
      break;
  case doublescan:  
 //*********************************************
@@ -162,8 +162,8 @@ AliGenPythia *gener = new AliGenPythia(ntracks);
      //gener->SetVertexSmear(kPerEvent);
      //gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP
 position
-     gener->SetStrucFunc(DO_Set_1);
-     gener->SetProcess(charm);
+     gener->SetStrucFunc(kDO_Set_1);
+     gener->SetProcess(kPyCharm);
      gener->SetEnergyCMS(5500.);
      break;              
 /*
@@ -248,8 +248,8 @@ position
      gener->SetPhiRange(0,360);
      gener->SetThetaRange(2.,9.);
      gener->SetTrackingFlag(0);
-     AliGenParam *Pi0 = new AliGenParam(100, new AliGenPMDlib(), Pion);
-     AliGenParam *Eta = new AliGenParam( 10, new AliGenPMDlib(), Eta);
+     AliGenParam *Pi0 = new AliGenParam(100, new AliGenPMDlib(), AliGenPMDlib::kPion);
+     AliGenParam *Eta = new AliGenParam( 10, new AliGenPMDlib(), AliGenPMDlib::kEta);
      gener->AddGenerator(Pi0, "neutral pions"  , 1.);
      gener->AddGenerator(Eta, "neutral etas"  ,  1.);
      break;
@@ -262,10 +262,10 @@ gAlice->SetField(2,1);    //Specify maximum magnetic field in Tesla (neg. ==> de
 Int_t iFRAME  =0;
 Int_t iMAG    =0;
 Int_t iITS    =0;
-Int_t iABSO   =0;
-Int_t iDIPO   =0;
+Int_t iABSO   =1;
+Int_t iDIPO   =1;
 Int_t iHALL   =0;
-Int_t iSHIL   =0;
+Int_t iSHIL   =1;
 Int_t iPIPE   =0;
 Int_t iFMD    =0;
 Int_t iMUON   =1;
@@ -491,8 +491,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
                       0,0,2,0};
 
  Float_t shift = 1.5/2.;
- // Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
- Float_t xpos5[9]    = {2., 2., 2., 2.,32., 2., 2., 2., 2.};
+ Float_t xpos5[9]    = {2., 2., 2., 2.,33., 2., 2., 2., 2.};
  Float_t ypos5       = -(20.+4.*(40.-2.*shift));
 
  chamber=5;
@@ -570,7 +569,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		    0,0,3,2, 
 		    0,0,2,2, 
 		    0,0,0,3};
- Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
+ Float_t xpos7[11]   = {2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2.};
  Float_t ypos7       = -(20.+5.*(40.-2.*shift));
  
  seg71->SetNSlats(11);  
@@ -654,7 +653,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		      0,0,0,4, 
 		      0,0,0,3};   
 
- Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2., 2.};
+ Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2., 2.};
  Float_t ypos9       = -(20.+6.*(40.-2.*shift));
 
  seg91->SetNSlats(13);  
