@@ -145,13 +145,13 @@ void guout()
 //    ------------------------------------------------------------------
 //
 
-  Int_t ndet = gAlice->Detectors()->GetLast();
-  TObjArray &dets = *gAlice->Detectors();
-  AliDetector *detector;
+  Int_t ndet = gAlice->Modules()->GetLast();
+  TObjArray &dets = *gAlice->Modules();
+  AliModule *module;
   Int_t i;
   for(i=0; i<=ndet; i++)
-    if((detector = (AliDetector*)dets[i]))
-      detector->FinishEvent();
+    if((module = (AliModule*)dets[i]))
+      module->FinishEvent();
 }
 
 //______________________________________________________________________
@@ -409,20 +409,20 @@ void gutrak()
 //
 //    ------------------------------------------------------------------
 //
-     Int_t ndet = gAlice->Detectors()->GetLast();
-     TObjArray &dets = *gAlice->Detectors();
-     AliDetector *detector;
+     Int_t ndet = gAlice->Modules()->GetLast();
+     TObjArray &dets = *gAlice->Modules();
+     AliModule *module;
      Int_t i;
 
      for(i=0; i<=ndet; i++)
-       if((detector = (AliDetector*)dets[i]))
-	 detector->PreTrack();
+       if((module = (AliModule*)dets[i]))
+	 module->PreTrack();
 
      gtrack();
 
      for(i=0; i<=ndet; i++)
-       if((detector = (AliDetector*)dets[i]))
-	 detector->PostTrack();
+       if((module = (AliModule*)dets[i]))
+	 module->PostTrack();
 }
 
 //______________________________________________________________________

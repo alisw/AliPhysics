@@ -497,6 +497,9 @@ public:
   virtual Gckin2_t* Gckin2() const {return fGckin2;}
   virtual Gckin3_t* Gckin3() const {return fGckin3;}
   virtual Gctrak_t* Gctrak() const {return fGctrak;}
+  virtual Int_t* Iq() const {return fZiq;}
+  virtual Int_t* Lq() const {return fZlq;}
+  virtual Float_t* Q() const {return fZq;}
 
 
       // functions from GBASE 
