@@ -28,11 +28,11 @@ AliDetConstruction::AliDetConstruction()
   // moduleName nofVersions defaultVersion [type]
         // det switch objects are deleted in fDetSwitchVector destructor
 
+  fDetSwitchVector.Add(new AliDetSwitch("MAG",    1, 0, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("ABSO",   1, 0, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("DIPO",   3, 2, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("FRAME",  3, 2, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("HALL",   1, 0, kStructure));
-  fDetSwitchVector.Add(new AliDetSwitch("MAG",    1, 0, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("PIPE",   5, 0, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("SHIL",   2, 1, kStructure));
   fDetSwitchVector.Add(new AliDetSwitch("CASTOR", 2, 1));
