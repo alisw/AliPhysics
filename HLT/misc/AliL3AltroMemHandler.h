@@ -18,12 +18,15 @@ class AliL3AltroMemHandler {
   public: 
 
    AliL3AltroMemHandler();
-   void Write(UShort_t row, UChar_t pad, UShort_t charge, UShort_t time);
+   void Write(UShort_t row, UChar_t pad, UShort_t time, UShort_t charge);
+   Bool_t Read(UShort_t &row, UChar_t &pad, UShort_t &time, UShort_t &charge);
+   Bool_t ReadSequence(UShort_t &row, UChar_t &pad, UShort_t &time, UChar_t &n, UShort_t **charges);
    void WriteFinal();
 
    Bool_t SetASCIIOutput(FILE *file);
    Bool_t SetBinaryOutput(FILE *file);
-   //Bool_t SetBinaryInput(FILE *file);
+   Bool_t SetASCIIInput(FILE *file);
+   Bool_t SetBinaryInput(FILE *file);
 
   private:
 
@@ -31,17 +34,22 @@ class AliL3AltroMemHandler {
    UShort_t times_per_pad[1024];
    UShort_t charges_per_pad[1024];
 
-   //FILE *fInBinary;
-   FILE *fOutBinary;
+   FILE *fInBinary;  //!
+   FILE *fOutBinary; //!
    UShort_t lrow;
    UChar_t lpad;
-
-   UShort_t counter;  //totalcounter
-   UShort_t tcounter; //timecounter
-   UShort_t pcounter; //packetcounter
-   Bool_t flag;
+   UShort_t rrow;  //read row
+   UChar_t rpad;   //read pad
+   UShort_t rtime; //read time
+   UShort_t counter;  //total counter
+   UShort_t tcounter; //time counter
+   UShort_t pcounter; //packet counter
+   UShort_t rcounter; //read counter
+   UShort_t scounter; //sequence counter
+   Bool_t flag; //Binary File?
 
    void Clear();
+   void ClearRead();
    void Add(UShort_t charge, UShort_t time);
    void MakeAltroPackets();
    void AddTrailer();
