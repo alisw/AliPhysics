@@ -130,8 +130,8 @@ class AliTRDsimpleMC : public TVirtualMC {
 #else
     virtual void     SetCut(const char* , Double_t ) {}
     virtual void     SetProcess(const char* , Int_t ) {}
-    virtual void     DefineParticles() {}
 #endif
+    virtual void     DefineParticles() {}
     virtual Double_t Xsec(char*, Double_t, Int_t, Int_t) { return 0.; }
 
   // Particle table usage
@@ -205,6 +205,7 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual void          GetSecondary(Int_t , Int_t& ,
                                      TLorentzVector& ,
                                      TLorentzVector& )                                    { };
+  virtual Bool_t        SecondariesAreOrdered() const {return kTRUE;}
   virtual TMCProcess    ProdProcess(Int_t ) const                                           { return kPNoProcess; };
   virtual Int_t         StepProcesses(TArrayI& ) const                                    { return 0; };
 
