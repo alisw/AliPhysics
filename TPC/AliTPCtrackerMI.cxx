@@ -1994,7 +1994,7 @@ void  AliTPCtrackerMI::RemoveDouble(TObjArray * arr, Float_t factor1, Float_t fa
   //sort trackss according sectors
   //
   if (fDebug&1) {
-    printf("Number of tracks before double removal- %d\n",arr->GetEntries());
+    Info("RemoveDouble","Number of tracks before double removal- %d\n",arr->GetEntries());
   }
   //
   for (Int_t i=0; i<arr->GetEntriesFast(); i++) {
@@ -2066,7 +2066,7 @@ void  AliTPCtrackerMI::RemoveDouble(TObjArray * arr, Float_t factor1, Float_t fa
   }
   arr->Compress();
   if (fDebug&1) {
-    printf("Number of tracks after double removal- %d\n",arr->GetEntries());
+    Info("RemoveDouble","Number of tracks after double removal- %d\n",arr->GetEntries());
   }
 }
 
@@ -2152,8 +2152,9 @@ void AliTPCtrackerMI::RemoveUsed(TObjArray * arr, Float_t factor1,  Float_t fact
     
   }
   fNtracks = good;
-
-  printf("\n*****\nNumber of good tracks after shared removal\t%d\n",fNtracks);
+  if (fDebug>0){
+    Info("RemoveUsed","\n*****\nNumber of good tracks after shared removal\t%d\n",fNtracks);
+  }
 }
 
 void AliTPCtrackerMI::UnsignClusters() 
@@ -2477,7 +2478,9 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
   //read seeds from the event
   
   Int_t nentr=event->GetNumberOfTracks();
-  Info("PropagateBack", "Number of ESD tracks: %d\n", nentr);
+  if (fDebug>0){
+    Info("ReadSeeds", "Number of ESD tracks: %d\n", nentr);
+  }
   if (fSeeds) 
     DeleteSeeds();
   if (!fSeeds){   
@@ -2836,8 +2839,8 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
       }
     }
   }
-  if (fDebug>1){
-    //    printf("\nSeeding statiistic:\t%d\t%d\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin,nout1,nout2);
+  if (fDebug>3){
+    Info("MakeSeeds3","\nSeeding statistic:\t%d\t%d\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin,nout1,nout2);
   }
   delete seed;
 }
@@ -3094,8 +3097,8 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
     }
   }
   
-  if (fDebug>1){
-    //    printf("\nSeeding statiistic:\t%d\t%d\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin,nout1,nout2,nout3);
+  if (fDebug>3){
+    Info("MakeSeeds5","\nSeeding statiistic:\t%d\t%d\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin,nout1,nout2,nout3);
   }
   delete seed;
 }
@@ -3351,8 +3354,8 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
       }
     }  // if accepted seed
   }
-  if (fDebug>1){
-    printf("\nSeeding statiistic:\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin3);
+  if (fDebug>3){
+    Info("MakeSeeds2","\nSeeding statiistic:\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin3);
   }
   delete seed;
 }
@@ -3527,7 +3530,7 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track, Float_t r0, Float_t r1, F
     Int_t clindex = track->GetClusterIndex2(row[ipoint]);
     AliTPCclusterMI * cl = GetClusterMI(clindex);
     if (cl==0) {
-      printf("Bug\n");
+      //Error("Bug\n");
       //      AliTPCclusterMI * cl = GetClusterMI(clindex);
       return 0;
     }
@@ -3695,7 +3698,7 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed, Float_t th)
       //Double_t xxh[5];
       //xxh[4]=F1old(x[i2],y[i2],x[padm],y[padm],x[i1],y[i1]);  
       //xxh[2]=F2old(x[i2],y[i2],x[padm],y[padm],x[i1],y[i1]);
-      printf("problem\n");
+      Error("AliTPCtrackerMI::CheckKinkPoint","problem\n");
     }
     y[i] = y[i] - yy;
     z[i] = z[i] - zz;
@@ -3938,9 +3941,9 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   fIteration = 0;
   fSeeds = Tracking();
 
-
-  printf("Time for tracking: \t");timer.Print();timer.Start();
-
+  if (fDebug>0){
+    Info("Clusters2Tracks","Time for tracking: \t");timer.Print();timer.Start();
+  }
   //activate again some tracks
   for (Int_t i=0; i<fSeeds->GetEntriesFast(); i++) {
     AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;    
@@ -4003,7 +4006,10 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
     //    CheckKinkPoint(&t,0.05);
     //if ((pt->IsActive() || (pt->fRemoval==10) )&& nc>50 &&pt->GetNumberOfClusters()>0.4*pt->fNFoundable){
     if ((pt->IsActive() || (pt->fRemoval==10) )){
-      cerr<<found++<<'\r';      
+      found++;
+      if (fDebug>0){
+	cerr<<found<<'\r';      
+      }
       pt->fLab2 = i;
     }
     else
@@ -4060,9 +4066,12 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   */
  
   //  fNTracks = found;
-  printf("Time for overlap removal, track writing and dedx cooking: \t"); timer.Print();timer.Start();
+  if (fDebug>0){
+    Info("Clusters2Tracks","Time for overlap removal, track writing and dedx cooking: \t"); timer.Print();timer.Start();
+  }
   //
-  cerr<<"Number of found tracks : "<<"\t"<<found<<endl;  
+  //  cerr<<"Number of found tracks : "<<"\t"<<found<<endl;  
+  Info("Clusters2Tracks","Number of found tracks %d",found);  
   savedir->cd();
   //  UnloadClusters();
   //  
@@ -4097,7 +4106,7 @@ TObjArray * AliTPCtrackerMI::Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_
     if (seedtype==2) MakeSeeds2(arr,sec,i1,i2,cuts,dy);
   }
   if (fDebug>0){
-    printf("\nSeeding - %d\t%d\t%d\t%d\n",seedtype,i1,i2,arr->GetEntriesFast());
+    Info("Tracking","\nSeeding - %d\t%d\t%d\t%d\n",seedtype,i1,i2,arr->GetEntriesFast());
     timer.Print();
     timer.Start();
   }
@@ -4183,7 +4192,7 @@ TObjArray * AliTPCtrackerMI::Tracking()
   fdensity = 2.;
   
   if (fDebug>0){
-    printf("\n\nPrimary seeding\t%d\n\n",seeds->GetEntriesFast());
+    Info("Tracking()","\n\nPrimary seeding\t%d\n\n",seeds->GetEntriesFast());
     timer.Print();
     timer.Start();
   }
@@ -4252,7 +4261,7 @@ TObjArray * AliTPCtrackerMI::Tracking()
   }
  
   if (fDebug>0){
-    printf("\n\nSecondary seeding\t%d\n\n",seeds->GetEntriesFast());
+    Info("Tracking()","\n\nSecondary seeding\t%d\n\n",seeds->GetEntriesFast());
     timer.Print();
     timer.Start();
   }
@@ -4421,8 +4430,8 @@ Int_t AliTPCtrackerMI::PropagateBack(TObjArray * arr)
       //fSectors = fOuterSec;
       FollowBackProlongation(*pt,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1);
      
-      if (pt->GetNumberOfClusters()<20 && pt->GetLabel()>0 ){
-	printf("\n%d",pt->GetLabel());
+      if (fDebug>1 && pt->GetNumberOfClusters()<20 && pt->GetLabel()>0 ){
+	Error("PropagateBack","Not prolonged track %d",pt->GetLabel());
 	fSectors = fInnerSec;
 	//FollowBackProlongation(*pt2,fInnerSec->GetNRows()-1);
 	//fSectors = fOuterSec;
@@ -5056,9 +5065,9 @@ void AliTPCseed::GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_
     }
     
   }
-  if (shared>found){
-    printf("problem\n");
-  }
+  //if (shared>found){
+    //Error("AliTPCseed::GetClusterStatistic","problem\n");
+  //}
 }
 
 //_____________________________________________________________________________
