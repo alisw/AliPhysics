@@ -12,6 +12,12 @@
 #include <G4StackedTrack.hh>
 #include <G4StackManager.hh>
 #include <G4ios.hh>
+#include <G4NeutrinoE.hh>
+#include <G4NeutrinoMu.hh>
+#include <G4NeutrinoTau.hh>
+#include <G4AntiNeutrinoE.hh>
+#include <G4AntiNeutrinoMu.hh>
+#include <G4AntiNeutrinoTau.hh>
 
 AliStackingAction::AliStackingAction()
   : fStage(0), 
@@ -71,12 +77,24 @@ AliStackingAction::ClassifyNewTrack(const G4Track* track)
       fTrackingAction->SaveParticle(track, "primary");
   }  
   else {
+     // exclude neutrinos
+    G4ParticleDefinition* particle = track->GetDefinition();
+    if( particle == G4NeutrinoE::NeutrinoEDefinition() ||
+        particle == G4NeutrinoMu::NeutrinoMuDefinition() ||
+        particle == G4NeutrinoTau::NeutrinoTauDefinition() ||
+        particle == G4AntiNeutrinoE::AntiNeutrinoEDefinition() ||
+        particle == G4AntiNeutrinoMu::AntiNeutrinoMuDefinition() ||
+        particle == G4AntiNeutrinoTau::AntiNeutrinoTauDefinition()) {
+
+        return fKill;	 
+     }	
+     
      G4int parentID = track->GetParentID();
      if (parentID ==0) { 
-       classification = fUrgent; 
+        return fUrgent; 
      }
      else { 
-       classification = fWaiting; 
+        return fWaiting; 
      }
   }
   return classification;
