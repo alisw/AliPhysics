@@ -19,6 +19,7 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3TrackArray.h"
 
+
 //_____________________________________________________________
 // AliL3MemHandler
 //
@@ -67,12 +68,12 @@
 //  newfile.SetBinaryOutput(newfilename);
 //  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
 //  newfile.CloseBinaryOutput();
-  
-ClassImp(AliL3MemHandler)
 
+ClassImp(AliL3MemHandler)
+  
 AliL3MemHandler::AliL3MemHandler()
 {
-  ///Constructor
+  //Constructor
   
   fPt = 0;
   fSize =0;
@@ -123,7 +124,8 @@ void AliL3MemHandler::SetROI(Float_t *eta,Int_t *slice)
   //   eta[1] = maximum eta
   //   slice[0] = mimumum slice
   //   slice[1] = maximum slice
-  
+
+
   if(eta[1]==0)
     {
       LOG(AliL3Log::kWarning,"AliL3MemHandler::SetROI","Eta Values")
@@ -241,7 +243,6 @@ void AliL3MemHandler::CloseBinaryOutput()
   fclose(fOutBinary);
   fOutBinary =0;
 }
-
 
 UInt_t AliL3MemHandler::GetFileSize()
 {
