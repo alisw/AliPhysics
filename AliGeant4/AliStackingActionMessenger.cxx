@@ -19,10 +19,6 @@ AliStackingActionMessenger::AliStackingActionMessenger(
   fStackingDirectory = new G4UIdirectory("/aliStacking/");
   fStackingDirectory->SetGuidance("AliStackingAction control commands.");
 
-  fClearStackCmd = new G4UIcmdWithoutParameter("/aliStacking/clearStack", this);
-  fClearStackCmd->SetGuidance("Clears the primary stack.");
-  fClearStackCmd->AvailableForStates(EventProc);
-
   fVerboseCmd = new G4UIcmdWithAnInteger("/aliStacking/verbose", this);
   fVerboseCmd->SetGuidance("Set verbose level for AliStackingAction");
   fVerboseCmd->SetParameterName("VerboseLevel", true);
@@ -44,7 +40,6 @@ AliStackingActionMessenger::AliStackingActionMessenger(
 AliStackingActionMessenger::~AliStackingActionMessenger() {
 //
   delete fStackingDirectory;
-  delete fClearStackCmd;
   delete fVerboseCmd;
 }
 
@@ -70,10 +65,7 @@ void AliStackingActionMessenger::SetNewValue(G4UIcommand* command,
 // Applies command to the associated object.
 // ---
 
-  if (command == fClearStackCmd) { 
-    fStackingAction->ClearPrimaryStack(); 
-  }
-  else if (command == fVerboseCmd) { 
+  if (command == fVerboseCmd) { 
     fStackingAction
       ->SetVerboseLevel(fVerboseCmd->GetNewIntValue(newValue)); 
   }  

@@ -39,7 +39,6 @@ class AliStackingActionMessenger: public G4UImessenger
     // data members
     AliStackingAction*        fStackingAction;    //associated class 
     G4UIdirectory*            fStackingDirectory; //command directory
-    G4UIcmdWithoutParameter*  fClearStackCmd;     //command: clearStack
     G4UIcmdWithAnInteger*     fVerboseCmd;        //command: verbose
 };
 
