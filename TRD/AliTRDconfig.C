@@ -3,7 +3,10 @@ void Config()
 
   Int_t iField = 0;
 
-  new AliGeant3("C++ Interface to Geant3");
+  // libraries required by geant321
+  gSystem->Load("libgeant321");
+
+  new     TGeant3("C++ Interface to Geant3");
 
   // Create the output file
   TFile *rootfile = new TFile("TRD_test.root","recreate");
