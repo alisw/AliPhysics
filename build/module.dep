@@ -1,44 +1,49 @@
  
 ALIFAST/module.mk:	 ALIFAST/libALIFAST.pkg
 ALIROOT/module.mk:	 ALIROOT/binaliroot.pkg 
-CRT/module.mk:           CRT/libCRT.pkg
+ANALYSIS/module.mk:	 ANALYSIS/libANALYSIS.pkg 
 CONTAINERS/module.mk: 	 CONTAINERS/libCONTAINERS.pkg
+CRT/module.mk:           CRT/libCRT.pkg
+DISPLAY/module.mk: 	 DISPLAY/libDISPLAY.pkg
 EMCAL/module.mk:	 EMCAL/libEMCAL.pkg
+EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
 EVGEN/module.mk:	 EVGEN/libEVGEN.pkg
 FMD/module.mk:		 FMD/libFMD.pkg
 FASTSIM/module.mk:	 FASTSIM/libFASTSIM.pkg
+HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
+HBTP/module.mk:		 HBTP/libHBTP.pkg
+HERWIG/module.mk:        HERWIG/libherwig.pkg
 HIJING/module.mk:	 HIJING/libhijing.pkg
 ITS/module.mk:		 ITS/libITS.pkg
+JETAN/module.mk:	 JETAN/libJETAN.pkg
 MEVSIM/module.mk:	 MEVSIM/libmevsim.pkg
+MICROCERN/module.mk:	 MICROCERN/libmicrocern.pkg
+MONITOR/module.mk:       MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITOR/binmonitorCheck.pkg
 MUON/module.mk:		 MUON/libMUON.pkg
 PDF/module.mk:		 PDF/libpdf.pkg
 PHOS/module.mk:		 PHOS/libPHOS.pkg
 PMD/module.mk:		 PMD/libPMD.pkg
-PYTHIA/module.mk:	 PYTHIA/libpythia.pkg
 PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg
 RALICE/module.mk:	 RALICE/libRALICE.pkg
+RAW/module.mk:           RAW/libRAW.pkg RAW/binraw2date.pkg
 RICH/module.mk:		 RICH/libRICH.pkg
 START/module.mk:	 START/libSTART.pkg
 STEER/module.mk:	 STEER/libSTEER.pkg
 STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
+TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
+THbtp/module.mk:	 THbtp/libTHbtp.pkg
+THerwig/module.mk:	 THerwig/libTHerwig.pkg
 THijing/module.mk:	 THijing/libTHijing.pkg
 TMEVSIM/module.mk:	 TMEVSIM/libTMEVSIM.pkg
 TOF/module.mk:		 TOF/libTOF.pkg
 TPC/module.mk:		 TPC/libTPC.pkg TPC/libTPCBarrel.pkg
+TPHIC/module.mk:	 TPHIC/libTPHIC.pkg
 TRD/module.mk:		 TRD/libTRD.pkg
+VZERO/module.mk:	 VZERO/libVZERO.pkg
 ZDC/module.mk:		 ZDC/libZDC.pkg
 LHC/module.mk:		 LHC/libLHC.pkg
-THbtp/module.mk:	 THbtp/libTHbtp.pkg
-HBTP/module.mk:		 HBTP/libHBTP.pkg
-HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
-MICROCERN/module.mk:	 MICROCERN/libmicrocern.pkg
-HERWIG/module.mk:        HERWIG/libherwig.pkg
 TFluka/module.mk:        TFluka/libTFluka.pkg
 Flugg/module.mk:         Flugg/libFlugg.pkg
 VZERO/module.mk:         VZERO/libVZERO.pkg
-EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
-TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
-RAW/module.mk:           RAW/libRAW.pkg RAW/binaddMiniHeader.pkg RAW/binprintMiniHeader.pkg RAW/binraw2date.pkg
-MONITOR/module.mk:       MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg
 
 
