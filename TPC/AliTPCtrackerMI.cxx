@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2003/09/29 11:28:19  kowal2
+completly rewritten
+
 Revision 1.9.4.3  2003/06/23 14:47:10  hristov
 Minor fix
 
@@ -2142,7 +2145,7 @@ void AliTPCtrackerMI::UnsignClusters()
 
 
 
-void AliTPCtrackerMI::SignClusters(TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.)
+void AliTPCtrackerMI::SignClusters(TObjArray * arr, Float_t fnumber, Float_t fdensity)
 {
   //
   //sign clusters to be "used"
