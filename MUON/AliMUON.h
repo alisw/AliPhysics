@@ -24,6 +24,8 @@ class AliMUONPadHit;
 class AliMUONRawCluster;
 class AliMUONClusterFinderVS;
 class AliMUONReconstHit;
+class AliMUONMerger;
+
 class TVector;
 #include "TObjArray.h"
 class TFile;
@@ -61,9 +63,6 @@ class AliMUON : public  AliDetector {
     virtual void   FindClusters(Int_t event ,Int_t lastEntry);
     // Digitisation 
     virtual void   SDigits2Digits();      
-    virtual void   Digitise(Int_t nev,Int_t bgrEvent, Option_t *opt1=" ",
-    			    Option_t *opt2=" ",Text_t *name=" ");
-    virtual void   SortTracks(Int_t *tracks,Int_t *charges, Int_t ntr);
 // Configuration Methods (per station id)
 //
 // Set Chamber Segmentation Parameters
@@ -84,14 +83,16 @@ class AliMUON : public  AliDetector {
     virtual void   SetNsec(Int_t id, Int_t nsec);
 // Set Reconstruction Model
     virtual void   SetReconstructionModel(Int_t id, AliMUONClusterFinderVS *reconstruction);
+// Set Merger/Digitizer
+    virtual void   SetMerger(AliMUONMerger* merger);
+    virtual AliMUONMerger* Merger();
+    
 // Set Stepping Parameters
     virtual void   SetMaxStepGas(Float_t p1);
     virtual void   SetMaxStepAlu(Float_t p1);
     virtual void   SetMaxDestepGas(Float_t p1);
     virtual void   SetMaxDestepAlu(Float_t p1);
     virtual void   SetAcceptance(Bool_t acc=0, Float_t angmin=2, Float_t angmax=9);
-// Set Merger
-    virtual void   SetMerger(AliMUONMerger* thisMerger) {fMerger=thisMerger;}
 // Response Simulation
     virtual void   MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
 			       Float_t eloss, Float_t tof, Int_t id);
@@ -138,7 +139,7 @@ class AliMUON : public  AliDetector {
     TClonesArray         *fLocalTrigger;       // List of Local Trigger      
     Int_t                 fNGlobalTrigger;     // Number of Global Trigger
     TClonesArray         *fGlobalTrigger;      // List of Global Trigger  
-
+    
 //
     Bool_t   fAccCut;          //Transport acceptance cut
     Float_t  fAccMin;          //Minimum acceptance cut used during transport
