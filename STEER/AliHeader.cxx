@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/23 08:54:53  hristov
+Typo corrected
+
 Revision 1.8  2001/05/23 08:50:01  hristov
 Weird inline removed
 
@@ -49,6 +52,7 @@ AliHeader::AliHeader()
   fEvent=0;
   fStack=0;
   fGenHeader = 0;
+  fEventNrInRun=0;
 }
 
 AliHeader::AliHeader(Int_t run, Int_t event)
@@ -65,6 +69,22 @@ AliHeader::AliHeader(Int_t run, Int_t event)
   fGenHeader = 0;
 }
 
+AliHeader::AliHeader(Int_t run, Int_t event, Int_t evNumber)
+{
+  //
+  // Standard constructor
+  //
+  fRun=run;	
+  fNvertex=0;
+  fNprimary=0;
+  fNtrack=0;
+  fEvent=event;
+  fEventNrInRun=evNumber;
+  fStack=0;
+  fGenHeader = 0;
+}
+
+
 void AliHeader::Reset(Int_t run, Int_t event)
 {
   //
@@ -75,6 +95,19 @@ void AliHeader::Reset(Int_t run, Int_t event)
   fNprimary=0;
   fNtrack=0;
   fEvent=event;
+}
+
+void AliHeader::Reset(Int_t run, Int_t event, Int_t evNumber)
+{
+  //
+  // Resets the header with new run and event number
+  //
+  fRun=run;	
+  fNvertex=0;
+  fNprimary=0;
+  fNtrack=0;
+  fEvent=event;
+  fEventNrInRun=evNumber;
 }
 
 void AliHeader::Print(const char* option)

@@ -72,6 +72,8 @@ public:
    Int_t          GetEvNumber() const {return fEvent;}
    Int_t          GetRunNumber() const {return fRun;}
    void           SetRunNumber(Int_t run) {fRun=run;}
+   void           SetEventNrInRun(Int_t event) {fEventNrInRun=event;}
+   Int_t          GetEventNrInRun() const {return fEventNrInRun;}
    Int_t          GetEventsPerRun() const {return fEventsPerRun;}
    Int_t          GetDebug() const {return fDebug;}
    AliModule     *GetModule(const char *name) const;
@@ -166,6 +168,7 @@ protected:
 
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
+  Int_t          fEventNrInRun;      //! Current unique event number in run
   Int_t          fEventsPerRun;      //  Number of events per run
   Int_t          fDebug;             //  Debug flag
   AliHeader     *fHeader;            //  Header information
@@ -203,7 +206,7 @@ private:
    AliRun(const AliRun &right) 
      {}  
    AliRun& operator = (const AliRun &) {return *this;}
-   ClassDef(AliRun,4)      //Supervisor class for all Alice detectors
+   ClassDef(AliRun,5)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

@@ -6,7 +6,6 @@
 /* $Id$ */
 
 #include <TObject.h>
-#include <TArrayI.h>
 class AliStack;
 class AliGenEventHeader;
  
@@ -14,9 +13,11 @@ class AliHeader : public TObject {
 public:
   AliHeader();
   AliHeader(Int_t run, Int_t event);
+  AliHeader(Int_t run, Int_t eventSerialNr, Int_t evNrInRun);
   virtual ~AliHeader() {}
 
   virtual void Reset(Int_t run, Int_t event);
+  virtual void Reset(Int_t run, Int_t eventSerialNr, Int_t evNrInRun);
 
   virtual  void  SetRun(Int_t run) {fRun = run;}
   virtual  Int_t GetRun() const {return fRun;}
@@ -33,6 +34,10 @@ public:
   
   virtual  void  SetEvent(Int_t event) {fEvent = event;}
   virtual  Int_t GetEvent() const {return fEvent;}
+
+  virtual  void  SetEventNrInRun(Int_t event) {fEventNrInRun = event;}
+  virtual  Int_t GetEventNrInRun() const {return fEventNrInRun;}
+
   virtual  AliStack* Stack() const;
   virtual  void SetStack(AliStack* stack);
 
@@ -46,11 +51,12 @@ protected:
   Int_t         fNvertex;     //Number of vertices
   Int_t         fNprimary;    //Number of primary tracks
   Int_t         fNtrack;      //Number of tracks
-  Int_t         fEvent;       //Event number
+  Int_t         fEvent;       //Event number (serial in the file)
+  Int_t         fEventNrInRun; //Unique Event number within the run
   AliStack     *fStack;       //Pointer to stack
   AliGenEventHeader* fGenHeader;    //Event Header for Generator  
   
-  ClassDef(AliHeader,1) //Alice event header    
+  ClassDef(AliHeader,2) //Alice event header    
 };
 
 #endif
