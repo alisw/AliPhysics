@@ -1,5 +1,7 @@
 #ifndef PMDClusterFinder_H
 #define PMDClusterFinder_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 //-----------------------------------------------------//
 //                                                     //
 //  Date   : August 05 2003                            //
@@ -31,9 +33,7 @@ class AliHeader;
 class AliPMDdigit;
 class AliPMDClustering;
 class AliPMDcluster;
-class AliPMDrecpoint;
-
-//using namespace std;
+class AliPMDrecpoint1;
 
 class AliPMDClusterFinder
 {
@@ -52,11 +52,12 @@ class AliPMDClusterFinder
 
   Int_t fNpoint;
   Int_t fDetNo;
+  Int_t fDebug;
+  Float_t fEcut;
 
-  static const Int_t fTotSM = 27;
-  static const Int_t fNCell = 72;
-  Float_t fCPV[fTotSM][fNCell][fNCell];
-  Float_t fPMD[fTotSM][fNCell][fNCell];
+  static const Int_t fRow = 48;
+  static const Int_t fCol = 96;
+  Double_t fCellADC[fRow][fCol];
 
  public:
 
@@ -66,12 +67,14 @@ class AliPMDClusterFinder
   void OpengAliceFile(char * /* galice.root */, Option_t * /* option */);
 
   void Digits2RecPoints(Int_t /* ievt */);
+  void SetCellEdepCut(Float_t /* ecut */);
+  void SetDebug(Int_t /* idebug */);
   void AddRecPoint(Float_t * /* clusdata */);
   void ResetCellADC();
   void ResetRecpoint();
   void UnLoad(Option_t * /* option */);
 
-  ClassDef(AliPMDClusterFinder,1)
+  ClassDef(AliPMDClusterFinder,2)
 };
 #endif
 

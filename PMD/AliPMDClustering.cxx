@@ -1,3 +1,18 @@
+/***************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 //-----------------------------------------------------//
 //                                                     //
 //  Source File : PMDClustering.cxx, Version 00        //
@@ -44,7 +59,8 @@ const double AliPMDClustering::sqrth=0.8660254;  // sqrth = sqrt(3.)/2.
 
 AliPMDClustering::AliPMDClustering()
 {
-  fMessage = 0;
+  fDebug  = 0;
+  fCutoff = 0;
   for(int i = 0; i < ndimx; i++)
     {
       for(int j = 0; j < ndimy; j++)
@@ -59,7 +75,7 @@ AliPMDClustering::~AliPMDClustering()
 
 }
 
-void AliPMDClustering::DoClust(int idet, int isup, double d1[72][72], TObjArray *pmdcont)
+void AliPMDClustering::DoClust(double celladc[48][96], TObjArray *pmdcont)
 {
 
   AliPMDcluster *pmdcl = 0;
@@ -70,23 +86,20 @@ void AliPMDClustering::DoClust(int idet, int isup, double d1[72][72], TObjArray 
 
   const float twobysqrt3 = 1.1547; // 2./sqrt(3.)
 
-  //  if (fMessage == 1)
-    {
-      cout << " supermodule no. " << idet << " " << isup << endl;
-    }
 
   for (i = 0; i < ndimx; i++)
     {
       for (j = 0; j < ndimy; j++)
 	{
-	  d[i][j] = d1[i][j];
+	  d[i][j] = celladc[i][j];
 	}
     }
-  order(idet); // order the data
-  cutoff=400.; // cutoff used to discard cells having ener. dep. 
+  order(); // order the data
+  //  cutoff=400.; // cutoff used to discard cells having ener. dep. 
+  cutoff = fCutoff; // cutoff used to discard cells having ener. dep. 
   ave=0.; 
   nmx1=-1;
-
+  
   for(j=0;j<nmx; j++)
     {
       i1 = iord[0][j];
@@ -95,30 +108,26 @@ void AliPMDClustering::DoClust(int idet, int isup, double d1[72][72], TObjArray 
       if (d[i1][i2] >= cutoff ) nmx1 = nmx1 + 1;
     }
   // nmx1 --- number of cells having ener dep >= cutoff
-  if (fMessage == 1)
+  if (fDebug == 1)
     {
       cout << " nmx1 " << nmx1 << endl;
     }
   ave=ave/nmx1;
-  if (fMessage == 1)
+  if (fDebug == 1)
     {
       cout <<"nmx " << nmx << " nmx1 " << nmx1<< " ave "<<ave<<
 	" cutoff " << cutoff << endl;
     }
-
-  incr = crclust(ave, cutoff, nmx1, idet);
-
-  refclust(incr, i, idet);
-  if (fMessage == 1)
+  
+  incr = crclust(ave, cutoff, nmx1);
+  
+  refclust(incr);
+  
+  if (fDebug == 1)
     {
-      if(idet == 0)cout <<" supermodule ( pmd ) = "<< isup <<" done "
-			<<endl;
-      if(idet == 1)cout <<" supermodule ( cpv ) = "<< isup <<" done "
-			<<endl;
       cout << "clno " << clno << endl;
     }
-
-
+  
   for(i1=0; i1<clno; i1++)
     {
       float clu_xc    = (float) clusters[0][i1];
@@ -139,12 +148,10 @@ void AliPMDClustering::DoClust(int idet, int isup, double d1[72][72], TObjArray 
       pmdcl = new AliPMDcluster(clusdata);
       pmdcont->Add(pmdcl);
     }
-
   delete pmdcl;
-
 }
 
-void AliPMDClustering::order(int /*idet*/)
+void AliPMDClustering::order()
 {
   // using simple sort
   double dd[nmx], adum;// matrix d converted into 
@@ -175,14 +182,131 @@ void AliPMDClustering::order(int /*idet*/)
   }
   // store the sorted information in iord for later use
   for(i=0; i<nmx; i++){
-    j=iord1[i]; i2=j/ndimx; 
-    i1=j-i2*ndimx; 
+    j  = iord1[i];
+    i2 = j/ndimx; 
+    i1 = j-i2*ndimx; 
     iord[0][i]=i1; 
     iord[1][i]=i2;
   }
 }
 
-void AliPMDClustering::refclust(int incr, int /*supmod*/, int /*idet*/)
+
+  
+int AliPMDClustering::crclust(double ave, double cutoff, int nmx1)
+{
+  int i,j,k,id1,id2,icl, numcell, clust[2][5000];
+  int jd1,jd2, icell, cellcount;
+  static int neibx[6]={1,0,-1,-1,0,1}, neiby[6]={0,1,1,0,-1,-1};
+  // neibx and neiby define ( incremental ) (i,j) for the neighbours of a 
+  // cell. There are six neighbours.
+  // cellcount --- total number of cells having nonzero ener dep
+  // numcell --- number of cells in a given supercluster
+  //ofstream ofl0("cells_loc",ios::out);
+  // initialize infocl[2][ndimx][ndimy] 
+
+  if (fDebug == 1)
+    {
+      printf(" *** Inside crclust **  nmx = %d nmx1 = %d ndimx = %d ndimy = %d ave = %f cutoff = %f\n",
+	     nmx,nmx1,ndimx,ndimy,ave,cutoff);
+    }
+  for (j=0; j < ndimx; j++){
+    for(k=0; k < ndimy; k++){
+      infocl[0][j][k] = 0; 
+      infocl[1][j][k] = 0;
+    }
+  }
+  for(i=0; i < nmx; i++){
+    infcl[0][i] = -1;
+    id1=iord[0][i]; 
+    id2=iord[1][i];
+    if(d[id1][id2] <= cutoff){infocl[0][id1][id2]=-1;}
+  }
+  // ---------------------------------------------------------------
+  // crude clustering begins. Start with cell having largest adc 
+  // count and loop over the cells in descending order of adc count
+  // ---------------------------------------------------------------
+  icl=-1;
+  cellcount=-1;
+  for(icell=0; icell <= nmx1; icell++){
+    id1=iord[0][icell]; 
+    id2=iord[1][icell]; 
+    if(infocl[0][id1][id2] == 0 ){
+      // ---------------------------------------------------------------
+      // icl -- cluster #, numcell -- # of cells in it, clust -- stores 
+      // coordinates of the cells in a cluster, infocl[0][i1][i2] is 1 for 
+      // primary and 2 for secondary cells, 
+      // infocl[1][i1][i2] stores cluster #
+      // ---------------------------------------------------------------
+      icl=icl+1; 
+      numcell=0; 
+      cellcount=cellcount+1;
+      infocl[0][id1][id2]=1; 
+      infocl[1][id1][id2]=icl;
+      infcl[0][cellcount]=icl; 
+      infcl[1][cellcount]=id1; 
+      infcl[2][cellcount]=id2;
+
+
+      clust[0][numcell]=id1;
+      clust[1][numcell]=id2;
+      for(i=1; i<5000; i++)clust[0][i]=0;
+      // ---------------------------------------------------------------
+      // check for adc count in neib. cells. If ne 0 put it in this clust
+      // ---------------------------------------------------------------
+      for(i=0; i<6; i++){
+	jd1=id1+neibx[i]; 
+	jd2=id2+neiby[i];
+	//if( (jd1 >= 0 && jd1 < 72) && (jd2 >= 0 && jd2 < 72) && 
+	if( (jd1 >= 0 && jd1 < ndimx) && (jd2 >= 0 && jd2 < ndimy) && 
+	    infocl[0][jd1][jd2] == 0){
+	  numcell=numcell+1;
+	  infocl[0][jd1][jd2]=2; 
+	  infocl[1][jd1][jd2]=icl;
+	  clust[0][numcell]=jd1;
+	  clust[1][numcell]=jd2;
+	  cellcount=cellcount+1;
+	  infcl[0][cellcount]=icl; 
+	  infcl[1][cellcount]=jd1; 
+	  infcl[2][cellcount]=jd2;
+	}
+      }
+      // ---------------------------------------------------------------
+      // check adc count for neighbour's neighbours recursively and 
+      // if nonzero, add these to the cluster.
+      // ---------------------------------------------------------------
+      for(i=1;i < 5000;i++){
+	if(clust[0][i] != 0){
+	  id1=clust[0][i]; 
+	  id2=clust[1][i];
+	  for(j=0; j<6 ; j++){
+	    jd1=id1+neibx[j]; 
+	    jd2=id2+neiby[j];
+	    //if( (jd1 >= 0 && jd1 < 72) && (jd2 >= 0 && jd2 < 72) && 
+	    if( (jd1 >= 0 && jd1 < ndimx) && (jd2 >= 0 && jd2 < ndimy) && 
+		infocl[0][jd1][jd2] == 0 ){
+	      infocl[0][jd1][jd2]=2; 
+	      infocl[1][jd1][jd2]=icl;
+	      numcell=numcell+1; 
+	      clust[0][numcell]=jd1;
+	      clust[1][numcell]=jd2;
+	      cellcount=cellcount+1;
+	      infcl[0][cellcount]=icl; 
+	      infcl[1][cellcount]=jd1; 
+	      infcl[2][cellcount]=jd2;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  //  for(icell=0; icell<=cellcount; icell++){
+  //    ofl0 << infcl[0][icell] << " " << infcl[1][icell] << " " << 
+  //      infcl[2][icell] << endl;
+  //  }
+  return cellcount;
+}
+
+void AliPMDClustering::refclust(int incr)
 {
   int i, j, k, i1, i2, id, icl, ncl[4500], iord[4500], itest; 
   int ihld;
@@ -204,7 +328,7 @@ void AliPMDClustering::refclust(int incr, int /*supmod*/, int /*idet*/)
     if(infcl[0][i] != nsupcl){ nsupcl=nsupcl+1; }
     ncl[nsupcl]=ncl[nsupcl]+1;
   }
-  if (fMessage == 1)
+  if (fDebug == 1)
     {
       cout << " # of cells " <<incr+1 << " # of superclusters " << nsupcl+1
 	   << endl;
@@ -254,6 +378,7 @@ void AliPMDClustering::refclust(int incr, int /*supmod*/, int /*idet*/)
       //ofl1 << icl << " " << clusters[0][clno] << " " << clusters[1][clno]
       //   << " " << clusters[2][clno] << " " <<clusters[3][clno] <<endl; 
     }else{
+
       id=id+1; 
       iord[0]=0;
       // super-cluster of more than two cells - broken up into smaller 
@@ -267,6 +392,7 @@ void AliPMDClustering::refclust(int incr, int /*supmod*/, int /*idet*/)
       z[0]=d[i1][i2];
       iord[0]=0;
       for(j=1;j<=ncl[i];j++){
+
 	id=id+1;
 	i1=infcl[1][id]; 
 	i2=infcl[2][id];
@@ -288,6 +414,8 @@ void AliPMDClustering::refclust(int incr, int /*supmod*/, int /*idet*/)
 	  }
 	}
       }
+
+
       // compute the number of Gaussians and their centers ( first 
       // guess ) 
       // centers must be separated by cells having smaller ener. dep.
@@ -386,8 +514,9 @@ void AliPMDClustering::refclust(int incr, int /*supmod*/, int /*idet*/)
     }
   }
 
-}
+  cout << " COMING OUT of refclust" << endl;
 
+}
 
 void AliPMDClustering::gaussfit(int ncell, int nclust, double &x, double &y ,double &z, double &xc, double &yc, double &zc, double &rc)
 {
@@ -506,111 +635,6 @@ double AliPMDClustering::Dist(double x1, double y1, double x2, double y2)
   return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
 
-  
-int AliPMDClustering::crclust(double /*ave*/, double cutoff, int nmx1, int /*idet*/)
-{
-  int i,j,k,id1,id2,icl, numcell, clust[2][5000];
-  int jd1,jd2, icell, cellcount;
-  static int neibx[6]={1,0,-1,-1,0,1}, neiby[6]={0,1,1,0,-1,-1};
-  // neibx and neiby define ( incremental ) (i,j) for the neighbours of a 
-  // cell. There are six neighbours.
-  // cellcount --- total number of cells having nonzero ener dep
-  // numcell --- number of cells in a given supercluster
-  //ofstream ofl0("cells_loc",ios::out);
-  // initialize infocl[2][ndimx][ndimy] 
-  for (j=0; j < 72; j++){
-    for(k=0; k < 72; k++){
-      infocl[0][j][k] = 0; 
-      infocl[1][j][k] = 0;
-    }
-  }
-  for(i=0; i < nmx; i++){
-    infcl[0][i] = -1;
-    id1=iord[0][i]; 
-    id2=iord[1][i];
-    if(d[id1][id2] <= cutoff){infocl[0][id1][id2]=-1;}
-  }
-  // ---------------------------------------------------------------
-  // crude clustering begins. Start with cell having largest adc 
-  // count and loop over the cells in descending order of adc count
-  // ---------------------------------------------------------------
-  icl=-1;
-  cellcount=-1;
-  for(icell=0; icell <= nmx1; icell++){
-    id1=iord[0][icell]; 
-    id2=iord[1][icell]; 
-    if(infocl[0][id1][id2] == 0 ){
-      // ---------------------------------------------------------------
-      // icl -- cluster #, numcell -- # of cells in it, clust -- stores 
-      // coordinates of the cells in a cluster, infocl[0][i1][i2] is 1 for 
-      // primary and 2 for secondary cells, 
-      // infocl[1][i1][i2] stores cluster #
-      // ---------------------------------------------------------------
-      icl=icl+1; 
-      numcell=0; 
-      cellcount=cellcount+1;
-      infocl[0][id1][id2]=1; 
-      infocl[1][id1][id2]=icl;
-      infcl[0][cellcount]=icl; 
-      infcl[1][cellcount]=id1; 
-      infcl[2][cellcount]=id2;
-      clust[0][numcell]=id1;
-      clust[1][numcell]=id2;
-      for(i=1; i<5000; i++)clust[0][i]=0;
-      // ---------------------------------------------------------------
-      // check for adc count in neib. cells. If ne 0 put it in this clust
-      // ---------------------------------------------------------------
-      for(i=0; i<6; i++){
-	jd1=id1+neibx[i]; 
-	jd2=id2+neiby[i];
-	if( (jd1 >= 0 && jd1 < 72) && (jd2 >= 0 && jd2 < 72) && 
-	    infocl[0][jd1][jd2] == 0){
-	  numcell=numcell+1;
-	  infocl[0][jd1][jd2]=2; 
-	  infocl[1][jd1][jd2]=icl;
-	  clust[0][numcell]=jd1;
-	  clust[1][numcell]=jd2;
-	  cellcount=cellcount+1;
-	  infcl[0][cellcount]=icl; 
-	  infcl[1][cellcount]=jd1; 
-	  infcl[2][cellcount]=jd2;
-	}
-      }
-      // ---------------------------------------------------------------
-      // check adc count for neighbour's neighbours recursively and 
-      // if nonzero, add these to the cluster.
-      // ---------------------------------------------------------------
-      for(i=1;i < 5000;i++){
-	if(clust[0][i] != 0){
-	  id1=clust[0][i]; 
-	  id2=clust[1][i];
-	  for(j=0; j<6 ; j++){
-	    jd1=id1+neibx[j]; 
-	    jd2=id2+neiby[j];
-	    if( (jd1 >= 0 && jd1 < 72) && (jd2 >= 0 && jd2 < 72) && 
-		infocl[0][jd1][jd2] == 0 ){
-	      infocl[0][jd1][jd2]=2; 
-	      infocl[1][jd1][jd2]=icl;
-	      numcell=numcell+1; 
-	      clust[0][numcell]=jd1;
-	      clust[1][numcell]=jd2;
-	      cellcount=cellcount+1;
-	      infcl[0][cellcount]=icl; 
-	      infcl[1][cellcount]=jd1; 
-	      infcl[2][cellcount]=jd2;
-	    }
-	  }
-	}
-      }
-    }
-  }
-  //  for(icell=0; icell<=cellcount; icell++){
-  //    ofl0 << infcl[0][icell] << " " << infcl[1][icell] << " " << 
-  //      infcl[2][icell] << endl;
-  //  }
-  return cellcount;
-}
-
 double AliPMDClustering::ranmar()
 {
   /*                                   C==========================C*/
@@ -678,7 +702,11 @@ double AliPMDClustering::ranmar()
 
 }   
 
-void AliPMDClustering::SetMessage(Int_t imessage)
+void AliPMDClustering::SetEdepCut(Float_t decut)
 {
-  fMessage = imessage;
+  fCutoff = decut;
+}
+void AliPMDClustering::SetDebug(Int_t idebug)
+{
+  fDebug = idebug;
 }

@@ -1,5 +1,8 @@
 #ifndef PMDClustering_H
 #define PMDClustering_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 //-----------------------------------------------------//
 //                                                     //
 //  Header File : PMDClustering.h, Version 00          //
@@ -47,9 +50,9 @@ class AliPMDClustering
   static const double pi;
   static const double sqrth;  // sqrth = sqrt(3.)/2.
   enum {
-    nmx=5184,
-    ndimx=72,
-    ndimy=72
+    nmx=4608,
+    ndimx=48,
+    ndimy=96
   };
 
   /*
@@ -89,22 +92,27 @@ class AliPMDClustering
      coord --- x and y coordinates of center of each cell
   */
 
-  Int_t fMessage;
+  Int_t fDebug;
+  Float_t fCutoff;
 
  public:
   AliPMDClustering();
   virtual ~AliPMDClustering();
   
-  void DoClust(int, int, double [][72], TObjArray *);
-  int crclust(double, double, int, int);
-  void refclust(int, int, int);
-  double ranmar();
-  void order(int);
-  double Dist(double, double, double, double);
-  void gaussfit(int, int, double &, double &, double &, double &, double &, 
-		double &, double &);
-  void SetMessage(Int_t);
+  void DoClust(double /*celladc*/[][96], TObjArray * /* pmdcont */);
+  void order();
 
-  ClassDef(AliPMDClustering,1)
+  int crclust(double /* ave */, double /* cutoff */ , int /* nmx1 */);
+  void refclust(int /* incr */);
+  void gaussfit(int /*ncell*/, int /*nclust*/, double &/*x*/, 
+		double &/*y*/, double &/*z*/, double &/*xc*/,
+		double &/*yc*/, double &/*zc*/, double &/*rc*/);
+  double Dist(double /* x1 */, double /* y1 */ ,
+	      double /* x2 */, double /* y2 */);
+  double ranmar();
+  void SetEdepCut(Float_t /* decut */);
+  void SetDebug(Int_t /* idebug */);
+
+  ClassDef(AliPMDClustering,2)
 };
 #endif
