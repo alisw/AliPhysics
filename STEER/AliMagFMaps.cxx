@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/02/26 09:48:14  morsch
+Extra argument in constructor for l3 map choice.
+
 Revision 1.4  2002/02/22 14:00:20  morsch
 Protection against replication of fieldmap data in gAlice.
 
@@ -53,87 +56,16 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
   //
   fType         = kConMesh;
   fFieldMap[0]  = 0;
-  char* fname;
-  
-  fMap = map;
-  TFile* file = 0;
-  if (fMap == k2kG) {
-      if (l3) {
-	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
-	  file = new TFile(fname);
-	  fFieldMap[0] = (AliFieldMap*) file->Get("L3B02");
-	  file->Close();
-	  delete file;
-      }
-      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB02.root");
-      file = new TFile(fname);
-      fFieldMap[1] = (AliFieldMap*) file->Get("DipB02");
-      file->Close();
-      delete file;;
-      
-      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB02.root");
-      file = new TFile(fname);
-      fFieldMap[2] = (AliFieldMap*) file->Get("ExtB02");
-      file->Close();
-      delete file;
-      fSolenoid = 2.;
-  } else if (fMap == k4kG) {
-      if (l3) {
-	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B04.root");
-	  file = new TFile(fname);
-	  fFieldMap[0] = (AliFieldMap*) file->Get("L3B04");
-	  file->Close();
-	  delete file;
-      }
-      
-      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB04.root");
-      file = new TFile(fname);
-      fFieldMap[1] = (AliFieldMap*) file->Get("DipB04");
-      file->Close();
-      delete file;;
-      
-      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB04.root");
-      file = new TFile(fname);
-      fFieldMap[2] = (AliFieldMap*) file->Get("ExtB04");
-      file->Close();
-      delete file;
-      fSolenoid = 4.;
-  } else if (fMap == k5kG) {
-      if (l3) {
-	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B05.root");
-	  file = new TFile(fname);
-	  fFieldMap[0] = (AliFieldMap*) file->Get("L3B05");
-	  file->Close();
-	  delete file;
-      }
-      
-      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB05.root");
-      file = new TFile(fname);
-      fFieldMap[1] = (AliFieldMap*) file->Get("DipB05");
-      file->Close();
-      delete file;;
-      
-      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB05.root");
-      file = new TFile(fname);
-      fFieldMap[2] = (AliFieldMap*) file->Get("ExtB05");
-      file->Close();
-      delete file;
-      
-      fSolenoid = 5.;
-  }
+  fMap          = map;
+  fL3Option     = l3;
 
-  if (!l3) {
-//
-// Dummy L3 map
-      fFieldMap[0] = new AliFieldMap();
-      fFieldMap[0] -> SetLimits(-800., 800., -800., 800., -700., 700.);
-  }
-  
+  ReadField();
+  fFieldRead = 1;
 //
 // Don't replicate field information in gAlice
   for (Int_t i = 0; i < 3; i++)  fFieldMap[i]->SetWriteEnable(0);
 //
-  fL3Option = l3;
+
 }
 
 //________________________________________
@@ -153,6 +85,89 @@ AliMagFMaps::~AliMagFMaps()
     delete fFieldMap[0];
     delete fFieldMap[1];
     delete fFieldMap[2];    
+}
+
+void AliMagFMaps::ReadField()
+{
+//  Read Field Map from file
+//
+//  don't read twice
+//
+    if (fFieldRead) return;
+//    
+    char* fname;
+    TFile* file = 0;
+    if (fMap == k2kG) {
+	if (fL3Option) {
+	    fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
+	    file = new TFile(fname);
+	    fFieldMap[0] = (AliFieldMap*) file->Get("L3B02");
+	    file->Close();
+	    delete file;
+	}
+	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB02.root");
+	file = new TFile(fname);
+	fFieldMap[1] = (AliFieldMap*) file->Get("DipB02");
+	file->Close();
+	delete file;;
+	
+	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB02.root");
+	file = new TFile(fname);
+	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB02");
+	file->Close();
+	delete file;
+	fSolenoid = 2.;
+    } else if (fMap == k4kG) {
+	if (fL3Option) {
+	    fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B04.root");
+	    file = new TFile(fname);
+	    fFieldMap[0] = (AliFieldMap*) file->Get("L3B04");
+	    file->Close();
+	    delete file;
+	}
+	
+	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB04.root");
+	file = new TFile(fname);
+	fFieldMap[1] = (AliFieldMap*) file->Get("DipB04");
+	file->Close();
+	delete file;;
+	
+	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB04.root");
+	file = new TFile(fname);
+	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB04");
+	file->Close();
+	delete file;
+	fSolenoid = 4.;
+    } else if (fMap == k5kG) {
+	if (fL3Option) {
+	    fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B05.root");
+	    file = new TFile(fname);
+	    fFieldMap[0] = (AliFieldMap*) file->Get("L3B05");
+	    file->Close();
+	    delete file;
+	}
+	
+	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB05.root");
+	file = new TFile(fname);
+	fFieldMap[1] = (AliFieldMap*) file->Get("DipB05");
+	file->Close();
+	delete file;;
+	
+	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB05.root");
+	file = new TFile(fname);
+	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB05");
+	file->Close();
+	delete file;
+	
+	fSolenoid = 5.;
+    }
+
+    if (!fL3Option) {
+//
+// Dummy L3 map
+	fFieldMap[0] = new AliFieldMap();
+	fFieldMap[0] -> SetLimits(-800., 800., -800., 800., -700., 700.);
+    }
 }
 
 

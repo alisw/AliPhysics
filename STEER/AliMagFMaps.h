@@ -18,7 +18,7 @@ class AliMagFMaps : public AliMagF
 
 public:
     enum constants {k2kG, k4kG, k5kG};
-    AliMagFMaps(){fFieldMap[0] = fFieldMap[1] = fFieldMap[2] = 0;}
+    AliMagFMaps(){fFieldMap[0] = fFieldMap[1] = fFieldMap[2] = 0; fFieldRead = 0;}
     AliMagFMaps(const char *name, const char *title, const Int_t integ,
 		const Float_t factor, const Float_t fmax, const Int_t map = k2kG,
 		const Int_t l3 = 1);
@@ -26,16 +26,25 @@ public:
     virtual ~AliMagFMaps();
     virtual void    Field(Float_t *x, Float_t *b);
     AliFieldMap* FieldMap(Int_t i) {return fFieldMap[i];}
+    virtual void ReadField();
     virtual Float_t SolenoidField() const;
     virtual void    SetL3ConstField(Int_t flag = 0) {fL3Option = flag;}
     
     void Copy(AliMagFMaps &magf) const;
     virtual AliMagFMaps & operator=(const AliMagFMaps &magf);
 protected:
-  AliFieldMap* fFieldMap[3];     // Field maps
-  Float_t      fSolenoid;        // Solenoid field setting
-  Int_t        fL3Option;        // Option for field inside L3
-  ClassDef(AliMagFMaps,2)        // Class for all Alice MagField using three Maps with Constant Mesh
+    AliFieldMap* fFieldMap[3];     // Field maps
+    Float_t      fSolenoid;        // Solenoid field setting
+    Int_t        fL3Option;        // Option for field inside L3
+    Int_t        fFieldRead;       // Field has been read in
+    ClassDef(AliMagFMaps,2)        // Class for all Alice MagField using three Maps with Constant Mesh
 };
 
 #endif
+
+
+
+
+
+
+
