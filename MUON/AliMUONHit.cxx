@@ -242,6 +242,6 @@ Int_t  AliMUONHit::Chamber()  const
   if (!fIsDetElemId) 
     return fDetElemId;
   else  
-    return AliMUONVGeometryDEIndexing::GetModuleId(fDetElemId);  
+    return AliMUONVGeometryDEIndexing::GetModuleId(fDetElemId)+1;  
 }
 
