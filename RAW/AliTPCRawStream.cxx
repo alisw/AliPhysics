@@ -34,6 +34,8 @@ ClassImp(AliTPCRawStream)
 
 
 AliTPCHNode** AliTPCRawStream::fgRootNode = NULL;
+UInt_t**      AliTPCRawStream::fgLUTDimension = NULL;
+AliTPCHNode***AliTPCRawStream::fgLUTNode = NULL;
 
 
 AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader)
@@ -48,7 +50,10 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader)
 
   if (!fgRootNode) {
     fgRootNode = new AliTPCHNode*[fgkNumTables];
+    fgLUTDimension = new UInt_t*[fgkNumTables];
+    fgLUTNode = new AliTPCHNode**[fgkNumTables];
     fCompression.CreateTreesFromFile(fgRootNode, fgkNumTables);
+    fCompression.CreateLUTsFromTrees(fgRootNode, fgkNumTables, fgLUTDimension, fgLUTNode);
   }
 
   fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = fTime = fSignal = -1;
@@ -102,9 +107,12 @@ Bool_t AliTPCRawStream::Next()
 
       if (fRawReader->IsCompressed()) {  // compressed data
 	UInt_t size = 0;
-	fCompression.Decompress(fgRootNode, fgkNumTables, 
-				(char*) data, fRawReader->GetDataSize(),
-				fData, size);
+	//	fCompression.Decompress(fgRootNode, fgkNumTables, 
+	//				(char*) data, fRawReader->GetDataSize(),
+	//				fData, size);
+	fCompression.DecompressWithLUTs(fgRootNode, fgLUTDimension, fgLUTNode, fgkNumTables,
+					(char*) data, fRawReader->GetDataSize(),
+					fData, size);
 	fDataSize = size;
 
       } else {                           // uncompressed data

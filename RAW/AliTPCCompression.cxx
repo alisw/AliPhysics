@@ -33,12 +33,13 @@
 #include "AliTPCCompression.h"
 
 ClassImp(AliTPCCompression)
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 AliTPCCompression::AliTPCCompression(){
   //Defaul constructor
   fDimBuffer=sizeof(UInt_t)*8;
   fFreeBitsBuffer=fDimBuffer;
-  fReadBits=0;
+  fBitsToRead=32;
   fPos=0;
   fBuffer=0;
   fVerbose=0;
@@ -52,7 +53,7 @@ AliTPCCompression::AliTPCCompression(const AliTPCCompression &source)
   //Constructor
   this->fDimBuffer=source.fDimBuffer;
   this->fFreeBitsBuffer=source.fFreeBitsBuffer;
-  this->fReadBits=source.fReadBits;
+  this->fBitsToRead=source.fBitsToRead;
   this->fPos=source.fPos;
   this->fBuffer=source.fBuffer;
   this->fVerbose=source.fVerbose;
@@ -65,7 +66,7 @@ AliTPCCompression&  AliTPCCompression::operator=(const AliTPCCompression &source
   //Redefinition of the assignment operator
   this->fDimBuffer=source.fDimBuffer;
   this->fFreeBitsBuffer=source.fFreeBitsBuffer;
-  this->fReadBits=source.fReadBits;
+  this->fBitsToRead=source.fBitsToRead;
   this->fPos=source.fPos;
   this->fBuffer=source.fBuffer;
   this->fVerbose=source.fVerbose;
@@ -830,7 +831,8 @@ Int_t AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTa
       node=RootNode[k];
       for(Int_t j=1;j<=codeLen;j++){
 	UInt_t bit,val=0;
-	val=(UInt_t)TMath::Power(2,codeLen-j);
+	//	val=(UInt_t)TMath::Power(2,codeLen-j);
+	val=(UInt_t)(1<<(codeLen-j));
 	bit=(UInt_t)code&val; 
 	AliTPCHNode *temp=node;
 	if(bit){
@@ -860,6 +862,34 @@ Int_t AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTa
   //At this point the trees are been built
   return 0;
 }
+
+Int_t AliTPCCompression::CreateLUTsFromTrees(AliTPCHNode *RootNode[],Int_t NumTables,UInt_t *LUTDimension[],AliTPCHNode **LUTNode[]){
+  //For each Huffman tree this method builds the associate look-up-table for fast 
+  //decoding of compressed data.
+  //Should be called after CreateTreesFromFile.
+  if(fVerbose)
+    cout<<"Creating the LUTs \n";
+  AliTPCHNode *node=0;
+
+  //loop over the tables
+  for(Int_t k=0;k<NumTables;k++){
+    UInt_t dim = 1<<fgkTableDimension;
+    LUTDimension[k] = new UInt_t[dim];
+    LUTNode[k] = new AliTPCHNode*[dim];
+    //loop over the words of one LUT
+    for(UInt_t i=0;i<dim;i++){
+      UInt_t buffer = i;
+      node=RootNode[k];
+      LUTDimension[k][i] = GetDecodedLUTBuffer(&node,&buffer);
+      LUTNode[k][i] = node;
+      //      cout<<"LUT "<<k<<" "<<i<<" "<<LUTDimension[k][i]<<" "<<LUTNode[k][i]<<" "<<LUTNode[k][i]->GetSymbol()<<endl;
+    }
+  }
+  if (fVerbose)
+    cout<<"LUTs generated \n";
+  //At this point the LUTs are built
+  return 0;
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void AliTPCCompression::DeleteHuffmanTree(AliTPCHNode* node){
   //This function deletes all the nodes of an Huffman tree
@@ -881,61 +911,104 @@ void AliTPCCompression::VisitHuffmanTree(AliTPCHNode* node){
   }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t AliTPCCompression::ReadWord(Int_t NumberOfBit){
+UInt_t AliTPCCompression::ReadWord(UInt_t NumberOfBit){
   //This method retrieves a word of a specific number of bits from the file through the internal buffer 
   UInt_t result=0;
   UInt_t bit=0;
-  for (Int_t i=0;i<NumberOfBit;i++){
-    if (fReadBits==32){
+  for (UInt_t i=0;i<NumberOfBit;i++){
+    if (fBitsToRead==0){
       fPos-=sizeof(UInt_t);
       f.seekg(fPos);
       f.read((char*)(&fBuffer),sizeof(UInt_t));
-      fReadBits=0;
+      fBitsToRead=32;
     }//end if
-    //    UInt_t mask=0;
-    //    mask=(UInt_t)TMath::Power(2,fReadBits);
-    UInt_t mask=(UInt_t)(1<<fReadBits);
+    UInt_t mask=(UInt_t)(1<<(32-fBitsToRead));
     bit=fBuffer&mask;
-    bit=bit>>fReadBits;
-    fReadBits++;
+    bit=bit>>(32-fBitsToRead);
+    fBitsToRead--;
     bit=bit<<i;
     result=result|bit;
   }//end for
   return result;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t AliTPCCompression::ReadWordBuffer(Int_t NumberOfBit){
+UInt_t AliTPCCompression::ReadWordBuffer(UInt_t NumberOfBit){
   //This method retrieves a word of a specific number of bits from the file through the buffer 
   UInt_t result=0;
-  UInt_t bit=0;
-  for (Int_t i=0;i<NumberOfBit;i++){
-    if (fReadBits==32){
-      fPointBuffer--;
-      fBuffer=*fPointBuffer;
-      fReadBits=0;
-    }//end if
-    bit=fBuffer&0x1;
-    bit=bit<<i;
-    result=result|bit;
-    fReadBits++;
-    fBuffer=fBuffer>>1;
-  }//end for
+
+  if(NumberOfBit<=fBitsToRead) {
+    result = fBuffer&((1<<NumberOfBit)-1);
+    fBuffer=fBuffer>>NumberOfBit;
+    fBitsToRead-=NumberOfBit;
+  }
+  else {
+    fPointBuffer--;
+    UInt_t tempbuffer = *fPointBuffer;
+    if((NumberOfBit-fBitsToRead) != 32)
+      tempbuffer=tempbuffer&((1<<(NumberOfBit-fBitsToRead))-1);
+    tempbuffer=tempbuffer<<fBitsToRead;
+    result = fBuffer|tempbuffer;
+    fBuffer=*fPointBuffer;
+    fBitsToRead=(32+fBitsToRead)-NumberOfBit;
+    fBuffer=fBuffer>>(32-fBitsToRead);
+  }
+
   return result;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+inline void AliTPCCompression::AdjustWordBuffer(UInt_t NumberOfBit){
+  //This method retrieves a word of a specific number of bits from the file through the buffer
+  //The method is used together with LUTs for fast decoding
+  if(NumberOfBit<=fBitsToRead) {
+    fBuffer=fBuffer>>NumberOfBit;
+    fBitsToRead-=NumberOfBit;
+  }
+  else {
+    fPointBuffer--;
+    fBuffer=*fPointBuffer;
+    fBitsToRead=(32+fBitsToRead)-NumberOfBit;
+    fBuffer=fBuffer>>(32-fBitsToRead);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+inline UInt_t AliTPCCompression::ReadWordBufferWithLUTs(){
+  //This method retrieves a word of a specific number of bits from the file through the buffer
+  //The method is used together with LUTs for fast decoding
+  if(fgkTableDimension<=fBitsToRead)
+    return fBuffer&((1<<fgkTableDimension)-1);
+  else {
+    UInt_t tempbuffer = *(fPointBuffer-1);
+    tempbuffer=tempbuffer&((1<<(fgkTableDimension-fBitsToRead))-1);
+    tempbuffer=tempbuffer<<fBitsToRead;
+    return fBuffer|tempbuffer;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 inline UInt_t AliTPCCompression::ReadBitFromWordBuffer(){
-  //This method retrieves a word of a specific number of bits from the file through the buffer 
+  //This method retrieves a bit from the file through the buffer 
   UInt_t result=0;
 
-  if (fReadBits==32){
+  if (fBitsToRead==0){
     fPointBuffer--;
     fBuffer=*fPointBuffer;
-    fReadBits=0;
+    fBitsToRead=32;
   }//end if
   result=fBuffer&0x1;
-  fReadBits++;
+  fBitsToRead--;
   fBuffer=fBuffer>>1;
+  return result;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+inline UInt_t AliTPCCompression::ReadBitFromLUTBuffer(UInt_t *buffer){
+  //This method retrieves a word of a bit out of the LUT buffer
+  UInt_t result=0;
+
+  result=*buffer&0x1;
+  *buffer=*buffer>>1;
   return result;
 }
 
@@ -977,6 +1050,54 @@ inline UInt_t AliTPCCompression::GetDecodedWordBuffer(AliTPCHNode* root){
     }
   }//end while
   return symbol;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+inline UInt_t AliTPCCompression::GetDecodedWordBufferWithLUTs(UInt_t* LUTDimension,AliTPCHNode** LUTNode){
+  //This method retrieves a decoded word.
+  UInt_t symbol=0;
+  UInt_t buffer=0;
+  Bool_t decoded=0;
+
+  buffer = ReadWordBufferWithLUTs();
+  AliTPCHNode *node=LUTNode[buffer];
+  if (!(node->GetLeft())){
+    symbol=node->GetSymbol();
+    decoded=1;
+  }
+  AdjustWordBuffer(LUTDimension[buffer]);
+  while(!decoded){
+    UInt_t bit=ReadBitFromWordBuffer();
+    if(bit)
+      node=node->GetRight();
+    else
+      node=node->GetLeft();
+    if (!(node->GetLeft())){
+      symbol=node->GetSymbol();
+      decoded=1;
+    }
+  }//end while
+  return symbol;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+inline UInt_t AliTPCCompression::GetDecodedLUTBuffer(AliTPCHNode** node,UInt_t *buffer){
+  //This method retrieves a decoded word for the LUTs.
+  Bool_t decoded=0;
+  UInt_t counter=0;
+
+  while(!decoded && counter<fgkTableDimension){
+    UInt_t bit=ReadBitFromLUTBuffer(buffer);
+    counter++;
+    if(bit)
+      *node=(*node)->GetRight();
+    else
+      *node=(*node)->GetLeft();
+    if (!((*node)->GetLeft())){
+      decoded=1;
+    }
+  }//end while
+  return counter;
 }
 
 inline UInt_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root){
@@ -1033,7 +1154,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
   fPos=f.tellg();
   fPos-=sizeof(UInt_t);
   f.seekg(fPos);
-  fReadBits=0;
+  fBitsToRead=32;
   fBuffer=0;
   f.read((char*)(&fBuffer),sizeof(UInt_t));
   Int_t bit=0;
@@ -1041,7 +1162,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
   while(!bit){
     bit=fBuffer&mask;
     mask=mask<<1;
-    fReadBits++;
+    fBitsToRead--;
   }
   UInt_t packetNumber=ReadWord(sizeof(UInt_t)*8);
   if(fVerbose){
@@ -1100,7 +1221,7 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],Int_t /*NumTables*/,
 
   //  fPointBuffer=((UInt_t *)PointBuffer)+(UInt_t)(BufferSize/4)-1;
   fPointBuffer=(UInt_t *)(PointBuffer+BufferSize-4);
-  fReadBits=0;
+  fBitsToRead=32;
   fBuffer=0;
   
   fBuffer=*fPointBuffer;
@@ -1108,7 +1229,7 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],Int_t /*NumTables*/,
   while(!bit){
     bit=fBuffer&0x1;
     fBuffer=fBuffer>>1;
-    fReadBits++;
+    fBitsToRead--;
   }//end while
   UInt_t packetNumber=ReadWordBuffer(sizeof(UInt_t)*8); //32 bits
   if (fVerbose){
@@ -1140,6 +1261,90 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],Int_t /*NumTables*/,
     Int_t timeDigit=0;
     for(Int_t i=0;i<numWords;i++){
       UInt_t symbol=GetDecodedWordBuffer(RootNode[nextTableType]);
+      wordsRead++;
+      //Time reconstruction
+      if (nextTableType==1){
+	if (previousTime!=-1){
+	  previousTime=symbol+previousTime+bunchLen;
+	}
+	else previousTime=symbol;
+	time=previousTime;
+	out[dim]=bunchLen+2;
+	dim++;
+	out[dim]=time;
+	dim++;
+	timeDigit=time-bunchLen;
+      }
+      if(nextTableType>1){
+	//
+	//ftxt<<symbol<<endl;
+	out[dim]=symbol;
+	dim++;
+	timeDigit++;
+	//padDigits->SetDigits(symbol,timeDigit);
+      }
+      NextTable(symbol,nextTableType,bunchLen,count); 
+      if(nextTableType==0){
+	//
+	//ftxt<<time<<endl;
+	//  ftxt<<(bunchLen+2)<<endl;
+	bunchLen=0;
+      }
+    }//end for
+  }//end while
+  return 0; 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+Int_t AliTPCCompression::DecompressWithLUTs(AliTPCHNode *RootNode[],UInt_t *LUTDimension[],AliTPCHNode **LUTNode[],Int_t /*NumTables*/,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim){
+  //This method decompress a file using separate Huffman tables and already prepared LUTs for fast decoding
+
+  //  fPointBuffer=((UInt_t *)PointBuffer)+(UInt_t)(BufferSize/4)-1;
+  fPointBuffer=(UInt_t *)(PointBuffer+BufferSize-4);
+  fBitsToRead=32;
+  fBuffer=0;
+  
+  fBuffer=*fPointBuffer;
+  Int_t bit=0;
+  while(!bit){
+    bit=fBuffer&0x1;
+    fBuffer=fBuffer>>1;
+    fBitsToRead--;
+  }//end while
+  UInt_t packetNumber=ReadWordBuffer(sizeof(UInt_t)*8); //32 bits
+  if (fVerbose){
+    cout<<"First one has been found "<<endl;
+    cout<<"Number of packets:"<<packetNumber<<endl;
+  }//end if
+  UInt_t k=0;
+  UInt_t wordsRead=0; //number of read coded words
+  while(k<packetNumber){
+    Int_t numWords,padNumber,rowNumber,secNumber=0;
+    ReadTrailer(numWords,padNumber,rowNumber,secNumber,kTRUE);
+    out[dim]=numWords;
+    dim++;
+    out[dim]=padNumber;
+    dim++;
+    out[dim]=rowNumber;
+    dim++;
+    out[dim]=secNumber;
+    dim++;
+    //ftxt<<"S:"<<secNumber<<" R:"<<rowNumber<<" P:"<<padNumber<<" W:"<<numWords<<endl;
+    //    padDigits->SetPadID(padNumber,rowNumber,secNumber,DDL);
+    k++;
+    wordsRead+=4;
+    Int_t previousTime=-1;
+    Int_t time=0;
+    Int_t nextTableType=0;
+    Int_t bunchLen=0;
+    Int_t count=0;
+    Int_t timeDigit=0;
+    for(Int_t i=0;i<numWords;i++){
+      UInt_t symbol;
+      if(i == (numWords-1))
+	symbol = GetDecodedWordBuffer(RootNode[nextTableType]);
+      else
+	symbol=GetDecodedWordBufferWithLUTs(LUTDimension[nextTableType],LUTNode[nextTableType]);
       wordsRead++;
       //Time reconstruction
       if (nextTableType==1){

@@ -47,6 +47,8 @@ class AliTPCRawStream: public TObject {
     AliTPCCompression    fCompression;   // object for decompression
     static const Int_t   fgkNumTables = 5; // number of (de)compression tables
     static AliTPCHNode** fgRootNode;     // (de)compression tables
+    static UInt_t**      fgLUTDimension; // LUT for fast decompression
+    static AliTPCHNode***fgLUTNode;      // LUT for fast decompression
 
     static const Int_t fgkDataMax = 10000000; // size of array for uncompressed raw data
     UShort_t*        fData;         // uncompressed raw data

@@ -32,6 +32,7 @@ class AliTPCCompression:public TObject{
   //It expects a set of table used for compressing the file in the same directory of the compressed file
   Int_t  Decompress(AliTPCHNode *RootNode[],Int_t NumTables,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim);
   //This method is used to decompress data stored in a char* buffer
+  Int_t  DecompressWithLUTs(AliTPCHNode *RootNode[],UInt_t *LUTDimension[],AliTPCHNode **LUTNode[],Int_t /*NumTables*/,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim);
   Int_t  FillTables(const char* fSource,AliTPCHTable* table[],Int_t NumTables);
   //This method is used to compute the frequencies of the symbols in the source file
   Int_t  CreateTables(const char* fSource,Int_t NumTables);
@@ -53,6 +54,7 @@ class AliTPCCompression:public TObject{
   Int_t  CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTables);
   //This method is like the previous one but the tables are stored in binary files
   //It is used in the decompression phase (DecompressDataOptTables())
+  Int_t  CreateLUTsFromTrees(AliTPCHNode *RootNode[],Int_t NumTables,UInt_t *LUTDimension[],AliTPCHNode **LUTNode[]);
  private:
   Int_t   StoreTables(AliTPCHTable* table[],const Int_t NumTable);
   //This method is used to store an array of tables in a sequence of binary files
@@ -75,28 +77,35 @@ class AliTPCCompression:public TObject{
   //for instance the specular value of 12345 is 54321
   void    Flush();
   //This method is used to complete and store the buffer in the output file when it isn't completely full 
-  UInt_t  ReadWord(Int_t NumberOfBit);
+  UInt_t  ReadWord(UInt_t NumberOfBit);
   //this method is used to read a specified number of bits from the compressed file
-  UInt_t  ReadWordBuffer(Int_t NumberOfBit);
+  UInt_t  ReadWordBuffer(UInt_t NumberOfBit);
   //this method is used to read a specified number of bits from the compressed memory buffer
+  inline void   AdjustWordBuffer(UInt_t NumberOfBit);
+  inline UInt_t ReadWordBufferWithLUTs();
   inline UInt_t ReadBitFromWordBuffer();
+  inline UInt_t ReadBitFromLUTBuffer(UInt_t *buffer);
   void    ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumberr,Bool_t Memory);
   //This method is used to read the trailer 
   inline UInt_t GetDecodedWordBuffer(AliTPCHNode* root);
   //This method is used to get a decoded word from the compressed file
   inline UInt_t GetDecodedWord(AliTPCHNode* root);
   //This method is used to get a decoded word from the compressed file
+  inline UInt_t GetDecodedWordBufferWithLUTs(UInt_t* LUTDimension,AliTPCHNode** LUTNode);
+  inline UInt_t GetDecodedLUTBuffer(AliTPCHNode** node,UInt_t *buffer);
 
   fstream f;                  // f is the logical name for the compressed and uncompressed file
   ofstream fStat;             // Logical name for the Statistics file
   UInt_t  fBuffer;            // buffer 
   Int_t   fDimBuffer;         // buffer dimension (32 bit)
   Int_t   fFreeBitsBuffer;    // number of free bits inside the buffer
-  Int_t   fReadBits;          // number of bit read
+  UInt_t  fBitsToRead;        // number of bits to be read
   UInt_t  fPos;               // current file position
   Int_t   fVerbose;           // verbose level (0 silent, !=0 output messages)
   UInt_t  fFillWords;         // Number of hexadecimally words (2AA pattern) inside a pad data block 
   UInt_t* fPointBuffer;       //pointer to the compressed raw data
+  static const UInt_t   fgkTableDimension = 7; // size of LUTs for fast decompression
+
   ClassDef(AliTPCCompression,1)
 };
 #endif
