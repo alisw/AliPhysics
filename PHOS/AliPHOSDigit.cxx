@@ -47,7 +47,7 @@ ClassImp(AliPHOSDigit)
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
   fNMaxPrimary = 5 ; 
-  fPrimary = new Int_t[fNMaxPrimary] ;
+  fPrimary     = new Int_t[fNMaxPrimary] ;
 }
 
 //____________________________________________________________________________
@@ -55,6 +55,8 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index
 {  
   // ctor with all data 
 
+  fNMaxPrimary = 5 ; 
+  fPrimary     = new Int_t[fNMaxPrimary] ;
   fAmp         = DigEnergy ;
   fId          = id ;
   fIndexInList = index ; 
@@ -76,6 +78,8 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
 {
   // copy ctor
   
+  fNMaxPrimary = 5 ; 
+  fPrimary     = new Int_t[fNMaxPrimary] ;
   fAmp         = digit.fAmp ;
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
@@ -84,6 +88,14 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
   Int_t i ;
   for ( i = 0; i < fNMaxPrimary ; i++)
     fPrimary[i]  = digit.fPrimary[i] ;
+}
+
+//____________________________________________________________________________
+  AliPHOSDigit::~AliPHOSDigit() 
+{
+  // Delete array of primiries if any
+
+  delete fPrimary;
 }
 
 //____________________________________________________________________________

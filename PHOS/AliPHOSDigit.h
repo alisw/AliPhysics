@@ -34,9 +34,7 @@ class AliPHOSDigit : public AliDigitNew {
   AliPHOSDigit() ;
   AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index = -1) ;
   AliPHOSDigit(const AliPHOSDigit & digit) ;
-  virtual ~AliPHOSDigit(){
-    // dtor 
-  } 
+  virtual ~AliPHOSDigit() ;
 
   Bool_t operator==(const AliPHOSDigit &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
