@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/06/30 16:31:51  dibari
+  New drawing routine from Nico and Daniela.
+
   Revision 1.1  2000/06/12 15:21:57  jbarbosa
   Cleaned up version.
 
@@ -155,7 +158,7 @@ void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
   Float_t e1, e2, f1, f2;
   Float_t pointsOnCathode[3];
 
-  printf("Drawing ring in chamber:%d\n",chamber);
+  //printf("Drawing ring in chamber:%d\n",chamber);
 
 
   AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
@@ -166,7 +169,7 @@ void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
   AliRICHPatRec *PatRec = new AliRICHPatRec;
   PatRec->TrackParam(track,chamber);
 
-  printf("Just created PateRec\n");
+  //printf("Just created PateRec\n");
 
 //parameters to calculate freon window refractive index vs. energy
 
@@ -211,7 +214,7 @@ void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
        //nfreonave = 1.295;
        //nquartzave = 1.585;
        
-       printf("Calling DistancefromMip %f %f \n",fEmissPoint,fOmega);
+       ///printf("Calling DistancefromMip %f %f \n",fEmissPoint,fOmega);
        
        //Float_t dummy = 
 	 PatRec->DistanceFromMip(nfreonave, nquartzave,fEmissPoint,fOmega, phpad, pointsOnCathode);
@@ -230,7 +233,7 @@ void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
       //fCoordEllipse[0][Nphpad] = pointsOnCathode[0];
       //fCoordEllipse[1][Nphpad] = pointsOnCathode[1];
        
-       printf(" values %f %f \n",pointsOnCathode[0],pointsOnCathode[1]);
+       //printf(" values %f %f \n",pointsOnCathode[0],pointsOnCathode[1]);
        
    }
 
