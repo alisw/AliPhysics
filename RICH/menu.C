@@ -158,10 +158,18 @@ void C_R()
   } // event loop  
   delete detect;
 }  
+//__________________________________________________________________________________________________
+void D_C()
+{
+  TStopwatch sw;TDatime time;
 
+   AliRICHClusterFinder *z=new AliRICHClusterFinder(r); z->Exec();
 
-
-
+   cout << endl;
+   cout << "Info in Digits->Clusters: Start time: ";time.Print();
+   cout << "Info in Digits->Clusters: Stop  time: ";time.Set();  time.Print();
+   cout << "Info in Digits->Clusters: Time  used: ";sw.Print();
+}
 //__________________________________________________________________________________________________
 void OLD_S_SD()
 {
