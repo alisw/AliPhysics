@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/12/04 11:22:03  morsch
+Init of sRandom as in 1.15
+
 Revision 1.16  2000/12/02 11:41:39  morsch
 Use SetRandom() to initialize random number generator in constructor.
 
@@ -522,5 +525,9 @@ extern "C" {
   {printf("Dummy version of rluset_hijing reached\n");}
 
   Double_t type_of_call rlu_hijing(Int_t & /*idum*/) 
-  {return sRandom->Rndm();}
+  {
+      Float_t r;
+      do r=sRandom->Rndm(); while(0 >= r || r >= 1);
+      return r;
+  }
 }
