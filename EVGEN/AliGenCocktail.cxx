@@ -31,6 +31,7 @@
 #include "AliCollisionGeometry.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliGenCocktail)
 
@@ -143,6 +144,10 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 //    
     if(fVertexSmear == kPerEvent) Vertex();
 
+    TArrayF eventVertex;
+    eventVertex.Set(3);
+    for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
+
     
   //
     // Loop over generators and generate events
@@ -174,6 +179,11 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	preventry = entry;
     }  
     next.Reset();
+// Header
+    AliGenEventHeader* header = new AliGenEventHeader("AliGenCocktail");
+// Event Vertex
+    header->SetPrimaryVertex(eventVertex);
+    gAlice->SetGenEventHeader(header); 
 }
 
 AliGenCocktailEntry *  AliGenCocktail::FirstGenerator()
