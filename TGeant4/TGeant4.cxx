@@ -249,6 +249,13 @@ Int_t TGeant4::NofVolumes() const {
   return fGeometryManager->NofVolumes(); 
 } 
 
+Int_t TGeant4::VolId2Mate(Int_t id) const {
+//
+  return fGeometryManager->VolId2Mate(id); 
+} 
+
+
+
 // methods for physics management
 // ------------------------------------------------
  
