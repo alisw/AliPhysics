@@ -29,7 +29,6 @@ class AliTrackHitsInfo   {
  public:
   AliTrackHitsInfo(){fgCounter1++;fgCounter2++;}
   ~AliTrackHitsInfo(){fgCounter1--;}
- protected:
  private:  
   Int_t   fTrackID;  //track ID
   Int_t   fVolumeID;   //volume ID
@@ -47,7 +46,6 @@ class AliTrackHitsParam {
  public:
   AliTrackHitsParam(){fgCounter1++;fgCounter2++;}
   ~AliTrackHitsParam(){fgCounter1--;}
- protected:
  private:
   Float_t fR;  //radius
   Float_t fZ;  //z position
@@ -69,7 +67,6 @@ class AliHitInfo {
 public:
   AliHitInfo(){fgCounter1++;fgCounter2++;}
   ~AliHitInfo(){fgCounter1--;}
- protected:
  private:
   Short_t fHitDistance; //distance to previous hit
   Short_t fCharge; //deponed charge
@@ -87,6 +84,9 @@ class AliTPCTrackHits : public TObject{
 public:
   AliTPCTrackHits(); 
   ~AliTPCTrackHits();
+  AliTPCTrackHits(const AliTPCTrackHits& r);
+  AliTPCTrackHits & operator=(const AliTPCTrackHits& r);  
+
   void Clear();
   void AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
 		    Double_t y, Double_t z,Int_t q);
@@ -103,7 +103,6 @@ public:
   void SetStepPrecision(Double_t prec) {fStep=prec;}
   void SetMaxDistance(UInt_t distance) {fMaxDistance = distance;}
   Bool_t  FlushHitStack(Bool_t force=kTRUE);    //
- protected:
 private:
   void FlushHitStack2(Int_t index1, Int_t index2);   //
   AliObjectArray * fTrackHitsInfo;  //quick information about track
@@ -113,7 +112,6 @@ private:
   Double_t fPrecision;  // required precision
   Double_t fStep;       //unit step size
   UInt_t fMaxDistance;   //maximal distance between two connected hits 
-  AliTPCTrackHits(const AliTPCTrackHits& r);
   AliTPCTempHitInfo * fTempInfo; //!information about track
   AliTPCCurrentHit  * fCurrentHit; //!information about current hit 
   static const Double_t fgkPrecision;  //precision 

@@ -83,7 +83,12 @@ struct  AliTPCTempHitInfo {
   friend class AliTPCTrackHits;
 private:
   enum    { kStackSize = 100};
-  AliTPCTempHitInfo();   
+  AliTPCTempHitInfo(); 
+  AliTPCTempHitInfo(const AliTPCTempHitInfo &t){
+  }
+  AliTPCTempHitInfo   & operator=(const AliTPCTempHitInfo& r){
+    return *this;
+  }
   void     NewParam(Double_t r, Double_t z, Double_t fi, Int_t q);
   void     SetHit(Double_t r, Double_t z, Double_t fi, Int_t q);
   Double_t * GetPosition(Int_t index){return &fPositionStack[index*3];}
@@ -291,8 +296,13 @@ AliTPCTrackHits::AliTPCTrackHits()
 
 AliTPCTrackHits::AliTPCTrackHits(const AliTPCTrackHits& r) : TObject(r)
 {
+  //dummy
 }
-
+AliTPCTrackHits &AliTPCTrackHits::operator=(const AliTPCTrackHits& /* r */)
+{
+  //dummy
+  return *this;
+}
 
 AliTPCTrackHits::~AliTPCTrackHits()
 {
