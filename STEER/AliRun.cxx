@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.76  2001/08/03 14:38:35  morsch
+Use original method to access TreeH.
+
 Revision 1.75  2001/07/28 10:52:27  hristov
 Event number updated correctly (M.Ivanov)
 
@@ -1247,7 +1250,8 @@ void AliRun::MakeTree(Option_t *option, const char *file)
 
   if (oE && !fTreeE) {
     fTreeE = new TTree("TE","Header");
-    branch = fTreeE->Branch("Header", "AliHeader", &fHeader, 4000, 0);         
+    //    branch = fTreeE->Branch("Header", "AliHeader", &fHeader, 4000, 0);         
+    branch = fTreeE->BranchOld("Header", "AliHeader", &fHeader, 4000, 0);         
     branch->SetAutoDelete(kFALSE);	     
     TFolder *folder = (TFolder *)gROOT->FindObjectAny("/Folders/RunMC/Event/Header");
     if (folder) folder->Add(fHeader);
