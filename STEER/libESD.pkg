@@ -12,4 +12,6 @@ EINCLUDE:=RAW
 
 DHDR= ESDLinkDef.h
 
+EXPORT:=$(SRCS:.cxx=.h)
+
 
