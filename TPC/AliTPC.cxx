@@ -337,64 +337,6 @@ void AliTPC::Clusters2Tracks() const
 
 
 //_____________________________________________________________________________
-void AliTPC::Reconstruct() const
-{
-// reconstruct clusters
-
-  AliLoader* loader = GetLoader();
-  loader->LoadRecPoints("recreate");
-  loader->LoadDigits("read");
-
-  AliTPCclustererMI clusterer(fTPCParam);
-  AliRunLoader* runLoader = loader->GetRunLoader();
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    runLoader->GetEvent(iEvent);
-
-    TTree* treeClusters = loader->TreeR();
-    if (!treeClusters) {
-      loader->MakeTree("R");
-      treeClusters = loader->TreeR();
-    }
-    TTree* treeDigits = loader->TreeD();
-    if (!treeDigits) {
-      Error("Reconstruct", "Can't get digits tree !");
-      return;
-    }
-
-//    clusterer.Digits2Clusters(treeDigits, treeClusters);
-    clusterer.SetInput(treeDigits);
-    clusterer.SetOutput(treeClusters);
-    clusterer.Digits2Clusters();
-         
-    loader->WriteRecPoints("OVERWRITE");
-  }
-
-  loader->UnloadRecPoints();
-  loader->UnloadDigits();
-}
-
-//_____________________________________________________________________________
-AliTracker* AliTPC::CreateTracker() const
-{
-// create a TPC tracker
-
-  return new AliTPCtrackerMI(fTPCParam);
-}
-
-//_____________________________________________________________________________
-void AliTPC::FillESD(AliESD* esd) const
-{
-// make PID
-
-  Double_t parTPC[] = {47., 0.10, 10.};
-  AliTPCpidESD tpcPID(parTPC);
-  tpcPID.MakePID(esd);
-}
-
-
-//_____________________________________________________________________________
 void AliTPC::CreateMaterials()
 {
   //-----------------------------------------------

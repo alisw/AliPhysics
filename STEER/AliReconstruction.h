@@ -7,6 +7,7 @@
 
 #include <TNamed.h>
 #include <TString.h>
+#include <TObjArray.h>
 
 class AliRunLoader;
 class AliLoader;
@@ -27,8 +28,8 @@ public:
 
   void           SetGAliceFile(const char* fileName);
 
-  void           SetRunReconstruction(const char* detectors) {
-    fRunReconstruction = detectors;};
+  void           SetRunLocalReconstruction(const char* detectors) {
+    fRunLocalReconstruction = detectors;};
   void           SetRunVertexFinder(Bool_t run) {fRunVertexFinder = run;};
   void           SetRunTracking(Bool_t run) {fRunTracking = run;};
   void           SetFillESD(const char* detectors) {fFillESD = detectors;};
@@ -41,7 +42,7 @@ public:
   virtual Bool_t Run();
 
 private:
-  Bool_t         RunReconstruction(const TString& detectors);
+  Bool_t         RunLocalReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESD*& esd);
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
@@ -54,7 +55,7 @@ private:
   Bool_t         ReadESD(AliESD*& esd, const char* recStep) const;
   void           WriteESD(AliESD* esd, const char* recStep) const;
 
-  TString        fRunReconstruction;  // run the reconstr. for these detectors
+  TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunTracking;        // run the barrel tracking
   TString        fFillESD;            // fill ESD for these detectors
@@ -72,6 +73,8 @@ private:
   AliTracker*    fTRDTracker;         //! tracker for TRD
   AliLoader*     fTOFLoader;          //! loader for TOF
   AliTracker*    fTOFTracker;         //! tracker for TOF
+
+  TObjArray      fReconstructors;     //! array of reconstructor objects
 
   ClassDef(AliReconstruction, 1)      // class for running the reconstruction
 };

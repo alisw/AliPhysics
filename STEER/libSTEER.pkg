@@ -18,7 +18,9 @@ AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx AliBarrelTrack.cxx \
 AliESDtrack.cxx AliESDCaloTrack.cxx AliESDMuonTrack.cxx AliESDv0.cxx AliESDcascade.cxx AliESDVertex.cxx AliESDpid.cxx \
 AliVertexer.cxx \
-AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx 
+AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
+AliReconstructor.cxx
+
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= STEERLinkDef.h

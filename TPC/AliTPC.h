@@ -66,10 +66,6 @@ public:
   virtual void  Digits2Clusters(Int_t eventnumber=0) const;
   virtual void  Clusters2Tracks() const;
 
-  virtual void  Reconstruct() const;
-  virtual AliTracker* CreateTracker() const;
-  virtual void  FillESD(AliESD* esd) const;
-
   Int_t         GetNsectors() const  {return fNsectors;}
   virtual void  MakeBranch(Option_t *opt=" ");
   virtual void  ResetDigits();

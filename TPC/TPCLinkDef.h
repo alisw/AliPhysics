@@ -82,6 +82,8 @@
 #pragma link C++ class  AliTPCtrackPid+;
 #pragma link C++ class  AliHelix+;
 
+#pragma link C++ class  AliTPCReconstructor+;
+
 
 
 #endif
