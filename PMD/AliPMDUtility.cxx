@@ -169,8 +169,88 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad
   //Every even row of cells is shifted and placed
   //in geant so this condition
   //
-  Float_t shift;
+  Float_t shift = 0.0;
   if(irow%2 == 0)
+    {
+      shift = 0.25;
+    }
+  else
+    {
+      shift = 0.0;
+    }
+  if(ism == 0 || ism == 2)
+    {
+      ypos = ycorner[gb_um] + 
+	irow*cell_radius*root_3;
+
+      xpos = xcorner[gb_um] - 
+	icol*2.0*cell_radius - shift;
+    }
+  else if(ism == 1 || ism == 3)
+    {
+      ypos = ycorner[gb_um] -
+	irow*cell_radius*root_3;
+
+      xpos = xcorner[gb_um] +
+	icol*2.0*cell_radius + shift;
+    }
+}
+
+void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t ypad, Float_t &xpos, Float_t &ypos)
+{
+  // If the xpad and ypad inputs are float, then 0.5 is added to it
+  // to find the layer which is shifted.
+  // This routine finds the cell eta,phi for the new PMD rectangular 
+  // geometry in ALICE
+  // Authors : Bedanga Mohanty and Dipak Mishra - 29.4.2003
+  // modified by B. K. Nnadi for change of coordinate sys
+  //
+  // SMA  ---> Supermodule Type A           ( SM - 0)
+  // SMAR ---> Supermodule Type A ROTATED   ( SM - 1)
+  // SMB  ---> Supermodule Type B           ( SM - 2)
+  // SMBR ---> Supermodule Type B ROTATED   ( SM - 3)
+  //
+  // ism   : number of supermodules in one plane = 4
+  // ium   : number of unitmodules  in one SM    = 6
+  // gb_um : (global) unit module numbering in a supermodule
+  //
+
+  Int_t gb_um = ism*6 + ium;
+  Float_t irow  = xpad;
+  Float_t icol  = ypad;
+
+  // Corner positions (x,y) of the 24 unit moudles in ALICE PMD
+  
+  double xcorner[24] =
+  {
+    85.15,  60.85,  36.55,  85.15,  60.85,  36.55, //SMA 
+    -85.15, -60.85, -36.55, -85.15, -60.85, -36.55, //SMAR
+    84.90,  36.60,  84.90,  36.60,  84.90,  36.60, //SMB
+    -84.90, -36.60, -84.90, -36.60, -84.90, -36.60  //SMBR
+  };
+  
+  double ycorner[24] =
+  { 
+    32.45708755,  32.45708755,  32.45708755,        //SMA
+    -9.30645245,  -9.30645245,  -9.30645245,        //SMA
+    -32.45708755, -32.45708755, -32.45708755,        //SMAR
+    9.30645245,   9.30645245,   9.30645245,        //SMAR
+    -31.63540818, -31.63540818, -52.61435544,        //SMB
+    -52.61435544, -73.59330270, -73.59330270,        //SMB
+    31.63540818,  31.63540818,  52.61435544,        //SMBR
+    52.61435544,  73.59330270,  73.59330270         //SMBR
+  };
+  
+  const Float_t root_3      = 1.73205;  // sqrt(3.);
+  const Float_t cell_radius = 0.25;
+  
+  //
+  //Every even row of cells is shifted and placed
+  //in geant so this condition
+  //
+  Float_t shift = 0.0;
+  Int_t iirow = (Int_t) (irow+0.5);
+  if(iirow%2 == 0)
     {
       shift = 0.25;
     }
