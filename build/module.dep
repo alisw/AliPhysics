@@ -1,7 +1,7 @@
 
 ALIFAST/module.mk:	ALIFAST/libALIFAST.pkg
 ALIROOT/module.mk:	ALIROOT/binaliroot.pkg 
-CASTOR/module.mk:	CASTOR/libCASTOR.pkg
+CRT/module.mk:		CRT/libCRT.pkg
 CONTATINERS/module.mk:	CONTAINERS/libCONTAINERS.pkg
 EMCAL/module.mk:	EMCAL/libEMCAL.pkg
 EVGEN/module.mk:	EVGEN/libEVGEN.pkg
