@@ -59,7 +59,7 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const {return 1;}
   virtual void  StepManager();
-  virtual void  DrawDetector();
+  virtual void  DrawModule();
  
    ClassDef(AliPMDv1,1)  //Hits manager for set:PMD
 };

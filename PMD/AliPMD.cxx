@@ -1054,7 +1054,7 @@ void AliPMDv1::CreatePads()
 }
  
 //_____________________________________________________________________________
-void AliPMDv1::DrawDetector()
+void AliPMDv1::DrawModule()
 {
   //
   // Draw a shaded view of the Photon Multiplicity Detector

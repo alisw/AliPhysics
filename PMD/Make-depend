@@ -2,19 +2,51 @@
  
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-AliPMD.o: /soft/root/include/TBRIK.h /soft/root/include/TNode.h AliPMD.h
-AliPMD.o: /hdb2/offline/pro/include/AliDetector.h /soft/root/include/TNamed.h
-AliPMD.o: /soft/root/include/TClonesArray.h /soft/root/include/TBrowser.h
-AliPMD.o: /soft/root/include/TAttLine.h /soft/root/include/TAttMarker.h
-AliPMD.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
-AliPMD.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
+AliPMD.o: /soft/root/include/TBRIK.h /soft/root/include/TShape.h
+AliPMD.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliPMD.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliPMD.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliPMD.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliPMD.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliPMD.o: /usr/include/gnu/stubs.h
+AliPMD.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliPMD.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliPMD.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliPMD.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliPMD.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliPMD.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliPMD.o: /soft/root/include/TSeqCollection.h
+AliPMD.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliPMD.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliPMD.o: /soft/root/include/TRefCnt.h /soft/root/include/TMaterial.h
+AliPMD.o: /soft/root/include/TAttFill.h /soft/root/include/Gtypes.h
+AliPMD.o: /soft/root/include/Htypes.h /soft/root/include/TAttLine.h
+AliPMD.o: /soft/root/include/X3DBuffer.h /soft/root/include/TPolyLine3D.h
+AliPMD.o: /soft/root/include/TNode.h /soft/root/include/TRotMatrix.h AliPMD.h
+AliPMD.o: /hdb2/offline/pro/include/AliDetector.h
+AliPMD.o: /hdb2/offline/pro/include/AliModule.h
+AliPMD.o: /soft/root/include/TClonesArray.h /soft/root/include/TObjArray.h
+AliPMD.o: /soft/root/include/TBrowser.h /soft/root/include/TBrowserImp.h
+AliPMD.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliPMD.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
 AliPMD.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
-AliPMD.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
-AliPMD.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliPMD.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
+AliPMD.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliPMD.o: /soft/root/include/TBranch.h /soft/root/include/TStringLong.h
+AliPMD.o: /soft/root/include/TCut.h /soft/root/include/TGeometry.h
+AliPMD.o: /soft/root/include/THashList.h
 AliPMD.o: /hdb2/offline/pro/include/AliHeader.h
 AliPMD.o: /hdb2/offline/pro/include/AliMagF.h /soft/root/include/TVector.h
-AliPMD.o: /hdb2/offline/pro/include/AliMC.h
+AliPMD.o: /soft/root/include/TError.h /hdb2/offline/pro/include/AliMC.h
 AliPMD.o: /hdb2/offline/pro/include/AliGenerator.h
 AliPMD.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliPMD.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-AliPMD.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
+AliPMD.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliPMD.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
+AliPMD.o: /usr/local/include/g++/iostream.h
+AliPMD.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliPMD.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliPMD.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliPMD.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliPMD.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliPMD.o: /soft/root/include/TArrayD.h /hdb2/offline/pro/include/AliConst.h
