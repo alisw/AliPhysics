@@ -20,9 +20,9 @@ public:
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   DrawModule();
-  virtual Int_t  IsVersion() const {return 1;}
-  
+  virtual Int_t  IsVersion() const {return 0;}
+ 
   ClassDef(AliFMDv1,1)  //Class for FMD version 1
 };
- 
+
 #endif
