@@ -48,7 +48,7 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT() : AliL3HoughBaseTransformer
   fLUT2sinphi0=0;
   fLUT2cosphi0=0;
   fLUTKappa=0;
-
+  
   fLastPad=0;
   fLastIndex=0;
 }
@@ -459,8 +459,8 @@ void AliL3HoughTransformerLUT::TransformCircle()
 
 	  //Fill the histogram along the phirange
 	  for(Int_t b=0; b<fNPhi0; b++){
-	    //hist->Fill(fLUTKappa[b],fLUTphi0[b],charge);
-	    hist->Fill(fLUTKappa[b],fLUTphi0[b],1);
+	    hist->Fill(fLUTKappa[b],fLUTphi0[b],charge);
+	    //hist->Fill(fLUTKappa[b],fLUTphi0[b],1);
 	    //cout << kappa << " " << fLUTphi0[b] << " " << charge << endl;
 
 #ifdef do_mcc
@@ -493,7 +493,7 @@ void AliL3HoughTransformerLUT::TransformCircle()
     }
 }
 
-Int_t AliL3HoughTransformerLUT::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi)
+Int_t AliL3HoughTransformerLUT::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi,Int_t &nhits)
 {
   if(!fDoMC)
     {
