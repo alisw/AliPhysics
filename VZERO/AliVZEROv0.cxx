@@ -39,7 +39,7 @@
 #include <TClonesArray.h>
 #include <TH1.h>
 #include <string.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliVZEROv0.h"
 #include "AliRun.h"
@@ -47,8 +47,8 @@
 #include "AliMC.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROdigit.h"
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 #include <stdlib.h>
 #include "TObjectTable.h"

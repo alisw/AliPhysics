@@ -42,7 +42,7 @@
 #include <TClonesArray.h>
 #include <TH1.h>
 #include <string.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliVZEROv2.h"
 #include "AliRun.h"
@@ -50,8 +50,8 @@
 #include "AliMC.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROdigit.h"
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 #include <TGeant3.h>
 #include <stdlib.h>
