@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.3  2000/06/07 16:27:01  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -58,13 +61,13 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
 }
 
 //_____________________________________________________________________________
-AliTRDdigitsManager::AliTRDdigitsManager(AliTRDdigitsManager &m)
+AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
 {
   //
   // AliTRDdigitsManager copy constructor
   //
 
-  m.Copy(*this);
+  ((AliTRDdigitsManager &) m).Copy(*this);
 
 }
 
@@ -88,13 +91,13 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitsManager::Copy(AliTRDdigitsManager &m)
+void AliTRDdigitsManager::Copy(TObject &m)
 {
   //
   // Copy function
   //
 
-  m.fIsRaw = fIsRaw;
+  ((AliTRDdigitsManager &) m).fIsRaw = fIsRaw;
 
   TObject::Copy(m);
 
@@ -276,3 +279,52 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track
 
 }
 
+//_____________________________________________________________________________
+AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det) 
+{
+  //
+  // Returns the digits array for one detector
+  //
+
+  return (AliTRDdataArrayI *) fDigits->At(det);
+
+}
+
+//_____________________________________________________________________________
+AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) 
+{
+  //
+  // Returns the dictionary for one detector
+  //
+
+  return (AliTRDdataArrayI *) fDictionary[i]->At(det);
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit)
+{
+  // 
+  // Returns the MC-track numbers from the dictionary for a given digit
+  //
+
+  Int_t row  = Digit->GetRow();
+  Int_t col  = Digit->GetCol();
+  Int_t time = Digit->GetTime();
+  Int_t det  = Digit->GetDetector();
+
+  return GetTrack(track,row,col,time,det);
+
+}
+
+//_____________________________________________________________________________
+AliTRDdigitsManager &AliTRDdigitsManager::operator=(const AliTRDdigitsManager &m)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &m) ((AliTRDdigitsManager &) m).Copy(*this);
+  return *this;
+
+}

@@ -1,5 +1,5 @@
-#ifndef ALITRDCLUSTERIZERV1_h
-#define ALITRDCLUSTERIZERV1_h
+#ifndef ALITRDCLUSTERIZERV1_H
+#define ALITRDCLUSTERIZERV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -19,8 +19,9 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
   AliTRDclusterizerV1();
   AliTRDclusterizerV1(const Text_t* name, const Text_t* title);
-  AliTRDclusterizerV1(AliTRDclusterizerV1 &c);
+  AliTRDclusterizerV1(const AliTRDclusterizerV1 &c);
   virtual ~AliTRDclusterizerV1();
+  AliTRDclusterizerV1 &operator=(const AliTRDclusterizerV1 &c);
 
   virtual void    Copy(AliTRDclusterizerV1 &c);
   virtual void    Init();
@@ -34,8 +35,6 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual Float_t GetClusMaxThresh()                        { return fClusMaxThresh; };
   virtual Float_t GetClusSigThresh()                        { return fClusSigThresh; };
   virtual Int_t   GetClusMethod()                           { return fClusMethod;    };
-
-  inline  AliTRDclusterizerV1 &operator=(AliTRDclusterizerV1 &c);
 
  protected:
 
@@ -53,17 +52,5 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   ClassDef(AliTRDclusterizerV1,1)      // TRD-Cluster manager, slow simulator
 
 };
-
-//_____________________________________________________________________________
-AliTRDclusterizerV1 &AliTRDclusterizerV1::operator=(AliTRDclusterizerV1 &c)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &c) c.Copy(*this);
-  return *this;
-
-}
 
 #endif

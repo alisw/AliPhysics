@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -59,13 +62,13 @@ AliTRDdataArrayI::AliTRDdataArrayI(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
-AliTRDdataArrayI::AliTRDdataArrayI(AliTRDdataArrayI &a)
+AliTRDdataArrayI::AliTRDdataArrayI(const AliTRDdataArrayI &a)
 {
   //
   // AliTRDdataArrayI copy constructor
   //
 
-  a.Copy(*this);
+  ((AliTRDdataArrayI &) a).Copy(*this);
 
 }
 
@@ -605,3 +608,67 @@ Int_t AliTRDdataArrayI::GetData1(Int_t idx1, Int_t idx2)
 
 }
 
+//_____________________________________________________________________________
+Int_t AliTRDdataArrayI::GetDataFast(Int_t idx1, Int_t idx2)
+{
+  //
+  // Returns the value at a given position in the array
+  //
+  
+  return fElements->At(fIndex->At(idx2) + idx1); 
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdataArrayI::SetData(Int_t row, Int_t col, Int_t time, Int_t value)
+{
+  //
+  // Sets the data value at a given position of the array
+  // Includes boundary checking
+  //
+
+  if ((row >= 0) && (col >= 0) && (time >= 0)) {
+    Int_t idx1 = GetIdx1(row,col);
+    if ((idx1 >= 0) && (time < fNdim2)) {
+       SetDataFast(idx1,time,value);
+    }
+    else {
+      if (idx1 >= 0) {
+        TObject::Error("SetData"
+                      ,"time %d out of bounds (size: %d, this: 0x%08x)"
+                      ,time,fNdim2,this);
+      }
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
+void  AliTRDdataArrayI::SetDataFast(Int_t idx1, Int_t idx2, Int_t value)
+{
+  //
+  // Set the value at a given position in the array
+  //
+
+  if ((idx1 < 0) || (idx1 >= fNdim1) || 
+      (idx2 < 0) || (idx2 >= fNdim2)) { 
+    TObject::Error("SetDataFast"
+                  ,"idx1 %d  idx2 %d out of bounds (size: %d x %d, this: 0x%08x)"
+                  ,idx1,idx2,fNdim1,fNdim2,this);
+  }
+
+  (*fElements)[fIndex->fArray[idx2] + idx1] = value; 
+
+}
+
+//_____________________________________________________________________________
+AliTRDdataArrayI &AliTRDdataArrayI::operator=(const AliTRDdataArrayI &a)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &a) ((AliTRDdataArrayI &) a).Copy(*this);
+  return *this;
+
+}

@@ -21,10 +21,11 @@ class AliTRDdataArray : public AliTRDsegmentID {
 
   AliTRDdataArray();
   AliTRDdataArray(Int_t nrow, Int_t ncol,Int_t ntime);
-  AliTRDdataArray(AliTRDdataArray &d);
+  AliTRDdataArray(const AliTRDdataArray &d);
   virtual ~AliTRDdataArray();
+  AliTRDdataArray &operator=(const AliTRDdataArray &d);
 
-  virtual void   Copy(AliTRDdataArray &d);
+  virtual void   Copy(TObject &d);
   virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void   Reset();
 
@@ -33,7 +34,6 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual Int_t  GetNtime()                    { return fNtime;      };
 
           Int_t  GetIndex(Int_t row, Int_t col, Int_t time);
-  inline  AliTRDdataArray &operator=(AliTRDdataArray &d);
 
  protected:
 
@@ -59,49 +59,5 @@ class AliTRDdataArray : public AliTRDsegmentID {
 
 };
  
-//_____________________________________________________________________________
-Bool_t AliTRDdataArray::CheckBounds(const char *where, Int_t idx1, Int_t idx2) 
-{
-  //
-  // Does the boundary checking
-  //
-
-  if ((idx2 >= fNdim2) || (idx2 < 0)) 
-    return OutOfBoundsError(where,idx1,idx2);
-
-  Int_t index = (*fIndex).At(idx2) + idx1;
-  if ((index < 0) || (index > fNelems)) 
-    return OutOfBoundsError(where,idx1,idx2);
-
-  return kTRUE;  
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDdataArray::OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2) 
-{
-  //
-  // Generate an out-of-bounds error. Always returns false.
-  //
-
-  TObject::Error(where, "idx1 %d  idx2 %d out of bounds (size: %d x %d, this: 0x%08x)"
-	   ,idx1,idx2,fNdim1,fNdim2,this);
-
-  return kFALSE;
-
-}
-
-//_____________________________________________________________________________
-AliTRDdataArray &AliTRDdataArray::operator=(AliTRDdataArray &d)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &d) d.Copy(*this);
-  return *this;
-
-}
-
 #endif
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.3  2000/06/07 16:27:01  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -88,13 +91,13 @@ AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(Text_t *classname, Int_t n)
 }
 
 //_____________________________________________________________________________
-AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(AliTRDsegmentArrayBase &a)
+AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(const AliTRDsegmentArrayBase &a)
 {
   //
   // AliTRDsegmentArrayBase copy constructor
   //
   
-  a.Copy(*this);
+  ((AliTRDsegmentArrayBase &) a).Copy(*this);
 
 }
 
@@ -117,7 +120,20 @@ AliTRDsegmentArrayBase::~AliTRDsegmentArrayBase()
 }
 
 //_____________________________________________________________________________
-void AliTRDsegmentArrayBase::Copy(AliTRDsegmentArrayBase &a)
+AliTRDsegmentArrayBase &AliTRDsegmentArrayBase
+                        ::operator=(const AliTRDsegmentArrayBase &a)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &a) ((AliTRDsegmentArrayBase &) a).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDsegmentArrayBase::Copy(TObject &a)
 {
   //
   // Copy function
@@ -125,11 +141,11 @@ void AliTRDsegmentArrayBase::Copy(AliTRDsegmentArrayBase &a)
 
   TNamed::Copy(a);
 
-  fSegment->Copy(*a.fSegment);
-  fTreeIndex->Copy(*a.fTreeIndex);
-  fClass->Copy(*a.fClass);
+  fSegment->Copy(*((AliTRDsegmentArrayBase &) a).fSegment);
+  fTreeIndex->Copy(*((AliTRDsegmentArrayBase &) a).fTreeIndex);
+  fClass->Copy(*((AliTRDsegmentArrayBase &) a).fClass);
 
-  a.fNSegment = fNSegment;
+  ((AliTRDsegmentArrayBase &) a).fNSegment = fNSegment;
 
 }
 

@@ -23,8 +23,9 @@ class AliTRDv1 : public AliTRD {
 
   AliTRDv1();
   AliTRDv1(const char *name, const char *title);
-  AliTRDv1(AliTRDv1 &trd);
+  AliTRDv1(const AliTRDv1 &trd);
   virtual ~AliTRDv1();
+  AliTRDv1 &operator=(const AliTRDv1 &trd);
 
   virtual void    Copy(AliTRDv1 &trd);
   virtual void    CreateGeometry();
@@ -42,8 +43,6 @@ class AliTRDv1 : public AliTRD {
           Int_t   GetSensChamber()     { return fSensChamber;     };
           Int_t   GetSensSector()      { return fSensSector;      };
           Int_t   GetSensSectorRange() { return fSensSectorRange; };
-
-  inline  AliTRDv1 &operator=(AliTRDv1 &trd);
 
  protected:
 
@@ -68,17 +67,5 @@ class AliTRDv1 : public AliTRD {
   ClassDef(AliTRDv1,1)                  // Transition Radiation Detector version 1 (slow simulator)
 
 };
-
-//_____________________________________________________________________________
-AliTRDv1 &AliTRDv1::operator=(AliTRDv1 &trd)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &trd) trd.Copy(*this);
-  return *this;
-
-}
 
 #endif

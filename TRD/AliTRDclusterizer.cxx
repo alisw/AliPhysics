@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -67,13 +70,13 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t* name, const Text_t* title)
 }
 
 //_____________________________________________________________________________
-AliTRDclusterizer::AliTRDclusterizer(AliTRDclusterizer &c)
+AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
 {
   //
   // AliTRDclusterizer copy constructor
   //
 
-  c.Copy(*this);
+  ((AliTRDclusterizer &) c).Copy(*this);
 
 }
 
@@ -92,14 +95,26 @@ AliTRDclusterizer::~AliTRDclusterizer()
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::Copy(AliTRDclusterizer &c)
+AliTRDclusterizer &AliTRDclusterizer::operator=(const AliTRDclusterizer &c)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &c) ((AliTRDclusterizer &) c).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::Copy(TObject &c)
 {
   //
   // Copy function
   //
 
-  c.fInputFile = NULL;
-  c.fEvent     = 0;  
+  ((AliTRDclusterizer &) c).fInputFile = NULL;
+  ((AliTRDclusterizer &) c).fEvent     = 0;  
 
 }
 

@@ -18,11 +18,11 @@ class AliTRDclusterizer : public TNamed {
 
   AliTRDclusterizer();
   AliTRDclusterizer(const Text_t* name, const Text_t* title);
-  AliTRDclusterizer(AliTRDclusterizer &c);
+  AliTRDclusterizer(const AliTRDclusterizer &c);
   virtual ~AliTRDclusterizer();
-  
-  inline  AliTRDclusterizer &operator=(AliTRDclusterizer &c);
-  virtual void    Copy(AliTRDclusterizer &c);
+  AliTRDclusterizer &operator=(const AliTRDclusterizer &c);
+
+  virtual void    Copy(TObject &c);
   virtual void    Init();
   virtual Bool_t  Open(const Char_t *name, Int_t nEvent = 0);
   virtual Bool_t  MakeCluster() = 0;
@@ -37,17 +37,5 @@ class AliTRDclusterizer : public TNamed {
   ClassDef(AliTRDclusterizer,1)    // TRD-Cluster manager base class
 
 };
-
-//_____________________________________________________________________________
-AliTRDclusterizer &AliTRDclusterizer::operator=(AliTRDclusterizer &c)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &c) c.Copy(*this);
-  return *this;
-
-}
 
 #endif

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.1  2000/02/28 19:02:07  cblume
 Add new TRD classes
 
@@ -78,7 +81,8 @@ void AliTRDrecPoint::AddDigit(Int_t digit)
 
   // Increase the size of the list if necessary
   if (fMulDigit >= fMaxDigit) { 
-    int *tempo = new (int[fMaxDigit*=2]); 
+    fMaxDigit *= 2;
+    int *tempo = new (int[fMaxDigit]); 
     Int_t index; 
     for (index = 0; index < fMulDigit; index++)
       tempo[index] = fDigitsList[index]; 

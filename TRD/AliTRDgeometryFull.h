@@ -1,5 +1,5 @@
-#ifndef ALITRDGEOMETRYFULL_h
-#define ALITRDGEOMETRYFULL_h
+#ifndef ALITRDGEOMETRYFULL_H
+#define ALITRDGEOMETRYFULL_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

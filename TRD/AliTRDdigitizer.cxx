@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.6  2000/06/07 16:27:32  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -118,13 +121,13 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
 }
 
 //_____________________________________________________________________________
-AliTRDdigitizer::AliTRDdigitizer(AliTRDdigitizer &d)
+AliTRDdigitizer::AliTRDdigitizer(const AliTRDdigitizer &d)
 {
   //
   // AliTRDdigitizer copy constructor
   //
 
-  d.Copy(*this);
+  ((AliTRDdigitizer &) d).Copy(*this);
 
 }
 
@@ -149,35 +152,47 @@ AliTRDdigitizer::~AliTRDdigitizer()
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::Copy(AliTRDdigitizer &d)
+AliTRDdigitizer &AliTRDdigitizer::operator=(const AliTRDdigitizer &d)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &d) ((AliTRDdigitizer &) d).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitizer::Copy(TObject &d)
 {
   //
   // Copy function
   //
 
-  d.fInputFile     = NULL;
-  d.fDigits        = NULL;
-  d.fTRD           = NULL;
-  d.fGeo           = NULL;
+  ((AliTRDdigitizer &) d).fInputFile     = NULL;
+  ((AliTRDdigitizer &) d).fDigits        = NULL;
+  ((AliTRDdigitizer &) d).fTRD           = NULL;
+  ((AliTRDdigitizer &) d).fGeo           = NULL;
 
-  d.fEvent         = 0;
+  ((AliTRDdigitizer &) d).fEvent         = 0;
 
-  d.fGasGain       = fGasGain;
-  d.fNoise         = fNoise;
-  d.fChipGain      = fChipGain;
-  d.fADCoutRange   = fADCoutRange;
-  d.fADCinRange    = fADCinRange;
-  d.fADCthreshold  = fADCthreshold;
-  d.fDiffusionOn   = fDiffusionOn; 
-  d.fDiffusionT    = fDiffusionT;
-  d.fDiffusionL    = fDiffusionL;
-  d.fElAttachOn    = fElAttachOn;
-  d.fElAttachProp  = fElAttachProp;
-  d.fExBOn         = fExBOn;
-  d.fLorentzAngle  = fLorentzAngle;
-  d.fLorentzFactor = fLorentzFactor;
+  ((AliTRDdigitizer &) d).fGasGain       = fGasGain;
+  ((AliTRDdigitizer &) d).fNoise         = fNoise;
+  ((AliTRDdigitizer &) d).fChipGain      = fChipGain;
+  ((AliTRDdigitizer &) d).fADCoutRange   = fADCoutRange;
+  ((AliTRDdigitizer &) d).fADCinRange    = fADCinRange;
+  ((AliTRDdigitizer &) d).fADCthreshold  = fADCthreshold;
+  ((AliTRDdigitizer &) d).fDiffusionOn   = fDiffusionOn; 
+  ((AliTRDdigitizer &) d).fDiffusionT    = fDiffusionT;
+  ((AliTRDdigitizer &) d).fDiffusionL    = fDiffusionL;
+  ((AliTRDdigitizer &) d).fElAttachOn    = fElAttachOn;
+  ((AliTRDdigitizer &) d).fElAttachProp  = fElAttachProp;
+  ((AliTRDdigitizer &) d).fExBOn         = fExBOn;
+  ((AliTRDdigitizer &) d).fLorentzAngle  = fLorentzAngle;
+  ((AliTRDdigitizer &) d).fLorentzFactor = fLorentzFactor;
 
-  fPRF->Copy(*d.fPRF);
+  fPRF->Copy(*((AliTRDdigitizer &) d).fPRF);
 
 }
 
@@ -290,6 +305,19 @@ Bool_t AliTRDdigitizer::Open(const Char_t *name, Int_t nEvent)
     return kFALSE;
   }
 
+  // Get the pointer to the detector class and check for version 1
+  fTRD = (AliTRD*) gAlice->GetDetector("TRD");
+  if (fTRD->IsVersion() != 1) {
+    printf("AliTRDdigitizer::Open -- ");
+    printf("TRD must be version 1 (slow simulator).\n");
+    exit(1);
+  }
+
+  // Get the geometry
+  fGeo = fTRD->GetGeometry();
+  printf("AliTRDdigitizer::Open -- ");
+  printf("Geometry version %d\n",fGeo->IsVersion());
+
   return kTRUE;
 
 }
@@ -382,10 +410,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
           Int_t sens1 = fTRD->GetSensSector();
           Int_t sens2 = sens1 + fTRD->GetSensSectorRange();
           sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
-          if (sens1 < sens2) 
+          if (sens1 < sens2) {
             if ((iSect < sens1) || (iSect >= sens2)) continue;
-          else
+	  }
+          else {
             if ((iSect < sens1) && (iSect >= sens2)) continue;
+	  }
 	}
 
         Int_t nDigits = 0;

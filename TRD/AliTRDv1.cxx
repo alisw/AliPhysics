@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.19  2000/06/07 16:27:32  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -131,24 +134,38 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDv1::AliTRDv1(AliTRDv1 &trd)
+AliTRDv1::AliTRDv1(const AliTRDv1 &trd)
 {
   //
   // Copy constructor
   //
 
-  trd.Copy(*this);
+  ((AliTRDv1 &) trd).Copy(*this);
 
 }
 
 //_____________________________________________________________________________
 AliTRDv1::~AliTRDv1()
 {
+  //
+  // AliTRDv1 destructor
+  //
 
   if (fDeltaE) delete fDeltaE;
 
 }
  
+//_____________________________________________________________________________
+AliTRDv1 &AliTRDv1::operator=(const AliTRDv1 &trd)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &trd) ((AliTRDv1 &) trd).Copy(*this);
+  return *this;
+
+}
  
 //_____________________________________________________________________________
 void AliTRDv1::Copy(AliTRDv1 &trd)

@@ -22,8 +22,9 @@ class AliTRDdataArrayF : public AliTRDdataArray {
 
   AliTRDdataArrayF();
   AliTRDdataArrayF(Int_t nrow, Int_t ncol,Int_t ntime);
-  AliTRDdataArrayF(AliTRDdataArrayF &a);
+  AliTRDdataArrayF(const AliTRDdataArrayF &a);
   virtual ~AliTRDdataArrayF();
+  AliTRDdataArrayF &operator=(const AliTRDdataArrayF &a);
 
   virtual void    Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void    Copy(AliTRDdataArrayF &a);
@@ -43,8 +44,6 @@ class AliTRDdataArrayF : public AliTRDdataArray {
   virtual Int_t   GetSize();
   virtual Int_t   GetDataSize(); 
   virtual Int_t   GetOverThreshold(Float_t threshold);  
-
-  inline  AliTRDdataArrayF &operator=(AliTRDdataArrayF &a);
 
  protected:
 
@@ -68,70 +67,5 @@ class AliTRDdataArrayF : public AliTRDdataArray {
 
 };
  
-//____________________________________________________________________________
-Float_t AliTRDdataArrayF::GetDataFast(Int_t idx1, Int_t idx2)
-{
-  //
-  // Returns the value at a given position in the array
-  //
-
-  return fElements->At(fIndex->At(idx2) + idx1); 
-
-}
-
-//_____________________________________________________________________________
-void AliTRDdataArrayF::SetData(Int_t row, Int_t col, Int_t time, Float_t value)
-{
-  //
-  // Sets the data value at a given position of the array
-  // Includes boundary checking
-  //
-
-  if ((row >= 0) && (col >= 0) && (time >= 0)) {
-    Int_t idx1 = GetIdx1(row,col);
-    if ((idx1 >= 0) && (time < fNdim2)) {
-      SetDataFast(idx1,time,value);
-    }
-    else {
-      if (idx1 >= 0) {
-        TObject::Error("SetData"
-                      ,"time %d out of bounds (size: %d, this: 0x%08x)"
-                      ,time,fNdim2,this);
-      }
-    }
-  }
-
-}
-
-//_____________________________________________________________________________
-void  AliTRDdataArrayF::SetDataFast(Int_t idx1, Int_t idx2, Float_t value)
-{
-  //
-  // Set the value at a given position in the array
-  //
-
-  if ((idx1 < 0) || (idx1 >= fNdim1) || 
-      (idx2 < 0) || (idx2 >= fNdim2)) { 
-    TObject::Error("SetDataFast"
-                  ,"idx1 %d  idx2 %d out of bounds (size: %d x %d, this: 0x%08x)"
-                  ,idx1,idx2,fNdim1,fNdim2,this);
-  }
-
-  (*fElements)[fIndex->fArray[idx2] + idx1] = value; 
-
-}
-
-//_____________________________________________________________________________
-AliTRDdataArrayF &AliTRDdataArrayF::operator=(AliTRDdataArrayF &a)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &a) a.Copy(*this);
-  return *this;
-
-}
-
 #endif
 

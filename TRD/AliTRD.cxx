@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/06/08 18:32:57  cblume
+Make code compliant to coding conventions
+
 Revision 1.19  2000/06/07 16:25:37  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -146,13 +149,13 @@ AliTRD::AliTRD(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRD::AliTRD(AliTRD &trd)
+AliTRD::AliTRD(const AliTRD &trd)
 {
   //
   // Copy constructor
   //
 
-  trd.Copy(*this);
+  ((AliTRD &) trd).Copy(*this);
 
 }
 
@@ -245,16 +248,16 @@ void AliTRD::BuildGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTRD::Copy(AliTRD &trd)
+void AliTRD::Copy(TObject &trd)
 {
   //
   // Copy function
   //
 
-  trd.fGasMix     = fGasMix;
-  trd.fGeometry   = fGeometry;
-  trd.fRecPoints  = fRecPoints;
-  trd.fNRecPoints = fNRecPoints;
+  ((AliTRD &) trd).fGasMix     = fGasMix;
+  ((AliTRD &) trd).fGeometry   = fGeometry;
+  ((AliTRD &) trd).fRecPoints  = fRecPoints;
+  ((AliTRD &) trd).fNRecPoints = fNRecPoints;
 
   //AliDetector::Copy(trd);
 
@@ -617,3 +620,14 @@ void AliTRD::SetGasMix(Int_t imix)
 
 }
 
+//_____________________________________________________________________________
+AliTRD &AliTRD::operator=(const AliTRD &trd)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &trd) ((AliTRD &) trd).Copy(*this);
+  return *this;
+
+}

@@ -24,14 +24,17 @@ class AliTRD : public AliDetector {
 
   AliTRD();
   AliTRD(const char *name, const char *title);
-  AliTRD(AliTRD &trd);
+  AliTRD(const AliTRD &trd);
   virtual           ~AliTRD();
+
+          AliTRD    &operator=(const AliTRD &trd);
+
   virtual void       AddHit(Int_t track, Int_t *det, Float_t *hits);
   virtual void       AddDigit(Int_t *digits, Int_t *amp);    
   virtual void       AddRecPoint(Float_t *pos, Int_t *digits
                                , Int_t det, Float_t amp);
   virtual void       BuildGeometry();
-  virtual void       Copy(AliTRD &trd);
+  virtual void       Copy(TObject &trd);
   virtual void       CreateGeometry();
   virtual void       CreateMaterials();
   virtual void       DrawModule();
@@ -61,8 +64,6 @@ class AliTRD : public AliDetector {
   virtual Int_t      GetSensSector()      = 0;
   virtual Int_t      GetSensSectorRange() = 0; 
 
-  inline  AliTRD    &operator=(AliTRD &trd);
-
  protected:
 
   Int_t              fGasMix;            //  Gas mixture. 0: Xe/Isobutane 1: Xe/CO2
@@ -75,17 +76,5 @@ class AliTRD : public AliDetector {
   ClassDef(AliTRD,1)                     //  Transition Radiation Detector base class
 
 };
-
-//_____________________________________________________________________________
-AliTRD &AliTRD::operator=(AliTRD &trd)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &trd) trd.Copy(*this);
-  return *this;
-
-}
 
 #endif

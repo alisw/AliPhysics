@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.4  2000/06/07 16:27:01  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -83,13 +86,13 @@ AliTRDdataArray::AliTRDdataArray(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
-AliTRDdataArray::AliTRDdataArray(AliTRDdataArray &d)
+AliTRDdataArray::AliTRDdataArray(const AliTRDdataArray &d)
 {
   //
   // AliTRDdataArray copy constructor
   //
 
-  d.Copy(*this);
+  ((AliTRDdataArray &) d).Copy(*this);
 
 }
 
@@ -105,27 +108,39 @@ AliTRDdataArray::~AliTRDdataArray()
 }
 
 //_____________________________________________________________________________
-void AliTRDdataArray::Copy(AliTRDdataArray &d)
+AliTRDdataArray &AliTRDdataArray::operator=(const AliTRDdataArray &d)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &d) ((AliTRDdataArray &) d).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdataArray::Copy(TObject &d)
 {
   //
   // Copy function
   //
 
-  d.fNrow         = fNrow;
-  d.fNcol         = fNcol;
-  d.fNtime        = fNtime;
+  ((AliTRDdataArray &) d).fNrow         = fNrow;
+  ((AliTRDdataArray &) d).fNcol         = fNcol;
+  ((AliTRDdataArray &) d).fNtime        = fNtime;
 
-  d.fNdim1        = fNdim1;
-  d.fNdim2        = fNdim2;
+  ((AliTRDdataArray &) d).fNdim1        = fNdim1;
+  ((AliTRDdataArray &) d).fNdim2        = fNdim2;
 
-  d.fBufType      = fBufType;
-  d.fNelems       = fNelems;
+  ((AliTRDdataArray &) d).fBufType      = fBufType;
+  ((AliTRDdataArray &) d).fNelems       = fNelems;
 
-  d.fCurrentIdx1  = 0;
-  d.fCurrentIdx2  = 0;
-  d.fCurrentIndex = 0;
+  ((AliTRDdataArray &) d).fCurrentIdx1  = 0;
+  ((AliTRDdataArray &) d).fCurrentIdx2  = 0;
+  ((AliTRDdataArray &) d).fCurrentIndex = 0;
 
-  fIndex->Copy(*d.fIndex);
+  fIndex->Copy(*((AliTRDdataArray &) d).fIndex);
 
 }
 
@@ -170,6 +185,38 @@ void AliTRDdataArray::Allocate(Int_t nrow, Int_t ncol,Int_t ntime)
   }
 
   fBufType = 0;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDdataArray::CheckBounds(const char *where, Int_t idx1, Int_t idx2) 
+{
+  //
+  // Does the boundary checking
+  //
+
+  if ((idx2 >= fNdim2) || (idx2 < 0)) 
+    return OutOfBoundsError(where,idx1,idx2);
+
+  Int_t index = (*fIndex).At(idx2) + idx1;
+  if ((index < 0) || (index > fNelems)) 
+    return OutOfBoundsError(where,idx1,idx2);
+
+  return kTRUE;  
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDdataArray::OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2) 
+{
+  //
+  // Generate an out-of-bounds error. Always returns false.
+  //
+
+  TObject::Error(where, "idx1 %d  idx2 %d out of bounds (size: %d x %d, this: 0x%08x)"
+	   ,idx1,idx2,fNdim1,fNdim2,this);
+
+  return kFALSE;
 
 }
 

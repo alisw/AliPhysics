@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.6  2000/05/08 15:48:30  cblume
 Resolved merge conflict
 
@@ -91,13 +94,13 @@ AliTRDmatrix::AliTRDmatrix(Int_t nRow, Int_t nCol, Int_t nTime
 }
 
 //_____________________________________________________________________________
-AliTRDmatrix::AliTRDmatrix(AliTRDmatrix &m)
+AliTRDmatrix::AliTRDmatrix(const AliTRDmatrix &m)
 {
   //
   // AliTRDmatrix copy constructor
   //
 
-  m.Copy(*this);
+  ((AliTRDmatrix &) m).Copy(*this);
 
 }
 
@@ -112,6 +115,18 @@ AliTRDmatrix::~AliTRDmatrix()
     fPixelArray->Delete();
     delete fPixelArray;
   }
+
+}
+
+//_____________________________________________________________________________
+AliTRDmatrix &AliTRDmatrix::operator=(const AliTRDmatrix &m)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &m) ((AliTRDmatrix &) m).Copy(*this);
+  return *this;
 
 }
 
@@ -131,21 +146,21 @@ void AliTRDmatrix::AddSignal(Int_t iRow, Int_t iCol, Int_t iTime, Float_t signal
 }
 
 //_____________________________________________________________________________
-void AliTRDmatrix::Copy(AliTRDmatrix &m)
+void AliTRDmatrix::Copy(TObject &m)
 {
   //
   // Copy function
   //
 
-  m.fRow        = fRow;
-  m.fCol        = fCol;
-  m.fTime       = fTime;
-  m.fPixel      = fPixel;
-  m.fSector     = fSector;
-  m.fChamber    = fChamber;
-  m.fPlane      = fPlane;
+  ((AliTRDmatrix &) m).fRow        = fRow;
+  ((AliTRDmatrix &) m).fCol        = fCol;
+  ((AliTRDmatrix &) m).fTime       = fTime;
+  ((AliTRDmatrix &) m).fPixel      = fPixel;
+  ((AliTRDmatrix &) m).fSector     = fSector;
+  ((AliTRDmatrix &) m).fChamber    = fChamber;
+  ((AliTRDmatrix &) m).fPlane      = fPlane;
 
-  m.fPixelArray = new TObjArray(*fPixelArray);
+  ((AliTRDmatrix &) m).fPixelArray = new TObjArray(*fPixelArray);
 
 }
 

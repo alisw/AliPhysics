@@ -1,5 +1,5 @@
-#ifndef ALITRDDIGITIZER_h
-#define ALITRDDIGITIZER_h
+#ifndef ALITRDDIGITIZER_H
+#define ALITRDDIGITIZER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -26,10 +26,11 @@ class AliTRDdigitizer : public TNamed {
 
   AliTRDdigitizer();
   AliTRDdigitizer(const Text_t* name, const Text_t* title);
-  AliTRDdigitizer(AliTRDdigitizer &d);
+  AliTRDdigitizer(const AliTRDdigitizer &d);
   virtual ~AliTRDdigitizer();
+  AliTRDdigitizer &operator=(const AliTRDdigitizer &d);
 
-  virtual void         Copy(AliTRDdigitizer &d);
+  virtual void         Copy(TObject &d);
   virtual void         Init();
   virtual Bool_t       Open(const Char_t *name, Int_t nEvent = 0);
   virtual Bool_t       MakeDigits();
@@ -65,8 +66,6 @@ class AliTRDdigitizer : public TNamed {
   virtual Float_t      GetLorentzAngle()               { return fLorentzAngle;  };
   virtual TF1         *GetPadResponse()                { return fPRF;           };
 
-  inline  AliTRDdigitizer &operator=(AliTRDdigitizer &d);
-
  protected:
 
   TFile               *fInputFile;       //! ALIROOT-filename
@@ -100,17 +99,5 @@ class AliTRDdigitizer : public TNamed {
   ClassDef(AliTRDdigitizer,1)            // Produces TRD-Digits
 
 };
-
-//_____________________________________________________________________________
-AliTRDdigitizer &AliTRDdigitizer::operator=(AliTRDdigitizer &d)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &d) d.Copy(*this);
-  return *this;
-
-}
 
 #endif

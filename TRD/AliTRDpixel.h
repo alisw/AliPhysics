@@ -1,5 +1,5 @@
-#ifndef ALITRDPIXEL_h
-#define ALITRDPIXEL_h
+#ifndef ALITRDPIXEL_H
+#define ALITRDPIXEL_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -20,7 +20,7 @@ public:
   AliTRDpixel();
   virtual ~AliTRDpixel();
 
-  virtual void    Copy(AliTRDpixel &p);
+  virtual void    Copy(TObject &p);
 
   virtual void    SetSignal(Float_t signal)      { fSignal   = signal; };
   virtual void    SetTrack(Int_t i, Int_t track) { fTrack[i] = track;  };

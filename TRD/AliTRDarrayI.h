@@ -13,7 +13,7 @@ class AliTRDarrayI: public TObject ,public TArrayI {
 public:
 
   ~AliTRDarrayI();
-  void Copy(AliTRDarrayI &a);
+  void Copy(TObject &a);
   void Expand(Int_t n);  
 
   ClassDef(AliTRDarrayI,1)  

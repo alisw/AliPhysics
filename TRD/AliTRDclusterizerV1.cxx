@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.4  2000/06/07 16:27:01  cblume
 Try to remove compiler warnings on Sun and HP
 
@@ -72,13 +75,13 @@ AliTRDclusterizerV1::AliTRDclusterizerV1(const Text_t* name, const Text_t* title
 }
 
 //_____________________________________________________________________________
-AliTRDclusterizerV1::AliTRDclusterizerV1(AliTRDclusterizerV1 &c)
+AliTRDclusterizerV1::AliTRDclusterizerV1(const AliTRDclusterizerV1 &c)
 {
   //
   // AliTRDclusterizerV1 copy constructor
   //
 
-  c.Copy(*this);
+  ((AliTRDclusterizerV1 &) c).Copy(*this);
 
 }
 
@@ -92,6 +95,18 @@ AliTRDclusterizerV1::~AliTRDclusterizerV1()
   if (fDigitsManager) {
     delete fDigitsManager;
   }
+
+}
+
+//_____________________________________________________________________________
+AliTRDclusterizerV1 &AliTRDclusterizerV1::operator=(const AliTRDclusterizerV1 &c)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &c) ((AliTRDclusterizerV1 &) c).Copy(*this);
+  return *this;
 
 }
 
@@ -203,10 +218,12 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
           Int_t sens1 = trd->GetSensSector();
           Int_t sens2 = sens1 + trd->GetSensSectorRange();
           sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
-          if (sens1 < sens2) 
+          if (sens1 < sens2) {
             if ((isect < sens1) || (isect >= sens2)) continue;
-          else
+	  }
+          else {
             if ((isect < sens1) && (isect >= sens2)) continue;
+	  }
 	}
 
         Int_t idet = geo->GetDetector(iplan,icham,isect);

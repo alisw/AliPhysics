@@ -25,8 +25,9 @@ class AliTRDsegmentArrayBase: public TNamed {
 
   AliTRDsegmentArrayBase();
   AliTRDsegmentArrayBase(Text_t *classname, Int_t n); 
-  AliTRDsegmentArrayBase(AliTRDsegmentArrayBase &a);
+  AliTRDsegmentArrayBase(const AliTRDsegmentArrayBase &a);
   virtual ~AliTRDsegmentArrayBase();
+  AliTRDsegmentArrayBase &operator=(const AliTRDsegmentArrayBase &a);
  
   const AliTRDsegmentID *At(Int_t i); 
   const AliTRDsegmentID *operator[](Int_t i); 
@@ -34,7 +35,7 @@ class AliTRDsegmentArrayBase: public TNamed {
           Bool_t           AddSegment(AliTRDsegmentID *segment);
           AliTRDsegmentID *AddSegment(Int_t index);  
           void             ClearSegment(Int_t index); 
-  virtual void             Copy(AliTRDsegmentArrayBase &a);
+  virtual void             Copy(TObject &a);
   virtual Bool_t           ConnectTree(const char *treeName);
           Bool_t           MakeArray(Int_t n);    
   virtual AliTRDsegmentID *NewSegment(); 
@@ -49,8 +50,6 @@ class AliTRDsegmentArrayBase: public TNamed {
           TClass          *GetClass() { return fClass; };
           TTree           *GetTree()  { return fTree;  };   
 
-  inline  AliTRDsegmentArrayBase &operator=(AliTRDsegmentArrayBase &a);
-
  protected:
 
   TObjArray    *fSegment;            //! Pointer to an array of pointers to a segment
@@ -63,18 +62,5 @@ class AliTRDsegmentArrayBase: public TNamed {
   ClassDef(AliTRDsegmentArrayBase,1) // TRD detextor segment array base class
 
 };
-
-//_____________________________________________________________________________
-AliTRDsegmentArrayBase &AliTRDsegmentArrayBase
-                        ::operator=(AliTRDsegmentArrayBase &a)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &a) a.Copy(*this);
-  return *this;
-
-}
 
 #endif 

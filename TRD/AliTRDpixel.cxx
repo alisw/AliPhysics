@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.3  2000/02/28 19:10:26  cblume
 Include the new TRD classes
 
@@ -60,15 +63,15 @@ AliTRDpixel::~AliTRDpixel()
 }
 
 //_____________________________________________________________________________
-void AliTRDpixel::Copy(AliTRDpixel &p)
+void AliTRDpixel::Copy(TObject &p)
 {
   //
   // Copy function
   //
 
-  p.fSignal = fSignal;
+  ((AliTRDpixel &) p).fSignal = fSignal;
   for (Int_t iTrackPixel = 0; iTrackPixel < kTrackPixel; iTrackPixel++) {
-    p.fTrack[iTrackPixel] = fTrack[iTrackPixel];
+    ((AliTRDpixel &) p).fTrack[iTrackPixel] = fTrack[iTrackPixel];
   }
 
 }
