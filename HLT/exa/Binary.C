@@ -1,15 +1,31 @@
+/* $Id$ */
+
+/**
+Macro for converting AliRoot digits into L3 RawData. Binary create for each patch its own file. singlepatch uses one file per slice. 
+ */
+
 Binary(char* in,int first, int last,char *path=""){
   char name[256];
-  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
-  fFileHandler->SetAliInput(in);
   const Int_t npatch = 6;
   Int_t row[npatch][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
+  AliL3Logger l;
+  //l.UnSet(AliL3Logger::kDebug);
+  //l.UnSet(AliL3Logger::kAll);
+  //l.Set(AliL3Logger::kInformational);
+  l.UseStdout();
+  //l.UseStream();
+
+  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
+  fFileHandler->SetAliInput(in);
+  AliL3Transform *fTransformer = new AliL3Transform(path);
+  fFileHandler->SetTransformer(fTransformer);
+
   for(int slice=first; slice<=last; slice++){
     for(int patch=0;patch<npatch;patch++){
-      cerr<<"reading slice: "<<slice<<" patch: "<<patch;
+      cerr<<"reading slice: "<<slice<<" patch: "<<patch<<" and storing to: "<<path<<"digits_"<<slice<<"_"<<patch<<".raw"<<endl;
       fFileHandler->Free();
       fFileHandler->Init(slice,patch,row[patch]);      
-      sprintf(name,"%sdigits_%d_%d.raw",path,slice,patch);
+      sprintf(name,"%s/digits_%d_%d.raw",path,slice,patch);
       fFileHandler->SetBinaryOutput(name);
       fFileHandler->AliDigits2CompBinary();
       fFileHandler->CloseBinaryOutput();      
@@ -22,9 +38,9 @@ Binary(char* in,int first, int last,char *path=""){
 void singlepatch(char* in,int first, int last,char *path="",int event=0)
 {
   AliL3Logger l;
-  //  l.UnSet(AliL3Logger::kDebug);
-  //  l.UnSet(AliL3Logger::kAll);
-  //  l.Set(AliL3Logger::kInformational);
+  //l.UnSet(AliL3Logger::kDebug);
+  //l.UnSet(AliL3Logger::kAll);
+  //l.Set(AliL3Logger::kInformational);
   //l.UseStdout();
   l.UseStream();
   
@@ -49,5 +65,3 @@ void singlepatch(char* in,int first, int last,char *path="",int event=0)
   fFileHandler->CloseAliInput();
   
 }
-
-
