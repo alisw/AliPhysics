@@ -21,7 +21,8 @@ AliEMCALClusterizerv1.cxx \
 AliEMCALHadronCorrection.cxx \
 AliEMCALHadronCorrectionv0.cxx \
 AliEMCALJetMicroDst.cxx \
-AliEMCALParton.cxx
+AliEMCALParton.cxx \
+AliEMCALReconstructioner.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
