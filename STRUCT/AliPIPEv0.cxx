@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/12/21 16:41:06  morsch
+Coding convention clean-up (RS3)
+
 Revision 1.11  2000/11/28 16:06:57  morsch
 Undulated beam-pipe replaced by Al-Be (40,60) pipe 1.5 mm thick.
 
@@ -427,7 +430,7 @@ void AliPIPEv0::CreateGeometry()
 // Mother Volume
     ptube[0] =  2.90;
     ptube[1] =  3.75;
-    ptube[2] = 14.70;
+    ptube[2] = 20.40;
     gMC->Gsvolu("QBE0","TUBE", idtmed[kAir], ptube, 3);
     gMC->Gspos("QBE0", 2 ,"QBPM", 0.0, 0.0, 229.5, 0, "ONLY");
     gMC->Gspos("QBE0", 1 ,"QBPM", 0.0, 0.0, -61.3, 0, "ONLY");
