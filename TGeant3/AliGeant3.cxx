@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:16  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/09/12 14:36:17  morsch
 In gudcay(): call ForceDecay() before Decay()
 
@@ -46,6 +49,8 @@ AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
 
 */
+
+#include <stdlib.h>
 
 #include <TParticle.h>
 
