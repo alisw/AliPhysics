@@ -1,5 +1,5 @@
 #include <Riostream.h>
-#include "AliRun.h"
+#include "TVirtualMCApplication.h"
 #include "TFluka.h"
 #ifndef WIN32
 # define bxdraw bxdraw_
@@ -16,9 +16,9 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
   ((TFluka*) gMC)->SetXsco(xsco);
   ((TFluka*) gMC)->SetYsco(ysco);
   ((TFluka*) gMC)->SetZsco(zsco);
-  cout << endl << " !!! I am in bxdraw - calling gAlice->Stepping()" << endl;
+  cout << endl << " !!! I am in bxdraw - calling Stepping()" << endl;
   ((TFluka*) gMC)->FutoTest();
-//  gAlice->Stepping();
+  (TVirtualMCApplication::Instance())->Stepping();
 } // end of bxdraw
 } // end of extern "C"
 

@@ -1,5 +1,4 @@
-#include "AliRun.h"
-#include "AliMagF.h"
+#include "TVirtualMCApplication.h"
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 //
 // #include "TCallf77.h"
@@ -37,8 +36,8 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
     
     idisc = 0;
     
-    Float_t bc[3];
-    Float_t xc[3];
+    Double_t bc[3];
+    Double_t xc[3];
     
     xc[1] = x;
     xc[0] = y;
@@ -46,7 +45,7 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
     
     
 	
-    gAlice->Field()->Field(xc, bc);
+    (TVirtualMCApplication::Instance())->Field(xc, bc);
     
     b = sqrt(bc[0] * bc[0] + bc[1] * bc[1] + bc[2] * bc[2]);
     if (b) {

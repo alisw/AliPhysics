@@ -1,5 +1,4 @@
 #include <Riostream.h>
-#include "AliRun.h"
 #include "TFluka.h"
 #ifndef WIN32
 # define usdraw usdraw_
@@ -15,9 +14,8 @@ void usdraw(Int_t& icode, Int_t& mreg,
   ((TFluka*) gMC)->SetXsco(xsco);
   ((TFluka*) gMC)->SetYsco(ysco);
   ((TFluka*) gMC)->SetZsco(zsco);
-  cout << endl << " !!! I am in usdraw - calling gAlice->Stepping()" << endl;
+  cout << endl << " !!! I am in usdraw" << endl;
   ((TFluka*) gMC)->FutoTest();
-//  gAlice->Stepping();
 } // end of usdraw
 } // end of extern "C"
 

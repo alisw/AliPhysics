@@ -1,5 +1,5 @@
 #include <Riostream.h>
-#include "AliRun.h"
+#include "TVirtualMCApplication.h"
 #include "TFluka.h"
 #ifndef WIN32
 # define eedraw eedraw_
@@ -10,9 +10,9 @@ extern "C" {
 void eedraw(Int_t& icode)
 {
   ((TFluka*) gMC)->SetIcode(icode);
-  cout << endl << " !!! I am in eedraw - calling gAlice->Stepping()" << endl;
+  cout << endl << " !!! I am in eedraw - calling Stepping()" << endl;
   ((TFluka*) gMC)->FutoTest();
-//  gAlice->Stepping();
+  (TVirtualMCApplication::Instance())->Stepping();
 } // end of eedraw
 } // end of extern "C"
 
