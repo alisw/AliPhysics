@@ -11,14 +11,17 @@
 #ifndef TG4_PHYSICS_CONSTRUCTOR_GENERAL_H
 #define TG4_PHYSICS_CONSTRUCTOR_GENERAL_H
 
-#include <G4VPhysicsConstructor.hh>
+#include "TG4VPhysicsConstructor.h"
+
 #include <G4Decay.hh>
 #include <globals.hh>
 
-class TG4PhysicsConstructorGeneral: public G4VPhysicsConstructor
+class TG4PhysicsConstructorGeneral: public TG4VPhysicsConstructor
 {
   public:
     TG4PhysicsConstructorGeneral(const G4String& name = "General");
+    TG4PhysicsConstructorGeneral(G4int verboseLevel,
+                                 const G4String& name = "General");
     virtual ~TG4PhysicsConstructorGeneral();
 
   protected:

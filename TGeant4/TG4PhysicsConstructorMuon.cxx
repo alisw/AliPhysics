@@ -33,10 +33,15 @@
 
 //_____________________________________________________________________________
 TG4PhysicsConstructorMuon::TG4PhysicsConstructorMuon(const G4String& name)
-  : G4VPhysicsConstructor(name)
-{
+  : TG4VPhysicsConstructor(name) {
 //
-  SetVerboseLevel(1);
+}
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorMuon::TG4PhysicsConstructorMuon(G4int verboseLevel,
+                                                     const G4String& name)
+  : TG4VPhysicsConstructor(name, verboseLevel) {
+//
 }
 
 //_____________________________________________________________________________
@@ -201,6 +206,7 @@ void TG4PhysicsConstructorMuon::ConstructProcess()
   ConstructProcessForTauPlus();
   ConstructProcessForTauMinus();
 
-  if (verboseLevel>0)
+  if (VerboseLevel() >0 ) {
     G4cout << "### Muon physics constructed." << G4endl;
+  }  
 }

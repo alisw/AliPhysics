@@ -23,10 +23,15 @@
 
 //_____________________________________________________________________________
 TG4PhysicsConstructorEM::TG4PhysicsConstructorEM(const G4String& name)
-  : G4VPhysicsConstructor(name)
-{
+  : TG4VPhysicsConstructor(name) {
 //
-  SetVerboseLevel(1);
+}
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorEM::TG4PhysicsConstructorEM(G4int verboseLevel,
+                                                 const G4String& name)
+  : TG4VPhysicsConstructor(name, verboseLevel) {
+//
 }
 
 //_____________________________________________________________________________
@@ -152,6 +157,7 @@ void TG4PhysicsConstructorEM::ConstructProcess()
   ConstructProcessForElectron();
   ConstructProcessForPositron();
 
-  if (verboseLevel>0)
+  if (VerboseLevel() > 0) {
     G4cout << "### Electromagnetic physics constructed." << G4endl;
+  }  
 }

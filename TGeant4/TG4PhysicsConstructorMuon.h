@@ -11,7 +11,8 @@
 #ifndef TG4_PHYSICS_CONSTRUCTOR_MUON_H
 #define TG4_PHYSICS_CONSTRUCTOR_MUON_H
 
-#include <G4VPhysicsConstructor.hh>
+#include "TG4VPhysicsConstructor.h"
+
 #include "G4MultipleScattering.hh"
 #include "G4MuBremsstrahlung.hh"
 #include "G4MuPairProduction.hh"
@@ -20,10 +21,12 @@
 #include "G4hIonisation.hh"
 #include <globals.hh>
 
-class TG4PhysicsConstructorMuon: public G4VPhysicsConstructor
+class TG4PhysicsConstructorMuon: public TG4VPhysicsConstructor
 {
   public:
-    TG4PhysicsConstructorMuon(const G4String& name = "EM");
+    TG4PhysicsConstructorMuon(const G4String& name = "Muon");
+    TG4PhysicsConstructorMuon(G4int verboseLevel,
+                              const G4String& name = "Muon");
     virtual ~TG4PhysicsConstructorMuon();
 
   protected:

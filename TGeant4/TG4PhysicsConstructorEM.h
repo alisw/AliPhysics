@@ -12,7 +12,8 @@
 #ifndef TG4_PHYSICS_CONSTRUCTOR_EM_H
 #define TG4_PHYSICS_CONSTRUCTOR_EM_H
 
-#include <G4VPhysicsConstructor.hh>
+#include "TG4VPhysicsConstructor.h"
+
 #include <G4PhotoElectricEffect.hh>
 #include <G4ComptonScattering.hh>
 #include <G4GammaConversion.hh>
@@ -22,10 +23,12 @@
 #include <G4eplusAnnihilation.hh>
 #include <globals.hh>
 
-class TG4PhysicsConstructorEM: public G4VPhysicsConstructor
+class TG4PhysicsConstructorEM: public TG4VPhysicsConstructor
 {
   public:
-    TG4PhysicsConstructorEM(const G4String& name = "EM");
+    TG4PhysicsConstructorEM(const G4String& name = "EM"); 
+    TG4PhysicsConstructorEM(G4int verboseLevel, 
+                            const G4String& name = "EM");
     virtual ~TG4PhysicsConstructorEM();
 
   protected:

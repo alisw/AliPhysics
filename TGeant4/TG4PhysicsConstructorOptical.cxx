@@ -21,10 +21,15 @@
 
 //_____________________________________________________________________________
 TG4PhysicsConstructorOptical::TG4PhysicsConstructorOptical(const G4String& name)
-  : G4VPhysicsConstructor(name)
-{
+  : TG4VPhysicsConstructor(name) {
 //
-  SetVerboseLevel(1);
+}
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorOptical::TG4PhysicsConstructorOptical(G4int verboseLevel,
+							   const G4String& name)
+  : TG4VPhysicsConstructor(name, verboseLevel) {
+//
 }
 
 //_____________________________________________________________________________
@@ -107,7 +112,8 @@ void TG4PhysicsConstructorOptical::ConstructProcess()
   mcMap->Add(theRayleighScatteringProcess, kPRayleigh); 
   mcMap->Add(theBoundaryProcess, kPLightScattering); 
 
-  if (verboseLevel>0)
+  if (VerboseLevel() > 0) {
     G4cout << "### " << namePhysics << " physics constructed." << G4endl;
+  }  
 }
 

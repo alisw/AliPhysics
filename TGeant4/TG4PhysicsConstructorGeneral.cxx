@@ -24,10 +24,16 @@
 
 //_____________________________________________________________________________
 TG4PhysicsConstructorGeneral::TG4PhysicsConstructorGeneral(const G4String& name)
-  : G4VPhysicsConstructor(name)
-{
+  : TG4VPhysicsConstructor(name) {
 //
-  SetVerboseLevel(1);
+}
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorGeneral::TG4PhysicsConstructorGeneral(
+						   G4int verboseLevel,
+                                                   const G4String& name)
+  : TG4VPhysicsConstructor(name, verboseLevel) {
+//
 }
 
 //_____________________________________________________________________________
@@ -59,10 +65,12 @@ void TG4PhysicsConstructorGeneral::ConstructProcess()
   if (aliDecayer) {
     TG4ExtDecayer* tg4Decayer = new TG4ExtDecayer(aliDecayer);
        // the tg4Decayer is deleted in G4Decay destructor
-    tg4Decayer->SetVerboseLevel(1);   
+    tg4Decayer->VerboseLevel(VerboseLevel());   
     fDecayProcess.SetExtDecayer(tg4Decayer);
     
-    if (verboseLevel>0) G4cout << "### External decayer is set" << G4endl;
+    if (VerboseLevel() > 0) { 
+      G4cout << "### External decayer is set" << G4endl;
+    }  
   } 
 
   theParticleIterator->reset();
@@ -81,6 +89,7 @@ void TG4PhysicsConstructorGeneral::ConstructProcess()
   TG4ProcessControlMap* processMap = TG4ProcessControlMap::Instance();
   processMap->Add(&fDecayProcess, kDCAY); 
 
-  if (verboseLevel>0)
+  if (VerboseLevel() > 0) {
     G4cout << "### General physics constructed." << G4endl;
+  }  
 }
