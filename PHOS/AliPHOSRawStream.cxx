@@ -23,7 +23,10 @@
 /// The Next method goes to the next digit. If there are no digits left
 /// it returns kFALSE.
 /// Several getters provide information about the current digit.
-///
+/// usage: 
+/// root > AliRawReaderFile rawReader ; 
+/// root > AliPHOSRawStream input(&rawReader) ; 
+/// root > while (input.Next()) ..... 
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliPHOSRawStream.h"
