@@ -212,7 +212,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
   Int_t* fStations = new Int_t[5];
   for (Int_t i=0; i<5; i++) fStations[i] = 1;
-  fStations[4] = 1;
+  fStations[2] = 1;
      
   if (fStations[2])
     {
@@ -526,25 +526,26 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       }
 
       // position the volumes approximating the circular section of the pipe
-      Float_t yoffs = kSensHeight/2.; 
       Float_t epsilon = 0.001; 
       Int_t ndiv = 6;
+      Int_t imax = 1;
       Double_t divpar[3];
-      Double_t dydiv= kSensHeight/ndiv;
-      Double_t ydiv = yoffs -dydiv/2.;
-      Int_t imax = 0; 
-      imax = 1; 
-      Double_t rmin = 31.5;  // Corrected in sep04 from PQ-LAT-SR2 de CEA-DSM-DAPNIA-SIS/BE ph HARDY 19-Oct-2002 slat 
-      Double_t xdiv = 0.;
-      for (Int_t idiv = 0;idiv < ndiv; idiv++){ 
+      Double_t dydiv = kSensHeight/ndiv;
+      Double_t ydiv  = (kSensHeight - dydiv)/2.;
+      Double_t rmin  = 31.5;  // Corrected in sep04 from PQ-LAT-SR2 de CEA-DSM-DAPNIA-SIS/BE ph HARDY 19-Oct-2002 slat 
+      Double_t xdiv  = 0.;
+      Float_t xvol;
+      Float_t yvol;
+
+      for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
 	ydiv += dydiv;
 	xdiv = 0.; 
 	if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
-	divpar[0] = (kPcbLength-xdiv)/2.; 
+	divpar[0] = (kPcbLength - xdiv)/2.; 
 	divpar[1] = dydiv/2. - epsilon;
 	divpar[2] = kSensWidth/2.; 
-	Float_t xvol = (kPcbLength+xdiv)/2.;
-	Float_t yvol = ydiv; 
+	xvol = (kPcbLength + xdiv)/2.;
+	yvol = ydiv; 
 
 	// Volumes close to the beam pipe for slat i=1 so 4 slats per chamber
 	for (Int_t quadrant = 1; quadrant <= 4; quadrant++) {
@@ -552,10 +553,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  sprintf(idSlatCh6,"LB%d",ConvertSlatNum(1,quadrant,kNslats3-1));
 
 	  GetEnvelopes(4)->AddEnvelopeConstituentParam("S05G", idSlatCh5, quadrant*100+imax+4*idiv+1,
-						       TGeoTranslation(xvol-(kPcbLength * (kNPCB3[1])/2.),yvol-kPcbLength,0.),3,divpar);
+						       TGeoTranslation(xvol-(kPcbLength * kNPCB3[1]/2.),yvol-kPcbLength,0.),3,divpar);
 
 	  GetEnvelopes(5)->AddEnvelopeConstituentParam("S06G", idSlatCh6,  quadrant*100+imax+4*idiv+1,
-						       TGeoTranslation(xvol-kPcbLength * kNPCB3[1]/2.,yvol-kPcbLength,0.),3,divpar);
+						       TGeoTranslation(xvol-(kPcbLength * kNPCB3[1]/2.),yvol-kPcbLength,0.),3,divpar);
 	}
       }
 
@@ -564,18 +565,19 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // 9 box volumes are used to define the PCB closed to the beam pipe of the slat 122000SR1 of chamber 5 and 6 of St3
       // Accordingly to plan PQ-LAT-SR1 of CEA-DSM-DAPNIA-SIS/BE ph HARDY 8-Oct-2002
       // Rmin = 31.5 cm
-      Double_t rmin_122000SR1 = 31.5; //in cm  
+      rmin = 31.5; //in cm  
       ndiv  = 9; 
       dydiv = kSensHeight/ndiv;           // Vertical size of the box volume approximating the rounded PCB
       ydiv  = -kSensHeight/2 + dydiv/2.;   // Initializing vertical position of the volume from bottom
       xdiv  = 0.;                         // Initializing horizontal position of the box volumes
-      for (Int_t idiv=0;idiv<ndiv; idiv++){ 
-	xdiv = TMath::Abs( rmin_122000SR1 * TMath::Sin( TMath::ACos(ydiv/rmin_122000SR1) ) );
-	divpar[0] = (kPcbLength-xdiv)/2.; // Dimension of the box volume
+
+      for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
+	xdiv = TMath::Abs( rmin * TMath::Sin( TMath::ACos(ydiv/rmin) ) );
+	divpar[0] = (kPcbLength - xdiv)/2.; // Dimension of the box volume
 	divpar[1] = dydiv/2. - epsilon;
 	divpar[2] = kSensWidth/2.; 
-	Float_t xvol = (kPcbLength+xdiv)/2.; //2D traslition for positionning of box volume
-	Float_t yvol =  ydiv;
+	xvol = (kPcbLength + xdiv)/2.; //2D traslition for positionning of box volume
+	yvol =  ydiv;
 	Int_t side;
 	for (side = 1; side <= 2; side++) {
 	  sprintf(idSlatCh5,"LA%d",4); 	   
@@ -585,10 +587,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    sprintf(idSlatCh6,"LB%d",13);
 	  }	   
 	  GetEnvelopes(4)->AddEnvelopeConstituentParam("S05G", idSlatCh5,500+side*100+imax+4*idiv+1,
-						       TGeoTranslation(xvol-(kPcbLength * (kNPCB3[0])/2.),yvol,0.),3,divpar);
+						       TGeoTranslation(xvol-(kPcbLength * kNPCB3[0]/2.),yvol,0.),3,divpar);
 
 	  GetEnvelopes(5)->AddEnvelopeConstituentParam("S06G", idSlatCh6,500+side*100+imax+4*idiv+1,
-						       TGeoTranslation(xvol-kPcbLength * kNPCB3[0]/2.,yvol,0.),3,divpar);
+						       TGeoTranslation(xvol-(kPcbLength * kNPCB3[0]/2.),yvol,0.),3,divpar);
 	}
 	ydiv += dydiv; // Going from bottom to top
       }
@@ -614,7 +616,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     const Int_t   kNPCB4[kNslats4]  = {5, 6, 5, 5, 4, 3, 2}; // n PCB per slat
     const Float_t kXpos4[kNslats4]  = {38.2, 0., 0., 0., 0., 0., 0.};
     const Float_t kYpos41[kNslats4] = {0., 38.2, 34.40, 36.60, 29.3, 37.0, 28.6};
-    const Float_t kYpos42[kNslats4] = {0., 38.2, 37.85, 37.55, 37.0, 29.4, 36.2};
+    const Float_t kYpos42[kNslats4] = {0., 38.2, 37.85, 37.55, 29.4, 37.0, 28.6};
 
     Float_t slatLength4[kNslats4];     
 
@@ -820,26 +822,28 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
     // position the volumes approximating the circular section of the pipe
 
-    Float_t yoffs = kSensHeight/2.; 
     Float_t epsilon = 0.001; 
     Int_t ndiv = 10;
+    Int_t imax = 1; 
     Double_t divpar[3];
-    Double_t dydiv= kSensHeight/ndiv;
-    Double_t ydiv = yoffs -dydiv;
-    Int_t imax=0; 
-    imax = 1; 
-    Float_t rmin = 39.5;
+    Double_t dydiv = kSensHeight/ndiv;
+    Double_t ydiv  = (kSensHeight - dydiv)/2.;
+    Float_t rmin   = 39.5;// Corrected in sep04 from PQ-LAT-NR3 de CEA-DSM-DAPNIA-SIS/BE ph HARDY 19-Oct-2002 slat 
+    Float_t xdiv   = 0.; 
+    Float_t xvol;
+    Float_t yvol;
+
     for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
       ydiv += dydiv;
-      Float_t xdiv = 0.; 
+      xdiv = 0.; 
       if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
-      divpar[0] = (kPcbLength-xdiv)/2.; 
+      divpar[0] = (kPcbLength - xdiv)/2.; 
       divpar[1] = dydiv/2. - epsilon;
       divpar[2] = kSensWidth/2.; 
-      Float_t xvol = (kPcbLength+xdiv)/2.;
-      Float_t yvol = ydiv + dydiv/2.;
+      xvol = (kPcbLength + xdiv)/2.;
+      yvol = ydiv ;
        
-      for (Int_t quadrant=1; quadrant<=4; quadrant++) {
+      for (Int_t quadrant = 1; quadrant <= 4; quadrant++) {
 	sprintf(idSlatCh7,"LC%d",ConvertSlatNum(1,quadrant,kNslats4-1));
 	sprintf(idSlatCh8,"LD%d",ConvertSlatNum(1,quadrant,kNslats4-1));
 	 
@@ -1078,24 +1082,26 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 
     // position the volumes approximating the circular section of the pipe
-    Float_t yoffs = kSensHeight/2.; 
     Float_t epsilon = 0.001; 
     Int_t ndiv = 10;
+    Int_t imax = 1; 
     Double_t divpar[3];
     Double_t dydiv = kSensHeight/ndiv;
-    Double_t ydiv = yoffs -dydiv;
-    Int_t imax = 0; 
-    imax = 1; 
-    Float_t rmin = 40.;
-    for (Int_t idiv = 0;idiv < ndiv; idiv++){ 
+    Double_t ydiv  = (kSensHeight - dydiv)/2.;
+    Float_t rmin   = 39.5;
+    Float_t xdiv   = 0.; 
+    Float_t xvol;
+    Float_t yvol; 
+
+    for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
       ydiv += dydiv;
-      Float_t xdiv = 0.; 
+      xdiv = 0.; 
       if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
-      divpar[0] = (kPcbLength-xdiv)/2.; 
+      divpar[0] = (kPcbLength - xdiv)/2.; 
       divpar[1] = dydiv/2. - epsilon;
       divpar[2] = kSensWidth/2.; 
-      Float_t xvol = (kPcbLength+xdiv)/2.;
-      Float_t yvol = ydiv + dydiv/2.;
+      xvol = (kPcbLength + xdiv)/2.;
+      yvol = ydiv;
 
       for (Int_t quadrant = 1; quadrant <= 4; quadrant++) {
 	sprintf(idSlatCh9,"LE%d",ConvertSlatNum(1,quadrant,kNslats5-1));
