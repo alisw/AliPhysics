@@ -33,7 +33,9 @@ AliSDManager* AliSDManager::Instance()
   return fgInstance;
 }  
     
-AliSDManager::AliSDManager() {
+AliSDManager::AliSDManager()
+  : fNofLVWithSD(0)
+{
 //
   //fMessenger = new AliSDMessenger(this);
   fgInstance = this;
