@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/12/12 11:21:37  morsch
+Dummy copy constructor added.
+
 Revision 1.2  2001/11/12 14:31:00  morsch
 Memory leaks fixed. (M. Bondila)
 
@@ -70,32 +73,26 @@ void AliGenReaderTreeK::Init()
     } else {
 	printf("\n Warning: Basefile cannot be found !\n");
     }
-    fFile = new TFile(fFileName);
+    if (!fFile) fFile  = new TFile(fFileName);
 }
 
 Int_t AliGenReaderTreeK::NextEvent() 
 {
-// Read the next event  
+//  Read the next event  
 //  cd to file with old kine tree    
     if (!fBaseFile) Init();
-    if (fStack) delete fStack;
-    fStack = new AliStack(1000);
     fFile->cd();
-//  Connect treeE
-    if (fTreeE) {
-	delete fTreeE;
-    } else {
-	fTreeE = (TTree*)gDirectory->Get("TE");
-    }
-
+//  Connect header tree
+    if (!fTreeE) fTreeE = (TTree*)gDirectory->Get("TE");
     if (fHeader) delete fHeader;
     fHeader = 0;
     fTreeE->SetBranchAddress("Header", &fHeader);
 //  Get next event
     fTreeE->GetEntry(fNcurrent);
+//  Connect Stack
+    if (fStack) delete fStack;
     fStack = fHeader->Stack();
     fStack->GetEvent(fNcurrent);
-    
 //  cd back to base file
     fBaseFile->cd();
 //
@@ -103,7 +100,7 @@ Int_t AliGenReaderTreeK::NextEvent()
     fNparticle = 0;
     Int_t ntrack =  fStack->GetNtrack();
     printf("\n Next event contains %d particles", ntrack);
-    
+//    
     return  ntrack;
 }
 
