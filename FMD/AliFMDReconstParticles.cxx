@@ -1,3 +1,14 @@
+
+ //////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Forward Multiplicity Detector have to be reconstructed                   //
+//  number of particles in fixed pseudorapidity interval from                //
+// fNumOfMinRing  to fNumOfMaxRing                                           //
+// and phi interval                                                          //
+//  from fNumOfMinSector to fNumOfMaxSector                                  //
+ //////////////////////////////////////////////////////////////////////////////
+ 
+
 #include "AliFMDReconstParticles.h"
 
 ClassImp(AliFMDReconstParticles)

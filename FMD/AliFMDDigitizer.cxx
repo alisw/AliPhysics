@@ -13,6 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+ //////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Forward Multiplicity Detector based on Silicon plates                    //
+//  This class contains the procedures simulation ADC  signal for            //
+//  the Forward Multiplicity detector  : hits -> digits                      //
+//  ADC signal consists                                                      //
+//   - number of detector;                                                   //
+//   - number of ring;                                                       //
+//   - number of sector;                                                     //
+//   - ADC signal in this channel                                            //
+//                                                                           //
+ //////////////////////////////////////////////////////////////////////////////
 
 #include <TTree.h> 
 #include <TVector.h>
@@ -50,12 +62,11 @@ ClassImp(AliFMDDigitizer)
 AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager) 
     :AliDigitizer(manager) 
 {
-     cout<<"AliFMDDigitizer::AliFMDDigitizer"<<endl;
-// ctor which should be used
-//  fDebug =0;
- // if (GetDebug()>2)
+  // ctor which should be used
+  //  fDebug =0;
+  // if (GetDebug()>2)
   //  cerr<<"AliFMDDigitizer::AliFMDDigitizer"
-   //     <<"(AliRunDigitizer* manager) was processed"<<endl;
+  //     <<"(AliRunDigitizer* manager) was processed"<<endl;
 }
 
 //------------------------------------------------------------------------
@@ -75,7 +86,7 @@ Bool_t AliFMDDigitizer::Init()
 
 //---------------------------------------------------------------------
 
-void AliFMDDigitizer::Exec(Option_t * option)
+void AliFMDDigitizer::Exec(Option_t * /*option*/)
 {
 
   /*
@@ -85,14 +96,12 @@ void AliFMDDigitizer::Exec(Option_t * option)
    - number of sector;
    - ADC signal in this channel
   */
-  cout<<"AliFMDDigitizer::Exec Nachali Exec>> "<<endl;
 
   AliRunLoader *inRL, *outRL;//in and out Run Loaders
   AliLoader *ingime, *outgime;// in and out ITSLoaders
 
   outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   outgime = outRL->GetLoader("FMDLoader");
-  cout<<"AliFMDDigitizer::Exec >> "<<outgime<<endl;
 
 #ifdef DEBUG
   cout<<"AliFMDDigitizer::>SDigits2Digits start...\n";
@@ -109,13 +118,13 @@ void AliFMDDigitizer::Exec(Option_t * option)
     for(Int_t j=0; j<50; j++)
       for(Int_t ij=0; ij<520; ij++)
      de[i][j][ij]=0;
-  Int_t NumberOfRings[5]=
+  Int_t numberOfRings[5]=
   {512,256,512,256,512};
-  Int_t NumberOfSectors[5]=
+  Int_t numberOfSector[5]=
   {20,40,20,40,20}; 
   
   AliFMDhit *fmdHit=0;
-  TTree *TH=0;
+  TTree *tH=0;
   TBranch *brHits=0;
   TBranch *brD=0;
 
@@ -150,31 +159,31 @@ void AliFMDDigitizer::Exec(Option_t * option)
       ingime->LoadHits("READ");//probably it is necessary to load them before
       
       
-      TH = ingime->TreeH();
-      if (TH == 0x0)
+      tH = ingime->TreeH();
+      if (tH == 0x0)
        {
          ingime->LoadHits("read");
-         TH = ingime->TreeH();
+         tH = ingime->TreeH();
        }
-      brHits = TH->GetBranch("FMD");
+      brHits = tH->GetBranch("FMD");
       if (brHits) {
   //      brHits->SetAddress(&fHits);
           fFMD->SetHitsAddressBranch(brHits);
       }else{
         Fatal("Exec","EXEC Branch FMD hit not found");
       }
-      TClonesArray *FMDhits = fFMD->Hits ();
+      TClonesArray *fFMDhits = fFMD->Hits ();
       
-      Int_t ntracks    = (Int_t) TH->GetEntries();
+      Int_t ntracks    = (Int_t) tH->GetEntries();
       cout<<"Number of tracks TreeH"<<ntracks<<endl;
       for (Int_t track = 0; track < ntracks; track++)
        {
          brHits->GetEntry(track);
-         Int_t nhits = FMDhits->GetEntries ();
+         Int_t nhits = fFMDhits->GetEntries ();
          // if(nhits>0) cout<<"nhits "<<nhits<<endl;
          for (hit = 0; hit < nhits; hit++)
            {
-             fmdHit = (AliFMDhit *) FMDhits->UncheckedAt(hit);
+             fmdHit = (AliFMDhit *) fFMDhits->UncheckedAt(hit);
 
              volume = fmdHit->Volume ();
              sector = fmdHit->NumberOfSector ();
@@ -190,14 +199,14 @@ void AliFMDDigitizer::Exec(Option_t * option)
 
  
   // Put noise and make ADC signal
-   Float_t I = 1.664 * 0.04 * 2.33 / 22400;     // = 6.923e-6;
+   Float_t mipI = 1.664 * 0.04 * 2.33 / 22400;     // = 6.923e-6;
    for ( ivol=1; ivol<=5; ivol++){
-     for ( iSector=1; iSector<=NumberOfSectors[ivol-1]; iSector++){
-       for ( iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++){
+     for ( iSector=1; iSector<=numberOfSector[ivol-1]; iSector++){
+       for ( iRing=1; iRing<=numberOfRings[ivol-1]; iRing++){
          digit[0]=ivol;
          digit[1]=iSector;
          digit[2]=iRing;
-         charge = Int_t (de[ivol][iSector][iRing] / I);
+         charge = Int_t (de[ivol][iSector][iRing] / mipI);
          Int_t pedestal=Int_t(gRandom->Gaus(500,250));
   //       digit[3]=PutNoise(charge);
          digit[3]=charge + pedestal;

@@ -20,8 +20,8 @@
 //  Forward Multiplicity Detector based on Silicon plates                    //
 //  This class contains the base procedures for the Forward Multiplicity     //
 //  detector                                                                 //
-//  Detector consists of 6 Si volumes covered pseudorapidity interval         //
-//  from 1.6 to 6.0.                                                         //
+//  Detector consists of 5 Si volumes covered pseudorapidity interval         //
+//  from 1.7 to 5.1.                                                         //
 //                                                                           //
 //Begin_Html
 /*

@@ -18,7 +18,7 @@ class AliFMDDigitizer : public AliDigitizer {
   
   // Do the main work
   void Exec(Option_t* option=0) ;
-  Int_t PutNoise(Int_t charge){return (Int_t)(gRandom->Gaus(charge,500));}
+  Int_t PutNoise(Int_t charge) {return (Int_t)(gRandom->Gaus(charge,500));}
   TClonesArray *Digits() const {return fDigits;}
   TClonesArray *Hits() const {return fHits;}
  
