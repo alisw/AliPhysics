@@ -261,12 +261,17 @@ Bool_t AliReconstruction::Run()
     }      
   }
 
-  // create the ESD output file
+  // create the ESD output file and tree
   TFile* file = TFile::Open("AliESDs.root", "RECREATE");
   if (!file->IsOpen()) {
     Error("Run", "opening AliESDs.root failed");
     if (fStopOnError) {CleanUp(file); return kFALSE;}    
   }
+  AliESD* esd = new AliESD;
+  TTree* tree = new TTree("esdTree", "Tree with ESD objects");
+  tree->Branch("ESD", "AliESD", &esd);
+  delete esd;
+  gROOT->cd();
 
   // loop over events
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
@@ -278,7 +283,7 @@ Bool_t AliReconstruction::Run()
 	    aliRun->GetRunNumber(), aliRun->GetEvNumber());
     if (!gSystem->AccessPathName(fileName)) continue;
 
-    AliESD* esd = new AliESD;
+    esd = new AliESD;
     esd->SetRunNumber(aliRun->GetRunNumber());
     esd->SetEventNumber(aliRun->GetEvNumber());
     esd->SetMagneticField(aliRun->Field()->SolenoidField());
@@ -315,19 +320,14 @@ Bool_t AliReconstruction::Run()
     if (fCheckPointLevel > 1) WriteESD(esd, "PID");
 
     // write ESD
-    char name[100]; 
-    sprintf(name, "ESD%d", iEvent);
-    file->cd();
-    if (!esd->Write(name)) {
-      Error("Run", "writing ESD failed");
-      if (fStopOnError) {CleanUp(file); return kFALSE;}
-    }
-    file->Flush();
+    tree->Fill();
 
     if (fCheckPointLevel > 0) WriteESD(esd, "final");
     delete esd;
   }
 
+  file->cd();
+  tree->Write();
   CleanUp(file);
 
   return kTRUE;
