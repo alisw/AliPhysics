@@ -46,22 +46,24 @@
 #include <TParticle.h>
 
 // --- AliRoot header files ---
+#include "AliRun.h"
+#include "AliMC.h"
 #include "AliConst.h"
 #include "AliMagF.h"
 #include "AliVZEROLoader.h"
 #include "AliVZEROdigit.h"
 #include "AliVZEROhit.h"
 #include "AliVZEROv2.h"
-#include "AliMC.h"
 
 ClassImp(AliVZEROv2)
 
-//--------------------------------------------------------------------
+//_____________________________________________________________________________
 AliVZEROv2:: AliVZEROv2():AliVZERO()
 {
 // Standard default constructor 
 }
-//--------------------------------------------------------------------
+
+//_____________________________________________________________________________
 AliVZEROv2::AliVZEROv2(const char *name, const char *title):
  AliVZERO(name,title)
 {
@@ -78,7 +80,7 @@ AliVZEROv2::AliVZEROv2(const char *name, const char *title):
   
 }
 
-//-------------------------------------------------------------------------
+//_____________________________________________________________________________
 void AliVZEROv2::CreateGeometry()
 {
 
@@ -112,20 +114,20 @@ void AliVZEROv2::CreateGeometry()
   Float_t  r0, r5;
   Float_t  pi = TMath::Pi();
     
-  height1           =     1.82;           // height of cell 1, in cm
-  height2           =     3.81;           // height of cell 2, in cm
-  height3           =     4.72;           // height of cell 3, in cm
-  height4           =     7.12;           // height of cell 4, in cm
-  height5           =    10.83;           // height of cell 5, in cm
+  height1     =     1.82;         // height of cell 1, in cm
+  height2     =     3.81;         // height of cell 2, in cm
+  height3     =     4.72;         // height of cell 3, in cm
+  height4     =     7.12;         // height of cell 4, in cm
+  height5     =    10.83;         // height of cell 5, in cm
   
-  theta             = pi/6.0/2.0;       // half angular opening = 15 degrees
+  theta       = pi/6.0/2.0;       // half angular opening = 15 degrees
     
-  halfThickQua    = fThickness1/2.0;   // half thickness of elementary cell (inner ring)
+  halfThickQua= fThickness1/2.0;  // half thickness of elementary cell (inner ring)
     
-  zdet              =    90.0 - 0.6 -fThickness/2.0;  // distance to vertex (along Z axis)
-  r0                =    4.05;            // closest distance to center of the beam pipe
-  height            =    height1 + height2 + height3 + height4 + height5;
-  r5                =    r0 + height;
+  zdet        =    90.0 - 0.6 -fThickness/2.0;  // distance to vertex (along Z axis)
+  r0          =    4.05;          // closest distance to center of the beam pipe
+  height      =    height1 + height2 + height3 + height4 + height5;
+  r5          =    r0 + height;
 
 // Creation of mother volume v0LE - left part - :
 // Entrance face at  +350.0 cm  (new coordinate system) ...
@@ -636,8 +638,8 @@ void AliVZEROv2::BuildGeometry()
   v0L0->SetNumberOfDivisions(ndiv); 
   v0L0->SetLineColor(7);
   
-  Float_t   offset_left;
-  offset_left    = - fThickness1/2.0; 
+  Float_t   offsetLeft;
+  offsetLeft    = - fThickness1/2.0; 
 
   Float_t   r1Left =  r0Left + height1Left;        
       
@@ -709,7 +711,7 @@ void AliVZEROv2::BuildGeometry()
     sprintf(nameNode,"SUBDEL%d",ndetL);
     
     v0Lnode->cd();
-    v0Lnode0 = new TNode(nameNode,nameNode,v0L0,0.0,0.0, offset_left + halfThickQua,mat920);	 
+    v0Lnode0 = new TNode(nameNode,nameNode,v0L0,0.0,0.0, offsetLeft + halfThickQua,mat920);	 
     v0Lnode0->SetLineColor(kColorVZERO);
     fNodes->Add(v0Lnode0);
     ndetL++;
@@ -763,7 +765,7 @@ void AliVZEROv2::BuildGeometry()
      
 }  
     
-//------------------------------------------------------------------------
+//_____________________________________________________________________________
 void AliVZEROv2::CreateMaterials()
 {
 
@@ -925,10 +927,10 @@ void AliVZEROv2::CreateMaterials()
 
 //    gMC->SetCerenkov(idtmed[3002], 14, ppckov, absco_quarz, effic_all,rindex_quarz);    
 //    gMC->SetCerenkov(idtmed[3004], 14, ppckov_alu, absco_alu, effic_alu, rindex_alu);
-                                   
-    
+                                       
 }
-//---------------------------------------------------------------------
+
+//_____________________________________________________________________________
 void AliVZEROv2::DrawModule()
 {
 
@@ -945,10 +947,10 @@ void AliVZEROv2::DrawModule()
 
 }
 
-//-------------------------------------------------------------------
+//_____________________________________________________________________________
 void AliVZEROv2::Init()
 {
-// Initialises version 1 of the VZERO Detector
+// Initialises version 2 of the VZERO Detector
 // Just prints an information message
   
    printf(" VZERO version %d initialized \n",IsVersion());
@@ -960,8 +962,8 @@ void AliVZEROv2::Init()
   
 }
 
-//-------------------------------------------------------------------
 
+//_____________________________________________________________________________
 void AliVZEROv2::StepManager()
 {
  
@@ -977,7 +979,7 @@ void AliVZEROv2::StepManager()
      
      Float_t        theta;
      Float_t        phi;
-     Float_t        kRaddeg = 180/TMath::Pi();
+     Float_t        kRaddeg = 180.0/TMath::Pi();
      Float_t        ringNumber;
 
      Int_t          ipart;
@@ -1071,7 +1073,6 @@ void AliVZEROv2::StepManager()
 	 	 
 	 tlength  = 0.0;
 	 eloss    = 0.0; 
-
 	  
 	 } 
     }
@@ -1088,7 +1089,7 @@ void AliVZEROv2::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   new(lhits[fNhits++]) AliVZEROhit(fIshunt,track,vol,hits);
 }
 
-//---------------------------------------------------------------------
+//_____________________________________________________________________________
 void AliVZEROv2::AddDigits(Int_t *tracks, Int_t* digits) 
 {
 
@@ -1098,7 +1099,7 @@ void AliVZEROv2::AddDigits(Int_t *tracks, Int_t* digits)
    new(ldigits[fNdigits++]) AliVZEROdigit(tracks, digits);
 }
 
-//---------------------------------------------------------------------
+//_____________________________________________________________________________
 void AliVZEROv2::MakeBranch(Option_t *option)
 {
   
@@ -1116,7 +1117,7 @@ void AliVZEROv2::MakeBranch(Option_t *option)
   }     
 
   const char *cD = strstr(option,"D");
-  //
+  
   if (fDigits   && fLoader->TreeD() && cD) {
     fLoader->TreeD()->Branch(branchname,&fDigits, fBufferSize);
     printf("* AliDetector::MakeBranch * Making Branch %s for digits\n",branchname);

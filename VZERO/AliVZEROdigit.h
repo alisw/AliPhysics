@@ -7,13 +7,13 @@
 
 #include "AliDigit.h"
 
-//___________________________________________
+//_____________________________________________________________________________
 class AliVZEROdigit: public AliDigit  {
 
  public:
-    AliVZEROdigit() {}
+    AliVZEROdigit() {};
     AliVZEROdigit(Int_t* tracks, Int_t* digits);
-    virtual ~AliVZEROdigit() {}
+    virtual ~AliVZEROdigit() {};
     
   private:
     Int_t fEvent;         // Event number

@@ -13,24 +13,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-#include "AliVZERO.h"
 #include "AliVZEROdigit.h"
-#include "AliRun.h"
+
 ClassImp(AliVZEROdigit)
 
 AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
   AliDigit(tracks){
   
   //
-  // Creates VZERO digit
-  // The creator for the AliVZEROdigit class. This routine fills the
-  // AliVZEROdigit data members from the array digits. 
+  // Creates VZERO digits
+  //
+  // Fills the AliVZEROdigit data members from the array digits. 
   //
   
   fTrack      = tracks[0];
   fEvent      = digits[0];
-
   
 }
 

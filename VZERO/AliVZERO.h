@@ -8,6 +8,7 @@
 //  Manager and hits classes for set : VZERO    //
 //////////////////////////////////////////////////
 
+/*
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliDetector.h"
@@ -15,7 +16,13 @@
  
 #include <TNamed.h>
 #include <TTree.h>
+*/
+#include "AliDetector.h"
 
+class TNamed;
+class TTree;
+
+class AliVZEROLoader;
 class AliVZEROhit; 
 class AliVZEROdigit;
   
@@ -39,26 +46,25 @@ public:
   virtual void   MakeBranch(Option_t *option) =0;
   virtual void   DrawModule() {};
   virtual void   StepManager() {};
-  virtual inline  void   SetThickness(Float_t thick)  {fThickness = thick;};
-  virtual inline  void   SetThickness1(Float_t thick) {fThickness1 = thick;};
+  virtual void   SetThickness(Float_t thick)  {fThickness = thick;};
+  virtual void   SetThickness1(Float_t thick) {fThickness1 = thick;};
 // Set Stepping Parameters
   virtual void   SetMaxStepQua(Float_t p1);
   virtual void   SetMaxStepAlu(Float_t p1);
   virtual void   SetMaxDestepQua(Float_t p1);
   virtual void   SetMaxDestepAlu(Float_t p1);
 
-   Float_t      fThickness;
-   Float_t      fThickness1;
-
 protected:
 
-   Int_t fIdSens1;           // Sensitive volume  in VZERO
+   Int_t   fIdSens1;      // Sensitive volume  in VZERO
+   Float_t fThickness;    // Total thickness of box holding Right detector V0R i.e. 4.1 cm
+   Float_t fThickness1;   // Thickness of elementary cells i.e. 0.7 cm
   
 // Stepping Parameters
-   Float_t fMaxStepQua;      // Maximum step size inside the quartz volumes
-   Float_t fMaxStepAlu;      // Maximum step size inside the  aluminum volumes
-   Float_t fMaxDestepQua;    // Maximum relative energy loss in quartz
-   Float_t fMaxDestepAlu;    // Maximum relative energy loss in aluminum
+   Float_t fMaxStepQua;   // Maximum step size inside the quartz volumes
+   Float_t fMaxStepAlu;   // Maximum step size inside the  aluminum volumes
+   Float_t fMaxDestepQua; // Maximum relative energy loss in quartz
+   Float_t fMaxDestepAlu; // Maximum relative energy loss in aluminum
   
   ClassDef(AliVZERO,1)  //Class for the VZERO detector
 };

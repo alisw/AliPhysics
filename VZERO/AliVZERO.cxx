@@ -26,13 +26,21 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
+// --- Standard libraries ---
 #include <Riostream.h>
 
+// --- ROOT libraries ---
+#include <TNamed.h>
+#include <TTree.h>
+
+// --- AliRoot header files ---
+#include "AliRun.h"
+#include "AliMC.h"
 #include "AliVZERO.h"
+#include "AliVZEROLoader.h"
 
 ClassImp(AliVZERO)
  
-
 //_____________________________________________________________________________
 AliVZERO::AliVZERO(const char *name, const char *title)
        : AliDetector(name,title)
@@ -63,9 +71,20 @@ AliVZERO::AliVZERO(const char *name, const char *title)
 //_____________________________________________________________________________
 AliVZERO::~AliVZERO()
 {
+  //
+  // Default destructor for VZERO Detector
+  //
+  
     if (fHits) {
         fHits->Delete();
         delete fHits;
+	fHits=0;
+    }
+    
+    if (fDigits) {
+        fDigits->Delete();
+        delete fDigits;
+        fDigits=0;
     }
 }
 
@@ -73,7 +92,7 @@ AliVZERO::~AliVZERO()
 void AliVZERO::BuildGeometry()
 {
   //
-  // Build simple ROOT TNode geometry for event display
+  // Builds simple ROOT TNode geometry for event display
   //
 }
  
@@ -81,78 +100,94 @@ void AliVZERO::BuildGeometry()
 void AliVZERO::CreateGeometry()
 {
   //
-  // Build simple ROOT TNode geometry for event display
+  // Builds simple Geant3 geometry 
   //
 }
 //_____________________________________________________________________________
 void AliVZERO::CreateMaterials()
 {
   //
-  // Build simple ROOT TNode geometry for event display
+  // Creates materials used for Geant3 geometry 
   //
 }
-
-
 
 //_____________________________________________________________________________
 Int_t AliVZERO::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
 {
   //
-  // Calculate the distance from the mouse to the VZERO on the screen
+  // Calculates the distance from the mouse to the VZERO on the screen
   // Dummy routine
   //
   
   return 9999;
 }
  
-//-------------------------------------------------------------------------
+//_____________________________________________________________________________
 void AliVZERO::Init()
 {
   //
-  // Initialise the VZERO after it has been built
+  // Initialises the VZERO  class after it has been built
   //
 }
 
 
-//-------------------------------------------------------------------------
-
+//_____________________________________________________________________________
 void AliVZERO::SetMaxStepQua(Float_t p1)
 {
+  //
+  // Possible parametrisation of steps in active materials
+  //
      fMaxStepQua = p1;
 }
 
-//___________________________________________
+//_____________________________________________________________________________
 void AliVZERO::SetMaxStepAlu(Float_t p1)
 {
+  //
+  // Possible parametrisation of steps in Aluminum foils (not used in 
+  // version v2)
+  //
     fMaxStepAlu = p1;
 }
 
-//___________________________________________
+//_____________________________________________________________________________
 void AliVZERO::SetMaxDestepQua(Float_t p1)
 {
+  //
+  // Possible parametrisation of steps in active materials (quartz)
+  //
     fMaxDestepQua = p1;
 }
 
-//___________________________________________
+//_____________________________________________________________________________
 void AliVZERO::SetMaxDestepAlu(Float_t p1)
 {
+  //
+  // Possible parametrisation of steps in Aluminum (not used in 
+  // version v2)
+  //
     fMaxDestepAlu = p1;
 }
 
-//___________________________________________
+//_____________________________________________________________________________
 AliLoader* AliVZERO::MakeLoader(const char* topfoldername)
 { 
-  // builds VZEROgetter (AliLoader type)
+  //
+  // Builds VZEROgetter (AliLoader type)
   // if detector wants to use customized getter, it must overload this method
+  //
 
   Info("MakeLoader","Creating AliVZEROLoader. Top folder is %s.",topfoldername);
   fLoader = new AliVZEROLoader(GetName(),topfoldername);
   return fLoader;
 }
 
-//___________________________________________
-void AliVZERO::SetTreeAddress(){
+//_____________________________________________________________________________
+void AliVZERO::SetTreeAddress()
+{
+  // 
   // Sets tree address for hits.
+  //
 
   if (fLoader->TreeH() && (fHits == 0x0))
     fHits = new  TClonesArray("AliVZEROhit", 400);
