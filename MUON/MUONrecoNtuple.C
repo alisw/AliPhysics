@@ -197,7 +197,7 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   // The right place for changing AliMUONEventReconstructor parameters
   // with respect to the default ones
 //   Reco->SetMaxSigma2Distance(100.0);
-  Reco->SetPrintLevel(10);
+  Reco->SetPrintLevel(0);
 //   Reco->SetPrintLevel(1);
 //   Reco->SetBendingResolution(0.0);
 //   Reco->SetNonBendingResolution(0.0);
