@@ -48,74 +48,76 @@ class AliHBTAnalysis: public AliAnalysis
      virtual ~AliHBTAnalysis();
 
      Int_t  Init();
-     Int_t ProcessEvent(AliAOD* aodrec, AliAOD* aodsim = 0x0);
-     Int_t Finish();
+     Int_t  ProcessEvent(AliAOD* aodrec, AliAOD* aodsim = 0x0);
+     Int_t  Finish();
      
-     enum EProcessOption{kReconstructed,kSimulated,kSimulatedAndReconstructed};
-     void  SetProcessOption(EProcessOption option){fProcessOption = option;}//Init must be called to make effect
+     enum   EProcessOption{kReconstructed,kSimulated,kSimulatedAndReconstructed};
+     void   SetProcessOption(EProcessOption option){fProcessOption = option;}//Init must be called to make effect
      
-     virtual void Process(Option_t* option = "TracksAndParticles");//Stand alone HBT analysis 
+     void   Process(Option_t* option = "TracksAndParticles");//Stand alone HBT analysis 
      
-     void SetGlobalPairCut(AliAODPairCut* cut);
+     void   SetGlobalPairCut(AliAODPairCut* cut);
      
-     void AddTrackFunction(AliHBTOnePairFctn* f);
-     void AddParticleFunction(AliHBTOnePairFctn* f);
-     void AddParticleAndTrackFunction(AliHBTTwoPairFctn* f);
+     void   AddTrackFunction(AliHBTOnePairFctn* f);
+     void   AddParticleFunction(AliHBTOnePairFctn* f);
+     void   AddParticleAndTrackFunction(AliHBTTwoPairFctn* f);
      
-     void AddParticleMonitorFunction(AliHBTMonOneParticleFctn* f);    //z.ch.
-     void AddTrackMonitorFunction(AliHBTMonOneParticleFctn* f);    //z.ch.
-     void AddParticleAndTrackMonitorFunction(AliHBTMonTwoParticleFctn* f);//z.ch.
+     void   AddParticleMonitorFunction(AliHBTMonOneParticleFctn* f);    //z.ch.
+     void   AddTrackMonitorFunction(AliHBTMonOneParticleFctn* f);    //z.ch.
+     void   AddParticleAndTrackMonitorFunction(AliHBTMonTwoParticleFctn* f);//z.ch.
 
-     void AddResolutionFunction(AliHBTTwoPairFctn* f){AddParticleAndTrackFunction(f);}
+     void   AddResolutionFunction(AliHBTTwoPairFctn* f){AddParticleAndTrackFunction(f);}
      
-     void SetReader(AliReader* r){fReader = r;}
+     void   SetReader(AliReader* r){fReader = r;}
      
-     void WriteFunctions();
-     void SetOutputFileName(const char* fname);
+     void   WriteFunctions();
+     void   SetOutputFileName(const char* fname);
           
-     void SetBufferSize(Int_t buffsize){fBufferSize=buffsize;}
-     void SetOwner(Bool_t owner=kTRUE){fIsOwner=owner;}
+     void   SetBufferSize(Int_t buffsize){fBufferSize=buffsize;}
+     void   SetOwner(Bool_t owner=kTRUE){fIsOwner=owner;}
      Bool_t IsOwner() const {return fIsOwner;}
      Bool_t IsNonIdentAnalysis();
      void   ResetFunctions();
      void   SetDisplayInfo(Int_t howoften){fDisplayMixingInfo = howoften;}//defines every each line info about mixing is displayed
      
+     void   SetApparentVertex(Double_t x, Double_t y, Double_t z);//Sets apparent vertex
+     
      static void PressAnyKey();//small utility function that helps to make comfortable macros
+     
    protected:
      
-     Bool_t RunCoherencyCheck();
-     
-     void FilterOut(AliAOD* outpart1, AliAOD* outpart2, AliAOD* inpart,
-                    AliAOD* outtrack1, AliAOD* outtrack2, AliAOD* intrack)const;
-     void FilterOut(AliAOD* out1, AliAOD* out2, AliAOD* in)const;
-     void DeleteFunctions();
-     
-
      /**********************************************/
      /*      E V E N T     P R O C E S S I N G     */
      /**********************************************/
      // NEW AOD schema
      Int_t (AliHBTAnalysis::*fProcEvent)(AliAOD* aodrec, AliAOD* aodsim);//Pointer to the processing method
 
-     virtual Int_t ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim);
-     virtual Int_t ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/);
-     virtual Int_t ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim);
+     Int_t ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     Int_t ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/);
+     Int_t ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim);
      
-     virtual Int_t ProcessRecAndSimNonId(AliAOD* aodrec, AliAOD* aodsim);
-     virtual Int_t ProcessSimNonId(AliAOD* /*aodrec*/, AliAOD* aodsim);
-     virtual Int_t ProcessRecNonId(AliAOD* aodrec, AliAOD* /*aodsim*/);
+     Int_t ProcessRecAndSimNonId(AliAOD* aodrec, AliAOD* aodsim);
+     Int_t ProcessSimNonId(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     Int_t ProcessRecNonId(AliAOD* aodrec, AliAOD* /*aodsim*/);
      
 
      // OLD legacy schema
 
-     virtual void ProcessTracks();
-     virtual void ProcessParticles();
-     virtual void ProcessTracksAndParticles();
+     void   ProcessTracks();
+     void   ProcessParticles();
+     void   ProcessTracksAndParticles();
      
-     virtual void ProcessTracksAndParticlesNonIdentAnal();
-     virtual void ProcessParticlesNonIdentAnal();
-     virtual void ProcessTracksNonIdentAnal();
+     void   ProcessTracksAndParticlesNonIdentAnal();
+     void   ProcessParticlesNonIdentAnal();
+     void   ProcessTracksNonIdentAnal();
 
+     Bool_t RunCoherencyCheck();
+     
+     void   FilterOut(AliAOD* outpart1, AliAOD* outpart2, AliAOD* inpart,
+                      AliAOD* outtrack1, AliAOD* outtrack2, AliAOD* intrack)const;
+     void   FilterOut(AliAOD* out1, AliAOD* out2, AliAOD* in)const;
+     void   DeleteFunctions();
+     
 
      AliReader* fReader;//! Pointer to reader
      
@@ -136,26 +138,28 @@ class AliHBTAnalysis: public AliAnalysis
      AliHBTMonOneParticleFctn**  fTrackMonitorFunctions; //! which are used for single particle analysis,
      AliHBTMonTwoParticleFctn**  fParticleAndTrackMonitorFunctions;  //! cut monitoring, etc.
 
-
-     /**********************************************/
-     /* Control parameters  */
-     /**********************************************/
-
      AliEventCut*     fBkgEventCut;// We can narrow class of events used in 
+
+     AliEventBuffer*  fPartBuffer;//Sim Particles event buffer
+     AliEventBuffer*  fTrackBuffer;//Rec Tracks event buffer
+
+     /**********************************************/
+     /* Control parameters                         */
+     /**********************************************/
       
-     Int_t  fBufferSize; //defines the size of buffer for mixed events; -1==MIX All
-     Int_t  fDisplayMixingInfo;//!defines every which particle mixing info is displayed
-     Bool_t fIsOwner;//!defines of all functions are supposed to be deleted while by the way of analysis defaulr false
-    
-     AliEventBuffer* fPartBuffer;//Sim Particles event buffer
-     AliEventBuffer* fTrackBuffer;//Rec Tracks event buffer
+     Int_t            fBufferSize; //defines the size of buffer for mixed events; -1==MIX All
+     Int_t            fDisplayMixingInfo;//!defines every which particle mixing info is displayed
+     Bool_t           fIsOwner;//!defines of all functions are supposed to be deleted while by the way of analysis defaulr false
      
-     EProcessOption  fProcessOption;//Option that says waht analysis to do (Rec, Sim or SimAndRec)
-     Bool_t          fNoCorrfctns;//Internal flag indicating that no cfs are set by the user (only monitor ones)
-     TString*        fOutputFileName;//Fiele name where to dump results, if not specified reults are written to gDirectory
+     EProcessOption   fProcessOption;//Option that says waht analysis to do (Rec, Sim or SimAndRec)
+     Bool_t           fNoCorrfctns;//Internal flag indicating that no cfs are set by the user (only monitor ones)
+     TString*         fOutputFileName;//Fiele name where to dump results, if not specified reults are written to gDirectory
+     
+     Double_t         fVertexX;//X position of apparent vertex
+     Double_t         fVertexY;//Y position of apparent vertex
+     Double_t         fVertexZ;//Z position of apparent vertex
      
    private:
-   
 
      static const UInt_t fgkFctnArraySize;//!
      static const UInt_t fgkDefaultMixingInfo;//!
@@ -163,6 +167,4 @@ class AliHBTAnalysis: public AliAnalysis
 
      ClassDef(AliHBTAnalysis,0)
  };
- 
- 
 #endif

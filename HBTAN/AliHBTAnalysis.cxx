@@ -58,14 +58,17 @@ AliHBTAnalysis::AliHBTAnalysis():
   fTrackMonitorFunctions ( new AliHBTMonOneParticleFctn* [fgkFctnArraySize]),    
   fParticleAndTrackMonitorFunctions ( new AliHBTMonTwoParticleFctn* [fgkFctnArraySize]),    
   fBkgEventCut(0x0),
+  fPartBuffer(0x0),
+  fTrackBuffer(0x0),
   fBufferSize(2),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE),
-  fPartBuffer(0x0),
-  fTrackBuffer(0x0),
   fProcessOption(kSimulatedAndReconstructed),
   fNoCorrfctns(kFALSE),
-  fOutputFileName(0x0)
+  fOutputFileName(0x0),
+  fVertexX(0.0),
+  fVertexY(0.0),
+  fVertexZ(0.0)
  {
    //default constructor
    
@@ -89,14 +92,17 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   fTrackMonitorFunctions(0x0),
   fParticleAndTrackMonitorFunctions(0x0),
   fBkgEventCut(0x0),
+  fPartBuffer(0x0),
+  fTrackBuffer(0x0),
   fBufferSize(fgkDefaultBufferSize),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE),
-  fPartBuffer(0x0),
-  fTrackBuffer(0x0),
   fProcessOption(kSimulatedAndReconstructed),
   fNoCorrfctns(kFALSE),
-  fOutputFileName(0x0)
+  fOutputFileName(0x0),
+  fVertexX(0.0),
+  fVertexY(0.0),
+  fVertexZ(0.0)
  {
 //copy constructor
    Fatal("AliHBTAnalysis(const AliHBTAnalysis&)","Sensless");
@@ -146,7 +152,26 @@ Int_t AliHBTAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
    }
   if ( Pass(aodrec,aodsim) ) return 0;
   
-  return  (this->*fProcEvent)(aodrec,aodsim);
+  //Move event to the apparent vertex -> must be after the event cut
+  //It is important for any cut that use any spacial coordiantes, 
+  //f.g. anti-merging cut in order to preserve the same bahavior of variables (f.g. distance between tracks)
+  Double_t dvx = 0, dvy = 0, dvz = 0;
+  if (aodrec)
+   {
+     Double_t pvx,pvy,pvz;
+     aodrec->GetPrimaryVertex(pvx,pvy,pvz);
+     
+     dvx = fVertexX - pvx;
+     dvy = fVertexY - pvy;
+     dvz = fVertexZ - pvz;
+     aodrec->Move(dvx,dvy,dvz);
+   }  
+  
+  Int_t result = (this->*fProcEvent)(aodrec,aodsim);
+
+  if (aodrec) aodrec->Move(-dvx,-dvy,-dvz);//move event back to the same spacial coordinates
+  
+  return  result;
 }
 /*************************************************************************************/ 
 
@@ -161,6 +186,7 @@ Int_t AliHBTAnalysis::Finish()
 void AliHBTAnalysis::DeleteFunctions()
 {
  //Deletes all functions added to analysis
+ 
  UInt_t ii;
  for(ii = 0;ii<fNParticleFunctions;ii++)
   { 
@@ -1693,6 +1719,19 @@ Bool_t AliHBTAnalysis::IsNonIdentAnalysis()
    return kFALSE;
  
  return kTRUE;
+}
+/*************************************************************************************/ 
+
+void AliHBTAnalysis::SetApparentVertex(Double_t x, Double_t y, Double_t z)
+{ 
+  //Sets apparent vertex
+  // All events have to be moved to the same vertex position in order to
+  // to be able to comare any space positions (f.g. anti-merging)
+  // This method defines this position
+  
+  fVertexX = x;
+  fVertexY = y;
+  fVertexZ = z;
 }
 /*************************************************************************************/ 
 
