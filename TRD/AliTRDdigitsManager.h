@@ -31,6 +31,7 @@ class AliTRDdigitsManager : public TObject {
   AliTRDdigitsManager &operator=(const AliTRDdigitsManager &m);
 
   virtual void                CreateArrays();
+  virtual void                ResetArrays();
   virtual void                Copy(TObject &m);
   virtual Bool_t              Open(const Char_t *file);
   virtual Bool_t              MakeBranch(const Char_t *file = 0);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.42  2002/12/13 13:31:44  cblume
+Add ADC offset and change default digitazation parameters
+
 Revision 1.41  2002/10/21 09:10:32  cblume
 Fix type conversion warnings
 
@@ -661,6 +664,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
   AliTRDdataArrayI *digits  = 0;
   AliTRDdataArrayI *dictionary[kNDict];
 
+  // Reset the digits arrays
+  fDigitsManager->ResetArrays();
+
   // Create a default parameter class if none is defined
   if (!fPar) {
     fPar = new AliTRDparameter("TRDparameter","Standard TRD parameter");
@@ -1158,6 +1164,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
     // Compress the arrays
     if (!fSimpleSim) {  
+
       digits->Compress(1,0);
       for (iDict = 0; iDict < kNDict; iDict++) {
         dictionary[iDict]->Compress(1,0);

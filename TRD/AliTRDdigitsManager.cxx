@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/22 15:53:08  alibrary
+Introducing Riostream.h
+
 Revision 1.19  2002/10/14 14:57:43  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -209,6 +212,27 @@ void AliTRDdigitsManager::CreateArrays()
   fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+    fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
+                                               ,AliTRDgeometry::Ndet());
+  }
+
+}
+//_____________________________________________________________________________
+void AliTRDdigitsManager::ResetArrays()
+{
+  //
+  // Reset the data arrays
+  //
+
+  if (fDigits) {
+    delete fDigits;
+  }
+  fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
+
+  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+    if (fDictionary[iDict]) {  
+      delete fDictionary[iDict];
+    }
     fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
                                                ,AliTRDgeometry::Ndet());
   }
