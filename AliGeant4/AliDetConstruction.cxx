@@ -44,9 +44,9 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("ITS",    7, 5);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("MUON",   2, 1);
+  detSwitch = new AliDetSwitch("MUON",   2, 1, kDetector, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PHOS",   5, 1);
+  detSwitch = new AliDetSwitch("PHOS",   2, 1);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("PMD",    3, 1);
   AddDetSwitch(detSwitch); 
@@ -60,7 +60,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("TRD",    2, 1, kDetector, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("ZDC",    2, 1, kDetector, false);
+  detSwitch = new AliDetSwitch("ZDC",    3, 2, kDetector, false);
   AddDetSwitch(detSwitch);  
 }
 
@@ -175,12 +175,23 @@ void AliDetConstruction::CheckDetDependencies()
 // ---
 
   // get switched versions of dependent modules
+  G4int verMUON = GetDetSwitch("MUON")->GetSwitchedVersion(); 
   G4int verTOF = GetDetSwitch("TOF")->GetSwitchedVersion(); 
   G4int verTRD = GetDetSwitch("TRD")->GetSwitchedVersion(); 
   G4int verZDC = GetDetSwitch("ZDC")->GetSwitchedVersion(); 
   G4int verFRAME = GetDetSwitch("FRAME")->GetSwitchedVersion(); 
   
   // check dependencies  
+  if (verMUON > -1) {
+    // MUON requires DIPO
+    if(GetDetSwitch("DIPO")->GetSwitchedVersion()<0) {
+      GetDetSwitch("DIPO")->SwitchOnDefault();
+      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
+      text = text + "    Switched MUON requires DIPO.\n"; 
+      text = text + "    The det switch for DIPO has been changed."; 
+      AliGlobals::Warning(text);
+    }  
+  }
   if (verTOF > -1) {
     // TOF requires FRAMEv1 - obsolete? 
     if (verFRAME != 2) {
@@ -202,7 +213,7 @@ void AliDetConstruction::CheckDetDependencies()
       AliGlobals::Warning(text);
     }  
   }  
-  if (verZDC > 0) {
+  if (verZDC > -1) {
     // ZDC requires PIPE, ABSO, DIPO, SHIL 
     G4int verPIPE = GetDetSwitch("PIPE")->GetSwitchedVersion(); 
     G4int verABSO = GetDetSwitch("ABSO")->GetSwitchedVersion(); 
