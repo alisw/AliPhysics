@@ -47,9 +47,13 @@ class AliHBTPair: public TObject
    virtual Double_t GetKStar();
    
    virtual Double_t GetDeltaP(); //return difference of momenta
+   virtual Double_t GetDeltaPt();
    virtual Double_t GetDeltaPx();
    virtual Double_t GetDeltaPy();
    virtual Double_t GetDeltaPz();
+   
+   virtual Double_t GetDeltaTheta();
+   virtual Double_t GetDeltaPhi();
    
    virtual Double_t GetGammaToCMSLC();
    Double_t GetWeight();
@@ -226,11 +230,20 @@ void AliHBTPair::CalculateDiffs()
 inline 
 Double_t AliHBTPair::GetDeltaP() //return difference of momenta
 {
- //returns difference of momenta
+ //returns difference of momenta (length of vector)
  CalculateDiffs();
  return TMath::Sqrt(fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff);
 }
 /****************************************************************/
+
+inline 
+Double_t AliHBTPair::GetDeltaPt()
+ {
+   //returns difference of Pz
+   return fPart1->Pt()-fPart2->Pt();
+ }
+/****************************************************************/
+
 inline 
 Double_t AliHBTPair::GetDeltaPx()
  {
@@ -255,6 +268,23 @@ Double_t AliHBTPair::GetDeltaPz()
    CalculateDiffs();
    return fPzDiff;
  }
+/****************************************************************/
+
+inline 
+Double_t AliHBTPair::GetDeltaPhi()
+ {
+   //returns difference of Pz
+   return fPart1->Phi()-fPart2->Phi();
+ }
+/****************************************************************/
+
+inline 
+Double_t AliHBTPair::GetDeltaTheta()
+ {
+   //returns difference of Pz
+   return fPart1->Theta()-fPart2->Theta();
+ }
+/****************************************************************/
 
 
 #endif
