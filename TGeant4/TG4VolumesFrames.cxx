@@ -32,8 +32,8 @@ TG4VolumesFrames::TG4VolumesFrames( TGTab* Tab, TGMainFrame* ActionFrame)
 { 
 //---> creates the volumes properties display frame
 //---> and plunges it into the main frame
-   TGCompositeFrame* Parent = Tab->AddTab("Volumes Properties");
-   fCapFrame = new TGCompositeFrame(Parent, 60, 20, kHorizontalFrame);
+   TGCompositeFrame* parent = Tab->AddTab("Volumes Properties");
+   fCapFrame = new TGCompositeFrame(parent, 60, 20, kHorizontalFrame);
    ULong_t back= TGFrame::GetBlackPixel(); 
    fCapFrame->ChangeBackground(back);
    fVolSubframe1 = new TGCompositeFrame(fCapFrame, 60, 20, kVerticalFrame);
@@ -85,7 +85,7 @@ TG4VolumesFrames::TG4VolumesFrames( TGTab* Tab, TGMainFrame* ActionFrame)
      fCapFrame->AddFrame(fVolSubframe1,fVolFrameLayout);  
      fCapFrame->AddFrame(fVolSubframe2,fVolFrameLayout);
 // going to the main frame     
-     Parent->AddFrame(fCapFrame, fVolFrameLayout);
+     parent->AddFrame(fCapFrame, fVolFrameLayout);
 }
 
 TG4VolumesFrames::TG4VolumesFrames(const TG4VolumesFrames& vf) 
