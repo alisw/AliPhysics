@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.17.4.3  2002/10/11 08:34:48  hristov
 Updating VirtualMC to v3-09-02
 
@@ -995,23 +998,16 @@ void AliTPCtracker::AliTPCseed::CookdEdx(Double_t low, Double_t up) {
   //-----------------------------------------------------------------
   Int_t i;
   Int_t nc=GetNumberOfClusters();
-
-  Int_t swap;//stupid sorting
-  do {
-    swap=0;
-    for (i=0; i<nc-1; i++) {
-      if (fdEdxSample[i]<=fdEdxSample[i+1]) continue;
-      Float_t tmp=fdEdxSample[i];
-      fdEdxSample[i]=fdEdxSample[i+1]; fdEdxSample[i+1]=tmp;
-      swap++;
-    }
-  } while (swap);
+  Int_t * index = new Int_t[nc];
+  TMath::Sort(nc, fdEdxSample,index,kFALSE);
 
   Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
   Float_t dedx=0;
-  for (i=nl; i<=nu; i++) dedx += fdEdxSample[i];
+  for (i=nl; i<=nu; i++) dedx += fdEdxSample[index[i]];
   dedx /= (nu-nl+1);
   SetdEdx(dedx);
+
+  delete [] index;
 
   //Very rough PID
   Double_t p=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt()));
