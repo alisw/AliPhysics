@@ -7,7 +7,15 @@ Sources   	:=$(SRCS)
 OutputDir	:=$(KIR_DIR)/$(Module)
 SoLib		:=$(KIR_DIR)/lib$(Module).so
 
-CxxFlags	:=-O -g -W -Wall -fPIC -pipe -fmessage-length=0 -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include
+ifeq ($(shell root-config --arch),linuxicc)
+ Compiler	:=icc
+ CompilerOptions:=-O0 -fpstkchk -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ SoOptions      := -Wl,-soname,lib$(Module).so -shared -O -g	
+else
+ Compiler       :=g++
+ CompilerOptions:=-O -g -W -Wall -fPIC -pipe -fmessage-length=0 -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ SoOptions      := -Wl,-soname,lib$(Module).so -shared -O -g	
+endif
 
 ifdef ALIVERBOSE
 	Mute		:=
@@ -31,7 +39,7 @@ DepFile		:= $(OutputDir)/$(Module).d
 
 $(SoLib):	 $(Objects)
 	@echo "Creating $@"
-	$(Mute)g++ -Wl,-soname,lib$(Module).so -shared -O -g $^ -o $@	
+	$(Mute)$(Compiler) $(SoOptions) $^ -o $@	
 
 $(DepFile):	$(Headers)
 	@[ -d $(OutputDir) ] || mkdir -p $(OutputDir)
@@ -41,11 +49,11 @@ $(DepFile):	$(Headers)
 
 $(DictSource):  $(Headers)
 	@echo "Generating $@"
-	$(Mute)rootcint -f $@ -c $(filter -I%,$(CxxFlags)) $^
+	$(Mute)rootcint -f $@ -c $(filter -I%,$(CompilerOptions)) $^
 
 $(DictObject) : $(DictSource)
 	@echo "Compiling $^"        
-	$(Mute)g++ $(CxxFlags) -I. -c $^ -o $@
+	$(Mute)$(Compiler) $(CompilerOptions) -I. -c $^ -o $@
 
 show:
 	@echo "Headers: $(Headers)"
@@ -65,7 +73,7 @@ clean:
 ############################ cxx rule #########################################
 $(OutputDir)/%.o : %.cxx
 	@echo $*.cxx
-	$(Mute)g++ $(CxxFlags) -c $*.cxx -o $(OutputDir)/$*.o
+	$(Mute)$(Compiler) $(CompilerOptions) -c $*.cxx -o $(OutputDir)/$*.o
 ############################ Dependencies #####################################
 
 -include $(DepFile) 
