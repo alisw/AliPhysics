@@ -189,7 +189,7 @@ void AliEMCALv1::StepManager(void){
       if (gMC->TrackCharge()!=0) { // Check
 	  Float_t BirkC1_mod = 0;
 	if (fBirkC0==1){ // Apply correction for higher charge states
-	  if (abs(gMC->TrackCharge())>=2)
+	  if (TMath::Abs(gMC->TrackCharge())>=2)
 	    BirkC1_mod=fBirkC1*7.2/12.6;
 	  else
 	    BirkC1_mod=fBirkC1;
