@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2002/03/21 13:52:53  vicinanz
+Minor changes to AliTOF constructor
+
 Revision 1.34  2002/02/20 13:41:38  hristov
 Default arguments set only in the header file
 
@@ -788,9 +791,9 @@ void AliTOF::Hits2SDigits()
   cout<<"ALiTOF::Hits2SDigits> start...\n";
   //#endif
   
-  char * fileSDigits = 0 ;
+  //char * fileSDigits = 0 ;
   char * fileHeader = 0;
-  AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader,fileSDigits) ;
+  AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader) ;
 
   sd->Exec("") ;
   sd->Print("");

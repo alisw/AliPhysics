@@ -27,9 +27,15 @@
 #include "TTask.h"
 #include "TTree.h"
 #include "TSystem.h"
-#include "TFile.h"
 #include "TParticle.h"
 #include "TH1.h"
+#include "TFile.h"
+#include "TROOT.h"
+#include "TFolder.h"
+#include <TF1.h>
+#include <stdlib.h>
+#include <iostream.h>
+#include <fstream.h>
 
 #include "AliTOFHitMap.h"
 #include "AliTOFSDigit.h"
@@ -45,16 +51,6 @@
 #include "AliDetector.h"
 #include "AliMC.h"
 
-#include "TFile.h"
-#include "TTask.h"
-#include "TTree.h"
-#include "TSystem.h"
-#include "TROOT.h"
-#include "TFolder.h"
-#include <TF1.h>
-#include <stdlib.h>
-#include <iostream.h>
-#include <fstream.h>
 
 ClassImp(AliTOFSDigitizer)
 
@@ -62,22 +58,19 @@ ClassImp(AliTOFSDigitizer)
   AliTOFSDigitizer::AliTOFSDigitizer():TTask("AliTOFSDigitizer","") 
 {
   // ctor
-  fSDigits = 0 ;
   fEvent1=0;
   fEvent2=0;
   ftail    = 0;
 }
            
 //____________________________________________________________________________ 
-  AliTOFSDigitizer::AliTOFSDigitizer(char* HeaderFile,char *SdigitsFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
+  AliTOFSDigitizer::AliTOFSDigitizer(char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
 {
   fEvent1=evNumber1;
   fEvent2=fEvent1+nEvents;
-  fSDigits = 0;
   ftail    = 0;
 
   fHeadersFile = HeaderFile ; // input filename (with hits)
-  fSDigitsFile = SdigitsFile; // output filename for sdigits
   TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
 
   //File was not opened yet
@@ -99,11 +92,6 @@ ClassImp(AliTOFSDigitizer)
   AliTOFSDigitizer::~AliTOFSDigitizer()
 {
   // dtor
-  if (ftail)
-    {
-      delete ftail;
-      ftail = 0;
-    }
 }
 
 //____________________________________________________________________________ 
@@ -226,6 +214,10 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 
     // create hit map
     AliTOFHitMap *hitMap = new AliTOFHitMap(TOF->SDigits());
+
+    // decrease required CPU time
+    TH->SetBranchStatus("*",0); // switch off all branches
+    TH->SetBranchStatus("TOF*",1); // switch on only TOF
 
     Int_t ntracks = static_cast<Int_t>(TH->GetEntries());
     for (Int_t track = 0; track < ntracks; track++)
@@ -392,23 +384,12 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 
   Print("");
 }
- 
-//__________________________________________________________________
-void AliTOFSDigitizer::SetSDigitsFile(char * file ){
-  if(!fSDigitsFile.IsNull())
-    cout << "Changing SDigits file from " <<(char *)fSDigitsFile.Data() << " to " << file << endl ;
-  fSDigitsFile=file ;
-}
 
 //__________________________________________________________________
 void AliTOFSDigitizer::Print(Option_t* opt)const
 {
   cout << "------------------- "<< GetName() << " -------------" << endl ;
-  if(fSDigitsFile.IsNull())
-    cout << " Writing SDigits to file with hits "<< endl ;
-  else
-    cout << "    Writing SDigits to file  " << (char*) fSDigitsFile.Data() << endl ;
-  cout << "--------------------------------------------------" << endl;
+
 }
 
 //__________________________________________________________________
