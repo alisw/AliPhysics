@@ -6,7 +6,6 @@
 class AliL3TrackSegmentData;
 class AliL3DigitRowData;
 class AliL3TrackArray;
-class AliL3Transform;
 class AliL3Vertex;
 
 class AliL3Trigger {
@@ -16,7 +15,6 @@ class AliL3Trigger {
   AliL3DigitRowData *fDigitRowData; //!
   AliL3DigitRowData *fOutput; //!
   AliL3Vertex *fVertex; //!
-  AliL3Transform *fTransform;//!
   Int_t fDataSize;
 
   Float_t fZcut;

@@ -7,7 +7,6 @@
 #include "AliL3Logging.h"
 #include "AliL3HoughBaseTransformer.h"
 #include "AliL3Defs.h"
-#include "AliL3Transform.h"
 #include "AliL3DigitData.h"
 #include "AliL3Histogram.h"
 
@@ -24,7 +23,6 @@ ClassImp(AliL3HoughBaseTransformer)
 AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
 {
   //Default constructor
-  fTransform = 0;
   fDigitRowData = 0;
 }
 
@@ -37,7 +35,6 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int
   fEtaMax = fSlice < 18 ? 0.9 : -0.9;
   fThreshold = 0;
   fDigitRowData = 0;
-  fTransform = 0;
 }
 
 AliL3HoughBaseTransformer::~AliL3HoughBaseTransformer()

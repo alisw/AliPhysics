@@ -8,8 +8,8 @@
 #include "AliL3HoughTrack.h"
 #include "AliL3HoughGlobalMerger.h"
 #include "AliL3Track.h"
-#include "AliL3Transform.h"
 #include "AliL3TrackArray.h"
+#include "AliL3Transform.h"
 
 //_____________________________________________________________
 // Merging Hough tracks across slices
@@ -111,7 +111,7 @@ void AliL3HoughGlobalMerger::SlowMerge(){
     if(slice2==fNSlices) slice2 =0; 
     AliL3TrackArray *ttt1=GetInTracks(slice2);
     Float_t angle = PI/18.; //10 degrees -> the border of the slices
-    fTransformer->Local2GlobalAngle(&angle,slice);
+    AliL3Transform::Local2GlobalAngle(&angle,slice);
     if(i==0)
       ttt0->QSort();
     ttt1->QSort();
@@ -194,7 +194,7 @@ void AliL3HoughGlobalMerger::Merge()
       if(slice2==fNSlices) slice2 =0;
       AliL3TrackArray *ttt1=GetInTracks(slice2);
       Float_t angle = PI/18.; //10 degrees -> the border of the slices
-      fTransformer->Local2GlobalAngle(&angle,slice);
+      AliL3Transform::Local2GlobalAngle(&angle,slice);
       if(i==0)
 	ttt0->QSort();
       ttt1->QSort();

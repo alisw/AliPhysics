@@ -75,3 +75,70 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
   fclose(f);
 }
 
+void Make_Default(char *file,char *tofile)
+{
+  /*
+    Macro to write out default values, which should be used to initialize
+    the static data members of the AliL3Transform class. Macro does more
+    or less the same as the above, only the output syntax is changed in order
+    to use it for static data member initialization.
+  */
+  
+  TFile * rootf = new TFile(file,"READ");
+  
+  if(!rootf->IsOpen()){
+    cerr<<"no file: "<<file<<endl;
+    return;
+  }
+
+  AliTPCParam* par = (AliTPCParam*)rootf->Get("75x40_100x60");
+
+  if(!par){
+    cerr<<"no AliTPCParam 75x40_100x60 in file: "<<file<<endl;
+    return;
+  }
+
+  int fNTimeBins = par->GetMaxTBin()+1;
+  int fNRowLow = par->GetNRowLow();
+  int fNRowUp  = par->GetNRowUp();
+  int fNRow= fNRowLow + fNRowUp;
+  int fNSectorLow = par->GetNInnerSector();
+  int fNSectorUp = par->GetNOuterSector();
+  int fNSector = fNSectorLow + fNSectorUp;
+  int fNSlice = fNSectorLow;
+
+  FILE *f = fopen(tofile,"w");
+  fprintf(f,"Int_t AliL3Transform::fNTimeBins = %d ;\n",fNTimeBins);
+  fprintf(f,"Int_t AliL3Transform::fNRowLow = %d ;\n",fNRowLow);
+  fprintf(f,"Int_t AliL3Transform::fNRowUp = %d ;\n",fNRowUp);
+  fprintf(f,"Int_t AliL3Transform::fNSectorLow = %d ;\n",fNSectorLow);
+  fprintf(f,"Int_t AliL3Transform::fNSectorUp = %d ;\n",fNSectorUp);
+  fprintf(f,"Int_t AliL3Transform::fNSector = %d ;\n",fNSector);
+  fprintf(f,"Double_t AliL3Transform::fPadPitchWidthLow = %f ;\n",par->GetPadPitchWidth(0));
+  fprintf(f,"Double_t AliL3Transform::fPadPitchWidthUp = %f ;\n",par->GetPadPitchWidth(fNSectorLow));
+  fprintf(f,"Double_t AliL3Transform::fZWidth = %.20f ;\n",par->GetZWidth());
+  fprintf(f,"Double_t AliL3Transform::fZSigma = %.20f ;\n",par->GetZSigma());
+  fprintf(f,"Int_t AliL3Transform::fNSlice = %d ;\n",fNSectorLow);
+  fprintf(f,"Int_t AliL3Transform::fNRow = %d ;\n",fNRow);
+  fprintf(f,"Double_t AliL3Transform::fNRotShift = 0.5 ;\n");
+  fprintf(f,"Double_t AliL3Transform::fPi = %.15f ;\n",TMath::Pi());
+  fprintf(f,"Double_t AliL3Transform::fX[176] = {\n");
+  for(Int_t i=0;i<fNRow;i++){
+    int sec,row;
+    if( i < fNRowLow){sec =0;row =i;}
+    else{sec = fNSectorLow;row =i-fNRowLow;}
+    
+  fprintf(f,"                                    %3.15f,\n",par->GetPadRowRadii(sec,row));
+  }
+  fprintf(f,"};\n\n");
+  
+  fprintf(f,"Int_t AliL3Transform::fNPads[176] = {\n");
+  for(Int_t i=0;i<fNRow;i++){
+    int sec,row;
+    if( i < fNRowLow){sec =0;row =i;}
+    else{sec = fNSectorLow;row =i-fNRowLow;}
+  fprintf(f,"                                     %d,\n",par->GetNPads(sec,row));
+  }
+  fprintf(f,"};\n");
+  fclose(f);
+}

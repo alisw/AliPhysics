@@ -8,7 +8,7 @@
 void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitfile,Int_t event)
 {
 
-  Int_t good_number = 10; //Minimum number of points on a good track
+  Int_t good_number = 70; //Minimum number of points on a good track
   
   struct GoodTrack goodtracks[15000];
   Int_t nt=0;
@@ -49,7 +49,7 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
   for(Int_t ii=0; ii<np; ii++)
     good[ii] = 0;
 
-  AliL3Transform *transform = new AliL3Transform();
+
 
   TFile *digfile = TFile::Open(digitfile);
   Char_t dname[100];
@@ -67,7 +67,7 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
       Int_t sec,row;
       param->AdjustSectorRow(digits->GetID(),sec,row);
       Int_t sl,padrow;
-      transform->Sector2Slice(sl,padrow,sec,row);
+      AliL3Transform::Sector2Slice(sl,padrow,sec,row);
       if(sl < minslice) continue;
       if(sl > maxslice) break;
       digits->First();
@@ -158,6 +158,5 @@ void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitf
   evfile->Close();
   digfile->Close();
 
-  delete transform;
 
 }

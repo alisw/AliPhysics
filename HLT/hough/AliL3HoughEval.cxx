@@ -32,7 +32,6 @@ ClassImp(AliL3HoughEval)
 AliL3HoughEval::AliL3HoughEval()
 {
   
-  fTransform = new AliL3Transform();
   fRemoveFoundTracks = kFALSE;
   fNumOfPadsToLook = 1;
   fNumOfRowsToMiss = 1;
@@ -44,8 +43,6 @@ AliL3HoughEval::AliL3HoughEval()
 AliL3HoughEval::~AliL3HoughEval()
 {
   fHoughTransformer = 0;
-  if(fTransform)
-    delete fTransform;
   if(fRowPointers)
     {
       for(Int_t i=0; i<fNrows; i++)
@@ -115,7 +112,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 
   for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
     {
-      if(fTransform->Row2X(padrow) > maxrow) break;//The track has left this slice
+      if(AliL3Transform::Row2X(padrow) > maxrow) break;//The track has left this slice
       rows_crossed++;
       Int_t prow = padrow - NRows[fPatch][0];
       if(!track->GetCrossingPoint(padrow,xyz))  
@@ -124,8 +121,8 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	  continue;
 	}
       
-      fTransform->Slice2Sector(fSlice,padrow,sector,row);
-      fTransform->Local2Raw(xyz,sector,row);
+      AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
+      AliL3Transform::Local2Raw(xyz,sector,row);
       npixs=0;
       
       
@@ -148,7 +145,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	      if(pad < p) continue;
 	      if(pad > p) break;
 	      UShort_t time = digPt[j].fTime;
-	      Double_t eta = fTransform->GetEta(padrow,pad,time);
+	      Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
 	      Int_t pixel_index = (Int_t)(eta/etaslice);
 	      if(pixel_index > eta_index) continue;
 	      if(pixel_index != eta_index) break;
@@ -214,8 +211,8 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
 	      continue;
 	    }
 	  
-	  fTransform->Slice2Sector(fSlice,padrow,sector,row);
-	  fTransform->Local2Raw(xyz,sector,row);
+	  AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
+	  AliL3Transform::Local2Raw(xyz,sector,row);
 	  
 	  //Get the timebins for this pad
 	  AliL3DigitRowData *tempPt = fRowPointers[prow];
@@ -236,7 +233,7 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
 		  if(pad < p) continue;
 		  if(pad > p) break;
 		  UShort_t time = digPt[j].fTime;
-		  Double_t eta = fTransform->GetEta(padrow,pad,time);
+		  Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
 		  Int_t pixel_index = (Int_t)(eta/etaslice);
 		  if(pixel_index > track->GetEtaIndex()+1) continue;
 		  if(pixel_index < track->GetEtaIndex()-1) break;
@@ -308,9 +305,9 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	  if(charge < fHoughTransformer->GetThreshold()) continue;
 	  Float_t xyz[3];
 	  Int_t sector,row;
-	  fTransform->Slice2Sector(fSlice,padrow,sector,row);
-	  fTransform->Raw2Local(xyz,sector,row,pad,time);
-	  Double_t eta = fTransform->GetEta(xyz);
+	  AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
+	  AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+	  Double_t eta = AliL3Transform::GetEta(xyz);
 	  Int_t pixel_index = (Int_t)(eta/etaslice);
 	  if(pixel_index != eta_index) continue;
 	  hist->Fill(xyz[0],xyz[1],charge);

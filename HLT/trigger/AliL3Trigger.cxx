@@ -15,7 +15,6 @@ AliL3Trigger::AliL3Trigger()
 {
   fDataSize=0;
   fTracks=0;
-  fTransform=0;
   fDigitRowData=0;
   fOutput=0;
   fVertex=0;
@@ -25,18 +24,13 @@ AliL3Trigger::~AliL3Trigger()
 {
   if(fTracks)
     delete fTracks;
-  if(fTransform)
-    delete fTransform;
 }
 
 void AliL3Trigger::InitTrigger()
 {
   if(fTracks)
     delete fTracks;
-  if(fTransform)
-    delete fTransform;
   fTracks = new AliL3TrackArray();
-  fTransform = new AliL3Transform;
 }
 
 void AliL3Trigger::InitPatch(Int_t slice,Int_t patch)
@@ -104,8 +98,8 @@ void AliL3Trigger::RemovePileupData()
 	  AliL3Track *track = fTracks->GetCheckedTrack(j);
 	  if(!track) continue;
 	  track->GetCrossingPoint(i,hit);
-	  fTransform->Slice2Sector(fSlice,i,sector,row);
-	  fTransform->Local2Raw(hit,sector,row);
+	  AliL3Transform::Slice2Sector(fSlice,i,sector,row);
+	  AliL3Transform::Local2Raw(hit,sector,row);
 	  row_cross[j].pad = (Int_t)rint(hit[1]);
 	  row_cross[j].time = (Int_t)rint(hit[2]);
 	}

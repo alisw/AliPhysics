@@ -16,8 +16,8 @@ int main(int argc,char **argv)
   unsigned int ndigits=0;
   
   AliL3MemHandler file; //Does all the file/data handling
-  AliL3Transform transform; //Storing all detector-spesific quantities, needed by the clusterfinder.
-  AliL3ClustFinderNew cf(&transform); //The cluster finder itself.
+  //AliL3Transform::Init(path); //Storing all detector-spesific quantities, needed by the clusterfinder.
+  AliL3ClustFinderNew cf; //The cluster finder itself.
 
   //Open the data file:
   if(!file.SetBinaryInput(argv[1]))

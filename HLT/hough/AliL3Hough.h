@@ -9,12 +9,10 @@ class AliL3Histogram;
 class AliL3MemHandler;
 class AliL3FileHandler;
 class AliL3HoughEval;
-class AliL3Transform;
 class AliL3TrackArray;
 class AliL3HoughMerger;
 class AliL3HoughIntMerger;
 class AliL3HoughGlobalMerger;
-class AliL3Transform;
 
 class AliL3Hough {
   
@@ -39,7 +37,6 @@ class AliL3Hough {
   AliL3HoughMerger *fMerger; //!
   AliL3HoughIntMerger *fInterMerger; //!
   AliL3HoughGlobalMerger *fGlobalMerger; //!
-  AliL3Transform *fTransform; //!
 
   void CleanUp();
   void Init();

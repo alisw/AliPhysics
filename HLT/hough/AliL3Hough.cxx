@@ -61,7 +61,6 @@ AliL3Hough::AliL3Hough()
   fMerger = 0;
   fInterMerger = 0;
   fGlobalMerger = 0;
-  fTransform = 0;
 }
 
 
@@ -92,8 +91,6 @@ AliL3Hough::~AliL3Hough()
     delete fPeakFinder;
   if(fGlobalMerger)
     delete fGlobalMerger;
-  if(fTransform)
-    delete fTransform;
 }
 
 void AliL3Hough::CleanUp()
@@ -120,7 +117,7 @@ void AliL3Hough::Init()
 {
   fPeakThreshold = 0;
   fNPatches = NPatches;
-  fTransform = new AliL3Transform(fPath);
+  AliL3Transform::Init(fPath);
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
 #ifdef use_aliroot
   fMemHandler = new AliL3FileHandler*[fNPatches];
@@ -132,7 +129,6 @@ void AliL3Hough::Init()
   for(Int_t i=0; i<fNPatches; i++)
     {
       fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
-      fHoughTransformer[i]->SetTransformer(fTransform);
       //fHoughTransformer[i]->CreateHistograms(64,-0.003,0.003,64,-0.26,0.26);
       fHoughTransformer[i]->CreateHistograms(64,0.1,64,-30,30);
       fHoughTransformer[i]->SetThreshold(3);
@@ -221,7 +217,6 @@ void AliL3Hough::MergePatches()
 {
   if(fAddHistograms) //Nothing to merge here
     return;
-  fMerger->SetTransformer(fTransform);
   fMerger->MergePatches(kTRUE);
 }
 

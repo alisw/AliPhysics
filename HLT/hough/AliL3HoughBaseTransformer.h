@@ -3,7 +3,6 @@
 
 #include "AliL3RootTypes.h"
 
-class AliL3Transform;
 class AliL3DigitRowData;
 class AliL3Histogram;
 
@@ -20,15 +19,11 @@ class AliL3HoughBaseTransformer {
   
   AliL3DigitRowData *fDigitRowData; //!
   
- protected:
-  AliL3Transform *fTransform; //!
-
  public:
   AliL3HoughBaseTransformer(); 
   AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments);
   virtual ~AliL3HoughBaseTransformer();
   
-  void SetTransformer(AliL3Transform *tr) {fTransform = tr;}
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr) {fDigitRowData = ptr;}
   
   virtual void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax) = 0;

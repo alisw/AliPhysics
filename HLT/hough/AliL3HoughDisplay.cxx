@@ -37,8 +37,6 @@ AliL3HoughDisplay::AliL3HoughDisplay()
 
 AliL3HoughDisplay::~AliL3HoughDisplay()
 {
-  if(fTransform)
-    delete fTransform;
 }
 
 void AliL3HoughDisplay::Init()
@@ -48,7 +46,6 @@ void AliL3HoughDisplay::Init()
     cerr<<"AliL3HoughDisplay::AliL3HoughDisplay : Geometry file alice.geom does not exist"<<endl;
   fGeom = (TGeometry*)file->Get("AliceGeom");
   file->Close();
-  fTransform = new AliL3Transform();
 }
 
 
@@ -61,7 +58,7 @@ void AliL3HoughDisplay::GenerateHits(AliL3HoughTrack *track,Float_t *x,Float_t *
     {
       if(track->GetCrossingPoint(i,xyz))
 	{
-	  fTransform->Local2Global(xyz,slice);
+	  AliL3Transform::Local2Global(xyz,slice);
 	  x[n] = xyz[0];
 	  y[n] = xyz[1];
 	  z[n] = xyz[2];
@@ -100,8 +97,8 @@ TPolyMarker3D *AliL3HoughDisplay::LoadDigits()
       Int_t padrow = (Int_t)tempPt->fRow;
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	{
-	  fTransform->Slice2Sector(fShowSlice,padrow,sector,row);
-	  fTransform->Raw2Global(xyz,sector,row,(Int_t)digPt->fPad,(Int_t)digPt->fTime);
+	  AliL3Transform::Slice2Sector(fShowSlice,padrow,sector,row);
+	  AliL3Transform::Raw2Global(xyz,sector,row,(Int_t)digPt->fPad,(Int_t)digPt->fTime);
 	  pm->SetPoint(count,xyz[0],xyz[1],xyz[2]);
 	  count++;
 	}

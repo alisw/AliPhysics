@@ -5,7 +5,6 @@
 
 
 class AliL3HoughBaseTransformer;
-class AliL3Transform;
 class AliL3HoughTrack;
 class AliL3DigitRowData;
 class AliL3Histogram;
@@ -28,7 +27,6 @@ class AliL3HoughEval {
   //Flags
   Bool_t fRemoveFoundTracks;
   
-  AliL3Transform *fTransform; //!
   AliL3HoughBaseTransformer *fHoughTransformer; //!
   AliL3DigitRowData **fRowPointers; //!
   

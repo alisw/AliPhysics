@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stream.h>
 
 #include "AliL3Histogram.h"
 #include "AliL3TrackArray.h"
@@ -133,80 +134,96 @@ AliL3TrackArray *AliL3HoughMaxFinder::FindBigMaxima(AliL3Histogram *hist)
 }
 
 
-AliL3TrackArray *AliL3HoughMaxFinder::FindMaxima(AliL3Histogram *hist,Int_t *rowrange,Int_t ref_row)
+void AliL3HoughMaxFinder::FindMaxima(Float_t *xpeaks,Float_t *ypeaks,Int_t *weight,Int_t &entries)
 {
   //Locate all the maxima in input histogram.
   //Maxima is defined as bins with more entries than the
   //immediately neighbouring bins. 
   
-  Int_t xmin = hist->GetFirstXbin();
-  Int_t xmax = hist->GetLastXbin();
-  Int_t ymin = hist->GetFirstYbin();
-  Int_t ymax = hist->GetLastYbin();
-  Int_t bin[9],track_counter=0;
+  Int_t max_entries = entries;
+  entries = 0;
+  Int_t xmin = fCurrentHisto->GetFirstXbin();
+  Int_t xmax = fCurrentHisto->GetLastXbin();
+  Int_t ymin = fCurrentHisto->GetFirstYbin();
+  Int_t ymax = fCurrentHisto->GetLastYbin();
+  Int_t bin[9];
   Double_t value[9];
   
-  AliL3TrackArray *tracks = new AliL3TrackArray("AliL3HoughTrack");
-  AliL3HoughTrack *track;
-
+  Double_t kappa_overlap = 0.001;
+  Double_t phi_overlap = 0.05;
+  
   for(Int_t xbin=xmin+1; xbin<xmax-1; xbin++)
     {
       for(Int_t ybin=ymin+1; ybin<ymax-1; ybin++)
 	{
-	  bin[0] = hist->GetBin(xbin-1,ybin-1);
-	  bin[1] = hist->GetBin(xbin,ybin-1);
-	  bin[2] = hist->GetBin(xbin+1,ybin-1);
-	  bin[3] = hist->GetBin(xbin-1,ybin);
-	  bin[4] = hist->GetBin(xbin,ybin);
-	  bin[5] = hist->GetBin(xbin+1,ybin);
-	  bin[6] = hist->GetBin(xbin-1,ybin+1);
-	  bin[7] = hist->GetBin(xbin,ybin+1);
-	  bin[8] = hist->GetBin(xbin+1,ybin+1);
-	  value[0] = hist->GetBinContent(bin[0]);
-	  value[1] = hist->GetBinContent(bin[1]);
-	  value[2] = hist->GetBinContent(bin[2]);
-	  value[3] = hist->GetBinContent(bin[3]);
-	  value[4] = hist->GetBinContent(bin[4]);
-	  value[5] = hist->GetBinContent(bin[5]);
-	  value[6] = hist->GetBinContent(bin[6]);
-	  value[7] = hist->GetBinContent(bin[7]);
-	  value[8] = hist->GetBinContent(bin[8]);
+	  bin[0] = fCurrentHisto->GetBin(xbin-1,ybin-1);
+	  bin[1] = fCurrentHisto->GetBin(xbin,ybin-1);
+	  bin[2] = fCurrentHisto->GetBin(xbin+1,ybin-1);
+	  bin[3] = fCurrentHisto->GetBin(xbin-1,ybin);
+	  bin[4] = fCurrentHisto->GetBin(xbin,ybin);
+	  bin[5] = fCurrentHisto->GetBin(xbin+1,ybin);
+	  bin[6] = fCurrentHisto->GetBin(xbin-1,ybin+1);
+	  bin[7] = fCurrentHisto->GetBin(xbin,ybin+1);
+	  bin[8] = fCurrentHisto->GetBin(xbin+1,ybin+1);
+	  value[0] = fCurrentHisto->GetBinContent(bin[0]);
+	  value[1] = fCurrentHisto->GetBinContent(bin[1]);
+	  value[2] = fCurrentHisto->GetBinContent(bin[2]);
+	  value[3] = fCurrentHisto->GetBinContent(bin[3]);
+	  value[4] = fCurrentHisto->GetBinContent(bin[4]);
+	  value[5] = fCurrentHisto->GetBinContent(bin[5]);
+	  value[6] = fCurrentHisto->GetBinContent(bin[6]);
+	  value[7] = fCurrentHisto->GetBinContent(bin[7]);
+	  value[8] = fCurrentHisto->GetBinContent(bin[8]);
 	  
-	  if(value[4] <= fThreshold) continue;//central bin below threshold
+	  
 	  
 	  if(value[4]>value[0] && value[4]>value[1] && value[4]>value[2]
 	     && value[4]>value[3] && value[4]>value[5] && value[4]>value[6]
 	     && value[4]>value[7] && value[4]>value[8])
 	    {
 	      //Found a local maxima
-	      Float_t max_x = hist->GetBinCenterX(xbin);
-	      Float_t max_y = hist->GetBinCenterY(ybin);
-	      
-	      track = (AliL3HoughTrack*)tracks->NextTrack();
+	      Float_t max_x = fCurrentHisto->GetBinCenterX(xbin);
+	      Float_t max_y = fCurrentHisto->GetBinCenterY(ybin);
 	      
 	      
-	      switch(fHistoType)
+	      if((Int_t)value[4] <= fThreshold) continue;//central bin below threshold
+	      
+	      if(entries >= max_entries)
 		{
-		case 'c':
-		  track->SetTrackParameters(max_x,max_y,(Int_t)value[4]);
-		  break;
-		case 'l':
-		  track->SetLineParameters(max_x,max_y,(Int_t)value[4],rowrange,ref_row);
-		  break;
-		default:
-		  printf("AliL3HoughMaxFinder: Error in tracktype\n");
+		  cerr<<"AliL3HoughMaxFinder::FindMaxima : Array out of range : "<<entries<<" "<<max_entries<<endl;
+		  return;
 		}
 	      
-	      track_counter++;
-	      
-
+	      //Check if the peak is overlapping with a previous:
+	      Bool_t bigger = kFALSE;
+	      for(Int_t p=0; p<entries; p++)
+		{
+		  if(fabs(max_x - xpeaks[p]) < kappa_overlap && fabs(max_y - ypeaks[p]) < phi_overlap)
+		    {
+		      bigger = kTRUE;
+		      if(value[4] > weight[p]) //this peak is bigger.
+			{
+			  xpeaks[p] = max_x;
+			  ypeaks[p] = max_y;
+			  weight[p] = (Int_t)value[4];
+			}
+		      else
+			continue; //previous peak is bigger.
+		    }
+		}
+	      if(!bigger) //there were no overlapping peaks.
+		{
+		  xpeaks[entries] = max_x;
+		  ypeaks[entries] = max_y;
+		  weight[entries] = (Int_t)value[4];
+		  entries++;
+		}
 	    }
 	  else
 	    continue; //not a maxima
 	}
     }
-  tracks->QSort();
-  return tracks;
+  
 }
 
 
@@ -571,9 +588,6 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weigh
   //Sort the windows according to the weight
   SortPeaks(windowPt,0,nbinsx);
   
-  //for(Int_t i=0; i<nbinsx; i++)
-  //printf("xbin %f weight %d\n",fCurrentHisto->GetBinCenterX(windowPt[i]->xbin),windowPt[i]->weight);
-  
   Float_t top,butt;
   for(Int_t i=0; i<nbinsx; i++)
     {
@@ -596,6 +610,8 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weigh
 	}
       xpeaks[n] = fCurrentHisto->GetBinCenterX(windowPt[i]->xbin);
       ypeaks[n] = top/butt;
+      weight[n] = (Int_t)butt;
+      //cout<<"mean in y "<<ypeaks[n]<<" on x "<<windowPt[i]->xbin<<" content "<<butt<<endl;
       n++;
       if(n==max_entries) break;
     }
@@ -615,11 +631,13 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weigh
       prev = xbin - x_bin_sides+1;
       for(Int_t j=xbin-x_bin_sides; j<=xbin+x_bin_sides; j++)
 	{
+	  /*
 	  //Check if the windows are overlapping:
 	  if(anotherPt[j]->ymin > anotherPt[prev]->ymax) {prev=j; continue;}
 	  if(anotherPt[j]->ymax < anotherPt[prev]->ymin) {prev=j; continue;}
 	  prev = j;
-
+	  */
+	  
 	  top += fCurrentHisto->GetBinCenterX(j)*anotherPt[j]->weight;
 	  butt += anotherPt[j]->weight;
 	  
@@ -635,7 +653,7 @@ void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t *weigh
       xpeaks[i] = top/butt;
       ypeaks[i] = ytop/ybutt;
       weight[i] = w;
-      
+      //cout<<"Setting weight "<<w<<" kappa "<<xpeaks[i]<<" phi0 "<<ypeaks[i]<<endl;
       
       //Check if this peak is overlapping with a previous:
       for(Int_t p=0; p<i-1; p++)

@@ -31,7 +31,7 @@ class AliL3HoughMaxFinder {
 
   void FindAbsMaxima(Int_t &max_xbin,Int_t &max_ybin);
   AliL3TrackArray *FindBigMaxima(AliL3Histogram *hist);
-  AliL3TrackArray *FindMaxima(AliL3Histogram *hist,Int_t *rowrange=0,Int_t ref_row=0);
+  void FindMaxima(Float_t *xpeaks,Float_t *ypeaks,Int_t *weight,Int_t &entries);
   AliL3TrackArray *LookForPeaks(AliL3Histogram *hist,Int_t nbins);
   
   void FindPeak(Int_t t1,Double_t t2,Int_t t3,Float_t &kappa,Float_t &phi0);

@@ -126,12 +126,6 @@ void AliL3HoughTransformer::TransformCircle()
 	<<"No input data "<<ENDLOG;
       return;
     }
-  if(!fTransform)
-    {
-      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircle","Transformer")
-	<<"No AliL3Transform object"<<ENDLOG;
-      return;
-    }
   
   //Loop over the padrows:
   for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
@@ -156,11 +150,11 @@ void AliL3HoughTransformer::TransformCircle()
 	  Float_t xyz[3];
 	  
 	  //Transform data to local cartesian coordinates:
-	  fTransform->Slice2Sector(GetSlice(),i,sector,row);
-	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
+	  AliL3Transform::Slice2Sector(GetSlice(),i,sector,row);
+	  AliL3Transform::Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
 	  
 	  //Calculate the eta:
-	  Double_t eta = fTransform->GetEta(xyz);
+	  Double_t eta = AliL3Transform::GetEta(xyz);
 	  
 	  //Get the corresponding index, which determines which histogram to fill:
 	  Int_t eta_index = GetEtaIndex(eta);
@@ -177,7 +171,7 @@ void AliL3HoughTransformer::TransformCircle()
 
 	  //Do the transformation:
 	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]); 
-	  Float_t phi = fTransform->GetPhi(xyz);
+	  Float_t phi = AliL3Transform::GetPhi(xyz);
 	  
 	  //Fill the histogram along the phirange
 	  for(Int_t b=hist->GetFirstYbin(); b<=hist->GetLastYbin(); b++)
@@ -203,13 +197,6 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
     LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircleC","Data")
       <<"No input data "<<ENDLOG;
  
-  if(!fTransform)
-    {
-      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircleC","Transformer")
-	<<"No AliL3Transform object"<<ENDLOG;
-      return;
-    }
-  
   Int_t counter=0;
   for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
     {
@@ -244,9 +231,9 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
 	  charge = digPt[di].fCharge;
 	  pad = digPt[di].fPad;
 	  time = digPt[di].fTime;
-	  fTransform->Slice2Sector(GetSlice(),i,sector,row);
-	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
-	  eta = fTransform->GetEta(xyz);
+	  AliL3Transform::Slice2Sector(GetSlice(),i,sector,row);
+	  AliL3Transform::Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
+	  eta = AliL3Transform::GetEta(xyz);
 	  digits[counter].row = i;
 	  digits[counter].r = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	  digits[counter].phi = atan2(xyz[1],xyz[0]);
@@ -301,12 +288,6 @@ void AliL3HoughTransformer::TransformLine()
 	<<"No input data "<<ENDLOG;
       return;
     }
-  if(!fTransform)
-    {
-      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformLine","Transformer")
-	<<"No AliL3Transform object"<<ENDLOG;
-      return;
-    }
   
   for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
     {
@@ -325,9 +306,9 @@ void AliL3HoughTransformer::TransformLine()
 	    continue;
 	  Int_t sector,row;
 	  Float_t xyz[3];
-	  fTransform->Slice2Sector(GetSlice(),i,sector,row);
-	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
-	  Float_t eta = fTransform->GetEta(xyz);
+	  AliL3Transform::Slice2Sector(GetSlice(),i,sector,row);
+	  AliL3Transform::Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
+	  Float_t eta = AliL3Transform::GetEta(xyz);
 	  Int_t eta_index = GetEtaIndex(eta);//(Int_t)(eta/etaslice);
 	  if(eta_index < 0 || eta_index >= GetNEtaSegments())
 	    continue;

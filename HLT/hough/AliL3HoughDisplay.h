@@ -5,7 +5,6 @@
 
 class TGeometry;
 class AliL3TrackArray;
-class AliL3Transform;
 class AliL3DigitRowData;
 class TPolyMarker3D;
 class AliL3HoughTrack;
@@ -16,7 +15,6 @@ class AliL3HoughDisplay {
   
   TGeometry *fGeom; //!
   AliL3TrackArray *fTracks; //!
-  AliL3Transform *fTransform; //!
   AliL3DigitRowData *fDigitRowData;  //!
   UInt_t fNDigitRowData; //!
   Int_t fShowSlice; 
