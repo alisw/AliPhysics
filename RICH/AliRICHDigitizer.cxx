@@ -36,7 +36,10 @@ Bool_t AliRICHDigitizer::Init()
 {
 //This methode is called from AliRunDigitizer after the corresponding file is open
   if(GetDebug())Info("Init","Start.");
-  fRich=(AliRICH*)gAlice->GetDetector("RICH");
+  AliRunLoader *pOutAL = 
+    AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  if (!pOutAL->GetAliRun()) pOutAL->LoadgAlice();
+  fRich=(AliRICH*)pOutAL->GetAliRun()->GetDetector("RICH");
   Rich()->P()->GenSigmaThMap();
   return kTRUE;
 }//Init()
@@ -57,10 +60,12 @@ void AliRICHDigitizer::Exec(Option_t*)
   for(Int_t inFileN=0;inFileN<fManager->GetNinputs();inFileN++){//files loop
     pInAL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN)); 
     pInRL = pInAL->GetLoader("RICHLoader"); if(pInRL==0) continue;//no RICH in this input, check the next input
-    pInRL->LoadSDigits(); pInAL->GetEvent(fManager->GetInputEventNumber(fManager->GetOutputEventNr(),0)); pInRL->TreeS()->GetEntry(0);
-    Info("Exec","input %i has %i sdigits",inFileN,Rich()->SDigits()->GetEntries());
-    for(Int_t i=0;i<Rich()->SDigits()->GetEntries();i++) new(tmpCA[total++]) AliRICHdigit(*(AliRICHdigit*)Rich()->SDigits()->At(i)); 
-    pInRL->UnloadSDigits();   Rich()->ResetSDigits();
+    if (!pInAL->GetAliRun()) pInAL->LoadgAlice();
+    AliRICH* rich=(AliRICH*)pInAL->GetAliRun()->GetDetector("RICH");
+    pInRL->LoadSDigits(); pInRL->TreeS()->GetEntry(0);
+    Info("Exec","input %i has %i sdigits",inFileN,rich->SDigits()->GetEntries());
+    for(Int_t i=0;i<rich->SDigits()->GetEntries();i++) new(tmpCA[total++]) AliRICHdigit(*(AliRICHdigit*)rich->SDigits()->At(i)); 
+    pInRL->UnloadSDigits();   rich->ResetSDigits();
   }//files loop
   
   tmpCA.Sort();                     //sort them according to Id() methode
