@@ -63,10 +63,14 @@ FFLAGS      = $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -I.
 SLIBRARY	= $(ALICE_ROOT)/lib/libgeant321.$(SL) $(ALICE_ROOT)/lib/libgxint321.$(SL)
 ALIBRARY	= $(ALICE_ROOT)/lib/libgeant321.a $(ALICE_ROOT)/lib/libgxint321.a
 
-default:	$(SLIBRARY)
+ifeq ($(PLATFORM),alpha)
+	default:	$(ALIBRARY)
+else
+	default:	$(SLIBRARY)
+endif
 
-$(ALICE_ROOT)/lib/libgeant321.$(SL):  $(GOBJ)
-$(ALICE_ROOT)/lib/libgxint321.$(SL):  $(XOBJ)
+$(ALICE_ROOT)/lib/libgeant321.$(SL) $(ALICE_ROOT)/lib/libgeant321.a:  $(GOBJ)
+$(ALICE_ROOT)/lib/libgxint321.$(SL) $(ALICE_ROOT)/lib/libgxint321.$(SL):  $(XOBJ)
 
 depend:			$(SRCS)
 
