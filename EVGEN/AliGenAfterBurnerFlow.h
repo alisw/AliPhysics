@@ -5,7 +5,7 @@
 // 
 // AliGenAfterBurnerFlow is a After Burner event generator applying flow.
 // The generator changes Phi coordinate of the particle momentum.
-// Flow (directed and elliptical) can be defined on particle type level
+// Flow (directed and elliptic) can be defined on particle type level
 //
 // For examples, parameters and testing macros refer to:
 // http:/home.cern.ch/radomski
@@ -32,11 +32,12 @@ class AliGenAfterBurnerFlow : public AliGenerator {
 
   ~AliGenAfterBurnerFlow();
 
-  void SetDirected(Int_t pdg, Float_t v11, Float_t v12 = 0, Float_t v13 = 1, Float_t v14 = 0);
-  void SetElliptic(Int_t pdg, Float_t v21, Float_t v22 = 0, Float_t v23 = 0);
+  void SetDirectedSimple(Int_t pdg, Float_t v1);
+  void SetDirectedParam(Int_t pdg, Float_t v11, Float_t v12 = 0, Float_t v13 = 1, Float_t v14 = 0);
 
-  void SetDefDirected(Float_t v11, Float_t v12 = 0, Float_t v13 = 1, Float_t v14 = 0);
-  void SetDefElliptic(Float_t v21, Float_t v22 = 0, Float_t v23 = 0);
+  void SetEllipticSimple(Int_t pdg, Float_t v2);
+  void SetEllipticParamPion(Int_t pdg, Float_t v21, Float_t pTmax, Float_t v22=0.);
+  void SetEllipticParamOld(Int_t pdg, Float_t v21, Float_t v22, Float_t v23);
 
   void Init();
   void Generate(); 
@@ -45,16 +46,16 @@ class AliGenAfterBurnerFlow : public AliGenerator {
 
   static const Int_t kN = 30;
 
-  Float_t GetCoeff(Int_t pdg, Int_t n, Float_t Pt, Float_t Y);
-  void SetFlowParameters(Int_t pdg, Int_t order, Float_t v1, Float_t v2, Float_t v3, Float_t v4);
+  Float_t GetCoefficient(Int_t pdg, Int_t n, Float_t Pt, Float_t Y);
+  void SetFlowParameters(Int_t pdg, Int_t order, Int_t type, Float_t v1, Float_t v2, Float_t v3, Float_t v4);
 
   Float_t fReactionPlane;      // Reaction plane angle (in rad)
-  Float_t fParams[kN][6];      // parameters (0: pdg, 1: order, 2-5: actual parameters) 
+  Float_t fParams[kN][7];      // parameters (0: pdg, 1: order, 2: type,  3-6: actual parameters) 
   Int_t   fCounter;            // counter
 
  public:
 
-  ClassDef(AliGenAfterBurnerFlow,1)
+  ClassDef(AliGenAfterBurnerFlow,2)
 
 };
 

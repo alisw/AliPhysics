@@ -3,8 +3,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// AliGenGeVSim is a class implementing simple Monte-Carlo event generator for 
-// testing algorythms and detector performance.
+// AliGenGeVSim is a class implementing GeVSim event generator.
+// 
+// GeVSim is a simple Monte-Carlo event generator for testing detector and 
+// algorythm performance especialy concerning flow and event-by-event studies
 //
 // In this event generator particles are generated from thermal distributions 
 // without any dynamics and addicional constrains. Distribution parameters like
@@ -14,17 +16,27 @@
 // GeVSim contains four thermal distributions the same as
 // MevSim event generator developed for STAR experiment.
 //
-// In addition custom distributions can be used be the mean of TF2 function
-// named "gevsimPtY". 
+// In addition custom distributions can be used be the mean 
+// either two dimensional formula (TF2), a two dimensional histogram or
+// two one dimensional histograms.
 //  
 // Azimuthal distribution is deconvoluted from (Pt,Y) distribution
 // and is described by two Fourier coefficients representing 
-// Directed and Elliptical flow. 
+// Directed and Elliptic flow. 
 // 
+////////////////////////////////////////////////////////////////////////////////
+//
 // To apply flow to event ganerated by an arbitraly event generator
 // refer to AliGenAfterBurnerFlow class.
+//
+////////////////////////////////////////////////////////////////////////////////
+//
 // For examples, parameters and testing macros refer to:
 // http:/home.cern.ch/radomski
+// 
+// for more detailed description refer to ALICE NOTE
+// "GeVSim Monte-Carlo Event Generator"
+// S.Radosmki, P. Foka.
 //  
 // Author:
 // Sylwester Radomski,
@@ -33,10 +45,17 @@
 // S.Radomski@gsi.de
 //
 ////////////////////////////////////////////////////////////////////////////////
+//
+// Updated and revised: September 2002, S. Radomski, GSI
+//
+////////////////////////////////////////////////////////////////////////////////
+
 
 class TFormula;
 class TF1;
 class TF2;
+class TH1D;
+class TH2D;
 class TObjArray;
 class AliGeVSimParticle;
 
@@ -46,13 +65,14 @@ class AliGenGeVSim : public AliGenerator {
  public:
   
   AliGenGeVSim();
-  AliGenGeVSim(Int_t model, Float_t psi);
+  AliGenGeVSim(Float_t psi, Bool_t isMultTotal = kTRUE);
   
   virtual ~AliGenGeVSim();
   
   /////////////////////////////////////////////////////////////////
   
   void AddParticleType(AliGeVSimParticle *part);
+  void SetMultTotal(Bool_t isTotal = kTRUE);
   
   void Init();
   void Generate();
@@ -61,25 +81,31 @@ class AliGenGeVSim : public AliGenerator {
   
  private:
   
-  Int_t   fModel;            // Selected model (1-5)
+  Int_t   fModel;            // Selected model (1-7)
   Float_t fPsi;              // Reaction Plane angle (0-2pi)
+  Bool_t  fIsMultTotal;      // Mode od multiplicity: total, dN/dY
+
+  TF1 *fPtFormula;           //! Pt formula for model (1)
+  TF1 *fYFormula;            //! Y formula for model (1)
+  TF2 *fPtYFormula[3];       //! Pt,Y formulae for model (2)-(4)
+  TF1 *fPhiFormula;          //! phi formula 
   
-  TF1 *fPtFormula;           // Pt formula for model (1)
-  TF1 *fYFormula;            // Y formula for model (1)
-  TF2 *fPtYFormula[4];       // Pt,Y formulae for model (2)-(4) and custom
-  TF1 *fPhiFormula;          // phi formula 
-  
+  TFormula *fCurrentForm;    //! currently used formula
+  TH1D *fHist[2];            //! two 1D histograms (fModel == 6)
+  TH2D *fPtYHist;            //! two-dimensional histogram (fModel == 7)
+
   TObjArray *fPartTypes;     // Registered particles
   
-  void InitFormula();        
+  void InitFormula();
+  void SetFormula(Int_t pdg);
+  void AdjustFormula();
   void DetermineReactionPlane();
- 
-  TFormula* DetermineModel();
- 
-  //void PlotDistributions();
+  void GetRandomPtY(Double_t &pt, Double_t &y);
+
+  Float_t GetdNdYToTotal();
   
-  Bool_t CheckPtYPhi(Float_t pt, Float_t y, Float_t phi);
-  Bool_t CheckP(Float_t p[3]);
+  Bool_t CheckPtYPhi(Float_t pt, Float_t y, Float_t phi);  // for histograms only
+  Bool_t CheckAcceptance(Float_t p[3]);
   
   Float_t FindScaler(Int_t paramId, Int_t pdg);
   
@@ -87,7 +113,7 @@ class AliGenGeVSim : public AliGenerator {
 
  public:
 
-  ClassDef(AliGenGeVSim, 1)
+  ClassDef(AliGenGeVSim, 2)
 
 };
 
