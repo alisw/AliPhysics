@@ -184,7 +184,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
        gAlice->ResetDigits();
        Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-       gAlice->TreeD()->GetEvent(0);
+       gAlice->TreeD()->GetEvent(1);
 
 
 
