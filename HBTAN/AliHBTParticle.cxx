@@ -1,6 +1,7 @@
 //Simplified TParticle class
 #include "AliHBTParticle.h"
 #include <TParticle.h>
+#include <TClass.h>
 
 ClassImp(AliHBTParticle)
 
@@ -205,12 +206,12 @@ void AliHBTParticle::Print() const
      printf("Not known\n");
    }
   
-  printf("Px: %+f Py: %+f Pz: %+f E: %+f Calculated Mass: %f Vx: %+f Vy: %+f Vz: %+f T: %+f",
+  printf("Px: %+f Py: %+f Pz: %+f E: %+f Calculated Mass: %f\nVx: %+f Vy: %+f Vz: %+f T: %+f\n",
           Px(),Py(),Pz(),Energy(),GetCalcMass(),Vx(),Vy(),Vz(),T());
 
   for (Int_t i = 0; i < fNPids; i++)
    {
-     printf("# %d  PID: %d  Probability %f name",i,fPids[i],fPidProb[i]);
+     printf("# %d  PID: %d  Probability %f name ",i,fPids[i],fPidProb[i]);
      const TParticlePDG *ap = TDatabasePDG::Instance()->GetParticle(fPids[i]);
      if (ap)
       {
@@ -222,3 +223,90 @@ void AliHBTParticle::Print() const
       }
    }
 }
+
+//______________________________________________________________________________
+
+//void AliHBTParticle::Streamer(TBuffer &b)
+//{
+//     // Stream all objects in the array to or from the I/O buffer.
+//   UInt_t R__s, R__c;
+//   Int_t i;
+//   if (b.IsReading()) 
+//    {
+//      delete [] fPids;
+//      delete [] fPidProb;
+//      
+//      Version_t v = b.ReadVersion(&R__s, &R__c);
+//      if (v == 1)
+//       {
+//         AliHBTParticle::Class()->ReadBuffer(b, this);
+//      }
+//      else
+//       {
+//        TObject::Streamer(b);
+//       b >> fPdgIdx;
+//       b >> fIdxInEvent;
+//       
+//       b >> fNPids;
+//       Int_t* fPids = new Int_t[fNPids];
+//        Float_t* fPidProb = new Float_t[fNPids];
+//        for (i = 0;i<fNPids;i++) 
+//         {
+//           b >> fPids[i];
+//         }
+//        for (i = 0;i<fNPids;i++) 
+//        {
+//          b >> fPidProb[i];
+//         }
+//        b >> fCalcMass;
+//
+//        b >> fPx;
+//       b >> fPy;
+//       b >> fPz;
+//        b >> fE;
+//
+//       b >> fVx;
+//        b >> fVy;
+//        b >> fVz;
+//       b >> fVt;
+//       Info("Streamer","Read data");
+//        Print();
+//       }
+//
+//      b.CheckByteCount(R__s, R__c,AliHBTParticle::IsA());
+//    } 
+//  else 
+//   {
+//     R__c = b.WriteVersion(AliHBTParticle::IsA(), kTRUE);
+//     TObject::Streamer(b);
+//     Info("Streamer","Read data");
+//     Print();
+//
+//     b << fPdgIdx;
+//     b << fIdxInEvent;
+//     b << fNPids;
+//     for (i = 0;i<fNPids;i++) 
+//      {
+//        b << fPids[i];
+//      }
+//      {
+//      {
+//     for (i = 0;i<fNPids;i++) 
+//     {
+//        b << fPidProb[i];
+//      }
+//     b << fCalcMass;
+//
+//     b << fPx;
+//     b << fPy;
+//     b << fPz;
+//     b << fE;
+//
+//     b << fVx;
+//     b << fVy;
+//     b << fVz;
+//     b << fVt;
+//
+//    b.SetByteCount(R__c, kTRUE);
+//   }
+//}
