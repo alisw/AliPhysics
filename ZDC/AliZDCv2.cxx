@@ -16,10 +16,11 @@
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
-//  		AliZDCv2 --- new ZDC geometry,		     	     //
+//  		AliZDCv2 --- new ZDC geometry		     	     //
 //  	    with the EM ZDC at about 10 m from IP		     //
 //  		Just one set of ZDC is inserted			     //
 //      (on the same side of the dimuon arm realtive to IP)	     //
+//	      Compensator in ZDC geometry (Nov. 2004)		     //
 //                                                                   //  
 ///////////////////////////////////////////////////////////////////////
 
@@ -163,14 +164,15 @@ void AliZDCv2::CreateBeamLine()
   // Create the beam line elements
   //
   
-  Float_t zq, zd1, zd2;
+  Float_t zc, zq, zd1, zd2;
   Float_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
   Int_t im1, im2;
   
   Int_t *idtmed = fIdtmed->GetArray();
   
   // -- Mother of the ZDCs (Vacuum PCON)
-  zd1 = 2092.;
+  // zd1 = 2092.; // (Without compensator in ZDC geometry)
+  zd1 = 1921.6;
   
   conpar[0] = 0.;
   conpar[1] = 360.;
@@ -460,23 +462,38 @@ void AliZDCv2::CreateBeamLine()
    
   // ----------------------------------------------------------------
   // --  MAGNET DEFINITION  -> LHC OPTICS 6.5  
-  // ----------------------------------------------------------------
-  // -- INNER TRIPLET 
+  // ----------------------------------------------------------------      
+  // --  COMPENSATOR DIPOLE (MBXW)
+  zc = 1921.6;   
   
-  zq = 2296.5;
-  
-  // -- DEFINE MQXL AND MQX QUADRUPOLE ELEMENT 
-  
-  //     MQXL 
-  // --  GAP (VACUUM WITH MAGNETIC FIELD) 
-  
+  // --  GAP (VACUUM WITH MAGNETIC FIELD)
   tubpar[0] = 0.;
-  tubpar[1] = 3.5;
-  tubpar[2] = 637./2.;
-  gMC->Gsvolu("MQXL", "TUBE", idtmed[11], tubpar, 3);
+  tubpar[1] = 4.5;
+  tubpar[2] = 170./2.;
+  gMC->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
+
+  // --  YOKE 
+  tubpar[0] = 4.5;
+  tubpar[1] = 55.;
+  tubpar[2] = 170./2.;
+  gMC->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
+
+  gMC->Gspos("MBXW", 1, "ZDC ", 0., 0., -tubpar[2]-zc, 0, "ONLY");
+  gMC->Gspos("YMBX", 1, "ZDC ", 0., 0., -tubpar[2]-zc, 0, "ONLY");
+  
+  
+  // -- INNER TRIPLET 
+  zq = 2296.5; 
+
+  // -- DEFINE MQXL AND MQX QUADRUPOLE ELEMENT 
+  // --  MQXL 
+  // --  GAP (VACUUM WITH MAGNETIC FIELD) 
+  tubpar[0] = 0.;
+  tubpar[1] = 4.5;
+  tubpar[2] = 170./2.;
+  gMC->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);
   
   // --  YOKE 
-  
   tubpar[0] = 3.5;
   tubpar[1] = 22.;
   tubpar[2] = 637./2.;
@@ -490,14 +507,12 @@ void AliZDCv2::CreateBeamLine()
   
   // --  MQX 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
-  
   tubpar[0] = 0.;
   tubpar[1] = 3.5;
   tubpar[2] = 550./2.;
   gMC->Gsvolu("MQX ", "TUBE", idtmed[11], tubpar, 3);
   
   // --  YOKE 
-  
   tubpar[0] = 3.5;
   tubpar[1] = 22.;
   tubpar[2] = 550./2.;
@@ -510,11 +525,9 @@ void AliZDCv2::CreateBeamLine()
   gMC->Gspos("YMQ ", 2, "ZDC ", 0., 0., -tubpar[2]-zq-1558.5, 0, "ONLY");
   
   // -- SEPARATOR DIPOLE D1 
-  
   zd1 = 5838.3;
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
-  
   tubpar[0] = 0.;
   tubpar[1] = 6.94/2.;
   tubpar[2] = 945./2.;
@@ -522,7 +535,6 @@ void AliZDCv2::CreateBeamLine()
   
   // --  Insert horizontal Cu plates inside D1 
   // --   (to simulate the vacuum chamber)
-  
   boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.98+0.2)*(2.98+0.2)) - 0.05;
   boxpar[1] = 0.2/2.;
   boxpar[2] =945./2.;
@@ -531,7 +543,6 @@ void AliZDCv2::CreateBeamLine()
   gMC->Gspos("MD1V", 2, "MD1 ", 0., -2.98-boxpar[1], 0., 0, "ONLY");
     
   // --  YOKE 
-  
   tubpar[0] = 0.;
   tubpar[1] = 110./2;
   tubpar[2] = 945./2.;
@@ -541,19 +552,16 @@ void AliZDCv2::CreateBeamLine()
   gMC->Gspos("MD1 ", 1, "YD1 ", 0., 0., 0., 0, "ONLY");
   
   // -- DIPOLE D2 
-  
- // --- LHC optics v6.4
+  // --- LHC optics v6.4
   zd2 = 12147.6;
   
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
-  
   tubpar[0] = 0.;
   tubpar[1] = 7.5/2.;
   tubpar[2] = 945./2.;
   gMC->Gsvolu("MD2 ", "TUBE", idtmed[11], tubpar, 3);
   
   // --  YOKE 
-  
   tubpar[0] = 0.;
   tubpar[1] = 55.;
   tubpar[2] = 945./2.;
