@@ -15,7 +15,7 @@ SRCS          = AliDigits.cxx   AliSegmentArray.cxx AliTPCClusterFinder.cxx  Ali
 		AliTPCRF1D.cxx AliArrayI.cxx AliArrayS.cxx \
 		AliSegmentID.cxx  \
 		AliSimDigits.cxx AliDigitsArray.cxx  AliTPCDigitsArray.cxx \
-		AliCluster.cxx AliClusters.cxx AliClustersArray.cxx \
+		AliComplexCluster.cxx AliClusters.cxx AliClustersArray.cxx \
 		 AliTPCClustersRow.cxx \
 		AliTPCClustersArray.cxx AliH2F.cxx \
                 AliTPCcluster.cxx AliTPCclusterer.cxx \

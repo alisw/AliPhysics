@@ -17,7 +17,7 @@
 #pragma link C++ class  AliTPChit;
 #pragma link C++ class  AliTPCdigit;
 #pragma link C++ class  AliTPCcluster;
-#pragma link C++ class  AliTPCtrack-;
+#pragma link C++ class  AliTPCtrack;
 
 #pragma link C++ class  AliTPCParam-;
 #pragma link C++ class  AliTPCParamSR-;
@@ -30,7 +30,7 @@
 #pragma link C++ class AliDetectorParam;
 #pragma link C++ class AliSegmentID;
 #pragma link C++ class AliSegmentArray-;
-#pragma link C++ class AliCluster;
+#pragma link C++ class AliComplexCluster;
 #pragma link C++ class AliDigitCluster;
 #pragma link C++ class AliDifCluster;
 #pragma link C++ class AliClusters;
