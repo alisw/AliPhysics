@@ -1,3 +1,4 @@
+#include "AliHBTParticleCut.h"
 //__________________________________________________________________________
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -19,22 +20,21 @@
 // resonsible: Piotr Skowronski@cern.ch                                   //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-#include "AliHBTParticleCut.h"
 
 #include <Riostream.h>
+
 
 ClassImp(AliHBTParticleCut)
 const Int_t AliHBTParticleCut::fgkMaxCuts = 50;
 /******************************************************************/
 
-AliHBTParticleCut::AliHBTParticleCut()
- {
-   //default ctor
-   fCuts = new AliHbtBaseCut* [fgkMaxCuts];//last property in the property
-                                         //property enum => defines number of properties
-   fNCuts = 0;
-   fPID  = 0;
- }
+AliHBTParticleCut::AliHBTParticleCut():
+ fCuts(new AliHbtBaseCut* [fgkMaxCuts]),//last property in the property enum => defines number of properties
+ fNCuts(0),
+ fPID(0)
+{
+  //default ctor
+}
 /******************************************************************/
 
 AliHBTParticleCut::AliHBTParticleCut(const AliHBTParticleCut& in):
@@ -51,9 +51,10 @@ AliHBTParticleCut::AliHBTParticleCut(const AliHBTParticleCut& in):
    }
 }
 /******************************************************************/
-const AliHBTParticleCut& AliHBTParticleCut::operator = (const AliHBTParticleCut& in)
+AliHBTParticleCut& AliHBTParticleCut::operator=(const AliHBTParticleCut& in)
 {
   //assigment operator
+  Info("operator=","operator=operator=operator=operator=\noperator=operator=operator=operator=");
   for (Int_t i = 0;i<fNCuts;i++)
    {
      delete fCuts[i];
@@ -80,10 +81,11 @@ AliHBTParticleCut::~AliHBTParticleCut()
 } 
 /******************************************************************/
 
-Bool_t AliHBTParticleCut::Pass(AliHBTParticle* p)
+Bool_t AliHBTParticleCut::Pass(AliHBTParticle* p) const
 {
 //method checks all the cuts that are set (in the list)
 //If any of the baseCuts rejects particle False(rejection) is returned
+
  if(!p) 
   {
     Warning("Pass()","No Pasaran! We never accept NULL pointers");
@@ -410,7 +412,7 @@ AliHBTLogicalOperCut::~AliHBTLogicalOperCut()
 }
 /******************************************************************/
 
-Bool_t AliHBTLogicalOperCut::AliHBTDummyBaseCut::Pass(AliHBTParticle* /*part*/)
+Bool_t AliHBTLogicalOperCut::AliHBTDummyBaseCut::Pass(AliHBTParticle* /*part*/)  const
 {
   //checks if particles passes properties defined by this cut
   Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
@@ -448,7 +450,7 @@ void AliHBTLogicalOperCut::Streamer(TBuffer &b)
 /******************************************************************/
 ClassImp(AliHBTOrCut)
 
-Bool_t AliHBTOrCut::Pass(AliHBTParticle * p)
+Bool_t AliHBTOrCut::Pass(AliHBTParticle * p) const
 {
   //returns true when rejected 
   //AND operation is a little bit misleading but is correct
@@ -461,7 +463,7 @@ Bool_t AliHBTOrCut::Pass(AliHBTParticle * p)
 
 ClassImp(AliHBTAndCut)
 
-Bool_t AliHBTAndCut::Pass(AliHBTParticle * p)
+Bool_t AliHBTAndCut::Pass(AliHBTParticle * p)  const
 {
   //returns true when rejected 
   //OR operation is a little bit misleading but is correct

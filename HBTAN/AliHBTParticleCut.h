@@ -1,3 +1,5 @@
+#ifndef ALIHBTPARTICLECUT_H
+#define ALIHBTPARTICLECUT_H
 //__________________________________________________________________________
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -20,9 +22,6 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-
-#ifndef ALIHBTPARTICLECUT_H
-#define ALIHBTPARTICLECUT_H
 
 #include <TObject.h>
 #include "AliHBTParticle.h"
@@ -71,9 +70,9 @@ class AliHBTParticleCut: public TObject
     AliHBTParticleCut();
     AliHBTParticleCut(const AliHBTParticleCut& in);
     virtual ~AliHBTParticleCut();
-    const AliHBTParticleCut& operator = (const AliHBTParticleCut& in);
+    AliHBTParticleCut& operator = (const AliHBTParticleCut& in);
     
-    virtual Bool_t Pass(AliHBTParticle* p);
+    virtual Bool_t Pass(AliHBTParticle* p) const;
     Bool_t IsEmpty() const {return kFALSE;}
     
     void AddBasePartCut(AliHbtBaseCut* basecut);
@@ -123,7 +122,7 @@ class AliHBTEmptyParticleCut:  public AliHBTParticleCut
     AliHBTEmptyParticleCut(){};
     virtual ~AliHBTEmptyParticleCut(){};
     
-    Bool_t Pass(AliHBTParticle*){return kFALSE;} //accept everything <<CAN NOT BE const!!!!>>
+    Bool_t Pass(AliHBTParticle*) const {return kFALSE;} //accept everything <<CAN NOT BE const!!!!>>
     Bool_t IsEmpty() const {return kTRUE;}
 
     ClassDef(AliHBTEmptyParticleCut,1)
@@ -146,7 +145,7 @@ class AliHbtBaseCut: public TObject
 
      virtual           ~AliHbtBaseCut(){}
      
-     virtual Bool_t    Pass(AliHBTParticle *p);
+     virtual Bool_t    Pass(AliHBTParticle *p) const;
      
      void              SetRange(Double_t min, Double_t max){fMin = min; fMax = max;}
 
@@ -173,7 +172,7 @@ class AliHbtBaseCut: public TObject
  };
 
 inline Bool_t
-AliHbtBaseCut::Pass(AliHBTParticle *p)
+AliHbtBaseCut::Pass(AliHBTParticle *p) const
 {
   //cjecks if particle property fits in range
   if ( (GetValue(p) < fMin) || (GetValue(p) > fMax ) ) return kTRUE; //rejected
@@ -211,7 +210,7 @@ class AliHBTEnergyCut: public AliHbtBaseCut
     AliHBTEnergyCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBaseCut(min,max,kHbtE){}
     virtual ~AliHBTEnergyCut(){}
   protected:
-    Double_t  GetValue(AliHBTParticle * p)const{return p->Energy();}
+    Double_t  GetValue(AliHBTParticle * p)const {return p->Energy();}
     ClassDef(AliHBTEnergyCut,1)
  };
 
@@ -361,7 +360,7 @@ class AliHBTLogicalOperCut:  public AliHbtBaseCut
     class  AliHBTDummyBaseCut: public AliHbtBaseCut 
      {
        Double_t  GetValue(AliHBTParticle * /*part*/) const {return 0.0;}
-       Bool_t    Pass(AliHBTParticle* /*part*/);
+       Bool_t    Pass(AliHBTParticle* /*part*/) const;
      };
      
     ClassDef(AliHBTLogicalOperCut,1)
@@ -373,7 +372,7 @@ class AliHBTOrCut: public AliHBTLogicalOperCut
      AliHBTOrCut(){}
      AliHBTOrCut(AliHbtBaseCut* first, AliHbtBaseCut* second):AliHBTLogicalOperCut(first,second){}
      virtual   ~AliHBTOrCut(){}
-     Bool_t    Pass(AliHBTParticle *p);
+     Bool_t    Pass(AliHBTParticle *p) const;
      ClassDef(AliHBTOrCut,1)
 };
 
@@ -383,7 +382,7 @@ class AliHBTAndCut: public AliHBTLogicalOperCut
      AliHBTAndCut(){}
      AliHBTAndCut(AliHbtBaseCut* first, AliHbtBaseCut* second):AliHBTLogicalOperCut(first,second){}
      virtual   ~AliHBTAndCut(){}
-     Bool_t    Pass(AliHBTParticle *p);
+     Bool_t    Pass(AliHBTParticle *p) const;
      ClassDef(AliHBTAndCut,1)
 };
 
