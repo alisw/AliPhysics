@@ -48,7 +48,8 @@ AliTPCHNode::AliTPCHNode(Int_t sym, Double_t freq){
 
 //////////////////////////////////////////////////////////////////////////////
 
-AliTPCHNode::AliTPCHNode(const AliTPCHNode &source){
+AliTPCHNode::AliTPCHNode(const AliTPCHNode &source)
+  :TObject(source){
   //Copy Constructor 
   if(&source == this) return;
   this->fSymbol = source.fSymbol;
@@ -118,7 +119,8 @@ AliTPCHTable::AliTPCHTable(Int_t size){
 
 //////////////////////////////////////////////////////////////////////////////
 
-AliTPCHTable::AliTPCHTable(const AliTPCHTable &source){
+AliTPCHTable::AliTPCHTable(const AliTPCHTable &source)
+  :TObject(source){
   //Copy Constructor 
   if(&source == this) return;
   this->fSize = source.fSize;

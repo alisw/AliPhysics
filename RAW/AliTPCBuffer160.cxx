@@ -100,7 +100,8 @@ AliTPCBuffer160::~AliTPCBuffer160(){
 }
 
 
-AliTPCBuffer160::AliTPCBuffer160(const AliTPCBuffer160 &source){
+AliTPCBuffer160::AliTPCBuffer160(const AliTPCBuffer160 &source)
+  :TObject(source){
   // Copy Constructor
   if(&source==this)return;
   this->fShift=source.fShift;

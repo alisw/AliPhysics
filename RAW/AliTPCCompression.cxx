@@ -45,7 +45,8 @@ AliTPCCompression::AliTPCCompression(){
   return;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-AliTPCCompression::AliTPCCompression(const AliTPCCompression &source){
+AliTPCCompression::AliTPCCompression(const AliTPCCompression &source)
+  :TObject(source){
   //Constructor
   this->fDimBuffer=source.fDimBuffer;
   this->fFreeBitsBuffer=source.fFreeBitsBuffer;
@@ -124,7 +125,7 @@ void AliTPCCompression::NextTable(Int_t Val,Int_t &NextTableType,Int_t &BunchLen
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTPCCompression::FillTables(const char* fSource,AliTPCHTable* table[],const Int_t NumTables){
+Int_t AliTPCCompression::FillTables(const char* fSource,AliTPCHTable* table[],const Int_t /*NumTables*/){
   //This method is used to compute the frequencies of the symbols in the source file
   AliTPCBuffer160 buff(fSource,0);
   ULong_t countWords=0;
@@ -1021,7 +1022,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t NumTables,char* PointBuffer,ULong_t BufferSize,UShort_t out[],ULong_t &dim){
+Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t /*NumTables*/,char* PointBuffer,ULong_t BufferSize,UShort_t out[],ULong_t &dim){
   //This method decompress a file using separate Huffman tables
 
   fPointBuffer=PointBuffer+BufferSize-4;
