@@ -16,6 +16,10 @@ class TParticle;
 class AliGenPythia : public AliGenMC
 {
  public:
+
+  typedef enum {kFlavorSelection, kParentSelection} StackFillOpt_t;
+  typedef enum {kCountAll, kCountParents, kCountTrackables} CountMode_t;
+
     AliGenPythia();
     AliGenPythia(Int_t npart);
     AliGenPythia(const AliGenPythia &Pythia);
@@ -44,6 +48,23 @@ class AliGenPythia : public AliGenMC
 	{fEtaMinGamma = etamin; fEtaMaxGamma = etamax;}
     virtual void    SetGammaPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
 	{fPhiMinGamma = TMath::Pi()*phimin/180.; fPhiMaxGamma = TMath::Pi()*phimax/180.;}
+    // Set option for feed down from higher family
+    virtual void SetFeedDownHigherFamily(Bool_t opt) {
+      fFeedDownOpt = opt;
+    }
+    // Set option for selecting particles kept in stack according to flavor
+    // or to parent selection
+    virtual void SetStackFillOpt(StackFillOpt_t opt) {
+      fStackFillOpt = opt;
+    }
+    // Set fragmentation option
+    virtual void SetFragmentation(const Bool_t opt) {
+      fFragmentation = opt;
+    }
+    // Set counting mode
+    virtual void SetCountMode(const CountMode_t mode) {
+      fCountMode = mode;
+    }
     
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}      
@@ -83,6 +104,21 @@ class AliGenPythia : public AliGenMC
     Float_t     fEtaMaxGamma;    // Maximum eta of triggered gamma
     Float_t     fPhiMinGamma;    // Minimum phi of triggered gamma
     Float_t     fPhiMaxGamma;    // Maximum phi of triggered gamma
+
+    StackFillOpt_t fStackFillOpt; // Stack filling with all particles with
+                                  // that flavour or only with selected
+                                  // parents and their decays
+    Bool_t fFeedDownOpt;          // Option to set feed down from higher
+                                  // quark families (e.g. b->c)
+    Bool_t fFragmentation;        // Option to activate fragmentation by Pythia
+    //
+    // Options for counting when the event will be finished.
+    // fCountMode = kCountAll         --> All particles that end up in the
+    //                                    stack are counted
+    // fCountMode = kCountParents     --> Only selected parents are counted
+    // fCountMode = kCountTrackabless --> Only particles flagged for tracking
+    //                                     are counted
+    CountMode_t fCountMode;
 
  private:
     // adjust the weight from kinematic cuts
