@@ -76,12 +76,12 @@ AliPHOSv1(name,title)
   for (iPHOSModule=0; iPHOSModule<nPHOSModules; iPHOSModule++) {
     fEMCImpacts->Add(new TClonesArray("AliPHOSImpact",200)) ;
     fNEMCImpacts[iPHOSModule] = 0;
-    impacts = (TClonesArray *)fEMCImpacts->At(iPHOSModule);
+    impacts = dynamic_cast<TClonesArray *>(fEMCImpacts->At(iPHOSModule));
   }
   for (iPHOSModule=0; iPHOSModule<nCPVModules; iPHOSModule++) {
     fCPVImpacts->Add(new TClonesArray("AliPHOSImpact",200)) ;
     fNCPVImpacts[iPHOSModule] = 0;
-    impacts = (TClonesArray *)fCPVImpacts->At(iPHOSModule);
+    impacts = dynamic_cast<TClonesArray *>(fCPVImpacts->At(iPHOSModule));
   }
 
 }
@@ -121,12 +121,12 @@ void AliPHOSvImpacts::AddImpact( char* det, Int_t shunt, Int_t primary, Int_t tr
   Int_t         nImpacts = 0;
 
   if (strcmp(det,"EMC ")==0) {
-    impacts = (TClonesArray *)fEMCImpacts->At(module);
+    impacts = dynamic_cast<TClonesArray *>(fEMCImpacts->At(module));
     nImpacts= fNEMCImpacts[module];
     fNEMCImpacts[module]++ ;
   }
   else if (strcmp(det,"CPV ")==0) {
-    impacts = (TClonesArray *)fCPVImpacts->At(module);
+    impacts = dynamic_cast<TClonesArray *>(fCPVImpacts->At(module));
     nImpacts= fNCPVImpacts[module];
     fNCPVImpacts[module]++ ;
   }
@@ -135,7 +135,7 @@ void AliPHOSvImpacts::AddImpact( char* det, Int_t shunt, Int_t primary, Int_t tr
 
   if (fDebug==1) {
     printf("Module %d %s: ",module,det);
-    ((AliPHOSImpact*)(impacts->At(nImpacts)))->Print();
+    (dynamic_cast<AliPHOSImpact*>((impacts->At(nImpacts))))->Print();
   }
 }
 
@@ -163,12 +163,12 @@ void AliPHOSvImpacts::ResetHits()
 
   Int_t i;
   for (i=0; i<GetGeometry()->GetNModules(); i++) {
-    ((TClonesArray*)fEMCImpacts->At(i)) -> Clear();
+    (dynamic_cast<TClonesArray*>(fEMCImpacts->At(i))) -> Clear();
     fNEMCImpacts[i] = 0 ;
   }
 
   for (i=0; i<GetGeometry()->GetNModules(); i++) {
-    ((TClonesArray*)fCPVImpacts->At(i)) -> Clear();
+    (dynamic_cast<TClonesArray*>(fCPVImpacts->At(i))) -> Clear();
     fNCPVImpacts[i] = 0 ;
   }
   

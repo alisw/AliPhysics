@@ -131,14 +131,14 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
   //First EMC clusters
   Int_t totalEmc = emcRecPoints->GetEntriesFast() ;
   for(fEmcFirst = fEmcLast; (fEmcLast < totalEmc) &&  
-	(((AliPHOSRecPoint *) emcRecPoints->At(fEmcLast))->GetPHOSMod() == fModule ); 
+	((dynamic_cast<AliPHOSRecPoint *>(emcRecPoints->At(fEmcLast)))->GetPHOSMod() == fModule ); 
       fEmcLast ++)  ;
   
   //Now CPV clusters
   Int_t totalCpv = cpvRecPoints->GetEntriesFast() ;
 
     for(fCpvFirst = fCpvLast; (fCpvLast < totalCpv) && 
-	  (((AliPHOSRecPoint *) cpvRecPoints->At(fCpvLast))->GetPHOSMod() == fModule ); 
+	  ((dynamic_cast<AliPHOSRecPoint *>(cpvRecPoints->At(fCpvLast)))->GetPHOSMod() == fModule ); 
 	fCpvLast ++) ;
       
 }
@@ -228,13 +228,13 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
   
   Int_t iEmcRP;
   for(iEmcRP = fEmcFirst; iEmcRP < fEmcLast; iEmcRP++ ) {
-    emcclu = (AliPHOSEmcRecPoint *) emcRecPoints->At(iEmcRP) ;
+    emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(iEmcRP)) ;
 
     Bool_t toofar ;        
     Int_t iCpv = 0 ;    
     for(iCpv = fCpvFirst; iCpv < fCpvLast;iCpv++ ) { 
       
-      cpv = (AliPHOSRecPoint *) cpvRecPoints->At(iCpv) ;
+      cpv = dynamic_cast<AliPHOSRecPoint *>(cpvRecPoints->At(iCpv)) ;
       Float_t r = GetDistanceInPHOSPlane(emcclu, cpv, toofar) ;
       
       if(toofar)
@@ -287,16 +287,16 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   
   AliPHOSRecPoint * nullpointer = 0 ;
   
-  while ( (linkUp =  (AliPHOSLink *)nextUp() ) ){  
+  while ( (linkUp =  static_cast<AliPHOSLink *>(nextUp()) ) ){  
 
     if(emcExist[linkUp->GetEmc()-fEmcFirst] != -1){ //without ppsd Up yet 
 
       if(cpvExist[linkUp->GetPpsd()-fCpvFirst]){ //CPV still exist
 	
 	new ((* trackSegments)[fNTrackSegments]) 
-	  AliPHOSTrackSegment((AliPHOSEmcRecPoint *) emcRecPoints->At(linkUp->GetEmc()) , 
-			      (AliPHOSRecPoint *)cpvRecPoints->At(linkUp->GetPpsd())) ;
-	((AliPHOSTrackSegment *) trackSegments->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
+	  AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(linkUp->GetEmc())) , 
+			      dynamic_cast<AliPHOSRecPoint *>(cpvRecPoints->At(linkUp->GetPpsd()))) ;
+	(dynamic_cast<AliPHOSTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++ ;
 	
 	emcExist[linkUp->GetEmc()-fEmcFirst] = -1 ; //Mark emc  that Cpv was found 
@@ -312,9 +312,9 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     for(iEmcRP = 0; iEmcRP < fEmcLast-fEmcFirst  ; iEmcRP++ ){
       if(emcExist[iEmcRP] > 0 ){
 	new ((*trackSegments)[fNTrackSegments])  
-	  AliPHOSTrackSegment((AliPHOSEmcRecPoint *)emcRecPoints->At(iEmcRP+fEmcFirst), 
+	  AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(iEmcRP+fEmcFirst)), 
 			      nullpointer) ;
-	((AliPHOSTrackSegment *) trackSegments->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
+	(dynamic_cast<AliPHOSTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++;    
       } 
     }
@@ -340,7 +340,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 
   gAlice->GetEvent(0) ;
   //check, if the branch with name of this" already exits?
-  TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
+  TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeR()->GetListOfBranches()) ;
   TIter next(lob) ; 
   TBranch * branch = 0 ;  
   Bool_t phostsfound = kFALSE, tracksegmentmakerfound = kFALSE ; 
@@ -348,7 +348,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
   TString branchname = GetName() ;
   branchname.Remove(branchname.Index(Version())-1) ;
 
-  while ( (branch = (TBranch*)next()) && (!phostsfound || !tracksegmentmakerfound) ) {
+  while ( (branch = static_cast<TBranch*>(next())) && (!phostsfound || !tracksegmentmakerfound) ) {
     if ( (strcmp(branch->GetName(), "PHOSTS")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
       phostsfound = kTRUE ;
     
@@ -462,7 +462,7 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
     tsBranch->SetFile(filename);
     TIter next( tsBranch->GetListOfBranches());
     TBranch * sb ;
-    while ((sb=(TBranch*)next())) {
+    while ((sb=static_cast<TBranch*>(next()))) {
       sb->SetFile(filename);
     }   
     cwd->cd();
@@ -478,7 +478,7 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
     tsMakerBranch->SetFile(filename);
     TIter next( tsMakerBranch->GetListOfBranches());
     TBranch * sb;
-    while ((sb=(TBranch*)next())) {
+    while ((sb=static_cast<TBranch*>(next()))) {
       sb->SetFile(filename);
     }   
     cwd->cd();

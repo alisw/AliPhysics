@@ -146,8 +146,8 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   fQAHitsMul->AddChecker(hmc) ; 
   fQATotEner->AddChecker(emc) ; 
   for ( i = 0 ; i < nb ; i++ ) {
-    ((AliPHOSQAIntCheckable*)(*fQAHitsMulB)[i])->AddChecker(bhmc) ;
-    ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[i])->AddChecker(bemc) ; 
+    (static_cast<AliPHOSQAIntCheckable*>((*fQAHitsMulB)[i]))->AddChecker(bhmc) ;
+    (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[i]))->AddChecker(bemc) ; 
   }
 
 }
@@ -181,7 +181,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
 
   for ( hitCounter = fNhits-1 ; hitCounter >= 0 && !deja ; hitCounter-- ) {
-    curHit = (AliPHOSHit*) (*fHits)[hitCounter] ;
+    curHit = dynamic_cast<AliPHOSHit*>((*fHits)[hitCounter]) ;
     if(curHit->GetPrimary() != primary) break ; 
            // We add hits with the same primary, while GEANT treats primaries succesively 
     if( *curHit == *newHit ) {
@@ -198,7 +198,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
     // and fill the relevant QA checkable (only if in PbW04)
     if ( relid[1] == 0 ) {
       fQAHitsMul->Update(1) ; 
-      ((AliPHOSQAIntCheckable*)(*fQAHitsMulB)[relid[0]-1])->Update(1) ;
+      (static_cast<AliPHOSQAIntCheckable*>((*fQAHitsMulB)[relid[0]-1]))->Update(1) ;
     } 
     fNhits++ ;
   }
@@ -234,8 +234,8 @@ void AliPHOSv1::FinishEvent()
   Int_t i ; 
   if ( fQAHitsMulB && fQATotEnerB ) {
     for (i = 0 ; i < GetGeometry()->GetNModules() ; i++) {
-      AliPHOSQAIntCheckable * ci = (AliPHOSQAIntCheckable*)(*fQAHitsMulB)[i] ;  
-      AliPHOSQAFloatCheckable* cf = (AliPHOSQAFloatCheckable*)(*fQATotEnerB)[i] ; 
+      AliPHOSQAIntCheckable * ci = static_cast<AliPHOSQAIntCheckable*>((*fQAHitsMulB)[i]) ;  
+      AliPHOSQAFloatCheckable* cf = static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[i]) ; 
       if ( ci->HasChanged() ) { 
 	ci->CheckMe() ;  
 	ci->Reset() ;
@@ -319,11 +319,11 @@ void AliPHOSv1::StepManager(void)
     
     ndigits = cpvDigits->GetEntriesFast();
     for (idigit=0; idigit<ndigits-1; idigit++) {
-      AliPHOSCPVDigit  *cpvDigit1 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
+      AliPHOSCPVDigit  *cpvDigit1 = dynamic_cast<AliPHOSCPVDigit*>(cpvDigits->UncheckedAt(idigit));
       Float_t x1 = cpvDigit1->GetXpad() ;
       Float_t z1 = cpvDigit1->GetYpad() ;
       for (Int_t jdigit=idigit+1; jdigit<ndigits; jdigit++) {
-	AliPHOSCPVDigit  *cpvDigit2 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(jdigit);
+	AliPHOSCPVDigit  *cpvDigit2 = dynamic_cast<AliPHOSCPVDigit*>(cpvDigits->UncheckedAt(jdigit));
 	Float_t x2 = cpvDigit2->GetXpad() ;
 	Float_t z2 = cpvDigit2->GetYpad() ;
 	if (x1==x2 && z1==z2) {
@@ -339,7 +339,7 @@ void AliPHOSv1::StepManager(void)
     
     ndigits = cpvDigits->GetEntriesFast();
     for (idigit=0; idigit<ndigits; idigit++) {
-      AliPHOSCPVDigit  *cpvDigit = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
+      AliPHOSCPVDigit  *cpvDigit = dynamic_cast<AliPHOSCPVDigit*>(cpvDigits->UncheckedAt(idigit));
       relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
       relid[1] =-1 ;                                            // means CPV
       relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad
@@ -386,7 +386,7 @@ void AliPHOSv1::StepManager(void)
       
       // fill the relevant QA Checkables
       fQATotEner->Update( xyze[4] ) ;                                             // total energy in PHOS
-      ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[moduleNumber-1])->Update( xyze[4] ) ; // energy in this block  
+      (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[moduleNumber-1]))->Update( xyze[4] ) ; // energy in this block  
 
       Int_t strip ;
       gMC->CurrentVolOffID(3, strip);
@@ -527,7 +527,7 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   Int_t nz3     = (kNgamz+1)/2;
   Int_t nx3     = (kNgamx+1)/2;
   cpvDigits->Expand(nIter*kNgamx*kNgamz);
-  TClonesArray &ldigits = *(TClonesArray *)cpvDigits;
+  TClonesArray &ldigits = *(static_cast<TClonesArray *>(cpvDigits));
 
   for (Int_t iter=0; iter<nIter; iter++) {
 

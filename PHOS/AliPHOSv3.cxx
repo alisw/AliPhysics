@@ -221,11 +221,11 @@ void AliPHOSv3::StepManager(void)
 
       ndigits = cpvDigits->GetEntriesFast();
       for (idigit=0; idigit<ndigits-1; idigit++) {
-	AliPHOSCPVDigit  *cpvDigit1 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
+	AliPHOSCPVDigit  *cpvDigit1 = dynamic_cast<AliPHOSCPVDigit*>(cpvDigits->UncheckedAt(idigit));
 	Float_t x1 = cpvDigit1->GetXpad() ;
 	Float_t z1 = cpvDigit1->GetYpad() ;
 	for (Int_t jdigit=idigit+1; jdigit<ndigits; jdigit++) {
-	  AliPHOSCPVDigit  *cpvDigit2 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(jdigit);
+	  AliPHOSCPVDigit  *cpvDigit2 = dynamic_cast<AliPHOSCPVDigit*>(cpvDigits->UncheckedAt(jdigit));
 	  Float_t x2 = cpvDigit2->GetXpad() ;
 	  Float_t z2 = cpvDigit2->GetYpad() ;
 	  if (x1==x2 && z1==z2) {
@@ -241,7 +241,7 @@ void AliPHOSv3::StepManager(void)
 
       ndigits = cpvDigits->GetEntriesFast();
       for (idigit=0; idigit<ndigits; idigit++) {
-	AliPHOSCPVDigit  *cpvDigit = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
+	AliPHOSCPVDigit  *cpvDigit = dynamic_cast<AliPHOSCPVDigit*>(cpvDigits->UncheckedAt(idigit));
 	relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
 	relid[1] =-1 ;                                            // means CPV
 	relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad

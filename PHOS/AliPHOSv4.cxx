@@ -180,7 +180,7 @@ void AliPHOSv4::CreateGeometry()
 {
   // Create the geometry for GEANT
   
-  AliPHOSv4 *phostmp = (AliPHOSv4*)gAlice->GetModule("PHOS") ;
+  AliPHOSv4 *phostmp = dynamic_cast<AliPHOSv4*>(gAlice->GetModule("PHOS")) ;
   
   if ( phostmp == NULL ) {
     
