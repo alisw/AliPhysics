@@ -173,7 +173,7 @@ void AliITStrack::LmTPC() {
 
   rtrack=TMath::Sqrt(xm*xm+ym*ym);
   Double_t pigre=TMath::Pi();
-  Double_t phi;
+  Double_t phi=0.0;
   if(ym == 0. || xm == 0.) {
     if(ym == 0. && xm == 0.) {cout << "  Error in AliITStrack::LmTPC x=0 and y=0 \n"; getchar();}
     if(ym ==0. && xm>0.) phi=0.;

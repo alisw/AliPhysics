@@ -326,7 +326,7 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
   
   // cout<<" layer phidet e det(6) = "<< layer<<" "<<phidet<<" "<<det(6)<<"\n"; getchar();
   Double_t xmin,ymin,xmax,ymax;	
-  Double_t phiconfr;  
+  Double_t phiconfr=0.0;
   local[1]=local[2]=0.;  
   local[0]= -(Detx[layer-1]);
   if(layer==1)    local[0]= (Detx[layer-1]);  //take into account different reference system
@@ -367,7 +367,7 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
 
 Double_t AliITStracking::PhiDef(Double_t x, Double_t y){
   Double_t pigre= TMath::Pi();
-  Double_t phi;
+  Double_t phi=0.0;
   if(y == 0. || x == 0.) {
     if(y == 0. && x == 0.) {
       cout << "  Error in AliITStracking::PhiDef x=0 and y=0 \n"; getchar();
