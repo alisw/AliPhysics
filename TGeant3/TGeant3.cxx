@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/01/17 19:41:17  fca
+Add SetERAN function
+
 Revision 1.20  2000/01/12 11:29:27  fca
 Close material file
 
@@ -75,6 +78,7 @@ Introduction of the Copyright and cvs Log
 # define gfmate  gfmate_ 
 # define gfpart  gfpart_ 
 # define gftmed  gftmed_ 
+# define gftmat  gftmat_ 
 # define gmate   gmate_ 
 # define gpart   gpart_ 
 # define gsdk    gsdk_ 
@@ -152,6 +156,8 @@ Introduction of the Copyright and cvs Log
 # define setclip setclip_
 # define gcomad gcomad_
 
+# define gbrelm gbrelm_
+# define gprelm gprelm_
 #else 
 # define gzebra  GZEBRA 
 # define grfile  GRFILE 
@@ -169,6 +175,7 @@ Introduction of the Copyright and cvs Log
 # define gfmate  GFMATE 
 # define gfpart  GFPART 
 # define gftmed  GFTMED 
+# define gftmat  GFTMAT
 # define gmate   GMATE 
 # define gpart   GPART 
 # define gsdk    GSDK 
@@ -247,6 +254,9 @@ Introduction of the Copyright and cvs Log
 # define setclip SETCLIP
 # define gcomad  GCOMAD
  
+# define gbrelm GBRELM
+# define gprelm GPRELM
+
 #endif 
 
 //____________________________________________________________________________ 
@@ -352,6 +362,10 @@ extern "C"
   void type_of_call gftmed(const Int_t&, DEFCHARD, Int_t &, Int_t &, Int_t &,
 			   Float_t &, Float_t &, Float_t &, Float_t &,
 			   Float_t &, Float_t &, Float_t *, Int_t * DEFCHARL); 
+
+  void type_of_call gftmat(const Int_t&, const Int_t&, DEFCHARD, const Int_t&,
+			   Float_t*, Float_t*
+			   ,Float_t *, Int_t & DEFCHARL);
 
   void type_of_call gsmate(const Int_t&, DEFCHARD, Float_t &, Float_t &,
 			   Float_t &, Float_t &, Float_t &, Float_t *,
@@ -461,6 +475,9 @@ extern "C"
 			   const Int_t &ipa, DEFCHARD DEFCHARL);
 
   void type_of_call ertrgo();
+  
+    float type_of_call gbrelm(const Float_t &z, const Float_t& t, const Float_t& cut);
+    float type_of_call gprelm(const Float_t &z, const Float_t& t, const Float_t& cut);
 }
 
 //
@@ -833,6 +850,11 @@ void TGeant3::DefineParticles()
   pdgDB->AddParticle("Cherenkov","Cherenkov",0,kFALSE,
 		     0,0,"Special",kspe+50);
   fPDGCode[fNPDGCodes++]=kspe+50;   // 50 = Cherenkov
+
+  Gspart(51, "FeedbackPhoton", 7, 0., 0.,1.e20 );
+  pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton",0,kFALSE,
+		     0,0,"Special",kspe+51);
+  fPDGCode[fNPDGCodes++]=kspe+51;   // 51 = FeedbackPhoton
 
 /* --- Define additional decay modes --- */
 /* --- omega(783) --- */
@@ -1708,7 +1730,30 @@ void  TGeant3::Gftmed(Int_t numed, char *name, Int_t &nmat, Int_t &isvol,
   //
   gftmed(numed, PASSCHARD(name), nmat, isvol, ifield, fieldm, tmaxfd, stemax,  
          deemax, epsil, stmin, ubuf, nbuf PASSCHARL(name)); 
+}
+
+ 
+ void  TGeant3::Gftmat(Int_t imate, Int_t ipart, char *chmeca, Int_t kdim,
+		      Float_t* tkin, Float_t* value, Float_t* pcut,
+		      Int_t &ixst)
+{ 
+  //
+  // Return parameters for tracking medium NUMED
+  //
+  gftmat(imate, ipart, PASSCHARD(chmeca), kdim,
+	 tkin, value, pcut, ixst PASSCHARL(chmeca));
+
 } 
+
+Float_t TGeant3::Gbrelm(Float_t z, Float_t t, Float_t bcut)
+{
+    return gbrelm(z,t,bcut);
+}
+
+Float_t TGeant3::Gprelm(Float_t z, Float_t t, Float_t bcut)
+{
+    return gprelm(z,t,bcut);
+}
  
 //_____________________________________________________________________________
 void  TGeant3::Gmate() 
