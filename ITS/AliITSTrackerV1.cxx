@@ -15,6 +15,10 @@
  
 /*
 $Log$
+Revision 1.12  2001/10/19 21:32:35  nilsen
+Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
+cleanded up a little bit of code.
+
 */
 //     The purpose of this class is to permorm the ITS tracking. The 
 // constructor has the task to inizialize some private members. The method 
@@ -58,6 +62,20 @@ $Log$
 #include "AliITSVertex.h"
 
 ClassImp(AliITSTrackerV1)
+ //______________________________________________________________________
+AliITSTrackerV1::AliITSTrackerV1() {
+  //Default constructor
+  fITS = 0;
+  fresult = 0;
+  frecPoints = 0;
+  fvettid = 0;
+  frl = 0;
+  fzmin = 0;
+  fzmax = 0;
+  fphimin = 0;
+  fphimax = 0;
+  fphidet = 0;
+}
 //______________________________________________________________________
 AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
     //Origin   A. Badala' and G.S. Pappalardo:  

@@ -36,6 +36,7 @@ class TStopwatch;
 
 class AliITSTrackerV1 : public TObject {
  public:
+    AliITSTrackerV1();
     AliITSTrackerV1(AliITS* IITTSS, Bool_t flag);
     AliITSTrackerV1(const AliITSTrackerV1 &cobj);
     ~AliITSTrackerV1();

@@ -48,6 +48,7 @@ AliITSClusterFinder::AliITSClusterFinder()
 {
   // constructor
     fResponse=0;
+    fSegmentation = 0;
     
     fDigits=0;
     fNdigits = 0;
