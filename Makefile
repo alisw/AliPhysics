@@ -131,7 +131,7 @@ htmldoc:		FORCE
 
 clean:  FORCE
 		@rm -f *~ \#*
-		@for i in $(ALIROOT_DIRS) ; do \
+		@for i in $(ALIROOT_DIRS) ALIROOT ; do \
                     ${MAKE} -C $$i macroclean ; \
                 done
 
