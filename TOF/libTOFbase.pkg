@@ -1,7 +1,8 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS  = AliTOFGeometry.cxx
+SRCS  = AliTOFGeometry.cxx  \
+        AliTOFdigit.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
