@@ -42,96 +42,124 @@ RICH 9 -1. -1. -1. -1. -1. -1. -1. 5.e6
 
 * Front Absorber ABSO
 * ===================
-
 * CARBON
 * ^^^^^^
 * unshielded
-ABSO  6 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+*       GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL
+ABSO  6 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4 -1.    -1.   -1.  -1    -1    -1   -1    1   -1    2   -1   -1   -1   -1
 * shielded
-ABSO 26 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 26 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 46 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 46 1.e-3 1.e-2 1.e-3 1.e-3
 
 * ALUMINUM
 * ^^^^^^^^
 * unshielded
-ABSO  9 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+ABSO  9 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 29 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 29 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 49 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 49 1.e-3 1.e-2 1.e-3 1.e-3
 
 * IRON
 * ^^^^
 * unshielded
-ABSO 10 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+*ABSO 10 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 30 1.e-3 1.e-2 1.e-2 1.e-3
+*ABSO 20 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * very shielded
-ABSO 50 1.e-3 1.e-2 1.e-2 1.e-3
+*ABSO 50 1.e-3 1.e-2 1.e-3 1.e-3
+
+* COPPER
+* ^^^^^^
+* unshielded
+*ABSO 11 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+*ABSO 21 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+* very shielded
+*ABSO 51 1.e-3 1.e-2 1.e-3 1.e-3
 
 * TUNGSTEN
 * ^^^^^^^^
 * unshielded
-ABSO 12 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+ABSO 12 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 32 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 32 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * very shielded
-ABSO 52 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 52 1.e-4 1.e-3 1.e-3 1.e-3
 
 * LEAD
 * ^^^^
 * unshielded
-ABSO 13 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+ABSO 13 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 33 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 33 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * very shielded
-ABSO 53 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 53 1.e-4 1.e-3 1.e-3 1.e-3
 
 * Air
 * ^^^
 * unshielded
-ABSO 15 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+ABSO 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 35 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 35 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 55 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 55 1.e-4 1.e-3 1.e-3 1.e-3
 
 * VACUUM
 * ^^^^^^
 * unshielded
-ABSO 16 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+ABSO 16 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 36 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 36 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 56 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 56 1.e-4 1.e-3 1.e-3 1.e-3
 
 * CONCRETE
 * ^^^^^^^^
 * unshielded
-ABSO 17 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+*       GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL
+ABSO 17 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4 -1.    -1.   -1.  -1   -1   -1   -1   1    -1   2    -1   -1   -1   -1
 * shielded
-ABSO 37 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 37 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 57 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 57 1.e-4 1.e-2 1.e-3 1.e-3
 
 * POLY CH_2
 * ^^^^^^^^^
 * unshielded
-ABSO 18 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+ABSO 18 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 38 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 38 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 58 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 58 1.e-4 1.e-2 1.e-3 1.e-3
 
 * STEEL
 * ^^^^^
 * unshielded
-ABSO 19 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+ABSO 19 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
 * shielded
-ABSO 39 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 39 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-ABSO 59 1.e-3 1.e-2 1.e-2 1.e-3
+ABSO 59 1.e-4 1.e-2 1.e-3 1.e-3
+
+* Ni-W-Cu
+* ^^^^^^^
+* unshielded
+ABSO 21 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 41 1.e-3 1.e-2 1.e-3 1.e-3
+* very shielded
+ABSO 61 1.e-4 1.e-2 1.e-3 1.e-3
+
+* Insulation Powder
+* ^^^^^^^^^^^^^^^^^
+* unshielded
+ABSO 14 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 34 1.e-3 1.e-2 1.e-3 1.e-3
+* very shielded
+ABSO 54 1.e-4 1.e-2 1.e-3 1.e-3
 
 * Beam Shield SHIL
 * ================
@@ -139,65 +167,92 @@ ABSO 59 1.e-3 1.e-2 1.e-2 1.e-3
 * ALUMINUM
 * ^^^^^^^^
 * unshielded
-SHIL  9 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+SHIL  9 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
-SHIL 29 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 29 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 49 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 49 1.e-3 1.e-2 1.e-3 1.e-3
 
 * IRON
 * ^^^^
 * unshielded
-SHIL 10 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+SHIL 10 2.e-4 2.e-4 1.e-3 2.e-4 1.e-3 1.e-3 1.e-3
 * shielded
-SHIL 30 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 30 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 50 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 50 1.e-4 1.e-2 1.e-3 1.e-3
+
+* COPPER
+* ^^^^^^
+* unshielded
+SHIL 11 2.e-4 2.e-4 1.e-3 2.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 31 1.e-3 1.e-2 1.e-3 1.e-3
+* very shielded
+SHIL 51 1.e-3 1.e-2 1.e-3 1.e-3
 
 * TUNGSTEN
 * ^^^^^^^^
 * unshielded
-SHIL 12 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+SHIL 12 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
-SHIL 32 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 32 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 52 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 52 1.e-4 1.e-2 1.e-3 1.e-3
 
 * LEAD
 * ^^^^
 * unshielded
-SHIL 13 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+SHIL 13 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
-SHIL 33 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 33 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 53 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 53 1.e-4 1.e-2 1.e-3 1.e-3
 
 * Air
 * ^^^
 * unshielded
-SHIL 15 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+SHIL 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
-SHIL 35 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 35 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 55 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 55 1.e-4 1.e-2 1.e-3 1.e-3
 
 * VACUUM
 * ^^^^^^
 * unshielded
-SHIL 16 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+SHIL 16 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
-SHIL 36 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 36 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 56 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 56 1.e-4 1.e-2 1.e-3 1.e-3
 
 * STEEL
 * ^^^^^
 * unshielded
-SHIL 19 2.e-4 2.e-4 2.e-4 2.e-4 1.e-3 1.e-3 1.e-3
+SHIL 19 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
-SHIL 39 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 39 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
-SHIL 59 1.e-3 1.e-2 1.e-2 1.e-3
+SHIL 59 1.e-4 1.e-2 1.e-3 1.e-3
+
+* Ni-W-Cu
+* ^^^^^^^
+* unshielded
+SHIL 21 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 41 1.e-3 1.e-2 1.e-3 1.e-3
+* very shielded
+SHIL 61 1.e-4 1.e-2 1.e-3 1.e-3
+
+* Insulation Powder
+* ^^^^^^^^^^^^^^^^^
+* unshielded
+SHIL 14 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+SHIL 34 1.e-3 1.e-2 1.e-3 1.e-3
+* very shielded
+SHIL 54 1.e-4 1.e-2 1.e-3 1.e-3
 
 
 * L3 Magnet MAG
