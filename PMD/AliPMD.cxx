@@ -48,11 +48,13 @@
 
 #include "AliConst.h" 
 #include "AliLoader.h" 
+#include "AliPMDLoader.h" 
 #include "AliPMD.h"
 #include "AliPMDRecPoint.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliPMDDigitizer.h"
+#include "AliPMDhit.h"
   
 ClassImp(AliPMD)
  
@@ -107,20 +109,20 @@ AliPMD::AliPMD(const char *name, const char *title)
 
 AliLoader* AliPMD::MakeLoader(const char* topfoldername)
 {
- cout<<"AliPMD::MakeLoader ";
+  // Makes PMD Loader
  
- fLoader = new AliPMDLoader(GetName(),topfoldername);
+  fLoader = new AliPMDLoader(GetName(),topfoldername);
  
- if (fLoader)
-  {
-   cout<<"Success"<<endl;
-  }
- else
-  {
-   cout<<"Failure"<<endl;
-  }
+  if (fLoader)
+    {
+      cout<<"Success"<<endl;
+    }
+  else
+    {
+      cout<<"Failure"<<endl;
+    }
 
- return fLoader;
+  return fLoader;
 }
 
 AliPMD::~AliPMD()
@@ -169,22 +171,22 @@ void AliPMD::BuildGeometry()
   // Build simple ROOT TNode geometry for event display
   //
 
-  TNode *Node, *Top;
+  TNode *node, *top;
   const int kColorPMD  = kRed;
 
   //
-  Top=gAlice->GetGeometry()->GetNode("alice");
+  top=gAlice->GetGeometry()->GetNode("alice");
 
   // PMD
   new TBRIK("S_PMD","PMD box","void",300,300,5);
-  Top->cd();
-  Node = new TNode("PMD","PMD","S_PMD",0,0,-600,"");
-  Node->SetLineColor(kColorPMD);
-  fNodes->Add(Node);
+  top->cd();
+  node = new TNode("PMD","PMD","S_PMD",0,0,-600,"");
+  node->SetLineColor(kColorPMD);
+  fNodes->Add(node);
 }
 
 //_____________________________________________________________________________
-Int_t AliPMD::DistancetoPrimitive(Int_t , Int_t )
+Int_t AliPMD::DistancetoPrimitive(Int_t , Int_t ) const
 {
   //
   // Distance from mouse to detector on the screen
@@ -319,39 +321,6 @@ void AliPMD::ResetHits()
     fNRecPoints   = 0;
     if (fRecPoints)   fRecPoints->Clear();
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Photon Multiplicity Detector Version 1                                   //
-//                                                                           //
-//Begin_Html
-/*
-<img src="picts/AliPMDv1Class.gif">
-*/
-//End_Html
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-ClassImp(AliPMDhit)
-  
-//_____________________________________________________________________________
-AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
-{
-  //
-  // Add a PMD hit
-  //
-  Int_t i;
-  for (i=0;i<8;i++) fVolume[i] = vol[i];
-  fX=hits[0];
-  fY=hits[1];
-  fZ=hits[2];
-  fEnergy=hits[3];
-}
-  
-
 //____________________________________________________________________________
 void AliPMD::Hits2SDigits()  
 { 
