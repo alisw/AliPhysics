@@ -23,11 +23,6 @@
 #pragma link C++ class AliTPCHTable+;
 #pragma link C++ class AliAltroRawStream+;
 #pragma link C++ class AliTPCRawStream+;
-#pragma link C++ class AliITSRawStream+;
-#pragma link C++ class AliITSRawStreamSPD+;
-#pragma link C++ class AliITSRawStreamSDD+;
-#pragma link C++ class AliITSRawStreamSSD+;
-#pragma link C++ class AliITSRawStreamSDDv2+;
 #pragma link C++ class AliVMERawStream+;
 
 #endif
