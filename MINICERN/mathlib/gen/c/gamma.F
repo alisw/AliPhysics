@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:34  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1996/04/01 15:01:54  mclareni
 * Mathlib gen
 *
@@ -14,5 +17,8 @@
       SROUND(D)=D+(D-SNGL(D))
       GAMMA=SROUND(DGAMMA(DBLE(X)))
       RETURN
+      END
+#else
+      SUBROUTINE GAMMA_DUMMY
       END
 #endif
