@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  1999/10/26 06:04:50  fca
+Introduce TLorentzVector in AliMC::GetSecondary. Thanks to I.Hrivnacova
+
 Revision 1.14  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -1156,12 +1159,13 @@ Int_t   TGeant3::CurrentEvent() const
 }
 
 //_____________________________________________________________________________
-void    TGeant3::ProdProcess(char* proc) const
+const char* TGeant3::ProdProcess() const
 {
   //
   // Name of the process that has produced the secondary particles
   // in the current step
   //
+  static char proc[5];
   const Int_t ipmec[13] = { 5,6,7,8,9,10,11,12,21,23,25,105,108 };
   Int_t mec, km, im;
   //
@@ -1176,12 +1180,13 @@ void    TGeant3::ProdProcess(char* proc) const
 	    strncpy(proc,(char *)&fGctpol->namec1[mec - 101],4);
 	  }
 	  proc[4]='\0';
-	  return;
+	  return proc;
 	}
       }
     }
     strcpy(proc,"UNKN");
   } else strcpy(proc,"NONE");
+  return proc;
 }
 
 //_____________________________________________________________________________

@@ -577,10 +577,10 @@ public:
   Bool_t IsTrackDisappeared() const;
   Bool_t IsTrackStop() const;
   Bool_t IsTrackAlive() const;
-  Int_t   NSecondaries() const;
-  Int_t   CurrentEvent() const;
-  void    ProdProcess(char*) const;
-  void    GetSecondary(Int_t, Int_t&, TLorentzVector&, TLorentzVector&);
+  Int_t  NSecondaries() const;
+  Int_t  CurrentEvent() const;
+  const char*  ProdProcess() const;
+  void   GetSecondary(Int_t, Int_t&, TLorentzVector&, TLorentzVector&);
   void   StopTrack();
   void   StopEvent();
   Float_t MaxStep() const;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/11/02 17:05:06  fca
+Update GetSecondary arguments
+
 Revision 1.11  1999/09/29 09:24:31  fca
 Introduction of the Copyright and cvs Log
 
@@ -72,7 +75,7 @@ Bool_t  TGeant3::IsTrackOut() const {return 0;}
 Bool_t  TGeant3::IsTrackDisappeared() const {return 0;}
 Bool_t  TGeant3::IsTrackStop() const {return 0;}
 Int_t   TGeant3::NSecondaries() const {return 0;}
-void    TGeant3::ProdProcess(char*) const {}
+const char* TGeant3::ProdProcess() const {}
 void    TGeant3::GetSecondary(Int_t, Int_t&, 
 			      TLorentzVector&, TLorentzVector&){}
 Float_t TGeant3::MaxStep() const {return 0;}

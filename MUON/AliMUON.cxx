@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  1999/10/26 06:04:48  fca
+Introduce TLorentzVector in AliMC::GetSecondary. Thanks to I.Hrivnacova
+
 Revision 1.12  1999/10/07 21:08:10  fca
 Corrections by G.Chabratova
 
@@ -633,10 +636,10 @@ void AliMUON::StepManager()
     Int_t nsec, ipart;
     TLorentzVector x, p;
     Float_t pt, th0, th2;
-    char proc[5];
+    char *proc;
     if(fAccCut) {
 	if((nsec=gMC->NSecondaries())>0) {
-	    gMC->ProdProcess(proc);
+	    proc=gMC->ProdProcess();
 	    if((gMC->TrackPid()==443 || gMC->TrackPid()==553) && !strcmp(proc,"DCAY")) {
 		//
 		// Check angular acceptance

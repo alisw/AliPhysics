@@ -56,7 +56,7 @@ public:
   virtual Bool_t  IsTrackAlive() const=0;
   virtual Int_t   NSecondaries() const=0;
   virtual Int_t   CurrentEvent() const=0;
-  virtual void    ProdProcess(char*) const=0;
+  virtual const char*   ProdProcess() const=0;
   virtual void    GetSecondary(Int_t, Int_t&, TLorentzVector&, TLorentzVector&)=0;
   virtual void    StopTrack() =0;
   virtual void    StopEvent() =0;

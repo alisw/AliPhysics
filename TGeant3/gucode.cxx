@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/09/29 09:24:31  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliCallf77.h"
@@ -487,7 +490,7 @@ void gustep()
   Int_t ipp, jk, id, nt;
   Float_t polar[3]={0,0,0};
   Float_t mom[3];
-  char chproc[11];
+  const char *chproc;
   
   // --- Standard GEANT debug routine 
   TGeant3* geant3 = (TGeant3*) gMC;
@@ -501,7 +504,7 @@ void gustep()
   }
   // --- Add new created particles 
   if (gMC->NSecondaries() > 0) {
-    gMC->ProdProcess(chproc);
+    chproc=gMC->ProdProcess();
     for (jk = 0; jk < geant3->Gcking()->ngkine; ++jk) {
       ipp = Int_t (geant3->Gcking()->gkin[jk][4]+0.5);
       // --- Skip neutrinos! 

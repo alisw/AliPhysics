@@ -53,7 +53,7 @@ public:
   Bool_t TrackAlive() const;
   Int_t   NSecondaries() const;
   Int_t   CurrentEvent() const;
-  void    ProdProcess(char*) const;
+  const char*  ProdProcess() const;
   void    GetSecondary(Int_t, Int_t&, Float_t*, Float_t*);
   void   StopTrack();
   void   StopEvent();
