@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.36  2001/10/19 21:32:35  nilsen
+Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
+cleanded up a little bit of code.
+
 Revision 1.35  2001/10/19 10:16:28  barbera
 A bug corrected in the definition of a TPCON
 
@@ -464,21 +468,21 @@ void AliITSvPPRsymm::BuildGeometry(){
   
   if (option == 1) {  
   
-     new TRotMatrix("rot238","rot238",90.0,144.0,90.0,234.0,0.0,0.0);
-     new TRotMatrix("rot236","rot236",90.0,180.013702,90.0,270.013702,0.0,0.0);
-     new TRotMatrix("rot239","rot239",90.0,216.0,90.0,306.0,0.0,0.0);     
-     new TRotMatrix("rot233","rot233",90.0,252.000504,90.0,342.000488,0.0,0.0 );     
-     new TRotMatrix("rot240","rot240",90.0,288.0,90.0,18.0,0.0,0.0);
-     new TRotMatrix("rot241","rot241",90.0,324.0,90.0,54.0,0.0,0.0);          
-     new TRotMatrix("rot242","rot242",90.0,36.0,90.0,126.0,0.0,0.0); 
-     new TRotMatrix("rot234","rot234",90.0,71.9991,90.0,161.9991,0.0,0.0);     
-     new TRotMatrix("rot243","rot243",90.0,108.0,90.0,198.0,0.0,0.0);  
-     new TRotMatrix("rot244","rot244",90.0,180.0,90.0,270.0,0.0,0.0);
-     new TRotMatrix("rot245","rot245",90.0,162.0,90.0,252.0,0.0,0.0);
-     new TRotMatrix("rot246","rot246",90.0,310.0,90.0,40.0,0.0,0.0);
-     new TRotMatrix("rot247","rot247",90.0,319.0,90.0,49.0,0.0,0.0);
-     new TRotMatrix("rot248","rot248",90.0,328.0,90.0,58.0,0.0,0.0);
-     new TRotMatrix("rot249","rot249",90.0,337.0,90.0,67.0,0.0,0.0);     
+     new TRotMatrix("itsrot238","itsrot238",90.0,144.0,90.0,234.0,0.0,0.0);
+     new TRotMatrix("itsrot236","itsrot236",90.0,180.013702,90.0,270.013702,0.0,0.0);
+     new TRotMatrix("itsrot239","itsrot239",90.0,216.0,90.0,306.0,0.0,0.0);     
+     new TRotMatrix("itsrot233","itsrot233",90.0,252.000504,90.0,342.000488,0.0,0.0 );     
+     new TRotMatrix("itsrot240","itsrot240",90.0,288.0,90.0,18.0,0.0,0.0);
+     new TRotMatrix("itsrot241","itsrot241",90.0,324.0,90.0,54.0,0.0,0.0);          
+     new TRotMatrix("itsrot242","itsrot242",90.0,36.0,90.0,126.0,0.0,0.0); 
+     new TRotMatrix("itsrot234","itsrot234",90.0,71.9991,90.0,161.9991,0.0,0.0);     
+     new TRotMatrix("itsrot243","itsrot243",90.0,108.0,90.0,198.0,0.0,0.0);  
+     new TRotMatrix("itsrot244","itsrot244",90.0,180.0,90.0,270.0,0.0,0.0);
+     new TRotMatrix("itsrot245","itsrot245",90.0,162.0,90.0,252.0,0.0,0.0);
+     new TRotMatrix("itsrot246","itsrot246",90.0,310.0,90.0,40.0,0.0,0.0);
+     new TRotMatrix("itsrot247","itsrot247",90.0,319.0,90.0,49.0,0.0,0.0);
+     new TRotMatrix("itsrot248","itsrot248",90.0,328.0,90.0,58.0,0.0,0.0);
+     new TRotMatrix("itsrot249","itsrot249",90.0,337.0,90.0,67.0,0.0,0.0);     
                  
   }   
 
@@ -486,136 +490,136 @@ void AliITSvPPRsymm::BuildGeometry(){
 
   if (option == 2) {  
   
-     new TRotMatrix("rot233","rot233",90.0,252.000504,90.0,342.000488,0.0,0.0);
-     new TRotMatrix("rot244","rot244",90.0,216.0,90.0,306.0,0.0,0.0);
-     new TRotMatrix("rot236","rot236",90.0,180.013702,90.0,270.013702,0.0,0.0);  
-     new TRotMatrix("rot245","rot245",90.0,36.0,90.0,126.0,0.0,0.0);     
-     new TRotMatrix("rot234","rot234",90.0,71.9991,90.0,161.9991,0.0,0.0);  
-     new TRotMatrix("rot246","rot246",90.0,108.0,90.0,198.0,0.0,0.0);    
-     new TRotMatrix("rot247","rot247",90.0,144.0,90.0,234.0,0.0,0.0);
-     new TRotMatrix("rot248","rot248",90.0,288.0,90.0,18.0,0.0,0.0);     
-     new TRotMatrix("rot249","rot249",90.0,324.0,90.0,54.0,0.0,0.0);       
-     new TRotMatrix("rot238","rot238",90.0,180.0,90.0,270.0,0.0,0.0);
-     new TRotMatrix("rot239","rot239",90.0,162.0,90.0,252.0,0.0,0.0);     
-     new TRotMatrix("rot240","rot240",90.0,310.0,90.0,40.0,0.0,0.0);
-     new TRotMatrix("rot241","rot241",90.0,319.0,90.0,49.0,0.0,0.0);
-     new TRotMatrix("rot242","rot242",90.0,328.0,90.0,58.0,0.0,0.0);
-     new TRotMatrix("rot243","rot243",90.0,337.0,90.0,67.0,0.0,0.0);
+     new TRotMatrix("itsrot233","itsrot233",90.0,252.000504,90.0,342.000488,0.0,0.0);
+     new TRotMatrix("itsrot244","itsrot244",90.0,216.0,90.0,306.0,0.0,0.0);
+     new TRotMatrix("itsrot236","itsrot236",90.0,180.013702,90.0,270.013702,0.0,0.0);  
+     new TRotMatrix("itsrot245","itsrot245",90.0,36.0,90.0,126.0,0.0,0.0);     
+     new TRotMatrix("itsrot234","itsrot234",90.0,71.9991,90.0,161.9991,0.0,0.0);  
+     new TRotMatrix("itsrot246","itsrot246",90.0,108.0,90.0,198.0,0.0,0.0);    
+     new TRotMatrix("itsrot247","itsrot247",90.0,144.0,90.0,234.0,0.0,0.0);
+     new TRotMatrix("itsrot248","itsrot248",90.0,288.0,90.0,18.0,0.0,0.0);     
+     new TRotMatrix("itsrot249","itsrot249",90.0,324.0,90.0,54.0,0.0,0.0);       
+     new TRotMatrix("itsrot238","itsrot238",90.0,180.0,90.0,270.0,0.0,0.0);
+     new TRotMatrix("itsrot239","itsrot239",90.0,162.0,90.0,252.0,0.0,0.0);     
+     new TRotMatrix("itsrot240","itsrot240",90.0,310.0,90.0,40.0,0.0,0.0);
+     new TRotMatrix("itsrot241","itsrot241",90.0,319.0,90.0,49.0,0.0,0.0);
+     new TRotMatrix("itsrot242","itsrot242",90.0,328.0,90.0,58.0,0.0,0.0);
+     new TRotMatrix("itsrot243","itsrot243",90.0,337.0,90.0,67.0,0.0,0.0);
 
   }   
      
   // SDD
   
-  new TRotMatrix("rot321","rot321",90.0,12.86,90.0,102.86,0.0,0.0);	 
-  new TRotMatrix("rot333","rot333",90.0,38.57,90.0,128.57,0.0,0.0);
-  new TRotMatrix("rot336","rot336",90.0,64.29,90.0,154.29,0.0,0.0);	
-  new TRotMatrix("rot350","rot350",90.0,90.0,90.0,180.0,0.0,0.0);    
-  new TRotMatrix("rot313","rot313",90.0,115.71,90.0,205.71,0.0,0.0);   
-  new TRotMatrix("rot311","rot311",90.0,141.43,90.0,231.43,0.0,0.0);
-  new TRotMatrix("rot310","rot310",90.0,167.14,90.0,257.14,0.0,0.0);  
-  new TRotMatrix("rot386","rot386",90.0,192.86,90.0,282.86,0.0,0.0);    
-  new TRotMatrix("rot309","rot309",90.0,218.57,90.0,308.57,0.0,0.0);  
-  new TRotMatrix("rot308","rot308",90.0,244.29,90.0,334.29,0.0,0.0);  
-  new TRotMatrix("rot356","rot356",90.0,270.0,90.0,0.0,0.0,0.0);   
-  new TRotMatrix("rot307","rot307",90.0,295.71,90.0,25.71,0.0,0.0);  
-  new TRotMatrix("rot306","rot306",90.0,321.43,90.0,51.43,0.0,0.0); 
-  new TRotMatrix("rot305","rot305",90.0,347.14,90.0,77.14,0.0,0.0);		
-  new TRotMatrix("rot335","rot335",90.0,8.18,90.0,98.18,0.0,0.0); 
-  new TRotMatrix("rot332","rot332",90.0,24.55,90.0,114.55,0.0,0.0);  
-  new TRotMatrix("rot331","rot331",90.0,40.91,90.0,130.91,0.0,0.0);	 
-  new TRotMatrix("rot366","rot366",90.0,57.27,90.0,147.27,0.0,0.0);	
-  new TRotMatrix("rot330","rot330",90.0,73.64,90.0,163.64,0.0,0.0);	   
-  new TRotMatrix("rot350","rot350",90.0,90.0,90.0,180.0,0.0,0.0);    
-  new TRotMatrix("rot329","rot329",90.0,106.36,90.0,196.36,0.0,0.0);  
-  new TRotMatrix("rot328","rot328",90.0,122.73,90.0,212.73,0.0,0.0);  
-  new TRotMatrix("rot327","rot327",90.0,139.09,90.0,229.09,0.0,0.0);  
-  new TRotMatrix("rot326","rot326",90.0,155.45,90.0,245.45,0.0,0.0); 
-  new TRotMatrix("rot325","rot325",90.0,171.82,90.0,261.82,0.0,0.0);  
-  new TRotMatrix("rot324","rot324",90.0,188.18,90.0,278.18,0.0,0.0);   
-  new TRotMatrix("rot323","rot323",90.0,204.55,90.0,294.55,0.0,0.0);   
-  new TRotMatrix("rot322","rot322",90.0,220.91,90.0,310.91,0.0,0.0);  
-  new TRotMatrix("rot320","rot320",90.0,237.27,90.0,327.27,0.0,0.0);  
-  new TRotMatrix("rot319","rot319",90.0,253.64,90.0,343.64,0.0,0.0);  
-  new TRotMatrix("rot318","rot318",90.0,270.0,90.0,360.0,0.0,0.0);  
-  new TRotMatrix("rot317","rot317",90.0,286.36,90.0,16.36,0.0,0.0);  
-  new TRotMatrix("rot316","rot316",90.0,302.73,90.0,32.73,0.0,0.0);	
-  new TRotMatrix("rot315","rot315",90.0,319.09,90.0,49.09,0.0,0.0);	
-  new TRotMatrix("rot314","rot314",90.0,335.45,90.0,65.45,0.0,0.0); 
-  new TRotMatrix("rot334","rot334",90.0,351.82,90.0,81.82,0.0,0.0);	 
+  new TRotMatrix("itsrot321","itsrot321",90.0,12.86,90.0,102.86,0.0,0.0);	 
+  new TRotMatrix("itsrot333","itsrot333",90.0,38.57,90.0,128.57,0.0,0.0);
+  new TRotMatrix("itsrot336","itsrot336",90.0,64.29,90.0,154.29,0.0,0.0);	
+  new TRotMatrix("itsrot350","itsrot350",90.0,90.0,90.0,180.0,0.0,0.0);    
+  new TRotMatrix("itsrot313","itsrot313",90.0,115.71,90.0,205.71,0.0,0.0);   
+  new TRotMatrix("itsrot311","itsrot311",90.0,141.43,90.0,231.43,0.0,0.0);
+  new TRotMatrix("itsrot310","itsrot310",90.0,167.14,90.0,257.14,0.0,0.0);  
+  new TRotMatrix("itsrot386","itsrot386",90.0,192.86,90.0,282.86,0.0,0.0);    
+  new TRotMatrix("itsrot309","itsrot309",90.0,218.57,90.0,308.57,0.0,0.0);  
+  new TRotMatrix("itsrot308","itsrot308",90.0,244.29,90.0,334.29,0.0,0.0);  
+  new TRotMatrix("itsrot356","itsrot356",90.0,270.0,90.0,0.0,0.0,0.0);   
+  new TRotMatrix("itsrot307","itsrot307",90.0,295.71,90.0,25.71,0.0,0.0);  
+  new TRotMatrix("itsrot306","itsrot306",90.0,321.43,90.0,51.43,0.0,0.0); 
+  new TRotMatrix("itsrot305","itsrot305",90.0,347.14,90.0,77.14,0.0,0.0);		
+  new TRotMatrix("itsrot335","itsrot335",90.0,8.18,90.0,98.18,0.0,0.0); 
+  new TRotMatrix("itsrot332","itsrot332",90.0,24.55,90.0,114.55,0.0,0.0);  
+  new TRotMatrix("itsrot331","itsrot331",90.0,40.91,90.0,130.91,0.0,0.0);	 
+  new TRotMatrix("itsrot366","itsrot366",90.0,57.27,90.0,147.27,0.0,0.0);	
+  new TRotMatrix("itsrot330","itsrot330",90.0,73.64,90.0,163.64,0.0,0.0);	   
+  new TRotMatrix("itsrot350","itsrot350",90.0,90.0,90.0,180.0,0.0,0.0);    
+  new TRotMatrix("itsrot329","itsrot329",90.0,106.36,90.0,196.36,0.0,0.0);  
+  new TRotMatrix("itsrot328","itsrot328",90.0,122.73,90.0,212.73,0.0,0.0);  
+  new TRotMatrix("itsrot327","itsrot327",90.0,139.09,90.0,229.09,0.0,0.0);  
+  new TRotMatrix("itsrot326","itsrot326",90.0,155.45,90.0,245.45,0.0,0.0); 
+  new TRotMatrix("itsrot325","itsrot325",90.0,171.82,90.0,261.82,0.0,0.0);  
+  new TRotMatrix("itsrot324","itsrot324",90.0,188.18,90.0,278.18,0.0,0.0);   
+  new TRotMatrix("itsrot323","itsrot323",90.0,204.55,90.0,294.55,0.0,0.0);   
+  new TRotMatrix("itsrot322","itsrot322",90.0,220.91,90.0,310.91,0.0,0.0);  
+  new TRotMatrix("itsrot320","itsrot320",90.0,237.27,90.0,327.27,0.0,0.0);  
+  new TRotMatrix("itsrot319","itsrot319",90.0,253.64,90.0,343.64,0.0,0.0);  
+  new TRotMatrix("itsrot318","itsrot318",90.0,270.0,90.0,360.0,0.0,0.0);  
+  new TRotMatrix("itsrot317","itsrot317",90.0,286.36,90.0,16.36,0.0,0.0);  
+  new TRotMatrix("itsrot316","itsrot316",90.0,302.73,90.0,32.73,0.0,0.0);	
+  new TRotMatrix("itsrot315","itsrot315",90.0,319.09,90.0,49.09,0.0,0.0);	
+  new TRotMatrix("itsrot314","itsrot314",90.0,335.45,90.0,65.45,0.0,0.0); 
+  new TRotMatrix("itsrot334","itsrot334",90.0,351.82,90.0,81.82,0.0,0.0);	 
       
   //SSD 
   
-  new TRotMatrix("rot504","rot504",90.0,127.06,90.0,217.06,0.0,0.0);  
-  new TRotMatrix("rot505","rot505",90.0,116.47,90.0,206.47,0.0,0.0);  
-  new TRotMatrix("rot506","rot506",90.0,105.88,90.0,195.88,0.0,0.0);  
-  new TRotMatrix("rot507","rot507",90.0,95.29,90.0,185.29,0.0,0.0);  
-  new TRotMatrix("rot508","rot508",90.0,84.71,90.0,174.71,0.0,0.0);
-  new TRotMatrix("rot509","rot509",90.0,74.12,90.0,164.12,0.0,0.0);
-  new TRotMatrix("rot510","rot510",90.0,63.53,90.0,153.53,0.0,0.0);  
-  new TRotMatrix("rot511","rot511",90.0,52.94,90.0,142.94,0.0,0.0);
-  new TRotMatrix("rot512","rot512",90.0,42.35,90.0,132.35,0.0,0.0);
-  new TRotMatrix("rot513","rot513",90.0,31.76,90.0,121.76,0.0,0.0); 
-  new TRotMatrix("rot653","rot653",90.0,21.18,90.0,111.18,0.0,0.0); 
-  new TRotMatrix("rot514","rot514",90.0,10.59,90.0,100.59,0.0,0.0);  
-  new TRotMatrix("rot515","rot515",90.0,349.41,90.0,79.41,0.0,0.0);  
-  new TRotMatrix("rot516","rot516",90.0,338.82,90.0,68.82,0.0,0.0);  
-  new TRotMatrix("rot517","rot517",90.0,328.24,90.0,58.24,0.0,0.0);  
-  new TRotMatrix("rot518","rot518",90.0,317.65,90.0,47.65,0.0,0.0);
-  new TRotMatrix("rot519","rot519",90.0,307.06,90.0,37.06,0.0,0.0);
-  new TRotMatrix("rot520","rot520",90.0,296.47,90.0,26.47,0.0,0.0);  
-  new TRotMatrix("rot521","rot521",90.0,285.88,90.0,15.88,0.0,0.0);
-  new TRotMatrix("rot522","rot522",90.0,275.29,90.0,5.29,0.0,0.0);
-  new TRotMatrix("rot523","rot523",90.0,264.71,90.0,354.71,0.0,0.0); 
-  new TRotMatrix("rot524","rot524",90.0,254.12,90.0,344.12,0.0,0.0);  
-  new TRotMatrix("rot525","rot525",90.0,243.53,90.0,333.53,0.0,0.0);  
-  new TRotMatrix("rot526","rot526",90.0,232.94,90.0,322.94,0.0,0.0);  
-  new TRotMatrix("rot527","rot527",90.0,222.35,90.0,312.35,0.0,0.0);  
-  new TRotMatrix("rot528","rot528",90.0,211.76,90.0,301.76,0.0,0.0);
-  new TRotMatrix("rot618","rot618",90.0,201.18,90.0,291.18,0.0,0.0); 
-  new TRotMatrix("rot529","rot529",90.0,190.59,90.0,280.59,0.0,0.0); 
-  new TRotMatrix("rot533","rot533",90.0,180.0,90.0,270.0,0.0,0.0);   
-  new TRotMatrix("rot530","rot530",90.0,169.41,90.0,259.41,0.0,0.0);  
-  new TRotMatrix("rot531","rot531",90.0,158.82,90.0,248.82,0.0,0.0);  
-  new TRotMatrix("rot501","rot501",90.0,148.24,90.0,238.24,0.0,0.0);
-  new TRotMatrix("rot503","rot503",90.0,137.65,90.0,227.65,0.0,0.0);         
-  new TRotMatrix("rot532","rot532",90.0,360.0,90.0,90.0,0.0,0.0);
-  new TRotMatrix("rot560","rot560",90.0,85.26,90.0,175.26,0.0,0.0);  
-  new TRotMatrix("rot561","rot561",90.0,94.74,90.0,184.74,0.0,0.0);
-  new TRotMatrix("rot562","rot562",90.0,104.21,90.0,194.21,0.0,0.0);
-  new TRotMatrix("rot563","rot563",90.0,113.68,90.0,203.68,0.0,0.0); 
-  new TRotMatrix("rot564","rot564",90.0,123.16,90.0,213.16,0.0,0.0);  
-  new TRotMatrix("rot565","rot565",90.0,132.63,90.0,222.63,0.0,0.0);  
-  new TRotMatrix("rot566","rot566",90.0,142.11,90.0,232.11,0.0,0.0);  
-  new TRotMatrix("rot567","rot567",90.0,151.58,90.0,241.58,0.0,0.0);  
-  new TRotMatrix("rot568","rot568",90.0,161.05,90.0,251.05,0.0,0.0);
-  new TRotMatrix("rot569","rot569",90.0,170.53,90.0,260.53,0.0,0.0);
-  new TRotMatrix("rot533","rot533",90.0,180.0,90.0,270.0,0.0,0.0); 
-  new TRotMatrix("rot534","rot534",90.0,189.47,90.0,279.47,0.0,0.0);  
-  new TRotMatrix("rot535","rot535",90.0,198.95,90.0,288.95,0.0,0.0);  
-  new TRotMatrix("rot623","rot623",90.0,208.42,90.0,298.42,0.0,0.0);  
-  new TRotMatrix("rot537","rot537",90.0,217.89,90.0,307.89,0.0,0.0);  
-  new TRotMatrix("rot538","rot538",90.0,227.37,90.0,317.37,0.0,0.0);
-  new TRotMatrix("rot539","rot539",90.0,236.84,90.0,326.84,0.0,0.0);
-  new TRotMatrix("rot540","rot540",90.0,246.32,90.0,336.32,0.0,0.0);  
-  new TRotMatrix("rot541","rot541",90.0,255.79,90.0,345.79,0.0,0.0);
-  new TRotMatrix("rot542","rot542",90.0,265.26,90.0,355.26,0.0,0.0);
-  new TRotMatrix("rot543","rot543",90.0,274.74,90.0,4.74,0.0,0.0); 
-  new TRotMatrix("rot544","rot544",90.0,284.21,90.0,14.21,0.0,0.0);  
-  new TRotMatrix("rot545","rot545",90.0,293.68,90.0,23.68,0.0,0.0);  
-  new TRotMatrix("rot546","rot546",90.0,303.16,90.0,33.16,0.0,0.0);  
-  new TRotMatrix("rot547","rot547",90.0,312.63,90.0,42.63,0.0,0.0);  
-  new TRotMatrix("rot548","rot548",90.0,322.11,90.0,52.11,0.0,0.0);
-  new TRotMatrix("rot549","rot549",90.0,331.58,90.0,61.58,0.0,0.0);
-  new TRotMatrix("rot550","rot550",90.0,341.05,90.0,71.05,0.0,0.0);  
-  new TRotMatrix("rot551","rot551",90.0,350.53,90.0,80.53,0.0,0.0);
-  new TRotMatrix("rot552","rot552",90.0,9.47,90.0,99.47,0.0,0.0);
-  new TRotMatrix("rot553","rot553",90.0,18.95,90.0,108.95,0.0,0.0);
-  new TRotMatrix("rot620","rot620",90.0,28.42,90.0,118.42,0.0,0.0);  
-  new TRotMatrix("rot555","rot555",90.0,37.89,90.0,127.89,0.0,0.0);  
-  new TRotMatrix("rot556","rot556",90.0,47.37,90.0,137.37,0.0,0.0);  
-  new TRotMatrix("rot557","rot557",90.0,56.84,90.0,146.84,0.0,0.0);  
-  new TRotMatrix("rot558","rot558",90.0,66.32,90.0,156.32,0.0,0.0);
-  new TRotMatrix("rot559","rot559",90.0,75.79,90.0,165.79,0.0,0.0);       
+  new TRotMatrix("itsrot504","itsrot504",90.0,127.06,90.0,217.06,0.0,0.0);  
+  new TRotMatrix("itsrot505","itsrot505",90.0,116.47,90.0,206.47,0.0,0.0);  
+  new TRotMatrix("itsrot506","itsrot506",90.0,105.88,90.0,195.88,0.0,0.0);  
+  new TRotMatrix("itsrot507","itsrot507",90.0,95.29,90.0,185.29,0.0,0.0);  
+  new TRotMatrix("itsrot508","itsrot508",90.0,84.71,90.0,174.71,0.0,0.0);
+  new TRotMatrix("itsrot509","itsrot509",90.0,74.12,90.0,164.12,0.0,0.0);
+  new TRotMatrix("itsrot510","itsrot510",90.0,63.53,90.0,153.53,0.0,0.0);  
+  new TRotMatrix("itsrot511","itsrot511",90.0,52.94,90.0,142.94,0.0,0.0);
+  new TRotMatrix("itsrot512","itsrot512",90.0,42.35,90.0,132.35,0.0,0.0);
+  new TRotMatrix("itsrot513","itsrot513",90.0,31.76,90.0,121.76,0.0,0.0); 
+  new TRotMatrix("itsrot653","itsrot653",90.0,21.18,90.0,111.18,0.0,0.0); 
+  new TRotMatrix("itsrot514","itsrot514",90.0,10.59,90.0,100.59,0.0,0.0);  
+  new TRotMatrix("itsrot515","itsrot515",90.0,349.41,90.0,79.41,0.0,0.0);  
+  new TRotMatrix("itsrot516","itsrot516",90.0,338.82,90.0,68.82,0.0,0.0);  
+  new TRotMatrix("itsrot517","itsrot517",90.0,328.24,90.0,58.24,0.0,0.0);  
+  new TRotMatrix("itsrot518","itsrot518",90.0,317.65,90.0,47.65,0.0,0.0);
+  new TRotMatrix("itsrot519","itsrot519",90.0,307.06,90.0,37.06,0.0,0.0);
+  new TRotMatrix("itsrot520","itsrot520",90.0,296.47,90.0,26.47,0.0,0.0);  
+  new TRotMatrix("itsrot521","itsrot521",90.0,285.88,90.0,15.88,0.0,0.0);
+  new TRotMatrix("itsrot522","itsrot522",90.0,275.29,90.0,5.29,0.0,0.0);
+  new TRotMatrix("itsrot523","itsrot523",90.0,264.71,90.0,354.71,0.0,0.0); 
+  new TRotMatrix("itsrot524","itsrot524",90.0,254.12,90.0,344.12,0.0,0.0);  
+  new TRotMatrix("itsrot525","itsrot525",90.0,243.53,90.0,333.53,0.0,0.0);  
+  new TRotMatrix("itsrot526","itsrot526",90.0,232.94,90.0,322.94,0.0,0.0);  
+  new TRotMatrix("itsrot527","itsrot527",90.0,222.35,90.0,312.35,0.0,0.0);  
+  new TRotMatrix("itsrot528","itsrot528",90.0,211.76,90.0,301.76,0.0,0.0);
+  new TRotMatrix("itsrot618","itsrot618",90.0,201.18,90.0,291.18,0.0,0.0); 
+  new TRotMatrix("itsrot529","itsrot529",90.0,190.59,90.0,280.59,0.0,0.0); 
+  new TRotMatrix("itsrot533","itsrot533",90.0,180.0,90.0,270.0,0.0,0.0);   
+  new TRotMatrix("itsrot530","itsrot530",90.0,169.41,90.0,259.41,0.0,0.0);  
+  new TRotMatrix("itsrot531","itsrot531",90.0,158.82,90.0,248.82,0.0,0.0);  
+  new TRotMatrix("itsrot501","itsrot501",90.0,148.24,90.0,238.24,0.0,0.0);
+  new TRotMatrix("itsrot503","itsrot503",90.0,137.65,90.0,227.65,0.0,0.0);         
+  new TRotMatrix("itsrot532","itsrot532",90.0,360.0,90.0,90.0,0.0,0.0);
+  new TRotMatrix("itsrot560","itsrot560",90.0,85.26,90.0,175.26,0.0,0.0);  
+  new TRotMatrix("itsrot561","itsrot561",90.0,94.74,90.0,184.74,0.0,0.0);
+  new TRotMatrix("itsrot562","itsrot562",90.0,104.21,90.0,194.21,0.0,0.0);
+  new TRotMatrix("itsrot563","itsrot563",90.0,113.68,90.0,203.68,0.0,0.0); 
+  new TRotMatrix("itsrot564","itsrot564",90.0,123.16,90.0,213.16,0.0,0.0);  
+  new TRotMatrix("itsrot565","itsrot565",90.0,132.63,90.0,222.63,0.0,0.0);  
+  new TRotMatrix("itsrot566","itsrot566",90.0,142.11,90.0,232.11,0.0,0.0);  
+  new TRotMatrix("itsrot567","itsrot567",90.0,151.58,90.0,241.58,0.0,0.0);  
+  new TRotMatrix("itsrot568","itsrot568",90.0,161.05,90.0,251.05,0.0,0.0);
+  new TRotMatrix("itsrot569","itsrot569",90.0,170.53,90.0,260.53,0.0,0.0);
+  new TRotMatrix("itsrot533","itsrot533",90.0,180.0,90.0,270.0,0.0,0.0); 
+  new TRotMatrix("itsrot534","itsrot534",90.0,189.47,90.0,279.47,0.0,0.0);  
+  new TRotMatrix("itsrot535","itsrot535",90.0,198.95,90.0,288.95,0.0,0.0);  
+  new TRotMatrix("itsrot623","itsrot623",90.0,208.42,90.0,298.42,0.0,0.0);  
+  new TRotMatrix("itsrot537","itsrot537",90.0,217.89,90.0,307.89,0.0,0.0);  
+  new TRotMatrix("itsrot538","itsrot538",90.0,227.37,90.0,317.37,0.0,0.0);
+  new TRotMatrix("itsrot539","itsrot539",90.0,236.84,90.0,326.84,0.0,0.0);
+  new TRotMatrix("itsrot540","itsrot540",90.0,246.32,90.0,336.32,0.0,0.0);  
+  new TRotMatrix("itsrot541","itsrot541",90.0,255.79,90.0,345.79,0.0,0.0);
+  new TRotMatrix("itsrot542","itsrot542",90.0,265.26,90.0,355.26,0.0,0.0);
+  new TRotMatrix("itsrot543","itsrot543",90.0,274.74,90.0,4.74,0.0,0.0); 
+  new TRotMatrix("itsrot544","itsrot544",90.0,284.21,90.0,14.21,0.0,0.0);  
+  new TRotMatrix("itsrot545","itsrot545",90.0,293.68,90.0,23.68,0.0,0.0);  
+  new TRotMatrix("itsrot546","itsrot546",90.0,303.16,90.0,33.16,0.0,0.0);  
+  new TRotMatrix("itsrot547","itsrot547",90.0,312.63,90.0,42.63,0.0,0.0);  
+  new TRotMatrix("itsrot548","itsrot548",90.0,322.11,90.0,52.11,0.0,0.0);
+  new TRotMatrix("itsrot549","itsrot549",90.0,331.58,90.0,61.58,0.0,0.0);
+  new TRotMatrix("itsrot550","itsrot550",90.0,341.05,90.0,71.05,0.0,0.0);  
+  new TRotMatrix("itsrot551","itsrot551",90.0,350.53,90.0,80.53,0.0,0.0);
+  new TRotMatrix("itsrot552","itsrot552",90.0,9.47,90.0,99.47,0.0,0.0);
+  new TRotMatrix("itsrot553","itsrot553",90.0,18.95,90.0,108.95,0.0,0.0);
+  new TRotMatrix("itsrot620","itsrot620",90.0,28.42,90.0,118.42,0.0,0.0);  
+  new TRotMatrix("itsrot555","itsrot555",90.0,37.89,90.0,127.89,0.0,0.0);  
+  new TRotMatrix("itsrot556","itsrot556",90.0,47.37,90.0,137.37,0.0,0.0);  
+  new TRotMatrix("itsrot557","itsrot557",90.0,56.84,90.0,146.84,0.0,0.0);  
+  new TRotMatrix("itsrot558","itsrot558",90.0,66.32,90.0,156.32,0.0,0.0);
+  new TRotMatrix("itsrot559","itsrot559",90.0,75.79,90.0,165.79,0.0,0.0);       
   
   
   // --- Define SPD (option 'a') volumes ----------------------------
@@ -871,7 +875,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -982,7 +986,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1093,7 +1097,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1204,7 +1208,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1315,7 +1319,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1426,7 +1430,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1537,7 +1541,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #2 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot245");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot245");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -1546,7 +1550,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1657,7 +1661,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1768,7 +1772,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1879,7 +1883,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -1990,7 +1994,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2101,7 +2105,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2212,7 +2216,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #3 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot234");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot234");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -2221,7 +2225,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2332,7 +2336,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2443,7 +2447,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2554,7 +2558,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2665,7 +2669,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2776,7 +2780,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -2887,7 +2891,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #4 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot246");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot246");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -2896,7 +2900,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3007,7 +3011,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3118,7 +3122,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3229,7 +3233,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3340,7 +3344,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3451,7 +3455,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3562,7 +3566,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #5 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot247");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot247");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -3571,7 +3575,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3682,7 +3686,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3793,7 +3797,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -3904,7 +3908,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4015,7 +4019,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4126,7 +4130,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4237,7 +4241,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #6 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot236");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot236");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -4246,7 +4250,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4357,7 +4361,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4468,7 +4472,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4579,7 +4583,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4690,7 +4694,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4801,7 +4805,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -4912,7 +4916,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #7 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot244");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot244");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -4921,7 +4925,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5032,7 +5036,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5143,7 +5147,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5254,7 +5258,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5365,7 +5369,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5476,7 +5480,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5587,7 +5591,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #8 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot233");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot233");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -5596,7 +5600,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5707,7 +5711,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5818,7 +5822,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -5929,7 +5933,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6040,7 +6044,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6151,7 +6155,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6262,7 +6266,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #9 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot248");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot248");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -6271,7 +6275,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6382,7 +6386,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6493,7 +6497,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6604,7 +6608,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6715,7 +6719,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6826,7 +6830,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -6937,7 +6941,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #10 of I12B in IT12
        //
-       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"rot249");
+       sub1node = new TNode("I12B","I12B","I12B",0.,0.,0.,"itsrot249");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();    
@@ -6946,7 +6950,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(252.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(252.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"rot239");
+          sub2node = new TNode("I10B","I10B","I10B",1.4531+deltax,3.8152+deltay,0.,"itsrot239");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -7057,7 +7061,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  
           deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);
-          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"rot238");
+          sub2node = new TNode("I10B","I10B","I10B",0.203+deltax,3.8206+deltay,0.,"itsrot238");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -7168,7 +7172,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(40.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(40.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"rot240");
+          sub2node = new TNode("I20B","I20B","I20B",3.0174+deltax,6.5143+deltay,0.,"itsrot240");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -7279,7 +7283,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(49.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(49.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"rot241");
+          sub2node = new TNode("I20B","I20B","I20B",1.9612+deltax,6.9062+deltay,0.,"itsrot241");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -7390,7 +7394,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(58.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(58.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"rot242");
+          sub2node = new TNode("I20B","I20B","I20B",0.8567+deltax,7.1279+deltay,0.,"itsrot242");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -7501,7 +7505,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  deltax=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Cos(67.*TMath::Pi()/180.);  
           deltay=((ddet2-0.01/2.)+(dchip2-0.015/2.))*TMath::Sin(67.*TMath::Pi()/180.);
-          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"rot243");
+          sub2node = new TNode("I20B","I20B","I20B",-0.2689+deltax,7.1742+deltay,0.,"itsrot243");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(0);
 	  sub2node->cd();
@@ -7625,7 +7629,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #1 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",-3.2777,14.3607,0.,"rot321");
+       sub1node = new TNode("I004","I004","I004",-3.2777,14.3607,0.,"itsrot321");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -7688,7 +7692,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #2 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",-9.5581,11.9855,0.,"rot333");
+       sub1node = new TNode("I004","I004","I004",-9.5581,11.9855,0.,"itsrot333");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -7751,7 +7755,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #3 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",-13.2713,6.3911,0.,"rot336");
+       sub1node = new TNode("I004","I004","I004",-13.2713,6.3911,0.,"itsrot336");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -7814,7 +7818,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #4 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",-15.33,0.,0.,"rot350");
+       sub1node = new TNode("I004","I004","I004",-15.33,0.,0.,"itsrot350");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -7877,7 +7881,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #5 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",-13.2713,-6.3911,0.,"rot313");
+       sub1node = new TNode("I004","I004","I004",-13.2713,-6.3911,0.,"itsrot313");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -7940,7 +7944,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #6 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",-9.5581,-11.9855,0.,"rot311");
+       sub1node = new TNode("I004","I004","I004",-9.5581,-11.9855,0.,"itsrot311");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8003,7 +8007,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #7 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",-3.2777,-14.3607,0.,"rot310");
+       sub1node = new TNode("I004","I004","I004",-3.2777,-14.3607,0.,"itsrot310");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8066,7 +8070,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #8 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",3.4112,-14.9456,0.,"rot386");
+       sub1node = new TNode("I004","I004","I004",3.4112,-14.9456,0.,"itsrot386");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8129,7 +8133,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #9 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",9.184,-11.5164,0.,"rot309");
+       sub1node = new TNode("I004","I004","I004",9.184,-11.5164,0.,"itsrot309");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8192,7 +8196,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #10 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",13.8119,-6.6514,0.,"rot308");
+       sub1node = new TNode("I004","I004","I004",13.8119,-6.6514,0.,"itsrot308");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8255,7 +8259,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #11 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",14.73,0.,0.,"rot356");
+       sub1node = new TNode("I004","I004","I004",14.73,0.,0.,"itsrot356");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8318,7 +8322,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #12 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",13.8119,6.6514,0.,"rot307");
+       sub1node = new TNode("I004","I004","I004",13.8119,6.6514,0.,"itsrot307");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8381,7 +8385,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #13 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",9.184,11.5164,0.,"rot306");
+       sub1node = new TNode("I004","I004","I004",9.184,11.5164,0.,"itsrot306");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8444,7 +8448,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #14 of I004 in IT34
        //
-       sub1node = new TNode("I004","I004","I004",3.4113,14.9456,0.,"rot305");
+       sub1node = new TNode("I004","I004","I004",3.4113,14.9456,0.,"itsrot305");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8507,7 +8511,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #1 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-3.3629,23.3895,-0.15,"rot335");
+       sub1node = new TNode("I005","I005","I005",-3.3629,23.3895,-0.15,"itsrot335");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8588,7 +8592,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #2 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-10.0447,21.9949,-0.15,"rot332");
+       sub1node = new TNode("I005","I005","I005",-10.0447,21.9949,-0.15,"itsrot332");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8669,7 +8673,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #3 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-15.4744,17.8584,-0.15,"rot331");
+       sub1node = new TNode("I005","I005","I005",-15.4744,17.8584,-0.15,"itsrot331");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8750,7 +8754,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #4 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-20.3415,13.0727,-0.15,"rot366");
+       sub1node = new TNode("I005","I005","I005",-20.3415,13.0727,-0.15,"itsrot366");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8831,7 +8835,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #5 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-22.6728,6.6573,-0.15,"rot330");
+       sub1node = new TNode("I005","I005","I005",-22.6728,6.6573,-0.15,"itsrot330");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8912,7 +8916,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #6 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-24.18,0.,-0.15,"rot350");
+       sub1node = new TNode("I005","I005","I005",-24.18,0.,-0.15,"itsrot350");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -8993,7 +8997,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #7 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-22.6728,-6.6573,-0.15,"rot329");
+       sub1node = new TNode("I005","I005","I005",-22.6728,-6.6573,-0.15,"itsrot329");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9074,7 +9078,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #8 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-20.3415,-13.0727,-0.15,"rot328");
+       sub1node = new TNode("I005","I005","I005",-20.3415,-13.0727,-0.15,"itsrot328");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9155,7 +9159,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #9 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-15.4744,-17.8584,-0.15,"rot327");
+       sub1node = new TNode("I005","I005","I005",-15.4744,-17.8584,-0.15,"itsrot327");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9236,7 +9240,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #10 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-10.0447,-21.9949,-0.15,"rot326");
+       sub1node = new TNode("I005","I005","I005",-10.0447,-21.9949,-0.15,"itsrot326");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9317,7 +9321,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #11 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",-3.3629,-23.3895,-0.15,"rot325");
+       sub1node = new TNode("I005","I005","I005",-3.3629,-23.3895,-0.15,"itsrot325");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9398,7 +9402,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #12 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",3.4412,-23.9339,-0.15,"rot324");
+       sub1node = new TNode("I005","I005","I005",3.4412,-23.9339,-0.15,"itsrot324");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9479,7 +9483,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #13 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",9.8163,-21.4946,-0.15,"rot323");
+       sub1node = new TNode("I005","I005","I005",9.8163,-21.4946,-0.15,"itsrot323");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9560,7 +9564,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #14 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",15.8345,-18.274,-0.15,"rot322");
+       sub1node = new TNode("I005","I005","I005",15.8345,-18.274,-0.15,"itsrot322");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9641,7 +9645,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #15 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",19.8788,-12.7753,-0.15,"rot320");
+       sub1node = new TNode("I005","I005","I005",19.8788,-12.7753,-0.15,"itsrot320");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9722,7 +9726,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #16 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",23.2005,-6.8123,-0.15,"rot319");
+       sub1node = new TNode("I005","I005","I005",23.2005,-6.8123,-0.15,"itsrot319");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9803,7 +9807,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #17 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",23.63,0.,-0.15,"rot318");
+       sub1node = new TNode("I005","I005","I005",23.63,0.,-0.15,"itsrot318");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9884,7 +9888,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #18 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",23.2005,6.8123,-0.15,"rot317");
+       sub1node = new TNode("I005","I005","I005",23.2005,6.8123,-0.15,"itsrot317");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -9965,7 +9969,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #19 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",19.8788,12.7753,-0.15,"rot316");
+       sub1node = new TNode("I005","I005","I005",19.8788,12.7753,-0.15,"itsrot316");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -10046,7 +10050,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #20 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",15.8345,18.274,-0.15,"rot315");
+       sub1node = new TNode("I005","I005","I005",15.8345,18.274,-0.15,"itsrot315");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -10127,7 +10131,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #21 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",9.8163,21.4946,-0.15,"rot314");
+       sub1node = new TNode("I005","I005","I005",9.8163,21.4946,-0.15,"itsrot314");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -10208,7 +10212,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #22 of I005 in IT34
        //
-       sub1node = new TNode("I005","I005","I005",3.4412,23.9339,-0.15,"rot334");
+       sub1node = new TNode("I005","I005","I005",3.4412,23.9339,-0.15,"itsrot334");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -10485,7 +10489,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #2 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-7.0924,37.9412,0.,"rot514");
+       sub1node = new TNode("I565","I565","I565",-7.0924,37.9412,0.,"itsrot514");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -10670,7 +10674,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #3 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-13.8879,35.8489,0.,"rot653");
+       sub1node = new TNode("I565","I565","I565",-13.8879,35.8489,0.,"itsrot653");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -10855,7 +10859,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #4 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-20.3195,32.817,0.,"rot513");
+       sub1node = new TNode("I565","I565","I565",-20.3195,32.817,0.,"itsrot513");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -11040,7 +11044,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #5 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-25.9002,28.4112,0.,"rot512");
+       sub1node = new TNode("I565","I565","I565",-25.9002,28.4112,0.,"itsrot512");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -11225,7 +11229,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #6 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-30.8022,23.2608,0.,"rot511");
+       sub1node = new TNode("I565","I565","I565",-30.8022,23.2608,0.,"itsrot511");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -11410,7 +11414,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #7 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-34.4146,17.1364,0.,"rot510");
+       sub1node = new TNode("I565","I565","I565",-34.4146,17.1364,0.,"itsrot510");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -11595,7 +11599,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #8 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-37.1249,10.563,0.,"rot509");
+       sub1node = new TNode("I565","I565","I565",-37.1249,10.563,0.,"itsrot509");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -11780,7 +11784,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #9 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-38.281,3.5473,0.,"rot508");
+       sub1node = new TNode("I565","I565","I565",-38.281,3.5473,0.,"itsrot508");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -11965,7 +11969,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #10 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-38.4338,-3.5614,0.,"rot507");
+       sub1node = new TNode("I565","I565","I565",-38.4338,-3.5614,0.,"itsrot507");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -12150,7 +12154,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #11 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-36.9774,-10.521,0.,"rot506");
+       sub1node = new TNode("I565","I565","I565",-36.9774,-10.521,0.,"itsrot506");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -12335,7 +12339,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #12 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-34.5519,-17.2048,0.,"rot505");
+       sub1node = new TNode("I565","I565","I565",-34.5519,-17.2048,0.,"itsrot505");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -12520,7 +12524,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #13 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-30.6798,-23.1683,0.,"rot504");
+       sub1node = new TNode("I565","I565","I565",-30.6798,-23.1683,0.,"itsrot504");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -12705,7 +12709,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #14 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-26.0036,-28.5246,0.,"rot503");
+       sub1node = new TNode("I565","I565","I565",-26.0036,-28.5246,0.,"itsrot503");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -12890,7 +12894,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #15 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-20.2387,-32.6866,0.,"rot501");
+       sub1node = new TNode("I565","I565","I565",-20.2387,-32.6866,0.,"itsrot501");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -13075,7 +13079,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #16 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-13.9434,-35.992,0.,"rot531");
+       sub1node = new TNode("I565","I565","I565",-13.9434,-35.992,0.,"itsrot531");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -13260,7 +13264,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #17 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",-7.0643,-37.7904,0.,"rot530");
+       sub1node = new TNode("I565","I565","I565",-7.0643,-37.7904,0.,"itsrot530");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -13445,7 +13449,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #18 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",0.,-38.5984,0.,"rot533");
+       sub1node = new TNode("I565","I565","I565",0.,-38.5984,0.,"itsrot533");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -13630,7 +13634,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #19 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",7.0642,-37.7904,0.,"rot529");
+       sub1node = new TNode("I565","I565","I565",7.0642,-37.7904,0.,"itsrot529");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -13815,7 +13819,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #20 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",13.9433,-35.992,0.,"rot618");
+       sub1node = new TNode("I565","I565","I565",13.9433,-35.992,0.,"itsrot618");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -14000,7 +14004,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #21 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",20.2387,-32.6866,0.,"rot528");
+       sub1node = new TNode("I565","I565","I565",20.2387,-32.6866,0.,"itsrot528");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -14185,7 +14189,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #22 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",26.0036,-28.5246,0.,"rot527");
+       sub1node = new TNode("I565","I565","I565",26.0036,-28.5246,0.,"itsrot527");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -14370,7 +14374,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #23 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",30.6798,-23.1683,0.,"rot526");
+       sub1node = new TNode("I565","I565","I565",30.6798,-23.1683,0.,"itsrot526");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -14555,7 +14559,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #24 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",34.5519,-17.2048,0.,"rot525");
+       sub1node = new TNode("I565","I565","I565",34.5519,-17.2048,0.,"itsrot525");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -14740,7 +14744,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #25 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",36.9774,-10.521,0.,"rot524");
+       sub1node = new TNode("I565","I565","I565",36.9774,-10.521,0.,"itsrot524");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -14925,7 +14929,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #26 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",38.4338,-3.5614,0.,"rot523");
+       sub1node = new TNode("I565","I565","I565",38.4338,-3.5614,0.,"itsrot523");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -15110,7 +15114,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #27 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",38.281,3.5472,0.,"rot522");
+       sub1node = new TNode("I565","I565","I565",38.281,3.5472,0.,"itsrot522");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -15295,7 +15299,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #28 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",37.125,10.5629,0.,"rot521");
+       sub1node = new TNode("I565","I565","I565",37.125,10.5629,0.,"itsrot521");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -15480,7 +15484,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #29 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",34.4146,17.1364,0.,"rot520");
+       sub1node = new TNode("I565","I565","I565",34.4146,17.1364,0.,"itsrot520");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -15665,7 +15669,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #30 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",30.8022,23.2607,0.,"rot519");
+       sub1node = new TNode("I565","I565","I565",30.8022,23.2607,0.,"itsrot519");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -15850,7 +15854,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #31 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",25.9002,28.4112,0.,"rot518");
+       sub1node = new TNode("I565","I565","I565",25.9002,28.4112,0.,"itsrot518");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -16035,7 +16039,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #32 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",20.3195,32.817,0.,"rot517");
+       sub1node = new TNode("I565","I565","I565",20.3195,32.817,0.,"itsrot517");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -16220,7 +16224,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #33 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",13.888,35.8489,0.,"rot516");
+       sub1node = new TNode("I565","I565","I565",13.888,35.8489,0.,"itsrot516");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -16405,7 +16409,7 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #34 of I565 in IT56
        //
-       sub1node = new TNode("I565","I565","I565",7.0925,37.9412,0.,"rot515");
+       sub1node = new TNode("I565","I565","I565",7.0925,37.9412,0.,"itsrot515");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
@@ -16590,14 +16594,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #1 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-14.139,41.1856,0.,"rot553");
+       sub1node = new TNode("I569","I569","I569",-14.139,41.1856,0.,"itsrot553");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16613,7 +16617,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16629,7 +16633,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16645,7 +16649,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -16661,7 +16665,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -16677,7 +16681,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16709,7 +16713,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16741,7 +16745,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -16757,7 +16761,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16789,7 +16793,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16799,14 +16803,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #2 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-20.7978,38.431,0.,"rot620");
+       sub1node = new TNode("I569","I569","I569",-20.7978,38.431,0.,"itsrot620");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16822,7 +16826,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16838,7 +16842,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16854,7 +16858,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -16870,7 +16874,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -16886,7 +16890,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16918,7 +16922,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16950,7 +16954,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -16966,7 +16970,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -16998,7 +17002,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17008,14 +17012,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #3 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-26.7459,34.3631,0.,"rot555");
+       sub1node = new TNode("I569","I569","I569",-26.7459,34.3631,0.,"itsrot555");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17031,7 +17035,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17047,7 +17051,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17063,7 +17067,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17079,7 +17083,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -17095,7 +17099,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17127,7 +17131,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17159,7 +17163,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17175,7 +17179,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17207,7 +17211,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17217,14 +17221,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #4 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-32.1494,29.5956,0.,"rot556");
+       sub1node = new TNode("I569","I569","I569",-32.1494,29.5956,0.,"itsrot556");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17240,7 +17244,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17256,7 +17260,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17272,7 +17276,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17288,7 +17292,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -17304,7 +17308,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17336,7 +17340,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17368,7 +17372,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17384,7 +17388,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17416,7 +17420,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17426,14 +17430,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #5 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-36.4544,23.8169,0.,"rot557");
+       sub1node = new TNode("I569","I569","I569",-36.4544,23.8169,0.,"itsrot557");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17449,7 +17453,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17465,7 +17469,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17481,7 +17485,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17497,7 +17501,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -17513,7 +17517,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17545,7 +17549,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17577,7 +17581,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17593,7 +17597,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17625,7 +17629,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17635,14 +17639,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #6 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-40.0172,17.5532,0.,"rot558");
+       sub1node = new TNode("I569","I569","I569",-40.0172,17.5532,0.,"itsrot558");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17658,7 +17662,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17674,7 +17678,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17690,7 +17694,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17706,7 +17710,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -17722,7 +17726,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17754,7 +17758,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17786,7 +17790,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17802,7 +17806,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17834,7 +17838,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17844,14 +17848,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #7 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-42.2125,10.6897,0.,"rot559");
+       sub1node = new TNode("I569","I569","I569",-42.2125,10.6897,0.,"itsrot559");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17867,7 +17871,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17883,7 +17887,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17899,7 +17903,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -17915,7 +17919,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -17931,7 +17935,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17963,7 +17967,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -17995,7 +17999,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18011,7 +18015,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18043,7 +18047,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18053,14 +18057,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #8 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-43.5484,3.6085,0.,"rot560");
+       sub1node = new TNode("I569","I569","I569",-43.5484,3.6085,0.,"itsrot560");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18076,7 +18080,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18092,7 +18096,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18108,7 +18112,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18124,7 +18128,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -18140,7 +18144,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18172,7 +18176,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18204,7 +18208,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18220,7 +18224,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18252,7 +18256,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18262,14 +18266,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #9 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-43.3963,-3.5959,0.,"rot561");
+       sub1node = new TNode("I569","I569","I569",-43.3963,-3.5959,0.,"itsrot561");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18285,7 +18289,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18301,7 +18305,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18317,7 +18321,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18333,7 +18337,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -18349,7 +18353,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18381,7 +18385,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18413,7 +18417,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18429,7 +18433,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18461,7 +18465,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18471,14 +18475,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #10 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-42.3606,-10.7271,0.,"rot562");
+       sub1node = new TNode("I569","I569","I569",-42.3606,-10.7271,0.,"itsrot562");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18494,7 +18498,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18510,7 +18514,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18526,7 +18530,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18542,7 +18546,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -18558,7 +18562,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18590,7 +18594,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18622,7 +18626,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18638,7 +18642,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18670,7 +18674,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18680,14 +18684,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #11 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-39.8773,-17.4918,0.,"rot563");
+       sub1node = new TNode("I569","I569","I569",-39.8773,-17.4918,0.,"itsrot563");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18703,7 +18707,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18719,7 +18723,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18735,7 +18739,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18751,7 +18755,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -18767,7 +18771,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18799,7 +18803,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18831,7 +18835,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18847,7 +18851,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18879,7 +18883,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18889,14 +18893,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #12 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-36.5823,-23.9004,0.,"rot564");
+       sub1node = new TNode("I569","I569","I569",-36.5823,-23.9004,0.,"itsrot564");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18912,7 +18916,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18928,7 +18932,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -18944,7 +18948,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -18960,7 +18964,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -18976,7 +18980,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19008,7 +19012,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19040,7 +19044,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19056,7 +19060,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19088,7 +19092,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19098,14 +19102,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #13 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-32.0371,-29.4922,0.,"rot565");
+       sub1node = new TNode("I569","I569","I569",-32.0371,-29.4922,0.,"itsrot565");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19121,7 +19125,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19137,7 +19141,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19153,7 +19157,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19169,7 +19173,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -19185,7 +19189,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19217,7 +19221,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19249,7 +19253,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19265,7 +19269,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19297,7 +19301,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19307,14 +19311,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #14 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-26.8397,-34.4836,0.,"rot566");
+       sub1node = new TNode("I569","I569","I569",-26.8397,-34.4836,0.,"itsrot566");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19330,7 +19334,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19346,7 +19350,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19362,7 +19366,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19378,7 +19382,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -19394,7 +19398,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19426,7 +19430,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19458,7 +19462,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19474,7 +19478,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19506,7 +19510,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19516,14 +19520,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #15 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-20.7251,-38.2967,0.,"rot567");
+       sub1node = new TNode("I569","I569","I569",-20.7251,-38.2967,0.,"itsrot567");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19539,7 +19543,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19555,7 +19559,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19571,7 +19575,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19587,7 +19591,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -19603,7 +19607,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19635,7 +19639,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19667,7 +19671,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19683,7 +19687,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19715,7 +19719,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19725,14 +19729,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #16 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-14.1886,-41.33,0.,"rot568");
+       sub1node = new TNode("I569","I569","I569",-14.1886,-41.33,0.,"itsrot568");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19748,7 +19752,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19764,7 +19768,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19780,7 +19784,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19796,7 +19800,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -19812,7 +19816,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19844,7 +19848,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19876,7 +19880,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -19892,7 +19896,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19924,7 +19928,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19934,14 +19938,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #17 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-7.1673,-42.9511,0.,"rot569");
+       sub1node = new TNode("I569","I569","I569",-7.1673,-42.9511,0.,"itsrot569");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19957,7 +19961,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19973,7 +19977,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -19989,7 +19993,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20005,7 +20009,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -20021,7 +20025,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20053,7 +20057,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20085,7 +20089,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20101,7 +20105,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20133,7 +20137,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20143,14 +20147,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #18 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",0.,-43.6977,0.,"rot533");
+       sub1node = new TNode("I569","I569","I569",0.,-43.6977,0.,"itsrot533");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20166,7 +20170,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20182,7 +20186,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20198,7 +20202,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20214,7 +20218,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -20230,7 +20234,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20262,7 +20266,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20294,7 +20298,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20310,7 +20314,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20342,7 +20346,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20352,14 +20356,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #19 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",7.1673,-42.9511,0.,"rot534");
+       sub1node = new TNode("I569","I569","I569",7.1673,-42.9511,0.,"itsrot534");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20375,7 +20379,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20391,7 +20395,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20407,7 +20411,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20423,7 +20427,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -20439,7 +20443,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20471,7 +20475,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20503,7 +20507,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20519,7 +20523,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20551,7 +20555,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20561,14 +20565,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #20 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",14.1886,-41.33,0.,"rot535");
+       sub1node = new TNode("I569","I569","I569",14.1886,-41.33,0.,"itsrot535");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20584,7 +20588,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20600,7 +20604,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20616,7 +20620,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20632,7 +20636,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -20648,7 +20652,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20680,7 +20684,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20712,7 +20716,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20728,7 +20732,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20760,7 +20764,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20770,14 +20774,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #21 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",20.7251,-38.2967,0.,"rot623");
+       sub1node = new TNode("I569","I569","I569",20.7251,-38.2967,0.,"itsrot623");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20793,7 +20797,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20809,7 +20813,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20825,7 +20829,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20841,7 +20845,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -20857,7 +20861,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20889,7 +20893,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20921,7 +20925,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -20937,7 +20941,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20969,7 +20973,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -20979,14 +20983,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #22 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",26.8397,-34.4836,0.,"rot537");
+       sub1node = new TNode("I569","I569","I569",26.8397,-34.4836,0.,"itsrot537");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21002,7 +21006,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21018,7 +21022,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21034,7 +21038,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21050,7 +21054,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -21066,7 +21070,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21098,7 +21102,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21130,7 +21134,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21146,7 +21150,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21178,7 +21182,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21188,14 +21192,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #23 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",32.0371,-29.4922,0.,"rot538");
+       sub1node = new TNode("I569","I569","I569",32.0371,-29.4922,0.,"itsrot538");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21211,7 +21215,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21227,7 +21231,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21243,7 +21247,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21259,7 +21263,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -21275,7 +21279,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21307,7 +21311,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21339,7 +21343,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21355,7 +21359,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21387,7 +21391,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21397,14 +21401,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #24 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",36.5822,-23.9004,0.,"rot539");
+       sub1node = new TNode("I569","I569","I569",36.5822,-23.9004,0.,"itsrot539");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21420,7 +21424,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21436,7 +21440,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21452,7 +21456,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21468,7 +21472,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -21484,7 +21488,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21516,7 +21520,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21548,7 +21552,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21564,7 +21568,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21596,7 +21600,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21606,14 +21610,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #25 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",39.8773,-17.4918,0.,"rot540");
+       sub1node = new TNode("I569","I569","I569",39.8773,-17.4918,0.,"itsrot540");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21629,7 +21633,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21645,7 +21649,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21661,7 +21665,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21677,7 +21681,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -21693,7 +21697,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21725,7 +21729,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21757,7 +21761,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21773,7 +21777,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21805,7 +21809,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21815,14 +21819,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #26 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",42.3606,-10.7272,0.,"rot541");
+       sub1node = new TNode("I569","I569","I569",42.3606,-10.7272,0.,"itsrot541");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21838,7 +21842,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21854,7 +21858,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21870,7 +21874,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21886,7 +21890,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -21902,7 +21906,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21934,7 +21938,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -21966,7 +21970,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -21982,7 +21986,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22014,7 +22018,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22024,14 +22028,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #27 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",43.3963,-3.5959,0.,"rot542");
+       sub1node = new TNode("I569","I569","I569",43.3963,-3.5959,0.,"itsrot542");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22047,7 +22051,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22063,7 +22067,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22079,7 +22083,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22095,7 +22099,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -22111,7 +22115,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22143,7 +22147,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22175,7 +22179,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22191,7 +22195,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22223,7 +22227,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22233,14 +22237,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #28 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",43.5484,3.6085,0.,"rot543");
+       sub1node = new TNode("I569","I569","I569",43.5484,3.6085,0.,"itsrot543");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22256,7 +22260,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22272,7 +22276,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22288,7 +22292,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22304,7 +22308,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -22320,7 +22324,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22352,7 +22356,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22384,7 +22388,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22400,7 +22404,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22432,7 +22436,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22442,14 +22446,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #29 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",42.2125,10.6897,0.,"rot544");
+       sub1node = new TNode("I569","I569","I569",42.2125,10.6897,0.,"itsrot544");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22465,7 +22469,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22481,7 +22485,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22497,7 +22501,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22513,7 +22517,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -22529,7 +22533,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22561,7 +22565,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22593,7 +22597,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22609,7 +22613,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22641,7 +22645,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22651,14 +22655,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #30 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",40.0172,17.5532,0.,"rot545");
+       sub1node = new TNode("I569","I569","I569",40.0172,17.5532,0.,"itsrot545");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22674,7 +22678,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22690,7 +22694,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22706,7 +22710,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22722,7 +22726,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -22738,7 +22742,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22770,7 +22774,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22802,7 +22806,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22818,7 +22822,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22850,7 +22854,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22860,14 +22864,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #31 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",36.4544,23.8169,0.,"rot546");
+       sub1node = new TNode("I569","I569","I569",36.4544,23.8169,0.,"itsrot546");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22883,7 +22887,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22899,7 +22903,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22915,7 +22919,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -22931,7 +22935,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -22947,7 +22951,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -22979,7 +22983,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23011,7 +23015,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23027,7 +23031,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23059,7 +23063,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23069,14 +23073,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #32 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",32.1494,29.5956,0.,"rot547");
+       sub1node = new TNode("I569","I569","I569",32.1494,29.5956,0.,"itsrot547");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23092,7 +23096,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23108,7 +23112,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23124,7 +23128,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23140,7 +23144,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -23156,7 +23160,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23188,7 +23192,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23220,7 +23224,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23236,7 +23240,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23268,7 +23272,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23278,14 +23282,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #33 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",26.7459,34.3631,0.,"rot548");
+       sub1node = new TNode("I569","I569","I569",26.7459,34.3631,0.,"itsrot548");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23301,7 +23305,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23317,7 +23321,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23333,7 +23337,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23349,7 +23353,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -23365,7 +23369,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23397,7 +23401,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23429,7 +23433,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23445,7 +23449,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23477,7 +23481,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23487,14 +23491,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #34 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",20.7978,38.431,0.,"rot549");
+       sub1node = new TNode("I569","I569","I569",20.7978,38.431,0.,"itsrot549");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23510,7 +23514,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23526,7 +23530,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23542,7 +23546,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23558,7 +23562,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -23574,7 +23578,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23606,7 +23610,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23638,7 +23642,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23654,7 +23658,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23686,7 +23690,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23696,14 +23700,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #35 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",14.139,41.1856,0.,"rot550");
+       sub1node = new TNode("I569","I569","I569",14.139,41.1856,0.,"itsrot550");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23719,7 +23723,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23735,7 +23739,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23751,7 +23755,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23767,7 +23771,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -23783,7 +23787,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23815,7 +23819,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23847,7 +23851,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23863,7 +23867,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23895,7 +23899,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23905,14 +23909,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #36 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",7.1924,43.1017,0.,"rot551");
+       sub1node = new TNode("I569","I569","I569",7.1924,43.1017,0.,"itsrot551");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23928,7 +23932,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23944,7 +23948,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -23960,7 +23964,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -23976,7 +23980,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -23992,7 +23996,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24024,7 +24028,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24056,7 +24060,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -24072,7 +24076,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24104,7 +24108,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24121,7 +24125,7 @@ void AliITSvPPRsymm::BuildGeometry(){
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24137,7 +24141,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24153,7 +24157,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24169,7 +24173,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -24185,7 +24189,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -24201,7 +24205,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24233,7 +24237,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24265,7 +24269,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -24281,7 +24285,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24313,7 +24317,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24323,14 +24327,14 @@ void AliITSvPPRsymm::BuildGeometry(){
        //
        // Place copy #38 of I569 in IT56
        //
-       sub1node = new TNode("I569","I569","I569",-7.1924,43.1017,0.,"rot552");
+       sub1node = new TNode("I569","I569","I569",-7.1924,43.1017,0.,"itsrot552");
        sub1node->SetLineColor(kColorITS);
        sub1node->SetVisibility(0);
        sub1node->cd();
           //
           // Place copy #1 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,46.9203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24346,7 +24350,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #3 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,39.1003,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24362,7 +24366,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #5 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,31.2803,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24378,7 +24382,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #7 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,23.4603,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -24394,7 +24398,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #9 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,15.6403,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);  
           fNodes->Add(sub2node);
@@ -24410,7 +24414,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #11 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,7.8203,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24442,7 +24446,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #15 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-7.8197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24474,7 +24478,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #19 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-23.4597,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);   
           fNodes->Add(sub2node);
@@ -24490,7 +24494,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #21 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-31.2797,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
@@ -24522,7 +24526,7 @@ void AliITSvPPRsymm::BuildGeometry(){
 	  //
 	  // Place copy #25 of ITS6 in I569
           //
-	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"rot532");
+	  sub2node = new TNode("ITS6","ITS6","ITS6",0.,-0.03,-46.9197,"itsrot532");
           sub2node->SetLineColor(kColorITS);
           sub2node->SetVisibility(1);
           fNodes->Add(sub2node);
