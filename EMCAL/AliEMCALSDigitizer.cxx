@@ -128,10 +128,9 @@ if( strcmp(GetTitle(), "") == 0 )
   TString sdname(GetName() );
   sdname.Append(":") ;
   sdname.Append(GetTitle() ) ;
-  SetName(sdname) ;
+  SetName(sdname.Data()) ;
   gime->PostSDigitizer(this) ;
  
-  // create a folder on the white board //YSAlice/WhiteBoard/SDigits/EMCAL/headerFile/sdigitsTitle
  
  }
 //____________________________________________________________________________
@@ -149,19 +148,25 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
   
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALSDigitizer");
+
+
   //Check, if this branch already exits
   gAlice->GetEvent(0) ;
+ 
+  TString sdname(GetName()) ;
+  sdname.Remove(sdname.Index(GetTitle())-1) ;
+
   if(gAlice->TreeS() ) {
     TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeS()->GetListOfBranches()) ;
     TIter next(lob) ; 
     TBranch * branch = 0 ;  
     Bool_t emcalfound = kFALSE, sdigitizerfound = kFALSE ; 
     
-    while ( (branch = (static_cast<TBranch*>(next()))) && (!emcalfound || !sdigitizerfound) ) {
+     while ( (branch = (static_cast<TBranch*>(next()))) && (!emcalfound || !sdigitizerfound) ) {
       if ( (strcmp(branch->GetName(), "EMCAL")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
 	emcalfound = kTRUE ;
       
-      else if ( (strcmp(branch->GetName(), "AliEMCALSDigitizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+      else if ( (strcmp(branch->GetName(), "AliEMCALSDigitizer")==0) && (strcmp(branch->GetTitle(), sdname)==0) ) 
 	sdigitizerfound = kTRUE ; 
     }
     
@@ -171,8 +176,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
       return ; 
     }   
   }  
-  TString sdname(GetName()) ;
-  sdname.Remove(sdname.Index(GetTitle())-1) ;
+
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ; 
   
@@ -298,10 +302,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 	   NPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
        }
        if(gAlice->TreeS() == 0)
-	gAlice->MakeTree("S") ;
-      cout << " AliEMCALSDigitizer:: NPrimaryMax = " << NPrimarymax << endl;
-      
-      
+	gAlice->MakeTree("S") ;      
       
       //Make (if necessary) branches    
       char * file =0;
@@ -316,7 +317,6 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
       Int_t bufferSize = 32000 ;    
       TBranch * sdigitsBranch = gAlice->TreeS()->Branch("EMCAL",&sdigits,bufferSize);
       sdigitsBranch->SetTitle(sdname);
-      cout << " AliEMCALSDigitizer::Exec sdname " << sdname << endl ; 
       
       if (file) {
 	sdigitsBranch->SetFile(file);
