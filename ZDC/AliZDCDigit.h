@@ -42,7 +42,7 @@ class AliZDCDigit : public AliDigitNew {
     return *this ;
   }
   
- protected:
+// protected:
 
 //  Int_t   fNprimary;          // Number of primaries
   Int_t   fDetector;          // Detector
