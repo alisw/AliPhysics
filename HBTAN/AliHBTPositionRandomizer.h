@@ -15,7 +15,16 @@ class AliHBTPositionRandomizer: public AliHBTReader
    AliHBTPositionRandomizer();
    AliHBTPositionRandomizer(AliHBTReader* reader);
    
-   Int_t Read(AliHBTRun* particles, AliHBTRun *tracks);
+   Int_t  Next(){return (fReader)?fReader->Next():1;}
+   void   Rewind(){if(fReader) fReader->Rewind();}
+   
+   Bool_t ReadsTracks() const {return (fReader)?fReader->ReadsTracks():kFALSE;}
+   Bool_t ReadsParticles() const {return (fReader)?fReader->ReadsParticles():kFALSE;}
+   
+   Int_t  Read(AliHBTRun* particles, AliHBTRun *tracks);
+   
+   AliHBTEvent* GetParticleEvent() ;
+   AliHBTEvent* GetTrackEvent() ;
 
    AliHBTEvent* GetParticleEvent(Int_t n);
    AliHBTEvent* GetTrackEvent(Int_t n){return (fReader)?fReader->GetTrackEvent(n):0x0;}
@@ -32,6 +41,7 @@ class AliHBTPositionRandomizer: public AliHBTReader
    
  protected:
    void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p);
+   Int_t ReadNext(){return (fReader)?fReader->Next():1;}
  private:
    AliHBTReader* fReader;
    AliHBTRndm*   fRandomizer;

@@ -96,6 +96,7 @@ void  AliHBTEvent::Reset()
        }
     }
    fNParticles = 0;
+   fRandomized = kFALSE;
 } 
 /**************************************************************************/ 
 

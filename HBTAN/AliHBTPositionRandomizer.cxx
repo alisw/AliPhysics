@@ -37,8 +37,29 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliHBTReader* reader):
 } 
 /*********************************************************************/
 
+AliHBTEvent* AliHBTPositionRandomizer::GetParticleEvent() 
+{
+ // gets from fReader and randomizes current particle event
+ if (fReader == 0x0) return 0x0;
+ AliHBTEvent *e =  fReader->GetParticleEvent();
+ if (e->IsRandomized() == kFALSE) Randomize(e);
+ return e;
+}
+/*********************************************************************/
+
+AliHBTEvent* AliHBTPositionRandomizer::GetTrackEvent() 
+{
+ // gets from fReader and randomizes current track event
+ if (fReader == 0x0) return 0x0;
+ AliHBTEvent *e =  fReader->GetTrackEvent();
+ if (e->IsRandomized() == kFALSE) Randomize(e);
+ return e;
+}
+/*********************************************************************/
+
 Int_t AliHBTPositionRandomizer::Read(AliHBTRun* particles, AliHBTRun *tracks)
 {
+  //Reads all available events and randomizes them
   if (fReader == 0x0) return 1;
   Info("Randomize(AliHBTRun*)","");
   Int_t err = fReader->Read(particles,tracks);

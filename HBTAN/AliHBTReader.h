@@ -31,8 +31,8 @@ class AliHBTReader: public TNamed
     
     virtual Int_t        Read(AliHBTRun* particles, AliHBTRun *tracks);
     
-    virtual AliHBTEvent* GetParticleEvent() const {return fParticlesEvent;}
-    virtual AliHBTEvent* GetTrackEvent() const {return fTracksEvent;}
+    virtual AliHBTEvent* GetParticleEvent() {return fParticlesEvent;}//can not be const because position randomizer overloads it
+    virtual AliHBTEvent* GetTrackEvent() {return fTracksEvent;}//
     
     virtual AliHBTEvent* GetParticleEvent(Int_t);
     virtual AliHBTEvent* GetTrackEvent(Int_t);
