@@ -46,12 +46,15 @@ setenv AG4_MAKESHLIB 1
 #
 set VERBOSE = "NO"
 set LOCAL = "NO"
+set SILENT = "NO"
 foreach param ( $* )
   switch ( $param )
     case -g:
       set VERBOSE="YES"; shift; breaksw;
     case local:
       set LOCAL="YES"; shift; breaksw;
+    case silent:
+      set SILENT="YES"; shift; breaksw;
   endsw
 end
 
@@ -292,9 +295,7 @@ if ( "$?AG4_VISUALIZE" == 1 ) then
     echo "* Fukui Renderer (DAWN)..."
   endif
   setenv G4VIS_BUILD_DAWN_DRIVER     1
-  setenv G4VIS_BUILD_DAWNFILE_DRIVER 1
   setenv G4VIS_USE_DAWN              1
-  setenv G4VIS_USE_DAWNFILE          1
   #setenv G4DAWNFILE_VIEWER   david
   setenv DAWN_HOME ${G4_BASE}/tools/bin
   if ( "`echo ${PATH} | grep ${DAWN_HOME} `" == "" ) then
@@ -309,9 +310,6 @@ if ( "$?AG4_VISUALIZE" == 1 ) then
   if ( "$VERBOSE" == "YES" ) then
     if ("$?G4VIS_USE_DAWN" == 1) then
       echo "  Dawn driver activated"
-    endif
-    if ("$?G4VIS_USE_DAWNFILE" == 1) then
-      echo "  Dawn file driver activated"
     endif
     if ("$?G4DAWNFILE_VIEWER" == 1) then
       echo "  Dawn file viewer set to ${G4DAWNFILE_VIEWER}"
@@ -428,9 +426,7 @@ if ( "$?AG4_VISUALIZE" == 1 ) then
     echo "* VRML..."
   endif
   setenv G4VIS_BUILD_VRML_DRIVER        1
-  setenv G4VIS_BUILD_VRMLFILE_DRIVER    1
   setenv G4VIS_USE_VRML                 1
-  setenv G4VIS_USE_VRMLFILE 		1
   #Set preferred vrml viewer to be invoked in this mode
   setenv G4VRMLFILE_VIEWER vrweb
   #Set host name for VRML1 visualization.... the g4vrmlview machine!
@@ -443,24 +439,6 @@ if ( "$?AG4_VISUALIZE" == 1 ) then
       echo "  VRML driver activated"
       echo "  Host Name for remote visualization is ${G4VRML_HOST_NAME}"
     endif
-    if ("$?G4VIS_USE_VRMLFILE" == 1) then
-      echo "  VRML file driver activated"
-      echo "  VRML viewer set to ${G4VRMLFILE_VIEWER}"
-    endif
-  endif
-
-  #
-  # Ray Tracer
-  #
-  if ( "$VERBOSE" == "YES" ) then
-    echo "* Ray Tracer..."
-  endif
-  #setenv G4VIS_BUILD_RAYTRACER_DRIVER 1
-  #setenv G4VIS_USE_RAYTRACER          1
-  if ( "$VERBOSE" == "YES" ) then
-    if ("$?G4VIS_USE_RAYTRACER" == 1) then
-      echo "  Ray tracing driver activated"
-    endif
   endif
 
   #
@@ -469,7 +447,6 @@ if ( "$?AG4_VISUALIZE" == 1 ) then
   if ( "$VERBOSE" == "YES" ) then
     echo "* Geant Adaptative GUI (GAG)..."
   endif
-  setenv G4UI_BUILD_GAG_SESSION 1
   setenv G4UI_USE_GAG           1
   setenv MOMOPATH     ${G4_BASE}/tools/GAG/tcltk
   if ( "`echo ${PATH} | grep ${MOMOPATH} `" == "" ) then
@@ -507,9 +484,7 @@ else
 
   # Dawn
   unsetenv G4VIS_BUILD_DAWN_DRIVER
-  unsetenv G4VIS_BUILD_DAWNFILE_DRIVER
   unsetenv G4VIS_USE_DAWN
-  unsetenv G4VIS_USE_DAWNFILE
   unsetenv G4DAWNFILE_VIEWER
   unsetenv DAWN_HOME
   unsetenv G4DAWN_MULTI_WINDOW
@@ -539,14 +514,11 @@ else
 
   # VRML1
   unsetenv G4VIS_BUILD_VRML_DRIVER
-  unsetenv G4VIS_BUILD_VRMLFILE_DRIVER
   unsetenv G4VIS_USE_VRML
-  unsetenv G4VIS_USE_VRMLFILE
   unsetenv G4VRMLFILE_VIEWER
   unsetenv G4VRML_HOST_NAME
 
   # GAG
-  unsetenv G4UI_BUILD_GAG_SESSION
   unsetenv G4UI_USE_GAG
   unsetenv MOMOPATH
 
@@ -672,4 +644,6 @@ unset SHLIBVARNAME
 unset LOCAL
 unset VERBOSE
 
-echo "Default ALICE environment for GEANT4 has been set."
+if ( "$SILENT" == "NO" ) then
+  echo "Default ALICE environment for GEANT4 has been set."
+endif
