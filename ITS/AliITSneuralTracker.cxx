@@ -19,8 +19,8 @@
  * and it must be read by groups of six entries at a time                 *
  **************************************************************************/
 
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 #include <stdlib.h>
 
 #include <TROOT.h>

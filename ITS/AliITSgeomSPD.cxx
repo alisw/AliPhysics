@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -63,8 +66,7 @@ Additional smaller modifications are still to come.
 // initilize this one with predefined values.
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <TShape.h>
 #include <TMath.h>
 
@@ -263,6 +265,9 @@ istream &operator>>(istream &is,AliITSgeomSPD &r){
 
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -382,6 +387,9 @@ istream &operator>>(istream &is,AliITSgeomSPD300 &r){
 //=====================================================================
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -531,6 +539,9 @@ istream &operator>>(istream &is,AliITSgeomSPD425Short &r){
 
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 

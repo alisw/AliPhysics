@@ -18,7 +18,7 @@
 //
 //     Origin: Iouri Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 
 #include "AliV0vertex.h"

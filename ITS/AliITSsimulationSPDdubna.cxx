@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/10/14 14:57:08  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.8.2  2002/10/14 13:14:08  hristov
 Updating VirtualMC to v3-09-02
 
@@ -26,7 +29,7 @@ Updated SPD simulation with difusion effects. ReWritten Hit to SDigits
 code.
 
 */
-#include <iostream.h>
+#include <Riostream.h>
 #include <TRandom.h>
 #include <TH1.h>
 #include <TMath.h>

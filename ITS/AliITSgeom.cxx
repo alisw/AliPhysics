@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.18.8.1  2002/07/24 09:27:50  alibrary
 Updating on VirtualMC
 
@@ -193,9 +196,7 @@ pixel coordinate system.
 // ITS volumes. See the example classes AliITSgeomSPD, AliITSgeomSDD,
 // and AliITSgeomSSD for a more detailed example.
 ////////////////////////////////////////////////////////////////////////
-#include <iostream.h>
-#include <fstream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

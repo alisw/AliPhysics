@@ -1,7 +1,7 @@
 #include "AliITSPid.h"
 #include "TMath.h"
 #include "AliITSIOTrack.h"
-#include <iostream.h>
+#include <Riostream.h>
 ClassImp(AliITSPid)
 
 Float_t AliITSPid::qcorr(Float_t xc)

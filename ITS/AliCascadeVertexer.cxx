@@ -21,7 +21,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TObjArray.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliCascadeVertex.h"
 #include "AliCascadeVertexer.h"

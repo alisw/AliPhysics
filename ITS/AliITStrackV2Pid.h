@@ -2,7 +2,7 @@
 #define ALIITSTRACKV2PID_H
 
 #include <TMath.h>
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliITStrackV2.h"
 
 //_____________________________________________________________________________

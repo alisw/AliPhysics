@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.7.6.1  2002/10/14 13:14:08  hristov
 Updating VirtualMC to v3-09-02
 
@@ -23,7 +26,7 @@ Minor changes in support of changes to AliITSdigitS?D class'.
 
 */
 
-#include <iostream.h>
+#include <Riostream.h>
 #include "TArrayI.h"
 #include "TClonesArray.h"
 #include "AliITSdigit.h"

@@ -18,7 +18,7 @@
 //
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 
 #include "AliCascadeVertex.h"

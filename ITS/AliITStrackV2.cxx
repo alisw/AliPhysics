@@ -23,7 +23,7 @@
 #include <TMatrixD.h>
 
 #include <TMath.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliCluster.h"
 #include "AliTPCtrack.h"

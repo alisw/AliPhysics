@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2002/10/14 14:57:09  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.38.6.3  2002/10/14 13:14:12  hristov
 Updating VirtualMC to v3-09-02
 
@@ -229,8 +232,7 @@ Introduction of the Copyright and cvs Log
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 // See AliITSvPPRsymm::StepManager().
-#include <iostream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.2.8.1  2002/08/28 15:06:50  alibrary
 Updating to v3-09-01
 
@@ -37,7 +40,7 @@ Fixed a reoccuring bug. Array sizes must be declare const.
 
 */
 
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliITSClusterFinderSPDdubna.h"
 #include "AliITSMapA1.h"
 #include "AliITS.h"

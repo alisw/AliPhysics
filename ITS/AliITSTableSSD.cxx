@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliITSTableSSD.h"
 
 ClassImp(AliITSTableSSD);

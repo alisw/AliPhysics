@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/10/14 14:57:08  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.15.4.3  2002/10/14 13:14:08  hristov
 Updating VirtualMC to v3-09-02
 
@@ -51,7 +54,7 @@ of these will require addtional work as data bases of detectors and the like
 are developed.
 
 */
-#include <iostream.h>
+#include <Riostream.h>
 #include <TRandom.h>
 #include <TH1.h>
 #include <TMath.h>

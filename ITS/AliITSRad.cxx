@@ -1,7 +1,7 @@
 #include <TMatrix.h>
 #include <TObjArray.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 
 
 #include "AliITSRad.h"

@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.2  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.1.2.1  2002/07/24 09:27:50  alibrary
 Updating on VirtualMC
 
@@ -24,7 +27,7 @@ New Fastpoint merger added.
 */
 
 #include <stdlib.h>
-#include <iostream.h>
+#include <Riostream.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TTree.h>

@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.27  2002/10/14 14:57:00  hristov
+  Merging the VirtualMC branch to the main development branch (HEAD)
+
   Revision 1.23.4.2  2002/10/14 13:14:07  hristov
   Updating VirtualMC to v3-09-02
 
@@ -31,7 +34,7 @@
 
  */
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TFile.h>
 #include <TMath.h>
 #include <math.h>

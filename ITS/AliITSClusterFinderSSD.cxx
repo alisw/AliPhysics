@@ -18,7 +18,7 @@
  * period of March - June 2001                                            *
  **************************************************************************/
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TArrayI.h>
 #include "AliRun.h"
 #include "AliITS.h"

@@ -22,7 +22,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliITSgeom.h"
 #include "AliITSRecPoint.h"

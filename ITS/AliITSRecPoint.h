@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 
 class AliITSRecPoint : public TObject {

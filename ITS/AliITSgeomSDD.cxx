@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.15.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -83,8 +86,7 @@ Introduction of the Copyright and cvs Log
 // initilize this one with predefined values.
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <stdlib.h>
 #include <TShape.h>
 
@@ -337,6 +339,9 @@ istream &operator>>(istream &is,AliITSgeomSDD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.17  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.15.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -374,7 +379,7 @@ set up for new formatted .det file which includes detector information.
 Additional smaller modifications are still to come.
 
 */
-//#include <iostream.h>
+//#include <Riostream.h>
 //#include <TBRIK.h>
 
 //#include "AliITSgeomSDD256.h"
@@ -821,6 +826,9 @@ istream &operator>>(istream &is,AliITSgeomSDD256 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.17  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.15.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -858,7 +866,7 @@ set up for new formatted .det file which includes detector information.
 Additional smaller modifications are still to come.
 
 */
-//#include <iostream.h>
+//#include <Riostream.h>
 //#include <TBRIK.h>
 
 //#include "AliITSgeomSDD300.h"

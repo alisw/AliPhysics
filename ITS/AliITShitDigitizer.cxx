@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.1  2002/03/15 17:25:54  nilsen
+Renaming of old hit based Digitizer to make room for new SDigit version.
+
 Revision 1.1  2001/11/27 16:27:28  nilsen
 Adding AliITSDigitizer class to do merging and digitization . Based on the
 TTask method. AliITSDigitizer class added to the Makefile and ITSLinkDef.h
@@ -26,7 +29,7 @@ the original Root Directory in function Compress1D. Now it uses gDirectory.
 */
 
 #include <stdlib.h>
-#include <iostream.h>
+#include <Riostream.h>
 #include <TObjArray.h>
 #include <TTree.h>
 #include <TBranch.h>

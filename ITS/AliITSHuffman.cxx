@@ -4,7 +4,7 @@
 
 #include <TMath.h>
 #include <TObjArray.h>
-#include <iostream.h>
+#include <Riostream.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -75,8 +78,7 @@ Introduction of the Copyright and cvs Log
 // initilize this one with predefined values.
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <stdlib.h>
 #include <TShape.h>
 #include <TBRIK.h>
@@ -303,6 +305,9 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -393,6 +398,9 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -492,6 +500,9 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 

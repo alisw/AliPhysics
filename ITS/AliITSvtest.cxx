@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/10/14 14:57:10  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.13.8.2  2002/08/30 15:45:56  alibrary
 Adding geant4vmc support
 
@@ -99,8 +102,7 @@ $Id$
 ///////////////////////////////////////////////////////////////////////////////
 #include <stdio.h>
 #include <stdlib.h>
-#include <iomanip.h>
-#include <fstream.h>
+#include <Riostream.h>
 #include <TMath.h>
 #include <TGeometry.h>
 #include <TNode.h>

@@ -6,7 +6,7 @@
 /* $Id$ */
 
 #include "AliHit.h" 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TLorentzVector.h>
 
 class TParticle;

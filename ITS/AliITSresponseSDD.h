@@ -9,7 +9,7 @@
 */
 #include "TArrayF.h"
 #include <TString.h>
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliITSresponse.h"
 
 // response for SDD

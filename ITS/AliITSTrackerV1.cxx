@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.21  2002/02/05 09:12:26  hristov
+Small mods for gcc 3.02
+
 Revision 1.20  2001/11/21 14:47:45  barbera
 Some unuseful print-out commented out
 
@@ -52,8 +55,8 @@ cleanded up a little bit of code.
 // imposition respectively. The authors thank Mariana Bondila to have help 
 // them to resolve some problems.  July-2000
 
-#include <iostream.h>
-#include <fstream.h>
+#include <Riostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 #include <TBranch.h>
 #include <TVector.h>

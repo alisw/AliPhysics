@@ -17,7 +17,7 @@
 // the information needed to do the coordinate transformation are kept in
 // a specialized structure for ease of implementation.
 /////////////////////////////////////////////////////////////////////////
-#include <fstream.h>
+#include <Riostream.h>
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TVector.h>

@@ -5,7 +5,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliRun.h"
 #include "AliITS.h"

@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.8  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.6.6.1  2002/06/10 17:51:15  hristov
 Merged with v3-08-02
 
@@ -23,7 +26,7 @@ New SDigits and Digits routines, and related changes,  (including new
 noise values).
 
 */
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 #include <TString.h>
 #include "AliITSetfSDD.h"

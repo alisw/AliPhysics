@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include <TROOT.h>
 #include <TMath.h>

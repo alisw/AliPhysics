@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/10/14 14:57:09  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.2.1  2002/10/14 13:14:11  hristov
 Updating VirtualMC to v3-09-02
 
@@ -47,8 +50,7 @@ Updated detailed geometry needed by FMD people for some studies
 ///////////////////////////////////////////////////////////////////////////////
 
 // See AliITSvPPRasymmFMD::StepManager().
-#include <iostream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>

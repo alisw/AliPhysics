@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.5  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.4.1  2002/06/10 17:51:14  hristov
 Merged with v3-08-02
 
@@ -43,7 +46,7 @@ The SDigits are reading as TClonesArray of AliITSpListItem
 */
 
 #include <stdlib.h>
-#include <iostream.h>
+#include <Riostream.h>
 #include <TObjArray.h>
 #include <TTree.h>
 #include <TBranch.h>

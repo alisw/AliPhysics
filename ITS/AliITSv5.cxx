@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2002/10/14 14:57:08  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.35.10.2  2002/08/30 15:45:54  alibrary
 Adding geant4vmc support
 
@@ -104,8 +107,7 @@ Introduction of the Copyright and cvs Log
 // Created September 17 1999.
 //
 ///////////////////////////////////////////////////////////////////////////////
-#include <iostream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>
