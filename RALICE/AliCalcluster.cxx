@@ -18,10 +18,27 @@
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCalcluster
 // Description of a cluster of calorimeter modules.
-// A matrix geometry is assumed in which a cluster center
-// is identified by (row,col) and contains sig as signal
-// being the signal of the complete cluster.
-// Some info about cluster topology is provided in order
+// A 2D (matrix) geometry is assumed in which a cluster center is identified
+// by two integer indices (i,j), e.g. row and column indicators.
+//
+// The 1st signal value is the signal of the complete cluster.
+// This is the signal which is provided as default by invoking GetSignal().
+//
+// In case clustering/grouping of module signals was performed over several
+// rings around the center (see e.g. AliCalorimeter::Group), the following
+// additional information is provided by the various signal values :
+//
+// The 2nd signal value is the original signal of the central module.
+// The 3rd signal value is the total signal within the 1st (i.e. 3x3) ring of
+// modules around the cluster center.
+// The 4th signal value is the total signal within the 2nd (i.e. 5x5) ring of
+// modules around the cluster center.
+// Etc....
+//
+// Note : In case the cluster consists of only 1 module, then only the
+//        1st signal value will be present (for obvious reasons).
+//
+// Some dispersion info about cluster topology is provided in order
 // to enable EM or hadronic cluster identification.
 //
 //--- Author: Nick van Eijndhoven 13-jun-1997 UU-SAP Utrecht
@@ -36,15 +53,12 @@ AliCalcluster::AliCalcluster()
 {
 // Default constructer, all data is set to 0
  fCenter=0;
- fSig=0.;
  fNmods=0;
- fSig11=0.;
- fSig33=0.;
- fSig55=0.;
  fRowdisp=0.;
  fColdisp=0.;
  fNvetos=0;
  fVetos=0;
+ SetName("AliCalcluster [sig, sig11, sig33, sig55, ...]");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalcluster::~AliCalcluster()
@@ -70,16 +84,15 @@ AliCalcluster::AliCalcluster(AliCalmodule& m)
 
  Ali3Vector r;
 
- if (m.GetClusteredSignal()>0. && m.GetDeadValue()==0)
+ Float_t sig=m.GetClusteredSignal();
+
+ if (sig>0. && m.GetDeadValue()==0)
  {
   fCenter=&m;
   r=m.GetPosition();
   SetPosition(r);
-  fSig=m.GetClusteredSignal();
+  SetSignal(sig);
   fNmods=1;
-  fSig11=m.GetClusteredSignal();
-  fSig33=m.GetClusteredSignal();
-  fSig55=m.GetClusteredSignal();
   fRowdisp=0.;
   fColdisp=0.;
   m.SetClusteredSignal(0.); // mark module as used in cluster
@@ -90,16 +103,13 @@ AliCalcluster::AliCalcluster(AliCalmodule& m)
  {
   fCenter=0;
   SetPosition(r);
-  fSig=0.;
   fNmods=0;
-  fSig11=0.;
-  fSig33=0.;
-  fSig55=0.;
   fRowdisp=0.;
   fColdisp=0.;
   fNvetos=0;
   fVetos=0;
  }
+ SetName("AliCalcluster [sig, sig11, sig33, sig55, ...]");
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalcluster::GetRow()
@@ -128,32 +138,6 @@ Int_t AliCalcluster::GetColumn()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalcluster::GetSignal(Int_t n)
-{
-// Provide the total signal of a module matrix of n modules around
-// the cluster center.
-// Example : n=9 --> total signal in the 3x3 matrix
-//             1 --> signal of central module
-// Note : n=0 provides the total cluster signal (Default)
- 
- Float_t signal=-1;
- 
- if (n == 0)  signal=fSig;
- if (n == 1)  signal=fSig11;
- if (n == 9)  signal=fSig33;
- if (n == 25) signal=fSig55;
- 
- if (signal > 0.)
- {
-  return signal;
- }
- else
- {
-  cout << " *AliCalcluster::GetSignal* Invalid argument n = " << n << endl;
-  return 0;
- }
-}
-///////////////////////////////////////////////////////////////////////////
 Int_t AliCalcluster::GetNmodules()
 {
 // Provide the number of modules in the cluster
@@ -162,10 +146,11 @@ Int_t AliCalcluster::GetNmodules()
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliCalcluster::GetRowDispersion()
 {
-// Provide the normalised row dispersion of the cluster
- if (fSig > 0.)
+// Provide the normalised row dispersion of the cluster.
+ Float_t sig=GetSignal();
+ if (sig > 0.)
  {
-  return fRowdisp/fSig;
+  return fRowdisp/sig;
  }
  else
  {
@@ -176,9 +161,10 @@ Float_t AliCalcluster::GetRowDispersion()
 Float_t AliCalcluster::GetColumnDispersion()
 {
 // Provide the normalised column dispersion of the cluster
- if (fSig > 0.)
+ Float_t sig=GetSignal();
+ if (sig > 0.)
  {
-  return fColdisp/fSig;
+  return fColdisp/sig;
  }
  else
  {
@@ -197,6 +183,8 @@ void AliCalcluster::Start(AliCalmodule& m)
 // This feature is automatically checked when using the built-in clustering
 // of AliCalorimeter.  
 
+ AliSignal::Reset();
+
  Ali3Vector r;
 
  if (m.GetClusteredSignal()>0. && m.GetDeadValue()==0)
@@ -204,11 +192,8 @@ void AliCalcluster::Start(AliCalmodule& m)
   fCenter=&m;
   r=m.GetPosition();
   SetPosition(r);
-  fSig=m.GetSignal();
+  SetSignal(m.GetSignal());
   fNmods=1;
-  fSig11=m.GetSignal();
-  fSig33=m.GetSignal();
-  fSig55=m.GetSignal();
   fRowdisp=0.;
   fColdisp=0.;
   m.SetClusteredSignal(0.); // mark module as used in cluster
@@ -217,11 +202,7 @@ void AliCalcluster::Start(AliCalmodule& m)
  {
   fCenter=0;
   SetPosition(r);
-  fSig=0.;
   fNmods=0;
-  fSig11=0.;
-  fSig33=0.;
-  fSig55=0.;
   fRowdisp=0.;
   fColdisp=0.;
  }
@@ -231,20 +212,54 @@ void AliCalcluster::Add(AliCalmodule& m)
 {
 // Add module data to the cluster.
 // Dead modules are NOT added to the cluster.
+// According to the distance of the module w.r.t. the cluster center
+// the various signal values are updated.
 
- Float_t signal=m.GetClusteredSignal();
- 
- if (signal>0. && m.GetDeadValue()==0) // only add unused modules
+ if (fNmods)
  {
-  fSig+=signal;
-  fNmods+=1;
-  Int_t drow=int(fabs(double(GetRow()-m.GetRow())));       // row distance to center
-  Int_t dcol=int(fabs(double(GetColumn()-m.GetColumn()))); // column distance to center
-  if ((drow < 2) && (dcol < 2)) fSig33+=signal;
-  if ((drow < 3) && (dcol < 3)) fSig55+=signal;
-  fRowdisp+=signal*float(drow*drow);
-  fColdisp+=signal*float(dcol*dcol);
-  m.SetClusteredSignal(0.); // mark module as used in cluster
+  Float_t sigm=m.GetClusteredSignal();
+ 
+  if (sigm>0. && m.GetDeadValue()==0) // only add unused modules
+  {
+   Int_t drow=int(fabs(double(GetRow()-m.GetRow())));       // row distance to center
+   Int_t dcol=int(fabs(double(GetColumn()-m.GetColumn()))); // column distance to center 
+
+   // Determine the ring index for this module around the cluster center
+   Int_t jring=drow;
+   if (dcol>drow) jring=dcol;
+
+   Int_t nvalues=GetNvalues();
+
+   if ((jring+2)<=nvalues) // Module within existing ring(s) ==> Add module signal to the enclosing ring(s)
+   {
+    for (Int_t i=(jring+2); i<=nvalues; i++)
+    {
+     AddSignal(sigm,i);
+    }
+   }
+   else  // Module outside all existing rings ==> Init. new ring signals with existing enclosed signal(s)
+   {
+    for (Int_t j=(nvalues+1); j<=(jring+2); j++)
+    {
+     SetSignal(GetSignal(j-1),j);
+    }
+    // Add current module signal to the signal value for the corresponding ring
+    AddSignal(sigm,(jring+2));
+   }
+
+   // Update total cluster signal
+   AddSignal(sigm);
+ 
+   fNmods+=1;
+   fRowdisp+=sigm*float(drow*drow);
+   fColdisp+=sigm*float(dcol*dcol);
+   m.SetClusteredSignal(0.); // mark module as used in cluster
+  }
+ }
+ else
+ {
+  cout << " *AliCalcluster::Add* No action. Cluster should be started first."
+       << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////

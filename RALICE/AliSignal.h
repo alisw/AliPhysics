@@ -30,11 +30,10 @@ class AliSignal : public TObject,public AliPosition
   Int_t GetNvalues();                                   // Provide the number of signal values
 
  protected:
-  Int_t fNvalues;    // The number of values per signal
   TArrayF* fSignal;  // Signal values
   TArrayF* fDsignal; // Errors on signal values
   TString fName;     // Name tag to identify the kind of signal
 
- ClassDef(AliSignal,4) // Handling of ALICE (extrapolated) signals.
+ ClassDef(AliSignal,5) // Generic handling of (extrapolated) detector signals.
 };
 #endif

@@ -17,7 +17,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliSignal
-// Handling of ALICE (extrapolated) signals.
+// Generic handling of (extrapolated) detector signals.
 //
 // Note :
 // ------
@@ -51,7 +51,7 @@
 // Float_t adc=s.GetSignal();
 // Float_t sigma=s.GetSignalError();
 //
-// AliSignal q(3); // q can store 3 signal values with their errors
+// AliSignal q(3); // q can store initially 3 signal values with their errors
 //                 // In the example below a signal contains the
 //                 // following data : timing, ADC and dE/dx
 // q.SetName("TOF hit");
@@ -81,11 +81,12 @@ ClassImp(AliSignal) // Class implementation to enable ROOT I/O
 AliSignal::AliSignal(Int_t n)
 {
 // Creation of an AliSignal object and initialisation of parameters.
-// A total of n (default n=1) values (with errors) can be stored.
- fNvalues=n;
+// Initially a total of n (default n=1) values (with errors) can be stored.
+// If needed, the number of values (and errors) will be increased automatically
+// when entering values.
  fSignal=0;
  fDsignal=0;
- fName=" ";
+ fName="Unspecified";
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
@@ -106,15 +107,15 @@ AliSignal::~AliSignal()
 AliSignal::AliSignal(AliSignal& s)
 {
 // Copy constructor
- fNvalues=s.GetNvalues();
  fSignal=0;
  fDsignal=0;
  fName=s.GetName();
  
  SetPosition((Ali3Vector&)s);
 
+ Int_t nvalues=s.GetNvalues();
  Double_t sig,err;
- for (Int_t i=1; i<=fNvalues; i++)
+ for (Int_t i=1; i<=nvalues; i++)
  {
   sig=s.GetSignal(i);
   err=s.GetSignalError(i);
@@ -126,39 +127,37 @@ AliSignal::AliSignal(AliSignal& s)
 void AliSignal::Reset()
 {
 // Reset all signal and position values and errors to 0.
-// The data arrays are also created if not already existing.
 
- if (!fSignal) fSignal=new TArrayF(fNvalues);
- if (!fDsignal) fDsignal=new TArrayF(fNvalues);
-
- Double_t r[3]={0,0,0};
- SetPosition(r,"sph");
- SetErrors(r,"car");
- for (Int_t i=0; i<fSignal->GetSize(); i++)
+ if (fSignal && fDsignal)
  {
-  fSignal->AddAt(0,i);
-  fDsignal->AddAt(0,i);
+  Double_t r[3]={0,0,0};
+  SetPosition(r,"sph");
+  SetErrors(r,"car");
+  for (Int_t i=0; i<fSignal->GetSize(); i++)
+  {
+   fSignal->AddAt(0,i);
+   fDsignal->AddAt(0,i);
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetSignals()
 {
-// Reset all signal values and errors to 0.
-// The data arrays are also created if not already existing.
+// Reset all signal values and their errors to 0.
 
- if (!fSignal) fSignal=new TArrayF(fNvalues);
- if (!fDsignal) fDsignal=new TArrayF(fNvalues);
-
- for (Int_t i=0; i<fSignal->GetSize(); i++)
+ if (fSignal && fDsignal)
  {
-  fSignal->AddAt(0,i);
-  fDsignal->AddAt(0,i);
+  for (Int_t i=0; i<fSignal->GetSize(); i++)
+  {
+   fSignal->AddAt(0,i);
+   fDsignal->AddAt(0,i);
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetPosition()
 {
-// Reset position and errors to 0.
+// Reset the position and corresponding errors to 0.
  Double_t r[3]={0,0,0};
  SetPosition(r,"sph");
  SetErrors(r,"car");
@@ -168,39 +167,53 @@ void AliSignal::SetSignal(Double_t sig,Int_t j)
 {
 // Store j-th (default j=1) signal value.
 // Note : The first signal value is at j=1.
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for signal values, the number of reserved slots for both the
+// signal values and errors is increased automatically.
 
- if (!fSignal) ResetSignals();
+ if (!fSignal && !fDsignal)
+ {
+  fSignal=new TArrayF(j);
+  fDsignal=new TArrayF(j);
+  ResetSignals();
+ }
 
  Int_t size=fSignal->GetSize();
- if (j<=size)
+
+ if (j>size)
  {
-  fSignal->AddAt(float(sig),j-1);
+  fSignal->Set(j);
+  fDsignal->Set(j);
  }
- else
- {
-  cout << "*AliSignal::SetSignal* Index mismatch j : " << j
-       << " size : " << size << endl;
- }
+
+ fSignal->AddAt(float(sig),j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::AddSignal(Double_t sig,Int_t j)
 {
 // Add value to j-th (default j=1) signal value.
 // Note : The first signal value is at j=1.
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for signal values, the number of reserved slots for both the
+// signal values and errors is increased automatically.
 
- if (!fSignal) ResetSignals();
+ if (!fSignal && !fDsignal)
+ {
+  fSignal=new TArrayF(j);
+  fDsignal=new TArrayF(j);
+  ResetSignals();
+ }
 
  Int_t size=fSignal->GetSize();
- if (j<=size)
+
+ if (j>size)
  {
-  Float_t sum=(fSignal->At(j-1))+sig;
-  fSignal->AddAt(sum,j-1);
+  fSignal->Set(j);
+  fDsignal->Set(j);
  }
- else
- {
-  cout << "*AliSignal::AddSignal* Index mismatch j : " << j
-       << " size : " << size << endl;
- }
+
+ Float_t sum=(fSignal->At(j-1))+sig;
+ fSignal->AddAt(sum,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliSignal::GetSignal(Int_t j)
@@ -221,19 +234,26 @@ void AliSignal::SetSignalError(Double_t dsig,Int_t j)
 {
 // Store error on j-th (default j=1) signal value.
 // Note : The error on the first signal value is at j=1.
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for signal error values, the number of reserved slots for both the
+// signal values and errors is increased automatically.
 
- if (!fDsignal) ResetSignals();
+ if (!fSignal && !fDsignal)
+ {
+  fSignal=new TArrayF(j);
+  fDsignal=new TArrayF(j);
+  ResetSignals();
+ }
 
  Int_t size=fDsignal->GetSize();
- if (j<=size)
+
+ if (j>size)
  {
-  fDsignal->AddAt(float(dsig),j-1);
+  fSignal->Set(j);
+  fDsignal->Set(j);
  }
- else
- {
-  cout << "*AliSignal::SetSignalError* Index mismatch j : " << j
-       << " size : " << size << endl;
- }
+
+ fDsignal->AddAt(float(dsig),j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliSignal::GetSignalError(Int_t j)
@@ -282,6 +302,8 @@ TString AliSignal::GetName()
 Int_t AliSignal::GetNvalues()
 {
 // Provide the number of values for this signal.
- return fNvalues;
+ Int_t n=0;
+ if (fSignal && fDsignal) n=fSignal->GetSize();
+ return n;
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -338,3 +338,9 @@
 03-feb-2003 NvE File "gcclib" added to subdirectory "scripts" to provide Ralice installation
                 script for Linux machines using gcc.
                 Class AliObjMatrix introduced.
+08-feb-2003 NvE Class AliSignal modified such that the maximum number of signal slots is
+                handled completely dynamically at runtime.
+                Memberfunctions SetSignal() and AddSignal() of class AliCalmodule declared
+                virtual to enable inheritance.
+09-feb-2003 NvE Class AliCalcluster derived from AliSignal to enable automatic signal setting
+                for various rings of modules around the cluster center.
