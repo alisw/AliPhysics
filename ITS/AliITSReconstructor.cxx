@@ -99,7 +99,7 @@ AliVertexer* AliITSReconstructor::CreateVertexer(AliRunLoader* /*runLoader*/) co
 {
 // create a ITS vertexer
 
-  TString selectedVertexer(" ");
+  TString selectedVertexer = GetOption();
   if(selectedVertexer.Contains("ions") || selectedVertexer.Contains("IONS")){
     Info("CreateVertexer","a AliITSVertexerIons object has been selected\n");
     return new AliITSVertexerIons("null");
