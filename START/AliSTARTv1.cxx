@@ -73,7 +73,7 @@ void AliSTARTv1::CreateGeometry()
   Int_t idrotm[999];
   Float_t x,y,z;
 
-  Float_t pstart[3]={4.5,10.,4.0};
+  Float_t pstart[3]={4.5,11.,7.};
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.3,3.5};
   Float_t pdivider[3]={0.,1.2,1.75};
@@ -99,6 +99,7 @@ void AliSTARTv1::CreateGeometry()
   Float_t psupport6[3] = {0,1.6,0.05}; //kryshechka stakanchika  Al
   Float_t psupport7[3] = {1.5,1.6,0.6}; //kolechko snaruzhu stakanchika Al
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
+    AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
   Float_t ppcon[70]; 
     ppcon[0]  =   0;
     ppcon[1]  = 360;
@@ -174,20 +175,19 @@ void AliSTARTv1::CreateGeometry()
     ppcon[47] =   7.6;
     
     gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,48);
-    z=69.7; //+14.1/2;
-    gMC->Gspos("0SUP",1, "ALIC", 0,0,z,0,"ONLY");
+    z=-69.7;//-14.1/2;
+    gMC->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
 
   Float_t zdetRight=69.7,zdetLeft=350;
  //-------------------------------------------------------------------
  //  START volume 
  //-------------------------------------------------------------------
   
-    AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
     
     gMC->Gsvolu("0STR","TUBE",idtmed[kAir],pstart,3);
     gMC->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
-    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetRight-pstart[2],0,"ONLY");
-    gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetLeft+pstart[2],idrotm[901],"ONLY");
+    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetRight-pstart[2],idrotm[901],"ONLY");
+    gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetLeft+pstart[2],0,"ONLY");
 
 //START interior
     gMC->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);

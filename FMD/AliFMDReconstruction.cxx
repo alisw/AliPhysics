@@ -112,7 +112,7 @@ void AliFMDReconstruction::Exec()
   Int_t ivol, iSector, iRing;
   Float_t rin[5]={4.2,15.4,4.2,15.4,4.2};
   Float_t rout[5]={17.4,28.4,17.4,28.4,17.4};
-  Float_t z[5]={62.8, 75.2, -83.4, -75.2, -340.};
+  Float_t z[5]={-62.8, -75.2, 83.4, 75.2, 340.};
   Int_t numberOfRings[5]={512,256,512,256,512};
   Int_t numberOfSectors[5]=  {20,40,20,40,20};
   Int_t numberOfEtaIntervals[5];
