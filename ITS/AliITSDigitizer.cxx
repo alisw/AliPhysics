@@ -15,6 +15,10 @@
  
 /*
 $Log$
+Revision 1.3  2002/03/25 10:48:55  nilsen
+New ITS SDigit merging with region of interest cut. Update for changes in
+AliDigitizer. Additional optimization should be done.
+
 Revision 1.2  2002/03/15 17:26:40  nilsen
 New SDigit version of ITS Digitizer.
 
@@ -42,7 +46,7 @@ The SDigits are reading as TClonesArray of AliITSpListItem
 #include <AliRunDigitizer.h>
 
 #include "AliITSDigitizer.h"
-#include "AliITShit.h"
+#include "AliITSpList.h"
 #include "AliITSmodule.h"
 #include "AliITSsimulation.h"
 #include "AliITSDetType.h"
@@ -61,10 +65,11 @@ AliITSDigitizer::AliITSDigitizer() : AliDigitizer(){
     // Return:
     //      A blank AliITSDigitizer class.
 
-    fITS    = 0;
-    fActive = 0;
-    fRoif   = -1;
+    fITS      = 0;
+    fActive   = 0;
+    fRoif     = -1;
     fRoiifile = 0;
+    fInit     = kFALSE;
 }
 //______________________________________________________________________
 AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
@@ -77,31 +82,11 @@ AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
     // Return:
     //      An AliItSDigitizer class.
 
-    if(!gAlice) {
-	fITS = 0;
-	fActive = 0;
-	fRoif   = -1;
-	fRoiifile = 0;
-	return;
-    } // end if
-    fITS = (AliITS *)(gAlice->GetDetector("ITS"));
-    if(!fITS){
-	fActive = 0;
-	fRoif   = -1;
-	fRoiifile = 0;
-	return;
-    } else if(fITS->GetITSgeom()){
-	fActive = new Bool_t[fITS->GetITSgeom()->GetIndexMax()];
-	fRoif   = -1;
-	fRoiifile = 0;
-    } else{
-	fActive = 0;
-	fRoif   = -1;
-	fRoiifile = 0;
-	return;
-    } // end if
-    // fActive needs to be set to a default all kTRUE value
-    for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fActive[i] = kTRUE;
+    fITS      = 0;
+    fActive   = 0;
+    fRoif     = -1;
+    fRoiifile = 0;
+    fInit     = kFALSE;
 }
 //______________________________________________________________________
 AliITSDigitizer::~AliITSDigitizer(){
@@ -117,80 +102,64 @@ AliITSDigitizer::~AliITSDigitizer(){
     if(fActive) delete[] fActive;
 }
 //______________________________________________________________________
-Bool_t AliITSDigitizer::Init(const char *filename){
-    // Initialization 
-    // Inputs:
-    //      none.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
-     
-//    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
-//    if (file) {file->Close(); delete file;}
-    TFile *file = new TFile(filename);
-    if (!file->IsOpen()) {
-        Error("Init","Can't open %s!",filename);
-        return kFALSE;
-    } // end if !file 
-    if (gAlice) delete gAlice;
-    gAlice = (AliRun*)file->Get("gAlice");
-    if (!gAlice) {
-        Error("Init","AliRun object not found on file");
-        return kFALSE;
-    } // end if !gAlice
-
-    this->Init();
-    delete gAlice;
-    gAlice=0;
-    return kTRUE;
-}
-//______________________________________________________________________
 Bool_t AliITSDigitizer::Init(){
-    // Initialization 
+    // Initialization. Set up region of interest, if switched on, and
+    // loads ITS and ITSgeom.
     // Inputs:
     //      none.
     // Outputs:
     //      none.
     // Return:
-
     //      none.
-//    TTree *ts;
 
+    fInit = kTRUE; // Assume for now init will work.
     if(!gAlice) {
 	fITS      = 0;
 	fActive   = 0;
 	fRoif     = -1;
 	fRoiifile = 0;
-//	cout << "init !gAlice"<<endl;
-	return kFALSE;
+	fInit     = kFALSE;
+	Warning("Init","gAlice not found");
+	return fInit;
     } // end if
     fITS = (AliITS *)(gAlice->GetDetector("ITS"));
     if(!fITS){
 	fActive   = 0;
 	fRoif     = -1;
 	fRoiifile = 0;
-//	cout << "init !fITS"<<endl;
-	return kFALSE;
+	fInit     = kFALSE;
+	Warning("Init","ITS not found");
+	return fInit;
     } else if(fITS->GetITSgeom()){
+	//cout << "fRoif,fRoiifile="<<fRoif<<" "<<fRoiifile<<endl;
 	fActive = new Bool_t[fITS->GetITSgeom()->GetIndexMax()];
     } else{
-	fActive = 0;
-	fRoif   = -1;
+	fActive   = 0;
+	fRoif     = -1;
 	fRoiifile = 0;
-//	cout << "init !fITS-GetITSgeom()"<<endl;
-	return kFALSE;
+	fInit     = kFALSE;
+	Warning("Init","ITS geometry not found");
+	return fInit;
     } // end if
     // fActive needs to be set to a default all kTRUE value
     for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fActive[i] = kTRUE;
-/*
+/*  This will not work from Init. ts is aways returned as zero.
+    TTree *ts;
     if(fRoif>=0 && fRoiifile>=0 && fRoiifile<GetManager()->GetNinputs()){
 	ts = GetManager()->GetInputTreeS(fRoiifile);
-	cout << "calling SetByReionOfInterest"<<endl;
+	if(!ts){
+	    if(!gAlice) ts = gAlice->TreeS();
+	    if(!ts){
+		cout <<"The TTree TreeS needed to set by region not found."
+		    " No region of interest cut will be applied."<< endl;
+		return fInit;
+	    } // end if
+	} // end if
+	cout << "calling SetByReionOfInterest ts="<< ts <<endl;
 	SetByRegionOfInterest(ts);
     } // end if
 */
-    return kTRUE;
+    return fInit;
 }
 //______________________________________________________________________
 void AliITSDigitizer::Exec(Option_t* opt){
@@ -212,33 +181,37 @@ void AliITSDigitizer::Exec(Option_t* opt){
     AliITSDetType    *iDetType = 0;
     static Bool_t    setDef    = kTRUE;
 
-    if(!fITS) fITS = (AliITS*)(gAlice->GetDetector("ITS"));
-    if(!fITS){
-	Error("Exec","The ITS not found. aborting.");
+    if(!fInit){
+	Error("Exec","Init not succesfull, aborting.");
 	return;
     } // end if
-    if( !(fITS->GetITSgeom()) ) {
-        Warning( "Exec", "Need ITS geometry to be properly defined first." );
-        return; // need transformations to do digitization.
-    } // end if !GetITSgeom()
 
     if( setDef ) fITS->SetDefaultSimulation();
     setDef = kFALSE;
-    sprintf( name, "%s", fITS->GetName() );
+    sprintf(name,"%s",fITS->GetName());
 
     Int_t nfiles = GetManager()->GetNinputs();
     Int_t event  = GetManager()->GetOutputEventNr();
     Int_t size   = fITS->GetITSgeom()->GetIndexMax();
+    Int_t module,id,ifiles,mask;
+    Bool_t lmod;
+    Int_t *fl = new Int_t[nfiles];
+    fl[0] = fRoiifile;
+    mask = 1;
+    for(id=0;id<nfiles;id++) if(id!=fRoiifile){
+	// just in case fRoiifile!=0.
+	fl[mask] = id;
+	mask++;
+    } // end for,if
     TClonesArray * sdig = new TClonesArray( "AliITSpListItem",1000 );
     
-    // Digitize 
-    fITS->MakeBranchInTreeD( GetManager()->GetTreeD() );
-    if(fRoif!=-1)SetByRegionOfInterest(GetManager()->GetInputTreeS(fRoiifile));
+    // Digitize
+    fITS->MakeBranchInTreeD(GetManager()->GetTreeD());
 
-    for( Int_t module=0; module<size; module++ ){
-	if(fActive && fRoif!=-1) if(!fActive[module]) continue;
-        Int_t id = fITS->GetITSgeom()->GetModuleType( module );
-        if( !all && !det[id] ) continue;
+    for(module=0; module<size; module++ ){
+	if(fActive && fRoif!=0) if(!fActive[module]) continue;
+        id = fITS->GetITSgeom()->GetModuleType(module);
+        if(!all && !det[id]) continue;
         iDetType = fITS->DetType( id );
         sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
         if(!sim) {
@@ -247,11 +220,12 @@ void AliITSDigitizer::Exec(Option_t* opt){
         } // end if !sim
 
         // Fill the module with the sum of SDigits
-        sim->InitSimulationModule( module, event );
-//	cout << "Module=" << module;
-        for( Int_t ifiles=0; ifiles<nfiles; ifiles++ ){
-//	    cout <<" ifiles=" << ifiles;
-            TTree *treeS = GetManager()->GetInputTreeS(ifiles);
+        sim->InitSimulationModule(module, event);
+	//cout << "Module=" << module;
+        for(ifiles=0; ifiles<nfiles; ifiles++ ){
+	    if(fActive && fRoif!=0) if(!fActive[module]) continue;
+	    //cout <<" fl[ifiles=" << ifiles << "]=" << fl[ifiles];
+            TTree *treeS = GetManager()->GetInputTreeS(fl[ifiles]);
             if( !(treeS && fITS->GetSDigits()) ) continue;   
             TBranch *brchSDigits = treeS->GetBranch( name );
             if( brchSDigits ) {
@@ -259,15 +233,21 @@ void AliITSDigitizer::Exec(Option_t* opt){
             } else {
                 Error( "Exec", "branch ITS not found in TreeS, input file %d ",
                        ifiles );
+		return;
             } // end if brchSDigits
             sdig->Clear();
-            Int_t mask = GetManager()->GetMask( ifiles );
-            
+            mask = GetManager()->GetMask(ifiles);
             // add summable digits to module
             brchSDigits->GetEvent( module );
-            sim->AddSDigitsToModule( sdig, mask );    
+            lmod = sim->AddSDigitsToModule(sdig,mask);
+	    if(ifiles==0){
+		fActive[module] = lmod;
+	    } // end if
+	    //cout << " fActive["<<module<<"]=";
+	    //if(fActive[module]) cout << "kTRUE";
+	    //else cout << "kFALSE";
         } // end for ifiles
-//	cout << " end ifiles loop" << endl;
+	//cout << " end ifiles loop" << endl;
         // Digitize current module sum(SDigits)->Digits
         sim->FinishSDigitiseModule();
 
@@ -275,15 +255,15 @@ void AliITSDigitizer::Exec(Option_t* opt){
         GetManager()->GetTreeD()->Fill();
         fITS->ResetDigits();
     } // end for module
-//    cout << "end modules loop"<<endl;
- 
-    GetManager()->GetTreeD()->GetEntries();
-    GetManager()->GetTreeD()->Write( 0, TObject::kOverwrite );
-    // reset tree
-    GetManager()->GetTreeD()->Reset();
-    
+    //cout << "end modules loop"<<endl;
+
+    GetManager()->GetTreeD()->AutoSave();
+
+    delete[] fl;
     sdig->Clear();
     delete sdig;
+    for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fActive[i] = kTRUE;
+    return;
 }
 //______________________________________________________________________
 void AliITSDigitizer::SetByRegionOfInterest(TTree *ts){
@@ -301,15 +281,16 @@ void AliITSDigitizer::SetByRegionOfInterest(TTree *ts){
     //      none.
     // Return:
     //      none.
-    Int_t m,nm;
-    if(gAlice==0 && ts==0) return;
-    if(ts==0) ts = gAlice->TreeS();
+    Int_t m,nm,i;
+
+    if(fRoif==0) return;
+    if(ts==0) return;
     TBranch *brchSDigits = ts->GetBranch(fITS->GetName());
     TClonesArray * sdig = new TClonesArray( "AliITSpListItem",1000 );
-//    cout << "Region of Interest ts="<<ts<<" brchSDigits="<<brchSDigits<<" sdig="<<sdig<<endl;
+    //cout << "Region of Interest ts="<<ts<<" brchSDigits="<<brchSDigits<<" sdig="<<sdig<<endl;
 
     if( brchSDigits ) {
-	brchSDigits->SetAddress( &sdig ); 
+	brchSDigits->SetAddress( &sdig );
     } else {
 	Error( "SetByRegionOfInterest","branch ITS not found in TreeS");
 	return;
@@ -317,18 +298,21 @@ void AliITSDigitizer::SetByRegionOfInterest(TTree *ts){
 
     nm = fITS->GetITSgeom()->GetIndexMax();
     for(m=0;m<nm;m++){
-//	cout << " fActive["<<m<<"]=";
+	//cout << " fActive["<<m<<"]=";
 	fActive[m] = kFALSE; // Not active by default
 	sdig->Clear();
 	brchSDigits->GetEvent(m);
-	if(sdig->GetLast()>=0){ // activate the necessary modules
-	    if(fRoif>=0){
+	if(sdig->GetLast()>=0) for(i=0;i<sdig->GetLast();i++){
+	    // activate the necessary modules
+	    if(((AliITSpList*)sdig->At(m))->GetpListItem(i)->GetSignal()>0.0){ // Must have non zero signal.
 		fActive[m] = kTRUE;
-//		cout << "kTRUE";
+		break;
 	    } // end if
-	} // end if.
-//	cout << endl;
+	} // end if. end for i.
+	//cout << fActive[m];
+	//cout << endl;
     } // end for m
     sdig->Clear();
     delete sdig;
+    return;
 }

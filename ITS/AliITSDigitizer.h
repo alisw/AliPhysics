@@ -8,6 +8,7 @@
  */
 
 class TObjArray;
+class TTree;
 
 #include <TClonesArray.h> // function of this class used in inline functions.
 
@@ -15,7 +16,6 @@ class AliRunDigitizer;
 
 #include "AliDigitizer.h" // Base class from which this one is derived
 #include "AliITS.h"   // ITS class functions used in inline functions.
-class AliITShit;
 class AliITSmodule;
 
 class AliITSDigitizer : public AliDigitizer{
@@ -25,27 +25,40 @@ class AliITSDigitizer : public AliDigitizer{
     virtual ~AliITSDigitizer();
     // Standard routines.
     virtual Bool_t Init();
-    virtual Bool_t Init(const char *filename);
+    // Perform SDigits to Digits, with or without merging, depending on the
+    // number of files.
     virtual void Exec(Option_t* opt=0);
     // Sets a particular module active
     virtual void SetModuleActive(Int_t i){if(fActive) fActive[i] = kTRUE;}
     // Sets a particular module inactive
     virtual void SetModuleInActive(Int_t i){if(fActive) fActive[i] = kFALSE;}
-    virtual void SetByRegionOfInterest(Int_t i=0){fRoif = i;};
-    virtual void SetByRegionOfFileNumber(Int_t i=0){fRoiifile = i;};
-    virtual void ClearByRegionOfInterest(){fRoif = -1;};
+    // Sets Region of Interst Flag. if fRiof=0 then no Region of Interest
+    // cut applyed
+    virtual void SetByRegionOfInterestFlag(Int_t i=0){fRoif = i;};
+    // Sets the SDigits file number to  be used to define the region of 
+    // interest. Default is file=-1, assumed that a region of interest
+    // cut will be applied. A value of 0 means no cut to be applyed. Other
+    // values have yet to be defined.
+    virtual void SetByRegionOfFileNumber(Int_t i=-1){fRoiifile = i;};
+    // Clears the region of interest flag. Calling this implies that a
+    // Region of interest cut will not be made.
+    virtual void ClearByRegionOfInterestFlag(){fRoif = 0;};
  private:
     // Routines used internaly
-    TClonesArray* GetHits(){return fITS->Hits();}
-    AliITShit* GetHit(Int_t h){return (AliITShit*)(GetHits()->UncheckedAt(h));}
+    // Returns a pointer to the TObjecArray of Modules.
     TObjArray* GetModules(){return fITS->GetModules();}
+    // Returns a pointer to a  specific module.
     AliITSmodule* GetModule(Int_t i){return fITS->GetModule(i);}
+    // Returns a pointer to the manager
     AliRunDigitizer* GetManager(){return fManager;}
+    // Sets the region of Interest based on which module have SDigits
+    // Defined (non-noise SDigits).
     virtual void SetByRegionOfInterest(TTree *ts);
  private:
-    AliITS *fITS;  //! local pointer to ITS
-    Bool_t *fActive; //! flag to indicate which module to digitize.
-    Int_t   fRoif;  //! Region of interest flag.
+    AliITS *fITS;      //! local pointer to ITS
+    Bool_t *fActive;   //! flag to indicate which module to digitize.
+    Bool_t  fInit;     //! flag to indecate Initilization when well.
+    Int_t   fRoif;     //! Region of interest flag.
     Int_t   fRoiifile; //! The file number with which to determing the region
                        // of interest from.
 
