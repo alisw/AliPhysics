@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.1  2000/10/06 08:59:03  morsch
 Segmentation classes for bending and non bending plane slat modules (A. de Falco, A. Morsch)
 
@@ -249,6 +253,9 @@ void AliMUONSegmentationSlatModuleN::Init(Int_t chamber)
 
     fNpx=fNpxS[3];
     fNpy=Int_t(fDyPCB/fDpy)*(*fNDiv)[1];
+//  
+    fId = chamber;
+    
 }
 
 

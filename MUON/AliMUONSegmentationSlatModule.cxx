@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.1  2000/10/06 08:59:03  morsch
 Segmentation classes for bending and non bending plane slat modules (A. de Falco, A. Morsch)
 
@@ -119,7 +123,7 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 //
 //  Find sector isec
     Int_t isec=AliMUONSegmentationSlatModule::Sector(ix,iy);
-    if (isec == -1) printf("\n PadC %d %d %d  \n ", isec, ix, iy);
+    if (isec == -1) printf("\n PadC %d %d %d  %d \n ", isec, fId, ix, iy);
 //
     if (isec>0) {
 	x = fCx[isec-1]+(ix-fNpxS[isec-1])*(*fDpxD)[isec];
@@ -364,6 +368,9 @@ void AliMUONSegmentationSlatModule::Init(Int_t chamber)
 // maximum number of pad rows    
     fNpy=nPyPCB;
     fNpx=fNpxS[3];
+//
+    fId = chamber;
+    
 }
 
 
