@@ -38,6 +38,9 @@
 #pragma link C++ class  AliGenHijing+;
 #pragma link C++ class  AliDecayer+;
 #pragma link C++ class  AliDecayerPythia+;
+#pragma link C++ class  AliMevSimConfig+;
+#pragma link C++ class  AliMevSimParticle+;
+#pragma link C++ class  AliGenMevSim+;
 #endif
 
 
