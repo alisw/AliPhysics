@@ -16,6 +16,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>
+#include <TError.h>
 
 #include "AliMpPlane.h"
 #include "AliMpReader.h"
@@ -107,6 +108,12 @@ AliMpPlane::AliMpPlane(AliMpSector* frontSector, AliMpSector* backSector,
 #endif
 }
 
+//_____________________________________________________________________________
+AliMpPlane::AliMpPlane(const AliMpPlane& right) 
+  : TObject(right) {
+// 
+  Fatal("AliMpPlane", "Copy constructor not provided.");
+}
 
 //______________________________________________________________________________
 AliMpPlane::AliMpPlane() 
@@ -128,6 +135,21 @@ AliMpPlane::~AliMpPlane() {
   for (Int_t i=0; i<GetNofSectorPositions(); i++) 
     delete GetSectorPosition(i);    
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpPlane& AliMpPlane::operator=(const AliMpPlane& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //
 // public methods

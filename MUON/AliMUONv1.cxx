@@ -110,6 +110,15 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
     fGlobalTransformation = new TGeoCombiTrans(0., 0., 0., rotGlobal);
 }
 
+//_____________________________________________________________________________
+AliMUONv1::AliMUONv1(const AliMUONv1& right) 
+  : AliMUON(right) 
+{  
+  // copy constructor (not implemented)
+
+  Fatal("AliMUONv1", "Copy constructor not provided.");
+}
+
 //___________________________________________
 AliMUONv1::~AliMUONv1()
 {
@@ -117,6 +126,19 @@ AliMUONv1::~AliMUONv1()
 
   delete fGlobalTransformation;
 }
+
+//_____________________________________________________________________________
+AliMUONv1& AliMUONv1::operator=(const AliMUONv1& right)
+{
+  // assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //__________________________________________________
 void AliMUONv1::CreateGeometry()

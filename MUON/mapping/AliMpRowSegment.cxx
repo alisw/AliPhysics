@@ -55,9 +55,31 @@ AliMpRowSegment::AliMpRowSegment()
 }
 
 //_____________________________________________________________________________
+AliMpRowSegment::AliMpRowSegment(const AliMpRowSegment& right) 
+  : AliMpVRowSegment(right) {
+// 
+  Fatal("AliMpRowSegment", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpRowSegment::~AliMpRowSegment() {
 //  
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpRowSegment& AliMpRowSegment::operator=(const AliMpRowSegment& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //
 // private methods  

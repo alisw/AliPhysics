@@ -60,6 +60,9 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     virtual Int_t         GetMotifPositionId(Int_t i) const;
 
   protected:
+    AliMpVRowSegmentSpecial(const AliMpVRowSegmentSpecial& right);
+    AliMpVRowSegmentSpecial&  operator = (const AliMpVRowSegmentSpecial& right);
+
     // methods
     virtual TVector2  MotifCenterSlow(Int_t motifPositionId) const = 0;
     AliMpPadRow*         FindPadRow(Double_t y) const;

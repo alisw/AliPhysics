@@ -12,6 +12,7 @@
 
 #include <Riostream.h>
 #include <TMath.h>
+#include <TError.h>
 
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"
@@ -57,11 +58,35 @@ AliMpSectorSegmentation::AliMpSectorSegmentation()
 //
 }
 
+//_____________________________________________________________________________
+AliMpSectorSegmentation::AliMpSectorSegmentation(
+                                    const AliMpSectorSegmentation& right) 
+  : AliMpVSegmentation(right) {
+// 
+  Fatal("AliMpSectorSegmentation", "Copy constructor not provided.");
+}
+
 //______________________________________________________________________________
 AliMpSectorSegmentation::~AliMpSectorSegmentation() {
 // 
   delete fPadBuffer;
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpSectorSegmentation& 
+AliMpSectorSegmentation::operator=(const AliMpSectorSegmentation& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //
 // private methods

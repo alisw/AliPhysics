@@ -11,6 +11,7 @@
 #include <TList.h>
 #include <TVirtualX.h>
 #include <TPad.h>
+#include <TError.h>
 
 #include "AliMpVPainter.h"
 #include "AliMpGraphContext.h"
@@ -42,6 +43,15 @@ AliMpVPainter::AliMpVPainter()
   fTrashList = new TList;
 }
 
+//_____________________________________________________________________________
+AliMpVPainter::AliMpVPainter(const AliMpVPainter& right) 
+  : TObject(right) 
+{  
+  // copy constructor (not implemented)
+
+  Fatal("AliMpVPainter", "Copy constructor not provided.");
+}
+
 //_______________________________________________________________________
 AliMpVPainter::~AliMpVPainter()
 {
@@ -51,6 +61,19 @@ AliMpVPainter::~AliMpVPainter()
     delete fTrashList;
   }
 }
+
+//_____________________________________________________________________________
+AliMpVPainter& AliMpVPainter::operator=(const AliMpVPainter& right)
+{
+  // assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_______________________________________________________________________
 Bool_t AliMpVPainter::IsInside(const TVector2 &point,const TVector2& pos,const TVector2& dim)
@@ -92,6 +115,7 @@ TObject* AliMpVPainter::Clone(const char* newname) const
 //_______________________________________________________________________
 TObject* AliMpVPainter::DrawClone(Option_t* option) const
 {
+  // draw the clone object
   TVirtualPad *pad = gROOT->GetSelectedPad();
   TVirtualPad *padsav = gPad;
 

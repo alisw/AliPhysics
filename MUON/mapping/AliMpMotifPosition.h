@@ -36,6 +36,10 @@ class AliMpMotifPosition : public AliMpVIndexed
   TVector2 Position() const;
   TVector2 Dimensions() const;
 
+ protected:
+  AliMpMotifPosition(const AliMpMotifPosition& right);
+  AliMpMotifPosition&  operator = (const AliMpMotifPosition& right);
+
  private:
   // methods
   // data members 

@@ -40,6 +40,9 @@ class AliMpVPadRowSegment : public TObject
     void  SetOffsetX(Double_t offsetX);  
 
   protected:
+    AliMpVPadRowSegment(const AliMpVPadRowSegment& right);
+    AliMpVPadRowSegment&  operator = (const AliMpVPadRowSegment& right);
+
     Double_t  GetOffsetX() const { return fOffsetX; }
 
   private:

@@ -46,6 +46,10 @@ class AliMpReader : public TObject
     // set methods
     void SetVerboseLevel(Int_t verboseLevel); 
     
+  protected:
+    AliMpReader(const AliMpReader& right);
+    AliMpReader&  operator = (const AliMpReader& right);
+
   private:
 #ifdef WITH_ROOT
     static const Int_t   fgkSeparator;  // the separator used for conversion

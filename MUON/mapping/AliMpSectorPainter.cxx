@@ -4,6 +4,7 @@
   
 #include <TVirtualX.h>
 #include <TPad.h>
+#include <TError.h>
 
 #include "AliMpSectorPainter.h"
 #include "AliMpGraphContext.h"
@@ -30,11 +31,36 @@ AliMpSectorPainter::AliMpSectorPainter(AliMpSector *sector)
   // normal constructor 
 
 }
+
+//_____________________________________________________________________________
+AliMpSectorPainter::AliMpSectorPainter(const AliMpSectorPainter& right) 
+  : AliMpVPainter(right) 
+{  
+  // copy constructor (not implemented)
+
+  Fatal("AliMpSectorPainter", "Copy constructor not provided.");
+}
+
 //_______________________________________________________________________
 AliMpSectorPainter::~AliMpSectorPainter()
 {
   // destructor
 }
+
+//_____________________________________________________________________________
+AliMpSectorPainter& 
+AliMpSectorPainter::operator=(const AliMpSectorPainter& right)
+{
+  // assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+
 //_______________________________________________________________________
 void AliMpSectorPainter::DumpObject()
 {

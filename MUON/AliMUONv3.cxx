@@ -107,6 +107,28 @@ AliMUONv3::AliMUONv3(const char *name, const char *title)
     fAngleEffectNorma->SetParameter(3,-1.490e-03);
 }
 
+//_____________________________________________________________________________
+AliMUONv3::AliMUONv3(const AliMUONv3& right) 
+  : AliMUON(right) 
+{  
+  // copy constructor (not implemented)
+
+  Fatal("AliMUONv3", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
+AliMUONv3& AliMUONv3::operator=(const AliMUONv3& right)
+{
+  // assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+
 //___________________________________________
 void AliMUONv3::CreateGeometry()
 {

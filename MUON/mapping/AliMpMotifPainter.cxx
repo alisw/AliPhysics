@@ -9,6 +9,7 @@
 
 #include <TVirtualX.h>
 #include <TPad.h>
+#include <TError.h>
  
 #include "AliMpMotifPainter.h"
 #include "AliMpGraphContext.h"
@@ -26,6 +27,7 @@ AliMpMotifPainter::AliMpMotifPainter()
 {
   // default dummy constructor
 }
+
 //_______________________________________________________________________
 AliMpMotifPainter::AliMpMotifPainter(AliMpMotifPosition *motifPos)
   : AliMpVPainter(),
@@ -34,11 +36,32 @@ AliMpMotifPainter::AliMpMotifPainter(AliMpMotifPosition *motifPos)
   // normal constructor 
 
 }
+
+//_____________________________________________________________________________
+AliMpMotifPainter::AliMpMotifPainter(const AliMpMotifPainter& right) 
+  : AliMpVPainter(right) {
+// 
+  Fatal("AliMpMotifPainter", "Copy constructor not provided.");
+}
+
 //_______________________________________________________________________
 AliMpMotifPainter::~AliMpMotifPainter()
 {
   // default dummy constructor
 }
+
+//_____________________________________________________________________________
+AliMpMotifPainter& 
+AliMpMotifPainter::operator=(const AliMpMotifPainter& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+
 //_______________________________________________________________________
 void AliMpMotifPainter::DumpObject()
 {

@@ -2,6 +2,8 @@
 //
 // Author: Ivana Hrivnacova, IPN Orsay
 
+#include <TError.h>
+
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifPositionPadIterator.h"
 #include "AliMpMotifType.h"
@@ -27,10 +29,31 @@ AliMpMotifPosition::AliMpMotifPosition()
 //
 }
 
+//_____________________________________________________________________________
+AliMpMotifPosition::AliMpMotifPosition(const AliMpMotifPosition& right) 
+  : AliMpVIndexed(right) {
+// 
+  Fatal("AliMpMotifPosition", "Copy constructor not provided.");
+}
+
 //______________________________________________________________________________
 AliMpMotifPosition::~AliMpMotifPosition(){
 // 
 }
+
+// operators
+
+//_____________________________________________________________________________
+AliMpMotifPosition& 
+AliMpMotifPosition::operator=(const AliMpMotifPosition& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //______________________________________________________________________________
 AliMpVPadIterator* AliMpMotifPosition::CreateIterator() const

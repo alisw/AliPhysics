@@ -48,6 +48,10 @@ class AliMpGraphContext : public TObject
 		 TVector2 &padDimensions) const;
   void SetPadPosForReal(const TVector2 &position,const TVector2 &dimensions);
 
+ protected:
+  AliMpGraphContext(const AliMpGraphContext& right);
+  AliMpGraphContext&  operator = (const AliMpGraphContext& right);
+
  private:
   //private constructor (not instanciable from outside)
   AliMpGraphContext();

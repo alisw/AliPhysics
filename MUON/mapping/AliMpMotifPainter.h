@@ -26,6 +26,10 @@ class AliMpMotifPainter : public AliMpVPainter
   virtual TVector2 GetPosition() const;
   virtual TVector2 GetDimensions() const;
 
+ protected:
+  AliMpMotifPainter(const AliMpMotifPainter& right);
+  AliMpMotifPainter&  operator = (const AliMpMotifPainter& right);
+
  private:
   AliMpMotifPosition *fMotifPos;          // the motif to draw
 

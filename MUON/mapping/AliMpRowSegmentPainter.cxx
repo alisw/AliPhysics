@@ -9,6 +9,7 @@
  
 #include <TVirtualX.h>
 #include <TPad.h>
+#include <TError.h>
 
 #include "AliMpRowSegmentPainter.h"
 #include "AliMpGraphContext.h"
@@ -26,6 +27,7 @@ AliMpRowSegmentPainter::AliMpRowSegmentPainter()
 {
   // default dummy constructor
 }
+
 //_______________________________________________________________________
 AliMpRowSegmentPainter::AliMpRowSegmentPainter(AliMpVRowSegment *row)
   : AliMpVPainter(),
@@ -34,11 +36,37 @@ AliMpRowSegmentPainter::AliMpRowSegmentPainter(AliMpVRowSegment *row)
   // normal constructor 
 
 }
+
+//_____________________________________________________________________________
+AliMpRowSegmentPainter::AliMpRowSegmentPainter(
+                                       const AliMpRowSegmentPainter& right) 
+  : AliMpVPainter(right) 
+{  
+  // copy constructor (not implemented)
+
+  Fatal("AliMpRowSegmentPainter", "Copy constructor not provided.");
+}
+
 //_______________________________________________________________________
 AliMpRowSegmentPainter::~AliMpRowSegmentPainter()
 {
   // destructor
 }
+
+//_____________________________________________________________________________
+AliMpRowSegmentPainter& 
+AliMpRowSegmentPainter::operator=(const AliMpRowSegmentPainter& right)
+{
+  // assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+
 //_______________________________________________________________________
 TVector2 AliMpRowSegmentPainter::GetPosition() const
 {

@@ -20,10 +20,12 @@ class AliMpVPainter : public TObject
  public:
   AliMpVPainter();
   virtual ~AliMpVPainter();
+
   void DumpObject() const; // *MENU*
   virtual void Paint(Option_t *option)=0;
   virtual TObject* Clone(const char* newname="") const;
   virtual TObject* DrawClone(Option_t* option) const; // *MENU*
+
   // get methods
   TVector2 GetPadPosition() const {return fPadPosition;}
   TVector2 GetPadDimensions() const {return fPadDimensions;}
@@ -44,9 +46,14 @@ class AliMpVPainter : public TObject
   TVector2 RealToPad(const TVector2& realPos);
 
   static AliMpVPainter *CreatePainter(TObject *object);
+
  protected:
+  AliMpVPainter(const AliMpVPainter& right);
+  AliMpVPainter&  operator = (const AliMpVPainter& right);
+  
   void AddPainter(AliMpVPainter *painter);
   AliMpVPainter *DrawObject(TObject *object,Option_t *option="");
+
  private:
   Int_t fColor;               //  color
   TVector2 fPadPosition;      // position inside the graphics pad

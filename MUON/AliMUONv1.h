@@ -37,6 +37,9 @@ public:
    void SetStepMaxInActiveGas(Float_t StepMax)
      {fStepMaxInActiveGas = StepMax; }
 protected:
+   AliMUONv1(const AliMUONv1& right);
+   AliMUONv1&  operator = (const AliMUONv1& right);
+
    Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
    Bool_t  fAngleEffect; // Angle Effect along wires, Default is true
    Float_t fStepMaxInActiveGas;    // Step max in active gas default 0.6cm

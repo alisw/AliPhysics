@@ -8,6 +8,8 @@
 //
 // Author: David GUEZ, IPN Orsay
 
+#include <TError.h>
+
 #include "AliMpGraphContext.h"
 
 ClassImp(AliMpGraphContext)
@@ -18,7 +20,7 @@ GraphContextVector AliMpGraphContext::fgStack;
 Int_t              AliMpGraphContext::fgStackSize = 0;
 #endif
 
-// private constructor
+//_____________________________________________________________________________
 AliMpGraphContext::AliMpGraphContext():
   TObject(),
   fPadPosition(TVector2(0.5,0.5)),
@@ -26,9 +28,36 @@ AliMpGraphContext::AliMpGraphContext():
   fRealPosition(TVector2(0.,0.)),
   fRealDimensions(TVector2(1,1))
 {
+// private constructor
+
   fColor = 20;
   // default constructor (private)
 }
+
+//_____________________________________________________________________________
+AliMpGraphContext::AliMpGraphContext(const AliMpGraphContext& right) 
+  : TObject(right) 
+{
+// protected copy constructor
+
+  Fatal("AliMpGraphContext", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
+AliMpGraphContext& 
+AliMpGraphContext::operator=(const AliMpGraphContext& right)
+{
+// protected assignement operator
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+
+//_____________________________________________________________________________
 AliMpGraphContext *AliMpGraphContext::Instance()
 {
   // return or create a unique instance of this class
@@ -37,6 +66,7 @@ AliMpGraphContext *AliMpGraphContext::Instance()
   return fgInstance;
 }
 
+//_____________________________________________________________________________
 TVector2 AliMpGraphContext::RealToPad(const TVector2 &position) const
 {
   // transform a real position into its equivalent position in the pad
@@ -55,8 +85,7 @@ TVector2 AliMpGraphContext::RealToPad(const TVector2 &position) const
   return TVector2(x,y);
 }
 
-
-
+//_____________________________________________________________________________
 void AliMpGraphContext::RealToPad(const TVector2 &position,
 			      const TVector2 &dimensions,
 			      TVector2 &padPosition,
@@ -70,6 +99,8 @@ void AliMpGraphContext::RealToPad(const TVector2 &position,
 	     dimensions.Y()*fPadDimensions.Y()/fRealDimensions.Y());
 
 }
+
+//_____________________________________________________________________________
 void AliMpGraphContext::SetPadPosForReal(const TVector2 &position,
 				     const TVector2 &dimensions)
 {
@@ -77,6 +108,8 @@ void AliMpGraphContext::SetPadPosForReal(const TVector2 &position,
   // corresponding to the given real area.
   RealToPad(position,dimensions,fPadPosition,fPadDimensions);
 }
+
+//_____________________________________________________________________________
 void AliMpGraphContext::Push() const
 {
   // Store the current configuration
@@ -90,8 +123,11 @@ void AliMpGraphContext::Push() const
   fgStack.AddAt(save, fgStackSize++);
 #endif
 }
+
+//_____________________________________________________________________________
 void AliMpGraphContext::Pop()
 {
+// Pops object from the stack.
 #ifdef WITH_STL
   // restore the last saved configuration
   if (!fgStack.empty()){

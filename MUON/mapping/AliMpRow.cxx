@@ -46,6 +46,13 @@ AliMpRow::AliMpRow()
 }
 
 //_____________________________________________________________________________
+AliMpRow::AliMpRow(const AliMpRow& right) 
+  : AliMpVIndexed(right) {
+// 
+  Fatal("AliMpRow", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpRow::~AliMpRow() {
 // 
 
@@ -58,6 +65,21 @@ AliMpRow::~AliMpRow() {
   fSegments.Delete();
 #endif
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpRow&  AliMpRow::operator=(const AliMpRow& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //
 // private methods
@@ -411,6 +433,7 @@ Double_t AliMpRow::SetOffsetY(Double_t offsetY)
 Int_t AliMpRow::GetNofRowSegments() const 
 {
 // Returns number of row segments.
+// ---
 
 #ifdef WITH_STL
   return fSegments.size();
@@ -424,6 +447,9 @@ Int_t AliMpRow::GetNofRowSegments() const
 //_____________________________________________________________________________
 AliMpVRowSegment* AliMpRow::GetRowSegment(Int_t i) const 
 {
+// Returns i-th row segment.
+// ---
+
   if (i<0 || i>=GetNofRowSegments()) {
     Warning("GetRowSegment", "Index outside range");
     return 0;

@@ -38,6 +38,8 @@ public:
    void SetStepMaxInActiveGas(Float_t StepMax)
      {fStepMaxInActiveGas = StepMax; }
 protected:
+   AliMUONv3(const AliMUONv3& right);
+   AliMUONv3&  operator = (const AliMUONv3& right);
    Int_t*  fStations;              //! allow to externally set which station to create
    Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
    Bool_t  fAngleEffect; // Angle Effect along wires, Default is true

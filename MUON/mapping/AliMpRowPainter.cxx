@@ -9,6 +9,7 @@
   
 #include <TVirtualX.h>
 #include <TPad.h>
+#include <TError.h>
  
 #include "AliMpRowPainter.h"
 #include "AliMpGraphContext.h"
@@ -27,10 +28,19 @@ AliMpRowPainter::AliMpRowPainter()
 
 //_______________________________________________________________________
 AliMpRowPainter::AliMpRowPainter(AliMpRow *row)
-  :AliMpVPainter(),
-   fRow(row)
+  : AliMpVPainter(),
+    fRow(row)
 {
   // normal constructor 
+}
+
+//_____________________________________________________________________________
+AliMpRowPainter::AliMpRowPainter(const AliMpRowPainter& right) 
+  : AliMpVPainter(right) {
+// 
+  // copy constructor (not implemented)
+
+  Fatal("AliMpRowPainter", "Copy constructor not provided.");
 }
 
 //_______________________________________________________________________
@@ -38,6 +48,19 @@ AliMpRowPainter::~AliMpRowPainter()
 {
   // destructor
 }
+
+//_____________________________________________________________________________
+AliMpRowPainter& AliMpRowPainter::operator=(const AliMpRowPainter& right)
+{
+  // assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_______________________________________________________________________
 void AliMpRowPainter::DumpObject()

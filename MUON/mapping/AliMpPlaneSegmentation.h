@@ -62,6 +62,10 @@ class AliMpPlaneSegmentation : public AliMpVSegmentation
     AliMpSectorSegmentation* GetSectorSegmentation(
                                    const AliMpIntPair& scale) const;
 
+  protected:
+    AliMpPlaneSegmentation(const AliMpPlaneSegmentation& right);
+    AliMpPlaneSegmentation&  operator = (const AliMpPlaneSegmentation& right);
+
   private:
     // methods    
     const AliMpTransformer* GetTransformer(const AliMpIntPair& scale) const;

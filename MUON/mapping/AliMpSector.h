@@ -62,6 +62,10 @@ class AliMpSector : public TObject
     TVector2        GetMinPadDimensions() const;
     AliMpMotifMap*  GetMotifMap() const;
     
+  protected:
+    AliMpSector(const AliMpSector& right);
+    AliMpSector&  operator = (const AliMpSector& right);
+
   private:
     // methods
     AliMpVRowSegment* FindRowSegment(const TVector2& position) const;

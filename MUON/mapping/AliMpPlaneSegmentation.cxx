@@ -19,6 +19,7 @@
 
 #include <Riostream.h>
 #include <TMath.h>
+#include <TError.h>
 
 #include "AliMpPlaneSegmentation.h"
 #include "AliMpPlaneAreaPadIterator.h"
@@ -66,6 +67,14 @@ AliMpPlaneSegmentation::AliMpPlaneSegmentation()
 }
 
 //_____________________________________________________________________________
+AliMpPlaneSegmentation::AliMpPlaneSegmentation(
+                                  const AliMpPlaneSegmentation& right) 
+  : AliMpVSegmentation(right) {
+// 
+  Fatal("AliMpPlaneSegmentation", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpPlaneSegmentation::~AliMpPlaneSegmentation() {
 // 
   delete fFrontSectorSegmentation;
@@ -74,6 +83,22 @@ AliMpPlaneSegmentation::~AliMpPlaneSegmentation() {
   for (Int_t i=0; i<GetNofTransformers(); i++) 
     delete GetTransformer(i);
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpPlaneSegmentation& 
+AliMpPlaneSegmentation::operator=(const AliMpPlaneSegmentation& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //
 // private methods

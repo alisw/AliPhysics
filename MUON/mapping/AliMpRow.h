@@ -52,6 +52,10 @@ class AliMpRow : public AliMpVIndexed
     AliMpVRowSegment*  GetRowSegment(Int_t i) const;
     AliMpMotifMap*     GetMotifMap() const;
 
+  protected:
+    AliMpRow(const AliMpRow& right);
+    AliMpRow&  operator = (const AliMpRow& right);
+
   private:
     // methods
     AliMpVRowSegment*    FindRowSegment(Int_t ix) const;

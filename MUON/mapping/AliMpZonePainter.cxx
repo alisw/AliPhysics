@@ -9,6 +9,7 @@
  
 #include <TVirtualX.h>
 #include <TPad.h>
+#include <TError.h>
 
 #include "AliMpZonePainter.h"
 #include "AliMpGraphContext.h"
@@ -35,12 +36,35 @@ AliMpZonePainter::AliMpZonePainter(AliMpZone *zone)
 
 }
 
+//_____________________________________________________________________________
+AliMpZonePainter::AliMpZonePainter(const AliMpZonePainter& right) 
+  : AliMpVPainter(right) 
+{  
+  // copy constructor (not implemented)
+
+  Fatal("AliMpZonePainter", "Copy constructor not provided.");
+}
+
 //_______________________________________________________________________
 AliMpZonePainter::~AliMpZonePainter()
 {
   // destructor 
 
 }
+
+//_____________________________________________________________________________
+AliMpZonePainter& 
+AliMpZonePainter::operator=(const AliMpZonePainter& right)
+{
+  // assignement operator (not implemented)
+
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_______________________________________________________________________
 Int_t AliMpZonePainter::DistancetoPrimitive(Int_t x, Int_t y)

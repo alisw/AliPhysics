@@ -10,6 +10,7 @@
 
 #include <iomanip>
 
+#include <TError.h>
 #include <Riostream.h>
 
 #include "AliMpVMotif.h"
@@ -40,10 +41,30 @@ AliMpVMotif::AliMpVMotif(const TString &id, AliMpMotifType *motifType):
 }
 
 //_____________________________________________________________________________
+AliMpVMotif::AliMpVMotif(const AliMpVMotif& right) 
+  : TObject(right) {
+// 
+  Fatal("AliMpVMotif", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpVMotif::~AliMpVMotif()
 {
   // destructor
 }
+
+// operators
+
+//_____________________________________________________________________________
+AliMpVMotif& AliMpVMotif::operator=(const AliMpVMotif& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //_____________________________________________________________________________
 AliMpConnection* 

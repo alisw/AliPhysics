@@ -54,6 +54,10 @@ class AliMpRowSegment : public AliMpVRowSegment
     virtual AliMpVMotif*  GetMotif(Int_t /*i*/) const;
     virtual Int_t         GetMotifPositionId(Int_t i) const;
 
+  protected:
+   AliMpRowSegment(const AliMpRowSegment& right);
+   AliMpRowSegment&  operator = (const AliMpRowSegment& right);
+
   private:
     // methods
     Double_t  FirstMotifCenterX() const;

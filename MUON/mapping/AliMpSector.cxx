@@ -7,6 +7,7 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+#include <TError.h>
 #include <Riostream.h>
 
 #include "AliMpSector.h"
@@ -54,6 +55,13 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
 }
 
 //_____________________________________________________________________________
+AliMpSector::AliMpSector(const AliMpSector& right) 
+  : TObject(right) {
+// 
+  Fatal("AliMpSector", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpSector::AliMpSector() 
   : TObject(),
     fID(""),    
@@ -79,6 +87,21 @@ AliMpSector::~AliMpSector() {
 
   delete fMotifMap;
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpSector& AliMpSector::operator=(const AliMpSector& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //
 // private methods

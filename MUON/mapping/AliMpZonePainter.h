@@ -21,7 +21,7 @@ class AliMpZonePainter : public AliMpVPainter
   AliMpZonePainter(AliMpZone *zone);
   virtual ~AliMpZonePainter();
   
-  virtual void DumpObject(); //*MENU*
+  virtual void DumpObject(); //-MENU-
   virtual void Draw(Option_t *option);
   virtual void Paint(Option_t *option);
   // get/set methods
@@ -29,6 +29,11 @@ class AliMpZonePainter : public AliMpVPainter
   virtual TVector2 GetPosition() const;
   virtual TVector2 GetDimensions() const;
   virtual Int_t DistancetoPrimitive(Int_t x, Int_t y);
+
+ protected:
+  AliMpZonePainter(const AliMpZonePainter& right);
+  AliMpZonePainter&  operator = (const AliMpZonePainter& right);
+
  private: 
   AliMpZone *fZone;            // the zone to draw
   ClassDef(AliMpZonePainter,1) // Zone painter

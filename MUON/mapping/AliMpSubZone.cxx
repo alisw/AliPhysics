@@ -9,6 +9,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>
+#include <TError.h>
 
 #include "AliMpSubZone.h"
 #include "AliMpVRowSegment.h"
@@ -33,9 +34,35 @@ AliMpSubZone::AliMpSubZone()
 }
 
 //_____________________________________________________________________________
+AliMpSubZone::AliMpSubZone(const AliMpSubZone& right) 
+  : TObject(right) {
+// 
+  Fatal("AliMpSubZone", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpSubZone::~AliMpSubZone() {
 //  
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpSubZone& AliMpSubZone::operator=(const AliMpSubZone& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+
+//
+// public methods
+//
 
 //_____________________________________________________________________________
 void AliMpSubZone::AddRowSegment(AliMpVRowSegment* rowSegment)
@@ -75,6 +102,7 @@ void AliMpSubZone::Print(const char* /*option*/) const
 Int_t AliMpSubZone::GetNofRowSegments() const 
 {
 // Returns number of row segments.
+// ---
 
 #ifdef WITH_STL
   return fSegments.size();
@@ -88,6 +116,9 @@ Int_t AliMpSubZone::GetNofRowSegments() const
 //_____________________________________________________________________________
 AliMpVRowSegment* AliMpSubZone::GetRowSegment(Int_t i) const 
 {
+// Returns i-th row segment.
+// ---
+
   if (i<0 || i>=GetNofRowSegments()) {
     Warning("GetRowSegment", "Index outside range");
     return 0;

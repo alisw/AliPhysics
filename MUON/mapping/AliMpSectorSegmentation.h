@@ -55,6 +55,10 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     TVector2 GetMinPadDimensions() const;
     Bool_t CircleTest(const AliMpIntPair& indices) const;
 
+  protected:
+    AliMpSectorSegmentation(const AliMpSectorSegmentation& right);
+    AliMpSectorSegmentation&  operator = (const AliMpSectorSegmentation& right);
+
   private:
 #ifdef WITH_ROOT
     static const Double_t   fgkSeparator;  // the separator used for conversion

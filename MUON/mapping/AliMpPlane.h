@@ -54,6 +54,10 @@ class AliMpPlane : public TObject
     Int_t GetNofSectorPositions() const;
     AliMpSectorPosition* GetSectorPosition(Int_t i) const;
 
+  protected:
+    AliMpPlane(const AliMpPlane& right);
+    AliMpPlane&  operator = (const AliMpPlane& right);
+
   private:
     // data members    
     const AliMpSector*    fkFrontSector;    // front sector in the 1st quadrant

@@ -76,9 +76,31 @@ AliMpReader::AliMpReader()
 }
 
 //_____________________________________________________________________________
+AliMpReader::AliMpReader(const AliMpReader& right) 
+  : TObject(right) {
+// 
+  Fatal("AliMpReader", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpReader::~AliMpReader() {
 //  
 }
+
+//
+// operators
+//
+
+//_____________________________________________________________________________
+AliMpReader& AliMpReader::operator=(const AliMpReader& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
 
 //
 // private methods
