@@ -90,7 +90,7 @@ void AliEMCALGeometry::Init(void){
     fAirGap         = 5.0; // cm, air gap between EMCAL mother volume and 
                            // active material.
     fAlFrontThick   = 3.18; // cm, Thickness of front Al layer
-    fPbRadThickness = 0.5; // cm, Thickness of theh Pb radiators.
+    fPbRadThickness = 0.5; // cm, Thickness of the Pb radiators.
     fPreShowerSintThick = 0.6; // cm, Thickness of the sintilator for the
                                // preshower part of the calorimeter
     fFullShowerSintThick = 0.5; // cm, Thickness of the sintilator for the
@@ -382,7 +382,7 @@ void AliEMCALGeometry::XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Fl
     kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
     cyl_radius = GetIPDistance()+ GetAirGap() ;
     x =  cyl_radius * TMath::Cos(phi * kDeg2Rad ) ;
-    y =  cyl_radius * TMath::Cos(phi * kDeg2Rad ) ; 
+    y =  cyl_radius * TMath::Sin(phi * kDeg2Rad ) ; 
     z =  cyl_radius / TMath::Tan(theta * kDeg2Rad ) ; 
  
  return;

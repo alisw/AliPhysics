@@ -1499,7 +1499,7 @@ Int_t AliEMCALGetter::ReadTreeR(const Int_t event)
     TFile * file = static_cast<TFile*>(gROOT->GetFile(fRecPointsFileName)); 
     if(!file) 
       file = TFile::Open(fRecPointsFileName) ;      
-
+    Info("ReadTreeR", "file=%s\n",fRecPointsFileName.Data()); 
     // Get Digits Tree header from file
 
     TString treeName("TreeR") ;

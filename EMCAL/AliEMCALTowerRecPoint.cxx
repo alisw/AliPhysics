@@ -301,7 +301,6 @@ void AliEMCALTowerRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits)
 {
   // Calculates the dispersion of the shower at the origine of the RecPoint
-  printf("**************** EVAL Dispersion *****************") ; 
 
   Float_t d    = 0. ;
   Float_t wtot = 0. ;
@@ -363,7 +362,6 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
     Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
     d += w*((xi-x)*(xi-x) + (yi-y)*(yi-y)+ (zi-z)*(zi-z) ) ; 
     wtot+=w ;
-    printf("xi=%f, x=%f\n yi=%f, y=%f\n zi=%f, z=%f\n phi=%f phii=%f theta=%f thetaii=%f\n\n",xi,x,yi,y,zi,z, fPhi, phii, fTheta, thetai) ;  
   }
   
   if ( wtot > 0 ) 

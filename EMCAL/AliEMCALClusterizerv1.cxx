@@ -681,11 +681,11 @@ void AliEMCALClusterizerv1::Print(Option_t * option)const
     message += fTowerLocMaxCut ; 
     message += "\n                       EMC Logarothmic weight   = " ;
     message += fW0 ;
-    message += "\n                       CPV Clustering threshold = " ; 
+    message += "\n                       Pre Shower Clustering threshold = " ; 
     message += fPreShoClusteringThreshold ;
-    message += "\n                       CPV Local Maximum cut    = " ;
+    message += "\n                       Pre Shower  Local Maximum cut    = " ;
     message += fPreShoLocMaxCut ;
-    message += "\n                       CPV Logarothmic weight   = " ; 
+    message += "\n                       Pre Shower Logarothmic weight   = " ; 
     message += fW0CPV ;
     if(fToUnfold)
       message +="\nUnfolding on\n" ;
