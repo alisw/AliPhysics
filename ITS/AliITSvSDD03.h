@@ -38,8 +38,6 @@ class AliITSvSDD03 : public AliITS{
                                                 fGeomDetIn = det;}
     virtual void   SetReadDet(const char *f){ // set read file
                                        strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
-    virtual void   SetEUCLID(Bool_t euclid=kTRUE){ // set write Euclid file
-                                                  fEuclidOut = euclid;}
     virtual void   SetEUCLIDFileName(const char *f){ // set write file
                              fEuclidGeometry=f;fEuclidOut = kTRUE;}
     virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions

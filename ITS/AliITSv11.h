@@ -35,7 +35,6 @@ class AliITSv11 : public AliITS {
     void InitAliITSgeom();
 
     // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.
-    Bool_t fEuclidOut;        // Flag to write geometry in euclid format
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Int_t  fMajorVersion;     // Major version number == IsVersion

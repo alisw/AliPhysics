@@ -38,7 +38,6 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <float.h>
-#include <TFile.h>    // only required for Tracking function?
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
@@ -61,25 +60,16 @@
 #include "AliMagF.h"
 #include "AliConst.h"
 // ITS specific includes
-#include "AliITShit.h"
-#include "AliITSgeom.h"
 #include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
-#include "AliITSgeomSSD.h"
 #include "AliITSDetType.h"
 #include "AliITSresponseSPD.h"
 #include "AliITSresponseSDD.h"
-#include "AliITSresponseSSD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
-#include "AliITSsegmentationSSD.h"
 #include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSDD.h"
-#include "AliITSsimulationSSD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSDD.h"
 #include "AliITSClusterFinderSSD.h"
-#include "AliITSBaseGeometry.h"
 #include "AliITSv11.h"
 #include "AliITSv11GeometrySupport.h"
 
@@ -93,7 +83,6 @@ ClassImp(AliITSv11)
 
 //______________________________________________________________________
 AliITSv11::AliITSv11() : AliITS(),
-fEuclidOut(kFALSE),
 fGeomDetOut(kFALSE),
 fGeomDetIn(kFALSE),
 fMajorVersion(11),
@@ -115,10 +104,11 @@ fFluid(1){
     //fITSV = 0;
     //fcS = 0;
 //   fcD = 0;
+
+   SetEUCLID(kFALSE);
 }
 //______________________________________________________________________
 AliITSv11::AliITSv11(const char *title) : AliITS("ITS", title),
-fEuclidOut(kFALSE),
 fGeomDetOut(kFALSE),
 fGeomDetIn(kFALSE),
 fMajorVersion(11),
@@ -136,6 +126,7 @@ fFluid(1){
     //   none.
     // Return
     //   A Standard constructed AliITSv11 class.
+   SetEUCLID(kFALSE);
 }
 //______________________________________________________________________
 AliITSv11::~AliITSv11() {
