@@ -253,6 +253,7 @@ Bool_t AliReconstruction::Run(const char* input)
     return kFALSE;
   }
   gAlice = aliRun;
+  AliTracker::SetFieldMap(gAlice->Field());
 
   // load the reconstructor objects
   TPluginManager* pluginManager = gROOT->GetPluginManager();
