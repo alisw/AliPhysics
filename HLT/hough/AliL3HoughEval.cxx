@@ -289,7 +289,7 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	  UChar_t pad = digPt[j].fPad;
 	  UChar_t charge = digPt[j].fCharge;
 	  UShort_t time = digPt[j].fTime;
-	  if(charge < fHoughTransformer->GetThreshold()) continue;
+	  if((Int_t)charge < fHoughTransformer->GetLowerThreshold() || (Int_t)charge > fHoughTransformer->GetUpperThreshold()) continue;
 	  Float_t xyz[3];
 	  Int_t sector,row;
 	  AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);

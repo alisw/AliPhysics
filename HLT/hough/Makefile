@@ -15,7 +15,7 @@ DEFSTR = -Dno_root
 
 CXX         = g++
 LD          = g++
-CXXFLAGS    = -O2 -Wall -fPIC
+CXXFLAGS    = -O2 -Wall -fPIC -Woverloaded-virtual
 LDFLAGS     = -O2
 SOFLAGS     = -shared
 

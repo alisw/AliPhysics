@@ -144,7 +144,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 	  UShort_t charge = digPt[j].fCharge;
 	  UChar_t pad = digPt[j].fPad;
 	  UShort_t time = digPt[j].fTime;
-	  if(charge <= GetThreshold())
+	  if((Int_t)charge <= GetLowerThreshold())
 	    continue;
 	  Int_t sector,row;
 	  Float_t xyz[3];
@@ -302,7 +302,7 @@ void AliL3HoughTransformerVhdl::TransformLine()
 	  UShort_t charge = digPt[j].fCharge;
 	  UChar_t pad = digPt[j].fPad;
 	  UShort_t time = digPt[j].fTime;
-	  if(charge < GetThreshold())
+	  if((Int_t)charge < GetLowerThreshold())
 	    continue;
 	  Int_t sector,row;
 	  Float_t xyz[3];

@@ -26,7 +26,8 @@ class AliL3Hough {
   Int_t fNEtaSegments;
   Int_t fNPatches;
   Int_t fversion;
-
+  Int_t fCurrentSlice;
+  
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!

@@ -136,12 +136,12 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
       case 1: 
 	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(1,i,fNEtaSegments);
 	fHoughTransformer[i]->CreateHistograms(180,0.1,180,-90,90);
-	fHoughTransformer[i]->SetThreshold(3);
+	fHoughTransformer[i]->SetLowerThreshold(3);
 	break;
       default:
 	fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
 	fHoughTransformer[i]->CreateHistograms(64,0.1,64,-30,30);
-	fHoughTransformer[i]->SetThreshold(3);
+	fHoughTransformer[i]->SetLowerThreshold(3);
       }
 
       fEval[i] = new AliL3HoughEval();
@@ -153,7 +153,11 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
       	{
 	  fMemHandler[i] = new AliL3FileHandler();
 	  if(!fBinary)
-	    fMemHandler[i]->SetAliInput(fPath);
+	    {
+	      Char_t filename[100];
+	      sprintf(filename,"%s/digitfile",fPath);
+	      fMemHandler[i]->SetAliInput(filename);
+	    }
 	}
 #else
       fMemHandler[i] = new AliL3MemHandler();
@@ -185,7 +189,8 @@ void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
 void AliL3Hough::ReadData(Int_t slice,Int_t eventnr=0)
 {
   //Read data from files, binary or root.
-
+  
+  fCurrentSlice = slice;
   for(Int_t i=0; i<fNPatches; i++)
     {
       fMemHandler[i]->Free();
@@ -206,7 +211,7 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr=0)
       else //read data from root file
 	{
 #ifdef use_aliroot
-	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits,eventnr); 
+	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits,eventnr);
 	  fMemHandler[i]->FreeDigitsTree();
 #else
 	  cerr<<"You cannot read from rootfile now"<<endl;
@@ -342,15 +347,17 @@ void AliL3Hough::FindTrackCandidates()
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
 	  fPeakFinder->FindMaxima(0,0); //Simple maxima finder
-	  cout<<"Found "<<fPeakFinder->GetEntries()<<endl;
-
+	  
+	  //fPeakFinder->FindAbsMaxima();
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
 	      if(fPeakFinder->GetWeight(k) == 0) continue;
 	      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
 	      track->SetEtaIndex(j);
-	      track->SetEta((Double_t)((j+0.5)*eta_slice));
+	      Double_t eta = (Double_t)((j+0.5)*eta_slice);
+	      if(fCurrentSlice > 17) eta*=-1;
+	      track->SetEta(eta);
 	      track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
 	    }
 	}

@@ -32,7 +32,8 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int
   fNEtaSegments = n_eta_segments;
   fEtaMin = 0;
   fEtaMax = fSlice < 18 ? 0.9 : -0.9;
-  fThreshold = 0;
+  fLowerThreshold = 3;
+  fUpperThreshold = 1023;
   fDigitRowData = 0;
 }
 

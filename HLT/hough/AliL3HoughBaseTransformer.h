@@ -15,7 +15,8 @@ class AliL3HoughBaseTransformer {
   Int_t fNEtaSegments;
   Double_t fEtaMin;
   Double_t fEtaMax;
-  Int_t fThreshold;
+  Int_t fLowerThreshold;
+  Int_t fUpperThreshold;
   
   AliL3DigitRowData *fDigitRowData; //!
   
@@ -37,7 +38,8 @@ class AliL3HoughBaseTransformer {
   Int_t GetSlice() {return fSlice;}
   Int_t GetPatch() {return fPatch;}
   Int_t GetNEtaSegments() {return fNEtaSegments;}
-  Int_t GetThreshold() {return fThreshold;}
+  Int_t GetLowerThreshold() {return fLowerThreshold;}
+  Int_t GetUpperThreshold() {return fUpperThreshold;}
   Double_t GetEtaMin() {return fEtaMin;}
   Double_t GetEtaMax() {return fEtaMax;}
   
@@ -47,7 +49,8 @@ class AliL3HoughBaseTransformer {
   virtual AliL3Histogram *GetHistogram(Int_t eta_index) = 0;
   
   //setters
-  void SetThreshold(Int_t i) {fThreshold = i;}
+  void SetLowerThreshold(Int_t i) {fLowerThreshold = i;}
+  void SetUpperThreshold(Int_t i) {fUpperThreshold = i;}
 
   ClassDef(AliL3HoughBaseTransformer,1) //Hough transformation base class
 
