@@ -1,3 +1,7 @@
+# Makefile for AliRoot for MacOS X with gcc
+
+PLATFORM      = macosx
+
 # The compilers
 CXX           = g++ 
 F77	      = g77

@@ -34,7 +34,7 @@ endif
 endif
 
 ifndef PACKDCXXFLAGS
-ifeq ($(PLATFORM),linuxicc)
+ifeq ($(ALICE_TARGET),linuxicc)
 @PACKAGE@DCXXFLAGS:=$(filter-out -O%,$(CXXFLAGS)) -O0
 else
 @PACKAGE@DCXXFLAGS:=$(filter-out -O%,$(CXXFLAGS))

@@ -1,3 +1,7 @@
+# Makefile for AliRoot for MacOS X using the IBM xlc compiler
+
+PLATFORM      = macosx
+
 # The compilers
 CXX           = xlC
 F77	      = xlf

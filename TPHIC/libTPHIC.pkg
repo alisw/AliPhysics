@@ -6,7 +6,7 @@ HDRS= TPHICgen.h   AliGenTPHIC.h
 
 DHDR:=TPHICLinkDef.h
 
-ifeq ($(PLATFORM),linux)
+ifeq ($(ALICE_TARGET),linux)
 FFLAGS += -fno-automatic
 endif
 #PACKFFLAGS := $(filter-out -O%,$(FFLAGS))

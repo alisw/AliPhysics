@@ -393,7 +393,7 @@ npdf/structa.F
 
 PACKFFLAGS := $(FFLAGS) -IPDF/pdf
 
-ifeq ($(PLATFORM),linux)
+ifeq ($(ALICE_TARGET),linux)
    GCC_VERSION    := $(shell $(CXX) -v 2>&1 | \
                      grep version | cut -d' ' -f3)
    ifeq ($(GCC_VERSION),2.96)

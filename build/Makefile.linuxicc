@@ -1,3 +1,7 @@
+# Makefile for AliRoot for Linux with the Intel icc compiler
+
+PLATFORM      = linux
+
 # The C/C++ compilers
 CXX           = icc
 CC            = icc

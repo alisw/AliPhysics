@@ -1,3 +1,7 @@
+# Makefile for AliRoot for Itanium/Linux with Intel icc compiler
+
+PLATFORM      = linux
+
 # The compilers
 CXX           = ecc 
 F77	      = efc

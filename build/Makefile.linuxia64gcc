@@ -1,3 +1,7 @@
+# Makefile for AliRoot for Itanium/Linux with gcc
+
+PLATFORM      = linux
+
 # The compilers
 CXX           = g++ 
 F77	      = g77

@@ -5,12 +5,8 @@
 
 
 ##### include general path/location macros #####
-ifeq ($(PLATFORM),)
-PLATFORM = $(shell root-config --arch)
-endif
-ALICE_TARGET = $(PLATFORM)
-
-override ALICE_ROOT=$(shell pwd)
+override ALICE_TARGET := $(shell root-config --arch)
+override ALICE_ROOT   := $(shell pwd)
 
 ifdef ALIVERBOSE
 MUTE:=
@@ -28,9 +24,9 @@ REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
 
 include build/Makefile.config
-################################################################## 
-# 
-#            Where to install libraries and binaries 
+##################################################################
+#
+#            Where to install libraries and binaries
 #                 and common header files
 
 LIBPATH   = lib/tgt_$(ALICE_TARGET)
@@ -39,68 +35,68 @@ EXPORTDIR = $(ALICE_ROOT)/include
 ##################################################################
 
 ##################################################################
-# include machine dependent macros 
+# include machine dependent macros
 
 -include build/Makefile.$(ALICE_TARGET)
 ##################################################################
 
 ##################################################################
-# 
+#
 #               Check if called with debug
 
 ifeq ($(ALIDEBUG),YES)
-override ALICE_TARGET:=$(ALICE_TARGET)DEBUG
-FFLAGS := -g $(filter-out -O%,$(FFLAGS))
+override ALICE_TARGET := $(ALICE_TARGET)DEBUG
+FFLAGS   := -g $(filter-out -O%,$(FFLAGS))
 CXXFLAGS := -g $(filter-out -O%,$(CXXLAGS))
-CFLAGS := -g $(filter-out -O%,$(CLAGS))
-SOFLAGS := -g $(filter-out -O%,$(SOFLAGS))
-LDFLAGS := -g $(filter-out -O%,$(LDFLAGS))
-endif
-##################################################################
-
-##################################################################
-# 
-#               Check if called with profile
-
-ifeq ($(ALIPROFILE),YES)
-override ALICE_TARGET:=$(ALICE_TARGET)PROF
-FFLAGS += -pg
-CXXFLAGS += -pg
-CFLAGS += -pg
-SOFLAGS += -pg
-LDFLAGS += -pg
-endif
-##################################################################
-
-##################################################################
-# 
-#               check if DATE is installed
-
-ifdef DATE_ROOT
-DATEFLAGS = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} -Dlong64=${DATE_LONG64} -DdatePointer=${DATE_POINTER}
-CXXFLAGS += $(DATEFLAGS)
-CFLAGS += $(DATEFLAGS)
-CINTFLAGS += $(DATEFLAGS)
-DEPINC += $(DATEFLAGS)
+CFLAGS   := -g $(filter-out -O%,$(CLAGS))
+SOFLAGS  := -g $(filter-out -O%,$(SOFLAGS))
+LDFLAGS  := -g $(filter-out -O%,$(LDFLAGS))
 endif
 ##################################################################
 
 ##################################################################
 #
-#                   Modules to build 
+#               Check if called with profile
+
+ifeq ($(ALIPROFILE),YES)
+override ALICE_TARGET := $(ALICE_TARGET)PROF
+FFLAGS   += -pg
+CXXFLAGS += -pg
+CFLAGS   += -pg
+SOFLAGS  += -pg
+LDFLAGS  += -pg
+endif
+##################################################################
+
+##################################################################
+#
+#               check if DATE is installed
+
+ifdef DATE_ROOT
+DATEFLAGS  = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} -Dlong64=${DATE_LONG64} -DdatePointer=${DATE_POINTER}
+CXXFLAGS  += $(DATEFLAGS)
+CFLAGS    += $(DATEFLAGS)
+CINTFLAGS += $(DATEFLAGS)
+DEPINC    += $(DATEFLAGS)
+endif
+##################################################################
+
+##################################################################
+#
+#                   Modules to build
 
 # Uncomment to show some output
 #$(warning MAKECMDGOALS=$(MAKECMDGOALS))
 
-ALIROOTMODULES:= STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
+ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       CRT RICH START STRUCT EVGEN RALICE ALIFAST VZERO \
       THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN \
       THerwig TEPEMGEN EPEMGEN FASTSIM TPHIC RAW MONITOR DISPLAY ANALYSIS \
       JETAN HLT
 
-CERNMODULES:= PDF PYTHIA6 HIJING MICROCERN HERWIG
+CERNMODULES := PDF PYTHIA6 HIJING MICROCERN HERWIG
 
-MODULES:=$(ALIROOTMODULES) $(CERNMODULES) 
+MODULES := $(ALIROOTMODULES) $(CERNMODULES)
 
 ifeq ($(findstring TFluka,$(MAKECMDGOALS)),TFluka)
 MODULES += TFluka
@@ -112,14 +108,14 @@ endif
 
 ##################################################################
 
-MODULES += ALIROOT 
+MODULES += ALIROOT
 
 MODDIRS := $(MODULES)
 
 #############################################################
-# 
-#               Default include dirs for 
-#          C++, Fortran, Cint, and dependencies 
+#
+#               Default include dirs for
+#          C++, Fortran, Cint, and dependencies
 #      The module directory will be added by each module
 #
 
@@ -153,8 +149,8 @@ default:     alilibs  aliroot
 ALLLIBS      :=
 ALLEXECS     :=
 INCLUDEFILES :=
-BINLIBS      := 
-EXPORTFILES  := 
+BINLIBS      :=
+EXPORTFILES  :=
 #############################################################
 
 BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
@@ -165,7 +161,7 @@ BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
 include build/module.dep
 
 #############################################################
-# 
+#
 #        Check if module.mk is present for the library
 %.mk: build/module.tpl
 ifndef ALIQUIET
@@ -176,7 +172,7 @@ endif
 
 # **************************************************************************
 #
-#               If cleaning, do not include 
+#               If cleaning, do not include
 #             dependencies or module.mk files.
 
 ifeq ($(findstring $(MAKECMDGOALS), clean distclean clean-all clean-dicts clean-modules clean-depend clean-objects clean-libs clean-bins),)
@@ -187,9 +183,9 @@ ifeq ($(findstring $(MAKECMDGOALS), clean distclean clean-all clean-dicts clean-
 ifneq ($(findstring modules,$(MAKECMDGOALS)),modules)
 
 #############################################################
-# 
+#
 #                Include the modules
--include $(patsubst %,%/module.mk,$(MODULES)) 
+-include $(patsubst %,%/module.mk,$(MODULES))
 
 #
 #
@@ -224,7 +220,7 @@ include build/dummy.d
 .PHONY:		alilibs aliroot makedistr clean distclean clean-all \
 		htmldoc profile
 
-modules: $(patsubst %,%/module.mk,$(MODULES)) 	
+modules: $(patsubst %,%/module.mk,$(MODULES)) 
 
 
 aliroot: $(BINPATH) $(ALLEXECS) alilibs bin
@@ -236,30 +232,32 @@ alilibs: $(LIBPATH) $(ALLLIBS) lib modules
 endif
 
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
-makedistr: $(MODULES)	 
+makedistr: $(MODULES)
 	 tar -cvf MakeDistr.tar $(patsubst %,%/*.pkg,$(MODULES)) \
-		Makefile create build/* 
+		Makefile create build/*
 
 all: aliroot
 
 
-depend: $(INCLUDEFILES) 
+depend: $(INCLUDEFILES)
 
 debug:
 ifndef ALIQUIET
 	@echo "***** Entering DEBUG mode. *****"
 endif
 	@(export ALIDEBUG=YES && $(MAKE))
+
 profile:
 ifndef ALIQUIET
 	@echo "***** Entering PROFILE mode. *****"
 endif
 	@(export ALIPROFILE=YES && $(MAKE))
-lib: 
+
+lib:
 	@mkdir lib
 	@mkdir lib/tgt_$(ALICE_TARGET)
 
-bin: 
+bin:
 	@mkdir bin
 	@mkdir bin/tgt_$(ALICE_TARGET)
 
@@ -292,7 +290,7 @@ clean:
 	@echo "	clean-MODULENAME  : Clean everything from module MODULENAME"
 	@echo "	clean-all         : Cleans up everything, including cern libraires"
 	@echo "	distclean         : Like clean-all + clean all tgt_*'s"
-	@echo "	clean-modules     : Clean all module.mk file in all modules"
+	@echo "	clean-modules     : Clean all module.mk files in all modules"
 	@echo "	clean-libs        : Clean all libraries (not object files)"
 	@echo "********************************************"
 
@@ -318,11 +316,11 @@ CHECKMODULES := $(filter-out TPHIC,$(CHECKMODULES))
 CHECKMODULES := $(filter-out PDF,$(CHECKMODULES))
 CHECKMODULES := $(filter-out MICROCERN,$(CHECKMODULES))
 
-check-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,check-%,$(CHECKMODULES))
+check-all:    $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,check-%,$(CHECKMODULES))
 
-reveng-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,reveng-%,$(CHECKMODULES))
+reveng-all:   $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,reveng-%,$(CHECKMODULES))
 
-revdisp-all:		$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,revdisp-%,$(CHECKMODULES))
+revdisp-all:  $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,revdisp-%,$(CHECKMODULES))
 
 clean-dicts:
 ifndef ALIQUIET
@@ -334,7 +332,7 @@ clean-modules:
 ifndef ALIQUIET
 	@echo "***** Cleaning up module.mk files *****"
 endif
-	$(MUTE)rm -rf $(patsubst %,%/module.mk,$(MODULES)) 
+	$(MUTE)rm -rf $(patsubst %,%/module.mk,$(MODULES))
 
 clean-depend:
 ifndef ALIQUIET
@@ -360,9 +358,9 @@ ifndef ALIQUIET
 endif
 	$(MUTE)rm -rf bin/tgt_$(ALICE_TARGET)
 
-clean-check-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-check-%,$(CHECKMODULES))
+clean-check-all:  $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-check-%,$(CHECKMODULES))
 
-clean-reveng-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-reveng-%,$(CHECKMODULES))
+clean-reveng-all: $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-reveng-%,$(CHECKMODULES))
 
 htmldoc:
 	@rm -rf html/roothtml

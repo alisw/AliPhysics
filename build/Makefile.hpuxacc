@@ -1,3 +1,7 @@
+# Makefile to build AliRoot on HP-UX
+
+PLATFORM      = hpux
+
 # The compilers
 CXX           = aCC
 F77	      = f77

@@ -1,4 +1,6 @@
-# Makefile to build ALIROOT for OSF1
+# Makefile to build AliRoot for Alpha OSF1
+
+PLATFORM      = alpha
 
 # The compilers
 CXX           = cxx 
