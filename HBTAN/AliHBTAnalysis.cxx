@@ -543,7 +543,7 @@ void AliHBTAnalysis::ProcessTracks()
             if (!trackEvent2) continue;
              
             if ( (j%fDisplayMixingInfo) == 0) 
-                 Info("ProcessTracksAndParticles",
+                 Info("ProcessTracks",
                       "Mixing particle %d from event %d with particles from event %d",j,i,k);
             
             for(Int_t l = 0; l<trackEvent2->GetNumberOfParticles();l++)   //  ... on all particles
