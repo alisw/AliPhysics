@@ -379,3 +379,18 @@ void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
     fFile->seekp(currentFilePos);
   }
 }
+
+//_____________________________________________________________________________
+Bool_t AliAltroBuffer::ReadDataHeader()
+{
+//Read the DDL data header at the beginning of the file, 
+//returns true in case of valid data
+
+  AliRawDataHeader header;
+  UInt_t currentPos = fFile->tellp();
+  fFile->seekp(0);
+  if (!fFile->read((char*)(&header), sizeof(header))) return kFALSE;
+  fDataHeaderPos = fFile->tellp();
+  fFile->seekp(currentPos);
+  return header.TestAttribute(0);
+}

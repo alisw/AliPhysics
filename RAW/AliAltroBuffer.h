@@ -56,6 +56,8 @@ class AliAltroBuffer: public TObject {
 
   void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
   //this method is used to write the data header
+  Bool_t ReadDataHeader();
+  //this method is used to read the data header
   void  SetVerbose(Int_t val) {fVerbose = val;}
   //this method is used to set the verbose level 
   //level  0 no output messages
