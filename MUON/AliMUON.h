@@ -6,10 +6,9 @@
 /* $Id$ */
 
 ////////////////////////////////////////////////
-//  Manager and hits classes for set:MUON     //
+//  AliDetector Class for MUON subsystem      //
 ////////////////////////////////////////////////
 #include "AliDetector.h"
-// #include "AliMUONTriggerCircuit.h" // cp
 
 class AliMUONChamber;
 class AliMUONLocalTrigger;
@@ -39,7 +38,11 @@ class AliMUON : public  AliDetector {
     AliMUON(const AliMUON& rMUON);
     virtual       ~AliMUON();
     virtual void   AddHit(Int_t track , Int_t *vol, Float_t *hits);
-    virtual void   AddPadHit(Int_t* clhits);
+    virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
+			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
+			  Float_t tof, Float_t momentum, Float_t theta, 
+			  Float_t phi, Float_t length, Float_t destep);
+    virtual void   AddPadHit(Int_t* clhits); // To be removed !
     virtual void   AddDigits(Int_t id, Int_t* tracks, Int_t* charges,
 			     Int_t* digits);
     virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);

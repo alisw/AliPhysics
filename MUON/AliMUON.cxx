@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.59  2002/11/21 17:01:56  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.58  2002/10/21 09:01:33  alibrary
 Getting rid of unused variable
 
@@ -497,7 +500,19 @@ void AliMUON::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   new(lhits[fNhits++]) AliMUONHit(fIshunt,track,vol,hits);
 }
 //___________________________________________
-void AliMUON::AddPadHit(Int_t *clhits)
+void AliMUON::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
+	      Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
+	      Float_t tof, Float_t momentum, Float_t theta, 
+	      Float_t phi, Float_t length, Float_t destep)
+{
+  TClonesArray &lhits = *fHits;
+  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
+	       idpart, X, Y, Z, 
+	       tof, momentum, theta, 
+	       phi, length, destep);
+}
+//___________________________________________
+void AliMUON::AddPadHit(Int_t *clhits)  // To be removed
 {
    TClonesArray &lclusters = *fPadHits;
    new(lclusters[fNPadHits++]) AliMUONPadHit(clhits);
@@ -579,6 +594,7 @@ void AliMUON::MakeBranch(Option_t* option, const char *file)
     const char *cR = strstr(option,"R");
     const char *cH = strstr(option,"H");
 
+    // PadHits to be removed
     if (fPadHits   && gAlice->TreeH() && cH) {
       MakeBranchInTree(gAlice->TreeH(), 
                        branchname, &fPadHits, kBufferSize, file);
@@ -905,6 +921,7 @@ void AliMUON::SDigits2Digits()
 }
 
 //___________________________________________
+// To be removed
 void AliMUON::MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
 			  Float_t eloss, Float_t tof,  Int_t idvol)
 {
@@ -1188,7 +1205,7 @@ void AliMUON::Streamer(TBuffer &R__b)
 
 AliMUONPadHit* AliMUON::FirstPad(AliMUONHit*  hit, TClonesArray *clusters) 
 {
-//
+// to be removed
     // Initialise the pad iterator
     // Return the address of the first padhit for hit
     TClonesArray *theClusters = clusters;
@@ -1204,6 +1221,7 @@ AliMUONPadHit* AliMUON::FirstPad(AliMUONHit*  hit, TClonesArray *clusters)
 
 AliMUONPadHit* AliMUON::NextPad(TClonesArray *clusters) 
 {
+  // To be removed
 // Get next pad (in iterator) 
 //
     AliMUON::fCurIterPad++;
