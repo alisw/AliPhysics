@@ -25,7 +25,7 @@ class TParticle ;
 class TTask ;
 
 // --- Standard library ---
-#include <cstdlib>
+#include <stdlib.h>
 #include <iostream>
 
 // --- AliRoot header files ---
