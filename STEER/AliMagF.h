@@ -24,7 +24,7 @@ public:
   virtual Float_t Factor() const {return fFactor;}
   virtual void ReadField() {}
   virtual void SetDebug(Int_t level=0) {fDebug=level;}
-  virtual Float_t SolenoidField() {return 2.;}
+  virtual Float_t SolenoidField() const {return 2.;}
   
   virtual Int_t GetDebug() const {return fDebug;}
   
