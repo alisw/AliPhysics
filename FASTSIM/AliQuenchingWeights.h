@@ -36,9 +36,10 @@ class AliQuenchingWeights : public TObject {
   Double_t CalcQuenchedEnergy(Int_t ipart, Double_t length, Double_t e)  const;
   Double_t GetELossRandom(Int_t ipart, TH1F *hell, Double_t e=1.e10) const;
   Double_t CalcQuenchedEnergy(Int_t ipart, TH1F *hell, Double_t e)  const;
-
   Double_t GetELossRandomK(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
   Double_t CalcQuenchedEnergyK(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
+  Double_t GetELossRandomKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
+  Double_t CalcQuenchedEnergyKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
 
   //multiple soft scattering approximation
   Int_t InitMult(const Char_t *contall="$(ALICE_ROOT)/FASTSIM/data/cont_mult.all",
@@ -137,8 +138,8 @@ class AliQuenchingWeights : public TObject {
   Int_t GetIndex(Double_t len) const;
 
   static const Double_t fgkConvFmToInvGeV; //conversion factor
-  static const Int_t    fgBins;            //number of bins for hists
-  static const Double_t fgMaxBin;          //max. value of wc
+  static const Int_t    fgkBins;           //number of bins for hists
+  static const Double_t fgkMaxBin;         //max. value of wc
   static const Double_t fgkRMax;           //max. tabled value of R
 
   static Int_t fgCounter;//static instance counter

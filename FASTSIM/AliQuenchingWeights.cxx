@@ -53,8 +53,8 @@ const Double_t AliQuenchingWeights::fgkConvFmToInvGeV = 1./0.197;
 const Double_t AliQuenchingWeights::fgkRMax = 1.e6; 
 
 // hist binning
-const Int_t AliQuenchingWeights::fgBins = 1300; 
-const Double_t AliQuenchingWeights::fgMaxBin = 1.3; 
+const Int_t AliQuenchingWeights::fgkBins = 1300; 
+const Double_t AliQuenchingWeights::fgkMaxBin = 1.3; 
 
 // counter for histogram labels
 Int_t AliQuenchingWeights::fgCounter = 0; 
@@ -71,15 +71,15 @@ AliQuenchingWeights::AliQuenchingWeights()
   SetMu();
   SetQTransport();
   SetK();
-  fECMethod=kReweight; //this is to force printout
-  SetECMethod();
+  fECMethod=kDefault; 
+  //SetECMethod();
   SetLengthMax();
   fLengthMaxOld=0;
   fInstanceNumber=fgCounter++;
   Char_t name[100];
   sprintf(name,"hhistoqw_%d",fInstanceNumber);
-  fHisto = new TH1F(name,"",fgBins,0.,fgMaxBin);
-  for(Int_t bin=1;bin<=fgBins;bin++) 
+  fHisto = new TH1F(name,"",fgkBins,0.,fgkMaxBin);
+  for(Int_t bin=1;bin<=fgkBins;bin++) 
     fHisto->SetBinContent(bin,0.);
 }
 
@@ -100,8 +100,8 @@ AliQuenchingWeights::AliQuenchingWeights(const AliQuenchingWeights& a)
   fInstanceNumber=fgCounter++;
   Char_t name[100];
   sprintf(name,"hhistoqw_%d",fInstanceNumber);
-  fHisto = new TH1F(name,"",fgBins,0.,fgMaxBin);
-  for(Int_t bin=1;bin<=fgBins;bin++) 
+  fHisto = new TH1F(name,"",fgkBins,0.,fgkMaxBin);
+  for(Int_t bin=1;bin<=fgkBins;bin++) 
       fHisto->SetBinContent(bin,0.);
 
   //Missing in the class is the pathname
@@ -132,7 +132,6 @@ void AliQuenchingWeights::SetECMethod(kECMethod type)
 {
   //set energy constraint method
 
-  if(fECMethod==type) return;
   fECMethod=type;
   if(fECMethod==kDefault)
     Info("SetECMethod","Energy Constraint Method set to DEFAULT:\nIf (sampled energy loss > parton energy) then sampled energy loss = parton energy.");
@@ -942,7 +941,6 @@ Double_t AliQuenchingWeights::GetELossRandomK(Int_t ipart, Double_t I0, Double_t
     return -1000.;
   }
   if(SampleEnergyLoss(ipart,R)!=0){
-    cout << ipart << " " << R << endl;
     Fatal("GetELossRandomK","Could not sample energy loss");
     return -1000.;
   }
@@ -973,6 +971,80 @@ Double_t AliQuenchingWeights::CalcQuenchedEnergyK(Int_t ipart, Double_t I0, Doub
   //for given parton type, I0 and I1 value and energy
 
   Double_t loss=GetELossRandomK(ipart,I0,I1,e);
+  return e-loss;
+}
+
+Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e)
+{
+  // return DeltaE for new dynamic version
+  // for given parton type, I0 and I1 value and energy
+  // Dependant on ECM (energy constraint method)
+  // e is used to determine where to set bins to zero.
+  // method is optimized and should only be used if 
+  // all parameters are well within the bounds.
+  // read-in data tables before first call 
+
+  Double_t R=CalcRk(I0,I1);
+  if(R<=0){
+    return 0.;
+  }
+
+  Double_t wc=CalcWCk(I1);
+  if(wc<=0){
+    return 0.;
+  }
+
+  Double_t discrete=0.;
+  Double_t continuous=0;
+  Int_t bin=1;
+  Double_t xxxx = fHisto->GetBinCenter(bin);
+  if(fMultSoft)
+    CalcMult(ipart,R,xxxx,continuous,discrete);
+  else
+    CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+
+  if(discrete>0.999) {
+    return 0.0;
+  }
+
+  //set first bin
+  fHisto->SetBinContent(bin,continuous);
+
+  if(fMultSoft) {
+    for(Int_t bin=2; bin<=fgkBins; bin++) {
+      xxxx = fHisto->GetBinCenter(bin);
+      CalcMult(ipart,R,xxxx,continuous,discrete);
+      fHisto->SetBinContent(bin,continuous);
+    }
+  } else {
+    for(Int_t bin=2; bin<=fgkBins; bin++) {
+      xxxx = fHisto->GetBinCenter(bin);
+      CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+      fHisto->SetBinContent(bin,continuous);
+    }
+  }
+
+  // add discrete part to distribution
+  Double_t val=discrete/(1.-discrete)*fHisto->Integral(1,fgkBins);
+  fHisto->Fill(0.,val);
+
+  if(fECMethod==kReweight) {
+    for(Int_t bin=fHisto->FindBin(e/wc)+1; bin<=fgkBins; bin++) {
+      fHisto->SetBinContent(bin,0);
+    }
+  }
+
+  Double_t ret=fHisto->GetRandom()*wc;
+  if(ret>e) return e;
+  return ret;
+}
+
+Double_t AliQuenchingWeights::CalcQuenchedEnergyKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e)
+{
+  //return quenched parton energy (fast method)
+  //for given parton type, I0 and I1 value and energy
+
+  Double_t loss=GetELossRandomKFast(ipart,I0,I1,e);
   return e-loss;
 }
 
@@ -1028,7 +1100,7 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
       sprintf(hname,"hDisc-ContQW_%s_%d_%d_%d_%d",meddesc,fInstanceNumber,ipart,medvalue,l);
       Double_t len=l/4.;
       Double_t wc = CalcWC(len);
-      fHistos[ipart-1][l-1] = new TH1F(hname,hname,fgBins,0.,fgMaxBin*wc);
+      fHistos[ipart-1][l-1] = new TH1F(hname,hname,fgkBins,0.,fgkMaxBin*wc);
       fHistos[ipart-1][l-1]->SetXTitle("#Delta E [GeV]");
       fHistos[ipart-1][l-1]->SetYTitle("p(#Delta E)");
       fHistos[ipart-1][l-1]->SetLineColor(4);
@@ -1036,7 +1108,7 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
       Double_t rrrr = CalcR(wc,len);
       Double_t discrete=0.;
       // loop on histogram channels
-      for(Int_t bin=1; bin<=fgBins; bin++) {
+      for(Int_t bin=1; bin<=fgkBins; bin++) {
 	Double_t xxxx = fHistos[ipart-1][l-1]->GetBinCenter(bin)/wc;
 	Double_t continuous;
 	if(fMultSoft)
@@ -1047,13 +1119,13 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
       }
       // add discrete part to distribution
       if(discrete>=1.)
-	for(Int_t bin=2;bin<=fgBins;bin++) 
+	for(Int_t bin=2;bin<=fgkBins;bin++) 
 	  fHistos[ipart-1][l-1]->SetBinContent(bin,0.);
       else {
-	Double_t val=discrete/(1.-discrete)*fHistos[ipart-1][l-1]->Integral(1,fgBins);
+	Double_t val=discrete/(1.-discrete)*fHistos[ipart-1][l-1]->Integral(1,fgkBins);
 	fHistos[ipart-1][l-1]->Fill(0.,val);
       }
-      Double_t hint=fHistos[ipart-1][l-1]->Integral(1,fgBins);
+      Double_t hint=fHistos[ipart-1][l-1]->Integral(1,fgkBins);
       fHistos[ipart-1][l-1]->Scale(1./hint);
     }
   }
@@ -1082,13 +1154,13 @@ Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t R)
 
   if(discrete>=1.) {
     fHisto->SetBinContent(1,1.);
-    for(Int_t bin=2;bin<=fgBins;bin++) 
+    for(Int_t bin=2;bin<=fgkBins;bin++) 
       fHisto->SetBinContent(bin,0.);
     return 0;
   }
 
   fHisto->SetBinContent(bin,continuous);
-  for(Int_t bin=2; bin<=fgBins; bin++) {
+  for(Int_t bin=2; bin<=fgkBins; bin++) {
     xxxx = fHisto->GetBinCenter(bin);
     if(fMultSoft)
       CalcMult(ipart,R,xxxx,continuous,discrete);
@@ -1096,15 +1168,13 @@ Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t R)
       CalcSingleHard(ipart,R,xxxx,continuous,discrete);
     fHisto->SetBinContent(bin,continuous);
   }
-  // add discrete part to distribution
-  Double_t val=discrete/(1.-discrete)*fHisto->Integral(1,fgBins);
+  Double_t val=discrete/(1.-discrete)*fHisto->Integral(1,fgkBins);
   fHisto->Fill(0.,val);
-  
-  Double_t hint=fHisto->Integral(1,fgBins);
+  Double_t hint=fHisto->Integral(1,fgkBins);
   if(hint!=0)
     fHisto->Scale(1./hint);
   else {
-    cout << discrete << " " << hint << " " << continuous << endl;
+    //cout << discrete << " " << hint << " " << continuous << endl;
     return -1;
   }
   return 0;
@@ -1152,14 +1222,14 @@ TH1F* AliQuenchingWeights::ComputeQWHisto(Int_t ipart,Double_t medval,Double_t l
   sprintf(hname,"hContQWHisto_%s_%d_%d_%d",meddesc,ipart,
                 (Int_t)(medval*1000.),(Int_t)length);
 
-  TH1F *hist = new TH1F("hist",hname,fgBins,0.,fgMaxBin*wc);
+  TH1F *hist = new TH1F("hist",hname,fgkBins,0.,fgkMaxBin*wc);
   hist->SetXTitle("#Delta E [GeV]");
   hist->SetYTitle("p(#Delta E)");
   hist->SetLineColor(4);
 
   Double_t rrrr = CalcR(wc,length);
   //loop on histogram channels
-  for(Int_t bin=1; bin<=fgBins; bin++) {
+  for(Int_t bin=1; bin<=fgkBins; bin++) {
     Double_t xxxx = hist->GetBinCenter(bin)/wc;
     Double_t continuous,discrete;
     Int_t ret=0;
@@ -1197,7 +1267,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t 
   sprintf(hname,"hContQWHistox_%s_%d_%d_%d",meddesc,ipart,
                 (Int_t)(medval*1000.),(Int_t)length);
 
-  TH1F *histx = new TH1F("histx",hname,fgBins,0.,fgMaxBin);
+  TH1F *histx = new TH1F("histx",hname,fgkBins,0.,fgkMaxBin);
   histx->SetXTitle("x = #Delta E/#omega_{c}");
   if(fMultSoft)
     histx->SetYTitle("p(#Delta E/#omega_{c})");
@@ -1207,7 +1277,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t 
 
   Double_t rrrr = CalcR(wc,length);
   //loop on histogram channels
-  for(Int_t bin=1; bin<=fgBins; bin++) {
+  for(Int_t bin=1; bin<=fgkBins; bin++) {
     Double_t xxxx = histx->GetBinCenter(bin);
     Double_t continuous,discrete;
     Int_t ret=0;
@@ -1237,7 +1307,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t R) const
 
   Char_t hname[100];
   sprintf(hname,"hQWHistox_%s_%d_%.2f",meddesc,ipart,R);
-  TH1F *histx = new TH1F("histx",hname,fgBins,0.,fgMaxBin);
+  TH1F *histx = new TH1F("histx",hname,fgkBins,0.,fgkMaxBin);
   histx->SetXTitle("x = #Delta E/#omega_{c}");
   if(fMultSoft)
     histx->SetYTitle("p(#Delta E/#omega_{c})");
@@ -1248,7 +1318,7 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t R) const
   Double_t rrrr = R;
   Double_t continuous=0.,discrete=0.;
   //loop on histogram channels
-  for(Int_t bin=1; bin<=fgBins; bin++) {
+  for(Int_t bin=1; bin<=fgkBins; bin++) {
     Double_t xxxx = histx->GetBinCenter(bin);
     Int_t ret=0;
     if(fMultSoft) ret=CalcMult(ipart,rrrr,xxxx,continuous,discrete);
@@ -1262,13 +1332,13 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t R) const
 
   //add discrete part to distribution
   if(discrete>=1.)
-    for(Int_t bin=2;bin<=fgBins;bin++) 
+    for(Int_t bin=2;bin<=fgkBins;bin++) 
       histx->SetBinContent(bin,0.);
   else {
-    Double_t val=discrete/(1.-discrete)*histx->Integral(1,fgBins);
+    Double_t val=discrete/(1.-discrete)*histx->Integral(1,fgkBins);
     histx->Fill(0.,val);
   }
-  Double_t hint=histx->Integral(1,fgBins);
+  Double_t hint=histx->Integral(1,fgkBins);
   if(hint!=0) histx->Scale(1./hint);
 
   return histx;
@@ -1357,7 +1427,7 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t R) const
 
   Char_t hname[100];
   sprintf(hname,"hELossHistox_%d_%.2f",ipart,R);
-  TH1F *histx = new TH1F("histxr",hname,fgBins,0.,fgMaxBin);
+  TH1F *histx = new TH1F("histxr",hname,fgkBins,0.,fgkMaxBin);
   for(Int_t i=0;i<100000;i++){
     //if(i % 1000 == 0) cout << "." << flush;
     Double_t loss=dummy->GetRandom();
