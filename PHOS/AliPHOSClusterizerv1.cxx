@@ -15,6 +15,19 @@
 
 /* $Id$ */
 
+/* $Log:
+   1 October 2000. Yuri Kharlov:
+     AreNeighbours()
+     PPSD upper layer is considered if number of layers>1
+
+   18 October 2000. Yuri Kharlov:
+     AliPHOSClusterizerv1()
+     CPV clusterizing parameters added
+
+     MakeClusters()
+     After first PPSD digit remove EMC digits only once
+*/
+
 //_________________________________________________________________________
 //  Implementation version 1 of the clusterization algorithm 
 // 
@@ -52,10 +65,12 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1()
   fNumberOfPpsdClusters    = 0 ; 
   fEmcClusteringThreshold  = 0.1;   
   fEmcEnergyThreshold      = 0.01;    
-  fPpsdClusteringThreshold = 0.00000015; 
-  fPpsdEnergyThreshold     = 0.0000001;  
+  fPpsdClusteringThreshold = 0.0;
+  fPpsdEnergyThreshold     = 0.1;  
   fW0                      = 4.5 ;
   fLocMaxCut               = 0.06 ;
+  fW0CPV                   = 4.5 ;
+  fLocMaxCutCPV            = 0.06 ;
 }
 
 //____________________________________________________________________________
@@ -95,7 +110,12 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)
       rv=2 ;
 
   }
-  if((relid1[1]>0) && (relid1[1]<16) ) rv = 2 ; //Do NOT clusterize upper PPSD  
+
+  //Do NOT clusterize upper PPSD  
+  if(fGeom->GetNumberOfCPVLayers() > 1 &&
+     relid1[1] > 0                     &&
+     relid1[1] < fGeom->GetNumberOfPadsPhi()*fGeom->GetNumberOfPadsPhi() ) rv = 2 ;
+
   return rv ; 
 }
 
@@ -110,9 +130,6 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
   TIter next(dl) ; 
   AliPHOSDigit * digit ;
   
- 
- 
-
   while ( (digit = (AliPHOSDigit *)next()) ) { 
 
 //     cout << " clusterizerv1 " << endl ;
@@ -189,15 +206,14 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 
     AliPHOSDigit ** clusterdigitslist = new AliPHOSDigit*[dl->GetEntries()] ;   
     Int_t index ;
-    if (( ( IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold ) ) || 
+    if (( (  IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold  ) ) || 
         ( ( !IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fPpsdClusteringThreshold ) ) ) {
   
       Int_t iDigitInCluster = 0 ; 
 
       if  ( IsInEmc(digit) ) {   
 	// start a new EMC RecPoint
-	if(fNumberOfEmcClusters >= emcl->GetSize())
-	  emcl->Expand(2*fNumberOfEmcClusters+1) ;
+	if(fNumberOfEmcClusters >= emcl->GetSize()) emcl->Expand(2*fNumberOfEmcClusters+1) ;
 	(*emcl)[fNumberOfEmcClusters] = new  AliPHOSEmcRecPoint(fW0, fLocMaxCut) ;
 	clu = (AliPHOSEmcRecPoint *) emcl->At(fNumberOfEmcClusters) ; 
 	fNumberOfEmcClusters++ ; 
@@ -206,16 +222,18 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	iDigitInCluster++ ; 
 	tempodigitslist.Remove(digit) ; 
 
-      }
-
-      else { 
+      } else { 
 	
 	// start a new PPSD cluster
-	if(fNumberOfPpsdClusters >= ppsdl->GetSize())
-	  ppsdl->Expand(2*fNumberOfPpsdClusters+1) ;
-	
-	(*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
-	clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
+	if(fNumberOfPpsdClusters >= ppsdl->GetSize()) ppsdl->Expand(2*fNumberOfPpsdClusters+1);
+	if      (strcmp(fGeom->GetName(),"GPS2") == 0) {
+	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
+	  clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
+	}
+	else if (strcmp(fGeom->GetName(),"IHEP") == 0) {
+	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSEmcRecPoint(fW0CPV, fLocMaxCutCPV) ;
+	  clu =  (AliPHOSEmcRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
+	}
 	fNumberOfPpsdClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp()) ) ;	
 	clusterdigitslist[iDigitInCluster] = digit  ;	
@@ -226,17 +244,14 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	// Here we remove resting EMC digits, which cannot make cluster
 
         if( notremoved ) { 
-	  
 	  while( ( digit = (AliPHOSDigit *)nextdigit() ) ) {
-	    
             if( IsInEmc(digit) ) 
 	      tempodigitslist.Remove(digit) ;
             else 
 	      break ;
-	  
-	  } // while digit  
-	  
-	} // if notremoved 
+	  }
+	  notremoved = kFALSE ;
+	}
 	
       } // else        
       
@@ -248,10 +263,10 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	digit =  clusterdigitslist[index]  ;      
 	index++ ; 
         while ( (digitN = (AliPHOSDigit *)nextdigit()) ) { // scan over the reduced list of digits 
-	  Int_t ineb = AreNeighbours(digit, digitN);   //  call (digit,digitN) in THAT oder !!!!!
+	  Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!!
           switch (ineb ) {
           case 0 :   // not a neighbour
-	    break ;	 
+	    break ;
 	  case 1 :   // are neighbours 
 	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp() ) ) ;
 	    clusterdigitslist[iDigitInCluster] = digitN ; 
@@ -268,8 +283,8 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	nextdigit.Reset() ; 
 	
       } // loop over cluster     
-   }  //below energy theshold  
-  
+    }  //below energy theshold  
+    
     delete[] clusterdigitslist ; 
     
   } // while digit

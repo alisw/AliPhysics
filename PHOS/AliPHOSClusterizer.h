@@ -36,6 +36,8 @@ public:
   virtual Float_t GetEmcEnergyThreshold() = 0 ;  
   virtual Float_t GetLocalMaxCut() = 0 ; 
   virtual Float_t GetLogWeightCut() = 0 ; 
+  virtual Float_t GetLocalMaxCutCPV() = 0 ; 
+  virtual Float_t GetLogWeightCutCPV() = 0 ; 
   virtual Float_t GetPpsdClusteringThreshold() = 0 ; 
   virtual Float_t GetPpsdEnergyThreshold() = 0 ; 
 
@@ -46,6 +48,8 @@ public:
   virtual void SetEmcEnergyThreshold(Float_t enth) = 0 ;  
   virtual void SetLocalMaxCut(Float_t cut) = 0 ; 
   virtual void SetLogWeightCut(Float_t w) = 0 ; 
+  virtual void SetLocalMaxCutCPV(Float_t cut) = 0 ; 
+  virtual void SetLogWeightCutCPV(Float_t w) = 0 ; 
   virtual void SetPpsdClusteringThreshold(Float_t cluth) = 0 ; 
   virtual void SetPpsdEnergyThreshold(Float_t enth) = 0 ; 
  
