@@ -7,11 +7,11 @@ void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE)
     Display tracks and clusters already written to file.
   */
   char fname[256];
-  UInt_t npp[36][5];
-  AliL3SpacePointData *ppp[36][5];
-  AliL3FileHandler *fff[36][5];
+  UInt_t npp[36][6];
+  AliL3SpacePointData *ppp[36][6];
+  AliL3FileHandler *fff[36][6];
   for(int s=minslice;s<=maxslice;s++){
-    for(int p=0;p<5;p++){
+    for(int p=0;p<6;p++){
       ppp[s][p]=0;
       fff[s][p] = new AliL3FileHandler();
       sprintf(fname,"points_%d_%d.raw",s,p);
@@ -48,7 +48,7 @@ void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE)
 
   if(rpoints){
     for(Int_t s=0;s<36;s++){
-      for(int p=0;p<5;p++){
+      for(int p=0;p<6;p++){
         AliL3SpacePointData *points = ppp[s][p];
         if(!points) continue;
         int npoints = npp[s][p];
@@ -75,9 +75,9 @@ void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE)
     {
       int ntracks = tracks->GetNTracks();
       TPolyLine3D *line = new TPolyLine3D[ntracks];
-      Float_t xcl[174];
-      Float_t ycl[174];
-      Float_t zcl[174];
+      Float_t xcl[176];
+      Float_t ycl[176];
+      Float_t zcl[176];
       
       printf("ntracks %d\n",ntracks);
       
@@ -121,7 +121,7 @@ void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE)
 	  current_line->Draw("same");
 	}
     }
-  TFile *geofile = new TFile("alice.geom","READ");  
+  TFile *geofile = new TFile("/prog/alice/data/GEO/alice.geom","READ");  
   TGeometry *geom=(TGeometry*)geofile->Get("AliceGeom");
   geom->Draw("same");
   
