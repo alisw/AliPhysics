@@ -4,7 +4,7 @@
 #include "Fopphcm.h"  //(OPPHCM) fluka common
 #include "TGeoMaterial.h"
 #include "TFlukaCerenkov.h"
-#include "TFlukaGeo.h"
+#include "TFluka.h"
 #include "TGeoManager.h"
 
 #ifndef WIN32

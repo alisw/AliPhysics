@@ -13,19 +13,10 @@
 //#include "Fcaslim.h"  //(CASLIM) fluka common
 
 //Virutal MC
-#ifndef WITH_ROOT
 #include "TFluka.h"
-#else
-#include "TFlukaGeo.h"
-#endif
 
 #include "TVirtualMCStack.h"
 //#include "TVirtualMCApplication.h"
-#ifndef WITH_ROOT
-#include "TFluka.h"
-#else
-#include "TFlukaGeo.h"
-#endif
 
 #include "TParticle.h"
 #include "TVector3.h"
