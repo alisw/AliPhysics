@@ -5,6 +5,10 @@ RICHdisplay (Int_t nevent=0) {
 	gROOT->LoadMacro("loadlibs.C");
 	loadlibs();
     }
+    else {
+      //delete gAlice;
+      gAlice = 0;
+    }
     
     
 // Connect the Root Galice file containing Geometry, Kine and Hits
@@ -23,12 +27,24 @@ RICHdisplay (Int_t nevent=0) {
 	if (gAlice) printf("AliRun object found on file\n");
 	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
+    else {
+      delete gAlice;
+      gAlice = (AliRun*)file->Get("gAlice");
+      	if (gAlice) printf("AliRun object found on file\n");
+	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
+    }
+    
     printf ("I'm after gAlice \n");
     
     // Create Event Display object
-    AliRICHdisplay *muondisplay = new AliRICHdisplay(750);
+    AliRICHDisplay *richdisplay = new AliRICHDisplay(750);
     
 // Display first event
     gAlice->GetEvent(nevent);
-    muondisplay->ShowNextEvent(0);
+    richdisplay->ShowNextEvent(0);
+    
+    
+    //file->Close();
+    //delete file;
+    //delete richdisplay;
 }
