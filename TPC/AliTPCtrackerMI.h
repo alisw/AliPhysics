@@ -183,6 +183,7 @@ public:
      AliTPCRow();
      ~AliTPCRow();
      void InsertCluster(const AliTPCclusterMI *c, UInt_t index);
+     void ResetClusters();
      operator int() const {return fN;}
      Int_t GetN() const {return fN;}
      const AliTPCclusterMI* operator[](Int_t i) const {return fClusters[i];}

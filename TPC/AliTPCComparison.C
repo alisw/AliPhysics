@@ -185,7 +185,7 @@ Int_t AliTPCComparison(const Char_t *dir=".") {
       TMath::Sqrt(gt[ngood].px*gt[ngood].px + gt[ngood].py*gt[ngood].py);
 
       if (ptg<1e-33) continue; // for those not crossing 0 pad row
-
+      if (ptg<0.2) continue;
       hgood->Fill(ptg);
 
       AliESDtrack *track=0;

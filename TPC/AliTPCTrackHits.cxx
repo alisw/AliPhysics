@@ -68,7 +68,9 @@ const Double_t AliTPCTrackHits::fgkPrecision2=1e-20;  //precision
 
 
 struct AliTPCCurrentHit {
-  AliTPChit fHit;
+  friend class AliTPCTrackHits;
+private:
+  AliTPChit fHit;     //   - hit in "standard" representation
   UInt_t   fInfoIndex;//   - current info pointer 
   UInt_t   fParamIndex;//  - current param pointer
   UInt_t   fStackIndex; // - current hit stack index
@@ -78,7 +80,9 @@ struct AliTPCCurrentHit {
 
 
 struct  AliTPCTempHitInfo {
-  enum    { fkStackSize = 100};
+  friend class AliTPCTrackHits;
+private:
+  enum    { kStackSize = 100};
   AliTPCTempHitInfo();   
   void     NewParam(Double_t r, Double_t z, Double_t fi, Int_t q);
   void     SetHit(Double_t r, Double_t z, Double_t fi, Int_t q);
@@ -100,8 +104,8 @@ struct  AliTPCTempHitInfo {
   Double_t fSumDZDr;  //fSumDZDr
   Double_t fSumDZDr2;  //fSumDZDr2
   Double_t fOldR;     //previos r
-  Double_t fPositionStack[3*fkStackSize];  //position stack 
-  UInt_t   fQStack[fkStackSize];           //Q stack
+  Double_t fPositionStack[3*kStackSize];  //position stack 
+  UInt_t   fQStack[kStackSize];           //Q stack
   UInt_t fStackIndex;   //current stack index 
   UInt_t fInfoIndex;    //current track info index
   UInt_t fParamIndex;   //current track parameters index
@@ -432,7 +436,7 @@ void AliTPCTrackHits::AddHit(Int_t volumeID, Int_t trackID,
   }        
   //safety factor 1.25
   if ( ( (dd*1.25>fPrecision) ) ||  
-       (fTempInfo->fStackIndex+4>fTempInfo->fkStackSize) || 
+       (fTempInfo->fStackIndex+4>fTempInfo->kStackSize) || 
        (TMath::Abs(dl/fStep)>fMaxDistance)  ) 
     diff=kTRUE;
   else{

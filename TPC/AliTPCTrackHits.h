@@ -26,9 +26,10 @@ class AliObjectArray;
 class AliTrackHitsInfo   {
   friend  class  AliTPCTrackHits;
   friend class   AliTPC;
-public:
+ public:
   AliTrackHitsInfo(){fgCounter1++;fgCounter2++;}
   ~AliTrackHitsInfo(){fgCounter1--;}
+ protected:
  private:  
   Int_t   fTrackID;  //track ID
   Int_t   fVolumeID;   //volume ID
@@ -43,9 +44,10 @@ public:
 class AliTrackHitsParam {
   friend  class  AliTPCTrackHits;
   friend  struct AliTPCTempHitInfo;
-public:
+ public:
   AliTrackHitsParam(){fgCounter1++;fgCounter2++;}
   ~AliTrackHitsParam(){fgCounter1--;}
+ protected:
  private:
   Float_t fR;  //radius
   Float_t fZ;  //z position
@@ -67,6 +69,7 @@ class AliHitInfo {
 public:
   AliHitInfo(){fgCounter1++;fgCounter2++;}
   ~AliHitInfo(){fgCounter1--;}
+ protected:
  private:
   Short_t fHitDistance; //distance to previous hit
   Short_t fCharge; //deponed charge
@@ -100,6 +103,7 @@ public:
   void SetStepPrecision(Double_t prec) {fStep=prec;}
   void SetMaxDistance(UInt_t distance) {fMaxDistance = distance;}
   Bool_t  FlushHitStack(Bool_t force=kTRUE);    //
+ protected:
 private:
   void FlushHitStack2(Int_t index1, Int_t index2);   //
   AliObjectArray * fTrackHitsInfo;  //quick information about track
@@ -114,8 +118,8 @@ private:
   AliTPCCurrentHit  * fCurrentHit; //!information about current hit 
   static const Double_t fgkPrecision;  //precision 
   static const Double_t fgkPrecision2;  //precision
-  static Int_t fgCounter1;
-  static Int_t fgCounter2;  
+  static Int_t fgCounter1;  // counter1
+  static Int_t fgCounter2;  // counter2
 
   ClassDef(AliTPCTrackHits,1) 
 };

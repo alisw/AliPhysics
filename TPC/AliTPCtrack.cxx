@@ -374,18 +374,38 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
 
   Double_t ey=fP4*fX - fP2, ez=fP3;
   Double_t xz=fP4*ez, zz1=ez*ez+1, xy=fP2+ey;
-
+    
   fC22 += (2*ey*ez*ez*fP2+1-ey*ey+ez*ez+fP2*fP2*ez*ez)*theta2;
   fC32 += ez*zz1*xy*theta2;
   fC33 += zz1*zz1*theta2;
   fC42 += xz*ez*xy*theta2;
   fC43 += xz*zz1*theta2;
   fC44 += xz*xz*theta2;
-
+  /*
+  //
+  //MI coeficints
+  Double_t dc22 = (1-ey*ey+xz*xz*fX*fX)*theta2;
+  Double_t dc32 = (xz*fX*zz1)*theta2;
+  Double_t dc33 = (zz1*zz1)*theta2;
+  Double_t dc42 = (xz*fX*xz)*theta2;
+  Double_t dc43 = (zz1*xz)*theta2;
+  Double_t dc44 = (xz*xz)*theta2; 
+  fC22 += dc22;
+  fC32 += dc32;
+  fC33 += dc33;
+  fC42 += dc42;
+  fC43 += dc43;
+  fC44 += dc44;
+  */
   //Energy losses************************
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d*rho;
   if (x1 < x2) dE=-dE;
   cc=fP4;
+
+  //Double_t E = sqrt(p2+GetMass()*GetMass());
+  //Double_t mifac  = TMath::Sqrt(1.+dE*dE/p2+2*E*dE/p2)-1;
+  //Double_t belfac = E*dE/p2;
+			       //
   fP4*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fP2+=fX*(fP4-cc);
 

@@ -384,11 +384,10 @@ void AliTPCtrackerMI::WriteTracks()
   if (fOutput){
     AliTPCtrack *iotrack= 0;
     Int_t nseed=fSeeds->GetEntriesFast();
-    for (Int_t i=0; i<nseed; i++) {
-      iotrack= (AliTPCtrack*)fSeeds->UncheckedAt(i);
-      if (iotrack) break;      
-    }
-    
+    //for (Int_t i=0; i<nseed; i++) {
+    //  iotrack= (AliTPCtrack*)fSeeds->UncheckedAt(i);
+    //  if (iotrack) break;      
+    //}    
     //TBranch * br = fOutput->Branch("tracks","AliTPCtrack",&iotrack,32000,100);
     TBranch * br = fOutput->GetBranch("tracks");
     br->SetAddress(&iotrack);
@@ -396,14 +395,16 @@ void AliTPCtrackerMI::WriteTracks()
     for (Int_t i=0; i<nseed; i++) {
       AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i);    
       if (!pt) continue;    
-      iotrack = pt;
+      AliTPCtrack * track = new AliTPCtrack(*pt);
+      iotrack = track;
       pt->fLab2 =i; 
       //      br->SetAddress(&iotrack);
       fOutput->Fill();
+      delete track;
       iotrack =0;
     }
-    fOutput->GetDirectory()->cd();
-    fOutput->Write();
+    //fOutput->GetDirectory()->cd();
+    //fOutput->Write();
   }
   // delete iotrack;
   //
@@ -836,10 +837,10 @@ void AliTPCseed::Modify(Double_t factor)
     return;
   }
   fC00*=factor;
-  fC10*=factor;  fC11*=factor;
-  fC20*=factor;  fC21*=factor;  fC22*=factor;
-  fC30*=factor;  fC31*=factor;  fC32*=factor;  fC33*=factor;
-  fC40*=factor;  fC41*=factor;  fC42*=factor;  fC43*=factor;  fC44*=factor;
+  fC10*=0;  fC11*=factor;
+  fC20*=0;  fC21*=0;  fC22*=factor;
+  fC30*=0;  fC31*=0;  fC32*=0;  fC33*=factor;
+  fC40*=0;  fC41*=0;  fC42*=0;  fC43*=0;  fC44*=factor;
   SetNumberOfClusters(0);
   fNFoundable =0;
   SetChi2(0);
@@ -1269,20 +1270,22 @@ void AliTPCtrackerMI::UnloadClusters()
   for (Int_t sec = 0;sec<fkNOS;sec++)
     for (Int_t row = 0;row<nrows;row++){
       AliTPCRow*  tpcrow = &(fOuterSec[sec%fkNOS][row]);
-      if (tpcrow){
-	if (tpcrow->fClusters1) delete []tpcrow->fClusters1; 
-	if (tpcrow->fClusters2) delete []tpcrow->fClusters2; 
-      }
+      //      if (tpcrow){
+      //	if (tpcrow->fClusters1) delete []tpcrow->fClusters1; 
+      //	if (tpcrow->fClusters2) delete []tpcrow->fClusters2; 
+      //}
+      tpcrow->ResetClusters();
     }
   //
   nrows = fInnerSec->GetNRows();
   for (Int_t sec = 0;sec<fkNIS;sec++)
     for (Int_t row = 0;row<nrows;row++){
       AliTPCRow*  tpcrow = &(fInnerSec[sec%fkNIS][row]);
-      if (tpcrow){
-	if (tpcrow->fClusters1) delete []tpcrow->fClusters1; 
-	if (tpcrow->fClusters2) delete []tpcrow->fClusters2; 
-      }
+      //if (tpcrow){
+      //	if (tpcrow->fClusters1) delete []tpcrow->fClusters1; 
+      //if (tpcrow->fClusters2) delete []tpcrow->fClusters2; 
+      //}
+      tpcrow->ResetClusters();
     }
 
   return ;
@@ -1448,9 +1451,10 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       if (!t.Rotate(-fSectors->GetAlpha())) 
 	return 0;
     }
-    if (!t.PropagateTo(x)) {
-      return 0;
-    } 
+    //if (!t.PropagateTo(x)) {
+    //  return 0;
+    //}
+    return 1;
     y=t.GetY();
   }
   //
@@ -1530,7 +1534,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
     if (accept<3) UpdateTrack(&t,accept);
 
   } else {  
-    if (t.fNFoundable*0.5 > t.GetNumberOfClusters()) t.fRemoval=10;
+    if ( fIteration==0 && t.fNFoundable*0.5 > t.GetNumberOfClusters()) t.fRemoval=10;
     
   }
   return 1;
@@ -1658,10 +1662,11 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
       if (!t.Rotate(-fSectors->GetAlpha())) 
 	return 0;
     }
-    if (!t.PropagateTo(x)){
-      return 0;
-    }
-    y = t.GetY();    
+    //    if (!t.PropagateTo(x)){
+    //  return 0;
+    //}
+    return 1;
+    //y = t.GetY();    
   }
   //
 
@@ -1771,6 +1776,10 @@ Int_t AliTPCtrackerMI::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step) {
     
   Int_t first = GetRowNumber(xt)-1;
   for (Int_t nr= first; nr>=rf; nr-=step) {    
+    if (nr<fInnerSec->GetNRows()) 
+      fSectors = fInnerSec;
+    else
+      fSectors = fOuterSec;
     if (FollowToNext(t,nr)==0) 
       if (!t.IsActive()) return 0;
     
@@ -2405,8 +2414,8 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
   fEvent = event;
   ReadSeeds(event,2);
   fIteration=2;
-  PrepareForProlongation(fSeeds,1);
-  PropagateForward();
+  //PrepareForProlongation(fSeeds,1);
+  PropagateForward2(fSeeds);
   Int_t nseed = fSeeds->GetEntriesFast();
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed * seed = (AliTPCseed*) fSeeds->UncheckedAt(i);
@@ -2483,7 +2492,9 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     ULong_t status=esd->GetStatus();    
     AliTPCtrack t(*esd);
     AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
-    if (status==AliESDtrack::kTPCin&&direction==1) seed->Modify(0.8);
+    if ((status==AliESDtrack::kTPCin)&&(direction==1)) seed->ResetCovariance(); 
+    if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance();
+
     //
     //
     // rotate to the local coordinate system
@@ -4013,16 +4024,16 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
 
   SortTracks(fSeeds, 1);
   
-  /*
+  /*    
   fIteration = 1;
-  PrepareForBackProlongation(fSeeds,0.5);
+  PrepareForBackProlongation(fSeeds,5.);
   PropagateBack(fSeeds);
   printf("Time for back propagation: \t");timer.Print();timer.Start();
   
   fIteration = 2;
   
-  PrepareForProlongation(fSeeds,1.);
-  PropagateForward();
+  PrepareForProlongation(fSeeds,5.);
+  PropagateForward2(fSeeds);
    
   printf("Time for FORWARD propagation: \t");timer.Print();timer.Start();
   // RemoveUsed(fSeeds,0.7,0.7,6);
@@ -4310,7 +4321,11 @@ void  AliTPCtrackerMI::ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rla
 
 
   //
-  for (Int_t nr=rfirst; nr>=rlast; nr--){      
+  for (Int_t nr=rfirst; nr>=rlast; nr--){ 
+    if (nr<fInnerSec->GetNRows()) 
+      fSectors = fInnerSec;
+    else
+      fSectors = fOuterSec;
     // make indexes with the cluster tracks for given       
 
     // find nearest cluster
@@ -4431,19 +4446,11 @@ Int_t AliTPCtrackerMI::PropagateForward2(TObjArray * arr)
     AliTPCseed *pt = (AliTPCseed*)arr->UncheckedAt(i);
     if (pt) { 
       AliTPCseed *pt2 = new AliTPCseed(*pt);
-      fSectors = fOuterSec;
       FollowProlongation(*pt,0);
-      fSectors = fOuterSec;
-      FollowProlongation(*pt,0);
-      fSectors = fInnerSec;
       if (pt->GetNumberOfClusters()<35 && pt->GetLabel()>0 ){
-	printf("\n%d",pt->GetLabel());
-	fSectors = fOuterSec;
 	FollowProlongation(*pt2,0);
-	fSectors = fOuterSec;
-	FollowProlongation(*pt2,0);
-	fSectors = fOuterSec;
       }
+      delete pt2;
     }      
   }
   return 0;
@@ -4739,6 +4746,20 @@ AliTPCtrackerMI::AliTPCRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index
   memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliTPCclusterMI*));
   memmove(fIndex   +i+1 ,fIndex   +i,(fN-i)*sizeof(UInt_t));
   fIndex[i]=index; fClusters[i]=c; fN++;
+}
+
+void AliTPCtrackerMI::AliTPCRow::ResetClusters() {
+   //
+   // reset clusters
+   fN  = 0; 
+   fN1 = 0;
+   fN2 = 0;
+   //delete[] fClusterArray; 
+   if (fClusters1) delete []fClusters1; 
+   if (fClusters2) delete []fClusters2; 
+   //fClusterArray=0;
+   fClusters1 = 0;
+   fClusters2 = 0;
 }
 
 

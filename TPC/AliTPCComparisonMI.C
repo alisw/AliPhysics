@@ -1618,7 +1618,7 @@ TH1F* AliTPCComparisonDraw::CreateResHisto(TH2F* hRes2, TH1F **phMean,  Bool_t d
     if (drawBinFits) canBinFits->cd(bin + dBin);
     TH1D* hBin = hRes2->ProjectionY("hBin", bin, bin);
     //    
-    if (hBin->GetEntries() > 10) {
+    if (hBin->GetEntries() > 5) {
       fitFunc->SetParameters(hBin->GetMaximum(),hBin->GetMean(),hBin->GetRMS());
       hBin->Fit(fitFunc,"s");
       Double_t sigma = TMath::Abs(fitFunc->GetParameter(2));

@@ -86,7 +86,8 @@ Int_t AliTPCFindTracksMI(Int_t N=-1) {
    TStopwatch timer;
    Int_t rc=0;
    for (Int_t i=0;i<eventn;i++)
-    {
+    { 
+      rl->GetEvent(i);
       TTree * input = tpcl->TreeR();
       if (input == 0x0)
        {
@@ -115,8 +116,9 @@ Int_t AliTPCFindTracksMI(Int_t N=-1) {
       tracker->SetIO();
       tracker->LoadClusters();
       rc=tracker->Clusters2Tracks();
-      tracker->WriteTracks();
+      tracker->WriteTracks(output);
       tracker->UnloadClusters();
+      tpcl->WriteTracks("OVERWRITE");
       //output->GetDirectory()->cd();
       //output->Write();
       delete tracker;
