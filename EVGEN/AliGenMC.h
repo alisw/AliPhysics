@@ -36,8 +36,6 @@ class AliGenMC : public AliGenerator
     virtual void SetChildYRange(Float_t ymin = -12, Float_t ymax = 12)
 	{fChildYMin = ymin;
 	fChildYMax  = ymax;}
-    virtual void    SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
-
 
  protected:
     // check if particle is selected as parent particle
@@ -63,10 +61,7 @@ class AliGenMC : public AliGenerator
     Float_t     fChildYMin;     // Children minimum y
     Float_t     fChildYMax;     // Children maximum y
     Decay_t     fForceDecay;    // Decay channel forced
-    TArrayF     fEventVertex;   //!The current event vertex
-    Float_t     fCutVertexZ;    // Vertex cut in units of sigma_z
-	
-    ClassDef(AliGenMC,1)       // AliGenerator implementation for generators using MC methods
+    ClassDef(AliGenMC,2)       // AliGenerator implementation for generators using MC methods
 };
 #endif
 
