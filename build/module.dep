@@ -28,7 +28,7 @@ PHOS/module.mk:		 PHOS/libPHOS.pkg
 PMD/module.mk:		 PMD/libPMD.pkg
 PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg
 RALICE/module.mk:	 RALICE/libRALICE.pkg
-RAW/module.mk:           RAW/libRAW.pkg RAW/binraw2date.pkg
+RAW/module.mk:           RAW/libRAW.pkg
 RICH/module.mk:		 RICH/libRICH.pkg
 START/module.mk:	 START/libSTART.pkg
 STEER/module.mk:	 STEER/libSTEER.pkg
@@ -45,4 +45,3 @@ TPHIC/module.mk:	 TPHIC/libTPHIC.pkg
 TRD/module.mk:		 TRD/libTRDbase.pkg TRD/libTRDsim.pkg TRD/libTRDrec.pkg TRD/libTRDfast.pkg
 VZERO/module.mk:	 VZERO/libVZERO.pkg
 ZDC/module.mk:		 ZDC/libZDC.pkg
-TRACKING/module.mk:      TRACKING/libTRACKING.pkg
