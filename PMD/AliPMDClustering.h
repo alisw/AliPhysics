@@ -37,7 +37,8 @@ class AliPMDClustering
   AliPMDClustering();
   virtual ~AliPMDClustering();
 
-  void DoClust(Double_t celladc[][96], TObjArray *pmdcont);
+  void DoClust(Int_t idet, Int_t ismn, Double_t celladc[][96],
+	       TObjArray *pmdcont);
   void Order();
 
   Int_t CrClust(Double_t ave, Double_t cutoff, Int_t nmx1);

@@ -50,10 +50,10 @@ ClassImp(AliPMDClustering)
 
 const Double_t AliPMDClustering::fgkSqroot3by2=0.8660254;  // sqrt(3.)/2.
 
-AliPMDClustering::AliPMDClustering()
+AliPMDClustering::AliPMDClustering():
+  fDebug(0),
+  fCutoff(0.0)
 {
-  fDebug  = 0;
-  fCutoff = 0.0;
   for(int i = 0; i < kNDIMX; i++)
     {
       for(int j = 0; j < kNDIMY; j++)
@@ -63,12 +63,13 @@ AliPMDClustering::AliPMDClustering()
 	}
     }
 }
+// ------------------------------------------------------------------------ //
 AliPMDClustering::~AliPMDClustering()
 {
 
 }
-
-void AliPMDClustering::DoClust(Double_t celladc[48][96], TObjArray *pmdcont)
+// ------------------------------------------------------------------------ //
+void AliPMDClustering::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96], TObjArray *pmdcont)
 {
   // main function to call other necessary functions to do clustering
   //
@@ -80,7 +81,7 @@ void AliPMDClustering::DoClust(Double_t celladc[48][96], TObjArray *pmdcont)
   */
   int i, i1, i2, j, nmx1, incr, id, jd;
   double  cutoff, ave;
-  Float_t clusdata[5];
+  Float_t clusdata[7];
 
   const float ktwobysqrt3 = 1.1547; // 2./sqrt(3.)
 
@@ -110,6 +111,9 @@ void AliPMDClustering::DoClust(Double_t celladc[48][96], TObjArray *pmdcont)
     {
       cout << " nmx1 " << nmx1 << endl;
     }
+
+  //  if (nmx1 == 0 | nmx1 == -1) return;
+
   ave=ave/nmx1;
   if (fDebug == 1)
     {
@@ -124,7 +128,7 @@ void AliPMDClustering::DoClust(Double_t celladc[48][96], TObjArray *pmdcont)
       cout << "fClno " << fClno << endl;
     }
 
-  for(i1=0; i1<fClno; i1++)
+  for(i1=0; i1<=fClno; i1++)
     {
       Float_t cluXC    = (Float_t) fClusters[0][i1];
       Float_t cluYC    = (Float_t) fClusters[1][i1];
@@ -142,13 +146,11 @@ void AliPMDClustering::DoClust(Double_t celladc[48][96], TObjArray *pmdcont)
       clusdata[3]      = cluCELLS;
       clusdata[4]      = cluRAD;
 
-      pmdcl = new AliPMDcluster(clusdata);
+      pmdcl = new AliPMDcluster(idet, ismn, clusdata);
       pmdcont->Add(pmdcl);
     }
-  delete pmdcl;
-
 }
-
+// ------------------------------------------------------------------------ //
 void AliPMDClustering::Order()
 {
   // Sorting algorithm
@@ -202,7 +204,7 @@ void AliPMDClustering::Order()
       fIord[1][i]=i2;
     }
 }
-
+// ------------------------------------------------------------------------ //
 int AliPMDClustering::CrClust(double ave, double cutoff, int nmx1)
 {
   // Does crude clustering
@@ -317,7 +319,7 @@ int AliPMDClustering::CrClust(double ave, double cutoff, int nmx1)
   //  }
   return cellcount;
 }
-
+// ------------------------------------------------------------------------ //
 void AliPMDClustering::RefClust(int incr)
 {
   // Does the refining of clusters
@@ -530,7 +532,7 @@ void AliPMDClustering::RefClust(int incr)
     }
   }
 }
-
+// ------------------------------------------------------------------------ //
 void AliPMDClustering::GaussFit(Int_t ncell, Int_t nclust, Double_t &x, Double_t &y ,Double_t &z, Double_t &xc, Double_t &yc, Double_t &zc, Double_t &rc)
 {
   // Does gaussian fitting
@@ -641,12 +643,12 @@ void AliPMDClustering::GaussFit(Int_t ncell, Int_t nclust, Double_t &x, Double_t
     *(&rc+j)=rrc[j];
   }
 }
-
+// ------------------------------------------------------------------------ //
 double AliPMDClustering::Distance(double x1, double y1, double x2, double y2)
 {
   return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
-
+// ------------------------------------------------------------------------ //
 double AliPMDClustering::Ranmar() const
 {
   //  Universal random number generator proposed by Marsaglia and Zaman
@@ -716,11 +718,12 @@ double AliPMDClustering::Ranmar() const
   }
   return uni;
 }
-
+// ------------------------------------------------------------------------ //
 void AliPMDClustering::SetEdepCut(Float_t decut)
 {
   fCutoff = decut;
 }
+// ------------------------------------------------------------------------ //
 void AliPMDClustering::SetDebug(Int_t idebug)
 {
   fDebug = idebug;

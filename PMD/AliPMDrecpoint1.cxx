@@ -27,80 +27,93 @@
 
 ClassImp(AliPMDrecpoint1)
 
-AliPMDrecpoint1::AliPMDrecpoint1()
+AliPMDrecpoint1::AliPMDrecpoint1():
+  fDet(0),
+  fSMN(0)
 {
   // Default constructor
-  for (Int_t i = 0; i < 7; i++)
+  for (Int_t i = 0; i < 5; i++)
     {
       fClusData[i] = 0.;
     }
 }
-
-AliPMDrecpoint1::AliPMDrecpoint1(Float_t *clusdata)
+// ------------------------------------------------------------------------- //
+AliPMDrecpoint1::AliPMDrecpoint1(Int_t idet, Int_t ismn, Float_t *clusdata)
 {
   // Constructor
-  for (Int_t i = 0; i < 7; i++)
+  fDet = idet;
+  fSMN = ismn;
+  for (Int_t i = 0; i < 5; i++)
     {
       fClusData[i] = clusdata[i];
     }
 }
-
+// ------------------------------------------------------------------------- //
 AliPMDrecpoint1::AliPMDrecpoint1(const AliPMDrecpoint1 &pmdrecpoint):TObject(pmdrecpoint)
 {
   //Copy Constructor 
   if(&pmdrecpoint == this) return;
-  for(Int_t i=0; i<7; i++)
+  this->fDet = pmdrecpoint.fDet;
+  this->fSMN = pmdrecpoint.fSMN;
+  for(Int_t i=0; i<5; i++)
     {
       this->fClusData[i] = pmdrecpoint.fClusData[i];
     }
   return;
 }
-
+// ------------------------------------------------------------------------- //
 AliPMDrecpoint1 & AliPMDrecpoint1::operator=(const AliPMDrecpoint1 &pmdrecpoint)
 {
   // Assignment operator 
   if(&pmdrecpoint == this) return *this;
-  for(Int_t i=0; i<7; i++)
+  this->fDet = pmdrecpoint.fDet;
+  this->fSMN = pmdrecpoint.fSMN;
+  for(Int_t i=0; i<5; i++)
     {
       this->fClusData[i] = pmdrecpoint.fClusData[i];
     }
   return *this;
 }
-
+// ------------------------------------------------------------------------- //
 AliPMDrecpoint1::~AliPMDrecpoint1()
 {
   // Default destructor
 }
-
-Float_t AliPMDrecpoint1::GetDetector() const
+// ------------------------------------------------------------------------- //
+Int_t AliPMDrecpoint1::GetDetector() const
+{
+  return fDet;
+}
+// ------------------------------------------------------------------------- //
+Int_t AliPMDrecpoint1::GetSMNumber() const
+{
+  return fSMN;
+}
+// ------------------------------------------------------------------------- //
+Float_t AliPMDrecpoint1::GetClusX() const
 {
   return fClusData[0];
 }
-Float_t AliPMDrecpoint1::GetSMNumber() const
+// ------------------------------------------------------------------------- //
+Float_t AliPMDrecpoint1::GetClusY() const
 {
   return fClusData[1];
 }
-Float_t AliPMDrecpoint1::GetClusX() const
+// ------------------------------------------------------------------------- //
+Float_t AliPMDrecpoint1::GetClusADC() const
 {
   return fClusData[2];
 }
-
-Float_t AliPMDrecpoint1::GetClusY() const
+// ------------------------------------------------------------------------- //
+Float_t AliPMDrecpoint1::GetClusCells() const
 {
   return fClusData[3];
 }
-
-Float_t AliPMDrecpoint1::GetClusADC() const
+// ------------------------------------------------------------------------- //
+Float_t AliPMDrecpoint1::GetClusRadius() const
 {
   return fClusData[4];
 }
-Float_t AliPMDrecpoint1::GetClusCells() const
-{
-  return fClusData[5];
-}
-Float_t AliPMDrecpoint1::GetClusRadius() const
-{
-  return fClusData[6];
-}
+// ------------------------------------------------------------------------- //
 
 

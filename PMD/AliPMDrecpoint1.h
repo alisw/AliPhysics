@@ -20,15 +20,15 @@ class AliPMDrecpoint1 : public TObject
 
  public:
   AliPMDrecpoint1();
-  AliPMDrecpoint1(Float_t *clusdata);
+  AliPMDrecpoint1(Int_t idet, Int_t ismn, Float_t *clusdata);
   AliPMDrecpoint1(AliPMDrecpoint1 *pmdrecpoint) {*this = *pmdrecpoint;}
   AliPMDrecpoint1 (const AliPMDrecpoint1 &pmdrecpoint);  // copy constructor
   AliPMDrecpoint1 &operator=(const AliPMDrecpoint1 &pmdrecpoint); // assignment op
   
   virtual ~AliPMDrecpoint1();
 
-  Float_t GetDetector() const;
-  Float_t GetSMNumber() const;
+  Int_t   GetDetector() const;
+  Int_t   GetSMNumber() const;
   Float_t GetClusX() const;
   Float_t GetClusY() const;
   Float_t GetClusADC() const;
@@ -37,12 +37,14 @@ class AliPMDrecpoint1 : public TObject
   
  protected:
 
-  Float_t fClusData[7];  // Array containing cluster information
+  Int_t   fDet;          // Detector No (0:PRE, 1:CPV)
+  Int_t   fSMN;          // Serial Module No.
+  Float_t fClusData[5];  // Array containing cluster information
   /*
-    fClusData[0] : Detector Number,  fClusData[1] : SuperModule Number
-    fClusData[2] : Cluster x      ,  fClusData[3] : Cluster y
-    fClusData[4] : Cluster adc    ,  fClusData[5] : Cluster Cells
-    fClusData[6] : Cluster radius
+    fDet         : Detector Number,  fSMN         : Serial Module Number
+    fClusData[0] : Cluster x      ,  fClusData[1] : Cluster y
+    fClusData[2] : Cluster adc    ,  fClusData[3] : Cluster Cells
+    fClusData[4] : Cluster radius
   */
   
   ClassDef(AliPMDrecpoint1,2) // keep reconstructed points info
