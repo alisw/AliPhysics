@@ -24,6 +24,9 @@
 #include "AliMC.h"
 #include "AliConst.h"
 
+#include "AliTPCParam.h"
+#include "AliTPCD.h"
+
 ClassImp(AliTPCv1)
  
 //_____________________________________________________________________________
@@ -57,8 +60,11 @@ void AliTPCv1::CreateGeometry()
   AliMC* pMC = AliMC::GetMC();
 
   Int_t *idtmed = gAlice->Idtmed();
+
+
+  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
   
-  Float_t padl, tana, rlsl, wlsl, rssl, rlsu, wssl, wlsu,
+  Float_t tana, rlsl, wlsl, rssl, rlsu, wssl, wlsu,
     rssu, wssu, alpha, x, y, z, sec_thick;
   
   Float_t r1, r2, x1, z0, z1, x2, theta1, theta2, theta3, dm[21];
@@ -72,7 +78,7 @@ void AliTPCv1::CreateGeometry()
   Int_t ils;
   Float_t opl;
   Int_t iss;
-  Float_t thu, opu, dzz, phi1, phi2, phi3;
+  Float_t thu, opu, phi1, phi2, phi3;
   
   // ---------------------------------------------------- 
   //          FIELD CAGE WITH ENDCAPS - CARBON FIBER 
@@ -198,41 +204,39 @@ void AliTPCv1::CreateGeometry()
   pMC->Gsvolu("TLGA", "TRD1", idtmed[402], dm, 4);
   // ----------------------------------------------------- 
   //  thin sensitive strips (100 microns) placed at a center 
-  //  of each pad row (23 rows) in the "drift gas sector" 
+  //  of each pad row  in the "drift gas sector" 
   // ----------------------------------------------------- 
   pMC->Gsvolu("TSST", "TRD1", idtmed[403], dm, 0);
   
   dm[3] = .005;
-  padl  = 2.05;
-  z0    = (rssu - rssl) * .5;
-  dzz   = (rssu - rssl - padl * 22.) * .5;
-  z0    = -z0 + dzz;
-  
-  for (iss = 0; iss < 23; ++iss) {
-    r1    = rssl + dzz + iss * padl - dm[3];
+  z0    = rssl + (rssu - rssl) * .5;
+
+  for (iss = 0; iss < fTPCParam->GetNRowLow(); ++iss) {
+    r1    = fTPCParam->GetPadRowRadiiLow(iss);
     r2    = r1 + dm[3] * 2.;
-    dm[0] = r1 * thl - 1.1;
-    dm[1] = r2 * thl - 1.1;
-    zz    = z0 + iss * padl;
+    dm[0] = r1 * thl - 2.63;
+    dm[1] = r2 * thl - 2.63;
+
+    zz    = -z0 + r1+dm[3];
+
     pMC->Gsposp("TSST", iss+1, "TSGA", 0, 0, zz, 0, "ONLY", dm, 4);
   }
   // ----------------------------------------------------- 
   //  thin sensitive strips (100 microns) placed at a center 
-  //  of each pad row (52 rows) in the "drift gas sector" 
+  //  of each pad row  in the "drift gas sector" 
   // ----------------------------------------------------- 
   pMC->Gsvolu("TLST", "TRD1", idtmed[403], dm, 0);
+
+  z0   = rlsl+ (rlsu - rlsl) * .5;
   
-  padl = 2.05;
-  z0   = (rlsu - rlsl) * .5;
-  dzz  = (rlsu - rlsl - padl * 51.) * .5;
-  z0   = -z0 + dzz;
-  
-  for (ils = 0; ils < 52; ++ils) {
-    r1    = rlsl + dzz + ils * padl - dm[3];
+  for (ils = 0; ils < fTPCParam->GetNRowUp(); ++ils) {
+    r1    = fTPCParam->GetPadRowRadiiUp(ils);
     r2    = r1 + dm[3] * 2.;
-    dm[0] = r1 * thu - 1.1;
-    dm[1] = r2 * thu - 1.1;
-    zz    = z0 + ils * padl;
+    dm[0] = r1 * thu - 2.63;
+    dm[1] = r2 * thu - 2.63;
+
+    zz    = -z0 + r1 +dm[3];
+
     pMC->Gsposp("TLST", ils+1, "TLGA", 0, 0, zz, 0, "ONLY", dm, 4);
   }
   // ------------------------------------------------ 
@@ -626,7 +630,7 @@ void AliTPCv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliTPCv1::DrawModule()
+void AliTPCv1::DrawDetector()
 {
   //
   // Draw a shaded view of the Time Projection Chamber version 1

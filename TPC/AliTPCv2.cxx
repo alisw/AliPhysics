@@ -22,6 +22,9 @@
 #include "AliConst.h"
 #include <stdlib.h>
 
+#include "AliTPCParam.h"
+#include "AliTPCD.h"
+
 ClassImp(AliTPCv2)
  
 //_____________________________________________________________________________
@@ -57,7 +60,9 @@ void AliTPCv2::CreateGeometry()
 
   Int_t *idtmed = gAlice->Idtmed();
 
-  Float_t padl, tana;
+  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
+
+  Float_t tana;
   Int_t isll;
   Float_t rlsl, wlsl, rssl, rlsu, wssl, wlsu, rssu, wssu;
   Int_t i;
@@ -72,7 +77,7 @@ void AliTPCv2::CreateGeometry()
   Int_t idr;
   Float_t thl, opl;
   Int_t ils, iss;
-  Float_t thu, opu, dzz;
+  Float_t thu, opu;
   Int_t ifl1 = 0, ifl2 = 0;
   Float_t phi1, phi2, phi3;
   
@@ -91,6 +96,7 @@ void AliTPCv2::CreateGeometry()
 
   } else {
     printf("*** ALL LOWER SECTORS SELECTED ***\n");
+    ifl1 = 1;
   }
 
   if (fSecAU >= 0) {
@@ -105,6 +111,7 @@ void AliTPCv2::CreateGeometry()
     
   } else {
     printf("*** ALL UPPER SECTORS SELECTED ***\n");
+    ifl1 = 1;
   }
   
   if (ifl1 == 0 && ifl2 == 0) {
@@ -201,18 +208,18 @@ void AliTPCv2::CreateGeometry()
   if (fSens >= 0) {
     pMC->Gsvolu("TSST", "TRD1", idtmed[403], dm, 0);
     dm[3] = .005;
-    padl  = 2.05;
-    z0    = (rssu - rssl) * .5;
-    dzz   = (rssu - rssl - padl * 22.) * .5;
-    z0    = -z0 + dzz;
+  
+    z0    = rssl + (rssu - rssl) * .5;
     
-    for (iss = 1; iss <= 23; ++iss) {
-      r1    = rssl + dzz + (iss - 1) * padl - dm[3];
+    for (iss = 0; iss < fTPCParam->GetNRowLow(); ++iss) {
+      r1    = fTPCParam->GetPadRowRadiiLow(iss);
       r2    = r1 + dm[3] * 2.;
       dm[0] = r1 * thl - .01;
       dm[1] = r2 * thl - .01;
-      zz    = z0 + (iss - 1) * padl;
-      pMC->Gsposp("TSST", iss, "TSGA", 0, 0, zz, 0, "ONLY", dm, 4);
+      
+      zz    = -z0 + r1 +dm[3];
+
+      pMC->Gsposp("TSST", iss+1, "TSGA", 0, 0, zz, 0, "ONLY", dm, 4);
     }
     pMC->Gsord("TSGA", 3);
   }
@@ -240,18 +247,18 @@ void AliTPCv2::CreateGeometry()
     pMC->Gsvolu("TLST", "TRD1", idtmed[403], dm, 0);
     
     dm[3] = .005;
-    padl  = 2.05;
-    z0    = (rlsu - rlsl) * .5;
-    dzz   = (rlsu - rlsl - padl * 51.) * .5;
-    z0    = -z0 + dzz;
+
+    z0   = rlsl+ (rlsu - rlsl) * .5;
     
-    for (ils = 1; ils <= 52; ++ils) {
-      r1    = rlsl + dzz + (ils - 1) * padl - dm[3];
+    for (ils = 0; ils <fTPCParam->GetNRowUp(); ++ils) {
+      r1    = fTPCParam->GetPadRowRadiiUp(ils);
       r2    = r1 + dm[3] * 2.;
-      dm[0] = r1 * thu - 1.1;
-      dm[1] = r2 * thu - 1.1;
-      zz    = z0 + (ils - 1) * padl;
-      pMC->Gsposp("TLST", ils, "TLGA", 0, 0, zz, 0, "ONLY", dm, 4);
+      dm[0] = r1 * thu - 2.63;
+      dm[1] = r2 * thu - 2.63;
+
+      zz  = -z0 + r1 +dm[3]; 
+
+      pMC->Gsposp("TLST", ils+1, "TLGA", 0, 0, zz, 0, "ONLY", dm, 4);
     }
     pMC->Gsord("TLGA", 3);
   }
@@ -670,7 +677,7 @@ void AliTPCv2::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTPCv2::DrawModule()
+void AliTPCv2::DrawDetector()
 {
   //
   // Draw a shaded view of the Time Projection Chamber version 1

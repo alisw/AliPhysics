@@ -8,12 +8,18 @@
 #include "AliHit.h" 
 #include "AliDigit.h" 
 #include "AliTPCSecGeo.h" 
+#include "AliTPCParam.h"
 #include <TMatrix.h>
+#include <TTree.h>
+#include <TClonesArray.h>
 
 #define MAXTPCTBK 500
 
 class AliTPCcluster;
 class AliTPCtrack;
+class AliTPCParam;
+//MI changes
+class AliTPCD;
 
 class AliTPC : public AliDetector {
 protected:
@@ -29,7 +35,8 @@ protected:
   Int_t          *fDigitsIndex;     // Index for each sector in fDigits
   TClonesArray   *fClusters;        // List of clusters for all sectors
   TClonesArray   *fTracks;          // List of reconstructed tracks
-  
+  //MI changes
+  AliTPCD * fDigParam;              //detector parameters  
 public:
   AliTPC();
   AliTPC(const char *name, const char *title);
@@ -45,7 +52,9 @@ public:
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
   virtual void  Hits2Clusters();
-  virtual void  Hits2Digits();
+
+  virtual void  Hits2Digits();   //MI change
+  virtual void Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();
   virtual Int_t IsVersion() const =0;
   virtual void  Digits2Clusters();
@@ -64,72 +73,25 @@ public:
 			   Int_t s7,Int_t s8,Int_t s9,Int_t s10, Int_t s11, Int_t s12);
   virtual void  SetSens(Int_t sens);
   virtual void  StepManager()=0;
-  virtual void  DrawModule() {}
-  
+  virtual void  DrawDetector() {}
+  AliTPCD*  GetDigParam() {return fDigParam;} //MI change8
+  void SetDigParam(AliTPCD* param) {fDigParam=param;}  //MI must think about it
 private:
   //
-  //  Private inline functions for AliTPC
-  //
-  inline Float_t P1(const Float_t x){
-#ifndef __CINT__
-    const
-#endif
-    Float_t y=x*x;
-    return(1.25e-3-8.0e-3*x+0.0274*y-0.0523*x*y); //electron is 3 pads away
-  }
-  //
-  inline Float_t P2(const Float_t x){
-#ifndef __CINT__
-    const
-#endif
-    Float_t y=x*x;
-
-    return(.0114-0.0726*x+0.2408*y-0.4421*x*y);    //electron is 2 pads away
-  }
-  //
-  inline Float_t P3(const Float_t x){
-#ifndef __CINT__
-    const
-#endif
-    Float_t y=x*x;
-
-    return(0.0959-0.5204*x+0.9272*y+0.2865*x*y);      //electron is 1 pad away
-  }
-  //
-  inline Float_t P4(const Float_t x){
-#ifndef __CINT__
-    const
-#endif
-      Float_t y=x*x; 
-    return(.2835-2.7*y+11.55*y*y); //electron is here
-  }
-
-
-  //
-  //  Time response, 3 sigma truncated Gaussian
-  //
-  inline Float_t TimeRes(const Float_t x) {
-#ifndef __CINT__
-    const 
-#endif
-      Float_t sigma = fwhm/2.354820045;
-#ifndef __CINT__
-    const
-#endif
-      Float_t trunc = 3.*sigma;
-    const Float_t norm = 0.4; // according to H-G. Fischer
-#ifndef __CINT__
-    const
-#endif
-      Float_t x1 = x-trunc;
-    return (TMath::Abs(x1)>trunc) ? 0 : norm*TMath::Exp(-0.5*x1*x1/sigma/sigma);
-  }
-  //
-  // Private prototypes for Alice TPC
-  //
-  void CreateList(Int_t *tracks,Float_t signal[][MAXTPCTBK+1],Int_t ntr,Int_t time);
-  void DigSignal(Int_t isec,Int_t irow,TObjArray *pointer);
   void ElDiff(Float_t *xyz);
+  void MakeTriplet(Int_t row,TObjArray **rowTriplet, 
+                   TObjArray **prow);
+
+  void ExB(Float_t *xyz);
+  void DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet);
+  Float_t GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatrix *m2,
+                    Int_t *IndexRange);
+  void GetList (Float_t label,Int_t np,TMatrix *m,Int_t *IndexRange,
+                Float_t **pList);
+  void MakeSector(Int_t isec,Int_t nrows,TTree *TH,Stat_t ntracks,TObjArray **row);
+  void GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
+                     TMatrix *m);
+
   
   ClassDef(AliTPC,2)  // Time Projection Chamber class
 };
@@ -157,8 +119,9 @@ public:
   virtual ~AliTPCcluster() {;}
   void Use() {fTracks[0]=-fTracks[0];}
   int IsUsed() const {return (fTracks[0]<0) ? 1 : 0;}
-  void GetXYZ(Double_t& x,Double_t& y,Double_t& z) const; //Get global x,y,z
-  
+  void GetXYZ(Float_t *x, const AliTPCParam *) const; //Get global x,y,z
+  Bool_t    IsSortable() const;
+  Int_t Compare(TObject *o) ;
   ClassDef(AliTPCcluster,1)  // Time Projection Chamber clusters
 };
 
@@ -201,7 +164,7 @@ public:
  
 //_____________________________________________________________________________
  
-const unsigned MAX_CLUSTER_PER_ROW=500;
+const unsigned MAX_CLUSTER_PER_ROW=1500;
 const Double_t FIELD=0.2;
 
 class AliTPCtrack : public TObject {
@@ -213,7 +176,8 @@ class AliTPCtrack : public TObject {
    Double_t chi2;            // total chi2 value for this track
 public:
    AliTPCtrack(Float_t *hits);
-   AliTPCtrack(const AliTPCcluster& c, const TVector& xx, const TMatrix& CC); 
+   AliTPCtrack(const AliTPCcluster& c, const TVector& xx, const TMatrix& CC,
+               const AliTPCParam *); 
    AliTPCtrack(const AliTPCtrack& t);
    int PropagateTo(Double_t x,
                     Double_t x0=28.94,Double_t rho=0.9e-3,Double_t pm=0.139);
@@ -252,8 +216,8 @@ public:
 
 class TrackSeed : public AliTPCtrack {
 public:
-   TrackSeed(const AliTPCcluster& c, const TVector& x, const TMatrix& C) :
-   AliTPCtrack(c,x,C) {}
+   TrackSeed(const AliTPCcluster& c, const TVector& x, const TMatrix& C,
+   const AliTPCParam *p) : AliTPCtrack(c,x,C,p) {}
    Bool_t IsSortable() const {return kTRUE;}
    Int_t Compare(TObject *o) {
       AliTPCtrack *t=(AliTPCtrack*)o;
@@ -277,13 +241,18 @@ public:
    int Find(Double_t y) const; 
 };
 
+
 class AliTPCSector {
+protected:
    unsigned num_of_rows; 
    AliTPCRow *row;
+   const AliTPCParam *param; 
 public:
-   AliTPCSector(int nl) { 
-      row = new AliTPCRow[nl]; num_of_rows=nl;
+   AliTPCSector() { 
+      row = 0; num_of_rows=0;
+      param=0;
    }
+   virtual void SetUp(AliTPCParam *p) {param=p;}
    virtual ~AliTPCSector() { delete[] row; }
    AliTPCRow& operator[](int i) const { return *(row+i); }
    virtual Double_t GetX(int l) const = 0;
@@ -293,21 +262,34 @@ public:
 
 class AliTPCSSector : public AliTPCSector {
 public:
-   AliTPCSSector(): AliTPCSector(nrow_low){}
+   AliTPCSSector(){}
    virtual ~AliTPCSSector() {}
-   Double_t GetX(int l) const { return pad_row_low[0] + (l+0.0)*pad_pitch_l; }
-   Double_t GetMaxY(int l) const { return GetX(l)*tan(0.5*alpha_low); }
+   virtual void SetUp(AliTPCParam *p) {
+      param=p;
+      num_of_rows=p->GetNRowLow();
+      row=new AliTPCRow[num_of_rows];
+   }
+   Double_t GetX(int l) const { return param->GetPadRowRadiiLow(l); }
    Double_t GetAlpha() const {return alpha_low;}
+   Double_t GetMaxY(int l) const { return GetX(l)*tan(0.5*GetAlpha()); }
 };
 
 class AliTPCLSector : public AliTPCSector {
 public:
-   AliTPCLSector(): AliTPCSector(nrow_up){}
+   AliTPCLSector(){}
    virtual ~AliTPCLSector() {}
-   Double_t GetX(int l) const { return pad_row_up[0] + (l+0.0)*pad_pitch_l; }
-   Double_t GetMaxY(int l) const { return GetX(l)*tan(0.5*alpha_up); }
+   virtual void SetUp(AliTPCParam *p) {
+      param=p;
+      num_of_rows=p->GetNRowUp();
+      row=new AliTPCRow[num_of_rows];
+   }
+   Double_t GetX(int l) const { return param->GetPadRowRadiiUp(l); }
    Double_t GetAlpha() const {return alpha_up;}
+   Double_t GetMaxY(int l) const { return GetX(l)*tan(0.5*GetAlpha()); }
 };
+
+
+
 
 #endif
 

@@ -528,7 +528,7 @@ void AliTPCv0::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliTPCv0::DrawModule()
+void AliTPCv0::DrawDetector()
 {
   //
   // Draw a shaded view of the Time Projection Chamber version 0
