@@ -256,7 +256,7 @@ void AliTrackingAction::SaveParticle(const G4Track* track)
   }
   else {  
     TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
-    mcProcess = pPhysicsManager->GetMCProcess(kpProcess->GetProcessName());  
+    mcProcess = pPhysicsManager->GetMCProcess(kpProcess);  
     // distinguish kPDeltaRay from kPEnergyLoss  
     if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
   }  
