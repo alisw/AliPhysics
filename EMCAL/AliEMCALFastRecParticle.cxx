@@ -168,49 +168,285 @@ void AliEMCALFastRecParticle::ExecuteEvent(Int_t event, Int_t /*px*/, Int_t /*py
 }
 
 //____________________________________________________________________________
-TString AliEMCALFastRecParticle::Name()const
+Bool_t AliEMCALFastRecParticle::IsPhoton(TString purity) const
 {
-  // Returns the name of the particle type (only valid if PIDv1 is employed)
+  //FIXME : just a blind copy from PHOS
+  // Rec.Particle is a photon if it has a photon-like shape, fast and neutral
+  // photon-like shape is defined with a purity "low", "medium" or "high"
 
-  TString  name ; 
-  
-  if(fType == 127)
-    name = "PHOTON_LOPU_HIEF" ;    //PCA = 001 TOF = 111 CPV = 111
-  
-  if(fType == 511)
-    name = "PHOTON_HIPU_LOEF" ;    //PCA = 011 TOF = 111 CPV = 111
-  
-  if(fType == 255)
-	name = "PHOTON_MED_PU_EF" ;    //PCA = 111 TOF = 111 CPV = 111
-  
-  if((fType == 383)||(fType == 447)) 
-    name = "PHOTON_STRANGE" ;      //PCA = 101 or 110 TOF = 111 CPV = 111
-  
-  if(fType == 63)
-    name = "NEUTRAL_FAST_HADRON" ; //PCA = 000 TOF = 111 CPV = 111
-  
-  if((fType == 504) || (fType == 505) ||(fType == 248)||(fType == 249)||(fType == 120)||(fType == 121))
-    name = "CHARGED_FAST_EM" ;     //PCA = 111, 011 or 001 TOF =111 CPV = 000 or 001  
-  
-  if((fType == 56)||(fType == 57))
-    name = "CHARGED_FAST_HADRON" ; //PCA = 000 TOF = 111 CPV = 000 or 001 
-  
-  if((fType < 8)&&(fType > 0))
-    name = "NEUTRAL_SLOW_HADRON" ; //PCA = 000 TOF = 000 CPV = 001 or 011 or 111
-  
-  if((fType == 0))
-    name = "CHARGED_SLOW_HADRON" ; //PCA = 000 TOF = 000 CPV = 000
-  
-  if((fType == 448) || (fType == 449) ||(fType == 192)||(fType == 193)||(fType == 64)||(fType == 64))
-    name = "CHARGED_SLOW_EM" ;    //PCA = 111, 011 or 001 TOF =000 CPV = 000 or 001  
-  
-  return name ; 
+  purity.ToLower();
+  Bool_t photonLike = kFALSE;
+  if      (purity == "low"   ) photonLike = TestPIDBit(6);
+  else if (purity == "medium") photonLike = TestPIDBit(7);
+  else if (purity == "high"  ) photonLike = TestPIDBit(8);
+  if (photonLike                                   && //  photon by PCA
+      (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
+      (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0))&& //  neutral by CPV
+      !TestPIDBit(14))                              //  no charged track
+    return kTRUE ;
+  else
+    return kFALSE;
 }
 
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsPi0(TString purity) const
+{
+  //FIXME : just a blind copy from PHOS
+  // Rec.Particle is a pi0 if it has a pi0-like shape, fast and neutral
+  // pi0-like shape is defined with a purity "low", "medium" or "high"
+
+  purity.ToLower();
+  Bool_t pi0Like = kFALSE;
+  if      (purity == "low"   ) pi0Like = TestPIDBit(9);
+  else if (purity == "medium") pi0Like = TestPIDBit(10);
+  else if (purity == "high"  ) pi0Like = TestPIDBit(11);
+  else Error("IsPi0","Wrong purity type: %s",purity.Data());
+  if (pi0Like                                      && //  pi0 by PCA
+      (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
+      (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0))&& //  neutral by CPV
+      !TestPIDBit(14))                              //  no charged track
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsElectron(TString purity) const
+{
+  //FIXME : just a blind copy from PHOS
+  // Rec.Particle is an electron if it has a photon-like shape, fast and charged
+  // photon-like shape is defined with a purity "low", "medium" or "high"
+
+  purity.ToLower();
+  Bool_t photonLike = kFALSE;
+  if      (purity == "low"   ) photonLike = TestPIDBit(6);
+  else if (purity == "medium") photonLike = TestPIDBit(7);
+  else if (purity == "high"  ) photonLike = TestPIDBit(8);
+  else Error("IsElectron","Wrong purity type: %s",purity.Data());
+  
+  if (photonLike                                   && //  photon by PCA
+      (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
+      (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0))&& //  charged by CPV
+      TestPIDBit(14))                                  //  no charged track
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsEleCon(TString purity) const
+{
+  //FIXME : just a blind copy from PHOS
+  // Rec.Particle is an electron if it has a photon-like shape, fast and charged
+  // photon-like shape is defined with a purity "low", "medium" or "high"
+
+  purity.ToLower();
+  Bool_t photonLike = kFALSE;
+  if      (purity == "low"   ) photonLike = TestPIDBit(6);
+  else if (purity == "medium") photonLike = TestPIDBit(7);
+  else if (purity == "high"  ) photonLike = TestPIDBit(8);
+  else Error("IsElectron","Wrong purity type: %s",purity.Data());
+  
+  if (photonLike                                   && //  photon by PCA
+      (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
+      (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0))&& //  charged by CPV
+      !TestPIDBit(14))                                  //  no charged track
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsHardPhoton() const
+{
+  //FIXME : just a blind copy from PHOS
+  // Rec.Particle is a hard photon (E > 30 GeV) if its second moment M2x
+  // corresponds to photons
+  if (TestPIDBit(12) && !TestPIDBit(14))
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsHardPi0() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is a hard pi0 (E > 30 GeV) if its second moment M2x
+  // corresponds to pi0
+  if (TestPIDBit(13)&& !TestPIDBit(14))
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsHadron() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is an hadron if it does not look like
+  // a low-purity photon nor low-purity pi0
+
+  if ( !TestPIDBit(6) && !TestPIDBit(9) )             // not photon nor pi0
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsChargedHadron() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is a charged hadron if it does not look like
+  // a low-purity photon nor low-purity pi0 and is low-purity charged
+
+  if ( !TestPIDBit(6) && !TestPIDBit(9) &&            // not photon nor pi0
+       !TestPIDBit(2))                                // charged by CPV
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsNeutralHadron() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is a neutral hadron if it does not look like
+  // a low-purity photon nor low-purity pi0 and is high-purity neutral
+
+  if ( !TestPIDBit(6) && !TestPIDBit(9) &&            // not photon nor pi0
+        TestPIDBit(2))                                // neutral by CPV
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsFastChargedHadron() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is a fast charged hadron if it does not look like
+  // a low-purity photon nor low-purity pi0, is low-purity charged
+  // and is high-purity fast
+
+  if ( !TestPIDBit(6) && !TestPIDBit(9) &&            // not photon nor pi0
+       !TestPIDBit(2) &&                              // charged by CPV
+        TestPIDBit(5))                                // fast by TOF
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsSlowChargedHadron() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is a slow neutral hadron if it does not look like
+  // a low-purity photon nor low-purity pi0, is high-purity neutral
+  // and is not high-purity fast
+
+  if ( !TestPIDBit(6) && !TestPIDBit(9) &&            // not photon nor pi0
+       !TestPIDBit(2) &&                              // charged by CPV
+       !TestPIDBit(5))                                // slow by TOF
+    return kTRUE ;
+  else
+    return kFALSE;
+
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsFastNeutralHadron() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is a fast neutral hadron if it does not look like
+  // a low-purity photon nor low-purity pi0, is high-purity neutral
+  // and is high-purity fast
+
+  if ( !TestPIDBit(6) && !TestPIDBit(9) &&            // not photon nor pi0
+        TestPIDBit(2) &&                              // neutral by CPV
+        TestPIDBit(5))                                // fast by TOF
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALFastRecParticle::IsSlowNeutralHadron() const
+{
+  //FIXME : just a blind copy from EMCAL
+  // Rec.Particle is a slow neutral hadron if it does not look like
+  // a low-purity photon nor low-purity pi0, is high-purity neutral
+  // and is not high-purity fast
+
+  if ( !TestPIDBit(6) && !TestPIDBit(9) &&            // not photon nor pi0
+        TestPIDBit(2) &&                              // neutral by CPV
+       !TestPIDBit(5))                                // slow by TOF
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+
+//____________________________________________________________________________
+TString AliEMCALFastRecParticle::Name()const
+{
+   // Returns the name of the particle type (only valid if PIDv1 is employed)
+
+  TString  name ; 
+
+  name = "Undefined particle" ;
+  
+  if      (IsPhoton("low"))
+    name = "Photon low purity, ";
+  else if (IsPhoton("medium"))
+    name = "Photon medium purity, ";
+  else if (IsPhoton("high"))
+    name = "Photon high purity, ";
+
+  if      (IsPi0("low"))
+    name += "Pi0 low purity, ";
+  else if (IsPi0("medium"))
+    name += "Pi0 medium purity, ";
+  else if (IsPi0("high"))
+    name += "Pi0 high purity, ";
+
+  if      (IsElectron("low"))
+    name += "Electron low purity, ";
+  else if (IsElectron("medium"))
+    name += "Electron medium purity, ";
+  else if (IsElectron("high"))
+    name += "Electron high purity, ";
+
+  if     (IsHadron()) {
+    name = "hadron";
+    if      (IsChargedHadron()) {
+      name.Prepend("charged, ");
+      if      (IsFastChargedHadron())
+	name.Prepend("fast, ");
+      else if (IsSlowChargedHadron())
+	name.Prepend("slow, ");
+    }
+    else if (IsNeutralHadron()) {
+      name.Prepend("neutral, ");
+      if      (IsFastNeutralHadron())
+	name.Prepend("fast, ");
+      else if (IsSlowNeutralHadron())
+	name.Prepend("slow, ");
+    }
+  }
+
+  return name ; 
+}
 
 //______________________________________________________________________________
 void AliEMCALFastRecParticle::SetType(Int_t type) { 
   // sets the particle type 
+  // bit-mask of the particle type means the following:
+  // bits 0,1,2   - neutral particle with low, medium and high purity
+  // bits 3.4,5   - fast particle with low, medium and high purity
+  // bits 6.7,8   - photon shower with low, medium and high purity
+  // bits 9,10,11 - hard-pi0 shower with low, medium and high purity
+
   fType = type ; 
   
   if((type == 127) || (fType == 511) || (fType == 255) ||(fType == 383)||(fType == 447)){

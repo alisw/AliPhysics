@@ -44,7 +44,32 @@ class AliEMCALFastRecParticle : public TParticle {
     // returns the type of the particle
     return fType ; 
   } 
+ 
+  void SetPIDBit(UInt_t fSet) {
+    // Set PID bit number fSet
+    fType |= (1<<fSet) ; 
+  } 
   
+  Bool_t TestPIDBit(UInt_t fTest) const {
+    // Check PID bit number fTest
+    if (fType & (1<<fTest) ) return  kTRUE ;	
+    else return kFALSE ;
+  }
+  
+  Bool_t IsPhoton           (TString purity = "low") const;
+  Bool_t IsPi0              (TString purity = "low") const;
+  Bool_t IsElectron         (TString purity = "low") const;
+  Bool_t IsHardPhoton       () const;
+  Bool_t IsHardPi0          () const;
+  Bool_t IsHadron           () const;
+  Bool_t IsChargedHadron    () const;
+  Bool_t IsNeutralHadron    () const;
+  Bool_t IsFastChargedHadron() const;
+  Bool_t IsSlowChargedHadron() const;
+  Bool_t IsFastNeutralHadron() const;
+  Bool_t IsSlowNeutralHadron() const;
+  Bool_t IsEleCon(TString purity = "low") const;  
+
   TString Name() const ; 
   virtual void Paint(Option_t * option="");
   virtual void Print(Option_t * option = "") const ; 

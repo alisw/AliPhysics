@@ -17,6 +17,7 @@
 
 // --- AliRoot header files ---
 
+#include "AliESDtrack.h" 
 #include "AliEMCALFastRecParticle.h"
 class TParticle ;
 #include  "TVector3.h"  
@@ -25,7 +26,7 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
 
  public:
   
-  AliEMCALRecParticle() { fEMCALRecPoint = 0 ; fDebug = kFALSE ; } 
+  AliEMCALRecParticle() ;  
   AliEMCALRecParticle(const AliEMCALRecParticle & rp) ;  // ctor
   virtual ~AliEMCALRecParticle(){  }
 
@@ -34,6 +35,7 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
   virtual const Int_t GetNPrimaries() const ;
   TVector3 GetPos() const { return fPos ; } 
   virtual const TParticle * GetPrimary(Int_t index) const ;
+  const Double_t *GetPID();
   void    SetDebug() { fDebug = kTRUE ; } 
   void    SetPos(TVector3 pos) { fPos.SetXYZ( pos.X(), pos.Y(), pos.Z() ); } 
   void    UnsetDebug() { fDebug = kFALSE ; }
@@ -46,8 +48,9 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
   Int_t fEMCALRecPoint ; // pointer to the associated track segment in EMCAL  
   Bool_t fDebug ; // to steer debug output 
   TVector3 fPos ; // position in the global alice coordinate system 
+  Double_t fPID[AliESDtrack::kSPECIESN] ; // PID probability densities
 
-  ClassDef(AliEMCALRecParticle,2)  // Reconstructed Particle
+  ClassDef(AliEMCALRecParticle,3)  // Reconstructed Particle
 };
 
 #endif // AliEMCALRECPARTICLE_H
