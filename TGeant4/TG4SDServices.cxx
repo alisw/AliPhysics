@@ -4,8 +4,8 @@
 // See the class description in the header file.
 
 #include "TG4SDServices.h"
-#include "TG4GeometryServices.h"
 #include "TG4VSensitiveDetector.h"
+#include "TG4GeometryServices.h"
 #include "TG4Globals.h"
 
 #include <G4VSensitiveDetector.hh>
@@ -27,11 +27,48 @@ TG4SDServices::TG4SDServices(){
 }
 
 //_____________________________________________________________________________
+TG4SDServices::TG4SDServices(const TG4SDServices& right) {
+// 
+  TG4Globals::Exception(
+    "Attempt to copy TG4SDServices singleton.");
+}
+
+
+//_____________________________________________________________________________
 TG4SDServices::~TG4SDServices(){
 //
 }
 
+// operators
+
+//_____________________________________________________________________________
+TG4SDServices& TG4SDServices::operator=(const TG4SDServices& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  TG4Globals::Exception(
+    "Attempt to assign TG4SDServices singleton.");
+    
+  return *this;  
+}    
+          
+
 // public methods 
+
+//_____________________________________________________________________________
+void TG4SDServices::PrintStatistics(G4bool open, G4bool close) const
+{
+// Print G4 SD statistics
+// ---
+  
+  if (open)  TG4Globals::PrintStars(true);
+     
+   G4cout << "          " << NofSensitiveDetectors()  
+	                  << " sensitive detectors" << G4endl;
+
+  if (close) TG4Globals::PrintStars(false);
+}
 
 //_____________________________________________________________________________
 G4int TG4SDServices::GetVolumeID(const G4String& volName) const
@@ -40,7 +77,6 @@ G4int TG4SDServices::GetVolumeID(const G4String& volName) const
 // !! Gives exception in case logical volume is not associated with 
 // a sensitive detector.
 // ---
-
 
   G4String g4VolName 
     = TG4GeometryServices::Instance()->CutName(volName);
@@ -51,19 +87,11 @@ G4int TG4SDServices::GetVolumeID(const G4String& volName) const
     G4LogicalVolume* lv = (*pLVStore)[i];
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
   
-    if ((sd) && (sd->GetName()==g4VolName)) {
-      TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-      if (tsd)
-        return tsd->GetID();
-      else {
-        TG4Globals::Exception(
-          "TG4SDServices::GetVolumeID: Unknown sensitive detector type");
-        return 0;
-      }
-    }   
+    if (sd && sd->GetName() == g4VolName) 
+        return GetSensitiveDetector(sd)->GetID();
   }
 
-  G4String text = "TG4SDServices::VolId: Sensitive detector ";
+  G4String text = "TG4SDServices::GetVolumeID: Sensitive detector ";
   text = text + g4VolName;
   text = text + " is not defined.\n"; 
   TG4Globals::Warning(text);
@@ -78,27 +106,17 @@ G4int TG4SDServices::GetVolumeID(G4LogicalVolume* logicalVolume) const
 // logical volume.
 // ---
  
-  // sensitive detector ID
   G4VSensitiveDetector* sd
     = logicalVolume->GetSensitiveDetector();
-  if (sd) {
-    TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-    if (tsd)
-      return tsd->GetID();
-    else {
-      TG4Globals::Exception(
-        "TG4SDServices::GetVolumeID: Unknown sensitive detector type");
-      return 0;
-    }   	
-  }  
-  else {
-    G4String text = "TG4SDServices::GetVolumeID: \n";
-    text = text + "    Volume " + logicalVolume->GetName();
-    text = text + " has not a sensitive detector.";
-    //TG4Globals::Exception(text);
-    TG4Globals::Warning(text);
-    return 0;
-  }      	
+
+  if (sd) return GetSensitiveDetector(sd)->GetID();
+
+  G4String text = "TG4SDServices::GetVolumeID: \n";
+  text = text + "    Volume " + logicalVolume->GetName();
+  text = text + " has not a sensitive detector.";
+  //TG4Globals::Exception(text);
+  TG4Globals::Warning(text);
+  return 0;
 } 
 
 
@@ -116,18 +134,8 @@ G4String TG4SDServices::GetVolumeName(G4int volumeId) const
     G4LogicalVolume* lv = (*pLVStore)[i];
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
     
-    if (sd) {
-      G4int sdID;
-      TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-      if (tsd)
-        sdID = tsd->GetID();
-      else {
-        TG4Globals::Exception(
-          "TG4SDServices::VolId: Unknown sensitive detector type");
-        return "";
-      }
-      if (sdID == volumeId) return sd->GetName();
-    }  
+    if (sd && GetSensitiveDetector(sd)->GetID() == volumeId) 
+        return sd->GetName();
   }
 
   G4String text = "TG4SDServices::VolName:\n";
@@ -163,11 +171,8 @@ Int_t TG4SDServices::GetMediumId(G4int volumeId)  const
 // Return the material number for a given volume id
 // ---
 
-  G4LogicalVolume* logicalVolume = GetLogicalVolume(volumeId);
-    
-  G4Material* material = logicalVolume->GetMaterial();  
-
-  return TG4GeometryServices::Instance()->GetMediumId(material);	       	         
+  return TG4GeometryServices::Instance()
+            ->GetMediumId(GetLogicalVolume(volumeId));	       	         
 }
  
 
@@ -180,6 +185,24 @@ Int_t TG4SDServices::NofSensitiveDetectors() const
   return TG4VSensitiveDetector::GetTotalNofSensitiveDetectors();
 }
 
- 
+//_____________________________________________________________________________
+TG4VSensitiveDetector* TG4SDServices::GetSensitiveDetector(
+                                         G4VSensitiveDetector* sd) const
+{
+// Checks and converts type of the sensitive detector.
+// ---
+
+  if (!sd) return 0;
+  
+  TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
+  
+  if (!tsd) {
+    G4Exception(
+      "TG4SDServices::GetSensitiveDetector: Wrong sensitive detector type.");
+    return 0;
+  }    
+  else 
+    return tsd;  
+} 
 
  

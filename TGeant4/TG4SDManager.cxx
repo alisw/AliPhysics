@@ -6,7 +6,7 @@
 #include "TG4SDManager.h"
 #include "TG4VSDConstruction.h"
 #include "TG4SDServices.h"
-#include "TG4GeometryManager.h"
+#include "TG4Globals.h"
 
 TG4SDManager* TG4SDManager::fgInstance = 0;
 
@@ -24,11 +24,42 @@ TG4SDManager::TG4SDManager(TG4VSDConstruction* sdConstruction)
 }
 
 //_____________________________________________________________________________
+TG4SDManager::TG4SDManager(const TG4SDManager& right) {
+// 
+  TG4Globals::Exception(
+    "Attempt to copy TG4SDManager singleton.");
+}
+
+
+//_____________________________________________________________________________
+TG4SDManager::TG4SDManager() {
+// 
+  TG4Globals::Exception(
+    "TG4SDManager has protected the default constructor.");
+}
+
+
+//_____________________________________________________________________________
 TG4SDManager::~TG4SDManager(){
 //
 
   delete fSDServices;
 }
+
+// operators
+
+//_____________________________________________________________________________
+TG4SDManager& TG4SDManager::operator=(const TG4SDManager& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  TG4Globals::Exception(
+    "Attempt to assign TG4SDManager singleton.");
+    
+  return *this;  
+}    
+          
 
 // public methods 
 
@@ -41,7 +72,6 @@ void TG4SDManager::Initialize()
 // ---
 
   fSDConstruction->Construct();
-  TG4GeometryManager::Instance()->FillMediumIdVector();
 }  
   
 
