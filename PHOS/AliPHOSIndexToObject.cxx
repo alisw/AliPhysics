@@ -15,6 +15,12 @@
 
 /* $Id:  */
 
+/* $Log:
+   29.05.2001 Yuri Kharlov:
+              Everywhere reading the treese TTree->GetEvent(i)
+              is replaced by reading the branches TBranch->GetEntry(0)
+*/
+
 //_________________________________________________________________________
 //  A singleton. This class should be used in the analysis stage to get 
 //  reconstructed objects: Digits, RecPoints, TrackSegments and RecParticles,
@@ -109,6 +115,7 @@ AliPHOSIndexToObject::AliPHOSIndexToObject(const char* headerFile,const char* br
 void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const char* branchTitle)
 {
   // Points to the branches of all reconstructed objects with the specified names
+
   gAlice->GetEvent(0) ;
   // Read all reconstruction classes to extract titles of 
   // branches, constituing "reconstruction branch"
@@ -132,20 +139,23 @@ void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const cha
     if( (strcmp(branch->GetName(),"AliPHOSPID") == 0) ){
       pids[ipids] =  new  AliPHOSPIDv1() ;
       branch->SetAddress(& (pids[ipids])) ;
+      branch->GetEntry(0) ;
       ipids++ ;
     }
     if( (strcmp(branch->GetName(),"AliPHOSTrackSegmentMaker") == 0) ){
       tsms[itsms] = new  AliPHOSTrackSegmentMakerv1() ;
       branch->SetAddress(&(tsms[itsms])) ;
+      branch->GetEntry(0) ;
       itsms++ ;
     }
     if( (strcmp(branch->GetName(),"AliPHOSClusterizer") == 0) ){
       clus[iclus] = new  AliPHOSClusterizerv1() ;
       branch->SetAddress(&(clus[iclus])) ;
+      branch->GetEntry(0) ;
       iclus++ ;
     }
   }
-  gAlice->TreeR()->GetEvent(0) ;
+//    gAlice->TreeR()->GetEvent(0) ;
 
 
   //read TreeD
@@ -155,22 +165,25 @@ void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const cha
     if( (strcmp(branch->GetName(),"AliPHOSDigitizer") == 0) ){
       digs[idigs] = new  AliPHOSDigitizer() ;
       branch->SetAddress(&(digs[idigs])) ;
+      branch->GetEntry(0) ;
       idigs++ ;
     }
   }
-  gAlice->TreeD()->GetEvent(0) ;
+//    gAlice->TreeD()->GetEvent(0) ;
 
   //read TreeS
   branches = gAlice->TreeS()->GetListOfBranches() ;
   for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
     branch=(TBranch *) branches->At(ibranch) ;
+    gAlice->TreeS()->GetBranch(branch->GetName())->GetEntry(0) ; // YK
     if( (strcmp(branch->GetName(),"AliPHOSSDigitizer") == 0) ){
       sdigs[isdigs] = new  AliPHOSSDigitizer() ;
       branch->SetAddress(&(sdigs[isdigs])) ;
+      branch->GetEntry(0) ;
       isdigs++ ;
     }
   }
-  gAlice->TreeS()->GetEvent(0) ;
+//    gAlice->TreeS()->GetEvent(0) ;
 
   // now choose among read Reconstruction classes those,
   // which constituite "reconstruction branch"
@@ -214,11 +227,12 @@ void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const cha
   if((strcmp(startBranch,"PHOS") == 0) || (strcmp(startBranch,"AliPHOSDigitizer") == 0) ||cluDefined ) {
     if(!cluDefined)
       fDigitsTitle = branchTitle ; 
-    for(index = 0; index < idigs ; index++)
+    for(index = 0; index < idigs ; index++) {
       if(fDigitsTitle.CompareTo(((AliPHOSDigitizer*)digs[index])->GetDigitsBranch())== 0){
 	digDefined = kTRUE ;
 	fSDigitsTitle =((AliPHOSDigitizer*)digs[index])->GetSDigitsBranch() ;
       }
+    }
   }
   for(index = 0; index < idigs ; index++)
     if(fSDigitsTitle.CompareTo(((AliPHOSSDigitizer*)sdigs[index])->GetSDigitsBranch())== 0)
@@ -313,9 +327,10 @@ AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance(const char* headerFile,
 }
 
 //____________________________________________________________________________ 
-TParticle * AliPHOSIndexToObject::GimePrimary(Int_t index)
+TParticle * AliPHOSIndexToObject::GimePrimary(Int_t index) const
 {
-  // retrieves the primary particle indexed by index  
+  // Return primary particle numbered by <index>
+
   if(index < 0) 
     return 0 ;
   
@@ -333,8 +348,9 @@ TParticle * AliPHOSIndexToObject::GimePrimary(Int_t index)
 }
 
 //____________________________________________________________________________ 
-void AliPHOSIndexToObject::ReadTreeD(){
-  
+void AliPHOSIndexToObject::ReadTreeD()
+{
+  // Read the digit tree gAlice->TreeD()  
   if(gAlice->TreeD()== 0){
     cout << "AliPHOSIndexToObject : can not read TreeD " << endl;
     return ;
@@ -370,16 +386,19 @@ void AliPHOSIndexToObject::ReadTreeD(){
     return  ;
   }
   
-  digitsBranch->SetAddress(&fDigits) ;
+  digitsBranch   ->SetAddress(&fDigits) ;
   digitizerBranch->SetAddress(&fDigitizer) ;
+  digitsBranch   ->GetEntry(0) ;
+  digitizerBranch->GetEntry(0) ;
   
-  gAlice->TreeD()->GetEvent(0) ;
+//    gAlice->TreeD()->GetEvent(0) ;    // YK 29.05.2001
   
 }
 //____________________________________________________________________________ 
 void AliPHOSIndexToObject::ReadTreeS()
 {
-  // Reads the contents of SDigits  
+  // Read the summable digits tree gAlice->TreeS()  
+
   if(gAlice->TreeS()== 0){
     cout <<   "AliPHOSIndexToObject: can not read TreeS " << endl ;
     return ;
@@ -415,17 +434,19 @@ void AliPHOSIndexToObject::ReadTreeS()
     return ;
   }
   
-  sdigitsBranch->SetAddress(&fSDigits) ;
+  sdigitsBranch   ->SetAddress(&fSDigits) ;
   sdigitizerBranch->SetAddress(&fSDigitizer) ;
+  sdigitsBranch   ->GetEvent(0) ;
+  sdigitizerBranch->GetEvent(0) ;
   
-  gAlice->TreeS()->GetEvent(0) ;
+//    gAlice->TreeS()->GetEvent(0) ;    // YK 29.05.2001
   
 }
 //____________________________________________________________________________ 
 void AliPHOSIndexToObject::ReadTreeR()
 {
-  // Reads the contents of reconstruction Tree
-  
+  // Read the reconstrunction tree gAlice->TreeR()
+
   if(gAlice->TreeR()== 0){
     cout <<   "AliPHOSIndexToObject: can not read TreeR " << endl ;
     return ;
@@ -512,17 +533,25 @@ void AliPHOSIndexToObject::ReadTreeR()
     return ;
   }
 
-  emcBranch->SetAddress(&fEmcRecPoints) ;
-  cpvBranch->SetAddress(&fCpvRecPoints) ;
+  //    YK 29.05.2001 : Read branch instead of tree
+  emcBranch        ->SetAddress(&fEmcRecPoints) ;
+  cpvBranch        ->SetAddress(&fCpvRecPoints) ;
   clusterizerBranch->SetAddress(&fClusterizer) ;
+  emcBranch        ->GetEntry(0) ;
+  cpvBranch        ->GetEntry(0) ;
+  clusterizerBranch->GetEntry(0) ;
   
-  tsMakerBranch->SetAddress(&fTSMaker) ;
-  tsBranch->SetAddress(&fTS) ;
+  tsMakerBranch    ->SetAddress(&fTSMaker) ;
+  tsBranch         ->SetAddress(&fTS) ;
+  tsMakerBranch    ->GetEntry(0) ;
+  tsBranch         ->GetEntry(0) ;
     
-  pidBranch->SetAddress(&fPID) ;
-  rpBranch->SetAddress(&fRecParticles) ;
+  pidBranch        ->SetAddress(&fPID) ;
+  rpBranch         ->SetAddress(&fRecParticles) ;
+  pidBranch        ->GetEntry(0) ;
+  rpBranch         ->GetEntry(0) ;
   
-  gAlice->TreeR()->GetEvent(0) ;    
+//    gAlice->TreeR()->GetEvent(0) ;    // YK 29.05.2001
 
 }
 //____________________________________________________________________________ 
@@ -605,6 +634,7 @@ void AliPHOSIndexToObject::ReadPrimaries()
 void AliPHOSIndexToObject::GetEvent(Int_t event)
 {
   // Reads the content of all Tree's S, D and R
+
   if(event == fEvent) // do nothing
     return ;
     
