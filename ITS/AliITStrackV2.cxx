@@ -160,9 +160,11 @@ Int_t AliITStrackV2::PropagateToVertex(Double_t d,Double_t x0) {
   //------------------------------------------------------------------
   //This function propagates a track to the minimal distance from the origin
   //------------------------------------------------------------------
-  Double_t xv=fP2*(fX*fP2 - fP0*TMath::Sqrt(1.- fP2*fP2)); //linear approxim.
-  PropagateTo(xv,d,x0);   
-  return 0;
+  //Double_t xv=fP2*(fX*fP2 - fP0*TMath::Sqrt(1.- fP2*fP2)); //linear approxim.
+  Double_t tgf=-(fP4*fX - fP2)/(fP4*fP0 + TMath::Sqrt(1 - fP2*fP2));
+  Double_t snf=tgf/TMath::Sqrt(1.+ tgf*tgf);
+  Double_t xv=(snf - fP2)/fP4 + fX;
+  return PropagateTo(xv,d,x0);
 }
 
 //____________________________________________________________________________
