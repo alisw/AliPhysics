@@ -19,7 +19,7 @@ class TFolder ;
 // --- AliRoot header files ---
 
 #include "AliDetector.h"
-class AliEMCALGeometry ; 
+#include "AliEMCALGeometry.h" 
 class AliEMCAL : public AliDetector {
 
  public:
@@ -35,19 +35,23 @@ class AliEMCAL : public AliDetector {
   virtual void   AddHit(Int_t, Int_t*, Float_t *) const{
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
+  void Copy(AliEMCAL & emcal) ; 
   virtual void  CreateMaterials() ;   
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual void  FillESD(AliESD* esd) const ; 
   virtual void  FinishRun() {}                  
-  virtual AliEMCALGeometry * GetGeometry() const ;   
+  virtual AliEMCALGeometry * GetGeometry() const 
+  {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
+  virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;   
-  virtual void  SetTreeAddress() ;              
+  virtual AliLoader* MakeLoader(const char* topfoldername);
+  virtual void Reconstruct() const; 
+  virtual void SetTreeAddress() ;              
   virtual const TString Version() const {return TString(" ") ; }   
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ;  return *this ; }
  
-  virtual AliLoader* MakeLoader(const char* topfoldername);
   
-  virtual void    Hits2SDigits();
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
 protected:
   AliEMCALGeometry * fGeom ;   // the geometry object
