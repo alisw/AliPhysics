@@ -1,5 +1,5 @@
-#ifndef ITSgeomSSD_H
-#define ITSgeomSSD_H
+#ifndef ALIITSGEOMSSD_H
+#define ALIITSGEOMSSD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -35,6 +35,6 @@ class AliITSgeomSSD : public TObject {
     virtual ~AliITSgeomSSD() {};
     TBRIK *GetShape() const {return fShapeSSD;}
 
-    ClassDef(AliITSgeomSSD,1)	
+    ClassDef(AliITSgeomSSD,1) // ITS SSD detector geometry class
 };
 #endif

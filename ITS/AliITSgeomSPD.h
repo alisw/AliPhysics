@@ -1,5 +1,5 @@
-#ifndef ITSgeomSPD_H
-#define ITSgeomSPD_H
+#ifndef ALIITSGEOMSPD_H
+#define ALIITSGEOMSPD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -7,6 +7,7 @@
 
 #include "TShape.h"
 #include "TBRIK.h"
+
 
 class AliITSgeomSPD: public TObject {
  private:
@@ -25,11 +26,20 @@ class AliITSgeomSPD: public TObject {
     // Float_t fCellZ;      // cm
     // Float_t fCellY;      // cm
     // or what other or different information that is needed.
+    Float_t dx;
+    Float_t dy;
+    Float_t dz;
+
  public:
     AliITSgeomSPD();
     virtual ~AliITSgeomSPD(){};
     TBRIK *GetShape() const {return fShapeSPD;}
 
-    ClassDef(AliITSgeomSPD,1)	
+    
+    Float_t GetDx() const {return dx;}
+    Float_t GetDy() const {return dy;}
+    Float_t GetDz() const {return dz;}
+
+    ClassDef(AliITSgeomSPD,1) // ITS SPD detector geometry class
 };
 #endif
