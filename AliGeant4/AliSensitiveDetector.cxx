@@ -7,6 +7,8 @@
 #include "AliModule.h" 
 #include "AliRun.h"
 
+#include "TG3Units.h"
+
 AliSensitiveDetector::AliSensitiveDetector(G4String sdName, AliModule* module)
   : TG4VSensitiveDetector(sdName),
     fModule(module)
@@ -63,7 +65,9 @@ void AliSensitiveDetector::UserProcessHits(const G4Track* track,
 
   // add energy deposit of the current step
   // directly to AliRun
-  if (step) gAlice->AddEnergyDeposit(fID, step->GetTotalEnergyDeposit());
+  if (step) 
+    gAlice->AddEnergyDeposit(
+      fID, step->GetTotalEnergyDeposit()/TG3Units::Energy());
 
   // parent ID -> shunt
   G4int parentID = track->GetParentID();
