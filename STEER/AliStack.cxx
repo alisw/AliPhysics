@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/11/20 09:27:55  hristov
+Possibility to investigate a primary of not yet loaded particle (I.Hrivnacova)
+
 Revision 1.15  2001/09/04 15:10:37  hristov
 Additional protection is included to avoid some problems using Hijing
 
@@ -106,8 +109,8 @@ AliStack::AliStack()
   //
   
   // Create the particles arrays 
-  fParticles      = new TClonesArray("TParticle",1000);
-  fParticleMap    = new TObjArray(10000);
+  fParticles      = 0;
+  fParticleMap    = 0;
   fParticleBuffer = 0;
   fNtrack         = 0;
   fCurrent        = -1;
@@ -561,9 +564,15 @@ void  AliStack::ResetArrays(Int_t size)
   // Resets stack arrays
   //
 
-  fParticles->Clear();
-  fParticleMap->Clear();
-  if (size>0) fParticleMap->Expand(size);  
+  if (fParticles) 
+    fParticles->Clear();
+  else
+    fParticles = new TClonesArray("TParticle",1000);
+  if (fParticleMap) {
+    fParticleMap->Clear();
+    if (size>0) fParticleMap->Expand(size);}
+  else
+    fParticleMap = new TObjArray(size);
 }
 
 //_____________________________________________________________________________
