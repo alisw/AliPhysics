@@ -370,22 +370,22 @@ class AliITSgeom : public TObject {
     void operator=(AliITSgeom &source);// = operator
     virtual ~AliITSgeom();             // Default destructor
     // this is a dummy routine for now.
-    inline Int_t GetNdetectors(Int_t layer) {return fNdet[layer-1];}
-    inline Int_t GetNladders(Int_t layer)   {return fNlad[layer-1];}
-    inline Int_t GetNlayers()               {return fNlayers;}
-    inline void GetAngles(Int_t lay,Int_t lad,Int_t det,
-			  Float_t &rx,Float_t &ry,Float_t &rz){
+    Int_t GetNdetectors(Int_t layer) const {return fNdet[layer-1];}
+    Int_t GetNladders(Int_t layer)   const {return fNlad[layer-1];}
+    Int_t GetNlayers()               const {return fNlayers;}
+    void GetAngles(Int_t lay,Int_t lad,Int_t det,
+			  Float_t &rx,Float_t &ry,Float_t &rz)const {
                           rx = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].frx;
                           ry = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fry;
                           rz = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].frz;}
-    inline void GetTrans(Int_t lay,Int_t lad,Int_t det,
-			 Float_t &x,Float_t &y,Float_t &z){
+    void GetTrans(Int_t lay,Int_t lad,Int_t det,
+			 Float_t &x,Float_t &y,Float_t &z)const {
                          x = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fx0;
                          y = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fy0;
                          z = fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fz0;}
     void SetByAngles(Int_t lay,Int_t lad,Int_t det,
 		     Float_t rx,Float_t ry,Float_t rz);
-    inline void SetTrans(Int_t lay,Int_t lad,Int_t det,
+    void SetTrans(Int_t lay,Int_t lad,Int_t det,
 			 Float_t x,Float_t y,Float_t z){
                          fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fx0 = x;
                          fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fy0 = y;
@@ -400,7 +400,7 @@ class AliITSgeom : public TObject {
     void LtoG(const Int_t index,const Float_t *l,Float_t *g);
     void LtoGMomentum(Int_t lay,Int_t lad,Int_t det,const Float_t *l,Float_t *g);
     Int_t GetModuleIndex(Int_t lay,Int_t lad,Int_t det);
-    void  GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det);
+    void GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det);
     void GlobalChange(Float_t  *tran,Float_t  *rot);
     void GlobalCylindericalChange(Float_t *tran,Float_t *rot);
     void RandomChange(Float_t *stran,Float_t *srot);
@@ -410,7 +410,9 @@ class AliITSgeom : public TObject {
     ofstream &PrintGeom(ofstream &out);
     ifstream &ReadGeom(ifstream &in);
     virtual Int_t IsVersion() const {return 0;}
-    inline void AddShape(TObject *shp){fShape->AddLast(shp);}
+    void AddShape(TObject *shp){fShape->AddLast(shp);}
+    virtual TObject *GetShape(Int_t lay,Int_t lad,Int_t det)
+	const {return fShape->At(fg[lay-1][fNdet[lay-1]*(lad-1)+det-1].fShapeIndex);}
 
   ClassDef(AliITSgeom,1)
 };

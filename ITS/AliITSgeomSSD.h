@@ -33,7 +33,7 @@ class AliITSgeomSSD : public TObject {
  public:
     AliITSgeomSSD();
     virtual ~AliITSgeomSSD() {};
-    inline TBRIK *GetShape(){return fShapeSSD;}
+    TBRIK *GetShape() const {return fShapeSSD;}
 
     ClassDef(AliITSgeomSSD,1)	
 };

@@ -13,6 +13,11 @@
  
 class AliITSv3 : public AliITS {
 
+private:
+    Int_t fId3N; // The number of layers for geometry version 5
+    // The name of the layers as defined in the Geant tree.
+    char  **fId3Name;
+
 protected:
   Int_t fMinorVersionV3;  //Minor version identifier
  
@@ -24,7 +29,7 @@ public:
    virtual void   CreateMaterials();
    virtual void   Init();   
    virtual Int_t  IsVersion() const {return 3;}
-   virtual inline void   SetMinorVersion(Int_t version) {fMinorVersionV3=version;}
+   virtual void   SetMinorVersion(Int_t version) {fMinorVersionV3=version;}
    virtual void   StepManager();
    
    ClassDef(AliITSv3,1)  //Hits manager for set:ITS version 3

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +45,7 @@ $Log$
 ClassImp(AliITSv5)
  
 //_____________________________________________________________________________
-AliITSv5::AliITSv5() : AliITS(){
+AliITSv5::AliITSv5() {
     //
     // Standard constructor for the ITS
     //

@@ -181,36 +181,37 @@ class AliITShit : public AliHit {
     AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
     virtual ~AliITShit() {}
     // Get Hit information functions.
-    // inline virtual int GetTrack(){return fTrack;} // define in AliHit
-    // inline virtual void SetTrack(int track){fTrack=track;) // AliHit
-    inline virtual Int_t GetTrackStatus() {return fStatus;}
-    inline virtual Int_t GetLayer() {return fLayer;}
-    inline virtual Int_t GetLadder() {return fLadder;}
-    inline virtual Int_t GetDetector() {return fDet;}
-    inline virtual void  GetDetectorID(Int_t &layer,Int_t &ladder,
+    // virtual int GetTrack() const {return fTrack;} // define in AliHit
+    // virtual void SetTrack(int track) const {fTrack=track;) // AliHit
+    virtual Int_t GetTrackStatus() const {return fStatus;}
+    virtual Int_t GetLayer() const {return fLayer;}
+    virtual Int_t GetLadder() const {return fLadder;}
+    virtual Int_t GetDetector() const {return fDet;}
+    virtual void  GetDetectorID(Int_t &layer,Int_t &ladder,
 	 			       Int_t &detector)
-                     {layer=fLayer;ladder=fLadder;detector=fDet;return;};
-    inline virtual Float_t GetIonization() {return fDestep;}
+                     const {layer=fLayer;ladder=fLadder;detector=fDet;return;};
+    virtual Float_t GetIonization() const {return fDestep;}
     //
-    inline virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z)
-                                    {x=fX;y=fY;z=fZ;return;};
-    inline virtual Float_t GetTOF() {return fTof;}
-    inline virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z,
+    virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z)
+                                    const {x=fX;y=fY;z=fZ;return;};
+    virtual Float_t GetTOF() const {return fTof;}
+    virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z,
 				    Float_t &tof)
-                                    {x=fX;y=fY;z=fZ,tof=fTof;return;};
-    inline virtual Float_t GetXG(){return fX;}
-    inline virtual Float_t GetYG(){return fY;}
-    inline virtual Float_t GetZG(){return fZ;}
-           virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z);
-           virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z,
+                                    const {x=fX;y=fY;z=fZ,tof=fTof;return;};
+    virtual Float_t GetXG()const {return fX;}
+    virtual Float_t GetYG()const {return fY;}
+    virtual Float_t GetZG()const {return fZ;}
+    virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z);
+    virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z,
 				     Float_t &tof);
-           virtual Float_t GetXL();
-           virtual Float_t GetYL();
-           virtual Float_t GetZL();
+    virtual Float_t GetXL();
+    virtual Float_t GetYL();
+    virtual Float_t GetZL();
     // Get Monti Carlo information about hit.
-    inline virtual void GetMomentumG(Float_t &px,Float_t &py,Float_t &pz)
-                                    {px=fPx;py=fPy;pz=fPz;return;};
-           virtual void GetMomentumL(Float_t &px,Float_t &py,Float_t &pz);
+    virtual void GetMomentumG(Float_t &px,Float_t &py,Float_t &pz)
+                                    const {px=fPx;py=fPy;pz=fPz;return;};
+    virtual void GetMomentumL(Float_t &px,Float_t &py,Float_t &pz);
+
     ClassDef(AliITShit,1)  //Hits object for set:ITS
 };
 

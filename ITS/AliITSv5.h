@@ -27,7 +27,7 @@ public:
            virtual void  CreateGeometry();
            virtual void  CreateMaterials();
            virtual void  Init();   
-    inline virtual Int_t IsVersion() const {return 5;}
+           virtual Int_t IsVersion() const {return 5;}
            virtual void  StepManager();
   
   ClassDef(AliITSv5,1)  //Hits manager for ITS version 5

@@ -21,16 +21,16 @@ public:
   AliITSdigitSSD(Int_t *tracks, Int_t *digits, Int_t strNo, Int_t s, Bool_t p);
 
   // Methods for accesing signal on strip				
-  inline void   SetSignal(Int_t s) {fSignal = s;}           
-  inline Int_t  GetSignal() {return fSignal;}               		         
+  void   SetSignal(Int_t s) {fSignal = s;}           
+  Int_t  GetSignal() const {return fSignal;}               		         
   
   // Methods for accesing strip number  
-  inline Int_t  GetStripNumber() {return fStripNumber;};
-  inline void   SetStripNumber(Int_t s) {fStripNumber = s;};
+  Int_t  GetStripNumber() const {return fStripNumber;};
+  void   SetStripNumber(Int_t s) {fStripNumber = s;};
     
   // Methods for accesing side of the strip P/N
-  inline Bool_t IsSideP() {return fSide;};              //returns true when side P
-  inline void   SetSideP(Bool_t b) {fSide = b;};        //set side of digit
+  Bool_t IsSideP() const {return fSide;};              //returns true when side P
+  void   SetSideP(Bool_t b) {fSide = b;};        //set side of digit
     	
   ClassDef(AliITSdigitSSD, 1)
 };

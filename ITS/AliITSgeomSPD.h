@@ -28,7 +28,7 @@ class AliITSgeomSPD: public TObject {
  public:
     AliITSgeomSPD();
     virtual ~AliITSgeomSPD(){};
-    inline TBRIK *GetShape(){return fShapeSPD;}
+    TBRIK *GetShape() const {return fShapeSPD;}
 
     ClassDef(AliITSgeomSPD,1)	
 };

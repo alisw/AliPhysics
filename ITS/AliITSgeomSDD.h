@@ -27,7 +27,7 @@ class AliITSgeomSDD: public TObject {
  public:
     AliITSgeomSDD();
     virtual ~AliITSgeomSDD(){};
-    inline TBRIK *GetShape(){return fShapeSDD;}
+    TBRIK *GetShape() const {return fShapeSDD;}
 
     ClassDef(AliITSgeomSDD,1)	
 };

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +54,7 @@ extern "C" void type_of_call its_geo4(Int_t&, Int_t*);
 ClassImp(AliITSv4)
  
 //_____________________________________________________________________________
-AliITSv4::AliITSv4() : AliITS() 
+AliITSv4::AliITSv4()
 {
   //
   // Default constructor for the ITS

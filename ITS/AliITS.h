@@ -220,10 +220,10 @@ class AliITS : public AliDetector {
            virtual void   CreateGeometry() {};
            virtual void   CreateMaterials();
 
-    inline virtual TObjArray* GetModules() {return fITSmodules;}
-    inline virtual TObjArray* GetPoints(){return fITSpoints;}
+           virtual TObjArray* GetModules() const {return fITSmodules;}
+           virtual TObjArray* GetPoints() const {return fITSpoints;}
 
-    inline void GetGeometryVersion(Int_t &a,Int_t &b)
+           void GetGeometryVersion(Int_t &a,Int_t &b) const 
       {a = fMajorVersion;b=fMinorVersion;return;}
            virtual Int_t  IsVersion() const {return 1;}
                    Int_t  DistancetoPrimitive(Int_t px, Int_t py);
@@ -233,8 +233,8 @@ class AliITS : public AliDetector {
            virtual void   StepManager()=0;
     //
     // ITS geometry functions
-    inline virtual AliITSgeom *GetITSgeom(){return fITSgeom;}
-    inline virtual TObjArray  *GetITSpoints(){return fITSpoints;}
+           virtual AliITSgeom *GetITSgeom() const {return fITSgeom;}
+           virtual TObjArray  *GetITSpoints() const {return fITSpoints;}
 
     ClassDef(AliITS,1)
 };

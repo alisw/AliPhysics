@@ -24,7 +24,7 @@ public:
    virtual void   CreateMaterials();
    virtual void   Init();   
    virtual Int_t  IsVersion() const {return 4;}
-   virtual inline void   SetMinorVersion(Int_t version) {fMinorVersion=version;}
+   virtual void   SetMinorVersion(Int_t version) {fMinorVersion=version;}
    virtual void   StepManager();
    
    ClassDef(AliITSv4,1)  //Hits manager for set:ITS version 4

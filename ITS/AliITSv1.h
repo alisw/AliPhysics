@@ -12,6 +12,11 @@
 #include "AliITS.h"
  
 class AliITSv1 : public AliITS {
+
+private:
+    Int_t fId1N; // The number of layers for geometry version 5
+    // The name of the layers as defined in the Geant tree.
+    char  **fId1Name;
  
 public:
   AliITSv1();

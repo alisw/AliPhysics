@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,19 +49,35 @@ $Log$
 ClassImp(AliITSv3)
  
 //_____________________________________________________________________________
-AliITSv3::AliITSv3() : AliITS(){
-  //
-  // Default constructor for ITS
-  //
-  fMinorVersionV3=1;
+AliITSv3::AliITSv3() {
+    //
+    // Default constructor for ITS
+    //
+    fId3N = 6;
+    fId3Name = new char*[fId3N];
+    fId3Name[0] = "ITS1";
+    fId3Name[1] = "ITS2";
+    fId3Name[2] = "ITS3";
+    fId3Name[3] = "ITS4";
+    fId3Name[4] = "ITS5";
+    fId3Name[5] = "ITS6";
+    fMinorVersionV3=1;
 }
  
 //_____________________________________________________________________________
 AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
-  //
-  // Standard constructor for ITS
-  // 
-  fMinorVersionV3=1;
+    //
+    // Standard constructor for ITS
+    // 
+    fId3N = 6;
+    fId3Name = new char*[fId3N];
+    fId3Name[0] = "ITS1";
+    fId3Name[1] = "ITS2";
+    fId3Name[2] = "ITS3";
+    fId3Name[3] = "ITS4";
+    fId3Name[4] = "ITS5";
+    fId3Name[5] = "ITS6";
+    fMinorVersionV3=1;
 }
  
 //_____________________________________________________________________________
@@ -4598,14 +4617,25 @@ void AliITSv3::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliITSv3::Init()
-{
-  //
-  // Initialise its after it is built
-  //
-  AliITS::Init();
-  fMajorVersion = 3;
-  fMinorVersion = fMinorVersionV3;
+void AliITSv3::Init(){
+    //
+    // Initialise its after it is built
+    //
+    Int_t i,j,l;
+
+    fIdN       = fId3N;;
+    fIdName    = new char*[fIdN];
+    fIdSens    = new Int_t[fIdN];
+    for(i=0;i<fId3N;i++) {
+	l = strlen(fId3Name[i]);
+	fIdName[i] = new char[l+1];
+	for(j=0;j<l;j++) fIdName[i][j] = fId3Name[i][j];
+	fIdName[i][l] = '\0'; // Null terminate this string.
+    } // end for i
+    //
+    AliITS::Init();
+    fMajorVersion = 3;
+    fMinorVersion = fMinorVersionV3;
 } 
 
 //_____________________________________________________________________________
@@ -4679,4 +4709,26 @@ void AliITSv3::StepManager()
     hits[7]=gMC->TrackTime();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }      
+}
+
+//____________________________________________________________________________
+void AliITSv3::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliITSv3.
+
+   if (R__b.IsReading()) {
+      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+      AliITS::Streamer(R__b);
+      // This information does not need to be read. It is "hard wired"
+      // into this class via its creators.
+      //R__b >> fId3N;
+      //R__b.ReadArray(fId3Name);
+   } else {
+      R__b.WriteVersion(AliITSv3::IsA());
+      AliITS::Streamer(R__b);
+      // This information does not need to be saved. It is "hard wired"
+      // into this class via its creators.
+      //R__b << fId3N;
+      //R__b.WriteArray(fId3Name, __COUNTER__);
+   }
 }

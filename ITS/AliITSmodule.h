@@ -50,10 +50,10 @@ public:
     //________________________________________________________________
     //
     
-    inline Int_t GetIndex()  { return fIndex;}
-    //inline Int_t GetLayer()  { return fLayer;}
-    //inline Int_t GetLadder() { return fLadder;}
-    //inline Int_t GetDet()    { return fDet;}
+    Int_t GetIndex()  const { return fIndex;}
+    //Int_t GetLayer()  const { return fLayer;}
+    //Int_t GetLadder() const { return fLadder;}
+    //Int_t GetDet()    const { return fDet;}
     
     
     //________________________________________________________________
@@ -62,10 +62,10 @@ public:
     //________________________________________________________________
     //
     
-    inline Int_t GetNhits() { return fNhitsM;} 
+    Int_t GetNhits() const { return fNhitsM;} 
     // returns number of hits in this module
                   
-    inline TObjArray *GetHits() { return fHitsM; }
+    TObjArray *GetHits() const { return fHitsM; }
     // returns pointer to array (TClonesArray) of pointers to hits
     
     Int_t  AddHit(AliITShit *hit); 
