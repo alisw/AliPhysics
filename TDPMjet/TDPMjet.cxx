@@ -214,8 +214,6 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	      DTEVT1.vhkk[i][1],
 	      DTEVT1.vhkk[i][2],
 	      DTEVT1.vhkk[i][3]);
-	  printf("%Particle: d %d %d %d \n", i, DTEVT1.idhkk[i],  DTEVT1.isthkk[i], iParent);
-	  
       } // Particle loop  
   }
   return nump;
