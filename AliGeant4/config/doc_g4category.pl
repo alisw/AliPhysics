@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 # $Id$
 # Ivana Hrivnacova 15.2.00
 #
@@ -86,7 +86,7 @@ print OUTPUT "<ADDRESS>\n";
 print OUTPUT "Created on $today by <B>$user</B> <BR>\n";
 print OUTPUT "using the HTML generator\n";
 print OUTPUT "<A HREF=\"http://home.cern.ch/~binko/Ddl2Html/Ddl2Html.html\">Ddl2Html description</A>\n";
-print OUTPUT " (the source <A HREF=\"http://home.cern.ch/~binko/Ddl2Html/Ddl2Html.code\">Perl5 code</A>)\n";
+print OUTPUT " (the source <A HREF=\"http://home.cern.ch/~binko/Ddl2Html/Ddl2Html.code\">Perl code</A>)\n";
 print OUTPUT "</ADDRESS>\n";
 print OUTPUT "\n";
 print OUTPUT "</BODY bgcolor=#FFFFFF >\n";

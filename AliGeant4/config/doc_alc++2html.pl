@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 # $Id$
 # Ivana Hrivnacova 12.2.99
 #

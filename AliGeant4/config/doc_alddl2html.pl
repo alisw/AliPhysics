@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl5
+#!/usr/bin/perl
 # $Id$
 ################################################################################
 #
@@ -456,7 +456,7 @@ sub create_address
   print HLPF "using the HTML generator\n";
   print HLPF "<A HREF=\"http://home.cern.ch/~binko/Ddl2Html/Ddl2Html.html\">Ddl2Html description</A>\n";
   print HLPF " (the source ";
-  print HLPF "<A HREF=\"http://home.cern.ch/~binko/Ddl2Html/Ddl2Html.code\">Perl5 code</A>)\n";
+  print HLPF "<A HREF=\"http://home.cern.ch/~binko/Ddl2Html/Ddl2Html.code\">Perl code</A>)\n";
   print HLPF "</ADDRESS>\n\n";
 
   print HLPF "</BODY bgcolor=#FFFFFF >\n\n";

@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 # $Id$
 # by I. Hrivnacova, 22.6. 2000
 #
