@@ -10,8 +10,8 @@
 ////////////////////////////////////////////////
  
 #include "AliDetector.h"
-#include "AliLoader.h"
 
+class AliLoader;
 class TClonesArray;
 class TFile;
 class AliPMDRecPoint;
@@ -38,10 +38,8 @@ public:
   virtual void  SetGEO(Float_t p1, Float_t p2, Float_t p3);
   virtual void  SetPadSize(Float_t p1, Float_t p2, Float_t p3, Float_t p4);
   virtual void  StepManager();
-  virtual void  AddRecPoint(const AliPMDRecPoint &p);
   virtual void  MakeBranch(Option_t* option);
   virtual void  SetTreeAddress();
-  virtual void  ResetHits();
   
   virtual void  Hits2SDigits();
   virtual void  SDigits2Digits();
@@ -58,11 +56,6 @@ public:
   Float_t fPadSize[4];       // size of the pads
   Int_t   fNumPads[4];       // number of the pads
 
-
- private:
-  TClonesArray* fRecPoints;   //! List of reconstructed hits
-  Int_t         fNRecPoints;  // Number of reconstructed hits
-  
-  ClassDef(AliPMD,5)  // Base Class for Photon Multiplicity Detector
+  ClassDef(AliPMD,6)  // Base Class for Photon Multiplicity Detector
 };
 #endif

@@ -40,17 +40,14 @@
 
 #include <TBRIK.h>
 #include <TClonesArray.h>
-#include <TFile.h>
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 
-#include "AliConst.h" 
 #include "AliLoader.h" 
 #include "AliPMDLoader.h" 
 #include "AliPMD.h"
-#include "AliPMDRecPoint.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliPMDDigitizer.h"
@@ -67,8 +64,6 @@ AliPMD::AliPMD()
   //
   fIshunt = 0;
 
-  fRecPoints  = 0;
-
 }
  
 //_____________________________________________________________________________
@@ -84,9 +79,6 @@ AliPMD::AliPMD(const char *name, const char *title)
   fHits   = new TClonesArray("AliPMDhit",  405);
   gAlice->GetMCApp()->AddHitList(fHits);
 
-  fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
-  fNRecPoints = 0;
-  
 
   fIshunt =  0;
   
@@ -129,10 +121,8 @@ AliLoader* AliPMD::MakeLoader(const char* topfoldername)
 AliPMD::~AliPMD()
 {
   //
-  // Default constructor
+  // Destructor
   //
-    delete fRecPoints;
-    fNRecPoints=0;
 }
 
 //_____________________________________________________________________________
@@ -252,76 +242,28 @@ void AliPMD::StepManager()
   //
 }
 
-void AliPMD::AddRecPoint(const AliPMDRecPoint &p)
-{
-    //
-    // Add a PMD reconstructed hit to the list
-    //
-    TClonesArray &lrecpoints = *fRecPoints;
-    new(lrecpoints[fNRecPoints++]) AliPMDRecPoint(p);
-}
-
 void AliPMD::MakeBranch(Option_t* option)
 {
     // Create Tree branches for the PMD
     
-    const char *cR = strstr(option,"R");
     const char *cH = strstr(option,"H");
     if (cH && fLoader->TreeH() && (fHits == 0x0))
       fHits   = new TClonesArray("AliPMDhit",  405);
     
     AliDetector::MakeBranch(option);
-
-    if (cR  && fLoader->TreeR()) {
-      printf("Make Branch - TreeR address %p\n",(void*)fLoader->TreeR());
-    
-      const Int_t kBufferSize = 4000;
-      char branchname[30];
-      
-      sprintf(branchname,"%sRecPoints",GetName());
-      if (fRecPoints == 0x0) {
-        fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
-      }
-      MakeBranchInTree(fLoader->TreeR(), branchname, &fRecPoints, kBufferSize,0);
-   }	
 }
 
 
 void AliPMD::SetTreeAddress()
 {
-  // Set branch address for the TreeR
-    char branchname[30];
-    
+  // Set branch address
+
     if (fLoader->TreeH() && fHits==0x0)
       fHits   = new TClonesArray("AliPMDhit",  405);
       
     AliDetector::SetTreeAddress();
-
-    TBranch *branch;
-    TTree *treeR = fLoader->TreeR();
-
-    sprintf(branchname,"%s",GetName());
-    if (treeR) {
-       branch = treeR->GetBranch(branchname);
-       if (branch) 
-       {
-         if (fRecPoints == 0x0) {
-           fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
-         }
-         branch->SetAddress(&fRecPoints);
-       }
-    }
 }
 
-void AliPMD::ResetHits()
-{
-  //
-  // Reset number of hits and the hits array
-  //
-    AliDetector::ResetHits();
-    fNRecPoints   = 0;
-    if (fRecPoints)   fRecPoints->Clear();
-}
 //____________________________________________________________________________
 void AliPMD::Hits2SDigits()  
 { 
