@@ -15,6 +15,9 @@
 #include "AliStack.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
+#else
+const Int_t kXiMinus = 3312;
+const Int_t kOmegaMinus = 3334;
 #endif
 
 
@@ -360,8 +363,8 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 
     // loop over calo tracks
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfCaloTracks(); iTrack++) {
-      AliESDCaloTrack* track = esd->GetCaloTrack(iTrack);
-      TParticle* recParticle = track->GetRecParticle();
+      AliESDCaloTrack* caloTrack = esd->GetCaloTrack(iTrack);
+      TParticle* recParticle = caloTrack->GetRecParticle();
       if (recParticle->InheritsFrom("AliPHOSRecParticle")) {
 	hEPHOS->Fill(recParticle->Energy());
       } else if (recParticle->InheritsFrom("AliEMCALRecParticle")) {
@@ -373,12 +376,14 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     }
 
     // loop over muon tracks
+    {
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfMuonTracks(); iTrack++) {
-      AliESDMuonTrack* track = esd->GetMuonTrack(iTrack);
-      Double_t ptInv = TMath::Abs(track->GetInverseBendingMomentum());
+      AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
+      Double_t ptInv = TMath::Abs(muonTrack->GetInverseBendingMomentum());
       if (ptInv > 0.001) {
 	hPtMUON->Fill(1./ptInv);
       }
+    }
     }
 
     // loop over V0s
