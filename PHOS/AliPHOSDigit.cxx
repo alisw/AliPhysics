@@ -129,7 +129,14 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   return rv ; 
   
 }
-
+//____________________________________________________________________________
+void AliPHOSDigit::ShiftPrimary(Int_t shift){
+  //shifts primary nimber to BIG offset, to separate primary in different TreeK
+  Int_t index  ;
+  for(index = 0; index <fNprimary; index ++ ){
+    fPrimary[index] = fPrimary[index]+ shift * 10000000   ;
+  } 
+}
 //____________________________________________________________________________
 Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const 
 {

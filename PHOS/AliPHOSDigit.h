@@ -50,6 +50,7 @@ class AliPHOSDigit : public AliDigitNew {
   void    SetAmp(Int_t Amp) { 
     // sets the amplitude data member 
     fAmp=Amp ; } 
+  void ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
 
  private:
 

@@ -19,7 +19,8 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
 		 AliPHOSCPVDigit.cxx AliPHOSDigit.cxx  \
                  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
 		 AliPHOSPpsdRecPoint.cxx AliPHOSCpvRecPoint.cxx \
-		 AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  AliPHOSLink.cxx \
+		 AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  \
+                 AliPHOSLink.cxx AliPHOSSDigitizer.cxx AliPHOSDigitizer.cxx\
 		 AliPHOSReconstructioner.cxx  AliPHOSTrackSegment.cxx \
                  AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
                  AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv1.cxx \

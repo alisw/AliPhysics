@@ -42,7 +42,7 @@ public:
 
   virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;  // add a digit to the digits list  
   Int_t       Compare(const TObject * obj) const;                         // method for sorting  
-  Float_t CoreEnergy() ;
+  Float_t     CoreEnergy() ;
   void        EvalAll() ;
   void        EvalLocalPosition() ;                                // computes the position in the PHOS module 
   Float_t     GetDelta () const {     return fDelta ; }    

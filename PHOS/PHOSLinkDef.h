@@ -18,6 +18,8 @@
 #pragma link C++ class AliPHOSPpsdRecPoint+;
 #pragma link C++ class AliPHOSReconstructioner+;
 #pragma link C++ class AliPHOSRecPoint+;
+#pragma link C++ class AliPHOSSDigitizer+;
+#pragma link C++ class AliPHOSDigitizer+;
 #pragma link C++ class AliPHOSv0+;
 #pragma link C++ class AliPHOSv1+;
 #pragma link C++ class AliPHOSv2+;
