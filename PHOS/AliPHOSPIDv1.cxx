@@ -194,7 +194,7 @@ void AliPHOSPIDv1::Init()
 
   //  gime->SetRecParticlesTitle(BranchName()) ;
   if ( gime == 0 ) {
-    cerr << "ERROR: AliPHOSPIDv1::Init -> Could not obtain the Getter object !" << endl ; 
+    Error("Init", "Could not obtain the Getter object !" ) ;  
     return ;
   } 
 
@@ -349,7 +349,8 @@ const Int_t  AliPHOSPIDv1::GetPrincipalSign(const Double_t* P,const Int_t eff_pu
   if((eff_pur==1)&&(R <2.   )) prinsign= 1;
   if((eff_pur==0)&&(R <9./2.)) prinsign= 1;
 
-  if(R<0)cout<<"Error: Negative square?"<<endl;
+  if(R<0)
+    Error("GetPrincipalSign", "Negative square?") ;
   return prinsign;
 
 }
@@ -454,10 +455,11 @@ const Int_t  AliPHOSPIDv1::GetEffPurOption(const TString Eff_Pur) const
     eff_pur = 2 ;
   else{
     eff_pur = -1;
-    cout<<"Invalid Efficiency-Purity option"<<endl;
-    cout<<"Possible options: HIGH EFFICIENCY =    LOW PURITY"<<endl;
-    cout<<"                MEDIUM EFFICIENCY = MEDIUM PURITY"<<endl;
-    cout<<"                   LOW EFFICIENCY =   HIGH PURITY"<<endl;
+    TString message ; 
+    message  = "Invalid Efficiency-Purity option\n";
+    message += "Possible options: HIGH EFFICIENCY =    LOW PURITY\n" ;
+    message += "                MEDIUM EFFICIENCY = MEDIUM PURITY\n" ;
+    message += "                   LOW EFFICIENCY =   HIGH PURITY\n" ;
   }
 
   return eff_pur;
@@ -476,9 +478,9 @@ void  AliPHOSPIDv1::SetEllipseParameter(TString Param, Int_t i, Double_t par)
   if(Param.Contains("x0"))p=15; 
   if(Param.Contains("y0"))p=16;
   if((i>4)||(i<0))
-    cout<<"Error:: No parameter with index "<<i<<endl; 
+    Error("SetEllipseParameter", "No parameter with index %d", i) ; 
   else if(p==-1)
-    cout<<"Error:: No parameter with name "<<Param<<endl; 
+     Error("SetEllipseParameter", "No parameter with name %s", Param.Data() ) ; 
   else
     (*fParameters)(p,i) = par ;
 } 
@@ -498,9 +500,9 @@ const Double_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(const TString Param
   if(Param.Contains("y0"))p=16;
 
   if((i>4)||(i<0))
-    cout<<"Error:: No parameter with index "<<i<<endl; 
+    Error("GetParameterToCalculateEllipse", "No parameter with index", i) ; 
   else if(p==-1)
-    cout<<"Error:: No parameter with name "<<Param<<endl; 
+    Error("GetParameterToCalculateEllipse", "No parameter with name %s", Param.Data() ) ; 
   else
     par = (*fParameters)(p,i) ;
   
@@ -587,8 +589,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
 //     }
     
 //     if ( phospidfound || pidfound ) {
-//       cerr << "WARNING: AliPHOSPIDv1::Exec -> RecParticles and/or PIDtMaker branch with name " 
-// 	   << taskName.Data() << " already exits" << endl ;
+//       Error("Exec", "RecParticles and/or PIDtMaker branch with name %s already exists", taskName.Data() ) ; 
 //       return ; 
 //     }       
 //   }
@@ -621,12 +622,10 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
-    cout << "AliPHOSPID:" << endl ;
-    cout << "  took " << gBenchmark->GetCpuTime("PHOSPID") << " seconds for PID " 
-	 <<  gBenchmark->GetCpuTime("PHOSPID")/nevents << " seconds per event " << endl ;
-    cout << endl ;
-  }
-  
+    Info("Exec", "took %f seconds for PID %f seconds per event", 
+	 gBenchmark->GetCpuTime("PHOSPID"),  
+	 gBenchmark->GetCpuTime("PHOSPID")/nevents) ;
+  } 
 }
 
 //____________________________________________________________________________
@@ -639,7 +638,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
   if ( !emcRecPoints || !cpvRecPoints || !trackSegments ) {
-    cerr << "ERROR:  AliPHOSPIDv1::MakeRecParticles -> RecPoints or TrackSegments not found ! " << endl ; 
+    Error("MakeRecParticles", "RecPoints or TrackSegments not found !") ;  
     abort() ; 
   }
   TClonesArray * recParticles  = gime->RecParticles() ; 
@@ -671,8 +670,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     
     // YK: check if (emc != 0) !!!
     if (!emc) {
-      cerr << "ERROR:  AliPHOSPIDv1::MakeRecParticles -> emc("
-	   <<ts->GetEmcIndex()<<") = "         <<emc<< endl;
+      Error("MakeRecParticles", "-> emc(%d) = %d", ts->GetEmcIndex(), emc ) ;
       abort();
     }
     Float_t    e = emc->GetEnergy() ;   
@@ -754,21 +752,18 @@ void  AliPHOSPIDv1::MakeRecParticles(){
 void  AliPHOSPIDv1:: Print()
 {
   // Print the parameters used for the particle type identification
-    cout <<  "=============== AliPHOSPID1 ================" << endl ;
-    cout <<  "Making PID "<< endl ;
-//     cout <<  "    Headers file:               " << fHeaderFileName.Data() << endl ;
-//     cout <<  "    RecPoints branch title:     " << fRecPointsTitle.Data() << endl ;
-//     cout <<  "    TrackSegments Branch title: " << fTrackSegmentsTitle.Data() << endl ;
-//     cout <<  "    RecParticles Branch title   " << fRecParticlesTitle.Data() << endl;
-    cout <<  "    Pricipal analysis file from 0.5 to 100 " << fFileName.Data() << endl;
-    cout <<  "    Name of parameters file     "<<fFileNamePar.Data() << endl ;
-    cout <<  "    Matrix of Parameters: 18x4"<<endl;
-    cout <<  "        RCPV 6x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]"<<endl;
-    cout <<  "        TOF  6x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]"<<endl;
-    cout <<  "        PCA  5x4 [5 ellipse parametres and 4 parametres to calculate them: A/Sqrt(E) + B* E + C * E^2 + D]"<<endl;
-    cout <<  "        Energy Calibration  1x3 [3 parametres to calibrate energy: A + B* E + C * E^2]"<<endl;
+  TString message ; 
+    message  = "\n=============== AliPHOSPID1 ================\n" ;
+    message += "Making PID\n";
+    message += "    Pricipal analysis file from 0.5 to 100 %s\n" ; 
+    message += "    Name of parameters file     %s\n" ;
+    message += "    Matrix of Parameters: 18x4\n" ;
+    message += "        RCPV 6x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n" ;
+    message += "        TOF  6x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n" ;
+    message += "        PCA  5x4 [5 ellipse parametres and 4 parametres to calculate them: A/Sqrt(E) + B* E + C * E^2 + D]\n" ;
+    message += "        Energy Calibration  1x3 [3 parametres to calibrate energy: A + B* E + C * E^2]\n" ;
+    Info("Print", message.Data(), fFileName.Data(), fFileNamePar.Data() ) ; 
     fParameters->Print() ;
-    cout <<  "============================================" << endl ;
 }
 
 //____________________________________________________________________________
@@ -856,26 +851,25 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
 
   TClonesArray * recParticles = gime->RecParticles(BranchName()) ; 
-  
-  cout << "AliPHOSPIDv1: event "<<gAlice->GetEvNumber()  << endl ;
-  cout << "       found " << recParticles->GetEntriesFast() << " RecParticles " << endl ;
-  
+
+  TString message ; 
+  message  = "event %d\n" ; 
+  message += "       found %d RecParticles\n" ; 
+  Info("PrintRecParticles", message.Data(), gAlice->GetEvNumber(), recParticles->GetEntriesFast() ) ; 
   if(strstr(option,"all")) {  // printing found TS
-    
-    cout << "  PARTICLE       "   
-	 << "  Index    "  << endl ;
+    message = "  PARTICLE         Index    \n" ;
+    Info("PrintRecParticles", message.Data() ) ; 
     
     Int_t index ;
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
-       AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       
-
-       cout << setw(10) << rp->Name() << "  "
-	    << setw(5) <<  rp->GetIndexInList() << " " <<endl;
-       cout << "Type "<<  rp->GetType() << endl;
+      AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       
+      message = "          %s     %d     Type %d\n" ; 
+      Info("PrintRecParticles", message.Data(), 
+	   rp->Name().Data(), 
+	   rp->GetIndexInList(), 
+	   rp->GetType() );
     }
-    cout << "-------------------------------------------" << endl ;
-  }
-  
+  }  
 }
 
 

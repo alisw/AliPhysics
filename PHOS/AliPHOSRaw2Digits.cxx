@@ -30,7 +30,6 @@
 #include "TTree.h"
 
 // --- Standard library ---
-#include <iostream.h>
 //#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -190,7 +189,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
   sprintf(command,"zcat %s",fInName.Data());
   FILE *dataFile = popen(command, "r");
   if (dataFile == NULL) {
-    cout << " Can not open file " << fInName.Data() << endl ;
+    Warning("ProcessRawFile", " Cannot open file %s\n", fInName.Data() ) ;
     perror(fInName.Data()) ;
     fStatus = -1 ;
     return kFALSE ;
@@ -201,7 +200,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
   UInt_t w = 0x12345678;
   Int_t swapo = memcmp(&w, "\x78\x56\x34\x12", sizeof(UInt_t)) == 0;
   if(fDebug)
-    cout << "swapo=" << swapo << endl;
+    Info("ProcessRawFile", "swapo=%f\n", swapo ) ;
   
   
   UInt_t recBuf[300] ;
@@ -213,20 +212,20 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     if (n < 0 )
       perror(fInName.Data());
     else
-      cout << "Could not read physical record control words" << endl;
+      Error("ProcessRawFile", "Could not read physical record control words" ) ;
     fStatus = -2 ;
     return kFALSE;
   }
   
   if(fDebug)
-    cout << "recbuf[0] = " << recBuf[0] << endl ;
+    Info("ProcessRawFile", "recbuf[0] = %d\n", recBuf[0] );
   
   // Check if it is a ZEBRA file and if the words are swapped 
   UInt_t swapi = 0 ;
   if (recBuf[0] != fMK1) {
     Swab4(recBuf, &w, 1);
     if (w != fMK1) {
-      cout << "Does not look like a ZEBRA file\n";
+      Error("ProcessRawFile", "Does not look like a ZEBRA file\n" ) ;
       pclose(dataFile) ;
       fStatus = -2 ;
       return kFALSE;
@@ -235,8 +234,10 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
   }
   
   if(fDebug){
-    cout << "        w = " << w << endl ;;
-    cout << "    swapi = " << swapi << endl ;;
+    TString message ; 
+    message  = "        w = %f\n" ; 
+    message += "    swapi = %f\n" ; 
+    Info("ProcessRawFile", message.Data(), w, swapi ) ; 
   }
   
   // Get number of words in physical record 
@@ -300,7 +301,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     UInt_t * recptr = recBuf;  //Pointer to current position
 
     if(recptr[7] != 1) {
-      cout << "Can not handle fast blocks" << endl;
+      Error("ProcessRawFile", "Cannot handle fast blocks" ) ; 
       fStatus = -2 ;
       return kFALSE;
     }    
@@ -309,14 +310,14 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     // Logical record control words   
     UInt_t lrtyp = recptr[1];
     if (lrtyp != 3) {
-      cout << "Can not handle logical record type " <<  lrtyp << endl ;
+      Error("ProcessRawFile", "Can not handle logical record type %d", lrtyp ) ;
       fStatus = -2 ;
       return kFALSE;
     }
     
     recptr += 2;
     if (recptr[0] != fCKW) {
-      cout <<  "Bad check word" << endl;
+      Error("ProcessRawFile", "Bad check word" ) ;
       fStatus = -2 ;
       return kFALSE;
     }
@@ -332,7 +333,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     UInt_t evtno = recptr[2];			/* Event number */
     
     if(fDebug)
-      cout << "evtno=" << evtno << endl;
+       Info("ProcessRawFile", "evtno= %d", evtno);
     
     UInt_t nh = recptr[4];		     /* Number of header words in data bank */
     recptr += nh;
@@ -370,7 +371,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
 	new((*fDigits)[i])AliPHOSDigit(-1,absID,peak,0.,i) ;
       if(fDebug){
 	if(peak>(UShort_t)1000)
-	  cout << "event=" << fEvent << " peak[" << i << "] = "<<peak << endl;
+	  Info("ProcessRawFile", "event= %d peak[%d] = %f", fEvent, i, peak);
       }
       byteptr+=sizeof(UShort_t);
     }
@@ -405,7 +406,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
 
     WriteDigits() ;
     if(fDebug)
-      cout << "event=" << fEvent << " written " << endl;
+      Info("ProcessRawFile", "event= %d written", fEvent) ;
  
     // Read next record 
     UInt_t nb = nwphr *sizeof(UInt_t);
@@ -509,28 +510,34 @@ void AliPHOSRaw2Digits::WriteDigits(void){
 //____________________________________________________________________________ 
 void AliPHOSRaw2Digits::Print(Option_t * option)const{
   
-  cout << "----------AliPHOSRaw2Digits----------" << endl ;
-  cout << "Input stream " << endl ;
-  cout << "Current input  File: " << fInName.Data() << endl ;
-  cout << "Current output File: " << GetTitle() << endl ;
-  cout << "Events processes in the last file " << fEvent << endl ;
-  cout << "Input file status " ;
+  TString message ;
+  message  = "----------AliPHOSRaw2Digits---------- \n" ;
+  message += "Input stream \n" ;
+  message += "Current input  File: %s\n" ; 
+  message += "Current output File: %s\n" ; 
+  message += "Events processes in the last file %d\n" ; 
+  message += "Input file status\n" ;
   switch (fStatus){
-  case 0: cout << "`Have not processed yet' " << endl ;
+  case 0: message += "`Have not processed yet'\n" ;
     break ;
-  case 1: cout << "`Processed normally' " << endl ;
+  case 1: message += "`Processed normally'\n" ;
     break ;
-  case -1: cout << "`File not found'" << endl ;
+  case -1: message += "`File not found'\n" ;
     break ;
-  case -2: cout << "`Error in reading' " << endl ;
+  case -2: message += "`Error in reading'\n" ;
     break ;
-  case -3: cout << "'Interupted'" << endl ;
+  case -3: message += "'Interupted'\n" ;
   default: ;
   }
-  cout << "Connection table: " ;
+  message += "Connection table: " ;
   if(fctdb)
-    cout << fctdb->GetName() << "  " << fctdb->GetTitle() << endl ;
+    message += "%s %s \n" ; 
   else
-    cout << " no DB " << endl ;
-  
+    message += " no DB \n" ;
+
+  Info("Print", message.Data(),  
+       fInName.Data(), 
+       GetTitle(), 
+       fEvent, 
+       fctdb->GetName(), fctdb->GetTitle() ) ; 
 }

@@ -31,8 +31,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSQAVirtualCheckable.h"
@@ -88,7 +86,7 @@ ClassImp(AliPHOSQAVirtualCheckable)
   // Prints all the alarms 
   TObjArray * alarms = GetAlarms() ; 
   if (alarms->IsEmpty() )
-    cout << " No alarms raised for checkable " << GetName() << endl ; 
+    Info("Alarms", "No alarms raised for checkable %s", GetName()) ; 
   else {
     TIter next(alarms);
     AliPHOSQAAlarm * alarm ; 
@@ -109,7 +107,7 @@ void AliPHOSQAVirtualCheckable::CheckMe()
 void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message)
 {
   // Raise an alarm and store it in the appropriate folder : //Folders/Run/Conditions/QA/PHOS..
-  // cout << message ; 
+  // Info("RaiseAlarm", "%s", message) ; 
   AliPHOSQAAlarm * alarm = new AliPHOSQAAlarm(time, checked, checker, message)  ;   
   GetAlarms()->Add(alarm) ; 
 }
@@ -131,10 +129,10 @@ void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * check
   // resets the list of alarms (delete the alarms from the list)
   TObjArray * alarms = GetAlarms() ; 
   if (alarms->IsEmpty() )
-    cout << " No alarms raised for checkable " << GetName() << endl ; 
+    Info("ResetAlarms", "No alarms raised for checkable %s", GetName()) ; 
   else {
     alarms->Delete() ; 
-    cout << " Reset alarms for checkable " << GetName() << endl ; 
+    Info("ResetAlarms", " Reset alarms for checkable %s", GetName()) ; 
   }
 }
 
@@ -144,9 +142,9 @@ void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * check
   // Tells which checkers are attached to this checkable
   TList * list = fChecker->GetListOfTasks(); 
   if (list->IsEmpty() )
-    cout << "No checkers are in use for " << GetName() << endl ;
+    Info("Status", "No checkers are in use for %s", GetName()) ;
   else {    
-    cout << "The following checkers are in use for " << GetName() << endl ;
+    Info("Status", "The following checkers are in use for %s", GetName()) ;
     TIter next(list) ; 
     AliPHOSQAChecker * checker ; 
     while ( (checker = (AliPHOSQAChecker*)next() ) ) 

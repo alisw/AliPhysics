@@ -443,7 +443,7 @@ void AliPHOSv1::StepManager(void)
       xyzte[4] = fAPDFactor * lightYield  ;
       
       // add current hit to the hit list
-      //cout << "AliPHOSv1::StepManager " << primary << " " << tracknumber << endl ; 
+      // Info("StepManager","%d %d", primary, tracknumber) ; 
       AddHit(fIshunt, primary,tracknumber, absid, xyzte);
       
       // fill the relevant QA Checkables
@@ -489,7 +489,7 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   Float_t pNorm = p.Py();
   Float_t eloss = kdEdx;
 
-//    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
+//Info("CPVDigitize", "YVK : %f %f | %f %f %d", hitX, hitZ, pX, pZ, pNorm) ;
 
   Float_t dZY   = pZ/pNorm * GetGeometry()->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * GetGeometry()->GetCPVGasThickness();

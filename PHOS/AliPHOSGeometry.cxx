@@ -35,7 +35,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
 #include <stdlib.h>
 
 // --- AliRoot header files ---
@@ -71,8 +70,7 @@ void AliPHOSGeometry::Init(void)
   
   TString test(GetName()) ; 
   if (test != "IHEP" && test != "GPS2" && test != "MIXT") {
-    cerr << "ERROR: " << ClassName() << "::Init -> " << test.Data() 
-	 << " is not a known geometry (choose among IHEP, GPS2 and MIXT)" << endl ; 
+    Error("Init", "%s is not a known geometry (choose among IHEP, GPS2 and MIXT)", test.Data() ) ; 
     abort() ;
   }
 
@@ -139,10 +137,8 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
     }
   }
   else {
-    if ( strcmp(fgGeom->GetName(), name) != 0 ) {
-      cout << "AliPHOSGeometry <E> : current geometry is " << fgGeom->GetName() << endl
-	   << "                      you cannot call     " << name << endl ; 
-    }
+    if ( strcmp(fgGeom->GetName(), name) != 0 ) 
+      ::Error("GetInstance", "Current geometry is %s. You cannot call %s", fgGeom->GetName(), name) ; 
     else
       rv = (AliPHOSGeometry *) fgGeom ; 
   } 
@@ -158,8 +154,7 @@ void AliPHOSGeometry::SetPHOSAngles()
   Float_t pphi =  2 * TMath::ATan( GetOuterBoxSize(0)  / ( 2.0 * GetIPtoUpperCPVsurface() ) ) ;
   pphi *= kRADDEG ;
   if (pphi > fAngle){ 
-    cout << "AliPHOSGeometry: PHOS modules overlap!\n";
-    cout <<  "pphi = " << pphi << " fAngle  " << fAngle << endl ;
+    Error("SetPHOSAngles", "PHOS modules overlap!\n pphi = %f fAngle = %f", pphi, fAngle);
 
   }
   pphi = fAngle;
@@ -217,7 +212,7 @@ void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t
   else if ( opt == Degre() )
     conv = 180. / TMath::Pi() ; 
   else {
-    cout << "<I>  AliPHOSGeometry::EmcXtalCoverage : " << opt << " unknown option; result in radian " << endl ; 
+    Warning("EmcModuleCoverage", "%s unknown option; result in radian", opt) ; 
     conv = 1. ;
       }
 
@@ -252,7 +247,7 @@ void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t
   else if ( opt == Degre() )
     conv = 180. / TMath::Pi() ; 
   else {
-    cout << "<I>  AliPHOSGeometry::EmcXtalCoverage : " << opt << " unknown option; result in radian " << endl ; 
+    Warning("EmcXtalCoverage", "%s unknown option; result in radian", opt) ;  
     conv = 1. ;
       }
 

@@ -25,7 +25,6 @@
 #include "TClonesArray.h"
 
 // --- Standard library ---
-#include <iostream.h>
 
 // --- AliRoot header files ---
 
@@ -210,7 +209,7 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
       for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
 	if ( fMulTrack > fMaxTrack ) {
 	  fMulTrack = - 1 ;
-	  cout << "AliPHOSRecPoint::GetNprimaries ERROR > increase fMaxTrack " << endl ;
+	  Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
 	  break ;
 	}
 	Int_t newprimary = newprimaryarray[jndex] ;

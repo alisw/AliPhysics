@@ -25,8 +25,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSFastRecParticle.h"
@@ -245,9 +243,16 @@ void AliPHOSFastRecParticle::Print(const char * opt)
 {
   // Print the type, energy and momentum of the reconstructed particle
   
-  cout << "AliPHOSFastRecParticle > " << "type is  " << Name() << endl 
-       << "                     " << "Energy = " << fE << endl 
-       << "                     " << "Px     = " << fPx << endl 
-       << "                     " << "Py     = " << fPy << endl 
-       << "                     " << "Pz     = " << fPz << endl ; 
+  TString message ; 
+  message  = "AliPHOSFastRecParticle > type is  %s\n" ; 
+  message += "                         Energy = %f\n" ; 
+  message += "                         Px     = %f\n" ; 
+  message += "                         Py     = %f\n" ;
+  message += "                         Pz     = %f\n" ;
+  Info("Print", message.Data(), 
+       Name().Data(), 
+       fE, 
+       fPx, 
+       fPy,
+       fPz ); 
 }

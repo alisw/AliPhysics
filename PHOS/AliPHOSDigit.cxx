@@ -28,8 +28,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSDigit.h"
@@ -178,7 +176,7 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
       fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
       fNprimary++ ;
       if(fNprimary>fNMaxPrimary) {
-	cout << "AliPHOSDigit >> Increase NMaxPrimary "<< endl ;
+	Error("Operator +", "Increase NMaxPrimary") ;
 	return *this ;
       }
     }
@@ -192,11 +190,12 @@ ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
 {
   // Prints the data of the digit
   
-  out << "ID " << digit.fId << " Energy = " << digit.fAmp << " Time = " << digit.fTime << endl ; 
-  Int_t i ;
-  for(i=0;i<digit.fNprimary;i++)
-    out << "Primary " << i+1 << " = " << digit.fPrimary[i] << endl ;
-  out << "Position in list = " << digit.fIndexInList << endl ; 
+//   out << "ID " << digit.fId << " Energy = " << digit.fAmp << " Time = " << digit.fTime << endl ; 
+//   Int_t i ;
+//   for(i=0;i<digit.fNprimary;i++)
+//     out << "Primary " << i+1 << " = " << digit.fPrimary[i] << endl ;
+//   out << "Position in list = " << digit.fIndexInList << endl ; 
+  digit.Warning("operator <<", "Implement differently") ; 
   return out ;
 }
 

@@ -68,9 +68,6 @@
 #include "TBenchmark.h"
 // --- Standard library ---
 
-#include <iostream.h>
-#include <iomanip.h>
-
 // --- AliRoot header files ---
 
 #include "AliRun.h"
@@ -202,8 +199,7 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
 //   }
 
 //   if ( phospidfound || pidfound ) {
-//     cerr << "WARNING: AliPHOSPIDv0::Exec -> RecParticles and/or PIDtMaker branch with name " 
-// 	 << taskName.Data() << " already exits" << endl ;
+//     Error("Exec", "RecParticles and/or PIDtMaker branch with name %s already exists", taskName.Data() ) ; 
 //     return ; 
 //   }       
   
@@ -212,7 +208,7 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
   
   for(ievent = 0; ievent < nevents; ievent++){
     gime->Event(ievent,"R") ;
-    cout << "event " << ievent << " " << gime->EmcRecPoints() << " " << gime->TrackSegments() << endl ;
+    Info("Exec", "event %d %d %d", ievent, gime->EmcRecPoints(), gime->TrackSegments()) ;
     MakeRecParticles() ;
     
     WriteRecParticles(ievent);
@@ -227,10 +223,8 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
-    cout << "AliPHOSPID:" << endl ;
-    cout << "  took " << gBenchmark->GetCpuTime("PHOSPID") << " seconds for PID " 
-	 <<  gBenchmark->GetCpuTime("PHOSPID")/nevents << " seconds per event " << endl ;
-    cout << endl ;
+    Info("Exec", "took %f seconds for PID %f seconds per event", 
+	 gBenchmark->GetCpuTime("PHOSPID"), gBenchmark->GetCpuTime("PHOSPID")/nevents) ; 
   }
   
 }
@@ -248,7 +242,7 @@ void AliPHOSPIDv0::Init()
   
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName.Data(),fToSplit) ; 
   if ( gime == 0 ) {
-    cerr << "ERROR: AliPHOSPIDv0::Init -> Could not obtain the Getter object !" << endl ; 
+    Error("Init", "Could not obtain the Getter object !") ; 
     return ;
   } 
    
@@ -367,23 +361,28 @@ void  AliPHOSPIDv0::MakeRecParticles(){
 void  AliPHOSPIDv0:: Print(Option_t * option) const
 {
   // Print the parameters used for the particle type identification
-    cout <<  "=============== AliPHOSPID1 ================" << endl ;
-    cout <<  "Making PID "<< endl ;
-    cout <<  "    Headers file:               " << fHeaderFileName.Data() << endl ;
-    cout <<  "    RecPoints branch title:     " << fRecPointsTitle.Data() << endl ;
-    cout <<  "    TrackSegments Branch title: " << fTrackSegmentsTitle.Data() << endl ;
-    cout <<  "    RecParticles Branch title   " << fRecParticlesTitle.Data() << endl;
-    cout <<  "with parameters: " << endl ;
-    cout <<  "    Maximal EMC - CPV  distance (cm) " << fCpvEmcDistance << endl ;
-    if(fIDOptions.Contains("dis",TString::kIgnoreCase ))
-      cout <<  "                    dispersion cut " << fDispersion << endl ;
-    if(fIDOptions.Contains("ell",TString::kIgnoreCase )){
-      cout << "             Eliptic cuts function: " << endl ;
-      cout << fFormula->GetTitle() << endl ;
-    }
-    if(fIDOptions.Contains("tim",TString::kIgnoreCase ))
-      cout << "             Time Gate uzed: " << fTimeGate <<  endl ;
-    cout <<  "============================================" << endl ;
+  TString message ; 
+  message  = "=============== AliPHOSPID1 ================\n" ;
+  message += "Making PID\n" ;
+  message += "    Headers file:               %s\n" ; 
+  message += "    RecPoints branch title:     %s\n" ;
+  message += "    TrackSegments Branch title: %s\n" ; 
+  message += "    RecParticles Branch title   %s\n" ;  
+  message += "with parameters:\n"  ;
+  message += "    Maximal EMC - CPV  distance (cm) %f\n" ;
+  Info("Print", message.Data(),  
+       fHeaderFileName.Data(), 
+       fRecPointsTitle.Data(), 
+       fTrackSegmentsTitle.Data(), 
+       fRecParticlesTitle.Data(), 
+       fCpvEmcDistance );
+
+  if(fIDOptions.Contains("dis",TString::kIgnoreCase ))
+    Info("Print", "                    dispersion cut %f",  fDispersion ) ;
+  if(fIDOptions.Contains("ell",TString::kIgnoreCase ))
+    Info("Print", "             Eliptic cuts function: %s",  fFormula->GetTitle() ) ;
+  if(fIDOptions.Contains("tim",TString::kIgnoreCase ))
+    Info("Print",  "             Time Gate used: %f",  fTimeGate) ;
 }
 
 //____________________________________________________________________________
@@ -558,18 +557,13 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
   taskName.Remove(taskName.Index(Version())-1) ;
   TClonesArray * recParticles = gime->RecParticles(taskName) ; 
   
-  cout << "AliPHOSPIDv0: event "<<gAlice->GetEvNumber()  << endl ;
-  cout << "       found " << recParticles->GetEntriesFast() << " RecParticles " << endl ;
-  
+  TString message ; 
+  message  = "event %d\n" ; 
+  message += "       found %d RecParticles\n" ; 
+  Info("PrintRecParticles", message.Data(), gAlice->GetEvNumber(), recParticles->GetEntriesFast() ) ;   
+
   if(strstr(option,"all")) {  // printing found TS
-    
-    cout << "  PARTICLE "   
-	 << "  Index    "  << endl ;
-      //	 << "  X        "     
-      //	 << "  Y        " 
-      //	 << "  Z        "    
-      //	 << " # of primaries "          
-      //	 << " Primaries list "    <<  endl;      
+    Info("PrintRecParticles","  PARTICLE   Index    \n"  ) ; 
     
     Int_t index ;
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
@@ -607,16 +601,9 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
       //    Int_t nprimaries;
       //    primaries = rp->GetPrimaries(nprimaries);
       
-      cout << setw(10) << particle << "  "
-	   << setw(5) <<  rp->GetIndexInList() << " "  ;
-	//	   << setw(4) <<  nprimaries << "  ";
-	//      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++)
-	//	cout << setw(4)  <<  primaries[iprimary] << " ";
-      cout << endl;  	 
+      Info("PrintRecParticles", "          %s     %d\n",  particle, rp->GetIndexInList()) ;
     }
-    cout << "-------------------------------------------" << endl ;
-  }
-  
+  }  
 }
 
 

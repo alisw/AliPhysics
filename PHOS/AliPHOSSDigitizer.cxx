@@ -61,7 +61,6 @@
 #include "TGeometry.h"
 
 // --- Standard library ---
-#include <iomanip.h>
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -117,8 +116,7 @@ void AliPHOSSDigitizer::Init()
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName(),fToSplit) ;  
   if ( gime == 0 ) {
-    cerr << "ERROR: AliPHOSSDigitizer::Init -> Could not obtain the Getter object !" 
-	 << endl ; 
+    Error("Init" ,"Could not obtain the Getter object !") ;  
     return ;
   } 
   
@@ -266,10 +264,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSSDigitizer");
-    cout << "AliPHOSSDigitizer:" << endl ;
-    cout << "   took " << gBenchmark->GetCpuTime("PHOSSDigitizer") << " seconds for SDigitizing " 
-	 <<  gBenchmark->GetCpuTime("PHOSSDigitizer")/nevents << " seconds per event " << endl ;
-    cout << endl ;
+    Info("Exec","   took %f seconds for SDigitizing  %f seconds per event",
+	 gBenchmark->GetCpuTime("PHOSSDigitizer"), gBenchmark->GetCpuTime("PHOSSDigitizer")/nevents) ;
   }
 }
 
@@ -288,11 +284,11 @@ void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
   const char * sdigitsTitle    = sdigitsBranch ->GetTitle() ;  
   const char * sdigitizerTitle = sdigitizerBranch ->GetTitle() ;
   if ( stitle.CompareTo(sdigitsTitle)==0 || stitle.CompareTo(sdigitizerTitle)==0 ){
-    cerr << "ERROR: AliPHOSSdigitizer::SetSDigitsBranch -> Cannot overwrite existing branch with title " << title << endl ;
+    Error("SetSDigitsBranch", "Cannot overwrite existing branch with title %s", title) ;
     return ;
   }
   
-  cout << "AliPHOSSdigitizer::SetSDigitsBranch -> Changing SDigits file from " << GetName() << " to " << title << endl ;
+  Info("SetSDigitsBranch", "-> Changing SDigits file from %s to %s", GetName(), title) ;
 
   SetName(title) ; 
     
@@ -306,12 +302,14 @@ void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
 void AliPHOSSDigitizer::Print(Option_t* option)const
 {
   // Prints parameters of SDigitizer
-  cout << "------------------- "<< GetName() << " -------------" << endl ;
-  cout << "   Writing SDigits to branch with title  " << GetName() << endl ;
-  cout << "   with digitization parameters  A = " << fA << endl ;
-  cout << "                                 B = " << fB << endl ;
-  cout << "   Threshold for Primary assignment= " << fPrimThreshold << endl ; 
-  cout << "---------------------------------------------------"<<endl ;
+  TString message ; 
+  message  = "\n------------------- %s -------------\n" ;  
+  message += "   Writing SDigits to branch with title  %s\n" ;
+  message += "   with digitization parameters  A = %f\n" ; 
+  message += "                                 B = %f\n" ;
+  message += "   Threshold for Primary assignment= %f\n" ; 
+  message += "---------------------------------------------------\n" ;
+  Info("Print", message.Data(),  GetName(),  GetName(), fA, fB, fPrimThreshold ) ;
   
 }
 
@@ -336,58 +334,67 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TString sdname(GetName()) ;
   sdname.Remove(sdname.Index(GetTitle())-1) ;
-  const TClonesArray * sdigits = gime->SDigits(sdname.Data()) ; 
+  const TClonesArray * sdigits = gime->SDigits(sdname.Data()) ;
 
-  cout << "AliPHOSSDigitiser: event " << gAlice->GetEvNumber() << endl ;
-  cout << "      Number of entries in SDigits list " << sdigits->GetEntriesFast() << endl ;
-  cout << endl ;
+  TString message ; 
+  message  = "\nAliPHOSSDigitiser: event " ;
+  message += gAlice->GetEvNumber(); 
+  message += "\n      Number of entries in SDigits list " ;  
+  message += sdigits->GetEntriesFast() ; 
+  
   if(strstr(option,"all")||strstr(option,"EMC")){
     
     //loop over digits
     AliPHOSDigit * digit;
-    cout << "EMC sdigits " << endl ;
-    cout << "Digit Id    Amplitude     Index     Nprim  Primaries list " <<  endl;      
+    message += "\nEMC sdigits\n" ;
+    message += "Digit Id    Amplitude     Index     Nprim  Primaries list\n" ;       
     Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; (index < sdigits->GetEntriesFast()) && 
 	 ((dynamic_cast<AliPHOSDigit *> (sdigits->At(index)))->GetId() <= maxEmc) ; index++) {
       digit = dynamic_cast<AliPHOSDigit *>( sdigits->At(index) ) ;
-      if(digit->GetNprimary() == 0) continue;
-      cout << setw(6)  <<  digit->GetId() << "   "  << 	setw(10)  <<  digit->GetAmp() <<   "    "  
-	   << setw(6)  <<  digit->GetIndexInList() << "    "   
-	   << setw(5)  <<  digit->GetNprimary() <<"    ";
-      
+      if(digit->GetNprimary() == 0) 
+	continue;
+      message += digit->GetId() ; 
+      message += digit->GetAmp() ;
+      message += digit->GetIndexInList() ;
+      message += digit->GetNprimary() ;
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
-	cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << "    ";
-      cout << endl;  	 
+	message += digit->GetPrimary(iprimary+1) ;
     }    
-    cout << endl;
   }
 
   if(strstr(option,"all")||strstr(option,"CPV")){
     
     //loop over CPV digits
     AliPHOSDigit * digit;
-    cout << "CPV sdigits " << endl ;
-    cout << "Digit Id    Amplitude     Index     Nprim  Primaries list " <<  endl;      
+    
+    message += "CPV sdigits\n" ;
+    message += "Digit Id Amplitude Index Nprim  Primaries list\n" ;
     Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; index < sdigits->GetEntriesFast(); index++) {
       digit = dynamic_cast<AliPHOSDigit *>( sdigits->At(index) ) ;
       if(digit->GetId() > maxEmc){
-	cout << setw(6)  <<  digit->GetId() << "   "  << 	setw(10)  <<  digit->GetAmp() <<   "    "  
-	     << setw(6)  <<  digit->GetIndexInList() << "    "   
-	     << setw(5)  <<  digit->GetNprimary() <<"    ";
-	
+	message += "\n" ; 
+	message += digit->GetId() ; 
+	message += "   " ; 
+	message += digit->GetAmp() ;
+	message += "   " ; 
+	message += digit->GetIndexInList() ;
+	message += "   " ; 
+	message += digit->GetNprimary() ;
+	message += "   " ; 
 	Int_t iprimary;
-	for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
-	  cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << "    ";
-	cout << endl;  	 
+	for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
+	  message += digit->GetPrimary(iprimary+1) ;
+	  message += "," ; 
+	}
       }    
     }
   }
-
+  Info("PrintSDigits", message.Data() ) ;
 }
 
 //____________________________________________________________________________ 

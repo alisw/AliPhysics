@@ -26,7 +26,6 @@
 // --- Standard library ---
 #include <string.h>
 #include <stdlib.h>
-#include <strstream.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSHit.h"
@@ -142,7 +141,8 @@ ostream& operator << (ostream& out, const AliPHOSHit& hit)
 {
   // Print out Id and energy 
   
-  out << "AliPHOSHit = " << hit.GetId() << " " << hit.GetEnergy() << "  " << hit.GetTime() << endl ;
+  //out << "AliPHOSHit = " << hit.GetId() << " " << hit.GetEnergy() << "  " << hit.GetTime() << endl ;
+  Warning("operator <<", "Implement differently") ; 
   return out ;
 }
 

@@ -27,8 +27,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSQAFloatCheckable.h"
@@ -56,7 +54,7 @@ ClassImp(AliPHOSQAFloatCheckable)
 void AliPHOSQAFloatCheckable::Print() const
 {
   // Print the chekable name and its value
-  cout << " Checkable-> " << GetName() << " : value = " << fValue << endl ; 
+  Info("Print", "Checkable-> %s : value = %f", GetName(), fValue) ; 
 }
 
 //____________________________________________________________________________ 

@@ -69,9 +69,8 @@ TString AliPHOSQAMeanChecker::CheckingOperation()
 
   Float_t checked = 0. ;  
   if ( (fCheckable->HasA() == "I") &&  (fCheckable->HasA() == "F") ) {
-    cout << " ERROR : checker " << GetName() << " says you got the wrong checkable " 
-	 << fCheckable->GetName() << endl ; 
-    cout << "         or the checkable has no value !" << endl ; 
+    Error("CheckingOperation", "checker %s says you got the wrong checkable %s \n 
+          or the checkable has no value !", GetName(), fCheckable->GetName()) ;  
   } else {
     checked = fCheckable->GetValue(); 
     if (checked < fMean-fRms || checked > fMean+fRms) {
@@ -90,5 +89,5 @@ TString AliPHOSQAMeanChecker::CheckingOperation()
 {
   // print the name 
   
-  cout << "Checker : " << GetName() << " : " << GetTitle() << " : Mean = " <<  fMean << " Rms = " << fRms << endl ;  
+  Info("Print", "Checker : %s : %s : Mean = %f Rms = %f", GetName(), GetTitle(), fMean, fRms) ;  
 }

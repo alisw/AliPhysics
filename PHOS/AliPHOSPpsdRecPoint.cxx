@@ -267,16 +267,14 @@ void AliPHOSPpsdRecPoint::Print(Option_t * option)
 {
   // Print the digits information 
   
-  cout << "AliPHOSPpsdRecPoint: " << endl ;
+  Info("Print","AliPHOSPpsdRecPoint: " ) ;
   
   Int_t iDigit; 
-  cout << " Digit{s} # " ; 
+  Info("Print"," Digit{s} # ") ; 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    cout  << fDigitsList[iDigit] << "  " ;  
-  cout << endl   ;  
-
-  cout << "       Multiplicity    = " << fMulDigit  << endl ;
-  cout << "       Stored at position " << fIndexInList << endl ; 
+    Info("Print", "%d", fDigitsList[iDigit]) ;  
+  Info("Print","       Multiplicity    = %d", fMulDigit  ) ;
+  Info("Print","       Stored at position %d", fIndexInList ) ; 
 }
 
 

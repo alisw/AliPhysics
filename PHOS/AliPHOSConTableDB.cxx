@@ -26,7 +26,7 @@
 #include "TH2S.h"
 
 // --- Standard library ---
-#include <iostream.h>
+
 // --- AliRoot header files ---
 #include "AliPHOSGeometry.h"
 #include "AliPHOSConTableDB.h"
@@ -73,8 +73,7 @@ void  AliPHOSConTableDB::BuildDB(void)
   //assuming, that prototype is centered in the third module of the PHOS
   fNcrInProto =fProtoRaws*fProtoColumns ;
   if(!fNcrInProto){
-    cout << "configuratio of prototype is not known!!!" << endl ;
-    cout << "specify number of raws and columns in prototype" << endl ;
+    Error("BuildDB", "configuratio of prototype is not known!!!\n Specify number of raws and columns in prototype") ;
     return ;
   }
   fRawOffset = (fGeom->GetNPhi() - fProtoRaws)/2 ;
@@ -148,17 +147,23 @@ Int_t AliPHOSConTableDB::Raw2AbsId(Int_t rawId){
 //____________________________________________________________________________ 
 void AliPHOSConTableDB::Print(Option_t * option)const {
 
-  cout << GetName() <<  " " << GetTitle() << endl ;
-  cout << "PHOS Geometry configured for " ; 
+  TString message ; 
+  message  = " %s %s\n" ;
+  message += "PHOS Geometry configured for " ; 
   if(fGeom)
-    cout << fGeom->GetName() << " " << fGeom->GetTitle() <<  endl ;
+    message += "%s %s \n" ;
   else
-    cout << " null " << endl ;
-  cout << "-------Prototype parameters--------" << endl ;
-  cout << "    number of columns: " << fProtoColumns << endl ;
-  cout << "    number of raws:    " << fProtoRaws << endl ;
-  cout << "    centered in third PHOS module with offsets: " <<endl ;
-  cout << "    raw: " << fRawOffset << " of " << fGeom->GetNPhi() << endl ;
-  cout << "    col: " << fColOffset << " of " << fGeom->GetNZ() << endl ;
-  cout << "------------------------------------" << endl ;
+    message += " null \n"  ;
+
+  Info("Print", message.Data(), GetName(), GetTitle(), fGeom->GetName(), fGeom->GetTitle() ) ; 
+
+  message  = "-------Prototype parameters--------\n" ;
+  message += "    number of columns: %d" ; 
+  message += "    number of raws:    %d" ;
+  message += "    centered in third PHOS module with offsets: " ;
+  message += "    raw: %d of %d\n" ;
+  message += "    col: %d of %d\n" ; 
+  message += "------------------------------------" ;
+
+  Info("Print", message.Data(), fProtoColumns, fProtoRaws, fRawOffset, fGeom->GetNPhi(), fColOffset,fGeom->GetNZ() );   
 }

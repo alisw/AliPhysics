@@ -23,8 +23,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSRecManager.h"

@@ -27,7 +27,6 @@ class TTask ;
 
 // --- Standard library ---
 #include <stdlib.h>
-#include <iostream.h>
 
 // --- AliRoot header files ---
 
@@ -52,7 +51,7 @@ class AliPHOSGetter : public TObject {
  public:
   
   AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
-    cerr << "ERROR: AliPHOSGetter is a singleton default ctor not callable" << endl ;
+    Error("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
     abort() ; 
   } 
   AliPHOSGetter(const AliPHOSGetter & obj) {

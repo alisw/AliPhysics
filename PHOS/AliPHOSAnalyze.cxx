@@ -28,8 +28,7 @@
 //    Contamination(...) - calculates contamination of the photon spectrum and 
 //                         pobability of reconstruction of several primaries as 
 //                         kGAMMA,kELECTRON etc.
-//
-//    User Case:
+////    User Case:
 //    root [0] AliPHOSAnalyze * a = new AliPHOSAnalyze("galice.root")
 //                    // set the file you want to analyse
 //    root [1] a->DrawRecon(1,3)
@@ -76,8 +75,6 @@
 #include "TFolder.h"
 
 // --- Standard library ---
-
-#include <iomanip.h>
 
 // --- AliRoot header files ---
 
@@ -131,7 +128,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   //========== Create ObjectGetter
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(ffileName.Data(),branchTitle) ;
   if(Nevent >= gAlice->TreeE()->GetEntries() ) {
-    cout << "There is no event " << Nevent << ", only " << gAlice->TreeE()->GetEntries() << "events available " <<endl ;
+    Error("DrawRecon", "There is no event %d only %d events available", Nevent, gAlice->TreeE()->GetEntries() ) ;
     return ;
   }
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
@@ -236,10 +233,10 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
 	}
       }
   }
-  cout << "Number of EMC + CPV SDigits per module: " <<endl ;
-  cout << nsdig[0] << " " << nsdig[1] << " " << nsdig[2] << " " << nsdig[3]<< " " << nsdig[4] << endl ;
-  cout << endl ;
-
+  TString message ; 
+  message  = "Number of EMC + CPV SDigits per module: \n" ;
+  message += "%d %d %d %d %d\n"; 
+  Info("DrawRecon", message.Data(), nsdig[0], nsdig[1], nsdig[2], nsdig[3], nsdig[4] ) ;
 
   //Plot digits
   Int_t iDigit ;
@@ -364,36 +361,46 @@ void AliPHOSAnalyze::Ls(){
   
   branches = gAlice->TreeS()->GetListOfBranches() ;
  
-  cout << "TreeS: " << endl ;
+  TString message ; 
+  message  = "TreeS:\n" ;
   for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
     TBranch * branch=(TBranch *) branches->At(ibranch) ;
-    if(strstr(branch->GetName(),"PHOS") )
-      cout << "       " << branch->GetName() << "     " << branch->GetTitle() << endl ;
+    if(strstr(branch->GetName(),"PHOS") ){
+      message += "       " ; 
+      message += branch->GetName() ; 
+      message += "     " ; 
+      message += branch->GetTitle() ;
+      message += "\n" ; 
+    }
   }
-  cout << endl ;
- 
   branches = gAlice->TreeD()->GetListOfBranches() ;
   
-  cout << "TreeD: " << endl ;
+  message += "TreeD:\n" ;
   for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
     TBranch * branch=(TBranch *) branches->At(ibranch) ;
-    if(strstr(branch->GetName(),"PHOS") )
-      cout << "       " << branch->GetName() << "     " << branch->GetTitle() << endl ;
+    if(strstr(branch->GetName(),"PHOS") ) {
+      message += "       "; 
+      message += branch->GetName() ; 
+      message += "     " ; 
+      message += branch->GetTitle() ; 
+      message +="\n" ;
+    }
   }
-  cout << endl ;
   
-
   branches = gAlice->TreeR()->GetListOfBranches() ;
   
-  cout << "TreeR: " << endl ;
+  message += "TreeR: \n" ;
   for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
     TBranch * branch=(TBranch *) branches->At(ibranch) ;
-    if(strstr(branch->GetName(),"PHOS") )
-      cout << "       " << branch->GetName() << "     " << branch->GetTitle() << endl ;
+    if(strstr(branch->GetName(),"PHOS") ) {
+      message += "       " ; 
+      message += branch->GetName() ; 
+      message += "     " ;
+      message += branch->GetTitle() ; 
+      message += "\n" ;
+    }
   }
-  cout << endl ;
-
-
+  Info("LS", message.Data()) ;  
 }
 //____________________________________________________________________________
  void AliPHOSAnalyze::InvariantMass(const char* branchTitle)    
@@ -448,7 +455,7 @@ void AliPHOSAnalyze::Ls(){
     Int_t iRecParticle ;
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp){
-      cout << "AliPHOSAnalyze::InvariantMass --> Can't find RecParticles " << endl ;
+      Error("InvariantMass", "Can't find RecParticles") ; 
       return ;
     }
 
@@ -575,20 +582,17 @@ void AliPHOSAnalyze::Ls(){
     Int_t iRecParticle ;
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
-      cout << "AliPHOSAnalyze::EnergyResolution --> Event " <<ievent 
-	   << ",  Can't find RecParticles " << endl ;
+      Error("EnergyResolution", "Event %d,  Can't find RecParticles ", ievent) ;  
       return ;
     }
     TClonesArray * ts = gime->TrackSegments() ;
     if(!ts) {
-      cout << "AliPHOSAnalyze::EnergyResolution --> Event " <<ievent 
-	   << ",  Can't find TrackSegments " << endl ;
+      Error("EnergyResolution", "Event %d,  Can't find TrackSegments", ievent) ;  
       return ;
     }
     TObjArray * emcrp = gime->EmcRecPoints() ;
     if(!emcrp){
-      cout << "AliPHOSAnalyze::EnergyResolution --> Event " <<ievent 
-	   << ",  Can't find EmcRecPoints " << endl ;
+      Error("EnergyResolution", "Event %d,  Can't find EmcRecPoints") ; 
       return ;
     }
       
@@ -710,20 +714,17 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
     gime->Event(ievent) ;
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
-      cout << "AliPHOSAnalyze::PositionResolution --> Event " <<ievent 
-	   << ",  Can't find RecParticles " << endl ;
+      Error("PositionResolution", "Event %d,  Can't find RecParticles", ievent) ;
       return ;
     }
     TClonesArray * ts = gime->TrackSegments() ;
     if(!ts) {
-      cout << "AliPHOSAnalyze::PositionResolution --> Event " <<ievent 
-	   << ",  Can't find TrackSegments " << endl ;
+      Error("PositionResolution", "Event %d,  Can't find TrackSegments", ievent) ;
       return ;
     }
     TObjArray * emcrp = gime->EmcRecPoints() ;
     if(!emcrp){
-      cout << "AliPHOSAnalyze::PositionResolution --> Event " <<ievent 
-	   << ",  Can't find EmcRecPoints " << endl ;
+      Error("PositionResolution", "Event %d,  Can't find EmcRecPoints", ievent) ;
       return ;
     }
     
@@ -921,20 +922,17 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
     
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
-      cout << "AliPHOSAnalyze::Contamination --> Event " <<ievent 
-	   << ",  Can't find RecParticles " << endl ;
+      Error("Contamination", "Event %d,  Can't find RecParticles", ievent) ;
       return ;
     }
     TClonesArray * ts = gime->TrackSegments() ;
     if(!ts) {
-      cout << "AliPHOSAnalyze::Contamination --> Event " <<ievent 
-	   << ",  Can't find TrackSegments " << endl ;
+      Error("Contamination", "Event %d,  Can't find TrackSegments", ievent) ;
       return ;
     }
     TObjArray * emcrp = gime->EmcRecPoints() ;
     if(!emcrp){
-      cout << "AliPHOSAnalyze::Contamination --> Event " <<ievent 
-	   << ",  Can't find EmcRecPoints " << endl ;
+      Error("Contamination", "Event %d,  Can't find EmcRecPoints", ievent) ;
       return ;
     }
     
@@ -1114,45 +1112,49 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
   
   //print Final Table
   maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
- //  cout << "Resolutions: Analyzed " << gime->MaxEvent() << " event(s)" << endl ;
 
-  cout << "Resolutions: Analyzed " << maxevent << " event(s)" << endl ;
-  cout << endl ;
-  
-  cout << "        Primary:    Photon  Neutron  Antineutron  Charged hadron   AntiProton" << endl ; 
-  cout << "--------------------------------------------------------------------------------" << endl ;
-  cout << "         kGAMMA: " 
-       << setw(8) << counter[2][0] << setw(9)  << counter[2][1] << setw(13) << counter[2][2] 
-       << setw(15)<< counter[2][3] << setw(13) << counter[2][4] << endl ;
-  cout << "       kGAMMAHA: " 
-       << setw(8) << counter[3][0] << setw(9)  << counter[3][1] << setw(13) << counter[3][2] 
-       << setw(15)<< counter[3][3] << setw(13) << counter[3][4] << endl ;
-  cout << "     kNEUTRALEM: " 
-       << setw(8) << counter[0][0] << setw(9)  << counter[0][1] << setw(13) << counter[0][2] 
-       << setw(15)<< counter[0][3] << setw(13) << counter[0][4] << endl ;
-  cout << "     kNEUTRALHA: " 
-       << setw(8) << counter[1][0] << setw(9)  << counter[1][1] << setw(13) << counter[1][2] 
-       << setw(15)<< counter[1][3] << setw(13) << counter[1][4] << endl ;
-  cout << "      kABSURDEM: " 
-       << setw(8) << counter[4][0] << setw(9)  << counter[4][1] << setw(13) << counter[4][2] 
-       << setw(15)<< counter[4][3] << setw(13) << counter[4][4] << endl ;
-  cout << "      kABSURDHA: " 
-       << setw(8) << counter[5][0] << setw(9)  << counter[5][1] << setw(13) << counter[5][2] 
-       << setw(15)<< counter[5][3] << setw(13) << counter[5][4] << endl ;
-  cout << "      kELECTRON: " 
-       << setw(8) << counter[6][0] << setw(9)  << counter[6][1] << setw(13) << counter[6][2] 
-       << setw(15)<< counter[6][3] << setw(13) << counter[6][4] << endl ; 
-  cout << "     kCHARGEDHA: " 
-       << setw(8) << counter[7][0] << setw(9)  << counter[7][1] << setw(13) << counter[7][2] 
-       << setw(15)<< counter[7][3] << setw(13) << counter[7][4] << endl ;
-  cout << "--------------------------------------------------------------------------------" << endl ;
-      
+  TString message ; 
+  message  = "Resolutions: Analyzed %d event(s)\n" ; 
+ 
+  message += "        Primary:    Photon  Neutron  Antineutron  Charged hadron   AntiProton\n" ; 
+  message += "--------------------------------------------------------------------------------\n" ;
+  message += "         kGAMMA: " ; 
+  message += "%d %d %d %d %d\n" ; 
+  message += "       kGAMMAHA: " ;
+  message += "%d %d %d %d %d\n" ; 
+  message += "     kNEUTRALEM: " ; 
+  message += "%d %d %d %d %d\n" ; 
+  message += "     kNEUTRALHA: " ; 
+  message += "%d %d %d %d %d\n" ;
+  message += "      kABSURDEM: ";
+  message += "%d %d %d %d %d\n" ;
+  message += "      kABSURDHA: " ;
+  message += "%d %d %d %d %d\n" ;
+  message += "      kELECTRON: " ;
+  message += "%d %d %d %d %d\n" ;
+  message += "     kCHARGEDHA: " ;  
+  message += "%d %d %d %d %d\n" ;
+   
+  message += "--------------------------------------------------------------------------------" ;
+
+ 
   Int_t totalInd = 0 ;
   for(i1 = 0; i1<8; i1++)
     for(i2 = 0; i2<5; i2++)
       totalInd+=counter[i1][i2] ;
-  cout << "Indentified particles: " << totalInd << endl ;
+  message += "Indentified particles: %d" ; 
   
+ Info("Contamination", message.Data(), maxevent, 
+      counter[2][0], counter[2][1], counter[2][2], counter[2][3], counter[2][4], 
+      counter[3][0], counter[3][1], counter[3][2], counter[3][3], counter[3][4], 
+      counter[0][0], counter[0][1], counter[0][2], counter[0][3], counter[0][4], 
+      counter[1][0], counter[1][1], counter[1][2], counter[1][3], counter[1][4], 
+      counter[4][0], counter[4][1], counter[4][2], counter[4][3], counter[4][4], 
+      counter[5][0], counter[5][1], counter[5][2], counter[5][3], counter[5][4], 
+      counter[6][0], counter[6][1], counter[6][2], counter[6][3], counter[6][4], 
+      counter[7][0], counter[7][1], counter[7][2], counter[7][3], counter[7][4], 
+      totalInd ) ;
+
 }
 
 

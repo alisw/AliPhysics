@@ -30,8 +30,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h> 
-
 // --- AliRoot header files ---
 
  #include "AliGenerator.h"
@@ -660,28 +658,29 @@ void AliPHOSEmcRecPoint::Print(Option_t * option)
 {
   // Print the list of digits belonging to the cluster
   
-  cout << "AliPHOSEmcRecPoint: " << endl ;
+  TString message ; 
+  message  = "AliPHOSEmcRecPoint:\n" ;
+  message +=  " digits # = " ; 
+  Info("Print", message.Data()) ; 
 
   Int_t iDigit;
-  cout << " digits # = " ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++)
-    cout << fDigitsList[iDigit] << "  " ;  
-  cout << endl ;
+    Info("Print", " %d ", fDigitsList[iDigit] ) ;  
   
-  cout << " Energies = " ;
+  Info("Print", " Energies = ") ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    cout  << fEnergyList[iDigit] << "  ";
-  cout << endl ;
+    Info("Print", " %f ", fEnergyList[iDigit] ) ;
   
-  cout << " Primaries  " ;
+   Info("Print", " Primaries  ") ;
   for(iDigit = 0;iDigit < fMulTrack; iDigit++)
-    cout << fTracksList[iDigit] << " " << endl ;
+    Info("Print", " %d ", fTracksList[iDigit]) ;
 	
-  cout << "       Multiplicity    = " << fMulDigit  << endl ;
-  cout << "       Cluster Energy  = " << fAmp << endl ;
-  cout << "       Number of primaries " << fMulTrack << endl ;
-  cout << "       Stored at position " << GetIndexInList() << endl ; 
+  message  = "       Multiplicity    = %d" ;
+  message += "       Cluster Energy  = %f" ; 
+  message += "       Number of primaries %d" ; 
+  message += "       Stored at position %d" ; 
  
+  Info("Print", message.Data(), fMulDigit, fAmp, fMulTrack,GetIndexInList() ) ;  
 }
  
   

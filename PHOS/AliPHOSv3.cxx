@@ -116,9 +116,9 @@ void AliPHOSv3::StepManager(void)
   // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
 
 //    if (gMC->IsTrackEntering())
-//      cout << "Track enters the volume " << gMC->CurrentVolName() << endl;
+//      Info("StepManager", "Track enters the volume %d", gMC->CurrentVolName()) ;
 //    if (gMC->IsTrackExiting())
-//      cout << "Track leaves the volume " << gMC->CurrentVolName() << endl;
+//      Info("StepManager", "Track leaves the volume %d", gMC->CurrentVolName()) ;
 
   Int_t          relid[4] ;        // (box, layer, row, column) indices
   Int_t          absid    ;        // absolute cell ID number
@@ -309,8 +309,8 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
    xyze[3] = (fRecalibrationFactor/100.) * fAPDGain * fLightYield  ;
   
     
-   // cout<<"xyze[3]:    "<<xyze[3]<<   endl;
-   //cout<<"lostenergy: "<<lostenergy<<endl; 
+   // Info("StepManager", "xyze[3]: %f", xyze[3]) ;
+   // Info("StepManager", "lostenergy: %f", lostenergy) ; 
 
 
         
@@ -326,7 +326,7 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
 
 //  if(gMC->CurrentVolID(copy) == gMC->VolId("PPIN"))//We are inside the PIN diode 
 //     {
-//       cout<<" Inside PIN "<<endl;
+//       Info("StepManager", "Inside PIN";
 //       gMC->TrackPosition(pos) ;
 //       global[0] = pos[0] ;
 //       global[1] = pos[1] ;

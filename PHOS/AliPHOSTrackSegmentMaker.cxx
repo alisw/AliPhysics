@@ -61,39 +61,3 @@ AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
       fSplitFile = 0 ;
 }
 
-// //____________________________________________________________________________
-// void AliPHOSTrackSegmentMaker::SetSplitFile(const TString splitFileName) const
-// {
-//   // Diverts the TrackSegments in a file separate from the Digits file
-  
-
-//   TDirectory * cwd = gDirectory ;
-//   TFile * splitFile = gAlice->InitTreeFile("R",splitFileName.Data());
-//   splitFile->cd() ; 
-//   gAlice->Write(0, TObject::kOverwrite);
-
-//   TTree *treeE  = gAlice->TreeE();
-//   if (!treeE) {
-//     cerr << "ERROR: AliPHOSTrackSegmentMaker::SetSplitFile -> No TreeE found "<<endl;
-//     abort() ;
-//   }      
-  
-//   // copy TreeE
-//   AliHeader *header = new AliHeader();
-//   treeE->SetBranchAddress("Header", &header);
-//   treeE->SetBranchStatus("*",1);
-//   TTree *treeENew =  treeE->CloneTree();
-//   treeENew->Write(0, TObject::kOverwrite);
-  
-//   // copy AliceGeom
-//   TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-//   if (!AliceGeom) {
-//     cerr << "ERROR: AliPHOSTrackSegmentMaker::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-//     abort() ;
-//   }
-//   AliceGeom->Write(0, TObject::kOverwrite);
-  
-//   gAlice->MakeTree("R",splitFile);
-//   cwd->cd() ; 
-//   cout << "INFO: AliPHOSTrackSegmentMaker::SetSPlitMode -> TrackSegments will be stored in " << splitFileName.Data() << endl ;   
-// }

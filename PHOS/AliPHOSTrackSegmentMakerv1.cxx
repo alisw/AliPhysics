@@ -28,8 +28,7 @@
 //   new TrackSegment. 
 // If there is no CPV/PPSD RecPoint we make TrackSegment 
 // consisting from EMC alone. There is no TrackSegments without EMC RecPoint.
-//
-// In principle this class should be called from AliPHOSReconstructioner, but 
+//// In principle this class should be called from AliPHOSReconstructioner, but 
 // one can use it as well in standalone mode.
 // Use  case:
 //  root [0] AliPHOSTrackSegmentMakerv1 * t = new AliPHOSTrackSegmentMaker("galice.root", "tracksegmentsname", "recpointsname")
@@ -51,10 +50,8 @@
 #include "TTree.h"
 #include "TSystem.h"
 #include "TBenchmark.h"
-// --- Standard library ---
 
-#include <iostream.h>
-#include <iomanip.h>
+// --- Standard library ---
 
 // --- AliRoot header files ---
 
@@ -220,7 +217,7 @@ void  AliPHOSTrackSegmentMakerv1::Init()
   branchname.Remove(branchname.Index(Version())-1) ;
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(),branchname.Data(), fToSplit ) ; 
   if ( gime == 0 ) {
-    cerr << "ERROR: AliPHOSTrackSegmentMakerv1::Init -> Could not obtain the Getter object !" << endl ; 
+    Error("Init", "Could not obtain the Getter object !") ; 
     return ;
   } 
   
@@ -418,8 +415,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 //     }
     
 //     if ( phostsfound || tracksegmentmakerfound ) {
-//       cerr << "WARNING: AliPHOSTrackSegmentMakerv1::Exec -> TrackSegments and/or TrackSegmentMaker branch with name " 
-// 	   << branchname.Data() << " already exits" << endl ;
+//       Warning("Exec", "TrackSegments and/or TrackSegmentMaker branch with name %s already exists", branchname.Data() ) ;
 //       return ; 
 //     }       
 //   }
@@ -466,10 +462,8 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSTSMaker");
-    cout << "AliPHOSTSMaker:" << endl ;
-    cout << "  took " << gBenchmark->GetCpuTime("PHOSTSMaker") << " seconds for making TS " 
-	 <<  gBenchmark->GetCpuTime("PHOSTSMaker")/nevents << " seconds per event " << endl ;
-    cout << endl ;
+    Info("Exec", "took %f seconds for making TS %f seconds per event", 
+	 gBenchmark->GetCpuTime("PHOSTSMaker"), gBenchmark->GetCpuTime("PHOSTSMaker")/nevents) ;
   }
     
 }
@@ -479,18 +473,17 @@ void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const
 {
   //  Print TrackSegmentMaker parameters
 
+  TString message("") ;
   if( strcmp(GetName(), "") != 0 ) {
-    cout <<  "======== AliPHOSTrackSegmentMakerv1 ========" << endl ;
-    cout <<  "Making Track segments "<< endl ;
-    //    cout <<  "    Headers file:                   " << fHeaderFileName.Data() << endl ;
-    //    cout <<  "    RecPoints branch file name:     " << fRecPointsBranchTitle.Data() << endl ;
-    //    cout <<  "    TrackSegments Branch file name: " << fTrackSegmentsBranchTitle.Data() << endl ;
-    cout <<  "with parameters: " << endl ;
-    cout <<  "    Maximal EMC - CPV (PPSD) distance (cm)" << fRcpv << endl ;
-    cout <<  "============================================" << endl ;
+    message = "\n======== AliPHOSTrackSegmentMakerv1 ========\n" ; 
+    message += "Making Track segments\n" ;
+    message += "with parameters:\n" ; 
+    message += "     Maximal EMC - CPV (PPSD) distance (cm) %f\n" ;
+    message += "============================================\n" ;
+    Info("Print", message.Data(),fRcpv) ;
   }
   else
-    cout << "AliPHOSTrackSegmentMakerv1 not initialized " << endl ;
+    Info("Print", "AliPHOSTrackSegmentMakerv1 not initialized ") ;
 }
 
 //____________________________________________________________________________
@@ -558,21 +551,20 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
   
   TClonesArray * trackSegments = AliPHOSGetter::GetInstance()->TrackSegments(taskName) ; 
 
-  
-  cout << "AliPHOSTrackSegmentMakerv1: event "<<gAlice->GetEvNumber()  << endl ;
-  cout << "       Found " << trackSegments->GetEntriesFast() << "  trackSegments " << endl ;
-  
+  TString message ; 
+  message  = "AliPHOSTrackSegmentMakerv1: event %d\n" ; 
+  message += "      Found %d TrackSegments\n" ; 
+
   if(strstr(option,"all")) {  // printing found TS
-    cout << "TrackSegment # " << "    EMC RP#    " << "    CPV RP#    " << endl ; 
-    
+    message += "TrackSegment #     EMC RP#        CPV RP#    \n" ; 
+    Info("PrintTrackSegments", message.Data(), 
+	 gAlice->GetEvNumber(), 
+	 trackSegments->GetEntriesFast() ) ;  
     Int_t index;
     for (index = 0 ; index <trackSegments->GetEntriesFast() ; index++) {
       AliPHOSTrackSegment * ts = (AliPHOSTrackSegment * )trackSegments->At(index) ; 
-      cout<<"   "<< setw(4) << ts->GetIndexInList() << "            " 
-	  <<setw(4) << ts->GetEmcIndex()<< "            " 
-	  <<setw(4) << ts->GetCpvIndex()<< "            " << endl ;
+      message = "       %d    %d    %d\n" ; 
+      Info("PrintTrackSegments", message.Data(), ts->GetIndexInList(), ts->GetEmcIndex(), ts->GetCpvIndex() ) ;
     }	
-    
-    cout << "-------------------------------------------------------"<< endl ;
   }
 }

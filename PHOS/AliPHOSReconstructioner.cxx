@@ -28,8 +28,7 @@
 //  Thanks to getters, one can set 
 //  parameters to reconstruction briks. The full set of parameters is saved in the 
 //  corresponding branch: e.g. parameters of clusterizer are stored in branch 
-//  TreeR::AliPHOSClusterizer with the same title as the branch containing the RecPoints. 
-//  TTree does not support overwriting, therefore one can not produce several 
+//  TreeR::AliPHOSClusterizer with the same title as the branch containing the RecPoints. //  TTree does not support overwriting, therefore one can not produce several 
 //  branches with the same names and titles - use different titles.
 //
 //  Use case: 
@@ -66,7 +65,6 @@
 #include "TFile.h"
 
 // --- Standard library ---
-#include <iostream.h>   
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -139,6 +137,7 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
   if(!fIsInitialized)
     Init() ;
 
+  TString message(" ") ; 
 //   gAlice->GetEvent(0) ;
 
 //   if(fSDigitizer->IsActive()&& gAlice->TreeS()){ //Will produce SDigits
@@ -166,11 +165,10 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
 //     }
     
 //     if(!(sdigitizerNotFound && phosNotFound)){
-//       cout << "AliPHOSReconstructioner error: "<< endl ;
-//       cout << "       Branches ''PHOS'' or ''AliPHOSSDigitizer'' with title ``" << fSDigitsBranch.Data() << "''" << endl ;
-//       cout << "       already exist in TreeS. ROOT does not allow updating/overwriting." << endl ;
-//       cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
-      
+//       message  = "       Branches PHOS or AliPHOSSDigitizer with title %s\n" ;
+//       message += "       already exist in TreeS. ROOT does not allow updating/overwriting.\n" ;
+//       message += "       Specify another title for branches or use StartFrom() method\n" ;
+//       Error("Exec", message.Data(), fSDigitsBranch.Data() ) ;       
 //       //mark all tasks as inactive
 //       TIter next(fTasks);
 //       TTask *task;
@@ -206,11 +204,10 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
 //     }
     
 //     if(!(digitizerNotFound && phosNotFound)){
-//       cout << "AliPHOSReconstructioner error: "<< endl ;
-//       cout << "       Branches ''PHOS'' or ''AliPHOSDigitizer'' with title ``" << fDigitsBranch.Data() << "''" << endl ;
-//       cout << "       already exist in TreeD. ROOT does not allow updating/overwriting." << endl ;
-//       cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
-      
+//       message  = "       Branches PHOS or AliPHOSDigitizer with title %s\n" ; 
+//       message += "       already exist in TreeD. ROOT does not allow updating/overwriting.\n" ; 
+//       message += "       Specify another title for branches or use StartFrom() method" ;
+//       Error("Exec", message>Data(), fDigitsBranch.Data() ) ;       
 //       //mark all tasks as inactive
 //       TIter next(fTasks);
 //       TTask *task;
@@ -255,12 +252,10 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
 //     }
 
 //     if(!(clusterizerNotFound && emcNotFound && cpvNotFound)){
-//       cout << "AliPHOSReconstructioner error: "<< endl ;
-//       cout << "       Branches ''PHOSEmcRP'', ''PHOSCpvRP'' or ''AliPHOSClusterizer'' with title ``" 
-// 	   << fRecPointBranch.Data() << "''" << endl ;
-//       cout << "       already exist in TreeR. ROOT does not allow updating/overwriting." << endl ;
-//       cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
-      
+//       message  = "       Branches PHOSEmcRP, PHOSCpvRP or AliPHOSClusterizer with title %s\n" ; 
+//       message += "       already exist in TreeR. ROOT does not allow updating/overwriting.\n" ;
+//       message += "       Specify another title for branches or use StartFrom() method\n" ;
+//       Error("Exec", message.Data(),fRecPointBranch.Data() ) ;        
 //       //mark all tasks as inactive
 //       TIter next(fTasks);
 //       TTask *task;
@@ -295,12 +290,10 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
 //     }
     
 //     if(!(tsMakerNotFound &&tsNotFound) ){
-//       cout << "AliPHOSReconstructioner error: "<< endl ;
-//       cout << "       Branches ''PHOSTS'' or ''AliPHOSTrackSegmentMaker'' with title ``" 
-// 	   << fTSBranch.Data() << "''" << endl ;
-//       cout << "       already exist in TreeR. ROOT does not allow updating/overwriting." << endl ;
-//       cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
-      
+//       message  = "       Branches PHOSTS or AliPHOSTrackSegmentMaker with title %s\n" ;  
+//       message += "       already exist in TreeR. ROOT does not allow updating/overwriting.\n" ;
+//       message += "       Specify another title for branches or use StartFrom() method\n" ;
+//       Error("Exec", message.Data(),fTSBranch.Data() ) ;        
 //       //mark all tasks as inactive
 //       TIter next(fTasks);
 //       TTask *task;
@@ -337,12 +330,10 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
 //     }
     
 //     if(!pidNotFound  || !rpNotFound ){
-//       cout << "AliPHOSReconstructioner error: "<< endl ;
-//       cout << "       Branches ''PHOSRP'' or ''AliPHOSPID'' with title ``" 
-// 	   << fRecPartBranch.Data() << "''" << endl ;
-//       cout << "       already exist in TreeR. ROOT does not allow updating/overwriting." << endl ;
-//       cout << "       Specify another title for branches." << endl ;
-      
+//       message  = "       Branches PHOSRP or AliPHOSPID with title %s\n" ;  
+//       message += "       already exist in TreeR. ROOT does not allow updating/overwriting.\n" ;
+//       message += "       Specify another title for branches.\n" ;
+//       Error("Exec", message.Data(), fRecPartBranch.Data() ) ;        
 //       //mark all tasks as inactive
 //       TIter next(fTasks);
 //       TTask *task;
@@ -453,9 +444,11 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 //     return ;
 //   }
 
-//   cout << "There is no branch " << branch << "!"<< endl ;
-//   cout << "Available branches `SDigits', `Digits', `RecPoints', `TrackSegments' and `RecParticles' " << endl ;
-  
+//   
+//   TString message ;    
+//   message  = "There is no branch %s !\n" ;
+//   message += "Available branches `SDigits', `Digits', `RecPoints', `TrackSegments' and `RecParticles'\n" ;
+//   Warning("SetBranchTitle", message.Data(), branch ) ;   
 // }
 // //____________________________________________________________________________
 // void AliPHOSReconstructioner::StartFrom(char * module,char* title)
@@ -488,7 +481,7 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 // 	  if(strstr(module,"PID") || strstr(module,"Particle") || strstr(module,"RP") )
 // 	    sprintf(moduleName,"AliPHOSPID") ;
 // 	  else{
-// 	    cout << "Do not know such a module / Rec Object " << endl;
+// 	    Warning("StartFrom", "Do not know such a module / Rec Object ") ;
 // 	    return ;
 // 	  }
   
@@ -537,34 +530,34 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 void AliPHOSReconstructioner::Print(Option_t * option)const {
   // Print reconstructioner data  
 
-  cout << "-----------------AliPHOSReconstructioner---------------" << endl ;
-  cout << " Reconstruction of the header file " <<fHeaderFileName.Data() << endl ;
-  cout << " with the following modules: " << endl ;
+  TString message ; 
+  message  = "-----------------AliPHOSReconstructioner---------------\n" ;
+  message += " Reconstruction of the header file %s\n" ;
+  message += " with the following modules:\n" ;
 
   if(fSDigitizer->IsActive()){
-    cout << "   (+)   " << fSDigitizer->GetName() << " to branch : " << fSDigitsBranch.Data() << endl ; 
-    cout << endl ;
+    message += "   (+)   %s to branch %s\n" ; 
   }
   if(fDigitizer->IsActive()){
-    cout << "   (+)   " << fDigitizer->GetName() << " to branch : " << fDigitsBranch.Data() << endl ;  
-    cout <<  endl ;
+    message += "   (+)   %s to branch %s\n" ; 
   }
   
   if(fClusterizer->IsActive()){
-    cout << "   (+)   " <<fClusterizer->GetName() << " to branch : " <<fRecPointBranch.Data()  << endl ;  
-    cout <<  endl ;
+    message += "   (+)   %s to branch %s\n" ;
   }
 
   if(fTSMaker->IsActive()){
-    cout << "   (+)   " << fTSMaker->GetName() << " to branch : " << fTSBranch.Data() << endl ;  
-    cout <<  endl ;
+    message += "   (+)   %s to branch %s\n" ; 
   }
-
 
   if(fPID->IsActive()){
-    cout << "   (+)   " << fPID->GetName() << " to branch : " <<fRecPartBranch.Data()  << endl ;  
-    cout <<  endl ;
+    message += "   (+)   %s to branch %s\n" ;  
   }
-
-
+  Info("Print", message.Data(), 
+       fHeaderFileName.Data(), 
+       fSDigitizer->GetName(), fSDigitsBranch.Data(), 
+       fDigitizer->GetName(), fDigitsBranch.Data() , 
+       fClusterizer->GetName(), fRecPointBranch.Data(), 
+       fTSMaker->GetName(), fTSBranch.Data() , 
+       fPID->GetName(), fRecPartBranch.Data() ) ; 
 }

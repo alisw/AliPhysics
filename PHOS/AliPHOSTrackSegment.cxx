@@ -80,16 +80,16 @@ void AliPHOSTrackSegment::Print(Option_t * opt) const
   // Print all information on this track Segment
   
 
-  cout << "--------AliPHOSTrackSegment-------- "<<endl ;
-  cout << "Stored at position " << fIndexInList << endl ;
-  cout << "Emc RecPoint #     " << fEmcRecPoint << endl ;
+  Info("Print", "--------AliPHOSTrackSegment-------- ");
+  Info("Print", "Stored at position %d", fIndexInList) ;
+  Info("Print", "Emc RecPoint #     %d", fEmcRecPoint) ;
   if(fPpsdUpRecPoint >= 0)
-    cout << "CPV RecPoint #     " << fPpsdUpRecPoint << endl ;
+    Info("Print", "CPV RecPoint #     %d", fPpsdUpRecPoint) ;
   else
-    cout << "No CPV RecPoint " << endl ;
+    Info("Print", "No CPV RecPoint ");
 
   
-  cout << "------------------------------------ " << endl ; 
+  Info("Print", "------------------------------------ ") ; 
   
 }
 //____________________________________________________________________________

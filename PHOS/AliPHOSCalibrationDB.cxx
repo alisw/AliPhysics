@@ -24,7 +24,6 @@
 // --- ROOT system ---
 #include "TFile.h"
 // --- Standard library ---
-#include <iostream.h>
 #include <fstream>
 
 // --- AliRoot header files ---
@@ -86,7 +85,7 @@ void  AliPHOSCalibrationDB::SetAll(Float_t pedestal, Float_t slope){
       fSlopes->AddAt(slope,i);
     }
   else
-    cout << "Please, create me with non-default constructor!" << endl;
+    Warning("SetAll", "Please, create me with non-default constructor!") ;
 }
 //____________________________________________________________________________
 void AliPHOSCalibrationDB::ReadCalibrationParameters(const char * filename, Option_t* opt){
@@ -94,7 +93,7 @@ void AliPHOSCalibrationDB::ReadCalibrationParameters(const char * filename, Opti
 
   if(strcmp(opt,"gains")==0){  //read gains
     if(!fctdb){
-      cout << "Specify Connections Table Database first" << endl ;
+      Error("ReadCalibrationParameters", "Specify Connections Table Database first") ;
       return ;
     }
     ifstream gainfile(filename) ; 
@@ -108,7 +107,7 @@ void AliPHOSCalibrationDB::ReadCalibrationParameters(const char * filename, Opti
   else
     if(strstr(opt,"pedest")){  //read pedestals
       if(!fctdb){
-	cout << "Specify Connections Table Database first" << endl ;
+	Error("ReadCalibrationParameters", "Specify Connections Table Database first") ;
 	return ;
       }
       ifstream pfile(filename) ; 
@@ -120,9 +119,7 @@ void AliPHOSCalibrationDB::ReadCalibrationParameters(const char * filename, Opti
       pfile.close();
    }
    else{
-     cout << "Available options are " << endl ;
-     cout << " `gains' : to read gains " << endl ;
-     cout << " `pedestals : to read pedestals " << endl ;
+     Warning("ReadCalibrationParameters", "Available options are\n `gains' : to read gains\n `pedestals : to read pedestals ") ;
    }
 }
 //____________________________________________________________________________

@@ -127,9 +127,9 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
   AliPHOSGeometry::GetInstance(title, "") ; 
 
   if (GetGeometry()->IsInitialized() ) 
-    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << GetGeometry()->GetName() << endl ;
+    Info("AliPHOSv1", "AliPHOS %d : PHOS geometry intialized for %s", Version(), GetGeometry()->GetName() );
   else
-    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
+    Info("AliPHOSv1", "AliPHOS %d : PHOS geometry initialization failed !", Version() ) ;   
 
   // Defining the PHOS Reconstructioner
  
@@ -289,7 +289,7 @@ void AliPHOSv1::SDigits2Digits()
 
   //we assume, that there is al least one EMC digit...
   if(fSDigits->GetEntries() == 0) {
-    cout << "PHOS::SDigits2Digits>  No SDigits !!! Do not produce Digits " << endl ;
+    Warning("SDigits2Digits", "No SDigits !!! Do not produce Digits ") ;
     return ;
   }
 
@@ -721,8 +721,6 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   Float_t pZ    =-p.Pz();
   Float_t pNorm = p.Py();
   Float_t eloss = kdEdx;
-
-//    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
 
   Float_t dZY   = pZ/pNorm * GetGeometry()->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * GetGeometry()->GetCPVGasThickness();

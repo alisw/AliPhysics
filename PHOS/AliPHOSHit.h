@@ -19,8 +19,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
 
 class AliPHOSHit : public AliHit {
 

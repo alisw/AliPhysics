@@ -39,7 +39,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <strstream.h>
 
 // --- AliRoot header files ---
 
@@ -876,25 +875,19 @@ void AliPHOSv0::Init(void)
   Int_t i;
 
   if(fDebug) {
-    cout << endl ;  
+    TString st ; 
     for(i=0;i<35;i++) 
-      cout <<"*";
-    cout << "INFO: " << ClassName() << "::Init ";
-    for(i=0;i<35;i++) 
-      cout << "*";
-    cout << endl;
-   
+      st += "*";
+    Info("Init", "%s", st.Data()) ;  
     // Here the PHOS initialisation code (if any!)
     
     AliPHOSGeometry * geom = GetGeometry() ; 
 
     if (geom!=0)  
-      cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << geom->GetName() << endl ;
+      Info("Init", "AliPHOS%s: PHOS geometry intialized for %s", Version().Data(), geom->GetName()) ;
     else
-      cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;       
-    for(i=0;i<80;i++) 
-      cout << "*" ;
-    cout << endl;
-    
+      Info("Init", "AliPHOS%s: PHOS geometry initialization failed !", Version().Data()) ;       
+
+    Info("Init", "%s", st.Data()) ;  
   }
 }

@@ -93,8 +93,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
 {
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
-      cout << "WARNING : AliPHOSRecParticle::GetPrimary -> " << index << " is larger that the number of primaries " 
-	   <<  GetNPrimaries() << endl ;
+      Warning("GetPrimary", "%d is larger that the number of primaries %d", index, GetNPrimaries()) ;
     return 0 ; 
   } else { 
     Int_t dummy ; 
@@ -103,7 +102,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
     Int_t primaryindex = ((AliPHOSEmcRecPoint*)gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
 //     if (primaryindex >= 10000000) { // it comes from backgroundfile 
 //       if (fDebug) 
-// 	cout << "WARNING : AliPHOSRecParticle::GetPrimary -> not a signal primary" << endl ;
+// 	Warning("GetPrimary","-> not a signal primary") ;
 //       return 0 ; 
 //     } else 
       return gime->Primary(primaryindex) ; 

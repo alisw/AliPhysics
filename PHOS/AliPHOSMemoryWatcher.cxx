@@ -108,7 +108,7 @@ void AliPHOSMemoryWatcher::watch(int x)
   }
   else {
     fDisabled=true;
-    cerr << "AliPHOSMemoryWatcher::watch : I'm full !" << endl;
+    Error("watch", "I'm full !" ) ;
   }
 }
 //_____________________________________________________________________________

@@ -27,8 +27,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSQAObjectCheckable.h"
@@ -52,10 +50,10 @@ ClassImp(AliPHOSQAObjectCheckable)
 //____________________________________________________________________________ 
 void AliPHOSQAObjectCheckable::Print() const
 {
-  cout << " Checkable-> " << GetName() << " : value = "  << endl ; 
+  Info("Print", "Checkable-> %s : value = ", GetName()) ; 
   if( fObject ) 
     fObject->Print() ;
   else
-    cerr << "ERROR : no object specified yet " << endl ; 
+    Info("Print", "no object specified yet" ) ; 
 }
 

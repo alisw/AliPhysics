@@ -3,8 +3,6 @@
 #include "TROOT.h"
 
 // --- Standard library ---
-#include <iostream.h>
-#include <iomanip.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSClusterizerv2.h"
@@ -62,9 +60,9 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
 //      if(!ReadDigits(ievent))  //reads digits for event fEvent
 //        continue;
     
-    cout<<" MakeClusters invoked..";
+    Info("Exec", "MakeClusters invoked..") ;
     MakeClusters() ;
-    cout<<" done."<<endl;
+    Info("Exec", "MakeClusters done.") ;
 
 
     //SmartRecPoints will communicate with wPool.
@@ -102,8 +100,8 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     wPoolF->Remove(recCpv);
     delete recCpv;
 
-    cout<<"       "<<gime->CpvRecPoints()->GetEntries()<<endl;
-    cout<<"       "<<cpvRecPoints->GetEntries()<<" cpvRecPoints."<<endl<<endl;
+    Info("Exec", "       %d", gime->CpvRecPoints()->GetEntries() ) ;
+    Info("Exec", "       %d cpvRecPoints", cpvRecPoints->GetEntries() ) ;
 
 
     // Now Emc reconstruction
@@ -132,13 +130,20 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     wPoolF->Remove(recEmc);
     delete recEmc;
 
-    cout<<"       "<<nOldCpv<<" OLD cpvRecPoints."<<endl;
-    cout<<"       "<<gime->CpvRecPoints()->GetEntries()<<endl;
-    cout<<"       "<<cpvRecPoints->GetEntries()<<" cpvRecPoints."<<endl<<endl;
+    TString message ; 
+    message  = "       %d  OLD cpvRecPoints\n" ; 
+    message += "       %d\n" ; 
+    message += "       %d cpvRecPoints\n" ; 
 
-    cout<<"       "<<nOldEmc<<" OLD emcRecPoints."<<endl;
-    cout<<"       "<<gime->EmcRecPoints()->GetEntries()<<endl;
-    cout<<"       "<<emcRecPoints->GetEntries()<<" emcRecPoints."<<endl<<endl;
+    message += "       %d OLD emcRecPoints " ; 
+    message += "       %d\n" ;
+    message += "       %d emcRecPoints\n" ;
+
+    Info("Exec", message.Data(), 
+	 nOldCpv, 
+	 gime->CpvRecPoints()->GetEntries(),cpvRecPoints->GetEntries(), 
+	 nOldEmc, 
+	 gime->EmcRecPoints()->GetEntries(), emcRecPoints->GetEntries() ) ; 
 
     WriteRecPoints(ievent);
 
@@ -147,12 +152,8 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
 
   if(strstr(option,"tim")) {
     gBenchmark->Stop("PHOSClusterizer");
-    cout << "AliPHOSClusterizer:" << endl ;
-    cout << "  took " << gBenchmark->GetCpuTime("PHOSClusterizer") << " seconds for Clusterizing " << endl;
-    cout << endl ;
-
+    Info("Exec","took %f seconds for Clusterizing", gBenchmark->GetCpuTime("PHOSClusterizer") ) ;
   }
-
 }
 //---------------------------------------------------------------------------------
 Int_t AliPHOSClusterizerv2::AreNeighbours(AliPHOSDigit* d1, AliPHOSDigit* d2) const

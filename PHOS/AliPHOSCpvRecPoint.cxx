@@ -31,8 +31,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h> 
-
 // --- AliRoot header files ---
 
 #include "AliPHOSCpvRecPoint.h"
@@ -285,8 +283,8 @@ void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight,TClonesArray * digi
   } else {
     x = -1e6 ;
     z = -1e6 ;
-    if (fMulDigit != 0) cout << "AliPHOSCpvRecPoint: too low log weight factor "
-			     << "to evaluate cluster's center\n";
+    if (fMulDigit != 0) 
+      Warning(":EvalLocalPosition", "Too low log weight factor to evaluate cluster's center" ) ;
   }
   fLocPos.SetX(x)  ;
   fLocPos.SetY(0.) ;
@@ -349,22 +347,24 @@ void AliPHOSCpvRecPoint::Print(Option_t * option)
 {
   // Print the list of digits belonging to the cluster
   
-  cout << "AliPHOSCpvRecPoint: " << endl ;
-
+  TString message ; 
+  message  =  "AliPHOSCpvRecPoint: " ;
+  message +=  "Digits #   " ;
+  Info("Print", message.Data()) ; 
+  
   Int_t iDigit;
 
-  cout << "Digits #   "  ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    cout << fDigitsList[iDigit] << "  "  ; 
-  cout << endl ;
+    Info("Print", " %d ", fDigitsList[iDigit]) ; 
 
-  cout << "Energies: "  ;
+  Info("Print", "Energies: ")  ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    cout << fEnergyList[iDigit] << "  "  ; 
-  cout << endl ;
+    Info("Print", " %f ", fEnergyList[iDigit]) ; 
   
-  cout << "       Multiplicity    = " << fMulDigit  << endl ;
-  cout << "       Cluster Energy  = " << fAmp << endl ;
-  cout << "       Stored at position " << GetIndexInList() << endl ; 
+  message  = "       Multiplicity    = %d\n" ;
+  message += "       Cluster Energy  = %f\n" ;
+  message += "       Stored at position %d\n" ; 
  
+  Info("Print", message.Data(), fMulDigit, fAmp, GetIndexInList() ) ; 
+
 }

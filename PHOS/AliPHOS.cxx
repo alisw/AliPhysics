@@ -32,7 +32,6 @@ class TFile;
 #include "TFolder.h" 
 
 // --- Standard library ---
-#include <strstream.h>
 
 // --- AliRoot header files ---
 #include "AliPHOS.h"

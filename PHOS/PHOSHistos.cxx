@@ -60,7 +60,7 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
   AliPHOSTrackSegmentMakerv1 * tracksegmentmaker = new AliPHOSTrackSegmentMakerv1() ;
   //========== Creates the particle identifier
   AliPHOSPIDv1 * particleidentifier = new AliPHOSPIDv1 ;
-  cout <<  "AnalyzeOneEvent > using particle identifier " << particleidentifier->GetName() << endl ; 
+  Info("PHOSHistos", "AnalyzeOneEvent > using particle identifier %s\n", particleidentifier->GetName() ) ; 
     
   TH1F * hEmcDigit       = new TH1F("hEmcDigit","hEmcDigit",1000,0.,5.);
   TH1F * hVetoDigit      = new TH1F("hVetoDigit","hVetoDigit",1000,0.,3.e-5);
@@ -88,7 +88,7 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
   //========== Creates the Reconstructioner  
     AliPHOSReconstructioner * Reconstructioner = new AliPHOSReconstructioner(clusterizer, tracksegmentmaker, particleidentifier) ;
      
-    cout << "Event " << ievent <<endl;
+    Info("PHOSHistos", "Event %d\n", ievent);
 
     Int_t RelId[4] ;
     //=========== Connects the various Tree's for evt

@@ -25,7 +25,6 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
 // --- AliRoot header files ---
 
 #include "AliPHOSQAAlarm.h"
@@ -55,5 +54,5 @@ ClassImp(AliPHOSQAAlarm)
 {
   // print the message 
 
-  cout << "Event# " << fEvent << " " << fMessage << endl;  
+  Info("Print", "Event# %d %s", fEvent, fMessage.Data()) ;  
 }
