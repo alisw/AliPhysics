@@ -9,7 +9,7 @@ PACKAGE = ITS
 
 # C++ sources
 
-SRCS          = AliITS.cxx AliITSv0.cxx    AliITSv1.cxx      AliITSv3.cxx    AliITSv5.cxx  
+SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx AliITSdigit.cxx AliITSgeom.cxx AliITSgeomSPD.cxx AliITSgeomSDD.cxx AliITSgeomSSD.cxx AliITSmodule.cxx AliITSmoduleSPD.cxx AliITSmoduleSDD.cxx AliITSmoduleSSD.cxx AliITSdigitSSD.cxx AliITShit.cxx
 
 # Fortran sources
 
@@ -54,6 +54,7 @@ ALIBRARY	= $(LIBDIR)/libITS.a
 
 default:	$(SLIBRARY)
 
+
 $(LIBDIR)/libITS.$(SL):		$(OBJS)
 
 $(DICT):			$(HDRS)
@@ -79,10 +80,3 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
 
 check:          $(CHECKS)
-
-
-
-
-
-
-

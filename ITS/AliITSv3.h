@@ -9,7 +9,7 @@
 class AliITSv3 : public AliITS {
 
 protected:
-  Int_t fMinorVersion;  //Minor version identifier
+  Int_t fMinorVersionV3;  //Minor version identifier
  
 public:
    AliITSv3();
@@ -19,7 +19,7 @@ public:
    virtual void   CreateMaterials();
    virtual void   Init();   
    virtual Int_t  IsVersion() const {return 3;}
-   virtual inline void   SetMinorVersion(Int_t version) {fMinorVersion=version;}
+   virtual inline void   SetMinorVersion(Int_t version) {fMinorVersionV3=version;}
    virtual void   StepManager();
    
    ClassDef(AliITSv3,1)  //Hits manager for set:ITS version 3

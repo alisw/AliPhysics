@@ -1,25 +1,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Inner Traking System version 1                                           //
+//  This class contains the base procedures for the Inner Tracking System    //
 //                                                                           //
-//Begin_Html
-/*
-<img src="picts/AliITSv1Class.gif">
-</pre>
-<br clear=left>
-<font size=+2 color=red>
-<p>The responsible person for this module is
-<a href="mailto:roberto.barbera@ct.infn.it">Roberto Barbera</a>.
-</font>
-<pre>
-*/
-//End_Html
+// Authors: R. Barbera, A. Morsch.
+// version 1.
+// Created  1998.
+//
+//  NOTE: THIS IS THE COARSE pre.TDR geometry of the ITS. THIS WILL NOT WORK
+// with the geometry or module classes or any analysis classes. You are 
+// strongly encouraged to uses AliITSv5.
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
  
 #include <TMath.h>
 #include <TRandom.h>
 #include <TVector.h>
+#include "AliITShit.h"
 #include "AliITSv1.h"
 #include "AliRun.h"
 
@@ -54,16 +51,7 @@ void AliITSv1::CreateGeometry()
   //
   // Create Geometry for ITS version 0
   //
-  //Begin_Html
-  /*
-    <img src="picts/AliITSv1Tree.gif">
-  */
-  //End_Html
-  //Begin_Html
-  /*
-    <img src="picts/AliITSv1.gif">
-  */
-  //End_Html
+  //
   
 
   
@@ -458,6 +446,8 @@ void AliITSv1::Init()
   // Initialise the ITS after it has been built
   //
   AliITS::Init();
+  fMajorVersion = 1;
+  fMinorVersion = 0;
 }  
  
 //_____________________________________________________________________________
@@ -519,42 +509,53 @@ void AliITSv1::StepManager()
   // Called at every step in the ITS
   //
   Int_t         copy, id;
-  Float_t       hits[7];
-  Int_t         vol[3];
+  Float_t       hits[8];
+  Int_t         vol[4];
   TLorentzVector position, momentum;
   TClonesArray &lhits = *fHits;
   //
+  // Track status
+  vol[3] = 0;
+  if(gMC->IsTrackInside())      vol[3] +=  1;
+  if(gMC->IsTrackEntering())    vol[3] +=  2;
+  if(gMC->IsTrackExiting())     vol[3] +=  4;
+  if(gMC->IsTrackOut())         vol[3] +=  8;
+  if(gMC->IsTrackDisappeared()) vol[3] += 16;
+  if(gMC->IsTrackStop())        vol[3] += 32;
+  if(gMC->IsTrackAlive())       vol[3] += 64;
+  //
+  // Fill hit structure.
   if(gMC->TrackCharge() && gMC->Edep()) {
     //
     // Only entering charged tracks
-    if((id=gMC->CurrentVolID(copy))==fIdSens1) {  
+    if((id=gMC->CurrentVolID(copy))==fIdSens[0]) {  
       vol[0]=1;
       id=gMC->CurrentVolOffID(1,copy);      
       vol[1]=copy;
       id=gMC->CurrentVolOffID(2,copy);
       vol[2]=copy;                       
-    } else if(id==fIdSens2) {
+    } else if(id==fIdSens[1]) {
       vol[0]=2;
       id=gMC->CurrentVolOffID(1,copy);       
       vol[1]=copy;
       id=gMC->CurrentVolOffID(2,copy);
       vol[2]=copy;                    
-    } else if(id==fIdSens3) {
+    } else if(id==fIdSens[2]) {
       vol[0]=3;
       vol[1]=copy;
       id=gMC->CurrentVolOffID(1,copy);
       vol[2]=copy;             
-    } else if(id==fIdSens4) {
+    } else if(id==fIdSens[3]) {
       vol[0]=4;
       vol[1]=copy;
       id=gMC->CurrentVolOffID(1,copy);
       vol[2]=copy;                  
-    } else if(id==fIdSens5) {
+    } else if(id==fIdSens[4]) {
       vol[0]=5;
       vol[1]=copy;
       id=gMC->CurrentVolOffID(1,copy);
       vol[2]=copy;               
-    } else if(id==fIdSens6) {
+    } else if(id==fIdSens[5]) {
       vol[0]=6;
       vol[1]=copy;
       id=gMC->CurrentVolOffID(1,copy);
@@ -567,8 +568,9 @@ void AliITSv1::StepManager()
     hits[2]=position[2];          
     hits[3]=momentum[0];
     hits[4]=momentum[1];
-    hits[5]=momentum[2];        
+    hits[5]=momentum[2];
     hits[6]=gMC->Edep();
+    hits[7]=gMC->TrackTime();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }      
 }

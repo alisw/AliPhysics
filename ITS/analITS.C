@@ -5,23 +5,28 @@ void analITS (Int_t evNumber=0)
 //   illustrating how to read the output of GALICE
 //   and fill some histograms.
 //   
-//     Root > .L anal.C   //this loads the macro in memory
-//     Root > anal();     //by default process first event   
-//     Root > anal(2);    //process third event
+//     Root > .L analITS.C   //this loads the macro in memory
+//     Root > analITS();     //by default process first event   
+//     Root > analITS(2);    //process third event
 //Begin_Html
 /*
-<img src="picts/anal.gif">
-*/
+<img src="figures/analITS_ref.gif">
+</pre>
+<br clear=left>
+<font size=+2 color=red>
+<p>A reference plot produced by analITS.C.
+</font>
+<pre>
+ */
 //End_Html
 /////////////////////////////////////////////////////////////////////////
 
 
 // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
-      gSystem->Load("libGeant3Dummy.so");   // a dummy version of Geant3
-      gSystem->Load("PHOS/libPHOSdummy.so");        // the standard Alice classes 
-      gSystem->Load("libgalice.so");        // the standard Alice classes 
-   }
+      gROOT->LoadMacro("loadlibs.C");
+      loadlibs();
+   } // end if gClassTable...
       
 // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
@@ -42,7 +47,7 @@ void analITS (Int_t evNumber=0)
    Int_t j,hit,ipart;
    Int_t nhits;
    Int_t sector,plane;
-   GParticle *particle;
+   TParticle *particle;
    AliTPChit  *tpcHit;
    AliITShit  *itsHit;
 
@@ -59,7 +64,7 @@ void analITS (Int_t evNumber=0)
    // Create histograms
    TH1F *hITSZ    = new TH1F("hITSZ","Z of hits in ITS",100,-50.,50.);
    TH1F *hITSR    = new TH1F("hITSR","R of hits in ITS",100,0.,50.);
-   TH1F *hITSDnum = new TH1F("hITSDnum","JLAY of hits in ITS",20, 0., 20.);
+   TH1F *hITSlayer= new TH1F("hITSlayer","JLAY of hits in ITS",6, 0., 6.);
    TH1F *hITSTr   = new TH1F("hITSTr","Track number for hits in ITS",100,0.,50000.);
 
 // Start loop on tracks in the hits containers
@@ -71,13 +76,18 @@ void analITS (Int_t evNumber=0)
        nhits = ITShits->GetEntriesFast();
        for (hit=0;hit<nhits;hit++) {
 	 itsHit   = (AliITShit*)ITShits->UncheckedAt(hit);
+	 // With this new version, to be able to do proper detector
+	 // simulations, the requirment that a "hit" leave some
+	 // energy deposited has been removed.
+	 if(itsHit->GetIonization()<=0.0) continue;
          ipart    = itsHit->fTrack;
-         particle = (GParticle*)Particles->UncheckedAt(ipart);
-         z = itsHit->fZ;
+         particle = (TParticle*)Particles->UncheckedAt(ipart);
+         z = itsHit->GetZG();
          hITSZ->Fill(z);
-         r = sqrt(itsHit->fX*itsHit->fX + itsHit->fY*itsHit->fY);
+         r = sqrt(itsHit->GetXG()*itsHit->GetXG() + 
+		  itsHit->GetYG()*itsHit->GetYG());
          hITSR->Fill(r);
-         hITSDnum->Fill(itsHit->fDnum);
+         hITSlayer->Fill((Float_t)itsHit->GetLayer());
          hITSTr->Fill(itsHit->fTrack);
          i++;
        }
@@ -97,11 +107,11 @@ void analITS (Int_t evNumber=0)
    hITSR->Draw();
    c1->cd(3);
    gPad->SetFillColor(33);
-   hITSDnum->SetFillColor(46);
-   hITSDnum->Draw();
+   hITSlayer->SetFillColor(46);
+   hITSlayer->Draw();
    c1->cd(4);
    gPad->SetFillColor(33);
    hITSTr->SetFillColor(46);
    hITSTr->Draw();
-   c1->Print("analITS.ps");
+   c1->Print("analITS.gif");
 }

@@ -1,0 +1,30 @@
+#ifndef ITSgeomSDD_H
+#define ITSgeomSDD_H
+
+#include "TShape.h"
+#include "TBRIK.h"
+
+class AliITSgeomSDD: public TObject {
+ private:
+    // define shape of active area using ROOT shapes so that they can
+    // be easly plotted. Inputs to TBRIK are
+    // Shape name (what ever that is)
+    // Shape title (what ever that means)
+    // name of material (something I took from ITSgeometry.tme file
+    // dx => 1/2 thickness of wafer's active volume (cm)
+    // dy => 1/2 r*phi size of active volume (cm)
+    // dz => 1/2 size of active volume (cm)
+    TBRIK *fShapeSDD;
+    // Other infomation like.
+    // Int_t   fNAnodes;         // count
+    // Float_t fAnodePitch;      // cm
+    // Float_t fAnodeWidth;      // cm
+    // or what other or different information that is needed.
+ public:
+    AliITSgeomSDD();
+    virtual ~AliITSgeomSDD(){};
+    inline TBRIK *GetShape(){return fShapeSDD;}
+
+    ClassDef(AliITSgeomSDD,1)	
+};
+#endif
