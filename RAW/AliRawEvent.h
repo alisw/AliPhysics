@@ -175,7 +175,7 @@ private:
    Bool_t  fOwner;        //!if true object owns fRawData buffer
 
    AliRawData(const AliRawData &);      // not implemented, usage causes
-   void operator=(const AliRawData &);  // link time error
+   AliRawData &operator=(const AliRawData &);  // link time error
 
    ClassDef(AliRawData,1)  // Alice raw event buffer
 };
@@ -223,7 +223,7 @@ private:
    TObjArray             *fSubEvents;   // sub AliRawEvent's
 
    AliRawEvent(const AliRawEvent &);    // not implemented, usage causes
-   void operator=(const AliRawEvent &); // link time error
+   AliRawEvent &operator=(const AliRawEvent &); // link time error
 
    ClassDef(AliRawEvent,1)  // ALICE raw event object
 };
@@ -320,7 +320,7 @@ protected:
 
 private:
    AliRawDB(const AliRawDB &);       // not implemented, usage causes
-   void operator=(const AliRawDB &); // link time error
+   AliRawDB &operator=(const AliRawDB &); // link time error
 
    ClassDef(AliRawDB,0)  // Raw DB
 };
@@ -419,7 +419,7 @@ protected:
 
 private:
    AliTagDB(const AliTagDB &);       // not implemented, usage causes
-   void operator=(const AliTagDB &); // link time error
+   AliTagDB &operator=(const AliTagDB &); // link time error
 
    ClassDef(AliTagDB,0)  // Tag DB
 };
@@ -455,7 +455,7 @@ private:
    TFile  *fRunDB;     // run database
 
    AliRunDB(const AliRunDB &);       // not implemented, usage causes
-   void operator=(const AliRunDB &); // link time error
+   AliRunDB &operator=(const AliRunDB &); // link time error
 
    ClassDef(AliRunDB,0)  // Run (bookkeeping) DB
 };

@@ -1290,7 +1290,7 @@ private:
    AliMDC *fMDC;   // alimdc to signal
 
    AliMDCInterruptHandler(const AliMDCInterruptHandler &);
-   void operator=(const AliMDCInterruptHandler &);
+   AliMDCInterruptHandler &operator=(const AliMDCInterruptHandler &);
 };
 
 //______________________________________________________________________________
