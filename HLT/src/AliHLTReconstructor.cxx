@@ -42,7 +42,9 @@ ClassImp(AliHLTReconstructor)
 AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor() 
 { 
   //constructor
+#ifndef use_logging
   AliL3Log::fgLevel=AliL3Log::kWarning;
+#endif
   fDoTracker=1;
   fDoHough=1;
   fDoBench=0;
@@ -52,7 +54,9 @@ AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor()
 AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough): AliReconstructor() 
 { 
   //constructor
+#ifndef use_logging
   AliL3Log::fgLevel=AliL3Log::kWarning;
+#endif
   fDoTracker=doTracker;
   fDoHough=doHough;
   fDoBench=0;

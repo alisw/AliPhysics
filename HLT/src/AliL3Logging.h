@@ -22,5 +22,3 @@ typedef MLUCStreamLogServer AliL3StreamLogServer;
 #include "AliL3Log.h"
 #endif /* use_logging */ 
 #endif /* ALIL3LOGGING_H */
-
-
