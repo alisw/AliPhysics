@@ -27,6 +27,7 @@ Base classes for HBT functions
 /******************************************************************/
 /******************************************************************/
 
+#include <iostream.h>
 ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction()
@@ -41,18 +42,26 @@ Write()
    if (GetNumerator()) GetNumerator()->Write();
    if (GetDenominator()) GetDenominator()->Write();
    TH1* res = GetResult();
-   if (res) GetResult()->Write();
+   if (res) res->Write();
  }
 /******************************************************************/
 
 TH1* AliHBTFunction::
 GetRatio(Double_t normfactor)
  {
+   //if (gDebug>0) 
+   cout<<"Mormfactor is "<<normfactor<<" for "<<fName<<endl;
+   
+   if (normfactor == 0.0)
+    {
+      Error("GetRatio","Scaling Factor is 0. Null poiner returned");
+      return 0x0;
+    }
    TString str = fName + " ratio";
    TH1 *result = (TH1*)GetNumerator()->Clone(str.Data());
    
    result->SetTitle(str.Data());
-   result->Sumw2();
+   //result->Sumw2();
    
    result->Divide(GetNumerator(),GetDenominator(),normfactor);
    
@@ -169,6 +178,8 @@ AliHBTTwoPartFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
    fNumerator->Sumw2();
    fDenominator->Sumw2();
    
+   fNBinsToScale = 30;
+   
  }
 /******************************************************************/
 AliHBTTwoPartFctn1D::~AliHBTTwoPartFctn1D()
@@ -176,6 +187,76 @@ AliHBTTwoPartFctn1D::~AliHBTTwoPartFctn1D()
   delete fNumerator;
   delete fDenominator;
 }
+/******************************************************************/
+
+void AliHBTTwoPartFctn1D::ProcessSameEventParticles(AliHBTPair* pair)
+{
+ //Fills the numerator
+   pair = CheckPair(pair);
+   if(pair) fNumerator->Fill(GetValue(pair));
+}
+/******************************************************************/
+void AliHBTTwoPartFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
+ {
+  //fills denumerator
+   pair = CheckPair(pair);
+   if(pair) fDenominator->Fill(GetValue(pair));
+
+  }
+/******************************************************************/
+Double_t AliHBTTwoPartFctn1D::Scale()
+{
+  if(!fNumerator) 
+   {
+     Error("Scale","No numerator");
+     return 0.0;
+   }
+  if(!fDenominator) 
+   {
+     Error("Scale","No denominator");
+     return 0.0;
+   }
+  
+  if(fNBinsToScale < 1) 
+   {
+    return 0.0;
+    Error("Scale","Number of bins for scaling is smaller thnan 1");
+   }
+  Int_t nbins = fNumerator->GetNbinsX();
+  if (fNBinsToScale > nbins) 
+   {
+    Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
+    return 0.0;
+   }
+  Double_t ratios[fNBinsToScale];
+
+  Int_t offset = nbins - fNBinsToScale - 1; 
+  Int_t i;
+  for ( i = offset; i< nbins; i++)
+   {
+    if ( fNumerator->GetBinContent(i) == 0.0 )
+     {
+       ratios[i - offset] = -1.0; //since we play with histograms negative is impossible 
+                                  //so it is good flag
+     }
+    else
+     {
+       ratios[i - offset] = fDenominator->GetBinContent(i)/fNumerator->GetBinContent(i);
+     }
+   }
+ 
+  Double_t sum = 0;
+  Int_t skipped = 0;
+  for (i = 0; i<fNBinsToScale; i++)
+   {
+    if (ratios[i] == -1.0) skipped++;
+    else sum += ratios[i];
+   }
+  cout<<"sum="<<sum<<" fNBinsToScale="<<fNBinsToScale<<" skipped="<<skipped<<endl;
+
+  return sum/(Double_t)(fNBinsToScale - skipped);
+} 
+
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/

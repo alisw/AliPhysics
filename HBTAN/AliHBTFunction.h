@@ -18,12 +18,12 @@ class AliHBTFunction: public TNamed
 {
   public:
     AliHBTFunction();
-    virtual ~AliHBTFunction(){}
+    virtual ~AliHBTFunction(){delete fPairCut;}
     
     virtual TH1* GetNumerator() =0;
     virtual TH1* GetDenominator() =0;
     virtual TH1* GetResult() = 0;
-    
+
     virtual void Write();
     
     TH1* GetRatio(Double_t normfactor = 1.0);
@@ -41,6 +41,7 @@ class AliHBTFunction: public TNamed
   public:  
    ClassDef(AliHBTFunction,1)
 };
+/******************************************************************/
 inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
 {
   //check if pair and both particles meets the cut criteria
@@ -55,8 +56,6 @@ inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
   return pair; 
 }
 
-
-
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
@@ -68,7 +67,8 @@ class AliHBTTwoPartFctn: public AliHBTFunction
     
     virtual void ProcessSameEventParticles(AliHBTPair* pair) = 0;
     virtual void ProcessDiffEventParticles(AliHBTPair* pair) = 0;
-    
+
+
     
   protected:
   public:  
@@ -88,6 +88,7 @@ class AliHBTFourPartFctn: public AliHBTFunction
     ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
     virtual void 
     ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
+
 	     
   protected:
   public:  
@@ -111,35 +112,20 @@ class AliHBTTwoPartFctn1D: public AliHBTTwoPartFctn
 
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
-  
+  Double_t Scale();  
+  void SetNumberOfBinsToScale();
  protected:
   //retruns velue to be histogrammed
   virtual Double_t GetValue(AliHBTPair* pair) = 0; 
-  
+
   TH1D* fNumerator;
   TH1D* fDenominator;
+  Int_t fNBinsToScale;
   
  public:
-  ClassDef(AliHBTTwoPartFctn1D,1)
+  ClassDef(AliHBTTwoPartFctn1D,2)
 };
 
-inline void 
-AliHBTTwoPartFctn1D::ProcessSameEventParticles(AliHBTPair* pair)
-{
- //Fills the numerator
-   pair = CheckPair(pair);
-   if(pair) fNumerator->Fill(GetValue(pair));
-}
-  
-  
-inline void
-AliHBTTwoPartFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
- {
-  //fills denumerator
-   pair = CheckPair(pair);
-   if(pair) fDenominator->Fill(GetValue(pair));
-
-  }
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
@@ -157,9 +143,10 @@ class AliHBTTwoPartFctn2D: public AliHBTTwoPartFctn
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
  
-  virtual void GetValues(AliHBTPair* pair, Double_t&, Double_t&) = 0;
-  
+
  protected:
+  virtual void GetValues(AliHBTPair* pair, Double_t&, Double_t&) = 0;
+
   TH2D* fNumerator;
   TH2D* fDenominator;
   
@@ -210,9 +197,10 @@ class AliHBTFourPartFctn2D: public AliHBTFourPartFctn
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
  
-  virtual void GetValues(AliHBTPair*,AliHBTPair*, Double_t&, Double_t&) = 0;
   
  protected:
+  virtual void GetValues(AliHBTPair*,AliHBTPair*, Double_t&, Double_t&) = 0;
+
   TH2D* fNumerator;
   TH2D* fDenominator;
   
