@@ -48,8 +48,8 @@ void AliL3ConfMapTrack::DeleteCandidate()
   
   while(curHit != 0)
     {
-      nextHit = (AliL3ConfMapPoint*)curHit->nextTrackHit;
-      curHit->nextTrackHit = 0;
+      nextHit = (AliL3ConfMapPoint*)curHit->GetNextTrackHit();
+      curHit->SetNextTrackHit(0);
       curHit = nextHit;
     }
   
@@ -125,7 +125,7 @@ void AliL3ConfMapTrack::UpdateParam(AliL3ConfMapPoint *thisHit)
   if(GetNHits()==1)  
     fFirstHit = thisHit;
   else
-    ((AliL3ConfMapPoint*)fLastHit)->nextTrackHit = thisHit;
+    ((AliL3ConfMapPoint*)fLastHit)->SetNextTrackHit(thisHit);
   fLastHit = thisHit;
 
   

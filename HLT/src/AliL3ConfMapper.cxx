@@ -192,17 +192,17 @@ void AliL3ConfMapper::SetPointers()
 	continue;
 
       //Get indexes:
-      thisHit->phiIndex=(Int_t)((thisHit->GetPhi()-fPhiMin)/phiSlice +1);
+      thisHit->SetPhiIndex((Int_t)((thisHit->GetPhi()-fPhiMin)/phiSlice +1));
       
-      if(thisHit->phiIndex<1 || thisHit->phiIndex>fNumPhiSegment)
+      if(thisHit->GetPhiIndex()<1 || thisHit->GetPhiIndex()>fNumPhiSegment)
 	{
 	  //cout << "Phiindex: " << thisHit->phiIndex << " " << thisHit->GetPhi() << endl;
 	  fPhiHitsOutOfRange++;
 	  continue;
 	}
       
-      thisHit->etaIndex=(Int_t)((thisHit->GetEta()-fEtaMin)/etaSlice + 1);
-      if(thisHit->etaIndex<1 || thisHit->etaIndex>fNumEtaSegment)
+      thisHit->SetEtaIndex((Int_t)((thisHit->GetEta()-fEtaMin)/etaSlice + 1));
+      if(thisHit->GetEtaIndex()<1 || thisHit->GetEtaIndex()>fNumEtaSegment)
 	{
 	  //cout << "Etaindex: " << thisHit->etaIndex << " " << thisHit->GetEta() << endl;
 	  fEtaHitsOutOfRange++;
@@ -210,12 +210,13 @@ void AliL3ConfMapper::SetPointers()
 	}
       localcounter++;
       
-      volumeIndex = (localrow-fRowMin)*fNumPhiEtaSegmentPlusOne+thisHit->phiIndex*fNumEtaSegmentPlusOne+thisHit->etaIndex;
+      volumeIndex = (localrow-fRowMin)*fNumPhiEtaSegmentPlusOne + 
+                    thisHit->GetPhiIndex()*fNumEtaSegmentPlusOne+thisHit->GetEtaIndex();
       
       if(fVolume[volumeIndex].first == NULL)
 	fVolume[volumeIndex].first = (void *)thisHit;
       else
- 	((AliL3ConfMapPoint *)fVolume[volumeIndex].last)->nextVolumeHit=thisHit;
+ 	((AliL3ConfMapPoint *)fVolume[volumeIndex].last)->SetNextVolumeHit(thisHit);
       fVolume[volumeIndex].last = (void *)thisHit;
       
       
@@ -223,7 +224,7 @@ void AliL3ConfMapper::SetPointers()
       if(fRow[(localrow-fRowMin)].first == NULL)
  	fRow[(localrow-fRowMin)].first = (void *)thisHit;
       else
- 	((AliL3ConfMapPoint *)(fRow[(localrow-fRowMin)].last))->nextRowHit = thisHit;
+ 	((AliL3ConfMapPoint *)(fRow[(localrow-fRowMin)].last))->SetNextRowHit(thisHit);
 	fRow[(localrow-fRowMin)].last = (void *)thisHit;
     }
   
@@ -403,7 +404,7 @@ void AliL3ConfMapper::ClusterLoop()
       if(fRow[(rowsegm-fRowMin)].first && ((AliL3ConfMapPoint*)fRow[(rowsegm-fRowMin)].first)->GetPadRow() < fRowMin + 1)
 	break;
 
-      for(hit = (AliL3ConfMapPoint*)fRow[(rowsegm-fRowMin)].first; hit!=0; hit=hit->nextRowHit)
+      for(hit = (AliL3ConfMapPoint*)fRow[(rowsegm-fRowMin)].first; hit!=0; hit=hit->GetNextRowHit())
 	{
 	  if(hit->GetUsage() == true)
 	    continue;
@@ -510,13 +511,12 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 		  //keep total chi:
 		  Double_t lxyChi2 = track->GetChiSq1()-track->GetChiSq2();
 		  xyChi2 += lxyChi2;
-		  closesthit->xyChi2 = lxyChi2;
+		  closesthit->SetXYChi2(lxyChi2);
 		  		  
 		  //update track length:
-		  //track->fLength = closesthit->GetS();
 		  track->SetLength(closesthit->GetS());
 		  szChi2 += track->GetChiSq2();
-		  closesthit->szChi2 = track->GetChiSq2();
+		  closesthit->SetSZChi2(track->GetChiSq2());
 		  
 		  track->UpdateParam(closesthit);
 		  trackhitnumber[track->GetNumberOfPoints()-1] = closesthit->GetHitNumber();
@@ -615,7 +615,7 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *starthit,
 	  //loop over subsegments, in the order defined above.
 	  for(Int_t i=0; i<9; i++)  
 	    {
-	      subphisegm = starthit->phiIndex + loopphi[i];
+	      subphisegm = starthit->GetPhiIndex() + loopphi[i];
 	      
 	      if(subphisegm < 0 || subphisegm >= fNumPhiSegment)
 		continue;
@@ -628,7 +628,7 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *starthit,
 	      */
 	      //loop over sub eta segments
 	      
-	      subetasegm = starthit->etaIndex + loopeta[i];
+	      subetasegm = starthit->GetEtaIndex() + loopeta[i];
 	      
 	      if(subetasegm < 0 || subetasegm >=fNumEtaSegment)
 		continue;//segment exceeds bounds->skip it
@@ -644,7 +644,7 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *starthit,
 		}
 	      
 	      for(hit = (AliL3ConfMapPoint*)fVolume[volumeIndex].first;
-		  hit!=0; hit = hit->nextVolumeHit)
+		  hit!=0; hit = hit->GetNextVolumeHit())
 		{
 		  
 		  if(!hit->GetUsage())

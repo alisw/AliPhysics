@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3_ConfMapPoint
-#define ALIL3_ConfMapPoint
+#ifndef ALIL3ConfMapPointH
+#define ALIL3ConfMapPointH
 
 #include "AliL3RootTypes.h"
 
@@ -63,6 +63,15 @@ class AliL3ConfMapPoint {
   Double_t   fPhi;         // angle phi
   Double_t   fEta;         // pseudorapidity
   
+  AliL3ConfMapPoint *fNextVolumeHit; //!
+  AliL3ConfMapPoint *fNextRowHit;    //!
+  AliL3ConfMapPoint *fNextTrackHit;  //! Linked chain of points in a track
+  Short_t fPhiIndex; //phi index
+  Short_t fEtaIndex; //eta index
+  Double_t fXYChi2; //xy chi
+  Double_t fSZChi2; //z chi
+  Int_t fMCTrackID[3]; //MClabel of tracks, may overlap
+
   static Bool_t fgDontMap; //flag to switch off mapping  
 
  public:
@@ -71,19 +80,8 @@ class AliL3ConfMapPoint {
   virtual ~AliL3ConfMapPoint();
   
   void Reset();
-  Bool_t ReadHits(AliL3SpacePointData* hits ); //!
+  Bool_t ReadHits(AliL3SpacePointData* hits );
   
-  AliL3ConfMapPoint *nextVolumeHit; //!
-  AliL3ConfMapPoint *nextRowHit;  //!
-  
-  AliL3ConfMapPoint *nextTrackHit; //! Linked chain of points in a track
-  Short_t phiIndex; //phi index
-  Short_t etaIndex; //eta index
- 
-  Double_t xyChi2; //xy chi
-  Double_t szChi2; //z chi
-  Int_t fMCTrackID[3]; //MClabel of tracks, may overlap
-
    // getter
   Double_t GetX() const {return fx;}
   Double_t GetY() const {return fy;}
@@ -98,8 +96,6 @@ class AliL3ConfMapPoint {
   Double_t GetZWeight() const {return fWz;}
   Float_t GetS()        const {return fs;}
 
-  //AliL3ConfMapTrack *GetTrack(TClonesArray *tracks) const;
-  
   Bool_t GetUsage() const {return fUsed;}
   Double_t GetPhi() const {return fPhi;}
   Double_t GetEta() const {return fEta;}
@@ -109,75 +105,87 @@ class AliL3ConfMapPoint {
   Double_t GetXprimeerr() const {return fXprimeerr;}
   Double_t GetYprimeerr() const {return fYprimeerr;}
   
-  Double_t GetXt() const           { return fXt;         }
-  Double_t GetYt() const           { return fYt;         }
-  Double_t GetZt() const           { return fZt;         }
-  Double_t GetXterr() const        { return fXterr;      }
-  Double_t GetYterr() const        { return fYterr;      }
-  Double_t GetZterr() const        { return fZterr;      }
+  Double_t GetXt() const {return fXt;}
+  Double_t GetYt() const {return fYt;}
+  Double_t GetZt() const {return fZt;}
+  Double_t GetXterr() const {return fXterr;}
+  Double_t GetYterr() const {return fYterr;}
+  Double_t GetZterr() const {return fZterr;}
   
-  Double_t GetXv() const           { return fXv;         }
-  Double_t GetYv() const           { return fYv;         }
-  Double_t GetZv() const           { return fZv;         }
-  Double_t GetXverr() const        { return fXverr;      }
-  Double_t GetYverr() const        { return fYverr;      }
-  Double_t GetZverr() const        { return fZverr;      }
+  Double_t GetXv() const {return fXv;}
+  Double_t GetYv() const {return fYv;}
+  Double_t GetZv() const {return fZv;}
+  Double_t GetXverr() const {return fXverr;}
+  Double_t GetYverr() const {return fYverr;}
+  Double_t GetZverr() const {return fZverr;}
 
   Int_t GetHitNumber() const {return fHitNumber;}
   Int_t GetNextHitNumber() const {return fNextHitNumber;}
   Int_t GetTrackNumber() const {return fTrackNumber;}
   //Int_t const *GetMCTrackID()     const {return fMCTrackID;}
   
+  AliL3ConfMapPoint* GetNextVolumeHit(){return fNextVolumeHit;}
+  AliL3ConfMapPoint* GetNextRowHit(){return fNextRowHit;}
+  AliL3ConfMapPoint* GetNextTrackHit(){return fNextTrackHit;}
+  Short_t GetPhiIndex() const {return fPhiIndex;}
+  Short_t GetEtaIndex() const {return fEtaIndex;}
+  Double_t GetXYChi2() const {return fXYChi2;}
+  Double_t GetSZChi2() const {return fSZChi2;}
+  //Int_t fMCTrackID[3]; //MClabel of tracks, may overlap
+
   // setter
+  void SetNextVolumeHit(AliL3ConfMapPoint* p){fNextVolumeHit=p;}
+  void SetNextRowHit(AliL3ConfMapPoint* p){fNextRowHit=p;}
+  void SetNextTrackHit(AliL3ConfMapPoint* p){fNextTrackHit=p;}
+
+  void SetPhiIndex(Short_t p){fPhiIndex=p;}
+  void SetEtaIndex(Short_t p){fEtaIndex=p;}
+  void SetXYChi2(Double_t d) {fXYChi2=d;}
+  void SetSZChi2(Double_t d) {fSZChi2=d;}
+
   static void SetDontMap(Bool_t b){fgDontMap=b;}
 
-  void SetX(Double_t f) {fx=f;}
-  void SetY(Double_t f) {fy=f;}
-  void SetZ(Double_t f) {fz=f;}
-  void SetXerr(Double_t f) {fxerr=f;}
-  void SetYerr(Double_t f) {fyerr=f;}
-  void SetZerr(Double_t f) {fzerr=f;}
-  void SetPadRow(Int_t f) {fPadrow=f;}
-  void SetSector(Int_t f) {fSector=f;}
-  void SetMCTrackID(Int_t f,Int_t g,Int_t h) {fMCTrackID[0] = f; fMCTrackID[1]=g; fMCTrackID[2]=h;}
+  void SetX(Double_t f){fx=f;}
+  void SetY(Double_t f){fy=f;}
+  void SetZ(Double_t f){fz=f;}
+  void SetXerr(Double_t f){fxerr=f;}
+  void SetYerr(Double_t f){fyerr=f;}
+  void SetZerr(Double_t f){fzerr=f;}
+  void SetPadRow(Int_t f){fPadrow=f;}
+  void SetSector(Int_t f){fSector=f;}
+  void SetMCTrackID(Int_t f,Int_t g,Int_t h){fMCTrackID[0] = f; fMCTrackID[1]=g; fMCTrackID[2]=h;}
 
-  void SetXYWeight(Float_t f) {fWxy = f;}
-  void SetZWeight(Float_t f) {fWz = f;}
-  void SetS(Float_t f) {fs = f;}
-
-  void SetUsage(Bool_t f) {fUsed=f;}
-    
-  void SetPhi(Double_t f)         {           fPhi = f; }
-  void SetEta(Double_t f)         {           fEta = f; }
-  
-  void SetXprime(Double_t f)      {        fXprime = f; }
-  void SetYprime(Double_t f)      {        fYprime = f; }
-  void SetXprimeerr(Double_t f)   {     fXprimeerr = f; }
-  void SetYprimeerr(Double_t f)   {     fYprimeerr = f; }
-  
-  void SetXt(Double_t f)          {            fXt = f; }
-  void SetYt(Double_t f)          {            fYt = f; }
-  void SetZt(Double_t f)          {            fZt = f; }
-  void SetXterr(Double_t f)       {         fXterr = f; }
-  void SetYterr(Double_t f)       {         fYterr = f; }
-  void SetZterr(Double_t f)       {         fZterr = f; }
-  
-  void SetXv(Double_t f)          {            fXv = f; }
-  void SetYv(Double_t f)          {            fYv = f; }
-  void SetZv(Double_t f)          {            fZv = f; }
-  void SetXverr(Double_t f)       {         fXverr = f; }
-  void SetYverr(Double_t f)       {         fYverr = f; }
-  void SetZverr(Double_t f)       {         fZverr = f; }
-  
-  void SetHitNumber(Int_t f) {fHitNumber=f;}
-  void SetTrackNumber(Int_t f) {fTrackNumber=f;}
-  void SetNextHitNumber(Int_t f) {fNextHitNumber=f;}
+  void SetXYWeight(Float_t f){fWxy = f;}
+  void SetZWeight(Float_t f){fWz = f;}
+  void SetS(Float_t f){fs = f;}
+  void SetUsage(Bool_t f){fUsed=f;}
+  void SetPhi(Double_t f ){fPhi = f;}
+  void SetEta(Double_t f){fEta = f;}
+  void SetXprime(Double_t f){fXprime = f;}
+  void SetYprime(Double_t f){fYprime = f;}
+  void SetXprimeerr(Double_t f){fXprimeerr = f;}
+  void SetYprimeerr(Double_t f){fYprimeerr = f;}
+  void SetXt(Double_t f){fXt = f;}
+  void SetYt(Double_t f){fYt = f;}
+  void SetZt(Double_t f){fZt = f;}
+  void SetXterr(Double_t f){fXterr = f;}
+  void SetYterr(Double_t f){fYterr = f;}
+  void SetZterr(Double_t f){fZterr = f;}
+  void SetXv(Double_t f){fXv = f;}
+  void SetYv(Double_t f){fYv = f;}
+  void SetZv(Double_t f){fZv = f;}
+  void SetXverr(Double_t f){fXverr = f;}
+  void SetYverr(Double_t f){fYverr = f;}
+  void SetZverr(Double_t f){fZverr = f;}
+  void SetHitNumber(Int_t f){fHitNumber=f;}
+  void SetTrackNumber(Int_t f){fTrackNumber=f;}
+  void SetNextHitNumber(Int_t f){fNextHitNumber=f;}
 
   void Setup(AliL3Vertex *vertex);// does the usual setup in the right order
-  void SetAngles();// calculate spherical angles and set values
-  void SetIntPoint(const Double_t in_x = 0.,const Double_t in_y = 0.,
-	           const Double_t in_z = 0.,const Double_t in_x_err = 0., 
-		   const Double_t in_y_err = 0., const Double_t in_z_err = 0.);  
+  void SetAngles();               // calculate spherical angles and set values
+  void SetIntPoint(const Double_t inx = 0.,const Double_t iny = 0.,
+	           const Double_t inz = 0.,const Double_t inxerr = 0., 
+		   const Double_t inyerr = 0., const Double_t inzerr = 0.);  
   //-> set interaction point
   void SetShiftedCoord();// set shifted coordinates  
   void SetAllCoord(const AliL3ConfMapPoint *hit);// set conformal mapping coordinates in respect to given hit

@@ -24,7 +24,7 @@ class AliL3ConfMapTrack :public AliL3Track {
   void DeleteCandidate();
 
   void StartLoop() {fCurrentHit = fFirstHit;}
-  void GetNextHit() {fCurrentHit = ((AliL3ConfMapPoint*)fCurrentHit)->nextTrackHit;}
+  void GetNextHit() {fCurrentHit = ((AliL3ConfMapPoint*)fCurrentHit)->GetNextTrackHit();}
   Int_t LoopDone() const {return fCurrentHit != 0;}
 
   // setter   

@@ -76,9 +76,9 @@ void AliL3ConfMapPoint::Reset()
   //Reset this point.
   SetUsage(kFALSE);
   SetS(0);
-  nextRowHit = 0;
-  nextVolumeHit=0;
-  nextTrackHit=0;
+  fNextRowHit = 0;
+  fNextVolumeHit=0;
+  fNextTrackHit=0;
 }
 
 void AliL3ConfMapPoint::Setup(AliL3Vertex *vertex)
@@ -97,36 +97,36 @@ void AliL3ConfMapPoint::Setup(AliL3Vertex *vertex)
   return;
 }
 
-void AliL3ConfMapPoint::SetIntPoint(const Double_t in_x,const Double_t in_y,const Double_t in_z,
-			            const Double_t in_x_err,const Double_t in_y_err,const Double_t in_z_err)
+void AliL3ConfMapPoint::SetIntPoint(const Double_t inx,const Double_t iny,const Double_t inz,
+			            const Double_t inxerr,const Double_t inyerr,const Double_t inzerr)
 {
   // Defines a new interaction point. This point is needed to calculate
   // the conformal coordinates.
 
-  SetXt(in_x);
-  SetYt(in_y);
-  SetZt(in_z);
-  SetXterr(in_x_err);
-  SetYterr(in_y_err);
-  SetZterr(in_z_err);
+  SetXt(inx);
+  SetYt(iny);
+  SetZt(inz);
+  SetXterr(inxerr);
+  SetYterr(inyerr);
+  SetZterr(inzerr);
 
   return;
 }
 
-void AliL3ConfMapPoint::SetAllCoord(const AliL3ConfMapPoint *preceding_hit)
+void AliL3ConfMapPoint::SetAllCoord(const AliL3ConfMapPoint *precedinghit)
 {
   // Sets the interaction point, the shifted coordinates, and the conformal mapping coordinates.
   // These values are calculated from the interaction point of the given cluster which should be a
   // already found cluster on the same track.
 
-  if (this == preceding_hit) {
-    SetIntPoint(preceding_hit->GetX(),    preceding_hit->GetY(),    preceding_hit->GetZ(),
-                preceding_hit->GetXerr(), preceding_hit->GetYerr(), preceding_hit->GetZerr());
+  if (this == precedinghit) {
+    SetIntPoint(precedinghit->GetX(),    precedinghit->GetY(),    precedinghit->GetZ(),
+                precedinghit->GetXerr(), precedinghit->GetYerr(), precedinghit->GetZerr());
   }
 
   else {
-    SetIntPoint(preceding_hit->GetXt(),    preceding_hit->GetYt(),    preceding_hit->GetZt(),
-                preceding_hit->GetXterr(), preceding_hit->GetYterr(), preceding_hit->GetZterr());
+    SetIntPoint(precedinghit->GetXt(),    precedinghit->GetYt(),    precedinghit->GetZt(),
+                precedinghit->GetXterr(), precedinghit->GetYterr(), precedinghit->GetZterr());
   }
 
   SetShiftedCoord();
