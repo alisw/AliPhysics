@@ -16,7 +16,10 @@ public:
   virtual void   SetupGeometry(Int_t airId, Int_t kaptionId);  
   virtual void   Geometry(const char* mother, Int_t pbRotId, 
 			  Int_t idRotId, Double_t z=0);
+  virtual void   SimpleGeometry(TList* nodes, TNode* mother, 
+				Int_t colour, Double_t zMother);
 protected:
+  void     CalculateDz();
   Int_t    fVolumeId;
   Double_t fDz;
   ClassDef(AliFMD3,1); // Geometry of FMD3 
