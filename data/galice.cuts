@@ -6,6 +6,11 @@
 *  ---  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA
 *  ---  ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL
 
+* ITS
+* ===
+* ITS sensitive Si medium cuts values
+ITS  1 7.e-5 7.e-5 -1. -1. -1. 7.e-5 7.e-5 7.e-5 7.e-5 -1. 
+
 * TPC
 * ===
 
