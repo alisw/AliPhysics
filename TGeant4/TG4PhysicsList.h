@@ -46,7 +46,6 @@ class TG4PhysicsList: public G4VUserPhysicsList
     void ConstructEM();
     void ConstructHad();
     void ConstructOp();
-    void ConstructNewSpecialCuts();
     void ConstructSpecialCuts();
     void ConstructSpecialFlags();
 
