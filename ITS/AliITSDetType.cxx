@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.6  2001/09/07 08:44:43  hristov
+ Deletion commented out because AliITSDetType was not the owner
+
  Revision 1.5  2001/05/31 06:58:38  fca
  Patch problem with destructor
 
@@ -43,12 +46,10 @@ AliITSDetType::AliITSDetType(){
 //----------------------------------------------------------------------
 AliITSDetType::~AliITSDetType(){
     // destructor
-  /* PH Commented because AliITSDetType is not the owner
     if(fSegmentation!=0) delete fSegmentation; fSegmentation = 0;
     //    if(fResponse!=0)     delete fResponse;     fResponse     = 0;
     if(fSimulation!=0)   delete fSimulation;   fSimulation   = 0;
     if(fReconst!=0)      delete fReconst;      fReconst      = 0;
-  */
 }
 //______________________________________________________________________
 AliITSDetType::AliITSDetType(const AliITSDetType &source){
