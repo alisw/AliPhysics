@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.48  2001/05/10 18:14:25  barbera
+A typo corrected
+
 Revision 1.47  2001/05/10 17:55:59  barbera
 Modified to create rec points also for PPR geometries
 
@@ -1432,8 +1435,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 
   gAlice->GetEvent(0);
  
-  AliKalmanTrack *kkprov;
-  kkprov->SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());  
+  //  AliKalmanTrack *kkprov;
+  //  kkprov->SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());  
 
   /*  //modificato il 26-4-2001
   AliTPC *TPC=(AliTPC*)gAlice->GetDetector("TPC");
