@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.18  2002/02/01 18:02:41  morsch
+Material of beam pipe between inner Be piece and forward detectors
+can be set by SetPipeMaterial(mat), mat = kInox, kAlu, kBe ...
+
 Revision 1.17  2001/09/24 13:11:50  morsch
 Ion pump and bellows moved out by 15 cm to make space for forward
 detectors.
@@ -640,12 +644,12 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] = 2.75;
 
     gMC->Gsposp("QB25", 1, "QBPM", 0., 0., 654.8, 0, "ONLY", ptube, 3);
-    gMC->Gspos("QBRM", 1, "QBPM", 0., 0., 654.8, 0, "ONLY");
+//    gMC->Gspos("QBRM", 1, "QBPM", 0., 0., 654.8, 0, "ONLY");
 
     ptube[0] = 3.05;
     ptube[1] = 3.20;
     gMC->Gsposp("QB25", 2, "QBPM", 0., 0., 254.8, 0, "ONLY", ptube, 3);
-    gMC->Gspos("QBRM", 2, "QBPM", 0., 0., 254.8, 0, "ONLY");
+//    gMC->Gspos("QBRM", 2, "QBPM", 0., 0., 254.8, 0, "ONLY");
 
 
 
