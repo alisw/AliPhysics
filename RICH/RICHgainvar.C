@@ -40,7 +40,7 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
   TH1F *gainX = new TH1F("gainX","Gain along the wires",40,0,40);
   TH1F *gainIn = new TH1F("gainIn","Gain near the center of photocathode",300,0,300);
   TH1F *gainOut = new TH1F("gainOut","Gain near the edge of photocathode",300,0,300);
-  TH1F *gainPhi1 = new TH1F("gainPhi1","Gain variation along wires, 0-30 degrees",300,0,300);
+  /*TH1F *gainPhi1 = new TH1F("gainPhi1","Gain variation along wires, 0-30 degrees",300,0,300);
   TH1F *gainPhi2 = new TH1F("gainPhi2","Gain variation along wires, 30-60 degrees",300,0,300);
   TH1F *gainPhi3 = new TH1F("gainPhi3","Gain variation along wires, 60-90 degrees",300,0,300);
   TH1F *gainPhi4 = new TH1F("gainPhi4","Gain variation along wires, 90-120 degrees",300,0,300);
@@ -52,8 +52,15 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
   TH1F *gainPhi10 = new TH1F("gainPhi10","Gain variation along wires, 270-300 degrees",300,0,300);
   TH1F *gainPhi11 = new TH1F("gainPhi11","Gain variation along wires, 300-330 degrees",300,0,300);
   TH1F *gainPhi12 = new TH1F("gainPhi12","Gain variation along wires, 330-360 degrees",300,0,300);
-  TH1F *gainPhi = new TH1F("gainPhi","Gain variation along phi",36,0,360);
+  TH1F *gainPhi = new TH1F("gainPhi","Gain variation along phi",36,0,360);*/
 
+
+  TH1F *gainPhi1 = new TH1F("gainPhi1","Gain variation along wires, 315 to 45 degrees",300,0,300);
+  TH1F *gainPhi2 = new TH1F("gainPhi2","Gain variation along wires, 45 to 135 degrees",300,0,300);
+  TH1F *gainPhi3 = new TH1F("gainPhi3","Gain variation along wires, 135 to 225 degrees",300,0,300);
+  TH1F *gainPhi4 = new TH1F("gainPhi4","Gain variation along wires, 225 to 315 degrees",300,0,300);
+  TH1F *gainPhi = new TH1F("gainPhi","Gain variation along phi",8,0,360);
+  
   //   Start loop over events 
 
   for (int nev=0; nev<= evNumber2; nev++) {
@@ -138,7 +145,7 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
 		}
 	      
 	      
-	      if (phi_deg>=0 && phi_deg<30)
+	      /*if (phi_deg>=0 && phi_deg<30)
 		gainPhi1->Fill(qtot,(float) 1);
 	      if (phi_deg>=30 && phi_deg<60)
 		gainPhi2->Fill(qtot,(float) 1);
@@ -161,7 +168,16 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
 	      if (phi_deg>=300 && phi_deg<330)
 		gainPhi11->Fill(qtot,(float) 1);
 	      if (phi_deg>=330 && phi_deg<360)
-		gainPhi12->Fill(qtot,(float) 1);
+		gainPhi12->Fill(qtot,(float) 1);*/
+	      
+	      if (phi_deg>=315 || phi_deg<45)
+		gainPhi1->Fill(qtot,(float) 1);
+	      if (phi_deg>=45 && phi_deg<135)
+		gainPhi2->Fill(qtot,(float) 1);
+	      if (phi_deg>=135 && phi_deg<225)
+		gainPhi3->Fill(qtot,(float) 1);
+	      if (phi_deg>=225 && phi_deg<315)
+		gainPhi4->Fill(qtot,(float) 1);
 	      
 	    }
 	  
@@ -173,8 +189,10 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
 
   
   TCanvas *c16 = new TCanvas("c16","Gain Variation over Phi",50,50,1200,700);
-  c16->Divide(4,3);
+  //c16->Divide(4,2);
   //c16->SetFillColor(42);
+  
+  c16->Divide(2,2);
   
   c16->cd(1);
   c16_1->SetLogy();
@@ -184,7 +202,8 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
   expo->SetLineColor(2);
   expo->SetLineWidth(3);
   Float_t inv_slope1 = -1/expo->GetParameter(1);
-  gainPhi->Fill(15, (float) inv_slope1);
+  //gainPhi->Fill(15, (float) inv_slope1);
+  gainPhi->Fill(0, (float) inv_slope1);
   gainPhi1->Draw();
   
   c16->cd(2);
@@ -195,7 +214,8 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
   expo->SetLineColor(2);
   expo->SetLineWidth(3);
   Float_t inv_slope2 = -1/expo->GetParameter(1);
-  gainPhi->Fill(45, (float) inv_slope2);
+  //gainPhi->Fill(45, (float) inv_slope2);
+  gainPhi->Fill(90, (float) inv_slope2);
   gainPhi2->Draw();
   
   c16->cd(3);
@@ -206,7 +226,8 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
   expo->SetLineColor(2);
   expo->SetLineWidth(3);
   Float_t inv_slope3 = -1/expo->GetParameter(1);
-  gainPhi->Fill(75, (float) inv_slope3);
+  //gainPhi->Fill(75, (float) inv_slope3);
+  gainPhi->Fill(180, (float) inv_slope3);
   gainPhi3->Draw();
   
   c16->cd(4);
@@ -217,10 +238,11 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
   expo->SetLineColor(2);
   expo->SetLineWidth(3);
   Float_t inv_slope4 = -1/expo->GetParameter(1);
-  gainPhi->Fill(105, (float) inv_slope4);
+  //gainPhi->Fill(105, (float) inv_slope4);
+  gainPhi->Fill(270, (float) inv_slope4);
   gainPhi4->Draw();
   
-  c16->cd(5);
+  /*c16->cd(5);
   c16_5->SetLogy();
   gainPhi5->SetFillColor(5);
   gainPhi5->SetXTitle("ADC counts");
@@ -308,7 +330,7 @@ void RICHgainvar (Int_t evNumber1=0,Int_t evNumber2=0)
   expo->SetLineWidth(3);
   Float_t inv_slope12 = -1/expo->GetParameter(1);
   gainPhi->Fill(335, (float) inv_slope12);
-  gainPhi12->Draw();
+  gainPhi12->Draw();*/
   
   TCanvas *c17 = new TCanvas("c17","Gain Variation",50,50,600,700);
   c17->Divide(2,2);
