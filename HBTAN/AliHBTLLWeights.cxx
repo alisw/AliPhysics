@@ -272,6 +272,8 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
      return 0.0;
    }
 
+  if ( fPID1 != part1->GetPdgCode() ) return 1.0; 
+  if ( fPID2 != part2->GetPdgCode() ) return 1.0; 
 
 //takes a lot of time
   if ( (part1->Px() == part2->Px()) && 
