@@ -30,7 +30,7 @@
   const Float_t dInsuS=0.6;
   const Float_t dEnveS=0.1;
   const Float_t dProtS=0.2;
-  const Float_t dFreeS=0.5;
+  const Float_t dFreeS=0.45;
 
   Float_t dVacuS=dTubeS+dInsuS+dEnveS+dProtS+dFreeS;
 
