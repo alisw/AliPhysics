@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.6 2002/12/02 15:10:38 nick Exp $
+// $Id: AliEvent.h,v 1.7 2003/02/03 13:19:44 nick Exp $
 
 #include "Riostream.h"
 #include <math.h>
@@ -46,6 +46,7 @@ class AliEvent : public AliVertex
   void AddCalorimeter(AliCalorimeter& c); // Add a calorimeter system to the event
   void AddCalorimeter(AliCalorimeter* c) { AddCalorimeter(*c); }
   Int_t GetNcalorimeters();               // Provide the number of calorimeter systems
+  void ShowCalorimeters();                // Provide on overview of the available calorimeter systems
   AliCalorimeter* GetCalorimeter(Int_t i);// Provide i-th calorimeter system of the event
   AliCalorimeter* GetCalorimeter(TString name); // Provide calorimeter with name "name"
 
@@ -65,6 +66,6 @@ class AliEvent : public AliVertex
   TObjArray* fCalorimeters; // Array to hold the pointers to the calorimeter systems
   Int_t fCalCopy;           // Flag to denote creation of private copies in fCalorimeters
 
- ClassDef(AliEvent,5) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,6) // Creation and investigation of an Alice physics event.
 };
 #endif

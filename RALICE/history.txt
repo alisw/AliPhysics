@@ -345,4 +345,7 @@
 09-feb-2003 NvE Class AliCalcluster derived from AliSignal to enable automatic signal setting
                 for various rings of modules around the cluster center.
 10-feb-2003 NvE Class AliSignal modified such that also signals without errors can be stored.
-                This may limit memory occupation and output file size. 
+                This may minimise memory occupation and output file size. 
+18-feb-2003 NvE Memberfunction ShowCalorimeters() introduced in AliEvent to display an overview of all
+                available calorimeter systems.
+                Date/time format changed and ShowCalorimeters() invoked in AliEvent::HeaderData().

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.9 2003/01/09 16:06:35 nick Exp $
+// $Id: AliEvent.cxx,v 1.10 2003/02/03 13:19:44 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -189,7 +189,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/01/09 16:06:35 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/02/03 13:19:44 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -410,25 +410,10 @@ Int_t AliEvent::GetTargetId()
 void AliEvent::HeaderData()
 {
 // Provide event header information
- Int_t date=fDaytime.GetDate();
- Int_t time=fDaytime.GetTime();
+ cout << " *AliEvent::Data* Run : " << fRun << " Event : " << fEvent
+      << " Date : " << fDaytime.AsString() << endl;
 
- Int_t year=date/10000;
- Int_t month=(date%10000)/100;
- Int_t day=date%100;
- Int_t hh=time/10000;
- Int_t mm=(time%10000)/100;
- Int_t ss=time%100;
-
- char* c[12]={"jan","feb","mar","apr","may","jun",
-              "jul","aug","sep","oct","nov","dec"};
-
- cout << " *AliEvent::Data* Run : " << fRun << " Event : " << fEvent;
- cout.fill('0');
- cout << " Date : " << setw(2) << day << "-" << c[month-1] << "-" << year
-      << " Time : " << setw(2) << hh << ":" << setw(2) << mm << ":" << setw(2) << ss;
- cout.fill(' ');
- cout << " Ncalorimeters : " << fNcals << endl;
+ ShowCalorimeters();
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::Data(TString f)
@@ -547,6 +532,24 @@ AliCalorimeter* AliEvent::GetCalorimeter(TString name)
   }
 
   return 0; // No matching name found
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::ShowCalorimeters()
+{
+// Provide an overview of the available calorimeter systems.
+ if (fNcals>0)
+ {
+  cout << " The following " << fNcals << " calorimeter systems are available :" << endl; 
+  for (Int_t i=1; i<=fNcals; i++)
+  {
+   AliCalorimeter* cal=GetCalorimeter(i);
+   if (cal) cout << " Calorimeter number : " << i << " Name : " << cal->GetName() << endl;
+  }
+ }
+ else
+ {
+  cout << " No calorimeters present for this event." << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
