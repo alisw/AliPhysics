@@ -56,8 +56,8 @@
 *      IF ( LEMAGN )
 *     &   CALL FLABRT ( 'CRNKVP', ' STOP:LEMAGN-NOT-YET-IMPLEMENTED' )
 *  No change of lattice check implemented for the moment:
-      IF ( LT1TRK .NE. LT2TRK ) CALL FLABRT ( 'CRNKVP',
-     &    ' STOP:LT1TRK.NE.LT2TRK-NOT-YET-IMPLEMENTED' )
+*      IF ( LT1TRK .NE. LT2TRK ) CALL FLABRT ( 'CRNKVP',
+*     &    ' STOP:LT1TRK.NE.LT2TRK-NOT-YET-IMPLEMENTED' )
       DEDXCK = ZERZER
       MMAT   = MEDIUM (MREG)
       IF ( JTRACK .GE. -6 ) THEN
