@@ -239,6 +239,7 @@ Int_t AliMDC::Run()
    AliRawEvent *event = new AliRawEvent;
 #ifdef USE_HLT
    //Init HLT
+#ifndef use_logging
    AliL3Log::fgLevel=AliL3Log::kError;
    ALIDEBUG(1)
      AliL3Log::fgLevel=AliL3Log::kWarning;
@@ -246,7 +247,7 @@ Int_t AliMDC::Run()
      AliL3Log::fgLevel=AliL3Log::kWarning;
    ALIDEBUG(3)
      AliL3Log::fgLevel=AliL3Log::kNone;
-
+#endif
    if (!AliL3Transform::Init("./", kFALSE)) {
      Error("Run","HLT initialization failed!");
      return 1;
