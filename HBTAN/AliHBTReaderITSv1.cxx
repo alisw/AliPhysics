@@ -112,7 +112,8 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
  AliITSIOTrack *iotrack=new AliITSIOTrack;
  Int_t currentdir = 0;
  Int_t Ndirs;
-
+ Int_t totalNevents = 0;
+ 
  if (fDirs)
   {
     Ndirs = fDirs->GetEntries();
@@ -153,12 +154,13 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
        delete iotrack;
        return 4;
      }
-
+    
+   Int_t naccepted = 0;
    char tname[30];
-   Int_t totalNevents = 0;
+   
    for (Int_t currentEvent = 0; currentEvent < Nevents; currentEvent++)
     { 
-      cout<<"Reading Event "<<currentEvent<<endl;
+      cout<<"Reading Event "<<currentEvent;
       
       sprintf(tname,"TreeT%d",currentEvent);
       file->cd(); 
@@ -171,7 +173,10 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
       gAlice->Particles();
 
       Int_t nentr=(Int_t)tracktree->GetEntries();
-
+      
+      cout<<".  Found "<<nentr<<" tracks.";
+      fflush(0);
+      
       for (Int_t i=0; i<nentr; i++) 
        {
 
@@ -212,10 +217,11 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
 
         particles->AddParticle(totalNevents,part);//put track and particle on the run
         tracks->AddParticle(totalNevents,track);
+        naccepted++;
        }//end loop over tracks in the event
 
        totalNevents++;
-
+       cout<<"  Accepted "<<naccepted<<" tracks"<<endl;
      }//end of loop over events in current directory
     
     gAliceFile->Close();
