@@ -31,7 +31,7 @@
 #include <TGeant3.h>              // For DtoM and InitGeo, should  
 #include "../STRUCT/AliBODY.h"    // be removed after we switch to 
 #include "../STRUCT/AliFRAMEv2.h" // AliTOGeometry::GetPos
-#include "AliTOFv2FHoles.h"
+#include "AliTOFv4T0.h"
 
 #include <stdlib.h>
 
@@ -50,7 +50,7 @@ static Int_t InitGeo() {
   frame->SetHoles(1);
   frame->CreateGeometry();
 
-  AliTOF *tof = new AliTOFv2FHoles("TOF", "TOF with Holes");
+  AliTOF *tof = new AliTOFv4T0("TOF", "TOF with Holes");
   tof->CreateGeometry();
 
   return 0;
