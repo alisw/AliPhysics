@@ -36,7 +36,8 @@ TG4GeometryServices::TG4GeometryServices(TG4IntMap* mediumMap,
                                          TG4NameMap* nameMap) 
   : TG4Verbose("geometryServices"),
     fMediumMap(mediumMap),
-    fNameMap(nameMap)				 
+    fNameMap(nameMap),
+    fWorld(0)				 
 {
 //
   if (fgInstance) {
