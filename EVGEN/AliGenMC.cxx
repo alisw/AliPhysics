@@ -47,6 +47,7 @@ AliGenMC::AliGenMC()
     SetProjectile();
     fParentSelect.Set(8);
     fChildSelect.Set(8);
+    fForceDecay = kAll;
 }
 
 AliGenMC::AliGenMC(Int_t npart)
@@ -69,6 +70,7 @@ AliGenMC::AliGenMC(Int_t npart)
     SetNumberOfAcceptedParticles();
     SetTarget();
     SetProjectile();
+    fForceDecay = kAll;
 }
 
 AliGenMC::AliGenMC(const AliGenMC & mc):
