@@ -5,6 +5,11 @@
 
 
 ##### include general path/location macros #####
+ifeq ($(PLATFORM),)
+PLATFORM = $(shell root-config --arch)
+endif
+ALICE_TARGET = $(PLATFORM)
+
 override ALICE_ROOT=$(shell pwd)
 
 ifdef ALIVERBOSE
@@ -28,8 +33,8 @@ include build/Makefile.config
 #            Where to install libraries and binaries 
 #                 and common header files
 
-LIBPATH=lib/tgt_$(ALICE_TARGET)
-BINPATH=bin/tgt_$(ALICE_TARGET)
+LIBPATH   = lib/tgt_$(ALICE_TARGET)
+BINPATH   = bin/tgt_$(ALICE_TARGET)
 EXPORTDIR = $(ALICE_ROOT)/include
 ##################################################################
 
@@ -89,7 +94,7 @@ endif
 
 ALIROOTMODULES:= STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       CRT RICH START STRUCT EVGEN RALICE ALIFAST VZERO \
-	  THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN \
+      THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN \
       THerwig TEPEMGEN EPEMGEN FASTSIM TPHIC RAW MONITOR DISPLAY ANALYSIS \
       JETAN HLT
 
@@ -119,13 +124,13 @@ MODDIRS := $(MODULES)
 #
 
 CXXFLAGS += -I$(ALICE_ROOT)/include
-CXXFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
+CXXFLAGS += -I$(shell root-config --incdir)
 
 CINTFLAGS += -I$(ALICE_ROOT)/include
-CINTFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
+CINTFLAGS += -I$(shell root-config --incdir)
 
-DEPINC  += -I$(ALICE_ROOT)/include
-DEPINC += $(patsubst %,-I%,$(ROOTSYS)/include)
+DEPINC += -I$(ALICE_ROOT)/include
+DEPINC += -I$(shell root-config --incdir)
 #############################################################
 
 
@@ -286,7 +291,7 @@ clean:
 	@echo "	clean-aliroot     : Clean up all aliroot libraries"
 	@echo "	clean-MODULENAME  : Clean everything from module MODULENAME"
 	@echo "	clean-all         : Cleans up everything, including cern libraires"
-	@echo "	distclean         : Idem clean-all"
+	@echo "	distclean         : Like clean-all + clean all tgt_*'s"
 	@echo "	clean-modules     : Clean all module.mk file in all modules"
 	@echo "	clean-libs        : Clean all libraries (not object files)"
 	@echo "********************************************"
@@ -299,6 +304,7 @@ endif
 	$(MUTE)rm -rf $(EXPORTDIR)
 
 distclean: clean-all
+	$(MUTE)rm -rf */tgt_* bin lib
 
 #This cleans only libraries that are not CERN-libraries
 
