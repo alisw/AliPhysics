@@ -1,5 +1,5 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliTRDtracker.h"
 #include "AliTRDclusterMI.h"
@@ -8,12 +8,13 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDgeometryDetail.h"
 #include "AliTRDparameter.h"
-
+#include "AliTRDclusterCorrection.h"
 #include "alles.h"
 #include "TFile.h"
 #include "TStopwatch.h"
 #include "Rtypes.h"
 #include "TTree.h"
+
 #include "AliRunLoader.h"
 #include "AliStack.h"
 #include "TF1.h"
@@ -145,6 +146,8 @@ void AliTRDClusterErrAnal::SortReferences()
   br->SetAddress(&arr);
   //
   TClonesArray *labarr=0;
+  Int_t nreferences=0;
+  Int_t nreftracks=0;
   for (Int_t iprim=0;iprim<nentries;iprim++){
     if (br->GetEntry(iprim)){
       for (Int_t iref=0;iref<arr->GetEntriesFast();iref++){
@@ -156,13 +159,18 @@ void AliTRDClusterErrAnal::SortReferences()
 	if (fReferences->At(lab)==0) {
 	  labarr = new TClonesArray("AliTrackReference"); 
 	  fReferences->AddAt(labarr,lab);
+	  nreftracks++;
 	}
 	TClonesArray &larr = *labarr;
 	new(larr[larr.GetEntriesFast()]) AliTrackReference(*ref);
+	nreferences++;
       }
     }
   }
-  printf("end - Sorting references\n");
+  printf("Total number of references = \t%d\n", nreferences);
+  printf("Total number of tracks with references = \t%d\n", nreftracks);
+  printf("End - Sorting references\n");
+  
 }
 
 AliTrackReference * AliTRDClusterErrAnal::FindNearestReference(Int_t lab, Float_t pos[3], Float_t dmax)
@@ -241,6 +249,8 @@ void AliTRDClusterErrAnal::MakeExactPoints(Int_t trackmax)
       //
       Float_t rot[3];
       fGeometry->Rotate(detector,pos,rot);
+      //rot[0] *=-1;
+      //  rot[1] *=-1;
       //
       //
       Float_t  time0    = fParam->GetTime0(plane);
@@ -293,7 +303,12 @@ void AliTRDClusterErrAnal::MakeExactPoints(Int_t trackmax)
 	  //
 	  Float_t lastplane = fGeometry->GetPlane(lastdetector);
 	  Float_t time0    = fParam->GetTime0(lastplane);
-	  Float_t xcenter = time0 - (lasttimebin - fParam->GetTimeBefore())*fParam->GetTimeBinSize();
+	  Float_t xcenter0 = time0 - (lasttimebin - fParam->GetTimeBefore()+0.5)*fParam->GetTimeBinSize();
+	  Float_t xcenter = fTracker->GetX(0,lastplane,lasttimebin);
+	  if (TMath::Abs(xcenter-xcenter0)>0.001){
+	    printf("problem");
+	  }
+	  
 	  Float_t ty = ay + by * xcenter;
 	  Float_t tz = az + bz * xcenter;
 	  //
@@ -339,7 +354,7 @@ void AliTRDClusterErrAnal::MakeExactPoints(Int_t trackmax)
       lastpos[1] = hit->Y();
       lastpos[2] = hit->Z();
       fSum++;
-      fSumQ = hit->GetCharge();
+      fSumQ  +=hit->GetCharge();
       fSumX  +=rot[0];
       fSumX2 +=rot[0]*rot[0];
       fSumXY +=rot[0]*rot[1];      
@@ -381,7 +396,7 @@ Int_t AliTRDClusterErrAnal::Analyze(Int_t trackmax) {
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
   Int_t nTrack = (Int_t)fExactPoints.GetEntries();
-  printf("Found %d charged in TRD in first %d primaries", nTrack, trackmax);
+  printf("Found %d charged in TRD in first %d particles", nTrack, trackmax);
   //
 
   for (Int_t itrack = 0; itrack<trackmax; itrack++){
@@ -459,6 +474,36 @@ Int_t AliTRDClusterErrAnal::Analyze(Int_t trackmax) {
   return 0;
 }
 
+AliTRDclusterCorrection*   AliTRDClusterErrDraw::MakeCorrection(TTree * tree, Float_t offset)
+{
+  //
+  //
+  // make corrections
+  AliTRDclusterCorrection * cor = new AliTRDclusterCorrection;
+  cor->SetOffsetAngle(offset); 
+  for (Int_t iplane=0;iplane<6;iplane++)
+    for (Int_t itime=0;itime<15;itime++)
+      for (Int_t iangle=0; iangle<20;iangle++){
+	Float_t angle = cor->GetAngle(iangle);
+	TH1F delta("delta","delta",30,-0.3,0.3);
+	char selection[100]="fStatus==0&&fNTracks<2";
+	char selectionall[1000];
+	sprintf(selectionall,"%s&&abs(fEp.fTAY-%f)<0.2&&fEp.fPlane==%d&&fCl.fTimeBin==%d&&fCl.fQ>20",
+		selection,angle,iplane,itime);
+	printf("\n%s",selectionall);
+	tree->Draw("fEp.fTY-fCl.fY+fDYtilt>>delta",selectionall);
+	gPad->Update();
+	printf("\nplane\t%d\ttime%d\tangle%f",iplane,itime,angle);
+	printf("\tentries%f\tmean\t%f\t%f",delta.GetEntries(),delta.GetMean(),delta.GetRMS());	
+	cor->SetCorrection(iplane,itime,angle,delta.GetMean(),delta.GetRMS());
+      }
+  TFile * f = new TFile("TRDcorrection.root","new");
+  if (!f) f = new TFile("TRDcorrection.root","recreate");
+  f->cd();
+  cor->Write("TRDcorrection");
+  f->Close();
+  return cor; 
+}
 
 TH1F * AliTRDClusterErrDraw::ResDyVsAmp(TTree* tree, const char* selection, Float_t t0, Float_t ampmin, Float_t ampmax)
 {

@@ -2,6 +2,17 @@
 #include "AliTrackReference.h"
 #endif
 
+AliTRDclusterCorrection * gCorrection;
+
+void ReadCorrection(){
+  TFile f("TRDcorrection.root");
+  gCorrection= (AliTRDclusterCorrection *)f.Get("TRDcorrection");
+  if (gCorrection==0){
+    printf("Correction not found");
+  }
+}
+
+
 class AliTRDExactPoint: public TObject {
   public : 
   AliTRDExactPoint();
@@ -31,24 +42,6 @@ class AliTRDExactPoint: public TObject {
   ClassDef(AliTRDExactPoint,1)
 };
 
-AliTRDExactPoint::AliTRDExactPoint()
-{
-  fTX=fTY=fTZ=fTAZ=fTAY=fGx=fGy=fGz=fTRefAngleY=0;
-  fRefPos[0]=fRefPos[1]=fRefPos[2]=fRefMom[0]=fRefMom[1]=fRefMom[2]=0;
-  fDetector=fLocalTimeBin=fPlane=fSector=fPlaneMI=0;
-  fTQ=fTPrim=0;
-}
-
-void AliTRDExactPoint::SetReference(AliTrackReference *ref){
-  fRefPos[0] = ref->X();
-  fRefPos[1] = ref->Y();
-  fRefPos[2] = ref->Z();
-  //
-  fRefMom[0] = ref->Px();
-  fRefMom[1] = ref->Py();
-  fRefMom[2] = ref->Pz();
-}
-
 class AliTRDCI: public TObject {
   public :
   AliTRDCI(){;}
@@ -66,20 +59,10 @@ class AliTRDCI: public TObject {
   Float_t fPt;
   Float_t fCharge;
   Bool_t  fIsPrim;
-  
+  Float_t fCorrection;
   void Update();
   ClassDef(AliTRDCI,1)
 };
-
-void AliTRDCI::Update()
-{
-  //
-  //thanks to root
-  fPt = fP.Pt();
-  fCharge = fP.GetPDG()->Charge();
-  fIsPrim = (fP.GetMother(0)>0)? kFALSE :kTRUE;
-}
-
 
 class AliTRDClusterErrAnal: public TObject{
 public: 
@@ -114,6 +97,8 @@ public:
 
 class AliTRDClusterErrDraw: public TObject{
 public:
+  AliTRDclusterCorrection*   MakeCorrection(TTree * tree, Float_t offset);
+
   static TH1F * ResDyVsAmp(TTree* tree, const char* selection, Float_t t0, Float_t ampmin=10, Float_t ampmax=300);
   static TH1F * ResDyVsRelPos(TTree* tree, const char* selection, Float_t t0, Float_t min=-0.5, Float_t max=0.5);
   static TH1F * ResDyVsAngleY(TTree* tree, const char* selection, Float_t t0, Float_t min=-1., Float_t max=1.);
@@ -121,10 +106,38 @@ public:
   static TH1F* CreateEffHisto(TH1F* hGen, TH1F* hRec);
   static TH1F* CreateResHisto(TH2F* hRes2, Bool_t draw = kTRUE, Bool_t drawBinFits = kTRUE, 
 		     Bool_t overflowBinFits = kFALSE);
-
   ClassDef(AliTRDClusterErrDraw,1)
 };
 
 
 
+
+AliTRDExactPoint::AliTRDExactPoint()
+{
+  fTX=fTY=fTZ=fTAZ=fTAY=fGx=fGy=fGz=fTRefAngleY=0;
+  fRefPos[0]=fRefPos[1]=fRefPos[2]=fRefMom[0]=fRefMom[1]=fRefMom[2]=0;
+  fDetector=fLocalTimeBin=fPlane=fSector=fPlaneMI=0;
+  fTQ=fTPrim=0;
+}
+
+void AliTRDExactPoint::SetReference(AliTrackReference *ref){
+  fRefPos[0] = ref->X();
+  fRefPos[1] = ref->Y();
+  fRefPos[2] = ref->Z();
+  //
+  fRefMom[0] = ref->Px();
+  fRefMom[1] = ref->Py();
+  fRefMom[2] = ref->Pz();
+}
+
+
+void AliTRDCI::Update()
+{
+  //
+  //thanks to root
+  fPt = fP.Pt();
+  fCharge = fP.GetPDG()->Charge();
+  fIsPrim = (fP.GetMother(0)>0)? kFALSE :kTRUE;
+  fCorrection = gCorrection->GetCorrection(fEp.fPlane,fCl.fTimeBin,fEp.fTAY);
+}
 
