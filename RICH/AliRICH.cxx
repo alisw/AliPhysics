@@ -1,1924 +1,1199 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Ring Imaging Cherenkov                                                   //
-//  This class contains the basic functions for the Ring Imaging Cherenkov   //
-//  detector. Functions specific to one particular geometry are              //
-//  contained in the derived classes                                         //
-//                                                                           //
-//Begin_Html
-/*
-<img src="picts/AliRICHClass.gif">
-*/
-//End_Html
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////
+//  Manager and hits classes for set:RICH     //
+////////////////////////////////////////////////
 
-#include <TBRIK.h> 
+#include <TBRIK.h>
+#include <TTUBE.h>
 #include <TNode.h> 
 #include <TRandom.h> 
+#include <TObject.h>
+#include <TVector.h>
+#include <TObjArray.h>
 
-#include <TClass.h> 
 #include "AliRICH.h"
+#include "AliRICHHitMap.h"
 #include "AliRun.h"
-#include "TGeant3.h" 
+#include "AliMC.h"
+#include "iostream.h"
+#include "AliCallf77.h" 
 
-
+// Static variables for the pad-hit iterator routines
+static Int_t sMaxIterPad=0;
+static Int_t sCurIterPad=0;
+static TClonesArray *fClusters2;
+static TClonesArray *fHits2;
+ 
 ClassImp(AliRICH)
-
-//_____________________________________________________________________________
+    
+//___________________________________________
 AliRICH::AliRICH()
 {
-  //
-  // Default constructor for RICH
-  //
-  fIshunt   = 0;
-  fHits     = 0;
-  fMips     = 0;
-  fCkovs    = 0;
-  fPadhits  = 0;
-  fNmips    = 0;
-  fNckovs   = 0;
-  fNpadhits = 0;
-  
-  fChslope  = 0;
-  fAlphaFeed= 0;
-  fSxcharge = 0;
-  fIritri   = 0;
+    fIshunt     = 0;
+    fHits       = 0;
+    fClusters   = 0;
+    fNclusters  = 0;
+    fDchambers  = 0;
+    fRecClusters= 0;
+    fCerenkovs  = 0;
+    fNdch       = 0;
 }
- 
-//_____________________________________________________________________________
+
+//___________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
-       : AliDetector(name,title)
+    : AliDetector(name,title)
 {
-  //
-  // Standard constructor for RICH
-  //
-  fIshunt     = 0;
-  fNmips      = 0;
-  fNckovs     = 0;
-  fNpadhits   = 0;
-  //
-  // Allocate space for different components
-  fHits     = new TClonesArray("AliRICHhit", 100);
-  fMips     = new TClonesArray("AliRICHmip", 100);
-  fCkovs    = new TClonesArray("AliRICHckov", 100);
-  fPadhits  = new TClonesArray("AliRICHpadhit", 100);
-  //
-  // Set parameters to default value
-  fChslope  = 40;
-  fAlphaFeed= 0.04;
-  fSxcharge = 0.18;
-  fIritri   = 0;
-  //
-  SetMarkerColor(6);
-  SetMarkerStyle(20);
-  SetMarkerSize(0.5);
-}
-
-//_____________________________________________________________________________
-AliRICH::~AliRICH()
-{
-  //
-  // Destructor for RICH
-  //
-  fIshunt   = 0;
-  delete fHits;
-  fMips->Delete();    delete fMips;
-  fCkovs->Delete();   delete fCkovs;
-  fPadhits->Delete(); delete fPadhits;
-}
-
-//_____________________________________________________________________________
-void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
-{
-  //
-  // Add a RICH hit
-  //
-  switch ((int) hits[0]) {
-  case 0:
-    {
-      //
-      // Simple hit
-      TClonesArray &lhits = *fHits;
-      new(lhits[fNhits++]) AliHit(fIshunt,track);
-      AliHit *lhit = (AliHit*) fHits->AddrAt(fNhits-1);
-      lhit->fX = hits[19];
-      lhit->fY = hits[20];
-      lhit->fZ = hits[21];
-    }	break;
-  case 1:
-    //
-    // MIP hit
-    AddMipHit(track,vol,hits);
-    break;
-  case 2:
-    //
-    // Cherenkov hit
-    AddCkovHit(track,vol,hits);
-    break;
-  case 3:
-    //
-    // Pad hit
-    AddPadHit(track,vol,hits);
-    break;
-  case 4:
-    // Update a mip hit
-    UpdateMipHit(hits);
-    break; 
-  default:
-    printf("Error: AliRICH::AddHit flag %d not defined./n",(int) hits[0]);
-    return;
-  }    
-}
-
-//_____________________________________________________________________________
-void AliRICH::AddMipHit(Int_t track, Int_t *vol, Float_t *hits)
-{ 
-    // Adds a mip hit in the RICH.
-    TClonesArray &lhits = *fMips;
-    new(lhits[fNmips++]) AliRICHmip(fIshunt,track,vol,hits,
-				    fNckovs,fNpadhits);
-}
-
-//_____________________________________________________________________________
-void AliRICH::AddCkovHit(Int_t track, Int_t *vol, Float_t *hits)
-{ 
-  //
-  // Adds a cerenkov hit in the RICH.
-  //
-  TClonesArray &lhits = *fCkovs;
-  AliRICHmip *lmip = (AliRICHmip*) fMips->AddrAt(fNmips-1);
-  //
-  // If this ckov come from a mip update the mip lastckov entry.
-  Int_t fmipslocal=-1;
-  if (lmip->GetZ() != -999.0) {
-    fmipslocal    =   fNmips-1;
-    lmip->SetLastCkov(fNckovs);
-  }
-  new(lhits[fNckovs++]) AliRICHckov(fIshunt,track,vol,hits,
-				    fmipslocal,fNpadhits);
-}
-
-//_____________________________________________________________________________
-void AliRICH::AddPadHit(Int_t track, Int_t *vol, Float_t *hits)
-{ 
-  //
-  // Adds pad hits in the RICH
-  //
-  TClonesArray &lhits = *fPadhits;
-  // Update the last padhit of the respective particle:
-  if ((int) hits[1]==50) { // a ckov
-    ((AliRICHckov *) fCkovs->AddrAt(fNckovs-1))->SetLastpad(fNpadhits);
-    new(lhits[fNpadhits++]) AliRICHpadhit(fIshunt,track,vol,hits,-1,fNckovs-1);
-  }else { // a mip
-    ((AliRICHmip *) fMips->AddrAt(fNmips-1))->SetLastpad(fNpadhits);
-    new(lhits[fNpadhits++]) AliRICHpadhit(fIshunt,track,vol,hits,fNmips-1,-1);
-  }
-}
-
-//_____________________________________________________________________________
-void AliRICH::BuildGeometry()
-{
-  //
-  // Builds a TNode geometry for event display
-  //
-  TNode *Node, *Top;
-  
-  const int kColorRICH = kGreen;
-  //
-  Top=gAlice->GetGeometry()->GetNode("alice");
-
-  new TRotMatrix("rot993","rot993",90,0,70.69,90,19.30999,-90);
-  new TRotMatrix("rot994","rot994",90,-20,90,70,0,0);
-  new TRotMatrix("rot995","rot995",90,0,90,90,0,0);
-  new TRotMatrix("rot996","rot996",90,20,90,110,0,0);
-  new TRotMatrix("rot997","rot997",90,340,108.1999,70,18.2,70);
-  new TRotMatrix("rot998","rot998",90,0,109.3099,90,19.30999,90);
-  new TRotMatrix("rot999","rot999",90,20,108.1999,110,18.2,110);
-  new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
-  Top->cd();
-  Node = new TNode("RICH1","RICH1","S_RICH",0,471.8999,165.2599,"rot993");
-  Node->SetLineColor(kColorRICH);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("RICH2","RICH2","S_RICH",171,470,0,"rot994");
-  Node->SetLineColor(kColorRICH);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("RICH3","RICH3","S_RICH",0,500,0,"rot995");
-  Node->SetLineColor(kColorRICH);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("RICH4","RICH4","S_RICH",-171,470,0,"rot996");
-  Node->SetLineColor(kColorRICH);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("RICH5","RICH5","S_RICH",161.3999,443.3999,-165.3,"rot997");
-  Node->SetLineColor(kColorRICH);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("RICH6","RICH6","S_RICH",0,471.8999,-165.3,"rot998");
-  Node->SetLineColor(kColorRICH);
-  fNodes->Add(Node);
-  Top->cd();
-  Node = new TNode("RICH7","RICH7","S_RICH",-161.399,443.3999,-165.3,"rot999");
-  Node->SetLineColor(kColorRICH);
-  fNodes->Add(Node); 
-}
-
-//*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-//
-//                       Section for Rich Step
-#define MAXPH 1000
-
-static Float_t sVloc[3];
-static Float_t sVectIn[3];
-static Float_t sDetot;
-static Float_t sYanode[MAXPH];
-static Float_t sXpad[MAXPH];
-static Float_t sYpad[MAXPH];
-static Int_t sNpx;
-static Int_t sNpy;
-static Float_t sDxp;
-static Float_t sDyp;
-static Float_t sDlx;
-static Float_t sDly;
-static Float_t sDpad;
-
-
-static Int_t sNsecon;
-//static Float_t sQint[2];
-
-#define MAXSEC 2000
-
-static Int_t sNpads;
-static Int_t sIpx[MAXSEC];
-static Int_t sIpy[MAXSEC];
-static Int_t sIqpad[MAXSEC];
-static Int_t sNphlink[MAXSEC];
-static Int_t sNphoton;
-
-static Int_t sNfeed, sNfeedd, sNdir;
-
-static Float_t sPparent;
-static Float_t sThincParent;
-static Int_t sIloss[MAXPH];
-static Int_t sIprod[MAXPH];
-static Float_t sXphit[MAXPH];
-static Float_t sYphit[MAXPH];
-
-static Float_t sSycharge;
-static Float_t sXsox, sYsox, sZsox;
-
-static Int_t sMckov[MAXPH];
-static Int_t idpartgx;
-static Float_t phisx;
-static Int_t nmodsx;
-static Float_t psx;
-static Float_t xsx;
-static Float_t ysx;
-static Float_t thetasx;
-
-
-//_____________________________________________________________________________
-void AliRICH::Init()
-{
-  //
-  // Initialise RICH after that it has been built
-  //
-  const Float_t sconv=2*TMath::Sqrt(2*TMath::Log(2));
-  const Float_t yK3=1.20;
-  Float_t ansp;
-  Int_t i;
-  //
-  sNpx=162;
-  sNpy=162;
-  sDxp=0.80;
-  sDyp=0.80;
-  ansp=sDyp/2;
-  sDlx=sNpx*sDxp/2;
-  sDly=sNpy*sDyp/2;
-  sDpad=0.2;
-  //
-  for(i=0;i<sNpx;i++) {
-    sXpad[i]=i*sDxp;
-    sYpad[i]=i*sDyp;
-  }
-  for(i=0;i<2*sNpy+1;i++) sYanode[i]=ansp/2+i*ansp;
-  //
-  
-  sSycharge=4*TMath::ATanH(1/TMath::Sqrt(2*yK3))/TMath::Pi()
-    /(1-0.5*TMath::Sqrt(yK3))/sDpad/sconv;
-  //
-}
-
-
-//___________________________________________________________________________
-void AliRICH::StepManager()
-{
-  //
-  // Called at every step in the RICH
-  //
-
-  TGeant3 *geant3 = (TGeant3*) gMC;
-
-  const Float_t xshift[3] = { 41.3, 0, -41.3 };
-  const Int_t nrooth = 25;
-  
-  static Int_t ixold=-1, iyold=-1;
-  
-  // System generated locals 
-  Int_t j, i1;
-  Float_t r1, r2;
-  
-  // Local variables 
-  Float_t ranf[2], rrhh[nrooth], phiangle, cost, vmod;
-  //Int_t idpartsx;
-  Int_t i;
-  Float_t t, vxloc[3];
-  Int_t ll, irivol[2];
-  Int_t lcase;
-  //Int_t iprimx;
-  Int_t ix, iy;
-  Float_t stwght;
-  Float_t cophi;
-  Float_t dir[3];
-  Int_t ihitrak;
-  Int_t medprod;
-  
-  Int_t nmult=0;
-  //Float_t xtrig[200], ytrig[200];
-  //Int_t itrig[200];
-
-  
-  
-  //     ILOSS = 0    NOT LOST 
-  //             1    REFLECTED FREON-QUARZ 
-  //             2    REFLECTED QUARZ-METHANE 
-  //             3    REFLECTED METHANE-CSI 
-  //            11    ABSORBED IN FREON 
-  //            12    ABSORBED IN QUARZ 
-  //            13    ABSORBED IN METHANE 
-  //            21    CSI QE 
-  //     IPROD = 1    PRODUCED IN FREON 
-  //     IPROD = 2    PRODUCED IN QUARZ 
-  
-  // new (changed NROOTH from 10 to 25!!!!!!!!!!!!!) 
-  
-  
-  Int_t *idtmed = fIdtmed->GetArray()-999;
-  
-  //--------------------------------------------------------------------------
-  
-  //        MIP inside CsI 
-
-  if (geant3->Gckine()->charge) {
-    
-    //        Charged particles treatment 
-    if (fIritri && !geant3->Gctrak()->upwght) {
-      if (geant3->Gctmed()->numed == idtmed[fIritri-1]) {
-	if (geant3->Gcking()->ngkine > 0) {
-	  strncpy((char *)&lcase,"HADR",4);
-	  if (geant3->Gcking()->kcase == lcase) {
-	    i1 = geant3->Gcking()->ngkine;
-	    for (i = 1; i <= i1; ++i) {
-	      gMC->Gmtod(geant3->Gckin3()->gpos[i-1], vxloc, 1);
-	      gMC->Gmtod(geant3->Gcking()->gkin[i-1], dir, 2);
-	      if (geant3->Gcking()->gkin[i-1][4] == 8. || 
-		  geant3->Gcking()->gkin[i-1][4] == 9.) {
-		++nmult;
-		// Computing 2nd power 
-		r1 = dir[0];
-		// Computing 2nd power 
-		r2 = dir[2];
-		//theta = TMath::ATan2(TMath::Sqrt(r1*r1+r2*r2),dir[1]);
-		//xtrig[nmult - 1] = theta;
-		//ytrig[nmult - 1] = vxloc[1] + .25;
-		//itrig[nmult - 1] = (Int_t) geant3->Gcking()->gkin[i-1][4];
-	      }
-	    }
-	  }
-	}
-      }
-      if ((geant3->Gctmed()->numed == idtmed[1006-1] &&
-	   geant3->Gctrak()->inwvol == 2) || 
-	  geant3->Gctrak()->istop) {
-	if (!nmult) {
-	  printf("NOT TRIGGERED\n");
-	  sDetot = 0.;
-	  sNsecon = 0;
-	  sNpads = 0;
-	  sNphoton = 0;
-	  sNfeed = 0;
-	  sNfeedd = 0;
-	  sNdir = 0;
-	  geant3->Gctrak()->istory = 0;
-	  geant3->Gctrak()->upwght = 0.;
-	  geant3->Gcflag()->ieotri = 1;
-	  nmult = 0;
-	  //sQint[0] = 0.;
-	  //sQint[1] = 0.;
-	} else {
-	  printf("TRIGGERED %d\n",nmult);
-	}
-      }
-    }
-    //        MIP inside Methane 
-    if (geant3->Gctmed()->numed == idtmed[1009-1]) {
-      
-      // new 
-      //     If particle produced already Cerenkov Photons (istory=1) 
-      //     update the impact point only 
-      if (geant3->Gctrak()->istory == 1) {
-	//     Direction of incidence and where did it hit ? 
-	gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-	gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
-	phiangle = TMath::ATan2(dir[2], dir[0]);
-	if (phiangle < 0.) phiangle += 2*TMath::Pi();
-	i1 = nrooth;
-	for (ll = 0; ll < i1; ++ll) rrhh[ll] = 0;
-	irivol[0] = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-	irivol[1] = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-	// NMODSX 
-	ihitrak = gAlice->CurrentTrack();
-	rrhh[0] = 4.;
-	// flag to say this is update 
-	rrhh[1] = sVloc[0] + sDlx;
-	// XSX 
-	rrhh[2] = sVloc[2] + sDly;
-	// YSX 
-	rrhh[3] = (Float_t) geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-	// NMODSX 
-	// Computing 2nd power 
-	r1 = dir[0];
-	// Computing 2nd power 
-	r2 = dir[2];
-	rrhh[4] = TMath::ATan2(TMath::Sqrt(r1 * r1 + r2 * r2), dir[1]);
-	// theta 
-	rrhh[5] = phiangle;
-	//          PRINT *, 'ITRA = ',ITRA,'ISTAK = ',ISTAK 
-	AddHit(ihitrak,irivol,rrhh);
-      }
-      // enew 
-      //        Record particle properties 
-      //        If particle produced already Cerenkov Photons (istory=1)
-      
-      //        update the impact point only 
-      if (geant3->Gctrak()->istory != 2) {
-	if (!geant3->Gctrak()->istory) {
-	  ++sNsecon;
-	  
-	  //        Is this a primary particle ? 
-	  //iprimx = 1;
-	  //if (geant3->Gctrak()->upwght) iprimx = 0;
-	  
-	  //        Where did it come from ? 
-	  sXsox = geant3->Gckine()->vert[0];
-	  sYsox = geant3->Gckine()->vert[1];
-	  sZsox = geant3->Gckine()->vert[2];
-	  
-	  //        Momentum 
-	  psx = geant3->Gctrak()->vect[6];
-	  
-	  //        Particle type and parent 
-	  //idpartsx = geant3->Gckine()->ipart;
-	  r1 = geant3->Gctrak()->upwght / 100.;
-	  idpartgx = Int_t(r1+0.5);
-	  if (!geant3->Gctrak()->upwght) {
-	    sPparent = geant3->Gctrak()->vect[6];
-	    sThincParent = thetasx;
-	  }
-	  
-	  //        Direction of incidence and where did it hit ? 
-	  gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-	  gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
-	  // Computing 2nd power 
-	  r1 = dir[0];
-	  // Computing 2nd power 
-	  r2 = dir[2];
-	  thetasx = TMath::ATan2(TMath::Sqrt(r1 * r1 + r2 * r2), dir[1]);
-	  phisx = TMath::ATan2(dir[2], dir[0]);
-	  if (phisx < 0.) phisx += 2*TMath::Pi();
-	  ysx = sVloc[2] + sDly;
-	  xsx = sVloc[0] + sDlx;
-	  nmodsx = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-	  //     new 
-	  i1 = nrooth;
-	  for (ll = 0; ll < i1; ++ll) rrhh[ll] = 0;
-	  irivol[0] = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-	  irivol[1] = nmodsx;
-	  ihitrak = gAlice->CurrentTrack();
-	  rrhh[0] = 1.;
-	  // Flag to say this is MIP 
-	  rrhh[1] = (Float_t) geant3->Gckine()->ipart;
-	  rrhh[2] = xsx;
-	  rrhh[3] = ysx;
-	  rrhh[4] = (Float_t) nmodsx;
-	  // Module Number 
-	  rrhh[5] = thetasx;
-	  rrhh[6] = geant3->Gctrak()->tofg;
-	  // in seconds 
-	  rrhh[7] = (Float_t) idpartgx;
-	  //     mips specific 
-	  rrhh[8] = phisx;
-	  rrhh[9] = psx;
-	  //     charge of current particle in electron charge unit; 
-	  rrhh[10] = geant3->Gckine()->charge;
-	  rrhh[11] = -999.;
-	  // Zo of ckov generation 
-	  rrhh[12] = 0.;
-	  // no ckov !!! 
-	  AddHit(ihitrak, irivol, rrhh);
-	  //     end of new 
-	  
-	  //        Earmark track as being recorded in methane gap 
-	  
-	  geant3->Gctrak()->istory = 2;
-	}
-      }
-      
-      //        Signal generation in methane gap 
-      gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-      gMC->Gmtod(geant3->Gckine()->vert, vxloc, 1);
-      ix = (Int_t) ((sVloc[0] + sDlx) /  sDxp);
-      iy = (Int_t) ((sVloc[2] + sDly) /  sDyp);
-      
-      //        Is this the first step? 
-      if (ixold == -1 && iyold == -1) {
-	ixold = ix;
-	iyold = iy;
-	for(j=0;j<3;j++) sVectIn[j]=geant3->Gctrak()->vect[j];
-      }
-      
-      //        Mip left gap 
-      if (geant3->Gctrak()->inwvol == 2 || geant3->Gctrak()->istop) {
-	sDetot += geant3->Gctrak()->destep;
-	if (sDetot > 0.) RichIntegration();
-	sDetot = 0.;
-	ixold = -1;
-	iyold = -1;
-	
-	//        Mip left current pad 
-      } else if (ixold != ix || iyold != iy) {
-	if (sDetot > 0.) RichIntegration();
-	for(j=0;j<3;j++) sVectIn[j]=geant3->Gctrak()->vect[j];
-	sDetot = geant3->Gctrak()->destep;
-	ixold = ix;
-	iyold = iy;
-      } else {
-	sDetot += geant3->Gctrak()->destep;
-      }
-    }
-  }
-  
-  //        End charged particles treatment 
-  //
-  //        Treat photons produced in Freon and Quartz 
-  if (geant3->Gckin2()->ngphot > 0 && 
-      (geant3->Gctmed()->numed == idtmed[1004-1] || 
-       geant3->Gctmed()->numed == idtmed[1003-1])) {
-    if (!geant3->Gctrak()->upwght) {
-      
-      //        If it is a primary, save all generated photons 
-      i1 = geant3->Gckin2()->ngphot;
-      for (i = 1; i <= i1; ++i) {
-	++sNphoton;
-	if (sNphoton > MAXPH) {
-	  sNphoton = MAXPH;
-	  printf("ATTENTION NPHOTON %d\n",sNphoton);
-	  continue;
-	}
-	
-	//        Production medium 
-	medprod = 1;
-	if (geant3->Gctmed()->numed == idtmed[1003-1]) medprod = 2;
-	//
-	//        Production angle and energy 
-	vmod=0;
-	cost=0;
-	for(j=0;j<3;j++) {
-	  cost+=geant3->Gckin2()->xphot[i-1][3+j]*geant3->Gctrak()->vect[3+j];
-	  vmod+=geant3->Gckin2()->xphot[i-1][3+j]*
-	    geant3->Gckin2()->xphot[i-1][3+j];
-	}
-	cost/=sqrt(vmod);
-	sIloss[sNphoton - 1] = 22;
-	sIprod[sNphoton - 1] = medprod;
-	sXphit[sNphoton - 1] = 0.;
-	sYphit[sNphoton - 1] = 0.;
-	stwght = geant3->Gctrak()->upwght;
-	geant3->Gctrak()->upwght = (Float_t) sNphoton;
-	//	geant3->Gskpho(i);
-	sMckov[sNphoton - 1] = gAlice->CurrentTrack()+i;
-	geant3->Gctrak()->upwght = stwght;
-      }
-    } else {
-      stwght = geant3->Gctrak()->upwght;
-      geant3->Gctrak()->upwght = 0.;
-      //      geant3->Gskpho(0);
-      geant3->Gctrak()->upwght = stwght;
-    }
-    
-    //        Particle did not yet pass the methane gap 
-    if (geant3->Gctrak()->istory == 0) {
-      geant3->Gctrak()->istory = 1;
-      ++sNsecon;
-      //        Is this a primary particle ? 
-      //iprimx = 1;
-      //if (geant3->Gctrak()->upwght) iprimx = 0;
-      
-      //        Where did it come from ? 
-      sXsox = geant3->Gckine()->vert[0];
-      sYsox = geant3->Gckine()->vert[1];
-      sZsox = geant3->Gckine()->vert[2];
-      
-      //        Where did it hit ? 
-      gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-      gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
-      ysx = sVloc[2] + sDly;
-      if (geant3->Gctmed()->numed == idtmed[1004-1]) {
-	nmodsx = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-	xsx = sVloc[0] + sDlx + 
-	  xshift[geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 2] - 1];
-      } else if (geant3->Gctmed()->numed == idtmed[1003-1]) {
-	nmodsx = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 3];
-	xsx = sVloc[0] + sDlx;
-      } else {
-	nmodsx = 0;
-      }
-      
-      //        Momentum and direction of incidence 
-      psx = geant3->Gctrak()->vect[6];
-      // Computing 2nd power 
-      r1 = dir[0];
-      // Computing 2nd power 
-      r2 = dir[2];
-      thetasx = TMath::ATan2(TMath::Sqrt(r1 * r1 + r2 * r2), dir[1]);
-      phisx = TMath::ATan2(dir[2], dir[0]);
-      if (phisx < 0.) phisx += 2*TMath::Pi();
-      
-      //        Particle type and parent 
-      //idpartsx = geant3->Gckine()->ipart;
-      r1 = geant3->Gctrak()->upwght / 100.;
-      idpartgx = Int_t(r1+0.5);
-      if (!geant3->Gctrak()->upwght) {
-	sPparent = geant3->Gctrak()->vect[6];
-	sThincParent = thetasx;
-      }
-      // new 
-      for (ll = 0; ll <nrooth; ++ll) rrhh[ll] = 0;
-      irivol[0] = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-      irivol[1] = nmodsx;
-      ihitrak = gAlice->CurrentTrack();
-      rrhh[0] = 1.;
-      // Flag to say that this is MIP 
-      rrhh[1] = (Float_t) geant3->Gckine()->ipart;
-      rrhh[2] = xsx;
-      rrhh[3] = ysx;
-      rrhh[4] = (Float_t) nmodsx;
-      // Module Number 
-      rrhh[5] = thetasx;
-      rrhh[6] = geant3->Gctrak()->tofg;
-      // in seconds 
-      rrhh[7] = (Float_t) idpartgx;
-      //     mips specific 
-      rrhh[8] = phisx;
-      rrhh[9] = psx;
-      //     charge of current particle in electron charge unit; 
-      rrhh[10] = geant3->Gckine()->charge;
-      rrhh[11] = sVloc[1];
-      // Zo of ckov generation 
-      rrhh[12] = 1.;
-      // ckov generation 
-      AddHit(ihitrak, irivol, rrhh);
-      // enew 
-    }
-  }
-  
-  //        Current particle is cherenkov photon 
-  if (geant3->Gckine()->ipart == 50) {
-    gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-    //         WRITE(6,* ) UPWGHT, VLOC(2), NUMED, DESTEP 
-    //        Photon crosses ch4-csi boundary 
-    //           take into account fresnel losses with complex refraction index
-    if (geant3->Gctrak()->inwvol == 1 && geant3->Gctmed()->numed == idtmed[1006-1]) {
-      
-      //     fresnel losses commented out for the moment 
-      //    make sure that qe correction for fresnel losses is also switched off !
-      //            CALL FRESNELCSI 
-      //            IF (ISTOP .EQ. 2) RETURN 
-      //        Put transmission of electrodes in by hand 
-      gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
-      cophi = TMath::Cos(TMath::ATan2(dir[0], dir[1]));
-      t = (1. - .025 / cophi) * (1. - .05 /  cophi);
-      gMC->Rndm(ranf, 1);
-      if (ranf[0] > t) {
-	if (geant3->Gctrak()->upwght && Int_t(geant3->Gctrak()->upwght+0.5)<MAXPH) 
-	  sIloss[Int_t(geant3->Gctrak()->upwght+0.5) - 1] = 15;
-	geant3->Gctrak()->istop = 2;
-	return;
-      }
-    }
-    
-    //        Photon lost energy in CsI 
-    if (geant3->Gctrak()->destep > 0. && geant3->Gctmed()->numed == idtmed[1006-1]) {
-      geant3->Gctrak()->istop = 2;
-      r1 = geant3->Gctrak()->upwght / 100.;
-      if (Int_t(r1+0.5) > 50) {
-	++sNfeedd;
-      } else {
-	++sNdir;
-      }
-      //            WRITE(6,*) 'PHOTON',UPWGHT, MAXPH 
-      if (geant3->Gctrak()->upwght && Int_t(geant3->Gctrak()->upwght+0.5) < MAXPH) 
-	sIloss[Int_t(geant3->Gctrak()->upwght+0.5) - 1] = 0;
-      //            write(6,*) 'photon detected' 
-      for(j=0;j<3;j++) sVectIn[j]=geant3->Gctrak()->vect[j];
-      // new 
-      // copied from miphit in Freon or Quartz 
-      //        Where did it hit ? 
-      gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
-      
-      //        Momentum and direction of incidence 
-      for (ll = 0; ll < nrooth; ++ll) rrhh[ll]=0;
-      irivol[0] = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-      // ??? 
-      irivol[1] = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-      // ??? 
-      ihitrak = gAlice->CurrentTrack();
-      rrhh[0] = 2.;
-      // Flag to say that this is CK 
-      rrhh[1] = (Float_t) geant3->Gckine()->ipart;
-      rrhh[2] = sVloc[0] + sDlx;
-      rrhh[3] = sVloc[2] + sDly;
-      rrhh[4] = (Float_t) geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 3];
-      // ??? Module Number 
-      // Computing 2nd power 
-      r1 = dir[0];
-      // Computing 2nd power 
-      r2 = dir[2];
-      rrhh[5] = TMath::ATan2(TMath::Sqrt(r1 * r1 + r2 * r2), dir[1]);
-      // THETASX 
-      rrhh[6] = geant3->Gctrak()->tofg;
-      // in seconds 
-      r1 = geant3->Gctrak()->upwght / 100.;
-      rrhh[7] = (Float_t) Int_t(r1+0.5);
-      //     ckov specific 
-      // Feedback ??? 
-      rrhh[8] = geant3->Gctrak()->getot;
-      rrhh[9] = 0.;
-      // Stop in CsI 
-      AddHit(ihitrak, irivol, rrhh);
-      //     end of new 
-      RichIntegration();
-      return;
-    }
-    if (geant3->Gctrak()->upwght && Int_t(geant3->Gctrak()->upwght+0.5) < MAXPH) 
-      {
-	//        Losses by reflection and absorption and leaving detector
-	if (sIloss[Int_t(geant3->Gctrak()->upwght+0.5) - 1] == 22) {
-	  i1 = geant3->Gctrak()->nmec;
-	  for (i = 0; i < i1; ++i) {
-	    //        Reflection loss 
-	    if (geant3->Gctrak()->lmec[i] == 106) {
-	      sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=10;
-	      if (geant3->Gctmed()->numed == idtmed[1004-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=1;
-	      
-	      if (geant3->Gctmed()->numed == idtmed[1003-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=2;
-	      
-	      //        Absorption loss 
-	    } else if (geant3->Gctrak()->lmec[i] == 101) {
-	      geant3->Gctrak()->istop = 2;
-	      sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=20;
-	      if (geant3->Gctmed()->numed == idtmed[1004-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=11;
-	      
-	      if (geant3->Gctmed()->numed == idtmed[1003-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=12;
-	      
-	      if (geant3->Gctmed()->numed == idtmed[1005-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=13;
-	      
-	      if (geant3->Gctmed()->numed == idtmed[1009-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=13;
-	      
-	      if (geant3->Gctmed()->numed == idtmed[1001-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=14;
-	      
-	      //        CsI inefficiency 
-	      if (geant3->Gctmed()->numed == idtmed[1006-1]) 
-		sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=16;
-	      
-	      
-	      //        Photon goes out of tracking scope 
-	    } else if (geant3->Gctrak()->lmec[i] == 30) 
-	      sIloss[Int_t(geant3->Gctrak()->upwght+0.5)-1]=21;
-	    
-	  }
-	}
-      }
-  }
-}
-
-
-//_____________________________________________________________________________
-void AliRICH::RichIntegration()
-{
-  //
-  // Integrates over RICH pads
-  //
-
-  TGeant3 *geant3 = (TGeant3*) gMC;
-  
-  Int_t i1, i2;
-  Float_t r1;
-  
-  // Local variables 
-  Float_t rrhh[25];
-  Float_t qtot;
-  Int_t ifeed;
-  Float_t x0;
-  Int_t ixmin, ixmax, iymin, iymax;
-  Int_t ll, ix, iy;
-  Float_t qp;
-  Float_t source[3];
-  Int_t irivol[2];
-  Float_t y0a, qtot_check, xi1, xi2, yi1, yi2;
-  Int_t nph = 0, iqp;
-  Int_t ihitrak, modulen;
-  //Int_t isec[MAXSEC];
-  //     ILOSS = 0    NOT LOST 
-  //             1    REFLECTED FREON-QUARZ 
-  //             2    REFLECTED QUARZ-METHANE 
-  //             3    REFLECTED METHANE-CSI 
-  //            11    ABSORBED IN FREON 
-  //            12    ABSORBED IN QUARZ 
-  //            13    ABSORBED IN METHANE 
-  //            21    CSI QE 
-  //     IPROD = 1    PRODUCED IN FREON 
-  //     IPROD = 2    PRODUCED IN QUARZ 
-  //       get charge for MIP or cherenkov photon 
-  
-  if (geant3->Gckine()->ipart == 50) {
-    GetCharge(qtot);
-    modulen = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 3];
-    //sQint[1] = qtot;
-  } else {
-    GetChargeMip(qtot);
-    modulen = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
-    //sQint[0] = qtot;
-  }
-  //
-  gMC->Gmtod(sVectIn, sVloc, 1);
-  if (TMath::Abs(sVloc[0]) >= sDlx) return;
-  
-  if (TMath::Abs(sVloc[2]) >= sDly) return;
-  
-  sVloc[0] += sDlx;
-  x0 = sVloc[0];
-  sVloc[2] += sDly;
-  //y0 = sVloc[2];
-  AnodicWires(y0a);
-  ixmin = (Int_t) ((x0 - fSxcharge * 5.) / sDxp) + 1;
-  if (ixmin < 1) ixmin = 1;
-  ixmax = (Int_t) ((x0 + fSxcharge * 5.) / sDxp) + 1;
-  if (ixmax > sNpx) ixmax = sNpx;
-  iymin = (Int_t) ((y0a - sSycharge * 5.) / sDyp) + 1;
-  if (iymin < 1) iymin = 1;
-  iymax = (Int_t) ((y0a + sSycharge * 5.) / sDyp) + 1;
-  if (iymax > sNpy) iymax = sNpy;
-  qtot_check = 0.;
-  i1 = ixmax;
-  for (ix = ixmin; ix <= i1; ++ix) {
-    i2 = iymax;
-    for (iy = iymin; iy <= i2; ++iy) {
-      xi1 = (sXpad[ix - 1] - x0) / sDpad;
-      xi2 = xi1 + sDxp / sDpad;
-      yi1 = (sYpad[iy - 1] - y0a) / sDpad;
-      yi2 = yi1 + sDyp / sDpad;
-      qp = qtot * FMathieson(xi1, xi2) * FMathieson(yi1, yi2);
-      iqp = (Int_t) TMath::Abs(qp);
-      qtot_check += TMath::Abs(qp);
-      
-      //     FILL COMMON FOR PADS 
-      
-      if (iqp) {
-	if (iqp > 4095) {
-	  iqp = 4096;
-	}
-	++sNpads;
-	if (sNpads > MAXSEC) {
-	  //                  write(6,*) 'attention npads',npads 
-	  sNpads = MAXSEC;
-	}
-	sIpx[sNpads - 1] = ix;
-	sIpy[sNpads - 1] = iy;
-	sIqpad[sNpads - 1] = iqp;
-	//     TAG THE ORIGIN OF THE CHARGE DEPOSITION 
-	r1 = geant3->Gctrak()->upwght / 100.;
-	ifeed = Int_t(r1+0.5);
-	sNphlink[sNpads - 1] = 0;
-	if (geant3->Gckine()->ipart != 50) {
-	  //     MIP 
-	  //isec[sNpads - 1] = sNsecon;
-	} else {
-	  if (ifeed < 50) {
-	    //     CERENKOV PHOTON 
-	    
-	    nph = Int_t(geant3->Gctrak()->upwght+0.5);
-	    sNphlink[sNpads - 1] = nph;
-	    sXphit[nph - 1] = sVloc[0];
-	    sYphit[nph - 1] = sVloc[2];
-	    //isec[sNpads - 1] = sNsecon + 100;
-	  } else if (ifeed == 51) {
-	    //     FEEDBACK FROM CERENKOV 
-	    
-	    //isec[sNpads - 1] = sNsecon + 300;
-	  } else if (ifeed == 52) {
-	    //     FEEDBACK FROM MIP 
-	    
-	    //isec[sNpads - 1] = sNsecon + 200;
-	  }
-	}
-	// Generate the hit for Root IO 
-	for (ll = 0; ll < 25; ++ll) rrhh[ll] = 0;
-	irivol[0] = modulen;
-	irivol[1] = nmodsx;
-	rrhh[0] = 0.;
-	// Flag to say this is a  hit 
-	rrhh[1] = xsx;
-	rrhh[2] = ysx;
-	rrhh[3] = psx;
-	rrhh[4] = thetasx;
-	rrhh[5] = phisx;
-	rrhh[6] = (Float_t) idpartgx;
-	rrhh[7] = sXsox;
-	rrhh[8] = sYsox;
-	rrhh[9] = sZsox;
-	rrhh[10] = (Float_t) sIpx[sNpads - 1];
-	rrhh[11] = (Float_t) sIpy[sNpads - 1];
-	rrhh[12] = (Float_t) sIqpad[sNpads - 1];
-	ihitrak = gAlice->CurrentTrack();
-	if (sNphlink[sNpads - 1] > 0) {
-	  rrhh[13] = sPparent;
-	  rrhh[14] = sThincParent;
-	  rrhh[15] = (Float_t) sIloss[nph - 1];
-	  rrhh[16] = (Float_t) sIprod[nph - 1];
-	  rrhh[17] = sXphit[nph - 1];
-	  rrhh[18] = sYphit[nph - 1];
-	  ihitrak = sMckov[nph - 1];
-	}
-	//     This is the current position of the hit 
-	rrhh[19] = geant3->Gctrak()->vect[0];
-	rrhh[20] = geant3->Gctrak()->vect[1];
-	rrhh[21] = geant3->Gctrak()->vect[2];
-	//               PRINT *,' ' 
-	//               PRINT *,'RXAHIT(oldhit)=[',RRHH(20),',',RRHH(21),',', 
-	//     +              RRHH(22),']' 
-	//          PRINT *, 'ITRA = ',ITRA,'ISTAK = ',ISTAK 
-	AddHit(ihitrak, irivol, rrhh);
-	// new Padhits 
-	for (ll = 0; ll < 25; ++ll) rrhh[ll] = 0;
-	rrhh[0] = 3.;
-	rrhh[1] = (Float_t) geant3->Gckine()->ipart;
-	rrhh[2] = (Float_t) sIpx[sNpads - 1];
-	rrhh[3] = (Float_t) sIpy[sNpads - 1];
-	rrhh[4] = (Float_t) modulen;
-	rrhh[5] = -1.;
-	// !!!Prod 
-	rrhh[6] = (Float_t) sIqpad[sNpads - 1];
-	AddHit(ihitrak, irivol, rrhh);
-	// enew 
-      }
-    }
-  }
-  //      IF (IPART .NE. 50) WRITE(6,*) 'CHECK',QTOT,QTOT_CHECK 
-  
-  //     GENERATE FEEDBACK PHOTONS 
-  
-  source[0] = x0 - sDlx;
-  source[1] = sVloc[1] - .2;
-  source[2] = y0a - sDly;
-  gMC->Gdtom(source, source, 1);
-  FeedBack(source, qtot);
-  return;
-}
-
-//_____________________________________________________________________________
-void AliRICH::AnodicWires(Float_t &y0a)
-{
-  //
-  // Position of anodic wires
-  //
-  Int_t i1;
-  
-  // Local variables 
-  Int_t i;
-  Float_t ass_i, y0, ass_i1;
-  
-  y0 = sVloc[2];
-  y0a = -1.;
-  i1 = (sNpy << 1) + 1;
-  for (i = 1; i <= i1; ++i) {
-    if (y0 > sYanode[i - 1] && y0 <= sYanode[i]) {
-      ass_i1 = TMath::Abs(sYanode[i] - y0);
-      ass_i = TMath::Abs(sYanode[i - 1] - y0);
-      if (ass_i1 <= ass_i) y0a = sYanode[i];
-      if (ass_i1 > ass_i) y0a = sYanode[i - 1];
-      return;
-    }
-  }
-} 
-
-//_____________________________________________________________________________
-void AliRICH::GetChargeMip(Float_t &qtot)
-{
-  //
-  // Calculates the charge deposited by a MIP
-  //
-
-
-  Int_t i1;
-  
-  // Local variables 
-  Float_t ranf[2];
-  Int_t i;
-  Int_t nel;
-  
-  //     NUMBER OF ELECTRONS 
-  
-  nel = (Int_t) (sDetot * 1e9 / 26.);
-  qtot = 0.;
-  if (!nel) nel = 1;
-  i1 = nel;
-  for (i = 1; i <= i1; ++i) {
-    gMC->Rndm(ranf, 1);
-    qtot -= fChslope * TMath::Log(ranf[0]);
-  }
-} 
-
-//_____________________________________________________________________________
-void AliRICH::GetCharge(Float_t &qtot)
-{
-  //
-  // Charge deposited
-  //
-
-
-  Float_t ranf[1];
-  
-  gMC->Rndm(ranf, 1);
-  qtot = -fChslope * TMath::Log(ranf[0]);
-} 
-
-//_____________________________________________________________________________
-void AliRICH::FeedBack(Float_t *source, Float_t qtot)
-{
-  //
-  // Generate FeedBack photons
-  //
-
-  TGeant3 *geant3 = (TGeant3*) gMC;
-
-  Int_t i1, j;
-  Float_t r1, r2;
-  
-  // Local variables 
-  Float_t cthf, ranf[2], phif, enfp = 0, sthf;
-  Int_t i, ifeed;
-  Float_t e1[3], e2[3], e3[3];
-  Float_t vmod, uswop;
-  Float_t fp, random;
-  Float_t dir[3], phi;
-  Int_t nfp;
-  Float_t pol[3], supwght;
-  
-  //     DETERMINE NUMBER OF FEEDBACK PHOTONS 
-  
-  // Function Body 
-  fp = fAlphaFeed * qtot;
-  nfp = gRandom->Poisson(fp);
-  
-  //     GENERATE PHOTONS 
-  
-  geant3->Gckin2()->ngphot = 0;
-  i1 = nfp;
-  for (i = 1; i <= i1; ++i) {
-    
-    //     DIRECTION 
-    gMC->Rndm(ranf, 2);
-    cthf = ranf[0] * 2. - 1.;
-    if (cthf < 0.)  continue;
-    sthf = TMath::Sqrt((1. - cthf) * (cthf + 1.));
-    phif = ranf[1] * 2 * TMath::Pi();
-    ++geant3->Gckin2()->ngphot;
-    if (geant3->Gckin2()->ngphot > 800) {
-      printf("ATTENTION NGPHOT ! %d %f %d\n",
-	     geant3->Gckin2()->ngphot,fp,nfp);
-      break;
-    }
-    
-    //     POSITION 
-    for(j=0;j<3;j++) 
-      geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][j]=source[j];
-    
-    //     ENERGY 
-    gMC->Rndm(&random, 1);
-    if (random <= .57) {
-      enfp = 7.5e-9;
-    } else if (random > .57 && random <= .7) {
-      enfp = 6.4e-9;
-    } else if (random > .7) {
-      enfp = 7.9e-9;
-    }
-    geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][6] = enfp;
-    dir[0] = sthf * TMath::Sin(phif);
-    dir[1] = cthf;
-    dir[2] = sthf * TMath::Cos(phif);
-    gMC->Gdtom(dir, &geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][3], 2);
-    
-    //     POLARISATION 
-    e1[0] = 0.;
-    e1[1] = -dir[2];
-    e1[2] = dir[1];
-    
-    e2[0] = -dir[1];
-    e2[1] = dir[0];
-    e2[2] = 0.;
-    
-    e3[0] = dir[1];
-    e3[1] = 0.;
-    e3[2] = -dir[0];
-    
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e1[j]*e1[j];
-    if (!vmod) for(j=0;j<3;j++) {
-      uswop=e1[j];
-      e1[j]=e3[j];
-      e3[j]=uswop;
-    }
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e2[j]*e2[j];
-    if (!vmod) for(j=0;j<3;j++) {
-      uswop=e2[j];
-      e2[j]=e3[j];
-      e3[j]=uswop;
-    }
-    
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e1[j]*e1[j];
-    vmod=TMath::Sqrt(1/vmod);
-    for(j=0;j<3;j++) e1[j]*=vmod;
-    
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e2[j]*e2[j];
-    vmod=TMath::Sqrt(1/vmod);
-    for(j=0;j<3;j++) e2[j]*=vmod;
-    
-    gMC->Rndm(ranf, 1);
-    phi = ranf[0] * 2 * TMath::Pi();
-    r1 = TMath::Sin(phi);
-    r2 = TMath::Cos(phi);
-    for(j=0;j<3;j++) pol[j]=e1[j]*r1+e2[j]*r2;
-    gMC->Gdtom(pol, &geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][7], 2);
-    
-    //     TIME OF FLIGHT 
-    geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][10] = 0.;
-    
-    //     PUT PHOTON ON THE STACK AND LABEL IT AS FEEDBACK (51,52) 
-    supwght = geant3->Gctrak()->upwght;
-    r1 = geant3->Gctrak()->upwght / 100.;
-    ifeed = Int_t(r1+0.5);
-    ++sNfeed;
-    if (geant3->Gckine()->ipart == 50 && ifeed != 52) {
-      geant3->Gctrak()->upwght = 5100.;
-    } else {
-      geant3->Gctrak()->upwght = 5200.;
-    }
-    //    geant3->Gskpho(geant3->Gckin2()->ngphot);
-    geant3->Gctrak()->upwght = supwght;
-    
-  }
-  geant3->Gckin2()->ngphot = 0;
-}
-
-//_____________________________________________________________________________
-Float_t AliRICH::FMathieson(Float_t lambda1, Float_t lambda2)
-{
-  //
-  // Mathieson charge distribution
-  //
-  // CALCULATES INTEGRAL OF GATTI/MATHIESON CHARGE DISTRIBUTION 
-  // FOR CPC AND CSC CHAMBERS 
-  // INTEGRATION LIMITS LAMBDA1,LAMBDA2=  X/D WHERE D IS THE ANODE CATHODE
-  //                                          SEPARATION 
-  // K3: GEOMETRY PARAMETER 
-  //
-  Float_t u1, u2;
-  //    const Float_t k1=0.2828;
-  const Float_t k2=0.962;
-  const Float_t k3=0.6;
-  const Float_t k4=0.379;
-  const Float_t sqrtk3=TMath::Sqrt(k3);
-  
-  
-  u1 = tanh(lambda1 * k2) * sqrtk3;
-  u2 = tanh(lambda2 * k2) * sqrtk3;
-  
-  return (atan(u2) - atan(u1)) * 2 * k4;
-  
-}
-
-
-//_____________________________________________________________________________
-void AliRICH::UpdateMipHit(Float_t *hits)
-{
-  //
-  // Update some parameters when the current mip hits the detector.
-  //
-  TClonesArray &lhits = *fMips;
-  AliRICHmip *lmip = (AliRICHmip *) lhits.AddrAt(fNmips-1);
-  lmip->SetX     (      hits[1]);
-  lmip->SetY     (      hits[2]);
-  lmip->SetModule((int) hits[3]);
-  lmip->SetTheta (      hits[4]);
-  lmip->SetPhi   (      hits[5]);
-}
-
-//*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-
-//_____________________________________________________________________________
-void AliRICH::MakeBranch(Option_t *option)
-{
-  //
-  // Create a new branch in the current Root Tree.
-  // The branch of fHits is automatically split
-  //
-  AliDetector::MakeBranch(option);
-  
-  Int_t buffersize = 4000;
-  if (gAlice->TreeH()) {
-    if(fMips){
-      gAlice->TreeH()->Branch("RICHmip",&fMips, buffersize);
-      printf("Making Branch %s for mips\n","RICHmip");
-    }
-    if(fCkovs){
-      gAlice->TreeH()->Branch("RICHckov",&fCkovs, buffersize);
-      printf("Making Branch %s for ckovs\n","RICHckov");
-    }
-    if(fPadhits){
-      gAlice->TreeH()->Branch("RICHpadhit",&fPadhits, buffersize);
-      printf("Making Branch %s for padhits\n","RICHpadhit");
-    }
-  }	
-}
-
-//_____________________________________________________________________________
-void AliRICH::SetTreeAddress()
-{
-  //
-  // Set branch address for the Hits and Digits Tree.
-  //
-  AliDetector::SetTreeAddress();
-  TBranch *branch;
-  TTree *treeH = gAlice->TreeH();
-  if (treeH) {
-    if (fMips) {
-      branch = treeH->GetBranch("RICHmip");
-      if (branch) branch->SetAddress(&fMips);
-    }
-    if (fCkovs) {
-      branch = treeH->GetBranch("RICHckov");
-      if (branch) branch->SetAddress(&fCkovs);
-    }
-    if (fPadhits) {
-      branch = treeH->GetBranch("RICHpadhit");
-      if (branch) branch->SetAddress(&fPadhits);
-    }
-  }
-}
-
-//_____________________________________________________________________________
-void AliRICH::ResetHits()
-{
-  //
-  // Reset number of mips and the mips array for RICH
-  //
-  AliDetector::ResetHits();
-  fNmips    = 0;
-  if (fMips)    fMips->Clear();
-  // Reset number of Ckovs and the Ckovs array for RICH
-  fNckovs   = 0;
-  if (fCkovs)   fCkovs->Clear();
-  // Reset number of Padhits and the Padhits array for RICH
-  fNpadhits = 0;
-  if (fPadhits) fPadhits->Clear();
-}
-
-//_____________________________________________________________________________
-Int_t AliRICH::DistancetoPrimitive(Int_t , Int_t )
-{
-  //
-  // Distance from mouse RICH on the display
-  // Dummy routine
-  //
-  return 9999;
-}
- 
-//_____________________________________________________________________________
-void AliRICH::PreTrack()
-{
-  //
-  // Called before transporting a track
-  //
-  sDetot=0;
-  sNsecon=0;
-  sNpads=0;
-  sNphoton=0;
-  sNfeed=0;
-  sNfeedd=0;
-  sNdir=0;
-}
-
-//_____________________________________________________________________________
-void AliRICH::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class AliRICH.
-  //
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    AliDetector::Streamer(R__b);
-    R__b >> fNmips;
-    R__b >> fNckovs;
-    R__b >> fNpadhits;
-    R__b >> fMips; //diff
-    R__b >> fCkovs; //diff
-    R__b >> fPadhits; //diff
-    R__b >> fChslope;
-    R__b >> fAlphaFeed;
-    R__b >> fSxcharge;
-    R__b >> fIritri;
-  } else {
-    R__b.WriteVersion(AliRICH::IsA());
-    AliDetector::Streamer(R__b);
-    R__b << fNmips;
-    R__b << fNckovs;
-    R__b << fNpadhits;
-    R__b << fMips; //diff
-    R__b << fCkovs; //diff
-    R__b << fPadhits; //diff
-    R__b << fChslope;
-    R__b << fAlphaFeed;
-    R__b << fSxcharge;
-    R__b << fIritri;
-  }
-}
-
-ClassImp(AliRICHv1)
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Ring Imaging Cherenkov                                                   //
-//  This class contains version 1 of the Ring Imaging Cherenkov              //
-//                                                                           //
 //Begin_Html
 /*
-<img src="picts/AliRICHv1Class.gif">
+  <img src="gif/alirich.gif">
 */
 //End_Html
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
-//_____________________________________________________________________________
-AliRICHv1::AliRICHv1() : AliRICH()
-{
-  //
-  // Default Constructor RICH for version 1
-  //
-}
- 
-//_____________________________________________________________________________
-AliRICHv1::AliRICHv1(const char *name, const char *title)
-       : AliRICH(name,title)
-{
-  //
-  // Standard constructor for RICH version 1
-  //
-}
-
-//_____________________________________________________________________________
-AliRICHv1::~AliRICHv1()
-{
-  //
-  // Standard destructor for RICH version 1
-  //
-}
- 
-//_____________________________________________________________________________
-void AliRICHv1::CreateGeometry()
-{
-  //
-  // Create the geometry for RICH version 1
-  //
-  // Modified by:  N. Colonna (INFN - BARI, Nicola.Colonna@ba.infn.it) 
-  //               R.A. Fini  (INFN - BARI, Rosanna.Fini@ba.infn.it) 
-  //               R.A. Loconsole (Bari University, loco@riscom.ba.infn.it) 
-  //
-  //Begin_Html
-  /*
-    <img src="picts/AliRICHv1.gif">
-  */
-  //End_Html
-  //Begin_Html
-  /*
-    <img src="picts/AliRICHv1Tree.gif">
-  */
-  //End_Html
-
-
-  Int_t *idtmed = fIdtmed->GetArray()-999;
-  
-  Int_t i;
-  Float_t zs;
-  Int_t idrotm[1099];
-  Float_t par[3];
-  
-  // --- Define the RICH detector 
-  //     External aluminium box 
-  par[0] = 71.1;
-  par[1] = 11.5;
-  par[2] = 73.15;
-  gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
-  
-  //     Sensitive part of the whole RICH 
-  par[0] = 64.8;
-  par[1] = 11.5;
-  par[2] = 66.55;
-  gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3);
-  
-  //     Honeycomb 
-  par[0] = 63.1;
-  par[1] = .188;
-  par[2] = 66.55;
-  gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
-  
-  //     Aluminium sheet 
-  par[0] = 63.1;
-  par[1] = .025;
-  par[2] = 66.55;
-  gMC->Gsvolu("ALUM", "BOX ", idtmed[1009], par, 3);
-  
-  //     Quartz 
-  par[0] = 63.1;
-  par[1] = .25;
-  par[2] = 65.5;
-  gMC->Gsvolu("QUAR", "BOX ", idtmed[1002], par, 3);
-  
-  //     Spacers (cylinders) 
-  par[0] = 0.;
-  par[1] = .5;
-  par[2] = .5;
-  gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);
-  
-  //     Opaque quartz 
-  par[0] = 61.95;
-  par[1] = .2;
-  par[2] = 66.5;
-  gMC->Gsvolu("OQUA", "BOX ", idtmed[1007], par, 3);
-  
-  //     Frame of opaque quartz 
-  par[0] = 20.65;
-  par[1] = .5;
-  par[2] = 66.5;
-  gMC->Gsvolu("OQUF", "BOX ", idtmed[1007], par, 3);
-  
-  //     Little bar of opaque quartz 
-  par[0] = 63.1;
-  par[1] = .25;
-  par[2] = .275;
-  gMC->Gsvolu("BARR", "BOX ", idtmed[1007], par, 3);
-  
-  //     Freon 
-  par[0] = 20.15;
-  par[1] = .5;
-  par[2] = 65.5;
-  gMC->Gsvolu("FREO", "BOX ", idtmed[1003], par, 3);
-  
-  //     Methane 
-  par[0] = 64.8;
-  par[1] = 5.;
-  par[2] = 64.8;
-  gMC->Gsvolu("META", "BOX ", idtmed[1004], par, 3);
-  
-  //     Methane gap 
-  par[0] = 64.8;
-  par[1] = .2;
-  par[2] = 64.8;
-  gMC->Gsvolu("GAP ", "BOX ", idtmed[1008], par, 3);
-  
-  //     CsI photocathode 
-  par[0] = 64.8;
-  par[1] = .25;
-  par[2] = 64.8;
-  gMC->Gsvolu("CSI ", "BOX ", idtmed[1005], par, 3);
-  
-  //     Anode grid 
-  par[0] = 0.;
-  par[1] = .0025;
-  par[2] = 20.;
-  gMC->Gsvolu("GRID", "TUBE", idtmed[1006], par, 3);
-  
-  // --- Places the detectors defined with GSVOLU 
-  //     Place material inside RICH 
-  gMC->Gspos("SRIC", 1, "RICH", 0., 0., 0., 0, "ONLY");
-  
-  gMC->Gspos("ALUM", 1, "SRIC", 0., -6.075, 0., 0, "ONLY");
-  gMC->Gspos("HONE", 1, "SRIC", 0., -5.862, 0., 0, "ONLY");
-  gMC->Gspos("ALUM", 2, "SRIC", 0., -5.649, 0., 0, "ONLY");
-  gMC->Gspos("OQUA", 1, "SRIC", 0., -5.424, 0., 0, "ONLY");
-  
-  AliMatrix(idrotm[1019], 0., 0., 90., 0., 90., 90.);
-  
-  for (i = 1; i <= 9; ++i) {
-    zs = (5 - i) * 14.4;
-    gMC->Gspos("SPAC", i, "FREO", 6.7, 0., zs, idrotm[1019], "ONLY");
-  }
-  for (i = 10; i <= 18; ++i) {
-    zs = (14 - i) * 14.4;
-    gMC->Gspos("SPAC", i, "FREO", -6.7, 0., zs, idrotm[1019], "ONLY");
-  }
-  
-  gMC->Gspos("FREO", 1, "OQUF", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("OQUF", 1, "SRIC", 41.3, -4.724, 0., 0, "ONLY");
-  gMC->Gspos("OQUF", 2, "SRIC", 0., -4.724, 0., 0, "ONLY");
-  gMC->Gspos("OQUF", 3, "SRIC", -41.3, -4.724, 0., 0, "ONLY");
-  gMC->Gspos("BARR", 1, "QUAR", 0., 0., -21.65, 0, "ONLY");
-  gMC->Gspos("BARR", 2, "QUAR", 0., 0., 21.65, 0, "ONLY");
-  gMC->Gspos("QUAR", 1, "SRIC", 0., -3.974, 0., 0, "ONLY");
-  gMC->Gspos("GAP ", 1, "META", 0., 4.8, 0., 0, "ONLY");
-  gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
-  gMC->Gspos("CSI ", 1, "SRIC", 0., 6.526, 0., 0, "ONLY");
-  
-  //     Place RICH inside ALICE apparatus 
-  
-  AliMatrix(idrotm[1000], 90., 0., 70.69, 90., 19.31, -90.);
-  AliMatrix(idrotm[1001], 90., -20., 90., 70., 0., 0.);
-  AliMatrix(idrotm[1002], 90., 0., 90., 90., 0., 0.);
-  AliMatrix(idrotm[1003], 90., 20., 90., 110., 0., 0.);
-  AliMatrix(idrotm[1004], 90., 340., 108.2, 70., 18.2, 70.);
-  AliMatrix(idrotm[1005], 90., 0., 109.31, 90., 19.31, 90.);
-  AliMatrix(idrotm[1006], 90., 20., 108.2, 110., 18.2, 110.);
-  
-  gMC->Gspos("RICH", 1, "ALIC", 0., 471.9, 165.26,     idrotm[1000], "ONLY");
-  gMC->Gspos("RICH", 2, "ALIC", 171., 470., 0.,        idrotm[1001], "ONLY");
-  gMC->Gspos("RICH", 3, "ALIC", 0., 500., 0.,          idrotm[1002], "ONLY");
-  gMC->Gspos("RICH", 4, "ALIC", -171., 470., 0.,       idrotm[1003], "ONLY");
-  gMC->Gspos("RICH", 5, "ALIC", 161.4, 443.4, -165.3,  idrotm[1004], "ONLY");
-  gMC->Gspos("RICH", 6, "ALIC", 0., 471.9, -165.3,     idrotm[1005], "ONLY");
-  gMC->Gspos("RICH", 7, "ALIC", -161.4, 443.4, -165.3, idrotm[1006], "ONLY");
-  
+    
+    fHits       = new TClonesArray("AliRICHhit",1000  );
+    fClusters   = new TClonesArray("AliRICHcluster",10000);
+    fCerenkovs  = new TClonesArray("AliRICHCerenkov",20000);
+    fNclusters  =  0;
+    fIshunt     =  0;
+    
+    fNdch      = new Int_t[7];
+    
+    fDchambers = new TObjArray(7);
+    
+    Int_t i;
+   
+    for (i=0; i<7 ;i++) {
+	(*fDchambers)[i] = new TClonesArray("AliRICHdigit",10000); 
+	fNdch[i]=0;
+    }
+    
+    fRecClusters=new TObjArray(7);
+    for (i=0; i<7;i++)
+	(*fRecClusters)[i] = new TObjArray(1000);
+    
+//   
+// Transport angular cut
+    fAccCut=0;
+    fAccMin=2;
+    fAccMax=9;
+    
+    SetMarkerColor(kRed);
 }
 
-//_____________________________________________________________________________
-void AliRICHv1::DrawModule()
+//___________________________________________
+AliRICH::~AliRICH()
 {
-  //
-  // Draw a shaded view of the Ring Imaging Cherenkov
-  //
-
-  TGeant3 *geant3 = (TGeant3*) gMC;
-
-  // Set everything unseen
-  gMC->Gsatt("*", "seen", -1);
-  // 
-  // Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN",0);
-  //
-  // Set the volumes visible
-
-  gMC->Gsatt("RICH","seen",0);
-  gMC->Gsatt("SRIC","seen",0);
-  gMC->Gsatt("HONE","seen",1);
-  gMC->Gsatt("ALUM","seen",1);
-  gMC->Gsatt("QUAR","seen",1);
-  gMC->Gsatt("SPAC","seen",1);
-  gMC->Gsatt("OQUA","seen",1);
-  gMC->Gsatt("OQUF","seen",1);
-  gMC->Gsatt("BARR","seen",1);
-  gMC->Gsatt("FREO","seen",1);
-  gMC->Gsatt("META","seen",1);
-  gMC->Gsatt("GAP ","seen",1);
-  gMC->Gsatt("CSI ","seen",1);
-  gMC->Gsatt("GRID","seen",1);
-  
-  //
-  geant3->Gdopt("hide", "on");
-  geant3->Gdopt("shad", "on");
-  geant3->Gsatt("*", "fill", 7);
-  geant3->SetClipBox(".");
-  geant3->Gdopt("hide", "on");
-  geant3->Gdopt("shad", "on");
-  geant3->Gsatt("*", "fill", 7);
-  geant3->SetClipBox(".");
-  //  geant3->SetClipBox("*", 0, 2000, -2000, 2000, -2000, 2000);
-  geant3->DefaultRange();
-  gMC->Gdraw("alic", 60, 50, 0, 10, 0, .03, .03);
-  geant3->Gdhead(1111, "Ring Imaging Cherenkov version 1");
-  geant3->Gdman(16, 6, "MAN");
-  geant3->Gdopt("hide", "off");
+    fIshunt  = 0;
+    delete fHits;
+    delete fClusters;
+    delete fCerenkovs;
+    for (Int_t i=0;i<7;i++) 
+	delete (*fRecClusters)[i];
+    delete fRecClusters;
+    
 }
 
-//_____________________________________________________________________________
-void AliRICHv1::CreateMaterials()
+//___________________________________________
+void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
-  //
-  // *** DEFINITION OF AVAILABLE RICH MATERIALS *** 
-  // ORIGIN    : NICK VAN EIJNDHOVEN 
-  // Modified by:  N. Colonna (INFN - BARI, Nicola.Colonna@ba.infn.it) 
-  //               R.A. Fini  (INFN - BARI, Rosanna.Fini@ba.infn.it) 
-  //               R.A. Loconsole (Bari University, loco@riscom.ba.infn.it) 
-  //
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
-  
-  Float_t ppckov[14] = { 5.63e-9,5.77e-9,5.9e-9,6.05e-9,6.2e-9,6.36e-9,6.52e-9,
-			 6.7e-9,6.88e-9,7.08e-9,7.3e-9,7.51e-9,7.74e-9,8e-9 };
-  Float_t rindex_quarz[14] = { 1.528309,1.533333,
-			       1.538243,1.544223,1.550568,1.55777,
-			       1.565463,1.574765,1.584831,1.597027,
-			       1.611858,1.6277,1.6472,1.6724 };
-  Float_t rindex_quarzo[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-  Float_t rindex_methane[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-  Float_t rindex_gri[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-  Float_t absco_freon[14] = { 179.0987,179.0987,
-			      179.0987,179.0987,179.0987,35.7,12.54,5.92,4.92,3.86,1.42,.336,.134,0. };
-  Float_t absco_quarz[14] = { 20.126,16.27,13.49,11.728,9.224,8.38,7.44,7.17,
-			      6.324,4.483,1.6,.323,.073,0. };
-  Float_t absco_quarzo[14] = { 1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,1e-5,
-			       1e-5,1e-5,1e-5,1e-5,1e-5 };
-  Float_t absco_csi[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
-			    1e-4,1e-4,1e-4,1e-4 };
-  Float_t absco_methane[14] = { 1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,
-				1e6,1e6,1e6 };
-  Float_t absco_gri[14] = { 1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,1e-4,
-			    1e-4,1e-4,1e-4,1e-4 };
-  Float_t effic_all[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-  Float_t effic_csi[14] = { 4.74e-4,.00438,.009,.0182,.0282,.0653,.1141,.163,
-			    .2101,.2554,.293,.376,.3861,.418 };
-  Float_t effic_gri[14] = { 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1. };
-  
-  Float_t afre[2], agri, amet[2], aqua[2], ahon, zfre[2], zgri, zhon, 
-    zmet[2], zqua[2];
-  Int_t nlmatfre;
-  Float_t densquao;
-  Int_t nlmatmet, nlmatqua;
-  Float_t wmatquao[2], rindex_freon[14];
-  Int_t i;
-  Float_t aquao[2], epsil, stmin, zquao[2];
-  Int_t nlmatquao;
-  Float_t radlal, densal, tmaxfd, deemax, stemax;
-  Float_t aal, zal, radlgri, densfre, radlhon, densgri, denshon,densqua, densmet, wmatfre[2], wmatmet[2], wmatqua[2];
-  
-  Int_t *idtmed = fIdtmed->GetArray()-999;
-  
-  TGeant3 *geant3 = (TGeant3*) gMC;
-
-  // --- Photon energy (GeV) 
-  // --- Refraction indexes 
-  for (i = 0; i < 14; ++i) {
-    rindex_freon[i] = ppckov[i] * .01095 * 1e9 + 1.2177;
-  }
-  // need to be changed 
-  
-  // --- Absorbtion lenghts (in cm) 
-  //      DATA ABSCO_QUARZ / 
-  //     &    5 * 1000000., 
-  //     &    29.85,    7.34,     4.134,    1.273,    0.722, 
-  //     &    0.365, 0.365, 0.365, 0.  / 
-  // need to be changed 
-  
-  // --- Detection efficiencies (quantum efficiency for CsI) 
-  // --- Define parameters for honeycomb. 
-  //     Used carbon of equivalent rad. lenght 
-  
-  ahon    = 12.01;
-  zhon    = 6.;
-  denshon = 2.265;
-  radlhon = 18.8;
-  
-  // --- Parameters to include in GSMIXT, relative to Quarz (SiO2) 
-  
-  aqua[0]    = 28.09;
-  aqua[1]    = 16.;
-  zqua[0]    = 14.;
-  zqua[1]    = 8.;
-  densqua    = 2.64;
-  nlmatqua   = -2;
-  wmatqua[0] = 1.;
-  wmatqua[1] = 2.;
-  
-  // --- Parameters to include in GSMIXT, relative to opaque Quarz (SiO2) 
-  
-  aquao[0]    = 28.09;
-  aquao[1]    = 16.;
-  zquao[0]    = 14.;
-  zquao[1]    = 8.;
-  densquao    = 2.64;
-  nlmatquao   = -2;
-  wmatquao[0] = 1.;
-  wmatquao[1] = 2.;
-  
-  // --- Parameters to include in GSMIXT, relative to Freon (C6F14) 
-  
-  afre[0]    = 12.;
-  afre[1]    = 19.;
-  zfre[0]    = 6.;
-  zfre[1]    = 9.;
-  densfre    = 1.7;
-  nlmatfre   = -2;
-  wmatfre[0] = 6.;
-  wmatfre[1] = 14.;
-  
-  // --- Parameters to include in GSMIXT, relative to methane (CH4) 
-  
-  amet[0]    = 12.01;
-  amet[1]    = 1.;
-  zmet[0]    = 6.;
-  zmet[1]    = 1.;
-  densmet    = 7.17e-4;
-  nlmatmet   = -2;
-  wmatmet[0] = 1.;
-  wmatmet[1] = 4.;
-  
-  // --- Parameters to include in GSMIXT, relative to anode grid (Cu) 
-  
-  agri    = 63.54;
-  zgri    = 29.;
-  densgri = 8.96;
-  radlgri = 1.43;
-  
-  // --- Parameters to include in GSMATE related to aluminium sheet 
-  
-  aal    = 26.98;
-  zal    = 13.;
-  densal = 2.7;
-  radlal = 8.9;
-  
-  AliMaterial(1, "Air     $", 14.61, 7.3, .001205, 30420., 67500);
-  AliMaterial(6, "HON", ahon, zhon, denshon, radlhon, 0);
-  AliMaterial(16, "CSI", ahon, zhon, denshon, radlhon, 0);
-  AliMixture(20, "QUA", aqua, zqua, densqua, nlmatqua, wmatqua);
-  AliMixture(21, "QUAO", aquao, zquao, densquao, nlmatquao, wmatquao);
-  AliMixture(30, "FRE", afre, zfre, densfre, nlmatfre, wmatfre);
-  AliMixture(40, "MET", amet, zmet, densmet, nlmatmet, wmatmet);
-  AliMixture(41, "METG", amet, zmet, densmet, nlmatmet, wmatmet);
-  AliMaterial(11, "GRI", agri, zgri, densgri, radlgri, 0);
-  AliMaterial(50, "ALUM", aal, zal, densal, radlal, 0);
-  
-  tmaxfd = -10.;
-  stemax = -.1;
-  deemax = -.2;
-  epsil  = .001;
-  stmin  = -.001;
-  
-  AliMedium(1, "DEFAULT MEDIUM AIR$", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(2, "HONEYCOMB$", 6, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(3, "QUARZO$", 20, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(4, "FREON$", 30, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(5, "METANO$", 40, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(6, "CSI$", 16, 1, ISXFLD, SXMGMX,tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(7, "GRIGLIA$", 11, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(8, "QUARZOO$", 21, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(9, "GAP$", 41, 1, ISXFLD, SXMGMX,tmaxfd, .1, -deemax, epsil, -stmin);
-  AliMedium(10, "ALUMINUM$", 50, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  
-  
-  //     Switch on delta-ray production in the methane and freon gaps 
-  
-  gMC->Gstpar(idtmed[1002], "LOSS", 1.);
-  gMC->Gstpar(idtmed[1003], "LOSS", 1.);
-  gMC->Gstpar(idtmed[1004], "LOSS", 1.);
-  gMC->Gstpar(idtmed[1008], "LOSS", 1.);
-  gMC->Gstpar(idtmed[1005], "LOSS", 1.);
-  gMC->Gstpar(idtmed[1002], "HADR", 1.);
-  gMC->Gstpar(idtmed[1003], "HADR", 1.);
-  gMC->Gstpar(idtmed[1004], "HADR", 1.);
-  gMC->Gstpar(idtmed[1008], "HADR", 1.);
-  gMC->Gstpar(idtmed[1005], "HADR", 1.);
-  gMC->Gstpar(idtmed[1002], "DCAY", 1.);
-  gMC->Gstpar(idtmed[1003], "DCAY", 1.);
-  gMC->Gstpar(idtmed[1004], "DCAY", 1.);
-  gMC->Gstpar(idtmed[1008], "DCAY", 1.);
-  gMC->Gstpar(idtmed[1005], "DCAY", 1.);
-  geant3->Gsckov(idtmed[1000], 14, ppckov, absco_methane, effic_all, rindex_methane);
-  geant3->Gsckov(idtmed[1001], 14, ppckov, absco_methane, effic_all, rindex_methane);
-  geant3->Gsckov(idtmed[1002], 14, ppckov, absco_quarz, effic_all,rindex_quarz);
-  geant3->Gsckov(idtmed[1003], 14, ppckov, absco_freon, effic_all,rindex_freon);
-  geant3->Gsckov(idtmed[1004], 14, ppckov, absco_methane, effic_all, rindex_methane);
-  geant3->Gsckov(idtmed[1005], 14, ppckov, absco_csi, effic_csi, rindex_methane);
-  geant3->Gsckov(idtmed[1006], 14, ppckov, absco_gri, effic_gri, rindex_gri);
-  geant3->Gsckov(idtmed[1007], 14, ppckov, absco_quarzo, effic_all, rindex_quarzo);
-  geant3->Gsckov(idtmed[1008], 14, ppckov, absco_methane, effic_all, rindex_methane);
-  geant3->Gsckov(idtmed[1009], 14, ppckov, absco_gri, effic_gri, rindex_gri);
+    TClonesArray &lhits = *fHits;
+    new(lhits[fNhits++]) AliRICHhit(fIshunt,track,vol,hits);
 }
+//_____________________________________________________________________________
+void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
+{
+    TClonesArray &lcerenkovs = *fCerenkovs;
+    new(lcerenkovs[fNcerenkovs++]) AliRICHCerenkov(fIshunt,track,vol,cerenkovs);
+}
+//___________________________________________
+void AliRICH::AddCluster(Int_t *clhits)
+{
+    TClonesArray &lclusters = *fClusters;
+    new(lclusters[fNclusters++]) AliRICHcluster(clhits);
+}
+//_____________________________________________________________________________
+void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
+{
+    //
+    // Add a RICH digit to the list
+    //
+
+    TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
+    new(ldigits[fNdch[id]++]) AliRICHdigit(tracks,charges,digits);
+}
+
+
+//_____________________________________________________________________________
+void AliRICH::AddRecCluster(Int_t iCh, Int_t iCat, AliRICHRecCluster* Cluster)
+{
+    //
+    // Add a RICH reconstructed cluster to the list
+    //
+    TObjArray* ClusterList = RecClusters(iCh,iCat);
+    ClusterList->Add(Cluster);
+}
+
+
+
+//___________________________________________
+void AliRICH::BuildGeometry()
+    
+{
+    //
+    // Builds a TNode geometry for event display
+    //
+    TNode *Node, *Top;
+    
+    const int kColorRICH = kGreen;
+    //
+    Top=gAlice->GetGeometry()->GetNode("alice");
+    
+    
+    new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
+    
+    Top->cd();
+    Float_t pos1[3]={0,471.8999,165.2599};
+    Chamber(0).SetChamberTransform(pos1[0],pos1[1],pos1[2],new TRotMatrix("rot993","rot993",90,0,70.69,90,19.30999,-90));
+    Node = new TNode("RICH1","RICH1","S_RICH",pos1[0],pos1[1],pos1[2],"rot993");
+    
+
+    Node->SetLineColor(kColorRICH);
+    fNodes->Add(Node);
+    Top->cd();
+    
+    Float_t pos2[3]={171,470,0};
+    Chamber(1).SetChamberTransform(pos2[0],pos2[1],pos2[2],new TRotMatrix("rot994","rot994",90,-20,90,70,0,0));
+    Node = new TNode("RICH2","RICH2","S_RICH",pos2[0],pos2[1],pos2[2],"rot994");
+    
+    
+    Node->SetLineColor(kColorRICH);
+    fNodes->Add(Node);
+    Top->cd();
+    Float_t pos3[3]={0,500,0};
+    Chamber(2).SetChamberTransform(pos3[0],pos3[1],pos3[2],new TRotMatrix("rot995","rot995",90,0,90,90,0,0));
+    Node = new TNode("RICH3","RICH3","S_RICH",pos3[0],pos3[1],pos3[2],"rot995");
+    
+
+    Node->SetLineColor(kColorRICH);
+    fNodes->Add(Node);
+    Top->cd();
+    Float_t pos4[3]={-171,470,0};
+    Chamber(3).SetChamberTransform(pos4[0],pos4[1],pos4[2], new TRotMatrix("rot996","rot996",90,20,90,110,0,0));  
+    Node = new TNode("RICH4","RICH4","S_RICH",pos4[0],pos4[1],pos4[2],"rot996");
+    
+
+    Node->SetLineColor(kColorRICH);
+    fNodes->Add(Node);
+    Top->cd();
+    Float_t pos5[3]={161.3999,443.3999,-165.3};
+    Chamber(4).SetChamberTransform(pos5[0],pos5[1],pos5[2],new TRotMatrix("rot997","rot997",90,340,108.1999,70,18.2,70));
+    Node = new TNode("RICH5","RICH5","S_RICH",pos5[0],pos5[1],pos5[2],"rot997");
+    
+    Node->SetLineColor(kColorRICH);
+    fNodes->Add(Node);
+    Top->cd();
+    Float_t pos6[3]={0., 471.9, -165.3,};
+    Chamber(5).SetChamberTransform(pos6[0],pos6[1],pos6[2],new TRotMatrix("rot998","rot998",90,0,109.3099,90,19.30999,90));
+    Node = new TNode("RICH6","RICH6","S_RICH",pos6[0],pos6[1],pos6[2],"rot998");
+    
+    
+    Node->SetLineColor(kColorRICH);
+    fNodes->Add(Node);
+    Top->cd();
+    Float_t pos7[3]={-161.399,443.3999,-165.3};
+    Chamber(6).SetChamberTransform(pos7[0],pos7[1],pos7[2],new TRotMatrix("rot999","rot999",90,20,108.1999,110,18.2,110));
+    Node = new TNode("RICH7","RICH7","S_RICH",pos7[0],pos7[1],pos7[2],"rot999");
+    Node->SetLineColor(kColorRICH);
+    fNodes->Add(Node); 
+    
+}
+
+//___________________________________________
+Int_t AliRICH::DistancetoPrimitive(Int_t , Int_t )
+{
+    return 9999;
+}
+
+//___________________________________________
+void AliRICH::MakeBranch(Option_t* option)
+{
+    // Create Tree branches for the RICH.
+    
+    const Int_t buffersize = 4000;
+    char branchname[20];
+    
+    
+    AliDetector::MakeBranch(option);
+    sprintf(branchname,"%sCerenkov",GetName());
+    if (fCerenkovs   && gAlice->TreeH()) {
+	gAlice->TreeH()->Branch(branchname,&fCerenkovs, buffersize);
+	printf("Making Branch %s for Cerenkov Hits\n",branchname);
+    }
+    
+    sprintf(branchname,"%sCluster",GetName());
+    if (fClusters   && gAlice->TreeH()) {
+	gAlice->TreeH()->Branch(branchname,&fClusters, buffersize);
+	printf("Making Branch %s for clusters\n",branchname);
+    }
+    
+// one branch for digits per chamber
+    Int_t i;
+    
+    for (i=0; i<7 ;i++) {
+	sprintf(branchname,"%sDigits%d",GetName(),i+1);
+	
+	if (fDchambers   && gAlice->TreeD()) {
+	    gAlice->TreeD()->Branch(branchname,&((*fDchambers)[i]), buffersize);
+	    printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
+	}	
+    }
+// one branch for rec clusters
+    for (i=0; i<7; i++) {
+	sprintf(branchname,"%sRecClus%d",GetName(),i+1);
+	if (fRecClusters   && gAlice->TreeD()) {
+	    gAlice->TreeR()
+		->Branch(branchname,"TObjArray", 
+			 &((*fRecClusters)[i]), buffersize,0);
+	    printf("Making Branch %s for clusters in chamber %d\n",
+		   branchname,i+1);
+	}
+    }
+}
+
+//___________________________________________
+void AliRICH::SetTreeAddress()
+{
+    // Set branch address for the Hits and Digits Tree.
+    char branchname[20];
+    AliDetector::SetTreeAddress();
+    
+    TBranch *branch;
+    TTree *treeH = gAlice->TreeH();
+    TTree *treeD = gAlice->TreeD();
+    
+    if (treeH) {
+	if (fClusters) {
+	    branch = treeH->GetBranch("RICHCluster");
+	    if (branch) branch->SetAddress(&fClusters);
+	}
+	if (fCerenkovs) {
+	    branch = treeH->GetBranch("RICHCerenkov");
+	    if (branch) branch->SetAddress(&fCerenkovs);
+	}
+	
+    }
+    
+    if (treeD) {
+	for (int i=0; i<7; i++) {
+	    sprintf(branchname,"%sDigits%d",GetName(),i+1);
+	    if (fDchambers) {
+		branch = treeD->GetBranch(branchname);
+		if (branch) branch->SetAddress(&((*fDchambers)[i]));
+	    }
+	}
+    }
+}
+//___________________________________________
+void AliRICH::ResetHits()
+{
+    // Reset number of clusters and the cluster array for this detector
+    AliDetector::ResetHits();
+    fNclusters = 0;
+    if (fClusters) fClusters->Clear();
+    if (fCerenkovs) fCerenkovs->Clear();
+}
+
+//____________________________________________
+void AliRICH::ResetDigits()
+{
+    //
+    // Reset number of digits and the digits array for this detector
+    //
+    for ( int i=0;i<7;i++ ) {
+	if ((*fDchambers)[i])   (*fDchambers)[i]->Clear();
+	if (fNdch)  fNdch[i]=0;
+    }
+}
+//____________________________________________
+void AliRICH::ResetRecClusters()
+{
+    //
+    // Reset the rec clusters
+    //
+    for ( int i=0;i<7;i++ ) {
+	if ((*fRecClusters)[i])   (*fRecClusters)[i]->Clear();
+    }
+}
+//___________________________________________
+
+void AliRICH::SetPADSIZ(Int_t id, Int_t isec, Float_t p1, Float_t p2)
+{
+    Int_t i=2*(id-1);
+    ((AliRICHchamber*) (*fChambers)[i])  ->SetPADSIZ(isec,p1,p2);
+    ((AliRICHchamber*) (*fChambers)[i+1])->SetPADSIZ(isec,p1,p2);
+}
+
+//___________________________________________
+void AliRICH::SetMUCHSP(Int_t id, Float_t p1)
+{
+    Int_t i=2*(id-1);
+    ((AliRICHchamber*) (*fChambers)[i])->SetMUCHSP(p1);
+    ((AliRICHchamber*) (*fChambers)[i+1])->SetMUCHSP(p1);
+}
+
+//___________________________________________
+void AliRICH::SetMUSIGM(Int_t id, Float_t p1, Float_t p2)
+{
+    Int_t i=2*(id-1);
+    ((AliRICHchamber*) (*fChambers)[i])->SetMUSIGM(p1,p2);
+    ((AliRICHchamber*) (*fChambers)[i+1])->SetMUSIGM(p1,p2);
+}
+
+//___________________________________________
+void AliRICH::SetRSIGM(Int_t id, Float_t p1)
+{
+    Int_t i=2*(id-1);
+    ((AliRICHchamber*) (*fChambers)[i])->SetRSIGM(p1);
+    ((AliRICHchamber*) (*fChambers)[i+1])->SetRSIGM(p1);
+}
+
+//___________________________________________
+void AliRICH::SetMAXADC(Int_t id, Float_t p1)
+{
+    Int_t i=2*(id-1);
+    ((AliRICHchamber*) (*fChambers)[i])->SetMAXADC(p1);
+    ((AliRICHchamber*) (*fChambers)[i+1])->SetMAXADC(p1);
+}
+
+//___________________________________________
+void AliRICH::SetSMAXAR(Float_t p1)
+{
+    fMaxStepGas=p1;
+}
+
+//___________________________________________
+void AliRICH::SetSMAXAL(Float_t p1)
+{
+    fMaxStepAlu=p1;
+}
+
+//___________________________________________
+void AliRICH::SetDMAXAR(Float_t p1)
+{
+    fMaxDestepGas=p1;
+}
+
+//___________________________________________
+void AliRICH::SetDMAXAL(Float_t p1)
+{
+    fMaxDestepAlu=p1;
+}
+//___________________________________________
+void AliRICH::SetRICHACC(Bool_t acc, Float_t angmin, Float_t angmax)
+{
+    fAccCut=acc;
+    fAccMin=angmin;
+    fAccMax=angmax;
+}
+//___________________________________________
+void   AliRICH::SetSegmentationModel(Int_t id, Int_t isec, AliRICHsegmentation *segmentation)
+{
+    ((AliRICHchamber*) (*fChambers)[id])->SegmentationModel(isec, segmentation);
+
+}
+//___________________________________________
+void   AliRICH::SetResponseModel(Int_t id, Response_t res,  AliRICHresponse *response)
+{
+    ((AliRICHchamber*) (*fChambers)[id])->ResponseModel(res, response);
+}
+
+void   AliRICH::SetNsec(Int_t id, Int_t nsec)
+{
+    ((AliRICHchamber*) (*fChambers)[id])->SetNsec(nsec);
+}
+
+
+//___________________________________________
+
+void AliRICH::StepManager()
+{
+    printf("Dummy version of RICH step -- it should never happen!!\n");
+    const Float_t kRaddeg = 180/TMath::Pi();
+    AliMC* pMC = AliMC::GetMC();
+    Int_t nsec, ipart;
+    Float_t x[4], p[4];
+    Float_t pt, th0, th1;
+    char proc[5];
+    if(fAccCut) {
+	if((nsec=pMC->NSecondaries())>0) {
+	    pMC->ProdProcess(proc);
+	    if((pMC->TrackPid()==113 || pMC->TrackPid()==114) && !strcmp(proc,"DCAY")) {
+		
+		// Check angular acceptance
+		//* --- and have muons from resonance decays in the wanted window --- 
+		if(nsec != 2) {
+		    printf(" AliRICH::StepManager: Strange resonance Decay into %d particles\n",nsec);
+		    pMC->StopEvent();
+		} else {
+		    pMC->GetSecondary(0,ipart,x,p);
+		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
+		    th0 = TMath::ATan2(pt,p[2])*kRaddeg;
+		    pMC->GetSecondary(1,ipart,x,p);
+		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
+		    th1 = TMath::ATan2(pt,p[2])*kRaddeg;
+		    if(!(fAccMin < th0 && th0 < fAccMax) ||
+		       !(fAccMin < th1 && th1 < fAccMax)) 
+			pMC->StopEvent();
+		}
+	    }
+	}
+    }
+}
+void AliRICH::ReconstructClusters()
+{
+//
+// Initialize the necessary correspondance table
+//
+    static const Int_t kMaxNpadx = 600;
+    static const Int_t kMaxNpady = 600;
+    Int_t elem[kMaxNpadx*2][kMaxNpady*2];
+//
+// Loop on chambers and on cathode planes
+//
+    for (Int_t ich=0;ich<7;ich++)
+	for (Int_t icat=0;icat<1;icat++) {
+	    //
+	    // Get ready the current chamber stuff
+	    //
+	    
+	    printf ("Olarilole");
+	    AliRICHchamber*  iChamber= &(this->Chamber(ich));
+	    AliRICHsegmentation*  segmentation = 
+		iChamber->GetSegmentationModel(icat+1);
+	    if (!segmentation) 
+		continue;
+	    TClonesArray *RICHdigits  = this->DigitsAddress(ich);
+	    if (RICHdigits == 0) 
+		continue;
+	    cout << "Npx " << segmentation->Npx() 
+		 << " Npy " << segmentation->Npy() << endl;
+	    //      
+	    // Ready the digits
+	    //  
+	    gAlice->ResetDigits();
+	    gAlice->TreeD()->GetEvent(icat+1); // spurious +1 ...
+	    Int_t ndigits = RICHdigits->GetEntriesFast();
+	    if (ndigits == 0) 
+		continue;
+	    printf("Found %d digits for cathode %d in chamber %d \n",
+		   ndigits,icat,ich+1);
+	    AliRICHdigit  *mdig;
+	    AliRICHRecCluster *Cluster;
+	    //
+	    // Build the correspondance table
+	    //
+	    memset(elem,0,sizeof(Int_t)*kMaxNpadx*kMaxNpady*4);
+	    Int_t digit;
+	    for (digit=0; digit<ndigits; digit++) 
+	    {
+		mdig    = (AliRICHdigit*)RICHdigits->UncheckedAt(digit);
+		elem[kMaxNpadx+mdig->fPadX][kMaxNpady+mdig->fPadY] = digit+1;
+		// because default is 0
+	    }
+	    //
+	    // Declare some useful variables
+	    //
+	    Int_t Xlist[10];
+	    Int_t Ylist[10];
+	    Int_t Nlist;
+	    Int_t nclust=0;
+	    //
+	    // loop over digits
+	    //
+	    for (digit=0;digit<ndigits;digit++) {
+		mdig    = (AliRICHdigit*)RICHdigits->UncheckedAt(digit);
+		//
+		// if digit still available, start clustering
+		//
+		if (elem[kMaxNpadx+mdig->fPadX][kMaxNpady+mdig->fPadY]) {
+		    Cluster = new AliRICHRecCluster(digit, ich, icat);
+		    elem[kMaxNpadx+mdig->fPadX][kMaxNpady+mdig->fPadY]=0;
+		    //
+		    // loop over the current list of digits 
+                    // and look for neighbours
+		    //
+		    for(Int_t clusDigit=Cluster->FirstDigitIndex();
+			clusDigit!=Cluster->InvalidDigitIndex();
+			clusDigit=Cluster->NextDigitIndex()) {
+			AliRICHdigit* pDigit=(AliRICHdigit*)RICHdigits
+			    ->UncheckedAt(clusDigit);
+			segmentation->Neighbours(pDigit->fPadX,pDigit->fPadY, 
+						 &Nlist, Xlist, Ylist);
+			for (Int_t Ilist=0;Ilist<Nlist;Ilist++) {
+			    if (elem[kMaxNpadx+Xlist[Ilist]][kMaxNpady
+							    +Ylist[Ilist]]) {
+				//
+				// Add the digit at the end and reset the table
+				//
+				Cluster->AddDigit(elem[kMaxNpadx+Xlist[Ilist]][kMaxNpady+Ylist[Ilist]]-1);
+				elem[kMaxNpadx+Xlist[Ilist]][kMaxNpady
+							    +Ylist[Ilist]] =0;
+			    } // if elem
+			} // for Ilist
+		    } // for pDigit
+		    //
+		    // Store the cluster (good time to do Cluster polishing)
+		    //
+		    segmentation->FitXY(Cluster,RICHdigits);
+		    nclust ++;
+		    AddRecCluster(ich,icat,Cluster);
+		}
+	    }
+	    printf("===> %d Clusters\n",nclust); 
+	} // for icat
+}
+
+
+//______________________________________________________________________________
+void AliRICH::Streamer(TBuffer &R__b)
+{
+    // Stream an object of class AliRICH.
+    AliRICHchamber       *iChamber;
+    AliRICHsegmentation  *segmentation;
+    AliRICHresponse      *response;
+    TClonesArray         *digitsaddress;
+      
+    if (R__b.IsReading()) {
+	Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+	AliDetector::Streamer(R__b);
+	R__b >> fNclusters;
+	R__b >> fClusters; // diff
+	R__b >> fDchambers;
+	R__b.ReadArray(fNdch);
+	//
+	R__b >> fAccCut;
+	R__b >> fAccMin;
+	R__b >> fAccMax; 
+	//   
+	R__b >> fChambers;
+// Stream chamber related information
+	for (Int_t i =0; i<7; i++) {
+	    iChamber=(AliRICHchamber*) (*fChambers)[i];
+	    iChamber->Streamer(R__b);
+	    if (iChamber->Nsec()==1) {
+		segmentation=iChamber->GetSegmentationModel(1);
+		segmentation->Streamer(R__b);
+	    } else {
+		segmentation=iChamber->GetSegmentationModel(1);
+		segmentation->Streamer(R__b);
+		segmentation=iChamber->GetSegmentationModel(2);
+		segmentation->Streamer(R__b);
+	    }
+	    response=iChamber->GetResponseModel(mip);
+	    response->Streamer(R__b);	  
+	    response=iChamber->GetResponseModel(cerenkov);
+	    response->Streamer(R__b);	  
+	    
+	    digitsaddress=(TClonesArray*) (*fDchambers)[i];
+	    digitsaddress->Streamer(R__b);
+	}
+      
+    } else {
+	R__b.WriteVersion(AliRICH::IsA());
+	AliDetector::Streamer(R__b);
+	R__b << fNclusters;
+	R__b << fClusters; // diff
+	R__b << fDchambers;
+	R__b.WriteArray(fNdch, 7);
+	//
+	R__b << fAccCut;
+	R__b << fAccMin;
+	R__b << fAccMax; 
+	//   
+	R__b << fChambers;
+//  Stream chamber related information
+	for (Int_t i =0; i<7; i++) {
+	    iChamber=(AliRICHchamber*) (*fChambers)[i];
+	    iChamber->Streamer(R__b);
+	    if (iChamber->Nsec()==1) {
+		segmentation=iChamber->GetSegmentationModel(1);
+		segmentation->Streamer(R__b);
+	    } else {
+		segmentation=iChamber->GetSegmentationModel(1);
+		segmentation->Streamer(R__b);
+		segmentation=iChamber->GetSegmentationModel(2);
+		segmentation->Streamer(R__b);
+	    }
+	    response=iChamber->GetResponseModel(mip);
+	    response->Streamer(R__b);
+	    response=iChamber->GetResponseModel(cerenkov);
+	    response->Streamer(R__b);
+	    
+	    digitsaddress=(TClonesArray*) (*fDchambers)[i];
+	    digitsaddress->Streamer(R__b);
+	}
+    }
+}
+AliRICHcluster* AliRICH::FirstPad(AliRICHhit*  hit,TClonesArray *clusters ) 
+{
+//
+    // Initialise the pad iterator
+    // Return the address of the first padhit for hit
+    TClonesArray *theClusters = clusters;
+    Int_t nclust = theClusters->GetEntriesFast();
+    if (nclust && hit->fPHlast > 0) {
+	sMaxIterPad=hit->fPHlast;
+	sCurIterPad=hit->fPHfirst;
+	return (AliRICHcluster*) clusters->UncheckedAt(sCurIterPad-1);
+    } else {
+	return 0;
+    }
+    
+}
+
+AliRICHcluster* AliRICH::NextPad(TClonesArray *clusters) 
+{
+    sCurIterPad++;
+    if (sCurIterPad <= sMaxIterPad) {
+	return (AliRICHcluster*) clusters->UncheckedAt(sCurIterPad-1);
+    } else {
+	return 0;
+    }
+}
+
+ClassImp(AliRICHcluster)
+    
+//___________________________________________
+AliRICHcluster::AliRICHcluster(Int_t *clhits)
+{
+    fHitNumber=clhits[0];
+    fCathode=clhits[1];
+    fQ=clhits[2];
+    fPadX=clhits[3];
+    fPadY=clhits[4];
+    fQpad=clhits[5];
+    fRSec=clhits[6];
+}
+ClassImp(AliRICHdigit)
+//_____________________________________________________________________________
+AliRICHdigit::AliRICHdigit(Int_t *digits)
+{
+    //
+    // Creates a RICH digit object to be updated
+    //
+    fPadX        = digits[0];
+    fPadY        = digits[1];
+    fSignal      = digits[2];
+    
+}
+//_____________________________________________________________________________
+AliRICHdigit::AliRICHdigit(Int_t *tracks, Int_t *charges, Int_t *digits)
+{
+    //
+    // Creates a RICH digit object
+    //
+    fPadX        = digits[0];
+    fPadY        = digits[1];
+    fSignal      = digits[2];
+    for(Int_t i=0; i<10; i++) {
+	fTcharges[i]  = charges[i];
+	fTracks[i]    = tracks[i];
+    }
+}
+
+ClassImp(AliRICHlist)
+    
+//____________________________________________________________________________
+AliRICHlist::AliRICHlist(Int_t ich, Int_t *digits): 
+    AliRICHdigit(digits)
+{
+    //
+    // Creates a RICH digit list object
+    //
+    
+    fChamber = ich;
+    fTrackList   = new TObjArray;
+    
+}
+//_____________________________________________________________________________
+
 
 ClassImp(AliRICHhit)
-  
-//_____________________________________________________________________________
-AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol,
-		       Float_t *hits, Int_t fNpadhits) :
-    AliHit(shunt,track)
+    
+//___________________________________________
+AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
+    AliHit(shunt, track)
 {
-  //
-  // Standard constructor for RICH hit
-  //
-  Int_t i;
-  for (i=0;i<2;i++) fVolume[i] = vol[i];
-  fTrack      = (int)  track;
-  //Hit information
-  fPart       = (int)  hits[ 1]; 
-  //AliHit information, position of the hit
-  fX          =        hits[ 2];       
-  fY          =        hits[ 3];
-  //Pad information
-  fFirstpad   = fNpadhits;
-  fLastpad    = fNpadhits-1;
-  
-  //Hit information
-  fModule     = (int)  hits[ 4];
-  fTheta      =        hits[ 5];
-  fArrivaltime=        hits[ 6];
-  fFeed       = (int)  hits[ 7];
+    fChamber=vol[0];
+    fParticle=hits[0];
+    fX=hits[1];
+    fY=hits[2];
+    fZ=hits[3];
+    fTheta=hits[4];
+    fPhi=hits[5];
+    fTlength=hits[6];
+    fEloss=hits[7];
+    fPHfirst=(Int_t) hits[8];
+    fPHlast=(Int_t) hits[9];
+}
+ClassImp(AliRICHreccluster)
+
+ClassImp(AliRICHCerenkov)
+//___________________________________________
+AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
+    AliHit(shunt, track)
+{
+    fChamber=vol[0];
+    fX=hits[1];
+    fY=hits[2];
+    fZ=hits[3];
+    fTheta=hits[4];
+    fPhi=hits[5];
+    fTlength=hits[6];
+    fPHfirst=(Int_t) hits[8];
+    fPHlast=(Int_t) hits[9];
 }
 
-ClassImp(AliRICHmip)
-
-//_____________________________________________________________________________
-AliRICHmip::AliRICHmip(Int_t shunt, Int_t track, Int_t *vol, 
-		       Float_t *hits, Int_t fNckovs, Int_t fNpadhits) :
-    AliRICHhit(shunt,track,vol,hits,fNpadhits)
+ClassImp(AliRICHRecCluster)
+    
+//_____________________________________________________________________
+AliRICHRecCluster::AliRICHRecCluster()
 {
-  //
-  // Standard constructor for RICH Mip hit
-  //
-  fPhi        =        hits[ 8];  
-  fPs         =        hits[ 9];
-  fQ          =        hits[10];    
-  fZ          =        hits[11];
-  //Ckov information
-  if ((int) hits[12]){
-    fFirstCkov  =    fNckovs;
-    fLastCkov   =    fNckovs-1;
-  } else {
-    fFirstCkov  =    -1;
-    fLastCkov   =    -1;
-  }
+    fDigits=0;
+    fNdigit=-1;
 }
 
-ClassImp(AliRICHckov)
-  
-//_____________________________________________________________________________
-AliRICHckov::AliRICHckov(Int_t shunt, Int_t track, Int_t *vol, 
-			 Float_t *hits, Int_t fNmips, Int_t fNpadhits) :
-  AliRICHhit(shunt,track,vol,hits,fNpadhits)
+AliRICHRecCluster::AliRICHRecCluster(Int_t FirstDigit,Int_t Ichamber, Int_t Icathod)
 {
-  //
-  // Standard creator for RICH Cherenkov information
-  //
-  fEnergy     =        hits[8];
-  fStop       = (int)  hits[9];
-  
-  //Parent info
-  fParent     =         fNmips;
+    fX = 0.;
+    fY = 0.;
+    fDigits = new TArrayI(10);
+    fNdigit=0;
+    AddDigit(FirstDigit);
+    fChamber=Ichamber;
+    fCathod=Icathod;
 }
 
-ClassImp(AliRICHpadhit)
-
-
-//_____________________________________________________________________________
-AliRICHpadhit::AliRICHpadhit(Int_t shunt, Int_t track, Int_t *vol,
-			     Float_t *hits, Int_t fNmips, Int_t fNckovs):
-  AliHit(shunt,track)
+void AliRICHRecCluster::AddDigit(Int_t Digit)
 {
-  //
-  // Standard constructor for RICH pad hit
-  //
-  Int_t i;
-  for (i=0;i<2;i++) fVolume[i] = vol[i];
-  
-  // Hit information
-  fX          = (int)  hits[ 2];
-  fY          = (int)  hits[ 3];
-  fModule     = (int)  hits[ 4];
-  fParentMip  =        fNmips;
-  fParentCkov =        fNckovs;
-  fProd       = (int)  hits[ 5];
-  fCharge     =        hits[ 6];
-  fZ          =          -999.0; // Not implemented
+    if (fNdigit==fDigits->GetSize()) {
+	//enlarge the list by hand!
+	Int_t *array= new Int_t[fNdigit*2];
+	for(Int_t i=0;i<fNdigit;i++)
+	    array[i] = fDigits->At(i);
+	fDigits->Adopt(fNdigit*2,array);
+    }
+    fDigits->AddAt(Digit,fNdigit);
+    fNdigit++;
 }
+
+
+AliRICHRecCluster::~AliRICHRecCluster()
+{
+    if (fDigits)
+	delete fDigits;
+}
+
+Int_t AliRICHRecCluster::FirstDigitIndex()
+{
+    fCurrentDigit=0;
+    return fDigits->At(fCurrentDigit);
+}
+
+Int_t AliRICHRecCluster::NextDigitIndex()
+{
+    fCurrentDigit++;
+    if (fCurrentDigit<fNdigit)
+	return fDigits->At(fCurrentDigit);
+    else 
+	return InvalidDigitIndex();
+}
+
+Int_t AliRICHRecCluster::NDigits()
+{
+    return fNdigit;
+}
+
+void AliRICHRecCluster::Finish()
+{
+    // In order to reconstruct coordinates, one has to
+    // get back to the digits which is not trivial here,
+    // because we don't know where digits are stored!
+    // Center Of Gravity, or other method should be
+    // a property of AliRICH class!
+}
+
+
+
+void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
+{
+    // keep galice.root for signal and name differently the file for 
+    // background when add! otherwise the track info for signal will be lost !
+    
+    static Bool_t first=true;
+    static TTree *TH1;
+    static TFile *File;
+    char *Add = strstr(option,"Add");
+
+    AliRICHchamber*  iChamber;
+    AliRICHsegmentation*  segmentation;
+
+    
+    Int_t trk[50];
+    Int_t chtrk[50];  
+    TObjArray *list=new TObjArray;
+    Int_t digits[3]; 
+    
+    AliRICH *RICH  = (AliRICH *) gAlice->GetDetector("RICH");
+    AliRICHHitMap* HitMap[10];
+    for (Int_t i=0; i<10; i++) {HitMap[i]=0;}
+    if (Add ) {
+	if(first) {
+	    fFileName=filename;
+	    cout<<"filename"<<fFileName<<endl;
+	    File=new TFile(fFileName);
+	    cout<<"I have opened "<<fFileName<<" file "<<endl;
+	    fHits2     = new TClonesArray("AliRICHhit",1000  );
+	    fClusters2 = new TClonesArray("AliRICHcluster",10000);
+	    first=false;
+	}
+	File->cd();
+	File->ls();
+	// Get Hits Tree header from file
+	if(fHits2) fHits2->Clear();
+	if(fClusters2) fClusters2->Clear();
+	if(TH1) delete TH1;
+	TH1=0;
+	//
+	char treeName[20];
+	sprintf(treeName,"TreeH%d",nev);
+	TH1 = (TTree*)gDirectory->Get(treeName);
+	if (!TH1) {
+	    printf("ERROR: cannot find Hits Tree for event:%d\n",nev);
+	}
+	// Set branch addresses
+	TBranch *branch;
+	char branchname[20];
+	sprintf(branchname,"%s",GetName());
+	if (TH1 && fHits2) {
+	    branch = TH1->GetBranch(branchname);
+	    if (branch) branch->SetAddress(&fHits2);
+	}
+	if (TH1 && fClusters2) {
+	    branch = TH1->GetBranch("RICHCluster");
+	    if (branch) branch->SetAddress(&fClusters2);
+	}
+    }
+    //
+    // loop over cathodes
+    //
+    AliRICHHitMap* hm;
+    
+    for (int icat=0; icat<1; icat++) { 
+	for (Int_t i=0; i<7; i++) {
+	    if (HitMap[i]) {
+		hm=HitMap[i];
+		delete hm;
+		HitMap[i]=0;
+	    }
+	}
+	Int_t counter=0;
+	for (Int_t i =0; i<7; i++) {
+	    iChamber=(AliRICHchamber*) (*fChambers)[i];
+	    if (iChamber->Nsec()==1 && icat==1) {
+		continue;
+	    } else {
+		segmentation=iChamber->GetSegmentationModel(icat+1);
+	    }
+	    HitMap[i] = new AliRICHHitMapA1(segmentation, list);
+	}
+	printf("Start loop over tracks \n");     
+//
+//   Loop over tracks
+//
+
+	TTree *TH = gAlice->TreeH();
+	Int_t ntracks =(Int_t) TH->GetEntries();
+	for (Int_t track=0; track<ntracks; track++) {
+	    gAlice->ResetHits();
+	    TH->GetEvent(track);
+//
+//   Loop over hits
+	    for(AliRICHhit* mHit=(AliRICHhit*)RICH->FirstHit(-1); 
+		mHit;
+		mHit=(AliRICHhit*)RICH->NextHit()) 
+	    {
+		Int_t   nch   = mHit->fChamber-1;  // chamber number
+		if (nch >7) continue;
+		iChamber = &(RICH->Chamber(nch));
+				
+//
+// Loop over pad hits
+		for (AliRICHcluster* mPad=
+			 (AliRICHcluster*)RICH->FirstPad(mHit,fClusters);
+		     mPad;
+		     mPad=(AliRICHcluster*)RICH->NextPad(fClusters))
+		{
+		    Int_t cathode  = mPad->fCathode;    // cathode number
+		    Int_t ipx      = mPad->fPadX;       // pad number on X
+		    Int_t ipy      = mPad->fPadY;       // pad number on Y
+		    Int_t iqpad    = mPad->fQpad;       // charge per pad
+//
+//
+		    
+		    if (cathode != (icat+1)) continue;
+		    // fill the info array
+		    Float_t thex, they;
+		    segmentation=iChamber->GetSegmentationModel(cathode);
+		    segmentation->GetPadCxy(ipx,ipy,thex,they);
+		    TVector *trinfo_p= new TVector(2);
+		    TVector &trinfo = *trinfo_p;
+		    trinfo(0)=(Float_t)track;
+		    trinfo(1)=(Float_t)iqpad;
+		    
+		    digits[0]=ipx;
+		    digits[1]=ipy;
+		    digits[2]=iqpad;
+		    
+		    AliRICHlist* pdigit;
+		    // build the list of fired pads and update the info
+		    if (!HitMap[nch]->TestHit(ipx, ipy)) {
+			list->AddAtAndExpand(
+			    new AliRICHlist(nch,digits),counter);
+			HitMap[nch]->SetHit(ipx, ipy, counter);
+			counter++;
+			pdigit=(AliRICHlist*)list->At(list->GetLast());
+			// list of tracks
+			TObjArray *trlist=(TObjArray*)pdigit->TrackList();
+			trlist->Add(&trinfo);
+		    } else {
+			pdigit=(AliRICHlist*) HitMap[nch]->GetHit(ipx, ipy);
+			// update charge
+			(*pdigit).fSignal+=iqpad;
+			// update list of tracks
+			TObjArray* trlist=(TObjArray*)pdigit->TrackList();
+			Int_t last_entry=trlist->GetLast();
+			TVector *ptrk_p=(TVector*)trlist->At(last_entry);
+			TVector &ptrk=*ptrk_p;
+			Int_t last_track=Int_t(ptrk(0));
+			Int_t last_charge=Int_t(ptrk(1));
+			if (last_track==track) {
+			    last_charge+=iqpad;
+			    trlist->RemoveAt(last_entry);
+			    trinfo(0)=last_track;
+			    trinfo(1)=last_charge;
+			    trlist->AddAt(&trinfo,last_entry);
+			} else {
+			    trlist->Add(&trinfo);
+			}
+			// check the track list
+			Int_t nptracks=trlist->GetEntriesFast();
+			if (nptracks > 2) {
+			    printf("Attention - nptracks > 2  %d \n",nptracks);
+			    printf("cat,nch,ix,iy %d %d %d %d  \n",icat+1,nch,ipx,ipy);
+			    for (Int_t tr=0;tr<nptracks;tr++) {
+				TVector *pptrk_p=(TVector*)trlist->At(tr);
+				TVector &pptrk=*pptrk_p;
+				trk[tr]=Int_t(pptrk(0));
+				chtrk[tr]=Int_t(pptrk(1));
+			    }
+			} // end if nptracks
+		    } //  end if pdigit
+		} //end loop over clusters
+	    } // hit loop
+	} // track loop
+	
+	Int_t nentr1=list->GetEntriesFast();
+	printf(" \n counter, nentr1 %d %d\n",counter,nentr1);
+	
+	// open the file with background
+	
+	if (Add ) {
+	    ntracks =(Int_t)TH1->GetEntries();
+	    printf("background - icat,ntracks1  %d %d\n",icat,ntracks);
+	    printf("background - Start loop over tracks \n");     
+//
+//   Loop over tracks
+//
+	    for (Int_t track=0; track<ntracks; track++) {
+
+		if (fHits2)       fHits2->Clear();
+		if (fClusters2)   fClusters2->Clear();
+		
+		TH1->GetEvent(track);
+//
+//   Loop over hits
+		AliRICHhit* mHit;
+		for(int i=0;i<fHits2->GetEntriesFast();++i) 
+		{
+		    mHit=(AliRICHhit*) (*fHits2)[i];
+		    Int_t   nch   = mHit->fChamber-1;  // chamber number
+		    if (nch >9) continue;
+		    iChamber = &(RICH->Chamber(nch));
+		    Int_t rmin = (Int_t)iChamber->RInner();
+		    Int_t rmax = (Int_t)iChamber->ROuter();
+//
+// Loop over pad hits
+		    for (AliRICHcluster* mPad=
+			     (AliRICHcluster*)RICH->FirstPad(mHit,fClusters2);
+			 mPad;
+			 mPad=(AliRICHcluster*)RICH->NextPad(fClusters2))
+		    {
+			Int_t cathode  = mPad->fCathode;    // cathode number
+			Int_t ipx      = mPad->fPadX;       // pad number on X
+			Int_t ipy      = mPad->fPadY;       // pad number on Y
+			Int_t iqpad    = mPad->fQpad;       // charge per pad
+			if (track==3 && nch==0 && icat==0) printf("bgr - track,iqpad,ipx,ipy %d %d %d %d\n",track,iqpad,ipx,ipy);
+//
+//
+			if (cathode != (icat+1)) continue;
+			// fill the info array
+			Float_t thex, they;
+			segmentation=iChamber->GetSegmentationModel(cathode);
+			segmentation->GetPadCxy(ipx,ipy,thex,they);
+			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
+			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
+			
+			TVector *trinfo_p;
+			trinfo_p = new TVector(2);
+			TVector &trinfo = *trinfo_p;
+			trinfo(0)=-1;  // tag background
+			trinfo(1)=-1;
+			
+			digits[0]=ipx;
+			digits[1]=ipy;
+			digits[2]=iqpad;
+
+			
+			if (track <4 && icat==0 && nch==0)
+			    printf("bgr - HitMap[nch]->TestHit(ipx, ipy),track %d %d\n",
+				   HitMap[nch]->TestHit(ipx, ipy),track);
+			AliRICHlist* pdigit;
+			// build the list of fired pads and update the info
+			if (!HitMap[nch]->TestHit(ipx, ipy)) {
+			    list->AddAtAndExpand(new AliRICHlist(nch,digits),counter);
+			    
+			    HitMap[nch]->SetHit(ipx, ipy, counter);
+			    counter++;
+			    printf("bgr new elem in list - counter %d\n",counter);
+			    
+			    pdigit=(AliRICHlist*)list->At(list->GetLast());
+			    // list of tracks
+			    TObjArray *trlist=(TObjArray*)pdigit->TrackList();
+			    trlist->Add(&trinfo);
+			} else {
+			    pdigit=(AliRICHlist*) HitMap[nch]->GetHit(ipx, ipy);
+			    // update charge
+			    (*pdigit).fSignal+=iqpad;
+			    // update list of tracks
+			    TObjArray* trlist=(TObjArray*)pdigit->TrackList();
+			    Int_t last_entry=trlist->GetLast();
+			    TVector *ptrk_p=(TVector*)trlist->At(last_entry);
+			    TVector &ptrk=*ptrk_p;
+			    Int_t last_track=Int_t(ptrk(0));
+			    if (last_track==-1) {
+				continue;
+			    } else {
+				trlist->Add(&trinfo);
+			    }
+			    // check the track list
+			    Int_t nptracks=trlist->GetEntriesFast();
+			    if (nptracks > 0) {
+				for (Int_t tr=0;tr<nptracks;tr++) {
+				    TVector *pptrk_p=(TVector*)trlist->At(tr);
+				    TVector &pptrk=*pptrk_p;
+				    trk[tr]=Int_t(pptrk(0));
+				    chtrk[tr]=Int_t(pptrk(1));
+				}
+			    } // end if nptracks
+			} //  end if pdigit
+		    } //end loop over clusters
+		} // hit loop
+	    } // track loop
+	    Int_t nentr2=list->GetEntriesFast();
+	    printf(" \n counter2, nentr2 %d %d \n",counter,nentr2);
+	    TTree *fAli=gAlice->TreeK();
+	    if (fAli) File =fAli->GetCurrentFile();
+	    File->cd();
+	} // if Add	
+	
+	Int_t tracks[10];
+	Int_t charges[10];
+	cout<<"start filling digits \n "<<endl;
+	Int_t nentries=list->GetEntriesFast();
+	printf(" \n \n nentries %d \n",nentries);
+
+	// start filling the digits
+	
+	for (Int_t nent=0;nent<nentries;nent++) {
+	    AliRICHlist *address=(AliRICHlist*)list->At(nent);
+	    if (address==0) continue; 
+	    Int_t ich=address->fChamber;
+	    Int_t q=address->fSignal; 
+	    iChamber=(AliRICHchamber*) (*fChambers)[ich];
+	    // add white noise and do zero-suppression and signal truncation
+	    Float_t MeanNoise = gRandom->Gaus(1, 0.2);
+	    Float_t ZeroSupp=5*MeanNoise;
+	    Float_t Noise     = gRandom->Gaus(0, MeanNoise);
+	    q+=(Int_t)Noise; 
+	    if ( q <= ZeroSupp) continue;
+	    digits[0]=address->fPadX;
+	    digits[1]=address->fPadY;
+	    digits[2]=q;
+	    
+	    TObjArray* trlist=(TObjArray*)address->TrackList();
+	    Int_t nptracks=trlist->GetEntriesFast();
+	    
+	    // this was changed to accomodate the real number of tracks
+	    if (nptracks > 10) {
+		cout<<"Attention - nptracks > 10 "<<nptracks<<endl;
+		nptracks=10;
+	    }
+	    if (nptracks > 2) {
+		printf("Attention - nptracks > 2  %d \n",nptracks);
+		printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,digits[0],digits[1],q);
+	    }
+	    for (Int_t tr=0;tr<nptracks;tr++) {
+		TVector *pp_p=(TVector*)trlist->At(tr);
+		TVector &pp  =*pp_p;
+		tracks[tr]=Int_t(pp(0));
+		charges[tr]=Int_t(pp(1));
+	    }      //end loop over list of tracks for one pad
+	    if (nptracks < 10 ) {
+		for (Int_t i=nptracks; i<10; i++) {
+		    tracks[i]=0;
+		    charges[i]=0;
+		}
+	    }
+	    // fill digits
+	    RICH->AddDigits(ich,tracks,charges,digits);
+	    
+	    delete address;
+	}
+	cout<<"I'm out of the loops for digitisation"<<endl;
+	gAlice->TreeD()->Fill();
+	TTree *TD=gAlice->TreeD();
+	Stat_t ndig=TD->GetEntries();
+	cout<<"number of digits  "<<ndig<<endl;
+	TClonesArray *fDch;
+	for (int i=0;i<7;i++) {
+	    fDch= RICH->DigitsAddress(i);
+	    int ndig=fDch->GetEntriesFast();
+	    printf (" i, ndig %d %d \n",i,ndig);
+	}
+	RICH->ResetDigits();
+	
+	list->Clear();
+	
+    } //end loop over cathodes
+    char hname[30];
+    sprintf(hname,"TreeD%d",nev);
+    gAlice->TreeD()->Write(hname);
+}
+
+
+
+
+
+
+
 
 
