@@ -24,6 +24,21 @@ AliTrackingActionMessenger::AliTrackingActionMessenger(
   fVerboseCmd->SetDefaultValue(2);
   fVerboseCmd->SetRange("VerboseLevel >= 0 && VerboseLevel <= 3");
   fVerboseCmd->AvailableForStates(Idle);
+
+  fNewVerboseCmd = new G4UIcmdWithAnInteger("/aliTracking/newVerbose", this);
+  fNewVerboseCmd->SetGuidance("Set new verbose level (/tracking/verbose)");
+  fNewVerboseCmd->SetGuidance("when a track with specified track ID ");
+  fNewVerboseCmd->SetGuidance("(/aliTracking/newVerboseTrack)\n starts tracking");
+  fNewVerboseCmd->SetParameterName("NewVerboseLevel", false);
+  fNewVerboseCmd->SetRange("NewVerboseLevel >= 0 && NewVerboseLevel <= 5");
+  fNewVerboseCmd->AvailableForStates(PreInit, Init, Idle);
+
+  fNewVerboseTrackCmd = new G4UIcmdWithAnInteger("/aliTracking/newVerboseTrack", this);
+  fNewVerboseTrackCmd->SetGuidance("Set the track ID for which the new verbose level");
+  fNewVerboseTrackCmd->SetGuidance("(/aliTracking/newVerbose) will be applied.");
+  fNewVerboseTrackCmd->SetParameterName("NewVerboseLevelTrackID", false);
+  fNewVerboseTrackCmd->SetRange("NewVerboseLevelTrackID >= 0");
+  fNewVerboseTrackCmd->AvailableForStates(PreInit, Init, Idle);
 }
 
 AliTrackingActionMessenger::AliTrackingActionMessenger() {
@@ -41,6 +56,8 @@ AliTrackingActionMessenger::~AliTrackingActionMessenger() {
 //
   delete fTrackingDirectory;
   delete fVerboseCmd;
+  delete fNewVerboseCmd;
+  delete fNewVerboseTrackCmd;
 }
 
 // operators
@@ -65,9 +82,16 @@ void AliTrackingActionMessenger::SetNewValue(G4UIcommand* command,
 // Applies command to the associated object.
 // ---
 
-  if(command == fVerboseCmd)
-  { 
+  if(command == fVerboseCmd) { 
     fTrackingAction
       ->SetVerboseLevel(fVerboseCmd->GetNewIntValue(newValue)); 
-  };   
+  }   
+  else if(command == fNewVerboseCmd) { 
+    fTrackingAction
+      ->SetNewVerboseLevel(fNewVerboseCmd->GetNewIntValue(newValue)); 
+  }   
+  else if(command == fNewVerboseTrackCmd) { 
+    fTrackingAction
+      ->SetNewVerboseTrackID(fNewVerboseTrackCmd->GetNewIntValue(newValue)); 
+  }   
 }

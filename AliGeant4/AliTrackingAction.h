@@ -37,6 +37,8 @@ class AliTrackingAction : public TG4TrackingAction
 
     // set methods
     void SetVerboseLevel(G4int level);
+    void SetNewVerboseLevel(G4int level);
+    void SetNewVerboseTrackID(G4int trackID);
     void SetSavePrimaries(G4bool savePrimaries);
 
     // get methods
@@ -64,6 +66,8 @@ class AliTrackingAction : public TG4TrackingAction
     G4int   fPrimaryTrackID;   //current primary track ID 
     G4bool  fSavePrimaries;    //control of saving primaries
     G4int   fVerboseLevel;     //verbose level
+    G4int   fNewVerboseLevel;  //new /tracking/verbose level
+    G4int   fNewVerboseTrackID;//track ID for which new /tracking/verbose level is applied
     G4int   fTrackCounter;     //tracks counter
 };
 
