@@ -81,9 +81,12 @@ void AliEMCAL::CreateMaterials()
   // Definitions of materials to build EMCAL and associated tracking media.
   // media number in idtmed are 1599 to 1698.
 
-  // --- Air ---
-  AliMaterial(0, "Air$", 14.61, 7.3, 0.001205, 30420., 67500., 0, 0) ;
-
+  // --- Air ---               
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  AliMixture(0, "Air$", aAir, zAir, dAir, 4, wAir) ;
 
   // --- Lead ---                                                                     
   AliMaterial(1, "Pb$", 207.2, 82, 11.35, 0.56, 0., 0, 0) ;
@@ -108,12 +111,9 @@ void AliEMCAL::CreateMaterials()
   Int_t   isxfld = gAlice->Field()->Integ() ;
   Float_t sxmgmx = gAlice->Field()->Max() ;
 
-   // Air                                            -> idtmed[1599]
-  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
-  Float_t zAir[4]={6.,7.,8.,18.};
-  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
-  Float_t dAir = 1.20479E-3;
-  AliMixture(0, "Air$", aAir, zAir, dAir, 4, wAir) ;
+  // Air                                                                         -> idtmed[1599]
+ AliMedium(0, "Air          $", 0, 0,
+	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
 
   // The Lead                                                                      -> idtmed[1600]
  
