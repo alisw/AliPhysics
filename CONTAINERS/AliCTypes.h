@@ -27,6 +27,9 @@ public:
 
 
 
+// Removed:
+// friend operator>>
+// _ClassInit_
 #define LClassDef(name,id) \
 private: \
    static TClass *fgIsA; \
@@ -38,8 +41,6 @@ public: \
    TClass *IsA() const { return name::Class(); } \
    void ShowMembers(TMemberInspector &insp, char *parent); \
    void Streamer(TBuffer &b); \
-   friend TBuffer &operator>>(TBuffer &buf, name *&obj); \
-   _ClassInit_(name) \
    static const char *DeclFileName() { return __FILE__; } \
    static int DeclFileLine() { return __LINE__; } \
    static const char *ImplFileName(); \
@@ -47,6 +48,7 @@ public: \
    void    *operator new(size_t sz) { return TStorage::ObjectAlloc(sz); } \
    void    *operator new(size_t sz, void *vp) { return vp; } \
    void  Dump();
+   static int ImplFileLine();  
 
 #define LClassImp(name)  \
   void name::Dump() { \
