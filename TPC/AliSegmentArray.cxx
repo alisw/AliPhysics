@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.2.4.1  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:39:36  kowal2
 
 New data structure handling
@@ -85,6 +91,34 @@ AliSegmentArray::AliSegmentArray(Text_t *classname, Int_t n)
    }
 }
 
+AliSegmentArray::AliSegmentArray(const AliSegmentArray &segment)
+{
+  //
+  //copy constructor
+  // to be later implemented
+}
+
+AliSegmentArray &AliSegmentArray::operator = (const AliSegmentArray & segment)
+{
+  //assignment operator
+  //to be later implemented
+  return (*this);
+}
+
+AliSegmentArray::~AliSegmentArray()
+{
+  //
+  // default destructor
+  if (fNSegment>0){
+    fSegment->Delete();
+    delete fSegment;
+  }
+  if (fTree) delete fTree;
+  if (fTreeIndex) delete fTreeIndex;
+  if (fClass!=0) delete fClass;
+}
+
+
 Bool_t AliSegmentArray::SetClass(Text_t *classname)
 {
   //
@@ -120,16 +154,6 @@ Bool_t AliSegmentArray::SetClass(Text_t *classname)
    return kTRUE;
 }
 
-AliSegmentArray::~AliSegmentArray()
-{
-  if (fNSegment>0){
-    fSegment->Delete();
-    delete fSegment;
-  }
-  if (fTree) delete fTree;
-  if (fTreeIndex) delete fTreeIndex;
-  if (fClass!=0) delete fClass;
-}
 
 AliSegmentID * AliSegmentArray::NewSegment()
 {
@@ -313,10 +337,10 @@ void AliSegmentArray::StoreSegment(Int_t index)
   //
   //make segment persistent 
   //
-  const AliSegmentID *  segment = (*this)[index];
-  if (segment == 0 ) return;
+  const AliSegmentID *  ksegment = (*this)[index];
+  if (ksegment == 0 ) return;
   if (fTree==0) MakeTree();
-  fBranch->SetAddress(&segment);
+  fBranch->SetAddress(&ksegment);
   fTree->Fill();
 }
 

@@ -18,10 +18,10 @@ class AliH2F;
 class AliSimDigits : public AliDigits{
 public: 
   AliSimDigits();
-  ~AliSimDigits();
+  virtual ~AliSimDigits();
   void AllocateTrack(Int_t length);  //construct empty buffer fTracks with size rows x column x length (number of tracks for one digit)
-  inline Int_t GetTrackIDFast(Int_t row, Int_t column,Int_t level);  //return track ID  at given row and collumn
-  inline void  SetTrackIDFast(Int_t value,Int_t row, Int_t column,Int_t level);  //set ID track at given row and collumn
+  Int_t GetTrackIDFast(Int_t row, Int_t column,Int_t level);  //return track ID  at given row and collumn
+  void  SetTrackIDFast(Int_t value,Int_t row, Int_t column,Int_t level);  //set ID track at given row and collumn
   virtual Int_t GetTrackID(Int_t row, Int_t column, Int_t level);
   virtual void ExpandTrackBuffer();  //expand buffer to twodimensional array
   virtual void CompresTrackBuffer(Int_t bufType); //compres buffer according buffertype algorithm 
@@ -29,7 +29,7 @@ public:
 		  Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); //draw tracks
   TClonesArray * GenerTPCClonesArray(TClonesArray * arr); //generate TClonnesArray of digits
   //only for demonstration purpose
-public:
+private:
   void InvalidateTrack();
  
   Int_t GetTrackID1(Int_t row, Int_t column, Int_t level);  //returnb track ID of digits - for buffer compresion 1 
@@ -50,7 +50,7 @@ public:
 
 
 
-Int_t AliSimDigits::GetTrackIDFast(Int_t row, Int_t column,Int_t level)
+inline Int_t AliSimDigits::GetTrackIDFast(Int_t row, Int_t column,Int_t level)
 {
   //
   //return track ID  at given row and column
@@ -58,9 +58,10 @@ Int_t AliSimDigits::GetTrackIDFast(Int_t row, Int_t column,Int_t level)
   return fTracks->At(level*fNrows*fNcols+fNrows*column+row); 
 }
  
-void AliSimDigits::SetTrackIDFast(Int_t value,Int_t row, Int_t column,Int_t level)
+inline void AliSimDigits::SetTrackIDFast(Int_t value,Int_t row, Int_t column,Int_t level)
 {
-value+=2;
+  //
+  value+=2;
   //set ID track at given row and collumn
   //  fTracks[level][fTrIndex[level][column]+row]=value; 
   if ( (row<0) || (row>=fNrows)  || (column<0) || (column>=fNcols) ) 
@@ -73,3 +74,9 @@ value+=2;
 
 
 #endif
+
+
+
+
+
+

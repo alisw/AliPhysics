@@ -14,12 +14,33 @@
  **************************************************************************/
 
 /*
+
 $Log$
+Revision 1.2.4.3  2000/06/26 07:39:42  kowal2
+Changes to obey the coding rules
+
+Revision 1.2.4.2  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+
+Revision 1.2.4.1  2000/06/14 16:45:13  kowal2
+Improved algorithms. Compiler warnings removed.
+
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:37:42  kowal2
 
 Digits handling in a new data structure
 
 */
+
+/*MI change -- for Rule checker
+          -- added copy constructor and assignmet operator 
+	  -- new GetSize return size of object in Bytes
+          -- added GetDigitSize and GetOverTh function
+	  -- added GetNRows, GetNCols function
+          -- for Marek -I had it in my code  
+*/ 
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -49,16 +70,46 @@ ClassImp(AliDigits)
 
 AliDigits::AliDigits()
 {
+  // 
+  //default constructor
   fIndex = 0;
   fElements = 0;
   fThreshold =0;
   Invalidate();
 }
 
+AliDigits::AliDigits(const AliDigits& digits)
+{
+  //
+  //copy constructor
+  fNrows = digits.fNrows;
+  fNcols = digits.fNcols;
+  fElements = new AliArrayS(*(digits.fElements));
+  fIndex = new AliArrayI(*(digits.fIndex));
+  fBufType = digits.fBufType;
+  fThreshold = digits.fThreshold;
+  fNelems    = digits.fNelems;
+}
+
+AliDigits & AliDigits::operator =(const AliDigits & digits)
+{
+ //assignment operator
+  fNrows = digits.fNrows;
+  fNcols = digits.fNcols;
+  if (fElements) delete fElements;
+  fElements = new AliArrayS(*(digits.fElements));
+  if (fIndex) delete fIndex;
+  fIndex = new AliArrayI(*(digits.fIndex));
+  fBufType = digits.fBufType;
+  fThreshold = digits.fThreshold;
+  fNelems    = digits.fNelems; 
+  return (*this);
+}
+
 AliDigits::~AliDigits()
 {
   //
-  //defaulta destructor
+  //default destructor
   if (fIndex !=0 ) fIndex->Delete();;
   if (fElements != 0) fElements->Delete();
   
@@ -115,8 +166,57 @@ void AliDigits::Allocate(Int_t rows, Int_t columns)
 }
 
 
+Int_t AliDigits::GetSize()
+{
+  //
+  //return size of object
+  //
+  Int_t size = sizeof(this);
+  if (fIndex!=0) size+= sizeof(fIndex)+fIndex->GetSize()*sizeof(Int_t);
+  if (fElements!=0) size+= sizeof(fElements)+fElements->GetSize()*sizeof(Short_t);
+  return size;
+}
+
+Int_t AliDigits::GetDigitSize() //return total size of pure digit
+{
+  //
+  //return size of PURE DIGITS
+  //
+  if (fElements==0) return 0;
+  else return sizeof(fElements)+fElements->GetSize()*sizeof(Short_t);
+}
+
+Int_t AliDigits::GetOverTh(Float_t threshold,Float_t x1, Float_t x2, Float_t y1, Float_t y2)
+{
+  //
+  //return number of digits over threshold
+  // 
+ if ( (fElements==0) || (fElements->GetSize()<=0)) return 0;
+ 
+ if (x1<=x2) {
+    x1=0;
+    x2=fNrows;
+  }
+  if (y1<=y2) {
+     y1=0;
+     y2=fNcols;
+  }
+  Int_t over=0;
+
+  Bool_t cont=First();
+  for ( cont=First(); cont==kTRUE;cont=Next()) {
+    if ( (CurrentRow()<x1) || (CurrentRow()>x2)) continue;
+    if ( (CurrentColumn()<y1) || (CurrentColumn()>y2)) continue;
+    if (CurrentDigit()>threshold) over++;
+  }
+  return over;
+}
+
+
 Short_t AliDigits::GetDigit(Int_t row, Int_t column)
 {
+  //
+  // return digit for given row and collumn
   if (fBufType ==0) return GetDigitFast(row,column);
   if (fBufType ==1) return GetDigit1(row,column);
 
@@ -215,7 +315,7 @@ AliH2F *  AliDigits::GenerHisto()
   return his;
 }
 
-AliH2F *  AliDigits::Draw(const char *option,Float_t x1, Float_t x2, Float_t y1, Float_t y2)
+AliH2F *AliDigits::DrawDigits(const char *option,Float_t x1, Float_t x2, Float_t y1, Float_t y2)
 {
   //
   //draw digits in given array
@@ -243,8 +343,8 @@ void AliDigits::ExpandBuffer1()
   for (i =0,k=0 ;i<fNcols;i++,k+=fNrows) (*fIndex)[i]=k;
   Int_t col=0;
   Int_t row = 0;
-  Int_t N=fElements->fN;
-  for (i=0;i<N;i++){
+  Int_t n=fElements->fN;
+  for (i=0;i<n;i++){
     //oposite signa means how many unwrited (under threshold) values
     if ((*fElements)[i]<0) row-=fElements->At(i); 
     else {

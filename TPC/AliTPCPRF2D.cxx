@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.4.4.3  2000/06/26 07:39:42  kowal2
+Changes to obey the coding rules
+
+Revision 1.4.4.2  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+
+Revision 1.4.4.1  2000/06/14 16:48:24  kowal2
+Parameter setting improved. Removed compiler warnings
+
+Revision 1.4  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.3.8.2  2000/04/10 08:40:46  kowal2
 
 Small changes by M. Ivanov, improvements of algorithms
@@ -45,6 +57,8 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 
 
+//
+
 #include "TMath.h"
 #include "AliTPCPRF2D.h"
 #include "TF2.h"
@@ -61,8 +75,8 @@ Introduction of the Copyright and cvs Log
 
 extern TStyle * gStyle;
 
-static const Float_t sqrt12=3.46;
-static const Int_t   NPRF = 100;
+const Float_t AliTPCPRF2D::fgSQRT12=3.46;
+const Int_t   AliTPCPRF2D::fgNPRF = 100;
 
 
 static Double_t funGauss2D(Double_t *x, Double_t * par)
@@ -83,23 +97,23 @@ static Double_t funCosh2D(Double_t *x, Double_t * par)
 static Double_t funGati2D(Double_t *x, Double_t * par)
 {
   //Gati function  -needde by the generic function object 
-  Float_t K3=par[1];
-  Float_t K3R=TMath::Sqrt(K3);
-  Float_t K2=(TMath::Pi()/2)*(1-K3R/2.);
-  Float_t K1=K2*K3R/(4*TMath::ATan(K3R));
+  Float_t k3=par[1];
+  Float_t k3R=TMath::Sqrt(k3);
+  Float_t k2=(TMath::Pi()/2)*(1-k3R/2.);
+  Float_t k1=k2*k3R/(4*TMath::ATan(k3R));
   Float_t l=x[0]/par[0];
-  Float_t tan2=TMath::TanH(K2*l);
+  Float_t tan2=TMath::TanH(k2*l);
   tan2*=tan2;
-  Float_t res = K1*(1-tan2)/(1+K3*tan2);
+  Float_t res = k1*(1-tan2)/(1+k3*tan2);
  //par[4] = is equal to k3Y
-  K3=par[4];
-  K3R=TMath::Sqrt(K3);
-  K2=(TMath::Pi()/2)*(1-K3R/2.);
-  K1=K2*K3R/(4*TMath::ATan(K3R));
+  k3=par[4];
+  k3R=TMath::Sqrt(k3);
+  k2=(TMath::Pi()/2)*(1-k3R/2.);
+  k1=k2*k3R/(4*TMath::ATan(k3R));
   l=x[1]/par[0];
-  tan2=TMath::TanH(K2*l);
+  tan2=TMath::TanH(k2*l);
   tan2*=tan2;
-  res = res*K1*(1-tan2)/(1+K3*tan2);  
+  res = res*k1*(1-tan2)/(1+k3*tan2);  
   return res;  
 }   
 
@@ -112,7 +126,7 @@ AliTPCPRF2D::AliTPCPRF2D()
 {
   //default constructor for response function object
   ffcharge = 0;
-  fNPRF =NPRF ;
+  fNPRF = fgNPRF ;
   fSigmaX = 0;
   fSigmaY = 0;
 
@@ -130,8 +144,31 @@ AliTPCPRF2D::AliTPCPRF2D()
   SetY(-0.2,0.2,2);
 }
 
+AliTPCPRF2D::AliTPCPRF2D(const AliTPCPRF2D &prf)
+{
+  //
+  memcpy(this, &prf, sizeof(prf)); 
+  ffcharge = new Float_t[fNPRF*fNYdiv];
+  memcpy(ffcharge,prf.ffcharge, fNPRF*fNYdiv);
+  fGRF = new TF2(*(prf.fGRF)); 
+}
+
+AliTPCPRF2D & AliTPCPRF2D::operator = (const AliTPCPRF2D &prf)
+{
+  //  
+  if (ffcharge) delete ffcharge;
+  if (fGRF) delete fGRF;
+  memcpy(this, &prf, sizeof(prf)); 
+  ffcharge = new Float_t[fNPRF*fNYdiv];
+  memcpy(ffcharge,prf.ffcharge, fNPRF*fNYdiv);
+  fGRF = new TF2(*(prf.fGRF));
+  return (*this);
+}
+
+
 AliTPCPRF2D::~AliTPCPRF2D()
 {
+  //
   if (ffcharge!=0) delete [] ffcharge;
   if (fGRF !=0 ) fGRF->Delete();
 }
@@ -211,13 +248,13 @@ Float_t AliTPCPRF2D::GetPRF(Float_t xin, Float_t yin, Bool_t inter)
       fcharge =&(ffcharge[(i+2)*fNPRF]);
       z3 = GetPRFActiv(xin);
     }
-    Float_t a,b,c,d,K,L;
+    Float_t a,b,c,d,k,l;
     a=z1;
     b=(z2-z0)/2.;
-    K=z2-a-b;
-    L=(z3-z1)/2.-b;
-    d=L-2*K;
-    c=K-d;
+    k=z2-a-b;
+    l=(z3-z1)/2.-b;
+    d=l-2*k;
+    c=k-d;
     Float_t dy=y-Float_t(i);
         Float_t res = a+b*dy+c*dy*dy+d*dy*dy*dy;  
     return res;            
@@ -234,13 +271,13 @@ Float_t AliTPCPRF2D::GetPRFActiv(Float_t xin)
   Int_t i = Int_t(x);
   
   if  ( (i>0) && ((i+2)<fNPRF)) {
-    Float_t a,b,c,d,K,L;
+    Float_t a,b,c,d,k,l;
     a = fcharge[i];
     b = (fcharge[i+1]-fcharge[i-1])*0.5; 
-    K = fcharge[i+1]-a-b;
-    L = (fcharge[i+2]-fcharge[i])*0.5-b;
-    d=L-2.*K;
-    c=K-d;
+    k = fcharge[i+1]-a-b;
+    l = (fcharge[i+2]-fcharge[i])*0.5-b;
+    d=l-2.*k;
+    c=k-d;
     Float_t dx=x-Float_t(i);
     Float_t res = a+b*dx+c*dx*dx+d*dx*dx*dx;  
     return res;
@@ -268,8 +305,8 @@ void AliTPCPRF2D::SetParam( TF2 * GRF,  Float_t kNorm,
    if (fGRF !=0 ) fGRF->Delete();
    fGRF = GRF;
    fkNorm = kNorm;
-   if (sigmaX ==0) sigmaX=(fWidth+fK*fHeightS)/sqrt12;
-   if (sigmaY ==0) sigmaY=(fWidth+fK*fHeightS)/sqrt12;
+   if (sigmaX ==0) sigmaX=(fWidth+fK*fHeightS)/fgSQRT12;
+   if (sigmaY ==0) sigmaY=(fWidth+fK*fHeightS)/fgSQRT12;
    fOrigSigmaX=sigmaX; 
    fOrigSigmaY=sigmaY; 
    fDStep = TMath::Sqrt(sigmaX*sigmaX+fWidth*fWidth/6.)/10.; 
@@ -630,7 +667,7 @@ void AliTPCPRF2D::DrawX(Float_t x1 ,Float_t x2,Float_t y, Bool_t inter)
 { 
   //draw pad response function at interval <x1,x2> at  given y position
   if (fGRF==0) return ;
-  const Int_t N=100;
+  const Int_t kN=100;
   char s[100];
   TCanvas  * c1 = new TCanvas("canPRF","Pad response function",700,900);
   c1->cd();
@@ -642,13 +679,13 @@ void AliTPCPRF2D::DrawX(Float_t x1 ,Float_t x2,Float_t y, Bool_t inter)
   gStyle->SetOptFit(1);
   gStyle->SetOptStat(0); 
   sprintf(s,"PRF response function for chevron pad");  
-  TH1F * hPRFc = new TH1F("hPRFc",s,N+1,x1,x2);
+  TH1F * hPRFc = new TH1F("hPRFc",s,kN+1,x1,x2);
   Float_t x=x1;
   Float_t y1;
 
-  for (Float_t i = 0;i<N+1;i++)
+  for (Float_t i = 0;i<kN+1;i++)
     {
-      x+=(x2-x1)/Float_t(N);
+      x+=(x2-x1)/Float_t(kN);
       y1 = GetPRF(x,y,inter);
       hPRFc->Fill(x,y1);
     };
@@ -689,9 +726,11 @@ void AliTPCPRF2D::DrawX(Float_t x1 ,Float_t x2,Float_t y, Bool_t inter)
 
 
 
-void AliTPCPRF2D::Draw(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2, 
+void AliTPCPRF2D::DrawPRF(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2, 
 		  Bool_t inter, Int_t Nx, Int_t Ny)
 { 
+  //Draw PRF in range x1,x2,y1,y2 
+  //with x binning Nx and y bining Ny
   char s[100];
   if (fGRF==0) return ;
   TCanvas  * c1 = new TCanvas("canPRF","Pad response function",700,900);
@@ -753,8 +792,12 @@ void AliTPCPRF2D::Draw(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2,
 void AliTPCPRF2D::DrawDist(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2, 
 		  Bool_t inter, Int_t Nx, Int_t Ny, Float_t thr)
 { 
-  const Float_t minth=0.00001;
-  if (thr<minth) thr=minth;
+  //Draw COG (Centrum of Gravity)  distortion for  PRF in range x1,x2,y1,y2 
+  //with x binning Nx and y bining Ny
+  //thr is the threshold for COG metheod
+
+  const Float_t kminth=0.00001;
+  if (thr<kminth) thr=kminth;
   char s[100];
   if (fGRF==0) return ;
   TCanvas  * c1 = new TCanvas("padDistortion","COG distortion",700,900);
@@ -789,7 +832,7 @@ void AliTPCPRF2D::DrawDist(Float_t x1 ,Float_t x2,Float_t y1, Float_t y2,
 	      sumx+=z*padx;
 	    }	
 	  };	
-	if (sum>minth)  
+	if (sum>kminth)  
 	  {
 	    ddx = (x-(sumx/sum));
 	  }

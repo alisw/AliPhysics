@@ -17,7 +17,7 @@
 class AliDetectorParam : public TNamed {
 public:
   AliDetectorParam(){;}
-  virtual Int_t GetNSegmentsTotal(){return 0;} //get total nuber of segments
+  virtual Int_t GetNSegmentsTotal() const {return 0;} //get total nuber of segments
   virtual Bool_t Get1DIndex(Int_t *index, const Int_t * arrindex) {return kFALSE;} 
   //transform multidimensional index to one dimesional
   virtual Bool_t GetNDIndex(const Int_t * index1, Int_t * arrIndex) {return kFALSE;}

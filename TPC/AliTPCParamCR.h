@@ -8,15 +8,16 @@
 ////////////////////////////////////////////////
 //  Manager class for TPC parameters          //
 ////////////////////////////////////////////////
-#include "AliTPCPRF2D.h"
-#include "AliTPCRF1D.h"
 #include "AliTPCParam.h"
+
+class AliTPCRF1D;
+class AliTPCPRF2D;
 
 class AliTPCParamCR : public AliTPCParam {
 public:
   AliTPCParamCR();
   virtual ~AliTPCParamCR();
-  Int_t  CalcResponse(Float_t* x, Int_t * index);
+  Int_t  CalcResponse(Float_t* x, Int_t * index, Int_t dummy=0);
   //calculate bin response as function of the input position -x 
   //return number of valid response bin
   

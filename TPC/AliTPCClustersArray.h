@@ -35,7 +35,7 @@ public:
   AliTPCClustersRow * LoadRow(Int_t sector,Int_t row);
   Bool_t StoreRow(Int_t sector,Int_t row);
   Bool_t ClearRow(Int_t sector,Int_t row);
-  Bool_t Setup(AliDetectorParam *param);     
+  Bool_t Setup(const AliDetectorParam *param);     
   //construct array  according parameters in fParam   
   Bool_t  Update(); //blabla 
   AliSegmentID * NewSegment(); //create new segment - AliTPCClustersRow

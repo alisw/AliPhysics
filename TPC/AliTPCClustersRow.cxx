@@ -22,8 +22,8 @@
 //                                                                           //
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
-#include "AliTPC.h"
-#include "AliCluster.h"
+#include "AliTPCcluster.h"
+#include <TClass.h>
 #include "AliClusters.h"
 #include "AliTPCClustersRow.h"
 #include "TDirectory.h"
@@ -46,9 +46,18 @@ AliTPCClustersRow::AliTPCClustersRow()
 }
 
 //_____________________________________________________________________________
-//AliTPCClustersRow::AliTPCClustersRow(Int_t size) 
-//{    
-//  fNclusters=0;
-//  fClusters = new TClonesArray("AliTPCcluster",size);
-//}
+TObject *AliTPCClustersRow::InsertCluster(const TObject *c) 
+{    
+  //
+  // Add a simulated cluster copy to the list
+  //
+  if (fClass==0) {
+    Error("AliClusters", "class type not specified");
+    return 0;
+  }
+  if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),1000);
+  TClonesArray &lclusters = *fClusters;
+  return new(lclusters[fNclusters++]) AliTPCcluster(*((AliTPCcluster*)c));
+}
+
 

@@ -4,6 +4,7 @@
 
 /* $Id$ */
 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -16,7 +17,7 @@
 #pragma link C++ class  AliTPChit;
 #pragma link C++ class  AliTPCdigit;
 #pragma link C++ class  AliTPCcluster;
-#pragma link C++ class  AliTPCtrack;
+#pragma link C++ class  AliTPCtrack-;
 
 #pragma link C++ class  AliTPCParam-;
 #pragma link C++ class  AliTPCParamSR-;
@@ -44,8 +45,7 @@
 #pragma link C++ class AliTPCDigitsArray;
 
 
-#pragma link C++ class AliClusterFinder-;
-#pragma link C++ class AliCell;
+#pragma link C++ class AliTPCClusterFinder-;
 #pragma link C++ class AliH2F;
 
 

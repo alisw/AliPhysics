@@ -15,9 +15,8 @@
 
 /*
 $Log$
-Revision 1.1.4.2  2000/04/10 11:34:56  kowal2
-
-Experimental cluster finder
+Revision 1.1.2.1  2000/06/25 08:52:51  kowal2
+replacing AliClusterFinder
 
 */
 
@@ -39,6 +38,7 @@ Experimental cluster finder
 //direction nder threshold or response begin
 //to increase in given radial direction
 //-----------------------------------------------------------------------------
+
 #include "TMinuit.h"
 #include "AliArrayI.h"
 #include "TClonesArray.h"
@@ -47,9 +47,8 @@ Experimental cluster finder
 #include "AliH2F.h"
 #include "TMarker.h"
 #include "AliCluster.h"
-#include "AliClusterFinder.h"
-
-#include "iostream.h" //I.Belikov
+#include "AliTPCClusterFinder.h"
+#include <fstream.h>
 
 //direction constants possible direction in 8 different sectors
 //
@@ -60,7 +59,7 @@ const Int_t kClStackSize =1000;
 
 
 
-static AliClusterFinder * gClusterFinder; //for fitting routine
+static AliTPCClusterFinder * gClusterFinder; //for fitting routine
 
 void gauss(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
@@ -88,14 +87,14 @@ void gauss(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 }
 
 
-ClassImp(AliClusterFinder)
+ClassImp(AliTPCClusterFinder)
+  //ClassImp(AliCell)
 
-AliClusterFinder::AliClusterFinder()
+AliTPCClusterFinder::AliTPCClusterFinder()
 {
   fDigits =0;
   fDimX = 0;
   fDimY = 0;
-  fOver = 0;
   fNoiseTh = 3;
   fMulSigma2 = 16; //4 sigma
   fDirSigmaFac = 1.4;
@@ -105,6 +104,9 @@ AliClusterFinder::AliClusterFinder()
   fStack = new AliArrayI;
   fStack->Set(kClStackSize);  
   fClustersArray =0;
+  SetSigmaX(1,0,0);
+  SetSigmaY(1,0,0);
+
 
   fDetectorParam = 0;
   ResetStatus(); 
@@ -116,16 +118,68 @@ AliClusterFinder::AliClusterFinder()
 }
 
 
-AliClusterFinder::~AliClusterFinder()
+AliTPCClusterFinder::~AliTPCClusterFinder()
 {
  if (fDigits  != 0) delete fDigits;
 }
 
-void AliClusterFinder::GetHisto(TH2F * his2)
+void AliTPCClusterFinder::SetSigmaX(Float_t s0, Float_t s1x, Float_t s1y)
+{
+  fSigmaX[0]=s0;
+  fSigmaX[1]=s1x;
+  fSigmaX[2]=s1y;
+
+}
+void AliTPCClusterFinder::SetSigmaY(Float_t s0, Float_t s1x, Float_t s1y)
+{
+  fSigmaY[0]=s0;
+  fSigmaY[1]=s1x;
+  fSigmaY[2]=s1y;
+}
+
+
+
+Bool_t AliTPCClusterFinder::SetSigma2(Int_t i, Int_t j, Float_t & sigmax2, Float_t &sigmay2)
+{
+  //
+  //set sigmax2 and sigma y2  accordig i and j position of cell 
+  //
+  
+  //  Float_t x[3] = {ItoX(i),JtoY(j),0};
+  Float_t x= ItoX(i);
+  Float_t y= JtoY(j);
+
+  sigmax2= fSigmaX[0]+fSigmaX[1]*x+fSigmaX[2]*y;
+  sigmay2= fSigmaY[0]+fSigmaY[1]*x+fSigmaY[2]*y;
+  return kTRUE;  
+}
+
+/*
+Bool_t AliTPCClusterFinder::SetSigma2(Int_t i, Int_t j, Float_t & sigmax2, Float_t &sigmay2)
+{
+  //
+  //set sigmax2 and sigma y2  accordig i and j position of cell 
+  //
+  if (fDetectorParam==0) {
+    sigmax2=1;
+    sigmay2=1;
+    return kFALSE;
+  }
+  Float_t x[3] = {ItoX(i),JtoY(j),0};
+  Float_t sigma[2];
+  fDetectorParam->GetClusterSize(x,fDetectorIndex,0,0,sigma);
+  sigmax2=sigma[0]*(fX2-fX1)*(fX2-fX1)/(fDimX*fDimX);
+  sigmay2=sigma[1]*(fY2-fY1)*(fY2-fY1)/(fDimY*fDimY);
+  return kTRUE;
+}
+*/
+
+
+void AliTPCClusterFinder::GetHisto(TH2F * his2)
 {
   
-  Int_t idim =his2->GetNbinsX();
-  Int_t jdim =his2->GetNbinsY();
+  UInt_t idim =his2->GetNbinsX();
+  UInt_t jdim =his2->GetNbinsY();
   fX1 = his2->GetXaxis()->GetXmin();
   fX2 = his2->GetXaxis()->GetXmax();
   fY1 = his2->GetYaxis()->GetXmin();
@@ -136,17 +190,20 @@ void AliClusterFinder::GetHisto(TH2F * his2)
       rOK = kTRUE;
       fDimX = idim;
       fDimY = jdim;
-      //Int_t size =idim*jdim;       
+      Int_t size =idim*jdim;       
       if (fDigits !=0) delete fDigits;
-      fDigits  = (AliCell*) new AliCell[idim*jdim];
+      fDigits  = (Int_t*) new Int_t[size];
+      fCells  = (AliCell*) new AliCell[size];
+
     }  else 
       rOK=kFALSE;
   for (Int_t i = 0; i<idim;i++)    
     for (Int_t j = 0; j<jdim;j++)
       {
 	Int_t index = his2->GetBin(i+1,j+1);
-	AliCell * cell = GetCell(i,j);
-	if (cell!=0) cell->SetSignal(his2->GetBinContent(index));
+	//AliCell * cell = GetCell(i,j);
+	//if (cell!=0) cell->SetSignal(his2->GetBinContent(index));
+	SetSignal(his2->GetBinContent(index),i,j);
       }
    
 }
@@ -154,7 +211,7 @@ void AliClusterFinder::GetHisto(TH2F * his2)
 
 
 
-void AliClusterFinder::FindMaxima()
+void AliTPCClusterFinder::FindMaxima()
 {
   for (Int_t i=0; i<fDimX; i++) 
     for (Int_t j=0;j<fDimY; j++)      
@@ -162,7 +219,7 @@ void AliClusterFinder::FindMaxima()
 }
 
  
-void  AliClusterFinder::Transform(AliDigitCluster * c)
+void  AliTPCClusterFinder::Transform(AliDigitCluster * c)
 {
   //transform coordinata from bin coordinata to "normal coordinata"
   //for example if we initialize finder with histogram
@@ -176,7 +233,7 @@ void  AliClusterFinder::Transform(AliDigitCluster * c)
   c->fSigmaY2=c->fSigmaY2*(fY2-fY1)*(fY2-fY1)/(fDimY*fDimY);  
   c->fArea   =c->fArea*(fX2-fX1)*(fY2-fY1)/(fDimX*fDimY); 
 }
-void  AliClusterFinder::AddToStack(Int_t i, Int_t j, Int_t signal)
+void  AliTPCClusterFinder::AddToStack(Int_t i, Int_t j, Int_t signal)
 {
   //
   //add digit to stack
@@ -188,13 +245,13 @@ void  AliClusterFinder::AddToStack(Int_t i, Int_t j, Int_t signal)
   fStackIndex+=3;  
 }
 
-void AliClusterFinder::GetClusterStatistic(AliDigitCluster & cluster)
+void AliTPCClusterFinder::GetClusterStatistic(AliDigitCluster & cluster)
 {
   //
   //calculate statistic of cluster 
   //
   Double_t sumxw,sumyw,sumx2w,sumy2w,sumxyw,sumw;
-  Int_t minx,maxx,miny,maxy,maxQ;
+  Int_t minx,maxx,miny,maxy;
   sumxw=sumyw=sumx2w=sumy2w=sumxyw=sumw=0;
   minx=fDimX;
   maxx=-fDimX;
@@ -202,13 +259,22 @@ void AliClusterFinder::GetClusterStatistic(AliDigitCluster & cluster)
   maxy=-fDimY;
   Int_t x0=fStack->At(0);
   Int_t y0=fStack->At(1);
-  maxQ=fStack->At(2);
+  Int_t maxQx =x0;
+  Int_t maxQy =y0;  
+  Int_t maxQ=fStack->At(2);
+  
+
   for (Int_t i = 0; i<fStackIndex;i+=3){
     Int_t x = fStack->At(i);
     Int_t y = fStack->At(i+1);
     Int_t dx=x-x0;
     Int_t dy=y-y0;
     Int_t w = fStack->At(i+2);
+    if (w>maxQ){
+      maxQ = w;
+      maxQx = x;
+      maxQy=y;
+    }	
     if (x<minx) minx=x;
     if (y<miny) miny=y;
     if (x>maxx) maxx=x;
@@ -228,8 +294,8 @@ void AliClusterFinder::GetClusterStatistic(AliDigitCluster & cluster)
     cluster.fSigmaX2 = sumx2w/sumw-cluster.fX*cluster.fX;
     cluster.fSigmaY2 = sumy2w/sumw-cluster.fY*cluster.fY;
     cluster.fSigmaXY = sumxyw/sumw-cluster.fX*cluster.fY;
-    cluster.fMaxX = x0;
-    cluster.fMaxY = y0; 
+    cluster.fMaxX = maxQx;
+    cluster.fMaxY = maxQy; 
     cluster.fMax = maxQ;
     cluster.fArea = fStackIndex/3;  
     cluster.fNx = maxx-minx+1;
@@ -238,7 +304,7 @@ void AliClusterFinder::GetClusterStatistic(AliDigitCluster & cluster)
     cluster.fY +=y0;
   }
 }
-void AliClusterFinder::GetClusterFit(AliDigitCluster & cluster)
+void AliTPCClusterFinder::GetClusterFit(AliDigitCluster & cluster)
 {
   //
   //calculate statistic of cluster 
@@ -333,7 +399,7 @@ void AliClusterFinder::GetClusterFit(AliDigitCluster & cluster)
   }
 }
 
-Bool_t   AliClusterFinder::CheckIfDirBorder(Float_t x, Float_t y, 
+Bool_t   AliTPCClusterFinder::CheckIfDirBorder(Float_t x, Float_t y, 
 					  Int_t i,Int_t j)
 {
   //
@@ -343,7 +409,8 @@ Bool_t   AliClusterFinder::CheckIfDirBorder(Float_t x, Float_t y,
   //direction is given by the 
   Float_t virtualcell;
   AliCell * cellor= GetCell(i,j);
-     
+  Int_t     sigor = GetSignal(i,j);
+
   //control derivation in direction
   //if function grows up in direction then there is border
   Float_t dx = i-x;
@@ -359,28 +426,30 @@ Bool_t   AliClusterFinder::CheckIfDirBorder(Float_t x, Float_t y,
   //I accept sigmax and sigma y bigge by factor sqrt(fDirsigmaFac)
   Float_t amp = TMath::Exp(-d2)*fCurrentMaxAmp*fDirAmpFac; //safety factor fDirFac>1
 
-  if (cellor->GetSignal()>amp) return kTRUE; 
+  if (sigor>amp) return kTRUE; 
   if (dd==0) return kFALSE;
 
   dx/=dd;
   dy/=dd;  
   virtualcell = GetVirtualSignal(i+dx,j+dy);
   if (virtualcell <=fThreshold) return kFALSE;
-  if (virtualcell>cellor->GetSignal())
-    if (virtualcell>(cellor->GetSignal()+fNoiseTh))
-      {cellor->SetDirBorder(fIndex+1); return kTRUE;}
+  if (virtualcell>sigor)
+    if (virtualcell>(sigor+fNoiseTh))
+      {cellor->SetDirBorder(fIndex); return kTRUE;}
     else
       {
 	virtualcell = GetVirtualSignal(i+2*dx,j+2*dy);
-	if (virtualcell>cellor->GetSignal())
-	  { cellor->SetDirBorder(fIndex+1); return kTRUE;}       
+	if (virtualcell>sigor)
+	  { cellor->SetDirBorder(fIndex); return kTRUE;}       
       };
   return kFALSE;  
 }
 
 
 
-Bool_t  AliClusterFinder::IsMaximum(Int_t i, Int_t  j)
+
+
+Bool_t  AliTPCClusterFinder::IsMaximum(Int_t i, Int_t  j)
 {
   //there is maximum if given digits is 1 sigma over all adjacent
   //in 8 neighborow 
@@ -391,27 +460,29 @@ Bool_t  AliClusterFinder::IsMaximum(Int_t i, Int_t  j)
   Int_t overth=0;
   Int_t oversigma =0;
   AliCell * cell = GetCell(i,j); 
+  Int_t signal = GetSignal(i,j);
   if (cell == 0) return kFALSE;
   for ( Int_t di=-1;di<=1;di++)
     for ( Int_t dj=-1;dj<=1;dj++){      
       if ( (di!=0) || (dj!=0))
 	{
 	  AliCell * cell2=GetCell(i+di,j+dj);
+	  Int_t signal2 = GetSignal(i+di,j+dj);
 	  if (cell2 == 0) {
 	    over+=1;
 	    oversigma+=1;
 	  }
 	  else
 	    {
-	      if (cell2->GetSignal()>cell->GetSignal()) return kFALSE;
-	      if (cell2->GetSignal()>fThreshold) overth++;
-	      if (cell2->GetSignal()==cell->GetSignal()) {
+	      if (signal2>signal) return kFALSE;
+	      if (signal2>fThreshold) overth++;
+	      if (signal2==signal) {
 		if (di<0) return kFALSE; 
 		if ( (di+dj)<0) return kFALSE;
 	      }
-	      //	      if (cell->GetSignal()>=cell2->GetSignal()){
+	      //	      if (signal>=signal2){
 	      over+=1;
-	      if (cell->GetSignal()>fNoiseTh+cell2->GetSignal())	     
+	      if (signal>fNoiseTh+signal2)	     
 		oversigma+=1;		
 	      //}
 	    }
@@ -423,24 +494,24 @@ Bool_t  AliClusterFinder::IsMaximum(Int_t i, Int_t  j)
   if (oversigma==8) {
     fCurrentMaxX = i;
     fCurrentMaxY = j;
-    fCurrentMaxAmp =cell->GetSignal();
-    SetMaximum(fIndex+1,i,j);
+    fCurrentMaxAmp =signal;
+    SetMaximum(fIndex,i,j);
     return kTRUE;
   }
   //check if there exist virtual maximum
-  for (Float_t dii=0;(dii<1);dii+=0.5)
-    for (Float_t dj=0;(dj<1);dj+=0.5)	   	  
-      if (IsVirtualMaximum(Float_t(i)+dii,Float_t(j)+dj)){
-	fCurrentMaxX = i+dii;
-	fCurrentMaxY = j+dj;
-	fCurrentMaxAmp =cell->GetSignal(); 
-	SetMaximum(fIndex+1,i,j);
+  for (Float_t ddi=0.;(ddi<1.);ddi+=0.5)
+    for (Float_t ddj=0.;(ddj<1.);ddj+=0.5)	   	  
+      if (IsVirtualMaximum(Float_t(i)+ddi,Float_t(j)+ddj)){
+	fCurrentMaxX = i+ddi;
+	fCurrentMaxY = j+ddj;
+	fCurrentMaxAmp =signal; 
+	SetMaximum(fIndex,i,j);
 	return kTRUE;	
       }
   return kFALSE;
 }
 
-Bool_t  AliClusterFinder::IsVirtualMaximum(Float_t x, Float_t  y)
+Bool_t  AliTPCClusterFinder::IsVirtualMaximum(Float_t x, Float_t  y)
 {
   //there is maximum if given digits is 1 sigma over all adjacent
   //in 8 neighborow or 
@@ -475,11 +546,11 @@ Bool_t  AliClusterFinder::IsVirtualMaximum(Float_t x, Float_t  y)
   if (oversigma==8)  res = kTRUE;
   else if ((over==8)&&(GetNType()==8)) res=kTRUE;
   else if (over ==8 )
-    for ( Int_t dia=-2;dia<=2;dia++)
+    for ( Int_t di=-2;di<=2;di++)
       for ( Int_t dj=-2;dj<=2;dj++)
-	if ( (dia==2)||(dia==-2) || (dj==2)|| (dj==-2) )
+	if ( (di==2)||(di==-2) || (dj==2)|| (dj==-2) )
 	  {
-	    Float_t virtualcell2=GetVirtualSignal(x+dia,y+dj);
+	    Float_t virtualcell2=GetVirtualSignal(x+di,y+dj);
 	    if (virtualcell2 < 0) {
 	      over+=1;
 	      oversigma+=1;
@@ -495,36 +566,36 @@ Bool_t  AliClusterFinder::IsVirtualMaximum(Float_t x, Float_t  y)
 }
 
 
-void AliClusterFinder::ResetSignal()
+void AliTPCClusterFinder::ResetSignal()
 {
    //reset dignals to 0
   Int_t size = fDimX*fDimY;
-  AliCell *dig=fDigits;
+  AliCell *dig=fCells;
   if (rOK==kTRUE) for (Int_t i=0 ; i<size;i++) dig[i] = 0; 
 }
 
 
 
-void AliClusterFinder::ResetStatus()
+void AliTPCClusterFinder::ResetStatus()
 {
    //reset status of signals to not used
   Int_t size = fDimX*fDimY;
-  AliCell *dig=fDigits;
+  AliCell *dig=fCells;
   if (rOK==kTRUE) for (Int_t i=0 ; i<size;i++) 
       dig[i].SetStatus(0);     
 } 
 
 
-AliCell  *  AliClusterFinder::GetCell(Int_t i, Int_t j)
+AliCell  *  AliTPCClusterFinder::GetCell(Int_t i, Int_t j)
 {
   //return reference to the cell with index i,j 
   if (rOK == kTRUE)
     if ( (i>=0) && (i<fDimX) && (j>=0) && (j<fDimY) )
-      return &fDigits[i+j*fDimX];
+      return &fCells[i+j*fDimX];
   return 0; 
 }
 
-Float_t   AliClusterFinder::GetVirtualSignal(Float_t ri, Float_t rj)
+Float_t   AliTPCClusterFinder::GetVirtualSignal(Float_t ri, Float_t rj)
 {
   //it generate virtual cell as mean value from different cels
   //after using it must be destructed !!!  
@@ -541,9 +612,10 @@ Float_t   AliClusterFinder::GetVirtualSignal(Float_t ri, Float_t rj)
 	if (w>0) w=1/TMath::Sqrt(w);
 	else w=9999999;
 	AliCell * cel2 =GetCell(i+di,j+dj);
+	Int_t signal2 = GetSignal(i+di,j+dj);
         if (cel2!=0) {
 	  sumw+=w;
-	  sum+= cel2->GetSignal()*w;
+	  sum+= signal2*w;
 	}
       }
   if (sumw>0)  return (sum/sumw);
@@ -553,35 +625,18 @@ Float_t   AliClusterFinder::GetVirtualSignal(Float_t ri, Float_t rj)
 
 
 
-void AliClusterFinder::Streamer(TBuffer & R__b)
+void AliTPCClusterFinder::Streamer(TBuffer & R__b)
 {
   if (R__b.IsReading()) {
     //      Version_t R__v = R__b.ReadVersion();
    } else {
-      R__b.WriteVersion(AliClusterFinder::IsA());    
+      R__b.WriteVersion(AliTPCClusterFinder::IsA());    
    } 
 }
 
 
-Bool_t AliClusterFinder::SetSigma2(Int_t i, Int_t j, Float_t & sigmax2, Float_t &sigmay2)
-{
-  //
-  //set sigmax2 and sigma y2  accordig i and j position of cell 
-  //
-  if (fDetectorParam==0) {
-    sigmax2=1;
-    sigmay2=1;
-    return kFALSE;
-  }
-  Float_t x[3] = {ItoX(i),JtoY(j),0};
-  Float_t sigma[2];
-  fDetectorParam->GetClusterSize(x,fDetectorIndex,0,0,sigma);
-  sigmax2=sigma[0]*(fX2-fX1)*(fX2-fX1)/(fDimX*fDimX);
-  sigmay2=sigma[1]*(fY2-fY1)*(fY2-fY1)/(fDimY*fDimY);
-  return kTRUE;
-}
 
-void AliClusterFinder::SetBlockIndex(Int_t * index)
+void AliTPCClusterFinder::SetBlockIndex(Int_t * index)
 {
   //
   //calculate which indexes we must check for border
@@ -615,17 +670,20 @@ void AliClusterFinder::SetBlockIndex(Int_t * index)
 //***********************************************************************
 //***********************************************************************
 
-TClonesArray * AliClusterFinder::FindPeaks1(TClonesArray *arr)
+TClonesArray * AliTPCClusterFinder::FindPeaks1(TClonesArray *arr)
 {
   //find peaks and write it in form of AliTPCcluster to array
-  TClonesArray * clusters;
-  if (arr==0)  clusters=new TClonesArray("AliDigitCluster",300);
-  else clusters = arr;
-  fClustersArray = clusters;
-  AliDigitCluster c;          
-  Int_t index = clusters->GetEntriesFast();
+  if (arr==0){
+    fClustersArray=new TClonesArray("AliDigitCluster",300);
+    fIndex=1;
+  }
+  else {
+    fClustersArray = arr;
+    fIndex = fClustersArray->GetEntriesFast();
+  }
+ 
+  AliDigitCluster c;           
   ResetStatus();  
-
    for (Int_t i=0; i<fDimX; i++) 
      for (Int_t j=0;j<fDimY; j++) 
        {	
@@ -641,25 +699,28 @@ TClonesArray * AliClusterFinder::FindPeaks1(TClonesArray *arr)
 	   //	   
 	   Transform(&c);
 	   //write cluster information to array
-	   TClonesArray &lclusters = *clusters;
-	   new(lclusters[index++]) AliDigitCluster(c);
+	   TClonesArray &lclusters = *fClustersArray;
+	   new (lclusters[fIndex++])  AliDigitCluster(c);
 	   //             cout<<"fx="<<c.fX<<"   fy"<<c.fY<<"\n";	   
 	 } 
        }
-   return clusters;
+   return fClustersArray;
 }
 
 
-TClonesArray * AliClusterFinder::FindPeaks2(TClonesArray *arr)
+TClonesArray * AliTPCClusterFinder::FindPeaks2(TClonesArray *arr)
 {
   //find peaks and write it in form of AliTPCcluster to array
-  TClonesArray * clusters;
-  if (arr==0)  clusters=new TClonesArray("AliDigitCluster",300);
-  else clusters = arr;
-  fClustersArray = clusters;
-  AliDigitCluster c;          
-  fIndex = clusters->GetEntriesFast();
- 
+  if (arr==0){
+    fClustersArray=new TClonesArray("AliDigitCluster",300);
+    fIndex=1;
+  }
+  else {
+    fClustersArray = arr;
+    fIndex = fClustersArray->GetEntriesFast();
+  }
+
+  AliDigitCluster c;           
   ResetStatus();  
   
    for (Int_t i=0; i<fDimX; i++) 
@@ -678,26 +739,29 @@ TClonesArray * AliClusterFinder::FindPeaks2(TClonesArray *arr)
 	     //	   
 	     Transform(&c);
 	     //write cluster information to array
-	     TClonesArray &lclusters = *clusters;
+	     TClonesArray &lclusters = *fClustersArray;
 	     new(lclusters[fIndex++]) AliDigitCluster(c);
 	     //             cout<<"fx="<<c.fX<<"   fy"<<c.fY<<"\n";	   
 	   } 
 	 }
        }
-   return clusters;
+   return fClustersArray;
 }
 
 
-TClonesArray * AliClusterFinder::FindPeaks3(TClonesArray *arr)
+TClonesArray * AliTPCClusterFinder::FindPeaks3(TClonesArray *arr)
 {
   //find peaks and write it in form of AliTPCcluster to array
-  TClonesArray * clusters;
-  if (arr==0)  clusters=new TClonesArray("AliDigitCluster",300);
-  else clusters = arr;
-  fClustersArray = clusters;
-  AliDigitCluster c;          
-  fIndex = clusters->GetEntriesFast();
- 
+  if (arr==0){
+    fClustersArray=new TClonesArray("AliDigitCluster",300);
+    fIndex=1;
+  }
+  else {
+    fClustersArray = arr;
+    fIndex = fClustersArray->GetEntriesFast();
+  }
+  
+  AliDigitCluster c;    
   ResetStatus();  
   
   Int_t dmax=5;
@@ -708,42 +772,43 @@ TClonesArray * AliClusterFinder::FindPeaks3(TClonesArray *arr)
 	 fStackIndex=0;  
 	 if (IsMaximum(i,j) == kTRUE){
 	   SetSigma2(i,j,fCurrentSigmaX2,fCurrentSigmaY2);
-           AddToStack(i,j,GetCell(i,j)->GetSignal());
+           AddToStack(i,j,GetSignal(i,j));
 	   
 	   //loop over different distance 
 	   naccepted =1;
 	   for ( Int_t dd =1;((dd<=dmax) && (naccepted>0));dd++){
              naccepted=0; 
 	     for (Int_t di = -dd;di<=dd;di++){
-	       Int_t ddj = dd-TMath::Abs(di);
+	       Int_t ddj = dd-abs(di);
 	       Int_t sigstart = (ddj>0) ?  -1 : 0;
 	       for (Int_t sig = sigstart;sig<=1;sig+=2){
 		 Int_t dj= sig*ddj; 
 		 AliCell *cell= GetCell(i+di,j+dj);
+		 Int_t signal = GetSignal(i+di,j+dj);
 		 if (cell==0) continue;
 		 Int_t index[6];
 		 index[0]=di;
 		 index[1]=dj;
 		 if (dd>2) {
 		   SetBlockIndex(index);  //adjust index to control	       
-		   if ( IsBorder(fIndex+1,i+index[2],j+index[3]) || 
-			IsBorder(fIndex+1,i+index[4],j+index[5])) {
-		     cell->SetBorder(fIndex+1);   
+		   if ( IsBorder(fIndex,i+index[2],j+index[3]) || 
+			IsBorder(fIndex,i+index[4],j+index[5])) {
+		     cell->SetBorder(fIndex);   
 		     continue;
 		   }
 		 }
-		 if ( cell->GetSignal()<=fThreshold ){
+		 if ( signal<=fThreshold ){
 		   //if under threshold
-		   cell->SetThBorder(fIndex+1);
-		   if (fBFit==kTRUE)  AddToStack(i+di,j+dj,cell->GetSignal());
+		   cell->SetThBorder(fIndex);
+		   if (fBFit==kTRUE)  AddToStack(i+di,j+dj,signal);
 		   continue;
 		 }
 		 naccepted++;	       
 		 if (CheckIfDirBorder(fCurrentMaxX,fCurrentMaxY,i+di,j+dj) == kTRUE) {
-		   if (fBFit==kFALSE) AddToStack(i+di,j+dj,cell->GetSignal()/2);
+		   if (fBFit==kFALSE) AddToStack(i+di,j+dj,signal/2);
 		   continue; 
 		 }
-		 AddToStack(i+di,j+dj,cell->GetSignal());
+		 AddToStack(i+di,j+dj,signal);
 
 	       } //loop over sig dj 
 	     } //loop over di
@@ -758,13 +823,13 @@ TClonesArray * AliClusterFinder::FindPeaks3(TClonesArray *arr)
 	   //	   
 	   Transform(&c);
 	   //write cluster information to array
-	   TClonesArray &lclusters = *clusters;
+	   TClonesArray &lclusters = *fClustersArray;
 	   new(lclusters[fIndex++]) AliDigitCluster(c);
 	   //             cout<<"fx="<<c.fX<<"   fy"<<c.fY<<"\n";	   
 	 }
        } //lopp over all digits
 
-   return clusters;
+   return fClustersArray;
 }
 
 
@@ -772,7 +837,7 @@ TClonesArray * AliClusterFinder::FindPeaks3(TClonesArray *arr)
 
 
 
-void AliClusterFinder::Adjacent(Int_t i,Int_t j)
+void AliTPCClusterFinder::Adjacent(Int_t i,Int_t j)
 {
   //
   //recursive agorithm program
@@ -781,33 +846,34 @@ void AliClusterFinder::Adjacent(Int_t i,Int_t j)
     Float_t delta = (i-fCurrentMaxX)*(i-fCurrentMaxX)/fCurrentSigmaX2;
     delta+=(j-fCurrentMaxY)*(j-fCurrentMaxY)/fCurrentSigmaY2;
     if (delta > fMulSigma2) {
-       SetDirBorder(fIndex+1,i,j);
+       SetDirBorder(fIndex,i,j);
       return;
     }
   }
   AliCell *cell = GetCell(i,j);
-  Int_t q=cell->GetSignal();  
-  cell->SetChecked(fIndex+1);  
+  Int_t signal = GetSignal(i,j);
+  Int_t q=signal;  
+  cell->SetChecked(fIndex);  
   if ( (q>fThreshold) || (fBFit==kTRUE))   AddToStack(i,j,q);
   if ( q >fThreshold )
     {
       
       AliCell * newcel;      
       newcel = GetCell(i-1,j);
-      if (newcel !=0) if (!newcel->IsChecked(fIndex+1) ) Adjacent(i-1,j);
+      if (newcel !=0) if (!newcel->IsChecked(fIndex) ) Adjacent(i-1,j);
       newcel = GetCell(i,j-1);
-      if (newcel !=0) if (!newcel->IsChecked(fIndex+1) ) Adjacent(i,j-1);
+      if (newcel !=0) if (!newcel->IsChecked(fIndex) ) Adjacent(i,j-1);
       newcel = GetCell(i+1,j);
-      if (newcel !=0) if (!newcel->IsChecked(fIndex+1) ) Adjacent(i+1,j);
+      if (newcel !=0) if (!newcel->IsChecked(fIndex) ) Adjacent(i+1,j);
       newcel = GetCell(i,j+1);
-      if (newcel !=0) if (!newcel->IsChecked(fIndex+1) ) Adjacent(i,j+1);
+      if (newcel !=0) if (!newcel->IsChecked(fIndex) ) Adjacent(i,j+1);
     }      
-  else cell->SetThBorder(fIndex+1);
+  else cell->SetThBorder(fIndex);
 }
 
 
 
-AliH2F *  AliClusterFinder::Draw( const char *option, 
+AliH2F *  AliTPCClusterFinder::DrawHisto( const char *option=0, 
 			      Float_t x1, Float_t x2, Float_t y1, Float_t y2)
 {
   //
@@ -839,7 +905,7 @@ AliH2F *  AliClusterFinder::Draw( const char *option,
 }
 
 
-void AliClusterFinder::DrawCluster(
+void AliTPCClusterFinder::DrawCluster(
 				  Int_t color, Int_t size, Int_t style)
 {
 
@@ -860,7 +926,7 @@ void AliClusterFinder::DrawCluster(
 
 
 
-AliH2F *  AliClusterFinder::DrawBorders( const char *option,  AliH2F *h, Int_t type ,
+AliH2F *  AliTPCClusterFinder::DrawBorders( const char *option,  AliH2F *h, Int_t type ,
 			      Float_t x1, Float_t x2, Float_t y1, Float_t y2)
 {
   //

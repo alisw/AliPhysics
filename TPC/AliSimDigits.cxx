@@ -15,12 +15,25 @@
 
 /*
 $Log$
+Revision 1.2.4.3  2000/06/26 07:39:42  kowal2
+Changes to obey the coding rules
+
+Revision 1.2.4.2  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+
+Revision 1.2.4.1  2000/06/14 16:45:13  kowal2
+Improved algorithms. Compiler warnings removed.
+
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:37:42  kowal2
 
 Digits handling in a new data structure
 
 */
 
+//
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -153,9 +166,9 @@ Int_t  AliSimDigits::GetTrackID1(Int_t row, Int_t column, Int_t level)
   n1 = fTrIndex->At(i);
   Int_t rownew = 0;
   Int_t rowold=0;
-  Int_t ID;
+  Int_t id;
   for (i = n1;(i<n2);i++){
-    ID = 0;
+    id = 0;
     Int_t num = fTracks->At(i);
     if (num<0) {
       rownew-=num;  
@@ -165,17 +178,17 @@ Int_t  AliSimDigits::GetTrackID1(Int_t row, Int_t column, Int_t level)
 	num = fTracks->At(i);
 	rownew+=num;
 	i++;
-	ID = fTracks->At(i);
+	id = fTracks->At(i);
       }
     }
     else {
       rowold = rownew;
       rownew+=num;
       i++;
-      ID = fTracks->At(i);
+      id = fTracks->At(i);
     }
-ID-=2;
-    if ( (row>=rowold) && (row<=rownew) ) return ID;
+    id-=2;
+    if ( (row>=rowold) && (row<=rownew) ) return id;
     if (row < rownew ) return -2; //empty track
   }
   return -2;
@@ -184,7 +197,7 @@ ID-=2;
 void  AliSimDigits::ExpandTrackBuffer1()
 {
   //
-  //expand  track compressed according algorithm 1 (track ID comression independent to the digit compression)
+  //expand  track compressed according algorithm 1 (track id comression independent to the digit compression)
   // !!in expanded tracks we don't use fTrIndex array
   //  
   fTrBufType = 0;
@@ -199,16 +212,16 @@ void  AliSimDigits::ExpandTrackBuffer1()
   Int_t level = 0;
   Int_t col=0;
   Int_t row = 0;
-  Int_t N=fTracks->fN;
+  Int_t n=fTracks->fN;
   //
-  for (i=0;i<N;i++){
+  for (i=0;i<n;i++){
     //oposite signa means how many unwrited (under threshold) values
     Int_t num = fTracks->At(i);
     if (num<0) row-=num;   //negative number mean number of zeroes (no tracks of gibven level no need to write to array) 
     else {
       i++;
-      Int_t ID =  fTracks->At(i);
-      for (j = 0; j<num; j++,row++) (*buf)[level*all+col*fNrows+row]=ID;       
+      Int_t id =  fTracks->At(i);
+      for (j = 0; j<num; j++,row++) (*buf)[level*all+col*fNrows+row]=id;       
     }
     if (row>=fNrows) {
       row=0;
@@ -226,7 +239,7 @@ void  AliSimDigits::ExpandTrackBuffer1()
 void  AliSimDigits::CompresTrackBuffer1()
 {
   //
-  //comress track according algorithm 1 (track ID comression independent to the digit compression)
+  //comress track according algorithm 1 (track id comression independent to the digit compression)
   //
   fTrBufType = 1;  
 
@@ -237,18 +250,18 @@ void  AliSimDigits::CompresTrackBuffer1()
 
   Int_t icurrent=-1;  //current index
   Int_t izero;      //number of zero
-  Int_t inum;      //number of digits  with the same current track ID  
-  Int_t lastID =0;  //last track ID
+  Int_t inum;      //number of digits  with the same current track id  
+  Int_t lastID =0;  //last track id
   for (Int_t lev =0; lev<fNlevel; lev++){    //loop over levels 
     for (Int_t col = 0; col<fNcols; col++){    //loop over columns
       izero = 0;
       inum =  0;
       lastID = 0;
       (*index)[lev*fNcols+col]=icurrent+1;//set collumn pointer
-      Int_t ID;  //current ID
+      Int_t id=0;  //current id
       for (Int_t row = 0; row< fNrows;row++){ //loop over rows
-	ID = GetTrackIDFast(row,col,lev);
-	if (ID <= 0) {
+	id = GetTrackIDFast(row,col,lev);
+	if (id <= 0) {
 	  if ( inum> 0 ) { //if we have some tracks in buffer
 	    icurrent++;
 	    if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2);
@@ -261,7 +274,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	  izero++;
 	}
 	else
-          if (ID != lastID) 
+          if (id != lastID) 
 	    if ( izero > 0 ) { 
 	      //if we have currently izero count of non tracks digits
 	      icurrent++;	  
@@ -269,16 +282,16 @@ void  AliSimDigits::CompresTrackBuffer1()
 	      (*buf)[icurrent]= -izero;  //write how many under zero
 	      inum++;
 	      izero = 0;	     
-	      lastID = ID;
+	      lastID = id;
 	    }
 	    else{ 
-	      //if we change track ID from another track ID	    
+	      //if we change track id from another track id	    
 	      icurrent++;	  
 	      if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2);
 	      (*buf)[icurrent] = inum;
 	      icurrent++;
 	      (*buf)[icurrent] = lastID;	
-	      lastID = ID;
+	      lastID = id;
 	      inum = 1;      
 	      izero = 0;
 	    }	
@@ -298,7 +311,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2);
 	(*buf)[icurrent] = inum;
 	icurrent++;
-	(*buf)[icurrent] = ID;	
+	(*buf)[icurrent] = id;	
       }      
     }//end of loop over columns
   }//end of loop over differnet track level  
@@ -314,21 +327,21 @@ void  AliSimDigits::CompresTrackBuffer1()
 void  AliSimDigits::ExpandTrackBuffer2()
 {
   //
-  //comress track according algorithm 2 (track ID comression according  digit compression)
+  //comress track according algorithm 2 (track id comression according  digit compression)
   fTrBufType = 0;
 }
 
 void  AliSimDigits::CompresTrackBuffer2()
 {
   //
-  //comress track according algorithm 2 (track ID comression according  digit compression)
+  //comress track according algorithm 2 (track id comression according  digit compression)
   fTrBufType = 2;
 }
 
 
 Int_t  AliSimDigits::GetTrackID2(Int_t row, Int_t column, Int_t level)
 {
-  //returnb track ID of digits - for buffer compresion 2
+  //returnb track id of digits - for buffer compresion 2
   return -2;
 }
 

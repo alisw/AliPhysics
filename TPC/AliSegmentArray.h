@@ -1,5 +1,5 @@
-#ifndef ALISEGARRAY_H
-#define ALISEGARRAY_H
+#ifndef ALISEGMENTARRAY_H
+#define ALISEGMENTARRAY_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -12,22 +12,21 @@
 
 #include "TNamed.h"
 #include "TError.h"
-//#include "AliSegmentID.h"
+#include "TObjArray.h"
 
 class TTree;
 class TBranch;
 class AliArrayI;
 class AliSegmentID;
-class TObjArray;
  
 class AliSegmentArray: public TNamed{
 public:
   AliSegmentArray();
-  AliSegmentArray(Text_t *classname, Int_t n);  //
-  Bool_t  SetClass(Text_t *classname);  //set class of stored object
-  ~AliSegmentArray();
-  inline const AliSegmentID * At(Int_t i); //return pointer to segment with index i 
-  inline const AliSegmentID * operator[](Int_t i); //return pointer to segment with index i
+  AliSegmentArray(Text_t *classname, Int_t n);  // 
+  virtual ~AliSegmentArray();
+  Bool_t  SetClass(Text_t *classname);  //set class of stored object 
+  const AliSegmentID * At(Int_t i); //return pointer to segment with index i 
+  const AliSegmentID * operator[](Int_t i); //return pointer to segment with index i
 
   Bool_t AddSegment(AliSegmentID *segment); // add segment to array
   AliSegmentID * AddSegment(Int_t index);   //create objet and set index
@@ -45,10 +44,12 @@ public:
   Bool_t  MakeDictionary(Int_t size);//create index table for tree
   TClass * GetClass() {return fClass;}
   
-public:
+protected:
+  AliSegmentArray(const AliSegmentArray &segment); //copy constructor
+  AliSegmentArray &operator = (const AliSegmentArray & segment); //assignment operator
   TObjArray  * fSegment;  //!pointer to array of pointers to segment
   AliArrayI    * fTreeIndex; //!pointers(index) table in tree
-  Int_t      fNSegment;   
+  Int_t      fNSegment; //number of alocated segments   
   TTree    * fTree;   //!tree with segment objects
   TBranch  * fBranch; //!total branch 
 private: 
@@ -58,21 +59,23 @@ private:
 
 
 
-const AliSegmentID*  AliSegmentArray::operator[](Int_t i)
+inline const AliSegmentID*  AliSegmentArray::operator[](Int_t i)
 {
   //
   //return segment with given index
   //
   if ( (i<0) || (i>=fNSegment)) return 0; 
-  return (AliSegmentID *)((*fSegment)[i]);
-}
-const AliSegmentID*  AliSegmentArray::At(Int_t i)
-{
-  //
-  //return segment with given index
-  //
-  if ( (i<0) || (i>=fNSegment)) return 0; 
-  return (AliSegmentID *)((*fSegment)[i]);
+  return (AliSegmentID *)(fSegment->At(i));
+  
 }
 
-#endif //ALISEGARRAY_H
+inline const AliSegmentID*  AliSegmentArray::At(Int_t i)
+{
+  //
+  //return segment with given index
+  //
+  if ( (i<0) || (i>=fNSegment)) return 0; 
+  return (AliSegmentID *)(fSegment->At(i));
+}
+
+#endif //ALISEGMENTARRAY_H

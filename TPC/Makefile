@@ -1,4 +1,4 @@
-############################### TPC Makefile ##################################
+############################## TPC Makefile ##################################
 
 # Include machine specific definitions
 
@@ -9,15 +9,17 @@ PACKAGE = TPC
 
 # C++ sources
 
-SRCS          = AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
+SRCS          = AliDigits.cxx   AliSegmentArray.cxx AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
 		AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
 		AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
 		AliTPCRF1D.cxx AliArrayI.cxx AliArrayS.cxx \
-		AliSegmentID.cxx  AliSegmentArray.cxx AliDigits.cxx \
+		AliSegmentID.cxx  \
 		AliSimDigits.cxx AliDigitsArray.cxx  AliTPCDigitsArray.cxx \
 		AliCluster.cxx AliClusters.cxx AliClustersArray.cxx \
-		AliClusterFinder.cxx AliTPCClustersRow.cxx \
-		AliTPCClustersArray.cxx AliH2F.cxx
+		 AliTPCClustersRow.cxx \
+		AliTPCClustersArray.cxx AliH2F.cxx \
+                AliTPCcluster.cxx AliTPCclusterer.cxx \
+                AliTPCtrack.cxx AliTPCtracker.cxx
 
 
 # C++ Headers
@@ -77,4 +79,5 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
+check : $(CHECKS)
 

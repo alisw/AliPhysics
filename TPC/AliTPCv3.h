@@ -1,5 +1,5 @@
-#ifndef TPCv3_H
-#define TPCv3_H
+#ifndef ALITPCV3_H
+#define ALITPCV3_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

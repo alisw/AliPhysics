@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.2.4.1  2000/06/09 07:09:29  kowal2
+
+Clustering and tracking classes are splitted from the simulation ones
+
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:34:02  kowal2
 
 Clusters handling in a new data structure
@@ -57,9 +64,6 @@ AliTPCClustersArray::AliTPCClustersArray()
 AliTPCClustersArray::~AliTPCClustersArray()
 {
   //
-  //object is only owner of fParam
-  //
-  if (fParam) delete fParam;
 }
 
 
@@ -124,13 +128,13 @@ Bool_t  AliTPCClustersArray::ClearRow(Int_t sector,Int_t row)
 
 
 
-Bool_t AliTPCClustersArray::Setup(AliDetectorParam *param)
+Bool_t AliTPCClustersArray::Setup(const AliDetectorParam *param)
 {
   //
   //setup  function to adjust array parameters
   //
   if (param==0) return kFALSE;
-  fParam = param;
+  fParam = (AliDetectorParam *)param;
   return MakeArray(((AliTPCParam*)fParam)->GetNRowsTotal());
 
 }

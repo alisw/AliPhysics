@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.2.4.2  2000/06/14 16:48:24  kowal2
+Parameter setting improved. Removed compiler warnings
+
+Revision 1.2.4.1  2000/06/09 07:55:39  kowal2
+
+Updated defaults
+
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:36:13  kowal2
 
 New Detector parameters handling class
@@ -38,13 +48,15 @@ New Detector parameters handling class
 #include <TMath.h>
 #include <TObject.h>
 #include <AliTPCParamSR.h>
+#include "AliTPCPRF2D.h"
+#include "AliTPCRF1D.h"
 
 
 
 ClassImp(AliTPCParamSR)
 const static  Int_t kMaxRows=600;
 const static  Float_t  kEdgeSectorSpace = 2.5;
-const static Float_t kFacSigmaPadRow=2.;
+const static Float_t kFacSigmaPadRow=3.;
 const static Float_t kFacSigmaPad=3.;
 const static Float_t kFacSigmaTime=3.;
 

@@ -1,13 +1,12 @@
 #ifndef TCLUSTERFINDER_H
 #define TCLUSTERFINDER_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
 
 // include files and class forward declarations
 #include "TObject.h"
 #include "TH2.h"
+#include "AliCluster.h"
+
 class TClonesArray;
 class AliCluster;
 class AliCell;
@@ -15,12 +14,13 @@ class AliArrayI;
 class AliDetectorParam;
 class TMinuit;
 class AliH2F;
-class  AliClusterFinder : public TObject {
+
+class  AliTPCClusterFinder : public TObject {
  
 public:      
-  AliClusterFinder(); 
+  AliTPCClusterFinder(); 
   // constructor which create cluster finder  object  
-  ~AliClusterFinder();
+  ~AliTPCClusterFinder();
   void GetHisto(TH2F * his2);
   //reset object to include histograms values
   TClonesArray * FindPeaks1( TClonesArray *arr=0);  
@@ -35,8 +35,6 @@ public:
   void SetDirSigmaFac(Float_t fac) {fDirSigmaFac = fac;}
   void SetDirAmpFac(Float_t fac) {fDirAmpFac = fac;}
 
-  void SetDetectorParam(AliDetectorParam*param) {fDetectorParam = param;}
-  //set Detector parameters -necesssary to estimate cluster size
   void SetDetectorIndex(Int_t *index) {fDetectorIndex = index;}
   //set index of described detector
   Bool_t  SetSigma2(Int_t i, Int_t j, Float_t & sigmax2, Float_t & sigmay2);
@@ -46,11 +44,15 @@ public:
   Int_t GetStackIndex(){return fStackIndex;}
   void SetBFit(Bool_t fit) {fBFit = fit;}
   TMinuit * GetMinuit() {return fMinuit;}
-  AliH2F *  Draw( const char *option=0,Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); 
+  AliH2F *  DrawHisto( const char *option,Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); 
            //draw digits
   void DrawCluster(Int_t color=5, Int_t size=5, Int_t style=4);
   AliH2F *  DrawBorders( const char *option=0,  AliH2F *his=0, Int_t type =0, Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); 
   //draw digits
+
+  void SetSigmaX(Float_t s0, Float_t s1x, Float_t s1y);
+  void SetSigmaY(Float_t s0, Float_t s1x, Float_t s1y);
+
 public:
   Bool_t   IsMaximum(Int_t i, Int_t  j);
   Bool_t   IsVirtualMaximum(Float_t x, Float_t  y);
@@ -61,7 +63,11 @@ public:
   AliCell  * GetCell(Int_t i, Int_t j);   
   //return reference to the cell with index i,j 
   void SetBlockIndex(Int_t *index); //calculate which indexes we must check for border
+  void SetDetectorParam(AliDetectorParam*param) {fDetectorParam = param;}
+  //set Detector parameters -necesssary to estimate cluster size
+
 public:
+  
   void AddToStack(Int_t i, Int_t j, Int_t signal);	  
   //add given cell to the stack of particles
   void GetClusterStatistic(AliDigitCluster & cluster);
@@ -85,9 +91,9 @@ public:
   inline void  SetDirBorder(Int_t index, Int_t i, Int_t j);
   inline void  SetMaximum(Int_t index, Int_t i, Int_t j);
 
-  
-  
+    
   inline Int_t  GetSignal(Int_t i, Int_t j); 
+  inline void   SetSignal(Int_t signal,  Int_t i, Int_t j); 
   Float_t  GetVirtualSignal(Float_t ri, Float_t rj); 
   //create new virtual cell and interpolate signal at  position ri,rj
 
@@ -107,15 +113,21 @@ private:
 
   Float_t fThreshold; //treshold;
   Float_t  fNoiseTh;  //noise threshoshol to accept maximum    
-  AliCell   * fDigits;  //field with all cell digits   
+  Int_t     *fDigits;   //field with all digits  
+  AliCell   *fCells;  //field with all cell status    
  
  
   Int_t      fIndex;        //!index of current  cluster
   AliArrayI  * fStack;      //!stack with digits index
   Int_t      fStackIndex;   //!stack index
   TMinuit    *fMinuit;      //!minuit object
+
+  //
   AliDetectorParam * fDetectorParam; //pointer to detector param  - finder is not owner
   Int_t *    fDetectorIndex; // detector index -  
+  //
+  Float_t fSigmaX[3];            //x cluster size parametrization
+  Float_t fSigmaY[3];            //y cluster size parametrization
   //original frame 
   Float_t   fX1;
   Float_t   fY1;
@@ -123,13 +135,12 @@ private:
   Float_t   fY2;
   Int_t      fDimX;
   Int_t      fDimY;
-  Int_t      fOver;     
-
+ 
   //
   TClonesArray * fClustersArray; //array with current clusters
   Bool_t     rOK;       
   //signalize that all fields were initialised 
-  ClassDef(AliClusterFinder,2)
+  ClassDef(AliTPCClusterFinder,2)
 };  
 
 
@@ -138,18 +149,13 @@ private:
 ////////////////////////////////////////////////////////////////////////////
 //objec AliCell 
 
-const Int_t krCheck     = 1;
-const Int_t krBorder    = 2;
-const Int_t krThBorder  = 4;
-const Int_t krDirBorder = 8;
-const Int_t krMaximum = 16;
-const Int_t krIndexNull =0x1F;
-
 class AliCell{
+private :
+  enum State {krCheck     = 1,krBorder    = 2,krThBorder  = 4,krDirBorder = 8, krMaximum = 16,krIndexNull =0x1F};
 public :
-  AliCell(Int_t signal =0, Int_t status = 0){fSignal =signal;fStatus = status;}  
+  AliCell(Int_t status = 0){fStatus = status;}  
   //at the begining set  
-  void SetSignal(Int_t signal){fSignal = signal;}
+
   void SetStatus(Int_t status){fStatus = status;}  
   void SetChecked(Int_t index) {fStatus &=krIndexNull; fStatus+=(index<<5); fStatus|=krCheck;}
   void SetChecked() {fStatus|=krCheck;}
@@ -177,30 +183,32 @@ public :
   Bool_t  IsMaximum() {return ((fStatus&krMaximum)!=0);}
   Bool_t  IsMaximum(Int_t index) {return ( ((fStatus&krMaximum)!=0) && ((fStatus>>5)==index));}  
 
-  void Reset() { fStatus = 0; fSignal =0;} 
-  Int_t GetSignal() {return fSignal;}
+  void Reset() { fStatus = 0;} 
+
   Int_t GetStatus() {return fStatus;}
 
-  
 private:
-  Int_t fSignal;
   Int_t fStatus;
+  //  ClassDef(AliCell,0)
 };
 
 
 
-Int_t AliClusterFinder::GetSignal(Int_t i, Int_t j)
-{
-  AliCell *c = GetCell(i,j);
-  Int_t res;
-  if (c==0) res = -1;
-  else  res = c->GetSignal();
-  return res;
+Int_t AliTPCClusterFinder::GetSignal(Int_t i, Int_t j)
+{  
+  return  ( (i>=0) && (i<fDimX) && (j>=0) && (j<fDimY) ) ? fDigits[i+j*fDimX]: 0;
+}
+
+
+void  AliTPCClusterFinder::SetSignal(Int_t signal, Int_t i, Int_t j)
+{  
+  if ( (i>=0) && (i<fDimX) && (j>=0) && (j<fDimY) ) fDigits[i+j*fDimX] = signal;
 }
 
 
 
-Bool_t AliClusterFinder::IsBorder(Int_t index, Int_t i, Int_t j)
+
+Bool_t AliTPCClusterFinder::IsBorder(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   Bool_t res;
@@ -214,7 +222,7 @@ Bool_t AliClusterFinder::IsBorder(Int_t index, Int_t i, Int_t j)
 
 
 
-Bool_t AliClusterFinder::IsThBorder(Int_t index, Int_t i, Int_t j)
+Bool_t AliTPCClusterFinder::IsThBorder(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   Bool_t res;
@@ -226,7 +234,7 @@ Bool_t AliClusterFinder::IsThBorder(Int_t index, Int_t i, Int_t j)
   return res;
 }
 
-Bool_t AliClusterFinder::IsDirBorder(Int_t index, Int_t i, Int_t j)
+Bool_t AliTPCClusterFinder::IsDirBorder(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   Bool_t res;
@@ -238,7 +246,7 @@ Bool_t AliClusterFinder::IsDirBorder(Int_t index, Int_t i, Int_t j)
   return res;
 }
 
-Bool_t AliClusterFinder::IsChecked(Int_t index, Int_t i, Int_t j)
+Bool_t AliTPCClusterFinder::IsChecked(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   Bool_t res;
@@ -250,7 +258,7 @@ Bool_t AliClusterFinder::IsChecked(Int_t index, Int_t i, Int_t j)
   return res;
 }
 
-Bool_t AliClusterFinder::IsMaximum(Int_t index, Int_t i, Int_t j)
+Bool_t AliTPCClusterFinder::IsMaximum(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   Bool_t res;
@@ -263,7 +271,7 @@ Bool_t AliClusterFinder::IsMaximum(Int_t index, Int_t i, Int_t j)
 }
 
 
-void AliClusterFinder::SetChecked(Int_t index, Int_t i, Int_t j)
+void AliTPCClusterFinder::SetChecked(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   if (c!=0) {
@@ -272,7 +280,7 @@ void AliClusterFinder::SetChecked(Int_t index, Int_t i, Int_t j)
   }
 }
  
-void AliClusterFinder::SetBorder(Int_t index, Int_t i, Int_t j)
+void AliTPCClusterFinder::SetBorder(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   if (c!=0) {
@@ -282,7 +290,7 @@ void AliClusterFinder::SetBorder(Int_t index, Int_t i, Int_t j)
 }
 
 
-void AliClusterFinder::SetThBorder(Int_t index, Int_t i, Int_t j)
+void AliTPCClusterFinder::SetThBorder(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   if (c!=0) {
@@ -292,7 +300,7 @@ void AliClusterFinder::SetThBorder(Int_t index, Int_t i, Int_t j)
 }
 
 
-void AliClusterFinder::SetDirBorder(Int_t index, Int_t i, Int_t j)
+void AliTPCClusterFinder::SetDirBorder(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   if (c!=0) {
@@ -302,7 +310,7 @@ void AliClusterFinder::SetDirBorder(Int_t index, Int_t i, Int_t j)
 }
 
  
-void AliClusterFinder::SetMaximum(Int_t index, Int_t i, Int_t j)
+void AliTPCClusterFinder::SetMaximum(Int_t index, Int_t i, Int_t j)
 {
   AliCell *c = GetCell(i,j);
   if (c!=0) {

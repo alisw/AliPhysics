@@ -15,6 +15,23 @@
 
 /*
 $Log$
+Revision 1.13.2.4  2000/06/26 07:39:42  kowal2
+Changes to obey the coding rules
+
+Revision 1.13.2.3  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+
+Revision 1.13.2.2  2000/06/16 12:58:13  kowal2
+Changed parameter settings
+
+Revision 1.13.2.1  2000/06/09 07:15:07  kowal2
+
+Defaults loaded automatically (hard-wired)
+Optional parameters can be set via macro called in the constructor
+
+Revision 1.13  2000/05/15 10:00:30  kowal2
+Corrected bug in the TPC geometry, thanks to Ivana Hrivnacova
+
 Revision 1.12  2000/04/17 09:37:33  kowal2
 removed obsolete AliTPCDigitsDisplay.C
 
@@ -43,6 +60,7 @@ Introduction of the Copyright and cvs Log
 
 */
 
+//
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Time Projection Chamber version 3 -- detailed TPC and slow simulation    //
@@ -63,7 +81,9 @@ Introduction of the Copyright and cvs Log
 #include "AliConst.h"
 #include "AliTPCDigitsArray.h"
 #include"AliTPCParam.h"
+#include"AliTPCParamSR.h"
 #include "AliPDG.h"
+#include <TInterpreter.h>
 
 ClassImp(AliTPCv3)
  
@@ -76,6 +96,11 @@ AliTPCv3::AliTPCv3(const char *name, const char *title) :
   //
 
   SetBufferSize(128000);
+
+  SetGasMixt(2,20,10,-1,0.9,0.1,0.);
+
+  if (fTPCParam)
+     fTPCParam->Write(fTPCParam->GetTitle());
 }
  
 //_____________________________________________________________________________
@@ -181,58 +206,58 @@ void AliTPCv3::CreateGeometry()
    
   gMC->Gsvolu("TPSG", "TUBE", idtmed[2], dm, 3);
 
-  Float_t z_side = dm[2]; // 1/2 of the side gas thickness
+  Float_t zSide = dm[2]; // 1/2 of the side gas thickness
 
   //-----------------------------------------------------------
   //   Readout chambers , 25% of X0, I use Al as the material
   //-----------------------------------------------------------
 
-  Float_t InnerOpenAngle = fTPCParam->GetInnerAngle();
-  Float_t OuterOpenAngle = fTPCParam->GetOuterAngle();
+  Float_t innerOpenAngle = fTPCParam->GetInnerAngle();
+  Float_t outerOpenAngle = fTPCParam->GetOuterAngle();
 
-  Float_t InnerAngleShift = fTPCParam->GetInnerAngleShift();
-  Float_t OuterAngleShift = fTPCParam->GetOuterAngleShift();
+  Float_t innerAngleShift = fTPCParam->GetInnerAngleShift();
+  Float_t outerAngleShift = fTPCParam->GetOuterAngleShift();
 
 
   Int_t nInnerSector = fTPCParam->GetNInnerSector()/2;
   Int_t nOuterSector = fTPCParam->GetNOuterSector()/2;
 
 
-  Float_t InSecLowEdge = fTPCParam->GetInnerRadiusLow();
-  Float_t InSecUpEdge =  fTPCParam->GetInnerRadiusUp();
+  Float_t inSecLowEdge = fTPCParam->GetInnerRadiusLow();
+  Float_t inSecUpEdge =  fTPCParam->GetInnerRadiusUp();
 
-  Float_t OuSecLowEdge = fTPCParam->GetOuterRadiusLow();
-  Float_t OuSecUpEdge = fTPCParam->GetOuterRadiusUp();
+  Float_t ouSecLowEdge = fTPCParam->GetOuterRadiusLow();
+  Float_t ouSecUpEdge = fTPCParam->GetOuterRadiusUp();
 
-  Float_t SecThick = 2.225; // Al
+  Float_t secThick = 2.225; // Al
 
-  Float_t LowEdge = fTPCParam->GetInnerFrameSpace();
+  Float_t lowEdge = fTPCParam->GetInnerFrameSpace();
 
   //  S (Inner) sectors
 
-  dm[0] = InSecLowEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
-  dm[1] = InSecUpEdge*TMath::Tan(0.5*InnerOpenAngle)-LowEdge;
-  dm[2] = SecThick;
-  dm[3] = 0.5*(InSecUpEdge-InSecLowEdge);
+  dm[0] = inSecLowEdge*TMath::Tan(0.5*innerOpenAngle)-lowEdge;
+  dm[1] = inSecUpEdge*TMath::Tan(0.5*innerOpenAngle)-lowEdge;
+  dm[2] = secThick;
+  dm[3] = 0.5*(inSecUpEdge-inSecLowEdge);
 
-  Float_t xCenterS = InSecLowEdge+dm[3];
+  Float_t xCenterS = inSecLowEdge+dm[3];
 
   gMC->Gsvolu("TRCS", "TRD1", idtmed[0], dm, 4); 
 
   //  L (Outer) sectors
 
-  Float_t UpEdge = fTPCParam->GetOuterFrameSpace();
+  Float_t upEdge = fTPCParam->GetOuterFrameSpace();
 
-  dm[0] = OuSecLowEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
-  dm[1] = OuSecUpEdge*TMath::Tan(0.5*OuterOpenAngle)-UpEdge;
-  dm[2] = SecThick;
-  dm[3] = 0.5*(OuSecUpEdge-OuSecLowEdge);
+  dm[0] = ouSecLowEdge*TMath::Tan(0.5*outerOpenAngle)-upEdge;
+  dm[1] = ouSecUpEdge*TMath::Tan(0.5*outerOpenAngle)-upEdge;
+  dm[2] = secThick;
+  dm[3] = 0.5*(ouSecUpEdge-ouSecLowEdge);
 
-  Float_t xCenterL = OuSecLowEdge+dm[3];  
+  Float_t xCenterL = ouSecLowEdge+dm[3];  
 
   gMC->Gsvolu("TRCL", "TRD1", idtmed[0], dm, 4);
 
-  Float_t z1 = -z_side + SecThick*0.5;
+  Float_t z1 = -zSide + secThick*0.5;
 
   //------------------------------------------------------------------
   // Positioning of the S-sector readout chambers
@@ -246,7 +271,7 @@ void AliTPCv3::CreateGeometry()
 
   for(ns=0;ns<nInnerSector;ns++){
     
-    phi1 = ns * InnerOpenAngle + 270.*kDegrad + InnerAngleShift;
+    phi1 = ns * innerOpenAngle + 270.*kDegrad + innerAngleShift;
     phi1 *= kRaddeg; // in degrees
 
     phi1 = (Float_t)TMath::Nint(phi1);
@@ -256,7 +281,7 @@ void AliTPCv3::CreateGeometry()
     theta1 = 90.;
     phi2   = 90.;
     theta2 = 180.;
-    phi3   = ns * InnerOpenAngle + InnerAngleShift;
+    phi3   = ns * innerOpenAngle + innerAngleShift;
     phi3 *= kRaddeg; // in degrees
 
     phi3 = (Float_t)TMath::Nint(phi3);
@@ -283,7 +308,7 @@ void AliTPCv3::CreateGeometry()
   //-------------------------------------------------------------------
     
   for(ns=0;ns<nOuterSector;ns++){
-    phi1 = ns * OuterOpenAngle + 270.*kDegrad + OuterAngleShift;
+    phi1 = ns * outerOpenAngle + 270.*kDegrad + outerAngleShift;
     phi1 *= kRaddeg; // in degrees
 
     phi1 = (Float_t)TMath::Nint(phi1);
@@ -294,7 +319,7 @@ void AliTPCv3::CreateGeometry()
     theta1 = 90.;
     phi2   = 90.;
     theta2 = 180.;
-    phi3   = ns * OuterOpenAngle+OuterAngleShift;
+    phi3   = ns * outerOpenAngle+outerAngleShift;
     phi3 *= kRaddeg; // in degrees
 
     phi3 = (Float_t)TMath::Nint(phi3);
@@ -318,7 +343,7 @@ void AliTPCv3::CreateGeometry()
 
   }
 
-  Float_t z0 = z_side - 0.95;
+  Float_t z0 = zSide - 0.95;
 
   gMC->Gspos("TPEC",1,"TPSG",0.,0.,z0,0,"ONLY");
 
@@ -449,7 +474,7 @@ void AliTPCv3::CreateGeometry()
 
   gMC->Gsposp("TPWI",2,"TPWC",0.,0.,0.,0,"ONLY",dm,3);
 
-  z0 = z_side - 1.9 - 2.;
+  z0 = zSide - 1.9 - 2.;
 
   gMC->Gspos("TPWC",1,"TPSG",0.,0.,z0,0,"ONLY");
 
@@ -477,7 +502,7 @@ void AliTPCv3::CreateGeometry()
 
   for(ns=0;ns<nInnerSector;ns++){
 
-    phi1 = 0.5*InnerOpenAngle + ns*InnerOpenAngle + InnerAngleShift;
+    phi1 = 0.5*innerOpenAngle + ns*innerOpenAngle + innerAngleShift;
     theta1=90.;
     phi1 *=kRaddeg;
 
@@ -520,7 +545,7 @@ void AliTPCv3::CreateGeometry()
 
   for(ns=0;ns<nOuterSector;ns++){
 
-    phi1 = 0.5*OuterOpenAngle + ns*OuterOpenAngle + OuterAngleShift;
+    phi1 = 0.5*outerOpenAngle + ns*outerOpenAngle + outerAngleShift;
     theta1=90.;
     phi1 *=kRaddeg;
 
@@ -559,7 +584,7 @@ void AliTPCv3::CreateGeometry()
   
   AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
   
-  z0 = z_side + 250.;
+  z0 = zSide + 250.;
   
   gMC->Gspos("TPSG", 1, "TPC ", 0, 0, z0, 0, "ONLY");
   gMC->Gspos("TPSG", 2, "TPC ", 0, 0, -z0, idrotm[nRotMat], "ONLY");
@@ -735,12 +760,12 @@ void AliTPCv3::StepManager()
   //
   // parameters used for the energy loss calculations
   //
-  const Float_t prim = 14.35; // number of primary collisions per 1 cm
-  const Float_t poti = 20.77e-9; // first ionization potential for Ne/CO2
-  const Float_t w_ion = 35.97e-9; // energy for the ion-electron pair creation 
+  const Float_t kprim = 14.35; // number of primary collisions per 1 cm
+  const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
+  const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation 
  
  
-  const Float_t big = 1.e10;
+  const Float_t kbig = 1.e10;
 
   Int_t id,copy;
   TLorentzVector pos;
@@ -753,7 +778,7 @@ void AliTPCv3::StepManager()
 
   //
 
-  gMC->SetMaxStep(big);
+  gMC->SetMaxStep(kbig);
   
   if(!gMC->IsTrackAlive()) return; // particle has disappeared
   
@@ -775,7 +800,7 @@ void AliTPCv3::StepManager()
   if(gMC->TrackStep() > 0) {
 
     
-    Int_t nel = (Int_t)(((gMC->Edep())-poti)/w_ion) + 1;
+    Int_t nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     
     gMC->TrackPosition(pos);
@@ -803,16 +828,16 @@ void AliTPCv3::StepManager()
   TLorentzVector mom;
   gMC->TrackMomentum(mom);
   Float_t ptot=mom.Rho();
-  Float_t beta_gamma = ptot/gMC->TrackMass();
+  Float_t betaGamma = ptot/gMC->TrackMass();
   
   Int_t pid=gMC->TrackPid();
   if((pid==kElectron || pid==kPositron) && ptot > 0.002)
     { 
-      pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
+      pp = kprim*1.58; // electrons above 20 MeV/c are on the plateau!
     }
   else
     {
-      pp=prim*BetheBloch(beta_gamma);    
+      pp=kprim*BetheBloch(betaGamma);    
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
   
@@ -831,20 +856,20 @@ Float_t AliTPCv3::BetheBloch(Float_t bg)
   //
   // Bethe-Bloch energy loss formula
   //
-  const Double_t p1=0.76176e-1;
-  const Double_t p2=10.632;
-  const Double_t p3=0.13279e-4;
-  const Double_t p4=1.8631;
-  const Double_t p5=1.9479;
+  const Double_t kp1=0.76176e-1;
+  const Double_t kp2=10.632;
+  const Double_t kp3=0.13279e-4;
+  const Double_t kp4=1.8631;
+  const Double_t kp5=1.9479;
 
   Double_t dbg = (Double_t) bg;
 
   Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
 
-  Double_t aa = TMath::Power(beta,p4);
-  Double_t bb = TMath::Power(1./dbg,p5);
+  Double_t aa = TMath::Power(beta,kp4);
+  Double_t bb = TMath::Power(1./dbg,kp5);
 
-  bb=TMath::Log(p3+bb);
+  bb=TMath::Log(kp3+bb);
   
-  return ((Float_t)((p2-aa-bb)*p1/aa));
+  return ((Float_t)((kp2-aa-bb)*kp1/aa));
 }

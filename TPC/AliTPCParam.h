@@ -1,5 +1,5 @@
-#ifndef TPCParam_H
-#define TPCParam_H
+#ifndef ALITPCPARAM_H
+#define ALITPCPARAM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -12,14 +12,6 @@
 #include "AliDetectorParam.h"
 #include "TMath.h"
 
-// the last things from AliTPCSecGeo
-const Float_t z_end = 250.; 
-const Float_t alpha_low=0.34906585; // 20 degrees
-const Float_t alpha_up=0.34906585; //  20 degrees
-const Float_t q_el = 1.602e-19; // elementary charge
-const Float_t adc_sat = 1023; // dynamic range (10 bits)
-const Float_t dyn_range = 2000.; // output dynamic range (mV)
-//
 
 
 class AliTPCParam : public AliDetectorParam {
@@ -38,37 +30,37 @@ public:
   Int_t  Transform0to1(Float_t *xyz, Int_t *index) const;
   //trasforamtion from global to global - adjust index[0] sector 
   //return value is equal to sector corresponding to global position
-  inline void Transform1to2(Float_t *xyz, Int_t *index) const;
+  void Transform1to2(Float_t *xyz, Int_t *index) const;
   //transformation to rotated coordinata 
-  inline void Transform2to1(Float_t *xyz, Int_t *index) const;
+  void Transform2to1(Float_t *xyz, Int_t *index) const;
   //transformation from rotated coordinata to global coordinata
-  inline void Transform2to2(Float_t *xyz, Int_t *index, Int_t *oindex) const;
+  void Transform2to2(Float_t *xyz, Int_t *index, Int_t *oindex) const;
   //transform rotated coordinata of one sector to rotated
   //coordinata relative to another sector
-  inline Float_t  Transform2to2NearestWire(Float_t *xyz, Int_t *index) const;
+  Float_t  Transform2to2NearestWire(Float_t *xyz, Int_t *index) const;
   //round x position to nearest wire
-  inline Int_t   Transform2to3(Float_t *xyz, Int_t *index) const;
+  Int_t   Transform2to3(Float_t *xyz, Int_t *index) const;
   //calulate coresponding index[2] -pad row for straight rows
   //does not change xyz[] 
   //return pad - row 
-  inline void   Transform3to4(Float_t *xyz, Int_t *index) const;
+  void   Transform3to4(Float_t *xyz, Int_t *index) const;
   //valid only for straight rows straight rows
   //calculate xyz[0] position relative to given index
   //return pad - row 
-  inline void   Transform4to3(Float_t *xyz, Int_t *index) const;
+  void   Transform4to3(Float_t *xyz, Int_t *index) const;
   //valid only for straight rows straight rows
   //transform  xyz[0] position relative to given index
-  inline void   Transform2to5( Float_t *xyz, Int_t *index) const;
+  void   Transform2to5( Float_t *xyz, Int_t *index) const;
   //transform [x,y,z] to [r,rphi,z]
-  inline void   Transform5to2(Float_t *xyz, Int_t *index) const;
+  void   Transform5to2(Float_t *xyz, Int_t *index) const;
   //transform [r,rphi,z] coordinata to [x,y,z] 
-  inline void  Transform4to8(Float_t *xyz, Int_t *index) const;
+  void  Transform4to8(Float_t *xyz, Int_t *index) const;
   //transform xyz coordinata to 'digit' coordinata
-  inline void  Transform8to4(Float_t *xyz, Int_t *index) const;
+  void  Transform8to4(Float_t *xyz, Int_t *index) const;
   //transform  'digit' coordinata to xyz coordinata   
-  inline void  Transform6to8(Float_t *xyz, Int_t *index) const;
+  void  Transform6to8(Float_t *xyz, Int_t *index) const;
   //transform dr,f coordinata to 'digit' coordinata
-  inline void  Transform8to6(Float_t *xyz, Int_t *index) const;
+  void  Transform8to6(Float_t *xyz, Int_t *index) const;
   //transform 'digit' coordinata to dr,f coordinata 
 
   virtual Int_t  Transform2toPadRow(Float_t *xyz, Int_t *index) const{return 0;}
@@ -78,7 +70,7 @@ public:
   //return pad row of point xyz - xyz is given in coordinate system -(given by index)
   //output system is 3 for straight row and 7 for cylindrical row
   virtual void XYZtoCRXYZ(Float_t *xyz, 
-			  Int_t &sector, Int_t &padrow, Int_t option=3){;}
+		      Int_t &sector, Int_t &padrow, Int_t option=3) const {;}
   //transform global position to the position relative to the sector padrow
   //if option=0  X calculate absolute            calculate sector
   //if option=1  X           absolute            use input sector
@@ -115,9 +107,9 @@ public:
   Bool_t   AdjustSectorRow(Int_t index, Int_t & sector, Int_t &row) const; //return sector and padrow
   //for given index
 
-  inline void  AdjustCosSin(Int_t isec, Float_t &cos, Float_t &sin) const;
+  void  AdjustCosSin(Int_t isec, Float_t &cos, Float_t &sin) const;
   //set cosinus and sinus of rotation angles for sector isec 
-  inline Float_t GetAngle(Int_t isec) const;
+  Float_t GetAngle(Int_t isec) const;
   //
   //set sector parameters
   //
@@ -283,9 +275,9 @@ public:
   //
   // get response data
   //  
-  inline Int_t * GetResBin(Int_t i);  
+  Int_t * GetResBin(Int_t i);  
   //return response bin i  - bin given by  padrow [0] pad[1] timebin[2] 
-  inline Float_t GetResWeight(Int_t i);
+  Float_t GetResWeight(Int_t i);
   //return  weight of response bin i
 protected :
 
@@ -406,35 +398,8 @@ inline Float_t AliTPCParam::GetResWeight(Int_t i)
   else return 0;
 }
 
- 
-/////////////////////////////////////////////////////////////////////////////
-//
-//---------------------------------------------------------------------
-//   ALICE TPC Cluster Parameters
-//--------------------------------------------------------------------
-//
-//
-// Sigma rphi
-const Float_t a_rphi=0.41818e-2;
-const Float_t b_rphi=0.17460e-4;
-const Float_t c_rphi=0.30993e-2;
-const Float_t d_rphi=0.41061e-3;
-// Sigma z
-const Float_t a_z=0.39614e-2;
-const Float_t b_z=0.22443e-4;
-const Float_t c_z=0.51504e-1;
-// Cluster width in rphi
-const Float_t ac_rphi=0.18322;
-const Float_t bc_rphi=0.59551e-3;
-const Float_t cc_rphi=0.60952e-1;
-// Cluster width in z
-const Float_t ac_z=0.19081;
-const Float_t bc_z=0.55938e-3;
-const Float_t cc_z=0.30428;
 
-
-
-void  AliTPCParam::AdjustCosSin(Int_t isec, Float_t &cos, Float_t &sin) const
+inline void  AliTPCParam::AdjustCosSin(Int_t isec, Float_t &cos, Float_t &sin) const
 {
   //
   //set cosinus and sinus of rotation angles for sector isec
@@ -443,7 +408,7 @@ void  AliTPCParam::AdjustCosSin(Int_t isec, Float_t &cos, Float_t &sin) const
   sin=fRotAngle[isec*4+1];
 }
 
-Float_t   AliTPCParam::GetAngle(Int_t isec) const
+inline Float_t   AliTPCParam::GetAngle(Int_t isec) const
 {
   //
   //return rotation angle of given sector

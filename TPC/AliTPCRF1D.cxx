@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.5.4.3  2000/06/26 07:39:42  kowal2
+Changes to obey the coding rules
+
+Revision 1.5.4.2  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+
+Revision 1.5.4.1  2000/06/14 16:48:24  kowal2
+Parameter setting improved. Removed compiler warnings
+
+Revision 1.5  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.4.8.2  2000/04/10 08:53:09  kowal2
 
 Updates by M. Ivanov
@@ -26,7 +38,7 @@ Introduction of the Copyright and cvs Log
 */
 
 //-----------------------------------------------------------------------------
-//  $Header$
+//
 //
 //
 //  Origin:   Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk
@@ -34,6 +46,8 @@ Introduction of the Copyright and cvs Log
 //  Declaration of class AliTPCRF1D
 //
 //-----------------------------------------------------------------------------
+
+//
 
 #include "TMath.h"
 #include "AliTPCRF1D.h"
@@ -44,7 +58,10 @@ Introduction of the Copyright and cvs Log
 #include "TStyle.h"
 #include "TH1.h"
 
-extern TStyle * gStyle;
+extern TStyle * gStyle; 
+
+Int_t   AliTPCRF1D::fgNRF=100;  //default  number of interpolation points
+Float_t AliTPCRF1D::fgRFDSTEP=0.01; //default step in cm
 
 static Double_t funGauss(Double_t *x, Double_t * par)
 {
@@ -61,14 +78,14 @@ static Double_t funCosh(Double_t *x, Double_t * par)
 static Double_t funGati(Double_t *x, Double_t * par)
 {
   //Gati function  -needde by the generic function object 
-  Float_t K3=par[1];
-  Float_t K3R=TMath::Sqrt(K3);
-  Float_t K2=(TMath::Pi()/2)*(1-K3R/2.);
-  Float_t K1=K2*K3R/(4*TMath::ATan(K3R));
+  Float_t k3=par[1];
+  Float_t k3R=TMath::Sqrt(k3);
+  Float_t k2=(TMath::Pi()/2)*(1-k3R/2.);
+  Float_t k1=k2*k3R/(4*TMath::ATan(k3R));
   Float_t l=x[0]/par[0];
-  Float_t tan2=TMath::TanH(K2*l);
+  Float_t tan2=TMath::TanH(k2*l);
   tan2*=tan2;
-  Float_t res = K1*(1-tan2)/(1+K3*tan2);  
+  Float_t res = k1*(1-tan2)/(1+k3*tan2);  
   return res;  
 }    
 
@@ -82,9 +99,11 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
 {
   //default constructor for response function object
   fDirect=direct;
-  fNRF = np;
+  if (np!=0)fNRF = np;
+  else (fNRF=fgNRF);
   fcharge = new Float_t[fNRF];
-  fDSTEPM1=1./step;
+  if (step>0) fDSTEPM1=1./step;
+  else fDSTEPM1 = 1./fgRFDSTEP;
   fSigma = 0;
   fGRF = 0;
   fkNorm = 0.5;
@@ -93,9 +112,32 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
   fOffset = 0.;
 }
 
+AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
+{
+  //
+  memcpy(this, &prf, sizeof(prf)); 
+  fcharge = new Float_t[fNRF];
+  memcpy(fcharge,prf.fcharge, fNRF);
+  fGRF = new TF1(*(prf.fGRF)); 
+}
+
+AliTPCRF1D & AliTPCRF1D::operator = (const AliTPCRF1D &prf)
+{
+  //  
+  if (fcharge) delete fcharge;
+  if (fGRF) delete fGRF;
+  memcpy(this, &prf, sizeof(prf)); 
+  fcharge = new Float_t[fNRF];
+  memcpy(fcharge,prf.fcharge, fNRF);
+  fGRF = new TF1(*(prf.fGRF));
+  return (*this);
+}
+
+
 
 AliTPCRF1D::~AliTPCRF1D()
 {
+  //
   if (fcharge!=0) delete [] fcharge;
   if (fGRF !=0 ) fGRF->Delete();
 }
@@ -196,7 +238,7 @@ void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
   sprintf(fType,"Gati");
 }
 
-void AliTPCRF1D::Draw(Float_t x1,Float_t x2,Int_t N)
+void AliTPCRF1D::DrawRF(Float_t x1,Float_t x2,Int_t N)
 { 
   //
   //Draw prf in selected region <x1,x2> with nuber of diviision = n
@@ -284,7 +326,7 @@ void AliTPCRF1D::Update()
 void AliTPCRF1D::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliTPCRF1D.
-
+  Float_t dummy;
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       TObject::Streamer(R__b);     
@@ -298,7 +340,7 @@ void AliTPCRF1D::Streamer(TBuffer &R__b)
       R__b >> fType[4];
       R__b >> forigsigma;
       R__b >> fkNorm;
-      R__b >> fK3X;
+      R__b >> dummy;  //dummuy instead fK3X in previous
       R__b >> fPadDistance; 
       R__b >> fInteg;
       R__b >> fOffset;
@@ -337,7 +379,7 @@ void AliTPCRF1D::Streamer(TBuffer &R__b)
       R__b << fType[4];
       R__b << forigsigma;
       R__b << fkNorm;
-      R__b << fK3X;
+      R__b << dummy;  //dummuy instead fK3X in previouis
       R__b << fPadDistance;
       R__b << fInteg;
       R__b << fOffset;

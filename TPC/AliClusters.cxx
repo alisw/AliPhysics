@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.2.4.2  2000/06/14 16:45:13  kowal2
+Improved algorithms. Compiler warnings removed.
+
+Revision 1.2.4.1  2000/06/09 07:09:29  kowal2
+
+Clustering and tracking classes are splitted from the simulation ones
+
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:34:02  kowal2
 
 Clusters handling in a new data structure
@@ -51,10 +61,23 @@ AliClusters::AliClusters()
 {  
   //
   //default constructor
+  //
   fNclusters=0;
   fClusters =0;
   fClass =0;
 }
+
+//________________________________________________________________________
+AliClusters::~AliClusters()
+{
+   //
+   //default destructor
+  //
+   if (fClusters !=0) fClusters->Clear();
+   delete fClusters;
+}
+
+//_________________________________________________________________________
 
 Bool_t AliClusters::SetClass(const Text_t *classname)
 {
@@ -73,10 +96,10 @@ Bool_t AliClusters::SetClass(const Text_t *classname)
       Error("AliClusters", "%s is not a valid class name", classname);
       return kFALSE;
    }
-   if (!fClass->InheritsFrom(AliCluster::Class())) {
-      Error("AliClusters", "%s does not inherit from AliCluster", classname);
-      return kFALSE;
-   }  
+   if (!fClass->InheritsFrom(TObject::Class())) {
+      Error("AliClusters", "%s does not inherit from TObject", classname);
+      return kFALSE; 
+   } 
    return kTRUE;
 }
 
@@ -97,15 +120,13 @@ void AliClusters::SetArray(Int_t length)
 
 
 //_____________________________________________________________________________
-const  AliCluster* AliClusters::operator[](Int_t i)
+const  TObject* AliClusters::operator[](Int_t i)
 {
   //
   // return cluster at internal position i
   //
   if (fClusters==0) return 0;
-  void * cl = fClusters->UncheckedAt(i);
-  if (cl==0) return 0;
-  return  (AliCluster*)cl;
+  return fClusters->UncheckedAt(i);
 }
 //_____________________________________________________________________________
 void  AliClusters::Sort()
@@ -115,7 +136,7 @@ void  AliClusters::Sort()
 }
 
 //_____________________________________________________________________________
-AliCluster * AliClusters::InsertCluster( const AliCluster * c) 
+TObject * AliClusters::InsertCluster( const TObject * c) 
 { 
   //
   // Add a simulated cluster copy to the list
@@ -126,7 +147,7 @@ AliCluster * AliClusters::InsertCluster( const AliCluster * c)
   }
   if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),1000);
   TClonesArray &lclusters = *fClusters;
-  return new(lclusters[fNclusters++]) AliCluster(*c);
+  return new(lclusters[fNclusters++]) AliCluster(*((AliCluster*)c));
 }
 
 //_____________________________________________________________________________
@@ -152,7 +173,7 @@ Int_t AliClusters::Find(Double_t y) const
 
 //_____________________________________________________________________________
 
-void AliClusters::Draw(Float_t shiftx, Float_t shifty, 
+void AliClusters::DrawClusters(Float_t shiftx, Float_t shifty, 
 				  Int_t color, Int_t size, Int_t style)
 {
 

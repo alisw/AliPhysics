@@ -15,6 +15,22 @@
 
 /*
 $Log$
+Revision 1.2.4.4  2000/06/26 07:39:42  kowal2
+Changes to obey the coding rules
+
+Revision 1.2.4.3  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+
+Revision 1.2.4.2  2000/06/14 16:45:13  kowal2
+Improved algorithms. Compiler warnings removed.
+
+Revision 1.2.4.1  2000/06/09 07:09:29  kowal2
+
+Clustering and tracking classes are splitted from the simulation ones
+
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:34:02  kowal2
 
 Clusters handling in a new data structure
@@ -23,9 +39,9 @@ Clusters handling in a new data structure
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  AliClustersArray  object                                //
+//  AliClustersArray  object                                                 //
 //
-//  Origin: Marian Ivanov , GSI Darmstadt
+//  Origin: Marian Ivanov , GSI Darmstadt                                    //
 //                                                                           //
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,7 +55,6 @@ Clusters handling in a new data structure
 
 #include "AliCluster.h"
 #include "AliClusters.h"
-#include "AliClusterFinder.h"
 #include "AliDetectorParam.h"
 #include "AliClustersArray.h"
 
@@ -68,21 +83,21 @@ Bool_t  AliClustersArray::SetClusterType(Text_t * classname)
   }
 
   if (!gROOT)
-    ::Fatal("AliTPCClustersArray", "ROOT system not initialized");
+    ::Fatal("AliClustersArray", "ROOT system not initialized");
    
    fClusterType = gROOT->GetClass(classname);
    if (!fClusterType) {
-      Error("AliTPCClustersArray", "%s is not a valid class name", classname);
+      Error("AliClustersArray", "%s is not a valid class name", classname);
       return kFALSE;
    }
-   if (!fClusterType->InheritsFrom(AliCluster::Class())) {
-      Error("AliTPCClustersArray", "%s does not inherit from AliCluster", classname);
+   if (!fClusterType->InheritsFrom(TObject::Class())) {
+      Error("AliClustersArray", "%s does not inherit from TObject", classname);
       return kFALSE;
    }     
   return kTRUE;
 }
 
-Bool_t AliClustersArray::Setup(AliDetectorParam *param)
+Bool_t AliClustersArray::Setup(const AliDetectorParam *param)
 {
   //
   //make copy of param object

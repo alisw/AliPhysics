@@ -24,6 +24,7 @@ class TObjArray;
 class AliTPCClustersRow : public AliClusters{
 public:
   AliTPCClustersRow();
+  virtual TObject *InsertCluster(const TObject *c);
 
 public:
   

@@ -18,10 +18,12 @@ class AliH2F;
 class AliDigits: public AliSegmentID{ 
 public:
   AliDigits();
-  ~AliDigits();
-  inline Short_t GetDigitFast(Int_t row, Int_t column);  //return value at given row and collumn
-  inline void  SetDigitFast(Short_t value,Int_t row, Int_t column);  //set value at given row and collumn
-  inline Bool_t BoundsOK(const char *where, Int_t row, Int_t col) ;  //Check If Bound Ok
+  AliDigits(const AliDigits &digits); //copy constructor
+  AliDigits &operator = (const AliDigits & digits); //assignment operator
+  virtual ~AliDigits();
+  Short_t GetDigitFast(Int_t row, Int_t column);  //return value at given row and collumn
+  void  SetDigitFast(Short_t value,Int_t row, Int_t column);  //set value at given row and collumn
+  Bool_t BoundsOK(const char *where, Int_t row, Int_t col) ;  //Check If Bound Ok
   Bool_t OutOfBoundsError(const char *where, Int_t row, Int_t column);
   virtual void Allocate(Int_t rows, Int_t columns);  //construct empty buffer fDigits with size rows x columns
   virtual Short_t GetDigit(Int_t row, Int_t column);
@@ -29,15 +31,20 @@ public:
   virtual void CompresBuffer(Int_t bufferType,Int_t threshold); //compres buffer according buffertype algorithm   
   virtual Bool_t First(); //adjust  first valid current digit
   virtual Bool_t Next();  //addjust next valid current digit
-  void SetThreshold(Int_t th) {fThreshold = th;}
-  Int_t  GetThreshold() {return fThreshold;}
+  void SetThreshold(Int_t th) {fThreshold = th;} //set threshold
+  Int_t  GetThreshold() {return fThreshold;}  //return threshold    
+  Int_t GetNRows(){return fNrows;}
+  Int_t GetNCols(){return fNcols;}
   Int_t CurrentRow(){ return fCurrentRow;}  //return current row
   Int_t CurrentColumn(){ return fCurrentCol;} //return current column
   Int_t CurrentDigit() {return fElements->At(fCurrentIndex);} //return degit for current row and column
   void AcceptHisto(AliH2F * his);  //update buffer for - it will content histogram values
   AliH2F * GenerHisto();           //generate 2 dimensional histogram with digits
-  AliH2F *  Draw( const char *option=0,Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); //draw digits
-  Int_t GetSize() {return fNelems;} //return main buffer size
+  AliH2F *DrawDigits( const char *option=0,Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); //draw digits
+  
+  Int_t GetSize();//return total size of object in bytes
+  Int_t GetDigitSize(); //return total size of pure digits 
+  Int_t GetOverTh(Float_t threshold,Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); //return number of digits over threshold 
 protected:
   virtual  void Invalidate();  
   void ExpandBuffer1(); //expand buffer of type to twodimensional array
@@ -74,7 +81,7 @@ inline Bool_t AliDigits::BoundsOK(const char *where, Int_t row, Int_t col)
   return kTRUE;  
 }
 
-Short_t AliDigits::GetDigitFast(Int_t row, Int_t column)
+inline Short_t AliDigits::GetDigitFast(Int_t row, Int_t column)
 {
   //
   //return digit from  fDigits array
@@ -83,13 +90,13 @@ Short_t AliDigits::GetDigitFast(Int_t row, Int_t column)
   return fElements->At(fIndex->At(column)+row); 
 }
 
-void  AliDigits::SetDigitFast(Short_t value, Int_t row, Int_t column)
+inline void  AliDigits::SetDigitFast(Short_t value, Int_t row, Int_t column)
 {
   //
   //set  digit 
   //
   if ( (row<0) || (row>=fNrows)  || (column<0) || (column>=fNrows) ) 
-       ::Error("AliDigits::SetDigitFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08x)", 
+       Error("AliDigits::SetDigitFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08x)", 
 	   row, column, fNrows, fNcols, this);
   (*fElements)[fIndex->At(column)+row]=value; 
 }

@@ -22,6 +22,8 @@ class TArrayF;
 class AliTPCPRF2D : public TObject {
 public : 
   AliTPCPRF2D();
+   AliTPCPRF2D(const AliTPCPRF2D &prf);
+  AliTPCPRF2D & operator = (const AliTPCPRF2D &prf);
   ~AliTPCPRF2D();
   void Update();  //recalculate tables for charge calculation
   Float_t GetGRF(Float_t xin, Float_t yin); 
@@ -33,7 +35,7 @@ public :
   //fixed y
   // void DrawY(Float_t y1, Float_t y2,Float_t x);
   //draw one dimensional response for fixed x
-  void Draw(Float_t x1, Float_t x2, Float_t y1, Float_t y2,
+  void DrawPRF(Float_t x1, Float_t x2, Float_t y1, Float_t y2,
 	    Bool_t inter=kFALSE, Int_t Nx=20, Int_t Ny=20);
   //draw two dimensional PRF
 
@@ -116,6 +118,10 @@ private:
   Float_t fCurrentY;    //in reality we calculate PRF only for one fixed y 
   Float_t fDYtoWire;    //! used to make PRF calculation faster in GetPRF
   Float_t fDStepM1;     //! used in GetPRFActiv to make calculation faster
+  
+  static const Float_t fgSQRT12; //numeric constant
+  static const Int_t   fgNPRF;   //default number of division
+
   ClassDef(AliTPCPRF2D,1) 
 }; 
 

@@ -1,5 +1,5 @@
-#ifndef AliTPCRF1D_H
-#define AliTPCRF1D_H
+#ifndef ALITPCRF1D_H
+#define ALITPCRF1D_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -7,14 +7,11 @@
 
 ////////////////////////////////////////////////
 //  Manager class for AliTPCRF1D              //
-////////////////////////////////////////////////
+//////////////////////////////////////////////// 
   
 
 // include files and class forward declarations
-//DSTEP in cm
-//NPRF in number of interpolation points
-const Int_t   NRF=100;
-const Float_t RFDSTEP=0.01;
+
 
 #include "TObject.h"
 #include "TMath.h"
@@ -23,7 +20,9 @@ class TF1;
 
 class AliTPCRF1D : public TObject {
 public : 
-  AliTPCRF1D(Bool_t direct=kFALSE,Int_t np=NRF,Float_t step=RFDSTEP );
+  AliTPCRF1D(Bool_t direct=kFALSE,Int_t np=0,Float_t step=0 ); 
+  AliTPCRF1D(const AliTPCRF1D &prf);
+  AliTPCRF1D & operator = (const AliTPCRF1D &prf);
   ~AliTPCRF1D();  
   Float_t GetRF(Float_t xin); //return RF in point xin
   Float_t GetGRF(Float_t xin); //return generic response function  in xin
@@ -44,7 +43,7 @@ public :
   //return  pad width 
   Float_t  GetSigma(){return fSigma;}
   //return estimated sigma of RF
-  void Draw(Float_t x1=-3 ,Float_t x2 =3.,Int_t N = 200);
+  void DrawRF(Float_t x1=-3 ,Float_t x2 =3.,Int_t N = 200);
   //draw RF it don't delete histograms after drawing
   /// it's on user !!!!
   void Update();  
@@ -65,15 +64,16 @@ private:
   //calculated during update
  
   Bool_t fDirect;     //tell us if we use directly generalfunction
-  Float_t fK3X;  
-  Float_t fPadDistance; 
-  //charge type
-  char  fType[5];
+  
+  Float_t fPadDistance;   //pad to wire distance
+  char  fType[5];     //type of the parametrisation
+  static Int_t   fgNRF;//default  number of interpolation points
+  static Float_t fgRFDSTEP;//default step in cm
   ClassDef(AliTPCRF1D,2)
 }; 
 
 
 
 
-#endif /* AliTPCRF1D_H */
+#endif /* ALITPCRF1D_H */
   

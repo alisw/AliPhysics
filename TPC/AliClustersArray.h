@@ -14,7 +14,7 @@ class AliClustersFinder;
 class AliClustersArray : public AliSegmentArray {
 public:
   AliClustersArray();
-  virtual   Bool_t Setup(AliDetectorParam *param);  
+  virtual   Bool_t Setup(const AliDetectorParam *param);  
   const AliDetectorParam *  GetParam() {return fParam;} 
   AliClustersFinder *  GetFinder() {return fClFinder;}
   virtual Bool_t SetParam(AliDetectorParam * param);
@@ -26,6 +26,9 @@ protected:
   AliClustersFinder * fClFinder; //!pointer to cluster finder object
   TClass *fClusterType; //!
   ClassDef(AliClustersArray,1) 
+private:
+  AliClustersArray(const AliClustersArray& r); //dummy copy constructor
+  AliClustersArray &operator=(const AliClustersArray& r);//dummy assignment operator
 };
   
 #endif

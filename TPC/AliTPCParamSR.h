@@ -8,9 +8,10 @@
 ////////////////////////////////////////////////
 //  Manager class for TPC parameters          //
 ////////////////////////////////////////////////
-#include "AliTPCPRF2D.h"
-#include "AliTPCRF1D.h"
 #include "AliTPCParam.h"
+
+class AliTPCRF1D;
+class AliTPCPRF2D;
 
 class AliTPCParamSR : public AliTPCParam {
 public:
@@ -42,9 +43,9 @@ public:
   AliTPCPRF2D * GetInnerPRF() const {return fInnerPRF;}
   AliTPCPRF2D * GetOuterPRF() const {return fOuterPRF;}
   AliTPCRF1D  * GetTimeRF()   const {return fTimeRF;}
-  void SetFacSigmaPadRow(Float_t fac) {fFacSigmaPadRow=fac;}
-  void SetFacSigmaPad(Float_t fac) {fFacSigmaPad=fac;}
-  void SetFacSigmaTime(Float_t fac) {fFacSigmaTime=fac;}
+  void SetFacSigmaPadRow(Float_t fac=3.) {fFacSigmaPadRow=fac;}
+  void SetFacSigmaPad(Float_t fac=3.) {fFacSigmaPad=fac;}
+  void SetFacSigmaTime(Float_t fac=3.) {fFacSigmaTime=fac;}
 
   virtual Float_t GetPrimaryLoss(Float_t *x, Int_t *index, Float_t *angle);
   virtual Float_t GetTotalLoss(Float_t *x, Int_t *index, Float_t *angle);

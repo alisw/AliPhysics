@@ -15,6 +15,22 @@
 
 /*
 $Log$
+Revision 1.8.4.4  2000/06/26 07:39:42  kowal2
+Changes to obey the coding rules
+
+Revision 1.8.4.3  2000/06/25 08:38:41  kowal2
+Splitted from AliTPCtracking
+  
+Revision 1.8.4.2  2000/06/14 16:48:24  kowal2
+Parameter setting improved. Removed compiler warnings
+
+Revision 1.8.4.1  2000/06/09 07:12:21  kowal2  
+
+Updated defaults
+
+Revision 1.8  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.7.8.2  2000/04/10 08:44:51  kowal2
 
 New transformations added
@@ -48,6 +64,7 @@ Introduction of the Copyright and cvs Log
 //                                                                   //  
 ///////////////////////////////////////////////////////////////////////
 
+//
 
 #include <iostream.h>
 #include <TMath.h>
@@ -56,89 +73,9 @@ Introduction of the Copyright and cvs Log
 #include <AliTPCParam.h>
 
 
+
+
 ClassImp(AliTPCParam)
-
-const static  Int_t kMaxRows=600; 
-//
-//sector default parameters
-//
-const static  Float_t kInnerRadiusLow = 81.6;
-const static  Float_t kOuterRadiusLow = 144.2;
-const static  Float_t kInnerRadiusUp  = 143.6;
-const static  Float_t kOuterRadiusUp  = 252.1;
-const static  Float_t kInnerAngle = 20; // 20 degrees
-const static  Float_t kInnerAngleShift = 10;
-const static  Float_t kOuterAngle = 20; //  20 degrees
-const static  Float_t kOuterAngleShift = 10;
-const static  Float_t kInnerFrameSpace = 1.5;
-const static  Float_t kOuterFrameSpace = 1.5;
-const static  Float_t kInnerWireMount = 1.15;
-const static  Float_t kOuterWireMount = 1.15;
-const static  Float_t kZLength =250.;
-const static  Int_t   kGeometryType = 0; //straight rows 
-//
-//wires default parameters
-//
-const static Int_t    kNInnerWiresPerPad = 5;
-const static Int_t    kInnerDummyWire = 2;
-const static Float_t  kInnerOffWire = 0.5;
-const static Int_t    kNOuterWiresPerPad = 5;
-const static Int_t    kOuterDummyWire = 2;
-const static Float_t  kOuterOffWire = 0.5;
-//
-//pad default parameters
-// 
-const static Float_t  kInnerPadPitchLength = 2.05;
-const static Float_t  kInnerPadPitchWidth = 0.35;
-const static Float_t  kInnerPadLength = 2.05;
-const static Float_t  kInnerPadWidth = 0.35;
-const static Float_t  kOuterPadPitchLength = 2.05;
-const static Float_t  kOuterPadPitchWidth = 0.35;
-const static Float_t  kOuterPadLength = 2.05;
-const static Float_t  kOuterPadWidth = 0.35;
-const static Bool_t   kBMWPCReadout = kTRUE; //MWPC readout - another possibility GEM 
-const static Int_t    kNCrossRows = 1; //number of rows to cross-talk
-
-//
-//gas default parameters
-//
-const static  Float_t  kDiffT = 2.2e-2; 
-const static  Float_t  kDiffL = 2.2e-2;
-const static  Float_t  kGasGain = 2.e4;
-const static  Float_t  kDriftV  =2.85e6;
-const static  Float_t  kOmegaTau = 0.145;
-const static  Float_t  kAttCoef = 250.;
-const static  Float_t  kOxyCont = 5.e-6;
-//
-//electornic default parameters
-//
-const static  Float_t  kPadCoupling=0.5;
-const static  Int_t    kZeroSup=5;
-const static  Float_t  kNoise = 1000;                            
-const static  Float_t  kChipGain = 12;
-const static  Float_t  kChipNorm = 0.4;
-const static  Float_t  kTSample = 2.e-7; 
-const static  Float_t  kTFWHM   = 1.9e-7;  //fwhm of charge distribution
-const static  Int_t    kMaxTBin =512;  
-const static  Int_t    kADCSat  =1024;  
-const static  Float_t  kADCDynRange =2000.;  
-//
-//
-//
-const static  Float_t kBField =0.2; 
-const static  Float_t kNPrimLoss =10.9;
-const static  Float_t kNTotalLoss =39.9;
-// 
-//transformation coeficients
-//
-const static  Float_t  kDegtoRad = 0.01745329251994;
-const static  Float_t  kRadtoDeg = 57.29577951309;
-// 
-//response constants
-//
-const static Int_t     kNResponseMax=100;
-const static Float_t   kResponseThreshold=0.01;
-
 
 
 //___________________________________________
@@ -151,6 +88,7 @@ AliTPCParam::AliTPCParam()
   fResponseBin = 0;
   fResponseWeight = 0;
   fRotAngle = 0;
+  SetTitle("75x40_100x60");
   SetDefault();  
 }
 
@@ -278,6 +216,7 @@ void  AliTPCParam::SetSectorAngles(Float_t innerangle, Float_t innershift, Float
 {
   //
   // set opening angles  
+  const static  Float_t  kDegtoRad = 0.01745329251994;
   fInnerAngle = innerangle;       //opening angle of Inner sector
   fInnerAngleShift = innershift;  //shift of first inner sector center to the 0
   fOuterAngle = outerangle;       //opening angle of outer sector
@@ -348,6 +287,81 @@ void AliTPCParam::SetDefault()
   //
   //set default parameters
   //
+  const static  Int_t kMaxRows=600; 
+  //
+  //sector default parameters
+  //
+  const static  Float_t kInnerRadiusLow = 87.35;
+  const static  Float_t kOuterRadiusLow = 131.2;
+  const static  Float_t kInnerRadiusUp  = 130.6;
+  const static  Float_t kOuterRadiusUp  = 252.2;
+  const static  Float_t kInnerAngle = 20; // 20 degrees
+  const static  Float_t kInnerAngleShift = 10;
+  const static  Float_t kOuterAngle = 20; //  20 degrees
+  const static  Float_t kOuterAngleShift = 10;
+  const static  Float_t kInnerFrameSpace = 1.5;
+  const static  Float_t kOuterFrameSpace = 1.5;
+  const static  Float_t kInnerWireMount = 1.15;
+  const static  Float_t kOuterWireMount = 1.15;
+  const static  Float_t kZLength =250.;
+  const static  Int_t   kGeometryType = 0; //straight rows 
+  //
+  //wires default parameters
+  //
+  const static Int_t    kNInnerWiresPerPad = 3;
+  const static Int_t    kInnerDummyWire = 2;
+  const static Float_t  kInnerOffWire = 0.5;
+  const static Int_t    kNOuterWiresPerPad = 4;
+  const static Int_t    kOuterDummyWire = 2;
+  const static Float_t  kOuterOffWire = 0.5;
+  //
+  //pad default parameters
+  // 
+  const static Float_t  kInnerPadPitchLength = 0.75;
+  const static Float_t  kInnerPadPitchWidth = 0.40;
+  const static Float_t  kInnerPadLength = 0.75;
+  const static Float_t  kInnerPadWidth = 0.40;
+  const static Float_t  kOuterPadPitchLength = 1.0;
+  const static Float_t  kOuterPadPitchWidth = 0.6;
+  const static Float_t  kOuterPadLength = 1.0;
+  const static Float_t  kOuterPadWidth = 0.6;
+  const static Bool_t   kBMWPCReadout = kTRUE; //MWPC readout - another possibility GEM 
+  const static Int_t    kNCrossRows = 1; //number of rows to cross-talk
+  
+  //
+  //gas default parameters
+  //
+  const static  Float_t  kDiffT = 2.2e-2; 
+  const static  Float_t  kDiffL = 2.2e-2;
+  const static  Float_t  kGasGain = 2.e4;
+  const static  Float_t  kDriftV  =2.83e6;
+  const static  Float_t  kOmegaTau = 0.145;
+  const static  Float_t  kAttCoef = 250.;
+  const static  Float_t  kOxyCont = 5.e-6;
+  //
+  //electronic default parameters
+  //
+  const static  Float_t  kPadCoupling=0.5;
+  const static  Int_t    kZeroSup=2;
+  const static  Float_t  kNoise = 1000;                            
+  const static  Float_t  kChipGain = 12;
+  const static  Float_t  kChipNorm = 0.4;
+  const static  Float_t  kTSample = 2.e-7; 
+  const static  Float_t  kTFWHM   = 1.9e-7;  //fwhm of charge distribution
+  const static  Int_t    kMaxTBin =445;  
+  const static  Int_t    kADCSat  =1024;  
+  const static  Float_t  kADCDynRange =2000.;  
+  //
+  //
+  //
+  const static  Float_t kBField =0.2; 
+  const static  Float_t kNPrimLoss =10.9;
+  const static  Float_t kNTotalLoss =39.9;
+  // 
+  //response constants
+  //
+  const static Int_t     kNResponseMax=100;
+  const static Float_t   kResponseThreshold=0.01;     
   fbStatus = kFALSE;
   //
   //set sector parameters
@@ -428,6 +442,7 @@ Bool_t AliTPCParam::Update()
   // for example we can change size of pads and according this recalculate number
   // of pad rows, number of of pads in given row ....
   //
+  const Float_t kQel = 1.602e-19; // elementary charge
   fbStatus = kFALSE;
 
   Int_t i,j;  //loop variables because HP 
@@ -466,8 +481,8 @@ Bool_t AliTPCParam::Update()
     fRotAngle[j+2] =angle;    
   }
   fZWidth = fTSample*fDriftV;  
-  fTotalNormFac = fPadCoupling*fChipNorm*q_el*1.e15*fChipGain*fADCSat/fADCDynRange;
-  fNoiseNormFac = q_el*1.e15*fChipGain*fADCSat/fADCDynRange;
+  fTotalNormFac = fPadCoupling*fChipNorm*kQel*1.e15*fChipGain*fADCSat/fADCDynRange;
+  fNoiseNormFac = kQel*1.e15*fChipGain*fADCSat/fADCDynRange;
   //wire section 
   Int_t nwire;
   Float_t wspace; //available space for wire
