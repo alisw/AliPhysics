@@ -5,11 +5,12 @@
 
 #include "TG4StepManager.h"
 #include "TG4GeometryServices.h"
+#include "TG4ParticlesManager.h"
 #include "TG4PhysicsManager.h"
 #include "TG4VSensitiveDetector.h"
 #include "TG4Limits.h"
 #include "TG4Globals.h"
-#include "TG3Units.h"
+#include "TG4G3Units.h"
 
 #include <G4SteppingManager.hh>
 #include <G4UserLimits.hh>
@@ -199,7 +200,7 @@ void TG4StepManager::SetMaxStep(Float_t step)
   }
 
   // set max step
-  userLimits->SetMaxAllowedStep(step*TG3Units::Length());
+  userLimits->SetMaxAllowedStep(step*TG4G3Units::Length()); 
 }
 
 void TG4StepManager::SetMaxNStep(Int_t maxNofSteps)
@@ -341,11 +342,11 @@ Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens,
       
     // density 
     dens = material->GetDensity();
-    dens /= TG3Units::MassDensity();      
+    dens /= TG4G3Units::MassDensity();      
       
     // radiation length
     radl = material->GetRadlen();
-    radl /= TG3Units::Length();
+    radl /= TG4G3Units::Length();
       
     absl = 0.;  // this parameter is not defined in Geant4
     return nofElements;
@@ -491,7 +492,7 @@ Float_t TG4StepManager::MaxStep() const
   else { 
     const G4Track& trackRef = *(fTrack);
     maxStep = userLimits->GetMaxAllowedStep(trackRef); 
-    maxStep /= TG3Units::Length(); 
+    maxStep /= TG4G3Units::Length(); 
     return maxStep;
   }  
 }
@@ -520,11 +521,11 @@ void TG4StepManager::TrackPosition(TLorentzVector& position) const
   // get position
   // check if this is == to PostStepPoint position !!
   G4ThreeVector positionVector = fTrack->GetPosition();
-  positionVector *= 1./(TG3Units::Length());   
+  positionVector *= 1./(TG4G3Units::Length());   
      
   // local time   
   G4double time = fTrack->GetLocalTime();
-  time /= TG3Units::Time();
+  time /= TG4G3Units::Time();
     
   SetTLorentzVector(positionVector, time, position);
 }
@@ -554,10 +555,10 @@ void TG4StepManager::TrackMomentum(TLorentzVector& momentum) const
 #endif
 
   G4ThreeVector momentumVector = fTrack->GetMomentum(); 
-  momentumVector *= 1./(TG3Units::Energy());   
+  momentumVector *= 1./(TG4G3Units::Energy());   
 
   G4double energy = fTrack->GetDynamicParticle()->GetTotalEnergy();
-  energy /= TG3Units::Energy();  
+  energy /= TG4G3Units::Energy();  
 
   SetTLorentzVector(momentumVector, energy, momentum);
 }
@@ -574,12 +575,12 @@ void TG4StepManager::TrackVertexPosition(TLorentzVector& position) const
 
   // position
   G4ThreeVector positionVector = fTrack->GetVertexPosition();
-  positionVector *= 1./(TG3Units::Length());   
+  positionVector *= 1./(TG4G3Units::Length());   
      
   // local time 
   // to be checked  
   G4double time = fTrack->GetLocalTime();
-  time /= TG3Units::Time();
+  time /= TG4G3Units::Time();
       
   SetTLorentzVector(positionVector, time, position);
 }
@@ -595,10 +596,10 @@ void TG4StepManager::TrackVertexMomentum(TLorentzVector& momentum) const
 #endif
 
   G4ThreeVector momentumVector = fTrack->GetVertexMomentumDirection(); 
-  momentumVector *= 1./(TG3Units::Energy());   
+  momentumVector *= 1./(TG4G3Units::Energy());   
 
   G4double energy = fTrack->GetVertexKineticEnergy();
-  energy /= TG3Units::Energy();  
+  energy /= TG4G3Units::Energy();  
 
   SetTLorentzVector(momentumVector, energy, momentum);
 }
@@ -616,7 +617,7 @@ Float_t TG4StepManager::TrackStep() const
 #endif
 
     length = fStep->GetStepLength();
-    length /= TG3Units::Length();
+    length /= TG4G3Units::Length();
   }  
   else 
     length = 0;
@@ -634,7 +635,7 @@ Float_t TG4StepManager::TrackLength() const
 #endif
 
   G4double length = fTrack->GetTrackLength();
-  length /= TG3Units::Length();
+  length /= TG4G3Units::Length();
   return length;
 }
 
@@ -651,7 +652,7 @@ Float_t TG4StepManager::TrackTime() const
 #endif
   
   G4double time = fTrack->GetLocalTime();
-  time /= TG3Units::Time();
+  time /= TG4G3Units::Time();
   return time;
 }
 
@@ -668,7 +669,7 @@ Float_t TG4StepManager::Edep() const
 #endif
 
     energyDeposit = fStep->GetTotalEnergyDeposit();
-    energyDeposit /= TG3Units::Energy();
+    energyDeposit /= TG4G3Units::Energy();
   }
   else   
     energyDeposit = 0;
@@ -688,11 +689,11 @@ Int_t TG4StepManager::TrackPid() const
   G4ParticleDefinition* particle
     = fTrack->GetDynamicParticle()->GetDefinition();
     
-  // ask TG4PhysicsManager to get PDG encoding 
+  // ask TG4ParticlesManager to get PDG encoding 
   // (in order to get PDG from extended TDatabasePDG
   // in case the standard PDG code is not defined)
-  TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
-  G4int pdgEncoding = pPhysicsManager->GetPDGEncodingFast(particle);
+  G4int pdgEncoding 
+    = TG4ParticlesManager::Instance()->GetPDGEncodingFast(particle);
 
   return pdgEncoding;
 }
@@ -709,7 +710,7 @@ Float_t TG4StepManager::TrackCharge() const
   G4double charge
     = fTrack->GetDynamicParticle()->GetDefinition()
       ->GetPDGCharge();
-  charge /= TG3Units::Charge();	
+  charge /= TG4G3Units::Charge();	
   return charge;
 }
 
@@ -725,7 +726,7 @@ Float_t TG4StepManager::TrackMass() const
   G4double mass
     = fTrack->GetDynamicParticle()->GetDefinition()
       ->GetPDGMass();
-  mass /= TG3Units::Mass();	
+  mass /= TG4G3Units::Mass();	
   return mass;
 }
 
@@ -740,7 +741,7 @@ Float_t TG4StepManager::Etot() const
 
   G4double energy
     = fTrack->GetDynamicParticle()->GetTotalEnergy();
-  energy /= TG3Units::Energy();  
+  energy /= TG4G3Units::Energy();  
   return energy;
 }
 
@@ -949,15 +950,15 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
  
       // position & time
       G4ThreeVector positionVector = track->GetPosition();
-      positionVector *= 1./(TG3Units::Length());
+      positionVector *= 1./(TG4G3Units::Length());
       G4double time = track->GetLocalTime();
-      time /= TG3Units::Time();
+      time /= TG4G3Units::Time();
       SetTLorentzVector(positionVector, time, position);
 
       // momentum & energy
       G4ThreeVector momentumVector = track->GetMomentum();	
       G4double energy = track->GetDynamicParticle()->GetTotalEnergy();
-      energy /= TG3Units::Energy();
+      energy /= TG4G3Units::Energy();
       SetTLorentzVector(momentumVector, energy, momentum);
     }
     else {
@@ -1007,8 +1008,8 @@ AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
    
     const G4VProcess* kpProcess = track->GetCreatorProcess(); 
   
-    TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
-    AliMCProcess mcProcess = pPhysicsManager->GetMCProcess(kpProcess);
+    AliMCProcess mcProcess 
+     = TG4PhysicsManager::Instance()->GetMCProcess(kpProcess);
   
     // distinguish kPDeltaRay from kPEnergyLoss  
     if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
