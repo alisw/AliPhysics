@@ -150,7 +150,8 @@ void Config()
     Int_t   iTPC    = 1;
     Int_t   iTRD    = 1;
     Int_t   iZDC    = 1;
-    Int_t   iEMCAL  = 0;
+    Int_t   iEMCAL  = 1;
+    Int_t   iCRT    = 0;
 
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -202,7 +203,7 @@ void Config()
     {
         //=================== SHIL parameters ============================
 
-        AliSHIL *SHIL = new AliSHILv0("SHIL", "Shielding");
+        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
     }
 
 
@@ -213,7 +214,7 @@ void Config()
         AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
     }
  
-  if(iITS) {
+    if(iITS) {
 
 //=================== ITS parameters ============================
     //
@@ -393,11 +394,19 @@ void Config()
         AliSTART *START = new AliSTARTv1("START", "START Detector");
     }
 
-    if (iEMCAL && !iRICH)
+    if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
         AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
     }
+
+     if (iCRT)
+    {
+        //=================== CRT parameters ============================
+        AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+    }
+ 
+             
 }
 
 Float_t EtaToTheta(Float_t arg){
