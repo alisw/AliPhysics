@@ -55,8 +55,6 @@ public AliMUONsegmentation {
     void  SigGenInit(Float_t x, Float_t y, Float_t z);
     //
     // Identification
-    virtual char* YourName() {return fName;}
-
     ClassDef(AliMUONsegmentationV01,1)
     
  private:
@@ -106,9 +104,7 @@ public AliMUONsegmentation {
     Int_t fiwt;
     Float_t fxt;
     Float_t fyt;
-    //
-    // Version Identifier
-    char    *fName;       
+
 };
 #endif
 

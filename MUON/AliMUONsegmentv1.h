@@ -70,8 +70,6 @@ public AliMUONsegmentation {
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     //
     // Identification
-    virtual char* YourName() {return fName;}
-
     ClassDef(AliMUONsegmentationV1,1)
  protected:
     //
@@ -113,9 +111,6 @@ public AliMUONsegmentation {
     Int_t fiwt;
     Float_t fxt;
     Float_t fyt;
-    //
-    // Version Identifier
-    char    *fName;       
 };
 
 #endif

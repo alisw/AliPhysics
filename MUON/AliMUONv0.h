@@ -68,7 +68,6 @@ public AliMUONsegmentation {
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     //
     // Identification
-    virtual char* YourName(){return fName;}
     ClassDef(AliMUONsegmentationV0,1)
 	 protected:
     //
@@ -103,9 +102,6 @@ public AliMUONsegmentation {
     Int_t fiwt;
     Float_t fxt;
     Float_t fyt;
-    //
-    // Version Identifier
-    char    *fName;       
 };
 
 class AliMUONresponseV0 : //Mathieson response
@@ -143,8 +139,6 @@ public AliMUONresponse {
     virtual Float_t IntXY(AliMUONsegmentation * segmentation);
     // Identification
     //
-    virtual char* YourName() {return fName;}
-
     ClassDef(AliMUONresponseV0,1)
  protected:
     Float_t fChslope;         // Slope of the charge distribution
@@ -159,7 +153,6 @@ public AliMUONresponse {
     Float_t fKy2;
     Float_t fKy4;
     Float_t fPitch;           //anode-cathode pitch
-    char    *fName;           // Version Identifier
 };
 
 #endif
