@@ -88,7 +88,8 @@ test:
 		@echo " ____________________________________________________________ "
 		@aliroot -b -q "test.C(100)" > out
 		@rm out
-		@rm testPHOS.root
+		@rm testPHOS.root 
+		@rm testsimglobal_C.so
 
 test10:	
 		@echo " ____________________________________________________________ "
@@ -98,6 +99,6 @@ test10:
 		@aliroot -b -q "test.C(10)" > out
 		@rm out
 		@rm testPHOS.root
-
+		@rm testsimglobal_C.so
 
 
