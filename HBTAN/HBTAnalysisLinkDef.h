@@ -107,6 +107,8 @@
 #pragma link C++ class AliHBTPairPhiResolVsQInvFctn+;
 #pragma link C++ class AliHBTPairThetaResolVsKtFctn+;
 #pragma link C++ class AliHBTPairPhiResolVsKtFctn+;
+#pragma link C++ class AliHBTPairPhiResolVsPairPhiFctn+;
+#pragma link C++ class AliHBTPairThetaResolVsPairThetaFctn+;
 
 #pragma link C++ class AliHBTQInvDistributionVsKtFctn+;
 #pragma link C++ class AliHBTQOutDistributionVsKtFctn+;
@@ -151,6 +153,8 @@
 #pragma link C++ class AliHBTMonPtResolutionVsPtFctn+;
 #pragma link C++ class AliHBTMonPhiResolutionVsPtFctn+;
 #pragma link C++ class AliHBTMonThetaResolutionVsPtFctn+;
+#pragma link C++ class AliHBTMonPhiResolutionVsPhiFctn+;
+#pragma link C++ class AliHBTMonThetaResolutionVsThetaFctn+;
 
 #pragma link C++ class AliHBTTwoTrackEffFctn+;
 #pragma link C++ class AliHBTTwoTrackEffFctn3D+;
