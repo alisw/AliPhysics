@@ -11,8 +11,14 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- **************************************************************************
- **************************************************************************
+ **************************************************************************/
+
+/*
+$Log$
+*/
+
+
+ /**************************************************************************
  *                                                                        *
  * This class builds AliTPCtrack objects from generated tracks to feed    *
  * ITS tracking (V2). The AliTPCtrack is built from its first hit in      *
