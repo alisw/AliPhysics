@@ -62,7 +62,6 @@ public:
   AliTPC(const char *name, const char *title);
   virtual      ~AliTPC();
   virtual void  AddHit(Int_t a1, Int_t *a2, Float_t *a3);
-  virtual void  AddTrackReference(Int_t label, TVirtualMC *vMC);
   Int_t         DistancetoPrimitive(Int_t px, Int_t py);
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}

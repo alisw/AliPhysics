@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.67  2003/03/03 16:36:16  kowal2
+Added LoadTPCParam method
+
 Revision 1.66  2003/02/11 16:54:07  hristov
 Updated AliTrackReference class (S.Radomski)
 
@@ -402,18 +405,6 @@ void AliTPC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   }
   if (fHitType>1)
    AddHit2(track,vol,hits);
-}
-
-void  AliTPC::AddTrackReference(Int_t label, TVirtualMC *vMC){
-  //
-  // add a trackrefernce to the list
-  if (!fTrackReferences) {
-    cerr<<"Container trackrefernce not active\n";
-    return;
-  }
-  Int_t nref = fTrackReferences->GetEntriesFast();
-  TClonesArray &lref = *fTrackReferences;
-  new(lref[nref]) AliTrackReference(label, vMC);
 }
  
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.47  2003/03/04 15:16:54  kowal2
+Geometry corrected for an overlap
+
 Revision 1.46  2003/02/11 16:54:07  hristov
 Updated AliTrackReference class (S.Radomski)
 
@@ -1986,7 +1989,7 @@ void AliTPCv2::StepManager()
   if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting()) &&
        ((id == fIdLSec) || (id == fIdUSec)) ) {
 
-    AddTrackReference(gAlice->CurrentTrack(), gMC);
+    AddTrackReference(gAlice->CurrentTrack());
   }
 
   if(id == fIdLSec){
