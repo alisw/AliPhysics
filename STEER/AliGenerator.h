@@ -71,8 +71,6 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void GetOrigin(TLorentzVector &o) const
 	{o[0]=fOrigin.At(0);o[1]=fOrigin.At(1);o[2]=fOrigin.At(2);o[3]=0;}
 
-    virtual void SetNumberOfEvents(Int_t n) {fNumberOfEvents=n;}
-    virtual Int_t GetNumberOfEvents() {return fNumberOfEvents;}
     void SetStack (AliStack *stack) {fStack = stack;}
     AliStack* GetStack(){return fStack;}
 // Comminication with stack
@@ -110,19 +108,11 @@ class AliGenerator : public TNamed, public AliRndm
    //
     VertexSmear_t     fVertexSmear;  //Vertex Smearing mode
     VertexSource_t    fVertexSource; //Vertex source (internal/external)    
-    Int_t       fTrackIt;    // if 1 Track final state particles 
+    Int_t       fTrackIt;    // if 1, Track final state particles 
     TArrayF     fOrigin;     // Origin of event
-    TArrayF     fOsigma;     // Sigma of the Origin of even
+    TArrayF     fOsigma;     // Sigma of the Origin of event
     TArrayF     fVertex;     //! Vertex of current event
-    Int_t fNumberOfEvents;
-    AliStack *fStack;        //! Local pointer to stack
-    Int_t fActiveEvent;      //HBT Processor needs more then one event to do correlations
-                             //Due to complications in fortran, it first calls C routine
-                             //that sets the active event to be read. All alihbtp_gettrack
-                             //are addressed to this event
-     
-    Int_t fNParticles;       //number of particles in current event
-
+    AliStack*   fStack;      //! Local pointer to stack
     /*************************************************************************/
     enum {kThetaRange    = BIT(14),
 	  kVertexRange   = BIT(15),

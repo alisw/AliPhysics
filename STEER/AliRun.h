@@ -72,6 +72,7 @@ public:
    Int_t          GetEvNumber() const {return fEvent;}
    Int_t          GetRunNumber() const {return fRun;}
    void           SetRunNumber(Int_t run) {fRun=run;}
+   Int_t          GetEventsPerRun() const {return fEventsPerRun;}
    Int_t          GetDebug() const {return fDebug;}
    AliModule     *GetModule(const char *name) const;
    TList*         GetHitLists() const {return fHitLists ;}
@@ -165,6 +166,7 @@ protected:
 
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
+  Int_t          fEventsPerRun;      //  Number of events per run
   Int_t          fDebug;             //  Debug flag
   AliHeader     *fHeader;            //  Header information
   TTree         *fTreeD;             //! Pointer to Tree for Digits

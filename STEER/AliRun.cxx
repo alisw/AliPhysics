@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.73  2001/07/27 12:34:30  jchudoba
+remove the dummy argument in fStack->GetEvent call
+
 Revision 1.72  2001/07/03 08:10:57  hristov
 J.Chudoba's changes merged correctly with the HEAD
 
@@ -218,6 +221,7 @@ Introduction of the Copyright and cvs Log
 #include <TBrowser.h>
 #include <TFolder.h>
 #include <TNode.h>
+#include <TKey.h>
 
 #include "TParticle.h"
 #include "AliRun.h"
@@ -683,7 +687,8 @@ void AliRun::FinishRun()
   if (fTreeS) {
     delete fTreeS; fTreeS = 0;
   }
-    
+  fGenerator->FinishRun();
+  
   // Close output file
   file->Write();
 }
@@ -840,14 +845,21 @@ Int_t AliRun::GetEvent(Int_t event)
   //
   TFile *file = fTreeE->GetCurrentFile();
   char treeName[20];
+  TKey* currentKey;
+  static TIter Iter(gDirectory->GetListOfKeys());
+  
   file->cd();
 
   // Get Hits Tree header from file
   sprintf(treeName,"TreeH%d",event);
-  fTreeH = (TTree*)gDirectory->Get(treeName);
-  if (!fTreeH) {
-    Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
-  }
+  while ((currentKey = (TKey *) Iter.Next())) {
+      if (strcmp(treeName,currentKey->GetName()) == 0) {
+	  fTreeH  = (TTree*)currentKey->ReadObj();
+	  if (!fTreeH)
+	  {Error("GetEvent","cannot find Hits Tree for event:%d\n",event);}
+	  break;
+      }
+  }          
   
   // Get Digits Tree header from file
   sprintf(treeName,"TreeD%d",event);
@@ -1418,7 +1430,7 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   // a positive number of events will cause the finish routine
   // to be called
   //
-
+    fEventsPerRun = nevent;
   // check if initialisation has been done
   if (!fInitDone) InitMC(setup);
   
