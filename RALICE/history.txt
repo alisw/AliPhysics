@@ -486,3 +486,7 @@
                 for the particle names. The name returned by TPythia6::Pyname contains trailing
                 characters due to an incorrect stripping process.
                 AliCollider::MakeEvent was updated accordingly to make use of this new memberfunction.
+04-mar-2004 NvE Functionality of AliObjMatrix extended to provide the number of references and
+                (row,col) indices of all the occurrences of the stored objects.
+                Also an additional memberfunction AliObjMatrix::RemoveObject introduced to allow more
+                flexibility in specifying objects to be removed. 

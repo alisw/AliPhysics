@@ -289,6 +289,86 @@ void AliObjMatrix::RemoveObject(Int_t row,Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliObjMatrix::RemoveObject(TObject* obj,Int_t row,Int_t col)
+{
+// Remove an object from the matrix according to user specified selections.
+// In case the object was owned by the matrix, it will be deleted.
+//
+// An object is only removed from the matrix if the stored reference matches
+// the argument "obj".
+// In case obj=0 no check on the matching of the stored reference is performed
+// and the stored object is always removed in accordance with the other
+// selection criteria.
+//
+// In case the argument "row" is specified, only the object references from
+// that matrix row will be deleted.
+// In case row=0 (default) no checking on the row index is performed.
+//
+// In case the argument "col" is specified, only the object references from
+// that matrix column will be deleted.
+// In case col=0 (default) no checking on the column index is performed.
+//
+// So, invokation of RemoveObject(obj) will remove all references to the
+// object "obj" from the total matrix, whereas RemoveObject(obj,0,col)
+// will remove all references to the object "obj" only from column "col".
+//
+// Notes :
+// -------
+// The first location in the matrix is indicated as (1,1).
+//
+// Invokation of RemoveObject(0,row,col) is equivalent to invoking the
+// memberfunction RemoveObject(row,col).
+// Invoking the latter directly is slightly faster.
+//
+// Invokation of RemoveObject(0) is equivalent to invoking Reset().
+// Invoking the latter directly is slightly faster.
+//
+ TArrayI rows;
+ TArrayI cols;
+ Int_t nrefs=0;
+
+ if (row && col)
+ {
+  if (!obj)
+  {
+   RemoveObject(row,col);
+  }
+  else
+  {
+   TObject* objx=GetObject(row,col);
+   if (objx==obj) RemoveObject(row,col);
+  }
+  return;
+ }
+
+ if (!row && !col)
+ {
+  if (!obj)
+  {
+   Reset();
+   return;
+  }
+  else
+  {
+   nrefs=GetIndices(obj,rows,cols);
+  }
+ }
+
+ if (row && !col) nrefs=GetIndices(obj,row,cols);
+ if (!row && col) nrefs=GetIndices(obj,rows,col);
+
+ // Remove the selected objects based on the obtained row and column indices
+ Int_t irow,icol;
+ for (Int_t i=0; i<nrefs; i++)
+ {
+  irow=row;
+  if (!irow) irow=rows.At(i);
+  icol=col;
+  if (!icol) icol=cols.At(i);
+  RemoveObject(irow,icol);
+ }
+}
+///////////////////////////////////////////////////////////////////////////
 TObject* AliObjMatrix::GetObject(Int_t row,Int_t col)
 {
 // Provide a pointer to the object stored at the matrix location (row,col).
@@ -367,5 +447,214 @@ Int_t AliObjMatrix::GetNobjects()
  if (fObjects) nobj=fObjects->GetEntries();
 
  return nobj;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliObjMatrix::GetNrefs(TObject* obj)
+{
+// Provide the number of stored references to the specified object.
+// If obj=0 the total number of stored references for all objects is returned.
+ Int_t nobjs=GetNobjects();
+
+ if (!obj) return nobjs;
+
+ Int_t nrefs=0;
+ for (Int_t i=1; i<=nobjs; i++)
+ {
+  TObject* objx=GetObject(i);
+  if (objx==obj) nrefs++;
+ }
+ return nrefs;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,TArrayI& cols)
+{
+// Provide the (row,col) indices of all the storage locations of the
+// specified object.
+// The row and column indices are returned in the two separate TArrayI arrays
+// from which the (row,col) pairs can be obtained from the corresponding
+// array indices like (row,col)=(rows.At(j),cols.At(j)).
+// The integer return argument represents the number of (row,col) pairs which
+// were encountered for the specified object.
+//
+// If obj=0 no object selection is performed and all (row,col) indices
+// of the stored references for all objects are returned.
+//
+// Notes :
+// -------
+// As usual the convention is that row and column numbering starts at 1.
+// 
+// This memberfunction always resets the two TArrayI arrays at the start.
+//
+// This memberfunction can only be used to obtain the (row,col) indices
+// of the object as stored via the EnterObject() memberfunction.
+// This means that in case the user has entered a TObjArray as object
+// (to increase the dimension of the resulting structure), the (row,col)
+// indices of that TObjArray are obtained and NOT the indices of the
+// actual objects contained in that TObjArray structure.
+//
+ Int_t nrefs=GetNrefs(obj);
+ rows.Reset();
+ cols.Reset();
+ rows.Set(nrefs);
+ cols.Set(nrefs);
+ if (!nrefs) return 0;
+
+ Int_t irow,icol;
+ Int_t jref=0;
+ for (Int_t i=0; i<fRows->GetSize(); i++)
+ {
+  TObjArray* columns=(TObjArray*)fRows->At(i);
+  if (!columns) continue;
+
+  for (Int_t j=0; j<columns->GetSize(); j++)
+  {
+   TObject* objx=(TObject*)columns->At(j);
+   if (objx && (objx==obj || !obj))
+   {
+    irow=i+1;
+    if (fSwap) irow=j+1;
+    icol=j+1;
+    if (fSwap) icol=i+1;
+    rows.AddAt(irow,jref);
+    cols.AddAt(icol,jref);
+    jref++;
+   }
+   // All references found ==> Done
+   if (jref==nrefs) break;
+  }
+  // All references found ==> Done
+  if (jref==nrefs) break;
+ }
+ return nrefs;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliObjMatrix::GetIndices(TObject* obj,Int_t row,TArrayI& cols)
+{
+// Provide the column indices of all the storage locations of the
+// specified object in the specified row of the matrix.
+// The column indices are returned in the TArrayI array.
+// The integer return argument represents the number of storage locations which
+// were encountered for the specified object in the specified matrix row.
+//
+// If obj=0 no object selection is performed and all column indices
+// of the stored references for all objects are returned.
+//
+// Notes :
+// -------
+// As usual the convention is that row and column numbering starts at 1.
+// 
+// This memberfunction always resets the TArrayI array at the start.
+//
+// This memberfunction can only be used to obtain the column indices
+// of the object as stored via the EnterObject() memberfunction.
+// This means that in case the user has entered a TObjArray as object
+// (to increase the dimension of the resulting structure), the column
+// indices of that TObjArray are obtained and NOT the indices of the
+// actual objects contained in that TObjArray structure.
+//
+ if (row<1 || row>GetMaxRow()) return 0;
+
+ Int_t nrefs=GetNrefs(obj);
+ cols.Reset();
+ cols.Set(nrefs);
+ if (!nrefs) return 0;
+
+ Int_t irow,icol;
+ Int_t jref=0;
+ for (Int_t i=0; i<fRows->GetSize(); i++)
+ {
+  TObjArray* columns=(TObjArray*)fRows->At(i);
+  if (!columns) continue;
+
+  for (Int_t j=0; j<columns->GetSize(); j++)
+  {
+   TObject* objx=(TObject*)columns->At(j);
+   if (objx && (objx==obj || !obj))
+   {
+    irow=i+1;
+    if (fSwap) irow=j+1;
+    icol=j+1;
+    if (fSwap) icol=i+1;
+    if (irow==row)
+    {
+     cols.AddAt(icol,jref);
+     jref++;
+    }
+   }
+   // All references found ==> Done
+   if (jref==nrefs) break;
+  }
+  // All references found ==> Done
+  if (jref==nrefs) break;
+ }
+ // Set the array size to the actual number of found occurrences
+ cols.Set(jref);
+
+ return jref;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,Int_t col)
+{
+// Provide the row indices of all the storage locations of the
+// specified object in the specified column of the matrix.
+// The row indices are returned in the TArrayI array.
+// The integer return argument represents the number of storage locations which
+// were encountered for the specified object in the specified matrix column.
+//
+// If obj=0 no object selection is performed and all row indices
+// of the stored references for all objects are returned.
+//
+// Notes :
+// -------
+// As usual the convention is that row and column numbering starts at 1.
+// 
+// This memberfunction always resets the TArrayI array at the start.
+//
+// This memberfunction can only be used to obtain the row indices
+// of the object as stored via the EnterObject() memberfunction.
+// This means that in case the user has entered a TObjArray as object
+// (to increase the dimension of the resulting structure), the row
+// indices of that TObjArray are obtained and NOT the indices of the
+// actual objects contained in that TObjArray structure.
+//
+ if (col<1 || col>GetMaxColumn()) return 0;
+
+ Int_t nrefs=GetNrefs(obj);
+ rows.Reset();
+ rows.Set(nrefs);
+ if (!nrefs) return 0;
+
+ Int_t irow,icol;
+ Int_t jref=0;
+ for (Int_t i=0; i<fRows->GetSize(); i++)
+ {
+  TObjArray* columns=(TObjArray*)fRows->At(i);
+  if (!columns) continue;
+
+  for (Int_t j=0; j<columns->GetSize(); j++)
+  {
+   TObject* objx=(TObject*)columns->At(j);
+   if (objx && (objx==obj || !obj))
+   {
+    irow=i+1;
+    if (fSwap) irow=j+1;
+    icol=j+1;
+    if (fSwap) icol=i+1;
+    if (icol==col)
+    {
+     rows.AddAt(irow,jref);
+     jref++;
+    }
+   }
+   // All references found ==> Done
+   if (jref==nrefs) break;
+  }
+  // All references found ==> Done
+  if (jref==nrefs) break;
+ }
+ // Set the array size to the actual number of found occurrences
+ rows.Set(jref);
+
+ return jref;
 }
 ///////////////////////////////////////////////////////////////////////////

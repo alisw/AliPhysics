@@ -8,6 +8,7 @@
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TRefArray.h"
+#include "TArrayI.h"
 
 class AliObjMatrix : public TObject
 {
@@ -20,13 +21,18 @@ class AliObjMatrix : public TObject
   virtual void SetSwapMode(Int_t swap=1);                     // Set the swap mode flag for this matrix
   virtual Int_t GetSwapMode();                                // Provide the swap mode flag for this matrix
   virtual void EnterObject(Int_t row,Int_t col,TObject* obj); // Enter an object into the matrix
-  virtual void RemoveObject(Int_t row,Int_t col);             // Remove an object from the matrix
+  void RemoveObject(Int_t row,Int_t col);                     // Remove object at (row,col) from the matrix
+  void RemoveObject(TObject* obj,Int_t row=0,Int_t col=0);    // Remove an object from the matrix
   virtual TObject* GetObject(Int_t row,Int_t col);            // Provide an object from the matrix
   virtual Int_t GetMaxRow();                                  // Provide the maximum row number index
   virtual Int_t GetMaxColumn();                               // Provide the maximum column number index
   virtual Int_t GetNobjects();                                // Provide the number of stored objects
   virtual TObject* GetObject(Int_t j);                        // Provide pointer to the j-th object
   virtual TObjArray* GetObjects();                            // Provide pointers of all stored onjects
+  Int_t GetNrefs(TObject* obj);                               // Provide # of stored references to this object
+  Int_t GetIndices(TObject* obj,TArrayI& rows,TArrayI& cols); // Provide all (row,col) indices of this object
+  Int_t GetIndices(TObject* obj,Int_t row,TArrayI& cols);     // Provide column indices in a specific row
+  Int_t GetIndices(TObject* obj,TArrayI& rows,Int_t col);     // Provide row indices in a specific column
  
  protected:
   TObjArray* fRows;    // Pointers to the various arrays representing the matrix rows
@@ -36,6 +42,6 @@ class AliObjMatrix : public TObject
   Int_t fMaxcol;       // The maximum column number index
   TObjArray* fObjects; // Linear reference array for fast looping over the stored objects
  
- ClassDef(AliObjMatrix,2) // Handling of a matrix structure of objects.
+ ClassDef(AliObjMatrix,3) // Handling of a matrix structure of objects.
 };
 #endif
