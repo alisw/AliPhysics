@@ -21,9 +21,9 @@ class AliGenFixed : public AliGenerator
   virtual void Generate();
   virtual void Init() {}
   virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz);
-  virtual void SetMomentum(Float_t pmom) {fPMin=pmom; fPMax=pmom;}
-  virtual void SetPhi(Float_t phi) {fPhiMin=phi*TMath::Pi()/180; fPhiMax=phi*TMath::Pi()/180;}
-  virtual void SetTheta(Float_t theta) {fThetaMin=theta*TMath::Pi()/180; fThetaMax=theta*TMath::Pi()/180;}
+  virtual void SetMomentum(Float_t pmom) {fPMin=pmom; fPMax=pmom; SetBit(kMomentumRange);}
+  virtual void SetPhi(Float_t phi) {fPhiMin=phi*TMath::Pi()/180; fPhiMax=phi*TMath::Pi()/180; SetBit(kPhiRange);}
+  virtual void SetTheta(Float_t theta) {fThetaMin=theta*TMath::Pi()/180; fThetaMax=theta*TMath::Pi()/180; SetBit(kThetaRange);}
   virtual void SetPart(Int_t part) {fIpart=part;}
   virtual void SetGun(Double_t px, Double_t py, Double_t pz, Double_t x, 
   Double_t y, Double_t z) {fP[0]=px;fP[1]=py;fP[2]=pz;fOrigin[0]=x;fOrigin[1]=y;
