@@ -1,8 +1,8 @@
 /** $Id$ 
 
 Important macro to get certain Aliroot parameters. They are stored
-in a file "Init.cxx". Compare the contents of the class AliL3Transform
-with the result of this macro to check that there are no differences.
+in a file "Init.cxx". New init of AliL3Transform uses ouput to read certain 
+TPC parameters.
 */
 
 void Make_Init(char *file, char *tofile="Init.cxx"){
@@ -67,6 +67,7 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
   fprintf(f,"  fPadPitchWidthUp = %f ;\n",par->GetPadPitchWidth(fNSectorLow));
   fprintf(f,"  fZWidth = %.20f ;\n",par->GetZWidth());
   fprintf(f,"  fZSigma = %.20f ;\n",par->GetZSigma());
+  fprintf(f,"  fZLength = %.20f ;\n",par->GetZLength());
   fprintf(f,"  fZOffset = %.20f ;\n",par->GetZOffset());
   fprintf(f,"  fDiffT = %.20f ;\n",par->GetDiffT());
   fprintf(f,"  fDiffL = %.20f ;\n",par->GetDiffL());
@@ -75,7 +76,6 @@ void Make_Init(char *file, char *tofile="Init.cxx"){
   fprintf(f,"  fInnerPRFSigma = %.20f ;\n",param->GetInnerPRF()->GetSigmaX());
   fprintf(f,"  fOuterPRFSigma = %.20f ;\n",param->GetOuterPRF()->GetSigmaX());
   fprintf(f,"  fTimeSigma = %.20f ;\n",param->GetTimeRF()->GetSigma());
-  fprintf(f,"  fZLength = %f ;\n",par->GetZLength());
   
   fprintf(f,"\n  //slices:\n");
   fprintf(f,"  fNSlice = %d ;\n",fNSectorLow);
