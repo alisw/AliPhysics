@@ -480,37 +480,38 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	  dig->SetDigitFast(charge,time,pad);
 	  
 	  Int_t trackID[3] = {old_dig->GetTrackID(time,pad,0),old_dig->GetTrackID(time,pad,1),old_dig->GetTrackID(time,pad,2)};
-	  Int_t s_pad = pad;
-	  Int_t s_time = time - 1;
-	  while(trackID[0] < 0)
+	  /*
+	    Int_t s_pad = pad;
+	    Int_t s_time = time - 1;
+	    while(trackID[0] < 0)
 	    {
-	      if(s_time >= 0 && s_time < AliL3Transform::GetNTimeBins() && s_pad >= 0 && s_pad < AliL3Transform::GetNPads(i))
-		{
-		  if(old_dig->GetTrackID(s_time,s_pad,0) > 0)
-		    {
-		      trackID[0]=old_dig->GetTrackID(s_time,s_pad,0); 
-		      trackID[1]=old_dig->GetTrackID(s_time,s_pad,1); 
-		      trackID[2]=old_dig->GetTrackID(s_time,s_pad,2); 
-		    }
-		}
-	      if(s_pad == pad && s_time == time - 1)
-		s_time = time + 1;
-	      else if(s_pad == pad && s_time == time + 1)
-		{s_pad = pad - 1; s_time = time;}
-	      else if(s_pad == pad - 1 && s_time == time)
-		s_time = time - 1;
-	      else if(s_pad == pad - 1 && s_time == time - 1)
-		s_time = time + 1;
-	      else if(s_pad == pad - 1 && s_time == time + 1)
-		{s_pad = pad + 1; s_time = time;}
-	      else if(s_pad == pad + 1 && s_time == time)
-		s_time = time - 1;
-	      else if(s_pad == pad + 1 && s_time == time - 1)
-		s_time = time + 1;
-	      else 
-		break;
+	    if(s_time >= 0 && s_time < AliL3Transform::GetNTimeBins() && s_pad >= 0 && s_pad < AliL3Transform::GetNPads(i))
+	    {
+	    if(old_dig->GetTrackID(s_time,s_pad,0) > 0)
+	    {
+	    trackID[0]=old_dig->GetTrackID(s_time,s_pad,0); 
+	    trackID[1]=old_dig->GetTrackID(s_time,s_pad,1); 
+	    trackID[2]=old_dig->GetTrackID(s_time,s_pad,2); 
 	    }
-	  
+	    }
+	    if(s_pad == pad && s_time == time - 1)
+	    s_time = time + 1;
+	    else if(s_pad == pad && s_time == time + 1)
+	    {s_pad = pad - 1; s_time = time;}
+	    else if(s_pad == pad - 1 && s_time == time)
+	    s_time = time - 1;
+	    else if(s_pad == pad - 1 && s_time == time - 1)
+	    s_time = time + 1;
+	    else if(s_pad == pad - 1 && s_time == time + 1)
+	    {s_pad = pad + 1; s_time = time;}
+	    else if(s_pad == pad + 1 && s_time == time)
+	    s_time = time - 1;
+	    else if(s_pad == pad + 1 && s_time == time - 1)
+	    s_time = time + 1;
+	    else 
+	    break;
+	    }
+	  */
 	  dig->SetTrackIDFast(trackID[0],time,pad,0);
 	  dig->SetTrackIDFast(trackID[1],time,pad,1);
 	  dig->SetTrackIDFast(trackID[2],time,pad,2);
@@ -610,8 +611,8 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
       data[n].fX = fParam->GetPadRowRadii(sector,row);
       data[n].fID = n+((fSlice&0x7f)<<25)+((fPatch&0x7)<<22);//uli
       data[n].fPadRow = lrow;
-      data[n].fXYErr = c->GetSigmaY2();
-      data[n].fZErr = c->GetSigmaZ2();
+      data[n].fXYErr = sqrt(c->GetSigmaY2());
+      data[n].fZErr = sqrt(c->GetSigmaZ2());
       if(fMC) fprintf(fMC,"%d %d\n",data[n].fID,c->GetLabel(0));
       n++;
     }
