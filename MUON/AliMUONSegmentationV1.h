@@ -66,7 +66,7 @@ public AliSegmentation {
     // Transform from real to pad coordinates
     virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
     virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
-	{z=0; GetPadC(ix, iy, x , y);}
+	{z=fZ; GetPadC(ix, iy, x , y);}
     // Set pad position
     virtual void     SetPad(Int_t ix, Int_t iy);
     // Set hit position
@@ -178,6 +178,7 @@ public AliSegmentation {
     Float_t fYt;    // y
     Float_t fXhit;  // x-position of hit
     Float_t fYhit;  // y-position of hit
+    Float_t fZ;     // z-position of chamber
     
     TF1* fCorr;     // correction function
 };

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.7  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.6  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -63,15 +66,16 @@ ClassImp(AliMUONSegmentationV0)
 //  owned by Chamber
 //
     AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
-    AliMUONChamber* iChamber=&(pMUON->Chamber(chamber));
+    fChamber=&(pMUON->Chamber(chamber));
     
 //  Initialise maximum number of pads in x ans y
-    fNpx=(Int_t) (iChamber->ROuter()/fDpx+1);
-    fNpy=(Int_t) (iChamber->ROuter()/fDpy+1);
+    fNpx=(Int_t) (fChamber->ROuter()/fDpx+1);
+    fNpy=(Int_t) (fChamber->ROuter()/fDpy+1);
 //  Initialize inner and outer radius of the sensitive region     
-    fRmin=iChamber->RInner();
-    fRmax=iChamber->ROuter();    
+    fRmin=fChamber->RInner();
+    fRmax=fChamber->ROuter();    
     fCorr=0;
+    fZ=fChamber->Z();
 }
 
 

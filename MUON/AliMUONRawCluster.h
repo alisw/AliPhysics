@@ -18,6 +18,7 @@ public:
    Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
    Float_t     fX[2]  ;           // X of cluster
    Float_t     fY[2]  ;           // Y of cluster
+   Float_t     fZ[2]  ;           // Z of cluster
    Int_t       fPeakSignal[2];    // Peak signal 
    Int_t       fIndexMap[50][2];  // indeces of digits
    Int_t       fOffsetMap[50][2]; // Emmanuel special

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/09 14:06:18  morsch
+Some type cast problems of type  (TMath::Sign((Float_t)1.,x)) corrected (P.H.)
+
 Revision 1.1  2000/10/06 09:00:47  morsch
 Segmentation class for chambers built out of slats.
 
@@ -432,7 +435,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
 // Initialize slat modules of quadrant +/+    
 // The other three quadrants are handled through symmetry transformations
 //
-    printf("\n Initialise segmentation Slat \n");
+    printf("\n Initialise Segmentation Slat \n");
 //
 
 //    Initialize Slat modules

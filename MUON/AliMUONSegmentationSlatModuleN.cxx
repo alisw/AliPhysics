@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/06 08:59:03  morsch
+Segmentation classes for bending and non bending plane slat modules (A. de Falco, A. Morsch)
+
 */
 
 /////////////////////////////////////////////////////
@@ -201,7 +204,7 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
 void AliMUONSegmentationSlatModuleN::Init(Int_t chamber)
 {
-    printf("\n Initialise segmentation SlatModuleN \n");
+    printf("\n Initialise Segmentation SlatModuleN \n");
 //
 //  Fill the arrays fCx (x-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -223,7 +226,6 @@ void AliMUONSegmentationSlatModuleN::Init(Int_t chamber)
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
-	    printf("\n test ---dx %d %f \n",i,(*fDpxD)[i]);
 	}
     }
 //
@@ -240,9 +242,6 @@ void AliMUONSegmentationSlatModuleN::Init(Int_t chamber)
 	} else {
 	    fNpxS[isec] = fNpxS[isec-1] + fPcbBoards[isec]*fNpxPCB;
 	    fNpyS[isec] = Int_t(fDyPCB/fDpy)*(*fNDiv)[isec];
-
-	    printf("\n %d %d ",isec, fNpxS[isec]);
-	    
 	    fCx[isec] = fCx[isec-1] + fPcbBoards[isec]*fDxPCB;
 	    fNpx += fPcbBoards[isec] * fNpxPCB;
 	}

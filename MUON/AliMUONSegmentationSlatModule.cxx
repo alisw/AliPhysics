@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/06 08:59:03  morsch
+Segmentation classes for bending and non bending plane slat modules (A. de Falco, A. Morsch)
+
 */
 
 /////////////////////////////////////////////////////
@@ -315,7 +318,7 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
 void AliMUONSegmentationSlatModule::Init(Int_t chamber)
 {
-    printf("\n Initialise segmentation SlatModule \n");
+    printf("\n Initialise Segmentation SlatModule \n");
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -340,7 +343,6 @@ void AliMUONSegmentationSlatModule::Init(Int_t chamber)
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
-	    printf("\n test ---dx %d %f \n",i,(*fDpxD)[i]);
 	}
     }
 //

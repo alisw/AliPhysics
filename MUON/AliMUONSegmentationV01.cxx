@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/18 08:41:32  morsch
+Make NextPad() and MorePads() to iterate until the end.
+
 Revision 1.8  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -60,6 +63,8 @@ AliMUONSegmentationV01 code  from  AliMUONSegResV01.cxx
 
 #include "AliMUONSegmentationV01.h"
 #include "AliMUON.h"
+#include "AliMUONChamber.h"
+#include "AliRun.h"
 
 
 
@@ -107,8 +112,6 @@ void   AliMUONSegmentationV01::SetSegRadii(Float_t  r[4])
 // Set the radii of the segmentation zones 
     for (Int_t i=0; i<4; i++) {
 	(*fRSec)[i]=r[i];
-	printf("\n R %d %f \n",i,(*fRSec)[i]);
-	
     }
 }
 
@@ -122,7 +125,6 @@ void AliMUONSegmentationV01::SetPadDivision(Int_t ndiv[4])
 // 
     for (Int_t i=0; i<4; i++) {
 	(*fNDiv)[i]=ndiv[i];
-	printf("\n Ndiv %d %d \n",i,(*fNDiv)[i]);
     }
     ndiv[0]=ndiv[1];
 }
@@ -137,14 +139,13 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 //  This version approximates concentric segmentation zones
 //
     Int_t isec;
-    printf("\n Initialise segmentation v01 -- test !!!!!!!!!!!!!! \n");
+    printf("\n Initialise Segmentation V01\n");
     fNpy=Int_t((*fRSec)[fNsec-1]/fDpy)+1;
 
     (*fDpxD)[fNsec-1]=fDpx;
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
-	    printf("\n test ---dx %d %f \n",i,(*fDpxD)[i]);
 	}
     }
 //
@@ -187,6 +188,10 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 	    }
 	} // y-pad loop
     } // sector loop
+// reference to chamber
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    fChamber=&(pMUON->Chamber(chamber));
+    fZ = fChamber->Z();
 }
 
 Int_t AliMUONSegmentationV01::Sector(Int_t ix, Int_t iy)

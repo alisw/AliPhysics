@@ -121,7 +121,7 @@ class AliMUON : public  AliDetector {
 	    
  protected:
     TObjArray            *fChambers;           // List of Tracking Chambers
-    TObjArray            *fTriggerCircuits;   // List of Trigger Circuits
+    TObjArray            *fTriggerCircuits;    // List of Trigger Circuits
     Int_t                 fNPadHits;           // Number of pad hits
     TClonesArray         *fPadHits;            // List of pad hits
     TObjArray            *fDchambers;          // List of digits

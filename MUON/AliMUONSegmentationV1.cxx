@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.5  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -52,6 +55,7 @@ AliMUONSegmentationV1 code  from  AliMUONSegResV1.cxx
 #include "AliMUONSegmentationV1.h"
 #include "AliRun.h"
 #include "AliMUON.h"
+#include "AliMUONChamber.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationV1)
@@ -89,6 +93,9 @@ void AliMUONSegmentationV1::Init(Int_t chamber)
     //    fNwire=3;
     DefaultCut();
     fCorr=0;
+
+    fZ = iChamber->Z();
+
 }
 
 void AliMUONSegmentationV1::DefaultCut(void)

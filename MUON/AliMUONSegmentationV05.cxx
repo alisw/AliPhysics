@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.3  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -35,6 +38,10 @@ AliMUONSegmentationV05 code  from  AliMUONSegResV05.cxx
 
 
 #include "AliMUONSegmentationV05.h"
+#include "AliMUON.h"
+#include "AliMUONChamber.h"
+#include "AliRun.h"
+
 #include <TMath.h>
 //___________________________________________
 ClassImp(AliMUONSegmentationV05)
@@ -42,7 +49,7 @@ ClassImp(AliMUONSegmentationV05)
 
 void AliMUONSegmentationV05::Init(Int_t chamber)
 {
-    printf("\n Initialise segmentation v05 \n");
+    printf("\n Initialise Segmentation V05 \n");
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -92,7 +99,6 @@ void AliMUONSegmentationV05::Init(Int_t chamber)
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
-	    printf("\n test ---dx %d %f \n",i,(*fDpxD)[i]);
 	}
     }
 //
@@ -121,16 +127,10 @@ void AliMUONSegmentationV05::Init(Int_t chamber)
 	    } // sectors
 	} // pad raws in module
     } // PCB rows
-/*
-    for (Int_t iy=1; iy< fNpy; iy++) {
-	    printf("\nBoundary %d %f %d %f %d %f %d %f",
-		   fNpxS[0][iy], fCx[0][iy],
-		   fNpxS[1][iy], fCx[1][iy],
-		   fNpxS[2][iy], fCx[2][iy],
-		   fNpxS[3][iy], fCx[3][iy]);
-	    
-    }
-*/
+
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    fChamber=&(pMUON->Chamber(chamber));
+    fZ = fChamber->Z();
 }
 
 void AliMUONSegmentationV05::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const

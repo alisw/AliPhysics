@@ -40,7 +40,7 @@ public AliMUONSegmentationV0 {
     // Transform from real to pad coordinates
     virtual void    GetPadC(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y );
     virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
-	{z=0; GetPadC(ix, iy, x , y);}
+	{z=fZ; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
     virtual void Init(Int_t chamber);

@@ -14,6 +14,11 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.11  2000/10/06 09:04:05  morsch
+- Dummy z-arguments in GetPadI, SetHit, FirstPad replaced by real z-coordinate
+	to make code work with slat chambers (AM)
+- Replace GetPadI calls with unchecked x,y coordinates by pad iterator calls wherever possible.
+
 Revision 1.10  2000/10/03 13:51:57  egangler
 Removal of useless dependencies via forward declarations
 
@@ -1336,6 +1341,10 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    c.fX[1] /= c.fQ[1];
 	    c.fX[1]=fSeg[0]->GetAnod(c.fX[1]);
 	    c.fY[1] /= c.fQ[1];
+	    
+	    c.fZ[0] = fZPlane;
+	    c.fZ[1] = fZPlane;	    
+
 	    fprintf(stderr,"\n Cathode 1 multiplicite %d X(CG) %f Y(CG) %f\n",
 		    c.fMultiplicity[0],c.fX[0],c.fY[0]);
 	    fprintf(stderr," Cathode 2 multiplicite %d X(CG) %f Y(CG) %f\n",
@@ -1475,6 +1484,7 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster *c)
     if (lower[0]>upper[0]) {xdum=lower[0]; lower[0]=upper[0]; upper[0]=xdum;}
 	
     icount=0;
+    printf("\n single y %f %f", fXInit[0], fYInit[0]);
     
     for (fSeg[0]->FirstPad(fXInit[0], fYInit[0], fZPlane, 0., dpy); 
 	 fSeg[0]->MorePads(); fSeg[0]->NextPad())
@@ -1483,6 +1493,7 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster *c)
 	fSeg[0]->GetPadC(ix,iy,xdum,upper[1],zdum);	
 	if (icount ==0) lower[1]=upper[1];
 	icount++;
+	printf("\n upper lower %d %f %f", icount, upper[1], lower[1]);
     }
     
     if (lower[1]>upper[1]) {xdum=lower[1]; lower[1]=upper[1]; upper[1]=xdum;}

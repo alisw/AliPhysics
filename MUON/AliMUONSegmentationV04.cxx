@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/04 18:50:05  morsch
+In Init(): (*fDpxD)[fNsec-1]=fDpx;
+
 Revision 1.4  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -38,6 +41,10 @@ AliMUONSegmentationV04 code  from  AliMUONSegResV04.cxx
 
 
 #include "AliMUONSegmentationV04.h"
+#include "AliMUONChamber.h"
+#include "AliMUON.h"
+#include "AliRun.h"
+
 #include <TMath.h>
 
 //___________________________________________
@@ -46,7 +53,7 @@ ClassImp(AliMUONSegmentationV04)
 
 void AliMUONSegmentationV04::Init(Int_t chamber)
 {
-    printf("\n Initialise segmentation v04 \n");
+    printf("\n Initialise Segmentation V04 \n");
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -96,7 +103,6 @@ void AliMUONSegmentationV04::Init(Int_t chamber)
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
-	    printf("\n test ---dx %d %f \n",i,(*fDpxD)[i]);
 	}
     }
 //
@@ -125,6 +131,10 @@ void AliMUONSegmentationV04::Init(Int_t chamber)
 	    } // sectors
 	} // pad raws in module
     } // PCB rows
+
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    fChamber=&(pMUON->Chamber(chamber));
+    fZ = fChamber->Z();
 }
 
 void AliMUONSegmentationV04::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const

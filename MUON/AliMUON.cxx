@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.33  2000/10/09 14:01:57  morsch
+Unused variables removed.
+
 Revision 1.32  2000/10/06 09:08:10  morsch
 Built geometry includes slat geometry for event display.
 
@@ -525,8 +528,6 @@ void AliMUON::BuildGeometry()
 		
 		for (Int_t j=0; j<7; j++)
 		{
-		    printf("\n BuildGeometry %d", j);
-		    
 		    sprintf(nameSlat,"SLAT%d",100*id+j);
 		    new TBRIK(nameSlat,"Slat Module","void",20.*npcb[j],20.,0.25);
 		    node->cd();
