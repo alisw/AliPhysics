@@ -6,6 +6,10 @@
 
 //_________________________________________________________________________
 //  Base Class for PHOS     
+//   PHOS consists of a PbWO4 calorimeter (EMCA) and a gazeous charged 
+//   particles detector (CPV or PPSD).
+//   The only provided method here is CreateMaterials, 
+//   which defines the materials common to all PHOS versions.   
 //                  
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
@@ -15,7 +19,6 @@ class TString ;
 
 // --- AliRoot header files ---
 
-#include <stdlib.h>
 #include "AliDetector.h" 
 class AliPHOSGeometry ; 
 
@@ -23,8 +26,8 @@ class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS() : AliDetector() {}
-  AliPHOS(const char* name, const char* title="") : AliDetector(name, title) {}
+  AliPHOS();
+  AliPHOS(const char* name, const char* title="");
   AliPHOS(const AliPHOS & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -37,15 +40,14 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
-  virtual  AliPHOSGeometry * GetGeometry() = 0 ;
+  virtual  AliPHOSGeometry * GetGeometry() const = 0 ;
 
   Int_t   IsVersion(void) const { return -1 ; } 
   virtual void    SetTreeAddress();                
   virtual TString Version() {return TString(" ") ; } 
  
   AliPHOS & operator = (const AliPHOS & rvalue)  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     abort() ;
     return *this ; 
   }
