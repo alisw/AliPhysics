@@ -230,7 +230,7 @@ c*-reject cluster below minimum Ej_min
 c* protection (am)
             etas=eta+etas/ets
             arg = 0.
-            if (arg .ne. 0.) then
+            if (ets .ne. 0.) then
                if (abs(etas/ets) .lt. 23.719) then
                   arg = ets * cosh(etas/ets)
                else
