@@ -28,17 +28,13 @@ fCurrentPadX(0),fCurrentPadY(0),fCurrentWire(0),
 fSizeZ(0),
 fAngleRot(0),fAngleYZ(0),fAngleXY(0),
 fOffset(0),
-fGapThickness(0),
 fProximityGapThickness(0),
 fQuartzLength(0),
 fQuartzWidth(0),
-fQuartzThickness(0),
 fOuterFreonLength(0),
 fOuterFreonWidth(0),
 fInnerFreonLength(0),
 fInnerFreonWidth(0),
-fFreonThickness(0),
-fRadiatorToPads(0),
 fChargeSlope(0),
 fChargeSpreadX(0),
 fChargeSpreadY(0),
@@ -53,17 +49,13 @@ fVoltage(0)
   AngleRot             (-60);                         //rotation of the whole RICH around Z, deg
   Angles               (20,19.5);                     //XY angle, YZ angle  deg  
   Offset               (490*kcm+1.267*kcm);           //1.267???????cm distance from IP to the center of module 
-  GapThickness         (8*kcm);              
   ProximityGapThickness(0.4*kcm);            
   QuartzLength         (133*kcm);            
   QuartzWidth          (127.9*kcm);          
-  QuartzThickness      (0.5*kcm);            
   OuterFreonLength     (133*kcm);            
   OuterFreonWidth      (41.3*kcm);           
   InnerFreonLength     (133*kcm);            
   InnerFreonWidth      (41.3*kcm);           
-  FreonThickness       (1.5*kcm);            
-  RadiatorToPads       (80*kmm);                 
   
   ChargeSlope(27.);
   ChargeSpreadX(0.18);ChargeSpreadY(0.18);

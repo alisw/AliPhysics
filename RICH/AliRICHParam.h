@@ -52,16 +52,14 @@ public:
   Float_t AngleXY()                     const{return fAngleXY*kD2r;} 
   void    AngleRot(Float_t angle)            {       fAngleRot=angle;}
   Float_t AngleRot()                    const{return fAngleRot*kD2r;}                
-  void    GapThickness(Float_t a)            {       fGapThickness=a;}    
-  Float_t GapThickness()                const{return fGapThickness;}      
+  static Float_t GapThickness()              {return 8.0;}      
   void    ProximityGapThickness(Float_t a)   {       fProximityGapThickness=a;}
   Float_t ProximityGapThickness()       const{return fProximityGapThickness;}    
   void    QuartzLength(Float_t a)            {       fQuartzLength=a;}
   Float_t QuartzLength()                const{return fQuartzLength;}   
   void    QuartzWidth(Float_t a)             {       fQuartzWidth=a;}
   Float_t QuartzWidth()                 const{return fQuartzWidth;}
-  void    QuartzThickness(Float_t a)         {       fQuartzThickness=a;}
-  Float_t QuartzThickness()             const{return fQuartzThickness;}   
+  static Float_t QuartzThickness()           {return 0.5;}   
   void    OuterFreonLength(Float_t a)        {       fOuterFreonLength=a;}
   Float_t OuterFreonLength()            const{return fOuterFreonLength;}   
   void    OuterFreonWidth(Float_t a)         {       fOuterFreonWidth=a;}
@@ -70,10 +68,8 @@ public:
   Float_t InnerFreonLength()            const{return fInnerFreonLength;}   
   void    InnerFreonWidth(Float_t a)         {       fInnerFreonWidth=a;}
   Float_t InnerFreonWidth()             const{return fInnerFreonWidth;}   
-  void    FreonThickness(Float_t a)          {       fFreonThickness=a;}
-  Float_t FreonThickness()              const{return fFreonThickness;}   
-  void    RadiatorToPads(Float_t a)          {       fRadiatorToPads=a;}
-  Float_t RadiatorToPads()              const{return fRadiatorToPads;}   
+  static  Float_t FreonThickness()           {return 1.5;}   
+  static  Float_t RadiatorToPads()           {return FreonThickness()+QuartzThickness()+GapThickness();}   
         
   void    SigmaIntegration(Float_t a)        {       fSigmaIntegration=a;}    
   Float_t SigmaIntegration()            const{return fSigmaIntegration;}    
@@ -113,13 +109,10 @@ protected:
   Float_t fAngleYZ;                                                               //angle between chambers YZ plane, deg
   Float_t fAngleXY;                                                               //angle between chambers XY plane, deg
   Float_t fOffset;                                                                //chambers offset from IP, cm   
-  Float_t fGapThickness;                                                          //gap thickness, cm
   Float_t fProximityGapThickness;                                                 //proximity gap thickness, cm
-  Float_t fQuartzLength;     Float_t fQuartzWidth;     Float_t fQuartzThickness;  //quartz window size, cm
+  Float_t fQuartzLength;     Float_t fQuartzWidth;                                //quartz window size, cm
   Float_t fOuterFreonLength; Float_t fOuterFreonWidth;                            //freon box outer size, cm
   Float_t fInnerFreonLength; Float_t fInnerFreonWidth;                            //freon box inner size, cm
-  Float_t fFreonThickness;                                                        //freon thickness
-  Float_t fRadiatorToPads;                                                        //distance from radiator to pads, cm
   
   Float_t fChargeSlope;              //Slope of the charge distribution
   Float_t fChargeSpreadX;            //Width of the charge distribution in x

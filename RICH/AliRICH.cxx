@@ -716,9 +716,6 @@ void AliRICH::Print(Option_t *option)const
 void AliRICH::CreateGeometry()
 {//Creates detailed geometry simulation (currently GEANT volumes tree)         
   if(GetDebug())Info("CreateGeometry","Start.");
-//???????? to be removed to AliRICHParam?
-  Param()->RadiatorToPads(Param()->FreonThickness()/2+Param()->QuartzThickness()+Param()->GapThickness());
-    
 //Opaque quartz thickness
   Float_t oqua_thickness = .5;
 //CsI dimensions
