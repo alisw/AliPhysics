@@ -623,7 +623,8 @@ Int_t AliEMCALGetter::ReadRaw(Int_t event)
   digits->Sort() ; 
 
   delete signalF ; 
-  delete gLowGain, gHighGain ; 
+  delete gLowGain;
+  delete gHighGain ; 
     
   return Digits()->GetEntriesFast() ; 
 }
