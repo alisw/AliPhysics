@@ -55,7 +55,6 @@ Int_t AliHBTAnalysisStavinskyMixing::ProcessRecAndSim(AliAOD* aodrec, AliAOD* ao
   AliAOD* trackEvent1 = new AliAOD();
   AliAOD* partEvent1 = new AliAOD();
 
-  AliAOD * trackEvent2,*partEvent2;
   
 //  Int_t N1, N2, N=0; //number of particles in current event(we prcess two events in one time)
   
@@ -203,7 +202,6 @@ Int_t AliHBTAnalysisStavinskyMixing::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aods
 
   AliAOD* partEvent2;
   
-  AliHBTPair ppair;
 
   AliHBTPair* partpair = &ppair;
  

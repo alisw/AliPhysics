@@ -170,5 +170,8 @@
 #pragma link C++ class AliHBTRndmCyllSurf+;
 #pragma link C++ class AliHBTMonVyDistributionVsVxFctn+;
 #pragma link C++ class AliHBTMonRtDistributionVsVzFctn+;
+
+#pragma link C++ class AliHBTAnalysisStavinskyMixing+;
+
 //#pragma link C++ class AliHBTGoComPair+;
 #endif

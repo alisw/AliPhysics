@@ -1,5 +1,5 @@
 SRCS          =       AliHBTWeights.cxx AliHBTCrab.cxx AliHBTAnalysis.cxx  \
-AliHBTPair.cxx       \
+AliHBTPair.cxx  AliHBTAnalysisStavinskyMixing.cxx  \
 AliHBTFunction.cxx    AliHBTCorrelFctn.cxx  \
 AliHBTMonitorFunction.cxx       AliHBTTwoTrackEffFctn.cxx \
 AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx \
