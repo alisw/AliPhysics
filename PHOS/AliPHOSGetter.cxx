@@ -100,6 +100,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   fESDFileName = rl->GetFileName()  ; // this should be the galice.root file
   fESDFileName.ReplaceAll("galice.root", "AliESDs.root") ;  
   fESDFile = 0 ; 
+  fESD = 0 ; 
+  fESDTree = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -112,7 +114,11 @@ AliPHOSGetter::~AliPHOSGetter()
   fBTE = 0 ; 
   fPrimaries->Delete() ; 
   delete fPrimaries ; 
-  fgObjGetter = 0; 
+  fgObjGetter = 0;
+  if (fESD) 
+    delete fESD ; 
+  if (fESDTree) 
+    delete fESDTree ; 
 }
 
 //____________________________________________________________________________ 
@@ -294,7 +300,11 @@ void AliPHOSGetter::Event(Int_t event, const char* opt)
 
   if( strstr(opt,"P") )
     ReadTreeP() ;
+
+  if( strstr(opt,"E") )
+    ReadTreeE(event) ;
  
+
 //   if( strstr(opt,"Q") )
 //     ReadTreeQA() ;
  
@@ -485,22 +495,6 @@ void AliPHOSGetter::ReadPrimaries()
 }
 
 //____________________________________________________________________________ 
-AliESD * AliPHOSGetter::ESD(Int_t event)
-{
-  //Read the ESD
-
-  AliESD * esd = 0 ; 
-  if (!fESDFile)
-    if ( !OpenESDFile() ) 
-      return esd ; 
-
-  TString esdEvent("ESD") ;  
-  esdEvent+= event ; 
-  esd = dynamic_cast<AliESD *>(fESDFile->Get(esdEvent)) ; 
-  return esd ; 
-}
-
-//____________________________________________________________________________ 
 Bool_t AliPHOSGetter::OpenESDFile() 
 {
   //Open the ESD file    
@@ -608,6 +602,29 @@ Int_t AliPHOSGetter::ReadTreeS()
     //}
 
   return SDigits()->GetEntries() ; 
+}
+
+//____________________________________________________________________________ 
+Int_t AliPHOSGetter::ReadTreeE(Int_t event)
+{
+  // Read the ESD
+  
+  // gets esdTree from the root file (AliESDs.root)
+  if (!fESDFile)
+    if ( !OpenESDFile() ) 
+      return -1 ; 
+
+  fESDTree = static_cast<TTree*>(fESDFile->Get("esdTree")) ; 
+  fESD = new AliESD;
+   if (!fESDTree) {
+
+     Error("ReadTreeE", "no ESD tree found");
+     return -1;
+   }
+   fESDTree->SetBranchAddress("ESD", &fESD);
+   fESDTree->GetEvent(event);
+
+   return event ; 
 }
 
 //____________________________________________________________________________ 

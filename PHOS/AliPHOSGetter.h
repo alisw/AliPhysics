@@ -184,8 +184,7 @@ public:
   AliPHOSLoader * PhosLoader() const { return  fgPhosLoader ; }
   void Reset() ;
   
-  AliESD * ESD(Int_t event = 0) ;
-  Bool_t OpenESDFile() ;
+  AliESD * ESD() const { return fESD ; }
   
 private:
   
@@ -199,7 +198,9 @@ private:
   Int_t ReadTreeT(void) ;
   Int_t ReadTreeS(void) ;
   Int_t ReadTreeP(void) ;
-   
+
+  Int_t ReadTreeE(Int_t event) ;    
+  Bool_t OpenESDFile() ;
   void ReadPrimaries(void) ;
   
 private:
@@ -212,7 +213,9 @@ private:
   TClonesArray *    fPrimaries ;         //! list of lists of primaries
   TFile *           fESDFile ;           //! ESD file
   TString           fESDFileName ;       //! ESD File Name
-  
+  AliESD *          fESD ;               //! ESD object
+  TTree *           fESDTree ;           //! ESD Tree
+
   //  AliPHOSCalibrationDB * fcdb ;       //!
   
   static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
