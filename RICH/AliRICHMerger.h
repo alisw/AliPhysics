@@ -51,7 +51,7 @@ class AliRICHMerger {
     Int_t fNch;                     // ! chamber nr (loop variable)
     Int_t fTrack;                   // ! track nr (loop variable)
     TObjArray *fList;               // ! list of AliRICHTransientDigit
-    TObjArray *fTrList;             // ! list of tracks
+    //    TObjArray *fTrList;             // ! list of tracks
     TClonesArray *fAddress;         // ! pointer to TClonesArray of TVectors with trackinfo
     Int_t fCounter;                 // ! nr. of AliRICHTransientDigit
     Int_t fCountadr;                // ! counter for trinfo

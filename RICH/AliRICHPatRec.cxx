@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.12  2001/05/10 12:34:23  jbarbosa
+  Changed drwaing routines.
+
   Revision 1.11  2001/03/14 18:21:24  jbarbosa
   Corrected bug in digits loading.
 
@@ -138,9 +141,9 @@ void AliRICHPatRec::PatRec()
 
     for (Int_t dig=0;dig<ndigits[ich];dig++) {
       padI=(AliRICHDigit*) pDigitss->UncheckedAt(dig);
-      x=padI->fPadX;
-      y=padI->fPadY;
-      q=padI->fSignal;
+      x=padI->PadX();
+      y=padI->PadY();
+      q=padI->Signal();
       segmentation->GetPadC(x,y,rx,ry,rz);      
 
       //printf("Pad coordinates x:%d, Real coordinates x:%f\n",x,rx);
@@ -223,13 +226,13 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t
     AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
     AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1);
     if(mHit==0) return 1;
-    ich = mHit->fChamber-1;
+    ich = mHit->Chamber()-1;
     trackglob[0] = mHit->X();
     trackglob[1] = mHit->Y();
     trackglob[2] = mHit->Z();
-    pX = mHit->fMomX;
-    pY = mHit->fMomY;
-    pZ = mHit->fMomZ;
+    pX = mHit->MomX();
+    pY = mHit->MomY();
+    pZ = mHit->MomZ();
     fTrackMom = sqrt(TMath::Power(pX,2)+TMath::Power(pY,2)+TMath::Power(pZ,2));
     if(recphi!=0 || rectheta!=0)
       {
@@ -238,11 +241,11 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t
       }
     else
       {
-	thetatr = mHit->fTheta*TMath::Pi()/180;
-	phitr = mHit->fPhi*TMath::Pi()/180;
+	thetatr = mHit->Theta()*TMath::Pi()/180;
+	phitr = mHit->Phi()*TMath::Pi()/180;
       }
-    iloss = mHit->fLoss;
-    part  = mHit->fParticle;
+    iloss = mHit->Loss();
+    part  = mHit->Particle();
 
     iChamber = &(pRICH->Chamber(ich));
     iChamber->GlobaltoLocal(trackglob,trackloc);

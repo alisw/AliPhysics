@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/10/21 18:31:24  hristov
+Several pointers were set to zero in the default constructors to avoid memory management problems
+
 Revision 1.3  2001/05/16 14:57:20  alibrary
 New files for folders and Stack
 
@@ -26,6 +29,7 @@ Revision 1.1  2001/02/27 22:13:34  jbarbosa
 Implementing merger class.
 
 */
+#include <iostream> 
 
 #include <TTree.h> 
 #include <TVector.h>
@@ -65,9 +69,8 @@ AliRICHMerger::AliRICHMerger()
     fHitsBgr = 0;
     fSDigitsBgr = 0;
     fHitMap     = 0;
-    fList       = 0;
-    fTrList     = 0;
-    fAddress    = 0;
+    fList=new TObjArray;
+    fAddress    = 0; 
     fBgrFile    = 0;
 }
 
@@ -80,7 +83,6 @@ AliRICHMerger::~AliRICHMerger()
     if (fSDigitsBgr) delete fSDigitsBgr;
     if (fHitMap)     delete fHitMap;
     if (fList)       delete fList;
-    if (fTrList)     delete fTrList;
     if (fAddress)    delete fAddress; 
 }
 
@@ -107,9 +109,9 @@ void AliRICHMerger::Update(AliRICHSDigit *mergable)
     (*pdigit).AddPhysicsSignal(iqpad);		
     // update list of tracks
     //
-    TObjArray* fTrList = (TObjArray*)pdigit->TrackList();
-    Int_t lastEntry = fTrList->GetLast();
-    TVector *pTrack = (TVector*)fTrList->At(lastEntry);
+    TObjArray* digitTrList = (TObjArray*)pdigit->TrackList();
+    Int_t lastEntry = digitTrList->GetLast();
+    TVector *pTrack = (TVector*)digitTrList->At(lastEntry);
     TVector &ptrk   = *pTrack;
     TVector &trinfo = *((TVector*) (*fAddress)[fCountadr-1]);
     Int_t lastTrack = Int_t(ptrk(0));
@@ -118,14 +120,14 @@ void AliRICHMerger::Update(AliRICHSDigit *mergable)
 	if (lastTrack == fTrack) {
 	    Int_t lastCharge = Int_t(ptrk(1));
 	    lastCharge += iqpad;
-	    fTrList->RemoveAt(lastEntry);
+	    digitTrList->RemoveAt(lastEntry);
 	    trinfo(1) = lastCharge;
-	    fTrList->AddAt(&trinfo,lastEntry);
+	    digitTrList->AddAt(&trinfo,lastEntry);
 	} else {
-	    fTrList->Add(&trinfo);
+	    digitTrList->Add(&trinfo);
 	}
     } else {
-	if (lastTrack != -1) fTrList->Add(&trinfo);
+	if (lastTrack != -1) digitTrList->Add(&trinfo);
     }
 }
 
@@ -143,9 +145,9 @@ void AliRICHMerger::CreateNew(AliRICHSDigit *mergable)
     fCounter++;
     pdigit = (AliRICHTransientDigit*)fList->At(fList->GetLast());
     // list of tracks
-    TObjArray *fTrList = (TObjArray*)pdigit->TrackList();
+    TObjArray *digitTrList = (TObjArray*)pdigit->TrackList();
     TVector &trinfo    = *((TVector*) (*fAddress)[fCountadr-1]);
-    fTrList->Add(&trinfo);
+    digitTrList->Add(&trinfo);
 }
 
 
@@ -190,9 +192,6 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     Int_t digitise=0;
     Int_t trk[50];
     Int_t chtrk[50];  
-    TObjArray *list=new TObjArray;
-    static TClonesArray *pAddress=0;
-    if(!pAddress) pAddress=new TClonesArray("TVector",1000);
     Int_t digits[5]; 
     
     AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
@@ -232,12 +231,11 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     }
     
     AliHitMap* hm;
-    Int_t countadr=0;
     Int_t counter=0;
     for (i =0; i<kNCH; i++) {
       iChamber= &(pRICH->Chamber(i));
       segmentation=iChamber->GetSegmentationModel(1);
-      pHitMap[i] = new AliRICHHitMapA1(segmentation, list);
+      pHitMap[i] = new AliRICHHitMapA1(segmentation, fList);
     }
     //
     //   Loop over tracks
@@ -255,7 +253,7 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 	  mHit=(AliRICHHit*)pRICH->NextHit()) 
 	{
 	  
-	  Int_t   nch   = mHit->fChamber-1;  // chamber number
+	  Int_t   nch   = mHit->Chamber()-1;  // chamber number
 	  Int_t   index = mHit->Track();
 	  if (nch >kNCH) continue;
 	  iChamber = &(pRICH->Chamber(nch));
@@ -321,11 +319,8 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 		  //
 		  //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
 		  
-		  Float_t thex, they, thez;
 		  segmentation=iChamber->GetSegmentationModel(0);
-		  segmentation->GetPadC(ipx,ipy,thex,they,thez);
-		  new((*pAddress)[countadr++]) TVector(2);
-		  TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
+		  TVector & trinfo = *(new TVector(2));
 		  trinfo(0)=(Float_t)track;
 		  trinfo(1)=(Float_t)iqpad;
 		  
@@ -336,17 +331,18 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 		  AliRICHTransientDigit* pdigit;
 		  // build the list of fired pads and update the info
 		  if (!pHitMap[nch]->TestHit(ipx, ipy)) {
-		    list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
+		    fList->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
 		    pHitMap[nch]->SetHit(ipx, ipy, counter);
 		    counter++;
-		    pdigit=(AliRICHTransientDigit*)list->At(list->GetLast());
+		    pdigit=(AliRICHTransientDigit*)fList->At(fList->GetLast());
 		    // list of tracks
 		    TObjArray *trlist=(TObjArray*)pdigit->TrackList();
 		    trlist->Add(&trinfo);
 		  } else {
 		    pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
 		    // update charge
-		    (*pdigit).fSignal+=iqpad;
+		    //		    (*pdigit).fSignal+=iqpad;
+		    pdigit->AddSignal(iqpad);
 		    // update list of tracks
 		    TObjArray* trlist=(TObjArray*)pdigit->TrackList();
 		    Int_t lastEntry=trlist->GetLast();
@@ -446,25 +442,25 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     Int_t tracks[10];
     Int_t charges[10];
     //cout<<"Start filling digits \n "<<endl;
-    Int_t nentries=list->GetEntriesFast();
-    //printf(" \n \n nentries %d \n",nentries);
+    Int_t nentries=fList->GetEntriesFast();
+    printf(" \n \n nentries %d \n",nentries);
     
     // start filling the digits
     
     for (Int_t nent=0;nent<nentries;nent++) {
-      AliRICHTransientDigit *address=(AliRICHTransientDigit*)list->At(nent);
-      if (address==0) continue; 
+      AliRICHTransientDigit *transDigit=(AliRICHTransientDigit*)fList->At(nent);
+      if (transDigit==0) continue; 
       
-      Int_t ich=address->fChamber;
-      Int_t q=address->fSignal; 
+      Int_t ich=transDigit->GetChamber();
+      Int_t q=transDigit->Signal(); 
       iChamber=&(pRICH->Chamber(ich));
       AliRICHResponse * response=iChamber->GetResponseModel();
       Int_t adcmax= (Int_t) response->MaxAdc();
       
       
       // add white noise and do zero-suppression and signal truncation (new electronics,old electronics gaus 1.2,0.2)
-      //printf("Treshold: %d\n",iChamber->fTresh->GetHitIndex(address->fPadX,address->fPadY));
-      Int_t pedestal = iChamber->fTresh->GetHitIndex(address->fPadX,address->fPadY);
+      //printf("Treshold: %d\n",iChamber->fTresh->GetHitIndex(transDigit->PadX(),transDigit->PadY()));
+      Int_t pedestal = iChamber->fTresh->GetHitIndex(transDigit->PadX(),transDigit->PadY());
 
       //printf("Pedestal:%d\n",pedestal);
       //Int_t pedestal=0;
@@ -482,11 +478,11 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 	}
       q = q - pedestal;
       if ( q >= adcmax) q=adcmax;
-      digits[0]=address->fPadX;
-      digits[1]=address->fPadY;
+      digits[0]=transDigit->PadX();
+      digits[1]=transDigit->PadY();
       digits[2]=q;
       
-      TObjArray* trlist=(TObjArray*)address->TrackList();
+      TObjArray* trlist=(TObjArray*)transDigit->TrackList();
       Int_t nptracks=trlist->GetEntriesFast();
       
       // this was changed to accomodate the real number of tracks
@@ -519,8 +515,8 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
       pRICH->AddDigits(ich,tracks,charges,digits);
     }	
     gAlice->TreeD()->Fill();
-    
-    list->Delete();
+
+    fList->Delete();
     for(Int_t ii=0;ii<kNCH;++ii) {
       if (pHitMap[ii]) {
 	hm=pHitMap[ii];
@@ -545,8 +541,7 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     gAlice->TreeD()->Write(0,TObject::kOverwrite);
     // reset tree
     //    gAlice->TreeD()->Reset();
-    delete list;
-    pAddress->Clear();
+    //    delete fList; // deleted in dtor
     // gObjectTable->Print();
 
 }

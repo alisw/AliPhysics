@@ -9,7 +9,7 @@
 
 #include "AliDigit.h"
 class AliRICHDigit : public TObject {
- public:
+ protected:
     Int_t     fPadX;        // Pad number along x
     Int_t     fPadY ;       // Pad number along y
     Int_t     fSignal;      // Signal amplitude

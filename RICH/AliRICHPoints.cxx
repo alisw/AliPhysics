@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.9  2001/02/27 15:20:56  jbarbosa
+  Transition to SDigits.
+
   Revision 1.8  2001/01/26 20:00:27  hristov
   Major upgrade of AliRoot code
 
@@ -221,10 +224,10 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
     
   AliRICHHit *mHit = GetHit();
 
-  printf("Hit %d on chamber: %d\n",fHitIndex, mHit->fChamber);
+  printf("Hit %d on chamber: %d\n",fHitIndex, mHit->Chamber());
 
-  TClonesArray *digits  = pRICH->DigitsAddress(mHit->fChamber - 1);
-  iChamber = &(pRICH->Chamber(mHit->fChamber - 1));
+  TClonesArray *digits  = pRICH->DigitsAddress(mHit->Chamber() - 1);
+  iChamber = &(pRICH->Chamber(mHit->Chamber() - 1));
   segmentation=iChamber->GetSegmentationModel();
 
   Float_t dpx  = segmentation->Dpx();
@@ -241,11 +244,11 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
      //printf("Particle %d belongs to ring %d \n", fTrackIndex, mdig->fTracks[1]);
 
     if (!points) continue;
-    if (fTrackIndex == mdig->fTracks[0]) {
+    if (fTrackIndex == mdig->Track(0)) {
 
-      printf("Digit %d from particle %d belongs to ring %d \n", digit, fTrackIndex, mdig->fTracks[0]);
+      printf("Digit %d from particle %d belongs to ring %d \n", digit, fTrackIndex, mdig->Track(0));
 
-      Int_t charge=mdig->fSignal;
+      Int_t charge=mdig->Signal();
       Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(adc_satm)/22));
       Int_t color=701+index;
       if (color>722) color=722;
@@ -253,7 +256,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
       points->SetMarkerStyle(21);
       points->SetMarkerSize(.5);
       Float_t xpad, ypad, zpad;
-      segmentation->GetPadC(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
+      segmentation->GetPadC(mdig->PadX(), mdig->PadY(),xpad, ypad, zpad);
       Float_t vectorLoc[3]={xpad,6.276,ypad};
       Float_t  vectorGlob[3];
       points->SetParticle(-1);
@@ -263,7 +266,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
       points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
       
-      segmentation->GetPadC(mdig->fPadX, mdig->fPadY, xpad, ypad, zpad);
+      segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
       Float_t theta = iChamber->GetRotMatrix()->GetTheta();
       Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
       marker=new TMarker3DBox(vectorGlob[0],vectorGlob[1],vectorGlob[2],

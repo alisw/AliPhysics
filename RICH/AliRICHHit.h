@@ -11,7 +11,7 @@
 #include "AliHit.h"
 
 class AliRICHHit : public AliHit {
- public:
+ protected:
     Int_t     fChamber;       // Chamber number
     Float_t   fParticle;      // Geant3 particle type
     Float_t   fTheta ;        // Incident theta angle in degrees      
@@ -41,6 +41,7 @@ class AliRICHHit : public AliHit {
     Float_t Phi()                 {return fPhi;}
     Float_t Tlength()             {return fTlength;}
     Float_t Eloss()               {return fEloss;}
+    Float_t Loss()                {return fLoss;}
     Float_t   PHfirst()           {return fPHfirst;}
     Float_t   PHlast()            {return fPHlast;}
     Float_t MomX()                {return fMomX;}

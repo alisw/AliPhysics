@@ -11,7 +11,7 @@ Int_t particle_type=0;
 
 #include "iostream.h"
 
-void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0, Int_t merging) 
+void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0, Int_t merging=0) 
 {
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
@@ -31,8 +31,6 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0, Int_t merging)
     gAlice = 0;
   }
   
-  galice=0;
-
 // Connect the Root Galice file containing Geometry, Kine and Hits
 
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");

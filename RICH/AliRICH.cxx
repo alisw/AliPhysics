@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.54  2001/09/07 08:38:10  hristov
+  Pointers initialised to 0 in the default constructors
+
   Revision 1.53  2001/08/30 09:51:23  hristov
   The operator[] is replaced by At() or AddAt() in case of TObjArray.
 
@@ -410,41 +413,18 @@ void AliRICH::SDigits2Digits(Int_t nev, Int_t flag)
   }
   
   int nparticles = gAlice->GetNtrack();
-  if (nparticles > 0) 
-    {
-      if (fMerger) {
-	fMerger->Init();
-	fMerger->Digitise(nev,flag);
-      }
-    }
-  //Digitise(nev,flag);
+  cout << "Particles (RICH):" <<nparticles<<endl;
+  if (nparticles <= 0) return;
+  if (!fMerger) {
+    fMerger = new AliRICHMerger();
+  }
+  fMerger->Init();
+  fMerger->Digitise(nev,flag);
 }
 //___________________________________________
 void AliRICH::SDigits2Digits()
 {
-
-//
-// Generate digits
-// Called from alirun, single event only.
-  
-  AliRICHChamber*       iChamber;
-   
-  printf("Generating tresholds...\n");
-  
-  for(Int_t i=0;i<7;i++) {
-    iChamber = &(Chamber(i));
-    iChamber->GenerateTresholds();
-  }
-  
-  int nparticles = gAlice->GetNtrack();
-  cout << "Particles (RICH):" <<nparticles<<endl;
-  if (nparticles > 0)
-    {
-      if (fMerger) {
-	fMerger->Init();
-	fMerger->Digitise(0,0);
-      }
-    }
+  SDigits2Digits(0,0);
 }
 //___________________________________________
 void AliRICH::Digits2Reco()
@@ -2435,9 +2415,9 @@ void AliRICH::StepManager()
 			mom[0] = current->Px();
 			mom[1] = current->Py();
 			mom[2] = current->Pz();
-			Float_t mipPx = mipHit->fMomX;
-			Float_t mipPy = mipHit->fMomY;
-			Float_t mipPz = mipHit->fMomZ;
+			Float_t mipPx = mipHit->MomX();
+			Float_t mipPy = mipHit->MomY();
+			Float_t mipPz = mipHit->MomZ();
 			
 			Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
 			Float_t rt = TMath::Sqrt(r);
@@ -2698,9 +2678,9 @@ AliRICHSDigit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters )
     // Return the address of the first sdigit for hit
     TClonesArray *theClusters = clusters;
     Int_t nclust = theClusters->GetEntriesFast();
-    if (nclust && hit->fPHlast > 0) {
-	sMaxIterPad=Int_t(hit->fPHlast);
-	sCurIterPad=Int_t(hit->fPHfirst);
+    if (nclust && hit->PHlast() > 0) {
+	sMaxIterPad=Int_t(hit->PHlast());
+	sCurIterPad=Int_t(hit->PHfirst());
 	return (AliRICHSDigit*) clusters->UncheckedAt(sCurIterPad-1);
     } else {
 	return 0;
@@ -2817,12 +2797,12 @@ void AliRICH::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
 	       //Float_t x  = mHit->X();                    // x-pos of hit
 	       //Float_t y  = mHit->Z();                    // y-pos
 	       //Float_t z  = mHit->Y();
-	       //Float_t phi = mHit->fPhi;                 //Phi angle of incidence
-	       Float_t theta = mHit->fTheta;             //Theta angle of incidence
+	       //Float_t phi = mHit->Phi();                 //Phi angle of incidence
+	       Float_t theta = mHit->Theta();             //Theta angle of incidence
 	       Float_t px = mHit->MomX();
 	       Float_t py = mHit->MomY();
 	       Int_t index = mHit->Track();
-	       Int_t particle = (Int_t)(mHit->fParticle);    
+	       Int_t particle = (Int_t)(mHit->Particle());    
 	       Float_t R;
 	       Float_t PTfinal;
 	       Float_t PTvertex;
@@ -3394,10 +3374,10 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	     //Int_t nch  = mHit->fChamber;              // chamber number
 	     x  = mHit->X();                           // x-pos of hit
 	     y  = mHit->Z();                           // y-pos
-	     Float_t phi = mHit->fPhi;                 //Phi angle of incidence
-	     Float_t theta = mHit->fTheta;             //Theta angle of incidence
+	     Float_t phi = mHit->Phi();                 //Phi angle of incidence
+	     Float_t theta = mHit->Theta();             //Theta angle of incidence
 	     Int_t index = mHit->Track();
-	     Int_t particle = (Int_t)(mHit->fParticle);        
+	     Int_t particle = (Int_t)(mHit->Particle());        
 	     //Int_t freon = (Int_t)(mHit->fLoss);    
 	     
 	     hitsX->Fill(x,(float) 1);
@@ -3679,9 +3659,9 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	   padsev->Fill(ndigits,(float) 1);
 	   for (Int_t hit=0;hit<ndigits;hit++) {
 	     AliRICHDigit* dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
-	     Int_t qtot = dHit->fSignal;                // charge
-	     Int_t ipx  = dHit->fPadX;               // pad number on X
-	     Int_t ipy  = dHit->fPadY;               // pad number on Y
+	     Int_t qtot = dHit->Signal();                // charge
+	     Int_t ipx  = dHit->PadX();               // pad number on X
+	     Int_t ipy  = dHit->PadY();               // pad number on Y
 	     //printf("%d, %d\n",ipx,ipy);
 	     if( ipx<=100 && ipy <=100) hc0->Fill(ipx,ipy,(float) qtot);
 	   }
@@ -3698,11 +3678,11 @@ AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
 	       if (ndigits) {
 		 for (Int_t hit=0;hit<ndigits;hit++) {
 		   AliRICHDigit* dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
-		   //Int_t nchamber = dHit->fChamber;     // chamber number
+		   //Int_t nchamber = dHit->GetChamber();     // chamber number
 		   //Int_t nhit = dHit->fHitNumber;          // hit number
-		   Int_t qtot = dHit->fSignal;                // charge
-		   Int_t ipx  = dHit->fPadX;               // pad number on X
-		   Int_t ipy  = dHit->fPadY;               // pad number on Y
+		   Int_t qtot = dHit->Signal();                // charge
+		   Int_t ipx  = dHit->PadX();               // pad number on X
+		   Int_t ipy  = dHit->PadY();               // pad number on Y
 		   //Int_t iqpad  = dHit->fQpad;           // charge per pad
 		   //Int_t rpad  = dHit->fRSec;            // R-position of pad
 		   //printf ("Pad hit, PadX:%d, PadY:%d\n",ipx,ipy);

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.16  2001/10/21 18:31:24  hristov
+  Several pointers were set to zero in the default constructors to avoid memory management problems
+
   Revision 1.15  2001/10/09 07:34:09  hristov
   Modifications needed by Root.03.01.06 (J.Chudoba)
 
@@ -1013,7 +1016,7 @@ void AliRICHDisplay::LoadDigits()
 	   points = new AliRICHPoints(npoints);
 	   fPoints->AddAt(points,counter);
 	   counter++;
-	   Int_t charge=mdig->fSignal;
+	   Int_t charge=mdig->Signal();
 	   Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(adc_satm)/22));
 	   Int_t color=701+index;
 	   if (color>722) color=722;
@@ -1021,7 +1024,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetMarkerStyle(21);
 	   points->SetMarkerSize(0.5);
 	   Float_t xpad, ypad, zpad;
-	   segmentation->GetPadC(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
+	   segmentation->GetPadC(mdig->PadX(), mdig->PadY(),xpad, ypad, zpad);
 	   Float_t vectorLoc[3]={xpad,5,ypad};
 	   Float_t  vectorGlob[3];
 	   iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
@@ -1032,7 +1035,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
 	   //printf("Y position (digit): %f\n", vectorGlob[1]);
 	   
-	   segmentation->GetPadC(mdig->fPadX, mdig->fPadY, xpad, ypad, zpad);
+	   segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
 	   Float_t theta = iChamber->GetRotMatrix()->GetTheta();
 	   Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
 	   marker=new TMarker3DBox(vectorGlob[0],vectorGlob[1],vectorGlob[2],

@@ -99,7 +99,7 @@ void  AliRICHHitMapA1::FillHits()
     AliRICHDigit *dig;
     for (Int_t ndig=0; ndig<fNdigits; ndig++) {
 	dig = (AliRICHDigit*)fDigits->UncheckedAt(ndig);
-	SetHit(dig->fPadX,dig->fPadY,ndig);
+	SetHit(dig->PadX(),dig->PadY(),ndig);
     }
 }
 

@@ -9,7 +9,7 @@
 #include "AliRICHDigit.h"
 
 class AliRICHTransientDigit : public AliRICHDigit {
- public:
+ protected:
     Int_t          fRpad;          // r_pos of pad
     Int_t          fChamber;       // chamber number of pad
     TObjArray     *fTrackList;     // list of tracks
@@ -19,6 +19,7 @@ class AliRICHTransientDigit : public AliRICHDigit {
     virtual ~AliRICHTransientDigit();
     
     TObjArray  *TrackList()   {return fTrackList;}
+    Int_t      GetChamber()   {return fChamber;}
     
     ClassDef(AliRICHTransientDigit,1)  //Digits for set:RICH
 };

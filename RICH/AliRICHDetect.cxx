@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.15  2001/10/21 18:31:23  hristov
+  Several pointers were set to zero in the default constructors to avoid memory management problems
+
   Revision 1.14  2001/05/14 13:25:54  hristov
   stdlib.h included (for Alpha)
 
@@ -260,7 +263,7 @@ void AliRICHDetect::Detect(Int_t nev)
       }
     mHit = (AliRICHHit*) pHits->UncheckedAt(0);
     //printf("Aqui vou eu\n");
-    Int_t nch  = mHit->fChamber;
+    Int_t nch  = mHit->Chamber();
     //printf("Aqui fui eu\n");
     trackglob[0] = mHit->X();
     trackglob[1] = mHit->Y();
@@ -304,7 +307,7 @@ void AliRICHDetect::Detect(Int_t nev)
 	    for (Int_t dig=0;dig<ndigits;dig++)
 	      {	
 		points=(AliRICHDigit*) pDigits->UncheckedAt(dig);
-		segmentation->GetPadC(points->fPadX, points->fPadY,x, y, z);
+		segmentation->GetPadC(points->PadX(), points->PadY(),x, y, z);
 		x=x-cx;
 		y=y-cy;
 		radius=TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));

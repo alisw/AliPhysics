@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2001/02/27 15:21:58  jbarbosa
+  Transition to SDigits.
+
   Revision 1.9  2001/01/26 20:00:27  hristov
   Major upgrade of AliRoot code
 
@@ -211,8 +214,8 @@ Bool_t AliRICHClusterFinder::Centered(AliRICHRawCluster *cluster)
 
     AliRICHDigit* dig;
     dig= (AliRICHDigit*)fDigits->UncheckedAt(cluster->fIndexMap[0]);
-    Int_t ix=dig->fPadX;
-    Int_t iy=dig->fPadY;
+    Int_t ix=dig->PadX();
+    Int_t iy=dig->PadY();
     Int_t nn;
     Int_t x[kMaxNeighbours], y[kMaxNeighbours], xN[kMaxNeighbours], yN[kMaxNeighbours];
     
@@ -310,9 +313,9 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
     for (i=0; i<mul; i++)
     {
 	dig[i]= (AliRICHDigit*)fDigits->UncheckedAt(c->fIndexMap[i]);
-	ix[i]= dig[i]->fPadX;
-	iy[i]= dig[i]->fPadY;
-	q[i] = dig[i]->fSignal;
+	ix[i]= dig[i]->PadX();
+	iy[i]= dig[i]->PadY();
+	q[i] = dig[i]->Signal();
 	fSegmentation->GetPadC(ix[i], iy[i], x[i], y[i], zdum);
     }
 //
@@ -330,12 +333,12 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	for (j=0; j<nn; j++) {
 	    if (fHitMap->TestHit(xNei[j], yNei[j])==kEmpty) continue;
 	    digt=(AliRICHDigit*) fHitMap->GetHit(xNei[j], yNei[j]);
-	    if (digt->fSignal > q[i]) {
+	    if (digt->Signal() > q[i]) {
 		isLocal[i]=kFALSE;
 		break;
 //
 // handle special case of neighbouring pads with equal signal
-	    } else if (digt->fSignal == q[i]) {
+	    } else if (digt->Signal() == q[i]) {
 		if (nLocal >0) {
 		    for (Int_t k=0; k<nLocal; k++) {
 			if (xNei[j]==ix[indLocal[k]] && yNei[j]==iy[indLocal[k]]){
@@ -610,12 +613,12 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
     for (Int_t i=0; i<c->fMultiplicity; i++)
     {
 	dig= (AliRICHDigit*)fDigits->UncheckedAt(c->fIndexMap[i]);
-	ix=dig->fPadX+c->fOffsetMap[i];
-	iy=dig->fPadY;
-	Int_t q=dig->fSignal;
-	if (dig->fPhysics >= dig->fSignal) {
+	ix=dig->PadX()+c->fOffsetMap[i];
+	iy=dig->PadY();
+	Int_t q=dig->Signal();
+	if (dig->Physics() >= dig->Signal()) {
 	  c->fPhysicsMap[i]=2;
-	} else if (dig->fPhysics == 0) {
+	} else if (dig->Physics() == 0) {
 	  c->fPhysicsMap[i]=0;
 	} else  c->fPhysicsMap[i]=1;
 //
@@ -625,28 +628,28 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 	   if (q>c->fPeakSignal) {
 	      c->fPeakSignal=q;
 /*
-	    c->fTracks[0]=dig->fTracks[0];
-	    c->fTracks[1]=dig->fTracks[1];
-	    c->fTracks[2]=dig->fTracks[2];
+	    c->fTracks[0]=dig->Track(0);
+	    c->fTracks[1]=dig->Track(1);
+	    c->fTracks[2]=dig->Track(2);
 */
 	      //c->fTracks[0]=dig->fTrack;
-	    c->fTracks[0]=dig->fHit;
-	    c->fTracks[1]=dig->fTracks[0];
-	    c->fTracks[2]=dig->fTracks[1];
+	    c->fTracks[0]=dig->Hit();
+	    c->fTracks[1]=dig->Track(0);
+	    c->fTracks[2]=dig->Track(1);
 	   }
 	} else {
 	   if (c->fContMap[i] > frac) {
               frac=c->fContMap[i];
 	      c->fPeakSignal=q;
 /*
-	    c->fTracks[0]=dig->fTracks[0];
-	    c->fTracks[1]=dig->fTracks[1];
-	    c->fTracks[2]=dig->fTracks[2];
+	    c->fTracks[0]=dig->Track(0);
+	    c->fTracks[1]=dig->Track(1);
+	    c->fTracks[2]=dig->Track(2);
 */
 	      //c->fTracks[0]=dig->fTrack;
-	    c->fTracks[0]=dig->fHit;
-	    c->fTracks[1]=dig->fTracks[0];
-	    c->fTracks[2]=dig->fTracks[1];
+	    c->fTracks[0]=dig->Hit();
+	    c->fTracks[1]=dig->Track(0);
+	    c->fTracks[2]=dig->Track(1);
 	   }
 	}
 //
@@ -692,7 +695,7 @@ void  AliRICHClusterFinder::FindCluster(Int_t i, Int_t j, AliRICHRawCluster &c){
     
     Int_t idx = fHitMap->GetHitIndex(i,j);
     AliRICHDigit* dig = (AliRICHDigit*) fHitMap->GetHit(i,j);
-    Int_t q=dig->fSignal;
+    Int_t q=dig->Signal();
     if (q > TMath::Abs(c.fPeakSignal)) {
 	c.fPeakSignal=q;
 /*
@@ -701,9 +704,9 @@ void  AliRICHClusterFinder::FindCluster(Int_t i, Int_t j, AliRICHRawCluster &c){
 	c.fTracks[2]=dig->fTracks[2];
 */
 	//c.fTracks[0]=dig->fTrack;
-	c.fTracks[0]=dig->fHit;
-	c.fTracks[1]=dig->fTracks[0];
-	c.fTracks[2]=dig->fTracks[1];
+	c.fTracks[0]=dig->Hit();
+	c.fTracks[1]=dig->Track(0);
+	c.fTracks[2]=dig->Track(1);
     }
 //
 //  Make sure that list of digits is ordered 
@@ -711,9 +714,9 @@ void  AliRICHClusterFinder::FindCluster(Int_t i, Int_t j, AliRICHRawCluster &c){
     Int_t mu=c.fMultiplicity;
     c.fIndexMap[mu]=idx;
 
-    if (dig->fPhysics >= dig->fSignal) {
+    if (dig->Physics() >= dig->Signal()) {
         c.fPhysicsMap[mu]=2;
-    } else if (dig->fPhysics == 0) {
+    } else if (dig->Physics() == 0) {
         c.fPhysicsMap[mu]=0;
     } else  c.fPhysicsMap[mu]=1;
 
@@ -721,7 +724,7 @@ void  AliRICHClusterFinder::FindCluster(Int_t i, Int_t j, AliRICHRawCluster &c){
 	for (Int_t ind=mu-1; ind>=0; ind--) {
 	    Int_t ist=(c.fIndexMap)[ind];
 	    Int_t ql=((AliRICHDigit*)fDigits
-		      ->UncheckedAt(ist))->fSignal;
+		      ->UncheckedAt(ist))->Signal();
 	    if (q>ql) {
 		c.fIndexMap[ind]=idx;
 		c.fIndexMap[ind+1]=ist;
@@ -781,24 +784,24 @@ void AliRICHClusterFinder::FindRawClusters()
     fHitMap->FillHits();
     for (ndig=0; ndig<fNdigits; ndig++) {
 	dig = (AliRICHDigit*)fDigits->UncheckedAt(ndig);
-	Int_t i=dig->fPadX;
-	Int_t j=dig->fPadY;
+	Int_t i=dig->PadX();
+	Int_t j=dig->PadY();
 	if (fHitMap->TestHit(i,j)==kUsed ||fHitMap->TestHit(i,j)==kEmpty) {
 	    nskip++;
 	    continue;
 	}
 	AliRICHRawCluster c;
 	c.fMultiplicity=0;
-	c.fPeakSignal=dig->fSignal;
+	c.fPeakSignal=dig->Signal();
 /*
 	c.fTracks[0]=dig->fTracks[0];
 	c.fTracks[1]=dig->fTracks[1];
 	c.fTracks[2]=dig->fTracks[2];
 */
 	//c.fTracks[0]=dig->fTrack;
-	c.fTracks[0]=dig->fHit;
-	c.fTracks[1]=dig->fTracks[0];
-	c.fTracks[2]=dig->fTracks[1];
+	c.fTracks[0]=dig->Hit();
+	c.fTracks[1]=dig->Track(0);
+	c.fTracks[2]=dig->Track(1);
         // tag the beginning of cluster list in a raw cluster
         c.fNcluster[0]=-1;
 	FindCluster(i,j, c);
