@@ -6,8 +6,10 @@ AliEMCALv0.cxx \
 AliEMCALv1.cxx \
 AliEMCALDigit.cxx \
 AliEMCALSDigitizer.cxx \
-AliEMCALDigitizer.cxx
-
+AliEMCALDigitizer.cxx \
+AliEMCALTick.cxx \
+AliEMCALGetter.cxx
+ 
 HDRS= \
 AliEMCAL.h  \
 AliEMCALGeometry.h \
@@ -16,6 +18,8 @@ AliEMCALv0.h \
 AliEMCALv1.h \
 AliEMCALDigit.h \
 AliEMCALSDigitizer.h \
-AliEMCALDigitizer.h
+AliEMCALDigitizer.h \
+AliEMCALTick.h  \
+AliEMCALGetter.h
 
 DHDR:=EMCALLinkDef.h
