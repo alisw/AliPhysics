@@ -150,7 +150,7 @@ void AliEMCALSDigitizer::InitParameters()
     printf("InitParameters: Sampling factor set to %f\n", geom->GetSampling()) ; 
   
   // this threshold corresponds approximately to 100 MeV
-  fECPrimThreshold     = 100E-3 / ( geom->GetSampling() * geom->GetNECLayers()) * geom->GetNECLayers() ;
+  fECPrimThreshold     = 100E-3;
 }
 
 //____________________________________________________________________________

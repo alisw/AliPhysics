@@ -174,7 +174,6 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
 
   const AliEMCALGeometry *geom = gime->EMCALGeometry() ; 
 
-  //Making digits from noise first
   Int_t nEMC = 0 ;
   nEMC = geom->GetNPhi()*geom->GetNZ(); //max number of digits possible
   
@@ -331,7 +330,7 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy)
   Int_t channel = -999; 
   channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
   if(channel > fNADCEC ) 
-    channel =  fNADCEC ;   
+    channel =  fNADCEC ; 
   return channel ;
 }
 
@@ -451,15 +450,15 @@ Bool_t AliEMCALDigitizer::Init()
 //____________________________________________________________________________ 
 void AliEMCALDigitizer::InitParameters()
 {
-  fMeanPhotonElectron = 1250 ; // electrons per GeV
-  fPinNoise           = 0.001 ; // noise equivalent GeV (random choice)
+  fMeanPhotonElectron = 18200 ; // electrons per GeV
+  fPinNoise           = 0.1 ; // noise equivalent GeV (random choice)
   if (fPinNoise == 0. ) 
     Warning("InitParameters", "No noise added\n") ; 
   fDigitThreshold     = fPinNoise * 3; //2 sigma
-  fTimeResolution     = 0.5e-9 ;
+  fTimeResolution     = 1.0e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
 
-  fADCchannelEC    = 0.000220;                     // width of one ADC channel in GeV
+  fADCchannelEC    = 0.00050;                     // width of one ADC channel in GeV
   fADCpedestalEC   = 0.005 ;                       // GeV
   fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 

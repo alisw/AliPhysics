@@ -149,6 +149,9 @@ void AliEMCALv1::StepManager(void){
     
     if( (depositedEnergy = gMC->Edep()) > 0.){// Track is inside a scintillator and deposits some energy
      
+      // use sampling fraction to get original energy --HG
+      depositedEnergy = depositedEnergy * geom->GetSampling();
+
       gMC->TrackPosition(pos);
       xyzte[0] = pos[0];
       xyzte[1] = pos[1];
