@@ -53,7 +53,7 @@ AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
   // ctor : title is used to identify the layout
   
   // gets an instance of the geometry parameters class  
-  
+ 
   if (strcmp(GetTitle(),"") != 0 ) 
     fGeom =  AliEMCALGeometry::GetInstance(GetTitle(), "") ; 
 }
