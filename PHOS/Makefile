@@ -7,23 +7,26 @@ include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
 
 PACKAGE = PHOS
 
+MYLIBDIR = ~/lib/tgt_$(ALICE_TARGET)
+
 # C++ sources
 
 SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSv3.cxx AliPHOSv4.cxx \
                  AliPHOSHit.cxx \
                  AliPHOSGeometry.cxx \
-		 AliEMCAGeometry.cxx \
-		 AliCPVGeometry.cxx AliCPVBaseGeometry.cxx AliPPSDGeometry.cxx \
-		 AliPHOSCPV.cxx \
+		 AliPHOSEMCAGeometry.cxx \
+		 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx AliPHOSPPSDGeometry.cxx \
+		 AliPHOSCPVModule.cxx AliPHOSCPVDigit.cxx AliPHOSCPVHit.cxx \
                  AliPHOSDigit.cxx  \
-                 AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx AliPHOSPpsdRecPoint.cxx \
+                 AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
+		 AliPHOSPpsdRecPoint.cxx AliPHOSCpvRecPoint.cxx \
 		 AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  AliPHOSLink.cxx \
 		 AliPHOSReconstructioner.cxx  AliPHOSTrackSegment.cxx \
                  AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
                  AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv1.cxx \
                  AliPHOSAnalyze.cxx AliPHOSFastRecParticle.cxx \
-                 AliPHOSIndexToObject.cxx \
+                 AliPHOSIndexToObject.cxx
 
 # C++ Headers
 
@@ -49,11 +52,11 @@ ALOBJS  = $(SHOBJS) $(RCOBJS) $(DUOBJS)
 
 ##### COMMANDS ##### 
 
-SLIBRARY     	= $(LIBDIR)/libPHOS.$(SL)
+SLIBRARY     	= $(MYLIBDIR)/libPHOS.$(SL)
 
 default:	$(SLIBRARY)
 
-$(LIBDIR)/libPHOS.$(SL):			$(OBJS) $(FOBJS)
+$(MYLIBDIR)/libPHOS.$(SL):			$(OBJS) $(FOBJS)
 
 $(DICT):					$(HDRS)
 

@@ -11,7 +11,6 @@
 
 // --- ROOT system ---
 #include "TClonesArray.h"
-#include "TH1.h"
 
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
@@ -19,7 +18,9 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSPID.h"
-#include "AliPHOSCPV.h"
+#include "AliPHOSCPVModule.h"
+#include "AliPHOSCPVHit.h"
+#include "AliPHOSCPVDigit.h"
 
 class AliPHOSv1 : public AliPHOSv0 {
 
@@ -69,7 +70,7 @@ public:
 
   // IHEP's CPV specific functions
 
-  CPVModule &GetCPVModule(int n) { return *(CPVModule*)fCPVModules->operator[](n); }
+  AliPHOSCPVModule &GetCPVModule(int n) { return *(AliPHOSCPVModule*)fCPVModules->operator[](n); }
   void       CPVDigitize (TLorentzVector p, Float_t *xy, Int_t moduleNumber, TClonesArray *digits) ;
   Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
   Double_t   CPVCumulPadResponse(Double_t x, Double_t y) ;

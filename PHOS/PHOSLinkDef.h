@@ -7,6 +7,7 @@
 #pragma link C++ class AliPHOS ;
 #pragma link C++ class AliPHOSClusterizer ;
 #pragma link C++ class AliPHOSClusterizerv1 ;
+#pragma link C++ class AliPHOSCpvRecPoint ;
 #pragma link C++ class AliPHOSDigit ;
 #pragma link C++ class AliPHOSEmcRecPoint ;
 #pragma link C++ class AliPHOSFastRecParticle ;
@@ -29,12 +30,12 @@
 #pragma link C++ class AliPHOSPID ;
 #pragma link C++ class AliPHOSPIDv1 ;
 #pragma link C++ class AliPHOSAnalyze ;
-#pragma link C++ class AliEMCAGeometry ;
-#pragma link C++ class AliCPVBaseGeometry ;
-#pragma link C++ class AliCPVGeometry ;
-#pragma link C++ class AliPPSDGeometry ;
-#pragma link C++ class CPVModule ;
-#pragma link C++ class CPVHit ;
-#pragma link C++ class CPVDigit ;
+#pragma link C++ class AliPHOSEMCAGeometry ;
+#pragma link C++ class AliPHOSCPVBaseGeometry ;
+#pragma link C++ class AliPHOSCPVGeometry ;
+#pragma link C++ class AliPHOSPPSDGeometry ;
+#pragma link C++ class AliPHOSCPVModule ;
+#pragma link C++ class AliPHOSCPVHit ;
+#pragma link C++ class AliPHOSCPVDigit ;
 
 #endif

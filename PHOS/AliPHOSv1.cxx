@@ -56,10 +56,10 @@ AliPHOSv1::AliPHOSv1()
   fNTmpHits = 0 ; 
   fTmpHits  = 0 ;
 
-  // Create an empty array of CPVModule to satisfy
+  // Create an empty array of AliPHOSCPVModule to satisfy
   // AliPHOSv1::Streamer when reading root file
 
-  if ( NULL==(fCPVModules=new TClonesArray("CPVModule",0)) ) {
+  if ( NULL==(fCPVModules=new TClonesArray("AliPHOSCPVModule",0)) ) {
     Error("AliPHOSv1","Can not create array of CPV modules");
     exit(1);
   }
@@ -101,20 +101,20 @@ AliPHOSv0(name,title)
   // Create array of CPV modules for the IHEP's version of CPV
 
   if ( strcmp(fGeom->GetName(),"IHEP") == 0 ) {
-    // Create array of CPVmodule of the size of PHOS modules number
+    // Create array of AliPHOSCPVmodule of the size of PHOS modules number
 
-    if ( NULL==(fCPVModules=new TClonesArray("CPVModule",fGeom->GetNModules())) ) {
+    if ( NULL==(fCPVModules=new TClonesArray("AliPHOSCPVModule",fGeom->GetNModules())) ) {
       Error("AliPHOSv1","Can not create array of CPV modules");
       exit(1);
     }
     TClonesArray &lcpvmodule = *fCPVModules;
-    for (Int_t i=0; i<fGeom->GetNModules(); i++) new(lcpvmodule[i]) CPVModule();
+    for (Int_t i=0; i<fGeom->GetNModules(); i++) new(lcpvmodule[i]) AliPHOSCPVModule();
   }
   else {
-    // Create an empty array of CPVModule to satisfy
+    // Create an empty array of AliPHOSCPVModule to satisfy
     // AliPHOSv1::Streamer when writing root file
 
-    fCPVModules=new TClonesArray("CPVModule",0);
+    fCPVModules=new TClonesArray("AliPHOSCPVModule",0);
 
   }
 }
@@ -447,7 +447,7 @@ void AliPHOSv1::ResetHits()
 
   AliDetector::ResetHits();
   if ( strcmp(fGeom->GetName(),"IHEP") == 0 ) {
-    for (Int_t i=0; i<fGeom->GetNModules(); i++) ((CPVModule*)(*fCPVModules)[i]) -> Clear();
+    for (Int_t i=0; i<fGeom->GetNModules(); i++) ((AliPHOSCPVModule*)(*fCPVModules)[i]) -> Clear();
   }
 }  
 //____________________________________________________________________________
@@ -592,7 +592,7 @@ void AliPHOSv1::StepManager(void)
 
       // 1. find pad response and
       
-      TClonesArray *cpvDigits = new TClonesArray("CPVDigit",0);   // array of digits for current hit
+      TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
       CPVDigitize(pmom,xyd,ModuleNumber,cpvDigits);
       
       Float_t xmean = 0;
@@ -604,11 +604,11 @@ void AliPHOSv1::StepManager(void)
 
       ndigits = cpvDigits->GetEntriesFast();
       for (Int_t idigit=0; idigit<ndigits-1; idigit++) {
-	CPVDigit  *cpvDigit1 = (CPVDigit*) cpvDigits->UncheckedAt(idigit);
+	AliPHOSCPVDigit  *cpvDigit1 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
 	Float_t x1 = cpvDigit1->GetXpad() ;
 	Float_t z1 = cpvDigit1->GetYpad() ;
 	for (Int_t jdigit=idigit+1; jdigit<ndigits; jdigit++) {
-	  CPVDigit  *cpvDigit2 = (CPVDigit*) cpvDigits->UncheckedAt(jdigit);
+	  AliPHOSCPVDigit  *cpvDigit2 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(jdigit);
 	  Float_t x2 = cpvDigit2->GetXpad() ;
 	  Float_t z2 = cpvDigit2->GetYpad() ;
 	  if (x1==x2 && z1==z2) {
@@ -624,7 +624,7 @@ void AliPHOSv1::StepManager(void)
 
       ndigits = cpvDigits->GetEntriesFast();
       for (Int_t idigit=0; idigit<ndigits; idigit++) {
-	CPVDigit  *cpvDigit = (CPVDigit*) cpvDigits->UncheckedAt(idigit);
+	AliPHOSCPVDigit  *cpvDigit = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
 	relid[0] = ModuleNumber + 1 ;                             // CPV (or PHOS) module number
 	relid[1] =-1 ;                                            // means CPV
 	relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad
@@ -703,12 +703,16 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   // axis X goes across the beam in the module plane
   // axis Y is a normal to the module plane showing from the IP
 
+//    cout << __PRETTY_FUNCTION__ << ": YVK : Start digitization\n";
+
   Float_t hitX  = zxhit[0];
   Float_t hitZ  =-zxhit[1];
   Float_t pX    = p.Px();
   Float_t pZ    =-p.Pz();
   Float_t pNorm = p.Py();
   Float_t E     = dEdx;
+
+//    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
 
   Float_t dZY   = pZ/pNorm * fGeom->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * fGeom->GetCPVGasThickness();
@@ -719,6 +723,9 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   Float_t xhit1 = hitX + fGeom->GetCPVActiveSize(0)/2 - dXY/2;
   Float_t zhit2 = zhit1 + dZY;
   Float_t xhit2 = xhit1 + dXY;
+
+//    cout << "CPVDigitize: YVK : "<<xhit1<<" "<<xhit2<<" | "<<zhit1<<" "<<zhit2<<" | "
+//         << (Int_t)(xhit1/fGeom->GetPadSizePhi())<<" "<<(Int_t)(zhit1/fGeom->GetPadSizeZ())<<" "<<endl;
 
   Int_t   iwht1 = (Int_t) (xhit1 / celWr);           // wire (x) coordinate "in"
   Int_t   iwht2 = (Int_t) (xhit2 / celWr);           // wire (x) coordinate "out"
@@ -784,6 +791,7 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   TClonesArray &ldigits = *(TClonesArray *)cpvDigits;
 
   for (Int_t iter=0; iter<nIter; iter++) {
+//      cout << "CPVDigitize: YVK : iter="<<iter<<endl;
 
     Float_t zhit = zxe[0][iter];
     Float_t xhit = zxe[1][iter];
@@ -811,7 +819,7 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
 	if (qpad<0) continue;
 	
 	// Fill the array with pad response ID and amplitude
-	new(ldigits[cpvDigits->GetEntriesFast()]) CPVDigit(kxg,kzg,qpad);
+	new(ldigits[cpvDigits->GetEntriesFast()]) AliPHOSCPVDigit(kxg,kzg,qpad);
 //  	printf("(%2d,%2d,%5.3f) ",kxg,kzg,qpad);
       }
 //        cout << endl;
