@@ -9,7 +9,7 @@ ClassImp(AliHBTParticle)
 
 //______________________________________________________________________________
 AliHBTParticle::AliHBTParticle():  
-                fPdgCode(0), fPx(0), fPy(0),fPz(0),fE(0), fVx(0), fVy(0),fVz(0),fVt(0)
+                fPdgCode(0), fCalcMass(0),fPx(0), fPy(0),fPz(0),fE(0), fVx(0), fVy(0),fVz(0),fVt(0)
 {//empty particle
 }
 
@@ -17,8 +17,9 @@ AliHBTParticle::AliHBTParticle():
 //______________________________________________________________________________
 AliHBTParticle::AliHBTParticle(Int_t pdg, Double_t px, Double_t py, Double_t pz, Double_t etot,
                      Double_t vx, Double_t vy, Double_t vz, Double_t time):
-  fPdgCode(pdg), fPx(px), fPy(py),fPz(pz),fE(etot), 
-                 fVx(vx), fVy(vy),fVz(vz),fVt(time)
+  fPdgCode(pdg), 
+  fPx(px), fPy(py),fPz(pz),fE(etot), 
+  fVx(vx), fVy(vy),fVz(vz),fVt(time)
 {
 //mormal constructor
   
