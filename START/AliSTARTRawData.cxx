@@ -31,8 +31,8 @@
 #include <AliLoader.h>
 #include <AliRunLoader.h>
  
-#include "/home/alla/AliRoot/verynew/RAW/AliRawDataHeader.h"
-#include "/home/alla/AliRoot/verynew/RAW/AliRawData.h"
+#include "AliRawDataHeader.h"
+#include "AliRawData.h"
 
 ClassImp(AliSTARTRawData)
 

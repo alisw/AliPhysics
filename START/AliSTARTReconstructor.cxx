@@ -21,7 +21,6 @@
 
 #include "AliRunLoader.h"
 #include "AliRun.h"
-#include "/home/alla/AliRoot/verynew/RAW/AliRawReader.h"
 #include "AliSTARTLoader.h"
 #include "AliSTARTdigit.h"
 #include "AliSTARTReconstructor.h"
