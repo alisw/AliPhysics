@@ -31,6 +31,8 @@ public:
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
   Bool_t RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index);
 
+  void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
+
   class AliITSdetector {
   public:
     AliITSdetector(){}
@@ -53,6 +55,8 @@ public:
     void SelectClusters(Double_t zmi,Double_t zma,Double_t ymi,Double_t yma);
     const AliITSclusterV2 *GetNextCluster(Int_t &ci);
     void *operator new(size_t s, AliITSlayer *p) {return p;}
+    void ResetRoad();
+    Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
     AliITSclusterV2 *GetCluster(Int_t i) const {return fClusters[i];} 
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
@@ -75,6 +79,7 @@ public:
     Double_t fYmin;      //   of  the
     Double_t fYmax;      //   "window"
     Int_t fI;            // index of the current cluster within the "window"
+    Double_t fRoad;      // road defined by the cluster density
     Int_t FindClusterIndex(Double_t z) const;
   };
 

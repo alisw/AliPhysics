@@ -35,7 +35,7 @@
 //#define DEBUG
 
 #ifdef DEBUG
-Int_t LAB=113;
+Int_t LAB=38;
 #endif
 
 AliITStrackerV2::AliITSlayer AliITStrackerV2::fLayers[kMaxLayer]; // ITS layers
@@ -111,7 +111,8 @@ void AliITStrackerV2::LoadClusters() {
 
   Int_t j=0;
   for (Int_t i=0; i<kMaxLayer; i++) {
-    Int_t jmax = j + fLayers[i].GetNladders()*fLayers[i].GetNdetectors();
+    Int_t ndet=fLayers[i].GetNdetectors();
+    Int_t jmax = j + fLayers[i].GetNladders()*ndet;
     for (; j<jmax; j++) {           
       if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
@@ -122,13 +123,16 @@ void AliITStrackerV2::LoadClusters() {
 if (c->GetLabel(2)!=LAB)
 if (c->GetLabel(1)!=LAB)
 if (c->GetLabel(0)!=LAB) continue;
-cout<<lay-1<<' '<<lad-1<<' '<<det-1<<' '<<c->GetY()<<' '<<c->GetZ()<<endl;
+Int_t idx=c->GetDetectorIndex();
+Int_t lay=i, lad=idx/ndet, det=idx-lad*ndet;
+cout<<lay<<' '<<lad<<' '<<det<<' '<<c->GetY()<<' '<<c->GetZ()<<endl;
 #endif
 
         fLayers[i].InsertCluster(new AliITSclusterV2(*c));
       }
       clusters->Delete();
     }
+    fLayers[i].ResetRoad(); //road defined by the cluster density
   }
   delete cTree; //Thanks to Mariana Bondila
 }
@@ -259,10 +263,6 @@ cout<<fBestTrack.GetNumberOfClusters()<<" number of clusters\n\n";
         fBestTrack.SetLabel(tpcLabel);
 	fBestTrack.CookdEdx();
         CookLabel(&fBestTrack,0.); //For comparison only
-            
-        fBestTrack.PropagateTo(3.,0.0028,65.19);
-        fBestTrack.PropagateToVertex();
-        
         itsTree.Fill();
         UseClusters(&fBestTrack);
         delete itsTracks.RemoveAt(i);
@@ -328,7 +328,6 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
 
   Int_t nentr=(Int_t)itsTree->GetEntries();
   for (Int_t i=0; i<nentr; i++) {
-
     itsTree->GetEvent(i);
     ResetTrackToFollow(*itrack);
 
@@ -341,8 +340,7 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
     fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
     //
 
-    fTrackToFollow.ResetCovariance(); 
-    fTrackToFollow.ResetClusters();
+    fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
 
     Int_t itsLabel=fTrackToFollow.GetLabel(); //save the ITS track label
 
@@ -436,13 +434,13 @@ for (Int_t k=0; k<nc; k++) {
          }
 
          if (cl) {
-           if (!fTrackToFollow.Update(cl,maxchi2,index)) 
-             cerr<<"AliITStrackerV2::PropagateBack: filtering failed !\n";
+            if (!fTrackToFollow.Update(cl,maxchi2,index)) 
+              cerr<<"AliITStrackerV2::PropagateBack: filtering failed !\n";
          }
          {
-           Double_t x0;
-           x=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ(),x0);
-           fTrackToFollow.CorrectForMaterial(-x,x0); 
+          Double_t x0;
+          x=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ(),x0);
+          fTrackToFollow.CorrectForMaterial(-x,x0); 
          }
          	 
          // track time update [SR, GSI 17.02.2003]
@@ -550,7 +548,15 @@ cout<<i<<' ';
 
     //Select possible prolongations and store the current track estimation
     track.~AliITStrackV2(); new(&track) AliITStrackV2(fTrackToFollow);
-    Double_t dz=3*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
+ Double_t dz=7*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
+ Double_t dy=7*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
+ Double_t road=layer.GetRoad();
+ if (dz*dy>road*road) {
+    Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
+    dz=road*scz; dy=road*scy;
+ } 
+
+    //Double_t dz=4*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
     if (dz < 0.5*TMath::Abs(track.GetTgl())) dz=0.5*TMath::Abs(track.GetTgl());
     if (dz > kMaxRoad) {
       //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Z !\n";
@@ -559,7 +565,7 @@ cout<<i<<' ';
 
     if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+dz) break;
 
-    Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
+    //Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
     if (dy < 0.5*TMath::Abs(track.GetSnp())) dy=0.5*TMath::Abs(track.GetSnp());
     if (dy > kMaxRoad) {
       //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Y !\n";
@@ -603,8 +609,13 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
   AliITSlayer &layer=fLayers[fI];
   ResetTrackToFollow(fTracks[fI]);
 
-  Double_t dz=4*TMath::Sqrt(fTrackToFollow.GetSigmaZ2() + kSigmaZ2[fI]);
-  Double_t dy=4*TMath::Sqrt(fTrackToFollow.GetSigmaY2() + kSigmaY2[fI]);
+  Double_t dz=7*TMath::Sqrt(fTrackToFollow.GetSigmaZ2() + kSigmaZ2[fI]);
+  Double_t dy=7*TMath::Sqrt(fTrackToFollow.GetSigmaY2() + kSigmaY2[fI]);
+Double_t road=layer.GetRoad();
+if (dz*dy>road*road) {
+   Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
+   dz=road*scz; dy=road*scy;
+} 
 
   const AliITSclusterV2 *c=0; Int_t ci=-1;
   Double_t chi2=12345.;
@@ -701,6 +712,8 @@ AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd) {
 
   fN=0;
   fI=0;
+
+  fRoad=2*fR*TMath::Sqrt(3.14/1.);//assuming that there's only one cluster
 }
 
 AliITStrackerV2::AliITSlayer::~AliITSlayer() {
@@ -718,6 +731,17 @@ void AliITStrackerV2::AliITSlayer::ResetClusters() {
   for (Int_t i=0; i<fN; i++) delete fClusters[i];
   fN=0;
   fI=0;
+}
+
+void AliITStrackerV2::AliITSlayer::ResetRoad() {
+  //--------------------------------------------------------------------
+  // This function calculates the road defined by the cluster density
+  //--------------------------------------------------------------------
+  Int_t n=0;
+  for (Int_t i=0; i<fN; i++) {
+     if (TMath::Abs(fClusters[i]->GetZ())<fR) n++;
+  }
+  if (n>1) fRoad=2*fR*TMath::Sqrt(3.14/n);
 }
 
 Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
@@ -1070,5 +1094,17 @@ Bool_t AliITStrackerV2::RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index) {
   return kTRUE;
 }
 
-
-
+void AliITStrackerV2::UseClusters(const AliKalmanTrack *t, Int_t from) const {
+  //--------------------------------------------------------------------
+  // This function marks clusters assigned to the track
+  //--------------------------------------------------------------------
+  AliTracker::UseClusters(t,from);
+  /*
+  AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(0));
+  //if (c->GetQ()>2) c->Use();
+  if (c->GetSigmaZ2()>0.1) c->Use();
+  c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(1));
+  //if (c->GetQ()>2) c->Use();
+  if (c->GetSigmaZ2()>0.1) c->Use();
+  */
+}
