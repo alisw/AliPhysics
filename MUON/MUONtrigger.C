@@ -1,4 +1,12 @@
-#include "iostream.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+#include "AliMUON.h"
+#include "AliMUONData.h"
+
+
+AliRun * gAlice;
+
 //get trigger decision and write it in TreeR of MUON.RecPoints.root
 
 void MUONtrigger (char* filename="galice.root", 

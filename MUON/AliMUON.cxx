@@ -409,7 +409,10 @@ void AliMUON::Trigger(Int_t nev){
   
   delete decision;
 
-  fLoader->TreeR()->Fill();
+  //  fLoader->TreeR()->Fill();
+  fLoader->TreeR()->GetBranch("MUONGlobalTrigger")->Fill();
+  fLoader->TreeR()->GetBranch("MUONLocalTrigger")->Fill();
+ 
  
   //  char hname[30];
   //  sprintf(hname,"TreeR%d",nev);

@@ -12,7 +12,7 @@
 #include "AliMUONTrackHit.h"
 #include "AliMUONTrackParam.h"
 
-void MUONTracker (Int_t FirstEvent = 0, Int_t LastEvent = 0, Text_t *FileName = "galice.root")
+void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t LastEvent = 9999)
 {
   //
   cout << "MUONTracker" << endl;
@@ -55,6 +55,7 @@ void MUONTracker (Int_t FirstEvent = 0, Int_t LastEvent = 0, Text_t *FileName = 
   Reco->Dump();
   //   gObjectTable->Print();
 
+  if  (LastEvent>nevents) LastEvent=nevents;
   // Loop over events
   for (Int_t event = FirstEvent; event < LastEvent; event++) {
     cout << "Event: " << event << endl;

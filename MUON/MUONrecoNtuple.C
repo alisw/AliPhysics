@@ -221,6 +221,7 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   Reco->Dump();
 //   gObjectTable->Print();
   // Loop over events
+  if (LastEvent>nevents) LastEvent = nevents;
   for (Int_t event = FirstEvent; event < LastEvent; event++) {
     cout << "Event: " << event << endl;
     RunLoader->GetEvent(event);   

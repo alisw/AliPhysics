@@ -45,7 +45,9 @@ First event and last event are given by hand, but this will change.
 ============================================================
  How to run MUON Trigger
 ============================================================
-.L $ALICE_ROOT/MUON/MUONtrigger.C
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONtrigger.C++
 MUONtrigger("galice.root",0,9999); 
 
 ============================================================
@@ -54,7 +56,7 @@ MUONtrigger("galice.root",0,9999);
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
 .L $ALICE_ROOT/MUON/MUONrecoNtuple.C++
-MUONrecoNtuple(0,10,0,"galice.root")    
+MUONrecoNtuple(0,9999,0,"galice.root")    
 
 First event and last event are given by hand, but this will change.
 
