@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/03/26 13:30:35  morsch
+SetTrackIsExiting, SetTrackIsEntering, SetTrackIsInside added.
+
 Revision 1.15  2003/02/18 16:12:17  morsch
 Protect  mpdgha against negative argument.
 
@@ -257,6 +260,7 @@ void TFluka::FinishGeometry() {
       FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[i]);
       TString volName = vol->GetName();
       Int_t   media   = vol->GetMedium();
+      if (fVerbosityLevel >= 3)
       printf("Finish Geometry: volName, media %d %s %d \n", i, volName.Data(), media);
       strcpy(tmp, volName.Data());
       tmp[4] = '\0';
@@ -393,6 +397,7 @@ Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,
 		     Float_t *upar, Int_t np)  {
 //
 //  fVolumeMediaMap[TString(name)] = nmed;
+    if (fVerbosityLevel >= 3)
     printf("TFluka::Gsvolu() name = %s, nmed = %d\n", name, nmed);
     
     TClonesArray &lvols = *fVolumeMediaMap;
@@ -534,18 +539,22 @@ Int_t TFluka::PDGFromId(Int_t id) const
 
   //IPTOKP array goes from official to internal
     if (id == 0) {
+      if (fVerbosityLevel >= 1)
 	printf("PDGFromId: Error id = 0");
 	return -1;
     }
     
   Int_t intfluka = GetFlukaIPTOKP(id);
     if (intfluka == 0) {
+      if (fVerbosityLevel >= 1)
 	printf("PDGFromId: Error intfluka = 0");
 	return -1;
     } else if (intfluka < 0) {
+      if (fVerbosityLevel >= 1)
 	printf("PDGFromId: Error intfluka < 0");
 	return -1;
     }
+    if (fVerbosityLevel >= 3)
     printf("mpdgha called with %d %d \n", id, intfluka);
   return mpdgha(intfluka);
 }
@@ -559,18 +568,21 @@ Int_t TFluka::PDGFromId(Int_t id) const
 void TFluka::SetMaxStep(Double_t)
 {
 // SetMaxStep is dummy procedure in TFluka !
+  if (fVerbosityLevel >=3)
   cout << "SetMaxStep is dummy procedure in TFluka !" << endl;
 }
 
 void TFluka::SetMaxNStep(Int_t)
 {
 // SetMaxNStep is dummy procedure in TFluka !
+  if (fVerbosityLevel >=3)
   cout << "SetMaxNStep is dummy procedure in TFluka !" << endl;
 }
 
 void TFluka::SetUserDecay(Int_t)
 {
 // SetUserDecay is dummy procedure in TFluka !
+  if (fVerbosityLevel >=3)
   cout << "SetUserDecay is dummy procedure in TFluka !" << endl;
 }
 
@@ -951,6 +963,7 @@ Int_t TFluka::VolId2Mate(Int_t id) const
 //
 // Returns the material number for a given volume ID
 //
+    if (fVerbosityLevel >= 3)
     printf("VolId2Mate %d %d\n", id, fMediaByRegion[id]); 
     return fMediaByRegion[id-1];
 }
@@ -962,6 +975,7 @@ const char* TFluka::VolName(Int_t id) const
 //
     FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[id-1]);
     const char* name = vol->GetName();
+    if (fVerbosityLevel >= 3)
     printf("VolName %d %s \n", id, name);
     return name;
 }
@@ -996,6 +1010,7 @@ Int_t TFluka::CurrentVolID(Int_t& copyNo) const
 //
     int ir = fCurrentFlukaRegion;
     int id = (FGeometryInit::GetInstance())->CurrentVolID(ir, copyNo);
+    if (fVerbosityLevel >= 3)
     printf("CurrentVolID: %d %d %d \n", ir, id, copyNo); 
     return id;
 
@@ -1012,9 +1027,10 @@ Int_t TFluka::CurrentVolOffID(Int_t off, Int_t& copyNo) const
     
     int ir = fCurrentFlukaRegion;
     int id = (FGeometryInit::GetInstance())->CurrentVolOffID(ir, off, copyNo);
-    
+    if (fVerbosityLevel >= 3)
     printf("CurrentVolOffID: %d %d %d \n", ir, id, copyNo); 
     if (id == -1) 
+	if (fVerbosityLevel >= 0)
 	printf("CurrentVolOffID: Warning Mother not found !!!\n"); 
     return id;
 }
@@ -1028,6 +1044,7 @@ const char* TFluka::CurrentVolName() const
     Int_t copy;
     Int_t id = TFluka::CurrentVolID(copy);
     const char* name = TFluka::VolName(id);
+    if (fVerbosityLevel >= 3)
     printf("CurrentVolumeName: %d %s \n", fCurrentFlukaRegion,  name); 
     return name;
 }
@@ -1040,6 +1057,7 @@ const char* TFluka::CurrentVolOffName(Int_t off) const
     Int_t copy;
     Int_t id = TFluka::CurrentVolOffID(off, copy);
     const char* name = TFluka::VolName(id);
+    if (fVerbosityLevel >= 3)
     printf("CurrentVolumeOffName: %d %s \n", fCurrentFlukaRegion,  name); 
     return name;
 }
@@ -1053,6 +1071,7 @@ Int_t TFluka::CurrentMaterial(Float_t &a, Float_t &z,
     Int_t copy;
     Int_t id  =  TFluka::CurrentVolID(copy);
     Int_t med =  TFluka::VolId2Mate(id);
+    if (fVerbosityLevel >= 3)
     printf("CurrentMaterial: %d %d \n", fCurrentFlukaRegion,  med); 
     return med;
 }
@@ -1154,169 +1173,154 @@ void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
 // ===============================================================
 void TFluka::FutoTest() 
 {
-  Int_t icode, mreg, newreg, particleId;
-//  Int_t medium;
-  Double_t rull, xsco, ysco, zsco;
-  TLorentzVector position, momentum;
-  icode = GetIcode();
-  if (icode == 0) {
-    cout << " icode=" << icode << endl;
-    /*
-    cout << "TLorentzVector positionX=" << position.X()
-       << "positionY=" << position.Y()
-       << "positionZ=" << position.Z()
-       << "timeT=" << position.T() << endl;
-    cout << "TLorentzVector momentumX=" << momentum.X()
-       << "momentumY=" << momentum.Y()
-       << "momentumZ=" << momentum.Z()
-       << "energyE=" << momentum.E() << endl;
-    cout << "TrackPid=" << TrackPid() << endl;
-    */
-  }
-
-  else if (icode > 0 && icode <= 5) {
+    Int_t icode, mreg, newreg, particleId;
+    Double_t rull, xsco, ysco, zsco;
+    TLorentzVector position, momentum;
+    icode = GetIcode();
+    if (icode == 0) {
+	if (fVerbosityLevel >=3)
+	    cout << " icode=" << icode << endl;
+    } else if (icode > 0 && icode <= 5) {
 // mgdraw
-    mreg = GetMreg();
-//    medium = GetMedium();
-    cout << " icode=" << icode
-	 << " mreg=" << mreg
-//	 << " medium=" << medium
-	 << endl;
-  TrackPosition(position);
-  TrackMomentum(momentum);
-  cout << "TLorentzVector positionX=" << position.X()
-       << "positionY=" << position.Y()
-       << "positionZ=" << position.Z()
-       << "timeT=" << position.T() << endl;
-  cout << "TLorentzVector momentumX=" << momentum.X()
-       << "momentumY=" << momentum.Y()
-       << "momentumZ=" << momentum.Z()
-       << "energyE=" << momentum.E() << endl;
-  cout << "TrackStep=" << TrackStep() << endl;
-  cout << "TrackLength=" << TrackLength() << endl;
-  cout << "TrackTime=" << TrackTime() << endl;
-  cout << "Edep=" << Edep() << endl;
-  cout << "TrackPid=" << TrackPid() << endl;
-  cout << "TrackCharge=" << TrackCharge() << endl;
-  cout << "TrackMass=" << TrackMass() << endl;
-  cout << "Etot=" << Etot() << endl;
-  cout << "IsNewTrack=" << IsNewTrack() << endl;
-  cout << "IsTrackInside=" << IsTrackInside() << endl;
-  cout << "IsTrackEntering=" << IsTrackEntering() << endl;
-  cout << "IsTrackExiting=" << IsTrackExiting() << endl;
-  cout << "IsTrackOut=" << IsTrackOut() << endl;
-  cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
-  cout << "IsTrackAlive=" << IsTrackAlive() << endl;
-
-  Float_t x = position.X();
-  Float_t y = position.Y();
-  Float_t z = position.Z();
-  Float_t xm[3];
-  Float_t xd[3];
-  xm[0] = x; xm[1] = y; xm[2] = z;
-  printf("Global trackPosition: %f %f %f \n", x, y, z);
-  Gmtod(xm, xd, 1);
-  printf("Local trackPosition: %f %f %f \n", xd[0], xd[1], xd[2]);
-  Gdtom(xd, xm, 1);
-  printf("New trackPosition: %f %f %f \n", xm[0], xm[1], xm[2]);
-  }
-
-  else if((icode >= 10 && icode <= 15) ||
-          (icode >= 20 && icode <= 24) ||
-          (icode >= 30 && icode <= 33) ||
-          (icode >= 40 && icode <= 41) ||
-          (icode >= 50 && icode <= 52)) {
+	mreg = GetMreg();
+	if (fVerbosityLevel >=3)
+	    cout << " icode=" << icode
+		 << " mreg=" << mreg
+		 << endl;
+	TrackPosition(position);
+	TrackMomentum(momentum);
+	if (fVerbosityLevel >=3) {
+	    cout << "TLorentzVector positionX=" << position.X()
+		 << "positionY=" << position.Y()
+		 << "positionZ=" << position.Z()
+		 << "timeT=" << position.T() << endl;
+	    cout << "TLorentzVector momentumX=" << momentum.X()
+		 << "momentumY=" << momentum.Y()
+		 << "momentumZ=" << momentum.Z()
+		 << "energyE=" << momentum.E() << endl;
+	    cout << "TrackStep=" << TrackStep() << endl;
+	    cout << "TrackLength=" << TrackLength() << endl;
+	    cout << "TrackTime=" << TrackTime() << endl;
+	    cout << "Edep=" << Edep() << endl;
+	    cout << "TrackPid=" << TrackPid() << endl;
+	    cout << "TrackCharge=" << TrackCharge() << endl;
+	    cout << "TrackMass=" << TrackMass() << endl;
+	    cout << "Etot=" << Etot() << endl;
+	    cout << "IsNewTrack=" << IsNewTrack() << endl;
+	    cout << "IsTrackInside=" << IsTrackInside() << endl;
+	    cout << "IsTrackEntering=" << IsTrackEntering() << endl;
+	    cout << "IsTrackExiting=" << IsTrackExiting() << endl;
+	    cout << "IsTrackOut=" << IsTrackOut() << endl;
+	    cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
+	    cout << "IsTrackAlive=" << IsTrackAlive() << endl;
+	}
+	
+	Float_t x = position.X();
+	Float_t y = position.Y();
+	Float_t z = position.Z();
+	Float_t xm[3];
+	Float_t xd[3];
+	xm[0] = x; xm[1] = y; xm[2] = z;
+	if (fVerbosityLevel >= 3)
+	    printf("Global trackPosition: %f %f %f \n", x, y, z);
+	Gmtod(xm, xd, 1);
+	if (fVerbosityLevel >= 3)
+	    printf("Local trackPosition: %f %f %f \n", xd[0], xd[1], xd[2]);
+	Gdtom(xd, xm, 1);
+	if (fVerbosityLevel >= 3)
+	    printf("New trackPosition: %f %f %f \n", xm[0], xm[1], xm[2]);
+    } else if((icode >= 10 && icode <= 15) ||
+	      (icode >= 20 && icode <= 24) ||
+	      (icode >= 30 && icode <= 33) ||
+	      (icode >= 40 && icode <= 41) ||
+	      (icode >= 50 && icode <= 52)) {
 // endraw
-    mreg = GetMreg();
-//    medium = GetMedium();
-    rull = GetRull();
-    xsco = GetXsco();
-    ysco = GetYsco();
-    zsco = GetZsco();
-    cout << " icode=" << icode
-         << " mreg=" << mreg
-//	 << " medium=" << medium
-	 << " rull=" << rull
-	 << " xsco=" << xsco
-	 << " ysco=" << ysco
-	 << " zsco=" << zsco << endl;
-  TrackPosition(position);
-  TrackMomentum(momentum);
-  cout << "Edep=" << Edep() << endl;
-  cout << "Etot=" << Etot() << endl;
-  cout << "TrackPid=" << TrackPid() << endl;
-  cout << "TrackCharge=" << TrackCharge() << endl;
-  cout << "TrackMass=" << TrackMass() << endl;
-  cout << "IsTrackOut=" << IsTrackOut() << endl;
-  cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
-  cout << "IsTrackStop=" << IsTrackStop() << endl;
-  cout << "IsTrackAlive=" << IsTrackAlive() << endl;
-  }
-
-  else if((icode >= 100 && icode <= 105) ||
-           (icode == 208) ||
-           (icode == 210) ||
-           (icode == 212) ||
-           (icode >= 214 && icode <= 215) ||
-           (icode == 217) ||
-           (icode == 219) ||
-           (icode == 221) ||
-           (icode == 225) ||
-           (icode == 300) ||
-           (icode == 400)) {
+	mreg = GetMreg();
+	rull = GetRull();
+	xsco = GetXsco();
+	ysco = GetYsco();
+	zsco = GetZsco();
+	
+	if (fVerbosityLevel >=3) {     
+	    cout << " icode=" << icode
+		 << " mreg=" << mreg
+		 << " rull=" << rull
+		 << " xsco=" << xsco
+		 << " ysco=" << ysco
+		 << " zsco=" << zsco << endl;
+	}
+	TrackPosition(position);
+	TrackMomentum(momentum);
+	if (fVerbosityLevel >=3) {
+	    cout << "Edep=" << Edep() << endl;
+	    cout << "Etot=" << Etot() << endl;
+	    cout << "TrackPid=" << TrackPid() << endl;
+	    cout << "TrackCharge=" << TrackCharge() << endl;
+	    cout << "TrackMass=" << TrackMass() << endl;
+	    cout << "IsTrackOut=" << IsTrackOut() << endl;
+	    cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
+	    cout << "IsTrackStop=" << IsTrackStop() << endl;
+	    cout << "IsTrackAlive=" << IsTrackAlive() << endl;
+	}
+    } else if((icode >= 100 && icode <= 105) ||
+	      (icode == 208) ||
+	      (icode == 210) ||
+	      (icode == 212) ||
+	      (icode >= 214 && icode <= 215) ||
+	      (icode == 217) ||
+	      (icode == 219) ||
+	      (icode == 221) ||
+	      (icode == 225) ||
+	      (icode == 300) ||
+	      (icode == 400)) {
 // usdraw
-    mreg = GetMreg();
-//    medium = GetMedium();
-    xsco = GetXsco();
-    ysco = GetYsco();
-    zsco = GetZsco();
-    cout << " icode=" << icode
-         << " mreg=" << mreg
-//	 << " medium=" << medium
-	 << " xsco=" << xsco
-	 << " ysco=" << ysco
-	 << " zsco=" << zsco << endl;
-    cout << "TrackPid=" << TrackPid() << endl;
-    cout << "NSecondaries=" << NSecondaries() << endl;
-    for (Int_t isec=0; isec< NSecondaries(); isec++) {
-      TFluka::GetSecondary(isec, particleId, position, momentum);
-      cout << "TLorentzVector positionX=" << position.X()
-           << "positionY=" << position.Y()
-           << "positionZ=" << position.Z()
-           << "timeT=" << position.T() << endl;
-      cout << "TLorentzVector momentumX=" << momentum.X()
-           << "momentumY=" << momentum.Y()
-           << "momentumZ=" << momentum.Z()
-           << "energyE=" << momentum.E() << endl;
-      cout << "TrackPid=" << particleId << endl;
-
+	  mreg = GetMreg();
+	  xsco = GetXsco();
+	  ysco = GetYsco();
+	  zsco = GetZsco();
+	  
+	  if (fVerbosityLevel >=3) {
+	      cout << " icode=" << icode
+		   << " mreg=" << mreg
+		   << " xsco=" << xsco
+		   << " ysco=" << ysco
+		   << " zsco=" << zsco << endl;
+	      cout << "TrackPid=" << TrackPid() << endl;
+	      cout << "NSecondaries=" << NSecondaries() << endl;
+	  }
+	  
+	  for (Int_t isec=0; isec< NSecondaries(); isec++) {
+	      TFluka::GetSecondary(isec, particleId, position, momentum);
+	      if (fVerbosityLevel >=3) {
+		  cout << "TLorentzVector positionX=" << position.X()
+		       << "positionY=" << position.Y()
+		       << "positionZ=" << position.Z()
+		       << "timeT=" << position.T() << endl;
+		  cout << "TLorentzVector momentumX=" << momentum.X()
+		       << "momentumY=" << momentum.Y()
+		       << "momentumZ=" << momentum.Z()
+		       << "energyE=" << momentum.E() << endl;
+		  cout << "TrackPid=" << particleId << endl;
+	      }
+	  }
+    } else if((icode == 19) ||
+	      (icode == 29) ||
+	      (icode == 39) ||
+	      (icode == 49) ||
+	      (icode == 59)) {
+	mreg = GetMreg();
+	newreg = GetNewreg();
+	xsco = GetXsco();
+	ysco = GetYsco();
+	zsco = GetZsco();
+	if (fVerbosityLevel >=3) {
+	    cout << " icode=" << icode
+		 << " mreg=" << mreg
+		 << " newreg=" << newreg
+		 << " xsco=" << xsco
+		 << " ysco=" << ysco
+		 << " zsco=" << zsco << endl;
+	}
     }
-  }
-
-  else if((icode == 19) ||
-          (icode == 29) ||
-          (icode == 39) ||
-          (icode == 49) ||
-          (icode == 59)) {
-    mreg = GetMreg();
-//    medium = GetMedium();
-    newreg = GetNewreg();
-    xsco = GetXsco();
-    ysco = GetYsco();
-    zsco = GetZsco();
-    cout << " icode=" << icode
-         << " mreg=" << mreg
-//	 << " medium=" << medium
-	 << " newreg=" << newreg
-	 << " xsco=" << xsco
-	 << " ysco=" << ysco
-	 << " zsco=" << zsco << endl;
-  }
-//
-// ====================================================================
-//
-
-  
-
 } // end of FutoTest
 

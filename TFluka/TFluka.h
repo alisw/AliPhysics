@@ -117,8 +117,7 @@ class TFluka : public TVirtualMC {
   // get methods
   virtual Int_t VolId(const Text_t* volName) const;
   virtual const char* VolName(Int_t id) const;
-  virtual Int_t NofVolumes() const
-    {printf("NofVolumes %d\n", fNVolumes); return fNVolumes;}
+  virtual Int_t NofVolumes() const {return fNVolumes;}
   virtual Int_t VolId2Mate(Int_t id) const;
   //
   // methods for physics management
