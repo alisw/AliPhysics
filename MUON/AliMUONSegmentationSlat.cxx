@@ -573,7 +573,7 @@ CreateSlatModule() const
 }
 
 
-void AliMUONSegmentationSlat::Draw(const char* opt) const
+void AliMUONSegmentationSlat::Draw(const char* opt)
 {
 // Draw method for event display
 // 

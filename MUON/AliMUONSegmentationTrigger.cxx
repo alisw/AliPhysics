@@ -167,7 +167,7 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
 
 }
 //------------------------------------------------------------------
-void  AliMUONSegmentationTrigger::Draw(const char * /*opt*/) const {}
+void  AliMUONSegmentationTrigger::Draw(const char * /*opt*/) {}
 //------------------------------------------------------------------
 Int_t AliMUONSegmentationTrigger::ModuleNumber(Int_t imodule){
 // returns module number (from 0 to 126) corresponding to module imodule

@@ -29,7 +29,7 @@ class AliMUONSegmentationTrigger : public AliMUONSegmentationV0
     virtual void     SetHit(Float_t xhit, Float_t yhit);
     virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit);
     // Draw the segmentation zones
-    virtual void Draw(const char *opt="") const ;
+    virtual void Draw(const char *opt="");
  
   protected:
     Int_t                fId;                    // Identifier

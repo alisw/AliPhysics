@@ -307,7 +307,7 @@ void  AliMUONSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) co
     y[0]=x[0];
 }
 
-void AliMUONSegmentationV0::Draw(const char *) const
+void AliMUONSegmentationV0::Draw(const char *)
 {
 // Draws the segmentation zones
 //

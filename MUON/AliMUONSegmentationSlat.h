@@ -119,7 +119,7 @@ class AliMUONSegmentationSlat : public AliSegmentation
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     // Draw the segmentation zones
-    virtual void Draw(const char *opt = "") const;
+    virtual void Draw(const char *opt = "");
 
     
     // Function for systematic corrections
