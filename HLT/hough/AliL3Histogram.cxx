@@ -177,6 +177,36 @@ void AliL3Histogram::AddBinContent(Int_t bin,Int_t weight)
   fContent[bin] += weight;
 }
 
+void AliL3Histogram::Add(AliL3Histogram *h1,Double_t weight)
+{
+  //Adding two histograms. Should be identical.
+  
+  if(!h1)
+    {
+      LOG(AliL3Log::kError,"AliL3Histogram::Add","Pointer")<<
+	"Attempting to add a non-existing histogram"<<ENDLOG;
+      return;
+    }
+  
+  if(h1->GetNbinsX()!=fNxbins || h1->GetNbinsY()!=fNybins)
+    {
+      LOG(AliL3Log::kError,"AliL3Histogram::Add","array")<<
+	"Mismatch in the number of bins "<<ENDLOG;
+      return;
+    }
+  if(h1->GetFirstXbin()!=fFirstXbin || h1->GetLastXbin()!=fLastXbin ||
+     h1->GetFirstYbin()!=fFirstYbin || h1->GetLastYbin()!=fLastYbin)
+    {
+      LOG(AliL3Log::kError,"AliL3Histogram::Add","array")<<
+	"Mismatch in the bin numbering "<<ENDLOG;
+      return;
+    }
+  
+  for(Int_t bin=0; bin<fNcells; bin++)
+    fContent[bin] += h1->GetBinContent(bin);
+  
+}
+
 Double_t AliL3Histogram::GetBinCenterX(Int_t xbin)
 {
   
@@ -201,7 +231,6 @@ void AliL3Histogram::Draw(Char_t *option)
     {
       fRootHisto->AddBinContent(bin,fContent[bin]);
     }
-  //printf("ncells %d %d\n",(hist->GetNbinsX()+2)*(hist->GetNbinsY()+2),fNcells);
   
   fRootHisto->Draw(option);
   
