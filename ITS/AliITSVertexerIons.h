@@ -32,13 +32,14 @@ class AliITSVertexerIons : public AliITSVertexer {
   virtual void FindVertices();
   virtual Double_t PhiFunc(Float_t p[]);
   virtual void PrintStatus() const;
-
+  Int_t GetNpThreshold() const {return fNpThreshold;}
+  void SetNpThreshold(Int_t t = 4000){fNpThreshold = t;}
 
  protected:
   AliITS *fITS;            //! pointer to the AliITS object
+  Int_t fNpThreshold;      // minimum number of rec points for vertexing
 
-
-  ClassDef(AliITSVertexerIons,1);
+  ClassDef(AliITSVertexerIons,2);
 };
 
 #endif
