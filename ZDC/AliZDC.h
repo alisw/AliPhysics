@@ -25,7 +25,6 @@ public:
   Int_t         DistancetoPrimitive(Int_t px, Int_t py);
   virtual Int_t IsVersion() const =0;
   virtual void  StepManager();
-  virtual void  ResetHits(); 
   virtual void  ResetDigits(); 
 
 protected:
