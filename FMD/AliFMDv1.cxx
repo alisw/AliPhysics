@@ -17,6 +17,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <stdlib.h>
+
 #include "AliRun.h"
 #include "AliFMDv1.h"
 #include "AliMC.h"
