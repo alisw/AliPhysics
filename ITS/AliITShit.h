@@ -1,11 +1,12 @@
-#ifndef ITSHIT_H
-#define ITSHIT_H
+#ifndef ALIITSHIT_H
+#define ALIITSHIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
 #include "AliDetector.h"
+#include "TParticle.h"
 #include "AliHit.h" 
 #include "AliDigit.h"
 #include "AliITSgeom.h"
@@ -90,73 +91,6 @@ class AliITShit : public AliHit {
 // are those determined by the Monte Carlo.
 //
 //
-// Member functions:
-//
-// AliITShit()
-//     The default creator of the AliITShit class.
-//
-// AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
-//     The creator of the AliITShit class. The variables shunt and
-// track are passed to the creator of the AliHit class. See the AliHit
-// class for a full description. the integer array *vol contains, in order,
-// fLayer = vol[0], fDet = vol[1], fLadder = vol[2], fStatus = vol[3].
-// The array *hits contains, in order, fX = hits[0], fY = hits[1], 
-// fZ = hits[2], fPx = hits[3], fPy = hits[4], fPz = hits[5],
-// fDestep = hits[6], and fTof = hits[7].
-//
-// ~AliITShit()
-//     The default destructor of the AliITShit class.
-//
-// int GetTrack()
-//     See AliHit for a full description. Returns the track number fTrack
-// for this hit.
-//
-// SetTrack(int track)
-//     See AliHit for a full description. Sets the track number fTrack
-// for this hit.
-//
-// Int_t GetTrackStatus()
-//     Returns the value of the track status flag fStatus. This flag
-// indicates the track status at the time of creating this hit. It is
-// made up of the following 8 status bits from highest order to lowest
-// order bits
-// 0           :  IsTrackAlive():    IsTrackStop():IsTrackDisappeared():
-// IsTrackOut():IsTrackExiting():IsTrackEntering():IsTrackInside()     .
-// See AliMC for a description of these functions. If the function is
-// true then the bit is set to one, otherwise it is zero.
-//
-// Int_t GetLayer()
-//     Returns the layer number, fLayer, for this hit.
-//
-// Int_t GetLadder()
-//     Returns the ladder number, fLadder, for this hit.
-//
-// Int_t GetDetector()
-//     Returns the detector number, fDet, for this hit.
-//
-// GetDetectorID(Int_t &layer, Int_t &ladder, Int_t &detector)
-//     Returns the layer, ladder, and detector numbers, fLayer fLadder fDet,
-// in one call.
-//
-// Float_t GetIonization()
-//     Returns the energy lost, fDestep, by the particle creating this hit,
-// in the units defined by the Monte Carlo.
-//
-// GetPoositionG(Float_t &x, Float_t &y, Float_t &z)
-//     Returns the global position, fX fY fZ, of this hit, in the units
-// define by the Monte Carlo.
-//
-// Float_t GetTOF()
-//     Returns the time of flight, fTof, of this hit, in the units defined
-// by the Monte Carlo.
-//
-// GetPositionG(Float_t &x, Float_t &y, Float_t &z, Float_t &tof)
-//     Returns the global position and time of flight, fX fY fZ fTof, of
-// this hit, in the units define by the Monte Carlo.
-//
-// GetPositioonP(Float_t &px, Float_t &py, Float_t &pz)
-//     Returns the global momentum, fPx fPy fPz, of the particle that made
-// this hit, in the units define by the Monte Carlo.
 ////////////////////////////////////////////////////////////////////////
     // public;       // defined in AliHit
     // Int_t fTrack  // defined in AliHit
@@ -165,7 +99,7 @@ class AliITShit : public AliHit {
     // Float_t fZ;   // defined in AliHit
 
  public:
-//private:
+//protected:
     Int_t     fStatus; // Track Status
     Int_t     fLayer;  // Layer number
     Int_t     fLadder; // Ladder number
@@ -190,27 +124,84 @@ class AliITShit : public AliHit {
     virtual void  GetDetectorID(Int_t &layer,Int_t &ladder,
 	 			       Int_t &detector)
                      const {layer=fLayer;ladder=fLadder;detector=fDet;return;};
+    virtual Int_t GetModule();
     virtual Float_t GetIonization() const {return fDestep;}
     //
     virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z)
                                     const {x=fX;y=fY;z=fZ;return;};
+    virtual void GetPositionG(Double_t &x,Double_t &y,Double_t &z)
+                                    const {x=fX;y=fY;z=fZ;return;};
     virtual Float_t GetTOF() const {return fTof;}
+    // Returns particle 3 position at this hit in global coordinates.
     virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z,
 				    Float_t &tof)
                                     const {x=fX;y=fY;z=fZ,tof=fTof;return;};
+    virtual void GetPositionG(Double_t &x,Double_t &y,Double_t &z,
+				    Double_t &tof)
+                                    const {x=fX;y=fY;z=fZ,tof=fTof;return;};
+    // Returns particle 3 position and the time of flight at this hit
+    // in global coordinates.
     virtual Float_t GetXG()const {return fX;}
+    // Returns particle X position at this hit in global coordinates.
     virtual Float_t GetYG()const {return fY;}
+    // Returns particle Y position at this hit in global coordinates.
     virtual Float_t GetZG()const {return fZ;}
+    // Returns particle Z position at this hit in global coordinates.
     virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z);
+    // Returns particle 3 position at this hit in local coordinates.
     virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z,
 				     Float_t &tof);
+    virtual void GetPositionL(Double_t &x,Double_t &y,Double_t &z){
+	Float_t xf,yf,zf;GetPositionL(xf,yf,zf);x=xf,y=yf;z=zf;}
+    // Returns particle 3 position at this hit in local coordinates.
+    virtual void GetPositionL(Double_t &x,Double_t &y,Double_t &z,
+				     Double_t &tof){
+	Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;tof=tf;}
+    // Returns particle 3 position and the time of flight at this hit
+    // in local coordinates.
     virtual Float_t GetXL();
+    // Returns particle X position at this hit in local coordinates.
     virtual Float_t GetYL();
+    // Returns particle Y position at this hit in local coordinates.
     virtual Float_t GetZL();
+    // Returns particle Z position at this hit in local coordinates.
     // Get Monti Carlo information about hit.
     virtual void GetMomentumG(Float_t &px,Float_t &py,Float_t &pz)
                                     const {px=fPx;py=fPy;pz=fPz;return;};
+    virtual void GetMomentumG(Double_t &px,Double_t &py,Double_t &pz)
+                                    const {px=fPx;py=fPy;pz=fPz;return;};
+    // Returns particle 3 momentum at this hit in global coordinates.
+    virtual Float_t GetPXG()const {return fPx;}
+    // Returns particle X momentum at this hit in global coordinates.
+    virtual Float_t GetPYG()const {return fPy;}
+    // Returns particle Y momentum at this hit in global coordinates.
+    virtual Float_t GetPZG()const {return fPz;}
+    // Returns particle Z momentum at this hit in global coordinates.
     virtual void GetMomentumL(Float_t &px,Float_t &py,Float_t &pz);
+    virtual void GetMomentumL(Double_t &px,Double_t &py,Double_t &pz){
+	Float_t x,y,z;GetMomentumL(x,y,z);px=x,py=y,pz=z;}
+    // Returns particle 3 momentum at this hit in local coordinates.
+    virtual Float_t GetPXL();
+    // Returns particle X momentum at this hit in local coordinates.
+    virtual Float_t GetPYL();
+    // Returns particle Y momentum at this hit in local coordinates.
+    virtual Float_t GetPZL();
+    // Returns particle Z momentum at this hit in local coordinates.
+    virtual TParticle * GetParticle(); // Returns pointer to this particle.
+    Bool_t StatusInside() {if((fStatus&0x0001)==0) return kFALSE;
+                                              else return kTRUE;}
+    Bool_t StatusEntering() {if((fStatus&0x0002)==0) return kFALSE;
+                                                else return kTRUE;}
+    Bool_t StatusExiting() {if((fStatus&0x0004)==0) return kFALSE;
+                                               else return kTRUE;}
+    Bool_t StatusOut() {if((fStatus&0x0008)==0) return kFALSE;
+                                           else return kTRUE;}
+    Bool_t StatusDisappeared() {if((fStatus&0x00010)==0) return kFALSE;
+                                                    else return kTRUE;}
+    Bool_t StatusStop() {if((fStatus&0x00020)==0) return kFALSE;
+                                             else return kTRUE;}
+    Bool_t StatusAlive() {if((fStatus&0x00030)==0) return kFALSE;
+                                              else return kTRUE;}
 
     ClassDef(AliITShit,1)  //Hits object for set:ITS
 };
