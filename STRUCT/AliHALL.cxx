@@ -249,7 +249,7 @@ void AliHALL::CreateGeometry()
   //     pillars for working platform 
   
   pbox[0] = 40.;
-  pbox[1] = 97.;
+  pbox[1] = 96.;
   pbox[2] = 550.;
   gMC->Gsvolu("HPIL", "BOX ", idtmed[1956], pbox, 3);
   gMC->Gspos("HPIL", 1, "ALIC", 165.,-706+pbox[1] , 1350., 0, "ONLY");
