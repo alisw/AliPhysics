@@ -59,18 +59,12 @@ class AliRICHChamber : public TObject
     void GenerateTresholds();
 
     
-//Setting chamber specific rotation matrices
-    
-    void SetChamberTransform(Float_t Trans1,Float_t Trans2,Float_t Trans3,TRotMatrix *Matrix)
-	
-	{
-	    fChamberMatrix=Matrix;
-	    fChamberTrans[0]=Trans1;
-	    fChamberTrans[1]=Trans2;
-	    fChamberTrans[2]=Trans3;
-	}
-    
-    TRotMatrix * GetRotMatrix() {return fChamberMatrix;}
+// getter&setter for the chamber position and attitude    
+   void         SetChamberTransform(Float_t x,Float_t y,Float_t z,TRotMatrix *pRotMatrix) {fX=x; fY=y; fZ=z; fpRotMatrix=pRotMatrix;}
+   TRotMatrix * GetRotMatrix()                                                    const   {return fpRotMatrix;}
+   Float_t      GetX()                                                            const   {return fX;}
+   Float_t      GetY()                                                            const   {return fY;}
+   Float_t      GetZ()                                                            const   {return fZ;}    
     
 //Configure geometry model
     void    GeometryModel(AliRICHGeometry* thisGeometry){
@@ -239,8 +233,8 @@ class AliRICHChamber : public TObject
 	fGeometry->SetFreonThickness(thickness);
       }
 
-    AliRICHChamber& operator=(const AliRICHChamber& rhs);
-    
+   AliRICHChamber& operator=(const AliRICHChamber& rhs);
+   
 //  
 // Cluster formation method
     void   DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit, Int_t&x, Float_t newclust[6][500], ResponseType res);
@@ -251,8 +245,8 @@ class AliRICHChamber : public TObject
     Int_t   fGid;                  // Id tag 
     Float_t fzPos;                 // z-position of this chamber
 
-    TRotMatrix *fChamberMatrix;          //Rotation matrices for each chamber
-    Float_t fChamberTrans[3];            //Translaction vectors for each chamber
+    TRotMatrix *fpRotMatrix;       // Rotation matrix of the chamber with respect to MRS 
+    Float_t fX,fY,fZ;              // Position of the center of the chamber in MRS (cm)
 
     AliSegmentation               *fSegmentation;          //Segmentation model for each chamber
     AliRICHResponse               *fResponse;              //Response model for each chamber
@@ -261,7 +255,3 @@ class AliRICHChamber : public TObject
     ClassDef(AliRICHChamber,1)
 };
 #endif
-
-
-
-
