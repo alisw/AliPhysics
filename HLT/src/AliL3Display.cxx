@@ -68,10 +68,10 @@ void AliL3Display::Setup(Char_t *trackfile,Char_t *path)
   //Read in the hit and track information from produced files.
   
   Char_t fname[256];
-  AliL3FileHandler *clusterfile[36][5];
+  AliL3FileHandler *clusterfile[36][6];
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
-      for(Int_t p=0; p<5; p++)
+      for(Int_t p=0; p<6; p++)
 	{
 	  clusterfile[s][p] = new AliL3FileHandler();
 	  sprintf(fname,"%spoints_%d_%d.raw",path,s,p);
@@ -211,7 +211,7 @@ void AliL3Display::DisplayClusters()
   
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
-      for(Int_t p=0;p<5;p++)
+      for(Int_t p=0;p<6;p++)
 	{
 	  AliL3SpacePointData *points = fClusters[s][p];
 	  if(!points) continue;
@@ -382,7 +382,7 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   Float_t xyz_cross[3];
   */
   
-  for(Int_t p=0;p<5;p++)
+  for(Int_t p=0;p<6;p++)
     {
       AliL3SpacePointData *points = fClusters[slice][p];
       if(!points) continue;
