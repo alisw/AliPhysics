@@ -470,8 +470,6 @@ class AliEMCALGetter : public TObject {
 
   Int_t          fDebug ;             // Debug level
 
-  AliRun *       fAlice ;             //! needed to read TreeK if in an other file than fHeaderFile
-
   Int_t          fNPrimaries ;        //! # of primaries 
 
   TObjArray *    fPrimaries ;         //! list of lists of primaries-for the case of mixing

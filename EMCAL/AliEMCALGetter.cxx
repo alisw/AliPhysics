@@ -188,10 +188,6 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
 
   fDebug  = 0 ; 
 
-  fAlice  = 0 ; 
-
-
-
   fToSplit    = toSplit ;
 
   fHeaderFile = headerFile ; 
@@ -353,10 +349,6 @@ void AliEMCALGetter::CloseFile()
   delete gAlice ;  
 
   gAlice = 0 ; 
-
-  delete fAlice ; 
-
-  fAlice = 0 ; 
 
 }
 
@@ -2970,17 +2962,12 @@ TTree * AliEMCALGetter::TreeK(TString filename)
 
   file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
 
-  if (file && (filename != fHeaderFile) ) {  // file already open 
+  if (!file)  {  // file not yet open 
 
-    file->Close() ; 
-
-    delete fAlice ; 
+    file = TFile::Open(filename.Data(), "read") ; 
 
   }    
 
-  file = TFile::Open(filename.Data(), "read") ; 
-
-  fAlice = static_cast<AliRun *>(file->Get("gAlice")) ; 
 
   TString treeName("TreeK") ; 
 
@@ -3160,14 +3147,7 @@ const TParticle * AliEMCALGetter::Primary(Int_t index) const
 
   TParticle *  p = 0 ;
 
-  if (fAlice) 
-
-    p = fAlice->Particle(index) ; 
-
-  else 
-
-    p = gAlice->Particle(index) ; 
-
+  p = gAlice->Particle(index) ; 
   
 
   return p ; 
@@ -4228,7 +4208,6 @@ void AliEMCALGetter::ReadPrimaries()
 
     fNPrimaries = gAlice->GetNtrack() ; 
 
-    fAlice = 0 ; 
 
 
 
@@ -4318,7 +4297,7 @@ void AliEMCALGetter::Event(const Int_t event, const char* opt)
 
  
 
-  if( strstr(opt,"P") || (strcmp(opt,"")==0) )
+  if( strstr(opt,"P") )
 
     ReadPrimaries() ;
 

@@ -91,7 +91,6 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle, co
 
   fFailed = kFALSE ;   
   fDebug  = 0 ; 
-  fAlice  = 0 ; 
 
   fToSplit    = toSplit ;
   fHeaderFile = headerFile ; 
@@ -174,8 +173,6 @@ void AliPHOSGetter::CloseFile()
 {
   delete gAlice ;  
   gAlice = 0 ; 
-  delete fAlice ; 
-  fAlice = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -1479,12 +1476,9 @@ TTree * AliPHOSGetter::TreeK(TString filename)
 
   TFile * file = 0 ; 
   file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-  if (file && (filename != fHeaderFile) ) {  // file already open 
-    file->Close() ; 
-    delete fAlice ; 
+  if (!file) {  // file not yet open 
+    file = TFile::Open(filename.Data(), "read") ;    
   }    
-  file = TFile::Open(filename.Data(), "read") ; 
-  fAlice = static_cast<AliRun *>(file->Get("gAlice")) ; 
   TString treeName("TreeK") ; 
   treeName += EventNumber()  ; 
   TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
@@ -1574,10 +1568,8 @@ const TParticle * AliPHOSGetter::Primary(Int_t index) const
   if(index < 0) 
     return 0 ;
   TParticle *  p = 0 ;
-  if (fAlice) 
-    p = fAlice->Particle(index) ; 
-  else 
-    p = gAlice->Particle(index) ; 
+
+  p = gAlice->Particle(index) ; 
   
   return p ; 
     
@@ -2107,7 +2099,6 @@ void AliPHOSGetter::ReadPrimaries()
     if (fDebug) 
       cout << "INFO: AliPHOSGetter::ReadPrimaries -> TreeK found in " << fHeaderFile.Data() << endl ; 
     fNPrimaries = gAlice->GetNtrack() ; 
-    fAlice = 0 ; 
   
   } else { // treeK not found in header file
     
@@ -2152,7 +2143,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
  
-  if( strstr(opt,"P") || (strcmp(opt,"")==0) )
+  if( strstr(opt,"P"))
     ReadPrimaries() ;
   
 }
