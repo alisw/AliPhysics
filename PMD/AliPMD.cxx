@@ -267,7 +267,7 @@ void AliPMD::SetTreeAddress()
   // Set branch address for the TreeR
     char branchname[30];
     
-    if (fLoader->TreeH())
+    if (fLoader->TreeH() && fHits==0x0)
       fHits   = new TClonesArray("AliPMDhit",  405);
       
     AliDetector::SetTreeAddress();
