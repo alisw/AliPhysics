@@ -11,14 +11,13 @@
 #include "AliDetector.h"
 #include "AliHit.h" 
 #include "AliDigit.h" 
-#include <TMatrix.h>
-#include <TTree.h>
-#include <TClonesArray.h>
+
+
+class TMatrix;
+class TTree;
 
 class TFile;
-
 class AliTPCParam;
-
 class AliTPCDigitsArray;
 class AliTPCClustersArray;
 
@@ -71,9 +70,6 @@ public:
 			   Int_t s7,Int_t s8,Int_t s9,Int_t s10, Int_t s11, Int_t s12);
   virtual void  SetSens(Int_t sens);
 
-  //MK changes
-
-  //MK changes
 
   virtual void  SetSide(Float_t side);
   virtual void  SetGasMixt(Int_t nc,Int_t c1,Int_t c2,Int_t c3,Float_t p1,

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/10/02 21:28:18  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.22  2000/07/10 20:57:39  hristov
 Update of TPC code and macros by M.Kowalski
 
@@ -105,7 +108,7 @@ Introduction of the Copyright and cvs Log
 #include "AliSimDigits.h"
 
 #include "AliTPCDigitsArray.h"
-#include "AliCluster.h"
+#include "AliComplexCluster.h"
 #include "AliClusters.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCClustersArray.h"
@@ -115,6 +118,7 @@ Introduction of the Copyright and cvs Log
 #include "AliTPCtracker.h"
 
 #include <TInterpreter.h>
+#include <TTree.h>
 
 ClassImp(AliTPC) 
 
@@ -982,7 +986,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 	  Float_t bz=detbz/det; //z angle
 	  sumy/=Float_t(currentIndex);
 	  sumz/=Float_t(currentIndex);
-	  AliCluster cl;
+	  AliComplexCluster cl;
 	  cl.fX=z;
 	  cl.fY=y;
 	  cl.fQ=sumq;
@@ -1685,6 +1689,7 @@ void AliTPC::SetSens(Int_t sens)
 
   fSens = sens;
 }
+
  
 void AliTPC::SetSide(Float_t side=0.)
 {
