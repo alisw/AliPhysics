@@ -62,7 +62,7 @@ AliGDCInterruptHandler::AliGDCInterruptHandler() :
 
 
 //_____________________________________________________________________________
-int main(int argc, char** argv)
+int main(int /*argc*/, char** /*argv*/)
 {
 #ifdef DATE_SYS
   // set ROOT in batch mode
