@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 */
 
 //======================================================================
@@ -30,10 +33,11 @@ $Log$
 //  param represents the particle to be simulated : 
 //  Pion, Kaon, Eta, Omega, Etaprime, Phi or Baryon    
 //  Pt distributions are calculated from the transverse mass scaling 
-//  with Pions, using the PtScal fonction taken from AliGenMUONlib 
+//  with Pions, using the PtScal function taken from AliGenMUONlib 
 //  version aliroot 3.01
 //
-//     Gines MARTINEZ GPS @ SUBATECH,  Nantes , France
+//     Gines MARTINEZ. Laurent APHECETCHE and Yves SCHUTZ
+//      GPS @ SUBATECH,  Nantes , France  (October 1999)
 //     http://www-subatech.in2p3.fr/~photons/subatech
 //     martinez@subatech.in2p3.fr
 //======================================================================
@@ -53,7 +57,7 @@ ClassImp(AliGenPHOSlib)
  Double_t AliGenPHOSlib::PtPion(Double_t *px, Double_t *)
 {
 //     Pion transverse momentum distribtuion taken 
-//     from AliGenMUONlib class, version 3.01 of alirrot
+//     from AliGenMUONlib class, version 3.01 of aliroot
 //     PT-PARAMETERIZATION CDF, PRL 61(88) 1819
 //     POWER LAW FOR PT > 500 MEV
 //     MT SCALING BELOW (T=160 MEV)
@@ -184,9 +188,9 @@ ClassImp(AliGenPHOSlib)
     else
     {  
       if (random[0] < 0.5) {       
-        return  311;   // K^0
+        return  130;   // K^0 short
       } else {  
-        return -311;   // K^0 bar
+        return  310;   // K^0 long
       }
     }
 }
