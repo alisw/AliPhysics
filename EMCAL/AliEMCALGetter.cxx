@@ -76,6 +76,7 @@
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALTrackSegmentMakerv1.h"
 #include "AliEMCALTrackSegment.h"
+#include "AliEMCALPIDv1.h" 
 #include "AliEMCALGeometry.h"
 
 ClassImp(AliEMCALGetter)
@@ -1387,30 +1388,30 @@ const Bool_t AliEMCALGetter::PostRecParticles(const char * name) const
   
   // the hierarchy is //Folders/Run/Event/RecData/EMCAL/RecParticles/name
 
-  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL")) ; 
+  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL")) ; 
   
-  if ( !phosFolder ) {
+  if ( !emcalFolder ) {
     if (fDebug) {
       Warning("PostRecParticles", "-> Folder //%s/EMCAL/ not found!", fRecoFolder->GetName()) ;
       Info("PostRecParticles", "-> Adding Folder //%s/EMCAL/", fRecoFolder->GetName()) ;
     }
-    phosFolder = fRecoFolder->AddFolder("EMCAL", "Reconstructed data from EMCAL") ;  
+    emcalFolder = fRecoFolder->AddFolder("EMCAL", "Reconstructed data from EMCAL") ;  
   }    
 
- TFolder * phosRPaFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("RecParticles")) ;
-  if ( !phosRPaFolder ) {
+ TFolder * emcalRPaFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("RecParticles")) ;
+  if ( !emcalRPaFolder ) {
     if (fDebug) {
       Warning("PostRecParticles", "-> Folder //%s/EMCAL/RecParticles/ not found!", fRecoFolder->GetName()) ;
       Info("PostRecParticles", "-> Adding Folder //%s/EMCAL/RecParticles/", fRecoFolder->GetName()) ;
     }
-    phosRPaFolder = phosFolder->AddFolder("RecParticles", "RecParticles from EMCAL") ;  
+    emcalRPaFolder = emcalFolder->AddFolder("RecParticles", "RecParticles from EMCAL") ;  
   } 
 
-  TObject * rps = phosRPaFolder->FindObject( name )  ;
+  TObject * rps = emcalRPaFolder->FindObject( name )  ;
   if ( !rps ) {
     TClonesArray * rp = new TClonesArray("AliEMCALRecParticle",100) ;
     rp->SetName(name) ;    
-    phosRPaFolder->Add(rp) ;  
+    emcalRPaFolder->Add(rp) ;  
   }
   return kTRUE; 
 } 
@@ -1425,17 +1426,127 @@ TObject** AliEMCALGetter::RecParticlesRef(const char * name) const
     Fatal("RecParticlesRef", "Folder//%s not found !", fRecoFolder->GetName() ) ; 
   }    
 
-  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/RecParticles")) ; 
-  if ( !phosFolder ) {
+  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/RecParticles")) ; 
+  if ( !emcalFolder ) {
     Fatal("RecParticlesRef", "Folder //%s/EMCAL/RecParticles/ not found !", fRecoFolder->GetName() ) ;
   }    
 
-  TObject * tss =  phosFolder->FindObject(name  ) ;
+  TObject * tss =  emcalFolder->FindObject(name  ) ;
   if (!tss) {
     Fatal("RecParticlesRef", "object %s not found !", name) ; 
   }
-  return phosFolder->GetListOfFolders()->GetObjectRef(tss) ;
+  return emcalFolder->GetListOfFolders()->GetObjectRef(tss) ;
 }
+
+//____________________________________________________________________________ 
+const Bool_t AliEMCALGetter::PostPID(AliEMCALPID * pid) const 
+{      // ------------AliEMCAL PID -----------------------------
+
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    Error("PostPID", "Task //%s/Reconstructioner not found !", fTasksFolder) ;
+    return kFALSE ;
+  }        
+  
+  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
+  if ( !emcal )  {
+    if (fDebug) {
+      Warning("PostPID", "//%s/Reconstructioner/EMCAL not found!", fTasksFolder) ; 
+      Info("PostPID", "Adding //%s/Reconstructioner/EMCAL", fTasksFolder) ;
+    }
+    emcal = new TTask("EMCAL", "") ; 
+    tasks->Add(emcal) ; 
+  } 
+
+  AliEMCALPID * emcalpid = dynamic_cast<AliEMCALPID*>(emcal->GetListOfTasks()->FindObject(pid->GetName())) ; 
+  if (emcalpid) { 
+    if (fDebug)
+      Info("PostPID", "-> Task %s qlready exists", pid->GetName()) ; 
+    emcal->GetListOfTasks()->Remove(emcalpid) ;
+  }
+  
+  emcal->Add(pid) ;      
+  return kTRUE; 
+} 
+
+//____________________________________________________________________________ 
+const Bool_t AliEMCALGetter::PostPID(const char * name) const 
+{     
+  // the hierarchy is //Folders/Tasks/Reconstructioner/EMCAL/sdigitsname
+  
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    Error("PostPID", "Task //%s/Reconstructioner not found !", fTasksFolder->GetName() ) ;
+    return kFALSE ;
+  }        
+  
+  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
+  if ( !emcal )  {
+    if (fDebug) {
+      Warning("PostPID", "//%s/Reconstructioner/EMCAL not found!", fTasksFolder->GetName()) ; 
+      Info("PostPID", "Adding //%s/Reconstructioner/EMCAL", fTasksFolder->GetName()) ;
+    }
+    emcal = new TTask("EMCAL", "") ; 
+    tasks->Add(emcal) ; 
+  } 
+
+  TList * l = emcal->GetListOfTasks() ;   
+  TIter it(l) ;
+  TString pidname(name) ;
+  pidname+=":pid" ;
+  TTask * task ;
+  while((task = static_cast<TTask *>(it.Next()) )){
+    TString taskname(task->GetName()) ;
+    if(taskname.BeginsWith(pidname))
+      return kTRUE ;
+  }
+ 
+  AliEMCALPIDv1 * emcalpid = new AliEMCALPIDv1() ;
+  pidname+="-v1" ;
+  emcalpid->SetName(pidname) ; 
+  emcalpid->SetTitle(fHeaderFile) ;
+  emcal->Add(emcalpid) ;      
+  
+  return kTRUE; 
+} 
+
+//____________________________________________________________________________ 
+TObject** AliEMCALGetter::PIDRef(const char * name) const 
+{ //------------PID ------------------------------
+
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    Fatal("PIDRef", "Task //%s/Reconstructioner not found !", fTasksFolder->GetName() ) ;
+  }        
+        
+  TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
+  if ( !emcal )  {
+    Fatal("PIDRef", "//%s/Reconstructioner/EMCAL not found !", fTasksFolder->GetName() ) ; 
+  }   
+  
+  TList * l = emcal->GetListOfTasks() ; 
+  TIter it(l) ;
+  TTask * task ;
+  TTask * pid = 0 ;
+  TString pidname(name) ;
+  pidname+=":pid" ;
+  while((task = static_cast<TTask *>(it.Next()) )){
+    TString taskname(task->GetName()) ;
+    if(taskname.BeginsWith(pidname)){
+      pid = task ;
+      break ;
+    }
+  }
+  
+  if(!pid) {
+    Fatal("PIDRef", "Task //%s/Reconstructioner/EMCAL/PID/%s not found !", fTasksFolder->GetName(), name) ;
+  }
+  
+    return l->GetObjectRef(pid) ;
+} 
 
 //____________________________________________________________________________ 
 TTree * AliEMCALGetter::TreeK(TString filename)  
