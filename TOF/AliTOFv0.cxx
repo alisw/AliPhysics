@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/10/15 15:35:20  fca
+New version for frame1099 with and without holes
+
 Revision 1.9  1999/09/29 09:24:33  fca
 Introduction of the Copyright and cvs Log
 
@@ -254,14 +257,6 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   gMC->Gsdvn("FLZ","FCFC", nz, 3); 
   gMC->Gsdvn("FLX","FLZ" , nx, 1); 
 
-  // MRPC pixel itself 
-//  par[0] = -1;
-//  par[1] = -1; 
-//  par[2] = -1;
-//  gMC->Gsvolu("FPAD", "BOX ", idtmed[513], par, 3);
-//  gMC->Gspos("FPAD", 0, "FLX", 0., 0., 0., 0, "ONLY");
-
-
 ////  Positioning the Strips  (FSTR) in the FLT volumes  /////
 
  
@@ -278,14 +273,14 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
  
   do{
      ang = atan(zcoor/t);
-     ang = ang*180/3.141592654;
-     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 0.);
-     AliMatrix (idrotm[nrot+1], 90., 180., 90.+ang,90.,ang, 0);
+     ang = ang*kRaddeg;
+     AliMatrix (idrotm[nrot],  90.,  0.,90.-ang,90.,-ang,90.);
+     AliMatrix (idrotm[nrot+1],90.,180.,90.+ang,90., ang,90.);
      ycoor = -14.5+ Space; //2 cm over front plate
      ycoor += (1-(UpDown+1)/2)*Gap;
      gMC->Gspos("FSTR",j  ,"FLT3",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
      gMC->Gspos("FSTR",j+1,"FLT3",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-     ang  = ang*3.141592654/180;
+     ang  = ang/kRaddeg;
      
      zcoor=zcoor-(zSenStrip/2)/TMath::Cos(ang)+UpDown*Gap*TMath::Tan(ang)-(zSenStrip/2)/TMath::Cos(ang);
      UpDown*= -1; // Alternate strips 
@@ -306,13 +301,13 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
 
   do {
      ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
-     ang = ang*180/3.141592654;
-     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 0.);
+     ang = ang*kRaddeg;
+     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang,270.);
      ycoor = -29./2.+ Space ; //2 cm over front plate
      ycoor += (1-(UpDown+1)/2)*Gap;
      zcoor = zpos+(zFLT3/2.+7+zFLT2/2); // Moves to the system of the centre of the modulus FLT2
      gMC->Gspos("FSTR",i, "FLT2", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-     ang  = ang*3.141592654/180;
+     ang  = ang/kRaddeg;
      zpos = zpos - (zSenStrip/2)/TMath::Cos(ang)+UpDown*Gap*TMath::Tan(ang)-(zSenStrip/2)/TMath::Cos(ang);
      last = StripWidth*TMath::Cos(ang)/2;
      UpDown*=-1;
@@ -330,12 +325,12 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
 
  do {
      ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
-     ang = ang*180/3.141592654;
-     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 0.);
+     ang = ang*kRaddeg;
+     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang,270.);
      i++;
      zcoor = zpos+(zFLT1/2+zFLT2+zFLT3/2+7.*2.);
      gMC->Gspos("FSTR",i, "FLT1", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-     ang  = ang *3.141592654/180;
+     ang  = ang /kRaddeg;
      zpos = zpos - zSenStrip/TMath::Cos(ang);
      last = StripWidth*TMath::Cos(ang)/2.;
   }  while (zpos>-t+7.+last);
