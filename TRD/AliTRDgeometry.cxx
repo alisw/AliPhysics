@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/31 17:45:35  cblume
+New chamber geometry
+
 Revision 1.19  2002/10/14 14:57:43  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -201,7 +204,7 @@ ClassImp(AliTRDgeometry)
 
   // Difference of outer chamber width and pad plane width
   const Float_t AliTRDgeometry::fgkCpadW   =   1.0;
-  const Float_t AliTRDgeometry::fgkRpadW   =   1.5;
+  const Float_t AliTRDgeometry::fgkRpadW   =   1.0;
 
   //
   // Thickness of the the material layers
