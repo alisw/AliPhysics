@@ -53,7 +53,16 @@ AliLog::AliLog() :
   TObject(),
   fGlobalLogLevel(kInfo),
   fModuleDebugLevels(),
-  fClassDebugLevels()
+  fClassDebugLevels(),
+  fPrintRepetitions(kTRUE),
+  fRepetitions(0),
+  fLastType(0),
+  fLastMessage(),
+  fLastModule(),
+  fLastClassName(),
+  fLastFunction(),
+  fLastFile(),
+  fLastLine(0)
 {
 // default constructor: set default values
 
@@ -69,11 +78,11 @@ AliLog::AliLog() :
     fPrintLocation[iType] = (iType == kDebug);  
   }
 
-  SetHandleRootMessages(kTRUE);
-
   // replace the previous instance by this one
   if (fgInstance) delete fgInstance;
   fgInstance = this;
+
+  SetHandleRootMessages(kTRUE);
 
   // read the .rootrc settings
   ReadEnvSettings();
@@ -83,6 +92,8 @@ AliLog::AliLog() :
 AliLog::~AliLog()
 {
 // destructor: clean up and reset instance pointer
+
+  if (fRepetitions > 0) PrintRepetitions();
 
   for (Int_t i = 0; i < fModuleDebugLevels.GetEntriesFast(); i++) {
     if (fModuleDebugLevels[i]) fModuleDebugLevels[i]->Delete();
@@ -262,6 +273,14 @@ void AliLog::ReadEnvSettings()
                          typeNames[iType]));
       }
     }
+  }
+
+  // repetition of messages
+  if (gEnv->Defined("AliRoot.AliLog.PrintRepetitions")) {
+    Bool_t on = gEnv->GetValue("AliRoot.AliLog.PrintRepetitions", kTRUE);
+    fPrintRepetitions = on;
+    AliDebug(3, Form("printing of message repetitions %sabled",
+                     ((on) ? "en" : "dis")));
   }
 }
 
@@ -555,6 +574,7 @@ void AliLog::SetHandleRootMessages(Bool_t on)
 {
 // enable or disable the handling of messages form root
 
+  if (!fgInstance) new AliLog;
   if (on) {
     SetErrorHandler(RootErrorHandler);
   } else {
@@ -652,6 +672,18 @@ void AliLog::SetPrintLocation(EType type, Bool_t on)
 
 
 //_____________________________________________________________________________
+void AliLog::SetPrintRepetitions(Bool_t on)
+{
+// switch on or off the printing of the number of repetitions of a message
+// instead of repeating the same message
+
+  if (!fgInstance) new AliLog;
+  if (!on && (fgInstance->fRepetitions > 0)) fgInstance->PrintRepetitions();
+  fgInstance->fPrintRepetitions = on;
+}
+
+
+//_____________________________________________________________________________
 void AliLog::Write(const char* name, Int_t option)
 {
 // write the log object with the given name and option to the current file
@@ -690,6 +722,37 @@ void AliLog::PrintMessage(UInt_t type, const char* message,
 {
 // print the given message
 
+  // don't print the message if it is repeated
+  if (fPrintRepetitions &&
+      (fLastType == type) && 
+      (message && (fLastMessage.CompareTo(message) == 0)) &&
+      ((module && (fLastModule.CompareTo(module) == 0)) ||
+       (!module && fLastModule.IsNull())) &&
+      ((className && (fLastClassName.CompareTo(className) == 0)) ||
+       (!className && fLastClassName.IsNull())) &&
+      ((function && (fLastFunction.CompareTo(function) == 0)) ||
+       (!function && fLastFunction.IsNull()))&&
+      ((file && (fLastFile.CompareTo(file) == 0)) ||
+       (!file && fLastFile.IsNull())) &&
+      (fLastLine == line)) {
+    fRepetitions++;
+    return;
+  }
+
+  // print number of repetitions
+  if (fRepetitions > 0) PrintRepetitions();
+
+  // remember this message
+  fRepetitions = 0;
+  fLastType = type;
+  fLastMessage = message;
+  fLastModule = module;
+  fLastClassName = className;
+  fLastFunction = function;
+  fLastFile = file;
+  fLastLine = line;
+
+  // print the message
   FILE* stream = GetOutputStream(type);
   static const char* typeNames[kMaxType] = 
     {"Fatal", "Error", "Warning", "Info", "Debug"};
@@ -717,6 +780,15 @@ void AliLog::PrintMessage(UInt_t type, const char* message,
   } else {
     fprintf(stream, ": ");
   }
+}
+
+//_____________________________________________________________________________
+void AliLog::PrintRepetitions()
+{
+// print number of repetitions
+
+  fprintf(GetOutputStream(fLastType), " <message repeated %d time%s>\n", 
+          fRepetitions, (fRepetitions > 1) ? "s" : "");
 }
 
 //_____________________________________________________________________________

@@ -51,6 +51,8 @@ class AliLog: public TObject {
   static void  SetPrintLocation(Bool_t on);
   static void  SetPrintLocation(EType type, Bool_t on);
 
+  static void  SetPrintRepetitions(Bool_t on);
+
   static void  Write(const char* name, Int_t option = 0);
 
   // the following public methods are used by the preprocessor macros 
@@ -94,6 +96,7 @@ class AliLog: public TObject {
                               const char* module, const char* className,
                               const char* function, 
                               const char* file, Int_t line);
+  void           PrintRepetitions();
 
   Int_t          RedirectTo(FILE* stream, EType type, UInt_t level,
                             const char* module, const char* className,
@@ -123,6 +126,17 @@ class AliLog: public TObject {
   Bool_t         fPrintModule[kMaxType];     // print module on/off
   Bool_t         fPrintScope[kMaxType];      // print scope/class name on/off
   Bool_t         fPrintLocation[kMaxType];   // print file and line on/off
+
+  Bool_t         fPrintRepetitions;          // print number of repetitions instead of repeated message on/off
+
+  Int_t          fRepetitions;               //! counter of repetitions
+  UInt_t         fLastType;                  //! type of last message
+  TString        fLastMessage;               //! last message
+  TString        fLastModule;                //! module name of last message
+  TString        fLastClassName;             //! class name of last message
+  TString        fLastFunction;              //! function name of last message
+  TString        fLastFile;                  //! file name of last message
+  Int_t          fLastLine;                  //! line number of last message
 
   ClassDef(AliLog, 1)   // class for logging debug, info and error messages
 };
