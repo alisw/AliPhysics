@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.2.1  2002/07/12 12:31:30  gamez
+Material numbers, correction
+
+Revision 1.3  2002/07/10 15:53:10  gamez
+Molasse redefinition
+
 Revision 1.2  2002/07/09 08:45:35  hristov
 Old style include files needed on HP (aCC)
 
@@ -226,13 +232,13 @@ void AliCRT::CreateMaterials()
   Float_t zP[2] = {6.0, 1.0};
   Float_t wP[2] = {1.0, 1.0};
   Float_t dP = 1.032;
-  AliMixture(3, "Polystyrene$", aP, zP, dP, -2, wP);
+  AliMixture(13, "Polystyrene$", aP, zP, dP, -2, wP);
   // Subalpine Molasse over the ALICE hall. 
-  Float_t aMolasse[10] = {0.008, 0.043, 0.485, 0.007, 0.042, 0.037, 0.215, 0.023, 0.1, 0.04};
+  Float_t aMolasse[10] = { 1., 12.01, 15.994, 22.99, 24.305, 26.98, 28.086, 39.1, 40.08, 55.85 };
   Float_t zMolasse[10] = {1., 6., 8., 11., 12., 13., 14., 19., 20., 26.};
-  Float_t wMolasse[1] = {10.};
+  Float_t wMolasse[10] = {0.008, 0.043, 0.485, 0.007, 0.042, 0.037, 0.215, 0.023, 0.1, 0.04};
   Float_t dMolasse = 2.40;
-  AliMixture(4, "Molasse$", aMolasse, zMolasse, dMolasse, 1, wMolasse);
+  AliMixture(24, "Molasse$", aMolasse, zMolasse, dMolasse, 10, wMolasse);
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -263,11 +269,11 @@ void AliCRT::CreateMaterials()
 
 
   // The scintillator of the CPV made of Polystyrene 
-  // scintillator -> idtmed[1102]
-  AliMedium(3 , "CPV scint.      ", 3, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  // scintillator -> idtmed[1112]
+  AliMedium(13 , "CPV scint.      ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   
-  //     Molasse -> idtmed[1103]
-  AliMedium(4 , "Molasse         ", 6, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
+  //     Molasse -> idtmed[1123]
+  AliMedium(24 , "Molasse         ", 24, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
 
 
 }
