@@ -73,10 +73,12 @@ Int_t AliHBTReaderKineTree::GetNumberOfPartEvents()
 
 
 /**********************************************************/
-Int_t AliHBTReaderKineTree::
-Read(AliHBTRun* particles, AliHBTRun *tracks)
- {
- cout<<"AliHBTReaderKineTree::Read()"<<endl;
+Int_t AliHBTReaderKineTree::Read(AliHBTRun* particles, AliHBTRun* /*tracks*/)
+{
+ //Reads Kinematics Tree
+  
+ Info("Read","");
+ 
  if (!particles) //check if an object is instatiated
    {
      Error("Read"," particles object must instatiated before passing it to the reader");
@@ -100,7 +102,7 @@ Read(AliHBTRun* particles, AliHBTRun *tracks)
 
  do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
   { 
-    cout<<"________________________________________________________\n";
+    Info("Read","________________________________________________________");
     AliRunLoader * rl = OpenFile(currentdir);
 
     if (rl == 0x0)
@@ -145,7 +147,7 @@ Read(AliHBTRun* particles, AliHBTRun *tracks)
           }
          nnn++;
        }
-      cout<<"Total read "<<nnn<<endl;
+      Info("Read","Total read %d",nnn);
       totalNevents++;
      }
      delete rl;

@@ -28,7 +28,7 @@ class AliHBTAnalysis: public TObject
    public:
      AliHBTAnalysis();
      AliHBTAnalysis(const AliHBTAnalysis& in);
-     const AliHBTAnalysis& operator=(const AliHBTAnalysis& right);
+     const AliHBTAnalysis& operator=(const AliHBTAnalysis& /*right*/);
      virtual ~AliHBTAnalysis();
 
      virtual void Process(Option_t* option = "TracksAndParticles");

@@ -18,7 +18,7 @@ class AliHBTReaderKineTree: public AliHBTReader
 
     virtual ~AliHBTReaderKineTree(){}
     
-    Int_t        Read(AliHBTRun* particles, AliHBTRun *tracks);//reads tracks and particles and puts them in runs
+    Int_t        Read(AliHBTRun* particles, AliHBTRun* /*tracks*/);//reads tracks and particles and puts them in runs
 
     AliHBTEvent* GetParticleEvent(Int_t);//returns pointer to event with particles
     AliHBTEvent* GetTrackEvent(Int_t){return 0x0;}//returns pointer to event with particles

@@ -61,6 +61,7 @@ AliHBTAnalysis::AliHBTAnalysis():
 /*************************************************************************************/ 
 
 AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
+  TObject(in),
   fReader(0x0),
   fNTrackFunctions(0),
   fNParticleFunctions(0),
@@ -83,7 +84,7 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
    Fatal("AliHBTAnalysis(const AliHBTAnalysis&)","Sensless");
  }
 /*************************************************************************************/ 
-const AliHBTAnalysis& AliHBTAnalysis::operator=(const AliHBTAnalysis& right)
+const AliHBTAnalysis& AliHBTAnalysis::operator=(const AliHBTAnalysis& /*right*/)
  {
 //operator =
    Fatal("AliHBTAnalysis(const AliHBTAnalysis&)","Sensless");
