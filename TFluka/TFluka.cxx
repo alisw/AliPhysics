@@ -1183,7 +1183,7 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
 // TRACKR.jtrack = identity number of the particle
 // PAPROP.am[TRACKR.jtrack] = particle mass in gev
   Int_t caller = GetCaller();
-  if (caller != 2) { // not eedraw 
+  if (caller != 2 && caller != 40) { // not eedraw or mgdraw resuming 
     if (TRACKR.ptrack >= 0) {
       momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
       momentum.SetPy(TRACKR.ptrack*TRACKR.cytrck);
@@ -1222,7 +1222,7 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
 // TRACKR.jtrack = identity number of the particle
 // PAPROP.am[TRACKR.jtrack] = particle mass in gev
   Int_t caller = GetCaller();
-  if (caller != 2) { // not eedraw 
+  if (caller != 2 && caller != 40) { // not eedraw and not mgdraw resuming 
     if (TRACKR.ptrack >= 0) {
       px = TRACKR.ptrack*TRACKR.cxtrck;
       py = TRACKR.ptrack*TRACKR.cytrck;
@@ -1243,6 +1243,7 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
       py = TRACKR.spausr[5];
       pz = TRACKR.spausr[6];
       e  = TRACKR.spausr[7];
+      return;
   }
   else
     Warning("TrackMomentum","momentum not available");
