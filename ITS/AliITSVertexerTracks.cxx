@@ -27,7 +27,6 @@
 #include <TTree.h>
 #include <TVector3.h>
 #include <TMatrixD.h>
-#include <TObjArray.h>
 #include <TRandom.h> // TEMPORARY !!!!!!!
 //---- AliRoot headers -----
 #include <AliRun.h>

@@ -28,9 +28,9 @@
 #include "AliKalmanTrack.h"
 #include "AliITSVertexer.h"
 
+#include <TObjArray.h>
+
 class TTree; 
-class TFile; 
-class TObjArray; 
 class AliITSVertex; 
 
 class AliITSVertexerTracks : public AliITSVertexer {
