@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/05/10 19:57:26  nilsen
+Fixed problem with display.C and ITS versions v1 and v3.
+
 Revision 1.16  2000/03/05 00:11:03  nilsen
 Fixed merge error.
 
@@ -134,6 +137,7 @@ void AliITSv5::BuildGeometry(){
   Top=gAlice->GetGeometry()->GetNode("alice");
   AliITSgeom  *gm = this->GetITSgeom();
 
+  Int_t       lay,lad,det,i;
   Text_t      name[10];
   Float_t     xg[3];
   Float_t     rt[9];
@@ -142,9 +146,9 @@ void AliITSv5::BuildGeometry(){
   TRotMatrix  *rm;
   //TCanvas     *c1 = new TCanvas("c1","ITS");
 
-  for(Int_t lay=1;lay<=2;lay++)
-   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
-    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+  for(lay=1;lay<=2;lay++)
+   for(lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(det=1;det<=gm->GetNdetectors(lay);det++){
           try {
               box  = new TBRIK ("ActiveSPD","Active volume of SPD","SPD SI DET",
 		        	    0.64,0.0075,4.19); 
@@ -174,9 +178,9 @@ void AliITSv5::BuildGeometry(){
          fNodes->Add(nd);
     }
 
-  for(Int_t lay=3;lay<=3;lay++)
-   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
-    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+  for(lay=3;lay<=3;lay++)
+   for(lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(det=1;det<=gm->GetNdetectors(lay);det++){
           try {
               box  = new TBRIK ("ActiveSDD","Active volume of SDD","SDD SI DET",
 		        	    3.5,0.014,3.763); 
@@ -206,9 +210,9 @@ void AliITSv5::BuildGeometry(){
          fNodes->Add(nd);
     }
 
-  for(Int_t lay=4;lay<=4;lay++)
-   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
-    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+  for(lay=4;lay<=4;lay++)
+   for(lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(det=1;det<=gm->GetNdetectors(lay);det++){
           try {
               box  = new TBRIK ("ActiveSDD","Active volume of SDD","SDD SI DET",
 		        	    3.5,0.014,3.763); 
@@ -237,9 +241,9 @@ void AliITSv5::BuildGeometry(){
          nd->SetLineColor(kColorITS_SSD);
          fNodes->Add(nd);
     }
- for(Int_t lay=5;lay<=5;lay++)
-   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
-    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+ for(lay=5;lay<=5;lay++)
+   for(lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(det=1;det<=gm->GetNdetectors(lay);det++){
           try {
               box  = new TBRIK ("ActiveSSD","Active volume of SSD","SSD SI DET",
 		        	    3.65,0.015,2.0); 
@@ -269,9 +273,9 @@ void AliITSv5::BuildGeometry(){
          fNodes->Add(nd);
     }
 
- for(Int_t lay=6;lay<=6;lay++)
-   for(Int_t lad=1;lad<=gm->GetNladders(lay);lad++)
-    for(Int_t det=1;det<=gm->GetNdetectors(lay);det++){
+ for(lay=6;lay<=6;lay++)
+   for(lad=1;lad<=gm->GetNladders(lay);lad++)
+    for(det=1;det<=gm->GetNdetectors(lay);det++){
           try {
               box  = new TBRIK ("ActiveSSD","Active volume of SSD","SSD SI DET",
 		        	    3.65,0.015,2.0); 
@@ -283,7 +287,7 @@ void AliITSv5::BuildGeometry(){
           gm->GetTrans(lay,lad,det,xg[0],xg[1],xg[2]); 
           gm->GetRotMatrix(lay,lad,det,rt);
           //sprintf(name,"ROT%1.1d2.2d2.2d",lay,lad,det);
-          for(Int_t i=0;i<9;i++) rtd[i] = rt[i];
+          for(i=0;i<9;i++) rtd[i] = rt[i];
           try {
 	        rm  = new TRotMatrix(name,name,rtd);
           } catch (...) {
