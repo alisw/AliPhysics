@@ -113,6 +113,7 @@ public:
 
   Bool_t IsOn(Int_t mask){ return (fFlags&mask)>0;}
   Bool_t IsRICH(){ return fFlags&kRICHpid;}
+  Bool_t IsPHOS(){ return fFlags&kPHOSpid;}
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
@@ -123,8 +124,11 @@ public:
     kESDpid=0x40000000,
     kTIME=0x80000000
   }; 
-  enum {kSPECIES=5}; // Number of particle species recognized by the PID
-
+  enum {
+    kSPECIES=5, // Number of particle species recognized by the PID
+    kElectron=0, kMuon=1, kPion=2, kKaon=3, kProton=4, kPhoton=5, 
+    kPi0=6, kNeutron=7, kKaon0=8 // PHOS definition
+  };
 protected:
   ULong_t   fFlags;        // Reconstruction status flags 
   Int_t     fLabel;        // Track label
@@ -186,7 +190,7 @@ protected:
   // PHOS related track information 
   Float_t fPHOSpos[3]; //position localised by PHOS in global coordinate system
   Float_t fPHOSsignal; // energy measured by PHOS
-  Float_t fPHOSr[kSPECIES]; // PID information from PHOS
+  Float_t fPHOSr[kSPECIES+4]; // PID information from PHOS
 
   // HMPID related track information
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)

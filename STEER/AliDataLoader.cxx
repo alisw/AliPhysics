@@ -742,8 +742,9 @@ Int_t AliBaseLoader::Load(Option_t* opt)
 
   if (Get())
    {
-      Warning("Load","Data <<%s>> are already loaded. Use ReloadData to force reload. Nothing done",GetName());
-      return 0;
+     if (GetDebug())
+       Warning("Load","Data <<%s>> are already loaded. Use ReloadData to force reload. Nothing done",GetName());
+     return 0;
    }
   
   Int_t retval;

@@ -72,6 +72,11 @@ fRICHsignal(-1)
     fPHOSr[i]=1.;
     fRICHr[i]=1.;
   }
+  fPHOSr[kSPECIES]= 1.;
+  fPHOSr[kSPECIES+1]= 1.;
+  fPHOSr[kSPECIES+2]= 1.;
+  fPHOSr[kSPECIES+3]= 1.;
+
   fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
   Int_t i;
   for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.;}
@@ -511,14 +516,14 @@ void AliESDtrack::GetTOFpid(Double_t *p) const {
 //_______________________________________________________________________
 void AliESDtrack::SetPHOSpid(const Double_t *p) {  
   // Sets the probability of each particle type (in PHOS)
-  for (Int_t i=0; i<kSPECIES; i++) fPHOSr[i]=p[i];
+  for (Int_t i=0; i<kSPECIES+4; i++) fPHOSr[i]=p[i];
   SetStatus(AliESDtrack::kPHOSpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetPHOSpid(Double_t *p) const {
   // Gets probabilities of each particle type (in PHOS)
-  for (Int_t i=0; i<kSPECIES; i++) p[i]=fPHOSr[i];
+  for (Int_t i=0; i<kSPECIES+4; i++) p[i]=fPHOSr[i];
 }
 
 
