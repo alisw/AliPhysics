@@ -43,4 +43,5 @@
 #pragma link C++ class AliPHOSQAChecker+;
 #pragma link C++ class AliPHOSQAMeanChecker+;
 #pragma link C++ class AliPHOSQAAlarm+;
+#pragma link C++ class AliPHOSTick+;
 #endif

@@ -12,7 +12,7 @@ PACKAGE = PHOS
 SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
                  AliPHOSvFast.cxx AliPHOSvImpacts.cxx \
                  AliPHOSImpact.cxx \
-                 AliPHOSHit.cxx \
+                 AliPHOSHit.cxx AliPHOSTick.cxx\
                  AliPHOSGeometry.cxx \
 		 AliPHOSEMCAGeometry.cxx \
 		 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
@@ -26,8 +26,9 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
                  AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
                  AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv1.cxx \
                  AliPHOSAnalyze.cxx AliPHOSFastRecParticle.cxx \
-                 AliPHOSGetter.cxx \
-		 AliPHOSQAVirtualCheckable.cxx AliPHOSQAIntCheckable.cxx AliPHOSQAFloatCheckable.cxx\
+                 AliPHOSGetter.cxx AliPHOSTick.cxx \
+		 AliPHOSQAVirtualCheckable.cxx AliPHOSQAIntCheckable.cxx \
+                 AliPHOSQAFloatCheckable.cxx\
                  AliPHOSQAObjectCheckable.cxx AliPHOSQAChecker.cxx AliPHOSQAMeanChecker.cxx AliPHOSQAAlarm.cxx
 
 # C++ Headers

@@ -76,6 +76,7 @@
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSTick.h"
 
 ClassImp(AliPHOSDigitizer)
 
@@ -90,9 +91,11 @@ ClassImp(AliPHOSDigitizer)
   fCPVNoise           = 0.01;
   fCPVDigitThreshold  = 0.09 ;
   fTimeResolution     = 1.0e-9 ;
+  fTimeSignalLength   = 1.0e-9 ;
   fDigitsInRun  = 0 ; 
   fPedestal = 0.;                // Calibration parameters 
   fSlope = 10000000. ;
+  fTimeThreshold = 0.001*fSlope ; //Means 1 MeV in terms of SDigits amplitude
   fARD = 0 ;                     // We work in the standalong mode
 }
 
@@ -109,6 +112,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   fDigitsInRun  = 0 ; 
   fPedestal = 0.;                // Calibration parameters 
   fSlope = 10000000. ;
+  fTimeSignalLength   = 1.0e-9 ;
+  fTimeThreshold = 0.001*fSlope ; //Means 1 MeV in terms of SDigits amplitude
   fARD = 0 ;                     // We work in the standalong mode
 
   Init() ;
@@ -208,14 +213,14 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
     Int_t curNext = ((AliPHOSDigit *)sdigits->At(0))->GetId() ;
     if(curNext < nextSig) nextSig = curNext ;
   }
-  
-  TArrayF * energies = new TArrayF(input);
-  TArrayF * times    = new TArrayF(input) ;
+
   TArrayI index(input) ;
   index.Reset() ;  //Set all indexes to zero
 
   AliPHOSDigit * digit ;
   AliPHOSDigit * curSDigit ;
+
+  TClonesArray * ticks = new TClonesArray("AliPHOSTick",1000) ;
 
   //Put Noise contribution
   for(absID = 1; absID <= nEMC; absID++){
@@ -225,9 +230,16 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
     if(absID==nextSig){
       //Add SDigits from all inputs 
       digit = (AliPHOSDigit *) digits->At(absID-1) ;
+
+      ticks->Clear() ;
       Int_t contrib = 0 ;
-      energies[contrib] = digit->GetAmp() ;
-      times[contrib]    = digit->GetTime() ;
+      Float_t a = digit->GetAmp() ;
+      Float_t b = TMath::Abs( a /fTimeSignalLength) ;
+      //Mark the beginnign of the signal
+      new((*ticks)[contrib++]) AliPHOSTick(digit->GetTime(),0, b);  
+      //Mark the end of the ignal     
+      new((*ticks)[contrib++]) AliPHOSTick(digit->GetTime()+fTimeSignalLength, -a, -b); 
+
       //loop over inputs
       for(i=0; i<input; i++){
 	curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ; 	
@@ -240,22 +252,25 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	  else
 	    primaryoffset = 10000000*i ;
 	  curSDigit->ShiftPrimary(primaryoffset) ;
+	  
+	  a = curSDigit->GetAmp() ;
+	  b = a /fTimeSignalLength ;
+	  new((*ticks)[contrib++]) AliPHOSTick(curSDigit->GetTime(),0, b);  
+	  new((*ticks)[contrib++]) AliPHOSTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
 
 	  *digit = *digit + *curSDigit ;  //add energies
-	  energies[contrib] = curSDigit->GetAmp() ;
-	  times[contrib]    = curSDigit->GetTime() ;
-	  contrib++ ;
+
 	  index[i]++ ;
 	  curSDigit = (AliPHOSDigit*)((TClonesArray *)sdigArray->At(i))->At(index[i]) ;
 	}
       }
 
       //calculate and set time
-      Float_t time = FrontEdgeTime(energies, times) ;
+      Float_t time = FrontEdgeTime(ticks) ;
       digit->SetTime(time) ;
-      energies->Reset() ;
-      times->Reset() ;
+
       //Find next signal module
+      nextSig = 200000 ;
       for(i=0; i<input; i++){
 	sdigits = ((TClonesArray *)sdigArray->At(i)) ;
 	Int_t curNext = ((AliPHOSDigit *) sdigits->At(index[i]))->GetId() ;
@@ -264,6 +279,8 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
     }
   }
   
+  ticks->Delete() ;
+  delete ticks ;
 
 
   //Now CPV digits (different noise and no timing)
@@ -302,8 +319,6 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
       
     }
   }
-  delete energies ;
-  delete times ;
   delete sdigArray ; //We should not delete its contents
   
   
@@ -430,17 +445,23 @@ void AliPHOSDigitizer::Exec(Option_t *option)
 }
 
 //____________________________________________________________________________ 
-Float_t AliPHOSDigitizer::FrontEdgeTime(TArrayF * energies, TArrayF * times) 
+Float_t AliPHOSDigitizer::FrontEdgeTime(TClonesArray * ticks) 
 { // 
-  Float_t curtime = times->At(0) ;
-  Float_t time = curtime ;
-  Int_t i = 1 ;
-  while(curtime){
-    if(time > curtime) time = curtime ;
-    curtime = times->At(i++) ;
+  ticks->Sort() ; //Sort in accordance with times of ticks
+  TIter it(ticks) ;
+  AliPHOSTick * ctick = (AliPHOSTick *) it.Next() ;
+  Float_t time = ctick->CrossingTime(fTimeThreshold) ;    
+
+  AliPHOSTick * t ;  
+  while((t=(AliPHOSTick*) it.Next())){
+    if(t->GetTime() < time)  //This tick starts before crossing
+      *ctick+=*t ;
+    else
+      return time ;
+
+    time = ctick->CrossingTime(fTimeThreshold) ;    
   }
   return time ;
-
 }
 //____________________________________________________________________________ 
 Bool_t AliPHOSDigitizer::Init()
