@@ -174,7 +174,7 @@ endif
 #               If cleaning, do not include 
 #             dependencies or module.mk files.
 
-ifeq ($(findstring $(MAKECMDGOALS), clean clean-all clean-dicts clean-modules clean-depend clean-objects clean-libs clean-bins),)
+ifeq ($(findstring $(MAKECMDGOALS), clean distclean clean-all clean-dicts clean-modules clean-depend clean-objects clean-libs clean-bins),)
 
 #            If making modules, not not include
 #                       anything
@@ -216,7 +216,8 @@ include build/dummy.d
 
 # targets
 
-.PHONY:		alilibs aliroot makedistr clean htmldoc profile
+.PHONY:		alilibs aliroot makedistr clean distclean clean-all \
+		htmldoc profile
 
 modules: $(patsubst %,%/module.mk,$(MODULES)) 	
 
@@ -281,10 +282,11 @@ build/dummy.d: $(EXPORTFILES)
 	fi)
 
 clean:
-	@echo "***** No targen clean, use one of these *****"
+	@echo "***** No target clean, use one of these *****"
 	@echo "	clean-aliroot     : Clean up all aliroot libraries"
 	@echo "	clean-MODULENAME  : Clean everything from module MODULENAME"
 	@echo "	clean-all         : Cleans up everything, including cern libraires"
+	@echo "	distclean         : Idem clean-all"
 	@echo "	clean-modules     : Clean all module.mk file in all modules"
 	@echo "	clean-libs        : Clean all libraries (not object files)"
 	@echo "********************************************"
@@ -295,6 +297,8 @@ ifndef ALIQUIET
 endif
 	$(MUTE)rm -rf $(patsubst %,%/tgt_$(ALICE_TARGET),$(MODULES))
 	$(MUTE)rm -rf $(EXPORTDIR)
+
+distclean: clean-all
 
 #This cleans only libraries that are not CERN-libraries
 
