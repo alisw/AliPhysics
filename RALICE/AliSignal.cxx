@@ -82,8 +82,8 @@ AliSignal::AliSignal(Int_t n)
 {
 // Creation of an AliSignal object and initialisation of parameters.
 // Initially a total of n (default n=1) values (with errors) can be stored.
-// If needed, the number of values (and errors) will be increased automatically
-// when entering values.
+// If needed, the storage for values (and errors) will be expanded automatically
+// when entering values and/or errors.
  fSignal=0;
  fDsignal=0;
  fName="Unspecified";
@@ -114,44 +114,120 @@ AliSignal::AliSignal(AliSignal& s)
  SetPosition((Ali3Vector&)s);
 
  Int_t nvalues=s.GetNvalues();
- Double_t sig,err;
+ Double_t sig;
  for (Int_t i=1; i<=nvalues; i++)
  {
   sig=s.GetSignal(i);
-  err=s.GetSignalError(i);
   SetSignal(sig,i);
-  SetSignalError(err,i);
+ } 
+
+ Int_t nerrors=s.GetNerrors();
+ Double_t err;
+ for (Int_t j=1; j<=nerrors; j++)
+ {
+  err=s.GetSignalError(j);
+  SetSignalError(err,j);
  } 
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::Reset()
+void AliSignal::Reset(Int_t mode)
 {
 // Reset all signal and position values and errors to 0.
+//
+// mode = 0 Reset position and all signal values and their errors to 0.
+//        1 Reset position and delete the signal and error storage arrays.
+//
+// The default when invoking Reset() corresponds to mode=0.
+//
+// The usage of mode=0 allows to re-use the allocated memory for new
+// signal (and error) values. This behaviour is preferable (i.e. faster)
+// in case the various signals always contain the same number of values.
+// The usage of mode=1 is slower, but allows a more efficient memory
+// occupation (and smaller output file size) in case the different
+// signals have a variable number of values.
+//
+// For more specific actions see ResetPosition(), ResetSignals()
+// and DeleteSignals().
 
- if (fSignal && fDsignal)
+ if (mode<0 || mode>1)
  {
-  Double_t r[3]={0,0,0};
-  SetPosition(r,"sph");
-  SetErrors(r,"car");
+  cout << " *AliSignal::Reset* Invalid argument mode = " << mode << endl;
+  cout << " Default mode=0 will be used." << endl;
+  mode=0;
+ }
+
+ ResetPosition();
+ if (!mode)
+ {
+  ResetSignals();
+ }
+ else
+ {
+  DeleteSignals();
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetSignals(Int_t mode)
+{
+// Reset various signal data according to user selection.
+//
+// mode = 0 Reset all signal values and their errors to 0.
+//        1 Reset only signal values
+//        2 Reset only signal errors
+//
+// The default when invoking ResetSignals() corresponds to mode=0.
+
+ if (mode<0 || mode>2)
+ {
+  cout << " *AliSignal::ResetSignals* Invalid argument mode = " << mode << endl;
+  cout << " Default mode=0 will be used." << endl;
+  mode=0;
+ }
+
+ if (fSignal && (mode==0 || mode==1))
+ {
   for (Int_t i=0; i<fSignal->GetSize(); i++)
   {
    fSignal->AddAt(0,i);
-   fDsignal->AddAt(0,i);
+  }
+ }
+
+ if (fDsignal && (mode==0 || mode==2))
+ {
+  for (Int_t j=0; j<fDsignal->GetSize(); j++)
+  {
+   fDsignal->AddAt(0,j);
   }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::ResetSignals()
+void AliSignal::DeleteSignals(Int_t mode)
 {
-// Reset all signal values and their errors to 0.
+// Delete storage arrays of various signal data according to user selection.
+//
+// mode = 0 Delete arrays of both signal values and their errors.
+//        1 Delete only signal values array
+//        2 Delete only signal errors array
+//
+// The default when invoking DeleteSignals() corresponds to mode=0.
 
- if (fSignal && fDsignal)
+ if (mode<0 || mode>2)
  {
-  for (Int_t i=0; i<fSignal->GetSize(); i++)
-  {
-   fSignal->AddAt(0,i);
-   fDsignal->AddAt(0,i);
-  }
+  cout << " *AliSignal::DeleteSignals* Invalid argument mode = " << mode << endl;
+  cout << " Default mode=0 will be used." << endl;
+  mode=0;
+ }
+
+ if (fSignal && (mode==0 || mode==1))
+ {
+  delete fSignal;
+  fSignal=0;
+ }
+
+ if (fDsignal && (mode==0 || mode==2))
+ {
+  delete fDsignal;
+  fDsignal=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -168,14 +244,13 @@ void AliSignal::SetSignal(Double_t sig,Int_t j)
 // Store j-th (default j=1) signal value.
 // Note : The first signal value is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
-// slots for signal values, the number of reserved slots for both the
-// signal values and errors is increased automatically.
+// slots for signal values, the number of reserved slots for the
+// signal values is increased automatically.
 
- if (!fSignal && !fDsignal)
+ if (!fSignal)
  {
   fSignal=new TArrayF(j);
-  fDsignal=new TArrayF(j);
-  ResetSignals();
+  ResetSignals(1);
  }
 
  Int_t size=fSignal->GetSize();
@@ -183,7 +258,6 @@ void AliSignal::SetSignal(Double_t sig,Int_t j)
  if (j>size)
  {
   fSignal->Set(j);
-  fDsignal->Set(j);
  }
 
  fSignal->AddAt(float(sig),j-1);
@@ -194,14 +268,13 @@ void AliSignal::AddSignal(Double_t sig,Int_t j)
 // Add value to j-th (default j=1) signal value.
 // Note : The first signal value is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
-// slots for signal values, the number of reserved slots for both the
-// signal values and errors is increased automatically.
+// slots for signal values, the number of reserved slots for the
+// signal values is increased automatically.
 
- if (!fSignal && !fDsignal)
+ if (!fSignal)
  {
   fSignal=new TArrayF(j);
-  fDsignal=new TArrayF(j);
-  ResetSignals();
+  ResetSignals(1);
  }
 
  Int_t size=fSignal->GetSize();
@@ -209,7 +282,6 @@ void AliSignal::AddSignal(Double_t sig,Int_t j)
  if (j>size)
  {
   fSignal->Set(j);
-  fDsignal->Set(j);
  }
 
  Float_t sum=(fSignal->At(j-1))+sig;
@@ -220,14 +292,20 @@ Float_t AliSignal::GetSignal(Int_t j)
 {
 // Provide j-th (default j=1) signal value.
 // Note : The first signal value is at j=1.
+// In case no signal is present or the argument j is invalid, 0 is returned.
+ Float_t sig=0;
  if (fSignal)
  {
-  return fSignal->At(j-1);
+  if (j>0 && j<=(fSignal->GetSize()))
+  {
+   sig=fSignal->At(j-1);
+  }
+  else
+  {
+   cout << " *AliSignal::GetSignal* Index j = " << j << " invalid." << endl;
+  } 
  }
- else
- {
-  return 0;
- }
+ return sig;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignalError(Double_t dsig,Int_t j)
@@ -235,21 +313,19 @@ void AliSignal::SetSignalError(Double_t dsig,Int_t j)
 // Store error on j-th (default j=1) signal value.
 // Note : The error on the first signal value is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
-// slots for signal error values, the number of reserved slots for both the
-// signal values and errors is increased automatically.
+// slots for signal error values, the number of reserved slots for the
+// signal errors is increased automatically.
 
- if (!fSignal && !fDsignal)
+ if (!fDsignal)
  {
-  fSignal=new TArrayF(j);
   fDsignal=new TArrayF(j);
-  ResetSignals();
+  ResetSignals(2);
  }
 
  Int_t size=fDsignal->GetSize();
 
  if (j>size)
  {
-  fSignal->Set(j);
   fDsignal->Set(j);
  }
 
@@ -260,29 +336,39 @@ Float_t AliSignal::GetSignalError(Int_t j)
 {
 // Provide error on the j-th (default j=1) signal value.
 // Note : The error on the first signal value is at j=1.
+// In case no signal is present or the argument j is invalid, 0 is returned.
+ Float_t err=0;
  if (fDsignal)
  {
-  return fDsignal->At(j-1);
+  if (j>0 && j<=(fDsignal->GetSize()))
+  {
+   err=fDsignal->At(j-1);
+  }
+  else
+  {
+   cout << " *AliSignal::GetSignalError* Index j = " << j << " invalid." << endl;
+  } 
  }
- else
- {
-  return 0;
- }
+ return err;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::Data(TString f)
 {
 // Provide signal information within the coordinate frame f
- cout << " *AliSignal::Data* For signal of kind : " << fName << endl;
+ cout << " *AliSignal::Data* Signal of kind : " << fName << endl;
  cout << " Position";
- Ali3Vector::Data(f); 
- 
- if (fSignal && fDsignal)
+ Ali3Vector::Data(f);
+
+ Int_t nvalues=GetNvalues();
+ Int_t nerrors=GetNerrors();
+
+ if (fSignal)
  {
-  for (Int_t i=0; i<fSignal->GetSize(); i++)
+  for (Int_t i=0; i<nvalues; i++)
   {
-   cout << "   Signal value : " << fSignal->At(i)
-        << " error : " << fDsignal->At(i) << endl;
+   cout << "   Signal value : " << fSignal->At(i);
+   if (fDsignal && i<nerrors) cout << " error : " << fDsignal->At(i);
+   cout << endl;
   }
  }
 } 
@@ -303,7 +389,15 @@ Int_t AliSignal::GetNvalues()
 {
 // Provide the number of values for this signal.
  Int_t n=0;
- if (fSignal && fDsignal) n=fSignal->GetSize();
+ if (fSignal) n=fSignal->GetSize();
+ return n;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetNerrors()
+{
+// Provide the number specified errors on the values for this signal.
+ Int_t n=0;
+ if (fDsignal) n=fDsignal->GetSize();
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
