@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  1999/11/03 13:17:08  fca
+Have ProdProcess return const char*
+
 Revision 1.15  1999/10/26 06:04:50  fca
 Introduce TLorentzVector in AliMC::GetSecondary. Thanks to I.Hrivnacova
 
@@ -3452,8 +3455,8 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
     end=i;
     break;
   }
-  filext=new char[end+4];
-  filetme=new char[end+4];
+  filext=new char[end+5];
+  filetme=new char[end+5];
   strncpy(filext,filnam,end);
   strncpy(filetme,filnam,end);
   //
