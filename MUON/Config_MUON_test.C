@@ -87,7 +87,7 @@ void Config(char directory[100]="", char option[6]="box")
   if (!strcmp(option,"box")) {
     AliGenBox * gener = new AliGenBox(1);
     gener->SetMomentumRange(20.,20.1);
-    gener->SetPhiRange(-180, 180.01);         
+    gener->SetPhiRange(0, 360);         
     gener->SetThetaRange(171.000,178.001);
     gener->SetPart(13);           // Muons
     gener->SetOrigin(0.,0., 0.);  //vertex position
@@ -111,7 +111,7 @@ void Config(char directory[100]="", char option[6]="box")
     AliGenParam *gener = new AliGenParam(1, AliGenMUONlib::kUpsilon);
     gener->SetMomentumRange(0,999);
     gener->SetPtRange(0,100.);
-    gener->SetPhiRange(-180, 180);
+    gener->SetPhiRange(0, 360);
     gener->SetCutOnChild(1);
     gener->SetChildPhiRange(0.,360.);
     gener->SetChildThetaRange(171.0,178.0);
