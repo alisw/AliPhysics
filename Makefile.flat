@@ -8,69 +8,96 @@
 override ALICE_ROOT=$(shell pwd)
 
 include build/Makefile.config
+################################################################## 
+# 
+#            Where to install libraries and binaries 
+#                 and common header files
 
-# Where to install libraries and binaries
 LIBPATH=lib/tgt_$(ALICE_TARGET)
 BINPATH=bin/tgt_$(ALICE_TARGET)
+EXPORTDIR = $(ALICE_ROOT)/include
+##################################################################
 
-##### include machine dependent macros #####
+##################################################################
+# include machine dependent macros 
 
-#include $(filter-out DEBUG,build/Makefile.$(ALICE_TARGET))
 include build/Makefile.$(ALICE_TARGET)
+##################################################################
 
-# Check if called with debug
+##################################################################
+# 
+#               Check if called with debug
+
 ifeq ($(ALIDEBUG),YES)
 override ALICE_TARGET:=$(ALICE_TARGET)DEBUG
 FFLAGS := -g $(filter-out -O%,$(FFLAGS))
 CXXFLAGS := -g $(filter-out -O%,$(CXXLAGS))
 CFLAGS := -g $(filter-out -O%,$(CLAGS))
 endif
+##################################################################
 
-
-##### Modules to build #####
-
-#needs to add:  VZERO TGeant4 AliGeant4 GEODB Euclid  
+##################################################################
 #
+#                   Modules to build 
 
-MODULES:=STEER TPC PMD CONTAINERS ZDC STRUCT RALICE EMCAL \
-	ALIFAST CASTOR FMD START TGeant3 EVGEN THijing TMEVSIM \
-	 MEVSIM PDF PYTHIA PYTHIA6  TRD GEANT321 MINICERN TOF \
-	ITS RICH PHOS MUON HIJING LHC HBTP THbtp
+MODULES:=PDF PYTHIA PYTHIA6 GEANT321 MINICERN STEER HIJING\
+	 TGeant3 PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
+         CASTOR RICH START STRUCT EVGEN RALICE ALIFAST \
+	 THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP 
+##################################################################
 
 MODULES += ALIROOT 
 
 MODDIRS := MODULES
 		 
-# look for include files in each of the moduled
+
+#############################################################
+# 
+#               Default include dirs for 
+#          C++, Fortran, Cint, and dependencies 
+#      The module directory will be added by each module
+#
+
 CXXFLAGS += $(patsubst %,-I%,$(ALICE_ROOT))
-CXXFLAGS += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+CXXFLAGS += -I$(ALICE_ROOT)/include
 CXXFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
 
 FFLAGS += $(patsubst %,-I%,$(ALICE_ROOT))
-FFLAGS += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+FFLAGS += -I$(ALICE_ROOT)/include
 FFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
 
 CINTFLAGS += $(patsubst %,-I%,$(ALICE_ROOT))
-CINTFLAGS += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+CINTFLAGS += -I$(ALICE_ROOT)/include
 CINTFLAGS += $(patsubst %,-I%,$(ROOTSYS)/include)
 
 DEPINC += $(patsubst %,-I%,$(ALICE_ROOT))
-DEPINC += $(patsubst %,-I$(ALICE_ROOT)/%,$(MODULES))
+DEPINC  += -I$(ALICE_ROOT)/include
 DEPINC += $(patsubst %,-I%,$(ROOTSYS)/include)
+#############################################################
 
 
+#############################################################
+#
+#             Libraries to link binaries against
+#            Libraries will be linked againstSHLIB
 LIBS := $(ROOTLIBS) $(SYSLIBS) $(GLIBS)
+#############################################################
 
 
 # default target
 default:     alilibs  aliroot
 
-# each module must add to this
+
+#############################################################
+#
+#            Each module will add to this
+
 ALLLIBS :=
 ALLEXECS :=
 INCLUDEFILES :=
 BINLIBS := 
-
+EXPORTFILES := 
+#############################################################
 
 BINLIBDIRS := -L$(ALICE_ROOT)/$(LIBPATH)
 
@@ -80,23 +107,38 @@ BINLIBDIRS := -L$(ALICE_ROOT)/$(LIBPATH)
 
 include build/module.dep
 
-# Check if module.mk is present for the library
+#############################################################
+# 
+#        Check if module.mk is present for the library
 %.mk:
 	@echo "***** Creating $@ file *****";
 	share/alibtool mkmodule  $(patsubst %/module.mk,%,$@) > $@;
+#############################################################
 
-# If cleaning, do not include dependencies or module.mk files.
+# **************************************************************************
+#
+#               If cleaning, do not include 
+#             dependencies or module.mk files.
+
 ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
 
-# description of each module
+#############################################################
+# 
+#                Include the modules
 include $(patsubst %,%/module.mk,$(MODULES))
+#############################################################
 
-# include dependencies if not making them!
+#############################################################
+#
+#          include dependencies if not making them!
 ifneq ($(MAKECMDGOALS),depend)
 include $(INCLUDEFILES)
 endif
+#############################################################
 
 endif
+# **************************************************************************
+
 
 # targets
 
@@ -112,7 +154,7 @@ makedistr: $(MODULES)
 
 all: aliroot
 
-depend: $(INCLUDEFILES)
+depend: $(INCLUDEFILES) 
 
 debug:
 	@echo "***** Entering DEBUG mode. *****"
@@ -138,15 +180,19 @@ $(LIBPATH):
 	mkdir -p $@
 
 
-cleanall:
+cleanall: clean-modules
 	@echo "***** Cleaning up everything ****"
 	rm -rf $(patsubst %,%/module.mk,$(MODULES)) 
 	rm -rf $(patsubst %,%/tgt_$(ALICE_TARGET),$(MODULES))
 	rm -rf lib/tgt_$(ALICE_TARGET)
 	rm -rf bin/tgt_$(ALICE_TARGET)
+	rm -rf $(EXPORTDIR)
 
-clean: clean-modules clean-depend clean-objects clean-libs clean-bins
+clean: clean-modules  clean-objects clean-libs clean-bins clean-ditcs
 
+clead-dicts:
+	@echo "***** Cleaning up G__ files *****"
+	rm -rf */tgt_$(ALICE_TARGET)/G__*
 clean-modules:
 	@echo "***** Cleaning up module.mk files *****"
 	rm -rf $(patsubst %,%/module.mk,$(MODULES)) 
