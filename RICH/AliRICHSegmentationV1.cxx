@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2001/01/22 21:37:39  jbarbosa
+  Added parametrised definiton sectors
+
   Revision 1.4  2001/01/22 21:35:39  jbarbosa
   Added deadzone size to data members
 
@@ -59,7 +62,7 @@ AliRICHSegmentationV1::~AliRICHSegmentationV1()
 
 // calculate sector from x-y coordinates
 
-Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
+Int_t AliRICHSegmentationV1::Sector(Float_t y, Float_t x)
 {
 
 // Calculate in which sector is the hit
@@ -108,19 +111,20 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
   
   // parametrised definition
 
-  Float_t csi_length = fNpx*Dpx() + fDeadZone;
-  Float_t csi_width = fNpy*Dpy() + 2*fDeadZone;
+  Float_t csi_length = fNpx*fDpx + fDeadZone;
+  Float_t csi_width = fNpy*fDpy + 2*fDeadZone;
 
   fPadPlane_Width = (csi_width - 2*fDeadZone)/3;
   fPadPlane_Length = (csi_length - fDeadZone)/2;
 
+  //printf("\n\n\n\n\n\n  csi      w: %f l:%f          \n\n\n\n\n\n\n\n",  csi_width,csi_length); 
   //printf("\n\n\n\n\n\n  padplane w: %f l:%f wr: %f   \n\n\n\n\n\n\n\n",  fPadPlane_Width,fPadPlane_Length,63.1-22.75); 
 
   if (x<-fDeadZone/2)
     {
       if (y> fPadPlane_Width/2 +fDeadZone)
 	{
-	  if ( fPadPlane_Width/2 +fDeadZone + fPadPlane_Width)
+	  if ( y<fPadPlane_Width/2 +fDeadZone + fPadPlane_Width)
 	    fSector=0;
 	}
       if (y< fPadPlane_Width/2)
@@ -138,7 +142,7 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
     {
       if (y> fPadPlane_Width/2 +fDeadZone)
 	{
-	  if ( fPadPlane_Width/2 +fDeadZone +  fPadPlane_Width)
+	  if (y< fPadPlane_Width/2 +fDeadZone +  fPadPlane_Width)
 	    fSector=0;
 	}
       if (y< fPadPlane_Width/2)
@@ -175,33 +179,33 @@ void AliRICHSegmentationV1::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
     {
       //ix = (x>0)? Int_t(x/fDpx)+1 : Int_t(x/fDpx);
       //iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy);
-      ix = Int_t (x/fDpx+fDeadZone/2);
-      iy = Int_t (y/fDpy-fDeadZone);
+      iy = (y>0)? iy = Int_t (y/fDpy+fDeadZone) : iy = Int_t (y/fDpy+fDeadZone)-1;
+      ix = (x>0)? ix = Int_t (x/fDpx-fDeadZone/2) : ix = Int_t (x/fDpx-fDeadZone/2)-1;
     }
   if (sector==1)
     {
-      ix = Int_t (x/fDpx-fDeadZone/2);
-      iy = Int_t (y/fDpy-fDeadZone);
+      iy = (y>0)? iy = Int_t (y/fDpy+fDeadZone) : iy = Int_t (y/fDpy+fDeadZone)-1;
+      ix = (x>0)? ix = Int_t (x/fDpx+fDeadZone/2) : ix = Int_t (x/fDpx+fDeadZone/2)-1;
     }
   if (sector==2)
     {
-      ix = Int_t (x/fDpx+fDeadZone/2);
-      iy = Int_t (y/fDpy);
+      iy = (y>0)? iy = Int_t (y/fDpy) : iy = Int_t (y/fDpy)-1;
+      ix = (x>0)? ix = Int_t (x/fDpx-fDeadZone/2) : ix = Int_t (x/fDpx-fDeadZone/2)-1;
     }
   if (sector==3)
     {
-      ix = Int_t (x/fDpx-fDeadZone);
-      iy = Int_t (y/fDpy);
+      iy = (y>0)? iy = Int_t (y/fDpy) : iy = Int_t (y/fDpy)-1;
+      ix = (x>0)? ix = Int_t (x/fDpx+fDeadZone/2) : ix = Int_t (x/fDpx+fDeadZone/2)-1;
     }
   if (sector==4)
     {
-      ix = Int_t (x/fDpx+fDeadZone/2);
-      iy = Int_t (y/fDpy+fDeadZone);
+      iy = (y>0)? iy = Int_t (y/fDpy-fDeadZone) : iy = Int_t (y/fDpy-fDeadZone)-1;
+      ix = (x>0)? ix = Int_t (x/fDpx-fDeadZone/2) : ix = Int_t (x/fDpx-fDeadZone/2)-1;
     }
   if (sector==5)
     {
-      ix = Int_t (x/fDpx-fDeadZone/2);
-      iy = Int_t (y/fDpy+fDeadZone);
+      iy = (y>0)? iy = Int_t (y/fDpy-fDeadZone) : iy = Int_t (y/fDpy-fDeadZone)-1;
+      ix = (x>0)? ix = Int_t (x/fDpx+fDeadZone/2) : ix = Int_t (x/fDpx+fDeadZone/2)-1;
     }
   
   //ix = Int_t (x/fDpx);
@@ -276,39 +280,39 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
   
   Float_t padplane_width = fNpy/3;
   
-  if (ix<=0)
+  if (iy<=0)
     {
-      if (iy <= fNpy/2)
+      if (ix <= fNpy/2)
 	{
-	  if (iy > fNpy/2 - padplane_width)
+	  if (ix > fNpy/2 - padplane_width)
 	    sector=0;
 	}
-      if (iy<= padplane_width/2)
+      if (ix<= padplane_width/2)
 	{
-	  if (iy > -(padplane_width/2))
+	  if (ix > -(padplane_width/2))
 	    sector=2;
 	}
-      if (iy <= -(padplane_width/2))
+      if (ix <= -(padplane_width/2))
 	{
-	  if (iy > -(fNpy/2))
+	  if (ix > -(fNpy/2))
 	    sector=4;
 	}
     }
-  if (ix>0)
+  if (iy>0)
     {
-      if (iy <= fNpy/2)
+      if (ix <= fNpy/2)
 	{
-	  if (iy > fNpy/2 - padplane_width)
+	  if (ix > fNpy/2 - padplane_width)
 	    sector=0;
 	}
-      if (iy<= padplane_width/2)
+      if (ix<= padplane_width/2)
 	{
-	  if (iy > -(padplane_width/2))
+	  if (ix > -(padplane_width/2))
 	    sector=2;
 	}
-      if (iy <= -(padplane_width/2))
+      if (ix <= -(padplane_width/2))
 	{
-	  if (iy > -(fNpy/2))
+	  if (ix > -(fNpy/2))
 	    sector=4;
 	}
     }
@@ -317,33 +321,33 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
     {
       //x = (ix>0) ? Float_t(ix*fDpx)-fDpx/2. : Float_t(ix*fDpx)-fDpx/2.;
       //y = (iy>0) ? Float_t(iy*fDpy)-fDpy/2. : Float_t(iy*fDpy)-fDpy/2.;
-      x = Float_t(ix*fDpx)-fDpx/2.-fDeadZone/2;
-      y = Float_t(iy*fDpy)-fDpy/2.+fDeadZone;
+      y = Float_t(iy*fDpy)-fDpy/2-fDeadZone;
+      x = Float_t(ix*fDpx)-fDpx/2+fDeadZone/2;
     }
   if (sector==1)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.+fDeadZone/2;
-      y = Float_t(iy*fDpy)-fDpy/2.+fDeadZone;
+      y = Float_t(iy*fDpy)-fDpy/2-fDeadZone;
+      x = Float_t(ix*fDpx)-fDpx/2-fDeadZone/2;
     }
   if (sector==2)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.-fDeadZone/2;
-      y = Float_t(iy*fDpy)-fDpy/2.;
+      y = Float_t(iy*fDpy)-fDpy/2;
+      x = Float_t(ix*fDpx)-fDpx/2+fDeadZone/2;
     }
   if (sector==3)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.+fDeadZone;
-      y = Float_t(iy*fDpy)-fDpy/2.;
+      y = Float_t(iy*fDpy)-fDpy/2;
+      x = Float_t(ix*fDpx)-fDpx/2-fDeadZone/2;
     }
   if (sector==4)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.-fDeadZone/2;
-      y = Float_t(iy*fDpy)-fDpy/2.-fDeadZone;
+      y = Float_t(iy*fDpy)-fDpy/2+fDeadZone;
+      x = Float_t(ix*fDpx)-fDpx/2+fDeadZone/2;
     }
   if (sector==5)
     {
-      x = Float_t(ix*fDpx)-fDpx/2.+fDeadZone/2;
-      y = Float_t(iy*fDpy)-fDpy/2.-fDeadZone;
+      y = Float_t(iy*fDpy)-fDpy/2+fDeadZone;
+      x = Float_t(ix*fDpx)-fDpx/2-fDeadZone/2;
     }
   
   //if (sector==2)
