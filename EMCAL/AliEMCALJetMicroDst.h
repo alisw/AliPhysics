@@ -9,10 +9,12 @@
 //                  
 //*-- Author: Aleksei Pavlinov (WSU)
 #include <TNamed.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TH1.h>
-#include <TH2.h>
+class TFile;
+class TTree;
+class TH1;
+class TH1F;
+class TH2F;
+class TH2;
 
 class AliGenHijingEventHeader;
 class AliRun;
@@ -22,45 +24,6 @@ class TBrowser;
 
 class AliEMCALJetMicroDst: public TNamed {
 
-  private:
-  Int_t   fDebug;
-
-  public:
-  TFile*  fFile;
-  TTree*  fTree;
-  TString fName;
-  TList*  fListHist;    //!
-  TString fFileName;    // for convenience
-
-  Float_t decone;   //! for EMCAL
-  Float_t ptcone;   //! for ch.particles 
-  // For partons after hard scattering
-  Int_t   npart;
-  Float_t xpt[4];  //[npart]
-  Float_t xeta[4]; //[npart]
-  Float_t xphi[4]; //[npart]
-  // Jet 
-  Int_t   njet;
-  Float_t jet[10];   //[njet]
-  Float_t jetal[10]; //[njet]
-  Float_t jphil[10]; //[njet]
-  Float_t jetaw[10]; //[njet]
-  Float_t jphiw[10]; //[njet]
-  // Charge particle in jet ??
-  // eT in EMCAL itself - 24-jan-2003
-  Int_t   ncell;         // 96*144 =13824 
-  Int_t   idcell[13824]; //[ncell]
-  Float_t etcell[13824]; //[ncell] : de = det*sf
-  // eT in EMCAL grid for jet finder 
-  Int_t   ngrid;         // 96*144 =13824 
-  Int_t   idgrid[13824]; //[ngrid]
-  Float_t etgrid[13824]; //[ngrid]
-  // charge particle which hit to EMCAL - 28-jan-2003
-  Int_t   nchp;
-  Int_t   pid[20000];  //[nchp]
-  Float_t ppt[20000];  //[nchp]
-  Float_t peta[20000]; //[nchp]
-  Float_t pphi[20000]; //[nchp]
 
   public:
   AliEMCALJetMicroDst(char *name="jetMicroDst",
@@ -86,10 +49,10 @@ class AliEMCALJetMicroDst: public TNamed {
   void    Print(Option_t* option="") const;                          // *MENU* 
   Int_t   GetEntry(Int_t entry);
   void    Test();
-  Int_t   GetNpart() {return npart;}
+  Int_t   GetNpart() {return fnpart;}
   Bool_t  GetParton(Int_t i, Float_t& pt, Float_t& eta, Float_t& phi);
   Bool_t  GetParton(Int_t i, TVector3& vec);
-  Int_t   GetNjet() {return njet;} 
+  Int_t   GetNjet() {return fnjet;} 
   Bool_t  GetJet(Int_t i,Int_t mode, Float_t& pt,Float_t& eta,Float_t& phi);
   Bool_t  GetJet(Int_t i,Int_t mode, TVector3& vec);
   static  void FillVector(Float_t pt, Float_t eta, Float_t phi, TVector3& vec);
@@ -101,8 +64,8 @@ class AliEMCALJetMicroDst: public TNamed {
   Double_t GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5);
   Double_t GetTpcPtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5);
   Double_t GetSum(Int_t n, Float_t *ar, Double_t cut=0.0);
-  Double_t GetSumEmcal(Double_t cut=0.0) {return GetSum(ncell, etcell, cut);}
-  Double_t GetSumTpc(Double_t cut=0.0) {return GetSum(nchp, ppt, cut);}
+  Double_t GetSumEmcal(Double_t cut=0.0) {return GetSum(fncell, fetcell, cut);}
+  Double_t GetSumTpc(Double_t cut=0.0) {return GetSum(fnchp, fppt, cut);}
 
   void    SetDebug(Int_t flag) {fDebug = flag;}
   Float_t GetDebug() const  {return fDebug;}
@@ -116,8 +79,61 @@ class AliEMCALJetMicroDst: public TNamed {
   virtual void Browse(TBrowser* b);
 
   static TList *MoveHistsToList(char* name="List of Hist", Bool_t putToBrowser=kTRUE);
+  private:
+  
+  Float_t fpphi[20000]; //[nchp]
+  Int_t   fDebug;	// debug flag
+  TFile*  fFile;	// filename
+  TTree*  fTree;	// Tree pointer
+  TString fName;	// name
+  TList*  fListHist;    //!
+  TString fFileName;    // for convenience
 
-  ClassDef(AliEMCALJetMicroDst,1) // Micro Dst for jet analysis
+  Float_t fdecone;   //! for EMCAL
+  Float_t fptcone;   //! for ch.particles 
+  // For partons after hard scattering
+  Int_t   fnpart;	//npartons
+  Float_t fxpt[4];  //[npart]
+  Float_t fxeta[4]; //[npart]
+  Float_t fxphi[4]; //[npart]
+  // Jet 
+  Int_t   fnjet;	// number of jets
+  Float_t fjet[10];   //[njet]
+  Float_t fjetal[10]; //[njet]
+  Float_t fjphil[10]; //[njet]
+  Float_t fjetaw[10]; //[njet]
+  Float_t fjphiw[10]; //[njet]
+  // Charge particle in jet ??
+  // eT in EMCAL itself - 24-jan-2003
+  Int_t   fncell;         // 96*144 =13824 
+  Int_t   fidcell[13824]; //[ncell]
+  Float_t fetcell[13824]; //[ncell] : de = det*sf
+  // eT in EMCAL grid for jet finder 
+  Int_t   fngrid;         // 96*144 =13824 
+  Int_t   fidgrid[13824]; //[ngrid]
+  Float_t fetgrid[13824]; //[ngrid]
+  // charge particle which hit to EMCAL - 28-jan-2003
+  Int_t   fnchp;	//number of charged particles
+  Int_t   fpid[20000];  //[nchp]
+  Float_t fppt[20000];  //[nchp]
+  Float_t fpeta[20000]; //[nchp]
+  TH1F*  hPtPart; //hist
+  TH1F*	 hNJet;	//hist
+  TH1F*  hPtJet;	//hist
+  TH2F*  hEtaPhiPart;	//hist
+  TH2F*  hEtaPhiJet;	//hist
+  TH1F*  hNcell;	//hist
+  TH1F*	  hCellId;	//hist
+  TH1F*	  hCellEt;	//hist
+  	
+  TH1F*	  hSumEt;	//hist
+  TH1F*  hNgrid;	//hist
+  TH1F*	  hGridId;	//hist
+  TH1F*  hGridEt;	//hist
+  TH1F* hSumEtGrForJF;	//hist
+
+
+  ClassDef(AliEMCALJetMicroDst,2) // Micro Dst for jet analysis
 };
 
 #endif // AliEMCALJETMICRODST_H
