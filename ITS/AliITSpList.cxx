@@ -304,17 +304,10 @@ AliITSpListItem::~AliITSpListItem(){
     //    none.
     // Return:
     //    A properly destroyed AliITSpListItem class.
-/*
-    this->fmodule = 0;
-    this->findex  = 0;
-    for(Int_t i=0;i<=this->GetNsignals();i++){
-        this->fTrack[i]  = 0;
-        this->fSignal[i] = 0.0;
-        this->fHits[i]   = 0;
-    } // end if i
-    this->fTsignal = 0.0;
-    this->fNoise   = 0.0;
-*/    
+
+    if(!fTrack)  delete [] fTrack;
+    if(!fHits)   delete [] fHits;
+    if(!fSignal) delete [] fSignal;
 }
 //______________________________________________________________________
 AliITSpListItem& AliITSpListItem::operator=(const AliITSpListItem &source){
