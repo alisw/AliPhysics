@@ -265,7 +265,8 @@ if (!fInitialised) InitPlots();
   Bool_t doesJetMeetBinCriteria = 0;
   AliEMCALJet* jethighest=0; 
   AliEMCALJet* jetsecond=0; 
-  //  Find Highest and Second Highest Jet
+  //  Find Highest and Second Highest Jet 
+  // (NB!!!!!!!)  Pointing into the EMCAL!!!!!!
   
 // =========================== All cases ===================================
   
@@ -273,36 +274,60 @@ if (fOutput->GetNJets()>=1)
 {
 	Float_t theta = 2.0*atan(exp(-fOutput->GetParton(0)->Eta()));
 	Float_t et    = fOutput->GetParton(0)->Energy() * TMath::Sin(theta);
-	fhInputOutput->Fill(et,fOutput->GetJet(0)->Energy());
+	// I will make a little array of jet indices for which jets are in 
+	// the EMCAL then my counter can loop from 0 below - but it will 
+	// be the index of the array of applicable jets
+	Int_t appjet[4];
+	Int_t numappjet=0;
+	for (Int_t appc=0;appc<fOutput->GetNJets();appc++)
+	{ // Check all jets for applicability
+		Float_t eta = fOutput->GetJet(appc)->Eta();
+		Float_t phi = fOutput->GetJet(appc)->Phi();
+		if (eta > -0.7 && eta < 0.7 && phi > 1./3.*TMath::Pi() && phi < TMath::Pi())
+		{ // Then jet is applicable
+			appjet[numappjet]=appc;
+			numappjet++;
+		}
+	}
+	
 	if (fOutput->GetNJets()>1)
 	{
-	      	for (Int_t counter = 0; counter<fOutput->GetNJets();counter++)  
+	      	for (Int_t counter = 0; counter<numappjet;counter++)  
 		{	  
 			if (counter==0)
 			{ 		  
-				jethighest = fOutput->GetJet(0);
-	      			jetsecond  = fOutput->GetJet(1);
+				jethighest = fOutput->GetJet(appjet[0]);
+	      			jetsecond  = fOutput->GetJet(appjet[1]);
 	      		}
 	      		if (counter>0)
 	      		{
 	      			Float_t energyhighest = jethighest->Energy();
 	      			Float_t energysecond = jetsecond->Energy();
 	      			
-	      			if ((fOutput->GetJet(counter))->Energy()>energyhighest) 
+	      			if ((fOutput->GetJet(appjet[counter]))->Energy()>energyhighest) 
 	      			{
 	      				jetsecond=jethighest;
-	      				jethighest=fOutput->GetJet(counter);
-	      			}else if ((fOutput->GetJet(counter))->Energy()>energysecond) 
+	      				jethighest=fOutput->GetJet(appjet[counter]);
+	      			}else if ((fOutput->GetJet(appjet[counter]))->Energy()>energysecond) 
 	      			{
-	      				jetsecond=fOutput->GetJet(counter);
+	      				jetsecond=fOutput->GetJet(appjet[counter]);
 	      			}
 	      
 			}
 	      	}
 	}else
 	{
-		jethighest=fOutput->GetJet(0);
-		jetsecond=0;
+		Float_t eta = fOutput->GetJet(0)->Eta();
+		Float_t phi = fOutput->GetJet(0)->Phi();
+		if (eta > -0.7 && eta < 0.7 && phi > 1./3.*TMath::Pi() && phi < TMath::Pi())
+		{ // Then jet is applicable
+			jethighest=fOutput->GetJet(0);
+			jetsecond=0;
+		}else
+		{
+			Error("FillFromOutput","There is only one jet and it isn't in the area of applicability");
+		}
+						
 	}
 	if ( 95.0 < jethighest->Energy() && jethighest->Energy() < 105.0  )
 	{
@@ -310,6 +335,7 @@ if (fOutput->GetNJets()>=1)
 		fhRecoBinJetEt->Fill(jethighest->Energy());
 		fhRecoBinInputJetEt->Fill(et);
 	}
+	fhInputOutput->Fill(et,jethighest->Energy());
 		
 }
 
