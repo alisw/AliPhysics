@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/04/12 12:13:23  cblume
+Add Jiris changes
+
 Revision 1.3  2002/03/28 14:59:07  cblume
 Coding conventions
 
@@ -382,7 +385,8 @@ void AliTRDparameter::Init()
   SetTiltingAngle(5.0);
 
   // The magnetic field strength in Tesla
-  fField           = 0.2 * gAlice->Field()->Factor();
+  //fField           = 0.2 * gAlice->Field()->Factor();
+  fField           = 0.4;
 
   //
   // ----------------------------------------------------------------------------

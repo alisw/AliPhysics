@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2002/04/29 11:50:47  cblume
+Change initialization of gAlice in the merging case
+
 Revision 1.36  2002/04/12 12:13:23  cblume
 Add Jiris changes
 
@@ -437,6 +440,13 @@ void AliTRDdigitizer::Exec(Option_t* option)
       printf("<AliTRDdigitizer::Exec> ");
       printf("Add input stream %d\n",iInput);
     }
+
+    // check if the input tree exists
+    if (!fManager->GetInputTreeTRDS(iInput)) {
+      printf("<AliTRDdigitizer::Exec> ");
+      printf("Input stream %d does not exist\n",iInput);
+      return;
+    } 
 
     // Read the s-digits via digits manager
     sdigitsManager = new AliTRDdigitsManager();

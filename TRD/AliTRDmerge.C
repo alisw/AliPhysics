@@ -10,11 +10,9 @@ void AliTRDmerge()
   Char_t *fileBackground = "galice_background.root";
 
   if (gAlice) {
-    printf("<AliTRDmerge> Get AliRun object from signal file.\n");
-    TFile *fFileSignal = new TFile(fileSignal); 
+    printf("<AliTRDmerge> Delete the AliRun object from memory.\n");
     delete gAlice;
-    gAlice = (AliRun *) fFileSignal->Get("gAlice");
-    fFileSignal->Close();
+    gAlice = 0;
   }
 
   AliRunDigitizer *manager = new AliRunDigitizer(2,1);
