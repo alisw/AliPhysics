@@ -22,7 +22,7 @@
   #include <TText.h>
   #include <TBenchmark.h>
   #include <TStyle.h>
-  #include <TKey.h>
+  #include <TFile.h>
   #include <TROOT.h>
 
   #include "AliStack.h"
@@ -146,16 +146,19 @@ Int_t AliTPCComparison
          return 5;
       }
    }
-   TKey *key=0;
-   TIter next(ef->GetListOfKeys());
+   AliESD* event = new AliESD;
+   TTree* esdTree = (TTree*) ef->Get("esdTree");
+   if (!esdTree) {
+      ::Error("AliTPCComparison.C", "no ESD tree found");
+      return 6;
+   }
+   esdTree->SetBranchAddress("ESD", &event);
 
 
    //******* Loop over events *********
    Int_t e=0;
-   while ((key=(TKey*)next())!=0) {
+   while (esdTree->GetEvent(e)) {
       cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
-
-      AliESD *event=(AliESD*)key->ReadObj();
 
       Int_t nentr=event->GetNumberOfTracks();
       allfound+=nentr;
@@ -271,9 +274,9 @@ Int_t AliTPCComparison
       cout<<"Number of \"good\" tracks ="<<ngood<<endl;
 
       refs->Clear();
-      delete event;
   }// ***** End of the loop over events
 
+   delete event;
    ef->Close();
 
    delete tpcTree;

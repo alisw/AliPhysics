@@ -1,6 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
   #include "Riostream.h"
-  #include "TKey.h"
+  #include "TFile.h"
+  #include "TTree.h"
   #include "TStopwatch.h"
 
   #include "AliRun.h"
@@ -10,7 +11,7 @@
   #include "AliITSLoader.h"
   #include "AliITS.h"
   #include "AliITSgeom.h"
-  #include "AliITStrackerV2.h"
+  #include "AliITStrackerANN.h"
   #include "AliESD.h"
 #endif
 
@@ -153,16 +154,19 @@ Int_t AliITSFindTracksANN
 		cerr<<"Can't AliESDtpc.root !\n";
 		return 1;
 	}
+	AliESD* event = new AliESD;
+	TTree* esdTree = (TTree*) tpcf->Get("esdTree");
+	if (!esdTree) {
+	  cerr<<"no ESD tree found !\n";
+	  return 1;
+	}
+	esdTree->SetBranchAddress("ESD", &event);
 	
 	// Loop on events
-	TKey *key=0;
-	TIter next(tpcf->GetListOfKeys());
 	TStopwatch timer; 
 	for (Int_t i = 0; i < nev; i++) {
-		tpcf->cd();
-		if ((key=(TKey*)next())==0) break;
 		cerr << "Processing event number: " << i << endl;
-		AliESD *event=(AliESD*)key->ReadObj();
+		esdTree->GetEvent(i);
 		
 		rl->GetEvent(i);
 		
@@ -237,12 +241,12 @@ Int_t AliITSFindTracksANN
 		// End of operations: unload clusters
 		tracker.UnloadClusters();
 		
-		delete event;
 	}
 	timer.Stop(); 
 	timer.Print();
 	
 	// Close files & delete objects
+	delete event;
 	tpcf->Close();
 	itsf->Close();
 	delete rl;

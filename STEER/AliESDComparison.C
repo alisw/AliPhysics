@@ -13,7 +13,8 @@
   #include <TParticle.h>
   #include <TCanvas.h>
   #include <TBenchmark.h>
-  #include <TKey.h>
+  #include <TFile.h>
+  #include <TTree.h>
   #include <TROOT.h>
 
   #include <AliStack.h>
@@ -116,22 +117,26 @@ Int_t AliESDComparison(const Char_t *dir=".") {
       delete rl;
       return 1;
    }
-   TKey *key=0;
-   TIter next(ef->GetListOfKeys());
+   AliESD* event = new AliESD;
+   TTree* tree = (TTree*) ef->Get("esdTree");
+   if (!tree) {
+      ::Error("AliESDComparison.C", "no ESD tree found");
+      delete rl;
+      return 1;
+   }
+   tree->SetBranchAddress("ESD", &event);
 
    //****** Tentative particle type "concentrations"
    Double_t c[5]={0.01, 0.01, 0.85, 0.10, 0.05};
 
    //******* The loop over events
    Int_t e=0;
-   while ((key=(TKey*)next())!=0) {
+   while (tree->GetEvent(e)) {
       cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
 
-      rl->GetEvent(e); ef->cd();
+      rl->GetEvent(e);
  
       e++;
-
-      AliESD *event=(AliESD*)key->ReadObj();
 
       Int_t ntrk=event->GetNumberOfTracks();
       cerr<<"Number of ESD tracks : "<<ntrk<<endl; 
@@ -192,7 +197,6 @@ Int_t AliESDComparison(const Char_t *dir=".") {
            }
 	}
       }
-      delete event;
       cout<<"Number of selected ESD tracks : "<<nsel<<endl;
       cout<<"Number of selected pion ESD tracks : "<<pisel<<endl;
       cout<<"Number of selected kaon ESD tracks : "<<kasel<<endl;
@@ -202,6 +206,7 @@ Int_t AliESDComparison(const Char_t *dir=".") {
 
    } // ***** End of the loop over events
 
+   delete event;
    ef->Close();
 
    TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");

@@ -8,7 +8,7 @@
 
 #if !defined( __CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
-  #include "TKey.h"
+  #include <TTree.h>
   #include "TFile.h"
   #include "TH1F.h"
   #include "TH2F.h"
@@ -30,21 +30,21 @@ Int_t AliESDv0Analysis(Int_t nev=1) {
 
    TFile *ef=TFile::Open("AliESDs.root");
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
+   AliESD* event = new AliESD;
+   TTree* tree = (TTree*) ef->Get("esdTree");
+   if (!tree) {cerr<<"no ESD tree found\n"; return 1;};
+   tree->SetBranchAddress("ESD", &event);
 
    TStopwatch timer;
    Int_t rc=0,n=0;
-   TKey *key=0;
-   TIter next(ef->GetListOfKeys());
 
    //****** Tentative particle type "concentrations"
    Double_t c[5]={0.0, 0.0, 0.1, 0.1, 0.1};
 
    //******* The loop over events
-   while ((key=(TKey*)next())!=0) {
+   while (tree->GetEvent(n)) {
 
      cerr<<"Processing event number : "<<n++<<endl;
-
-     AliESD *event=(AliESD*)key->ReadObj();
 
      Int_t nv0=event->GetNumberOfV0s();
      cerr<<"Number of ESD v0s : "<<nv0<<endl; 
@@ -74,8 +74,10 @@ Int_t AliESDv0Analysis(Int_t nev=1) {
        Double_t mass=v0->GetEffMass();
        hm->Fill(mass);
      } 
-     delete event;
    }
+
+   delete event;
+   ef->Close();
 
    timer.Stop(); timer.Print();
 

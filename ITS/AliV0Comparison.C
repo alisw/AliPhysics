@@ -19,7 +19,7 @@
   #include <TText.h>
   #include <TBenchmark.h>
   #include <TStyle.h>
-  #include <TKey.h>
+  #include <TFile.h>
   #include <TROOT.h>
 
   #include "AliStack.h"
@@ -164,17 +164,20 @@ Int_t AliV0Comparison(Int_t code=310, const Char_t *dir=".") {
          return 5;
       }
    }
-   TKey *key=0;
-   TIter next(ef->GetListOfKeys());
+   AliESD* event = new AliESD;
+   TTree* esdTree = (TTree*) ef->Get("esdTree");
+   if (!esdTree) {
+      ::Error("AliV0Comparison.C", "no ESD tree found");
+      return 6;
+   }
+   esdTree->SetBranchAddress("ESD", &event);
 
 
    //******* Loop over events *********
    Int_t e=0;
-   while ((key=(TKey*)next())!=0) { 
+   while (esdTree->GetEvent(e)) {
       cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
  
-      AliESD *event=(AliESD*)key->ReadObj();
-
       Int_t nentr=event->GetNumberOfV0s();
       allfound+=nentr;
 
@@ -273,10 +276,10 @@ Int_t AliV0Comparison(Int_t code=310, const Char_t *dir=".") {
 
       prefs->Clear();
       nrefs->Clear();
-      delete event;
 
    } //**** End of the loop over events
 
+   delete event;
    ef->Close();
    
    delete v0Tree;

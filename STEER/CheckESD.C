@@ -7,6 +7,7 @@
 #include <TCanvas.h>
 #include <TVector3.h>
 #include <TPDGCode.h>
+#include <TParticle.h>
 
 #include "AliRunLoader.h"
 #include "AliLoader.h"
@@ -155,6 +156,13 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     Error("CheckESD", "opening ESD file %s failed", esdFileName);
     return kFALSE;
   }
+  AliESD* esd = new AliESD;
+  TTree* tree = (TTree*) esdFile->Get("esdTree");
+  if (!tree) {
+    Error("CheckESD", "no ESD tree found");
+    return kFALSE;
+  }
+  tree->SetBranchAddress("ESD", &esd);
 
   // efficienc and resolution histograms
   Int_t nBinsPt = 15;
@@ -291,9 +299,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     }
 
     // get the event summary data
-    char esdName[256]; 
-    sprintf(esdName, "ESD%d", iEvent);
-    AliESD* esd = (AliESD*) esdFile->Get(esdName);
+    tree->GetEvent(iEvent);
     if (!esd) {
       Error("CheckESD", "no ESD object found for event %d", iEvent);
       return kFALSE;
@@ -362,16 +368,12 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     }
 
     // loop over calo tracks
-    for (Int_t iTrack = 0; iTrack < esd->GetNumberOfCaloTracks(); iTrack++) {
-      AliESDCaloTrack* caloTrack = esd->GetCaloTrack(iTrack);
-      TParticle* recParticle = caloTrack->GetRecParticle();
-      if (recParticle->InheritsFrom("AliPHOSRecParticle")) {
-	hEPHOS->Fill(recParticle->Energy());
-      } else if (recParticle->InheritsFrom("AliEMCALRecParticle")) {
-	hEEMCAL->Fill(recParticle->Energy());
-      } else {
-	Warning("CheckESD", "unknown calo particle");
-	recParticle->Dump();
+    for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
+      AliESDtrack* track = esd->GetTrack(iTrack);
+      if (track->IsPHOS()) {
+	hEPHOS->Fill(track->GetPHOSsignal());
+      } else if (track->IsEMCAL()) {
+	hEEMCAL->Fill(track->GetEMCALsignal());
       }
     }
 
@@ -677,6 +679,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   delete hMassXi;
   delete hMassOmega;
 
+  delete esd;
   esdFile->Close();
   delete esdFile;
 
