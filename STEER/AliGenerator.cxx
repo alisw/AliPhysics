@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/10/16 08:45:37  morsch
+All vertex truncation and event vertex moved here.
+
 Revision 1.15  2001/07/28 10:43:41  hristov
 Default argument initialised once
 
@@ -92,10 +95,12 @@ AliGenerator::AliGenerator()
   //
   // Default constructor
   //
-    if (gAlice->GetDebug()>0)
-        printf("\n AliGenerator Default Constructor\n\n");
-    
-    gAlice->SetGenerator(this);
+    if (gAlice) {
+	if (gAlice->GetDebug()>0)
+	    printf("\n AliGenerator Default Constructor\n\n");
+	gAlice->SetGenerator(this);
+    }
+
     SetThetaRange(); ResetBit(kThetaRange);
     SetPhiRange(); ResetBit(kPhiRange);
     SetMomentumRange(); ResetBit(kMomentumRange);
@@ -103,6 +108,8 @@ AliGenerator::AliGenerator()
     SetYRange(); ResetBit(kYRange);
     SetNumberParticles();
     SetTrackingFlag();
+    SetCutVertexZ();
+
 
     fOrigin.Set(3);
     fOsigma.Set(3);
@@ -126,15 +133,19 @@ AliGenerator::AliGenerator(Int_t npart)
   //
   // Standard constructor
   //
-    if (gAlice->GetDebug()>0)
-        printf("\n AliGenerator Constructor initializing number of particles \n\n");
-    gAlice->SetGenerator(this);
+    if (gAlice) {
+	if (gAlice->GetDebug()>0)
+	    printf("\n AliGenerator Constructor initializing number of particles \n\n");
+	gAlice->SetGenerator(this);
+    }
+    
     SetThetaRange(); ResetBit(kThetaRange);
     SetPhiRange(); ResetBit(kPhiRange);
     SetMomentumRange(); ResetBit(kMomentumRange);
     SetPtRange(); ResetBit(kPtRange);
     SetYRange(); ResetBit(kYRange);
     SetTrackingFlag();
+    SetCutVertexZ();
 
     fOrigin.Set(3);
     fOsigma.Set(3);
