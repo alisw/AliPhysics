@@ -98,11 +98,14 @@ void AliGenMevSim::Init()
 
   // mevsim specyfic parameters
   
-  mevsim->SetModelType(fConfig->fModelType);
-  mevsim->SetReacPlaneCntrl(fConfig->fReacPlaneCntrl);
-  mevsim->SetPsiRParams(fConfig->fPsiRMean, fConfig->fPsiRStDev);
-  mevsim->SetMultFacParams(fConfig->fMultFacMean, fConfig->fMultFacStDev);
-  
+  mevsim->SetModelType(fConfig->GetModelType());
+  Int_t ctrl; Float_t psiRMean = 0; Float_t psiRStDev = 0;
+  fConfig->GetRectPlane(ctrl,psiRMean,psiRStDev);
+  mevsim->SetReacPlaneCntrl(ctrl);
+  mevsim->SetPsiRParams(psiRMean, psiRStDev);
+  Float_t mean; Float_t stDev;
+  fConfig->GetMultFac(mean,stDev);
+  mevsim->SetMultFacParams(mean,stDev);
   // mevsim initialisation
 
   mevsim->Initialize();

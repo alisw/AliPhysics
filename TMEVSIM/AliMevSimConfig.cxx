@@ -12,8 +12,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
+//__________________________________________________________________
+////////////////////////////////////////////////////////////////////
+//
+// class AliMevSimConfig
+//
+// Class containing configuation inforamtion for MeVSim generator
+// --------------------------------------------
+// --------------------------------------------
+// --------------------------------------------
+// author: radomski@if.pw.edu.pl
+//
+////////////////////////////////////////////////////////////////////
 
 #include "AliMevSimConfig.h"
 
@@ -23,14 +33,14 @@ ClassImp(AliMevSimConfig)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 AliMevSimConfig::AliMevSimConfig() {
-
+//def ctor
   Init();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 AliMevSimConfig::AliMevSimConfig(Int_t modelType) {
-
+//ctor
   Init();
   SetModelType(modelType);
 }
@@ -38,12 +48,12 @@ AliMevSimConfig::AliMevSimConfig(Int_t modelType) {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 AliMevSimConfig::~AliMevSimConfig() {
+//dtor
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliMevSimConfig::Init() {
-
   // Default Values
 
   fModelType = 1;
@@ -63,8 +73,8 @@ void AliMevSimConfig::Init() {
 //////////////////////////////////////////////////////////////////////////////////////////////////
  
 void AliMevSimConfig::SetModelType(Int_t modelType) {
-
-  if (modelType < 0 || modelType > kMAX_MODEL)
+//Sets type of the model
+  if (modelType < 0 || modelType > fgkMAX_MODEL)
     Error("SetModelType","Wrog Model Type indentifier (%d)",modelType);
 
   fModelType = modelType;
@@ -73,8 +83,8 @@ void AliMevSimConfig::SetModelType(Int_t modelType) {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliMevSimConfig::SetRectPlane(Int_t ctrl, Float_t psiRMean, Float_t psiRStDev) {
-
-  if (ctrl < 0 || ctrl > kMAX_CTRL)
+//Sets reaction plane parameters
+  if (ctrl < 0 || ctrl > fgkMAX_CTRL)
     Error("SetReactPlane","Wrong Control Parameter (%d)", ctrl);
 
   fReacPlaneCntrl = ctrl;
@@ -85,7 +95,7 @@ void AliMevSimConfig::SetRectPlane(Int_t ctrl, Float_t psiRMean, Float_t psiRStD
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliMevSimConfig::SetMultFac(Float_t mean, Float_t stDev) {
-  
+  //Sets multiplicity mean and variance
   fMultFacMean = mean;
   fMultFacStDev = stDev;
 }
@@ -94,7 +104,7 @@ void AliMevSimConfig::SetMultFac(Float_t mean, Float_t stDev) {
 
 void AliMevSimConfig::SetStDev(Float_t mult, Float_t temp, Float_t sigma,
   Float_t expVel, Float_t psiR, Float_t Vn, Float_t multFac) {
-
+//sets Dev parameters (whatever Dev is)
   fNStDevMult = mult;
   fNStDevTemp = temp;
   fNStDevSigma = sigma;
@@ -102,12 +112,26 @@ void AliMevSimConfig::SetStDev(Float_t mult, Float_t temp, Float_t sigma,
   fNStdDevPSIr = psiR;
   fNStDevVn = Vn;
   fNStDevMultFac =multFac;
+
+}
+void AliMevSimConfig::GetStDev(Float_t& mult, Float_t& temp, Float_t& sigma,
+                Float_t& expVel, Float_t& psiR, Float_t& Vn, Float_t& multFac) const
+{
+ //returns dev parameters
+   mult  = fNStDevMult;
+   temp  = fNStDevTemp;
+   sigma  = fNStDevSigma;
+   expVel  = fNStDevExpVel;
+   psiR  = fNStdDevPSIr;
+   Vn  = fNStDevVn;
+   multFac  = fNStDevMultFac;
+ 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliMevSimConfig::SetGrid(Int_t integr, Int_t scan) {
-
+//Sets grid 
   fNIntegPts = integr;
   fNScanPts = scan;
 }
