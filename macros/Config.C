@@ -87,6 +87,45 @@ if(iMAG) {
 AliMAG *MAG  = new AliMAG("MAG","Magnet");
 }
 
+
+if(iABSO) {
+//=================== ABSO parameters ============================
+AliABSO *ABSO  = new AliABSO("ABSO","Muon Absorber");
+}
+
+if(iDIPO) {
+//=================== DIPO parameters ============================
+
+AliDIPO *DIPO  = new AliDIPOv2("DIPO","Dipole version 2");
+}
+
+if(iHALL) {
+//=================== HALL parameters ============================
+
+AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
+}
+
+
+if(iFRAME) {
+//=================== FRAME parameters ============================
+
+AliFRAME *FRAME  = new AliFRAMEv0("FRAME","Space Frame");
+}
+
+if(iSHIL) {
+//=================== SHIL parameters ============================
+
+AliSHIL *SHIL  = new AliSHIL("SHIL","Shielding");
+}
+
+
+if(iPIPE) {
+//=================== PIPE parameters ============================
+
+AliPIPE *PIPE  = new AliPIPEv0("PIPE","Beam Pipe");
+}
+
+
 if(iITS) {
 //=================== ITS parameters ============================
 //
@@ -189,44 +228,6 @@ TRD->SetGasMix(0);
 //TRD->SetSensChamber(2);
 //TRD->SetSensSector(5);
 }
-
-
-if(iABSO) {
-//=================== ABSO parameters ============================
-AliABSO *ABSO  = new AliABSO("ABSO","Muon Absorber");
-}
-
-if(iDIPO) {
-//=================== DIPO parameters ============================
-
-AliDIPO *DIPO  = new AliDIPOv2("DIPO","Dipole version 2");
-}
-
-if(iHALL) {
-//=================== HALL parameters ============================
-
-AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
-}
-
-
-if(iFRAME) {
-//=================== FRAME parameters ============================
-AliFRAME *FRAME  = new AliFRAMEv1("FRAME","Space Frame");
-}
-
-if(iSHIL) {
-//=================== SHIL parameters ============================
-
-AliSHIL *SHIL  = new AliSHIL("SHIL","Shielding");
-}
-
-
-if(iPIPE) {
-//=================== PIPE parameters ============================
-
-AliPIPE *PIPE  = new AliPIPEv0("PIPE","Beam Pipe");
-}
-
 
 if(iFMD) {
 //=================== FMD parameters ============================
