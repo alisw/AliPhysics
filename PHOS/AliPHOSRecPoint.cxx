@@ -44,7 +44,7 @@ AliPHOSRecPoint::AliPHOSRecPoint()
   // ctor
 
   fGeom = (AliPHOSGeometry*) AliPHOSGeometry::GetInstance() ;
-  fMaxTrack = 20 ;
+  fMaxTrack = 50 ;
   fPHOSMod = 0;
 }
 
