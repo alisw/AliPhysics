@@ -78,7 +78,7 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
       gAlice = (AliRun*) fRootFile->Get("gAlice") ;
 
       //=========== Get the PHOS object and associated geometry from the file      
-      fPHOS  = (AliPHOSv5 *)gAlice->GetDetector("PHOS") ;
+      fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
       fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
  
       //========== Initializes the Index to Object converter
@@ -881,7 +881,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
       
       //=========== Get the PHOS object and associated geometry from the file 
       
-      fPHOS  = (AliPHOSv5 *)gAlice->GetDetector("PHOS") ;
+      fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
       fGeom = fPHOS->GetGeometry();
       //      fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
 
