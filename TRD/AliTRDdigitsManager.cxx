@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/02/11 14:27:54  cblume
+Geometry and hit structure update
+
 Revision 1.14  2001/11/14 10:50:46  cblume
 Changes in digits IO. Add merging of summable digits
 
@@ -140,11 +143,6 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
     fFile->Close();
     delete fFile;
     fFile = NULL;
-  }
-
-  if (fTree) {
-    delete fTree;
-    fTree = NULL;
   }
 
   if (fDigits) {
