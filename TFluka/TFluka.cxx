@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/12/06 12:41:29  morsch
+Mess from last merge cleaned up.
+
 Revision 1.8  2002/12/06 12:28:44  morsch
 Region to media mapping corrected and improved.
 
@@ -497,11 +500,17 @@ Int_t TFluka::PDGFromId(Int_t id) const
 {
   //
   // Return PDG code and pseudo ENDF code from Fluka code
+  // IPTOKP array goes from official to internal
 
-  //IPTOKP array goes from official to internal
-  Int_t intfluka = GetFlukaIPTOKP(id);
-  //MPKDHA() goes from internal to PDG
-  return mpdgha(intfluka);
+    Int_t intfluka = GetFlukaIPTOKP(id);
+
+    if (! intfluka) {
+	printf("\n Warning PDGFromId: internal id of %d is zero \n", id);
+	return -1;
+    }
+    
+    //MPKDHA() goes from internal to PDG
+    return mpdgha(intfluka);
 }
 
 //_____________________________________________________________________________
