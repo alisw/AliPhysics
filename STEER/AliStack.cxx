@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/05/30 12:18:46  hristov
+Loop variables declared once
+
 Revision 1.4  2001/05/25 07:25:20  hristov
 AliStack destructor corrected (I.Hrivnacova)
 
@@ -62,7 +65,7 @@ AliStack::AliStack(Int_t size)
   // Create the particles arrays 
   fParticles      = new TClonesArray("TParticle",1000);
   fParticleMap    = new TObjArray(size);
-  fParticleBuffer = new TParticle();
+  fParticleBuffer = 0;
   fNtrack         =  0;
   fNprimary      =  0;
   fCurrent        = -1;
@@ -81,7 +84,7 @@ AliStack::AliStack()
   // Create the particles arrays 
   fParticles      = new TClonesArray("TParticle",1000);
   fParticleMap    = new TObjArray(10000);
-  fParticleBuffer = new TParticle();
+  fParticleBuffer = 0;
   fNtrack         =  0;
   fCurrent        = -1;
   fNprimary      =  0;
@@ -404,7 +407,7 @@ void AliStack::PurifyKine()
      fParticleBuffer = (TParticle*) particles.At(i);
      fParticleFileMap[i]=(Int_t) fTreeK->GetEntries();
      fTreeK->Fill();
-     particles[i]=0;
+     particles[i]=fParticleBuffer=0;
    }
 
    for (i=nkeep; i<fNtrack; ++i) particles[i]=0;
@@ -448,7 +451,7 @@ void AliStack::FinishEvent()
       fParticleBuffer = (TParticle*) part;
       fParticleFileMap[i]= (Int_t) fTreeK->GetEntries();
       fTreeK->Fill();
-      (*fParticleMap)[i]=0;      
+      (*fParticleMap)[i]=fParticleBuffer=0;      
       
       // When all primaries were filled no particle!=0
       // should be left => to be removed later.
