@@ -140,6 +140,11 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
 //____________________________________________________________________________ 
 AliEMCALGetter::~AliEMCALGetter(){
 
+  if (fPrimaries) {
+    fPrimaries->Delete() ; 
+    delete fPrimaries ; 
+  }
+
 }
 
 //____________________________________________________________________________ 
@@ -174,7 +179,7 @@ AliEMCALGetter * AliEMCALGetter::GetInstance(const char* headerFile,
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0))
       return fgObjGetter ;
     else
-      fgObjGetter->~AliEMCALGetter() ;  // delete it if already exists another version
+      fgObjGetter->~AliEMCALGetter() ;  // delete it already exists another version
   
   fgObjGetter = new AliEMCALGetter(headerFile,branchTitle, rw) ; 
   

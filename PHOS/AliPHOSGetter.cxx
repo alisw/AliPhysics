@@ -141,6 +141,11 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 //____________________________________________________________________________ 
 AliPHOSGetter::~AliPHOSGetter(){
 
+  if (fPrimaries) {
+    fPrimaries->Delete() ; 
+    delete fPrimaries ; 
+  }
+
 }
 
 //____________________________________________________________________________ 
@@ -175,7 +180,7 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0))
       return fgObjGetter ;
     else
-      fgObjGetter->~AliPHOSGetter() ;  // delete it if already exists another version
+      fgObjGetter->~AliPHOSGetter() ;  // delete it already exists another version
   
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
   
