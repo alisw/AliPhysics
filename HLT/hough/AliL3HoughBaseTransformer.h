@@ -3,6 +3,15 @@
 
 #include "AliL3RootTypes.h"
 
+#ifdef do_mc
+const UInt_t MaxTrack=15;
+struct TrackIndex {
+  Int_t fLabel[MaxTrack];
+  Int_t fNHits[MaxTrack];
+};
+typedef struct TrackIndex TrackIndex;
+#endif
+
 class AliL3DigitRowData;
 class AliL3Histogram;
 
@@ -33,22 +42,23 @@ class AliL3HoughBaseTransformer {
   virtual void TransformCircle() = 0;
   virtual void TransformCircleC(Int_t row_range) = 0;
   virtual void TransformLine() = 0;
-
+  
   //Getters
   Int_t GetSlice() {return fSlice;}
   Int_t GetPatch() {return fPatch;}
-  inline Int_t GetNEtaSegments() {return fNEtaSegments;}
+  Int_t GetNEtaSegments() {return fNEtaSegments;}
   Int_t GetLowerThreshold() {return fLowerThreshold;}
   Int_t GetUpperThreshold() {return fUpperThreshold;}
-  inline Double_t GetEtaMin() {return fEtaMin;}
-  inline Double_t GetEtaMax() {return fEtaMax;}
+  Double_t GetEtaMin() {return fEtaMin;}
+  Double_t GetEtaMax() {return fEtaMax;}
   
   AliL3DigitRowData *GetDataPointer() {return fDigitRowData;}
  
   virtual Int_t GetEtaIndex(Double_t eta) = 0;
   virtual AliL3Histogram *GetHistogram(Int_t eta_index) = 0;
   virtual Double_t GetEta(Int_t eta_index,Int_t slice) = 0;
-
+  virtual Int_t GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi) {return -1;}
+  
   //setters
   virtual void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100);
   void SetLowerThreshold(Int_t i) {fLowerThreshold = i;}

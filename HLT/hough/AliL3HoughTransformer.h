@@ -11,6 +11,9 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
  private:
   
   AliL3Histogram **fParamSpace; //!
+#ifdef do_mc
+  TrackIndex **fTrackID; //!
+#endif
   void DeleteHistograms();
 
  public:
@@ -29,7 +32,8 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);
   Double_t GetEta(Int_t eta_index,Int_t slice);
-
+  Int_t GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi);
+  
   //void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100);
   
   ClassDef(AliL3HoughTransformer,1) //Normal Hough transformation class
