@@ -12,7 +12,7 @@ proper ITS geometry and how to tun the test macros contained under the
 directory ITS in order to compare your own installation with the standard one 
 looking at some distributions/histograms.
         Any difference between what is described here and what you really get
-when you  run the code on your computer must be reported either to Roberto
+when you run the code on your computer must be reported either to Roberto
 Barbera at roberto.barbera@ct.infn.it or to Bjorn Nilsen at
 nilsen@mps.ohio-state.edu. Please note that all the tests described here have
 been done on a PC running Linux RedHat 6.1, gcc 2.95.2, and Root 3.00/06. If
@@ -32,38 +32,37 @@ ITS part of Config.C (or ConfigPPR.C) is reported here:
 
 //=================== ITS parameters ============================
     //
-    // As the innermost detector in ALICE, the Inner Tracking System "impacts"
-    // on almost all other detectors. This involves the fact that the ITS
-    // geometry  still has several options to be followed in parallel in order
-    // to determine the best set-up which minimizes the induced background. All
-    // the geometries available to date are described in the following. Read
-    // carefully the comments and use the default version (the only one
-    // uncommented) unless you are making comparisons and you know what you are
-    // doing. In this case just uncomment the ITS geometry you want to use and
-    // run Aliroot.
+    // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
+    // almost all other detectors. This involves the fact that the ITS geometry
+    // still has several options to be followed in parallel in order to determine
+    // the best set-up which minimizes the induced background. All the geometries
+    // available to date are described in the following. Read carefully the comments
+    // and use the default version (the only one uncommented) unless you are making
+    // comparisons and you know what you are doing. In this case just uncomment the
+    // ITS geometry you want to use and run Aliroot.
     //
     // Detailed geometries:         
     //
     //
     //AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
     //
-    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
+    //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-    //AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-    //ITS->SetMinorVersion(2);
-    //ITS->SetReadDet(kFALSE);
-    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");
-    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
-    //ITS->SetRails(1);            // 1 --> rails in ; 0 --> rails out
-    //ITS->SetCoolingFluid(1);     // 1 --> water ; 0 --> freon
+    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+    ITS->SetMinorVersion(2);					   // don't touch this parameter if you're not an ITS developer
+    ITS->SetReadDet(kFALSE);					   // don't touch this parameter if you're not an ITS developer
+    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetRails(1);	       // 1 --> rails in ; 0 --> rails out
+    ITS->SetCoolingFluid(1);	 // 1 --> water ; 0 --> freon
     //
     //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
-    //ITS->SetMinorVersion(2);                                      
-    //ITS->SetReadDet(kFALSE);
-    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det");
+    //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
+    //ITS->SetReadDet(kFALSE);                                       // don't touch this parameter if you're not an ITS developer
+    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
     //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
     //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
     //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
@@ -76,11 +75,11 @@ ITS part of Config.C (or ConfigPPR.C) is reported here:
     // for reconstruction !):
     //                                                     
     //
-    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS coarse version with asymmetric services");
+    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
     //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
     //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
     //
-    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS coarse version with symmetric services");
+    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
     //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
     //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
     //                      
@@ -89,27 +88,72 @@ ITS part of Config.C (or ConfigPPR.C) is reported here:
     // Geant3 <-> EUCLID conversion
     // ============================
     //
-    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry
-    // and  media to two ASCII files (called by default ITSgeometry.euc and
+    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
+    // media to two ASCII files (called by default ITSgeometry.euc and
     // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
     // The default (=0) means that you dont want to use this facility.
     //
     ITS->SetEUCLID(0);  
   }
   
-As you can see looking at the uncommented line, the present default is
+As you can see looking at the uncommented lines, the present default is the new
+PPR detailed geometry with asymmetric services:
 
-    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with
-asymmetric services"); 
+    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+    ITS->SetMinorVersion(2);					   // don't touch this parameter if you're not an ITS developer
+    ITS->SetReadDet(kFALSE);					   // don't touch this parameter if you're not an ITS developer
+    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetRails(1);	       // 1 --> rails in ; 0 --> rails out
+    ITS->SetCoolingFluid(1);	 // 1 --> water ; 0 --> freon
+
+    The first three functions are reserved to the ITS developpers and their
+values must not be modified at any time. The next four functions allow the user
+to  change the thickness of detectors and chips in the two SPD layers
+separately.  Detector thicknesses can go from 100 microns (TDR value) to 300
+microns (present default value). If a value outside this range is set a warning
+message is printed out and the default value (300 microns) is used. Chip
+thicknesses can go from 150 (TDR value) to 300 (present default value)
+microns. If a value outside this range is set a warning message is printed out
+and the default value (300 microns) is used. The last two function allow people
+to set the ITS rails in (=1) and out (=0) (the default is in) and the cooling
+fluid as water (=1, which is the default) or freon (=0). If the switch for
+rails is different from 0 and 1 a warning message is printed out and the
+default (rails in) is used. If the switch of the cooling fluid is different
+from 0 and 1 a warning message is printed out and the default (water) is used.
+
+     If you want to run the new PPR detailed geometry with symmetric services,
+the only uncommented lines must be:
+
+    AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
+    ITS->SetMinorVersion(2);					   // don't touch this parameter if you're not an ITS developer
+    ITS->SetReadDet(kFALSE);					   // don't touch this parameter if you're not an ITS developer
+    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
+    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetRails(1);		   // 1 --> rails in ; 0 --> rails out
+    ITS->SetCoolingFluid(1);	   // 1 --> water ; 0 --> freon
+
+The two additional functions are just the same of those described above.
+
+If you want to run the old detailed version of the ITS the only uncommented
+line must be:
+
+    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services"); 
     
 which is the TDR detailed geometry with asymmetric services. If you want to run
-the TDR detailed version with symmetric services, You have to uncomment this
+the TDR detailed version with symmetric services, you have to uncomment this
 line and comment out the line above.
 
     AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with
 symmetric services");
 
-If you want to run the new PPR coarse geometry with asymmetric services, You
+If you want to run the new PPR coarse geometry with asymmetric services, you
 have to uncomment this line and comment out the line above.
 
     AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS coarse
@@ -139,62 +183,6 @@ symmetric services");
     ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
 
 The two additional functions are just the same of those described above.
-
-    If you want to run the new PPR detailed geometry with asymmetric services,
-you have to uncomment these lines and comment out the above lines.
-
-    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version
-with asymmetric services");
-    ITS->SetMinorVersion(2);
-    ITS->SetReadDet(kFALSE);
-    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");
-    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the
-range [100,300]
-    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the
-range [100,300]
-    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range
-[150,300]
-    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range
-[150,300]
-    ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
-    ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
-
-    The first three functions are reserved to the ITS developpers and their
-values must not be modified at any time. The next four functions allow the user
-to  change the thickness of detectors and chips in the two SPD layers
-separately.  Detector thicknesses can go from 100 microns (TDR value) to 300
-microns (present default value). If a value outside this range is set a warning
-message is printed out and the default value (300 microns) is used. Chip
-thicknesses can go from 150 (TDR value) to 300 (present default value)
-microns. If a value outside this range is set a warning message is printed out
-and the default value (300 microns) is used. The last two function allow people
-to set the ITS rails in (=1) and out (=0) (the default is in) and the cooling
-fluid as water (=1, which is the default) or freon (=0). If the switch for
-rails is different from 0 and 1 a warning message is printed out and the
-default (rails in) is used. If the switch of the cooling fluid is different
-from 0 and 1 a warning message is printed out and the default (water) is used.
-
-     If you want to run the new PPR detailed geometry with symmetric services,
-the only uncommented lines must be:
-
-    AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version
-with symmetric services");
-    ITS->SetMinorVersion(2);                                      
-    ITS->SetReadDet(kFALSE);
-    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det");
-    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the
-range [100,300]
-    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the
-range [100,300]
-    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range
-[150,300]
-    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range
-[150,300]
-    ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
-    ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
-
-The functions are the same as in the asymmetric services' geometry. For their
-explanation and use see above.
 
 
 3. Simulation
@@ -409,3 +397,40 @@ class is AliITSVertex and an example of its use is contained in the test macro
 VertexMacro.C. The output of the primary vertex finder will eventually be 
 incorporated in the tracking algorithms.
 
+
+10. ITS tracking version 1
+--------------------------
+ 
+        In order to run the TPC-ITS track matching version 1 you have to 
+execute the script ITStestV1.sh. At the end of the procedure you can use the 
+macro ITSPlotTracks.C to show plots of efficiency and track parameter 
+resolution. An example of read-out of track parameters can be found in the 
+macro ReadITSTracks.C. Specific questions about tracking V1 and its use/results 
+must be addresses to Angela Badala' (angela.badala@ct.infn.it) and Giuseppe 
+Pappalardo (giuseppe.s.pappalardo@ct.infn.it).
+
+
+11. ITS tracking version 2
+--------------------------
+
+     In order to run the TPC-ITS track matching version 2 you have two
+possibilities:
+
+
+     1) run the following macros in a sequence under ITS:
+
+        AliTPCtest.C
+        AliITStestV2.C
+        AliITSPropagateBack.C
+        AliTPCPropagateBack.C
+
+     or
+
+     2) run the macro:
+
+        AliBarrelReconstruction.C
+
+        after having created digits for TPC and ITS. 
+
+Specific questions about tracking V2 and its use/results must be addresses to 
+Iouri Belikov (jouri.belikov@cern.ch).
