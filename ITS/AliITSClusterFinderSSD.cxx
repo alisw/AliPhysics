@@ -13,6 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/**************************************************************************
+ * The package was revised and changed by Boris Batiounia in the time     *
+ * period of March - June 2001                                            *
+ **************************************************************************/
+
+
 #include <iostream.h>
 #include <TArrayI.h>
 #include "AliRun.h"
@@ -130,11 +136,14 @@ void AliITSClusterFinderSSD::FindRawClusters(Int_t module)
 // 3. If necesery, resolves for each group of neighbouring digits 
 //    how many clusters creates it.
 // 4. Colculate the x and z coordinate  
-
   Int_t lay, lad, detect;
   AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
   AliITSgeom *geom = aliITS->GetITSgeom();
+
 	    geom->GetModuleId(module,lay, lad, detect);
+
+	    //cout<<"FindRawCl: layer,module ="<<lay<<","<<module<<endl; 
+
             if ( lay == 6 )
 	      ((AliITSsegmentationSSD*)fSegmentation)->SetLayer(6);
 	    if ( lay == 5 )
@@ -147,6 +156,7 @@ void AliITSClusterFinderSSD::FindRawClusters(Int_t module)
   FindNeighbouringDigits(); //ad. 2
   //SeparateOverlappedClusters();  //ad. 3
   ClustersToPackages();  //ad. 4
+  AliITSRecPoint rnew;
   fMap->ClearMap();
 }
 
@@ -592,7 +602,6 @@ void AliITSClusterFinderSSD::ClustersToPackages()
                                           // MB: well, that's not true that one
                                           //cannot sort objects in TClonesArray
   
-  //AliITSpackageSSD *currentpkg;
   AliITSclusterSSD *currentP;
   AliITSclusterSSD *currentN;
   Int_t j1, j2;    
@@ -600,31 +609,32 @@ void AliITSClusterFinderSSD::ClustersToPackages()
 //Fills in One Side Clusters Index Array
   FillClIndexArrays(oneSclP,oneSclN); 
 //Sorts filled Arrays
-  SortClusters(oneSclP,oneSclN);                   
+  //SortClusters(oneSclP,oneSclN);                   
 
   fNPackages=1;      
   new ((*fPackages)[0]) AliITSpackageSSD(fClusterP,fClusterN);
-  //currentpkg = (AliITSpackageSSD*)((*fPackages)[0]);
 
-  // Take all pairs of recpoints x coordinates in both sides  
+
+  //This part was includede by Boris Batiounia in March 2001.
+
+  // Take all recpoint pairs (x coordinates) in both P and N sides  
   // to calculate z coordinates of the recpoints
+
   for (j1=0;j1<fNClusterP;j1++) {  
       currentP = GetPSideCluster(oneSclP[j1]);
       Double_t xP = currentP->GetPosition();
-      //Int_t NxP = currentP->GetNumOfDigits();
       Float_t signalP = currentP->GetTotalSignal();
     for (j2=0;j2<fNClusterN;j2++) {  
       currentN = GetNSideCluster(oneSclN[j2]);
       Double_t xN = currentN->GetPosition();
-      //Int_t NxN = currentN->GetNumOfDigits();
       Float_t signalN = currentN->GetTotalSignal();
       CreateNewRecPoint(xP,1,xN,1,signalP,signalN,currentP, currentN, 0.75);
 
     }
   }
 
-   delete [] oneSclP;
-   delete [] oneSclN;
+   delete oneSclP;
+   delete oneSclN;
 
 }
 
@@ -658,6 +668,7 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
      Float_t signal = 0;
      Float_t dedx = 0;
 
+     
      if(SigP>SigN) {
        signal = SigP;
        dedx = SigP*kADCtoKeV;
@@ -666,20 +677,14 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
        dedx = SigN*kADCtoKeV;
      }	       
 
-     Float_t signalCut = TMath::Abs((SigP-SigN)/signal);
-
-
      tr = (Int_t*) clusterP->GetTracks(n);
      NTracks = clusterP->GetNTracks();
-     //cout<<"NewRec: NTracks,tr0,tr1,tr2 ="<<NTracks<<","<<tr[0]<<","<<tr[1]<<","<<tr[2]<<endl;
-     if(NTracks>0 && signalCut<0.18) {
-     // the cut of the signals difference in P and N sides to
-     // remove the "ghosts"
+
        cnew.fSignalP=SigP;
        cnew.fSignalN=SigN;
        cnew.fMultiplicity=nstripsP;
        cnew.fMultiplicityN=nstripsN;
-       cnew.fQErr=signalCut;
+       cnew.fQErr=TMath::Abs(SigP-SigN);
        cnew.fNtracks=NTracks;
 
        fITS->AddCluster(2,&cnew);
@@ -698,7 +703,7 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
        fITS->AddRecPoint(rnew);
 
        return kTRUE;
-     }
+       //}
   }
      return kFALSE;  
 }
@@ -770,6 +775,10 @@ Bool_t AliITSClusterFinderSSD::GetCrossing (Float_t &P, Float_t &N)
 { 
 // get crossing 
 
+  // This function was rivised and changed by Boris Batiounia in March 2001
+
+
+
   Float_t Dx = fSegmentation->Dx(); // detector size in x direction, microns
   Float_t Dz = fSegmentation->Dz(); // detector size in z direction, microns
 
@@ -786,11 +795,13 @@ Bool_t AliITSClusterFinderSSD::GetCrossing (Float_t &P, Float_t &N)
   fTanN=TMath::Tan(StereoN);
   Float_t kP = fTanP; // Tangent of 0.0075 mrad
   Float_t kN = fTanN; // Tangent of 0.0275 mrad
-
+  
     P *= fPitch;
     N *= fPitch; 
+
     xP = N;      // change the mistake for the P/N
     xN = P;      // coordinates correspondence in this function
+
     x = xP + kP*(Dz*kN-xP+xN)/(kP+kN);
     z = (Dz*kN-xP+xN)/(kP+kN); 
     xL = x - Dx/2;
@@ -799,6 +810,7 @@ Bool_t AliITSClusterFinderSSD::GetCrossing (Float_t &P, Float_t &N)
     N = zL;  
 
     if(TMath::Abs(xL) > Dx/2 || TMath::Abs(zL) > Dz/2) return kFALSE;
+    
     // Check that xL and zL are inside the detector for the 
     // correspondent xP and xN coordinates
 
