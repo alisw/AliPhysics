@@ -44,11 +44,13 @@ class AliPMDClustering
   
  protected:
 
-  static const double pi=3.141593;
-  static const double sqrth=0.8660254;  // sqrth = sqrt(3.)/2.
-  static const int nmx=5184;
-  static const int ndimx=72;
-  static const int ndimy=72;
+  static const double pi;
+  static const double sqrth;  // sqrth = sqrt(3.)/2.
+  enum {
+    nmx=5184,
+    ndimx=72,
+    ndimy=72
+  };
 
   /*
     nmx : # of cells in a supermodule

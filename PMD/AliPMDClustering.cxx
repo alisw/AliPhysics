@@ -38,6 +38,10 @@
 
 ClassImp(AliPMDClustering)
 
+static const double pi=3.141593;
+static const double sqrth=0.8660254;  // sqrth = sqrt(3.)/2.
+
+
 AliPMDClustering::AliPMDClustering()
 {
   fMessage = 0;
@@ -141,7 +145,7 @@ void AliPMDClustering::DoClust(int idet, int isup, double d1[72][72], TObjArray 
 
 }
 
-void AliPMDClustering::order(int idet)
+void AliPMDClustering::order(int /*idet*/)
 {
   // using simple sort
   double dd[nmx], adum;// matrix d converted into 
@@ -179,7 +183,7 @@ void AliPMDClustering::order(int idet)
   }
 }
 
-void AliPMDClustering::refclust(int incr, int supmod, int idet)
+void AliPMDClustering::refclust(int incr, int /*supmod*/, int /*idet*/)
 {
   int i, j, k, i1, i2, id, icl, ncl[4500], iord[4500], itest; 
   int ihld;
@@ -504,7 +508,7 @@ double AliPMDClustering::Dist(double x1, double y1, double x2, double y2)
 }
 
   
-int AliPMDClustering::crclust(double ave, double cutoff, int nmx1, int idet)
+int AliPMDClustering::crclust(double /*ave*/, double cutoff, int nmx1, int /*idet*/)
 {
   int i,j,k,id1,id2,icl, numcell, clust[2][5000];
   int jd1,jd2, icell, cellcount;
