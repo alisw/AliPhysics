@@ -16,17 +16,21 @@
 #include <TMath.h>
 
 #include "AliITSresponseSPDdubna.h"
- 
-//___________________________________________
+
 ClassImp(AliITSresponseSPDdubna)	
 
-AliITSresponseSPDdubna::AliITSresponseSPDdubna()
-{
-  // constructor
-   SetDiffCoeff();
-   SetNoiseParam();
-   SetDataType();
-   SetMinVal();
+AliITSresponseSPDdubna::AliITSresponseSPDdubna(){
+    // constructor
 
+    SetDiffCoeff();
+    SetNoiseParam();
+    SetDataType();
+    SetMinVal();
+    SetGeVToCharge();
 }
+//______________________________________________________________________
+Double_t AliITSresponseSPDdubna::DiffusionSigma(Double_t dy){
+    // Computes the Sigma associated with deffusing a distance dy
 
+    return fDiffCoeff*TMath::Sqrt(dy);
+}
