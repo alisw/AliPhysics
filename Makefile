@@ -69,23 +69,6 @@ endif
 
 ##################################################################
 # 
-#               Check if HLT code is there
-
-ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
-HLTFLAGS = -DALI_HLT -Duse_aliroot -Duse_root
-ifeq ($(ALIHLT_DOMC),true)
-HLTFLAGS += -Ddo_mc
-endif
-HLTFLAGS += -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/comp
-CXXFLAGS += $(HLTFLAGS)
-CFLAGS += $(HLTFLAGS)
-CINTFLAGS += $(HLTFLAGS)
-DEPINC += $(HLTFLAGS)
-endif
-##################################################################
-
-##################################################################
-# 
 #               check if DATE is installed
 
 ifdef DATE_ROOT
@@ -107,7 +90,8 @@ endif
 ALIROOTMODULES:= STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       CRT RICH START STRUCT EVGEN RALICE ALIFAST VZERO \
 	  THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN \
-      THerwig TEPEMGEN EPEMGEN FASTSIM TPHIC RAW MONITOR DISPLAY ANALYSIS
+      THerwig TEPEMGEN EPEMGEN FASTSIM TPHIC RAW MONITOR DISPLAY ANALYSIS \
+      JETAN HLT
 
 CERNMODULES:= PDF PYTHIA6 HIJING MICROCERN HERWIG
 
