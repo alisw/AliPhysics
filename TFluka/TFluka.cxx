@@ -31,9 +31,6 @@
 
 #include <Riostream.h>
 
-//#include "AliModule.h"
-//#include "AliRun.h"
-#include "TClonesArray.h"
 #include "TFluka.h"
 #include "TCallf77.h"      //For the fortran calls
 #include "Fdblprc.h"       //(DBLPRC) fluka common
@@ -51,6 +48,7 @@
 #include "TGeoMaterial.h"
 #include "TGeoMedium.h"
 #include "TFlukaMCGeometry.h"
+#include "TGeoMCGeometry.h"
 #include "TFlukaCerenkov.h"
 #include "TLorentzVector.h"
 
@@ -540,6 +538,7 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
 //_____________________________________________________________________________
 void TFluka::Gsatt(const char *name, const char *att, Int_t val)
 { 
+  // Set visualisation attributes for one volume
   char vname[5];
   fGeom->Vname(name,vname);
   char vatt[5];

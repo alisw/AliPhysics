@@ -104,7 +104,7 @@ extern "C"
 // TFluka global pointer
 TFluka *gFluka = 0;
 TFlukaMCGeometry *gMCGeom = 0;
-Int_t kNstep = 0;
+Int_t gNstep = 0;
 
 ClassImp(TFlukaMCGeometry)
 
@@ -124,7 +124,7 @@ TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title)
   fRegionList   = 0;
   gFluka = (TFluka*)gMC;
   gMCGeom = this;
-  kNstep = 0;
+  gNstep = 0;
   fMatList = new TObjArray(256);
   fMatNames = new TObjArray(256);
 }
@@ -142,7 +142,7 @@ TFlukaMCGeometry::TFlukaMCGeometry()
   fRegionList   = 0;
   gFluka = (TFluka*)gMC;
   gMCGeom = this;
-  kNstep = 0;
+  gNstep = 0;
   fMatList = 0;
   fMatNames = 0;
 }
@@ -886,6 +886,7 @@ Int_t TFlukaMCGeometry::RegionId() const
 //_____________________________________________________________________________
 Int_t TFlukaMCGeometry::GetElementIndex(Int_t z) const
 {
+// Get index of a material having a given Z element.
    TIter next(fMatList);
    TGeoMaterial *mat;
    Int_t index = 0;
@@ -956,6 +957,7 @@ void TFlukaMCGeometry::ToFlukaString(TString &str) const
 //_____________________________________________________________________________
 void TFlukaMCGeometry::FlukaMatName(TString &str) const
 {
+// Convert a name to upper case 8 chars.
    ToFlukaString(str);
    Int_t ilast;
    for (ilast=7; ilast>0; ilast--) if (str(ilast)!=' ') break;
@@ -1024,7 +1026,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 
 {
    // Initialize FLUKa point and direction;
-   kNstep++;
+   gNstep++;
 /*
    if (kNstep>0) {
       gMCGeom->SetDebugMode(kTRUE);
@@ -1194,7 +1196,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
          gGeoManager->CdTop();
       } 
       gGeoManager->CdTop();
-      if (!gGeoManager->GetCurrentMatrix()->IsIdentity()) printf("ERROR  at step %i\n", kNstep);
+      if (!gGeoManager->GetCurrentMatrix()->IsIdentity()) printf("ERROR  at step %i\n", gNstep);
       gGeoManager->CdNode(oldLttc-1);
    }   
    if (gMCGeom->IsDebugging()) {

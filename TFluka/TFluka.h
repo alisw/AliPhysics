@@ -1,5 +1,5 @@
-#ifndef TFLUKA
-#define TFLUKA
+#ifndef TFLUKA_H
+#define TFLUKA_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -15,10 +15,9 @@
 
 
 #include "TVirtualMC.h"
-#include "TGeoMCGeometry.h" 
-#include "TMCProcess.h"
 
 //Forward declaration
+class TGeoMCGeometry;
 class TFlukaMCGeometry;
 class TGeoMaterial;
 
@@ -331,7 +330,7 @@ class TFluka : public TVirtualMC {
   void SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
   void SetTrackIsNew(Bool_t flag=kTRUE) {fTrackIsNew = flag;}
-  Int_t GetMaterialIndex(Int_t idmat) {return fMaterials[idmat];}
+  Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
   TObjArray *GetFlukaMaterials();
 
       
