@@ -471,7 +471,7 @@ void AliFastGlauber::DrawKernel(Double_t b) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"b = %.f fm",b);
+  sprintf(label,"b = %.1f fm",b);
   l1a->AddEntry(fgWStarfi,label,"");
   l1a->Draw();
   c8->Update();
@@ -495,7 +495,7 @@ void AliFastGlauber::DrawAlmond(Double_t b) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"b = %.f fm",b);
+  sprintf(label,"b = %.1f fm",b);
   l1a->AddEntry(fgWAlmond,label,"");
   l1a->Draw();
   c9->Update();
