@@ -37,7 +37,6 @@ public:
   virtual void MakeTrackSegments(DigitsList * DL, 
 				 AliPHOSRecPoint::RecPointsList * emcl, 
 				 AliPHOSRecPoint::RecPointsList * ppsdl,
-				 AliPHOSRecPoint::RecPointsList * cpvl,
 				 AliPHOSTrackSegment::TrackSegmentsList * trsl ) = 0 ; // does the job
   virtual void SetMaxEmcPpsdDistance(Float_t r) = 0 ; 
   virtual void SetUnfoldFlag() = 0 ;

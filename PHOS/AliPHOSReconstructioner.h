@@ -45,7 +45,6 @@ public:
   void Make(TClonesArray * DL, 
 	    AliPHOSRecPoint::RecPointsList * emccl, 
 	    AliPHOSRecPoint::RecPointsList * ppsdl, 
-	    AliPHOSRecPoint::RecPointsList * cpvl,
 	    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
 	    AliPHOSRecParticle::RecParticlesList * rpl)    ; // does the job
 

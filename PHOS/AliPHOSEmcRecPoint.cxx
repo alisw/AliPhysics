@@ -310,6 +310,42 @@ Float_t  AliPHOSEmcRecPoint::GetDispersion()
 
   return TMath::Sqrt(d) ;
 }
+//______________________________________________________________________________
+Float_t AliPHOSEmcRecPoint::CoreEnergy()
+{
+  //This function calculates energy in the core, 
+  //i.e. within radius rad = 3cm. Beyond this radius
+  //in accoradnce with shower profile energy deposition 
+  // should be less than 2%
+
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
+
+  Float_t eCore = 0 ;
+  Float_t coreRadius = 3 ;
+
+  TVector3 locpos;
+  GetLocalPosition(locpos);
+  Float_t x = locpos.X() ;
+  Float_t z = locpos.Z() ;
+
+  AliPHOSDigit * digit ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  
+  Int_t iDigit;
+  for(iDigit=0; iDigit < fMulDigit; iDigit++) {
+    digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) ) ;
+    Int_t relid[4] ;
+    Float_t xi ;
+    Float_t zi ;
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);    
+    Float_t distance = TMath::Sqrt((xi-x)*(xi-x)+(zi-z)*(zi-z)) ;
+    if(distance < coreRadius)
+      eCore += fEnergyList[iDigit] ;
+  }
+
+return eCore ;
+}
 
 //____________________________________________________________________________
 void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)

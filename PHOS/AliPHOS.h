@@ -51,10 +51,6 @@ class AliPHOS : public AliDetector {
     // to be redefined when ppsd is present
     return & fPpsdRecPoints ;
   } 
-  virtual  AliPHOSRecPoint::RecPointsList ** CpvRecPoints() {
-    // to be redefined when cpv is present
-    return & fCpvRecPoints ;
-  }
   virtual void  SetTreeAddress();                
   virtual  AliPHOSRecParticle::RecParticlesList **  RecParticles() {
     // Getting list of RecParticles
@@ -77,7 +73,6 @@ protected:
   
   AliPHOSRecPoint::RecPointsList         *fEmcRecPoints ; // The RecPoints (clusters) list in EMC 
   AliPHOSRecPoint::RecPointsList         *fPpsdRecPoints ;// The RecPoints (clusters) list in PPSD (veto)
-  AliPHOSRecPoint::RecPointsList         *fCpvRecPoints ; // The RecPoints (clusters) list in CPV (veto)
   AliPHOSTrackSegment::TrackSegmentsList *fTrackSegments ;// The TrackSegment list in PHOS
   AliPHOSRecParticle::RecParticlesList   *fRecParticles ; // The reconstructed particles list in PHOS
 

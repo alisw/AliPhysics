@@ -187,10 +187,14 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList *
     ppsdRecPoint = (AliPHOSPpsdRecPoint *) ppsdIn->At(index) ;
     if(ppsdRecPoint->GetPHOSMod() != phosmod )   
       break ;
-    if(ppsdRecPoint->GetUp() ) 
+    if(phosmod <= fGeom->GetNCPVModules())   //in CPV
       ppsdOutUp->AddAt(index,inPpsdUp++) ;
-    else  
-      ppsdOutLow->AddAt(index,inPpsdLow++) ;
+    else{			             //in PPSD
+      if(ppsdRecPoint->GetUp() ) 
+	ppsdOutUp->AddAt(index,inPpsdUp++) ;
+      else  
+	ppsdOutLow->AddAt(index,inPpsdLow++) ;
+    }
   }
   ppsdOutLow->Set(inPpsdLow);
   ppsdOutUp->Set(inPpsdUp);
@@ -378,7 +382,6 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TArrayI * emcRecPoints,
 void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl, 
 						    AliPHOSRecPoint::RecPointsList * emcl, 
 						    AliPHOSRecPoint::RecPointsList * ppsdl, 
-						    AliPHOSRecPoint::RecPointsList * cpvl, 
 						    AliPHOSTrackSegment::TrackSegmentsList * trsl)
 {
   // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
@@ -397,10 +400,10 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
 
   if(fUnfoldFlag){
     UnfoldAll(dl, emcl) ; // Unfolds all EMC clusters
-    UnfoldAll(dl, cpvl) ; // Unfolds all CPV clusters
+    UnfoldAll(dl, ppsdl) ; // Unfolds all CPV clusters
   }
 
-  Int_t phosmod  = fGeom->GetNCPVModules() + 1 ;
+  Int_t phosmod  = 1 ;
   while(phosmod <= fGeom->GetNModules() ){
     
     FillOneModule(emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;
@@ -485,43 +488,55 @@ Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::RecPointsList * emcIn) 
 {
-  // Performs unfolding of all EMC clusters, sorts them and resets indexes in RecPoints
+  // Performs unfolding of all EMC/CPV but NOT ppsd clusters, sorts them and resets indexes in RecPoints
 
   AliPHOSEmcRecPoint *  emcRecPoint  ; 
   Int_t index ;
   Int_t nEmcUnfolded = emcIn->GetEntries() ;
-  
-  for(index = 0 ; index < nEmcUnfolded; index++){
 
-    emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
+  Int_t nModulesToUnfold ;
+
+  if(emcIn->GetEntries() > 0){
+
+    if(((AliPHOSRecPoint *)emcIn->At(0))->IsEmc())
+      nModulesToUnfold = fGeom->GetNModules() ; 
+    else
+      nModulesToUnfold = fGeom->GetNCPVModules() ;
     
-    Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
-    Int_t * maxAt = new Int_t[nMultipl] ;
-    Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-    Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
+    for(index = 0 ; index < nEmcUnfolded; index++){
+      
+      emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
+      if(emcRecPoint->GetPHOSMod()> nModulesToUnfold)
+	break ;
+      
+      Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
+      Int_t * maxAt = new Int_t[nMultipl] ;
+      Float_t * maxAtEnergy = new Float_t[nMultipl] ;
+      Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
+      
+      if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0       
+	UnfoldClusters(dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy) ;
+	emcIn->Remove(emcRecPoint); 
+	emcIn->Compress() ;
+	index-- ;
+	nEmcUnfolded-- ;
+      }
+      
+      delete[] maxAt ; 
+      delete[] maxAtEnergy ; 
+    } //Unfolding finished
     
-    if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0       
-      UnfoldClusters(dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy) ;
-      emcIn->Remove(emcRecPoint); 
-      emcIn->Compress() ;
-      index-- ;
-      nEmcUnfolded-- ;
+    emcIn->Sort() ;
+    
+    // to set index to new and correct index of old RecPoints
+    for( index = 0 ; index < emcIn->GetEntries() ; index++){
+      
+      ((AliPHOSEmcRecPoint *) emcIn->At(index))->SetIndexInList(index) ;   
+      
     }
     
-    delete[] maxAt ; 
-    delete[] maxAtEnergy ; 
-  } //Unfolding finished
-
-  emcIn->Sort() ;
-
-  // to set index to new and correct index of old RecPoints
-  for( index = 0 ; index < emcIn->GetEntries() ; index++){
-    
-    ((AliPHOSEmcRecPoint *) emcIn->At(index))->SetIndexInList(index) ;   
-    
+    emcIn->Sort() ;
   }
-
-  emcIn->Sort() ;
 
 }
 //____________________________________________________________________________

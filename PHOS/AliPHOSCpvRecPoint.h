@@ -73,6 +73,10 @@ public:
     return fAmp ; }    
   void        GetLocalPosition(TVector3 &Lpos) ;  // computes the position in the PHOS module 
   void        GetClusterLengths(Int_t &lengX, Int_t &lengZ); // cluster lengths along x and z
+  Bool_t  IsEmc(void) {
+    // tells that this is not a EMC
+    return kFALSE ; 
+  } 
   Bool_t      IsCPV(void) {
     // true if the recpoint is in CPV
     return (fPHOSMod <= ((AliPHOSGeometry*) fGeom)->GetNCPVModules()) ; } 

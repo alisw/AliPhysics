@@ -71,7 +71,6 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
  void AliPHOSReconstructioner::Make(DigitsList * dl, 
 				    AliPHOSRecPoint::RecPointsList * emccl, 
 				    AliPHOSRecPoint::RecPointsList * ppsdl, 
-				    AliPHOSRecPoint::RecPointsList * cpvcl, 
 				    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
 				    AliPHOSRecParticle::RecParticlesList * rpl)
 {
@@ -82,7 +81,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   if  (fDebugReconstruction)
     cout << "\n\nDebugReconstruction>>> " << "Start making reconstructed points (clusterizing!!)" << endl;
   
-  fClusterizer->MakeClusters(dl, emccl, ppsdl, cpvcl);
+  fClusterizer->MakeClusters(dl, emccl, ppsdl);
 
   if  (fDebugReconstruction){
     cout << "DebugReconstruction>>> " << "AliPHOSReconstructioner: Digit list entries is " << dl->GetEntries() << endl ;
@@ -214,7 +213,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   
   
   if  (fDebugReconstruction)  cout << "DebugReconstruction>>>> Start making track segments(unfolding+tracksegments)" << endl;
-  fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, cpvcl, trsl) ;   
+  fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;   
   
   // mark the position of the TrackSegments in the array
   AliPHOSTrackSegment * trs ; 
@@ -260,7 +259,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
     
   }
   if  (fDebugReconstruction)  cout << "DebugReconstruction>>>> Start making reconstructed particles" << endl;
-
+  
   if (fPID) {
     fPID->MakeParticles(trsl, rpl) ; 
   

@@ -95,24 +95,21 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
   Int_t pcdetector ;    // 1 hit and 0 no hit
 
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
-    Int_t module = tracksegment->GetPHOSMod();
-    cout << "PHOS module: " << module << endl;
-    if ( module <= fGeom->GetNCPVModules()) continue;
     new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
     rp = (AliPHOSRecParticle *)rpl->At(index) ; 
     AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ;
     AliPHOSPpsdRecPoint * rpcpv = tracksegment->GetPpsdUpRecPoint() ;
     AliPHOSPpsdRecPoint * rppc  = tracksegment->GetPpsdLowRecPoint() ;
- 
-//     Float_t * lambda = new Float_t[2]; 
-//     recp->GetElipsAxis(lambda) ; 
-
-//     // Looking at the lateral development of the shower
-//     if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
-// 	 ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )	      
-//       //    Float_t R ;
-//       //R=(lambda[0]-1.386)*(lambda[0]-1.386)+1.707*1.707*(lambda[1]-1.008)*(lambda[1]-1.008) ;
-//       //if(R<0.35*0.35)
+    
+    //     Float_t * lambda = new Float_t[2]; 
+    //     recp->GetElipsAxis(lambda) ; 
+    
+    //     // Looking at the lateral development of the shower
+    //     if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
+    // 	 ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )	      
+    //       //    Float_t R ;
+    //       //R=(lambda[0]-1.386)*(lambda[0]-1.386)+1.707*1.707*(lambda[1]-1.008)*(lambda[1]-1.008) ;
+    //       //if(R<0.35*0.35)
 
     Float_t Dispersion;
     Dispersion = recp->GetDispersion();
@@ -120,8 +117,8 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
       showerprofile = 0 ;   // NARROW PROFILE   
     else      
       showerprofile = 1 ;// WIDE PROFILE
-  
-
+    
+    
     // Looking at the photon conversion detector
     if( tracksegment->GetPpsdLowRecPoint() == 0 )   
       pcdetector = 0 ;  // No hit
@@ -131,7 +128,7 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
       else
 	pcdetector = 0 ;
     }
-  
+    
     // Looking at the photon conversion detector
     if( tracksegment->GetPpsdUpRecPoint() == 0 )
       cpvdetector = 0 ;  // No hit

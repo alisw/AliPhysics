@@ -51,8 +51,7 @@ public:
   virtual Bool_t IsInCpv (AliPHOSDigit * digit) ;             // Tells if id digit is in CPV
   virtual void MakeClusters(const DigitsList * dl, 
 			    AliPHOSRecPoint::RecPointsList * emcl, 
-			    AliPHOSRecPoint::RecPointsList * ppsdl,
-			    AliPHOSRecPoint::RecPointsList * cpvl) ; // does the job 
+			    AliPHOSRecPoint::RecPointsList * ppsdl) ; // does the job 
   virtual void PrintParameters() ;
   virtual void SetCalibrationParameters(Float_t A,Float_t B){ fA = A ; fB = B;} 
   virtual void SetEmcClusteringThreshold(Float_t cluth)  { fEmcClusteringThreshold = cluth ; }

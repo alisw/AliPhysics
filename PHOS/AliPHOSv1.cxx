@@ -211,13 +211,7 @@ AliPHOSv1::~AliPHOSv1()
     delete fPpsdRecPoints ;
     fPpsdRecPoints = 0 ; 
   }
-  
-  if ( fCpvRecPoints ) {
-    fCpvRecPoints->Delete() ; 
-    delete fCpvRecPoints ; 
-    fCpvRecPoints = 0 ; 
-  }
-  
+    
   if ( fTrackSegments ) {
     fTrackSegments->Delete() ; 
     delete fTrackSegments ;
@@ -412,13 +406,6 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
     gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
   }
 
-  fCpvRecPoints->Delete() ; 
-
-  if ( fCpvRecPoints && gAlice->TreeR() ) {
-    sprintf(branchname,"%sCpvRP",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, "TObjArray", &fCpvRecPoints, fBufferSize, splitlevel) ;
-  }
-
   fTrackSegments->Delete() ; 
 
   if ( fTrackSegments && gAlice->TreeR() ) { 
@@ -428,20 +415,17 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 
   fRecParticles->Delete() ; 
 
-  if (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
-    if ( fRecParticles && gAlice->TreeR() ) { 
-      sprintf(branchname,"%sRP",GetName()) ;
-      gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
-    }
+  if ( fRecParticles && gAlice->TreeR() ) { 
+    sprintf(branchname,"%sRP",GetName()) ;
+    gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
   }
   
   // 3.
 
-  fReconstructioner->Make(fDigits, fEmcRecPoints, fPpsdRecPoints,
-			  fCpvRecPoints, fTrackSegments, fRecParticles);
+  fReconstructioner->Make(fDigits, fEmcRecPoints, fPpsdRecPoints, fTrackSegments, fRecParticles);
 
-  printf("Reconstruction: %d %d %d %d %d\n",
-	 fEmcRecPoints->GetEntries(),fPpsdRecPoints->GetEntries(),fCpvRecPoints->GetEntries(),
+  printf("Reconstruction: %d %d %d %d\n",
+	 fEmcRecPoints->GetEntries(),fPpsdRecPoints->GetEntries(),
 	 fTrackSegments->GetEntries(),fRecParticles->GetEntries());
 
   // 4. Expand or Shrink the arrays to the proper size
@@ -453,9 +437,6 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 
   size = fPpsdRecPoints->GetEntries() ;
   fPpsdRecPoints->Expand(size) ;
-
-  size = fCpvRecPoints->GetEntries() ;
-  fCpvRecPoints->Expand(size) ;
 
   size = fTrackSegments->GetEntries() ;
   fTrackSegments->Expand(size) ;
@@ -493,7 +474,6 @@ void AliPHOSv1::ResetReconstruction()
 
   if ( fEmcRecPoints  )  fEmcRecPoints ->Delete();
   if ( fPpsdRecPoints )  fPpsdRecPoints->Delete();
-  if ( fCpvRecPoints  )  fCpvRecPoints ->Delete();
   if ( fTrackSegments )  fTrackSegments->Delete();
   if ( fRecParticles  )  fRecParticles ->Delete();
   
@@ -560,8 +540,9 @@ void AliPHOSv1::StepManager(void)
 
       if ( xyze[3] != 0 ) { // there is deposited energy 
        	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
-	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 )
+	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
 	  relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();
+	}
        	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
       // 1-> fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() upper
       //   > fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() lower
@@ -713,6 +694,7 @@ void AliPHOSv1::StepManager(void)
 
 	Int_t moduleNumber;
 	gMC->CurrentVolOffID(10,moduleNumber);
+
 	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
 	  moduleNumber += fGeom->GetNModules() - fGeom->GetNPPSDModules();
 	moduleNumber--;
@@ -756,18 +738,17 @@ void AliPHOSv1::StepManager(void)
 
     if ( xyze[3] != 0 ) {
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
-      if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 )
-	relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();
+      if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
+	relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();      
+
       relid[1] = 0   ;                    // means PBW04
       gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
       gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
       
       // get the absolute Id number
-      
       fGeom->RelToAbsNumbering(relid, absid) ; 
 
       // add current hit to the hit list
-      
       AddHit(fIshunt, primary,tracknumber, absid, xyze, trackpid);
 
     } // there is deposited energy

@@ -326,37 +326,35 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
       else if (strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
 	fClu->SetLocalMaxCutCPV(0.03) ;
 	fClu->SetLogWeightCutCPV(4.0) ;
-	fClu->SetCpvEnergyThreshold(0.09) ;
+	fClu->SetCpvEnergyThreshold(0.2) ;
       }
       fClu->SetCalibrationParameters(0., 0.00000001) ; 
       
       //========== Creates the track segment maker
       fTrs = new AliPHOSTrackSegmentMakerv1()  ;
- 	  //	  fTrs->UnsetUnfoldFlag() ; 
+      //	  fTrs->UnsetUnfoldFlag() ; 
      
-      //========== Creates the particle identifier for GPS2 only
-      if      (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
-	fPID = new AliPHOSPIDv1() ;
-	fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
-      }	  
+      //========== Creates the particle identifier
+      fPID = new AliPHOSPIDv1() ;
+      fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ;       
       
       //========== Creates the Reconstructioner
       fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
       if (fDebugLevel != 0) fRec -> SetDebugReconstruction(kTRUE);     
     }
-      
+    
     if (fDebugLevel != 0 ||
 	(ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
       cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
     
     //=========== Connects the various Tree's for evt
     Int_t tracks = gAlice->GetEvent(ievent);
-
+    
     fPHOS->Hit2Digit(tracks) ;
-        
+    
     //=========== Do the reconstruction
     fPHOS->Reconstruction(fRec);    
-
+    
   }
   
   if(fClu)      {delete fClu      ; fClu     =0 ;}
@@ -369,84 +367,84 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
 //-------------------------------------------------------------------------------------
 void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
 {
-  //
-  // Read and print generated and reconstructed hits in CPV
-  // for events from EvFirst to Nevent.
-  // If only EvFirst is defined, print only this one event.
-  // Author: Yuri Kharlov
-  // 12 October 2000
-  //
+//   //
+//   // Read and print generated and reconstructed hits in CPV
+//   // for events from EvFirst to Nevent.
+//   // If only EvFirst is defined, print only this one event.
+//   // Author: Yuri Kharlov
+//   // 12 October 2000
+//   //
 
-  if (EvFirst!=0 && EvLast==0) EvLast=EvFirst;
-  for ( Int_t ievent=EvFirst; ievent<=EvLast; ievent++) {  
+//   if (EvFirst!=0 && EvLast==0) EvLast=EvFirst;
+//   for ( Int_t ievent=EvFirst; ievent<=EvLast; ievent++) {  
     
-    //========== Event Number>
-    cout << endl <<  "==== ReadAndPrintCPV ====> Event is " << ievent+1 << endl ;
+//     //========== Event Number>
+//     cout << endl <<  "==== ReadAndPrintCPV ====> Event is " << ievent+1 << endl ;
     
-    //=========== Connects the various Tree's for evt
-    Int_t ntracks = gAlice->GetEvent(ievent);
+//     //=========== Connects the various Tree's for evt
+//     Int_t ntracks = gAlice->GetEvent(ievent);
 
-    //========== Creating branches ===================================
-    AliPHOSRecPoint::RecPointsList ** emcRecPoints = fPHOS->EmcRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , emcRecPoints  ) ;
+//     //========== Creating branches ===================================
+//     AliPHOSRecPoint::RecPointsList ** emcRecPoints = fPHOS->EmcRecPoints() ;
+//     gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , emcRecPoints  ) ;
     
-    AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->CpvRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSCpvRP", cpvRecPoints ) ;
+//     AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->PpsdRecPoints() ;
+//     gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", cpvRecPoints ) ;
 
-    // Read and print CPV hits
+//     // Read and print CPV hits
       
-    AliPHOSCPVModule cpvModule;
-    TClonesArray    *cpvHits;
-    Int_t           nCPVhits;
-    AliPHOSCPVHit   *cpvHit;
-    TLorentzVector   p;
-    Float_t          xgen, zgen;
-    Int_t            ipart;
-    Int_t            nGenHits = 0;
-    for (Int_t itrack=0; itrack<ntracks; itrack++) {
-      //=========== Get the Hits Tree for the Primary track itrack
-      gAlice->ResetHits();
-      gAlice->TreeH()->GetEvent(itrack);
-      Int_t iModule = 0 ; 	
-      for (iModule=0; iModule < fGeom->GetNCPVModules(); iModule++) {
-	cpvModule = fPHOS->GetCPVModule(iModule);
-	cpvHits   = cpvModule.Hits();
-	nCPVhits  = cpvHits->GetEntriesFast();
-	for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
-	  nGenHits++;
-	  cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
-	  p      = cpvHit->GetMomentum();
-	  xgen   = cpvHit->X();
-	  zgen   = cpvHit->Y();
-	  ipart  = cpvHit->GetIpart();
-	  printf("CPV hit in module %d: ",iModule+1);
-	  printf(" p = (%f, %f, %f, %f) GeV,\n",
-		 p.Px(),p.Py(),p.Pz(),p.Energy());
-	  printf("                  (X,Z) = (%8.4f, %8.4f) cm, ipart = %d\n",
-		 xgen,zgen,ipart);
-	}
-      }
-    }
+//     AliPHOSCPVModule cpvModule;
+//     TClonesArray    *cpvHits;
+//     Int_t           nCPVhits;
+//     AliPHOSCPVHit   *cpvHit;
+//     TLorentzVector   p;
+//     Float_t          xgen, zgen;
+//     Int_t            ipart;
+//     Int_t            nGenHits = 0;
+//     for (Int_t itrack=0; itrack<ntracks; itrack++) {
+//       //=========== Get the Hits Tree for the Primary track itrack
+//       gAlice->ResetHits();
+//       gAlice->TreeH()->GetEvent(itrack);
+//       Int_t iModule = 0 ; 	
+//       for (iModule=0; iModule < fGeom->GetNCPVModules(); iModule++) {
+// 	cpvModule = fPHOS->GetCPVModule(iModule);
+// 	cpvHits   = cpvModule.Hits();
+// 	nCPVhits  = cpvHits->GetEntriesFast();
+// 	for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
+// 	  nGenHits++;
+// 	  cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
+// 	  p      = cpvHit->GetMomentum();
+// 	  xgen   = cpvHit->X();
+// 	  zgen   = cpvHit->Y();
+// 	  ipart  = cpvHit->GetIpart();
+// 	  printf("CPV hit in module %d: ",iModule+1);
+// 	  printf(" p = (%f, %f, %f, %f) GeV,\n",
+// 		 p.Px(),p.Py(),p.Pz(),p.Energy());
+// 	  printf("                  (X,Z) = (%8.4f, %8.4f) cm, ipart = %d\n",
+// 		 xgen,zgen,ipart);
+// 	}
+//       }
+//     }
 
-    // Read and print CPV reconstructed points
+//     // Read and print CPV reconstructed points
 
-    //=========== Gets the Reconstruction TTree
-    gAlice->TreeR()->GetEvent(0) ;
-    printf("Recpoints: %d\n",(*fPHOS->CpvRecPoints())->GetEntries());
-    TIter nextRP(*fPHOS->CpvRecPoints() ) ;
-    AliPHOSCpvRecPoint *cpvRecPoint ;
-    Int_t nRecPoints = 0;
-    while( ( cpvRecPoint = (AliPHOSCpvRecPoint *)nextRP() ) ) {
-      nRecPoints++;
-      TVector3  locpos;
-      cpvRecPoint->GetLocalPosition(locpos);
-      Int_t phosModule = cpvRecPoint->GetPHOSMod();
-      printf("CPV recpoint in module %d: (X,Z) = (%f,%f) cm\n",
-	     phosModule,locpos.X(),locpos.Z());
-    }
-    printf("This event has %d generated hits and %d reconstructed points\n",
-	   nGenHits,nRecPoints);
-  }
+//     //=========== Gets the Reconstruction TTree
+//     gAlice->TreeR()->GetEvent(0) ;
+//     printf("Recpoints: %d\n",(*fPHOS->CpvRecPoints())->GetEntries());
+//     TIter nextRP(*fPHOS->CpvRecPoints() ) ;
+//     AliPHOSCpvRecPoint *cpvRecPoint ;
+//     Int_t nRecPoints = 0;
+//     while( ( cpvRecPoint = (AliPHOSCpvRecPoint *)nextRP() ) ) {
+//       nRecPoints++;
+//       TVector3  locpos;
+//       cpvRecPoint->GetLocalPosition(locpos);
+//       Int_t phosModule = cpvRecPoint->GetPHOSMod();
+//       printf("CPV recpoint in module %d: (X,Z) = (%f,%f) cm\n",
+// 	     phosModule,locpos.X(),locpos.Z());
+//     }
+//     printf("This event has %d generated hits and %d reconstructed points\n",
+// 	   nGenHits,nRecPoints);
+//   }
 }
 
 //____________________________________________________________________________

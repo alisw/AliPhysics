@@ -42,6 +42,7 @@ public:
 
   virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;  // add a digit to the digits list  
   Int_t       Compare(TObject * obj) ;                         // method for sorting  
+  Float_t CoreEnergy() ;
   
   Float_t     GetDelta (){ 
     // gets the fDelta data member 
