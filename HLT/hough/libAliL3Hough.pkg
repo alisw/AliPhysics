@@ -1,0 +1,40 @@
+#-*- Mode: Makefile -*-
+# $Id:#
+
+HLTDEFS     := -Duse_aliroot -Duse_root -Ddo_mc \
+               -Duse_newio -D${ALICE_TARGET} -DROOTVERSION=\"unchecked\" \
+               -DALIROOTVERSION=\"unchecked\"
+
+
+SRCS:= AliL3Histogram.cxx \
+AliL3Histogram1D.cxx \
+AliL3HistogramAdaptive.cxx \
+AliL3Hough.cxx \
+AliL3HoughBaseTransformer.cxx \
+AliL3HoughClusterTransformer.cxx \
+AliL3HoughDisplay.cxx \
+AliL3HoughEval.cxx \
+AliL3HoughGlobalMerger.cxx \
+AliL3HoughIntMerger.cxx \
+AliL3HoughMaxFinder.cxx \
+AliL3HoughMerger.cxx \
+AliL3HoughTest.cxx \
+AliL3HoughTrack.cxx \
+AliL3HoughTransformer.cxx \
+AliL3HoughTransformerGlobal.cxx \
+AliL3HoughTransformerLUT.cxx \
+AliL3HoughTransformerNew.cxx \
+AliL3HoughTransformerRow.cxx \
+AliL3HoughTransformerVhdl.cxx
+
+
+HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+
+DHDR:= AliL3HoughLinkDef.h
+
+EDEFINE      := ${HLTDEFS} -DROWHOUGH
+PACKCXXFLAGS := $(CXXFLAGS) ${HLTDEFS}
+PACKCFLAGS   := $(CFLAGS)   ${HLTDEFS}
+PACKDCXXFLAGS:= $(CXXFLAGS) ${HLTDEFS}
+
+EINCLUDE:= HLT/src HLT/hough HLT/comp HLT/misc TPC STEER CONTAINERS 
