@@ -2209,6 +2209,14 @@ Bool_t   TFluka::IsNewTrack() const
    return fTrackIsNew;
 }
 
+void     TFluka::SetTrackIsNew(Bool_t flag)
+{
+// Return true for the first call of Stepping()
+   fTrackIsNew = flag;
+
+}
+
+
 //______________________________________________________________________________ 
 Bool_t   TFluka::IsTrackInside() const
 {
@@ -2271,10 +2279,18 @@ Bool_t   TFluka::IsTrackDisappeared() const
 // fIcode from usdraw
   if (fIcode == 101 || // inelastic interaction
       fIcode == 102 || // particle decay
+      fIcode == 103 || // delta ray generation by hadron
+      fIcode == 104 || // direct pair production
+      fIcode == 105 || // bremsstrahlung (muon)
+      fIcode == 208 || // bremsstrahlung (electron)
       fIcode == 214 || // in-flight annihilation
       fIcode == 215 || // annihilation at rest
       fIcode == 217 || // pair production
-      fIcode == 221) return 1;
+      fIcode == 219 || // Compton scattering
+      fIcode == 221 || // Photoelectric effect
+      fIcode == 300 || // hadronic interaction
+      fIcode == 400    // delta-ray
+      ) return 1;
   else return 0;
 }
 
@@ -2378,62 +2394,27 @@ TMCProcess TFluka::ProdProcess(Int_t) const
 {
 // Name of the process that has produced the secondary particles
 // in the current step
-    const TMCProcess kIpNoProc = kPNoProcess;
-    const TMCProcess kIpPDecay = kPDecay;
-    const TMCProcess kIpPPair = kPPair;
-//  const TMCProcess kIpPPairFromPhoton = kPPairFromPhoton;
-//  const TMCProcess kIpPPairFromVirtualPhoton = kPPairFromVirtualPhoton;
-    const TMCProcess kIpPCompton = kPCompton;
-    const TMCProcess kIpPPhotoelectric = kPPhotoelectric;
-    const TMCProcess kIpPBrem = kPBrem;
-//  const TMCProcess kIpPBremFromHeavy = kPBremFromHeavy;
-//  const TMCProcess kIpPBremFromElectronOrPositron = kPBremFromElectronOrPositron;
-    const TMCProcess kIpPDeltaRay = kPDeltaRay;
-//  const TMCProcess kIpPMoller = kPMoller;
-//  const TMCProcess kIpPBhabha = kPBhabha;
-    const TMCProcess kIpPAnnihilation = kPAnnihilation;
-//  const TMCProcess kIpPAnnihilInFlight = kPAnnihilInFlight;
-//  const TMCProcess kIpPAnnihilAtRest = kPAnnihilAtRest;
-    const TMCProcess kIpPHadronic = kPHadronic;
-    const TMCProcess kIpPMuonNuclear = kPMuonNuclear;
-    const TMCProcess kIpPPhotoFission = kPPhotoFission;
-    const TMCProcess kIpPRayleigh = kPRayleigh;
-//  const TMCProcess kIpPCerenkov = kPCerenkov;
-//  const TMCProcess kIpPSynchrotron = kPSynchrotron;
 
-    Int_t mugamma = TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11;
-    if (fIcode == 102) return kIpPDecay;
-    else if (fIcode == 104 || fIcode == 217) return kIpPPair;
-//  else if (fIcode == 104) return kIpPairFromPhoton;
-//  else if (fIcode == 217) return kIpPPairFromVirtualPhoton;
-    else if (fIcode == 219) return kIpPCompton;
-    else if (fIcode == 221) return kIpPPhotoelectric;
-    else if (fIcode == 105 || fIcode == 208) return kIpPBrem;
-//  else if (fIcode == 105) return kIpPBremFromHeavy;
-//  else if (fIcode == 208) return kPBremFromElectronOrPositron;
-    else if (fIcode == 103 || fIcode == 400) return kIpPDeltaRay;
-    else if (fIcode == 210 || fIcode == 212) return kIpPDeltaRay;
-//  else if (fIcode == 210) return kIpPMoller;
-//  else if (fIcode == 212) return kIpPBhabha;
-    else if (fIcode == 214 || fIcode == 215) return kIpPAnnihilation;
-//  else if (fIcode == 214) return kIpPAnnihilInFlight;
-//  else if (fIcode == 215) return kIpPAnnihilAtRest;
-    else if (fIcode == 101) return kIpPHadronic;
+    Int_t mugamma = (TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11);
+
+    if (fIcode == 102) return kPDecay;
+    else if (fIcode == 104 || fIcode == 217) return kPPair;
+    else if (fIcode == 219) return kPCompton;
+    else if (fIcode == 221) return kPPhotoelectric;
+    else if (fIcode == 105 || fIcode == 208) return kPBrem;
+    else if (fIcode == 103 || fIcode == 400) return kPDeltaRay;
+    else if (fIcode == 210 || fIcode == 212) return kPDeltaRay;
+    else if (fIcode == 214 || fIcode == 215) return kPAnnihilation;
+    else if (fIcode == 101) return kPHadronic;
     else if (fIcode == 101) {
-      if (!mugamma) return kIpPHadronic;
-      else if (TRACKR.jtrack == 7) return kIpPPhotoFission;
-      else return kIpPMuonNuclear;
+      if (!mugamma) return kPHadronic;
+      else if (TRACKR.jtrack == 7) return kPPhotoFission;
+      else return kPMuonNuclear;
     }
-    else if (fIcode == 225) return kIpPRayleigh;
+    else if (fIcode == 225) return kPRayleigh;
 // Fluka codes 100, 300 and 400 still to be investigasted
-    else return kIpNoProc;
+    else return kPNoProcess;
 }
-
-//Int_t StepProcesses(TArrayI &proc) const
-// Return processes active in the current step
-//{
-//ck = total energy of the particl ???????????????? 
-//}
 
 
 //______________________________________________________________________________ 
