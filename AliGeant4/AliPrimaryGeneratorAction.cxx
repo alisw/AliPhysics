@@ -12,7 +12,7 @@
 #include "AliRun.h"
 #include "AliGenerator.h"
 
-#include "TG3Units.h"
+#include "TG4G3Units.h"
 
 #include <G4Event.hh>
 #include <G4ParticleTable.hh>
@@ -166,67 +166,73 @@ void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
     // get the particle from AliRun stack
     TParticle* particle = gAlice->Particle(i);
 
-    // get particle definition from G4ParticleTable
-    G4int pdgEncoding = particle->GetPdgCode();
-    G4ParticleTable* particleTable 
-      = G4ParticleTable::GetParticleTable();                
-    G4ParticleDefinition* particleDefinition = 0;    
-    if (pdgEncoding != 0) 
-      particleDefinition = particleTable->FindParticle(pdgEncoding);
-    else {
-      G4String name = particle->GetName();
-      if (name == "Rootino")	
-        particleDefinition = particleTable->FindParticle("geantino");
-    }	
-  
-    if (particleDefinition==0) {
-      G4cout << "pdgEncoding: " << pdgEncoding << G4endl;
-      G4String text = 
-        "AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries:\n";
-      text = text + "   G4ParticleTable::FindParticle() failed.";
-      AliGlobals::Exception(text);
-    }	
-
-    // get/create vertex
-    G4ThreeVector position 
-      = G4ThreeVector(particle->Vx()*TG3Units::Length(),
-                      particle->Vy()*TG3Units::Length(),
-		      particle->Vz()*TG3Units::Length());
-    G4double time = particle->T()*TG3Units::Time(); 
-    G4PrimaryVertex* vertex;
-    if ( i==0 || position != previousPosition || time != previousTime ) {   
-      // create a new vertex 
-      // in case position and time of gun particle are different from 
-      // previous values
-      // (vertex objects are destroyed in G4EventManager::ProcessOneEvent()
-      // when event is deleted)  
-      vertex = new G4PrimaryVertex(position, time);
-      event->AddPrimaryVertex(vertex);
-
-      previousVertex = vertex;
-      previousPosition = position;
-      previousTime = time;
-    }
-    else 
-      vertex = previousVertex;
-
-    // create a primary particle and add it to the vertex
-    // (primaryParticle objects are destroyed in G4EventManager::ProcessOneEvent()
-    // when event and then vertex is deleted)
-    G4double px = particle->Px()*TG3Units::Energy();
-    G4double py = particle->Py()*TG3Units::Energy();
-    G4double pz = particle->Pz()*TG3Units::Energy();
-    G4PrimaryParticle* primaryParticle 
-      = new G4PrimaryParticle(particleDefinition, px, py, pz);
-      
-    // set polarization
-    TVector3 polarization;
-    particle->GetPolarisation(polarization);
-    primaryParticle
-      ->SetPolarization(polarization.X(), polarization.Y(), polarization.Z());    
     
-    // add primary particle to the vertex
-    vertex->SetPrimary(primaryParticle);
+    if (!particle->TestBit(kDoneBit)) {
+      // only particles that didn't die (decay) in primary generator
+      // will be transformed to G4 objects   
+
+      // get particle definition from G4ParticleTable
+      G4int pdgEncoding = particle->GetPdgCode();
+      G4ParticleTable* particleTable 
+        = G4ParticleTable::GetParticleTable();                        
+      G4ParticleDefinition* particleDefinition = 0;      
+      if (pdgEncoding != 0) 
+        particleDefinition = particleTable->FindParticle(pdgEncoding);
+      else {
+        G4String name = particle->GetName();
+        if (name == "Rootino")	
+            particleDefinition = particleTable->FindParticle("geantino");
+      }	
+  
+      if (particleDefinition==0) {
+        G4cout << "pdgEncoding: " << pdgEncoding << G4endl;
+        G4String text = 
+            "AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries:\n";
+        text = text + "   G4ParticleTable::FindParticle() failed.";
+        AliGlobals::Exception(text);
+      }	
+
+      // get/create vertex
+      G4ThreeVector position 
+        = G4ThreeVector(particle->Vx()*TG4G3Units::Length(),
+                        particle->Vy()*TG4G3Units::Length(),
+		        particle->Vz()*TG4G3Units::Length());
+      G4double time = particle->T()*TG4G3Units::Time(); 
+      G4PrimaryVertex* vertex;
+      if ( i==0 || position != previousPosition || time != previousTime ) {   
+        // create a new vertex 
+        // in case position and time of gun particle are different from 
+        // previous values
+        // (vertex objects are destroyed in G4EventManager::ProcessOneEvent()
+        // when event is deleted)  
+        vertex = new G4PrimaryVertex(position, time);
+        event->AddPrimaryVertex(vertex);
+
+        previousVertex = vertex;
+        previousPosition = position;
+        previousTime = time;
+      }
+      else 
+        vertex = previousVertex;
+
+      // create a primary particle and add it to the vertex
+      // (primaryParticle objects are destroyed in G4EventManager::ProcessOneEvent()
+      // when event and then vertex is deleted)
+      G4double px = particle->Px()*TG4G3Units::Energy();
+      G4double py = particle->Py()*TG4G3Units::Energy();
+      G4double pz = particle->Pz()*TG4G3Units::Energy();
+      G4PrimaryParticle* primaryParticle 
+        = new G4PrimaryParticle(particleDefinition, px, py, pz);
+        
+      // set polarization
+      TVector3 polarization;
+      particle->GetPolarisation(polarization);
+      primaryParticle
+        ->SetPolarization(polarization.X(), polarization.Y(), polarization.Z());    
+    
+      // add primary particle to the vertex
+      vertex->SetPrimary(primaryParticle);
+    }   
   }
 }
 
