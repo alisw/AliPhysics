@@ -19,6 +19,7 @@ const G4String AliFiles::fgkG4MacroExtension = ".in";
 const G4String AliFiles::fgkG3CallsExtension = ".dat";
 const G4String AliFiles::fgkXMLFileExtension = ".xml";   
 
+//_____________________________________________________________________________
 AliFiles::AliFiles()
   : fMacroName(fgkDefaultMacroName),
     fG3CallsName(fgkDefaultG3CallsName)
@@ -32,6 +33,7 @@ AliFiles::AliFiles()
   fgInstance = this;      
 }
   
+//_____________________________________________________________________________
 AliFiles::AliFiles(const G4String& config)  
   : fMacroName(config),
     fG3CallsName(fgkDefaultG3CallsName)
@@ -45,6 +47,7 @@ AliFiles::AliFiles(const G4String& config)
   fgInstance = this;      
 }
   
+//_____________________________________________________________________________
 AliFiles::AliFiles(const G4String& config, const G4String& g3calls)  
   : fMacroName(config),
     fG3CallsName(g3calls)
@@ -58,12 +61,35 @@ AliFiles::AliFiles(const G4String& config, const G4String& g3calls)
   fgInstance = this;      
 }
   
+//_____________________________________________________________________________
+AliFiles::AliFiles(const AliFiles& right) {
+// 
+  AliGlobals::Exception("Attempt to copy AliFiles singleton.");
+}
+
+
+//_____________________________________________________________________________
 AliFiles::~AliFiles() {
 //
 }
 
+// operators
+
+//_____________________________________________________________________________
+AliFiles& 
+AliFiles::operator=(const AliFiles& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  AliGlobals::Exception("Attempt to assign AliFiles singleton.");
+    
+  return *this;  
+}    
+          
 // private methods 
 
+//_____________________________________________________________________________
 G4String AliFiles::GetMacroPath(const G4String& macroName,
                                 const G4String& moduleName,
                                 G4bool isStructure) const
@@ -85,6 +111,7 @@ G4String AliFiles::GetMacroPath(const G4String& macroName,
 			      
 // public methods
 
+//_____________________________________________________________________________
 G4String AliFiles::GetRootMacroPath() const
 {
 // Returns the filepath:
@@ -97,6 +124,7 @@ G4String AliFiles::GetRootMacroPath() const
   return name;
 }  			      
 			      
+//_____________________________________________________________________________
 G4String AliFiles::GetRootMacroPath(const G4String& moduleName,
                                     G4bool isStructure) const
 {
@@ -111,6 +139,7 @@ G4String AliFiles::GetRootMacroPath(const G4String& moduleName,
   return name;
 }  			      
 			      
+//_____________________________________________________________________________
 G4String AliFiles::GetG4MacroPath(const G4String& moduleName, 
                                   G4bool isStructure) const
 {
@@ -125,6 +154,7 @@ G4String AliFiles::GetG4MacroPath(const G4String& moduleName,
   return name;
 }  			      
 			      				  				  
+//_____________________________________________________________________________
 G4String AliFiles::GetG3CallsDatPath(const G4String& moduleName, 
                               G4int moduleVersion, G4bool isStructure) const
 {
@@ -148,6 +178,7 @@ G4String AliFiles::GetG3CallsDatPath(const G4String& moduleName,
   return name;
 }  			      
 			      
+//_____________________________________________________________________________
 G4String AliFiles::GetXMLFilePath(const G4String& moduleName,
                                   G4int moduleVersion) const
 {
