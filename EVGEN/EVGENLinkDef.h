@@ -63,7 +63,6 @@
 #pragma link C++ class  AliGenGrayParticles+;
 #pragma link C++ class  AliGenEpEmv1+;
 #pragma link C++ class  AliGrayParticleModel+;
-#pragma link C++ class  AliCollisionGeometry+;
 #endif
 
 
