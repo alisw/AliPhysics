@@ -33,7 +33,7 @@
 //  unfolding of the clusters with several local maxima.  
 //  results are stored in TreeR#, branches PHOSEmcRP (EMC recPoints),
 //  PHOSCpvRP (CPV RecPoints) and AliPHOSClusterizer (Clusterizer with all 
-//  parameters including input digits branch file name thresholds etc.)
+//  parameters including input digits branch title, thresholds etc.)
 //  This TTask normally called from Reconstructioner, but as well can be used it in 
 //  standalone mode:
 // root [0] AliPHOSClusterizerv1 * cl = new AliPHOSClusterizerv1("galice.root")  
@@ -42,9 +42,9 @@
 // root [1] cl->ExecuteTask()  
 //               //finds RecPoints in all events stored in galice.root
 // root [2] cl->SetDigitsBranch("digits2") 
-//               //sets another input file
+//               //sets another title for Digitis (input) branch
 // root [3] cl->SetRecPointsBranch("recp2")  
-//               //sets another aouput file
+//               //sets another title four output branches
 // root [4] cl->SetEmcLocalMaxCut(0.03)  
 //               //set clusterization parameters
 // root [5] cl->ExecuteTask("deb all time")  
@@ -81,17 +81,17 @@
 #include "AliRun.h"
 
 ClassImp(AliPHOSClusterizerv1)
-
+  
 //____________________________________________________________________________
   AliPHOSClusterizerv1::AliPHOSClusterizerv1():AliPHOSClusterizer()
 {
-  // default ctor (to be used)
-  SetName("AliPHOSClusterizer");
+  // default ctor (to be used mainly by Streamer)
+  SetName("AliPHOSClusterizer"); 
   SetTitle("Version 1") ;
-
+  
   fNumberOfCpvClusters     = 0 ; 
   fNumberOfEmcClusters     = 0 ; 
-    
+  
   fCpvClusteringThreshold  = 0.0;
   fEmcClusteringThreshold  = 0.2;   
   fPpsdClusteringThreshold = 0.0000002 ;
@@ -101,7 +101,7 @@ ClassImp(AliPHOSClusterizerv1)
   
   fW0                      = 4.5 ;
   fW0CPV                   = 4.0 ;
-
+  
   fGeom  = 0 ;
   
   fDigits = 0 ;
@@ -113,14 +113,14 @@ ClassImp(AliPHOSClusterizerv1)
   
 }
 //____________________________________________________________________________
-  AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* digitsFile):AliPHOSClusterizer()
+AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* digitsFile):AliPHOSClusterizer()
 {
   SetName("AliPHOSClusterizer");
   SetTitle("Version 1") ;
   
   fNumberOfCpvClusters     = 0 ; 
   fNumberOfEmcClusters     = 0 ; 
-    
+  
   fCpvClusteringThreshold  = 0.0;
   fEmcClusteringThreshold  = 0.2;   
   fPpsdClusteringThreshold = 0.0000002 ;
@@ -139,7 +139,10 @@ ClassImp(AliPHOSClusterizerv1)
   TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
   
   if(file == 0){
-    file = new TFile(fHeaderFileName.Data(),"update") ;
+    if(fHeaderFileName.Contains("rfio")) // if we read file using HPSS
+      file =	TFile::Open(fHeaderFileName.Data(),"update") ;
+    else
+      file = new TFile(fHeaderFileName.Data(),"update") ;
     gAlice = (AliRun *) file->Get("gAlice") ;
   }
   
@@ -199,6 +202,8 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Fl
 				    Int_t nPar, Float_t * fitparameters)
 { 
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
+  // the initial values for fitting procedure are set in the positions of local maxima.
+  // Cluster will be fitted as a superposition of nPar/3 electromagnetic showers
 
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
@@ -282,7 +287,7 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Fl
 
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::Init(){
-
+  //Make all memory allocations which can not be done in default constructor.
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
       fHeaderFileName = "galice.root" ;
@@ -405,19 +410,20 @@ Bool_t AliPHOSClusterizerv1::IsInCpv(AliPHOSDigit * digit) const
 }
 //____________________________________________________________________________
 Bool_t AliPHOSClusterizerv1::ReadDigits(){
+  //reads digitis with specified title from TreeD
 
   fNumberOfEmcClusters  = 0 ;
   fNumberOfCpvClusters  = 0 ;
 
   // Get Digits Tree header from file
-  char treeName[20]; 
-  sprintf(treeName,"TreeD%d",fEvent);
   gAlice->GetEvent(fEvent) ;
   gAlice->SetEvent(fEvent) ;
 
-  TTree * treeD = gAlice->TreeD()  ; // (TTree*)file->Get(treeName);
+  TTree * treeD = gAlice->TreeD()  ;
 
   if(treeD==0){
+    char treeName[20]; 
+    sprintf(treeName,"TreeD%d",fEvent);
     cout << "Error in AliPHOSClusterizerv1 : no "<<treeName << endl  ;
     cout << "    Do nothing " << endl ;
     return kFALSE ;
@@ -468,6 +474,9 @@ Bool_t AliPHOSClusterizerv1::ReadDigits(){
 
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::WriteRecPoints(){
+  // checks, if PHOSEmcRP etc. branches with given title already exist, 
+  // exits without writing, otherwise create new branches with given title
+  // fills and wrights TreeR.
   
   Int_t index ;
   //Evaluate poisition, dispersion and other RecPoint properties...
@@ -780,19 +789,6 @@ void AliPHOSClusterizerv1::MakeUnfolding(){
   }
   //Unfolding of Cpv clusters finished
   
-}
-
-//____________________________________________________________________________
-void AliPHOSClusterizerv1::SetDigitsBranch(const char * title){
-  
-    fDigitsBranchTitle = title  ; 
-
-}
-//____________________________________________________________________________
-void AliPHOSClusterizerv1::SetRecPointsBranch(const char * title){
-  
-    fRecPointsBranchTitle = title;
-
 }
 
 //____________________________________________________________________________

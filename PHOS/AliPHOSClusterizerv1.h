@@ -58,8 +58,8 @@ public:
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
   virtual void SetPpsdClusteringThreshold(Float_t cluth) { fPpsdClusteringThreshold = cluth ; }
 
-  virtual void SetDigitsBranch(const char * title) ; 
-  virtual void SetRecPointsBranch(const char *title) ;
+  virtual void SetDigitsBranch(const char * title) { fDigitsBranchTitle = title  ;}
+  virtual void SetRecPointsBranch(const char *title){fRecPointsBranchTitle = title; }
 
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE ) {fToUnfold = toUnfold ;}  
 

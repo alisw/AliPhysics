@@ -16,9 +16,23 @@
 /* $Id:  */
 
 //_________________________________________________________________________
-//  A singleton 
+//  A singleton. This class should be used on the analysiz stage to get 
+//  reconstructed objects: Digits, RecPoints, TrackSegments and RecParticles,
+//  instead of direct reading them from galice.root file. This container 
+//  ensures, that one reads Digits, made of these particular digits RecPoints, 
+//  made of these particlar RecPoints TrackSegments and RecParticles, what is
+//  not trivial if there are several identical branches, but produced with
+//  different set of parameters. 
+//
+//  An example of use (see as well class AliPHOSAnalyser):
+//  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance("galice.root","RecParticles","") ;
+//  for(Int_t irecp = 0; irecp < please->GimeNRecParticles() ; irecp++)
+//     AliPHOSRecParticle * part = please->GimeRecParticle(1) ;
+//     ................
+//  please->GetEvent(event) ;    // reads new event from galice.root
 //                  
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
+//*--         Complitely redesigned by Dmitri Peressounko March 2001  
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -68,7 +82,10 @@ AliPHOSIndexToObject::AliPHOSIndexToObject(char* headerFile,char* branch,char* b
   TFile * file = (TFile*) gROOT->GetFile(fHeaderFile.Data() ) ;
 
   if(file == 0){
-    file = new TFile(fHeaderFile.Data(),"update") ;
+    if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
+      file =	TFile::Open(fHeaderFile.Data(),"update") ;
+    else
+      file = new TFile(fHeaderFile.Data(),"update") ;
     gAlice = (AliRun *) file->Get("gAlice") ;
   }
 
@@ -563,6 +580,8 @@ Bool_t AliPHOSIndexToObject::ReadDigits(char * branchTitle){
 
   if(gAlice->TreeD()== 0)
     return kFALSE ;
+
+
   
   //if RecPoints are already read, we should read Digits from which they are made
   if(fClusterizer)
@@ -602,7 +621,6 @@ Bool_t AliPHOSIndexToObject::ReadDigits(char * branchTitle){
     digitsBranch->SetAddress(&fDigits) ;
     digitizerBranch->SetAddress(&fDigitizer) ;
   
-    gAlice->TreeD()->GetEvent(0) ;
   }
   else{ //we should read any branch and print warning if there are other possibilities
     TBranch * digitsBranch = 0;
@@ -633,10 +651,10 @@ Bool_t AliPHOSIndexToObject::ReadDigits(char * branchTitle){
     
     digitsBranch->SetAddress(&fDigits) ;
     digitizerBranch->SetAddress(&fDigitizer) ;
-    
-    gAlice->TreeD()->GetEvent(0) ;
-    
+        
   }
+
+  gAlice->TreeD()->GetEvent(0) ;
 
   return kTRUE ;
 }
@@ -718,6 +736,9 @@ void AliPHOSIndexToObject::GetEvent(Int_t event){
   if(event == fEvent) // do nothing
     return ;
     
+  if(event > fMaxEvent)
+    return ;
+
   fEvent = event ;
   gAlice->GetEvent(fEvent) ;
   

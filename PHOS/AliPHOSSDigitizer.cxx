@@ -23,13 +23,27 @@
 // SDigits are written to TreeS, branch "PHOS"
 // AliPHOSSDigitizer with all current parameters is written 
 // to TreeS branch "AliPHOSSDigitizer".
-// Both branches, "PHOS" and "AliPHOSSDigitizer", are written to the same
-// file, and therefore, changing branch file name one can produce several
-// versions of SDigitization from the same hits.
-// 
+// Both branches have the same title. If necessary one can produce 
+// another set of SDigits with different parameters. Two versions
+// can be distunguished using titles of the branches.
+// User case:
+// root [0] AliPHOSSDigitizer * s = new AliPHOSSDigitizer("galice.root")
+// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+// root [1] s->ExecuteTask()
+//             // Makes SDigitis for all events stored in galice.root
+// root [2] s->SetPedestalParameter(0.001)
+//             // One can change parameters of digitization
+// root [3] s->SetSDigitsBranch("Redestal 0.001")
+//             // and write them into the new branch
+// root [4] s->ExeciteTask("deb all tim")
+//             // available parameters:
+//             deb - print # of produced SDigitis
+//             deb all  - print # and list of produced SDigits
+//             tim - print benchmarking information
 //
 //*-- Author :  Dmitri Peressounko (SUBATECH & KI) 
 //////////////////////////////////////////////////////////////////////////////
+
 
 // --- ROOT system ---
 #include "TFile.h"
@@ -83,7 +97,10 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char* headerFile, const char *sDigits
   
   //File was not opened yet
   if(file == 0){
-    file = new TFile(fHeadersFile.Data(),"update") ;
+    if(fHeadersFile.Contains("rfio"))
+      file =	TFile::Open(fHeadersFile,"update") ;
+    else
+      file = new TFile(fHeadersFile.Data(),"update") ;
     gAlice = (AliRun *) file->Get("gAlice") ;
   }
   

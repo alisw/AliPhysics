@@ -101,8 +101,6 @@ void AliPHOSDigitizer::Init(){
 
   if(!fInitialized){
     
-    cout << "In Init" << endl ;
-
     fHeaderFiles  = new TClonesArray("TObjString",1) ;
     new((*fHeaderFiles)[0]) TObjString("galice.root") ;
     
@@ -147,17 +145,20 @@ void AliPHOSDigitizer::Init(){
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(const char *HeaderFile,const char *sDigitsTitle):
+AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char *sDigitsTitle):
   TTask("AliPHOSDigitizer","")
 {
   // ctor
   fHeaderFiles  = new TClonesArray("TObjString",1) ;          
-  new((*fHeaderFiles)[0]) TObjString(HeaderFile) ;
+  new((*fHeaderFiles)[0]) TObjString(headerFile) ;
   
   // Header file, where result will be stored
   TFile * file = (TFile*) gROOT->GetFile(((TObjString *) fHeaderFiles->At(0))->GetString() ) ;
   if(file==0){
-    file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;      
+      if(((TObjString *) fHeaderFiles->At(0))->GetString().Contains("rfio"))
+	file =	TFile::Open(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;
+      else
+	file = new TFile(((TObjString *) fHeaderFiles->At(0))->GetString(),"update") ;      
     gAlice = (AliRun *) file->Get("gAlice") ;  //If not read yet
   }
   

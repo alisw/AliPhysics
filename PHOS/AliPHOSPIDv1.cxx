@@ -35,7 +35,7 @@
 //        Shower is considered as EM if f() > 0 )
 // One can visualize current cuts calling method PlotDispersionCuts().    
 //
-// Below we present usercase:
+// usercase:
 // root [0] AliPHOSPIDv1 * p1 = new AliPHOSPIDv1("galice.root")
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
 // root [1] p1->SetIdentificationMethod("disp ellipse")
@@ -104,7 +104,10 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headeFile,const char * tsBranchTitle):Al
   TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
 
   if(file == 0){
-    file = new TFile(fHeaderFileName.Data(),"update") ;
+    if(fHeaderFileName.Contains("rfio")) // if we read file using HPSS
+      file = TFile::Open(fHeaderFileName.Data(),"update") ;
+    else
+      file = new TFile(fHeaderFileName.Data(),"update") ;
     gAlice = (AliRun *) file->Get("gAlice") ;
   }
   
@@ -137,6 +140,7 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
 //____________________________________________________________________________
 void AliPHOSPIDv1::Init()
 {
+  // Make all memory allocationa not possible in default constructor
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
       fHeaderFileName = "galice.root" ;
@@ -169,14 +173,15 @@ void AliPHOSPIDv1::Init()
 
     fIsInitialized = kTRUE ;
   }
-
-
 }
 //____________________________________________________________________________
 Bool_t AliPHOSPIDv1::ReadTrackSegments()
 {
-  //Fist read Track Segment Branch and extract RecPointsBranch from fTSMaker
+  // Reads TrackSegments an extracts the title of the RecPoints 
+  // branch from which TS were made.
+  // Then reads both TrackSegments and RecPoints.
 
+  //Fist read Track Segment Branch and extract RecPointsBranch from fTSMaker
   fTrackSegments->Clear() ; 
   fEmcRecPoints->Clear() ;
   fCpvRecPoints->Clear() ;
@@ -307,6 +312,8 @@ Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cp
 //____________________________________________________________________________
 void  AliPHOSPIDv1::Exec(Option_t * option) 
 {
+  //Steering method
+
   if(!fIsInitialized) 
     Init() ;
 
@@ -352,7 +359,7 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     new( (*fRecParticles)[index] ) AliPHOSRecParticle() ;
     rp = (AliPHOSRecParticle *)fRecParticles->At(index) ; 
     rp->SetTraskSegment(index) ;
-
+    
     AliPHOSEmcRecPoint * emc = 0 ;
     if(ts->GetEmcIndex()>=0)
       emc = (AliPHOSEmcRecPoint *) fEmcRecPoints->At(ts->GetEmcIndex()) ;
@@ -411,12 +418,21 @@ void  AliPHOSPIDv1::MakeRecParticles(){
 void  AliPHOSPIDv1:: Print(Option_t * option) const
 {
   // Print the parameters used for the particle type identification
-  
-  cout << "AliPHOSPIDv1 : cuts for the particle idendification based on the shower profile " << endl ;
-
-  cout << "Eliptic cuts function " << endl ;
-  cout << "    " << fFormula->GetTitle() << endl ;
-
+    cout <<  "=============== AliPHOSPID1 ================" << endl ;
+    cout <<  "Making PID "<< endl ;
+    cout <<  "    Headers file:               " << fHeaderFileName.Data() << endl ;
+    cout <<  "    RecPoints branch title:     " << fRecPointsTitle.Data() << endl ;
+    cout <<  "    TrackSegments Branch title: " << fTSTitle.Data() << endl ;
+    cout <<  "    RecParticles Branch title   " << fRecparticlesTitle.Data() << endl;
+    cout <<  "with parameters: " << endl ;
+    cout <<  "    Maximal EMC - CPV (PPSD) distance (cm) " << fCpvEmcDistance << endl ;
+    if(fIDOptions.Contains("dis",TString::kIgnoreCase ))
+      cout <<  "                            dispersion cut " << fDispersion << endl ;
+    if(fIDOptions.Contains("ell",TString::kIgnoreCase )){
+      cout << "Eliptic cuts function: " << endl ;
+      cout << fFormula->GetTitle() << endl ;
+    }
+    cout <<  "============================================" << endl ;
 }
 
 //____________________________________________________________________________
@@ -425,12 +441,11 @@ void  AliPHOSPIDv1::SetShowerProfileCut(char * formula){
   //shower considered "narrow" if Formula(lambda[0],lambda[1]) > 0.
   if(fFormula) 
     delete fFormula; 
-  fFormula = new TF2("Lambda Cut",formula,0,3,0,3) ;
+  fFormula = new TFormula("Lambda Cut",formula) ;
 }
 //____________________________________________________________________________
 void  AliPHOSPIDv1::WriteRecParticles()
 {
-
   //check, if these branches already exist  
   TBranch * pidBranch = 0;
   TBranch * rpBranch = 0;

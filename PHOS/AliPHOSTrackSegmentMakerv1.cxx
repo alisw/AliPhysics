@@ -15,9 +15,26 @@
 /* $Id$ */
 //_________________________________________________________________________
 // Implementation version 1 of algorithm class to construct PHOS track segments
-// Associates EMC and PPSD clusters
-// Unfolds the EMC cluster   
-//                  
+// Track segment for PHOS is list of 
+//        EMC RecPoint + (possibly) CPV RecPoint + (possibly) PPSD RecPoint
+// To find TrackSegments we do the following: for each EMC RecPoints we look at
+// CPV/PPSD RecPoints in the radious fR0. If there is such a CPV RecPoint, 
+// we make "Link" it is just indexes of EMC and CPV/PPSD RecPoint and distance
+// between them in the PHOS plane. Then we sort "Links" and starting from the 
+// least "Link" pointing to the unassined EMC and CPV RecPoints assing them to 
+// new TrackSegment. If there is no CPV/PPSD RecPoint we make TrackSegment 
+// consisting from EMC along. There is no TrackSegments without EMC RecPoint.
+//
+// In principle this class should be called from AliPHOSReconstructioner, but 
+// one can use it as well in standalong mode.
+// User case:
+// root [0] AliPHOSTrackSegmentMakerv1 * t = new AliPHOSTrackSegmentMaker("galice.root")
+// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+// root [1] t->ExecuteTask()
+// root [2] t->SetMaxEmcPpsdDistance(5)
+// root [3] t->SetTrackSegmentsBranch("max distance 5 cm")
+// root [4] t->ExecuteTask("deb all time") 
+//                 
 //*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
 //
 
@@ -64,7 +81,8 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   fIsInitialized = kFALSE ;
 }
 //____________________________________________________________________________
- AliPHOSTrackSegmentMakerv1::  AliPHOSTrackSegmentMakerv1(const char* headerFile, const char* branchTitle): AliPHOSTrackSegmentMaker()
+ AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const char* headerFile, const char* branchTitle): 
+AliPHOSTrackSegmentMaker()
 {
   // ctor
   SetTitle("version 1") ;
@@ -104,6 +122,7 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 }
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::Init(){
+  //Make all memory allokations not possible in default constructor
 
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
@@ -146,7 +165,8 @@ void  AliPHOSTrackSegmentMakerv1::Init(){
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::FillOneModule()
 {
-  // Finds bounds in which clusters from one PHOS module are
+  // Finds first and last indexes between which 
+  // clusters from one PHOS module are
  
 
   //First EMC clusters
@@ -189,6 +209,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
   //clusters are sorted in "rows" and "columns" of width 1 cm
+
   Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
                        // if you change this value, change it as well in xxxRecPoint::Compare()
   Float_t r = fR0 ;
@@ -222,7 +243,9 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::MakeLinks()
 { 
-  // Finds distances (links) between all EMC and PPSD clusters, which are not further apart from each other than fR0 
+  // Finds distances (links) between all EMC and PPSD clusters, 
+  // which are not further apart from each other than fR0 
+  // and sort them in accordance with this distance
   
   fLinkUpArray->Clear() ;    
   fLinkLowArray->Clear() ;
@@ -272,6 +295,10 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::MakePairs()
 { 
+  // Using the previously made list of "links", we found the smallest link - i.e. 
+  // link with the least distance betwing EMC and CPV and pointing to still 
+  // unassigned RecParticles. We assign these RecPoints to TrackSegment and 
+  // remove them from the list of "unassigned". 
   
   //Make arrays to mark clusters already chousen
   Int_t * emcExist = 0;
@@ -364,7 +391,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 {
-  // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
+  //STEERing method
 
   if(! fIsInitialized) Init() ;
 
@@ -407,11 +434,11 @@ void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const {
   if(fIsInitialized){
     cout <<  "======== AliPHOSTrackSegmentMakerv1 ========" << endl ;
     cout <<  "Making Track segments "<< endl ;
-    cout <<  "    Headers file: " << fHeaderFileName.Data() << endl ;
-    cout <<  "    RecPoints branch file name: " <<fRecPointsBranchTitle.Data() << endl ;
+    cout <<  "    Headers file:                   " << fHeaderFileName.Data() << endl ;
+    cout <<  "    RecPoints branch file name:     " << fRecPointsBranchTitle.Data() << endl ;
     cout <<  "    TrackSegments Branch file name: " << fTSBranchTitle.Data() << endl ;
     cout <<  "with parameters: " << endl ;
-    cout <<  "    Maximal EMC - CPV (PPSD) distance " << fR0 << endl ;
+    cout <<  "    Maximal EMC - CPV (PPSD) distance (cm)" << fR0 << endl ;
     cout <<  "============================================" << endl ;
   }
   else
@@ -419,6 +446,9 @@ void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const {
 }
 //____________________________________________________________________________
 Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
+  // Reads Emc and CPV recPoints with given title (fRecPointsBranchTitle) 
+  // made priveously with Clusterizer.
+
 
   //Make some initializations 
   fEmcRecPoints->Clear() ;
@@ -436,25 +466,16 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
   gAlice->GetEvent(fEvent) ;
 
   // Get TreeR header from file
-  char treeName[20]; 
-  sprintf(treeName,"TreeR%d",fEvent);
-
   if(gAlice->TreeR()==0){
+    char treeName[20]; 
+    sprintf(treeName,"TreeR%d",fEvent);
     cout << "Error in AliPHOSTrackSegmentMakerv1 : no "<<treeName << endl  ;
     cout << "   Do nothing " << endl ;
     return kFALSE ;
   }
 
-  char * emcBranchName = new char[30];
-  // sprintf(emcBranchName,"PHOSEmcRP%d",fEvent);
-  sprintf(emcBranchName,"PHOSEmcRP");
-  char * cpvBranchName = new char[30];
-  //  sprintf(cpvBranchName,"PHOSCpvRP%d",fEvent);
-  sprintf(cpvBranchName,"PHOSCpvRP");
-  char * cluBranchName = new char[30];
-  //  sprintf(cluBranchName,"AliPHOSClusterizer%d",fEvent);
-  sprintf(cluBranchName,"AliPHOSClusterizer");
 
+  //Find RecPoints with title fRecPointsBranchTitle
   TBranch * emcBranch = 0;
   TBranch * cpvBranch = 0;
   TBranch * clusterizerBranch = 0;
@@ -470,7 +491,7 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
     if(emcNotFound){
       emcBranch=(TBranch *) branches->At(ibranch) ;
       if( fRecPointsBranchTitle.CompareTo(emcBranch->GetTitle())==0 )
-	if( strcmp(emcBranch->GetName(),emcBranchName) == 0) {
+	if( strcmp(emcBranch->GetName(),"PHOSEmcRP") == 0) {
 	  emcNotFound = kFALSE ;
 	}
     }
@@ -478,14 +499,14 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
     if(cpvNotFound){
       cpvBranch=(TBranch *) branches->At(ibranch) ;
       if( fRecPointsBranchTitle.CompareTo(cpvBranch->GetTitle())==0 )
-	if( strcmp(cpvBranch->GetName(),cpvBranchName) == 0) 
+	if( strcmp(cpvBranch->GetName(),"PHOSCpvRP") == 0) 
 	  cpvNotFound = kFALSE ;
     }
     
     if(clusterizerNotFound){
       clusterizerBranch = (TBranch *) branches->At(ibranch) ;
       if( fRecPointsBranchTitle.CompareTo(clusterizerBranch->GetTitle()) == 0)
-	if( strcmp(clusterizerBranch->GetName(),cluBranchName) == 0) 
+	if( strcmp(clusterizerBranch->GetName(),"AliPHOSClusterizer") == 0) 
 	  clusterizerNotFound = kFALSE ;
     }
     
@@ -504,19 +525,18 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
   
   gAlice->TreeR()->GetEvent(0) ;
   
-  delete emcBranchName;
-  delete cpvBranchName;
-  delete cluBranchName;
-
   return kTRUE ;
   
 }
 //____________________________________________________________________________
 void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(){
-
-  char treeName[20]; 
-  sprintf(treeName,"TreeR%d",fEvent);
-  
+  // Writes found TrackSegments to TreeR. Creates branches 
+  // "PHOSTS" and "AliPHOSTrackSegmentMaker" with the same title.
+  // In the former branch found TrackSegments are stored, while 
+  // in the latter all parameters, with which TS were made. 
+  // ROOT does not allow overwriting existing branches, therefore
+  // first we chesk, if branches with the same title alredy exist.
+  // If yes - exits without writing.
   
   //First, check, if branches already exist
   TBranch * tsMakerBranch = 0;
@@ -595,6 +615,9 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(){
 
 //____________________________________________________________________________
 void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option){
+  // option deb - prints # of found TrackSegments
+  // option deb all - prints as well indexed of found RecParticles assigned to the TS
+
   
   cout << "AliPHOSTrackSegmentMakerv1: " << endl ;
   cout << "       Found " << fTrackSegments->GetEntriesFast() << "  trackSegments " << endl ;
@@ -613,15 +636,4 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option){
     
     cout << "-------------------------------------------------------"<< endl ;
   }
-}
-//____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::SetRecPointsBranch(const char * title){
-  //set the title of RecPoints 
-    fRecPointsBranchTitle = title ;
-
-}
-//____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::SetTrackSegmentsBranch(const char * title){
-
-    fTSBranchTitle = title ; 
 }

@@ -48,8 +48,8 @@ public:
   virtual void   Print(Option_t * option) const ;
   virtual Bool_t ReadRecPoints() ;
   virtual void   SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
-  virtual void   SetRecPointsBranch(const char * title) ; 
-  virtual void   SetTrackSegmentsBranch(const char * title) ; 
+  virtual void   SetRecPointsBranch(const char * title) { fRecPointsBranchTitle = title ;} 
+  virtual void   SetTrackSegmentsBranch(const char * title){ fTSBranchTitle = title ; }
   virtual void   WriteTrackSegments() ;
 
   AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & )  {
