@@ -15,6 +15,7 @@
 
 #include <TGFrame.h>
 
+class TG4ListTreeFrame;
 class TG4VolumesFrames;
 class TG4MaterialsFrames;
 class TObject;
@@ -24,7 +25,6 @@ class TGListTree;
 class TGTab;
 class TGMenuBar;
 class TGPopupMenu;
-class TGCanvas;
 
 
 class TG4MainFrame : public TGMainFrame {
@@ -63,13 +63,13 @@ private:
     TGLayoutHints*      fMenuBarLayout;    // main bar layout 
     
     TGTab*      fTab;           // tab widget
-    TGCanvas*   fCanvasWindow;  // Canvas window for the list tree
     
     TGListTree*     fVolumesListTree;     // volumes list tree 
     
-    TG4VolumesFrames*   fvolumesFrames;  // service class for adding vols subframes 
-    TG4MaterialsFrames*   fmaterialsFrames;  // service class for adding mats subframes 
-			
+    TG4VolumesFrames*   fvolumesFrames;   // service class for adding vols subframes 
+    TG4MaterialsFrames* fmaterialsFrames; // service class for adding mats subframes 
+    TG4ListTreeFrame*   flistTreeFrame;	  // service class for volumes list tree		
+
     ClassDef(TG4MainFrame,0)  // the main frame for the TG4 Browser  
   };
   
