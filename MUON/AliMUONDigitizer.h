@@ -18,7 +18,7 @@ class AliMUONDigitizer : public AliDigitizer {
     virtual ~AliMUONDigitizer();
 
     // Compare pad hits
-    virtual Bool_t Exists(const AliMUONPadHit * sdigit);
+    virtual Bool_t Exists(const AliMUONPadHit * sdigit) const;
     // Update a pad hit
     virtual  void Update(AliMUONPadHit *sdigit);
     // Create a new hit
@@ -30,7 +30,7 @@ class AliMUONDigitizer : public AliDigitizer {
     // Do the main work
     virtual void Exec(Option_t* option=0);
     
-    Int_t GetDebug() {return fDebug;}             // get debug level
+    Int_t GetDebug() const {return fDebug;}       // get debug level
     void SetDebug(Int_t level){fDebug = level;}   // set debug level    
     enum {kBgTag = -1};
     

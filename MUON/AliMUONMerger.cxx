@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/10/31 16:35:07  jchudoba
+some functionality move to AliMUONTransientDigit class
+
 Revision 1.4  2001/03/20 13:36:11  egangler
 TFile memory leak and "too many files open" problem solved (?):
 the backgroud file is open only once forever, and not once for each event.
@@ -31,14 +34,10 @@ AliMUONMerger prototype to be called by the merge manager.
 */
 
 #include <TTree.h> 
-#include <TVector.h>
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TDirectory.h>
 
-
-// #include "AliMerger.h"
-// #include "AliMergable.h"
 #include "AliMUONMerger.h"
 #include "AliMUONConstants.h"
 #include "AliMUONChamber.h"
@@ -85,9 +84,8 @@ AliMUONMerger::~AliMUONMerger()
 }
 
 //------------------------------------------------------------------------
-Bool_t AliMUONMerger::Exists(const AliMUONPadHit *mergable)
+Bool_t AliMUONMerger::Exists(const AliMUONPadHit *padhit) const
 {
-    AliMUONPadHit *padhit = (AliMUONPadHit*) mergable;
     return (fHitMap[fNch]->TestHit(padhit->PadX(),padhit->PadY()));
 }
 
@@ -124,7 +122,7 @@ void AliMUONMerger::CreateNew(AliMUONPadHit *padhit)
 	new AliMUONTransientDigit(fNch,fDigits),fCounter);
     fHitMap[fNch]->SetHit(padhit->PadX(),padhit->PadY(),fCounter);
     AliMUONTransientDigit* pdigit = 
-      (AliMUONTransientDigit*)fList->At(fList->GetLast());
+      static_cast<AliMUONTransientDigit*>(fList->Last());
     // list of tracks
     Int_t track, charge;
     if (fSignal) {
@@ -207,11 +205,9 @@ void AliMUONMerger::Digitise()
     //
     // loop over cathodes
     //
-    AliHitMap* hm;
     fSignal = kTRUE;
     for (int icat = 0; icat < 2; icat++) { 
 	fCounter = 0;
-	Int_t * nmuon = new Int_t [AliMUONConstants::NCh()];
 	for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
 	    iChamber = &(pMUON->Chamber(i));
 	    if (iChamber->Nsec() == 1 && icat == 1) {
@@ -220,7 +216,6 @@ void AliMUONMerger::Digitise()
 		segmentation = iChamber->SegmentationModel(icat+1);
 	    }
 	    fHitMap[i] = new AliMUONHitMapA1(segmentation, fList);
-	    nmuon[i] = 0;
 	}
 
 //
@@ -251,15 +246,11 @@ void AliMUONMerger::Digitise()
 		     mPad = (AliMUONPadHit*)pMUON->NextPad(pMUON->PadHits()))
 		{
 		    Int_t cathode  = mPad->Cathode();      // cathode number
-		    Int_t ipx      = mPad->PadX();         // pad number on X
-		    Int_t ipy      = mPad->PadY();         // pad number on Y
-		    Int_t iqpad    = Int_t(mPad->QPad());  // charge per pad
 		    if (cathode != (icat+1)) continue;
-
-		    segmentation = iChamber->SegmentationModel(cathode);
-
-		    fDigits[0] = ipx;
-		    fDigits[1] = ipy;
+		    Int_t iqpad    = Int_t(mPad->QPad());  // charge per pad
+//		    segmentation = iChamber->SegmentationModel(cathode);
+		    fDigits[0] = mPad->PadX();  
+		    fDigits[1] = mPad->PadY();
 		    fDigits[2] = icat;
 		    fDigits[3] = iqpad;
 		    fDigits[4] = iqpad;
@@ -296,7 +287,7 @@ void AliMUONMerger::Digitise()
 //
 //   Loop over hits
 		AliMUONHit* mHit;
-		for(int i = 0; i < fHitsBgr->GetEntriesFast(); ++i) 
+		for(Int_t i = 0; i < fHitsBgr->GetEntriesFast(); ++i) 
 		{	
 		    mHit   = (AliMUONHit*) (*fHitsBgr)[i];
 		    fNch   = mHit->Chamber()-1;  // chamber number
@@ -331,10 +322,10 @@ void AliMUONMerger::Digitise()
 		} // hit loop
 	    } // track loop
 
-	    TTree *fAli = gAlice->TreeK();
+	    TTree *treeK = gAlice->TreeK();
             TFile *file = NULL;
 	    
-	    if (fAli) file = fAli->GetCurrentFile();
+	    if (treeK) file = treeK->GetCurrentFile();
 	    file->cd();
 	} // if fMerge
 
@@ -397,12 +388,10 @@ void AliMUONMerger::Digitise()
 	
 	for(Int_t ii = 0; ii < AliMUONConstants::NCh(); ++ii) {
 	    if (fHitMap[ii]) {
-		hm=fHitMap[ii];
-		delete hm;
+		delete fHitMap[ii];
 		fHitMap[ii] = 0;
 	    }
 	}
-	delete [] nmuon;    
     } //end loop over cathodes
     delete [] fHitMap;
     delete fList;

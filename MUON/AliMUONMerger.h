@@ -20,7 +20,7 @@ class AliMUONMerger {
     virtual ~AliMUONMerger();
     
     // Compare pad hits
-    virtual Bool_t Exists(const AliMUONPadHit * sdigit);
+    virtual Bool_t Exists(const AliMUONPadHit * sdigit) const;
     // Update a pad hit
     virtual  void Update(AliMUONPadHit *sdigit);
     // Create a new hit

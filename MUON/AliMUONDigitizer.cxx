@@ -29,7 +29,6 @@ merging/digitization classes
 
 */
 #include <TTree.h> 
-#include <TVector.h>
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TDirectory.h>
@@ -54,7 +53,10 @@ ClassImp(AliMUONDigitizer)
 AliMUONDigitizer::AliMUONDigitizer() :AliDigitizer()
 {
 // Default ctor - don't use it
-  ;
+  fHits = 0;
+  fPadHits = 0;
+  fHitMap = 0;
+  fTDList = 0;
 }
 
 //___________________________________________
@@ -83,9 +85,8 @@ AliMUONDigitizer::~AliMUONDigitizer()
 }
 
 //------------------------------------------------------------------------
-Bool_t AliMUONDigitizer::Exists(const AliMUONPadHit *mergable)
+Bool_t AliMUONDigitizer::Exists(const AliMUONPadHit *padhit) const
 {
-  AliMUONPadHit *padhit = (AliMUONPadHit*) mergable;
   return (fHitMap[fNch]->TestHit(padhit->PadX(),padhit->PadY()));
 }
 
@@ -123,7 +124,7 @@ void AliMUONDigitizer::CreateNew(AliMUONPadHit *padhit)
     new AliMUONTransientDigit(fNch,fDigits),fCounter);
   fHitMap[fNch]->SetHit(padhit->PadX(),padhit->PadY(),fCounter);
   AliMUONTransientDigit* pdigit = 
-    (AliMUONTransientDigit*)fTDList->At(fTDList->GetLast());
+    (AliMUONTransientDigit*)fTDList->Last();
   // list of tracks
   Int_t track, charge;    
   track = fTrack+fMask;
@@ -179,13 +180,11 @@ void AliMUONDigitizer::Exec(Option_t* option)
 
   for (int icat = 0; icat < 2; icat++) { 
     fCounter = 0;
-    Int_t * nmuon = new Int_t [AliMUONConstants::NCh()];
     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
       iChamber = &(pMUON->Chamber(i));
 //      if (!(iChamber->Nsec() == 1 && icat == 1)) {
 	segmentation = iChamber->SegmentationModel(icat+1);
 	fHitMap[i] = new AliMUONHitMapA1(segmentation, fTDList);
-	nmuon[i] = 0;
 //      }
     }
 
@@ -212,7 +211,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	  branchHits->SetAddress(&fHits);
 	}
 	else
-	  Error("Digitize","branch MUON was not found");
+	  Error("Exec","branch MUON was not found");
       }
       if (GetDebug()>2) cerr<<"   branchHits = "<<branchHits<<endl;
 
@@ -221,7 +220,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	if (branchPadHits) 
 	  branchPadHits->SetAddress(&fPadHits);
 	else
-	  Error("Digitize","branch MUONCluster was not found");
+	  Error("Exec","branch MUONCluster was not found");
       }
       if (GetDebug()>2) cerr<<"   branchPadHits = "<<branchPadHits<<endl;
 
@@ -242,17 +241,16 @@ void AliMUONDigitizer::Exec(Option_t* option)
 //   Loop over hits
 
 	AliMUONHit* mHit;
-	for(int i = 0; i < fHits->GetEntriesFast(); ++i) 
-	{	
-	  mHit   = (AliMUONHit*) (*fHits)[i];
+	for(Int_t i = 0; i < fHits->GetEntriesFast(); ++i) {
+	  mHit = static_cast<AliMUONHit*>(fHits->At(i));
 	  fNch = mHit->Chamber()-1;  // chamber number
-	  iChamber = &(pMUON->Chamber(fNch));
 	  if (fNch > AliMUONConstants::NCh()-1) {
 	    cerr<<"AliMUONDigitizer: ERROR: "
 		<<"fNch > AliMUONConstants::NCh()-1, fNch, NCh(): "
 		<<fNch<<", "<< AliMUONConstants::NCh()<<endl;
 	    return;
 	  }
+	  iChamber = &(pMUON->Chamber(fNch));
 //
 // Loop over pad hits
 	  for (AliMUONPadHit* mPad =
@@ -363,7 +361,6 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	fHitMap[ii] = 0;
       }
     }
-    delete [] nmuon;    
   } //end loop over cathodes
   if (GetDebug()>2) 
     cerr<<"AliMUONDigitizer::Exec: writing the TreeD: "
