@@ -15,7 +15,7 @@ new AliGeant3("C++ Interface to Geant3");
  rootfile->SetCompressionLevel(2);
  TGeant3 *geant3 = (TGeant3*)gMC;
  AliDecayer* decayer = new AliDecayerPythia();
- decayer->SetForceDecay(all);
+ decayer->SetForceDecay(kAll);
  decayer->Init();
  gMC->SetExternalDecayer(decayer);
 
@@ -188,7 +188,7 @@ position
 //*******************************************************
 // Example for J/psi or Upsilon Production from  Parameterisation *
 //*******************************************************
-     AliGenParam *gener = new AliGenParam(ntracks,upsilon_p);
+     AliGenParam *gener = new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
@@ -196,7 +196,7 @@ position
      gener->SetChildThetaRange(2.0,9);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetForceDecay(dimuon);
+     gener->SetForceDecay(kDiMuon);
      gener->SetTrackingFlag(1);
 
      break;
