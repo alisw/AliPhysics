@@ -61,7 +61,7 @@
 
 // --- Standard library ---
 
-//#include <unistd.h>
+#include <stdio.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSDigit.h"
