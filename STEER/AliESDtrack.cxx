@@ -24,6 +24,7 @@
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
+#include "../ITS/AliITStrackV2.h"
 
 ClassImp(AliESDtrack)
 
@@ -31,7 +32,8 @@ ClassImp(AliESDtrack)
 AliESDtrack::AliESDtrack() : 
 fFlags(0), 
 fITSncls(0),
-fTPCncls(0)
+fTPCncls(0),
+fVertex(kFALSE)
 {
   //
   // The default ESD constructor 
@@ -56,17 +58,21 @@ Float_t AliESDtrack::GetMass() const {
 }
 
 //_______________________________________________________________________
-Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
+Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   //
   // This function updates track's running parameters 
   //
   switch (flags) {
-  case kITSin: case kITSout: case kITSrefit:
+    
+  case kITSin:
+  case kITSout: 
+  case kITSrefit:
     fITSncls=t->GetNumberOfClusters();
     fITSchi2=t->GetChi2();
     for (Int_t i=0;i<fITSncls;i++) fITSindex[i]=t->GetClusterIndex(i);
     fITSsignal=t->GetPIDsignal();
     break;
+    
   case kTPCin: case kTPCout: case kTPCrefit:
     fTPCncls=t->GetNumberOfClusters();
     fTPCchi2=t->GetChi2();
@@ -99,6 +105,35 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
   fRalpha=t->GetAlpha();
   t->GetExternalParameters(fRx,fRp);
   t->GetExternalCovariance(fRc);
+  
+  if (flags == kITSin)
+   {
+     AliITStrackV2* itstrack = dynamic_cast<AliITStrackV2*>(t);
+     if (itstrack)
+      {
+        itstrack->PropagateTo(3.,0.0028,65.19);
+        itstrack->PropagateToVertex();
+        
+        Double_t ralpha=t->GetAlpha();
+        Double_t rx;      // X-coordinate of the track reference plane 
+        Double_t rp[5];   // external track parameters  
+        t->GetExternalParameters(rx,rp);
+   
+        Double_t phi=TMath::ASin(rp[2]) + ralpha;
+        Double_t pt=1./TMath::Abs(rp[4]);
+        Double_t r=TMath::Sqrt(rx*rx + rp[0]*rp[0]);
+        
+        fVertexX=r*TMath::Cos(phi); 
+        fVertexY=r*TMath::Sin(phi); 
+        fVertexZ=rp[1]; 
+        
+        fVertexPx = pt*TMath::Cos(phi); 
+        fVertexPy = pt*TMath::Sin(phi); 
+        fVertexPz = pt*rp[3]; 
+        fVertex = kTRUE;
+      }
+   }
+  
   return kTRUE;
 }
 
@@ -258,3 +293,17 @@ void AliESDtrack::GetESDpid(Double_t *p) const {
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fR[i];
 }
 
+void AliESDtrack::GetVertexXYZ(Double_t& x,Double_t& y, Double_t&z) const
+{
+//returns track position in DCA to vertex  
+  x = fVertexX;
+  y = fVertexY;
+  z = fVertexZ;
+}
+void AliESDtrack::GetVertexPxPyPz(Double_t& px,Double_t& py, Double_t& pz) const
+{
+//returns track momentum in DCA to vertex  
+  px = fVertexPx;
+  py = fVertexPy;
+  pz = fVertexPz;
+}

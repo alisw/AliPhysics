@@ -19,7 +19,7 @@ public:
   virtual ~AliESDtrack() {}
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
-  Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
+  Bool_t UpdateTrackParams(AliKalmanTrack *t, ULong_t flags);
   void SetIntegratedLength(Double_t l) {fTrackLength=l;}
   void SetIntegratedTimes(const Double_t *times);
   void SetESDpid(const Double_t *p);
@@ -60,6 +60,10 @@ public:
   void    GetTOFpid(Double_t *p) const;
   UInt_t  GetTOFcluster() const {return fTOFindex;}
   void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
+  
+  void  GetVertexXYZ(Double_t& x,Double_t& y, Double_t&z) const;
+  void  GetVertexPxPyPz(Double_t& px,Double_t& py, Double_t& pz) const;
+  Bool_t  HasVertexParameters() const {return fVertex;}
 
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
@@ -99,7 +103,17 @@ protected:
   UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[kSPECIES]; //! "detector response probabilities" (for the PID)
-
+  
+  Double_t fVertexX;
+  Double_t fVertexY;
+  Double_t fVertexZ;
+  
+  Double_t fVertexPx;
+  Double_t fVertexPy;
+  Double_t fVertexPz;
+  
+  Bool_t   fVertex;
+  
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
