@@ -34,10 +34,8 @@ class AliPMDClusterFinder
 
  public:
 
-  AliPMDClusterFinder();
+  AliPMDClusterFinder(AliRunLoader* runLoader);
   virtual ~AliPMDClusterFinder();
-
-  void OpengAliceFile(const char * file, Option_t * option);
 
   void Digits2RecPoints(Int_t ievt);
   void SetCellEdepCut(Float_t ecut);

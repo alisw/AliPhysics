@@ -373,15 +373,11 @@ void  AliPMD::Reconstruct() const
 // create reconstructed points
   
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
-  AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder();
-  pmdClus->OpengAliceFile(fLoader->GetRunLoader()->GetFileName().Data(),"DR");
+  AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder(runLoader);
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
     {
       pmdClus->Digits2RecPoints(iEvent);
     }
-
-  fLoader->UnloadRecPoints();
-  fLoader->UnloadDigits();
 
   delete pmdClus;
 
@@ -390,22 +386,16 @@ void  AliPMD::Reconstruct() const
 void  AliPMD::FillESD(AliESD* esd) const
 {
 
-  AliRunLoader* runLoader = fLoader->GetRunLoader();
   fLoader->LoadRecPoints("READ");
-  Int_t ievent = runLoader->GetEventNumber();
-  runLoader->GetEvent(ievent);
-  AliLoader *pmdloader = runLoader->GetLoader("PMDLoader");
-  TTree *treeR = pmdloader->TreeR();
-  AliPMDtracker *pmdtracker = new AliPMDtracker();
-  pmdtracker->LoadClusters(treeR);
-  pmdtracker->Clusters2Tracks(esd);
-  delete pmdtracker; 
-
+  TTree *treeR = fLoader->TreeR();
+  AliPMDtracker pmdtracker;
+  pmdtracker.LoadClusters(treeR);
+  pmdtracker.Clusters2Tracks(esd);
   fLoader->UnloadRecPoints();
 }
 
 // ---------------------------------------------------------------------------
-AliDigitizer* AliPMD::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliPMD::CreateDigitizer(AliRunDigitizer* manager) const
 { 
   return new AliPMDDigitizer(manager);
 }

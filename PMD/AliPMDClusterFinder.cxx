@@ -50,9 +50,9 @@
 
 ClassImp(AliPMDClusterFinder)
 
-AliPMDClusterFinder::AliPMDClusterFinder():
-  fRunLoader(0),
-  fPMDLoader(0),
+AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
+  fRunLoader(runLoader),
+  fPMDLoader(runLoader->GetLoader("PMDLoader")),
   fTreeD(0),
   fTreeR(0),
   fDigits(0),
@@ -62,7 +62,7 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fEcut(0.)
 {
 //
-// Default Constructor
+// Constructor
 //
 }
 // ------------------------------------------------------------------------- //
@@ -74,48 +74,6 @@ AliPMDClusterFinder::~AliPMDClusterFinder()
       fRecpoints->Delete();
       delete fRecpoints;
       fRecpoints=0;
-    }
-}
-// ------------------------------------------------------------------------- //
-
-void AliPMDClusterFinder::OpengAliceFile(const Char_t *file, Option_t *option)
-{
-  // Loads galice.root file and corresponding header, kinematics
-  // hits and sdigits or digits depending on the option
-  //
-  fRunLoader = AliRunLoader::Open(file,AliConfig::GetDefaultEventFolderName(),
-				  "UPDATE");
-  
-  if (!fRunLoader)
-   {
-     Error("Open","Can not open session for file %s.",file);
-   }
-  
-  fRunLoader->LoadgAlice();
-  gAlice = fRunLoader->GetAliRun();
-  
-  if (gAlice)
-    {
-      printf("<AliPMDdigitizer::Open> ");
-      printf("AliRun object found on file.\n");
-    }
-  else
-    {
-      printf("<AliPMDdigitizer::Open> ");
-      printf("Could not find AliRun object.\n");
-    }
-  fPMDLoader = fRunLoader->GetLoader("PMDLoader");
-  if (fPMDLoader == 0x0)
-    {
-      cerr<<"OpengAlice : Can not find PMD or PMDLoader\n";
-    }
-
-  const char *cDR = strstr(option,"DR");
-
-  if (cDR)
-    {
-      fPMDLoader->LoadDigits("READ");
-      fPMDLoader->LoadRecPoints("recreate");
     }
 }
 // ------------------------------------------------------------------------- //
@@ -138,6 +96,8 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   pmdclust->SetDebug(fDebug);
   pmdclust->SetEdepCut(fEcut);
 
+  fPMDLoader->LoadDigits("READ");
+  fPMDLoader->LoadRecPoints("recreate");
   fRunLoader->GetEvent(ievt);
   //cout << " ***** Beginning::Digits2RecPoints *****" << endl;
   fTreeD = fPMDLoader->TreeD();
@@ -186,7 +146,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
       pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
       
       Int_t nentries1 = pmdcont->GetEntries();
-      cout << " nentries1 = " << nentries1 << endl;
+//      cout << " nentries1 = " << nentries1 << endl;
       for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
 	{
 	  pmdcl = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
@@ -210,6 +170,8 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   ResetCellADC();
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
   fPMDLoader->WriteRecPoints("OVERWRITE");
+  fPMDLoader->UnloadRecPoints();
+  fPMDLoader->UnloadDigits();
 
   //   delete the pointers
   delete pmdclust;
