@@ -88,11 +88,11 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    printf("thres %f\n",thres);
    res1->Print();
 
-   TClonesArray *dig1  = ITS->DigitsAddress(iDet);
+   TClonesArray *dig1  = ITS->DigitsAddress(1);
    TClonesArray *recp1  = ITS->ClustersAddress(1);
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);
    rec1->SetCutAmplitude((int)thres);
-   ITS->SetReconstructionModel(iDet,rec1);
+   ITS->SetReconstructionModel(1,rec1);
    rec1->Print();
 
    // SSD
