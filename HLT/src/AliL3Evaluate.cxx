@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
@@ -319,11 +321,12 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
 	      Short_t dig = fDigits->GetDigit(it,ip);
 	      
 	      if(dig<=fParam->GetZeroSup()) continue;
-	      if(it < fParam->GetMaxTBin()-1 && it > 0)
+	      /*
+		if(it < fParam->GetMaxTBin()-1 && it > 0)
 		if(fDigits->GetDigit(it+1,ip) <= fParam->GetZeroSup()
-		   && fDigits->GetDigit(it-1,ip) <= fParam->GetZeroSup())
-		  continue;
-	      
+		&& fDigits->GetDigit(it-1,ip) <= fParam->GetZeroSup())
+		continue;
+	      */
 	      AliL3Transform::Raw2Local(xyz,sec,row,ip,it);
 	      if(fParam->GetPadRowRadii(sec,row)<230./250.*fabs(xyz[2]))
 		continue;
@@ -459,7 +462,7 @@ void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number,Char_t *fn
 {
   //Make efficiency plots for tracking on several slices.
   
-  Int_t row[2] = {0,175};
+  Int_t row[2] = {AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5)};
   SetMinPoints(min_points);
   Int_t slice[2] = {fMinSlice,fMaxSlice};
   DefineGoodTracks(slice,row,good_number,fname);
