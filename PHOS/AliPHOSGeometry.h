@@ -24,10 +24,9 @@
 // --- AliRoot header files ---
 
 #include "AliGeometry.h"
-#include "AliEMCAGeometry.h"
-#include "AliCPVBaseGeometry.h"
-#include "AliCPVGeometry.h"
-#include "AliPPSDGeometry.h"
+#include "AliPHOSEMCAGeometry.h"
+#include "AliPHOSCPVGeometry.h"
+#include "AliPHOSPPSDGeometry.h"
 #include "AliPHOSRecPoint.h"
 
 
@@ -122,83 +121,83 @@ public:
 
   // Return PPSD geometrical parameters
 
-  Float_t GetAnodeThickness(void)              const { return ((AliPPSDGeometry*) fGeometryCPV)->GetAnodeThickness();         }
-  Float_t GetAvalancheGap(void)                const { return ((AliPPSDGeometry*) fGeometryCPV)->GetAvalancheGap();           }
-  Float_t GetCathodeThickness(void)            const { return ((AliPPSDGeometry*) fGeometryCPV)->GetCathodeThickness();       }
-  Float_t GetCompositeThickness(void)          const { return ((AliPPSDGeometry*) fGeometryCPV)->GetCompositeThickness();     }
-  Float_t GetConversionGap(void)               const { return ((AliPPSDGeometry*) fGeometryCPV)->GetConversionGap();          }
-  Float_t GetLeadConverterThickness(void)      const { return ((AliPPSDGeometry*) fGeometryCPV)->GetLeadConverterThickness(); }
-  Float_t GetLeadToMicro2Gap(void)             const { return ((AliPPSDGeometry*) fGeometryCPV)->GetLeadToMicro2Gap();        }
-  Float_t GetLidThickness(void)                const { return ((AliPPSDGeometry*) fGeometryCPV)->GetLidThickness();           }
-  Float_t GetMicromegas1Thickness(void)        const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicromegas1Thickness();   }
-  Float_t GetMicromegas2Thickness(void)        const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicromegas2Thickness();   }
-  Float_t GetMicromegasWallThickness(void)     const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicromegasWallThickness();}
-  Float_t GetMicro1ToLeadGap(void)             const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicro1ToLeadGap();        }
-  Float_t GetPCThickness(void)                 const { return ((AliPPSDGeometry*) fGeometryCPV)->GetPCThickness();            }
-  Float_t GetPhiDisplacement(void)             const { return ((AliPPSDGeometry*) fGeometryCPV)->GetPhiDisplacement();        }
-  Float_t GetPPSDModuleSize(Int_t index)       const { return ((AliPPSDGeometry*) fGeometryCPV)->GetPPSDModuleSize(index);    }
-  Float_t GetZDisplacement(void)               const { return ((AliPPSDGeometry*) fGeometryCPV)->GetZDisplacement();          }
+  Float_t GetAnodeThickness(void)              const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetAnodeThickness();         }
+  Float_t GetAvalancheGap(void)                const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetAvalancheGap();           }
+  Float_t GetCathodeThickness(void)            const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetCathodeThickness();       }
+  Float_t GetCompositeThickness(void)          const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetCompositeThickness();     }
+  Float_t GetConversionGap(void)               const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetConversionGap();          }
+  Float_t GetLeadConverterThickness(void)      const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetLeadConverterThickness(); }
+  Float_t GetLeadToMicro2Gap(void)             const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetLeadToMicro2Gap();        }
+  Float_t GetLidThickness(void)                const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetLidThickness();           }
+  Float_t GetMicromegas1Thickness(void)        const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetMicromegas1Thickness();   }
+  Float_t GetMicromegas2Thickness(void)        const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetMicromegas2Thickness();   }
+  Float_t GetMicromegasWallThickness(void)     const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetMicromegasWallThickness();}
+  Float_t GetMicro1ToLeadGap(void)             const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetMicro1ToLeadGap();        }
+  Float_t GetPCThickness(void)                 const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetPCThickness();            }
+  Float_t GetPhiDisplacement(void)             const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetPhiDisplacement();        }
+  Float_t GetPPSDModuleSize(Int_t index)       const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetPPSDModuleSize(index);    }
+  Float_t GetZDisplacement(void)               const { return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetZDisplacement();          }
 
   // Return CPV geometrical parameters
 
-  Bool_t  IsLeadConverterExists(void)          const { return ((AliCPVGeometry*) fGeometryCPV)->IsLeadConverterExists();      }
-  Float_t GetCPVActiveSize(Int_t index)        const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVActiveSize(index);         }
-  Int_t   GetNumberOfCPVChipsPhi(void)         const { return ((AliCPVGeometry*) fGeometryCPV)->GetNumberOfCPVChipsPhi();     }
-  Int_t   GetNumberOfCPVChipsZ(void)           const { return ((AliCPVGeometry*) fGeometryCPV)->GetNumberOfCPVChipsZ();       }
-  Float_t GetGassiplexChipSize(Int_t index)    const { return ((AliCPVGeometry*) fGeometryCPV)->GetGassiplexChipSize(index);  }
-  Float_t GetCPVGasThickness(void)             const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVGasThickness();         }
-  Float_t GetCPVTextoliteThickness(void)       const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVTextoliteThickness();   }
-  Float_t GetCPVCuNiFoilThickness(void)        const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVCuNiFoilThickness();    }
-  Float_t GetFTPosition(Int_t index)           const { return ((AliCPVGeometry*) fGeometryCPV)->GetFTPosition(index);         }
-  Float_t GetCPVFrameSize(Int_t index)         const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVFrameSize(index);       }
+  Bool_t  IsLeadConverterExists(void)          const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->IsLeadConverterExists();      }
+  Float_t GetCPVActiveSize(Int_t index)        const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetCPVActiveSize(index);         }
+  Int_t   GetNumberOfCPVChipsPhi(void)         const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetNumberOfCPVChipsPhi();     }
+  Int_t   GetNumberOfCPVChipsZ(void)           const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetNumberOfCPVChipsZ();       }
+  Float_t GetGassiplexChipSize(Int_t index)    const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetGassiplexChipSize(index);  }
+  Float_t GetCPVGasThickness(void)             const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetCPVGasThickness();         }
+  Float_t GetCPVTextoliteThickness(void)       const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetCPVTextoliteThickness();   }
+  Float_t GetCPVCuNiFoilThickness(void)        const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetCPVCuNiFoilThickness();    }
+  Float_t GetFTPosition(Int_t index)           const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetFTPosition(index);         }
+  Float_t GetCPVFrameSize(Int_t index)         const { return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetCPVFrameSize(index);       }
 
   // Common PPSD and CPV parameters
 
   Int_t   GetNumberOfCPVLayers(void)  const {
     if      (strcmp(fName,"GPS2")==0) return 2;
-    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry*) fGeometryCPV)->GetNumberOfCPVLayers();
+    else if (strcmp(fName,"IHEP")==0) return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetNumberOfCPVLayers();
     else                              return 0;
   }
 
   Float_t GetCPVBoxSize(Int_t index)  const { 
-    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetCPVBoxSize(index);
-    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry* ) fGeometryCPV)->GetCPVBoxSize(index);
+    if      (strcmp(fName,"GPS2")==0) return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetCPVBoxSize(index);
+    else if (strcmp(fName,"IHEP")==0) return ((AliPHOSCPVGeometry* ) fGeometryCPV)->GetCPVBoxSize(index);
     else                              return 0;
   }
 
   Int_t   GetNumberOfModulesPhi(void) const {
-    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfModulesPhi();
+    if      (strcmp(fName,"GPS2")==0) return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetNumberOfModulesPhi();
     else if (strcmp(fName,"IHEP")==0) return 1;
     else                              return 0;
   }
 
   Int_t   GetNumberOfModulesZ(void)   const {
-    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfModulesZ();
+    if      (strcmp(fName,"GPS2")==0) return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetNumberOfModulesZ();
     else if (strcmp(fName,"IHEP")==0) return 1;
     else                              return 0;
   }
 
   Int_t   GetNumberOfPadsPhi(void)    const { 
-    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfPadsPhi();
-    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry* ) fGeometryCPV)->GetNumberOfCPVPadsPhi();
+    if      (strcmp(fName,"GPS2")==0) return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetNumberOfPadsPhi();
+    else if (strcmp(fName,"IHEP")==0) return ((AliPHOSCPVGeometry* ) fGeometryCPV)->GetNumberOfCPVPadsPhi();
     else                              return 0;
   }
 
   Int_t   GetNumberOfPadsZ(void)      const { 
-    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfPadsZ();
-    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry* ) fGeometryCPV)->GetNumberOfCPVPadsZ();
+    if      (strcmp(fName,"GPS2")==0) return ((AliPHOSPPSDGeometry*) fGeometryCPV)->GetNumberOfPadsZ();
+    else if (strcmp(fName,"IHEP")==0) return ((AliPHOSCPVGeometry* ) fGeometryCPV)->GetNumberOfCPVPadsZ();
     else                              return 0;
   }
 
   Float_t GetPadSizePhi(void)         const {
     if      (strcmp(fName,"GPS2")==0) return GetPPSDModuleSize(0) / GetNumberOfPadsPhi();
-    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry*) fGeometryCPV)->GetCPVPadSizePhi();
+    else if (strcmp(fName,"IHEP")==0) return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetCPVPadSizePhi();
     else                              return 0;
   }
 
   Float_t GetPadSizeZ(void)           const {
     if      (strcmp(fName,"GPS2")==0) return GetPPSDModuleSize(2) / GetNumberOfPadsZ();
-    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry*) fGeometryCPV)->GetCPVPadSizeZ();
+    else if (strcmp(fName,"IHEP")==0) return ((AliPHOSCPVGeometry*) fGeometryCPV)->GetCPVPadSizeZ();
     else                              return 0;
   }
 
@@ -227,11 +226,11 @@ protected:
 
 private:
 
-  Int_t                fNModules ;       // Number of modules constituing PHOS
-  Float_t             *fPHOSAngle ;      //[fNModules] Position angles of modules
-  TObjArray           *fRotMatrixArray ; // Liste of rotation matrices (one per phos module)
-  AliEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
-  AliCPVBaseGeometry  *fGeometryCPV ;    // Geometry object for CPV (either GPS2 or IHEP)
+  Int_t                    fNModules ;       // Number of modules constituing PHOS
+  Float_t                 *fPHOSAngle ;      //[fNModules] Position angles of modules
+  TObjArray               *fRotMatrixArray ; // Liste of rotation matrices (one per phos module)
+  AliPHOSEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
+  AliPHOSCPVBaseGeometry  *fGeometryCPV ;    // Geometry object for CPV (either GPS2 or IHEP)
 
   void                 SetPHOSAngles(); // calculates the PHOS modules PHI angle
 

@@ -34,8 +34,6 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSGeometry.h"
-#include "AliPPSDGeometry.h"
-#include "AliCPVGeometry.h"
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliConst.h"
 
@@ -52,6 +50,8 @@ AliPHOSGeometry::~AliPHOSGeometry(void)
   if (fRotMatrixArray) fRotMatrixArray->Delete() ; 
   if (fRotMatrixArray) delete fRotMatrixArray ; 
   if (fPHOSAngle     ) delete fPHOSAngle ; 
+//    if (fGeometryEMCA  ) detete fGeometryEMCA;
+//    if (fGeometryCPV   ) detete fGeometryCPV ;
 }
 
 //____________________________________________________________________________
@@ -65,9 +65,9 @@ void AliPHOSGeometry::Init(void)
        ((strcmp( fName, "GPS2" ))    == 0) ||
        ((strcmp( fName, "IHEP" ))    == 0) ) {
     fgInit     = kTRUE ; 
-                                             fGeometryEMCA = new AliEMCAGeometry();
-    if ( ((strcmp( fName, "GPS2" ))  == 0) ) fGeometryCPV  = new AliPPSDGeometry();
-    if ( ((strcmp( fName, "IHEP" ))  == 0) ) fGeometryCPV  = new AliCPVGeometry ();
+                                             fGeometryEMCA = new AliPHOSEMCAGeometry();
+    if ( ((strcmp( fName, "GPS2" ))  == 0) ) fGeometryCPV  = new AliPHOSPPSDGeometry();
+    if ( ((strcmp( fName, "IHEP" ))  == 0) ) fGeometryCPV  = new AliPHOSCPVGeometry ();
     fNModules = 5;
     fPHOSAngle = new Float_t[fNModules] ;
     Int_t index ;
