@@ -2628,7 +2628,7 @@ extern "C" {
 	TFluka* fluka =  (TFluka*) gMC;
 	TVirtualMCStack* cppstack = fluka->GetStack();
 	Int_t parent =  TRACKR.ispusr[mkbmx2-1];
-	cppstack->PushTrack(1, parent, 50000050,
+	cppstack->PushTrack(0, parent, 50000050,
 			    px, py, pz, e,
                             vx, vy, vz, tof,
 			    polx, poly, polz,
