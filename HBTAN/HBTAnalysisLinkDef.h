@@ -44,6 +44,8 @@
 
 #pragma link C++ class AliHBTReader+;
 #pragma link C++ class AliHBTReaderTPC+;
+#pragma link C++ class AliHBTReaderITSv1+;
+#pragma link C++ class AliHBTReaderITSv2+;
 #pragma link C++ class AliHBTReaderPPprod+;
 
 #pragma link C++ class AliHBTQInvCorrelFctn+;
@@ -65,6 +67,10 @@
 #pragma link C++ class AliHBTQSideResolVSQSideFctn+;
 #pragma link C++ class AliHBTQLongResolVSQLongFctn+;
 
-
+//#pragma link C++ class Xqinv+;
+//#pragma link C++ class Xqout+;
+//#pragma link C++ class Xqside+;
+//#pragma link C++ class Xqlong+;
+//#pragma link C++ class XqinvDiff+;
 
 #endif
