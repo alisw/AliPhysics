@@ -405,6 +405,7 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
 
   delete [] firstmod;
   delete fTable;
+  fTable = 0;
 }
 
 
@@ -618,7 +619,8 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
   }  //end opt="5/6"  
 
   delete [] firstmod;
-  delete fTable;   
+  delete fTable;
+  fTable = 0;
   Info("FindTracks","Number of found tracks: %d",event->GetNumberOfTracks());
 
   return 0;
