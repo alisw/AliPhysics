@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/23 10:09:39  gosset
+Bug correction in AliMUONRecoDisplay.
+Copyright, $Log$, $Id$, comments at the right place for automatic documentation,
+in AliMUONRecoEvent and AliMUONRecoDisplay
+
 */
 
 //Authors: Mihaela Gheata, Andrei Gheata 09/10/00
@@ -83,8 +88,8 @@ AliMUONRecoDisplay::AliMUONRecoDisplay(Int_t nevent)
    
    fEvGen  = new AliMUONRecoEvent();
 
-   TFile *galice_file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-   galice_file->cd();
+   TFile *galiceFile = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
+   galiceFile->cd();
    if (nevent > gAlice->TreeE()->GetEntries() - 1) {
       cout << "Event number out of range !\n";
       gApplication->Terminate(0);
@@ -216,10 +221,10 @@ void AliMUONRecoDisplay::XYPlot()
    kMaxRadius[6] =  kMaxRadius[7] = 260.0;
    kMaxRadius[8] =  kMaxRadius[9] = 260.0;
 
-   TH2F *xygen_found[10]; 
-   TH2F *xygen_lost[10]; 
-   TH2F *xyreco_good[10];
-   TH2F *xyreco_fake[10];
+   TH2F *xygenFound[10]; 
+   TH2F *xygenLost[10]; 
+   TH2F *xyrecoGood[10];
+   TH2F *xyrecoFake[10];
    Double_t x,y,r;
    Int_t matches[500];
    Int_t index, ch;
@@ -237,10 +242,10 @@ void AliMUONRecoDisplay::XYPlot()
    
    // Define histograms for x-y plots
    for (ch=0; ch<10; ch++) {
-      xygen_found[ch] = new TH2F("xygen_found","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
-      xygen_lost[ch] = new TH2F("xygen_lost","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
-      xyreco_good[ch] = new TH2F("xyreco_good","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
-      xyreco_fake[ch] = new TH2F("xyreco_fake","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
+      xygenFound[ch] = new TH2F("xygen_found","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
+      xygenLost[ch] = new TH2F("xygen_lost","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
+      xyrecoGood[ch] = new TH2F("xyreco_good","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
+      xyrecoFake[ch] = new TH2F("xyreco_fake","",50,-kMaxRadius[ch],kMaxRadius[ch],50,-kMaxRadius[ch],kMaxRadius[ch]);
    }
    // find list of matching tracks
    fPrinted = kTRUE; // no need to print
@@ -263,8 +268,8 @@ void AliMUONRecoDisplay::XYPlot()
          r = TMath::Sqrt(x*x +y*y);
          if (r >= 10) {
             if (wasreconst) {
-               xygen_found[ch]->Fill(x,y);
-            } else {xygen_lost[ch]->Fill(x,y);}
+               xygenFound[ch]->Fill(x,y);
+            } else {xygenLost[ch]->Fill(x,y);}
          }
       }
    }
@@ -276,34 +281,34 @@ void AliMUONRecoDisplay::XYPlot()
          r = TMath::Sqrt(x*x +y*y);
          if (r >= 10) {
             if (matches[index] >= 0) {
-               xyreco_good[ch]->Fill(x,y);
-            } else {xyreco_fake[ch]->Fill(x,y);}
+               xyrecoGood[ch]->Fill(x,y);
+            } else {xyrecoFake[ch]->Fill(x,y);}
          }
       }
    }
    // finally plot them
    for (ch=0; ch<10; ch++) {
       canvas->cd(ch+1);   
-      xygen_found[ch]->SetMarkerColor(kBlue);
-      xygen_found[ch]->SetMarkerStyle(4);
-      xygen_found[ch]->SetMarkerSize(0.5);
-      xygen_found[ch]->SetStats(kFALSE);
-      xygen_found[ch]->Draw();
-      xygen_lost[ch]->SetMarkerColor(kCyan);
-      xygen_lost[ch]->SetMarkerStyle(4);
-      xygen_lost[ch]->SetMarkerSize(0.5);
-      xygen_lost[ch]->SetStats(kFALSE);
-      xygen_lost[ch]->Draw("SAME");
-      xyreco_good[ch]->SetMarkerColor(kGreen);
-      xyreco_good[ch]->SetMarkerStyle(20);
-      xyreco_good[ch]->SetMarkerSize(0.4);
-      xyreco_good[ch]->SetStats(kFALSE);
-      xyreco_good[ch]->Draw("SAME");
-      xyreco_fake[ch]->SetMarkerColor(kRed);
-      xyreco_fake[ch]->SetMarkerStyle(20);
-      xyreco_fake[ch]->SetMarkerSize(0.5);
-      xyreco_fake[ch]->SetStats(kFALSE);
-      xyreco_fake[ch]->Draw("SAME");
+      xygenFound[ch]->SetMarkerColor(kBlue);
+      xygenFound[ch]->SetMarkerStyle(4);
+      xygenFound[ch]->SetMarkerSize(0.5);
+      xygenFound[ch]->SetStats(kFALSE);
+      xygenFound[ch]->Draw();
+      xygenLost[ch]->SetMarkerColor(kCyan);
+      xygenLost[ch]->SetMarkerStyle(4);
+      xygenLost[ch]->SetMarkerSize(0.5);
+      xygenLost[ch]->SetStats(kFALSE);
+      xygenLost[ch]->Draw("SAME");
+      xyrecoGood[ch]->SetMarkerColor(kGreen);
+      xyrecoGood[ch]->SetMarkerStyle(20);
+      xyrecoGood[ch]->SetMarkerSize(0.4);
+      xyrecoGood[ch]->SetStats(kFALSE);
+      xyrecoGood[ch]->Draw("SAME");
+      xyrecoFake[ch]->SetMarkerColor(kRed);
+      xyrecoFake[ch]->SetMarkerStyle(20);
+      xyrecoFake[ch]->SetMarkerSize(0.5);
+      xyrecoFake[ch]->SetStats(kFALSE);
+      xyrecoFake[ch]->Draw("SAME");
    }
    canvas->SetTitle("y vs. x for simulated and reconstructed tracks");
    pad->cd();
@@ -344,8 +349,8 @@ void AliMUONRecoDisplay::RecoEfficiency(Int_t first, Int_t last)
    // loop events
    for (Int_t event=first; event<=last; event++) {
       // get the reco. & gen. events
-      TFile *galice_file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-      galice_file->cd();
+      TFile *galiceFile = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
+      galiceFile->cd();
       gAlice->GetEvent(event);
       MapEvent(event);
       if (fEmpty) {
@@ -396,8 +401,8 @@ void AliMUONRecoDisplay::RecoEfficiency(Int_t first, Int_t last)
 void AliMUONRecoDisplay::ShowNextEvent(Int_t delta)
 {
 // overwritten from AliDisplay in order to get also mapping of next event
-   TFile *galice_file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-   galice_file->cd();
+   TFile *galiceFile = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
+   galiceFile->cd();
    if (delta) {
       gAlice->Clear();
       Int_t currentEvent = gAlice->GetHeader()->GetEvent();

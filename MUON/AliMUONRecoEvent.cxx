@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/23 10:09:38  gosset
+Bug correction in AliMUONRecoDisplay.
+Copyright, $Log$, $Id$, comments at the right place for automatic documentation,
+in AliMUONRecoEvent and AliMUONRecoDisplay
+
 */
 
 //Authors: Mihaela Gheata, Andrei Gheata 09/10/00
@@ -147,7 +152,7 @@ Bool_t AliMUONRecoEvent::MakeDumpTracks(TClonesArray *tracksPtr)
       return kFALSE;
    }
 	// Get event number
-   Int_t no_event = gAlice->GetHeader()->GetEvent();
+   Int_t noEvent = gAlice->GetHeader()->GetEvent();
    tracksPtr->Compress();  // simple loop
    AliMUONRecoTrack *currentTrack;
    Int_t trackIndex = 0, nTrackHits = 0;
@@ -157,7 +162,7 @@ Bool_t AliMUONRecoEvent::MakeDumpTracks(TClonesArray *tracksPtr)
    AliMUONTrack *track = 0;
    AliMUONTrackParam *trackParam = 0;
    // Fill event number and number of tracks
-   fNevr = no_event;
+   fNevr = noEvent;
    // Loop over reconstructed tracks
    for (trackIndex=0; trackIndex<nTracks; trackIndex++) {
       currentTrack = AddEmptyTrack();
