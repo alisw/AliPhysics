@@ -355,9 +355,15 @@ class TFluka : public TVirtualMC {
   Char_t   sCutFlag[100][7];
                                                                                 
   //Geometry through Geant4 for the time being!!!
-  Int_t                fNVolumes;        //!Current number of volumes
-  Int_t                fCurrentFlukaRegion; //Index of fluka region at each step  TFlukaMCGeometry    *fGeom;               // TGeo-FLUKA interface
+  TG4GeometryManager*  fGeometryManager; //Geometry manager
+  TG4DetConstruction*  fDetector;        //Detector
                                                                                 
+  TClonesArray*        fVolumeMediaMap;  //!Transient list of volumes
+
+  Int_t                fNVolumes;        //!Current number of volumes
+  Int_t*               fMediaByRegion;   //!Media by Fluka region
+  Int_t                fCurrentFlukaRegion; //Index of fluka region at each step
+
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
 };
 
