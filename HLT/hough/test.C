@@ -20,7 +20,7 @@ void test(char *file="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool bin=tru
   
   fTransform = new AliL3Transform();
   
-  fHoughTransformer->CreateHistograms();//64,-0.012,0.012,64,-0.26,0.26);
+  fHoughTransformer->CreateHistograms(64,-0.012,0.012,64,-0.35,0.35);
   fHoughTransformer->SetThreshold(10);
   fTracks = new AliL3TrackArray("AliL3HoughTrack");
     
@@ -131,7 +131,7 @@ void test(char *file="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool bin=tru
   road->Draw("same");
 } 
 
-void process(char *digitfile="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",bool bin=true,char *trackfile="good_tracks")
+void process(char *digitfile="/prog/alice/data/Rawdata/1_patch/pp/event_0/",bool bin=true,char *trackfile="good_tracks")
 {
   AliL3Logger l;
   //  l.UnSet(AliL3Logger::kDebug);
@@ -143,31 +143,23 @@ void process(char *digitfile="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",b
   double torad = 3.1415/180;
   int slice=1;
   a = new AliL3Hough(digitfile,bin,100);
+ 
   a->ReadData(slice);
   a->Transform();
   a->AddAllHistograms();
   a->FindTrackCandidates();
-  a->Evaluate(3);
-  a->MergePatches();
-  
+  // a->Evaluate(2);
+  a->WriteTracks();
+  return;
+  //a->MergePatches();
+
   //a->MergeInternally();
   
   //tracks = (AliL3TrackArray*)(a->GetInterMerger())->GetOutTracks();
   //tracks = (AliL3TrackArray*)(a->GetMerger())->GetOutTracks();
   tracks = (AliL3TrackArray*)a->GetTracks(0);
   //a->GetEval(0)->CompareMC(tracks,"good_tracks_hg4000_s1");
-  
-  
-  d = new AliL3HoughDisplay();
-  d->SetTracks(tracks);
-  UInt_t size;
-  int patch = 0;
-  data = (AliL3DigitRowData*)a->GetMemHandler(patch)->GetDataPointer(size);
-  //d->ShowData(data,size,slice,patch);
-  //return;
-  d->DisplayEvent();
-  //return;
-  
+ 
   for(int i=0; i<tracks->GetNTracks(); i++)
     {
       AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
@@ -177,6 +169,33 @@ void process(char *digitfile="/prog/alice/data/Rawdata/6_patch/hg_42105_s1-3/",b
   return;
 
 }
+
+void cf()
+{
+    AliL3Logger l;
+  //  l.UnSet(AliL3Logger::kDebug);
+  //  l.UnSet(AliL3Logger::kAll);
+  //l.Set(AliL3Logger::kError);
+  //l.UseStdout();
+  l.UseStream();
+  
+  AliL3FileHandler *file = new AliL3FileHandler();
+  file->SetBinaryInput("tracks.raw");
+  fTracks = new AliL3TrackArray("AliL3HoughTrack");
+  file->Binary2TrackArray(fTracks);
+  cout<<"Ntracks "<<fTracks->GetNTracks()<<endl;
+  file->CloseBinaryInput();
+  delete file;
+  
+
+  return;
+  /*
+  a = new AliL3ClusterFinder();
+  a->LoadData();
+  a->Process();
+  */
+}
+
 
 void HistogramParticles(char *trackfile)
 {
