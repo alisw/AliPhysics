@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.26  2000/10/03 21:44:08  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.25  2000/10/02 21:28:12  fca
   Removal of useless dependecies via forward declarations
 
@@ -1404,17 +1407,19 @@ void AliRICH::StepManager()
     pos[0]=position(0);
     pos[1]=position(1);
     pos[2]=position(2);
-    bzero((char *)ckovData,sizeof(ckovData)*19);
+    //bzero((char *)ckovData,sizeof(ckovData)*19);
     ckovData[1] = pos[0];                 // X-position for hit
     ckovData[2] = pos[1];                 // Y-position for hit
     ckovData[3] = pos[2];                 // Z-position for hit
     //ckovData[11] = gAlice->CurrentTrack();
+    
+    //printf("\n+++++++++++\nTrack: %d\n++++++++++++\n",gAlice->CurrentTrack());
 
     //AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
     
     /********************Store production parameters for Cerenkov photons************************/ 
 //is it a Cerenkov photon? 
-    if (gMC->TrackPid() == 50000050) {          
+    if (gMC->TrackPid() == 50000050) { 
 
       //if (gMC->VolId("GAP ")==gMC->CurrentVolID(copy))
         //{                    
@@ -1423,10 +1428,12 @@ void AliRICH::StepManager()
 	  if  (ckovEnergy > 5.6e-09 && ckovEnergy < 7.8e-09 )       
 	    //if (ckovEnergy > 0)
 	    {
-	      if (gMC->IsTrackEntering()){                                     //is track entering?
+	      if (gMC->IsTrackEntering()){        //is track entering?
+		//printf("Track entered (1)\n");
 		if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
 		  {                                                          //is it in freo?
 		    if (geant3->Gctrak()->nstep<1){                          //is it the first step?
+		      //printf("I'm in!\n");
 		      Int_t mother = current->GetFirstMother(); 
 		      
 		      //printf("Second Mother:%d\n",current->GetSecondMother());
@@ -1434,6 +1441,7 @@ void AliRICH::StepManager()
 		      ckovData[10] = mother;
 		      ckovData[11] = gAlice->CurrentTrack();
 		      ckovData[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
+		      //printf("Produced in FREO\n");
 		      fCkovNumber++;
 		      fFreonProd=1;
 		      //printf("Index: %d\n",fCkovNumber);
@@ -1444,6 +1452,7 @@ void AliRICH::StepManager()
 		  if (gMC->VolId("QUAR")==gMC->CurrentVolID(copy))             //is it in quarz?
 		    {
 		      ckovData[12] = 2;
+		      //printf("Produced in QUAR\n");
 		    }    //quarz question
 		}        //first step question
 		
@@ -1454,10 +1463,12 @@ void AliRICH::StepManager()
 		//if (fFreonProd == 1)
 		{
 		  if (gMC->IsTrackEntering()){                                     //is track entering?
-		    //printf("Got in");
+		    //printf("Track entered (2)\n");
+		    //printf("Current volume (should be META): %s\n",gMC->CurrentVolName());
+		    //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("META"),gMC->CurrentVolID(copy));
 		    if (gMC->VolId("META")==gMC->CurrentVolID(copy))                //is it in gap?      
 		      {
-			//printf("Got in\n");
+			//printf("Got in META\n");
 			gMC->TrackMomentum(momentum);
 			mom[0]=momentum(0);
 			mom[1]=momentum(1);
@@ -1473,16 +1484,20 @@ void AliRICH::StepManager()
 			gMC->Rndm(ranf, 1);
 			//printf("grid calculation:%f\n",t);
 			if (ranf[0] > t) {
-			  //geant3->StopTrack();
+			  geant3->StopTrack();
 			  ckovData[13] = 5;
 			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+			  //printf("Added One (1)!\n");
 			  //printf("Lost one in grid\n");
 			}
 			/**********************************************************************************/
 		      }    //gap
 		    
+		    //printf("Current volume (should be CSI) (1): %s\n",gMC->CurrentVolName());
+		    //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("CSI "),gMC->CurrentVolID(copy));
 		    if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))             //is it in csi?      
 		      {
+			//printf("Got in CSI\n");
 			gMC->TrackMomentum(momentum);
 			mom[0]=momentum(0);
 			mom[1]=momentum(1);
@@ -1496,9 +1511,10 @@ void AliRICH::StepManager()
 			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
 			gMC->Rndm(ranf, 1);
 			if (ranf[0] < t) {
-			  //geant3->StopTrack();
+			  geant3->StopTrack();
 			  ckovData[13] = 6;
 			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+			  //printf("Added One (2)!\n");
 			  //printf("Lost by Fresnel\n");
 			}
 			/**********************************************************************************/
@@ -1521,10 +1537,10 @@ void AliRICH::StepManager()
 		      //geant3->StopTrack();
 		      //AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		    } //reflection question
-		    
-		    
+		     
 		    //        Absorption loss 
 		    else if (geant3->Gctrak()->lmec[i] == 101) {              //was it absorbed?
+		      //printf("Got in absorption\n");
 		      ckovData[13]=20;
 		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
 			ckovData[13]=11;
@@ -1542,8 +1558,9 @@ void AliRICH::StepManager()
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("CSI ")) {
 			ckovData[13]=16;
 		      }
-		      //geant3->StopTrack();
+		      geant3->StopTrack();
 		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      //printf("Added One (3)!\n");
 		      //printf("Added cerenkov %d\n",fCkovNumber);
 		    } //absorption question 
 		    
@@ -1551,8 +1568,9 @@ void AliRICH::StepManager()
 		    //        Photon goes out of tracking scope 
 		    else if (geant3->Gctrak()->lmec[i] == 30) {                 //is it below energy treshold?
 		      ckovData[13]=21;
-		      //geant3->StopTrack();
+		      geant3->StopTrack();
 		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      //printf("Added One (4)!\n");
 		    }	// energy treshold question	    
 		  }  //number of mechanisms cycle
 		  /**********************End of evaluation************************/
@@ -1570,7 +1588,9 @@ void AliRICH::StepManager()
       //printf("Cerenkov\n");
 	if (gMC->VolId("CSI ")==gMC->CurrentVolID(copy))
 	{
-	    
+	  //printf("Current volume (should be CSI) (2): %s\n",gMC->CurrentVolName());
+	  //printf("VolId: %d, CurrentVolID: %d\n",gMC->VolId("CSI "),gMC->CurrentVolID(copy));
+	  //printf("Got in CSI\n");
 	  if (gMC->Edep() > 0.){
 		gMC->TrackPosition(position);
 		gMC->TrackMomentum(momentum);
@@ -1661,6 +1681,7 @@ void AliRICH::StepManager()
 		    //{
 		    AddHit(gAlice->CurrentTrack(),vol,ckovData);
 		    AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		    //printf("Added One (5)!\n");
 		    //}
 		}
 	    }
