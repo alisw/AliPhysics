@@ -222,14 +222,14 @@ V0sTracks2CascadeVertices(TTree *vTree,TTree *tTree, TTree *xTree) {
 
    for (i=0; i<nV0; i++) {
 
-       AliV0vertex *V0ver=(AliV0vertex *)vtxV0.UncheckedAt(i);
+       AliV0vertex *lV0ver=(AliV0vertex *)vtxV0.UncheckedAt(i);
 
-       V0ver->ChangeMassHypothesis(kLambda0); //I.B.
+       lV0ver->ChangeMassHypothesis(kLambda0); //I.B.
 
-       if (V0ver->GetEffMass()<massLambda-fMassWin ||       // condition of the V0 mass window (cut fMassWin)
-           V0ver->GetEffMass()>massLambda+fMassWin) continue; 
+       if (lV0ver->GetEffMass()<massLambda-fMassWin ||       // condition of the V0 mass window (cut fMassWin)
+           lV0ver->GetEffMass()>massLambda+fMassWin) continue; 
 
-       if (V0ver->GetD(0,0,0)<fDV0min) continue;          // condition of minimum impact parameter of the V0 (cut fDV0min) 
+       if (lV0ver->GetD(0,0,0)<fDV0min) continue;          // condition of minimum impact parameter of the V0 (cut fDV0min) 
                                                           // here why not cuting on pointing angle ???
 
    // for each vertex in the good mass range, loop on all tracks (= bachelor candidates)
@@ -240,10 +240,10 @@ V0sTracks2CascadeVertices(TTree *vTree,TTree *tTree, TTree *xTree) {
 
           if (TMath::Abs(bachtrk->GetD())<fDBachMin) continue;        // eliminate to small impact parameters
 
-          if (V0ver->GetPdgCode()==kLambda0 && bachtrk->Get1Pt()<0.) continue;     // condition on V0 label 
-          if (V0ver->GetPdgCode()==kLambda0Bar && bachtrk->Get1Pt()>0.) continue;  // + good sign for bachelor
+          if (lV0ver->GetPdgCode()==kLambda0 && bachtrk->Get1Pt()<0.) continue;     // condition on V0 label 
+          if (lV0ver->GetPdgCode()==kLambda0Bar && bachtrk->Get1Pt()>0.) continue;  // + good sign for bachelor
           
-	  AliV0vertex V0(*V0ver), *pV0=&V0;
+	  AliV0vertex lV0(*lV0ver), *pV0=&lV0;
           AliITStrackV2 bt(*bachtrk), *pbt=&bt;
 
    // calculation of the distance of closest approach between the V0 and the bachelor
@@ -265,7 +265,7 @@ V0sTracks2CascadeVertices(TTree *vTree,TTree *tTree, TTree *xTree) {
 
          {
    //I.B.
-         Double_t x1,y1,z1; V0ver->GetXYZ(x1,y1,z1);
+         Double_t x1,y1,z1; lV0ver->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
          if (z*z > z1*z1) continue;
          }

@@ -307,7 +307,7 @@ AliITS& AliITS::operator=(AliITS &source){
     return *this; //fake return
 }
 //______________________________________________________________________
-Int_t AliITS::DistancetoPrimitive(Int_t,Int_t){
+Int_t AliITS::DistancetoPrimitive(Int_t,Int_t) const{
     // Distance from mouse to ITS on the screen. Dummy routine
     //     A dummy routine used by the ROOT macro display.C to allow for the
     // use of the mouse (pointing device) in the macro. In general this should
@@ -1362,8 +1362,8 @@ void AliITS::MakeBranchC()
     Error("MakeTreeC","fLoader == 0x0");
     return;
    }
-  TTree * TC = pITSLoader->TreeC();
-  if (TC == 0x0)
+  TTree * lTC = pITSLoader->TreeC();
+  if (lTC == 0x0)
    {
      Error("MakeTreeC","Can not get TreeC from Loader");
      return;
@@ -1389,18 +1389,18 @@ void AliITS::MakeBranchC()
          }
         if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
         else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
-        if (fCtype  && TC) 
+        if (fCtype  && lTC) 
          {
-           if (TC->GetBranch(branchname))
+           if (lTC->GetBranch(branchname))
             {
               Warning("MakeBranchC","Branch %s alread exists in TreeC",branchname);
             }
            else
             {
               Info("MakeBranchC","Creating branch %s in TreeC",branchname);
-              TC->Branch(branchname,&((*fCtype)[i]), buffersize);
+              lTC->Branch(branchname,&((*fCtype)[i]), buffersize);
             }
-         } // end if fCtype && TC
+         } // end if fCtype && lTC
   } // end for i
 }
 
@@ -1417,17 +1417,17 @@ void AliITS::GetTreeC(Int_t event){
   const char *det[3] = {"SPD","SDD","SSD"};
 
   AliITSLoader *pITSLoader = (AliITSLoader*)fLoader;
-  TTree * TC = pITSLoader->TreeC();
+  TTree * lTC = pITSLoader->TreeC();
 
   ResetClusters();
-  if (TC) {
+  if (lTC) {
     pITSLoader->CleanRawClusters();
   } // end if TreeC()
 
 
   TBranch *branch;
 
-  if (TC) {
+  if (lTC) {
     Int_t i;
         char digclass[40];
         char clclass[40];
@@ -1440,13 +1440,13 @@ void AliITS::GetTreeC(Int_t event){
       if(kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
       else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
       if (fCtype) {
-                branch = TC->GetBranch(branchname);
+                branch = lTC->GetBranch(branchname);
         if (branch) branch->SetAddress(&((*fCtype)[i]));
       } // end if fCtype
         } // end for i
   } else {
         Error("GetTreeC","cannot find Clusters Tree for event:%d",event);
-  } // end if TC
+  } // end if lTC
 }
 //______________________________________________________________________
 void AliITS::AddCluster(Int_t id, AliITSRawCluster *c){
@@ -1625,8 +1625,8 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
         sim->CreateFastRecPoints(mod,module,gRandom);
         cout<<module<<"\r";fflush(0);
         //gAlice->TreeR()->Fill();
-	TTree *TR = pITSloader->TreeR();
-        TBranch *br=TR->GetBranch("ITSRecPointsF");
+	TTree *lTR = pITSloader->TreeR();
+        TBranch *br=lTR->GetBranch("ITSRecPointsF");
         br->Fill();
         ResetRecPoints();
     } // end for module
@@ -1695,11 +1695,11 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
 	  exit(1);
       } // end if !rec
       this->ResetDigits();
-      TTree *TD = pITSloader->TreeD();
+      TTree *lTD = pITSloader->TreeD();
       if (all) {
-	  TD->GetEvent(lastentry+module);
+	  lTD->GetEvent(lastentry+module);
       }else {
-	  TD->GetEvent(lastentry+(module-first));
+	  lTD->GetEvent(lastentry+(module-first));
       }
       Int_t ndigits = itsDigits->GetEntriesFast();
       if (ndigits) rec->FindRawClusters(module);

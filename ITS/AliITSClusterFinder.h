@@ -49,17 +49,17 @@ class AliITSClusterFinder :public TObject{
 	return fResponse;}
     virtual AliITSsegmentation * GetSeg(){// Returns fSegmentation
 	return fSegmentation;}
-    virtual Int_t GetNRawClusters(){ // returns fNRawClusters
+    virtual Int_t GetNRawClusters() const { // returns fNRawClusters
 	return fNRawClusters;}
     AliITSMap   *Map() {// map
 	return fMap;}
-    virtual Int_t GetNperMax(){ // returns fNperMax
+    virtual Int_t GetNperMax() const { // returns fNperMax
 	return fNperMax;}
-    virtual Int_t GetDeclusterFlag(){ // returns fDeclusterFlag
+    virtual Int_t GetDeclusterFlag() const { // returns fDeclusterFlag
 	return fDeclusterFlag;}
-    virtual Int_t GetClusterSize(){ // returns fClusterSize
+    virtual Int_t GetClusterSize() const { // returns fClusterSize
 	return fClusterSize;}
-    virtual Int_t GetNPeaks(){ // returns fNPeaks
+    virtual Int_t GetNPeaks() const { // returns fNPeaks
 	return fNPeaks;}
     //
     virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
@@ -102,10 +102,10 @@ class AliITSClusterFinder :public TObject{
     // set the fitting methods in the derived classes
     // data members
 
+protected:
     TClonesArray       *fDigits;       //! digits
     Int_t              fNdigits;       //! num of digits
 
- protected:
     AliITSresponse     *fResponse;     //! response
     AliITSsegmentation *fSegmentation; //!segmentation
     Int_t              fNRawClusters;  //! in case we split the cluster

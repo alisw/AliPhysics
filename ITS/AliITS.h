@@ -47,12 +47,12 @@ class AliITS : public AliDetector {
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(AliITS &source); // = operator. Not to be used!
     virtual Int_t IsVersion() const {return 1;}
-    virtual Int_t DistancetoPrimitive(Int_t px, Int_t py);
+    virtual Int_t DistancetoPrimitive(Int_t px, Int_t py) const;
 
     //===================== Simulation Geometry ========================
     // get geometry version - detailed (major) or coarse (minor)
-    virtual Int_t GetMajorVersion(){return -1;}
-    virtual Int_t GetMinorVersion(){return -1;}
+    virtual Int_t GetMajorVersion() const {return -1;}
+    virtual Int_t GetMinorVersion() const {return -1;}
     virtual void  GetGeometryVersion(Int_t &a,Int_t &b) 
 	                   {a = GetMajorVersion();b=GetMinorVersion();return;}
     virtual void  SetEUCLID(Bool_t euclid=1) {fEuclidOut = euclid;}
@@ -75,8 +75,8 @@ class AliITS : public AliDetector {
     virtual void SetDefaultClusterFinders();
     virtual void MakeBranch(Option_t *opt=" ");
     virtual void SetTreeAddress();
-    // For a give branch from the treeH sets the TClonesArray address.
-    virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
+    // For a given branch from the treeH sets the TClonesArray address.
+    virtual void SetHitsAddressBranch(TBranch *b) {b->SetAddress(&fHits);}
     // Return pointer to DetType #id
     AliITSDetType *DetType(Int_t id);
     //Int_t           NDetTypes() {return fNDetTypes;}
