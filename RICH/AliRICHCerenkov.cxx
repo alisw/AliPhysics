@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:16:59  jbarbosa
+  Cleaned up version.
+
 */
 #include "AliRICHCerenkov.h"
 
@@ -30,6 +33,7 @@ AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *
     fZ=hits[3];
     fTheta=hits[4];
     fPhi=hits[5];
+    fTlength=hits[6];
     fEloss=hits[7];
     fPHfirst=(Int_t) hits[8];
     fPHlast=(Int_t) hits[9];
