@@ -38,8 +38,8 @@
 
 ClassImp(AliPMDClustering)
 
-static const double pi=3.141593;
-static const double sqrth=0.8660254;  // sqrth = sqrt(3.)/2.
+const double AliPMDClustering::pi=3.141593;
+const double AliPMDClustering::sqrth=0.8660254;  // sqrth = sqrt(3.)/2.
 
 
 AliPMDClustering::AliPMDClustering()
