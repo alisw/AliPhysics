@@ -74,7 +74,7 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t NumbofEv=1, const char *fil
     }
     timer.Stop();
     timer.Print();
-
+    if(!V)continue;
     cout << endl << "Xv = " << V->GetXv() << " cm" << endl;
     cout << "X resolution = " << V->GetXRes()*10000 << " microns"  << endl;
     cout << "Signal/Noise for X = " << V->GetXSNR() << endl;
