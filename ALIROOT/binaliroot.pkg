@@ -56,6 +56,7 @@ ARLIBS:= \
    TPC/tgt_$(ALICE_TARGET)/G__TPCrec.o $(LIBPATH)/libTPCrec.a \
    TPC/tgt_$(ALICE_TARGET)/G__TPCfast.o $(LIBPATH)/libTPCfast.a \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
+   STEER/tgt_$(ALICE_TARGET)/G__ESD.o $(LIBPATH)/libESD.a \
    CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a \
    RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAW.a
 
