@@ -134,7 +134,6 @@ TTreeSRedirector::TTreeSRedirector(const char *fname){
     fFile = new TFile(fname,"new");
   }
   fDataLayouts =0;
-  
 }
 
 TTreeSRedirector::~TTreeSRedirector(){
@@ -162,6 +161,7 @@ TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
     }
   }
   if (!clayout){
+    fFile->cd();
     char chname[100];
     sprintf(chname,"Tree%d",id);
     clayout = new TTreeStream(chname);
@@ -178,22 +178,14 @@ TTreeStream  & TTreeSRedirector::operator<<(const char* name)
   // return reference to the data layout with given identifier
   // if not existing - creates new
   if (!fDataLayouts) fDataLayouts = new TObjArray(10000);
-  TTreeStream *clayout=0;
-  Int_t hash = TMath::Hash(name);
+  TTreeStream *clayout=(TTreeStream*)fDataLayouts->FindObject(name);
   Int_t entries = fDataLayouts->GetEntriesFast();
-  for (Int_t i=0;i<entries;i++){
-    TTreeStream * layout = (TTreeStream*)fDataLayouts->At(i);
-    if (!layout) continue;
-    if (layout->fHash==hash) {
-      clayout = layout;
-      break;
-    }
-  }
+
   if (!clayout){
+    fFile->cd();
     clayout = new TTreeStream(name);
     clayout->fId=-1;
     clayout->SetName(name);
-    clayout->fHash = hash;
     fDataLayouts->AddAt(clayout,entries);    
   }
   return *clayout;
@@ -205,13 +197,20 @@ TTreeStream  & TTreeSRedirector::operator<<(const char* name)
 void TTreeSRedirector::Close(){
   //
   //
-  Int_t entries = fDataLayouts->GetEntriesFast();
-  for (Int_t i=0;i<entries;i++){
-     TTreeStream * layout = (TTreeStream*)fDataLayouts->At(i);
-     if (layout){
-       if (layout->fTree) layout->fTree->Write();
-     }
+  TFile * backup = gFile;
+  fFile->cd();
+  if (fDataLayouts){
+    Int_t entries = fDataLayouts->GetEntriesFast();
+    for (Int_t i=0;i<entries;i++){
+      TTreeStream * layout = (TTreeStream*)fDataLayouts->At(i);
+      if (layout){
+	if (layout->fTree) layout->fTree->Write(layout->GetName());
+      }
+    }
+    delete fDataLayouts;
+    fDataLayouts=0;
   }
+  backup->cd();
 }
 
 
@@ -357,8 +356,14 @@ void TTreeStream::BuildTree(){
       sprintf(bname1,element->GetName());
     }
     if (element->fClass){
-      TBranch * br = fTree->Branch(bname1,element->fClass->GetName(),&(element->fPointer));
-      fBranches->AddAt(br,i);
+      if (element->fClass->GetBaseClass("TClonesArray")){
+	TBranch * br = fTree->Branch(bname1,&(element->fPointer));
+	fBranches->AddAt(br,i);
+      }else
+	{
+	  TBranch * br = fTree->Branch(bname1,element->fClass->GetName(),&(element->fPointer));
+	  fBranches->AddAt(br,i);
+	}
     }
     if (element->GetType()>0){
       char bname2[1000];

@@ -64,7 +64,6 @@ public:
   TTree *fTree;         //data storage
   Int_t fCurrentIndex;  //index of current element
   Int_t fId;            //identifier of layout
-  Int_t fHash;          //hash value of string
   TString fNextName;    //name for next entry
   Int_t   fNextNameCounter; //next name counter
   Int_t   fStatus;      //status of the layout
