@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/12/06 16:18:48  alibrary
+Small correction to enable std input
+
 Revision 1.13  2002/12/03 09:03:06  hristov
 Changes needed on Itanium (F.Carminati)
 
@@ -117,5 +120,14 @@ int main(int argc, char **argv)
   
   return(0);
 }
+#define ffinit ffinit_
+#define ffkey ffkey_
+#define ffgo ffgo_
 
+extern "C" {
+
+void ffinit_() {}
+void ffkey_() {}
+void ffgo_() {}
+}
 
