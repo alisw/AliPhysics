@@ -29,7 +29,7 @@ public:
     // ctor
   }
   AliPHOSv3(const char *name, const char *title="") ;
-  AliPHOSv3(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
+  //  AliPHOSv3(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
   virtual ~AliPHOSv3(void) {
     // dtor
   } 
