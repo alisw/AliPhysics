@@ -21,17 +21,13 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSDigit.h"
-#include "AliPHOSRecPoint.h"
+#include "AliPHOSEmcRecPoint.h"
 
-class AliPHOSCpvRecPoint : public AliPHOSRecPoint  {
+class AliPHOSCpvRecPoint : public AliPHOSEmcRecPoint  {
 
 public:
 
-  AliPHOSCpvRecPoint(){
-   // default ctor
-    fEnergyList = 0;  
-  } ;                    
-  AliPHOSCpvRecPoint(Float_t W0, Float_t LocMaxCut) ;
+  AliPHOSCpvRecPoint() ;
   AliPHOSCpvRecPoint(const AliPHOSCpvRecPoint & rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed
@@ -40,30 +36,18 @@ public:
  
   virtual ~AliPHOSCpvRecPoint() ;  
 
-  virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;  // add a digit to the digits list  
-  Int_t       Compare(const TObject * obj) const;                 // method for sorting  
-  void        EvalAll( void ) ;
-  void        EvalLocalPosition(void ) ;  // computes the position in the PHOS module 
-  Float_t     GetDelta () const {     return fDelta ; }           // gets the fDelta data member 
-  Float_t     GetDispersion() const ;                             // computes the dispersion of the shower
-  void        GetElipsAxis(Float_t * lambda) const;               // computes the axis of shower ellipsoide
-  Float_t *   GetEnergiesList()const {return fEnergyList ;}  // gets the list of energies making this recpoint
+  Int_t  Compare(const TObject * obj) const;                 // method for sorting  
+  void   EvalAll(Float_t logWeight,TClonesArray * digits) ;
+  void   EvalLocalPosition(Float_t logWeight,TClonesArray * digits ) ;  
+  void   EvalClusterLengths(TClonesArray * digits) ;
+
   virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) ; 
-  Float_t     GetLocMaxCut () const {return fLocMaxCut ; }        // gets the cut of the local maximum search 
-  Float_t     GetLogWeightCut ()const {return fW0 ; }             // gets the logarythmic weight for the 
-                                                                  // center of gravity calculation
-  Float_t     GetMaximalEnergy(void) const ;                      // get the highest energy in the cluster
-  Int_t       GetMaximumMultiplicity() const {return fMaxDigit ;} // gets the maximum number of digits allowed
-  Int_t       GetMultiplicity(void) const {return fMulDigit ; }   // gets the number of digits making this recpoint
-  Int_t       GetMultiplicityAtLevel(const Float_t level) const;  // computes multiplicity of digits with energy 
-                                                                  // above relative level
-  Int_t       GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) const ; // searches for the local maxima 
- 
-  void        GetClusterLengths(Int_t &lengX, Int_t &lengZ);      // cluster lengths along x and z
-  Bool_t      IsEmc(void) const {return kFALSE ;   }              // tells that this is not a EMC
-  Bool_t      IsCPV(void) const {return (fPHOSMod <= ((AliPHOSGeometry*) fGeom)->GetNCPVModules()) ; }     
+
+  void   GetClusterLengths(Int_t &lengX, Int_t &lengZ){lengX = fLengX ;lengZ = fLengZ ;}
+  Bool_t IsEmc(void) const {return kFALSE ;   }              // tells that this is not a EMC
+  Bool_t IsCPV(void) const {return (fPHOSMod <= ((AliPHOSGeometry*) fGeom)->GetNCPVModules()) ; }     
                                                                   // true if the recpoint is in CPV
-  Bool_t      IsSortable() const {  return kTRUE ; }              // says that emcrecpoints are sortable objects
+  Bool_t IsSortable() const { return kTRUE ; }    // tells that this is a sortable object
   void        Print(Option_t * opt = "void") ; 
 
   AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & rvalue)  {
@@ -72,14 +56,10 @@ public:
     return *this ; 
   }
 
- private:
+ protected:
 
   Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const ;
 
-  Float_t  fDelta ;          // parameter used to sort the clusters    
-  Float_t  *fEnergyList ;    //[fMulDigit] energy of digits
-  Float_t  fLocMaxCut ;      // minimum energy difference to distinguish two maxima 
-  Float_t  fW0 ;             // logarithmic weight factor for center of gravity calculation
   Int_t    fLengX ;          // cluster length along x
   Int_t    fLengZ ;          // cluster length along z
   
