@@ -114,7 +114,7 @@ public AliITSsegmentation {
     // Get the correction Function
     virtual TF1* CorrFunc(Int_t) {return 0;}
     // Print Parameters
-    virtual void    Print();
+    virtual void    Print(Option_t *opt="") const;
 	    
   private:
 
