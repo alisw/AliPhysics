@@ -87,10 +87,10 @@ void Config(){
     // Example for Moving Particle Gun            *
     //*********************************************
     AliGenBox *gener = new AliGenBox(nParticles);
-    gener->SetMomentumRange(100.,300.);
+    gener->SetMomentumRange(300.,301.);
     gener->SetPhiRange(0,0.1);
     gener->SetThetaRange(0.0, .1);
-    gener->SetOrigin(0.,0.,-50.);
+    gener->SetOrigin(0.,0.,-800.);
     //vertex position
     gener->SetSigma(0.1,0.1,0.0); //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetPart(211);                //GEANT particle type
