@@ -398,8 +398,11 @@ void AliTRDparameter::Init()
   // The number of exponentials
   fTCnexp         = 2;
 
-  // The pad coupling factor (same number as for the TPC)
-  fPadCoupling    = 0.3;
+  // The pad coupling factor
+  //fPadCoupling    = 0.3;
+  // Use 0.49 instead which reproduces better the test beam
+  // data, even tough it is not understood why.
+  fPadCoupling    = 0.49;
 
   // The time coupling factor (same number as for the TPC)
   fTimeCoupling   = 0.4;
