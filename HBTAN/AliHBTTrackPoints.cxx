@@ -166,10 +166,40 @@ void AliHBTTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t
   for(Int_t i = 0; i<fN; i++)
    {
      Double_t rc = r0 + i*dr;
-     Double_t factorPhi = TMath::ASin( (c2*rc + cst1/rc)/cst2 );//factor phi od rc
+     Double_t ftmp = (c2*rc + cst1/rc)/cst2;
+     if (ftmp > 1.0) 
+      {
+        Warning("AliHBTTrackPoints","ASin argument > 1 %f:",ftmp);
+        ftmp=1.0;
+      }
+     else if (ftmp < -1.0) 
+      {
+        Warning("AliHBTTrackPoints","ASin argument < -1 %f:",ftmp);
+        ftmp=-1.0;
+      }
+      
+     Double_t factorPhi = TMath::ASin( ftmp );//factor phi od rc
      Double_t phi = phi0global + factorPhi - factorPhi0;
      
-     Double_t factorZ = TMath::ASin(c2*TMath::Sqrt((rc*rc-dcasq)/cst2))*par[3]/c2;
+     ftmp = (rc*rc-dcasq)/cst2;
+     if (ftmp < 0.0) 
+      {
+        Warning("AliHBTTrackPoints","Sqrt argument < 0: %f",ftmp);
+        ftmp=1.0;
+      }
+     
+     ftmp = c2*TMath::Sqrt(ftmp);
+     if (ftmp > 1.0) 
+      {
+        Warning("AliHBTTrackPoints","ASin argument > 1: %f",ftmp);
+        ftmp=1.0;
+      }
+     else if (ftmp < -1.0) 
+      {
+        Warning("AliHBTTrackPoints","ASin argument < -1: %f",ftmp);
+        ftmp=-1.0;
+      }
+     Double_t factorZ = TMath::ASin(ftmp)*par[3]/c2;
      fZ[i] = z0 + factorZ - factorZ0;
      fX[i] = rc*TMath::Cos(phi);
      fY[i] = rc*TMath::Sin(phi);
