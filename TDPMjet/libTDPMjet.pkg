@@ -1,0 +1,7 @@
+SRCS= TDPMjet.cxx AliGenDPMjet.cxx AliGenDPMjetEventHeader.cxx AliIonPDGCodes.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=TDPMjetLinkDef.h
+
+EXPORT:=TDPMjet.h AliGenDPMjetEventHeader.h AliIonPDGCodes.h
