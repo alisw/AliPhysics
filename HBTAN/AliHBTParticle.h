@@ -10,6 +10,8 @@
 #include <TMath.h>
 #include <TDatabasePDG.h>
 
+#include "AliConst.h"
+
 class TParticle;
 
 class AliHBTParticle : public TObject
