@@ -1,10 +1,13 @@
 //This script is a skeleton for RICH analisys. It consequently reads events in a givent set of directories and provides
 //resulting RANA.root file in home directory which contains all the requested hists. 
+#if !defined( __CINT__) || defined(__MAKECINT__)
 #include <TCanvas.h>
 #include <TTree.h>
 #include <TH2F.h>
 #include <AliESD.h>
 #include <AliESDtrack.h>
+#include <TFile.h>
+#endif
 
 
 TH2F *pMassLen2;
@@ -52,7 +55,7 @@ void Analyse(char *sDirName)
 //__________________________________________________________________________________________________
 void RichAna(Int_t iDirFirst=1,Int_t iDirLast=4)
 {
-//  gBenchmark->Start("RICHanalisys"); 
+  gBenchmark->Start("RICHanalisys"); 
   
   HistBook();
   
@@ -60,6 +63,6 @@ void RichAna(Int_t iDirFirst=1,Int_t iDirLast=4)
   
   HistOut();
 
-//  gBenchmark->Stop("RICHanalisys");
-//  gBenchmark->Show("RICHanalisys"); 
+  gBenchmark->Stop("RICHanalisys");
+  gBenchmark->Show("RICHanalisys"); 
 }   
