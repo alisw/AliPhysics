@@ -44,25 +44,29 @@ public:
   void GetOuterPxPyPz(Double_t *p) const;
   void GetOuterXYZ(Double_t *r) const;
 
-  void SetTPCpid(const Double_t *p);
-  void GetTPCpid(Double_t *p) const;
-  Float_t GetTPCsignal() const {return fTPCsignal;}
-  Int_t GetTPCclusters(Int_t *idx) const;
-
   void SetITSpid(const Double_t *p);
   void GetITSpid(Double_t *p) const;
   Float_t GetITSsignal() const {return fITSsignal;}
+  Float_t GetITSchi2() const {return fITSchi2;}
   Int_t GetITSclusters(UInt_t *idx) const;
+
+  void SetTPCpid(const Double_t *p);
+  void GetTPCpid(Double_t *p) const;
+  Float_t GetTPCsignal() const {return fTPCsignal;}
+  Float_t GetTPCchi2() const {return fTPCchi2;}
+  Int_t GetTPCclusters(Int_t *idx) const;
 
   void SetTRDpid(const Double_t *p);
   void GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
+  Float_t GetTRDchi2() const {return fTRDchi2;}
   Int_t GetTRDclusters(UInt_t *idx) const;
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
 
   void SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
   Float_t GetTOFsignal() const {return fTOFsignal;}
+  Float_t GetTOFchi2() const {return fTOFchi2;}
   void    SetTOFpid(const Double_t *p);
   void    GetTOFpid(Double_t *p) const;
   UInt_t  GetTOFcluster() const {return fTOFindex;}
