@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/11/02 16:57:02  fca
+Avoid non ansi warnings on HP compilers
+
 Revision 1.13  1999/11/02 16:35:56  fca
 New version of TRD introduced
 
@@ -1088,7 +1091,7 @@ void AliTRD::Init()
 
   // The time bucket
   fTimeMax = 1 + TMath::Nint(kDrThick / fTimeBinSize - 0.5);
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     fTime0[iplan]   = kRmin + kCcframe/2. + kDrZpos - 0.5 * kDrThick
                             + iplan * (kCheight + kCspace);
   } 
