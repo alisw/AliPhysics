@@ -5,11 +5,15 @@
 include $(ALICE_ROOT)/conf/GeneralDef
 include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
 
-MAKEFLAGS =
+MAKEFLAGS = -s
 
 ##### MACROS #####
 
 PACKAGE = Main
+
+DOTS = " ................................................................................"
+
+PRETTY =  awk '{print $$0 substr($(DOTS),1,79-length($$0))}'
 
 ##### Module libraries #####
 
@@ -24,34 +28,25 @@ lib bin:
 	@mkdir $@
 
 alilibs:  lib
-	@for i in $(ALIROOT_DIRS) ; do \
+	for i in $(ALIROOT_DIRS) ; do \
+	   echo "Making headers in $$i" | $(PRETTY); \
 	   ${MAKE} -C $$i headers ; \
-	done
+        done
 	@for i in $(ALIROOT_DIRS) ; do \
+	   echo "Making dependencies in $$i" | $(PRETTY); \
 	   ${MAKE} -C $$i depend ; \
 	done
 	@for i in $(ALIROOT_DIRS) ; do \
+	   echo "Making in $$i" | $(PRETTY); \
 	   ${MAKE} -C $$i ; \
 	done
 
-aliroot: bin
-	@${MAKE} -C ALIROOT
-
-geant321:  lib
-	@-${MAKE} -C GEANT321 depend
-	@${MAKE} -C GEANT321
-
-pythia:    lib
-	@-${MAKE} -C PYTHIA depend
-	@${MAKE} -C PYTHIA
-
-pdf:       lib
-	@-${MAKE} -C PDF depend
-	@${MAKE} -C PDF
-
-minicern:  lib
-	@-${MAKE} -C MINICERN depend
-	@${MAKE} -C MINICERN
+aliroot geant321 minicern pdf pythia: bin
+	@DIR=`echo $@ | awk '{print toupper($$0)}'` ; \
+	echo "Making dependencies in $$DIR" | $(PRETTY); \
+	${MAKE} -C $$DIR depend;\
+	echo "Making in $$DIR" | $(PRETTY); \
+	${MAKE} -C $$DIR
 
 cernlibs: geant321 pythia minicern pdf
 
