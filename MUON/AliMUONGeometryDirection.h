@@ -7,10 +7,6 @@
 // Enum AliMUONGeometryDirection
 // -----------------------------
 // Enumeration for the directions in a plane.
-// This method gives the direction where the pad size of the chamber is constant.
-// In other words this corresponds with the coordinate where the spatial resolution is the best.
-// Normally kDirY will correspond with cathode segmentation for the bending plane and 
-// kDirX  with cathode segmentation for the non bending plane
 //
 // Author:Ivana Hrivnacova, IPN Orsay
 

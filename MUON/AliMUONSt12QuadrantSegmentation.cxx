@@ -213,7 +213,8 @@ Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Int_t ix, Int_t iy)
 //______________________________________________________________________________
 AliMUONGeometryDirection  AliMUONSt12QuadrantSegmentation::GetDirection()
 {
-// Returns the direction with a constant pad size  (Direction or coordinate where the resolution is the best)
+// Returns the direction with a constant pad size  
+// (Direction or coordinate where the resolution is the best)
 
   switch ( fSector->GetDirection() ) {
     case kX: return kDirX;
