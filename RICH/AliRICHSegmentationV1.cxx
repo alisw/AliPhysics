@@ -15,6 +15,10 @@
 
 /*
   $Log$
+  Revision 1.7  2001/02/13 20:13:20  jbarbosa
+  Moved setting of variables to constructor. Init is now responsible for calculating padplane dimensions.
+  Corrected all calculations for padplane definition.
+
   Revision 1.6  2001/01/24 21:00:29  jbarbosa
   Redefinition of sectors and pad coordinates/real coordinates transformations.
 
@@ -47,12 +51,13 @@ AliRICHSegmentationV1::AliRICHSegmentationV1()
 
 // Default constructor for AliRICHSegmantionV1 (with dead zones)
 
-  fNpx=144;
-  fNpy=160;
-  //fNpx=80;
-  //fNpy=48;
-  fDeadZone=2.6;
-  fSector=-1;
+   fNpx=144;      // number of pads along X direction 
+   fNpy=160;      // number of pads along Y direction 
+   fDeadZone=3.0; // space between CsI photocathods in cm
+   fDpx=0.84;     // pad width in cm
+   fDpy=0.80;     // pad heights in cm
+   fWireD=0.84/2;	 
+   fSector=-1;
 }
 
 void AliRICHSegmentationV1::Init(Int_t id)
