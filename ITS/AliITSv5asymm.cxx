@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/04/18 12:06:02  barbera
+Number of modules in layer 5 and 6 re-set to 23 and 26
+
 Revision 1.11  2001/03/23 00:12:23  nilsen
 Set Reading of AliITSgeom data from Geant3 common blocks as the default and
 not a .det file. Removed redundent calls to BuildGeometry.
@@ -760,8 +763,8 @@ void AliITSv5asymm::Init(){
     Int_t i;
 
     cout << endl;
-    for(i=0;i<30;i++) cout << "*";cout << " ITSv5_Init ";
-    for(i=0;i<30;i++) cout << "*";cout << endl;
+    for(i=0;i<28;i++) cout << "*";cout << " ITSv5asymm_Init ";
+    for(i=0;i<27;i++) cout << "*";cout << endl;
 //
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
