@@ -95,6 +95,8 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
 
   fFailed = kFALSE ;   
   fDebug  = 0 ; 
+  fAlice  = 0 ; 
+
   fToSplit    = toSplit ;
   fHeaderFile = headerFile ; 
 
@@ -109,7 +111,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   //fQAFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
   fTasksFolder     = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
 
-  //Set titles to branches and create PHOS specific folders
+  //Set titles to branches and create EMCAL specific folders
 
   SetTitle(branchTitle) ;
 
@@ -126,8 +128,8 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
        	fFailed = kTRUE ;
         return ;  
       }
-      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
     }
+    gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   }
 
   if (!gAlice) {
@@ -135,7 +137,6 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
     fFailed = kTRUE ;
     return ; 
   }
-
   if (!EMCAL()) {
     if (fDebug)
       Info("AliEMCALGetter","Posting EMCAL to Folders") ; 
@@ -184,6 +185,8 @@ void AliEMCALGetter::CloseFile()
 {
   delete gAlice ;  
   gAlice = 0 ; 
+  delete fAlice ; 
+  fAlice = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -253,15 +256,17 @@ AliEMCALGetter * AliEMCALGetter::GetInstance(const char* headerFile,
     else{ //Clean all data and AliEMCAL...zers
       if(fgObjGetter->fToSplit)
         fgObjGetter->CloseSplitFiles() ;	  
-      fgObjGetter->CleanWhiteBoard() ;
+      //fgObjGetter->CleanWhiteBoard() ;
       fgObjGetter->fToSplit = toSplit ;
       fgObjGetter->SetTitle(branchTitle) ;
     }
   }
   else{  //Close already opened files, clean memory and open new header file
-    if(gAlice)
+    if(gAlice){ //should first delete gAlice, then close file
+      //Should be in dtor of EMCAL, but if one changes path ...
+      fgObjGetter->fModuleFolder->Remove(fgObjGetter->fModuleFolder->FindObject("EMCAL")) ; 
       delete gAlice ;
-    gAlice= 0;
+    }
     if(fgObjGetter->fFile){
       fgObjGetter->fFile->Close() ;
       fgObjGetter->fFile=0;
@@ -1172,9 +1177,12 @@ TTree * AliEMCALGetter::TreeK(TString filename)
 
   file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
 
-  if (!file)  {  // file not yet open 
+  if (!file || !file->IsOpen())  // file not yet open 
     file = TFile::Open(filename.Data(), "read") ; 
-  }    
+  
+  if(filename != fHeaderFile ){
+    fAlice = dynamic_cast<AliRun *>(file->Get("gAlice")) ;
+  }
 
   TString treeName("TreeK") ; 
   treeName += EventNumber()  ; 
@@ -1274,8 +1282,11 @@ const TParticle * AliEMCALGetter::Primary(Int_t index) const
     return 0 ;
 
   TParticle *  p = 0 ;
-  p = gAlice->Particle(index) ; 
-  
+    if (fAlice) 
+      p = fAlice->Particle(index) ; 
+    else
+      p = gAlice->Particle(index) ; 
+ 
   return p ; 
 }
 
@@ -1748,6 +1759,7 @@ void AliEMCALGetter::ReadPrimaries()
     if (fDebug) 
       Info("ReadPrimaries", "-> TreeK found in %s", fHeaderFile.Data());
     fNPrimaries = gAlice->GetNtrack() ; 
+    fAlice = 0 ; 
   } 
   else { // treeK not found in header file
     Error("ReadPrimaries", "-> TreeK not  found ");
