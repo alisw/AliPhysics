@@ -1,3 +1,4 @@
+
 #include "AliPythia.h"
 #include "AliMC.h"
 ClassImp(AliPythia)
@@ -18,6 +19,14 @@ extern "C" void type_of_call
 //_____________________________________________________________________________
 
 Int_t AliPythia::fgInit=0;
+
+AliPythia::AliPythia()
+{
+    for (Int_t i=0; i<501; i++) {
+	fGPCode[i][0]=0; 
+	fGPCode[i][1]=0;
+    }
+}
 
 void  AliPythia::Lu1Ent(Int_t flag, Int_t idpart, 
 		      Float_t mom, Float_t theta,Float_t phi)
@@ -104,6 +113,28 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 // gg->gg
 	SetMSUB(68,1);
 	break;
+    case mb:
+// Minimum Bias pp-Collisions
+//
+// Tuning of parameters descibed in G. Ciapetti and A. Di Ciaccio
+// Proc. of the LHC Workshop, Aachen 1990, Vol. II p. 155
+//   
+//      select Pythia min. bias model
+	SetMSEL(2);
+	SetMSUB(92,1);
+	SetMSUB(93,1);
+	SetMSUB(94,1);
+	SetMSUB(95,1);	
+//      Multiple interactions switched on
+	SetMSTP(81,1);
+	SetMSTP(82,1);
+//      Low-pT cut-off for hard scattering
+	SetPARP(81,1.9);
+//      model for subsequent non-hardest interaction
+//      90% gg->gg 10% gg->qq
+	SetPARP(86,0.9);
+//      90% of gluon interactions have minimum string length
+	SetPARP(85,0.9);
     }
 //
 //  Initialize PYTHIA
@@ -135,7 +166,9 @@ void AliPythia::ForceParticleDecay(Int_t particle, Int_t product, Int_t mult)
 {
 //
 //  force decay of particle into products with multiplicity mult
+
     Int_t kc=LuComp(particle);
+    SetMDCY(kc,1,1);
     Int_t ifirst=GetMDCY(kc,2);
     Int_t ilast=ifirst+GetMDCY(kc,3)-1;
     fBraPart[kc] = 1;
@@ -163,15 +196,18 @@ void AliPythia::ForceDecay(Decay_t decay)
     switch (decay) 
     {
     case semimuonic:
-	ForceParticleDecay(  411,13,1); // D+/-     
-	ForceParticleDecay(  421,13,1); // D0     
-	ForceParticleDecay(  431,13,1); // D_s     
-	ForceParticleDecay( 4122,13,1); // Lambda_c     
-	
-	ForceParticleDecay(  511,13,1); // B0     
-	ForceParticleDecay(  521,13,1); // B+/-     
-	ForceParticleDecay(  531,13,1); // B_s     
-	ForceParticleDecay( 5122,13,1); // Lambda_b     
+	if (fProcess==charm || fProcess == charm_unforced) {
+	    ForceParticleDecay(  411,13,1); // D+/-     
+	    ForceParticleDecay(  421,13,1); // D0     
+	    ForceParticleDecay(  431,13,1); // D_s     
+	    ForceParticleDecay( 4122,13,1); // Lambda_c     
+	}
+	if (fProcess==beauty || fProcess == beauty_unforced) {
+	    ForceParticleDecay(  511,13,1); // B0     
+	    ForceParticleDecay(  521,13,1); // B+/-     
+	    ForceParticleDecay(  531,13,1); // B_s     
+	    ForceParticleDecay( 5122,13,1); // Lambda_b    
+	}
     break;
     case dimuon:
 	ForceParticleDecay(   41,13,2); // phi
@@ -227,6 +263,12 @@ void AliPythia::ForceDecay(Decay_t decay)
 	ForceParticleDecay(  531,30443,1); // B_s     
 	ForceParticleDecay( 5122,30443,1); // Lambda_b 
 	ForceParticleDecay(30443,11,2);    // Psi'   
+	break;
+    case pitomu:
+	ForceParticleDecay(211,13,1); // pi->mu     
+	break;
+    case katomu:
+	ForceParticleDecay(321,13,1); // K->mu     
 	break;
     }
 }
@@ -287,7 +329,7 @@ void AliPythia::ForceDecay(Decay_t decay)
 //
 //          Vector mesons
 //
-// phi clone for dileptin decay-channel
+// phi clone for dilepton decay-channel
     kc=LuComp(41);	    
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);

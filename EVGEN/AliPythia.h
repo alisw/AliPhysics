@@ -16,8 +16,8 @@ class AliPythia:public TPythia
     
  public:
     static Int_t fgInit;
-    AliPythia():TPythia(){}
-    virtual ~AliPythia(){}
+    AliPythia();
+    virtual ~AliPythia(){;}
     // convert to compressed code and print result (for debugging only)
     virtual Int_t CheckedLuComp(Int_t kf)
 	{
