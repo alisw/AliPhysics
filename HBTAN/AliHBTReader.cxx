@@ -1,4 +1,30 @@
 #include "AliHBTReader.h"
+//_________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTReader
+//
+// Reader Base class (reads particles and tracks and
+// puts it to the AliHBTRun objects
+//
+// Provides functionality for both buffering and non-buffering reading
+// This can be switched on/off via method SetEventBuffering(bool)
+// The main method that inheriting classes need to implement is ReadNext()
+// that read next event in queue.
+// The others are:
+// Bool_t  ReadsTracks() const; specifies if reader is able to read simulated particles
+// Bool_t  ReadsParticles() const; specifies if reader is able to read reconstructed tracks
+// void    Rewind(); rewind reading to the beginning
+//
+// reading of next event is triggered via method Next()
+//
+// This class provides full functionality for reading from many sources
+// User can provide TObjArray of TObjString (SetDirs method or via parameter 
+// in constructor) which desribes paths of directories to search data in.
+// If none specified current directory is searched.
+//
+// Piotr.Skowronski@cern.ch
+///////////////////////////////////////////////////////////////////////////
 
 #include <TString.h>
 #include <TObjString.h>
@@ -57,6 +83,26 @@ AliHBTReader::AliHBTReader(TObjArray* dirs):
 //ctor with array of directories to read as parameter
 }
 /*************************************************************************************/
+AliHBTReader::AliHBTReader(const AliHBTReader& in):
+ TNamed(in),
+ fCuts((in.fCuts)?(TObjArray*)in.fCuts->Clone():0x0),
+ fDirs((in.fDirs)?(TObjArray*)in.fDirs->Clone():0x0),
+ fCurrentEvent(0),
+ fCurrentDir(0),
+ fNEventsRead(0),
+ fTracksEvent(0x0),
+ fParticlesEvent(0x0),
+ fParticles(0x0),
+ fTracks(0x0),
+ fIsRead(kFALSE),
+ fBufferEvents(in.fBufferEvents),
+ fBlend(in.fBlend),
+ fFirst(in.fFirst),
+ fLast(in.fLast),
+ fTrackCounter(0x0)
+{
+ //cpy constructor
+}
 
 AliHBTReader::~AliHBTReader()
 {
@@ -69,6 +115,31 @@ AliHBTReader::~AliHBTReader()
  delete fParticlesEvent;
  delete fTracksEvent;
  delete fTrackCounter;
+}
+/*************************************************************************************/
+
+AliHBTReader& AliHBTReader::operator=(const AliHBTReader& in)
+{
+  //Assigment operator
+  if (this == &in) return *this;  
+  TNamed::operator=( (const TNamed&)in );
+
+ fCuts = (in.fCuts)?(TObjArray*)in.fCuts->Clone():0x0;
+ fDirs = (in.fDirs)?(TObjArray*)in.fDirs->Clone():0x0;
+ fCurrentEvent = 0;
+ fCurrentDir = 0;
+ fNEventsRead = 0;
+ fTracksEvent = 0x0;
+ fParticlesEvent = 0x0;
+ fParticles = 0x0;
+ fTracks = 0x0;
+ fIsRead = kFALSE;
+ fBufferEvents = in.fBufferEvents;
+ fBlend = in.fBlend;
+ fFirst = in.fFirst;
+ fLast = in.fLast;
+ fTrackCounter = 0x0;
+   
 }
 /*************************************************************************************/
 
