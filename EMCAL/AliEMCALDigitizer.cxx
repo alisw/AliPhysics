@@ -174,31 +174,33 @@ ClassImp(AliEMCALDigitizer)
 
   fSDigitizer = 0 ;
 
-  fNinputs = 0 ;
+  fNinputs = 1 ;
 
-  fPinNoise = 0. ;
+  fPinNoise = 0.00001 ;
 
-  fTowerDigitThreshold = 0. ;
+  fTowerDigitThreshold = 0.001 ;
 
-  fTimeResolution     =0.;
+  fTimeResolution     = 0.5e-9 ;
 
-  fTimeSignalLength   =0.;
+  fTimeSignalLength   = 1.0e-9 ;
 
-  fPreShowerDigitThreshold = 0. ;
+  fPreShowerDigitThreshold = fTowerDigitThreshold/25. ;
 
-  fADCchannelTower = 0.0;      // width of one ADC channel in GeV
+  fADCchannelTower = 0.000160;      // width of one ADC channel in GeV
 
-  fADCpedestalTower = 0.0 ;      // pedestal of ADC
+  fADCpedestalTower = 0.005 ;      // pedestal of ADC
 
-  fNADCTower = 0 ;
+  fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelPreSho  = 0.0 ;           // width of one ADC channel in Pre Shower
 
-  fADCpedestalPreSho = 0.0 ;          // pedestal of ADC
 
-  fNADCPreSho = 0;       // number of channels in Pre Shower ADC
+  fADCchannelPreSho  = 0.00000170;          // width of one ADC channel in Pre Shower
 
-  fTimeThreshold = 0.0 ; 
+  fADCpedestalPreSho = 0.005 ;         // pedestal of ADC
+
+  fNADCPreSho = (Int_t) TMath::Power(2,12);      // number of channels in Pre Shower ADC
+
+  fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
 
   fManager = 0 ;
 
@@ -236,7 +238,7 @@ Bool_t AliEMCALDigitizer::Init()
 
   fInitialized = kFALSE ;
 
-  fADCchannelTower = 0.000160;       // width of one ADC channel in GeV
+  fADCchannelTower = 0.000220;       // width of one ADC channel in GeV
 
   fADCpedestalTower = 0.005 ;      // GeV
 
@@ -244,7 +246,7 @@ Bool_t AliEMCALDigitizer::Init()
 
 
 
-  fADCchannelPreSho = 0.00000170;          // width of one ADC channel in Pre Shower
+  fADCchannelPreSho = 0.00000800;          // width of one ADC channel in Pre Shower
 
   fADCpedestalPreSho = 0.005 ;         // 
 
@@ -727,8 +729,6 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
   //Set indexes in list of digits
 
   //Int_t i ;
-
- cout << "fNADCTower = " << fNADCTower << "   fNADCPreSho = " << fNADCPreSho << endl ; 
 
  for (i = 0 ; i < ndigits ; i++) { 
 
