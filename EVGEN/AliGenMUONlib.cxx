@@ -188,6 +188,21 @@ Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t */*dummy*/)
     }
     return y;
 }
+
+Double_t AliGenMUONlib::PtJpsiBPbPb( Double_t *px, Double_t */*dummy*/)
+{
+// J/Psi pT spectrum
+// B -> J/Psi X
+    Double_t x0 =   4.0384;
+    Double_t  n =   3.0288;
+    
+    Double_t x = px[0];
+    Double_t y = x / TMath::Power((1. + (x/x0)*(x/x0)), n);
+    
+    return y;
+}
+
+
 Double_t AliGenMUONlib::PtJpsiPP( Double_t *px, Double_t */*dummy*/)
 {
 // J/Psi pT spectrum
@@ -289,6 +304,33 @@ Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t */*dummy*/)
     
     return y;
 }
+
+Double_t AliGenMUONlib::YJpsiBPbPb( Double_t *px, Double_t */*dummy*/)
+{
+
+//
+// J/Psi from B->J/Psi X
+//
+//
+    
+
+    Double_t c[7] = {7.37025e-02, 0., -2.94487e-03, 0., 6.07953e-06, 0., 5.39219e-07};
+    
+    Double_t x = TMath::Abs(px[0]);
+    Double_t y;
+    
+    if (x > 6.) {
+	y = 0.;
+    } else {
+	Int_t j;
+	y = c[j = 6];
+	while (j > 0) y  = y * x + c[--j];
+    } 
+    
+    return y;
+}
+
+
 
 //                 particle composition
 //
@@ -642,6 +684,9 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsi;
 	}
 	break;
+    case kJpsiFromB:
+	func = PtJpsiBPbPb;
+	break;
     case kUpsilon:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=PtUpsilonPbPb;
@@ -697,6 +742,9 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	}
 	
 	break;
+    case kJpsiFromB:
+	func = YJpsiBPbPb;
+	break;
     case kUpsilon:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=YUpsilonPbPb;
@@ -741,6 +789,7 @@ GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
 	func=IpOmega;
 	break;
     case kJpsi:
+    case kJpsiFromB:
 	func=IpJpsi;
 	break;
     case kUpsilon:
