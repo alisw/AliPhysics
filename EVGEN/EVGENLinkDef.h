@@ -31,6 +31,9 @@
 #pragma link C++ class  AliDimuCombinator;
 #pragma link C++ class  AliGenPHOSlib;
 #pragma link C++ class  AliGenGSIlib;
+//#pragma link C++ class  AliGenEventHeader;
+//#pragma link C++ class  AliGenHijingEventHeader;
+#pragma link C++ class  AliGenHijing;
 #endif
 
 
