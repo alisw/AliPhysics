@@ -143,165 +143,165 @@ class TG4PhysicsConstructorHadron: public G4VPhysicsConstructor
 
     // data members
          // Elastic Process
-    G4HadronElasticProcess  fElasticProcess;
-    G4LElastic*             fElasticModel;
+    G4HadronElasticProcess  fElasticProcess;            //hadron elastic process
+    G4LElastic*             fElasticModel;              //elastic model
   
          // Pi + 
-    G4PionPlusInelasticProcess fPionPlusInelastic;
-    G4LEPionPlusInelastic*     fLEPionPlusModel;
-    G4HEPionPlusInelastic*     fHEPionPlusModel;
-    G4MultipleScattering       fPionPlusMult;
-    G4hIonisation              fPionPlusIonisation;
+    G4PionPlusInelasticProcess fPionPlusInelastic;      //pi+ inel process
+    G4LEPionPlusInelastic*     fLEPionPlusModel;        //pi+ LE inel model
+    G4HEPionPlusInelastic*     fHEPionPlusModel;        //pi+ HE inel model
+    G4MultipleScattering       fPionPlusMult;           //pi+ msc
+    G4hIonisation              fPionPlusIonisation;     //pi+ ionisation
 
          // Pi -
-    G4PionMinusInelasticProcess  fPionMinusInelastic;
-    G4LEPionMinusInelastic*      fLEPionMinusModel;
-    G4HEPionMinusInelastic*      fHEPionMinusModel;
-    G4MultipleScattering         fPionMinusMult;
-    G4hIonisation                fPionMinusIonisation;
+    G4PionMinusInelasticProcess  fPionMinusInelastic;   //pi- inel process
+    G4LEPionMinusInelastic*      fLEPionMinusModel;     //pi- LE inel model
+    G4HEPionMinusInelastic*      fHEPionMinusModel;     //pi- HE inel model
+    G4MultipleScattering         fPionMinusMult;        //pi- msc
+    G4hIonisation                fPionMinusIonisation;  //pi- ionisation
 #ifdef TRIUMF_STOP_PIMINUS
-    G4PionMinusAbsorptionAtRest  fPionMinusAbsorption;
+    G4PionMinusAbsorptionAtRest  fPionMinusAbsorption;  //pi- absorption
 #else
-    G4PiMinusAbsorptionAtRest    fPionMinusAbsorption;
+    G4PiMinusAbsorptionAtRest    fPionMinusAbsorption;  //pi- absorption
 #endif
 
          // K + 
-    G4KaonPlusInelasticProcess  fKaonPlusInelastic;
-    G4LEKaonPlusInelastic*      fLEKaonPlusModel;
-    G4HEKaonPlusInelastic*      fHEKaonPlusModel;
-    G4MultipleScattering        fKaonPlusMult;
-    G4hIonisation               fKaonPlusIonisation;
+    G4KaonPlusInelasticProcess  fKaonPlusInelastic;     //kaon+ inel process
+    G4LEKaonPlusInelastic*      fLEKaonPlusModel;       //kaon+ LE inel model
+    G4HEKaonPlusInelastic*      fHEKaonPlusModel;       //kaon+ HE inel model
+    G4MultipleScattering        fKaonPlusMult;          //kaon+ msc
+    G4hIonisation               fKaonPlusIonisation;    //kaon+ ionisation
 
          // K -
-    G4KaonMinusInelasticProcess  fKaonMinusInelastic;
-    G4LEKaonMinusInelastic*      fLEKaonMinusModel;
-    G4HEKaonMinusInelastic*      fHEKaonMinusModel;
-    G4MultipleScattering         fKaonMinusMult;
-    G4hIonisation                fKaonMinusIonisation;
+    G4KaonMinusInelasticProcess  fKaonMinusInelastic;   //kaon- inel process
+    G4LEKaonMinusInelastic*      fLEKaonMinusModel;     //kaon- LE inel model
+    G4HEKaonMinusInelastic*      fHEKaonMinusModel;     //kaon- HE inel model
+    G4MultipleScattering         fKaonMinusMult;        //kaon- msc
+    G4hIonisation                fKaonMinusIonisation;  //kaon- ionisation
 #ifdef TRIUMF_STOP_KMINUS
-    G4KaonMinusAbsorption        fKaonMinusAbsorption;
+    G4KaonMinusAbsorption        fKaonMinusAbsorption;  //kaon- absorption
 #else
-    G4PiMinusAbsorptionAtRest    fKaonMinusAbsorption;
+    G4PiMinusAbsorptionAtRest    fKaonMinusAbsorption;  //kaon- absorption
 #endif
 
         // K0L
-    G4KaonZeroLInelasticProcess  fKaonZeroLInelastic;
-    G4LEKaonZeroLInelastic*      fLEKaonZeroLModel;
-    G4HEKaonZeroInelastic*       fHEKaonZeroLModel;
+    G4KaonZeroLInelasticProcess  fKaonZeroLInelastic;   //kaon0 inel process
+    G4LEKaonZeroLInelastic*      fLEKaonZeroLModel;     //kaon0 LE inel model
+    G4HEKaonZeroInelastic*       fHEKaonZeroLModel;     //kaon0 HE inel model
 
         // K0S
-    G4KaonZeroSInelasticProcess  fKaonZeroSInelastic;
-    G4LEKaonZeroSInelastic*      fLEKaonZeroSModel;
-    G4HEKaonZeroInelastic*       fHEKaonZeroSModel;
+    G4KaonZeroSInelasticProcess  fKaonZeroSInelastic;   //kaon0S inel process
+    G4LEKaonZeroSInelastic*      fLEKaonZeroSModel;     //kaon0S LE inel model
+    G4HEKaonZeroInelastic*       fHEKaonZeroSModel;     //kaon0S HE inel mode
 
         // Proton
-    G4ProtonInelasticProcess  fProtonInelastic;
-    G4LEProtonInelastic*      fLEProtonModel;
-    G4HEProtonInelastic*      fHEProtonModel;
-    G4MultipleScattering      fProtonMult;
-    G4hIonisation             fProtonIonisation;
+    G4ProtonInelasticProcess  fProtonInelastic;         //p inel process
+    G4LEProtonInelastic*      fLEProtonModel;           //p LE inel model
+    G4HEProtonInelastic*      fHEProtonModel;           //p HE inel model
+    G4MultipleScattering      fProtonMult;              //p msc
+    G4hIonisation             fProtonIonisation;        //p ionisation
  
         // anti-proton
-    G4AntiProtonInelasticProcess    fAntiProtonInelastic;
-    G4LEAntiProtonInelastic*        fLEAntiProtonModel;
-    G4HEAntiProtonInelastic*        fHEAntiProtonModel;
-    G4MultipleScattering            fAntiProtonMult;
-    G4hIonisation                   fAntiProtonIonisation;
-    G4AntiProtonAnnihilationAtRest  fAntiProtonAnnihilation;
+    G4AntiProtonInelasticProcess    fAntiProtonInelastic; //p_bar inel process
+    G4LEAntiProtonInelastic*        fLEAntiProtonModel;   //p_bar LE inel model
+    G4HEAntiProtonInelastic*        fHEAntiProtonModel;   //p_bar HE inel model
+    G4MultipleScattering            fAntiProtonMult;      //p_bar msc
+    G4hIonisation                   fAntiProtonIonisation;//p_bar ionisation
+    G4AntiProtonAnnihilationAtRest  fAntiProtonAnnihilation;//p_bar annihilation
     
        // neutron
-    G4NeutronInelasticProcess  fNeutronInelastic;
-    G4LENeutronInelastic*      fLENeutronModel;
-    G4HENeutronInelastic*      fHENeutronModel;
-    G4HadronFissionProcess     fNeutronFission;
-    G4LFission*                fNeutronFissionModel;
-    G4HadronCaptureProcess     fNeutronCapture;
-    G4LCapture*                fNeutronCaptureModel;
+    G4NeutronInelasticProcess  fNeutronInelastic;       //n inel process
+    G4LENeutronInelastic*      fLENeutronModel;         //n LE inel model
+    G4HENeutronInelastic*      fHENeutronModel;         //n HE inel model
+    G4HadronFissionProcess     fNeutronFission;         //n fission
+    G4LFission*                fNeutronFissionModel;    //n fission model
+    G4HadronCaptureProcess     fNeutronCapture;         //n capture
+    G4LCapture*                fNeutronCaptureModel;    //n capture model
 
        // anti-neutron
-    G4AntiNeutronInelasticProcess    fAntiNeutronInelastic;
-    G4LEAntiNeutronInelastic*        fLEAntiNeutronModel;
-    G4HEAntiNeutronInelastic*        fHEAntiNeutronModel;
-    G4AntiNeutronAnnihilationAtRest  fAntiNeutronAnnihilation;
+    G4AntiNeutronInelasticProcess    fAntiNeutronInelastic;//n_bar inel process
+    G4LEAntiNeutronInelastic*        fLEAntiNeutronModel;  //n_bar LE inel model
+    G4HEAntiNeutronInelastic*        fHEAntiNeutronModel;  //n_bar HE inel model
+    G4AntiNeutronAnnihilationAtRest  fAntiNeutronAnnihilation;//n_bar ionisation
      
        // Lambda
-    G4LambdaInelasticProcess  fLambdaInelastic;
-    G4LELambdaInelastic*      fLELambdaModel;
-    G4HELambdaInelastic*      fHELambdaModel;
+    G4LambdaInelasticProcess  fLambdaInelastic;         //lambda inel process
+    G4LELambdaInelastic*      fLELambdaModel;           //lambda LE inel model
+    G4HELambdaInelastic*      fHELambdaModel;           //lambda HE inel model
   
        // AntiLambda
-    G4AntiLambdaInelasticProcess  fAntiLambdaInelastic;
-    G4LEAntiLambdaInelastic*      fLEAntiLambdaModel;
-    G4HEAntiLambdaInelastic*      fHEAntiLambdaModel;
+    G4AntiLambdaInelasticProcess  fAntiLambdaInelastic; //lambda_bar inel process
+    G4LEAntiLambdaInelastic*      fLEAntiLambdaModel;   //lambda_bar LE inel model
+    G4HEAntiLambdaInelastic*      fHEAntiLambdaModel;   //lambda_bar HE inel model
   
        // SigmaMinus
-    G4SigmaMinusInelasticProcess  fSigmaMinusInelastic;
-    G4LESigmaMinusInelastic*      fLESigmaMinusModel;
-    G4HESigmaMinusInelastic*      fHESigmaMinusModel;
-    G4MultipleScattering          fSigmaMinusMult;
-    G4hIonisation                 fSigmaMinusIonisation;
+    G4SigmaMinusInelasticProcess  fSigmaMinusInelastic; //sigma- inel process
+    G4LESigmaMinusInelastic*      fLESigmaMinusModel;   //sigma- LE inel model
+    G4HESigmaMinusInelastic*      fHESigmaMinusModel;   //sigma- HE inel model
+    G4MultipleScattering          fSigmaMinusMult;      //sigma- msc
+    G4hIonisation                 fSigmaMinusIonisation;//sigma- ionisation
   
        // AntiSigmaMinus
-    G4AntiSigmaMinusInelasticProcess  fAntiSigmaMinusInelastic;
-    G4LEAntiSigmaMinusInelastic*      fLEAntiSigmaMinusModel;
-    G4HEAntiSigmaMinusInelastic*      fHEAntiSigmaMinusModel;
-    G4MultipleScattering              fAntiSigmaMinusMult;
-    G4hIonisation                     fAntiSigmaMinusIonisation;
+    G4AntiSigmaMinusInelasticProcess  fAntiSigmaMinusInelastic; //sigma-_bar inel process
+    G4LEAntiSigmaMinusInelastic*      fLEAntiSigmaMinusModel;   //sigma-_bar LE inel model
+    G4HEAntiSigmaMinusInelastic*      fHEAntiSigmaMinusModel;   //sigma-_bar HE inel model
+    G4MultipleScattering              fAntiSigmaMinusMult;      //sigma-_bar msc
+    G4hIonisation                     fAntiSigmaMinusIonisation;//sigma-_bar ionisation
    
        // SigmaPlus
-    G4SigmaPlusInelasticProcess  fSigmaPlusInelastic;
-    G4LESigmaPlusInelastic*      fLESigmaPlusModel;
-    G4HESigmaPlusInelastic*      fHESigmaPlusModel;
-    G4MultipleScattering         fSigmaPlusMult;
-    G4hIonisation                fSigmaPlusIonisation;
+    G4SigmaPlusInelasticProcess  fSigmaPlusInelastic;   //sigma+ inel process
+    G4LESigmaPlusInelastic*      fLESigmaPlusModel;     //sigma+ LE inel model
+    G4HESigmaPlusInelastic*      fHESigmaPlusModel;     //sigma+ HE inel model
+    G4MultipleScattering         fSigmaPlusMult;        //sigma+ msc
+    G4hIonisation                fSigmaPlusIonisation;  //sigma+ ionisation
   
        // AntiSigmaPlus
-    G4AntiSigmaPlusInelasticProcess  fAntiSigmaPlusInelastic;
-    G4LEAntiSigmaPlusInelastic*      fLEAntiSigmaPlusModel;
-    G4HEAntiSigmaPlusInelastic*      fHEAntiSigmaPlusModel;
-    G4MultipleScattering             fAntiSigmaPlusMult;
-    G4hIonisation                    fAntiSigmaPlusIonisation;
+    G4AntiSigmaPlusInelasticProcess  fAntiSigmaPlusInelastic;  //sigma+_bar inel process
+    G4LEAntiSigmaPlusInelastic*      fLEAntiSigmaPlusModel;    //sigma+_bar LE inel model
+    G4HEAntiSigmaPlusInelastic*      fHEAntiSigmaPlusModel;    //sigma+_bar HE inel model
+    G4MultipleScattering             fAntiSigmaPlusMult;       //sigma+_bar msc
+    G4hIonisation                    fAntiSigmaPlusIonisation; //sigma+_bar ionisation
   
       // XiZero
-    G4XiZeroInelasticProcess  fXiZeroInelastic;
-    G4LEXiZeroInelastic*      fLEXiZeroModel;
-    G4HEXiZeroInelastic*      fHEXiZeroModel;
+    G4XiZeroInelasticProcess  fXiZeroInelastic;        //xi0 inel process
+    G4LEXiZeroInelastic*      fLEXiZeroModel;          //xi0 LE inel model
+    G4HEXiZeroInelastic*      fHEXiZeroModel;          //xi0 HE inel model
   
       // AntiXiZero
-    G4AntiXiZeroInelasticProcess  fAntiXiZeroInelastic;
-    G4LEAntiXiZeroInelastic*      fLEAntiXiZeroModel;
-    G4HEAntiXiZeroInelastic*      fHEAntiXiZeroModel;
+    G4AntiXiZeroInelasticProcess  fAntiXiZeroInelastic;//xi0_bar inel process
+    G4LEAntiXiZeroInelastic*      fLEAntiXiZeroModel;  //xi0_bar LE inel model
+    G4HEAntiXiZeroInelastic*      fHEAntiXiZeroModel;  //xi0_bar HE inel model
   
       // XiMinus
-    G4XiMinusInelasticProcess  fXiMinusInelastic;
-    G4LEXiMinusInelastic*      fLEXiMinusModel;
-    G4HEXiMinusInelastic*      fHEXiMinusModel;
-    G4MultipleScattering       fXiMinusMult;
-    G4hIonisation              fXiMinusIonisation;
+    G4XiMinusInelasticProcess  fXiMinusInelastic;      //xi- inel process
+    G4LEXiMinusInelastic*      fLEXiMinusModel;        //xi- LE inel model
+    G4HEXiMinusInelastic*      fHEXiMinusModel;        //xi- HE inel model
+    G4MultipleScattering       fXiMinusMult;           //xi- msc
+    G4hIonisation              fXiMinusIonisation;     //xi- ionisation
 
       // AntiXiMinus
-    G4AntiXiMinusInelasticProcess  fAntiXiMinusInelastic;
-    G4LEAntiXiMinusInelastic*      fLEAntiXiMinusModel;
-    G4HEAntiXiMinusInelastic*      fHEAntiXiMinusModel;
-    G4MultipleScattering           fAntiXiMinusMult;
-    G4hIonisation                  fAntiXiMinusIonisation;
+    G4AntiXiMinusInelasticProcess  fAntiXiMinusInelastic; //xi-_bar inel process
+    G4LEAntiXiMinusInelastic*      fLEAntiXiMinusModel;   //xi-_bar LE inel model
+    G4HEAntiXiMinusInelastic*      fHEAntiXiMinusModel;   //xi-_bar HE inel model
+    G4MultipleScattering           fAntiXiMinusMult;      //xi-_bar msc
+    G4hIonisation                  fAntiXiMinusIonisation;//xi-_bar ionisation
   
       // OmegaMinus
-    G4OmegaMinusInelasticProcess  fOmegaMinusInelastic;
-    G4LEOmegaMinusInelastic*      fLEOmegaMinusModel;
-    G4HEOmegaMinusInelastic*      fHEOmegaMinusModel;
-    G4MultipleScattering          fOmegaMinusMult;
-    G4hIonisation                 fOmegaMinusIonisation;
+    G4OmegaMinusInelasticProcess  fOmegaMinusInelastic;   //omega- inel process
+    G4LEOmegaMinusInelastic*      fLEOmegaMinusModel;     //omega- LE inel model
+    G4HEOmegaMinusInelastic*      fHEOmegaMinusModel;     //omega- HE inel model
+    G4MultipleScattering          fOmegaMinusMult;        //omega- msc
+    G4hIonisation                 fOmegaMinusIonisation;  //omega- ionisation
    
       // AntiOmegaMinus
-    G4AntiOmegaMinusInelasticProcess  fAntiOmegaMinusInelastic;
-    G4LEAntiOmegaMinusInelastic*      fLEAntiOmegaMinusModel;
-    G4HEAntiOmegaMinusInelastic*      fHEAntiOmegaMinusModel;
-    G4MultipleScattering              fAntiOmegaMinusMult;
-    G4hIonisation                     fAntiOmegaMinusIonisation;
+    G4AntiOmegaMinusInelasticProcess  fAntiOmegaMinusInelastic; //omega-_bar inel process
+    G4LEAntiOmegaMinusInelastic*      fLEAntiOmegaMinusModel;   //omega-_bar LE inel model
+    G4HEAntiOmegaMinusInelastic*      fHEAntiOmegaMinusModel;   //omega-_bar HE inel model
+    G4MultipleScattering              fAntiOmegaMinusMult;      //omega-_bar msc
+    G4hIonisation                     fAntiOmegaMinusIonisation;//omega-_bar ionisation
     
       // Other
-    ProcessVector  fOtherProcesses;  
+    ProcessVector  fOtherProcesses; //other process
     
 
   private:

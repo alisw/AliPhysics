@@ -34,25 +34,25 @@ class TG4PhysicsConstructorMuon: public G4VPhysicsConstructor
 
     // data members
           // mu+ physics
-   G4MultipleScattering   fMuPlusMultipleScattering;
-   G4MuBremsstrahlung     fMuPlusBremsstrahlung ;
-   G4MuPairProduction     fMuPlusPairProduction;
-   G4MuIonisation         fMuPlusIonisation;
+   G4MultipleScattering   fMuPlusMultipleScattering;  //mu+ msc
+   G4MuBremsstrahlung     fMuPlusBremsstrahlung ;     //mu+ Bremsstrahlung
+   G4MuPairProduction     fMuPlusPairProduction;      //mu+ pair production
+   G4MuIonisation         fMuPlusIonisation;          //mu+ ionisation
 
           // mu- physics
-   G4MultipleScattering   fMuMinusMultipleScattering;
-   G4MuBremsstrahlung     fMuMinusBremsstrahlung ;
-   G4MuPairProduction     fMuMinusPairProduction;
-   G4MuIonisation         fMuMinusIonisation;
-   G4MuonMinusCaptureAtRest fMuMinusCaptureAtRest;
+   G4MultipleScattering   fMuMinusMultipleScattering; //mu- msc
+   G4MuBremsstrahlung     fMuMinusBremsstrahlung ;    //mu- Bremsstrahlung
+   G4MuPairProduction     fMuMinusPairProduction;     //mu- pair production
+   G4MuIonisation         fMuMinusIonisation;         //mu- ionisation
+   G4MuonMinusCaptureAtRest fMuMinusCaptureAtRest;    //mu- capture
 
           // tau+ physics
-   G4MultipleScattering   fTauPlusMultipleScattering;
-   G4hIonisation          fTauPlusIonisation;
+   G4MultipleScattering   fTauPlusMultipleScattering; //tau+ msc
+   G4hIonisation          fTauPlusIonisation;         //tau+ ionisation
 
           // tau+ physics
-   G4MultipleScattering   fTauMinusMultipleScattering;
-   G4hIonisation          fTauMinusIonisation;
+   G4MultipleScattering   fTauMinusMultipleScattering;//tau- msc
+   G4hIonisation          fTauMinusIonisation;        //tau- ionisation
     
   private:
     // methods

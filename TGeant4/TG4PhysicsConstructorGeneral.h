@@ -28,7 +28,7 @@ class TG4PhysicsConstructorGeneral: public G4VPhysicsConstructor
     virtual void ConstructProcess();
 
     // data members
-    G4Decay fDecayProcess;
+    G4Decay fDecayProcess; // decay process
 };
 
 #endif //TG4_PHYSICS_CONSTRUCTOR_GENERAL_H

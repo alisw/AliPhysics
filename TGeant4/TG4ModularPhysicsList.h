@@ -49,7 +49,7 @@ class TG4ModularPhysicsList: public G4VModularPhysicsList
                               G4int processId, G4bool activation);
 
     // static data members
-    static const G4double  fgkDefaultCutValue;
+    static const G4double  fgkDefaultCutValue; //default cut value
 };
 
 #endif //TG4_MODULAR_PHYSICS_LIST_H

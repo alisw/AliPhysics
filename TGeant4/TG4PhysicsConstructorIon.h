@@ -44,34 +44,34 @@ class TG4PhysicsConstructorIon: public G4VPhysicsConstructor
 
     // data members
           // Elastic Process
-   G4HadronElasticProcess fElasticProcess;
-   G4LElastic*            fElasticModel;
+   G4HadronElasticProcess fElasticProcess;         //elastic process
+   G4LElastic*            fElasticModel;           //elastic model
 
           // Generic Ion physics
-   G4MultipleScattering   fIonMultipleScattering;
-   G4hIonisation          fIonIonisation;
+   G4MultipleScattering   fIonMultipleScattering;  //ion multiple scattering
+   G4hIonisation          fIonIonisation;          //ion ionisation
 
           // Deuteron physics
-   G4MultipleScattering        fDeuteronMultipleScattering;
-   G4hIonisation               fDeuteronIonisation;
-   G4DeuteronInelasticProcess  fDeuteronProcess;
-   G4LEDeuteronInelastic*      fDeuteronModel;
+   G4MultipleScattering        fDeuteronMultipleScattering; //D msc
+   G4hIonisation               fDeuteronIonisation;//D ionisation
+   G4DeuteronInelasticProcess  fDeuteronProcess;   //D inelastic process
+   G4LEDeuteronInelastic*      fDeuteronModel;     //D LE inelastic model
 
           // Triton physics
-   G4MultipleScattering        fTritonMultipleScattering;
-   G4hIonisation               fTritonIonisation;
-   G4TritonInelasticProcess    fTritonProcess;
-   G4LETritonInelastic*        fTritonModel;
+   G4MultipleScattering        fTritonMultipleScattering; //T msc
+   G4hIonisation               fTritonIonisation;  //T ionisation
+   G4TritonInelasticProcess    fTritonProcess;     //T inelastic process
+   G4LETritonInelastic*        fTritonModel;       //T LE inelastic model
   
          // Alpha physics
-   G4MultipleScattering        fAlphaMultipleScattering;
-   G4hIonisation               fAlphaIonisation;
-   G4AlphaInelasticProcess     fAlphaProcess;
-   G4LEAlphaInelastic*         fAlphaModel;
+   G4MultipleScattering        fAlphaMultipleScattering; //alpha msc
+   G4hIonisation               fAlphaIonisation;   //alpha ionisation
+   G4AlphaInelasticProcess     fAlphaProcess;      //alpha inelastic process
+   G4LEAlphaInelastic*         fAlphaModel;        //alpha LE inelastic model
 
         // He3 physics
-   G4MultipleScattering        fHe3MultipleScattering;
-   G4hIonisation               fHe3Ionisation;
+   G4MultipleScattering        fHe3MultipleScattering; //He3 msc
+   G4hIonisation               fHe3Ionisation;     //He3 ionisation
     
   private:
     // methods

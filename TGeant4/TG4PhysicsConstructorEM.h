@@ -36,20 +36,20 @@ class TG4PhysicsConstructorEM: public G4VPhysicsConstructor
 
     // data members
             // Gamma physics
-    G4PhotoElectricEffect fPhotoEffect;
-    G4ComptonScattering   fComptonEffect;
-    G4GammaConversion     fPairProduction;
-  
+    G4PhotoElectricEffect fPhotoEffect;               //gamma photoeffect
+    G4ComptonScattering   fComptonEffect;             //Compton scattering
+    G4GammaConversion     fPairProduction;            //gamma pair production
+     
             // Electron physics
-    G4MultipleScattering  fElectronMultipleScattering;
-    G4eIonisation         fElectronIonisation;
-    G4eBremsstrahlung     fElectronBremsStrahlung;
+    G4MultipleScattering  fElectronMultipleScattering;//e- multiple scattering
+    G4eIonisation         fElectronIonisation;        //e- ionization 
+    G4eBremsstrahlung     fElectronBremsStrahlung;    //e- Bremsstrahlung
   
             //Positron physics
-    G4MultipleScattering  fPositronMultipleScattering;
-    G4eIonisation         fPositronIonisation; 
-    G4eBremsstrahlung     fPositronBremsStrahlung;  
-    G4eplusAnnihilation   fAnnihilation; 
+    G4MultipleScattering  fPositronMultipleScattering;//e+ multiple scattering
+    G4eIonisation         fPositronIonisation;        //e+ ionisation
+    G4eBremsstrahlung     fPositronBremsStrahlung;    //e+ Bremsstrahlung
+    G4eplusAnnihilation   fAnnihilation;              //e+ annihilation
     
   private:
     // methods
