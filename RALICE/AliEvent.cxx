@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.8 2002/12/02 15:10:37 nick Exp $
+// $Id: AliEvent.cxx,v 1.9 2003/01/09 16:06:35 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -157,7 +157,7 @@
 //        jx=v2.GetJet(2);
 //        evt.AddJet(jx,0); 
 // 
-//        evt.Info("sph");
+//        evt.Data("sph");
 //        v1.ListAll();
 //        v2.List("cyl");
 //
@@ -166,7 +166,7 @@
 //        Float_t loc[3];
 //        evt.GetPosition(loc,"sph");
 //        AliPosition r=v1.GetPosition();
-//        r.Info(); 
+//        r.Data(); 
 //        Int_t nt=v2.GetNtracks();
 //        AliTrack* tv=v2.GetTrack(1); // Access track number 1 of Vertex v2
 //
@@ -189,7 +189,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2002/12/02 15:10:37 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/01/09 16:06:35 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -407,7 +407,7 @@ Int_t AliEvent::GetTargetId()
  return fIdTarg;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::HeaderInfo()
+void AliEvent::HeaderData()
 {
 // Provide event header information
  Int_t date=fDaytime.GetDate();
@@ -423,7 +423,7 @@ void AliEvent::HeaderInfo()
  char* c[12]={"jan","feb","mar","apr","may","jun",
               "jul","aug","sep","oct","nov","dec"};
 
- cout << " *AliEvent::Info* Run : " << fRun << " Event : " << fEvent;
+ cout << " *AliEvent::Data* Run : " << fRun << " Event : " << fEvent;
  cout.fill('0');
  cout << " Date : " << setw(2) << day << "-" << c[month-1] << "-" << year
       << " Time : " << setw(2) << hh << ":" << setw(2) << mm << ":" << setw(2) << ss;
@@ -431,11 +431,11 @@ void AliEvent::HeaderInfo()
  cout << " Ncalorimeters : " << fNcals << endl;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::Info(TString f)
+void AliEvent::Data(TString f)
 {
 // Provide event information within the coordinate frame f
- HeaderInfo();
- AliVertex::Info(f);
+ HeaderData();
+ AliVertex::Data(f);
 } 
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetNcalorimeters()

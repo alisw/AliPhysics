@@ -25,7 +25,7 @@ class AliJet : public TObject,public Ali4Vector
   void Reset();                      // Reset all values
   void AddTrack(AliTrack& t,Int_t copy=1);// Add a track to the jet
   void AddTrack(AliTrack* t,Int_t copy=1) { AddTrack(*t,copy); }
-  void Info(TString f);              // Print jet information in coordinate frame f 
+  void Data(TString f);              // Print jet information in coordinate frame f 
   void List(TString f="car");        // Print jet prim. track information for coord. frame f
   void ListAll(TString f="car");     // Print jet prim. and decay track information for coord. frame f
   Double_t GetEnergy();              // Provide the total jet energy
@@ -58,6 +58,6 @@ class AliJet : public TObject,public Ali4Vector
   Int_t fTrackCopy;          // Flag to denote creation of private copies in fTracks
   Int_t fUserId;             // The user defined identifier
  
- ClassDef(AliJet,2) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,3) // Creation and investigation of a jet of particle tracks.
 };
 #endif

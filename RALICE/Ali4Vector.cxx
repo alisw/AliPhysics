@@ -121,7 +121,7 @@
 // Ali4Vector c;
 // c.SetVector(x0,x);
 // c.GetVector(vec,"car");
-// c.Info("cyl");
+// c.Data("cyl");
 // c=a+b;
 // c=a-b;
 // c=a*5;
@@ -471,7 +471,7 @@ void Ali4Vector::GetErrors(Float_t* e,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::Info(TString f)
+void Ali4Vector::Data(TString f)
 {
 // Print contravariant vector components and errors according to
 // reference frame f and according to the current mode.
@@ -494,7 +494,7 @@ void Ali4Vector::Info(TString f)
  }
  else
  {
-  cout << " *Ali4Vector::Info* Unsupported frame : " << f << endl
+  cout << " *Ali4Vector::Data* Unsupported frame : " << f << endl
        << "  Possible frames are 'car', 'sph' and 'cyl'." << endl; 
  }
 }

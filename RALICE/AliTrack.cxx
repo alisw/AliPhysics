@@ -36,8 +36,8 @@
 // t2.SetCharge(0);
 // t2.SetMass(1.115);
 //
-// t1.Info();
-// t2.Info();
+// t1.Data();
+// t2.Data();
 //
 // Float_t pi=acos(-1.);
 // Float_t thcms=0.2*pi; // decay theta angle in cms
@@ -268,12 +268,12 @@ void AliTrack::SetCharge(Float_t q)
  fQ=q;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::Info(TString f)
+void AliTrack::Data(TString f)
 {
 // Provide track information within the coordinate frame f
  Double_t m=GetMass();
  Double_t dm=GetResultError();
- cout << " *AliTrack::Info* Id : " << fUserId << " Code : " << fCode
+ cout << " *AliTrack::Data* Id : " << fUserId << " Code : " << fCode
       << " Mass : " << m << " error : " << dm << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Nmass hyp. : " << fNmasses
       << " Ntracks : " << fNdec << " Nsignals : " << fNsig << endl;
@@ -283,14 +283,14 @@ void AliTrack::Info(TString f)
        << " error : " << fDmasses->At(i) << " prob. : " << fPmasses->At(i)
        << endl;
  }
- Ali4Vector::Info(f); 
+ Ali4Vector::Data(f); 
 } 
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::List(TString f)
 {
 // Provide current track and decay level 1 information within coordinate frame f
 
- Info(f); // Information of the current track
+ Data(f); // Information of the current track
 
  // Decay products of this track
  AliTrack* td; 
@@ -300,7 +300,7 @@ void AliTrack::List(TString f)
   if (td)
   {
    cout << "  ---Level 1 sec. track no. " << id << endl;
-   td->Info(f); 
+   td->Data(f); 
   }
   else
   {
@@ -313,12 +313,12 @@ void AliTrack::ListAll(TString f)
 {
 // Provide complete track and decay information within the coordinate frame f
 
- Info(f); // Information of the current track
- cout << " Begin-point :"; fBegin.Info(f);
- cout << " End-point   :"; fEnd.Info(f);
+ Data(f); // Information of the current track
+ cout << " Begin-point :"; fBegin.Data(f);
+ cout << " End-point   :"; fEnd.Data(f);
  for (Int_t is=1; is<=GetNsignals(); is++)
  {
-  ((AliSignal*)GetSignal(is))->Info(f);
+  ((AliSignal*)GetSignal(is))->Data(f);
  }
 
  AliTrack* t=this;
@@ -335,10 +335,10 @@ void AliTrack::Dump(AliTrack* t,Int_t n,TString f)
   if (td)
   {
    cout << "  ---Level " << n << " sec. track no. " << id << endl;
-   td->Info(f); 
+   td->Data(f); 
    for (Int_t is=1; is<=td->GetNsignals(); is++)
    {
-    ((AliSignal*)td->GetSignal(is))->Info(f);
+    ((AliSignal*)td->GetSignal(is))->Data(f);
    }
 
    // Go for next decay level of this decay track recursively

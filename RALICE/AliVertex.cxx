@@ -101,7 +101,7 @@
 //        Float_t r3[3]={6.2,4.8,1.3};
 //        v3.SetPosition(r3,"car");
 //
-//        v1.Info("sph");
+//        v1.Data("sph");
 //        v2.ListAll();
 //        v3.List("cyl");
 //
@@ -110,7 +110,7 @@
 //        Float_t loc[3];
 //        v1.GetPosition(loc,"sph");
 //        AliPosition r=v2.GetPosition();
-//        r.Info(); 
+//        r.Data(); 
 //        Int_t nt=v2.GetNtracks();
 //        AliTrack* tv=v2.GetTrack(1); // Access track number 1 of Vertex v2
 //
@@ -549,24 +549,24 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliVertex::Info(TString f)
+void AliVertex::Data(TString f)
 {
 // Provide vertex information within the coordinate frame f
- cout << " *AliVertex::Info* Id : " << fUserId << " Invmass : " << GetInvmass()
+ cout << " *AliVertex::Data* Id : " << fUserId << " Invmass : " << GetInvmass()
       << " Charge : " << GetCharge() << " Momentum : " << GetMomentum()
       << " Ntracks : " << GetNtracks() << " Nvertices : " << fNvtx 
       << " Njets : " << fNjets << endl;
  cout << " ";
- Ali4Vector::Info(f);
+ Ali4Vector::Data(f);
  cout << "  Position";
- AliPosition::Info(f); 
+ AliPosition::Data(f); 
 } 
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::List(TString f)
 {
 // Provide primary track and sec. vertex information within the coordinate frame f
 
- Info(f); // Information of the current vertex
+ Data(f); // Information of the current vertex
 
  // The tracks of this vertex
  AliTrack* t; 
@@ -577,7 +577,7 @@ void AliVertex::List(TString f)
   {
    cout << "  ---Track no. " << it << endl;
    cout << " ";
-   t->Info(f); 
+   t->Data(f); 
   }
   else
   {
@@ -594,7 +594,7 @@ void AliVertex::List(TString f)
   {
    cout << "  ---Level 1 sec. vertex no. " << iv << endl;
    cout << " ";
-   v->Info(f); 
+   v->Data(f); 
   }
   else
   {
@@ -607,7 +607,7 @@ void AliVertex::ListAll(TString f)
 {
 // Provide complete (sec) vertex and (decay) track info within the coordinate frame f
 
- Info(f); // Information of the current vertex
+ Data(f); // Information of the current vertex
 
  // The tracks of this vertex
  AliTrack* t; 
@@ -641,7 +641,7 @@ void AliVertex::Dump(AliVertex* v,Int_t n,TString f)
   {
    cout << "  ---Level " << n << " sec. vertex no. " << iv << endl;
    cout << " ";
-   vs->Info(f); 
+   vs->Data(f); 
 
    // The tracks of this vertex
    AliTrack* t; 

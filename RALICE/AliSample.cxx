@@ -22,7 +22,7 @@
 // whereas the "Reset" function resets the complete sample to 'empty'.
 // The info which can be extracted from a certain data sample are the
 // sum, mean, variance, sigma, covariance and correlation.
-// The "Info" function provides all statistics data for a certain sample.
+// The "Data" function provides all statistics data for a certain sample.
 // The variables for which these stat. parameters have to be calculated
 // are indicated by the index of the variable which is passed as an
 // argument to the various member functions.
@@ -34,9 +34,9 @@
 // the mean_x can be obtained as s.GetMean(1) whereas the mean_y is obtained
 // via s.GetMean(2).
 // The correlation between x and y is available via s.GetCor(1,2).
-// The x-statistics are obtained via s.Info(1), y-statistics via s.Info(2),
-// and the covariance and correlation between x and y via s.Info(1,2).
-// All statistics of a sample are obtained via s.Info().
+// The x-statistics are obtained via s.Data(1), y-statistics via s.Data(2),
+// and the covariance and correlation between x and y via s.Data(1,2).
+// All statistics of a sample are obtained via s.Data().
 //
 //--- Author: Nick van Eijndhoven 30-mar-1996 CERN Geneva
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -354,7 +354,7 @@ Float_t AliSample::GetCor(Int_t i,Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Info()
+void AliSample::Data()
 {
 // Printing of statistics of all variables
  for (Int_t i=0; i<fDim; i++)
@@ -365,12 +365,12 @@ void AliSample::Info()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Info(Int_t i)
+void AliSample::Data(Int_t i)
 {
 // Printing of statistics of ith variable
  if (fDim < i)
  {
-  cout << " *AliSample::Info(i)* Error : Dimension less than " << i << endl;
+  cout << " *AliSample::Data(i)* Error : Dimension less than " << i << endl;
  }
  else
  {
@@ -380,14 +380,14 @@ void AliSample::Info(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Info(Int_t i,Int_t j)
+void AliSample::Data(Int_t i,Int_t j)
 {
 // Printing of covariance and correlation between variables i and j
  if ((fDim < i) || (fDim < j))
  {
   Int_t k=i;
   if (j > i) k=j;
-  cout << " *AliSample::Info(i,j)* Error : Dimension less than " << k << endl;
+  cout << " *AliSample::Data(i,j)* Error : Dimension less than " << k << endl;
  }
  else
  {

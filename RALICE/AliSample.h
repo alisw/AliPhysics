@@ -30,9 +30,9 @@ class AliSample
   Float_t GetSigma(Int_t i);                    // Standard deviation for i-th variable
   Float_t GetCov(Int_t i, Int_t j);             // Covariance for i-th and j-th variable
   Float_t GetCor(Int_t i, Int_t j);             // Correlation for i-th and j-th variable
-  void Info();                                  // Stat. info for the complete sample
-  void Info(Int_t i);                           // Stat. info for the i-th variable
-  void Info(Int_t i, Int_t j);                  // Stat. info for i-th and j-th variable
+  void Data();                                  // Stat. info for the complete sample
+  void Data(Int_t i);                           // Stat. info for the i-th variable
+  void Data(Int_t i, Int_t j);                  // Stat. info for i-th and j-th variable
  
  private:
   Int_t fDim;                      // Dimension of the sample

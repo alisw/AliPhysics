@@ -47,8 +47,8 @@
 // Ali3VectorObj vec2;
 // vec2.Load(add);
 //
-// vec1.Info();
-// vec2.Info();
+// vec1.Data();
+// vec2.Data();
 //
 //--- Author: Nick van Eijndhoven 18-oct-1999 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht

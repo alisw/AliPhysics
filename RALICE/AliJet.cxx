@@ -72,8 +72,8 @@
 //  tx->Reset();
 // }
 //
-// j1.Info();
-// j2.Info("sph");
+// j1.Data();
+// j2.Data("sph");
 //
 // Float_t e1=j1.GetEnergy();
 // Float_t pnorm=j1->GetMomentum();
@@ -244,20 +244,20 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
 
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::Info(TString f)
+void AliJet::Data(TString f)
 {
 // Provide jet information within the coordinate frame f
- cout << " *AliJet::Info* Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
+ cout << " *AliJet::Data* Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Ntracks : " << fNtrk << endl;
  cout << " ";
- Ali4Vector::Info(f); 
+ Ali4Vector::Data(f); 
 } 
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::List(TString f)
 {
 // Provide jet and primary track information within the coordinate frame f
 
- Info(f); // Information of the current jet
+ Data(f); // Information of the current jet
 
  // The tracks of this jet
  AliTrack* t; 
@@ -268,7 +268,7 @@ void AliJet::List(TString f)
   {
    cout << "  ---Track no. " << it << endl;
    cout << " ";
-   t->Info(f); 
+   t->Data(f); 
   }
   else
   {
@@ -281,7 +281,7 @@ void AliJet::ListAll(TString f)
 {
 // Provide jet and prim.+sec. track information within the coordinate frame f
 
- Info(f); // Information of the current jet
+ Data(f); // Information of the current jet
 
  // The tracks of this jet
  AliTrack* t; 

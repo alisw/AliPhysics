@@ -333,3 +333,8 @@
                 leaks in reading back AliCalorimeter objects from a data file.
                 Also unnecessary "LoadMatrix()" statement removed in AliCalorimeter::Reset().
                 Irrelevant cout statement removed from AliEvent constructor.
+01-feb-2003 NvE Memberfunction Info() renamed to Data() in various classes in order to
+                prevent problems w.r.t. TObject::Info due to probable root/cint bug. 
+03-feb-2003 NvE File "gcclib" added to subdirectory "scripts" to provide Ralice installation
+                script for Linux machines using gcc.
+                Class AliObjMatrix introduced.

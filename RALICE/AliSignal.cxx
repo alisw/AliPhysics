@@ -250,12 +250,12 @@ Float_t AliSignal::GetSignalError(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::Info(TString f)
+void AliSignal::Data(TString f)
 {
 // Provide signal information within the coordinate frame f
- cout << " *AliSignal::Info* For signal of kind : " << fName << endl;
+ cout << " *AliSignal::Data* For signal of kind : " << fName << endl;
  cout << " Position";
- Ali3Vector::Info(f); 
+ Ali3Vector::Data(f); 
  
  if (fSignal && fDsignal)
  {

@@ -29,3 +29,4 @@
 #include "AliInvmass.h"
 #include "AliEvent.h"
 #include "AliCollider.h"
+#include "AliObjMatrix.h"

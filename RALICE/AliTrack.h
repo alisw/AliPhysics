@@ -27,7 +27,7 @@ class AliTrack : public TObject,public Ali4Vector
   void SetMass(Double_t m,Double_t dm=0); // Set particle mass and error
   void SetMass();                   // Set mass and error to mass hypothesis with highest prob.
   void SetCharge(Float_t q);        // Set particle charge
-  void Info(TString f="car");       // Print track information for coord. frame f
+  void Data(TString f="car");       // Print track information for coord. frame f
   void List(TString f="car");       // Print track and decay level 1 information for coord. frame f
   void ListAll(TString f="car");    // Print track and all decay level information for coord. frame f
   Ali3Vector Get3Momentum();        // Provide track 3-momentum
@@ -97,6 +97,6 @@ class AliTrack : public TObject,public Ali4Vector
  private:
   void Dump(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,2) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,3) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

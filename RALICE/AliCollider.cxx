@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.3 2002/12/02 15:10:37 nick Exp $
+// $Id: AliCollider.cxx,v 1.4 2002/12/11 14:45:12 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -96,7 +96,7 @@
 //
 //   AliEvent* evt=gen->GetEvent();
 //  
-//   evt->Info();
+//   evt->Data();
 //  }
 //
 //  gen->EndRun();
@@ -104,7 +104,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2002/12/02 15:10:37 $ Utrecht University
+//- Modified: NvE $Date: 2002/12/11 14:45:12 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"

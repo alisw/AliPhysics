@@ -22,7 +22,7 @@ class AliBoost : public TObject
   Ali3Vector GetBetaVector();             // Provide the beta 3-vector
   Double_t GetBeta();                     // Provide norm of beta 3-vector
   Double_t GetGamma();                    // Provide gamma value
-  void Info(TString f="car");             // Print boost parameter info in coord. frame f
+  void Data(TString f="car");             // Print boost parameter info in coord. frame f
   Ali4Vector Boost(Ali4Vector& v);        // Perform Lorentz boost on 4-vector v
   Ali4Vector Inverse(Ali4Vector& v);      // Perform inverse Lorentz boost on 4-vector v
   Double_t GetResultError();              // Provide error on scalar result
@@ -33,6 +33,6 @@ class AliBoost : public TObject
   Double_t fDgamma;  // Error on the gamma value
   Double_t fDresult; // Error on scalar result
  
- ClassDef(AliBoost,1) // Perform various Lorentz transformations.
+ ClassDef(AliBoost,2) // Perform various Lorentz transformations.
 };
 #endif

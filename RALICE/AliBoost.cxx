@@ -30,7 +30,7 @@
 //
 // AliBoost b1;
 // b1.SetBeta(beta);
-// b1.Info();
+// b1.Data();
 //
 // Float_t b[4]={14,1,2,3};
 // Float_t eb[4]={1.4,0.1,0.2,0.3};
@@ -38,12 +38,12 @@
 // p.SetVector(b,"car");
 // p.SetErrors(eb,"car");
 // Ali4Vector pprim=b1.Boost(p);
-// p.Info();
-// pprim.Info();
+// p.Data();
+// pprim.Data();
 //
 // p=b1.Inverse(pprim);
-// pprim.Info();
-// p.Info();
+// pprim.Data();
+// p.Data();
 //
 // Float_t c[4]={5,0,0,4};
 // Float_t ec[4]={0.5,0,0,0.4};
@@ -53,7 +53,7 @@
 //
 // AliBoost b2;
 // b2.Set4Momentum(q);
-// b2.Info("sph");
+// b2.Data("sph");
 //
 //--- Author: Nick van Eijndhoven 14-may-1996 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -113,7 +113,7 @@ void AliBoost::Set4Momentum(Ali4Vector& p)
  if (E <= 0.)
  {
   cout << " *AliBoost::Set4Momentum* Unphysical situation." << endl;
-  p.Info();
+  p.Data();
  }
  else
  {
@@ -161,15 +161,15 @@ Double_t AliBoost::GetResultError()
  return fDresult;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliBoost::Info(TString f)
+void AliBoost::Data(TString f)
 {
 // Printing of the boost parameter info in coordinate frame f.
  Double_t beta=fBeta.GetNorm();
  Double_t dbeta=fBeta.GetResultError();
- cout << " *AliBoost::Info* beta : " << beta << " error : " << dbeta
+ cout << " *AliBoost::Data* beta : " << beta << " error : " << dbeta
       << " gamma : " << fGamma << " error : " << fDgamma << endl;
  cout << "  Beta"; 
- fBeta.Info(f);
+ fBeta.Data(f);
 }
 ///////////////////////////////////////////////////////////////////////////
 Ali4Vector AliBoost::Boost(Ali4Vector& v)

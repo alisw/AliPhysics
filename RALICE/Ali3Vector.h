@@ -24,7 +24,7 @@ class Ali3Vector
   virtual void GetErrors(Double_t* e,TString f); // Provide errors of vector in frame f
   virtual void SetErrors(Float_t*  e,TString f); // Store errors of vector in frame f
   virtual void GetErrors(Float_t*  e,TString f); // Provide errors of vector in frame f
-  virtual void Info(TString f="car");            // Print vector components in frame f
+  virtual void Data(TString f="car");            // Print vector components in frame f
   Double_t GetNorm();                            // Provide norm of the vector
   Double_t Dot(Ali3Vector& q);                   // Provide dot product with q
   Double_t GetPseudoRapidity();                  // Provide the pseudorapidity w.r.t z-axis
@@ -46,6 +46,6 @@ class Ali3Vector
   Double_t fDx,fDy,fDz;       // Errors on Cartesian coordinates
   Double_t fDresult;          // Error on scalar result (e.g. norm or dotproduct)
 
- ClassDef(Ali3Vector,1) // Handling of 3-vectors in various reference frames.
+ ClassDef(Ali3Vector,2) // Handling of 3-vectors in various reference frames.
 };
 #endif

@@ -44,7 +44,7 @@
 // Float_t e[3]={0.03,0.5,0.21};
 // a.SetVector(v,"car");
 // a.SetErrors(e,"car");
-// a.Info();
+// a.Data();
 //
 // Float_t vec[3];
 // Float_t err[3];
@@ -61,7 +61,7 @@
 // Float_t doterror=a.GetResultError();
 //
 // Ali3Vector c=a.Cross(b);
-// c.Info("sph");
+// c.Data("sph");
 // c.GetVector(vec,"cyl");
 // c.GetErrors(err,"cyl");
 //
@@ -408,7 +408,7 @@ void Ali3Vector::GetErrors(Float_t* e,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::Info(TString f)
+void Ali3Vector::Data(TString f)
 {
 // Print vector components according to reference frame f
  if (f=="car" || f=="sph" || f=="cyl")
@@ -423,7 +423,7 @@ void Ali3Vector::Info(TString f)
  }
  else
  {
-  cout << " *Ali3Vector::Info* Unsupported frame : " << f << endl
+  cout << " *Ali3Vector::Data* Unsupported frame : " << f << endl
        << "  Possible frames are 'car', 'sph' and 'cyl'." << endl; 
  }
 }

@@ -34,7 +34,7 @@ class Ali4Vector
   virtual void GetErrors(Double_t* v,TString f);    // Provide errors of vector v^i in frame f
   virtual void SetErrors(Float_t*  v,TString f);    // Store errors of vector v^i in frame f
   virtual void GetErrors(Float_t*  v,TString f);    // Provide errors of vector v^i in frame f
-  virtual void Info(TString f="car");               // Print contravariant components in frame f
+  virtual void Data(TString f="car");               // Print contravariant components in frame f
   Double_t Dot(Ali4Vector& q);                      // Provide dot product v^i*q_i
   Double_t GetResultError();                        // Provide error on scalar result (e.g. Dot)
   Ali4Vector operator+(Ali4Vector& q);              // Add contravariant vector q
@@ -61,6 +61,6 @@ class Ali4Vector
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,1) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,2) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

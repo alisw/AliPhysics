@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.5 2002/10/28 14:41:34 nick Exp $
+// $Id: AliEvent.h,v 1.6 2002/12/02 15:10:38 nick Exp $
 
 #include "Riostream.h"
 #include <math.h>
@@ -39,8 +39,8 @@ class AliEvent : public AliVertex
   TDatime GetDayTime();                   // Provide the date and time stamp
   Int_t GetRunNumber();                   // Provide the run number
   Int_t GetEventNumber();                 // Provide the event number
-  void HeaderInfo();                      // Print the event header information
-  void Info(TString f="car");             // Print the event info within coordinate frame f
+  void HeaderData();                      // Print the event header information
+  void Data(TString f="car");             // Print the event info within coordinate frame f
   void SetCalCopy(Int_t j);               // (De)activate creation of private copies in fCalorimeters
   Int_t GetCalCopy();                     // Provide CalCopy flag value      
   void AddCalorimeter(AliCalorimeter& c); // Add a calorimeter system to the event
@@ -65,6 +65,6 @@ class AliEvent : public AliVertex
   TObjArray* fCalorimeters; // Array to hold the pointers to the calorimeter systems
   Int_t fCalCopy;           // Flag to denote creation of private copies in fCalorimeters
 
- ClassDef(AliEvent,4) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,5) // Creation and investigation of an Alice physics event.
 };
 #endif

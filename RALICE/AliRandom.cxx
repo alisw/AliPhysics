@@ -69,7 +69,7 @@
 //                              // The sequence is started at the location
 //                              // denoted by the counters cnt1 and cnt2.
 //
-// q.Info();     // Print the current seed, cnt1 and cnt2 values.
+// q.Data();     // Print the current seed, cnt1 and cnt2 values.
 // q.GetSeed();  // Provide the current seed value.
 // q.GetCnt1();  // Provide the current cnt1 value.
 // q.GetCnt2();  // Provide the current cnt2 value.
@@ -317,7 +317,7 @@ Int_t AliRandom::GetCnt2()
  return fCnt2;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliRandom::Info()
+void AliRandom::Data()
 {
 // Print the current seed, cnt1 and cnt2 values
  cout << " *Random* seed = " << fSeed

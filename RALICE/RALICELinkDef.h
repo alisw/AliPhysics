@@ -34,5 +34,6 @@
  #pragma link C++ class AliInvmass+;
  #pragma link C++ class AliEvent+;
  #pragma link C++ class AliCollider+;
+ #pragma link C++ class AliObjMatrix+;
 #endif
  

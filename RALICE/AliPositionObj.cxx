@@ -46,9 +46,9 @@
 // rr2.Load(r2);
 // AliPositionObj ssum(r1+r2);
 //
-// rr1.Info();
-// rr2.Info();
-// ssum.Info();
+// rr1.Data();
+// rr2.Data();
+// ssum.Data();
 //
 //--- Author: Nick van Eijndhoven 18-oct-1999 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
