@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2003/01/29 00:34:51  pavlinov
+fixed bug in FillFromHits
+
 Revision 1.38  2003/01/28 16:08:11  morsch
 Particle loading according to generator type.
 
@@ -1777,7 +1780,7 @@ void hf1(Int_t& id, Float_t& x, Float_t& wgt)
 void AliEMCALJetFinder::DrawLego(Char_t *opt) 
 {if(fLego) fLego->Draw(opt);}
 
-void  AliEMCALJetFinder::DrawLegoBackground(Char_t *opt="lego") 
+void  AliEMCALJetFinder::DrawLegoBackground(Char_t *opt) 
 {if(fLegoB) fLegoB->Draw(opt);}
 
 void AliEMCALJetFinder::DrawLegoEMCAL(Char_t *opt) 
