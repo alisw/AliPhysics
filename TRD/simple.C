@@ -40,6 +40,7 @@ void simple()
 
   // The simple simulator
   AliTRDsimple *simple = new AliTRDsimple();
+  simple->Init();
 
   // Initialize a dummy frame so that the TRD works
   new AliFRAMEv1("FRAME","Space Frame");             
@@ -50,16 +51,6 @@ void simple()
   // Needed for some material properties 
   trd->CreateMaterials();
 
-  // Use PAI model (most propable energy loss) for the relativistic rise
-  //trd->SetPAI(1); 
-  // Use GEANT (mean energy loss) for the relativistic rise
-  trd->SetPAI(0);
- 
-  // Use the Ermilova spectrum for the delta electrons
-  trd->SetErmilova(1);
-  // Use the GEANT spectrum for the delta electrons
-  //trd->SetErmilova(0);
- 
   // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 85% Xe + 15% CO2)
   trd->SetGasMix(1);
  
