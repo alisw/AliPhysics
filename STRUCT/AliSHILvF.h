@@ -21,13 +21,12 @@ public:
   virtual void  CreateGeometry();
   virtual void  Init();
   virtual Int_t IsVersion() const {return 0;}
-  virtual void  SetPbCone(Bool_t flag=kTRUE) {fPbCone=flag;}
-	  
+  virtual void  SetPbCone(Bool_t flag = kTRUE)         {fPbCone        = flag;}
+  virtual void  SetWriteGeometry(Bool_t flag = kFALSE)  {fWriteGeometry = flag;}	  
  protected:
-  Bool_t fPbCone;         // outer Pb cone option flag 
-  
-  ClassDef(AliSHILvF,1)  // Muon Shield Class (Open Geometry)
-      
+  Bool_t fPbCone;           // outer Pb cone option flag 
+  Bool_t fWriteGeometry;    // flag to write out the fluka geometry
+  ClassDef(AliSHILvF,2)     // Muon Shield Class (Open Geometry)
 };
 
 #endif
