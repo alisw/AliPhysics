@@ -160,7 +160,7 @@ void AliPHOSvImpacts::AddImpact( char* det, Int_t shunt, Int_t primary, Int_t tr
 }
 
 //____________________________________________________________________________
-void AliPHOSvImpacts::MakeBranch(Option_t *opt=" ", const char *file=0)
+void AliPHOSvImpacts::MakeBranch(Option_t *opt, const char *file)
 {  
   // Create new branch in the current Hits Root Tree containing
   // a list of PHOS impacts (exact values of track coming to detector)
@@ -231,7 +231,7 @@ void AliPHOSvImpacts::StepManager(void)
     Int_t i;
     for (i=0; i<3; i++) xyzm[i] = pos[i];
 
-    for (Int_t i=0; i<3; i++) {
+    for (i=0; i<3; i++) {
       xyzm[i] = pos[i] ;
       pm[i]   = pmom[i];
     }
@@ -262,7 +262,7 @@ void AliPHOSvImpacts::StepManager(void)
     Int_t i;
     for (i=0; i<3; i++) xyzm[i] = pos[i];
 
-    for (Int_t i=0; i<3; i++) {
+    for (i=0; i<3; i++) {
       xyzm[i] = pos[i] ;
       pm[i]   = pmom[i];
     }
@@ -284,7 +284,7 @@ void AliPHOSvImpacts::StepManager(void)
     Int_t i;
     for (i=0; i<3; i++) xyzm[i] = pos[i];
 
-    for (Int_t i=0; i<3; i++) {
+    for (i=0; i<3; i++) {
       xyzm[i] = pos[i] ;
       pm[i]   = pmom[i];
     }

@@ -9,6 +9,8 @@
 //                  
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
+#include <stdlib.h>
+
 // --- ROOT system ---
 
 class TString ; 

@@ -25,6 +25,7 @@
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 
+
 // --- ROOT system ---
 class TFile;
 #include "TROOT.h"
@@ -52,7 +53,7 @@ AliPHOS:: AliPHOS() : AliDetector()
   CreatePHOSFolders();
 }
 //____________________________________________________________________________
-AliPHOS:: AliPHOS(const char* name, const char* title=""): AliDetector(name, title) 
+AliPHOS:: AliPHOS(const char* name, const char* title): AliDetector(name, title) 
 {
   // Create folder and task hierarchy
   CreatePHOSFolders();
