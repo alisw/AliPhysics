@@ -459,6 +459,19 @@ void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
 } 
 
 //____________________________________________________________________________
+void AliPHOSGeometry::RelPosToAbsId(const Int_t module, const Double_t x, const Double_t z, Int_t & AbsId) const
+{
+  // converts local PHOS-module (x, z) coordinates to absId 
+  Int_t relid[4] ;
+  relid[0] = module ;
+  relid[1] = 0 ;
+  relid[2] = static_cast<Int_t>(TMath::Ceil( x/ GetCellStep() + GetNPhi() / 2.) );
+  relid[3] = static_cast<Int_t>(TMath::Ceil(-z/ GetCellStep() + GetNZ()   / 2.) ) ;
+  
+  RelToAbsNumbering(relid,AbsId) ;
+}
+
+//____________________________________________________________________________
 void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t & z) const 
 {
   // Converts the relative numbering into the local PHOS-module (x, z) coordinates

@@ -77,6 +77,8 @@ public:
                                          // gets the position of element (pad or Xtal) relative to Alice
   Bool_t RelToAbsNumbering(const Int_t * RelId, Int_t & AbsId) const ;         
                                          // converts the absolute PHOS numbering to a relative 
+  void  RelPosToAbsId(const Int_t module, const Double_t x, const Double_t z, Int_t & AbsId) const; 
+                                         // converts local PHOS-module (x, z) coordinates to absId 
 
   Bool_t IsInitialized(void)                  const { return fgInit ; }  
                                                                        
