@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2002/02/13 16:58:37  cblume
+Bug fix reported by Jiri. Make atoi input zero terminated in StepManager()
+
 Revision 1.31  2002/02/11 14:25:27  cblume
 Geometry update, compressed hit structure
 
@@ -565,10 +568,10 @@ void AliTRDv1::StepManager()
     drRegion = kFALSE;
     amRegion = kFALSE;
     cIdCurrent = gMC->CurrentVolName();
-    if (cIdCurrent[1] == cIdSensDr) {
+    if (cIdSensDr == cIdCurrent[1]) {
       drRegion = kTRUE;
     }
-    if (cIdCurrent[1] == cIdSensAm) {
+    if (cIdSensAm == cIdCurrent[1]) {
       amRegion = kTRUE;
     }
     if (drRegion || amRegion) {

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/02/13 16:58:37  cblume
+Bug fix reported by Jiri. Make atoi input zero terminated in StepManager()
+
 Revision 1.19  2002/02/11 14:25:27  cblume
 Geometry update, compressed hit structure
 
@@ -199,7 +202,7 @@ void AliTRDv0::StepManager()
     
     // Check on sensitive volume
     cIdCurrent = gMC->CurrentVolName();
-    if (cIdCurrent[1] == cIdSens) {
+    if (cIdSens == cIdCurrent[1]) {
 
       gMC->TrackPosition(p);
       for (Int_t i = 0; i < 3; i++) hits[i] = p[i];
