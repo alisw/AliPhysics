@@ -213,6 +213,7 @@ void AliITSClusterFinderSPD::Find1DClusters()
 	    AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(clusterZ,clusterX,clusterCharge,clusterSizeZ,clusterSizeX,xstart,xstop,xstartfull,xstopfull,zstart,zstop,k);
 	    // fClusters->Add(point);
 	    iTS->AddCluster(0,clust);
+	    delete clust;
 	    //    	    cout << "Cluster at Ladder: " << fLadder << ", Detector: " <<fDetector<<endl;
 	    
 	    // cout<<" end of cluster finding for Z pixel "<<endl;
