@@ -49,34 +49,42 @@ AliL3Hough::AliL3Hough()
 {
   //Constructor
   
-  fBinary = kFALSE;
-  fNEtaSegments = 0;
+  fBinary        = kFALSE;
   fAddHistograms = kFALSE;
-  fDoIterative = kFALSE; 
-  fWriteDigits=kFALSE;
-  fNPatches=0;
-  fMemHandler = 0;
+  fDoIterative   = kFALSE; 
+  fWriteDigits   = kFALSE;
+  fUse8bits      = kFALSE;
+
+  fMemHandler       = 0;
   fHoughTransformer = 0;
-  fEval = 0;
-  fPeakFinder = 0;
-  fTracks = 0;
-  fMerger = 0;
-  fInterMerger = 0;
-  fGlobalMerger = 0;
-  fversion = 0;
+  fEval             = 0;
+  fPeakFinder       = 0;
+  fTracks           = 0;
+  fMerger           = 0;
+  fInterMerger      = 0;
+  fGlobalMerger     = 0;
+
+  fNEtaSegments     = 0;
+  fNPatches         = 0;
+  fVersion          = 0;
+  fCurrentSlice     = 0;
+
+  SetTransformerParams();
+  SetThreshold();
 }
 
-AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Int_t tversion=0)
+AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE,Int_t tv=0)
 {
   //Default ctor.
 
   fBinary = binary;
   strcpy(fPath,path);
-  fNEtaSegments = n_eta_segments;
+  fNEtaSegments  = n_eta_segments;
   fAddHistograms = kFALSE;
-  fDoIterative = kFALSE; 
-  fWriteDigits = kFALSE;
-  fversion = tversion;
+  fDoIterative   = kFALSE; 
+  fWriteDigits   = kFALSE;
+  fUse8bits      = bit8;
+  fVersion       = tv;
 }
 
 AliL3Hough::~AliL3Hough()
@@ -119,34 +127,41 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
   fBinary = binary;
   strcpy(fPath,path);
   fNEtaSegments = n_eta_segments;
-  fAddHistograms = kFALSE;
-  fDoIterative = kFALSE; 
-  fWriteDigits = kFALSE;
-  fUse8bits = bit8;
-  fversion = tv;
-  AliL3Transform::Init(fPath);
+  fWriteDigits  = kFALSE;
+  fUse8bits     = bit8;
+  fVersion      = tv;
 
+  Init(); //do the rest
+}
+
+void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE){
+  fDoIterative   = doit; 
+  fAddHistograms = addhists;
+
+  AliL3Transform::Init(fPath);
   fNPatches = AliL3Transform::GetNPatches();
+
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
   fMemHandler = new AliL3MemHandler*[fNPatches];
   fTracks = new AliL3TrackArray*[fNPatches];
   fEval = new AliL3HoughEval*[fNPatches];
+
   for(Int_t i=0; i<fNPatches; i++)
     {
-      switch (fversion){
+      switch (fVersion){ //choose Transformer
       case 1: 
 	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(1,i,fNEtaSegments);
-	fHoughTransformer[i]->CreateHistograms(180,0.1,180,-90,90);
-	fHoughTransformer[i]->SetLowerThreshold(3);
-	
 	break;
       default:
 	fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
-	fHoughTransformer[i]->CreateHistograms(64,0.1,64,-30,30);
-	fHoughTransformer[i]->SetLowerThreshold(3);
       }
+
+      fHoughTransformer[i]->CreateHistograms(fNBinX,fLowPt,fNBinY,-fPhi,fPhi);
+      fHoughTransformer[i]->SetLowerThreshold(fThreshold);
+
       LOG(AliL3Log::kInformational,"AliL3Hough::Init","Version")
-	<<"Initializing Hough transformer version "<<fversion<<ENDLOG;
+	<<"Initializing Hough transformer version "<<fVersion<<ENDLOG;
+
       fEval[i] = new AliL3HoughEval();
       fTracks[i] = new AliL3TrackArray("AliL3HoughTrack");
       if(fUse8bits)
@@ -166,6 +181,7 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
       fMemHandler[i] = new AliL3MemHandler();
 #endif
     }
+
   fPeakFinder = new AliL3HoughMaxFinder("KappaPhi",100);
   fMerger = new AliL3HoughMerger(fNPatches);
   fInterMerger = new AliL3HoughIntMerger();
