@@ -1,0 +1,217 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log$
+
+*/
+
+#include <TShape.h>
+
+#include "AliITSgeomSPD425.h"
+
+ClassImp(AliITSgeomSPD425)
+
+AliITSgeomSPD425::AliITSgeomSPD425(){
+////////////////////////////////////////////////////////////////////////
+//    default constructor, for ITS post TDR geometry.
+////////////////////////////////////////////////////////////////////////
+
+const Float_t kdx=0.6400,kdy=0.0075,kdz=4.23625;// cm; Standard pixel detector
+                                                // size is 2dx wide, 2dz long,
+                                                // and 2dy thick. Geant 3.12
+                                                // units.
+const Float_t kbinx0 = 0.0050; // cm; Standard pixel size in x direction.
+const Int_t   knbinx = 256;    // number of pixels along x direction.
+const Float_t kbinz0 = 0.0425; // cm; Standard pixel size in z direction.
+const Float_t kbinz1 = 0.0625; // cm; Special pixel size in z direction.
+const Int_t   knbinz = 197;    // number of pixels along z direction.
+
+    fdx = kdx;  // default value.
+    fdy = kdy;  // default value.
+    fdz = kdz;  // default value.
+    fNbinx = knbinx; // default number of bins in x.
+    fNbinz = knbinz; // default number of bins in z.
+
+    fBinSizeX = new Float_t[fNbinx]; // array of bin sizes along x.
+    for(Int_t i=0;i<fNbinx;i++) fBinSizeX[i] = kbinx0; // default x bin size.
+    fBinSizeZ = new Float_t[fNbinz]; // array of bin sizes along z.
+    for(Int_t i=0;i<fNbinz;i++) fBinSizeZ[i] = kbinz0; // default z bin size.
+    fBinSizeZ[ 31] = kbinz1;
+    fBinSizeZ[ 32] = kbinz1;
+
+    fBinSizeZ[ 64] = kbinz1;
+    fBinSizeZ[ 65] = kbinz1;
+
+    fBinSizeZ[ 97] = kbinz1;
+    fBinSizeZ[ 98] = kbinz1;
+
+    fBinSizeZ[130] = kbinz1;
+    fBinSizeZ[131] = kbinz1;
+
+    fBinSizeZ[163] = kbinz1;
+    fBinSizeZ[164] = kbinz1;
+
+    // correct detector size for bin size.
+    fdx = 0.0;
+    for(Int_t i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
+    fdx *= 0.5;
+    fdz = 0.0;
+    for(Int_t i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
+    fdz *= 0.5;
+
+    fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
+			  fdx,fdy,fdz);
+}
+//______________________________________________________________________
+AliITSgeomSPD425::AliITSgeomSPD425(Float_t dy,Int_t nx,Float_t *bx,
+				                Int_t nz,Float_t *bz){
+////////////////////////////////////////////////////////////////////////
+//    default constructor, for a User modified TDR based geometry.
+////////////////////////////////////////////////////////////////////////
+    fdx = 0.0;
+    fdy =  dy;
+    fdz = 0.0;
+    fNbinx = nx; // new number of bins in x.
+    fNbinz = nz; // new number of bins in z.
+
+    fBinSizeX = new Float_t[fNbinx]; // array of bin sizes along x.
+    for(Int_t i=0;i<fNbinx;i++) fBinSizeX[i] = bx[i]; // new x bin size.
+    fBinSizeZ = new Float_t[fNbinz]; // array of bin sizes along z.
+    for(Int_t i=0;i<fNbinz;i++) fBinSizeZ[i] = bz[i]; // new z bin size.
+
+    // correct detector size for bin size.
+    for(Int_t i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
+    fdx *= 0.5;
+    for(Int_t i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
+    fdz *= 0.5;
+
+    fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
+			  fdx,fdy,fdz);
+}
+//______________________________________________________________________
+AliITSgeomSPD425::AliITSgeomSPD425(AliITSgeomSPD425 &source){
+  // copy constructor
+    if(&source == this) return;
+    this->fShapeSPD = source.fShapeSPD;
+    this->fdx = source.fdx;
+    this->fdy = source.fdy;
+    this->fdz = source.fdz;
+    if(this->fBinSizeX) delete[] this->fBinSizeX; 
+    if(this->fBinSizeX) delete[] this->fBinSizeZ;
+    this->fNbinx = source.fNbinx;
+    this->fBinSizeX = new Float_t[this->fNbinx];
+    this->fNbinz = source.fNbinz;
+    this->fBinSizeZ = new Float_t[this->fNbinz];
+    for(Int_t i=0;i<fNbinx;i++) this->fBinSizeX[i] = source.fBinSizeX[i];
+    for(Int_t i=0;i<fNbinz;i++) this->fBinSizeZ[i] = source.fBinSizeZ[i];
+}
+//______________________________________________________________________
+AliITSgeomSPD425& AliITSgeomSPD425::operator=(AliITSgeomSPD425 &source){
+  // = operator
+    if(&source == this) return *this;
+    this->fShapeSPD = source.fShapeSPD;
+    this->fdx = source.fdx;
+    this->fdy = source.fdy;
+    this->fdz = source.fdz;
+    if(this->fBinSizeX) delete[] this->fBinSizeX; 
+    if(this->fBinSizeX) delete[] this->fBinSizeZ;
+    this->fNbinx = source.fNbinx;
+    this->fBinSizeX = new Float_t[this->fNbinx];
+    this->fNbinz = source.fNbinz;
+    this->fBinSizeZ = new Float_t[this->fNbinz];
+    for(Int_t i=0;i<fNbinx;i++) this->fBinSizeX[i] = source.fBinSizeX[i];
+    for(Int_t i=0;i<fNbinz;i++) this->fBinSizeZ[i] = source.fBinSizeZ[i];
+    return *this;
+}
+//______________________________________________________________________
+AliITSgeomSPD425::~AliITSgeomSPD425(){
+  // destructor
+    delete[] fBinSizeX;
+    delete[] fBinSizeZ;
+    delete   fShapeSPD;
+}
+//______________________________________________________________________
+void AliITSgeomSPD425::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
+                                        Int_t nz,Float_t *bz){
+////////////////////////////////////////////////////////////////////////
+//    default constructor, for a User modified TDR based geometry.
+////////////////////////////////////////////////////////////////////////
+    fdx = 0.0;
+    fdy =  dy;
+    fdz = 0.0;
+    fNbinx = nx; // new number of bins in x.
+    fNbinz = nz; // new number of bins in z.
+
+    if(fBinSizeX!=0) delete[] fBinSizeX;
+    fBinSizeX = new Float_t[fNbinx]; // array of bin sizes along x.
+    for(Int_t i=0;i<fNbinx;i++) fBinSizeX[i] = bx[i]; // new x bin size.
+    if(fBinSizeZ!=0) delete[] fBinSizeZ;
+    fBinSizeZ = new Float_t[fNbinz]; // array of bin sizes along z.
+    for(Int_t i=0;i<fNbinz;i++) fBinSizeZ[i] = bz[i]; // new z bin size.
+
+    // correct detector size for bin size.
+    for(Int_t i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
+    fdx *= 0.5;
+    for(Int_t i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
+    fdz *= 0.5;
+
+    fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
+			  fdx,fdy,fdz);
+}
+//----------------------------------------------------------------------
+void AliITSgeomSPD425::Streamer(TBuffer &R__b){
+    // Streamer function for the class AliITSgeomSPD425.
+    UInt_t R__s, R__c;
+
+    if(R__b.IsReading()){
+	Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+	if(R__v==1){
+	    TObject::Streamer(R__b);
+	    fShapeSPD->Streamer(R__b);
+	    R__b >> fdx;
+	    R__b >> fdy;
+	    R__b >> fdz;
+	}else if (R__v==2){
+	    AliITSgeomSPD::Streamer(R__b);
+	    fShapeSPD->Streamer(R__b);
+	    R__b >> fdx;
+	    R__b >> fdy;
+	    R__b >> fdz;
+	    R__b >> fNbinx;
+	    if(fBinSizeX!=0) delete[] fBinSizeX;
+	    fBinSizeX = new Float_t[fNbinx];
+	    for(Int_t i=0;i<fNbinx;i++) R__b >> fBinSizeX[i];
+	    R__b >> fNbinz;
+	    if(fBinSizeZ!=0) delete[] fBinSizeZ;
+	    fBinSizeZ = new Float_t[fNbinz];
+	    for(Int_t i=0;i<fNbinz;i++) R__b >> fBinSizeZ[i];
+	    R__b.CheckByteCount(R__s, R__c, AliITSgeomSPD425::IsA());
+	} // end if R__v==1
+    } else { // IsWriting.
+	R__c = R__b.WriteVersion(AliITSgeomSPD425::IsA(), kTRUE);
+	AliITSgeomSPD::Streamer(R__b);
+	fShapeSPD->Streamer(R__b);
+	R__b << fdx;
+	R__b << fdy;
+	R__b << fdz;
+	R__b << fNbinx;
+	for(Int_t i=0;i<fNbinx;i++) R__b << fBinSizeX[i];
+	R__b << fNbinz;
+	for(Int_t i=0;i<fNbinz;i++) R__b << fBinSizeZ[i];
+	R__b.SetByteCount(R__c, kTRUE);
+    } // end if R__b.IsReading()
+}
+//----------------------------------------------------------------------
