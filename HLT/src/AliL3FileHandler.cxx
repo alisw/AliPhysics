@@ -605,6 +605,7 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
       data[n].fZ = c->GetZ();
       data[n].fY = c->GetY();
       data[n].fX = fParam->GetPadRowRadii(sector,row);
+      data[n].fCharge = (UInt_t)c->GetQ();
       data[n].fID = n+((fSlice&0x7f)<<25)+((fPatch&0x7)<<22);//uli
       data[n].fPadRow = lrow;
       data[n].fXYErr = sqrt(c->GetSigmaY2());
