@@ -101,7 +101,7 @@ Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const{
     // from the same enterring Particle 
     Bool_t rv = kFALSE;
 
-    if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetIparent()) )
+    if ( (fId == rValue.GetId()) && ( fIparent == rValue.GetIparent()) )
 	rv = kTRUE;
 
     return rv;
