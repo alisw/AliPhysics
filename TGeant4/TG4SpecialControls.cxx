@@ -19,8 +19,8 @@
 TG4SpecialControls::TG4SpecialControls(const G4String& processName)
   : G4VProcess(processName),
     fSwitchControls(kUnswitch),
-    fLastTrackID(0)
-{
+    fLastTrackID(0) {
+//    
    verboseLevel = 1;
    if (verboseLevel>0) {
      G4cout << GetProcessName() << " is created "<< G4endl;
