@@ -82,7 +82,6 @@ void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
    }
   
   fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
   gAlice = fRunLoader->GetAliRun();
   
   if (gAlice)
@@ -95,7 +94,6 @@ void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
       printf("<AliPMDdigitizer::Open> ");
       printf("Could not find AliRun object.\n");
     }
-  fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
   if (fPMDLoader == 0x0)
     {
@@ -201,7 +199,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
     } // modules
 
   ResetCellADC();
-  
+  fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
   fPMDLoader->WriteRecPoints("OVERWRITE");
 
   //   delete the pointers
@@ -256,11 +254,10 @@ void AliPMDClusterFinder::UnLoad(Option_t *option)
   const char *cR = strstr(option,"R");
 
   fRunLoader->UnloadgAlice();
-  fRunLoader->UnloadHeader();
-  fRunLoader->UnloadKinematics();
 
   if (cR)
     {
       fPMDLoader->UnloadDigits();
+      fPMDLoader->UnloadRecPoints();
     }
 }

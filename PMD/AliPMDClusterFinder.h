@@ -49,7 +49,6 @@ class AliPMDClusterFinder
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
-  AliDetector  *fPMD;       // Pointers to Alice detectors & Hits containers
   AliLoader    *fPMDLoader; // Pointer to specific detector loader
 
   TTree        *fTreeD;     // Digits tree
@@ -67,7 +66,7 @@ class AliPMDClusterFinder
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,2) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,3) // To run PMD clustering
 };
 #endif
 
