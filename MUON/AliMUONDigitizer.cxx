@@ -424,7 +424,7 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 	}
 
 
-	fMUONData = new AliMUONData(muonloader,"MUON","MUON");
+	if (fMUONData == NULL) fMUONData = new AliMUONData(muonloader,"MUON","MUON");
 	if (fMUONData == NULL)
 	{
 		Error("FetchGlobalPointers", "Could not find AliMUONData object in runloader 0x%X.", (void*)runloader);
