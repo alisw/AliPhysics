@@ -3,8 +3,8 @@
 //
 // Special process that applies G3 process controls.
 
-#ifndef TG4_SPECIAL_FLAGS_H
-#define TG4_SPECIAL_FLAGS_H
+#ifndef TG4_SPECIAL_CONTROLS_H
+#define TG4_SPECIAL_CONTROLS_H
 
 #include "TG4Globals.h"
 
@@ -65,5 +65,5 @@ class TG4SpecialControls : public G4VProcess
                                          //the processes activation   
 };
 
-#endif //TG4_SPECIAL_FLAGS_H
+#endif //TG4_SPECIAL_CONTROLS_H
 
