@@ -26,6 +26,18 @@
 //   rec.Run();                                                              //
 //                                                                           //
 // The Run method returns kTRUE in case of successful execution.             //
+//                                                                           //
+// If the input to the reconstruction are not simulated digits but raw data, //
+// this can be specified by an argument of the Run method or by the method   //
+//                                                                           //
+//   rec.SetInput("...");                                                    //
+//                                                                           //
+// The input formats and the corresponding argument are:                     //
+// - DDL raw data files: directory name, ends with "/"                       //
+// - raw data root file: root file name, extension ".root"                   //
+// - raw data DATE file: DATE file name, any other non-empty string          //
+// - MC root files     : empty string, default                               //
+//                                                                           //
 // The name of the galice file can be changed from the default               //
 // "galice.root" by passing it as argument to the AliReconstruction          //
 // constructor or by                                                         //
@@ -41,6 +53,10 @@
 // detectors separated by a space. The special string "ALL" selects all      //
 // available detectors. This is the default.                                 //
 //                                                                           //
+// The reconstruction of the primary vertex position can be switched off by  //
+//                                                                           //
+//   rec.SetRunVertexFinder(kFALSE);                                         //
+//                                                                           //
 // The tracking in ITS, TPC and TRD and the creation of ESD tracks can be    //
 // switched off by                                                           //
 //                                                                           //
@@ -52,8 +68,8 @@
 //                                                                           //
 // Again, the string specifies the list of detectors. The default is "ALL".  //
 //                                                                           //
-// The reconstruction requires digits as input. For the creation of digits   //
-// have a look at the class AliSimulation.                                   //
+// The reconstruction requires digits or raw data as input. For the creation //
+// of digits and raw data have a look at the class AliSimulation.            //
 //                                                                           //
 // For debug purposes the method SetCheckPointLevel can be used. If the      //
 // argument is greater than 0, files with ESD events will be written after   //
