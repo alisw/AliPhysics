@@ -15,6 +15,20 @@
 
 /*
 $Log$
+Revision 1.15  2000/02/23 16:25:21  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
+Revision 1.14.4.3  2000/03/04 23:46:38  nilsen
+Fixed up the comments/documentation.
+
+Revision 1.14.4.2  2000/03/02 21:53:02  nilsen
+To make it compatable with the changes in AliRun/AliModule.
+
+Revision 1.14.4.1  2000/01/12 19:03:33  nilsen
+This is the version of the files after the merging done in December 1999.
+See the ReadMe110100.txt file for details
+
 Revision 1.14  1999/10/22 08:16:49  fca
 Correct destructors, thanks to I.Hrivnacova
 
@@ -30,15 +44,19 @@ Introduction of the Copyright and cvs Log
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Inner Traking System version 5                                           //
-//  This class contains the base procedures for the Inner Tracking System    //
-//                                                                           //
+//
+//  Inner Traking System version 5
+//  This class contains the base procedures for the Inner Tracking System
+//
 // Authors: R. Barbera, B. S. Nilsen.
 // version 5.
 // Created September 17 1999.
-//                                                                           //
+//
 ///////////////////////////////////////////////////////////////////////////////
+
+// See AliITSv5::StepManager().
+#define ALIITSPRINTGEOM 0 // default. don't print out gemetry information
+//#define ALIITSPRINTGEOM 1 // print out geometry information
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +64,9 @@ Introduction of the Copyright and cvs Log
 
 #include "AliRun.h"
 #include "TSystem.h"
+#if ALIITSPRINTGEOM==1
+#include "../TGeant3/TGeant3.h"
+#endif
 #include "AliITShit.h"
 #include "AliITS.h"
 #include "AliITSv5.h"
@@ -55,9 +76,9 @@ ClassImp(AliITSv5)
  
 //_____________________________________________________________________________
 AliITSv5::AliITSv5() {
-    //
-    // Standard constructor for the ITS
-    //
+////////////////////////////////////////////////////////////////////////
+//    Standard default constructor for the ITS version 5.
+////////////////////////////////////////////////////////////////////////
     fId5N = 6;
     fId5Name = new char*[fId5N];
     fId5Name[0] = "ITS1";
@@ -69,16 +90,16 @@ AliITSv5::AliITSv5() {
 }
 //_____________________________________________________________________________
 AliITSv5::~AliITSv5() {
-    //
-    // Standard destructor for the ITS
-    //
+////////////////////////////////////////////////////////////////////////
+//    Standard destructor for the ITS version 5.
+////////////////////////////////////////////////////////////////////////
   delete [] fId5Name;
 }
 //_____________________________________________________________________________
 AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
-    //
-    // Standard constructor for the ITS
-    //
+////////////////////////////////////////////////////////////////////////
+//    Standard constructor for the ITS version 5.
+////////////////////////////////////////////////////////////////////////
     fId5N = 6;
     fId5Name = new char*[fId5N];
     fId5Name[0] = "ITS1";
@@ -90,31 +111,25 @@ AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
 
     fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5.tme";
     fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5.euc";
-}
-
- 
+} 
 //_____________________________________________________________________________
 void AliITSv5::CreateMaterials(){
-  //
-  // Read materials for the ITS
-  //
+////////////////////////////////////////////////////////////////////////
+//     Read a file containing the materials for the ITS version 5.
+////////////////////////////////////////////////////////////////////////
     char *filtmp;
-//
+
   filtmp = gSystem->ExpandPathName(fEuclidMaterial.Data());
-//  FILE *file = fopen(fEuclidMaterial.Data(),"r");
+
   FILE *file = fopen(filtmp,"r");
   if(file) {
     fclose(file);
-//    ReadEuclidMedia(fEuclidMaterial.Data());
     ReadEuclidMedia(filtmp);
   } else {
-    Error("CreateMaterials"," THE MEDIA FILE %s DOES NOT EXIST !",
-//	  fEuclidMaterial.Data());
-	  filtmp);
+    Error("CreateMaterials"," THE MEDIA FILE %s DOES NOT EXIST !",filtmp);
     exit(1);
   } // end if(file)
 }
-
 //_____________________________________________________________________________
 void AliITSv5::CreateGeometry(){
 //////////////////////////////////////////////////////////////////////
@@ -273,14 +288,14 @@ void AliITSv5::CreateGeometry(){
 <pre>
  */
 //End_Html
-////////////////////////////////////////////////////////////////////////
-// Read geometry for the ITS
 //
+//    Read a file containing the geometry for the ITS version 5.
+////////////////////////////////////////////////////////////////////////
 
     Int_t size;
     char topvol[5];
     char *filtmp;
-//
+
   filtmp = gSystem->ExpandPathName(fEuclidGeometry.Data());
   FILE *file = fopen(filtmp,"r");
   delete [] filtmp;
@@ -295,17 +310,20 @@ void AliITSv5::CreateGeometry(){
     exit(1);
   } // end if(file)
   //
-  //---Place the ITS ghost volume ITSV in its mother volume (ALIC) and make it
-  //     invisible
+  // Place the ITS ghost volume ITSV in its mother volume (ALIC) and make it
+  // invisible
   //
   gMC->Gspos("ITSV",1,"ALIC",0,0,0,0,"ONLY");
   //
-  //---Outputs the geometry tree in the EUCLID/CAD format
+  // Outputs the geometry tree in the EUCLID/CAD format if requested to do so
   
     if (fEuclidOut) {
       gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
     } // end if (fEuclidOut)
 
+    // read in the file containing the transformations for the active
+    // volumes for the ITS version 5. This is expected to be in a file
+    // ending in .det. This geometry is kept in the AliITSgeom class.
     filtmp = gSystem->ExpandPathName(fEuclidGeometry.Data());
     size = strlen(filtmp);
     if(size>4){
@@ -325,12 +343,11 @@ void AliITSv5::CreateGeometry(){
     }// end if(size>4)
     printf("finished with euclid geometrys\n");
 }
-
 //_____________________________________________________________________________
 void AliITSv5::Init(){
-    //
-    // Initialise the ITS after it has been created
-    //
+////////////////////////////////////////////////////////////////////////
+//     Initialise the ITS after it has been created.
+////////////////////////////////////////////////////////////////////////
     Int_t i,j,l;
 
     fIdN    = fId5N;
@@ -345,18 +362,36 @@ void AliITSv5::Init(){
 
     AliITS::Init();
 } 
- 
 //_____________________________________________________________________________
 void AliITSv5::StepManager(){
-  //
-  // Called for every step in the ITS
-  //
+////////////////////////////////////////////////////////////////////////
+//    Called for every step in the ITS, then calles the AliITShit class
+// creator with the information to be recoreded about that hit.
+//     The value of the macro ALIITSPRINTGEOM if set to 1 will allow the
+// printing of information to a file which can be used to create a .det
+// file read in by the routine CreateGeometry(). If set to 0 or any other
+// value except 1, the default behavior, then no such file is created nor
+// it the extra variables and the like used in the printing allocated.
+////////////////////////////////////////////////////////////////////////
   Int_t          copy, id;
   Int_t          copy1,copy2;
   Float_t        hits[8];
   Int_t          vol[4];
   TLorentzVector position, momentum;
   TClonesArray   &lhits = *fHits;
+#if ALIITSPRINTGEOM==1
+  FILE          *fp;
+  Int_t         i;
+  Float_t       xl[3],xt[3],angl[6];
+//  Float_t       par[20],att[20];
+  Float_t      mat[9];
+  static Bool_t first=kTRUE,printit[6][50][50];
+  if(first){ for(copy1=0;copy1<6;copy1++)for(copy2=0;copy2<50;copy2++)
+      for(id=0;id<50;id++) printit[copy1][copy2][id] = kTRUE;
+  first = kFALSE;
+  }
+  // end if first
+#endif
   //
   // Track status
   vol[3] = 0;
@@ -440,20 +475,72 @@ void AliITSv5::StepManager(){
   hits[7]=gMC->TrackTime();
   // Fill hit structure with this new hit.
   new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+#if ALIITSPRINTGEOM==1
+  if(printit[vol[0]][vol[2]][vol[1]]){
+      printit[vol[0]][vol[2]][vol[1]] = kFALSE;
+      xl[0] = xl[1] = xl[2] = 0.0;
+      gMC->Gdtom(xl,xt,1);
+      for(i=0;i<9;i++) mat[i] = 0.0;
+      mat[0] = mat[4] = mat[8] = 1.0;  // default with identity matrix
+      xl[0] = 1.0;
+      xl[1] = xl[2] =0.0;
+      gMC->Gdtom(xl,&(mat[0]),2);
+      xl[1] = 1.0;
+      xl[0] = xl[2] =0.0;
+      gMC->Gdtom(xl,&(mat[3]),2);
+      xl[2] = 1.0;
+      xl[1] = xl[0] =0.0;
+      gMC->Gdtom(xl,&(mat[6]),2);
+
+      angl[0] = TMath::ACos(mat[2]);
+      if(mat[2]==1.0) angl[0] = 0.0;
+      angl[1] = TMath::ATan2(mat[1],mat[0]);
+      if(angl[1]<0.0) angl[1] += 2.0*TMath::Pi();
+
+      angl[2] = TMath::ACos(mat[5]);
+      if(mat[5]==1.0) angl[2] = 0.0;
+      angl[3] = TMath::ATan2(mat[4],mat[3]);
+      if(angl[3]<0.0) angl[3] += 2.0*TMath::Pi();
+
+      angl[4] = TMath::ACos(mat[8]);
+      if(mat[8]==1.0) angl[4] = 0.0;
+      angl[5] = TMath::ATan2(mat[7],mat[6]);
+      if(angl[5]<0.0) angl[5] += 2.0*TMath::Pi();
+
+      for(i=0;i<6;i++) angl[i] *= 180.0/TMath::Pi(); // degrees
+      fp = fopen("ITSgeometry_v5.det","a");
+      fprintf(fp,"%2d %2d %2d %9e %9e %9e %9e %9e %9e %9e %9e %9e ",
+	      vol[0],vol[2],vol[1], // layer ladder detector
+	      xt[0],xt[1],xt[2],    // Translation vector
+	      angl[0],angl[1],angl[2],angl[3],angl[4],angl[5] // Geant rotaion
+                                                           // angles (degrees)
+	      );
+      fprintf(fp,"%9e %9e %9e %9e %9e %9e %9e %9e %9e",
+	     mat[0],mat[1],mat[2],mat[3],mat[4],mat[5],mat[6],mat[7],mat[8]
+	  );  // Adding the rotation matrix.
+      fprintf(fp,"\n");
+      fclose(fp);
+  } // end if printit[layer][ladder][detector]
+#endif
   return;
 }
 //____________________________________________________________________________
-void AliITSv5::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliITSv5.
-
+void AliITSv5::Streamer(TBuffer &R__b){
+////////////////////////////////////////////////////////////////////////
+//    A dummy Streamer function for this class AliITSv5. By default it
+// only streams the AliITS class as it is required. Since this class
+// dosen't contain any "real" data to be saved, it doesn't.
+////////////////////////////////////////////////////////////////////////
    if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITS::Streamer(R__b);
-      // This information does not need to be read. It is "hard wired"
-      // into this class via its creators.
-      //R__b >> fId5N;
-      //R__b.ReadArray(fId5Name);
+      Version_t R__v = R__b.ReadVersion(); 
+      if (R__v==1) {
+	  AliITS::Streamer(R__b);
+	  // This information does not need to be read. It is "hard wired"
+	  // into this class via its creators.
+	  //R__b >> fId5N;
+	  //R__b.ReadArray(fId5Name);
+      }else{
+      } // end if R__v==1
    } else {
       R__b.WriteVersion(AliITSv5::IsA());
       AliITS::Streamer(R__b);
@@ -461,6 +548,6 @@ void AliITSv5::Streamer(TBuffer &R__b)
       // into this class via its creators.
       //R__b << fId5N;
       //R__b.WriteArray(fId5Name, __COUNTER__);
-   }
+   } // end if R__b.IsReading()
 }
 
