@@ -1,6 +1,4 @@
-#include "iostream.h"
-
-void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=9, Int_t ibg=1, Int_t bgr=10) 
+void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=1, Int_t bgr=10) 
 {
 // Dynamically link some shared libs
 
@@ -27,7 +25,7 @@ void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=9, Int_t ibg=1, Int_t bgr=10)
 // creation
        AliMUONMerger* merger = new AliMUONMerger();
 // configuration
-       merger->SetMode(1);
+       merger->SetMode(0);
        merger->SetSignalEventNumber(0);
        merger->SetBackgroundEventNumber(0);
        merger->SetBackgroundFileName("bg.root");
@@ -36,7 +34,24 @@ void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=9, Int_t ibg=1, Int_t bgr=10)
        pMUON->SetMerger(merger);
    }
 // Action !
-       gAlice->SDigits2Digits();
+//
+//   Loop over events              
+//
+    for (int nev=evNumber1; nev<= evNumber2; nev++) {
+	Int_t nparticles = gAlice->GetEvent(nev);
+	cout << "nev         " << nev <<endl;
+	cout << "nparticles  " << nparticles <<endl;
+	if (nev < evNumber1) continue;
+	if (nparticles <= 0) return;
+	gAlice->SDigits2Digits();
+
+	char hname[30];
+	sprintf(hname,"TreeD%d",nev);
+	gAlice->TreeD()->Write(hname);
+	// reset tree
+	gAlice->TreeD()->Reset();
+
+    }   // event loop 
 }
 
 
