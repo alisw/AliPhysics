@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/10/02 15:48:19  jbarbosa
+  Fixed coding conventions.
+
   Revision 1.1  2000/06/12 15:31:54  jbarbosa
   Cleaned up version.
 
@@ -24,13 +27,11 @@
 
 ClassImp(AliRICHSegmentationV0)
 
-void AliRICHSegmentationV0::Init(AliRICHChamber* Chamber)
+void AliRICHSegmentationV0::Init(Int_t id)
 {
 
 // Initialisation of chambers
 
-    //fNpx=(Int_t) (Chamber->ROuter()/fDpx+1);
-    //fNpy=(Int_t) (Chamber->ROuter()/fDpy+1);
   fNpx=160;
   fNpy=144;
   //fNpx=80;
@@ -39,7 +40,7 @@ void AliRICHSegmentationV0::Init(AliRICHChamber* Chamber)
 }
 
 
-Float_t AliRICHSegmentationV0::GetAnod(Float_t xhit)
+Float_t AliRICHSegmentationV0::GetAnod(Float_t xhit) const
 {
 
 // Get anod wire closer to hit
@@ -56,7 +57,7 @@ void AliRICHSegmentationV0::SetPadSize(Float_t p1, Float_t p2)
     fDpx=p1;
     fDpy=p2;
 }
-void AliRICHSegmentationV0::GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+void AliRICHSegmentationV0::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 //  returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
@@ -71,7 +72,7 @@ void AliRICHSegmentationV0::GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy
   if (ix < -fNpx) ix=-fNpx;
 }
 void AliRICHSegmentationV0::
-GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
 //  returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
@@ -96,7 +97,7 @@ SetPad(Int_t ix, Int_t iy)
 
 // Move to pad ix, iy
 
-    GetPadCxy(ix,iy,fX,fY);
+    GetPadC(ix,iy,fX,fY);
 }
 
 
@@ -118,13 +119,13 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     Float_t y02=yhit + dy;
     //
     // find the pads over which the charge distributes
-    GetPadIxy(x01,y01,fIxmin,fIymin);
-    GetPadIxy(x02,y02,fIxmax,fIymax);    
+    GetPadI(x01,y01,fIxmin,fIymin);
+    GetPadI(x02,y02,fIxmax,fIymax);    
     // 
     // Set current pad to lower left corner
     fIx=fIxmin;
     fIy=fIymin;
-    GetPadCxy(fIx,fIy,fX,fY);
+    GetPadC(fIx,fIy,fX,fY);
     
     //if (fSector==2)
       //printf("fIx: %d, fIy: %d fX: %f, fY: %f\n",fIx,fIy,fX,fY);
@@ -146,7 +147,7 @@ void AliRICHSegmentationV0::NextPad()
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
     }
-    GetPadCxy(fIx,fIy,fX,fY);
+    GetPadC(fIx,fIy,fX,fY);
 }
 
 Int_t AliRICHSegmentationV0::MorePads()
@@ -173,7 +174,7 @@ void AliRICHSegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t)
 //  Initialises pad and wire position during stepping
     fXt =x;
     fYt =y;
-    GetPadIxy(x,y,fIxt,fIyt);
+    GetPadI(x,y,fIxt,fIyt);
     fIwt= (x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1 ;
 }
 
@@ -183,7 +184,7 @@ Int_t AliRICHSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t)
 //  Signal will be generated if particle crosses pad boundary or
 //  boundary between two wires. 
     Int_t ixt, iyt;
-    GetPadIxy(x,y,ixt,iyt);
+    GetPadI(x,y,ixt,iyt);
     Int_t iwt=(x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1;
     
     if ((ixt != fIxt) || (iyt !=fIyt) || (iwt != fIwt)) {
@@ -249,12 +250,12 @@ Float_t AliRICHSegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X,
 // labelled by its Channel numbers and a coordinate
 
   Float_t x,y;
-  GetPadCxy(iX,iY,x,y);
+  GetPadC(iX,iY,x,y);
   return (x-X)*(x-X) + (y-Y)*(y-Y);
 }
 
 
-void  AliRICHSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
+void  AliRICHSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const
 {
 
 // Test
@@ -264,7 +265,7 @@ void  AliRICHSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
     y[0]=x[0];
 }
 
-void AliRICHSegmentationV0::Draw()
+void AliRICHSegmentationV0::Draw(const char* opt) const
 {
 
 // Dummy draw routine

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2000/10/02 15:44:37  jbarbosa
+  Fixed forward declarations.
+
   Revision 1.5  2000/07/13 16:19:45  fca
   Mainly coding conventions + some small bug fixes
 
@@ -41,7 +44,7 @@
 #include <TObjArray.h>
 #include <TRotMatrix.h>
 #include <AliRICHTresholdMap.h>
-#include <AliRICHSegmentation.h>
+#include <AliSegmentation.h>
 #include <AliRICHGeometry.h>
 #include <AliRICHResponse.h>
 
@@ -82,10 +85,10 @@ void   AliRICHChamber::ResponseModel(AliRICHResponse* thisResponse)
     fResponse=thisResponse;
 }
 
-void AliRICHChamber::Init()
+void AliRICHChamber::Init(Int_t id)
 {
 // Initialise chambers
-    fSegmentation->Init(this);
+    fSegmentation->Init(id);
 }
 
 void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
@@ -183,7 +186,7 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
     nnew=0;
     for (Int_t i=1; i<=fnsec; i++) {
 	qcheck=0;
-	for (fSegmentation->FirstPad(xhit, yhit, dx, dy); 
+	for (fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); 
 	     fSegmentation->MorePads(); 
 	     fSegmentation->NextPad()) 
 	{

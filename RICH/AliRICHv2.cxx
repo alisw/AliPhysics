@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/07/10 15:28:39  fca
+  Correction of the inheritance scheme
+
   Revision 1.1  2000/06/30 16:40:03  dibari
   New configurale version.
 
@@ -110,7 +113,7 @@ void AliRICHv2::Init()
   printf("*                                                                               *\n");
 
   
-  AliRICHSegmentation*  segmentation;
+  AliSegmentation*  segmentation;
   AliRICHGeometry*  geometry;
   AliRICHResponse*  response;
 
@@ -120,7 +123,7 @@ void AliRICHv2::Init()
     //
     for (Int_t i=1; i<kNCH; i++) {
 	//printf ("i:%d",i);
-	( (AliRICHChamber*) (*fChambers)[i])->Init();  
+	( (AliRICHChamber*) (*fChambers)[i])->Init(i);  
     }  
     
     //

@@ -14,7 +14,7 @@
 #include <TMath.h>
 
 #include "AliRICH.h"
-#include "AliRICHHitMap.h"
+#include "AliHitMap.h"
 
 
 class AliRICHPatRec;

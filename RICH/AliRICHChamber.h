@@ -10,7 +10,7 @@
 #include <TRotMatrix.h>
 
 #include "AliRICHTresholdMap.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRICHGeometry.h"
 #include "AliRICHResponse.h"
 
@@ -35,7 +35,7 @@ class AliRICHChamber : public TObject
     void    SetGid(Int_t id) {fGid=id;}
 //  
 // Initialisation and z-Position
-    void    Init();
+    void    Init(Int_t id);
     // Set inner radius of sensitive volume 
     void SetRInner(Float_t rmin) {frMin=rmin;}
 // Set outer radius of sensitive volum  
@@ -83,10 +83,10 @@ class AliRICHChamber : public TObject
     
     //  
 // Configure segmentation model
-    void    SegmentationModel(AliRICHSegmentation* thisSegmentation) {
+    void    SetSegmentationModel(AliSegmentation* thisSegmentation) {
 	fSegmentation = thisSegmentation;
     }
-    void    ReconstructionModel(AliRICHClusterFinder *thisReconstruction) {
+    void    SetReconstructionModel(AliRICHClusterFinder *thisReconstruction) {
 	fReconstruction = thisReconstruction;
     }
 
@@ -95,7 +95,7 @@ class AliRICHChamber : public TObject
     AliRICHResponse* GetResponseModel();
 //  
 //  Get reference to segmentation model
-    AliRICHSegmentation*  GetSegmentationModel() {
+    AliSegmentation*  GetSegmentationModel() {
 	return fSegmentation;
     }
 
@@ -105,7 +105,7 @@ class AliRICHChamber : public TObject
     }
     
 
-    AliRICHSegmentation*  GetSegmentationModel(Int_t i) {
+    AliSegmentation*  GetSegmentationModel(Int_t i) {
 	return fSegmentation;
     }
     
@@ -249,7 +249,7 @@ class AliRICHChamber : public TObject
     TRotMatrix *fChamberMatrix;          //Rotation matrices for each chamber
     Float_t fChamberTrans[3];            //Translaction vectors for each chamber
 
-    AliRICHSegmentation           *fSegmentation;          //Segmentation model for each chamber
+    AliSegmentation               *fSegmentation;          //Segmentation model for each chamber
     AliRICHResponse               *fResponse;              //Response model for each chamber
     AliRICHGeometry               *fGeometry;              //Geometry model for each chamber
     AliRICHClusterFinder          *fReconstruction;        //Reconstruction model for each chamber

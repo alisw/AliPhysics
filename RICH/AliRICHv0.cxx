@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.15  2000/10/02 15:54:55  jbarbosa
+  New default version (15 mm freon).
+
   Revision 1.14  2000/07/10 15:28:39  fca
   Correction of the inheritance scheme
 
@@ -62,7 +65,7 @@
 #include <TRandom.h> 
 
 #include "AliRICHv0.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRICHResponse.h"
 #include "AliRICHSegmentationV0.h"
 #include "AliRICHResponseV0.h"
@@ -164,7 +167,7 @@ void AliRICHv0::Init()
   printf("*                                                                               *\n");
 
   
-  AliRICHSegmentation*  segmentation;
+  AliSegmentation*  segmentation;
   AliRICHGeometry*  geometry;
   AliRICHResponse*  response;
 
@@ -174,7 +177,7 @@ void AliRICHv0::Init()
     //
     for (Int_t i=1; i<kNCH; i++) {
 	//printf ("i:%d",i);
-	( (AliRICHChamber*) (*fChambers)[i])->Init();  
+	( (AliRICHChamber*) (*fChambers)[i])->Init(i);  
     }  
     
     //

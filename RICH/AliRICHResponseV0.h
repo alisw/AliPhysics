@@ -9,6 +9,8 @@
 
 
 #include "AliRICHResponse.h"
+class AliSegmentation;
+
 
 class AliRICHResponseV0 : //Mathieson response
 public AliRICHResponse {
@@ -54,7 +56,7 @@ public AliRICHResponse {
     virtual Float_t IntPH(Float_t eloss);
     virtual Float_t IntPH();
     // Charge disintegration
-    virtual Float_t IntXY(AliRICHSegmentation * segmentation);
+    virtual Float_t IntXY(AliSegmentation * segmentation);
     virtual Int_t   FeedBackPhotons(Float_t *source, Float_t qtot);
 	protected:
     Float_t fChargeSlope;              // Slope of the charge distribution

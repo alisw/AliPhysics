@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/10/02 15:48:55  jbarbosa
+  Fixed coding conventions.
+
   Revision 1.1  2000/06/12 15:34:28  jbarbosa
   Cleaned up version.
 
@@ -100,7 +103,7 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
 }
 
 
-void AliRICHSegmentationV1::GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+void AliRICHSegmentationV1::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
 //  returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
@@ -163,7 +166,7 @@ void AliRICHSegmentationV1::GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy
 }
 
 void AliRICHSegmentationV1::
-GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
 //  returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
@@ -269,3 +272,9 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
   y1=fYhit-fY-fDpy/2.;
   y2=y1+fDpy;
 }
+
+
+
+
+
+

@@ -7,10 +7,10 @@
 
 /* $Id$ */
 
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 
 class AliRICHSegmentationV0 :
-public AliRICHSegmentation {
+public AliSegmentation {
  public:
     AliRICHSegmentationV0(){}
     virtual ~AliRICHSegmentationV0(){}
@@ -26,40 +26,48 @@ public AliRICHSegmentation {
     // Transform from pad (wire) to real coordinates and vice versa
     //
     // Anod wire coordinate closest to xhit
-    virtual Float_t GetAnod(Float_t xhit);
+    virtual Float_t GetAnod(Float_t xhit) const;
     // Transform from pad to real coordinates
-    virtual void    GetPadIxy(Float_t x ,Float_t y ,Int_t   &ix,Int_t   &iy);
+    virtual void    GetPadI(Float_t x, Float_t y , Int_t &ix, Int_t &iy);
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)  
+	{GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
-    virtual void    GetPadCxy(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y );
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
+	{z=0; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
-    virtual void Init(AliRICHChamber* chamber);
+    virtual void Init(Int_t id);
     //
     // Get member data
     //
     // Pad size in x
-    virtual Float_t Dpx(){return fDpx;}
+    virtual Float_t Dpx() const {return fDpx;}
     //
     // Pad size in y
-    virtual Float_t Dpy(){return fDpy;}
+    virtual Float_t Dpy() const {return fDpy;}
     // Pad size in x by Sector
-    virtual Float_t Dpx(Int_t) {return fDpx;}
+    virtual Float_t Dpx(Int_t) const {return fDpx;}
     // Pad size in y by Sector
-    virtual Float_t Dpy(Int_t) {return fDpy;}
+    virtual Float_t Dpy(Int_t) const {return fDpy;}
     // Max number of Pads in x
-    virtual Int_t   Npx(){return fNpx;}
+    virtual Int_t   Npx() const {return fNpx;}
     // Max number of Pads in y
-    virtual Int_t   Npy(){return fNpy;}
+    virtual Int_t   Npy() const {return fNpy;}
     
 
     // set pad position
     virtual void     SetPad(Int_t ix, Int_t iy);
     // set hit position
     virtual void     SetHit(Float_t xhit , Float_t yhit);
+    virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
+	{SetHit(xhit, yhit);}
     //
     // Iterate over pads
     // Initialiser
     virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);
+    virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy)
+	{FirstPad(xhit, yhit, dx, dy);}
     // Stepper
     virtual void  NextPad();
     // Condition
@@ -78,13 +86,13 @@ public AliRICHSegmentation {
     //
     // Current Pad during Integration
     // x-coordinate
-    virtual Int_t  Ix(){return fIx;}
+    virtual Int_t  Ix() {return fIx;}
     // y-coordinate
-    virtual Int_t  Iy(){return fIy;}
+    virtual Int_t  Iy() {return fIy;}
     // current sector
-    virtual Int_t  ISector(){return 1;}
+    virtual Int_t  ISector() {return 1;}
     // calculate sector from x-y coordinates
-    virtual Int_t  Sector(Float_t x, Float_t y){return 1;}
+    virtual Int_t  Sector(Int_t ix, Int_t iy) {return 1;}
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z);
@@ -94,13 +102,13 @@ public AliRICHSegmentation {
     virtual void IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     // Test points for auto calibration
-    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
+    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     // Debugging utilities
-    virtual void Draw();
+    virtual void Draw(const char* = "") const; 
     // Function for systematic corrections
     virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
     
-    virtual TF1* CorrFunc(Int_t) {return fCorr;} 
+    virtual TF1* CorrFunc(Int_t) const {return fCorr;} 
     ClassDef(AliRICHSegmentationV0,1)
 	protected:
     //

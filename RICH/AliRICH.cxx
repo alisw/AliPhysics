@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.25  2000/10/02 21:28:12  fca
+  Removal of useless dependecies via forward declarations
+
   Revision 1.24  2000/10/02 15:43:17  jbarbosa
   Fixed forward declarations.
   Fixed honeycomb density.
@@ -69,7 +72,7 @@
 #include <strings.h>
 
 #include "AliRICH.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"
 #include "AliRICHPadHit.h"
@@ -362,7 +365,7 @@ void AliRICH::CreateGeometry()
     //End_Html
 
   AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH"); 
-  AliRICHSegmentation*  segmentation;
+  AliSegmentation*  segmentation;
   AliRICHGeometry*  geometry;
   AliRICHChamber*       iChamber;
 
@@ -1313,14 +1316,14 @@ void   AliRICH::SetGeometryModel(Int_t id, AliRICHGeometry *geometry)
 }
 
 //___________________________________________
-void   AliRICH::SetSegmentationModel(Int_t id, AliRICHSegmentation *segmentation)
+void   AliRICH::SetSegmentationModel(Int_t id, AliSegmentation *segmentation)
 {
 
 //
 // Setter for the RICH segmentation model
 //
 
-    ((AliRICHChamber*) (*fChambers)[id])->SegmentationModel(segmentation);
+    ((AliRICHChamber*) (*fChambers)[id])->SetSegmentationModel(segmentation);
 }
 
 //___________________________________________
@@ -1341,7 +1344,7 @@ void   AliRICH::SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconst)
 // Setter for the RICH reconstruction model (clusters)
 //
 
-    ((AliRICHChamber*) (*fChambers)[id])->ReconstructionModel(reconst);
+    ((AliRICHChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
 }
 
 void   AliRICH::SetNsec(Int_t id, Int_t nsec)
@@ -1842,7 +1845,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 	  // Get ready the current chamber stuff
 	  //
 	  AliRICHResponse* response = iChamber->GetResponseModel();
-	  AliRICHSegmentation*  seg = iChamber->GetSegmentationModel();
+	  AliSegmentation*  seg = iChamber->GetSegmentationModel();
 	  AliRICHClusterFinder* rec = iChamber->GetReconstructionModel();
 	  if (seg) {	  
 	      rec->SetSegmentation(seg);
@@ -1883,7 +1886,7 @@ void AliRICH::Streamer(TBuffer &R__b)
 {
     // Stream an object of class AliRICH.
     AliRICHChamber       *iChamber;
-    AliRICHSegmentation  *segmentation;
+    AliSegmentation  *segmentation;
     AliRICHResponse      *response;
     TClonesArray         *digitsaddress;
     TClonesArray         *rawcladdress;
@@ -2033,7 +2036,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
     points=fopen("points.dat","w");
 
     AliRICHChamber*       iChamber;
-    AliRICHSegmentation*  segmentation;
+    AliSegmentation*  segmentation;
 
     Int_t digitse=0;
     Int_t trk[50];
@@ -2044,7 +2047,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
     Int_t digits[5]; 
     
     AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
-    AliRICHHitMap* pHitMap[10];
+    AliHitMap* pHitMap[10];
     Int_t i;
     for (i=0; i<10; i++) {pHitMap[i]=0;}
     if (addBackground ) {
@@ -2084,7 +2087,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	}
     }
     
-    AliRICHHitMap* hm;
+    AliHitMap* hm;
     Int_t countadr=0;
     Int_t counter=0;
     for (i =0; i<kNCH; i++) {
@@ -2168,9 +2171,9 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		  //
 		  //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
 		  
-		  Float_t thex, they;
+		  Float_t thex, they, thez;
 		  segmentation=iChamber->GetSegmentationModel(cathode);
-		  segmentation->GetPadCxy(ipx,ipy,thex,they);
+		  segmentation->GetPadC(ipx,ipy,thex,they,thez);
 		  new((*pAddress)[countadr++]) TVector(2);
 		  TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
 		  trinfo(0)=(Float_t)track;
@@ -2264,9 +2267,9 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		Int_t ipy      = mPad->fPadY;       // pad number on Y
 		Int_t iqpad    = mPad->fQpad;       // charge per pad
 		
-		Float_t thex, they;
+		Float_t thex, they, thez;
 		segmentation=iChamber->GetSegmentationModel(cathode);
-		segmentation->GetPadCxy(ipx,ipy,thex,they);
+		segmentation->GetPadC(ipx,ipy,thex,they,thez);
 		Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 		if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 		new((*pAddress)[countadr++]) TVector(2);

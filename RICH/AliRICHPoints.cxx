@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2000/10/02 21:28:12  fca
+  Removal of useless dependecies via forward declarations
+
   Revision 1.4  2000/10/02 15:50:43  jbarbosa
   Fixed forward declarations.
 
@@ -204,7 +207,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
    
   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
   AliRICHChamber*       iChamber;
-  AliRICHSegmentation*  segmentation;
+  AliSegmentation*      segmentation;
 
       
   AliRICHPoints *points = 0;
@@ -243,8 +246,8 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
       points->SetMarkerColor(color);
       points->SetMarkerStyle(21);
       points->SetMarkerSize(.5);
-      Float_t xpad, ypad;
-      segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY,xpad, ypad);
+      Float_t xpad, ypad, zpad;
+      segmentation->GetPadC(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
       Float_t vectorLoc[3]={xpad,6.276,ypad};
       Float_t  vectorGlob[3];
       points->SetParticle(-1);
@@ -254,7 +257,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
       points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
       
-      segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY, xpad, ypad);
+      segmentation->GetPadC(mdig->fPadX, mdig->fPadY, xpad, ypad, zpad);
       Float_t theta = iChamber->GetRotMatrix()->GetTheta();
       Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
       marker=new TMarker3DBox(vectorGlob[0],vectorGlob[1],vectorGlob[2],

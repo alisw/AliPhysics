@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2000/07/10 15:28:39  fca
+  Correction of the inheritance scheme
+
   Revision 1.5  2000/06/30 16:38:51  dibari
   Removed setters.
 
@@ -64,7 +67,7 @@
 
 #include "AliRICHv1.h"
 #include "AliRICHHit.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRICHResponse.h"
 #include "AliRICHSegmentationV0.h"
 #include "AliRICHResponseV0.h"
@@ -166,7 +169,7 @@ void AliRICHv1::Init()
   printf("*                                                                               *\n");
 
   
-  AliRICHSegmentation*  segmentation;
+  AliSegmentation*  segmentation;
   AliRICHGeometry*  geometry;
   AliRICHResponse*  response;
 
@@ -176,7 +179,7 @@ void AliRICHv1::Init()
     //
     for (Int_t i=1; i<kNCH; i++) {
 	//printf ("i:%d",i);
-	( (AliRICHChamber*) (*fChambers)[i])->Init();  
+	( (AliRICHChamber*) (*fChambers)[i])->Init(i);  
     }  
     
     //

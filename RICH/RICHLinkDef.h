@@ -15,7 +15,6 @@
 #pragma link C++ class  AliRICHRawCluster;
 #pragma link C++ class  AliRICHRecHit;
 #pragma link C++ class  AliRICHCerenkov;
-#pragma link C++ class  AliRICHSegmentation;
 #pragma link C++ class  AliRICHSegmentationV0;
 #pragma link C++ class  AliRICHSegmentationV1;
 #pragma link C++ class  AliRICHResponse;
@@ -26,7 +25,6 @@
 #pragma link C++ class  AliRICHDisplay;
 #pragma link C++ class  AliRICHEllipse;
 #pragma link C++ class  AliRICHDetect;
-#pragma link C++ class  AliRICHHitMap;
 #pragma link C++ class  AliRICHHitMapA1;
 #pragma link C++ class  AliRICHTresholdMap;
 #pragma link C++ class  AliRICHClusterFinder-;

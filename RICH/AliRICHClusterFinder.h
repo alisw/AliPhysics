@@ -15,7 +15,7 @@ class AliRICHHitMapA1;
 #include "TF1.h"
 #include "TObject.h"
 class  TClonesArray;
-class AliRICHSegmentation;
+class AliSegmentation;
 class AliRICHRawCluster;
 class AliRICHResponse;
 class TClonesArray;
@@ -25,13 +25,13 @@ class AliRICHClusterFinder : public TObject
 {
  public:
     AliRICHClusterFinder
-	(AliRICHSegmentation *segmentation,
+	(AliSegmentation *segmentation,
 	 AliRICHResponse *response, TClonesArray *digits, Int_t chamber);
     AliRICHClusterFinder();
     AliRICHClusterFinder(const AliRICHClusterFinder & ClusterFinder);
     virtual ~AliRICHClusterFinder();
     virtual void SetSegmentation(
-	AliRICHSegmentation *segmentation){
+	AliSegmentation *segmentation){
 	fSegmentation=segmentation;
     }
     virtual void SetResponse(AliRICHResponse *response) {
@@ -74,7 +74,7 @@ class AliRICHClusterFinder : public TObject
     ClassDef(AliRICHClusterFinder,1) //Class for clustering and reconstruction of space points
 
 protected:
-    AliRICHSegmentation*    fSegmentation;                 //Segmentation model
+    AliSegmentation*        fSegmentation;                 //Segmentation model
     AliRICHResponse*        fResponse;                     //Response model
     TClonesArray*           fRawClusters;                  //Raw clusters list
     AliRICHHitMapA1*        fHitMap;                       //Hit Map with digit positions

@@ -11,7 +11,7 @@
 // Chamber response virtual base class
 //
 #include <TObject.h>
-class AliRICHSegmentation;
+class AliSegmentation;
 
 
 class AliRICHResponse :
@@ -47,7 +47,7 @@ public TObject {
     virtual Float_t IntPH(Float_t eloss)                       =0;
     virtual Float_t IntPH()                                    =0;
     // Charge disintegration
-    virtual Float_t IntXY(AliRICHSegmentation *)                 =0;
+    virtual Float_t IntXY(AliSegmentation *)                   =0;
     virtual Int_t   FeedBackPhotons(Float_t *source, Float_t qtot) =0;
     //
     // Mathieson parameters
@@ -61,3 +61,7 @@ public TObject {
 };
 
 #endif
+
+
+
+

@@ -11,7 +11,7 @@ PACKAGE = RICH
 
 SRCS   = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx\
 	 AliRICHDisplay.cxx AliRICHPoints.cxx AliRICHGeometry.cxx\
-	 AliRICHHitMap.cxx AliRICHHitMapA1.cxx AliRICHSegmentation.cxx \
+	 AliRICHHitMapA1.cxx \
 	 AliRICHSegmentationV0.cxx AliRICHTresholdMap.cxx\
 	 AliRICHSegmentationV1.cxx AliRICHResponse.cxx AliRICHResponseV0.cxx \
 	 AliRICHClusterFinder.cxx \

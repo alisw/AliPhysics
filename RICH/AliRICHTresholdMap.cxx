@@ -19,7 +19,7 @@
 
 
 #include "AliRICHTresholdMap.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRICHDigit.h"
 
 #include <TObjArray.h>
@@ -28,7 +28,7 @@
 ClassImp(AliRICHTresholdMap)
 
 
-AliRICHTresholdMap::AliRICHTresholdMap(AliRICHSegmentation *seg)
+AliRICHTresholdMap::AliRICHTresholdMap(AliSegmentation *seg)
 {
 
 // Constructor for AliRICHTresholdMap
@@ -50,7 +50,7 @@ AliRICHTresholdMap::~AliRICHTresholdMap()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliRICHTresholdMap::Clear()
+void AliRICHTresholdMap::Clear(const char *opt = "")
 {
 
 // Clear contents of hit map
@@ -58,7 +58,7 @@ void AliRICHTresholdMap::Clear()
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }
 
-Int_t AliRICHTresholdMap::CheckedIndex(Int_t ix, Int_t iy)
+Int_t AliRICHTresholdMap::CheckedIndex(Int_t ix, Int_t iy) const
 {
 
 // Check if index is valid
@@ -106,7 +106,7 @@ void AliRICHTresholdMap::FlagHit(Int_t ix, Int_t iy)
 	-TMath::Abs(fHitMap[CheckedIndex(ix, iy)]);
 }
 
-Int_t AliRICHTresholdMap::GetHitIndex(Int_t ix, Int_t iy)
+Int_t AliRICHTresholdMap::GetHitIndex(Int_t ix, Int_t iy) const
 {
 
 // Return hit coordinates from index
@@ -117,7 +117,7 @@ Int_t AliRICHTresholdMap::GetHitIndex(Int_t ix, Int_t iy)
     
 }
 
-TObject* AliRICHTresholdMap::GetHit(Int_t ix, Int_t iy)
+TObject* AliRICHTresholdMap::GetHit(Int_t ix, Int_t iy) const
 {
 
 // Return index from coordinates

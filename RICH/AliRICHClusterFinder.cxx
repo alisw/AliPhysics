@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2000/10/02 21:28:12  fca
+  Removal of useless dependecies via forward declarations
+
   Revision 1.5  2000/10/02 15:45:58  jbarbosa
   Fixed forward declarations.
 
@@ -56,7 +59,7 @@
 #include <TMinuit.h> 
 
 //----------------------------------------------------------
-static AliRICHSegmentation* gSegmentation;
+static AliSegmentation* gSegmentation;
 static AliRICHResponse*     gResponse;
 static Int_t                gix[500];
 static Int_t                giy[500];
@@ -70,7 +73,7 @@ static Int_t                gChargeTot;
 ClassImp(AliRICHClusterFinder)
 
 AliRICHClusterFinder::AliRICHClusterFinder
-(AliRICHSegmentation *segmentation, AliRICHResponse *response, 
+(AliSegmentation *segmentation, AliRICHResponse *response, 
  TClonesArray *digits, Int_t chamber)   
 {
 
@@ -286,7 +289,7 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 
     AliRICHDigit* dig[100], *digt;
     Int_t ix[100], iy[100], q[100];
-    Float_t x[100], y[100];
+    Float_t x[100], y[100], zdum;
     Int_t i; // loops over digits
     Int_t j; // loops over local maxima
     //    Float_t xPeak[2];
@@ -302,7 +305,7 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	ix[i]= dig[i]->fPadX;
 	iy[i]= dig[i]->fPadY;
 	q[i] = dig[i]->fSignal;
-	fSegmentation->GetPadCxy(ix[i], iy[i], x[i], y[i]);
+	fSegmentation->GetPadC(ix[i], iy[i], x[i], y[i], zdum);
     }
 //
 //  Find local maxima
@@ -469,7 +472,7 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	    } else {
 		cnew.fQ=Int_t(gChargeTot*(1-qfrac));
 	    }
-	    gSegmentation->SetHit(xrec[j],yrec[j]);
+	    gSegmentation->SetHit(xrec[j],yrec[j],0);
 	    for (i=0; i<mul; i++) {
 		cnew.fIndexMap[cnew.fMultiplicity]=c->fIndexMap[i];
 		gSegmentation->SetPad(gix[i], giy[i]);
@@ -583,7 +586,7 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 //  Completes cluster information starting from list of digits
 //
     AliRICHDigit* dig;
-    Float_t x, y;
+    Float_t x, y, z;
     Int_t  ix, iy;
     Float_t frac=0;
     
@@ -640,7 +643,7 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 	}
 //
 	if (flag) {
-	    fSegmentation->GetPadCxy(ix, iy, x, y);
+	    fSegmentation->GetPadC(ix, iy, x, y, z);
 	    c->fX += q*x;
 	    c->fY += q*y;
 	    c->fQ += q;
@@ -658,8 +661,8 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 //
      x=c->fX;   
      y=c->fY;
-     fSegmentation->GetPadIxy(x, y, ix, iy);
-     fSegmentation->GetPadCxy(ix, iy, x, y);
+     fSegmentation->GetPadI(x, y, 0, ix, iy);
+     fSegmentation->GetPadC(ix, iy, x, y, z);
      Int_t isec=fSegmentation->Sector(ix,iy);
      TF1* cogCorr = fSegmentation->CorrFunc(isec-1);
      
@@ -728,8 +731,8 @@ void  AliRICHClusterFinder::FindCluster(Int_t i, Int_t j, AliRICHRawCluster &c){
     }
 
 // Prepare center of gravity calculation
-    Float_t x, y;
-    fSegmentation->GetPadCxy(i, j, x, y);
+    Float_t x, y, z;
+    fSegmentation->GetPadC(i, j, x, y, z);
     c.fX += q*x;
     c.fY += q*y;
     c.fQ += q;
@@ -801,8 +804,10 @@ void AliRICHClusterFinder::FindRawClusters()
 	Int_t ix,iy;
 	Float_t x=c.fX;   
 	Float_t y=c.fY;
-	fSegmentation->GetPadIxy(x, y, ix, iy);
-	fSegmentation->GetPadCxy(ix, iy, x, y);
+	Float_t z;
+	
+	fSegmentation->GetPadI(x, y, 0, ix, iy);
+	fSegmentation->GetPadC(ix, iy, x, y, z);
 	Int_t isec=fSegmentation->Sector(ix,iy);
 	TF1* cogCorr=fSegmentation->CorrFunc(isec-1);
 	if (cogCorr) {
@@ -860,6 +865,8 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 
     static Int_t count=0;
     char canvasname[3];
+    Float_t z;
+    
     count++;
     sprintf(canvasname,"c%d",count);
 
@@ -867,11 +874,11 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
     Float_t xg[kNs], yg[kNs], xrg[kNs], yrg[kNs];
     Float_t xsig[kNs], ysig[kNs];
    
-    AliRICHSegmentation *segmentation=fSegmentation;
+    AliSegmentation *segmentation=fSegmentation;
 
     Int_t ix,iy;
-    segmentation->GetPadIxy(x,y,ix,iy);   
-    segmentation->GetPadCxy(ix,iy,x,y);   
+    segmentation->GetPadI(x,y,0,ix,iy);   
+    segmentation->GetPadC(ix,iy,x,y,z);   
     Int_t isec=segmentation->Sector(ix,iy);
 // Pad Limits    
     Float_t xmin = x-segmentation->Dpx(isec)/2;
@@ -899,7 +906,7 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 	Float_t qcheck=0;
 	segmentation->SigGenInit(x, yscan, 0);
 	
-	for (segmentation->FirstPad(x, yscan, dxI, dyI); 
+	for (segmentation->FirstPad(x, yscan,0, dxI, dyI); 
 	     segmentation->MorePads(); 
 	     segmentation->NextPad()) 
 	{
@@ -911,8 +918,8 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 		qcheck+=qp;
 		Int_t ixs=segmentation->Ix();
 		Int_t iys=segmentation->Iy();
-		Float_t xs,ys;
-		segmentation->GetPadCxy(ixs,iys,xs,ys);
+		Float_t xs,ys,zs;
+		segmentation->GetPadC(ixs,iys,xs,ys,zs);
 		sum+=qp*ys;
 	    }
 	} // Pad loop
@@ -935,7 +942,7 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 	Float_t qcheck=0;
 	segmentation->SigGenInit(xscan, y, 0);
 	
-	for (segmentation->FirstPad(xscan, y, dxI, dyI); 
+	for (segmentation->FirstPad(xscan, y, 0, dxI, dyI); 
 	     segmentation->MorePads(); 
 	     segmentation->NextPad()) 
 	{
@@ -947,8 +954,8 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 		qcheck+=qp;
 		Int_t ixs=segmentation->Ix();
 		Int_t iys=segmentation->Iy();
-		Float_t xs,ys;
-		segmentation->GetPadCxy(ixs,iys,xs,ys);
+		Float_t xs,ys,zs;
+		segmentation->GetPadC(ixs,iys,xs,ys,zs);
 		sum+=qp*xs;
 	    }
 	} // Pad loop
@@ -1079,11 +1086,11 @@ Float_t DiscrCharge(Int_t i,Double_t *par)
     }
     gSegmentation->SetPad(gix[i], giy[i]);
 //  First Cluster
-    gSegmentation->SetHit(par[0],par[1]);
+    gSegmentation->SetHit(par[0],par[1],0);
     Float_t q1=gResponse->IntXY(gSegmentation);
     
 //  Second Cluster
-    gSegmentation->SetHit(par[2],par[3]);
+    gSegmentation->SetHit(par[2],par[3],0);
     Float_t q2=gResponse->IntXY(gSegmentation);
     
     Float_t value = qtot*(par[4]*q1+(1.-par[4])*q2);

@@ -9,33 +9,33 @@
 $Id$ 
 */
 
-#include "AliRICHHitMap.h"
+#include "AliHitMap.h"
 
 class  TObjArray;
-class  AliRICHSegmentation;
+class  AliSegmentation;
 
 
-class AliRICHTresholdMap : public AliRICHHitMap 
+class AliRICHTresholdMap : public AliHitMap 
 {
     
  public:
   
-  AliRICHTresholdMap(AliRICHSegmentation *seg);
+  AliRICHTresholdMap(AliSegmentation *seg);
   //AliRICHTresholdMap() {}
   virtual ~AliRICHTresholdMap();
   virtual  void    FillHits();
-  virtual  void    Clear();    
+  virtual  void    Clear(const char *opt = "");    
   virtual  void    SetHit(Int_t ix, Int_t iy, Int_t idigit);
   virtual  void    DeleteHit(Int_t ix, Int_t iy);
-  virtual Int_t    GetHitIndex(Int_t ix, Int_t iy);
-  virtual TObject* GetHit(Int_t ix, Int_t iy);
+  virtual Int_t    GetHitIndex(Int_t ix, Int_t iy) const;
+  virtual TObject* GetHit(Int_t ix, Int_t iy) const;
   virtual  void    FlagHit(Int_t ix, Int_t iy);    
   virtual FlagType TestHit(Int_t ix, Int_t iy);
  private:
-  Int_t CheckedIndex(Int_t ix, Int_t iy);
+  Int_t CheckedIndex(Int_t ix, Int_t iy) const;
   
  private:
-  AliRICHSegmentation *fSegmentation;                    //Segmentation model
+  AliSegmentation     *fSegmentation;                    //Segmentation model
   Int_t fNpx;                                            //Pads in x
   Int_t fNpy;                                            //Pads in y
   Int_t *fHitMap;                                        // !

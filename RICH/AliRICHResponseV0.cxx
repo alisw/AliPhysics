@@ -15,13 +15,16 @@
 
 /*
   $Log$
+  Revision 1.2  2000/10/02 21:28:12  fca
+  Removal of useless dependecies via forward declarations
+
   Revision 1.1  2000/06/12 15:29:37  jbarbosa
   Cleaned up version.
 
 */
 
 #include "AliRICHResponseV0.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRun.h"
 #include "AliMC.h"
 
@@ -58,7 +61,7 @@ Float_t AliRICHResponseV0::IntPH()
 
 
 // -------------------------------------------
-Float_t AliRICHResponseV0::IntXY(AliRICHSegmentation * segmentation)
+Float_t AliRICHResponseV0::IntXY(AliSegmentation * segmentation)
 {
     
     const Float_t kInversePitch = 1/fPitch;

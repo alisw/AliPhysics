@@ -19,7 +19,7 @@
 
 
 #include "AliRICHHitMapA1.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRICHDigit.h"
 
 #include <TObjArray.h>
@@ -28,7 +28,7 @@
 ClassImp(AliRICHHitMapA1)
 
 
-AliRICHHitMapA1::AliRICHHitMapA1(AliRICHSegmentation *seg, TObjArray *dig)
+AliRICHHitMapA1::AliRICHHitMapA1(AliSegmentation *seg, TObjArray *dig)
 {
 
 // Constructor for AliRICHMapA1
@@ -52,7 +52,7 @@ AliRICHHitMapA1::~AliRICHHitMapA1()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliRICHHitMapA1::Clear()
+void AliRICHHitMapA1::Clear(const char *opt = "")
 {
 
 // Clear contents of hit map
@@ -60,7 +60,7 @@ void AliRICHHitMapA1::Clear()
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }
 
-Int_t AliRICHHitMapA1::CheckedIndex(Int_t ix, Int_t iy)
+Int_t AliRICHHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 {
 
 // Check if index is valid
@@ -117,7 +117,7 @@ void AliRICHHitMapA1::FlagHit(Int_t ix, Int_t iy)
 	-TMath::Abs(fHitMap[CheckedIndex(ix, iy)]);
 }
 
-Int_t AliRICHHitMapA1::GetHitIndex(Int_t ix, Int_t iy)
+Int_t AliRICHHitMapA1::GetHitIndex(Int_t ix, Int_t iy) const
 {
 
 // Return hit coordinates from index
@@ -128,7 +128,7 @@ Int_t AliRICHHitMapA1::GetHitIndex(Int_t ix, Int_t iy)
     
 }
 
-TObject* AliRICHHitMapA1::GetHit(Int_t ix, Int_t iy)
+TObject* AliRICHHitMapA1::GetHit(Int_t ix, Int_t iy) const
 {
 
 // Return index from coordinates

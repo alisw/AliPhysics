@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2000/10/02 21:28:12  fca
+  Removal of useless dependecies via forward declarations
+
   Revision 1.5  2000/10/02 15:50:25  jbarbosa
   Fixed forward declarations.
 
@@ -42,13 +45,13 @@
 #include "AliDetector.h"
 #include "AliRICH.h"
 #include "AliRICHPoints.h"
-#include "AliRICHSegmentation.h"
+#include "AliSegmentation.h"
 #include "AliRICHPatRec.h"
 #include "AliRICH.h"
 #include "AliRICHConst.h"
 #include "AliRICHPoints.h"
 #include "AliConst.h"
-#include "AliRICHHitMap.h"
+#include "AliHitMap.h"
 
 #include <TParticle.h>
 #include <TMath.h>
@@ -79,13 +82,13 @@ void AliRICHPatRec::PatRec()
 // Pattern recognition algorithm
 
   AliRICHChamber*       iChamber;
-  AliRICHSegmentation*  segmentation;
+  AliSegmentation*  segmentation;
   	
   Int_t ntracks, ndigits[kNCH];
   Int_t itr, ich, i;
   Int_t goodPhotons;
   Int_t x,y,q;
-  Float_t rx,ry;
+  Float_t rx,ry,rz;
   Int_t nent,status;
   Int_t padsUsedX[100];
   Int_t padsUsedY[100];
@@ -123,7 +126,7 @@ void AliRICHPatRec::PatRec()
       x=padI->fPadX;
       y=padI->fPadY;
       q=padI->fSignal;
-      segmentation->GetPadCxy(x,y,rx,ry);      
+      segmentation->GetPadC(x,y,rx,ry,rz);      
 
       //printf("Pad coordinates x:%d, Real coordinates x:%f\n",x,rx);
       //printf("Pad coordinates y:%d, Real coordinates y:%f\n",y,ry);
@@ -140,7 +143,7 @@ void AliRICHPatRec::PatRec()
       Int_t xpad;
       Int_t ypad;
 
-      segmentation->GetPadIxy(fXpad,fYpad,xpad,ypad);
+      segmentation->GetPadI(fXpad,fYpad,0,xpad,ypad);
 
       padsUsedX[goodPhotons]=xpad;
       padsUsedY[goodPhotons]=ypad;
@@ -186,7 +189,7 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
   // Get Local coordinates of track impact  
 
   AliRICHChamber*       iChamber;
-  AliRICHSegmentation*  segmentation;
+  AliSegmentation*      segmentation;
 
   Float_t trackglob[3];
   Float_t trackloc[3];

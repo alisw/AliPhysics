@@ -24,7 +24,7 @@ class AliRICHClusterFinder;
 class AliRICHDetect;
 class AliRICHChamber;
 class AliRICHCerenkov;
-class AliRICHSegmentation;
+class AliSegmentation;
 class AliRICHResponse;
 class AliRICHEllipse;
 class AliRICHGeometry;
@@ -69,7 +69,7 @@ class AliRICH : public  AliDetector {
 // id refers to the station and isec to the cathode plane   
 // Set Segmentation and Response Model
     virtual void   SetGeometryModel(Int_t id, AliRICHGeometry *geometry);
-    virtual void   SetSegmentationModel(Int_t id, AliRICHSegmentation *segmentation);
+    virtual void   SetSegmentationModel(Int_t id, AliSegmentation *segmentation);
     virtual void   SetResponseModel(Int_t id, AliRICHResponse *response);
     virtual void   SetNsec(Int_t id, Int_t nsec);
 // Set Reconstruction Model
