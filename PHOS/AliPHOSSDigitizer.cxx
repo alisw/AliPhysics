@@ -181,13 +181,12 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     
     
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
-
-//******************** CHECK HERE
-//YS DOES NOT UNDERSTAND THE NEED FOR THE FOLLOWING LOOP
-//     Int_t itrack ;
-//     for (itrack=0; itrack < gAlice->GetNtrack(); itrack++){
-//       //=========== Get the PHOS branch from Hits Tree for the Primary track itrack
-//       gime->Track(itrack) ;
+    Int_t Nprim =  (Int_t)  (gAlice->TreeH())->GetEntries(); 
+    // Attention Nprim is the number of primaries tracked by Geant and this number could be different to the number of Primaries in TreeK;
+    Int_t iprim;
+    for (iprim=0; iprim<Nprim; iprim++) { 
+      //=========== Get the PHOS branch from Hits Tree for the Primary iprim
+      gime->Track(iprim) ;
       Int_t i;
       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
 	AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
@@ -202,19 +201,19 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	nSdigits++ ;	
 	
       }
-//    } // loop over tracks
+    } // loop over iprim
     
     sdigits->Sort() ;
     
     nSdigits = sdigits->GetEntriesFast() ;
     fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
-//    Int_t i ;
+    Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
       AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
       digit->SetIndexInList(i) ;     
     }
-    
+
     if(gAlice->TreeS() == 0)
 	gAlice->MakeTree("S") ;
         
