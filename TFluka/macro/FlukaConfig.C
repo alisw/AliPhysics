@@ -39,8 +39,7 @@ static TString  comment;
                                                                                 
 // Functions
 Float_t EtaToTheta(Float_t arg);
-//AliGenerator* GeneratorFactory(PprRun_t srun);
-//AliGenHijing* HijingStandard();
+
 
 void Config()
 {
@@ -83,11 +82,12 @@ void Config()
   decayer->SetForceDecay(kAll);
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
- 
-  TFluka *fluka = (TFluka *) gMC;
-  fluka->SetCoreInputFileName("corealice.inp");
-  fluka->SetInputFileName("alice.inp");
-  fluka->SetGeneratePemf(kFALSE);
+
+  //
+  // Use kTRUE as argument to generate alice.pemf first
+  //
+  ((TFluka*) gMC)->SetGeneratePemf(kTRUE);
+
   //
   //
   //
@@ -102,7 +102,7 @@ void Config()
   gMC->SetProcess("ANNI",1);
   gMC->SetProcess("BREM",1);
   gMC->SetProcess("MUNU",1);
-  gMC->SetProcess("CKOV",1); // 1
+  gMC->SetProcess("CKOV",1); 
   gMC->SetProcess("HADR",1);
   gMC->SetProcess("LOSS",2);
   gMC->SetProcess("MULS",1);
@@ -138,11 +138,11 @@ void Config()
   
   AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
   
-  gener->SetMomentumRange(2, 999);
+  gener->SetMomentumRange(0., 999);
   gener->SetPhiRange(0, 360);
-  // Set pseudorapidity range from -8 to 8.
+  // Set pseudorapidity range from -3 to 3.
   Float_t thmin = EtaToTheta( 3.);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-3.);  // theta max. <---> eta min 
+  Float_t thmax = EtaToTheta(-3.);   // theta max. <---> eta min 
   gener->SetThetaRange(thmin,thmax);
   gener->SetOrigin(0, 0, 0);  //vertex position
   gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
@@ -188,26 +188,26 @@ void Config()
     rl->CdGAFile();
     gAlice->SetField(field);
  
-  Int_t   iABSO  = 0; //1
-  Int_t   iCRT   = 0; //Not good ?
-  Int_t   iDIPO  = 0; //1
-  Int_t   iFMD   = 0; //1
-  Int_t   iFRAME = 0; //1
-  Int_t   iHALL  = 0; //1
-  Int_t   iITS   = 0; //1
-  Int_t   iMAG   = 0; //1
-  Int_t   iMUON  = 0; //1. Not good (newFlagLttc=10000 is outside array bounds)
-  Int_t   iPHOS  = 0; //1
-  Int_t   iPIPE  = 0; //1
-  Int_t   iPMD   = 0; //Not good (too many regions)
-  Int_t   iRICH  = 1; //1. Not good (no tracking with FRAME)
-  Int_t   iSHIL  = 0; //1. Not good (no tracking) (it works alone)
-  Int_t   iSTART = 0; //1. Not good (no tracking) (it works alone)
-  Int_t   iTOF   = 0; //1. Not good (no tracking) (newFlagLttc=10000 is outside array bounds if alone)
+  Int_t   iABSO  = 0; 
+  Int_t   iCRT   = 0; 
+  Int_t   iDIPO  = 0; 
+  Int_t   iFMD   = 0; 
+  Int_t   iFRAME = 0; 
+  Int_t   iHALL  = 0; 
+  Int_t   iITS   = 0; 
+  Int_t   iMAG   = 0; 
+  Int_t   iMUON  = 0; 
+  Int_t   iPHOS  = 0; 
+  Int_t   iPIPE  = 0; 
+  Int_t   iPMD   = 0; 
+  Int_t   iRICH  = 1; 
+  Int_t   iSHIL  = 0; 
+  Int_t   iSTART = 0; 
+  Int_t   iTOF   = 0; 
   Int_t   iTPC   = 1;
-  Int_t   iTRD   = 0; //1. Not good (no tracking) (Crash alone with FRAME)
-  Int_t   iZDC   = 0; //1. Needs SHIL and others
-  Int_t   iEMCAL = 0; //Not good (Crash)
+  Int_t   iTRD   = 0; 
+  Int_t   iZDC   = 0; 
+  Int_t   iEMCAL = 0; 
   Int_t   iVZERO = 0;
  
   cout << "\t* Creating the detectors ..." << endl;
