@@ -46,6 +46,9 @@ protected:
     TArrayF     fOrigin;     //Origin of event
     TArrayF     fOsigma;     //Sigma of the Origin of event
 
+    enum {kThetaRange=1, kVertexRange=2, kPhiRange=4, kPtRange=8,
+	  kYRange=32, kMomentumRange=16};
+
  public:
     AliGenerator();
     AliGenerator(Int_t npart);
@@ -58,26 +61,31 @@ protected:
     virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz)
 	{fOsigma[0]=sx;fOsigma[1]=sy;fOsigma[2]=sz;}
     virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=1.e10)
-	{fPMin = pmin; fPMax = pmax;}
+	{fPMin = pmin; fPMax = pmax; SetBit(kMomentumRange);
+	 printf("\n set bits p %d %d %f %f  \n \n",TestBit(kMomentumRange), TestBit(kPtRange), pmin, pmax);
+	}
     virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=1.e10)
-	{fPtMin = ptmin; fPtMax = ptmax;}
+	{fPtMin = ptmin; fPtMax = ptmax; SetBit(kPtRange);
+	printf("\n set bits pt %d %d %f %f \n \n",TestBit(kMomentumRange), TestBit(kPtRange), ptmin, ptmax);
+	}
     virtual void SetPhiRange(Float_t phimin=-180., Float_t phimax=180)
 	{fPhiMin = TMath::Pi()*phimin/180;
-	fPhiMax = TMath::Pi()*phimax/180;}
+	fPhiMax = TMath::Pi()*phimax/180; SetBit(kPhiRange);}
     virtual void SetYRange(Float_t ymin=-100, Float_t ymax=100)
-	{fYMin=ymin; fYMax=ymax;}
+	{fYMin=ymin; fYMax=ymax; SetBit(kYRange);}
     virtual void SetVRange(Float_t vxmin, Float_t vxmax,
 			   Float_t vymin, Float_t vymax,
 			   Float_t vzmin, Float_t vzmax)
 	{
 	    fVMin[0]=vxmin; fVMin[1]=vymin; fVMin[2]=vzmin;
 	    fVMax[0]=vxmax; fVMax[1]=vymax; fVMax[2]=vzmax;
+	    SetBit(kVertexRange);
 	}
     virtual void SetNumberParticles(Int_t npart=100) {fNpart=npart;}
     virtual Int_t NumberParticles() {return fNpart;}
     virtual void SetThetaRange(Float_t thetamin=0, Float_t thetamax=180)
 	{fThetaMin = TMath::Pi()*thetamin/180;
-	fThetaMax = TMath::Pi()*thetamax/180;}
+	fThetaMax = TMath::Pi()*thetamax/180; SetBit(kThetaRange);}
     virtual void Generate()=0;
     virtual void SetParentWeight(Float_t wgt) {fParentWeight=wgt;}
     virtual void SetChildWeight(Float_t wgt)  {fChildWeight=wgt;}    

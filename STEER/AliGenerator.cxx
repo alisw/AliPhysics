@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////
@@ -47,44 +50,17 @@ TGenerator* AliGenerator::fgMCEvGen=0;
 //____________________________________________________________
 AliGenerator::AliGenerator()
 {
-    printf("\n Initialising AliGenerator\n\n");
+    printf("\n AliGenerator Default Constructor\n\n");
     
     gAlice->SetGenerator(this);
-    SetThetaRange();
-    SetPhiRange();
-    SetMomentumRange();
-    SetPtRange();
-    SetYRange();
+    SetThetaRange(); ResetBit(kThetaRange);
+    SetPhiRange(); ResetBit(kPhiRange);
+    SetMomentumRange(); ResetBit(kMomentumRange);
+    SetPtRange(); ResetBit(kPtRange);
+    SetYRange(); ResetBit(kYRange);
     SetNumberParticles();
     SetTrackingFlag();
-  //
-  //  fName="Default";
-  //  fTitle="Base Generator Class";
-  //
-    fOrigin.Set(3);
-    fOsigma.Set(3);
-    fOrigin[0]=fOrigin[1]=fOrigin[2]=0;
-    fOsigma[0]=fOsigma[1]=fOsigma[2]=0;
-}
 
-//____________________________________________________________
-AliGenerator::AliGenerator(Int_t npart)
-    : TNamed(" "," ")
-{
-    printf("\n Initialising AliGenerator\n\n");
-    gAlice->SetGenerator(this);
-    SetThetaRange();
-    SetPhiRange();
-    SetMomentumRange();
-    SetPtRange();
-    SetYRange();
-    SetNumberParticles(npart);
-    SetTrackingFlag();
-  //
-  //  fName="Default";
-  //  fTitle="Base Generator Class";
-  //
-    fVertexSmear=none;
     fOrigin.Set(3);
     fOsigma.Set(3);
     fOrigin[0]=fOrigin[1]=fOrigin[2]=0;
@@ -93,6 +69,31 @@ AliGenerator::AliGenerator(Int_t npart)
     fVMin[0]=fVMin[1]=fVMin[2]=0;
     fVMax.Set(3);
     fVMax[0]=fVMax[1]=fVMax[2]=10000;
+}
+
+//____________________________________________________________
+AliGenerator::AliGenerator(Int_t npart)
+    : TNamed(" "," ")
+{
+    printf("\n AliGenerator Constructor initializing number of particles \n\n");
+    gAlice->SetGenerator(this);
+    SetThetaRange(); ResetBit(kThetaRange);
+    SetPhiRange(); ResetBit(kPhiRange);
+    SetMomentumRange(); ResetBit(kMomentumRange);
+    SetPtRange(); ResetBit(kPtRange);
+    SetYRange(); ResetBit(kYRange);
+    SetTrackingFlag();
+
+    fOrigin.Set(3);
+    fOsigma.Set(3);
+    fOrigin[0]=fOrigin[1]=fOrigin[2]=0;
+    fOsigma[0]=fOsigma[1]=fOsigma[2]=0;
+    fVMin.Set(3);
+    fVMin[0]=fVMin[1]=fVMin[2]=0;
+    fVMax.Set(3);
+    fVMax[0]=fVMax[1]=fVMax[2]=10000;
+
+    SetNumberParticles(npart);
 }
 
 //____________________________________________________________
