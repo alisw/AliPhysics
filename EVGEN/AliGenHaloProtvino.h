@@ -16,6 +16,7 @@
 class AliGenHaloProtvino : public AliGenerator
 {
 public:
+    enum constants{kY1Day0, kY1Day70, kY2D0, kY2D10, kY3D90};
     AliGenHaloProtvino();
     AliGenHaloProtvino(Int_t npart);
     AliGenHaloProtvino(const AliGenHaloProtvino &HaloProtvino);
@@ -26,15 +27,19 @@ public:
     virtual Float_t GassPressureWeight(Float_t zPrimary);
     virtual void SetSide(Int_t flag = 1) {fSide = flag;}
     virtual void SetNskip(Int_t nskip) {fNskip = nskip;}
+    virtual void SetRunPeriod(Int_t t = kY3D90) {fRunPeriod = t;}
+    
 
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
 
 protected:
   FILE*    fFile;                       // ! Pointer to file
   TString  fFileName;                   //   Choose the file
-  Int_t    fSide;                       //   Muon arm side (1) / Castor side (-1) 
-  Int_t    fNskip;                      //   
-  
+  Int_t    fSide;                       //   Muon arm side (1) / Castor side (-1)
+  Int_t    fRunPeriod;                  //   LHC Running Period 
+  Int_t    fNskip;                      //   Number of entries to skip
+  Float_t  fZ1[20],    fZ2[21];         // ! z-positions for gas pressure tables
+  Float_t  fG1[20][5], fG2[21][5];      // ! gas pressures
   ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)
 };
 #endif

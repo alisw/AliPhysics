@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/12/19 16:30:24  morsch
+Some bugs corrected and skip method added. (Rachid Guernane)
+
 Revision 1.3  2001/07/27 17:09:36  morsch
 Use local SetTrack, KeepTrack and SetHighWaterMark methods
 to delegate either to local stack or to stack owned by AliRun.
@@ -40,6 +43,7 @@ Generator to read beam halo file from Protvino group.
 #include "AliPDG.h"
 
 #include <TDatabasePDG.h>
+#include <TSystem.h>
 #include <stdlib.h>
 
  ClassImp(AliGenHaloProtvino)
@@ -56,6 +60,8 @@ Generator to read beam halo file from Protvino group.
     fNpart = -1;
     fFile  =  0;
     fSide  =  1;
+//
+    SetRunPeriod();
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
@@ -69,6 +75,8 @@ AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
     fNpart   = npart;
     fFile    = 0;
     fSide    = 1;
+//
+    SetRunPeriod();
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(const AliGenHaloProtvino & HaloProtvino)
@@ -93,6 +101,70 @@ void AliGenHaloProtvino::Init()
     } else {
 	printf("\n Opening of file %s failed,  %p ! \n ",  fFileName.Data(), fFile);
     }
+//
+//
+//
+//    Read file with gas pressure values
+    char *name;
+    
+    name = gSystem->ExpandPathName("$(ALICE_ROOT)/LHC/gasPressure.dat" );
+    FILE* file = fopen(name, "r");
+    Float_t z;
+    Int_t i, j;
+    
+//
+//  Ring 1   
+// 
+    for (i = 0; i < 20; i++)
+    {
+	fscanf(file, "%f %f %f %f %f %f", &z, 
+	       &fG1[i][0], &fG1[i][1], &fG1[i][2], &fG1[i][3], &fG1[i][4]);
+	if (i > 0) {
+	    fZ1[i] = fZ1[i-1] + z;
+	} else {
+	    fZ1[i] = 20.;
+	}
+  }
+//
+// Ring 2
+//
+    for (i = 0; i < 21; i++)
+    {
+	fscanf(file, "%f %f %f %f %f %f", &z, 
+	       &fG2[i][0], &fG2[i][1], &fG2[i][2], &fG2[i][3], &fG2[i][4]);
+	if (i > 0) {
+	    fZ2[i] = fZ2[i-1] + z;
+	} else {
+	    fZ2[i] = 20.;
+	}
+    }
+//
+//  Transform into interaction rates
+//
+    const Float_t crossSection = 0.094e-28;     // m^2
+    const Float_t pFlux        = 1.e11/25.e-9;  // 1/s
+
+    for (j = 0; j <  5; j++) {
+	for (i = 0; i < 21; i++)  
+	{
+	    if (i <20)
+		fG1[i][j] = fG1[i][j] * crossSection * pFlux; // 1/m/s 
+	        fG2[i][j] = fG2[i][j] * crossSection * pFlux; // 1/m/s 
+	}
+    }
+
+
+    Float_t sum;
+    
+    for (Int_t i = 0; i < 250; i++) {
+	Float_t z = 20.+i*1.;
+	z*=100;
+	Float_t wgt = GassPressureWeight(z);
+	printf("\n %f %f", z, wgt);
+	sum+=wgt;
+    }
+    sum/=250.;
+    printf("\n %f \n \n", sum);
 }
 
 //____________________________________________________________
@@ -195,15 +267,43 @@ AliGenHaloProtvino& AliGenHaloProtvino::operator=(const  AliGenHaloProtvino& rhs
 }
 
 
+
 Float_t AliGenHaloProtvino::GassPressureWeight(Float_t zPrimary)
 {
-  // Return z-dependent gasspressure weight
-  //
-    Float_t weight = 500.;
+//
+// Return z-dependent gasspressure weight = interaction rate [1/m/s].
+//
+    Float_t weight = 0.;
+    zPrimary/=100.;        // m
+    Float_t zAbs = TMath::Abs(zPrimary);
+    zPrimary = TMath::Abs(zPrimary);
     
-    if (zPrimary > 45000.) weight = 2.e4;
+    if (zPrimary < 0.) 
+    {
+	if (zAbs > fZ1[19]) {
+	    weight = 2.e4;
+	} else {
+	    for (Int_t i = 1; i < 20; i++) {
+		if (zAbs < fZ1[i]) {
+		    weight = fG1[i][fRunPeriod];
+		    break;
+		}
+	    }
+	}
+    } else {
+	if (zAbs > fZ2[20]) {
+	    weight = 2.e4;
+	} else {
+	    for (Int_t i = 1; i < 21; i++) {
+		if (zAbs < fZ2[i]) {
+		    weight = fG2[i][fRunPeriod];
+		    break;
+		}
+	    }
+	}
+    }
     
-  return weight;
+    return weight;
 }
 
 /*
