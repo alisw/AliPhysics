@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.36  2000/12/18 17:45:54  jbarbosa
+  Cleaned up PadHits object.
+
   Revision 1.35  2000/12/15 16:49:40  jbarbosa
   Geometry and materials updates (wire supports, pcbs, backplane supports, frame).
 
@@ -122,7 +125,6 @@
 #include "AliPDG.h"
 #include "AliPoints.h"
 #include "AliCallf77.h" 
-#include "TGeant3.h"
 
 
 // Static variables for the pad-hit iterator routines
@@ -1071,8 +1073,6 @@ void AliRICH::CreateMaterials()
     
     Int_t *idtmed = fIdtmed->GetArray()-999;
     
-    TGeant3 *geant3 = (TGeant3*) gMC;
-    
     // --- Photon energy (GeV) 
     // --- Refraction indexes 
     for (i = 0; i < 26; ++i) {
@@ -1189,17 +1189,17 @@ void AliRICH::CreateMaterials()
     AliMedium(12, "PCB_COPPER", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
     
 
-    geant3->Gsckov(idtmed[1000], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    geant3->Gsckov(idtmed[1001], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    geant3->Gsckov(idtmed[1002], 26, ppckov, abscoQuarz, efficAll,rIndexQuarz);
-    geant3->Gsckov(idtmed[1003], 26, ppckov, abscoFreon, efficAll,rIndexFreon);
-    geant3->Gsckov(idtmed[1004], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    geant3->Gsckov(idtmed[1005], 26, ppckov, abscoCsI, efficCsI, rIndexMethane);
-    geant3->Gsckov(idtmed[1006], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
-    geant3->Gsckov(idtmed[1007], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
-    geant3->Gsckov(idtmed[1008], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
-    geant3->Gsckov(idtmed[1009], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
-    geant3->Gsckov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
+    gMC->SetCerenkov(idtmed[1000], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    gMC->SetCerenkov(idtmed[1001], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    gMC->SetCerenkov(idtmed[1002], 26, ppckov, abscoQuarz, efficAll,rIndexQuarz);
+    gMC->SetCerenkov(idtmed[1003], 26, ppckov, abscoFreon, efficAll,rIndexFreon);
+    gMC->SetCerenkov(idtmed[1004], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    gMC->SetCerenkov(idtmed[1005], 26, ppckov, abscoCsI, efficCsI, rIndexMethane);
+    gMC->SetCerenkov(idtmed[1006], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
+    gMC->SetCerenkov(idtmed[1007], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
+    gMC->SetCerenkov(idtmed[1008], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
+    gMC->SetCerenkov(idtmed[1009], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
+    gMC->SetCerenkov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
 }
 
 //___________________________________________
@@ -1689,7 +1689,6 @@ void AliRICH::StepManager()
     const  Float_t kBig=1.e10;
        
     TClonesArray &lhits = *fHits;
-    TGeant3 *geant3 = (TGeant3*) gMC;
     TParticle *current = (TParticle*)(*gAlice->Particles())[gAlice->CurrentTrack()];
 
  //if (current->Energy()>1)
@@ -1733,7 +1732,7 @@ void AliRICH::StepManager()
 		//printf("Track entered (1)\n");
 		if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy))
 		  {                                                          //is it in freo?
-		    if (geant3->Gctrak()->nstep<1){                          //is it the first step?
+		    if (gMC->IsNewTrack()){                          //is it the first step?
 		      //printf("I'm in!\n");
 		      Int_t mother = current->GetFirstMother(); 
 		      
@@ -1749,7 +1748,7 @@ void AliRICH::StepManager()
 		    }    //first step question
 		  }        //freo question
 		
-		if (geant3->Gctrak()->nstep<1){                                  //is it first step?
+		if (gMC->IsNewTrack()){                                  //is it first step?
 		  if (gMC->VolId("QUAR")==gMC->CurrentVolID(copy))             //is it in quarz?
 		    {
 		      ckovData[12] = 2;
@@ -1785,7 +1784,7 @@ void AliRICH::StepManager()
 			gMC->Rndm(ranf, 1);
 			//printf("grid calculation:%f\n",t);
 			if (ranf[0] > t) {
-			  geant3->StopTrack();
+			  gMC->StopTrack();
 			  ckovData[13] = 5;
 			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 			  //printf("Added One (1)!\n");
@@ -1812,7 +1811,7 @@ void AliRICH::StepManager()
 			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
 			gMC->Rndm(ranf, 1);
 			if (ranf[0] < t) {
-			  geant3->StopTrack();
+			  gMC->StopTrack();
 			  ckovData[13] = 6;
 			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 			  //printf("Added One (2)!\n");
@@ -1826,21 +1825,22 @@ void AliRICH::StepManager()
 		  /********************Evaluation of losses************************/
 		  /******************still in the old fashion**********************/
 		  
-		  Int_t i1 = geant3->Gctrak()->nmec;            //number of physics mechanisms acting on the particle
+		  TArrayI procs;
+		  Int_t i1 = gMC->StepProcesses(procs);            //number of physics mechanisms acting on the particle
 		  for (Int_t i = 0; i < i1; ++i) {
 		    //        Reflection loss 
-		    if (geant3->Gctrak()->lmec[i] == 106) {        //was it reflected
+		    if (procs[i] == kPLightReflection) {        //was it reflected
 		      ckovData[13]=10;
 		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
 			ckovData[13]=1;
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
 			ckovData[13]=2;
-		      //geant3->StopTrack();
+		      //gMC->StopTrack();
 		      //AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		    } //reflection question
 		     
 		    //        Absorption loss 
-		    else if (geant3->Gctrak()->lmec[i] == 101) {              //was it absorbed?
+		    else if (procs[i] == kPLightAbsorption) {              //was it absorbed?
 		      //printf("Got in absorption\n");
 		      ckovData[13]=20;
 		      if (gMC->VolId("FRE1")==gMC->CurrentVolID(copy) || gMC->VolId("FRE2")==gMC->CurrentVolID(copy)) 
@@ -1859,7 +1859,7 @@ void AliRICH::StepManager()
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("CSI ")) {
 			ckovData[13]=16;
 		      }
-		      geant3->StopTrack();
+		      gMC->StopTrack();
 		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		      //printf("Added One (3)!\n");
 		      //printf("Added cerenkov %d\n",fCkovNumber);
@@ -1867,9 +1867,9 @@ void AliRICH::StepManager()
 		    
 		    
 		    //        Photon goes out of tracking scope 
-		    else if (geant3->Gctrak()->lmec[i] == 30) {                 //is it below energy treshold?
+		    else if (procs[i] == kPStop) {                 //is it below energy treshold?
 		      ckovData[13]=21;
-		      geant3->StopTrack();
+		      gMC->StopTrack();
 		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		      //printf("Added One (4)!\n");
 		    }	// energy treshold question	    

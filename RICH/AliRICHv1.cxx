@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.9  2000/12/18 17:44:40  jbarbosa
+  Took two lines out of output.
+
   Revision 1.8  2000/11/01 15:39:00  jbarbosa
   Updated default geometry.
 
@@ -84,7 +87,6 @@
 #include "AliCallf77.h"
 #include "AliConst.h" 
 #include "AliPDG.h" 
-#include "TGeant3.h"
 
 ClassImp(AliRICHv1)
     

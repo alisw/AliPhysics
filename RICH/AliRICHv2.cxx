@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/12/18 17:44:49  jbarbosa
+  Took two lines out of output.
+
   Revision 1.3  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -76,7 +79,6 @@
 #include "AliCallf77.h"
 #include "AliConst.h" 
 #include "AliPDG.h" 
-#include "TGeant3.h"
 
 ClassImp(AliRICHv2)
     

@@ -46,9 +46,6 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
 
-CXXFLAGS      += -I$(ALICE_ROOT)/TGeant3
-DEPINC        += -I$(ALICE_ROOT)/TGeant3
- 
 # FORTRAN compilation flags
 
 FFLAGS      = $(FOPT)
