@@ -30,7 +30,7 @@ ClassImp(AliL3ClustFinderNew)
 
 AliL3ClustFinderNew::AliL3ClustFinderNew()
 {
-  fMatch = 4;
+  fMatch = 2;
   fThreshold = 10;
   fXYErr = 0.2;
   fZErr = 0.3;
@@ -348,6 +348,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       fSpacePointData[counter].fTrackID[1] = trackID[1];
       fSpacePointData[counter].fTrackID[2] = trackID[2];
 #endif
+
       fNClusters++;
       counter++;
     }
