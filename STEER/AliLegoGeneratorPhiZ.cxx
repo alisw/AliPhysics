@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.2  2000/10/27 11:40:01  morsch
 Error in printouts corrected
 
@@ -56,7 +59,7 @@ void AliLegoGeneratorPhiZ::Generate()
    fCurCoor1 = (fCoor1Min+(fCoor1Bin+0.5)*(fCoor1Max-fCoor1Min)/fNCoor1);
    fCurCoor2 = (fCoor2Min+(fCoor2Bin+0.5)*(fCoor2Max-fCoor2Min)/fNCoor2);
 
-   Float_t phi   = fCurCoor1*TMath::Pi()/180.;
+   Float_t phi   = fCurCoor2*TMath::Pi()/180.;
    
    cosp      = TMath::Cos(phi);
    sinp      = TMath::Sin(phi);
@@ -67,7 +70,7 @@ void AliLegoGeneratorPhiZ::Generate()
    
    // --- Where to start
    orig[0] = orig[1] = orig[2] = 0;
-   orig[2] = fCurCoor2;
+   orig[2] = fCurCoor1;
    
    Float_t dalicz = 3000;
    if (fRadMin > 0) {
