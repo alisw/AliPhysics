@@ -12,6 +12,7 @@
 class G4UIdirectory;
 class G4UIcmdWithoutParameter;
 class G4UIcmdWithAnInteger;
+class G4UIcmdWithAString;
 
 class AliRunMessenger: public G4UImessenger
 {
@@ -33,6 +34,7 @@ class AliRunMessenger: public G4UImessenger
   private:
     // data members
     G4UIdirectory*            fRunDirectory;  //command directory
+    G4UIcmdWithAString*       fConfigCmd;     //command: setConfig
     G4UIcmdWithoutParameter*  fInitializeCmd; //command: initialize
     G4UIcmdWithAnInteger*     fBeamOnCmd;     //command: beamOn
     G4UIcmdWithoutParameter*  fLegoCmd;       //command: lego
