@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.32  2001/02/08 23:55:31  nilsen
+Removed fMajor/MinorVersion variables in favor of variables in derived classes.
+Set arrays char *det[3] = {"SPD","SDD","SSD"} as const.
+
 Revision 1.31  2001/02/02 23:57:28  nilsen
 Added include file that are no londer included in AliITSgeom.h
 
@@ -142,7 +146,7 @@ the AliITS class.
 #include <TRandom.h>
 #include <TBranch.h>
 #include <TVector.h>
-#include <TObjArray.h>
+#include <TClonesArray.h>
 #include <TROOT.h>
 #include <TObjectTable.h>
 #include <TFile.h>
@@ -156,7 +160,10 @@ the AliITS class.
 #include "AliITSMap.h"
 #include "AliITSDetType.h"
 #include "AliITSClusterFinder.h"
-#include "AliITSsimulation.h"
+//#include "AliITSsimulation.h"
+#include "AliITSsimulationSPD.h"
+#include "AliITSsimulationSDD.h"
+#include "AliITSsimulationSSD.h"
 #include "AliITSresponse.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSresponseSPD.h"
@@ -681,9 +688,17 @@ void AliITS::MakeTreeC(Option_t *option)
 
      const char *det[3] = {"SPD","SDD","SSD"};
 
+     char digclass[40];
+     char clclass[40];
+
      // one branch for Clusters per type of detector
      Int_t i;
      for (i=0; i<kNTYPES ;i++) {
+       AliITSDetType *iDetType=DetType(i); 
+       iDetType->GetClassNames(digclass,clclass);
+       //printf("i, digclass, recclass %d %s %s\n",i,digclass,clclass); 
+       // clusters
+       (*fCtype)[i] = new TClonesArray(clclass,10000); 
         if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
 	else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	if (fCtype   && fTreeC) {
@@ -714,7 +729,6 @@ void AliITS::GetTreeC(Int_t event)
 
     sprintf(treeName,"TreeC%d",event);
     fTreeC = (TTree*)gDirectory->Get(treeName);
-
 
     TBranch *branch;
     if (fTreeC) {
@@ -766,7 +780,7 @@ void AliITS::MakeBranch(Option_t* option, char *file)
        // digits
        (*fDtype)[i] = new TClonesArray(digclass,10000); 
        // clusters
-       (*fCtype)[i] = new TClonesArray(clclass,10000); 
+       //(*fCtype)[i] = new TClonesArray(clclass,10000); 
    }
 
    for (i=0; i<kNTYPES ;i++) {
@@ -1157,12 +1171,13 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
    char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
 
    static Bool_t first=kTRUE;
-   if (first) {
+   if (!TreeC() && first) {
        MakeTreeC("C");
        first=kFALSE;
    }
+
+   TTree *treeC=TreeC();
  
-   TTree *iTC=TreeC();
 
    //TBranch *branch;
    AliITSClusterFinder* rec;
@@ -1197,7 +1212,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
 	      if (ndigits) rec->FindRawClusters();
 	      gAlice->TreeR()->Fill(); 
 	      ResetRecPoints();
-	      iTC->Fill();
+	      treeC->Fill();
               ResetClusters();
 	      // try and fill only the branch 
 	      //branch->Fill();
@@ -1207,7 +1222,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
 
 
    Int_t nentries=(Int_t)gAlice->TreeR()->GetEntries();
-   Int_t ncentries=(Int_t)iTC->GetEntries();
+   Int_t ncentries=(Int_t)treeC->GetEntries();
    cout << " nentries ncentries " << nentries << ncentries <<  endl;
 
    char hname[30];
@@ -1217,8 +1232,8 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
    gAlice->TreeR()->Reset();
 
    sprintf(hname,"TreeC%d",evNumber);
-   iTC->Write(hname);
-   iTC->Reset();
+   treeC->Write(hname,TObject::kOverwrite);
+   treeC->Reset();
 }
 
 
