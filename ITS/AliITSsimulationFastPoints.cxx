@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/07/27 08:06:49  hristov
+Use global gRandom generator (M.Ivanov)
+
 Revision 1.7  2001/05/11 09:15:21  barbera
 Corrected to make fast point creation working with PPR geometry
 
@@ -147,7 +150,7 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod, Int_t mo
 	   sigmade = SigmaDe(hitlay);
 	   thrde = ThrDe(hitlay);
 	   // Randomize position and deposited energy
-           Int_t k=3*(Int_t)((hitlay-1)/2);
+//           Int_t k=3*(Int_t)((hitlay-1)/2);
 
            //	   deltaXl = (float)(random[k].Gaus(0,sigmarphi));
            //	   deltaZl = (float)(random[k+1].Gaus(0,sigmaz));
