@@ -190,7 +190,7 @@ Double_t dz=5*TMath::Sqrt(cov[2]) + 0.5*fDz + 2.5*TMath::Abs(par[3]);
       if (c->IsUsed()) continue;
 
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
-      if (dph>TMath::Pi()) dph-=TMath::Pi();
+      if (dph>TMath::Pi()) dph-=2*TMath::Pi();
       if (dph>dphi) continue;
 
       Double_t d2=dph*dph*fR*fR + (c->GetZ()-z)*(c->GetZ()-z);
