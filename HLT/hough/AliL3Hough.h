@@ -12,6 +12,7 @@ class AliL3Transform;
 class AliL3TrackArray;
 class AliL3HoughMerger;
 class AliL3HoughIntMerger;
+class AliL3HoughGlobalMerger;
 
 class AliL3Hough {
   
@@ -22,6 +23,7 @@ class AliL3Hough {
   Bool_t fDoIterative;
   Bool_t fWriteDigits;
   Int_t fNEtaSegments;
+  Int_t fNPatches;
   AliL3FileHandler **fMemHandler; //!
   AliL3HoughTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
@@ -29,7 +31,8 @@ class AliL3Hough {
   AliL3TrackArray **fTracks; //!
   AliL3HoughMerger *fMerger; //!
   AliL3HoughIntMerger *fInterMerger; //!
-  
+  AliL3HoughGlobalMerger *fGlobalMerger; //!
+
   void CleanUp();
   void Init();
   
@@ -48,10 +51,10 @@ class AliL3Hough {
   void MergeInternally();
 
   void FindTrackCandidates();
-  AliL3Histogram *AddHistograms(Int_t eta_index);
   void AddAllHistograms();
   void Evaluate(Int_t road_width=1);
   void EvaluateWithEta();
+  void WriteTracks();
   void WriteDigits(Char_t *outfile="output_digits.root");
   
   //Setters

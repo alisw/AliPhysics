@@ -43,6 +43,7 @@ AliL3Hough::AliL3Hough()
   fAddHistograms = kFALSE;
   fDoIterative = kFALSE; 
   fWriteDigits=kFALSE;
+  fNPatches=0;
 }
 
 
@@ -67,13 +68,15 @@ AliL3Hough::~AliL3Hough()
     delete fInterMerger;
   if(fPeakFinder)
     delete fPeakFinder;
+  if(fGlobalMerger)
+    delete fGlobalMerger;
 }
 
 void AliL3Hough::CleanUp()
 {
   //Cleanup memory
   
-  for(Int_t i=0; i<NPatches; i++)
+  for(Int_t i=0; i<fNPatches; i++)
     {
       if(fTracks[i]) delete fTracks[i];
       if(fEval[i]) delete fEval[i];
@@ -92,11 +95,12 @@ void AliL3Hough::CleanUp()
 
 void AliL3Hough::Init()
 {
-  fHoughTransformer = new AliL3HoughTransformer*[NPatches];
-  fMemHandler = new AliL3FileHandler*[NPatches];
-  fTracks = new AliL3TrackArray*[NPatches];
-  fEval = new AliL3HoughEval*[NPatches];
-  for(Int_t i=0; i<NPatches; i++)
+  fNPatches = NPatches;
+  fHoughTransformer = new AliL3HoughTransformer*[fNPatches];
+  fMemHandler = new AliL3FileHandler*[fNPatches];
+  fTracks = new AliL3TrackArray*[fNPatches];
+  fEval = new AliL3HoughEval*[fNPatches];
+  for(Int_t i=0; i<fNPatches; i++)
     {
       fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
       fHoughTransformer[i]->CreateHistograms(64,-0.003,0.003,64,-0.26,0.26);
@@ -108,13 +112,14 @@ void AliL3Hough::Init()
 	fMemHandler[i]->SetAliInput(fPath);
     }
   fPeakFinder = new AliL3HoughMaxFinder("KappaPhi");
-  fMerger = new AliL3HoughMerger(NPatches);
+  fMerger = new AliL3HoughMerger(fNPatches);
   fInterMerger = new AliL3HoughIntMerger();
 }
 
 void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
 {
   //Process all slices [minslice,maxslice].
+  fGlobalMerger = new AliL3HoughGlobalMerger(minslice,maxslice);
   
   for(Int_t i=minslice; i<=maxslice; i++)
     {
@@ -126,14 +131,17 @@ void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
       Evaluate();
       if(fWriteDigits)
 	WriteDigits();
+      fGlobalMerger->FillTracks(fTracks[0],i);
     }
+  
+  
 }
 
 void AliL3Hough::ReadData(Int_t slice)
 {
   //Read data from files, binary or root.
 
-  for(Int_t i=0; i<NPatches; i++)
+  for(Int_t i=0; i<fNPatches; i++)
     {
       fMemHandler[i]->Free();
       UInt_t ndigits=0;
@@ -161,7 +169,7 @@ void AliL3Hough::Transform()
   //(after ReadData(slice))
 
   Double_t initTime,finalTime;
-  for(Int_t i=0; i<NPatches; i++)
+  for(Int_t i=0; i<fNPatches; i++)
     {
       fHoughTransformer[i]->Reset();//Reset the histograms
       initTime = AliL3Benchmark::GetCpuTime();
@@ -196,7 +204,7 @@ void AliL3Hough::ProcessSliceIter()
 {
   //Process current slice (after ReadData(slice)) iteratively.
   
-  for(Int_t i=0; i<NPatches; i++)
+  for(Int_t i=0; i<fNPatches; i++)
     {
       ProcessPatchIter(i);
       fMerger->FillTracks(fTracks[i],i); //Copy tracks to merger
@@ -243,18 +251,6 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
     <<AliL3Log::kDec<<"Found "<<tracks->GetNTracks()<<" tracks in patch "<<patch<<ENDLOG;
 }
 
-AliL3Histogram *AliL3Hough::AddHistograms(Int_t eta_index)
-{
-
-  AliL3Histogram *hist0 = fHoughTransformer[0]->GetHistogram(eta_index);
-  for(Int_t i=1; i<NPatches; i++)
-    {
-      AliL3Histogram *hist = fHoughTransformer[i]->GetHistogram(eta_index);
-      hist0->Add(hist);
-    }
-  
-  return hist0;
-}
 
 void AliL3Hough::AddAllHistograms()
 {
@@ -264,7 +260,7 @@ void AliL3Hough::AddAllHistograms()
   for(Int_t i=0; i<fNEtaSegments; i++)
     {
       AliL3Histogram *hist0 = fHoughTransformer[0]->GetHistogram(i);
-      for(Int_t j=1; j<NPatches; j++)
+      for(Int_t j=1; j<fNPatches; j++)
 	{
 	  AliL3Histogram *hist = fHoughTransformer[j]->GetHistogram(i);
 	  hist0->Add(hist);
@@ -281,7 +277,7 @@ void AliL3Hough::FindTrackCandidates()
   if(fAddHistograms)
     n_patches = 1; //Histograms has been added.
   else
-    n_patches = NPatches;
+    n_patches = fNPatches;
   
   for(Int_t i=0; i<n_patches; i++)
     {
@@ -296,7 +292,7 @@ void AliL3Hough::FindTrackCandidates()
 	  Float_t x[10];
 	  Float_t y[10];
 	  Int_t weight[10];
-	  fPeakFinder->FindPeak1(x,y,weight,n);
+	  fPeakFinder->FindPeak1(x,y,weight,n,1);
 	  for(Int_t k=0; k<n; k++)
 	    {
 	      if(weight[k] == 0) continue;
@@ -325,10 +321,10 @@ void AliL3Hough::Evaluate(Int_t road_width)
   
   printf("Number of tracks before evaluation %d\n",fTracks[0]->GetNTracks());
   AliL3TrackArray *tracks;
-  for(Int_t i=0; i<NPatches; i++)
+  for(Int_t i=0; i<fNPatches; i++)
     {
       fEval[i]->InitTransformer(fHoughTransformer[i]);
-      fEval[i]->SetNumOfRowsToMiss(1);
+      fEval[i]->SetNumOfRowsToMiss(2);
       fEval[i]->SetNumOfPadsToLook(road_width);
       if(fAddHistograms)
 	tracks = fTracks[0];
@@ -343,6 +339,7 @@ void AliL3Hough::Evaluate(Int_t road_width)
 		<<"Track object missing!"<<ENDLOG;
 	      continue;
 	    }
+	  
 	  if(!fEval[i]->LookInsideRoad(track,track->GetEtaIndex()))
 	    tracks->Remove(j);
 	  if(fAddHistograms)
@@ -366,7 +363,7 @@ void AliL3Hough::EvaluateWithEta()
     }
   printf("Number of tracks before evaluation %d\n",fTracks[0]->GetNTracks());
  
-  for(Int_t i=0; i<NPatches; i++)
+  for(Int_t i=0; i<fNPatches; i++)
     {
       fEval[i]->InitTransformer(fHoughTransformer[i]);
       fEval[i]->FindEta(fTracks[0]);
@@ -375,11 +372,21 @@ void AliL3Hough::EvaluateWithEta()
   fMerger->MergeEtaSlices(0);
 }
 
+void AliL3Hough::WriteTracks()
+{
+  AliL3MemHandler *mem = new AliL3MemHandler();
+  mem->SetBinaryOutput("tracks.raw");
+  mem->TrackArray2Binary(fTracks[0]);
+  mem->CloseBinaryOutput();
+  delete mem;
+  
+}
+
 void AliL3Hough::WriteDigits(Char_t *outfile)
 {
   //Write the current data to a new rootfile.
 
-  for(Int_t i=0; i<NPatches; i++)
+  for(Int_t i=0; i<fNPatches; i++)
     {
       AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fHoughTransformer[i]->GetDataPointer();
       fMemHandler[i]->AliDigits2RootFile(tempPt,outfile);
