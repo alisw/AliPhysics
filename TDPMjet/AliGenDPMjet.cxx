@@ -100,7 +100,7 @@ void AliGenDPMjet::Init()
     SetMC(new TDPMjet(fAProjectile, fZProjectile, fATarget, fZTarget, 
 		      fBeamEn,fEnergyCMS));
 
-    fDPMjet=(TDPMjet*) fgMCEvGen;
+    fDPMjet=(TDPMjet*) fMCEvGen;
     //
     // **** Flag to force central production
     // fICentr=1. central production forced 
