@@ -82,15 +82,16 @@ AliPHOSv0hits::~AliPHOSv0hits()
 }
 
 //____________________________________________________________________________
-void AliPHOSv0hits::AddHit(Int_t tracknumber, Int_t Id, Float_t * hits)
+void AliPHOSv0hits::AddHit(Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
   // In this version of AliPHOSv0, a PHOS hit is real geant 
   // hits in a single crystal or in a single PPSD gas cell
 
-  //  cout << "Tracknumber is " << tracknumber << endl;
-  //cout << "Vol Id is " << Id << endl;
-  //cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
+  cout << "Primary is " << primary << endl;
+  cout << "Tracknumber is " << tracknumber << endl;
+  cout << "Vol Id is " << Id << endl;
+  cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
 
   //  cout << " Adding a hit number " << fNhits << endl ;
 
@@ -99,7 +100,7 @@ void AliPHOSv0hits::AddHit(Int_t tracknumber, Int_t Id, Float_t * hits)
 
   //  fHits->Print("");
 
-  newHit = new AliPHOSHit(tracknumber, Id, hits) ;
+  newHit = new AliPHOSHit(primary, tracknumber, Id, hits) ;
 
   // We DO want to save in TreeH the raw hits 
   //  TClonesArray &lhits = *fHits;
@@ -200,6 +201,7 @@ void AliPHOSv0hits::StepManager(void)
   Int_t copy ;
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
+  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() );
 
   TString name = fGeom->GetName() ; 
   if ( name == "GPS2" ) { // the CPV is a PPSD
@@ -225,7 +227,7 @@ void AliPHOSv0hits::StepManager(void)
        	fGeom->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
-	AddHit(tracknumber, absid, xyze);
+	AddHit(primary, tracknumber, absid, xyze);
 
       } // there is deposited energy 
      } // We are inside the gas of the CPV  
@@ -252,7 +254,7 @@ void AliPHOSv0hits::StepManager(void)
  
       // add current hit to the hit list
 
-          AddHit(tracknumber, absid, xyze);
+          AddHit(primary,tracknumber, absid, xyze);
     
        } // there is deposited energy
     } // we are inside a PHOS Xtal
