@@ -61,7 +61,10 @@
 #pragma link C++ class AliHBTVxCut+;
 #pragma link C++ class AliHBTVyCut+;
 #pragma link C++ class AliHBTVzCut+;
-
+#pragma link C++ class AliHBTPIDCut+;
+#pragma link C++ class AliHBTLogicalOperCut-;
+#pragma link C++ class AliHBTAndCut+;
+#pragma link C++ class AliHBTOrCut+;
 
 #pragma link C++ class AliHBTReader+;
 #pragma link C++ class AliHBTReaderTPC+;

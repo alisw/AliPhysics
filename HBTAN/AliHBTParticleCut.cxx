@@ -314,4 +314,96 @@ ClassImp( AliHBTVxCut )
 ClassImp( AliHBTVyCut )
 ClassImp( AliHBTVzCut )
 
+ClassImp( AliHBTPIDCut )
 
+ClassImp( AliHBTLogicalOperCut )
+
+AliHBTLogicalOperCut::AliHBTLogicalOperCut():
+ AliHbtBaseCut(-10e10,10e10,kHbtNone),
+ fFirst(new AliHBTDummyBaseCut),
+ fSecond(new AliHBTDummyBaseCut)
+{
+
+}
+/******************************************************************/
+
+AliHBTLogicalOperCut::AliHBTLogicalOperCut(AliHbtBaseCut* first, AliHbtBaseCut* second):
+ AliHbtBaseCut(-10e10,10e10,kHbtNone),
+ fFirst((first)?(AliHbtBaseCut*)first->Clone():0x0),
+ fSecond((second)?(AliHbtBaseCut*)second->Clone():0x0)
+{
+  if ( (fFirst && fSecond) == kFALSE) 
+   {
+     Fatal("AliHBTLogicalOperCut","One of parameters is NULL!");
+   }
+}
+/******************************************************************/
+
+AliHBTLogicalOperCut::~AliHBTLogicalOperCut()
+{
+//destructor
+  delete fFirst;
+  delete fSecond;
+}
+/******************************************************************/
+
+Bool_t AliHBTLogicalOperCut::AliHBTDummyBaseCut::Pass(AliHBTParticle*p)
+{
+  Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
+  return kFALSE;//accept
+}
+/******************************************************************/
+
+void AliHBTLogicalOperCut::Streamer(TBuffer &b)
+{
+  // Stream all objects in the array to or from the I/O buffer.
+  UInt_t R__s, R__c;
+  if (b.IsReading()) 
+   {
+     delete fFirst;
+     delete fSecond;
+     fFirst  = 0x0;
+     fSecond = 0x0;
+
+     b.ReadVersion(&R__s, &R__c);
+     TObject::Streamer(b);
+     b >> fFirst;
+     b >> fSecond;
+     b.CheckByteCount(R__s, R__c,AliHBTLogicalOperCut::IsA());
+   } 
+  else 
+   {
+     R__c = b.WriteVersion(AliHBTLogicalOperCut::IsA(), kTRUE);
+     TObject::Streamer(b);
+     b << fFirst;
+     b << fSecond;
+     b.SetByteCount(R__c, kTRUE);
+  }
+}
+
+/******************************************************************/
+ClassImp(AliHBTOrCut)
+
+Bool_t AliHBTOrCut::Pass(AliHBTParticle * p)
+{
+  //returns true when rejected 
+  //AND operation is a little bit misleading but is correct
+  //User wants to build logical cuts with natural (positive) logic
+  //while HBTAN use inernally reverse (returns true when rejected)
+  if (fFirst->Pass(p) && fSecond->Pass(p)) return kTRUE;//rejected (both rejected, returned kTRUE)
+  return kFALSE;//accepted, at least one accepted (returned kFALSE)
+}
+/******************************************************************/
+
+ClassImp(AliHBTAndCut)
+
+Bool_t AliHBTAndCut::Pass(AliHBTParticle * p)
+{
+  //returns true when rejected 
+  //OR operation is a little bit misleading but is correct
+  //User wants to build logical cuts with natural (positive) logic
+  //while HBTAN use inernally reverse (returns true when rejected)
+  if (fFirst->Pass(p) || fSecond->Pass(p)) return kTRUE;//rejected (any of two rejected(returned kTRUE) )
+  return kFALSE;//accepted (both accepted (returned kFALSE))
+}
+/******************************************************************/
