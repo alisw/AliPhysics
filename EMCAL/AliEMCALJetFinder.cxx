@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/02/02 08:37:18  morsch
+Formula for rB corrected.
+
 Revision 1.14  2002/02/01 08:55:30  morsch
 Fill map with Et and pT.
 
@@ -107,6 +110,10 @@ AliEMCALJetFinder::AliEMCALJetFinder()
     fEtaB             = 0;
     fPhiB             = 0;
     fHadronCorrector  = 0;
+    fOutFileName      = 0;
+    fOutFile          = 0;
+    fInFile           = 0;
+    fEvent            = 0;
 }
 
 AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
@@ -131,6 +138,10 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
     fPhiB       = 0;
     fHadronCorrector = 0;
     fBackground = 0;
+    fOutFileName      = 0;
+    fOutFile          = 0;
+    fInFile           = 0;
+    fEvent            = 0;
 //
     SetPtCut();
     SetMomentumSmearing();
@@ -139,25 +150,6 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
     SetHadronCorrection();
     SetSamplingFraction();
     SetIncludeK0andN();
-//
-//
-//  Get geometry parameters from EMCAL
-// 
-    AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-    AliEMCALGeometry* geom = 
-	AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
-    fNbinEta = geom->GetNZ();
-    fNbinPhi = geom->GetNPhi();
-    fPhiMin  = geom->GetArm1PhiMin()*TMath::Pi()/180.;
-    fPhiMax  = geom->GetArm1PhiMax()*TMath::Pi()/180.;
-    fEtaMin  = geom->GetArm1EtaMin();
-    fEtaMax  = geom->GetArm1EtaMax();
-    fDphi    = (fPhiMax-fPhiMin)/fNbinEta;
-    fDeta    = (fEtaMax-fEtaMin)/fNbinEta;
-    fNtot    = fNbinPhi*fNbinEta;
-//
-    SetCellSize(fDeta, fDphi);
-    
 }
 
 
@@ -200,6 +192,35 @@ extern "C" void type_of_call hf1(Int_t& id, Float_t& x, Float_t& wgt);
 
 
 
+void AliEMCALJetFinder::Init()
+{
+//
+// Geometry and I/O initialization
+//
+//
+//
+//  Get geometry parameters from EMCAL
+//
+//
+//  Geometry 
+    AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
+    AliEMCALGeometry* geom = 
+	AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+    fNbinEta = geom->GetNZ();
+    fNbinPhi = geom->GetNPhi();
+    fPhiMin  = geom->GetArm1PhiMin()*TMath::Pi()/180.;
+    fPhiMax  = geom->GetArm1PhiMax()*TMath::Pi()/180.;
+    fEtaMin  = geom->GetArm1EtaMin();
+    fEtaMax  = geom->GetArm1EtaMax();
+    fDphi    = (fPhiMax-fPhiMin)/fNbinEta;
+    fDeta    = (fEtaMax-fEtaMin)/fNbinEta;
+    fNtot    = fNbinPhi*fNbinEta;
+//
+    SetCellSize(fDeta, fDphi);
+//
+//  I/O
+    if (fOutFileName) fOutFile = new TFile(fOutFileName, "recreate");
+}
 
 void AliEMCALJetFinder::Find(Int_t ncell, Int_t ncell_tot, Float_t etc[30000], 
 			     Float_t etac[30000], Float_t phic[30000],
@@ -240,6 +261,7 @@ void AliEMCALJetFinder::Find()
     }
     FindTracksInJetCone();
     WriteJets();
+    fEvent++;
 }
 
 
@@ -374,34 +396,55 @@ void AliEMCALJetFinder::WriteJets()
 // Add all jets to the list
 //
     const Int_t kBufferSize = 4000;
-    TTree *pK = gAlice->TreeK();
-    const char* file = (pK->GetCurrentFile())->GetName();
-// I/O
-    AliEMCAL* pEMCAL = (AliEMCAL* )gAlice->GetModule("EMCAL");
- 
-    if (fDebug > 1)
-    printf("Make Branch - TreeR address %p %p\n",gAlice->TreeR(), pEMCAL);
+    const char* file = 0;
 
-    if (fJets && gAlice->TreeR()) {
-	pEMCAL->MakeBranchInTree(gAlice->TreeR(), 
-				 "EMCALJets", 
-				 &fJets, 
-				 kBufferSize, 
-				 file);
-    }
     Int_t njet = Njets();
+
     for (Int_t nj = 0; nj < njet; nj++)
     {
 	AddJet(*fJetT[nj]);
 	delete fJetT[nj];
     }
 
-    Int_t nev = gAlice->GetHeader()->GetEvent();
-    gAlice->TreeR()->Fill();
-    char hname[30];
-    sprintf(hname,"TreeR%d", nev);
-    gAlice->TreeR()->Write(hname);
-    gAlice->TreeR()->Reset();
+// I/O
+    if (!fOutFileName) {
+//
+// output written to input file
+//
+	AliEMCAL* pEMCAL = (AliEMCAL* )gAlice->GetModule("EMCAL");
+	TTree* pK = gAlice->TreeK();
+	file = (pK->GetCurrentFile())->GetName();
+	if (fDebug > 1)
+	    printf("Make Branch - TreeR address %p %p\n",gAlice->TreeR(), pEMCAL);
+	if (fJets && gAlice->TreeR()) {
+	    pEMCAL->MakeBranchInTree(gAlice->TreeR(), 
+				     "EMCALJets", 
+				     &fJets, 
+				     kBufferSize, 
+				     file);
+	}
+	Int_t nev = gAlice->GetHeader()->GetEvent();
+	gAlice->TreeR()->Fill();
+	char hname[30];
+	sprintf(hname,"TreeR%d", nev);
+	gAlice->TreeR()->Write(hname);
+	gAlice->TreeR()->Reset();
+    } else {
+//
+// Output written to user specified output file
+//
+	TTree* pK = gAlice->TreeK();
+	fInFile  = pK->GetCurrentFile();
+
+	fOutFile->cd();
+	char hname[30];
+	sprintf(hname,"TreeR%d", fEvent);
+	TTree* treeJ = new TTree(hname, "EMCALJets");
+	treeJ->Branch("EMCALJets", &fJets, kBufferSize);
+	treeJ->Fill();
+	treeJ->Write(hname);
+	fInFile->cd();
+    }
     ResetJets();        
 }
 

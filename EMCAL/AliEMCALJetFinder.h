@@ -21,6 +21,7 @@ class AliEMCALJetFinder : public TTask {
     AliEMCALJetFinder();
     AliEMCALJetFinder(const char* name, const char *title);
     virtual ~AliEMCALJetFinder();
+    virtual void  Init();
     virtual void  Find(Int_t ncell, Int_t ncell_tot, Float_t etc[30000], 
 		      Float_t etac[30000], Float_t phic[30000],
 		      Float_t min_move, Float_t max_move, Int_t mode,
@@ -56,6 +57,7 @@ class AliEMCALJetFinder : public TTask {
     virtual Float_t JetEtaW(Int_t);
     virtual TH2F* GetLego() {return fLego;}
     // I/O
+    virtual void SetOutputFileName(char* name) {fOutFileName = name;}
     virtual void FillFromHits(Int_t flag = 0);
     virtual void FillFromHitFlaggedTracks(Int_t flag = 0);
     virtual void FillFromDigits(Int_t flag = 0);
@@ -114,7 +116,10 @@ class AliEMCALJetFinder : public TTask {
     Float_t*                       fPtB;             //! Pt   of tracks in Bg
     Float_t*                       fEtaB;            //! Eta  of tracks in Bg
     Float_t*                       fPhiB;            //! Phi  of tracks in Bg
-
+    char*                          fOutFileName;     //! Output file name
+    TFile*                         fOutFile;         //! Output file
+    TFile*                         fInFile;          //! Output file
+    Int_t                          fEvent;           //! Processed event
     ClassDef(AliEMCALJetFinder,2)        // JetFinder for EMCAL
 }
 ;

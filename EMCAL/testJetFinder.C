@@ -42,13 +42,19 @@ void testJetFinder(Int_t evNumber1=0, Int_t evNumber2=0)
     jetFinder->SetHadronCorrection(0);
 //    jetFinder->SetHadronCorrector(AliEMCALHadronCorrectionv0::Instance());
     jetFinder->SetSamplingFraction(12.9);
-    
+//
+//  I/O
+    jetFinder->SetOutputFileName("jets.root");
+//
+//  Initialization    
+    jetFinder->Init();
 //
 //   Loop over events 
 //
 
     Int_t nhit=0;
     for (Int_t nev = evNumber1; nev<= evNumber2; nev++) {
+	file->cd();
 	Int_t nparticles = gAlice->GetEvent(nev);
 	if (nev < evNumber1) continue;
 	if (nparticles <= 0) return;
