@@ -171,11 +171,12 @@ Float_t AliMUONSt345SlatSegmentation::GetAnod(Float_t xhit) const
 //--------------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 {
-  if (ix<1 || ix>Npx() || iy<1 || iy>Npy() ){
+  if (ix < 1 || ix > Npx() || iy < 1 || iy > Npy() ){
     AliWarning(Form("ix %d or iy %d out of boundaries: Npx=%d and Npy=%d",ix, iy, Npx(), Npy()));
     x=-99999.; y=-99999.;
-  }
-  else { 
+
+  } else { 
+
     //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
     //  Find sector isec
     Int_t isec = Sector(ix,iy);
@@ -189,7 +190,7 @@ void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float
       x = x-(*fDpxD)[isec]/2;
       y = Float_t(iy*(*fDpyD)[isec])-(*fDpyD)[isec]/2.- fCy;  // !!!  
     } else {
-      x=y=0;
+      x = y = 0;
     }
   }
 }
@@ -272,11 +273,11 @@ void AliMUONSt345SlatSegmentation::SetHit(Float_t x, Float_t y)
   fXhit = x;
   fYhit = y;
     
- //  if (x < 0) fXhit = 0;
-//   if (y < 0) fYhit = 0;
+  if (x <  fCx[0])    fXhit = fCx[0];
+  if (y < -fDyPCB/2.) fYhit = -fDyPCB/2.;
     
-//   if (x >= fCx[fNsec-1]) fXhit = fCx[fNsec-1];
-//   if (y >= fDyPCB)       fYhit = fDyPCB;
+  if (x > fCx[fNsec-1]) fXhit = fCx[fNsec-1];
+  if (y > fDyPCB/2.)    fYhit = fDyPCB/2.;
     
 }
 //----------------------------------------------------------------------------
@@ -292,31 +293,34 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
 //
     //
     // Find the wire position (center of charge distribution)
-    Float_t x0a=GetAnod(xhit);
-    fXhit=x0a;
-    fYhit=yhit;
+    Float_t x0a = GetAnod(xhit);
+    fXhit = x0a;
+    fYhit = yhit;
     //
     // and take fNsigma*sigma around this center
-    Float_t x01=x0a  - dx ;
-    Float_t x02=x0a  + dx;
-    Float_t y01=yhit - dy;
-    Float_t y02=yhit + dy;
-//     if (x01 < 0) x01 = 0;
-//     if (y01 < 0) y01 = 0;
+    Float_t x01 = x0a  - dx ;
+    Float_t x02 = x0a  + dx;
+    Float_t y01 = yhit - dy;
+    Float_t y02 = yhit + dy;
 
-//     if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1];
+    // check the limits after adding (fNsigma*sigma)
+    if (x01 <  fCx[0])   x01 =  fCx[0];
+    if (y01 < -fDyPCB/2) y01 = -fDyPCB/2;
+
+    if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1]; // still ok ? (CF)
 
    
     Int_t isec=-1;
     for (Int_t i=fNsec-1; i > 0; i--) {
-	if (x02 >= fCx[i-1]) {
-	    isec=i;
-	    if (fCx[isec] == fCx[isec-1] && isec > 1) isec--;
-	    break;
-	}
+      if (x02 >= fCx[i-1]) {
+	isec=i;
+	if (fCx[isec] == fCx[isec-1] && isec > 1) isec--;
+	break;
+      }
     }
-    y02 += Dpy(isec);
-    if (y02 >= fDyPCB) y02 = fDyPCB;
+
+    y02 += Dpy(isec);// why ? (CF)
+    if (y02 >= fDyPCB/2.) y02 = fDyPCB/2;
    
     //
     // find the pads over which the charge distributes
@@ -328,20 +332,20 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
     if (fIxmin < 1) fIxmin = 1;    // patch for the moment (Ch. Finck)
     if (fIymin < 1) fIymin = 1;    
 
-    fXmin=x01;
-    fXmax=x02;    
-    fYmin=y01;
-    fYmax=y02;    
+    fXmin = x01;
+    fXmax = x02;    
+    fYmin = y01;
+    fYmax = y02;    
   
     // 
     // Set current pad to lower left corner
-    if (fIxmax < fIxmin) fIxmax=fIxmin;
-    if (fIymax < fIymin) fIymax=fIymin;    
-    fIx=fIxmin;
-    fIy=fIymin;
+    if (fIxmax < fIxmin) fIxmax = fIxmin;
+    if (fIymax < fIymin) fIymax = fIymin;    
+    fIx = fIxmin;
+    fIy = fIymin;
     
     GetPadC(fIx,fIy,fX,fY);
-    fSector=Sector(fIx,fIy);
+    fSector = Sector(fIx,fIy);
 /*
     printf("\n \n First Pad: %d %d %f %f %d %d %d %f" , 
 	   fIxmin, fIxmax, fXmin, fXmax, fNpx, fId, isec, Dpy(isec));    
@@ -395,15 +399,15 @@ Int_t AliMUONSt345SlatSegmentation::Sector(Int_t ix, Int_t iy)
   //
   // Determine segmentation zone from pad coordinates
   //
-  Int_t isec=-1;
-  for (Int_t i=0; i < fNsec; i++) {
+  Int_t isec = -1;
+  for (Int_t i = 0; i < fNsec; i++) {
     if (ix <= fNpxS[i]) {
-      isec=i;
+      isec = i;
       break;
     }
   }
-  if (isec == -1) AliWarning(Form("Sector = %d  with ix %d and iy %d, max padx %d",
-				  isec, ix, iy,fNpxS[3]));
+  if (isec == -1) AliWarning(Form("Sector = %d  with ix %d and iy %d, Npx %d",
+				  isec, ix, iy, fNpx));
 
   return isec;
 
