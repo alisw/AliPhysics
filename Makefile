@@ -67,19 +67,19 @@ STRUCT_DIRS	= html conf macros data share include Euclid picts \
 
 LIBRARY_DIRS	= MINICERN GEANT321 PYTHIA PDF
 
-dist: AliRoot3.01.tar.gz
+dist: AliRoot$(VERSION).tar.gz
 
-AliRoot3.01.tar.gz: $(STRUCT_DIRS) $(ALIROOT_DIRS) ALIROOT
+AliRoot$(VERSION).tar.gz: $(STRUCT_DIRS) $(ALIROOT_DIRS) ALIROOT
 
-distall: AliOffline3.01.tar.gz
+distall: AliOffline$(VERSION).tar.gz
 
-AliOffline3.01.tar.gz: $(STRUCT_DIRS) $(ALIROOT_DIRS) $(LIBRARY_DIRS) ALIROOT
+AliOffline$(VERSION).tar.gz: $(STRUCT_DIRS) $(ALIROOT_DIRS) $(LIBRARY_DIRS) ALIROOT
 
-distlib: AliLibs3.01.tar.gz
+distlib: AliLibs$(VERSION).tar.gz
 
-AliLibs3.01.tar.gz: $(LIBRARY_DIRS)
+AliLibs$(VERSION).tar.gz: $(LIBRARY_DIRS)
 
-AliRoot3.01.tar.gz AliLibs3.01.tar.gz AliOffline3.01.tar.gz:
+AliRoot$(VERSION).tar.gz AliLibs$(VERSION).tar.gz AliOffline$(VERSION).tar.gz:
 		@rm -f $(ALICE)/$@ 
 		@rm -f `find . -name '*~' -print` \
                        `find . -name '*.bak' -print` \
