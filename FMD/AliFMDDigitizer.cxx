@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -63,9 +63,9 @@ AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager)
 {
   // ctor which should be used
   //  fDebug =0;
-   if (GetDebug()>1)
+#ifgef DEBUG
      Info("AliFMDDigitizer"," processed");
-
+#endif
 }
 
 //------------------------------------------------------------------------
