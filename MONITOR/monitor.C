@@ -29,7 +29,7 @@ void monitor(const char* alienDir = ".")
   }
 
   // start the monitoring
-  AliMonitorProcess process(alienDir);
-  process.Run();
-//  new AliMonitorControl(&process);
+  AliMonitorProcess *process = new AliMonitorProcess(alienDir);
+  //  process->Run();
+  new AliMonitorControl(process);
 }
