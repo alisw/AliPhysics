@@ -191,6 +191,14 @@ void AliMUONData::AddRecTrack(const AliMUONTrack& track)
   new(lrectracks[fNrectracks++]) AliMUONTrack(track);
 }
 //____________________________________________________________________________
+TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane) 
+{
+  if (fDigits)
+    return ( (TClonesArray*) fDigits->At(DetectionPlane) );
+  else
+    return NULL;
+}
+//____________________________________________________________________________
 Bool_t   AliMUONData::IsRawClusterBranchesInTree()
 {
   if (TreeR()==0x0) {
@@ -430,7 +438,14 @@ void AliMUONData::MakeBranch(Option_t* option)
     Info("MakeBranch","Making Branch for TreeP is not yet ready. \n");
   }
 }
-
+//____________________________________________________________________________
+TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
+{
+  if (fRawClusters) 
+    return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );
+  else
+    return NULL;
+}
 //____________________________________________________________________________
 void AliMUONData::ResetDigits()
 {

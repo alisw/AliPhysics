@@ -129,7 +129,7 @@ G3GUI()
 ============================================================
  How to run MUONdisplay
 ============================================================
-Frist you need to perfomr a full simulation: 
+First you need to perform a full simulation: 
 generation, digitalisation and clusterisation
 .L $ALICE_ROOT/MUON/MUONdisplay.C
 MUONdisplay(0,"galice.root")

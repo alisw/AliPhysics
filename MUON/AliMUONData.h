@@ -55,12 +55,10 @@ class AliMUONData : public TNamed {
     virtual void   AddRecTrack(const AliMUONTrack& track);
 
     TClonesArray*  Hits() {return fHits;}
-    TClonesArray*  Digits(Int_t DetectionPlane) 
-      {return ( (TClonesArray*) fDigits->At(DetectionPlane) );}
+    TClonesArray*  Digits(Int_t DetectionPlane);
     TClonesArray*  LocalTrigger() {return fLocalTrigger;}
     TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
-    TClonesArray*  RawClusters(Int_t DetectionPlane)
-      {return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );}
+    TClonesArray*  RawClusters(Int_t DetectionPlane);
     TClonesArray*  RecTracks() {return fRecTracks;}
 
     void           GetTrack(Int_t it) {fLoader->TreeH()->GetEvent(it);}
