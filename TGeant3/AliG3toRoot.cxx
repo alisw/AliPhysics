@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/07/09 11:43:01  morsch
+Class Responsible for G3 -> Root geometry conversion.
+
 */
 
 
@@ -390,9 +393,12 @@ void AliG3toRoot::ReadRotations()
 	 for(irm=1;irm<=nrot;irm++) {
 	     jrm  = fZlq[fGclink->jrotm-irm];
 	     sprintf(name, "R%d", irm);
-	     (*fRotations)[irm-1] =
+         //PH	     (*fRotations)[irm-1] =
+           //PH		 new TRotMatrix(name, "Rotation", fZq[jrm+11], fZq[jrm+12], fZq[jrm+13], 
+           //PH				fZq[jrm+14], fZq[jrm+15], fZq[jrm+16]);
+	     fRotations->AddAt(
 		 new TRotMatrix(name, "Rotation", fZq[jrm+11], fZq[jrm+12], fZq[jrm+13], 
-				fZq[jrm+14], fZq[jrm+15], fZq[jrm+16]);
+				fZq[jrm+14], fZq[jrm+15], fZq[jrm+16]), irm-1);
 	 }
     }
 }
