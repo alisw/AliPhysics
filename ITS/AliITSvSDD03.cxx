@@ -18,28 +18,28 @@
 */
 
 #include <Riostream.h>
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 #include <TMath.h>
 #include <TGeometry.h>
 #include <TNode.h>
-#include <TTUBE.h>
-#include <TTUBS.h>
-#include <TPCON.h>
-#include <TFile.h>    // only required for Tracking function?
-#include <TCanvas.h>
-#include <TObjArray.h>
-#include <TLorentzVector.h>
-#include <TObjString.h>
-#include <TClonesArray.h>
 #include <TBRIK.h>
-#include <TSystem.h>
+//#include <TTUBE.h>
+//#include <TTUBS.h>
+//#include <TPCON.h>
+//#include <TFile.h>    // only required for Tracking function?
+//#include <TCanvas.h>
+//#include <TObjArray.h>
+#include <TLorentzVector.h>
+//#include <TObjString.h>
+//#include <TClonesArray.h>
+//#include <TSystem.h>
 #include <TVirtualMC.h>
 
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliConst.h"
+//#include "AliConst.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
 #include "AliITShit.h"
@@ -59,15 +59,28 @@
 #include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSSD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSDD.h"
-#include "AliITSClusterFinderSSD.h"
-
+//#include "AliITSClusterFinderSPD.h"
+//#include "AliITSClusterFinderSDD.h"
+//#include "AliITSClusterFinderSSD.h"
 
 ClassImp(AliITSvSDD03)
 
 //______________________________________________________________________
-AliITSvSDD03::AliITSvSDD03() {
+AliITSvSDD03::AliITSvSDD03() :
+    AliITS(),
+    fGeomDetOut(kFALSE),
+    fGeomDetIn(kFALSE),
+    fMajorVersion(11),
+    fMinorVersion(-1),
+    fEuclidGeomDet(),
+    fRead(),
+    fWrite(),
+    fDet1(0.0),
+    fDet2(0.0),
+    fChip1(0.0),
+    fChip2(0.0),
+    fIDMother(0),
+    fYear(2003){
     ////////////////////////////////////////////////////////////////////////
     // Standard default constructor for the ITS SDD test beam 2002 version 1.
     // Inputs:
@@ -92,7 +105,21 @@ AliITSvSDD03::AliITSvSDD03() {
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //______________________________________________________________________
-AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year) : AliITS("ITS", title){
+AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year):
+    AliITS("ITS", title),
+    fGeomDetOut(kFALSE),
+    fGeomDetIn(kFALSE),
+    fMajorVersion(11),
+    fMinorVersion(-1),
+    fEuclidGeomDet(),
+    fRead(),
+    fWrite(),
+    fDet1(0.0),
+    fDet2(0.0),
+    fChip1(0.0),
+    fChip2(0.0),
+    fIDMother(0),
+    fYear(2003){
     ////////////////////////////////////////////////////////////////////////
     //    Standard constructor for the ITS SDD testbeam 2002 version 1.
     // Inputs:
@@ -104,10 +131,11 @@ AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year) : AliITS("ITS", title){
     ////////////////////////////////////////////////////////////////////////
     Int_t i;
 
-    fIdN = 2;
+    fIdN = 3;
     fIdName = new TString[fIdN];
     fIdName[0] = "IMBS";
     fIdName[1] = "ITST";
+    fIdName[2] = "ISNT";
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
     fMajorVersion = IsVersion();
@@ -127,7 +155,21 @@ AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year) : AliITS("ITS", title){
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
-AliITSvSDD03::AliITSvSDD03(const AliITSvSDD03 &source) : AliITS(source){
+AliITSvSDD03::AliITSvSDD03(const AliITSvSDD03 &source) : 
+    AliITS(source),
+    fGeomDetOut(kFALSE),
+    fGeomDetIn(kFALSE),
+    fMajorVersion(11),
+    fMinorVersion(-1),
+    fEuclidGeomDet(),
+    fRead(),
+    fWrite(),
+    fDet1(0.0),
+    fDet2(0.0),
+    fChip1(0.0),
+    fChip2(0.0),
+    fIDMother(0),
+    fYear(2003){
     ////////////////////////////////////////////////////////////////////////
     //     Copy Constructor for ITS SDD test beam 2002 version 1.
     // This class is not to be copied. Function only dummy.
@@ -192,8 +234,8 @@ void AliITSvSDD03::BuildGeometry(){
     //    none.
     ////////////////////////////////////////////////////////////////////////
     // Get the top alice volume.
-    TNode *ALIC = gAlice->GetGeometry()->GetNode("alice");
-    ALIC->cd();
+    TNode *nALIC = gAlice->GetGeometry()->GetNode("alice");
+    nALIC->cd();
 
     // Define ITS Mother Volume
     Float_t data[3];
@@ -205,34 +247,34 @@ void AliITSvSDD03::BuildGeometry(){
     data[0] = 10.0;
     data[1] = 50.0;
     data[2] = 100.0;
-    TBRIK *ITSVshape = new TBRIK("ITSVshape","ITS Logical Mother Volume","Air",
+    TBRIK *sITSVshape =new TBRIK("ITSVshape","ITS Logical Mother Volume","Air",
 				 data[0],data[1],data[2]);
-    TNode *ITSV = new TNode("ITSV","ITS Mother Volume",ITSVshape,
+    TNode *sITSV = new TNode("ITSV","ITS Mother Volume",sITSVshape,
 			    0.0,0.0,0.0,0,0);
-    ITSV->cd(); // set ourselve into ITSV subvolume of ALIC
+    sITSV->cd(); // set ourselve into ITSV subvolume of ALIC
 
     // SDD part of telescope (MiniBuS)
     data[0] = 0.705;
     data[1] = 0.5*ddettelescope;
     data[2] = 3.536;
-    TBRIK *IMB0shape = new TBRIK("IMB0shape","SDD wafer","Si",
+    TBRIK *sIMB0shape = new TBRIK("IMB0shape","SDD wafer","Si",
 				 data[0],data[1],data[2]);
     Float_t detMiniBusX,detMiniBusY,detMiniBusZ;
     data[0] = detMiniBusX = 0.64;
     data[1] = detMiniBusY = 0.5*ddettelescope;
     data[2] = detMiniBusZ = 3.48;
-    TBRIK *IMBSshape = new TBRIK("IMBSshape","SDD Sensitive volume","Si",
+    TBRIK *sIMBSshape = new TBRIK("IMBSshape","SDD Sensitive volume","Si",
 				 data[0],data[1],data[2]);
     Float_t chipMiniBusX,chipMiniBusY,chipMiniBusZ;
     data[0] = chipMiniBusX = 0.793;
     data[1] = chipMiniBusY = 0.5*dchipMiniBus;
     data[2] = chipMiniBusZ = 0.68;
-    TBRIK *ICMBshape = new TBRIK("ICMBshape","chip Minibus","Si",
+    TBRIK *sICMBshape = new TBRIK("ICMBshape","chip Minibus","Si",
 				 data[0],data[1],data[2]);
     data[0] = TMath::Max(detMiniBusX,chipMiniBusX);
     data[1] = detMiniBusY+chipMiniBusY;
     data[2] = TMath::Max(detMiniBusZ,chipMiniBusZ);
-    TBRIK *ITELshape = new TBRIK("ITELshape","ITELshape","Air",
+    TBRIK *sITELshape = new TBRIK("ITELshape","ITELshape","Air",
 				 data[0],data[1],data[2]);
 
     // SDD under test
@@ -240,23 +282,23 @@ void AliITSvSDD03::BuildGeometry(){
     data[0] = 0.705;
     data[1] = ddettest;
     data[2] = 3.536;
-    TBRIK *ITS0shape = new TBRIK("ITS0shape","SDD wafer","Si",
+    TBRIK *sITS0shape = new TBRIK("ITS0shape","SDD wafer","Si",
 				 data[0],data[1],data[2]); // contains detector
     data[0] = spdX = 0.64;
     data[1] = spdY = ddettest;
     data[2] = spdZ = 3.48;
-    TBRIK *ITSTshape = new TBRIK("ITSTshape","SDD sensitive volume","Si",
+    TBRIK *sITSTshape = new TBRIK("ITSTshape","SDD sensitive volume","Si",
 				 data[0],data[1],data[2]);
     // ITS0 with no translation and unit rotation matrix.
     data[0] = spdchipX = 0.793;
     data[1] = spdchipY = dchiptest;
     data[2] = spdchipZ = 0.68;
-    TBRIK *IPC0shape = new TBRIK("IPC0shape","Readout Chips","Si",
+    TBRIK *sIPC0shape = new TBRIK("IPC0shape","Readout Chips","Si",
 				 data[0],data[1],data[2]); // chip under test
     data[0] = TMath::Max(spdchipX,spdX);
     data[1] = spdY+spdchipY;
     data[2] = TMath::Max(spdchipZ,spdZ);
-    TBRIK *IDETshape = new TBRIK("IDETshape","Detector Under Test","Air",
+    TBRIK *sIDETshape = new TBRIK("IDETshape","Detector Under Test","Air",
 				 data[0],data[1],data[2]);
     // Place volumes in geometry
     Int_t i,j;
@@ -265,45 +307,77 @@ void AliITSvSDD03::BuildGeometry(){
     pz[1] = pz[0]+2.0;
     pz[2] = pz[1]+38.0+spdY+spdchipY+34.5;
     pz[3] = pz[2]+2.0;
-    TNode *ITEL[4],*ICMB[4],*IMB0[4],*IMBS[4];
-    TNode *IDET = new TNode("IDET","Detector Under Test",IDETshape,
+    TNode *nITEL[4],*nICMB[4],*nIMB0[4],*nIMBS[4];
+    TNode *nIDET = new TNode("IDET","Detector Under Test",sIDETshape,
 			    0.0,0.0,pz[1]+38.0,r0,0);
-    IDET->cd();
-    TNode *ITS0 = new TNode("ITS0","SDD Chip",ITS0shape,
-			    0.0,IDETshape->GetDy()-spdY,0.0,0,0);
-    TNode *IPC0[5];
+    nIDET->cd();
+    TNode *nITS0 = new TNode("ITS0","SDD Chip",sITS0shape,
+			    0.0,sIDETshape->GetDy()-spdY,0.0,0,0);
+    TNode *nIPC0[5];
     for(i=0;i<5;i++) { //place readout chips on the back of SDD chip under test
 	sprintf(name,"IPC0%d",i);
 	sprintf(title,"Readout chip #%d",i+1);
 	j = i-2;
-	IPC0[i] = new TNode(name,title,IPC0shape,
-			    0.0,spdchipY-IDETshape->GetDy(),
+	nIPC0[i] = new TNode(name,title,sIPC0shape,
+			    0.0,spdchipY-sIDETshape->GetDy(),
 			    j*2.0*spdchipZ+j*0.25*(spdZ-5.*spdchipZ),0,0);
     } // end for i
-    ITS0->cd();
-    TNode *ITST = new TNode("ITST","SDD sensitive volume",ITSTshape,
+    nITS0->cd();
+    TNode *nITST = new TNode("ITST","SDD sensitive volume",sITSTshape,
 			    0.0,0.0,0.0,0,0);
     for(Int_t i=0;i<4;i++){
-	ITSV->cd();
+	sITSV->cd();
 	sprintf(name,"ITEL%d",i);
 	sprintf(title,"Test beam telescope element #%d",i+1);
-	ITEL[i] = new TNode(name,title,ITELshape,px,py,pz[i],r0,0);
-	ITEL[i]->cd();
-	ICMB[i] = new TNode("ICMB","Chip MiniBus",ICMBshape,
-			    0.0,-ITELshape->GetDy()+detMiniBusY,0.0,0,0);
-	IMB0[i] = new TNode("IMB0","Chip MiniBus",IMB0shape,
-			    0.0, ITELshape->GetDy()-detMiniBusY,0.0,0,0);
-	IMB0[i]->cd();
-	IMBS[i] = new TNode("IMBS","IMBS",IMBSshape,0.0,0.0,0.0,0,0);
+	nITEL[i] = new TNode(name,title,sITELshape,px,py,pz[i],r0,0);
+	nITEL[i]->cd();
+	nICMB[i] = new TNode("ICMB","Chip MiniBus",sICMBshape,
+			    0.0,-sITELshape->GetDy()+detMiniBusY,0.0,0,0);
+	nIMB0[i] = new TNode("IMB0","Chip MiniBus",sIMB0shape,
+			    0.0, sITELshape->GetDy()-detMiniBusY,0.0,0,0);
+	nIMB0[i]->cd();
+	nIMBS[i] = new TNode("IMBS","IMBS",sIMBSshape,0.0,0.0,0.0,0,0);
 	// place IMBS inside IMB0 with no translation and unit rotation matrix.
     } // end for i
-    ALIC->cd();
-    ITST->SetLineColor(kYellow);
-    fNodes->Add(ITST);
+    nALIC->cd();
+    nITST->SetLineColor(kYellow);
+    fNodes->Add(nITST);
     for(i=0;i<4;i++){
-	IMBS[i]->SetLineColor(kGreen);
-	fNodes->Add(IMBS[i]);
+	nIMBS[i]->SetLineColor(kGreen);
+	fNodes->Add(nIMBS[i]);
     } // end for i
+}
+//______________________________________________________________________
+Int_t AliITSvSDD03::DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,
+                                   Int_t &lad,Int_t &det) const{
+    // Given the Geant id and copy volume number, returns the layer, ladder,
+    // and detector number, allong with the module number of the detector
+    // involved. Returns -1 and lay=0, lad=0, and det=0 if not a sensitive 
+    // volume.
+    // Inputs:
+    //    Int_t id    Geometry volume id number
+    //    Int_t cpy   Geometry copy number
+    // Outputs:
+    //    Int_t lay   ITS layer number
+    //    Int_t lad   ITS ladder number
+    //    Int_t det   ITS detector number
+    // Return:
+    //    Int_t module number.
+    Int_t mod;
+
+    lay = 0; lad = 0; det = 0; mod = -1;
+    if(id==fIdSens[0]){ // Volume name is IMBS (ITEL)
+        lad = 1; det = 1;
+        lay = cpy;
+        if(cpy>4) lay++;
+        mod = lay-1;
+        return mod;
+    }// end if
+    if(id==fIdSens[1]){ // Volume name is ITST (IDet)
+        lad = 1; det = 1;lay = 5; mod = 4;
+        return mod;
+    }// end if
+    return mod;
 }
 //______________________________________________________________________
 void AliITSvSDD03::CreateGeometry(){
@@ -342,7 +416,7 @@ void AliITSvSDD03::CreateGeometry(){
     AliMatrix(idrotm[1], 90.0,0.0, 0.0,0.0, 90.0,270.0); // SSD Y
     data[0] = 100.0*kmm;
     data[1] = 100.0*kmm;
-    data[2] = 800.0*kmm;
+    data[2] = 800.0*kcm;
     gMC->Gsvolu("ITSV","BOX ",idtmed[0],data,3);
     gMC->Gspos("ITSV",1,"ALIC",0.0,0.0,0.0,0,"ONLY");
 
@@ -353,7 +427,7 @@ void AliITSvSDD03::CreateGeometry(){
     data[0] = 10.0*kcm;
     data[1] = 2.0*kcm;
     data[2] = 2.0*kmm;
-    gMC->Gsvolu("ISNT","BOX ",idtmed[3],data,3);
+    gMC->Gsvolu("ISNT","BOX ",idtmed[2],data,3);
     gMC->Gspos("ISNT",1,"ITSV",0.0,0.0,800.0*kmm+data[2],0,"ONLY");
     gMC->Gspos("ISNT",2,"ITSV",0.0,0.0,800.0*kmm,idrotm[2],"ONLY");
     gMC->Gspos("ISNT",3,"ITSV",0.0,0.0,-800.0*kmm,0,"ONLY");
@@ -370,7 +444,7 @@ void AliITSvSDD03::CreateGeometry(){
     gMC->Gsvolu("IMBS","BOX ",idtmed[1],data,3); // sensitive detecor volulme
     gMC->Gspos("IMBS",1,"IMB0",0.0,0.0,0.0,0,"ONLY"); // place IMBS inside
     // Box containing SSD's
-    data[0] = 4.0*kcm;
+    data[0] = 11.6*kcm;
     data[1] = 0.500*kcm;
     data[2] = 5.0*kcm;
     gMC->Gsvolu("ITAI","BOX ",idtmed[0],data,3);
@@ -378,9 +452,9 @@ void AliITSvSDD03::CreateGeometry(){
     data[0] = data[0] + 2.0*kmm;
     data[1] = data[1] + 200.0*kmicm;
     data[2] = data[2] + 2.0*kmm;
-    gMC->Gsvolu("ITEL","BOX ",idtmed[4],data,3);
+    gMC->Gsvolu("ITEL","BOX ",idtmed[3],data,3);
     gMC->Gspos("ITAI",1,"ITEL",0.0,0.0,0.0,0,"ONLY");
-    gMC->Gspos("IMB0",1,"ITAI",0.0,data[1]-detMiniBusY,0.0,0,"ONLY");
+    gMC->Gspos("IMB0",1,"ITAI",0.0,0.0,0.0,0,"ONLY");
 
     // SDD under test
     Float_t sddX,sddY,sddZ;
@@ -400,8 +474,8 @@ void AliITSvSDD03::CreateGeometry(){
     gMC->Gsvolu("IDAI","BOX ",idtmed[0],data,3);
     data[0] = data[0] + 2.0*kmm;
     data[1] = data[1] + 200.0*kmicm;
-    data[2] = data[2] = 2.0*kmm;
-    gMC->Gsvolu("IDET","BOX ",idtmed[0],data,3);
+    data[2] = data[2] + 2.0*kmm;
+    gMC->Gsvolu("IDET","BOX ",idtmed[3],data,3);
     gMC->Gspos("IDAI",1,"IDET",0.0,0.0,0.0,0,"ONLY");
     gMC->Gspos("ITS0",1,"IDAI",0.0,0.0,0.0,0,"ONLY");
 
@@ -502,14 +576,18 @@ void AliITSvSDD03::CreateMaterials(){
 		0.93600E+01*kcm,0.99900E+03);
     AliMedium(2,"SI$",2,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,
 	      epsilSi,stminSi);
-    // sintilator is basicaly polystyrene
-    z[0] = 7.0; a[0] = 14.00674; w[0] = 0.80;
-    AliMixture(3,"Sintilator$",a,z,1.032*kgpcm3,0,w);
+    // sintilator is Lucite
+    z[0] = 1.0; a[0] =  1.00; w[0] = 8.;  // H8
+    z[1] = 6.0; a[1] = 12.00; w[1] = 5.;  // C5
+    z[2] = 8.0; a[2] = 16.00; w[2] = 2.;  // O2
+    AliMixture(3,"Sintilator$",a,z,1.190*kgpcm3,-3,w);
     AliMedium(3,"Sintilator$",3,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,
 	      epsilSi,stminSi);
     // assumed to be Lucite/Plexiglas
-    z[0] = 7.0; a[0] = 14.00674; w[0] = 0.80;
-    AliMixture(4,"PlasticBox$",a,z,1.18*kgpcm3,0,w);
+    z[0] = 1.0; a[0] =  1.00; w[0] = 8.;  // H8
+    z[1] = 6.0; a[1] = 12.00; w[1] = 5.;  // C5
+    z[2] = 8.0; a[2] = 16.00; w[2] = 2.;  // O2
+    AliMixture(4,"PlasticBox$",a,z,1.190*kgpcm3,-3,w);
     AliMedium(4,"PlasticBox$",4,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,
 	      epsilSi,stminSi);
 }
@@ -535,13 +613,13 @@ void AliITSvSDD03::InitAliITSgeom(){
     const Float_t pitch=50.E-4;/*cm*/
     Float_t box[3]={0.5*pitch*(Float_t)np,150.E-4,1.0},p[np],n[np];
     const Int_t ltypess = 2;
-    const Int_t nlayers = 6;
+    const Int_t nlayers = 11;
     const Int_t ndeep = 6;
     Int_t itsGeomTreeNames[ltypess][ndeep],lnam[20],lnum[20];
     Int_t nlad[nlayers],ndet[nlayers];
     Double_t t[3],r[10];
     Float_t  par[20],att[20];
-    Int_t    npar,natt,idshape,imat,imed;
+    Int_t    npar,natt,idshape,imat,imed,id;
     AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
     Int_t mod,typ,lay,lad,det,cpy,i,j,k;
     Char_t names[ltypess][ndeep][4];
@@ -567,34 +645,39 @@ void AliITSvSDD03::InitAliITSgeom(){
     for(i=0;i<ltypess;i++)for(j=0;j<ndeep;j++) 
         strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4);
     //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
-    mod = 5;
+    mod = 11;
     if(fITSgeom!=0) delete fITSgeom;
-    nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
-    ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
+    nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;nlad[5]=1;
+    nlad[6]=1;nlad[7]=1;nlad[8]=1;nlad[9]=1;nlad[10]=1;
+    ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;ndet[5]=1;
+    ndet[6]=1;ndet[7]=1;ndet[8]=1;ndet[9]=1;ndet[10]=1;
     fITSgeom = new AliITSgeom(0,nlayers,nlad,ndet,mod);
+    fIdSens[0] = 0; fIdSens[1] = 1; // Properly reset in Init later.
     for(typ=1;typ<=ltypess;typ++){
         for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
         for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
+        if(typ == 1) id = fIdSens[0];
+        else id = fIdSens[1];
         lad = 1;
         det = 1;
         for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
-            lnum[2] = cpy;
-            lay = cpy;
-            if(cpy>2 && typ==1) lay = cpy +1;
-            if(typ==2) lay = 3;
-            mod = lay-1;
+            mod = DecodeDetector(id,cpy,lay,lad,det);
             ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
                             imat,imed);
+            cout << "0: id,cpy="<<id<<","<<cpy<<" mod,lay,lad,det"<<mod
+                 << ","<<lay<<","<<lad<<","<<det;
             switch (typ){
-            case 1:
+            case 2:
+                fITSgeom->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
+                cout <<" SDD"<<endl;
                 if(!(fITSgeom->IsShapeDefined((Int_t)kSDD))){
-                    fITSgeom->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
                     fITSgeom->ReSetShape(kSDD,new AliITSgeomSDD256(npar,par));
                 } // end if
                 break;
-            case 2:
+            case 1:
+                fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+                cout <<" SSD"<<endl;
                 if(!(fITSgeom->IsShapeDefined((Int_t)kSSD))){
-                    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
                     fITSgeom->ReSetShape(kSSD,new AliITSgeomSSD(box,0.0,0.0,
                                                               np+1,p,np+1,n));
                 } // end if
@@ -630,10 +713,10 @@ void AliITSvSDD03::Init(){
     if(!fGeomDetIn) this->InitAliITSgeom();
     if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
     AliITS::Init();
+    fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 //
     for(i=0;i<72;i++) cout << "*";
     cout << endl;
-    fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 }
 //______________________________________________________________________
 void AliITSvSDD03::SetDefaults(){
@@ -651,8 +734,13 @@ void AliITSvSDD03::SetDefaults(){
     AliITSDetType *iDetType;
     AliITSgeomSDD *s1;
     AliITSgeomSSD *s2;
-    //Int_t i;
-    //Float_t bx[256],bz[280];
+    iDetType=DetType(kSPD);
+    SetResponseModel(kSPD,new AliITSresponseSPD());
+    SetSegmentationModel(kSPD,new AliITSsegmentationSPD());
+    const char *kData0=(iDetType->GetResponseModel())->DataType();
+    if(strstr(kData0,"real") ) iDetType->ClassNames("AliITSdigit",
+						    "AliITSRawClusterSPD");
+    else iDetType->ClassNames("AliITSdigitSPD","AliITSRawClusterSPD");
 
     // SDD
     iDetType=DetType(kSDD);
@@ -670,8 +758,6 @@ void AliITSvSDD03::SetDefaults(){
     if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
 	iDetType->ClassNames("AliITSdigit","AliITSRawClusterSDD");
     } else iDetType->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
-//    SetSimulationModel(kSDD,new AliITSsimulationSDD(seg1,resp1));
-//    iDetType->ReconstructionModel(new AliITSClusterFinderSDD());
 
     // SSD  Layer 5
     iDetType=DetType(kSSD);
@@ -692,8 +778,6 @@ void AliITSvSDD03::SetDefaults(){
     if(strstr(kData2,"real") ) iDetType->ClassNames("AliITSdigit",
 						    "AliITSRawClusterSSD");
     else iDetType->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
-//    SetSimulationModel(kSSD,new AliITSsimulationSSD(seg2,resp2));
-//    iDetType->ReconstructionModel(new AliITSClusterFinderSSD());
 
     if(kNTYPES>3){
 	Warning("SetDefaults",
@@ -713,24 +797,22 @@ void AliITSvSDD03::SetDefaultSimulation(){
 
     AliITSDetType *iDetType;
     AliITSsimulation *sim;
-    iDetType=DetType(kSPD);
+    iDetType = DetType(kSPD);
     sim = iDetType->GetSimulationModel();
     if (!sim) {
         AliITSsegmentation *seg0=
             (AliITSsegmentation*)iDetType->GetSegmentationModel();
+        if(seg0==0) seg0 = new AliITSsegmentationSPD();
         AliITSresponse *res0 = (AliITSresponse*)iDetType->GetResponseModel();
+        if(res0==0) res0 = new AliITSresponseSPD();
         AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
         SetSimulationModel(kSPD,sim0);
     }else{ // simulation exists, make sure it is set up properly.
         ((AliITSsimulationSPD*)sim)->Init(
             (AliITSsegmentationSPD*) iDetType->GetSegmentationModel(),
             (AliITSresponseSPD*) iDetType->GetResponseModel());
-//        if(sim->GetResponseModel()==0) sim->SetResponseModel(
-//            (AliITSresponse*)iDetType->GetResponseModel());
-//        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
-//            (AliITSsegmentation*)iDetType->GetSegmentationModel());
     } // end if
-    iDetType=DetType(kSDD);
+    iDetType = DetType(kSDD);
     sim = iDetType->GetSimulationModel();
     if (!sim) {
         AliITSsegmentation *seg1=
@@ -742,31 +824,23 @@ void AliITSvSDD03::SetDefaultSimulation(){
         ((AliITSsimulationSDD*)sim)->Init(
             (AliITSsegmentationSDD*) iDetType->GetSegmentationModel(),
             (AliITSresponseSDD*) iDetType->GetResponseModel());
-//        if(sim->GetResponseModel()==0) sim->SetResponseModel(
-//            (AliITSresponse*)iDetType->GetResponseModel());
-//        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
-//            (AliITSsegmentation*)iDetType->GetSegmentationModel());
     } //end if
-    iDetType=DetType(kSSD);
+    iDetType = DetType(kSSD);
     sim = iDetType->GetSimulationModel();
     if (!sim) {
         AliITSsegmentation *seg2=
             (AliITSsegmentation*)iDetType->GetSegmentationModel();
         AliITSresponse *res2 = (AliITSresponse*)iDetType->GetResponseModel();
         AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
-        SetSimulationModel(kSDD,sim2);
+        SetSimulationModel(kSSD,sim2);
     }else{ // simulation exists, make sure it is set up properly.
         ((AliITSsimulationSSD*)sim)->Init(
             (AliITSsegmentationSSD*) iDetType->GetSegmentationModel(),
             (AliITSresponseSSD*) iDetType->GetResponseModel());
-//        if(sim->GetResponseModel()==0) sim->SetResponseModel(
-//            (AliITSresponse*)iDetType->GetResponseModel());
-//        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
-//            (AliITSsegmentation*)iDetType->GetSegmentationModel());
     } // end if
 }
 //______________________________________________________________________
-void AliITSvSDD03::DrawModule(){
+void AliITSvSDD03::DrawModule() const{
     ////////////////////////////////////////////////////////////////////////
     //     Draw a shaded view of the ITS SDD test beam version 1.
     // Inputs:
@@ -813,22 +887,44 @@ void AliITSvSDD03::StepManager(){
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-    Int_t         copy, id;
-    TLorentzVector position, momentum;
+    Int_t  copy, id;
     static TLorentzVector position0;
     static Int_t stat0=0;
     if((id=gMC->CurrentVolID(copy) == fIDMother)&&
        (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
-	copy = fTrackReferences->GetEntriesFast();
-	TClonesArray &lTR = *fTrackReferences;
-	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+        copy = fTrackReferences->GetEntriesFast();
+        TClonesArray &lTR = *fTrackReferences;
+        // Fill TrackReference structure with this new TrackReference.
+        new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->
+                                         GetCurrentTrackNumber());
     } // if Outer ITS mother Volume
-    if(!(this->IsActive())){
-	return;
-    } // end if !Active volume.
-    Int_t   vol[5];
+    //if(!(this->IsActive())) return;
+    if(!(gMC->TrackCharge())) return;
+    Int_t   vol[5],copy3;
+    TLorentzVector position, momentum;
     TClonesArray &lhits = *fHits;
+    //
+    // Fill hit structure.
+    gMC->TrackPosition(position);
+    gMC->TrackMomentum(momentum);
+    id   = gMC->CurrentVolID(copy);
+    if(id==fIdSens[0] || id==fIdSens[1]){ // Volumes "ITST" or "IMBS"
+        copy = gMC->CurrentVolOffID(3,copy3);
+        copy = DecodeDetector(id,copy3,vol[0],vol[1],vol[2]);
+        //cout << "0: mod,lay,lad,det="<<copy<<","<<vol[0]<<","<<vol[1]
+        //     <<","<<vol[2]<<" name="<<gMC->CurrentVolName()<<" z="
+        //     <<position.Z()<<endl;
+    }else if(id==fIdSens[2]){ // "ISNT" Sintilator
+        //cout << "1: id,copy="<<id<<","<<copy
+        //     <<" name="<<gMC->CurrentVolName()<<" z="
+        //     <<position.Z()<<endl;
+        return; // Do nothing for now.
+    }else{
+        //cout << "2: id,copy="<<id<<","<<copy
+        //     <<" name="<<gMC->CurrentVolName()<<" z="
+        //     <<position.Z()<<endl;
+        return;
+    } // end if
     //
     // Track status
     vol[3] = 0;
@@ -841,42 +937,17 @@ void AliITSvSDD03::StepManager(){
     if(gMC->IsTrackStop())        vol[3] += 32;
     if(gMC->IsTrackAlive())       vol[3] += 64;
     //
-    // Fill hit structure.
-    if(!(gMC->TrackCharge())) return;
-    id = gMC->CurrentVolID(copy);
-    if(id==fIdSens[0]){  // Volume name "IMBS"
-	vol[2] = 1; // detector
-	id = gMC->CurrentVolOffID(3,copy);
-	//detector copy in the ladder = 1<->4  (ITS1 < I101 < I103 < I10A)
-	vol[1] = copy; // ladder
-	vol[0] = 5; // Lay
-	if(copy>4){
-	    vol[0] = 6;
-	    vol[1] = copy - 4;
-	} // end if
-	if(copy>2) vol[0]++;
-    } else if(id == fIdSens[1]){ // Volume name "ITST"
-	vol[0] = 3; // layer
-	vol[1] = 1; // ladder
-	id = gMC->CurrentVolOffID(3,copy);
-	//detector copy in the ladder = 1<->4  (ITS2 < I1D1 < I1D3 < I20A)
-	vol[2] = 1;  // detector
-    } else return; // end if
-    //
-    gMC->TrackPosition(position);
-    gMC->TrackMomentum(momentum);
     vol[4] = stat0;
     if(gMC->IsTrackEntering()){
-	position0 = position;
-	stat0 = vol[3];
-	return;
-    } // end if IsEntering
-    // Fill hit structure with this new hit only for non-entrerance hits.
-    else new(lhits[fNhits++]) AliITShit(fIshunt,
-					gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,
-					gMC->Edep(),gMC->TrackTime(),position,
-					position0,momentum);
-    //
+        position0 = position;
+        stat0 = vol[3];
+        return;
+    }else{
+        new(lhits[fNhits++]) AliITShit(fIshunt,
+                                   gAlice->GetMCApp()->GetCurrentTrackNumber(),
+                                       vol,gMC->Edep(),gMC->TrackTime(),
+                                       position,position0,momentum);
+    }// end if gMC->IsTrackEnetering()
     position0 = position;
     stat0 = vol[3];
 

@@ -6,7 +6,11 @@
   $Id$
 */
 // ITS step manager and geometry class for the ITS SDD test beam geometry
-// of Summer 2002.
+// of Summer 2003 and later.
+// At present, the geometry and materials need to be checked against the
+// proper geometry of the 2003 test beam. In addition, because the SSD
+// used in the test beam are single sided, the second side needs be ignored.
+// This can cause some problems with the SSD reconstruction code.
 
 #include "AliITS.h"
 
@@ -24,7 +28,7 @@ class AliITSvSDD03 : public AliITS{
                                       return 1;} 
     virtual void   Init(); 
     virtual void   SetDefaults();
-    virtual void   DrawModule();
+    virtual void   DrawModule() const;
     virtual void   StepManager(); 
     virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
                                                  fGeomDetOut = det;}
@@ -54,6 +58,10 @@ class AliITSvSDD03 : public AliITS{
          fChip2 = v;}
     // Replacement default simulation initilization.
     virtual void SetDefaultSimulation();
+    // Decodes the id and copy nuber to give the layer, ladder, and detector 
+    // numbers . Returns the module number.
+    virtual Int_t DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,
+                                 Int_t &lad,Int_t &det) const;
          //
  private:  
     void InitAliITSgeom();
@@ -69,7 +77,7 @@ class AliITSvSDD03 : public AliITS{
     Float_t  fChip1;          // thickness of chip in SDD layer 1
     Float_t  fChip2;          // thickness of chip in SDD layer 2 
     Int_t fIDMother;          //! ITS Mother Volume id.
-    Int_t fYear;              //
+    Int_t fYear;              // Year flag to select different geometries.
 
     ClassDef(AliITSvSDD03,1) // Hits manager and geometry for SDD testbeam
 };
