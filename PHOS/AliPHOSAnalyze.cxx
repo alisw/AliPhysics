@@ -34,6 +34,7 @@
 #include "TTree.h"
 #include "TMath.h"
 #include "TCanvas.h" 
+#include "TStyle.h" 
 
 // --- Standard library ---
 
@@ -52,6 +53,7 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSIndexToObject.h"
+#include "AliPHOSCPV.h"
 
 ClassImp(AliPHOSAnalyze)
 
@@ -87,6 +89,7 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
       fEvt = -999 ; 
 
   }
+  fDebugLevel = 0;
   ResetHistograms() ;
 }
 
@@ -112,23 +115,12 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 
   if (fRootFile->IsOpen() ) 
     fRootFile->Close() ; 
-  if(fRootFile)
-    delete fRootFile ; 
-
-  if(fPHOS)
-    delete fPHOS ; 
-
-  if(fClu)
-    delete fClu ; 
-
-  if(fPID)
-    delete fPID ; 
-
-  if(fRec)
-    delete fRec ; 
-
-  if(fTrs)
-    delete fTrs ; 
+  if(fRootFile) {delete fRootFile ; fRootFile=0 ;}
+  if(fPHOS)     {delete fPHOS     ; fPHOS    =0 ;}
+  if(fClu)      {delete fClu      ; fClu     =0 ;}
+  if(fPID)      {delete fPID      ; fPID     =0 ;}
+  if(fRec)      {delete fRec      ; fRec     =0 ;}
+  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
 
 }
 
@@ -159,7 +151,7 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
 
       //=========== Gets the Kine TTree
       gAlice->TreeK()->GetEvent(0) ;
-            
+      
       //=========== Get the Digit Tree
       gAlice->TreeD()->GetEvent(0) ;
       
@@ -211,7 +203,7 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
 }
 
 //____________________________________________________________________________
- void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)    
+void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)    
 {
   // analyzes Nevents events in a single PHOS module  
   // Events should be reconstructed by Reconstruct()
@@ -251,10 +243,10 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
 	      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;         
 	      if (fClu->IsInEmc(digit)) fhEmcDigit->Fill(fClu->Calibrate(digit->GetAmp())) ; 
 	      else    
-	      {  
-		if (relid[1]<17) fhVetoDigit->Fill(fClu->Calibrate(digit->GetAmp())); 
-		if (relid[1]>16) fhConvertorDigit->Fill(fClu->Calibrate(digit->GetAmp()));
-	      }
+		{  
+		  if (relid[1]<17) fhVetoDigit->Fill(fClu->Calibrate(digit->GetAmp())); 
+		  if (relid[1]>16) fhConvertorDigit->Fill(fClu->Calibrate(digit->GetAmp()));
+		}
 	    }
 	  
 
@@ -308,7 +300,69 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
 }           // endfunction
 
 //____________________________________________________________________________
- void AliPHOSAnalyze::Reconstruct(Int_t Nevents )    
+void AliPHOSAnalyze::ReconstructCPV(Int_t Nevents )    
+{     
+
+  // Perform reconstruction of EMC and CPV (GPS2 or IHEP) for <Nevents> events
+  // Yuri Kharlov. 19 October 2000
+
+  Int_t ievent ;   
+  for ( ievent=0; ievent<Nevents; ievent++) {  
+    if (ievent==0) {
+      cout << "Analyze > Starting Reconstructing " << endl ; 
+      //========== Create the Clusterizer
+      fClu = new AliPHOSClusterizerv1() ; 
+      fClu->SetEmcEnergyThreshold(0.05) ; 
+      fClu->SetEmcClusteringThreshold(0.20) ; 
+      fClu->SetLocalMaxCut(0.03) ;
+      if      (strcmp(fGeom->GetName(),"GPS2") == 0) {
+	fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
+	fClu->SetPpsdClusteringThreshold(0.0000001) ; 
+      }
+      else if (strcmp(fGeom->GetName(),"IHEP") == 0) {
+	fClu->SetLocalMaxCutCPV(0.03) ;
+	fClu->SetLogWeightCutCPV(4.0) ;
+	fClu->SetPpsdEnergyThreshold    (0.09) ;
+      }
+      fClu->SetCalibrationParameters(0., 0.00000001) ; 
+      
+      //========== Creates the track segment maker
+      fTrs = new AliPHOSTrackSegmentMakerv1()  ;
+      
+      //========== Creates the particle identifier for GPS2 only
+      if      (strcmp(fGeom->GetName(),"GPS2") == 0) {
+	fPID = new AliPHOSPIDv1() ;
+	fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
+      }	  
+      
+      //========== Creates the Reconstructioner
+      fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
+      if (fDebugLevel != 0) fRec -> SetDebugReconstruction(kTRUE);     
+    }
+      
+    if (fDebugLevel != 0 ||
+	(ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
+      cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
+    
+    //=========== Connects the various Tree's for evt
+    gAlice->GetEvent(ievent);
+    
+    //=========== Gets the Digit TTree
+    gAlice->TreeD()->GetEvent(0) ;
+    
+    //=========== Do the reconstruction
+    fPHOS->Reconstruction(fRec);
+  }
+
+  if(fClu)      {delete fClu      ; fClu     =0 ;}
+  if(fPID)      {delete fPID      ; fPID     =0 ;}
+  if(fRec)      {delete fRec      ; fRec     =0 ;}
+  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
+  
+}
+//-------------------------------------------------------------------------------------
+
+void AliPHOSAnalyze::Reconstruct(Int_t Nevents )    
 {     
   Int_t ievent ;   
   for ( ievent=0; ievent<Nevents; ievent++)
@@ -335,13 +389,13 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
 	  
 	  //========== Creates the Reconstructioner  
 	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
-	  //  fRec -> SetDebugReconstruction(kTRUE);     
+//     	  fRec -> SetDebugReconstruction(kTRUE);     
 
 	}
       
       //========== Event Number>         
-      if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
-	cout <<  "Analyze > Event is " << ievent << endl ;  
+    if ((ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
+      cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
       
       //=========== Connects the various Tree's for evt
       gAlice->GetEvent(ievent);
@@ -353,11 +407,11 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
       fPHOS->Reconstruction(fRec);
     }
 
-    fClu->Delete();
-    fTrs->Delete();
-    fPID->Delete();
-    fRec->Delete();
-
+  if(fClu)      {delete fClu      ; fClu     =0 ;}
+  if(fPID)      {delete fPID      ; fPID     =0 ;}
+  if(fRec)      {delete fRec      ; fRec     =0 ;}
+  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
+  
 }
 //-------------------------------------------------------------------------------------
 
@@ -439,6 +493,184 @@ void AliPHOSAnalyze::ActivePPSD(Int_t Nevents=1){
 // 	}
 //       cout << "Digits after add " << DigitsList->GetEntries() << endl ;
 
+
+//____________________________________________________________________________
+void AliPHOSAnalyze::ReadAndPrintCPV(Int_t Nevents)
+{
+  //
+  // Read and print generated and reconstructed hits in CPV
+  // Author: Yuri Kharlov
+  // 12 October 2000
+  //
+
+  cout << "Start CPV Analysis"<< endl ;
+  for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
+      
+    //========== Event Number>         
+    cout << endl <<  "==== ReadAndPrintCPV ====> Event is " << ievent+1 << endl ;
+    
+    //=========== Connects the various Tree's for evt
+    gAlice->GetEvent(ievent);
+
+    //=========== Get the Hits Tree
+    gAlice->ResetHits();
+    gAlice->TreeH()->GetEvent(0);
+    
+    //========== Creating branches ===================================
+    AliPHOSRecPoint::RecPointsList ** EmcRecPoints = fPHOS->EmcRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , EmcRecPoints  ) ;
+    
+    AliPHOSRecPoint::RecPointsList ** CpvRecPoints = fPHOS->PpsdRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", CpvRecPoints ) ;
+
+    //=========== Gets the Reconstruction TTree
+    gAlice->TreeR()->GetEvent(0) ;
+
+    // Read and print CPV hits
+
+    TClonesArray *CPVhits;
+    for (Int_t iModule=0; iModule < fGeom->GetNModules(); iModule++) {
+      CPVModule   cpvModule = fPHOS->GetCPVModule(iModule);
+      CPVhits   = cpvModule.Hits();
+      Int_t nCPVhits  = CPVhits->GetEntriesFast();
+      for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
+	CPVHit        *cpvHit = (CPVHit*)CPVhits->UncheckedAt(ihit);
+	TLorentzVector p      = cpvHit->GetMomentum();
+	Float_t        xgen   = cpvHit->GetX();
+	Float_t        zgen   = cpvHit->GetY();
+	Int_t          ipart  = cpvHit->GetIpart();
+	printf("CPV hit in module %d: ",iModule+1);
+	printf(" p = (%f, %f, %f, %f) GeV,\n",
+	       p.Px(),p.Py(),p.Pz(),p.Energy());
+	printf("               xy = (%8.4f, %8.4f) cm, ipart = %d\n",
+	       xgen,zgen,ipart);
+      }
+    }
+
+    // Read and print CPV reconstructed points
+
+    TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
+    AliPHOSPpsdRecPoint *cpvRecPoint ;
+    while( ( cpvRecPoint = (AliPHOSPpsdRecPoint *)nextRP() ) ) {
+      TVector3  locpos;
+      cpvRecPoint->GetLocalPosition(locpos);
+      Int_t PHOSModule = cpvRecPoint->GetPHOSMod();
+      printf("CPV recpoint in module %d: (X,Y,Z) = (%f,%f,%f) cm\n",
+	     PHOSModule,locpos.X(),locpos.Y(),locpos.Z());
+    }
+  }
+}
+
+//____________________________________________________________________________
+void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
+{
+  //
+  // Analyzes CPV characteristics
+  // Author: Yuri Kharlov
+  // 9 October 2000
+  //
+
+  // Book histograms
+
+  TH1F *hDx   = new TH1F("hDx"  ,"CPV x-resolution@reconstruction",100,-5. , 5.);
+  TH1F *hDz   = new TH1F("hDz"  ,"CPV z-resolution@reconstruction",100,-5. , 5.);
+  TH1S *hNrp  = new TH1S("hNrp" ,"CPV rec.point multiplicity",      21,-0.5,20.5);
+
+  cout << "Start CPV Analysis"<< endl ;
+  for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
+      
+    //========== Event Number>         
+    if ( (ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
+      cout << endl <<  "==== AnalyzeCPV ====> Event is " << ievent+1 << endl ;
+    
+    //=========== Connects the various Tree's for evt
+    gAlice->GetEvent(ievent);
+
+    //=========== Get the Hits Tree
+    gAlice->ResetHits();
+    gAlice->TreeH()->GetEvent(0);
+    
+    //========== Creating branches ===================================
+    AliPHOSRecPoint::RecPointsList ** EmcRecPoints = fPHOS->EmcRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , EmcRecPoints  ) ;
+    
+    AliPHOSRecPoint::RecPointsList ** CpvRecPoints = fPHOS->PpsdRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", CpvRecPoints ) ;
+
+    //=========== Gets the Reconstruction TTree
+    gAlice->TreeR()->GetEvent(0) ;
+
+    TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
+    AliPHOSEmcRecPoint *cpvRecPoint ;
+    CPVModule           cpvModule;
+    TClonesArray        *CPVhits;
+    while( ( cpvRecPoint = (AliPHOSEmcRecPoint *)nextRP() ) ) {
+      TVector3  locpos;
+      cpvRecPoint->GetLocalPosition(locpos);
+      Int_t PHOSModule = cpvRecPoint->GetPHOSMod();
+      Int_t rpMult     = cpvRecPoint->GetDigitsMultiplicity();
+      Float_t xrec  = locpos.X();
+      Float_t zrec  = locpos.Z();
+      Float_t dxmin = 1.e+10;
+      Float_t dzmin = 1.e+10;
+
+      cpvModule = fPHOS->GetCPVModule(PHOSModule-1);
+      CPVhits   = cpvModule.Hits();
+      Int_t nCPVhits  = CPVhits->GetEntriesFast();
+      for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
+	CPVHit        *cpvHit = (CPVHit*)CPVhits->UncheckedAt(ihit);
+	Float_t        xgen   = cpvHit->GetX();
+	Float_t        zgen   = cpvHit->GetY();
+	if ( TMath::Abs(xgen-xrec) < TMath::Abs(dxmin) ) dxmin = xgen-xrec;
+	if ( TMath::Abs(zgen-zrec) < TMath::Abs(dzmin) ) dzmin = zgen-zrec;
+      }
+      cpvModule.Clear();
+      hDx  ->Fill(dxmin);
+      hDz  ->Fill(dzmin);
+      hNrp ->Fill(rpMult);
+    }
+
+  }
+
+  // Save histograms
+
+  Text_t outputname[80] ;
+  sprintf(outputname,"%s.analyzed",fRootFile->GetName());
+  TFile output(outputname,"RECREATE");
+  output.cd();
+
+  hDx  ->Write() ;
+  hDz  ->Write() ;
+  hNrp ->Write() ;
+
+  // Plot histograms
+
+  TCanvas *CPVcanvas = new TCanvas("CPV","CPV analysis",20,20,300,900);
+  gStyle->SetOptStat(111111);
+  gStyle->SetOptFit(1);
+  gStyle->SetOptDate(1);
+  CPVcanvas->Divide(3,1);
+
+  CPVcanvas->cd(1);
+  gPad->SetFillColor(10);
+  hNrp->SetFillColor(16);
+  hNrp->Draw();
+
+  CPVcanvas->cd(2);
+  gPad->SetFillColor(10);
+  hDx->SetFillColor(16);
+  hDx->Fit("gaus");
+  hDx->Draw();
+
+  CPVcanvas->cd(3);
+  gPad->SetFillColor(10);
+  hDz->SetFillColor(16);
+  hDz->Fit("gaus");
+  hDz->Draw();
+
+  CPVcanvas->Print("CPV.ps");
+
+}
 
 //____________________________________________________________________________
  void AliPHOSAnalyze::AnalyzeResolutions(Int_t Nevents )    
@@ -918,7 +1150,8 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     //========== Creates the Reconstructioner  
     
     fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;
-    fRec -> SetDebugReconstruction(kFALSE);     
+//      fRec -> SetDebugReconstruction(kFALSE);     
+    fRec -> SetDebugReconstruction(kTRUE);     
     
     //=========== Connect the various Tree's for evt
     

@@ -36,7 +36,10 @@ public:
   void ActivePPSD(Int_t Nevents) ;
   void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
   void Reconstruct(Int_t Nevtents = 100) ;
-  void AnalyzeResolutions(Int_t Nevtents) ;  // analyzes Energy and Position resolutions   ;
+  void ReconstructCPV(Int_t Nevents = 1) ;  // reconstruct points in EMC and CPV
+  void AnalyzeResolutions(Int_t Nevtents) ; // analyzes Energy and Position resolutions   ;
+  void ReadAndPrintCPV(Int_t Nevents);      // Read & print generated and reconstructed hits in CPV
+  void AnalyzeCPV(Int_t Nevents);           // analyzes various CPV characteristics
   void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
   void BookResolutionHistograms() ;         // booking histograms for the Resoluion analysis ;
   void Copy(TObject & obj) ;                // copies an analysis into an other one   
@@ -54,6 +57,7 @@ public:
     assert(0==1) ;
     return *this ; 
   }
+  void SetDebugLevel(Int_t flag) { fDebugLevel = flag; }
  
  private:
   
@@ -66,6 +70,8 @@ public:
   AliPHOSReconstructioner * fRec ;    // a reconstructioner  
   TFile * fRootFile ;                 // the root file that contains the data
   AliPHOSTrackSegmentMaker * fTrs ;   // a tracksegmentmaker ;
+
+  Int_t fDebugLevel;                  // debug level for analysis
 
   TH2F * fhEnergyCorrelations ;     //Energy correlations between Eloss in Convertor and PPSD(2)
 
