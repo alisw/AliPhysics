@@ -87,6 +87,9 @@ class AliITSgeom : public TObject {
     Int_t GetModuleIndex(const Int_t *id){
 	return GetModuleIndex(id[0],id[1],id[2]);}
     void  GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det);
+    // Returns the detector type
+    Int_t GetModuleType(Int_t index){
+	                   return GetGeomMatrix(index)->GetDetectorIndex();}
 //
     Int_t GetStartDet(Int_t dtype );
     Int_t GetLastDet(Int_t dtype);
