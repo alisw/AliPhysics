@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/06 16:49:46  cblume
+Made Getters const
+
 Revision 1.1.2.1  2000/09/22 14:47:52  cblume
 Add the tracking code
 
@@ -57,8 +60,31 @@ AliTRDcluster::AliTRDcluster(AliTRDrecPoint *rp)
   fSigmaY2    = rp->GetSigmaY2();
   fSigmaZ2    = rp->GetSigmaZ2();  
 
-  fSigmaY2    = 1;
-  fSigmaZ2    = 5;  
+  fSigmaY2    = 0.2;
+  fSigmaZ2    = 5.;  
+
+}
+
+//_____________________________________________________________________________
+AliTRDcluster::AliTRDcluster(AliTRDcluster *cl)
+{
+  //
+  // Copy constructor 
+  //
+
+  fDetector   = cl->GetDetector();
+  fTimeBin    = cl->GetLocalTimeBin();
+
+  fTracks[0]  = cl->GetTrackIndex(0);
+  fTracks[1]  = cl->GetTrackIndex(1);
+  fTracks[2]  = cl->GetTrackIndex(2);
+
+  fQ          = cl->GetQ();
+
+  fY          = cl->GetY();
+  fZ          = cl->GetZ();
+  fSigmaY2    = cl->GetSigmaY2();
+  fSigmaZ2    = cl->GetSigmaZ2();  
 
 }
 

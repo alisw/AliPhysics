@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/16 01:16:53  cblume
+Changed timebin 0 to be the one closest to the readout
+
 Revision 1.3  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
 
@@ -68,7 +71,6 @@ AliTRDtimeBin &AliTRDtrackingSector::operator[](Int_t i)
 
 void AliTRDtrackingSector::SetUp()
 { 
-
   AliTRD *TRD = (AliTRD*) gAlice->GetDetector("TRD");
   fGeom = TRD->GetGeometry();
 
@@ -97,9 +99,7 @@ Double_t AliTRDtrackingSector::GetX(Int_t l) const
                                /fTimeBinSize) + 1);
 
     Float_t t0 = fGeom->GetTime0(plane);
-    Double_t x = t0 + time_slice * fTimeBinSize;
-
-    //    cerr<<"plane, tb, x = "<<plane<<","<<time_slice<<","<<x<<endl;
+    Double_t x = t0 - time_slice * fTimeBinSize;
 
     return x;
   }
@@ -127,29 +127,23 @@ Double_t AliTRDtrackingSector::GetMaxY(Int_t l) const
 
 Int_t AliTRDtrackingSector::GetTimeBinNumber(Double_t x) const
 {
-  //Float_t r_out = fGeom->GetTime0(AliTRDgeometry::Nplan()-1) 
-  //              + AliTRDgeometry::DrThick(); 
-  // Changed to new time0 (CBL)
   Float_t r_out = fGeom->GetTime0(AliTRDgeometry::Nplan()-1); 
-  Float_t r_in = fGeom->GetTime0(0);
-  //  cerr<<"GetTimeBinNumber: r_in,r_out = "<<r_in<<","<<r_out<<endl;
+  Float_t r_in = fGeom->GetTime0(0) - AliTRDgeometry::DrThick();
 
   if(x >= r_out) return fN-1;
   if(x <= r_in) return 0;
 
   Float_t gap = fGeom->GetTime0(1) - fGeom->GetTime0(0);
-  //  cerr<<"GetTimeBinNumber: gap = "<<gap<<endl;
 
   Int_t plane = Int_t((x - r_in + fTimeBinSize/2)/gap);
-  //  cerr<<"GetTimeBinNumber: plane="<<plane<<endl;
 
-  Int_t local_tb = Int_t((x-fGeom->GetTime0(plane))/fTimeBinSize + 0.5);
-  //  cerr<<"GetTimeBinNumber: local_tb="<<local_tb<<endl;
+  Int_t local_tb = Int_t((fGeom->GetTime0(plane)-x)/fTimeBinSize + 0.5);
 
-  Int_t time_bin = plane * (Int_t(AliTRDgeometry::DrThick()
-                                 /fTimeBinSize) + 1) + local_tb;
-  //  cerr<<"GetTimeBinNumber: time_bin = "<<time_bin<<endl;
-  
+
+  Int_t tb_per_plane = fN/AliTRDgeometry::Nplan();
+
+  Int_t time_bin = plane * (Int_t(AliTRDgeometry::DrThick()/fTimeBinSize) + 1)
+                   + (tb_per_plane - 1 - local_tb);
 
   return time_bin;
 }
@@ -160,8 +154,11 @@ Int_t AliTRDtrackingSector::GetTimeBin(Int_t det, Int_t local_tb) const
 {
   Int_t plane = fGeom->GetPlane(det);
 
-  Int_t time_bin = plane * (Int_t(AliTRDgeometry::DrThick()
-                                 /fTimeBinSize) + 1) + local_tb;  
+  Int_t tb_per_plane = fN/AliTRDgeometry::Nplan();
+
+  Int_t time_bin = plane * (Int_t(AliTRDgeometry::DrThick()/fTimeBinSize) + 1)
+                   + (tb_per_plane - 1 - local_tb);
+
   return time_bin;
 }
 

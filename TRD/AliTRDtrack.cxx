@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
 Revision 1.2  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -426,28 +429,4 @@ void AliTRDtrack::Streamer(TBuffer &R__b)
    }
 }                                                          
 
-//_____________________________________________________________________________
-void AliTRDseed::CookdEdx(Double_t low, Double_t up) {
-
-  // Calculates dE/dX within the "low" and "up" cuts.
-
-  Int_t i;
-  Int_t nc=this->GetNclusters();
-
-  Int_t swap;//stupid sorting
-  do {
-    swap=0;
-    for (i=0; i<nc-1; i++) {
-      if (fdEdx[i]<=fdEdx[i+1]) continue;
-      Float_t tmp=fdEdx[i]; fdEdx[i]=fdEdx[i+1]; fdEdx[i+1]=tmp;
-      swap++;
-    }
-  } while (swap);
-
-  Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
-  Float_t dedx=0;
-  for (i=nl; i<=nu; i++) dedx += fdEdx[i];
-  dedx /= (nu-nl+1);
-  SetdEdx(dedx);
-}
 

@@ -15,19 +15,23 @@ class AliTRDcluster : public TObject {
 
   AliTRDcluster();
   AliTRDcluster(AliTRDrecPoint *rp);
+  AliTRDcluster(AliTRDcluster *cl);
   
-  virtual Int_t   GetDetector() const           { return fDetector; };
-  virtual Int_t   GetLocalTimeBin() const       { return fTimeBin; }
+  Int_t   GetDetector() const           { return fDetector; };
+  Int_t   GetLocalTimeBin() const       { return fTimeBin; }
 
-  virtual Float_t GetSigmaY2() const            { return fSigmaY2; }
-  virtual Float_t GetSigmaZ2() const            { return fSigmaZ2; }
-  virtual Float_t GetY() const                  { return fY; }
-  virtual Float_t GetZ() const                  { return fZ; }
-  virtual Float_t GetQ() const                  { return fQ; }
+  Float_t GetSigmaY2() const            { return fSigmaY2; }
+  Float_t GetSigmaZ2() const            { return fSigmaZ2; }
+  Float_t GetY() const                  { return fY; }
+  Float_t GetZ() const                  { return fZ; }
+  Float_t GetQ() const                  { return fQ; }
 
-  Int_t   IsUsed() const                        { return (fQ<0) ? 1 : 0; }
-  void    Use()                                 { fQ=-fQ; }
-  Int_t   GetTrackIndex(Int_t i) const          { return fTracks[i]; }
+  Int_t   IsUsed() const                { return (fQ<0) ? 1 : 0; }
+  void    Use()                         { fQ=-fQ; }
+  Int_t   GetTrackIndex(Int_t i) const  { return fTracks[i]; }
+
+  void    SetSigmaY2(Float_t s)         { fSigmaY2 = s; }
+  void    SetSigmaZ2(Float_t s)         { fSigmaZ2 = s; }
 
 
  protected:

@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.6  2000/11/30 17:38:08  cblume
+Changes to get in line with new STEER and EVGEN
+
 Revision 1.5  2000/11/14 14:40:27  cblume
 Correction for the Sun compiler (kTRUE and kFALSE)
 
@@ -34,7 +37,7 @@ Revision 1.1.2.1  2000/09/22 14:47:52  cblume
 Add the tracking code
 
 */   
- 
+
 #include <iostream.h>
 
 #include <TFile.h>
@@ -43,7 +46,6 @@ Add the tracking code
 #include <TTree.h>
 
 #include "AliRun.h"
-
 #include "AliTRD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h" 
@@ -56,6 +58,26 @@ Add the tracking code
 
 ClassImp(AliTRDtracker) 
 
+  const  Int_t     AliTRDtracker::fSeedGap            = 35;  
+  const  Int_t     AliTRDtracker::fSeedStep           = 5;   
+
+
+  const  Float_t   AliTRDtracker::fMinClustersInTrack = 0.5;  
+  const  Float_t   AliTRDtracker::fMinClustersInSeed  = 0.5;  
+  const  Float_t   AliTRDtracker::fSeedDepth          = 0.5; 
+  const  Float_t   AliTRDtracker::fSkipDepth          = 0.2;
+  const  Float_t   AliTRDtracker::fMaxSeedDeltaZ      = 30.;  
+  const  Float_t   AliTRDtracker::fMaxSeedC           = 0.01; 
+  const  Float_t   AliTRDtracker::fMaxSeedTan         = 1.2;  
+  const  Float_t   AliTRDtracker::fMaxSeedVertexZ     = 200.; 
+  const  Float_t   AliTRDtracker::fLabelFraction      = 0.5;  
+  const  Float_t   AliTRDtracker::fWideRoad           = 30.;
+
+  const  Double_t  AliTRDtracker::fMaxChi2            = 12.; 
+  const  Double_t  AliTRDtracker::fSeedErrorSY        = 0.1;
+  const  Double_t  AliTRDtracker::fSeedErrorSY3       = 2.5;
+  const  Double_t  AliTRDtracker::fSeedErrorSZ        = 0.1;
+
 //____________________________________________________________________
 AliTRDtracker::AliTRDtracker()
 {
@@ -63,10 +85,9 @@ AliTRDtracker::AliTRDtracker()
   // Default constructor
   //   
 
-  fInputFile = NULL;
   fEvent     = 0;
-
   fGeom      = NULL;
+
   fNclusters = 0;
   fClusters  = NULL; 
   fNseeds    = 0;
@@ -80,10 +101,9 @@ AliTRDtracker::AliTRDtracker()
 AliTRDtracker::AliTRDtracker(const Text_t* name, const Text_t* title)
                   :TNamed(name, title)
 {
-  fInputFile = NULL;
   fEvent     = 0;
-
   fGeom      = NULL;
+
   fNclusters = 0;
   fClusters  = new TObjArray(2000); 
   fNseeds    = 0;
@@ -93,38 +113,44 @@ AliTRDtracker::AliTRDtracker(const Text_t* name, const Text_t* title)
 
 }   
 
-
 //___________________________________________________________________
 AliTRDtracker::~AliTRDtracker()
 {
-  if (fInputFile) {
-    fInputFile->Close();
-    delete fInputFile;
-  }
   delete fClusters;
   delete fTracks;
   delete fSeeds;
   delete fGeom;
 }   
 
+//___________________________________________________________________
+void AliTRDtracker::Clusters2Tracks()
+{
+  Int_t inner, outer;
+  Int_t fTotalNofTimeBins = fGeom->GetTimeMax() * AliTRDgeometry::Nplan();
+  Int_t nSteps = (Int_t) (fTotalNofTimeBins * fSeedDepth)/fSeedStep;
+
+  for(Int_t i=0; i<nSteps; i++) {
+    printf("step %d out of %d \n", i+1, nSteps);
+    outer=fTotalNofTimeBins-1-i*fSeedStep; inner=outer-fSeedGap;
+    MakeSeeds(inner,outer);
+    FindTracks();
+  } 
+}          
 
 //_____________________________________________________________________
-static Double_t SigmaY2trd(Double_t r, Double_t tgl, Double_t pt)
+Double_t AliTRDtracker::ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt)
 {
   // Parametrised "expected" error of the cluster reconstruction in Y 
 
-  Double_t s = 1.;    
+  Double_t s = 0.2;    
   return s;
 }
 
 //_____________________________________________________________________
-static Double_t SigmaZ2trd(Double_t r, Double_t tgl)
+Double_t AliTRDtracker::ExpectedSigmaZ2(Double_t r, Double_t tgl)
 {
   // Parametrised "expected" error of the cluster reconstruction in Z 
 
-  AliTRD *TRD = (AliTRD*) gAlice->GetDetector("TRD");
-  AliTRDgeometry   *fGeom;   
-  fGeom = TRD->GetGeometry();
   Double_t s, pad = fGeom->GetRowPadSize();
   s = pad * pad /12.;  
   return s;
@@ -182,7 +208,7 @@ inline Double_t f3trd(Double_t x1,Double_t y1,
 
 //___________________________________________________________________
 
-static Int_t FindProlongation(AliTRDseed& t, AliTRDtrackingSector *sec,
+Int_t AliTRDtracker::FindProlongation(AliTRDtrack& t, AliTRDtrackingSector *sec,
                             Int_t s, Int_t rf=0)
 {
   // Starting from current position on track=t this function tries 
@@ -190,8 +216,7 @@ static Int_t FindProlongation(AliTRDseed& t, AliTRDtrackingSector *sec,
   // if a close cluster is found. *sec is a pointer to allocated
   // array of sectors, in which the initial sector has index=s. 
 
-  const Int_t TIME_BINS_TO_SKIP=Int_t(0.2*sec->GetNtimeBins());
-  const Double_t MAX_CHI2=12.;
+  const Int_t TIME_BINS_TO_SKIP=Int_t(fSkipDepth*sec->GetNtimeBins());
   Int_t try_again=TIME_BINS_TO_SKIP;
 
   Double_t alpha=AliTRDgeometry::GetAlpha();
@@ -208,14 +233,14 @@ static Int_t FindProlongation(AliTRDseed& t, AliTRDtrackingSector *sec,
     AliTRDcluster *cl=0;
     UInt_t index=0;
 
-    Double_t max_chi2=MAX_CHI2;
-    //    const AliTRDtimeBin& time_bin=sec[s][nr];
+    Double_t max_chi2=fMaxChi2;
+
     AliTRDtimeBin& time_bin=sec[s][nr];
-    Double_t sy2=SigmaY2trd(t.GetX(),t.GetTgl(),t.GetPt());
-    Double_t sz2=SigmaZ2trd(t.GetX(),t.GetTgl());
+    Double_t sy2=ExpectedSigmaY2(t.GetX(),t.GetTgl(),t.GetPt());
+    Double_t sz2=ExpectedSigmaZ2(t.GetX(),t.GetTgl());
     Double_t road=5.*sqrt(t.GetSigmaY2() + sy2), y=t.GetY(), z=t.GetZ();
 
-    if (road>30) {
+    if (road>fWideRoad) {
       if (t.GetNclusters() > 4) {
 	cerr<<t.GetNclusters()<<" FindProlongation: Road is too wide !\n";
       }
@@ -273,37 +298,36 @@ static Int_t FindProlongation(AliTRDseed& t, AliTRDtrackingSector *sec,
 
 
 //_____________________________________________________________________________
-void AliTRDtracker::GetEvent(const Char_t *name, Int_t nEvent)
+void AliTRDtracker::GetEvent(const Char_t *hitfile, const Char_t *clusterfile)
 {
   // Opens a ROOT-file with TRD-clusters and reads in the cluster-tree
- 
 
-  // Connect the AliRoot file containing Geometry, Kine, and Hits
-  fInputFile = (TFile*) gROOT->GetListOfFiles()->FindObject(name);
+  ReadClusters(fClusters, clusterfile);
+
+  // get geometry from the file with hits
+
+  TFile *fInputFile = (TFile*) gROOT->GetListOfFiles()->FindObject(hitfile);
   if (!fInputFile) {
     printf("AliTRDtracker::Open -- ");
-    printf("Open the ALIROOT-file %s.\n",name);
-    fInputFile = new TFile(name,"UPDATE");
+    printf("Open the ALIROOT-file %s.\n",hitfile);
+    fInputFile = new TFile(hitfile);
   }
   else {
     printf("AliTRDtracker::Open -- ");
-    printf("%s is already open.\n",name);
+    printf("%s is already open.\n",hitfile);
   }
 
   // Get AliRun object from file or create it if not on file
-  //if (!gAlice) {
-    gAlice = (AliRun*) fInputFile->Get("gAlice");
-    if (gAlice) {
-      printf("AliTRDtracker::GetEvent -- ");
-      printf("AliRun object found on file.\n");
-    }
-    else {
-      printf("AliTRDtracker::GetEvent -- ");
-      printf("Could not find AliRun object.\n");
-    }
-  //}        
 
-  fEvent = nEvent;
+  gAlice = (AliRun*) fInputFile->Get("gAlice");
+  if (gAlice) {
+    printf("AliTRDtracker::GetEvent -- ");
+    printf("AliRun object found on file.\n");
+  }
+  else {
+    printf("AliTRDtracker::GetEvent -- ");
+    printf("Could not find AliRun object.\n");
+  }
 
   // Import the Trees for the event nEvent in the file
   Int_t nparticles = gAlice->GetEvent(fEvent);
@@ -317,27 +341,6 @@ void AliTRDtracker::GetEvent(const Char_t *name, Int_t nEvent)
   AliTRD *TRD = (AliTRD*) gAlice->GetDetector("TRD");
   fGeom = TRD->GetGeometry();
 
-  Char_t treeName[14];
-  sprintf(treeName,"TRDrecPoints%d", nEvent);
-
-  TTree *tree=(TTree*)fInputFile->Get(treeName);
-  TBranch *branch=tree->GetBranch("TRDrecPoints");
-  Int_t nentr = (Int_t) tree->GetEntries();
-  printf("found %d entries in %s tree.\n",nentr,treeName);
-
-  for (Int_t i=0; i<nentr; i++) {
-    TObjArray *ioArray = new TObjArray(400);
-    branch->SetAddress(&ioArray);
-    tree->GetEvent(i);
-    Int_t npoints = ioArray->GetEntriesFast();
-    printf("Read %d rec. points from entry %d \n", npoints, i);
-    for(Int_t j=0; j<npoints; j++) {
-      AliTRDrecPoint *p=(AliTRDrecPoint*)ioArray->UncheckedAt(j);
-      AliTRDcluster  *c = new AliTRDcluster(p); 
-      fClusters->AddLast(c);
-    }
-  }
-
 }     
 
 
@@ -348,7 +351,7 @@ void AliTRDtracker::SetUpSectors(AliTRDtrackingSector *sec)
   // Note that the numbering scheme for the TRD tracking_sectors 
   // differs from that of TRD sectors
 
-  for (Int_t i=0; i<AliTRDgeometry::kNsect; i++) sec[i].SetUp();
+  for (Int_t i=0; i<AliTRDgeometry::Nsect(); i++) sec[i].SetUp();
 
   //  Sort clusters into AliTRDtimeBin's within AliTRDtrackSector's 
 
@@ -378,7 +381,7 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
 {
   // Creates track seeds using clusters in timeBins=i1,i2
 
-  Int_t i2 = inner, i1=outer; 
+  Int_t i2 = inner, i1 = outer; 
 
   if (!fClusters) return; 
 
@@ -438,7 +441,7 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
 
         Double_t zz=z1 - z1/x1*(x1-x2);
 	
-        if (TMath::Abs(zz-z2)>30.) continue;   
+        if (TMath::Abs(zz-z2)>fMaxSeedDeltaZ) continue;   
 
         Double_t d=(x2-x1)*(0.-y2)-(0.-x2)*(y2-y1);
         if (d==0.) {cerr<<"TRD MakeSeeds: Straight seed !\n"; continue;}
@@ -447,7 +450,7 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
         x[1]=z1;
         x[2]=f1trd(x1,y1,x2,y2,x3,y3);
 
-        if (TMath::Abs(x[2]) >= 0.01) continue;
+        if (TMath::Abs(x[2]) >= fMaxSeedC) continue;
 
         x[3]=f2trd(x1,y1,x2,y2,x3,y3);
 
@@ -455,15 +458,15 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
 
         x[4]=f3trd(x1,y1,x2,y2,z1,z2);
 
-        if (TMath::Abs(x[4]) > 1.2) continue;
+        if (TMath::Abs(x[4]) > fMaxSeedTan) continue;
 
         Double_t a=asin(x[3]);
         Double_t zv=z1 - x[4]/x[2]*(a+asin(x[2]*x1-x[3]));
-        if (TMath::Abs(zv)>200.) continue;    
+        if (TMath::Abs(zv)>fMaxSeedVertexZ) continue;    
 
-        Double_t sy1=r1[is]->GetSigmaY2(), sz1=r1[is]->GetSigmaZ2()*12;
-        Double_t sy2=cl->GetSigmaY2(),     sz2=cl->GetSigmaZ2()*12;
-        Double_t sy3=100*0.025, sy=0.1, sz=0.1;
+        Double_t sy1=r1[is]->GetSigmaY2(), sz1=r1[is]->GetSigmaZ2();
+        Double_t sy2=cl->GetSigmaY2(),     sz2=cl->GetSigmaZ2();
+        Double_t sy3=fSeedErrorSY3, sy=fSeedErrorSY, sz=fSeedErrorSZ;
 
         Double_t f20=(f1trd(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
         Double_t f22=(f1trd(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
@@ -486,14 +489,12 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
         c[14]=f40*sy1*f40+f41*sz1*f41+f42*sy2*f42+f43*sz2*f43;   
 
         UInt_t index=r1.GetIndex(is);
-        AliTRDseed *track=new AliTRDseed(index, x, c, x1, ns*alpha+shift); 
-
-	//        Float_t l=fTrSec->GetPitch();
-	//        track->SetSampledEdx(r1[is]->fQ/l,0); 
+        AliTRDtrack *track=new AliTRDtrack(index, x, c, x1, ns*alpha+shift); 
 
         Int_t rc=FindProlongation(*track,fTrSec,ns,i2);
        
-        if ((rc < 0) || (track->GetNclusters() < (i1-i2)/2) ) delete track;
+        if ((rc < 0) || 
+            (track->GetNclusters() < (i1-i2)*fMinClustersInSeed)) delete track;
         else { 
 	  fSeeds->AddLast(track); fNseeds++; 
 	  cerr<<"found seed "<<fNseeds<<endl;
@@ -501,8 +502,6 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
       }
     }
   }
-
-  //  delete[] fTrSec;
 
   fSeeds->Sort();
 }          
@@ -524,10 +523,10 @@ void AliTRDtracker::FindTracks()
   for (Int_t i=0; i<nseed; i++) {
     cerr<<"FindTracks: seed "<<i+1<<" out of "<<nseed<<endl;
 
-    AliTRDseed& t=*((AliTRDseed*)fSeeds->UncheckedAt(i));
+    AliTRDtrack& t=*((AliTRDtrack*)fSeeds->UncheckedAt(i));
 
     nSeedClusters = t.GetNclusters();
-    Double_t alpha=AliTRDgeometry::GetAlpha();
+    Double_t alpha=t.GetAlpha();
 
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
     if (alpha < 0.            ) alpha += 2.*TMath::Pi();
@@ -535,22 +534,23 @@ void AliTRDtracker::FindTracks()
 
     if (FindProlongation(t,fTrSec,ns)) {
       cerr<<"No of clusters in the track = "<<t.GetNclusters()<<endl; 
-      if ((t.GetNclusters() >= Int_t(0.3*num_of_time_bins)) && 
-         ((t.GetNclusters()-nSeedClusters)>60)) {
-	t.CookdEdx();
+      if (t.GetNclusters() >= Int_t(fMinClustersInTrack*num_of_time_bins)) {
 	Int_t label = GetTrackLabel(t);
 	t.SetLabel(label);
-	AliTRDtrack* pt=&t;
-        fTracks->AddLast(pt); fNtracks++;
 	UseClusters(t);
+
+        AliTRDtrack *pt = new AliTRDtrack(t);
+        fTracks->AddLast(pt); fNtracks++;     
+
 	cerr<<"found track "<<fNtracks<<endl;
       }                         
     }     
+    delete fSeeds->RemoveAt(i);  
   }            
 }
 
 //__________________________________________________________________
-void AliTRDtracker::UseClusters(AliTRDseed t) {
+void AliTRDtracker::UseClusters(AliTRDtrack t) {
   Int_t ncl=t.GetNclusters();
   for (Int_t i=0; i<ncl; i++) {
     Int_t index = t.GetClusterIndex(i);
@@ -560,11 +560,11 @@ void AliTRDtracker::UseClusters(AliTRDseed t) {
 }
 
 //__________________________________________________________________
-Int_t AliTRDtracker::GetTrackLabel(AliTRDseed t) {
+Int_t AliTRDtracker::GetTrackLabel(AliTRDtrack t) {
 
   Int_t label=123456789, index, i, j;
   Int_t ncl=t.GetNclusters();
-  const Int_t range=300;
+  const Int_t range = AliTRDgeometry::kNplan * fGeom->GetTimeMax();
   Bool_t label_added;
 
   Int_t s[range][2];
@@ -601,7 +601,6 @@ Int_t AliTRDtracker::GetTrackLabel(AliTRDseed t) {
     }
   }
 
-
   Int_t max=0;
   label = -123456789;
 
@@ -610,17 +609,17 @@ Int_t AliTRDtracker::GetTrackLabel(AliTRDseed t) {
       max=s[i][1]; label=s[i][0];
     }
   }
-  if(max > ncl/2) return label;
+  if(max > ncl*fLabelFraction) return label;
   else return -1;
 }
 
 //___________________________________________________________________
 
-Int_t AliTRDtracker::WriteTracks() {
+Int_t AliTRDtracker::WriteTracks(const Char_t *filename) {
 
   TDirectory *savedir=gDirectory;   
 
-  TFile *out=TFile::Open("AliTRDtracks.root","RECREATE");
+  TFile *out=TFile::Open(filename,"RECREATE");
 
   TTree tracktree("TreeT","Tree with TRD tracks");
 
@@ -645,11 +644,9 @@ Int_t AliTRDtracker::WriteTracks() {
   return 0;
 }
 
-
-
 //_____________________________________________________________________________
-void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename
-                               , Int_t nEvent, Int_t option)
+void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename, 
+Int_t option = 1) 
 {
   //
   // Reads AliTRDclusters (option >= 0) or AliTRDrecPoints (option < 0) 
@@ -662,33 +659,48 @@ void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename
   TFile *file = TFile::Open(filename);
   if (!file->IsOpen()) {printf("Can't open file %s !\n",filename); return;} 
 
-  Char_t treeName[14];
-  sprintf(treeName,"TRDrecPoints%d", nEvent);
-
-  TTree *tree=(TTree*)file->Get(treeName);
-  TBranch *branch=tree->GetBranch("TRDrecPoints");
+  TTree *tree = (TTree*)file->Get("ClusterTree");
   Int_t nentr = (Int_t) tree->GetEntries();
-  printf("found %d entries in %s tree.\n",nentr,treeName);
+  printf("found %d entries in %s.\n",nentr,tree->GetName());
 
-  for (Int_t i=0; i<nentr; i++) {
-    TObjArray *ioArray = new TObjArray(400);
-    branch->SetAddress(&ioArray);
-    tree->GetEvent(i);
-    Int_t npoints = ioArray->GetEntriesFast();
-    printf("Read %d rec. points from entry %d \n", npoints, i);
-    for(Int_t j=0; j<npoints; j++) {
-      AliTRDrecPoint *p=(AliTRDrecPoint*)ioArray->UncheckedAt(j);
-      AliTRDcluster  *c = new AliTRDcluster(p); 
-      if( option >= 0) array->AddLast(c);
-      else array->AddLast(p);
+  TBranch *branch;
+  TObjArray *ioArray = new TObjArray(400);
+
+  if( option < 0 ) {
+    branch = tree->GetBranch("RecPoints");
+
+    for (Int_t i=0; i<nentr; i++) {
+      branch->SetAddress(&ioArray);
+      tree->GetEvent(i);
+      Int_t npoints = ioArray->GetEntriesFast();
+      printf("Read %d rec. points from entry %d \n", npoints, i);
+
+      for(Int_t j=0; j<npoints; j++) {
+	AliTRDrecPoint *p=(AliTRDrecPoint*)ioArray->UncheckedAt(j);
+	array->AddLast(p);
+	ioArray->RemoveAt(j);
+      }
+    }
+  }
+  else {
+    branch = tree->GetBranch("Clusters");
+
+    for (Int_t i=0; i<nentr; i++) {
+      branch->SetAddress(&ioArray);
+      tree->GetEvent(i);
+      Int_t npoints = ioArray->GetEntriesFast();
+      printf("Read %d clusters from entry %d \n", npoints, i);
+
+      for(Int_t j=0; j<npoints; j++) {
+	AliTRDcluster *c=(AliTRDcluster*)ioArray->UncheckedAt(j);
+	array->AddLast(c);
+	ioArray->RemoveAt(j);
+      }
     }
   }
 
   file->Close();                   
   savedir->cd(); 
-
+  
 }
-
-
-
 

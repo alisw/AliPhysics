@@ -15,13 +15,8 @@ class AliTRDtrackingSector : public TObject {
 
 // Provides tools to address clusters which lay within one sector
 
-protected:
-  Int_t fN;
-  AliTRDtimeBin           *fTimeBin;    // Pointer to array of AliTRDtimeBin
-  AliTRDgeometry          *fGeom;       // Pointer to TRD geometry
-  Float_t                  fTimeBinSize;  // Time bin size in cm  
-
 public:
+
   AliTRDtrackingSector() {fN=0; fTimeBin=0; fGeom=0; fTimeBinSize=0;}
   virtual ~AliTRDtrackingSector();
   virtual void SetUp();
@@ -34,6 +29,15 @@ public:
   Int_t GetTimeBinNumber(Double_t x) const;
   Int_t GetTimeBin(Int_t det, Int_t local_tb) const;
   Float_t GetPitch() const {return fTimeBinSize;}   
+
+
+protected:
+
+  Int_t fN;
+  AliTRDgeometry          *fGeom;       // Pointer to TRD geometry
+  AliTRDtimeBin           *fTimeBin;    // Pointer to array of AliTRDtimeBin
+  Float_t                  fTimeBinSize;  // Time bin size in cm  
+
 
   ClassDef(AliTRDtrackingSector,1)  // Provides tools to address clusters which lay within one sector
 

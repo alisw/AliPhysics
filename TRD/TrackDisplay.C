@@ -46,12 +46,13 @@ void TrackDisplay(Int_t track) {
   TObjArray rparray(2000);
   TObjArray *RecPointsArray = &rparray;
   AliTRDtracker *Tracker = new AliTRDtracker("dummy","dummy");
-  Tracker->ReadClusters(RecPointsArray,alifile,nEvent,-1); 
+  Tracker->ReadClusters(RecPointsArray,alifile,-1); 
   Int_t nRecPoints = RecPointsArray->GetEntriesFast();
   cerr<<"Found "<<nRecPoints<<" rec. points"<<endl;
 
 
   // Connect the AliRoot file containing Geometry, Kine, Hits, and Digits
+  alifile = "galice.root";
   TFile *gafl = (TFile*) gROOT->GetListOfFiles()->FindObject(alifile);
   if (!gafl) {
     cout << "Open the ALIROOT-file " << alifile << endl;

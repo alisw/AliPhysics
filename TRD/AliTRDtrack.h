@@ -12,29 +12,6 @@ class AliTRDtrack : public TObject {
 
 // Represents reconstructed TRD track
 
-   Int_t    fLab;         // track label  
-   Double_t fChi2;        // total chi2 value for the track  
-   Float_t  fdEdx;        // dE/dx 
-
-   Double_t fAlpha;       // rotation angle
-   Double_t fX;           // running local X-coordinate of the track (time bin)
-
-   Double_t fY;           // Y-coordinate of the track
-   Double_t fZ;           // Z-coordinate of the track
-   Double_t fC;           // track curvature
-   Double_t fE;           // C*x0
-   Double_t fT;           // tangent of the track dip angle   
-
-   Double_t fCyy;                         // covariance
-   Double_t fCzy, fCzz;                   // matrix
-   Double_t fCcy, fCcz, fCcc;             // of the
-   Double_t fCey, fCez, fCec, fCee;       // track
-   Double_t fCty, fCtz, fCtc, fCte, fCtt; // parameters   
-
-   Short_t fN;             // number of clusters associated with the track
-   UInt_t  fIndex[200];    // global indexes of these clusters  
-			   
-
 public:
 
    AliTRDtrack() { fN=0;}
@@ -81,24 +58,34 @@ public:
 
    void     Update(const AliTRDcluster* c, Double_t chi2, UInt_t i);
 
+
+protected:
+
+   Int_t    fLab;         // track label  
+   Double_t fChi2;        // total chi2 value for the track  
+   Float_t  fdEdx;        // dE/dx 
+
+   Double_t fAlpha;       // rotation angle
+   Double_t fX;           // running local X-coordinate of the track (time bin)
+
+   Double_t fY;           // Y-coordinate of the track
+   Double_t fZ;           // Z-coordinate of the track
+   Double_t fC;           // track curvature
+   Double_t fE;           // C*x0
+   Double_t fT;           // tangent of the track dip angle   
+
+   Double_t fCyy;                         // covariance
+   Double_t fCzy, fCzz;                   // matrix
+   Double_t fCcy, fCcz, fCcc;             // of the
+   Double_t fCey, fCez, fCec, fCee;       // track
+   Double_t fCty, fCtz, fCtc, fCte, fCtt; // parameters   
+
+   Short_t fN;             // number of clusters associated with the track
+   UInt_t  fIndex[200];    // global indexes of these clusters  
+			   
+
    ClassDef(AliTRDtrack,1)  // TRD reconstructed tracks
 };                     
 
-
-//-----------------------------------------------------------------
-class AliTRDseed : public AliTRDtrack {
-   Float_t fdEdx[200];
-public:
-   AliTRDseed():AliTRDtrack(){}
-   AliTRDseed(UInt_t index, const Double_t xx[5],
-              const Double_t cc[15], Double_t xr, Double_t alpha):
-              AliTRDtrack(index, xx, cc, xr, alpha) {}
-   void SetSampledEdx(Float_t q, Int_t i) {
-     Double_t c=GetC(), e=GetEta(), t=GetTgl(), x=GetX();
-     q *= TMath::Sqrt((1-(c*x-e)*(c*x-e))/(1+t*t));
-     fdEdx[i]=q;
-   }
-   void CookdEdx(Double_t low=0.05, Double_t up=0.70);
-};            
 
 #endif   

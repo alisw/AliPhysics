@@ -14,25 +14,18 @@ void AliTRDfindTracks() {
     cout << "Loaded shared libraries" << endl;
   }       
 
-  Char_t *alifile = "AliTRDclusters.root"; 
-
-  cerr<<"got this far"<<endl;
+  Char_t *hitfile     = "galice.root"; 
+  Char_t *clusterfile = "AliTRDclusters.root"; 
+  Char_t *trackfile   = "AliTRDtracks.root"; 
 
   AliTRDtracker *Tracker =
     new AliTRDtracker("TheOnlyTRDtrackerSoFar","UniqueVariationOfIt");
 
+  Tracker->GetEvent(hitfile,clusterfile);
 
-  Tracker->GetEvent(alifile);
+  Tracker->Clusters2Tracks();
 
-  Int_t inner, outer, delta=60;
-  for(Int_t i=0; i<1; i++) {
-    outer=179-i; inner=outer-delta;
-    Tracker->MakeSeeds(inner,outer);
-  }
-
-  Tracker->FindTracks();
-
-  Tracker->WriteTracks();
+  Tracker->WriteTracks(trackfile);
 
 
 }

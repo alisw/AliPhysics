@@ -28,7 +28,7 @@ public:
 
   Int_t Find(Double_t y) const; 
 
- protected:
+protected:
  
    unsigned fN;
    AliTRDcluster *fClusters[kMAX_CLUSTER_PER_TIME_BIN];

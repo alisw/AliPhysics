@@ -13,29 +13,30 @@ void slowClusterCreate() {
     cout << "Loaded shared libraries" << endl;
   }
 
-  // Input (and output) file name
-  Char_t *alifile = "galice.root";
+  // Input and output file names
+  Char_t *infile  = "galice.root";
+  Char_t *outfile = "AliTRDclusters.root";
 
   // Create the clusterizer
   AliTRDclusterizerV1 *Clusterizer = 
     new AliTRDclusterizerV1("clusterizer","slow clusterizer class"); 
 
+  // Define output file name
+  Clusterizer->Init(outfile);
+
   // Open the AliRoot file 
-  Clusterizer->Open(alifile);
+  Clusterizer->Open(infile);
 
   // Load the digits
   Clusterizer->ReadDigits();
-
-  // Clean output branch
-  Clusterizer->WriteClusters(-2);
  
   // Find the cluster
   Clusterizer->MakeClusters();
 
-  // Write the cluster into the input file
+  // Write the cluster tree into file AliTRDclusters.root
   Clusterizer->WriteClusters(-1);
 
   // Save the clusterizer class in the AliROOT file
-  Clusterizer->Write();
+  // Clusterizer->Write();
 
 }
