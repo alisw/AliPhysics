@@ -30,7 +30,6 @@
 // 3. load this macro and run testmerge()
 
 // 4. run test function bellow to compare merged digits with original one
-
 // 5. to be  noticed output ftom testx() function - should be bigger than
 //    noise because in proces of digitisation we use different seed
 //    of random numbers for diffusion and gas gain
@@ -48,8 +47,13 @@ void testmerge()
   manager->SetInputStream(0,"galice.root");
   manager->SetInputStream(1,"ev2/galice.root.sdigits");
   AliTPCDigitizer dTPC(manager);
-  manager->SetNrOfEventsToWrite(1);
-  manager->Exec("");
+  manager->SetNrOfEventsToWrite(1); 
+  TStopwatch timer;
+  timer.Start();
+
+  manager->Exec(""); 
+  timer.Stop();
+  timer.Print();
 
 }
 
@@ -59,11 +63,11 @@ void drawmerged(Int_t sec, Int_t row, Int_t x1=-1, Int_t x2=-1, Int_t y1=-1, Int
   //you are tru but othervise graphic doesn't work
   // sec=0; row =0;
   TFile * f = new TFile("galice.root");
-  TFile * f1= new TFile("ev1/galice.root.dig2");
-  TFile * f2= new TFile("ev2/galice.root.dig2");
-  TTree * tree = (TTree*)f->Get("TreeD_75x40_100x60_0;1");
-  TTree * tree1 = (TTree*)f1->Get("TreeD_75x40_100x60_0;1");
-  TTree * tree2 = (TTree*)f2->Get("TreeD_75x40_100x60_0;1");
+  TFile * f1= new TFile("ev1/galice.root.digits");
+  TFile * f2= new TFile("ev2/galice.root.digits");
+  TTree * tree = (TTree*)f->Get("TreeD_75x40_100x60_0");
+  TTree * tree1 = (TTree*)f1->Get("TreeD_75x40_100x60_0");
+  TTree * tree2 = (TTree*)f2->Get("TreeD_75x40_100x60_0");
   //
   AliSimDigits *dig=0;
   AliSimDigits *dig1=0;
@@ -84,26 +88,32 @@ void drawmerged(Int_t sec, Int_t row, Int_t x1=-1, Int_t x2=-1, Int_t y1=-1, Int
   c->cd(1);
   AliH2F * his = dig->DrawDigits("cont1",x1,x2,y1,y2);
   his->SetTitle("MergedDigits");
-  his->SetName("MergedDigits");
-  his->DrawClone();
+  his->SetName("Merged Digits");
+  his->GetXaxis()->SetTitle("time");
+  his->GetYaxis()->SetTitle("pad");
+  his->DrawClone("cont1");
   //
   c->cd(2);
   AliH2F * his1 =dig1->DrawDigits("cont1",x1,x2,y1,y2); 
-  his1->SetTitle("Event 1");
-  his1->SetName("Event1");
-  his1->DrawClone();
+  his1->SetTitle("background");
+  his1->SetName("background");
+  his1->GetXaxis()->SetTitle("time");
+  his1->GetYaxis()->SetTitle("pad");
+  his1->DrawClone("cont1"); 
   //
   c->cd(3);
   AliH2F * his2 =dig2->DrawDigits("cont1",x1,x2,y1,y2); 
-  his2->SetTitle("Event 2");
-  his2->SetName("Event2");
-  his2->DrawClone();  
+  his2->SetTitle("signal");
+  his2->SetName("signal");
+  his2->GetXaxis()->SetTitle("time");
+  his2->GetYaxis()->SetTitle("pad");
+  his2->DrawClone("cont1");  
 }
 
 
 void drawd(TFile * f, Int_t amp1, Int_t amp2)
 {
-  TTree * tree = (TTree*)f->Get("TreeD_75x40_100x60_0;1");
+  TTree * tree = (TTree*)f->Get("TreeD_75x40_100x60_0");
   AliSimDigits *dig=0;
   tree->GetBranch("Segment")->SetAddress(&dig); 
   TH1F * his = new TH1F("his","his",amp2-amp1,amp1,amp2);
@@ -127,9 +137,9 @@ void test1(){
   TFile f("galice.root");
   TFile f1("ev1/galice.root.digits");
   TFile f2("ev2/galice.root.digits");
-  TTree * tree = (TTree*)f.Get("TreeD_75x40_100x60_0;1");
-  TTree * tree1 = (TTree*)f1.Get("TreeD_75x40_100x60_0;1");
-  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0;1");
+  TTree * tree = (TTree*)f.Get("TreeD_75x40_100x60_0");
+  TTree * tree1 = (TTree*)f1.Get("TreeD_75x40_100x60_0");
+  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0");
   //
   AliSimDigits *dig=0;
   AliSimDigits *dig1=0;
@@ -155,8 +165,7 @@ void test1(){
 	Int_t d1 = dig1->GetDigitFast(rows,col);
 	Int_t d2 = dig2->GetDigitFast(rows,col);
 	
-	if (abs(d-d1-d2)>4)
-	//if (d2>5)
+	if (abs(d-(d1+d2))>4)
 	  printf("%d\t%d\t%d\t%d\t%d\t%d\n",i,rows,col,d,d1,d2);
       }
   }
@@ -168,9 +177,9 @@ void test5(){
   TFile f("galice.root");
   TFile f1("ev1/galice.root.dig2");
   TFile f2("ev2/galice.root.dig2");
-  TTree * tree = (TTree*)f.Get("TreeD_75x40_100x60_0;1");
-  TTree * tree1 = (TTree*)f1.Get("TreeD_75x40_100x60_0;1");
-  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0;1");
+  TTree * tree = (TTree*)f.Get("TreeD_75x40_100x60_0");
+  TTree * tree1 = (TTree*)f1.Get("TreeD_75x40_100x60_0");
+  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0");
 
   AliSimDigits *dig=0;
   AliSimDigits *dig1=0;
@@ -212,9 +221,9 @@ void test3(){
   TFile f("galice.root");
   TFile f1("ev1/galice.root.sdigits");
   TFile f2("ev2/galice.root.sdigits");
-  TTree * tree = (TTree*)f.Get("TreeD_75x40_100x60_0;1");
-  TTree * tree1 = (TTree*)f1.Get("TreeS_75x40_100x60_0;1");
-  TTree * tree2 = (TTree*)f2.Get("TreeS_75x40_100x60_0;1");
+  TTree * tree = (TTree*)f.Get("TreeD_75x40_100x60_0");
+  TTree * tree1 = (TTree*)f1.Get("TreeS_75x40_100x60_0");
+  TTree * tree2 = (TTree*)f2.Get("TreeS_75x40_100x60_0");
   //
   AliSimDigits *dig=0;
   AliSimDigits *dig1=0;
@@ -252,14 +261,14 @@ void test3(){
 }
 
 
-void test2(){
+void TestSDigitsDig2(){
   //test of the digits produced by the Hits2Digits 
   //and Hits2SDigits - SDigits2Digits chain
   TFile f1("galice.root.digits");
   TFile f2("galice.root.dig2");
   //
-  TTree * tree1 = (TTree*)f1.Get("TreeD_75x40_100x60_0;1");
-  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0;1");
+  TTree * tree1 = (TTree*)f1.Get("TreeD_75x40_100x60_0");
+  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0");
   //
   AliSimDigits *dig1=0;
   AliSimDigits *dig2=0;
@@ -278,6 +287,61 @@ void test2(){
     //        
     dig1->ExpandBuffer();
     dig2->ExpandBuffer();
+    dig1->ExpandTrackBuffer();
+    dig2->ExpandTrackBuffer();
+    //
+    Int_t nrows = dig1->GetNRows();
+    Int_t ncols = dig1->GetNCols();
+    //
+    for (Int_t rows=0;rows<nrows; rows++)
+      for (Int_t col=0;col<ncols; col++){
+	Int_t d1 = dig1->GetDigitFast(rows,col);
+	Int_t d2 = dig2->GetDigitFast(rows,col);
+	Int_t t1_1 =dig1->GetTrackIDFast(rows,col,0);
+	Int_t t1_2 =dig1->GetTrackIDFast(rows,col,1);
+	Int_t t1_3 =dig1->GetTrackIDFast(rows,col,2);
+	//
+	Int_t t2_1 =dig2->GetTrackIDFast(rows,col,0);
+	Int_t t2_2 =dig2->GetTrackIDFast(rows,col,1);
+	Int_t t2_3 =dig2->GetTrackIDFast(rows,col,2);
+	//
+	if ( (d2>0) && (d1>0))
+	  if ( ( ( d2>2) || (d1>2)) && (t2_1!=t1_1)) {
+	    printf("%d\t%d\t%d\t\t%d\t%d\n",i,rows,col,t1_1,t2_1);
+	    printf("\t\t\t\t%d\t%d\n",d1,d2);
+	  }
+      }
+  }
+}
+
+void TestSDigitsDig1(){
+  //test of the digits produced by the Hits2Digits 
+  //and Hits2SDigits - SDigits2Digits chain
+  TFile f1("galice.root.digits");
+  TFile f2("galice.root.dig2");
+  //
+  TTree * tree1 = (TTree*)f1.Get("TreeD_75x40_100x60_0");
+  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0");
+  //
+  AliSimDigits *dig1=0;
+  AliSimDigits *dig2=0;
+  //  
+  tree1->GetBranch("Segment")->SetAddress(&dig1);
+  tree2->GetBranch("Segment")->SetAddress(&dig2);
+  //
+  for (Int_t i=0;i<6000;i++){
+    //tree->GetEvent(i);
+    tree1->GetEvent(i);
+    tree2->GetEvent(i);
+    //dig->ExpandBuffer();
+    if ( (dig1->GetID()!=i) || (dig2->GetID()!=i) ) {
+      printf("miised semgnets\n");
+    }
+    //        
+    dig1->ExpandBuffer();
+    dig2->ExpandBuffer();
+    dig1->ExpandTrackBuffer();
+    dig2->ExpandTrackBuffer();
     //
     Int_t nrows = dig1->GetNRows();
     Int_t ncols = dig1->GetNCols();
@@ -287,8 +351,10 @@ void test2(){
 	//	Int_t d  = dig->GetDigitFast(rows,col);
 	Int_t d1 = dig1->GetDigitFast(rows,col);
 	Int_t d2 = dig2->GetDigitFast(rows,col);
+ 
 	//	
-	if ((d2>5) &&abs(d1-d2)>2) 	  printf("%d\t%d\t%d\t\t%d\t%d\n",i,rows,col,d1,d2);
+	if ( ((d2>4) || (d1>4))  && abs(d1-d2)>4)
+ 	  printf("%d\t%d\t%d\t\t%d\t%d\n",i,rows,col,d1,d2);
       }
   }
 }
@@ -299,8 +365,8 @@ void test4(){
   //TPC internal test
   TFile f1("galice.root.sdigits");
   TFile f2("galice.root.digits");
-  TTree * tree1 = (TTree*)f1.Get("TreeS_75x40_100x60_0;1");
-  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0;1");
+  TTree * tree1 = (TTree*)f1.Get("TreeS_75x40_100x60_0");
+  TTree * tree2 = (TTree*)f2.Get("TreeD_75x40_100x60_0");
   //
   AliSimDigits *dig1=0;
   AliSimDigits *dig2=0;
@@ -331,6 +397,4 @@ void test4(){
       }
   }
 }
-
-
 

@@ -372,9 +372,9 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
               Int_t idx0=digits->GetTrackID(it,ip,0); 
               Int_t idx1=digits->GetTrackID(it,ip,1);
               Int_t idx2=digits->GetTrackID(it,ip,2);
-              if (idx0>=0 && dig>=zero) count[idx0]+=1;
-              if (idx1>=0 && dig>=zero) count[idx1]+=1;
-              if (idx2>=0 && dig>=zero) count[idx2]+=1;
+              if (idx0>=0 && dig>=zero && idx0<np) count[idx0]+=1;
+              if (idx1>=0 && dig>=zero && idx1<np) count[idx1]+=1;
+              if (idx2>=0 && dig>=zero && idx2<np) count[idx2]+=1;
           } while (digits->Next());
           for (Int_t j=0; j<np; j++) {
               if (count[j]>1) {
