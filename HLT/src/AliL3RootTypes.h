@@ -11,7 +11,7 @@
 #include <math.h>
 
 //#define no_root //switch on the root
-//#define use_aliroot //use AliL3FileHandler??
+#define use_aliroot //use AliL3FileHandler
 
 #ifndef no_root
 #define use_root
