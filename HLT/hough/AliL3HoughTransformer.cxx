@@ -22,6 +22,7 @@ AliL3HoughTransformer::AliL3HoughTransformer()
 {
   //Default constructor
   fParamSpace = 0;
+  fDoMC = kFALSE;
 #ifdef do_mc
   fTrackID = 0;
 #endif
@@ -31,6 +32,7 @@ AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta
 {
   //Normal constructor
   fParamSpace = 0;
+  fDoMC = kFALSE;
 #ifdef do_mc
   fTrackID = 0;
 #endif
@@ -98,11 +100,14 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t 
     }
   
 #ifdef do_mc
-  Int_t ncells = (nxbin+2)*(nybin+2);
-  cout<<"Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fTrackID"<<endl;
-  fTrackID = new TrackIndex*[GetNEtaSegments()];
-  for(Int_t i=0; i<GetNEtaSegments(); i++)
-    fTrackID[i] = new TrackIndex[ncells];
+  if(fDoMC)
+    {
+      Int_t ncells = (nxbin+2)*(nybin+2);
+      cout<<"Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fTrackID"<<endl;
+      fTrackID = new TrackIndex*[GetNEtaSegments()];
+      for(Int_t i=0; i<GetNEtaSegments(); i++)
+	fTrackID[i] = new TrackIndex[ncells];
+    }
 #endif
 }
 
@@ -120,10 +125,13 @@ void AliL3HoughTransformer::Reset()
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     fParamSpace[i]->Reset();
 #ifdef do_mc
-  AliL3Histogram *hist = fParamSpace[0];
-  Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
-  for(Int_t i=0; i<GetNEtaSegments(); i++)
-    memset(fTrackID[i],0,ncells*sizeof(TrackIndex));
+  if(fDoMC)
+    {
+      AliL3Histogram *hist = fParamSpace[0];
+      Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
+      for(Int_t i=0; i<GetNEtaSegments(); i++)
+	memset(fTrackID[i],0,ncells*sizeof(TrackIndex));
+    }
 #endif
 }
 
@@ -228,18 +236,21 @@ void AliL3HoughTransformer::TransformCircle()
 	      Float_t kappa = 2*sin(phi - phi0)/R;
 	      hist->Fill(kappa,phi0,charge);
 #ifdef do_mc
-	      Int_t bin = hist->FindBin(kappa,phi0);
-	      for(Int_t t=0; t<3; t++)
+	      if(fDoMC)
 		{
-		  Int_t label = digPt[j].fTrackID[t];
-		  if(label < 0) break;
-		  UInt_t c;
-		  for(c=0; c<MaxTrack; c++)
-		    if(fTrackID[eta_index][bin].fLabel[c] == label || fTrackID[eta_index][bin].fNHits[c] == 0)
-		      break;
-		  if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircle : Array reached maximum!! "<<c<<endl;
-		  fTrackID[eta_index][bin].fLabel[c] = label;
-		  fTrackID[eta_index][bin].fNHits[c]++;
+		  Int_t bin = hist->FindBin(kappa,phi0);
+		  for(Int_t t=0; t<3; t++)
+		    {
+		      Int_t label = digPt[j].fTrackID[t];
+		      if(label < 0) break;
+		      UInt_t c;
+		      for(c=0; c<MaxTrack; c++)
+			if(fTrackID[eta_index][bin].fLabel[c] == label || fTrackID[eta_index][bin].fNHits[c] == 0)
+			  break;
+		      if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircle : Array reached maximum!! "<<c<<endl;
+		      fTrackID[eta_index][bin].fLabel[c] = label;
+		      fTrackID[eta_index][bin].fNHits[c]++;
+		    }
 		}
 #endif
 	    }
@@ -304,9 +315,12 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
 	  digits[counter].eta_index = GetEtaIndex(eta);
 	  digits[counter].charge = charge;
 #ifdef do_mc
-	  digits[counter].trackID[0] = digPt[di].fTrackID[0];
-	  digits[counter].trackID[1] = digPt[di].fTrackID[1];
-	  digits[counter].trackID[2] = digPt[di].fTrackID[2];
+	  if(fDoMC)
+	    {
+	      digits[counter].trackID[0] = digPt[di].fTrackID[0];
+	      digits[counter].trackID[1] = digPt[di].fTrackID[1];
+	      digits[counter].trackID[2] = digPt[di].fTrackID[2];
+	    }
 #endif
 	  counter++;
 	}
@@ -341,22 +355,25 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
 	  tot_charge = digits[i].charge + digits[j].charge;
 	  hist->Fill(kappa,phi_0,tot_charge);
 #ifdef do_mc
-	  Int_t bin = hist->FindBin(kappa,phi_0);
-	  for(Int_t l=0; l<3; l++)
+	  if(fDoMC)
 	    {
-	      for(Int_t m=0; m<3; m++)
+	      Int_t bin = hist->FindBin(kappa,phi_0);
+	      for(Int_t l=0; l<3; l++)
 		{
-		  if(digits[i].trackID[l] == digits[j].trackID[m])
+		  for(Int_t m=0; m<3; m++)
 		    {
-		      Int_t label = digits[i].trackID[l];
-		      if(label < 0) continue;
-		      UInt_t c;
-		      for(c=0; c<MaxTrack; c++)
-			if(fTrackID[ind][bin].fLabel[c] == label || fTrackID[ind][bin].fNHits[c] == 0)
-			  break;
-		      if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircleC : Array reached maximum!! "<<c<<endl;
-		      fTrackID[ind][bin].fLabel[c] = label;
-		      fTrackID[ind][bin].fNHits[c]++;
+		      if(digits[i].trackID[l] == digits[j].trackID[m])
+			{
+			  Int_t label = digits[i].trackID[l];
+			  if(label < 0) continue;
+			  UInt_t c;
+			  for(c=0; c<MaxTrack; c++)
+			    if(fTrackID[ind][bin].fLabel[c] == label || fTrackID[ind][bin].fNHits[c] == 0)
+			      break;
+			  if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircleC : Array reached maximum!! "<<c<<endl;
+			  fTrackID[ind][bin].fLabel[c] = label;
+			  fTrackID[ind][bin].fNHits[c]++;
+			}
 		    }
 		}
 	    }
@@ -424,7 +441,12 @@ void AliL3HoughTransformer::TransformLine()
 
 Int_t AliL3HoughTransformer::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi)
 {
-
+  if(!fDoMC)
+    {
+      cerr<<"AliL3HoughTransformer::GetTrackID : Flag switched off"<<endl;
+      return -1;
+    }
+  
 #ifdef do_mc
   if(eta_index < 0 || eta_index > GetNEtaSegments())
     {
