@@ -1,27 +1,26 @@
-#ifndef ALIRICHRECONSTRUCTOR_H
-#define ALIRICHRECONSTRUCTOR_H
+#ifndef AliRICHReconstructor_h
+#define AliRICHReconstructor_h
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-#include "AliReconstructor.h"
+#include <AliReconstructor.h>
+#include <AliLog.h>
+#include "AliRICHTracker.h"
 
 class AliRICH;
 
-
-class AliRICHReconstructor: public AliReconstructor {
+class AliRICHReconstructor: public AliReconstructor 
+{
 public:
-  AliRICHReconstructor(): AliReconstructor() {};
-  virtual ~AliRICHReconstructor() {};
-
-  virtual void         Reconstruct(AliRunLoader* runLoader) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-
+           AliRICHReconstructor(): AliReconstructor()          {AliDebug(1,"Start.");}
+  virtual ~AliRICHReconstructor()                              {AliDebug(1,"Start.");}  
+  virtual AliTracker*  CreateTracker(AliRunLoader*)const       {AliDebug(1,"Start.");return new AliRICHTracker;}    //virtual from AliReconstructor
+  virtual void         Reconstruct(AliRunLoader* pAL) const;              //virtual from AliReconstructor
+  virtual void         FillESD(AliRunLoader* pAL, AliESD* pESD) const;    //virtual from AliReconstructor
 private:
-  AliRICH*             GetRICH(AliRunLoader* runLoader) const;
+  AliRICH*             GetRICH(AliRunLoader* pAL) const;
 
-  ClassDef(AliRICHReconstructor, 0)   // class for the RICH reconstruction
+  ClassDef(AliRICHReconstructor, 0)   //class for the RICH reconstruction
 };
 
 #endif

@@ -15,12 +15,11 @@ void Opticals()
   Float_t aIdxSiO2[kNbins];
   Float_t aIdxOpSiO2[kNbins];
         
-  Float_t  e1=10.666,e2=18.125,f1=46.411,f2= 228.71; //RICH TDR page 35 
   for (i=0;i<kNbins;i++){
-    aIdxC6F14[i] = aPckov[i] *0.0172*1e9+1.177;
-    aIdxSiO2[i]  = TMath::Sqrt(1.+f1/(e1*e1-TMath::Power(aPckov[i]*1e9,2))+f2/(e2*e2-TMath::Power(aPckov[i]*1e9,2)));//TDR p.35
-    aIdxCH4[i]   =1.000444;
-    aIdxGrid[i]  =1;
+    aIdxC6F14[i] = (Float_t)AliRICHParam::IndOfRefC6F14(aPckov[i]*1e9);
+    aIdxSiO2[i]  = (Float_t)AliRICHParam::IndOfRefSiO2(aPckov[i]*1e9);
+    aIdxCH4[i]   = (Float_t)AliRICHParam::IndOfRefCH4();
+    aIdxGrid[i]    =1;
     aIdxOpSiO2[i]  =1;
   } 
     

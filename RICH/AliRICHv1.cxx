@@ -32,42 +32,42 @@ ClassImp(AliRICHv1)
 void AliRICHv1::StepManager()
 {
 // Full Step Manager.
-// 3- Ckovs absorbed in Collection electrods
-// 5- Ckovs absorbed in Cathode wires
-// 6- Ckovs absorbed in Anod wires
+// 3- Ckovs absorbed on Collection electrods
+// 5- Ckovs absorbed on Cathode wires
+// 6- Ckovs absorbed on Anod wires
          
   Int_t          copy;
   static Int_t   iCurrentChamber;
 //history of Cerenkovs
   if(gMC->TrackPid()==kCerenkov){
-    if(gMC->IsNewTrack() && (gMC->CurrentVolID(copy)==gMC->VolId("FRE1")||gMC->CurrentVolID(copy)==gMC->VolId("FRE2"))) fCounters(0)++;// 0- Ckovs produced in Freon
-    if(!gMC->IsTrackAlive() && (gMC->CurrentVolID(copy)==gMC->VolId("FRE1")||gMC->CurrentVolID(copy)==gMC->VolId("FRE2"))) fCounters(1)++;// 1- Ckovs absorbed in Freon
-    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("QUAR")) fCounters(2)++;//2- Ckovs absorbed in Quartz
-    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("META")) fCounters(4)++;//4- Ckovs absorbed in CH4
+    if( gMC->IsNewTrack()   && gMC->CurrentVolID(copy)==gMC->VolId("RRAD")) fCounters(0)++;// 0- Ckovs produced in radiator
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("RRAD")) fCounters(1)++;// 1- Ckovs absorbed in radiator
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("RRWI")) fCounters(2)++;// 2- Ckovs absorbed in radiator window
+    if(!gMC->IsTrackAlive() && gMC->CurrentVolID(copy)==gMC->VolId("RICH")) fCounters(4)++;// 4- Ckovs absorbed in CH4
   }
           
 //Treat photons    
   static TLorentzVector cerX4;
-  if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==gMC->VolId("CSI ")){//photon in CSI
-    if(gMC->Edep()>0){//CF+CSI+DE
+  if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==gMC->VolId("RPC ")){//photon in PC
+    if(gMC->Edep()>0){//photon in PC +DE
       if(IsLostByFresnel()){ 
-        if(gMC->TrackPid()==kCerenkov) fCounters(7)++;// 7- Ckovs reflected on CsI
+        if(gMC->TrackPid()==kCerenkov) fCounters(7)++;// 7- Ckovs reflected from CsI
         gMC->StopTrack();
         return;
       }        
-      gMC->TrackPosition(cerX4); gMC->CurrentVolOffID(2,iCurrentChamber);
+      gMC->TrackPosition(cerX4); gMC->CurrentVolOffID(2,iCurrentChamber);//RICH-RPPF-RPC
 	
       AddHit(iCurrentChamber,gAlice->GetMCApp()->GetCurrentTrackNumber(),cerX4.Vect(),cerX4.Vect());//HIT for PHOTON in conditions CF+CSI+DE
-      fCounters(8)++;//4- Ckovs converted in CsI
+      fCounters(8)++;//4- Ckovs converted to electron on CsI
       GenerateFeedbacks(iCurrentChamber);
-    }//CF+CSI+DE
-  }//CF in CSI
+    }//photon in PC and DE >0 
+  }//photon in PC
   
 //Treat charged particles  
   static Float_t eloss;
   static TLorentzVector mipInX4,mipOutX4;
-  if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==gMC->VolId("GAP ")){//MIP in GAP
-    gMC->CurrentVolOffID(3,iCurrentChamber);
+  if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==gMC->VolId("RGAP")){//MIP in GAP
+    gMC->CurrentVolOffID(1,iCurrentChamber);//RICH-RGAP
     if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {//MIP in GAP entering or newly created
       eloss=0;                                                           
       gMC->TrackPosition(mipInX4);
@@ -93,7 +93,7 @@ Bool_t AliRICHv1::IsLostByFresnel()
   Double_t localTheta = TMath::ATan2(TMath::Sqrt(localTc),localMom[1]);
   Double_t cotheta = TMath::Abs(TMath::Cos(localTheta));
   if(gMC->GetRandom()->Rndm() < Fresnel(p4.E()*1e9,cotheta,1)){
-    if(GetDebug()) Info("IsLostByFresnel","Photon lost");
+    AliDebug(1,"Photon lost");
     return kTRUE;
   }else
     return kFALSE;
@@ -106,11 +106,12 @@ void AliRICHv1::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
   
   TLorentzVector x4;
   gMC->TrackPosition(x4);  
-  TVector2 x2=C(iChamber)->Glob2Loc(x4);
-  Int_t sector=P()->Loc2Sec(x2);  if(sector==kBad) return; //hit in dead zone, nothing to produce
+  TVector2 x2=C(iChamber)->Mrs2Pc(x4);//hit position on photocathode plane
+  TVector2 xspe=x2;
+  Int_t sector=P()->Loc2Sec(xspe);  if(sector==kBad) return; //hit in dead zone, nothing to produce
   Int_t iTotQdc=P()->TotQdc(x2,eloss);
-  Int_t iNphotons=gMC->GetRandom()->Poisson(P()->AlphaFeedback(sector)*iTotQdc);    
-  if(GetDebug())Info("GenerateFeedbacks","N photons=%i",iNphotons);
+  Int_t iNphotons=gMC->GetRandom()->Poisson(P()->C(iChamber)->AlphaFeedback(sector)*iTotQdc);    
+  AliDebug(1,Form("N photons=%i",iNphotons));
   Int_t j;
   Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
 //Generate photons
@@ -172,5 +173,5 @@ void AliRICHv1::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
                      outputNtracksStored,
                      1.0);    
   }//feedbacks loop
-  if(GetDebug()) Info("GenerateFeedbacks","Stop.");
+  AliDebug(1,"Stop.");
 }//GenerateFeedbacks()

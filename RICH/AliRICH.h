@@ -77,9 +77,9 @@ class AliRICHcluster :public TObject
 public:
   enum ClusterStatus {kEdge,kShape,kSize,kRaw,kResolved,kEmpty=kBad};
                     AliRICHcluster():TObject(),fCFM(0),fSize(0),fShape(0),fQdc(0),fChamber(0),fX(0),fY(0),fStatus(kEmpty),fDigits(0) {}    
-  virtual          ~AliRICHcluster()                 {Reset();}  
+  virtual          ~AliRICHcluster()                 {AliDebug(1,"Start");/*Reset();*/}  
          void       Reset()                          {DeleteDigits();fCFM=fSize=fShape=fQdc=fChamber=0;fX=fY=0;fStatus=kEmpty;} //cleans the cluster
-         void       DeleteDigits()                   {if(fDigits) delete fDigits; fDigits=0;}           //deletes the list of digits  
+         void       DeleteDigits()                   {if(fDigits) {delete fDigits;} fDigits=0;}           //deletes the list of digits  
   AliRICHcluster&   operator=(const AliRICHcluster&) {return *this;}                                 
          Int_t      Nlocals()                   const{return fSize-10000*(fSize/10000);}                //number of local maximums
          Int_t      Size()                      const{return fSize/10000;}                              //number of digits in cluster
@@ -108,11 +108,12 @@ public:
          Int_t      CombiPid()                  const{return fCFM;}                                        //
          void       CFM(Int_t c,Int_t f,Int_t m)     {fCFM=1000000*c+1000*f+m;}                            //cluster contributors
          TObjArray* Digits()                    const{return fDigits;}                                     //  
-  virtual void      Print(Option_t *option="")const;                                                                //
-  inline  void      AddDigit(AliRICHdigit *pDig);                                                                   //
-  inline  void      CoG(Int_t nLocals);                                                                             //calculates center of gravity
-          void      Fill(AliRICHcluster *pRaw,Double_t x,Double_t y,Double_t q,Int_t cfm)                           //form new resolved cluster from raw one
-                    {fCFM=cfm;fChamber=pRaw->Fchamber();fSize=pRaw->Fsize();fQdc=(Int_t)(q*pRaw->Q());fX=x;fY=y;fStatus=kResolved;} //
+  virtual void      Print(Option_t *option="")const;                                                   //
+  inline  void      AddDigit(AliRICHdigit *pDig);                                                      //
+  inline  void      CoG(Int_t nLocals);                                                                //calculates center of gravity
+          void      Fill(AliRICHcluster *pRaw,Double_t x,Double_t y,Double_t q,Int_t cfm)              //form new resolved cluster from raw one
+                    {fCFM=cfm;fChamber=pRaw->Fchamber();fSize=pRaw->Fsize();fQdc=(Int_t)(q*pRaw->Q());fX=x;fY=y;fStatus=kResolved;} 
+         Double_t   DistTo(TVector2 x)          const{return TMath::Sqrt((x.X()-fX)*(x.X()-fX)+(x.Y()-fY)*(x.Y()-fY));} //distance to given point 
 protected:
   Int_t         fCFM;         //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
   Int_t         fSize;        //10000*(how many digits belong to this cluster) + nLocalMaxima     
@@ -171,9 +172,8 @@ public:
   virtual void          StepManager()                               =0;                                  //interface from AliMC
   virtual void          Hits2SDigits();                                                                  //interface from AliSimulation
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* man) const {return new AliRICHDigitizer(man);}  //interface from AliSimulation
-  virtual void          Reconstruct()                         const;                                     //interface from AliReconstruction
-  virtual void          FillESD(AliESD *pESD)                 const;                                     //interface from AliReconstruction          
-  virtual void          Print(Option_t *option)               const;                                     //prints current RICH status
+//  virtual void          Reconstruct()                         const;                                     //interface from AliReconstruction
+//  virtual void          FillESD(AliESD *pESD)                 const;                                     //interface from AliReconstruction          
   virtual void          SetTreeAddress();                                                                //interface from AliLoader
   virtual void          MakeBranch(Option_t *opt=" ");                                                   //interface from AliLoader
   virtual void          CreateMaterials();                                                               //interface from AliMC
@@ -198,10 +198,12 @@ public:
   AliRICH*        R()                        {return this;}                                 //provides pointer to RICH main object
   TVector         Counters()            const{return fCounters;}                            //provides a set of counters
   void            ControlPlots();                                                           //utility
+  virtual void    Print(Option_t *option="")               const;                           //prints current RICH status
   void            PrintHits    (Int_t iEvent=0);                                            //utility
   void            PrintSDigits (Int_t iEvent=0);                                            //utility
   void            PrintDigits  (Int_t iEvent=0);                                            //utility
   void            PrintClusters(Int_t iEvent=0);                                            //utility
+  void            PrintTracks  (Int_t iEvent=0);                                            //utility
             
   void AddHit(Int_t c,Int_t tid,TVector3 i3,TVector3 o3,Double_t eloss=0){TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(c,tid,i3,o3,eloss);}
   inline void AddSDigit(Int_t c,TVector pad,Double_t q,Int_t pid,Int_t tid); 
@@ -213,7 +215,7 @@ public:
        {Int_t c=cl.C()-1;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));new(tmp[fNclusters[c]++])AliRICHcluster(cl);}
   AliRICHhit* Hit(Int_t tid);           //returns pointer ot RICH hit for a given tid
 protected:  
-  enum                  {kAir=1,kCSI=6,kGAP=9,kAl=10,kCH4=5,kSteel=15,kPerpex=16,kSr90=17};
+  enum                  {kAir=1,kRoha,kSiO2,kC6F14,kCH4,kCsI,kGridCu,kOpSiO2,kGap,kAl,kGlass,kCu,kW,kSteel,kPerpex,kSr90};
   AliRICHParam         *fpParam;             //main RICH parametrization     
                                              //fHits and fDigits belong to AliDetector
   TClonesArray         *fSdigits;            //! list of sdigits  
@@ -233,21 +235,21 @@ protected:
 void AliRICH::CreateHits()
 {
   if(fHits) return;
-  if(GetDebug())Info("CreateHits","creating hits container.");
+  AliDebug(1,"creating hits container.");
   fHits=new TClonesArray("AliRICHhit",10000);   fNhits=0;
 }
 //__________________________________________________________________________________________________
 void AliRICH::CreateSDigits()
 {
   if(fSdigits) return;
-  if(GetDebug())Info("CreateSDigits","creating sdigits container.");
+  AliDebug(1,"creating sdigits container.");
   fSdigits=new TClonesArray("AliRICHdigit",10000); fNsdigits=0;
 }
 //__________________________________________________________________________________________________
 void AliRICH::CreateDigits()
 {
   if(fDigitsNew) return;
-  if(GetDebug())Info("CreateDigits","creating digits containers.");
+  AliDebug(1,"creating digits containers.");
   fDigitsNew = new TObjArray(kNchambers);  
   for(Int_t i=0;i<kNchambers;i++) {fDigitsNew->AddAt(new TClonesArray("AliRICHdigit",10000), i); fNdigitsNew[i]=0;}
 }
@@ -255,7 +257,7 @@ void AliRICH::CreateDigits()
 void AliRICH::CreateClusters()
 {
   if(fClusters) return;
-  if(GetDebug())Info("CreateClusters","creating clusters containers.");
+  AliDebug(1,"creating clusters containers.");
   fClusters = new TObjArray(kNchambers);  
   for(Int_t i=0;i<kNchambers;i++) {fClusters->AddAt(new TClonesArray("AliRICHcluster",10000), i); fNclusters[i]=0;}
 }

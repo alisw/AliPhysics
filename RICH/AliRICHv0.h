@@ -15,7 +15,6 @@ public:
   virtual void   Init()                                              {;}                      //interface from AliRICH
   virtual Int_t  IsVersion()                                    const{return 0;}              //interface from AliRICH
   virtual void   StepManager();                                                               //interface from AliRICH
-  virtual void   CreateGeometry();                                                            //interface from AliRICH
 protected:
   ClassDef(AliRICHv0,1)  //RICH coarse version for material budget study and debuging
 };

@@ -5,19 +5,24 @@
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TObject.h>
+#include <TMath.h>
 #include <TRandom.h>
 #include <TVector.h>
 #include <TVector2.h>
 #include <TVector3.h>
+#include <TRandom.h>
+#include <TError.h>
+#include <TObjArray.h>
+#include <AliLog.h>
+#include <TClass.h>
 
-static const int kNCH=7;           //number of RICH chambers ???
+
 static const int kNchambers=7;     //number of RICH chambers 
 static const int kNpadsX = 160;    //number of pads along X in single chamber
 static const int kNpadsY = 144;    //number of pads along Y in single chamber
 static const int kBad=-101;        //useful static const to mark initial (uninitalised) values
 static const int kNsectors=6;      //number of sectors per chamber
 
-static const int kadc_satm  =  4096;  //dynamic range (10 bits)
 static const int kCerenkov=50000050;  //??? go to something more general like TPDGCode
 static const int kFeedback=50000051;  //??? go to something more general like TPDGCode
 
@@ -29,7 +34,7 @@ public:
                   AliRICHParam():TObject(),fpChambers(0)  {CreateChambers();}
   virtual        ~AliRICHParam()                          {delete fpChambers;}
          void     CreateChambers();
-         AliRICHChamber* C(Int_t i)          {return (AliRICHChamber*)fpChambers->UncheckedAt(i-1);}      //returns pointer to chamber i
+  AliRICHChamber* C(Int_t i)                 {return (AliRICHChamber*)fpChambers->UncheckedAt(i-1);}      //returns pointer to chamber i
   static Int_t    NpadsX()                   {return kNpadsX;}                           //pads along X in chamber
   static Int_t    NpadsY()                   {return kNpadsY;}                           //pads along Y in chamber
   static Int_t    NpadsXsec()                {return NpadsX()/2;}                        //pads along X in sector
@@ -37,41 +42,26 @@ public:
   static Double_t DeadZone()                 {return 2.6;}                               //dead zone size in cm  
   static Double_t PadSizeX()                 {return 0.8;}                               //pad size x in cm 
   static Double_t PadSizeY()                 {return 0.84;}                              //pad size y in cm   
+  
   static Double_t SectorSizeX()              {return NpadsX()*PadSizeX()/2;}             //sector size x in cm
   static Double_t SectorSizeY()              {return NpadsY()*PadSizeY()/3;}             //sector size y in cm 
-  static Double_t PcSizeX()                  {return NpadsX()*PadSizeX()+DeadZone();}    //photocathode size x in cm
-  static Double_t PcSizeY()                  {return NpadsY()*PadSizeY()+2*DeadZone();}  //photocathode size y in cm 
-  static Double_t SizeX()                    {return 132.6;}
-  static Double_t SizeY()                    {return 26;}
-  static Double_t SizeZ()                    {return 136.7;}                             
-  static Double_t Offset()                   {return 490+1.267;}                         //distance from IP to center of chamber in cm 
-  static Double_t AngleYZ()                  {return 19.5*TMath::DegToRad();}            //angle between chambers in YZ plane, rad
-  static Double_t AngleXY()                  {return 20*TMath::DegToRad();}              //angle between chambers in XY plane, rad
-  static Double_t AngleRot()                 {return fgAngleRot*TMath::DegToRad();}      //RICH rotation around Z, rad
-  static Double_t FreonThickness()           {return 1.5;}   
-  static Double_t QuartzThickness()          {return 0.5;}   
-  
-  static Double_t GapProx()                  {return 8.0;}                               //cm between CsI PC and radiator quartz window
-  static Double_t GapColl()                  {return 7.0;}                               //cm between CsI PC and third wire grid (collection wires)     
-  static Double_t GapAnod()                  {return 0.204;}                             //cm between CsI PC and first wire grid (anod wires)     
-  static Double_t GapAmp()                   {return 0.445;}                             //cm between CsI PC and second wire grid (cathode wires)
+  static Double_t PcSizeX()                  {return NpadsX()*PadSizeX()+DeadZone();}    //PC size x, cm
+  static Double_t PcSizeY()                  {return NpadsY()*PadSizeY()+2*DeadZone();}  //PC size y, cm
+   
+  static Double_t Zfreon()                   {return 1.5;}                               //freon thinkness, cm
+  static Double_t Zwin()                     {return 0.5;}                               //radiator quartz window, cm   
+  static Double_t Pc2Win()                   {return 8.0;}                               //cm between CsI PC and radiator quartz window
+  static Double_t Pc2Coll()                  {return 7.0;}                               //cm between CsI PC and third wire grid (collection wires)     
+  static Double_t Pc2Anod()                  {return 0.204;}                             //cm between CsI PC and first wire grid (anod wires)     
+  static Double_t Pc2Cath()                  {return 0.445;}                             //cm between CsI PC and second wire grid (cathode wires)
+  static Double_t Freon2Pc()                 {return Zfreon()+Zwin()+Pc2Win();}          //cm between CsI PC and entrance to freon
   static Double_t PitchAnod()                {return PadSizeY()/2;}                      //cm between anode wires
   static Double_t PitchCath()                {return PadSizeY()/4;}                      //cm between cathode wires
-  static Double_t PitchColl()                {return 0.5;}                               //cm between collect wires
+  static Double_t PitchColl()                {return 0.5;}                               //cm between collection wires
   
-  static Double_t GapThickness()             {return 8.0;}      
-  static Double_t RadiatorToPads()           {return FreonThickness()+QuartzThickness()+GapThickness();}   
-  static Double_t AnodeCathodeGap()          {return 0.2;}                               //between CsI PC and first wire grid     
-  static Double_t QuartzLength()             {return 133;}   
-  static Double_t QuartzWidth()              {return 127.9;}
-  static Double_t OuterFreonLength()         {return 133;}   
-  static Double_t OuterFreonWidth()          {return 41.3;}   
-  static Double_t InnerFreonLength()         {return 133;}   
-  static Double_t InnerFreonWidth()          {return 41.3;}   
   static Double_t IonisationPotential()      {return 26.0e-9;}                            //for CH4 in GeV taken from ????
   static TVector2 MathiesonDelta()           {return TVector2(5*0.18,5*0.18);}            //area of 5 sigmas of Mathieson distribution (cm)
   static Int_t    MaxQdc()                   {return 4095;}                               //QDC number of channels          
-  static Double_t AlphaFeedback(Int_t )      {return 0.030;}                              //determines number of feedback photons
     
   static Bool_t   IsResolveClusters()         {return fgIsResolveClusters;}  //go after resolved clusters?
   static Bool_t   IsWireSag()                 {return fgIsWireSag;}          //take wire sagita in account?
@@ -89,6 +79,10 @@ public:
   static void     SetWireSag(Bool_t status)   {fgIsWireSag=status;}  
   static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
   static void     SetAngleRot(Double_t rot)   {fgAngleRot =rot;}
+  static Double_t IndOfRefC6F14(Double_t eV)  {return eV*0.0172+1.177;}          // eV = photon energy in eV
+  static Double_t IndOfRefSiO2(Double_t eV)   {Double_t e1=10.666,e2=18.125,f1=46.411,f2= 228.71;
+                                     return TMath::Sqrt(1.+f1/(e1*e1-TMath::Power(eV,2))+f2/(e2*e2-TMath::Power(eV,2)));}//TDR p.35
+  static Double_t IndOfRefCH4()               {return 1.000444;}
 
   inline static TVector  Loc2Area(TVector2 x2);                                                    //return area affected by hit x2
   inline static TVector  Loc2Pad(TVector2 x2);                                                     //return pad containing given position
@@ -107,10 +101,11 @@ public:
          static Float_t  SigmaThMean()                 {return fgSigmaThMean;}                     //QDC electronic noise mean
          static Float_t  SigmaThSpread()               {return fgSigmaThSpread;}                   //QDC electronic noise width
                 void     Print(const Option_t *opt="");                                            //virtual
-  inline static void     PropogateHelix(TVector3 x0,TVector3 p0,Double_t s,TVector3 *x,TVector3 *p);                
                 
   inline static Int_t    Loc2Sec(TVector2 &x2);             //return sector, x2->Sector RS
-  inline static Int_t    Pad2Sec(TVector pad);              //return sector
+  inline static Int_t    Pad2Sec(const TVector &pad);              //return sector
+         static Bool_t   IsAccepted(const TVector2 &x2) {return ( x2.X()>=0 && x2.X()<=PcSizeX() && x2.Y()>=0 && x2.Y()<=PcSizeY() ) 
+? kTRUE:kFALSE;}
 protected:
          TObjArray *fpChambers;                             //list of chambers    
   static Bool_t     fgIsWireSag;                            //wire sagitta ON/OFF flag
@@ -156,12 +151,12 @@ Int_t AliRICHParam::Loc2Sec(TVector2 &v2)
   Double_t x=v2.X(),y=v2.Y();  
   if     (v2.X() >= x0 && v2.X() <= x1 )  {sector=1;}
   else if(v2.X() >= x2 && v2.X() <= x3 )  {sector=2; x=v2.X()-x2;}
-  else                                    {sector=kBad; ::Error("Loc2Sec","Position %6.2f,%6.2f is out of chamber in X",v2.X(),v2.Y());return kBad;}
+  else                                    {return kBad;}
   
   if     (v2.Y() >= y0 && v2.Y() <= y1 )  {}                                  //sectors 1 or 2 
   else if(v2.Y() >= y2 && v2.Y() <= y3 )  {sector+=2; y=v2.Y()-y2;}           //sectors 3 or 4
   else if(v2.Y() >= y4 && v2.Y() <= y5 )  {sector+=4; y=v2.Y()-y4;}           //sectors 5 or 6
-  else                                    {sector=kBad; ::Error("Loc2Sec","Position %6.2f,%6.2f is out of chamber in Y",v2.X(),v2.Y());return kBad;}
+  else                                    {return kBad;}
   v2.Set(x,y);
   return sector;
 }//Loc2Sec(Double_t x, Double_t y)
@@ -188,27 +183,27 @@ TVector AliRICHParam::Loc2Pad(TVector2 x2)
   return pad;
 }
 //__________________________________________________________________________________________________
-Int_t AliRICHParam::Pad2Sec(TVector pad)
+Int_t AliRICHParam::Pad2Sec(const TVector &pad)
 {
 // Determines sector containing the given pad.
   Int_t sector=kBad;      
   if     (pad[0] >= 1           && pad[0] <=   NpadsXsec() )    {sector=1;}
   else if(pad[0] >  NpadsXsec() && pad[0] <=   NpadsX()    )    {sector=2;} 
-  else                                                         ::Error("Pad2Sec","Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]);
+  else                                                         AliDebugClass(1,Form("Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]));
     
   if     (pad[1] >= 1             && pad[1] <=   NpadsYsec() )    {}
   else if(pad[1] >  NpadsYsec()   && pad[1] <= 2*NpadsYsec() )    {sector+=2;}
   else if(pad[1] >  2*NpadsYsec() && pad[1] <=   NpadsY()    )    {sector+=4;}
-  else                                                         ::Error("Pad2Sec","Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]);
+  else                                                         AliDebugClass(1,Form("Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]));
 
   return sector;
 }//Pad2Sec()
 //__________________________________________________________________________________________________
 TVector2 AliRICHParam::Pad2Loc(TVector pad)
 {
-// Returns position of the center of the given pad in local system of the chamber    
+// Returns position of the center of the given pad in local system of the chamber (cm)    
 // y ^  5 6
-//   |  3 4        chamber structure
+//   |  3 4        sector numbers
 //   |  1 2
 //    -------> x  
   Double_t x=kBad,y=kBad;
@@ -217,7 +212,7 @@ TVector2 AliRICHParam::Pad2Loc(TVector pad)
   else if(pad[0] > NpadsXsec() && pad[0] <= NpadsX())//it's 2 or 4 or 6
     x=(pad[0]-0.5)*PadSizeX()+DeadZone();
   else
-    ::Error("Pad2Loc","Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]);
+    AliDebugClass(1,Form("Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]));
   
   if(pad[1] > 0 && pad[1] <= NpadsYsec())//it's 1 or 2
     y=(pad[1]-0.5)*PadSizeY();
@@ -226,7 +221,7 @@ TVector2 AliRICHParam::Pad2Loc(TVector pad)
   else if(pad[1] > 2*NpadsYsec() && pad[1]<= NpadsY())//it's 5 or 6
     y=(pad[1]-0.5)*PadSizeY()+2*DeadZone();
   else
-    ::Error("Pad2Loc","Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]);
+    AliDebugClass(1,Form("Wrong pad (%3.0f,%3.0f)",pad[0],pad[1]));
     
   return TVector2(x,y);
 }
@@ -234,7 +229,8 @@ TVector2 AliRICHParam::Pad2Loc(TVector pad)
 Double_t AliRICHParam::GainSag(Double_t x,Int_t sector)
 {
 // Returns % of gain variation due to wire sagita.
-// All curves are parametrized as per sector basis, so y must be apriory transformed to the Sector RS.    
+// All curves are parametrized as per sector basis, so x must be apriory transformed to the Sector RS.    
+// Here x is a distance along wires.  
   x-=SectorSizeX()/2;
   if(x>SectorSizeX()) x-=SectorSizeX(); 
   switch(HV(sector)){
@@ -250,8 +246,7 @@ Int_t AliRICHParam::TotQdc(TVector2 x2,Double_t eloss)
 {
 // Calculates the total charge produced by the eloss in point x2 (Chamber RS).
 // Returns this change parametrised in QDC channels, or 0 if the hit in the dead zone.
-// eloss=0 means photons which provided for only 1 electron
-// eloss > 0 for Mip
+// eloss=0 means photon which produces 1 electron only eloss > 0 for Mip
   if(Loc2Sec(x2)==kBad) return 0; //hit in the dead zone     
   Int_t iNelectrons=Int_t(eloss/IonisationPotential()); if(iNelectrons==0) iNelectrons=1;
   Double_t qdc=0;
@@ -264,13 +259,13 @@ Double_t AliRICHParam::FracQdc(TVector2 x2,TVector pad)
 // Calculates the charge fraction induced to given pad by the hit from the given point.
 // Integrated Mathieson distribution is used.  
   TVector2 center2=Pad2Loc(pad);//gives center of requested pad
-  Double_t normXmin=(x2.X()-center2.X()-PadSizeX()/2)  /AnodeCathodeGap();
-  Double_t normXmax=(x2.X()-center2.X()+PadSizeX()/2)  /AnodeCathodeGap();
-  Double_t normYmin=(x2.Y()-center2.Y()-PadSizeY()/2)  /AnodeCathodeGap();
-  Double_t normYmax=(x2.Y()-center2.Y()+PadSizeY()/2)  /AnodeCathodeGap();
-  
-  if(Loc2Sec(x2)!=Pad2Sec(pad)) return 0;//requested pad does not belong to the sector of the given hit position  
-  else                          return Mathieson(normXmin, normYmin, normXmax, normYmax);
+  Double_t normXmin=(x2.X()-center2.X()-PadSizeX()/2)  /Pc2Cath();//parametrise for Mathienson
+  Double_t normXmax=(x2.X()-center2.X()+PadSizeX()/2)  /Pc2Cath();
+  Double_t normYmin=(x2.Y()-center2.Y()-PadSizeY()/2)  /Pc2Cath();
+  Double_t normYmax=(x2.Y()-center2.Y()+PadSizeY()/2)  /Pc2Cath();
+ 
+//requested pad might not belong to the sector of the given hit position, hence the check:
+  return (Loc2Sec(x2)!=Pad2Sec(pad)) ? 0:Mathieson(normXmin, normYmin, normXmax, normYmax);
 }
 //__________________________________________________________________________________________________
 Double_t AliRICHParam::Mathieson(Double_t xMin,Double_t yMin,Double_t xMax,Double_t yMax)
@@ -305,22 +300,5 @@ Bool_t AliRICHParam::IsOverTh(Int_t ,TVector ,Double_t q)
 {
 // Checks if the current q is over threshold and FEE will save this value to data concentrator.
   return (q>NsigmaTh()*(SigmaThMean()+(1.-2*gRandom->Rndm())*SigmaThSpread()));
-}
-//__________________________________________________________________________________________________
-void AliRICHParam::PropogateHelix(TVector3 x0,TVector3 p0,Double_t s,TVector3 *x,TVector3 *p)
-{
-// Propogates the helix given by (x0,p0) in MRS to the position of interest defined by helix length s  
-  const Double_t c = 0.00299792458;
-  const Double_t Bz = 0.5;       //field in Tesla
-  const Double_t q = 1;          //charge in electron units
-  Double_t a = -c*Bz*q;
- 
-  Double_t rho = a/p0.Mag();
-  p->SetX(p0.X()*TMath::Cos(rho*s)-p0.Y()*TMath::Sin(rho*s));
-  p->SetY(p0.Y()*TMath::Cos(rho*s)+p0.X()*TMath::Sin(rho*s));
-  p->SetZ(p0.Z());
-  x->SetX(x0.X()+p0.X()*TMath::Sin(rho*s)/a-p0.Y()*(1-TMath::Cos(rho*s))/a);
-  x->SetY(x0.Y()+p0.Y()*TMath::Sin(rho*s)/a+p0.X()*(1-TMath::Cos(rho*s))/a);
-  x->SetZ(x0.Z()+p0.Z()*s/p->Mag());
 }
 #endif //AliRICHParam_h

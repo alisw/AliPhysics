@@ -3,7 +3,7 @@ How to open session?
 How to retrive pointer to alice run loader:
         use pRICH->GetLoader()->GetRunLoader() (all detector classes inherit from AliDetector wich has GetLoader())
 	use methode AliRun::GetRunLoader for gAlice (depricated)
-How to get pointers to deifferent root trees:
+How to get pointers to different root trees:
 	TreeE belongs to AliRunLoader, available after AliRunLoader::LoadHeader()
 	TreeK belongs to AliRunLoader, available after AliRunLoader::LoadKinematics()
 	TreeH belongs to AliLoader   , available after AliLoader::LoadHits()
@@ -13,19 +13,20 @@ How to get pointers to deifferent root trees:
 
 
 How to work with the stack of particles?
-	- pointer to the stack is returned by gAlice->Stack() (global gAlice of type AliRun) or AliRunLoader::Stack() but
-        before one needs to load event header by AliRunLoader::LoadHeader() otherwise both methods return 0.
-        Moreover loading header gives the information about number of particles only. 
-        To retrive the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
-	- total amount of particles in stack for a given event:         AliRunLoader::Stack()->GetNtrack() or AliRun::GetEvent() (after LoadHeader())
-	- total amount of primiry particles in stack for a given event: AliRunLoader::Stack()->GetNprimary() or AliLoader::TreeH()->GetEntries() (after LoadHeader())
+        - first of all, the stack includes primary as well as secondary particles
+	- pointer to the stack is returned by AliRun::Stack() (global gAlice of type AliRun - depricated way to do)
+          or by AliRunLoader::Stack() but before one needs to load event header by AliRunLoader::LoadHeader() otherwise both methods return 0.
+          Moreover loading header gives the information about number of particles only. 
+          To retrive the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
+	- total amount of particles in stack for a given event:         AliStack::GetNtrack() or AliRun::GetEvent() (after LoadHeader())
+	- total amount of primiry particles in stack for a given event: AliStack::GetNprimary() or AliLoader::TreeH()->GetEntries() (after LoadHeader())
 
 
 
 How to retrive hits:
-	Hits a stored on primiry by primiry basis. To retrieve all hits one needs to do:
+	Hits a stored on primary by primary basis. To retrieve all hits one needs to do:
 	initialise the root tree and containers:    AliLoader::LoadHits() 
-	read number of primiries in current event:
+	read number of primaries in current event:
 	loop on the list of primiries:
 
 
@@ -36,13 +37,8 @@ How to retrive sdigits?
 	One needs to say:
 	pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
 
-
-
-gAlice->GetMCApp()->GetCurrentTrackNumber()
-
-
 What are the debug methodes avail:
-	AliModule::GetDebug() 
+	AliModule::GetDebug() now depricated, use AliDebug printout instead
 	AliModule::SetDebug()
 	AliRun::GetDebug()
 	AliRun::SetDebug()
@@ -61,5 +57,3 @@ How to deal with AliRunDigitizer?
 How to avoid using gAlice?
 	Rich()->GetLoader()->GetRunLoader()->GetAliRun() returns gAlice global pointer.
          
-
-

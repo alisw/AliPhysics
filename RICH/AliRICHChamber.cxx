@@ -15,47 +15,50 @@
 
 #include "AliRICHChamber.h"
 #include <TRotMatrix.h>
+#include <AliLog.h>
 
 ClassImp(AliRICHChamber)	
 //______________________________________________________________________________
 AliRICHChamber::AliRICHChamber(Int_t iChamber):TNamed()
 {
 //main ctor. Defines all geometry parameters for the given module.
-  SetToZenith();//put to up position   
+// 7 6     ^      
+// 5 4 3   |      
+//   2 1   |
+// <-----z y   . x     
+//  horizontal angle between chambers  19.5 grad
+//  vertical angle between chambers    20   grad     
+  RotY(90);//rotate around y
+  fCenterX3.SetXYZ(490,0,0);fPcX3.SetXYZ(490+8,0,0);fRadX3.SetXYZ(490-2,0,0); //shift center along x by 490 cm
+  
   switch(iChamber){
-    case 1:
-      RotateX(-AliRICHParam::AngleYZ());   
-      RotateZ(-AliRICHParam::AngleXY());      
-      fName="RICHc1";fTitle="RICH chamber 1";
+    case 0:                    //special test beam configuration without rotation.
+      break;
+    case 1:        
+      RotY(19.5); RotZ(-20);   //right and down 
       break;      
     case 2:
-      RotateZ(-AliRICHParam::AngleXY());      
-      fName="RICHc2";fTitle="RICH chamber 2";
+      RotZ(-20);              //down
       break;      
     case 3:
-      RotateX(-AliRICHParam::AngleYZ());
-      fName="RICHc3";fTitle="RICH chamber 3";
+      RotY(19.5);             //right 
       break;      
     case 4:          
-      fName="RICHc4";fTitle="RICH chamber 4";  //no turns
-      break;      
+      break;                  //no rotation
     case 5:
-      RotateX(AliRICHParam::AngleYZ());
-      fName="RICHc5";fTitle="RICH chamber 5";
+      RotY(-19.5);            //left   
       break;      
     case 6:
-      RotateZ(AliRICHParam::AngleXY());      
-      fName="RICHc6";fTitle="RICH chamber 6";
+      RotZ(20);               //up
       break;      
     case 7:
-      RotateX(AliRICHParam::AngleYZ());            
-      RotateZ(AliRICHParam::AngleXY());      
-      fName="RICHc7";fTitle="RICH chamber 7";
+      RotY(-19.5); RotZ(20);  //left and up 
       break;      
     default:
       Fatal("named ctor","Wrong chamber number %i, check CreateChamber ctor",iChamber);
   }//switch(iModuleN)
-  RotateZ(AliRICHParam::AngleRot());//apply common rotation  
+  fName=Form("RICHc%i",iChamber);fTitle=Form("RICH chamber %i",iChamber);
+  RotZ(30);     //apply common rotation  
   fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*TMath::RadToDeg(), Rot().PhiX()*TMath::RadToDeg(),
                                                       Rot().ThetaY()*TMath::RadToDeg(), Rot().PhiY()*TMath::RadToDeg(),
                                                       Rot().ThetaZ()*TMath::RadToDeg(), Rot().PhiZ()*TMath::RadToDeg());
@@ -64,9 +67,6 @@ AliRICHChamber::AliRICHChamber(Int_t iChamber):TNamed()
 void AliRICHChamber::Print(Option_t *opt) const
 {
 // Debug printout
-//  printf("%s r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f  %6.2f,%6.2f %6.2f,%6.2f %6.2f,%6.2f\n",fName.Data(),
-//                     Rho(), ThetaD(),PhiD(),   X(),    Y(),    Z(),
-//                     ThetaXd(),PhiXd(),ThetaYd(),PhiYd(),ThetaZd(),PhiZd());
-  fCenterV3.Print(opt);fPcX3.Print(opt);
+  ToAliInfo(fCenterX3.Print(opt));
 }//Print()
 //__________________________________________________________________________________________________

@@ -6,7 +6,7 @@ public:
                    kPMD=8192,kDIPO=16384,kEMCAL=32768,kVZERO=65536,kMUON=131072,kZDC=262144,kSHILD=524288};
   enum EProcesses {kDCAY=1,kPAIR=2,kCOMP=4,kPHOT=8,kPFIS=16,kDRAY=32,kANNI=64,kBREM=128,kMUNU=256,kCKOV=512,kHADR=1024,kLOSS=2048,kMULS=4096,
                    kRAYL=8192};
-  enum EGenTypes  {kGun1,kGun7,kPythia7,kHijing,kHijingPara};
+  enum EGenTypes  {kGun1=100,kGun7,kPythia7,kHijing,kHijingPara};
   
           KirConfig(const char*sFileName);
          ~KirConfig()                    {Info("ctor","");fMain->Cleanup(); delete fMain;}
@@ -51,9 +51,12 @@ KirConfig::KirConfig(const char *sFileName)
 //Generator  
   pVerFrame->AddFrame(pGenGrpFrm=new TGGroupFrame(pHorFrame,"Generator"));
   pGenGrpFrm->AddFrame(fGenTypeCombo=new TGComboBox(pGenGrpFrm,100));
-  fGenTypeCombo->AddEntry("gun to single chamber",kGun1);  fGenTypeCombo->AddEntry("gun to all chambers",kGun7);
+  fGenTypeCombo->AddEntry("gun to single chamber",kGun1);  
+  fGenTypeCombo->AddEntry("gun to all chambers",kGun7);
   fGenTypeCombo->AddEntry("7 guns on top of Pythia",kPythia7);
-  fGenTypeCombo->AddEntry("HIJING",kHijing);                fGenTypeCombo->AddEntry("parametrized HIJING",kHijingPara);
+  fGenTypeCombo->AddEntry("HIJING",kHijing);
+  fGenTypeCombo->AddEntry("parametrized HIJING",kHijingPara);
+  fGenTypeCombo->AddEntry("Sr90 source",kSr90);
   fGenTypeCombo->Select(kHijingPara);
   fGenTypeCombo->Resize(160,20);
   
@@ -86,7 +89,7 @@ KirConfig::KirConfig(const char *sFileName)
 // Magnetic Field
   pVerFrame->AddFrame(pFldGrpFrm=new TGGroupFrame(pHorFrame,"Magnetic Field"));
   pFldGrpFrm->AddFrame(fMagFldChkBtn=new TGCheckButton(pFldGrpFrm,"On/Off"));
-  fMagFldChkBtn->SetState(kButtonUp);
+  fMagFldChkBtn->SetState(kButtonDown);
 //Detectors
   pHorFrame->AddFrame(fDetButGrp=new TGButtonGroup(pHorFrame,"Detectors"));
   fDetButGrp->Connect("Pressed(Int_t)","KirConfig",this,"AddDetector(Int_t)");
@@ -206,14 +209,15 @@ void KirConfig::CreateConfigFile()
   switch(fGenTypeCombo->GetSelected()){
     case kHijingPara: 
       fprintf(fp,"  AliGenHIJINGpara *pGen=new AliGenHIJINGpara(%i);\n",(int)fGenNprimEntry->GetNumber());
-      fprintf(fp,"  pGen->SetMomentumRange(0,999); pGen->SetPhiRange(0,360); pGen->SetThetaRange(%f,%f);\n",Eta2Theta(8),Eta2Theta(-8));
+      fprintf(fp,"  pGen->SetMomentumRange(0,999); pGen->SetThetaRange(%f,%f); pGen->SetPhiRange(0,360);\n",Eta2Theta(8),Eta2Theta(-8));
       fprintf(fp,"  pGen->SetOrigin(0,0,0);  pGen->SetSigma(0,0,0);\n");
       fprintf(fp,"  pGen->Init();\n");
     break;
     case kGun1:     
       fprintf(fp,"  AliGenFixed *pGen=new AliGenFixed(1);\n");  
-      fprintf(fp,"  pGen->SetPart(%i); pGen->SetMomentum(%3.1f); pGen->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected(),float(fGenMomCombo->GetSelected())/10);  
-      fprintf(fp,"  pGen->SetPhiRange(pRICH->C(%i)->PhiD()); pGen->SetThetaRange(pRICH->C(%i)->ThetaD()-2);\n",fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());            
+      fprintf(fp,"  pGen->SetPart(%i); pGen->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());  
+      fprintf(fp,"  pGen->SetMomentum(%3.1f); pGen->SetTheta(pRICH->C(%i)->ThetaD()-2); pGen->SetPhi(pRICH->C(%i)->PhiD()); \n",
+                    float(fGenMomCombo->GetSelected())/10,fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());            
       fprintf(fp,"  pGen->Init();\n");
     break;    
     case kGun7:   
@@ -221,7 +225,7 @@ void KirConfig::CreateConfigFile()
       fprintf(fp,"  for(int i=1;i<=7;i++){\n");
       fprintf(fp,"    AliGenFixed *pFixed=new AliGenFixed(1);\n");
       fprintf(fp,"    pFixed->SetPart(%i); pFixed->SetMomentum(2.5+i*0.4); pFixed->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());
-      fprintf(fp,"    pFixed->SetPhiRange(pRICH->C(i)->PhiD()); pFixed->SetThetaRange(pRICH->C(i)->ThetaD()-2);\n");                             
+      fprintf(fp,"    pFixed->SetPhi(pRICH->C(i)->PhiD()); pFixed->SetTheta(pRICH->C(i)->ThetaD()-2);\n");                             
       fprintf(fp,"    pCocktail->AddGenerator(pFixed,Form(\"Fixed %i\",i),1);\n  }\n");  
       fprintf(fp,"  pCocktail->Init();\n");
     break;
@@ -238,6 +242,18 @@ void KirConfig::CreateConfigFile()
       fprintf(fp,"  pPythia->SetProcess(kPyMb);  pPythia->SetEnergyCMS(14000);\n");      
       fprintf(fp,"  pCocktail->AddGenerator(pPythia,\"Pythia\",1);\n");  
       fprintf(fp,"  pCocktail->Init();\n");
+    case kSr90:  
+      fprintf(fp,"  AliGenRadioactive *pGen=new AliGenRadioactive(kSr90,%i);\n",(int)fGenNprimEntry->GetNumber());
+      fprintf(fp,"  pGen->SetOrigin(0,0,0);  pGen->SetSigma(0.1,0.1,0.05);\n");      
+      fprintf(fp,"  pGen->Init();\n");
+    break;  
+    case kHijing:  
+      fprintf(fp,"  AliGenHijing *pGen=new AliGenHijing(-1); pGen->SetEnergyCMS(5500); pGen->SetReferenceFrame(\"CMS\");\n");
+      fprintf(fp,"  pGen->SetProjectile(\"A\", 208, 82); pGen->SetTarget(\"A\", 208, 82);\n");      
+      fprintf(fp,"  pGen->SetJetQuenching(0); pGen->SetShadowing(0);\n");
+      fprintf(fp,"  pGen->KeepFullEvent(); pGen->SetSelectAll(0); \n");
+      fprintf(fp,"  pGen->SetImpactParameterRange(0., 5.);\n");
+      fprintf(fp,"  pGen->Init();\n");
     break;  
   }
 //central before RICH detectors                  

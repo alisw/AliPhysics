@@ -28,15 +28,20 @@ Float_t  AliRICHParam::fgSigmaThSpread        =0.035; //
 //__________________________________________________________________________________________________
 void AliRICHParam::Print(Option_t*)
 {
-  ::Info("","Pads in chamber (%3i,%3i) in sector (%2i,%2i)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec());
-  fpChambers->Print();
-}
+  AliInfo(Form("Pads in chamber (%3i,%3i) in sector (%2i,%2i)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec()));
+  ToAliInfo(fpChambers->Print());
+}//Print()
 //__________________________________________________________________________________________________
 void AliRICHParam::CreateChambers()
 {
 //Create all RICH Chambers on each call. Previous chambers deleted.
   if(fpChambers) delete fpChambers;
-  fpChambers=new TObjArray(kNchambers);
+  if(IsRadioSrc()){ 
+    fpChambers=new TObjArray(1);//test beam configuration 1 chamber
+    fpChambers->AddAt(new AliRICHChamber(0),0);  
+  }else{ 
+    fpChambers=new TObjArray(kNchambers);//normal configuration 7 chambers
+    for(int iChamberN=0;iChamberN<kNchambers;iChamberN++)  fpChambers->AddAt(new AliRICHChamber(iChamberN+1),iChamberN);  
+  }
   fpChambers->SetOwner();
-  for(int iChamberN=0;iChamberN<kNchambers;iChamberN++)  fpChambers->AddAt(new AliRICHChamber(iChamberN+1),iChamberN);  
-}//void AliRICH::CreateChambers()
+}//CreateChambers()

@@ -11,17 +11,20 @@ void Geom()
   Double_t dx,dy,dz,r1,r2,a=0,z=0,den=0,radlen=0,intlen=0;
   Double_t cm=1,m=100*cm,mm=0.1*cm,mkm=0.001*cm;  
 //Medium  
-                                                                                      pAir=new TGeoMedium("Air"      ,1, g->GetMaterial("Air"));
-  new TGeoMaterial("CH4"      ,a=26.98 ,z=13,den=0.4224                       );      pCH4=new TGeoMedium("CH4"      ,2, g->GetMaterial("CH4"));
-  new TGeoMaterial("CsI"      ,a=26.98 ,z=13,den=2.7 ,radlen=24.01,intlen=70.6);      pCsI=new TGeoMedium("CsI"      ,3, g->GetMaterial("CsI"));
-  new TGeoMaterial("Al"       ,a=26.98 ,z=13,den=2.7 ,radlen=24.01,intlen=70.6);      pAl =new TGeoMedium("Al"       ,4, g->GetMaterial("Al")); 
-  new TGeoMaterial("Fe"       ,a=55.845,z=26,den=7.87,radlen=13.84,intlen=82.8);      pFe =new TGeoMedium("Fe"       ,5, g->GetMaterial("Fe"));
-  new TGeoMaterial("W"        ,a=183.84,z=27,den=19.3,radlen= 9.59*cm,intlen=0.35*cm);pW  =new TGeoMedium("W"        ,6, g->GetMaterial("W"));
-  new TGeoMaterial("Cu"       ,a=55.845,z=26,den=7.87,radlen=13.84,intlen=82.8);      pCu =new TGeoMedium("Cu"       ,7, g->GetMaterial("Cu"));
-  new TGeoMaterial("Perpex"   ,a=55.845,z=26,den=7.87,radlen=13.84,intlen=82.8);       new TGeoMedium("Perpex"   ,8, g->GetMaterial("Perpex")); 
-  new TGeoMaterial("Rohacell" ,a=12.01,z=6,den=0.1,radlen=18.8,intlen=0);              new TGeoMedium("Rohacell" ,9, g->GetMaterial("Rohacell"));
-  new TGeoMaterial("SiO2"     ,a=0,z=0,den=0);                                         new TGeoMedium("SiO2"     ,10, g->GetMaterial("SiO2"));
-  new TGeoMaterial("C6F14"    ,a=0,z=0,den=0);                                         new TGeoMedium("C6F14"    ,11, g->GetMaterial("C6F14"));
+                                                                                       pAir =new TGeoMedium("Air"      ,1, g->GetMaterial("Air"));
+  new TGeoMaterial("CH4"      ,a=26.98 ,z=13,den=0.4224                             ); pCH4 =new TGeoMedium("CH4"      ,2, g->GetMaterial("CH4"));
+  new TGeoMaterial("CsI"      ,a=26.98 ,z=13,den=2.7 ,radlen=24.01*cm,intlen=70.6*cm); pCsI =new TGeoMedium("CsI"      ,3, g->GetMaterial("CsI"));
+  new TGeoMaterial("Al"       ,a=26.98 ,z=13,den=2.7 ,radlen=24.01*cm,intlen=70.6*cm); pAl  =new TGeoMedium("Al"       ,4, g->GetMaterial("Al")); 
+  new TGeoMaterial("W"        ,a=183.84,z=27,den=19.3,radlen= 9.59*cm,intlen=0.35*cm); pW   =new TGeoMedium("W"      ,5, g->GetMaterial("W"));
+  new TGeoMaterial("Cu"       ,a=55.845,z=26,den=7.87,radlen=13.84*cm,intlen=82.8*cm); pCu  =new TGeoMedium("Cu"       ,6, g->GetMaterial("Cu"));
+  new TGeoMaterial("Rohacell",a=12.01 ,z=6 ,den=0.1,radlen=18.8,intlen=0);            pRoha =new TGeoMedium("Rohacell" ,7, g->GetMaterial("Rohacell"));
+  new TGeoMaterial("SiO2"     ,a=0     ,z=0 ,den=0);                                  pSiO2= new TGeoMedium("SiO2"     ,8,g->GetMaterial("SiO2"));
+  new TGeoMaterial("C6F14"    ,a=0     ,z=0 ,den=0);                                  pC6F14=new TGeoMedium("C6F14"    ,9,g->GetMaterial("C6F14"));
+//for Sr90 source  
+  new TGeoMaterial("Perpex"  ,a=55.845,z=26,den=7.87,radlen=13.84*cm,intlen=82.8*cm); pPerpex=new TGeoMedium("Perpex",10, g->GetMaterial("Perpex"));
+  new TGeoMaterial("Steel"   ,a=55.845,z=26,den=7.87,radlen=13.84*cm,intlen=82.8*cm); pSteel=new TGeoMedium("Steel"  ,11, g->GetMaterial("Steel"));
+  new TGeoMaterial("Mylar"   ,a=55.845,z=26,den=7.87,radlen=13.84*cm,intlen=82.8*cm); pMylar=new TGeoMedium("Mylar"  ,12, g->GetMaterial("Mylar"));
+  new TGeoMaterial("Sr"      ,a=87.62 ,z=38,den=7.87,radlen=13.84*cm,intlen=82.8*cm); pSr   =new TGeoMedium("Sr"     ,13, g->GetMaterial("Sr"));
 //Mother
   TGeoVolume *pMother=g->MakeBox("Mother",pAir,dx=10*m/2,dy=10*m/2,dz=30*m/2); //arbitrary values  
 //Rich  
@@ -43,7 +46,7 @@ void Geom()
   pRich->AddNode(pPpf,copy=5,new TGeoTranslation(-335*mm,+433*mm,8*cm+20*mm));
   pRich->AddNode(pPpf,copy=6,new TGeoTranslation(+335*mm,+433*mm,8*cm+20*mm));
   pPpf->AddNode( pPc ,copy=1,new TGeoTranslation(   0*mm,   0*mm,-19.15*mm));//PPF 2001P2 
-  pPpf->AddNode(g->GetVolume("PPFlarge"),copy=1,new TGeoTranslation(-224.5*mm,-151.875*mm,  0.85*mm));
+  pPpf->AddNode(pPpfLarge,copy=1,new TGeoTranslation(-224.5*mm,-151.875*mm,  0.85*mm));
   pPpf->AddNode(g->GetVolume("PPFlarge"),copy=2,new TGeoTranslation(-224.5*mm,- 50.625*mm,  0.85*mm));
   pPpf->AddNode(g->GetVolume("PPFlarge"),copy=3,new TGeoTranslation(-224.5*mm,+ 50.625*mm,  0.85*mm));
   pPpf->AddNode(g->GetVolume("PPFlarge"),copy=4,new TGeoTranslation(-224.5*mm,+151.875*mm,  0.85*mm));
@@ -99,52 +102,49 @@ void Geom()
     TGeoVolume *pRadShort =g->MakeBox( "RadShort" ,g->GetMedium("Neoceram") ,dx=  10*mm/2 ,dy= 403*mm/2  ,dz=  15*mm/2);    
     TGeoVolume *pRadSpacer=g->MakeTube("RadSpacer",g->GetMedium("SiO2")     ,r1= 0        ,r2=10*mm/2  ,dz=  15*mm/2);         
     
-    pRich->AddNode(pRad,copy=1,new TGeoTranslation(   0*mm,-434*mm,   -12*mm)); 
-    pRich->AddNode(pRad,copy=2,new TGeoTranslation(   0*mm,   0*mm,   -12*mm)); 
-    pRich->AddNode(pRad,copy=3,new TGeoTranslation(   0*mm,+434*mm,   -12*mm)); 
-    pRad->AddNode(g->GetVolume("RadFront") ,copy=1,new TGeoTranslation(   0*mm,   0*mm, -10.0*mm));
-    pRad->AddNode(g->GetVolume("RadWin")   ,copy=1,new TGeoTranslation(   0*mm,   0*mm,   9.5*mm));
-    pRad->AddNode(g->GetVolume("RadLong")  ,copy=1,new TGeoTranslation(   0*mm,-204*mm,  -0.5*mm));
-    pRad->AddNode(g->GetVolume("RadLong")  ,copy=2,new TGeoTranslation(   0*mm,+204*mm,  -0.5*mm));
-    pRad->AddNode(g->GetVolume("RadShort") ,copy=1,new TGeoTranslation(-660*mm,   0*mm,  -0.5*mm));
-    pRad->AddNode(g->GetVolume("RadShort") ,copy=2,new TGeoTranslation(+660*mm,   0*mm,  -0.5*mm));
+    pRich->AddNode(pRad      ,copy=1,new TGeoTranslation(   0*mm,-434*mm,   -12*mm)); 
+    pRich->AddNode(pRad      ,copy=2,new TGeoTranslation(   0*mm,   0*mm,   -12*mm)); 
+    pRich->AddNode(pRad      ,copy=3,new TGeoTranslation(   0*mm,+434*mm,   -12*mm)); 
+    
+    pRad ->AddNode(pRadFront ,copy=1,new TGeoTranslation(   0*mm,   0*mm, -10.0*mm));
+    pRad ->AddNode(pRadWin   ,copy=1,new TGeoTranslation(   0*mm,   0*mm,   9.5*mm));
+    pRad ->AddNode(pRadLong  ,copy=1,new TGeoTranslation(   0*mm,-204*mm,  -0.5*mm));
+    pRad ->AddNode(pRadLong  ,copy=2,new TGeoTranslation(   0*mm,+204*mm,  -0.5*mm));
+    pRad ->AddNode(pRadShort ,copy=1,new TGeoTranslation(-660*mm,   0*mm,  -0.5*mm));
+    pRad ->AddNode(pRadShort ,copy=2,new TGeoTranslation(+660*mm,   0*mm,  -0.5*mm));
     for(int i=0;i<3;i++)
       for(int j=0;j<10;j++)
         pRad->AddNode(pRadSpacer,copy=10*i+j,new TGeoTranslation(-1330*mm/2+116*mm+j*122*mm,(i-1)*105*mm,-0.5*mm));
   }else{//Sr90
-    Double_t containerZ=21.8*mm/2,containerR=38*mm/2;  
-    Double_t screwLen=15*mm/2      ,screwR=5*mm/2;  
-    Double_t srcLen=10*mm/2        ,srcR=2*mm/2;  
-    Double_t perpexZ=20*mm/2       ,perpexR=34*mm/2;  
-    Double_t perpexWholeLen=10*mm/2,perpexWholeR=4*mm/2;  
-    Double_t alBottomLen=containerZ-perpexZ,alWholeR=5*mm/2;  
-    g->MakeTube("Sr90"           ,pAir   ,0      ,containerR  ,containerZ);             
-    g->MakeTube("Sr90AlWall"     ,pAl    ,perpexR,containerR  ,containerZ);             
-    g->MakeTube("Sr90AlBottom"   ,pAl    ,0      ,perpexR     ,alBottomLen);            
-    g->MakeTube("Sr90AlWhole"    ,pAir   ,0      ,alWholeR    ,alBottomLen);            
-    g->MakeTube("Sr90PerpexPlug" ,g->GetMedium("Perpex"),0      ,perpexR     ,perpexZ);                
-    g->MakeTube("Sr90PerpexWhole",pAir   ,0      ,perpexWholeR,perpexWholeLen);         
-    g->MakeTube("Sr90Screw"      ,g->GetMedium("Steel") ,0      ,screwR      ,screwLen);               
-    g->MakeTube("Sr90Source"     ,g->GetMedium("Steel") ,0      ,srcR        ,srcLen);     
+    pSrc               =g->MakeTube("Src"              ,pCH4    , 0 , 70*mm/2 ,  30*mm/2);       //top container
+      pAlGlass         =g->MakeTube("SrcAlGlass"        ,pAl    , 0 , 38*mm/2 ,21.8*mm/2);       //Al glass wall        
+        pPerpexPlug    =g->MakeTube("SrcPerpex"        ,pPerpex , 0 , 34*mm/2 ,  20*mm/2);       //Perpex plug         
+          pSteelScrew  =g->MakeTube("SrcSteelScrew"    ,pSteel  , 0 ,  5*mm/2 ,  15*mm/2);       //Steel screw in the center        
+          pSr90Screw   =g->MakeTube("SrcSr90Screw"     ,pSteel  , 0 ,  2*mm/2 ,  10*mm/2);       //Steel screw to support Sr90 
+            pSr90      =g->MakeTube("SrcSr90"          ,pSr     , 0 ,  1*mm/2 ,   1*mm/2);       //Sr90 source
+          pHolePerpex  =g->MakeTube("SrcHolePerpex"    ,pAir    , 0 ,  4*mm/2 ,  10*mm/2);       //Air hole in perpex plug      
+        pHoleAl        =g->MakeTube("SrcHoleAl"        ,pAir    , 0 ,  4*mm/2 , 1.8*mm/2);       //Air hole in Al glass bottom
+    pMylarFoil         =g->MakeTube("SrcMylarFoil"     ,pMylar  , 0 , 30*mm/2 , 50*mkm/2);       //Mylar foil                
                 
-    pRich->AddNode(pContainer,1,new TGeoTranslation(30*cm,0,containerZ));
-    pContainer ->AddNode(pAlWall,1);
-    pContainer ->AddNode(pAlBottom,1,new TGeoTranslation(0,0,-containerZ+alBottomLen));
-    pContainer ->AddNode(pPerpexPlug,1,new TGeoTranslation(0,0,containerZ-perpexZ));
-    pAlBottom  ->AddNode(pAlWhole,1,new TGeoTranslation(6*mm,0,0));
-    pPerpexPlug->AddNode(pPerpexWhole,1,new TGeoTranslation(6*mm,0,-perpexZ+perpexWholeLen));  
-    pPerpexPlug->AddNode(pSource,1     ,new TGeoTranslation(6*mm,0, perpexZ-srcLen));  
-    pPerpexPlug->AddNode(pScrew,1,new TGeoTranslation(0,0,perpexZ-screwLen));  
+    pRich->AddNode(pSrc,1,new TGeoTranslation(30*cm,0,alVesselZ));
+      pSrc ->AddNode(pMylarFoil,1,new TGeoTranslation(0,0,21.8*mm/2+50*mkm/2));
+      pSrc ->AddNode(pAlGlass,1,new TGeoTranslation(0,0,0));//Al glass to fake Src volume
+        pAlGlass->AddNode(pHoleAl,1,new TGeoTranslation(6*mm, 0*mm, 10.9*mm));
+        pAlGlass->AddNode(pPerpexPlug,1,new TGeoTranslation(0*mm,0*mm,-0.9*mm));
+          pPerpexPlug->AddNode(pSteelScrew,1,new TGeoTranslation(shift,0, perpexPlugZ-steelScrewZ));  
+          pPerpexPlug->AddNode(pHolePerpex,1,new TGeoTranslation(shift,0,-perpexPlugZ+airWholeZ));      
+          pPerpexPlug->AddNode(pSr90Screw ,1,new TGeoTranslation(shift,0, perpexPlugZ-sr90ScrewZ));  
+          pSr90Screw->AddNode(pSr90 ,1,new TGeoTranslation(0,0, -(sr90ScrewZ-sr90Z)));  
   }//if(!isSr90)
 //Sandbox  
-  TGeoVolume *pSandBox=g->MakeBox( "SandBox"  ,g->GetMedium("Air")      ,dx=1419*mm/2 ,dy=1378*mm/2   ,dz=50.5*mm/2);  //2072P1   
-  g->MakeBox( "SandCover",g->GetMedium("Al")       ,dx=1419*mm/2 ,dy=1378*mm/2   ,dz= 0.5*mm/2);  
-  g->MakeBox( "SandComb" ,g->GetMedium("Rohacell") ,dx=1359*mm/2 ,dy=1318*mm/2   ,dz=49.5*mm/2);  
+  TGeoVolume *pSandBox  =g->MakeBox( "SandBox"  ,pAir  ,dx=1419*mm/2 ,dy=1378*mm/2   ,dz=50.5*mm/2);  //2072P1   
+  TGeoVolume *pSandCover=g->MakeBox( "SandCover",pAl   ,dx=1419*mm/2 ,dy=1378*mm/2   ,dz= 0.5*mm/2);  
+  TGeoVolume *pSandComb =g->MakeBox( "SandComb" ,pRoha ,dx=1359*mm/2 ,dy=1318*mm/2   ,dz=49.5*mm/2);  
   
   pRich->AddNode(pSandBox,copy=1,new TGeoTranslation(  0*mm,0*mm, -73.75*mm)); //p.84 TDR
-  pSandBox->AddNode(g->GetVolume("SandComb")  ,copy=1,new TGeoTranslation(  0*mm,0*mm,      0*mm)); //2072P1
-  pSandBox->AddNode(g->GetVolume("SandCover") ,copy=1,new TGeoTranslation(  0*mm,0*mm,    +25*mm)); 
-  pSandBox->AddNode(g->GetVolume("SandCover") ,copy=2,new TGeoTranslation(  0*mm,0*mm,    -25*mm)); 
+    pSandBox->AddNode(pSandComb  ,copy=1,new TGeoTranslation(  0*mm,0*mm,      0*mm)); //2072P1
+    pSandBox->AddNode(pSandCover ,copy=1,new TGeoTranslation(  0*mm,0*mm,    +25*mm)); 
+    pSandBox->AddNode(pSandCover ,copy=2,new TGeoTranslation(  0*mm,0*mm,    -25*mm)); 
 //Colors  
   g->GetVolume("Pc")       ->SetLineColor(kGreen);
   g->GetVolume("PPF")      ->SetLineColor(33);

@@ -80,7 +80,7 @@ void AliRICHDisplFast::Exec(Option_t *)
           AliRICHhit *pHit = (AliRICHhit*)Hits[i].At(j);
           if(pHit->C()==iChamber){
             TVector3 hitGlobX3= pHit->OutX3();
-            TVector2 hitLocX2 = pRich->C(iChamber)->Glob2Loc(hitGlobX3);
+            TVector2 hitLocX2 = pRich->C(iChamber)->Mrs2Pc(hitGlobX3);
             pHitsH2->Fill(hitLocX2.X(),hitLocX2.Y(),200);
           }//if
         }//hits loop         
@@ -95,7 +95,7 @@ void AliRICHDisplFast::Exec(Option_t *)
       if(!isClusters) {l.SetTextColor(kBlue) ;l.DrawLatex(0.8,0.01,"No CLUSTERS");}
       Display->Update();
       Display->Modified();
-      getchar();             
+      gPad->WaitPrimitive();
 //deals with digits      
       if(isDigits){
         pRich->GetLoader()->TreeD()->GetEntry(0);
@@ -108,7 +108,7 @@ void AliRICHDisplFast::Exec(Option_t *)
         pDigitsH2->Draw("same");
         Display->Update();
         Display->Modified();       
-        getchar();
+        gPad->WaitPrimitive();
       }//if(isDigits)      
 //deals with clusters      
       if(isClusters){
@@ -121,7 +121,7 @@ void AliRICHDisplFast::Exec(Option_t *)
         pClustersH2->Draw("same");
         Display->Update();
         Display->Modified();
-        getchar();
+        gPad->WaitPrimitive();
       }//if(isClusters)
     }//chambers loop
     delete [] Hits;

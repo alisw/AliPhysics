@@ -16,4 +16,8 @@
 #pragma link C++ class  AliRICHDigitizer+;
 #pragma link C++ class  AliRICHDisplFast+;
 #pragma link C++ class  AliRICHReconstructor+;
+#pragma link C++ class  AliRICHHelix+;
+#pragma link C++ class  AliGenRadioactive+;
+#pragma link C++ class  AliRICHTracker+;
+#pragma link C++ enum   RadioNuclei_t;
 #endif

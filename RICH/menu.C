@@ -3,6 +3,7 @@ void ph(Int_t event=0) {R()->PrintHits(event);}    //utility print hits for 'eve
 void ps(Int_t event=0) {R()->PrintSDigits(event);} //utility print sdigits
 void pd(Int_t event=0) {R()->PrintDigits(event);}  //utility print digits
 void pc(Int_t event=0) {R()->PrintClusters(event);}//utility print clusters
+void pt(Int_t event=0) {R()->PrintTracks(event);}  //utility print tracks
 
 //__________________________________________________________________________________________________
 void pp(int tid)
@@ -19,6 +20,7 @@ void pp(int tid)
 //__________________________________________________________________________________________________
 void PrintParticleInfo(int tid)
 {
+// Prints particle info for a given TID
   TParticle *p=al->Stack()->Particle(tid);
   cout<<p->GetName()<<"("<<tid<<")";
   if(p->GetMother(0)!=-1){cout<<" from "; PrintParticleInfo(p->GetMother(0));}
@@ -27,6 +29,7 @@ void PrintParticleInfo(int tid)
 //__________________________________________________________________________________________________
 Int_t prim(Int_t tid)
 {
+// Provides mother TID for the given TID
   R()->GetLoader()->GetRunLoader()->LoadHeader();  R()->GetLoader()->GetRunLoader()->LoadKinematics();
   
   if(tid<0||tid>=R()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
@@ -147,13 +150,11 @@ AliRICH *r;
 Bool_t ReadAlice()
 {
   Info("ReadAlice","Tring to read ALICE from SIMULATED FILE.");
-  AliLoader::SetDebug(0);
   if(gAlice) delete gAlice;      
   if(!(al=AliRunLoader::Open("galice.root","AlicE","update"))){
     gSystem->Exec("rm -rf *.root *.dat");
     Error("menu.C::ReadAlice","galice.root broken, removing all this garbage then init new one");
     new AliRun("gAlice","Alice experiment system");
-    gAlice->SetDebug(-1);
     gAlice->Init("Config.C");
     r=(AliRICH*)gAlice->GetDetector("RICH");
     return kFALSE;
@@ -164,7 +165,6 @@ Bool_t ReadAlice()
   a->SetDebug(0);    
 //RICH      
   if(!(r=(AliRICH*)gAlice->GetDetector("RICH"))) Warning("RICH/menu.C::ReadAlice","No RICH in file");
-  r->SetDebug(0);
   if(!(rl=al->GetLoader("RICHLoader")))          Warning("RICH/menu.C::ReadAlice","No RICH loader in file");        
         
   Info("ReadAlice","Run contains %i event(s)",gAlice->GetEventsPerRun());      
@@ -353,22 +353,22 @@ void TestSeg()
   TPolyLine3D *pXaxis=new TPolyLine3D(2,X);pXaxis->SetLineColor(kRed);   pXaxis->Draw();
   TPolyLine3D *pYaxis=new TPolyLine3D(2,Y);pYaxis->SetLineColor(kGreen); pYaxis->Draw();
   TPolyLine3D *pZaxis=new TPolyLine3D(2,Z);pZaxis->SetLineColor(kBlue);  pZaxis->Draw();  
-//chambers  
+//Draw PC for all chambers by trasfering Pc plane using Pc2Mrs methode  
   Int_t iNpointsX=50,iNpointsY=50;  
   for(Int_t iChamberN=1;iChamberN<=7;iChamberN++){//chamber loop
     TPolyMarker3D *pChamber=new TPolyMarker3D(iNpointsX*iNpointsY);
     Int_t i=0;
     for(Double_t x=0;x<p.PcSizeX();x+=p.PcSizeX()/iNpointsX)
       for(Double_t y=0;y<p.PcSizeY();y+=p.PcSizeY()/iNpointsY){//step loop
-        TVector3 v3=p.C(iChamberN)->Loc2Glob(TVector2(x,y));
-        pChamber->SetPoint(i++,v3.X(),v3.Y(),v3.Z());
-        pChamber->SetMarkerSize(1);
-        pChamber->SetMarkerColor(iChamberN);
+        TVector3 v3=p.C(iChamberN)->Pc2Mrs(TVector2(x,y));//from regular grid of local PC points to MRS presentation
+        pChamber->SetPoint(i++,v3.X(),v3.Y(),v3.Z());//Pc plane poing in MRS
       }//step loop
+    pChamber->SetMarkerSize(1);
+    pChamber->SetMarkerColor(iChamberN);
     pChamber->Draw();  
     t.SetNDC();t.SetTextColor(iChamberN); t.DrawText(0.1,iChamberN*0.1,Form("Chamber %i",iChamberN));    
   }//chamber loop   
-  gPad->GetView()->RotateView(94,45);
+//  gPad->GetView()->RotateView(94,45);
 }//void TestSeg()
 //__________________________________________________________________________________________________
 void TestMenu()
@@ -423,3 +423,92 @@ void ReadRaw()
   }
   fclose(pRawFile);
 }
+//__________________________________________________________________________________________________
+void FillContribs(Int_t part,Int_t C, Bool_t print)
+{
+  static Int_t contrib[10][7][2];
+  static Bool_t kEnter=kFALSE;
+
+  C--; // chamber numbering from 1 to 7
+  if(!kEnter) {
+    for(Int_t i=0;i<10;i++) {
+      for(Int_t j=0;j<7;j++) {
+        for(Int_t k=0;k<2;k++) contrib[i][j][k]=0;
+      }
+    }
+    kEnter=kTRUE;
+  }
+
+  if(print) {
+    for(Int_t k=0;k<2;k++) {cout << "----------------Positives  to RICH ---------------" << endl;
+                            cout << " chamber    1    2    3     4     5     6    7    " << endl;
+                            cout << " -------------------------------------------------" << endl;
+      for(Int_t i=0;i<4;i++) {
+        if(i==0) cout << " e";
+        if(i==1) cout << "pi";
+        if(i==2) cout << " K";
+        if(i==3) cout << " p";
+        if(k==0) cout << "+         ";
+        if(k==1) cout << "-         ";
+        for(Int_t j=0;j<7;j++) {
+          cout << contrib[i][j][k] << "    ";
+        }
+          cout << endl;
+      }
+    }
+  }
+
+  // +ves
+  if(part==kPositron)    contrib[0][C][0]++;
+  if(part==kPiPlus)      contrib[1][C][0]++;
+  if(part==kKPlus)       contrib[2][C][0]++;
+  if(part==kProton)      contrib[3][C][0]++;
+
+  // -ves
+  if(part==kElectron)    contrib[0][C][1]++;
+  if(part==kPiMinus)     contrib[1][C][1]++;
+  if(part==kKMinus)      contrib[2][C][1]++;
+  if(part==kProtonBar)   contrib[3][C][1]++;
+}
+//__________________________________________________________________________________________________
+void ParticleContribs()
+{
+
+  TH1F *distH1 = new TH1F("distH1","distH1",100,0.,5.);
+  AliRICH *pRich = (AliRICH*)gAlice->GetDetector("RICH");
+  Bool_t isHits    =!pRich->GetLoader()->LoadHits();
+
+  pRich->GetLoader()->GetRunLoader()->LoadHeader();  pRich->GetLoader()->GetRunLoader()->LoadKinematics();
+
+
+  if(!isHits){Error("Exec","No hits. No contribs to calculate.");return;}
+
+  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events Loop
+    pRich->GetLoader()->GetRunLoader()->GetEvent(iEventN);
+    cout << " event n. " << iEventN << endl;
+    Int_t nPrimaries = (Int_t)pRich->GetLoader()->TreeH()->GetEntries();
+    TObjArray * Hits = new TObjArray[nPrimaries];
+
+    for(Int_t i=0;i<nPrimaries;i++) {
+      pRich->GetLoader()->TreeH()->GetEntry(i);
+      Int_t nHits = pRich->Hits()->GetEntries();
+      for(Int_t k=0;k<nHits;k++)         Hits[i].Add(pRich->Hits()->At(k));
+
+    }
+//deals with hits
+      for(Int_t i=0;i<nPrimaries;i++){//prims loop
+        pRich->GetLoader()->TreeH()->GetEntry(i);
+        Int_t nHits = pRich->Hits()->GetEntries();
+        for(Int_t j=0;j<nHits;j++){//hits loop
+          AliRICHhit *pHit = (AliRICHhit*)Hits[i].At(j);
+          TParticle *pParticle = pRich->GetLoader()->GetRunLoader()->GetAliRun()->Stack()->Particle(pHit->GetTrack());
+//          if(pParticle->P()>1) FillContribs(pParticle->GetPdgCode(),pHit->C(),kFALSE);
+          FillContribs(pParticle->GetPdgCode(),pHit->C(),kFALSE);
+          if(pParticle->GetPDG()->Charge()!=0) distH1->Fill(pHit->Length());
+        }//hits loop
+      }//prims loop
+    }// event loop
+    FillContribs(0,0,kTRUE);
+    distH1->Draw();
+
+}//ParticleContribs()
