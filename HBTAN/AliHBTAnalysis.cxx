@@ -337,7 +337,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
 //          }
          
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
-         if (fBufferSize == 0) 
+         if (fBufferSize != 0) 
            if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
             {
               //accepted by any cut
@@ -500,7 +500,7 @@ void AliHBTAnalysis::ProcessTracks()
          track1= trackEvent->GetParticle(j);
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(track1);
          
-         if (fBufferSize == 0) //useless in case 
+         if (fBufferSize != 0)
            if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(track1) == kFALSE) )
             {
               //accepted by any cut
@@ -628,7 +628,7 @@ void AliHBTAnalysis::ProcessParticles()
          part1 = partEvent->GetParticle(j);
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
          
-         if (fBufferSize == 0) //useless in case 
+         if (fBufferSize != 0) //useless in case 
            if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
             {
               //accepted by any cut
