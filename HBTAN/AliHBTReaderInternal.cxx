@@ -218,8 +218,9 @@ Int_t AliHBTReaderInternal::ReadNext()
       }
      else Info("ReadNext","   Read: 0 tracks.");
     }
-    fPartBuffer->Delete();
-    fTrackBuffer->Delete();
+    
+    if (fPartBuffer) fPartBuffer->Delete();
+    if (fTrackBuffer) fTrackBuffer->Delete();
     
     fCurrentEvent++;
     fNEventsRead++;
