@@ -2,7 +2,6 @@
 #define ALITPCTRACKERPARAM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
 /* See cxx source for full Copyright notice                               */
-/* $Id$ */
 //-----------------------------------------------------------------------------
 //                    TPC Tracking Parameterization Class
 //
@@ -10,6 +9,7 @@
 //-----------------------------------------------------------------------------
 #include "alles.h"
 #include "AliMagF.h"
+#include "AliGausCorr.h"
 #include "AliTPCtrack.h"
 
 class AliTPCtrackerParam {

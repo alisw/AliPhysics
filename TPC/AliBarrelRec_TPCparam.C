@@ -13,20 +13,33 @@
  ****************************************************************************/
 
 #ifndef __CINT__
-  #include "alles.h"
-  #include "AliMagF.h"
-  #include "AliITS.h"
-  #include "AliITSgeom.h"
-  #include "AliITSRecPoint.h"
-  #include "AliITSclusterV2.h"
-  #include "AliITSsimulationFastPoints.h"
-  #include "AliITStrackerV2.h"
-  #include "AliTPCtrackerParam.h"
+#include <iostream.h>
+#include <TFile.h>
+#include <TStopwatch.h>
+#include <TObject.h>
+#include "alles.h"
+#include "AliRun.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliMagF.h"
+#include "AliModule.h"
+#include "AliArrayI.h"
+#include "AliDigits.h"
+#include "AliITS.h"
+#include "AliTPC.h"
+#include "AliITSgeom.h"
+#include "AliITSRecPoint.h"
+#include "AliITSclusterV2.h"
+#include "AliITSsimulationFastPoints.h"
+#include "AliITStrackerV2.h"
+#include "AliKalmanTrack.h"
+#include "AliTPCtrackerParam.h"
 #endif
 
 typedef struct {
   Int_t lab;
   Int_t pdg;
+  Int_t mumlab;
   Int_t mumpdg;
   Float_t Vx,Vy,Vz;
   Float_t Px,Py,Pz;
@@ -39,6 +52,12 @@ Int_t ITSFindTracks(const Char_t *galice,const Char_t *inname,const Char_t *inna
 Int_t ITSMakeRefFile(const Char_t *galice, const Char_t *inname, const Char_t *outname, Int_t n);
 
 Int_t AliBarrelRec_TPCparam(Int_t n=1) {
+
+  const Char_t *name=" AliBarrelRec_TPCparam";
+  cerr<<'\n'<<name<<"...\n";
+  gBenchmark->Start(name);
+
+
   const Char_t *TPCtrkNameS="AliTPCtracksParam.root";
   const Char_t *galiceName="galice.root";
   const Char_t *ITSclsName="AliITSclustersV2.root";
@@ -57,21 +76,21 @@ Int_t AliBarrelRec_TPCparam(Int_t n=1) {
 
   AliKalmanTrack::SetConvConst(100/0.299792458/BfieldValue);
 
-  
+
   // ********** Build TPC tracks with parameterization *********** //
   if (TPCParamTracks(galiceName,TPCtrkNameS,collcode,BfieldValue,n)) {
     cerr<<"Failed to get TPC hits !\n";
     return 1;
   }
-
+ 
   
   // ********** Find ITS clusters *********** //
   if (ITSFindClusters(galiceName,ITSclsName,n)) {
     cerr<<"Failed to get ITS clusters !\n";
     return 1;
-  } 
+  }  
   
-
+  
   // ********* Find ITS tracks *********** //
   if (ITSFindTracks(galiceName,TPCtrkNameS,ITSclsName,ITStrkName,n)) {
     cerr<<"Failed to get ITS tracks !\n";
@@ -85,6 +104,8 @@ Int_t AliBarrelRec_TPCparam(Int_t n=1) {
     return 1;
   } 
   
+  gBenchmark->Stop(name);
+  gBenchmark->Show(name);
 
   return 0;
 }
@@ -119,16 +140,22 @@ Int_t TPCParamTracks(const Char_t *galice, const Char_t *outname,
 
 Int_t ITSFindClusters(const Char_t *inname, const Char_t *outname, Int_t n) {
 
- 
+  
   cerr<<"\n*******************************************************************\n";
 
   Int_t rc=0;
   const Char_t *name="ITSFindClusters";
   cerr<<'\n'<<name<<"...\n";
   gBenchmark->Start(name);
+
+ 
+  // delete reconstruction Tree if it's there
+  TFile *f =TFile::Open(inname,"update");
+  f->Delete("TreeR0;*");
+  f->Close();
+
   TFile *out=TFile::Open(outname,"recreate");
   TFile *in =TFile::Open(inname,"update");
-
   
   if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
     cerr<<"Can't get gAlice !\n";
@@ -245,7 +272,7 @@ Int_t ITSFindClusters(const Char_t *inname, const Char_t *outname, Int_t n) {
   out->Close();
   gBenchmark->Stop(name);
   gBenchmark->Show(name);
-
+ 
   return rc;
 }
 
@@ -253,14 +280,14 @@ Int_t ITSFindTracks(const Char_t *galice, const Char_t * inname,
                     const Char_t *inname2, const Char_t *outname, 
                     Int_t n) {
 
- 
+  
   cerr<<"\n*******************************************************************\n";
 
   Int_t rc=0;
   const Char_t *name="ITSFindTracks";
   cerr<<'\n'<<name<<"...\n";
   gBenchmark->Start(name);
-  
+ 
   
   TFile *out=TFile::Open(outname,"recreate");
   TFile *in =TFile::Open(inname);
@@ -298,9 +325,9 @@ Int_t ITSFindTracks(const Char_t *galice, const Char_t * inname,
 
     // setup vertex constraint in the two tracking passes
     Int_t flags[2];
-    flags[0]=0;
+    flags[0]=1;
     tracker.SetupFirstPass(flags);
-    flags[0]=-1;
+    flags[0]=0;
     tracker.SetupSecondPass(flags);
     
     rc=tracker.Clusters2Tracks(in,out);
@@ -311,7 +338,7 @@ Int_t ITSFindTracks(const Char_t *galice, const Char_t * inname,
   in->Close();
   in2->Close();
   out->Close();
-
+ 
   gBenchmark->Stop(name);
   gBenchmark->Show(name);
   
@@ -354,7 +381,7 @@ Int_t ITSMakeRefFile(const Char_t *galice, const Char_t *inname,
 
     AliITStrackV2 *itstrack=0;
 
-    Int_t nparticles=gAlice->GetEvent(event);  
+    gAlice->GetEvent(event);  
 
     trk->cd();
 
@@ -370,7 +397,7 @@ Int_t ITSMakeRefFile(const Char_t *galice, const Char_t *inname,
     char ttname[100];
     sprintf(ttname,"Tree_Ref_%d",event);
     TTree *reftree = new TTree(ttname,"Tree with true track params");
-    reftree->Branch("rectracks",&rectrk,"lab/I:pdg:Vx/F:Vy:Vz:Px:Py:Pz");
+    reftree->Branch("rectracks",&rectrk,"lab/I:pdg:mumlab:mumpdg:Vx/F:Vy:Vz:Px:Py:Pz");
 
     for (Int_t i=0; i<nentr; i++) {
       itstrack=new AliITStrackV2;
@@ -381,6 +408,7 @@ Int_t ITSMakeRefFile(const Char_t *galice, const Char_t *inname,
       Part = (TParticle*)gAlice->Particle(label);
       rectrk.lab=label;
       rectrk.pdg=Part->GetPdgCode();
+      rectrk.mumlab = Part->GetFirstMother();
       if(Part->GetFirstMother()>=0) {
 	Mum = (TParticle*)gAlice->Particle(Part->GetFirstMother());
 	rectrk.mumpdg=Mum->GetPdgCode();
@@ -405,7 +433,7 @@ Int_t ITSMakeRefFile(const Char_t *galice, const Char_t *inname,
   trk->Close();
   kin->Close();
   out->Close();
-
+  
   gBenchmark->Stop(name);
   gBenchmark->Show(name);
   

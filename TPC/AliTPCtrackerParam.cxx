@@ -11,20 +11,14 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-/*
-$Log$
-Revision 1.1  2002/02/18 09:06:54  kowal2
-TPC parametrization by Andrea Dainese
-
-*/
-/*************************************************************************
+ **************************************************************************
+ **************************************************************************
  *                                                                        *
  * This class builds AliTPCtrack objects from generated tracks to feed    *
  * ITS tracking (V2). The AliTPCtrack is built from its first hit in      *
  * the TPC. The track is assigned a Kalman-like covariance matrix         *
  * depending on its pT and pseudorapidity and track parameters are        *
- * smeared according this covariance matrix.                              *
+ * smeared according to this covariance matrix.                           *
  * Output file contains sorted tracks, ready for matching with ITS        *
  *                                                                        *
  * Test macro is: AliBarrelRec_TPCparam.C                                 * 
@@ -38,6 +32,11 @@ TPC parametrization by Andrea Dainese
 #include "AliTPCtrack.h"
 #include "TMatrixD.h"
 #include "AliKalmanTrack.h"
+#include "AliMagFCM.h"
+#include "AliGausCorr.h"
+
+
+
 
 ClassImp(AliTPCtrackerParam)
 
@@ -57,17 +56,15 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out, Int_t n)
 {
  
   if(fColl!=0) { 
-    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid collision!"<<endl<<
-                "Available:  0   ->   PbPb6000"<<endl; return 0; 
+    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid collision!\n
+                 Available:  0   ->   PbPb6000"<<endl; return 0; 
   }
   if(fBz!=0.4) {
-    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid field!"<<endl<<
-                "Available:  0.4"<<endl; return 0;
+    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid field!\n
+                 Available:  0.4"<<endl; return 0;
   }
 
   TFile *infile=(TFile*)inp;
-
-  AliKalmanTrack::SetConvConst(100/0.299792458/fBz);
 
   // Get gAlice object from file
   if(!(gAlice=(AliRun*)infile->Get("gAlice"))) {
@@ -75,9 +72,17 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out, Int_t n)
     return 1;
   }
 
-  // Set random number generator seed
-  TDatime t;
-  gRandom->SetSeed(t.Get());
+  AliMagFCM *fiel = (AliMagFCM*)gAlice->Field();
+  Double_t fieval=(Double_t)fiel->SolenoidField()/10.;
+  printf("Magnetic field is %6.2f Tesla\n",fieval);
+  if(fBz!=fieval) {
+    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid field!"<<endl;
+    cerr<<"Field selected is: "<<fBz<<" T\n";
+    cerr<<"Field found on file is: "<<fieval<<" T\n";
+    return 0;
+  }
+
+  AliKalmanTrack::SetConvConst(100/0.299792458/fBz);
 
 
   // loop over first n events in file
@@ -424,40 +429,11 @@ TMatrixD AliTPCtrackerParam::GetSmearingMatrix(Double_t* cc,Double_t pt,Double_t
 //-----------------------------------------------------------------
 void AliTPCtrackerParam::SmearTrack(Double_t* xx,Double_t* xxsm,TMatrixD cov) {
 
-  // build triangular matrix Bmat
-  TMatrixD* Bmat = new TMatrixD(5,5);
-
-  for(Int_t j=0;j<5;j++){
-    Double_t accum = 0;
-    for(Int_t k=0;k<j;k++){
-      accum += (*Bmat)(j,k)* (*Bmat)(j,k);
-    }
-    (*Bmat)(j,j)=TMath::Sqrt(TMath::Abs(cov(j,j)-accum));
-    for(Int_t i=j+1;i<5;i++){
-      accum = 0;
-      for(Int_t k=0;k<j;k++){
-	accum+=(*Bmat)(i,k)* (*Bmat)(j,k);
-      }
-      (*Bmat)(i,j) = (cov(i,j)-accum) / (*Bmat)(j,j);
-    }
-  }
-
-  // get array of numbers with normal distribution
-  TArrayD norm;
-  norm.Set(5);
-  for(Int_t l=0;l<5;l++) {
-    norm[l]=gRandom->Gaus();
-  }
-
-  // use Bmat matrix to generate correlated numbers
-  TArrayD corr;
-  corr.Set(5);
-  for(Int_t i=0;i<5;i++){
-    corr[i]=0;
-    for(Int_t j=0;j<=i;j++) corr[i] += (*Bmat)(i,j)*norm[j];
-  }
-
-  delete Bmat;
+  AliGausCorr *corgen = new AliGausCorr(cov,5);
+  TArrayD corr(5);
+  corgen->GetGaussN(corr);
+  delete corgen;
+  corgen = 0;
 
   for(Int_t l=0;l<5;l++) {
     xxsm[l] = xx[l]+corr[l];
@@ -475,7 +451,7 @@ void AliTPCtrackerParam::CookTracks(TObjArray& tarray,TObjArray& newtarray)
   // open file with matrixes DB
   TFile* DBfile = new TFile(s->Data());  
 
-  AliTPCtrack* track=new AliTPCtrack;
+  AliTPCtrack* track = 0;
   Int_t entr = (Int_t)tarray.GetEntriesFast();
 
   for(Int_t k=0; k<entr; k++) {
@@ -544,10 +520,16 @@ void AliTPCtrackerParam::CookTracks(TObjArray& tarray,TObjArray& newtarray)
 
     // fill the array
     newtarray.AddLast(tpctrack);
-  
+ 
+   delete matrix;  
+
   }
 
   DBfile->Close();
+
+  delete s;
+  delete DBfile;
+
 
   return; 
 }
