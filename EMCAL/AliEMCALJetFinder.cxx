@@ -18,8 +18,8 @@
 //*-- Authors: Andreas Morsch   (CERN)
 //*            J.L. Klay        (LBL)
 //*            Aleksei Pavlinov (WSU) 
-//
-//
+//--
+//--
 //
 
 #include <stdio.h>
@@ -257,15 +257,15 @@ void AliEMCALJetFinder::Init()
 //
 }
 
-void AliEMCALJetFinder::Find(Int_t ncell, Int_t ncell_tot, Float_t etc[30000], 
+void AliEMCALJetFinder::Find(Int_t ncell, Int_t ncelltot, Float_t etc[30000], 
 			     Float_t etac[30000], Float_t phic[30000],
-			     Float_t min_move, Float_t max_move, Int_t mode, 
-			     Float_t prec_bg,  Int_t   ierror)
+			     Float_t minmove, Float_t maxmove, Int_t mode, 
+			     Float_t precbg,  Int_t   ierror)
 {
 // Wrapper for fortran coded jet finder
 // Full argument list
-    jet_finder_ua1(ncell, ncell_tot, etc, etac, phic, 
-		   min_move, max_move, mode, prec_bg, ierror);
+    jet_finder_ua1(ncell, ncelltot, etc, etac, phic, 
+		   minmove, maxmove, mode, precbg, ierror);
     // Write result to output
     if(fWrite) WriteJets();
     fEvent++;
@@ -276,15 +276,15 @@ void AliEMCALJetFinder::Find()
 // Wrapper for fortran coded jet finder using member data for 
 // argument list
 
-    Float_t min_move = fMinMove;
-    Float_t max_move = fMaxMove;
+    Float_t minmove = fMinMove;
+    Float_t maxmove = fMaxMove;
     Int_t   mode     = fMode;
-    Float_t prec_bg  = fPrecBg;
+    Float_t precbg  = fPrecBg;
     Int_t   ierror;
     ResetJets(); // 4-feb-2002 by PAI
 
     jet_finder_ua1(fNcell, fNtot, fEtCell, fEtaCell, fPhiCell, 
-		   min_move, max_move, mode, prec_bg, ierror);
+		   minmove, maxmove, mode, precbg, ierror);
     fError = ierror;
     // Write result to output
     Int_t njet = Njets();
@@ -306,7 +306,6 @@ void AliEMCALJetFinder::Find()
         fJetT[nj]->SetIsWeightedEnergy(fWeightingMethod); 
         fJetT[nj]->SetEMCALEnergy( EMCALConeEnergy(JetEtaW(nj),JetPhiW(nj)) ); 
         fJetT[nj]->SetTrackEnergy(TrackConeEnergy( JetEtaW(nj),JetPhiW(nj)  )); 
-        fJetT[nj]->SetHCEnergy(HCConeEnergy( JetEtaW(nj),JetPhiW(nj)  )); 
 	
     }
 
@@ -360,31 +359,6 @@ for (Int_t i = 0 ; i < fNbinEta  ; i++) // x coord
 return newenergy;
 }
 
-Float_t AliEMCALJetFinder::HCConeEnergy(Float_t eta, Float_t phi)
-{
-//Float_t newenergy = 0.0;
-//Float_t bineta,binphi;
-//TAxis *x = fhLegoTracks->GetXaxis();
-//TAxis *y = fhLegoTracks->GetYaxis();
-//for (Int_t i = 0 ; i < fNbinEta  ; i++) // x coord
-//   {
-//      for (Int_t j = 0 ; j < fNbinPhi  ; j++)  // y coord
-//      {
-//        bineta = x->GetBinCenter(i);
-//        binphi = y->GetBinCenter(j);
-//        if ( (bineta-eta)*(bineta-eta) + (binphi-phi)*(binphi-phi) < fConeRadius*fConeRadius)
-//        {
-//            newenergy += fhLegoTracks->GetBinContent(i,j);
-//         }
-//    }
-//}
-//return newenergy;
-	
-return eta*phi*0.0;	
-	
-}
-
-
 
 Float_t AliEMCALJetFinder::WeightedJetEnergy(Float_t eta, Float_t phi)
 {
@@ -420,32 +394,32 @@ Int_t AliEMCALJetFinder::Njets() const
     return EMCALJETS.njet;
 }
 
-Float_t AliEMCALJetFinder::JetEnergy(Int_t i)
+Float_t AliEMCALJetFinder::JetEnergy(Int_t i) const
 {
 // Get reconstructed jet energy
     return EMCALJETS.etj[i];
 }
 
-Float_t AliEMCALJetFinder::JetPhiL(Int_t i)
+Float_t AliEMCALJetFinder::JetPhiL(Int_t i) const
 {
 // Get reconstructed jet phi from leading particle
     return EMCALJETS.phij[0][i];
 }
 
-Float_t AliEMCALJetFinder::JetPhiW(Int_t i)
+Float_t AliEMCALJetFinder::JetPhiW(Int_t i) const
 {
 // Get reconstructed jet phi from weighting
     return EMCALJETS.phij[1][i];
 }
 
-Float_t  AliEMCALJetFinder::JetEtaL(Int_t i)
+Float_t  AliEMCALJetFinder::JetEtaL(Int_t i) const
 {
 // Get reconstructed jet eta from leading particles
     return EMCALJETS.etaj[0][i];
 }
 
 
-Float_t  AliEMCALJetFinder::JetEtaW(Int_t i)  
+Float_t  AliEMCALJetFinder::JetEtaW(Int_t i)  const
 {
 // Get reconstructed jet eta from weighting
     return EMCALJETS.etaj[1][i];
@@ -498,22 +472,22 @@ void AliEMCALJetFinder::Test()
 //
 // Test the finder call
 //
-    const Int_t nmax = 30000;
+    const Int_t knmax = 30000;
     Int_t ncell      = 10;
-    Int_t ncell_tot  = 100;
+    Int_t ncelltot  = 100;
 
-    Float_t etc[nmax];
-    Float_t etac[nmax];
-    Float_t phic[nmax];
-    Float_t min_move = 0;
-    Float_t max_move = 0;
+    Float_t etc[knmax];
+    Float_t etac[knmax];
+    Float_t phic[knmax];
+    Float_t minmove = 0;
+    Float_t maxmove = 0;
     Int_t   mode = 0;
-    Float_t prec_bg = 0;
+    Float_t precbg = 0;
     Int_t   ierror = 0;
 
     
-    Find(ncell, ncell_tot, etc, etac, phic, 
-	 min_move, max_move, mode, prec_bg, ierror);
+    Find(ncell, ncelltot, etc, etac, phic, 
+	 minmove, maxmove, mode, precbg, ierror);
 
 }
 
@@ -786,18 +760,18 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 
     // this is for Pythia ??
     for (Int_t part = 0; part < npart; part++) {
-	TParticle *MPart = gAlice->GetMCApp()->Particle(part);
-	Int_t mpart   = MPart->GetPdgCode();
-	Int_t child1  = MPart->GetFirstDaughter();
-	Float_t pT    = MPart->Pt();
-	Float_t p     = MPart->P();
-	Float_t phi   = MPart->Phi();
+	TParticle *mPart = gAlice->GetMCApp()->Particle(part);
+	Int_t mpart   = mPart->GetPdgCode();
+	Int_t child1  = mPart->GetFirstDaughter();
+	Float_t pT    = mPart->Pt();
+	Float_t p     = mPart->P();
+	Float_t phi   = mPart->Phi();
 	Float_t eta   = -100.;
-	if(pT > 0.001) eta   = MPart->Eta();
-	Float_t theta = MPart->Theta();	
-        if  (fDebug>=2 && MPart->GetStatusCode()==1) { 
+	if(pT > 0.001) eta   = mPart->Eta();
+	Float_t theta = mPart->Theta();	
+        if  (fDebug>=2 && mPart->GetStatusCode()==1) { 
 	   printf("ind %7i part %7i -> child1 %5i child2 %5i Status %5i\n", 
-           part, mpart, child1, MPart->GetLastDaughter(), MPart->GetStatusCode());
+           part, mpart, child1, mPart->GetLastDaughter(), mPart->GetStatusCode());
         }
 	
 	if (fDebug >= 2 && genType == kPythia) {
@@ -817,7 +791,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 //	final state particles only
 
 	if (genType == kPythia) {
-	    if (MPart->GetStatusCode() != 1) continue;
+	    if (mPart->GetStatusCode() != 1) continue;
 	} else if (genType == kHijing) {
 	    if (child1 >= 0 && child1 < npart) continue;
 	}
@@ -825,7 +799,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	
 	TParticlePDG* pdgP = 0;
 // charged or neutral 
-	pdgP  = MPart->GetPDG();
+	pdgP  = mPart->GetPDG();
         chTmp = pdgP->Charge() / 3.; // 13-feb-2001!!  
 
 	if (ich == 0) {
@@ -1800,7 +1774,8 @@ const Char_t* AliEMCALJetFinder::GetFileNameForParameters(Char_t* dir)
 }
 
 void AliEMCALJetFinder::RearrangeParticlesMemory(Int_t npart)
-{ // See FillFromTracks() - npart must be positive
+{ 
+	// See FillFromTracks() - npart must be positive
     if (fTrackList) delete[] fTrackList;
     if (fPtT)       delete[] fPtT;
     if (fEtaT)      delete[] fEtaT;
@@ -1977,7 +1952,8 @@ Bool_t AliEMCALJetFinder::IsFolder() const
 }
 
 const Char_t* AliEMCALJetFinder::GetNameOfVariant()
-{// generate the literal string with info about jet finder
+{
+	// generate the literal string with info about jet finder
   Char_t name[200];
   sprintf(name, "jF_R%3.2fMinCell%4.1fPtCut%4.1fEtSeed%4.1fMinEt%4.1fBGSubtr%iSF%4.1f",
 	  fConeRadius,fMinCellEt,fPtCut,fEtSeed,fMinJetEt, fMode, fSamplingF);

@@ -26,10 +26,10 @@ class AliEMCALJetFinder : public TTask {
     AliEMCALJetFinder(const char* name, const char *title);
     virtual ~AliEMCALJetFinder();
     virtual void  Init();
-    virtual void  Find(Int_t ncell, Int_t ncell_tot, Float_t etc[30000], 
+    virtual void  Find(Int_t ncell, Int_t ncelltot, Float_t etc[30000], 
 		      Float_t etac[30000], Float_t phic[30000],
-		      Float_t min_move, Float_t max_move, Int_t mode,
-		      Float_t prec_bg, Int_t ierror);
+		      Float_t minmove, Float_t maxmove, Int_t mode,
+		      Float_t precbg, Int_t ierror);
     virtual void  Find();
     virtual void  FindChargedJet();
     virtual void  FindTracksInJetCone();
@@ -74,12 +74,12 @@ class AliEMCALJetFinder : public TTask {
     virtual const Char_t* GetFileNameForParameters(Char_t* dir="RES/");
 
     // Access to Results
-    virtual Int_t   Njets() const;
-    virtual Float_t JetEnergy(Int_t count);
-    virtual Float_t JetPhiL(Int_t count);
-    virtual Float_t JetPhiW(Int_t count);
-    virtual Float_t JetEtaL(Int_t count);  
-    virtual Float_t JetEtaW(Int_t count);
+    virtual Int_t Njets() const;
+    virtual Float_t JetEnergy (Int_t count) const;
+    virtual Float_t JetPhiL  (Int_t count) const;
+    virtual Float_t JetPhiW  (Int_t count) const ;
+    virtual Float_t JetEtaL (Int_t count) const ;  
+    virtual Float_t JetEtaW (Int_t count) const;
     TH2F*   GetLego() const {return fLego;}
     TH2F*   GetLegoB() const {return fLegoB;}
     TH2F*   GetLegoEMCAL() const {return fhLegoEMCAL;}
@@ -119,14 +119,14 @@ class AliEMCALJetFinder : public TTask {
     virtual Bool_t  IsFolder() const;
     virtual void Browse(TBrowser* b);
 
-    TString fBGFileName;				// file name for background
-    Float_t			   fEMCALWeight;	// EMCal energy weighting
-    Float_t			   fTrackWeight;	// Track energy weighting
-    Bool_t                         fRandomBg;        //  Flag for Random Background 
 
 
     
  protected:
+    TString fBGFileName;				// file name for background
+    Float_t			   fEMCALWeight;	// EMCal energy weighting
+    Float_t			   fTrackWeight;	// Track energy weighting
+    Bool_t                         fRandomBg;        //  Flag for Random Background 
     Bool_t                         fWrite;           // Key for writing
     Bool_t                         fWeightingMethod; // Key for writing
     TClonesArray*                  fJets;            //! List of Jets
@@ -205,13 +205,12 @@ class AliEMCALJetFinder : public TTask {
     Float_t WeightedJetEnergy(Float_t eta, Float_t phi);
     Float_t EMCALConeEnergy(Float_t eta, Float_t phi);
     Float_t TrackConeEnergy(Float_t eta, Float_t phi);
-    Float_t HCConeEnergy(Float_t eta, Float_t phi);
     virtual void DumpLego();
     virtual void ResetMap();
     virtual Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);
     virtual void RearrangeParticlesMemory(Int_t npart);
 
-    ClassDef(AliEMCALJetFinder,4)                    // JetFinder for EMCAL
+    ClassDef(AliEMCALJetFinder,5)                    // JetFinder for EMCAL
 }
 ;
 #endif // ALIEMCALJetFinder_H
