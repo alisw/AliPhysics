@@ -333,6 +333,9 @@ Int_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
     return 0;
   }
 
+  // old position [SR, GSI, 17.02.2003]
+  Double_t oldX = fX, oldY = fP0, oldZ = fP1;
+
   Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);
   
   fP0 += dx*(f1+f2)/(r1+r2);
@@ -382,6 +385,13 @@ Int_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   fX=x2;
 
   if (!CorrectForMaterial(d,x0)) return 0;
+
+  // Integrated Time [SR, GSI, 17.02.2003]
+  if (IsStartedTimeIntegral()) {
+    Double_t l2 = (fX-oldX)*(fX-oldX)+(fP0-oldY)*(fP0-oldY)+(fP1-oldZ)*(fP1-oldZ);
+    AddTimeStep(TMath::Sqrt(l2));
+  }
+  //
 
   return 1;
 }

@@ -259,6 +259,10 @@ cout<<fBestTrack.GetNumberOfClusters()<<" number of clusters\n\n";
         fBestTrack.SetLabel(tpcLabel);
 	fBestTrack.CookdEdx();
         CookLabel(&fBestTrack,0.); //For comparison only
+            
+        fBestTrack.PropagateTo(3.,0.0028,65.19);
+        fBestTrack.PropagateToVertex();
+        
         itsTree.Fill();
         UseClusters(&fBestTrack);
         delete itsTracks.RemoveAt(i);
@@ -318,15 +322,28 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
   sprintf(tname,"TreeT_ITSb_%d",GetEventNumber());
   TTree backTree(tname,"Tree with back propagated ITS tracks");
   AliTPCtrack *otrack=0;
-  backTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);
+  backTree.Branch("tracks","AliTPCtrack",&otrack,32000,2);
 
   Int_t ntrk=0;
 
   Int_t nentr=(Int_t)itsTree->GetEntries();
   for (Int_t i=0; i<nentr; i++) {
+
     itsTree->GetEvent(i);
     ResetTrackToFollow(*itrack);
-    fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
+
+    // propagete to vertex [SR, GSI 17.02.2003]
+    fTrackToFollow.PropagateTo(3.,0.0028,65.19);
+    fTrackToFollow.PropagateToVertex();
+
+    // Start Time measurement [SR, GSI 17.02.2003]
+    fTrackToFollow.StartTimeIntegral();
+    fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
+    //
+
+    fTrackToFollow.ResetCovariance(); 
+    fTrackToFollow.ResetClusters();
+
     Int_t itsLabel=fTrackToFollow.GetLabel(); //save the ITS track label
 
 #ifdef DEBUG
@@ -358,6 +375,11 @@ for (Int_t k=0; k<nc; k++) {
             if (fI==2) {rs=9.; d=0.0097; x0=42.;}
             if (!fTrackToFollow.PropagateTo(rs,-d,x0)) throw "";
          }
+
+         // remember old position [SR, GSI 18.02.2003]
+	 Double_t oldX, oldY, oldZ;
+	 fTrackToFollow.GetGlobalXYZat(fTrackToFollow.GetX(),oldX,oldY,oldZ);
+	 //
 
          Double_t x,y,z;
          if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) 
@@ -414,14 +436,22 @@ for (Int_t k=0; k<nc; k++) {
          }
 
          if (cl) {
-            if (!fTrackToFollow.Update(cl,maxchi2,index)) 
-              cerr<<"AliITStrackerV2::PropagateBack: filtering failed !\n";
+           if (!fTrackToFollow.Update(cl,maxchi2,index)) 
+             cerr<<"AliITStrackerV2::PropagateBack: filtering failed !\n";
          }
          {
-         Double_t x0;
-         x=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ(),x0);
-         fTrackToFollow.CorrectForMaterial(-x,x0); 
+           Double_t x0;
+           x=layer.GetThickness(fTrackToFollow.GetY(),fTrackToFollow.GetZ(),x0);
+           fTrackToFollow.CorrectForMaterial(-x,x0); 
          }
+         	 
+         // track time update [SR, GSI 17.02.2003]
+         Double_t newX, newY, newZ;
+	 fTrackToFollow.GetGlobalXYZat(fTrackToFollow.GetX(),newX,newY,newZ);
+         Double_t dL2 = (oldX-newX)*(oldX-newX)+(oldY-newY)*(oldY-newY)+(oldZ-newZ)*(oldZ-newZ);
+	 fTrackToFollow.AddTimeStep(TMath::Sqrt(dL2));
+         //
+
        }
 
        fTrackToFollow.PropagateTo(50.,-0.001);
