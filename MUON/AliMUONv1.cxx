@@ -761,12 +761,12 @@ void AliMUONv1::CreateGeometry()
      Float_t z1 = spar[2], z2=2*spar[2]*1.01; 
      for (Int_t idiv=0;idiv<ndiv; idiv++){ 
        ydiv+= dydiv;
-       Float_t xdiv =2; 
+       Float_t xdiv = 0.; 
        if (ydiv<rmin) xdiv= rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
        divpar[0] = (pcbLength-xdiv)/2.; 
        divpar[1] = dydiv/2. - epsilon;
        divpar[2] = sensWidth/2.; 
-       Float_t xvol=(pcbLength+xdiv)/2.;
+       Float_t xvol=(pcbLength+xdiv)/2.+1.999;
        Float_t yvol=ydiv + dydiv/2.; 
        gMC->Gsposp("S05G",imax+4*idiv+1,"C05M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
        gMC->Gsposp("S06G",imax+4*idiv+1,"C06M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
@@ -808,7 +808,7 @@ void AliMUONv1::CreateGeometry()
      
 
      const Int_t nSlats4 = 6;  // number of slats per quadrant
-     const Int_t nPCB4[nSlats4] = {4,4,5,4,4,3}; // n PCB per slat
+     const Int_t nPCB4[nSlats4] = {4,4,5,5,4,3}; // n PCB per slat
      const Float_t xpos4[nSlats4] = {37.5, 40., 0., 0., 0., 0.};
      Float_t slatLength4[nSlats4];     
 
@@ -965,12 +965,12 @@ void AliMUONv1::CreateGeometry()
      Float_t z1 = -spar[2], z2=2*spar[2]*1.01; 
      for (Int_t idiv=0;idiv<ndiv; idiv++){ 
        ydiv+= dydiv;
-       Float_t xdiv =2; 
+       Float_t xdiv = 0.; 
        if (ydiv<rmin) xdiv= rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
        divpar[0] = (pcbLength-xdiv)/2.; 
        divpar[1] = dydiv/2. - epsilon;
        divpar[2] = sensWidth/2.; 
-       Float_t xvol=(pcbLength+xdiv)/2.;
+       Float_t xvol=(pcbLength+xdiv)/2.+1.999;
        Float_t yvol=ydiv + dydiv/2.;
        gMC->Gsposp("S07G",imax+4*idiv+1,"C07M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
        gMC->Gsposp("S08G",imax+4*idiv+1,"C08M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
@@ -1169,12 +1169,12 @@ void AliMUONv1::CreateGeometry()
      Float_t z1 = spar[2], z2=2*spar[2]*1.01; 
      for (Int_t idiv=0;idiv<ndiv; idiv++){ 
        ydiv+= dydiv;
-       Float_t xdiv =2; 
+       Float_t xdiv = 0.; 
        if (ydiv<rmin) xdiv= rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
        divpar[0] = (pcbLength-xdiv)/2.; 
        divpar[1] = dydiv/2. - epsilon;
        divpar[2] = sensWidth/2.; 
-       Float_t xvol=(pcbLength+xdiv)/2.;
+       Float_t xvol=(pcbLength+xdiv)/2. + 1.999;
        Float_t yvol=ydiv + dydiv/2.;
        gMC->Gsposp("S09G",imax+4*idiv+1,"C09M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
        gMC->Gsposp("S10G",imax+4*idiv+1,"C10M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
