@@ -204,7 +204,9 @@ void  AliSimDigits::ExpandTrackBuffer1()
       num %= 10000000; //PH: take into account the case of underlying events
       i++;
       Int_t id =  fTracks->At(i);
-      for (j = 0; j<num; j++,row++) (*buf)[level*all+col*fNrows+row]=id;       
+      for (j = 0; j<num; j++,row++) {
+	if (level*all+col*fNrows+row<elems) (*buf)[level*all+col*fNrows+row]=id;       
+      }
     }
     if (row>=fNrows) {
       row=0;
