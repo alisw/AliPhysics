@@ -1,3 +1,20 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <stdio.h>
+#include <TFile.h>
+#include <TCanvas.h>
+#include <TH2F.h>
+#include <TH1F.h>
+#include <TF1.h>
+#include <TDatabasePDG.h>
+#include <TRandom.h>
+#include <TStopwatch.h>
+#include "AliFastGlauber.h"
+#include "AliFastMuonTrackingRes.h"
+#include "AliFastMuonTrackingAcc.h"
+#include "AliFastMuonTrackingEff.h"
+#include "AliFastMuonTriggerEff.h"
+#endif
+
 void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 {
 //
@@ -17,17 +34,17 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
     printf("Impact parameter range: %10.3f - %10.3f fm \n", bmin, bmax);
     printf("Luminosity: %10.3e cm^-2 s^-1 \n", lumi);
     printf("Rate: %10.3f Hz\n", rate);
-    printf("Fraction of hard  cross-section: %10.3f %\n", fhard * 100.);
-    printf("Fraction of geom. cross-section: %10.3f %\n", fgeo  * 100.);
-    printf("Events in 10^6 s: %10.3e %\n", events);
+    printf("Fraction of hard  cross-section: %10.3f \n", fhard * 100.);
+    printf("Fraction of geom. cross-section: %10.3f \n", fgeo  * 100.);
+    printf("Events in 10^6 s: %10.3e \n", events);
     printf("-------------------------------------------------------------------\n");
 
 //
 //    
-    Float_t ptMinCut  = 3.;
+    Float_t ptMinCut  = 3.;     // GeV
     Float_t etamin    = 2.543;
     Float_t etar      = 1.457;
-    Float_t ptUp      = 20.;   // GeV
+    Float_t ptUp      = 20.;    // GeV
     Float_t dpt       = 0.01;   // GeV
 //    
 //  For b = 0
@@ -106,7 +123,7 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 //
 //  pi/K -> mu
 //
-    f = new TFile("$(ALICE_ROOT)/FASTSIM/data/pikmu.root");
+    TFile* f = new TFile("$(ALICE_ROOT)/FASTSIM/data/pikmu.root");
     TH2F*  etaptPiK = (TH2F*) f->Get("etaptH");
     TAxis* etaAxis  = etaptPiK->GetXaxis();
     TAxis* ptAxis   = etaptPiK->GetYaxis();    
@@ -239,8 +256,8 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 	Float_t ptMax = pT1;
 	Float_t ptMin = pT2;
 	if (pT2 > pT1) {
-	    Float_t ptMax = pT2;
-	    Float_t ptMin = pT1;
+	    ptMax = pT2;
+	    ptMin = pT1;
 	}
 	
 	if (ptMin > ptMinCut && p1 > 4. && p2 > 4.) {
