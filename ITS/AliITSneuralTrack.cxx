@@ -1,18 +1,27 @@
 #include <Riostream.h>
 #include <Riostream.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
-#include <TObject.h>
-#include <TROOT.h>
+//#include <TObject.h>
+//#include <TROOT.h>
 #include <TMath.h>
 #include <TString.h>
 
 #include "AliITSglobalRecPoint.h"
-#include "AliITSneuralTracker.h"
+//#include "AliITSneuralTracker.h"
 
 #include "AliITSneuralTrack.h"
 
-
+///////////////////////////////////////////////////////////////////////
+//
+// AliITSneuralTrack: 
+// track object produced with a
+// neural network MFT algorithm 
+// for track finding in ITS stand alone
+// according to the Denby-Peterson model with adaptments to the 
+// ALICE multiplicity
+// 
+///////////////////////////////////////////////////////////////////////
 
 ClassImp(AliITSneuralTrack)
 //
@@ -20,9 +29,36 @@ ClassImp(AliITSneuralTrack)
 //
 AliITSneuralTrack::AliITSneuralTrack()
 {
+  // default constructor
 	Int_t i;
 	for (i = 0; i < 6; i++) fPoint[i] = 0;
 }
+//__________________________________________________________
+AliITSneuralTrack::AliITSneuralTrack(const AliITSneuralTrack &src):TObject(src){
+  // copy constructor
+  fFitXC = src.fFitXC;
+  fFitYC = src.fFitYC;
+  fFitRadius = src.fFitRadius;
+  fFitTanL = src.fFitTanL;
+  fSqChi = src.fSqChi;
+  for(Int_t i=0;i<6;i++)fPoint[i] = src.fPoint[i];
+}
+
+//__________________________________________________________
+AliITSneuralTrack& AliITSneuralTrack::operator=(const AliITSneuralTrack &src){
+  // assignment operator
+  if(this != &src){
+    TObject::operator=(src);
+    fFitXC = src.fFitXC;
+    fFitYC = src.fFitYC;
+    fFitRadius = src.fFitRadius;
+    fFitTanL = src.fFitTanL;
+    fSqChi = src.fSqChi;
+    for(Int_t i=0;i<6;i++)fPoint[i] = src.fPoint[i];
+  }
+  return *this;
+}
+
 //
 //
 //
@@ -34,8 +70,8 @@ AliITSneuralTrack::~AliITSneuralTrack()
 //
 //
 //
-Int_t AliITSneuralTrack::CheckMe(Bool_t verbose)
-{
+Int_t AliITSneuralTrack::CheckMe(Bool_t verbose) const {
+  // returns the number of points (it should be 6)
 	Int_t l, stored = 0;
 	TString empty("Not filled slots: ");
 	for (l = 0; l < 6; l++) {
@@ -53,8 +89,8 @@ Int_t AliITSneuralTrack::CheckMe(Bool_t verbose)
 //
 //
 //
-Int_t AliITSneuralTrack::EvaluateTrack(Bool_t verbose, Int_t min, Int_t* &good)
-{
+Int_t AliITSneuralTrack::EvaluateTrack(Bool_t verbose, Int_t min, Int_t* &good){
+  //Used for comparison (good and fake tracks)
 	Int_t i, j, k = 0, count[18], id[18];
 	for (i = 0; i < 6; i++) {
 		for (j = 0; j < 3; j++) {
@@ -148,8 +184,9 @@ Int_t AliITSneuralTrack::EvaluateTrack(Bool_t verbose, Int_t min, Int_t* &good)
 //
 //
 //
-void AliITSneuralTrack::GetCoords(Double_t* &x, Double_t* &y, Double_t* &z)
+void AliITSneuralTrack::GetCoords(Double_t* &x, Double_t* &y, Double_t* &z) const
 {
+  // returns the coordinates of a point
 	if (x) delete [] x; x = new Double_t[6];
 	if (y) delete [] y; y = new Double_t[6];
 	if (z) delete [] z; z = new Double_t[6];
@@ -169,6 +206,7 @@ void AliITSneuralTrack::GetCoords(Double_t* &x, Double_t* &y, Double_t* &z)
 //
 void AliITSneuralTrack::CopyPoint(AliITSglobalRecPoint *p)
 {
+  // copy p in a new globalrecpoint obj
 	Int_t layer = p->fLayer;
 	if (layer < 0 || layer > 6) {
 		Error("", Form("Wrong layer [%d]", layer));
@@ -192,6 +230,7 @@ void AliITSneuralTrack::CopyPoint(AliITSglobalRecPoint *p)
 //
 void AliITSneuralTrack::Print(Option_t *option, Int_t min)
 {
+  // print this
 	Int_t *vuoto = 0;
 	TString opt(option);
 	opt.ToUpper();
@@ -215,14 +254,15 @@ void AliITSneuralTrack::Print(Option_t *option, Int_t min)
 //
 void AliITSneuralTrack::Kinks(Int_t &pos, Int_t &neg, Int_t &incr, Int_t &decr)
 {
+  // Kinks
 	Int_t i;
-	Double_t dphi, dphi_old = 0.0;
+	Double_t dphi, dphiold = 0.0;
 	pos = neg = incr = decr = 0;
 	for (i = 1; i < 6; i++) {
 		dphi = fPoint[i]->fPhi - fPoint[i-1]->fPhi;
 		if (dphi > 0.0) pos++; else neg++;
-		if (TMath::Abs(dphi) > dphi_old) incr++; else decr++;
-		dphi_old = TMath::Abs(dphi);
+		if (TMath::Abs(dphi) > dphiold) incr++; else decr++;
+		dphiold = TMath::Abs(dphi);
 	}
 }
 //
@@ -230,36 +270,37 @@ void AliITSneuralTrack::Kinks(Int_t &pos, Int_t &neg, Int_t &incr, Int_t &decr)
 //
 Double_t AliITSneuralTrack::FitXY(Double_t VX, Double_t VY)
 {
+  // determines XC, YC, radius and chi squared
 	Int_t i;
-	Double_t X, Y, D, R;
+	Double_t xX, yY, dD, rR;
 	Double_t rx(0.0), ry(0.0), x2(0.0), y2(0.0), xy(0.0);
 	for (i = 0; i < 6; i++) {
-		X = fPoint[i]->fGX - VX;
-		Y = fPoint[i]->fGY - VY;
-		R = X * X + Y * Y;
-		rx += R * X;
-		ry += R * Y;
-		x2 += X * X;
-		y2 += Y * Y;
-		xy += X * Y;
+		xX = fPoint[i]->fGX - VX;
+		yY = fPoint[i]->fGY - VY;
+		rR = xX * xX + yY * yY;
+		rx += rR * xX;
+		ry += rR * yY;
+		x2 += xX * xX;
+		y2 += yY * yY;
+		xy += xX * yY;
 	}
   
-	D = 2 * (x2 * y2 - xy * xy);
-	if (D == 0.0) 
+	dD = 2 * (x2 * y2 - xy * xy);
+	if (dD == 0.0) 
 		return 1000.0;
 	else {
-		X = (rx * y2 - ry * xy) / D;
-		Y = (ry * x2 - rx * xy) / D;
-		fFitRadius  = TMath::Sqrt(X * X + Y * Y);
-		fFitXC = X + VX;
-		fFitYC = Y + VY;
+		xX = (rx * y2 - ry * xy) / dD;
+		yY = (ry * x2 - rx * xy) / dD;
+		fFitRadius  = TMath::Sqrt(xX * xX + yY * yY);
+		fFitXC = xX + VX;
+		fFitYC = yY + VY;
 	}
   
 	fSqChi = 0.0;
 	for (i = 0; i < 6; i++) {
-		X = fPoint[i]->fGX - fFitXC;
-		Y = fPoint[i]->fGY - fFitYC;
-		fSqChi += ((X * X + Y * Y) / (fFitRadius * fFitRadius)) * ((X * X + Y * Y) / (fFitRadius * fFitRadius));
+		xX = fPoint[i]->fGX - fFitXC;
+		yY = fPoint[i]->fGY - fFitYC;
+		fSqChi += ((xX * xX + yY * yY) / (fFitRadius * fFitRadius)) * ((xX * xX + yY * yY) / (fFitRadius * fFitRadius));
 	}
 	fSqChi /= 6.0;
 	fSqChi = TMath::Sqrt(fSqChi);
