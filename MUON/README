@@ -166,6 +166,42 @@ config file when the magnetic field is defined:
 TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX))
 FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.
 MAXB is the maximum magnetic field which is 10.T
+===========================================================
+ MUON cocktail for physics ..............
+===========================================================
+There is a MUON cocktail generator of the muon sources in the
+EVGEN directory. This class derives from AliGenCocktail.
+In the init of this class I have filled the cocktail with 
+the muon sources: J/Psi, Upsilon, Open Charm, Open Beauty, 
+Pion, Kaons. The code needs only the production cross section 
+at 4pi (for the moment this values are in the code since I 
+prefere them do not be modified), and the code calculates the  
+rate of particles in the acceptance, making the scaling based 
+on the number of collisions for the hard probes and on the  
+number of participants for soft sources: Pions and Kaons.
+
+In the Genereate of this class all entries in the cocktail 
+are called and we define a "primordial trigger" with requires 
+a minimum number of muons above a Pt cut in the required acceptance.
+In order to normalized to the real number of simulated events, 
+there are 2 data members in the class fNsuceeded adn fNGenerate 
+which tell us what is the biais source.
+
+Enclose an example to use this generator:   
+AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+gener->SetPtRange(1.,100.);       // Transverse momentum range  
+gener->SetPhiRange(0.,360.);    // Azimuthal angle range 
+gener->SetYRange(-4.0,-2.4);
+gener->SetMuonPtCut(1.);
+gener->SetMuonThetaCut(171.,178.);
+gener->SetMuonMultiplicity(2);
+gener->SetNumberOfCollisions(1950.);   
+gener->SetNumberOfParticipants(400.);     
+gener->SetVertexSmear(kPerTrack);  
+gener->SetOrigin(0,0,0);        // Vertex position
+gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
+gener->Init();
+ 
 
 ===========================================================
  Still working ..............
