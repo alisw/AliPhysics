@@ -21,7 +21,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 EHDRS:=$(shell root-config --incdir)/TH1F.h
 
-EINCLUDE+=HLT/src HLT/hough HLT/comp
+EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 
 DHDR:= RAWLinkDef.h 
 

@@ -7,20 +7,17 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-SRCS:=  AliMDC.cxx AliRawDB.cxx \
-	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
-	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
-	AliRunDB.cxx mdc.cxx
+SRCS:=  AliHoughFilter.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
-EHDRS:=$(shell root-config --incdir)/TH1F.h
+#EHDRS:=$(shell root-config --incdir)/TH1F.h
 
 #EDEFINE+= -DUSE_EB
 
 EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 
-DHDR:= MDCLinkDef.h 
+DHDR:= MDCFilterLinkDef.h 
 
 ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}

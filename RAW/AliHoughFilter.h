@@ -11,6 +11,10 @@
 
 #include "AliFilter.h"
 
+class TTree;
+
+class AliITSgeom;
+
 
 class AliHoughFilter: public AliFilter {
 public:
@@ -18,7 +22,15 @@ public:
 
   virtual Bool_t       Filter(AliRawEvent* event, AliESD* esd);
 
+  void                 RunITSclusterer(AliRawEvent* event, TTree *treeClusters);
+  void                 RunITSvertexer(AliESD* esd, TTree *treeClusters);
+  void                 RunTPCtracking(AliRawEvent* event, AliESD* esd);
+  void                 RunITStracking(AliESD* esd, TTree *treeClusters);
 private:
+  Float_t fPtmin;        //Low limit on Pt
+
+  AliITSgeom *fITSgeom;  //Pointer to the ITS geometry
+
   ClassDef(AliHoughFilter, 0)   // TPC hough filter
 };
 
