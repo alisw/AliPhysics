@@ -280,8 +280,6 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
   AliHBTEventBuffer partbuffer(fBufferSize);
   AliHBTEventBuffer trackbuffer(fBufferSize);
   
-  Int_t ntracks = 0;
-  
   register UInt_t ii;
   
   Bool_t nocorrfctns = (fNParticleFunctions == 0) && (fNTrackFunctions == 0) && (fNParticleAndTrackFunctions == 0);
@@ -290,7 +288,6 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
   Int_t i = -1;
   while (fReader->Next() == kFALSE)
     {
-      ntracks = 0;
       i++;
       partEvent= fReader->GetParticleEvent();
       trackEvent = fReader->GetTrackEvent();
@@ -357,8 +354,6 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
             }
 
          if (firstcut) continue;
-         
-         ntracks++;
          
          for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
            fParticleMonitorFunctions[ii]->Process(part1);
