@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.18  2000/06/12 15:15:46  jbarbosa
+  Cleaned up version.
+
   Revision 1.17  2000/06/09 14:58:37  jbarbosa
   New digitisation per particle type
 
@@ -186,7 +189,7 @@ void AliRICH::AddPadHit(Int_t *clhits)
 
     TClonesArray &lPadHits = *fPadHits;
     new(lPadHits[fNPadHits++]) AliRICHPadHit(clhits);
-}
+} 
 //_____________________________________________________________________________
 void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
 {
@@ -211,7 +214,7 @@ void AliRICH::AddRawCluster(Int_t id, const AliRICHRawCluster& c)
 }
 
 //_____________________________________________________________________________
-void AliRICH::AddRecHit(Int_t id, Float_t *rechit)
+void AliRICH::AddRecHit(Int_t id, Float_t *rechit, Float_t *photons, Int_t *padsx, Int_t* padsy)
 {
   
   //
@@ -219,7 +222,7 @@ void AliRICH::AddRecHit(Int_t id, Float_t *rechit)
   //
 
     TClonesArray &lrec = *((TClonesArray*)(*fRecHits)[id]);
-    new(lrec[fNrechits[id]++]) AliRICHRecHit(id,rechit);
+    new(lrec[fNrechits[id]++]) AliRICHRecHit(id,rechit,photons,padsx,padsy);
 }
 
 //___________________________________________
@@ -580,7 +583,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
     
     char hname[30];
     sprintf(hname,"TreeR%d",nev);
-    gAlice->TreeR()->Write(hname);
+    gAlice->TreeR()->Write(hname,kOverwrite,0);
     gAlice->TreeR()->Reset();
     
     //gObjectTable->Print();
@@ -607,7 +610,8 @@ void AliRICH::Streamer(TBuffer &R__b)
 	R__b >> fCerenkovs; // diff
 	R__b >> fDchambers;
 	R__b >> fRawClusters;
-	R__b >> fRecHits;  //diff	
+	R__b >> fRecHits;  //diff
+	R__b >> fDebugLevel;  //diff
 	R__b.ReadArray(fNdch);
 	R__b.ReadArray(fNrawch);
 	R__b.ReadArray(fNrechits);
@@ -639,6 +643,7 @@ void AliRICH::Streamer(TBuffer &R__b)
 	R__b << fDchambers;
 	R__b << fRawClusters;
 	R__b << fRecHits; //diff
+	R__b << fDebugLevel; //diff
 	R__b.WriteArray(fNdch, kNCH);
 	R__b.WriteArray(fNrawch, kNCH);
 	R__b.WriteArray(fNrechits, kNCH);
@@ -756,348 +761,354 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	    if (branch) branch->SetAddress(&fClusters2);
 	}
     }
-    //
-    // loop over cathodes
-    //
+    
     AliRICHHitMap* hm;
     Int_t countadr=0;
-    for (int icat=0; icat<1; icat++) { 
-	Int_t counter=0;
-	for (i =0; i<kNCH; i++) {
-	    iChamber=(AliRICHChamber*) (*fChambers)[i];
-	    if (iChamber->Nsec()==1 && icat==1) {
-		continue;
-	    } else {
-		segmentation=iChamber->GetSegmentationModel(icat+1);
-	    }
-	    pHitMap[i] = new AliRICHHitMapA1(segmentation, list);
-	}
-//
-//   Loop over tracks
-//
-
-	TTree *treeH = gAlice->TreeH();
-	Int_t ntracks =(Int_t) treeH->GetEntries();
-	for (Int_t track=0; track<ntracks; track++) {
-	    gAlice->ResetHits();
-	    treeH->GetEvent(track);
-//
-//   Loop over hits
-	    for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
-		mHit;
-		mHit=(AliRICHHit*)pRICH->NextHit()) 
+    Int_t counter=0;
+    for (i =0; i<kNCH; i++) {
+      iChamber=(AliRICHChamber*) (*fChambers)[i];
+      segmentation=iChamber->GetSegmentationModel(1);
+      pHitMap[i] = new AliRICHHitMapA1(segmentation, list);
+    }
+    //
+    //   Loop over tracks
+    //
+    
+    TTree *treeH = gAlice->TreeH();
+    Int_t ntracks =(Int_t) treeH->GetEntries();
+    for (Int_t track=0; track<ntracks; track++) {
+      gAlice->ResetHits();
+      treeH->GetEvent(track);
+      //
+      //   Loop over hits
+      for(AliRICHHit* mHit=(AliRICHHit*)pRICH->FirstHit(-1); 
+	  mHit;
+	  mHit=(AliRICHHit*)pRICH->NextHit()) 
+	{
+	  
+	  digitse=0;
+	  
+	  Int_t   nch   = mHit->fChamber-1;  // chamber number
+	  if (nch >kNCH) continue;
+	  iChamber = &(pRICH->Chamber(nch));
+	  
+	  TParticle *current = (TParticle*)(*gAlice->Particles())[track];
+	  
+	  Int_t particle = current->GetPdgCode();
+	  
+	  //printf("Flag:%d\n",flag);
+	  //printf("Track:%d\n",track);
+	  //printf("Particle:%d\n",particle);
+	  
+	  if (flag == 0)
+	    digitse=1;
+	  
+	  if (flag == 1) 
+	    if(TMath::Abs(particle) == 211 || TMath::Abs(particle) == 111)
+	      digitse=1;
+	  
+	  if (flag == 2)
+	    if(TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
+	       || TMath::Abs(particle)==311)
+	      digitse=1;
+	  
+	  if (flag == 3 && TMath::Abs(particle)==2212)
+	    digitse=1;
+	  
+	  if (flag == 4 && TMath::Abs(particle)==13)
+	    digitse=1;
+	  
+	  if (flag == 5 && TMath::Abs(particle)==11)
+	    digitse=1;
+	  
+	  if (flag == 6 && TMath::Abs(particle)==2112)
+	    digitse=1;
+	  
+	  
+	  //printf ("Particle: %d, Flag: %d, Digitse: %d\n",particle,flag,digitse); 
+	  
+	  
+	  if (digitse)
 	    {
 	      
-	      digitse=0;
-	      
-	      Int_t   nch   = mHit->fChamber-1;  // chamber number
-	      if (nch >kNCH) continue;
-	      iChamber = &(pRICH->Chamber(nch));
-	      
-	      TParticle *current = (TParticle*)(*gAlice->Particles())[track];
-	      
-	      Int_t particle = current->GetPdgCode();
-	      
-	      //printf("Flag:%d\n",flag);
-	      //printf("Track:%d\n",track);
-	      //printf("Particle:%d\n",particle);
-	      
-	      if (flag == 0)
-		digitse=1;
-	      
-	      if (flag == 1) 
-		if(TMath::Abs(particle) == 211 || TMath::Abs(particle) == 111)
-		  digitse=1;
-	      
-	      if (flag == 2)
-		if(TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
-		   || TMath::Abs(particle)==311)
-		  digitse=1;
-	      
-	      if (flag == 3 && TMath::Abs(particle)==2212)
-		digitse=1;
-	      
-	      if (flag == 4 && TMath::Abs(particle)==13)
-		digitse=1;
-
-	      if (flag == 5 && TMath::Abs(particle)==11)
-		digitse=1;
-	      
-	      if (flag == 6 && TMath::Abs(particle)==2112)
-		digitse=1;
+	      //
+	      // Loop over pad hits
+	      for (AliRICHPadHit* mPad=
+		     (AliRICHPadHit*)pRICH->FirstPad(mHit,fPadHits);
+		   mPad;
+		   mPad=(AliRICHPadHit*)pRICH->NextPad(fPadHits))
+		{
+		  Int_t cathode  = mPad->fCathode;    // cathode number
+		  Int_t ipx      = mPad->fPadX;       // pad number on X
+		  Int_t ipy      = mPad->fPadY;       // pad number on Y
+		  Int_t iqpad    = mPad->fQpad;       // charge per pad
+		  //
+		  //
+		  //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
 		  
-
-	      //printf ("Particle: %d, Flag: %d, Digitse: %d\n",particle,flag,digitse); 
-
-
-	      if (digitse)
-		{
+		  Float_t thex, they;
+		  segmentation=iChamber->GetSegmentationModel(cathode);
+		  segmentation->GetPadCxy(ipx,ipy,thex,they);
+		  new((*pAddress)[countadr++]) TVector(2);
+		  TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
+		  trinfo(0)=(Float_t)track;
+		  trinfo(1)=(Float_t)iqpad;
+		  
+		  digits[0]=ipx;
+		  digits[1]=ipy;
+		  digits[2]=iqpad;
+		  
+		  AliRICHTransientDigit* pdigit;
+		  // build the list of fired pads and update the info
+		  if (!pHitMap[nch]->TestHit(ipx, ipy)) {
+		    list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
+		    pHitMap[nch]->SetHit(ipx, ipy, counter);
+		    counter++;
+		    pdigit=(AliRICHTransientDigit*)list->At(list->GetLast());
+		    // list of tracks
+		    TObjArray *trlist=(TObjArray*)pdigit->TrackList();
+		    trlist->Add(&trinfo);
+		  } else {
+		    pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
+		    // update charge
+		    (*pdigit).fSignal+=iqpad;
+		    // update list of tracks
+		    TObjArray* trlist=(TObjArray*)pdigit->TrackList();
+		    Int_t lastEntry=trlist->GetLast();
+		    TVector *ptrkP=(TVector*)trlist->At(lastEntry);
+		    TVector &ptrk=*ptrkP;
+		    Int_t lastTrack=Int_t(ptrk(0));
+		    Int_t lastCharge=Int_t(ptrk(1));
+		    if (lastTrack==track) {
+		      lastCharge+=iqpad;
+		      trlist->RemoveAt(lastEntry);
+		      trinfo(0)=lastTrack;
+		      trinfo(1)=lastCharge;
+		      trlist->AddAt(&trinfo,lastEntry);
+		    } else {
+		      trlist->Add(&trinfo);
+		    }
+		    // check the track list
+		    Int_t nptracks=trlist->GetEntriesFast();
+		    if (nptracks > 2) {
+		      printf("Attention - tracks:  %d (>2)\n",nptracks);
+		      //printf("cat,nch,ix,iy %d %d %d %d  \n",icat+1,nch,ipx,ipy);
+		      for (Int_t tr=0;tr<nptracks;tr++) {
+			TVector *pptrkP=(TVector*)trlist->At(tr);
+			TVector &pptrk=*pptrkP;
+			trk[tr]=Int_t(pptrk(0));
+			chtrk[tr]=Int_t(pptrk(1));
+		      }
+		    } // end if nptracks
+		  } //  end if pdigit
+		} //end loop over clusters
+	    }// track type condition
+	} // hit loop
+    } // track loop
+    
+    // open the file with background
+    
+    if (addBackground ) {
+      ntracks =(Int_t)TrH1->GetEntries();
+      //printf("background - icat,ntracks1  %d %d\n",icat,ntracks);
+      //printf("background - Start loop over tracks \n");     
+      //
+      //   Loop over tracks
+      //
+      for (Int_t trak=0; trak<ntracks; trak++) {
+	if (fHits2)       fHits2->Clear();
+	if (fClusters2)   fClusters2->Clear();
+	TrH1->GetEvent(trak);
+	//
+	//   Loop over hits
+	AliRICHHit* mHit;
+	for(int j=0;j<fHits2->GetEntriesFast();++j) 
+	  {
+	    mHit=(AliRICHHit*) (*fHits2)[j];
+	    Int_t   nch   = mHit->fChamber-1;  // chamber number
+	    if (nch >6) continue;
+	    iChamber = &(pRICH->Chamber(nch));
+	    Int_t rmin = (Int_t)iChamber->RInner();
+	    Int_t rmax = (Int_t)iChamber->ROuter();
+	    //
+	    // Loop over pad hits
+	    for (AliRICHPadHit* mPad=
+		   (AliRICHPadHit*)pRICH->FirstPad(mHit,fClusters2);
+		 mPad;
+		 mPad=(AliRICHPadHit*)pRICH->NextPad(fClusters2))
+	      {
+		Int_t cathode  = mPad->fCathode;    // cathode number
+		Int_t ipx      = mPad->fPadX;       // pad number on X
+		Int_t ipy      = mPad->fPadY;       // pad number on Y
+		Int_t iqpad    = mPad->fQpad;       // charge per pad
 		
-//
-// Loop over pad hits
-		  for (AliRICHPadHit* mPad=
-			 (AliRICHPadHit*)pRICH->FirstPad(mHit,fPadHits);
-		       mPad;
-		       mPad=(AliRICHPadHit*)pRICH->NextPad(fPadHits))
-		    {
-		      Int_t cathode  = mPad->fCathode;    // cathode number
-		      Int_t ipx      = mPad->fPadX;       // pad number on X
-		      Int_t ipy      = mPad->fPadY;       // pad number on Y
-		      Int_t iqpad    = mPad->fQpad;       // charge per pad
-		      //
-		      //
-		      //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
-		      
-		      Float_t thex, they;
-		      segmentation=iChamber->GetSegmentationModel(cathode);
-		      segmentation->GetPadCxy(ipx,ipy,thex,they);
-		      new((*pAddress)[countadr++]) TVector(2);
-		      TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
-		      trinfo(0)=(Float_t)track;
-		      trinfo(1)=(Float_t)iqpad;
-		      
-		      digits[0]=ipx;
-		      digits[1]=ipy;
-		      digits[2]=iqpad;
-		      
-		      AliRICHTransientDigit* pdigit;
-		      // build the list of fired pads and update the info
-		      if (!pHitMap[nch]->TestHit(ipx, ipy)) {
-			list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
-			pHitMap[nch]->SetHit(ipx, ipy, counter);
-			counter++;
-			pdigit=(AliRICHTransientDigit*)list->At(list->GetLast());
-			// list of tracks
-			TObjArray *trlist=(TObjArray*)pdigit->TrackList();
-			trlist->Add(&trinfo);
-		      } else {
-			pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
-			// update charge
-			(*pdigit).fSignal+=iqpad;
-			// update list of tracks
-			TObjArray* trlist=(TObjArray*)pdigit->TrackList();
-			Int_t lastEntry=trlist->GetLast();
-			TVector *ptrkP=(TVector*)trlist->At(lastEntry);
-			TVector &ptrk=*ptrkP;
-			Int_t lastTrack=Int_t(ptrk(0));
-			Int_t lastCharge=Int_t(ptrk(1));
-			if (lastTrack==track) {
-			    lastCharge+=iqpad;
-			    trlist->RemoveAt(lastEntry);
-			    trinfo(0)=lastTrack;
-			    trinfo(1)=lastCharge;
-			    trlist->AddAt(&trinfo,lastEntry);
-			} else {
-			    trlist->Add(&trinfo);
-			}
-			// check the track list
-			Int_t nptracks=trlist->GetEntriesFast();
-			if (nptracks > 2) {
-			    printf("Attention - tracks:  %d (>2)\n",nptracks);
-			    //printf("cat,nch,ix,iy %d %d %d %d  \n",icat+1,nch,ipx,ipy);
-			    for (Int_t tr=0;tr<nptracks;tr++) {
-				TVector *pptrkP=(TVector*)trlist->At(tr);
-				TVector &pptrk=*pptrkP;
-				trk[tr]=Int_t(pptrk(0));
-				chtrk[tr]=Int_t(pptrk(1));
-			    }
-			} // end if nptracks
-		      } //  end if pdigit
-		    } //end loop over clusters
-		}// track type condition
-	    } // hit loop
-	} // track loop
-	
-	// open the file with background
-	
-	if (addBackground ) {
-	    ntracks =(Int_t)TrH1->GetEntries();
-	    //printf("background - icat,ntracks1  %d %d\n",icat,ntracks);
-	    //printf("background - Start loop over tracks \n");     
-//
-//   Loop over tracks
-//
-	    for (Int_t trak=0; trak<ntracks; trak++) {
-		if (fHits2)       fHits2->Clear();
-		if (fClusters2)   fClusters2->Clear();
-		TrH1->GetEvent(trak);
-//
-//   Loop over hits
-		AliRICHHit* mHit;
-		for(int j=0;j<fHits2->GetEntriesFast();++j) 
-		{
-		    mHit=(AliRICHHit*) (*fHits2)[j];
-		    Int_t   nch   = mHit->fChamber-1;  // chamber number
-		    if (nch >6) continue;
-		    iChamber = &(pRICH->Chamber(nch));
-		    Int_t rmin = (Int_t)iChamber->RInner();
-		    Int_t rmax = (Int_t)iChamber->ROuter();
-//
-// Loop over pad hits
-		    for (AliRICHPadHit* mPad=
-			     (AliRICHPadHit*)pRICH->FirstPad(mHit,fClusters2);
-			 mPad;
-			 mPad=(AliRICHPadHit*)pRICH->NextPad(fClusters2))
-		    {
-			Int_t cathode  = mPad->fCathode;    // cathode number
-			Int_t ipx      = mPad->fPadX;       // pad number on X
-			Int_t ipy      = mPad->fPadY;       // pad number on Y
-			Int_t iqpad    = mPad->fQpad;       // charge per pad
-			if (trak==3 && nch==0 && icat==0) printf("bgr - trak,iqpad,ipx,ipy %d %d %d %d\n",trak,iqpad,ipx,ipy);
-//
-//
-			Float_t thex, they;
-			segmentation=iChamber->GetSegmentationModel(cathode);
-			segmentation->GetPadCxy(ipx,ipy,thex,they);
-			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
-			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
-			new((*pAddress)[countadr++]) TVector(2);
-			TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
-			trinfo(0)=-1;  // tag background
-			trinfo(1)=-1;
-			digits[0]=ipx;
-			digits[1]=ipy;
-			digits[2]=iqpad;
-			if (trak <4 && icat==0 && nch==0)
-			    printf("bgr - pHitMap[nch]->TestHit(ipx, ipy),trak %d %d\n",
-				   pHitMap[nch]->TestHit(ipx, ipy),trak);
-			AliRICHTransientDigit* pdigit;
-			// build the list of fired pads and update the info
-			if (!pHitMap[nch]->TestHit(ipx, ipy)) {
-			    list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
-			    
-			    pHitMap[nch]->SetHit(ipx, ipy, counter);
-			    counter++;
-			    printf("bgr new elem in list - counter %d\n",counter);
-			    
-			    pdigit=(AliRICHTransientDigit*)list->At(list->GetLast());
-			    // list of tracks
-			    TObjArray *trlist=(TObjArray*)pdigit->TrackList();
-			    trlist->Add(&trinfo);
-			} else {
-			    pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
-			    // update charge
-			    (*pdigit).fSignal+=iqpad;
-			    // update list of tracks
-			    TObjArray* trlist=(TObjArray*)pdigit->TrackList();
-			    Int_t lastEntry=trlist->GetLast();
-			    TVector *ptrkP=(TVector*)trlist->At(lastEntry);
-			    TVector &ptrk=*ptrkP;
-			    Int_t lastTrack=Int_t(ptrk(0));
-			    if (lastTrack==-1) {
-				continue;
-			    } else {
-				trlist->Add(&trinfo);
-			    }
-			    // check the track list
-			    Int_t nptracks=trlist->GetEntriesFast();
-			    if (nptracks > 0) {
-				for (Int_t tr=0;tr<nptracks;tr++) {
-				    TVector *pptrkP=(TVector*)trlist->At(tr);
-				    TVector &pptrk=*pptrkP;
-				    trk[tr]=Int_t(pptrk(0));
-				    chtrk[tr]=Int_t(pptrk(1));
-				}
-			    } // end if nptracks
-			} //  end if pdigit
-		    } //end loop over clusters
-		} // hit loop
-	    } // track loop
+		Float_t thex, they;
+		segmentation=iChamber->GetSegmentationModel(cathode);
+		segmentation->GetPadCxy(ipx,ipy,thex,they);
+		Float_t rpad=TMath::Sqrt(thex*thex+they*they);
+		if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
+		new((*pAddress)[countadr++]) TVector(2);
+		TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
+		trinfo(0)=-1;  // tag background
+		trinfo(1)=-1;
+		digits[0]=ipx;
+		digits[1]=ipy;
+		digits[2]=iqpad;
+		if (trak <4 && nch==0)
+		  printf("bgr - pHitMap[nch]->TestHit(ipx, ipy),trak %d %d\n",
+			 pHitMap[nch]->TestHit(ipx, ipy),trak);
+		AliRICHTransientDigit* pdigit;
+		// build the list of fired pads and update the info
+		if (!pHitMap[nch]->TestHit(ipx, ipy)) {
+		  list->AddAtAndExpand(new AliRICHTransientDigit(nch,digits),counter);
+		  
+		  pHitMap[nch]->SetHit(ipx, ipy, counter);
+		  counter++;
+		  printf("bgr new elem in list - counter %d\n",counter);
+		  
+		  pdigit=(AliRICHTransientDigit*)list->At(list->GetLast());
+		  // list of tracks
+		  TObjArray *trlist=(TObjArray*)pdigit->TrackList();
+		  trlist->Add(&trinfo);
+		} else {
+		  pdigit=(AliRICHTransientDigit*) pHitMap[nch]->GetHit(ipx, ipy);
+		  // update charge
+		  (*pdigit).fSignal+=iqpad;
+		  // update list of tracks
+		  TObjArray* trlist=(TObjArray*)pdigit->TrackList();
+		  Int_t lastEntry=trlist->GetLast();
+		  TVector *ptrkP=(TVector*)trlist->At(lastEntry);
+		  TVector &ptrk=*ptrkP;
+		  Int_t lastTrack=Int_t(ptrk(0));
+		  if (lastTrack==-1) {
+		    continue;
+		  } else {
+		    trlist->Add(&trinfo);
+		  }
+		  // check the track list
+		  Int_t nptracks=trlist->GetEntriesFast();
+		  if (nptracks > 0) {
+		    for (Int_t tr=0;tr<nptracks;tr++) {
+		      TVector *pptrkP=(TVector*)trlist->At(tr);
+		      TVector &pptrk=*pptrkP;
+		      trk[tr]=Int_t(pptrk(0));
+		      chtrk[tr]=Int_t(pptrk(1));
+		    }
+		  } // end if nptracks
+		} //  end if pdigit
+	      } //end loop over clusters
+	  } // hit loop
+      } // track loop
 	    TTree *fAli=gAlice->TreeK();
 	    if (fAli) pFile =fAli->GetCurrentFile();
 	    pFile->cd();
-	} // if Add	
-	
-	Int_t tracks[10];
-	Int_t charges[10];
-	//cout<<"Start filling digits \n "<<endl;
-	Int_t nentries=list->GetEntriesFast();
-	//printf(" \n \n nentries %d \n",nentries);
+    } // if Add	
+    
+    Int_t tracks[10];
+    Int_t charges[10];
+    //cout<<"Start filling digits \n "<<endl;
+    Int_t nentries=list->GetEntriesFast();
+    //printf(" \n \n nentries %d \n",nentries);
+    
+    // start filling the digits
+    
+    for (Int_t nent=0;nent<nentries;nent++) {
+      AliRICHTransientDigit *address=(AliRICHTransientDigit*)list->At(nent);
+      if (address==0) continue; 
+      
+      Int_t ich=address->fChamber;
+      Int_t q=address->fSignal; 
+      iChamber=(AliRICHChamber*) (*fChambers)[ich];
+      AliRICHResponse * response=iChamber->GetResponseModel();
+      Int_t adcmax= (Int_t) response->MaxAdc();
+      
+      
+      // add white noise and do zero-suppression and signal truncation (new electronics,old electronics gaus 1.2,0.2)
+      //printf("Treshold: %d\n",iChamber->fTresh->GetHitIndex(address->fPadX,address->fPadY));
+      Int_t pedestal = iChamber->fTresh->GetHitIndex(address->fPadX,address->fPadY);
 
-	// start filling the digits
-	
-	for (Int_t nent=0;nent<nentries;nent++) {
-	    AliRICHTransientDigit *address=(AliRICHTransientDigit*)list->At(nent);
-	    if (address==0) continue; 
-	    Int_t ich=address->fChamber;
-	    Int_t q=address->fSignal; 
-	    iChamber=(AliRICHChamber*) (*fChambers)[ich];
-	    AliRICHResponse * response=iChamber->GetResponseModel();
-	    Int_t adcmax= (Int_t) response->MaxAdc();
-	    // add white noise and do zero-suppression and signal truncation (new electronics,old electronics gaus 1.2,0.2)
-	    Float_t meanNoise = gRandom->Gaus(1.7, 0.25);
-	    Float_t noise     = gRandom->Gaus(0, meanNoise);
-	    q+=(Int_t)noise;
-//          magic number to be parametrised !!! 
-	    if ( q <= 6.8) continue;
-	    if ( q >= adcmax) q=adcmax;
-	    digits[0]=address->fPadX;
-	    digits[1]=address->fPadY;
-	    digits[2]=q;
-	    
-	    TObjArray* trlist=(TObjArray*)address->TrackList();
-	    Int_t nptracks=trlist->GetEntriesFast();
-	    
-	    // this was changed to accomodate the real number of tracks
-	    if (nptracks > 10) {
-		cout<<"Attention - tracks > 10 "<<nptracks<<endl;
-		nptracks=10;
-	    }
-	    if (nptracks > 2) {
-		printf("Attention - tracks > 2  %d \n",nptracks);
-		//printf("cat,ich,ix,iy,q %d %d %d %d %d \n",
-		       //icat,ich,digits[0],digits[1],q);
-	    }
-	    for (Int_t tr=0;tr<nptracks;tr++) {
-		TVector *ppP=(TVector*)trlist->At(tr);
-		TVector &pp  =*ppP;
-		tracks[tr]=Int_t(pp(0));
-		charges[tr]=Int_t(pp(1));
-	    }      //end loop over list of tracks for one pad
-	    if (nptracks < 10 ) {
-		for (Int_t t=nptracks; t<10; t++) {
-		    tracks[t]=0;
-		    charges[t]=0;
-		}
-	    }
-	    //write file
-	    if (ich==2)
-	      fprintf(points,"%4d,      %4d,      %4d\n",digits[0],digits[1],digits[2]);
-	    
-	    // fill digits
-	    pRICH->AddDigits(ich,tracks,charges,digits);
+      //printf("Pedestal:%d\n",pedestal);
+      //Int_t pedestal=0;
+      Float_t treshold = (pedestal + 4*1.7);
+      
+      Float_t meanNoise = gRandom->Gaus(1.7, 0.25);
+      Float_t noise     = gRandom->Gaus(0, meanNoise);
+      q+=(Int_t)(noise + pedestal);
+      //q+=(Int_t)(noise);
+      //          magic number to be parametrised !!! 
+      if ( q <= treshold) 
+	{
+	  q = q - pedestal;
+	  continue;
 	}
-	gAlice->TreeD()->Fill();
-
-	list->Delete();
-	for(Int_t ii=0;ii<kNCH;++ii) {
-	    if (pHitMap[ii]) {
-		hm=pHitMap[ii];
-		delete hm;
-		pHitMap[ii]=0;
-	    }
+      q = q - pedestal;
+      if ( q >= adcmax) q=adcmax;
+      digits[0]=address->fPadX;
+      digits[1]=address->fPadY;
+      digits[2]=q;
+      
+      TObjArray* trlist=(TObjArray*)address->TrackList();
+      Int_t nptracks=trlist->GetEntriesFast();
+      
+      // this was changed to accomodate the real number of tracks
+      if (nptracks > 10) {
+	cout<<"Attention - tracks > 10 "<<nptracks<<endl;
+	nptracks=10;
+      }
+      if (nptracks > 2) {
+	printf("Attention - tracks > 2  %d \n",nptracks);
+	//printf("cat,ich,ix,iy,q %d %d %d %d %d \n",
+	//icat,ich,digits[0],digits[1],q);
+      }
+      for (Int_t tr=0;tr<nptracks;tr++) {
+	TVector *ppP=(TVector*)trlist->At(tr);
+	TVector &pp  =*ppP;
+	tracks[tr]=Int_t(pp(0));
+	charges[tr]=Int_t(pp(1));
+      }      //end loop over list of tracks for one pad
+      if (nptracks < 10 ) {
+	for (Int_t t=nptracks; t<10; t++) {
+	  tracks[t]=0;
+	  charges[t]=0;
 	}
-	
-	//TTree *TD=gAlice->TreeD();
-	//Stat_t ndig=TD->GetEntries();
-	//cout<<"number of digits  "<<ndig<<endl;
-	TClonesArray *fDch;
-	for (int k=0;k<kNCH;k++) {
-	    fDch= pRICH->DigitsAddress(k);
-	    int ndigit=fDch->GetEntriesFast();
-	    printf ("Chamber %d digits %d \n",k,ndigit);
-	}
-	pRICH->ResetDigits();
-    } //end loop over cathodes
+      }
+      //write file
+      if (ich==2)
+	fprintf(points,"%4d,      %4d,      %4d\n",digits[0],digits[1],digits[2]);
+      
+      // fill digits
+      pRICH->AddDigits(ich,tracks,charges,digits);
+    }	
+    gAlice->TreeD()->Fill();
+    
+    list->Delete();
+    for(Int_t ii=0;ii<kNCH;++ii) {
+      if (pHitMap[ii]) {
+	hm=pHitMap[ii];
+	delete hm;
+	pHitMap[ii]=0;
+      }
+    }
+    
+    //TTree *TD=gAlice->TreeD();
+    //Stat_t ndig=TD->GetEntries();
+    //cout<<"number of digits  "<<ndig<<endl;
+    TClonesArray *fDch;
+    for (int k=0;k<kNCH;k++) {
+      fDch= pRICH->DigitsAddress(k);
+      int ndigit=fDch->GetEntriesFast();
+      printf ("Chamber %d digits %d \n",k,ndigit);
+    }
+    pRICH->ResetDigits();
     char hname[30];
     sprintf(hname,"TreeD%d",nev);
-    gAlice->TreeD()->Write(hname);
-
-// reset tree
-//    gAlice->TreeD()->Reset();
+    gAlice->TreeD()->Write(hname,kOverwrite,0);
+    
+    // reset tree
+    //    gAlice->TreeD()->Reset();
     delete list;
     pAddress->Clear();
-// gObjectTable->Print();
+    // gObjectTable->Print();
 }
 
 AliRICH& AliRICH::operator=(const AliRICH& rhs)
