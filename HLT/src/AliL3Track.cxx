@@ -179,16 +179,19 @@ Double_t AliL3Track::GetCrossingAngle(Int_t padrow)
   
   //Take the dot product of the tangent vector of the track, and
   //vector perpendicular to the padrow.
+  //In order to do this, we need the tangent vector to the track at the
+  //point. This is done by rotating the radius vector by 90 degrees;
+  //rotation matrix: (  0  1 )
+  //                 ( -1  0 )
   
   Double_t tangent[2];
-  tangent[1] = (xyz[0] - GetCenterX())/GetRadius();
   tangent[0] = -1.*(xyz[1] - GetCenterY())/GetRadius();
-
+  tangent[1] = (xyz[0] - GetCenterX())/GetRadius();
+  
   Double_t perp_padrow[2] = {1,0}; //locally in slice
 
   Double_t cos_beta = fabs(tangent[0]*perp_padrow[0] + tangent[1]*perp_padrow[1]);
   return acos(cos_beta);
-  
 }
 
 Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz) 
