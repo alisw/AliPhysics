@@ -44,7 +44,7 @@
 
 #include "AliESDPmdTrack.h"
 #include "AliESD.h"
-
+#include "AliLog.h"
 
 ClassImp(AliPMDtracker)
 
@@ -58,7 +58,6 @@ AliPMDtracker::AliPMDtracker():
   fPMDrecpoint(0),
   fPMDclin(0),
   fPMDclout(0),
-  fDebug(0),
   fXvertex(0.),
   fYvertex(0.),
   fZvertex(0.),
@@ -111,16 +110,21 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
   Float_t clusdata[5];
 
   TBranch *branch = fTreeR->GetBranch("PMDRecpoint");
-  if (!branch) return;
+  if (!branch)
+    {
+      AliError("PMDRecpoint branch not found");
+      return;
+    }
   branch->SetAddress(&fRecpoints);  
   
   Int_t   nmodules = (Int_t) fTreeR->GetEntries();
-  cout << " nmodules = " << nmodules << endl;
+  AliDebug(1,Form("Number of modules filled in treeR = %d",nmodules));
   for (Int_t imodule = 0; imodule < nmodules; imodule++)
     {
       fTreeR->GetEntry(imodule); 
       Int_t nentries = fRecpoints->GetLast();
-      //      cout << " nentries = " << nentries << endl;
+      AliDebug(2,Form("Number of clusters per modules filled in treeR = %d"
+		      ,nentries));
       for(Int_t ient = 0; ient < nentries+1; ient++)
 	{
 	  fPMDrecpoint = (AliPMDrecpoint1*)fRecpoints->UncheckedAt(ient);
@@ -151,7 +155,8 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
   Float_t zglobal = kzpos + (Float_t) fZvertex;
 
   Int_t nentries2 = fPMDcontout->GetEntries();
-  cout << " nentries2 = " << nentries2 << endl;
+  AliDebug(1,Form("Number of clusters coming after discrimination = %d"
+		  ,nentries2));
   for (Int_t ient1 = 0; ient1 < nentries2; ient1++)
     {
       fPMDclout = (AliPMDclupid*)fPMDcontout->UncheckedAt(ient1);
@@ -234,11 +239,6 @@ void AliPMDtracker::SetVertex(Double_t vtx[3], Double_t evtx[3])
   fSigmaX  = evtx[0];
   fSigmaY  = evtx[1];
   fSigmaZ  = evtx[2];
-}
-//--------------------------------------------------------------------//
-void AliPMDtracker::SetDebug(Int_t idebug)
-{
-  fDebug = idebug;
 }
 //--------------------------------------------------------------------//
 void AliPMDtracker::ResetClusters()

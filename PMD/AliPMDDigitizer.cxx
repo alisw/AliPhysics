@@ -31,6 +31,7 @@
 #include <TNtuple.h>
 #include <TParticle.h>
 
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliPMD.h"
 #include "AliPMDhit.h"
@@ -60,7 +61,6 @@ AliPMDDigitizer::AliPMDDigitizer() :
   fSDigits(0),
   fDigits(0),
   fCell(0),
-  fDebug(0),
   fNsdigit(0),
   fNdigit(0),
   fDetNo(0),
@@ -94,7 +94,6 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager)
   fSDigits(new TClonesArray("AliPMDsdigit", 1000)),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fCell(0),
-  fDebug(0),
   fNsdigit(0),
   fNdigit(0),
   fDetNo(0),
@@ -152,7 +151,7 @@ void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
   
   if (!fRunLoader)
    {
-     Error("Open","Can not open session for file %s.",file);
+     AliError(Form("Can not open session for file %s.",file));
    }
   
   if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
@@ -161,24 +160,20 @@ void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
 
   gAlice = fRunLoader->GetAliRun();
   
-  if (fDebug) {
-    if (gAlice)
-      {
-	printf("<AliPMDdigitizer::Open> ");
-	printf("AliRun object found on file.\n");
-      }
-    else
-      {
-	printf("<AliPMDdigitizer::Open> ");
-	printf("Could not find AliRun object.\n");
-      }
-  }
+  if (gAlice)
+    {
+      AliDebug(1,"Alirun object found");
+    }
+  else
+    {
+      AliError("Could not found Alirun object");
+    }
   
   fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
   if (fPMDLoader == 0x0)
     {
-      cerr<<"Hits2Digits : Can not find PMD or PMDLoader\n";
+      AliError("Can not find PMDLoader");
     }
 
   const char *cHS = strstr(option,"HS");
@@ -207,7 +202,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   // This reads the PMD Hits tree and assigns the right track number
   // to a cell and stores in the summable digits tree
   //
-  // cout << " -------- Beginning of Hits2SDigits ----------- " << endl;
 
   const Int_t kPi0 = 111;
   const Int_t kGamma = 22;
@@ -227,9 +221,9 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);
   ResetSDigit();
 
-  if (fDebug) printf("Event Number =  %d \n",ievt); 
+  AliDebug(1,Form("Event Number = %d",ievt));
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
-  if (fDebug) printf("Number of Particles = %d \n", nparticles);
+  AliDebug(1,Form("Number of Particles = %d",nparticles));
   fRunLoader->GetEvent(ievt);
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
@@ -238,8 +232,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   TTree* treeH = fPMDLoader->TreeH();
   
   Int_t ntracks    = (Int_t) treeH->GetEntries();
-  if (fDebug) printf("Number of Tracks in the TreeH = %d \n", ntracks);
-
+  AliDebug(1,Form("Number of Tracks in the TreeH = %d", ntracks));
   TTree* treeS = fPMDLoader->TreeS();
   if (treeS == 0x0)
     {
@@ -360,8 +353,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  ypad = vol1;
 		}
 
-	      //cout << "zpos = " << zPos << " edep = " << edep << endl;
-
+	      AliDebug(2,Form("Zposition = %f Edeposition = %f",zPos,edep));
 	      Float_t zposition = TMath::Abs(zPos);
 	      if (zposition < fZPos)
 		{
@@ -434,7 +426,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   fPMDLoader->WriteSDigits("OVERWRITE");
   ResetCellADC();
 
-  //  cout << " -------- End of Hits2SDigit ----------- " << endl;
 }
 //____________________________________________________________________________
 
@@ -460,10 +451,9 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   ResetDigit();
 
-  if (fDebug) printf("Event Number =  %d \n",ievt); 
-
+  AliDebug(1,Form("Event Number =  %d",ievt)); 
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
-  if (fDebug) printf("Number of Particles = %d \n", nparticles);
+  AliDebug(1,Form("Number of Particles = %d", nparticles));
   fRunLoader->GetEvent(ievt);
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
@@ -474,11 +464,11 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
   if (fPMDLoader == 0x0)
     {
-      cerr<<"Hits2Digits method : Can not find PMD or PMDLoader\n";
+      AliError("Can not find PMD or PMDLoader");
     }
   TTree* treeH = fPMDLoader->TreeH();
   Int_t ntracks    = (Int_t) treeH->GetEntries();
-  if (fDebug) printf("Number of Tracks in the TreeH = %d \n", ntracks);
+  AliDebug(1,Form("Number of Tracks in the TreeH = %d", ntracks));
   fPMDLoader->LoadDigits("recreate");
   TTree* treeD = fPMDLoader->TreeD();
   if (treeD == 0x0)
@@ -604,8 +594,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  ypad = vol1;
 		}
 
-	      //cout << "-zpos = " << -zPos << endl;
-
+	      AliDebug(2,Form("ZPosition = %f Edeposition = %d",zPos,edep));
 	      Float_t zposition = TMath::Abs(zPos);
 
 	      if (zposition < fZPos)
@@ -682,8 +671,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   
   fPMDLoader->WriteDigits("OVERWRITE");
   ResetCellADC();
-  
-  //  cout << " -------- End of Hits2Digit ----------- " << endl;
+
 }
 //____________________________________________________________________________
 
@@ -693,12 +681,17 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
   // This reads the PMD sdigits tree and converts energy deposition
   // in a cell to ADC and stores in the digits tree
   //
-  //  cout << " -------- Beginning of SDigits2Digit ----------- " << endl;
+
   fRunLoader->GetEvent(ievt);
 
   TTree* treeS = fPMDLoader->TreeS();
   AliPMDsdigit  *pmdsdigit;
   TBranch *branch = treeS->GetBranch("PMDSDigit");
+  if(!branch)
+    {
+      AliError("PMD Sdigit branch does not exist");
+      return;
+    }
   if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);
   branch->SetAddress(&fSDigits);
 
@@ -717,12 +710,13 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
   Float_t edep, adc;
 
   Int_t nmodules = (Int_t) treeS->GetEntries();
+  AliDebug(1,Form("Number of modules = %d",nmodules));
 
   for (Int_t imodule = 0; imodule < nmodules; imodule++)
     {
       treeS->GetEntry(imodule); 
       Int_t nentries = fSDigits->GetLast();
-      //cout << " nentries = " << nentries << endl;
+      AliDebug(2,Form("Number of entries per module = %d",nentries+1));
       for (Int_t ient = 0; ient < nentries+1; ient++)
 	{
 	  pmdsdigit = (AliPMDsdigit*)fSDigits->UncheckedAt(ient);
@@ -740,26 +734,20 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
       ResetDigit();
     }
   fPMDLoader->WriteDigits("OVERWRITE");
-  //  cout << " -------- End of SDigits2Digit ----------- " << endl;
+
 }
 //____________________________________________________________________________
 void AliPMDDigitizer::Exec(Option_t *option)
 {
   // Does the event merging and digitization
-
-  fDebug = 0;
   const char *cdeb = strstr(option,"deb");
   if(cdeb)
     {
-      cout << "**************** PMD Exec *************** " << endl;
-      fDebug = 1;
+      AliDebug(100," *** PMD Exec is called ***");
     }
-  
+
   Int_t ninputs = fManager->GetNinputs();
-  if(fDebug)
-    {
-      cout << " Number of files = " << ninputs << endl;
-    }
+  AliDebug(1,Form("Number of files to be processed = %d",ninputs));
   ResetCellADC();
 
   for (Int_t i = 0; i < ninputs; i++)
@@ -773,7 +761,7 @@ void AliPMDDigitizer::Exec(Option_t *option)
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
   if (fPMDLoader == 0x0)
     {
-      cerr<<"AliPMDDigitizer::Exec : Can not find PMD or PMDLoader\n";
+      AliError("Can not find PMD or PMDLoader");
     }
   fPMDLoader->LoadDigits("update");
   TTree* treeD = fPMDLoader->TreeD();
@@ -845,19 +833,13 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
   Float_t edep;
   
   Int_t nmodules = (Int_t) treeS->GetEntries();
-  if(fDebug)
-    {
-      cout << " nmodules = " << nmodules << endl;
-      cout << " tr offset = " << troffset << endl;
-    }
+  AliDebug(1,Form("Number of Modules in the treeS = %d",nmodules));
+  AliDebug(1,Form("Track Offset = %d",troffset));
   for (Int_t imodule = 0; imodule < nmodules; imodule++)
     {
       treeS->GetEntry(imodule); 
       Int_t nentries = fSDigits->GetLast();
-      if(fDebug)
-	{
-	  cout << " nentries = " << nentries << endl;
-	}
+      AliDebug(2,Form("Number of Entries per Module = %d",nentries));
       for (Int_t ient = 0; ient < nentries+1; ient++)
 	{
 	  pmdsdigit = (AliPMDsdigit*)fSDigits->UncheckedAt(ient);
@@ -964,7 +946,6 @@ void AliPMDDigitizer::TrackAssignment2Cell()
       iyp      = cell->GetY();
       edep     = cell->GetEdep();
       Int_t nn = fPRECounter[ism][ixp][iyp];
-      //      cout << " nn = " << nn << endl;
       pmdTrack[ism][ixp][iyp][nn] = (Int_t) mtrackno;
       pmdEdep[ism][ixp][iyp][nn] = edep;
       fPRECounter[ism][ixp][iyp]++;
@@ -1099,10 +1080,6 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
   // To be done
   //
 
-  //  adc = mev*1.;
-
-  
-  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
   // PS Test in September 2003
   // MeV - ADC conversion for 10bit ADC
 
@@ -1130,8 +1107,6 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
     {
       adc = 3000.0;
     }
-
-  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 
 }
 //____________________________________________________________________________

@@ -26,6 +26,7 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliLog.h"
 #include "AliPMDRawStream.h"
 #include "AliRawReader.h"
 
@@ -66,7 +67,7 @@ AliPMDRawStream::AliPMDRawStream(const AliPMDRawStream& stream) :
 {
 // copy constructor
 
-  Fatal("AliPMDRawStream", "copy constructor not implemented");
+  AliFatal("Copy constructor not implemented");
 }
 
 //_____________________________________________________________________________
@@ -75,7 +76,7 @@ AliPMDRawStream& AliPMDRawStream::operator = (const AliPMDRawStream&
 {
 // assignment operator
 
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("operator = assignment operator not implemented");
   return *this;
 }
 

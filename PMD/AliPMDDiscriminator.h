@@ -18,7 +18,7 @@ class TNtuple;
 class AliPMDcluster;
 class AliPMDclupid;
 
-class AliPMDDiscriminator
+class AliPMDDiscriminator : public TObject
 {
 
  public:
@@ -35,9 +35,8 @@ class AliPMDDiscriminator
  protected:
 
   Int_t   fDiscrim;       // To switch on different discrimination method
-  Int_t   fDebug;         // Debugging switch (0:NO, 1:YES)
 
-  ClassDef(AliPMDDiscriminator,1) // To run PMD discrimination
+  ClassDef(AliPMDDiscriminator,2) // To run PMD discrimination
 };
 #endif
 

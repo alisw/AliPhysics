@@ -75,7 +75,6 @@ class AliPMDDigitizer:public AliDigitizer
 
   TObjArray     fCell;       //! List of pmd cells
 
-  Int_t   fDebug;            // Debug switch
   Int_t   fNsdigit;          // Summable digits counter
   Int_t   fNdigit;           // Digits counter
   Int_t   fDetNo;            // Detector Number (0:PRE, 1:CPV)
@@ -92,7 +91,7 @@ class AliPMDDigitizer:public AliDigitizer
   Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing track number
 
 
-  ClassDef(AliPMDDigitizer,4)    // To digitize PMD Hits
+  ClassDef(AliPMDDigitizer,5)    // To digitize PMD Hits
 };
 #endif
 

@@ -45,6 +45,7 @@
 #include <TTree.h>
 #include <TVirtualMC.h>
 
+#include "AliLog.h"
 #include "AliLoader.h" 
 #include "AliPMDLoader.h" 
 #include "AliPMD.h"
@@ -108,11 +109,11 @@ AliLoader* AliPMD::MakeLoader(const char* topfoldername)
  
   if (fLoader)
     {
-      cout<<"Success"<<endl;
+      AliInfo("Success");
     }
   else
     {
-      cout<<"Failure"<<endl;
+      AliError("Failure");
     }
 
   return fLoader;
@@ -319,7 +320,7 @@ void AliPMD::Digits2Raw()
   fLoader->LoadDigits();
   TTree* digits = fLoader->TreeD();
   if (!digits) {
-    Error("Digits2Raw", "no digits tree");
+    AliError("No digits tree");
     return;
   }
 

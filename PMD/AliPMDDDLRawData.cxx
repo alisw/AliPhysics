@@ -19,6 +19,7 @@
 #include <TBranch.h>
 #include <TMath.h>
 
+#include "AliLog.h"
 #include "AliRawDataHeader.h"
 #include "AliBitPacking.h"
 #include "AliPMDdigit.h"
@@ -52,11 +53,15 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
   ofstream outfile;
 
   TBranch *branch = treeD->GetBranch("PMDDigit");
-  if (!branch) return;
+  if (!branch)
+    {
+      AliError("PMD Digit branch not found");
+      return;
+    }
   branch->SetAddress(&fDigits);  
   
-  //  Int_t   nmodules = (Int_t) treeD->GetEntries();
-  //  cout << " nmodules = " << nmodules << endl;
+  Int_t   nmodules = (Int_t) treeD->GetEntries();
+  AliDebug(1,Form("Number of modules inside treeD = %d",nmodules));
 
   const Int_t kSize         = 4608;
   const Int_t kDDL          = 6;

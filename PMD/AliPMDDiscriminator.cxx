@@ -34,6 +34,7 @@
 #include <TNtuple.h>
 #include <TParticle.h>
 
+#include "AliLog.h"
 #include "AliPMDcluster.h"
 #include "AliPMDclupid.h"
 #include "AliPMDDiscriminator.h"
@@ -41,8 +42,7 @@
 ClassImp(AliPMDDiscriminator)
 
 AliPMDDiscriminator::AliPMDDiscriminator() :
-  fDiscrim(0),
-  fDebug(0)
+  fDiscrim(0)
 {
 //
 // Default Constructor
@@ -94,7 +94,8 @@ void AliPMDDiscriminator::EmpDiscrimination(TObjArray *pmdcontin, TObjArray *pmd
   AliPMDclupid   *pmdclout = 0;
 
   Int_t nentries1 = pmdcontin->GetEntries();
-  cout << " nentries1 = " << nentries1 << endl;
+
+  AliDebug(1,Form("Number of total clusters from CPV PRE = %d",nentries1));
   for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
     {
       pmdcl = (AliPMDcluster*)pmdcontin->UncheckedAt(ient1);

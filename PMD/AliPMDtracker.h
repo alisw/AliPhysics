@@ -23,7 +23,7 @@ class AliPMDDiscriminator;
 
 class AliESD;
 
-class AliPMDtracker
+class AliPMDtracker:public TObject
 {
 
  public:
@@ -34,7 +34,6 @@ class AliPMDtracker
   void LoadClusters(TTree *treein);
   void Clusters2Tracks(AliESD *event);
   void SetVertex(Double_t vtx[3], Double_t evtx[3]);
-  void SetDebug(Int_t idebug);
   void ResetClusters();
 
  protected:
@@ -50,7 +49,6 @@ class AliPMDtracker
   AliPMDcluster       *fPMDclin;
   AliPMDclupid        *fPMDclout;
 
-  Int_t    fDebug;          // Debugging switch (0:NO, 1:YES)
   Double_t fXvertex;        // X-vertex position
   Double_t fYvertex;        // Y-vertex position
   Double_t fZvertex;        // Z-vertex position
@@ -58,7 +56,7 @@ class AliPMDtracker
   Double_t fSigmaY;         // Y-vertex error
   Double_t fSigmaZ;         // Z-vertex error
 
-  ClassDef(AliPMDtracker,1) // To run PMD clustering
+  ClassDef(AliPMDtracker,2) // To run PMD clustering
 };
 #endif
 
