@@ -314,7 +314,7 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
 
   fTerminating = kFALSE;
 
-  fTimer = new TTimer(this, 100, kFALSE);
+  fTimer = new TTimer(this, 10, kTRUE);
   fTimer->TurnOn();
 }
 
@@ -467,6 +467,7 @@ Bool_t AliMonitorControl::HandleTimer(TTimer* timer)
   UpdateStatus();
   gSystem->ProcessEvents();
   timer->TurnOn();
+
   return kFALSE;
 }
 
