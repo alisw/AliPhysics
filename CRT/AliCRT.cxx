@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/07/09 08:45:35  hristov
+Old style include files needed on HP (aCC)
+
 Revision 1.1  2002/06/16 17:08:19  hristov
 First version of CRT
 
@@ -201,10 +204,6 @@ void AliCRT::CreateMaterials()
   Float_t xepsil = 0.1; // Tracking precission in cm. obove the pit
 
   // --- Define the various materials for GEANT --- 
-  Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,28.086,39.1,40.08,55.85 };
-  Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };
-  Float_t wconc[10] = { .01,.001,.529107,.016,.002,.033872,.337021,.013,.044,.014 };
-  
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   //
   //     Aluminum 
@@ -221,17 +220,6 @@ void AliCRT::CreateMaterials()
   AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
   AliMaterial(35, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
   AliMaterial(55, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  //
-  //     Vacuum 
-  AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  AliMaterial(36, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  AliMaterial(56, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  //
-  //     Concrete
-  AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(37, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-  AliMixture(57, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
-
 
   // Scintillator material polystyrene 
   Float_t aP[2] = {12.011, 1.00794};
@@ -239,16 +227,12 @@ void AliCRT::CreateMaterials()
   Float_t wP[2] = {1.0, 1.0};
   Float_t dP = 1.032;
   AliMixture(3, "Polystyrene$", aP, zP, dP, -2, wP);
-  // Standard ROCK, ROCK1 and molasse. 
-  Float_t aRock[1] = {22.};
-  Float_t zRock[1] = {11.};
-  Float_t wRock[1] = {1.};
-  Float_t dRock = 2.65;
-  AliMixture(4, "Standard Rock$", aRock, zRock, dRock, 1, wRock);
-  Float_t dRock1 = 2.2;
-  AliMixture(5, "Rock1$", aRock, zRock, dRock1, 1, wRock);
-  Float_t dMolasse = 2.50;
-  AliMixture(6, "Molasse$", aRock, zRock, dMolasse, 1, wRock);
+  // Subalpine Molasse over the ALICE hall. 
+  Float_t aMolasse[10] = {0.008, 0.043, 0.485, 0.007, 0.042, 0.037, 0.215, 0.023, 0.1, 0.04};
+  Float_t zMolasse[10] = {1., 6., 8., 11., 12., 13., 14., 19., 20., 26.};
+  Float_t wMolasse[1] = {10.};
+  Float_t dMolasse = 2.40;
+  AliMixture(4, "Molasse$", aMolasse, zMolasse, dMolasse, 1, wMolasse);
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -276,31 +260,14 @@ void AliCRT::CreateMaterials()
   AliMedium(15, "AIR_C0          ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  //
-  //    Vacuum 
-  AliMedium(16, "VA_C0           ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(36, "VA_C1           ", 36, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(56, "VA_C2           ", 56, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  //
-  //    Concrete 
-  AliMedium(17, "CC_C0           ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(37, "CC_C1           ", 37, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(57, "CC_C2           ", 57, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 
   // The scintillator of the CPV made of Polystyrene 
   // scintillator -> idtmed[1102]
-  AliMedium(3, "CPV scint.          ", 3, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium(3 , "CPV scint.      ", 3, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   
-  //     Standard ROCK  -> idtmed[1103]
-  AliMedium(4, "Standard Rock ",  4, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
-  
-  //     ROCK1   -> idtmed[1104]
-  AliMedium(5, "Rock 1                 ", 5, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
-
-
-  //     Molasse -> idtmed[1105]
-  AliMedium(6, "Molasse          ", 6, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
+  //     Molasse -> idtmed[1103]
+  AliMedium(4 , "Molasse         ", 6, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
 
 
 }
