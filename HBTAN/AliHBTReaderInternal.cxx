@@ -347,7 +347,7 @@ Int_t AliHBTReaderInternal::OpenNextFile()
 
    Info("OpenNextFile","________________________________________________________");
    Info("OpenNextFile","Found %d event(s) in directory %s",
-         (Int_t)fTree->GetEntries(),GetDirName(fCurrentEvent).Data());
+         (Int_t)fTree->GetEntries(),GetDirName(fCurrentDir).Data());
    
    fCurrentEvent = 0;
 

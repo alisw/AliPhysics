@@ -97,7 +97,7 @@ TH1* AliHBTFunction::GetRatio(Double_t normfactor)
  {
  //returns ratio of numerator and denominator
  //
-   if (gDebug>0) Info("GetRatio","Norm. Factor is %f for %s",normfactor,GetName());
+   if (AliHBTParticle::GetDebug()>0) Info("GetRatio","Norm. Factor is %f for %s",normfactor,GetName());
    
    if (normfactor == 0.0)
     {
@@ -317,7 +317,7 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
  //Calculates the factor that should be used to scale 
  //quatience of num and den to 1 at tail
  
-  if (gDebug>0) Info("Scale","Enetered Scale()");
+  if (AliHBTParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
   if(!num) 
    {
      Error("Scale","No numerator");
@@ -340,7 +340,7 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
     Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
-  if (gDebug>0) Info("Scale","No errors detected");
+  if (AliHBTParticle::GetDebug()>0) Info("Scale","No errors detected");
 
   Double_t ratio;
   Double_t sum = 0;
@@ -358,12 +358,12 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
      }
    }
   
-  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScale=%d n=%d",sum,fNBinsToScale,n);
+  if(AliHBTParticle::GetDebug() > 0) Info("Scale","sum=%f fNBinsToScale=%d n=%d",sum,fNBinsToScale,n);
   
   if (n == 0) return 0.0;
   Double_t ret = sum/((Double_t)n);
 
-  if(gDebug > 0) Info("Scale","returning %f",ret);
+  if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 
@@ -502,7 +502,7 @@ Double_t AliHBTFunction2D::Scale()
 // Calculates the factor that should be used to scale 
 // quatience of fNumerator and fDenominator to 1 at 
 // given region
-  if (gDebug>0) Info("Scale","Enetered Scale()");
+  if (AliHBTParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
      Error("Scale","No numerator");
@@ -533,7 +533,7 @@ Double_t AliHBTFunction2D::Scale()
     return 0.0;
    }
 
-  if (gDebug>0) Info("Scale","No errors detected");
+  if (AliHBTParticle::GetDebug()>0) Info("Scale","No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis X
@@ -553,12 +553,12 @@ Double_t AliHBTFunction2D::Scale()
        }
      }
   
-  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d n=%d",sum,fNBinsToScaleX,fNBinsToScaleY,n);
+  if(AliHBTParticle::GetDebug() > 0) Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d n=%d",sum,fNBinsToScaleX,fNBinsToScaleY,n);
   
   if (n == 0) return 0.0;
   Double_t ret = sum/((Double_t)n);
 
-  if(gDebug > 0) Info("Scale","returning %f",ret);
+  if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 
@@ -709,7 +709,7 @@ Double_t AliHBTFunction3D::Scale()
   // Calculates the factor that should be used to scale 
   // quatience of fNumerator and fDenominator to 1 at 
   // given volume
-  if (gDebug>0) Info("Scale","Enetered Scale()");
+  if (AliHBTParticle::GetDebug()>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
      Error("Scale","No numerator");
@@ -747,7 +747,7 @@ Double_t AliHBTFunction3D::Scale()
     return 0.0;
    }
 
-  if (gDebug>0) Info("Scale","No errors detected");
+  if (AliHBTParticle::GetDebug()>0) Info("Scale","No errors detected");
 
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis Y
@@ -769,14 +769,14 @@ Double_t AliHBTFunction3D::Scale()
          }
        }
   
-  if(gDebug > 0) 
+  if(AliHBTParticle::GetDebug() > 0) 
     Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d n=%d",
           sum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ,n);
   
   if (n == 0) return 0.0;
   Double_t ret = sum/((Double_t)n);
 
-  if(gDebug > 0) Info("Scale","returning %f",ret);
+  if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 /******************************************************************/
