@@ -1503,7 +1503,7 @@ void AliPHOSGetter::ReadPrimaries()
   return ;
 }
 //____________________________________________________________________________ 
-void AliPHOSGetter::Event(Int_t event, const char* opt)
+void AliPHOSGetter::Event(const Int_t event, const char* opt)
 {
   // Reads the content of all Tree's S, D and R
   
