@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/07/09 08:45:35  hristov
+Old style include files needed on HP (aCC)
+
 Revision 1.1  2002/06/16 17:08:19  hristov
 First version of CRT
 
@@ -23,10 +26,10 @@ First version of CRT
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Alice COsmic Ray Trigger                                                  //
+// ALICE Cosmic Ray Trigger                                                  //
 //                                                                           //
-//  This class contains the functions for version 0 of the Cosmic Rays ALICE //
-//  detector.                                                                //
+//  This class contains the functions for version 0 of the ALICE Cosmic Ray  //
+//  Trigger.                                                                 //
 //
 //   Authors:
 //
@@ -105,19 +108,109 @@ void AliCRTv0::CreateGeometry()
   // Create geometry for the CRT array
   //
 
-  //
-  //-- Create the hall
-  CreateHall();
-
   Int_t  idrotm[2499];    // The rotation matrix.
 
-  // idtmed[1099->1198] equivalent to fIdtmed[0->100]
   Int_t * idtmed = fIdtmed->GetArray() - 1099 ;
 
-  // In order to generate the more correctly the modules (more datails)
-  // we will create a box (air box) as a (sub)mother volume.
-  // Inside this box we'll put the scintillator tiles, the PMTs the frame
-  // and, maybe, some other things.
+  //
+  // Molasse
+  //
+
+  // Exactly above the hall
+  Float_t tspar[5];
+  tspar[0] = 1170.;
+  tspar[1] = 1170. + 375.;
+  tspar[2] = (1900.+1150.)/2.+100.;
+  tspar[3] = 0.;
+  tspar[4] = 180.;
+  gMC->Gsvolu("CMO1", "TUBS", idtmed[1103], tspar, 5);
+  gMC->Gspos("CMO1", 1, "ALIC", 0., 500., 1900.-tspar[2]+400., 0, "MANY");
+
+  Float_t tbox[3];
+  tbox[0] = 1250.;
+  tbox[1] = (4420. - 1670.)/2.;
+  tbox[2] = (1900.+1150.)/2. + 200.;
+  gMC->Gsvolu("CM12", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gspos("CM12", 1, "ALIC", 0., 4420. -tbox[1], 1900.-tbox[2]+400., 0, "MANY");
+
+  AliMatrix(idrotm[2003], 0., 0., 90., 0., 90., 90.);
+  // Along the PM25
+  Float_t tube[3];
+  tube[0] = 455. + 100.;
+  tube[1] = 555. + 375.;
+  tube[2] = (5150. - 1166.)/2.;
+  gMC->Gsvolu("CMO2", "TUBE", idtmed[1103], tube, 3);
+  gMC->Gspos("CMO2", 1, "ALIC", -2100., 4420.-tube[2], 0., idrotm[2003], "MANY");
+
+
+  // Along the PGC2
+  tube[0] = 650.;
+  tube[1] = 2987.7;
+  tube[2] = (5150. - 690.)/2.;
+  gMC->Gsvolu("CMO3", "TUBE", idtmed[1103], tube, 3);
+  gMC->Gspos("CMO3", 1, "ALIC", 375., 4420.-tube[2], 1900.+2987.7, idrotm[2003], "MANY");
+  // Behind the PGC2 up to the end of the M. volume.
+  tbox[0] = 12073.;
+  tbox[1] = 2575. + 95.;
+  tbox[2] = (12073. - 1900.+2987.7+650.)/2.;
+  gMC->Gsvolu("CMO7", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gspos("CMO7", 1, "ALIC", 0., 4420.-tbox[1], 1900.+2987.7+650.+tbox[2], 0, "MANY");
+
+  // Along the PX24 , upper part.
+  tube[0] = 1250.;
+  tube[1] = 2300;
+  tube[2] = 2575. - 1300. + 95.;
+  gMC->Gsvolu("CMO4", "TUBE", idtmed[1103], tube, 3);
+  gMC->Gspos("CMO4", 1, "ALIC", 0., 404.+1300.+tube[2], -2300., idrotm[2003], "MANY");
+
+  // Along the PX24 , lower part
+  tspar[0] = 1250.;
+  tspar[1] = 2300;
+  tspar[2] = 1300.;
+  tspar[3] = kRaddeg*TMath::ASin(1070./1150.);
+  tspar[4] = 360. - tspar[3];
+  gMC->Gsvolu("CMO5", "TUBS", idtmed[1103], tspar, 5);
+  gMC->Gspos("CMO5", 1, "ALIC", 0., 404., -2300., idrotm[2003], "MANY");
+  // behind the PX24
+  tbox[0] = 12073.;
+  tbox[1] = 2575. + 95.;
+  tbox[2] = 8523./2.;
+  gMC->Gsvolu("CMO6", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gspos("CMO6", 1, "ALIC", 0., 4420.-tbox[1], -3550.-tbox[2], 0, "MANY");
+
+
+  // On the right side of th hall
+  tbox[0] = (12073. - 1250.)/2.;
+  tbox[1] = 2575. + 95.;
+  tbox[2] = (8437.7+650.)/2.;
+  gMC->Gsvolu("CMO8", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gspos("CMO8", 1, "ALIC", 1250.+tbox[0], 4420.-tbox[1], -3550.+tbox[2], 0, "MANY");
+
+  // on the left side of the hall, behind 
+  tbox[0] = (12073. - 2755.)/2.;
+  tbox[1] = 2575. + 95.;
+  tbox[2] = (8437.7+650.)/2.;
+  gMC->Gsvolu("CMO9", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gspos("CMO9", 1, "ALIC", -2755.-tbox[0], 4420.-tbox[1], -3550.+tbox[2], 0, "MANY");
+
+
+  // Molasse betwen the PX24 & PM25 on the left side.
+  tbox[0] = (2755. - 1250.)/2.;
+  tbox[1] = 2575. + 95.;
+  tbox[2] = (3550. - 555.)/2.;
+  gMC->Gsvolu("CM10", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gspos("CM10", 1, "ALIC", -1250.-tbox[0], 4420.-tbox[1], -tbox[2]-555., 0, "MANY");
+
+
+  // Molasse betwen the PGC2 & PM25 on the left side.
+  tbox[0] = (2755. - 1250.)/2.;
+  tbox[1] = 2575. + 95.;
+  tbox[2] = (1900.+2987.7 - 555. + 650.)/2.;
+  gMC->Gsvolu("CM11", "BOX", idtmed[1103], tbox, 3);
+  gMC->Gspos("CM11", 1, "ALIC", -1250.-tbox[0], 4420.-tbox[1], 555.+tbox[2], 0, "MANY");
+
+  //
+  // Scintillators
 
   Float_t box[3];
   box[0] = AliCRTConstants::fgCageLenght/2.; // Half Length of the box along the X axis, cm.
@@ -132,9 +225,9 @@ void AliCRTv0::CreateGeometry()
   scint[2] = AliCRTConstants::fgActiveAreaWidth/2.;        // Half Length in Z
   gMC->Gsvolu("CRT1", "BOX ", idtmed[1102], scint, 3);  // Scintillators
   // Divide the modules in 2 planes.
-  //gMC->Gsdvn("CRT2", "CRT1", 2, 2);
+  gMC->Gsdvn("CRT2", "CRT1", 2, 2);
   // Now divide each plane in 8 palettes
-  //gMC->Gsdvn("CRT3", "CRT1", 8, 3);
+  gMC->Gsdvn("CRT3", "CRT1", 8, 3);
 
 
   //
@@ -163,7 +256,7 @@ void AliCRTv0::CreateGeometry()
   // Put 4 modules on the top of the magnet
   Int_t step = 4;
   for ( Int_t i = 1 ; i <= 4 ; i++ ) {
-    gMC->Gspos("CRT1", i, "CRTA", initX, initY, (i-step)*box[2], 0, "ONLY");
+    gMC->Gspos("CRT1", i, "ALIC", initX, initY, (i-step)*box[2], 0, "ONLY");
     step--;
   }
 
@@ -179,7 +272,7 @@ void AliCRTv0::CreateGeometry()
   AliMatrix(idrotm[232], 90., 315., 90., 45., 0., 337.5);
   Int_t stepl = 4;
   for ( Int_t i = 1 ; i <= 4 ; i++ ) {
-    gMC->Gspos("CRT1", i+4, "CRTA", initXside, initYside, (i-stepl)*box[2],
+    gMC->Gspos("CRT1", i+4, "ALIC", initXside, initYside, (i-stepl)*box[2],
 	       idrotm[232], "ONLY");
     stepl--;
   }
@@ -189,240 +282,13 @@ void AliCRTv0::CreateGeometry()
   AliMatrix(idrotm[231], 90., 45., 90., 315., 180., 202.5);
   Int_t stepr = 4;
   for ( Int_t i = 1 ; i <= 4 ; i++ ) {
-    gMC->Gspos("CRT1", i+8, "CRTA", -initXside, initYside, (i-stepr)*box[2],
+    gMC->Gspos("CRT1", i+8, "ALIC", -initXside, initYside, (i-stepr)*box[2],
 	       idrotm[231], "ONLY");
     stepr--;
   }
 
 }
 
-//_____________________________________________________________________________
-void AliCRTv0::CreateHall()
-{
-
-  Float_t r2;
-  Float_t phid, phim, pbox[3], h, r, tspar[5];
-  Float_t w1, dh, am, bm, dl,cm, hm, dr, dx, xl;
-  Int_t idrotm[1999];
-  Float_t trdpar[4], trapar[11];
-  Float_t phi;
-  
-  Int_t *idtmed = fIdtmed->GetArray()-1899;
-
-  // Because the BODY,  was "filled with vaccum", we're goin to superimpose
-  // a volume with molasse, then using the boolenaq operations with volumes
-  // we are going the replace, with air, the part closed by the hall walls
-
-  // For the moment, just use the simple mother volume ...
-  Float_t mola[3];
-  mola[0] = 2000.;
-  mola[1] = 2000.;
-  mola[2] = 3000.;
-  gMC->Gsvolu("CRTA", "BOX", idtmed[1905], mola, 3);
-  gMC->Gspos("CRTA", 1, "ALIC", 0., 0., 0., 0, "MANY");
-
-  // Now make a cilinder with the size of the hall (raughtly)
-  // and fill it with air.
-  Float_t hall[3];
-  hall[0] = 0.;    // Inner radius
-  hall[1] = 1170.; // Outer radius
-  hall[2] = 2625. + 200.; // Hall lenght
-  gMC->Gsvolu("CRTB", "TUBE", idtmed[1914], hall, 3);
-  // perform the substraction SMOL - SALL, asigning SMOL as MANY and 
-  // SALL as ONLY.
-  gMC->Gspos("CRTB", 1, "CRTA", 0., 500., -2*375., 0, "ONLY");
-
-  //     RB24/26 TUNNEL FLOOR 
-  
-  r   = 220.;
-  h   = 140.;
-  phi = TMath::ACos(h / r);
-  xl  = r * TMath::Sin(phi);
-  dr  = 100.;
-  dh  = dr * TMath::Cos(phi);
-  dl  = dr * TMath::Sin(phi);
-
-  AliMatrix(idrotm[1900], 90., 0., 0., 0., 90., 90.);
-  AliMatrix(idrotm[1901], 270., 0., 90., 90., 0., 0.);
-  //     END WALL 
-  
-  pbox[0] = 1200.;
-  pbox[1] = 1300.;
-  pbox[2] = 60.;
-  gMC->Gsvolu("CRTC", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("CRTC", 1, "CRTA", 0., 404., 1960, 0, "ONLY");
-  
-  //     hall floor, the interior part (left)
-  
-  phid      = 16.197;
-  trdpar[0] = 700.;
-  trdpar[1] = TMath::Tan(phid * kDegrad) * 190. + 700.;
-  trdpar[2] = 550.;
-  trdpar[3] = 95.;
-  gMC->Gsvolu("CRTD", "TRD1", idtmed[1956], trdpar, 4);
-  gMC->Gspos("CRTD", 1, "CRTA", 0., -801., 1350., idrotm[1900], "ONLY");
-
-  //     hall floor, the outside part
-  
-  phid      = 16.197;
-  trdpar[0] = 700.;
-  trdpar[1] = TMath::Tan(phid * kDegrad) * 190. + 700.;
-  trdpar[2] = 1325.;
-  trdpar[3] = 95.;
-  gMC->Gsvolu("CRTE", "TRD1", idtmed[1956], trdpar, 4);
-  gMC->Gspos("CRTE", 2, "CRTA", 0., -801., -2125., idrotm[1900], "ONLY");
-  
-  //     hall side walls 
-
-  // Interior walls  
-  trapar[0] = 550.;
-  trapar[1] = 0.;
-  trapar[2] = 0.;
-  trapar[3] = 1273.78/2;
-  trapar[4] = 235.;
-  trapar[5] = 50.;
-  trapar[6] = TMath::ATan((trapar[4] - trapar[5]) / 2. / trapar[3]) * kRaddeg;
-  trapar[7] = trapar[3];
-  trapar[8] = trapar[4];
-  trapar[9] = trapar[5];
-  trapar[10] = trapar[6];
-  dx = trapar[4] * 1.5 + 700. - trapar[5] * .5;
-  gMC->Gsvolu("CRTF", "TRAP", idtmed[1956], trapar, 11);// interior wall
-  gMC->Gspos("CRTF", 1, "CRTA", dx, -896+trapar[3],  1350., 0, "ONLY");
-  gMC->Gspos("CRTF", 2, "CRTA",-dx, -896+trapar[3],  1350., idrotm[1901], "ONLY");
-
-  // Exterior walls
-  Float_t trapare[11];
-  trapare[0] = 275.;
-  for ( Int_t i = 1 ; i <= 10 ; i++ ) {
-    trapare[i] = trapar[i];
-  }
-  gMC->Gsvolu("CRTG", "TRAP", idtmed[1956], trapare, 11);// exterior wall
-  gMC->Gspos("CRTG", 1, "CRTA", dx, -896+trapar[3],  -1075., 0, "ONLY");
-  gMC->Gspos("CRTG", 2, "CRTA",-dx, -896+trapar[3],  -1075., idrotm[1901], "ONLY");
-
-  pbox[0] = 50.;
-  pbox[1] = (500. - (trapar[3] * 2. - 896.)) / 2.;
-  pbox[2] = 1625.;
-  gMC->Gsvolu("CRTH", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("CRTH", 1, "CRTA",  1120., 500-pbox[1], 275., 0, "ONLY");
-  gMC->Gspos("CRTH", 2, "CRTA", -1120., 500-pbox[1], 275., 0, "ONLY");
-
-  //     slanted wall close to L3 magnet 
-  
-  phim = 45.;
-  hm   = 790.;
-  //rm   = hm / TMath::Cos(phim / 2. * kDegrad);
-  am   = hm * TMath::Tan(phim / 2. * kDegrad);
-  bm   = (hm + 76.) / hm * am;
-  cm   = bm * 2. / TMath::Sqrt(2.);
-  trapar[0] = 800.;
-  trapar[1] = 0.;
-  trapar[2] = 0.;
-  trapar[3] = (1273.78 - cm) / 2.;
-  trapar[4] = 235. - cm * TMath::Tan(phid * kDegrad) / 2.;
-  trapar[5] = 50.;
-  trapar[6] = TMath::ATan((trapar[4] - trapar[5]) / 2. / trapar[3]) * kRaddeg;
-  trapar[7] = trapar[3];
-  trapar[8] = trapar[4];
-  trapar[9] = trapar[5];
-  trapar[10] = trapar[6];
-  w1 = trapar[4];
-  dx = cm*TMath::Tan(phid * kDegrad) + 700. + trapar[4] * 1.5 - trapar[5] * .5;
-  gMC->Gsvolu("CRTI", "TRAP", idtmed[1956], trapar, 11);
-  r2 = cm - 896. + trapar[3];
-  gMC->Gspos("CRTI", 1, "CRTA", dx, r2, 0., 0, "ONLY");
-  gMC->Gspos("CRTI", 2, "CRTA",-dx, r2, 0., idrotm[1901], "ONLY");
-  trapar[3]  = cm / 2.;
-  trapar[4]  = w1 + cm / 2.;
-  trapar[5]  = w1;
-  trapar[6]  = TMath::ATan(.5) * kRaddeg;
-  trapar[7]  = trapar[3];
-  trapar[8]  = trapar[4];
-  trapar[9]  = trapar[5];
-  trapar[10] = trapar[6];
-  dx = 1170. - trapar[4] * .5 - trapar[5] * .5;
-  gMC->Gsvolu("CRTJ", "TRAP", idtmed[1956], trapar, 11);
-  r2 = trapar[3] - 896.;
-  gMC->Gspos("CRTJ", 1, "CRTA", dx, r2, 0., 0, "ONLY");
-  gMC->Gspos("CRTJ", 2, "CRTA",-dx, r2, 0., idrotm[1901], "ONLY");
-
-  tspar[0] = 1070.;
-  tspar[1] = 1170.;
-  tspar[2] = pbox[2];
-  tspar[3] = 0.;
-  tspar[4] = 180.;
-  gMC->Gsvolu("CRTK", "TUBS", idtmed[1956], tspar, 5);
-  gMC->Gspos("CRTK", 1, "CRTA", 0., 500., 300., 0, "ONLY");
-  trdpar[0] = 1170 - trapar[4] * 2.;
-  trdpar[1] = trdpar[0] + TMath::Tan(phim * kDegrad) * 76.;
-  trdpar[2] = 800.;
-  trdpar[3] = 38.;
-  gMC->Gsvolu("CRTL", "TRD1", idtmed[1956], trdpar, 4);
-  gMC->Gspos("CRTL", 1, "CRTA", 0., -858., 0., idrotm[1900], "ONLY");
-
-
-
-  // Define the setion tube of the PX24, at the same level of hall
-  // rotate the tubes around X, Z'=Y, Y'=-Z
-  AliMatrix(idrotm[2001], 0., 0., 90., 0., 90., 90.);
-  Float_t pxi[5];
-  pxi[0] = 1150.;              // inside radius
-  pxi[1] = 1250.;              // outside radius
-  pxi[2] = 1300.;              // half lenght in Z
-  pxi[3] = kRaddeg*TMath::ASin(tspar[0]/pxi[0]);//starting angle of the segment
-  pxi[4] = 360.-pxi[3];               // ending angle of the segment
-  gMC->Gsvolu("CRTM", "TUBS", idtmed[1956], pxi, 5);
-  gMC->Gspos("CRTM", 1, "CRTA", 0., 404., -2300., idrotm[2001], "MANY");
-
-  // Define the setion tube of the PX24, above the hall
-  Float_t pxa[3];
-  pxa[0] = pxi[0];
-  pxa[1] = pxi[1];
-  pxa[2] = 2550. - pxi[2]; // Half lenght
-  gMC->Gsvolu("CRTN", "TUBE", idtmed[1956], pxa, 3);
-  gMC->Gspos("CRTN", 1, "CRTA", 0.,pxi[2]+404+pxa[2], -2300., idrotm[2001], "MANY");
-  // Fill this section with air.
-  Float_t pxb[3];
-  pxb[0] = 0.;
-  pxb[1] = pxa[0];
-  pxb[2] = pxa[2];
-  gMC->Gsvolu("CRTO", "TUBE", idtmed[1914], pxb, 3);
-  gMC->Gspos("CRTO", 1, "CRTA", 0., pxi[2]+404+pxa[2], -2300., idrotm[2001], "ONLY");
-
-
-  // PM25 Acces shaft.
-  Float_t pma[3];
-  pma[0] = 910./2.;// Inner radius 
-  pma[1] = pma[0] + 100.; // Outer Radius
-  pma[2] = 5100./2.; // Half lenght 
-  gMC->Gsvolu("CRTP", "TUBE", idtmed[1956], pma, 3);
-  gMC->Gspos("CRTP", 1, "CRTA", -2100., 1654., 0., idrotm[2001], "ONLY");
-  // Fill it with air.
-  Float_t pmb[3];
-  pmb[0] = 0.;
-  pmb[1] = pma[0];
-  pmb[2] = pma[2];
-  gMC->Gsvolu("CRTQ", "TUBE", idtmed[1914], pmb, 3);
-  gMC->Gspos("CRTQ", 1, "CRTA", -2100., 1654., 0., idrotm[2001], "ONLY");
-
-
-  // PGC2 Acces shaft.
-  Float_t pgc[3];
-  pgc[0] = 1200./2.;// Inner Radius 
-  pgc[1] = pgc[0] + 100.; // outer Radius
-  pgc[2] = 5100./2.; // Half lenght 
-  gMC->Gsvolu("CRTR", "TUBE", idtmed[1956], pgc, 3);
-  gMC->Gspos("CRTR", 1, "CRTA", 375., 1654., 4850., idrotm[2001], "ONLY");
-  // Fill it with air.
-  Float_t pgd[3];
-  pgd[0] = 0.;
-  pgd[1] = pgc[0];
-  pgd[2] = pgc[2];
-  gMC->Gsvolu("CRTS", "TUBE", idtmed[1914], pgd, 3);
-  gMC->Gspos("CRTS", 1, "CRTA", 375., 1654., 4850., idrotm[2001], "ONLY");
-
-}
 //_____________________________________________________________________________
 void AliCRTv0::CreateMaterials()
 {
@@ -452,31 +318,23 @@ void AliCRTv0::DrawModule()
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
 
-   gMC->Gsatt("ALIC","seen",0); // Mother volume, pit ceiling
+   gMC->Gsatt("ALIC","seen",0);
    gMC->Gsatt("L3MO","seen",1); // L3 Magnet
-   gMC->Gsatt("CRT1","seen",1); // Scintillators (air) box.
+   gMC->Gsatt("CRT1","seen",1); // Scintillators
 
-   // Draw the volumes for all the hall.
-   gMC->Gsatt("CRTA","seen",1);
-   gMC->Gsatt("CRTB","seen",1);
-   gMC->Gsatt("CRTC","seen",1);
-   gMC->Gsatt("CRTD","seen",1);
-   gMC->Gsatt("CRTE","seen",1);
-   gMC->Gsatt("CRTF","seen",1);
-   gMC->Gsatt("CRTG","seen",1);
-   gMC->Gsatt("CRTH","seen",1);
-   gMC->Gsatt("CRTI","seen",1);
-   gMC->Gsatt("CRTJ","seen",1);
-   gMC->Gsatt("CRTK","seen",1);
-   gMC->Gsatt("CRTL","seen",1);
-   gMC->Gsatt("CRTM","seen",1);
-   gMC->Gsatt("CRTN","seen",1);
-   gMC->Gsatt("CRTO","seen",1);
-   gMC->Gsatt("CRTP","seen",1);
-   gMC->Gsatt("CRTQ","seen",1);
-   gMC->Gsatt("CRTR","seen",1);
-   gMC->Gsatt("CRTS","seen",1);
-
+   // Draw the molasse volumes
+   gMC->Gsatt("CMO1","seen",0); // Exactly above the HALL
+   gMC->Gsatt("CMO2","seen",0); // Molasse, along the PM25
+   gMC->Gsatt("CMO3","seen",0); // molasse along the PGC2
+   gMC->Gsatt("CMO4","seen",0); // Molasse, behind the PX24 upper part
+   gMC->Gsatt("CMO5","seen",0); // molasse behind px24, lower part
+   gMC->Gsatt("CMO6","seen",0); // behind the PX24
+   gMC->Gsatt("CMO7","seen",0); // behind the PGC2
+   gMC->Gsatt("CMO8","seen",0); // on the right side.
+   gMC->Gsatt("CMO9","seen",0); // on the left side.
+   gMC->Gsatt("CM10","seen",0); // betwen PX24 & PM25.
+   gMC->Gsatt("CM11","seen",0); // betwen PGC2 & PM25.
+   gMC->Gsatt("CM12","seen",0); // box above the hall.
 
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("edge","off");
