@@ -1,7 +1,7 @@
 //********************************************************************
 //     Example (very naive for the moment) of using the ESD classes
-//       It demonstrates the idea of the "combined PID".
-//     Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//        It demonstrates the idea of the "combined PID".
+//      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //********************************************************************
 
 #if !defined( __CINT__) || defined(__MAKECINT__)
@@ -13,6 +13,7 @@
   #include "TCanvas.h"
   #include "TStopwatch.h"
   #include "TParticle.h"
+  #include "TROOT.h"
 
   #include "AliRun.h"
   #include "AliStack.h"
@@ -23,41 +24,64 @@
 #endif
 
 extern AliRun *gAlice;
+extern TROOT *gROOT;
 
-Int_t AliESDcomparison() { 
-  TH2F *tpcHist=
-     new TH2F("tpcHist","TPC dE/dX vs momentum",100,0.,4.,100,0.,500.);
+Int_t AliESDcomparison(const Char_t *dir=".") { 
+   TH2F *tpcHist=(TH2F*)gROOT->FindObject("tpcHist");
+   if (!tpcHist)
+     tpcHist=new TH2F("tpcHist","TPC dE/dX vs momentum",100,0.,4.,100,0.,500.);
    tpcHist->SetXTitle("p (GeV/c)"); tpcHist->SetYTitle("dE/dx (Arb. Units)");
-     tpcHist->SetMarkerStyle(8); 
-     tpcHist->SetMarkerSize(0.3);
+   tpcHist->SetMarkerStyle(8); 
+   tpcHist->SetMarkerSize(0.3);
  
-  TH1F *piG=new TH1F("piG","",20,0.,4.);
-  TH1F *piR=new TH1F("piR","",20,0.,4.);
-  TH1F *piF=new TH1F("piF","",20,0.,4.);
-  TH1F *piGood=new TH1F("piGood","Combined PID for pions",20,0.,4.); 
-  piGood->SetLineColor(4); piGood->SetXTitle("p (GeV/c)");
-  TH1F *piFake=new TH1F("piFake","",20,0.,4.); piFake->SetLineColor(2);
+   const Char_t *hname[]={
+    "piG","piR","piF","piGood","piFake",
+    "kaG","kaR","kaF","kaGood","kaFake",
+    "prG","prR","prF","prGood","prFake"
+   };
+   Int_t nh=sizeof(hname)/sizeof(const Char_t *);
+   TH1F **hprt=new TH1F*[nh]; 
 
-  TH1F *kaG=new TH1F("kaG","",20,0.,4.);
-  TH1F *kaR=new TH1F("kaR","",20,0.,4.);
-  TH1F *kaF=new TH1F("kaF","",20,0.,4.);
-  TH1F *kaGood=new TH1F("kaGood","Combined PID for kaons",20,0.,4.); 
-  kaGood->SetLineColor(4); kaGood->SetXTitle("p (GeV/c)");
-  TH1F *kaFake=new TH1F("kaFake","",20,0.,4.); kaFake->SetLineColor(2);
+   for (Int_t i=0; i<nh; i++) {
+     hprt[i]=(TH1F*)gROOT->FindObject(hname[i]);
+     if (hprt[i]==0) {hprt[i]=new TH1F(hname[i],"",20,0.,4.);hprt[i]->Sumw2();}
+   }
+   TH1F *piG=hprt[0];
+   TH1F *piR=hprt[1];
+   TH1F *piF=hprt[2];
+   TH1F *piGood=hprt[3]; 
+        piGood->SetTitle("Combined PID for pions"); 
+        piGood->SetLineColor(4); piGood->SetXTitle("p (GeV/c)");
+   TH1F *piFake=hprt[4]; 
+        piFake->SetLineColor(2);
+   TH1F *kaG=hprt[5];
+   TH1F *kaR=hprt[6];
+   TH1F *kaF=hprt[7];
+   TH1F *kaGood=hprt[8];
+        kaGood->SetTitle("Combined PID for kaons"); 
+        kaGood->SetLineColor(4); kaGood->SetXTitle("p (GeV/c)");
+   TH1F *kaFake=hprt[9]; 
+        kaFake->SetLineColor(2);
+   TH1F *prG=hprt[10];
+   TH1F *prR=hprt[11];
+   TH1F *prF=hprt[12];
+   TH1F *prGood=hprt[13];
+        prGood->SetTitle("Combined PID for protons"); 
+        prGood->SetLineColor(4); prGood->SetXTitle("p (GeV/c)");
+   TH1F *prFake=hprt[14]; 
+        prFake->SetLineColor(2);
 
-  TH1F *prG=new TH1F("prG","",20,0.,4.);
-  TH1F *prR=new TH1F("prR","",20,0.,4.);
-  TH1F *prF=new TH1F("prF","",20,0.,4.);
-  TH1F *prGood=new TH1F("prGood","Combined PID for protons",20,0.,4.); 
-  prGood->SetLineColor(4); prGood->SetXTitle("p (GeV/c)");
-  TH1F *prFake=new TH1F("prFake","",20,0.,4.); prFake->SetLineColor(2);
+   delete[] hprt;
+
+   Char_t fname[100];
 
    if (gAlice) {
       delete gAlice->GetRunLoader();
       delete gAlice;
       gAlice=0;
    }
-   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   sprintf(fname,"%s/galice.root",dir);
+   AliRunLoader *rl = AliRunLoader::Open(fname);
    if (rl == 0x0) {
       cerr<<"Can not open session"<<endl;
       return 1;
@@ -73,9 +97,10 @@ Int_t AliESDcomparison() {
       return 1;
    }
    rl->LoadKinematics();
-   AliStack* stack = rl->Stack();
+   AliStack *stack = rl->Stack();
 
-   TFile *ef=TFile::Open("AliESDs.root");
+   sprintf(fname,"%s/AliESDs.root",dir);
+   TFile *ef=TFile::Open(fname);
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
 
    TStopwatch timer;
@@ -165,28 +190,30 @@ Int_t AliESDcomparison() {
 
    timer.Stop(); timer.Print();
 
-   TCanvas *c1=new TCanvas("c1","",0,0,600,1200);
+   TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");
+   if (c1) delete c1; 
+   c1=new TCanvas("c1","",0,0,600,1200);
    c1->Divide(1,4);
 
    c1->cd(1);
    tpcHist->Draw();
 
    c1->cd(2);
-   piG->Sumw2(); piF->Sumw2(); piR->Sumw2();
+   //piG->Sumw2(); piF->Sumw2(); piR->Sumw2();
    piGood->Divide(piR,piG,1,1,"b");
    piFake->Divide(piF,piG,1,1,"b");
    piGood->Draw("hist");
    piFake->Draw("same");
 
    c1->cd(3);
-   kaG->Sumw2(); kaF->Sumw2(); kaR->Sumw2();
+   //kaG->Sumw2(); kaF->Sumw2(); kaR->Sumw2();
    kaGood->Divide(kaR,kaG,1,1,"b");
    kaFake->Divide(kaF,kaG,1,1,"b");
    kaGood->Draw("hist");
    kaFake->Draw("same");
 
    c1->cd(4);
-   prG->Sumw2(); prF->Sumw2(); prR->Sumw2();
+   //prG->Sumw2(); prF->Sumw2(); prR->Sumw2();
    prGood->Divide(prR,prG,1,1,"b");
    prFake->Divide(prF,prG,1,1,"b");
    prGood->Draw("hist");
