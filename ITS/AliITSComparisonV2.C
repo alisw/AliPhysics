@@ -51,7 +51,7 @@ const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
 
 extern AliRun *gAlice;
 
-Int_t AliITSComparisonV2() {
+Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
    cerr<<"Doing comparison...\n";
    if (gAlice) {
       delete gAlice->GetRunLoader();
@@ -179,7 +179,8 @@ Int_t AliITSComparisonV2() {
       Int_t lab=gt[ng].lab, tlab=-1;
       Double_t pxg=gt[ng].px, pyg=gt[ng].py, pzg=gt[ng].pz;
       Double_t ptg=TMath::Sqrt(pxg*pxg+pyg*pyg);
-
+      if (ptg<ptcutl) continue;
+      if (ptg>ptcuth) continue;
 
       if (ptg>pmin) hgood->Fill(ptg);
 

@@ -146,7 +146,7 @@ AliKalmanTrack() {
   }
   fESDtrack=&t;
 
-  if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
+  //if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 
 }
 

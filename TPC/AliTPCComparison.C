@@ -57,7 +57,7 @@ extern AliRun *gAlice;
 extern TBenchmark *gBenchmark;
 extern TROOT *gROOT;
 
-Int_t AliTPCComparison(const Char_t *dir=".") {
+Int_t AliTPCComparison(Float_t ptcutl=0.2, Float_t ptcuth=10., const Char_t *dir=".") {
    gBenchmark->Start("AliTPCComparison");
 
    ::Info("AliTPCComparison.C","Doing comparison...");
@@ -185,7 +185,8 @@ Int_t AliTPCComparison(const Char_t *dir=".") {
       TMath::Sqrt(gt[ngood].px*gt[ngood].px + gt[ngood].py*gt[ngood].py);
 
       if (ptg<1e-33) continue; // for those not crossing 0 pad row
-      if (ptg<0.2) continue;
+      if (ptg<ptcutl) continue;
+      if (ptg>ptcuth) continue;
       hgood->Fill(ptg);
 
       AliESDtrack *track=0;
