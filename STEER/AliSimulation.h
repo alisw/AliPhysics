@@ -28,6 +28,8 @@ public:
   void           SetMakeSDigits(const char* detectors) 
                    {fMakeSDigits = detectors;};
   void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 1);
+  void           SetUseBkgrdVertex(Bool_t useBkgrdVertex)
+                   {fUseBkgrdVertex = useBkgrdVertex;};
   void           SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
   void           SetMakeDigits(const char* detectors)
                    {fMakeDigits = detectors;};
@@ -57,6 +59,7 @@ private:
   TString        fConfigFileName;     // name of the config file
   TString        fGAliceFileName;     // name of the galice file
   TObjArray*     fBkgrdFileNames;     // names of background files for merging
+  Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
   ClassDef(AliSimulation, 1)  // class for running generation, simulation and digitization

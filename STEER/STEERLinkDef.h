@@ -80,6 +80,7 @@
 #pragma link C++ class  AliMC+;
 #pragma link C++ class  AliSimulation+;
 #pragma link C++ class  AliReconstruction+;
+#pragma link C++ class  AliVertexGenFile+;
 #endif
 
 

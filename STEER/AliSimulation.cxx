@@ -83,6 +83,7 @@
 #include "AliRun.h"
 #include "AliModule.h"
 #include "AliGenerator.h"
+#include "AliVertexGenFile.h"
 #include "AliRunDigitizer.h"
 #include "AliDigitizer.h"
 #include <TObjString.h>
@@ -107,6 +108,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fConfigFileName(configFileName),
   fGAliceFileName("galice.root"),
   fBkgrdFileNames(NULL),
+  fUseBkgrdVertex(kTRUE),
   fRegionOfInterest(kTRUE)
 {
 // create simulation object with default parameters
@@ -128,6 +130,7 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fConfigFileName(sim.fConfigFileName),
   fGAliceFileName(sim.fGAliceFileName),
   fBkgrdFileNames(NULL),
+  fUseBkgrdVertex(sim.fUseBkgrdVertex),
   fRegionOfInterest(sim.fRegionOfInterest)
 {
 // copy constructor
@@ -258,12 +261,26 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
   fGAliceFileName = runLoader->GetFileName();
 
+  if (!gAlice->Generator()) {
+    Error("RunSimulation", "gAlice has no generator object. "
+	  "Check your config file: %s", fConfigFileName.Data());
+    return kFALSE;
+  }
+
+  // get vertex from background file in case of merging
+  if (fUseBkgrdVertex &&
+      fBkgrdFileNames && (fBkgrdFileNames->GetEntriesFast() > 0)) {
+    Int_t signalPerBkgrd = fBkgrdFileNames->At(0)->GetUniqueID();
+    const char* fileName = ((TObjString*)
+			    (fBkgrdFileNames->At(0)))->GetName();
+    Info("RunSimulation", "The vertex will be taken from the background "
+	 "file %s with nSignalPerBackground = %d", 
+	 fileName, signalPerBkgrd);
+    AliVertexGenFile* vtxGen = new AliVertexGenFile(fileName, signalPerBkgrd);
+    gAlice->Generator()->SetVertexGenerator(vtxGen);
+  }
+
   if (!fRunSimulation) {
-    if (!gAlice->Generator()) {
-      Error("RunSimulation", "gAlice has no generator object. "
-	    "Check your config file: %s", fConfigFileName.Data());
-      return kFALSE;
-    }
     gAlice->Generator()->SetTrackingFlag(0);
   }
 
