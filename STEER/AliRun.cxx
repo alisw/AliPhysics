@@ -149,7 +149,7 @@ AliRun::AliRun(const char *name, const char *title)
   //
   //---------------Load detector names
   
-  fNdets=21;
+  /*  fNdets=21;
   strcpy(fDnames[0],"BODY");
   strcpy(fDnames[1],"NULL");
   strcpy(fDnames[2],"ITS");
@@ -171,7 +171,7 @@ AliRun::AliRun(const char *name, const char *title)
   strcpy(fDnames[18],"DIPO");
   strcpy(fDnames[19],"HALL");
   strcpy(fDnames[20],"PIPE");
-  
+  */
   //
   // Prepare the tracking medium lists
   fImedia = new TArrayI(1000);
@@ -358,7 +358,8 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
   //
   // --- Sanity check on mag field flags
   if(type<0 || type > 2) {
-    printf(" Invalid magnetic field flag: %5d; Helix tracking chosen instead\n"
+    Warning("SetField",
+	    "Invalid magnetic field flag: %5d; Helix tracking chosen instead\n"
 	   ,type);
     type=2;
   }
@@ -369,7 +370,7 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
     fField = new AliMagFCM("Map2-3",filename,type,version,scale,maxField);
     fField->ReadField();
   } else {
-    printf("Invalid map %d\n",version);
+    Warning("SetField","Invalid map %d\n",version);
   }
 }
 
@@ -619,12 +620,10 @@ Int_t AliRun::GetModuleID(const char *name)
   //
   // Return galice internal detector identifier from name
   //
-  Int_t i;
-  for(i=0;i<fNdets;i++) if(!strcmp(fDnames[i],name)) {
-    return i;
-  }
-  printf(" * GetDetectorID * Detector %s not found: returning -1\n",name);
-  return -1;
+  Int_t i=-1;
+  TObject *mod=fModules->FindObject(name);
+  if(mod) i=fModules->IndexOf(mod);
+  return i;
 }
  
 //_____________________________________________________________________________
@@ -652,14 +651,13 @@ Int_t AliRun::GetEvent(Int_t event)
   sprintf(treeName,"TreeK%d",event);
   fTreeK = (TTree*)gDirectory->Get(treeName);
   if (fTreeK) fTreeK->SetBranchAddress("Particles", &fParticles);
-  else        printf("ERROR: cannot find Kine Tree for event:%d\n",event);
+  else    Error("GetEvent","cannot find Kine Tree for event:%d\n",event);
   
   // Get Hits Tree header from file
   sprintf(treeName,"TreeH%d",event);
   fTreeH = (TTree*)gDirectory->Get(treeName);
   if (!fTreeH) {
-    printf("ERROR: cannot find Hits Tree for event:%d\n",event);
-    return 0;
+    Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
   }
   
   // Get Digits Tree header from file
@@ -802,6 +800,8 @@ void AliRun::Init(const char *setup)
   pMC->DefineParticles();  //Create standard MC particles
 
   TObject *objfirst, *objlast;
+
+  fNdets = fModules->GetLast()+1;
 
   //
   //=================Create Materials, geometry, histograms, etc
@@ -998,7 +998,7 @@ void AliRun::SetTransPar(char* filename)
 	// Set energy thresholds
 	for(kz=0;kz<ncuts;kz++) {
 	  if(cut[kz]>=0) {
-	    printf(" *  %-6s set to %10.3E for tracking medium code %4d %s\n",
+	    printf(" *  %-6s set to %10.3E for tracking medium code %4d for %s\n",
 		   pars[kz],cut[kz],itmed,mod->GetName());
 	    pMC->Gstpar(ktmed,pars[kz],cut[kz]);
 	  }
@@ -1169,6 +1169,7 @@ void AliRun::Reset(Int_t run, Int_t idevent)
   if(fTreeK) fTreeK->Reset();
   if(fTreeH) fTreeH->Reset();
   if(fTreeD) fTreeD->Reset();
+  if(fTreeR) fTreeR->Reset();
 }
 
 //_____________________________________________________________________________
@@ -1414,7 +1415,7 @@ void AliRun::StepManager(Int_t id) const
 }
 
 //_____________________________________________________________________________
-void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
+void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* topvol)
 {
   //                                                                     
   //       read in the geometry of the detector in euclid file format    
@@ -1445,15 +1446,6 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
   Float_t xo, yo, zo;
   Int_t idrot[5000],istop[7000];
   FILE *lun;
-  AliModule *det;
-  //
-  TObjArray &dets = *fModules;
-  if(!dets[id_det]) {
-    printf(" *** GREUTMED *** Detector %d not defined\n",id_det);
-    return;
-  } else {
-    det = (AliModule*) dets[id_det];
-  }
   //
   // *** The input filnam name will be with extension '.euc'
   filtmp=gSystem->ExpandPathName(filnam);
@@ -1483,7 +1475,6 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //
-    //    pMC->Gckmat(idtmed[itmed+id_det*100-1],natmed);
     pMC->Gckmat(idtmed[itmed],natmed);
     //*
   } else if (!strcmp(key,"ROTM")) {
@@ -1568,7 +1559,7 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
 }
 
 //_____________________________________________________________________________
-void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
+void AliRun::ReadEuclidMedia(const char* filnam, const AliModule *det)
 {
   //                                                                     
   //       read in the materials and tracking media for the detector     
@@ -1589,15 +1580,7 @@ void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
   Int_t imate;
   Int_t nwbuf, isvol, ifield, nmat;
   Float_t a, z, dens, radl, absl, fieldm, tmaxfd, stemax, deemax, epsil, stmin;
-  AliModule* det;
-//
-  TObjArray &dets = *fModules;
-  if(!dets[id_det]) {
-    printf(" *** GREUTMED *** Detector %d not defined\n",id_det);
-    return;
-  } else {
-    det = (AliModule*) dets[id_det];
-  }
+  //
   end=strlen(filnam);
   for(i=0;i<end;i++) if(filnam[i]=='.') {
     end=i;
@@ -1610,14 +1593,14 @@ void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
   lun=fopen(filtmp,"r");
   delete [] filtmp;
   if(!lun) {
-    printf(" *** GREUTMED *** Could not open file %s\n",filnam);
+    Warning("ReadEuclidMedia","Could not open file %s\n",filnam);
     return;
   }
   //
   // Retrieve Mag Field parameters
   Int_t ISXFLD=gAlice->Field()->Integ();
   Float_t SXMGMX=gAlice->Field()->Max();
-  TArrayI &idtmed = *(det->GetIdtmed());
+  //  TArrayI &idtmed = *(det->GetIdtmed());
   //
  L10:
   for(i=0;i<130;i++) card[i]=0;
@@ -1652,7 +1635,7 @@ void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
     //
     det->AliMedium(itmed,natmed,nmat,isvol,ISXFLD,SXMGMX,tmaxfd,
 		   stemax,deemax,epsil,stmin,ubuf,nwbuf);
-    (*fImedia)[idtmed[itmed]-1]=id_det;
+    //    (*fImedia)[idtmed[itmed]-1]=id_det;
     //*
   }
   //*
@@ -1660,12 +1643,12 @@ void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
   fclose (lun);
   //*
   //*     commented out only for the not cernlib version
-  printf(" *** GREUTMED *** file: %s is now read in\n",filnam);
+  Warning("ReadEuclidMedia","file: %s is now read in\n",filnam);
   //*
   return;
   //*
  L20:
-  printf(" *** GREUTMED *** reading error or premature end of file\n");
+  Warning("ReadEuclidMedia","reading error or premature end of file\n");
 } 
  
 //_____________________________________________________________________________
