@@ -3,7 +3,7 @@ CSRCS:=fpu.c
 
 ELIBSDIR:=
 
-ELIBS:= MUON TPCbase TPCsim TPCrec TPCfast \
+ELIBS:= MUONmapping MUON TPCbase TPCsim TPCrec TPCfast \
 	ITS PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast \
 	FMDbase FMDsim FMDrec TOF PHOS CRT RICH \
         ZDC VZERObase VZEROsim VZEROrec EMCAL \
@@ -46,6 +46,7 @@ ARLIBS:= \
    PMD/tgt_$(ALICE_TARGET)/G__PMDbase.o $(LIBPATH)/libPMDbase.a \
    PMD/tgt_$(ALICE_TARGET)/G__PMDsim.o $(LIBPATH)/libPMDsim.a \
    PMD/tgt_$(ALICE_TARGET)/G__PMDrec.o $(LIBPATH)/libPMDrec.a \
+   MUON/tgt_$(ALICE_TARGET)/G__MUONmapping.o $(LIBPATH)/libMUONmapping.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUON.o $(LIBPATH)/libMUON.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOS.o $(LIBPATH)/libPHOS.a \
    ITS/tgt_$(ALICE_TARGET)/G__ITS.o $(LIBPATH)/libITS.a \

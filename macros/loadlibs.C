@@ -24,6 +24,7 @@ void loadlibs ()
   gSystem->Load("libAliPythia6");
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOS");
+  gSystem->Load("libMUONmapping");
   gSystem->Load("libMUON");
   gSystem->Load("libFMDbase");
   gSystem->Load("libFMDsim");
