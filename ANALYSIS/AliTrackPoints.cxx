@@ -36,22 +36,31 @@ AliTrackPoints::AliTrackPoints():
 }
 /***************************************************************/
 
-AliTrackPoints::AliTrackPoints(AliTrackPoints::ETypes type, AliESDtrack* track):
+AliTrackPoints::AliTrackPoints(AliTrackPoints::ETypes type, AliESDtrack* track, Float_t mf):
  fN(0),
  fX(0x0),
  fY(0x0),
  fZ(0x0)
 {
-  //constructor
+  //constructor 
+  //tupe -  what kind of track points should be calculated
+  //mf - magnetic field in [kG] = [T]*10.0
   switch (type)
    {
      case kITS:
-       //Used only in non-id analysis
        fN = 6;
        fX = new Float_t[fN];
        fY = new Float_t[fN];
        fZ = new Float_t[fN];
        MakeITSPoints(track);
+       break;
+
+     case kITSInnerFromVertexOuterFromTPC:
+       fN = 6;
+       fX = new Float_t[fN];
+       fY = new Float_t[fN];
+       fZ = new Float_t[fN];
+       MakeITSPointsInnerFromVertexOuterFromTPC(track,mf);
        break;
 
      default:
@@ -68,7 +77,7 @@ AliTrackPoints::AliTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t 
  fZ(new Float_t[fN])
 {
   //constructor
-  //mf - magnetic field in kG - needed to calculated curvature out of Pt
+  //mf - magnetic field in kG - needed to calculate curvature out of Pt
   //r0 - starting radius
   //dr - calculate points every dr cm, default every 30cm
   if (track == 0x0)
@@ -292,6 +301,42 @@ void AliTrackPoints::MakeITSPoints(AliESDtrack* track)
 }
 
 /***************************************************************/
+void AliTrackPoints::MakeITSPointsInnerFromVertexOuterFromTPC(AliESDtrack* track, Float_t mf)
+{
+//makes trackpoints for ITS  
+//for 3 inner layers calculates out of the vector at vertex
+//for 3 outer ---------------//------------------ at inner TPC  
+
+ static const Double_t r[6] = {4.0, 7.0, 14.9, 23.8, 39.1, 43.6};
+ AliITStrackV2 itstrack(*track,kTRUE);
+ Double_t x,y,z;
+ for (Int_t i = 0; i < 3; i++)
+  {
+    itstrack.GetGlobalXYZat(r[i],x,y,z);
+    fX[i] = x;
+    fY[i] = y;
+    fZ[i] = z;
+    Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
+             fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
+  }   
+ 
+ for (Int_t i = 3; i < 6; i++)
+  {
+    Float_t ax,ay,az;
+    AliTrackPoints tmptp(1,track,mf,0,r[i]);
+    tmptp.PositionAt(0,ax,ay,az);
+    fX[i] = ax;
+    fY[i] = ay;
+    fZ[i] = az;
+    Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
+             fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
+  }
+ 
+}
+    
+
+/***************************************************************/
+
 void AliTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
 {
   //returns position at point n
