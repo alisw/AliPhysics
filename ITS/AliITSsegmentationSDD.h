@@ -33,7 +33,7 @@ public AliITSsegmentation {
     virtual void    SetNPads(Int_t p1=256, Int_t p2=256) 
                          {fNanodes=2*p1;fNsamples=p2;}
     // Returns the maximum number of cells (digits) posible
-    virtual Int_t   GetNPads(){return fNandoes*fNsamples;}
+    virtual Int_t   GetNPads(){return fNanodes*fNsamples;}
 
     // Transform from real local to cell coordinates
     virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t   &ix,Int_t   &iz);
