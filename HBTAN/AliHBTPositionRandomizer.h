@@ -7,6 +7,7 @@ class AliHBTRndm;
 class AliHBTEvent;
 class AliHBTRun;
 class AliHBTParticle;
+class TH1I;
 
 class AliHBTPositionRandomizer: public AliHBTReader
 {
@@ -30,7 +31,9 @@ class AliHBTPositionRandomizer: public AliHBTReader
    AliHBTEvent* GetTrackEvent(Int_t n){return (fReader)?fReader->GetTrackEvent(n):0x0;}
    Int_t GetNumberOfPartEvents(){return (fReader)?fReader->GetNumberOfPartEvents():0;}
    Int_t GetNumberOfTrackEvents(){return (fReader)?fReader->GetNumberOfTrackEvents():0;}
-   
+   virtual TH1I* GetTrackCounter() const {return (fReader)?fReader->GetTrackCounter():0x0;}
+   virtual void  WriteTrackCounter() const {if(fReader) fReader->WriteTrackCounter();}
+
    void Randomize(AliHBTEvent* event);
    void Randomize(AliHBTRun* run);
    void SetEventVertex(Double_t x, Double_t y,Double_t z);
