@@ -240,7 +240,7 @@ private:
    AliRun(const AliRun &right) 
      {}  
    AliRun& operator = (const AliRun &) {return *this;}
-   ClassDef(AliRun,6)      //Supervisor class for all Alice detectors
+   ClassDef(AliRun,7)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;
