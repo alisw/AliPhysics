@@ -175,9 +175,7 @@ ifndef ALIQUIET
 	  @echo "***** Making executable $@ *****"
 endif
 ifeq ($(ALIPROFILE),YES)
-	@echo "Not implemented yet"
 	$(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(ARLIBS) $(SHLIBS) $(LIBS) $(EXEFLAGS) -o $@
-#$(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@
 else
 	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@
 endif
