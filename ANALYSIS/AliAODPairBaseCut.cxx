@@ -10,6 +10,11 @@ ClassImp(AliAODKtCut)
 ClassImp(AliAODQSideLCMSCut)
 ClassImp(AliAODQOutLCMSCut)
 ClassImp(AliAODQLongLCMSCut)
+ClassImp(AliAODDeltaECut)
+ClassImp(AliAODDeltaPCut)
+ClassImp(AliAODDeltaPvectorCut)
+ClassImp(AliAODDeltaPhiCut)
+ClassImp(AliAODDeltaThetaCut)
 
 /******************************************************************/
 ClassImp(AliAODAvSeparationCut)

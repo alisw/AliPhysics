@@ -51,7 +51,9 @@ class AliAODPair: public TObject
    
    virtual Double_t GetAvarageDistance();//returns avarage distnace between two tracks
    
-   virtual Double_t GetDeltaP(); //return difference of momenta
+   virtual Double_t GetDeltaE(); //return difference of Energies
+   virtual Double_t GetDeltaP(); //return difference of momenta (scalar difference)
+   virtual Double_t GetDeltaPvector(); //return legth of difference vector of momenta
    virtual Double_t GetDeltaPt();
    virtual Double_t GetDeltaPx();
    virtual Double_t GetDeltaPy();
@@ -244,10 +246,27 @@ void AliAODPair::CalculateDiffs()
  }
 
 /****************************************************************/
+
 inline 
-Double_t AliAODPair::GetDeltaP() //return difference of momenta
+Double_t AliAODPair::GetDeltaE() 
 {
- //returns difference of momenta (length of vector)
+ //returns difference of energies
+  return fPart1->E() - fPart2->E();
+}
+/****************************************************************/
+
+inline 
+Double_t AliAODPair::GetDeltaP() 
+{
+ //returns difference of momenta (scalars)
+ return fPart1->P() - fPart2->P();
+}
+/****************************************************************/
+
+inline 
+Double_t AliAODPair::GetDeltaPvector() //return difference of momenta
+{
+ //returns legth of the momenta difference vector 
  CalculateDiffs();
  return TMath::Sqrt(fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff);
 }

@@ -22,7 +22,9 @@ class AliAODPairBaseCut: public TObject
       kHbtPairCutPropQLongLCMS,
       kHbtPairCutPropDeltaPhi,
       kHbtPairCutPropDeltaTheta,
-      kHbtPairCutPropDeltaP,
+      kHbtPairCutPropDeltaE,
+      kHbtPairCutPropDeltaP,//scalar difference
+      kHbtPairCutPropDeltaPvector,//legth of the momenta difference vector
       kHbtPairCutPropDeltaPt,
       kHbtPairCutPropAvSepar,
       kHbtPairCutPropSepar,
@@ -149,6 +151,48 @@ class AliAODQLongLCMSCut: public AliAODPairBaseCut
     {return pair->GetQLongLCMS();}
 
   ClassDef(AliAODQLongLCMSCut,1)
+};
+/******************************************************************/
+
+class AliAODDeltaECut: public AliAODPairBaseCut
+{
+ public:
+  AliAODDeltaECut(Double_t min = 0.0, Double_t max = 0.0):
+    AliAODPairBaseCut(min,max,kHbtPairCutPropDeltaE){}
+  virtual ~AliAODDeltaECut(){}
+ protected:
+  virtual Double_t  GetValue(AliAODPair* pair) const 
+    {return pair->GetDeltaE();}
+
+  ClassDef(AliAODDeltaECut,1)
+};
+/******************************************************************/
+
+class AliAODDeltaPCut: public AliAODPairBaseCut
+{
+ public:
+  AliAODDeltaPCut(Double_t min = 0.0, Double_t max = 0.0):
+    AliAODPairBaseCut(min,max,kHbtPairCutPropDeltaP){}
+  virtual ~AliAODDeltaPCut(){}
+ protected:
+  virtual Double_t  GetValue(AliAODPair* pair) const 
+    {return pair->GetDeltaP();}
+
+  ClassDef(AliAODDeltaPCut,1)
+};
+/******************************************************************/
+
+class AliAODDeltaPvectorCut: public AliAODPairBaseCut
+{
+ public:
+  AliAODDeltaPvectorCut(Double_t min = 0.0, Double_t max = 0.0):
+    AliAODPairBaseCut(min,max,kHbtPairCutPropDeltaPvector){}
+  virtual ~AliAODDeltaPvectorCut(){}
+ protected:
+  virtual Double_t  GetValue(AliAODPair* pair) const 
+    {return pair->GetDeltaPvector();}
+
+  ClassDef(AliAODDeltaPvectorCut,1)
 };
 /******************************************************************/
 
