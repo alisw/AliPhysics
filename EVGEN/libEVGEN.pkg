@@ -10,7 +10,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenGSIlib.cxx AliGenPMDlib.cxx\
 	        AliGenHijing.cxx \
 		AliGenHijingEventHeader.cxx AliGenPythiaEventHeader.cxx \
-		AliDecayer.cxx AliDecayerPythia.cxx \
+		AliDecayerPythia.cxx \
                 AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
 	        AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
                 AliGenHBTprocessor.cxx \

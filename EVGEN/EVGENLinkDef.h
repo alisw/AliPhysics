@@ -8,6 +8,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ typedef AliDecayer;
+
 #pragma link C++ enum   Process_t;
 #pragma link C++ enum   Decay_t;
 #pragma link C++ enum   StrucFunc_t;
@@ -40,7 +42,6 @@
 #pragma link C++ class  AliGenHerwig+;
 #pragma link C++ class  AliGenPythiaEventHeader+;
 #pragma link C++ class  AliGenHijing+;
-#pragma link C++ class  AliDecayer+;
 #pragma link C++ class  AliDecayerPythia+;
 #pragma link C++ class  AliMevSimConfig+;
 #pragma link C++ class  AliMevSimParticle+;
