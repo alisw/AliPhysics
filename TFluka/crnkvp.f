@@ -410,8 +410,23 @@ D    &              SCADOT
          AGOPPH (LSTOPP) = ATRKCR
          CMPOPP (LSTOPP) = ZERZER
          LOOPPH (LSTOPP) = LTRACK + 1
+*
+*
+*        Hook to TFluka
+*
+         PXCR =  EPHSMP * TXOPPH (LSTOPP)
+         PYCR =  EPHSMP * TYOPPH (LSTOPP)
+         PZCR =  EPHSMP * TZOPPH (LSTOPP)
+         POX  = TXPOPP(LSTOPP)
+         POY  = TYPOPP(LSTOPP)
+         POZ  = TZPOPP(LSTOPP)
+         CALL PushCerenkovPhoton(PXCR, PYCR, PZCR, EPHSMP, XTRKCR, 
+     &        YTRKCR , ZTRKCR, ATRKCR, POX, POY, POZ, WTRACK, ITFL)
+*
+*
+*
 *  |  !!!!!! Here Stuprf should be used !!!!!!
-         LOUOPP (LSTOPP) = LLOUSE
+         LOUOPP (LSTOPP) = ITFL
          DO 2100 ISPR = 1, MKBMX1
             SPAROK (ISPR,LSTOPP) = SPAUSR (ISPR)
  2100    CONTINUE

@@ -8,6 +8,7 @@
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 #include "Ftrackr.h"  //(TRACKR) fluka common
+#include "Fopphst.h"  //(OPPHST) fluka common
 
 #ifndef WIN32
 # define mgdraw mgdraw_
@@ -22,8 +23,16 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 //    Int_t verbosityLevel = fluka->GetVerbosityLevel();
 //
 //  Make sure that stack has currrent track Id
-    Int_t trackId = TRACKR.ispusr[mkbmx2-1];
+    Int_t trackId = -1;
     TVirtualMCStack* cppstack = fluka->GetStack();
+    
+    if (TRACKR.jtrack == -1) {
+	trackId = OPPHST.LOUOPP[OPPHST.LSTOPP - 1];
+
+    } else {
+	trackId = TRACKR.ispusr[mkbmx2-1];
+    }
+    
     cppstack->SetCurrentTrack(trackId);
 //
 //    
@@ -36,9 +45,7 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 //      cout << endl << " !!! I am in mgdraw - calling Stepping()" << endl;
 //      cout << endl << " Track Id =" << trackId << endl;
 //    }
-    if (TRACKR.jtrack == -1)
-    printf("Cerenkov photon: region# %6d icode %6d \n", mreg, icode);
-
+    
     
     (TVirtualMCApplication::Instance())->Stepping();
     fluka->SetTrackIsNew(kFALSE);

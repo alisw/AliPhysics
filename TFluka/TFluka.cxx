@@ -42,8 +42,10 @@
 #include "Ftrackr.h"       //(TRACKR) fluka common
 #include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Ffheavy.h"       //(FHEAVY) fluka common
+#include "Fopphst.h"       //(OPPHST) fluka common
 
 #include "TVirtualMC.h"
+#include "TMCProcess.h"
 #include "TGeoManager.h"
 #include "TGeoMaterial.h"
 #include "TGeoMedium.h"
@@ -51,6 +53,7 @@
 #include "TGeoMCGeometry.h"
 #include "TFlukaCerenkov.h"
 #include "TLorentzVector.h"
+
 
 // Fluka methods that may be needed.
 #ifndef WIN32 
@@ -2605,5 +2608,28 @@ void TFluka::SetMreg(Int_t l)
 }
 
 
+#define pushcerenkovphoton pushcerenkovphoton_
+
+
+extern "C" {
+    void pushcerenkovphoton(Double_t & px, Double_t & py, Double_t & pz, Double_t & e,
+			    Double_t & vx, Double_t & vy, Double_t & vz, Double_t & tof,
+			    Double_t & polx, Double_t & poly, Double_t & polz, Double_t & wgt, Int_t& ntr)
+    {
+	//
+	// Pushes one cerenkov photon to the stack
+	//
+	
+	TFluka* fluka =  (TFluka*) gMC;
+	TVirtualMCStack* cppstack = fluka->GetStack();
+	Int_t parent = cppstack->GetCurrentTrackNumber();
+	
+	cppstack->PushTrack(1, parent, 50000050,
+			    px, py, pz, e,
+                            vx, vy, vz, tof,
+			    polx, poly, polz,
+			    kPCerenkov, ntr, wgt, 0); 
+    }
+}
 
 
