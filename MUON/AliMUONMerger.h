@@ -43,6 +43,8 @@ class AliMUONMerger {
  private:    
     // Open the bgr file
     TFile *InitBgr();
+    void SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr);
+    
  private:
     TTree *fTrH1;                   // ! Hits Tree for background event
     TClonesArray *fHitsBgr;         // ! List of hits for one track only

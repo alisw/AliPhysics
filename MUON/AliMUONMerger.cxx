@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/02/02 14:11:53  morsch
+AliMUONMerger prototype to be called by the merge manager.
+
 */
 
 #include <TTree.h> 
@@ -426,7 +429,7 @@ void AliMUONMerger::Digitise()
 	    }      //end loop over list of tracks for one pad
             // Sort list of tracks according to charge
 	    if (nptracks > 1) {
-		pMUON->SortTracks(tracks,charges,nptracks);
+		SortTracks(tracks,charges,nptracks);
 	    }
 	    if (nptracks < 10 ) {
 		for (Int_t i = nptracks; i < 10; i++) {
@@ -468,6 +471,60 @@ void AliMUONMerger::Digitise()
 }
 
 
+
+void AliMUONMerger::SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr)
+{
+  //
+  // Sort the list of tracks contributing to a given digit
+  // Only the 3 most significant tracks are acctually sorted
+  //
+  
+  //
+  //  Loop over signals, only 3 times
+  //
+  
+  Int_t qmax;
+  Int_t jmax;
+  Int_t idx[3] = {-2,-2,-2};
+  Int_t jch[3] = {-2,-2,-2};
+  Int_t jtr[3] = {-2,-2,-2};
+  Int_t i,j,imax;
+  
+  if (ntr<3) imax=ntr;
+  else imax=3;
+  for(i=0;i<imax;i++){
+    qmax=0;
+    jmax=0;
+    
+    for(j=0;j<ntr;j++){
+      
+      if((i == 1 && j == idx[i-1]) 
+	 ||(i == 2 && (j == idx[i-1] || j == idx[i-2]))) continue;
+      
+      if(charges[j] > qmax) {
+	qmax = charges[j];
+	jmax=j;
+      }       
+    } 
+    
+    if(qmax > 0) {
+      idx[i]=jmax;
+      jch[i]=charges[jmax]; 
+      jtr[i]=tracks[jmax]; 
+    }
+    
+  } 
+  
+  for(i=0;i<3;i++){
+    if (jtr[i] == -2) {
+         charges[i]=0;
+         tracks[i]=0;
+    } else {
+         charges[i]=jch[i];
+         tracks[i]=jtr[i];
+    }
+  }
+}
 
 
 
