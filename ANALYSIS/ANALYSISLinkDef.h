@@ -68,6 +68,9 @@
 #pragma link C++ class AliAODQSideLCMSCut+;
 #pragma link C++ class AliAODQOutLCMSCut+;
 #pragma link C++ class AliAODQLongLCMSCut+;
+#pragma link C++ class AliAODDeltaECut+;
+#pragma link C++ class AliAODDeltaPCut+;
+#pragma link C++ class AliAODDeltaPvectorCut+;
 #pragma link C++ class AliAODDeltaPhiCut+;
 #pragma link C++ class AliAODDeltaThetaCut+;
 #pragma link C++ class AliAODAvSeparationCut+;
