@@ -156,6 +156,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
       for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
 	track = fESD->GetTrack(iTrack);
 	track->GetOuterXYZ(xyz);     // track coord on the cylinder of PHOS radius
+	if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
+	  continue;
 	track->GetOuterPxPyPz(pxyz); // track momentum ibid.
 	vecDist = PropagateToCPV(xyz,pxyz,cpvClu->GetPHOSMod());
 	vecDist -= vecCpv;
