@@ -1,10 +1,10 @@
-
+#-*- Mode: Makefile -*-
 
 #********** This part is for package @PACKAGE@ ***********
 
 #Determine if it's a library or a executable
 TYPE=@TYPE@
-    
+
 # Package head directory, source and include directories
 MODDIR:=@MODULE@
 MODDIRS:=$(MODDIR)
