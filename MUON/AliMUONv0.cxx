@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/06/15 07:58:49  morsch
+Code from MUON-dev joined
+
 Revision 1.8.4.9  2000/06/12 19:20:49  morsch
 Constructor sets default geometry, segmentation and response parameters.
 
@@ -65,6 +68,7 @@ Gammas and neutrons are also scored in the stepmanager
 #include "AliMUONSegmentationTrigger.h"
 #include "AliMUONSegmentationTriggerX.h"
 #include "AliMUONSegmentationTriggerY.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMUONv0)
  
@@ -393,7 +397,7 @@ void AliMUONv0::CreateGeometry()
 
      AliMUONChamber *iChamber;
      // Loop over all chambers (tracking and trigger)
-     for (Int_t ch = 0; ch < kNCH; ch++) {
+     for (Int_t ch = 0; ch < AliMUONConstants::NCh(); ch++) {
 	 char alu[8];
 	 char gas[8];
      
@@ -401,7 +405,7 @@ void AliMUONv0::CreateGeometry()
 	 // Z of the chamber
 	 zpos=iChamber->Z(); 
 	 dAlu=iChamber->DAlu();
-	 if (ch < kNTrackingCh) {
+	 if (ch < AliMUONConstants::NTrackingCh()) {
 	   // tracking chambers
 	     sprintf(alu,"CA0%1d",ch);
 	     sprintf(gas,"CG0%1d",ch);	 
@@ -459,8 +463,9 @@ void AliMUONv0::Init()
    // 
    // Initialize Tracking Chambers
    //
+
    printf("\n\n\n Start Init for version 0 - CPC chamber type\n\n\n");
-   for (Int_t i=0; i<kNCH; i++) {
+   for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
        ( (AliMUONChamber*) (*fChambers)[i])->Init();
    }
 }
@@ -487,7 +492,7 @@ void AliMUONv0::StepManager()
   idvol=-1;
   id=gMC->CurrentVolID(copy);
   
-    for (Int_t i=1; i<=kNCH; i++) {
+    for (Int_t i=1; i<=AliMUONConstants::NCh(); i++) {
       if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()){ 
 	  vol[0]=i; 
 	  idvol=i-1;

@@ -31,7 +31,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONTrack.cxx AliMUONTrackHit.cxx AliMUONTrackParam.cxx \
                AliMUONTriggerCircuit.cxx AliMUONTriggerLut.cxx \
                AliMUONGlobalTrigger.cxx AliMUONLocalTrigger.cxx \
-               AliMUONTriggerConstants.cxx        
+               AliMUONTriggerConstants.cxx  AliMUONConstants.cxx      
 
 # C++ Headers
 

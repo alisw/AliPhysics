@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/22 14:10:05  morsch
+HP scope problems corrected (PH)
+
 Revision 1.2  2000/06/15 07:58:49  morsch
 Code from MUON-dev joined
 
@@ -50,6 +53,7 @@ Log messages included.
 #include "AliMUONChamber.h"
 #include "AliMUONHit.h"
 #include "AliMUONPadHit.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMUONv1)
  
@@ -1459,8 +1463,7 @@ void AliMUONv1::Init()
 
    printf("\n\n\n Start Init for version 1 - CPC chamber type\n\n\n");
    Int_t i;
-   
-   for (i=0; i<kNCH; i++) {
+   for (i=0; i<AliMUONConstants::NCh(); i++) {
        ( (AliMUONChamber*) (*fChambers)[i])->Init();
    }
    
@@ -1486,7 +1489,7 @@ void AliMUONv1::Init()
 
    //cp 
    printf("\n\n\n Start Init for Trigger Circuits\n\n\n");
-   for (i=0; i<kNTriggerCircuit; i++) {
+   for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) {
      ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
    }
    printf(" Finished Init for Trigger Circuits\n\n\n");
@@ -1508,7 +1511,6 @@ void AliMUONv1::StepManager()
   
   static Float_t eloss, eloss2, xhit, yhit, tof, tlength;
   const  Float_t kBig=1.e10;
-  
   //  modifs perso
   static Float_t hits[15];
 
@@ -1526,7 +1528,7 @@ void AliMUONv1::StepManager()
   idvol=-1;
   id=gMC->CurrentVolID(copy);
   
-    for (Int_t i=1; i<=kNCH; i++) {
+    for (Int_t i=1; i<=AliMUONConstants::NCh(); i++) {
       if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()){ 
 	  vol[0]=i; 
 	  idvol=i-1;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.15  2000/06/14 14:37:53  morsch
 method Trigger() modified
 
@@ -122,7 +125,7 @@ it is now really the Z position of the chambers.
 #include "AliMUONSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
-
+#include "AliMUONConstants.h"
 // to manage the same zoom on both cathodes
 
 
@@ -1150,7 +1153,7 @@ void AliMUONDisplay::NextChamber(Int_t delta)
   // to go from chamber to next chamber if delta = 1
   // or previous chamber otherwise
     if (delta == 1) {
-	if (fChamber < kNCH) fChamber++;
+	if (fChamber < AliMUONConstants::NCh()) fChamber++;
     } else {
 	if (fChamber > 1) fChamber--;
     }
