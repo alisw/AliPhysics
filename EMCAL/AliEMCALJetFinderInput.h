@@ -16,7 +16,6 @@
 
 #include "TObject.h"
 #include "TParticle.h"
-#include "TClonesArray.h"
 #include "AliEMCALParton.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALJetFinderTypes.h"
@@ -33,13 +32,13 @@ class AliEMCALJetFinderInput : public TObject
 		void AddParton(AliEMCALParton *parton);
 		void AddParticle(TParticle *particle);
 		AliEMCALDigit* GetDigit(Int_t digitID);
-		Int_t GetNDigits(){return fNDigits;}
+		const Int_t GetNDigits(){return fNDigits;}
 		TParticle* GetTrack(Int_t trackID);
-		Int_t GetNTracks(){return fNTracks;}
+		const Int_t GetNTracks(){return fNTracks;}
 		AliEMCALParton* GetParton(Int_t partonID);
-		Int_t GetNPartons(){return fNPartons;}
+		const Int_t GetNPartons(){return fNPartons;}
 		TParticle* GetParticle(Int_t particleID);
-		Int_t GetNParticles(){return fNParticles;}
+		const Int_t GetNParticles(){return fNParticles;}
 
 	private:
 		void InitArrays();
@@ -58,6 +57,6 @@ class AliEMCALJetFinderInput : public TObject
 		Int_t		fDebug;		// This is the debug value 
 		Bool_t		fInitialised;	// Stores whether or not the arrays have been initialised 
 		
-	ClassDef(AliEMCALJetFinderInput,2)
+	ClassDef(AliEMCALJetFinderInput,3)
 };
 #endif

@@ -20,11 +20,16 @@
 // Initial JetFinder input object
 //
 //*-- Author: Mark Horner (LBL/UCT)
+//
+//
+//
+
+
 
 #include "AliEMCALJetFinderInput.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALParton.h"
-#include "TClonesArray.h"
+class TClonesArray;
 
 
 ClassImp(AliEMCALJetFinderInput)
