@@ -13,7 +13,8 @@
 
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
-#include "AliMpRowSegmentSpecial.h"
+#include "AliMpVRowSegmentSpecial.h"
+#include "AliMpRowSegmentRSpecial.h"
 #include "AliMpVMotif.h"
 #include "AliMpMotifType.h"
 #include "AliMpMotifPosition.h"
@@ -65,12 +66,12 @@ AliMpVRowSegment*  AliMpRow::FindRowSegment(Int_t ix) const
   for (Int_t i=0; i<GetNofRowSegments(); i++) {
     AliMpVRowSegment* segment = GetRowSegment(i);
 
-    if (!dynamic_cast<AliMpRowSegmentSpecial*>(segment) &&
+    if (!dynamic_cast<AliMpVRowSegmentSpecial*>(segment) &&
          segment->GetHighIndicesLimit().GetFirst() >= ix)
 	 
      return segment;	 
   }   
-  
+
   return 0;	 
 }
 
@@ -236,7 +237,9 @@ void AliMpRow::SetMotifPositions()
         // special row segments)
         motifPosition->SetHighIndicesLimit(AliMpIntPair::Invalid());
 
-        Bool_t warn = (rowSegment->GetNofMotifs()==1); 
+        //Bool_t warn = (rowSegment->GetNofMotifs()==1); 
+        Bool_t warn = true;
+	if (dynamic_cast<AliMpVRowSegmentSpecial*>(rowSegment)) warn = false; 
                // supress warnings for special row segments
 	       // which motifs can overlap the row borders
 	       
@@ -271,19 +274,21 @@ void AliMpRow::SetGlobalIndices(AliMpDirection constPadSizeDirection,
            iy = rowBefore->GetHighIndicesLimit().GetSecond()+1;
          } 
 	 else {
-           AliMpVRowSegment* seg = rowBefore->FindRowSegment(ix);	   
+           AliMpVRowSegment* seg = rowBefore->FindRowSegment(ix);	
 	   AliMpMotifPosition* motPos =  FindMotifPosition(seg, ix);
-           if (!motPos) 
-	     Fatal("SetGlobalIndices", "Motif position in rowBefore not found.");
+	   if (!dynamic_cast<AliMpRowSegmentRSpecial*>(rowSegment)) {
+             if (!motPos) 
+	       Fatal("SetGlobalIndices", "Motif position in rowBefore not found.");
 	   
-           iy = motPos->GetHighIndicesLimit().GetSecond()+1;
+             iy = motPos->GetHighIndicesLimit().GetSecond()+1;
+	   }  
          }
        } 
 
        // Set (ix, iy) to k-th motif position and update ix
        ix = rowSegment->SetIndicesToMotifPosition(k, AliMpIntPair(ix, iy));		   
     }
-    rowSegment->SetGlobalIndices();        
+    rowSegment->SetGlobalIndices();    
   }
 
   SetLowIndicesLimit(GetRowSegment(0)->GetLowIndicesLimit());
@@ -363,8 +368,8 @@ Double_t AliMpRow::SetOffsetY(Double_t offsetY)
      Double_t sizeY = GetRowSegment(i)->HalfSizeY();
      
      if (TMath::Abs(sizeY - rowSizeY) >= AliMpConstants::LengthTolerance()) {
-       cout << GetID() << "th row " << i << "th segment " 
-            << sizeY << "  " << rowSizeY  << endl;
+       //cout << GetID() << "th row " << i << "th segment " 
+       //     << sizeY << "  " << rowSizeY  << endl;
        Fatal("SetOffsetY", "Motif with different Y size in one row");
        return 0.;
      }  
