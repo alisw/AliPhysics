@@ -56,10 +56,10 @@ MAKEDEPEND    = $(ROOTSYS)/bin/makedepend
 
 # Root libraries
  
-ROOTLIBS      = -L$(ROOTSYS)/lib -lBase -lCint -lClib -lCont -lFunc -lGraf \
-                -lGraf3d -lHist -lHtml -lMeta -lMinuit -lNet -lPostscript \
-                -lProof -lRint -lTree -lUnix -lZip -lMatrix -lMeta -lPhysics \
-		-lNew
+ROOTLIBS      = -L$(ROOTSYS)/lib -lNew -lBase -lCint -lClib -lCont -lFunc \
+		-lGraf -lGraf3d -lHist -lHtml -lMeta -lMinuit -lNet \
+		-lPostscript -lProof -lRint -lTree -lUnix -lZip -lMatrix \
+		-lMeta -lPhysics
 
 # Alice libraries
 
