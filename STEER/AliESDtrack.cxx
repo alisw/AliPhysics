@@ -282,6 +282,7 @@ Double_t AliESDtrack::GetP() const {
   //---------------------------------------------------------------------
   // This function returns the track momentum
   //---------------------------------------------------------------------
+  if (TMath::Abs(fRp[4])<=0) return 0;
   Double_t lam=TMath::ATan(fRp[3]);
   Double_t pt=1./TMath::Abs(fRp[4]);
   return pt/TMath::Cos(lam);
@@ -291,6 +292,10 @@ void AliESDtrack::GetConstrainedPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the constrained global track momentum components
   //---------------------------------------------------------------------
+  if (TMath::Abs(fCp[4])<=0) {
+    p[0]=p[1]=p[2]=0;
+    return;
+  }
   Double_t phi=TMath::ASin(fCp[2]) + fCalpha;
   Double_t pt=1./TMath::Abs(fCp[4]);
   p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fCp[3]; 
@@ -308,6 +313,10 @@ void AliESDtrack::GetPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
   //---------------------------------------------------------------------
+  if (TMath::Abs(fRp[4])<=0) {
+    p[0]=p[1]=p[2]=0;
+    return;
+  }
   Double_t phi=TMath::ASin(fRp[2]) + fRalpha;
   Double_t pt=1./TMath::Abs(fRp[4]);
   p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fRp[3]; 
