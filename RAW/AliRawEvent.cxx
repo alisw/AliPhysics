@@ -201,10 +201,21 @@ AliRawEvent::AliRawEvent()
    // raw data object, otherwise a private copy will be made.
 
    fNSubEvents = 0;
-   fEvtHdr     = new AliRawEventHeader;
+   fEvtHdr     = 0;
    fEqpHdr     = 0;
    fRawData    = 0;
    fSubEvents  = 0;
+}
+
+//______________________________________________________________________________
+AliRawEventHeader *AliRawEvent::GetHeader()
+{
+   // Get event header part of AliRawEvent.
+
+   if (!fEvtHdr)
+      fEvtHdr = new AliRawEventHeader;
+
+   return fEvtHdr;
 }
 
 //______________________________________________________________________________

@@ -186,7 +186,7 @@ public:
    AliRawEvent();
    virtual ~AliRawEvent();
 
-   AliRawEventHeader     *GetHeader() const { return fEvtHdr; }
+   AliRawEventHeader     *GetHeader();
    AliRawEquipmentHeader *GetEquipmentHeader();
    AliRawData            *GetRawData();
    Int_t                  GetNSubEvents() const { return fNSubEvents; }
