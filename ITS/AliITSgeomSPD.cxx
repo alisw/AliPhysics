@@ -15,15 +15,29 @@
 
 /*
 $Log$
+Revision 1.2.4.2  2000/03/04 23:55:08  nilsen
+Updated comments/documentation.
+
+Revision 1.2.4.1  2000/01/12 19:03:32  nilsen
+This is the version of the files after the merging done in December 1999.
+See the ReadMe110100.txt file for details
+
+Revision 1.2  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliITSgeomSPD.h"
 
 ClassImp(AliITSgeomSPD)
 AliITSgeomSPD::AliITSgeomSPD(){
-    //
-    // default constructor
-    //
-    fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI CHIP",
-			  2.5E-2/2.0,1.38/2.0,8.2/2.0);
+////////////////////////////////////////////////////////////////////////
+//    default constructor
+////////////////////////////////////////////////////////////////////////
+    dx = 0.64;    // cm. (Geant 3.12 units) Orthonormal to y and z
+    dy = 0.0075;  // cm. (Geant 3.12 units) Radialy from the Beam Pipe
+    dz = 4.19;    // cm. (Geant 3.12 units) Allong the Beam Pipe
+
+    fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
+			  dx,dy,dz);
 }
