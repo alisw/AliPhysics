@@ -61,6 +61,7 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TObjString.h"
+#include "TGeometry.h"
 #include "TBenchmark.h"
 // --- Standard library ---
 #include <iomanip.h>
@@ -68,6 +69,7 @@
 // --- AliRoot header files ---
 
 #include "AliRun.h"
+#include "AliHeader.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALTick.h"
@@ -247,6 +249,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
       input++ ;
     }
 
+
   //Find the first tower with signal
   Int_t nextSig = 200000 ; 
   Int_t i;
@@ -272,10 +275,9 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
     Float_t noise = gRandom->Gaus(0., fPinNoise); 
     new((*digits)[absID-1]) AliEMCALDigit( -1, -1, absID,sDigitizer->Digitize(noise), TimeOfNoise() ) ;
     //look if we have to add signal?
+    digit = (AliEMCALDigit *) digits->At(absID-1) ;
     if(absID==nextSig){
-      //Add SDigits from all inputs 
-      digit = (AliEMCALDigit *) digits->At(absID-1) ;
-      
+      //Add SDigits from all inputs    
       ticks->Clear() ;
       Int_t contrib = 0 ;
       Float_t a = digit->GetAmp() ;
@@ -343,6 +345,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
 
   //remove digits below thresholds
   for(absID = 0; absID < nEMC/2 ; absID++){
+
     if(sDigitizer->Calibrate(((AliEMCALDigit*)digits->At(absID))->GetAmp()) < fTowerDigitThreshold)
       digits->RemoveAt(absID) ;
     else
@@ -350,6 +353,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
   }
   
   for(absID = nEMC/2; absID < nEMC ; absID++){
+
     if(sDigitizer->Calibrate(((AliEMCALDigit*)digits->At(absID))->GetAmp()) < fPreShowerDigitThreshold)
       digits->RemoveAt(absID) ;
     else
@@ -423,38 +427,36 @@ if(strcmp(GetName(), "") == 0 )
     nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
     treeD=gAlice->TreeD() ;
   }
-  if(treeD == 0 ){
-    cerr << " AliEMCALDigitizer :: Can not find TreeD " << endl ;
-    return ;
-  }
+ 
 
   //Check, if this branch already exits
-  TObjArray * lob = (TObjArray*)treeD->GetListOfBranches() ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t emcalfound = kFALSE, digitizerfound = kFALSE ; 
-  
-  while ( (branch = (TBranch*)next()) && (!emcalfound || !digitizerfound) ) {
-    if ( (strcmp(branch->GetName(), "EMCAL")==0) && 
-	 (strcmp(branch->GetTitle(), GetName())==0) ) 
-      emcalfound = kTRUE ;
+  if (treeD) {
+    TObjArray * lob = (TObjArray*)treeD->GetListOfBranches() ;
+    TIter next(lob) ; 
+    TBranch * branch = 0 ;  
+    Bool_t emcalfound = kFALSE, digitizerfound = kFALSE ; 
     
-    else if ( (strcmp(branch->GetName(), "AliEMCALDigitizer")==0) && 
-	      (strcmp(branch->GetTitle(), GetName())==0) ) 
-      digitizerfound = kTRUE ; 
+    while ( (branch = (TBranch*)next()) && (!emcalfound || !digitizerfound) ) {
+      if ( (strcmp(branch->GetName(), "EMCAL")==0) && 
+	   (strcmp(branch->GetTitle(), GetName())==0) ) 
+	emcalfound = kTRUE ;
+      
+      else if ( (strcmp(branch->GetName(), "AliEMCALDigitizer")==0) && 
+		(strcmp(branch->GetTitle(), GetName())==0) ) 
+	digitizerfound = kTRUE ; 
+    }
+    
+    if ( emcalfound ) {
+      cerr << "WARNING: AliEMCALDigitizer -> Digits branch with name " << GetName() 
+	   << " already exits" << endl ;
+      return ; 
+    }   
+    if ( digitizerfound ) {
+      cerr << "WARNING: AliEMCALDigitizer -> Digitizer branch with name " << GetName() 
+	   << " already exits" << endl ;
+      return ; 
+    }   
   }
-
-  if ( emcalfound ) {
-    cerr << "WARNING: AliEMCALDigitizer -> Digits branch with name " << GetName() 
-	 << " already exits" << endl ;
-    return ; 
-  }   
-  if ( digitizerfound ) {
-    cerr << "WARNING: AliEMCALDigitizer -> Digitizer branch with name " << GetName() 
-	 << " already exits" << endl ;
-    return ; 
-  }   
-
   Int_t ievent ;
 
   for(ievent = 0; ievent < nevents; ievent++){
@@ -614,51 +616,27 @@ void AliEMCALDigitizer::WriteDigits(Int_t event)
   const TClonesArray * digits = gime->Digits(GetName()) ; 
  TTree * treeD ;
 
-  if(fManager)
-    treeD = fManager->GetTreeD() ;
- else
-    treeD = gAlice->TreeD();
-  
-  // create new branches
-  // -- generate file name if necessary
-  char * file =0;
-  if(gSystem->Getenv("CONFIG_SPLIT_FILE")){ //generating file name
-    file = new char[strlen(gAlice->GetBaseFile())+20] ;
-    sprintf(file,"%s/EMCAL.Digits.root",gAlice->GetBaseFile()) ;
-  }
-
-  TDirectory *cwd = gDirectory;
-  // -- create Digits branch
-  Int_t bufferSize = 32000 ;    
-  TBranch * digitsBranch = treeD->Branch("EMCAL",&digits,bufferSize);
-  digitsBranch->SetTitle(GetName());
-  if (file) {
-    digitsBranch->SetFile(file);
-    TIter next( digitsBranch->GetListOfBranches());
-    TBranch * sbr ;
-    while ((sbr=(TBranch*)next())) {
-      sbr->SetFile(file);
-    }   
-    cwd->cd();
-  } 
-    
-  // -- Create Digitizer branch
-  Int_t splitlevel = 0 ;
-  AliEMCALDigitizer * d = gime->Digitizer(GetName()) ;
-  TBranch * digitizerBranch = treeD->Branch("AliEMCALDigitizer", "AliEMCALDigitizer", &d,bufferSize,splitlevel); 
-  digitizerBranch->SetTitle(GetName());
-  if (file) {
-    digitizerBranch->SetFile(file);
-    TIter next( digitizerBranch->GetListOfBranches());
-    TBranch * sbr;
-    while ((sbr=(TBranch*)next())) {
-      sbr->SetFile(file);
-    }   
-    cwd->cd();
-  }
-  
-  treeD->Fill() ; 
-  treeD->Write(0,kOverwrite) ;  
+ if(fManager)
+   treeD = fManager->GetTreeD() ;
+ else {
+   if (!gAlice->TreeD() ) 
+     gAlice->MakeTree("D");
+   treeD = gAlice->TreeD();
+ }
+ 
+ // -- create Digits branch
+ Int_t bufferSize = 32000 ;    
+ TBranch * digitsBranch = treeD->Branch("EMCAL",&digits,bufferSize);
+ digitsBranch->SetTitle(GetName());
+ 
+ // -- Create Digitizer branch
+ Int_t splitlevel = 0 ;
+ AliEMCALDigitizer * d = gime->Digitizer(GetName()) ;
+ TBranch * digitizerBranch = treeD->Branch("AliEMCALDigitizer", "AliEMCALDigitizer", &d,bufferSize,splitlevel); 
+ digitizerBranch->SetTitle(GetName());
+ 
+ treeD->Fill() ; 
+ treeD->AutoSave() ;  
  
 }
 //____________________________________________________________________________ 
@@ -695,4 +673,45 @@ void AliEMCALDigitizer::SetSDigitsBranch(const char* title)
     Init() ;
 
   AliEMCALGetter::GetInstance()->SDigits()->SetName(title) ; 
+}
+
+//__________________________________________________________________
+void AliEMCALDigitizer::SetSplitFile(const TString splitFileName) const
+{
+  // Diverts the Digits in a file separate from the hits file
+  
+  // I guess it is not going to work if we do merging
+  if (fManager) {
+    cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
+    return ; 
+  }
+
+  TDirectory * cwd = gDirectory ;
+  TFile * splitFile = gAlice->InitTreeFile("D",splitFileName.Data());
+  splitFile->cd() ; 
+  gAlice->Write();
+  
+  TTree *treeE  = gAlice->TreeE();
+  if (!treeE) {
+    cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> No TreeE found "<<endl;
+    abort() ;
+  }      
+  
+  // copy TreeE
+  AliHeader *header = new AliHeader();
+  treeE->SetBranchAddress("Header", &header);
+  treeE->SetBranchStatus("*",1);
+  TTree *treeENew =  treeE->CloneTree();
+  treeENew->Write();
+  
+  // copy AliceGeom
+  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+  if (!AliceGeom) {
+    cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+    abort() ;
+  }
+  AliceGeom->Write();
+  cwd->cd() ; 
+  gAlice->MakeTree("D",splitFile);
+  cout << "INFO: AliEMCALDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
 }

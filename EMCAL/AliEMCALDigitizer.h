@@ -57,6 +57,7 @@ public:
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   void    SetSDigitsBranch(const char* file) ;
+  void    SetSplitFile(const TString splitFileName = "EMCAL.Digits.root") const ;
  
 
  AliEMCALDigitizer & operator = (const AliEMCALDigitizer & rvalue)  {
