@@ -123,7 +123,7 @@ Int_t ITSOccupancy(char *name = "galice", Int_t evNum = 0) {
 
 	// Variables and objects definition and setting
 	Float_t zmax[] = {20.0,20.0,25.0,35.0,49.5,54.0}; // z edges for TH1F (cm)
-	Int_t nbins[]  = {20,20,20,28,22,24};             // bins number for TH1Fs
+	Int_t nbins[]  = {40,40,50,70,99,108};             // bins number for TH1Fs
 	
 	// Histos for plotting occupancy distributions
 	TH1F *above[6], *below[6];
@@ -142,7 +142,9 @@ Int_t ITSOccupancy(char *name = "galice", Int_t evNum = 0) {
 			AliITSDetType *det = ITS->DetType(dtype);
 			AliITSsegmentation *seg = det->GetSegmentationModel();
 			Int_t NX = seg->Npx();
+			if(lay == 2 || lay == 3) NX = 192;
 			Int_t NZ = seg->Npz();
+			//			cout << "ID: " << I << ", Layer: " << lay+1 << ", NX = " << NX << ", NZ = " << NZ << endl;
 			for (Int_t ix = 0; ix <= NX; ix++) {
 				for (Int_t iz = 0; iz <= NZ; iz++) {
 					Float_t lx[] = {0.0,0.0,0.0}, gx[] = {0.0,0.0,0.0};
@@ -160,6 +162,7 @@ Int_t ITSOccupancy(char *name = "galice", Int_t evNum = 0) {
 	TTree *TD = gAlice->TreeD();
 	ITS->ResetDigits();
 	Float_t mean[6];
+	Float_t average[6];
 
 	for (Int_t L = 0; L < 6; L++) {
 		
@@ -195,11 +198,16 @@ Int_t ITSOccupancy(char *name = "galice", Int_t evNum = 0) {
 			}
 		}
 		
+		Float_t occupied = above[L]->GetEntries();
+		Float_t total = below[L]->GetEntries();
+		cout << "Entries: " << occupied << ", " << total << endl;
+		average[L] = 100.*occupied/total;
 		above[L]->Divide(above[L], below[L], 100.0, 1.0);
 		mean[L] = above[L]->GetSumOfWeights() / above[L]->GetNbinsX(); 
 		cout.setf(ios::fixed);
 		cout.precision(2);
 		cout << " digits occupancy = " << mean[L] << "%" << endl;
+		cout << " average digits occupancy = " << average[L] << "%" << endl;
 	}
 	
 	TCanvas *view = new TCanvas("view", "Digits occupancy distributions", 600, 900);
@@ -225,7 +233,10 @@ Int_t ITSOccupancy(char *name = "galice", Int_t evNum = 0) {
 	strcat (fileps, "_digit_occupancy.eps");
 	view->SaveAs(filegif);
 	view->SaveAs(fileps);
-	
+	TFile *fOc = new TFile("ITS_occupancy.root","NEW");
+        fOc->cd();
+	for (Int_t I = 0; I < 6; I++) above[I]->Write();
+        fOc->Close();
 
 	return 1;
 }
