@@ -15,6 +15,7 @@
 #include "AliL3ModelTrack.h"
 #include "AliL3Transform.h"
 #include "AliL3MemHandler.h"
+#include "AliL3FileHandler.h"
 #include "bitio.h"
 
 //_____________________________________________________________
@@ -28,21 +29,22 @@ ClassImp(AliL3Compress)
 AliL3Compress::AliL3Compress()
 {
   fTracks=0;
-  SetBitNumbers(7,7,10,4);
+  SetBitNumbers(0,0,0,0);
   fSlice =0;
   fPatch=0;
   fDigits=0;
   fDPt=0;
 }
 
-AliL3Compress::AliL3Compress(Int_t slice,Int_t patch,Int_t pad,Int_t time,Int_t charge,Int_t shape)
+AliL3Compress::AliL3Compress(Int_t slice,Int_t patch,Char_t *path)
 {
   fSlice=slice;
   fPatch=patch;
-  SetBitNumbers(pad,time,charge,shape);
+  SetBitNumbers(0,0,0,0);
   fTracks=0;
   fDigits=0;
   fDPt=0;
+  sprintf(fPath,"%s",path);
 }
 
 AliL3Compress::~AliL3Compress()
@@ -63,9 +65,11 @@ void AliL3Compress::SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape)
   fNumShapeBits=shape;
 }
 
-void AliL3Compress::WriteFile(AliL3TrackArray *tracks,Char_t *filename)
+void AliL3Compress::WriteFile(AliL3TrackArray *tracks)
 {
-  FILE *file = fopen(filename,"w");
+  Char_t fname[100];
+  sprintf(fname,"%s/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
+  FILE *file = fopen(fname,"w");
   Short_t ntracks = tracks->GetNTracks();
   //cout<<"Writing "<<ntracks<<" tracks to file"<<endl;
     
@@ -93,12 +97,25 @@ void AliL3Compress::WriteFile(AliL3TrackArray *tracks,Char_t *filename)
   fclose(file);
 }
 
-void AliL3Compress::ReadFile(Char_t *filename)
+void AliL3Compress::ReadFile(Char_t which)
 {
-  FILE *file = fopen(filename,"r");
+  //Read the trackfile.
+
+  Char_t fname[100];
+  if(which == 'm')
+    sprintf(fname,"%s/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
+  else if(which == 'u')
+    sprintf(fname,"%s/tracks_u_%d_%d.raw",fPath,fSlice,fPatch);
+  else
+    {
+      cerr<<"AliL3Compress::ReadFile() : Wrong option"<<endl;
+      return;
+    }
+
+  FILE *file = fopen(fname,"r");
   if(!file)
     {
-      cerr<<"Cannot open file "<<filename<<endl;
+      cerr<<"Cannot open file "<<fname<<endl;
       return;
     }
 
@@ -106,7 +123,7 @@ void AliL3Compress::ReadFile(Char_t *filename)
     delete fTracks;
   fTracks = new AliL3TrackArray("AliL3ModelTrack");
   
-  cout<<"Reading file "<<filename<<endl;
+  cout<<"Reading file "<<fname<<endl;
   while(!feof(file))
     {
       AliL3ModelTrack *track = (AliL3ModelTrack*)fTracks->NextTrack();
@@ -127,11 +144,25 @@ void AliL3Compress::ReadFile(Char_t *filename)
   fclose(file);
 }
 
-void AliL3Compress::CompressFile(Char_t *infile,Char_t *outfile)
+void AliL3Compress::CompressFile()
 {
+  if(fNumTimeBits==0)
+    {
+      cerr<<"AliL3Compress::CompressFile() : Bitnumbers not set"<<endl;
+      return;
+    }
   
-  BIT_FILE *output = OpenOutputBitFile(outfile);
-  FILE *input = fopen(infile,"r");
+  Char_t fname[100];
+  sprintf(fname,"%s/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
+  BIT_FILE *output = OpenOutputBitFile(fname);
+  
+  sprintf(fname,"%s/tracks_m_%d_%d.raw",fPath,fSlice,fPatch);
+  FILE *input = fopen(fname,"r");
+  if(!input)
+    {
+      cerr<<"AliL3Compress::CompressFile() : Error opening file: "<<fname<<endl;
+      return;
+    }
 
   AliL3TrackModel track;
   AliL3ClusterModel cluster;
@@ -235,10 +266,25 @@ void AliL3Compress::CompressFile(Char_t *infile,Char_t *outfile)
       <<"Shape "<<shapeo<<endl;
 }
 
-void AliL3Compress::ExpandFile(Char_t *infile,Char_t *outfile)
+void AliL3Compress::ExpandFile()
 {
-  BIT_FILE *input = OpenInputBitFile(infile);
-  FILE *output = fopen(outfile,"w");
+  if(fNumTimeBits==0)
+    {
+      cerr<<"AliL3Compress::ExpandFile() : Bitnumbers not set"<<endl;
+      return;
+    }
+  
+  Char_t fname[100];
+  sprintf(fname,"%s/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
+  BIT_FILE *input = OpenInputBitFile(fname);
+  
+  sprintf(fname,"%s/tracks_u_%d_%d.raw",fPath,fSlice,fPatch);
+  FILE *output = fopen(fname,"w");
+  if(!output)
+    {
+      cerr<<"AliL3Compress::ExpandFile() : Error opening file: "<<fname<<endl;
+      return;
+    }
 
   AliL3TrackModel trackmodel;
   AliL3ClusterModel *clusters=0;
@@ -317,11 +363,11 @@ void AliL3Compress::CreateDigitArray(Int_t maxnumber)
   fDPt = new AliL3RandomDigitData*[maxnumber];
 }
 
-void AliL3Compress::RestoreData(Char_t *uncompfile)
+void AliL3Compress::RestoreData()
 {
   
   //Read the uncompressed file:
-  ReadFile(uncompfile);
+  ReadFile('u');
   
   CreateDigitArray(100000);
   
@@ -362,37 +408,50 @@ void AliL3Compress::PrintDigits()
     }
 }
 
-void AliL3Compress::WriteRestoredData(Char_t *remainfile,Char_t *restoredfile)
+void AliL3Compress::WriteRestoredData()
 {
+  Char_t fname[100];
+  
   //Get the remaining raw data array:
   AliL3MemHandler *mem = new AliL3MemHandler();
-  mem->SetBinaryInput(remainfile);
+  sprintf(fname,"%s/remains_%d_%d.raw",fPath,fSlice,fPatch);
+  mem->SetBinaryInput(fname);
   UInt_t numdigits;
   AliL3DigitRowData *origRow = mem->CompBinary2Memory(numdigits);
   mem->CloseBinaryInput();
   
   //Allocate memory for the merged data:
   UInt_t size = mem->GetAllocatedSize() + fNDigits*sizeof(AliL3DigitData);
+  cout<<"Allocating "<<size<<" bytes for merged data array "<<endl;
   Byte_t *data = new Byte_t[size];
   memset(data,0,size);
   AliL3DigitRowData *tempRow = (AliL3DigitRowData*)data;
 
   Int_t ndigits,action,charge;
   UShort_t pad,time;
+      
+  UInt_t digit_counter;
+  Int_t row_counter=0;
   for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
     {
       tempRow->fRow = i;
       ndigits=0;
       AliL3DigitData *origDig = origRow->fDigitData;
       AliL3DigitData *tempDig = tempRow->fDigitData;
+      if((Int_t)origRow->fRow != i)
+	cerr<<"AliL3Compress::WriteRestoredData() : Mismatching row numbering "<<(Int_t)origRow->fRow<<" "<<i<<endl;
+
+      //cout<<"Writing row "<<i<<" with "<<(Int_t)origRow->fNDigit<<" old digits"<<endl;
+      digit_counter=0;
       
       while(1)
 	{
-	  for(UInt_t j=0; j<origRow->fNDigit; j++)
+	  while(digit_counter < origRow->fNDigit)
 	    {
-	      pad = origDig[j].fPad;
-	      time = origDig[j].fTime;
-	      charge = origDig[j].fCharge;
+	      pad = origDig[digit_counter].fPad;
+	      time = origDig[digit_counter].fTime;
+	      charge = origDig[digit_counter].fCharge;
+	      digit_counter++;
 	      while((action=ComparePoints(i,pad,time)) == 1)
 		{
 		  tempDig[ndigits].fPad = fDPt[fNUsed]->fPad;
@@ -400,6 +459,7 @@ void AliL3Compress::WriteRestoredData(Char_t *remainfile,Char_t *restoredfile)
 		  tempDig[ndigits].fCharge = fDPt[fNUsed]->fCharge;
 		  ndigits++;
 		  fNUsed++;
+
 		}
 	      if(action == 0)
 		{
@@ -409,7 +469,9 @@ void AliL3Compress::WriteRestoredData(Char_t *remainfile,Char_t *restoredfile)
 		  ndigits++;
 		}
 	    }
-	  if(fNUsed >= fNDigits) break;
+	  
+	  if(fNUsed >= fNDigits) 
+	    break;
 	  if(fDPt[fNUsed]->fRow != i) //we are on a new row
 	    break;
 	  tempDig[ndigits].fPad = fDPt[fNUsed]->fPad;
@@ -417,6 +479,12 @@ void AliL3Compress::WriteRestoredData(Char_t *remainfile,Char_t *restoredfile)
 	  tempDig[ndigits].fCharge = fDPt[fNUsed]->fCharge;
 	  ndigits++;
 	  fNUsed++;
+	}
+      //cout<<"Writing "<<ndigits<<" digits on row "<<i<<endl;
+      if(ndigits < 4)
+	{
+	  row_counter++;
+	  cout<<"Few digits on row "<<i<<endl;
 	}
       tempRow->fNDigit = ndigits;
       Int_t size = sizeof(AliL3DigitData)*tempRow->fNDigit + sizeof(AliL3DigitRowData);
@@ -426,13 +494,18 @@ void AliL3Compress::WriteRestoredData(Char_t *remainfile,Char_t *restoredfile)
       mem->UpdateRowPointer(origRow);
     }
   
-  mem->Free();
-  mem->SetBinaryOutput(restoredfile);
+  if(row_counter != NumRows[fPatch])
+    cerr<<"AliL3Compress::WriteRestoredData() : Written rows: "<<row_counter<<" total rows "<<NumRows[fPatch]<<endl;
+  
+  mem->Free();  
+  sprintf(fname,"%s/restored_%d_%d.raw",fPath,fSlice,fPatch);
+  mem->SetBinaryOutput(fname);
   mem->Memory2CompBinary((UInt_t)NumRows[fPatch],(AliL3DigitRowData*)data);
   mem->CloseBinaryOutput();
   
   delete [] data;
   delete mem;
+  
 }
 
 void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge,Float_t sigmaY2,Float_t sigmaZ2)
@@ -573,4 +646,28 @@ void AliL3Compress::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
       last = j;        // QSort(first, j);
     }
   }
+}
+
+void AliL3Compress::WriteRootFile(Char_t *digitsfile,Char_t *rootfile)
+{
+  Char_t fname[100];
+  AliL3MemHandler *mem = new AliL3MemHandler();
+  sprintf(fname,"%s/restored_%d_%d.raw",fPath,fSlice,fPatch);
+  mem->SetBinaryInput(fname);
+  UInt_t ndigits;
+  AliL3DigitRowData *rowPt = (AliL3DigitRowData*)mem->CompBinary2Memory(ndigits);
+  mem->CloseBinaryInput();
+
+  AliL3FileHandler *file = new AliL3FileHandler();
+  if(!file->SetAliInput(digitsfile))
+    {
+      cerr<<"AliL3Compress::WriteRootFile() : Error opening file: "<<digitsfile<<endl;
+      return;
+    }
+  file->Init(fSlice,fPatch,NRows[fPatch]);
+  file->AliDigits2RootFile(rowPt,rootfile);
+  file->CloseAliInput();
+
+  delete mem;
+  delete file;
 }

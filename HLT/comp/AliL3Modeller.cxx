@@ -44,6 +44,7 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *path)
   fPadOverlap=4;
   fTimeOverlap=4;
   fTrackThreshold=10;
+  sprintf(fPath,"%s",path);
   
   fTransform = new AliL3Transform();
   fTracks = new AliL3TrackArray("AliL3ModelTrack");
@@ -73,7 +74,7 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *path)
 
   fMemHandler = new AliL3MemHandler();
   Char_t fname[100];
-  sprintf(fname,"%sdigits_%d_%d.raw",path,fSlice,fPatch);
+  sprintf(fname,"%sdigits_%d_%d.raw",fPath,fSlice,fPatch);
   if(!fMemHandler->SetBinaryInput(fname))
     {
       cerr<<"AliL3Modeller::Init : Error opening file "<<fname<<endl;
@@ -301,11 +302,10 @@ void AliL3Modeller::FillZeros(AliL3DigitRowData *rowPt,Digit *row)
     }
 }
 
-void AliL3Modeller::WriteRemaining(Char_t *output)
+void AliL3Modeller::WriteRemaining()
 {
   //Write remaining (nonzero) digits to file.
   
-  cout<<"Writing remaining data to file "<<output<<endl;
   AliL3DigitRowData *rowPt;
   rowPt = (AliL3DigitRowData*)fRowData;
   Int_t digitcount=0;
@@ -361,8 +361,10 @@ void AliL3Modeller::WriteRemaining(Char_t *output)
       tempPt = (AliL3DigitRowData*)tmp;
     }
 
+  Char_t fname[100];
   AliL3MemHandler *mem = new AliL3MemHandler();
-  mem->SetBinaryOutput(output);
+  sprintf(fname,"%s/remains_%d_%d.raw",fPath,fSlice,fPatch);
+  mem->SetBinaryOutput(fname);
   mem->Memory2CompBinary((UInt_t)NumRows[fPatch],(AliL3DigitRowData*)data);
   mem->CloseBinaryOutput();
   delete mem;

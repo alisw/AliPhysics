@@ -41,6 +41,7 @@ class AliL3Modeller {
   
   Int_t fSlice;
   Int_t fPatch;
+  Char_t fPath[100];
   
   void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row);
   void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
@@ -51,11 +52,11 @@ class AliL3Modeller {
   AliL3Modeller();
   virtual ~AliL3Modeller();
   
-  void Init(Int_t slice,Int_t patch,Char_t *path);
+  void Init(Int_t slice,Int_t patch,Char_t *path="./");
   void FindClusters();
   void CheckForOverlaps();
   void CalculateCrossingPoints();
-  void WriteRemaining(Char_t *output);
+  void WriteRemaining();
   
   void SetInputData(AliL3DigitRowData *digits) {fRowData = digits;}
   
