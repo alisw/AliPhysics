@@ -27,12 +27,12 @@
 
 #include "AliKalmanTrack.h"
 #include "AliITSVertexer.h"
-#include "AliESD.h"
 
 #include <TObjArray.h>
 
 class TTree; 
 class AliESDVertex; 
+class AliESD;
 
 class AliITSVertexerTracks : public AliITSVertexer {
   
@@ -47,7 +47,7 @@ class AliITSVertexerTracks : public AliITSVertexer {
   AliITSVertexerTracks(Double_t field, TString fn,
 		       Double_t xStart=0,Double_t yStart=0); 
   // destructor
-  ~AliITSVertexerTracks();
+  virtual ~AliITSVertexerTracks();
   // return vertex from the set of tracks in the tree
   AliESDVertex* VertexOnTheFly(TTree &trkTree);
   // computes the vertex for the current event
@@ -67,6 +67,11 @@ class AliITSVertexerTracks : public AliITSVertexer {
     { fNominalPos[0]=x; fNominalPos[1]=y; return; }
   
  private:
+    // copy constructor (NO copy allowed: the constructor is protected
+    // to avoid misuse)
+    AliITSVertexerTracks(const AliITSVertexerTracks& vtxr);
+    // assignment operator (NO assignment allowed)
+    AliITSVertexerTracks& operator=(const AliITSVertexerTracks& /* vtxr */);
   TFile    *fInFile;          // input file (with tracks)
   TFile    *fOutFile;         // output file for vertices
   Double_t  fInitPos[3];      // vertex position after vertex finder
