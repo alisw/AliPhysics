@@ -26,7 +26,6 @@ class AliStackingAction : public G4UserStackingAction
     // methods
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track);
     void NewStage();
-    void ClearPrimaryStack();
     void PrepareNewEvent();
 
     // set methods
