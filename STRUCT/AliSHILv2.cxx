@@ -1771,7 +1771,7 @@ void AliSHILv2::CreateGeometry()
 
       par0[27]  = -dz + kZch52;
       par0[28]  = 30.;
-      par0[29]  = 30.+(kZch52-kZConeE)*TMath::Tan(kThetaOpenPbO);
+      par0[29]  = 30.+(kZch52+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
 // end of cone
       par0[30]  = +dl;
       par0[31]  = 30.;
