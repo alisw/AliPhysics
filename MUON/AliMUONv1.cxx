@@ -170,7 +170,7 @@ void AliMUONv1::Init()
    Int_t i;
 
  
-  //
+   //
    // Initialize geometry
    //
    fGeometryBuilder->InitGeometry();
@@ -206,13 +206,12 @@ void AliMUONv1::Init()
        ( (AliMUONChamber*) (*fChambers)[i])->Init(fSegmentationType);// new segmentation
    }
  
-   if (fSegmentationType == 1) {
-    //cp 
-     AliDebug(1,"Start Init for Trigger Circuits");
-     for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) 
-       ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
-     AliDebug(1,"Finished Init for Trigger Circuits");
-   } 
+   // trigger circuit
+   // cp 
+   for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) 
+     ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
+   
+
 
 
 

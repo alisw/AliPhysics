@@ -9,7 +9,8 @@
 #include <TObject.h>
 #include <TObjArray.h>
 
-#include "AliSegmentation.h"
+class AliSegmentation;
+class AliMUONGeometrtSegmentation;
 
 class TObjArray;
 
@@ -43,19 +44,13 @@ class AliMUONTriggerCircuit : public TObject
   Float_t GetY11Pos(Int_t istrip) const;
   Float_t GetY21Pos(Int_t istrip) const;
   Float_t GetX11Pos(Int_t istrip) const;
- 
-  //  Get reference to segmentation model
-  virtual AliSegmentation*  SegmentationModel(Int_t isec) {
-      return (AliSegmentation *) (*fSegmentation)[isec-1];
-  }
+  Int_t   DetElemId(Int_t ichamber, Int_t idModule);
 
  protected:
   // copy constructor
   AliMUONTriggerCircuit(const AliMUONTriggerCircuit& AliMUONTriggerCircuit); 
   // assignment operator
   AliMUONTriggerCircuit& operator=(const AliMUONTriggerCircuit& AliMUONTriggerCircuit); 
-
-  TObjArray            *fSegmentation;    // pointer to segmentation
 
  private:
   Int_t CircuitNumber(Int_t idCircuit) const;
@@ -67,7 +62,9 @@ class AliMUONTriggerCircuit : public TObject
   void LoadYCode();
   void LoadYPos();
   void LoadXPos();
-  
+  void LoadYPos2();
+  void LoadXPos2();
+   
   ClassDef(AliMUONTriggerCircuit,1) // Trigger Circuit class
     
  private:    
@@ -80,6 +77,7 @@ class AliMUONTriggerCircuit : public TObject
   Float_t fXpos11[16];         // X position of Y strips in MC11
   Float_t fYpos11[31];         // Y position of X strips in MC11
   Float_t fYpos21[63];         // Y position of X strips in MC21
+  //  Int_t fSegmentationType;     // segmentation old / new
 
 };
 #endif
