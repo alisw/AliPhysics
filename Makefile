@@ -29,14 +29,6 @@ REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 include build/Makefile.config
 
 #-------------------------------------------------------------------------------
-# Location where to install libraries and binaries and common header files
-
-LIBPATH      := lib/tgt_$(ALICE_TARGET)
-BINPATH      := bin/tgt_$(ALICE_TARGET)
-EXPORTDIR    := $(ALICE_ROOT)/include
-BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
-
-#-------------------------------------------------------------------------------
 # Include machine dependent macros
 
 -include build/Makefile.$(ALICE_TARGET)
@@ -76,6 +68,14 @@ CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
 endif
+
+#-------------------------------------------------------------------------------
+# Location where to install libraries and binaries and common header files
+
+LIBPATH      := lib/tgt_$(ALICE_TARGET)
+BINPATH      := bin/tgt_$(ALICE_TARGET)
+EXPORTDIR    := $(ALICE_ROOT)/include
+BINLIBDIRS   := -L$(ALICE_ROOT)/$(LIBPATH)
 
 #-------------------------------------------------------------------------------
 # Modules to build
