@@ -18,13 +18,13 @@
 //
 //     Origin: B.Hippolyte, IReS, hippolyt@in2p3.fr 
 //             G.Van Buren, BNL,  gene@bnl.gov      (original STAR MuDsts)
+//
+//     Purpose: Having observables for physics available for V0s
 //-------------------------------------------------------------------------
 #include <Riostream.h>
 #include <TMath.h>
-#include <TPDGCode.h>
 
 #include "AliESD.h"
-
 #include "AliAODv0.h"
 
 ClassImp(AliAODv0)
@@ -61,7 +61,7 @@ AliAODv0::AliAODv0(AliESDv0* rV0Vertex ,AliESD* rEvent){
 // AliAODv0::~AliAODv0(){
 // }
 
-void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESD* rEvent){
+void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESD* rEvent){// Filling method
   fEvent=rEvent;
   Double_t tDecayVertexV0[3]; rV0Vertex->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
   fDecayVertexV0X = tDecayVertexV0[0];
@@ -102,7 +102,7 @@ void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESD* rEvent){
   fDcaNegToPrimVertex = TMath::Sqrt(tDcaNegToPrimVertex[0]*tDcaNegToPrimVertex[0]+tDcaNegToPrimVertex[1]*tDcaPosToPrimVertex[1]);
 }
 
-void AliAODv0::ResetV0(){
+void AliAODv0::ResetV0(){// Reset method
   fDecayVertexV0X     = 999;
   fDecayVertexV0Y     = 999;
   fDecayVertexV0Z     = 999;
