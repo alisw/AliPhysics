@@ -1,45 +1,47 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliModuleConstruction
+// ---------------------------
 // See the class description in the header file.
 
 #include "AliModuleConstruction.h"
-#include "AliModuleConstructionMessenger.h"
 #include "AliGlobals.h"
 #include "AliLVStructure.h"
 #include "AliModule.h"
-
 #ifdef ALICE_VISUALIZE
 #include "AliColourStore.h"
+#endif
 
-#include <G4Colour.hh>
-#include <G4VisAttributes.hh>
-#endif //ALICE_VISUALIZE
+#include "TG4GeometryServices.h"
+
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
+#ifdef ALICE_VISUALIZE
+#include <G4Colour.hh>
+#include <G4VisAttributes.hh>
+#endif
 
 //_____________________________________________________________________________
-AliModuleConstruction::AliModuleConstruction(G4String moduleName) 
+AliModuleConstruction::AliModuleConstruction(const G4String& moduleName) 
   : fModuleName(moduleName), 
     fModuleFrameName(moduleName),
     fModuleFrameLV(0),
     fAliModule(0),
     fReadGeometry(false),
     fWriteGeometry(false),
-    fDataFilePath("")    
-{
+    fDataFilePath(""),    
+    fMessenger(this, moduleName) {
 //
-  moduleName.toLower();
-  fMessenger = new AliModuleConstructionMessenger(this, moduleName);
 }
 
 //_____________________________________________________________________________
 AliModuleConstruction::AliModuleConstruction(const AliModuleConstruction& right)
+  : fMessenger(this, right.fModuleName)
 {
 //
-  // allocation in assignement operator
-  fMessenger = 0;
-  
   // copy stuff
   *this = right;
 }
@@ -49,12 +51,11 @@ AliModuleConstruction::AliModuleConstruction()
   : fModuleName(""), 
     fModuleFrameName(""),
     fModuleFrameLV(0),
-    fMessenger(0),
     fAliModule(0),
     fReadGeometry(false),
     fWriteGeometry(false),
-    fDataFilePath("")    
-{
+    fDataFilePath(""),    
+    fMessenger(this, "") {
 //
 }
 
@@ -62,7 +63,6 @@ AliModuleConstruction::AliModuleConstruction()
 AliModuleConstruction::~AliModuleConstruction()
 {
 //
-  delete fMessenger;
   delete fAliModule;
 }
 
@@ -82,12 +82,7 @@ AliModuleConstruction::operator=(const AliModuleConstruction& right)
   fReadGeometry = right.fReadGeometry;
   fWriteGeometry = right.fWriteGeometry;
   fDataFilePath = right.fDataFilePath;
-
-  // new messenger
-  if (fMessenger) delete fMessenger;
-  G4String moduleName = fModuleName;
-  moduleName.toLower();
-  fMessenger = new AliModuleConstructionMessenger(this, moduleName);
+  //fMessenger = right.fMessenger;
 
   return *this;
 }
@@ -148,7 +143,8 @@ void AliModuleConstruction::SetDetFrame(G4bool warn)
 // fModuleName is retrieved from G4LogicalVolumeStore.
 // ---
 
-  fModuleFrameLV = FindLogicalVolume(fModuleFrameName, true);
+  fModuleFrameLV 
+    = TG4GeometryServices::Instance()->FindLogicalVolume(fModuleFrameName, true);
   
   if (fModuleFrameLV == 0 && warn) {
     G4String text = "AliModuleConstruction: Detector frame for ";
@@ -207,7 +203,9 @@ void AliModuleConstruction::ListLVTree(G4String lvName)
 // with specified lvName.
 // ---- 
 
-  G4LogicalVolume* lv = FindLogicalVolume(lvName);
+  G4LogicalVolume* lv 
+    = TG4GeometryServices::Instance()->FindLogicalVolume(lvName);
+
   if (lv)
   {
     G4String path = "";
@@ -224,7 +222,9 @@ void AliModuleConstruction::ListLVTreeLong(G4String lvName)
 // with specified lvName with numbers of daughters (physical volumes).
 // ---- 
 
-  G4LogicalVolume* lv = FindLogicalVolume(lvName);
+  G4LogicalVolume* lv 
+    = TG4GeometryServices::Instance()->FindLogicalVolume(lvName);
+
   if (lv) {
     G4String path = "";
     AliLVStructure lvStructure(path);
@@ -232,29 +232,6 @@ void AliModuleConstruction::ListLVTreeLong(G4String lvName)
     lvStructure.ListTreeLong();
   }
 }
-
-//_____________________________________________________________________________
-G4LogicalVolume* AliModuleConstruction::FindLogicalVolume(
-                                          G4String name, G4bool silent) const
-{
-// Finds logical volume with specified name in G4LogicalVolumeStore.
-// (To do: use this method only for retrieving detector frame;
-//  add method FindLogicalVolumeInDet - that will search only
-//  in the detector frame LVTree.)
-// ---
-
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  
-  for (G4int i=0; i<pLVStore->size(); i++) {
-    G4LogicalVolume* lv = (*pLVStore)[i];
-    if (lv->GetName() == name) return lv;
-  }
-  
-  G4String text = "AliModuleConstruction: Logical volume "; 
-  text = text + name + " does not exist.";
-  if (!silent) AliGlobals::Warning(text);
-  return 0;	       	         
-}  
 
 #ifdef ALICE_VISUALIZE
 

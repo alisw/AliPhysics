@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliModuleConstruction
+// ---------------------------
 // Abstract base class for modular construction of geometry,
 // providing methods for browsing geometry (list volumes trees, 
 // visualization).
@@ -8,10 +12,11 @@
 #ifndef ALI_MODULE_CONSTRUCTION_H
 #define ALI_MODULE_CONSTRUCTION_H
 
+#include "AliModuleConstructionMessenger.h"
+
 #include <globals.hh>
 
 class AliLVStructure;
-class AliModuleConstructionMessenger;
 class AliModule;
 
 class G4VPhysicalVolume;
@@ -23,7 +28,7 @@ class G4Colour;
 class AliModuleConstruction
 {
   public:
-    AliModuleConstruction(G4String moduleName);
+    AliModuleConstruction(const G4String& moduleName);
     AliModuleConstruction(const AliModuleConstruction& right);
     // --> protected
     // AliModuleConstruction();
@@ -40,8 +45,6 @@ class AliModuleConstruction
     void ListAllLVTreeLong();
     void ListLVTree(G4String lvName);
     void ListLVTreeLong(G4String lvName);
-    G4LogicalVolume* FindLogicalVolume(G4String name, 
-                                       G4bool silent = false) const;
 
     // set methods
     void SetDetFrame(G4bool warn = true);
@@ -88,7 +91,7 @@ class AliModuleConstruction
            AliLVStructure& lvStructure);
 
     // data members
-    AliModuleConstructionMessenger*  fMessenger; //messenger     
+    AliModuleConstructionMessenger  fMessenger; //messenger     
 };
 
 // inline methods
