@@ -146,7 +146,7 @@ void AliTPCpolyTrack::Refit(AliTPCpolyTrack &track, Double_t deltay, Double_t de
   track.Reset();
   //first refit to temporary
   AliTPCpolyTrack track0;
-  track0.Reset;
+  track0.Reset();
   for (Int_t i=0;i<fNPoints;i++){
     Double_t y,z;
     GetFitPoint(fX[i],y,z);
