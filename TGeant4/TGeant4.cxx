@@ -12,6 +12,8 @@
 #include "TG4RunManager.h"
 #include "TG4Globals.h"
 
+#include "AliDecayer.h"
+
 TGeant4::TGeant4(const char* name, const char* title,
                  TG4VRunConfiguration* configuration, int argc, char** argv)
   : AliMC(name, title),
@@ -269,6 +271,18 @@ Float_t TGeant4::Xsec(char* reac, Float_t energy, Int_t part, Int_t mate) {
 //
   return fPhysicsManager->Xsec(reac, energy, part, mate);
 }  
+
+void TGeant4::SetExternalDecayer(AliDecayer* decayer) {
+//
+  TG4Globals:: Warning("TGeant4::SetExternalDecayer() is not implemented."); 
+}
+
+AliDecayer* TGeant4::Decayer() const {
+//
+  TG4Globals:: Warning("TGeant4::Decayer() is not implemented.");
+  return 0; 
+}
+  
 
 Int_t TGeant4::IdFromPDG(Int_t pdgID) const { 
 //
