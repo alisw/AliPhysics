@@ -54,7 +54,7 @@ class AliL3Transform {
   static Int_t GetVersion(){return fVersion;}
   static Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
   static Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}
-  static Double_t GetPadPitchWidth(Int_t patch) {if(patch<=2) return fPadPitchWidthLow; else return fPadPitchWidthUp;}
+  static Double_t GetPadPitchWidth(Int_t patch) {return patch < 2 ? fPadPitchWidthLow : fPadPitchWidthUp;}  
   static Double_t GetZWidth() {return fZWidth;}
   static Double_t GetZLength() {return fZLength;}
   static Double_t GetZOffset() {return fZOffset;}
