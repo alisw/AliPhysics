@@ -8,6 +8,8 @@
 #include <TRandom.h>
 #include <TMath.h>
 
+//#include "AliITSclusterSSD.h"
+//#include "AliITSpackageSSD.h"
 #include "AliITSClusterFinder.h"
 
 class AliITSclusterSSD;
@@ -139,8 +141,9 @@ public:
   Float_t fPNsignalRatio;
 
     
-  static const Bool_t fgkSIDEP;
-  static const Bool_t fgkSIDEN;
+  static const Bool_t fgkSIDEP=kTRUE;
+  static const Bool_t fgkSIDEN=kFALSE;
+
 
   Int_t fSFF;              //forward stepping factor 
   Int_t fSFB;              //backward stepping factor 
