@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.43  2001/01/23 18:58:19  hristov
+Initialisation of some pointers
+
 Revision 1.42  2001/01/17 20:53:40  hristov
 Destructors corrected to avoid memory leaks
 
@@ -239,27 +242,29 @@ AliMUON::AliMUON()
 {
 // Default Constructor
 //
-   fIshunt       = 0;
-   fHits         = 0;
-   fPadHits      = 0;
-   fNPadHits     = 0;
-   fDchambers    = 0;
-   fTriggerCircuits = 0;     // cp new design of AliMUONTriggerDecision
-   fNdch         = 0;
-   fRawClusters  = 0;
-   fNrawch       = 0;
-   fGlobalTrigger   = 0;
-   fNLocalTrigger   = 0;
-   fLocalTrigger    = 0;
-   fNLocalTrigger   = 0;
-   fAccMin          = 0.;
-   fAccMax          = 0.;   
-   fAccCut          = kFALSE;
-   fChambers        = 0;
-   fHits2           = 0;
-   fPadHits2        = 0;
-   fFileName        = 0;
-   fTrH1            = 0;
+    fNCh             = AliMUONConstants::NCh();
+    fNTrackingCh     = AliMUONConstants::NTrackingCh();
+    fIshunt          = 0;
+    fHits            = 0;
+    fPadHits         = 0;
+    fNPadHits        = 0;
+    fDchambers       = 0;
+    fTriggerCircuits = 0; 
+    fNdch            = 0;
+    fRawClusters     = 0;
+    fNrawch          = 0;
+    fGlobalTrigger   = 0;
+    fNLocalTrigger   = 0;
+    fLocalTrigger    = 0;
+    fNLocalTrigger   = 0;
+    fAccMin          = 0.;
+    fAccMax          = 0.;   
+    fAccCut          = kFALSE;
+    fChambers        = 0;
+    fHits2           = 0;
+    fPadHits2        = 0;
+    fFileName        = 0;
+    fTrH1            = 0;
 }
  
 //___________________________________________
@@ -281,6 +286,9 @@ AliMUON::AliMUON(const char *name, const char *title)
    fPadHits = new TClonesArray("AliMUONPadHit",10000);
    fNPadHits  =  0;
    fIshunt     =  0;
+
+   fNCh             = AliMUONConstants::NCh();
+   fNTrackingCh     = AliMUONConstants::NTrackingCh();
 
    fNdch      = new Int_t[AliMUONConstants::NCh()];
 
