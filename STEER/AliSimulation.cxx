@@ -658,7 +658,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
                                          "PMD", "START", "VZERO", "CRT"};
   const Int_t kDetectorDDLs[kNDetectors]   = {216, 20, 12, 16, 
                                               18, 72, 20, 5, 
-                                              1, 20, 1, 1, 
+                                              22, 20, 1, 1, 
                                               6, 1, 1, 1};
   const Float_t kDetectorLDCs[kNDetectors] = {46, 2, 2, 1, 
                                               4, 2, 1, 2, 
