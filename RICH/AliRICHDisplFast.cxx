@@ -59,10 +59,10 @@ void AliRICHDisplFast::Display()
 
   TText *text;
 
-  TH2F *h2_disp   = new TH2F("h2_disp"  ,"STAR-RICH Event Display",165,Xmin,Xmax,100,Ymin,Ymax);
-  TH2F *gHitsH2   = new TH2F("gHitsH2"  ,"STAR-RICH Event Display",165,Xmin,Xmax,100,Ymin,Ymax);
+  TH2F *h2_disp   = new TH2F("h2_disp"  ,"STAR-RICH Event Display",165,Xmin,Xmax,144,Ymin,Ymax);
+  TH2F *gHitsH2   = new TH2F("gHitsH2"  ,"STAR-RICH Event Display",165,Xmin,Xmax,144,Ymin,Ymax);
   TH2F *h2_dispad = new TH2F("h2_dispad","STAR-RICH Event Display",161,0.,161.,145,0.,145.);
-  TH2F *gClustersH2 = new TH2F("gClusH2"  ,"STAR-RICH Event Display",165,Xmin,Xmax,100,Ymin,Ymax);
+  TH2F *gClustersH2 = new TH2F("gClusH2"  ,"STAR-RICH Event Display",165,Xmin,Xmax,144,Ymin,Ymax);
 
   TCanvas *Display = new TCanvas("Display","Star Display",0,0,800,800);
     
@@ -107,6 +107,7 @@ void AliRICHDisplFast::Display()
 
      h2_disp->Reset();
      gHitsH2->Reset();
+     gClustersH2->Reset();
 //     h2_dispad->Reset();
 
      Double_t xpad,ypad;
