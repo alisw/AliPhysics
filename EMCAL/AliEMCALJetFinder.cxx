@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2003/01/14 10:50:18  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.33  2003/01/10 10:48:19  morsch
 SetSamplingFraction() removed from constructor.
 
@@ -331,7 +334,7 @@ void AliEMCALJetFinder::Init()
     AliEMCALGeometry* geom = 
     AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
 
-    SetSamplingFraction(geom->GetSampling());
+//    SetSamplingFraction(geom->GetSampling());
 
     fNbinEta = geom->GetNZ();
     fNbinPhi = geom->GetNPhi();
@@ -663,7 +666,8 @@ void AliEMCALJetFinder::DumpLego()
             }
 	} // phi
     } // eta
-    fNcell--;
+//  today
+//    fNcell--;
 }
 
 void AliEMCALJetFinder::ResetMap()
@@ -758,7 +762,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	fPhiT[part]      = phi;
 	fPdgT[part]      = mpart;
 	
-
+// today
 	if (part < 2) continue;
 
 	// move to fLego->Fill because hadron correction must apply 
@@ -774,9 +778,12 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	        if (!fK0N) { 
 		    continue;
 		} else {
+// today
+/*
 		    if (mpart != kNeutron    &&
 			mpart != kNeutronBar &&
 			mpart != kK0Long) continue;
+*/
 		}
 	    }
 	}
@@ -814,8 +821,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 // Tracking Efficiency and TPC acceptance goes here ...
 	Float_t eff;
 	if (fEffic && TMath::Abs(chTmp)) {
-	  //	    eff =  AliEMCALFast::Efficiency(1,p);
-            eff = 0.95; // for testing 25-feb-2002
+	    eff =  AliEMCALFast::Efficiency(2,p);
             if(fhEff) fhEff->Fill(p, eff);
 	    if (AliEMCALFast::RandomReject(eff)) {
               if(fDebug >= 5) printf(" reject due to unefficiency ");
@@ -850,7 +856,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 
 	      if (fDebug >= 7) printf(" phi %f phiHC %f eTcorr %f\n", 
 	      phi, phiHC, -eTdpH); // correction is negative
-	      fLego->Fill(eta, phiHC, -eTdpH);
+	      fLego->Fill(eta, phiHC, -eTdpH );
               fhLegoHadrCorr->Fill(eta, phiHC, eTdpH);
 	  }
         }
@@ -878,6 +884,14 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
         }
 
     } // primary loop    
+    Float_t etsum = 0.;
+    for(Int_t i=0; i<fLego->GetSize(); i++) {
+	Float_t etc =  (*fLego)[i];
+	if (etc > fMinCellEt) etsum += etc;
+    }
+    
+    printf("\nFillFromTracks: Sum above threshold %f %f \n \n", fMinCellEt, etsum);
+
     DumpLego();
 }
 
@@ -932,7 +946,7 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 	    Float_t eta    =   -TMath::Log(TMath::Tan(theta/2.));
 	    Float_t phi    =    TMath::ATan2(y,x);
 
-	    if (fDebug >= 11) printf("\n Hit %f %f %f %f", x, y, z, eloss);
+	    if (fDebug >= 11) printf("\n Hit %f %f %f %f %f %f %f %f", x, y, z, eloss, r, eta, phi, fSamplingF);
 //	    printf("\n Hit %f %f %f %f", x, y, z, eloss);
 	    
             etH = fSamplingF*eloss*TMath::Sin(theta);
@@ -941,8 +955,18 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 	} // Hit Loop
     } // Track Loop
     // copy content of fLego to fhLegoEMCAL (fLego and fhLegoEMCAL are identical)
-    for(Int_t i=0; i<fLego->GetSize(); i++) (*fhLegoEMCAL)[i] = (*fLego)[i]; 
+    Float_t etsum = 0;
+    
+    for(Int_t i=0; i<fLego->GetSize(); i++) {
+	(*fhLegoEMCAL)[i] = (*fLego)[i];
+	Float_t etc =  (*fLego)[i];
+	if (etc > fMinCellEt) etsum += etc;
+    }
+    
+    printf("\nFillFromHits: Sum above threshold %f %f \n \n", fMinCellEt, etsum);
+    
     //    DumpLego(); ??
+    
 }
 
 void AliEMCALJetFinder::FillFromDigits(Int_t flag)
@@ -1534,14 +1558,11 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 // Propagates phi angle to EMCAL radius
 //
   static Float_t b = 0.0, rEMCAL = -1.0;
-  if(rEMCAL<0) {
 // Get field in kGS
-    b =  gAlice->Field()->SolenoidField();
+  b =  gAlice->Field()->SolenoidField();
 // Get EMCAL radius in cm 
-    rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
-    printf("\nMagnetic field %f rEMCAL %f ", b, rEMCAL);
-  }
-    Float_t dPhi = 0.;
+  rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
+  Float_t dPhi = 0.;
 //
 //
 // bending radies
