@@ -27,16 +27,20 @@
 
 ClassImp(AliFastGlauber)
 
-TF1*    AliFastGlauber::fWSb      = NULL;     
-TF2*    AliFastGlauber::fWSbz     = NULL;    
-TF1*    AliFastGlauber::fWSz      = NULL;     
-TF1*    AliFastGlauber::fWSta     = NULL;    
-TF2*    AliFastGlauber::fWStarfi  = NULL; 
-TF1*    AliFastGlauber::fWStaa    = NULL;   
-TF1*    AliFastGlauber::fWSgeo    = NULL;   
-TF1*    AliFastGlauber::fWSbinary = NULL;   
-TF1*    AliFastGlauber::fWSN      = NULL;   
-Float_t AliFastGlauber::fbMax     = 0.;
+TF1*    AliFastGlauber::fWSb          = NULL;     
+TF2*    AliFastGlauber::fWSbz         = NULL;    
+TF1*    AliFastGlauber::fWSz          = NULL;     
+TF1*    AliFastGlauber::fWSta         = NULL;    
+TF2*    AliFastGlauber::fWStarfi      = NULL; 
+TF2*    AliFastGlauber::fWAlmond      = NULL; 
+TF1*    AliFastGlauber::fWStaa        = NULL;   
+TF1*    AliFastGlauber::fWSgeo        = NULL;   
+TF1*    AliFastGlauber::fWSbinary     = NULL;   
+TF1*    AliFastGlauber::fWSN          = NULL;   
+TF1*    AliFastGlauber::fWPathLength0 = NULL;   
+TF1*    AliFastGlauber::fWPathLength  = NULL;
+TF1*    AliFastGlauber::fWIntRadius   = NULL;   
+Float_t AliFastGlauber::fbMax         = 0.;
 
 AliFastGlauber::AliFastGlauber()
 {
@@ -84,6 +88,26 @@ void AliFastGlauber::Init(Int_t mode)
     fWStarfi->SetParameter(0, 0.);     
     fWStarfi->SetNpx(200);     
     fWStarfi->SetNpy(20);     
+//
+//  Almond shaped interaction region
+//
+    fWAlmond = new TF2("WAlmond", WAlmond, -fbMax, fbMax, -fbMax, fbMax, 1);
+    fWAlmond->SetParameter(0, 0.);     
+    fWAlmond->SetNpx(200);     
+    fWAlmond->SetNpy(200);    
+//
+//  Path Length as a function of Phi
+//    
+    fWPathLength0 = new TF1("WPathLength0", WPathLength0, -TMath::Pi(), TMath::Pi(), 1);
+    fWPathLength0->SetParameter(0, 0.);     
+    fWPathLength = new TF1("WPathLength", WPathLength, -TMath::Pi(), TMath::Pi(), 2);
+//  Impact Parameter
+    fWPathLength->SetParameter(0, 0.);    
+//  Number of interactions used for average
+    fWPathLength->SetParameter(1, 1000.);    
+
+    fWIntRadius = new TF1("WIntRadius", WIntRadius, 0., fbMax, 1);
+    fWIntRadius->SetParameter(0, 0.);     
 //
 //  Overlap
 //
@@ -173,14 +197,67 @@ void AliFastGlauber::DrawN()
     fWSN->Draw();
 }
 
-void AliFastGlauber::DrawKernel()
+void AliFastGlauber::DrawKernel(Double_t b)
 {
 //
 //  Draw Kernel
 //
     TCanvas *c6 = new TCanvas("c6","Kernel",400,10,600,700);
     c6->cd();
+    fWStarfi->SetParameter(0, b);
     fWStarfi->Draw();
+}
+
+void AliFastGlauber::DrawAlmond(Double_t b)
+{
+//
+//  Draw Kernel
+//
+    TCanvas *c7 = new TCanvas("c7","Almond",400,10,600,700);
+    c7->cd();
+    fWAlmond->SetParameter(0, b);
+    fWAlmond->Draw();
+}
+
+void AliFastGlauber::DrawPathLength0(Double_t b)
+{
+//
+//  Draw Kernel
+//
+    TCanvas *c8 = new TCanvas("c8","Path Length",400,10,600,700);
+    c8->cd();
+    fWPathLength0->SetParameter(0, b);
+    fWPathLength0->SetMinimum(0.); 
+    fWPathLength0->SetMaximum(10.); 
+    fWPathLength0->Draw();
+}
+
+void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni)
+{
+//
+//  Draw Kernel
+//
+    TCanvas *c9 = new TCanvas("c9","Path Length",400,10,600,700);
+    c9->cd();
+    fWAlmond->SetParameter(0, b);
+
+    fWPathLength->SetParameter(0, b);
+    fWPathLength->SetParameter(1, Double_t (ni));
+    fWPathLength->SetMinimum(0.); 
+    fWPathLength->SetMaximum(10.); 
+    fWPathLength->Draw();
+}
+
+void AliFastGlauber::DrawIntRadius(Double_t b)
+{
+//
+//  Draw Kernel
+//
+    TCanvas *c10 = new TCanvas("c10","Interaction Radius",400,10,600,700);
+    c10->cd();
+    fWIntRadius->SetParameter(0, b);
+    fWIntRadius->SetMinimum(0.);
+    fWIntRadius->Draw();
 }
 
 Double_t AliFastGlauber::WSb(Double_t* x, Double_t* par)
@@ -260,6 +337,149 @@ Double_t AliFastGlauber::WStarfi(Double_t* x, Double_t* par)
     return y;
 }
 
+
+Double_t AliFastGlauber::WAlmond(Double_t* x, Double_t* par)
+{
+//
+//  Almond shaped interaction region
+//
+    Double_t b    = par[0];
+    Double_t xx   = x[0] + b/2.;
+    Double_t yy   = x[1];
+    Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+    Double_t phi  = TMath::ATan2(yy,xx);
+    
+    Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
+//
+//  Interaction probability calculated as product of thicknesses
+//
+    Double_t y    = fWSta->Eval(r1) * fWSta->Eval(r2);
+    return y;
+}
+
+Double_t AliFastGlauber::WIntRadius(Double_t* x, Double_t* par)
+{
+//
+//  Average radius at which interaction takes place
+//
+//  Radius in the Almond
+    Double_t r    = x[0];
+//  Impact parameter
+    Double_t b    = par[0];
+    fWAlmond->SetParameter(0, b);
+//  Steps in phi
+    Double_t dphi = 2. * TMath::Pi() / 100.;
+//  Average over phi    
+    Double_t phi  = 0.;
+    Double_t y    = 0.;
+
+    for (Int_t i = 0; i < 100; i++) {
+	Double_t xx = r * TMath::Cos(phi);
+	Double_t yy = r * TMath::Sin(phi);
+	y   += fWAlmond->Eval(xx,yy);
+	phi += dphi;
+    } // phi loop
+// Result multiplied by Jacobian (2 pi r)     
+    return (2. * TMath::Pi() * y * r / 100.);
+}
+
+Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
+{
+//
+//  Path Length as a function of phi for interaction point fixed at (0,0)
+//
+//
+//  Steps in r 
+    const Int_t    np  = 100;
+    const Double_t dr  = fbMax/Double_t(np);
+//  Impact parameter    
+    Double_t b      = par[0];
+//  Phi direction in Almond
+    Double_t phi0   = x[0];
+    Double_t r  = 0.;
+    Double_t rw = 0.;
+    Double_t w  = 0.;
+//  Step along radial direction phi   
+    for (Int_t i = 0; i < np; i++) {
+//
+//  Transform into target frame
+//
+	Double_t xx   = r * TMath::Cos(phi0) + b / 2.;
+	Double_t yy   = r * TMath::Sin(phi0);
+	Double_t phi  = TMath::ATan2(yy, xx);
+	
+	Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+// Radius in projectile frame
+	Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
+	Double_t y    = fWSta->Eval(r1) * fWSta->Eval(r2);
+
+	rw += y * r;
+	w  += y;
+	r  += dr;
+    } // radial steps
+//
+//  My length definition (is exact for hard sphere)
+    return (2. * rw / w);
+}
+
+Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
+{
+//
+//  Path Length as a function of phi 
+//  Interaction point from random distribution
+//
+//
+//  r-steps
+// 
+    const Int_t    np   = 100;
+    const Double_t dr  = fbMax/Double_t(np);
+//  Number of interactions
+    const Int_t    npi  = Int_t (par[1]);
+
+//
+//  Impact parameter    
+    Double_t b      = par[0];
+//  Phi direction
+    Double_t phi0   = x[0];
+
+    printf("phi0 %f \n", phi0);
+    
+//  Path length 
+    Double_t l = 0.;
+    
+    for (Int_t in = 0; in < npi; in ++) {
+	Double_t rw = 0.;
+	Double_t w  = 0.;
+	
+	// Interaction point
+	Double_t x0, y0;
+	fWAlmond->GetRandom2(x0, y0);
+// Initial radius
+	Double_t r0  = TMath::Sqrt(x0 * x0 + y0 * y0);
+	Int_t    nps = Int_t ((fbMax - r0)/dr) - 1;
+	
+	Double_t r  = 0.;
+// Radial steps
+	for (Int_t i = 0; (i < nps ); i++) {
+	    
+// Transform into target frame
+	    Double_t xx   = x0 + r * TMath::Cos(phi0) + b / 2.;
+	    Double_t yy   = y0 + r * TMath::Sin(phi0);
+	    Double_t phi  = TMath::ATan2(yy, xx);
+	    Double_t r1   = TMath::Sqrt(xx * xx + yy * yy);
+// Radius in projectile frame
+	    Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
+	    Double_t y    = fWSta->Eval(r1) * fWSta->Eval(r2);
+	    
+	    rw += y * r;
+	    w  += y;
+	    r  += dr;
+	} // steps
+// Average over interactions
+	l += 2. * rw / w;
+    } // interactions
+    return (l / Double_t(npi));
+}
 
 Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* /*par*/)
 {
