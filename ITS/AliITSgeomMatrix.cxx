@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.12  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.11  2001/09/04 14:54:31  hristov
 Const multidimentional arrays cause problems in the CINT dictionary on HP, const removed
 
@@ -431,9 +436,12 @@ void AliITSgeomMatrix::GtoLPositionError(      Double_t g[3][3],
 ////////////////////////////////////////////////////////////////////////
 	Int_t    i,j,k,m;
 
-	for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(m=0;m<3;m++)
-		l[i][m] = fm[j][i]*g[j][k]*fm[k][m];
-		// g = R^t l R
+	for(i=0;i<3;i++)for(m=0;m<3;m++){
+	    l[i][m] = 0.0;
+	    for(j=0;j<3;j++)for(k=0;k<3;k++)
+		l[i][m] += fm[j][i]*g[j][k]*fm[k][m];
+	} // end for i,m
+	    // g = R^t l R
 	return;
 }
 //----------------------------------------------------------------------
@@ -446,9 +454,12 @@ void AliITSgeomMatrix::LtoGPositionError(      Double_t l[3][3],
 ////////////////////////////////////////////////////////////////////////
 	Int_t    i,j,k,m;
 
-	for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(m=0;m<3;m++)
-		g[i][m] = fm[i][j]*l[j][k]*fm[m][k];
-		// g = R l R^t
+	for(i=0;i<3;i++)for(m=0;m<3;m++){
+	    g[i][m] = 0.0;
+	    for(j=0;j<3;j++)for(k=0;k<3;k++)
+		g[i][m] += fm[i][j]*l[j][k]*fm[m][k];
+	} // end for i,m
+	    // g = R l R^t
 	return;
 }
 //----------------------------------------------------------------------
@@ -601,9 +612,12 @@ void AliITSgeomMatrix::GtoLPositionErrorTracking(     Double_t g[3][3],
 	    rt[i][k] = a0[i][j]*fm[j][k];
 	else for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)
 	    rt[i][k] = a1[i][j]*fm[j][k];
-	for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(m=0;m<3;m++)
-		l[i][m] = rt[j][i]*g[j][k]*rt[k][m];
-		// g = R^t l R
+	for(i=0;i<3;i++)for(m=0;m<3;m++){
+	    l[i][m] = 0.0;
+	    for(j=0;j<3;j++)for(k=0;k<3;k++)
+		l[i][m] += rt[j][i]*g[j][k]*rt[k][m];
+	} // end for i,m
+	    // g = R^t l R
 	return;
 }
 //----------------------------------------------------------------------
@@ -631,9 +645,12 @@ void AliITSgeomMatrix::LtoGPositionErrorTracking( Double_t l[3][3],
 	    rt[i][k] = a0[i][j]*fm[j][k];
 	else for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)
 	    rt[i][k] = a1[i][j]*fm[j][k];
-	for(i=0;i<3;i++)for(j=0;j<3;j++)for(k=0;k<3;k++)for(m=0;m<3;m++)
-		g[i][m] = rt[i][j]*l[j][k]*rt[m][k];
-		// g = R l R^t
+	for(i=0;i<3;i++)for(m=0;m<3;m++){
+	    g[i][m] = 0.0;
+	    for(j=0;j<3;j++)for(k=0;k<3;k++)
+		g[i][m] += rt[i][j]*l[j][k]*rt[m][k];
+	} // end for i,m
+	    // g = R l R^t
 	return;
 }
 //----------------------------------------------------------------------
