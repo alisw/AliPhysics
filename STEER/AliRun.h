@@ -87,9 +87,11 @@ public:
 			       Float_t &tof);
    Int_t          GetNtrack() const {return fNtrack;}
    virtual  Int_t GetPrimary(Int_t track) const;
-   virtual  void  Hits2Digits(const char *detector=0);
-   virtual  void  Hits2SDigits(const char *detector=0);
-   virtual  void  SDigits2Digits(const char *detector=0);
+   virtual  void  Hits2Digits(const char *detector=0); 
+   virtual  void  Hits2SDigits(const char *detector=0)   {Tree2Tree("S",detector);}
+   virtual  void  SDigits2Digits(const char *detector=0) {Tree2Tree("D",detector);}
+   virtual  void  Digits2Reco(const char *detector=0)    {Tree2Tree("R",detector);}
+   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
    virtual  void  InitMC(const char *setup="Config.C");
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() const {return kTRUE;}
@@ -118,6 +120,7 @@ public:
 			  Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
 			  Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
+   virtual  void  RunReco(const char *detector=0);
    virtual  void  SetCurrentTrack(Int_t track);                           
    virtual  void  SetDebug(const Int_t level=1) {fDebug = level;}
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}

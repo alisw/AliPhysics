@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.56  2001/02/14 15:45:20  hristov
+Algorithmic way of getting entry index in fParticleMap. Protection of fParticleFileMap (I.Hrivnacova)
+
 Revision 1.55  2001/02/12 15:52:54  buncic
 Removed OpenBaseFile().
 
@@ -681,7 +684,7 @@ void AliRun::FinishRun()
   fTreeE->Write(0,TObject::kOverwrite);
   
   // Write AliRun info and all detectors parameters
-  Write();
+  Write(0,TObject::kOverwrite);
   
   // Clean tree information
   if (fTreeK) {
@@ -1280,6 +1283,9 @@ void AliRun::ReadTransPar()
 //_____________________________________________________________________________
 void AliRun::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_t size, char *file)
 { 
+    //
+    // Makes branch in given tree and diverts them  to a separate file 
+    //  
     if (GetDebug()>1)
         printf("* MakeBranch * Making Branch %s \n",name);
 
@@ -1304,6 +1310,9 @@ void AliRun::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_
 //_____________________________________________________________________________
 void AliRun::MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address, Int_t size, Int_t splitlevel, char *file)
 { 
+    //
+    // Makes branch in given tree and diverts them to a separate file
+    //  
     TDirectory *cwd = gDirectory;
     TBranch *branch = tree->Branch(name,classname,address,size,splitlevel);
     if (GetDebug()>1)
@@ -1385,7 +1394,7 @@ void AliRun::MakeTree(Option_t *option, char *file)
   TIter next(fModules);
   AliModule *detector;
   while((detector = (AliModule*)next())) {
-     if (oH || oR) detector->MakeBranch(option,file);
+     if (oH) detector->MakeBranch(option,file);
   }
 }
 
@@ -1666,13 +1675,13 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   
   // Create the Root Tree with one branch per detector
 
+   MakeTree("ESD");
+
   if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
-     MakeTree("E");
      MakeTree("K","Kine.root");
      MakeTree("H","Hits.root");
-     MakeTree("R","Reco.root");
   } else {
-    MakeTree("EKHR");
+     MakeTree("KH");
   }
 
   gMC->ProcessRun(nevent);
@@ -1682,92 +1691,97 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
 }
 
 //_____________________________________________________________________________
+void AliRun::RunReco(const char *detector)
+{
+  //
+  // Main function to be called to reconstruct Alice event
+  // 
+
+   MakeTree("R");
+   Digits2Reco(detector);
+}
+
+//_____________________________________________________________________________
 
 void AliRun::Hits2Digits(const char *selected)
 {
+   // Convert Hits to sumable digits
+   // 
    Hits2SDigits(selected);
    SDigits2Digits(selected);
 }
 
+
 //_____________________________________________________________________________
 
-void AliRun::Hits2SDigits(const char *selected)
+void AliRun::Tree2Tree(Option_t *option, const char *selected)
 {
   //
-  // Main function to be called to convert hits to digits. 
+  // Function to transform the content of
+  //  
+  // - TreeH to TreeS (option "S")
+  // - TreeS to TreeD (option "D")
+  // - TreeD to TreeR (option "R")
+  // 
+  // If multiple options are specified ("SDR"), transformation will be done in sequence for
+  // selected detector and for all detectors if none is selected (detector string 
+  // can contain blank separated list of detector names). 
 
+
+   char *oS = strstr(option,"S");
+   char *oD = strstr(option,"D");
+   char *oR = strstr(option,"R");
+   
    gAlice->GetEvent(0);
 
    TObjArray *detectors = gAlice->Detectors();
 
    TIter next(detectors);
 
-   AliDetector *detector;
+   AliDetector *detector = 0;
 
    TDirectory *cwd = gDirectory;
 
-   MakeTree("S");
+   char outFile[32];
    
    while((detector = (AliDetector*)next())) {
-     if (selected) {
+     if (selected) 
        if (strcmp(detector->GetName(),selected)) continue;
-     }
      if (detector->IsActive()){ 
-       if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
-         if (GetDebug()>0)
+       if (GetDebug()>0)
              cout << "Processing " << detector->GetName() << "..." << endl;
-         char * outFile = new char[strlen (detector->GetName())+18];
-         sprintf(outFile,"SDigits.%s.root",detector->GetName());
-         detector->MakeBranch("S",outFile);
-         delete outFile;
+       if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {          
+          if (oS) {
+            sprintf(outFile,"SDigits.%s.root",detector->GetName());
+            detector->MakeBranch("S",outFile);
+          }    
+          if (oD) {
+            sprintf(outFile,"Digits.%s.root",detector->GetName());
+            detector->MakeBranch("D",outFile);
+          }    
+          if (oR) {
+            sprintf(outFile,"Reco.%s.root",detector->GetName());
+            detector->MakeBranch("R",outFile);
+          }    
        } else {
-         detector->MakeBranch("S");
-       }   
-       cwd->cd();  
-       detector->Hits2SDigits(); 
+          detector->MakeBranch(option);
+       }
+       
+       cwd->cd(); 
+
+       if (oS) 
+          detector->Hits2SDigits(); 
+       if (oD) 
+          detector->SDigits2Digits(); 
+       if (oR) 
+          detector->Digits2Reco(); 
+
+       cwd->cd(); 
+       
      }  
    }
 }
 
-//_____________________________________________________________________________
-
-void AliRun::SDigits2Digits(const char *selected)
-{
-  //
-  // Main function to be called to convert hits to digits. 
-
-   gAlice->GetEvent(0);
-
-   TObjArray *detectors = gAlice->Detectors();
-
-   TIter next(detectors);
-
-   AliDetector *detector;
-
-   TDirectory *cwd = gDirectory;
-
-   MakeTree("D");
-   
-   while((detector = (AliDetector*)next())) {
-     if (selected) {
-       if (strcmp(detector->GetName(),selected)) continue;
-     }
-     if (detector->IsActive()){ 
-       if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
-         if (GetDebug()>0)
-             cout << "Processing " << detector->GetName() << "..." << endl;
-         char * outFile = new char[strlen (detector->GetName())+16];
-         sprintf(outFile,"Digits.%s.root",detector->GetName());
-         detector->MakeBranch("D",outFile);
-         delete outFile;
-       } else {
-         detector->MakeBranch("D");
-       }   
-       cwd->cd();  
-       detector->SDigits2Digits(); 
-     }  
-   }
-}
 
 //_____________________________________________________________________________
 void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
