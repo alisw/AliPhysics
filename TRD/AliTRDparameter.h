@@ -69,8 +69,6 @@ class AliTRDparameter : public TNamed {
 
   virtual void     SetTimeStruct(Int_t timestrOn = 1)             { fTimeStructOn = timestrOn;
                                                                     ReInit();                 };
-  virtual void     SetStaggering(Int_t staggOn = 1)               { fStaggeringOn = staggOn;
-                                                                    ReInit();                 };
   virtual void     SetAnodeWireOffset(Float_t offset = 0.25)      { fAnodeWireOffset = offset;};
   
           Int_t    GetRowMax(Int_t p, Int_t c, Int_t s)     
@@ -130,7 +128,6 @@ class AliTRDparameter : public TNamed {
           Int_t    TCOn()                                   const { return fTCOn;          };
           Int_t    LUTOn()                                  const { return fLUTOn;         };
           Int_t    TimeStructOn()                           const { return fTimeStructOn;  };
-          Int_t    StaggeringOn()                           const { return fStaggeringOn;  };
 
   virtual Int_t    Diffusion(Float_t driftlength, Float_t *xyz);
   virtual Int_t    ExB(Float_t driftlength, Float_t *xyz) const;  
@@ -194,7 +191,6 @@ class AliTRDparameter : public TNamed {
   Float_t             *fCTsmp;                              //! Integrated cross talk
   Int_t                fTCOn;                               //  Switch for the tail cancelation
   Int_t                fTCnexp;                             //  Number of exponential of the digital filter
-  Int_t                fStaggeringOn;                       //  Staggering of wire planes
   Float_t             *fTimeStruct;                         //! Time Structure of Drift Cells
   Int_t                fTimeStructOn;                       //  Switch for cell time structure
   Float_t              fAnodeWireOffset;                    //  Distance of first anode wire from pad edge

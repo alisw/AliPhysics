@@ -665,13 +665,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
     if (fPar->TimeStructOn()) {
       printf("<AliTRDdigitizer::MakeDigits> ");
       printf("Time Structure of drift cells implemented.\n");
-      if (fPar->StaggeringOn()) {
-	printf("<AliTRDdigitizer::MakeDigits> ");
-	printf("Staggered geometry.\n");
-      } else {
-	printf("<AliTRDdigitizer::MakeDigits> ");
-	printf("Non-Staggered geometry.\n");      
-      }
     } else {
       printf("<AliTRDdigitizer::MakeDigits> ");
       printf("Constant drift velocity in drift cells.\n");      
@@ -869,9 +862,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	  if (fPar->TimeStructOn()) {
 	    // Get z-position with respect to anode wire:
 	    Float_t Z  =  xyz[2] - row0 + fPar->GetAnodeWireOffset();
-	    while (Z>0.5)    Z -= 0.5;
-	    if    (Z>0.25)   Z  = 0.5-Z;
-            if    (!(fPar->TimeStruct(driftlength+2*kAmWidth,Z,xyz))) continue;
+	    Z -= ((Int_t)(2*Z))/2.;
+	    if (Z>0.25)   Z  = 0.5-Z;
+	    //if (Z>0.248) cout << Z << ": " << time0 - xyz[0] + kAmWidth << " -> ";
+            if (!(fPar->TimeStruct(driftlength+2*kAmWidth,Z,xyz))) continue;
+	    //if (Z>0.248) cout << time0 - xyz[0] + kAmWidth << endl;
 	  }
 
           // The electron position after diffusion and ExB in pad coordinates 
