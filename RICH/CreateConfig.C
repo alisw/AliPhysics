@@ -27,9 +27,9 @@ protected:
   Int_t         fProcesses;
   char         *fFileName;
 };//class RichConfig
-	 
+//__________________________________________________________________________________________________	 
 RichConfig::RichConfig(const char *sFileName)
-{   
+{// creates configuration file  
   fFileName=sFileName;
   fDetectors=0;
 // Create main frame       
@@ -67,9 +67,10 @@ RichConfig::RichConfig(const char *sFileName)
   fGenPartIdCombo->AddEntry("Kaon-",kKMinus);
   fGenPartIdCombo->AddEntry("Proton",kProton);
   fGenPartIdCombo->AddEntry("AntiProton",kProtonBar);
-  fGenPartIdCombo->Select(kPiPlus);  fGenPartIdCombo->Resize(160,20);
+  fGenPartIdCombo->Select(kProton);  fGenPartIdCombo->Resize(160,20);
 
   pGenGrpFrm->AddFrame(fGenMinMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
+  fGenMinMomCombo->AddEntry("0.5 GeV", 5);
   fGenMinMomCombo->AddEntry("1.0 GeV",10);
   fGenMinMomCombo->AddEntry("1.5 GeV",15);
   fGenMinMomCombo->AddEntry("2.0 Gev",20);
@@ -152,10 +153,10 @@ RichConfig::RichConfig(const char *sFileName)
   
   fMain->MapSubwindows();   
   fMain->Layout();
-  fMain->SetWindowName("Create AliROOT Config script");
+  fMain->SetWindowName("Create AliROOT scripts");
   fMain->MapWindow();      
 }//KirCondig::ctor
-          
+//__________________________________________________________________________________________________          
 void RichConfig::CreateConfigFile()
 {   
   FILE *fp=fopen(fFileName,"w"); if(!fp){Info("CreateConfigFile","Cannot open output file:%sn",fFileName);return;}
@@ -312,7 +313,7 @@ void RichConfig::CreateConfigFile()
 }//CreateConfigFile
 //__________________________________________________________________________________________________
 void RichConfig::CreateRichBatch()
-{
+{//creates RichBatch.C file
   FILE *fp=fopen("RichBatch.C","w"); if(!fp){Info("CreateRichBatch","Cannot open output file: RichBatch.C");return;}
   
   fprintf(fp,"void RichBatch(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFileName)\n");
@@ -321,7 +322,7 @@ void RichConfig::CreateRichBatch()
   fprintf(fp,"  if(isDebug)   AliLog::SetGlobalDebugLevel(AliLog::kDebug);\n");
   fprintf(fp,"  TStopwatch sw;TDatime time;\n\n");
   
-  fprintf(fp,"  AliSimulation     *pSim=new AliSimulation;\n");
+  fprintf(fp,"  AliSimulation     *pSim=new AliSimulation(sConfigFileName);\n");
   if(fGenTypeCombo->GetSelected()==kGun1||fGenTypeCombo->GetSelected()==kGun7) {
     fprintf(fp,"  pSim->SetRegionOfInterest(kTRUE);\n");
     fprintf(fp,"  pSim->SetMakeSDigits(\"TOF RICH\");\n");
