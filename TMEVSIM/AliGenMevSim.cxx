@@ -23,6 +23,8 @@
 // Sylwester Radomski <radomski@if.pw.edu.pl>
 //
 
+#include <Riostream.h>
+
 //#include "TSystem.h"
 //#include "TUnixSystem.h"
 #include "TParticle.h"
