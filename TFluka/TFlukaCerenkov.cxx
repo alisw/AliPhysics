@@ -1,5 +1,7 @@
 #include "TFlukaCerenkov.h"
 
+Double_t TFlukaCerenkov::fgGlobalMaximumEfficiency = 0.;
+   
 ClassImp(TFlukaCerenkov);
 
 
@@ -11,7 +13,8 @@ TFlukaCerenkov::TFlukaCerenkov()
       fWaveLength(0),
       fAbsorptionCoefficient(0),
       fQuantumEfficiency(0),
-      fRefractionIndex(0)
+      fRefractionIndex(0),
+      fMaximumEfficiency(0.)
 {
 // Default constructor
 }
@@ -26,6 +29,7 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
     fAbsorptionCoefficient = new Float_t[fSamples];
     fRefractionIndex       = new Float_t[fSamples];
     fQuantumEfficiency     = new Float_t[fSamples];
+    
     for (Int_t i = 0; i < fSamples; i++) {
 	fEnergy[i]             = ppckov[i];
 	fWaveLength[i]         = khc / ppckov[i];
@@ -37,9 +41,19 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
 	fRefractionIndex[i]    = rindex[i];
 	fQuantumEfficiency[i]  = effic[i];
 	//
+	// Find local maximum quantum efficiency
+	if (effic[i] > fMaximumEfficiency) fMaximumEfficiency = effic[i];
+	//
 	// Flag is sensitive if quantum efficiency 0 < eff < 1 for at least one value.
 	if (effic[i] < 1. && effic[i] > 0.) fIsSensitive = 1;
     }
+    // Find global  maximum quantum efficiency
+    if (fMaximumEfficiency > GetGlobalMaximumEfficiency()) {
+	SetGlobalMaximumEfficiency(fMaximumEfficiency);
+    }
+    printf("Maximum eff. %f\n",  GetGlobalMaximumEfficiency());
+	
+    
 }
 
 Float_t TFlukaCerenkov::GetAbsorptionCoefficient(Float_t energy)
