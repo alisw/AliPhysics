@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/11/22 11:30:12  coppedis
+Major code revision
+
 Revision 1.4  2000/10/05 08:02:47  fca
 Correction of the generator direction
 
@@ -44,6 +47,7 @@ Introduction of the Copyright and cvs Log
 #include "AliConst.h"
 #include "AliPDG.h"
 #include "AliRun.h"
+#include "AliMCProcess.h"
  
 ClassImp(AliGenZDC)
  
@@ -163,7 +167,7 @@ void AliGenZDC::Generate()
   Float_t polar[3] = {0,0,0};
 //  printf("fPTrack = %f, %f, %f \n",fPTrack[0],fPTrack[1],fPTrack[2]);
   gAlice->SetTrack(fTrackIt,-1,fIpart,fPTrack,fOrigin.GetArray(),polar,0,
-  		   "Primary",nt);
+  		   kPPrimary,nt);
 }
 
 //_____________________________________________________________________________
