@@ -17,8 +17,8 @@
 
 //_________________________________________________________________________
 //  Hits class for EMCAL    
-//  A hit in EMCAL is the sum of all hits in a single segment
-//  from a single enterring particle             
+//  A hit in EMCAL is the sum of all hits in a tower
+//  from a single entering particle             
 //*-- Author: Sahal Yacoob (LBL / UCT)
 // Based on AliPHOSHit
 
