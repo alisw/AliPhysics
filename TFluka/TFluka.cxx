@@ -1,0 +1,2201 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+#include <Riostream.h>
+
+#include "TClonesArray.h"
+#include "TFluka.h"
+#include "TCallf77.h"      //For the fortran calls
+#include "Fdblprc.h"       //(DBLPRC) fluka common
+#include "Fepisor.h"       //(EPISOR) fluka common
+#include "Ffinuc.h"        //(FINUC) fluka common
+#include "Fiounit.h"       //(IOUNIT) fluka common
+#include "Fpaprop.h"       //(PAPROP) fluka common
+#include "Fpart.h"         //(PART)   fluka common
+#include "Ftrackr.h"       //(TRACKR) fluka common
+#include "Fpaprop.h"       //(PAPROP) fluka common
+#include "Ffheavy.h"       //(FHEAVY) fluka common
+
+#include "TVirtualMC.h"
+#include "TG4GeometryManager.h" //For the geometry management
+#include "TG4DetConstruction.h" //For the detector construction
+
+#include "FGeometryInit.hh"
+#include "TLorentzVector.h"
+#include "FlukaVolume.h"
+
+// Fluka methods that may be needed.
+#ifndef WIN32 
+# define flukam  flukam_
+# define fluka_openinp fluka_openinp_
+# define fluka_closeinp fluka_closeinp_
+# define mcihad mcihad_
+# define mpdgha mpdgha_
+#else 
+# define flukam  FLUKAM
+# define fluka_openinp FLUKA_OPENINP
+# define fluka_closeinp FLUKA_CLOSEINP
+# define mcihad MCIHAD
+# define mpdgha MPDGHA
+#endif
+
+extern "C" 
+{
+  //
+  // Prototypes for FLUKA functions
+  //
+  void type_of_call flukam(const int&);
+  void type_of_call fluka_openinp(const int&, DEFCHARA);
+  void type_of_call fluka_closeinp(const int&);
+  int  type_of_call mcihad(const int&);
+  int  type_of_call mpdgha(const int&);
+}
+
+//
+// Class implementation for ROOT
+//
+ClassImp(TFluka)
+
+//
+//----------------------------------------------------------------------------
+// TFluka constructors and destructors.
+//____________________________________________________________________________ 
+TFluka::TFluka()
+  :TVirtualMC(),
+   fVerbosityLevel(0),
+   sInputFileName(""),
+   fDetector(0),
+   fCurrentFlukaRegion(-1)
+{ 
+  //
+  // Default constructor
+  //
+} 
+ 
+TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupported)
+  :TVirtualMC("TFluka",title, isRootGeometrySupported),
+   fVerbosityLevel(verbosity),
+   sInputFileName(""),
+   fTrackIsEntering(0),
+   fTrackIsExiting(0),
+   fTrackIsNew(0),
+   fDetector(0),
+   fCurrentFlukaRegion(-1)
+{
+  if (fVerbosityLevel >=3)
+    cout << "==> TFluka::TFluka(" << title << ") constructor called." << endl;
+
+  
+  // create geometry manager
+  if (fVerbosityLevel >=2)
+    cout << "\t* Creating G4 Geometry manager..." << endl;
+  fGeometryManager = new TG4GeometryManager();
+  if (fVerbosityLevel >=2)
+    cout << "\t* Creating G4 Detector..." << endl;
+  fDetector = new TG4DetConstruction();
+  FGeometryInit* geominit = FGeometryInit::GetInstance();
+  if (geominit)
+    geominit->setDetConstruction(fDetector);
+  else {
+    cerr << "ERROR: Could not create FGeometryInit!" << endl;
+    cerr << "       Exiting!!!" << endl;
+    abort();
+  }
+
+  if (fVerbosityLevel >=3)
+    cout << "<== TFluka::TFluka(" << title << ") constructor called." << endl;
+
+  fVolumeMediaMap = new TClonesArray("FlukaVolume",1000);
+  fNVolumes      = 0;
+  fMediaByRegion = 0;
+}
+
+TFluka::~TFluka() {
+  if (fVerbosityLevel >=3)
+    cout << "==> TFluka::~TFluka() destructor called." << endl;
+
+  delete fGeometryManager;
+  fVolumeMediaMap->Delete();
+  delete  fVolumeMediaMap;
+  
+
+  if (fVerbosityLevel >=3)
+    cout << "<== TFluka::~TFluka() destructor called." << endl;
+}
+
+//
+//_____________________________________________________________________________
+// TFluka control methods
+//____________________________________________________________________________ 
+void TFluka::Init() {
+
+  FGeometryInit* geominit = FGeometryInit::GetInstance();
+  if (fVerbosityLevel >=3)
+    cout << "==> TFluka::Init() called." << endl;
+
+  cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
+  geominit->Init();
+  // now we have G4 geometry created and we have to patch alice.inp
+  // with the material mapping file FlukaMat.inp
+  InitPhysics(); // prepare input file with the current physics settings
+    cout << "\t* InitPhysics() - Prepare input file was called" << endl; 
+
+  if (fVerbosityLevel >=2)
+    cout << "\t* Changing lfdrtr = (" << (GLOBAL.lfdrtr?'T':'F')
+	 << ") in fluka..." << endl;
+  GLOBAL.lfdrtr = true;
+
+  if (fVerbosityLevel >=2)
+    cout << "\t* Opening file " << sInputFileName << endl;
+  const char* fname = sInputFileName;
+  fluka_openinp(lunin, PASSCHARA(fname));
+
+  if (fVerbosityLevel >=2)
+    cout << "\t* Calling flukam..." << endl;
+  flukam(1);
+
+  if (fVerbosityLevel >=2)
+    cout << "\t* Closing file " << sInputFileName << endl;
+  fluka_closeinp(lunin);
+
+  FinishGeometry();
+
+  if (fVerbosityLevel >=3)
+    cout << "<== TFluka::Init() called." << endl;
+
+}
+
+void TFluka::FinishGeometry() {
+//
+// Build-up table with region to medium correspondance
+//
+    char tmp[5];
+    
+  if (fVerbosityLevel >=3)
+    cout << "==> TFluka::FinishGeometry() called." << endl;
+
+//  fGeometryManager->Ggclos();
+
+  FGeometryInit* flugg = FGeometryInit::GetInstance();  
+  
+  fMediaByRegion = new Int_t[fNVolumes+2];
+  for (Int_t i = 0; i < fNVolumes; i++)
+  {
+      FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[i]);
+      TString volName = vol->GetName();
+      Int_t   media   = vol->GetMedium();
+      if (fVerbosityLevel >= 3)
+      printf("Finish Geometry: volName, media %d %s %d \n", i, volName.Data(), media);
+      strcpy(tmp, volName.Data());
+      tmp[4] = '\0';
+      flugg->SetMediumFromName(tmp, media, i+1);
+      fMediaByRegion[i] = media;
+  }
+
+  flugg->BuildMediaMap();
+  
+  if (fVerbosityLevel >=3)
+    cout << "<== TFluka::FinishGeometry() called." << endl;
+} 
+
+void TFluka::BuildPhysics() {
+  if (fVerbosityLevel >=3)
+    cout << "==> TFluka::BuildPhysics() called." << endl;
+
+
+  if (fVerbosityLevel >=3)
+    cout << "<== TFluka::BuildPhysics() called." << endl;
+}  
+
+void TFluka::ProcessEvent() {
+  if (fVerbosityLevel >=3)
+    cout << "==> TFluka::ProcessEvent() called." << endl;
+  fApplication->GeneratePrimaries();
+  EPISOR.lsouit = true;
+  flukam(1);
+  if (fVerbosityLevel >=3)
+    cout << "<== TFluka::ProcessEvent() called." << endl;
+}
+
+
+void TFluka::ProcessRun(Int_t nevent) {
+  if (fVerbosityLevel >=3)
+    cout << "==> TFluka::ProcessRun(" << nevent << ") called." 
+	 << endl;
+
+  if (fVerbosityLevel >=2) {
+    cout << "\t* GLOBAL.fdrtr = " << (GLOBAL.lfdrtr?'T':'F') << endl;
+    cout << "\t* Calling flukam again..." << endl;
+  }
+  fApplication->InitGeometry();
+  fApplication->BeginEvent();
+  ProcessEvent();
+  fApplication->FinishEvent();
+  if (fVerbosityLevel >=3)
+    cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
+	 << endl;
+
+}
+
+//_____________________________________________________________________________
+// methods for building/management of geometry
+//____________________________________________________________________________ 
+// functions from GCONS 
+void TFluka::Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,  
+		    Float_t &dens, Float_t &radl, Float_t &absl,
+		    Float_t* ubuf, Int_t& nbuf) {
+//
+  fGeometryManager->Gfmate(imat, name, a, z, dens, radl, absl, ubuf, nbuf);
+} 
+
+void TFluka::Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,  
+		    Double_t &dens, Double_t &radl, Double_t &absl,
+		    Double_t* ubuf, Int_t& nbuf) {
+//
+  fGeometryManager->Gfmate(imat, name, a, z, dens, radl, absl, ubuf, nbuf);
+} 
+
+// detector composition
+void TFluka::Material(Int_t& kmat, const char* name, Double_t a, 
+		      Double_t z, Double_t dens, Double_t radl, Double_t absl,
+		      Float_t* buf, Int_t nwbuf) {
+//
+  fGeometryManager
+    ->Material(kmat, name, a, z, dens, radl, absl, buf, nwbuf); 
+} 
+void TFluka::Material(Int_t& kmat, const char* name, Double_t a, 
+		      Double_t z, Double_t dens, Double_t radl, Double_t absl,
+		      Double_t* buf, Int_t nwbuf) {
+//
+  fGeometryManager
+    ->Material(kmat, name, a, z, dens, radl, absl, buf, nwbuf); 
+} 
+
+void TFluka::Mixture(Int_t& kmat, const char *name, Float_t *a, 
+		     Float_t *z, Double_t dens, Int_t nlmat, Float_t *wmat) {
+//
+   fGeometryManager
+     ->Mixture(kmat, name, a, z, dens, nlmat, wmat); 
+} 
+void TFluka::Mixture(Int_t& kmat, const char *name, Double_t *a, 
+		     Double_t *z, Double_t dens, Int_t nlmat, Double_t *wmat) {
+//
+   fGeometryManager
+     ->Mixture(kmat, name, a, z, dens, nlmat, wmat); 
+} 
+
+void TFluka::Medium(Int_t& kmed, const char *name, Int_t nmat, 
+		    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
+		    Double_t stemax, Double_t deemax, Double_t epsil, 
+		    Double_t stmin, Float_t* ubuf, Int_t nbuf) { 
+  //
+  fGeometryManager
+    ->Medium(kmed, name, nmat, isvol, ifield, fieldm, tmaxfd, stemax, deemax, 
+	     epsil, stmin, ubuf, nbuf);
+} 
+void TFluka::Medium(Int_t& kmed, const char *name, Int_t nmat, 
+		    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
+		    Double_t stemax, Double_t deemax, Double_t epsil, 
+		    Double_t stmin, Double_t* ubuf, Int_t nbuf) { 
+  //
+  fGeometryManager
+    ->Medium(kmed, name, nmat, isvol, ifield, fieldm, tmaxfd, stemax, deemax, 
+	     epsil, stmin, ubuf, nbuf);
+} 
+
+void TFluka::Matrix(Int_t& krot, Double_t thetaX, Double_t phiX, 
+		    Double_t thetaY, Double_t phiY, Double_t thetaZ, 
+		    Double_t phiZ) {
+//		     
+  fGeometryManager
+    ->Matrix(krot, thetaX, phiX, thetaY, phiY, thetaZ, phiZ); 
+} 
+
+void TFluka::Gstpar(Int_t itmed, const char *param, Double_t parval) {
+//
+  fGeometryManager->Gstpar(itmed, param, parval); 
+}    
+
+// functions from GGEOM 
+Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
+		     Float_t *upar, Int_t np)  {
+//
+//  fVolumeMediaMap[TString(name)] = nmed;
+    if (fVerbosityLevel >= 3)
+    printf("TFluka::Gsvolu() name = %s, nmed = %d\n", name, nmed);
+    
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, nmed);
+    return fGeometryManager->Gsvolu(name, shape, nmed, upar, np); 
+}
+Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
+		     Double_t *upar, Int_t np)  {
+//
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, nmed);
+
+    return fGeometryManager->Gsvolu(name, shape, nmed, upar, np); 
+}
+ 
+void TFluka::Gsdvn(const char *name, const char *mother, Int_t ndiv, 
+		   Int_t iaxis) {
+//
+//  The medium of the daughter is the one of the mother
+    Int_t volid = TFluka::VolId(mother);
+    Int_t med   = TFluka::VolId2Mate(volid);
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, med);
+    fGeometryManager->Gsdvn(name, mother, ndiv, iaxis); 
+} 
+
+void TFluka::Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
+		    Int_t iaxis, Double_t c0i, Int_t numed) {
+//
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, numed);
+    fGeometryManager->Gsdvn2(name, mother, ndiv, iaxis, c0i, numed); 
+} 
+
+void TFluka::Gsdvt(const char *name, const char *mother, Double_t step, 
+		   Int_t iaxis, Int_t numed, Int_t ndvmx) {
+//	
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, numed);		
+    fGeometryManager->Gsdvt(name, mother, step, iaxis, numed, ndvmx); 
+} 
+
+void TFluka::Gsdvt2(const char *name, const char *mother, Double_t step, 
+		    Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx) { 
+//
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, numed);
+    fGeometryManager->Gsdvt2(name, mother, step, iaxis, c0, numed, ndvmx); 
+} 
+
+void TFluka::Gsord(const char *name, Int_t iax) {
+//
+  fGeometryManager->Gsord(name, iax); 
+} 
+
+void TFluka::Gspos(const char *name, Int_t nr, const char *mother,  
+		   Double_t x, Double_t y, Double_t z, Int_t irot, 
+		   const char *konly) {
+//
+  fGeometryManager->Gspos(name, nr, mother, x, y, z, irot, konly); 
+} 
+
+void TFluka::Gsposp(const char *name, Int_t nr, const char *mother,  
+		    Double_t x, Double_t y, Double_t z, Int_t irot,
+		    const char *konly, Float_t *upar, Int_t np)  {
+  //
+  fGeometryManager->Gsposp(name, nr, mother, x, y, z, irot, konly, upar, np); 
+} 
+void TFluka::Gsposp(const char *name, Int_t nr, const char *mother,  
+		    Double_t x, Double_t y, Double_t z, Int_t irot,
+		    const char *konly, Double_t *upar, Int_t np)  {
+  //
+  fGeometryManager->Gsposp(name, nr, mother, x, y, z, irot, konly, upar, np); 
+} 
+
+void TFluka::Gsbool(const char* onlyVolName, const char* manyVolName) {
+//
+  fGeometryManager->Gsbool(onlyVolName, manyVolName);
+}
+
+void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+			 Float_t *absco, Float_t *effic, Float_t *rindex) {
+//
+  fGeometryManager->SetCerenkov(itmed, npckov, ppckov, absco, effic, rindex);
+}  
+void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
+			 Double_t *absco, Double_t *effic, Double_t *rindex) {
+//
+  fGeometryManager->SetCerenkov(itmed, npckov, ppckov, absco, effic, rindex);
+}  
+    
+// Euclid
+void TFluka::WriteEuclid(const char* fileName, const char* topVol, 
+                          Int_t number, Int_t nlevel) {
+//
+  fGeometryManager->WriteEuclid(fileName, topVol, number, nlevel); 
+} 
+
+
+
+//_____________________________________________________________________________
+// methods needed by the stepping
+//____________________________________________________________________________ 
+
+Int_t TFluka::GetMedium() const {
+//
+//  Get the medium number for the current fluka region
+//
+    FGeometryInit* flugg = FGeometryInit::GetInstance();  
+    return flugg->GetMedium(fCurrentFlukaRegion);
+}
+
+
+
+//____________________________________________________________________________ 
+// particle table usage
+// ID <--> PDG transformations
+//_____________________________________________________________________________
+Int_t TFluka::IdFromPDG(Int_t pdg) const 
+{
+    //
+    // Return Fluka code from PDG and pseudo ENDF code
+    
+    // Catch the feedback photons
+    if (pdg == 50000051) return (-1);
+    // MCIHAD() goes from pdg to fluka internal.
+    Int_t intfluka = mcihad(pdg);
+    // KPTOIP array goes from internal to official
+    return GetFlukaKPTOIP(intfluka);
+}
+
+Int_t TFluka::PDGFromId(Int_t id) const 
+{
+  //
+  // Return PDG code and pseudo ENDF code from Fluka code
+
+  // IPTOKP array goes from official to internal
+
+    if (id == -1) {
+// Cerenkov photon
+	if (fVerbosityLevel >= 1)
+	    printf("\n PDGFromId: Cerenkov Photon \n");
+	return  50000050;
+    }
+// Error id    
+    if (id == 0) {
+	if (fVerbosityLevel >= 1)
+	    printf("PDGFromId: Error id = 0\n");
+	return -1;
+    }
+// Good id    
+    Int_t intfluka = GetFlukaIPTOKP(id);
+    if (intfluka == 0) {
+	if (fVerbosityLevel >= 1)
+	    printf("PDGFromId: Error intfluka = 0: %d\n", id);
+	return -1;
+    } else if (intfluka < 0) {
+	if (fVerbosityLevel >= 1)
+	    printf("PDGFromId: Error intfluka < 0: %d\n", id);
+	return -1;
+    }
+    if (fVerbosityLevel >= 3)
+	printf("mpdgha called with %d %d \n", id, intfluka);
+    // MPDGHA() goes from fluka internal to pdg.
+    return mpdgha(intfluka);
+}
+
+//_____________________________________________________________________________
+// methods for physics management
+//____________________________________________________________________________ 
+//
+// set methods
+//
+
+void TFluka::SetProcess(const char* flagName, Int_t flagValue)
+{
+  Int_t i;
+  if (iNbOfProc < 100) {
+    for (i=0; i<iNbOfProc; i++) {
+      if (strcmp(&sProcessFlag[i][0],flagName) == 0) {
+        iProcessValue[iNbOfProc] = flagValue;
+	goto fin;
+      }
+    }
+    strcpy(&sProcessFlag[iNbOfProc][0],flagName);
+    iProcessValue[iNbOfProc++] = flagValue;
+  }
+  else
+    cout << "Nb of SetProcess calls exceeds 100 - ignored" << endl;
+fin:
+  iNbOfProc = iNbOfProc;
+}
+
+void TFluka::SetCut(const char* cutName, Double_t cutValue)
+{
+  Int_t i;
+  if (iNbOfCut < 100) {
+    for (i=0; i<iNbOfCut; i++) {
+      if (strcmp(&sCutFlag[i][0],cutName) == 0) {
+        fCutValue[iNbOfCut] = cutValue;
+	goto fin;
+      }
+    }
+    strcpy(&sCutFlag[iNbOfCut][0],cutName);
+    fCutValue[iNbOfCut++] = cutValue;
+  }
+  else
+    cout << "Nb of SetCut calls exceeds 100 - ignored" << endl;
+fin:
+  iNbOfCut = iNbOfCut;
+}
+
+Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
+{
+  printf("WARNING: Xsec not yet implemented !\n"); return -1.;
+}
+
+
+void TFluka::InitPhysics()
+{
+  Int_t i, j, k;
+  Double_t fCut;
+  Double_t zero, one, two, three;
+  FILE *pAliceCoreInp, *pAliceFlukaMat, *pAliceInp;
+
+  zero  = 0.0;
+  one   = 1.0;
+  two   = 2.0;
+  three = 3.0;
+
+  FGeometryInit* geominit = FGeometryInit::GetInstance();
+  Float_t fLastMaterial = geominit->GetLastMaterialIndex();
+  printf("   last FLUKA material is %g\n", fLastMaterial);
+ 
+// construct file names
+  TString sAliceCoreInp = getenv("ALICE_ROOT");
+  sAliceCoreInp +="/TFluka/input/";
+  TString sAliceTmp = "flukaMat.inp";
+  TString sAliceInp = GetInputFileName();
+  sAliceCoreInp += GetCoreInputFileName();
+/* open files */
+  if ((pAliceCoreInp = fopen(sAliceCoreInp.Data(),"r")) == NULL) {
+    printf("\nCannot open file %s\n",sAliceCoreInp.Data());
+    exit(1);
+  }
+  if ((pAliceFlukaMat = fopen(sAliceTmp.Data(),"r")) == NULL) {
+    printf("\nCannot open file %s\n",sAliceTmp.Data());
+    exit(1);
+  }
+  if ((pAliceInp = fopen(sAliceInp.Data(),"w")) == NULL) {
+    printf("\nCannot open file %s\n",sAliceInp.Data());
+    exit(1);
+  }
+
+// copy core input file 
+  Char_t sLine[255];
+  Float_t fEventsPerRun;
+
+  while ((fgets(sLine,255,pAliceCoreInp)) != NULL) {
+    if (strncmp(sLine,"GEOEND",6) != 0)
+      fprintf(pAliceInp,"%s",sLine); // copy until GEOEND card
+    else {
+      fprintf(pAliceInp,"GEOEND\n");   // add GEOEND card
+      goto flukamat;
+    }
+  } // end of while until GEOEND card
+
+flukamat:
+  while ((fgets(sLine,255,pAliceFlukaMat)) != NULL) { // copy flukaMat.inp file
+    fprintf(pAliceInp,"%s\n",sLine);
+  }
+
+  while ((fgets(sLine,255,pAliceCoreInp)) != NULL) { 
+    if (strncmp(sLine,"START",5) != 0)
+      fprintf(pAliceInp,"%s\n",sLine);
+    else {
+      sscanf(sLine+10,"%10f",&fEventsPerRun);
+      goto fin;
+    }
+  } //end of while until START card
+
+fin:
+// in G3 the process control values meaning can be different for
+// different processes, but for most of them is:
+//   0  process is not activated
+//   1  process is activated WITH generation of secondaries
+//   2  process is activated WITHOUT generation of secondaries
+// if process does not generate secondaries => 1 same as 2
+//
+// Exceptions:
+//   MULS:  also 3
+//   LOSS:  also 3, 4
+//   RAYL:  only 0,1
+//   HADR:  may be > 2
+//
+ 
+// Loop over number of SetProcess calls  
+  fprintf(pAliceInp,"*----------------------------------------------------------------------------- \n");
+  fprintf(pAliceInp,"*----- The following data are generated from SetProcess and SetCut calls ----- \n");
+  fprintf(pAliceInp,"*----------------------------------------------------------------------------- \n");
+  for (i=0; i<iNbOfProc; i++) {
+
+    // annihilation
+    // G3 default value: 1
+    // G4 processes: G4eplusAnnihilation/G4IeplusAnnihilation
+    // Particles: e+
+    // Physics:   EM
+    // flag = 0 no annihilation
+    // flag = 1 annihilation, decays processed
+    // flag = 2 annihilation, no decay product stored
+    // gMC ->SetProcess("ANNI",1); // EMFCUT   -1.   0.  0. 3. lastmat 0. ANNH-THR
+    if (strncmp(&sProcessFlag[i][0],"ANNI",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+        fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for e+ annihilation - resets to default=0.\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('ANNI',1) or SetProcess('ANNI',2)\n");
+        // -one = kinetic energy threshold (GeV) for e+ annihilation (resets to default=0)
+        // zero = not used
+        // zero = not used
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        // one = step length in assigning indices
+        // "ANNH-THR"; 
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",-one,zero,zero,three,fLastMaterial,one);
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No annihilation - no FLUKA card generated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('ANNI',0)\n");
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('ANNI',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    }
+    
+    // bremsstrahlung and pair production are both activated
+    // G3 default value: 1
+    // G4 processes: G4eBremsstrahlung/G4IeBremsstrahlung,
+    //               G4MuBremsstrahlung/G4IMuBremsstrahlung,
+    //               G4LowEnergyBremstrahlung
+    // Particles: e-/e+; mu+/mu-
+    // Physics:   EM
+    // flag = 0 no bremsstrahlung
+    // flag = 1 bremsstrahlung, photon processed
+    // flag = 2 bremsstrahlung, no photon stored
+    // gMC ->SetProcess("BREM",1); // PAIRBREM  2.   0.  0. 3. lastmat
+                                   // EMFCUT   -1.   0.  0. 3. lastmat 0. ELPO-THR
+    // G3 default value: 1
+    // G4 processes: G4GammaConversion,
+    //               G4MuPairProduction/G4IMuPairProduction
+    //               G4LowEnergyGammaConversion
+    // Particles: gamma, mu
+    // Physics:   EM
+    // flag = 0 no delta rays
+    // flag = 1 delta rays, secondaries processed
+    // flag = 2 delta rays, no secondaries stored
+    // gMC ->SetProcess("PAIR",1); // PAIRBREM  1.   0.  0. 3. lastmat
+                                   // EMFCUT    0.   0. -1. 3. lastmat 0. PHOT-THR
+    else if ((strncmp(&sProcessFlag[i][0],"PAIR",4) == 0) && (iProcessValue[i] == 1 || iProcessValue[i] == 2)) {
+      for (j=0; j<iNbOfProc; j++) {
+        if ((strncmp(&sProcessFlag[j][0],"BREM",4) == 0) && (iProcessValue[j] == 1 || iProcessValue[j] == 2)) {
+          fprintf(pAliceInp,"*\n*Bremsstrahlung and pair production by muons and charged hadrons both activated\n");
+          fprintf(pAliceInp,"*Generated from call: SetProcess('BREM',1) and SetProcess('PAIR',1)\n");
+          fprintf(pAliceInp,"*Energy threshold set by call SetCut('BCUTM',cut) or set to 0.\n");
+          fprintf(pAliceInp,"*Energy threshold set by call SetCut('PPCUTM',cut) or set to 0.\n");
+          // three = bremsstrahlung and pair production by muons and charged hadrons both are activated
+          fprintf(pAliceInp,"PAIRBREM  %10.1f",three);
+          // direct pair production by muons
+          // G4 particles: "e-", "e+"
+          // G3 default value: 0.01 GeV
+          //gMC ->SetCut("PPCUTM",cut); // total energy cut for direct pair prod. by muons
+          fCut = 0.0;
+          for (k=0; k<iNbOfCut; k++) {
+            if (strncmp(&sCutFlag[k][0],"PPCUTM",6) == 0) fCut = fCutValue[k];
+          }
+          fprintf(pAliceInp,"%10.4g",fCut);
+          // fCut; = e+, e- kinetic energy threshold (in GeV) for explicit pair production.
+          // muon and hadron bremsstrahlung
+          // G4 particles: "gamma"
+          // G3 default value: CUTGAM=0.001 GeV
+          //gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung
+          fCut = 0.0;
+          for (k=0; k<iNbOfCut; k++) {
+            if (strncmp(&sCutFlag[k][0],"BCUTM",5) == 0) fCut = fCutValue[k];
+          }
+          fprintf(pAliceInp,"%10.4g%10.1f%10.1f\n",fCut,three,fLastMaterial);
+          // fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
+          // three = lower bound of the material indices in which the respective thresholds apply
+          // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+	  
+          // for e+ and e-
+          fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0.\n");
+          fprintf(pAliceInp,"*Generated from call: SetProcess('BREM',1);\n");
+          fCut = -1.0;
+          for (k=0; k<iNbOfCut; k++) {
+            if (strncmp(&sCutFlag[k][0],"BCUTE",5) == 0) fCut = fCutValue[k];
+          }
+          //fCut = kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
+          // zero = not used
+          // zero = not used
+          // three = lower bound of the material indices in which the respective thresholds apply
+          // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+          // one = step length in assigning indices
+          // "ELPO-THR"; 
+          fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",fCut,zero,zero,three,fLastMaterial,one);
+      
+          // for e+ and e-
+          fprintf(pAliceInp,"*\n*Pair production by electrons is activated\n");
+          fprintf(pAliceInp,"*Generated from call: SetProcess('PAIR',1);\n");
+          fCut = -1.0;
+          for (j=0; j<iNbOfCut; j++) {
+            if (strncmp(&sCutFlag[j][0],"CUTGAM",6) == 0) fCut = fCutValue[j];
+          }
+          // fCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
+          // three = lower bound of the material indices in which the respective thresholds apply
+          // fLastMaterial =  upper bound of the material indices in which the respective thresholds apply
+          // one = step length in assigning indices
+          fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,fCut,three,fLastMaterial,one);
+	  goto BOTH;
+        } // end of if for BREM
+      } // end of loop for BREM
+
+      // only pair production by muons and charged hadrons is activated
+      fprintf(pAliceInp,"*\n*Pair production by muons and charged hadrons is activated\n");
+      fprintf(pAliceInp,"*Generated from call: SetProcess('PAIR',1) or SetProcess('PAIR',2)\n");
+      fprintf(pAliceInp,"*Energy threshold set by call SetCut('PPCUTM',cut) or set to 0.\n");
+      // direct pair production by muons
+      // G4 particles: "e-", "e+"
+      // G3 default value: 0.01 GeV
+      //gMC ->SetCut("PPCUTM",cut); // total energy cut for direct pair prod. by muons
+      // one = pair production by muons and charged hadrons is activated
+      // zero = e+, e- kinetic energy threshold (in GeV) for explicit pair production.
+      // zero = no explicit bremsstrahlung production is simulated
+      // three = lower bound of the material indices in which the respective thresholds apply
+      // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+      fprintf(pAliceInp,"PAIRBREM  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,zero,zero,three,fLastMaterial);
+      
+      // for e+ and e-
+      fprintf(pAliceInp,"*\n*Pair production by electrons is activated\n");
+      fprintf(pAliceInp,"*Generated from call: SetProcess('PAIR',1) or SetProcess('PAIR',2)\n");
+      fCut = -1.0;
+      for (j=0; j<iNbOfCut; j++) {
+        if (strncmp(&sCutFlag[j][0],"CUTGAM",6) == 0) fCut = fCutValue[j];
+      }
+      // zero = energy threshold (GeV) for Compton scattering (= 0.0 : ignored)
+      // zero = energy threshold (GeV) for Photoelectric (= 0.0 : ignored)
+      // fCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
+      // three = lower bound of the material indices in which the respective thresholds apply
+      // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+      // one = step length in assigning indices
+      fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,fCut,three,fLastMaterial,one);
+
+BOTH:
+    k = 0;
+    } // end of if for PAIR
+
+
+
+    // bremsstrahlung
+    // G3 default value: 1
+    // G4 processes: G4eBremsstrahlung/G4IeBremsstrahlung,
+    //               G4MuBremsstrahlung/G4IMuBremsstrahlung,
+    //               G4LowEnergyBremstrahlung
+    // Particles: e-/e+; mu+/mu-
+    // Physics:   EM
+    // flag = 0 no bremsstrahlung
+    // flag = 1 bremsstrahlung, photon processed
+    // flag = 2 bremsstrahlung, no photon stored
+    // gMC ->SetProcess("BREM",1); // PAIRBREM  2.   0.  0. 3. lastmat
+                                 // EMFCUT   -1.   0.  0. 3. lastmat 0. ELPO-THR
+    else if (strncmp(&sProcessFlag[i][0],"BREM",4) == 0) {
+      for (j=0; j<iNbOfProc; j++) {
+        if ((strncmp(&sProcessFlag[j][0],"PAIR",4) == 0) && iProcessValue[j] == 1) goto NOBREM;
+      }
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) { 
+        fprintf(pAliceInp,"*\n*Bremsstrahlung by muons and charged hadrons is activated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('BREM',1) or SetProcess('BREM',2)\n");
+        fprintf(pAliceInp,"*Energy threshold set by call SetCut('BCUTM',cut) or set to 0.\n");
+        // two = bremsstrahlung by muons and charged hadrons is activated
+        // zero = no meaning
+        // muon and hadron bremsstrahlung
+        // G4 particles: "gamma"
+        // G3 default value: CUTGAM=0.001 GeV
+        //gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung
+        fCut = 0.0;
+        for (j=0; j<iNbOfCut; j++) {
+          if (strncmp(&sCutFlag[j][0],"BCUTM",5) == 0) fCut = fCutValue[j];
+        }
+        // fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"PAIRBREM  %10.1f%10.1f%10.4g%10.1f%10.1f\n",two,zero,fCut,three,fLastMaterial);
+ 
+        // for e+ and e-
+        fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0.\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('BREM',1);");
+        // - one = kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
+        // zero = not used
+        // zero = not used
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        // one = step length in assigning indices
+        //"ELPO-THR"; 
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",-one,zero,zero,three,fLastMaterial,one);
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No bremsstrahlung - no FLUKA card generated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('BREM',0)\n");
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('BREM',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+NOBREM:
+      j = 0;
+    } // end of else if (strncmp(&sProcessFlag[i][0],"BREM",4) == 0)
+
+    
+    // Cerenkov photon generation
+    // G3 default value: 0
+    // G4 process: G4Cerenkov
+    // 
+    // Particles: charged
+    // Physics:   Optical
+    // flag = 0 no Cerenkov photon generation
+    // flag = 1 Cerenkov photon generation
+    // flag = 2 Cerenkov photon generation with primary stopped at each step
+    //xx gMC ->SetProcess("CKOV",1); // ??? Cerenkov photon generation
+    else if (strncmp(&sProcessFlag[i][0],"CKOV",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) { 
+        fprintf(pAliceInp,"*\n*Cerenkov photon generation\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('CKOV',1) or SetProcess('CKOV',2)\n");
+        Double_t emin = 2.07e-9; // minimum Cerenkov photon emission energy (in GeV!). Default: 2.07E-9 GeV (corresponding to 600 nm)
+        Double_t emax = 4.96e-9; // maximum Cerenkov photon emission energy (in GeV!). Default: 4.96E-9 GeV (corresponding to 250 nm)
+        fprintf(pAliceInp,"OPT-PROD  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fCERENKOV\n",emin,emax,zero,three,fLastMaterial,one);
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No Cerenkov photon generation\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('CKOV',0)\n");
+        // zero = not used
+        // zero = not used
+        // zero = not used
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        // one = step length in assigning indices
+        //"CERE-OFF"; 
+        fprintf(pAliceInp,"OPT-PROD  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fCERE-OFF\n",zero,zero,zero,three,fLastMaterial,one);
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('CKOV',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"CKOV",4) == 0)
+	    
+
+    // Compton scattering
+    // G3 default value: 1
+    // G4 processes: G4ComptonScattering,
+    //               G4LowEnergyCompton,
+    //               G4PolarizedComptonScattering
+    // Particles: gamma
+    // Physics:   EM
+    // flag = 0 no Compton scattering
+    // flag = 1 Compton scattering, electron processed
+    // flag = 2 Compton scattering, no electron stored
+    // gMC ->SetProcess("COMP",1); // EMFCUT   -1.   0.  0. 3. lastmat 0. PHOT-THR
+    else if (strncmp(&sProcessFlag[i][0],"COMP",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) { 
+        fprintf(pAliceInp,"*\n*Energy threshold (GeV) for Compton scattering - resets to default=0.\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('COMP',1);\n");
+        // - one = energy threshold (GeV) for Compton scattering - resets to default=0.
+        // zero = not used
+        // zero = not used
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        // one = step length in assigning indices
+        //"PHOT-THR"; 
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",-one,zero,zero,three,fLastMaterial,one);
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No Compton scattering - no FLUKA card generated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('COMP',0)\n");
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('COMP',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"COMP",4) == 0)
+
+    // decay
+    // G3 default value: 1
+    // G4 process: G4Decay
+    // 
+    // Particles: all which decay is applicable for
+    // Physics:   General
+    // flag = 0 no decays
+    // flag = 1 decays, secondaries processed
+    // flag = 2 decays, no secondaries stored
+    //gMC ->SetProcess("DCAY",1); // not available
+    else if ((strncmp(&sProcessFlag[i][0],"DCAY",4) == 0) && iProcessValue[i] == 1) 
+      cout << "SetProcess for flag=" << &sProcessFlag[i][0] << " value=" << iProcessValue[i] << " not avaliable!" << endl;
+      
+    // delta-ray
+    // G3 default value: 2
+    // !! G4 treats delta rays in different way
+    // G4 processes: G4eIonisation/G4IeIonization,
+    //               G4MuIonisation/G4IMuIonization,
+    //               G4hIonisation/G4IhIonisation
+    // Particles: charged
+    // Physics:   EM
+    // flag = 0 no energy loss
+    // flag = 1 restricted energy loss fluctuations
+    // flag = 2 complete energy loss fluctuations
+    // flag = 3 same as 1
+    // flag = 4 no energy loss fluctuations
+    // gMC ->SetProcess("DRAY",0); // DELTARAY 1.E+6 0.  0. 3. lastmat 0.
+    else if (strncmp(&sProcessFlag[i][0],"DRAY",4) == 0) {
+      if (iProcessValue[i] == 0 || iProcessValue[i] == 4) {
+        fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for delta ray production\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('DRAY',0) or SetProcess('DRAY',4)\n");
+        fprintf(pAliceInp,"*No delta ray production by muons - threshold set artificially high\n");
+        Double_t emin = 1.0e+6; // kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
+        // zero = ignored
+        // zero = ignored
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        // one = step length in assigning indices
+        fprintf(pAliceInp,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n",emin,zero,zero,three,fLastMaterial,one);
+      }
+      else if (iProcessValue[i] == 1 || iProcessValue[i] == 2 || iProcessValue[i] == 3) {
+        fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for delta ray production\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('DRAY',flag), flag=1,2,3\n");
+        fprintf(pAliceInp,"*Delta ray production by muons switched on\n");
+        fprintf(pAliceInp,"*Energy threshold set by call SetCut('DCUTM',cut) or set to 1.0e+6.\n");
+        fCut = 1.0e+6;
+        for (j=0; j<iNbOfCut; j++) {
+          if (strncmp(&sCutFlag[j][0],"DCUTM",5) == 0) fCut = fCutValue[j];
+        }
+        // fCut = kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
+        // zero = ignored
+        // zero = ignored
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial =  upper bound of the material indices in which the respective thresholds apply
+        // one = step length in assigning indices
+        fprintf(pAliceInp,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n",fCut,zero,zero,three,fLastMaterial,one);
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('DRAY',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"DRAY",4) == 0)
+    
+    // hadronic process
+    // G3 default value: 1
+    // G4 processes: all defined by TG4PhysicsConstructorHadron
+    //  
+    // Particles: hadrons
+    // Physics:   Hadron
+    // flag = 0 no multiple scattering
+    // flag = 1 hadronic interactions, secondaries processed
+    // flag = 2 hadronic interactions, no secondaries stored
+    // gMC ->SetProcess("HADR",1); // ??? hadronic process
+    //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3) ?????
+    else if (strncmp(&sProcessFlag[i][0],"HADR",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+        fprintf(pAliceInp,"*\n*Hadronic interaction is ON by default in FLUKA\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*Hadronic interaction is set OFF\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('HADR',0);\n");
+        // zero = ignored
+        // three = multiple scattering for hadrons and muons is completely suppressed
+        // zero = no spin-relativistic corrections
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"MULSOPT   %10.1f%10.1f%10.1f%10.1f%10.1f\n",zero,three,zero,three,fLastMaterial);
+
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('HADR',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"HADR",4) == 0)
+
+
+    // energy loss
+    // G3 default value: 2
+    // G4 processes: G4eIonisation/G4IeIonization,
+    //               G4MuIonisation/G4IMuIonization,
+    //               G4hIonisation/G4IhIonisation
+    // 
+    // Particles: charged
+    // Physics:   EM
+    // flag=0 no energy loss
+    // flag=1 restricted energy loss fluctuations
+    // flag=2 complete energy loss fluctuations
+    // flag=3 same as 1
+    // flag=4 no energy loss fluctuations
+    // If the value ILOSS is changed, then (in G3) cross-sections and energy
+    // loss tables must be recomputed via the command 'PHYSI'
+    // gMC ->SetProcess("LOSS",2); // ??? IONFLUCT ? energy loss
+    else if (strncmp(&sProcessFlag[i][0],"LOSS",4) == 0) {
+      if (iProcessValue[i] == 2) { // complete energy loss fluctuations
+        fprintf(pAliceInp,"*\n*Complete energy loss fluctuations do not exist in FLUKA\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('LOSS',2);\n");
+        fprintf(pAliceInp,"*flag=2=complete energy loss fluctuations\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+      else if (iProcessValue[i] == 1 || iProcessValue[i] == 3) { // restricted energy loss fluctuations
+        fprintf(pAliceInp,"*\n*Restricted energy loss fluctuations\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('LOSS',1) or SetProcess('LOSS',3)\n");
+        // one = restricted energy loss fluctuations (for hadrons and muons) switched on
+        // one = restricted energy loss fluctuations (for e+ and e-) switched on
+        // one = minimal accuracy
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,one,one,three,fLastMaterial);
+      }
+      else if (iProcessValue[i] == 4) { // no energy loss fluctuations
+        fprintf(pAliceInp,"*\n*No energy loss fluctuations\n");
+        fprintf(pAliceInp,"*\n*Generated from call: SetProcess('LOSS',4)\n");
+        // - one = restricted energy loss fluctuations (for hadrons and muons) switched off
+        // - one = restricted energy loss fluctuations (for e+ and e-) switched off
+        // one = minimal accuracy
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",-one,-one,one,three,fLastMaterial);
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('LOSS',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"LOSS",4) == 0)
+	
+ 
+    // multiple scattering
+    // G3 default value: 1
+    // G4 process: G4MultipleScattering/G4IMultipleScattering
+    // 
+    // Particles: charged
+    // Physics:   EM
+    // flag = 0 no multiple scattering
+    // flag = 1 Moliere or Coulomb scattering
+    // flag = 2 Moliere or Coulomb scattering
+    // flag = 3 Gaussian scattering
+    // gMC ->SetProcess("MULS",1); // MULSOPT multiple scattering
+    else if (strncmp(&sProcessFlag[i][0],"MULS",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2 || iProcessValue[i] == 3) {
+        fprintf(pAliceInp,"*\n*Multiple scattering is ON by default for e+e- and for hadrons/muons\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*Multiple scattering is set OFF\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('MULS',0);\n");
+        // zero = ignored
+        // three = multiple scattering for hadrons and muons is completely suppressed
+        // three = multiple scattering for e+ and e- is completely suppressed
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"MULSOPT   %10.1f%10.1f%10.1f%10.1f%10.1f\n",zero,three,three,three,fLastMaterial);
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('MULS',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"MULS",4) == 0)
+
+
+    // muon nuclear interaction
+    // G3 default value: 0
+    // G4 processes: G4MuNuclearInteraction,
+    // G4MuonMinusCaptureAtRest
+    // 
+    // Particles: mu
+    // Physics:   Not set
+    // flag = 0 no muon-nuclear interaction
+    // flag = 1 nuclear interaction, secondaries processed
+    // flag = 2 nuclear interaction, secondaries not processed
+    // gMC ->SetProcess("MUNU",1); // MUPHOTON  1.   0.  0. 3. lastmat
+    else if (strncmp(&sProcessFlag[i][0],"MUNU",4) == 0) {
+      if (iProcessValue[i] == 1) {
+        fprintf(pAliceInp,"*\n*Muon nuclear interactions with production of secondary hadrons\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('MUNU',1);\n");
+        // one = full simulation of muon nuclear interactions and production of secondary hadrons
+        // zero = ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
+        // zero = fraction of rho-like interactions ( must be < 1) - Default = 0.75.
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"MUPHOTON  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,zero,zero,three,fLastMaterial);
+      }
+      else if (iProcessValue[i] == 2) {
+        fprintf(pAliceInp,"*\n*Muon nuclear interactions without production of secondary hadrons\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('MUNU',2);\n");
+        // two = full simulation of muon nuclear interactions and production of secondary hadrons
+        // zero = ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
+        // zero = fraction of rho-like interactions ( must be < 1) - Default = 0.75.
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"MUPHOTON  %10.1f%10.1f%10.1f%10.1f%10.1f\n",two,zero,zero,three,fLastMaterial);
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No muon nuclear interaction - no FLUKA card generated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('MUNU',0)\n");
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('MUNU',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"MUNU",4) == 0)
+
+
+    // photofission
+    // G3 default value: 0
+    // G4 process: ??
+    //
+    // Particles: gamma
+    // Physics:   ??
+    // gMC ->SetProcess("PFIS",0); // PHOTONUC -1.   0.  0. 3. lastmat 0.
+    // flag = 0 no photon fission
+    // flag = 1 photon fission, secondaries processed
+    // flag = 2 photon fission, no secondaries stored
+    else if (strncmp(&sProcessFlag[i][0],"PFIS",4) == 0) {
+      if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No photonuclear interactions\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('PFIS',0);\n");
+        // - one = no photonuclear interactions
+        // zero = not used
+        // zero = not used
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f\n",-one,zero,zero,three,fLastMaterial);
+      }
+      else if (iProcessValue[i] == 1) {
+        fprintf(pAliceInp,"*\n*Photon nuclear interactions are activated at all energies\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('PFIS',1);\n");
+        // one = photonuclear interactions are activated at all energies
+        // zero = not used
+        // zero = not used
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,zero,zero,three,fLastMaterial);
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No photofission - no FLUKA card generated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('PFIS',0)\n");
+      }
+      else {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('PFIS',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    }
+
+ 
+    // photo electric effect
+    // G3 default value: 1
+    // G4 processes: G4PhotoElectricEffect
+    //               G4LowEnergyPhotoElectric
+    // Particles: gamma
+    // Physics:   EM
+    // flag = 0 no photo electric effect
+    // flag = 1 photo electric effect, electron processed
+    // flag = 2 photo electric effect, no electron stored
+    // gMC ->SetProcess("PHOT",1); // EMFCUT    0.  -1.  0. 3. lastmat 0. PHOT-THR
+    else if (strncmp(&sProcessFlag[i][0],"PHOT",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+        fprintf(pAliceInp,"*\n*Photo electric effect is activated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('PHOT',1);\n");
+        // zero = ignored
+        // - one = resets to default=0.
+        // zero = ignored
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        // one = step length in assigning indices
+        //"PHOT-THR"; 
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",zero,-one,zero,three,fLastMaterial,one);
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*No photo electric effect - no FLUKA card generated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('PHOT',0)\n");
+      }
+      else {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('PHOT',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // else if (strncmp(&sProcessFlag[i][0],"PHOT",4) == 0)
+
+
+    // Rayleigh scattering
+    // G3 default value: 0
+    // G4 process: G4OpRayleigh
+    // 
+    // Particles: optical photon
+    // Physics:   Optical
+    // flag = 0 Rayleigh scattering off
+    // flag = 1 Rayleigh scattering on
+    //xx gMC ->SetProcess("RAYL",1);
+    else if (strncmp(&sProcessFlag[i][0],"RAYL",4) == 0) {
+      if (iProcessValue[i] == 1) {
+        fprintf(pAliceInp,"*\n*Rayleigh scattering is ON by default in FLUKA\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+      else if (iProcessValue[i] == 0) {
+        fprintf(pAliceInp,"*\n*Rayleigh scattering is set OFF\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('RAYL',0);\n");
+        // - one = no Rayleigh scattering and no binding corrections for Compton
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"EMFRAY    %10.1f%10.1f%10.1f%10.1f\n",-one,three,three,fLastMaterial);
+      }
+      else  {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('RAYL',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"RAYL",4) == 0)
+
+
+    // synchrotron radiation in magnetic field
+    // G3 default value: 0
+    // G4 process: G4SynchrotronRadiation
+    // 
+    // Particles: ??
+    // Physics:   Not set
+    // flag = 0 no synchrotron radiation
+    // flag = 1 synchrotron radiation
+    //xx gMC ->SetProcess("SYNC",1); // synchrotron radiation generation
+    else if (strncmp(&sProcessFlag[i][0],"SYNC",4) == 0) {
+        fprintf(pAliceInp,"*\n*Synchrotron radiation generation is NOT implemented in FLUKA\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+    }
+	
+
+    // Automatic calculation of tracking medium parameters
+    // flag = 0 no automatic calculation
+    // flag = 1 automatic calculation
+    //xx gMC ->SetProcess("AUTO",1); // ??? automatic computation of the tracking medium parameters
+    else if (strncmp(&sProcessFlag[i][0],"AUTO",4) == 0) {
+        fprintf(pAliceInp,"*\n*Automatic calculation of tracking medium parameters is always ON in FLUKA\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+    }
+	
+
+    // To control energy loss fluctuation model
+    // flag = 0 Urban model
+    // flag = 1 PAI model
+    // flag = 2 PAI+ASHO model (not active at the moment)
+    //xx gMC ->SetProcess("STRA",1); // ??? energy fluctuation model
+    else if (strncmp(&sProcessFlag[i][0],"STRA",4) == 0) {
+      if (iProcessValue[i] == 0 || iProcessValue[i] == 2 || iProcessValue[i] == 3) {
+        fprintf(pAliceInp,"*\n*Ionization energy losses calculation is activated\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('STRA',n);, n=0,1,2\n");
+        // one = restricted energy loss fluctuations (for hadrons and muons) switched on
+        // one = restricted energy loss fluctuations (for e+ and e-) switched on
+        // one = minimal accuracy
+        // three = lower bound of the material indices in which the respective thresholds apply
+        // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+        fprintf(pAliceInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,one,one,three,fLastMaterial);
+      }
+      else {
+        fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('STRA',?) call.\n");
+        fprintf(pAliceInp,"*No FLUKA card generated\n");
+      }
+    } // else if (strncmp(&sProcessFlag[i][0],"STRA",4) == 0)
+
+
+
+
+    else { // processes not yet treated
+
+    // light photon absorption (Cerenkov photons)
+    // it is turned on when Cerenkov process is turned on
+    // G3 default value: 0
+    // G4 process: G4OpAbsorption, G4OpBoundaryProcess
+    // 
+    // Particles: optical photon
+    // Physics:   Optical
+    // flag = 0 no absorption of Cerenkov photons
+    // flag = 1 absorption of Cerenkov photons
+    // gMC ->SetProcess("LABS",2); // ??? Cerenkov light absorption
+
+
+
+      cout << "SetProcess for flag=" << &sProcessFlag[i][0] << " value=" << iProcessValue[i] << " not yet implemented!" << endl;
+    }
+  } //end of loop number of SetProcess calls
+
+ 
+// Loop over number of SetCut calls  
+  for (Int_t i=0; i<iNbOfCut; i++) {
+
+    // cuts used in SetProcess calls
+    if (strncmp(&sCutFlag[i][0],"BCUTM",5) == 0) continue;
+    else if (strncmp(&sCutFlag[i][0],"BCUTE",5) == 0) continue;
+    else if (strncmp(&sCutFlag[i][0],"DCUTM",5) == 0) continue;
+    else if (strncmp(&sCutFlag[i][0],"PPCUTM",6) == 0) continue;
+
+    // gammas
+    // G4 particles: "gamma"
+    // G3 default value: 0.001 GeV
+    //gMC ->SetCut("CUTGAM",cut); // cut for gammas
+    else if (strncmp(&sCutFlag[i][0],"CUTGAM",6) == 0) {
+      fprintf(pAliceInp,"*\n*Cut for gamma\n");
+      fprintf(pAliceInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
+      // -fCutValue[i];
+      // 7.0 = lower bound of the particle id-numbers to which the cut-off
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f\n",-fCutValue[i],7.0);
+    }
+
+    // electrons
+    // G4 particles: "e-"
+    // ?? positrons
+    // G3 default value: 0.001 GeV
+    //gMC ->SetCut("CUTELE",cut); // cut for e+,e-
+    else if (strncmp(&sCutFlag[i][0],"CUTELE",6) == 0) {
+      fprintf(pAliceInp,"*\n*Cut for electrons\n");
+      fprintf(pAliceInp,"*Generated from call: SetCut('CUTELE',cut);\n");
+      // -fCutValue[i];
+      // three = lower bound of the particle id-numbers to which the cut-off
+      // 4.0 = upper bound of the particle id-numbers to which the cut-off
+      // one = step length in assigning numbers
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],three,4.0,one);
+    }
+
+    // neutral hadrons
+    // G4 particles: of type "baryon", "meson", "nucleus" with zero charge
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("CUTNEU",cut); // cut for neutral hadrons
+    else if (strncmp(&sCutFlag[i][0],"CUTNEU",6) == 0) {
+      fprintf(pAliceInp,"*\n*Cut for neutral hadrons\n");
+      fprintf(pAliceInp,"*Generated from call: SetCut('CUTNEU',cut);\n");
+
+      // 8.0 = Neutron
+      // 9.0 = Antineutron
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],8.0,9.0);
+
+      // 12.0 = Kaon zero long
+      // 12.0 = Kaon zero long
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],12.0,12.0);
+
+      // 17.0 = Lambda, 18.0 = Antilambda
+      // 19.0 = Kaon zero short
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],17.0,19.0);
+
+      // 22.0 = Sigma zero, Pion zero, Kaon zero
+      // 25.0 = Antikaon zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],22.0,25.0);
+
+      // 32.0 = Antisigma zero
+      // 32.0 = Antisigma zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],32.0,32.0);
+
+      // 34.0 = Xi zero
+      // 35.0 = AntiXi zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],34.0,35.0);
+
+      // 47.0 = D zero
+      // 48.0 = AntiD zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],47.0,48.0);
+
+      // 53.0 = Xi_c zero
+      // 53.0 = Xi_c zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],53.0,53.0);
+
+      // 55.0 = Xi'_c zero
+      // 56.0 = Omega_c zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],55.0,56.0);
+
+      // 59.0 = AntiXi_c zero
+      // 59.0 = AntiXi_c zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],59.0,59.0);
+
+      // 61.0 = AntiXi'_c zero
+      // 62.0 = AntiOmega_c zero
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],61.0,62.0);
+    }
+
+    // charged hadrons
+    // G4 particles: of type "baryon", "meson", "nucleus" with non-zero charge
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("CUTHAD",cut); // cut for charged hadrons
+    else if (strncmp(&sCutFlag[i][0],"CUTHAD",6) == 0) {
+      fprintf(pAliceInp,"*\n*Cut for charged hadrons\n");
+      fprintf(pAliceInp,"*Generated from call: SetCut('CUTHAD',cut);\n");
+
+      // 1.0 = Proton
+      // 2.0 = Antiproton
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],1.0,2.0);
+
+      // 13.0 = Positive Pion, Negative Pion, Positive Kaon
+      // 16.0 = Negative Kaon
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],13.0,16.0);
+
+      // 20.0 = Negative Sigma
+      // 21.0 = Positive Sigma
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],20.0,21.0);
+
+      // 31.0 = Antisigma minus
+      // 33.0 = Antisigma plus
+      // 2.0 = step length
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],31.0,33.0,2.0);
+
+      // 36.0 = Negative Xi, Positive Xi, Omega minus
+      // 39.0 = Antiomega
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],36.0,39.0);
+
+      // 45.0 = D plus
+      // 46.0 = D minus
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],45.0,46.0);
+
+      // 49.0 = D_s plus, D_s minus, Lambda_c plus
+      // 52.0 = Xi_c plus
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],49.0,52.0);
+
+      // 54.0 = Xi'_c plus
+      // 60.0 = AntiXi'_c minus
+      // 6.0 = step length
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],54.0,60.0,6.0);
+
+      // 57.0 = Antilambda_c minus
+      // 58.0 = AntiXi_c minus
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],57.0,58.0);
+    }
+
+    // muons
+    // G4 particles: "mu+", "mu-"
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("CUTMUO",cut); // cut for mu+, mu-
+    else if (strncmp(&sCutFlag[i][0],"CUTMUO",6) == 0) {
+      fprintf(pAliceInp,"*\n*Cut for muons\n");
+      fprintf(pAliceInp,"*Generated from call: SetCut('CUTMUO',cut);\n");
+      // 10.0 = Muon+
+      // 11.0 = Muon-
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],10.0,11.0);
+    }
+
+    // delta-rays by electrons
+    // G4 particles: "e-"
+    // G3 default value: 10**4 GeV
+    // gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons ???????????????
+    else if (strncmp(&sCutFlag[i][0],"DCUTE",5) == 0) {
+      fprintf(pAliceInp,"*\n*Cut for delta rays by electrons ????????????\n");
+      fprintf(pAliceInp,"*Generated from call: SetCut('DCUTE',cut);\n");
+      // -fCutValue[i];
+      // zero = ignored
+      // zero = ignored
+      // three = lower bound of the material indices in which the respective thresholds apply
+      // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
+      fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f\n",-fCutValue[i],zero,zero,three,fLastMaterial);
+    }
+    
+    //
+    // time of flight cut in seconds
+    // G4 particles: all
+    // G3 default value: 0.01 GeV
+    //gMC ->SetCut("TOFMAX",tofmax); // time of flight cuts in seconds
+    else if (strncmp(&sCutFlag[i][0],"TOFMAX",6) == 0) {
+      fprintf(pAliceInp,"*\n*Time of flight cuts in seconds\n");
+      fprintf(pAliceInp,"*Generated from call: SetCut('TOFMAX',tofmax);\n");
+      // zero = ignored
+      // zero = ignored
+      // -6.0 = lower bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
+      // 64.0 = upper bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
+      fprintf(pAliceInp,"TIME-CUT  %10.4g%10.1f%10.1f%10.1f%10.1f\n",fCutValue[i]*1.e9,zero,zero,-6.0,64.0);
+    }
+
+    else {
+      cout << "SetCut for flag=" << &sCutFlag[i][0] << " value=" << fCutValue[i] << " not yet implemented!" << endl;
+    }
+  } //end of loop over SetCut calls
+    
+// Add START and STOP card
+   fprintf(pAliceInp,"START     %10.1f\n",fEventsPerRun);
+   fprintf(pAliceInp,"STOP      \n");
+
+} // end of InitPhysics
+
+
+void TFluka::SetMaxStep(Double_t)
+{
+// SetMaxStep is dummy procedure in TFluka !
+  if (fVerbosityLevel >=3)
+  cout << "SetMaxStep is dummy procedure in TFluka !" << endl;
+}
+
+void TFluka::SetMaxNStep(Int_t)
+{
+// SetMaxNStep is dummy procedure in TFluka !
+  if (fVerbosityLevel >=3)
+  cout << "SetMaxNStep is dummy procedure in TFluka !" << endl;
+}
+
+void TFluka::SetUserDecay(Int_t)
+{
+// SetUserDecay is dummy procedure in TFluka !
+  if (fVerbosityLevel >=3)
+  cout << "SetUserDecay is dummy procedure in TFluka !" << endl;
+}
+
+//
+// dynamic properties
+//
+void TFluka::TrackPosition(TLorentzVector& position) const
+{
+// Return the current position in the master reference frame of the
+// track being transported
+// TRACKR.atrack = age of the particle
+// TRACKR.xtrack = x-position of the last point
+// TRACKR.ytrack = y-position of the last point
+// TRACKR.ztrack = z-position of the last point
+  Int_t caller = GetCaller();
+  if (caller == 3 || caller == 6 || caller == 11 || caller == 12) { //bxdraw,endraw,usdraw
+    position.SetX(GetXsco());
+    position.SetY(GetYsco());
+    position.SetZ(GetZsco());
+    position.SetT(TRACKR.atrack);
+  }
+  else if (caller == 4) { // mgdraw
+    position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
+    position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
+    position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
+    position.SetT(TRACKR.atrack);
+  }
+  else if (caller == 5) { // sodraw
+    position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
+    position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
+    position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
+    position.SetT(0);
+  }
+  else
+    Warning("TrackPosition","position not available");
+}
+
+//
+void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
+{
+// Return the current position in the master reference frame of the
+// track being transported
+// TRACKR.atrack = age of the particle
+// TRACKR.xtrack = x-position of the last point
+// TRACKR.ytrack = y-position of the last point
+// TRACKR.ztrack = z-position of the last point
+  Int_t caller = GetCaller();
+  if (caller == 3 || caller == 6 || caller == 11 || caller == 12) { //bxdraw,endraw,usdraw
+    x = GetXsco();
+    y = GetYsco();
+    z = GetZsco();
+  }
+  else if (caller == 4 || caller == 5) { // mgdraw, sodraw
+    x = TRACKR.xtrack[TRACKR.ntrack];
+    y = TRACKR.ytrack[TRACKR.ntrack];
+    z = TRACKR.ztrack[TRACKR.ntrack];
+  }
+  else
+    Warning("TrackPosition","position not available");
+}
+
+void TFluka::TrackMomentum(TLorentzVector& momentum) const
+{
+// Return the direction and the momentum (GeV/c) of the track
+// currently being transported
+// TRACKR.ptrack = momentum of the particle (not always defined, if
+//               < 0 must be obtained from etrack) 
+// TRACKR.cx,y,ztrck = direction cosines of the current particle
+// TRACKR.etrack = total energy of the particle
+// TRACKR.jtrack = identity number of the particle
+// PAPROP.am[TRACKR.jtrack] = particle mass in gev
+  Int_t caller = GetCaller();
+  if (caller != 2) { // not eedraw 
+    if (TRACKR.ptrack >= 0) {
+      momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
+      momentum.SetPy(TRACKR.ptrack*TRACKR.cytrck);
+      momentum.SetPz(TRACKR.ptrack*TRACKR.cztrck);
+      momentum.SetE(TRACKR.etrack);
+      return;
+    }
+    else {
+      Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
+      momentum.SetPx(p*TRACKR.cxtrck);
+      momentum.SetPy(p*TRACKR.cytrck);
+      momentum.SetPz(p*TRACKR.cztrck);
+      momentum.SetE(TRACKR.etrack);
+      return;
+    }
+  }
+  else
+    Warning("TrackMomentum","momentum not available");
+}
+
+void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e) const
+{
+// Return the direction and the momentum (GeV/c) of the track
+// currently being transported
+// TRACKR.ptrack = momentum of the particle (not always defined, if
+//               < 0 must be obtained from etrack) 
+// TRACKR.cx,y,ztrck = direction cosines of the current particle
+// TRACKR.etrack = total energy of the particle
+// TRACKR.jtrack = identity number of the particle
+// PAPROP.am[TRACKR.jtrack] = particle mass in gev
+  Int_t caller = GetCaller();
+  if (caller != 2) { // not eedraw 
+    if (TRACKR.ptrack >= 0) {
+      px = TRACKR.ptrack*TRACKR.cxtrck;
+      py = TRACKR.ptrack*TRACKR.cytrck;
+      pz = TRACKR.ptrack*TRACKR.cztrck;
+      e = TRACKR.etrack;
+      return;
+    }
+    else {
+      Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
+      px = p*TRACKR.cxtrck;
+      py = p*TRACKR.cytrck;
+      pz = p*TRACKR.cztrck;
+      e = TRACKR.etrack;
+      return;
+    }
+  }
+  else
+    Warning("TrackMomentum","momentum not available");
+}
+
+Double_t TFluka::TrackStep() const
+{
+// Return the length in centimeters of the current step
+// TRACKR.ctrack = total curved path
+  Int_t caller = GetCaller();
+  if (caller == 11 || caller==12 || caller == 3 || caller == 6) //bxdraw,endraw,usdraw
+    return 0.0;
+  else if (caller == 4) //mgdraw
+    return TRACKR.ctrack;
+  else
+    return -1.0;
+}
+
+Double_t TFluka::TrackLength() const
+{
+// TRACKR.cmtrck = cumulative curved path since particle birth
+  Int_t caller = GetCaller();
+  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
+    return TRACKR.cmtrck;
+  else 
+    return -1.0;
+}
+
+Double_t TFluka::TrackTime() const
+{
+// Return the current time of flight of the track being transported
+// TRACKR.atrack = age of the particle
+  Int_t caller = GetCaller();
+  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
+    return TRACKR.atrack;
+  else 
+    return -1;
+}
+
+Double_t TFluka::Edep() const
+{
+// Energy deposition
+// if TRACKR.ntrack = 0, TRACKR.mtrack = 0:
+// -->local energy deposition (the value and the point are not recorded in TRACKR)
+//    but in the variable "rull" of the procedure "endraw.cxx"
+// if TRACKR.ntrack > 0, TRACKR.mtrack = 0:
+// -->no energy loss along the track
+// if TRACKR.ntrack > 0, TRACKR.mtrack > 0:
+// -->energy loss distributed along the track
+// TRACKR.dtrack = energy deposition of the jth deposition even
+
+  // If coming from bxdraw we have 2 steps of 0 length and 0 edep
+  Int_t caller = GetCaller();
+  if (caller == 11 || caller==12) return 0.0;
+  Double_t sum = 0;
+  for ( Int_t j=0;j<TRACKR.mtrack;j++) {
+    sum +=TRACKR.dtrack[j];  
+  }
+  if (TRACKR.ntrack == 0 && TRACKR.mtrack == 0)
+    return fRull + sum;
+  else {
+    return sum;
+  }
+}
+
+Int_t TFluka::TrackPid() const
+{
+// Return the id of the particle transported
+// TRACKR.jtrack = identity number of the particle
+  Int_t caller = GetCaller();
+  if (caller != 2)  // not eedraw 
+    return PDGFromId(TRACKR.jtrack);
+  else
+    return -1000;
+}
+
+Double_t TFluka::TrackCharge() const
+{
+// Return charge of the track currently transported
+// PAPROP.ichrge = electric charge of the particle
+// TRACKR.jtrack = identity number of the particle
+  Int_t caller = GetCaller();
+  if (caller != 2)  // not eedraw 
+    return PAPROP.ichrge[TRACKR.jtrack+6];
+  else
+    return -1000.0;
+}
+
+Double_t TFluka::TrackMass() const
+{
+// PAPROP.am = particle mass in GeV
+// TRACKR.jtrack = identity number of the particle
+  Int_t caller = GetCaller();
+  if (caller != 2) {  // not eedraw 
+//    cout << "JTRACK=" << TRACKR.jtrack << " mass=" << PAPROP.am[TRACKR.jtrack+6] << endl;
+    return PAPROP.am[TRACKR.jtrack+6];
+  }
+  else
+    return -1000.0;
+}
+
+Double_t TFluka::Etot() const
+{
+// TRACKR.etrack = total energy of the particle
+  Int_t caller = GetCaller();
+  if (caller != 2)  // not eedraw
+    return TRACKR.etrack;
+  else
+    return -1000.0;
+}
+
+//
+// track status
+//
+Bool_t   TFluka::IsNewTrack() const
+{
+// Return true for the first call of Stepping()
+   return fTrackIsNew;
+}
+
+Bool_t   TFluka::IsTrackInside() const
+{
+// True if the track is not at the boundary of the current volume
+// In Fluka a step is always inside one kind of material
+// If the step would go behind the region of one material,
+// it will be shortened to reach only the boundary.
+// Therefore IsTrackInside() is always true.
+  Int_t caller = GetCaller();
+  if (caller == 11 || caller==12)  // bxdraw
+    return 0;
+  else
+    return 1;
+}
+
+Bool_t   TFluka::IsTrackEntering() const
+{
+// True if this is the first step of the track in the current volume
+
+  Int_t caller = GetCaller();
+  if (caller == 11)  // bxdraw entering
+    return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackExiting() const
+{
+  Int_t caller = GetCaller();
+  if (caller == 12)  // bxdraw exiting
+    return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackOut() const
+{
+// True if the track is out of the setup
+// means escape
+// Icode = 14: escape - call from Kaskad
+// Icode = 23: escape - call from Emfsco
+// Icode = 32: escape - call from Kasneu
+// Icode = 40: escape - call from Kashea
+// Icode = 51: escape - call from Kasoph
+  if (fIcode == 14 ||
+      fIcode == 23 ||
+      fIcode == 32 ||
+      fIcode == 40 ||
+      fIcode == 51) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackDisappeared() const
+{
+// means all inelastic interactions and decays
+// fIcode from usdraw
+  if (fIcode == 101 || // inelastic interaction
+      fIcode == 102 || // particle decay
+      fIcode == 214 || // in-flight annihilation
+      fIcode == 215 || // annihilation at rest
+      fIcode == 217 || // pair production
+      fIcode == 221) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackStop() const
+{
+// True if the track energy has fallen below the threshold
+// means stopped by signal or below energy threshold
+// Icode = 12: stopping particle       - call from Kaskad
+// Icode = 15: time kill               - call from Kaskad
+// Icode = 21: below threshold, iarg=1 - call from Emfsco
+// Icode = 22: below threshold, iarg=2 - call from Emfsco
+// Icode = 24: time kill               - call from Emfsco
+// Icode = 31: below threshold         - call from Kasneu
+// Icode = 33: time kill               - call from Kasneu
+// Icode = 41: time kill               - call from Kashea
+// Icode = 52: time kill               - call from Kasoph
+  if (fIcode == 12 ||
+      fIcode == 15 ||
+      fIcode == 21 ||
+      fIcode == 22 ||
+      fIcode == 24 ||
+      fIcode == 31 ||
+      fIcode == 33 ||
+      fIcode == 41 ||
+      fIcode == 52) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackAlive() const
+{
+// means not disappeared or not out
+  if (IsTrackDisappeared() || IsTrackOut() ) return 0;
+  else return 1;
+}
+
+//
+// secondaries
+//
+
+Int_t TFluka::NSecondaries() const
+// Number of secondary particles generated in the current step
+// FINUC.np = number of secondaries except light and heavy ions
+// FHEAVY.npheav = number of secondaries for light and heavy secondary ions
+{
+  Int_t caller = GetCaller();
+  if (caller == 6)  // valid only after usdraw
+    return FINUC.np + FHEAVY.npheav;
+  else
+    return 0;
+} // end of NSecondaries
+
+void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
+		TLorentzVector& position, TLorentzVector& momentum)
+{
+  Int_t caller = GetCaller();
+  if (caller == 6) {  // valid only after usdraw
+    if (isec >= 0 && isec < FINUC.np) {
+      particleId = PDGFromId(FINUC.kpart[isec]);
+      position.SetX(fXsco);
+      position.SetY(fYsco);
+      position.SetZ(fZsco);
+      position.SetT(TRACKR.atrack);
+      momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
+      momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
+      momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
+      momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
+    }
+    else if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
+      Int_t jsec = isec - FINUC.np;
+      particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
+      position.SetX(fXsco);
+      position.SetY(fYsco);
+      position.SetZ(fZsco);
+      position.SetT(TRACKR.atrack);
+      momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
+      momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
+      momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
+      if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
+        momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
+      else if (FHEAVY.tkheav[jsec] > 6)
+        momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+    }
+    else
+      Warning("GetSecondary","isec out of range");
+  }
+  else
+    Warning("GetSecondary","no secondaries available");
+} // end of GetSecondary
+
+TMCProcess TFluka::ProdProcess(Int_t) const
+// Name of the process that has produced the secondary particles
+// in the current step
+{
+    const TMCProcess kIpNoProc = kPNoProcess;
+    const TMCProcess kIpPDecay = kPDecay;
+    const TMCProcess kIpPPair = kPPair;
+//  const TMCProcess kIpPPairFromPhoton = kPPairFromPhoton;
+//  const TMCProcess kIpPPairFromVirtualPhoton = kPPairFromVirtualPhoton;
+    const TMCProcess kIpPCompton = kPCompton;
+    const TMCProcess kIpPPhotoelectric = kPPhotoelectric;
+    const TMCProcess kIpPBrem = kPBrem;
+//  const TMCProcess kIpPBremFromHeavy = kPBremFromHeavy;
+//  const TMCProcess kIpPBremFromElectronOrPositron = kPBremFromElectronOrPositron;
+    const TMCProcess kIpPDeltaRay = kPDeltaRay;
+//  const TMCProcess kIpPMoller = kPMoller;
+//  const TMCProcess kIpPBhabha = kPBhabha;
+    const TMCProcess kIpPAnnihilation = kPAnnihilation;
+//  const TMCProcess kIpPAnnihilInFlight = kPAnnihilInFlight;
+//  const TMCProcess kIpPAnnihilAtRest = kPAnnihilAtRest;
+    const TMCProcess kIpPHadronic = kPHadronic;
+    const TMCProcess kIpPMuonNuclear = kPMuonNuclear;
+    const TMCProcess kIpPPhotoFission = kPPhotoFission;
+    const TMCProcess kIpPRayleigh = kPRayleigh;
+//  const TMCProcess kIpPCerenkov = kPCerenkov;
+//  const TMCProcess kIpPSynchrotron = kPSynchrotron;
+
+    Int_t mugamma = TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11;
+    if (fIcode == 102) return kIpPDecay;
+    else if (fIcode == 104 || fIcode == 217) return kIpPPair;
+//  else if (fIcode == 104) return kIpPairFromPhoton;
+//  else if (fIcode == 217) return kIpPPairFromVirtualPhoton;
+    else if (fIcode == 219) return kIpPCompton;
+    else if (fIcode == 221) return kIpPPhotoelectric;
+    else if (fIcode == 105 || fIcode == 208) return kIpPBrem;
+//  else if (fIcode == 105) return kIpPBremFromHeavy;
+//  else if (fIcode == 208) return kPBremFromElectronOrPositron;
+    else if (fIcode == 103 || fIcode == 400) return kIpPDeltaRay;
+    else if (fIcode == 210 || fIcode == 212) return kIpPDeltaRay;
+//  else if (fIcode == 210) return kIpPMoller;
+//  else if (fIcode == 212) return kIpPBhabha;
+    else if (fIcode == 214 || fIcode == 215) return kIpPAnnihilation;
+//  else if (fIcode == 214) return kIpPAnnihilInFlight;
+//  else if (fIcode == 215) return kIpPAnnihilAtRest;
+    else if (fIcode == 101) return kIpPHadronic;
+    else if (fIcode == 101) {
+      if (!mugamma) return kIpPHadronic;
+      else if (TRACKR.jtrack == 7) return kIpPPhotoFission;
+      else return kIpPMuonNuclear;
+    }
+    else if (fIcode == 225) return kIpPRayleigh;
+// Fluka codes 100, 300 and 400 still to be investigasted
+    else return kIpNoProc;
+}
+
+//Int_t StepProcesses(TArrayI &proc) const
+// Return processes active in the current step
+//{
+//ck = total energy of the particl ???????????????? 
+//}
+
+
+Int_t TFluka::VolId2Mate(Int_t id) const
+{
+//
+// Returns the material number for a given volume ID
+//
+    if (fVerbosityLevel >= 3)
+    printf("VolId2Mate %d %d\n", id, fMediaByRegion[id-1]); 
+    return fMediaByRegion[id-1];
+}
+
+const char* TFluka::VolName(Int_t id) const
+{
+//
+// Returns the volume name for a given volume ID
+//
+    FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[id-1]);
+    const char* name = vol->GetName();
+    if (fVerbosityLevel >= 3)
+    printf("VolName %d %s \n", id, name);
+    return name;
+}
+
+Int_t TFluka::VolId(const Text_t* volName) const
+{
+//
+// Converts from volume name to volume ID.
+// Time consuming. (Only used during set-up)
+// Could be replaced by hash-table
+//
+    char tmp[5];
+    Int_t i =0;
+    for (i = 0; i < fNVolumes; i++)
+  {
+      FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[i]);
+      TString name = vol->GetName();
+      strcpy(tmp, name.Data());
+      tmp[4] = '\0';
+      if (!strcmp(tmp, volName)) break;
+  }
+    i++;
+
+    return i;
+}
+
+
+Int_t TFluka::CurrentVolID(Int_t& copyNo) const
+{
+//
+// Return the logical id and copy number corresponding to the current fluka region
+//
+    int ir = fCurrentFlukaRegion;
+    int id = (FGeometryInit::GetInstance())->CurrentVolID(ir, copyNo);
+    copyNo++;
+    if (fVerbosityLevel >= 3)
+    printf("CurrentVolID: %d %d %d \n", ir, id, copyNo); 
+    return id;
+} 
+
+Int_t TFluka::CurrentVolOffID(Int_t off, Int_t& copyNo) const
+{
+//
+// Return the logical id and copy number of off'th mother 
+// corresponding to the current fluka region
+//
+    if (off == 0) 
+	return CurrentVolID(copyNo);
+    
+    int ir = fCurrentFlukaRegion;
+    int id = (FGeometryInit::GetInstance())->CurrentVolOffID(ir, off, copyNo);
+    copyNo++;
+    if (fVerbosityLevel >= 3)
+    printf("CurrentVolOffID: %d %d %d \n", ir, id, copyNo); 
+    if (id == -1) 
+	if (fVerbosityLevel >= 0)
+	printf("CurrentVolOffID: Warning Mother not found !!!\n"); 
+    return id;
+}
+
+
+const char* TFluka::CurrentVolName() const
+{
+//
+// Return the current volume name
+//
+    Int_t copy;
+    Int_t id = TFluka::CurrentVolID(copy);
+    const char* name = TFluka::VolName(id);
+    if (fVerbosityLevel >= 3)
+    printf("CurrentVolumeName: %d %s \n", fCurrentFlukaRegion,  name); 
+    return name;
+}
+
+const char* TFluka::CurrentVolOffName(Int_t off) const
+{
+//
+// Return the volume name of the off'th mother of the current volume
+//
+    Int_t copy;
+    Int_t id = TFluka::CurrentVolOffID(off, copy);
+    const char* name = TFluka::VolName(id);
+    if (fVerbosityLevel >= 3)
+    printf("CurrentVolumeOffName: %d %s \n", fCurrentFlukaRegion,  name); 
+    return name;
+}
+
+Int_t TFluka::CurrentMaterial(Float_t & /*a*/, Float_t & /*z*/, 
+		      Float_t & /*dens*/, Float_t & /*radl*/, Float_t & /*absl*/) const
+{
+//
+//  Return the current medium number
+//
+    Int_t copy;
+    Int_t id  =  TFluka::CurrentVolID(copy);
+    Int_t med =  TFluka::VolId2Mate(id);
+    if (fVerbosityLevel >= 3)
+    printf("CurrentMaterial: %d %d \n", fCurrentFlukaRegion,  med); 
+    return med;
+}
+
+void TFluka::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
+    {
+// Transforms a position from the world reference frame
+// to the current volume reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//       Computes coordinates XD (in DRS) 
+//       from known coordinates XM in MRS 
+//       The local reference system can be initialized by
+//         - the tracking routines and GMTOD used in GUSTEP
+//         - a call to GMEDIA(XM,NUMED)
+//         - a call to GLVOLU(NLEVEL,NAMES,NUMBER,IER) 
+//             (inverse routine is GDTOM) 
+//
+//        If IFLAG=1  convert coordinates 
+//           IFLAG=2  convert direction cosinus
+//
+// ---
+	Double_t xmD[3], xdD[3];	
+	xmD[0] = xm[0]; xmD[1] = xm[1]; xmD[2] = xm[2];	
+	(FGeometryInit::GetInstance())->Gmtod(xmD, xdD, iflag);
+	xd[0] = xdD[0]; xd[1] = xdD[1]; xd[2] = xdD[2];	
+    }
+
+  
+void TFluka::Gmtod(Double_t* xm, Double_t* xd, Int_t iflag)
+    {
+// Transforms a position from the world reference frame
+// to the current volume reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//       Computes coordinates XD (in DRS) 
+//       from known coordinates XM in MRS 
+//       The local reference system can be initialized by
+//         - the tracking routines and GMTOD used in GUSTEP
+//         - a call to GMEDIA(XM,NUMED)
+//         - a call to GLVOLU(NLEVEL,NAMES,NUMBER,IER) 
+//             (inverse routine is GDTOM) 
+//
+//        If IFLAG=1  convert coordinates 
+//           IFLAG=2  convert direction cosinus
+//
+// ---
+	(FGeometryInit::GetInstance())->Gmtod(xm, xd, iflag);
+    }
+
+void TFluka::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
+    {
+// Transforms a position from the current volume reference frame
+// to the world reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//  Computes coordinates XM (Master Reference System
+//  knowing the coordinates XD (Detector Ref System)
+//  The local reference system can be initialized by
+//    - the tracking routines and GDTOM used in GUSTEP
+//    - a call to GSCMED(NLEVEL,NAMES,NUMBER)
+//        (inverse routine is GMTOD)
+// 
+//   If IFLAG=1  convert coordinates
+//      IFLAG=2  convert direction cosinus
+//
+// ---
+	Double_t xmD[3], xdD[3];	
+	xdD[0] = xd[0]; xdD[1] = xd[1]; xdD[2] = xd[2];	
+	(FGeometryInit::GetInstance())->Gdtom(xdD, xmD, iflag);
+	xm[0] = xmD[0]; xm[1] = xmD[1]; xm[2] = xmD[2];	
+    }
+void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
+    {
+// Transforms a position from the current volume reference frame
+// to the world reference frame.
+//
+//  Geant3 desription:
+//  ==================
+//  Computes coordinates XM (Master Reference System
+//  knowing the coordinates XD (Detector Ref System)
+//  The local reference system can be initialized by
+//    - the tracking routines and GDTOM used in GUSTEP
+//    - a call to GSCMED(NLEVEL,NAMES,NUMBER)
+//        (inverse routine is GMTOD)
+// 
+//   If IFLAG=1  convert coordinates
+//      IFLAG=2  convert direction cosinus
+//
+// ---
+
+	(FGeometryInit::GetInstance())->Gdtom(xd, xm, iflag);
+    }
+
+// ===============================================================
