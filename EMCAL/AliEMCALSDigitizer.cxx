@@ -68,7 +68,6 @@ ClassImp(AliEMCALSDigitizer)
 {
   // ctor
   fFirstEvent = fLastEvent  = 0 ;  
-  InitParameters() ; 
   fDefaultInit = kTRUE ; 
 }
 
