@@ -25,7 +25,7 @@ public:
   }
   virtual ~AliComplexCluster() {;}
   Bool_t    IsSortable() const;
-  Int_t Compare(TObject *o) ;
+  Int_t Compare(const TObject *o) const;
   ClassDef(AliComplexCluster,1)  // Cluster manager
 };
 

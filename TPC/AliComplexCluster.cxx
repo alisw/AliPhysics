@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/05 16:17:27  kowal2
+New class replacing AliCluster
+
 
 */
 
@@ -37,7 +40,7 @@ $Log$
 
 ClassImp(AliComplexCluster)
 //_____________________________________________________________________________
-Int_t AliComplexCluster::Compare(TObject * o)
+Int_t AliComplexCluster::Compare(const TObject * o) const
 {
   //
   // compare two clusters according y coordinata
