@@ -93,7 +93,8 @@ void g4libs_granular()
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4geomBoolean");    
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4csg");                  
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4step");
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4brep");               
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4brep"); 
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4specsolids"); 
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4stepinterface");
   
     // particles          
@@ -120,10 +121,9 @@ void g4libs_granular()
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_xsect");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_mgt");         
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_proc");
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_stop");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_util");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_man_gen");     
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_deex");        
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_util_gen");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_string_common");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_diffstring");  
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_stringfrag");
@@ -131,11 +131,12 @@ void g4libs_granular()
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_kinetic");     
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_preequ");      
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_qgstring");
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_util_gen");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_HE");          
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_LE");          
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_iso");         
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_deex");
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_stop");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_neu");         
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4hadronic_iso");         
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4optical");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4photolepton_hadron");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4transportation");
@@ -168,8 +169,8 @@ void g4libs_granular()
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4UIGAG");                
 
     // visualisation
-    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4vis_management");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4modeling");
+    gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4vis_management");
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4FR");                   
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4OpenGL");               
     gSystem->Load("$(G4INSTALL)/lib/$(G4SYSTEM)/libG4VRML");                 
