@@ -21,7 +21,11 @@ AliHBTCrab* AliHBTCrab::fgCrab = 0x0;
 
 const Double_t AliHBTCrab::fgkWcons = 1./0.1973;
 const Double_t AliHBTCrab::fgkROOT2=1.41421356237309504880;
+#ifdef __DECCXX
+const complex AliHBTCrab::ci(0.0,1.0);
+#else
 const double_complex AliHBTCrab::ci(0.0,1.0);
+#endif
 
 /************************************************************/
 
@@ -258,7 +262,11 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
   double wsym_leftover,wanti_leftover,wnosym_leftover;
   double qred,qdotr,r;
 //  const double rmass=MASS1*MASS2/(MASS1+MASS2);
+#ifdef __DECCXX
+  complex cphi1,cphi2,cphis,cphia;
+#else
   double_complex cphi1,cphi2,cphis,cphia;
+#endif
 
   arg=trueqdotr/197.323-2.0*TMath::Pi()*TMath::Floor(trueqdotr/(197.323*2.0*TMath::Pi()));
   cphi1=exp(ci*arg);
@@ -310,12 +318,20 @@ OUTSIDE_INTERACTION_RANGE:
   return corr0;
 }
 
+#ifdef __DECCXX
+complex AliHBTCrab::cgamma(complex c){
+#else
 double_complex AliHBTCrab::cgamma(double_complex c){
+#endif
   /* This calc.s gamma functions which are in the form gamma(n+i*y)
      where n is an int and y is real. */
 // This code is written by Scott Pratt
 // taken from http://www.nscl.msu.edu/~pratt/freecodes/crab/home.html
+#ifdef __DECCXX
+  complex cg,cphase;
+#else
   double_complex cg,cphase;
+#endif
   int mm,j;
   double x,y,phase,delp,cgmag;
   x=real(c);

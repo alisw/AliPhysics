@@ -11,8 +11,12 @@
 
 #include "AliHBTWeights.h"
 
-class Complex;
-typedef Complex double_complex;
+//class Complex;
+//typedef Complex double_complex;
+#ifdef __DECCXX
+#include <complex.h>
+#endif
+#include <math.h>
 
 class AliHBTPair;
 
@@ -53,11 +57,19 @@ class AliHBTCrab: public AliHBTWeights
      Float_t INTERACTION_DELK;
      Int_t INTERACTION_NKMAX;/* number of momentum points in mesh for strong/coul. interaction */
      
+#ifdef __DECCXX
+     static const complex ci;
+#else
      static const double_complex ci;
+#endif
      static const Double_t fgkROOT2;//! some const
      static const Double_t fgkWcons; //constant for fm->GeV conversion 1/0.1973
      
+#ifdef __DECCXX
+     complex cgamma(complex c);
+#else
      double_complex cgamma(double_complex c);
+#endif
      
      static AliHBTCrab* fgCrab;
      ClassDef(AliHBTCrab,1)
