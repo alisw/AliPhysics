@@ -6,6 +6,12 @@ static Bool_t isDetector = false;
 
 void g4libs()
 {
+  // g4libs_global();
+  g4libs_granular();
+}   
+
+void g4libs_global()
+{
 // Loads G4 global libraries, 
 // external packages: CLHEP, graphics drivers, .. used by G4
 // and Alice G4 libraries: AliGeant4, TGeant4
