@@ -83,7 +83,7 @@ AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator(-1)
   SetName("AliGenHBTprocessor");
   SetTitle("AliGenHBTprocessor");
   
-  fRandom ->SetSeed(0);
+  //  fRandom ->SetSeed(0);
   sRandom = fRandom;
   fHBTprocessor = new THBTprocessor();
 
