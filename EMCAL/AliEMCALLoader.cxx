@@ -45,7 +45,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCAL.h"
 #include "AliEMCALHit.h"
@@ -193,7 +193,7 @@ Int_t AliEMCALLoader::LoadHits(Option_t* opt)
   
   if (res)
    {//oops, error
-     Error("LoadHits","AliLoader::LoadHits returned error");
+     AliError("returned error");
      return res;
    }
 
@@ -260,33 +260,16 @@ Int_t AliEMCALLoader::LoadRecPoints(Option_t* opt)
 Int_t  AliEMCALLoader::LoadTracks(Option_t* opt)
 {
   //Loads Tracks: Open File, Reads Tree and posts, Read Data and Posts
-  if (GetDebug()) 
-    printf("LoadTracks: opt = %s",opt);
-  if (fTracksLoaded)
-    {
-      Warning("LoadTracks","Tracks are already loaded");
-      return 0;
-    }
+  AliDebug(1, Form("opt = %s",opt));
   Int_t res;
-  //First call the AliLoader's method to send the TreeS to folder
-  if (GetTracksDataLoader()->GetBaseLoader(0)->IsLoaded() == kFALSE) 
-    {//tracks can be loaded by LoadRecPoints
-      res = AliLoader::LoadTracks(opt);
-      if (res)
-	{//oops, error
-	  Error("LoadTracks","AliLoader::LoadTracks returned error");
-	  return res;
-	}
-    }
-  res = ReadTracks();
+  res = AliLoader::LoadTracks(opt);
   if (res)
-    {
-      Error("LoadTracks","Error occured while reading Tracks");
+    {//oops, error
+      AliError("returned error");
       return res;
-    }
+    }  
+  return ReadTracks();
   
-  fTracksLoaded = kTRUE;
-  return 0;
 }
 
 //____________________________________________________________________________ 
@@ -411,19 +394,18 @@ Int_t AliEMCALLoader::ReadHits()
   
   if(treeh == 0)
     {
-      Error("ReadHits"," Cannot read TreeH from folder");
+      AliError("Cannot read TreeH from folder");
       return 1;
     }
   
   TBranch * hitsbranch = treeh->GetBranch(fDetectorName);
   if (hitsbranch == 0) 
     {
-      Error("ReadHits"," Cannot find branch EMCAL"); 
+      AliError("Cannot find branch EMCAL"); 
       return 1;
     }
   
-  if (GetDebug()) 
-    printf("ReadHits: Reading Hits");
+  AliDebug(1, "Reading Hits");
   
   if (hitsbranch->GetEntries() > 1)
     {
@@ -907,13 +889,13 @@ void AliEMCALLoader::MakeDigitsArray()
 void AliEMCALLoader::MakeRecPointsArray()
 {
   // Make recpoints array
-  if ( ECARecPoints() == 0x0) {
-    if (GetDebug()>9) 
-      printf("MakeRecPointsArray: Making array for ECA");
-    TObjArray* eca = new TObjArray(100) ;
-    eca->SetName(fgkECARecPointsName) ;
-    GetDetectorDataFolder()->Add(eca);
-   }
+  if ( ECARecPoints() == 0x0) 
+    {
+      AliDebug(9, "Making array for ECA");
+      TObjArray* eca = new TObjArray(100) ;
+      eca->SetName(fgkECARecPointsName) ;
+      GetDetectorDataFolder()->Add(eca);
+    }
 }
 
 //____________________________________________________________________________ 
