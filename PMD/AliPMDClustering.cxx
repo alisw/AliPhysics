@@ -558,7 +558,7 @@ void AliPMDClustering::GaussFit(Int_t ncell, Int_t nclust, Double_t &x, Double_t
 {
   // Does gaussian fitting
   //
-  int i, j, i1, i2, jmax, novar, idd, jj;
+  int i, j, i1, i2, novar, idd, jj;
   double xx[4500], yy[4500], zz[4500], xxc[4500], yyc[4500];
   double a[4500], b[4500], c[4500], d[4500], ha[4500], hb[4500];
   double hc[4500], hd[4500], zzc[4500], rrc[4500];
@@ -620,9 +620,9 @@ void AliPMDClustering::GaussFit(Int_t ncell, Int_t nclust, Double_t &x, Double_t
     }
     sum=sum+(aint-zz[i1])*(aint-zz[i1])/str;
   }
-  jmax=nclust*1000;
-  if(nclust > 20)jmax=20000;
-  for(j=0; j<jmax; j++){
+//   jmax=nclust*1000;
+//   if(nclust > 20)jmax=20000;
+//   for(j=0; j<jmax; j++){
     str1=0.;
     for(i=0; i<=nclust; i++){
       a[i]=xxc[i]+0.6*(Ranmar()-0.5);
@@ -656,7 +656,7 @@ void AliPMDClustering::GaussFit(Int_t ncell, Int_t nclust, Double_t &x, Double_t
 	sum=sum1;
       }
     }
-  }
+//   }
   for(j=0; j<=nclust; j++){
     *(&xc+j)=xxc[j];
     *(&yc+j)=yyc[j];
