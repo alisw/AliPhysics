@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/07 13:06:50  barbera
+Some new materials and media defined
+
 Revision 1.2  2000/10/07 10:58:15  barbera
 Mother volume ITSV corrected
 
@@ -259,7 +262,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[12] = -100.7;
   dgh[13] = 44.9;
   dgh[14] = 56.1;
-  dgh[15] = -76.708;
+  dgh[15] = -77.2;
   dgh[16] = 44.9;
   dgh[17] = 56.1;
   dgh[18] = -36.;
@@ -268,7 +271,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[21] = 36.;
   dgh[22] = 3.29;
   dgh[23] = 56.1;
-  dgh[24] = 76.708;
+  dgh[24] = 77.2;
   dgh[25] = 44.9;
   dgh[26] = 56.1;
   dgh[27] = 100.7;
