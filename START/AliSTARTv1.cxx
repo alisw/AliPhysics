@@ -186,8 +186,8 @@ void AliSTARTv1::CreateGeometry()
     
     gMC->Gsvolu("0STR","TUBE",idtmed[kAir],pstart,3);
     gMC->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
-    gMC->Gspos("0STR",1,"ALIC",0.,0.,zdetRight+pstart[2],0,"ONLY");
-    gMC->Gspos("0STL",1,"ALIC",0.,0.,-zdetLeft-pstart[2],idrotm[901],"ONLY");
+    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetRight-pstart[2],0,"ONLY");
+    gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetLeft+pstart[2],idrotm[901],"ONLY");
 
 //START interior
     gMC->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);

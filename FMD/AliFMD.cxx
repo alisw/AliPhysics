@@ -158,31 +158,31 @@ void AliFMD::BuildGeometry ()
 
   new TTUBE ("S_FMD0", "FMD  volume 0", "void", 4.2, 17.2, 1.5);
   top->cd ();
-  node = new TNode ("FMD0", "FMD0", "S_FMD0", 0, 0, 62.8, "");
+  node = new TNode ("FMD0", "FMD0", "S_FMD0", 0, 0, -62.8, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
   new TTUBE ("S_FMD1", "FMD  volume 1", "void", 15.4, 28.4, 1.5);
   top->cd ();
-  node = new TNode ("FMD1", "FMD1", "S_FMD1", 0, 0, 75.2, "");
+  node = new TNode ("FMD1", "FMD1", "S_FMD1", 0, 0, -75.2, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
   new TTUBE ("S_FMD2", "FMD  volume 2", "void", 4.2, 17.2, 1.5);
   top->cd ();
-  node = new TNode ("FMD2", "FMD2", "S_FMD2", 0, 0, -83.2, "");
+  node = new TNode ("FMD2", "FMD2", "S_FMD2", 0, 0, 83.2, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
   new TTUBE ("S_FMD3", "FMD  volume 3", "void", 15.4, 28.4, 1.5);
   top->cd ();
-  node = new TNode ("FMD3", "FMD3", "S_FMD3", 0, 0, -75.2, "");
+  node = new TNode ("FMD3", "FMD3", "S_FMD3", 0, 0, 75.2, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
   new TTUBE ("S_FMD4", "FMD  volume 4", "void", 4.2, 17.2, 1.5);
   top->cd ();
-  node = new TNode ("FMD4", "FMD4", "S_FMD4", 0, 0, -340, "");
+  node = new TNode ("FMD4", "FMD4", "S_FMD4", 0, 0, 340, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 }

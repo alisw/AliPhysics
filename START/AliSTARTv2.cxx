@@ -101,8 +101,8 @@ void AliSTARTv2::CreateGeometry()
     
   gMC->Gsvolu ("0RST", "TUBE", idtmed[3], pstart, 3);
   gMC->Gsvolu ("0LST", "TUBE", idtmed[3], pstart, 3);
-  gMC->Gspos ("0RST", 1, "ALIC", 0., 0., zRight, 0, "ONLY");
-  gMC->Gspos ("0LST", 1, "ALIC", 0., 0., -zLeft, idrotm[901], "ONLY");
+  gMC->Gspos ("0RST", 1, "ALIC", 0., 0., -zRight, 0, "ONLY");
+  gMC->Gspos ("0LST", 1, "ALIC", 0., 0., zLeft, idrotm[901], "ONLY");
 
 //  12 unit: PMT + divider
   gMC->Gsvolu("0INS", "TUBE", idtmed[3], pinstart, 3);   

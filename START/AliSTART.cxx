@@ -151,13 +151,13 @@ void AliSTART::BuildGeometry()
 
   new TTUBE("S_0ST1","START  volume 1","void",5.,10.7,5.3);
   top->cd();
-  node = new TNode("0ST1","0ST01","S_0ST1",0,0,69.7,"");
+  node = new TNode("0ST1","0ST01","S_0ST1",0,0,-69.7,"");
   node->SetLineColor(kColorSTART);
   fNodes->Add(node);
 
   new TTUBE("S_0ST2","START volume 2","void",5.,10.7,5.3);
   top->cd();
-  node = new TNode("0ST2","0ST2","S_0ST2",0,0,-350,"rotx999");
+  node = new TNode("0ST2","0ST2","S_0ST2",0,0,350,"rotx999");
   node->SetLineColor(kColorSTART);
   fNodes->Add(node);
 }
