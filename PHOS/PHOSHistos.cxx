@@ -127,7 +127,7 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
      {
        if ( emc->GetPHOSMod() == Module )
        {  
-         Energy = emc->GetTotalEnergy() ;
+         Energy = emc->GetEnergy() ;
 	 hEmcCluster->Fill(Energy); 
          printf("Energy of the EMC cluster is %f \n",Energy);
 	 TClonesArray * PpsdRP = PHOS->PpsdClusters() ;
@@ -138,7 +138,7 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
 	   {
 	     if ( Ppsd->GetPHOSMod() == Module )
 	       { 
-		 Energy2 = Ppsd->GetTotalEnergy() ;
+		 Energy2 = Ppsd->GetEnergy() ;
 		 
 		 if (!Ppsd->GetUp()) hConvertorEmc->Fill(Energy,Energy2) ;
 	       }
@@ -155,7 +155,7 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
      {
        if ( Ppsd->GetPHOSMod() == Module )
        { 
-         Energy = Ppsd->GetTotalEnergy() ;
+         Energy = Ppsd->GetEnergy() ;
 
 	 if (!Ppsd->GetUp()) hConvertorCluster->Fill(Energy) ;
 	 if (Ppsd->GetUp()) hVetoCluster->Fill(Energy) ;

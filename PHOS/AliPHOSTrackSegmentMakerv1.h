@@ -62,9 +62,6 @@ public:
 			    AliPHOSRecPoint::RecPointsList * emcl, 
 			    AliPHOSRecPoint::RecPointsList * ppsdl, 
 			    AliPHOSTrackSegment::TrackSegmentsList * trsl ) ; // does the job
-  virtual void MakeTrackSegmentsCPV(DigitsList * DL, 
-			         AliPHOSRecPoint::RecPointsList * emcl, 
-			         AliPHOSRecPoint::RecPointsList * ppsdl ); // just unfold EMC and CPV clusters
   virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
   virtual void    SetUnfoldFlag() { fUnfoldFlag = kTRUE ; } ; 
   static Double_t ShowerShape(Double_t r) ; // Shape of shower used in unfolding; class member function (not object member function)

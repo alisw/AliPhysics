@@ -68,18 +68,6 @@ AliPHOSv1::AliPHOSv1()
   fReconstructioner  = 0;
   fTrackSegmentMaker = 0;
 
-  fHits = new TClonesArray("AliPHOSHit",1000) ;
- 
-  //  if ( 0==(fEMCModules=new TClonesArray("AliPHOSCPVModule",0)) ) {
-  //    Error("AliPHOSv1","Can not create array of EMC modules");
-  //    exit(1);
-  //  }
-
-  //  if ( 0==(fCPVModules=new TClonesArray("AliPHOSCPVModule",0)) ) {
-  //    Error("AliPHOSv1","Can not create array of CPV modules");
-  //    exit(1);
-  //  }
-
 }
 
 //____________________________________________________________________________
@@ -117,34 +105,6 @@ AliPHOSv0(name,title)
 
   fIshunt     =  1 ; // All hits are associated with primary particles
   
-  // Create array of EMC modules of the size of PHOS modules number
-  
-//  if ( 0==(fEMCModules=new TClonesArray("AliPHOSCPVModule",fGeom->GetNModules())) ) {
-//    Error("AliPHOSv1","Can not create array of EMC modules");
-//    exit(1);
-//  }
-//  TClonesArray &lemcmodule = *fEMCModules;
-//  for (Int_t i=0; i<fGeom->GetNModules(); i++) new(lemcmodule[i]) AliPHOSCPVModule();
-
-  // Create array of CPV modules for the IHEP's version of CPV
-
-//  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-//    // Create array of CPV modules of the size of PHOS modules number
-
-//    if ( 0==(fCPVModules=new TClonesArray("AliPHOSCPVModule",fGeom->GetNCPVModules())) ) {
-//      Error("AliPHOSv1","Can not create array of CPV modules");
-//      exit(1);
-//    }
-//    TClonesArray &lcpvmodule = *fCPVModules;
-//    for (Int_t i=0; i<fGeom->GetNCPVModules(); i++) new(lcpvmodule[i]) AliPHOSCPVModule();
-//  }
-//  else {
-//    // Create an empty array of AliPHOSCPVModule to satisfy
-//    // AliPHOSv1::Streamer when writing root file
-
-//    fCPVModules=new TClonesArray("AliPHOSCPVModule",0);
-
-//  }
 }
 
 //____________________________________________________________________________
@@ -153,19 +113,10 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
 {
   // ctor : title is used to identify the layout
   //        GPS2 = 5 modules (EMC + PPSD)   
-  // We use 2 arrays of hits :
-  //
-  //   - fHits (the "normal" one), which retains the hits associated with
-  //     the current primary particle being tracked
-  //     (this array is reset after each primary has been tracked).
-  //
-  //   - fTmpHits, which retains all the hits of the current event. It 
-  //     is used for the digitization part.
 
   fPinElectronicNoise = 0.010 ;
 
   // We do not want to save in TreeH the raw hits
-  //fHits   = new TClonesArray("AliPHOSHit",100) ;
 
   fDigits = 0 ;
   fHits= new TClonesArray("AliPHOSHit",1000) ;
@@ -331,10 +282,10 @@ void AliPHOSv1::SDigits2Digits(){
 
 
   gAlice->TreeS()->GetEvent(0) ;
-  
 
-  // Noise induced by the PIN diode of the PbWO crystals
+  // First calculate noise induced by the PIN diode of the PbWO crystals
   Int_t iCurSDigit = 0 ;
+
   //we assume, that there is al least one EMC digit...
   if(fSDigits->GetEntries() == 0) {
     cout << "PHOS::SDigits2Digits>  No SDigits !!! Do not produce Digits " << endl ;
@@ -424,6 +375,7 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
       fSDigits->Clear();
     else
       fSDigits = new TClonesArray("AliPHOSDigit",1000);
+
     fnSdigits = 0 ;
     gAlice->MakeBranchInTree(gAlice->TreeS(),branchname,&fSDigits,fBufferSize,file);  
   }
@@ -433,13 +385,14 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
   if( cH ){
     char branchname[20];
     sprintf(branchname,"%s",GetName());  
-    if(fSDigits)
+
+    if(fDigits)
       fDigits->Clear();
     else
       fDigits = new TClonesArray("AliPHOSDigit",1000);
     fNdigits = 0 ;
     
-    gAlice->MakeBranchInTree(gAlice->TreeD(),branchname,&fSDigits,fBufferSize,file);  
+    gAlice->MakeBranchInTree(gAlice->TreeD(),branchname,&fDigits,fBufferSize,file);  
   }
 
   cH = strstr(opt,"R");
@@ -448,29 +401,41 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
     char branchname[20];
 
     Int_t splitlevel = 0 ; 
-    
-    fEmcRecPoints->Delete() ; 
+
+    if(fEmcRecPoints)
+      fEmcRecPoints->Delete() ; 
+    else
+      fEmcRecPoints = new TObjArray(100) ;
 
     if ( fEmcRecPoints && gAlice->TreeR() ) {
       sprintf(branchname,"%sEmcRP",GetName()) ;
       gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcRecPoints, fBufferSize, splitlevel) ; 
     }
 
-    fPpsdRecPoints->Delete() ; 
+    if(fPpsdRecPoints)
+      fPpsdRecPoints->Delete() ; 
+    else
+      fPpsdRecPoints = new TObjArray(100) ;
 
     if ( fPpsdRecPoints && gAlice->TreeR() ) {
       sprintf(branchname,"%sPpsdRP",GetName()) ;
       gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
     }
 
-    fTrackSegments->Delete() ; 
+    if(fTrackSegments)
+      fTrackSegments->Delete() ; 
+    else
+      fTrackSegments = new TClonesArray("AliPHOSTrackSegment",100) ;
     
     if ( fTrackSegments && gAlice->TreeR() ) { 
       sprintf(branchname,"%sTS",GetName()) ;
       gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize) ;
     }
     
-    fRecParticles->Delete() ; 
+    if(fRecParticles)
+      fRecParticles->Delete() ; 
+    else
+      fRecParticles = new TClonesArray("AliPHOSRecParticle",100) ;
     
     if ( fRecParticles && gAlice->TreeR() ) { 
       sprintf(branchname,"%sRP",GetName()) ;

@@ -120,7 +120,7 @@ AliPHOSRecParticle * AliPHOSIndexToObject::GimeRecParticle(Int_t index)
 
   AliPHOSRecParticle * rv = 0 ; 
 
-  AliPHOSRecParticle::RecParticlesList * rplist = *(fDetector->RecParticles()) ; 
+  AliPHOSRecParticle::RecParticlesList * rplist = fDetector->RecParticles() ; 
 
   Int_t rpentries  = 0 ; 
 
@@ -139,7 +139,7 @@ AliPHOSRecParticle * AliPHOSIndexToObject::GimeRecParticle(Int_t index)
     cout << "AliPHOSIndexToObject::GimeRecParticle: index " << index << " larger than available entries " 
 	   <<  rpentries << endl ; 
   else 
-    rv =  (AliPHOSRecParticle *) (*(fDetector->RecParticles()) )->At(index)  ; 
+    rv =  (AliPHOSRecParticle *) (fDetector->RecParticles() )->At(index)  ; 
   
   return rv ;
   
@@ -154,8 +154,8 @@ AliRecPoint * AliPHOSIndexToObject::GimeRecPoint(Int_t index, TString type)
 
   AliPHOSRecPoint * rv = 0 ; 
   
-  AliPHOSRecPoint::RecPointsList * emclist = *(fDetector->EmcRecPoints() ); 
-  AliPHOSRecPoint::RecPointsList * ppsdlist = *(fDetector->PpsdRecPoints() ); 
+  AliPHOSRecPoint::RecPointsList * emclist = fDetector->EmcRecPoints() ; 
+  AliPHOSRecPoint::RecPointsList * ppsdlist = fDetector->PpsdRecPoints() ; 
 
   Int_t emcentries  = 0 ; 
   Int_t ppsdentries = 0 ; 
@@ -207,7 +207,7 @@ AliPHOSTrackSegment * AliPHOSIndexToObject::GimeTrackSegment(Int_t index)
 
   AliPHOSTrackSegment * rv = 0 ; 
 
-  AliPHOSTrackSegment::TrackSegmentsList * tslist = *( fDetector->TrackSegments()) ; 
+  AliPHOSTrackSegment::TrackSegmentsList * tslist = fDetector->TrackSegments() ; 
 
   Int_t tsentries  = 0 ; 
 

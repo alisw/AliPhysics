@@ -42,7 +42,6 @@ public:
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid, TLorentzVector p, Float_t *pos) ; 
   Float_t        Calibrate(Int_t amp){ return (amp - fDigitizeA)/fDigitizeB ; }
   Int_t          Digitize(Float_t Energy){ return (Int_t ) (fDigitizeA + Energy*fDigitizeB); }
-  //  virtual void   Hit2Digit(Int_t event) ;
   virtual void   Hits2SDigits() ;
   virtual void   MakeBranch(Option_t* opt, char *file=0 ) ;
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
@@ -74,11 +73,6 @@ public:
     return *this ; 
   }
 
-  // IHEP's CPV specific functions
-
-  //  AliPHOSCPVModule &GetEMCModule(int n) { return *(AliPHOSCPVModule*)fEMCModules->operator[](n); }
-  //  AliPHOSCPVModule &GetCPVModule(int n) { return *(AliPHOSCPVModule*)fCPVModules->operator[](n); }
-
   void       CPVDigitize (TLorentzVector p, Float_t *xy, Int_t moduleNumber, TClonesArray *digits) ;
   Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
   Double_t   CPVCumulPadResponse(Double_t x, Double_t y) ;
@@ -94,8 +88,6 @@ protected:
   Int_t   fnSdigits ; 
   AliPHOSReconstructioner  * fReconstructioner ;  // Clusterization and subtracking procedures
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
-  //  TClonesArray             * fEMCModules;         // Array of EMC modules
-  //  TClonesArray             * fCPVModules;         // Array of CPV modules for the IHEP's version of CPV
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

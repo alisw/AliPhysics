@@ -157,7 +157,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
       primaries = recpoint->GetPrimaries(nprimaries);
       cout << "DebugReconstruction>>>  " << 
 	setw(2) <<recpoint->GetPHOSMod() << " "  << 
-	setw(9) << 1000.*recpoint->GetTotalEnergy() <<       " "  <<                   
+	setw(9) << 1000.*recpoint->GetEnergy() <<       " "  <<                   
 	setw(6) <<  recpoint->GetIndexInList() << " "  << 
 	setw(5) <<  recpoint->GetMultiplicity() <<" "  << 
 	setw(8) <<  locpos.X() <<" "  << 
@@ -198,7 +198,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
       cout << "DebugReconstruction>>> " << 
 	setw(4) << ppsdrecpoint->GetPHOSMod() << "  "  << 
 	setw(4)  << detector << " "      <<
-	setw(9) << 1000000.*ppsdrecpoint->GetTotalEnergy() <<       " "  <<             
+	setw(9) << 1000000.*ppsdrecpoint->GetEnergy() <<       " "  <<             
 	setw(6) <<  ppsdrecpoint->GetIndexInList() << " "  << 
 	setw(5) <<  ppsdrecpoint->GetMultiplicity() <<" "  << 
 	setw(8) <<  locpos.X() <<" "  << 

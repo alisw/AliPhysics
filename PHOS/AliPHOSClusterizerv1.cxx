@@ -304,9 +304,12 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	nextdigit.Reset() ; 
 	
       } // loop over cluster     
-    }  //below energy theshold  
+
+      clu->EvalAll() ;
+    } // energy theshold  
     
     delete[] clusterdigitslist ; 
+
     
   } // while digit
 

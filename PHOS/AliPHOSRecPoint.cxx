@@ -152,19 +152,20 @@ break;
     
   }
 }
-
 //____________________________________________________________________________
-Int_t AliPHOSRecPoint::GetPHOSMod()
+void AliPHOSRecPoint::EvalAll() {
+  //evaluates (if necessary) all RecPoint data members 
+
+  EvalPHOSMod() ;
+}
+//____________________________________________________________________________
+void AliPHOSRecPoint::EvalPHOSMod() 
 {
   // Returns the PHOS module in which the RecPoint is found
  
-  if(fPHOSMod > 0) 
-    return fPHOSMod ;
-
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
 
-  Int_t relid[4] ;
-  
+  Int_t relid[4] ; 
   
   AliPHOSDigit * digit   ;
   digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[0]) ) ;
@@ -172,11 +173,10 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
-  return fPHOSMod ;
 }
 
 //______________________________________________________________________________
-Int_t * AliPHOSRecPoint::GetPrimaries(Int_t & number)
+Int_t * AliPHOSRecPoint::GetPrimaries(Int_t & number) const
 {
   // Constructs the list of primary particles which have contributed to this RecPoint
   

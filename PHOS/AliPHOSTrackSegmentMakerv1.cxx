@@ -439,38 +439,6 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakeTrackSegmentsCPV(DigitsList * dl, 
-                                                       AliPHOSRecPoint::RecPointsList * emcl, 
-                                                       AliPHOSRecPoint::RecPointsList * cpvl)
-{
-  // Unfold clusters in EMC and CPV and refill reconstructed point lists emcl and ppsdl
-  // Yuri Kharlov. 19 October 2000
-  
-  fNTrackSegments = 0 ; 
-
-  TArrayI * emcRecPoints     = new TArrayI(1000) ;  // these arrays keep indexes 
-  TArrayI * cpvRecPoints     = new TArrayI(1000) ;  // of RecPoints, which are kept in emcl and ppsdl
-  
-  if(fUnfoldFlag){
-    UnfoldAll(dl, emcl) ;   // Unfolds all EMC clusters
-    UnfoldAll(dl, cpvl) ;   // Unfolds all CPV clusters
-  }
-
-//    Int_t phosmod      = 1 ;
-//    Int_t emcStopedAt  = 0 ; 
-//    Int_t cpvStopedAt  = 0 ; 
-//    while(phosmod <= fGeom->GetNModules() ){
-//      FillOneModule(emcl, emcRecPoints, ppsdl, cpvRecPoints, phosmod, emcStopedAt, cpvStopedAt) ;
-//      emcRecPoints->Reset() ;
-//      cpvRecPoints->Reset() ;
-//      phosmod++ ; 
-//    }
-
-  delete emcRecPoints ; emcRecPoints = 0 ; 
-  delete cpvRecPoints ; cpvRecPoints = 0 ; 
-}
-
-//____________________________________________________________________________
 Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
 { 
   // Shape of the shower (see PHOS TDR)
@@ -624,6 +592,7 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
 	eDigit = emcEnergies[iDigit] * ratio ;
 	emcRP->AddDigit( *digit, eDigit ) ;
       }	
+      emcRP->EvalAll() ;
     }
     else{
       (*emcIn)[iRecPoint] = new AliPHOSCpvRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
@@ -643,6 +612,7 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
 	eDigit = emcEnergies[iDigit] * ratio ;
 	cpvRP->AddDigit( *digit, eDigit ) ;
       }
+      cpvRP->EvalAll() ;
     }
     
   }

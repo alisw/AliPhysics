@@ -46,8 +46,8 @@ AliPHOSPpsdRecPoint::AliPHOSPpsdRecPoint(void)
   // ctor
 
   fMulDigit = 0 ;  
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;  
-  fDelta = geom->GetCrystalSize(0) ; 
+  fGeom = AliPHOSGeometry::GetInstance() ;  
+  fDelta = ((AliPHOSGeometry *)fGeom)->GetCrystalSize(0) ; 
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
 }
 
@@ -169,16 +169,17 @@ Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
 }
 
 //____________________________________________________________________________
-void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos)
+void AliPHOSPpsdRecPoint::EvalAll( ){
+  AliPHOSRecPoint::EvalAll() ;
+  EvalLocalPosition( ) ;
+}
+
+//____________________________________________________________________________
+void AliPHOSPpsdRecPoint::EvalLocalPosition( )
 {
   // Calculates the local position in the PHOS-PPSD-module corrdinates
   
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
-
-  if( fLocPos.X() < 1000000.) { //allready evaluated
-   LPos = fLocPos ;
-   return ;
-  }
 
   Int_t relid[4] ;
 
@@ -208,12 +209,10 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos)
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(z)  ;
 
-  LPos = fLocPos ;
-
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSPpsdRecPoint::GetUp() 
+Bool_t AliPHOSPpsdRecPoint::GetUp() const
 {
   // Are we in the uper PPSD module ?
 

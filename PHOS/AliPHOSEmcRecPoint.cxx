@@ -50,8 +50,8 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut)
   fMulDigit   = 0 ;  
   fAmp   = 0. ;   
   fEnergyList = new Float_t[fMaxDigit]; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
-  fDelta     =  phosgeom->GetCrystalSize(0) ; 
+  fGeom = AliPHOSGeometry::GetInstance() ;
+  fDelta     =  ((AliPHOSGeometry *) fGeom)->GetCrystalSize(0) ; 
   fW0        = W0 ;          
   fLocMaxCut = LocMaxCut ; 
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
@@ -105,7 +105,7 @@ void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) 
+Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const
 {
   // Tells if (true) or not (false) two digits are neighbors)
   
@@ -137,7 +137,7 @@ Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
   AliPHOSEmcRecPoint * clu = (AliPHOSEmcRecPoint *)obj ; 
 
  
-  Int_t phosmod1 = this->GetPHOSMod() ;
+  Int_t phosmod1 = GetPHOSMod() ;
   Int_t phosmod2 = clu->GetPHOSMod() ;
 
   TVector3 locpos1; 
@@ -276,7 +276,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 }
 
 //____________________________________________________________________________
-Float_t  AliPHOSEmcRecPoint::GetDispersion() 
+Float_t  AliPHOSEmcRecPoint::GetDispersion() const
 {
   // Calculates the dispersion of the shower at the origine of the RecPoint
 
@@ -414,16 +414,17 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
 }
 
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
+void AliPHOSEmcRecPoint::EvalAll(void )
+{
+  AliPHOSRecPoint::EvalAll() ;
+  EvalLocalPosition() ;
+}
+//____________________________________________________________________________
+void AliPHOSEmcRecPoint::EvalLocalPosition(void )
 {
   // Calculates the center of gravity in the local PHOS-module coordinates 
 
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
-
-  if( fLocPos.X() < 1000000.) { // already evaluated
-   LPos = fLocPos ;
-   return ;
-  }
 
   Float_t wtot = 0. ;
  
@@ -437,7 +438,6 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
   Int_t iDigit;
-
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) );
@@ -455,15 +455,28 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 
   x /= wtot ;
   z /= wtot ;
-  fLocPos.SetX(x)  ;
-  fLocPos.SetY(0.) ;
-  fLocPos.SetZ(z)  ;
 
-  LPos = fLocPos ;
+  // Correction for the depth of the shower starting point (TDR p 127)  
+  Float_t para = 0.925 ; 
+  Float_t parb = 6.52 ; 
+
+  Float_t radius = ((AliPHOSGeometry *) fGeom)->GetIPtoOuterCoverDistance() + 
+                   ((AliPHOSGeometry *) fGeom)->GetOuterBoxSize(1) ; 
+  Float_t incidencephi = TMath::ATan(x / radius) ; 
+  Float_t incidencetheta = TMath::ATan(z / radius) ;
+ 
+  Float_t depthx =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencephi) ; 
+  Float_t depthz =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencetheta) ; 
+  
+
+  fLocPos.SetX(x - depthx)  ;
+  fLocPos.SetY(0.) ;
+  fLocPos.SetZ(z - depthz)  ;
+
 }
 
 //____________________________________________________________________________
-Float_t AliPHOSEmcRecPoint::GetMaximalEnergy(void)
+Float_t AliPHOSEmcRecPoint::GetMaximalEnergy(void) const
 {
   // Finds the maximum energy in the cluster
   
@@ -480,7 +493,7 @@ Float_t AliPHOSEmcRecPoint::GetMaximalEnergy(void)
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(const Float_t H) 
+Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(const Float_t H) const
 {
   // Calculates the multiplicity of digits with energy larger than H*energy 
   
@@ -495,7 +508,7 @@ Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(const Float_t H)
 }
 
 //____________________________________________________________________________
-Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) 
+Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) const
 { 
   // Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
   //  energy difference between two local maxima
@@ -567,7 +580,7 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEn
 //     AddDigit(*digit) ;
 //   }
 
-//   fAmp       = Clu.GetTotalEnergy() ;
+//   fAmp       = Clu.GetEnergy() ;
 //   fGeom      = Clu.GetGeom() ;
 //   TVector3 locpos;
 //   Clu.GetLocalPosition(locpos) ;

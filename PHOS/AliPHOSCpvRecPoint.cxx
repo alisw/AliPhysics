@@ -106,7 +106,7 @@ void AliPHOSCpvRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSCpvRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) 
+Bool_t AliPHOSCpvRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const
 {
   // Tells if (true) or not (false) two digits are neighbors)
   
@@ -288,7 +288,60 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 }
 
 //____________________________________________________________________________
-Float_t  AliPHOSCpvRecPoint::GetDispersion() 
+void AliPHOSCpvRecPoint::EvalAll(){
+  AliPHOSRecPoint::EvalAll() ;
+  EvalLocalPosition() ;
+}
+//____________________________________________________________________________
+void AliPHOSCpvRecPoint::EvalLocalPosition()
+{
+  // Calculates the center of gravity in the local PHOS-module coordinates 
+
+  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
+
+  Float_t wtot = 0. ;
+ 
+  Int_t relid[4] ;
+
+  Float_t x = 0. ;
+  Float_t z = 0. ;
+  
+  AliPHOSDigit * digit ;
+
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+
+  Int_t iDigit;
+
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) );
+
+    Float_t xi ;
+    Float_t zi ;
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
+    Float_t w = TMath::Max( 0., fW0 + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+    x    += xi * w ;
+    z    += zi * w ;
+    wtot += w ;
+  }
+
+  if (wtot != 0) {
+    x /= wtot ;
+    z /= wtot ;
+  } else {
+    x = -1e6 ;
+    z = -1e6 ;
+    if (fMulDigit != 0) cout << "AliPHOSCpvRecPoint: too low log weight factor "
+			     << "to evaluate cluster's center\n";
+  }
+  fLocPos.SetX(x)  ;
+  fLocPos.SetY(0.) ;
+  fLocPos.SetZ(z)  ;
+
+}
+
+//____________________________________________________________________________
+Float_t  AliPHOSCpvRecPoint::GetDispersion() const
 {
   // Calculates the dispersion of the shower at the origine of the RecPoint
 
@@ -324,7 +377,7 @@ Float_t  AliPHOSCpvRecPoint::GetDispersion()
 }
 
 //____________________________________________________________________________
-void  AliPHOSCpvRecPoint::GetElipsAxis(Float_t * lambda)
+void  AliPHOSCpvRecPoint::GetElipsAxis(Float_t * lambda) const
 {
   // Calculates the axis of the shower ellipsoid
 
@@ -376,59 +429,6 @@ void  AliPHOSCpvRecPoint::GetElipsAxis(Float_t * lambda)
 //    lambda[1] = TMath::Sqrt( 0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ) ) ;
 }
 
-//____________________________________________________________________________
-void AliPHOSCpvRecPoint::GetLocalPosition(TVector3 &LPos)
-{
-  // Calculates the center of gravity in the local PHOS-module coordinates 
-
-  AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
-
-  if( fLocPos.X() < 1000000.) { // already evaluated
-   LPos = fLocPos ;
-   return ;
-  }
-
-  Float_t wtot = 0. ;
- 
-  Int_t relid[4] ;
-
-  Float_t x = 0. ;
-  Float_t z = 0. ;
-  
-  AliPHOSDigit * digit ;
-
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
-
-  Int_t iDigit;
-
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-    digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) );
-
-    Float_t xi ;
-    Float_t zi ;
-    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    phosgeom->RelPosInModule(relid, xi, zi);
-    Float_t w = TMath::Max( 0., fW0 + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
-    x    += xi * w ;
-    z    += zi * w ;
-    wtot += w ;
-  }
-
-  if (wtot != 0) {
-    x /= wtot ;
-    z /= wtot ;
-  } else {
-    x = -1e6 ;
-    z = -1e6 ;
-    if (fMulDigit != 0) cout << "AliPHOSCpvRecPoint: too low log weight factor "
-			     << "to evaluate cluster's center\n";
-  }
-  fLocPos.SetX(x)  ;
-  fLocPos.SetY(0.) ;
-  fLocPos.SetZ(z)  ;
-
-  LPos = fLocPos ;
-}
 
 //____________________________________________________________________________
 void AliPHOSCpvRecPoint::GetClusterLengths(Int_t &lengX, Int_t &lengZ)
@@ -485,7 +485,7 @@ void AliPHOSCpvRecPoint::GetClusterLengths(Int_t &lengX, Int_t &lengZ)
 }
 
 //____________________________________________________________________________
-Float_t AliPHOSCpvRecPoint::GetMaximalEnergy(void)
+Float_t AliPHOSCpvRecPoint::GetMaximalEnergy(void) const
 {
   // Finds the maximum energy in the cluster
   
@@ -502,7 +502,7 @@ Float_t AliPHOSCpvRecPoint::GetMaximalEnergy(void)
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSCpvRecPoint::GetMultiplicityAtLevel(const Float_t H) 
+Int_t AliPHOSCpvRecPoint::GetMultiplicityAtLevel(const Float_t H) const
 {
   // Calculates the multiplicity of digits with energy larger than H*energy 
   
@@ -517,7 +517,7 @@ Int_t AliPHOSCpvRecPoint::GetMultiplicityAtLevel(const Float_t H)
 }
 
 //____________________________________________________________________________
-Int_t  AliPHOSCpvRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) 
+Int_t  AliPHOSCpvRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) const
 { 
   // Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
   //  energy difference between two local maxima

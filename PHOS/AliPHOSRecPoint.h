@@ -45,19 +45,15 @@ class AliPHOSRecPoint : public AliRecPoint {
     assert(0==1) ; 
   }
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
-  virtual Int_t   Compare(const TObject * obj) const { 
-    // check why this is done
-    assert(0==1) ; return 1 ; 
-  }   
+  virtual Int_t   Compare(const TObject * obj) const {assert(0==1) ; return 1 ;   }   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
-  virtual Int_t   GetPHOSMod(void) ;
-  virtual Int_t * GetPrimaries(Int_t & number) ;
-  virtual Bool_t  IsEmc(void){
-    // says that this is a EMC
-    return kTRUE ;
-  } 
+  virtual void    EvalAll(void) ;  
+  virtual void    EvalPHOSMod(void) ;  
+  virtual Int_t   GetPHOSMod(void) const {return fPHOSMod ; }
+  virtual Int_t * GetPrimaries(Int_t & number) const ;
+  virtual Bool_t  IsEmc(void)const { return kTRUE ;  } 
   virtual Bool_t  IsSortable() const { 
     // tells that this is a sortable object
     return kTRUE ; 
@@ -77,7 +73,6 @@ class AliPHOSRecPoint : public AliRecPoint {
 protected:
   
   Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found
-//    AliPHOSGeometry * fGeom ; // pointer to the PHOS geometry class
   
   ClassDef(AliPHOSRecPoint,1) // RecPoint for PHOS (Base Class)
  

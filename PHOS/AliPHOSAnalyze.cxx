@@ -134,6 +134,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   //for event Nevent in the module Nmod.
 
   TH2F * digitOccupancy  = new TH2F("digitOccupancy","EMC digits", 64,-71.,71.,64,-71.,71.);
+  TH2F * sdigitOccupancy = new TH2F("sdigitOccupancy","EMC sdigits", 64,-71.,71.,64,-71.,71.);
   TH2F * emcOccupancy    = new TH2F("emcOccupancy","EMC RecPoints",64,-71.,71.,64,-71.,71.);
   TH2F * ppsdUp          = new TH2F("ppsdUp","PPSD Up digits",     128,-71.,71.,128,-71.,71.) ;
   TH2F * ppsdUpCl        = new TH2F("ppsdUpCl","PPSD Up RecPoints",128,-71.,71.,128,-71.,71.) ;
@@ -181,107 +182,157 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
       }
     }  
 
-  fPHOS->SetTreeAddress() ;
+  //  fPHOS->SetTreeAddress() ;
 
+  gAlice->TreeS()->GetEvent(0) ;
+
+  Int_t iSDigit ;
+  AliPHOSDigit * sdigit ;
+  
+  if(fPHOS->SDigits()){
+    for(iSDigit = 0; iSDigit < fPHOS->SDigits()->GetEntries(); iSDigit++)
+      {
+	sdigit = (AliPHOSDigit *) fPHOS->SDigits()->At(iSDigit) ;
+	Int_t relid[4];
+	fGeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
+	Float_t x,z ;
+	fGeom->RelPosInModule(relid,x,z) ;
+	Float_t e = fPHOS->Calibrate(sdigit->GetAmp()) ;
+	if(relid[0]==Nmod){
+	  if(relid[1]==0)  //EMC
+	    sdigitOccupancy->Fill(x,z,e) ;
+	  if((relid[1]>0)&&(relid[1]<17))
+	    ppsdUp->Fill(x,z,e) ;
+	  if(relid[1]>16)
+	    ppsdLow->Fill(x,z,e) ;
+	}
+      }
+  }
+  else{
+    cout << "No SDigits read " << endl ;
+  }
+  
   gAlice->TreeD()->GetEvent(0) ;
+  
+  if(fPHOS->Digits()){
+    Int_t iDigit ;
+    AliPHOSDigit * digit ;
+    for(iDigit = 0; iDigit < fPHOS->Digits()->GetEntries(); iDigit++)
+      {
+	digit = (AliPHOSDigit *) fPHOS->Digits()->At(iDigit) ;
+	Int_t relid[4];
+	fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	Float_t x,z ;
+	fGeom->RelPosInModule(relid,x,z) ;
+	Float_t e = fClu->Calibrate(digit->GetAmp()) ;
+	if(relid[0]==Nmod){
+	  if(relid[1]==0)  //EMC
+	    digitOccupancy->Fill(x,z,e) ;
+	  if((relid[1]>0)&&(relid[1]<17))
+	    ppsdUp->Fill(x,z,e) ;
+	  if(relid[1]>16)
+	    ppsdLow->Fill(x,z,e) ;
+	}
+      }
+  }
+  else{
+    cout << "No Digits read " << endl ;
+  }
+
   gAlice->TreeR()->GetEvent(0) ;
   
-  TObjArray ** emcRecPoints =  fPHOS->EmcRecPoints() ;
-  TObjArray ** ppsdRecPoints = fPHOS->PpsdRecPoints() ;
-  TClonesArray ** recParticleList  = fPHOS->RecParticles() ;
-  
-  Int_t iDigit ;
-  AliPHOSDigit * digit ;
-  
-  for(iDigit = 0; iDigit < fPHOS->Digits()->GetEntries(); iDigit++)
-    {
-      digit = (AliPHOSDigit *) fPHOS->Digits()->At(iDigit) ;
-      Int_t relid[4];
-      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      Float_t x,z ;
-      fGeom->RelPosInModule(relid,x,z) ;
-      Float_t e = fClu->Calibrate(digit->GetAmp()) ;
-      if(relid[0]==Nmod){
-        if(relid[1]==0)  //EMC
-          digitOccupancy->Fill(x,z,e) ;
-        if((relid[1]>0)&&(relid[1]<17))
-          ppsdUp->Fill(x,z,e) ;
-        if(relid[1]>16)
-          ppsdLow->Fill(x,z,e) ;
-      }
-    }
+  TObjArray * emcRecPoints =  fPHOS->EmcRecPoints() ;
+  TObjArray * ppsdRecPoints = fPHOS->PpsdRecPoints() ;
+  TClonesArray * recParticleList  = fPHOS->RecParticles() ;
+
   
   Int_t irecp ;
   TVector3 pos ;
   
-  for(irecp = 0; irecp < (*emcRecPoints)->GetEntries() ; irecp ++){
-    AliPHOSEmcRecPoint * emc= (AliPHOSEmcRecPoint*)(*emcRecPoints)->At(irecp) ;
-    if(emc->GetPHOSMod()==Nmod){
-      emc->GetLocalPosition(pos) ;
-      emcOccupancy->Fill(pos.X(),pos.Z(),emc->GetEnergy());
-    }
-  }
-  
-  for(irecp = 0; irecp < (*ppsdRecPoints)->GetEntries() ; irecp ++){
-    AliPHOSPpsdRecPoint * ppsd= (AliPHOSPpsdRecPoint *)(*ppsdRecPoints)->At(irecp) ;
-    if(ppsd->GetPHOSMod()==Nmod){
-      ppsd->GetLocalPosition(pos) ;
-      if(ppsd->GetUp())
-        ppsdUpCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
-      else
-        ppsdLowCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
-    }
-  }
-  
-  AliPHOSRecParticle * recParticle ;
-  Int_t iRecParticle ;
-  for(iRecParticle = 0; iRecParticle < (*recParticleList)->GetEntries() ;iRecParticle++ )
-    {
-      recParticle = (AliPHOSRecParticle *) (*recParticleList)->At(iRecParticle) ;
-      
-      Int_t moduleNumberRec ;
-      Double_t recX, recZ ;
-      fGeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
-      if(moduleNumberRec == Nmod){
-	
-        Double_t minDistance = 5. ;
-        Int_t closestPrimary = -1 ;
-	
-        Int_t numberofprimaries ;
-        Int_t * listofprimaries  = recParticle->GetPrimaries(numberofprimaries)  ;
-        Int_t index ;
-        TParticle * primary ;
-        Double_t distance = minDistance ;
-	  
-	for ( index = 0 ; index < numberofprimaries ; index++){
-	  primary = gAlice->Particle(listofprimaries[index]) ;
-	  Int_t moduleNumber ;
-	  Double_t primX, primZ ;
-	  fGeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-	  if(moduleNumberRec == moduleNumber)
-	    distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
-	  if(minDistance > distance)
-	    {
-	      minDistance = distance ;
-	      closestPrimary = listofprimaries[index] ;
-	    }
-	}
-	
-        if(closestPrimary >=0 ){
-	  
-          Int_t primaryType = gAlice->Particle(closestPrimary)->GetPdgCode() ;
-	  
-          if(primaryType==22)
-            recPhot->Fill(recZ,recX,recParticle->Energy()) ;
-          else
-            if(primaryType==-2112)
-              recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
-        }
+  if(emcRecPoints ){
+    for(irecp = 0; irecp < emcRecPoints->GetEntries() ; irecp ++){
+      AliPHOSEmcRecPoint * emc= (AliPHOSEmcRecPoint*)emcRecPoints->At(irecp) ;
+      if(emc->GetPHOSMod()==Nmod){
+	emc->GetLocalPosition(pos) ;
+	emcOccupancy->Fill(pos.X(),pos.Z(),emc->GetEnergy());
       }
     }
-  
+  }
+  else{
+    cout << "No EMC rec points read " << endl ;
+  }
+
+  if(ppsdRecPoints ){
+    for(irecp = 0; irecp < ppsdRecPoints->GetEntries() ; irecp ++){
+      AliPHOSPpsdRecPoint * ppsd= (AliPHOSPpsdRecPoint *)ppsdRecPoints->At(irecp) ;
+      if(ppsd->GetPHOSMod()==Nmod){
+	ppsd->GetLocalPosition(pos) ;
+	if(ppsd->GetUp())
+	  ppsdUpCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
+	else
+	  ppsdLowCl->Fill(pos.X(),pos.Z(),ppsd->GetEnergy());
+      }
+    }
+  }
+  else{
+    cout << "No PPSD/CPV rec points read " << endl ;
+  }
+    
+  AliPHOSRecParticle * recParticle ;
+  Int_t iRecParticle ;
+  if(recParticleList ){ 
+    for(iRecParticle = 0; iRecParticle < recParticleList->GetEntries() ;iRecParticle++ )
+      {
+	recParticle = (AliPHOSRecParticle *) recParticleList->At(iRecParticle) ;
+	
+	Int_t moduleNumberRec ;
+	Double_t recX, recZ ;
+	fGeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+	if(moduleNumberRec == Nmod){
+	  
+	  Double_t minDistance = 5. ;
+	  Int_t closestPrimary = -1 ;
+	  
+	  Int_t numberofprimaries ;
+	  Int_t * listofprimaries  = recParticle->GetPrimaries(numberofprimaries)  ;
+	  Int_t index ;
+	  TParticle * primary ;
+	  Double_t distance = minDistance ;
+	  
+	  for ( index = 0 ; index < numberofprimaries ; index++){
+	    primary = gAlice->Particle(listofprimaries[index]) ;
+	    Int_t moduleNumber ;
+	    Double_t primX, primZ ;
+	    fGeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+	    if(moduleNumberRec == moduleNumber)
+	      distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
+	    if(minDistance > distance)
+	      {
+		minDistance = distance ;
+		closestPrimary = listofprimaries[index] ;
+	      }
+	  }
+	  
+	  if(closestPrimary >=0 ){
+	    
+	    Int_t primaryType = gAlice->Particle(closestPrimary)->GetPdgCode() ;
+	    
+	    if(primaryType==22)
+	      recPhot->Fill(recZ,recX,recParticle->Energy()) ;
+	    else
+	      if(primaryType==-2112)
+		recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
+	  }
+	}
+      }
+  }
+  else{
+    cout << "Not Rec Prticles read " << endl ;
+  }
   
   digitOccupancy->Draw("box") ;
+  sdigitOccupancy->SetLineColor(5) ;
+  sdigitOccupancy->Draw("box") ;
   emcOccupancy->SetLineColor(2) ;
   emcOccupancy->Draw("boxsame") ;
   ppsdUp->SetLineColor(3) ;
@@ -644,14 +695,14 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       gAlice->TreeD()->GetEvent(0) ;
       gAlice->TreeR()->GetEvent(0) ;
       
-      TClonesArray ** recParticleList  = fPHOS->RecParticles() ;
+      TClonesArray * recParticleList  = fPHOS->RecParticles() ;
       
             
       AliPHOSRecParticle * recParticle ;
       Int_t iRecParticle ;
-      for(iRecParticle = 0; iRecParticle < (*recParticleList)->GetEntries() ;iRecParticle++ )
+      for(iRecParticle = 0; iRecParticle < recParticleList->GetEntries() ;iRecParticle++ )
  	{
- 	  recParticle = (AliPHOSRecParticle *) (*recParticleList)->At(iRecParticle) ;
+ 	  recParticle = (AliPHOSRecParticle *) recParticleList->At(iRecParticle) ;
 	  if((recParticle->GetType() == AliPHOSFastRecParticle::kGAMMA)||
 	     (recParticle->GetType() == AliPHOSFastRecParticle::kNEUTRALEM)){ 
 	    new( (*allRecParticleList)[iRecPhot] ) AliPHOSRecParticle(*recParticle) ;
@@ -1036,13 +1087,13 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       gAlice->TreeD()->GetEvent(0) ;
       gAlice->TreeR()->GetEvent(0) ;
       
-      TClonesArray ** recParticleList  = fPHOS->RecParticles() ;     
+      TClonesArray * recParticleList  = fPHOS->RecParticles() ;     
       
       AliPHOSRecParticle * recParticle ;
       Int_t iRecParticle ;
-      for(iRecParticle = 0; iRecParticle < (*recParticleList)->GetEntries() ;iRecParticle++ )
+      for(iRecParticle = 0; iRecParticle < recParticleList->GetEntries() ;iRecParticle++ )
 	{
-	  recParticle = (AliPHOSRecParticle *) (*recParticleList)->At(iRecParticle) ;
+	  recParticle = (AliPHOSRecParticle *) recParticleList->At(iRecParticle) ;
 	  fhAllRP->Fill(CorrectEnergy(recParticle->Energy())) ;
 	  
 	  Int_t moduleNumberRec ;

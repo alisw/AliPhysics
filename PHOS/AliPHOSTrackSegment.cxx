@@ -226,7 +226,7 @@ AliPHOSEmcRecPoint * AliPHOSTrackSegment::GetEmcRecPoint() const
   
   AliPHOSEmcRecPoint  * emcrp   = GetEmcRecPoint() ; 
   
-  return emcrp->GetTotalEnergy() ;
+  return emcrp->GetEnergy() ;
 }   
 
 //____________________________________________________________________________
@@ -250,58 +250,30 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
 
   TVector3 posEmc ;
   emcrp->GetGlobalPosition(posEmc, mdummy) ;
-
-  // Correction for the depth of the shower starting point (TDR p 127) 
-
-  Float_t energy = emcrp->GetEnergy() ; 
-  Float_t para = 0.925 ; 
-  Float_t parb = 6.52 ; 
-
-  TVector3 localpos ; 
-  emcrp->GetLocalPosition(localpos) ; 
-
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ; 
-  Float_t radius = geom->GetIPtoOuterCoverDistance() + geom->GetOuterBoxSize(1) ; 
-  Float_t incidencephi = TMath::ATan(localpos.X() / radius) ; 
-  Float_t incidencetheta = TMath::ATan(localpos.Z() / radius) ;
- 
-  Float_t depthx =  ( para * TMath::Log(energy) + parb ) * TMath::Sin(incidencephi) ; 
-  Float_t depthz =  ( para * TMath::Log(energy) + parb ) * TMath::Sin(incidencetheta) ; 
-  
-  localpos.SetX(localpos.X() - depthx ) ;
-  localpos.SetZ(localpos.Z() - depthz ) ;
  
   TVector3 emcglobalpos ;
   TMatrix  dummy ;
 
   emcrp->GetGlobalPosition(emcglobalpos, dummy) ;
 
-  emcglobalpos.SetX( emcglobalpos.X() - depthx ) ;  
-  emcglobalpos.SetZ( emcglobalpos.Z() - depthz ) ;   
   
-  // The following commeneted code becomes valid once the PPSD provides 
-  // a reasonable position resolution, at least as good as EMC !
- 
+// The following commeneted code becomes valid once the PPSD provides 
+// a reasonable position resolution, at least as good as EMC ! 
 //   TVector3 ppsdlglobalpos ;
 //   TVector3 ppsduglobalpos ;
-
 //   if( fPpsdLowRecPoint ){ // certainly a photon that has concerted
-        
 //     fPpsdLowRecPoint->GetGlobalPosition(ppsdlglobalpos, mdummy) ; 
 //     dir = emcglobalpos -  ppsdlglobalpos ; 
-     
-//     if( fPpsdUpRecPoint ){ // nop looks like a charged
-       
+//     if( fPpsdUpRecPoint ){ // not looks like a charged       
 //        fPpsdUpRecPoint->GetGlobalPosition(ppsduglobalpos, mdummy) ; 
 //        dir = ( dir +  emcglobalpos -  ppsduglobalpos ) * 0.5 ; 
 //      }
 //   }
- 
 //   else { // looks like a neutral
-
-    dir = emcglobalpos ;  
+//    dir = emcglobalpos ;  
 //  }
 
+  dir = emcglobalpos ;  
   dir.SetZ( -dir.Z() ) ;   // why ?  
   dir.SetMag(1.) ;
     
@@ -494,7 +466,7 @@ void AliPHOSTrackSegment::Print(const char * opt)
     
     emcrp->GetGlobalPosition( pos, dummy ) ;
     
-    cout << " Global position " << pos.X() << "   " << pos.Y() << "  " << pos.Z() << "      Energy " << emcrp->GetTotalEnergy() << endl ;
+    cout << " Global position " << pos.X() << "   " << pos.Y() << "  " << pos.Z() << "      Energy " << emcrp->GetEnergy() << endl ;
   }
   
   if ( ppsdlrp != 0 ) {

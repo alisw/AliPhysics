@@ -350,50 +350,56 @@ void AliPHOS::CreateMaterials()
 void AliPHOS::SetTreeAddress()
 { 
 
-  // TBranch *branch;
-  AliDetector::SetTreeAddress();
 
-  TBranch * branch ;
+  // TBranch *branch;
+  //  AliDetector::SetTreeAddress();
+
+  TBranch *branch;
+  char branchname[20];
+  sprintf(branchname,"%s",GetName());
+  //
+  // Branch address for hit tree
+  TTree *treeH = gAlice->TreeH();
+  if (treeH && fHits) {
+    branch = treeH->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fHits);
+  }
+  //
+  // Branch address for digit tree
+  TTree *treeD = gAlice->TreeD();
+
+  if(fDigits)
+    fDigits->Clear();
+  else
+    fDigits = new TClonesArray("AliPHOSDigit",1000);
+
+  if (treeD && fDigits) {
+    branch = treeD->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fDigits);
+  }
+
 
   if(fSDigits)
     fSDigits->Clear();
   else
-    fSDigits = new TClonesArray("AliPHOSDigit",1) ;
+    fSDigits = new TClonesArray("AliPHOSDigit",1000);
 
   if (gAlice->TreeS()  && fSDigits ) {
     branch = gAlice->TreeS()->GetBranch("PHOS");
     if (branch) branch->SetAddress(&fSDigits) ;
   } 
 
-  if(fDigits)
-    fDigits->Clear();
-  else
-    fDigits = new TClonesArray("AliPHOSDigit",1) ;
-
-  if (gAlice->TreeD()  && fDigits ) {
-    branch = gAlice->TreeD()->GetBranch("PHOS");
-    if (branch) branch->SetAddress(&fDigits) ;
-  } 
 
   TTree *treeR = gAlice->TreeR();
    
   //Branch address for TreeR: EmcRecPoint
   
-  if(fEmcRecPoints)
-    fEmcRecPoints->Delete();
-  else
-    fEmcRecPoints  = new AliPHOSRecPoint::RecPointsList(1) ; 
-
   if ( treeR && fEmcRecPoints ) {
     branch = treeR->GetBranch("PHOSEmcRP");
     if (branch) branch->SetAddress(&fEmcRecPoints) ;
   }
 
   //Branch address for TreeR: PPSDRecPoint
-  if(fPpsdRecPoints)
-    fPpsdRecPoints->Delete();
-  else
-    fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList(1) ;
 
   if ( treeR && fPpsdRecPoints ) {
     branch = treeR->GetBranch("PHOSPpsdRP");
@@ -401,10 +407,6 @@ void AliPHOS::SetTreeAddress()
   }
 
   //Branch address for TreeR: TrackSegments
-  if(fTrackSegments)
-    fTrackSegments->Clear() ;
-  else
-    fTrackSegments = new AliPHOSTrackSegment::TrackSegmentsList("AliPHOSTrackSegment", 1) ;
   
   if ( treeR && fTrackSegments ) {
     branch = treeR->GetBranch("PHOSTS");
@@ -412,10 +414,6 @@ void AliPHOS::SetTreeAddress()
   }
   
   //Branch address for TreeR: RecParticles
-  if(fRecParticles)
-    fRecParticles->Clear() ;
-  else
-    fRecParticles  = new AliPHOSRecParticle::RecParticlesList("AliPHOSRecParticle", 1) ;
 
   if ( treeR && fRecParticles ) {
     branch = treeR->GetBranch("PHOSRP");

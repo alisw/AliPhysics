@@ -16,7 +16,7 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
 		 AliPHOSEMCAGeometry.cxx \
 		 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
 		 AliPHOSPPSDGeometry.cxx AliPHOSSupportGeometry.cxx \
-		 AliPHOSCPVModule.cxx AliPHOSCPVDigit.cxx AliPHOSCPVHit.cxx \
+		 AliPHOSCPVModule.cxx AliPHOSCPVDigit.cxx \
                  AliPHOSDigit.cxx  \
                  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
 		 AliPHOSPpsdRecPoint.cxx AliPHOSCpvRecPoint.cxx \

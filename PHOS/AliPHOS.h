@@ -39,26 +39,27 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
-  virtual  AliPHOSRecPoint::RecPointsList **  EmcRecPoints() {
+  AliPHOSRecPoint::RecPointsList *  EmcRecPoints() const {
     // Getting list of RecPoints
-    return &fEmcRecPoints ;
+    return fEmcRecPoints ;
   }
   virtual  AliPHOSGeometry * GetGeometry() = 0 ;
-  virtual void Hit2Digit(){}  // Will convert hits to digits in versions v1 etc
 
-  virtual Int_t   IsVersion(void) const { return -1 ; } 
-  virtual  AliPHOSRecPoint::RecPointsList ** PpsdRecPoints() {
+  Int_t   IsVersion(void) const { return -1 ; } 
+  AliPHOSRecPoint::RecPointsList * PpsdRecPoints() const {
     // to be redefined when ppsd is present
-    return & fPpsdRecPoints ;
+    return  fPpsdRecPoints ;
   } 
   virtual void  SetTreeAddress();                
-  virtual  AliPHOSRecParticle::RecParticlesList **  RecParticles() {
+  AliPHOSRecParticle::RecParticlesList *  RecParticles() const {
     // Getting list of RecParticles
-    return & fRecParticles ;
+    return fRecParticles ;
   }
-  virtual  AliPHOSTrackSegment::TrackSegmentsList **  TrackSegments() {
+  TClonesArray *SDigits() const {return fSDigits;}
+
+  AliPHOSTrackSegment::TrackSegmentsList *  TrackSegments() const {
     // Getting list of TrackSegments
-    return & fTrackSegments ;
+    return fTrackSegments ;
   }
   virtual TString Version() {return TString(" ") ; } 
  
