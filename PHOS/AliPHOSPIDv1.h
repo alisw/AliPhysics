@@ -16,12 +16,17 @@
 class TVector3 ;
 class TMatrix ;
 class TPrincipal ;
-
+class TROOT ;
+class TTree ;
+class TCanvas ;
+class TFolder ;
+class TMatrixD ;
 // --- Standard library ---
-
 // --- AliRoot header files ---
 class AliPHOSEmcRecPoint ;
 class AliPHOSCpvRecPoint ;
+class AliPHOSClusterizerv1 ;
+class AliPHOSTrackSegmentMakerv1 ;
 
 #include "AliPHOSPID.h"
 #include "AliESDtrack.h"
@@ -60,6 +65,9 @@ public:
   Float_t GetCpv2EmcDistanceCut  (TString axis, Float_t e)   const ;
   Float_t GetEllipseParameter    (TString particle, TString param, Float_t e) const;
 
+  //Do bayesian PID
+  void SetBayesianPID(Bool_t set){ fBayesian = set ;}
+
   // Set PID parameters to change appropriate element of fParameters
   void SetParameterCalibration   (Int_t i, Float_t param);
   void SetParameterCpv2Emc       (Int_t i, TString axis, Float_t cut)  ; 
@@ -86,10 +94,10 @@ private:
 
   //Functions to calculate the PID probability 
   //  Double_t ChargedHadronDistProb(Double_t  x, Double_t y, Double_t * parg, Double_t * parl) ;
-  Double_t GausF   (Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b/(x*x)+c/x
-  Double_t GausPol2(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b*x+c*x*x
-  Double_t LandauF(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence  a+b/(x*x)+c/x
- Double_t LandauPol2(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b*x+c*x*x
+  const Double_t GausF   (Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b/(x*x)+c/x
+  const Double_t GausPol2(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b*x+c*x*x
+  const Double_t LandauF(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence  a+b/(x*x)+c/x
+  const Double_t LandauPol2(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b*x+c*x*x
  // Relative Distance CPV-EMC
   Float_t GetDistance     (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Option_t * axis)const ; 
   Int_t   GetCPVBit       (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Int_t EffPur, Float_t e) const;
@@ -102,8 +110,6 @@ private:
   void          SetParameters() ; //Fills the matrix of parameters
   void          Unload(); 
 
-  //Do bayesian PID
-  void SetBayesianPID(Bool_t set){ fBayesian = set ;}
   //PID population
   void SetInitPID(const Double_t * pid) ;
   void GetInitPID(Double_t * pid) const ;
@@ -125,7 +131,7 @@ private:
   TMatrix    *fParameters;               //! Matrix of identification Parameters
 
   //Initial pid population
-  Double_t fInitPID[AliESDtrack::kSPECIESN] ;
+  Double_t fInitPID[AliESDtrack::kSPECIESN] ; // Initial population to do bayesian PID
   // pid probability function parameters
   // ToF
   Double_t fTphoton[3] ;                // gaussian tof response for photon
@@ -159,12 +165,17 @@ private:
 
                    // gaussian ss response for muons
   //CPV-EMCAL distance
-  Double_t fCPVelectron[9] ;   // gaussian emc-cpv distance response for electron
-  Double_t fCPVcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */
+/*   Double_t fCPVelectron[9] ;   // gaussian emc-cpv distance response for electron */
+/*   Double_t fCPVcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */ 
+  Double_t fXelectron[9] ;   // gaussian emc-cpv distance response for electron
+  Double_t fXcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */
+  Double_t fZelectron[9] ;   // gaussian emc-cpv distance response for electron
+  Double_t fZcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */
+
 /*   Double_t fCPVchargedg[9] ;         // gaussian emc-cpv distance response for charged part (no elect) */
 /*   Double_t fCPVchargedl[9] ;         // landau emc-cpv distance response for charged part (no elect) */
 
-  ClassDef( AliPHOSPIDv1,10)  // Particle identifier implementation version 1
+  ClassDef( AliPHOSPIDv1,11)  // Particle identifier implementation version 1
 
 };
 

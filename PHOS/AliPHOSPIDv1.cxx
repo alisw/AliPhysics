@@ -79,33 +79,20 @@
 //
 //
 // --- ROOT system ---
-#include "TROOT.h"
-#include "TTree.h"
-#include "TFile.h"
-#include "TF2.h"
-#include "TFormula.h"
-#include "TCanvas.h"
-#include "TFolder.h"
-#include "TSystem.h"
-#include "TBenchmark.h"
-#include "TMatrixD.h"
-#include "TPrincipal.h"
-#include "TSystem.h"
+
 
 // --- Standard library ---
-
+#include "TF1.h"
+#include "TBenchmark.h"
+#include "TPrincipal.h"
+#include "TFile.h" 
+#include "TSystem.h"
 
 // --- AliRoot header files ---
-#include "AliLog.h"
+	      //#include "AliLog.h"
 #include "AliGenerator.h"
 #include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
-#include "AliPHOSClusterizerv1.h"
-#include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSTrackSegment.h"
-#include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSRecParticle.h"
-#include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h"
 
 ClassImp( AliPHOSPIDv1) 
@@ -270,10 +257,15 @@ void AliPHOSPIDv1::InitParameters()
   // Shower shape: dispersion gaussian parameters
   // Photons
 
-  fDphoton[0] = 0.1    ;  fDphoton[1] = 0.      ; fDphoton[2] = 0.     ;//constant
-  //fDphoton[0] = 1.0    ;  fDphoton[1] = 0.      ; fDphoton[2] = 0.     ;//constant
-  fDphoton[3] = 1.55   ;  fDphoton[4] =-0.0863  ; fDphoton[5] = 0.287  ;//mean
-  fDphoton[6] = 0.0451 ;  fDphoton[7] =-0.0803  ; fDphoton[8] = 0.314  ;//sigma
+//   fDphoton[0] = 3.84e-2;  fDphoton[1] = 4.46e-3 ; fDphoton[2] = -2.36e-2;//constant
+//   //fDphoton[0] = 1.0    ;  fDphoton[1] = 0.      ; fDphoton[2] = 0.     ;//constant
+//   fDphoton[3] = 1.55   ;  fDphoton[4] =-0.0863  ; fDphoton[5] = 0.287   ;//mean
+//   fDphoton[6] = 0.0451 ;  fDphoton[7] =-0.0803  ; fDphoton[8] = 0.314   ;//sigma
+
+   fDphoton[0] = 4.62e-2;  fDphoton[1] = 1.39e-2 ; fDphoton[2] = -3.80e-2;//constant
+   //fDphoton[0] = 1.0    ;  fDphoton[1] = 0.      ; fDphoton[2] = 0.     ;//constant
+   fDphoton[3] = 1.53   ;  fDphoton[4] =-6.62e-2 ; fDphoton[5] = 0.339   ;//mean
+   fDphoton[6] = 6.89e-2;  fDphoton[7] =-6.59e-2 ; fDphoton[8] = 0.194   ;//sigma
 
    fDpi0[0] = 0.0586  ;  fDpi0[1] = 1.06E-3 ; fDpi0[2] = 0.      ;//constant
    //fDpi0[0] = 1.0     ;  fDpi0[1] = 0.0     ; fDpi0[2] = 0.      ;//constant
@@ -285,9 +277,9 @@ void AliPHOSPIDv1::InitParameters()
 //   fDhadron[3] = 3.38   ;  fDhadron[4] = 0.0833  ; fDhadron[5] =-0.845 ;//mean
 //   fDhadron[6] = 0.627  ;  fDhadron[7] = 0.012   ; fDhadron[8] =-0.170 ;//sigma
 
-  fDhadron[0] =-5.10E-3 ;  fDhadron[1] =-5.35E-3 ; fDhadron[2] = 3.77E-2 ;//constant
-  fDhadron[3] = 4.03    ;  fDhadron[4] = 0.292   ; fDhadron[5] =-1.50    ;//mean
-  fDhadron[6] = 0.958   ;  fDhadron[7] = 0.117   ; fDhadron[8] =-0.598   ;//sigma
+  fDhadron[0] = 1.61E-2 ;  fDhadron[1] = 3.03E-3 ; fDhadron[2] = 1.01E-2 ;//constant
+  fDhadron[3] = 3.81    ;  fDhadron[4] = 0.232   ; fDhadron[5] =-1.25    ;//mean
+  fDhadron[6] = 0.897   ;  fDhadron[7] = 0.0987  ; fDhadron[8] =-0.534   ;//sigma
   // Muons
   fDmuon[0] = 0.0631     ;
   fDmuon[1] = 1.4 ; 
@@ -295,34 +287,32 @@ void AliPHOSPIDv1::InitParameters()
   fDFmuon = new TFormula("Shower shape response to muons" , "landau") ; 
   fDFmuon->SetParameters( fDmuon[0], fDmuon[1], fDmuon[2]) ; 
 
-  // CPV-EMC distance gaussian parameters
 
-  fCPVelectron[0] = 0.0     ;  fCPVelectron[1] = 0.0160 ; fCPVelectron[2] = 0.    ;//constant
-  //fCPVelectron[0] = 1.0     ;  fCPVelectron[1] = 0.     ; fCPVelectron[2] = 0.    ;//constant
-  fCPVelectron[3] = 0.0682  ;  fCPVelectron[4] =-1.32   ; fCPVelectron[5] = 6.67  ;//mean
-  fCPVelectron[6] = 0.276   ;  fCPVelectron[7] = 0.234  ; fCPVelectron[8] = 0.356 ;//sigma
-
-  //all charged landau
- //  fCPVcharged[0] = 0.0     ;  fCPVcharged[1] = 0.0464  ; fCPVcharged[2] = 0.      ;//constant
-//   //fCPVcharged[0] = 5.53    ;  fCPVcharged[1] = 0.      ; fCPVcharged[2] = 0.      ;//constant
-//   fCPVcharged[3] = 0.297   ;  fCPVcharged[4] =-0.652   ; fCPVcharged[5] = 1.91    ;//mean
-//   fCPVcharged[6] = 0.0786  ;  fCPVcharged[7] =-0.237   ; fCPVcharged[8] = 0.752   ;//sigma
-
-// //charged hadrons landau
-//   fCPVchargedl[0] = 0.103   ;  fCPVchargedl[1] = 8.84E-3 ; fCPVchargedl[2] =-2.40E-2 ;//constant
-//   fCPVchargedl[3] = 2.86    ;  fCPVchargedl[4] =-0.214   ; fCPVchargedl[5] = 0.817   ;//mean
-//   fCPVchargedl[6] = 0.182   ;  fCPVchargedl[7] =-0.0693  ; fCPVchargedl[8] = 0.319   ;//sigma
-//   //charged hadrons gaus
-//   fCPVchargedg[0] = 0.0135  ;  fCPVchargedg[1] = 2.43E-5 ; fCPVchargedg[2] = 3.01E-3 ;//constant
-//   fCPVchargedg[3] = 2.37    ;  fCPVchargedg[4] =-0.181   ; fCPVchargedg[5] = 0.726   ;//mean
-//   fCPVchargedg[6] = 0.908   ;  fCPVchargedg[7] =-0.0558  ; fCPVchargedg[8] = 0.219   ;//sigma
-
-
-  //charged hadrons landau
-  fCPVcharged[0] = 6.06E-2 ;  fCPVcharged[1] = 3.80E-3 ; fCPVcharged[2] =-1.40E-2 ;//constant
-  fCPVcharged[3] = 1.15    ;  fCPVcharged[4] =-0.563   ; fCPVcharged[5] = 2.63    ;//mean
-  fCPVcharged[6] = 0.915   ;  fCPVcharged[7] =-0.0790  ; fCPVcharged[8] = 0.307   ;//sigma
-
+  // x(CPV-EMC) distance gaussian parameters
+  
+  fXelectron[0] = 8.06e-2 ;  fXelectron[1] = 1.00e-2; fXelectron[2] =-5.14e-2;//constant
+  //fXelectron[0] = 1.0     ;  fXelectron[1] = 0.     ; fXelectron[2] = 0.    ;//constant
+  fXelectron[3] = 0.202   ;  fXelectron[4] = 8.15e-3; fXelectron[5] = 4.55   ;//mean
+  fXelectron[6] = 0.334   ;  fXelectron[7] = 0.186  ; fXelectron[8] = 4.32e-2;//sigma
+  
+  //charged hadrons gaus
+  fXcharged[0] = 6.43e-3 ;  fXcharged[1] =-4.19e-5; fXcharged[2] = 1.42e-3;//constant
+  fXcharged[3] = 2.75    ;  fXcharged[4] =-0.40   ; fXcharged[5] = 1.68   ;//mean
+  fXcharged[6] = 3.135   ;  fXcharged[7] =-9.41e-2; fXcharged[8] = 1.31e-2;//sigma
+  
+  // z(CPV-EMC) distance gaussian parameters
+  
+  fZelectron[0] = 8.22e-2 ;  fZelectron[1] = 5.11e-3; fZelectron[2] =-3.05e-2;//constant
+  //fZelectron[0] = 1.0     ;  fZelectron[1] = 0.     ; fZelectron[2] = 0.    ;//constant
+  fZelectron[3] = 3.09e-2 ;  fZelectron[4] = 5.87e-2; fZelectron[5] =-9.49e-2;//mean
+  fZelectron[6] = 0.263   ;  fZelectron[7] =-9.02e-3; fZelectron[8] = 0.151 ;//sigma
+  
+  //charged hadrons gaus
+  
+  fZcharged[0] = 1.00e-2 ;  fZcharged[1] = 2.82E-4 ; fZcharged[2] = 2.87E-3 ;//constant
+  fZcharged[3] =-4.68e-2 ;  fZcharged[4] =-9.21e-3 ; fZcharged[5] = 4.91e-2 ;//mean
+  fZcharged[6] = 1.425   ;  fZcharged[7] =-5.90e-2 ; fZcharged[8] = 5.07e-2 ;//sigma
+  
   for (Int_t i =0; i<  AliESDtrack::kSPECIESN ; i++)
     fInitPID[i] = 1.;
   
@@ -383,40 +373,52 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
 }
 
 //________________________________________________________________________
-Double_t  AliPHOSPIDv1::GausF(Double_t  x, Double_t  y, Double_t * par)
+const Double_t  AliPHOSPIDv1::GausF(Double_t  x, Double_t  y, Double_t * par)
 {
-  Double_t cnt    = par[2] * (x*x) + par[1] * x + par[0] ;
+  //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
+  //this method returns a density probability of this parameter, given by a gaussian 
+  //function whose parameters depend with the energy  with a function: a/(x*x)+b/x+b
+  Double_t cnt    = par[1] / (x*x) + par[2] / x + par[0] ;
   Double_t mean   = par[4] / (x*x) + par[5] / x + par[3] ;
   Double_t sigma  = par[7] / (x*x) + par[8] / x + par[6] ;
-  //cout<<"c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
+ 
   //  Double_t arg    = - (y-mean) * (y-mean) / (2*sigma*sigma) ;
   //  return cnt * TMath::Exp(arg) ;
-  if(mean != 0. && sigma/mean > 1.e-4 ){
+  if(TMath::Abs(sigma) > 1.e-10){
     TF1 * f = new TF1("gaus","gaus",0,100);
     f->SetParameters(cnt,mean,sigma);
-    //cout<<"gaus value "<<f->Eval(y)<<endl ;
     Double_t arg  = f->Eval(y) ;
+    //cout<<"GausF : en "<<x<<" y "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
     return arg;
   }
   else
     return 0.;
-
+ 
 }
 //________________________________________________________________________
-Double_t  AliPHOSPIDv1::GausPol2(Double_t  x, Double_t y, Double_t * par)
+const Double_t  AliPHOSPIDv1::GausPol2(Double_t  x, Double_t y, Double_t * par)
 {
+  //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
+  //this method returns a density probability of this parameter, given by a gaussian 
+  //function whose parameters depend with the energy like second order polinomial
+
   Double_t cnt    = par[0] + par[1] * x + par[2] * x * x ;
   Double_t mean   = par[3] + par[4] * x + par[5] * x * x ;
   Double_t sigma  = par[6] + par[7] * x + par[8] * x * x ;
 
-  if(mean != 0. && sigma/mean > 1.e-4 ){
+  if(TMath::Abs(sigma) > 1.e-10){
     TF1 * f = new TF1("gaus","gaus",0,100);
     f->SetParameters(cnt,mean,sigma);
     Double_t arg  = f->Eval(y) ;
+  //cout<<"GausPol : en "<<x<<" y "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
+
     return arg;
   }
   else
     return 0.;
+ 
+
+
 }
 
 //____________________________________________________________________________
@@ -627,6 +629,7 @@ Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint *
 //____________________________________________________________________________
 Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Int_t effPur, Float_t e) const
 {
+  //Calculates the pid bit for the CPV selection per each purity.
   if(effPur>2 || effPur<0)
     AliError(Form("Invalid Efficiency-Purity choice %d",effPur));
   
@@ -742,20 +745,22 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
 }
 
 //________________________________________________________________________
-Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
+const Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
 {
-  Double_t cnt    = par[2] * (x*x) + par[1] * x + par[0] ;
+  //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
+  //this method returns a density probability of this parameter, given by a landau 
+  //function whose parameters depend with the energy  with a function: a/(x*x)+b/x+b
+
+  Double_t cnt    = par[1] / (x*x) + par[2] / x + par[0] ;
   Double_t mean   = par[4] / (x*x) + par[5] / x + par[3] ;
   Double_t sigma  = par[7] / (x*x) + par[8] / x + par[6] ;
- //  Double_t mean   = par[3] + par[4] * x + par[5] * x * x ;
-//   Double_t sigma  = par[6] + par[7] * x + par[8] * x * x ;
-  
-  //Double_t arg    = -(y-mean)*(y-mean)/(2*sigma*sigma) ;
-  //return cnt * TMath::Exp(arg) ;
-  if(mean != 0. && sigma/mean > 1.e-4 ){
+
+  if(TMath::Abs(sigma) > 1.e-10){
     TF1 * f = new TF1("landau","landau",0.,100.);
     f->SetParameters(cnt,mean,sigma);
     Double_t arg  = f->Eval(y) ;
+    //    cout<<"LandauF : en "<<x<<" y  "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
+
     return arg;
   }
   else
@@ -763,20 +768,28 @@ Double_t  AliPHOSPIDv1::LandauF(Double_t  x, Double_t y, Double_t * par)
 
 }
 //________________________________________________________________________
-Double_t  AliPHOSPIDv1::LandauPol2(Double_t  x, Double_t y, Double_t * par)
+const Double_t  AliPHOSPIDv1::LandauPol2(Double_t  x, Double_t y, Double_t * par)
 {
-  Double_t cnt    = par[2] * (x*x) + par[1] * x + par[0] ;
-  Double_t mean   = par[4] * (x*x) + par[5] * x + par[3] ;
-  Double_t sigma  = par[7] * (x*x) + par[8] * x + par[6] ;
 
-  if(mean != 0. && sigma/mean > 1.e-4 ){
+  //Given the energy x and the parameter y (tof, shower dispersion or cpv-emc distance), 
+  //this method returns a density probability of this parameter, given by a landau 
+  //function whose parameters depend with the energy like second order polinomial
+
+  Double_t cnt    = par[2] * (x*x) + par[1] * x + par[0] ;
+  Double_t mean   = par[5] * (x*x) + par[4] * x + par[3] ;
+  Double_t sigma  = par[8] * (x*x) + par[7] * x + par[6] ;
+
+   if(TMath::Abs(sigma) > 1.e-10){
     TF1 * f = new TF1("landau","landau",0.,100.);
     f->SetParameters(cnt,mean,sigma);
     Double_t arg  = f->Eval(y) ;
+    //cout<<"LandauPol : en "<<x<<" y  "<<y<<" c "<< cnt << " mean "<<mean<<" sigma "<<sigma<<endl;
     return arg;
   }
   else
     return 0.;
+
+
 }
 // //________________________________________________________________________
 // Double_t  AliPHOSPIDv1::ChargedHadronDistProb(Double_t  x, Double_t y, Double_t * parg, Double_t * parl)
@@ -814,16 +827,20 @@ Double_t  AliPHOSPIDv1::LandauPol2(Double_t  x, Double_t y, Double_t * par)
 void  AliPHOSPIDv1::MakePID()
 {
   // construct the PID weight from a Bayesian Method
-
+  
   Int_t index ;
   const Int_t kSPECIES = AliESDtrack::kSPECIESN ;
   Int_t nparticles = AliPHOSGetter::Instance()->RecParticles()->GetEntriesFast() ;
-
+  
+  //   const Int_t kMAXPARTICLES = 2000 ; 
+  //   if (nparticles >= kMAXPARTICLES) 
+  //     Error("MakePID", "Change size of MAXPARTICLES") ; 
+  //   Double_t stof[kSPECIES][kMAXPARTICLES] ;
+  
 //   const Int_t kMAXPARTICLES = 2000 ; 
 //   if (nparticles >= kMAXPARTICLES) 
 //     AliError("Change size of MAXPARTICLES") ; 
 //   Double_t stof[kSPECIES][kMAXPARTICLES] ;
-
 
   Double_t * stof[kSPECIES] ;
   Double_t * sdp [kSPECIES]  ;
@@ -846,8 +863,10 @@ void  AliPHOSPIDv1::MakePID()
     AliPHOSCpvRecPoint * cpv     = AliPHOSGetter::Instance()->CpvRecPoint(index) ;
     
     Float_t en   = emc->GetEnergy(); 
-    
+
     // Tof
+
+    //   Info("MakePID", "TOF");
     Double_t time = recpar->ToF() ;
     //cout<<">>>>>>>Energy "<<en<<"Time "<<time<<endl;
     //Electrons initial population to be removed
@@ -855,36 +874,22 @@ void  AliPHOSPIDv1::MakePID()
     
     // now get the signals probability
     // s(pid) in the Bayesian formulation
-    //     stof[AliESDtrack::kPhoton][index]   = fTFphoton     ->Eval(time) ; 
-    //     stof[AliESDtrack::kElectron][index] =  stof[AliESDtrack::kPhoton][index] ;
-    //     if(time < fTpionl[1])
-    //       stof[AliESDtrack::kPion][index]     = fTFpiong      ->Eval(time) ; //gaus distribution
-    //     else
-    //       stof[AliESDtrack::kPion][index]     = fTFpionl      ->Eval(time) ; //landau distribution
-    //     if(time < fTkaonl[1])
-    //       stof[AliESDtrack::kKaon][index]     = fTFkaong      ->Eval(time) ; //gaus distribution
-    //     else 
-    //       stof[AliESDtrack::kKaon][index]     = fTFkaonl      ->Eval(time) ; //landau distribution
-    //     if(time < fThhadronl[1])
-    //       stof[AliESDtrack::kProton][index]   = fTFhhadrong   ->Eval(time) ; //gaus distribution
-    //     else
-    //       stof[AliESDtrack::kProton][index]   = fTFhhadronl   ->Eval(time) ; //landau distribution
     
-    //     stof[AliESDtrack::kNeutron][index]  = stof[AliESDtrack::kProton][index] ;
-    //     stof[AliESDtrack::kEleCon][index]   = stof[AliESDtrack::kPhoton][index] ;
-    //     // a conversion electron has the photon ToF
-    //     stof[AliESDtrack::kKaon0][index]    = stof[AliESDtrack::kKaon][index] ;
-    //     stof[AliESDtrack::kMuon][index]     = stof[AliESDtrack::kPhoton][index] ;
+    stof[AliESDtrack::kPhoton][index]   = 1.; 
+    stof[AliESDtrack::kElectron][index] = 1.;
+    stof[AliESDtrack::kPion][index]     = 1.; 
+    stof[AliESDtrack::kKaon][index]     = 1.; 
+    stof[AliESDtrack::kProton][index]   = 1.;
+    stof[AliESDtrack::kNeutron][index]  = 1.;
+    stof[AliESDtrack::kEleCon][index]   = 1.;
+    stof[AliESDtrack::kKaon0][index]    = 1.;
+    stof[AliESDtrack::kMuon][index]     = 1.; 
+    
     if(en < 2.) {
-      //       cout<<"TOF: pi "<< GausPol2(en, time, fTpion)<<endl;
-      //       cout<<"TOF: k  "<< LandauPol2(en, time, fTkaon)<<endl;
-      //       cout<<"TOF: N  "<< LandauPol2(en, time, fThhadron)<<endl;
-      stof[AliESDtrack::kPhoton][index]   = fTFphoton     ->Eval(time) ; 
-      stof[AliESDtrack::kElectron][index] =  stof[AliESDtrack::kPhoton][index] ;
-//       stof[AliESDtrack::kPion][index]     = GausPol2(en, time, fTpion) ; //gaus distribution
-//       stof[AliESDtrack::kKaon][index]     = LandauPol2(en, time, fTkaon) ; //gaus distribution
-//       stof[AliESDtrack::kProton][index]   = LandauPol2(en, time, fThhadron); //gaus distribution
-      stof[AliESDtrack::kPion][index]     = fTFpiong      ->Eval(time) ; //landau distribution
+      stof[AliESDtrack::kPhoton][index]   = fTFphoton     ->Eval(time) ; //gaus distribution
+      stof[AliESDtrack::kPion][index]     = fTFpiong      ->Eval(time) ; //gaus distribution
+      stof[AliESDtrack::kElectron][index] = stof[AliESDtrack::kPion][index]  ;                               
+	
       if(time < fTkaonl[1])
 	stof[AliESDtrack::kKaon][index]     = fTFkaong      ->Eval(time) ; //gaus distribution
       else 
@@ -893,35 +898,31 @@ void  AliPHOSPIDv1::MakePID()
 	stof[AliESDtrack::kProton][index]   = fTFhhadrong   ->Eval(time) ; //gaus distribution
       else
 	stof[AliESDtrack::kProton][index]   = fTFhhadronl   ->Eval(time) ; //landau distribution
-
+      
       stof[AliESDtrack::kNeutron][index]  = stof[AliESDtrack::kProton][index] ;
       stof[AliESDtrack::kEleCon][index]   = stof[AliESDtrack::kPhoton][index] ;
       // a conversion electron has the photon ToF
       stof[AliESDtrack::kKaon0][index]    = stof[AliESDtrack::kKaon][index] ;
       stof[AliESDtrack::kMuon][index]     = stof[AliESDtrack::kPhoton][index] ;
     } 
-    else {
-      stof[AliESDtrack::kPhoton][index]   = 1.; 
-      stof[AliESDtrack::kElectron][index] = 1.;
-      stof[AliESDtrack::kPion][index]     = 1.; 
-      stof[AliESDtrack::kKaon][index]     = 1.; 
-      stof[AliESDtrack::kProton][index]   = 1.;
-      stof[AliESDtrack::kNeutron][index]  = 1.;
-      stof[AliESDtrack::kEleCon][index]   = 1.;
-      stof[AliESDtrack::kKaon0][index]    = 1.;
-      stof[AliESDtrack::kMuon][index]     = 1.; 
-    }
-    //    Info("MakePID", "TOF passed");
+    
+    //    Info("MakePID", "Dispersion");
     
     // Shower shape: Dispersion
     Float_t dispersion = emc->GetDispersion();
     //dispersion is not well defined if the cluster is only in few crystals
     
-    //     Info("MakePID","multiplicity %d, dispersion %f", emc->GetMultiplicity(), 
-    // 	 dispersion);
-    //     Info("MakePID","ss: photon %f, hadron %f ", GausF   (en , dispersion, fDphoton), 
-    //       LandauF(en , dispersion, fDhadron ) );
-    if(emc->GetMultiplicity() > 4){ 
+    sdp[AliESDtrack::kPhoton][index]   = 1. ;
+    sdp[AliESDtrack::kElectron][index] = 1. ;
+    sdp[AliESDtrack::kPion][index]     = 1. ; 
+    sdp[AliESDtrack::kKaon][index]     = 1. ; 
+    sdp[AliESDtrack::kProton][index]   = 1. ;
+    sdp[AliESDtrack::kNeutron][index]  = 1. ;
+    sdp[AliESDtrack::kEleCon][index]   = 1. ; 
+    sdp[AliESDtrack::kKaon0][index]    = 1. ; 
+    sdp[AliESDtrack::kMuon][index]     = 1. ; 
+    
+    if(en > 0.5 && emc->GetMultiplicity() > 3){ 
       sdp[AliESDtrack::kPhoton][index]   = GausF   (en , dispersion, fDphoton) ;
       sdp[AliESDtrack::kElectron][index] = sdp[AliESDtrack::kPhoton][index] ;
       sdp[AliESDtrack::kPion][index]     = LandauF(en , dispersion, fDhadron ) ; 
@@ -932,39 +933,45 @@ void  AliPHOSPIDv1::MakePID()
       sdp[AliESDtrack::kKaon0][index]    = sdp[AliESDtrack::kPion][index]  ; 
       sdp[AliESDtrack::kMuon][index]     = fDFmuon ->Eval(dispersion) ; //landau distribution
     }
-    else{
-      sdp[AliESDtrack::kPhoton][index]   = 1. ;
-      sdp[AliESDtrack::kElectron][index] = 1. ;
-      sdp[AliESDtrack::kPion][index]     = 1. ; 
-      sdp[AliESDtrack::kKaon][index]     = 1. ; 
-      sdp[AliESDtrack::kProton][index]   = 1. ;
-      sdp[AliESDtrack::kNeutron][index]  = 1. ; 
-      sdp[AliESDtrack::kEleCon][index]   = 1. ; 
-      sdp[AliESDtrack::kKaon0][index]    = 1. ; 
-      sdp[AliESDtrack::kMuon][index]     = 1. ; 
-    }
     
+//     Info("MakePID","multiplicity %d, dispersion %f", emc->GetMultiplicity(), dispersion);
+//     Info("MakePID","ss: photon %f, hadron %f ",  sdp[AliESDtrack::kPhoton][index],  sdp[AliESDtrack::kPion][index]);
     
+//       cout<<">>>>>multiplicity "<<emc->GetMultiplicity()<<", dispersion "<< dispersion<<endl ;
+//       cout<<"<<<<<ss: photon   "<<sdp[AliESDtrack::kPhoton][index]<<", hadron    "<<sdp[AliESDtrack::kPion][index]<<endl;
+
     // CPV-EMC  Distance
-    Float_t distance = GetDistance(emc, cpv,  "R") ;
+    //       Info("MakePID", "Distance");
+    //    Float_t distance = GetDistance(emc, cpv,  "R") ;
+    Float_t x        = TMath::Abs(GetDistance(emc, cpv,  "X")) ;
+    Float_t z        = GetDistance(emc, cpv,  "Z") ;
     //    Info("MakePID", "Distance %f", distance);
-    Float_t pcpv = 0 ;
-    Float_t pcpvneutral  = 0. ;
-    Float_t pcpvelectron = GausF  (en , distance, fCPVelectron) ;
-    Float_t pcpvcharged  = LandauF(en , distance, fCPVcharged) ;
-    //Float_t pcpvcharged  = ChargedHadronDistProb(en , distance, fCPVchargedg, fCPVchargedl) ;
-    //    Info("MakePID", "CPV: electron %f, hadron %f", pcpvelectron, pcpvcharged);
+    Double_t pcpv = 0 ;
+    Double_t pcpvneutral  = 0. ;
+    Double_t elprobx = GausF(en , x, fXelectron) ;
+    Double_t elprobz = GausF(en , z, fZelectron) ;
+    Double_t chprobx = GausF(en , x, fXcharged)  ;
+    Double_t chprobz = GausF(en , z, fZcharged)  ;
+    Double_t pcpvelectron = elprobx * elprobz;
+    Double_t pcpvcharged  = chprobx * chprobz;
+
+//     cout<<">>>>electron : x "<<x<<" xprob "<<elprobx<<" z "<<z<<" zprob "<<elprobz<<endl;
+//     cout<<">>>>hadron   : x "<<x<<" xprob "<<chprobx<<" z "<<z<<" zprob "<<chprobz<<endl;
+//     cout<<">>>>electron : px*pz "<<pcpvelectron <<" hadron: px*pz "<<pcpvcharged<<endl;  
+
     if(pcpvelectron >= pcpvcharged)  
       pcpv = pcpvelectron ;
     else
       pcpv = pcpvcharged ;
     
-    if(pcpv < 1e-4)
+    if(pcpv < 1e-7)
       {
 	pcpvneutral  = 1. ;
 	pcpvcharged  = 0. ;
 	pcpvelectron = 0. ;
       }
+    //    else
+    //      cout<<">>>>>>>>>>>CHARGED>>>>>>>>>>>"<<endl;
     
     scpv[AliESDtrack::kPion][index]     =  pcpvcharged  ; 
     scpv[AliESDtrack::kKaon][index]     =  pcpvcharged  ; 
@@ -977,50 +984,61 @@ void  AliPHOSPIDv1::MakePID()
     scpv[AliESDtrack::kMuon][index]     =  pcpvelectron ; 
     
     //   Info("MakePID", "CPV passed");
-    
+
+    //Pi0
+    stof[AliESDtrack::kPi0][index]      = 0. ;  
+    scpv[AliESDtrack::kPi0][index]      = 0. ;
+    sdp [AliESDtrack::kPi0][index]      = 0. ;
+    fInitPID[AliESDtrack::kPi0]         = 0. ;
+
     if(en > 30.){
       // pi0 are detected via decay photon
       stof[AliESDtrack::kPi0][index]  = fTFphoton  ->Eval(time) ;
       scpv[AliESDtrack::kPi0][index]  = pcpvneutral  ;
-      if(emc->GetMultiplicity() > 4)
+      sdp [AliESDtrack::kPi0][index]  = 1. ;
+      if(emc->GetMultiplicity() > 3)
 	sdp [AliESDtrack::kPi0][index]  = GausPol2(en , dispersion, fDpi0) ;
-      else
-	sdp [AliESDtrack::kPi0][index]  = 1. ;
-    }
-    else{
-      stof[AliESDtrack::kPi0][index]      = 0. ;  
-      scpv[AliESDtrack::kPi0][index]      = 0. ;
-      sdp [AliESDtrack::kPi0][index]      = 0. ;
-      fInitPID[AliESDtrack::kPi0]         = 0. ;
     }
     
     if(en > 0.5){
       //Muons deposit few energy
-      scpv[AliESDtrack::kMuon][index]     =  0;
-      stof[AliESDtrack::kMuon][index]     =  0;
-      sdp [AliESDtrack::kMuon][index]     =  0;
+      scpv[AliESDtrack::kMuon][index]     =  0 ;
+      stof[AliESDtrack::kMuon][index]     =  0 ;
+      sdp [AliESDtrack::kMuon][index]     =  0 ;
     }
-//     cout<<"MakePID: energy "<<en<<", tof "<<time<<", distance "<<distance<<", dispersion "<<dispersion<<endl ;
-//     cout<<"Photon   , pid "<< fInitPID[AliESDtrack::kPhoton]<<" tof "<<stof[AliESDtrack::kPhoton][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kPhoton][index]<<", ss "<<sdp[AliESDtrack::kPhoton][index]<<endl;
-//     cout<<"EleCon   , pid "<< fInitPID[AliESDtrack::kEleCon]<<", tof "<<stof[AliESDtrack::kEleCon][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kEleCon][index]<<" ss "<<sdp[AliESDtrack::kEleCon][index]<<endl;
-//     cout<<"Electron , pid "<< fInitPID[AliESDtrack::kElectron]<<", tof "<<stof[AliESDtrack::kElectron][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kElectron][index]<<" ss "<<sdp[AliESDtrack::kElectron][index]<<endl;
-//     cout<<"Muon     , pid "<< fInitPID[AliESDtrack::kMuon]<<", tof "<<stof[AliESDtrack::kMuon][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kMuon][index]<<" ss "<<sdp[AliESDtrack::kMuon][index]<<endl;
-//     cout<<"Pi0      , pid "<< fInitPID[AliESDtrack::kPi0]<<", tof "<<stof[AliESDtrack::kPi0][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kPi0][index]<<" ss "<<sdp[AliESDtrack::kPi0][index]<<endl;
-//     cout<<"Pion     , pid "<< fInitPID[AliESDtrack::kPion]<<", tof "<<stof[AliESDtrack::kPion][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kPion][index]<<" ss "<<sdp[AliESDtrack::kPion][index]<<endl;
-//     cout<<"Kaon0    , pid "<< fInitPID[AliESDtrack::kKaon0]<<", tof "<<stof[AliESDtrack::kKaon0][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kKaon0][index]<<" ss "<<sdp[AliESDtrack::kKaon0][index]<<endl;
-//     cout<<"Kaon     , pid "<< fInitPID[AliESDtrack::kKaon]<<", tof "<<stof[AliESDtrack::kKaon][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kKaon][index]<<" ss "<<sdp[AliESDtrack::kKaon][index]<<endl;
-//     cout<<"Neutron  , pid "<< fInitPID[AliESDtrack::kNeutron]<<", tof "<<stof[AliESDtrack::kNeutron][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kNeutron][index]<<" ss "<<sdp[AliESDtrack::kNeutron][index]<<endl;
-//     cout<<"Proton   , pid "<< fInitPID[AliESDtrack::kProton]<<", tof "<<stof[AliESDtrack::kProton][index]
-//      	<<", cpv "<<scpv[AliESDtrack::kProton][index]<<" ss "<<sdp[AliESDtrack::kProton][index]<<endl;
+
+    if(en > 0.5){
+      cout<<"######################################################"<<endl;
+      //cout<<"MakePID: energy "<<en<<", tof "<<time<<", distance "<<distance<<", dispersion "<<dispersion<<endl ;
+      cout<<"MakePID: energy "<<en<<", tof "<<time<<", dispersion "<<dispersion<<", x "<<x<<", z "<<z<<endl ;
+      cout<<">>>>>multiplicity "<<emc->GetMultiplicity()<<endl;
+      cout<<">>>>electron : xprob "<<elprobx<<" zprob "<<elprobz<<endl;
+      cout<<">>>>hadron   : xprob "<<chprobx<<" zprob "<<chprobz<<endl;
+      cout<<">>>>electron : px*pz "<<pcpvelectron <<" hadron: px*pz "<<pcpvcharged<<endl;  
+      
+
+      cout<<"Photon   , pid "<< fInitPID[AliESDtrack::kPhoton]<<" tof "<<stof[AliESDtrack::kPhoton][index]
+	  <<", cpv "<<scpv[AliESDtrack::kPhoton][index]<<", ss "<<sdp[AliESDtrack::kPhoton][index]<<endl;
+      cout<<"EleCon   , pid "<< fInitPID[AliESDtrack::kEleCon]<<", tof "<<stof[AliESDtrack::kEleCon][index]
+	  <<", cpv "<<scpv[AliESDtrack::kEleCon][index]<<" ss "<<sdp[AliESDtrack::kEleCon][index]<<endl;
+      cout<<"Electron , pid "<< fInitPID[AliESDtrack::kElectron]<<", tof "<<stof[AliESDtrack::kElectron][index]
+	  <<", cpv "<<scpv[AliESDtrack::kElectron][index]<<" ss "<<sdp[AliESDtrack::kElectron][index]<<endl;
+      cout<<"Muon     , pid "<< fInitPID[AliESDtrack::kMuon]<<", tof "<<stof[AliESDtrack::kMuon][index]
+	  <<", cpv "<<scpv[AliESDtrack::kMuon][index]<<" ss "<<sdp[AliESDtrack::kMuon][index]<<endl;
+      cout<<"Pi0      , pid "<< fInitPID[AliESDtrack::kPi0]<<", tof "<<stof[AliESDtrack::kPi0][index]
+	  <<", cpv "<<scpv[AliESDtrack::kPi0][index]<<" ss "<<sdp[AliESDtrack::kPi0][index]<<endl;
+      cout<<"Pion     , pid "<< fInitPID[AliESDtrack::kPion]<<", tof "<<stof[AliESDtrack::kPion][index]
+	  <<", cpv "<<scpv[AliESDtrack::kPion][index]<<" ss "<<sdp[AliESDtrack::kPion][index]<<endl;
+      cout<<"Kaon0    , pid "<< fInitPID[AliESDtrack::kKaon0]<<", tof "<<stof[AliESDtrack::kKaon0][index]
+	  <<", cpv "<<scpv[AliESDtrack::kKaon0][index]<<" ss "<<sdp[AliESDtrack::kKaon0][index]<<endl;
+      cout<<"Kaon     , pid "<< fInitPID[AliESDtrack::kKaon]<<", tof "<<stof[AliESDtrack::kKaon][index]
+	  <<", cpv "<<scpv[AliESDtrack::kKaon][index]<<" ss "<<sdp[AliESDtrack::kKaon][index]<<endl;
+      cout<<"Neutron  , pid "<< fInitPID[AliESDtrack::kNeutron]<<", tof "<<stof[AliESDtrack::kNeutron][index]
+	  <<", cpv "<<scpv[AliESDtrack::kNeutron][index]<<" ss "<<sdp[AliESDtrack::kNeutron][index]<<endl;
+      cout<<"Proton   , pid "<< fInitPID[AliESDtrack::kProton]<<", tof "<<stof[AliESDtrack::kProton][index]
+	  <<", cpv "<<scpv[AliESDtrack::kProton][index]<<" ss "<<sdp[AliESDtrack::kProton][index]<<endl;
+      cout<<"######################################################"<<endl;
+    }
   }
   
   //for (index = 0 ; index < kSPECIES ; index++) 
@@ -1120,20 +1138,20 @@ void  AliPHOSPIDv1::MakeRecParticles()
       // Looking PCA. Define and calculate the data (X),
       // introduce in the function X2P that gives the components (P).  
 
-      Float_t  Spher = 0. ;
-      Float_t  Emaxdtotal = 0. ; 
+      Float_t  spher = 0. ;
+      Float_t  emaxdtotal = 0. ; 
       
       if((lambda[0]+lambda[1])!=0) 
-	Spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
+	spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
       
-      Emaxdtotal=emc->GetMaximalEnergy()/emc->GetEnergy(); 
+      emaxdtotal=emc->GetMaximalEnergy()/emc->GetEnergy(); 
       
       fX[0] = lambda[0] ;  
       fX[1] = lambda[1] ; 
       fX[2] = emc->GetDispersion() ; 
-      fX[3] = Spher ; 
+      fX[3] = spher ; 
       fX[4] = emc->GetMultiplicity() ;  
-      fX[5] = Emaxdtotal ;  
+      fX[5] = emaxdtotal ;  
       fX[6] = emc->GetCoreEnergy() ;  
       
       fPrincipalPhoton->X2P(fX,fPPhoton);
@@ -1300,8 +1318,8 @@ void  AliPHOSPIDv1::SetParameters()
 
   fFileNameParameters = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
   fParameters = new TMatrix(16,4) ;
-  const Int_t maxLeng=255;
-  char string[maxLeng];
+  const Int_t kMaxLeng=255;
+  char string[kMaxLeng];
 
   // Open a text file with PID parameters
   FILE *fd = fopen(fFileNameParameters.Data(),"r");
@@ -1311,7 +1329,7 @@ void  AliPHOSPIDv1::SetParameters()
 
   Int_t i=0;
   // Read parameter file line-by-line and skip empty line and comments
-  while (fgets(string,maxLeng,fd) != NULL) {
+  while (fgets(string,kMaxLeng,fd) != NULL) {
     if (string[0] == '\n' ) continue;
     if (string[0] == '!'  ) continue;
     sscanf(string, "%f %f %f %f",
@@ -1414,6 +1432,7 @@ void  AliPHOSPIDv1::SetParameterToCalculateEllipse(TString particle, TString par
 //____________________________________________________________________________
 void AliPHOSPIDv1::Unload() 
 {
+  //Unloads RecPoints, Tracks and RecParticles
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
   gime->PhosLoader()->UnloadRecPoints() ;
   gime->PhosLoader()->UnloadTracks() ;
@@ -1423,7 +1442,8 @@ void AliPHOSPIDv1::Unload()
 //____________________________________________________________________________
 void  AliPHOSPIDv1::WriteRecParticles()
 {
- 
+  //It writes reconstructed particles and pid to file
+
   AliPHOSGetter *gime = AliPHOSGetter::Instance() ; 
 
   TClonesArray * recParticles = gime->RecParticles() ; 
