@@ -6,6 +6,12 @@
 /* $Id$ */
 
 
+// Base class for generators using external MC generators.
+// For example AliGenPythia using Pythia.
+// Provides basic functionality: setting of kinematic cuts on 
+// decay products and particle selection.
+// andreas.morsch@cern.ch
+
 #include "AliGenerator.h"
 #include "AliDecayer.h"
 #include <TArrayI.h>    
@@ -39,12 +45,12 @@ class AliGenMC : public AliGenerator
   virtual void SetMaximumLifetime(Float_t time = 1.e-15) {fMaxLifeTime = time;}
  protected:
     // check if particle is selected as parent particle
-    Bool_t ParentSelected(Int_t ip);
+    Bool_t ParentSelected(Int_t ip) const;
     // check if particle is selected as child particle
-    Bool_t ChildSelected(Int_t ip);
+    Bool_t ChildSelected(Int_t ip) const;
     // all kinematic selection cuts go here 
-    Bool_t KinematicSelection(TParticle *particle, Int_t flag);
-    Int_t  CheckPDGCode(Int_t pdgcode);
+    Bool_t KinematicSelection(TParticle *particle, Int_t flag) const;
+    Int_t  CheckPDGCode(Int_t pdgcode) const;
 
  protected:
     TArrayI     fParentSelect;  //!Parent particles to be selected 
