@@ -22,7 +22,7 @@ class AliObjMatrix : public TObject
   virtual Int_t GetSwapMode();                                // Provide the swap mode flag for this matrix
   virtual void EnterObject(Int_t row,Int_t col,TObject* obj); // Enter an object into the matrix
   void RemoveObject(Int_t row,Int_t col);                     // Remove object at (row,col) from the matrix
-  void RemoveObject(TObject* obj,Int_t row=0,Int_t col=0);    // Remove an object from the matrix
+  void RemoveObjects(TObject* obj,Int_t row=0,Int_t col=0);   // Remove specified object(s) from the matrix
   virtual TObject* GetObject(Int_t row,Int_t col);            // Provide an object from the matrix
   virtual Int_t GetMaxRow();                                  // Provide the maximum row number index
   virtual Int_t GetMaxColumn();                               // Provide the maximum column number index
@@ -42,6 +42,6 @@ class AliObjMatrix : public TObject
   Int_t fMaxcol;       // The maximum column number index
   TObjArray* fObjects; // Linear reference array for fast looping over the stored objects
  
- ClassDef(AliObjMatrix,3) // Handling of a matrix structure of objects.
+ ClassDef(AliObjMatrix,4) // Handling of a matrix structure of objects.
 };
 #endif

@@ -127,7 +127,7 @@ AliTrack::~AliTrack()
  for (Int_t i=1; i<=nsig; i++)
  {
   AliSignal* s=GetSignal(i);
-  if (s) s->ResetLink(this);
+  if (s) s->ResetLinks(this);
  }
  
  if (fDecays)
@@ -389,11 +389,26 @@ void AliTrack::ListAll(TString f)
  Int_t nsig=GetNsignals();
  if (nsig)
  {
-  cout << " List of the " << nsig << " related signals : " << endl;
+  cout << " List of the corresponding slots for the " << nsig
+       << " related signals : " << endl;
+  AliPosition r;
+  Int_t nrefs,jslot;
+  TArrayI slotarr;
   for (Int_t is=1; is<=nsig; is++)
   {
    AliSignal* sx=GetSignal(is);
-   if (sx) sx->Data(f);
+   if (sx)
+   {
+    nrefs=sx->GetIndices(this,slotarr,0);
+    for (Int_t jref=0; jref<nrefs; jref++)
+    {
+     jslot=slotarr.At(jref);
+     sx->List(jslot);
+    }
+    r=sx->GetPosition();
+    cout << "   Position";
+    r.Data(f);
+   }
   }
  }
 

@@ -490,3 +490,9 @@
                 (row,col) indices of all the occurrences of the stored objects.
                 Also an additional memberfunction AliObjMatrix::RemoveObject introduced to allow more
                 flexibility in specifying objects to be removed. 
+09-mar-2004 NvE Additional memberfunction AliObjMatrix::RemoveObject renamed to RemoveObjects to prevent
+                confusion and ambiguity in usage.
+                Linking facility of AliSignal extended by enabling multiple links to a specific signal slot.
+                Also call to AliSignal::ResetLink changed to AliSignal::ResetLinks() in the dtor
+                of AliTrack to adopt the extended AliSignal linking facility and output in 
+                AliTrack::ListAll() limited to only the referring signal slots to prevent long output lists.

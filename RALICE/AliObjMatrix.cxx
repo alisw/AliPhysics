@@ -289,9 +289,9 @@ void AliObjMatrix::RemoveObject(Int_t row,Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliObjMatrix::RemoveObject(TObject* obj,Int_t row,Int_t col)
+void AliObjMatrix::RemoveObjects(TObject* obj,Int_t row,Int_t col)
 {
-// Remove an object from the matrix according to user specified selections.
+// Remove object(s) from the matrix according to user specified selections.
 // In case the object was owned by the matrix, it will be deleted.
 //
 // An object is only removed from the matrix if the stored reference matches
@@ -308,19 +308,19 @@ void AliObjMatrix::RemoveObject(TObject* obj,Int_t row,Int_t col)
 // that matrix column will be deleted.
 // In case col=0 (default) no checking on the column index is performed.
 //
-// So, invokation of RemoveObject(obj) will remove all references to the
-// object "obj" from the total matrix, whereas RemoveObject(obj,0,col)
+// So, invokation of RemoveObjects(obj) will remove all references to the
+// object "obj" from the total matrix, whereas RemoveObjects(obj,0,col)
 // will remove all references to the object "obj" only from column "col".
 //
 // Notes :
 // -------
 // The first location in the matrix is indicated as (1,1).
 //
-// Invokation of RemoveObject(0,row,col) is equivalent to invoking the
+// Invokation of RemoveObjects(0,row,col) is equivalent to invoking the
 // memberfunction RemoveObject(row,col).
 // Invoking the latter directly is slightly faster.
 //
-// Invokation of RemoveObject(0) is equivalent to invoking Reset().
+// Invokation of RemoveObjects(0) is equivalent to invoking Reset().
 // Invoking the latter directly is slightly faster.
 //
  TArrayI rows;
@@ -403,8 +403,8 @@ TObject* AliObjMatrix::GetObject(Int_t j)
 // The first stored object is indicated as j=1.
 //
 // Note : Do NOT delete the object.
-//        To remove an object, the memberfunction RemoveObject()
-//        should be used.
+//        To remove an object, the memberfunction RemoveObject() or
+//        RemoveObjects() should be used.
 
  TObject* obj=0;
  Int_t nobj=0;
@@ -423,7 +423,7 @@ TObjArray* AliObjMatrix::GetObjects()
 // Note : Do NOT make any changes to the reference array apart from
 //        changing the order of the pointers of the various objects.
 //        For addition or removal of objects, the memberfunctions
-//        EnterObject() and RemoveObject() should be used.
+//        EnterObject(), RemoveObject() or RemoveObjects() should be used.
 
  return fObjects;
 }
@@ -537,7 +537,13 @@ Int_t AliObjMatrix::GetIndices(TObject* obj,Int_t row,TArrayI& cols)
 // were encountered for the specified object in the specified matrix row.
 //
 // If obj=0 no object selection is performed and all column indices
-// of the stored references for all objects are returned.
+// of the stored references for all objects in this specified matrix row
+// are returned.
+//
+// If row=0 all rows will be scanned and all column indices matching the
+// object selection are returned.
+// Note that in this case multiple appearances of the same column index
+// will only be recorded once in the returned TArrayI array.
 //
 // Notes :
 // -------
@@ -552,15 +558,45 @@ Int_t AliObjMatrix::GetIndices(TObject* obj,Int_t row,TArrayI& cols)
 // indices of that TObjArray are obtained and NOT the indices of the
 // actual objects contained in that TObjArray structure.
 //
- if (row<1 || row>GetMaxRow()) return 0;
+ cols.Reset();
+
+ if (row<0 || row>GetMaxRow()) return 0;
 
  Int_t nrefs=GetNrefs(obj);
- cols.Reset();
  cols.Set(nrefs);
  if (!nrefs) return 0;
 
  Int_t irow,icol;
  Int_t jref=0;
+
+ // No specific row selection
+ if (!row)
+ {
+  TArrayI ar;
+  TArrayI ac;
+  Int_t n=GetIndices(obj,ar,ac);
+  Int_t found=0;
+  for (Int_t idx=0; idx<n; idx++)
+  {
+   icol=ac.At(idx);
+   found=0;
+   for (Int_t k=0; k<jref; k++)
+   {
+    if (icol==cols.At(k)) found=1;
+   }
+   if (!found)
+   {
+    cols.AddAt(icol,jref);
+    jref++;
+   }
+  }
+  // Set the array size to the actual number of different column indices
+  cols.Set(jref);
+
+  return jref;
+ }
+
+ // Specific row selection
  for (Int_t i=0; i<fRows->GetSize(); i++)
  {
   TObjArray* columns=(TObjArray*)fRows->At(i);
@@ -602,7 +638,13 @@ Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,Int_t col)
 // were encountered for the specified object in the specified matrix column.
 //
 // If obj=0 no object selection is performed and all row indices
-// of the stored references for all objects are returned.
+// of the stored references for all objects in this specified matrix column
+// are returned.
+//
+// If col=0 all columns will be scanned and all row indices matching the
+// object selection are returned.
+// Note that in this case multiple appearances of the same row index
+// will only be recorded once in the returned TArrayI array.
 //
 // Notes :
 // -------
@@ -617,15 +659,45 @@ Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,Int_t col)
 // indices of that TObjArray are obtained and NOT the indices of the
 // actual objects contained in that TObjArray structure.
 //
- if (col<1 || col>GetMaxColumn()) return 0;
+ rows.Reset();
+
+ if (col<0 || col>GetMaxColumn()) return 0;
 
  Int_t nrefs=GetNrefs(obj);
- rows.Reset();
  rows.Set(nrefs);
  if (!nrefs) return 0;
 
  Int_t irow,icol;
  Int_t jref=0;
+
+ // No specific column selection
+ if (!col)
+ {
+  TArrayI ar;
+  TArrayI ac;
+  Int_t n=GetIndices(obj,ar,ac);
+  Int_t found=0;
+  for (Int_t idx=0; idx<n; idx++)
+  {
+   irow=ar.At(idx);
+   found=0;
+   for (Int_t k=0; k<jref; k++)
+   {
+    if (irow==rows.At(k)) found=1;
+   }
+   if (!found)
+   {
+    rows.AddAt(irow,jref);
+    jref++;
+   }
+  }
+  // Set the array size to the actual number of different row indices
+  rows.Set(jref);
+
+  return jref;
+ }
+
+ // Specific column selection
  for (Int_t i=0; i<fRows->GetSize(); i++)
  {
   TObjArray* columns=(TObjArray*)fRows->At(i);

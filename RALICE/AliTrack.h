@@ -10,6 +10,7 @@
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TArrayD.h"
+#include "TArrayI.h"
  
 #include "AliSignal.h"
 #include "AliBoost.h"
@@ -101,6 +102,6 @@ class AliTrack : public TNamed,public Ali4Vector
  private:
   void Dumps(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,9) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,10) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

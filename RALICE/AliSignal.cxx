@@ -158,11 +158,17 @@ AliSignal::AliSignal(AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
   if (hist) SetWaveform(hist,k); 
  }
 
- n=s.GetNlinks();
- for (Int_t il=1; il<=n; il++)
+ TArrayI slotarr;
+ TArrayI posarr;
+ TObject* dum=0;
+ n=s.GetIndices(dum,slotarr,posarr);
+ Int_t slot,pos;
+ for (Int_t idx=0; idx<n; idx++)
  {
-  TObject* obj=s.GetLink(il);
-  if (obj) SetLink(obj,il); 
+  slot=slotarr.At(idx);
+  pos=posarr.At(idx);
+  TObject* obj=s.GetLink(slot,pos);
+  if (obj) SetLink(obj,slot,pos); 
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -178,8 +184,7 @@ void AliSignal::Reset(Int_t mode)
 //
 // The default when invoking Reset() corresponds to mode=0.
 //
-// Note : In all cases the storage of the various links will be cleared
-//        and the container itself will be deleted to recover the memory.
+// Note : In all cases the storage of the various links will be reset.
 //
 // The usage of mode=0 allows to re-use the allocated memory for new
 // signal (and error) values. This behaviour is preferable (i.e. faster)
@@ -190,7 +195,8 @@ void AliSignal::Reset(Int_t mode)
 // signals have a variable number of values.
 //
 // For more specific actions see ResetPosition(), ResetSignals(),
-// DeleteSignals(), ResetGain(), ResetOffset() and DeleteCalibrations().
+// DeleteSignals(), ResetGain(), ResetOffset(), ResetLink(), ResetWaveform(),
+// DeleteWaveform() and DeleteCalibrations().
 //
 
  if (mode<0 || mode>1)
@@ -211,11 +217,7 @@ void AliSignal::Reset(Int_t mode)
   DeleteCalibrations();
  }
 
- if (fLinks)
- {
-  delete fLinks;
-  fLinks=0;
- }
+ if (fLinks) fLinks->Reset();
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetSignals(Int_t mode)
@@ -448,7 +450,7 @@ void AliSignal::Data(TString f)
  if (strlen(name))  cout << " Name : " << name;
  if (strlen(title)) cout << " Title : " << title;
  cout << endl;
- cout << " Position";
+ cout << "   Position";
  Ali3Vector::Data(f);
 
  List(-1);
@@ -482,20 +484,24 @@ void AliSignal::List(Int_t j)
  Int_t nvalues=GetNvalues();
  Int_t nerrors=GetNerrors();
  Int_t nwforms=GetNwaveforms();
- Int_t nlinks=GetNlinks();
+ Int_t nlinkslots=0;
+ if (fLinks) nlinkslots=fLinks->GetMaxColumn();
  Int_t n=nvalues;
  if (nerrors>n) n=nerrors;
  if (nwforms>n) n=nwforms;
- if (nlinks>n) n=nlinks;
+ if (nlinkslots>n) n=nlinkslots;
 
  TObject* obj=0;
+ Int_t nrefs=0;
+ TArrayI posarr;
+ Int_t pos;
 
  if (j<=0)
  {
   for (Int_t i=1; i<=n; i++)
   {
-   cout << "   Signal";
-   if (i<=nvalues) cout << " value : " << GetSignal(i);
+   cout << "   Slot : " << i;
+   if (i<=nvalues) cout << " Signal value : " << GetSignal(i);
    if (i<=nerrors) cout << " error : " << GetSignalError(i);
    AliAttrib::List(i);
    cout << endl;
@@ -509,18 +515,24 @@ void AliSignal::List(Int_t j)
     if (strlen(wftitle)) cout << " Title : " << wftitle;
     cout << endl;
    }
-   obj=GetLink(i);
-   if (obj)
+   obj=0;
+   nrefs=GetIndices(obj,i,posarr);
+   for (Int_t k=0; k<nrefs; k++)
    {
-    cout << "    Link to : " << obj->ClassName();
-    if (obj->InheritsFrom("TNamed"))
+    pos=posarr.At(k);
+    obj=GetLink(i,pos);
+    if (obj)
     {
-     const char* lname=obj->GetName();
-     const char* ltitle=obj->GetTitle();
-     if (strlen(lname))  cout << " Name : " << lname;
-     if (strlen(ltitle)) cout << " Title : " << ltitle;
+     cout << "    Link at position " << pos << " to : " << obj->ClassName();
+     if (obj->InheritsFrom("TNamed"))
+     {
+      const char* lname=obj->GetName();
+      const char* ltitle=obj->GetTitle();
+      if (strlen(lname))  cout << " Name : " << lname;
+      if (strlen(ltitle)) cout << " Title : " << ltitle;
+     }
+     cout << endl;
     }
-    cout << endl;
    }
   }
  }
@@ -528,8 +540,8 @@ void AliSignal::List(Int_t j)
  {
   if (j<=n)
   {
-   cout << "   Signal";
-   if (j<=nvalues) cout << " value : " << GetSignal(j);
+   cout << "   Slot : " << j;
+   if (j<=nvalues) cout << " Signal value : " << GetSignal(j);
    if (j<=nerrors) cout << " error : " << GetSignalError(j);
    AliAttrib::List(j);
    cout << endl;
@@ -543,18 +555,24 @@ void AliSignal::List(Int_t j)
     if (strlen(wftitlej)) cout << " Title : " << wftitlej;
     cout << endl;
    }
-   obj=GetLink(j);
-   if (obj)
+   obj=0;
+   nrefs=GetIndices(obj,j,posarr);
+   for (Int_t kj=0; kj<nrefs; kj++)
    {
-    cout << "    Link to : " << obj->ClassName();
-    if (obj->InheritsFrom("TNamed"))
+    pos=posarr.At(kj);
+    obj=GetLink(j,pos);
+    if (obj)
     {
-     const char* lnamej=obj->GetName();
-     const char* ltitlej=obj->GetTitle();
-     if (strlen(lnamej))  cout << " Name : " << lnamej;
-     if (strlen(ltitlej)) cout << " Title : " << ltitlej;
+     cout << "    Link at position " << pos << " to : " << obj->ClassName();
+     if (obj->InheritsFrom("TNamed"))
+     {
+      const char* lnamej=obj->GetName();
+      const char* ltitlej=obj->GetTitle();
+      if (strlen(lnamej))  cout << " Name : " << lnamej;
+      if (strlen(ltitlej)) cout << " Title : " << ltitlej;
+     }
+     cout << endl;
     }
-    cout << endl;
    }
   }
  }
@@ -709,39 +727,57 @@ void AliSignal::DeleteWaveform(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetNlinks()
+Int_t AliSignal::GetNlinks(TObject* obj,Int_t j)
 {
-// Provide the highest slot number with a specified link for this signal.
+// Provide the number of links to the specified object for the j-th slot.
+// If j=0 (default) all slots will be scanned for the specified object.
+// If obj=0 (default) all encountered objects for the specified slot will be counted.
+// So, invokation of the default GetNlinks() will return the total number of
+// all references to all sorts of stored objects.
+ if (j<0)
+ {
+  cout << " *AliSignal::GetNlinks* Index j = " << j << " invalid." << endl;
+  return 0;
+ }
+
  Int_t n=0;
- if (fLinks) n=fLinks->GetSize();
+ if (!j)
+ {
+  n=fLinks->GetNrefs(obj);
+ }
+ else
+ {
+  TArrayI posarr;
+  n=GetIndices(obj,j,posarr);
+ }
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliSignal::GetLink(Int_t j)
+TObject* AliSignal::GetLink(Int_t j,Int_t k)
 {
-// Provide pointer of the object linked to the j-th slot.
+// Provide pointer of the object linked to the j-th slot at position k.
+
  TObject* obj=0;
- if (j <= GetNlinks()) obj=fLinks->At(j-1);
+ // Note : In the internal storage matrix slots=columns positions=rows 
+ if (fLinks) obj=fLinks->GetObject(k,j);
  return obj;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::SetLink(TObject* obj,Int_t j)
+void AliSignal::SetLink(TObject* obj,Int_t j,Int_t k)
 {
-// Introduce a link (=pointer) to an object for the j-th slot.
+// Introduce a link (=pointer) to an object for the j-th slot at position k.
 // Only the pointer values are stored for (backward) reference, meaning
 // that the objects of which the pointers are stored are NOT owned
 // by the AliSignal object.
 //
 // Notes :
-//  The link of the first slot is at j=1.
-//  j=1 is the default value.
+//  The first slot is at j=1 and the first position is at k=1.
+//  j=1 and k=1 are the default values.
 //
-// In case the value of the index j exceeds the maximum number of reserved
-// slots for the links, the number of reserved slots for the links
-// is increased automatically (unless the pointer argument is zero).
+// If needed, the storage area for the links is increased automatically.
 //
 // In case the pointer argument is zero, indeed a value of zero will be
-// stored for the specified slot (unless j exceeds the current maximum).
+// stored at the specified position (k) for the specified slot (j).
 //
 // In principle any object derived from TObject can be referred to by this
 // mechanism.
@@ -755,32 +791,77 @@ void AliSignal::SetLink(TObject* obj,Int_t j)
 // Please also have a look at the docs of the memberfunction ResetLink()
 // to prevent the situation of stored pointers to non-existent object. 
 
- if (!fLinks && obj)
- {
-  fLinks=new TObjArray(j);
- }
+ if (!fLinks && obj) fLinks=new AliObjMatrix();
 
- if (j>fLinks->GetSize() && obj) fLinks->Expand(j);
+ if (!fLinks) return;
 
- if (j<=fLinks->GetSize())
+ // Note : In the internal storage matrix slots=columns positions=rows 
+ fLinks->EnterObject(k,j,obj);
+ if (obj) 
  {
-  fLinks->AddAt(obj,j-1);
-  if (obj) 
+  if (obj->InheritsFrom("AliTrack"))
   {
-   if (obj->InheritsFrom("AliTrack"))
-   {
-    AliTrack* t=(AliTrack*)obj;
-    t->AddSignal(*this);
-   }
+   AliTrack* t=(AliTrack*)obj;
+   t->AddSignal(*this);
   }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::ResetLink(Int_t j)
+void AliSignal::AddLink(TObject* obj,Int_t j)
 {
-// Reset the link of the j-th (default j=1) slot.
-// Notes : The first link position is at j=1.
-//         j=0 ==> All links will be reset and the storage array deleted.
+// Introduce a link (=pointer) to an object for the j-th slot at the first
+// free position.
+// Only the pointer values are stored for (backward) reference, meaning
+// that the objects of which the pointers are stored are NOT owned
+// by the AliSignal object.
+//
+// Notes :
+//  The first slot is at j=1 and the first position is at k=1.
+//  j=1 is the default value.
+//
+// If needed, the storage area for the links is increased automatically.
+//
+// In case the pointer argument is zero, no link will be added.
+//
+// In principle any object derived from TObject can be referred to by this
+// mechanism.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// Therefore, in case the input argument "obj" points to an AliTrack (or derived)
+// object, the current signal is automatically related to this AliTrack
+// (or derived) object.
+// 
+// Please also have a look at the docs of the memberfunction ResetLink()
+// to prevent the situation of stored pointers to non-existent object. 
+
+ if (!obj || j<=0) return;
+
+ if (!fLinks) fLinks=new AliObjMatrix();
+
+ TObject* dum=0;
+ Int_t n=GetNlinks(dum,j);
+ Int_t pos=1;
+ for (Int_t k=1; k<=n; k++)
+ {
+  dum=GetLink(j,k);
+  if (!dum) break;
+  pos++;
+ }
+
+ SetLink(obj,j,pos);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetLink(Int_t j,Int_t k)
+{
+// Reset the link of the j-th slot at position k.
+//
+// Notes :
+//  The first slot is at j=1 and the first position is at k=1.
+//  j=1 and k=1 are the default values.
+//
+//  This memberfunction is intended to reset only 1 specified link location.
+//  For extended functionality, please refer to the memberfuction ResetLinks().
 //
 // In general the user should take care of properly clearing the corresponding
 // pointer here when the referred object is deleted.
@@ -794,45 +875,197 @@ void AliSignal::ResetLink(Int_t j)
 // the user doesn't have to worry about clearing the corresponding AliTrack link from
 // the AliSignal object when the corresponding AliTrack object is deleted.
  
- if (!fLinks || j<0) return;
+ // Note : In the internal storage matrix slots=columns positions=rows 
+ if (fLinks) fLinks->RemoveObject(k,j);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetLinks(TObject* obj,Int_t j,Int_t k)
+{
+// Reset single or multiple link(s) according to user specified selections.
+//
+// A link is only reset if the stored reference matches the argument "obj".
+// In case obj=0 no check on the matching of the stored reference is performed
+// and the stored link is always reset in accordance with the other
+// selection criteria.
+//
+// In case the slot argument "j" is specified, only the links from that
+// specified slot will be deleted.
+// In case j=0 (default) no checking on the slot index is performed.
+//
+// In case the position argument "k" is specified, only the links from that
+// specified position will be deleted.
+// In case k=0 (default) no checking on the position index is performed.
+//
+// So, invokation of ResetLinks(obj) will remove all references to the
+// object "obj" from the total AliSignal, whereas ResetLinks(obj,j)
+// will remove all references to the object "obj" only from slot "j".
+//
+// Notes :
+// -------
+// The first slot is indicated as j=1, whereas the first position is at k=1.
+//
+// Invokation of ResetLinks(0,row,col) is equivalent to invoking the
+// memberfunction ResetLink(row,col).
+// Invoking the latter directly is slightly faster.
+//
+// Invokation of ResetLinks(0) will reset all stored references in this AliSignal.
+//
+// In general the user should take care of properly clearing the corresponding
+// pointer here when the referred object is deleted.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// As such, the AliTrack destructor already takes care of clearing the corresponding
+// links from the various AliSignal slots for all the AliSignal objects that were
+// related to that AliTrack. 
+// So, in case the link introduced via SetLink() is the pointer of an AliTrack object,
+// the user doesn't have to worry about clearing the corresponding AliTrack link from
+// the AliSignal object when the corresponding AliTrack object is deleted.
+ 
+ if (!fLinks) return;
 
- TObject* obj=0;
-
- if (j)
+ if (!obj && !j && !k)
  {
-  SetLink(obj,j);
+  fLinks->Reset();
  }
  else
  {
-  delete fLinks;
-  fLinks=0;
+  // Note : In the internal storage matrix slots=columns positions=rows 
+  fLinks->RemoveObjects(obj,k,j);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::ResetLink(TObject* obj)
+Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,TArrayI& ks)
 {
-// Reset the link of the all the slots referring to the specified object.
+// Provide the slot and position indices of all the storage locations
+// of the specified object.
+// The slot (j) and pos. (k) indices are returned in the two separate TArrayI arrays
+// from which the (j,k) pairs can be obtained from the corresponding
+// array indices like (j,k)=(js.At(i),ks.At(i)).
+// The integer return argument represents the number of (j,k) pairs which
+// were encountered for the specified object.
 //
-// In general the user should take care of properly clearing the corresponding
-// pointer here when the referred object is deleted.
-// However, this "linking back" facility was introduced to enable AliSignal slots
-// to refer directly to the various AliTracks to which the AliSignal object itself
-// is related (see AliTrack::AddSignal).
-// As such, the AliTrack destructor already takes care of clearing the corresponding
-// links from the various AliSignal slots for all the AliSignal objects that were
-// related to that AliTrack. 
-// So, in case the link introduced via SetLink() is the pointer of an AliTrack object,
-// the user doesn't have to worry about clearing the corresponding AliTrack link from
-// the AliSignal object when the corresponding AliTrack object is deleted.
+// If obj=0 no object selection is performed and all (j,k) indices
+// of the stored references for all objects are returned.
+//
+// Notes :
+// -------
+// As usual the convention is that slot and position numbering starts at 1.
+// 
+// This memberfunction always resets the two TArrayI arrays at the start.
+//
+// This memberfunction can only be used to obtain the (j,k) indices
+// of the object as stored via the SetLink() or AddLink() memberfunction.
+// This means that in case the user has entered a TObjArray as object
+// (to increase the dimension of the resulting structure), the (j,k)
+// indices of that TObjArray are obtained and NOT the indices of the
+// actual objects contained in that TObjArray structure.
+//
+ Int_t nrefs=0;
+ js.Reset();
+ ks.Reset();
+ // Note : In the internal storage matrix slots=columns positions=rows 
+ if (fLinks) nrefs=fLinks->GetIndices(obj,ks,js);
+ return nrefs;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetIndices(TObject* obj,Int_t j,TArrayI& ks)
+{
+// Provide the position indices of all the storage locations of the
+// specified object in the j-th slot of this AliSignal.
+// The position indices are returned in the TArrayI array.
+// The integer return argument represents the number of storage locations which
+// were encountered for the specified object in the j-th slot.
+//
+// If obj=0 no object selection is performed and all position indices
+// of the stored references for all objects of the j-th slot are returned.
+//
+// If j=0 all slots will be scanned and all position indices matching the
+// object selection are returned.
+// Note that in this case multiple appearances of the same position index
+// will only be recorded once in the returned TArrayI array.
+//
+// Notes :
+// -------
+// As usual the convention is that slot and position numbering starts at 1.
+// 
+// This memberfunction always resets the TArrayI array at the start.
+//
+// This memberfunction can only be used to obtain the position indices
+// of the object as stored via the SetLink() or AddLink() memberfunction.
+// This means that in case the user has entered a TObjArray as object
+// (to increase the dimension of the resulting structure), the position
+// indices of that TObjArray are obtained and NOT the indices of the
+// actual objects contained in that TObjArray structure.
+//
+ Int_t nrefs=0;
+ ks.Reset();
+ // Note : In the internal storage matrix slots=columns positions=rows 
+ if (fLinks) nrefs=fLinks->GetIndices(obj,ks,j);
+ return nrefs;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,Int_t k)
+{
+// Provide the slot indices of all the storage locations of the
+// specified object for the k-th position in this AliSignal.
+// The slot indices are returned in the TArrayI array.
+// The integer return argument represents the number of storage locations which
+// were encountered for the specified object in the k-th position.
+//
+// If obj=0 no object selection is performed and all slot indices
+// of the stored references for all objects in the k-th position are returned.
+//
+// If k=0 all positions will be scanned and all slot indices matching the
+// object selection are returned.
+// Note that in this case multiple appearances of the same slot index
+// will only be recorded once in the returned TArrayI array.
+//
+// Notes :
+// -------
+// As usual the convention is that slot and position numbering starts at 1.
+// 
+// This memberfunction always resets the TArrayI array at the start.
+//
+// This memberfunction can only be used to obtain the slot indices
+// of the object as stored via the SetLink() or AddLink() memberfunction.
+// This means that in case the user has entered a TObjArray as object
+// (to increase the dimension of the resulting structure), the slot
+// indices of that TObjArray are obtained and NOT the indices of the
+// actual objects contained in that TObjArray structure.
+//
+ Int_t nrefs=0;
+ js.Reset();
+ // Note : In the internal storage matrix slots=columns positions=rows 
+ if (fLinks) nrefs=fLinks->GetIndices(obj,k,js);
+ return nrefs;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetSwapMode(Int_t swap)
+{
+// Set swapmode flag for the internal link storage.
+// In case for the stored links the maximum slot number differs considerably
+// from the maximum position number, it might be more efficient
+// (w.r.t. memory usage and/or output file size) to internally store the
+// link reference matrix with the rows and colums swapped.
+// This swapping is only related with the internal storage and as such
+// is completely hidden for the user.
+// At invokation of this memberfunction the default argument is swap=1.
+//
+// Note : The swap mode can only be set as long as no links are
+//        stored in the AliSignal (i.e. a new instance of AliSignal
+//        or after invokation of the Reset() or ResetLinks() function).
  
- if (!fLinks || !obj) return;
-
- Int_t nlinks=GetNlinks();
- for (Int_t i=1; i<=nlinks; i++)
- {
-  TObject* obj2=GetLink(i);
-  if (obj2==obj) ResetLink(i);
- }
+ if (!fLinks) fLinks=new AliObjMatrix();
+ fLinks->SetSwapMode(swap);
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetSwapMode()
+{
+// Provide swapmode flag of the link storage.
+ Int_t swap=0; 
+ if (fLinks) swap=fLinks->GetSwapMode();
+ return swap;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliSignal::Clone(const char* name)
