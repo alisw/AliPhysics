@@ -1,22 +1,35 @@
+#####################################################################
+# runalifluka.csh: Script File that sets up the needed input/output
+# files for TFluka
+# Author: I. Gonzalez
+# Date: 11/2002
+#####################################################################
+# Remove the previous temporary directory
 rm -rf tmp
+# Make a new temporary directory and move to it
 mkdir tmp
 cd tmp
+
+# Link here some special Fluka files needed
 ln -s $FLUPRO/xnloan.dat .
 ln -s $FLUPRO/sigmapi.bin .
 ln -s $FLUPRO/nuclear.bin .
 ln -s $FLUPRO/neuxsc_72.bin neuxsc.bin
-#cp ../fort.16 .
-#cp $FLUPRO/random.dat ranmu001
-#ln -s ranmu001 fort.1
-#ln -s ranmu002 fort.2
-cp $FLUPRO/random.dat old.seed
-ln -s mu001.out fort.11
-#ln -s $FLUPRO/libec_thihecufealw_10t.pemf fort.12
-#ln -s ../alice.pemf fort.12
-ln -s ../alice.pemf .
-#ln -s mu001.err fort.15
 ln -s $FLUPRO/fluodt.dat .
 ln -s $FLUPRO/elasct.bin .
-ln -s ../muon.inp .
+
+# Copy the random seed
+cp $FLUPRO/random.dat old.seed
+
+# Give some meaningfull name to the output
+ln -s alice.out fort.11
+
+# Link the pemf and input file for alice
+ln -s ../TFluka/input/alice.pemf .
+ln -s ../TFluka/input/alice.inp .
+
+# Launch aliroot
 aliroot
+
+# Go back on exit
 cd ..
