@@ -32,6 +32,7 @@ class AliDetSwitchVector
 
     // methods
     void Add(AliDetSwitch* detSwitch);
+    void UpdateMessenger();
     void SwitchDetOn(const G4String& moduleNameVer);
     void SwitchDetOn(const G4String& moduleName, G4int version);
     void SwitchDetOnDefault(const G4String& moduleName);
@@ -62,6 +63,9 @@ class AliDetSwitchVector
 };
 
 // inline methods
+
+inline void AliDetSwitchVector::UpdateMessenger()
+{ fMessenger.Update(); }
 
 inline G4int AliDetSwitchVector::GetSize() const
 { return fDetSwitchVector.size(); }
