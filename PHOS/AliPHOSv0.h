@@ -25,6 +25,7 @@ public:
 
   AliPHOSv0() {
     //ctor
+    fGeom=0;
   }
   AliPHOSv0(const char *name, const char *title="") ;
   AliPHOSv0(const AliPHOSv0 & phos) {

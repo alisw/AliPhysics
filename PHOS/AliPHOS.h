@@ -27,6 +27,9 @@ class AliPHOS : public AliDetector {
 
   AliPHOS() {
     // ctor  
+    fEmcRecPoints=0;
+    fTrackSegments=0;
+    fRecParticles=0;
   } 
   AliPHOS(const char* name, const char* title=""): AliDetector(name,title) {
     // ctor  
