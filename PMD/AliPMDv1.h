@@ -1,5 +1,5 @@
-#ifndef PMDV1_H
-#define PMDV1_H
+#ifndef ALIPMDV1_H
+#define ALIPMDV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -15,14 +15,6 @@
 //___________________________________________
  
 class AliPMDv1 : public AliPMD {
-
-private:
-  Int_t fMedSens;
-  Int_t fMedSens1;
-  Float_t dbox_mm1[3];
-  Float_t dbox_mm12[3];
-  Float_t dbox_mm2[3];
-  Float_t dbox_mm22[3];
   
 public:
   AliPMDv1();
@@ -36,11 +28,16 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const {return 1;}
   virtual void  StepManager();
-  virtual void  DrawModule();
+  virtual void  DrawModule() const;
+
+private:
+  Int_t   fMedSens;        // Sensitive Medium Ar+CO2
+  Float_t fDboxmm1[3];     // Master MODULE EMPA of aluminum for PMD
+  Float_t fDboxmm12[3];    // Master MODULE EMCA of aluminum for CPV
+  Float_t fDboxmm2[3];     // Master MODULE EMPB of aluminum for PMD
+  Float_t fDboxmm22[3];    // Master MODULE EMCB of aluminum for CPV
  
-   ClassDef(AliPMDv1,1)  //Hits manager for set:PMD
+  ClassDef(AliPMDv1,1)     //Hits manager for set:PMD
 };
  
 #endif
-
-

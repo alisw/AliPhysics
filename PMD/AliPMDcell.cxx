@@ -7,12 +7,16 @@
 //                                                     //
 //-----------------------------------------------------//
 
+#include "Riostream.h"
+#include "Rtypes.h"
+
 #include "AliPMDcell.h"
 
 ClassImp(AliPMDcell)
 
 AliPMDcell::AliPMDcell()
 {
+  // Standard constructor
   fTrNumber = 0;
   fSMNumber = 0;
   fXpos     = 0;
@@ -23,6 +27,7 @@ AliPMDcell::AliPMDcell()
 AliPMDcell::AliPMDcell(Int_t trnumber, Int_t smnumber, 
 			 Int_t xpos, Int_t ypos, Float_t edep)
 {
+  // Constructor
   fTrNumber = trnumber;
   fSMNumber = smnumber;
   fXpos     = xpos;
@@ -32,7 +37,7 @@ AliPMDcell::AliPMDcell(Int_t trnumber, Int_t smnumber,
 }
 AliPMDcell::~AliPMDcell()
 {
-
+  // Default destructor
 }
 
 Int_t AliPMDcell::GetTrackNumber() const
