@@ -9,17 +9,20 @@
 
 #include "AliRunAction.h"
 #include "AliRunActionMessenger.h"
-#include "AliSDManager.h"
+#include "AliSDConstruction.h"
 #include "AliGlobals.h"
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliLego.h"
 
 #include "TG4GeometryManager.h"
+#include "TG4SDManager.h"
+#include "TG4VSDConstruction.h"
 
 #include <G4Run.hh>
 #include <G4UImanager.hh>
 
+//_____________________________________________________________________________
 AliRunAction::AliRunAction()
   : fRunID(-1),
     fVerboseLevel(0)
@@ -29,11 +32,13 @@ AliRunAction::AliRunAction()
   fTimer = new G4Timer;
 }
 
+//_____________________________________________________________________________
 AliRunAction::AliRunAction(const AliRunAction& right) {
 //
   AliGlobals::Exception("AliRunAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliRunAction::~AliRunAction() {
 //
   delete fMessenger;
@@ -42,6 +47,7 @@ AliRunAction::~AliRunAction() {
 
 // operators
 
+//_____________________________________________________________________________
 AliRunAction& AliRunAction::operator=(const AliRunAction &right)
 {
   // check assignement to self
@@ -52,8 +58,33 @@ AliRunAction& AliRunAction::operator=(const AliRunAction &right)
   return *this;
 }
 
+// private methods
+
+//_____________________________________________________________________________
+AliSDConstruction* AliRunAction::GetSDConstruction() const
+{
+// Gets sensitive detectors construction and checks type.
+// ---
+
+  TG4VSDConstruction* tg4SDConstruction 
+     = TG4SDManager::Instance()->GetSDConstruction();
+
+  AliSDConstruction* aliSDConstruction
+     = dynamic_cast<AliSDConstruction*>(tg4SDConstruction);
+
+  if (!aliSDConstruction) {
+     G4String text = "AliRunAction::GetSDConstruction:\n";
+     text = text + "    Unknown type.";
+     AliGlobals::Exception(text);
+     return 0;
+  }
+  
+  return aliSDConstruction;
+}
+
 // public methods
 
+//_____________________________________________________________________________
 void AliRunAction::BeginOfRunAction(const G4Run* run)
 {
 // Called by G4 kernel at the beginning of run.
@@ -73,7 +104,7 @@ void AliRunAction::BeginOfRunAction(const G4Run* run)
   // if lego is instantiated
   AliLego* lego = gAlice->Lego();
   if (lego) {
-    AliSDManager::Instance()->SetLego(lego);
+    GetSDConstruction()->SetLego(lego);
     G4UImanager::GetUIpointer()->ApplyCommand("/aliEvent/verbose 0");
     G4UImanager::GetUIpointer()->ApplyCommand("/aliGenerator/set AliGenerator");
   }  
@@ -82,6 +113,7 @@ void AliRunAction::BeginOfRunAction(const G4Run* run)
   fTimer->Start();
 }
 
+//_____________________________________________________________________________
 void AliRunAction::EndOfRunAction(const G4Run* run)
 {
 // Called by G4 kernel at the end of run.
@@ -93,7 +125,7 @@ void AliRunAction::EndOfRunAction(const G4Run* run)
   // if lego is instantiated
   AliLego* lego = gAlice->Lego();
   if (lego) {
-    AliSDManager::Instance()->UnsetLego();
+    GetSDConstruction()->UnsetLego();
     G4UImanager::GetUIpointer()->ApplyCommand("/aliEvent/verbose 1");
   }  
 
