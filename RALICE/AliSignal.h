@@ -19,7 +19,7 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   AliSignal();                                          // Default constructor
   virtual ~AliSignal();                                 // Destructor
   AliSignal(AliSignal& s);                              // Copy constructor
-  virtual TObject* Clone(char* name);                   // Make a deep copy and provide its pointer
+  virtual TObject* Clone(char* name="");                // Make a deep copy and provide its pointer
   virtual void SetSignal(Double_t sig,Int_t j=1);       // Store j-th signal value
   virtual void AddSignal(Double_t sig,Int_t j=1);       // Add value to j-th signal value
   virtual Float_t GetSignal(Int_t j=1,Int_t mode=0);    // Provide j-th (corrected) signal value
@@ -37,11 +37,17 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   TH1F* GetWaveform(Int_t j=1);                         // Provide pointer of the j-th waveform histogram 
   void ResetWaveform(Int_t j=1);                        // Reset the j-th waveform histogram 
   void DeleteWaveform(Int_t j=1);                       // Delete the j-th waveform histogram 
+  Int_t GetNlinks();                                    // Provide the number of specified linked objects
+  void SetLink(TObject* obj,Int_t j=1);                 // Link object to the j-th slot
+  TObject* GetLink(Int_t j=1);                          // Provide pointer of the object linked to the j-th slot
+  void ResetLink(Int_t j=1);                            // Reset the link of the j-th slot
+  void ResetLink(TObject* obj);                         // Reset the link to the specified object in all slots
 
  protected:
   TArrayF* fSignals;                           // Signal values
   TArrayF* fDsignals;                          // Errors on signal values
   TObjArray* fWaveforms;                       // The 1D histograms containing the signal waveforms
+  TObjArray* fLinks;                           // Pointers of objects related to the various slots
 
  ClassDef(AliSignal,9) // Generic handling of (extrapolated) detector signals.
 };

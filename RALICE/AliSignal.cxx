@@ -86,6 +86,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliSignal.h"
+#include "AliTrack.h"
 #include "Riostream.h"
  
 ClassImp(AliSignal) // Class implementation to enable ROOT I/O
@@ -99,8 +100,7 @@ AliSignal::AliSignal() : TNamed(),AliPosition(),AliAttrib()
  fSignals=0;
  fDsignals=0;
  fWaveforms=0;
- SetName("Unspecified");
- SetTitle("Unspecified");
+ fLinks=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
@@ -121,6 +121,11 @@ AliSignal::~AliSignal()
   delete fWaveforms;
   fWaveforms=0;
  }
+ if (fLinks)
+ {
+  delete fLinks;
+  fLinks=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::AliSignal(AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
@@ -129,6 +134,7 @@ AliSignal::AliSignal(AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
  fSignals=0;
  fDsignals=0;
  fWaveforms=0;
+ fLinks=0;
 
  Int_t n=s.GetNvalues();
  Double_t val;
@@ -151,6 +157,13 @@ AliSignal::AliSignal(AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
   TH1F* hist=s.GetWaveform(k);
   if (hist) SetWaveform(hist,k); 
  }
+
+ n=s.GetNlinks();
+ for (Int_t il=1; il<=n; il++)
+ {
+  TObject* obj=s.GetLink(il);
+  if (obj) SetLink(obj,il); 
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::Reset(Int_t mode)
@@ -164,6 +177,9 @@ void AliSignal::Reset(Int_t mode)
 //          Also the waveform histograms, gains and offset arrays are deleted.
 //
 // The default when invoking Reset() corresponds to mode=0.
+//
+// Note : In all cases the storage of the various links will be cleared
+//        and the container itself will be deleted to recover the memory.
 //
 // The usage of mode=0 allows to re-use the allocated memory for new
 // signal (and error) values. This behaviour is preferable (i.e. faster)
@@ -193,6 +209,12 @@ void AliSignal::Reset(Int_t mode)
  {
   DeleteSignals();
   DeleteCalibrations();
+ }
+
+ if (fLinks)
+ {
+  delete fLinks;
+  fLinks=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -419,8 +441,13 @@ void AliSignal::Data(TString f)
 {
 // Provide all signal information within the coordinate frame f.
 
- cout << " *" << ClassName() << "::Data* Name : " << GetName()
-      << " Title : " << GetTitle() << endl;
+ const char* name=GetName();
+ const char* title=GetTitle();
+
+ cout << " *" << ClassName() << "::Data*";
+ if (strlen(name))  cout << " Name : " << name;
+ if (strlen(title)) cout << " Title : " << title;
+ cout << endl;
  cout << " Position";
  Ali3Vector::Data(f);
 
@@ -441,15 +468,27 @@ void AliSignal::List(Int_t j)
   return;
  }
 
- if (j != -1) cout << " *" << ClassName() << "::List* Name : " << GetName()
-                   << " Title : " << GetTitle() << endl;
+ if (j != -1)
+ {
+  const char* name=GetName();
+  const char* title=GetTitle();
+
+  cout << " *" << ClassName() << "::Data*";
+  if (strlen(name))  cout << " Name : " << name;
+  if (strlen(title)) cout << " Title : " << title;
+  cout << endl;
+ }
 
  Int_t nvalues=GetNvalues();
  Int_t nerrors=GetNerrors();
  Int_t nwforms=GetNwaveforms();
+ Int_t nlinks=GetNlinks();
  Int_t n=nvalues;
  if (nerrors>n) n=nerrors;
  if (nwforms>n) n=nwforms;
+ if (nlinks>n) n=nlinks;
+
+ TObject* obj=0;
 
  if (j<=0)
  {
@@ -460,8 +499,26 @@ void AliSignal::List(Int_t j)
    if (i<=nerrors) cout << " error : " << GetSignalError(i);
    AliAttrib::List(i);
    cout << endl;
-   if (GetWaveform(i)) cout << "    Waveform : " << GetWaveform(i)->ClassName()
-                            << " " << GetWaveform(i)->GetTitle() << endl;
+   obj=GetWaveform(i);
+   if (obj)
+   {
+    const char* wfname=obj->GetName();
+    const char* wftitle=obj->GetTitle();
+    cout << "    Waveform : " << obj->ClassName();
+    if (strlen(wfname))  cout << " Name : " << wfname;
+    if (strlen(wftitle)) cout << " Title : " << wftitle;
+    cout << endl;
+   }
+   obj=GetLink(i);
+   if (obj)
+   {
+    const char* lname=obj->GetName();
+    const char* ltitle=obj->GetTitle();
+    cout << "    Link to : " << obj->ClassName();
+    if (strlen(lname))  cout << " Name : " << lname;
+    if (strlen(ltitle)) cout << " Title : " << ltitle;
+    cout << endl;
+   }
   }
  }
  else
@@ -473,8 +530,26 @@ void AliSignal::List(Int_t j)
    if (j<=nerrors) cout << " error : " << GetSignalError(j);
    AliAttrib::List(j);
    cout << endl;
-   if (GetWaveform(j)) cout << "    Waveform : " << GetWaveform(j)->ClassName()
-                            << " " << GetWaveform(j)->GetTitle() << endl;
+   obj=GetWaveform(j);
+   if (obj)
+   {
+    const char* wfnamej=obj->GetName();
+    const char* wftitlej=obj->GetTitle();
+    cout << "    Waveform : " << obj->ClassName();
+    if (strlen(wfnamej))  cout << " Name : " << wfnamej;
+    if (strlen(wftitlej)) cout << " Title : " << wftitlej;
+    cout << endl;
+   }
+   obj=GetLink(j);
+   if (obj)
+   {
+    const char* lnamej=obj->GetName();
+    const char* ltitlej=obj->GetTitle();
+    cout << "    Link to : " << obj->ClassName();
+    if (strlen(lnamej))  cout << " Name : " << lnamej;
+    if (strlen(ltitlej)) cout << " Title : " << ltitlej;
+    cout << endl;
+   }
   }
  }
 } 
@@ -625,6 +700,132 @@ void AliSignal::DeleteWaveform(Int_t j)
  {
   cout << " *AliSignal::DeleteWaveform* Index j = " << j << " invalid." << endl;
   return;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetNlinks()
+{
+// Provide the highest slot number with a specified link for this signal.
+ Int_t n=0;
+ if (fLinks) n=fLinks->GetSize();
+ return n;
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliSignal::GetLink(Int_t j)
+{
+// Provide pointer of the object linked to the j-th slot.
+ TObject* obj=0;
+ if (j <= GetNlinks()) obj=fLinks->At(j-1);
+ return obj;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetLink(TObject* obj,Int_t j)
+{
+// Introduce a link (=pointer) to an object for the j-th slot.
+// Only the pointer values are stored for (backward) reference, meaning
+// that the objects of which the pointers are stored are NOT owned
+// by the AliSignal object.
+//
+// Notes :
+//  The link of the first slot is at j=1.
+//  j=1 is the default value.
+//
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for the links, the number of reserved slots for the links
+// is increased automatically (unless the pointer argument is zero).
+//
+// In case the pointer argument is zero, indeed a value of zero will be
+// stored for the specified slot (unless j exceeds the current maximum).
+//
+// In principle any object derived from TObject can be referred to by this
+// mechanism.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// Therefore, in case the input argument "obj" points to an AliTrack (or derived)
+// object, the current signal is automatically related to this AliTrack
+// (or derived) object.
+// 
+// Please also have a look at the docs of the memberfunction ResetLink()
+// to prevent the situation of stored pointers to non-existent object. 
+
+ if (!fLinks && obj)
+ {
+  fLinks=new TObjArray(j);
+ }
+
+ if (j>fLinks->GetSize() && obj) fLinks->Expand(j);
+
+ if (j<=fLinks->GetSize())
+ {
+  fLinks->AddAt(obj,j-1);
+  if (obj) 
+  {
+   if (obj->InheritsFrom("AliTrack"))
+   {
+    AliTrack* t=(AliTrack*)obj;
+    t->AddSignal(*this);
+   }
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetLink(Int_t j)
+{
+// Reset the link of the j-th (default j=1) slot.
+// Notes : The first link position is at j=1.
+//         j=0 ==> All links will be reset and the storage array deleted.
+//
+// In general the user should take care of properly clearing the corresponding
+// pointer here when the referred object is deleted.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// As such, the AliTrack destructor already takes care of clearing the corresponding
+// links from the various AliSignal slots for all the AliSignal objects that were
+// related to that AliTrack. 
+// So, in case the link introduced via SetLink() is the pointer of an AliTrack object,
+// the user doesn't have to worry about clearing the corresponding AliTrack link from
+// the AliSignal object when the corresponding AliTrack object is deleted.
+ 
+ if (!fLinks || j<0) return;
+
+ TObject* obj=0;
+
+ if (j)
+ {
+  SetLink(obj,j);
+ }
+ else
+ {
+  delete fLinks;
+  fLinks=0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetLink(TObject* obj)
+{
+// Reset the link of the all the slots referring to the specified object.
+//
+// In general the user should take care of properly clearing the corresponding
+// pointer here when the referred object is deleted.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// As such, the AliTrack destructor already takes care of clearing the corresponding
+// links from the various AliSignal slots for all the AliSignal objects that were
+// related to that AliTrack. 
+// So, in case the link introduced via SetLink() is the pointer of an AliTrack object,
+// the user doesn't have to worry about clearing the corresponding AliTrack link from
+// the AliSignal object when the corresponding AliTrack object is deleted.
+ 
+ if (!fLinks || !obj) return;
+
+ Int_t nlinks=GetNlinks();
+ for (Int_t i=1; i<=nlinks; i++)
+ {
+  TObject* obj2=GetLink(i);
+  if (obj2==obj) ResetLink(i);
  }
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -449,3 +449,17 @@
 22-nov-2003 NvE Support for various computation modes introduced in AliMath::Prob.
 23-nov-2003 NvE New memberfunctions GetBetaVector(), GetBeta() and GetGamma() introduced in Ali4Vector.
 03-dec-2003 NvE Message removed from AliEvent::GetDevice in case there are no devices present.
+05-dec-2003 NvE Memberfunction SetStable introduced in AliCollider for the user's convenience.
+08-dec-2003 NvE AliTrack derived from TNamed to enhance labeling flexibility and also specific
+                Clone memberfunction introduced to enable storage of derived objects in AliJet & co.
+                Also specific Clone memberfunctions introduced for AliJet, AliVertex and AliEvent and
+                for the already existing specific Clone memberfunctions the default argument was set
+                to the empty string "".
+15-dec-2003 NvE Datamembers fNdec and fNsig removed from AliTrack since these data are now retrieved
+                directly from the corresponding arrays.
+                Support for hypothesis probability introduced in AliTrack and old mass hypothesis
+                machinery extended to provide now full track hypotheses.
+18-dec-2003 NvE Support for object references from the various signal slots introduced in AliSignal.
+                Since this is mainly intended for "backward references" to AliTrack objects,
+                the AliTrack class has been slightly updated for this to provide pointer consistency
+                in case the corresponding AliTrack object is deleted.

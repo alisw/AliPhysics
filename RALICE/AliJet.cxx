@@ -103,8 +103,6 @@ AliJet::AliJet() : TNamed(),Ali4Vector()
  Init();
  Reset();
  SetNtinit();
- SetName("Unspecified");
- SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::Init()
@@ -133,8 +131,6 @@ AliJet::AliJet(Int_t n) : TNamed(),Ali4Vector()
   cout << endl;
   SetNtinit();
  }
- SetName("Unspecified");
- SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliJet::~AliJet()
@@ -196,7 +192,7 @@ AliJet::AliJet(AliJet& j) : TNamed(j),Ali4Vector(j)
   AliTrack* tx=j.GetTrack(i);
   if (fTrackCopy)
   {
-   fTracks->Add(new AliTrack(*tx));
+   fTracks->Add(tx->Clone());
   }
   else
   {
@@ -236,6 +232,16 @@ void AliJet::AddTrack(AliTrack& t)
 // space will be extended to hold an additional amount of tracks as
 // was initially reserved.
 // See SetTrackCopy() to tailor the functionality of the stored structures.
+//
+// Note :
+// In case a private copy is made, this is performed via the Clone() memberfunction.
+// All AliTrack and derived classes have the default TObject::Clone() memberfunction.
+// However, derived classes generally contain an internal data structure which may
+// include pointers to other objects. Therefore it is recommended to provide
+// for all derived classes a specific copy constructor and override the default Clone()
+// memberfunction using this copy constructor.
+// An example for this may be seen from AliTrack.   
+
  AddTrack(t,1);
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -250,6 +256,10 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
 // of the TrackCopy flag.
 // This allows a proper treatment of automatically generated connecting
 // tracks between vertices.
+//
+// Note :
+// In case a private copy is made, this is performed via the Clone() memberfunction.
+
  if (!fTracks)
  {
   fTracks=new TObjArray(fNtmax);
@@ -265,7 +275,7 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
  fNtrk++;
  if (fTrackCopy && copy)
  {
-  fTracks->Add(new AliTrack(t));
+  fTracks->Add(t.Clone());
  }
  else
  {
@@ -280,7 +290,13 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
 void AliJet::Data(TString f)
 {
 // Provide jet information within the coordinate frame f
- cout << " *AliJet::Data* Name : " << GetName() << " Title : " << GetTitle() << endl;
+ const char* name=GetName();
+ const char* title=GetTitle();
+
+ cout << " *AliJet::Data*";
+ if (strlen(name))  cout << " Name : " << GetName();
+ if (strlen(title)) cout << " Title : " << GetTitle();
+ cout << endl;
  cout << " Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Ntracks : " << fNtrk << endl;
 
@@ -568,5 +584,23 @@ Int_t AliJet::GetId()
 {
 // Provide the user defined identifier of this jet.
  return fUserId;
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliJet::Clone(char* name)
+{
+// Make a deep copy of the current object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the object type, a feature which may be very useful
+// for containers when adding objects in case the container owns the objects.
+// This feature allows e.g. AliVertex to store either AliJet objects or
+// objects derived from AliJet via the AddJet memberfunction, provided
+// these derived classes also have a proper Clone memberfunction. 
+
+ AliJet* jet=new AliJet(*this);
+ if (name)
+ {
+  if (strlen(name)) jet->SetName(name);
+ }
+ return jet;
 }
 ///////////////////////////////////////////////////////////////////////////

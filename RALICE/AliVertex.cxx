@@ -440,6 +440,15 @@ void AliVertex::AddJet(AliJet& j,Int_t tracks)
 //        be stored according to the mode specified by SetJetCopy().
 //        The latter will enable jet studies based on a fixed list of tracks
 //        as contained e.g. in an AliVertex or AliEvent. 
+//
+// In case a private copy is made, this is performed via the Clone() memberfunction.
+// All AliJet and derived classes have the default TObject::Clone() memberfunction.
+// However, derived classes generally contain an internal data structure which may
+// include pointers to other objects. Therefore it is recommended to provide
+// for all derived classes a specific copy constructor and override the default Clone()
+// memberfunction using this copy constructor.
+// An example for this may be seen from AliJet.   
+
  if (!fJets)
  {
   fJets=new TObjArray(fNjmax);
@@ -453,7 +462,7 @@ void AliVertex::AddJet(AliJet& j,Int_t tracks)
 
  // Add the jet to the list 
  AliJet* jx=&j;
- if (fJetCopy) jx=new AliJet(j);
+ if (fJetCopy) jx=(AliJet*)j.Clone();
 
  if (jx)
  {
@@ -498,6 +507,14 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
 //        has to introduce the connecting track lateron by hand
 //        explicitly in order to match the kinematics and charge.
 //
+// In case a private copy is made, this is performed via the Clone() memberfunction.
+// All AliVertex and derived classes have the default TObject::Clone() memberfunction.
+// However, derived classes generally contain an internal data structure which may
+// include pointers to other objects. Therefore it is recommended to provide
+// for all derived classes a specific copy constructor and override the default Clone()
+// memberfunction using this copy constructor.
+// An example for this may be seen from AliVertex.   
+
  if (!fVertices)
  {
   fVertices=new TObjArray(fNvmax);
@@ -511,7 +528,7 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
 
  // Add the linked (secondary) vertex to the list 
  AliVertex* vx=&v;
- if (fVertexCopy) vx=new AliVertex(v);
+ if (fVertexCopy) vx=(AliVertex*)v.Clone();
 
  if (vx)
  {
@@ -968,5 +985,23 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
    if (vx) vx->Draw(secs,cons,jets);
   }
  }
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliVertex::Clone(char* name)
+{
+// Make a deep copy of the current object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the object type, a feature which may be very useful
+// for containers when adding objects in case the container owns the objects.
+// This feature allows e.g. AliEvent to store either AliVertex objects or
+// objects derived from AliVertex via the AddVertex memberfunction, provided
+// these derived classes also have a proper Clone memberfunction. 
+
+ AliVertex* vtx=new AliVertex(*this);
+ if (name)
+ {
+  if (strlen(name)) vtx->SetName(name);
+ }
+ return vtx;
 }
 ///////////////////////////////////////////////////////////////////////////

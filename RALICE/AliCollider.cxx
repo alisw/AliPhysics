@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.6 2003/08/29 09:05:11 nick Exp $
+// $Id: AliCollider.cxx,v 1.7 2003/10/26 14:53:44 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -104,7 +104,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2003/08/29 09:05:11 $ Utrecht University
+//- Modified: NvE $Date: 2003/10/26 14:53:44 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -712,6 +712,50 @@ void AliCollider::EndRun()
   fOutFile->Write();
   fOutFile->Close();
   cout << " *AliCollider::EndRun* Output file correctly closed." << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliCollider::SetStable(Int_t id,Int_t mode)
+{
+// Declare whether a particle must be regarded as stable or not.
+// The parameter "id" indicates the Pythia KF particle code, which
+// basically is the PDG particle identifier code.
+// The parameter "mode" indicates the action to be taken.
+//
+// mode = 0 : Particle will be able to decay
+//        1 : Particle will be regarded as stable.
+//
+// In case the user does NOT explicitly invoke this function, the standard
+// Pythia settings for the decay tables are used.
+//
+// When this function is invoked without the "mode" argument, then the
+// default of mode=1 will be used for the specified particle.
+//
+// Notes :
+// -------
+// 1) This function should be invoked after the initialisation call
+//    to AliCollider::Init.
+// 2) Due to the internals of Pythia, there is no need to specify particles
+//    and their corresponding anti-particles separately as (un)stable.
+//    Once a particle has been declared (un)stable, the corresponding 
+//    anti-particle will be treated in the same way.
+
+ if (mode==0 || mode==1)
+ {
+  Int_t kc=Pycomp(id);
+  Int_t decay=1-mode;
+  if (kc>0)
+  {
+   SetMDCY(kc,1,decay);
+  }
+  else 
+  {
+   cout << " *AliCollider::SetStable* Unknown particle code. id = " << id << endl;
+  }
+ }
+ else
+ {
+  cout << " *AliCollider::SetStable* Invalid parameter. mode = " << mode << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////

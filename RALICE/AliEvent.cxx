@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.15 2003/11/21 14:20:10 nick Exp $
+// $Id: AliEvent.cxx,v 1.16 2003/12/03 14:30:26 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -201,7 +201,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/11/21 14:20:10 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/12/03 14:30:26 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -668,6 +668,24 @@ void AliEvent::ShowDevices()
  {
   cout << " No devices present for this event." << endl;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliEvent::Clone(char* name)
+{
+// Make a deep copy of the current object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the object type, a feature which may be very useful
+// for containers when adding objects in case the container owns the objects.
+// This feature allows to store either AliEvent objects or objects derived from
+// AliEvent via some generic AddEvent memberfunction, provided these derived
+// classes also have a proper Clone memberfunction. 
+
+ AliEvent* evt=new AliEvent(*this);
+ if (name)
+ {
+  if (strlen(name)) evt->SetName(name);
+ }
+ return evt;
 }
 ///////////////////////////////////////////////////////////////////////////
 

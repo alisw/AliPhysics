@@ -94,7 +94,7 @@
  
 ClassImp(AliTrack) // Class implementation to enable ROOT I/O
  
-AliTrack::AliTrack() : TObject(),Ali4Vector()
+AliTrack::AliTrack() : TNamed(),Ali4Vector()
 {
 // Default constructor
 // All variables initialised to 0
@@ -107,9 +107,7 @@ void AliTrack::Init()
 // Initialisation of pointers etc...
  fDecays=0;
  fSignals=0;
- fMasses=0;
- fDmasses=0;
- fPmasses=0;
+ fHypotheses=0;
  fBegin=0;
  fEnd=0;
  fImpactXY=0;
@@ -121,7 +119,17 @@ void AliTrack::Init()
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::~AliTrack()
 {
-// Destructor to delete memory allocated for decay tracks array
+// Destructor to delete memory allocated for decay tracks array.
+// This destructor automatically cleares the pointer of this AliTrack
+// from all the link slots of the related AliSignal objects.
+
+ Int_t nsig=GetNsignals();
+ for (Int_t i=1; i<=nsig; i++)
+ {
+  AliSignal* s=GetSignal(i);
+  if (s) s->ResetLink(this);
+ }
+ 
  if (fDecays)
  {
   delete fDecays;
@@ -133,20 +141,10 @@ AliTrack::~AliTrack()
   delete fSignals;
   fSignals=0;
  }
- if (fMasses)
+ if (fHypotheses)
  {
-  delete fMasses;
-  fMasses=0;
- }
- if (fDmasses)
- {
-  delete fDmasses;
-  fDmasses=0;
- }
- if (fPmasses)
- {
-  delete fPmasses;
-  fPmasses=0;
+  delete fHypotheses;
+  fHypotheses=0;
  }
  if (fBegin)
  {
@@ -180,21 +178,13 @@ AliTrack::~AliTrack()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack::AliTrack(AliTrack& t) : TObject(t),Ali4Vector(t)
+AliTrack::AliTrack(AliTrack& t) : TNamed(t),Ali4Vector(t)
 {
 // Copy constructor
  Init();
 
  fQ=t.fQ;
- fNdec=t.fNdec;
- fNsig=t.fNsig;
- fNmasses=t.fNmasses;
- if (fNmasses)
- {
-  fMasses=new TArrayD(*(t.fMasses));
-  fDmasses=new TArrayD(*(t.fDmasses));
-  fPmasses=new TArrayD(*(t.fPmasses));
- }
+ fProb=t.fProb;
  if (t.fBegin) fBegin=new AliPositionObj(*(t.fBegin));
  if (t.fEnd) fEnd=new AliPositionObj(*(t.fEnd));
  if (t.fImpactXY) fImpactXY=new AliPositionObj(*(t.fImpactXY));
@@ -207,24 +197,38 @@ AliTrack::AliTrack(AliTrack& t) : TObject(t),Ali4Vector(t)
  fCode=t.fCode;
  fParent=t.fParent;
 
- if (fNdec)
+ Int_t ndec=t.GetNdecay();
+ if (ndec)
  {
-  fDecays=new TObjArray(fNdec);
+  fDecays=new TObjArray(ndec);
   fDecays->SetOwner();
-  for (Int_t it=1; it<=fNdec; it++)
+  for (Int_t it=1; it<=ndec; it++)
   {
    AliTrack* tx=t.GetDecayTrack(it);
    fDecays->Add(new AliTrack(*tx));
   }
  }
 
- if (fNsig)
+ Int_t nsig=t.GetNsignals();
+ if (nsig)
  {
-  fSignals=new TObjArray(fNsig);
-  for (Int_t is=1; is<=fNsig; is++)
+  fSignals=new TObjArray(nsig);
+  for (Int_t is=1; is<=nsig; is++)
   {
    AliSignal* sx=t.GetSignal(is);
    fSignals->Add(sx);
+  }
+ }
+
+ Int_t nhyp=t.GetNhypotheses();
+ if (nhyp)
+ {
+  fHypotheses=new TObjArray(nhyp);
+  fHypotheses->SetOwner();
+  for (Int_t ih=1; ih<=nhyp; ih++)
+  {
+   AliTrack* tx=t.GetTrackHypothesis(ih);
+   fHypotheses->Add(new AliTrack(*tx));
   }
  }
 }
@@ -237,9 +241,7 @@ void AliTrack::Reset()
  fNdf=0;
  fUserId=0;
  fCode=0;
- fNdec=0;
- fNsig=0;
- fNmasses=0;
+ fProb=0;
  Double_t a[4]={0,0,0,0};
  SetVector(a,"sph");
  fParent=0;
@@ -254,20 +256,10 @@ void AliTrack::Reset()
   delete fSignals;
   fSignals=0;
  }
- if (fMasses)
+ if (fHypotheses)
  {
-  delete fMasses;
-  fMasses=0;
- }
- if (fDmasses)
- {
-  delete fDmasses;
-  fDmasses=0;
- }
- if (fPmasses)
- {
-  delete fPmasses;
-  fPmasses=0;
+  delete fHypotheses;
+  fHypotheses=0;
  }
  if (fBegin)
  {
@@ -337,16 +329,18 @@ void AliTrack::Data(TString f)
 // Provide track information within the coordinate frame f
  Double_t m=GetMass();
  Double_t dm=GetResultError();
- cout << " *AliTrack::Data* Id : " << fUserId << " Code : " << fCode
-      << " Mass : " << m << " error : " << dm << " Charge : " << fQ
-      << " Momentum : " << GetMomentum() << " Nmass hyp. : " << fNmasses
-      << " Ntracks : " << fNdec << " Nsignals : " << fNsig << endl;
- for (Int_t i=0; i<fNmasses; i++)
- {
-  cout << " Mass hypothesis " << (i+1) << " Mass : " << fMasses->At(i)
-       << " error : " << fDmasses->At(i) << " prob. : " << fPmasses->At(i)
-       << endl;
- }
+ const char* name=GetName();
+ const char* title=GetTitle();
+
+ cout << " *" << ClassName() << "::Data*";
+ if (strlen(name))  cout << " Name : " << GetName();
+ if (strlen(title)) cout << " Title : " << GetTitle();
+ cout << endl;
+ cout << " Id : " << fUserId << " Code : " << fCode
+      << " m : " << m << " dm : " << dm << " Charge : " << fQ
+      << " p : " << GetMomentum() << endl;
+ cout << " Nhypotheses : " << GetNhypotheses() << " Ndecay-tracks : " << GetNdecay()
+      << " Nsignals : " << GetNsignals() << endl;
  Ali4Vector::Data(f); 
 } 
 ///////////////////////////////////////////////////////////////////////////
@@ -358,7 +352,7 @@ void AliTrack::List(TString f)
 
  // Decay products of this track
  AliTrack* td; 
- for (Int_t id=1; id<=fNdec; id++)
+ for (Int_t id=1; id<=GetNdecay(); id++)
  {
   td=GetDecayTrack(id);
   if (td)
@@ -368,7 +362,7 @@ void AliTrack::List(TString f)
   }
   else
   {
-   cout << " *AliTrack::List* Error : No decay track present." << endl; 
+   cout << " *AliTrack::List* Error : Empty decay track slot." << endl; 
   }
  }
 } 
@@ -380,9 +374,27 @@ void AliTrack::ListAll(TString f)
  Data(f); // Information of the current track
  if (fBegin) { cout << " Begin-point :"; fBegin->Data(f); }
  if (fEnd)   { cout << " End-point   :"; fEnd->Data(f); }
- for (Int_t is=1; is<=GetNsignals(); is++)
+
+ Int_t nhyp=GetNhypotheses();
+ if (nhyp)
  {
-  ((AliSignal*)GetSignal(is))->Data(f);
+  cout << " List of the " << nhyp << " track hypotheses : " << endl;
+  for (Int_t ih=1; ih<=nhyp; ih++)
+  {
+   AliTrack* tx=GetTrackHypothesis(ih);
+   if (tx) tx->Data(f);
+  }
+ }
+
+ Int_t nsig=GetNsignals();
+ if (nsig)
+ {
+  cout << " List of the " << nsig << " related signals : " << endl;
+  for (Int_t is=1; is<=nsig; is++)
+  {
+   AliSignal* sx=GetSignal(is);
+   if (sx) sx->Data(f);
+  }
  }
 
  AliTrack* t=this;
@@ -400,9 +412,27 @@ void AliTrack::Dumps(AliTrack* t,Int_t n,TString f)
   {
    cout << "  ---Level " << n << " sec. track no. " << id << endl;
    td->Data(f); 
-   for (Int_t is=1; is<=td->GetNsignals(); is++)
+
+   Int_t nhyp=td->GetNhypotheses();
+   if (nhyp)
    {
-    ((AliSignal*)td->GetSignal(is))->Data(f);
+    cout << " List of the " << nhyp << " track hypotheses : " << endl;
+    for (Int_t ih=1; ih<=nhyp; ih++)
+    {
+     AliTrack* tx=td->GetTrackHypothesis(ih);
+     if (tx) tx->Data(f);
+    }
+   }
+
+   Int_t nsig=td->GetNsignals();
+   if (nsig)
+   {
+    cout << " List of the " << nsig << " related signals : " << endl;
+    for (Int_t is=1; is<=nsig; is++)
+    {
+     AliSignal* sx=td->GetSignal(is);
+     if (sx) sx->Data(f);
+    }
    }
 
    // Go for next decay level of this decay track recursively
@@ -410,7 +440,7 @@ void AliTrack::Dumps(AliTrack* t,Int_t n,TString f)
   }
   else
   {
-   cout << " *AliTrack::Dumps* Error : No decay track present." << endl; 
+   cout << " *AliTrack::Dumps* Error : Empty decay track slot." << endl; 
   }
  }
 } 
@@ -487,8 +517,6 @@ void AliTrack::Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms)
 // thcms  : cms theta decay angle (in rad.) of m1
 // phicms : cms phi decay angle (in rad.) of m1
  
- fNdec=2; // it's a 2-body decay
-
  Double_t M=GetMass();
  
 // Compute the 4-momenta of the decay products in the cms
@@ -541,7 +569,7 @@ void AliTrack::Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms)
   delete fDecays;
   fDecays=0;
  }
- fDecays=new TObjArray();
+ fDecays=new TObjArray(2);
  fDecays->SetOwner();
 
  fDecays->Add(new AliTrack);
@@ -555,7 +583,9 @@ void AliTrack::Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms)
 Int_t AliTrack::GetNdecay()
 {
 // Provide the number of decay produced tracks
- return fNdec;
+ Int_t ndec=0;
+ if (fDecays) ndec=fDecays->GetEntries();
+ return ndec;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack* AliTrack::GetDecayTrack(Int_t j)
@@ -569,45 +599,71 @@ AliTrack* AliTrack::GetDecayTrack(Int_t j)
  }
  else
  {
-  if ((j >= 1) && (j <= fNdec))
+  if ((j >= 1) && (j <= GetNdecay()))
   {
    return (AliTrack*)fDecays->At(j-1);
   }
   else
   {
    cout << " *AliTrack* decay track number : " << j << " out of range."
-        << " Ndec = " << fNdec << endl;
+        << " Ndec = " << GetNdecay() << endl;
    return 0;  
   }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::RemoveDecays()
+{
+// Remove all decay tracks from this track.
+ if (fDecays)
+ {
+  delete fDecays;
+  fDecays=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::AddSignal(AliSignal& s)
 {
 // Relate an AliSignal object to this track.
- if (!fSignals) fSignals=new TObjArray();
- fNsig++;
+ if (!fSignals) fSignals=new TObjArray(1);
+
+ // Check if this signal is already stored for this track
+ Int_t nsig=GetNsignals();
+ for (Int_t i=0; i<nsig; i++)
+ {
+  if (&s==fSignals->At(i)) return; 
+ }
+
  fSignals->Add(&s);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::RemoveSignal(AliSignal& s)
 {
-// Remove related AliSignal object to this track.
+// Remove related AliSignal object from this track.
  if (fSignals)
  {
   AliSignal* test=(AliSignal*)fSignals->Remove(&s);
-  if (test)
-  {
-   fNsig--;
-   fSignals->Compress();
-  }
+  if (test) fSignals->Compress();
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::RemoveSignals()
+{
+// Remove all related AliSignal objects from this track.
+ if (fSignals)
+ {
+  fSignals->Clear();
+  delete fSignals;
+  fSignals=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliTrack::GetNsignals()
 {
 // Provide the number of related AliSignals.
- return fNsig;
+ Int_t nsig=0;
+ if (fSignals) nsig=fSignals->GetEntries();
+ return nsig;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal* AliTrack::GetSignal(Int_t j)
@@ -621,16 +677,121 @@ AliSignal* AliTrack::GetSignal(Int_t j)
  }
  else
  {
-  if ((j >= 1) && (j <= fNsig))
+  if ((j >= 1) && (j <= GetNsignals()))
   {
    return (AliSignal*)fSignals->At(j-1);
   }
   else
   {
    cout << " *AliTrack* signal number : " << j << " out of range."
-        << " Nsig = " << fNsig << endl;
+        << " Nsig = " << GetNsignals() << endl;
    return 0;
   }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::AddTrackHypothesis(AliTrack& t)
+{
+// Relate a track hypothesis to this track.
+// Note : a private copy of the input track will be made via the Clone()
+//        facility.
+ if (!fHypotheses)
+ {
+  fHypotheses=new TObjArray(1);
+  fHypotheses->SetOwner();
+ }
+ fHypotheses->Add(t.Clone());
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::AddTrackHypothesis(Double_t prob,Double_t m,Double_t dm)
+{
+// Add a track hypothesis by explicitly setting the mass and probability.
+// This will affect e.g. the hypothesis track's energy, since the momentum
+// and all other attributes will be copied from the current track.
+//
+// Input arguments :
+// ----------------- 
+// prob=probalility  m=mass value  dm=error on the mass value.
+// The default value for the mass error dm is 0.
+
+ AliTrack t(*this);
+ t.RemoveDecays();
+ t.RemoveTrackHypotheses();
+ t.RemoveSignals();
+ t.SetTitle("Mass hypothesis");
+ t.SetMass(m,dm);
+ t.SetProb(prob);
+ AddTrackHypothesis(t);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::RemoveTrackHypothesis(AliTrack& t)
+{
+// Remove the specified track hypothesis from this track.
+ if (fHypotheses)
+ {
+  AliTrack* test=(AliTrack*)fHypotheses->Remove(&t);
+  if (test) fHypotheses->Compress();
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::RemoveTrackHypotheses()
+{
+// Remove all track hypotheses from this track.
+ if (fHypotheses)
+ {
+  delete fHypotheses;
+  fHypotheses=0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTrack::GetNhypotheses()
+{
+// Provide the number of track hypotheses.
+ Int_t nhyp=0;
+ if (fHypotheses) nhyp=fHypotheses->GetEntries();
+ return nhyp;
+}
+///////////////////////////////////////////////////////////////////////////
+AliTrack* AliTrack::GetTrackHypothesis(Int_t j)
+{
+// Provide the j-th track hypothesis.
+// Note : j=1 denotes the first hypothesis.
+// Default : j=0 ==> Hypothesis with highest probability.
+
+ if (!fHypotheses) return 0;
+
+ Int_t nhyp=GetNhypotheses();
+
+ // Check validity of index j
+ if (j<0 || j>nhyp)
+ {
+   cout << " *AliTrack* hypothesis number : " << j << " out of range."
+        << " Nhyp = " << nhyp << endl;
+   return 0;
+ } 
+
+ AliTrack* t=0;
+
+ if (j==0) // Provide track hypothesis with highest probability
+ {
+  Float_t prob=0;   
+  t=(AliTrack*)fHypotheses->At(0);
+  if (t) prob=t->GetProb();
+  Float_t probx=0;
+  for (Int_t ih=1; ih<nhyp; ih++)
+  {
+   AliTrack* tx=(AliTrack*)fHypotheses->At(ih);
+   if (tx)
+   {
+    probx=tx->GetProb();
+    if (probx > prob) t=tx; 
+   }
+  }
+  return t;
+ }
+ else // Provide requested j-th track hypothesis
+ {
+  return (AliTrack*)fHypotheses->At(j-1);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -672,165 +833,23 @@ AliPosition* AliTrack::GetEndPoint()
  return fEnd;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::AddMassHypothesis(Double_t prob,Double_t m,Double_t dm)
-{
-// Add a mass hypothesis for this current track.
-// prob=probalility  m=mass value  dm=error on the mass value.
-// The default value for the mass error dm is 0.
- if (!fMasses) fMasses=new TArrayD();
- if (!fDmasses) fDmasses=new TArrayD();
- if (!fPmasses) fPmasses=new TArrayD();
-
- fNmasses++;
- fMasses->Set(fNmasses);
- fDmasses->Set(fNmasses);
- fPmasses->Set(fNmasses);
-
- fMasses->AddAt(m,fNmasses-1);
- fDmasses->AddAt(dm,fNmasses-1);
- fPmasses->AddAt(prob,fNmasses-1);
-}
-///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetNMassHypotheses()
-{
-// Provide the number of mass hypotheses for this track.
- return fNmasses;
-}
-///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetMassHypothesis(Int_t j)
-{
-// Provide the mass of the jth hypothesis for this track.
-// Note : the first hypothesis is indicated by j=1.
-// Default : j=0 ==> Hypothesis with highest probability.
-// The error on the mass can be obtained by invoking GetResultError()
-// after invokation of GetMassHypothesis(j).
-
- Double_t m=0,dm=0,prob=0;
-
- // Check validity of index j
- if (j<0 || j>fNmasses)
- {
-  cout << " *AliTrack::GetMassHypothesis* Invalid index j : " << j
-       << " Number of mass hypotheses : " << fNmasses << endl;
-  fDresult=0;
-  return 0;
- }
-
- // Select mass hypothesis with highest probability
- if (j==0) 
- {
-  if (fNmasses) 
-  {
-   m=fMasses->At(0);
-   dm=fDmasses->At(0);
-   prob=fPmasses->At(0);
-   for (Int_t i=1; i<fNmasses; i++)
-   {
-    if (fPmasses->At(i)>prob)
-    {
-     m=fMasses->At(i);
-     dm=fDmasses->At(i);
-    }
-   }
-  }
-  fDresult=dm;
-  return m;  
- }
-
- // Provide data of requested mass hypothesis
- m=fMasses->At(j-1);
- fDresult=fDmasses->At(j-1);
- return m;
-}
-///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetMassHypothesisProb(Int_t j)
-{
-// Provide the probability of the jth hypothesis for this track.
-// Note : the first hypothesis is indicated by j=1.
-// Default : j=0 ==> Hypothesis with highest probability.
-
- Double_t prob=0;
-
- // Check validity of index j
- if (j<0 || j>fNmasses)
- {
-  cout << " *AliTrack::GetMassHypothesisProb* Invalid index j : " << j
-       << " Number of mass hypotheses : " << fNmasses << endl;
-  return 0;
- }
-
- // Select mass hypothesis with highest probability
- if (j==0) 
- {
-  if (fNmasses) 
-  {
-   prob=fPmasses->At(0);
-   for (Int_t i=1; i<fNmasses; i++)
-   {
-    if (fPmasses->At(i)>prob) prob=fPmasses->At(i);
-   }
-  }
-  return prob;  
- }
-
- // Provide probability of requested mass hypothesis
- prob=fPmasses->At(j-1);
- return prob;
-}
-///////////////////////////////////////////////////////////////////////////
 void AliTrack::SetMass()
 {
 // Set the mass and error to the value of the hypothesis with highest prob.
 
- Double_t m=0,dm=0,prob=0;
+ Double_t m=0,dm=0;
 
  // Select mass hypothesis with highest probability
- if (fNmasses) 
+ AliTrack* t=GetTrackHypothesis(0);
+ if (t) 
  {
-  m=fMasses->At(0);
-  dm=fDmasses->At(0);
-  prob=fPmasses->At(0);
-  for (Int_t i=1; i<fNmasses; i++)
-  {
-   if (fPmasses->At(i)>prob)
-   {
-    m=fMasses->At(i);
-    dm=fDmasses->At(i);
-   }
-  }
+  m=t->GetMass();
+  dm=t->GetResultError();
   SetMass(m,dm);
  }
  else
  {
   cout << " *AliTrack::SetMass()* No hypothesis present => No action." << endl;
- }
-}
-///////////////////////////////////////////////////////////////////////////
-void AliTrack::RemoveMassHypothesis(Int_t j)
-{
-// Remove the jth mass hypothesis for this track.
-// Note : the first hypothesis is indicated by j=1.
-
- if (j<=0 || j>fNmasses) // Check validity of index j
- {
-  cout << " *AliTrack::RemoveMassHypothesis* Invalid index j : " << j
-       << " Number of mass hypotheses : " << fNmasses << endl;
- }
- else
- {
-  if (j != fNmasses)
-  {
-   fMasses->AddAt(fMasses->At(fNmasses-1),j-1);
-   fDmasses->AddAt(fDmasses->At(fNmasses-1),j-1);
-   fPmasses->AddAt(fPmasses->At(fNmasses-1),j-1);
-  }
-  fMasses->AddAt(0,fNmasses-1);
-  fDmasses->AddAt(0,fNmasses-1);
-  fPmasses->AddAt(0,fNmasses-1);
-  fNmasses--;
-  fMasses->Set(fNmasses);
-  fDmasses->Set(fNmasses);
-  fPmasses->Set(fNmasses);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -895,26 +914,6 @@ Double_t AliTrack::GetMt()
  Double_t pt=GetPt();
  Double_t dpt=GetResultError();
  Double_t m=GetMass();
- Double_t dm=GetResultError();
-
- Double_t mt=sqrt(pt*pt+m*m);
- Double_t dmt2=0;
- if (mt) dmt2=(pow((pt*dpt),2)+pow((m*dm),2))/(mt*mt);
-
- fDresult=sqrt(dmt2);
- return mt;
-}
-///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetMt(Int_t j)
-{
-// Provide transverse mass value w.r.t. z-axis and jth mass hypothesis.
-// Note : the first hypothesis is indicated by j=1.
-//        j=0 ==> Hypothesis with highest probability.
-// The error on the value can be obtained by GetResultError()
-// after invokation of GetMt(j).
- Double_t pt=GetPt();
- Double_t dpt=GetResultError();
- Double_t m=GetMassHypothesis(j);
  Double_t dm=GetResultError();
 
  Double_t mt=sqrt(pt*pt+m*m);
@@ -1121,5 +1120,35 @@ AliTrack* AliTrack::GetParentTrack()
 {
 // Provide pointer to the parent track.
  return fParent;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetProb(Double_t prob)
+{
+// Set hypothesis probability for this track.
+ fProb=prob;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliTrack::GetProb()
+{
+// Provide the hypothesis probability for this track.
+ return fProb;
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliTrack::Clone(char* name)
+{
+// Make a deep copy of the current object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the object type, a feature which may be very useful
+// for containers when adding objects in case the container owns the objects.
+// This feature allows e.g. AliJet to store either AliTrack objects or
+// objects derived from AliTrack via the AddTrack memberfunction, provided
+// these derived classes also have a proper Clone memberfunction. 
+
+ AliTrack* trk=new AliTrack(*this);
+ if (name)
+ {
+  if (strlen(name)) trk->SetName(name);
+ }
+ return trk;
 }
 ///////////////////////////////////////////////////////////////////////////
