@@ -53,7 +53,7 @@ class AliITSVertex : public TNamed {
 
   void     GetXYZ_ThrustFrame(Double_t position[3]) const;
   void     GetSigmaXYZ_ThrustFrame(Double_t sigma[3]) const;
-  void     GetCovMatrix_ThrustFrame(Double_t covmatrix[3]) const;
+  void     GetCovMatrix_ThrustFrame(Double_t covmatrix[6]) const;
 
   Double_t GetXv() const;
   Double_t GetYv() const;
