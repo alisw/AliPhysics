@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.2  2000/10/04 16:34:58  cblume
 Replace include files by forward declarations
 
@@ -194,13 +197,13 @@ void AliTRDrecPoint::AddTrackIndex(Int_t *track)
 
   for (Int_t k=0; k<size; k++) {
     index=track[k];
-    index_added=false; j=0;
+    index_added=kFALSE; j=0;
     if (index >= 0) {
       while ( (!index_added) && ( j < size ) ) {
         if ((entries[j][0]==index) || (entries[j][1]==0)) {
           entries[j][0]=index;
           entries[j][1]=entries[j][1]+1;
-          index_added=true;
+          index_added=kTRUE;
         }
         j++;
       }

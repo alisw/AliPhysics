@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.4  2000/11/10 14:57:52  cblume
+Changes in the geometry constants for the DEC compiler
+
 Revision 1.3  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
 
@@ -579,13 +582,13 @@ Int_t AliTRDtracker::GetTrackLabel(AliTRDseed t) {
     AliTRDcluster *c=(AliTRDcluster*)fClusters->UncheckedAt(index);
     for (Int_t k=0; k<3; k++) { 
       label=c->GetTrackIndex(k);
-      label_added=false; j=0;
+      label_added=kFALSE; j=0;
       if (label >= 0) {
 	while ( (!label_added) && ( j < range ) ) {
 	  if (s[j][0]==label || s[j][1]==0) {
 	    s[j][0]=label; 
 	    s[j][1]=s[j][1]+1; 
-	    label_added=true;
+	    label_added=kTRUE;
 	  }
 	  j++;
 	}
