@@ -255,7 +255,6 @@ void AliFMD::MakeBranch (Option_t * option)
 void AliFMD::SetTreeAddress ()
 {
   // Set branch address for the Hits and Digits Tree.
-  char branchname[30];
 
   if (fLoader->TreeH() && (fHits == 0x0)) 
     fHits = new TClonesArray ("AliFMDhit", 1000);  
@@ -268,7 +267,7 @@ void AliFMD::SetTreeAddress ()
   if (treeD)
     {
       if (fDigits == 0x0) fDigits = new TClonesArray ("AliFMDdigit", 1000);
-      branch = treeD->GetBranch (branchname);
+      branch = treeD->GetBranch ("FMD");
       if (branch)
        branch->SetAddress (&fDigits);
     }

@@ -291,7 +291,6 @@ void AliTOF::AddSDigit(Int_t tracknum, Int_t *vol, Float_t *digits)
 void AliTOF::SetTreeAddress ()
 {
   // Set branch address for the Hits and Digits Tree.
-  char branchname[30];
   
   if (fLoader->TreeH())
    {
@@ -308,7 +307,7 @@ void AliTOF::SetTreeAddress ()
 
   if (treeD)
     {
-      branch = treeD->GetBranch (branchname);
+      branch = treeD->GetBranch ("TOF");
       if (branch)
        {
          if (fDigits == 0x0) fDigits = new TClonesArray("AliTOFdigit",  1000); 
