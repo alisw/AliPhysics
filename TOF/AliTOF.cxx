@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2001/11/22 11:22:51  hristov
+Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
+
 Revision 1.30  2001/10/21 18:30:39  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -175,6 +178,13 @@ AliTOF::AliTOF(const char *name, const char *title)
 
   // Initialization of hits, sdigits and digits array
   //
+
+  fDTask=0;
+  fReTask=0;
+  fFGeom=0;
+  fReconParticles=0;
+  fMerger=0;
+
   fHits   = new TClonesArray("AliTOFhit",  1000);
   gAlice->AddHitList(fHits);
   fIshunt  = 0;
