@@ -5,17 +5,21 @@
 void hits()
 {
   hits("FMD","1");
-  hits("ITS","5");
-  hits("MUON","0");
-  hits("PMD","0");
-  hits("START","0");
-  hits("TOF","0");
-  hits("TPC","1");
   hits("PHOS","1");
+  hits("START","1");
+  hits("TOF","2");
+  hits("TPC","2");
+
+  //hits("ITS","5");
+  //hits("MUON","0");
+  //hits("PMD","1");
+  //hits("RICH","1");
 }  
 
 void hits(const TString& detName, const TString& detVersion)
 {
+  cout << detName << endl;
+
   // labels
   TString g3 = "G3: ";
   TString g4 = "G4: ";
@@ -24,6 +28,7 @@ void hits(const TString& detName, const TString& detVersion)
   TString top = getenv("ALICE_ROOT");
   TString f1NameEnd = "test10.root";
   TString f2NameEnd = "test20.root";
+
   TString g3File1Name = top + "/test/" + f1NameEnd;
   TString g3File2Name = top + "/test/" + f2NameEnd;
   TString g4File1Name = top + "/AliGeant4/test/" + f1NameEnd;
@@ -83,13 +88,15 @@ void hits(const TString& detName, const TString& detVersion)
   //detector = LoadDetector(g3File1Name, detName, g3);
   //FillHistogram(detector, g3, g3x, g3y, g3z); 
 
-  //detector = LoadDetector(g3File2Name, detName,  g3);
+  detector = LoadDetector(g3File2Name, detName,  g3);
   FillHistogram(detector, g3, g3xh, g3yh, g3zh); 
+  //TH1F* g3xh = LoadHistograms("g3xh"); 
+  //TH1F* g3zh = LoadHistograms("g3zh"); 
 
   detector = LoadDetector(g4File1Name, detName, g4);
   FillHistogram(detector, g4, g4x, g4y, g4z); 
 
-  //detector = LoadDetector(g4File2Name, detName, g4);
+  detector = LoadDetector(g4File2Name, detName, g4);
   FillHistogram(detector, g4, g4xh, g4yh, g4zh); 
 
   // compose picture name
@@ -97,9 +104,14 @@ void hits(const TString& detName, const TString& detVersion)
   TString title = detName + " hits";
 
   // draw histohrams
-  DrawHistograms(title, gifNameBase + "_x.gif", g3x, g4x, g3xh, g4xh);
-  DrawHistograms(title, gifNameBase + "_y.gif", g3y, g4y, g3yh, g4yh);
-  DrawHistograms(title, gifNameBase + "_z.gif", g3z, g4z, g3zh, g4zh);
+  DrawHistograms(title, gifNameBase + ".gif", g3xh, g4xh, g3zh, g4zh);
+  if (detName == "PHOS") 
+    DrawHistograms(title, gifNameBase + "2.gif", g3yh, g4yh, g3zh, g4zh);
+
+  //DrawHistograms(title, gifNameBase + "_x.gif", g3x, g4x, g3xh, g4xh);
+  //DrawHistograms(title, gifNameBase + "_y.gif", g3y, g4y, g3yh, g4yh);
+  //DrawHistograms(title, gifNameBase + "_z.gif", g3z, g4z, g3zh, g4zh);
+  
 }
 
 void SetHistogramRanges(TString& detName, Int_t& nbin, 
@@ -120,10 +132,10 @@ void SetHistogramRanges(TString& detName, Int_t& nbin,
   g3zmax = 1; g4zmax = g3zmax;
 
   if (detName == "FMD") {
-    g3xmin = -70; g4xmin = g3xmin;
-    g3xmax =  70; g4xmax = g3xmax;
-    g3zmin = -300; g4zmin = g3zmin;
-    g3zmax =  300; g4zmax = g3zmax;
+    g3xmin = -50; g4xmin = g3xmin;
+    g3xmax =  50; g4xmax = g3xmax;
+    g3zmin = -700; g4zmin = g3zmin;
+    g3zmax =  150; g4zmax = g3zmax;
   }
   else if (detName == "ITS") {
     g3xmin = -60; g4xmin = g3xmin;
@@ -140,8 +152,8 @@ void SetHistogramRanges(TString& detName, Int_t& nbin,
   else if (detName == "PHOS") {
     g3xmin = -400; g4xmin = g3xmin;
     g3xmax =  400; g4xmax = g3xmax;
-    g3ymin = -500; g4ymin = g3ymin;
-    g3ymax = -250; g4ymax = g3ymax;
+    g3ymin =  250; g4ymin = g3ymin;
+    g3ymax =  500; g4ymax = g3ymax;
     g3zmin =  -80; g4zmin = g3zmin;
     g3zmax =   80; g4zmax = g3zmax;
   }
@@ -150,6 +162,12 @@ void SetHistogramRanges(TString& detName, Int_t& nbin,
     g3xmax =  200; g4xmax = g3xmax*10;
     g3zmin = -582; g4zmin = g3zmin*10;
     g3zmax = -578; g4zmax = g3zmax*10;
+  }
+  else if (detName == "RICH") {
+    g3xmin = -250; g4xmin = g3xmin;
+    g3xmax =  250; g4xmax = g3xmax;
+    g3zmin = -250; g4zmin = g3zmin;
+    g3zmax =  250; g4zmax = g3zmax;
   }
   else if (detName == "START") {
     g3xmin = -10; g4xmin = g3xmin;
@@ -216,19 +234,56 @@ void FillHistogram(AliDetector* detector, TString& label,
   cout << label << "got ntracks = " << ntracks << endl;
 
   // loop on tracks in the hits container
-  for (Int_t i=0; i<ntracks; i++)
+  for (Int_t i=0; i<ntracks; i++) {
     // loop on hits  
     for(AliHit* hit= detector->FirstHit(i); hit; hit=detector->NextHit()) {
-      Float_t x = hit->X();
-      Float_t y = hit->Y();
-      Float_t z = hit->Z();
-      if (hx) hx->Fill(x);
-      if (hy) hy->Fill(y);
-      if (hz) hz->Fill(z);
+
+      TString detName = detector->GetName();
+      if (detName == "PHOS") { 
+        // PHOS special
+        FillPHOSHit(detector, hit, hx, hy, hz);
+      }	
+      else {
+        FillHit(hit, hx, hy, hz);
+      }	
+	
       nofHits++;
     }
-
+  } 
+/*  
+  TFile* file = new TFile("tmp.root","recreate");
+  hx->Write();
+  hz->Write();
+  file->Close();
+*/
   cout << label << "filled " << nofHits << " hits" << endl;
+}  
+
+TH1F* LoadHistograms(TString name)
+{
+  TFile* file = new TFile("tmp.root");
+  return (TH1F*)file->Get(name);
+}  
+
+void FillHit(AliHit* hit, TH1F* hx, TH1F* hy, TH1F* hz) 
+{ 
+  if (hx) hx->Fill(hit->X());
+  if (hy) hy->Fill(hit->Y());
+  if (hz) hz->Fill(hit->Z());
+}  
+
+void FillPHOSHit(AliDetector* detector, AliHit* hit, 
+                 TH1F* hx, TH1F* hy, TH1F* hz) 
+{ 
+  // PHOS special
+  Float_t id = ((AliPHOSHit*)hit)->GetId();
+      
+  TVector3 pos;
+  ((AliPHOS*)detector)->GetGeometry()->RelPosInAlice(id, pos);
+    
+  if (hx) hx->Fill(pos.X());
+  if (hy) hy->Fill(pos.Y());
+  if (hz) hz->Fill(pos.Z());
 }  
 
 void DrawHistograms(TString& title, TString& gifName,
@@ -239,7 +294,6 @@ void DrawHistograms(TString& title, TString& gifName,
 
   if (h1 && h2 && h3 && h4) {
     // create canvas
-    //TCanvas* canvas = new TCanvas("c1",detName + " hits", 400, 10, 800, 600);
     TCanvas* canvas = new TCanvas("c1", title, 400, 10, 800, 600);
     canvas->Divide(2,2);
     
