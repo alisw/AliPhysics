@@ -21,8 +21,6 @@ class TFile;
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSPID.h"
-#include "AliPHOSCPVModule.h"
-#include "AliPHOSCPVHit.h"
 #include "AliPHOSCPVDigit.h"
 
 class AliPHOSv1 : public AliPHOSv0 {

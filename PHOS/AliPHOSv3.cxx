@@ -103,12 +103,12 @@ void AliPHOSv3::StepManager(void)
 //    if (gMC->IsTrackExiting())
 //      cout << "Track leaves the volume " << gMC->CurrentVolName() << endl;
 
-  Int_t          relid[4] ;      // (box, layer, row, column) indices
-  Int_t          absid    ;      // absolute cell ID number
+  Int_t          relid[4] ;        // (box, layer, row, column) indices
+  Int_t          absid    ;        // absolute cell ID number
   Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
-  TLorentzVector pos      ;      // Lorentz vector of the track current position
-  TLorentzVector pmom     ;      //momentum of the particle initiated hit
-  Float_t        xyd[2]   ;      //local posiiton of the entering
+  TLorentzVector pos      ;        // Lorentz vector of the track current position
+  TLorentzVector pmom     ;        //momentum of the particle initiated hit
+  Float_t        xyd[2]={0,0}   ;  //local posiiton of the entering
   Bool_t         entered = kFALSE    ;  
   Int_t          copy     ;
 

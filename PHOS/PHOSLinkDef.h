@@ -35,7 +35,6 @@
 #pragma link C++ class AliPHOSCPVGeometry+;
 #pragma link C++ class AliPHOSPPSDGeometry+;
 #pragma link C++ class AliPHOSSupportGeometry+;
-#pragma link C++ class AliPHOSCPVModule+;
 #pragma link C++ class AliPHOSCPVDigit+;
 
 #endif

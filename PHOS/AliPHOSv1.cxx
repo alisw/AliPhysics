@@ -61,9 +61,6 @@ ClassImp(AliPHOSv1)
 AliPHOSv1::AliPHOSv1()
 {
   // ctor
-
-  // Create an empty array of AliPHOSCPVModule to satisfy
-  // AliPHOSv1::Streamer when reading root file
  
   fReconstructioner  = 0;
   fTrackSegmentMaker = 0;
@@ -519,7 +516,7 @@ void AliPHOSv1::StepManager(void)
   Int_t          absid    ;           // absolute cell ID number
   Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
   TLorentzVector pos      ;           // Lorentz vector of the track current position
-  TLorentzVector pmom = 0    ;        //momentum of the particle initiated hit
+  TLorentzVector pmom     ;        //momentum of the particle initiated hit
   Float_t        xyd[3]={0,0,0}   ;   //local posiiton of the entering
   Bool_t         entered = kFALSE ;  
   Int_t          copy     ;
