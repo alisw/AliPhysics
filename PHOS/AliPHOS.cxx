@@ -301,76 +301,27 @@ void AliPHOS::CreateMaterials()
 }
 
 //____________________________________________________________________________
-AliPHOSRecPoint::RecPointsList * AliPHOS::EmcRecPoints(Int_t evt) 
-{
-  // returns the pointer to the EMCA RecPoints list
-  // if the list is empty, get it from TreeR on the disk file
+void AliPHOS::SetTreeAddress()
+{ 
+  TBranch *branch;
+  AliDetector::SetTreeAddress();
 
-  AliPHOSRecPoint::RecPointsList * rv = 0 ; 
-  
-  if ( fEmcRecPoints ) 
-    rv = fEmcRecPoints ; 
-
-  else {
-    fEmcRecPoints = new TClonesArray("AliPHOSEmcRecPoint", 100) ; 
-    gAlice->GetEvent(evt) ; 
-    TTree * fReconstruct = gAlice->TreeR() ; 
-    fReconstruct->SetBranchAddress( "PHOSEmcRP", &fEmcRecPoints) ;
-    fReconstruct->GetEvent(0) ;
-    fEmcRecPoints->Expand( fEmcRecPoints->GetEntries() ) ; 
-    rv =  fEmcRecPoints ;
+  //Branch address for TreeR: RecParticles
+  TTree *treeR = gAlice->TreeR();
+  if ( treeR && fRecParticles ) {
+    branch = treeR->GetBranch("PHOSRP");
+    if (branch) branch->SetAddress(&fRecParticles) ;
   }
-    
-  return rv ; 
-  
+   //Branch address for TreeR: TrackSegments
+  if ( treeR && fTrackSegments ) {
+    branch = treeR->GetBranch("PHOSTS");
+    if (branch) branch->SetAddress(&fTrackSegments) ;
+  }
+  //Branch address for TreeR: EmcRecPoint
+ if ( treeR && fEmcRecPoints ) {
+    branch = treeR->GetBranch("PHOSEmcRP");
+    if (branch) branch->SetAddress(&fEmcRecPoints) ;
+ }
 }
 
-//____________________________________________________________________________
-AliPHOSRecParticle::RecParticlesList * AliPHOS::RecParticles(Int_t evt) 
-{
-  // returns the pointer to the RecParticles list
-  // if the list is empty, get it from TreeR on the disk file
 
-  AliPHOSRecParticle::RecParticlesList * rv = 0 ; 
-  
-  if ( fRecParticles ) 
-    rv = fRecParticles ; 
-
-  else {
-    fRecParticles = new TClonesArray("AliPHOSRecParticle", 100) ; 
-    gAlice->GetEvent(evt) ; 
-    TTree * fReconstruct = gAlice->TreeR() ; 
-    fReconstruct->SetBranchAddress( "PHOSRP", &fRecParticles) ;
-    fReconstruct->GetEvent(0) ;
-    fRecParticles->Expand( fRecParticles->GetEntries() ) ; 
-    rv =  fRecParticles ;
-  }
- 
-  return rv ; 
-  
-}
-
-//____________________________________________________________________________
-AliPHOSRecParticle::RecParticlesList * AliPHOS::TrackSegments(Int_t evt) 
-{
-  // returns the pointer to the TrackSegments list
-  // if the list is empty, get it from TreeR on the disk file
-
-  AliPHOSTrackSegment::TrackSegmentsList * rv = 0 ; 
-  
-  if ( fTrackSegments ) 
-    rv = fTrackSegments ; 
-
-  else {
-    fTrackSegments = new TClonesArray("AliPHOSTrackSegment", 100) ; 
-    gAlice->GetEvent(evt) ; 
-    TTree * fReconstruct = gAlice->TreeR() ; 
-    fReconstruct->SetBranchAddress( "PHOSTS", &fTrackSegments) ;
-    fReconstruct->GetEvent(0) ;
-    fTrackSegments->Expand( fTrackSegments->GetEntries() ) ; 
-    rv =  fTrackSegments ;
-  }
- 
-  return rv ; 
-  
-}

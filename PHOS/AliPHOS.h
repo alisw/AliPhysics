@@ -32,18 +32,18 @@ class AliPHOS : public AliDetector {
   virtual ~AliPHOS() ; 
  
   virtual  void              CreateMaterials() ;                     // defines the material of the detector
-  virtual  RecPointsList *  EmcRecPoints() {
+  virtual  AliPHOSRecPoint::RecPointsList *  EmcRecPoints() {
     // Getting list of RecPoints
     return fEmcRecPoints ;
   }
   virtual  AliPHOSGeometry * GetGeometry() = 0 ;
-  virtual  RecPointsList *    PpsdRecPoints()=0;// gets Array of clusters in the PPSD 
+  virtual   AliPHOSRecPoint::RecPointsList *    PpsdRecPoints()=0;// gets Array of clusters in the PPSD 
   virtual void               SetTreeAddress();                 // Tree Address for reconstruction lists
-  virtual  RecParticlesList *  RecParticles() {
+  virtual  AliPHOSRecParticle::RecParticlesList *  RecParticles() {
     // Getting list of RecParticles
     return fRecParticles ;
   }
-  virtual  TrackSegmentsList *  TrackSegments() {
+  virtual  AliPHOSTrackSegment::TrackSegmentsList *  TrackSegments() {
     // Getting list of TrackSegments
     return fTrackSegments ;
   }
