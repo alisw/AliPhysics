@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/10/06 10:03:38  morsch
+Call to gMC->VolId() moved to Init()
+
 Revision 1.12  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -75,6 +78,8 @@ Gammas and neutrons are also scored in the stepmanager
 #include "AliMUONSegmentationV02.h"
 #include "AliMUONSegmentationV04.h"
 #include "AliMUONSegmentationV05.h"
+#include "AliMUONSegmentationSlat.h"
+#include "AliMUONSegmentationSlatN.h"
 #include "AliMUONSegmentationTrigger.h"
 #include "AliMUONSegmentationTriggerX.h"
 #include "AliMUONSegmentationTriggerY.h"
@@ -97,8 +102,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     SetIshunt(0);
     SetMaxStepGas(0.1);
     SetMaxStepAlu(0.1);
-//
-// Version 0
+    
 //
 // First define the number of planes that are segmented (1 or 2) by a call
 // to SetNsec. 
@@ -110,20 +114,33 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //  
     Int_t chamber;
     Int_t station;
-// Default response
+    // Default response: 5 mm of gas
     AliMUONResponseV0* response0 = new AliMUONResponseV0;
-    response0->SetSqrtKx3(0.7131);
-    response0->SetKx2(1.0107);
-    response0->SetKx4(0.4036);
-    response0->SetSqrtKy3(0.7642);
-    response0->SetKy2(0.9706);
-    response0->SetKy4(0.3831);
-    response0->SetPitch(0.25);
+    response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131); // sqrt(0.5085)
+    response0->SetSqrtKy3AndDeriveKy2Ky4(0.7642); // sqrt(0.5840)
+    response0->SetPitch(0.25); // anode-cathode distance
     response0->SetSigmaIntegration(10.);
     response0->SetChargeSlope(50);
     response0->SetChargeSpread(0.18, 0.18);
     response0->SetMaxAdc(4096);
     response0->SetZeroSuppression(6);
+    
+    // Response for 4 mm of gas (station 1)
+    // automatic consistency with width of sensitive medium in CreateGeometry ????
+    AliMUONResponseV0* responseSt1 = new AliMUONResponseV0;
+    // Mathieson parameters from L.Kharmandarian's thesis, page 190
+    responseSt1->SetSqrtKx3AndDeriveKx2Kx4(0.7000); // sqrt(0.4900)
+    responseSt1->SetSqrtKy3AndDeriveKy2Ky4(0.7550); // sqrt(0.5700)
+    responseSt1->SetPitch(0.20); // anode-cathode distance
+    responseSt1->SetSigmaIntegration(10.);
+    // ChargeSlope larger to compensate for the smaller anode-cathode distance
+    // and keep the same most probable ADC channel for mip's
+    responseSt1->SetChargeSlope(62.5); 
+    // assumed proportionality to anode-cathode distance for ChargeSpread
+    responseSt1->SetChargeSpread(0.144, 0.144);
+    responseSt1->SetMaxAdc(4096);
+    responseSt1->SetZeroSuppression(6);
+    
 //--------------------------------------------------------
 // Configuration for Chamber TC1/2  (Station 1) ----------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -137,21 +154,27 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     AliMUONSegmentationV01 *seg11=new AliMUONSegmentationV01;
     
     seg11->SetSegRadii(rseg1);
-    seg11->SetPadSize(3, 0.5);
-    seg11->SetDAnod(3.0/3./4);
+//  seg11->SetPadSize(3, 0.5);
+    seg11->SetPadSize(2.4, 0.4); // smaller pad size
+//  seg11->SetDAnod(3.0/3./4);
+    seg11->SetDAnod(0.20); // smaller distance between anode wires
     seg11->SetPadDivision(nseg1);
     
     SetSegmentationModel(chamber-1, 1, seg11);
 //
     AliMUONSegmentationV02 *seg12=new AliMUONSegmentationV02;
     seg12->SetSegRadii(rseg1); 
-    seg12->SetPadSize(0.75, 2.0);
-    seg12->SetDAnod(3.0/3./4);
+//  seg12->SetPadSize(0.75, 2.0);
+    seg12->SetPadSize(0.6, 1.6); // smaller pad size
+//  seg12->SetDAnod(3.0/3./4);
+    seg12->SetDAnod(0.20); // smaller distance between anode wires
     seg12->SetPadDivision(nseg1);
     
     SetSegmentationModel(chamber-1, 2, seg12);
     
-    SetResponseModel(chamber-1, response0);	    
+//  SetResponseModel(chamber-1, response0);	    
+    SetResponseModel(chamber-1, responseSt1); // special response	    
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
     
     chamber=2;
 //^^^^^^^^^
@@ -160,23 +183,31 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //
     AliMUONSegmentationV01 *seg21=new AliMUONSegmentationV01;
     seg21->SetSegRadii(rseg1);
-    seg21->SetPadSize(3, 0.5);
-    seg21->SetDAnod(3.0/3./4);
+//  seg21->SetPadSize(3, 0.5);
+    seg21->SetPadSize(2.4, 0.4); // smaller pad size
+//  seg21->SetDAnod(3.0/3./4);
+    seg21->SetDAnod(0.20); // smaller distance between anode wires
     seg21->SetPadDivision(nseg1);
     SetSegmentationModel(chamber-1, 1, seg21);
 //
     AliMUONSegmentationV02 *seg22=new AliMUONSegmentationV02;
     seg22->SetSegRadii(rseg1); 
-    seg22->SetPadSize(0.75, 2.);
-    seg22->SetDAnod(3.0/3./4);
+//  seg22->SetPadSize(0.75, 2.);
+    seg22->SetPadSize(0.6, 1.6); // smaller pad size
+//  seg22->SetDAnod(3.0/3./4);
+    seg22->SetDAnod(0.20); // smaller distance between anode wires
     seg22->SetPadDivision(nseg1);
     SetSegmentationModel(chamber-1, 2, seg22);
     
-    SetResponseModel(chamber-1, response0);	    
+//  SetResponseModel(chamber-1, response0);	    
+    SetResponseModel(chamber-1, responseSt1); // special response
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+    
 //
 //--------------------------------------------------------
-// Configuration for Chamber TC3/4 -----------------------
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Configuration for Chamber TC3/4 (Station 2) -----------
+///^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Float_t rseg2[4]={23.5, 87.7, 122.4, 122.5};
     Float_t rseg2[4]={23.5, 47.1, 87.7, 122.5};
     Int_t   nseg2[4]={4, 4, 2, 1};
 //
@@ -186,20 +217,21 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //
     AliMUONSegmentationV01 *seg31=new AliMUONSegmentationV01;
     seg31->SetSegRadii(rseg2);
-    seg31->SetPadSize(6, 0.5);
+    seg31->SetPadSize(3.0, 0.5);
     seg31->SetDAnod(3.0/3./4);
     seg31->SetPadDivision(nseg2);
     SetSegmentationModel(chamber-1, 1, seg31);
 //
     AliMUONSegmentationV02 *seg32=new AliMUONSegmentationV02;
     seg32->SetSegRadii(rseg2); 
-    seg32->SetPadSize(0.75, 4.);
+    seg32->SetPadSize(0.75, 2.0);
     seg32->SetPadDivision(nseg2);
     seg32->SetDAnod(3.0/3./4);
     
     SetSegmentationModel(chamber-1, 2, seg32);
     
     SetResponseModel(chamber-1, response0);	    
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
     
     chamber=4;
 //^^^^^^^^^
@@ -208,73 +240,94 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //
     AliMUONSegmentationV01 *seg41=new AliMUONSegmentationV01;
     seg41->SetSegRadii(rseg2);
-    seg41->SetPadSize(6, 0.5);
+    seg41->SetPadSize(3.0, 0.5);
     seg41->SetDAnod(3.0/3./4);
     seg41->SetPadDivision(nseg2);
     SetSegmentationModel(chamber-1, 1, seg41);
 //
     AliMUONSegmentationV02 *seg42=new AliMUONSegmentationV02;
     seg42->SetSegRadii(rseg2); 
-    seg42->SetPadSize(0.75, 4.);
+    seg42->SetPadSize(0.75, 2.0);
     seg42->SetPadDivision(nseg2);
     seg42->SetDAnod(3.0/3./4);
     
     SetSegmentationModel(chamber-1, 2, seg42);
     
     SetResponseModel(chamber-1, response0);	    
-
-
-//--------------------------------------------------------
-// Configuration for Chamber TC5/6 -----------------------
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    chamber=5;
-//^^^^^^^^^
-    SetNsec(chamber-1,2);
-//
-    AliMUONSegmentationV01 *seg51=new AliMUONSegmentationV01;
-    seg51->SetSegRadii(rseg2);
-    seg51->SetPadSize(6, 0.5);
-    seg51->SetDAnod(3.0/3./4);
-    seg51->SetPadDivision(nseg2);
-    SetSegmentationModel(chamber-1, 1, seg51);
-//
-    AliMUONSegmentationV02 *seg52=new AliMUONSegmentationV02;
-    seg52->SetSegRadii(rseg2); 
-    seg52->SetPadSize(0.75, 4.);
-    seg52->SetPadDivision(nseg2);
-    seg52->SetDAnod(3.0/3./4);
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
     
+    
+//--------------------------------------------------------
+// Configuration for Chamber TC5/6  (Station 3) ----------          
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Int_t   nseg3[4]={4, 4, 2, 1};
+    Int_t   npcb5[36] = {0,0,2,0,
+			 0,0,3,0,
+			 0,1,3,0,
+			 0,2,2,0,
+			 0,1,2,0, 
+			 0,2,2,0, 
+			 0,1,3,0, 
+			 0,0,3,0,
+			 0,0,2,0};
+
+    Float_t shift = 1.5/2.;
+    // Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
+    Float_t xpos5[9]    = {2., 2., 2., 2.,32., 2., 2., 2., 2.};
+    Float_t ypos5       = -(20.+4.*(40.-2.*shift));
+    
+    chamber=5;
+    SetNsec(chamber-1,2);
+    AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat;
+    seg51->SetNSlats(9); 
+    seg51->SetShift(shift);  
+    seg51->SetNPCBperSector(npcb5); 
+    seg51->SetSlatXPositions(xpos5);
+    seg51->SetSlatYPosition(ypos5);
+    seg51->SetPadSize(10.,0.5);
+    seg51->SetDAnod(0.25);
+    seg51->SetPadDivision(nseg3);
+    SetSegmentationModel(chamber-1, 1, seg51);
+    
+    AliMUONSegmentationSlatN *seg52=new AliMUONSegmentationSlatN;
+    seg52->SetNSlats(9); 
+    seg52->SetShift(shift);  
+    seg52->SetNPCBperSector(npcb5); 
+    seg52->SetSlatXPositions(xpos5);
+    seg52->SetSlatYPosition(ypos5);
+    seg52->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
+    seg52->SetDAnod(0.25);
+    seg52->SetPadDivision(nseg3);
     SetSegmentationModel(chamber-1, 2, seg52);
     SetResponseModel(chamber-1, response0);	    
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
     
     chamber=6;
-//^^^^^^^^^
-//
     SetNsec(chamber-1,2);
-//
-    AliMUONSegmentationV01 *seg61=new AliMUONSegmentationV01;
-    seg61->SetSegRadii(rseg2);
-    seg61->SetPadSize(6, 0.5);
-    seg61->SetDAnod(3.0/3./4);
-    seg61->SetPadDivision(nseg2);
+    AliMUONSegmentationSlat *seg61=new AliMUONSegmentationSlat;
+    seg61->SetNSlats(9); 
+    seg61->SetShift(shift);  
+    seg61->SetNPCBperSector(npcb5); 
+    seg61->SetSlatXPositions(xpos5);
+    seg61->SetSlatYPosition(ypos5);
+    seg61->SetPadSize(10.,0.5);
+    seg61->SetDAnod(0.25);
+    seg61->SetPadDivision(nseg3);
     SetSegmentationModel(chamber-1, 1, seg61);
-//
-    AliMUONSegmentationV02 *seg62=new AliMUONSegmentationV02;
-    seg62->SetSegRadii(rseg2); 
-    seg62->SetPadSize(0.75, 4.);
-    seg62->SetPadDivision(nseg2);
-    seg62->SetDAnod(3.0/3./4);
     
+    AliMUONSegmentationSlatN *seg62=new AliMUONSegmentationSlatN;
+    seg62->SetNSlats(9); 
+    seg62->SetShift(shift);  
+    seg62->SetNPCBperSector(npcb5); 
+    seg62->SetSlatXPositions(xpos5);
+    seg62->SetSlatYPosition(ypos5);
+    seg62->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
+    seg62->SetDAnod(0.25);
+    seg62->SetPadDivision(nseg3);
     SetSegmentationModel(chamber-1, 2, seg62);
-    
     SetResponseModel(chamber-1, response0);	    
-
-
-//
-// Station 3
-    station=3;
-    SetPadSize(station, 1, 0.975, 0.55);
-
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+    
 //--------------------------------------------------------
 // Configuration for Chamber TC7/8  (Station 4) ----------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -283,81 +336,173 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 
     chamber=7;
 //^^^^^^^^^
+
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationV04 *seg71=new AliMUONSegmentationV04;
+    AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat;
+    Int_t npcb7[44] = {0,0,0,3,
+		       0,0,2,2,
+		       0,0,3,2,
+		       0,2,2,1,
+		       0,2,2,1,
+		       0,1,2,1, 
+		       0,2,2,1, 
+		       0,2,2,1, 
+		       0,0,3,2, 
+		       0,0,2,2, 
+		       0,0,0,3};
+    Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
+    Float_t ypos7       = -(20.+5.*(40.-2.*shift));
+    
+    seg71->SetNSlats(11);  
+    seg71->SetShift(shift);  
+    seg71->SetNPCBperSector(npcb7); 
+    seg71->SetSlatXPositions(xpos7);
+    seg71->SetSlatYPosition(ypos7);
+    
     seg71->SetPadSize(10.,0.5);
     seg71->SetDAnod(0.25);
     seg71->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg71);
-    AliMUONSegmentationV05 *seg72=new AliMUONSegmentationV05;
-    seg72->SetPadSize(1,10);
+    
+    AliMUONSegmentationSlatN *seg72=new AliMUONSegmentationSlatN;
+    
+    SetSegmentationModel(chamber-1, 2, seg72);
+    seg72->SetNSlats(11);  
+    seg72->SetShift(shift);   
+    seg72->SetNPCBperSector(npcb7); 
+    seg72->SetSlatXPositions(xpos7);
+    seg72->SetSlatYPosition(ypos7);
+    seg72->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
     seg72->SetDAnod(0.25);
     seg72->SetPadDivision(nseg4);
-    SetSegmentationModel(chamber-1, 2, seg72);
     
     SetResponseModel(chamber-1, response0);	    
-
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+    
     chamber=8;
 //^^^^^^^^^
     SetNsec(chamber-1,2);
-    AliMUONSegmentationV04 *seg81=new AliMUONSegmentationV04;
-    seg81->SetPadSize(10., 0.5);
-    seg81->SetPadDivision(nseg4);
+//
+    AliMUONSegmentationSlat *seg81=new AliMUONSegmentationSlat;
+    
+    seg81->SetNSlats(11);  
+    seg81->SetShift(shift);  
+    seg81->SetNPCBperSector(npcb7); 
+    seg81->SetSlatXPositions(xpos7);
+    seg81->SetSlatYPosition(ypos7);
+    seg81->SetPadSize(10.,0.5);
     seg81->SetDAnod(0.25);
+    seg81->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg81);
     
-    AliMUONSegmentationV05 *seg82=new AliMUONSegmentationV05;
-    seg82->SetPadSize(1, 10);
-    seg82->SetPadDivision(nseg4);
-    seg82->SetDAnod(0.25);
+    AliMUONSegmentationSlat *seg82=new AliMUONSegmentationSlatN;
+
     SetSegmentationModel(chamber-1, 2, seg82);
+    seg82->SetNSlats(11);  
+    seg82->SetShift(shift);  
+    seg82->SetNPCBperSector(npcb7); 
+    seg82->SetSlatXPositions(xpos7);
+    seg82->SetSlatYPosition(ypos7);
+    seg82->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
+    seg82->SetDAnod(0.25);
+    seg82->SetPadDivision(nseg4);
     
     SetResponseModel(chamber-1, response0);	    
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+    
+
 //--------------------------------------------------------
 // Configuration for Chamber TC9/10  (Station 5) ---------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     chamber=9;
 //^^^^^^^^^
+    
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationV04 *seg91=new AliMUONSegmentationV04;
+    AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat;
+    Int_t   npcb9[52] = {0,0,0,3,
+			 0,0,0,4,
+			 0,0,2,3,
+			 0,0,3,3,
+			 0,2,2,2,
+			 0,2,2,2,
+			 0,1,2,2, 
+			 0,2,2,2, 
+			 0,2,2,2, 
+			 0,0,3,3, 
+			 0,0,2,3, 
+			 0,0,0,4, 
+			 0,0,0,3};   
+    
+    // Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5 , 2., 2., 2., 2., 2., 2.};
+    Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2., 2.};
+    Float_t ypos9       = -(20.+6.*(40.-2.*shift));
+    
+    seg91->SetNSlats(13);  
+    seg91->SetShift(shift);  
+    seg91->SetNPCBperSector(npcb9); 
+    seg91->SetSlatXPositions(xpos9);
+    seg91->SetSlatYPosition(ypos9);
     seg91->SetPadSize(10.,0.5);
     seg91->SetDAnod(0.25);
     seg91->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg91);
     
-    AliMUONSegmentationV05 *seg92=new AliMUONSegmentationV05;
-    seg92->SetPadSize(1,10);
+    AliMUONSegmentationSlatN *seg92=new AliMUONSegmentationSlatN;
+    
+    SetSegmentationModel(chamber-1, 2, seg92);
+    seg92->SetNSlats(13);  
+    seg92->SetShift(shift);   
+    seg92->SetNPCBperSector(npcb9); 
+    seg92->SetSlatXPositions(xpos9);
+    seg92->SetSlatYPosition(ypos9);
+    seg92->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
     seg92->SetDAnod(0.25);
     seg92->SetPadDivision(nseg4);
     
-    SetSegmentationModel(chamber-1, 2, seg92);
-    
     SetResponseModel(chamber-1, response0);	    
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
     
     chamber=10;
 //^^^^^^^^^
     SetNsec(chamber-1,2);
-    AliMUONSegmentationV04 *seg101=new AliMUONSegmentationV04;
-    seg101->SetPadSize(10., 0.5);
-    seg101->SetPadDivision(nseg4);
+//
+    AliMUONSegmentationSlat *seg101=new AliMUONSegmentationSlat;
+    
+    seg101->SetNSlats(13);  
+    seg101->SetShift(shift);  
+    seg101->SetNPCBperSector(npcb9); 
+    seg101->SetSlatXPositions(xpos9);
+    seg101->SetSlatYPosition(ypos9);
+    seg101->SetPadSize(10.,0.5);
     seg101->SetDAnod(0.25);
+    seg101->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg101);
     
-    AliMUONSegmentationV05 *seg102=new AliMUONSegmentationV05;
-    seg102->SetPadSize(1,10);
-    seg102->SetPadDivision(nseg4);
-    seg102->SetDAnod(0.25);
+    AliMUONSegmentationSlatN *seg102=new AliMUONSegmentationSlatN;
+    
     SetSegmentationModel(chamber-1, 2, seg102);
+    seg102->SetNSlats(13);  
+    seg102->SetShift(shift);   
+    seg102->SetNPCBperSector(npcb9); 
+    seg102->SetSlatXPositions(xpos9);
+    seg102->SetSlatYPosition(ypos9);
+    seg102->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
+    seg102->SetDAnod(0.25);
+    seg102->SetPadDivision(nseg4);
     
     SetResponseModel(chamber-1, response0);	    
-
-//--------------------------------------------------------
-// Configuration for Trigger staions --------------------- 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    AliMUONResponseTrigger* responseTrigger0 =  new AliMUONResponseTrigger;
+    Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
     
+//--------------------------------------------------------
+// Configuration for Trigger Stations -------------------- 
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Cluster-size off
+    AliMUONResponseTrigger* responseTrigger0 =  new AliMUONResponseTrigger;
+// Cluster-size on  
+// AliMUONResponseTriggerV1* responseTrigger0 =  new AliMUONResponseTriggerV1;
+ 
     chamber=11;
     SetNsec(chamber-1,2);
     AliMUONSegmentationTriggerX *seg111=new AliMUONSegmentationTriggerX;
@@ -366,7 +511,9 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     SetSegmentationModel(chamber-1, 2, seg112);
     
     SetResponseModel(chamber-1, responseTrigger0);      
+    Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
     
+ 
     chamber=12;
     SetNsec(chamber-1,2);
     AliMUONSegmentationTriggerX *seg121=new AliMUONSegmentationTriggerX;
@@ -374,7 +521,8 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     AliMUONSegmentationTriggerY *seg122=new AliMUONSegmentationTriggerY;
     SetSegmentationModel(chamber-1, 2, seg122);
     
-    SetResponseModel(chamber-1, responseTrigger0);      
+    SetResponseModel(chamber-1, responseTrigger0);
+    Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
     
     chamber=13;
     SetNsec(chamber-1,2);
@@ -383,6 +531,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     AliMUONSegmentationTriggerY *seg132=new AliMUONSegmentationTriggerY;
     SetSegmentationModel(chamber-1, 2, seg132);
     SetResponseModel(chamber-1, responseTrigger0);      
+    Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
     
     chamber=14;
     SetNsec(chamber-1,2);
@@ -392,6 +541,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     SetSegmentationModel(chamber-1, 2, seg142);
     
     SetResponseModel(chamber-1, responseTrigger0); 
+    Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
 }
 
 void AliMUONv0::CreateGeometry()
@@ -522,7 +672,7 @@ void AliMUONv0::StepManager()
   ipart  = gMC->TrackPid();
   //
   // record hits when track enters ...
-//  if( !(gMC->TrackCharge()) ) return; 
+  if( !(gMC->TrackCharge()) ) return; 
   if( gMC->IsTrackEntering()) {
       Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
       Double_t rt = TMath::Sqrt(tc);
