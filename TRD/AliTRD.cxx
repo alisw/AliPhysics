@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2001/05/28 17:07:58  hristov
+Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
+
 Revision 1.29  2001/05/21 16:45:47  hristov
 Last minute changes (C.Blume)
 
@@ -997,7 +1000,7 @@ void AliTRD::MakeBranch(Option_t* option, const char *file)
   fDigitsArray = new AliTRDdataArrayI();
   MakeBranchInTree(gAlice->TreeD() 
                    ,"TRDdigits", fDigitsArray->IsA()->GetName()
-                   ,&fDigitsArray,buffersize,1,file);
+                   ,&fDigitsArray,buffersize,99,file);
 
   for (Int_t iDict = 0; iDict < AliTRDdigitsManager::NDict(); iDict++) {
     Char_t branchname[15];
@@ -1005,7 +1008,7 @@ void AliTRD::MakeBranch(Option_t* option, const char *file)
     fDictionaryArray[iDict] = new AliTRDdataArrayI();
     MakeBranchInTree(gAlice->TreeD() 
                      ,branchname,fDictionaryArray[iDict]->IsA()->GetName()
-                     ,&fDictionaryArray[iDict],buffersize,1,file);
+                     ,&fDictionaryArray[iDict],buffersize,99,file);
   }
 }
 
