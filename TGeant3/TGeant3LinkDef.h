@@ -13,10 +13,12 @@
 #pragma link C++ class  THIGZ+;
 #pragma link C++ class  TPaveTree+;
 #pragma link C++ class  AliGuiGeomMain-;
-#pragma link C++ class  AliDrawVolume-;
+#pragma link C++ class  AliG3Volume+;
 #pragma link C++ class  AliGeant3GeometryGUI-;
-#pragma link C++ class  AliGUIMaterial-;
-#pragma link C++ class  AliGUIMedium-;
+#pragma link C++ class  AliG3Material+;
+#pragma link C++ class  AliG3Medium-;
+#pragma link C++ class  AliNode+;
+#pragma link C++ class  AliG3toRoot+;
 
 
 #pragma link C++ class Quest_t+;
