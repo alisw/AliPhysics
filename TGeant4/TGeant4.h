@@ -13,6 +13,7 @@
 
 class TG4VRunConfiguration;
 class TG4GeometryManager;
+class TG4SDManager;
 class TG4PhysicsManager;
 class TG4StepManager;
 class TG4VisManager;
@@ -63,7 +64,6 @@ class TGeant4: public AliMC
     virtual void  Matrix(Int_t& krot, Float_t thetaX, Float_t phiX, 
                      Float_t thetaY, Float_t phiY, Float_t thetaZ, 
 		     Float_t phiZ);
-    virtual void Gstpar(Int_t itmed, const char *param, Float_t parval); 
     virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
                      Float_t *absco, Float_t *effic, Float_t *rindex);
 
@@ -116,6 +116,7 @@ class TGeant4: public AliMC
     //
  
     virtual void BuildPhysics();
+    virtual void Gstpar(Int_t itmed, const char *param, Float_t parval); 
 
     // set methods
     virtual void SetCut(const char* cutName, Float_t cutValue);
@@ -252,6 +253,7 @@ class TGeant4: public AliMC
   private:
     // data members
     TG4GeometryManager*  fGeometryManager; //geometry manager
+    TG4SDManager*        fSDManager;       //sensitive detectors manager
     TG4PhysicsManager*   fPhysicsManager;  //physics manager
     TG4StepManager*      fStepManager;     //step manager
     TG4VisManager*       fVisManager;      //visualization manager
