@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/11/21 16:28:39  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.12  2002/10/14 14:57:39  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -526,8 +529,9 @@ void AliFRAMEv2::CreateGeometry()
   {
       gMC->Gsvolu(module[jmod], "TRD1", kAir, ptrd1, 4);
   }
-
-  Int_t mod[18] = {1, 1, 1, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 1, 1};
+// Position of Holes for PHOS (P) and RICH (R) starting at 6h
+//                 P  P  P  -  -  R  R  R  -  -  -  -  -  -  -  -  P  P
+  Int_t mod[18] = {1, 1, 1, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
   
   
   Float_t r      = 341.8;
