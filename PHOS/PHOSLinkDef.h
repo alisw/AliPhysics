@@ -63,5 +63,6 @@
 #pragma link C++ class AliPHOSFastGlobalReconstruction+;
 #pragma link C++ class AliPHOSJet+;
 #pragma link C++ class AliPHOSJetFinder+;
+#pragma link C++ class AliPHOSGammaJet+;
 
 #endif
