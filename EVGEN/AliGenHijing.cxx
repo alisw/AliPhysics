@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.41  2002/03/05 11:25:33  morsch
+- New quenching options
+- Correction in CheckTrigger()
+
 Revision 1.40  2002/02/12 11:05:53  morsch
 Get daughter indices right.
 
@@ -447,6 +451,7 @@ void AliGenHijing::Generate()
 
 	  if (pSelected[i]) {
 	      kf   = iparticle->GetPdgCode();
+	      ks   = iparticle->GetStatusCode();
 	      p[0] = iparticle->Px();
 	      p[1] = iparticle->Py();
 	      p[2] = iparticle->Pz();
@@ -463,7 +468,7 @@ void AliGenHijing::Generate()
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
 	      SetTrack(tFlag,imo,kf,p,origin,polar,
-		       tof,kPNoProcess,nt);
+		       tof,kPNoProcess,nt, 1., ks);
 	      KeepTrack(nt);
 	      newPos[i] = nt;
 	  } // if selected
