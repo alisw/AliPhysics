@@ -16,6 +16,7 @@
 #include "TBranch.h"
 #include "TTree.h"
 #include "TBranchObject.h"
+class TClonesArray;
 class AliObjectArray;
  
 class AliArraySubBranch : public TBranch {
@@ -23,7 +24,8 @@ public:
   AliArraySubBranch(){;}
   AliArraySubBranch(const char* name, void* address, const char* leaflist, Int_t basketsize = 32000, 
     Int_t compress = -1):TBranch(name, address, leaflist, basketsize, compress){;}
-    virtual Int_t  GetEntryExport(Int_t entry, Int_t getall, AliObjectArray* list, Int_t n);
+  virtual Int_t  GetEntryExport(Long64_t entry, Int_t getall, TClonesArray* list, Int_t n) { return TBranch::GetEntryExport(entry, getall, list, n); }
+  virtual Int_t  GetEntryExport(Int_t entry, Int_t getall, AliObjectArray* list, Int_t n);
   virtual void ReadBasketExport(TBuffer &b, TLeaf *leaf, AliObjectArray *list, Int_t n); 
   ClassDef(AliArraySubBranch,1)  //Branch in case of an array of clone objects
 };
@@ -47,7 +49,7 @@ public:
 
     virtual void    Browse(TBrowser *b);
     virtual Int_t   Fill();
-    virtual Int_t   GetEntry(Int_t entry=0, Int_t getall = 0);
+    virtual Int_t   GetEntry(Long64_t entry=0, Int_t getall = 0);
     virtual Int_t   GetN() {return fN;}
     AliObjectArray    *GetList() {return fList;}
     Bool_t          IsFolder() {return kTRUE;}

@@ -11,6 +11,7 @@ class TArrayOfArray: public TObject {
 public:    
   virtual void * At(UInt_t index0, UInt_t index1)=0;
   //get pointer to the object
+  virtual void  Dump() const {TObject::Dump();}
   virtual void  Dump(UInt_t index0, UInt_t index1)=0;
   virtual Int_t Resize(Int_t index, UInt_t newsize)=0; 
   //expand array with index index to newsize 
@@ -34,6 +35,7 @@ public:
   //
   virtual void * At(UInt_t index0, UInt_t index1);
   //get pointer to the object 
+  virtual void  Dump() const {TArrayOfArray::Dump();}
   virtual void  Dump(UInt_t index0, UInt_t index1);
   virtual Int_t Resize(Int_t index, UInt_t newsize); 
   //expand array with index index to newsize 

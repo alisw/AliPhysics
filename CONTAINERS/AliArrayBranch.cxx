@@ -431,7 +431,7 @@ Int_t AliArrayBranch::Fill()
 }
 
 //______________________________________________________________________________
-Int_t AliArrayBranch::GetEntry(Int_t entry, Int_t getall)
+Int_t AliArrayBranch::GetEntry(Long64_t entry, Int_t getall)
 {
 //*-*-*-*-*Read all branches of a BranchClones and return total number of bytes
 //*-*      ====================================================================
