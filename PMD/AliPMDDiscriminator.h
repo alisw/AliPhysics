@@ -14,7 +14,6 @@ class TFile;
 class TObjArray;
 class TTree;
 class TNtuple;
-class TMath;
 
 class AliPMDcluster;
 class AliPMDclupid;
