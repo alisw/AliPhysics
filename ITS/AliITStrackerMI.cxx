@@ -1028,6 +1028,7 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
 	Int_t slice = int(fslice+21.0001)-21+di;
 	if (slice<0) continue;
 	if (slice>10) continue;
+	if (fN10[slice]>=kMaxClusterPerLayer10) break;
 	fClusters10[slice][fN10[slice]] = fClusters[i];
 	fY10[slice][fN10[slice]] = curY;
 	fZ10[slice][fN10[slice]] = fZ[i];
@@ -1045,6 +1046,7 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
 	Int_t slice = int(fslice+21.0001)-21+di;
 	if (slice<0) continue;
 	if (slice>5) continue;
+	if (fN5[slice]>=kMaxClusterPerLayer5) break;
 	fClusters5[slice][fN5[slice]] = fClusters[i];
 	fY5[slice][fN5[slice]] = curY;
 	fZ5[slice][fN5[slice]] = fZ[i];
@@ -1062,6 +1064,7 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
 	Int_t slice = int(fslice+21.0001)-21+di;
 	if (slice<0) continue;
 	if (slice>20) continue;
+	if (fN20[slice]>=kMaxClusterPerLayer20) break;
 	fClusters20[slice][fN20[slice]] = fClusters[i];
 	fY20[slice][fN20[slice]] = curY;
 	fZ20[slice][fN20[slice]] = fZ[i];
