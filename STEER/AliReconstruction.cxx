@@ -455,7 +455,6 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
 
   if (fITSVertexer) {
     AliInfo("running the ITS vertex finder");
-    fITSVertexer->SetDebug(1);
     vertex = fITSVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
     if(!vertex){
       AliWarning("Vertex not found");

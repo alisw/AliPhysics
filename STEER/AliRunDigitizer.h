@@ -97,9 +97,6 @@ public:
 // return TString with input file name  
   TString GetInputFileName(Int_t input, Int_t order) const;
   
-  Int_t     GetDebug() const {return fDebug;}
-  void      SetDebug(Int_t level) {fDebug = level;}
-
 private:
   void Copy(TObject& dig) const;
   Bool_t            ConnectInputTrees();
@@ -133,13 +130,12 @@ private:
   TArrayI           fCombination;         //! combination of events from
   TString           fCombinationFileName; // fn with combinations (used
                                           // with type 2 of comb.)
-  Int_t             fDebug;                //! specifies debug level, 0 is min
 
   AliRunLoader*     GetOutRunLoader();
   
   static const TString fgkDefOutFolderName;//default name for output foler 
   static const TString fgkBaseInFolderName;//default name for input foler
-  ClassDef(AliRunDigitizer,5)
+  ClassDef(AliRunDigitizer,6)
 };
 
 #endif // ALIRUNDIGITIZER_H

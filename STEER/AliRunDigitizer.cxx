@@ -97,6 +97,7 @@ class TList;
 
 // AliROOT includes
 
+#include "AliLog.h"
 #include "AliDigitizer.h"
 #include "AliHeader.h"
 #include "AliLoader.h"
@@ -127,8 +128,7 @@ AliRunDigitizer::AliRunDigitizer(): TTask("AliRunDigitizer","The manager for Mer
  fOutputInitialized(kFALSE),
  fCombi(0),
  fCombination(0),
- fCombinationFileName(0),
- fDebug(0)
+ fCombinationFileName(0)
 {
   //
   // root requires default ctor, where no new objects can be created
@@ -152,8 +152,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
  fOutputInitialized(kFALSE),
  fCombi(new AliMergeCombi(nInputStreams,sperb)),
  fCombination(MAXSTREAMSTOMERGE),
- fCombinationFileName(0),
- fDebug(0)
+ fCombinationFileName(0)
 
 {
   //
@@ -162,7 +161,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
   //
   if (nInputStreams == 0) 
    {//kidding
-    Fatal("AliRunDigitizer","Specify nr of input streams");
+    AliFatal("Specify nr of input streams");
     return;
    }
   Int_t i;
@@ -199,8 +198,7 @@ AliRunDigitizer::AliRunDigitizer(const AliRunDigitizer& dig):
  fOutputInitialized(kFALSE),
  fCombi(0),
  fCombination(0),
- fCombinationFileName(0),
- fDebug(0)
+ fCombinationFileName(0)
 {
   //
   // Copy ctor
@@ -214,7 +212,7 @@ void AliRunDigitizer::Copy(TObject&) const
   //
   // Non implemented copy function
   //
-  Fatal("Copy","Not installed\n");
+  AliFatal("Not installed");
 }
 
 //_______________________________________________________________________
@@ -243,7 +241,7 @@ void AliRunDigitizer::SetInputStream(Int_t i, const char *inputFile, TString fol
 // Sets the name of the input file
 //
   if (i > fInputStreams->GetLast()) {
-    Error("SetInputStream","Input stream number too high");
+    AliError("Input stream number too high");
     return;
   }
   AliStream * stream = static_cast<AliStream*>(fInputStreams->At(i)) ; 
@@ -266,13 +264,13 @@ void AliRunDigitizer::Digitize(Option_t* option)
   
   if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) 
    {
-     Error("Digitize","Error occured while getting gAlice from Input 0");
+     AliError("Error occured while getting gAlice from Input 0");
      return;
    }
     
   if (!InitGlobal()) //calls Init() for all (sub)digitizers
    {
-     Error("Digitize","InitGlobal returned error");
+     AliError("InitGlobal returned error");
      return;
    }
    
@@ -311,7 +309,7 @@ Bool_t AliRunDigitizer::ConnectInputTrees()
      } 
     else if (delta[i] != 0) 
      {
-      Error("ConnectInputTrees","Only delta 0 or 1 is implemented");
+      AliError("Only delta 0 or 1 is implemented");
       return kFALSE;
      }
    }
@@ -345,7 +343,7 @@ void AliRunDigitizer::SetOutputFile(TString fn)
   // not to the signal file here should be protection 
   //to avoid setting the same file as any input 
   //
-  Info("SetOutputFile","Setting Output File Name %s ",fn.Data());
+  AliInfo(Form("Setting Output File Name %s ",fn.Data()));
   fOutputFileName = fn;
   // InitOutputGlobal();
 }
@@ -365,17 +363,17 @@ Bool_t AliRunDigitizer::InitOutputGlobal()
     
     if (fOutRunLoader == 0x0)
      {
-       Error("InitOutputGlobal","Can not open ooutput");
+       AliError("Can not open output");
        return kFALSE;
      }
     Info("InitOutputGlobal", " 1 %s = ", GetInputFolderName(0).Data()) ; 
     AliRunLoader* inrl = AliRunLoader::GetRunLoader(GetInputFolderName(0));
     if (inrl == 0x0)
      {
-       Error("InitOutputGlobal","Can not get Run Loader Input 0. Maybe yet not initialized?");
+       AliError("Can not get Run Loader Input 0. Maybe yet not initialized?");
        return kFALSE;
      }
-    Info("InitOutputGlobal", " 2 %#x = ", inrl) ; 
+    AliDebug(2, Form(" 2 %#x = ", inrl)) ; 
 
     //Copy all detector loaders from input 0 to output
     const TObjArray* inloaders = inrl->GetArrayOfLoaders();
@@ -390,7 +388,7 @@ Bool_t AliRunDigitizer::InitOutputGlobal()
 
     fOutRunLoader->MakeTree("E");
     
-    if (GetDebug()>2)  Info("InitOutputGlobal","file %s was opened.",fOutputFileName.Data());
+    AliDebug(3,Form("file %s was opened.",fOutputFileName.Data()));
    }
   fOutputInitialized = kTRUE; 
   return kTRUE;
@@ -402,11 +400,8 @@ void AliRunDigitizer::InitEvent()
   //
   // redirects output properly
   //
-  if (GetDebug()>2)
-   {
-    Info("InitEvent","fEvent = %d",fEvent);
-    Info("InitEvent","fOutputFileName \"%s\"",fOutputFileName.Data());
-   }
+  AliDebug(3,Form("fEvent = %d",fEvent));
+  AliDebug(3,Form("fOutputFileName \"%s\"",fOutputFileName.Data()));
   if (fOutputInitialized == kFALSE) InitOutputGlobal();
   
   // if fOutputFileName was not given, write output to signal directory
@@ -421,7 +416,7 @@ void AliRunDigitizer::FinishEvent()
   
   if (GetOutRunLoader() == 0x0)
    {
-     Error("FinishEvent","fOutRunLoader is null");
+     AliError("fOutRunLoader is null");
      return;
    }
   
@@ -437,7 +432,7 @@ void AliRunDigitizer::FinishEvent()
      {
        inrl->LoadHeader();
        inheader = inrl->GetHeader();
-       if (inheader == 0x0) Fatal("FinishEvent","Can not get header from input 0");
+       if (inheader == 0x0) AliFatal("Can not get header from input 0");
      }
      
      outheader->SetNprimary(inheader->GetNprimary());
@@ -452,7 +447,7 @@ void AliRunDigitizer::FinishEvent()
    {
     //this is sensless since no information would be coherent in case of merging
     //
-    cout<<"Copy trees from input: Copy or link files manually"<<endl;
+    AliWarning("Copy trees from input: Copy or link files manually");
     return;
    }
 }
@@ -466,7 +461,7 @@ void AliRunDigitizer::FinishGlobal()
   //
   if (GetOutRunLoader() == 0x0)
    {
-     Error("FinishGlobal","Can not get RunLoader from Output Stream folder");
+     AliError("Can not get RunLoader from Output Stream folder");
      return;
    }
   GetOutRunLoader()->CdGAFile();
@@ -478,7 +473,7 @@ void AliRunDigitizer::FinishGlobal()
      TFolder* outfolder = fOutRunLoader->GetEventFolder();
      if (outfolder == 0x0)
      {
-       Error("FinishEvent","Can not get Event Folder");
+       AliError("Can not get Event Folder");
        return;
      }    
   
@@ -588,7 +583,7 @@ const TString& AliRunDigitizer::GetInputFolderName(Int_t i) const
   //
   AliStream* stream = dynamic_cast<AliStream*>(fInputStreams->At(i));
   if (stream == 0x0)
-    Fatal("GetInputFolderName","Can not get the input stream. Index = %d. Exiting",i);
+    AliFatal(Form("Can not get the input stream. Index = %d. Exiting",i));
   return stream->GetFolderName();
 }
 //_______________________________________________________________________
@@ -611,10 +606,7 @@ AliRunLoader* AliRunDigitizer::GetOutRunLoader()
   
   if ( fOutputFileName.IsNull() )
    {//guard that sombody calls it without settting file name
-    if (GetDebug()>0) {
-      Info("GetOutRunLoader", 
-	   "Output file name is empty. Using Input 0 for output");
-    }
+    AliDebug(1,"Output file name is empty. Using Input 0 for output");
     return AliRunLoader::GetRunLoader(GetInputFolderName(0));
    }
 //  InitOutputGlobal();

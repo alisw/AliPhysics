@@ -36,6 +36,7 @@
 #include <TBrowser.h>
 #include <TTree.h>
 
+#include "AliLog.h"
 #include "AliConfig.h"
 #include "AliDetector.h"
 #include "AliHit.h"
@@ -160,16 +161,16 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
 //
 //
 // if (GetDebug()>1)
- if(GetDebug()) Info("MakeBranch","Making Branch %s",name);
+ AliDebug(2,Form("Making Branch %s",name));
  if (tree == 0x0) 
   {
-   Error("MakeBranch","Making Branch %s Tree is NULL",name);
+   AliError(Form("Making Branch %s Tree is NULL",name));
    return 0x0;
   }
  TBranch *branch = tree->GetBranch(name);
  if (branch) 
   {  
-    if(GetDebug()) Info("MakeBranch","Branch %s is already in tree.",name);
+    AliDebug(2,Form("Branch %s is already in tree.",name));
     return branch;
   }
     
@@ -181,7 +182,7 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
   {
     branch = tree->Branch(name,address,size);
   }
- if(GetDebug()) Info("MakeBranch","Branch %s returning branch %#x",name,branch);
+ AliDebug(2,Form("Branch %s returning branch %#x",name,branch));
  return branch;
 }
 
@@ -210,7 +211,7 @@ void AliDetector::Copy(TObject &) const
   //
   // Copy *this onto det -- not implemented
   //
-  Fatal("Copy","Not implemented\n");
+  AliFatal("Not implemented");
 }
 
 //_______________________________________________________________________
@@ -254,7 +255,7 @@ AliHit* AliDetector::NextHit()
     else        
       return 0;
   } else {
-    printf("* AliDetector::NextHit * Hit Iterator called without calling FistHit before\n");
+    AliWarning("Hit Iterator called without calling FistHit before");
     return 0;
   }
 }
@@ -267,7 +268,7 @@ void AliDetector::LoadPoints(Int_t)
   //
   if (fHits == 0) 
    {
-    Error("LoadPoints","fHits == 0. Name is %s",GetName());
+    AliError(Form("fHits == 0. Name is %s",GetName()));
     return;
    }
   //
@@ -299,7 +300,7 @@ void AliDetector::LoadPoints(Int_t)
   for (Int_t hit=0;hit<nhits;hit++) {
     ahit = dynamic_cast<AliHit*>(fHits->UncheckedAt(hit));
     trk=ahit->GetTrack();
-    if(trk>tracks) Fatal("LoadPoints","Found track number %d, max track %d\n",trk, tracks);
+    if(trk>tracks) AliFatal(Form("Found track number %d, max track %d",trk, tracks));
     if(ntrk[trk]==limi[trk])
      {
       //
@@ -348,7 +349,7 @@ void AliDetector::MakeBranch(Option_t *option)
   // Create a new branch for this detector in its treeH
   //
 
-  if(GetDebug()) Info("MakeBranch"," for %s",GetName());
+  AliDebug(2,Form(" for %s",GetName()));
   const char *cH = strstr(option,"H");
 
   if (fHits && TreeH() && cH) 
@@ -405,12 +406,12 @@ void AliDetector::SetTreeAddress()
     branch = tree->GetBranch(GetName());
     if (branch) 
      {
-       if(GetDebug()) Info("SetTreeAddress","(%s) Setting for Hits",GetName());
+       AliDebug(2,Form("(%s) Setting for Hits",GetName()));
        branch->SetAddress(&fHits);
      }
     else
      { //can be invoked before branch creation
-       if(GetDebug()) Warning("SetTreeAddress","(%s) Failed for Hits. Can not find branch in tree.",GetName());
+       AliDebug(2,Form("(%s) Failed for Hits. Can not find branch in tree.",GetName()));
      }
   }
   
@@ -437,7 +438,7 @@ void AliDetector::MakeTree(Option_t *option)
     AliLoader* loader = GetLoader();
     if (loader == 0x0)
      {
-       Error("MakeTree","Can not get loader for %s",GetName());
+       AliError(Form("Can not get loader for %s",GetName()));
        return;
      }
     loader->MakeTree(option); //delegate this job to getter
@@ -449,10 +450,8 @@ AliLoader* AliDetector::MakeLoader(const char* topfoldername)
 //builds standard getter (AliLoader type)
 //if detector wants to use castomized getter, it must overload this method
 
- if (GetDebug())
-   Info("MakeLoader",
-        "Creating standard getter for detector %s. Top folder is %s.",
-         GetName(),topfoldername);
+ AliDebug(1,Form("Creating standard getter for detector %s. Top folder is %s.",
+         GetName(),topfoldername));
      
  fLoader = new AliLoader(GetName(),topfoldername);
  return fLoader;
@@ -465,7 +464,7 @@ TTree* AliDetector::TreeH() const
   if (GetLoader() == 0x0) 
     {
     //sunstitude this with make getter when we can obtain the event folder name 
-     Error("TreeH","Can not get the getter");
+     AliError("Can not get the getter");
      return 0x0;
     }
  

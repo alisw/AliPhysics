@@ -23,6 +23,7 @@
 
 #include "TSystem.h"
 
+#include "AliLog.h"
 #include "AliMagFDM.h"
 
 ClassImp(AliMagFDM)
@@ -99,9 +100,9 @@ AliMagFDM::AliMagFDM(const char *name, const char *title, Int_t integ,
   fMap  = 3;
   SetSolenoidField();
   
-  Info("ctor",
-       "Field Map for Muon Arm from IP till muon filter %s created: map= %d, integ= %d, factor= %f, file=%s\n",
-       fName.Data(), fMap ,integ,factor,fTitle.Data());
+  AliDebug(1, Form(
+       "Field Map for Muon Arm from IP till muon filter %s created: map= %d, integ= %d, factor= %f, file=%s",
+       fName.Data(), fMap ,integ,factor,fTitle.Data()));
  
 }
 
@@ -202,7 +203,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
        cphi=TMath::Abs(yyp/r0);
        Int_t kcphi=0;
        if (cphi > kone) {
-        printf("xL3[0] %e, xL3[1] %e, xL3[2] %e, yyp %e, r0 %e, cphi %e\n",xL3[0],xL3[1],xL3[2],yyp,r0,cphi);
+        AliDebug(2,Form("xL3[0] %e, xL3[1] %e, xL3[2] %e, yyp %e, r0 %e, cphi %e",xL3[0],xL3[1],xL3[2],yyp,r0,cphi));
         cphi =kone;
         kcphi=777;
        } 
@@ -212,7 +213,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
        if (xL3[0] > 0 && yyp < 0 ) {ph0=kPI2 - ph0;}  
        if (ph0 > kPI2) {       ph0=ph0 - kPI2;}
        if (kcphi==777) {
-        printf("xL3[0] %e, xL3[1] %e, xL3[2] %e, yyp %e, r0 %e, ph0 %e\n",xL3[0],xL3[1],xL3[2],yyp,r0,ph0);
+        AliDebug(2,Form("xL3[0] %e, xL3[1] %e, xL3[2] %e, yyp %e, r0 %e, ph0 %e",xL3[0],xL3[1],xL3[2],yyp,r0,ph0));
        }  
        fip=ph0; 
        mp0=FZ(fip,fPhi,fPhid ,mpi,fPhin);
@@ -298,7 +299,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
    if(xL3[0]<(xx1+m0*dx) || xL3[0] >(xx1+(m0+1)*dx)) 
     {
       m0=m0+1;   
-      printf(" m0 %d, m0+1 %d\n",m0,m0+1);  
+      AliDebug(2,Form(" m0 %d, m0+1 %d\n",m0,m0+1));  
     }
 
    x2=(xL3[0]-( xx1+m0*dx))/dx;
@@ -318,7 +319,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
 
 
   } else {
-        printf("Unknown map of Dipole region %d\n",fMap);
+        AliError(Form("Unknown map of Dipole region %d",fMap));
  }
            
 } else {
@@ -404,7 +405,7 @@ Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2,
     fa23 = fBpz[kaa+1][0][maa+1]; 
     break;
   default:
-    Fatal("Ba","Invalid value of kaai %d\n",kaai);
+    AliFatal(Form("Invalid value of kaai %d",kaai));
   }                            
   faY1=alf1*fa11+alf2*fa12+alf3*fa13;
   faY2=alf1*fa21+alf2*fa22+alf3*fa23;
@@ -504,7 +505,7 @@ Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2,
     break;
 
   default:
-    Fatal("Bb","Invalid value of kv %d\n",kv);
+    AliFatal(Form("Invalid value of kv %d",kv));
   }  
   
   
@@ -537,12 +538,12 @@ void AliMagFDM::ReadField()
   Float_t zz, yy, bx,by,bz,bb;
 
   char *fname;
-  printf("Reading Magnetic Field %s from file %s\n",fName.Data(),fTitle.Data());
+  AliDebug(1,Form("Reading Magnetic Field %s from file %s",fName.Data(),fTitle.Data()));
   fname = gSystem->ExpandPathName(fTitle.Data());
   magfile=fopen(fname,"r");
   delete [] fname;
 
-  printf("Cartensian part\n");
+  AliDebug(2,"Cartensian part");
  
   if (magfile) {
   
@@ -550,7 +551,7 @@ void AliMagFDM::ReadField()
  
     fscanf(magfile,"%d %d %d ",&fYl, &fXl, &fZl); 
     
-    printf("fYl %d, fXl %d, fZl %d\n",fYl, fXl, fZl);     
+    AliDebug(3,Form("fYl %d, fXl %d, fZl %d",fYl, fXl, fZl));     
     
     for (ik=0; ik<fZl; ik++)
     { 
@@ -568,14 +569,14 @@ void AliMagFDM::ReadField()
     } 
     for (ik=0; ik<81; ik++)
     {    
-           printf("fZc %e,fY %e\n", fZc[ik],fY[ik]); 
+           AliDebug(4,Form("fZc %e,fY %e", fZc[ik],fY[ik])); 
     }   
              
     fscanf(magfile," %e %e %e %e %e %e %e %e %e %e %e ", &fYdel,&fXdel,&fZdel,&fZmax,&fZmin,&fYmax,&fYmin,&fAx1,&fCx1,&fAx2,&fCx2); 
 
-printf("fYdel %e, fXdel %e, fZdel %e\n",fYdel,fXdel,fZdel);
-printf("fZmax %e, fZmin %e, fYmax %e,fYmin %e\n",fZmax,fZmin,fYmax,fYmin);
-printf("fAx1 %e, fCx1 %e, fAx2 %e, fCx %e\n",fAx1,fCx1,fAx2,fCx2);
+AliDebug(3,Form("fYdel %e, fXdel %e, fZdel %e",fYdel,fXdel,fZdel));
+AliDebug(3,Form("fZmax %e, fZmin %e, fYmax %e,fYmin %e",fZmax,fZmin,fYmax,fYmin));
+AliDebug(3,Form("fAx1 %e, fCx1 %e, fAx2 %e, fCx %e",fAx1,fCx1,fAx2,fCx2));
 
     for (il=0; il<44; il++)  { 
      for (im=0; im<81; im++)  {      
@@ -608,40 +609,40 @@ printf("fAx1 %e, fCx1 %e, fAx2 %e, fCx %e\n",fAx1,fCx1,fAx2,fCx2);
     } 
 //----------------------   Polar part ---------------------------------
 
-    printf("Polar part\n");
+    AliDebug(2,"Polar part");
     fscanf(magfile,"%d %d %d ", &fZpl, &fRn, &fPhin); 
-    printf("fZpl %d, fRn %d, fPhin %d\n",fZpl,fRn,fPhin);   
+    AliDebug(3,Form("fZpl %d, fRn %d, fPhin %d",fZpl,fRn,fPhin));   
 
-    printf(" fZp array\n"); 
+    AliDebug(4," fZp array"); 
      
     for (ik=0; ik<51; ik++) 
     {    
      fscanf(magfile, " %e ", &zzp);
      fZp[ik]=zzp; 
-     printf(" %e\n",fZp[ik]);      
+     AliDebug(4,Form(" %e",fZp[ik]));      
     } 
   
-    printf(" fR array\n"); 
+    AliDebug(4," fR array"); 
          
     for (ik=0; ik<10; ik++) 
     {    
      fscanf(magfile, " %e ", &rr); 
      fR[ik]=rr;
-     printf(" %e\n",fR[ik]);
+     AliDebug(4,Form(" %e",fR[ik]));
     } 
     
-//    printf("fPhi array\n"); 
+//    AliDebug(4,"fPhi array"); 
      
      for (il=0; il<33; il++)  
      {
        fscanf(magfile, " %e ", &phii); 
        fPhi[il]=phii; 
-//        printf(" %e\n",fPhi[il]);          
+//        AliDebug(4,Form(" %e",fPhi[il]));          
      }
 
     fscanf(magfile," %e %e %e %e %e %e %e ",&fZpdl,&fPhid,&fRdel,&fZpmx,&fZpmn,&fRmax, &fRmin); 
 
-printf("fZpdl %e, fPhid %e, fRdel %e, fZpmx %e, fZpmn %e,fRmax %e,fRmin %e \n", fZpdl,fPhid, fRdel,fZpmx, fZpmn,fRmax, fRmin);
+AliDebug(3,Form("fZpdl %e, fPhid %e, fRdel %e, fZpmx %e, fZpmn %e,fRmax %e,fRmin %e", fZpdl,fPhid, fRdel,fZpmx, fZpmn,fRmax, fRmin));
 
                       
     for (il=0; il<33; il++)  { 
@@ -683,6 +684,6 @@ printf("fZpdl %e, fPhid %e, fRdel %e, fZpmx %e, fZpmn %e,fRmax %e,fRmin %e \n", 
     }
 //
   } else { 
-    Fatal("ReadField","File %s not found !\n",fTitle.Data());
+    AliFatal(Form("File %s not found !",fTitle.Data()));
   }
 }

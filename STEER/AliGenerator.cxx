@@ -37,6 +37,7 @@
 #include <TGenerator.h>
 #include <TMCProcess.h>
 
+#include "AliLog.h"
 #include "AliCollisionGeometry.h"
 #include "AliConfig.h"
 #include "AliGenerator.h"
@@ -81,8 +82,7 @@ AliGenerator::AliGenerator():
   // Default constructor
   //
     if (gAlice) {
-	if (gAlice->GetDebug()>0)
-	    printf("\n AliGenerator Default Constructor\n\n");
+	AliDebug(1, "AliGenerator Default Constructor");
 	AliMC * mc = gAlice->GetMCApp();
 	if (mc) mc->SetGenerator(this);
     }
@@ -138,8 +138,7 @@ AliGenerator::AliGenerator(Int_t npart):
   // Standard constructor
   //
     if (gAlice) {
-	if (gAlice->GetDebug()>0)
-	    printf("\n AliGenerator Constructor initializing number of particles \n\n");
+        AliDebug(1, "AliGenerator Constructor initializing number of particles");
 	AliMC * mc = gAlice->GetMCApp();
 	if (mc) mc->SetGenerator(this);
     }
@@ -216,7 +215,7 @@ void AliGenerator::Copy(TObject &/* gen */) const
   //
   // Copy *this onto gen
   //
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________

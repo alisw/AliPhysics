@@ -59,8 +59,7 @@ public:
   virtual  Bool_t        IsFolder() const {return kTRUE;}
   virtual  Int_t&        LoMedium() {return fLoMedium;}
   virtual  Int_t&        HiMedium() {return fHiMedium;}
-  virtual  Int_t         GetDebug() const {return fDebug;}
-  virtual  void          SetDebug(Int_t deb=0) {fDebug=deb;}
+  virtual  Int_t         GetDebug() const;
 
   // Module composition
   virtual void AliMaterial(Int_t imat, const char* name, Float_t a, 

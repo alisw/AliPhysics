@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 
+#include "AliLog.h"
 #include "AliHeader.h"
  
 ClassImp(AliHeader)
@@ -170,7 +171,7 @@ AliGenEventHeader*  AliHeader::GenEventHeader() const
 //_______________________________________________________________________
 void AliHeader::Copy(TObject&) const
 {
-  Fatal("Copy","Not implemented\n");
+  AliFatal("Not implemented");
 }
 
 

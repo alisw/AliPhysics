@@ -37,6 +37,7 @@
 #include <TView.h>
 #include <TVirtualX.h>
 
+#include "AliLog.h"
 #include "AliDetector.h"
 #include "AliDisplay.h"
 #include "AliHeader.h"
@@ -349,7 +350,7 @@ void AliDisplay::Copy(TObject &) const
   //
   // Copy *this onto disp -- not implemented
   //
-  Fatal("Copy","Not implemented~\n");
+  AliFatal("Not implemented");
 }
 
 //----------------------------------------------------------------------------
@@ -373,11 +374,11 @@ void AliDisplay::ShowTrack(Int_t idx)
 	 //         TClonesArray *particles=gAlice->Particles();
 	 //         TParticle *p = (TParticle*)particles->UncheckedAt(idx);
 	 TParticle *p = gAlice->GetMCApp()->Particle(idx);
-         printf("\nTrack index %d\n",idx);
-         printf("Particle ID %d\n",p->GetPdgCode());
-         printf("Parent %d\n",p->GetFirstMother());
-         printf("First child %d\n",p->GetFirstDaughter());
-         printf("Px,Py,Pz %f %f %f\n",p->Px(),p->Py(),p->Pz());
+         AliInfo(Form("Track index %d",idx));
+         AliInfo(Form("Particle ID %d",p->GetPdgCode()));
+         AliInfo(Form("Parent %d",p->GetFirstMother()));
+         AliInfo(Form("First child %d",p->GetFirstDaughter()));
+         AliInfo(Form("Px,Py,Pz %f %f %f",p->Px(),p->Py(),p->Pz()));
          return;
       }
    }
@@ -947,9 +948,8 @@ void AliDisplay::ShowNextEvent(Int_t delta)
      Int_t currentEvent = gAlice->GetRunLoader()->GetEventNumber();
      Int_t newEvent     = currentEvent + delta;
      gAlice->GetEvent(newEvent);
-     cout<<"AliDisplay::ShowNextEvent: delta = "<<delta
-         <<"  currentEvent = "<<currentEvent
-         <<"  newEvent = "<<newEvent<<endl;
+     AliInfo(Form("delta = %d  currentEvent = %d  newEvent = %d",
+                  delta, currentEvent, newEvent));
    }
   LoadPoints();
   fPad->cd(); 

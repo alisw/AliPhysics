@@ -19,6 +19,7 @@
 #include <TFile.h>
 #include <TObjString.h>
 
+#include "AliLog.h"
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliStream.h"
@@ -94,7 +95,7 @@ void AliStream::Copy(TObject &) const
   //
   // Copy function
   //
-  Fatal("Copy","Not implemented!");
+  AliFatal("Not implemented!");
 }
 //_______________________________________________________________________
 
@@ -118,9 +119,9 @@ Bool_t AliStream::NextEventInStream()
   AliRunLoader* currentloader = AliRunLoader::GetRunLoader(fEventFolderName);
   if (currentloader == 0x0) 
    {
-    Info("NextEventInStream",
+    AliDebug(1, Form(
          "Can not get RL from folder named %s. Attempting to open next file",
-         fEventFolderName.Data());
+         fEventFolderName.Data()));
     Int_t res = OpenNextFile();
     if ( res == 0) return kFALSE;
     currentloader = AliRunLoader::GetRunLoader(fEventFolderName);
@@ -130,7 +131,7 @@ Bool_t AliStream::NextEventInStream()
    {
     if (!OpenNextFile()) return kFALSE;
    }
-  Info("NextEventInStream","Trying to get event %d",fLastEventSerialNr+1);
+  AliDebug(1, Form("Trying to get event %d",fLastEventSerialNr+1));
   currentloader->GetEvent(++fLastEventSerialNr);
   return kTRUE;
 }
@@ -158,7 +159,7 @@ Bool_t AliStream::OpenNextFile()
   // Opens next file in the list
   //
   if (++fCurrentFileIndex > fFileNames->GetLast()) {
-    Error("OpenNextFile", "No more files in the stream") ;
+    AliInfo("No more files in the stream") ;
     return kFALSE;
   }
 
@@ -181,7 +182,7 @@ Bool_t AliStream::OpenNextFile()
   if (currentloader == 0x0) 
    {
 // cannot open file specified on input. Do not skip it silently.
-    Error("OpenNextFile", "Cannot open session ");
+    AliError("Cannot open session ");
     return kFALSE;
    }
    
@@ -192,7 +193,7 @@ Bool_t AliStream::OpenNextFile()
     Int_t res = currentloader->LoadHeader();
     if (res)
      {
-       Error("OpenNextFile","Problems with loading header");
+       AliError("Problems with loading header");
        return kFALSE;
      }
     fEvents = static_cast<Int_t>(currentloader->TreeE()->GetEntries());

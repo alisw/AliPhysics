@@ -21,6 +21,7 @@
 // Author:
 //----------------------------------------------------------------------
 
+#include "AliLog.h"
 #include "AliMagF.h"
 Bool_t AliMagF::fgReadField = kTRUE;
 ClassImp(AliMagF)
@@ -31,8 +32,7 @@ AliMagF::AliMagF():
   fType(0),
   fInteg(0),
   fFactor(0),
-  fMax(0),
-  fDebug(0)
+  fMax(0)
 {
   //
   // Default constructor
@@ -47,23 +47,21 @@ AliMagF::AliMagF(const char *name, const char *title, Int_t integ,
   fType(0),
   fInteg(0),
   fFactor(factor),
-  fMax(fmax),
-  fDebug(0)
+  fMax(fmax)
 {
   //
   // Standard constructor
   //
     if(integ<0 || integ > 2) {
-      Warning("SetField",
-              "Invalid magnetic field flag: %5d; Helix tracking chosen instead\n"
-              ,integ);
+      AliWarning(Form(
+              "Invalid magnetic field flag: %5d; Helix tracking chosen instead"
+              ,integ));
       fInteg = 2;
     } else {
       fInteg = integ;
     }
     fType = kUndef;
     //
-    fDebug = 0;
 }
 
 //_______________________________________________________________________
@@ -72,6 +70,6 @@ void AliMagF::Field(Float_t*, Float_t *b) const
   //
   // Method to return the field in one point -- dummy in this case
   //
-  Warning("Field","Undefined MagF Field called, returning 0\n");
+  AliWarning("Undefined MagF Field called, returning 0");
   b[0]=b[1]=b[2]=0;
 }

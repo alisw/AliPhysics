@@ -25,6 +25,7 @@
 #include <TFile.h>
 #include <TSystem.h>
 
+#include "AliLog.h"
 #include "AliFieldMap.h"
 #include "AliMagFMaps.h"
 
@@ -239,7 +240,7 @@ void AliMagFMaps::Copy(TObject & /* magf */) const
   //
   // Copy *this onto magf -- Not implemented
   //
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________

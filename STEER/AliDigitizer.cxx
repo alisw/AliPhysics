@@ -27,6 +27,7 @@
 // ROOT includes
 
 // AliROOT includes
+#include "AliLog.h"
 #include "AliDigitizer.h"
 #include "AliRunDigitizer.h"
 
@@ -58,7 +59,7 @@ AliDigitizer::AliDigitizer(const AliDigitizer &dig):
 //_______________________________________________________________________
 void AliDigitizer::Copy(TObject &) const
 {
-  Fatal("Copy","Not yet implemented\n");
+  AliFatal("Not yet implemented");
 }
 
 //_______________________________________________________________________

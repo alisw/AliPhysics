@@ -28,7 +28,7 @@ class AliVertexer : public TObject {
     // computes the vetex for each event and stores it on file
     virtual void FindVertices()= 0;
     virtual void PrintStatus() const = 0;
-    virtual void SetDebug(Int_t debug = 0){fDebug = debug;}
+    virtual void SetDebug(Int_t debug = 0);
     virtual void SetFirstEvent(Int_t ev){fFirstEvent = ev;}
     virtual void SetLastEvent(Int_t ev){fLastEvent = ev;}
     virtual void SetUseV2Clusters(Bool_t choice) = 0;

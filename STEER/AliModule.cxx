@@ -41,6 +41,7 @@
 #include <TDirectory.h>
 #include <TVirtualMC.h>
 
+#include "AliLog.h"
 #include "AliConfig.h"
 #include "AliLoader.h"
 #include "AliMagF.h"
@@ -63,7 +64,6 @@ AliModule::AliModule():
   fActive(0),
   fHistograms(0),
   fNodes(0),
-  fDebug(0),
   fEnable(1),
   fTrackReferences(0),
   fMaxIterTrackRef(0),
@@ -87,7 +87,6 @@ AliModule::AliModule(const char* name,const char *title):
   fActive(0),
   fHistograms(new TList()),
   fNodes(new TList()),
-  fDebug(0),
   fEnable(1),
   fTrackReferences(new TClonesArray("AliTrackReference", 100)),
   fMaxIterTrackRef(0),
@@ -103,7 +102,7 @@ AliModule::AliModule(const char* name,const char *title):
   Int_t id = gAlice->GetModuleID(name);
   if (id>=0) {
     // Module already added !
-     Warning("Ctor","Module: %s already present at %d\n",name,id);
+     AliWarning(Form("Module: %s already present at %d",name,id));
      return;
   }
   //
@@ -116,9 +115,6 @@ AliModule::AliModule(const char* name,const char *title):
   // Clear space for tracking media and material indexes
 
   for(Int_t i=0;i<100;i++) (*fIdmate)[i]=(*fIdtmed)[i]=0;
-
-    
-  SetDebug(gAlice->GetDebug());
 }
  
 //_______________________________________________________________________
@@ -136,7 +132,6 @@ AliModule::AliModule(const AliModule &mod):
   fActive(0),
   fHistograms(0),
   fNodes(0),
-  fDebug(0),
   fEnable(0),
   fTrackReferences(0),
   fMaxIterTrackRef(0),
@@ -191,7 +186,7 @@ void AliModule::Copy(TObject & /* mod */) const
   //
   // Copy *this onto mod, not implemented for AliModule
   //
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________
@@ -427,7 +422,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   lun=fopen(filtmp,"r");
   delete [] filtmp;
   if(!lun) {
-    Error("ReadEuclid","Could not open file %s\n",filnam);
+    AliError(Form("Could not open file %s",filnam));
     return;
   }
   //* --- definition of rotation matrix 0 ---  
@@ -446,7 +441,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   if (!strcmp(key,"TMED")) {
     sscanf(&card[5],"%d '%[^']'",&itmed,natmed);
     if( itmed<0 || itmed>=100 ) {
-      Error("ReadEuclid","TMED illegal medium number %d for %s\n",itmed,natmed);
+      AliError(Form("TMED illegal medium number %d for %s",itmed,natmed));
       exit(1);
     }
     //Pad the string with blanks
@@ -456,7 +451,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
     natmed[i]='\0';
     //
     if( idtmed[itmed]<=0 ) {
-      Error("ReadEuclid","TMED undefined medium number %d for %s\n",itmed,natmed);
+      AliError(Form("TMED undefined medium number %d for %s",itmed,natmed));
       exit(1);
     }
     gMC->Gckmat(idtmed[itmed],natmed);
@@ -464,7 +459,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   } else if (!strcmp(key,"ROTM")) {
     sscanf(&card[4],"%d %f %f %f %f %f %f",&irot,&teta1,&phi1,&teta2,&phi2,&teta3,&phi3);
     if( irot<=0 || irot>=kMaxRot ) {
-      Error("ReadEuclid","ROTM rotation matrix number %d illegal\n",irot);
+      AliError(Form("ROTM rotation matrix number %d illegal",irot));
       exit(1);
     }
     AliMatrix(idrot[irot],teta1,phi1,teta2,phi2,teta3,phi3);
@@ -540,26 +535,26 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   flag=0;
   for(i=1;i<=nvol;i++) {
     if (istop[i] && flag) {
-      Warning("ReadEuclid"," %s is another possible top volume\n",volst[i]);
+      AliWarning(Form(" %s is another possible top volume",volst[i]));
     }
     if (istop[i] && !flag) {
       strcpy(topvol,volst[i]);
-      if(fDebug) printf("%s::ReadEuclid: volume %s taken as a top volume\n",ClassName(),topvol);
+      AliDebug(2, Form("volume %s taken as a top volume",topvol));
       flag=1;
     }
   }
   if (!flag) {
-    Warning("ReadEuclid","top volume not found\n");
+    AliWarning("top volume not found");
   }
   fclose (lun);
   //*
   //*     commented out only for the not cernlib version
-  if(fDebug) printf("%s::ReadEuclid: file: %s is now read in\n",ClassName(),filnam);
+  AliDebug(1, Form("file: %s is now read in",filnam));
   //
   return;
   //*
   L20:
-  Error("ReadEuclid","reading error or premature end of file\n");
+  AliError("reading error or premature end of file");
 }
 
 //_______________________________________________________________________
@@ -592,12 +587,12 @@ void AliModule::ReadEuclidMedia(const char* filnam)
   }
   //
   // *** The input filnam name will be with extension '.euc'
-  if(fDebug) printf("%s::ReadEuclid: The file name is %s\n",ClassName(),filnam); //Debug
+  AliDebug(1, Form("The file name is %s",filnam)); //Debug
   filtmp=gSystem->ExpandPathName(filnam);
   lun=fopen(filtmp,"r");
   delete [] filtmp;
   if(!lun) {
-    Warning("ReadEuclidMedia","Could not open file %s\n",filnam);
+    AliWarning(Form("Could not open file %s",filnam));
     return;
   }
   //
@@ -647,13 +642,12 @@ void AliModule::ReadEuclidMedia(const char* filnam)
   fclose (lun);
   //*
   //*     commented out only for the not cernlib version
-  if(fDebug) printf("%s::ReadEuclidMedia: file %s is now read in\n",
-  	ClassName(),filnam);
+  AliDebug(1, Form("file %s is now read in",filnam));
   //*
   return;
   //*
  L20:
-  Warning("ReadEuclidMedia","reading error or premature end of file\n");
+  AliWarning("reading error or premature end of file");
 } 
 
 //_______________________________________________________________________
@@ -694,7 +688,7 @@ AliTrackReference* AliModule::FirstTrackReference(Int_t track)
   if(track>=0) 
    {
      if (fRunLoader == 0x0)
-       Fatal("FirstTrackReference","AliRunLoader not initialized. Can not proceed");
+       AliFatal("AliRunLoader not initialized. Can not proceed");
      fRunLoader->GetAliRun()->GetMCApp()->ResetTrackReferences();
      fRunLoader->TreeTR()->GetEvent(track);
    }
@@ -717,7 +711,7 @@ AliTrackReference* AliModule::NextTrackReference()
     else        
       return 0;
   } else {
-    printf("* AliModule::NextTrackReference * TrackReference  Iterator called without calling FistTrackReference before\n");
+    AliWarning("Iterator called without calling FistTrackReference before");
     return 0;
   }
 }
@@ -759,17 +753,14 @@ void AliModule::SetTreeAddress()
      branch = treeTR->GetBranch(GetName());
     if (branch) 
      {
-       if(GetDebug()) 
-         Info("SetTreeAddress","(%s) Setting for TrackRefs",GetName());
+       AliDebug(3, Form("(%s) Setting for TrackRefs",GetName()));
        branch->SetAddress(&fTrackReferences);
      }
     else
      { 
      //can be called before MakeBranch and than does not make sense to issue the warning
-       if(GetDebug()) 
-         Warning("SetTreeAddress",
-                 "(%s) Failed for Track References. Can not find branch in tree.",
-                 GetName());
+       AliDebug(1, Form("(%s) Failed for Track References. Can not find branch in tree.",
+                 GetName()));
      }
   }
 }
@@ -779,7 +770,7 @@ void  AliModule::AddTrackReference(Int_t label){
   //
   // add a trackrefernce to the list
   if (!fTrackReferences) {
-    cerr<<"Container trackrefernce not active\n";
+    AliError("Container trackrefernce not active");
     return;
   }
   Int_t nref = fTrackReferences->GetEntriesFast();
@@ -794,14 +785,14 @@ void AliModule::MakeBranchTR(Option_t */*option*/)
     //
     // Makes branch in treeTR
     //  
-  if(GetDebug()) Info("MakeBranchTR","Making Track Refs. Branch for %s",GetName());
+  AliDebug(2,Form("Making Track Refs. Branch for %s",GetName()));
   TTree * tree = TreeTR();
   if (fTrackReferences && tree) 
    {
       TBranch *branch = tree->GetBranch(GetName());
      if (branch) 
        {  
-	 if(GetDebug()) Info("MakeBranch","Branch %s is already in tree.",GetName());
+	 AliDebug(2,Form("Branch %s is already in tree.",GetName()));
 	 return;
        }
   
@@ -809,9 +800,8 @@ void AliModule::MakeBranchTR(Option_t */*option*/)
    }
   else
     {
-      if(GetDebug()) 
-	Info("MakeBranchTR","FAILED for %s: tree=%#x fTrackReferences=%#x",
-	     GetName(),tree,fTrackReferences);
+      AliDebug(2,Form("FAILED for %s: tree=%#x fTrackReferences=%#x",
+	     GetName(),tree,fTrackReferences));
     }
 }
 
@@ -823,7 +813,7 @@ TTree* AliModule::TreeTR()
   //
   if ( fRunLoader == 0x0)
    {
-     Error("TreeTR","Can not get the run loader");
+     AliError("Can not get the run loader");
      return 0x0;
    }
 
@@ -838,7 +828,7 @@ void AliModule::Digits2Raw()
 // This is a dummy version that just copies the digits file contents
 // to a raw data file.
 
-  Warning("Digits2Raw", "Dummy version called for %s", GetName());
+  AliWarning(Form("Dummy version called for %s", GetName()));
 
   const Int_t kNDetectors = 17;
   const char* kDetectors[kNDetectors] = {"TPC", "ITSSPD", "ITSSDD", "ITSSSD", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "MUTR", "ZDC", "PMD", "START", "VZERO", "CRT", "FMD"};
@@ -878,4 +868,12 @@ void AliModule::Digits2Raw()
 
   digitsFile.close();
   delete[] buffer;
+}
+
+
+//_____________________________________________________________________________
+Int_t AliModule::GetDebug() const
+{
+  AliWarning("Don't use this method any more, use AliDebug instead");
+  return fDebug;
 }

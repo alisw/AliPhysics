@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 
+#include "AliLog.h"
 #include "AliMagFC.h"
 
 ClassImp(AliMagFC)
@@ -64,8 +65,7 @@ void AliMagFC::Field(Float_t *x, Float_t *b) const
 	b[2]*=fFactor;
     }
   } else {
-      printf("Invalid field map for constant field %d\n",fMap);
-      exit(1);
+      AliFatal(Form("Invalid field map for constant field %d",fMap));
   }
 }
 

@@ -25,6 +25,7 @@
 
 #include "TVector.h"
 
+#include "AliLog.h"
 #include "AliMagFCM.h"
 
 ClassImp(AliMagFCM)
@@ -80,9 +81,9 @@ AliMagFCM::AliMagFCM(const char *name, const char *title, Int_t integ,
   fMap  = 2;
   SetSolenoidField();
 
-  if(fDebug>-1) Info("ctor",
-     "%s: Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
-	 ClassName(),fName.Data(), fMap, factor,fTitle.Data());
+  AliDebug(1, Form(
+     "Constant Mesh Field %s created: map= %d, factor= %f, file= %s",
+	 fName.Data(), fMap, factor,fTitle.Data()));
 }
 
 //_______________________________________________________________________
@@ -194,7 +195,7 @@ void AliMagFCM::Field(Float_t *x, Float_t *b) const
 	b[2] = -b[2];
 	
       } else {
-	printf("Invalid field map for constant mesh %d\n",fMap);
+	AliError(Form("Invalid field map for constant mesh %d",fMap));
       }
     } else {
 //This is the ZDC part
@@ -219,15 +220,15 @@ void AliMagFCM::ReadField()
   Int_t ix, iy, iz, ipx, ipy, ipz;
   Float_t bx, by, bz;
   char *fname;
-  if(fDebug) printf("%s: Reading Magnetic Field %s from file %s\n",ClassName(),fName.Data(),fTitle.Data());
+  AliDebug(1,Form("Reading Magnetic Field %s from file %s",fName.Data(),fTitle.Data()));
   fname = gSystem->ExpandPathName(fTitle.Data());
   magfile=fopen(fname,"r");
   delete [] fname;
   if (magfile) {
     fscanf(magfile,"%d %d %d %f %f %f %f %f %f",
     	   &fXn, &fYn, &fZn, &fXdel, &fYdel, &fZdel, &fXbeg, &fYbeg, &fZbeg);
-    if(fDebug>1) printf("%s: fXn %d, fYn %d, fZn %d, fXdel %f, fYdel %f, fZdel %f, fXbeg %f, fYbeg %f, fZbeg %f\n",
-			ClassName(),fXn, fYn, fZn, fXdel, fYdel, fZdel, fXbeg, fYbeg, fZbeg);
+    AliDebug(2,Form("fXn %d, fYn %d, fZn %d, fXdel %f, fYdel %f, fZdel %f, fXbeg %f, fYbeg %f, fZbeg %f",
+			fXn, fYn, fZn, fXdel, fYdel, fZdel, fXbeg, fYbeg, fZbeg));
     fXdeli=1./fXdel;
     fYdeli=1./fYdel;
     fZdeli=1./fZdel;
@@ -246,8 +247,7 @@ void AliMagFCM::ReadField()
       }
     }
   } else { 
-    printf("%s: File %s not found !\n",ClassName(),fTitle.Data());
-    exit(1);
+    AliFatal(Form("File %s not found !",fTitle.Data()));
   }
 }
 
@@ -257,6 +257,6 @@ void AliMagFCM::Copy(TObject & /* magf */) const
   //
   // Copy *this onto magf -- Not implemented
   //
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
