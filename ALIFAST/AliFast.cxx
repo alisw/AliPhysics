@@ -261,7 +261,7 @@ void AliFast::Clear(Option_t *option)
 }
 
 //_____________________________________________________________________________
-void AliFast::Draw(Option_t *option)
+void AliFast::Draw(Option_t */*option*/)
 {
 //    Insert current event in graphics pad list
 
@@ -312,7 +312,7 @@ void AliFast::Init()
 }
 
 //_____________________________________________________________________________
-void AliFast::Paint(Option_t *option)
+void AliFast::Paint(Option_t */*option*/)
 {
 //    Paint AliFast objects
 

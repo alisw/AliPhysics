@@ -27,7 +27,7 @@ AliFBrowsable::AliFBrowsable()
 }
 
 //_____________________________________________________________________________
-void AliFBrowsable::Browse(TBrowser *b)
+void AliFBrowsable::Browse(TBrowser */*b*/)
 {
   /*
   AliFMCMaker *mcarlo = gAliFast->MCMaker();

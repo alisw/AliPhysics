@@ -37,7 +37,7 @@ AliFBigBang::~AliFBigBang()
 }
 
 //_____________________________________________________________________________
-void AliFBigBang::Browse(TBrowser *b)
+void AliFBigBang::Browse(TBrowser */*b*/)
 {
   /*
 
