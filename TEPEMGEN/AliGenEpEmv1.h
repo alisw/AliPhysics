@@ -26,7 +26,9 @@ public:
   void SetDebug(Int_t debug) {fDebug=debug;}
   
   AliGenEpEmv1(const AliGenEpEmv1 & gen);
-protected:
+ private:
+  void Copy(AliGenEpEmv1&) const;
+ protected:
   Float_t    fMass;    // electron mass
   TEpEmGen * fEpEmGen; // e+e- generator
   Int_t      fDebug;   // debug level
