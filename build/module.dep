@@ -24,7 +24,7 @@ STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
 THijing/module.mk:	 THijing/libTHijing.pkg
 TMEVSIM/module.mk:	 TMEVSIM/libTMEVSIM.pkg
 TOF/module.mk:		 TOF/libTOF.pkg
-TPC/module.mk:		 TPC/libTPC.pkg
+TPC/module.mk:		 TPC/libTPC.pkg TPC/libTPCBarrel.pkg
 TRD/module.mk:		 TRD/libTRD.pkg
 ZDC/module.mk:		 ZDC/libZDC.pkg
 LHC/module.mk:		 LHC/libLHC.pkg
