@@ -155,11 +155,9 @@ class TFluka : public TVirtualMC {
   
   // particle table usage         
   virtual Int_t   IdFromPDG(Int_t id) const;
-    //{printf("WARNING: IdFromPDG not yet implemented !\n"); return -1;}  
   virtual Int_t   PDGFromId(Int_t pdg) const;
-    //{printf("WARNING: PDGFromId not yet implemented !\n"); return -1;}  
-  virtual void    DefineParticles();
-    //{printf("WARNING: DefineParticles not yet implemented !\n");}     
+  virtual void    DefineParticles()
+  {printf("WARNING: DefineParticles not yet implemented !\n");}     
   
   //
   // methods for step management
@@ -300,15 +298,12 @@ class TFluka : public TVirtualMC {
   //
   
   virtual void Init();
-  //{printf("WARNING:  not yet implemented !\n");}
   virtual void FinishGeometry()
     {printf("WARNING: FinishGeometry not yet implemented !\n");}
   virtual void BuildPhysics()
     {printf("WARNING: BuildPhysics not yet implemented !\n");}
   virtual void ProcessEvent();
-  //{printf("WARNING: ProcessEvent not yet implemented !\n");}
   virtual void ProcessRun(Int_t nevent);
-  //{printf("WARNING: ProcessRun not yet implemented !\n");}
   
 
   //
