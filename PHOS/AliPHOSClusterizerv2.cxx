@@ -113,7 +113,7 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
     wPoolF->Add(recEmc);
 
     for(iPoint=0; iPoint<gime->EmcRecPoints()->GetEntriesFast(); iPoint++) {
-      rp = new AliPHOSEvalRecPoint(iPoint,AliPHOSEvalRecPoint::emc);
+      rp = new AliPHOSEvalRecPoint(iPoint,(Bool_t)AliPHOSEvalRecPoint::emc);
       rp->MakeJob();
     }
 
