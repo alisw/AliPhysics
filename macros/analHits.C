@@ -56,7 +56,6 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     AliTPChit    *tpcHit;
     AliTPCTrackHits *tpc2Hit;
     AliTRDhit    *trdHit;
-    AliCASTORhit *castorHit;
     AliZDCHit    *zdcHit;
     AliEMCALHit  *emcalHit;
 
@@ -72,7 +71,6 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     AliTPC    *TPC    = (AliTPC*)    gAlice->GetDetector("TPC");
     AliTPC    *TPC    = (AliTPC*)    gAlice->GetDetector("TPC");
     AliTRD    *TRD    = (AliTRD*)    gAlice->GetDetector("TRD");
-    AliCASTOR *CASTOR = (AliCASTOR*) gAlice->GetDetector("CASTOR");
     AliZDC    *ZDC    = (AliZDC*)    gAlice->GetDetector("ZDC");
     AliEMCAL  *EMCAL  = (AliEMCAL*)  gAlice->GetDetector("EMCAL");
 
@@ -91,7 +89,6 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     if(TOF)   TH1F *hTOF   = new TH1F("hTOF"   ,"Time of Flight",100,0.,1.e-5);
     if(TPC)   TH1F *hTPC   = new TH1F("hTPC"   ,"Charge",100,0.,70.2);
     if(TRD)   TH1F *hTRD   = new TH1F("hTRD"   ,"Charge",100,0.,10.);
-    if(CASTOR)TH1F *hCASTOR= new TH1F("hCASTOR","Hit Radius",100,0.,10.);
     if(ZDC)   TH1F *hZDC   = new TH1F("hZDC"   ,"Energy",100,0.,5.);
     if(EMCAL) TH1F *hEMCAL = new TH1F("hEMCAL" ,"Energy",100,0.,2.);
 //    TH1F *hTPAR  = new TH1F("hTPAR" ,"?",6,1,7);  
@@ -136,7 +133,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 	if(RICH){
 	    for(richHit=(AliRICHHit*)RICH->FirstHit(-1);richHit;
 		richHit=(AliRICHHit*)RICH->NextHit()){
-		hRICH->Fill(richHit->fEloss);
+		hRICH->Fill(richHit->Eloss());
 	    } // end for richHit
 	} // end if RICH
 	if(START){
@@ -158,12 +155,6 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 		hTRD->Fill((Float_t)(trdHit->GetCharge()));
 	    } // end for
 	} // end if TRD
-	if(CASTOR) {
-	    for(castorHit=(AliCASTORhit*)CASTOR->FirstHit(-1);castorHit;
-		castorHit=(AliCASTORhit*)CASTOR->NextHit()) {
-		hCASTOR->Fill(TMath::Hypot(castorHit->X(),castorHit->Y()));
-	    } // end for
-	} // end if CASTOR
 	if(ZDC){
 	    for(zdcHit=(AliZDCHit*)ZDC->FirstHit(-1);zdcHit;
 		zdcHit=(AliZDCHit*)ZDC->NextHit()){
@@ -238,11 +229,6 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 	hTRD->Draw();
 	c0->SaveAs("analHitsTRD.ps");
     } // end if TRD
-    if(CASTOR){
-	hCASTOR->SetFillColor(42);
-	hCASTOR->Draw();
-	c0->SaveAs("analHitsCASTOR.ps");
-    } // end if TRD
     if(ZDC){
 	hZDC->SetFillColor(42);
 	hZDC->Draw();
@@ -253,20 +239,4 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 	hEMCAL->Draw();
 	c0->SaveAs("analHitsEMCAL.ps");
     } // end if ZDC
-
-// Clean Up
-    /*
-    if(FMD)    delete hFMD;
-    if(ITS)    delete hITS;
-    if(MUON)   delete hMUON;
-    if(PHOS)   delete hPHOS;
-    if(PMD)    delete hPMD;
-    if(RICH)   delete hRICH;
-    if(START)  delete hSTART;
-    if(TOF)    delete hTOF;
-    if(TPC)    delete hTPC;
-    if(TRD)    delete hTRD;
-    if(CASTOR) delete hCASTOR;
-    if(ZDC)    delete hZDC;
-    */
 }
