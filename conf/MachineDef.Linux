@@ -7,13 +7,13 @@ F77	      = echo $*.F ; g77
 CC	      = echo $*.c ; gcc
 
 # Global optimisation
-OPT           = -g
+OPT           = -O2
 
 # Shared library suffix
 SL	      = so
 
 # The options
-CXXOPTS       = -Wall -fPIC  -fno-rtti -fno-exceptions
+CXXOPTS       = $(OPT) -Wall -fPIC  -fno-rtti -fno-exceptions
 COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore
 

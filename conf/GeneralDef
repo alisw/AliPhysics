@@ -3,7 +3,7 @@
 .SUFFIXES: .cxx
  
 .cxx.o:
-	@$(CXX) $(OPT) $(CXXFLAGS) -c $*.cxx -o $*.o
+	@$(CXX) $(CXXFLAGS) -c $*.cxx -o $*.o
 .c.o:
 	@$(CC) $(CFLAGS) -c $*.c -o $*.o
 .f.o:

@@ -8,13 +8,12 @@ F77	      = f77
 
 # Global optimisation
 OPT           = -O
-OPT           = -g
 
 # Shared library suffix
 SL	      = so
 
 # The options
-CXXOPTS       = +w -KPIC
+CXXOPTS       = $(OPT) +w -KPIC
 COPT	      = $(OPT) -KPIC -erroff=%none
 FOPT	      = $(OPT) -KPIC
 

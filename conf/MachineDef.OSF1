@@ -7,13 +7,12 @@ F77	      = f77
 
 # Global optimisation
 OPT	      = -O
-OPT           = -g
 
 # Shared library suffix
 SL	      = so
 
 # The options
-CXXOPTS       = -I/usr/include
+CXXOPTS       = $(OPT) -I/usr/include
 COPT          = $(OPT)
 FOPT          = $(OPT) -nofor_main
 
