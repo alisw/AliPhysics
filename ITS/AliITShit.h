@@ -98,8 +98,201 @@ class AliITShit : public AliHit {
     // Float_t fY;   // defined in AliHit
     // Float_t fZ;   // defined in AliHit
 
+
  public:
-//protected:
+    AliITShit() {
+	              // Default consrtructor
+					 }
+    AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
+    virtual ~AliITShit() {}
+    // Get Hit information functions.
+    // virtual int GetTrack() const {return fTrack;} // define in AliHit
+    // virtual void SetTrack(int track) const {fTrack=track;) // AliHit
+    virtual Int_t GetTrackStatus() const {
+	                                       //returns the status code
+														return fStatus;
+													  }
+    virtual Int_t GetLayer() const {
+	                                 // returns the layer number
+												return fLayer;
+											  }
+    virtual Int_t GetLadder() const {
+	                                  // returns the ladder number 
+												 return fLadder;
+												}
+    virtual Int_t GetDetector() const {
+	                                    // returns the detector number 
+	                                    return fDet;
+												  }
+    virtual void  GetDetectorID(Int_t &layer,Int_t &ladder,
+	 			       Int_t &detector)
+                     const {
+							       // returns the detector ID
+									 layer=fLayer;ladder=fLadder;detector=fDet;return;
+									 };
+    virtual Int_t GetModule();
+    virtual Float_t GetIonization() const {
+	                                        // returns the Destep
+	                                        return fDestep;
+														 }
+    //
+    virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z)
+                                    const {
+												       // returns the position in the Global
+														 //frame
+												       x=fX;y=fY;z=fZ;return;
+												      };
+    virtual void GetPositionG(Double_t &x,Double_t &y,Double_t &z)
+                                    const {
+												       // returns the position in the Global
+														 //frame
+												       x=fX;y=fY;z=fZ;return;
+														};
+    virtual Float_t GetTOF() const {
+	                                 // returns the time of flight
+	                                 return fTof;
+											  }
+    // Returns particle 3 position at this hit in global coordinates.
+    virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z,
+				    Float_t &tof)
+                                    const {
+												       // returns the position in the Global
+														 //frame and the time of flight
+												       x=fX;y=fY;z=fZ,tof=fTof;return;
+														};
+    virtual void GetPositionG(Double_t &x,Double_t &y,Double_t &z,
+				    Double_t &tof)
+                                    const {
+												       // Returns particle 3 position and 
+														 //the time of flight at this hit
+                                           // in global coordinates.
+												       x=fX;y=fY;z=fZ,tof=fTof;return;
+														};
+    
+    virtual Float_t GetXG()const {
+	                               // Returns particle X position at this hit 
+											 // in global coordinates.
+	                               return fX;
+	                              }
+    
+    virtual Float_t GetYG()const {
+	                               // Returns particle X position at this hit 
+											 // in global coordinates.
+	                               return fY;
+											}
+    
+    virtual Float_t GetZG()const {
+	                               // Returns particle Z position at this hit 
+											 // in global coordinates.
+	                               return fZ;
+											}
+    
+    virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z);
+    // Returns particle 3 position at this hit in local coordinates.
+    virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z,
+				     Float_t &tof);
+    virtual void GetPositionL(Double_t &x,Double_t &y,Double_t &z){
+	 // Returns particle 3 position at this hit in local coordinates.
+	 Float_t xf,yf,zf;GetPositionL(xf,yf,zf);x=xf,y=yf;z=zf;}
+    
+    virtual void GetPositionL(Double_t &x,Double_t &y,Double_t &z,
+				     Double_t &tof){
+    // Returns particle 3 position and the time of flight at this hit
+    // in local coordinates.
+	 Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;tof=tf;}
+    
+    virtual Float_t GetXL();
+    // Returns particle X position at this hit in local coordinates.
+    virtual Float_t GetYL();
+    // Returns particle Y position at this hit in local coordinates.
+    virtual Float_t GetZL();
+    // Returns particle Z position at this hit in local coordinates.
+    // Get Monti Carlo information about hit.
+    virtual void GetMomentumG(Float_t &px,Float_t &py,Float_t &pz)
+                                    const {
+												// returns the particle momentum in the
+												// Global frame
+												px=fPx;py=fPy;pz=fPz;return;
+												};
+    virtual void GetMomentumG(Double_t &px,Double_t &py,Double_t &pz)
+                                    const {
+                                    // returns the particle momentum in the
+												// Global frame												
+												px=fPx;py=fPy;pz=fPz;return;
+												};
+    
+    virtual Float_t GetPXG()const {
+	                                // Returns particle X momentum at 
+											  // this hit in global coordinates.
+											  return fPx;
+											 }
+    
+    virtual Float_t GetPYG()const {
+                                   // Returns particle Y momentum at 
+											  // this hit in global coordinates.	 
+	                                return fPy;
+											 }
+
+    virtual Float_t GetPZG()const {
+                                   // Returns particle Z momentum at 
+											  // this hit in global coordinates.	 
+	                                return fPz;
+											 }
+    
+    virtual void GetMomentumL(Float_t &px,Float_t &py,Float_t &pz);
+    virtual void GetMomentumL(Double_t &px,Double_t &py,Double_t &pz){
+       // Returns particle 3 momentum at this hit in local coordinates.	 
+	    Float_t x,y,z;GetMomentumL(x,y,z);px=x,py=y,pz=z;}
+
+    
+    virtual Float_t GetPXL();
+    // Returns particle X momentum at this hit in local coordinates.
+
+    virtual Float_t GetPYL();
+    // Returns particle Y momentum at this hit in local coordinates.
+
+    virtual Float_t GetPZL();
+    // Returns particle Z momentum at this hit in local coordinates.
+
+    virtual TParticle * GetParticle(); // Returns pointer to this particle.
+
+    Bool_t StatusInside() {
+	                        // checks if the particle is "inside"
+	                        if((fStatus&0x0001)==0) return kFALSE;
+                           else return kTRUE;
+								  }
+    Bool_t StatusEntering() {
+	                          // checks if the particle is "entering"
+	                          if((fStatus&0x0002)==0) return kFALSE;
+                             else return kTRUE;
+									 }
+    Bool_t StatusExiting() {
+	                         // checks if the particle is "exiting"
+	                         if((fStatus&0x0004)==0) return kFALSE;
+                            else return kTRUE;
+									}
+    Bool_t StatusOut() {
+	                     // checks if the particle is "out"
+	                     if((fStatus&0x0008)==0) return kFALSE;
+                        else return kTRUE;
+							  }
+    Bool_t StatusDisappeared() {
+	                             // checks if the particle is "disappeared"
+	                             if((fStatus&0x00010)==0) return kFALSE;
+                                else return kTRUE;
+										 }
+    Bool_t StatusStop() {
+	                      // checks if the particle is "stopped"
+	                      if((fStatus&0x00020)==0) return kFALSE;
+                         else return kTRUE;
+								}
+    Bool_t StatusAlive() {
+	                       // checks if the particle is "alive"
+	                       if((fStatus&0x00030)==0) return kFALSE;
+                          else return kTRUE;
+								 }
+
+ protected:
     Int_t     fStatus; // Track Status
     Int_t     fLayer;  // Layer number
     Int_t     fLadder; // Ladder number
@@ -110,100 +303,8 @@ class AliITShit : public AliHit {
     Float_t   fDestep; // Energy deposited in the current step
     Float_t   fTof;    // Time of flight at the point of the hit
 
- public:
-    AliITShit() {}
-    AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-    virtual ~AliITShit() {}
-    // Get Hit information functions.
-    // virtual int GetTrack() const {return fTrack;} // define in AliHit
-    // virtual void SetTrack(int track) const {fTrack=track;) // AliHit
-    virtual Int_t GetTrackStatus() const {return fStatus;}
-    virtual Int_t GetLayer() const {return fLayer;}
-    virtual Int_t GetLadder() const {return fLadder;}
-    virtual Int_t GetDetector() const {return fDet;}
-    virtual void  GetDetectorID(Int_t &layer,Int_t &ladder,
-	 			       Int_t &detector)
-                     const {layer=fLayer;ladder=fLadder;detector=fDet;return;};
-    virtual Int_t GetModule();
-    virtual Float_t GetIonization() const {return fDestep;}
-    //
-    virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z)
-                                    const {x=fX;y=fY;z=fZ;return;};
-    virtual void GetPositionG(Double_t &x,Double_t &y,Double_t &z)
-                                    const {x=fX;y=fY;z=fZ;return;};
-    virtual Float_t GetTOF() const {return fTof;}
-    // Returns particle 3 position at this hit in global coordinates.
-    virtual void GetPositionG(Float_t &x,Float_t &y,Float_t &z,
-				    Float_t &tof)
-                                    const {x=fX;y=fY;z=fZ,tof=fTof;return;};
-    virtual void GetPositionG(Double_t &x,Double_t &y,Double_t &z,
-				    Double_t &tof)
-                                    const {x=fX;y=fY;z=fZ,tof=fTof;return;};
-    // Returns particle 3 position and the time of flight at this hit
-    // in global coordinates.
-    virtual Float_t GetXG()const {return fX;}
-    // Returns particle X position at this hit in global coordinates.
-    virtual Float_t GetYG()const {return fY;}
-    // Returns particle Y position at this hit in global coordinates.
-    virtual Float_t GetZG()const {return fZ;}
-    // Returns particle Z position at this hit in global coordinates.
-    virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z);
-    // Returns particle 3 position at this hit in local coordinates.
-    virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z,
-				     Float_t &tof);
-    virtual void GetPositionL(Double_t &x,Double_t &y,Double_t &z){
-	Float_t xf,yf,zf;GetPositionL(xf,yf,zf);x=xf,y=yf;z=zf;}
-    // Returns particle 3 position at this hit in local coordinates.
-    virtual void GetPositionL(Double_t &x,Double_t &y,Double_t &z,
-				     Double_t &tof){
-	Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;tof=tf;}
-    // Returns particle 3 position and the time of flight at this hit
-    // in local coordinates.
-    virtual Float_t GetXL();
-    // Returns particle X position at this hit in local coordinates.
-    virtual Float_t GetYL();
-    // Returns particle Y position at this hit in local coordinates.
-    virtual Float_t GetZL();
-    // Returns particle Z position at this hit in local coordinates.
-    // Get Monti Carlo information about hit.
-    virtual void GetMomentumG(Float_t &px,Float_t &py,Float_t &pz)
-                                    const {px=fPx;py=fPy;pz=fPz;return;};
-    virtual void GetMomentumG(Double_t &px,Double_t &py,Double_t &pz)
-                                    const {px=fPx;py=fPy;pz=fPz;return;};
-    // Returns particle 3 momentum at this hit in global coordinates.
-    virtual Float_t GetPXG()const {return fPx;}
-    // Returns particle X momentum at this hit in global coordinates.
-    virtual Float_t GetPYG()const {return fPy;}
-    // Returns particle Y momentum at this hit in global coordinates.
-    virtual Float_t GetPZG()const {return fPz;}
-    // Returns particle Z momentum at this hit in global coordinates.
-    virtual void GetMomentumL(Float_t &px,Float_t &py,Float_t &pz);
-    virtual void GetMomentumL(Double_t &px,Double_t &py,Double_t &pz){
-	Float_t x,y,z;GetMomentumL(x,y,z);px=x,py=y,pz=z;}
-    // Returns particle 3 momentum at this hit in local coordinates.
-    virtual Float_t GetPXL();
-    // Returns particle X momentum at this hit in local coordinates.
-    virtual Float_t GetPYL();
-    // Returns particle Y momentum at this hit in local coordinates.
-    virtual Float_t GetPZL();
-    // Returns particle Z momentum at this hit in local coordinates.
-    virtual TParticle * GetParticle(); // Returns pointer to this particle.
-    Bool_t StatusInside() {if((fStatus&0x0001)==0) return kFALSE;
-                                              else return kTRUE;}
-    Bool_t StatusEntering() {if((fStatus&0x0002)==0) return kFALSE;
-                                                else return kTRUE;}
-    Bool_t StatusExiting() {if((fStatus&0x0004)==0) return kFALSE;
-                                               else return kTRUE;}
-    Bool_t StatusOut() {if((fStatus&0x0008)==0) return kFALSE;
-                                           else return kTRUE;}
-    Bool_t StatusDisappeared() {if((fStatus&0x00010)==0) return kFALSE;
-                                                    else return kTRUE;}
-    Bool_t StatusStop() {if((fStatus&0x00020)==0) return kFALSE;
-                                             else return kTRUE;}
-    Bool_t StatusAlive() {if((fStatus&0x00030)==0) return kFALSE;
-                                              else return kTRUE;}
-
     ClassDef(AliITShit,1)  //Hits object for set:ITS
+	 
 };
 
 #endif

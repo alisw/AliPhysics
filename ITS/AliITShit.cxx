@@ -390,8 +390,8 @@ TParticle * AliITShit::GetParticle(){
 // this hit. From the TParticle all kinds of information about this 
 // particle can be found. See the TParticle class.
 ////////////////////////////////////////////////////////////////////////
-    TClonesArray *Parts = gAlice->Particles();
-    return ((TParticle*)Parts->UncheckedAt(this->GetTrack()));
+    TClonesArray *parts = gAlice->Particles();
+    return ((TParticle*)parts->UncheckedAt(this->GetTrack()));
 }
 //___________________________________________________________________________
 void AliITShit::Streamer(TBuffer &R__b){
