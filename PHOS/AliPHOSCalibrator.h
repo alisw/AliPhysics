@@ -26,6 +26,12 @@ class AliPHOSCalibrator: public TTask{
 public:
   AliPHOSCalibrator() ;          // ctor
   AliPHOSCalibrator(const char* run, const char * title = "Default",Bool_t toSplit = kTRUE) ;
+  AliPHOSCalibrator(const AliPHOSCalibrator & ctor) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    Fatal("cpy ctor", "not implemented") ;
+  }
+ 
   virtual ~AliPHOSCalibrator() ; // dtor
 
   void AddRun(const char * filename) ; //Add one more file to handle
@@ -89,6 +95,11 @@ public:
 
   void ReadGains(const char * version="v1",
 		     Int_t ValidRange = 0) ;
+
+  AliPHOSCalibrator & operator = (const AliPHOSCalibrator & rvalue){
+    Fatal("operator =","assigment operator is not implemented") ;
+    return *this ;
+ }
 
 
 

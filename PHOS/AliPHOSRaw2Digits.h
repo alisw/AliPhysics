@@ -51,30 +51,30 @@ private:
   Bool_t StartRootFiles(void) ;
   Bool_t CloseRootFiles(void) ;
   Bool_t ProcessRawFile() ;
-  void Swab4(void *from, void *to, size_t nwords)  ;
-  void Swab2(void *from, void *to, size_t nwords)  ;
+  void Swab4(void *from, void *to, size_t nwords) const ;
+  void Swab2(void *from, void *to, size_t nwords) const ;
   Bool_t Init() ;
   void WriteDigits(void) ;
 
   TClonesArray * fDigits ;             //!list of final digits
-  AliPHOSBeamTestEvent * fPHOSHeader ; //!
+  AliPHOSBeamTestEvent * fPHOSHeader ; //!PHOSBeamTest header 
   AliPHOSConTableDB * fctdb ;          //!
   Double_t fTarget[3] ;                //!Position of the target
   TFile * fHeaderFile ;                //!galice.root file
   TFile * fDigitsFile ;                //!file with digits
   Float_t fBeamEnergy ;    //BeamEnergy 
   Int_t   fMaxPerFile ;    //!Maximal number  of events per root file
-  Int_t   fEvent ;         //
+  Int_t   fEvent ;         //Event number
   Int_t   fStatus ;        //status of input file: OK, not found etc.
   TString fInName ;        // FileName of the input file
   Bool_t  fDebug ;         //!
   Bool_t  fIsInitialized ; //!
   Bool_t  fToSplit ;       //To produce splitted output
   UInt_t  fMK1 ;     //!ZEBRA markers
-  UInt_t  fMK2 ;     //!
-  UInt_t  fMK3 ;     //!
-  UInt_t  fMK4 ;     //!
-  UInt_t  fCKW ;     //!
+  UInt_t  fMK2 ;     //!ZEBRA markers
+  UInt_t  fMK3 ;     //!ZEBRA markers
+  UInt_t  fMK4 ;     //!ZEBRA markers
+  UInt_t  fCKW ;     //!ZEBRA markers
 
   ClassDef(AliPHOSRaw2Digits,1)  // description 
 

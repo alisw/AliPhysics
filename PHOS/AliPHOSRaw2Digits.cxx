@@ -85,6 +85,7 @@ ClassImp(AliPHOSRaw2Digits)
 //____________________________________________________________________________ 
   AliPHOSRaw2Digits::AliPHOSRaw2Digits():TTask() 
 {
+//As one can easily see, this is constructor.
   fInName="";  
   fMK1 = 0x0123CDEF ;
   fMK2 = 0x80708070 ;
@@ -101,13 +102,14 @@ ClassImp(AliPHOSRaw2Digits)
   fHeaderFile = 0 ;
   fDigitsFile = 0 ;
   fPHOSHeader =0 ;
-  fMaxPerFile = 20000 ;
+  fMaxPerFile = 20000 ;  //Maximal number of events in root file.
   fEvent = 0 ;
   fctdb = 0;
 }
 //____________________________________________________________________________ 
   AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename,Bool_t toSplit):TTask("Default","") 
 {
+//this constructor should be normally used. Parameters: imput file and should we produce output in split mode.
   fInName=filename;
   fToSplit = toSplit ;
   TString outname("") ;
@@ -139,10 +141,10 @@ ClassImp(AliPHOSRaw2Digits)
   fEvent = 0 ;
   fctdb = 0;
 }
-
 //____________________________________________________________________________ 
 AliPHOSRaw2Digits::~AliPHOSRaw2Digits()
 {
+//destructor
   if(fPHOSHeader)
     fPHOSHeader->Delete() ;
   if(fDigits){
@@ -539,7 +541,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
   return kTRUE ;  
 }
 //____________________________________________________________________________ 
-void AliPHOSRaw2Digits::Swab4(void *from, void *to, size_t nwords){
+void AliPHOSRaw2Digits::Swab4(void *from, void *to, size_t nwords)const{
   // The function swaps 4 bytes: byte#3<-->byte#0, byte#2<-->byte#1 
   register char *pf=static_cast<char*>(from) ;
   register char *pt=static_cast<char*>(to) ;
@@ -557,8 +559,9 @@ void AliPHOSRaw2Digits::Swab4(void *from, void *to, size_t nwords){
 }
 
 //____________________________________________________________________________ 
-void AliPHOSRaw2Digits::Swab2(void *from, void *to, size_t nwords)
-{ //The function swaps 2x2 bytes: byte#0<-->byte#1, byte#2<-->byte#3 
+void AliPHOSRaw2Digits::Swab2(void *from, void *to, size_t nwords)const
+{ 
+//The function swaps 2x2 bytes: byte#0<-->byte#1, byte#2<-->byte#3 
   register char *pf=static_cast<char*>(from) ;
   register char *pt=static_cast<char*>(to);
   register char c;   
@@ -616,7 +619,7 @@ void AliPHOSRaw2Digits::WriteDigits(void){
 }
 //____________________________________________________________________________ 
 void AliPHOSRaw2Digits::Print(Option_t * option)const{
-  
+  //prints current configuration and status.
 
   printf("----------AliPHOSRaw2Digits---------- \n") ;
   printf("Current input  File: %s\n",fInName.Data()) ; 

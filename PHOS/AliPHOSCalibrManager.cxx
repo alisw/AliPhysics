@@ -16,7 +16,21 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Short description  
+// Class provides interface between classes 
+// consuming/producing calibration data, 
+// such as AliPHOSClusterizer and AliPHOSCalibrator
+// from one side and database (now just a root file, 
+// later  - AliEn etc.)
+// Use case: 
+//  First Manager should be configured so that is reads data 
+//  from a given source. e.g. from a root file:
+//   AliPHOSCalibrManager * m = AliPHOSCalibrManager::GetInstance("MyCalibrationRootFile.root") ;
+//  After that one can real/write data to this source:
+//  AliPHOSCalibrationData mydata("Gains","v1") ;
+//  ......
+//  m->Write(&mydata) ;
+//  AliPHOSCalibrationData myanotherdata("Gains","v2") ;
+//  m->ReadFromRoot(&myanotherdata) ;
 //
 //*-- Author :  D.Peressounko (RRC KI & SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
@@ -41,7 +55,7 @@ AliPHOSCalibrManager * AliPHOSCalibrManager::fgCaMa = 0 ;
 //____________________________________________________________________________ 
 AliPHOSCalibrManager::AliPHOSCalibrManager():TNamed() 
 {
-  // default ctor: nott to be used
+  // default ctor: not to be used
   fctdb = 0 ;
   fFileName="" ;
   Fatal("Default constructor","Should not use") ;
@@ -72,7 +86,8 @@ AliPHOSCalibrManager * AliPHOSCalibrManager::GetInstance(void)
 //____________________________________________________________________________ 
 AliPHOSCalibrManager * AliPHOSCalibrManager::GetInstance(const char* filename )
 {
-  // gets the instance of the unique object
+  // Opens source (now only root file) and
+  // returns the instance of the unique object
 
   if(!fgCaMa)
     fgCaMa = new AliPHOSCalibrManager(filename) ;

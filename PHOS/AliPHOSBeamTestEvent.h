@@ -7,7 +7,7 @@
 
 //_________________________________________________________________________
 //  Class for PHOS Beam Test event header. Contanes all information 
-//  about triggers, etc.    
+//  about triggers, temperature of cristals etc.    
 //                  
 //*-- Author: Maxim Volkov (RRC KI) & Dmitri Peressounko (RRC KI & SUBATECH)
 
@@ -26,9 +26,11 @@ public:
   virtual ~AliPHOSBeamTestEvent() ; // dtor
 
   Float_t   GetBeamEnergy(void) const {return fBeamEnergy ;}
+   //energy of the beam used in calibration (if available)
   UInt_t *  GetUserVector(void)       {return fUserVector ;}
   UInt_t *  GetHeader(void)           {return fHeader ;}
   UShort_t  GetPattern(void) const    {return fPattern ;}
+   //Trigger pattern: pedestal, pulser, real event etc.
   UShort_t *GetScanning(void)         {return fScanning ;}
   UShort_t *GetCharge(void)           {return fCharge ;}
   UInt_t *  GetScaler(void)           {return fScaler ;}

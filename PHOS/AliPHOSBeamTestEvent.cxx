@@ -17,8 +17,10 @@
 
 //_________________________________________________________________________
 // Class for PHOS Beam Test event header. 
-// Contains all information 
-//  about triggers, etc.    
+// Contains PHOS specific information 
+//  about triggers, cristal temperature etc.
+//  This class attached as a branch to TreeE 
+//  and used mainly to keep trigger pattern for current event.    
 // 
 //*-- Author : Maxim Volkov (RRC KI) & Dmitri Peressounko (RRC KI & SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
@@ -37,7 +39,7 @@ ClassImp(AliPHOSBeamTestEvent)
 //____________________________________________________________________________ 
   AliPHOSBeamTestEvent::AliPHOSBeamTestEvent():TObject() 
 {
-
+//Nothig should be set by default.
 }
 
 //____________________________________________________________________________ 

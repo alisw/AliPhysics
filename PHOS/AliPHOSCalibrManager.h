@@ -24,6 +24,12 @@ class AliPHOSCalibrManager:public TNamed {
 
 public:
   AliPHOSCalibrManager() ;          // ctor
+  AliPHOSCalibrManager(const AliPHOSCalibrManager & manager) {
+    // cpy ctor: no need
+    // requested by the Coding Convention
+    Fatal("cpy ctor", "not implemented") ;
+  }
+ 
   virtual ~AliPHOSCalibrManager() ; // dtor
   static AliPHOSCalibrManager * GetInstance() ;
   static AliPHOSCalibrManager * GetInstance(const char * dbfilename ) ; 
@@ -38,14 +44,14 @@ public:
 
   void WriteData(AliPHOSCalibrationData *data) ;
 
-  AliPHOSCalibrManager & operator = (const AliPHOSCalibrManager & ) ;
+  AliPHOSCalibrManager & operator = (const AliPHOSCalibrManager & right) ;
 
 private:
   AliPHOSCalibrManager(const char* filename) ;          
 
 private:
-  TString   fFileName ;
-  AliPHOSConTableDB * fctdb ;  //!
+  TString   fFileName ;        //Name of file with calibration data
+  AliPHOSConTableDB * fctdb ;  //! Connection table of PHOS
   static AliPHOSCalibrManager * fgCaMa ; // pointer to the unique instance of singleton
 	    
  

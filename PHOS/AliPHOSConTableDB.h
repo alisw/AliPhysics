@@ -6,9 +6,10 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Base Class for PHOS     
+//  Class for PHOS connection table, i.e. correspondence between 
+//  "cable number" and PHOS AbsId number.
 //                  
-//*-- Author: (SUBATECH)
+//*-- Author: D.Peressounko "RRC Kurchatov Institute"
 
 
 // --- ROOT system ---
@@ -25,14 +26,15 @@ class AliPHOSConTableDB: public TNamed {
 public:
   AliPHOSConTableDB() ;          // ctor
   AliPHOSConTableDB(const char * title) ;          // ctor
+  AliPHOSConTableDB(const AliPHOSConTableDB * cdb) ;          // ctor
   virtual ~AliPHOSConTableDB() ; // dtor
 
-  //Calculate table from known numbe of raws/columns 
+  //Calculate table from known number of raws/columns 
   //assuming that prototype is situated in the center of 3 PHOS mod.
   void BuildDB(void) ;
-  Int_t GetNchanels(){return fNcrInProto ; } 
-  Int_t GetNRaws(){return fProtoRaws ;} 
-  Int_t GetNColumns(){return fProtoColumns ;}
+  Int_t GetNchanels()const {return fNcrInProto ; } 
+  Int_t GetNRaws()const{return fProtoRaws ;} 
+  Int_t GetNColumns()const{return fProtoColumns ;}
 
   //set the number of columns in prototype
   void SetNCols(Int_t ncolumns){fProtoColumns = ncolumns ;}
@@ -45,25 +47,28 @@ public:
   void PlotProtoMap(Option_t * opt="Zoom") ; 
 
   //Transforms channel number in prototype into AbsId number in PHOS
-  Int_t Raw2AbsId(Int_t raw) ;
+  Int_t Raw2AbsId(Int_t raw)const ;
 
   //Transforms AbsId number in PHOS into channel number in prototype 
-  Int_t AbsId2Raw(Int_t AbsId) ;
+  Int_t AbsId2Raw(Int_t AbsId)const ;
 
   virtual void Print(Option_t * option="") const ;
 
-private:
-  AliPHOSGeometry * fGeom ;   //!
 
-  Int_t     fProtoRaws ;        //Parameters
-  Int_t     fProtoColumns ;     //used to calculate
-  Int_t     fRawOffset ;        //correspondance
-  Int_t     fColOffset ;        //map
-  Int_t     fNcrInProto ;    //Number of channels in prototype
-  Int_t     fMinAbsId ;
-  Int_t     fMaxAbsId ;
-  TArrayS * fAbsIdMap ;      //Map of correspondance between Raw and PHOS ID
-  TArrayS * fRawIdMap ;      //Map of correspondance between AbsId and Raw
+  AliPHOSConTableDB& operator=(const AliPHOSConTableDB& cdb) ;
+
+private:
+  AliPHOSGeometry * fGeom ;   //! PHOS geometry class
+
+  Int_t     fProtoRaws ;        //  Parameters
+  Int_t     fProtoColumns ;     //  used to calculate
+  Int_t     fRawOffset ;        //  correspondance
+  Int_t     fColOffset ;        //  map
+  Int_t     fNcrInProto ;       //Number of channels in prototype
+  Int_t     fMinAbsId ;         //Minimal AbsId, corresponding to some prototype cristall.
+  Int_t     fMaxAbsId ;         //Maximal AbsId, corresponding to some prototype cristall
+  TArrayS * fAbsIdMap ;         //Map of correspondance between Raw and PHOS ID
+  TArrayS * fRawIdMap ;         //Map of correspondance between AbsId and Raw
 
   ClassDef(AliPHOSConTableDB,1)  // description 
 

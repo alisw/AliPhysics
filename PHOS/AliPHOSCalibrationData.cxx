@@ -15,9 +15,12 @@
 
 
 //_________________________________________________________________________
-// Calibration data 
-// and their 
-// quality  
+// Calibration data class contains two arrays: 
+// data themselves and their quality (or possibility to check 
+// goodness of the data. 
+// There are two kinds of data in PHOS "Gains" and "Pedestals"
+// each of them have as well title and validity range to distinguish
+// different calibrations.
 //
 //*-- Author : D.Peressounko
 //////////////////////////////////////////////////////////////////////////////
