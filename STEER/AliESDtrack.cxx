@@ -41,6 +41,8 @@ fCx(0),
 fCchi2(1e10),
 fIalpha(0),
 fIx(0),
+fTalpha(0),
+fTx(0),
 fOalpha(0),
 fOx(0),
 fITSchi2(0),
@@ -52,6 +54,7 @@ fTPCClusterMap(159),//number of padrows
 fTPCsignal(0),
 fTRDchi2(0),
 fTRDncls(0),
+fTRDncls0(0),
 fTRDsignal(0),
 fTOFchi2(0),
 fTOFindex(0),
@@ -82,15 +85,115 @@ fRICHsignal(-1)
   fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
   fEMCALpos[0]=fEMCALpos[1]=fEMCALpos[2]=0.;
   Int_t i;
-  for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.;}
-  for (i=0; i<15; i++) { fRc[i]=0.; fCc[i]=0.; fIc[i]=0.; fOc[i]=0.;   }
+  for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.; fTp[i]=0.;}
+  for (i=0; i<15; i++) { fRc[i]=0.; fCc[i]=0.; fIc[i]=0.; fOc[i]=0.; fTc[i]=0.;  }
   for (i=0; i<6; i++)  { fITSindex[i]=0; }
   for (i=0; i<180; i++){ fTPCindex[i]=0; }
-  for (i=0; i<90; i++) { fTRDindex[i]=0; }
+  for (i=0; i<130; i++) { fTRDindex[i]=0; }
   fTPCLabel = 0;
   fTRDLabel = 0;
   fITSLabel = 0;
+  fITStrack = 0;
+  fTRDtrack = 0;  
+}
+
+//_______________________________________________________________________
+
+AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
+  //
+  //copy constructor
+  //
+  fFlags = track.fFlags;
+  fLabel =track.fLabel;
+  fTrackLength =track.fTrackLength;
+  for (Int_t i=0;i<kSPECIES;i++) fTrackTime[i] =track.fTrackTime[i];
+  for (Int_t i=0;i<kSPECIES;i++)  fR[i] =track.fR[i];
+  fStopVertex =track.fStopVertex;
+  //
+  fRalpha =track.fRalpha;
+  fRx =track.fRx;
+  for (Int_t i=0;i<5;i++) fRp[i] =track.fRp[i];
+  for (Int_t i=0;i<15;i++) fRc[i] =track.fRc[i];
+  //
+  fCalpha =track.fCalpha;
+  fCx =track.fCx;
+  for (Int_t i=0;i<5;i++) fCp[i] =track.fCp[i];
+  for (Int_t i=0;i<15;i++)  fCc[i] =track.fCc[i];
+  fCchi2 =track.fCchi2;
+  //
+  fIalpha =track.fIalpha;
+  fIx =track.fIx;
+  for (Int_t i=0;i<5;i++) fIp[i] =track.fIp[i];
+  for (Int_t i=0;i<15;i++)  fIc[i] =track.fIc[i];
+  //
+  fTalpha =track.fTalpha;
+  fTx =track.fTx;
+  for (Int_t i=0;i<5;i++) fTp[i] =track.fTp[i];
+  for (Int_t i=0;i<15;i++)  fTc[i] =track.fTc[i];
+  //
+  fOalpha =track.fOalpha;
+  fOx =track.fOx;
+  for (Int_t i=0;i<5;i++) fOp[i] =track.fOp[i];
+  for (Int_t i=0;i<15;i++)  fOc[i] =track.fOc[i];
+  //
+  fXalpha =track.fXalpha;
+  fXx =track.fXx;
+  for (Int_t i=0;i<5;i++) fXp[i] =track.fXp[i];
+  for (Int_t i=0;i<15;i++) fXc[i] =track.fXc[i];
+  //
+  fITSchi2 =track.fITSchi2;
+  for (Int_t i=0;i<12;i++) fITSchi2MIP[i] =track.fITSchi2MIP[i];
+  fITSncls =track.fITSncls;       
+  for (Int_t i=0;i<6;i++) fITSindex[i]=track.fITSindex[i];    
+  fITSsignal =track.fITSsignal;     
+  for (Int_t i=0;i<kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
+  fITSLabel =track.fITSLabel;       
+  fITSFakeRatio =track.fITSFakeRatio;   
+  fITStrack =0;  //coping separatelly - in user code
+  //
+  fTPCchi2 =track.fTPCchi2;       
+  fTPCncls =track.fTPCncls;       
+  for (Int_t i=0;i<180;i++) fTPCindex[i]=track.fTPCindex[i];  
+  fTPCClusterMap=track.fTPCClusterMap;  
+  fTPCsignal=track.fTPCsignal;      
+  for (Int_t i=0;i<kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
+  fTPCLabel=track.fTPCLabel;       
+  //
+  fTRDchi2=track.fTRDchi2;        
+  fTRDncls=track.fTRDncls;       
+  fTRDncls0=track.fTRDncls0;       
+  for (Int_t i=0;i<130;i++) fTRDindex[i]=track.fTRDindex[i];   
+  fTRDsignal=track.fTRDsignal;      
+  for (Int_t i=0;i<kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
+  fTRDLabel=track.fTRDLabel;       
+  fTRDtrack=0; 
+  //
+  fTOFchi2=track.fTOFchi2;        
+  fTOFindex=track.fTOFindex;       
+  fTOFsignal=track.fTOFsignal;      
+  for (Int_t i=0;i<kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
+  //
+  for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
+  fPHOSsignal=track.fPHOSsignal; 
+  for (Int_t i=0;i<kSPECIES;i++) fPHOSr[i]=track.fPHOSr[i]; 
+  //
+  for (Int_t i=0;i<3;i++) fEMCALpos[i]=track.fEMCALpos[i]; 
+  fEMCALsignal=track.fEMCALsignal; 
+  for (Int_t i=0;i<kSPECIES;i++) fEMCALr[i]=track.fEMCALr[i]; 
+  //
+  fRICHsignal=track.fRICHsignal;     
+  for (Int_t i=0;i<kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
   
+  
+}
+//_______________________________________________________________________
+AliESDtrack::~AliESDtrack(){ 
+  //
+  // This is destructor according Coding Conventrions 
+  //
+  //printf("Delete track\n");
+  if (fITStrack) delete fITStrack;
+  if (fTRDtrack) delete fTRDtrack;  
 }
 
 //_______________________________________________________________________
@@ -109,7 +212,7 @@ Double_t AliESDtrack::GetMass() const {
         if (fR[0]<fR[4]*10.) return 0.93827;
      return 0.00051;
   }
-  if (k==1) return 0.10566;
+  if (k==1) return 0.10566; 
   if (k==2||k==-1) return 0.13957;
   if (k==3) return 0.49368;
   if (k==4) return 0.93827;
@@ -237,17 +340,22 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
          for (i=0; i<15; i++) fXc[i]=buf[i];
       }
     }
-  case kTOFin: 
-    break;
-  case kTOFout: 
-    break;
   case kTRDin: case kTRDrefit:
     fTRDLabel = t->GetLabel();
-
+ 
     fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
     for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
     fTRDsignal=t->GetPIDsignal();
+    break;
+  case kTRDbackup:
+    t->GetExternalParameters(fTx,fTp);
+    t->GetExternalCovariance(fTc);
+    fTRDncls0 = t->GetNumberOfClusters(); 
+    break;
+  case kTOFin: 
+    break;
+  case kTOFout: 
     break;
   case kTRDStop:
     break;
@@ -405,6 +513,16 @@ void AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const
  
 }
 
+void  AliESDtrack::GetTRDExternalParameters(Double_t &x, Double_t p[5], Double_t cov[15]) const
+{
+  //
+  //this function returns TRD parameters
+  //
+  x=fTx;
+  for (Int_t i=0; i<5; i++) p[i]=fTp[i];
+  for (Int_t i=0; i<15; i++) cov[i]=fTc[i];
+}
+
 void AliESDtrack::GetOuterPxPyPz(Double_t *p, TString det) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
@@ -477,7 +595,7 @@ void AliESDtrack::SetITSpid(const Double_t *p) {
 }
 
 void AliESDtrack::SetITSChi2MIP(const Float_t *chi2mip){
-  for (Int_t i=0; i<6; i++) fITSchi2MIP[i]=chi2mip[i];
+  for (Int_t i=0; i<12; i++) fITSchi2MIP[i]=chi2mip[i];
 }
 //_______________________________________________________________________
 void AliESDtrack::GetITSpid(Double_t *p) const {
@@ -523,7 +641,7 @@ Int_t AliESDtrack::GetTRDclusters(UInt_t *idx) const {
   // This function returns indices of the assgined TRD clusters 
   //---------------------------------------------------------------------
   if (idx!=0)
-    for (Int_t i=0; i<90; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
+    for (Int_t i=0; i<130; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
   return fTRDncls;
 }
 

@@ -20,7 +20,8 @@ class AliKalmanTrack;
 class AliESDtrack : public TObject {
 public:
   AliESDtrack();
-  virtual ~AliESDtrack() {}
+  AliESDtrack(const AliESDtrack& track);
+  virtual ~AliESDtrack();  
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
   Bool_t UpdateTrackParams(AliKalmanTrack *t, ULong_t flags);
@@ -64,13 +65,14 @@ public:
 
   void SetITSpid(const Double_t *p);
   void SetITSChi2MIP(const Float_t *chi2mip);
+  void SetITStrack(AliKalmanTrack * track){fITStrack=track;}
   void GetITSpid(Double_t *p) const;
   Float_t GetITSsignal() const {return fITSsignal;}
   Float_t GetITSchi2() const {return fITSchi2;}
   Int_t GetITSclusters(UInt_t *idx) const;
   Int_t GetITSLabel() const {return fITSLabel;}
   Float_t GetITSFakeRatio() const {return fITSFakeRatio;}
-
+  AliKalmanTrack * GetITStrack(){return fITStrack;}
 
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
@@ -81,6 +83,7 @@ public:
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   
   void SetTRDpid(const Double_t *p);
+  void SetTRDtrack(AliKalmanTrack * track){fTRDtrack=track;}
   void GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
   Float_t GetTRDchi2() const {return fTRDchi2;}
@@ -88,7 +91,8 @@ public:
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
   Int_t GetTRDLabel() const {return fTRDLabel;}
-
+  void GetTRDExternalParameters(Double_t &x, Double_t p[5], Double_t cov[15]) const;//MI
+  AliKalmanTrack * GetTRDtrack(){return fTRDtrack;}
 
   void SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
   Float_t GetTOFsignal() const {return fTOFsignal;}
@@ -137,7 +141,8 @@ public:
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
     kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
     kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kPHOSpid=0x10000, kRICHpid=0x20000, kEMCALpid=0x40000, 
+    kPHOSpid=0x10000, kRICHpid=0x20000, kEMCALpid=0x40000,
+    kTRDbackup=0x80000,
     kTRDStop=0x20000000,
     kESDpid=0x40000000,
     kTIME=0x80000000
@@ -176,6 +181,11 @@ protected:
   Double_t fIx;       // x-coordinate of the track reference plane
   Double_t fIp[5];    // external track parameters
   Double_t fIc[15];   // external cov. matrix of the track parameters
+//Track parameters at the inner wall of the TRD 
+  Double_t fTalpha;   // Track rotation angle
+  Double_t fTx;       // x-coordinate of the track reference plane
+  Double_t fTp[5];    // external track parameters
+  Double_t fTc[15];   // external cov. matrix of the track parameters
 
 //Track parameters at the radius of the PHOS
   Double_t fOalpha;   // Track rotation angle
@@ -191,13 +201,15 @@ protected:
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
-  Float_t fITSchi2MIP[6];     // chi2s in the ITS
+  Float_t fITSchi2MIP[12];     // chi2s in the ITS
   Int_t   fITSncls;        // number of clusters assigned in the ITS
   UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
   Float_t fITSFakeRatio;   // ration of fake tracks
+  AliKalmanTrack * fITStrack; //OWNER: pointer to the ITS track -- currently for debug purpose
+  
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
@@ -206,15 +218,15 @@ protected:
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTPCLabel;       // label according TPC
-
   // TRD related track information
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
-  UInt_t  fTRDindex[90];   //! indices of the assigned TRD clusters
+  Int_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
+  UInt_t  fTRDindex[130];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
-
+  AliKalmanTrack * fTRDtrack; //OWNER: pointer to the TRD track -- currently for debug purpose
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF
   UInt_t  fTOFindex;       // index of the assigned TOF cluster
@@ -235,7 +247,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,5)  //ESDtrack 
+  ClassDef(AliESDtrack,6)  //ESDtrack 
 };
 
 #endif 
