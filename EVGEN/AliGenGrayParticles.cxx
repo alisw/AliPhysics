@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2003/01/06 10:09:57  morsch
+Use AliGrayParticleModel.
+
 Revision 1.3  2002/12/02 10:02:40  morsch
 Corrections introduced by F. Silker:
 - SetBetaSource
@@ -38,6 +41,7 @@ Gray particle generator, first commit.
  */
 #include "AliGenGrayParticles.h"
 #include "AliGrayParticleModel.h"
+#include "AliCollisionGeometry.h"
 #include "AliPDG.h"
 #include <TDatabasePDG.h>
 
@@ -46,6 +50,8 @@ Gray particle generator, first commit.
  AliGenGrayParticles::AliGenGrayParticles():AliGenerator(-1)
 {
 // Default constructor
+    fGrayParticleModel = 0;
+    fCollisionGeometry = 0;
 }
 
 AliGenGrayParticles::AliGenGrayParticles(Int_t npart)
@@ -60,12 +66,15 @@ AliGenGrayParticles::AliGenGrayParticles(Int_t npart)
     SetCharge();
     SetTemperature();
     SetBetaSource();
+    fGrayParticleModel = new AliGrayParticleModel();
+    fCollisionGeometry = 0;
 }
 
 //____________________________________________________________
 AliGenGrayParticles::~AliGenGrayParticles()
 {
 // Destructor
+    delete  fGrayParticleModel;
 }
 
 
@@ -85,11 +94,22 @@ void AliGenGrayParticles::Generate()
   //
   // Generate one event
   //
+  //
+  // Communication with Gray Particle Model 
+  // 
+    Int_t np, nn;
+
+    Float_t b = fCollisionGeometry->ImpactParameter();
+    printf("AliGenGrayParticles: Impact parameter from Collision Geometry %f \n", b);
+    
+    fGrayParticleModel->GetNumberOfGrayNucleons(fCollisionGeometry, np, nn);
+    
+   //
     Float_t p[3];
     Float_t origin[3] = {0., 0., 0.};
     Float_t polar [3] = {0., 0., 0.};    
     Int_t nt, i;
-    for(i = 0;i < fNpart; i++) {
+        for(i = 0;i < fNpart; i++) {
 	Int_t kf;
         if(fCharge==1) kf = kProton;
                   else kf = kNeutron;

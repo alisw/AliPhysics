@@ -25,6 +25,9 @@ public:
     //
     virtual void SetGrayParticleModel(AliGrayParticleModel* model) 
 	{fGrayParticleModel = model;}
+    virtual Bool_t NeedsCollisionGeometry() {return kTRUE;}
+    virtual void   SetCollisionGeometry(AliCollisionGeometry* geom)
+	{fCollisionGeometry = geom;}
 	    
  protected:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q);
