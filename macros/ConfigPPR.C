@@ -55,7 +55,22 @@ enum PprRun_t
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
     kHijing_pA, kPythia6, kPythia6Jets, kD0PbPb5500, kD_TRD, kB_TRD, kJpsi_TRD,
-    kU_TRD, kPyJJ, kPyGJ
+    kU_TRD, kPyJJ, kPyGJ, kRunMax
+};
+
+const char* pprRunName[kRunMax] = {
+    "test50",
+    "kParam_8000",   "kParam_4000",  "kParam_2000", 
+    "kHijing_cent1", "kHijing_cent2", 
+    "kHijing_per1",  "kHijing_per2", "kHijing_per3", "kHijing_per4",  
+    "kHijing_per5",
+    "kHijing_jj25",  "kHijing_jj50", "kHijing_jj75", "kHijing_jj100", 
+    "kHijing_jj200", 
+    "kHijing_gj25",  "kHijing_gj50", "kHijing_gj75", "kHijing_gj100", 
+    "kHijing_gj200",
+    "kHijing_pA", "kPythia6", "kPythia6Jets", "kD0PbPb5500", "kD_TRD", 
+    "kB_TRD", "kJpsi_TRD",
+    "kU_TRD", "kPyJJ", "kPyGJ"
 };
 
 enum PprGeo_t 
@@ -80,6 +95,7 @@ static PprRun_t srun = kPythia6;
 static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
+static Int_t    sseed = 12345; //Set 0 to use the current time
 
 // Comment line 
 static TString  comment;
@@ -88,14 +104,18 @@ static TString  comment;
 Float_t EtaToTheta(Float_t arg);
 AliGenerator* GeneratorFactory(PprRun_t srun);
 AliGenHijing* HijingStandard();
+void ProcessEnvironmentVars();
 
 void Config()
 {
     // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
     // Theta range given through pseudorapidity limits 22/6/2001
 
+    // Get settings from environment variables
+    ProcessEnvironmentVars();
+
     // Set Random Number seed
-  gRandom->SetSeed(12345); //Set 0 to use the current time
+    gRandom->SetSeed(sseed);
     cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
 
 
@@ -946,6 +966,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gGener=gener;
       }
       break;
+    default: break;
     }
     return gGener;
 }
@@ -976,4 +997,20 @@ AliGenHijing* HijingStandard()
 }
 
 
+void ProcessEnvironmentVars()
+{
+    // Run type
+    if (gSystem->Getenv("CONFIG_RUN_TYPE")) {
+      for (Int_t iRun = 0; iRun < kRunMax; iRun++) {
+	if (strcmp(gSystem->Getenv("CONFIG_RUN_TYPE"), pprRunName[iRun])==0) {
+	  srun = (PprRun_t)iRun;
+	  cout<<"Run type set to "<<pprRunName[iRun]<<endl;
+	}
+      }
+    }
 
+    // Random Number seed
+    if (gSystem->Getenv("CONFIG_SEED")) {
+      sseed = atoi(gSystem->Getenv("CONFIG_SEED"));
+    }
+}

@@ -245,6 +245,10 @@ Int_t AliTOFComparison() {
      break;
    }
 
+   TFile fc("AliTOFComparison.root","RECREATE");
+   c1->Write();
+   fc.Close();
+
    return 0;
 }
 

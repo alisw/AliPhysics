@@ -2,7 +2,7 @@ PLATFORM:=linuxicc
 
 # The compilers
 CXX           = icc 
-F77	      = ifc
+F77	      = ifort
 CC	      = icc
 
 # Global optimisation
@@ -52,7 +52,7 @@ GLIBS         = $(LIBNOVER)
 #System libraries
 SYSLIBS =
 
-EXEFLAGS+= -L/usr/local/lib -lXt -lCEPCF90 -lF90 -lPEPCF90 -lintrins
+EXEFLAGS+= -L/usr/local/lib -lXt -L/opt/intel_fc_80/lib -lifport -lifcore
 
 
 

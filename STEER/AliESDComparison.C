@@ -26,7 +26,7 @@
 extern AliRun *gAlice;
 extern TROOT *gROOT;
 
-Int_t AliESDcomparison(const Char_t *dir=".") { 
+Int_t AliESDComparison(const Char_t *dir=".") { 
    Double_t pi=0.2,pa=2;
 
    TH2F *tpcHist=(TH2F*)gROOT->FindObject("tpcHist");
@@ -227,6 +227,9 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
    prFake->Draw("same");
 
    ef->Close();
+   TFile fc("AliESDComparison.root","RECREATE");
+   c1->Write();
+   fc.Close();
 
    delete rl;
 
