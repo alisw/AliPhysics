@@ -57,8 +57,8 @@ int main(int argc,char **argv)
 
   //Create an ALtroMemHandler object
   AliL3AltroMemHandler altromem;
-  if(altroout) altroout=altromem.SetBinaryOutput(afile);
-  
+  if(altroout) altroout=altromem.SetASCIIOutput(afile);
+
   UShort_t time,charge;
   UChar_t pad;
   for(UInt_t row=0; row<nrows; row++) //Loop over padrows
