@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/12/13 10:33:49  coppedis
+Prints only if fDebug==1
+
 Revision 1.8  2000/12/12 14:10:02  coppedis
 Correction suggested by M. Masera
 
@@ -58,6 +61,9 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+// --- Standard libraries
+#include "stdio.h"
+
 // --- ROOT system
 #include <TBRIK.h>
 #include <TNode.h>
@@ -66,7 +72,6 @@ Introduction of the Copyright and cvs Log
 #include <TSystem.h>
 #include <TTree.h>
 
-#include "stdio.h"
 
 // --- AliRoot classes
 #include "AliZDCv1.h"
@@ -1104,100 +1109,107 @@ Int_t AliZDCv1::Digitize(Int_t Det, Int_t Quad, Int_t Light)
   return ADCch;
 }
 //_____________________________________________________________________________
-void AliZDCv1::FinishEvent()
+void AliZDCv1::Hits2Digits(Int_t ntracks)
 {
   // Creation of the digits from hits 
 
-  if(fDebug == 1){
-    printf("\n  Event Hits --------------------------------------------------------\n");  
-    printf("\n	Num. of primary hits = %d\n", fNPrimaryHits);  
-    fStHits->Print("");
-  }
+  if(fDigits!=0) fDigits->Clear();
+  else fDigits = new TClonesArray ("AliZDCDigit",1000);
 
-  TClonesArray &lDigits = *fDigits;
+  char branchname[10];
+  sprintf(branchname,"%s",GetName());
+  gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
+  
+  gAlice->TreeD()->GetEvent(0);
   
   AliZDCDigit *newdigit;
   AliZDCHit   *hit;
 
   Int_t PMCZN = 0, PMCZP = 0, PMQZN[4], PMQZP[4], PMZEM = 0;
   
-  Int_t h;
-  for(h=0; h<4; h++){
-     PMQZN[h] =0;
-     PMQZP[h] =0;
-  }
-  
   Int_t i;
-  for(i=0; i<fNStHits; i++){
-     hit = (AliZDCHit*)fStHits->At(i);
-     Int_t det   = hit->GetVolume(0);
-     Int_t quad  = hit->GetVolume(1);
-     Int_t lightQ = Int_t(hit->GetLightPMQ());
-     Int_t lightC = Int_t(hit->GetLightPMC());
-//     printf("	     \ni = %d, fNStHits = %d, det = %d, quad = %d,"
-//  	    "lightC = %d lightQ = %d\n", i, fNStHits, det, quad, lightC, lightQ);
-  	    
-     if(det == 1){   //ZN 
-       PMCZN = PMCZN + lightC;
-       PMQZN[quad-1] = PMQZN[quad-1] + lightQ;
-     }
-
-     if(det == 2){   //ZP 
-       PMCZP = PMCZP + lightC;
-       PMQZP[quad-1] = PMQZP[quad-1] + lightQ;
-     }
-
-     if(det == 3){   //ZEM 
-       PMZEM = PMZEM + lightC;
-     }
+  for(i=0; i<4; i++){
+     PMQZN[i] =0;
+     PMQZP[i] =0;
   }
   
-  if(fDebug == 1){
-    printf("\n	 PMCZN = %d, PMQZN[0] = %d, PMQZN[1] = %d, PMQZN[2] = %d, PMQZN[3] = %d\n"
-	 , PMCZN, PMQZN[0], PMQZN[1], PMQZN[2], PMQZN[3]);
-    printf("\n	 PMCZP = %d, PMQZP[0] = %d, PMQZP[1] = %d, PMQZP[2] = %d, PMQZP[3] = %d\n"
-	 , PMCZP, PMQZP[0], PMQZP[1], PMQZP[2], PMQZP[3]);
-    printf("\n	 PMZEM = %d\n", PMZEM);
-  }
+  Int_t itrack = 0;
+  for(itrack=0; itrack<ntracks; itrack++){
+     gAlice->ResetHits();
+     gAlice->TreeH()->GetEvent(itrack);
+     for(i=0; i<fHits->GetEntries(); i++){
+        hit = (AliZDCHit*)fHits->At(i);
+        Int_t det   = hit->GetVolume(0);
+        Int_t quad  = hit->GetVolume(1);
+        Int_t lightQ = Int_t(hit->GetLightPMQ());
+        Int_t lightC = Int_t(hit->GetLightPMC());
+	if(fDebug == 1)
+          printf("	   \n itrack = %d, fNhits = %d, det = %d, quad = %d,"
+	  "lightC = %d lightQ = %d\n", itrack, fNhits, det, quad, lightC, lightQ);
+	    
+        if(det == 1){   //ZN 
+          PMCZN = PMCZN + lightC;
+          PMQZN[quad-1] = PMQZN[quad-1] + lightQ;
+        }
+
+        if(det == 2){   //ZP 
+          PMCZP = PMCZP + lightC;
+          PMQZP[quad-1] = PMQZP[quad-1] + lightQ;
+        }
+
+        if(det == 3){   //ZEM 
+          PMZEM = PMZEM + lightC;
+        }
+     } // Hits loop
+  
+     if(fDebug == 1){
+       printf("\n	 PMCZN = %d, PMQZN[0] = %d, PMQZN[1] = %d, PMQZN[2] = %d, PMQZN[3] = %d\n"
+	    , PMCZN, PMQZN[0], PMQZN[1], PMQZN[2], PMQZN[3]);
+       printf("\n	 PMCZP = %d, PMQZP[0] = %d, PMQZP[1] = %d, PMQZP[2] = %d, PMQZP[3] = %d\n"
+	    , PMCZP, PMQZP[0], PMQZP[1], PMQZP[2], PMQZP[3]);
+       printf("\n	 PMZEM = %d\n", PMZEM);
+     }
 
   // ------------------------------------    Hits2Digits
   // Digits for ZN
-  newdigit = new AliZDCDigit(1, 0, Digitize(1, 0, PMCZN));
-  new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
-  fNdigits++;
-  delete newdigit;
-  
-  Int_t j;
-  for(j=0; j<4; j++){
-     newdigit = new AliZDCDigit(1, j+1, Digitize(1, j+1, PMQZN[j]));
-     new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
+     newdigit = new AliZDCDigit(1, 0, Digitize(1, 0, PMCZN));
+     new((*fDigits)[fNdigits]) AliZDCDigit(*newdigit);
      fNdigits++;
      delete newdigit;
-  }
   
-  // Digits for ZP
-  newdigit = new AliZDCDigit(2, 0, Digitize(2, 0, PMCZP));
-  new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
-  fNdigits++;
-  delete newdigit;
+     Int_t j;
+     for(j=0; j<4; j++){
+        newdigit = new AliZDCDigit(1, j+1, Digitize(1, j+1, PMQZN[j]));
+        new((*fDigits)[fNdigits]) AliZDCDigit(*newdigit);
+        fNdigits++;
+        delete newdigit;
+     }
   
-  Int_t k;
-  for(k=0; k<4; k++){
-     newdigit = new AliZDCDigit(2, k+1, Digitize(2, k+1, PMQZP[k]));
-     new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
+     // Digits for ZP
+     newdigit = new AliZDCDigit(2, 0, Digitize(2, 0, PMCZP));
+     new((*fDigits)[fNdigits]) AliZDCDigit(*newdigit);
      fNdigits++;
      delete newdigit;
-  }
   
-  // Digits for ZEM
-  newdigit = new AliZDCDigit(3, 0, Digitize(3, 0, PMZEM));
-  new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
-  fNdigits++;
-  delete newdigit;
+     Int_t k;
+     for(k=0; k<4; k++){
+        newdigit = new AliZDCDigit(2, k+1, Digitize(2, k+1, PMQZP[k]));
+        new((*fDigits)[fNdigits]) AliZDCDigit(*newdigit);
+        fNdigits++;
+        delete newdigit;
+     }
+  
+     // Digits for ZEM
+     newdigit = new AliZDCDigit(3, 0, Digitize(3, 0, PMZEM));
+     new((*fDigits)[fNdigits]) AliZDCDigit(*newdigit);
+     fNdigits++;
+     delete newdigit;
+  
+  } // Tracks loop
       
   
   gAlice->TreeD()->Fill();
-  gAlice->TreeD()->Write();
+  gAlice->TreeD()->Write(0,TObject::kOverwrite);
 
   if(fDebug == 1){
     printf("\n  Event Digits -----------------------------------------------------\n");  
@@ -1242,11 +1254,7 @@ void AliZDCv1::StepManager()
      (gMC->GetMedium() == fMedSensGR) || (gMC->GetMedium() == fMedSensF1) ||
      (gMC->GetMedium() == fMedSensF2) || (gMC->GetMedium() == fMedSensZEM) ||
      (gMC->GetMedium() == fMedSensPI)){
-     
-     for(j=0; j<=9; j++){
-        hits[j] = 0;
-     }
-  
+       
   // If particle interacts with beam pipe -> return
     if(gMC->GetMedium() == fMedSensPI){ 
   

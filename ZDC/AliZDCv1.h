@@ -23,12 +23,12 @@ public:
   virtual void  CreateZDC();
   virtual void  CreateMaterials();
   Int_t         Digitize(Int_t Det, Int_t Quad, Int_t Light);
-  virtual void  FinishEvent();
   virtual void  MakeBranch(Option_t* opt);
   virtual Int_t IsVersion() const {return 1;}
   virtual void  DrawModule();
   virtual void  Init();
   virtual void  InitTables();
+  virtual void  Hits2Digits(Int_t ntracks = 0);
   virtual void  StepManager();
   
   // Switching off the shower development in ZDCs
