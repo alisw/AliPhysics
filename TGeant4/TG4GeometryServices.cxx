@@ -117,7 +117,13 @@ G4bool TG4GeometryServices::CompareElement(G4double a, G4double z,
   G4double ze = element->GetZ();
 
   // g3tog4 can redefine A
-  G4double ax = G3Ele.GetEle(z)->GetA()/TG4G3Units::AtomicWeight();
+  G4double ax;
+  if (z<1) {
+    // vacuum 
+    ax = 1.01*g/mole; 
+  }
+  else  
+    ax = G3Ele.GetEle(z)->GetA()/TG4G3Units::AtomicWeight();
 
   if (abs(ax - ae) < fgkAZTolerance && abs(z  - ze) < fgkAZTolerance) 
     return true;
