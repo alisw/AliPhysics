@@ -1563,7 +1563,12 @@ Int_t TFluka::VolId(const Text_t* volName) const
 // Time consuming. (Only used during set-up)
 // Could be replaced by hash-table
 //
-   return fMCGeo->VolId(volName);
+    char sname[20];
+    Int_t len;
+    strncpy(sname, volName, len = strlen(volName));
+    sname[len] = 0;
+    while (sname[len - 1] == ' ') sname[--len] = 0;
+    return fMCGeo->VolId(sname);
 }
 
 //______________________________________________________________________________ 
