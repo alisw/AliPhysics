@@ -41,7 +41,9 @@ endif
 #DEFSTR += -Ddo_mc
 
 #Use logging classes
+ifndef NOLOGGING
 DEFSTR += -Duse_logging
+endif
 
 ifdef MLUCDIR
 INCLUDES += -I$(MLUCDIR)/include
