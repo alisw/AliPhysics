@@ -49,7 +49,7 @@ enum PprRun_t
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
-    kHijing_pA, kPythia
+    kHijing_pA, kPythia6
 };
 
 enum PprGeo_t 
@@ -70,7 +70,7 @@ enum PprMag_t
 
 // This part for configuration    
 //static PprRun_t srun = test50;
-static PprRun_t srun = kPythia;
+static PprRun_t srun = kPythia6;
 static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k4kG;
@@ -818,7 +818,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gGener=gener;
       }
 	break;
-    case kPythia:
+    case kPythia6:
       {
         comment = comment.Append(":Pythia p-p @ 14 TeV");
         AliGenPythia *gener = new AliGenPythia(-1); 
