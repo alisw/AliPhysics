@@ -108,7 +108,14 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Fl
      fX = fY = fZ = 0x0;
      return;
    }
-
+  
+  for (Int_t i = 0; i < fN; i++)
+   {
+     fX[i] = 0.0;
+     fY[i] = 0.0;
+     fZ[i] = 0.0;
+   }
+  
   Double_t x;
   Double_t par[5];
   track->GetInnerExternalParameters(x,par);     //get properties of the track
@@ -124,11 +131,11 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Fl
      return;
    }
    
-  Double_t alpha = track->GetInnerAlpha();
-  Double_t cc = 1000./0.299792458/mf;//conversion constant
-  Double_t c=par[4]/cc;
-  
-  MakePoints(dr,r0,x,par,c,alpha);
+//  Double_t alpha = track->GetInnerAlpha();
+//  Double_t cc = 1000./0.299792458/mf;//conversion constant
+//  Double_t c=par[4]/cc;
+//  
+//  MakePoints(dr,r0,x,par,c,alpha);
   
 }
 /***************************************************************/
