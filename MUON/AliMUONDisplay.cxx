@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/01/23 18:58:19  hristov
+Initialisation of some pointers
+
 Revision 1.8  2000/10/06 09:09:01  morsch
 Pad colour according to z-position (slats).
 
@@ -799,10 +802,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     }
 
 // Display MUON Chamber Geometry
-// gAlice->GetGeometry()->Draw("same");
     char nodeName[7];
     sprintf(nodeName,"MUON%d",100+fChamber);
-    printf("\n Node name %s", nodeName);
+    printf("\n Node name %s %p", nodeName, gAlice->GetGeometry());
     
     TNode *node1=gAlice->GetGeometry()->GetNode(nodeName);
     if (node1) node1->Draw("same");  
@@ -909,9 +911,13 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     if (muonDigits == 0) return;
 
     gAlice->ResetDigits();
-
-    Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(nent-2+cathode-1);
+    Int_t nent = 0;
+ 
+   if (gAlice->TreeD()) {
+	nent=(Int_t)gAlice->TreeD()->GetEntries();
+	gAlice->TreeD()->GetEvent(nent-2+cathode-1);
+    }
+    
     Int_t ndigits = muonDigits->GetEntriesFast();
     if (ndigits == 0) return;
     if (fPoints == 0) fPoints = new TObjArray(ndigits);
@@ -1013,9 +1019,12 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t cathode)
 
     pMUON->ResetRawClusters();
 
-
-    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
-    gAlice->TreeR()->GetEvent(nent-2+cathode-1);
+    Int_t nent = 0;
+    if (gAlice->TreeR()) {
+	nent=(Int_t)gAlice->TreeR()->GetEntries();
+	gAlice->TreeR()->GetEvent(nent-2+cathode-1);
+    }
+    
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
     if (nrawcl == 0) return;
     if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
@@ -1057,9 +1066,13 @@ void AliMUONDisplay::LoadCoG2(Int_t chamber, Int_t cathode)
     if (muonRawClusters == 0) return;
     
     pMUON->ResetRawClusters();
-
-    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
-    gAlice->TreeR()->GetEvent(nent-2+cathode-1);
+    
+    Int_t nent = 0;
+    if (gAlice->TreeR()) {
+	nent=(Int_t)gAlice->TreeR()->GetEntries();
+	gAlice->TreeR()->GetEvent(nent-2+cathode-1);
+    }
+    
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
     if (nrawcl == 0) return;
     if (fR2points == 0) fR2points = new TObjArray(nrawcl);
