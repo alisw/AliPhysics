@@ -627,9 +627,10 @@ void  AliPHOSPIDv1::MakePID()
     for (jndex = 0 ; jndex < kSPECIES ; jndex++) 
       wn += stof[jndex][index] * pid[jndex] ;
     AliPHOSRecParticle * recpar = AliPHOSGetter::Instance()->RecParticle(index) ;  
-    for (jndex = 0 ; jndex < kSPECIES ; jndex++) {
-      recpar->SetPID(jndex, stof[jndex][index] * pid[jndex] / wn) ; 
-    }
+    if (TMath::Abs(wn)>0)
+      for (jndex = 0 ; jndex < kSPECIES ; jndex++) {
+	recpar->SetPID(jndex, stof[jndex][index] * pid[jndex] / wn) ; 
+      }
   }
 }
 
