@@ -449,11 +449,11 @@ void AliZDCv2::CreateBeamLine()
   // -- ROTATE PIPES 
   Float_t angle = 0.143*kDegrad; // Rotation angle
   
-  AliMatrix(im1, 90.+0.143, 0., 90., 90., 0.143, 180.); // x<0
+  AliMatrix(im1, 90.+0.143, 0., 90., 90., 0.143, 0.); // x<0
   gMC->Gspos("QT17", 1, "ZDC ", TMath::Sin(angle) * 680.8/ 2. - 9.4, 
              0., -tubpar[2]-zd1, im1, "ONLY"); 
 	     
-  AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 0.); // x>0 (ZP)
+  AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)
   gMC->Gspos("QT18", 1, "ZDC ", 9.7 - TMath::Sin(angle) * 680.8 / 2., 
              0., -tubpar[2]-zd1, im2, "ONLY"); 
 	         
@@ -889,7 +889,7 @@ void AliZDCv2::CreateMaterials()
   
   Int_t *idtmed = fIdtmed->GetArray();
   
-  Float_t dens, ubuf[1], wmat[2], a[2], z[2], deemax = -1;
+  Float_t dens, ubuf[1], wmat[2], a[2], z[2];
   Int_t i;
   
   // --- Store in UBUF r0 for nuclear radius calculation R=r0*A**1/3 
@@ -938,14 +938,28 @@ void AliZDCv2::CreateMaterials()
   ubuf[0] = 1.1;
   AliMaterial(8, "IRON", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
+  // ---------------------------------------------------------  
+  Float_t aResGas[3]={1.008,12.0107,15.9994};
+  Float_t zResGas[3]={1.,6.,8.};
+  Float_t wResGas[3]={0.28,0.28,0.44};
+  Float_t dResGas = 3.2E-14;
+
   // --- Vacuum (no magnetic field) 
-  AliMaterial(10, "VOID", 1e-16, 1e-16, 1e-16, 1e16, 1e16, ubuf,0);
+  AliMixture(10, "VOID", aResGas, zResGas, dResGas, 3, wResGas);
+  //AliMaterial(10, "VOID", 1e-16, 1e-16, 1e-16, 1e16, 1e16, ubuf,0);
   
   // --- Vacuum (with magnetic field) 
-  AliMaterial(11, "VOIM", 1e-16, 1e-16, 1e-16, 1e16, 1e16, ubuf,0);
+  AliMixture(11, "VOIM", aResGas, zResGas, dResGas, 3, wResGas);
+  //AliMaterial(11, "VOIM", 1e-16, 1e-16, 1e-16, 1e16, 1e16, ubuf,0);
   
   // --- Air (no magnetic field)
-  AliMaterial(12, "Air    $", 14.61, 7.3, .001205, 30420., 67500., ubuf, 0);
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  //
+  AliMixture(12, "Air    $", aAir, zAir, dAir, 4, wAir);
+  //AliMaterial(12, "Air    $", 14.61, 7.3, .001205, 30420., 67500., ubuf, 0);
   
   // ---  Definition of tracking media: 
   
@@ -961,30 +975,34 @@ void AliZDCv2::CreateMaterials()
   // --- Vacuum (with field) = 11 
   // --- Air (no field) = 12 
   
+  // **************************************************** 
+  //     Tracking media parameters
+  //
+  Float_t epsil  = 0.01;   // Tracking precision, 
+  Float_t stmin  = 0.01;   // Min. value 4 max. step (cm)
+  Float_t stemax = 1.;     // Max. step permitted (cm) 
+  Float_t tmaxfd = 0.;     // Maximum angle due to field (degrees) 
+  Float_t deemax = -1.;    // Maximum fractional energy loss
+  Float_t nofieldm = 0.;   // Max. field value (no field)
+  Float_t fieldm = 45.;    // Max. field value (with field)
+  Int_t isvol = 0;         // ISVOL =0 -> not sensitive volume
+  Int_t isvolActive = 1;   // ISVOL =1 -> sensitive volume
+  Int_t inofld = 0;        // IFIELD=0 -> no magnetic field
+  Int_t ifield =2;         // IFIELD=2 -> magnetic field defined in AliMagFC.h
+  // *****************************************************
   
-  // --- Tracking media parameters 
-  Float_t epsil  = .01, stmin=0.01, stemax = 1.;
-//  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t fieldm = 0., tmaxfd = 0.;
-  Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
-  
-  AliMedium(1, "ZTANT", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-//  AliMedium(1, "ZW", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(2, "ZBRASS",2, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(3, "ZSIO2", 3, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(4, "ZQUAR", 3, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(5, "ZLEAD", 5, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-//  AliMedium(6, "ZCOPP", 6, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-//  AliMedium(7, "ZIRON", 7, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(6, "ZCOPP", 6, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(7, "ZIRON", 7, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(8, "ZIRONN",8, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(10,"ZVOID",10, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(12,"ZAIR", 12, 0, inofld, fieldm, tmaxfd, stemax,deemax, epsil, stmin);
-  
-  ifield =2;
-  fieldm = 45.;
-  AliMedium(11, "ZVOIM", 11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "ZTANT", 1, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "ZBRASS",2, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "ZSIO2", 3, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "ZQUAR", 3, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "ZLEAD", 5, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(6, "ZCOPP", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(7, "ZIRON", 7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(8, "ZIRONN",8, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(10,"ZVOID",10, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(12,"ZAIR", 12, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  //
+  AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   
   // Thresholds for showering in the ZDCs 
   i = 1; //tantalum
@@ -1189,13 +1207,11 @@ void AliZDCv2::StepManager()
     if(fNoShower==1) {
       if(gMC->GetMedium() == fMedSensPI) {
         knamed = gMC->CurrentVolName();
-	//printf("\t fMedSensPI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
-        if(!strncmp(knamed,"YMQ",3))  fpLostIT += 1;
+       if(!strncmp(knamed,"YMQ",3))  fpLostIT += 1;
         if(!strncmp(knamed,"YD1",3))   fpLostD1 += 1;
       }
       else if(gMC->GetMedium() == fMedSensTDI){ // NB->Cu = TDI or D1 vacuum chamber
         knamed = gMC->CurrentVolName();
-	//printf("\t fMedSensTDI -> medium: %d, Volume: %s \n",gMC->GetMedium(),knamed);
         if(!strncmp(knamed,"MD1",3)) fpLostD1 += 1;
         if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
       }
@@ -1393,8 +1409,6 @@ void AliZDCv2::StepManager()
          if(ibe>fNben) ibe=fNben;
          out =  charge*charge*fTablen[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);
-//	 printf("ZN --- ibeta = %d, ialfa = %d, ibe = %d"
-//	        "	-> out = %f, nphe = %d\n", ibeta, ialfa, ibe, out, nphe);
 	 if(gMC->GetMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
@@ -1412,8 +1426,6 @@ void AliZDCv2::StepManager()
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);
-//	 printf("ZP --- ibeta = %d, ialfa = %d, ibe = %d"
-//	        "	-> out = %f, nphe = %d\n", ibeta, ialfa, ibe, out, nphe);
 	 if(gMC->GetMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
@@ -1440,13 +1452,9 @@ void AliZDCv2::StepManager()
 //	 z = xalic[2]-fPosZEM[2]-fZEMLength-xalic[1]*(TMath::Tan(45.*kDegrad));
 //         printf("\n	fPosZEM[2]+2*fZEMLength = %f", fPosZEM[2]+2*fZEMLength);
 	 guiEff = guiPar[0]*(guiPar[1]*z*z+guiPar[2]*z+guiPar[3]);
-//         printf("\n	xalic[0] = %f	xalic[1] = %f	xalic[2] = %f	z = %f	\n",
-//	        xalic[0],xalic[1],xalic[2],z);
 	 out = out*guiEff;
 	 nphe = gRandom->Poisson(out);
 //         printf("	out*guiEff = %f	nphe = %d", out, nphe);
-//	 printf("ZEM --- ibeta = %d, ialfa = %d, ibe = %d"
-//	        "	-> out = %f, nphe = %d\n", ibeta, ialfa, ibe, out, nphe);
 	 if(vol[1] == 1){
 	   hits[7] = 0;  	
 	   hits[8] = nphe;	//fLightPMC (ZEM1)
