@@ -714,4 +714,21 @@ void AliZDC::Digits2Reco()
   treeR->Reset();
 }
 
+//______________________________________________________________________
+void AliZDC::SetTreeAddress(){
+  // Set branch address for the Trees.
+  // Inputs:
+  //      none.
+  // Outputs:
+  //      none.
+  // Return:
+  //      none.
+  if (fLoader->TreeH() && (fHits == 0x0))
+    fHits   = new TClonesArray("AliZDCHit",1000);
+      
+  if (fLoader->TreeD() && (fDigits == 0x0))
+    fDigits = new TClonesArray("AliZDCDigit",1000);
+      
+  AliDetector::SetTreeAddress();
+}
  

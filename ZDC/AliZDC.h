@@ -28,6 +28,7 @@ public:
   virtual Int_t IsVersion() const =0;
   virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
   virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC
+  virtual void  SetTreeAddress();
   virtual void  MakeBranch(Option_t* opt, const char *file=0);
   virtual void  MakeBranchInTreeS(TTree *treeS, const char *file=0);
   virtual void  MakeBranchInTreeD(TTree *treeD, const char *file=0);
