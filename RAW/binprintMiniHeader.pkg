@@ -1,0 +1,3 @@
+SRCS:=printMiniHeader.cxx
+
+ELIBS:= pythia6 pdf microcern

@@ -1,0 +1,3 @@
+CSRCS:=raw2date.c
+
+ELIBS:= pythia6 pdf microcern
