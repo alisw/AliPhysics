@@ -73,7 +73,7 @@ class AliGoodTracksPP
    
    private:
      AliGoodTracksPP(const TString& infilename = TString("good_tracks_tpc")); //constructor
-     ~AliGoodTracksPP(); //dctor
+     virtual ~AliGoodTracksPP(); //dctor
    
      const GoodTrack& GetTrack(Int_t event, Int_t n) const; //returns reference to the nth good track in event "event"
 

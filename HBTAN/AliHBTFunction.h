@@ -142,7 +142,7 @@ class AliHBTOnePairFctn2D: public AliHBTOnePairFctn
  public:
   AliHBTOnePairFctn2D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
                       Int_t nYbins = 200, Double_t maxYval = .15, Double_t minYval =-0.15);
-  ~AliHBTOnePairFctn2D();
+  virtual ~AliHBTOnePairFctn2D();
   
   TH1* GetNumerator(){return fNumerator;}
   TH1* GetDenominator(){return fDenominator;}
@@ -192,7 +192,7 @@ class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn
   AliHBTTwoPairFctn1D(Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
   AliHBTTwoPairFctn1D(const char*,const char*,
                       Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
-  ~AliHBTTwoPairFctn1D();
+  virtual ~AliHBTTwoPairFctn1D();
   
   TH1* GetNumerator(){return fNumerator;}
   TH1* GetDenominator(){return fDenominator;}

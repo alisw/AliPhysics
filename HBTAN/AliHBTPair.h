@@ -13,7 +13,7 @@ class AliHBTPair: public TObject
 {
  public:
    AliHBTPair(Bool_t rev = kFALSE); //contructor
-   ~AliHBTPair(){}
+   virtual ~AliHBTPair(){}
    void SetParticles(AliHBTParticle*,AliHBTParticle*); //sets particles in the pair
    AliHBTPair* GetSwapedPair() {return fSwapedPair;} //returns pair with swapped particles
    
