@@ -167,8 +167,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
 
 
-  FILE *fpw = fopen("junk_digit1.dat","w");
-  
   ResetSDigit();
 
   printf("Event Number =  %d \n",ievt); 
@@ -214,8 +212,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      fParticle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = fParticle->GetPdgCode();
 
-	      fprintf(fpw,"track =%d trackno = %d trackpid = %d\n",
-		      track, trackno, trackpid);
 	      Int_t igatr = -999;
 	      Int_t ichtr = -999;
 	      Int_t igapid = -999;
@@ -886,7 +882,6 @@ void AliPMDDigitizer::TrackAssignment2Cell()
   // End of the cell id assignment
   //
 }
-
 
 void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
 {
