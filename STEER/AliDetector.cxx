@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/08/26 13:51:17  hristov
+Remaping of track references at the end of each primary particle (M.Ivanov)
+
 Revision 1.17  2002/05/24 13:29:58  hristov
 AliTrackReference added, AliDisplay modified
 
@@ -359,9 +362,9 @@ AliTrackReference* AliDetector::FirstTrackReference(Int_t track)
     gAlice->TreeTR()->GetEvent(track);
   }
   //
-  sMaxIterHit=fTrackReferences->GetEntriesFast();
-  sCurIterHit=0;
-  if(sMaxIterHit) return (AliTrackReference*) fTrackReferences->UncheckedAt(0);
+  fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
+  fCurrentIterTrackRef = 0;
+  if(fMaxIterTrackRef) return (AliTrackReference*) fTrackReferences->UncheckedAt(0);
   else            return 0;
 }
 
