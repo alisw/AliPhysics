@@ -14,6 +14,7 @@
 class G4Material;
 class G4VSolid;
 class G4LogicalVolume;
+class G4PVReplica;
 
 class TG4VXMLConvertor
 {
@@ -40,6 +41,7 @@ class TG4VXMLConvertor
     virtual void WritePositionWithRotation(
                                G4String lvName, G4ThreeVector position,
                                const G4RotationMatrix* rotation) = 0; 
+    virtual void WriteReplica(G4String lvName, G4PVReplica* pvr) = 0;			       
     virtual void WriteEmptyLine() = 0;
     virtual void IncreaseIndention() = 0;
     virtual void DecreaseIndention() = 0;
