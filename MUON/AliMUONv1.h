@@ -30,6 +30,7 @@ class AliMUONv1 : public AliMUON
    virtual void   Init();
    virtual Int_t  IsVersion() const {return 1;}
    virtual void   StepManager();
+   virtual void   FinishRun();
    void StepManagerOld();
    void SetStepManagerVersionOld(Bool_t Opt) 
      { fStepManagerVersionOld = Opt; }
@@ -43,6 +44,7 @@ class AliMUONv1 : public AliMUON
    AliMUONv1&  operator = (const AliMUONv1& right);
 
    virtual Int_t  GetChamberId(Int_t volId) const;
+   TString CurrentVolumePath() const;	     
 
    Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
    Bool_t  fAngleEffect; // Angle Effect along wires, Default is true
@@ -58,15 +60,7 @@ class AliMUONv1 : public AliMUON
    TF1 *          fAngleEffect10; // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
    TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
 
- private:
-   // method
-   void PlaceVolume(const TString& name, const TString& mName, Int_t copyNo, 
-             const TGeoHMatrix& matrix, Int_t npar, Double_t* param,
-	     const char* only) const;
-
-   ClassDef(AliMUONv1,2)  // MUON Detector class Version 1
-
-
+   ClassDef(AliMUONv1,3)  // MUON Detector class Version 1
 };
 #endif
 

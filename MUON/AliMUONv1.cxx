@@ -24,6 +24,7 @@
 #include <TClonesArray.h>
 #include <TRandom.h> 
 #include <TVirtualMC.h>
+#include <TGeoMatrix.h>
 
 #include "AliMUONv1.h"
 #include "AliConst.h" 
@@ -33,6 +34,7 @@
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONGeometryBuilder.h"	
+#include "AliMUONGeometrySVMap.h"	
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -158,6 +160,8 @@ void AliMUONv1::CreateMaterials()
   fGeometryBuilder->CreateMaterials();
 }
 
+#include "AliMUONChamberGeometry.h"	
+#include "AliMUONGeometryTransformStore.h"	
 //___________________________________________
 void AliMUONv1::Init()
 {
@@ -184,6 +188,25 @@ void AliMUONv1::Init()
    }
    if(fDebug) printf("%s: Finished Init for Trigger Circuits\n",ClassName());
    //cp
+
+   //
+   // Debug info
+   //
+   if (GetDebug() >1) {
+     // Print transformations and SV map
+     for (i=0; i<AliMUONConstants::NCh(); i++) {
+ 
+       cout << "Chamber: " << i+1 << endl;
+       cout << "===================" << endl; 
+     
+       Chamber(i).GetGeometry()
+	   ->GetTransformStore()->Print("");
+ 
+       Chamber(i).GetGeometry()
+	   ->GetSVMap()->Print("");
+     }
+     cout << endl;
+   }  
 }
 
 //__________________________________________________________________
@@ -203,6 +226,32 @@ Int_t  AliMUONv1::GetChamberId(Int_t volId) const
 
   return 0;
 }
+
+//_______________________________________________________________________________
+TString  AliMUONv1::CurrentVolumePath() const
+{
+// Returns current volume path
+// (Could be removed when this function is available via gMC)
+// ---	     
+
+  TString path = "";
+  TString name;
+  Int_t copyNo;
+  Int_t imother = 0;
+  do {
+    name = gMC->CurrentVolOffName(imother);
+    gMC->CurrentVolOffID(imother++, copyNo);
+    TString add = "/";
+    add += name;
+    add += ".";
+    add += copyNo;
+    path.Insert(0,add); 
+  }
+  while ( name != TString("ALIC") );
+  
+  return path;  
+}
+
 //_______________________________________________________________________________
 void AliMUONv1::StepManager()
 {
@@ -214,7 +263,7 @@ void AliMUONv1::StepManager()
   }
 
   // Only charged tracks
-  if( !(gMC->TrackCharge()) ) return; 
+  if( !(gMC->TrackCharge()) && !(gMC->TrackPid()==0) ) return; 
   // Only charged tracks
   
   // Only gas gap inside chamber
@@ -234,6 +283,18 @@ void AliMUONv1::StepManager()
   idvol = iChamber -1;
 
   if (idvol == -1) return;
+  
+  if (GetDebug() > 1) {
+    // Fill the global position of detection elements
+    // Only for verification 
+    AliMUONGeometrySVMap* svMap
+      =  Chamber(iChamber-1).GetGeometry()->GetSVMap();
+    Double_t x, y, z;
+    gMC->TrackPosition(x, y, z);	   
+    svMap->AddPosition(CurrentVolumePath(), TGeoTranslation(x, y, z));
+  }   
+  
+  if (gMC->TrackPid()==0) return;
 
   // Filling TrackRefs file for MUON. Our Track references are the active volume of the chambers
   if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting() ) )     
@@ -259,8 +320,7 @@ void AliMUONv1::StepManager()
   
 //   if (GetDebug()) {
 //     Info("StepManager Step","iChamber %d, Particle %d, theta %f phi %f mass %f StepSum %f eloss %g",
-//       iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg, mass, fStepSum[idvol], gMC->Edep());
-//     Info("StepManager Step","Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), fTrackMomentum.Z()) ;
+//       iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg, mass, fStepSum[idvol], gMC->Edep());//     Info("StepManager Step","Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), fTrackMomentum.Z()) ;
 //     gMC->TrackPosition(fTrackPosition);
 //     Info("StepManager Step","Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
 //   }
@@ -312,6 +372,31 @@ void AliMUONv1::StepManager()
       yAngleEffect=1.e-04*gRandom->Gaus(0,sigmaEffectThetadegrees); // Error due to the angle effect in cm
     }
     }
+    
+    // Detection elements ids
+    AliMUONGeometryTransformStore* transforms
+      =  Chamber(iChamber-1).GetGeometry()->GetTransformStore();
+    const TGeoCombiTrans* kTransform
+      = transforms->FindBySensitiveVolume(CurrentVolumePath());
+      
+    Int_t detElemId = 0;
+    if (kTransform) detElemId = kTransform->GetUniqueID(); 
+ 
+    if (!detElemId) {
+      cerr << "Chamber id: "
+           << setw(3) << iChamber << "  "
+           << "Current SV: " 
+           <<  CurrentVolumePath() 
+ 	   << "  detElemId: "
+           << setw(5) << detElemId 
+	   << endl;
+      Double_t x, y, z;
+      gMC->TrackPosition(x, y, z);	   
+      cerr << "   global position: "
+           << x << ", " << y << ", " << z
+           << endl;
+      Warning("StepManager", "DetElemId not identified.");
+    }  
     
     // One hit per chamber
     GetMUONData()->AddHit(fIshunt, 
@@ -522,3 +607,27 @@ void AliMUONv1::StepManagerOld()
       tlength += step ;
   }
 }
+
+//______________________________________________________________________________
+void   AliMUONv1::FinishRun()
+{
+// Print debug info 
+// ---
+
+  if (GetDebug() <= 1) return;
+
+  // Print the global positions of detection elements
+  for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
+
+    cout << "Chamber: " << i+1 << endl;
+    cout << "===================" << endl; 
+     
+    AliMUONGeometrySVMap* svMap
+      = Chamber(i).GetGeometry()->GetSVMap();
+      
+    svMap->SortPositions();
+    svMap->PrintPositions();
+    svMap->ClearPositions();
+  }
+  cout << endl;	   
+}  
