@@ -1,9 +1,9 @@
 SRCS=  AliMAG.cxx      AliABSO.cxx       AliABSOv0.cxx \
-       AliDIPO.cxx     AliDIPOv1.cxx     AliDIPOv2.cxx \
+       AliDIPO.cxx     AliDIPOv2.cxx \
        AliFRAME.cxx    AliFRAMEv0.cxx    AliFRAMEv1.cxx AliFRAMEv2.cxx \
        AliHALL.cxx     AliSHIL.cxx 	 AliSHILv0.cxx AliSHILvF.cxx \
-       AliPIPE.cxx     AliPIPEv0.cxx     AliPIPEv1.cxx \
-       AliPIPEv3.cxx   AliBODY.cxx	 AliALIFE.cxx AliSHILv2.cxx
+       AliPIPE.cxx     AliPIPEv0.cxx    \
+       AliBODY.cxx     AliALIFE.cxx AliSHILv2.cxx
 
 
 HDRS= $(SRCS:.cxx=.h)
