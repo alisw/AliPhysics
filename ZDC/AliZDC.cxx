@@ -46,10 +46,13 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <stdlib.h>
+
 // --- ROOT system
 #include <TBRIK.h>
 #include <TNode.h>
 #include "TGeometry.h"
+#include "TTree.h"
 
 // --- AliRoot header files
 #include "AliZDC.h"
@@ -74,6 +77,9 @@ AliZDC::AliZDC()
 
   fNhits = 0;
   fNStHits = 0;
+  
+  fStHits = new TClonesArray("AliZDCHit",1000);
+  
   fNPrimaryHits = 0;
 }
  
