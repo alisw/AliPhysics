@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.11  2002/06/04 18:43:15  nilsen
+Fix to avoid divide by zero problem in MedianHitG and MedianHitL for track
+that enter and exit the same side of a detector sensitive volume. Needed
+for Fast simulation. Thanks to Nicola Carrer.
+
 Revision 1.10  2002/03/15 17:21:54  nilsen
 Removed zero-ing of fModules variable in constructors.
 
@@ -144,18 +149,10 @@ Int_t AliITSmodule::AddHit(AliITShit* hit,Int_t t,Int_t h) {
     fHitsM->AddLast(new AliITShit(*hit));
     Int_t fNhitsM = fHitsM->GetEntriesFast();
     if(fNhitsM-1>=fTrackIndex->GetSize()){ // need to expand the TArrayI
-	TArrayI *p = new TArrayI(fNhitsM+64);
-	for(Int_t i=0;i<fTrackIndex->GetSize();i++) 
-	    (*p)[i] = fTrackIndex->At(i);
-	delete fTrackIndex;
-	fTrackIndex = p;
+      fTrackIndex->Set(fNhitsM+64);
     } // end if
     if(fNhitsM-1>=fHitIndex->GetSize()){ // need to expand the TArrayI
-	TArrayI *p = new TArrayI(fNhitsM+64);
-	for(Int_t i=0;i<fHitIndex->GetSize();i++) 
-	    (*p)[i] = fHitIndex->At(i);
-	delete fHitIndex;
-	fHitIndex = p;
+      fHitIndex->Set(fNhitsM+64);
     } // end if
     (*fTrackIndex)[fNhitsM-1] = t;
     (*fHitIndex)[fNhitsM-1]   = h;
