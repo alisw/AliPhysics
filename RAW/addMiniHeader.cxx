@@ -25,7 +25,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/sendfile.h>
 #include <TError.h>
 #include <TSystem.h>
 #include "AliMiniHeader.h"
