@@ -428,7 +428,8 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c){
   if (fLoop==2) c.SetType(100);
 
   TClonesArray * arr = fRowCl->GetArray();
-  AliTPCclusterMI * cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
+  // AliTPCclusterMI * cl = 
+  new ((*arr)[fNcluster]) AliTPCclusterMI(c);
 
   fNcluster++;
 }
@@ -541,7 +542,7 @@ void AliTPCclustererMI::Digits2Clusters(const AliTPCParam *par, Int_t eventn)
     //first loop - for "gold cluster" 
     fLoop=1;
     Int_t *b=&fBins[-1]+2*fMaxTime;
-    Int_t crtime = (fParam->GetZLength()-1.05*fRx)/fZWidth-5;
+    Int_t crtime = Int_t((fParam->GetZLength()-1.05*fRx)/fZWidth-5);
 
     for (Int_t i=2*fMaxTime; i<fMaxBin-2*fMaxTime; i++) {
       b++;
@@ -555,7 +556,7 @@ void AliTPCclustererMI::Digits2Clusters(const AliTPCParam *par, Int_t eventn)
      
       if (!IsMaximum(*b,fMaxTime,b)) continue;
       AliTPCclusterMI c;
-      Int_t dummy;
+      Int_t dummy=0;
       MakeCluster(i, fMaxTime, fBins, dummy,c);
       //}
     }

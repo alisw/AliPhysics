@@ -48,7 +48,8 @@ public: \
    void    *operator new(size_t sz) { return TStorage::ObjectAlloc(sz); } \
    void    *operator new(size_t sz, void *vp) { return vp; } \
    void  Dump();
-   static int ImplFileLine();  
+
+//static int ImplFileLine(){return 0;}  
 
 #define LClassImp(name)  \
   void name::Dump() { \

@@ -1820,7 +1820,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
   printf("Time for parralel tracking inner sectors: \t"); timer.Print();timer.Start();
   //
   for (Int_t i=0;i<fSeeds->GetEntriesFast();i++){
-    AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;    
+    AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i);    
     if (!pt) continue;   
     if (!pt->IsActive()) continue;
     pt->PropagateTo(90.);
@@ -1837,7 +1837,8 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
   vseed->fEPoints = new TClonesArray("AliTPCExactPoint",1);
   vseed->fPoints->ExpandCreateFast(2);
   
-  TBranch * seedbranch =   seedtree.Branch("seeds","AliTPCseed",&vseed,32000,99);
+  //TBranch * seedbranch =   
+  seedtree.Branch("seeds","AliTPCseed",&vseed,32000,99);
   //delete vseed;
   nseed=fSeeds->GetEntriesFast();
 
@@ -2350,7 +2351,7 @@ void AliTPCseed::CookdEdx(Double_t low, Double_t up) {
 	//ampc *= 0.58;     // put mean value to channel 50
 	Float_t w      =  1.;
 	//	if (type>0)  w =  1./(type/2.-0.5); 
-	Float_t z = TMath::Abs(point->GetCPoint().GetZ());
+	//	Float_t z = TMath::Abs(point->GetCPoint().GetZ());
 	if (i<64) {
 	  ampc /= 0.6;
 	  //ampc /= (1+0.0008*z);

@@ -84,8 +84,8 @@ public:
 };
 
 struct AliTPCCurrentHitV2 {
-  UInt_t   fParamIndex;//  - current param pointer
-  UInt_t   fStackIndex; // - current hit stack index
+  Int_t   fParamIndex;//  - current param pointer
+  Int_t   fStackIndex; // - current hit stack index
   Double_t fR;   //current Radius
   Bool_t  fStatus; //current status    
 };   
