@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.66  2003/02/11 16:54:07  hristov
+Updated AliTrackReference class (S.Radomski)
+
 Revision 1.65  2002/11/21 22:43:32  alibrary
 Removing AliMC and AliMCProcess
 
@@ -3283,3 +3286,48 @@ void AliTPC::Digits2Reco(Int_t firstevent,Int_t lastevent)
 
 
 }
+
+////////////////////////////////////////////////////////////////////////
+AliTPCParam* AliTPC::LoadTPCParam(TFile *file) {
+//
+// load TPC paarmeters from a given file or create new if the object
+// is not found there
+//
+  char paramName[50];
+  sprintf(paramName,"75x40_100x60_150x60");
+  AliTPCParam *paramTPC=(AliTPCParam*)file->Get(paramName);
+  if (paramTPC) {
+    cout<<"TPC parameters "<<paramName<<" found."<<endl;
+  } else {
+    cerr<<"TPC parameters not found. Create new (they may be incorrect)."
+	<<endl;    
+    paramTPC = new AliTPCParamSR;
+  }
+  return paramTPC;
+
+// the older version of parameters can be accessed with this code.
+// In some cases, we have old parameters saved in the file but 
+// digits were created with new parameters, it can be distinguish 
+// by the name of TPC TreeD. The code here is just for the case 
+// we would need to compare with old data, uncomment it if needed.
+//
+//  char paramName[50];
+//  sprintf(paramName,"75x40_100x60");
+//  AliTPCParam *paramTPC=(AliTPCParam*)in->Get(paramName);
+//  if (paramTPC) {
+//    cout<<"TPC parameters "<<paramName<<" found."<<endl;
+//  } else {
+//    sprintf(paramName,"75x40_100x60_150x60");
+//    paramTPC=(AliTPCParam*)in->Get(paramName);
+//    if (paramTPC) {
+//	cout<<"TPC parameters "<<paramName<<" found."<<endl;
+//    } else {
+//	cerr<<"TPC parameters not found. Create new (they may be incorrect)."
+//	    <<endl;    
+//	paramTPC = new AliTPCParamSR;
+//    }
+//  }
+//  return paramTPC;
+
+}
+
