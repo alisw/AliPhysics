@@ -150,7 +150,7 @@ void AliFMDReconstruction::Exec()
   gDirectory = cwd;
  
        
-  if(fNevents == 0) fNevents=fRunLoader->TreeE()->GetEntries(); 
+  if(fNevents == 0) fNevents=Int_t (fRunLoader->TreeE()->GetEntries()); 
   cout<<" fNevents "<<fNevents<<endl;
    for(Int_t ievent=0;ievent<fNevents;ievent++)
     { 
@@ -239,7 +239,7 @@ void AliFMDReconstruction::Exec()
                etain = - TMath::Log( TMath::Tan(theta/2.));
                theta=TMath::ATan(rin[ivol]/TMath::Abs(realZ));
                etaout=- TMath::Log( TMath::Tan(theta/2.));
-               numberOfEtaIntervals[ivol]=(etaout-etain)*10-1;
+               numberOfEtaIntervals[ivol]=Int_t((etaout-etain)*10)-1;
                eta=etain;
                for (Int_t e1=0;e1<=numberOfEtaIntervals[ivol];e1++) 
                  {
@@ -274,7 +274,7 @@ void AliFMDReconstruction::Exec()
 
                    cout<<" zero "<<zeroPads++<<" pads "<<numberOfPads;
                    Double_t lambda=-TMath::Log(Double_t(zeroPads)/numberOfPads);
-                   Int_t fRecon=(lambda*numberOfPads+0.5);
+                   Int_t fRecon=Int_t (lambda*numberOfPads+0.5);
                    
                    Float_t zerosRatio= 
                      (Float_t)zeroPads/(Float_t)numberOfPads;

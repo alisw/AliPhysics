@@ -55,11 +55,11 @@
 #include "AliSTARThit.h"
 #include "AliSTARThitPhoton.h"
 #include "AliSTARTvertex.h"
-#include "AliMC.h"
+#include "AliSTARTLoader.h"
 
 ClassImp(AliSTART)
 
-static  AliSTARTdigit *digits; 
+  //static  AliSTARTdigit *digits; 
 
 //_____________________________________________________________________________
 AliSTART::AliSTART()
@@ -85,10 +85,10 @@ AliSTART::AliSTART(const char *name, const char *title)
   //
   // Initialise Hit array
   fHits       = new TClonesArray("AliSTARThit",  405);
-  gAlice->GetMCApp()->AddHitList(fHits);
+  gAlice->AddHitList(fHits);
 
   fPhotons  = new TClonesArray("AliSTARThitPhoton", 10000);
-  gAlice->GetMCApp()->AddHitList (fPhotons);
+  gAlice->AddHitList (fPhotons);
   
   fIshunt     =  1;
   fIdSens   =  0;
@@ -129,7 +129,7 @@ void AliSTART::AddHitPhoton(Int_t track, Int_t *vol, Float_t *hits)
 
 //_____________________________________________________________________________
 
-void AliSTART::AddDigit(Int_t *tracks,Int_t *digits)
+void AliSTART::AddDigit(Int_t  */*tracks*/,Int_t * /*digits*/)
 {
   
   //  Add a START digit to the list. Dummy function.
@@ -164,7 +164,7 @@ void AliSTART::BuildGeometry()
 }
  
 //_____________________________________________________________________________
-Int_t AliSTART::DistanceToPrimitive(Int_t px, Int_t py)
+Int_t AliSTART::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
 {
   //
   // Calculate the distance from the mouse to the START on the screen
@@ -200,12 +200,11 @@ void AliSTART::MakeBranch(Option_t* option)
   // Specific START branches
   //
   // Create Tree branches for the START.
-  Int_t buffersize = 4000;
   char branchname[20];
   sprintf(branchname,"%s",GetName());
 
 
-  const char *cD = strstr(option,"D");
+  //  const char *cD = strstr(option,"D");
   const char *cH = strstr(option,"H");
   
   if (cH && fLoader->TreeH())
@@ -217,11 +216,12 @@ void AliSTART::MakeBranch(Option_t* option)
   } 
   
   AliDetector::MakeBranch(option);
-
+  /*
   if (cD) {
     digits = new AliSTARTdigit();
     MakeBranchInTree(fLoader->TreeD(), branchname, "AliSTARTdigit", digits, buffersize, 1, 0);
   } 
+  */
 }    
 
 //_____________________________________________________________________________
@@ -255,9 +255,13 @@ void AliSTART::SetTreeAddress()
 }
 
 
-//_____________________________________________________________________________
+//______________________________________________________________________
+AliLoader* AliSTART::MakeLoader(const char* topfoldername)
+{ 
+  //builds STARTgetter (AliLoader type)
+  //if detector wants to use castomized getter, it must overload this method
 
-void AliSTART::Hit2digit(Int_t evnum) 
-{
+  Info("MakeLoader","Creating AliSTARTLoader. Top folder is %s.",topfoldername);
+  fLoader = new AliSTARTLoader(GetName(),topfoldername);
+  return fLoader;
 }
-
