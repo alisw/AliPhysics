@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  1999/11/10 07:37:06  fca
+Pads do not inherit editability from canvas any more
+
 Revision 1.6  1999/11/09 07:38:52  fca
 Changes for compatibility with version 2.23 of ROOT
 
@@ -59,8 +62,8 @@ Introduction of the Copyright and cvs Log
 #include "AliPoints.h"
 #include "TParticle.h"
 
-const Float_t ptcutmax  = 2;
-const Float_t etacutmax = 1.5;
+static const Float_t kptcutmax  = 2;
+static const Float_t ketacutmax = 1.5;
 
 ClassImp(AliDisplay)
 
@@ -68,7 +71,10 @@ ClassImp(AliDisplay)
 //_____________________________________________________________________________
 AliDisplay::AliDisplay()
 {
-   fCanvas = 0;
+  //
+  // Default constructor
+  //
+  fCanvas = 0;
 }
 
 //_____________________________________________________________________________
@@ -217,13 +223,13 @@ AliDisplay::AliDisplay(Int_t size)
    fCutPad->SetFillColor(22);
    fCutPad->SetBorderSize(2);
    fCutSlider   = new TSlider("pcut","Momentum cut",0,0,1,1);
-   fCutSlider->SetRange(fPTcut/ptcutmax,1);
+   fCutSlider->SetRange(fPTcut/kptcutmax,1);
    fCutSlider->SetObject(this);
    fCutSlider->SetFillColor(45);
    TSliderBox *sbox = (TSliderBox*)fCutSlider->GetListOfPrimitives()->First();
    sbox->SetFillColor(46);
    fCutSlider->cd();
-   TGaxis *cutaxis = new TGaxis(0.02,0.8,0.98,0.8,0,ptcutmax,510,"");
+   TGaxis *cutaxis = new TGaxis(0.02,0.8,0.98,0.8,0,kptcutmax,510,"");
    cutaxis->SetLabelSize(0.5);
    cutaxis->SetTitleSize(0.6);
    cutaxis->SetTitleOffset(0.5);
@@ -243,7 +249,7 @@ AliDisplay::AliDisplay(Int_t size)
    TSliderBox *sbox2 = (TSliderBox*)fEtaSlider->GetListOfPrimitives()->First();
    sbox2->SetFillColor(46);
    fEtaSlider->cd();
-   TGaxis *etaaxis = new TGaxis(0.9,0.02,0.9,0.98,-etacutmax,etacutmax,510,"");
+   TGaxis *etaaxis = new TGaxis(0.9,0.02,0.9,0.98,-ketacutmax,ketacutmax,510,"");
    etaaxis->SetLabelSize(0.5);
    etaaxis->SetTitleSize(0.6);
    etaaxis->SetTitleOffset(0.2);
@@ -258,8 +264,20 @@ AliDisplay::AliDisplay(Int_t size)
 
 
 //_____________________________________________________________________________
+AliDisplay::AliDisplay(const AliDisplay &disp)
+{
+  //
+  // Copy constructor
+  //
+  disp.Copy(*this);
+}
+
+//_____________________________________________________________________________
 AliDisplay::~AliDisplay()
 {
+  //
+  // Destructor
+  //
 }
 
 //_____________________________________________________________________________
@@ -268,10 +286,19 @@ void AliDisplay::Clear(Option_t *)
 //    Delete graphics temporary objects
 }
 
+//_____________________________________________________________________________
+void AliDisplay::Copy(AliDisplay &disp) const
+{
+  //
+  // Copy *this onto disp -- not implemented
+  //
+  Fatal("Copy","Not implemented~\n");
+}
+
 //----------------------------------------------------------------------------
 void AliDisplay::ShowTrack(Int_t idx) {
-   AliDetector *TPC=(AliDetector*)gAlice->GetModule("TPC");
-   TObjArray *points=TPC->Points();
+   AliDetector *mTPC=(AliDetector*)gAlice->GetModule("TPC");
+   TObjArray *points=mTPC->Points();
    int ntracks=points->GetEntriesFast();
    for (int track=0;track<ntracks;track++) {
       AliPoints *pm = (AliPoints*)points->UncheckedAt(track);
@@ -296,8 +323,8 @@ void AliDisplay::ShowTrack(Int_t idx) {
 
 //----------------------------------------------------------------------------
 void AliDisplay::HideTrack(Int_t idx) {
-   AliDetector *TPC=(AliDetector*)gAlice->GetModule("TPC");
-   TObjArray *points=TPC->Points();
+   AliDetector *mTPC=(AliDetector*)gAlice->GetModule("TPC");
+   TObjArray *points=mTPC->Points();
    int ntracks=points->GetEntriesFast();
    for (int track=0;track<ntracks;track++) {
       AliPoints *pm = (AliPoints*)points->UncheckedAt(track);
@@ -416,8 +443,8 @@ Int_t AliDisplay::DistancetoPrimitive(Int_t px, Int_t)
    if (gPad == fCutPad)  return 9999;
    if (gPad == fEtaPad)  return 9999;
 
-   const Int_t big = 9999;
-   Int_t dist   = big;
+   const Int_t kbig = 9999;
+   Int_t dist   = kbig;
    Float_t xmin = gPad->GetX1();
    Float_t xmax = gPad->GetX2();
    Float_t dx   = 0.02*(xmax - xmin);
@@ -496,15 +523,15 @@ void AliDisplay::DrawHits()
    //Get cut slider
    smax   = fCutSlider->GetMaximum();
    smin   = fCutSlider->GetMinimum();
-   cutmin = ptcutmax*smin;
-   if (smax < 0.98) cutmax = ptcutmax*smax;
+   cutmin = kptcutmax*smin;
+   if (smax < 0.98) cutmax = kptcutmax*smax;
    else             cutmax = 100000;
    
    //Get eta slider
    smax   = fEtaSlider->GetMaximum();
    smin   = fEtaSlider->GetMinimum();
-   etamin = etacutmax*(2*smin-1);
-   etamax = etacutmax*(2*smax-1);
+   etamin = ketacutmax*(2*smin-1);
+   etamax = ketacutmax*(2*smax-1);
    if (smin < 0.02) etamin = -1000;
    if (smax > 0.98) etamax =  1000;
       
@@ -799,9 +826,9 @@ void AliDisplay::ShowNextEvent(Int_t delta)
 
   if (delta) {
      gAlice->Clear();
-     Int_t current_event = gAlice->GetHeader()->GetEvent();
-     Int_t new_event     = current_event + delta;
-     gAlice->GetEvent(new_event);
+     Int_t currentEvent = gAlice->GetHeader()->GetEvent();
+     Int_t newEvent     = currentEvent + delta;
+     gAlice->GetEvent(newEvent);
      if (!gAlice->TreeH()) return; 
    }
   LoadPoints();
@@ -812,9 +839,22 @@ void AliDisplay::ShowNextEvent(Int_t delta)
 //______________________________________________________________________________
 void AliDisplay::UnZoom()
 {
-   if (fZooms <= 0) return;
-   fZooms--;
-   TPad *pad = (TPad*)gPad->GetPadSave();
-   pad->Range(fZoomX0[fZooms],fZoomY0[fZooms], fZoomX1[fZooms],fZoomY1[fZooms]);
-   pad->Modified();
+  //
+  // Resets ZOOM 
+  //
+  if (fZooms <= 0) return;
+  fZooms--;
+  TPad *pad = (TPad*)gPad->GetPadSave();
+  pad->Range(fZoomX0[fZooms],fZoomY0[fZooms], fZoomX1[fZooms],fZoomY1[fZooms]);
+  pad->Modified();
+}
+
+//_____________________________________________________________________________
+AliDisplay & AliDisplay::operator=(const AliDisplay &disp)
+{
+  //
+  // Assignment operator
+  //
+  disp.Copy(*this);
+  return (*this);
 }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/06/14 15:20:09  morsch
+Include clean-up (IH)
+
 Revision 1.8  2000/06/09 20:36:44  morsch
 All coding rule violations except RS3 corrected
 
@@ -134,7 +137,7 @@ void AliGenExtFile::Generate()
   Int_t i6=fIhead[5];
 
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
-  if(fVertexSmear==perEvent) {
+  if(fVertexSmear==kPerTrack) {
     gMC->Rndm(random,6);
     for (j=0;j<3;j++) {
 	origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
@@ -177,7 +180,7 @@ void AliGenExtFile::Generate()
 	  p[1]=prwn*TMath::Sin(fTheta)*TMath::Sin(fPhi);      
 	  p[2]=prwn*TMath::Cos(fTheta);
 	  
-	  if(fVertexSmear==perTrack) {
+	  if(fVertexSmear==kPerTrack) {
 	      gMC->Rndm(random,6);
 	      for (j=0;j<3;j++) {
 		  origin[j]=fOrigin[j]

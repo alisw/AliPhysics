@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:08:36  morsch
+In member data: char* replaced by TString, Init takes care of resizing the strings to
+8 characters required by Hijing.
+
 Revision 1.2  2000/06/15 14:15:05  morsch
 Add possibility for heavy flavor selection: charm and beauty.
 
@@ -114,14 +118,14 @@ void AliGenHijing::Generate()
     
     fTrials=0;
     for (j=0;j<3;j++) origin0[j]=fOrigin[j];
-    if(fVertexSmear==perEvent) {
+    if(fVertexSmear==kPerEvent) {
 	gMC->Rndm(random,6);
 	for (j=0;j<3;j++) {
 	    origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 //	    fHijing->SetMSTP(151,0);
 	}
-    } else if (fVertexSmear==perTrack) {
+    } else if (fVertexSmear==kPerTrack) {
 //	fHijing->SetMSTP(151,0);
 	for (j=0;j<3;j++) {
 //	    fHijing->SetPARP(151+j, fOsigma[j]*10.);

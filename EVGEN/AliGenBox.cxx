@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2000/06/09 20:22:58  morsch
+Same class as previously in AliSimpleGen.cxx
+All coding rule violations except RS3 corrected (AM)
+
 */
 
 /*
@@ -100,7 +104,7 @@ void AliGenBox::Generate()
     Float_t random[6];
   //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
-    if(fVertexSmear==perEvent) {
+    if(fVertexSmear==kPerEvent) {
 	gMC->Rndm(random,6);
 	for (j=0;j<3;j++) {
 	    origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
@@ -123,7 +127,7 @@ void AliGenBox::Generate()
 	p[1] = pt*TMath::Sin(phi);
 	p[2] = pmom*TMath::Cos(theta);
 
-	if(fVertexSmear==perTrack) {
+	if(fVertexSmear==kPerTrack) {
 	    gMC->Rndm(random,6);
 	    for (j=0;j<3;j++) {
 		origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*

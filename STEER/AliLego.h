@@ -1,5 +1,5 @@
-#ifndef ALILego_H
-#define ALILego_H
+#ifndef ALILEGO_H
+#define ALILEGO_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

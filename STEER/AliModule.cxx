@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/05/16 08:45:08  fca
+Correct dtor, thanks to J.Belikov
+
 Revision 1.8  2000/02/23 16:25:22  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -59,6 +62,8 @@ AliModule::AliModule()
   //
   fHistograms = 0;
   fNodes      = 0;
+  fIdtmed     = 0;
+  fIdmate     = 0;
 }
  
 //_____________________________________________________________________________
@@ -101,6 +106,15 @@ AliModule::AliModule(const char* name,const char *title):TNamed(name,title)
 }
  
 //_____________________________________________________________________________
+AliModule::AliModule(const AliModule &mod)
+{
+  //
+  // Copy constructor
+  //
+  Copy(*this);
+}
+
+//_____________________________________________________________________________
 AliModule::~AliModule()
 {
   //
@@ -119,6 +133,15 @@ AliModule::~AliModule()
   delete fIdmate;
 }
  
+//_____________________________________________________________________________
+void AliModule::Copy(AliModule &mod) const
+{
+  //
+  // Copy *this onto mod, not implemented for AliModule
+  //
+  Fatal("Copy","Not implemented!\n");
+}
+
 //_____________________________________________________________________________
 void AliModule::Disable()
 {
@@ -295,6 +318,13 @@ void AliModule::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
 } 
 
 //_____________________________________________________________________________
+AliModule& AliModule::operator=(const AliModule &mod)
+{
+  mod.Copy(*this);
+  return (*this);
+}
+
+//_____________________________________________________________________________
 void AliModule::SetEuclidFile(char* material, char* geometry)
 {
   //
@@ -341,8 +371,8 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   Float_t par[50];
   Float_t teta1, phi1, teta2, phi2, teta3, phi3, orig, step;
   Float_t xo, yo, zo;
-  const Int_t maxrot=5000;
-  Int_t idrot[maxrot],istop[7000];
+  const Int_t kMaxRot=5000;
+  Int_t idrot[kMaxRot],istop[7000];
   FILE *lun;
   //
   // *** The input filnam name will be with extension '.euc'
@@ -355,7 +385,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   }
   //* --- definition of rotation matrix 0 ---  
   TArrayI &idtmed = *fIdtmed;
-  for(i=1; i<maxrot; ++i) idrot[i]=-99;
+  for(i=1; i<kMaxRot; ++i) idrot[i]=-99;
   idrot[0]=0;
   nvol=0;
  L10:
@@ -386,7 +416,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
     //*
   } else if (!strcmp(key,"ROTM")) {
     sscanf(&card[4],"%d %f %f %f %f %f %f",&irot,&teta1,&phi1,&teta2,&phi2,&teta3,&phi3);
-    if( irot<=0 || irot>=maxrot ) {
+    if( irot<=0 || irot>=kMaxRot ) {
       Error("ReadEuclid","ROTM rotation matrix number %d illegal\n",irot);
       exit(1);
     }
@@ -421,7 +451,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
     //*
   } else if (!strcmp(key,"POSI")) {
     sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']'", name, &nr, mother, &xo, &yo, &zo, &irot, konly);
-    if( irot<0 || irot>=maxrot ) {
+    if( irot<0 || irot>=kMaxRot ) {
       Error("ReadEuclid","POSI %s#%d rotation matrix number %d illegal\n",name,nr,irot);
       exit(1);
     }
@@ -438,7 +468,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
     //*
   } else if (!strcmp(key,"POSP")) {
     sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']' %d", name, &nr, mother, &xo, &yo, &zo, &irot, konly, &npar);
-    if( irot<0 || irot>=maxrot ) {
+    if( irot<0 || irot>=kMaxRot ) {
       Error("ReadEuclid","POSP %s#%d rotation matrix number %d illegal\n",name,nr,irot);
       exit(1);
     }
@@ -525,8 +555,8 @@ void AliModule::ReadEuclidMedia(const char* filnam)
   }
   //
   // Retrieve Mag Field parameters
-  Int_t ISXFLD=gAlice->Field()->Integ();
-  Float_t SXMGMX=gAlice->Field()->Max();
+  Int_t globField=gAlice->Field()->Integ();
+  Float_t globMaxField=gAlice->Field()->Max();
   //  TArrayI &idtmed = *fIdtmed;
   //
  L10:
@@ -560,7 +590,7 @@ void AliModule::ReadEuclidMedia(const char* filnam)
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //
-    AliMedium(itmed,natmed,nmat,isvol,ISXFLD,SXMGMX,tmaxfd,
+    AliMedium(itmed,natmed,nmat,isvol,globField,globMaxField,tmaxfd,
 		   stemax,deemax,epsil,stmin,ubuf,nwbuf);
     //    (*fImedia)[idtmed[itmed]-1]=id_det;
     //*

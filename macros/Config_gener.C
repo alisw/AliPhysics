@@ -137,7 +137,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 //     
      gener->SetOrigin(0., 0.0 ,0);
      gener->SetSigma(0,0,5.3);
-     gener->SetVertexSmear(perEvent); 
+     gener->SetVertexSmear(kPerEvent); 
 // no tracking
      gener->SetTrackingFlag(0);
  case pythia:
@@ -152,7 +152,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
      gener->SetOrigin(0,0,0);          // vertex position
-     gener->SetVertexSmear(perEvent); 
+     gener->SetVertexSmear(kPerEvent); 
      gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
 //     gener->SetStrucFunc(DO_Set_1);
      gener->SetProcess(mb); 
@@ -255,7 +255,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 //*******************************************************
      AliGenExtFile *gener = new AliGenExtFile(-1); 
      gener->SetFileName("$(ALICE_ROOT)/data/dtujet93.root");
-     gener->SetVertexSmear(perEvent); 
+     gener->SetVertexSmear(kPerEvent); 
      gener->SetTrackingFlag(1);
      break;
 
@@ -305,7 +305,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 // Activate this line if you want the vertex smearing to happen
 // track by track
 //
-// gener->SetVertexSmear(perTrack); 
+// gener->SetVertexSmear(kPerTrack); 
 
 gener->Init();
 

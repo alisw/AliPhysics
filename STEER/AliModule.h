@@ -1,5 +1,5 @@
-#ifndef AliModule_H
-#define AliModule_H
+#ifndef ALIMODULE_H
+#define ALIMODULE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -15,27 +15,12 @@
 #include <AliHit.h>
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker {
-
-  // Data members
-protected:      
-  
-  TString       fEuclidMaterial;  //Name of the Euclid file for materials (if any)
-  TString       fEuclidGeometry;  //Name of the Euclid file for geometry (if any)
-  
-  TArrayI      *fIdtmed;      //List of tracking medium numbers
-  TArrayI      *fIdmate;      //List of material numbers
-  Int_t         fLoMedium;   //Minimum tracking medium ID for this Module
-  Int_t         fHiMedium;   //Maximum tracking medium ID for this Module
-
-  Bool_t        fActive;      //Detector activity flag
-  TList        *fHistograms;  //List of histograms
-  TList        *fNodes;       //List of geometry nodes
-
 public:
 
   // Creators - distructors
   AliModule(const char* name, const char *title);
   AliModule();
+  AliModule(const AliModule &mod);
   virtual ~AliModule();
 
   // Inline functions
@@ -55,14 +40,23 @@ public:
   virtual  Int_t&        HiMedium() {return fHiMedium;}
 
   // Module composition
-  virtual void  AliMaterial(Int_t, const char*, Float_t, Float_t, Float_t, Float_t,
-			    Float_t, Float_t* buf=0, Int_t nwbuf=0) const;
-  virtual void  AliGetMaterial(Int_t, char*, Float_t&, Float_t&, Float_t&,
-			       Float_t&, Float_t&);
-  virtual void  AliMixture(Int_t, const char*, Float_t*, Float_t*, Float_t, Int_t, Float_t*) const;
-  virtual void  AliMedium(Int_t, const char*, Int_t, Int_t, Int_t, Float_t, Float_t, 
-		   Float_t, Float_t, Float_t, Float_t, Float_t* ubuf=0, Int_t nbuf=0) const;
-  virtual void  AliMatrix(Int_t&, Float_t, Float_t, Float_t, Float_t, Float_t, Float_t) const;
+  virtual void AliMaterial(Int_t imat, const char* name, Float_t a, 
+			   Float_t z, Float_t dens, Float_t radl,
+			   Float_t absl, Float_t *buf=0, Int_t nwbuf=0) const;
+  virtual void AliGetMaterial(Int_t imat, char* name, Float_t &a, 
+				Float_t &z, Float_t &dens, Float_t &radl,
+				Float_t &absl);
+  virtual void AliMixture(Int_t imat, const char *name, Float_t *a,
+			  Float_t *z, Float_t dens, Int_t nlmat,
+			  Float_t *wmat) const;
+  virtual void AliMedium(Int_t numed, const char *name, Int_t nmat,
+			 Int_t isvol, Int_t ifield, Float_t fieldm,
+			 Float_t tmaxfd, Float_t stemax, Float_t deemax,
+			 Float_t epsil, Float_t stmin, Float_t *ubuf=0,
+			 Int_t nbuf=0) const;
+  virtual void AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
+			 Float_t theta2, Float_t phi2, Float_t theta3,
+			 Float_t phi3) const;
   
   // Virtual methods
   virtual void  BuildGeometry() {};
@@ -97,11 +91,28 @@ public:
   virtual void        StepManager() {}
   //virtual AliHit*     FirstHit(Int_t) {return 0;}
   //virtual AliHit*     NextHit() {return 0;}
-  virtual void        SetBufferSize(Int_t) {}  
-  virtual void        SetEuclidFile(char*,char*geometry=0);
-  virtual void ReadEuclid(const char*, char*);
-  virtual void ReadEuclidMedia(const char*);
+  virtual void        SetBufferSize(Int_t bufsiz) {}  
+  virtual void        SetEuclidFile(char *material,char *geometry=0);
+  virtual void ReadEuclid(const char *filnam, char *topvol);
+  virtual void ReadEuclidMedia(const char *filnam);
+  virtual AliModule& operator=(const AliModule &mod);
+  virtual void Copy(AliModule &mod) const;
  
+protected:      
+  // Data members
+  
+  TString       fEuclidMaterial;  //Name of the Euclid file for materials (if any)
+  TString       fEuclidGeometry;  //Name of the Euclid file for geometry (if any)
+  
+  TArrayI      *fIdtmed;      //List of tracking medium numbers
+  TArrayI      *fIdmate;      //List of material numbers
+  Int_t         fLoMedium;   //Minimum tracking medium ID for this Module
+  Int_t         fHiMedium;   //Maximum tracking medium ID for this Module
+
+  Bool_t        fActive;      //Detector activity flag
+  TList        *fHistograms;  //List of histograms
+  TList        *fNodes;       //List of geometry nodes
+
   ClassDef(AliModule,1)  //Base class for ALICE Modules
 };
 #endif

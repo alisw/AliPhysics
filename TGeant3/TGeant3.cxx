@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.28  2000/06/29 10:51:55  morsch
+Add some charmed and bottom baryons to the particle list (TDatabasePDG). This
+is needed by Hijing. Should be part of a future review of TDatabasePDG.
+
 Revision 1.27  2000/06/21 17:40:15  fca
 Adding possibility to set ISTRA, PAI model
 
@@ -122,7 +126,7 @@ Introduction of the Copyright and cvs Log
 # define gsxyz   gsxyz_ 
 # define gtrack  gtrack_ 
 # define gtreve  gtreve_ 
-# define gtreve_root  gtreve_root_ 
+# define gtreveroot  gtreveroot_ 
 # define grndm   grndm_ 
 # define grndmq  grndmq_ 
 # define gdtom   gdtom_ 
@@ -219,7 +223,7 @@ Introduction of the Copyright and cvs Log
 # define gsxyz   GSXYZ 
 # define gtrack  GTRACK 
 # define gtreve  GTREVE 
-# define gtreve_root  GTREVE_ROOT
+# define gtreveroot  GTREVEROOT
 # define grndm   GRNDM
 # define grndmq  GRNDMQ
 # define gdtom   GDTOM 
@@ -347,7 +351,7 @@ extern "C"
 
   void type_of_call gtreve(); 
 
-  void type_of_call gtreve_root(); 
+  void type_of_call gtreveroot(); 
 
   void type_of_call grndm(Float_t *, const Int_t &); 
 
@@ -2268,12 +2272,12 @@ void  TGeant3::Gtreve()
 } 
 
 //_____________________________________________________________________________
-void  TGeant3::Gtreve_root() 
+void  TGeant3::GtreveRoot() 
 { 
   //
   //   Controls tracking of all particles belonging to the current event
   //
-  gtreve_root(); 
+  gtreveroot(); 
 } 
 
 //_____________________________________________________________________________

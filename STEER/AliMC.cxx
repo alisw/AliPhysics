@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/03/22 18:08:07  fca
+Rationalisation of the virtual MC interfaces
+
 Revision 1.2  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -31,6 +34,9 @@ AliMC* gMC;
 
 AliMC::AliMC(const char *name, const char *title) : TNamed(name,title)
 {
+  //
+  // Standard constructor
+  //
   if(fgMC) {
     printf("Cannot initialise twice MonteCarlo class\n");
     exit(1);

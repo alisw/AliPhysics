@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.18  2000/06/30 12:40:34  morsch
+Pythia takes care of vertex smearing. Correct conversion from Pythia units (mm) to
+Geant units (cm).
+
 Revision 1.17  2000/06/09 20:34:07  morsch
 All coding rule violations except RS3 corrected
 
@@ -181,12 +185,12 @@ void AliGenPythia::Generate()
     
     fTrials=0;
     for (j=0;j<3;j++) origin0[j]=fOrigin[j];
-    if(fVertexSmear==perEvent) {
+    if(fVertexSmear==kPerEvent) {
 	fPythia->SetMSTP(151,1);
 	for (j=0;j<3;j++) {
 	    fPythia->SetPARP(151+j, fOsigma[j]/10.);
 	}
-    } else if (fVertexSmear==perTrack) {
+    } else if (fVertexSmear==kPerTrack) {
 	fPythia->SetMSTP(151,0);
     }
     

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/05/16 08:30:02  fca
+Using automatic streamer for c arrays
+
 Revision 1.3  2000/03/20 14:22:25  fca
 New version to support new PHOS code
 
@@ -62,6 +65,15 @@ AliRecPoint::AliRecPoint()
   fMulTrack    = 0 ; 
   fTracksList  = new int[fMaxTrack]; ; 
   fIndexInList = -1 ; // to be set when the point is already stored
+}
+
+//____________________________________________________________________________
+AliRecPoint::AliRecPoint(const AliRecPoint& recp)
+{
+  //
+  // Copy constructor
+  //
+  recp.Copy(*this);
 }
 
 //____________________________________________________________________________
@@ -121,6 +133,33 @@ void AliRecPoint::AddDigit(AliDigitNew & digit)
 // }
 
 //____________________________________________________________________________
+void AliRecPoint::Copy(AliRecPoint& recp) const
+{
+  //
+  // Copy *this onto pts
+  //
+  // Copy all first
+  if(this != &recp) {
+    ((TObject*) this)->Copy((TObject&)recp);
+    recp.fAmp = fAmp;
+    recp.fGeom = fGeom;
+    recp.fIndexInList = fIndexInList;
+    recp.fLocPos = fLocPos;
+    recp.fLocPosM = new TMatrix(*fLocPosM);
+    recp.fMaxDigit = fMaxDigit;
+    recp.fMulDigit = fMulDigit;
+    recp.fMaxTrack = fMaxTrack;
+    recp.fMulTrack = fMulTrack;
+    
+    // Duplicate pointed objects
+    recp.fDigitsList = new Int_t[fMulDigit];
+    memcpy(recp.fDigitsList,fDigitsList,fMulDigit*sizeof(Int_t));
+    recp.fTracksList = new Int_t[fMulTrack];
+    memcpy(recp.fTracksList,fTracksList,fMulTrack*sizeof(Int_t));
+  }
+}
+
+//____________________________________________________________________________
 void AliRecPoint::GetCovarianceMatrix(TMatrix & mat)
 {
   // returns the covariant matrix for the local position
@@ -138,6 +177,14 @@ void AliRecPoint::GetLocalPosition(TVector3 & pos)
 
  
 }
+
+//____________________________________________________________________________
+AliRecPoint & AliRecPoint::operator= (const AliRecPoint &recp)
+{
+  recp.Copy(*this);
+  return (*this);
+}
+
 
 //____________________________________________________________________________
 void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat)

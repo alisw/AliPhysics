@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.2  1999/07/01 14:45:34  fca
+* Modifications to allow Cherenkov transport
+*
 * Revision 1.1  1999/06/03 16:38:16  fca
 * First version of gtreve_root, special version of gtreve for AliRoot to be
 * called from gutrev.
@@ -16,7 +19,7 @@
 #include "geant321/pilot.h"
 *CMZ :  3.21/03 07/10/94  18.07.13  by  S.Giani
 *-- Author :
-      SUBROUTINE GTREVE_ROOT
+      SUBROUTINE GTREVEROOT
 C.
 C.    ******************************************************************
 C.    *                                                                *

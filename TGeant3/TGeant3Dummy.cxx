@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/06/27 09:26:18  fca
+Adding dummy SetSTRA
+
 Revision 1.20  2000/05/16 13:10:41  fca
 New method IsNewTrack and fix for a problem in Father-Daughter relations
 
@@ -199,7 +202,7 @@ void  TGeant3::Gsstak(Int_t) {}
 void  TGeant3::Gsxyz() {}
 void  TGeant3::Gtrack() {}
 void  TGeant3::Gtreve() {}
-void  TGeant3::Gtreve_root() {}
+void  TGeant3::GtreveRoot() {}
 void  TGeant3::Grndm(Float_t*, const Int_t) const {}
 void  TGeant3::Grndmq(Int_t&, Int_t&, const Int_t, const Text_t*) {}
 

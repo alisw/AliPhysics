@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliHit.h"
@@ -33,7 +36,7 @@ AliHit::AliHit(Int_t shunt, Int_t track)
   TClonesArray &particles = *(gAlice->Particles());
   if(shunt) {
     int primary = gAlice->GetPrimary(track);
-    ((TParticle *)particles[primary])->SetBit(Keep_Bit);
+    ((TParticle *)particles[primary])->SetBit(kKeepBit);
     fTrack=primary;
   } else {
     fTrack=track;

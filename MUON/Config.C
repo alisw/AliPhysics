@@ -75,7 +75,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetPhiRange(-360,360);
      gener->SetThetaRange(2., 10.);
      gener->SetOrigin(25,25,510.5);   
-     gener->SetVertexSmear(perTrack); 
+     gener->SetVertexSmear(kPerTrack); 
      //vertex position
      gener->SetSigma(1.8, 1.8,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kProton);                    //GEANT particle type
@@ -130,7 +130,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
      gener->SetOrigin(0,0,0);          // vertex position
-     gener->SetVertexSmear(perEvent); 
+     gener->SetVertexSmear(kPerEvent); 
      gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
 //     gener->SetStrucFunc(DO_Set_1);
      gener->SetProcess(mb); 
@@ -189,7 +189,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetThetaRange(0.104,33.52);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,5.6);         //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetVertexSmear(perTrack); 
+     gener->SetVertexSmear(kPerTrack); 
      gener->SetTrackingFlag(1);
      break;
 

@@ -1,5 +1,5 @@
-#ifndef ALI_MC_H
-#define ALI_MC_H
+#ifndef ALIMC_H
+#define ALIMC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -180,7 +180,7 @@ class AliMC : public TNamed
     virtual void Gdman(Float_t, Float_t, const char*) = 0;
     virtual void SetColors() = 0;
     virtual void Gtreve() = 0;
-    virtual void Gtreve_root() = 0;
+    virtual void GtreveRoot() = 0;
     virtual void Gckmat(Int_t, char*) = 0;
     virtual void InitLego() = 0;
     virtual void Gfpart(Int_t, char*, Int_t&, Float_t&, Float_t&, Float_t&) = 0; 
@@ -195,10 +195,10 @@ class AliMC : public TNamed
   virtual void ProcessRun(Int_t nevent) = 0;
 
   private:
-    static AliMC*  fgMC;
+  static AliMC*  fgMC;    // Pointer to the virtual MonteCarlo object
 
   ClassDef(AliMC,1)  //Geometry Interface Class
 };
 
-#endif // ALI_MC_H
+#endif 
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,6 +52,15 @@ AliPoints::AliPoints()
 }
 
 //_____________________________________________________________________________
+AliPoints::AliPoints(const AliPoints &pts)
+{
+  //
+  // Copy constructor
+  //
+  pts.Copy(*this);
+}
+
+//_____________________________________________________________________________
 AliPoints::AliPoints(Int_t nhits)
   :TPolyMarker3D(nhits)
 {
@@ -69,6 +81,22 @@ AliPoints::~AliPoints()
   fDetector = 0;	
   fIndex    = 0;
 }
+
+//_____________________________________________________________________________
+void AliPoints::Copy(AliPoints &pts) const
+{
+  //
+  // Copy *this onto pts
+  //
+  if(this != &pts) {
+    ((TPolyMarker3D*)this)->Copy((TPolyMarker3D&)pts);
+    pts.fGLList = fGLList;
+    pts.fLastPoint = fLastPoint;
+    pts.fDetector = fDetector;
+    pts.fIndex = fIndex;
+  }
+}
+
 
 //_____________________________________________________________________________
 Int_t AliPoints::DistancetoPrimitive(Int_t px, Int_t py)
@@ -163,6 +191,16 @@ void AliPoints::InspectParticle()
   //
   TParticle *particle = GetParticle();
   if (particle) particle->Inspect();
+}
+
+//_____________________________________________________________________________
+AliPoints & AliPoints::operator=(const AliPoints &pts)
+{
+  //
+  // Assignment operator
+  //
+  pts.Copy(*this);
+  return (*this);
 }
 
 //_____________________________________________________________________________

@@ -72,7 +72,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      gener->SetPhiRange(85,85);
      gener->SetThetaRange(85,85);
      gener->SetOrigin(0,0,0);   
-     gener->SetVertexSmear(perTrack); 
+     gener->SetVertexSmear(kPerTrack); 
      //vertex position
      gener->SetSigma(1.8, 1.8,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kPiPlus);                    //GEANT particle type
@@ -127,7 +127,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
      gener->SetOrigin(0,0,0);          // vertex position
-     gener->SetVertexSmear(perEvent); 
+     gener->SetVertexSmear(kPerEvent); 
      gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
 //     gener->SetStrucFunc(DO_Set_1);
      gener->SetProcess(mb); 
@@ -176,7 +176,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*******************************************************
      AliGenExtFile *gener = new AliGenExtFile(-1); 
      gener->SetFileName("$(ALICE_ROOT)/data/dtujet93.root");
-     gener->SetVertexSmear(perEvent); 
+     gener->SetVertexSmear(kPerEvent); 
      gener->SetTrackingFlag(1);
      break;
 
@@ -232,7 +232,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 // Activate this line if you want the vertex smearing to happen
 // track by track
 //
-gener->SetVertexSmear(perTrack); 
+gener->SetVertexSmear(kPerTrack); 
 gener->Init();
 gAlice->SetField(0,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 

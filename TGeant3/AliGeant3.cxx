@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/05/20 14:49:48  fca
+Call gdebug at the end of gustep
+
 Revision 1.4  2000/04/26 10:17:32  fca
 Changes in Lego for G4 compatibility
 
@@ -217,7 +220,7 @@ extern "C" void type_of_call  rxkeep(const Int_t &n)
       exit(1);
     }
   
-  ((TParticle*)(gAlice->Particles()->UncheckedAt(n-1)))->SetBit(Keep_Bit);
+  ((TParticle*)(gAlice->Particles()->UncheckedAt(n-1)))->SetBit(kKeepBit);
 }
 
 //_____________________________________________________________________________
@@ -263,7 +266,7 @@ extern "C" void type_of_call  rxouth ()
 #  define ghelix ghelix_
 #  define grkuta grkuta_
 #  define gtrack gtrack_
-#  define gtreve_root gtreve_root_
+#  define gtreveroot gtreveroot_
 #  define glast  glast_
 
 #else
@@ -299,7 +302,7 @@ extern "C" void type_of_call  rxouth ()
 #  define ghelix GHELIX
 #  define grkuta GRKUTA
 #  define gtrack GTRACK
-#  define gtreve_root GTREVE_ROOT
+#  define gtreveroot GTREVEROOT
 #  define glast  GLAST
 
 #endif
@@ -314,7 +317,7 @@ extern "C" type_of_call void ghelx3(Float_t&, Float_t&, Float_t*, Float_t*);
 extern "C" type_of_call void ghelix(Float_t&, Float_t&, Float_t*, Float_t*);
 extern "C" type_of_call void grkuta(Float_t&, Float_t&, Float_t*, Float_t*);
 extern "C" type_of_call void gtrack();
-extern "C" type_of_call void gtreve_root();
+extern "C" type_of_call void gtreveroot();
 extern "C" type_of_call void glast();
 
 extern "C" type_of_call {
@@ -659,7 +662,7 @@ void gutrev()
 //
 //    ------------------------------------------------------------------
 //
-  gtreve_root();
+  gtreveroot();
 }
 
 

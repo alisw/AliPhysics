@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/08 13:34:50  fca
+Better control of momentum range in GenBox
+
 Revision 1.4  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -50,6 +53,9 @@ TGenerator* AliGenerator::fgMCEvGen=0;
 //____________________________________________________________
 AliGenerator::AliGenerator()
 {
+  //
+  // Default constructor
+  //
     printf("\n AliGenerator Default Constructor\n\n");
     
     gAlice->SetGenerator(this);
@@ -75,6 +81,9 @@ AliGenerator::AliGenerator()
 AliGenerator::AliGenerator(Int_t npart)
     : TNamed(" "," ")
 {
+  //
+  // Standard constructor
+  //
     printf("\n AliGenerator Constructor initializing number of particles \n\n");
     gAlice->SetGenerator(this);
     SetThetaRange(); ResetBit(kThetaRange);
@@ -97,8 +106,39 @@ AliGenerator::AliGenerator(Int_t npart)
 }
 
 //____________________________________________________________
+AliGenerator::AliGenerator(const AliGenerator &gen) : TNamed(" "," ")
+{
+  //
+  // Copy constructor
+  //
+  gen.Copy(*this);
+}
+
+//____________________________________________________________
+AliGenerator & AliGenerator::operator=(const AliGenerator &gen)
+{
+  //
+  // Assignment operator
+  //
+  gen.Copy(*this);
+  return (*this);
+}
+
+//____________________________________________________________
+void AliGenerator::Copy(AliGenerator &gen) const
+{
+  //
+  // Copy *this onto gen
+  //
+  Fatal("Copy","Not implemented!\n");
+}
+
+//____________________________________________________________
 AliGenerator::~AliGenerator()
 {
+  //
+  // Destructor
+  //
   fOrigin.Set(0);
   fOsigma.Set(0);
   delete fgMCEvGen;
@@ -106,6 +146,9 @@ AliGenerator::~AliGenerator()
 
 void AliGenerator::Init()
 {   
+  //
+  // Dummy initialisation
+  //
 }
 
 

@@ -18,6 +18,7 @@ public TObject {
  public:
     // Set Chamber Segmentation Parameters
     //
+    virtual ~AliSegmentation() {}
     // Pad size Dx*Dy 
     virtual void    SetPadSize(Float_t p1, Float_t p2)                                   = 0;
     // Anod Pitch

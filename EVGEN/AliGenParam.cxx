@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.18  2000/06/29 21:08:27  morsch
+All paramatrisation libraries derive from the pure virtual base class AliGenLib.
+This allows to pass a pointer to a library directly to AliGenParam and avoids the
+use of function pointers in Config.C.
+
 Revision 1.17  2000/06/09 20:33:30  morsch
 All coding rule violations except RS3 corrected
 
@@ -277,7 +282,7 @@ void AliGenParam::Generate()
  
 // Calculating vertex position per event
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
-  if(fVertexSmear==perEvent) {
+  if(fVertexSmear==kPerEvent) {
       gMC->Rndm(random,6);
       for (j=0;j<3;j++) {
 	  origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
@@ -323,7 +328,7 @@ void AliGenParam::Generate()
 	  p[0]=pt*TMath::Cos(phi);
 	  p[1]=pt*TMath::Sin(phi);
 	  p[2]=pl;
-	  if(fVertexSmear==perTrack) {
+	  if(fVertexSmear==kPerTrack) {
 	      gMC->Rndm(random,6);
 	      for (j=0;j<3;j++) {
 		  origin0[j]=

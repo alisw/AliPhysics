@@ -191,7 +191,7 @@ class TGeant4: public AliMC
     virtual void Gdman(Float_t u, Float_t v, const char* type);
     virtual void SetColors();
     virtual void Gtreve();
-    virtual void Gtreve_root();
+    virtual void GtreveRoot();
     virtual void Gckmat(Int_t itmed, char* natmed);
     virtual void InitLego();
     virtual void Gfpart(Int_t ipart, char *name, Int_t& itrtyp,  

@@ -1,5 +1,5 @@
-#ifndef AliRun_H
-#define AliRun_H
+#ifndef ALIRUN_H
+#define ALIRUN_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -19,53 +19,17 @@
 #include "AliMC.h"
 #include "AliGenerator.h"
 class AliLego;
-//#include "AliLego.h"
 
-enum {Keep_Bit=1, Daughters_Bit=2, Done_Bit=4};
+enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
 class AliDisplay;
 
 class AliRun : public TNamed {
-
-protected:
-  Int_t         fRun;          //Current run number
-  Int_t         fEvent;        //Current event number (from 1)
-  Int_t         fNtrack;       //Number of tracks
-  Int_t         fHgwmk;        //Last track purified
-  Int_t         fCurrent;      //Last track returned from the stack
-  Int_t         fDebug;        //Debug flag
-  AliHeader     fHeader;       //Header information
-  TTree        *fTreeD;        //Pointer to Tree for Digits
-  TTree        *fTreeK;        //Pointer to Tree for Kinematics
-  TTree        *fTreeH;        //Pointer to Tree for Hits
-  TTree        *fTreeE;        //Pointer to Tree for Header
-  TTree        *fTreeR;        //Pointer to Tree for Reconstructed Objects
-  TObjArray    *fModules;      //List of Detectors
-  TClonesArray *fParticles;    //Pointer to list of particles
-  TGeometry    *fGeometry;     //Pointer to geometry
-  AliDisplay   *fDisplay;      //Pointer to event display
-  TStopwatch    fTimer;        //Timer object
-  AliMagF      *fField;        //Magnetic Field Map
-  AliMC        *fMC;           //pointer to MonteCarlo object
-  TArrayI      *fImedia;       //Array of correspondence between media and detectors
-  Int_t         fNdets;        //Number of detectors
-  Float_t       fTrRmax;       //Maximum radius for tracking
-  Float_t       fTrZmax;       //Maximu z for tracking
-  AliGenerator *fGenerator;    //Generator used in the MC
-  Bool_t        fInitDone;     //true when initialisation done
-  AliLego      *fLego;         //pointer to aliLego object if it exists
-  TDatabasePDG *fPDGDB;        //Particle factory object!
-  TList        *fHitLists;     //Lists of hits to be remapped by PurifyKine
-  TArrayF       fEventEnergy;  //Energy deposit for current event
-  TArrayF       fSummEnergy;   //Energy per event in each volume
-  TArrayF       fSum2Energy;   //Energy squared per event in each volume
-  TString       fConfigFunction; //Configuration file to be executed
-
-  
 public:
    // Creators - distructors
    AliRun();
    AliRun(const char *name, const char *title);
+   AliRun(const AliRun &run);
    virtual ~AliRun();
 
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
@@ -141,7 +105,7 @@ public:
   			       Float_t *pmom, Float_t *vpos, Float_t *polar, 
                                Float_t tof, const char *mecha, Int_t &ntr,
                                Float_t weight=1);
-   virtual  void  KeepTrack(const Int_t);
+  virtual  void  KeepTrack(const Int_t itra);
    virtual  void  MediaTable();
    virtual  Float_t TrackingZmax() const {return fTrZmax;}
    virtual  Float_t TrackingRmax() const {return fTrRmax;}
@@ -152,6 +116,8 @@ public:
    virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
+   virtual  AliRun& operator = (const AliRun &run);
+   virtual  void Copy(AliRun &run) const;
 
 
    TTree         *TreeD() {return fTreeD;}
@@ -160,7 +126,39 @@ public:
    TTree         *TreeK() {return fTreeK;}
    TTree         *TreeR() {return fTreeR;}
 
-  // --------------------------- commons -------------------------------------
+protected:
+  Int_t         fRun;          //Current run number
+  Int_t         fEvent;        //Current event number (from 1)
+  Int_t         fNtrack;       //Number of tracks
+  Int_t         fHgwmk;        //Last track purified
+  Int_t         fCurrent;      //Last track returned from the stack
+  Int_t         fDebug;        //Debug flag
+  AliHeader     fHeader;       //Header information
+  TTree        *fTreeD;        //Pointer to Tree for Digits
+  TTree        *fTreeK;        //Pointer to Tree for Kinematics
+  TTree        *fTreeH;        //Pointer to Tree for Hits
+  TTree        *fTreeE;        //Pointer to Tree for Header
+  TTree        *fTreeR;        //Pointer to Tree for Reconstructed Objects
+  TObjArray    *fModules;      //List of Detectors
+  TClonesArray *fParticles;    //Pointer to list of particles
+  TGeometry    *fGeometry;     //Pointer to geometry
+  AliDisplay   *fDisplay;      //Pointer to event display
+  TStopwatch    fTimer;        //Timer object
+  AliMagF      *fField;        //Magnetic Field Map
+  AliMC        *fMC;           //pointer to MonteCarlo object
+  TArrayI      *fImedia;       //Array of correspondence between media and detectors
+  Int_t         fNdets;        //Number of detectors
+  Float_t       fTrRmax;       //Maximum radius for tracking
+  Float_t       fTrZmax;       //Maximu z for tracking
+  AliGenerator *fGenerator;    //Generator used in the MC
+  Bool_t        fInitDone;     //true when initialisation done
+  AliLego      *fLego;         //pointer to aliLego object if it exists
+  TDatabasePDG *fPDGDB;        //Particle factory object!
+  TList        *fHitLists;     //Lists of hits to be remapped by PurifyKine
+  TArrayF       fEventEnergy;  //Energy deposit for current event
+  TArrayF       fSummEnergy;   //Energy per event in each volume
+  TArrayF       fSum2Energy;   //Energy squared per event in each volume
+  TString       fConfigFunction; //Configuration file to be executed
 
    ClassDef(AliRun,3)      //Supervisor class for all Alice detectors
 };
