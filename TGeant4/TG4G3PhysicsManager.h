@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4G3PhysicsManager
+// -------------------------
 // This class provides a Geant3 way control
 // to Geant4 physics. 
 // The G3 cuts and process controls are
@@ -15,8 +19,7 @@
 #define TG4_G3_PHYSICS_MANAGER_H
 
 #include "TG4Globals.h"
-#include "TG4NameMap.h"
-#include "TG4IntMap.h"
+#include "TG4G3Defaults.h"
 #include "TG4G3Cut.h"
 #include "TG4G3Control.h"
 #include "TG4G3ParticleWSP.h"
@@ -50,29 +53,30 @@ class TG4G3PhysicsManager
     G4bool CheckCutWithTheVector(
              G4String name, G4double value, TG4G3Cut& cut);   
     G4bool CheckControlWithTheVector(
-             G4String name, G4double value, TG4G3Control& control); 
+             G4String name, G4double value, 
+	     TG4G3Control& control, TG4G3ControlValue& controlValue); 
     G4bool CheckCutWithG3Defaults(
              G4String name, G4double value, TG4G3Cut& cut); 
     G4bool CheckControlWithG3Defaults(
-             G4String name, G4double value, TG4G3Control& control); 
+             G4String name, G4double value, 
+	     TG4G3Control& control, TG4G3ControlValue& controlValue); 
 
     // set methods
     void SetCut(TG4G3Cut cut, G4double cutValue);
-    void SetProcess(TG4G3Control control, G4int controlValue);
+    void SetProcess(TG4G3Control control, TG4G3ControlValue controlValue);
     void SetG3DefaultCuts();                    
     void SetG3DefaultControls();               
     
     // get methods
     G4bool IsSpecialCuts() const;
     G4bool IsSpecialControls() const;
-    TG4G3CutVector* GetCutVector() const;    
+    TG4G3CutVector*     GetCutVector() const;    
     TG4G3ControlVector* GetControlVector() const;   
-    TG4boolVector* GetIsCutVector() const;
-    TG4boolVector* GetIsControlVector() const;
-    TG4G3Cut  GetG3Cut(G4String cutName);
-    TG4G3Control GetG3Control(G4String controlName);
-    TG4G3ParticleWSP GetG3ParticleWSP(G4ParticleDefinition* particle) const;
-    void GetG3ParticleWSPName(G4int particleWSP, G4String& name) const;
+    TG4boolVector*      GetIsCutVector() const;
+    TG4boolVector*      GetIsControlVector() const;
+          // conversions
+    TG4G3ParticleWSP  GetG3ParticleWSP(G4ParticleDefinition* particle) const;
+    G4String GetG3ParticleWSPName(G4int particleWSP) const;
     
   protected:
     TG4G3PhysicsManager(const TG4G3PhysicsManager& right);
@@ -81,10 +85,6 @@ class TG4G3PhysicsManager
     TG4G3PhysicsManager& operator=(const TG4G3PhysicsManager& right);
 
   private:
-    // methods
-    void FillG3CutNameVector();
-    void FillG3ControlNameVector();
-
     // set methods
     void SwitchIsCutVector(TG4G3Cut cut);
     void SwitchIsControlVector(TG4G3Control control);
@@ -95,11 +95,9 @@ class TG4G3PhysicsManager
     // data members
     TG4G3CutVector*      fCutVector;    //TG4CutVector  
     TG4G3ControlVector*  fControlVector;//TG4ControlVector
-    TG4boolVector*    fIsCutVector;  //vector of booleans which cuts are set
+    TG4boolVector*    fIsCutVector;     //vector of booleans which cuts are set
     TG4boolVector*    fIsControlVector; //vector of booleans which controls are set
-    TG4StringVector   fG3CutNameVector; //vector of cut parameters names     
-    TG4StringVector   fG3ControlNameVector; //vector of process control 
-                                        // parameters names   
+    TG4G3Defaults     fG3Defaults;      // G3 default cuts/controls					  
     G4bool            fLock;  //if true: cut/control vectors cannot be modified
 };
 

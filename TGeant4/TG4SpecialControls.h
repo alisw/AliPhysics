@@ -1,16 +1,22 @@
 // $Id$
 // Category: physics
 //
-// Special process that applies G3 process controls.
+// Author: I. Hrivnacova
+//
+// Class TG4SpecialControls
+// ----------------------------
+// Special process that applies the G3 process controls.
 
 #ifndef TG4_SPECIAL_CONTROLS_H
 #define TG4_SPECIAL_CONTROLS_H
 
 #include "TG4Globals.h"
+#include "TG4G3Control.h"
 
 #include <G4VProcess.hh>
 #include <G4ProcessVector.hh>
 #include <globals.hh>
+#include <g4std/vector>
 
 class TG4SpecialControls : public G4VProcess 
 {
@@ -56,13 +62,17 @@ class TG4SpecialControls : public G4VProcess
     TG4SpecialControls& operator = (const TG4SpecialControls& right);
     
   private:  
+    // methods
+    virtual void Reset();    			 
+    
     // data members
-    Switch           fSwitchControls;       //directive passed from PostStepGetPIL
+    Switch           fSwitchControls;    //directive passed from PostStepGetPIL
                                          //to PostStepDoIt
-    G4ProcessVector  fSwitchedProcesses; //vector of the processes activation of
+    G4ProcessVector  fSwitchedProcesses; //vector of the processes the activation of
                                          //which is changed by this process
-    TG4boolVector    fSwitchedControls;     //vector for storing the current values of 
+    TG4boolVector    fSwitchedControls;  //vector for storing the current values of 
                                          //the processes activation   
+    G4int            fLastTrackID;       //the last processed track ID
 };
 
 #endif //TG4_SPECIAL_CONTROLS_H

@@ -1,8 +1,15 @@
 // $Id$
 // Category: visualization
+//
+// Author: A. Gheata
+//
+// Enum TG4G3Attribute
+// -------------------
+// Enumeration type for G3 visualization attributes.
 
-#ifndef TG4_G3_VIS_ATTRIBUTE_H
-#define TG4_G3_VIS_ATTRIBUTE_H
+
+#ifndef TG4_G3_ATTRIBUTE_H
+#define TG4_G3_ATTRIBUTE_H
 
 enum TG4G3Attribute
 {
@@ -33,4 +40,4 @@ enum TG4G3Attribute
   kUNKNOWN
 };
 
-#endif //TG4_G3_VIS_ATTRIBUTE_H
+#endif //TG4_G3_ATTRIBUTE_H

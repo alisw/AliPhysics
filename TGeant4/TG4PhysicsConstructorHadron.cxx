@@ -1,11 +1,18 @@
 // $Id$
 // Category: physics
 //
-// According to corresponding part of:
+// Author: I. Hrivnacova
+//
+// Class TG4PhysicsConstructorHadron
+// ---------------------------------
+// See the class description in the header file.
+// According to the corresponding part of:
 // ExN04PhysicsList.cc,v 1.7 1999/12/15 14:49:26 gunter
 // GEANT4 tag Name: geant4-01-01
 
 #include "TG4PhysicsConstructorHadron.h"
+#include "TG4ProcessControlMap.h"
+#include "TG4ProcessMCMap.h"
 
 #include <G4ParticleDefinition.hh>
 #include <G4ProcessManager.hh>
@@ -135,10 +142,17 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
 // F.W.Jones  09-JUL-1998
 // ---
 
+   TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+   TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+
    G4HadronElasticProcess* theElasticProcess = 
                                     new G4HadronElasticProcess;
    G4LElastic* theElasticModel = new G4LElastic;
    theElasticProcess->RegisterMe(theElasticModel);
+
+   // map to G3 controls, ALIMCProcess codes
+   controlMap->Add(theElasticProcess, kHADR); 
+   mcMap->Add(theElasticProcess, kPHElastic); 
 
    theParticleIterator->reset();
    while ((*theParticleIterator)()) {
@@ -157,6 +171,10 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                 new G4HEPionPlusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "pi-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -170,13 +188,24 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
 #ifdef TRIUMF_STOP_PIMINUS
-         pmanager->AddRestProcess(new G4PionMinusAbsorptionAtRest, ordDefault);
+         G4PionMinusAbsorptionAtRest* theAbsorption
+	   = new G4PionMinusAbsorptionAtRest; 
+         pmanager->AddRestProcess(theAbsorption, ordDefault);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theAbsorption, kHADR); 
+         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
 #else
-         G4String prcNam;
-         pmanager->AddRestProcess(
-           new G4PiMinusAbsorptionAtRest(
-                prcNam="PiMinusAbsorptionAtRest"), ordDefault);
+         G4String prcNam = "PiMinusAbsorptionAtRest";
+         G4PiMinusAbsorptionAtRest* theAbsorption
+	   = new G4PiMinusAbsorptionAtRest(prcNam); 
+         pmanager->AddRestProcess(theAbsorption, ordDefault);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theAbsorption, kHADR); 
+         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
 #endif
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "kaon+") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -189,6 +218,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                   new G4HEKaonPlusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "kaon0S") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -201,6 +233,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                              new G4HEKaonZeroInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "kaon0L") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -213,6 +248,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                              new G4HEKaonZeroInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "kaon-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -225,10 +263,22 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEKaonMinusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
 #ifdef TRIUMF_STOP_KMINUS
-         pmanager->AddRestProcess(new G4KaonMinusAbsorption, ordDefault);
+         G4KaonMinusAbsorption* theAbsorption = new G4KaonMinusAbsorption;
+         pmanager->AddRestProcess(theAbsorption, ordDefault);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theAbsorption, kHADR); 
+         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
 #else
-         pmanager->AddRestProcess(new G4KaonMinusAbsorptionAtRest, ordDefault);
+         G4KaonMinusAbsorptionAtRest* theAbsorption 
+	   = new G4KaonMinusAbsorptionAtRest;
+         pmanager->AddRestProcess(theAbsorption, ordDefault);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theAbsorption, kHADR); 
+         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
 #endif
       }
       else if (particleName == "proton") {
@@ -240,6 +290,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
          G4HEProtonInelastic* theHEInelasticModel = new G4HEProtonInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "anti_proton") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -252,6 +305,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                 new G4HEAntiProtonInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "neutron") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -264,6 +320,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                     new G4HENeutronInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }  
       else if (particleName == "anti_neutron") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -276,6 +335,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                new G4HEAntiNeutronInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "lambda") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -286,6 +348,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
          G4HELambdaInelastic* theHEInelasticModel = new G4HELambdaInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "anti_lambda") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -298,6 +363,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                 new G4HEAntiLambdaInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "sigma+") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -310,6 +378,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HESigmaPlusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "sigma-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -322,6 +393,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HESigmaMinusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "anti_sigma+") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -334,6 +408,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEAntiSigmaPlusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "anti_sigma-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -346,6 +423,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEAntiSigmaMinusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "xi0") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -358,6 +438,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEXiZeroInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "xi-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -370,6 +453,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEXiMinusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "anti_xi0") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -382,6 +468,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEAntiXiZeroInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "anti_xi-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -394,6 +483,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEAntiXiMinusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "deuteron") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -403,6 +495,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4LEDeuteronInelastic;
          theInelasticProcess->RegisterMe(theLEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "triton") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -412,6 +507,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4LETritonInelastic;
          theInelasticProcess->RegisterMe(theLEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "alpha") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -421,6 +519,7 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4LEAlphaInelastic;
          theInelasticProcess->RegisterMe(theLEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "omega-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -433,6 +532,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEOmegaMinusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
       else if (particleName == "anti_omega-") {
          pmanager->AddDiscreteProcess(theElasticProcess);
@@ -445,6 +547,9 @@ void TG4PhysicsConstructorHadron::ConstructProcess()
                                  new G4HEAntiOmegaMinusInelastic;
          theInelasticProcess->RegisterMe(theHEInelasticModel);
          pmanager->AddDiscreteProcess(theInelasticProcess);
+         // map to G3 controls, ALIMCProcess codes
+         controlMap->Add(theInelasticProcess, kHADR); 
+         mcMap->Add(theInelasticProcess, kPHInhelastic); 
       }
    }
 

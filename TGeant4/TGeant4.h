@@ -1,7 +1,11 @@
 // $Id$
 // Category: run
 //
-// Geant4 implementation of the MonteCarlo interface                      
+// Author: I. Hrivnacova
+//
+// Class TGeant4
+// -------------
+// Geant4 implementation of the MonteCarlo interface.                      
 
 #ifndef TGEANT4_H
 #define TGEANT4_H

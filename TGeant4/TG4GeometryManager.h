@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: V. Berejnoi, I. Hrivnacova
+//
+// Class TG4GeometryManager
+// ------------------------
 // Geant4 implementation of the MonteCarlo interface methods                    
 // for building Geant4 geometry and access to it.
 
@@ -8,24 +12,20 @@
 #define TG4_GEOMETRY_MANAGER_H
 
 #include "TG4NameMap.h"
+#include "TG4IntMap.h"
 #include "TG4Globals.h"
 
 #include <globals.hh>
-#include <G3SensVolVector.hh>
 
 #include <Rtypes.h>
 
-#include <g4std/fstream>
-#include <g4std/vector>
 
-class TG4CutVector;
-class TG4FlagVector;
 class TG4GeometryOutputManager;
 class TG4GeometryServices;
+class TG4G3CutVector;
+class TG4G3ControlVector;
 
-class G4Material;
 class G4VPhysicalVolume;
-class G4LogicalVolume;
 
 class TG4GeometryManager
 {
@@ -114,14 +114,14 @@ class TG4GeometryManager
     // methods for Geant4 only 
  
     G4VPhysicalVolume* CreateG4Geometry();
+    void SetUserLimits(const TG4G3CutVector& cuts,
+                       const TG4G3ControlVector& controls) const;
     void ReadG3Geometry(G4String filePath);
     void UseG3TrackingMediaLimits();
-    void FillMediumIdVector();
     void ClearG3Tables();       
     void ClearG3TablesFinal();
     void OpenOutFile(G4String filePath);
     void CloseOutFile();
-    void PrintNameMap();
     
     // set methods
     void SetWriteGeometry(G4bool writeGeometry);
@@ -135,7 +135,7 @@ class TG4GeometryManager
 
   private:
     // methods
-    void SetUserLimits();
+    void FillMediumMap();
         
     // static data members
     static TG4GeometryManager*  fgInstance;     //this instance
@@ -143,15 +143,19 @@ class TG4GeometryManager
     // data members
     TG4GeometryOutputManager*   fOutputManager;   //output manager 
     TG4GeometryServices*        fGeometryServices;//geometry services
-    TG4intVector  fMediumIdVector;  //vector of second indexes for materials
-    TG4NameMap    fNameMap;         //map of volumes names to modules names
-    G4int         fMediumCounter;   //global medium counter
-    G4int         fMaterialCounter; //global material counter
-    G4int         fMatrixCounter;   //global matrix counter
-    G4bool        fUseG3TMLimits;   //if true: G3 limits are passed to G4 
-                                    //(in development)
-    G4bool        fWriteGeometry;   //if true: geometry parameters are written
-                                    //in a file (ASCII)  
+    TG4IntMap        fMediumMap;       //map of volumes names to medias IDs
+    TG4NameMap       fNameMap;         //map of volumes names to modules names
+    TG4StringVector  fMaterialNameVector; // vector of material names sorted in the
+                                          // the order of materials in G3Mat
+    TG4StringVector  fMediumNameVector;   // vector of material names sorted in the
+                                          // the order of medias in G3Med
+    G4int            fMediumCounter;   //global medium counter
+    G4int            fMaterialCounter; //global material counter
+    G4int            fMatrixCounter;   //global matrix counter
+    G4bool           fUseG3TMLimits;   //if true: G3 limits are passed to G4 
+                                       //(in development)
+    G4bool           fWriteGeometry;   //if true: geometry parameters are written
+                                       //in a file (ASCII)  
 };
 
 // inline methods

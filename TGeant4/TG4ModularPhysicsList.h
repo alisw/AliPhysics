@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4ModularPhysicsList
+// ---------------------------
 // The modular physics list.
 // Creates all standard particles.
 // The physics processes have to be created
@@ -54,6 +58,14 @@ class TG4ModularPhysicsList: public G4VModularPhysicsList
     void ConstructGeneral();	
 
   private:
+    // methods
+    void SetProcessActivation(G4ProcessManager* processManager,
+                              G4int processId, G4bool activation);
+
+    // static data members
+    static const G4bool  fgkDefaultCutValue;
+
+    // data members
     TG4ExtDecayer*  fExtDecayer; //external decayer
 };
 

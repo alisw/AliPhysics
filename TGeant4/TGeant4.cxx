@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class TGeant4
+// -------------
 // See the class description in the header file.
 
 #include "TGeant4.h"
@@ -346,12 +350,6 @@ Int_t TGeant4::VolId2Mate(Int_t id) const {
 // ------------------------------------------------
  
 //_____________________________________________________________________________
-void TGeant4::BuildPhysics() {
-//
-  fPhysicsManager->BuildPhysics();
-}  
-
-//_____________________________________________________________________________
 void TGeant4::Gstpar(Int_t itmed, const char *param, Float_t parval) {
 //
   fGeometryManager->Gstpar(itmed, param, parval); 
@@ -467,6 +465,12 @@ void TGeant4::Init() {
   fRunManager->Initialize();
 }  
   
+//_____________________________________________________________________________
+void TGeant4::BuildPhysics() {
+//
+  fRunManager->LateInitialize();
+}  
+
 //_____________________________________________________________________________
 void TGeant4::ProcessEvent() { 
 //

@@ -1,14 +1,19 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class TG4RunManager
+// -------------------
 // See the class description in the header file.
 
 #include "TG4RunManager.h"
-#include "TG4RunMessenger.h"
 #include "TG4VRunConfiguration.h"
 #include "TG4Globals.h"
 #include "TG4GeometryManager.h"
+#include "TG4GeometryServices.h"
 #include "TG4SDManager.h"
+#include "TG4SDServices.h"
 #include "TG4PhysicsManager.h"
 #include "TG4G3PhysicsManager.h"
 
@@ -33,13 +38,13 @@ TG4RunManager* TG4RunManager::fgInstance = 0;
 //_____________________________________________________________________________
 TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration, 
                              int argc, char** argv)		  
-  : fRunConfiguration(runConfiguration),
+  : fMessenger(this),
+    fRunConfiguration(runConfiguration),
     fGeantUISession(0),
     fRootUISession(0),
     fRootUIOwner(false),
     fARGC(argc),
-    fARGV(argv)
-  
+    fARGV(argv)  
 {
 // 
   if (fgInstance) {
@@ -67,14 +72,12 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration,
 
   // create root UI
   CreateRootUI();
-
-  // messenger
-  fMessenger = new TG4RunMessenger(this);
 }
 
 //_____________________________________________________________________________
 TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration)
-  : fRunConfiguration(runConfiguration),
+  : fMessenger(this),
+    fRunConfiguration(runConfiguration),
     fGeantUISession(0),
     fRootUISession(0),
     fRootUIOwner(false),
@@ -115,18 +118,17 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration)
 
   // create root UI
   CreateRootUI();
-
-  // messenger
-  fMessenger = new TG4RunMessenger(this);
 }
 
 //_____________________________________________________________________________
-TG4RunManager::TG4RunManager() {
+TG4RunManager::TG4RunManager()
+  : fMessenger(this) {
 //
 }
 
 //_____________________________________________________________________________
-TG4RunManager::TG4RunManager(const TG4RunManager& right) {
+TG4RunManager::TG4RunManager(const TG4RunManager& right) 
+  : fMessenger(this) {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4RunManager singleton.");
@@ -139,7 +141,6 @@ TG4RunManager::~TG4RunManager() {
   delete fRunManager;
   delete fGeantUISession;
   if (fRootUIOwner) delete fRootUISession;
-  delete fMessenger;
 }
 
 // operators
@@ -171,8 +172,12 @@ void TG4RunManager::CreateGeantUI()
     if (fARGC == 1) {
 #ifdef G4UI_USE_GAG
       fGeantUISession = new G4UIGAG();
-#else      
+#else
+ #ifdef G4UI_USE_TCSH
+      fGeantUISession = new G4UIterminal(new G4UItcsh);      
+ #else
       fGeantUISession = new G4UIterminal(); 
+ #endif    
 #endif      
     }  
     else if (strcmp (fARGV[1], "dumb") == 0) {
@@ -237,10 +242,29 @@ void TG4RunManager::Initialize()
   
   // initialize SD manager
   TG4SDManager::Instance()->Initialize();
+}
 
+//_____________________________________________________________________________
+void TG4RunManager::LateInitialize()
+{
+// Finishes initialization of G4 after the AliRoot initialization
+// is finished. 
+// ---
+
+  // set user limits
+  TG4GeometryManager::Instance()
+    ->SetUserLimits(*TG4G3PhysicsManager::Instance()->GetCutVector(),
+                    *TG4G3PhysicsManager::Instance()->GetControlVector());
+
+  // final clear of G3toG4 objects
+  TG4GeometryManager::Instance()->ClearG3TablesFinal();
+      
   // activate/inactivate physics processes
-  // (this operation is not allowed in "Init" phase)
   TG4PhysicsManager::Instance()->SetProcessActivation();
+
+  // print statistics
+  TG4GeometryServices::Instance()->PrintStatistics(true, false);  
+  TG4SDServices::Instance()->PrintStatistics(false, true);  
 }
 
 //_____________________________________________________________________________

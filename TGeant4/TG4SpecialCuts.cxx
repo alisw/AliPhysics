@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4SpecialCuts
+// --------------------
 // See the class description in the header file.
 
 #include "TG4SpecialCuts.h"
@@ -29,8 +33,8 @@ TG4SpecialCuts::TG4SpecialCuts(TG4G3ParticleWSP particle,
       fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForElectron;
       break;
     case kChargedHadron:  
-      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForHadron;
-      fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForHadron;
+      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForChargedHadron;
+      fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForChargedHadron;
       break;
     case kNeutralHadron:  
       fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForNeutralHadron;

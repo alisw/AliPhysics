@@ -1,11 +1,16 @@
 // $Id$
 // Category: event
 //
+// Author: I.Hrivnacova
+//
+// Class TG4TrackingAction
+// -----------------------
 // See the class description in the header file.
 
 #include "TG4TrackingAction.h"
 #include "TG4StepManager.h"
 #include "TG4VSensitiveDetector.h"
+#include "TG4SDServices.h"
 #include "TG4Globals.h"
 
 //_____________________________________________________________________________
@@ -65,19 +70,19 @@ void TG4TrackingAction::PreUserTrackingAction(const G4Track* track)
     TG4Globals::Exception(text);
   }  
   
-  G4VSensitiveDetector* sd
-    = pv->GetLogicalVolume()->GetSensitiveDetector();
+#ifdef TGEANT4_DEBUG
+  TG4VSensitiveDetector* tsd
+    = TG4SDServices::Instance()
+         ->GetSensitiveDetector(
+	      pv->GetLogicalVolume()->GetSensitiveDetector());
 
-  if (sd) {
-    TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-    if (tsd) 
-      tsd->UserProcessHits((G4Track*)track, 0);
-    else {
-      G4String text = "TG4TrackingAction::PreUserTrackingAction: \n";
-      text = text + "   Unknown sensitive detector type"; 
-      TG4Globals::Exception(text);
-    }   	
-  } 
+  if (tsd) tsd->UserProcessHits((G4Track*)track, 0);
+#else
+  TG4VSensitiveDetector* tsd
+    = (TG4VSensitiveDetector*) pv->GetLogicalVolume()->GetSensitiveDetector();
+
+  if (tsd) tsd->UserProcessHits((G4Track*)track, 0);
+#endif  
 }
 
 //_____________________________________________________________________________

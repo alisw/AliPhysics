@@ -1,17 +1,23 @@
 // $Id$
 // Category: geometry
 //
-// C++ interface to Geant3 basic routines 
-// for building Geant4 geometry
+// Author: V. Berejnoi, I. Hrivnacova
 //
-// by V. Berejnoi, 25.2.1999
+// Class TG4GeometryManager
+// ------------------------
+// See the class description in the header file.
+// C++ interface to Geant3 basic routines for building Geant4 geometry
+// by V. Berejnoi, 25.2.1999;
 // materials, tracking media support 
-// added by I.Hrivnacova, 27.5.1999
+// added by I.Hrivnacova, 27.5.1999.
 
 #include "TG4GeometryManager.h"
 #include "TG4GeometryOutputManager.h"
 #include "TG4GeometryServices.h"
+#include "TG4Limits.h"
 #include "TG4G3Units.h"
+#include "TG4G3CutVector.h"
+#include "TG4G3ControlVector.h"
 #include "TG4Globals.h"
 
 #include <G3toG4.hh> 
@@ -48,9 +54,11 @@ TG4GeometryManager::TG4GeometryManager()
       "TG4GeometryManager: attempt to create two instances of singleton.");
   }
 
-  fOutputManager = new TG4GeometryOutputManager();
+  fOutputManager 
+    = new TG4GeometryOutputManager();
 
-  fGeometryServices = new TG4GeometryServices(&fMediumIdVector, &fNameMap);
+  fGeometryServices 
+    = new TG4GeometryServices(&fMediumMap, &fNameMap);
 
   fgInstance = this;
       
@@ -101,56 +109,25 @@ TG4GeometryManager::operator=(const TG4GeometryManager& right)
 //=============================================================================
  
 //_____________________________________________________________________________
-void TG4GeometryManager::FillMediumIdVector()
+void TG4GeometryManager::FillMediumMap()
 {
-// The second index for materials (having its origin in
-// G3 tracking media concept) is stored in a vector of G4int
-// parallel to G4MaterialTable.
+// Maps G3 tracking medium IDs to volumes names.
 // ---
 
-  // initialize vector 
-  G4int nofMaterials = G4Material::GetNumberOfMaterials();
-  G4int i;
-  for (i=0; i<nofMaterials; i++) 
-    fMediumIdVector.push_back(0);
+
+  static G4int done = 0;
   
-  // fill vector
-  for (i=0; i<fMediumCounter; i++) {
-    // material index (index in G4Material table)
-    G3MedTableEntry* mte = G3Med.get(i+1);
-    G4int materialIndex = mte->GetMaterial()->GetIndex();
-
-    // medium index (ID of G3MedTableEntry)
-    G4int mediumIndex = mte->GetID();
-    
-    // store medium index in the vector
-    fMediumIdVector[materialIndex] = mediumIndex;
-  }  
-
-  // add verbose
-  G4cout << "Total nof materials: " << nofMaterials << G4endl;
-  G4cout << "Total nof tracking medias: " << fMediumCounter << G4endl;  
-}    
-
-//_____________________________________________________________________________
-void TG4GeometryManager::SetUserLimits()
-{
-// Sets user limits defined in G3MedTable for all logical volumes.
-// ---
-
   G4LogicalVolumeStore* lvStore = G4LogicalVolumeStore::GetInstance();
 
-  for (G4int i=0; i<lvStore->size(); i++) {
-    G4LogicalVolume* lv = (*lvStore)[i];
+  for (G4int i=done; i<lvStore->size(); i++) {
+    G4String name  = ((*lvStore)[i])->GetName();
+    G4int mediumID = G3Vol.GetVTE(name)->GetNmed();
+    fMediumMap.Add(name, mediumID);     
+  }
+  
+  done = lvStore->size();
+}    
 
-    // get limits from G3Med
-    G4int materialIndex = lv->GetMaterial()->GetIndex();
-    G4int mediumIndex = fMediumIdVector[materialIndex];   
-    G4UserLimits* limits = G3Med.get(mediumIndex)->GetLimits();
-
-    lv->SetUserLimits(limits);
-  } 
-}
 
 //=============================================================================
 //
@@ -172,20 +149,32 @@ void TG4GeometryManager::Material(Int_t& kmat, const char* name, Float_t a,
 
     kmat = ++fMaterialCounter;
     G4double* bufin = fGeometryServices->CreateG4doubleArray(buf, nwbuf); 
+    G4String namein = fGeometryServices->CutMaterialName(name);
 
     // write token to the output file
     if (fWriteGeometry) 
-      fOutputManager->WriteGsmate(kmat, name, a, z, dens, radl, nwbuf, bufin); 
+      fOutputManager->WriteGsmate(kmat, namein, a, z, dens, radl, nwbuf, bufin); 
 
-    G4gsmate(kmat, name, a, z, dens, radl, nwbuf, bufin); 
+    // create new material only if it does not yet exist
+    G4Material* material = fGeometryServices->FindMaterial(a, z, dens); 
+    if (material) {
+      // add verbose
+      G4cout << "!!! Material " << namein << " already exists as "
+             << material->GetName() << G4endl;
+      G3Mat.put(kmat, material);	    
+    }  	       
+    else
+      G4gsmate(kmat, namein, a, z, dens, radl, nwbuf, bufin); 
+      
+    // save the original material name
+    fMaterialNameVector.push_back(namein);  
 
     delete [] bufin;
 
     if (nwbuf > 0) {  
-      G4String matName = name;
       G4String text 
         = "TG4GeometryManager: user defined parameters for material ";
-      text = text + matName;
+      text = text + namein;
       text = text + " are ignored by Geant4.";	
       TG4Globals::Warning(text);
     }
@@ -206,15 +195,29 @@ void TG4GeometryManager::Mixture(Int_t& kmat, const char *name, Float_t *a,
    G4double *ain = fGeometryServices->CreateG4doubleArray(a, npar); 
    G4double *zin = fGeometryServices->CreateG4doubleArray(z, npar); 
    G4double *wmatin = fGeometryServices->CreateG4doubleArray(wmat, npar); 
+   G4String namein = fGeometryServices->CutMaterialName(name);
 
    kmat = ++fMaterialCounter;
 
    // write token to the output file
    if (fWriteGeometry) 
-     fOutputManager->WriteGsmixt(kmat, name, ain, zin, dens, nlmat, wmatin);
+     fOutputManager->WriteGsmixt(kmat, namein, ain, zin, dens, nlmat, wmatin);
 
-   G4gsmixt(kmat, name, ain, zin, dens, nlmat, wmatin);
-   
+   // create new material only if it does not yet exist
+   G4Material* material 
+     = fGeometryServices->FindMaterial(ain, zin, dens, nlmat, wmatin); 
+   if (material) {
+     // add verbose
+     G4cout << "!!! Material " << namein << " already exists as "
+            << material->GetName() << G4endl;
+     G3Mat.put(kmat, material);	    
+   }  
+   else
+     G4gsmixt(kmat, namein, ain, zin, dens, nlmat, wmatin);
+     
+    // save the original material name
+    fMaterialNameVector.push_back(namein);  
+
    // !!! in Geant3:
    // After a call with ratios by number (negative number of elements), 
    // the ratio array is changed to the ratio by weight, so all successive 
@@ -263,6 +266,8 @@ void TG4GeometryManager::Medium(Int_t& kmed, const char *name, Int_t nmat,
 //  performed with GHELIX; IFIELD = 3 if tracking performed with GHELX3.  
 // ---
 
+  G4String namein = fGeometryServices->CutMaterialName(name);
+
   kmed = ++fMediumCounter;
 
   // write token to the output file
@@ -274,6 +279,12 @@ void TG4GeometryManager::Medium(Int_t& kmed, const char *name, Int_t nmat,
        epsil, stmin, 0, fUseG3TMLimits);
      // !! instead of the nbuf argument the bool fIsG3Default is passed
 
+  // generate new unique name  
+  G4String newName 
+    = fGeometryServices
+        ->GenerateLimitsName(kmed, namein, fMaterialNameVector[nmat-1]);
+  fMediumNameVector.push_back(newName);
+  
   if (nbuf > 0) {  
     G4String medName = name;
     G4String text
@@ -837,6 +848,9 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
 
   // create G4 geometry
   G3toG4BuildTree(first,0);  
+  
+  // fill medium map
+  FillMediumMap();
 
   // print G3 volume table statistics
   G3Vol.VTEStat();
@@ -861,6 +875,43 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
 }
 
  
+//_____________________________________________________________________________
+void TG4GeometryManager::SetUserLimits(const TG4G3CutVector& cuts,
+                               const TG4G3ControlVector& controls) const
+{
+// Sets user limits defined in G3MedTable for all logical volumes.
+// ---
+
+  G4LogicalVolumeStore* lvStore = G4LogicalVolumeStore::GetInstance();
+
+  for (G4int i=0; i<lvStore->size(); i++) {
+    G4LogicalVolume* lv = (*lvStore)[i];
+
+    // get limits from G3Med
+    G4int mediumIndex = fGeometryServices->GetMediumId(lv);    
+    G4UserLimits* limits = G3Med.get(mediumIndex)->GetLimits();
+    TG4Limits* tg4Limits = fGeometryServices->GetLimits(limits);
+
+    // get tracking medium name
+    G4String name = fMediumNameVector[mediumIndex-1];
+    
+    if (tg4Limits) 
+      tg4Limits->SetName(name);
+    else {
+      tg4Limits = fGeometryServices->FindLimits(name, true);  
+      if (!tg4Limits) 
+        tg4Limits = new TG4Limits(name, cuts, controls); 
+    }
+    
+    // update controls in limits according to the setup 
+    // in the passed vector
+    tg4Limits->Update(controls);
+
+    // set limits to logical volume
+    lv->SetUserLimits(tg4Limits);
+  } 
+}
+
 //_____________________________________________________________________________
 void TG4GeometryManager::ReadG3Geometry(G4String filePath)
 {
@@ -915,7 +966,6 @@ void TG4GeometryManager::ClearG3Tables()
   G3Vol.PutVTE(keep);
   
   // clear other tables
-  G3Mat.Clear();
   //G3Rot.Clear();
   G3SensVol.clear(); 
 }
@@ -928,14 +978,9 @@ void TG4GeometryManager::ClearG3TablesFinal()
 // (the top volume is removed from the vol table)
 // ---
 
-  SetUserLimits();
-
+  G3Mat.Clear();
   G3Med.Clear();
   G3Vol.Clear();  
-
-  // reset medium counter
-  //fMaterialCounter = 0;
-  fMediumCounter = 0;  
 }
 
  
@@ -956,16 +1001,6 @@ void TG4GeometryManager::CloseOutFile()
 // ---
 
   fOutputManager->CloseFile();
-}
-
- 
-//_____________________________________________________________________________
-void TG4GeometryManager::PrintNameMap()
-{
-// Prints the map of volumes names to second names.
-// ---
-
-  fNameMap.PrintAll();
 }
 
  

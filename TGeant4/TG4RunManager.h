@@ -1,11 +1,19 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class TG4RunManager
+// -------------------
 // Geant4 implementation of the MonteCarlo interface methods                    
-// for access to Geant4 at run level
+// for access to Geant4 at run level.
+// It provides also methods for switching between Geant4 and
+// Root UIs.
 
 #ifndef TG4_RUN_MANAGER_H
 #define TG4_RUN_MANAGER_H
+
+#include "TG4RunMessenger.h"
 
 #include <globals.hh>
 
@@ -14,7 +22,6 @@
 class AliMC;
 
 class TG4VRunConfiguration;
-class TG4RunMessenger;
 
 class G4RunManager;
 class G4UIsession;
@@ -36,6 +43,7 @@ class TG4RunManager
 
     // methods
     void Initialize();
+    void LateInitialize();
     void ProcessEvent();
     void ProcessRun(G4int nofEvents);
 
@@ -62,8 +70,6 @@ class TG4RunManager
     TG4RunManager& operator=(const TG4RunManager& right);
    
     // data members    
-    G4RunManager*     fRunManager; //G4RunManager
-    TG4RunMessenger*  fMessenger;  //messenger
 
   private:
     // methods
@@ -75,6 +81,8 @@ class TG4RunManager
     static TG4RunManager*  fgInstance; //this instance
     
     // data members    
+    G4RunManager*          fRunManager;       //G4RunManager
+    TG4RunMessenger        fMessenger;        //messenger
     TG4VRunConfiguration*  fRunConfiguration; //TG4VRunConfiguration
     G4UIsession*           fGeantUISession;   //G4 UI 
     TApplication*          fRootUISession;    //Root UI 

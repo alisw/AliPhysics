@@ -1,5 +1,11 @@
 // $Id$
 // Category: global
+//
+// Author: I. Hrivnacova
+//
+// Enum TG4G3Cut
+// -------------
+// Enumeration for G3 types of kinetic energy cuts.
 
 #ifndef TG4_G3_CUT_H
 #define TG4_G3_CUT_H
@@ -36,9 +42,11 @@ enum TG4G3Cut
   kDCUTM,  // delta-rays by muons        
                // G4 particles: "e-"         
                // G3 default value: 10**4
-  // the following cut is not yet implemented
   kPPCUTM, // direct pair production by muons 
-               // G4 particles: ??         
+               // G4 particles: "e-", "e+"         
+               // G3 default value: 0.01 GeV
+  kTOFMAX, // time of flight cut in seconds
+               // G4 particles: all
                // G3 default value: 0.01 GeV
   kNoG3Cuts    
 };

@@ -1,9 +1,14 @@
 // $Id$ //
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4VSpecialControls
+// -------------------------
 // See the class description in the header file.
 
 #include "TG4SpecialControls.h"
+#include "TG4GeometryServices.h"
 #include "TG4Limits.h"
 
 #include <G4StepStatus.hh>
@@ -11,11 +16,12 @@
 #include <G4ProcessVector.hh>
 
 //_____________________________________________________________________________
-TG4SpecialControls::TG4SpecialControls(const G4String& aName)
-  : G4VProcess(aName),
-    fSwitchControls(kUnswitch)
+TG4SpecialControls::TG4SpecialControls(const G4String& processName)
+  : G4VProcess(processName),
+    fSwitchControls(kUnswitch),
+    fLastTrackID(0)
 {
-   // verboseLevel = 1;
+   verboseLevel = 1;
    if (verboseLevel>0) {
      G4cout << GetProcessName() << " is created "<< G4endl;
    }
@@ -48,6 +54,21 @@ TG4SpecialControls& TG4SpecialControls::operator=(
   return *this;  
 } 
 
+// private methods   
+
+//_____________________________________________________________________________
+void TG4SpecialControls::Reset()
+{
+// Resets the buffers to the initial state.
+// ---
+    			
+  fSwitchControls = kUnswitch;
+
+  // clear buffers
+  fSwitchedProcesses.clear();
+  fSwitchedControls.clear();
+}
+
 // public methods   
           
 //_____________________________________________________________________________
@@ -61,20 +82,42 @@ G4double TG4SpecialControls::PostStepGetPhysicalInteractionLength(
 
   *condition = NotForced;
 
+  if (track.GetTrackID() != fLastTrackID) {
+    // new track
+    Reset();
+    fLastTrackID = track.GetTrackID();
+  }  
+
   G4double proposedStep = DBL_MAX;
-  G4double minStep = (1.0e-9)*m;
+  //G4double minStep = (1.0e-9)*m;
+  G4double minStep = 0.;
     // must be greater than DBL_MIN - so that particle can get out of
     // the boundary 
     // proposedStep = 0.; causes navigator to fall into panic 
   
   G4StepStatus status     
     = track.GetStep()->GetPreStepPoint()->GetStepStatus();
+
+  // get limits
+#ifdef TGEANT4_DEBUG
+  TG4Limits* limits 
+     = TG4GeometryServices::Instance()
+         ->GetLimits(track.GetVolume()->GetLogicalVolume()->GetUserLimits()); 
+
+  if (!limits) {
+    G4String text = "TG4VSpecialControls::PostStepGetPhysicalInteractionLength:\n";
+    text = text + "    " + track.GetVolume()->GetLogicalVolume()->GetName();
+    text = text + " has not limits.";
+    TG4Globals::Exception(text);
+  }  
+#else  
   TG4Limits* limits 
     = (TG4Limits*) track.GetVolume()->GetLogicalVolume()->GetUserLimits();
+#endif    
 
   if (fSwitchControls != kUnswitch) {
     if (status == fGeomBoundary) {
-      if  ((limits) && (limits->IsControl())) {
+      if  (limits->IsControl()) {
         // particle is exiting a logical volume with special controls
         // and entering another logical volume with special controls 
 	proposedStep = minStep;
@@ -90,7 +133,7 @@ G4double TG4SpecialControls::PostStepGetPhysicalInteractionLength(
       }
     }
   }
-  else if ((limits) && (limits->IsControl())) {
+  else if (limits->IsControl()) {
        // particle is entering a logical volume with special controls
        // that have not yet been set
        proposedStep = minStep;
@@ -108,19 +151,16 @@ G4VParticleChange* TG4SpecialControls::PostStepDoIt(
 // according to the current user limits.
 // ---
 
-  TG4Limits* limits 
-    = (TG4Limits*) track.GetVolume()->GetLogicalVolume()->GetUserLimits();
-
   G4ProcessManager* processManager
     = track.GetDefinition()->GetProcessManager();
   G4ProcessVector* processVector = processManager->GetProcessList();
-  // processManager->DumpInfo();
 
   if ((fSwitchControls==kUnswitch) || (fSwitchControls==kReswitch)) {
+  
     // set processes activation back
-    for (G4int i=0; i<fSwitchedProcesses.entries(); i++) {
+    for (G4int i=0; i<fSwitchedProcesses.length(); i++) {
       if (verboseLevel>0) {
-        G4cout << "Reset process activation back in" 
+        G4cout << "Reset process activation back in " 
   	       << track.GetVolume()->GetName() 
                << G4endl;
       }
@@ -132,14 +172,24 @@ G4VParticleChange* TG4SpecialControls::PostStepDoIt(
   }
 
   if ((fSwitchControls==kSwitch) ||  (fSwitchControls==kReswitch)) {
+
     // set TG4Limits processes controls
-    for (G4int i=0; i<processManager->GetProcessListLength(); i++) {
-      G4int control = limits->GetControl((*processVector)[i]);
-      if (control != kUnset) {
-        // store the current processes controls;
+    TG4Limits* limits 
+    = (TG4Limits*) track.GetVolume()->GetLogicalVolume()->GetUserLimits();
+
+    for (G4int i=0; i<processVector->length(); i++) {
+
+      TG4G3ControlValue control = limits->GetControl((*processVector)[i]);
+      G4bool activation = processManager->GetProcessActivation(i);
+
+      if (control != kUnset && ! TG4Globals::Compare(activation, control)) {
+
+        // store the current processes controls
+	G4cout << "Something goes to fSwitchedProcesses" << G4endl;
         fSwitchedProcesses.insert((*processVector)[i]);
-        //fSwitchedControls.insert(processManager->GetProcessActivation(i));
-        fSwitchedControls.push_back(processManager->GetProcessActivation(i));
+        fSwitchedControls.push_back(activation);
+
+        // set new process activation
         if (control == kInActivate) {
           if (verboseLevel>0) {
             G4cout << "Set process inactivation for " 
@@ -161,7 +211,8 @@ G4VParticleChange* TG4SpecialControls::PostStepDoIt(
         }
       }	 
     }
-  }  
+  }
+    
   // processManager->DumpInfo();      	
   aParticleChange.Initialize(track);
   aParticleChange.SetStatusChange(fAlive);

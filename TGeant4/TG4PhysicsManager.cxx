@@ -1,9 +1,14 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4PhysicsManager
+// -----------------------
 // See the class description in the header file.
 
 #include "TG4PhysicsManager.h"
+#include "TG4ModularPhysicsList.h"
 #include "TG4ParticlesManager.h"
 #include "TG4G3PhysicsManager.h"
 #include "TG4PhysicsConstructorEM.h"
@@ -14,12 +19,12 @@
 #include "TG4GeometryServices.h"
 #include "TG4G3Cut.h"
 #include "TG4G3Control.h"
+#include "TG4G3Units.h"
 #include "TG4Limits.h"
 #include "AliDecayer.h"
 
 #include <G4ParticleDefinition.hh>
 #include <G4VProcess.hh>
-#include <G4VModularPhysicsList.hh>
 #include <G3MedTable.hh>
 
 #include <TDatabasePDG.h>
@@ -27,7 +32,7 @@
 TG4PhysicsManager* TG4PhysicsManager::fgInstance = 0;
 
 //_____________________________________________________________________________
-TG4PhysicsManager::TG4PhysicsManager(G4VModularPhysicsList* physicsList)
+TG4PhysicsManager::TG4PhysicsManager(TG4ModularPhysicsList* physicsList)
   : fPhysicsList(physicsList),
     fDecayer(0),
     fSetEMPhysics(true),
@@ -52,7 +57,7 @@ TG4PhysicsManager::TG4PhysicsManager(G4VModularPhysicsList* physicsList)
   fG3PhysicsManager = new TG4G3PhysicsManager();
 
   // fill process name map
-  FillProcessMap();
+  // FillProcessMap();
 }
 
 //_____________________________________________________________________________
@@ -95,64 +100,66 @@ TG4PhysicsManager::operator=(const TG4PhysicsManager& right)
 //_____________________________________________________________________________
 void TG4PhysicsManager::FillProcessMap()
 {
-// Fills fProcessMap.
+// Fills fProcessMCMap.
 // The default G4 process names are used in the map.
+// Not used - the map is filled in physics constructors
+// only with processes that are really built.
 // ---
 
   // multiple scattering
-  fProcessMap.Add("msc",  kPMultipleScattering);
-  fProcessMap.Add("Imsc", kPMultipleScattering);
+  fProcessMCMap.Add("msc",  kPMultipleScattering);
+  fProcessMCMap.Add("Imsc", kPMultipleScattering);
     
   // continuous energy loss
   // !! including delta rays
-  fProcessMap.Add("eIoni",  kPEnergyLoss);
-  fProcessMap.Add("IeIoni", kPEnergyLoss);
-  fProcessMap.Add("LowEnergyIoni", kPEnergyLoss);
-  fProcessMap.Add("hIoni",  kPEnergyLoss);
-  fProcessMap.Add("IhIoni", kPEnergyLoss);
-  fProcessMap.Add("hLowEIoni", kPEnergyLoss);
-  fProcessMap.Add("MuIoni", kPEnergyLoss);
-  fProcessMap.Add("IMuIonisation", kPEnergyLoss);
-  fProcessMap.Add("ionIoni",  kPEnergyLoss);
-  fProcessMap.Add("ionLowEIoni",  kPEnergyLoss);
-  fProcessMap.Add("PAIonisation",  kPEnergyLoss);
+  fProcessMCMap.Add("eIoni",  kPEnergyLoss);
+  fProcessMCMap.Add("IeIoni", kPEnergyLoss);
+  fProcessMCMap.Add("LowEnergyIoni", kPEnergyLoss);
+  fProcessMCMap.Add("hIoni",  kPEnergyLoss);
+  fProcessMCMap.Add("IhIoni", kPEnergyLoss);
+  fProcessMCMap.Add("hLowEIoni", kPEnergyLoss);
+  fProcessMCMap.Add("MuIoni", kPEnergyLoss);
+  fProcessMCMap.Add("IMuIonisation", kPEnergyLoss);
+  fProcessMCMap.Add("ionIoni",  kPEnergyLoss);
+  fProcessMCMap.Add("ionLowEIoni",  kPEnergyLoss);
+  fProcessMCMap.Add("PAIonisation",  kPEnergyLoss);
   
   // bending in mag. field
   // kPMagneticFieldL
 
   // particle decay
-  fProcessMap.Add("Decay", kPDecay);
+  fProcessMCMap.Add("Decay", kPDecay);
   
   // photon pair production or
   // muon direct pair production
-  fProcessMap.Add("conv", kPPair);
-  fProcessMap.Add("LowEnConversion", kPPair);
-  fProcessMap.Add("MuPairProd", kPPair);
-  fProcessMap.Add("IMuPairProduction", kPPair);
+  fProcessMCMap.Add("conv", kPPair);
+  fProcessMCMap.Add("LowEnConversion", kPPair);
+  fProcessMCMap.Add("MuPairProd", kPPair);
+  fProcessMCMap.Add("IMuPairProduction", kPPair);
 
   // Compton scattering
-  fProcessMap.Add("compt", kPCompton);
-  fProcessMap.Add("LowEnCompton", kPCompton);
-  fProcessMap.Add("polarCompt", kPCompton);
+  fProcessMCMap.Add("compt", kPCompton);
+  fProcessMCMap.Add("LowEnCompton", kPCompton);
+  fProcessMCMap.Add("polarCompt", kPCompton);
 
   // photoelectric effect
-  fProcessMap.Add("phot", kPPhotoelectric);
-  fProcessMap.Add("LowEnPhotoElec", kPPhotoelectric);
+  fProcessMCMap.Add("phot", kPPhotoelectric);
+  fProcessMCMap.Add("LowEnPhotoElec", kPPhotoelectric);
 
   // bremsstrahlung
-  fProcessMap.Add("eBrem", kPBrem);
-  fProcessMap.Add("IeBrem", kPBrem);
-  fProcessMap.Add("MuBrems", kPBrem);
-  fProcessMap.Add("IMuBremsstrahlung", kPBrem);
-  fProcessMap.Add("LowEnBrem", kPBrem);
+  fProcessMCMap.Add("eBrem", kPBrem);
+  fProcessMCMap.Add("IeBrem", kPBrem);
+  fProcessMCMap.Add("MuBrems", kPBrem);
+  fProcessMCMap.Add("IMuBremsstrahlung", kPBrem);
+  fProcessMCMap.Add("LowEnBrem", kPBrem);
 
   // delta-ray production
   // kPDeltaRay
   // has to be distinguished from kPEnergyLoss on flight
   
   // positron annihilation
-  fProcessMap.Add("annihil", kPAnnihilation);
-  fProcessMap.Add("Iannihil", kPAnnihilation);
+  fProcessMCMap.Add("annihil", kPAnnihilation);
+  fProcessMCMap.Add("Iannihil", kPAnnihilation);
 
   // hadronic interaction
   // kPHadronic
@@ -164,27 +171,27 @@ void TG4PhysicsManager::FillProcessMap()
   // kPNuclearFission
 
   // nuclear absorption
-  fProcessMap.Add("PionMinusAbsorptionAtRest", kPNuclearAbsorption);
-  fProcessMap.Add("PiMinusAbsorptionAtRest", kPNuclearAbsorption);
-  fProcessMap.Add("KaonMinusAbsorption", kPNuclearAbsorption);         
-  fProcessMap.Add("KaonMinusAbsorptionAtRest", kPNuclearAbsorption);         
+  fProcessMCMap.Add("PionMinusAbsorptionAtRest", kPNuclearAbsorption);
+  fProcessMCMap.Add("PiMinusAbsorptionAtRest", kPNuclearAbsorption);
+  fProcessMCMap.Add("KaonMinusAbsorption", kPNuclearAbsorption);         
+  fProcessMCMap.Add("KaonMinusAbsorptionAtRest", kPNuclearAbsorption);         
   
   // antiproton annihilation
-  fProcessMap.Add("AntiProtonAnnihilationAtRest", kPPbarAnnihilation);
-  // fProcessMap.Add("AntiNeutronAnnihilationAtRest", not defined);
+  fProcessMCMap.Add("AntiProtonAnnihilationAtRest", kPPbarAnnihilation);
+  // fProcessMCMap.Add("AntiNeutronAnnihilationAtRest", not defined);
 
   // neutron capture    
-  fProcessMap.Add("NeutronCaptureAtRest", kPNCapture);
-  // fProcessMap.Add("LCapture", hadron capture not defined);
+  fProcessMCMap.Add("NeutronCaptureAtRest", kPNCapture);
+  // fProcessMCMap.Add("LCapture", hadron capture not defined);
 
   // hadronic elastic incoherent scattering
-  fProcessMap.Add("LElastic", kPHElastic);
+  fProcessMCMap.Add("LElastic", kPHElastic);
 
   // hadronic inelastic scattering
-  fProcessMap.Add("inelastic", kPHInhelastic);
+  fProcessMCMap.Add("inelastic", kPHInhelastic);
 
   // muon nuclear interaction
-  fProcessMap.Add("MuNucl", kPMuonNuclear);
+  fProcessMCMap.Add("MuNucl", kPMuonNuclear);
 
   // exceeded time of flight cut
   // kPTOFlimit
@@ -193,23 +200,23 @@ void TG4PhysicsManager::FillProcessMap()
   // kPPhotoFission
 
   // Rayleigh scattering
-  fProcessMap.Add("Rayleigh Scattering", kPRayleigh);
+  fProcessMCMap.Add("Rayleigh Scattering", kPRayleigh);
 
   // no mechanism is active, usually at the entrance of a new volume
-  fProcessMap.Add("Transportation", kPNull);
+  fProcessMCMap.Add("Transportation", kPNull);
 
   // particle has fallen below energy threshold and tracking stops
   // kPStop
   
   // Cerenkov photon absorption
-  fProcessMap.Add("Absorption", kPLightAbsorption);
+  fProcessMCMap.Add("Absorption", kPLightAbsorption);
 
   // Cerenkov photon reflection/refraction
   // kPLightScattering, kPLightReflection, kPLightRefraction
   // has to be inquired from the G4OpBoundary process
 
   // synchrotron radiation
-  fProcessMap.Add("SynchrotronRadiation", kPSynchrotron);
+  fProcessMCMap.Add("SynchrotronRadiation", kPSynchrotron);
 }  
 
 //_____________________________________________________________________________
@@ -229,29 +236,31 @@ void TG4PhysicsManager::GstparCut(G4int itmed, TG4G3Cut par, G4double parval)
   }  
 
   // get/create user limits
-  G4UserLimits* limits = medium->GetLimits();
-  TG4Limits* tg4Limits;
-  if (limits) {
-    tg4Limits = dynamic_cast<TG4Limits*> (limits);
-    if (!tg4Limits)
-      G4Exception("TG4PhysicsManager::GstparCut: Wrong limits type.");
-  }    
-  else {
-    tg4Limits = new TG4Limits();
-    medium->SetLimits(tg4Limits);
+  TG4Limits* limits 
+    = TG4GeometryServices::Instance()->GetLimits(medium->GetLimits());
+    
+  if (!limits) {
+    limits = new TG4Limits(*fG3PhysicsManager->GetCutVector(),
+                           *fG3PhysicsManager->GetControlVector());
+    medium->SetLimits(limits);
 
     // add verbose 
     G4cout << "TG4PhysicsManager::GstparCut: new TG4Limits() for medium " 
            << itmed << " has been created." << G4endl;  
   }	   
+
+  // add units
+  if (par == kTOFMAX) parval *= TG4G3Units::Time();
+  else                parval *= TG4G3Units::Energy();
+
   // set parameter
-  tg4Limits->SetG3Cut(par, parval*GeV);
+  limits->SetG3Cut(par, parval);
 }
 
 
 //_____________________________________________________________________________
 void TG4PhysicsManager::GstparControl(G4int itmed, TG4G3Control par, 
-                                      G4double parval)
+                                      TG4G3ControlValue parval)
 {
 // Sets special tracking medium parameter. 
 // It is applied to all logical volumes that use the specified 
@@ -267,41 +276,27 @@ void TG4PhysicsManager::GstparControl(G4int itmed, TG4G3Control par,
   }  
 
   // get/create user limits
-  G4UserLimits* limits = medium->GetLimits();
-  TG4Limits* tg4Limits;
-  if (limits) {
-    tg4Limits = dynamic_cast<TG4Limits*> (limits);
-    if (!tg4Limits)
-      G4Exception("TG4PhysicsManager::GstparControl: Wrong limits type.");
-  }    
-  else {     
-    tg4Limits = new TG4Limits();
-    medium->SetLimits(tg4Limits);
+  TG4Limits* limits 
+    = TG4GeometryServices::Instance()->GetLimits(medium->GetLimits());
+
+  if (!limits) {
+    limits = new TG4Limits(*fG3PhysicsManager->GetCutVector(),
+                           *fG3PhysicsManager->GetControlVector());
+    medium->SetLimits(limits);
 
     // add verbose 
     G4cout << "TG4PhysicsManager::GstparControl: new TG4Limits() for medium" 
            << itmed << " has been created." << G4endl;  
-  }
+  }	   
+  
   // set parameter
-  tg4Limits->SetG3Control(par, parval);
+  limits->SetG3Control(par, parval);
 }
 
 // public methods
 
 //_____________________________________________________________________________
-void TG4PhysicsManager::BuildPhysics()
-{
-// Empty function - not needed in G4.
-// (Physics is built within /run/initialize.)
-// ---
-
-  TG4Globals::Warning(
-    "TG4PhysicsManager::BuildPhysics: is empty function in G4 MC.");
-}    
-
-//_____________________________________________________________________________
-void  TG4PhysicsManager::Gstpar(Int_t itmed, const char *param, 
-           Float_t parval) 
+void  TG4PhysicsManager::Gstpar(Int_t itmed, const char *param, Float_t parval) 
 { 
 // Passes the tracking medium parameter to TG4Limits.
 // The tracking medium parameter is set only in case
@@ -336,8 +331,10 @@ void  TG4PhysicsManager::Gstpar(Int_t itmed, const char *param,
   }  
   else {
     TG4G3Control control;
-    if (fG3PhysicsManager->CheckControlWithTheVector(name, parval, control)) {
-      GstparControl(itmed, control, parval);
+    TG4G3ControlValue controlValue; 
+    if (fG3PhysicsManager
+         ->CheckControlWithTheVector(name, parval, control, controlValue)) {
+      GstparControl(itmed, control, controlValue);
       fG3PhysicsManager->Lock();
     } 
     else if (cut==kNoG3Cuts && control==kNoG3Controls) { 
@@ -375,7 +372,7 @@ void TG4PhysicsManager::CreatePhysicsConstructors()
     fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorSpecialControls());
 
          // all created physics constructors are deleted
-	 // in the G4VModularPhysicsList destructor
+	 // in the TG4ModularPhysicsList destructor
 }    
 
 //_____________________________________________________________________________
@@ -385,27 +382,37 @@ void TG4PhysicsManager::SetCut(const char* cutName, Float_t cutValue)
 // ---
 
   fG3PhysicsManager->CheckLock();
-  TG4G3Cut g3Cut = fG3PhysicsManager->GetG3Cut(cutName);
-  if (g3Cut != kNoG3Cuts)
-    fG3PhysicsManager->SetCut(g3Cut, cutValue);
-  else {   
+  TG4G3Cut g3Cut = TG4G3CutVector::GetCut(cutName);
+
+  if (g3Cut == kNoG3Cuts) {
     G4String text = "TG4PhysicsManager::SetCut:\n";
     text = text + "    Parameter " + cutName;
     text = text + " is not implemented.";
     TG4Globals::Warning(text);
+    return;
   }  
+  
+  // add units
+  if (g3Cut == kTOFMAX) cutValue *= TG4G3Units::Time();
+  else                  cutValue *= TG4G3Units::Energy();
+
+  fG3PhysicsManager->SetCut(g3Cut, cutValue);    
 }  
   
 //_____________________________________________________________________________
-void TG4PhysicsManager::SetProcess(const char* controlName, Int_t controlValue)
+void TG4PhysicsManager::SetProcess(const char* controlName, Int_t value)
 {
 // Sets the specified process control.
 // ---
 
   fG3PhysicsManager->CheckLock();
-  TG4G3Control control = fG3PhysicsManager->GetG3Control(controlName);
-  if (control != kNoG3Controls)
+  TG4G3Control control = TG4G3ControlVector::GetControl(controlName);
+  
+  if (control != kNoG3Controls) {
+    TG4G3ControlValue controlValue 
+      = TG4G3ControlVector::GetControlValue(value, control);
     fG3PhysicsManager->SetProcess(control, controlValue);
+  }  
   else {   
     G4String text = "TG4PhysicsManager::SetProcess:\n";
     text = text + "    Parameter " + controlName;
@@ -502,18 +509,10 @@ void  TG4PhysicsManager::DefineParticles()
 void TG4PhysicsManager::SetProcessActivation()
 {
 // (In)Activates built processes according
-// to the setup in fControlVector.
+// to the setup in TG4G3PhysicsManager::fControlVector.
 // ---
 
-  if (fPhysicsList) {
-    // temporarily excluded
-    // fPhysicsList->SetProcessActivation();
-  }  
-  else {
-    G4String text = "TG4PhysicsManager::SetProcessActivation:\n";
-    text = text +   "   There is no physics list set.";
-    TG4Globals::Exception(text);
-  }
+  fPhysicsList->SetProcessActivation();
 }       
 
 
@@ -525,11 +524,6 @@ AliMCProcess TG4PhysicsManager::GetMCProcess(const G4VProcess* process)
  
   if (!process) return kPNoProcess;
 
-  G4String name = process->GetProcessName();
-  G4int code = fProcessMap.GetSecond(name);
-  
-  if (code == 0) return kPNoProcess;
-  
-  return (AliMCProcess)code; 
+  return fProcessMCMap.GetMCProcess(process);
 }
 
