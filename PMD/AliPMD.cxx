@@ -103,6 +103,24 @@ AliPMD::AliPMD(const char *name, const char *title)
   fPadSize[3] = 1.5;
 }
 
+AliLoader* AliPMD::MakeLoader(const char* topfoldername)
+{
+ cout<<"AliPMD::MakeLoader ";
+ 
+ fLoader = new AliPMDLoader(GetName(),topfoldername);
+ 
+ if (fLoader)
+  {
+   cout<<"Success"<<endl;
+  }
+ else
+  {
+   cout<<"Failure"<<endl;
+  }
+
+ return fLoader;
+}
+
 AliPMD::~AliPMD()
 {
   //

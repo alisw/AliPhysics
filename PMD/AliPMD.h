@@ -11,6 +11,7 @@
  
 #include "AliDetector.h"
 #include "AliHit.h"
+#include "AliPMDLoader.h"
 
 class TClonesArray;
 class TFile;
@@ -27,9 +28,12 @@ protected:
 public:
   AliPMD();
   AliPMD(const char *name, const char *title);
+
+  virtual AliLoader* MakeLoader(const char* topfoldername);
+
   virtual      ~AliPMD();
   virtual void  AddHit(Int_t, Int_t*, Float_t*);
-   virtual void  BuildGeometry();
+  virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
   Int_t         DistancetoPrimitive(Int_t, Int_t);
