@@ -279,10 +279,9 @@ void AliEMCAL::Hits2SDigits()
 { 
 // create summable digits
 
-  AliEMCALSDigitizer* emcalDigitizer = 
-    new AliEMCALSDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
-  emcalDigitizer->SetEventRange(0, -1) ; // do all the events
-  emcalDigitizer->ExecuteTask() ;
+  AliEMCALSDigitizer emcalDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
+  emcalDigitizer.SetEventRange(0, -1) ; // do all the events
+  emcalDigitizer.ExecuteTask() ;
 }
 
 //____________________________________________________________________________
