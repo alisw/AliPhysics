@@ -37,7 +37,7 @@ Bool_t AliRICHDigitizer::Init()
 //This methode is called from AliRunDigitizer after the corresponding file is open
   if(GetDebug())Info("Init","Start.");
   fRich=(AliRICH*)gAlice->GetDetector("RICH");
-  Rich()->Param()->GenSigmaThMap();
+  Rich()->P()->GenSigmaThMap();
   return kTRUE;
 }//Init()
 //__________________________________________________________________________________________________
@@ -51,30 +51,41 @@ void AliRICHDigitizer::Exec(Option_t*)
   pOutAL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   pOutRL = pOutAL->GetLoader("RICHLoader");
   pOutRL->MakeTree("D");   Rich()->MakeBranch("D"); //create TreeD with RICH branches in output stream
+  
+  TClonesArray tmpCA("AliRICHdigit");//tmp storage for sdigits sum up from all input files
+  Int_t total=0;
   for(Int_t inFileN=0;inFileN<fManager->GetNinputs();inFileN++){//files loop
-    pInAL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN)); pInRL = pInAL->GetLoader("RICHLoader");
-    pInRL->LoadSDigits(); pInAL->GetEvent(fManager->GetOutputEventNr()); pInRL->TreeS()->GetEntry(0);
-    pInRL->UnloadSDigits();
+    pInAL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN)); 
+    pInRL = pInAL->GetLoader("RICHLoader"); if(pInRL==0) continue;//no RICH in this input, check the next input
+    pInRL->LoadSDigits(); pInAL->GetEvent(fManager->GetInputEventNumber(fManager->GetOutputEventNr(),0)); pInRL->TreeS()->GetEntry(0);
+    Info("Exec","input %i has %i sdigits",inFileN,Rich()->SDigits()->GetEntries());
+    for(Int_t i=0;i<Rich()->SDigits()->GetEntries();i++) new(tmpCA[total++]) AliRICHdigit(*(AliRICHdigit*)Rich()->SDigits()->At(i)); 
+    pInRL->UnloadSDigits();   Rich()->ResetSDigits();
   }//files loop
   
-  Rich()->SDigits()->Sort();                     //sort them according to Id() methode
-  Int_t combiPid=0,chamber=0,x=0,y=0,tid[3],id=0; Double_t q=0;
+  tmpCA.Sort();                     //sort them according to Id() methode
+  
+  Int_t chFbMip=0,chamber=0,x=0,y=0,tid[3],id=0; Double_t q=0;
   Int_t iNdigitsPerPad=0;//how many sdigits for a given pad
-  for(Int_t i=0;i<Rich()->SDigits()->GetEntries();i++){//sdigits loop (sorted)
-    AliRICHdigit *pSdig=(AliRICHdigit*)Rich()->SDigits()->At(i);
+  for(Int_t i=0;i<tmpCA.GetEntries();i++){//sdigits loop (sorted)
+    AliRICHdigit *pSdig=(AliRICHdigit*)tmpCA.At(i);//get new sdigit
     if(pSdig->Id()==id){//still the same pad
-      iNdigitsPerPad++;         q+=pSdig->Q();       combiPid+=pSdig->CombiPid();//sum up charge and cfm
+      iNdigitsPerPad++;         q+=pSdig->Q();       chFbMip+=pSdig->ChFbMi();//sum up charge and cfm
       if(iNdigitsPerPad<=3)        tid[iNdigitsPerPad-1]=pSdig->Tid(0);
-      else                         Warning("SDigits2Digits","More then 3 sdigits for the given pad");
+      else                         if(GetDebug())Warning("Exec","More then 3 sdigits for the given pad");
     }else{//new pad, add the pevious one
-        if(id!=kBad&&Rich()->Param()->IsOverTh(chamber,x,y,q)) Rich()->AddDigit(chamber,x,y,(Int_t)q,combiPid,tid); //add newly created dig
-        combiPid=pSdig->CombiPid(); chamber=pSdig->C(); id=pSdig->Id();  x=pSdig->X(); y=pSdig->Y(); q=pSdig->Q();  //init all values by current sdig
+        if(id!=kBad&&Rich()->P()->IsOverTh(chamber,x,y,q)) Rich()->AddDigit(chamber,x,y,(Int_t)q,chFbMip,tid); //add newly created dig
+        chFbMip=pSdig->ChFbMi(); chamber=pSdig->C(); id=pSdig->Id();  x=pSdig->X(); y=pSdig->Y(); q=pSdig->Q();  //init all values by current sdig
         iNdigitsPerPad=1; tid[0]=pSdig->Tid(0); tid[1]=tid[2]=kBad;
       }
   }//sdigits loop (sorted)
-  if(Rich()->SDigits()->GetEntries()&&Rich()->Param()->IsOverTh(chamber,x,y,q)) Rich()->AddDigit(chamber,x,y,(Int_t)q,combiPid,tid);//add the last dig
+  if(tmpCA.GetEntries()&&Rich()->P()->IsOverTh(chamber,x,y,q)) Rich()->AddDigit(chamber,x,y,(Int_t)q,chFbMip,tid);//add the last dig
+  
   pOutRL->TreeD()->Fill();              //fill the tree with the list of digits
   pOutRL->WriteDigits("OVERWRITE");     //serialize them to file
+  
+  tmpCA.Clear();
+  pOutRL->UnloadDigits();   Rich()->ResetDigits();
             
   if(GetDebug())Info("Exec","Stop.");
 }//Exec()

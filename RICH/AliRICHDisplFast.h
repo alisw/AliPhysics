@@ -14,8 +14,8 @@ class AliRICHDisplFast : public TTask
 {
 public :
  
-       AliRICHDisplFast() {;}
-      ~AliRICHDisplFast() {;}
+           AliRICHDisplFast() {;}
+  virtual ~AliRICHDisplFast() {;}
       
   void DrawSectors(); //Draw sectors in plot 
   void Exec();//virtual

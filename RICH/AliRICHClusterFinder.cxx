@@ -51,7 +51,7 @@ void AliRICHClusterFinder::FindLocalMaxima()
     Int_t padX1 = pDig1->X();
     Int_t padY1 = pDig1->Y();
     Int_t padQ1 = (Int_t)(pDig1->Q()+0.1);
-    Int_t padC1 = pDig1->CombiPid();
+    Int_t padC1 = pDig1->ChFbMi();
     for(Int_t iDig2=0;iDig2<fRawCluster.Size();iDig2++) {
       AliRICHdigit *pDig2 = (AliRICHdigit *)fRawCluster.Digits()->At(iDig2);
       Int_t padX2 = pDig2->X();
@@ -181,7 +181,7 @@ void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j)
   fHitMap->FlagHit(i,j);// Flag hit as taken  
 
   Int_t listX[4], listY[4];    //  Now look recursively for all neighbours
-  for (Int_t iNeighbour=0;iNeighbour<Rich()->Param()->PadNeighbours(i,j,listX,listY);iNeighbour++)
+  for (Int_t iNeighbour=0;iNeighbour<Rich()->P()->PadNeighbours(i,j,listX,listY);iNeighbour++)
     if(fHitMap->TestHit(listX[iNeighbour],listY[iNeighbour])==kUnused) 
                       FormRawCluster(listX[iNeighbour],listY[iNeighbour]);    
 }//FormRawCluster()

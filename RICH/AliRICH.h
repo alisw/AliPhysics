@@ -6,98 +6,65 @@
 
 #include <TObjArray.h>
 #include <TClonesArray.h>
-#include <TLorentzVector.h>
+#include <TVector3.h>
+#include <Riostream.h>
 #include <AliDetector.h>
 #include <AliHit.h>
 #include <AliDigit.h>
 #include "AliRICHDigitizer.h"
 #include "AliRICHParam.h"
-#include <Riostream.h>
 
 //__________________AliRICHhit______________________________________________________________________
 class AliRICHhit : public AliHit
 {
 public:
-  AliRICHhit():AliHit() {fChamber=fPid=kBad;  fEloss=kBad;  fInX3.SetXYZ(0,0,0);fOutX3.SetXYZ(0,0,0);
-                         fMomX=fMomY=fMomZ=fNPads=fCerenkovAngle=fMomFreoX=fMomFreoY=fMomFreoZ=kBad;}
-  AliRICHhit(Int_t c,Int_t tid,TVector3 in,TVector3 out,Double_t e):AliHit(0,tid) {fInX3=in; fOutX3=out; fChamber=c; fEloss=e;
-                                                                                       fX=out.X();fY=out.Y();fZ=out.Z(); 
-                                            fPid=kBad;fMomX=fMomY=fMomZ=fNPads=fCerenkovAngle=fMomFreoX=fMomFreoY=fMomFreoZ=kBad;}
-  inline   AliRICHhit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);                  //old version 3 ????? 
-  virtual ~AliRICHhit()         {;}
+           AliRICHhit():AliHit()          {fChamber=kBad;  fEloss=kBad;  fInX3.SetXYZ(0,0,0);fOutX3.SetXYZ(0,0,0);}
+           AliRICHhit(Int_t c,Int_t tid,TVector3 in,TVector3 out,Double_t e):AliHit(0,tid)
+                                          {fChamber=c;fInX3=in; fOutX3=out;fEloss=e; fX=out.X();fY=out.Y();fZ=out.Z();}
+  virtual ~AliRICHhit()                   {;}
 
-  Int_t   C()                   const{return fChamber;}
-  Int_t   Chamber()             const{return fChamber;}
-  Int_t   Pid()                 const{return fPid;}    
-  Int_t   Particle()            const{return fPid;}
-  Float_t Eloss()               const{return fEloss;}
-  Float_t MomX()                const{return fMomX;}
-  Float_t MomY()                const{return fMomY;}
-  Float_t MomZ()                const{return fMomZ;}
-  Float_t CerenkovAngle()       const{return fCerenkovAngle;}
-  Float_t MomFreoX()            const{return fMomFreoX;}
-  Float_t MomFreoY()            const{return fMomFreoY;}
-  Float_t MomFreoZ()            const{return fMomFreoZ;}
-  TVector3 InX3()               const{return fInX3;}
-  TVector3 OutX3()              const{return fOutX3;}
-  Double_t Length()             const{return (fOutX3-fInX3).Mag();}
-  void    Print(Option_t *option="")const;      //virtual
+  Int_t    C()                       const{return fChamber;}              //chamber number 
+  Int_t    Chamber()                 const{return fChamber;}              //chamber number 
+  Float_t  Eloss()                   const{return fEloss;}                //energy lost by track inside amplification gap  
+  TVector3 InX3()                    const{return fInX3;}                 //track position at the faceplane of the gap 
+  TVector3 OutX3()                   const{return fOutX3;}                //track position at the backplane of the gap 
+  Double_t Length()                  const{return (fOutX3-fInX3).Mag();}  //track length inside the amplification gap
+  void     Print(Option_t *option="")const;                               //virtual
 protected:
   Int_t     fChamber;                      //chamber number
-  Int_t     fPid;                          //particle code
-  Double_t  fEloss;                        //ionisation energy loss in GAP
-  Float_t   fMomX,fMomY,fMomZ;             //momentum at photochatode entry point
-  Float_t   fNPads;                        //Pads hit
-  Float_t   fCerenkovAngle;                //Dummy cerenkov angle
-  Float_t   fMomFreoX,fMomFreoY,fMomFreoZ; //momentum at freon entry point
+  Double_t  fEloss;                        //ionisation energy lost in GAP
   TVector3  fInX3;                         //position at the entrance of the GAP   
-  TVector3  fOutX3;                        //position at exit of the GAP
+  TVector3  fOutX3;                        //position at the exit of the GAP
   ClassDef(AliRICHhit,2)                   //RICH hit class
 };//class AliRICHhit
-//__________________________________________________________________________________________________
-AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hit)
-           :AliHit(shunt, track)
-{
-// old ctor to be deleted
-  fChamber=vol[0];
-  fPid=(Int_t)hit[0];
-  fX=hit[1];fY=hit[2];fZ=hit[3];
-  fEloss=hit[7];
-  fMomX=hit[14];fMomY=hit[15];fMomZ=hit[16];
-  fCerenkovAngle=hit[18];
-  fMomFreoX=hit[19];fMomFreoY=hit[20];fMomFreoZ=hit[21];
-}
 
 //__________________AliRICHdigit____________________________________________________________________
 class AliRICHdigit :public AliDigit
 {
 public:
-           AliRICHdigit() {fCombiPid=fChamber=fPadX=fPadY=fTracks[0]=fTracks[1]=fTracks[2]=kBad;fQdc=kBad;}
-           AliRICHdigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t cpid,Int_t tid0,Int_t tid1,Int_t tid2)
-           {fPadX=x;fPadY=y;fQdc=q;fChamber=10*c+AliRICHParam::Sector(x,y);fCombiPid=cpid;fTracks[0]=tid0;fTracks[1]=tid1;fTracks[2]=tid2;}        
+  AliRICHdigit() {fChFbMip=fChamber=fPadX=fPadY=fTracks[0]=fTracks[1]=fTracks[2]=kBad;fQdc=kBad;}
+  AliRICHdigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t cpid,Int_t tid0,Int_t tid1,Int_t tid2)  
+                 {fPadX=x;fPadY=y;fQdc=q;fChamber=10*c+AliRICHParam::Sector(x,y);fChFbMip=cpid;fTracks[0]=tid0;fTracks[1]=tid1;fTracks[2]=tid2;}
   virtual ~AliRICHdigit() {;}  
-  Int_t    Compare(const TObject *pObj) const                                         //virtual
-           {if(Id()==((AliRICHdigit*)pObj)->Id()) return 0; else if(Id()>((AliRICHdigit*)pObj)->Id()) return 1;  else return -1;} 
-           
-           Bool_t   IsSortable()                                  const{return kTRUE;}//virtual
-           Int_t    CombiPid()                                    const{return fCombiPid;}
-           Int_t    C()                                           const{return fChamber/10;}
-           Int_t    S()                                           const{return fChamber-(fChamber/10)*10;} 
-           Int_t    Chamber()                                     const{return C();}
-           Int_t    Sector()                                      const{return S();}
-           Int_t    X()                                           const{return fPadX;}
-           Int_t    Y()                                           const{return fPadY;}
-           Int_t    Id()                                          const{return fChamber*10000000+fPadX*1000+fPadY;}
-           Double_t Q()                                           const{return fQdc;}
-           Int_t    Tid(Int_t i)                                  const{return fTracks[i];}
-           void  Print(Option_t *option="")const;                 //virtual
+  Int_t    Compare(const TObject *pObj) const
+                 {if(Id()==((AliRICHdigit*)pObj)->Id())return 0;else if(Id()>((AliRICHdigit*)pObj)->Id())return 1;else return -1;}  //virtual      
+  Bool_t   IsSortable()                 const{return kTRUE;}                              //virtual
+  void     Print(Option_t *option="")   const;                                            //virtual
+  Int_t    ChFbMi()                     const{return fChFbMip;}                           //particle mixture for this digit
+  Int_t    C()                          const{return fChamber/10;}                        //chamber number
+  Int_t    S()                          const{return fChamber-(fChamber/10)*10;}          //sector number
+  Int_t    X()                          const{return fPadX;}                              //x position of the pad
+  Int_t    Y()                          const{return fPadY;}                              //y postion of the pad
+  Int_t    Id()                         const{return fChamber*10000000+fPadX*1000+fPadY;} //absolute id of this pad
+  Double_t Q()                          const{return fQdc;}                               //charge in terms of ADC channels
+  Int_t    Tid(Int_t i)                 const{return fTracks[i];}                         //track reference produced this digit
 protected:
-  Int_t    fCombiPid; //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
+  Int_t    fChFbMip;  //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
   Int_t    fChamber;  //10*chamber number+ sector number 
   Int_t    fPadX;     //pad number along X
   Int_t    fPadY;     //pad number along Y
   Double_t fQdc;      //QDC value, fractions are permitted for summable procedure  
-  ClassDef(AliRICHdigit,2) //RICH digit class       
+  ClassDef(AliRICHdigit,3) //RICH digit class       
 };//class AliRICHdigit
 
 //__________________AliRICHcluster__________________________________________________________________
@@ -115,8 +82,6 @@ public:
          Int_t      C()                                         const{return fChamber/10;}                 //
          Int_t      S()                                         const{return fChamber-(fChamber/10)*10;}   //
          Int_t      Fchamber()                                  const{return fChamber;}                    //
-         Int_t      Chamber()                                   const{return C();}                         //
-         Int_t      Sector()                                    const{return S();}                         //
          Int_t      Q()                                         const{return fQdc;}                        // 
          Double_t   X()                                         const{return fX;}                          //
          Double_t   Y()                                         const{return fY;}                          // 
@@ -175,7 +140,8 @@ void AliRICHcluster::CoG(Int_t nLocals)
    fSize+=nLocals;
    fStatus=kRaw;
 }//CoG()
-//__________________________________________________________________________________________________
+
+
 class AliRICHreco: public TObject
 {
 public:
@@ -194,6 +160,7 @@ protected:
    ClassDef(AliRICHreco,1)  //RICH reco class
 
 };//class AliRICHreco
+
 //__________________AliRICH_________________________________________________________________________
 class AliRICHParam;
 class AliRICHChamber;
@@ -203,59 +170,61 @@ class AliRICH : public AliDetector
 public:
             AliRICH();                                            
             AliRICH(const char *name, const char *title);
-            AliRICH(const AliRICH& RICH):AliDetector(RICH) {;}   
+            AliRICH(const AliRICH& RICH):AliDetector(RICH) {;}  //copy ctor 
   virtual  ~AliRICH();                                            
           
   AliRICH&  operator=(const AliRICH&)                 {return *this;}
-  virtual Int_t   IsVersion()                                            const =0;            
+//framework part  
+  virtual Int_t   IsVersion()                                            const =0;                                //virtual         
+  virtual void    StepManager()                                                =0;                                //virtual
           void    Hits2SDigits();                                                                                 //virtual
   AliDigitizer*   CreateDigitizer(AliRunDigitizer* man) const {return new AliRICHDigitizer(man);}                 //virtual
-  
-  inline  void    CreateHits();    
-  inline  void    CreateSDigits();  
-  inline  void    CreateDigits();  
-  inline  void    CreateClusters();  
-  inline  void    CreateRecos();  
-  void AddHit(Int_t chamber,Int_t tid,TVector3 iX3,TVector3 oX3,Double_t eloss=0)
-             {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(chamber,tid,iX3,oX3,eloss);} 
-  inline void AddSDigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t pid,Int_t tid); 
-  void AddDigit(int c,int x,int y,int q,int cpid,int *tid){TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,x,y,q,cpid,tid[0],tid[1],tid[2]);}  
-  void AddCluster(AliRICHcluster &cl)                     {Int_t c=cl.C()-1;cout<<c<<endl;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));new(tmp[fNclusters[c]++])AliRICHcluster(cl);}
-  void AddReco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) {TClonesArray &tmp=*(TClonesArray*)fRecos;new(tmp[fNrecos++])AliRICHreco(tid,thetaCherenkov,nPhotons);}  
-//  void ResetHits()     {AliDetector::ResetHits();}  //virtual  
-  void ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
-  void ResetDigits()   {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}}
-  void ResetClusters() {if(fClusters) for(int i=0;i<kNCH;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
-  void ResetRecos()    {if(fRecos) fRecos->Clear();fNrecos=0;}
-                  //Hits provided by AliDetector
+          void    Print(Option_t *option)const;                                                                   //virtual
+          void    SetTreeAddress();                                                                               //virtual
+          void    MakeBranch(Option_t *opt=" ");                                                                  //virtual
+          void    CreateMaterials();                                                                              //virtual
+  virtual void    BuildGeometry();                                                                                //virtual
+  virtual void    CreateGeometry();                                                                               //virtual
+//private part  
+          Float_t AbsoCH4(Float_t x)const;                               //calculates absorption length for methane
+          Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)const;  //deals with Fresnel absorption
+          void    GenerateFeedbacks(Int_t iChamber,Float_t eloss=0);     //generates feedback photons; eloss=0 for photon
+          void    CreateChambers();                                      //creates set of chambers
+  inline  void    CreateHits();                                          //create hits container as a simple list
+  inline  void    CreateSDigits();                                       //create sdigits container as a simple list
+  inline  void    CreateDigits();                                        //create digits container as 7 lists, one per chamber
+  inline  void    CreateClusters();                                      //create clusters container  as 7 lists, one per chamber
+  inline  void    CreateRecos();                                         //create recos container
+//        void    ResetHits()                {AliDetector::ResetHits();}  //virtual  
+          void    ResetSDigits()             {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
+          void    ResetDigits()              {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}} //virtual
+          void    ResetClusters()            {if(fClusters) for(int i=0;i<kNCH;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
+          void    ResetRecos()               {if(fRecos) fRecos->Clear();fNrecos=0;}
   TClonesArray*   SDigits()             const{return fSdigits;}
   TClonesArray*   Digits(Int_t iC)      const{if(fDigitsNew) return (TClonesArray *)fDigitsNew->At(iC-1);else return 0;}
   TClonesArray*   Clusters(Int_t iC)    const{if(fClusters)  return (TClonesArray *)fClusters->At(iC-1);else return 0;}
   TClonesArray*   Recos()               const{return fRecos;}
-          
   AliRICHChamber* C(Int_t iC)           const{return (AliRICHChamber*)fChambers->At(iC-1);}
-  AliRICHParam*   Param()               const{return fpParam;}
   AliRICHParam*   P()                   const{return fpParam;}
-          void    CreateChambers();         
-          void    CreateMaterials(); //virtual
-  virtual void    BuildGeometry();   //virtual
-  virtual void    CreateGeometry();  //virtual
-          Float_t AbsoCH4(Float_t x)const;
-          Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)const;
-  
-  virtual void    StepManager()=0;
-          void    GenerateFeedbacks(Int_t iChamber,Float_t eloss=0);//eloss=0 for photon
-          void    Print(Option_t *option)const;//virtual
-          void    MakeBranch(Option_t *opt=" ");
-          void    SetTreeAddress();//virtual
+          void    PrintDigits()         const{for(Int_t i=0;i<kNCH;i++) fDigitsNew->At(i)->Print();}
+          void    PrintClusters()       const{for(Int_t i=0;i<kNCH;i++) fClusters->At(i)->Print();}
             
-//          Int_t DistancetoPrimitive(Int_t /*px*/, Int_t /*py*/)      {return 9999;}
-    
+  void AddHit(Int_t chamber,Int_t tid,TVector3 iX3,TVector3 oX3,Double_t eloss=0)
+       {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(chamber,tid,iX3,oX3,eloss);} 
+  inline void AddSDigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t pid,Int_t tid); 
+  void AddDigit(int c,int x,int y,int q,int cfm,int *tid)
+       {TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,x,y,q,cfm,tid[0],tid[1],tid[2]);}  
+  void AddCluster(AliRICHcluster &cl)                     
+       {Int_t c=cl.C()-1;cout<<c<<endl;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));new(tmp[fNclusters[c]++])AliRICHcluster(cl);}
+  void AddReco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) 
+       {TClonesArray &tmp=*(TClonesArray*)fRecos;new(tmp[fNrecos++])AliRICHreco(tid,thetaCherenkov,nPhotons);}  
+          
 protected:  
-  enum       {kCSI=6,kGAP=9};
+  enum                  {kCSI=6,kGAP=9};
   AliRICHParam         *fpParam;             //main RICH parametrization     
   TObjArray            *fChambers;           //list of RICH chambers
-  //fHits and fDigits belong to AliDetector
+  
+                                             //fHits and fDigits belong to AliDetector
   TClonesArray         *fSdigits;            //! List of sdigits  
   Int_t                 fNsdigits;           //! Current number of sdigits
   
@@ -319,5 +288,5 @@ void AliRICH::AddSDigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t pid,Int_t tid)
   TClonesArray &tmp=*fSdigits;
   new(tmp[fNsdigits++])AliRICHdigit(c,x,y,q,pid,tid,kBad,kBad);
 }//AddSDigit()   
-
+//__________________________________________________________________________________________________
 #endif//#ifndef AliRICH_h

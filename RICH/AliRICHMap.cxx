@@ -19,7 +19,8 @@
 ClassImp(AliRICHMap)
 
 AliRICHMap::AliRICHMap(TClonesArray *pDig)
-{//main ctor
+{
+// main ctor
   fDigits=pDig;
   fNdigits=fDigits->GetEntries();
   fMap=new TMatrix(1,AliRICHParam::NpadsX(),1,AliRICHParam::NpadsY());
@@ -28,7 +29,8 @@ AliRICHMap::AliRICHMap(TClonesArray *pDig)
 }
 //__________________________________________________________________________________________________	
 void  AliRICHMap::FillHits()
-{//Fill hits into HitMap
+{
+// Loops over the list of digits filling the "pad fired by digits" structure
   if(!fNdigits) return;    
   for(Int_t iDigN=0;iDigN<fNdigits;iDigN++){
     AliRICHdigit *pDig= (AliRICHdigit*)fDigits->At(iDigN);
