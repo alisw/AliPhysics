@@ -1025,8 +1025,13 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & npoint,AliL3SpacePointData *data)
   }
 
   Int_t size = GetFileSize(); 
-
   npoint = size/sizeof(AliL3SpacePointData);
+  if(size==0) {
+    LOG(AliL3Log::kWarning,"AliL3MemHandler::Binary2Memory","File")
+    <<"File Size == 0"<<ENDLOG;
+    return kFALSE;
+  }
+
   if(fread(data,size,1,fInBinary)!=1){
     LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
     <<"File Read Error "<<ENDLOG;
