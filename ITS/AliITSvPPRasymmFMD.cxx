@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/09/16 14:45:31  barbera
+Updated detailed geometry needed by FMD people for some studies
+
 
 */
 
@@ -27708,7 +27711,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gspos("I570",34,"IT56",21.7497,40.1899,-0.27,idrotm[549],"ONLY");
   gMC->Gspos("I570",35,"IT56",14.7884,43.0772,-0.27,idrotm[550],"ONLY");
   gMC->Gspos("I570",36,"IT56",7.5216,45.0744,-0.27,idrotm[551],"ONLY");
-  gMC->Gspos("I570",37,"IT56",-0.27,45.545,-0.27,0,"ONLY");
+  gMC->Gspos("I570",37,"IT56",0.,45.545,-0.27,0,"ONLY");
   gMC->Gspos("I570",38,"IT56",-7.5216,45.0744,-0.27,idrotm[552],"ONLY");
   gMC->Gspos("I570",1,"IT56",-14.7884,43.0772,-0.27,idrotm[553],"ONLY");
   gMC->Gspos("I570",2,"IT56",-21.7497,40.1899,-0.27,idrotm[620],"ONLY");
