@@ -1,13 +1,17 @@
 enum EGeneratorTypes {kHijing, kGun, kBox, kPythia, kParam, kCcocktail, kFluka, kHalo, kNtuple, kScan,
                       kDoubleScan};
 
-EGeneratorTypes gentype=kBox;
-Int_t ntracks=50;
+EGeneratorTypes gentype=kScan;
+Int_t ntracks=1;
 
 void Config()
 {
-   cout<<"RICH private Config.C> Start\n";
-new AliGeant3("C++ Interface to Geant3");
+  // libraries required by geant321
+  gSystem->Load("libgeant321");
+
+  cout<<"RICH private Config.C> Start\n";
+  //new AliGeant3("C++ Interface to Geant3");
+  new     TGeant3("C++ Interface to Geant3");
 
 //=======================================================================
 //  Create the output file
@@ -26,19 +30,19 @@ geant3->SetTRIG(1); //Number of events to be processed
 geant3->SetSWIT(4,100);
 geant3->SetDEBU(0,0,1);
 //geant3->SetSWIT(2,2);
-geant3->SetDCAY(1);
-geant3->SetPAIR(1);
-geant3->SetCOMP(1);
-geant3->SetPHOT(1);
+geant3->SetDCAY(0);
+geant3->SetPAIR(0);
+geant3->SetCOMP(0);
+geant3->SetPHOT(0);
 geant3->SetPFIS(0);
-geant3->SetDRAY(1);
-geant3->SetANNI(1);
-geant3->SetBREM(1);
-geant3->SetMUNU(1); 
+geant3->SetDRAY(0);
+geant3->SetANNI(0);
+geant3->SetBREM(0);
+geant3->SetMUNU(0); 
 geant3->SetCKOV(1);
-geant3->SetHADR(3); //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
+geant3->SetHADR(0); //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
 geant3->SetLOSS(1);
-geant3->SetMULS(1);
+geant3->SetMULS(0);
 geant3->SetRAYL(0);
 geant3->SetAUTO(1); //Select automatic STMIN etc... calc. (AUTO 1) or manual (AUTO 0)
 geant3->SetABAN(0); //Restore 3.16 behaviour for abandoned tracks
@@ -66,8 +70,9 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
    case kBox:  
      AliGenBox *gener = new AliGenBox(ntracks);
      gener->SetMomentumRange(2,2);
-     gener->SetPhiRange(90,120);
-     gener->SetThetaRange(85,95);
+     //gener->SetPhiRange(30,30);                //for inclined HMPID
+     gener->SetPhiRange(82,98);
+     gener->SetThetaRange(82,98);
      gener->SetOrigin(0,0,0);   
      gener->SetVertexSmear(kPerTrack); 
      //vertex position
@@ -76,13 +81,16 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
    break;
    case kScan:  
      AliGenScan *gener = new AliGenScan(-1);
-     gener->SetMomentumRange(3,3);
-     gener->SetPhiRange(90,90);
+     gener->SetMomentumRange(2,2);
+     //gener->SetPhiRange(30,30);           //for inclined HMPID
+     gener->SetPhiRange(90,90);             //for normal HMPID
      gener->SetThetaRange(90,90);
      //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kPiPlus); 
-     gener->SetRange(1, 430, 430, 1, 430, 430, 1, 430, 430);
+     //gener->SetRange(1, 415, 415, 1, 245, 245, 1, -20, -20);   //for inclined HMPID
+     gener->SetRange(1, 0, 0, 1, 480, 480, 1, -20, -20);         //for normal HMPID
+
    break;
    case kSoubleScan:  
      AliGenDoubleScan *gener = new AliGenDoubleScan(-1);
@@ -203,7 +211,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 
 Int_t iMAG=0;
 Int_t iITS=0;
-Int_t iTPC=1;
+Int_t iTPC=0;
 Int_t iTOF=0;
 Int_t iRICH=1;
 Int_t iZDC=0;
@@ -219,7 +227,7 @@ Int_t iFMD=0;
 Int_t iMUON=0;
 Int_t iPHOS=0;
 Int_t iPMD=0;
-Int_t iSTART=1; 
+Int_t iSTART=0; 
 
 //=================== Alice BODY parameters =============================
 AliBODY *BODY = new AliBODY("BODY","Alice envelop");
@@ -365,11 +373,14 @@ if(iTOF) {
 AliTOF *TOF  = new AliTOFv2("TOF","normal TOF");
 }
    
-   gAlice->SetDebug(1);
 
-   if(iRICH){
-      AliRICH *RICH  = new AliRICHv3("RICH","normal RICH");
-   }//if(iRICH)
+ gAlice->SetDebug(1);
+
+
+if(iRICH){
+//====================== RICH parameters =========================
+AliRICH *RICH  = new AliRICHv3("RICH","normal RICH");
+}//if(iRICH)
 
 
 if(iZDC) {
