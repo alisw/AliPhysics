@@ -9,17 +9,17 @@
 
 class AliMUONproto : public AliMUON {
   public:
-    AliMUONv2();
-    AliMUONv2(const char *name, const char *title);
-    virtual ~AliMUONv2() {}
+    AliMUONproto();
+    AliMUONproto(const char *name, const char *title);
+    virtual ~AliMUONproto() {}
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual void   Init();
     virtual Int_t  IsVersion() const {return 2;}
     virtual void   StepManager();
-    void GetRawDigits(Int_t iev, Int_t* ptr, Int_t len);
+//    void GetRawDigits(Int_t iev, Int_t* ptr, Int_t len);
     void SetPadSize(Int_t id, Int_t isec, Float_t p1, Float_t p2);
-    void SetThreshold();
+//    void SetThreshold();
     void SetNsigma(Int_t nsig) {fNsigma = nsig;};
     void BuildGeometry();
     void SetChargeSlope(Int_t id, Float_t p1);

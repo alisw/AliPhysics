@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:49  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/04/18 09:11:15  morsch
 Implementation of MUON Chamber Prototype Class
 Both read digits from raw data or use the Monte-Carlo.
@@ -54,7 +57,9 @@ Both read digits from raw data or use the Monte-Carlo.
 #include <TArrayI.h>
 #include <AliDetector.h>
 
+#include "AliMUONChamber.h"
 #include "AliMUONproto.h"
+#include "AliMUONHit.h"
 #include "TTUBE.h"
 #include "AliMUONClusterFinder.h"
 #include "AliRun.h"
@@ -62,9 +67,9 @@ Both read digits from raw data or use the Monte-Carlo.
 #include "iostream.h"
 #include "AliCallf77.h" 
 #include "AliConst.h"
-#include "chainalice2.h"
-#include "AliMUONSegResV1.h"
-#include "AliMUONSegResV11.h"
+//#include "chainalice2.h"
+#include "AliMUONSegmentationV0.h"
+//#include "AliMUONSegResV11.h"
 
 ClassImp(AliMUONproto)
 
@@ -101,7 +106,7 @@ AliMUONproto::AliMUONproto(const char *name, const char *title)
     (*fChambers)[0] = new AliMUONChamber();
     AliMUONChamber* chamber = (AliMUONChamber*) (*fChambers)[0];
     chamber->SetGid(0);
-    chamber->SetZPOS(zch[0]);
+    chamber->SetZ(zch[0]);
 //
     chamber->InitGeo(zch[0]); 
     chamber->SetRInner(dmi[0]/2);
@@ -113,6 +118,7 @@ AliMUONproto::AliMUONproto(const char *name, const char *title)
     
 }
 
+#ifdef WE_FORGET_FOR_THE_MOMENT
 //___________________________________________ 
 void AliMUONproto::GetRawDigits(Int_t evnb, Int_t *lptr, Int_t ilen) {
 
@@ -129,7 +135,7 @@ void AliMUONproto::GetRawDigits(Int_t evnb, Int_t *lptr, Int_t ilen) {
     Int_t digits[5]; 
     
     AliMUON* MUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONSegmentationV1* seg = (AliMUONSegmentationV1*) Chamber(0).GetSegmentationModel(1);
+    AliMUONSegmentationV0* seg = (AliMUONSegmentationV0*) Chamber(0).SegmentationModel(1);
     
     Int_t tracks[10];
     Int_t charges[10];
@@ -198,6 +204,7 @@ void AliMUONproto::GetRawDigits(Int_t evnb, Int_t *lptr, Int_t ilen) {
     gAlice->TreeD()->Reset();
 
 }
+#endif
 
 //___________________________________________
 void AliMUONproto::SetPadSize(Int_t id, Int_t isec, Float_t p1, Float_t p2)
@@ -242,7 +249,7 @@ void AliMUONproto::CreateGeometry()
 //********************************************************************
     iChamber=(AliMUONChamber*) (*fChambers)[0];
     
-    zpos=iChamber->ZPosition(); 
+    zpos=iChamber->Z(); 
 //
     const Float_t X_POS = 11*.975/2; //half x
     const Float_t Y_POS = 18*.55/2;  //half y
@@ -337,7 +344,7 @@ void AliMUONproto::StepManager()
   idvol=-1;
   id=gMC->CurrentVolID(copy);
   
-    for (Int_t i=1; i<=NCH; i++) {
+    for (Int_t i=1; i<=kNCH; i++) {
       if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()){ 
 	  vol[0]=i; 
 	  idvol=i-1;
@@ -369,7 +376,7 @@ void AliMUONproto::StepManager()
       Double_t ty=mom[1]/pmom;
       Double_t tz=mom[2]/pmom;
       Double_t s=((AliMUONChamber*)(*fChambers)[idvol])
-	  ->GetResponseModel()
+	  ->ResponseModel()
 	  ->Pitch()/tz;
       theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
       phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
@@ -379,7 +386,7 @@ void AliMUONproto::StepManager()
       hits[3] = pos[2]+s*tz;                 // Z-position for hit
       hits[4] = theta;                  // theta angle of incidence
       hits[5] = phi;                    // phi angle of incidence 
-      hits[8] = (Float_t) fNclusters;   // first padhit
+      hits[8] = (Float_t) fNPadHits;   // first padhit
       hits[9] = -1;                     // last pad hit
 
       // modifs perso
@@ -420,14 +427,14 @@ void AliMUONproto::StepManager()
       // Only if not trigger chamber
       if(idvol<10) {
 	  if (eloss > 0) 
-	      MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),eloss,idvol);
+	      MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),eloss,0.0,idvol);
       }
 	  
       hits[6]=tlength;
       hits[7]=eloss2;
-      if (fNclusters > (Int_t)hits[8]) {
+      if (fNPadHits > (Int_t)hits[8]) {
 	  hits[8]= hits[8]+1;
-	  hits[9]= (Float_t) fNclusters;
+	  hits[9]= (Float_t) fNPadHits;
       }
     
       new(lhits[fNhits++]) 
@@ -445,7 +452,7 @@ void AliMUONproto::StepManager()
 	  ->SigGenInit(pos[0], pos[1], pos[2]);
 //      printf("\n-> MakePadHits, reason special %d",ipart);
       if (eloss > 0)
-	  MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),eloss,idvol);
+	  MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),eloss,0.0,idvol);
       xhit     = pos[0];
       yhit     = pos[1]; 
       eloss    = destep;
@@ -504,7 +511,7 @@ void AliMUONproto::FindClusters(Int_t nev, Int_t last_entry)
 	    gAlice->ResetDigits();
  	    gAlice->TreeD()->GetEvent(last_entry+icat);
             
-      for (Int_t ich = 0; ich < NTrackingCh; ich++) {
+      for (Int_t ich = 0; ich < kNTrackingCh; ich++) {
 	  AliMUONChamber* iChamber=(AliMUONChamber*) (*fChambers)[ich];
 	  TClonesArray *MUONdigits  = this->DigitsAddress(ich);
 	  if (MUONdigits == 0) continue;
@@ -512,9 +519,9 @@ void AliMUONproto::FindClusters(Int_t nev, Int_t last_entry)
 	  // Get ready the current chamber stuff
 	  //
 
-          AliMUONResponse* response = iChamber->GetResponseModel();
-	  AliMUONSegmentation* seg = iChamber->GetSegmentationModel(icat+1);
-	  AliMUONClusterFinder* rec = iChamber->GetReconstructionModel();
+          AliMUONResponse* response = iChamber->ResponseModel();
+	  AliMUONSegmentation* seg = iChamber->SegmentationModel(icat+1);
+	  AliMUONClusterFinder* rec = iChamber->ReconstructionModel();
 
           if (seg) {	  
 	      rec->SetSegmentation(seg);
@@ -542,6 +549,7 @@ void AliMUONproto::FindClusters(Int_t nev, Int_t last_entry)
   gAlice->TreeR()->Reset();
 }
 
+#ifdef WE_FORGRET_THIS_SHIT
 //_____________________________________________________________________________
 void AliMUONproto::SetThreshold()
 {
@@ -592,3 +600,4 @@ void AliMUONproto::SetThreshold()
     
     inputFile.close();    
 }
+#endif
