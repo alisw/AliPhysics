@@ -578,8 +578,16 @@ Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t ome
   //
   /////////////////////////////////////////////////////////////////////// 
   Int_t direction=0;
-  Double_t z[npoints],x[npoints],y[npoints],s[npoints];
-  Double_t ez[npoints],ex[npoints],ey[npoints],es[npoints];
+  //PH  Double_t z[npoints],x[npoints],y[npoints],s[npoints];
+  //PH  Double_t ez[npoints],ex[npoints],ey[npoints],es[npoints];
+  Double_t * z = new Double_t[npoints];
+  Double_t * x = new Double_t[npoints];
+  Double_t * y = new Double_t[npoints];
+  Double_t * s = new Double_t[npoints];
+  Double_t * ez = new Double_t[npoints];
+  Double_t * ex = new Double_t[npoints];
+  Double_t * ey = new Double_t[npoints];
+  Double_t * es = new Double_t[npoints];
   Double_t z0=0.0,vpar=0.0,ez0=0.0,evpar=0.0, chisquare;
 
   //  Double_t chi=TMath::Pi()/2.0+phi;
@@ -592,6 +600,14 @@ Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t ome
     if(TMath::Abs(x[k]-thu0)<1.0e-5) {  // should never happen, nor give troubles...
       chisquare=9999.99; 
       cerr<<"limit for  x-x_0 "<<x[k]<<" "<<thu0<<endl; 
+      delete [] z;
+      delete [] x;
+      delete [] y;
+      delete [] s;
+      delete [] ez;
+      delete [] ex;
+      delete [] ey;
+      delete [] es;
       return 12;
     }
     Double_t ang1=TMath::ATan2((y[k]-thv0),(x[k]-thu0));
@@ -645,6 +661,15 @@ Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t ome
 
   CorrLin = (Avsz-Avs*Avz)/(Sigmas*Sigmaz);
 
+  delete [] z;
+  delete [] x;
+  delete [] y;
+  delete [] s;
+  delete [] ez;
+  delete [] ex;
+  delete [] ey;
+  delete [] es;
+  
   return 0;
 }
 
@@ -652,7 +677,7 @@ Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t ome
 Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Int_t charge,Double_t Px,Double_t Py,Double_t Pz,Double_t& fd0,
 				   Double_t& fphi,Double_t& u0, Double_t& v0, Double_t& rho,Double_t& omega, Double_t& z0,
 				   Double_t& vpar,Double_t& chisql, Double_t& fCorrLin,Double_t& fFit,
-				   Int_t first=1,Int_t second=1,Int_t third=1,Int_t fourth=1,Int_t fifth=1,Int_t sixth=1) {
+				   Int_t first,Int_t second,Int_t third,Int_t fourth,Int_t fifth,Int_t sixth) {
   ///////////////////////////////////////////////////////////////////////
   //  This function finds the helix paramenters 
   //  d0  = impact parameter
@@ -698,7 +723,8 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Int_t charge,Double_t Px,Doub
   TVector3 **errors    = new TVector3*[iMAX];
   TVector3 *linerr        = new TVector3[iMAX];
   TVector3 **linerrors    = new TVector3*[iMAX];
-  Double_t Weight[iMAX];
+  //PH  Double_t Weight[iMAX];
+  Double_t * Weight = new Double_t[iMAX];
 
   for(i=0;i<iMAX;i++){
     original[i]   = &(ori[i]);
@@ -749,6 +775,7 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Int_t charge,Double_t Px,Doub
   //
   if(original[5]->X() == 9999 || original[6]->X() != 9999)  
     {
+      delete [] Weight;
       return 1;   // not enough points
     }
   
@@ -805,6 +832,7 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Int_t charge,Double_t Px,Doub
  
   if(Check_Cubic !=1 ){
     printf("Track %d Has no real solution continuing ...\n",tracknumber);
+    delete [] Weight;
     return 2;
   }
   
@@ -862,6 +890,7 @@ Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Int_t charge,Double_t Px,Doub
   fCorrLin = CorrLin;
   ierr = (ierrl > ierr ? ierrl : ierr);
 //   fclose(pout);
+  delete [] Weight;
   return ierr;
 }
 
