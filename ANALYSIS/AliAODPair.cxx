@@ -323,13 +323,22 @@ Double_t AliAODPair::GetQt()
  //returns Q transverse CMS longitudionally co-moving
  if (fQtNotCalc)
   {
+    CalculateSums();
+    CalculateDiffs();
+    
     Double_t dotprod = fPxSum*fPxDiff + fPySum*fPyDiff + fPzSum*fPzDiff;
     Double_t klen =    fPxSum*fPxSum  + fPySum*fPySum  + fPzSum*fPzSum;
     klen = TMath::Sqrt(klen);
     Double_t qlen =    fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff;
     qlen = TMath::Sqrt(qlen);
-    
-    Double_t cosopenangle = dotprod/(klen*qlen);
+    Double_t tmp = klen*qlen;
+    if (tmp == 0.0)
+     {
+       fQt = 10e5;
+       fQtNotCalc = kFALSE;
+       return fQt;
+     }
+    Double_t cosopenangle = dotprod/tmp;
     Double_t sinopenangle = TMath::Sqrt(1.0 - cosopenangle*cosopenangle);
     
     fQt = sinopenangle*qlen;
