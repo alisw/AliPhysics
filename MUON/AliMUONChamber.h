@@ -107,6 +107,8 @@ public TObject
 //
   virtual Float_t DGas() {return fdGas;}
   virtual Float_t DAlu() {return fdAlu;}  
+  virtual void SetDGas(Float_t DGas) {fdGas = DGas;}
+  virtual void SetDAlu(Float_t DAlu) {fdAlu = DAlu;}  
 // assignment operator  
   AliMUONChamber& operator =(const AliMUONChamber& rhs);
   

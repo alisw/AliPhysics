@@ -352,22 +352,33 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //  
  Int_t chamber;
  Int_t station;
-// Default response
+ // Default response: 5 mm of gas
  AliMUONResponseV0* response0 = new AliMUONResponseV0;
- response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131);
- response0->SetSqrtKy3AndDeriveKy2Ky4(0.7642);
- //response0->SetSqrtKx3(0.7131);
- //response0->SetKx2(1.0107);
- //response0->SetKx4(0.4036);
- //response0->SetSqrtKy3(0.7642);
- //response0->SetKy2(0.9706);
- //response0->SetKy4(0.3831);
- response0->SetPitch(0.25);
+ response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131); // sqrt(0.5085)
+ response0->SetSqrtKy3AndDeriveKy2Ky4(0.7642); // sqrt(0.5840)
+ response0->SetPitch(0.25); // anode-cathode distance
  response0->SetSigmaIntegration(10.);
  response0->SetChargeSlope(50);
  response0->SetChargeSpread(0.18, 0.18);
  response0->SetMaxAdc(4096);
  response0->SetZeroSuppression(6);
+
+ // Response for 4 mm of gas (station 1)
+ // automatic consistency with width of sensitive medium in CreateGeometry ????
+ AliMUONResponseV0* responseSt1 = new AliMUONResponseV0;
+ // Mathieson parameters from L.Kharmandarian's thesis, page 190
+ responseSt1->SetSqrtKx3AndDeriveKx2Kx4(0.7000); // sqrt(0.4900)
+ responseSt1->SetSqrtKy3AndDeriveKy2Ky4(0.7550); // sqrt(0.5700)
+ responseSt1->SetPitch(0.20); // anode-cathode distance
+ responseSt1->SetSigmaIntegration(10.);
+ // ChargeSlope larger to compensate for the smaller anode-cathode distance
+ // and keep the same most probable ADC channel for mip's
+ responseSt1->SetChargeSlope(62.5); 
+ // assumed proportionality to anode-cathode distance for ChargeSpread
+ responseSt1->SetChargeSpread(0.144, 0.144);
+ responseSt1->SetMaxAdc(4096);
+ responseSt1->SetZeroSuppression(6);
+
 //--------------------------------------------------------
 // Configuration for Chamber TC1/2  (Station 1) ----------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -381,21 +392,26 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  AliMUONSegmentationV01 *seg11=new AliMUONSegmentationV01;
  
  seg11->SetSegRadii(rseg1);
- seg11->SetPadSize(3, 0.5);
- seg11->SetDAnod(3.0/3./4);
+//  seg11->SetPadSize(3, 0.5);
+ seg11->SetPadSize(2.4, 0.4); // smaller pad size
+//  seg11->SetDAnod(3.0/3./4);
+ seg11->SetDAnod(0.20); // smaller distance between anode wires
  seg11->SetPadDivision(nseg1);
  
  MUON->SetSegmentationModel(chamber-1, 1, seg11);
 //
  AliMUONSegmentationV02 *seg12=new AliMUONSegmentationV02;
  seg12->SetSegRadii(rseg1); 
- seg12->SetPadSize(0.75, 2.0);
- seg12->SetDAnod(3.0/3./4);
+//  seg12->SetPadSize(0.75, 2.0);
+ seg12->SetPadSize(0.6, 1.6); // smaller pad size
+//  seg12->SetDAnod(3.0/3./4);
+ seg12->SetDAnod(0.20); // smaller distance between anode wires
  seg12->SetPadDivision(nseg1);
 
  MUON->SetSegmentationModel(chamber-1, 2, seg12);
 
- MUON->SetResponseModel(chamber-1, response0);	    
+//  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->SetResponseModel(chamber-1, responseSt1); // special response	    
 
  chamber=2;
 //^^^^^^^^^
@@ -404,19 +420,25 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //
  AliMUONSegmentationV01 *seg21=new AliMUONSegmentationV01;
  seg21->SetSegRadii(rseg1);
- seg21->SetPadSize(3, 0.5);
- seg21->SetDAnod(3.0/3./4);
+//  seg21->SetPadSize(3, 0.5);
+ seg21->SetPadSize(2.4, 0.4); // smaller pad size
+//  seg21->SetDAnod(3.0/3./4);
+ seg21->SetDAnod(0.20); // smaller distance between anode wires
  seg21->SetPadDivision(nseg1);
  MUON->SetSegmentationModel(chamber-1, 1, seg21);
 //
  AliMUONSegmentationV02 *seg22=new AliMUONSegmentationV02;
  seg22->SetSegRadii(rseg1); 
- seg22->SetPadSize(0.75, 2.);
- seg22->SetDAnod(3.0/3./4);
+//  seg22->SetPadSize(0.75, 2.);
+ seg22->SetPadSize(0.6, 1.6); // smaller pad size
+//  seg22->SetDAnod(3.0/3./4);
+ seg22->SetDAnod(0.20); // smaller distance between anode wires
  seg22->SetPadDivision(nseg1);
  MUON->SetSegmentationModel(chamber-1, 2, seg22);
 
- MUON->SetResponseModel(chamber-1, response0);	    
+//  MUON->SetResponseModel(chamber-1, response0);	    
+ MUON->SetResponseModel(chamber-1, responseSt1); // special response
+	    
 //
 //--------------------------------------------------------
 // Configuration for Chamber TC3/4 (Station 2) -----------

@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.5  2000/11/21 13:47:55  gosset
+All Mathieson parameters (Sqrt(K3), K2 and K4) set in one function,
+SetSqrtKx3AndDeriveKx2Kx4 or SetSqrtKx3AndDeriveKx2Kx4,
+for each cathode plane
+
 Revision 1.4  2000/10/25 10:41:52  morsch
 IntPH(..): Protec Log against random numbers equal to 0.
 
@@ -110,7 +115,10 @@ Float_t AliMUONResponseV0::IntXY(AliSegmentation * segmentation)
 Int_t  AliMUONResponseV0::DigitResponse(Int_t digit)
 {
     // add white noise and do zero-suppression and signal truncation
-    Float_t meanNoise = gRandom->Gaus(1, 0.2);
+//     Float_t meanNoise = gRandom->Gaus(1, 0.2);
+    // correct noise for slat chambers;
+    // one more field to add to AliMUONResponseV0 to allow different noises ????
+    Float_t meanNoise = gRandom->Gaus(1.5, 0.2);
     Float_t noise     = gRandom->Gaus(0, meanNoise);
     digit+=(Int_t)noise; 
     if ( digit <= ZeroSuppression()) digit = 0;
