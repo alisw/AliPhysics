@@ -173,6 +173,24 @@ void AliPHOSGetter::CloseFile()
 }
 
 //____________________________________________________________________________ 
+const TFolder * AliPHOSGetter::Folder(const TString what) const {
+
+  // returns the PHOS folder required by what
+  // what = hits, sdigits, digits
+
+  if ( what == "hits" ) 
+    return dynamic_cast<const TFolder *>(fHitsFolder->FindObject("PHOS")) ; 
+  else if ( what == "sdigits" ) 
+    return  dynamic_cast<const TFolder *>(fSDigitsFolder->FindObject("PHOS")) ; 
+  else if ( what == "digits" ) 
+    return  dynamic_cast<const TFolder *>(fDigitsFolder->FindObject("PHOS")) ; 
+  else {
+    cerr << "ERROR: AliPHOSGetter::GetFolder -> " << what.Data() << " illegal option (hits, sdigits, digits) " << endl ; 
+    return 0 ; 
+  }
+}
+
+//____________________________________________________________________________ 
 AliPHOSGetter * AliPHOSGetter::GetInstance()
 {
   // Returns the pointer of the unique instance already defined
@@ -1404,6 +1422,7 @@ Int_t AliPHOSGetter::ReadTreeD()
   
   
   // read  the Digitizer
+  RemoveTask("D", fDigitsTitle) ;
   if(!Digitizer(fDigitsTitle))
     PostDigitizer(fDigitsTitle) ;
   digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;

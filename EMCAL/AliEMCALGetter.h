@@ -63,6 +63,7 @@ class AliEMCALGetter : public TObject {
   virtual ~AliEMCALGetter() ; 
   
   void CloseFile() ;  
+  const TFolder * Folder(const TString what) const ;
   const Bool_t HasFailed(void) const {return fFailed ;} 
   Bool_t PostHits(void ) const ;  
   Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  

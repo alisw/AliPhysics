@@ -182,6 +182,23 @@ void AliEMCALGetter::CloseFile()
 }
 
 //____________________________________________________________________________ 
+const TFolder * AliEMCALGetter::Folder(const TString what) const {
+
+  // returns the EMCAL folder required by what
+  // what = hits, sdigits, digits
+
+  if ( what == "hits" ) 
+    return dynamic_cast<const TFolder *>(fHitsFolder->FindObject("EMCAL")) ; 
+  else if ( what == "sdigits" ) 
+    return  dynamic_cast<const TFolder *>(fSDigitsFolder->FindObject("EMCAL")) ; 
+  else if ( what == "digits" ) 
+    return  dynamic_cast<const TFolder *>(fDigitsFolder->FindObject("EMCAL")) ; 
+  else {
+    cerr << "ERROR: AliEMCALGetter::GetFolder -> " << what.Data() << " illegal option (hits, sdigits, digits) " << endl ; 
+    return 0 ; 
+  }
+}
+//____________________________________________________________________________ 
 AliEMCALGetter * AliEMCALGetter::GetInstance()
 {
   // Returns the pointer of the unique instance already defined
