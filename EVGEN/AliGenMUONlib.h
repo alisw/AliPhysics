@@ -17,7 +17,8 @@ class AliGenMUONlib :
   public AliGenLib
 {
  public:
-    enum constants{kPhi, kOmega, kEta, kJpsi, kUpsilon, kCharm, kBeauty, kPion, kKaon};
+    enum constants{kPhi, kOmega, kEta, kJpsi, kUpsilon,
+		   kCharm, kBeauty, kPion, kKaon};
     
     
 // pions
@@ -44,10 +45,14 @@ class AliGenMUONlib :
 // J/Psi     
     static Double_t PtJpsi( Double_t *px, Double_t *dummy);
     static Double_t YJpsi(Double_t *py, Double_t *dummy);
+    static Double_t PtJpsiPbPb( Double_t *px, Double_t *dummy);
+    static Double_t YJpsiPbPb(Double_t *py, Double_t *dummy);
     static Int_t    IpJpsi(TRandom *ran);
 // Upsilon    
     static Double_t PtUpsilon( Double_t *px, Double_t *dummy );
     static Double_t YUpsilon(Double_t *py, Double_t *dummy);
+    static Double_t PtUpsilonPbPb( Double_t *px, Double_t *dummy );
+    static Double_t YUpsilonPbPb(Double_t *py, Double_t *dummy);
     static Int_t    IpUpsilon(TRandom *ran);
 //
 // Charm    
@@ -62,7 +67,13 @@ class AliGenMUONlib :
 //
     GenFunc   GetPt(Int_t param, const char* tname=0) const;
     GenFunc   GetY (Int_t param, const char* tname=0) const;
-    GenFuncIp GetIp(Int_t param, const char* tname=0) const;    
+    GenFuncIp GetIp(Int_t param, const char* tname=0) const;
+ private:
+    
+    static Float_t Interpolate(Float_t x, Float_t* y, Float_t x0, 
+			Float_t dx,
+			Int_t n, Int_t no);
+    
     ClassDef(AliGenMUONlib,0) // Library providing y and pT parameterisations
 };
 #endif
