@@ -28,7 +28,6 @@
 #include "AliPMDdigit.h"
 #include "AliPMDClusterFinder.h"
 #include "AliPMDClustering.h"
-#include "AliPMDContainer.h"
 #include "AliPMDcluster.h"
 #include "AliPMDrecpoint.h"
 
