@@ -22,7 +22,6 @@
 #include "AliL3DigitData.h"
 #include "AliL3HoughEval.h"
 #include "AliL3Transform.h"
-#include "AliL3Defs.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
 
@@ -115,9 +114,9 @@ void AliL3Hough::CleanUp()
 
 void AliL3Hough::Init()
 {
-  fPeakThreshold = 0;
-  fNPatches = NPatches;
   AliL3Transform::Init(fPath);
+  fPeakThreshold = 0;
+  fNPatches = AliL3Transform::GetNPatches();
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
 #ifdef use_aliroot
   fMemHandler = new AliL3FileHandler*[fNPatches];
@@ -188,7 +187,8 @@ void AliL3Hough::ReadData(Int_t slice)
       else //read data from root file
 	{
 #ifdef use_aliroot
-	  fMemHandler[i]->Init(slice,i,NRows[i]);
+	  const Int_t rows[2] = {AliL3Transform::GetFirstRow(i),AliL3Transform::GetLastRow(i)};
+	  fMemHandler[i]->Init(slice,i,rows);
 	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits); 
 #else
 	  cerr<<"You cannot read from rootfile now"<<endl;
@@ -337,7 +337,7 @@ void AliL3Hough::FindTrackCandidates()
 	      track->SetTrackParameters(x[k],y[k],weight[k]);
 	      track->SetEtaIndex(j);
 	      track->SetEta((Double_t)(j*eta_slice));
-	      track->SetRowRange(NRows[0][0],NRows[5][1]);
+	      track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
 	    }
 	}
       fTracks[i]->QSort();
@@ -381,7 +381,7 @@ void AliL3Hough::Evaluate(Int_t road_width)
 	  if(!fEval[i]->LookInsideRoad(track,track->GetEtaIndex()))
 	    tracks->Remove(j);
 	  if(fAddHistograms)
-	    track->SetRowRange(NRows[0][0],NRows[5][1]);//All rows included
+	    track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));//All rows included
 	}
       tracks->Compress();
       tracks->QSort(); //Sort the tracks according to weight

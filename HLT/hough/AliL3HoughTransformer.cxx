@@ -6,7 +6,6 @@
 #include "AliL3MemHandler.h"
 #include "AliL3Logging.h"
 #include "AliL3HoughTransformer.h"
-#include "AliL3Defs.h"
 #include "AliL3Transform.h"
 #include "AliL3DigitData.h"
 #include "AliL3Histogram.h"
@@ -63,7 +62,8 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
   Double_t bfact = 0.0029980;
   Double_t bfield = 0.2;
   Double_t x = bfact*bfield/pt_min;
-  CreateHistograms(nxbin,-1.*x,x,nybin,phimin*ToRad,phimax*ToRad);
+  Double_t torad = AliL3Transform::Pi()/180;
+  CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
 }
 
 void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
@@ -128,7 +128,7 @@ void AliL3HoughTransformer::TransformCircle()
     }
   
   //Loop over the padrows:
-  for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
+  for(Int_t i=AliL3Transform::GetFirstRow(GetPatch()); i<=AliL3Transform::GetLastRow(GetPatch()); i++)
     {
       //Get the data on this padrow:
       AliL3DigitData *digPt = tempPt->fDigitData;
@@ -198,7 +198,7 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
       <<"No input data "<<ENDLOG;
  
   Int_t counter=0;
-  for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
+  for(Int_t i=AliL3Transform::GetFirstRow(GetPatch()); i<=AliL3Transform::GetLastRow(GetPatch()); i++)
     {
       counter += tempPt->fNDigit;
       AliL3MemHandler::UpdateRowPointer(tempPt);
@@ -223,7 +223,7 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
   counter=0;
   tempPt = GetDataPointer();
   
-  for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
+  for(Int_t i=AliL3Transform::GetFirstRow(GetPatch()); i<=AliL3Transform::GetLastRow(GetPatch()); i++)
     {
       AliL3DigitData *digPt = tempPt->fDigitData;
       for(UInt_t di=0; di<tempPt->fNDigit; di++)
@@ -288,8 +288,8 @@ void AliL3HoughTransformer::TransformLine()
 	<<"No input data "<<ENDLOG;
       return;
     }
-  
-  for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
+    
+  for(Int_t i=AliL3Transform::GetFirstRow(GetPatch()); i<=AliL3Transform::GetLastRow(GetPatch()); i++)
     {
       AliL3DigitData *digPt = tempPt->fDigitData;
       if(i != (Int_t)tempPt->fRow)

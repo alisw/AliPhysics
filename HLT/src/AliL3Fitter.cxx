@@ -5,7 +5,6 @@
 
 #include <math.h>
 
-#include "AliL3Defs.h"
 #include "AliL3Logging.h"
 #include "AliL3Fitter.h"
 #include "AliL3Vertex.h"

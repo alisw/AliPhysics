@@ -9,7 +9,6 @@
 #include <sys/time.h>
 #include "AliL3ConfMapper.h"
 
-#include "AliL3Defs.h"
 #include "AliL3Logging.h" 
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"

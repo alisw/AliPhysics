@@ -6,7 +6,6 @@
 #include <math.h>
 
 #include "AliL3Logging.h"
-#include "AliL3Defs.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
 
@@ -79,7 +78,7 @@ void AliL3HoughTrack::SetEta(Double_t f)
 
   fEta = f;
   Double_t theta = 2*atan(exp(-1.*fEta));
-  Double_t dipangle = Pi/2 - theta;
+  Double_t dipangle = AliL3Transform::Pi()/2 - theta;
   Double_t tgl = tan(dipangle);
   SetTgl(tgl);
 }
@@ -184,7 +183,7 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   Double_t charge = -1.*kappa;
   SetCharge((Int_t)copysign(1.,charge));
   
-  Double_t trackPhi0 = GetPsi() + charge*0.5*Pi/fabs(charge);
+  Double_t trackPhi0 = GetPsi() + charge*0.5*AliL3Transform::Pi()/fabs(charge);
   Double_t xc = GetFirstPointX() - GetRadius() * cos(trackPhi0) ;
   Double_t yc = GetFirstPointY() - GetRadius() * sin(trackPhi0) ;
   SetCenterX(xc);

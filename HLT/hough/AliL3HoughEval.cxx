@@ -20,7 +20,6 @@
 #include "AliL3Transform.h"
 #include "AliL3Histogram.h"
 #include "AliL3Histogram1D.h"
-#include "AliL3Defs.h"
 
 //_____________________________________________________________
 // AliL3HoughEval
@@ -56,7 +55,7 @@ void AliL3HoughEval::InitTransformer(AliL3HoughBaseTransformer *transformer)
   fHoughTransformer = transformer;
   fSlice = fHoughTransformer->GetSlice();
   fPatch = fHoughTransformer->GetPatch();
-  fNrows = NRows[fPatch][1] - NRows[fPatch][0] + 1;
+  fNrows = AliL3Transform::GetLastRow(fPatch) - AliL3Transform::GetFirstRow(fPatch) + 1;
   fNEtaSegments = fHoughTransformer->GetNEtaSegments();
   fEtaMin = fHoughTransformer->GetEtaMin();
   fEtaMax = fHoughTransformer->GetEtaMax();
@@ -74,9 +73,9 @@ void AliL3HoughEval::GenerateLUT()
   if(!tempPt)
     printf("\nAliL3HoughEval::GenerateLUT : Zero data pointer\n");
   
-  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+  for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
-      Int_t prow = i - NRows[fPatch][0];
+      Int_t prow = i - AliL3Transform::GetFirstRow(fPatch);
       fRowPointers[prow] = tempPt;
       AliL3MemHandler::UpdateRowPointer(tempPt);
     }
@@ -99,7 +98,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 
   //Check if the track is leaving the sector at some point
   Float_t maxrow=300;
-  Double_t angle=Pi/18;
+  Double_t angle=AliL3Transform::Pi()/18;
   track->CalculateEdgePoint(angle);
   if(!track->IsPoint())
     {
@@ -110,11 +109,11 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   else
     maxrow = track->GetPointX();
 
-  for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
+  for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
     {
       if(AliL3Transform::Row2X(padrow) > maxrow) break;//The track has left this slice
       rows_crossed++;
-      Int_t prow = padrow - NRows[fPatch][0];
+      Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
       if(!track->GetCrossingPoint(padrow,xyz))  
 	{
 	  //printf("AliL3HoughEval::LookInsideRoad : Track does not cross line!!; pt %f phi0 %f\n",track->GetPt(),track->GetPhi0());
@@ -170,7 +169,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
       track->SetEtaIndex(eta_index);
       track->SetWeight(total_charge,kTRUE);
       track->SetEta(eta_track);
-      track->SetRowRange(NRows[fPatch][0],NRows[fPatch][1]);
+      track->SetRowRange(AliL3Transform::GetFirstRow(fPatch),AliL3Transform::GetLastRow(fPatch));
       track->SetSlice(fSlice);
       if(fRemoveFoundTracks)
 	LookInsideRoad(track,eta_index,kTRUE);
@@ -201,9 +200,9 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
     {
       AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(ntr);
       if(!track) continue;
-      for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
+      for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
 	{
-	  Int_t prow = padrow - NRows[fPatch][0];
+	  Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
 	  
 	  if(!track->GetCrossingPoint(padrow,xyz))  
 	    {
@@ -280,9 +279,9 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
     }
   
   Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
-  for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
+  for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
     {
-      Int_t prow = padrow - NRows[fPatch][0];
+      Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
                   
       AliL3DigitRowData *tempPt = fRowPointers[prow];
       if(!tempPt) 

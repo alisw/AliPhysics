@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include "AliL3Logging.h"
-#include "AliL3Defs.h"
 #include "AliL3Transform.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
@@ -148,8 +147,8 @@ void AliL3HoughMerger::Merge()
     AliL3TrackArray *tout = GetOutTracks();
     if(i==subsec) tout = GetInTracks(subsec+1);
     AliL3TrackArray *tin = GetInTracks(i);
-    Double_t xval = AliL3Transform::Row2X(NRows[i][1]);
-    Double_t xmax = AliL3Transform::Row2X(NRows[i+1][1]);
+    Double_t xval = AliL3Transform::Row2X(AliL3Transform::GetLastRow(i));
+    Double_t xmax = AliL3Transform::Row2X(AliL3Transform::GetLastRow(i+1));
     Double_t ymax = xval*tan(edge0);
     for(Int_t out=0;out<tout->GetNTracks();out++){
       AliL3Track *outtrack=tout->GetCheckedTrack(out);

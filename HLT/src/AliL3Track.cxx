@@ -6,7 +6,6 @@
 
 #include "AliL3RootTypes.h"
 
-#include "AliL3Defs.h"
 #include "AliL3Logging.h"
 #include "AliL3Track.h"
 #include "AliL3Transform.h"

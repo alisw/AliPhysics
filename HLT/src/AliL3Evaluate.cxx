@@ -19,7 +19,6 @@
 #include "AliTPCParam.h"
 #include "AliComplexCluster.h"
 
-#include "AliL3Defs.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3Track.h"
