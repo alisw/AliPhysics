@@ -38,155 +38,58 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TTree.h>
-#include <TVirtualMC.h>
+
+#include "AliRun.h"
+#include "AliMagF.h"
 
 #include "AliCRT.h"
-#include "AliCRTConstants.h"
-#include "AliCRThit.h"
-#include "AliLoader.h"
-#include "AliMagF.h"
-#include "AliRun.h"
- 
+
 ClassImp(AliCRT)
 
 //_____________________________________________________________________________
 AliCRT::AliCRT()
+  : AliDetector()
 {
   //
-  // Default constructor for the CRT
+  // Default constructor
   //
-
-  fIshunt   = 0;
-  fHits     = 0;
-
 }
  
 //_____________________________________________________________________________
 AliCRT::AliCRT(const char *name, const char *title)
-  : AliDetector(name,title)
+  : AliDetector(name, title)
 {
   //
-  // Standard constructor for the CRT module
+  // Standard constructor
   //
-
-  fIshunt       =  1; // All hits are associated with primary particles  
-
-  fHits         =  new TClonesArray("AliCRThit",400) ; 
-
-  gAlice->AddHitList(fHits);
-
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
-
 }
 
 //_____________________________________________________________________________
 AliCRT::AliCRT(const AliCRT& crt)
+  : AliDetector(crt)
 {
   //
-  // Copy ctor.
+  // Copy constructor
   //
   crt.Copy(*this);
-}
-
-//_____________________________________________________________________________
-AliCRT& AliCRT::operator= (const AliCRT& crt)
-{
-  //
-  // Asingment operator.
-  //
-  crt.Copy(*this);
-  return *this;
 }
 
 //_____________________________________________________________________________
 AliCRT::~AliCRT()
 {
   //
-  // Standar destructor.
-  //
-  if (fHits) {
-    fHits->Delete();
-    delete fHits;
-  }
-}
-
-//_____________________________________________________________________________
-void AliCRT::AddHit(Int_t track, Int_t *vol, Float_t *hits)
-{
-  //
-  // Add a CRT hit
-  //
-  TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliCRThit(fIshunt,track,vol,hits);
-}
-
-//_____________________________________________________________________________
-void AliCRT::AddDigit(Int_t *tracks,Int_t *digits)
-{
-  // 
-  //  Add a CRT digit to the list. Dummy function.
+  // Default destructor
   //
 }
 
 //_____________________________________________________________________________
-void AliCRT::Init() const
+AliCRT& AliCRT::operator=(const AliCRT& crt)
 {
   //
-  // Initialise ...
+  // Asingment operator.
   //
-
-  Int_t i;
-  //
-  if(fDebug) {
-    printf("\n%s: ",ClassName());
-    for(i=0;i<35;i++) printf("*");
-    printf(" CRT_INIT ");
-    for(i=0;i<35;i++) printf("*");
-    printf("\n%s: ",ClassName());
-    //
-    // Here the CRT initialisation code (if any!)
-    for(i=0;i<80;i++) printf("*");
-    printf("\n");
-  }
-}
-
-//_____________________________________________________________________________
-void AliCRT::ResetHits()
-{
-  // Reset number of clusters and the cluster array for this detector
-  AliDetector::ResetHits();
-}
-
-//_____________________________________________________________________________
-void AliCRT::ResetDigits()
-{
-  //
-  // Reset number of digits and the digits array for this detector
-  AliDetector::ResetDigits();
-} 
-
-//____________________________________________________________________________
-void AliCRT::FinishEvent()
-{
-// do nothing
-}
-
-//_____________________________________________________________________________
-void AliCRT::BuildGeometry()
-{
-  //
-  // Build simple ROOT TNode geometry for event display
-  //
-}
-
-//_____________________________________________________________________________
-void AliCRT::CreateGeometry()
-{
-  //
-  // Build simple ROOT TNode geometry for GEANT simulations
-  //
+  crt.Copy(*this);
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -234,7 +137,7 @@ void AliCRT::CreateMaterials()
   Float_t wMolasse[10] = {0.008, 0.043, 0.485, 0.007, 0.042, 0.037, 0.215, 0.023, 0.1, 0.04};
   Float_t dMolasse = 2.40;
   AliMixture(24, "Molasse$", aMolasse, zMolasse, dMolasse, 10, wMolasse);
-  
+
   // **************** 
   //     Defines tracking media parameters. 
   //     Les valeurs sont commentees pour laisser le defaut 
@@ -267,14 +170,16 @@ void AliCRT::CreateMaterials()
   AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
   AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
   AliMedium(75, "AIR_C4          ", 75, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
-  AliMedium(75, "AIR_C5          ", 95, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  AliMedium(95, "AIR_C5          ", 95, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
 
 
 
   // The scintillator of the CPV made of Polystyrene 
   // scintillator -> idtmed[1112]
+  AliMedium(12 , "CPV scint.      ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(13 , "CPV scint.      ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  
+  AliMedium(14 , "CPV scint.      ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+
   //     Molasse -> idtmed[1123]
   AliMedium(24 , "Molasse         ", 24, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
 
@@ -283,36 +188,16 @@ void AliCRT::CreateMaterials()
   Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,28.086,39.1,40.08,55.85 };
   Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };
   Float_t wconc[10] = { .01,.001,.529107,.016,.002,.033872,.337021,.013,.044,.014 };
-  
+
   AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
   //    Concrete 
   AliMedium(17, "CC_C0            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(27, "CC_C1            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // MX24
+  AliMedium(37, "CC_C2            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // PM25
+  AliMedium(47, "CC_C3            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // PGC2
 
 }
-/*
-//_____________________________________________________________________________
-void AliCRT::MakeBranch(Option_t* option, const char *file)
-{
-  //
-  // Specific CRT branches
-  //
-  // Create Tree branches for the CRT.
-  Int_t buffersize = 400;
-  char branchname[10];
-  sprintf(branchname,"%s",GetName());
 
-  AliDetector::MakeBranch(option,file);
-
-  const char *cD = strstr(option,"D");
-  
-  if (cD) {
-    digits = new AliCRTdigit();
-    MakeBranchInTree(gAlice->TreeD(), branchname, "AliCRTdigit", 
-		     digits, buffersize, 1, file);
-  } 
-
-}
-*/
 //_____________________________________________________________________________
 void AliCRT::SetTreeAddress()
 {
@@ -320,12 +205,11 @@ void AliCRT::SetTreeAddress()
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());
-  
+
   // Branch address for hit tree
   TTree *treeH = fLoader->TreeH();
   if (treeH && fHits) {
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fHits);
   }
-
 }

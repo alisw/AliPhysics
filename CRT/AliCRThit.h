@@ -16,51 +16,36 @@
 
 #include "AliHit.h"
 
-class AliCRThit : public AliHit {
-  
+class AliCRThit : public AliHit {  
 public:
   AliCRThit();
   AliCRThit(Int_t shunt, Int_t track, Int_t* vol, Float_t *hits);
-  AliCRThit(const AliCRThit & hit);
-  AliCRThit& operator= (const AliCRThit& hit);
-  virtual ~AliCRThit() {}
+  AliCRThit(const AliCRThit& hit);
+  virtual ~AliCRThit();
 
-  // getters for AliCRThit object
-  Float_t GetId()   const {return fId;}
-  Float_t GetX()     const {return fX;}
-  Float_t GetY()     const {return fY;}
-  Float_t GetZ()     const {return fZ;}
-  Float_t GetPx()     const {return fPx;}
-  Float_t GetPy()     const {return fPy;}
-  Float_t GetPz()     const {return fPz;}
-  Float_t GetMedium()     const {return fMedium;}
-  Float_t GetELoss()   const {return fELoss;}
-  Float_t GetCRT() const {return fCRTh;}
-  Float_t GetCRTMod() const {return fCRTMod;}
-  Float_t GetCRTMag() const {return fCRTMag;}
-  Float_t GetCRTRICH() const {return fCRTRICH;}
-  Float_t GetCRTTPC() const {return fCRTTPC;}
+  AliCRThit& operator=(const AliCRThit& hit);
+  Bool_t operator==(const AliCRThit& hit);
+  Bool_t operator<(const AliCRThit& hit);
 
-  const Int_t* GetVolume() const {return fVolume;}
+  Float_t ParticleId()   const {return fId;}
+  Float_t Px()           const {return fPx;}
+  Float_t Py()           const {return fPy;}
+  Float_t Pz()           const {return fPz;}
+  Float_t Eloss()        const {return fEloss;}
+  Float_t Medium()       const {return fMedium;}
+  Float_t Energy()       const;
+  Float_t PolarAngle()   const;
+  Float_t AzimuthAngle() const;
 
 protected:
-  Int_t   fVolume[5];
-  Int_t   fCopy;
-  Float_t fId;     
-  Float_t fPx;          //
-  Float_t fPy;          //
-  Float_t fPz;          //
-  Float_t fMedium;      //
-  Float_t fELoss;       //
-  Float_t fCRTh;
-  Float_t fCRTMod;
-  Float_t fCRTMag;
-  Float_t fCRTRICH;
-  Float_t fCRTTPC;
+  Float_t fId;     //
+  Float_t fPx;     //
+  Float_t fPy;     //
+  Float_t fPz;     //
+  Float_t fEloss;  //
+  Float_t fMedium; //
 
 private:
   ClassDef(AliCRThit,1)  // Hit for CRT (ACORDE)
-
 };
-
 #endif /* ALICRTHIT_H */

@@ -13,53 +13,55 @@
 // easily accessible place. All constants are public const static data 
 // members. The class is never instatiated.
 //
-//
 // Author: Arturo Fernandez, Enrique Gamez
 //         FCFM-UAP, Mexico.
 //
 /////////////////////////////////////////////////////////////////////////
 
-#include <TObject.h>
+#include <Rtypes.h>
+
+enum ECRMode {
+  kSingleMuons,
+  kMuonBundle,
+  kMuonFlux
+};
 
 class AliCRTConstants {
- public:
-  // Modules
+public:
+  // Module dimentions
   static const Float_t fgCageLenght; // Module lenght
   static const Float_t fgCageWidth;  // Module width
   static const Float_t fgCageHeight; // Module height
 
-// The dimensions of the active area of a single palette are:
-  static const Float_t fgSinglePaletteLenght; // 
-  static const Float_t fgSinglePaletteWidth; // 
-  static const Float_t fgSinglePaletteHeight; // 
-  
-  static const Float_t fgActiveAreaGap; // 
-  
+  // The dimensions of the active area of a single palette are:
+  static const Float_t fgSinglePaletteLenght; //
+  static const Float_t fgSinglePaletteWidth; //
+  static const Float_t fgSinglePaletteHeight; //
+
+  static const Float_t fgActiveAreaGap; //
+
   // Aproximate dimensions of the active area of the module.
   static const Float_t fgActiveAreaLenght;
-  static const Float_t fgActiveAreaWidth; // 
+  static const Float_t fgActiveAreaWidth; //
   static const Float_t fgActiveAreaHeight;
-  
+
   // Magnet
-  static const Float_t fgMagnetWidth; // 
-  static const Float_t fgMagnetLenght; // 
+  static const Float_t fgMagnetWidth; //
+  static const Float_t fgMagnetLenght; //
+  static const Float_t fgMagMinRadius; //
+  static const Float_t fgMagMaxRadius; //
 
   // Surface
   static const Float_t fgDepth;
-  
+
   AliCRTConstants() {}
-  AliCRTConstants(const AliCRTConstants& ct) {}
-  AliCRTConstants& operator= (const AliCRTConstants& ct) {return *this;}
   virtual ~AliCRTConstants() {}
+
+protected:
+  AliCRTConstants(const AliCRTConstants& ct) {}
+  AliCRTConstants& operator=(const AliCRTConstants& ct) {return *this;}
 
  private:
   ClassDef(AliCRTConstants, 0)   // CRT(ACORDE) global constants
 };
-
-enum ECRMode { 
-  kSingleMuons, 
-  kMuonBundle, 
-  kMuonFlux
-};
-    
 #endif // ALICRTCONSTANTS_H

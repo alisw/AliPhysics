@@ -5,20 +5,19 @@
 
 /* $Id$ */
 
-#include <TArrayF.h>
-#include <TArrayI.h>
-
 #include "AliDigit.h"
-#include "AliCRT.h"
 
-class AliCRTdigit: public TObject  {
+class TArrayF;
+class TArrayI;
 
+class AliCRTdigit: public AliDigit  {
 public:
-            AliCRTdigit();
-            AliCRTdigit(Int_t tracknum, Int_t* vol, Float_t* digit);
-            AliCRTdigit(const AliCRTdigit & digit);
-    AliCRTdigit& operator= (const AliCRTdigit& digit);
-    virtual ~AliCRTdigit() {}
+  AliCRTdigit();
+  AliCRTdigit(Int_t tracknum, Int_t* vol, Float_t* digit);
+  AliCRTdigit(const AliCRTdigit& digit);
+  virtual ~AliCRTdigit();
+
+  AliCRTdigit& operator= (const AliCRTdigit& digit);
 
 protected:
   Int_t     fSector;  // number of sector
@@ -27,11 +26,10 @@ protected:
   Int_t     fPadx;    // number of pad along x
   Int_t     fPadz;    // number of pad along z
   Int_t     fNDigits;  // dimension of fTdc array
-  TArrayF   *fTdc;     // tdc values for sdigit
-  TArrayF   *fAdc;     // adc values for sdigit
-  TArrayI   *fTracks;  // contributing tracks, kMAXDIGITS entries per
+  TArrayF*  fTdc;     // tdc values for sdigit
+  TArrayF*  fAdc;     // adc values for sdigit
+  TArrayI*  fTracks;  // contributing tracks, kMAXDIGITS entries per
                      // 1 tdc value
-
 private:
     ClassDef(AliCRTdigit,1)  //Digit (Header) object for set : CRT (ACORDE)
 };

@@ -15,47 +15,78 @@
 
 /* $Id$ */
 
+#include <TMath.h>
+
+#include "AliConst.h"
 #include "AliCRThit.h"
 
 ClassImp(AliCRThit)
 
 //____________________________________________________________________________
 AliCRThit::AliCRThit()
+  : AliHit(),
+    fId(0),
+    fPx(0),
+    fPy(0),
+    fPz(0),
+    fEloss(0),
+    fMedium(0)
 {
-   //
-   // default ctor for AliCRThit object
-   //
-
-  fId     = 0.;
-  fX      = 0.;
-  fY      = 0.;
-  fZ      = 0.;
-  fPx     = 0.;
-  fPy     = 0.;
-  fPz     = 0.;
-  fMedium = 0.;
-  fELoss  = 0.;
-  fCRTh = 0.;
-  fCRTMod = 0.;
-  fCRTMag = 0.;
-  fCRTRICH = 0.;
-  fCRTTPC = 0.;
-
-  fCopy = 0;
-  for (Int_t i = 0; i < 5; i++ ) {
-    fVolume[i] = 0;
-  }
-
+  //
+  // default ctor for AliCRThit object
+  //
 }
 
+//_____________________________________________________________________________
+AliCRThit::AliCRThit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
+  : AliHit(shunt, track),
+    fId(hits[0]),
+    fPx(hits[4]),
+    fPy(hits[5]),
+    fPz(hits[6]),
+    fEloss(hits[7]),
+    fMedium(vol[0])
+{
+  //
+  // Constructor of hit object
+  //
+  fX = hits[1];
+  fY = hits[2];
+  fZ = hits[3];
+}
 
 //____________________________________________________________________________
 AliCRThit::AliCRThit(const AliCRThit & hit)
+  : AliHit(hit),
+    fId(hit.fId),
+    fPx(hit.fPx),
+    fPy(hit.fPy),
+    fPz(hit.fPz),
+    fEloss(hit.fEloss),
+    fMedium(hit.fMedium)
 {
-   //
-   // copy ctor
-   //
+  //
+  // copy ctor
+  //
+  fX      = hit.fX;
+  fY      = hit.fY;
+  fZ      = hit.fZ;
+}
 
+//_____________________________________________________________________________
+AliCRThit::~AliCRThit()
+{
+  //
+  // Default destructor.
+  //
+}
+
+//_____________________________________________________________________________
+AliCRThit& AliCRThit::operator=(const AliCRThit & hit)
+{
+  //
+  // aisngment operator.
+  //
   fId     = hit.fId;
   fX      = hit.fX;
   fY      = hit.fY;
@@ -63,75 +94,57 @@ AliCRThit::AliCRThit(const AliCRThit & hit)
   fPx     = hit.fPx;
   fPy     = hit.fPy;
   fPz     = hit.fPz;
+  fEloss  = hit.fEloss;
   fMedium = hit.fMedium;
-  fELoss  = hit.fELoss;
-  fCRTh = hit.fCRTh;
-  fCRTMod = hit.fCRTMod;
-  fCRTMag = hit.fCRTMag;
-  fCRTRICH = hit.fCRTRICH;
-  fCRTTPC = hit.fCRTTPC;
-
-  //fCopy = hit.fCopy;
-  //fVolume = hit.fVolume;
-
-}
-
-//_____________________________________________________________________________
-AliCRThit& AliCRThit::operator= (const AliCRThit & hit)
-{
-   //
-   // aisngment operator.
-   //
-
-  //fId     = hit.fId;
-  //fX      = hit.fX;
-  //fY      = hit.fY;
-  //fZ      = hit.fZ;
-  //fPx     = hit.fPx;
-  //fPy     = hit.fPy;
-  //fPz     = hit.fPz;
-  //fMedium = hit.fMedium;
-  //fELoss  = hit.fELoss;
-  //fCRTh = hit.fCRTh;
-  //fCRTMod = hit.fCRTMod;
-  //fCRTMag = hit.fCRTMag;
-  //fCRTRICH = hit.fCRTRICH;
-  //fCRTTPC = hit.fCRTTPC;
-
-  //fCopy = hit.fCopy;
-  //fVolume = hit.fVolume;
-
   return *this;
 }
 
 //_____________________________________________________________________________
-AliCRThit::AliCRThit(Int_t shunt, Int_t track, Int_t *vol,
-                     Float_t *hits) :AliHit(shunt, track)
+Float_t AliCRThit::Energy() const
 {
-//
-// Constructor of hit object
-//
-
-  fId     = hits[0];
-  fX      = hits[1];
-  fY      = hits[2];
-  fZ      = hits[3];
-  fPx     = hits[4];
-  fPy     = hits[5];
-  fPz     = hits[6];
-  fMedium = hits[7];
-  fELoss  = hits[8];
-  fCRTh = hits[9];
-  fCRTMod = hits[10];
-  fCRTMag = hits[11];
-  fCRTRICH = hits[12];
-  fCRTTPC = hits[13];
-
-  //fTrack = (Int_t)hits[9];
-
-  for (Int_t i = 0; i < 5 ; i++ ) {
-    fVolume[i] = vol[i];
-  }
-
+  //
+  //
+  //
+  return TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);
 }
 
+//_____________________________________________________________________________
+Float_t AliCRThit::PolarAngle() const
+{
+  //
+  //
+  //
+  return kRaddeg*TMath::ACos(-fPy/this->Energy());
+}
+
+//_____________________________________________________________________________
+Float_t AliCRThit::AzimuthAngle() const
+{
+  //
+  //
+  //
+  return kRaddeg*TMath::ATan2(-fPx, -fPz);
+}
+
+//_____________________________________________________________________________
+Bool_t AliCRThit::operator==(const AliCRThit& hit)
+{
+  //
+  //
+  //
+  Float_t energy = TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);
+  Float_t energy2=TMath::Sqrt(hit.fPx*hit.fPx+hit.fPy*hit.fPy+hit.fPz*hit.fPz);
+  return (energy == energy2);
+  //return (fTrack == hit.fTrack);
+}
+
+//_____________________________________________________________________________
+Bool_t AliCRThit::operator<(const AliCRThit& hit)
+{
+  //
+  //
+  //
+  Float_t energy = TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);
+  Float_t energy2=TMath::Sqrt(hit.fPx*hit.fPx+hit.fPy*hit.fPy+hit.fPz*hit.fPz);
+  return (energy < energy2);
+}
