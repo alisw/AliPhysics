@@ -10,6 +10,8 @@
 //                                                     //
 //-----------------------------------------------------//
 
+#include <TObjArray.h>
+
 #include "AliDigitizer.h"
 
 class TClonesArray;

@@ -23,23 +23,12 @@
 //-----------------------------------------------------//
 
 #include <Riostream.h>
-#include <TMath.h>
-#include <TBRIK.h>
-#include <TNode.h>
 #include <TTree.h>
-#include <TGeometry.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
-#include <TFile.h>
-#include <TNtuple.h>
-#include <TParticle.h>
 
-#include "AliRun.h"
-#include "AliPMD.h"
-#include "AliDetector.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
-#include "AliHeader.h"
 #include "AliRawReader.h"
 
 #include "AliPMDdigit.h"

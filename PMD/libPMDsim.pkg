@@ -1,0 +1,10 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDcell.cxx AliPMDsdigit.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:=PMDsimLinkDef.h
+
+EINCLUDE:=RAW
