@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:22  fca
+* AliRoot sources
+*
 * Revision 1.2  1996/04/24 17:26:12  mclareni
 * Extend the include file cleanup to dzebra, rz and tq, and also add
 * dependencies in some cases.
@@ -63,14 +66,15 @@
       IF (IQND.LT.0) THEN
           IF (IFLOPT(MPOSHQ).NE.0) THEN
 
-              WRITE(CQLINE,
 #if !defined(CERNLIB_OCTMAP)
+              WRITE(CQLINE,
      W         '(1X,''(*HO*'',1X,I8,''('',Z8,
-#endif
-#if defined(CERNLIB_OCTMAP)
-     W         '(1X,''(*HO*'',1X,I8,''('',O8,
-#endif
      W          '') -- HOLE of '',I8,'' words'')') IQLN,(IQLN+LQSTOR)
+#else
+              WRITE(CQLINE,
+     W         '(1X,''(*HO*'',1X,I8,''('',O8,
+     W          '') -- HOLE of '',I8,'' words'')') IQLN,(IQLN+LQSTOR)
+#endif
 *              MAP addresses are in BYTES
 #if !defined(CERNLIB_WORDMAP)
      W                                                               *4

@@ -9,27 +9,30 @@ PACKAGE = minicern
 
 INC	= -Ipacklib/zebra \
           -Ipacklib/kernlib/kerngen \
- 	  -Imathlib/gen \
-	  -Ipacklib/kernlib/kernnum
+	  -Imathlib/gen \
+	  -Ipacklib/kernlib/kernnum \
+      -Ipacklib/kernlib/kerngen/kerngen
 
- 
+
 # C++ compilation flags
 
 CXXFLAGS      = $(CXXOPTS) $(CLIBCXXOPTS) $(INC) $(CLIBDEFS)
- 
+
 # C compilation flags
 
 CFLAGS      = $(COPT) $(CLIBCOPT) $(INC) $(CLIBDEFS)
- 
+
 # FORTRAN compilation flags
 
 FFLAGS      = $(FOPT) $(CLIBFOPT) $(INC) $(CLIBDEFS)
- 
+
 FSRCS	= dummies.F hbcdf.F fzdummies.F \
 	  mathlib/gen/b/atg.F \
 	  mathlib/gen/c/gamma.F \
 	  mathlib/gen/c/gamma128.F \
 	  mathlib/gen/c/gamma64.F \
+	  mathlib/gen/c/erf64.F \
+	  mathlib/gen/c/erf128.F \
 	  mathlib/gen/d/gauss.F \
 	  mathlib/gen/d/gauss128.F \
 	  mathlib/gen/d/gauss64.F \
@@ -221,8 +224,7 @@ FSRCS	= dummies.F hbcdf.F fzdummies.F \
 	  packlib/zebra/rz/rzver2.F \
 	  packlib/zebra/rz/rzveri.F \
 	  packlib/zebra/rz/rzwrt.F \
- 
- 
+
 ifeq ($(PLATFORM),linux)
 	  FSRC = $(FSRCS) \
 	  packlib/kernlib/kerngen/unix/lnxgs/rdmin.F
@@ -254,8 +256,8 @@ CSRCS	= \
 	  packlib/kernlib/kerngen/ccgencf/cfstati.c \
 	  packlib/kernlib/kerngen/ccgenu/fchput.c \
 	  packlib/kernlib/kerngen/ccgenu/fchtak.c \
- 	  packlib/kernlib/kerngen/ccgen/datime.c \
- 
+	  packlib/kernlib/kerngen/ccgen/datime.c \
+
 ifeq ($(PLATFORM),linux)
 	  CSRC = $(CSRCS) \
 	  packlib/kernlib/kerngen/unix/lnxgs/ishftr.c
@@ -271,7 +273,7 @@ endif
 ifeq ($(PLATFORM),alpha)
 	  CSRC = $(CSRCS) 
 endif
-	
+
 
 CXXSRC	=
 
@@ -283,7 +285,7 @@ SRCS	= $(FSRC) $(CSRC) $(CXXSRC)
 OBJS	= $(FOBJ) $(COBJ) $(CXXOBJ)
 
 ##### TARGETS #####
- 
+
 # Target
 
 SLIBRARY	= $(LIBDIR)/libminicern.$(SL)

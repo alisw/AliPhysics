@@ -23,15 +23,15 @@ OBJS	= $(FOBJS)
 # C++ compilation flags
 
 CXXFLAGS      = $(CXXOPTS) $(CLIBCXXOPTS) $(CLIBDEFS) -I.
- 
+
 # C compilation flags
 
 CFLAGS      = $(COPT) $(CLIBCOPT) $(CLIBDEFS) -I.
- 
+
 # FORTRAN compilation flags
 
-FFLAGS      = $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -DCERNLIB_DOUBLE  -I.
- 
+FFLAGS      = $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -DCERNLIB_DOUBLE  -I. -Ipdf
+
 # Target
 
 SLIBRARY	= $(LIBDIR)/libpdf.$(SL)

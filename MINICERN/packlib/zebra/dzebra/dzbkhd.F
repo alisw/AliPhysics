@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:22  fca
+* AliRoot sources
+*
 * Revision 1.2  1996/04/24 17:26:02  mclareni
 * Extend the include file cleanup to dzebra, rz and tq, and also add
 * dependencies in some cases.
@@ -69,16 +72,22 @@
       ENDIF
 
 
+#if (!defined(CERNLIB_QMIBM))&&(!defined(CERNLIB_QMVAX))
       WRITE(CQLINE,
      W '(1X,A1,A4,''.'',I6,I9,''('',A ,'') SY/US/IO '',Z4,''/'',Z5,
      W   ''/'',Z4,'' NL/NS/ND'',I5,''/'',I5,''/'',I8,'' N/U/O/@O'',
-#if (!defined(CERNLIB_QMIBM))&&(!defined(CERNLIB_QMVAX))
      W   I8,''/'',I8,''/'',I8,''/'',A)',                     ERR=999)
 #endif
 #if defined(CERNLIB_QMVAX)
+      WRITE(CQLINE,
+     W '(1X,A1,A4,''.'',I6,I9,''('',A ,'') SY/US/IO '',Z4,''/'',Z5,
+     W   ''/'',Z4,'' NL/NS/ND'',I5,''/'',I5,''/'',I8,'' N/U/O/@O'',
      W   I8,''/'',I8,''/'',I8,''/'',A)',                IOSTAT=ISTAT)
 #endif
 #if defined(CERNLIB_QMIBM)
+      WRITE(CQLINE,
+     W '(1X,A1,A4,''.'',I6,I9,''('',A ,'') SY/US/IO '',Z4,''/'',Z5,
+     W   ''/'',Z4,'' NL/NS/ND'',I5,''/'',I5,''/'',I8,'' N/U/O/@O'',
      W   I8,''/'',I8,''/'',I8,''/'',A)')
 #endif
      W   CLIVE, IQWIDH(KQS+LS),IQWIDN(KQS+LS),LS,CQDIV,

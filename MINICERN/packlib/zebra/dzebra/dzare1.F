@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:22  fca
+* AliRoot sources
+*
 * Revision 1.2  1996/04/24 17:26:00  mclareni
 * Extend the include file cleanup to dzebra, rz and tq, and also add
 * dependencies in some cases.
@@ -168,15 +171,17 @@
              ENDIF
 
              CQMAP(1) = ' '
-             WRITE(CQMAP(2),
 #if !defined(CERNLIB_OCTMAP)
+             WRITE(CQMAP(2),
      W       '('' This '',A9,'' LINK AREA is at absolute address '',Z8,
-#endif
-#if defined(CERNLIB_OCTMAP)
-     W       '('' This '',A9,'' LINK AREA is at absolute address '',O11,
-#endif
      W       '' with NL/NS ='',I7,''/'',I7,4X,'' and is '',A8)'      )
      W        CLATYP(JTEMP),(LLAAR1+LQSTOR)
+#else
+             WRITE(CQMAP(2),
+     W       '('' This '',A9,'' LINK AREA is at absolute address '',O11,
+     W       '' with NL/NS ='',I7,''/'',I7,4X,'' and is '',A8)'      )
+     W        CLATYP(JTEMP),(LLAAR1+LQSTOR)
+#endif
 #if !defined(CERNLIB_WORDMAP)
      W       *4
 #endif
