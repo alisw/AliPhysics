@@ -30,6 +30,7 @@ Int_t   TGeant3::CurrentMaterial(Float_t &, Float_t &, Float_t &, Float_t &, Flo
 Int_t   TGeant3::NextVolUp(Text_t*, Int_t&) {return 0;}
 Int_t   TGeant3::CurrentVolID(Int_t&) const {return 0;}
 const char*  TGeant3::CurrentVolName() const {return 0;}
+Float_t TGeant3::Xsec(char*, Float_t, Int_t, Int_t) {return 0;}
 Int_t   TGeant3::NofVolumes() const {return 0;}
 Int_t   TGeant3::CurrentVolOffID(Int_t, Int_t&) const {return 0;}
 const char *TGeant3::CurrentVolOffName(Int_t) const {return 0;}
