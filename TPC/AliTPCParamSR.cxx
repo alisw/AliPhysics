@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/06/05 15:37:31  kowal2
+Added cross-talk from the wires beyond the first and the last rows
+
 Revision 1.7  2002/03/18 17:59:13  kowal2
 Chnges in the pad geometry - 3 pad lengths introduced.
 
@@ -564,7 +567,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
 	if (index[1]<fNInnerSector)
 	  cweight=prfinner[apadrow][apad];
 	else{
-	  if(row < fNRowUp1)
+	  if(row < fNRowUp1+1)
 	    cweight=prfouter1[apadrow][apad];
           else cweight=prfouter2[apadrow][apad];
 	}
