@@ -541,11 +541,11 @@ Int_t TFluka::PDGFromId(Int_t id) const
 // set methods
 //
 
-void TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imed)
+void TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imat)
 {
     strcpy(&fProcessFlag[fNbOfProc][0],flagName);
     fProcessValue[fNbOfProc] = flagValue;
-    fProcessMedium[fNbOfProc] = imed;
+    fProcessMaterial[fNbOfProc] = imat;
     fNbOfProc++;
 }
 
@@ -572,7 +572,7 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 {
     strcpy(&fCutFlag[fNbOfCut][0],cutName);
     fCutValue[fNbOfCut]  = cutValue;
-    fCutMedium[fNbOfCut] = imed;
+    fCutMaterial[fNbOfCut] = imed;
     fNbOfCut++;
 }
 
@@ -588,7 +588,7 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue)
       }
     }
     strcpy(&fCutFlag[fNbOfCut][0],cutName);
-    fCutMedium[fNbOfCut] = -1;
+    fCutMaterial[fNbOfCut] = -1;
     fCutValue[fNbOfCut++] = cutValue;
   }
   else
@@ -608,7 +608,7 @@ void TFluka::InitPhysics()
   Int_t i, j, k;
   Double_t fCut;
 
-  FILE *pAliceCoreInp, *pAliceFlukaMat, *pAliceInp, *pGaliceCuts;
+  FILE *pAliceCoreInp, *pAliceFlukaMat, *pAliceInp;
 
   Double_t zero  = 0.0;
   Double_t one   = 1.0;
@@ -623,17 +623,13 @@ void TFluka::InitPhysics()
   Int_t nmaterial =  matList->GetSize();
   fMaterials = new Int_t[nmaterial];
 	      
-	      
-
 // construct file names
 
   TString sAliceCoreInp = getenv("ALICE_ROOT");
-  TString sGaliceCuts = sAliceCoreInp;
   sAliceCoreInp +="/TFluka/input/";
   TString sAliceTmp = "flukaMat.inp";
   TString sAliceInp = GetInputFileName();
   sAliceCoreInp += GetCoreInputFileName();
-  sGaliceCuts +="/data/galice.cuts";
 
 // open files 
 
@@ -648,11 +644,6 @@ void TFluka::InitPhysics()
   if ((pAliceInp = fopen(sAliceInp.Data(),"w")) == NULL) {
       printf("\nCannot open file %s\n",sAliceInp.Data());
       exit(1);
-  }
-
-  if ((pGaliceCuts = fopen(sGaliceCuts.Data(),"r")) == NULL) {
-    printf("\nCannot open file %s\n",sGaliceCuts.Data());
-    exit(1);
   }
 
 // copy core input file 
@@ -707,8 +698,8 @@ fin:
       Float_t matMin = three;
       Float_t matMax = fLastMaterial;
       Bool_t  global = kTRUE;
-      if (fProcessMedium[i] != -1) {
-	  matMin = Float_t(fProcessMedium[i]);
+      if (fProcessMaterial[i] != -1) {
+	  matMin = Float_t(fProcessMaterial[i]);
 	  matMax = matMin;
 	  global = kFALSE;
       }
@@ -773,7 +764,7 @@ fin:
 	for (j=0; j<fNbOfProc; j++) {
 	    if ((strncmp(&fProcessFlag[j][0],"BREM",4) == 0) && 
 		(fProcessValue[j] == 1 || fProcessValue[j] == 2) &&
-		(fProcessMedium[j] == fProcessMedium[i])) {
+		(fProcessMaterial[j] == fProcessMaterial[i])) {
 		fprintf(pAliceInp,"*\n*Bremsstrahlung and pair production by muons and charged hadrons both activated\n");
 		fprintf(pAliceInp,"*Generated from call: SetProcess('BREM',1) and SetProcess('PAIR',1)\n");
 		fprintf(pAliceInp,"*Energy threshold set by call SetCut('BCUTM',cut) or set to 0.\n");
@@ -787,7 +778,7 @@ fin:
 		fCut = 0.0;
 		for (k=0; k<fNbOfCut; k++) {
 		    if (strncmp(&fCutFlag[k][0],"PPCUTM",6) == 0 &&
-			(fCutMedium[k] == fProcessMedium[i])) fCut = fCutValue[k];
+			(fCutMaterial[k] == fProcessMaterial[i])) fCut = fCutValue[k];
 		}
 		fprintf(pAliceInp,"%10.4g",fCut);
 		// fCut; = e+, e- kinetic energy threshold (in GeV) for explicit pair production.
@@ -798,7 +789,7 @@ fin:
 		fCut = 0.0;
 		for (k=0; k<fNbOfCut; k++) {
 		    if (strncmp(&fCutFlag[k][0],"BCUTM",5) == 0 &&
-			(fCutMedium[k] == fProcessMedium[i])) fCut = fCutValue[k];
+			(fCutMaterial[k] == fProcessMaterial[i])) fCut = fCutValue[k];
 		}
 		fprintf(pAliceInp,"%10.4g%10.1f%10.1f\n",fCut,matMin,matMax);
 		// fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
@@ -811,7 +802,7 @@ fin:
 		fCut = -1.0;
 		for (k=0; k<fNbOfCut; k++) {
 		    if (strncmp(&fCutFlag[k][0],"BCUTE",5) == 0 &&
-			(fCutMedium[k] == fProcessMedium[i])) fCut = fCutValue[k];
+			(fCutMaterial[k] == fProcessMaterial[i])) fCut = fCutValue[k];
 		}
 		//fCut = kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
 		// zero = not used
@@ -828,7 +819,7 @@ fin:
 		fCut = -1.0;
 		for (k=0; k<fNbOfCut; k++) {
 		    if (strncmp(&fCutFlag[k][0],"CUTGAM",6) == 0 &&
-			(fCutMedium[k] == fProcessMedium[i])) fCut = fCutValue[k];
+			(fCutMaterial[k] == fProcessMaterial[i])) fCut = fCutValue[k];
 		}
 		// fCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
 		// matMin = lower bound of the material indices in which the respective thresholds apply
@@ -860,7 +851,7 @@ fin:
 	fCut = -1.0;
 	for (j=0; j<fNbOfCut; j++) {
 	    if (strncmp(&fCutFlag[j][0],"CUTGAM",6) == 0 &&
-		(fCutMedium[j] == fProcessMedium[i])) fCut = fCutValue[j];
+		(fCutMaterial[j] == fProcessMaterial[i])) fCut = fCutValue[j];
 	}
 	// zero = energy threshold (GeV) for Compton scattering (= 0.0 : ignored)
 	// zero = energy threshold (GeV) for Photoelectric (= 0.0 : ignored)
@@ -892,7 +883,7 @@ fin:
 	  for (j = 0; j < fNbOfProc; j++) {
 	      if ((strncmp(&fProcessFlag[j][0],"PAIR",4) == 0) && 
 		  fProcessValue[j] == 1 &&
-		  (fProcessMedium[j] == fProcessMedium[i])) goto NOBREM;
+		  (fProcessMaterial[j] == fProcessMaterial[i])) goto NOBREM;
 	  }
 	  if (fProcessValue[i] == 1 || fProcessValue[i] == 2) { 
 	      fprintf(pAliceInp,"*\n*Bremsstrahlung by muons and charged hadrons is activated\n");
@@ -907,7 +898,7 @@ fin:
 	      fCut = 0.0;
 	      for (j=0; j<fNbOfCut; j++) {
 		  if (strncmp(&fCutFlag[j][0],"BCUTM",5) == 0 &&
-		      (fCutMedium[j] == fProcessMedium[i])) fCut = fCutValue[j];
+		      (fCutMaterial[j] == fProcessMaterial[i])) fCut = fCutValue[j];
 	      }
 	      // fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
 	      // matMin = lower bound of the material indices in which the respective thresholds apply
@@ -961,7 +952,7 @@ fin:
 		  TGeoMaterial* material = dynamic_cast<TGeoMaterial*> (matList->At(im));
 		  Int_t idmat = material->GetIndex();
 
-		  if (!global && idmat != fProcessMedium[i]) continue;
+		  if (!global && idmat != fProcessMaterial[i]) continue;
 		  
 		  fMaterials[idmat] = im;
 		  // Skip media with no Cerenkov properties
@@ -1110,7 +1101,7 @@ fin:
 	      fCut = 1.0e+6;
 	      for (j = 0; j < fNbOfCut; j++) {
 		  if (strncmp(&fCutFlag[j][0],"DCUTM",5) == 0 &&
-		      fCutMedium[j] == fProcessMedium[i]) fCut = fCutValue[j];
+		      fCutMaterial[j] == fProcessMaterial[i]) fCut = fCutValue[j];
 	      }
 	      // fCut = kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
 	      // zero = ignored
@@ -1466,114 +1457,163 @@ fin:
       Float_t matMin = three;
       Float_t matMax = fLastMaterial;
       Bool_t global  = kTRUE;
-      if (fCutMedium[i] != -1) {
-	  matMin = Float_t(fCutMedium[i]);
-	  matMax = matMin;
-	  global = kFALSE;
+      if (fCutMaterial[i] != -1) {
+	matMin = Float_t(fCutMaterial[i]);
+	matMax = matMin;
+	global = kFALSE;
       }
-    // cuts handled in SetProcess calls
+
+      // cuts handled in SetProcess calls
       if (strncmp(&fCutFlag[i][0],"BCUTM",5) == 0) continue;
       else if (strncmp(&fCutFlag[i][0],"BCUTE",5) == 0) continue;
       else if (strncmp(&fCutFlag[i][0],"DCUTM",5) == 0) continue;
       else if (strncmp(&fCutFlag[i][0],"PPCUTM",6) == 0) continue;
       
+      // delta-rays by electrons
+      // G4 particles: "e-"
+      // G3 default value: 10**4 GeV
+      // gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons 
+      else if (strncmp(&fCutFlag[i][0],"DCUTE",5) == 0) {
+	fprintf(pAliceInp,"*\n*Cut for delta rays by electrons\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('DCUTE',cut);\n");
+	// -fCutValue[i];
+	// zero = ignored
+	// zero = ignored
+	// matMin = lower bound of the material indices in which the respective thresholds apply
+	// matMax = upper bound of the material indices in which the respective thresholds apply
+        // loop over materials for EMFCUT FLUKA cards
+        for (j=0; j < matMax-matMin+1; j++) {
+          Int_t nreg, imat, *reglist;
+          Float_t ireg;
+          imat = (Int_t) matMin + j;
+          reglist = fGeom->GetMaterialList(imat, nreg);
+          // loop over regions of a given material
+          for (k=0; k<nreg; k++) {
+            ireg = reglist[k];
+	    fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f\n",-fCutValue[i],zero,zero,ireg,ireg);
+          }
+        }
+	fprintf(pAliceInp,"DELTARAY  %10.4g%10.3f%10.3f%10.1f%10.1f%10.1f\n",fCutValue[i], 100., 1.03, matMin, matMax, 1.0);
+	fprintf(pAliceInp,"STEPSIZE  %10.4g%10.3f%10.3f%10.1f%10.1f\n", 0.1, 1.0, 1.00, 
+	Float_t(gGeoManager->GetListOfUVolumes()->GetEntriesFast()-1), 1.0);
+      } // end of if for delta-rays by electrons
+    
+
       // gammas
       // G4 particles: "gamma"
       // G3 default value: 0.001 GeV
       // gMC ->SetCut("CUTGAM",cut); // cut for gammas
       
       else if (strncmp(&fCutFlag[i][0],"CUTGAM",6) == 0 && global) {
-	  fprintf(pAliceInp,"*\n*Cut for gamma\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
-	  // -fCutValue[i];
-	  // 7.0 = lower bound of the particle id-numbers to which the cut-off
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f\n",-fCutValue[i],7.0);
+	fprintf(pAliceInp,"*\n*Cut for gamma\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
+	// -fCutValue[i];
+	// 7.0 = lower bound of the particle id-numbers to which the cut-off
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f\n",-fCutValue[i],7.0);
       }
-
       else if (strncmp(&fCutFlag[i][0],"CUTGAM",6) == 0 && !global) {
-	  fprintf(pAliceInp,"*\n*Cut specific to  material for gamma\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
-	  // -fCutValue[i];
-	  // 7.0 = lower bound of the particle id-numbers to which the cut-off
-	  fprintf(pAliceInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 0., fCutValue[i], zero, matMin, matMax, one);
-      }
-      
+	fprintf(pAliceInp,"*\n*Cut specific to  material for gamma\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
+	// fCutValue[i];
+        // loop over materials for EMFCUT FLUKA cards
+        for (j=0; j < matMax-matMin+1; j++) {
+          Int_t nreg, imat, *reglist;
+          Float_t ireg;
+          imat = (Int_t) matMin + j;
+          reglist = fGeom->GetMaterialList(imat, nreg);
+          // loop over regions of a given material
+          for (Int_t k=0; k<nreg; k++) {
+            ireg = reglist[k];
+	    fprintf(pAliceInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", zero, fCutValue[i], zero, ireg, ireg, one);
+          }
+        }
+      } // end of else if for gamma
+
+
       // electrons
       // G4 particles: "e-"
       // ?? positrons
       // G3 default value: 0.001 GeV
       //gMC ->SetCut("CUTELE",cut); // cut for e+,e-
       else if (strncmp(&fCutFlag[i][0],"CUTELE",6) == 0 && global) {
-	  fprintf(pAliceInp,"*\n*Cut for electrons\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('CUTELE',cut);\n");
-	  // -fCutValue[i];
-	  // three = lower bound of the particle id-numbers to which the cut-off
-	  // 4.0 = upper bound of the particle id-numbers to which the cut-off
-	  // one = step length in assigning numbers
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],three,4.0,one);
+	fprintf(pAliceInp,"*\n*Cut for electrons\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('CUTELE',cut);\n");
+	// -fCutValue[i];
+	// three = lower bound of the particle id-numbers to which the cut-off
+	// 4.0 = upper bound of the particle id-numbers to which the cut-off
+	// one = step length in assigning numbers
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],three,4.0,one);
       }
-    
       else if (strncmp(&fCutFlag[i][0],"CUTELE",6) == 0 && !global) {
-	  fprintf(pAliceInp,"*\n*Cut specific to material for electrons\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('CUTELE',cut);\n");
-	  // -fCutValue[i];
-	  // three = lower bound of the particle id-numbers to which the cut-off
-	  // 4.0 = upper bound of the particle id-numbers to which the cut-off
-	  // one = step length in assigning numbers
-	  fprintf(pAliceInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -fCutValue[i], zero, zero, matMin, matMax, one);
-      }
-      
+	fprintf(pAliceInp,"*\n*Cut specific to material for electrons\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('CUTELE',cut);\n");
+	// -fCutValue[i];
+        // loop over materials for EMFCUT FLUKA cards
+        for (j=0; j < matMax-matMin+1; j++) {
+          Int_t nreg, imat, *reglist;
+          Float_t ireg;
+          imat = (Int_t) matMin + j;
+          reglist = fGeom->GetMaterialList(imat, nreg);
+          // loop over regions of a given material
+          for (k=0; k<nreg; k++) {
+            ireg = reglist[k];
+	    fprintf(pAliceInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -fCutValue[i], zero, zero, ireg, ireg, one);
+          }
+        }
+      } // end of else if for electrons
+
+    
       // neutral hadrons
       // G4 particles: of type "baryon", "meson", "nucleus" with zero charge
       // G3 default value: 0.01 GeV
       //gMC ->SetCut("CUTNEU",cut); // cut for neutral hadrons
       else if (strncmp(&fCutFlag[i][0],"CUTNEU",6) == 0 && global) {
-	  fprintf(pAliceInp,"*\n*Cut for neutral hadrons\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('CUTNEU',cut);\n");
+	fprintf(pAliceInp,"*\n*Cut for neutral hadrons\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('CUTNEU',cut);\n");
 	  
-	  // 8.0 = Neutron
-	  // 9.0 = Antineutron
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],8.0,9.0);
+	// 8.0 = Neutron
+	// 9.0 = Antineutron
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],8.0,9.0);
 	  
-	  // 12.0 = Kaon zero long
-	  // 12.0 = Kaon zero long
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],12.0,12.0);
+	// 12.0 = Kaon zero long
+	// 12.0 = Kaon zero long
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],12.0,12.0);
 	  
-	  // 17.0 = Lambda, 18.0 = Antilambda
-	  // 19.0 = Kaon zero short
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],17.0,19.0);
+	// 17.0 = Lambda, 18.0 = Antilambda
+	// 19.0 = Kaon zero short
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],17.0,19.0);
 	  
-	  // 22.0 = Sigma zero, Pion zero, Kaon zero
-	  // 25.0 = Antikaon zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],22.0,25.0);
+	// 22.0 = Sigma zero, Pion zero, Kaon zero
+	// 25.0 = Antikaon zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],22.0,25.0);
 	  
-	  // 32.0 = Antisigma zero
-	  // 32.0 = Antisigma zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],32.0,32.0);
+	// 32.0 = Antisigma zero
+	// 32.0 = Antisigma zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],32.0,32.0);
 	  
-	  // 34.0 = Xi zero
-	  // 35.0 = AntiXi zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],34.0,35.0);
+	// 34.0 = Xi zero
+	// 35.0 = AntiXi zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],34.0,35.0);
 	  
-	  // 47.0 = D zero
-	  // 48.0 = AntiD zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],47.0,48.0);
+	// 47.0 = D zero
+	// 48.0 = AntiD zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],47.0,48.0);
 	  
-	  // 53.0 = Xi_c zero
-	  // 53.0 = Xi_c zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],53.0,53.0);
+	// 53.0 = Xi_c zero
+	// 53.0 = Xi_c zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],53.0,53.0);
 	  
-	  // 55.0 = Xi'_c zero
-	  // 56.0 = Omega_c zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],55.0,56.0);
+	// 55.0 = Xi'_c zero
+	// 56.0 = Omega_c zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],55.0,56.0);
 	  
-	  // 59.0 = AntiXi_c zero
-	  // 59.0 = AntiXi_c zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],59.0,59.0);
+	// 59.0 = AntiXi_c zero
+	// 59.0 = AntiXi_c zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],59.0,59.0);
 	  
-	  // 61.0 = AntiXi'_c zero
-	  // 62.0 = AntiOmega_c zero
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],61.0,62.0);
+	// 61.0 = AntiXi'_c zero
+	// 62.0 = AntiOmega_c zero
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],61.0,62.0);
       }
       
       // charged hadrons
@@ -1581,46 +1621,46 @@ fin:
       // G3 default value: 0.01 GeV
       //gMC ->SetCut("CUTHAD",cut); // cut for charged hadrons
       else if (strncmp(&fCutFlag[i][0],"CUTHAD",6) == 0 && global) {
-	  fprintf(pAliceInp,"*\n*Cut for charged hadrons\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('CUTHAD',cut);\n");
+	fprintf(pAliceInp,"*\n*Cut for charged hadrons\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('CUTHAD',cut);\n");
 	  
-	  // 1.0 = Proton
-	  // 2.0 = Antiproton
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],1.0,2.0);
+	// 1.0 = Proton
+	// 2.0 = Antiproton
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],1.0,2.0);
 	  
-	  // 13.0 = Positive Pion, Negative Pion, Positive Kaon
-	  // 16.0 = Negative Kaon
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],13.0,16.0);
+	// 13.0 = Positive Pion, Negative Pion, Positive Kaon
+	// 16.0 = Negative Kaon
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],13.0,16.0);
 	  
-	  // 20.0 = Negative Sigma
-	  // 21.0 = Positive Sigma
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],20.0,21.0);
+	// 20.0 = Negative Sigma
+	// 21.0 = Positive Sigma
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],20.0,21.0);
 	  
-	  // 31.0 = Antisigma minus
-	  // 33.0 = Antisigma plus
-	  // 2.0 = step length
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],31.0,33.0,2.0);
+	// 31.0 = Antisigma minus
+	// 33.0 = Antisigma plus
+	// 2.0 = step length
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],31.0,33.0,2.0);
 	  
-	  // 36.0 = Negative Xi, Positive Xi, Omega minus
-	  // 39.0 = Antiomega
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],36.0,39.0);
+	// 36.0 = Negative Xi, Positive Xi, Omega minus
+	// 39.0 = Antiomega
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],36.0,39.0);
 	  
-	  // 45.0 = D plus
-	  // 46.0 = D minus
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],45.0,46.0);
+	// 45.0 = D plus
+	// 46.0 = D minus
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],45.0,46.0);
 	  
-	  // 49.0 = D_s plus, D_s minus, Lambda_c plus
-	  // 52.0 = Xi_c plus
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],49.0,52.0);
+	// 49.0 = D_s plus, D_s minus, Lambda_c plus
+	// 52.0 = Xi_c plus
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],49.0,52.0);
 	  
-	  // 54.0 = Xi'_c plus
-	  // 60.0 = AntiXi'_c minus
-	  // 6.0 = step length
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],54.0,60.0,6.0);
+	// 54.0 = Xi'_c plus
+	// 60.0 = AntiXi'_c minus
+	// 6.0 = step length
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],54.0,60.0,6.0);
 	  
-	  // 57.0 = Antilambda_c minus
-	  // 58.0 = AntiXi_c minus
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],57.0,58.0);
+	// 57.0 = Antilambda_c minus
+	// 58.0 = AntiXi_c minus
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],57.0,58.0);
       }
 
       // muons
@@ -1628,51 +1668,33 @@ fin:
       // G3 default value: 0.01 GeV
       //gMC ->SetCut("CUTMUO",cut); // cut for mu+, mu-
       else if (strncmp(&fCutFlag[i][0],"CUTMUO",6)== 0 && global) {
-	  fprintf(pAliceInp,"*\n*Cut for muons\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('CUTMUO',cut);\n");
-	  // 10.0 = Muon+
-	  // 11.0 = Muon-
-	  fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],10.0,11.0);
+	fprintf(pAliceInp,"*\n*Cut for muons\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('CUTMUO',cut);\n");
+	// 10.0 = Muon+
+	// 11.0 = Muon-
+	fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],10.0,11.0);
       }
       
-      // delta-rays by electrons
-      // G4 particles: "e-"
-      // G3 default value: 10**4 GeV
-      // gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons ???????????????
-      else if (strncmp(&fCutFlag[i][0],"DCUTE",5) == 0) {
-	  fprintf(pAliceInp,"*\n*Cut for delta rays by electrons ????????????\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('DCUTE',cut);\n");
-	  // -fCutValue[i];
-	  // zero = ignored
-	  // zero = ignored
-	  // matMin = lower bound of the material indices in which the respective thresholds apply
-	  // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-	  fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f\n",-fCutValue[i],zero,zero,matMin,matMax);
-	  fprintf(pAliceInp,"DELTARAY  %10.4g%10.3f%10.3f%10.1f%10.1f%10.1f\n",fCutValue[i], 100., 1.03, matMin, matMax, 1.0);
-	  fprintf(pAliceInp,"STEPSIZE  %10.4g%10.3f%10.3f%10.1f%10.1f\n", 0.1, 1.0, 1.00, 
-		  Float_t(gGeoManager->GetListOfUVolumes()->GetEntriesFast()-1), 1.0);
-      }
-    
       //
       // time of flight cut in seconds
       // G4 particles: all
       // G3 default value: 0.01 GeV
       //gMC ->SetCut("TOFMAX",tofmax); // time of flight cuts in seconds
       else if (strncmp(&fCutFlag[i][0],"TOFMAX",6) == 0) {
-	  fprintf(pAliceInp,"*\n*Time of flight cuts in seconds\n");
-	  fprintf(pAliceInp,"*Generated from call: SetCut('TOFMAX',tofmax);\n");
-	  // zero = ignored
-	  // zero = ignored
-	  // -6.0 = lower bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
-	  // 64.0 = upper bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
-	  fprintf(pAliceInp,"TIME-CUT  %10.4g%10.1f%10.1f%10.1f%10.1f\n",fCutValue[i]*1.e9,zero,zero,-6.0,64.0);
+	fprintf(pAliceInp,"*\n*Time of flight cuts in seconds\n");
+	fprintf(pAliceInp,"*Generated from call: SetCut('TOFMAX',tofmax);\n");
+	// zero = ignored
+	// zero = ignored
+	// -6.0 = lower bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
+	// 64.0 = upper bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
+	fprintf(pAliceInp,"TIME-CUT  %10.4g%10.1f%10.1f%10.1f%10.1f\n",fCutValue[i]*1.e9,zero,zero,-6.0,64.0);
       }
       
       else if (global){
-	  cout << "SetCut for flag=" << &fCutFlag[i][0] << " value=" << fCutValue[i] << " not yet implemented!" << endl;
+	cout << "SetCut for flag=" << &fCutFlag[i][0] << " value=" << fCutValue[i] << " not yet implemented!" << endl;
       }
       else {
-	  cout << "SetCut for flag=" << &fCutFlag[i][0] << " value=" << fCutValue[i] << " (material specific) not yet implemented!" << endl;
+	cout << "SetCut for flag=" << &fCutFlag[i][0] << " value=" << fCutValue[i] << " (material specific) not yet implemented!" << endl;
       }
       
   } //end of loop over SetCut calls
@@ -1687,7 +1709,6 @@ fin:
    fclose(pAliceCoreInp);
    fclose(pAliceFlukaMat);
    fclose(pAliceInp);
-   fclose(pGaliceCuts);
    
 } // end of InitPhysics
 

@@ -346,12 +346,12 @@ class TFluka : public TVirtualMC {
   //variables for SetProcess and SetCut
   Int_t    fNbOfProc;
   Int_t    fProcessValue[1000];
-  Int_t    fProcessMedium[1000];
+  Int_t    fProcessMaterial[1000];
   Char_t   fProcessFlag[1000][5];
   Int_t    fNbOfCut;
   Double_t fCutValue[1000];
   Char_t   fCutFlag[1000][7];
-  Int_t    fCutMedium[1000];
+  Int_t    fCutMaterial[1000];
 
   //Geometry through TGeo
   Int_t*               fMaterials;         //!Array of indices
