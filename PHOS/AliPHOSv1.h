@@ -17,6 +17,8 @@ class TFile;
 
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
+class AliPHOSQAIntCheckable ; 
+class AliPHOSQAFloatCheckable ; 
 
 class AliPHOSv1 : public AliPHOSv0 {
 
@@ -31,8 +33,10 @@ public:
   }
   virtual ~AliPHOSv1(void) ;
 
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits); 
- virtual Int_t  IsVersion(void) const {
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits) ; 
+  virtual void   FinishEvent() ;
+  virtual void   FinishPrimary() ;
+  virtual Int_t  IsVersion(void) const {
     // Gives the version number 
     return 1 ; 
   }
@@ -55,6 +59,11 @@ public:
 
 protected:
 
+  
+  AliPHOSQAIntCheckable   * fQAHitsMul ;  // QA Hits Multiplicity checkable
+  TClonesArray * fQAHitsMulB ;        // QA Hits Multiplicity / Block checkable
+  AliPHOSQAFloatCheckable * fQATotEner ;  // QA Total Energy checkable
+  TClonesArray * fQATotEnerB ;        // QA Total Energy / Block checkable
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

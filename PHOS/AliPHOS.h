@@ -6,34 +6,32 @@
 
 //_________________________________________________________________________
 //  Base Class for PHOS     
-//   PHOS consists of a PbWO4 calorimeter (EMCA) and a gazeous charged 
-//   particles detector (CPV or PPSD).
-//   The only provided method here is CreateMaterials, 
-//   which defines the materials common to all PHOS versions.   
 //                  
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 
 class TString ; 
+class TTask ;
 
 // --- AliRoot header files ---
 
 #include "AliDetector.h" 
 class AliPHOSGeometry ; 
+class AliPHOSQAChecker ;
 
 class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS();
-  AliPHOS(const char* name, const char* title="");
+  AliPHOS() : AliDetector() {fQATask=0;}
+  AliPHOS(const char* name, const char* title="") ;  
   AliPHOS(const AliPHOS & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     abort() ; 
   }
-  virtual ~AliPHOS() {}
+  virtual ~AliPHOS() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     // do not use this definition but the one below
     abort() ; 
@@ -41,18 +39,23 @@ class AliPHOS : public AliDetector {
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
   virtual  AliPHOSGeometry * GetGeometry() const = 0 ;
-
   Int_t   IsVersion(void) const { return -1 ; } 
+  AliPHOSQAChecker * QAChecker() {return fQATask;}  
   virtual void    SetTreeAddress();                
   virtual TString Version() {return TString(" ") ; } 
  
   AliPHOS & operator = (const AliPHOS & rvalue)  {
-    // assignement operator requested by coding convention but not needed
+    // assignement operator requested by coding convention
+    // but not needed
     abort() ;
     return *this ; 
   }
  
 protected:
+  
+  AliPHOSQAChecker * fQATask ; // PHOS checkers container
+  TTask * fSDTask ; // PHOS (S)Digitizer container
+  TTask * fReTask ; // PHOS Reconstructioner container
 
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 

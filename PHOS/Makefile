@@ -26,7 +26,8 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv1.cxx \
                  AliPHOSAnalyze.cxx AliPHOSFastRecParticle.cxx \
                  AliPHOSIndexToObject.cxx \
-                 AliDBPPR.cxx AliDBPPRS.cxx
+		 AliPHOSQAVirtualCheckable.cxx AliPHOSQAIntCheckable.cxx AliPHOSQAFloatCheckable.cxx\
+                 AliPHOSQAObjectCheckable.cxx AliPHOSQAChecker.cxx AliPHOSQAMeanChecker.cxx AliPHOSQAAlarm.cxx
 
 # C++ Headers
 

@@ -54,6 +54,9 @@
 #include "AliConst.h"
 #include "AliMC.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSQAIntCheckable.h"
+#include "AliPHOSQAFloatCheckable.h"
+#include "AliPHOSQAMeanChecker.h"
 
 ClassImp(AliPHOSv1)
 
@@ -62,11 +65,12 @@ AliPHOSv1::AliPHOSv1():
 AliPHOSv0()
 {
   // ctor
+ 
 }
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
-AliPHOSv0(name,title) 
+ AliPHOSv0(name,title) 
 {
   // ctor : title is used to identify the layout
   //        GPS2 = 5 modules (EMC + PPSD)
@@ -84,14 +88,50 @@ AliPHOSv0(name,title)
   // We do not want to save in TreeH the raw hits
   // But save the cumulated hits instead (need to create the branch myself)
   // It is put in the Digit Tree because the TreeH is filled after each primary
-  // and the TreeD at the end of the event (branch is set in FinishEvent() ).
+  // and the TreeD at the end of the event (branch is set in FinishEvent() ). 
   
   fHits= new TClonesArray("AliPHOSHit",1000) ;
 
   fNhits = 0 ;
 
   fIshunt     =  1 ; // All hits are associated with primary particles
+
+  Int_t nb   = fGeom->GetNModules() ; 
   
+  // create checkables 
+  fQAHitsMul   = new AliPHOSQAIntCheckable("HitsM") ; 
+  fQATotEner   = new AliPHOSQAFloatCheckable("TotEn") ; 
+  fQAHitsMulB  = new TClonesArray("AliPHOSQAIntCheckable",nb) ; 
+  fQATotEnerB  = new TClonesArray("AliPHOSQAFloatCheckable", nb); 
+  char tempo[20]  ; 
+  Int_t i ; 
+  for ( i = 0 ; i < nb ; i++ ) {
+    sprintf(tempo, "HitsMB%d", i+1) ; 
+    new( (*fQAHitsMulB)[i]) AliPHOSQAIntCheckable(tempo) ; 
+    sprintf(tempo, "TotEnB%d", i+1) ; 
+    new( (*fQATotEnerB)[i] ) AliPHOSQAFloatCheckable(tempo) ;
+  }
+
+  // create checkers 
+  // the container (QAChecker()) owns and deletes this local checker (see Hara-Kiri)
+  // the local checker can be accessed by 
+  // AliPHOSQAChecker * phos = 
+  //  (AliPHOSQAChecker*)(gROOT->GetListOfBrowsables()->FindObject("YSALICE")->FindObject("tasks/QA/PHOS"))
+  // AliPHOSQAMeanChecker * ch = (AliPHOSQAMeanChecker*)(phos->FindObject("QAHitsMul"))
+  // or directly from the root/Tasks folder 
+
+  AliPHOSQAMeanChecker * hmc  = new AliPHOSQAMeanChecker("HitsMul", 100. ,25.) ; 
+  AliPHOSQAMeanChecker * emc  = new AliPHOSQAMeanChecker("TotEner", 10. ,5.) ; 
+  AliPHOSQAMeanChecker * bhmc = new AliPHOSQAMeanChecker("HitsMulB", 100. ,5.) ; 
+  AliPHOSQAMeanChecker * bemc = new AliPHOSQAMeanChecker("TotEnerB", 2. ,.5) ; 
+
+  // associate checkables and checkers 
+  fQAHitsMul->AddChecker(hmc) ; 
+  fQATotEner->AddChecker(emc) ; 
+  for ( i = 0 ; i < nb ; i++ ) {
+    ((AliPHOSQAIntCheckable*)(*fQAHitsMulB)[i])->AddChecker(bhmc) ;
+    ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[i])->AddChecker(bemc) ; 
+  }
 }
 
 //____________________________________________________________________________
@@ -131,10 +171,70 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
          
   if ( !deja ) {
     new((*fHits)[fNhits]) AliPHOSHit(*newHit) ;
+    // get the block Id number
+    Int_t * relid = new Int_t[fGeom->GetNModules()] ; 
+    fGeom->AbsToRelNumbering(Id, relid) ;
+    // and fill the relevant QA checkable (only if in PbW04)
+    if ( relid[1] == 0 ) {
+      fQAHitsMul->Update(1) ; 
+      ((AliPHOSQAIntCheckable*)(*fQAHitsMulB)[relid[0]-1])->Update(1) ;
+    } 
+    delete relid ; 
     fNhits++ ;
   }
 
   delete newHit;
+}
+
+//____________________________________________________________________________
+void AliPHOSv1::FinishPrimary() 
+{
+  // called at the end of each track (primary) by AliRun
+  // hits are reset for each new track
+  // accumulate the total hit-multiplicity
+//   if ( fQAHitsMul ) 
+//     fQAHitsMul->Update( fHits->GetEntriesFast() ) ; 
+
+}
+
+//____________________________________________________________________________
+void AliPHOSv1::FinishEvent() 
+{
+  // called at the end of each event by AliRun
+  // accumulate the hit-multiplicity and total energy per block 
+  // if the values have been updated check it
+
+  if ( fQATotEner ) { 
+    if ( fQATotEner->HasChanged() ) {
+      fQATotEner->CheckMe() ; 
+      fQATotEner->Reset() ; 
+    }
+  }
+  
+  Int_t i ; 
+  if ( fQAHitsMulB && fQATotEnerB ) {
+    for (i = 0 ; i <  fGeom->GetNModules() ; i++) {
+      AliPHOSQAIntCheckable * ci = (AliPHOSQAIntCheckable*)(*fQAHitsMulB)[i] ;  
+      AliPHOSQAFloatCheckable* cf = (AliPHOSQAFloatCheckable*)(*fQATotEnerB)[i] ; 
+      if ( ci->HasChanged() ) { 
+	ci->CheckMe() ;  
+	ci->Reset() ;
+      } 
+      if ( cf->HasChanged() ) { 
+	cf->CheckMe() ; 
+	cf->Reset() ;
+      }
+    } 
+  }
+  
+  // check the total multiplicity 
+  
+  if ( fQAHitsMul ) {
+    if ( fQAHitsMul->HasChanged() ) { 
+      fQAHitsMul->CheckMe() ; 
+      fQAHitsMul->Reset() ; 
+    }
+  } 
 }
 
 //____________________________________________________________________________
@@ -296,6 +396,10 @@ void AliPHOSv1::StepManager(void)
     if ( xyze[3] != 0 ) {  // Track is inside the crystal and deposits some energy 
 
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
+      
+      // fill the relevant QA Checkables
+      fQATotEner->Update( xyze[3] ) ;                                             // total energy in PHOS
+      ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[relid[0]-1])->Update( xyze[3] ) ; // energy in this block  
 
       if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
 	relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();      
@@ -348,6 +452,8 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   Float_t pZ    =-p.Pz();
   Float_t pNorm = p.Py();
   Float_t eloss = kdEdx;
+
+//    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
 
   Float_t dZY   = pZ/pNorm * fGeom->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * fGeom->GetCPVGasThickness();

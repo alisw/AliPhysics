@@ -27,10 +27,9 @@
 
 // --- ROOT system ---
 class TFile;
-#include "TTree.h"
-#include "TTask.h"
 #include "TROOT.h"
-#include "TFolder.h"
+#include "TTree.h"
+#include "TFolder.h" 
 
 // --- Standard library ---
 
@@ -42,26 +41,76 @@ class TFile;
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSQAChecker.h" 
 
 ClassImp(AliPHOS)
-
-
 //____________________________________________________________________________
-  AliPHOS::AliPHOS():AliDetector()
+AliPHOS:: AliPHOS(const char* name, const char* title=""): AliDetector(name, title) 
 {
-  // ctor. creates task PHOS
-  TTask * phosTask = new TTask("PHOS","");
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(phosTask) ; 
+  // create the ALICE TFolder
+  // create the ALICE TTasks
+  //  add the Alice QA TTAsks 
+  // create the ALICE main TFolder
+  //  add the Alice QA Alarms
+  // this should be done of course by AliRun
+
+  TFolder * alice = new TFolder(); 
+  alice->SetNameTitle("YSAlice", "Alice Folder") ; 
+  gROOT->GetListOfBrowsables()->Add(alice) ;
+
+  TFolder * aliceF  = alice->AddFolder("folders", "Alice memory Folder") ; 
+  //  make it the owner of the objects that it contains
+  aliceF->SetOwner() ;
+  TFolder * alarmsF = aliceF->AddFolder("QAAlarms", "Alarms raised by QA check") ; 
+  //  make it the owner of the objects that it contains
+  alarmsF->SetOwner() ;
+  TFolder * aliceT  = alice->AddFolder("tasks", "Alice tasks Folder") ; 
+  //  make it the owner of the objects that it contains
+  aliceT->SetOwner() ;
+
+  TTask * aliceQA = new TTask("QA", "Alice QA tasks") ;
+  aliceT->Add(aliceQA); 
+ 
+  TTask * aliceDi = new TTask("(S)Digitizer", "Alice SDigitizer & Digitizer") ;
+  aliceT->Add(aliceDi); 
+
+  TTask * aliceRe = new TTask("Reconstructioner", "Alice Reconstructioner") ;
+  aliceT->Add(aliceRe); 
+
+  char * tempo = new char[80] ; 
+
+  // creates the PHOSQA and adds it to alice main QA task
+  sprintf(tempo, "%sCheckers container",GetName() ) ; 
+  fQATask = new AliPHOSQAChecker(GetName(), tempo); 
+  aliceQA->Add(fQATask) ; 
+
+  // creates the PHOS(S)Digitizer and adds it to alice main (S)Digitizer task 
+  sprintf(tempo, "%sDigitizers container",GetName() ) ; 
+  fSDTask = new AliPHOSQAChecker(GetName(), tempo);   
+  aliceDi->Add(fSDTask) ; 
+  // creates the PHOS reconstructioner and adds it to alice main Reconstructioner task 
+  sprintf(tempo, "%sReconstructioner container",GetName() ) ; 
+  fReTask = new AliPHOSQAChecker(GetName(), tempo); 
+  aliceRe->Add(fReTask) ; 
+
+  delete tempo ;  
+
+  // creates the PHOSQA alarm folder
+  alarmsF->AddFolder("PHOS", "QA alarms from PHOS") ; 
 }
-
 //____________________________________________________________________________
-  AliPHOS::AliPHOS(const char* name, const char* title=""):AliDetector(name, title)
-{
-  // ctor. creates task PHOS
-  TTask * phosTask = new TTask("PHOS","");
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(phosTask) ; 
+AliPHOS::~AliPHOS() 
+{  
+  // remove the alice folder and alice QA task that PHOS creates instead of AliRun
+  
+  // remove and delete the PHOS QA tasks
+  TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ; 
+  TTask * aliceQA = (TTask*)alice->FindObject("tasks/QA") ; 
+  fQATask->GetListOfTasks()->Delete() ;
+  aliceQA->GetListOfTasks()->Remove(fQATask) ; 
+  delete fQATask ;  
+  
+  // remove and delete aliceQA (should be done by AliRun) 
 }
 
 //____________________________________________________________________________
@@ -244,7 +293,7 @@ void AliPHOS::CreateMaterials()
 
   // The Silicon of the pin diode to read out the calorimeter crystal               -> idtmed[705] 
  AliMedium(6, "Si PIN       $", 6, 0,
-	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.01, 0.00001, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.01, 0.01, 0, 0) ;
 
  // The thermo insulating material of the box which contains the calorimeter module -> idtmed[706]
   AliMedium(7, "Thermo Insul.$", 7, 0,
@@ -303,21 +352,8 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[701], "LOSS",3.) ;
   gMC->Gstpar(idtmed[701], "DRAY",1.) ;
   // --- and in PIN diode
-  //setting local cuts to 10 keV OHO 20.04.2001
   gMC->Gstpar(idtmed[705], "LOSS",3) ;
   gMC->Gstpar(idtmed[705], "DRAY",1) ;
-  gMC->Gstpar(idtmed[705], "STRA",1.);
-  gMC->Gstpar(idtmed[705], "CUTGAM",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "CUTELE",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "CUTNEU",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "CUTHAD",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "CUTMUO",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "BCUTE",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "BCUTM",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "DCUTE",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "DCUTM",1.E-5) ;
-  gMC->Gstpar(idtmed[705], "PPCUTM",1.E-5) ;
-  //
   // --- and in the passive convertor
   gMC->Gstpar(idtmed[712], "LOSS",3) ;
   gMC->Gstpar(idtmed[712], "DRAY",1) ;
@@ -340,7 +376,8 @@ void AliPHOS::CreateMaterials()
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
-  // called by AliRun
+
+
   // TBranch *branch;
   //  AliDetector::SetTreeAddress();
 
