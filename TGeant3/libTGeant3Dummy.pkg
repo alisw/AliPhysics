@@ -4,4 +4,5 @@ HDRS:= TGeant3.h
 
 DHDR:=TGeant3LinkDef.h
 
+EINCLUDE = GEANT321/geant321 GEANT321
 
