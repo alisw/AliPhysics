@@ -41,8 +41,13 @@
 #pragma link C++ class AliHBTQSideLCMSCorrelFctn+;
 #pragma link C++ class AliHBTQtLCMSCorrelFctn+;
 #pragma link C++ class AliHBTQtCorrelFctn+;
+#pragma link C++ class AliHBTQOutQSideFctn+;
+#pragma link C++ class AliHBTQOutQLongFctn+;
+#pragma link C++ class AliHBTQSideQLongFctn+;
+
 
 #pragma link C++ class AliHBTAvSeparCorrelFctn+;
+#pragma link C++ class AliHBTAvSeparVsQInvCorrelFctn+;
 
 #pragma link C++ class AliHBTasCorrFctn+; //gg
 #pragma link C++ class AliHBTQOutasCorrFctn+;
@@ -178,6 +183,9 @@
 #pragma link C++ class AliHBTMonRtDistributionVsVzFctn+;
 
 #pragma link C++ class AliHBTAnalysisStavinskyMixing+;
+
+#pragma link C++ class AliHBTMonSplittingQosl+;
+#pragma link C++ class AliHBTMonSplittingDptDthetaDphi+;
 
 //#pragma link C++ class AliHBTGoComPair+;
 #endif

@@ -492,9 +492,16 @@ void AliHBTWeightQOutSQideQLongFctn::ProcessSameEventParticles(AliHBTPair* track
          weight=partpair->GetWeight();//here we take weight from the particle pair
       }   
 //    Double_t weight=weightHBT*weightPID;
-    Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
-    Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
-    Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
+    Double_t out = trackpair->GetQOutLCMS();
+    Double_t side = trackpair->GetQSideLCMS();
+    Double_t lon = trackpair->GetQLongLCMS();
+    
+    if (fAbs)
+     {
+       out = TMath::Abs(out);
+       side = TMath::Abs(side);
+       lon = TMath::Abs(lon);
+     }
     
     fNumerator->Fill(out,side,lon,weight);//here we fill in q's corresponding to track pair 
                                           //weight calculated for the simulated one
@@ -509,11 +516,18 @@ void AliHBTWeightQOutSQideQLongFctn::ProcessDiffEventParticles(AliHBTPair* track
 //  partpair  = CheckPair(partpair);
   if ( trackpair && partpair)  
    {
-     Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
-     Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
-     Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
+    Double_t out = trackpair->GetQOutLCMS();
+    Double_t side = trackpair->GetQSideLCMS();
+    Double_t lon = trackpair->GetQLongLCMS();
+    
+    if (fAbs)
+     {
+       out = TMath::Abs(out);
+       side = TMath::Abs(side);
+       lon = TMath::Abs(lon);
+     }
    
-     fDenominator->Fill(out,side,lon);
+    fDenominator->Fill(out,side,lon);
    }
 }
 /*************************************************************/

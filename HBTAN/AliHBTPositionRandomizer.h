@@ -46,60 +46,81 @@ class AliHBTPositionRandomizer: public AliReader
    void Randomize(AliAOD* event) const;
    void SetEventVertex(Double_t x, Double_t y,Double_t z);
    
-   void SetGaussianBall(Double_t r);
-   void SetGaussianBall(Double_t rx, Double_t ry, Double_t rz);
-   void SetCyllinderSurface(Double_t r, Double_t l);
-   void SetEllipse(Double_t rmin, Double_t rmax);
+   void SetRandomizer(Int_t pid,AliHBTRndm* rndm);
+   
+   void SetGaussianBall(Int_t pid, Double_t r, Double_t meantime, Double_t sigmatime);
+   void SetGaussianBall(Int_t pid, Double_t rx, Double_t ry, Double_t rz, Double_t meantime, Double_t sigmatime);
+   void SetCyllinderSurface(Int_t pid, Double_t r, Double_t l);
+   void SetEllipse(Int_t pid, Double_t rmin, Double_t rmax);
    
    void AddToPosition(Bool_t flag){fAddToExistingPos = flag;}
    void RandomizeTracks(Bool_t flag){fRandomizeTracks = flag;}
    
+   AliHBTRndm* GetRandomizer(Int_t pdg) const;
+   Int_t GetRandomizerIndex(Int_t pdg) const;
    
  protected:
    void Randomize(Double_t& x,Double_t& y,Double_t&z,AliVAODParticle*p);
    Int_t ReadNext(){return (fReader)?fReader->Next():1;}
    
  private:
-   AliReader* fReader;      // Pointer to reader
-   AliHBTRndm*   fRandomizer;  // Pointer to class that performs randomization according to some model
+   AliReader*   fReader;      // Pointer to reader
+   AliHBTRndm*  fDefaultRandomizer;  // Pointer to class that performs randomization according to some model - default one
+   TObjArray*   fRandomizers;//array with randomizers - each particle type can have different randomization parameters/model
+   Int_t        fNPid;//number of randomizers defined in fPid and fRandomizers
+   Int_t*       fPids;//[fgkNumberOfPids]
    
-   Int_t    fModel;            //Defines what model is used
-   
-   Bool_t   fAddToExistingPos;  //Determines if randomized position should be added to previous one, or overwrite old one
-   Bool_t   fOnlyParticlesFromVertex; //Determines if randomization should be performed for particles from vertex
+   Bool_t       fAddToExistingPos;  //Determines if randomized position should be added to previous one, or overwrite old one
+   Bool_t       fOnlyParticlesFromVertex; //Determines if randomization should be performed for particles from vertex
 
-   Bool_t   fRandomizeTracks; //Determines if tracks should also be randimized 
+   Bool_t       fRandomizeTracks; //Determines if tracks should also be randimized 
    
-   Double_t fVX; //vertex position
-   Double_t fVY; //vertex position
-   Double_t fVZ; //vertex position
+   Double_t     fVX; //vertex position
+   Double_t     fVY; //vertex position
+   Double_t     fVZ; //vertex position
+   
+   static const Int_t fgkNumberOfPids;//size of fPid array
    
    ClassDef(AliHBTPositionRandomizer,1)
 };
+
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
 
 class AliHBTRndm: public TObject
 {
   public:
    AliHBTRndm(){}
    virtual ~AliHBTRndm(){}
-   virtual void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*p) const = 0;
+   virtual void Randomize(Double_t& x, Double_t& y, Double_t& z, Double_t& t, AliVAODParticle*p) const = 0;
      ClassDef(AliHBTRndm,1)
 };
+
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
 
 class AliHBTRndmGaussBall: public AliHBTRndm
 {
   public:
    AliHBTRndmGaussBall();
-   AliHBTRndmGaussBall(Float_t r);
-   AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz);
+   AliHBTRndmGaussBall(Float_t r, Double_t meantime, Double_t sigmatime);
+   AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz, Double_t meantime, Double_t sigmatime);
    virtual ~AliHBTRndmGaussBall(){}
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*/*particle*/) const;
+   void Randomize(Double_t& x,Double_t& y,Double_t&z, Double_t& t, AliVAODParticle*/*particle*/) const;
   private:
    Float_t fRx; //Dispertion in x 
    Float_t fRy; //Dispertion in y
    Float_t fRz; //Dispertion in z
+   Float_t fTmean; //Mean emision time in t
+   Float_t fTsigma; //Dispertion in t
    ClassDef(AliHBTRndmGaussBall,1)
 };
+
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
 
 class AliHBTRndmCyllSurf: public AliHBTRndm
 {
@@ -108,13 +129,17 @@ class AliHBTRndmCyllSurf: public AliHBTRndm
    AliHBTRndmCyllSurf(Float_t r, Float_t l):fR(r),fL(l){}
    virtual ~AliHBTRndmCyllSurf(){}
    
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle* particle) const;
+   void Randomize(Double_t& x,Double_t& y,Double_t&z, Double_t& /*t*/t, AliVAODParticle* particle) const;
   private:
    Float_t fR; //Redius of cylinder
    Float_t fL; //Length of cylinder
  
    ClassDef(AliHBTRndmCyllSurf,1)
 };
+
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
 
 class AliHBTRndmEllipse: public AliHBTRndm
 {
@@ -123,12 +148,12 @@ class AliHBTRndmEllipse: public AliHBTRndm
    AliHBTRndmEllipse(Float_t rmin, Float_t rmax);
    virtual ~AliHBTRndmEllipse(){}
    
-   void Randomize(Double_t& x,Double_t& y, Double_t& z, AliVAODParticle* particle) const;
+   void Randomize(Double_t& x,Double_t& y, Double_t& z,  Double_t& , AliVAODParticle* particle) const;
   private:
    Float_t fRmin; //Radius in x direction
    Float_t fRmax; //Radius in y direction
  
-   ClassDef(AliHBTRndmEllipse,1)
+   ClassDef(AliHBTRndmEllipse,2)
 };
 
 

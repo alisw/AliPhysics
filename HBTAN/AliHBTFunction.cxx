@@ -42,7 +42,8 @@ ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction():
  fPairCut(new AliAODPairEmptyCut()), //dummy cut  
- fWriteNumAndDen(kFALSE)
+ fWriteNumAndDen(kFALSE),
+ fAbs(kFALSE)
 {
 //Default constructor
 }
@@ -51,7 +52,8 @@ AliHBTFunction::AliHBTFunction():
 AliHBTFunction::AliHBTFunction(const char* name,const char* title):
  TNamed(name,title),
  fPairCut(new AliAODPairEmptyCut()), //dummy cut  
- fWriteNumAndDen(kFALSE)
+ fWriteNumAndDen(kFALSE),
+ fAbs(kFALSE)
 {
 //Constructor  
 }
@@ -60,7 +62,8 @@ AliHBTFunction::AliHBTFunction(const char* name,const char* title):
 AliHBTFunction::AliHBTFunction(const AliHBTFunction & source):
  TNamed(source),
  fPairCut((AliAODPairCut*)source.fPairCut->Clone()),
- fWriteNumAndDen(source.fWriteNumAndDen)
+ fWriteNumAndDen(source.fWriteNumAndDen),
+ fAbs(source.fAbs)
 {
 // Copy constructor needed by the coding conventions
 }
@@ -81,6 +84,7 @@ AliHBTFunction & AliHBTFunction::operator= (const AliHBTFunction & source)
  // Assignment needed by the coding conventions
   delete fPairCut;
   fPairCut = (AliAODPairCut*)source.fPairCut->Clone();
+  fAbs = source.fAbs;
   return * this;
 }
 

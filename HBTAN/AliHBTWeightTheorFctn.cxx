@@ -210,15 +210,31 @@ AliHBTWeightTheorOSLFctn::AliHBTWeightTheorOSLFctn(Int_t nXbins, Double_t maxXva
 
 /*************************************************************/
 
+void AliHBTWeightTheorOSLFctn::GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const
+{ 
+//returns values of a functions for a given pair of particles
+  x=pair->GetQOutLCMS(); 
+  y=pair->GetQSideLCMS(); 
+  z=pair->GetQLongLCMS();
+
+  if (fAbs)
+   {
+     x = TMath::Abs(x);
+     y = TMath::Abs(y);
+     z = TMath::Abs(z);
+   }
+  
+} 
+
 void AliHBTWeightTheorOSLFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
 //Fills numerator
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   Double_t weight = partpair->GetWeight();
-  Double_t out = TMath::Abs(partpair->GetQOutLCMS());
-  Double_t side = TMath::Abs(partpair->GetQSideLCMS());
-  Double_t lon = TMath::Abs(partpair->GetQLongLCMS());
+  Double_t out, side, lon;
+  
+  GetValues(partpair, out, side, lon);
 
 /*  
   if (out < 0.01)

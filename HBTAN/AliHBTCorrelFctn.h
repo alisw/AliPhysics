@@ -49,12 +49,10 @@ class AliHBTOutSideLongFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunc
     virtual  ~AliHBTOutSideLongFctn(){}
 
     TH1* GetResult();
-    void UseAbsoluteValues(Bool_t flag){fAbs = flag;}
  
   protected:
     void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const;
     
-    Bool_t fAbs;//flag indicating if absolute values of qout, qside and qlong should be histogrammed
   ClassDef(AliHBTOutSideLongFctn,1)
 };
 
@@ -178,4 +176,92 @@ class AliHBTAvSeparCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFu
     ClassDef(AliHBTAvSeparCorrelFctn,2)
 };
 
+/*************************************************************************************/ 
+
+class AliHBTAvSeparVsQInvCorrelFctn: public AliHBTOnePairFctn2D, public AliHBTCorrelFunction
+{
+//   Correlation Function of 2*KStar
+ public:
+   AliHBTAvSeparVsQInvCorrelFctn(Int_t nXbins = 10, Double_t maxXval = 0.05, Double_t minXval = 0.,
+                           Int_t nYbins = 20, Double_t maxYval = 20, Double_t minYval = 0.0);
+   virtual ~AliHBTAvSeparVsQInvCorrelFctn(){};
+   TH1* GetResult();
+ protected:
+   void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y) const
+    {
+     y = pair->GetAvarageDistance();
+     x = pair->GetQInv();
+    }
+ private:  
+    ClassDef(AliHBTAvSeparVsQInvCorrelFctn,1)
+};
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+
+class AliHBTQOutQSideFctn: public AliHBTOnePairFctn2D, public AliHBTCorrelFunction
+{
+
+  //  friend class AliHBTOnePairFctn1D;
+ public:
+  AliHBTQOutQSideFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                      Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
+  virtual ~AliHBTQOutQSideFctn(){};
+  TH1* GetResult();
+      
+ protected:
+   void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y) const
+    {
+     y = pair->GetQSideLCMS();
+     x = pair->GetQOutLCMS();
+    }
+  ClassDef(AliHBTQOutQSideFctn,1)
+ 
+};
+/*************************************************************************************/ 
+
+class AliHBTQOutQLongFctn: public AliHBTOnePairFctn2D, public AliHBTCorrelFunction
+{
+
+  //  friend class AliHBTOnePairFctn1D;
+ public:
+  AliHBTQOutQLongFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                              Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
+  virtual ~AliHBTQOutQLongFctn(){};
+  TH1* GetResult();
+      
+ protected:
+   void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y) const
+    {
+     y = pair->GetQLongLCMS();
+     x = pair->GetQOutLCMS();
+    }
+  ClassDef(AliHBTQOutQLongFctn,1)
+ 
+};
+/*************************************************************************************/ 
+
+class AliHBTQSideQLongFctn: public AliHBTOnePairFctn2D, public AliHBTCorrelFunction
+{
+
+  //  friend class AliHBTOnePairFctn1D;
+ public:
+  AliHBTQSideQLongFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                             Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
+  virtual ~AliHBTQSideQLongFctn(){};
+  TH1* GetResult();
+      
+ protected:
+   void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y) const
+    {
+     y = pair->GetQLongLCMS();
+     x = pair->GetQSideLCMS();
+    }
+  ClassDef(AliHBTQSideQLongFctn,1)
+ 
+};
+
 #endif
+
+
+

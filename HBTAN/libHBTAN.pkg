@@ -9,7 +9,8 @@ AliHBTWeightsPID.cxx            AliHBTWeightTheorFctn.cxx \
 AliHBTPositionRandomizer.cxx    \
 AliHBTCorrFitFctn.cxx AliHBTPIDPurityFctns.cxx \
 AliHBTCorrectQInvCorrelFctn.cxx AliHBTCorrectOSLCorrelFctn.cxx \
-AliHBTasCorrFctn.cxx AliHBTWeightasCorrFctn.cxx
+AliHBTasCorrFctn.cxx AliHBTWeightasCorrFctn.cxx \
+AliHBTMonSplitting.cxx
 
 FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 

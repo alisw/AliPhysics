@@ -396,7 +396,7 @@ Int_t AliHBTAnalysis::ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim)
      /******   filling numerators    ********/
      /***************************************/
      if ( (j%fDisplayMixingInfo) == 0)
-        Info("ProcessTracksAndParticles",
+        Info("ProcessRecAndSim",
              "Mixing particle %d with particles from the same event",j);
 
      part1= partEvent->GetParticle(j);
@@ -474,7 +474,7 @@ Int_t AliHBTAnalysis::ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim)
 
         m++;
         if ( (j%fDisplayMixingInfo) == 0)
-           Info("ProcessTracksAndParticles",
+           Info("ProcessRecAndSim",
                 "Mixing particle %d from current event with particles from event %d",j,-m);
 
         for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
@@ -543,102 +543,104 @@ Int_t AliHBTAnalysis::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim)
 
   if ( !partEvent )
    {
-     Error("ProcessRecAndSim","Can not get event");
+     Error("ProcessSim","Can not get event");
      return 1;
    }
 
 
   for (Int_t j = 0; j<partEvent->GetNumberOfParticles() ; j++)
    {
-     /***************************************/
-     /******   Looping same events   ********/
-     /******   filling numerators    ********/
-     /***************************************/
-     if ( (j%fDisplayMixingInfo) == 0)
-        Info("ProcessTracksAndParticles",
-             "Mixing particle %d with particles from the same event",j);
+   /***************************************/
+   /******   Looping same events   ********/
+   /******   filling numerators    ********/
+   /***************************************/
+   if ( (j%fDisplayMixingInfo) == 0)
+      Info("ProcessSim",
+           "Mixing particle %d with particles from the same event",j);
 
-     part1= partEvent->GetParticle(j);
+   part1= partEvent->GetParticle(j);
 
-     Bool_t firstcut = fPairCut->GetFirstPartCut()->Rejected(part1);
+   Bool_t firstcut = fPairCut->GetFirstPartCut()->Rejected(part1);
 
-     if (fBufferSize != 0) 
-       if ( (firstcut == kFALSE) || ( fPairCut->GetSecondPartCut()->Rejected(part1) == kFALSE ) )
-        {
-          //accepted by any cut
-          // we have to copy because reader keeps only one event
-
-          partEvent1->AddParticle(part1);
-        }
-
-     if (firstcut) continue;
-
-     for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
-       fParticleMonitorFunctions[ii]->Process(part1);
-
-     if ( fNParticleFunctions == 0 ) continue;
-
-     for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
+   if (fBufferSize != 0) 
+     if ( (firstcut == kFALSE) || ( fPairCut->GetSecondPartCut()->Rejected(part1) == kFALSE ) )
       {
-        part2= partEvent->GetParticle(k);
-        if (part1->GetUID() == part2->GetUID()) continue;
-        partpair->SetParticles(part1,part2);
+        //accepted by any cut
+        // we have to copy because reader keeps only one event
 
-           if(fPairCut->Rejected(partpair)) //check pair cut
-            { //do not meets crietria of the 
-              if( fPairCut->Rejected((AliHBTPair*)partpair->GetSwappedPair()) ) continue;
-              else tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
-            }
-           else
-            {
-              tmppartpair = partpair;
-            }
+        partEvent1->AddParticle(part1);
+      }
 
-        for(ii = 0;ii<fNParticleFunctions;ii++)
-               fParticleFunctions[ii]->ProcessSameEventParticles(tmppartpair);
+   if (firstcut) continue;
 
-       //end of 2nd loop over particles from the same event  
-      }//for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
+   for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
+     fParticleMonitorFunctions[ii]->Process(part1);
 
-     /***************************************/
-     /***** Filling denominators    *********/
-     /***************************************/
-     if (fBufferSize == 0) continue;
+   if ( fNParticleFunctions == 0 ) continue;
 
-     fPartBuffer->ResetIter();
-         Int_t m = 0;
-         while (( partEvent2 = fPartBuffer->Next() ))
-          {
-            m++;
-            if ( (j%fDisplayMixingInfo) == 0)
-               Info("ProcessParticles",
-                    "Mixing particle %d from current event with particles from event %d",j,-m);
-            for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
-              {
+   for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
+    {
+      part2= partEvent->GetParticle(k);
+      if (part1->GetUID() == part2->GetUID()) continue;
+      partpair->SetParticles(part1,part2);
 
-                part2= partEvent2->GetParticle(l);
-                partpair->SetParticles(part1,part2);
-
-                if( fPairCut->Rejected(partpair) ) //check pair cut
-                  { //do not meets crietria of the 
-                    if( fPairCut->Rejected((AliHBTPair*)partpair->GetSwappedPair()) )
-                      continue;
-                    else 
-                     {
-                       tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
-                     }
-                  }
-                else
-                 {//meets criteria of the pair cut
-                  tmppartpair = partpair;
-                 }
-                 
-                for(ii = 0;ii<fNParticleFunctions;ii++)
-                  fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
-                 
-             }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
+         if(fPairCut->Rejected(partpair)) //check pair cut
+          { //do not meets crietria of the 
+            if( fPairCut->Rejected((AliHBTPair*)partpair->GetSwappedPair()) ) continue;
+            else tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
           }
-       }
+         else
+          {
+            tmppartpair = partpair;
+          }
+
+      for(ii = 0;ii<fNParticleFunctions;ii++)
+             fParticleFunctions[ii]->ProcessSameEventParticles(tmppartpair);
+
+     //end of 2nd loop over particles from the same event  
+    }//for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
+
+   /***************************************/
+   /***** Filling denominators    *********/
+   /***************************************/
+   if (fBufferSize == 0) continue;
+
+   fPartBuffer->ResetIter();
+       Int_t m = 0;
+       while (( partEvent2 = fPartBuffer->Next() ))
+        {
+          m++;
+          if ( (j%fDisplayMixingInfo) == 0)
+             Info("ProcessSim",
+                  "Mixing particle %d from current event with particles from event %d",j,-m);
+          for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
+            {
+
+              part2= partEvent2->GetParticle(l);
+              partpair->SetParticles(part1,part2);
+
+              if( fPairCut->Rejected(partpair) ) //check pair cut
+                { //do not meets crietria of the 
+                  if( fPairCut->Rejected((AliHBTPair*)partpair->GetSwappedPair()) )
+                    continue;
+                  else 
+                   {
+                     tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
+                   }
+                }
+              else
+               {//meets criteria of the pair cut
+                tmppartpair = partpair;
+               }
+
+              for(ii = 0;ii<fNParticleFunctions;ii++)
+                fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
+
+           }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
+        }
+     }
+
+       
   delete fPartBuffer->Push(partEvent1);
  //end of loop over events  
   return 0;

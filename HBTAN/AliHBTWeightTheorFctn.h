@@ -122,8 +122,7 @@ class AliHBTWeightTheorOSLFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelF
     void   ProcessSameEventParticles(AliHBTPair* partpair);
   
   protected:
-    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const
-      { x=TMath::Abs(pair->GetQOutLCMS()); y=TMath::Abs(pair->GetQSideLCMS()); z=TMath::Abs(pair->GetQLongLCMS());} 
+    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const;
 
     ClassDef(AliHBTWeightTheorOSLFctn,2)
 };

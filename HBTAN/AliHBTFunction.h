@@ -48,6 +48,7 @@ class AliHBTFunction: public TNamed
     void Rename(const Char_t * name, const Char_t * title); //renames and retitle the function and histograms
     
     void SetPairCut(AliAODPairCut* cut);
+    void UseAbsoluteValues(Bool_t flag){fAbs = flag;}
     
     virtual AliHBTPair* CheckPair(AliHBTPair* pair);
     void  SetWriteNumAndDen(Bool_t flag = kFALSE){fWriteNumAndDen = flag;}
@@ -55,6 +56,8 @@ class AliHBTFunction: public TNamed
     virtual void BuildHistos() = 0;//builds default histograms
     AliAODPairCut*   fPairCut;     //pair cut
     Bool_t           fWriteNumAndDen; //flag indicating whether numerator and denominator should be writted together with a result
+    Bool_t           fAbs;//flag indicating if absolute values of qout, qside and qlong should be histogrammed
+    
     ClassDef(AliHBTFunction,3)
 };
 /******************************************************************/

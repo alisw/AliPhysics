@@ -82,9 +82,16 @@ void AliHBTTwoTrackEffFctnPxPyPz::GetValues(AliHBTPair* pair, Double_t& x, Doubl
 {
 //Returns values to be histogrammed
 //it does not 
- x = TMath::Abs(pair->GetDeltaPx());
- y = TMath::Abs(pair->GetDeltaPy());
- z = TMath::Abs(pair->GetDeltaPz());
+ x = pair->GetDeltaPx();
+ y = pair->GetDeltaPy();
+ z = pair->GetDeltaPz();
+
+ if (fAbs)
+  {
+    x = TMath::Abs(x);
+    y = TMath::Abs(y);
+    z = TMath::Abs(z);
+  }
 }
 /******************************************************************/
 
@@ -130,9 +137,17 @@ void AliHBTTwoTrackEffFctnPtThetaPhi::GetValues(AliHBTPair* pair, Double_t& x, D
 {
 //Returns values to be histogrammed
 //it does not 
- x = TMath::Abs(pair->GetDeltaPt());
- y = TMath::Abs(pair->GetDeltaTheta());
- z = TMath::Abs(pair->GetDeltaPhi());
+ x = pair->GetDeltaPt();
+ y = pair->GetDeltaTheta();
+ z = pair->GetDeltaPhi();
+ 
+ if (fAbs)
+  {
+    x = TMath::Abs(x);
+    y = TMath::Abs(y);
+    z = TMath::Abs(z);
+  }
+ 
 }
 /******************************************************************/
 

@@ -520,10 +520,18 @@ void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTP
 //  partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
 
+
   Double_t weight = partpair->GetWeight();
-  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
-  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
-  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
+  Double_t out = trackpair->GetQOutLCMS();
+  Double_t side = trackpair->GetQSideLCMS();
+  Double_t lon = trackpair->GetQLongLCMS();
+
+  if (fAbs)
+   {
+     out = TMath::Abs(out);
+     side = TMath::Abs(side);
+     lon = TMath::Abs(lon);
+   }
   fNumerator->Fill(out,side,lon,weight);
 }
 /*************************************************************/
@@ -539,9 +547,16 @@ void AliHBTWeightQOutSQideQLongFctnPerfectPID::ProcessDiffEventParticles(AliHBTP
 //  partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
 
-  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
-  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
-  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
+  Double_t out = trackpair->GetQOutLCMS();
+  Double_t side = trackpair->GetQSideLCMS();
+  Double_t lon = trackpair->GetQLongLCMS();
+
+  if (fAbs)
+   {
+     out = TMath::Abs(out);
+     side = TMath::Abs(side);
+     lon = TMath::Abs(lon);
+   }
   fDenominator->Fill(out,side,lon);
 }
 /******************************************************************/
@@ -584,9 +599,16 @@ void AliHBTQOutSQideQLongFctnPerfectPID::ProcessSameEventParticles(AliHBTPair* t
 //  partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   
-  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
-  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
-  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
+  Double_t out = trackpair->GetQOutLCMS();
+  Double_t side = trackpair->GetQSideLCMS();
+  Double_t lon = trackpair->GetQLongLCMS();
+
+  if (fAbs)
+   {
+     out = TMath::Abs(out);
+     side = TMath::Abs(side);
+     lon = TMath::Abs(lon);
+   }
   fNumerator->Fill(out,side,lon);
 }
 /*************************************************************/
@@ -602,9 +624,16 @@ void AliHBTQOutSQideQLongFctnPerfectPID::ProcessDiffEventParticles(AliHBTPair* t
 //  partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
   
-  Double_t out = TMath::Abs(trackpair->GetQOutLCMS());
-  Double_t side = TMath::Abs(trackpair->GetQSideLCMS());
-  Double_t lon = TMath::Abs(trackpair->GetQLongLCMS());
+  Double_t out = trackpair->GetQOutLCMS();
+  Double_t side = trackpair->GetQSideLCMS();
+  Double_t lon = trackpair->GetQLongLCMS();
+
+  if (fAbs)
+   {
+     out = TMath::Abs(out);
+     side = TMath::Abs(side);
+     lon = TMath::Abs(lon);
+   }
   fDenominator->Fill(out,side,lon);
 }
 /******************************************************************/
@@ -680,9 +709,17 @@ void AliHBTPairPIDProbVsQOutSQideQLongFctn::ProcessSameEventParticles(AliHBTPair
   pair  = CheckPair(pair);
   if (pair == 0x0) return;
   Double_t weight = pair->GetPIDProb();
-  Double_t out = TMath::Abs(pair->GetQOutLCMS());
-  Double_t side = TMath::Abs(pair->GetQSideLCMS());
-  Double_t lon = TMath::Abs(pair->GetQLongLCMS());
+  Double_t out = pair->GetQOutLCMS();
+  Double_t side = pair->GetQSideLCMS();
+  Double_t lon = pair->GetQLongLCMS();
+
+  if (fAbs)
+   {
+     out = TMath::Abs(out);
+     side = TMath::Abs(side);
+     lon = TMath::Abs(lon);
+   }
+
   fNumerator->Fill(out,side,lon,weight);
 }
 /*************************************************************/
@@ -693,9 +730,17 @@ void AliHBTPairPIDProbVsQOutSQideQLongFctn::ProcessDiffEventParticles(AliHBTPair
   pair  = CheckPair(pair);
   if (pair == 0x0) return;
   Double_t weight = pair->GetPIDProb();
-  Double_t out = TMath::Abs(pair->GetQOutLCMS());
-  Double_t side = TMath::Abs(pair->GetQSideLCMS());
-  Double_t lon = TMath::Abs(pair->GetQLongLCMS());
+  Double_t out = pair->GetQOutLCMS();
+  Double_t side = pair->GetQSideLCMS();
+  Double_t lon = pair->GetQLongLCMS();
+
+  if (fAbs)
+   {
+     out = TMath::Abs(out);
+     side = TMath::Abs(side);
+     lon = TMath::Abs(lon);
+   }
+  
   fDenominator->Fill(out,side,lon,weight);
 }
 /*************************************************************/
