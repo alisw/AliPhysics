@@ -8,17 +8,15 @@
 //
 // description: 
 //       creates digits from sdigits for several detectors
-//       stores sdigits in separate file (or in the source file
-//       with sdigits). Stores gAlice object and copies TE to the
-//       file with digits
 //
 // input:
-//       TString fileNameSDigits ... input file with sdigits
-//       TString fileNameDigits ... output file with digits
+//       TString input ... galice input file
 //       Int_t nEvents  ... how many events to process
 //       Int_t ITS, TPC, ...   many flags for diff. detectors
 //
 // History:
+//
+// 21.07.03 - changes for NewIO
 //
 // 04.04.02 - first version
 // 
@@ -29,6 +27,7 @@
 #include "STEER/AliRun.h"
 #include "STEER/AliRunDigitizer.h"
 #include "ITS/AliITSDigitizer.h"
+#include "ITS/AliITSFDigitizer.h"
 #include "TPC/AliTPCDigitizer.h"
 #include "TRD/AliTRDdigitizer.h"
 #include "PHOS/AliPHOSDigitizer.h"
@@ -37,15 +36,10 @@
 #include "TStopwatch.h"
 #endif
 
-#include "AliHits2SDigits.C"
-
-void AliCopyN(TString inputFile, TString outputFile);
-
-Int_t AliSDigits2Digits(TString output="out/galice.root", 
-                        TString input="wrk/galice.root", 
-                        Int_t nEvents = 1, Int_t iITS = 0, Int_t iTPC = 1,
+Int_t AliSDigits2Digits(TString input="galice.root", 
+                        Int_t nEvents = 1, Int_t iITS = 0, Int_t iTPC = 0,
                         Int_t iTRD = 0,  Int_t iPHOS = 0, Int_t iMUON = 0,
-                        Int_t iRICH = 0, Int_t iCopy = 0)
+                        Int_t iRICH = 0)
 {
 // delete the current gAlice object, the one from input file
 //  will be used
@@ -57,12 +51,7 @@ Int_t AliSDigits2Digits(TString output="out/galice.root",
   AliRunDigitizer * manager = new AliRunDigitizer(1,1);
   manager->SetDebug(1000);
   manager->SetInputStream(0,input);
-    if (iCopy) 
-     {
-//      AliCopyN(fileNameSDigits,fileNameDigits);
-     }
   
-  manager->SetOutputFile(output);
   manager->SetNrOfEventsToWrite(nEvents);
   if (iITS == 1) AliITSDigitizer *dITS  = new AliITSDigitizer(manager);
   if (iITS == 2) AliITSFDigitizer *dITS  = new AliITSFDigitizer(manager);
@@ -79,10 +68,3 @@ Int_t AliSDigits2Digits(TString output="out/galice.root",
   delete manager;
 }
 
-
-////////////////////////////////////////////////////////////////////////
-void AliCopyN(TString inputFileName, TString outputFileName) {
-// copy some objects
-
-}
-////////////////////////////////////////////////////////////////////////

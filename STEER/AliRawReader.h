@@ -4,11 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
-#ifdef __CINT__
-class fstream;
-#else
-#include <Riostream.h>
-#endif
+
 
 struct AliMiniHeader {
   UInt_t    fSize;
@@ -21,28 +17,37 @@ struct AliMiniHeader {
 
 class AliRawReader: public TObject {
   public :
-    AliRawReader(const char* fileName, Bool_t addNumber = kTRUE);
-    virtual ~AliRawReader();
+    AliRawReader();
 
-    inline Int_t     GetDetectorID() const {return fMiniHeader.fDetectorID;};
-    inline Int_t     GetDDLID() const {return fMiniHeader.fDDLID;};
-    inline Int_t     GetVersion() const {return fMiniHeader.fVersion;};
-    inline Bool_t    IsCompressed() const {return fMiniHeader.fCompressionFlag != 0;};
+    void             Select(Int_t detectorID, 
+			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
 
-    Bool_t           ReadNextInt(UInt_t& data);
-    Bool_t           ReadNextShort(UShort_t& data);
-    Bool_t           ReadNextChar(UChar_t& data);
+    inline Int_t     GetDataSize() const {return fMiniHeader->fSize;};
+    inline Int_t     GetDetectorID() const {return fMiniHeader->fDetectorID;};
+    inline Int_t     GetDDLID() const {return fMiniHeader->fDDLID;};
+    inline Int_t     GetVersion() const {return fMiniHeader->fVersion;};
+    inline Bool_t    IsCompressed() const {return fMiniHeader->fCompressionFlag != 0;};
+
+    virtual Bool_t   ReadMiniHeader() = 0;
+    virtual Bool_t   ReadNextData(UChar_t*& data) = 0;
+    virtual Bool_t   ReadNextInt(UInt_t& data);
+    virtual Bool_t   ReadNextShort(UShort_t& data);
+    virtual Bool_t   ReadNextChar(UChar_t& data);
+
+    virtual Bool_t   Reset() = 0;
 
   protected :
-    Bool_t           OpenNextFile();
+    Bool_t           IsSelected();
 
-    Bool_t           ReadMiniHeader();
+    Bool_t           CheckMiniHeader();
+    virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
 
-    const char*      fFileName;    // name of input files
-    Int_t            fFileNumber;  // number of current input file
-    fstream*         fStream;      // stream of raw digits
-    AliMiniHeader    fMiniHeader;  // current mini header
+    AliMiniHeader*   fMiniHeader;  // current mini header
     Int_t            fCount;       // counter of bytes to be read for current DDL
+
+    Int_t            fSelectDetectorID;  // id of selected detector (<0 = no selection)
+    Int_t            fSelectMinDDLID;    // minimal index of selected DDLs (<0 = no selection)
+    Int_t            fSelectMaxDDLID;    // maximal index of selected DDLs (<0 = no selection)
 
     ClassDef(AliRawReader, 0) // base class for reading raw digits
 };

@@ -8,18 +8,16 @@
 //
 // description: 
 //       creates sdigits for several detectors
-//       stores sdigits in separate file (or in the source file
-//       with hits). Stores gAlice object and copies TE to the
-//       file with sdigits
 //
 // input:
-//       TString fileNameSDigits ... output file with sdigits
-//       TString fileNameHits ... input file with hits
+//       TString fileName ... galice input file
 //       Int_t nEvents  ... how many events to proceed
 //       Int_t firstEvent  ... first event number
 //       Int_t ITS, TPC, ...   many flags for diff. detectors
 //
 // History:
+//
+// 21.07.03 - changes for NewIO
 //
 // 04.04.02 - first version
 // 
@@ -49,7 +47,6 @@
 AliRunLoader* Init(TString fileName);
 
 AliTRDdigitizer *InitTRDdigitizer();
-void AliCopy(TFile *inputFile, TFile *outputFile);
 
 // global variables
 
@@ -58,23 +55,18 @@ Bool_t gSameFiles = kFALSE;
 Int_t gDEBUG = 1;
 
 
-Int_t AliHits2SDigits(TString fileName="rfio:galice.root", 
+Int_t AliHits2SDigits(TString fileName="galice.root", 
                   Int_t nEvents = 1, Int_t firstEvent = 0, Int_t iITS = 0,
-                  Int_t iTPC = 0, Int_t iTRD = 0,Int_t iPHOS = 0, 
-                  Int_t iCopy = 1)
+                  Int_t iTPC = 0, Int_t iTRD = 0,Int_t iPHOS = 0)
 {
 //
 // Initialization
 //
   AliRunLoader* rl = Init(fileName);
   if (!rl) return 1;
-  if (iCopy) {
-//    AliCopy(gFileHits,fileSDigits);
-//    gFileHits->cd();
-  }  
 
 // ITS
-  AliITS *ITS;
+  AliITS *ITS = NULL;
   if (iITS) {
     ITS  = (AliITS*) gAlice->GetModule("ITS");
     if (!ITS) {
@@ -87,7 +79,7 @@ Int_t AliHits2SDigits(TString fileName="rfio:galice.root",
   }
 
 // TPC
-  AliTPC *TPC;
+  AliTPC *TPC = NULL;
   if (iTPC) {
     TPC = (AliTPC*)gAlice->GetDetector("TPC");
     if (!TPC) {
@@ -97,14 +89,14 @@ Int_t AliHits2SDigits(TString fileName="rfio:galice.root",
   }
 
 // TRD
-  AliTRDdigitizer *sdTRD;
+  AliTRDdigitizer *sdTRD = NULL;
   if (iTRD) {
     sdTRD = InitTRDdigitizer();
   }
 
 
 // PHOS
-  AliPHOSSDigitizer *sdPHOS;
+  AliPHOSSDigitizer *sdPHOS = NULL;
   if (iPHOS) {
     sdPHOS = new AliPHOSSDigitizer(fileName.Data());
   }
@@ -127,7 +119,9 @@ Int_t AliHits2SDigits(TString fileName="rfio:galice.root",
       if (loader)
        { 
         loader->LoadHits("read");
-        loader->LoadSDigits("update");
+        loader->LoadSDigits("recreate");
+	if(!loader->TreeS()) loader->MakeTree("S");
+	ITS->MakeBranch("S");
         ITS->SetTreeAddress();
         ITS->Hits2SDigits();
         loader->UnloadHits();
@@ -144,8 +138,9 @@ Int_t AliHits2SDigits(TString fileName="rfio:galice.root",
       if (loader)
        { 
         loader->LoadHits("read");
-        loader->LoadSDigits("update");
+        loader->LoadSDigits("recreate");
       
+	TPC->SetTreeAddress();
         TPC->SetActiveSectors(1);
         TPC->Hits2SDigits2(iEvent);
         loader->UnloadHits();
@@ -162,7 +157,7 @@ Int_t AliHits2SDigits(TString fileName="rfio:galice.root",
       if (loader)
        { 
         loader->LoadHits("read");
-        loader->LoadSDigits("update");
+        loader->LoadSDigits("recreate");
         sdTRD->MakeDigits();
         sdTRD->WriteDigits();
         loader->UnloadHits();
@@ -186,6 +181,7 @@ Int_t AliHits2SDigits(TString fileName="rfio:galice.root",
   timer.Print();
 
   delete rl;
+  return 0;
 }
  
 
@@ -217,45 +213,5 @@ AliTRDdigitizer *InitTRDdigitizer() {
 
   sdTRD->SetParameter(TRDparam);
   sdTRD->InitDetector();
-  if (!sdTRD->MakeBranch()) {
-    cerr<<"Problems with TRD digitizer initialization."<<endl;
-  }
   return sdTRD;
 }
-////////////////////////////////////////////////////////////////////////
-/*void AliCopy(TFile *inputFile, TFile *outputFile) {
-// copy some objects
-
-// copy gAlice
-  if (gDEBUG) cout<<"Copy gAlice: ";
-  outputFile->cd();
-  gAlice->Write();
-  if (gDEBUG) cout<<"done"<<endl;
-
-  TTree *treeE  = gAlice->TreeE();
-  if (!treeE) {
-    cerr<<"No TreeE found "<<endl;
-    return;
-  }      
-
-// copy TreeE
-  if (gDEBUG) cout<<"Copy TreeE: ";
-  AliHeader *header = new AliHeader();
-  treeE->SetBranchAddress("Header", &header);
-  treeE->SetBranchStatus("*",1);
-  TTree *treeENew =  treeE->CloneTree();
-  treeENew->Write();
-  if (gDEBUG) cout<<"done"<<endl;
-
-// copy AliceGeom
-  if (gDEBUG) cout<<"Copy AliceGeom: ";
-  TGeometry *AliceGeom = static_cast<TGeometry*>(inputFile->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr<<"AliceGeom was not found in the input file "<<endl;
-    return;
-  }
-  AliceGeom->Write();
-  if (gDEBUG) cout<<"done"<<endl;
-
-}
-*/

@@ -72,6 +72,7 @@ public:
   virtual Double_t SigmaPhi() const;
   virtual Double_t Theta() const;
   virtual Double_t SigmaTheta() const;
+  virtual Double_t Eta() const;
   virtual Double_t Px() const;
   virtual Double_t Py() const;
   virtual Double_t Pz() const;
@@ -85,6 +86,7 @@ public:
   virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) {return 0;}
 
   static void SetConvConst(Double_t cc) {fgConvConst=cc;}
+  static void SetConvConst();
   Double_t GetConvConst() const {return fgConvConst;}
 
   static void SetMagneticField(Double_t f) {// f - Magnetic field in T

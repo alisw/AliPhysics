@@ -177,13 +177,8 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
    }
   
   TClonesArray &lInputStreams = *fInputStreams;
-
-// the first Input is open RW to be output as well
-  new(lInputStreams[0]) AliStream(fgkBaseInFolderName + "0","UPDATE");
-  //fOutputStream =  (AliStream*)lInputStreams.At(0);//redirects output to first input
   
-  
-  for (i=1;i<nInputStreams;i++) {
+  for (i=0;i<nInputStreams;i++) {
     new(lInputStreams[i]) AliStream(fgkBaseInFolderName+(Long_t)i,"READ");
   }
 }
@@ -289,6 +284,7 @@ void AliRunDigitizer::Digitize(Option_t* option)
        {
          fOutRunLoader->SetEventNumber(eventsCreated-1);
        }
+      static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice(); // use gAlice of the first input stream
       ExecuteTasks(option);// loop over all registered digitizers and let them do the work
       FinishEvent();
       CleanTasks();
@@ -457,8 +453,10 @@ void AliRunDigitizer::FinishGlobal()
      Error("FinishGlobal","Can not get RunLoader from Output Stream folder");
      return;
    }
-  GetOutRunLoader()->CdGAFile();
-  this->Write(0,TObject::kOverwrite);
+  TFile* file = TFile::Open(fOutputDirName + "/digitizer.root", "recreate");
+  this->Write();
+  file->Close();
+  delete file;
   if (fOutRunLoader)
    {
      fOutRunLoader->WriteHeader("OVERWRITE");

@@ -198,6 +198,13 @@ class AliRunLoader: public TNamed
   /******************************************/
     static AliRunLoader* GetRunLoader(const char* eventfoldername);
     static AliRunLoader* GetRunLoader(){return fgRunLoader;}
+    static AliLoader*    GetDetectorLoader(const char* detname);
+    static TTree*        GetTreeH(const char* detname, Bool_t maketree);
+    static TTree*        GetTreeS(const char* detname, Bool_t maketree);
+    static TTree*        GetTreeD(const char* detname, Bool_t maketree);
+    static TTree*        GetTreeR(const char* detname, Bool_t maketree);
+    static TTree*        GetTreeT(const char* detname, Bool_t maketree);
+    static TTree*        GetTreeP(const char* detname, Bool_t maketree);
 
 //    static AliRunDigitizer* GetRunDigitizer();
 //  Tasks are supposed to be singletons, that is why following methods are static

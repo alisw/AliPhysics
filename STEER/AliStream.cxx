@@ -109,7 +109,7 @@ Bool_t AliStream::NextEventInStream()
    {
     if (!OpenNextFile()) return kFALSE;
    }
-  Info("NextEventInStream","Trying to get event ",fLastEventSerialNr+1);
+  Info("NextEventInStream","Trying to get event %d",fLastEventSerialNr+1);
   currentloader->GetEvent(++fLastEventSerialNr);
   return kTRUE;
 }

@@ -1204,6 +1204,99 @@ AliRunLoader* AliRunLoader::GetRunLoader(const char* eventfoldername)
  }
 /**************************************************************************/
 
+AliLoader* AliRunLoader::GetDetectorLoader(const char* detname)
+{
+//get the loader of the detector with the given name from the global
+//run loader object
+  AliRunLoader* runLoader = GetRunLoader();
+  if (!runLoader) {
+    cerr << "AliRunLoader::GetDetectorLoader: no run loader found\n";
+    return NULL;
+  }
+  char loadername[256];
+  sprintf(loadername, "%sLoader", detname);
+  AliLoader* loader = runLoader->GetLoader(loadername);
+  if (!loader) {
+    runLoader->Error("GetDetectorLoader", "no loader for %s found", detname);
+    return NULL;
+  }
+  return loader;
+}
+
+/**************************************************************************/
+
+TTree* AliRunLoader::GetTreeH(const char* detname, Bool_t maketree)
+{
+//get the tree with hits of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname);
+  if (!loader) return NULL;
+  if (!loader->TreeH() && maketree) loader->MakeTree("H");
+  return loader->TreeH();
+}
+
+/**************************************************************************/
+
+TTree* AliRunLoader::GetTreeS(const char* detname, Bool_t maketree)
+{
+//get the tree with summable digits of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname);
+  if (!loader) return NULL;
+  if (!loader->TreeS() && maketree) loader->MakeTree("S");
+  return loader->TreeS();
+}
+
+/**************************************************************************/
+
+TTree* AliRunLoader::GetTreeD(const char* detname, Bool_t maketree)
+{
+//get the tree with digits of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname);
+  if (!loader) return NULL;
+  if (!loader->TreeD() && maketree) loader->MakeTree("D");
+  return loader->TreeD();
+}
+
+/**************************************************************************/
+
+TTree* AliRunLoader::GetTreeR(const char* detname, Bool_t maketree)
+{
+//get the tree with clusters of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname);
+  if (!loader) return NULL;
+  if (!loader->TreeR() && maketree) loader->MakeTree("R");
+  return loader->TreeR();
+}
+
+/**************************************************************************/
+
+TTree* AliRunLoader::GetTreeT(const char* detname, Bool_t maketree)
+{
+//get the tree with tracks of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname);
+  if (!loader) return NULL;
+  if (!loader->TreeT() && maketree) loader->MakeTree("T");
+  return loader->TreeT();
+}
+
+/**************************************************************************/
+
+TTree* AliRunLoader::GetTreeP(const char* detname, Bool_t maketree)
+{
+//get the tree with particles of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname);
+  if (!loader) return NULL;
+  if (!loader->TreeP() && maketree) loader->MakeTree("P");
+  return loader->TreeP();
+}
+
+/**************************************************************************/
+
 void AliRunLoader::CdGAFile()
 {
 //sets gDirectory to galice file

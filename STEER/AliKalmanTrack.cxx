@@ -25,6 +25,9 @@
 #include "AliPDG.h"
 #include "TPDGCode.h"
 #include "TDatabasePDG.h"
+#include "AliRunLoader.h"
+#include "AliRun.h"
+#include "AliMagF.h"
 
 ClassImp(AliKalmanTrack)
 
@@ -40,8 +43,10 @@ AliKalmanTrack::AliKalmanTrack():
   //
   // Default constructor
   //
-    if (fgConvConst==0) 
-      Fatal("AliKalmanTrack()","The magnetic field has not been set !\n"); 
+    if (fgConvConst==0) {
+      Warning("AliKalmanTrack()", "The magnetic field has not been set!");
+      SetConvConst();
+    }
     
     fStartTimeIntegral = kFALSE;
     fIntegratedLength = 0;
@@ -59,15 +64,33 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   //
   // Copy constructor
   //
-  if (fgConvConst==0) 
-    Fatal("AliKalmanTrack(const AliKalmanTrack&)",
-          "The magnetic field has not been set !\n"); 
+  if (fgConvConst==0) {
+    Warning("AliKalmanTrack(const AliKalmanTrack&)", 
+	    "The magnetic field has not been set!");
+    SetConvConst();
+  }
 
   fStartTimeIntegral = t.fStartTimeIntegral;
   fIntegratedLength = t.fIntegratedLength;
   
   for (Int_t i=0; i<5; i++) 
     fIntegratedTime[i] = t.fIntegratedTime[i];
+}
+
+
+//_______________________________________________________________________
+void AliKalmanTrack::SetConvConst()
+{
+  ::Info("SetConvConst()", "tryinig to get the magnetic field from the AliRun object..."); 
+  AliRunLoader* loader = AliRunLoader::GetRunLoader();
+  if (!loader) ::Fatal("SetConvConst()", "No run loader found"); 
+  if (!loader->GetAliRun()) loader->LoadgAlice();
+  AliRun* alirun = loader->GetAliRun();
+  if (!alirun) ::Fatal("SetConvConst()", "No AliRun object found");
+
+  Double_t field = alirun->Field()->SolenoidField();
+  SetConvConst(1000/0.299792458/field);
+  ::Info("SetConvConst()", "Magnetic field set to %f kGauss\n", field);
 }
 
 //_______________________________________________________________________
@@ -172,6 +195,13 @@ Double_t AliKalmanTrack::SigmaTheta() const
   GetExternalParameters(localX, par);
   GetExternalCovariance(cov);
   return TMath::Sqrt(TMath::Abs(cov[5])) / (1. + par[3]*par[3]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Eta() const
+{
+// return global eta of track
+
+  return -TMath::Log(TMath::Tan(Theta()/2.));
 }
 //_______________________________________________________________________
 Double_t AliKalmanTrack::Px() const
