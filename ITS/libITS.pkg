@@ -95,8 +95,13 @@ SRCS = 	AliITS.cxx \
 		AliITSRawClusterSPD.cxx \
 		AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx\
-          AliITSspdTestBeam.cxx \
+                AliITSspdTestBeam.cxx \
 		AliITSReconstructor.cxx \
+		AliITSRawStream.cxx \
+		AliITSRawStreamSDDv2.cxx \
+		AliITSRawStreamSSD.cxx \
+		AliITSRawStreamSDD.cxx \
+		AliITSRawStreamSPD.cxx \
 #          AliITSv11.cxx \
 #          AliITSv11Geometry.cxx \
 #          AliITSv11GeometrySupport.cxx \

@@ -184,6 +184,11 @@
 #pragma link C++ class AliITStrackerSA+;
 #pragma link C++ class AliITStrackSA+;
 #pragma link C++ class AliITSVertexerFast+;
+#pragma link C++ class AliITSRawStream+;
+#pragma link C++ class AliITSRawStreamSDD;
+#pragma link C++ class AliITSRawStreamSDDv2;
+#pragma link C++ class AliITSRawStreamSPD;
+#pragma link C++ class AliITSRawStreamSSD;
 
 #pragma link C++ class AliITSReconstructor+;
 
