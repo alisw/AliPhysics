@@ -14,6 +14,11 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.20  2001/04/12 12:22:26  morsch
+- some numerical problems caused by pad staggering cured.
+- treatment of 1-2 and 2-1 ghosts
+- debuglevel > 1 prints introduced
+
 Revision 1.19  2001/03/20 13:32:10  egangler
 Code introduced to remove ghosts with the charge correlation between the 2
 cathods. A chi2 is performed for the 2 possibilities.
@@ -738,7 +743,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	Bool_t accepted[4];
 	iacc=0;
 	// In case of staggering maxima are displaced by exactly half the pad-size in y. 
-        // We have to take into account the numerical precision in the consistency check; 	
+        // We have to take into account the numerical precision in the consistency check;
+	
 	Float_t eps = 1.e-5;
 
 	for (ico=0; ico<2; ico++) {
@@ -815,7 +821,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    if (chi22<10) Split(c);
 	}
 
-	if (chi21 > 10 && chi22 > 10) {
+	if (chi21 > 10 && chi22 > 10 && chi23 > 10) {
 // We keep only the combination found (X->cathode 2, Y->cathode 1)
 	    for (Int_t ico=0; ico<2; ico++) {
 		if (accepted[ico]) {
