@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.34  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.33  2000/10/09 14:01:57  morsch
 Unused variables removed.
 
@@ -472,7 +476,7 @@ void AliMUON::BuildGeometry()
 	    sprintf(nameSense1,"S1_MUON%d",id);
 	    sprintf(nameSense2,"S2_MUON%d",id);
 	    sprintf(nameFrame,"F_MUON%d",id);	
-	    if (i<3) {	                      // tracking chambers
+	    if (i<2) {	                      // tracking chambers
 		rmin = kDmin[i]/2.-3;
 		rmax = kDmax[i]/2.+3;
 		new TTUBE(nameChamber,"Mother","void",rmin,rmax,0.25,1.);
@@ -509,13 +513,30 @@ void AliMUON::BuildGeometry()
 		sprintf(nameNode,"MUON%d",600+id);   
 		nodeF = new TNode(nameNode,"Frame3",frMUON,0,-dr,0,rot270,"");
 		nodeF->SetLineColor(kColorMUON);
-	    } else if (i == 3 || i == 4) {
-		Int_t   npcb[7] = {7, 7, 6, 6, 5, 4, 3};
+	    } else if (i >= 2 || i <= 4) {
+		Int_t nslats;
+		Int_t npcb[7]={0, 0, 0, 0, 0, 0, 0};
+		if (i==2) {
+		    nslats = 4;
+		    npcb[0] = 3; npcb[1] = 4;  npcb[2] = 3; npcb[3] = 2;
+		} else if (i==3) {
+		    nslats = 6;
+		    npcb[0] = 4; npcb[1] = 5;  npcb[2] = 5; npcb[3] = 4;
+		    npcb[4] = 3; npcb[5] = 2;  
+		} else {
+		    nslats = 7;
+		    npcb[0] = 7; npcb[1] = 7;  npcb[2] = 6; npcb[3] = 6;
+		    npcb[4] = 5; npcb[5] = 4;  npcb[6] = 2;
+		}
+
 		char nameSlat[9];
 		
 		Float_t xpos=4.;
 		Float_t ypos1=-0.75+20.;
 		Float_t ypos2= 0.75-20.;
+		if (i!=2) {
+		    ypos1=ypos2=0.;
+		}
 		
 		new TBRIK(nameChamber,"Mother","void",340,340,5.);
 		top->cd();
@@ -526,7 +547,7 @@ void AliMUON::BuildGeometry()
 		TNode* nodeSlat;
 		Int_t color;
 		
-		for (Int_t j=0; j<7; j++)
+		for (Int_t j=0; j<nslats; j++)
 		{
 		    sprintf(nameSlat,"SLAT%d",100*id+j);
 		    new TBRIK(nameSlat,"Slat Module","void",20.*npcb[j],20.,0.25);
@@ -547,18 +568,27 @@ void AliMUON::BuildGeometry()
 			new TNode(nameNode,"Slat Module",nameSlat,-xpos,ypos1,0,"");
 		    nodeSlat->SetLineColor(color);
 		    
-		    color =  TMath::Even(j) ? kColorMUON3 : kColorMUON2;
-		    sprintf(nameNode,"SLAT%d",100*id+j+14);
-		    nodeSlat = 
-			new TNode(nameNode,"Slat Module",nameSlat,xpos,ypos2,0,"");
-		    nodeSlat->SetLineColor(color);
+		    if (i==2 || (i!=2 && j!=0)) {
 
-		    node->cd();
-		    sprintf(nameNode,"SLAT%d",100*id+j+21);
-		    nodeSlat = 
-			new TNode(nameNode,"Slat Module",nameSlat,-xpos,ypos2,0,"");
-		    nodeSlat->SetLineColor(color);
-		    
+			if (i==2) {
+			    color =  TMath::Even(j) ? kColorMUON3 : kColorMUON2;
+			} else {
+			    color =  TMath::Even(j) ? kColorMUON2 : kColorMUON3;
+			}
+			
+			
+			sprintf(nameNode,"SLAT%d",100*id+j+14);
+			nodeSlat = 
+			    new TNode(nameNode,"Slat Module",nameSlat,xpos,ypos2,0,"");
+			nodeSlat->SetLineColor(color);
+			
+			node->cd();
+			sprintf(nameNode,"SLAT%d",100*id+j+21);
+			nodeSlat = 
+			    new TNode(nameNode,"Slat Module",nameSlat,-xpos,ypos2,0,"");
+			nodeSlat->SetLineColor(color);
+		    }
+			
 		    ypos1+=38.5;
 		    ypos2-=38.5;
 		}
