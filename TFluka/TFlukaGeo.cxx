@@ -557,11 +557,14 @@ void TFluka::SetProcess(const char* flagName, Int_t flagValue)
     for (i=0; i<fNbOfProc; i++) {
       if (strcmp(&fProcessFlag[i][0],flagName) == 0) {
         fProcessValue[fNbOfProc] = flagValue;
-	return;
+	fProcessMaterial[fNbOfProc] = -1;
+  	return;
       }
     }
     strcpy(&fProcessFlag[fNbOfProc][0],flagName);
-    fProcessValue[fNbOfProc++] = flagValue;
+    fProcessMaterial[fNbOfProc] = -1;
+    fProcessValue[fNbOfProc++]  = flagValue;
+    
   }
   else
     cout << "Nb of SetProcess calls exceeds 100 - ignored" << endl;
