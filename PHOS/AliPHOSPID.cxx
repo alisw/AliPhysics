@@ -45,7 +45,6 @@ ClassImp(AliPHOSPID)
   AliPHOSPID::AliPHOSPID():TTask()
 {
   // ctor
-
 }
 //____________________________________________________________________________
 AliPHOSPID::AliPHOSPID(const char* header,const char * branch ):TTask()
@@ -55,10 +54,6 @@ AliPHOSPID::AliPHOSPID(const char* header,const char * branch ):TTask()
   abort() ;
 
 }
-
-
-
-
 //____________________________________________________________________________
 AliPHOSPID::~AliPHOSPID()
 {

@@ -20,8 +20,6 @@
 //              energy
 //              3 identifiers for the primary particle(s) at the origine of the digit
 //  The digits are made in FinishEvent() by summing all the hits in a single PHOS crystal or PPSD gas cell
-//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,
-//   it is not possible to stream such an array... (beyond my understqnding!)
 //
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
 
@@ -130,8 +128,9 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   
 }
 //____________________________________________________________________________
-void AliPHOSDigit::ShiftPrimary(Int_t shift){
-  //shifts primary nimber to BIG offset, to separate primary in different TreeK
+void AliPHOSDigit::ShiftPrimary(Int_t shift)
+{
+  //shifts primary number to BIG offset, to separate primary in different TreeK
   Int_t index  ;
   for(index = 0; index <fNprimary; index ++ ){
     fPrimary[index] = fPrimary[index]+ shift * 10000000   ;

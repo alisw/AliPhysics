@@ -59,6 +59,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
 AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint()
 {
   // dtor
+
   if ( fEnergyList )
     delete[] fEnergyList ; 
 }
@@ -67,7 +68,7 @@ AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint()
 void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 {
   // Adds a digit to the RecPoint
-  //  and accumulates the total amplitude and the multiplicity 
+  // and accumulates the total amplitude and the multiplicity 
   
   if(fEnergyList == 0)
     fEnergyList =  new Float_t[fMaxDigit]; 
@@ -109,7 +110,7 @@ void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 //____________________________________________________________________________
 Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const
 {
-  // Tells if (true) or not (false) two digits are neighbors)
+  // Tells if (true) or not (false) two digits are neighbors
   
   Bool_t aren = kFALSE ;
   
@@ -320,9 +321,9 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
 //______________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalCoreEnergy(TClonesArray * digits)
 {
-  //This function calculates energy in the core, 
-  //i.e. within radius rad = 3cm. Beyond this radius
-  //in accoradnce with shower profile energy deposition 
+  // This function calculates energy in the core, 
+  // i.e. within a radius rad = 3cm around the center. Beyond this radius
+  // in accordance with shower profile the energy deposition 
   // should be less than 2%
 
   Float_t coreRadius = 3 ;
@@ -417,6 +418,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
+  // calculates the various parameters characterizing the RecPoint 
   AliPHOSRecPoint::EvalAll(logWeight,digits) ;
   EvalLocalPosition(logWeight, digits) ;
   EvalElipsAxis(logWeight, digits) ;
@@ -427,7 +429,6 @@ void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)
 {
   // Calculates the center of gravity in the local PHOS-module coordinates 
-
   Float_t wtot = 0. ;
  
   Int_t relid[4] ;
@@ -527,7 +528,7 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEn
 					       Float_t locMaxCut,TClonesArray * digits) const
 { 
   // Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
-  //  energy difference between two local maxima
+  // energy difference between two local maxima
 
   AliPHOSDigit * digit ;
   AliPHOSDigit * digitN ;

@@ -211,8 +211,10 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::Hits2SDigits(){
-  //Collects all hits in the same active volume into digit
+void AliPHOSv1::Hits2SDigits()
+{
+  // Collects all hits in the same active volume into digit
+  // OBSOLETE replace by SDigitizer
 
   Int_t i ;
   Int_t j ; 
@@ -274,10 +276,11 @@ void AliPHOSv1::Hits2SDigits(){
 
 }
 //____________________________________________________________________________
-void AliPHOSv1::SDigits2Digits(){
-  //Adds noise to the summable digits and removes everething below thresholds
-  //Note, that sDigits should be SORTED in accordance with abs ID.
-
+void AliPHOSv1::SDigits2Digits()
+{
+  // Adds noise to the summable digits and removes everething below thresholds
+  // Note, that sDigits should be SORTED in accordance with abs ID.
+  // OBSOLETE Replaced by Digitzer
 
   gAlice->TreeS()->GetEvent(0) ;
 
@@ -357,6 +360,7 @@ void AliPHOSv1::SDigits2Digits(){
 //___________________________________________________________________________
 void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 { 
+  // Called by AliRun
 
   char *cH ; 
   // Create new branche in the current Root Tree in the digit Tree

@@ -306,7 +306,7 @@ void AliPHOS::CreateMaterials()
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
-
+  // called by AliRun
 
   // TBranch *branch;
   //  AliDetector::SetTreeAddress();

@@ -18,25 +18,26 @@
 //_________________________________________________________________________
 //*--
 //*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
-//*-- Complitely redisigned by Dmitri Peressounko (SUBATECH & RRC KI) March 2001
+//*-- Compleetely redisigned by Dmitri Peressounko (SUBATECH & RRC KI) March 2001
 /////////////////////////////////////////////////////////////////////////////////////
 //  Wrapping class for reconstruction. Allows to produce reconstruction from 
 //  different steps: from previously produced hits,sdigits, etc. Each new reconstruction
-//  flow (e.g. gigits, made from them RecPoints, made from them TrackSegments, made from 
-//  them RecParticles) are distinguished by the title of created branches. One can 
-//  use this title as a comment, see user case below. Thanks to getters, one can set 
-//  parameters to reconstruction bricks. The full set of parameters is saved in the 
-//  correspoinding branch: e.g. parameters of clusterizer are stored in branch 
-//  TreeR::AliPHOSClusterizer with the same title as the branch contaning RecPoints 
-//  themself. TTree does not support overwriting, therefore one can not produce several 
+//  flow (e.g. digits, made from them RecPoints, subsequently made TrackSegments, 
+//  subsequently made RecParticles) are distinguished by the title of created branches. One can 
+//  use this title as a comment, see use case below. 
+//  Thanks to getters, one can set 
+//  parameters to reconstruction briks. The full set of parameters is saved in the 
+//  corresponding branch: e.g. parameters of clusterizer are stored in branch 
+//  TreeR::AliPHOSClusterizer with the same title as the branch containing the RecPoints. 
+//  TTree does not support overwriting, therefore one can not produce several 
 //  branches with the same names and titles - use different titles.
 //
-//  User case: 
+//  Use case: 
 //
 //  root [0] AliPHOSReconstructioner * r = new AliPHOSReconstructioner("galice.root")
 //              //  Set the header file
 //  root [1] r->ExecuteTask() 
-//              //  Make full cheine of reconstruction
+//              //  Make full chain of reconstruction
 //
 //              // One can specify the title for each branch 
 //  root [2] r->SetBranchFileName("RecPoints","RecPoints1") ;
@@ -128,7 +129,8 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(const char* headerFile):TTask("
   
 } 
 //____________________________________________________________________________
-void AliPHOSReconstructioner::Exec(Option_t *option){
+void AliPHOSReconstructioner::Exec(Option_t *option)
+{
   //chesk, if the names of branches, which should be made conicide with already
   //existing
   if(!fIsInitialized)
@@ -353,7 +355,7 @@ void AliPHOSReconstructioner::Exec(Option_t *option){
 //____________________________________________________________________________
  void AliPHOSReconstructioner::Init()
 {
-  //initiase Reconstructioner if necessary: we can not do this in default constructor
+  // initiliaze Reconstructioner if necessary: we can not do this in default constructor
 
   if(!fIsInitialized){
     // Initialisation
@@ -385,7 +387,7 @@ void AliPHOSReconstructioner::Exec(Option_t *option){
 //____________________________________________________________________________
 AliPHOSReconstructioner::~AliPHOSReconstructioner()
 {
-  
+  // dtor  
   if(fSDigitizer)
     delete fSDigitizer ;
   
@@ -444,10 +446,11 @@ void AliPHOSReconstructioner::SetBranchTitle(const char* branch, const char * ti
   
 }
 //____________________________________________________________________________
-void AliPHOSReconstructioner::StartFrom(char * module,char* title){
+void AliPHOSReconstructioner::StartFrom(char * module,char* title)
+{
   // in the next pass of reconstruction (call ExecuteTask()) reconstruction will 
-  // start from the module "module", and in the case of nonsero title all 
-  // pruduced branches will have title "title". Recognize the following "modules"
+  // start from the module "module", and in the case of non zero title all 
+  // pruduced branches will have title "title". The following "modules" are recognized
   // "SD" - AliPHOSSDigitizer,
   // "D"  - AliPHOSDigitizer
   // "C"  - AliPHOSClusterizer
@@ -518,8 +521,9 @@ void AliPHOSReconstructioner::StartFrom(char * module,char* title){
   delete moduleName;
 }
 //____________________________________________________________________________
-void AliPHOSReconstructioner::Print(Option_t * option)const {
-  
+void AliPHOSReconstructioner::Print(Option_t * option)const 
+{
+  // Print the parameters of the reconstructioner  
   cout << "-----------------AliPHOSReconstructioner---------------" << endl ;
   cout << " Reconstruction of the header file " <<fHeaderFileName.Data() << endl ;
   cout << " with the following modules: " << endl ;

@@ -16,15 +16,15 @@
 /* $Id:  */
 
 //_________________________________________________________________________
-//  A singleton. This class should be used on the analysiz stage to get 
+//  A singleton. This class should be used in the analysis stage to get 
 //  reconstructed objects: Digits, RecPoints, TrackSegments and RecParticles,
-//  instead of direct reading them from galice.root file. This container 
-//  ensures, that one reads Digits, made of these particular digits RecPoints, 
-//  made of these particlar RecPoints TrackSegments and RecParticles, what is
-//  not trivial if there are several identical branches, but produced with
+//  instead of directly reading them from galice.root file. This container 
+//  ensures, that one reads Digits, made of these particular digits, RecPoints, 
+//  made of these particular RecPoints, TrackSegments and RecParticles. 
+//  This becomes non trivial if there are several identical branches, produced with
 //  different set of parameters. 
 //
-//  An example of use (see as well class AliPHOSAnalyser):
+//  An example of how to use (see also class AliPHOSAnalyser):
 //  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance("galice.root","RecParticles","") ;
 //  for(Int_t irecp = 0; irecp < please->GimeNRecParticles() ; irecp++)
 //     AliPHOSRecParticle * part = please->GimeRecParticle(1) ;
@@ -67,7 +67,7 @@ ClassImp(AliPHOSIndexToObject)
 //____________________________________________________________________________ 
 AliPHOSIndexToObject::AliPHOSIndexToObject(const char* headerFile,const char* branch,const char* branchTitle )
 {
-  //Initiate all lists
+  //Initialize  all lists
   fEvent = 0 ;
 
   fSDigits = new TClonesArray("AliPHOSDigit",100) ;
@@ -106,11 +106,12 @@ AliPHOSIndexToObject::AliPHOSIndexToObject(const char* headerFile,const char* br
 
 }
 //____________________________________________________________________________ 
-void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const char* branchTitle){
-
+void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const char* branchTitle)
+{
+  // Points to the branches of all reconstructed objects with the specified names
   gAlice->GetEvent(0) ;
-  //Read all reconstruction classes to extract titles of 
-  //branches, constituing "reconstruction branch"
+  // Read all reconstruction classes to extract titles of 
+  // branches, constituing "reconstruction branch"
   AliPHOSPID * pids[50];  // here AliPHOSPID's will be stored
   Int_t ipids = 0 ;
   AliPHOSTrackSegmentMaker * tsms[50] ; 
@@ -171,8 +172,8 @@ void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const cha
   }
   gAlice->TreeS()->GetEvent(0) ;
 
-  //now choose among read Reconstruction classes those,
-  //which constituite "reconstruction branch"
+  // now choose among read Reconstruction classes those,
+  // which constituite "reconstruction branch"
   Bool_t pidDefined = kFALSE ;
   Bool_t tsmDefined = kFALSE ;
   Bool_t cluDefined = kFALSE ;
@@ -180,7 +181,7 @@ void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const cha
   Bool_t sdigDefined = kFALSE ;
 
   Int_t index ;
-  //First, go from the end (RecParticles) to the beginning(SDigits)
+  // First, go from the end (RecParticles) to the beginning(SDigits)
   if((strcmp(startBranch,"PHOSRP") == 0)||(strcmp(startBranch,"AliPHOSPID") == 0)){
     fRPTitle = branchTitle ;
     for(index = 0; index < ipids ; index++){
@@ -228,8 +229,8 @@ void AliPHOSIndexToObject:: DefineBranchTitles(const char* startBranch,const cha
     cout << endl ;
   }
 
-  //Now we go in the inverse direction: from sdigits to recparticles - for the 
-  //case, if we started decending not from RecParticles, but e.g. from digits
+  // Now we go in the inverse direction: from sdigits to recparticles - for the 
+  // case, if we started decending not from RecParticles, but e.g. from digits
 
   if( !cluDefined ) {
     for(index = 0; index < iclus ; index++)
@@ -314,7 +315,7 @@ AliPHOSIndexToObject * AliPHOSIndexToObject::GetInstance(const char* headerFile,
 //____________________________________________________________________________ 
 TParticle * AliPHOSIndexToObject::GimePrimary(Int_t index)
 {
-  
+  // retrieves the primary particle indexed by index  
   if(index < 0) 
     return 0 ;
   
@@ -376,8 +377,9 @@ void AliPHOSIndexToObject::ReadTreeD(){
   
 }
 //____________________________________________________________________________ 
-void AliPHOSIndexToObject::ReadTreeS(){
-  
+void AliPHOSIndexToObject::ReadTreeS()
+{
+  // Reads the contents of SDigits  
   if(gAlice->TreeS()== 0){
     cout <<   "AliPHOSIndexToObject: can not read TreeS " << endl ;
     return ;
@@ -420,7 +422,9 @@ void AliPHOSIndexToObject::ReadTreeS(){
   
 }
 //____________________________________________________________________________ 
-void AliPHOSIndexToObject::ReadTreeR(){
+void AliPHOSIndexToObject::ReadTreeR()
+{
+  // Reads the contents of reconstruction Tree
   
   if(gAlice->TreeR()== 0){
     cout <<   "AliPHOSIndexToObject: can not read TreeR " << endl ;
@@ -522,8 +526,9 @@ void AliPHOSIndexToObject::ReadTreeR(){
 
 }
 //____________________________________________________________________________ 
-void AliPHOSIndexToObject::ReadPrimaries(){
-  //read specific branches of primaries
+void AliPHOSIndexToObject::ReadPrimaries()
+{
+  // Reads specific branches of primaries
   
   fNPrimaries = gAlice->GetNtrack();
   
@@ -597,7 +602,9 @@ void AliPHOSIndexToObject::ReadPrimaries(){
   return ;
 }
 //____________________________________________________________________________ 
-void AliPHOSIndexToObject::GetEvent(Int_t event){
+void AliPHOSIndexToObject::GetEvent(Int_t event)
+{
+  // Reads the content of all Tree's S, D and R
   if(event == fEvent) // do nothing
     return ;
     

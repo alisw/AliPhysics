@@ -17,23 +17,27 @@
 // Implementation version 1 of algorithm class to construct PHOS track segments
 // Track segment for PHOS is list of 
 //        EMC RecPoint + (possibly) CPV RecPoint + (possibly) PPSD RecPoint
-// To find TrackSegments we do the following: for each EMC RecPoints we look at
-// CPV/PPSD RecPoints in the radious fR0. If there is such a CPV RecPoint, 
-// we make "Link" it is just indexes of EMC and CPV/PPSD RecPoint and distance
-// between them in the PHOS plane. Then we sort "Links" and starting from the 
-// least "Link" pointing to the unassined EMC and CPV RecPoints assing them to 
-// new TrackSegment. If there is no CPV/PPSD RecPoint we make TrackSegment 
-// consisting from EMC along. There is no TrackSegments without EMC RecPoint.
+// To find TrackSegments we do the following: 
+//  for each EMC RecPoints we look at
+//   CPV/PPSD RecPoints in the radious fR0. 
+//  If there is such a CPV RecPoint, 
+//   we make "Link" it is just indexes of EMC and CPV/PPSD RecPoint and distance
+//   between them in the PHOS plane. 
+//  Then we sort "Links" and starting from the 
+//   least "Link" pointing to the unassined EMC and CPV RecPoints assing them to 
+//   new TrackSegment. 
+// If there is no CPV/PPSD RecPoint we make TrackSegment 
+// consisting from EMC alone. There is no TrackSegments without EMC RecPoint.
 //
 // In principle this class should be called from AliPHOSReconstructioner, but 
-// one can use it as well in standalong mode.
-// User case:
-// root [0] AliPHOSTrackSegmentMakerv1 * t = new AliPHOSTrackSegmentMaker("galice.root")
-// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-// root [1] t->ExecuteTask()
-// root [2] t->SetMaxEmcPpsdDistance(5)
-// root [3] t->SetTrackSegmentsBranch("max distance 5 cm")
-// root [4] t->ExecuteTask("deb all time") 
+// one can use it as well in standalone mode.
+// Use  case:
+//  root [0] AliPHOSTrackSegmentMakerv1 * t = new AliPHOSTrackSegmentMaker("galice.root")
+//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+//  root [1] t->ExecuteTask()
+//  root [2] t->SetMaxEmcPpsdDistance(5)
+//  root [3] t->SetTrackSegmentsBranch("max distance 5 cm")
+//  root [4] t->ExecuteTask("deb all time") 
 //                 
 //*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
 //
@@ -121,8 +125,9 @@ AliPHOSTrackSegmentMaker()
 
 }
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::Init(){
-  //Make all memory allokations not possible in default constructor
+void  AliPHOSTrackSegmentMakerv1::Init()
+{
+  // Make all memory allocations that are not possible in default constructor
 
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
@@ -208,7 +213,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
 Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,AliPHOSRecPoint * cpvClu, Bool_t &toofar)
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
-  //clusters are sorted in "rows" and "columns" of width 1 cm
+  // Clusters are sorted in "rows" and "columns" of width 1 cm
 
   Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
                        // if you change this value, change it as well in xxxRecPoint::Compare()
@@ -296,7 +301,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()
 void  AliPHOSTrackSegmentMakerv1::MakePairs()
 { 
   // Using the previously made list of "links", we found the smallest link - i.e. 
-  // link with the least distance betwing EMC and CPV and pointing to still 
+  // link with the least distance between EMC and CPV and pointing to still 
   // unassigned RecParticles. We assign these RecPoints to TrackSegment and 
   // remove them from the list of "unassigned". 
   
@@ -392,7 +397,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 {
-  //STEERing method
+  // STEERing method
 
   if(! fIsInitialized) Init() ;
 
@@ -431,7 +436,9 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 
 }
 //____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const {
+void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const 
+{
+  // Prints the parameters of track segment maker
   if(fIsInitialized){
     cout <<  "======== AliPHOSTrackSegmentMakerv1 ========" << endl ;
     cout <<  "Making Track segments "<< endl ;
@@ -446,9 +453,10 @@ void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const {
     cout << "AliPHOSTrackSegmentMakerv1 not initialized " << endl ;
 }
 //____________________________________________________________________________
-Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
+Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints()
+{
   // Reads Emc and CPV recPoints with given title (fRecPointsBranchTitle) 
-  // made priveously with Clusterizer.
+  // made previously with Clusterizer.
 
 
   //Make some initializations 
@@ -532,13 +540,14 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
   
 }
 //____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(){
+void AliPHOSTrackSegmentMakerv1::WriteTrackSegments()
+{
   // Writes found TrackSegments to TreeR. Creates branches 
   // "PHOSTS" and "AliPHOSTrackSegmentMaker" with the same title.
   // In the former branch found TrackSegments are stored, while 
   // in the latter all parameters, with which TS were made. 
   // ROOT does not allow overwriting existing branches, therefore
-  // first we chesk, if branches with the same title alredy exist.
+  // first we check, if branches with the same title already exist.
   // If yes - exits without writing.
   
   //First, check, if branches already exist
@@ -620,7 +629,8 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(){
 
 
 //____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option){
+void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
+{
   // option deb - prints # of found TrackSegments
   // option deb all - prints as well indexed of found RecParticles assigned to the TS
 

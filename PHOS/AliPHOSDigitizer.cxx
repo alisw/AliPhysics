@@ -18,18 +18,18 @@
 //_________________________________________________________________________
 //*-- Author :  Dmitri Peressounko (SUBATECH & Kurchatov Institute) 
 //////////////////////////////////////////////////////////////////////////////
-// Class performs digitization of Summable digits (in the PHOS case this is just
-// sum of contributions of all primary particles into given cell). 
+// This TTask performs digitization of Summable digits (in the PHOS case it is just
+// the sum of contributions from all primary particles into a given cell). 
 // In addition it performs mixing of summable digits from different events.
 //
 // For each event two branches are created in TreeD:
 //   "PHOS" - list of digits
 //   "AliPHOSDigitizer" - AliPHOSDigitizer with all parameters used in digitization
 //
-// Note, that one cset title for new digits branch, and repeat digitization with
+// Note, that one can set a title for new digits branch, and repeat digitization with
 // another set of parameters.
 //
-// Examples of use:
+// Use case:
 // root[0] AliPHOSDigitizer * d = new AliPHOSDigitizer() ;
 // root[1] d->ExecuteTask()             
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
@@ -39,9 +39,9 @@
 //                       // Will read sdigits from galice1.root
 // root[3] d1->MixWith("galice2.root")       
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-//                       // Reads another portion of sdigits from galice2.root
+//                       // Reads another set of sdigits from galice2.root
 // root[3] d1->MixWith("galice3.root")       
-//                       // Reads another portion of sdigits from galice3.root
+//                       // Reads another set of sdigits from galice3.root
 // root[4] d->ExecuteTask("deb timing")    
 //                       // Reads SDigits from files galice1.root, galice2.root ....
 //                       // mixes them and stores produced Digits in file galice1.root          
@@ -96,9 +96,10 @@ ClassImp(AliPHOSDigitizer)
 
 }
 //____________________________________________________________________________ 
-void AliPHOSDigitizer::Init(){
-// Makes all memory allocations
-
+void AliPHOSDigitizer::Init()
+{
+  // Makes all memory allocations
+  
   if(!fInitialized){
     
     fHeaderFiles  = new TClonesArray("TObjString",1) ;
@@ -141,7 +142,6 @@ void AliPHOSDigitizer::Init(){
     
     fInitialized = kTRUE ;
   }
-  
 }
 
 //____________________________________________________________________________ 
@@ -211,8 +211,9 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char *sDigitsTit
   if(fDigits)       delete fDigits ;
 }
 //____________________________________________________________________________
-void AliPHOSDigitizer::Reset() { 
-  //sets current event number to the first simulated event
+void AliPHOSDigitizer::Reset() 
+{ 
+  // sets current event number to the first simulated event
 
   if(!fInitialized)
     Init() ;
@@ -223,13 +224,13 @@ void AliPHOSDigitizer::Reset() {
   
 }
 //____________________________________________________________________________
-Bool_t AliPHOSDigitizer::Combinator() { 
+Bool_t AliPHOSDigitizer::Combinator() 
+{ 
+  // Makes all desirable combinations of Signal+Background,
+  // returns kFALSE when all combinations are made.
+  // May be useful to introduce options like "One-to-One", "All-to-One" and "All-to-All" ?
 
-  //Makes all desirable combinations Signal+Background,
-  // returns kFALSE when all combinations are made
-  // May be useful to introduce some options like "One-to-One", "All-to-One" and "All-to-All" ?
-
-  //realizing "One-to-One" option...
+  // realizing "One-to-One" option...
 
   if(!fInitialized)
     Init() ;
@@ -252,14 +253,15 @@ Bool_t AliPHOSDigitizer::Combinator() {
 }
 
 //____________________________________________________________________________
-void AliPHOSDigitizer::Digitize(Option_t *option) { 
-
-  // Makes the digitization of the collected summable digits
-  // for this it first creates the array of all PHOS modules
-  // filled with noise (different for EMC, CPV and PPSD) and
-  // after that adds contributions from SDigits. This design 
-  // helps to avoid scanning over the list of digits to add 
-  // contribution of any new SDigit.
+void AliPHOSDigitizer::Digitize(Option_t *option) 
+{ 
+  
+  // Makes the digitization of the collected summable digits.
+  //  It first creates the array of all PHOS modules
+  //  filled with noise (different for EMC, CPV and PPSD) and
+  //  then adds contributions from SDigits. 
+  // This design avoids scanning over the list of digits to add 
+  // contribution to new SDigits only.
 
   if(!fInitialized)
     Init() ;
@@ -356,13 +358,16 @@ void AliPHOSDigitizer::Digitize(Option_t *option) {
   }
 }
 //____________________________________________________________________________
-void AliPHOSDigitizer::WriteDigits(){
+void AliPHOSDigitizer::WriteDigits()
+{
 
-  // Made TreeD in the output file. Check if branch already exists: if yes, exits 
-  // without writing: ROOT TTree does not suppert overwriting/updating of the 
-  // already existing branches. Creates branch with Digits, named "PHOS", title "...",
-  // and branch "AliPHOSDigitizer", with the same title to keep all the parameters
-  // and names of files, from which digits are made.
+  // Makes TreeD in the output file. 
+  // Check if branch already exists: 
+  //   if yes, exit without writing: ROOT TTree does not support overwriting/updating of 
+  //      already existing branches. 
+  //   else creates branch with Digits, named "PHOS", title "...",
+  //      and branch "AliPHOSDigitizer", with the same title to keep all the parameters
+  //      and names of files, from which digits are made.
 
   gAlice->GetEvent(fIevent->At(0)) ;  // Suitable only for One-To-One mixing
   gAlice->SetEvent(fIevent->At(0)) ;  // for all-to-all will produce a lot of branches in TreeD
@@ -459,7 +464,8 @@ void AliPHOSDigitizer::WriteDigits(){
 }
 
 //____________________________________________________________________________
-void AliPHOSDigitizer::Exec(Option_t *option) { 
+void AliPHOSDigitizer::Exec(Option_t *option) 
+{ 
   // Managing method
 
   if(!fInitialized)    Init() ;
@@ -494,8 +500,9 @@ void AliPHOSDigitizer::Exec(Option_t *option) {
 }
 
 //__________________________________________________________________
-Bool_t AliPHOSDigitizer::ReadSDigits(){
-// Reads summable digits from the opened files for the particular set of events given by fIevent
+Bool_t AliPHOSDigitizer::ReadSDigits()
+{
+  // Reads summable digits from the opened files for the particular set of events given by fIevent
 
   if(!fInitialized)    Init() ;
 
@@ -586,15 +593,17 @@ Bool_t AliPHOSDigitizer::ReadSDigits(){
 
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::MixWith(char* HeaderFile, char* sDigitsTitle){
-  // Alows produce digits by superimposing background and signal event.
+void AliPHOSDigitizer::MixWith(char* HeaderFile, char* sDigitsTitle)
+{
+  // Alows to produce digits by superimposing background and signal event.
   // It is assumed, that headers file with SIGNAL events is opened in 
-  // constructor, and now we set the BACKGROUND event, with which we 
-  // will mix. Thus we avoid writing (changing) huge and expencive 
+  // the constructor. 
+  // Sets the BACKGROUND event, with which the SIGNAL event is to be mixed 
+  // Thus we avoid writing (changing) huge and expensive 
   // backgound files: all output will be writen into SIGNAL, i.e. 
   // opened in constructor file. 
   //
-  // One can open as many files to mix with as one wants.
+  // One can open as many files to mix with as one needs.
 
 
   if(!fInitialized)
@@ -649,8 +658,9 @@ void AliPHOSDigitizer::MixWith(char* HeaderFile, char* sDigitsTitle){
   
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::Print(Option_t* option)const {
-  
+void AliPHOSDigitizer::Print(Option_t* option)const 
+{
+  // Prints the parameters of the digitizer  
   if(fInitialized){
     
     cout << "------------------- "<< GetName() << " -------------" << endl ;
@@ -678,8 +688,10 @@ void AliPHOSDigitizer::Print(Option_t* option)const {
   
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::PrintDigits(Option_t * option){
-    
+void AliPHOSDigitizer::PrintDigits(Option_t * option)
+{
+  // Prints the list of produced digits
+
   cout << "AliPHOSDigitiser:"<< endl ;
   cout << "       Number of entries in Digits list " << fDigits->GetEntriesFast() << endl ;
   cout << endl ;
@@ -704,7 +716,8 @@ void AliPHOSDigitizer::PrintDigits(Option_t * option){
   }
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::SetSDigitsBranch(const char* title){
+void AliPHOSDigitizer::SetSDigitsBranch(const char* title)
+{
   // we set title (comment) of the SDigits branch in the first! header file
   if(!fInitialized)    Init() ;
 
@@ -712,7 +725,8 @@ void AliPHOSDigitizer::SetSDigitsBranch(const char* title){
 
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::SetDigitsBranch(const char* title){
+void AliPHOSDigitizer::SetDigitsBranch(const char* title)
+{
   //Sets the title (comment) of the branch to which Digits branch
   if(!fInitialized)    Init() ;
   

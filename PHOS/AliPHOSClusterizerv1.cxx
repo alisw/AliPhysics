@@ -30,24 +30,25 @@
 //*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 //////////////////////////////////////////////////////////////////////////////
 //  Clusterization class. Performs clusterization (collects neighbouring active cells) and 
-//  unfolding of the clusters with several local maxima.  
-//  results are stored in TreeR#, branches PHOSEmcRP (EMC recPoints),
+//  unfolds the clusters having several local maxima.  
+//  Results are stored in TreeR#, branches PHOSEmcRP (EMC recPoints),
 //  PHOSCpvRP (CPV RecPoints) and AliPHOSClusterizer (Clusterizer with all 
 //  parameters including input digits branch title, thresholds etc.)
-//  This TTask normally called from Reconstructioner, but as well can be used it in 
-//  standalone mode:
-// root [0] AliPHOSClusterizerv1 * cl = new AliPHOSClusterizerv1("galice.root")  
-// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+//  This TTask is normally called from Reconstructioner, but can as well be used in 
+//  standalone mode.
+// Use Case:
+//  root [0] AliPHOSClusterizerv1 * cl = new AliPHOSClusterizerv1("galice.root")  
+//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
 //               //reads gAlice from header file "..."                      
-// root [1] cl->ExecuteTask()  
+//  root [1] cl->ExecuteTask()  
 //               //finds RecPoints in all events stored in galice.root
-// root [2] cl->SetDigitsBranch("digits2") 
+//  root [2] cl->SetDigitsBranch("digits2") 
 //               //sets another title for Digitis (input) branch
-// root [3] cl->SetRecPointsBranch("recp2")  
+//  root [3] cl->SetRecPointsBranch("recp2")  
 //               //sets another title four output branches
-// root [4] cl->SetEmcLocalMaxCut(0.03)  
+//  root [4] cl->SetEmcLocalMaxCut(0.03)  
 //               //set clusterization parameters
-// root [5] cl->ExecuteTask("deb all time")  
+//  root [5] cl->ExecuteTask("deb all time")  
 //               //once more finds RecPoints options are 
 //               // deb - print number of found rec points
 //               // deb all - print number of found RecPoints and some their characteristics 
@@ -115,6 +116,7 @@ ClassImp(AliPHOSClusterizerv1)
 //____________________________________________________________________________
 AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* digitsFile):AliPHOSClusterizer()
 {
+  // ctor with the indication of the file where header Tree and digits Tree are stored
   SetName("AliPHOSClusterizer");
   SetTitle("Version 1") ;
   
@@ -167,8 +169,9 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* di
 
 }
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::Exec(Option_t * option){
-  // Steerign function
+void AliPHOSClusterizerv1::Exec(Option_t * option)
+{
+  // Steering function
 
   if(!fIsInitialized) Init() ;
 
@@ -204,7 +207,7 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Fl
 				    Int_t nPar, Float_t * fitparameters)
 { 
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
-  // the initial values for fitting procedure are set in the positions of local maxima.
+  // The initial values for fitting procedure are set equal to the positions of local maxima.
   // Cluster will be fitted as a superposition of nPar/3 electromagnetic showers
 
   gMinuit->mncler();                     // Reset Minuit's list of paramters
@@ -288,30 +291,31 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Fl
 }
 
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::Init(){
+void AliPHOSClusterizerv1::Init()
+{
   //Make all memory allocations which can not be done in default constructor.
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
       fHeaderFileName = "galice.root" ;
     
-
+    
     TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data() ) ;
-
+    
     if(file == 0){
       file = new TFile(fHeaderFileName.Data(),"update") ;
       gAlice = (AliRun *) file->Get("gAlice") ;
     }
-
+     
     AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;    
     fGeom  = AliPHOSGeometry::GetInstance(phos->GetGeometry()->GetName(),phos->GetGeometry()->GetTitle() );
-
+    
     fDigits = new TClonesArray("AliPHOSDigit",10) ;
     fDigitizer = new AliPHOSDigitizer() ;
     fEmcRecPoints = new TObjArray(200) ;
     fCpvRecPoints = new TObjArray(200) ;
     fEmcRecPoints->SetOwner();          // This lets Clear() really detete rec.points in array
     fCpvRecPoints->SetOwner();
-     
+    
     if(!gMinuit) gMinuit = new TMinuit(100) ;
 
     // add Task to //root/Tasks folder
@@ -327,7 +331,7 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
   // Gives the neighbourness of two digits = 0 are not neighbour but continue searching 
   //                                       = 1 are neighbour
   //                                       = 2 are not neighbour but do not continue searching
-  // neighbours are defined as digits having at least common vertex 
+  // neighbours are defined as digits having at least a common vertex 
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   //                                      which is compared to a digit (d2)  not yet in a cluster  
 
@@ -413,8 +417,9 @@ Bool_t AliPHOSClusterizerv1::IsInCpv(AliPHOSDigit * digit) const
   return rv ; 
 }
 //____________________________________________________________________________
-Bool_t AliPHOSClusterizerv1::ReadDigits(){
-  //reads digitis with specified title from TreeD
+Bool_t AliPHOSClusterizerv1::ReadDigits()
+ {
+   // reads digitis with specified title from TreeD
 
   fNumberOfEmcClusters  = 0 ;
   fNumberOfCpvClusters  = 0 ;
@@ -478,10 +483,12 @@ Bool_t AliPHOSClusterizerv1::ReadDigits(){
 }
 
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::WriteRecPoints(){
-  // checks, if PHOSEmcRP etc. branches with given title already exist, 
-  // exits without writing, otherwise create new branches with given title
-  // fills and wrights TreeR.
+void AliPHOSClusterizerv1::WriteRecPoints()
+{
+  // Checks, if PHOSEmcRP etc. branches with given title already exist, 
+  // if yes exits without writing, 
+  // else creates new branches with given title
+  // fills and writes into TreeR.
   
   Int_t index ;
   //Evaluate poisition, dispersion and other RecPoint properties...
@@ -729,11 +736,12 @@ void AliPHOSClusterizerv1::MakeClusters()
 }
 
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::MakeUnfolding(){
-  //Unfolds clusters using the shape of ElectroMagnetic shower
+void AliPHOSClusterizerv1::MakeUnfolding()
+{
+  // Unfolds clusters using the shape of an ElectroMagnetic shower
   // Performs unfolding of all EMC/CPV but NOT ppsd clusters
 
-  //Unfold first EMC clusters 
+  // Unfold first EMC clusters 
   if(fNumberOfEmcClusters > 0){
 
     Int_t nModulesToUnfold = fGeom->GetNModules() ; 
@@ -764,10 +772,10 @@ void AliPHOSClusterizerv1::MakeUnfolding(){
       delete[] maxAtEnergy ; 
     }
   } 
-  //Unfolding of EMC clusters finished
+  // Unfolding of EMC clusters finished
 
 
-  //Unfold now CPV clusters
+  // Unfold now CPV clusters
   if(fNumberOfCpvClusters > 0){
     
     Int_t nModulesToUnfold = fGeom->GetNCPVModules() ;
@@ -809,7 +817,7 @@ void AliPHOSClusterizerv1::MakeUnfolding(){
 Double_t  AliPHOSClusterizerv1::ShowerShape(Double_t r)
 { 
   // Shape of the shower (see PHOS TDR)
-  // If you change this function, change also the gradien evaluation  in ChiSquare()
+  // If you change this function, change also the gradient evaluation in ChiSquare()
 
   Double_t r4    = r*r*r*r ;
   Double_t r295  = TMath::Power(r, 2.95) ;
@@ -923,7 +931,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
 //_____________________________________________________________________________
 void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)
 {
-  // Calculates th Chi square for the cluster unfolding minimization
+  // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
 
 
@@ -1023,6 +1031,7 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::Print(Option_t * option)const
 {
+  // Prints the parameters of the clusterizer
   if(fIsInitialized){
     
     // Print parameters
@@ -1051,8 +1060,9 @@ void AliPHOSClusterizerv1::Print(Option_t * option)const
     cout << " AliPHOSClusterizerv1 not initialized " << endl ;
 }
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option){
-  //Prints list of RecPoints produced at the current pass of AliPHOSClusterizer
+void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
+{
+  // Prints list of RecPoints produced at the current pass of AliPHOSClusterizer
 
   cout << "AliPHOSClusterizerv1: " << endl ;
   cout << "       Found "<< fEmcRecPoints->GetEntriesFast() << " EMC Rec Points and " 

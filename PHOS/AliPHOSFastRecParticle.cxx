@@ -152,11 +152,9 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     delete clustertext ; 
     clustertext = 0 ; 
     gPad->Update() ; 
-   break ;
+    break ;
   }
-  
   }
-
 }
 
 //____________________________________________________________________________
@@ -213,7 +211,7 @@ void AliPHOSFastRecParticle::Paint(Option_t *)
 //____________________________________________________________________________
 void AliPHOSFastRecParticle::Print(const char * opt)
 {
-  // Print the typr, energy and momentum
+  // Print the type, energy and momentum of the reconstructed particle
   
   cout << "AliPHOSFastRecParticle > " << "type is  " << Name() << endl 
        << "                     " << "Energy = " << fE << endl 

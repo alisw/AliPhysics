@@ -44,6 +44,7 @@
 
 ClassImp(AliPHOSGeometry) ;
 
+// these initialisations are needed for a singleton
 AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
 Bool_t            AliPHOSGeometry::fgInit = kFALSE ;
 
@@ -61,10 +62,12 @@ AliPHOSGeometry::~AliPHOSGeometry(void)
 
 void AliPHOSGeometry::Init(void)
 {
-  // Initializes the PHOS parameters
+  // Initializes the PHOS parameters :
+  //  IHEP is the Protvino CPV (cathode pad chambers)
+  //  GPS2 is the Subatech Pre-Shower (two micromegas sandwiching a passive lead converter)
+  //  MIXT 4 PHOS modules withe the IHEP CPV qnd one PHOS module with the Subatche Pre-Shower
 
-  if ( ((strcmp( fName, "default" )) == 0) || 
-       ((strcmp( fName, "GPS2" ))    == 0) ||
+  if ( ((strcmp( fName, "GPS2" ))    == 0) ||
        ((strcmp( fName, "IHEP" ))    == 0) ||
        ((strcmp( fName, "MIXT" ))    == 0) ) {
     fgInit     = kTRUE ; 
@@ -106,7 +109,10 @@ void AliPHOSGeometry::Init(void)
 }
 
 //____________________________________________________________________________
-Float_t AliPHOSGeometry::GetCPVBoxSize(Int_t index)  const { 
+Float_t AliPHOSGeometry::GetCPVBoxSize(Int_t index)  const
+{
+  // returns the coarse dimension CPV depending on the CPV option set
+  
     if      (strcmp(fName,"GPS2") ==0 ) 
       return fGeometryPPSD->GetCPVBoxSize(index);
     else if (strcmp(fName,"IHEP")==0) 
@@ -120,7 +126,8 @@ Float_t AliPHOSGeometry::GetCPVBoxSize(Int_t index)  const {
 //____________________________________________________________________________
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance() 
 { 
-  // Returns the pointer of the unique instance
+  // Returns the pointer of the unique instance; singleton specific
+  
   return (AliPHOSGeometry *) fgGeom ; 
 }
 
@@ -128,6 +135,8 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance()
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t* title) 
 {
   // Returns the pointer of the unique instance
+  // Creates it with the specified options (name, title) if it does not exist yet
+
   AliPHOSGeometry * rv = 0  ; 
   if ( fgGeom == 0 ) {
     if ( strcmp(name,"") == 0 ) 
@@ -157,7 +166,7 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
 //____________________________________________________________________________
 void AliPHOSGeometry::SetPHOSAngles() 
 { 
-  // Calculates the position in ALICE of the PHOS modules
+  // Calculates the position of the PHOS modules in ALICE global coordinate system
   
   Double_t const kRADDEG = 180.0 / kPI ;
   Float_t pphi =  2 * TMath::ATan( GetOuterBoxSize(0)  / ( 2.0 * GetIPtoOuterCoverDistance() ) ) ;
@@ -244,7 +253,7 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid)
 //____________________________________________________________________________  
 void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt) 
 {
-  // calculates the angular coverage in theta and phi of a EMC module
+  // calculates the angular coverage in theta and phi of one EMC (=PHOS) module
 
  Double_t conv ; 
   if ( opt == Radian() ) 
@@ -278,7 +287,7 @@ void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t
 //____________________________________________________________________________  
 void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt) 
 {
-  // calculates the angular coverage in theta and phi of a single crystal in a EMC module
+  // calculates the angular coverage in theta and phi of a single crystal in a EMC(=PHOS) module
 
   Double_t conv ; 
   if ( opt == Radian() ) 
@@ -300,7 +309,7 @@ void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t
 //____________________________________________________________________________
 void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat) const
 {
-  // Calculates the ALICE global coordinates of a RecPoint and the error matrix
+  // Calculates the coordinates of a RecPoint and the error matrix in the ALICE global coordinate system
  
   AliPHOSRecPoint * tmpPHOS = (AliPHOSRecPoint *) RecPoint ;  
   TVector3 localposition ;
@@ -341,7 +350,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
 //____________________________________________________________________________
 void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const 
 {
-  // Calculates the ALICE global coordinates of a RecPoint 
+  // Calculates the coordinates of a RecPoint in the ALICE global coordinate system 
 
   AliPHOSRecPoint * tmpPHOS = (AliPHOSRecPoint *) RecPoint ;  
   TVector3 localposition ;
@@ -379,8 +388,8 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) co
 //____________________________________________________________________________
 void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) 
 {
-  // calculates the impact coordinates of a neutral particle  
-  // emitted in direction theta and phi in ALICE
+  // calculates the impact coordinates on PHOS of a neutral particle  
+  // emitted in the direction theta and phi in the ALICE global coordinate system
 
   // searches for the PHOS EMC module
   ModuleNumber = 0 ; 
@@ -460,7 +469,7 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 
 void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) 
 {
-  // Converts the absolute numbering into the global ALICE coordinates
+  // Converts the absolute numbering into the global ALICE coordinate system
   // It works only for the GPS2 geometry
   
   if (id > 0 && strcmp(fName,"GPS2")==0) { 

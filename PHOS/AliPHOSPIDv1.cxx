@@ -19,34 +19,34 @@
 // Implementation version v1 of the PHOS particle identifier 
 // Particle identification based on the 
 //     - CPV information, 
-//     - Preshower information (in MIX or GPS2 geometries)
+//     - Preshower information (in MIXT or GPS2 geometries)
 //     - shower width.
-
-// CPV or Preshower cluster should be clother in PHOS plane than fCpvEmcDistance (in cm).
-// This variable can be set by method SetCpvtoEmcDistanceCut(Float_t cut)  
+//
+// CPV or Preshower clusters should be closer in PHOS plane than fCpvEmcDistance (in cm).
+// This parameter can be set by method SetCpvtoEmcDistanceCut(Float_t cut)  
 //
 // One can set desirable ID method by the function SetIdentificationMethod(option).
-// Now the following options can be used together or separately :
+// Presently the following options can be used together or separately :
 //     - "disp": use dispersion cut on shower width 
 //               (width can be set by method SetDispersionCut(Float_t cut)
-//     - "ell" : use cut on the axis of the ellipse, drown around shower 
+//     - "ell" : use cut on the axis of the ellipse, drawn around shower 
 //       (this cut can be changed by SetShowerProfileCut(char* formula), 
 //        where formula - any function of two variables f(lambda[0],lambda[1]).
 //        Shower is considered as EM if f() > 0 )
 // One can visualize current cuts calling method PlotDispersionCuts().    
 //
-// usercase:
-// root [0] AliPHOSPIDv1 * p1 = new AliPHOSPIDv1("galice.root")
-// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-// root [1] p1->SetIdentificationMethod("disp ellipse")
-// root [2] p1->ExecuteTask()
-// root [3] AliPHOSPIDv1 * p2 = new AliPHOSPIDv1("galice1.root","ts1")
-// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+// use case:
+//  root [0] AliPHOSPIDv1 * p1 = new AliPHOSPIDv1("galice.root")
+//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+//  root [1] p1->SetIdentificationMethod("disp ellipse")
+//  root [2] p1->ExecuteTask()
+//  root [3] AliPHOSPIDv1 * p2 = new AliPHOSPIDv1("galice1.root","ts1")
+//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
 //                // reading headers from file galice1.root and TrackSegments 
 //                // with title "ts1"
-// root [4] p2->SetRecParticlesBranch("rp1")
+//  root [4] p2->SetRecParticlesBranch("rp1")
 //                // set file name for the branch RecParticles
-// root [5] p2->ExecuteTask("deb all time")
+//  root [5] p2->ExecuteTask("deb all time")
 //                // available options
 //                // "deb" - prints # of reconstructed particles
 //                // "deb all" -  prints # and list of RecParticles
@@ -87,13 +87,14 @@ ClassImp( AliPHOSPIDv1)
 //____________________________________________________________________________
 AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
 { 
+  // default ctor
   fIsInitialized = kFALSE ;
 }
 
 //____________________________________________________________________________
 AliPHOSPIDv1::AliPHOSPIDv1(const char * headeFile,const char * tsBranchTitle):AliPHOSPID()
 { 
-  
+  //ctor with the indication on where to look for the track segments
   fHeaderFileName = headeFile ;
 
   fTSTitle = tsBranchTitle ;
@@ -135,12 +136,12 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headeFile,const char * tsBranchTitle):Al
 //____________________________________________________________________________
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
-
+  //dtor 
 }
 //____________________________________________________________________________
 void AliPHOSPIDv1::Init()
 {
-  // Make all memory allocationa not possible in default constructor
+  // Make all memory allocations that are not possible in default constructor
   if(!fIsInitialized){
     if(fHeaderFileName.IsNull())
       fHeaderFileName = "galice.root" ;
@@ -178,7 +179,7 @@ void AliPHOSPIDv1::Init()
 Bool_t AliPHOSPIDv1::ReadTrackSegments()
 {
   // Reads TrackSegments an extracts the title of the RecPoints 
-  // branch from which TS were made.
+  // branch from which TS were made of.
   // Then reads both TrackSegments and RecPoints.
 
   //Fist read Track Segment Branch and extract RecPointsBranch from fTSMaker
@@ -440,7 +441,8 @@ void  AliPHOSPIDv1:: Print(Option_t * option) const
 }
 
 //____________________________________________________________________________
-void  AliPHOSPIDv1::SetShowerProfileCut(char * formula){
+void  AliPHOSPIDv1::SetShowerProfileCut(char * formula)
+{
   //set shape of the cut on the axis of ellipce, drown around shouer
   //shower considered "narrow" if Formula(lambda[0],lambda[1]) > 0.
   if(fFormula) 
@@ -528,7 +530,8 @@ void  AliPHOSPIDv1::WriteRecParticles()
 //____________________________________________________________________________
 void  AliPHOSPIDv1::PlotDispersionCuts()const
 {
-  TCanvas*  lambdas = new TCanvas("lambdas","Cuts on the elipse axise",200,10,700,500);
+  // produces a plot of the dispersion cut
+  TCanvas*  lambdas = new TCanvas("lambdas","Cuts on the ellipse axis",200,10,700,500);
   
   if(fIDOptions.Contains("ell",TString::kIgnoreCase ) ){
     TF2 * ell = new TF2("Elliptic Cuts",fFormula->GetName(),0,3,0,3) ;
@@ -576,7 +579,7 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRec
   emc->GetGlobalPosition(emcglobalpos, dummy) ;
   
  
-  // The following commeneted code becomes valid once the PPSD provides 
+  // The following commented code becomes valid once the PPSD provides 
   // a reasonable position resolution, at least as good as EMC ! 
   //   TVector3 ppsdlglobalpos ;
   //   TVector3 ppsduglobalpos ;
@@ -605,8 +608,9 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRec
   return dir ;  
 }
 //____________________________________________________________________________
-void AliPHOSPIDv1::PrintRecParticles(Option_t * option){
-
+void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
+{
+  // Prints the list of reconstructed particles
   cout << "AliPHOSPIDv1: " << endl ;
   cout << "       found " << fRecParticles->GetEntriesFast() << " RecParticles " << endl ;
 

@@ -243,7 +243,9 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 }
 
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits){
+void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
+{
+  // wraps other methods
   AliPHOSEmcRecPoint::EvalAll(logWeight,digits) ;
   EvalClusterLengths(digits) ;
 }

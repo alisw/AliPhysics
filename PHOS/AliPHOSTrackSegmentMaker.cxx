@@ -44,7 +44,5 @@ ClassImp( AliPHOSTrackSegmentMaker)
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(char * header,char * branch): TTask("AliPHOSTrackSegmentMaker","")
 {
-
-
 }
 

@@ -27,15 +27,15 @@
 // another set of SDigits with different parameters. Two versions
 // can be distunguished using titles of the branches.
 // User case:
-// root [0] AliPHOSSDigitizer * s = new AliPHOSSDigitizer("galice.root")
-// Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-// root [1] s->ExecuteTask()
+//  root [0] AliPHOSSDigitizer * s = new AliPHOSSDigitizer("galice.root")
+//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+//  root [1] s->ExecuteTask()
 //             // Makes SDigitis for all events stored in galice.root
-// root [2] s->SetPedestalParameter(0.001)
+//  root [2] s->SetPedestalParameter(0.001)
 //             // One can change parameters of digitization
-// root [3] s->SetSDigitsBranch("Redestal 0.001")
+//  root [3] s->SetSDigitsBranch("Redestal 0.001")
 //             // and write them into the new branch
-// root [4] s->ExeciteTask("deb all tim")
+//  root [4] s->ExeciteTask("deb all tim")
 //             // available parameters:
 //             deb - print # of produced SDigitis
 //             deb all  - print # and list of produced SDigits
@@ -121,8 +121,9 @@ AliPHOSSDigitizer::~AliPHOSSDigitizer()
     delete fHits ;
 }
 //____________________________________________________________________________ 
-void AliPHOSSDigitizer::Init(){
-  //Initialization can not be done in the default constructor
+void AliPHOSSDigitizer::Init()
+{
+  // Initialization can not be done in the default constructor
 
   if(!fIsInitialized){
 
@@ -148,8 +149,9 @@ void AliPHOSSDigitizer::Init(){
   }
 }
 //____________________________________________________________________________
-void AliPHOSSDigitizer::Exec(Option_t *option) { 
-  //Collects all hits in the same active volume into digit
+void AliPHOSSDigitizer::Exec(Option_t *option) 
+{ 
+  // Collects all hits in the same active volume into digit
   
   if(!fIsInitialized)
     Init() ;
@@ -312,14 +314,17 @@ void AliPHOSSDigitizer::Exec(Option_t *option) {
   
 }
 //__________________________________________________________________
-void AliPHOSSDigitizer::SetSDigitsBranch(const char * title ){
-  //Seting title to branch SDigits 
+void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
+{
+  // Setting title to branch SDigits 
   if(!fSDigitsTitle.IsNull())
     cout << "AliPHOSSdigitizer: changing SDigits file from " <<fSDigitsTitle.Data() << " to " << title << endl ;
   fSDigitsTitle=title ;
 }
 //__________________________________________________________________
-void AliPHOSSDigitizer::Print(Option_t* option)const{
+void AliPHOSSDigitizer::Print(Option_t* option)const
+{
+  // Prints parameters of SDigitizer
   cout << "------------------- "<< GetName() << " -------------" << endl ;
   cout << "   Writing SDigitis to branch with title  " << fSDigitsTitle.Data() << endl ;
   cout << "   with digitization parameters  A = " << fA << endl ;
@@ -329,15 +334,18 @@ void AliPHOSSDigitizer::Print(Option_t* option)const{
   
 }
 //__________________________________________________________________
-Bool_t AliPHOSSDigitizer::operator==( AliPHOSSDigitizer const &sd )const{
+Bool_t AliPHOSSDigitizer::operator==( AliPHOSSDigitizer const &sd )const
+{
+  // SDigitizer are identical if the same threshold is in use
   if( (fA==sd.fA)&&(fB==sd.fB)&&(fPrimThreshold==sd.fPrimThreshold))
     return kTRUE ;
   else
     return kFALSE ;
 }
 //__________________________________________________________________
-void AliPHOSSDigitizer::PrintSDigits(Option_t * option){
-  //Prints list of digits produced at the current pass of AliPHOSDigitizer
+void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
+{
+  // Prints list of digits produced in the current pass of AliPHOSDigitizer
   
   cout << "AliPHOSSDigitizer: " << endl ;
   cout << "       Number of entries in SDigits list  " << fSDigits->GetEntriesFast() << endl ;
