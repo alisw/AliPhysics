@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2002/12/05 20:07:25  nilsen
+Adding new SPD 2002 test-beam geometry, with Config file (setup for testing,
+50 pions in one event and not 50 events with one pion).
+
 */
 #include <Riostream.h>
 #include <stdio.h>
@@ -680,16 +684,10 @@ void AliITSvSPD02::StepManager(){
     static Int_t stat0=0;
     if((id=gMC->CurrentVolID(copy) == fIDMother)&&
        (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
-	gMC->TrackPosition(position); // Get Position
-	gMC->TrackMomentum(momentum); // Get Momentum
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	AliTrackReference *tr = new(lTR[copy]) AliTrackReference();
-	tr->SetTrack(gAlice->CurrentTrack());
-	tr->SetPosition(position.X(),position.Y(),position.Z());
-	tr->SetMomentum(momentum.Px(),momentum.Py(),momentum.Pz());
-	tr->SetLength(gMC->TrackLength());
+	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack(),gMC);
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;

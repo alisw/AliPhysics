@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/11/21 23:05:28  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.8  2002/11/14 15:09:58  nilsen
 Fixed problem of elements of a Mixture having zero concentration. This was
 done by reordering some of the elements such that those which may have
@@ -5219,16 +5222,10 @@ void AliITSvPPRasymmFMD::StepManager(){
     static Int_t stat0=0;
     if((id=gMC->CurrentVolID(copy) == fIDMother)&&
        (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
-	gMC->TrackPosition(position); // Get Position
-	gMC->TrackMomentum(momentum); // Get Momentum
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	AliTrackReference *tr = new(lTR[copy]) AliTrackReference();
-	tr->SetTrack(gAlice->CurrentTrack());
-	tr->SetPosition(position.X(),position.Y(),position.Z());
-	tr->SetMomentum(momentum.Px(),momentum.Py(),momentum.Pz());
-	tr->SetLength(gMC->TrackLength());
+	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack(),gMC);
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;

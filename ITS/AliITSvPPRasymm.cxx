@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.62  2003/01/16 08:10:13  hristov
+Correcting usage of string arrays (valgrind)
+
 Revision 1.61  2002/11/21 23:05:27  alibrary
 Removing AliMC and AliMCProcess
 
@@ -29372,16 +29375,10 @@ void AliITSvPPRasymm::StepManager(){
     static Int_t stat0=0;
     if((id=gMC->CurrentVolID(copy) == fIDMother)&&
        (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
-	gMC->TrackPosition(position); // Get Position
-	gMC->TrackMomentum(momentum); // Get Momentum
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	AliTrackReference *tr = new(lTR[copy]) AliTrackReference();
-	tr->SetTrack(gAlice->CurrentTrack());
-	tr->SetPosition(position.X(),position.Y(),position.Z());
-	tr->SetMomentum(momentum.Px(),momentum.Py(),momentum.Pz());
-	tr->SetLength(gMC->TrackLength());
+	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack(),gMC);
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;
