@@ -13,10 +13,13 @@
 #ifndef TG4_MODULAR_PHYSICS_LIST_H
 #define TG4_MODULAR_PHYSICS_LIST_H
 
+#include "TG4Verbose.h"
+
 #include <G4VModularPhysicsList.hh>
 #include <globals.hh>
 
-class TG4ModularPhysicsList: public G4VModularPhysicsList
+class TG4ModularPhysicsList: public G4VModularPhysicsList,
+                             public TG4Verbose
 {
   public:
     TG4ModularPhysicsList();

@@ -12,6 +12,7 @@
 #ifndef TG4_XML_GEOMETRY_GENERATOR_H
 #define TG4_XML_GEOMETRY_GENERATOR_H
 
+#include "TG4Verbose.h"
 #include "TG4Globals.h"
 
 #include <globals.hh>
@@ -21,7 +22,7 @@ class TG4VXMLConvertor;
 
 class G4LogicalVolume;
 
-class TG4XMLGeometryGenerator
+class TG4XMLGeometryGenerator : public TG4Verbose
 {
   public:
     TG4XMLGeometryGenerator();

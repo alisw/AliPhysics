@@ -11,6 +11,7 @@
 #ifndef TG4_GEOMETRY_MANAGER_H
 #define TG4_GEOMETRY_MANAGER_H
 
+#include "TG4Verbose.h"
 #include "TG4NameMap.h"
 #include "TG4IntMap.h"
 #include "TG4Globals.h"
@@ -27,7 +28,7 @@ class TG4G3ControlVector;
 
 class G4VPhysicalVolume;
 
-class TG4GeometryManager
+class TG4GeometryManager : public TG4Verbose
 {
   public:
     TG4GeometryManager();

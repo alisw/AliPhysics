@@ -43,7 +43,8 @@ TG4GeometryManager* TG4GeometryManager::fgInstance = 0;
 
 //_____________________________________________________________________________
 TG4GeometryManager::TG4GeometryManager() 
-  : fMediumCounter(0),
+  : TG4Verbose("geometryManager"),
+    fMediumCounter(0),
     fMaterialCounter(0),
     fMatrixCounter(0),
     fUseG3TMLimits(false),
@@ -68,7 +69,8 @@ TG4GeometryManager::TG4GeometryManager()
 }
 
 //_____________________________________________________________________________
-TG4GeometryManager::TG4GeometryManager(const TG4GeometryManager& right) {
+TG4GeometryManager::TG4GeometryManager(const TG4GeometryManager& right)
+  : TG4Verbose("geometryManager") {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4GeometryManager singleton.");
@@ -163,9 +165,11 @@ void TG4GeometryManager::Material(Int_t& kmat, const char* name, Float_t a,
     // create new material only if it does not yet exist
     G4Material* material = fGeometryServices->FindMaterial(a, z, dens); 
     if (material) {
-      // add verbose
-      G4cout << "!!! Material " << namein << " already exists as "
-             << material->GetName() << G4endl;
+      // verbose
+      if (VerboseLevel() > 1) {
+        G4cout << "!!! Material " << namein << " already exists as "
+               << material->GetName() << G4endl;
+      }	       
       G3Mat.put(kmat, material);	    
     }  	       
     else
@@ -212,9 +216,11 @@ void TG4GeometryManager::Mixture(Int_t& kmat, const char *name, Float_t *a,
    G4Material* material 
      = fGeometryServices->FindMaterial(ain, zin, dens, nlmat, wmatin); 
    if (material) {
-     // add verbose
-     G4cout << "!!! Material " << namein << " already exists as "
-            << material->GetName() << G4endl;
+     // verbose
+     if (VerboseLevel() > 1) {
+       G4cout << "!!! Material " << namein << " already exists as "
+              << material->GetName() << G4endl;
+     }	      
      G3Mat.put(kmat, material);	    
    }  
    else
@@ -463,10 +469,11 @@ void  TG4GeometryManager::SetCerenkov(Int_t itmed, Int_t npckov,
   // set material properties table 
   material->SetMaterialPropertiesTable(table);
 
-  // add verbose
-  G4cout << "The tables for UV photon tracking set for "
-         << material->GetName() << G4endl;
-
+  // verbose
+  if (VerboseLevel() > 0) {
+    G4cout << "The tables for UV photon tracking set for "
+           << material->GetName() << G4endl;
+  }	   
   for (i=0; i<npckov; i++)
     G4cout << ppckovDbl[i] << " " << rindexDbl[i] << G4endl;
 	 
@@ -882,13 +889,14 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
   G3Vol.VTEStat();
 
   // print G4 geometry statistics
-  // add verbose
-  G4cout << "G4 Stat: instantiated " 
-         << fGeometryServices->NofG4LogicalVolumes()  
-	 << " logical volumes \n"
-	 << "                      " 
-	 << fGeometryServices->NofG4PhysicalVolumes() 
-	 << " physical volumes" << G4endl;
+  if (VerboseLevel() > 0) {
+    G4cout << "G4 Stat: instantiated " 
+           << fGeometryServices->NofG4LogicalVolumes()  
+	   << " logical volumes \n"
+	   << "                      " 
+	   << fGeometryServices->NofG4PhysicalVolumes() 
+	   << " physical volumes" << G4endl;
+  }	   
 
   // position the first entry 
   // (in Geant3 the top volume cannot be positioned)
@@ -947,13 +955,16 @@ void TG4GeometryManager::ReadG3Geometry(G4String filePath)
 // Processes g3calls.dat file and fills G3 tables.
 // ---
 
-  // add verbose
-  G4cout << "Reading the call list file " << filePath << "..." << G4endl;
+  // verbose
+  if (VerboseLevel() > 0) {
+    G4cout << "Reading the call list file " << filePath << "..." << G4endl;
+  }
     
   G3CLRead(filePath, NULL);
 
-  // add verbose
-  G4cout << "Call list file read completed. Build geometry" << G4endl;
+  if (VerboseLevel() > 0) {
+    G4cout << "Call list file read completed. Build geometry" << G4endl;
+  }  
 }
 
  

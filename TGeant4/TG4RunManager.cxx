@@ -38,7 +38,8 @@ TG4RunManager* TG4RunManager::fgInstance = 0;
 //_____________________________________________________________________________
 TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration, 
                              int argc, char** argv)		  
-  : fMessenger(this),
+  : TG4Verbose("runManager"),
+    fMessenger(this),
     fRunConfiguration(runConfiguration),
     fGeantUISession(0),
     fRootUISession(0),
@@ -62,8 +63,10 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration,
   // create and configure geant4 run manager
   fRunManager =  new G4RunManager();
   fRunConfiguration->ConfigureRunManager(fRunManager);
-  // add verbose level
-  //G4cout << "G4RunManager has been created." << G4endl;
+
+  if (VerboseLevel() > 1) {
+    G4cout << "G4RunManager has been created." << G4endl;
+  }  
 
   // create geant4 UI
   CreateGeantUI();
@@ -76,7 +79,8 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration,
 
 //_____________________________________________________________________________
 TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration)
-  : fMessenger(this),
+  : TG4Verbose("runManager"),
+    fMessenger(this),
     fRunConfiguration(runConfiguration),
     fGeantUISession(0),
     fRootUISession(0),
@@ -108,8 +112,10 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration)
   // create and configure geant4 run manager
   fRunManager =  new G4RunManager();
   fRunConfiguration->ConfigureRunManager(fRunManager);
-  // add verbose level
-  //G4cout << "G4RunManager has been created." << G4endl;
+
+  if (VerboseLevel() > 1) {
+    G4cout << "G4RunManager has been created." << G4endl;
+  }  
 
   // create geant4 UI
   CreateGeantUI();
@@ -122,13 +128,15 @@ TG4RunManager::TG4RunManager(TG4VRunConfiguration* runConfiguration)
 
 //_____________________________________________________________________________
 TG4RunManager::TG4RunManager()
-  : fMessenger(this) {
+  : TG4Verbose("runManager"),
+    fMessenger(this) {
 //
 }
 
 //_____________________________________________________________________________
 TG4RunManager::TG4RunManager(const TG4RunManager& right) 
-  : fMessenger(this) {
+  : TG4Verbose("runManager"),
+    fMessenger(this) {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4RunManager singleton.");

@@ -27,16 +27,17 @@ const G4double TG4ModularPhysicsList::fgkDefaultCutValue = 1.0 * mm;
 
 //_____________________________________________________________________________
 TG4ModularPhysicsList::TG4ModularPhysicsList()
-  : G4VModularPhysicsList() {
+  : G4VModularPhysicsList(),
+    TG4Verbose("physicsList") {
 //
   defaultCutValue = fgkDefaultCutValue;
 
-  SetVerboseLevel(1);
+  SetVerboseLevel(VerboseLevel());
 }
 
 //_____________________________________________________________________________
 TG4ModularPhysicsList::TG4ModularPhysicsList(const TG4ModularPhysicsList& right)
-{
+  : TG4Verbose("physicsList") {
 //
   TG4Globals::Exception("TG4ModularPhysicsList is protected from copying.");
 }
@@ -75,7 +76,7 @@ void TG4ModularPhysicsList::SetProcessActivation(
   G4String strActivation = "activation";
   if (!activation) strActivation = "inactivation";
 
-  if (verboseLevel>1) {
+  if (VerboseLevel() > 1) {
     G4cout << "Set process " << strActivation << " for " 
            << (*processManager->GetProcessList())[processId]->GetProcessName() 
 	   << G4endl;
@@ -138,7 +139,7 @@ void TG4ModularPhysicsList::SetCuts()
   G4double ecut = cut; 
 
 #ifdef G4VERBOSE    
-  if (verboseLevel >1){
+  if (VerboseLevel() > 1) {
     G4cout << "TG4ModularPhysicsList::SetCutsWithDefault:";
     G4cout << "CutLength : " << cut/mm << " (mm)" << G4endl;
   }  
@@ -176,8 +177,10 @@ void TG4ModularPhysicsList::SetProcessActivation()
     = TG4GeometryServices::Instance()->IsSpecialControls();  
 
   if (!specialControls) 
-    G4cout << G4endl
-           << "### No special controls in user limits are set." << G4endl;
+    if (VerboseLevel() > 0) {
+      G4cout << G4endl
+             << "### No special controls in user limits are set." << G4endl;
+    }	     
 
   if (!controlVector) {
     G4String text = "TG4ModularPhysicsList::SetProcessActivation: \n";
@@ -268,4 +271,3 @@ void TG4ModularPhysicsList::DumpAllProcesses() const
     G4cout << G4endl;  
   }  
 }
-

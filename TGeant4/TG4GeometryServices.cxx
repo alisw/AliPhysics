@@ -33,7 +33,8 @@ const G4double       TG4GeometryServices::fgkDensityTolerance = 0.005;
 //_____________________________________________________________________________
 TG4GeometryServices::TG4GeometryServices(TG4IntMap* mediumMap, 
                                          TG4NameMap* nameMap) 
-  : fMediumMap(mediumMap),
+  : TG4Verbose("geometryServices"),
+    fMediumMap(mediumMap),
     fNameMap(nameMap)				 
 {
 //
@@ -46,7 +47,8 @@ TG4GeometryServices::TG4GeometryServices(TG4IntMap* mediumMap,
 }
 
 //_____________________________________________________________________________
-TG4GeometryServices::TG4GeometryServices() {
+TG4GeometryServices::TG4GeometryServices()
+  : TG4Verbose("geometryServices") {
 // 
   TG4Globals::Exception(
     "TG4GeometryServices default constructor is protected.");
@@ -54,7 +56,8 @@ TG4GeometryServices::TG4GeometryServices() {
 
 
 //_____________________________________________________________________________
-TG4GeometryServices::TG4GeometryServices(const TG4GeometryServices& right) {
+TG4GeometryServices::TG4GeometryServices(const TG4GeometryServices& right)  
+  : TG4Verbose("geometryServices")  {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4GeometryServices singleton.");
@@ -279,9 +282,11 @@ G4Material* TG4GeometryServices::MixMaterials(G4String name, G4double density,
     G4String text = "TG4GeometryServices::MixMaterials: ";
     text = text +  "different number of material names and weigths.";
     TG4Globals::Exception(text);
-  }    
-  // add verbose
-  // G4cout << "Nof of materials to be mixed: " << nofMaterials << G4endl;
+  } 
+     
+  if (VerboseLevel() > 1) {
+    G4cout << "Nof of materials to be mixed: " << nofMaterials << G4endl;
+  }  
 
   // fill vector of materials
   G4std::vector<G4Material*> matVector;  

@@ -10,6 +10,7 @@
 #ifndef TG4_SPECIAL_CONTROLS_H
 #define TG4_SPECIAL_CONTROLS_H
 
+#include "TG4Verbose.h"
 #include "TG4Globals.h"
 #include "TG4G3Control.h"
 
@@ -18,7 +19,8 @@
 #include <globals.hh>
 #include <g4std/vector>
 
-class TG4SpecialControls : public G4VProcess 
+class TG4SpecialControls : public G4VProcess,
+                           public TG4Verbose 
 {
   enum Switch { kSwitch, kReswitch, kUnswitch };
 

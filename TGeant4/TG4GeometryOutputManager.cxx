@@ -12,7 +12,8 @@
 #include <g4std/iomanip>
 
 //_____________________________________________________________________________
-TG4GeometryOutputManager::TG4GeometryOutputManager() {
+TG4GeometryOutputManager::TG4GeometryOutputManager()
+  : TG4Verbose("geometryOutputManager") {
 //
 }
 
@@ -29,7 +30,9 @@ void TG4GeometryOutputManager::OpenFile(G4String filePath)
 // Opens output files.
 // ---
 
-  G4cout << "TG4GeometryOutputManager::OpenFile: " << filePath << G4endl;
+  if (VerboseLevel() > 0) {
+    G4cout << "TG4GeometryOutputManager::OpenFile: " << filePath << G4endl;
+  }  
   
   //fOutFile.open(filePath, ios::out, filebuf::openprot); 
   fOutFile.open(filePath, G4std::ios::out); //, G4std::filebuf::openprot); 

@@ -11,6 +11,7 @@
 #ifndef TG4_GEOMETRY_SERVICES_H
 #define TG4_GEOMETRY_SERVICES_H
 
+#include "TG4Verbose.h"
 #include "TG4Globals.h"
 
 #include <globals.hh>
@@ -27,7 +28,7 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4UserLimits;
 
-class TG4GeometryServices
+class TG4GeometryServices : public TG4Verbose
 {
   public:
     TG4GeometryServices(TG4IntMap* mediumMap, TG4NameMap* nameMap);

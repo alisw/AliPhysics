@@ -13,6 +13,7 @@
 #ifndef TG4_RUN_MANAGER_H
 #define TG4_RUN_MANAGER_H
 
+#include "TG4Verbose.h"
 #include "TG4RunMessenger.h"
 
 #include <globals.hh>
@@ -28,7 +29,7 @@ class G4UIsession;
 
 class TApplication;
 
-class TG4RunManager
+class TG4RunManager : public TG4Verbose
 {
   public:
     TG4RunManager(TG4VRunConfiguration* configuration, int argc, char** argv);

@@ -11,6 +11,7 @@
 #ifndef TG4_PARTICLES_MANAGER_H
 #define TG4_PARTICLES_MANAGER_H
 
+#include "TG4Verbose.h"
 #include "TG4Globals.h"
 #include "TG4NameMap.h"
 #include "TG4IntMap.h"
@@ -26,7 +27,7 @@ class G4ParticleDefinition;
 class TParticle;
 class TClonesArray;
 
-class TG4ParticlesManager
+class TG4ParticlesManager : public TG4Verbose
 {
   public:
     TG4ParticlesManager();

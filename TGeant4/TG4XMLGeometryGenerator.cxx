@@ -26,7 +26,8 @@
 TG4XMLGeometryGenerator* TG4XMLGeometryGenerator::fgInstance = 0;
 
 //_____________________________________________________________________________
-TG4XMLGeometryGenerator::TG4XMLGeometryGenerator() 
+TG4XMLGeometryGenerator::TG4XMLGeometryGenerator()
+  : TG4Verbose("geometryGenerator") 
 {
 //
   if (fgInstance) {
@@ -38,7 +39,9 @@ TG4XMLGeometryGenerator::TG4XMLGeometryGenerator()
 }
 
 //_____________________________________________________________________________
-TG4XMLGeometryGenerator::TG4XMLGeometryGenerator(const TG4XMLGeometryGenerator& right) 
+TG4XMLGeometryGenerator::TG4XMLGeometryGenerator(
+                                       const TG4XMLGeometryGenerator& right) 
+  : TG4Verbose("geometryGenerator") 
 {
 // 
   TG4Globals::Exception(
@@ -96,8 +99,12 @@ void TG4XMLGeometryGenerator::ProcessSolids(G4LogicalVolume* lv)
   G4int nofDaughters = lv->GetNoDaughters();
   if (nofDaughters>0) 
     for (G4int i=0; i<nofDaughters; i++) {
-      //G4cout << "processing " << i << "th daughter of " 
-      //       << lv->GetName() << G4endl;
+
+      if (VerboseLevel() > 1) {
+        G4cout << "processing " << i << "th daughter of " 
+               << lv->GetName() << G4endl;
+      }
+              
       G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
       G4String lvdName = lvd->GetName();
 
@@ -195,8 +202,11 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   // write positions  
   G4int i;
   for (i=0; i<nofDaughters; i++) {
-   // G4cout << "processing " << i << "th daughter of " 
-   //        << lv->GetName() << G4endl;
+
+    if (VerboseLevel() > 1) {
+      G4cout << "processing " << i << "th daughter of " 
+             << lv->GetName() << G4endl;
+    }	     
    
     G4VPhysicalVolume* vpvd = lv->GetDaughter(i);
     G4LogicalVolume* lvd = vpvd->GetLogicalVolume();

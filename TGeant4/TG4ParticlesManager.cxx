@@ -22,7 +22,7 @@ TG4ParticlesManager* TG4ParticlesManager::fgInstance = 0;
 
 //_____________________________________________________________________________
 TG4ParticlesManager::TG4ParticlesManager()
-{ 
+  : TG4Verbose("particlesMananger") { 
 //
   if (fgInstance) {
     TG4Globals::Exception(
@@ -33,7 +33,8 @@ TG4ParticlesManager::TG4ParticlesManager()
 }
 
 //_____________________________________________________________________________
-TG4ParticlesManager::TG4ParticlesManager(const TG4ParticlesManager& right) {
+TG4ParticlesManager::TG4ParticlesManager(const TG4ParticlesManager& right) 
+  : TG4Verbose("particlesMananger") { 
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4ParticlesManager singleton.");
@@ -149,9 +150,13 @@ void  TG4ParticlesManager::MapParticles()
   fParticlePDGMap.Add("geantino", GetPDGEncoding("geantino"));
 
   // add verbose
-  G4cout << "Particle maps have been filled." << G4endl;
-  //fParticleNameMap.PrintAll();
-  //fParticlePDGMap.PrintAll();
+  if (VerboseLevel() > 0) {
+    G4cout << "Particle maps have been filled." << G4endl;
+  }  
+  if (VerboseLevel() > 1) {
+    fParticleNameMap.PrintAll();
+    fParticlePDGMap.PrintAll();
+  }  
 }    
 
 // public methods

@@ -18,17 +18,19 @@
 //_____________________________________________________________________________
 TG4SpecialControls::TG4SpecialControls(const G4String& processName)
   : G4VProcess(processName),
+    TG4Verbose("specialControls"),
     fSwitchControls(kUnswitch),
     fLastTrackID(0) {
 //    
-   verboseLevel = 1;
-   if (verboseLevel>0) {
+   verboseLevel = VerboseLevel();
+   if (VerboseLevel() >0 ) {
      G4cout << GetProcessName() << " is created "<< G4endl;
    }
 }
 
 //_____________________________________________________________________________
-TG4SpecialControls::TG4SpecialControls(const TG4SpecialControls& right) {
+TG4SpecialControls::TG4SpecialControls(const TG4SpecialControls& right)     
+  : TG4Verbose("specialControls") {
 // 
   TG4Globals::Exception(
     "TG4SpecialControls is protected from copying.");
@@ -122,14 +124,18 @@ G4double TG4SpecialControls::PostStepGetPhysicalInteractionLength(
         // and entering another logical volume with special controls 
 	proposedStep = minStep;
         fSwitchControls = kReswitch;
-        if (verboseLevel>0) G4cout << "kReswitch" << G4endl;
+        if (VerboseLevel() > 1) { 
+	  G4cout << "kReswitch" << G4endl;
+	}  
       }
       else {
         // particle is exiting a logical volume with special controls
         // and entering a logical volume without special controls 
 	proposedStep = minStep;
         fSwitchControls = kUnswitch;
-        if (verboseLevel>0) G4cout << "kUnswitch" << G4endl;
+        if (VerboseLevel() > 1) { 
+	  G4cout << "kUnswitch" << G4endl;
+	}  
       }
     }
   }
@@ -138,7 +144,9 @@ G4double TG4SpecialControls::PostStepGetPhysicalInteractionLength(
        // that have not yet been set
        proposedStep = minStep;
        fSwitchControls = kSwitch;
-       if (verboseLevel>0) G4cout << "kSwitch" << G4endl;
+       if (VerboseLevel() > 1) { 
+         G4cout << "kSwitch" << G4endl;
+       }	 
   }  
   return proposedStep;
 }
@@ -159,7 +167,7 @@ G4VParticleChange* TG4SpecialControls::PostStepDoIt(
   
     // set processes activation back
     for (G4int i=0; i<fSwitchedProcesses.length(); i++) {
-      if (verboseLevel>0) {
+      if (VerboseLevel() > 1) {
         G4cout << "Reset process activation back in " 
   	       << track.GetVolume()->GetName() 
                << G4endl;
@@ -185,13 +193,15 @@ G4VParticleChange* TG4SpecialControls::PostStepDoIt(
       if (control != kUnset && ! TG4Globals::Compare(activation, control)) {
 
         // store the current processes controls
-	G4cout << "Something goes to fSwitchedProcesses" << G4endl;
+        if (VerboseLevel() > 1) {
+	  G4cout << "Something goes to fSwitchedProcesses" << G4endl;
+	}  
         fSwitchedProcesses.insert((*processVector)[i]);
         fSwitchedControls.push_back(activation);
 
         // set new process activation
         if (control == kInActivate) {
-          if (verboseLevel>0) {
+          if (VerboseLevel() > 1) {
             G4cout << "Set process inactivation for " 
                    << (*processVector)[i]->GetProcessName() << " in " 
     	           << track.GetVolume()->GetName() 
@@ -201,7 +211,7 @@ G4VParticleChange* TG4SpecialControls::PostStepDoIt(
         }  
         else {
 	  // ((control == kActivate) || (control == kActivate2)) 
-          if (verboseLevel>0) {
+          if (VerboseLevel() > 1) {
             G4cout << "Set process activation for " 
                    << (*processVector)[i]->GetProcessName() << " in " 
 	           << track.GetVolume()->GetName() 

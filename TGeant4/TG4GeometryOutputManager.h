@@ -12,12 +12,13 @@
 #ifndef TG4_GEOMETRY_OUTPUT_MANAGER_H
 #define TG4_GEOMETRY_OUTPUT_MANAGER_H
 
+#include "TG4Verbose.h"
 #include "TG4Globals.h"
 
 #include <globals.hh>
 #include <g4std/fstream>
 
-class TG4GeometryOutputManager
+class TG4GeometryOutputManager : public TG4Verbose
 {
   public:
     TG4GeometryOutputManager();
