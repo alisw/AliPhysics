@@ -501,29 +501,31 @@ void TestDigitsOLD()
 {
   Info("TestDigitsOLD","Creating test digits.");
   rl->MakeTree("D");r->MakeBranch("D");
-  
-  
+
+
   Int_t t[10];
   Int_t c[10];
   Int_t d[5];
   t[0]=100;t[1]=200;t[2]=300;
   c[0]=10;c[1]=20;c[2]=30;
-  
-  
+
+
   d[0]=1;d[1]=1;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(1,t,c,d);
-  
-  d[0]=2;d[1]=2;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d); 
+
+  d[0]=2;d[1]=2;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d);
   d[0]=2;d[1]=3;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d);
-  
-  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d); 
+
+  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
   d[0]=2;d[1]=3;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
   d[0]=2;d[1]=4;d[2]=200;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
-    
-  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d); 
-  d[0]=2;d[1]=3;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
-  d[0]=2;d[1]=4;d[2]=200;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
-  d[0]=2;d[1]=5;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
-  
+
+  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
+  d[0]=2;d[1]=3;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
+  d[0]=2;d[1]=4;d[2]=200;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
+  d[0]=2;d[1]=5;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
+  d[0]=2;d[1]=6;d[2]=300;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
+  d[0]=2;d[1]=7;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
+
   rl->TreeD()->Fill();
   rl->WriteDigits("OVERWRITE");
   rl->UnloadDigits();
@@ -538,7 +540,7 @@ void TestSdigits()
 //totally 19 must be trasformd to 6 digits
   r->AddSdigit(1,40,40,10,40); r->AddSdigit(1,40,40,10,41); r->AddSdigit(1,40,40,10,42); r->AddSdigit(1,40,40,10,43);
   r->AddSdigit(1,45,45,10,45); r->AddSdigit(1,45,45,10,45); r->AddSdigit(1,45,45,10,45); r->AddSdigit(1,45,45,10,45);
-  
+
   r->AddSdigit(1,20,20,10,20);  r->AddSdigit(1,20,20,10,21);
   r->AddSdigit(1,25,25,10,25);  r->AddSdigit(1,25,25,10,25);
   
