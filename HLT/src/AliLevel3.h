@@ -50,6 +50,7 @@ class AliLevel3 : public TObject {
   Int_t fNPatch;
   Int_t fRow[6][2];
   Char_t fPath[256];
+  Char_t fWriteOutPath[256];
   AliL3Transform *fTransformer; //!
   TDirectory *savedir;
   TFile *fInputFile;
@@ -86,14 +87,13 @@ class AliLevel3 : public TObject {
   void ProcessEvent(Int_t first,Int_t last,Int_t event=0);
   void ProcessSlice(Int_t slice);
 
-
   void UseBinaryInput(char *path){SetPath(path);fUseBinary=kTRUE;}
   void DoMc(char* file="point_mc.dat");
   void DoNonVertexTracking() {fDoNonVertex=kTRUE;}
   void FindVertex() {fFindVertex=kTRUE;}
   void DoBench(char* name="benchmark");
   void DoRoi(Float_t e0=0.4,Float_t e1=0.5){fEta[0]=e0;fEta[1]=e1;fDoRoi=kTRUE;}
-  void WriteFiles(){fWriteOut = kTRUE;}
+  void WriteFiles(Char_t *path="./"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
   ClassDef(AliLevel3,1) //Interface class for Level3-tracking
 };
 

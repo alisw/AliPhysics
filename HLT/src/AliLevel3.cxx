@@ -117,7 +117,7 @@ void AliLevel3::Init(){
   fTransformer = new AliL3Transform();
   fDoRoi = kFALSE;
   fDoNonVertex = kFALSE;
-  fClusterDeconv = kFALSE;
+  fClusterDeconv = kTRUE;
   fEta[0] = 0.;
   fEta[1] = 0.9;
   fUseBinary =kFALSE;
@@ -273,7 +273,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
     if(UseCF){
       if(fUseBinary){
         if(!fDoRoi){ 
-          if(0){     //Binary to Memory
+          if(1){     //Binary to Memory
             fFileHandler->Free();
             sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
             if(!fFileHandler->SetBinaryInput(name)) return;
@@ -281,7 +281,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
             fFileHandler->CloseBinaryInput(); 
           }
 
-          if(1){     //Binary to Memory with Benchmark 
+          if(0){     //Binary to Memory with Benchmark 
             fFileHandler->Free();
             sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
             if(!memory->SetBinaryInput(name)) return;
@@ -456,15 +456,15 @@ void AliLevel3::ProcessSlice(Int_t slice){
     AliL3TrackSegmentData *trackdata0  = 
          (AliL3TrackSegmentData *) memory->Allocate(fTracker->GetTracks());
     memory->TrackArray2Memory(ntracks0,trackdata0,fTracker->GetTracks());
-    
+    /*
     //write tracks
     if(fWriteOut){
-      sprintf(name,"tracks_tr_%d_%d.raw",slice,patch);
+      sprintf(name,"%stracks_tr_%d_%d.raw",fWriteOutPath,slice,patch);
       memory->SetBinaryOutput(name);
       memory->Memory2Binary(ntracks0,trackdata0);
       memory->CloseBinaryOutput();
     }
-    
+    */
     fInterMerger->Reset();
     fInterMerger->SetTransformer(fTransformer);
     fInterMerger->Init(fRow[patch],patch);
@@ -475,12 +475,13 @@ void AliLevel3::ProcessSlice(Int_t slice){
 //    fInterMerger->SlowMerge();
     
     fBenchmark->Stop("Inter Merger");
-
+    /*
     //write inter merged tracks
     if(fWriteOut){
-      sprintf(name,"tracks_im_%d_%d.raw",slice,patch);
+      sprintf(name,"%stracks_im_%d_%d.raw",fWriteOutPath,slice,patch);
       WriteTracks(name,fInterMerger,'i'); //write output of intermerger
-    }
+      }
+    */
     memory->Free();
     
     UInt_t ntracks1 =0;
@@ -498,12 +499,13 @@ void AliLevel3::ProcessSlice(Int_t slice){
   fTrackMerger->AddAllTracks();
   //fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
+  /*
   //write merged tracks
   if(fWriteOut){
-    sprintf(name,"tracks_tm_%d.raw",slice);
+    sprintf(name,"%stracks_tm_%d.raw",fWriteOutPath,slice);
     WriteTracks(name,fTrackMerger,'o'); //write output of trackmerger
   }
- 
+  */
   fTrackData = (AliL3TrackSegmentData *) 
                          fFileHandler->Allocate(fTrackMerger->GetOutTracks());
 
@@ -516,7 +518,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
 void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
                                                       Int_t slice,Int_t patch){
   char name[256];
-  sprintf(name,"points_%d_%d.raw",slice,patch);
+  sprintf(name,"%spoints_%d_%d.raw",fWriteOutPath,slice,patch);
   AliL3MemHandler * memory = new AliL3MemHandler();
   memory->SetBinaryOutput(name);
   memory->Transform(npoints,points,slice,fTransformer);
@@ -549,6 +551,11 @@ Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt){
 void AliLevel3::WriteResults()
 {
   //Write the resulting tracks to outputfile
-  WriteTracks("tracks.raw",fGlobalMerger,'a');
-  WriteTracks("tracks_gl.raw",fGlobalMerger,'o');
+  Char_t fname[256];
+  sprintf(fname,"%stracks.raw",fWriteOutPath);
+  WriteTracks(fname,fGlobalMerger,'a');
+  //WriteTracks("tracks.raw",fGlobalMerger,'a');
+  sprintf(fname,"%stracks_gl.raw",fWriteOutPath);
+  WriteTracks(fname,fGlobalMerger,'o');
+  //WriteTracks("tracks_gl.raw",fGlobalMerger,'o');
 }
