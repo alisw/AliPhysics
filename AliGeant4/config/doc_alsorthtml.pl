@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 # $Id$
 # Ivana Hrivnacova 15.2.00
 #
@@ -18,10 +18,12 @@ print "Generating html pages for class categories\n";
 # subcategories
 @CATLIST = "global";
 @CATLIST = (@CATLIST,"geometry");
+@CATLIST = (@CATLIST,"digits+hits");
 @CATLIST = (@CATLIST,"physics");
 @CATLIST = (@CATLIST,"event");
 @CATLIST = (@CATLIST,"run");
 @CATLIST = (@CATLIST,"visualization");
+@CATLIST = (@CATLIST,"interfaces");
 
 # AliRoot categories
 @EXTDIRLIST = "STEER";
