@@ -50,7 +50,7 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    // simulation but in cluster finder as well, please set them via your
    // local Config.C - the streamer will take care of writing the correct
    // info and you'll no longer be obliged to set them again for your cluster
-   // finder as it's done in this macro (ugly and impractical, no? )
+   // finder as it's done in this macro (ugly)
 
 
 
@@ -82,19 +82,14 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
    if (!res1) res1=new AliITSresponseSDD();
-
-   Float_t baseline,noise;
-   res1->GetNoiseParam(noise,baseline);
-   Float_t noise_after_el = res1->GetNoiseAfterElectronics();
-   Float_t thres = baseline;
-   thres += (4.*noise_after_el);  // TB // (4.*noise_after_el);
-   printf("thres %f\n",thres);
    res1->Print();
+
+   //Float_t nsig_noise = 4.;
 
    TClonesArray *dig1  = ITS->DigitsAddress(1);
    TClonesArray *recp1  = ITS->ClustersAddress(1);
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);
-   rec1->SetCutAmplitude((int)thres);
+   //rec1->SetCutAmplitude(nsig_noise);
    ITS->SetReconstructionModel(1,rec1);
    rec1->Print();
 
