@@ -44,7 +44,9 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
      Int_t lay,lad,det; g->GetModuleId(m,lay,lad,det);
      Float_t x,y,z;     g->GetTrans(lay,lad,det,x,y,z); 
      Double_t rot[9];   g->GetRotMatrix(lay,lad,det,rot);
-     fYshift[m] = x*rot[0] + y*rot[1];
+     Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
+     Double_t ca=TMath::Cos(alpha), sa=TMath::Sin(alpha);
+     fYshift[m] = x*ca + y*sa;
      fZshift[m] = (Double_t)z;
      fNdet[m] = (lad-1)*g->GetNdetectors(lay) + (det-1);
   }
@@ -255,8 +257,8 @@ void AliITSclustererV2::RecPoints2Clusters
   for (Int_t i=0; i<ncl; i++) {
     AliITSRecPoint *p = (AliITSRecPoint *)points->UncheckedAt(i);
     Float_t lp[5];
-    lp[0]=-p->GetX()-fYshift[idx]; if (idx<=fLastSPD1) lp[0]*=-1; //SPD1
-    lp[1]=p->GetZ()+fZshift[idx];
+    lp[0]=-(-p->GetX()+fYshift[idx]); if (idx<=fLastSPD1) lp[0]*=-1; //SPD1
+    lp[1]=  -p->GetZ()+fZshift[idx];
     lp[2]=p->GetSigmaX2();
     lp[3]=p->GetSigmaZ2();
     lp[4]=p->GetQ();
@@ -408,8 +410,8 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
      y-=fHwSPD; z-=fHlSPD;
 
      Float_t lp[5];
-     lp[0]=-y-fYshift[fI]; if (fI<=fLastSPD1) lp[0]=-lp[0];
-     lp[1]= z+fZshift[fI];
+     lp[0]=-(-y+fYshift[fI]); if (fI<=fLastSPD1) lp[0]=-lp[0];
+     lp[1]=  -z+fZshift[fI];
      lp[2]= fYpitchSPD*fYpitchSPD/12.;
      lp[3]= fZ1pitchSPD*fZ1pitchSPD/12.;
      //lp[4]= q;
@@ -678,8 +680,8 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          z=(z-0.5)*fZpitchSDD;
          z-=fHlSDD;
 
-         y=-y-fYshift[fI];
-         z= z+fZshift[fI];
+         y=-(-y+fYshift[fI]);
+         z=  -z+fZshift[fI];
          c.SetY(y);
          c.SetZ(z);
 
@@ -884,8 +886,8 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
         lab[2]=neg[i].GetLabel(0);
         lab[3]=(((i<<10) + j)<<10) + idet; // pos|neg|det
         Float_t lp[5];
-        lp[0]=-ybest-fYshift[fI];
-        lp[1]= zbest+fZshift[fI];
+        lp[0]=-(-ybest+fYshift[fI]);
+        lp[1]=  -zbest+fZshift[fI];
         lp[2]=0.0025*0.0025;  //SigmaY2
         lp[3]=0.110*0.110;  //SigmaZ2
         if (pos[i].GetNd()+neg[j].GetNd() > 4) {

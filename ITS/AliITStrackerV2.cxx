@@ -67,11 +67,13 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
         Float_t x,y,zshift; g->GetTrans(i,j,k,x,y,zshift); 
         Double_t rot[9]; g->GetRotMatrix(i,j,k,rot);
 
-        Double_t r =-x*rot[1] + y*rot[0];         if (i==1) r=-r;
-        Double_t phi=TMath::ATan2(rot[1],rot[0]); if (i==1) phi-=3.1415927;
-        phi+=0.5*TMath::Pi(); if (phi<0) phi += 2*TMath::Pi();
-        AliITSdetector &det=fLayers[i-1].GetDetector((j-1)*ndet + k-1); 
+        Double_t phi=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
+        phi+=TMath::Pi()/2;
+        if (i==1) phi+=TMath::Pi();
+        Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
+        Double_t r=x*cp+y*sp;
 
+        AliITSdetector &det=fLayers[i-1].GetDetector((j-1)*ndet + k-1); 
         new(&det) AliITSdetector(r,phi); 
       } 
     }  
@@ -713,6 +715,7 @@ void AliITStrackerV2::FollowProlongation() {
       return;
     }
     Double_t phi=TMath::ATan2(y,x);
+
     Int_t idet=layer.FindDetectorIndex(phi,z);
     if (idet<0) {
       //Warning("FollowProlongation","failed to find a detector !\n");
@@ -976,7 +979,7 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   //--------------------------------------------------------------------
   //This function finds the detector crossed by the track
   //--------------------------------------------------------------------
-  Double_t dphi=phi-fPhiOffset;
+  Double_t dphi=-(phi-fPhiOffset);
   if      (dphi <  0) dphi += 2*TMath::Pi();
   else if (dphi >= 2*TMath::Pi()) dphi -= 2*TMath::Pi();
   Int_t np=Int_t(dphi*fNladders*0.5/TMath::Pi()+0.5);
