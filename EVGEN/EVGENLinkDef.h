@@ -11,7 +11,6 @@
 #pragma link C++ enum   Process_t;
 #pragma link C++ enum   Decay_t;
 #pragma link C++ enum   StrucFunc_t;
-#pragma link C++ enum   Param_t;
 #pragma link C++ enum   Weighting_t;
 
 #pragma link C++ class  AliGenHIJINGpara+;
