@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/04 16:30:22  fca
+Add include for exit()
+
 Revision 1.10  2000/10/02 21:28:16  fca
 Removal of useless dependecies via forward declarations
 
@@ -105,8 +108,8 @@ void AliGeant3::Init()
     // Initialise detector materials and geometry
     detector->CreateMaterials();
     detector->CreateGeometry();
-    detector->BuildGeometry();
     detector->Init();
+    detector->BuildGeometry();
   }
 
   //Terminate building of geometry
