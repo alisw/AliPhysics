@@ -853,23 +853,27 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
   TClonesArray * recParticles = gime->RecParticles(BranchName()) ; 
 
   TString message ; 
-  message  = "event %d\n" ; 
-  message += "       found %d RecParticles\n" ; 
-  Info("PrintRecParticles", message.Data(), gAlice->GetEvNumber(), recParticles->GetEntriesFast() ) ; 
+  message  = "\nevent " ;
+  message += gAlice->GetEvNumber() ; 
+  message += "       found " ; 
+  message += recParticles->GetEntriesFast(); 
+  message += " RecParticles\n" ; 
+
   if(strstr(option,"all")) {  // printing found TS
-    message = "  PARTICLE         Index    \n" ;
-    Info("PrintRecParticles", message.Data() ) ; 
+    message += "\n  PARTICLE         Index    \n" ; 
     
     Int_t index ;
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
       AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       
-      message = "          %s     %d     Type %d\n" ; 
-      Info("PrintRecParticles", message.Data(), 
-	   rp->Name().Data(), 
-	   rp->GetIndexInList(), 
-	   rp->GetType() );
+      message += "\n" ;
+      message += rp->Name().Data() ;  
+      message += " " ;
+      message += rp->GetIndexInList() ;  
+      message += " " ;
+      message += rp->GetType()  ;
     }
-  }  
+  }
+  Info("Print", message.Data() ) ; 
 }
 
 

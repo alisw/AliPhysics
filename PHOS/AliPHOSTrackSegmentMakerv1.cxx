@@ -552,19 +552,24 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
   TClonesArray * trackSegments = AliPHOSGetter::GetInstance()->TrackSegments(taskName) ; 
 
   TString message ; 
-  message  = "AliPHOSTrackSegmentMakerv1: event %d\n" ; 
-  message += "      Found %d TrackSegments\n" ; 
+  message  = "\nevent " ;
+  message += gAlice->GetEvNumber() ; 
+  message += "\n      Found " ;
+  message += trackSegments->GetEntriesFast() ; 
+  message += " TrackSegments\n" ; 
 
   if(strstr(option,"all")) {  // printing found TS
-    message += "TrackSegment #     EMC RP#        CPV RP#    \n" ; 
-    Info("PrintTrackSegments", message.Data(), 
-	 gAlice->GetEvNumber(), 
-	 trackSegments->GetEntriesFast() ) ;  
+    message += "TrackSegment #  EMC RP#  CPV RP#\n" ; 
     Int_t index;
     for (index = 0 ; index <trackSegments->GetEntriesFast() ; index++) {
       AliPHOSTrackSegment * ts = (AliPHOSTrackSegment * )trackSegments->At(index) ; 
-      message = "       %d    %d    %d\n" ; 
-      Info("PrintTrackSegments", message.Data(), ts->GetIndexInList(), ts->GetEmcIndex(), ts->GetCpvIndex() ) ;
+      message += "\n" ; 
+      message += ts->GetIndexInList() ; 
+      message += " " ; 
+      message += ts->GetEmcIndex() ; 
+      message += " " ; 
+      message += ts->GetCpvIndex() ; 
     }	
   }
+  Info("Print", message.Data() ) ; 
 }

@@ -497,7 +497,7 @@ Bool_t AliPHOSDigitizer::Init()
 
   if( strcmp(GetTitle(), "") == 0 )
     SetTitle("galice.root") ;
-
+  
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName(), fToSplit) ; 
   if ( gime == 0 ) {
     Error("Init", "Could not obtain the Getter object !") ; 
@@ -672,71 +672,77 @@ void AliPHOSDigitizer::Print(Option_t* option)const
 //__________________________________________________________________
  void AliPHOSDigitizer::PrintDigits(Option_t * option)
 {
-   // Print a table of digits
+  // Print a table of digits
   
-   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-   TClonesArray * digits = gime->Digits() ; 
-   
-   TString message ; 
-   message  = "event %d\n" ; 
-   message += "       Number of entries in Digits list %d\n" ;  
-   Info("Print", message.Data(), gAlice->GetEvNumber(), digits->GetEntriesFast() ) ;  
-   if(strstr(option,"all")||strstr(option,"EMC")){
-    
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  TClonesArray * digits = gime->Digits() ; 
+  
+  TString message ; 
+  message  = "\nevent " ;
+  message += gAlice->GetEvNumber() ;
+  message += "\n       Number of entries in Digits list " ;  
+  message += digits->GetEntriesFast()  ;  
+  
+  if(strstr(option,"all")||strstr(option,"EMC")){  
     //loop over digits
     AliPHOSDigit * digit;
-    message  = "EMC digits (with primaries):\n"  ;
-    message += "Digit Id     Amplitude   Index       Nprim  Primaries list\n" ; 
-    Info("Print", message.Data()) ; 
+    message += "\nEMC digits (with primaries):\n"  ;
+    message += "Digit Id Amplitude Index Nprim  Primaries list\n" ; 
     Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; (index < digits->GetEntriesFast()) && 
-	 (((AliPHOSDigit * )  digits->At(index))->GetId() <= maxEmc) ; index++) {
+	   (((AliPHOSDigit * )  digits->At(index))->GetId() <= maxEmc) ; index++) {
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetNprimary() == 0) 
 	continue;
-      message = "      %d          %d      %d     %d\n" ; 
-      Info("Print", message.Data(), 
-	   digit->GetId(), 
-	   digit->GetAmp(),  
-	   digit->GetIndexInList(),     
-	   digit->GetNprimary() ) ;
-      
+      message += "\n" ; 
+      message += digit->GetId() ; 
+      message += " " ; 
+      message += digit->GetAmp() ;  
+      message += " " ; 
+      message += digit->GetIndexInList() ;      
+      message += " " ; 
+      message += digit->GetNprimary()  ;
+      message += " : " ; 
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
-	message = "     %d\n" ; 
-	Info("Print", message.Data(), digit->GetPrimary(iprimary+1) ) ;
+	message += digit->GetPrimary(iprimary+1)  ;
+	message += " " ; 
       }    
     }
   }
-
+  
   if(strstr(option,"all")||strstr(option,"CPV")){
     
     //loop over CPV digits
     AliPHOSDigit * digit;
-    message  = "CPV digits:\n" ;
-    message += "Digit Id     Amplitude   Index       Nprim  Primaries list\n" ;
-    Info("Print", message.Data()) ; 
+    message += "\nCPV digits:\n" ;
+    message += "Digit Id Amplitude Index Nprim Primaries list\n" ;
+
     Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; index < digits->GetEntriesFast(); index++) {
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetId() > maxEmc){
-	message = "      %d          %d      %d     %d\n" ; 
-	Info("Print", message.Data(), 
-	     digit->GetId(), 
-	     digit->GetAmp(), 
-	     digit->GetIndexInList(), 
-	     digit->GetNprimary() ) ;
+	message += "\n" ; 
+	message += digit->GetId();  
+	message += " " ; 
+	message += digit->GetAmp() ; 
+	message += " " ; 
+	message += digit->GetIndexInList() ;  
+	message += " " ; 
+	message += digit->GetNprimary() ;
+	message += " : " ; 
 	
 	Int_t iprimary;
 	for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
-	  message = "     %d\n" ; 
-	  Info("Print", message.Data(), digit->GetPrimary(iprimary+1) ) ;
+	  message += digit->GetPrimary(iprimary+1)  ;
+	  message += " " ; 
 	}    
       }
     }
   }
+  Info("Print", message.Data() ) ; 
 }
 
 //__________________________________________________________________

@@ -1016,20 +1016,20 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   TObjArray * cpvRecPoints = AliPHOSGetter::GetInstance()->CpvRecPoints(BranchName()) ; 
 
   TString message ; 
-  message  = "event %d\n" ;
-  message += "       Found %d EMC RecPoints and %d CPV RecPoints \n" ; 
-  Info("PrintRecPoints", message.Data(),
-       gAlice->GetEvNumber(),
-       emcRecPoints->GetEntriesFast(),
-       cpvRecPoints->GetEntriesFast() ) ; 
-  
+  message  = "\nevent " ;
+  message += gAlice->GetEvNumber() ; 
+  message += "\n       Found " ; 
+  message += emcRecPoints->GetEntriesFast() ; 
+  message += "EMC RecPoints and " ;
+  message += cpvRecPoints->GetEntriesFast() ; 
+  message += " CPV RecPoints \n" ; 
+ 
   fRecPointsInRun +=  emcRecPoints->GetEntriesFast() ; 
   fRecPointsInRun +=  cpvRecPoints->GetEntriesFast() ; 
   
   if(strstr(option,"all")) {
-    message  = "EMC clusters " ;
-    message += " Index  Ene(MeV)   Multi  Module     X      Y      Z    Lambda 1   Lambda 2  # of prim  Primaries list " ; 
-    Info("PrintRecPoints", message.Data() ) ; 
+    message += "EMC clusters " ;
+    message += " Index  Ene(MeV) Multi Module X  Y  Z Lambda 1 Lambda 2  # of prim  Primaries list " ; 
     Int_t index ;
     for (index = 0 ; index < emcRecPoints->GetEntries() ; index++) {
       AliPHOSEmcRecPoint * rp = (AliPHOSEmcRecPoint * )emcRecPoints->At(index) ; 
@@ -1039,29 +1039,38 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
       rp->GetElipsAxis(lambda);
       Int_t * primaries; 
       Int_t nprimaries;
+      message += " " ; 
       primaries = rp->GetPrimaries(nprimaries);
-      message = "    %d       %f  %d      %f      %f      %f     %f    %f  %d\n" ; 
-      Info("PrintRecPoints", message.Data(), 
-	   rp->GetIndexInList(),  
-	   rp->GetEnergy(), 
-	   rp->GetMultiplicity(),  
-	   rp->GetPHOSMod(),  
-	   locpos.X(),  
-	   locpos.Y(),  
-	   locpos.Z(), 
-	   lambda[0], 
-	   lambda[1], 
-	   nprimaries ) ;
-     
+      message += "\n" ; 
+      message += rp->GetIndexInList() ;   
+      message += " " ; 
+      message += rp->GetEnergy();
+      message += " " ; 
+      message += rp->GetMultiplicity() ;  
+      message += " " ; 
+      message += rp->GetPHOSMod() ;
+      message += " " ; 
+      message += locpos.X() ;
+      message += " " ; 
+      message += locpos.Y() ;
+      message += " " ; 
+      message += locpos.Z() ;
+      message += " " ; 
+      message += lambda[0] ;
+      message += " " ; 
+      message += lambda[1] ;
+      message += " " ; 
+      message += nprimaries ;
+      message += " : " ; 
+      
       for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	message = "    %d" ; 
-	Info("PrintRecPoints", message.Data(), primaries[iprimary] ) ;
+	message += primaries[iprimary]  ;
+	message += " " ; 
       }
     }
     
     //Now plot CPV recPoints
-    message = "EMC clusters   Index      Multi      Module       X          Y          Z       # of prim  Primaries list \n" ;      
-    Info("PrintRecPoints", message.Data() ) ; 
+    message += "\nCPV clusters Index Multi Module X   Y   Z # of prim  Primaries list \n" ;      
     for (index = 0 ; index < cpvRecPoints->GetEntries() ; index++) {
       AliPHOSRecPoint * rp = (AliPHOSRecPoint * )cpvRecPoints->At(index) ; 
  
@@ -1070,22 +1079,27 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   
       Int_t * primaries; 
       Int_t nprimaries ; 
-     
-      message = "      %d      %d    CPV      %f      %f      %f       %d" ; 
-      Info("PrintRecPoints", message.Data(), 
-	   rp->GetIndexInList(), 
-	   rp->GetPHOSMod(), 
-	   locpos.X(), 
-	   locpos.Y(), 
-	   locpos.Z(), 
-	   nprimaries) ; 
- 
+      message += "\n" ; 
+      message += rp->GetIndexInList() ;
+      message += " " ;  
+      message += rp->GetPHOSMod();  
+      message += " " ; 
+      message += locpos.X() ;
+      message += " " ; 
+      message += locpos.Y() ;  
+      message += " " ; 
+      message += locpos.Z() ; 
+      message += " " ; 
+      message +=  nprimaries ; 
+      message += " : " ; 
+      
       primaries = rp->GetPrimaries(nprimaries);
       for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	message = "    %d " ; 
-	Info("PrintRecPoints", message.Data(), primaries[iprimary] ) ;
+	message += primaries[iprimary]  ;
+	message += " " ; 
       }
     }
   }
+  Info("Print", message.Data() ) ; 
 }
 
