@@ -3,19 +3,18 @@
 //
 // class AliHBTReaderTPC
 //
-// reader for TPC tracking
-// needs galice.root, AliTPCtracks.root, AliTPCclusters.root
-//
+// reader for TPC tracks
+// needs galice.root
+// just to shut up coding conventions checker
+// 
 // more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
 // Piotr.Skowronski@cern.ch
 //
 ///////////////////////////////////////////////////////////////////////////
 #include <TTree.h>
-#include <TFile.h>
 #include <TParticle.h>
 #include <TH1.h>
 
-#include <Varargs.h>
 
 #include <AliRun.h>
 #include <AliLoader.h>
@@ -23,13 +22,10 @@
 #include <AliMagF.h>
 #include <AliTPCtrack.h>
 #include <AliTPCParam.h>
-#include <AliTPCtracker.h>
 #include <AliTPCLoader.h>
 
-#include "AliHBTRun.h"
 #include "AliHBTEvent.h"
 #include "AliHBTParticle.h"
-#include "AliHBTParticleCut.h"
 #include "AliHBTTrackPoints.h"
 #include "AliHBTClusterMap.h"
 
@@ -125,6 +121,33 @@ AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs, const Char_t* galicefilename):
   
 }
 /********************************************************************/
+AliHBTReaderTPC::AliHBTReaderTPC(const AliHBTReaderTPC& in):
+ AliHBTReader(in),
+ fFileName(in.fFileName),
+ fRunLoader(0x0),
+ fTPCLoader(0x0),
+ fMagneticField(in.fMagneticField),
+ fUseMagFFromRun(in.fUseMagFFromRun),
+ fNTrackPoints(in.fNTrackPoints),
+ fdR(in.fdR),
+ fNClustMin(in.fNClustMin),
+ fNClustMax(in.fNClustMax),
+ fNChi2PerClustMin(in.fNChi2PerClustMin),
+ fNChi2PerClustMax(in.fNChi2PerClustMax),
+ fC00Min(in.fC00Min),
+ fC00Max(in.fC00Max),
+ fC11Min(in.fC11Min),
+ fC11Max(in.fC11Max),
+ fC22Min(in.fC22Min),
+ fC22Max(in.fC22Max),
+ fC33Min(in.fC33Min),
+ fC33Max(in.fC33Max),
+ fC44Min(in.fC44Min),
+ fC44Max(in.fC44Max)
+{
+  //cpy constructor, 
+}
+/********************************************************************/
 
 AliHBTReaderTPC::~AliHBTReaderTPC()
 {
@@ -143,9 +166,41 @@ AliHBTReaderTPC::~AliHBTReaderTPC()
     }
 }
 /********************************************************************/
+
+AliHBTReaderTPC& AliHBTReaderTPC::operator=(const AliHBTReaderTPC& in)
+{
+//Assigment operator
+
+ delete fRunLoader;
+
+ fFileName = in.fFileName;
+ fRunLoader = 0x0;
+ fTPCLoader = 0x0;
+ fMagneticField = in.fMagneticField;
+ fUseMagFFromRun = in.fUseMagFFromRun;
+ fNTrackPoints = in.fNTrackPoints;
+ fdR = in.fdR;
+ fNClustMin = in.fNClustMin;
+ fNClustMax = in.fNClustMax;
+ fNChi2PerClustMin = in.fNChi2PerClustMin;
+ fNChi2PerClustMax = in.fNChi2PerClustMax;
+ fC00Min = in.fC00Min;
+ fC00Max = in.fC00Max;
+ fC11Min = in.fC11Min;
+ fC11Max = in.fC11Max;
+ fC22Min = in.fC22Min;
+ fC22Max = in.fC22Max;
+ fC33Min = in.fC33Min;
+ fC33Max = in.fC33Max;
+ fC44Min = in.fC44Min;
+ fC44Max = in.fC44Max;
  
+} 
+/********************************************************************/
+
 void AliHBTReaderTPC::Rewind()
 {
+//Rewind reading to the beginning
   delete fRunLoader;
   fRunLoader = 0x0;
   fCurrentDir = 0;
@@ -314,6 +369,7 @@ Int_t AliHBTReaderTPC::ReadNext()
 
 Int_t AliHBTReaderTPC::OpenNextSession()
 {
+//Opens session thats from fCurrentDir 
   TString filename = GetDirName(fCurrentDir);
   if (filename.IsNull())
    {
@@ -371,11 +427,11 @@ Int_t AliHBTReaderTPC::OpenNextSession()
 
 
   fRunLoader->CdGAFile();
-  AliTPCParam *TPCParam= (AliTPCParam*)gDirectory->Get("75x40_100x60");
-  if (!TPCParam) 
+  AliTPCParam *aTPCParam= (AliTPCParam*)gDirectory->Get("75x40_100x60");
+  if (!aTPCParam) 
    {
-    TPCParam=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
-    if (!TPCParam) 
+    aTPCParam=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
+    if (!aTPCParam) 
      { 
        DoOpenError("TPC parameters have not been found !\n");
        return 1;
@@ -409,7 +465,7 @@ void AliHBTReaderTPC::DoOpenError( const char *va_(fmt), ...)
 }
 
 /********************************************************************/
-Bool_t AliHBTReaderTPC::CheckTrack(AliTPCtrack* t)
+Bool_t AliHBTReaderTPC::CheckTrack(AliTPCtrack* t) const
 {
   //Performs check of the track
   if ( (t->GetNumberOfClusters() > fNClustMax) || (t->GetNumberOfClusters() < fNClustMin) ) return kTRUE;

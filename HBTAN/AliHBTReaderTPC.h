@@ -1,16 +1,20 @@
 #ifndef AliHBTReaderTPC_H
 #define AliHBTReaderTPC_H
+//______________________________________________
+//
+// class AliHBTReaderTPC
+//
+// reader for TPC tracks
+// needs galice.root
+// 
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
+// Piotr.Skowronski@cern.ch
+//
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliHBTReader.h"
-
-//Multi file reader for TPC
-//
-//This reader reads tracks AliTPCtracks.root
-//                  particles form gAlice
-//Piotr.Skowronski@cern.ch
-//more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
-
 #include <TString.h>
+
 class TFile;
 class TArrayF;
 class AliRunLoader;
@@ -23,8 +27,11 @@ class AliHBTReaderTPC: public AliHBTReader
     AliHBTReaderTPC();
     AliHBTReaderTPC(const Char_t* galicefilename);
     AliHBTReaderTPC(TObjArray* dirs, const Char_t* galicefilename = "galice.root");
-
+    AliHBTReaderTPC(const AliHBTReaderTPC& in);
+    
     virtual ~AliHBTReaderTPC();
+    
+    AliHBTReaderTPC& operator=(const AliHBTReaderTPC& in);
     
     void          Rewind();
     
@@ -89,9 +96,8 @@ class AliHBTReaderTPC: public AliHBTReader
 
   private:
     
-    Bool_t CheckTrack(AliTPCtrack* t);
+    Bool_t CheckTrack(AliTPCtrack* t) const;
 
-  public:
     ClassDef(AliHBTReaderTPC,3)
 };
 
