@@ -10,12 +10,10 @@ void testsim (Int_t nevent=1, const char *config="testconfig.C")
   TStopwatch timer;
   timer.Start();
 
-  nevent=10 ; 
- 
-  gAlice->Init(config);
-   cerr<<" ___________________________________________________________________ "<<endl;
+  gAlice->Init(config); 
+  cerr<<" ___________________________________________________________________ "<<endl;
   cerr<<" "<<endl;
-  cerr<<"             MESS ==> The simulation will last about 4 minutes."<<endl;
+  cerr<<"             MESS ==> " << nevent << " : The simulation will last about 4 minutes."<<endl;
    cerr<<" ___________________________________________________________________ "<<endl;
   gAlice->Run(nevent);
   timer.Stop();
