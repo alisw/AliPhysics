@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 //-----------------------------------------------------------------
 //           Implementation of the ESD track class
 //   ESD = Event Summary Data
@@ -69,14 +68,12 @@ fRICHsignal(-1)
     fTPCr[i]=1.;
     fTRDr[i]=1.;
     fTOFr[i]=1.;
-    fPHOSr[i]=1.;
     fRICHr[i]=1.;
   }
-  fPHOSr[kSPECIES]= 1.;
-  fPHOSr[kSPECIES+1]= 1.;
-  fPHOSr[kSPECIES+2]= 1.;
-  fPHOSr[kSPECIES+3]= 1.;
-
+  
+  for (Int_t i=0; i<kSPECIESN; i++)
+    fPHOSr[i]= 1.;
+ 
   fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
   Int_t i;
   for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.;}
@@ -87,7 +84,7 @@ fRICHsignal(-1)
   fTPCLabel = 0;
   fTRDLabel = 0;
   fITSLabel = 0;
-
+  
 }
 
 //_______________________________________________________________________
@@ -516,14 +513,14 @@ void AliESDtrack::GetTOFpid(Double_t *p) const {
 //_______________________________________________________________________
 void AliESDtrack::SetPHOSpid(const Double_t *p) {  
   // Sets the probability of each particle type (in PHOS)
-  for (Int_t i=0; i<kSPECIES+4; i++) fPHOSr[i]=p[i];
+  for (Int_t i=0; i<kSPECIESN; i++) fPHOSr[i]=p[i];
   SetStatus(AliESDtrack::kPHOSpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetPHOSpid(Double_t *p) const {
   // Gets probabilities of each particle type (in PHOS)
-  for (Int_t i=0; i<kSPECIES+4; i++) p[i]=fPHOSr[i];
+  for (Int_t i=0; i<kSPECIESN; i++) p[i]=fPHOSr[i];
 }
 
 
@@ -555,3 +552,53 @@ void AliESDtrack::GetESDpid(Double_t *p) const {
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fR[i];
 }
 
+//_______________________________________________________________________
+void AliESDtrack::Print(Option_t *) const {
+  // Prints info on the track
+  
+  Info("Print","Track info") ; 
+  Double_t p[kSPECIESN] ; 
+  Int_t index = 0 ; 
+  if( IsOn(kITSpid) ){
+    printf("From ITS: ") ; 
+    GetITSpid(p) ; 
+    for(index = 0 ; index < kSPECIES; index++) 
+      printf("%f, ", p[index]) ;
+    printf("\n           signal = %f\n", GetITSsignal()) ;
+  } 
+  if( IsOn(kTPCpid) ){
+    printf("From TPC: ") ; 
+    GetTPCpid(p) ; 
+    for(index = 0 ; index < kSPECIES; index++) 
+      printf("%f, ", p[index]) ;
+    printf("\n           signal = %f\n", GetTPCsignal()) ;
+  }
+  if( IsOn(kTRDpid) ){
+    printf("From TRD: ") ; 
+    GetTRDpid(p) ; 
+    for(index = 0 ; index < kSPECIES; index++) 
+      printf("%f, ", p[index]) ;
+    printf("\n           signal = %f\n", GetTRDsignal()) ;
+  }
+  if( IsOn(kTOFpid) ){
+    printf("From TOF: ") ; 
+    GetTOFpid(p) ; 
+    for(index = 0 ; index < kSPECIES; index++) 
+      printf("%f, ", p[index]) ;
+    printf("\n           signal = %f\n", GetTOFsignal()) ;
+  }
+  if( IsOn(kRICHpid) ){
+    printf("From TOF: ") ; 
+    GetRICHpid(p) ; 
+    for(index = 0 ; index < kSPECIES; index++) 
+      printf("%f, ", p[index]) ;
+    printf("\n           signal = %f\n", GetRICHsignal()) ;
+  }
+  if( IsOn(kPHOSpid) ){
+    printf("From PHOS: ") ; 
+    GetPHOSpid(p) ; 
+    for(index = 0 ; index < kSPECIESN; index++) 
+      printf("%f, ", p[index]) ;
+    printf("\n           signal = %f\n", GetPHOSsignal()) ;
+  }
+} 
