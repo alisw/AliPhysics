@@ -50,7 +50,7 @@ SRCS     += AliMUONv2.cxx AliMUONSt1Segmentation.cxx AliMUONSt1Response.cxx \
 EHDRS    += $(ROOTSYS)/include/TArrayF.h \
 
 EINCLUDE := $(MINSTALL)/include
-ELIBSDIR := $(MINSTALL)/lib/$(G4SYSTEM)
+ELIBSDIR := $(MINSTALL)/lib/$(MPSYSTEM)
 ELIBS    := basic graphics motif sector plane 
 
 CINTFLAGS += -DUSE_MUON_MAPPING
