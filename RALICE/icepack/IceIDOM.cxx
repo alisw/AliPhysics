@@ -1,18 +1,17 @@
-///////////////////////////////////////////////////////////////////////////
-// Copyright(c) 2003, IceCube Experiment at the South Pole.
-// All rights reserved.
-//
-// Author: The IceCube RALICE-based Offline Project.
-// Contributors are mentioned in the code where appropriate.
-//
-// Permission to use, copy, modify and distribute this software and its
-// documentation strictly for non-commercial purposes is hereby granted
-// without fee, provided that the above copyright notice appears in all
-// copies and that both the copyright notice and this permission notice
-// appear in the supporting documentation.
-// The authors make no claims about the suitability of this software for
-// any purpose. It is provided "as is" without express or implied warranty.
-///////////////////////////////////////////////////////////////////////////
+/*******************************************************************************
+ * Copyright(c) 2003, IceCube Experiment at the South Pole. All rights reserved.
+ *
+ * Author: The IceCube RALICE-based Offline Project.
+ * Contributors are mentioned in the code where appropriate.
+ *
+ * Permission to use, copy, modify and distribute this software and its
+ * documentation strictly for non-commercial purposes is hereby granted
+ * without fee, provided that the above copyright notice appears in all
+ * copies and that both the copyright notice and this permission notice
+ * appear in the supporting documentation.
+ * The authors make no claims about the suitability of this software for
+ * any purpose. It is provided "as is" without express or implied warranty.
+ *******************************************************************************/
 
 // $Id$
 
