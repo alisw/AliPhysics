@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/11/02 16:35:56  fca
+New version of TRD introduced
+
 Revision 1.11  1999/11/01 20:41:51  fca
 Added protections against using the wrong version of FRAME
 
@@ -179,6 +182,8 @@ void AliTRDv1::Hits2Digits()
 
   Int_t nBytes = 0;
 
+  Int_t iRow;
+
   AliTRDhit *TRDhit;
 
   // Get the pointer to the hit tree
@@ -266,7 +271,7 @@ void AliTRDv1::Hits2Digits()
             const Int_t  colBox = 7;
             const Int_t  rowBox = 5;
             Float_t signalSum[rowBox][colBox][timeBox];
-            for (Int_t iRow  = 0;  iRow <  rowBox; iRow++ ) {
+            for (iRow  = 0;  iRow <  rowBox; iRow++ ) {
               for (Int_t iCol  = 0;  iCol <  colBox; iCol++ ) {
                 for (Int_t iTime = 0; iTime < timeBox; iTime++) {
                   signalSum[iRow][iCol][iTime] = 0;
@@ -321,7 +326,7 @@ void AliTRDv1::Hits2Digits()
             }
 
             // Add the padcluster to the detector matrix
-            for (Int_t iRow  = 0;  iRow <  rowBox; iRow++ ) {
+            for (iRow  = 0;  iRow <  rowBox; iRow++ ) {
               for (Int_t iCol  = 0;  iCol <  colBox; iCol++ ) {
                 for (Int_t iTime = 0; iTime < timeBox; iTime++) {
 
@@ -412,6 +417,8 @@ void AliTRDv1::Digits2Clusters()
   // To produce cluster from a root-file with TRD-digits use the
   // slowClusterCreate.C macro.
   //
+  
+  Int_t row
 
   printf("AliTRDv1::Digits2Clusters -- Start creating clusters\n");
 
@@ -507,7 +514,7 @@ void AliTRDv1::Digits2Clusters()
         }
 
         // Loop chamber and find maxima in digitMatrix
-        for (Int_t  row = 0;  row < fRowMax[iplan][icham][isect];  row++) {
+        for (row = 0;  row < fRowMax[iplan][icham][isect];  row++) {
           for (Int_t  col = 1;  col < fColMax[iplan]              ;  col++) {
             for (Int_t time = 0; time < fTimeMax                    ; time++) {
 
@@ -529,7 +536,7 @@ void AliTRDv1::Digits2Clusters()
         }       // row
 
         // now check maxima and calculate cluster position
-        for (Int_t  row = 0;  row < fRowMax[iplan][icham][isect];  row++) {
+        for (row = 0;  row < fRowMax[iplan][icham][isect];  row++) {
           for (Int_t  col = 1;  col < fColMax[iplan]              ;  col++) {
             for (Int_t time = 0; time < fTimeMax                    ; time++) {
 
