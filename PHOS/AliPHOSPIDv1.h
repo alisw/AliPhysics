@@ -74,6 +74,10 @@ public:
   void SetBCalParameter(Float_t b) { fBCalParameter = b ;}
   void SetCCalParameter(Float_t c) { fCCalParameter = c ;}
 
+
+  Float_t GetEnergyAnalysisCut() {return  fEnergyAnalysisCut ;}
+  void SetEnergyAnalysisCut(Float_t e) {  fEnergyAnalysisCut = e ;}
+
   virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
   virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
   virtual const char * Version() const { return "pid-v1" ; }  
@@ -130,7 +134,7 @@ public:
   TMatrixD *                 fParameters5 ;       //! Matrix of identification Parameters 0.5 to 5 GeV
   TMatrixD *                 fParameters100 ;     //! Matrix of identification Parameters 5-100 GeV
   TMatrixD *                 fParameters;         //! Matrix copy of identification Parameters
-
+  Float_t                    fEnergyAnalysisCut;   // Energy to change from one PCA to the other.
   Int_t                      fCluster;            // Cluster energy range to choose parameters
   Int_t                      fClusterrcpv;        // Cluster energy range to choos rcpv parameters
   Int_t                      fMatrixExtraRow;     // Different size of the parameters file. Depends on range
@@ -139,7 +143,7 @@ public:
   Float_t   fBCalParameter ;// B parameter energy calibration Encal=A+B*En+C*En^2
   Float_t   fCCalParameter ;// B parameter energy calibration Encal=A+B*En+C*En^2
 
-  ClassDef( AliPHOSPIDv1,4)  // Particle identifier implementation version 1
+  ClassDef( AliPHOSPIDv1,5)  // Particle identifier implementation version 1
 
 };
 

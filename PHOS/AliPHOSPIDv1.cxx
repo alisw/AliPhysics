@@ -80,9 +80,9 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-#include <fstream.h>
-#include <iomanip.h>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 
 // --- AliRoot header files ---
 
@@ -136,9 +136,9 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
 
   delete [] fX ; // Principal input 
   delete [] fP ; // Principal components
-  delete fParameters ; // Matrix of Parameters 
-  delete fParameters5 ; // Matrix of Parameters 
-  delete fParameters100 ; // Matrix of Parameters 
+//  delete fParameters ; // Matrix of Parameters 
+//  delete fParameters5 ; // Matrix of Parameters 
+//  delete fParameters100 ; // Matrix of Parameters 
  
 
   if (!fDefaultInit) {  
@@ -504,12 +504,13 @@ void  AliPHOSPIDv1::SetParameters()
   // for the principal file from 0.5-5 GeV and for the other one P1(95%,79%),
   // P2(89%,90%) and P3(72%,96%)
 
+  fEnergyAnalysisCut = 5.; // Energy cut to change PCA
 
   fParameters5 = new TMatrixD(21,3) ; 
   fParameters100 = new TMatrixD(22,3) ; 
   fParameters = new TMatrixD(22,3) ;
  
-  ifstream paramFile5(fFileNamePar5, ios::in) ; 
+  ifstream paramFile5(fFileNamePar5, ios_base::out) ; 
   
   Int_t i,j ;
   
@@ -520,7 +521,7 @@ void  AliPHOSPIDv1::SetParameters()
   }
   paramFile5.close();
  
-  ifstream paramFile100(fFileNamePar100, ios::in) ; 
+  ifstream paramFile100(fFileNamePar100, ios_base::out) ; 
   
   Int_t l,k ;
   
@@ -531,7 +532,7 @@ void  AliPHOSPIDv1::SetParameters()
   }
   paramFile100.close();
  
-  ifstream paramFile(fFileNamePar100, ios::in) ; 
+  ifstream paramFile(fFileNamePar100, ios_base::out) ; 
   Int_t h,n;
   for(h = 0; h< 22; h++){
     for(n = 0; n< 3; n++){
@@ -554,7 +555,7 @@ void  AliPHOSPIDv1::SetParameters()
 //_____________________________________________________________________________
 void  AliPHOSPIDv1::GetAnalysisParameters(Float_t Cluster_En) 
 {
-  if(Cluster_En <= 5.){
+  if(Cluster_En <=  fEnergyAnalysisCut){
     fPrincipal  = fPrincipal5;
     fParameters = fParameters5;
     fMatrixExtraRow = 0;
@@ -573,7 +574,7 @@ void  AliPHOSPIDv1::GetClusterOption(const Float_t Cluster_En, const Bool_t rang
 {
 
   // Gives the cluster energy range.
-  // range = kFALSE Default analisys range from 0.5 to 5 GeV
+  // range = kFALSE Default analysis range from 0.5 to 5 GeV
   // range = kTRUE  analysis range from 0.5 to 100 GeV
 
   
@@ -753,23 +754,20 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     // Choose the cluster energy range
     
     Float_t    e = emc->GetEnergy() ;   
-
-   
-    GetAnalysisParameters(e);
-
+    
+    GetAnalysisParameters(e);// Gives value to fCluster, fClusterrcpv, fMatrixExtraRow, and to fPrincipal and fParameters depending on the energy.
+    
     if((fCluster== -1)||(fClusterrcpv == -1)) continue ;
     
-    // Ellipse and rcpv cut in function of the cluster energy
+    Float_t  lambda[2] ;
+    emc->GetElipsAxis(lambda) ;
+    Float_t time =emc->GetTime() ;
     
-    // Loop of Efficiency-Purity (the 3 points of purity or efficiency are taken 
-    // into account to set the particle identification)
-    for(Int_t eff_pur = 0; eff_pur < 3 ; eff_pur++){
+    if((lambda[0]>0.01) && (lambda[1]>0.01) && time > 0.){
       
-      Float_t  lambda[2] ;
-      emc->GetElipsAxis(lambda) ;
-      Float_t time =emc->GetTime() ;
-      
-      if((lambda[0]>0.01) && (lambda[1]>0.01) && time > 0.){
+      // Loop of Efficiency-Purity (the 3 points of purity or efficiency are taken 
+      // into account to set the particle identification)
+      for(Int_t eff_pur = 0; eff_pur < 3 ; eff_pur++){
 	
 	// Looking at the CPV detector. If RCPV greater than CpvEmcDistance, 1st, 
 	// 2nd or 3rd bit (depending on the efficiency-purity point )is set to 1 . 
