@@ -46,6 +46,27 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	  TH1F *Zres1 = new TH1F("Zres1","Zrec and Zgen difference (micr) for layers 1",100,-800.,800.);
 	  TH1F *Zres2 = new TH1F("Zres2","Zrec and Zgen difference (micr) for layers 2",100,-800.,800.);
 
+	  TH1F *Ptot1 = new TH1F("Ptot1","Total momentum (GeV/C) for layers 1",100,0.,5.);
+	  TH1F *Pz1 = new TH1F("Pz1","Pz (GeV/C) for layers 1",100,-5.,5.);
+	  TH1F *Theta1 = new TH1F("Theta1","Theta angle (rad) for layers 1",100,0.,4.);
+	  TH1F *Y1 = new TH1F("Y1","Rapidity for layers 1",100,-4.,4.);
+	  TH1F *Eta1 = new TH1F("Eta1","PseudoRapidity for layers 1",100,-4.,4.);
+	  TH1F *Y1Den = new TH1F("Y1Den","Rapidity for layers 1",100,-0.5,0.5);
+	  TH1F *Eta1Den = new TH1F("Eta1Den","PseudoRapidity for layers 1",100,-0.5,0.5);
+	  TH1F *Y1DenA = new TH1F("Y1DenA","Rapidity for layers 1",100,-0.5,0.5);
+	  TH1F *Eta1DenA = new TH1F("Eta1DenA","PseudoRapidity for layers 1",100,-0.5,0.5);
+	  TH1F *Phi1 = new TH1F("Phi1","Phi angle (rad) for layers 1",100,0.,7.);
+	  TH1F *Ptot2 = new TH1F("Ptot2","Total momentum (GeV/C) for layers 2",100,0.,5.);
+	  TH1F *Pz2 = new TH1F("Pz2","Pz (GeV/C) for layers 2",100,-5.,5.);
+	  TH1F *Theta2 = new TH1F("Theta2","Theta angle (rad) for layers 2",100,0.,4.);
+	  TH1F *Y2 = new TH1F("Y2","Rapidity for layers 2",100,-4.,4.);
+	  TH1F *Eta2 = new TH1F("Eta2","PseudoRapidity for layers 2",100,-4.,4.);
+	  TH1F *Y2Den = new TH1F("Y2Den","Rapidity for layers 2",100,-0.5,0.5);
+	  TH1F *Eta2Den = new TH1F("Eta2Den","PseudoRapidity for layers 2",100,-0.5,0.5);
+	  TH1F *Y2DenA = new TH1F("Y2DenA","Rapidity for layers 2",100,-0.5,0.5);
+	  TH1F *Eta2DenA = new TH1F("Eta2DenA","PseudoRapidity for layers 2",100,-0.5,0.5);
+	  TH1F *Phi2 = new TH1F("Phi2","Phi angle (rad) for layers 2",100,0.,7.);
+
 	  // -------------- Create ntuples --------------------
 	  //  ntuple structures:
 
@@ -73,12 +94,18 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	    Float_t qcl;
 	    Float_t dx;
 	    Float_t dz;
+	    Float_t x;
+	    Float_t z;
 	  } ntuple1_st;
 
 	  struct {
 	    //	    Int_t lay;
+	    Int_t lay;
 	    Int_t nx;
 	    Int_t nz;
+	    Float_t x;
+	    Float_t z;
+	    Float_t qcl;
 	  } ntuple2_st;
 
 	  ntuple = new TTree("ntuple","Demo ntuple");
@@ -102,14 +129,20 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	  ntuple1->Branch("ntrover",&ntuple1_st.ntrover,"ntrover/I");
 	  ntuple1->Branch("noverlaps",&ntuple1_st.noverlaps,"noverlaps/I");
 	  ntuple1->Branch("noverprim",&ntuple1_st.noverprim,"noverprim/I");
+	  ntuple1->Branch("x",&ntuple1_st.x,"x/F");
+	  ntuple1->Branch("z",&ntuple1_st.z,"z/F");
 	  ntuple1->Branch("dx",&ntuple1_st.dx,"dx/F");
 	  ntuple1->Branch("dz",&ntuple1_st.dz,"dz/F");
 
 
 	  ntuple2 = new TTree("ntuple2","Demo ntuple2");
 	  //	  ntuple2->Branch("lay",&ntuple2_st.lay,"lay/I");
+	  ntuple2->Branch("lay",&ntuple2_st.lay,"lay/I");
+	  ntuple2->Branch("x",&ntuple2_st.x,"x/F");
+	  ntuple2->Branch("z",&ntuple2_st.z,"z/F");
 	  ntuple2->Branch("nx",&ntuple2_st.nx,"nx/I");
 	  ntuple2->Branch("nz",&ntuple2_st.nz,"nz/I");
+	  ntuple2->Branch("qcl",&ntuple2_st.qcl,"qcl/F");
 
 // ------------------------------------------------------------------------
 //
@@ -145,6 +178,8 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
      TTree *TC=ITS->TreeC();
      Int_t nent=TC->GetEntries();
      printf("Found %d entries in the tree (must be one per module per event!)\n",nent);
+     Int_t lay, lad, det;
+     AliITSgeom *geom = ITS->GetITSgeom();
    
      for (Int_t idettype=0;idettype<3;idettype++) {
 
@@ -153,9 +188,13 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
           if (idettype != 0) continue;
 
+	  Float_t occup1 = 0;
+	  Float_t occup2 = 0;
+
 	  // Module loop
 	  for (Int_t mod=0; mod<nent; mod++) {
 	      AliITSmodule *itsModule = (AliITSmodule*)ITSmodules->At(mod);
+	      geom->GetModuleId(mod,lay,lad,det);
 
 	      Int_t nhits = itsModule->GetNhits();
               //if(nhits) printf("module nhits %d %d\n",mod,nhits);
@@ -167,7 +206,7 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	      if (!nclust) continue;
 
 	      // cluster/hit loops
-
+	      //cout<<"mod,lay,nclust,nhits ="<<mod<<","<<lay<<","<<nclust<<","<<nhits<<endl;
 	for (Int_t clu=0;clu<nclust;clu++) {
 		itsclu   = (AliITSRawClusterSPD*)ITSclusters->UncheckedAt(clu);
 
@@ -189,9 +228,16 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 		Float_t clusterx = itsclu->X();
 		Float_t clusterz = itsclu->Z();
 		Float_t clusterQ = itsclu->Q();
-                
+
+		if(lay == 1) occup1 += clusterQ;                
+		if(lay == 2) occup2 += clusterQ;                
+
+		ntuple2_st.lay = lay;
+		ntuple2_st.x = clusterx/1000.;
+		ntuple2_st.z = clusterz/1000.;
 		ntuple2_st.nx = clustersizex;
 		ntuple2_st.nz = clustersizez;
+		ntuple2_st.qcl = clusterQ;
 
 		ntuple2->Fill();
 
@@ -203,7 +249,6 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
         	Float_t SPDwidth = 12800;	
                 Float_t xhit0 = 1e+5;
                 Float_t zhit0 = 1e+5;
-
 		
        for (Int_t hit=0;hit<nhits;hit++) {
 
@@ -215,28 +260,40 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 		  Int_t hitlayer = itsHit->GetLayer();
 		  Int_t hitladder= itsHit->GetLadder();
 		  Int_t hitdet= itsHit->GetDetector();
-
- 		  Int_t clusterlayer = hitlayer;
-		  Int_t clusterladder= hitladder;
-		  Int_t clusterdetector = hitdet;
-
+	          Float_t dEn = 1.0e+6*itsHit->GetIonization(); // hit energy, KeV 
 		  Int_t track = itsHit->GetTrack();
 		  Int_t dray = 0;
 		  Int_t hitstat = itsHit->GetTrackStatus();
 
-
 		  Float_t zhit = 10000*itsHit->GetZL();
 		  Float_t xhit = 10000*itsHit->GetXL();
 
-		  if(abs(zhit) > SPDlength/2) {
-		    if(hitstat == 66) zhit0 = 1e+5;
-		    continue;
-		  }
+        Int_t parent = itsHit->GetParticle()->GetFirstMother();
+        Int_t partcode = itsHit->GetParticle()->GetPdgCode();
+	Float_t pmod = itsHit->GetParticle()->P(); // total momentum at the
 
-		  if(abs(xhit) > SPDwidth/2) {
-		    if(hitstat == 66) xhit0 = 1e+5;
-		    continue;
-		  }
+        Float_t pxsimL = itsHit->GetPXL();  // the momenta at GEANT points
+        Float_t pysimL = itsHit->GetPYL();
+        Float_t pzsimL = itsHit->GetPZL();
+	Float_t psimL = TMath::Sqrt(pxsimL*pxsimL+pysimL*pysimL+pzsimL*pzsimL);
+
+	// Check boundaries
+	if(zhit  > SPDlength/2) {
+	  //cout<<"!!! z outside ="<<zhit<<endl;
+         zhit = SPDlength/2 - 10;
+	}
+	if(zhit < 0 && zhit < -SPDlength/2) {
+	  //cout<<"!!! z outside ="<<zhit<<endl;
+         zhit = -SPDlength/2 + 10;
+	}
+	if(xhit  > SPDwidth/2) {
+	  //cout<<"!!! x outside ="<<xhit<<endl;
+         xhit = SPDwidth/2 - 10;
+	}
+	if(xhit  < 0 && xhit < -SPDwidth/2) {
+	  //cout<<"!!! x outside ="<<xhit<<endl;
+         xhit = -SPDwidth/2 + 10;
+	}
 
 		  zhit += SPDlength/2;
 		  xhit += SPDwidth/2;
@@ -257,7 +314,6 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
 		  if(xhit0 > 9e+4 || zhit0 > 9e+4) continue;
 
-
 		  Float_t xmed = (xhit + xhit0)/2;
 		  Float_t zmed = (zhit + zhit0)/2;
 
@@ -268,28 +324,50 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
         // Consider the hits inside of cluster region only
 
   if((xmed >= fxstart && xmed <= fxstop) && (zmed >= zstart && zmed <= zstop)) {
-
         icl = 1;
 
                 //        part = (TParticle *)particles.UncheckedAt(track);
                 //        Int_t partcode = part->GetPdgCode();
                 //              Int_t primery = gAlice->GetPrimary(track);
 
-        Int_t parent = itsHit->GetParticle()->GetFirstMother();
-        Int_t partcode = itsHit->GetParticle()->GetPdgCode();
+        //Int_t parent = itsHit->GetParticle()->GetFirstMother();
+        //Int_t partcode = itsHit->GetParticle()->GetPdgCode();
 
 //  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0, 211 - pi+
 //                      310 - K0s, 321 - K+, 2112 - n, 2212 - p, 3122 - lambda
 
-	Float_t pmod = itsHit->GetParticle()->P(); // the momentum at the
+	//Float_t pmod = itsHit->GetParticle()->P(); // total momentum at the
 	                                           // vertex
+	Float_t energy = itsHit->GetParticle()->Energy(); // energy at the
+	                                           // vertex
+	Float_t mass = itsHit->GetParticle()->GetMass(); // particle mass 
+
+	Float_t pz = itsHit->GetParticle()->Pz(); // z momentum componetnt  
+	                                           // at the vertex
+	Float_t px = itsHit->GetParticle()->Px(); // z momentum componetnt  
+	                                           // at the vertex
+	Float_t py = itsHit->GetParticle()->Py(); // z momentum componetnt  
+	                                           // at the vertex
+	Float_t phi = itsHit->GetParticle()->Phi(); // Phi angle at the
+	                                           // vertex
+	Float_t theta = itsHit->GetParticle()->Theta(); // Theta angle at the
+	                                           // vertex
+	//Float_t y = itsHit->GetParticle()->Eta(); // Rapiditi at the
+	                                           // vertex
+	if((energy-pz) > 0) {
+	  Float_t y = 0.5*TMath::Log((energy+pz)/(energy-pz));
+	}else{
+	  cout<<" Warning: energy < pz ="<<energy<<","<<pz<<endl;
+	  y = 10;
+	}   
+        Float_t eta = -TMath::Log(TMath::Tan(theta/2));
         pmod *= 1.0e+3;
 
-	/*
-        Float_t px = itsHit->GetPXL();  // the momenta at this GEANT point
-        Float_t py = itsHit->GetPYL();
-        Float_t pz = itsHit->GetPZL();
-	*/
+
+        Float_t pxsim = itsHit->GetPXG();  // the momenta at this GEANT point
+        Float_t pysim = itsHit->GetPYG();
+        Float_t pzsim = itsHit->GetPZG();
+	Float_t psim = TMath::Sqrt(pxsim*pxsim+pysim*pysim+pzsim*pzsim);
 
         Int_t hitprim = 0;
 
@@ -326,23 +404,48 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
          ntuple->Fill();
 
+        if(hitlayer == 1) {
+           Y1DenA->Fill(y);
+           Eta1DenA->Fill(eta);
+        }
+        if(hitlayer == 2) {
+           Y2DenA->Fill(y);
+           Eta2DenA->Fill(eta);
+        }
+
       
 
       if(hitprim > 0) {   // for primary particles
+
         if(hitlayer == 1) {
            Xres1->Fill(xdif);
            Zres1->Fill(zdif);
+           Ptot1->Fill(pmod/1000.);
+           Pz1->Fill(pz);
+           Theta1->Fill(theta);
+           Y1->Fill(y);
+           Eta1->Fill(eta);
+           Y1Den->Fill(y);
+           Eta1Den->Fill(eta);
+           Phi1->Fill(phi);
         }
         if(hitlayer == 2) {
            Xres2->Fill(xdif);
            Zres2->Fill(zdif);
+           Ptot2->Fill(pmod/1000.);
+           Pz2->Fill(pz);
+           Theta2->Fill(theta);
+           Y2->Fill(y);
+           Eta2->Fill(eta);
+           Y2Den->Fill(y);
+           Eta2Den->Fill(eta);
+           Phi2->Fill(phi);
         }
       } // primery particles
 
      } // end of cluster region
    } // end of hit loop
 
-		
       if(icl == 1) {
 
         // fill ntuple1
@@ -353,9 +456,11 @@ noverprim,dx,dz);
         if(noverlaps == 0) noverlaps = 1; // cluster contains one or more
                                           // delta rays only
 
-         ntuple1_st.lay = clusterlayer;
-         ntuple1_st.lad = clusterladder;
-         ntuple1_st.det = clusterdetector;
+         ntuple1_st.lay = lay;
+         ntuple1_st.lad = lad;
+         ntuple1_st.det = det;
+         ntuple1_st.x = clusterx*1000.;
+         ntuple1_st.z = clusterz*1000.;
          ntuple1_st.nx = clustersizex;
          ntuple1_st.nz = clustersizez;
          ntuple1_st.qcl = clusterQ;
@@ -370,6 +475,10 @@ noverprim,dx,dz);
      } // icl = 1
     } // cluster loop
    } // module loop       
+
+     cout<<" Occupancy for layer-1 ="<<occup1<<endl;
+     cout<<" Occupancy for layer-2 ="<<occup2<<endl;
+
   } // idettype loop
  } // end if ITS
 } // event loop 
@@ -399,6 +508,28 @@ noverprim,dx,dz);
    Zres1->Write();
    Xres2->Write();
    Zres2->Write();
+
+   Ptot1->Write();
+   Pz1->Write();
+   Theta1->Write();
+   Y1->Write();
+   Eta1->Write();
+   Y1Den->Write();
+   Eta1Den->Write();
+   Y1DenA->Write();
+   Eta1DenA->Write();
+   Phi1->Write();
+
+   Ptot2->Write();
+   Pz2->Write();
+   Theta2->Write();
+   Y2->Write();
+   Eta2->Write();
+   Y2Den->Write();
+   Eta2Den->Write();
+   Y2DenA->Write();
+   Eta2DenA->Write();
+   Phi2->Write();
 
    fhistos.Close();
    cout<<"!!! Histogramms and ntuples were written"<<endl;
