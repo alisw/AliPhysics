@@ -961,19 +961,21 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
     iChamber = &(pMUON->Chamber(chamber-1));
     Float_t zpos=iChamber->Z();
 
-    GetMUONData()->SetTreeAddress("H");
-    Int_t ntracks = (Int_t)GetMUONData()->TreeH()->GetEntries(); //skowron
-    Int_t nthits  = 0;
-    for (track = 0; track < ntracks; track++) {
+
+    if (GetMUONData()->TreeH()) {
+      GetMUONData()->SetTreeAddress("H");
+      Int_t ntracks = (Int_t)GetMUONData()->TreeH()->GetEntries(); //skowron
+      Int_t nthits  = 0;
+      for (track = 0; track < ntracks; track++) {
 	GetMUONData()->ResetHits();
 	GetMUONData()->GetTrack(track);//skowron
 	TClonesArray *muonHits  = GetMUONData()->Hits();
 	if (muonHits == 0) return;
 	nthits += muonHits->GetEntriesFast();
-    } 
-    if (fPhits == 0) fPhits = new TObjArray(nthits);
-    Int_t nhold=0;
-    for (track=0; track<ntracks;track++) {
+      } 
+      if (fPhits == 0) fPhits = new TObjArray(nthits);
+      Int_t nhold=0;
+      for (track=0; track<ntracks;track++) {
 	GetMUONData()->ResetHits();
 	GetMUONData()->GetTrack(track);//skowron
 	TClonesArray *muonHits  = GetMUONData()->Hits();
@@ -984,25 +986,26 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
 	AliMUONPoints *points = 0;
 	Int_t npoints=1;
 	for (Int_t hit=0;hit<nhits;hit++) {
-            mHit = (AliMUONHit*)muonHits->UncheckedAt(hit);
-            Int_t nch  = mHit->Chamber();              // chamber number
-            if (nch != chamber) continue;
-	    //
-	    // Retrieve info and set the objects
-	    //
-	    points = new AliMUONPoints(npoints);
-	    fPhits->AddAt(points,nhold+hit);
-            points->SetMarkerColor(kRed);
-            points->SetMarkerStyle(5);
-            points->SetMarkerSize(1.);
-            points->SetParticle(mHit->Track());
-            points->SetHitIndex(hit);
-            points->SetTrackIndex(track);
-            points->SetDigitIndex(-1);
-	    points->SetPoint(0,mHit->X(),mHit->Y(),zpos);
-	    //	    printf("%f and %f and %f\n",mHit->X(),mHit->Y(),mHit->Z());
+	  mHit = (AliMUONHit*)muonHits->UncheckedAt(hit);
+	  Int_t nch  = mHit->Chamber();              // chamber number
+	  if (nch != chamber) continue;
+	  //
+	  // Retrieve info and set the objects
+	  //
+	  points = new AliMUONPoints(npoints);
+	  fPhits->AddAt(points,nhold+hit);
+	  points->SetMarkerColor(kRed);
+	  points->SetMarkerStyle(5);
+	  points->SetMarkerSize(1.);
+	  points->SetParticle(mHit->Track());
+	  points->SetHitIndex(hit);
+	  points->SetTrackIndex(track);
+	  points->SetDigitIndex(-1);
+	  points->SetPoint(0,mHit->X(),mHit->Y(),zpos);
+	  //	    printf("%f and %f and %f\n",mHit->X(),mHit->Y(),mHit->Z());
 	}
 	nhold+=nhits;
+      }
     }
 }
 
