@@ -1,5 +1,9 @@
 #ifndef ALIGENGEVSIM_H
 #define ALIGENGEVSIM_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -106,7 +110,7 @@ class AliGenGeVSim : public AliGenerator {
 
   Float_t GetdNdYToTotal();
   
-  Bool_t CheckPtYPhi(Float_t pt, Float_t y, Float_t phi);  // for histograms only
+  Bool_t CheckPtYPhi(Float_t pt, Float_t y, Float_t phi) const;  // for histograms only
   Bool_t CheckAcceptance(Float_t p[3]);
   
   Float_t FindScaler(Int_t paramId, Int_t pdg);

@@ -143,13 +143,13 @@ static Double_t etakac( Double_t *py, Double_t *)
 {
 // eta-distribution
 //____________________________________________________________
-    const Float_t p0 =  1.10343e+02;
-    const Float_t p1 =  1.73247e+01;
-    const Float_t p2 = -7.23808e+00;
-    const Float_t p3 =  4.48334e-01;
-    const Double_t y = TMath::Abs(*py);
+    const Float_t  kp0 =  1.10343e+02;
+    const Float_t  kp1 =  1.73247e+01;
+    const Float_t  kp2 = -7.23808e+00;
+    const Float_t  kp3 =  4.48334e-01;
+    const Double_t ky = TMath::Abs(*py);
 //
-    return (p0+p1*y+p2*y*y+p3*y*y*y)/20.;
+    return (kp0+kp1*ky+kp2*ky*ky+kp3*ky*ky*ky)/20.;
 }
 
 AliGenHIJINGparaBa::AliGenHIJINGparaBa()
@@ -175,6 +175,12 @@ AliGenHIJINGparaBa::AliGenHIJINGparaBa(Int_t npart)
     fTitle="HIJING Parametrisation Particle Generator with Baryons";
     fETAba = 0;
     fPtba  = 0;
+}
+
+AliGenHIJINGparaBa::AliGenHIJINGparaBa(const AliGenHIJINGparaBa& para) : AliGenHIJINGpara(para)
+{
+// Copy constructor
+    para.Copy(*this);
 }
 
 //_____________________________________________________________________________

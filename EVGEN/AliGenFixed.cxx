@@ -17,21 +17,9 @@
 
 // Simple particle gun. 
 // Momentum, phi and theta of the partice as well as the particle type can be set.
+// If fExplicit is true the user set momentum vector is used,
+// otherwise it is calculated.
 // andreas.morsch@cern.ch
-//Begin_Html
-/*
-<img src="picts/AliGeneratorClass.gif">
-</pre>
-<br clear=left>
-<font size=+2 color=red>
-<p>The responsible person for this module is
-<a href="mailto:andreas.morsch@cern.ch">Andreas Morsch</a>.
-</font>
-<pre>
-*/
-//End_Html
-//                                                               //
-///////////////////////////////////////////////////////////////////
 
 #include "TPDGCode.h"
 

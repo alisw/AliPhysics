@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// Helper class to interface pdflib and the TPythia 
+// the c++ interface for Pythia
+// The pdf codes used  in pdflib are mapped
+// to a more user friendly enumeration type.
+// Author: andreas.morsch@cern.ch
+
 #include "AliStructFuncType.h"
 
 #ifndef WIN32

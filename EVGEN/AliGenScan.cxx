@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// Realisation of AliGenerator that generates particles with
+// vertices on a user defined grid.
+// The vertex positions can be smeared. 
+// Momentum vectors are defined through the methods provided by AliGenerator.
+// Author: andreas.morsch@cern.ch
+
 #include "AliGenScan.h"
 #include "AliRun.h"
 

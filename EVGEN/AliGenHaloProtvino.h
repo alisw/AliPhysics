@@ -32,8 +32,7 @@ public:
     
 
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
- private:
-    void Copy(AliGenHaloProtvino&) const;
+
 protected:
   FILE*    fFile;                       // ! Pointer to file
   TString  fFileName;                   //   Choose the file
@@ -43,7 +42,11 @@ protected:
   Int_t    fNskip;                      //   Number of entries to skip
   Float_t  fZ1[21],    fZ2[21];         // ! z-positions for gas pressure tables
   Float_t  fG1[21][5], fG2[21][5];      // ! gas pressures
+ private:
+  void Copy(AliGenHaloProtvino&) const;
   ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)
+      
+
 };
 #endif
 

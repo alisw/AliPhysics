@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+//
+// Realisation of AliGenReader to be used with AliGenExtFile
+// It reads events from a ntuple like event structure.
+// Author: andreas.morsch@cern.ch
+//
 #include "AliGenReader.h"
 
 
@@ -23,8 +28,6 @@ class AliGenReaderCwn : public AliGenReader
     virtual TParticle*  NextParticle();
     virtual void RewindEvent(){;}
     AliGenReaderCwn & operator=(const AliGenReaderCwn & rhs);
- private:
-    void Copy(AliGenReaderCwn&) const;
     
  protected:
     Int_t             fNcurrent;      // points to the next entry
@@ -41,6 +44,8 @@ class AliGenReaderCwn : public AliGenReader
     Float_t         fPhi;             // Phi
     Float_t         fP;               // Total momentum
     Float_t         fE;               // Total energy
+ private:
+    void Copy(AliGenReaderCwn&) const;
     ClassDef(AliGenReaderCwn,1) // Read particles from cwn-ntuple
 };
 #endif

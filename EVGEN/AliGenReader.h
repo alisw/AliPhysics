@@ -25,7 +25,7 @@ class AliGenReader : public TObject
     virtual Int_t NextEvent()                                              = 0;
     virtual TParticle* NextParticle()                                      = 0;
     virtual void RewindEvent()                                             = 0;
-    enum Code_t {kPDG, kGEANT3};
+    typedef enum {kPDG, kGEANT3} Code_t;
     void SetParticleCode(Code_t code) {fCode = code;}
     AliGenReader & operator=(const AliGenReader & rhs);
 

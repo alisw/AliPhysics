@@ -5,11 +5,11 @@
 
 /* $Id$ */
 
-/*
- generates n particles with in the same phi angle, varies theta
- in equidistant intervals
- Comments and suggestions: Jiri.Chudoba@cern.ch
-*/
+
+// Generates n particles with in the same phi angle, varies theta
+// In equidistant intervals
+// Comments and suggestions: Jiri.Chudoba@cern.ch
+
 
 #include "AliGenerator.h"
 class AliGenThetaSlice : public AliGenerator

@@ -46,8 +46,7 @@ public:
     // generate event
     virtual void Generate();
     AliGenFLUKAsource & operator=(const AliGenFLUKAsource & rhs);
- private:
-    void Copy(AliGenFLUKAsource &arun) const;
+
  protected:
 
     Int_t       fIkine;         // Flag to choose type of particles to be read
@@ -80,7 +79,8 @@ public:
     Float_t         fPtg;    // Pt of primary particle
     Float_t         fAge;    // Time of flight
 
-
+ private:
+    void Copy(AliGenFLUKAsource &arun) const;
 
     ClassDef(AliGenFLUKAsource,1) //Boundary source
 };

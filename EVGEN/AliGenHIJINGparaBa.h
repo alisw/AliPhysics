@@ -6,6 +6,8 @@
 /* $Id$ */
 
 // Parameterisation of pi, K, n and p eta and pt distributions
+// eta: according to HIJING (shadowing + quenching)              
+// pT : according to CDF measurement at 1.8 TeV                  
 // Author: andreas.morsch@cern.ch
 
 #include "AliGenHIJINGpara.h"
@@ -16,6 +18,9 @@ class AliGenHIJINGparaBa : public AliGenHIJINGpara
  public:
     AliGenHIJINGparaBa();
     AliGenHIJINGparaBa(Int_t npart);
+    AliGenHIJINGparaBa(const AliGenHIJINGparaBa &HIJINGpara);
+    AliGenHIJINGparaBa& operator = (const AliGenHIJINGparaBa &para) 
+	{para.Copy(*this); return (*this);}
     virtual ~AliGenHIJINGparaBa();
     virtual void Generate();
     virtual void Init();

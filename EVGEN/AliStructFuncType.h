@@ -1,9 +1,13 @@
-#ifndef ALISTRUCFUNCTYPE_H
-#define ALISTRUCFUNCTYPE_H
+#ifndef ALISTRUCTFUNCTYPE_H
+#define ALISTRUCTFUNCTYPE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+// Helper class to interface pdflib and the TPythia 
+// the c++ interface for Pythia
+// Author: andreas.morsch@cern.ch
 
 #include <TObject.h>
 

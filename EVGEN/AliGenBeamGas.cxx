@@ -19,14 +19,12 @@
 // Generator to simulate beam gas interactions.
 // At present single interactions are read from an external file. 
 // Several interactions are combined in one event.
-
+// By default the vertex is smeared between +/- 20 m
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenBeamGas.h"
-#include "AliRun.h"
 
 #include <TParticle.h>
-#include <TFile.h>
-#include <TTree.h>
 
 
 ClassImp(AliGenBeamGas)

@@ -26,13 +26,11 @@ class AliGenCocktailEntry : public TNamed
     void SetGenerator(AliGenerator* generator){fGenerator=generator;}
     void SetFirst(Int_t first){fFirst=first;}
     void SetLast (Int_t last ){fLast =last;}
-    Int_t GetFirst(){return fFirst;}
-    Int_t GetLast (){return fLast;}
-    Float_t Rate(){return fRate;}
+    Int_t GetFirst() const {return fFirst;}
+    Int_t GetLast () const {return fLast;}
+    Float_t Rate()   const {return fRate;}
     void  PrintInfo();
     AliGenCocktailEntry & operator =(const AliGenCocktailEntry & rhs);
- private:
-    void Copy(AliGenCocktailEntry&) const;
  protected:
     AliGenerator *fGenerator;   // Pointer to generator
     Int_t fNGenerated;          // Number of primaries generated
@@ -41,6 +39,7 @@ class AliGenCocktailEntry : public TNamed
     Float_t fRate;              // Rate per event
     Float_t fKineBias;          // Bias due to kinematic selecion
     Float_t fBias;              // Bias
+    void Copy(AliGenCocktailEntry&) const;
  private:
     ClassDef(AliGenCocktailEntry,1) // Generator entry of AliGenCocktail
 };

@@ -20,23 +20,8 @@
 // kinematic range (flat distribution)
 // Note that for a given theta pt and p are not independent 
 // Range for only one variable (pt or p) should be given.
-//
 // Comments and suggestions: andreas.morsch@cern.ch
-//
-//Begin_Html
-/*
-<img src="picts/AliGeneratorClass.gif">
-</pre>
-<br clear=left>
-<font size=+2 color=red>
-<p>The responsible person for this module is
-<a href="mailto:andreas.morsch@cern.ch">Andreas Morsch</a>.
-</font>
-<pre>
-*/
-//End_Html
-//                                                               //
-///////////////////////////////////////////////////////////////////
+
 
 #include "TPDGCode.h"
 

@@ -246,7 +246,15 @@ void AliGenHIJINGpara::Init()
 //  Fraction of events corresponding to the selected phi-range    
     Float_t phiFrac    = (fPhiMax-fPhiMin)/2/TMath::Pi();
 
+    
     fParentWeight = Float_t(fNpart)/(intETASel*ptFrac*phiFrac);
+    
+    if (fAnalog != 0) {
+	fPtWgtPi = (fPtMax - fPtMin) / fPtpi->Integral(0., 20.);
+	fPtWgtKa = (fPtMax - fPtMin) / fPtka->Integral(0., 20.);
+	fParentWeight = Float_t(fNpart)/(intETASel*phiFrac);
+    }
+    
     
     printf("%s: The number of particles in the selected kinematic region corresponds to %f percent of a full event\n ", 
 	   ClassName(),100.*fParentWeight);
@@ -282,7 +290,7 @@ void AliGenHIJINGpara::Generate()
     const Int_t kKaons[4] = {kK0Long, kK0Short, kKPlus, kKMinus};
     //
     Float_t origin[3];
-    Float_t pt, pl, ptot;
+    Float_t pt, pl, ptot, wgt;
     Float_t phi, theta;
     Float_t p[3];
     Int_t i, part, j;
@@ -303,23 +311,32 @@ void AliGenHIJINGpara::Generate()
     eventVertex[0] = origin[0];
     eventVertex[1] = origin[1];
     eventVertex[2] = origin[2];
-
+     
     for(i=0;i<fNpart;i++) {
 	while(1) {
-	    Rndm(random,3);
+	    Rndm(random,4);
 	    if(random[0]<kBorne) {
 		part=kPions[Int_t (random[1]*3)];
 		ptf=fPtpi;
 		etaf=fETApic;
+		wgt = fPtWgtPi;
 	    } else {
 		part=kKaons[Int_t (random[1]*4)];
 		ptf=fPtka;
 		etaf=fETAkac;
+		wgt = fPtWgtKa;
 	    }
 	    phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
 	    theta=2*TMath::ATan(TMath::Exp(-etaf->GetRandom()));
 	    if(theta<fThetaMin || theta>fThetaMax) continue;
-	    pt=ptf->GetRandom();
+	 
+	    if (fAnalog == 0) { 
+		pt = ptf->GetRandom();
+	    } else {
+		pt = fPtMin + random[3] * (fPtMax - fPtMin);
+	    }
+	    
+	    
 	    pl=pt/TMath::Tan(theta);
 	    ptot=TMath::Sqrt(pt*pt+pl*pl);
 	    if(ptot<fPMin || ptot>fPMax) continue;
@@ -333,6 +350,14 @@ void AliGenHIJINGpara::Generate()
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
 	    }
+	    
+	    if (fAnalog == 0) { 
+		wgt = fParentWeight;
+	    } else {
+		wgt *= (fParentWeight * ptf->Eval(pt));
+	    }
+	    
+	    
 	    if (part == kPi0 && fPi0Decays){
 //
 //          Decay pi0 if requested

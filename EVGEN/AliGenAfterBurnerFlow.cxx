@@ -169,7 +169,7 @@ void AliGenAfterBurnerFlow::SetFlowParameters
   // Defaults
 
   if (pdg == 0) {
-    index = kN - order;
+    index = fgkN - order;
     newEntry = kFALSE;
   }
 
@@ -185,7 +185,7 @@ void AliGenAfterBurnerFlow::SetFlowParameters
   
   // check fCounter
 
-  if (newEntry && (fCounter > kN-3)) {
+  if (newEntry && (fCounter > fgkN-3)) {
     Error("AliAfterBurnerFlow","Overflow");
     return;
   }
@@ -225,7 +225,7 @@ Float_t AliGenAfterBurnerFlow::GetCoefficient
   // and particle momentum (Pt, Y)
   //
 
-  Int_t index = kN - n;  // default index 
+  Int_t index = fgkN - n;  // default index 
   Float_t v = 0;
 
   // try to find specific parametrs

@@ -6,7 +6,7 @@
 /* $Id$ */
 
 // Simple particle gun. 
-// Momentum, phi and theta of the partice as well as the particle type can be set.
+// Momentum, phi and theta of the particle as well as the particle type can be set.
 // andreas.morsch@cern.ch
 
 
@@ -31,9 +31,9 @@ class AliGenFixed : public AliGenerator
  
 protected:
 
-  Int_t fIpart; // Particle type
-  Int_t fExplicit;
-  Float_t fP[3];
+  Int_t fIpart;    // Particle type
+  Int_t fExplicit; // True if momentum vector has been set by user. 
+  Float_t fP[3];   // Momentum vector
 
   ClassDef(AliGenFixed,1) // Single particle generator
 };

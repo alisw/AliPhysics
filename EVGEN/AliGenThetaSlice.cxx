@@ -15,20 +15,17 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////////////////////
-//
-// generates n particles with in the same phi angle, varies theta
+
+// Generates n particles with in the same phi angle, varies theta
 // in equidistant intervals
 // This class is intended to use for studies of TPC response
 // via merging with background event.
-// 
 // Note that for a given theta pt and p are not independent 
 // Range for only one variable (pt or p) should be given.
 // Based on the AliGenBox class written by andreas.morsch@cern.ch
 //
 // Comments and suggestions: Jiri.Chudoba@cern.ch
-//
-////////////////////////////////////////////////////////////////////////
+
 
 #include <TPDGCode.h>
 

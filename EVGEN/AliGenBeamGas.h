@@ -5,11 +5,12 @@
 
 /* $Id$ */
 
+//
+// Generator to simulate beam gas interactions.
+// At present single interactions are read from an external file. 
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenExtFile.h"
-#include "AliGenReader.h"
-
-class TTree;
 
 class AliGenBeamGas : public AliGenExtFile
 {
@@ -24,12 +25,12 @@ class AliGenBeamGas : public AliGenExtFile
     virtual void Init();
     // generate event
     virtual void Generate();
+ protected:
+    Int_t fInteractions;    // Number of interactions
  private:
     void Copy(AliGenBeamGas&) const;
- protected:
-    Int_t fInteractions;
     
-    ClassDef(AliGenBeamGas,1) //Generate for beam gas interactions
+    ClassDef(AliGenBeamGas,1) //Generator for beam gas interactions
 	
 };
 #endif

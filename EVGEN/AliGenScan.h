@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// Realisation of AliGenerator that generates particles with
+// vertices on a user defined grid.
+// Author: andreas.morsch@cern.ch
+
 #include "AliGenerator.h"
 
 class AliGenScan : public AliGenerator

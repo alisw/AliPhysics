@@ -44,16 +44,15 @@ class AliGenAfterBurnerFlow : public AliGenerator {
 
  private:
 
-  static const Int_t kN = 30;
+  static const Int_t fgkN = 30; // Size of array fParams 
 
   Float_t GetCoefficient(Int_t pdg, Int_t n, Float_t Pt, Float_t Y);
   void SetFlowParameters(Int_t pdg, Int_t order, Int_t type, Float_t v1, Float_t v2, Float_t v3, Float_t v4);
 
   Float_t fReactionPlane;      // Reaction plane angle (in rad)
-  Float_t fParams[kN][7];      // parameters (0: pdg, 1: order, 2: type,  3-6: actual parameters) 
+  Float_t fParams[fgkN][7];    // parameters (0: pdg, 1: order, 2: type,  3-6: actual parameters) 
   Int_t   fCounter;            // counter
 
- public:
 
   ClassDef(AliGenAfterBurnerFlow,2)
 
