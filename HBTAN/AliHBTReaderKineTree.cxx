@@ -76,6 +76,7 @@ Int_t AliHBTReaderKineTree::GetNumberOfPartEvents()
 Int_t AliHBTReaderKineTree::
 Read(AliHBTRun* particles, AliHBTRun *tracks)
  {
+ cout<<"AliHBTReaderKineTree::Read()"<<endl;
  if (!particles) //check if an object is instatiated
    {
      Error("Read"," particles object must instatiated before passing it to the reader");
