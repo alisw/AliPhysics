@@ -6,7 +6,7 @@
 //___________________________________________
 ClassImp(AliRICHresponseCkv)
 //___________________________________________	
-Float_t AliRICHresponseCkv::IntPH()
+Float_t AliRICHresponseCkv::IntPH(Float_t)
 {
     
     Float_t charge = -fChslope*TMath::Log(gRandom->Rndm());

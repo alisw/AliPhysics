@@ -96,8 +96,8 @@ public TObject {
     //  
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
-    virtual Float_t IntPH(Float_t eloss)                         =0;
-    virtual Float_t IntPH()                                      =0;
+    virtual Float_t IntPH(Float_t eloss=0)                       =0;
+  //    virtual Float_t IntPH()                                      =0;
     virtual Int_t FeedBackPhotons(Float_t *source, Float_t qtot) =0;
     // Charge disintegration
     virtual Float_t IntXY(AliRICHsegmentation *)                 =0;

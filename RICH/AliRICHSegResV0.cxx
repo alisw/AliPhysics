@@ -317,5 +317,5 @@ Int_t AliRICHresponseV0::FeedBackPhotons(Float_t source[3], Float_t qtot)
 		     mom,source,pol,position[3],
 		     "Cherenkov", nt, weight);
   }
-  return(nfp);
+  return(sNfeed);
 }

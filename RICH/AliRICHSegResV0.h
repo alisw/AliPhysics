@@ -124,8 +124,7 @@ public AliRICHresponse {
     //  
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
-    virtual Float_t IntPH(Float_t eloss);
-    virtual Float_t IntPH(){return 0;}
+    virtual Float_t IntPH(Float_t eloss=0);
     virtual Int_t FeedBackPhotons(Float_t *source, Float_t qtot);
     
     // Charge disintegration

@@ -9,7 +9,7 @@ class AliRICHresponseCkv : public AliRICHresponseV0 {
     AliRICHresponseCkv(){}
     virtual ~AliRICHresponseCkv(){}
     
-    virtual Float_t IntPH();
+    virtual Float_t IntPH(Float_t =0);
     
     ClassDef(AliRICHresponseCkv,1)
 	

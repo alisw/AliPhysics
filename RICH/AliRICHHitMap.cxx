@@ -3,6 +3,9 @@
 ClassImp(AliRICHHitMap)
 ClassImp(AliRICHHitMapA1)
 
+    //const char* dummy=0;
+
+
 AliRICHHitMapA1::AliRICHHitMapA1(AliRICHsegmentation *seg, TObjArray *dig)
 {
     fSegmentation = seg;
@@ -23,7 +26,7 @@ AliRICHHitMapA1::~AliRICHHitMapA1()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliRICHHitMapA1::Clear()
+void AliRICHHitMapA1::Clear(Option_t *)
 {
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }

@@ -10,7 +10,7 @@ class AliRICHHitMap :
 public TObject {
  public:
     virtual  void  FillHits()                                      =0;
-    virtual  void  Clear()                                         =0;
+    virtual  void  Clear(Option_t* =0)                             =0;
     virtual  void  SetHit(Int_t ix, Int_t iy, Int_t idigit)        =0;
     virtual  void  DeleteHit(Int_t ix, Int_t iy)                   =0;
     virtual Int_t  GetHitIndex(Int_t ix, Int_t iy)                 =0;
@@ -37,7 +37,7 @@ public AliRICHHitMap
     AliRICHHitMapA1(AliRICHsegmentation *seg, TObjArray *dig);
     virtual ~AliRICHHitMapA1();
     virtual  void  FillHits();
-    virtual  void  Clear();    
+    virtual  void  Clear(Option_t* =0);    
     virtual  void  SetHit(Int_t ix, Int_t iy, Int_t idigit);
     virtual  void  DeleteHit(Int_t ix, Int_t iy);
     virtual Int_t  GetHitIndex(Int_t ix, Int_t iy);

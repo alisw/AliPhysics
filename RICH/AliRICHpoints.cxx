@@ -208,7 +208,7 @@ void AliRICHpoints::GetCenterOfGravity()
   // simple RICH cluster finder from digits -- finds neighbours and 
   // calculates center of gravity for the cluster
   //
-  const Int_t MAX_Nipx=400, MAX_Nipy=800;
+  const Int_t MAX_nipx=400, MAX_nipy=800;
   printf("\n Hallo world");
   AliRICHdisplay *display=(AliRICHdisplay*)gAlice->Display();
   Int_t chamber=display->GetChamber();
@@ -232,7 +232,7 @@ void AliRICHpoints::GetCenterOfGravity()
   dig=(AliRICHdigit*)RICHdigits->UncheckedAt(fDigitIndex);
   Int_t ipx=dig->fPadX;
   Int_t ipy=dig->fPadY;
-  Bin bins[MAX_Nipx][MAX_Nipy]; 
+  Bin bins[MAX_nipx][MAX_nipy]; 
   bins[ipx+npx][ipy+npy].dig=dig;
     
   int ndig;

@@ -617,8 +617,6 @@ void AliRICHdisplay::LoadDigits()
 // Read digits info and store x,y,z info in arrays fPoints
 // Loop on all detectors
     
-    Int_t ich;
-  
     printf("Entering Load-digits");
     
     
@@ -628,7 +626,7 @@ void AliRICHdisplay::LoadDigits()
    AliRICHsegmentation*  segmentation;
    Int_t NallDigits=0;
    
-   for (ich=0; ich<7; ich++) {
+   for (Int_t ich=0; ich<7; ich++) {
        TClonesArray *RICHdigits  = RICH->DigitsAddress(ich);
        if (RICHdigits == 0) continue;
        gAlice->ResetDigits();
@@ -639,7 +637,7 @@ void AliRICHdisplay::LoadDigits()
    }
    if (fPoints == 0) fPoints = new TObjArray(NallDigits);   
    Int_t counter=0;
-   for (ich=0; ich<7; ich++) {
+   for (Int_t ich=0; ich<7; ich++) {
        TClonesArray *RICHdigits  = RICH->DigitsAddress(ich);
        if (RICHdigits == 0) continue;
        gAlice->ResetDigits();

@@ -452,9 +452,9 @@ void AliRICH::ReconstructClusters()
 //
 // Initialize the necessary correspondance table
 //
-    static const Int_t kMaxNpadx = 600;
-    static const Int_t kMaxNpady = 600;
-    Int_t elem[kMaxNpadx*2][kMaxNpady*2];
+    static const Int_t kMaxNPadx = 600;
+    static const Int_t kMaxNPady = 600;
+    Int_t elem[kMaxNPadx*2][kMaxNPady*2];
 //
 // Loop on chambers and on cathode planes
 //
@@ -490,12 +490,12 @@ void AliRICH::ReconstructClusters()
 	    //
 	    // Build the correspondance table
 	    //
-	    memset(elem,0,sizeof(Int_t)*kMaxNpadx*kMaxNpady*4);
+	    memset(elem,0,sizeof(Int_t)*kMaxNPadx*kMaxNPady*4);
 	    Int_t digit;
 	    for (digit=0; digit<ndigits; digit++) 
 	    {
 		mdig    = (AliRICHdigit*)RICHdigits->UncheckedAt(digit);
-		elem[kMaxNpadx+mdig->fPadX][kMaxNpady+mdig->fPadY] = digit+1;
+		elem[kMaxNPadx+mdig->fPadX][kMaxNPady+mdig->fPadY] = digit+1;
 		// because default is 0
 	    }
 	    //
@@ -513,9 +513,9 @@ void AliRICH::ReconstructClusters()
 		//
 		// if digit still available, start clustering
 		//
-		if (elem[kMaxNpadx+mdig->fPadX][kMaxNpady+mdig->fPadY]) {
+		if (elem[kMaxNPadx+mdig->fPadX][kMaxNPady+mdig->fPadY]) {
 		    Cluster = new AliRICHRecCluster(digit, ich, icat);
-		    elem[kMaxNpadx+mdig->fPadX][kMaxNpady+mdig->fPadY]=0;
+		    elem[kMaxNPadx+mdig->fPadX][kMaxNPady+mdig->fPadY]=0;
 		    //
 		    // loop over the current list of digits 
                     // and look for neighbours
@@ -528,13 +528,13 @@ void AliRICH::ReconstructClusters()
 			segmentation->Neighbours(pDigit->fPadX,pDigit->fPadY, 
 						 &Nlist, Xlist, Ylist);
 			for (Int_t Ilist=0;Ilist<Nlist;Ilist++) {
-			    if (elem[kMaxNpadx+Xlist[Ilist]][kMaxNpady
+			    if (elem[kMaxNPadx+Xlist[Ilist]][kMaxNPady
 							    +Ylist[Ilist]]) {
 				//
 				// Add the digit at the end and reset the table
 				//
-				Cluster->AddDigit(elem[kMaxNpadx+Xlist[Ilist]][kMaxNpady+Ylist[Ilist]]-1);
-				elem[kMaxNpadx+Xlist[Ilist]][kMaxNpady
+				Cluster->AddDigit(elem[kMaxNPadx+Xlist[Ilist]][kMaxNPady+Ylist[Ilist]]-1);
+				elem[kMaxNPadx+Xlist[Ilist]][kMaxNPady
 							    +Ylist[Ilist]] =0;
 			    } // if elem
 			} // for Ilist
@@ -828,10 +828,9 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     
-    static Bool_t first=kTRUE;
+    static Bool_t first=true;
     static TTree *TH1;
     static TFile *File;
-    Int_t i;
     char *Add = strstr(option,"Add");
 
     AliRICHchamber*  iChamber;
@@ -845,7 +844,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
     
     AliRICH *RICH  = (AliRICH *) gAlice->GetDetector("RICH");
     AliRICHHitMap* HitMap[10];
-    for (i=0; i<10; i++) {HitMap[i]=0;}
+    for (Int_t i=0; i<10; i++) {HitMap[i]=0;}
     if (Add ) {
 	if(first) {
 	    fFileName=filename;
@@ -854,7 +853,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 	    cout<<"I have opened "<<fFileName<<" file "<<endl;
 	    fHits2     = new TClonesArray("AliRICHhit",1000  );
 	    fClusters2 = new TClonesArray("AliRICHcluster",10000);
-	    first=kFALSE;
+	    first=false;
 	}
 	File->cd();
 	File->ls();
@@ -888,8 +887,8 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
     //
     AliRICHHitMap* hm;
     
-    for (Int_t icat=0; icat<1; icat++) { 
-	for (i=0; i<7; i++) {
+    for (int icat=0; icat<1; icat++) { 
+	for (Int_t i=0; i<7; i++) {
 	    if (HitMap[i]) {
 		hm=HitMap[i];
 		delete hm;
@@ -897,7 +896,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 	    }
 	}
 	Int_t counter=0;
-	for (i =0; i<7; i++) {
+	for (Int_t i =0; i<7; i++) {
 	    iChamber=(AliRICHchamber*) (*fChambers)[i];
 	    if (iChamber->Nsec()==1 && icat==1) {
 		continue;
@@ -1014,18 +1013,18 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 //
 //   Loop over tracks
 //
-	    for (Int_t track=0; track<ntracks; track++) {
+	    for (Int_t trak=0; trak<ntracks; trak++) {
 
 		if (fHits2)       fHits2->Clear();
 		if (fClusters2)   fClusters2->Clear();
 		
-		TH1->GetEvent(track);
+		TH1->GetEvent(trak);
 //
 //   Loop over hits
 		AliRICHhit* mHit;
-		for(int i=0;i<fHits2->GetEntriesFast();++i) 
+		for(int j=0;j<fHits2->GetEntriesFast();++j) 
 		{
-		    mHit=(AliRICHhit*) (*fHits2)[i];
+		    mHit=(AliRICHhit*) (*fHits2)[j];
 		    Int_t   nch   = mHit->fChamber-1;  // chamber number
 		    if (nch >9) continue;
 		    iChamber = &(RICH->Chamber(nch));
@@ -1042,7 +1041,7 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 			Int_t ipx      = mPad->fPadX;       // pad number on X
 			Int_t ipy      = mPad->fPadY;       // pad number on Y
 			Int_t iqpad    = mPad->fQpad;       // charge per pad
-			if (track==3 && nch==0 && icat==0) printf("bgr - track,iqpad,ipx,ipy %d %d %d %d\n",track,iqpad,ipx,ipy);
+			if (trak==3 && nch==0 && icat==0) printf("bgr - trak,iqpad,ipx,ipy %d %d %d %d\n",trak,iqpad,ipx,ipy);
 //
 //
 			if (cathode != (icat+1)) continue;
@@ -1064,9 +1063,9 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 			digits[2]=iqpad;
 
 			
-			if (track <4 && icat==0 && nch==0)
-			    printf("bgr - HitMap[nch]->TestHit(ipx, ipy),track %d %d\n",
-				   HitMap[nch]->TestHit(ipx, ipy),track);
+			if (trak <4 && icat==0 && nch==0)
+			    printf("bgr - HitMap[nch]->TestHit(ipx, ipy),trak %d %d\n",
+				   HitMap[nch]->TestHit(ipx, ipy),trak);
 			AliRICHlist* pdigit;
 			// build the list of fired pads and update the info
 			if (!HitMap[nch]->TestHit(ipx, ipy)) {
@@ -1159,9 +1158,9 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 		charges[tr]=Int_t(pp(1));
 	    }      //end loop over list of tracks for one pad
 	    if (nptracks < 10 ) {
-		for (Int_t i=nptracks; i<10; i++) {
-		    tracks[i]=0;
-		    charges[i]=0;
+		for (Int_t t=nptracks; t<10; t++) {
+		    tracks[t]=0;
+		    charges[t]=0;
 		}
 	    }
 	    // fill digits
@@ -1175,10 +1174,10 @@ void AliRICH::Digitise(Int_t nev,Option_t *option,Text_t *filename)
 	Stat_t ndig=TD->GetEntries();
 	cout<<"number of digits  "<<ndig<<endl;
 	TClonesArray *fDch;
-	for (int i=0;i<7;i++) {
-	    fDch= RICH->DigitsAddress(i);
+	for (int k=0;k<7;k++) {
+	    fDch= RICH->DigitsAddress(k);
 	    int ndig=fDch->GetEntriesFast();
-	    printf (" i, ndig %d %d \n",i,ndig);
+	    printf (" k, ndigits %d %d \n",k,ndig);
 	}
 	RICH->ResetDigits();
 	

@@ -30,7 +30,7 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
     fChambers = new TObjArray(7);
     for (Int_t i=0; i<7; i++) {
     
-	(*fChambers)[i] = new AliRICHchamber();
+	(*fChambers)[i] = new AliRICHchamber();  
 	
     }      
 }
@@ -744,6 +744,8 @@ void AliRICHchamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
     Float_t local[3];
     Float_t source[3];
     Int_t Nfp=0;
+    //    Float_t dummy=0;
+    
     
     //
     // Width of the integration area
@@ -763,12 +765,14 @@ void AliRICHchamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 	local[2]=yhit;
 	//Generate feedback photons
 	Nfp  = ((AliRICHresponse*) (*fResponse)[0])->FeedBackPhotons(source,qtot);
+	//printf("\nFeedbacks (Mip)     :%d",Nfp);
     } else if (res==cerenkov) {
 	qtot = ((AliRICHresponse*) (*fResponse)[1])->IntPH();
 	local[0]=xhit;
 	local[1]=6.026;
 	local[2]=yhit;
 	Nfp  = ((AliRICHresponse*) (*fResponse)[1])->FeedBackPhotons(source,qtot);
+	//printf("\nFeedbacks (Cerenkov):%d",Nfp);
     }
 
     //
