@@ -237,7 +237,7 @@ void AliSingleModuleConstruction::Construct()
   //   G4cout << *(*table)[i] << G4endl;
   // }  
 
-  Configure();
+  // Configure();
 
   // get geometry manager
   TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
@@ -264,6 +264,9 @@ void AliSingleModuleConstruction::Construct()
     // construct G3 geometry
     fAliModule->CreateGeometry();
         
+    // construct geometry for display
+    fAliModule->BuildGeometry();
+
     if (fWriteGeometry) 
       pGeometryManager->CloseOutFile();
   }  
