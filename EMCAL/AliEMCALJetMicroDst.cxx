@@ -55,12 +55,12 @@ AliEMCALJetMicroDst::AliEMCALJetMicroDst(char *name, char *tit) : TNamed(name,ti
   hPtPart     = new TH1F("hPtPart","P_{T} for partons", 300, 0., 300.);
   // 16-jan-2002 - new limit fo phi 
   hEtaPhiPart = new TH2F("hEtaPhiPart","#eta #phi distr.for partons after HSc", 
-		       28, -0.7, 0.7, 21, TMath::Pi()/3., TMath::Pi());
+		       28, -0.7, 0.7, 21, 0.0, (2.0/3.0)*TMath::Pi());
 
   hNJet  = new TH1F("hNJet","number of jets", 11, -0.5, 10.5);
   hPtJet = new TH1F("hPtJet","P_{T} for jets", 500, 0., 500.);
   hEtaPhiJet = new TH2F("hEtaPhiJet","#eta #phi distr.for jets (W)", 
-		       28, -0.7, 0.7, 21, TMath::Pi()/3., TMath::Pi());
+		       28, -0.7, 0.7, 21, 0.0, (2.0/3.0)*TMath::Pi());
 
   hNcell  = new TH1F("hNcell","#cell with de>0.0 for EMCAL", 1400, 0.0, 14000.);
   hCellId = new TH1F("hCellId","cell ID with de>0.0 for EMCAL", 1400, 0.0, 14000.);
@@ -577,7 +577,7 @@ void AliEMCALJetMicroDst::FillVector(Float_t pt, Float_t eta, Float_t phi, TVect
 void AliEMCALJetMicroDst::GetEtaPhi(Int_t id, Double_t &eta, Double_t &phi)
 { // see AliEMCALGeometry 
   static Int_t ieta, iphi, nphi=144, neta=96;
-  static Double_t phiMax=TMath::Pi(), phiMin=phiMax/3.;
+  static Double_t phiMax=(2.0/3.0)*TMath::Pi(), phiMin=0.0;
   static Double_t phiStep=(phiMax-phiMin)/nphi, phiBeg = phiMin + phiStep/2.; 
   static Double_t etaMax=0.7, etaMin=-etaMax;
   static Double_t etaStep=(etaMax-etaMin)/neta, etaBeg = etaMin + etaStep/2.;
