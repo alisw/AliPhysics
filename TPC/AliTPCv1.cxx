@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.21  2000/11/02 16:55:24  kowal2
+Corrected bug in the inner containment vessel geometry.
+Thanks to J. Belikov
+
 Revision 1.20  2000/11/02 07:24:11  kowal2
 Correction in the TPC geometry.
 Changes due to the new hit structure.
@@ -316,7 +320,7 @@ void AliTPCv1::CreateGeometry()
   
   dm[0]= 0.;
   dm[1]= 360.;
-  dm[2]=5.;
+  dm[2]=6.;
 
   //
 
@@ -331,24 +335,29 @@ void AliTPCv1::CreateGeometry()
   dm[8]= 277.95;
 
   //
-
-  dm[9]= 253.6;
-  dm[10]= 272.2;
-  dm[11]= 277.95;
+  dm[9]= -248.4;
+  dm[10]= 274.81;
+  dm[11]= 277.95; 
 
   //
 
   dm[12]= 253.6;
-  dm[13]= 265.2;
+  dm[13]= 274.81;
   dm[14]= 277.95;
 
-  // 
+  //
 
-  dm[15]= 255.6;
+  dm[15]= 253.6;
   dm[16]= 265.2;
   dm[17]= 277.95;
 
-  gMC->Gsvolu("TOCV","PCON",idtmed[4],dm,18);
+  // 
+
+  dm[18]= 255.6;
+  dm[19]= 265.2;
+  dm[20]= 277.95;
+
+  gMC->Gsvolu("TOCV","PCON",idtmed[4],dm,21);
 
   // Daughter volumes
 
@@ -428,7 +437,7 @@ void AliTPCv1::CreateGeometry()
 
   dm[15]= 251.;
   dm[16]= 258.;
-  dm[17]= 260.05;
+  dm[17]= 270.9;
 
   //
 
