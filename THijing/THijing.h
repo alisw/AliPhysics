@@ -194,7 +194,17 @@ public:
 			      
    virtual void         Hijing(const char* frame, float bmin, float bmax);
 
+   virtual Float_t      Profile(float b);
+   
+
    ClassDef(THijing,1)  //Interface to Hijing Event Generator
 };
 
 #endif
+
+
+
+
+
+
+
