@@ -17,6 +17,7 @@ public AliHitMap
 {
     
  public:
+    AliRICHHitMapA1();
     AliRICHHitMapA1(AliSegmentation *seg, TObjArray *dig);
     virtual ~AliRICHHitMapA1();
     virtual  void    FillHits();

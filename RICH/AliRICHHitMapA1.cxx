@@ -27,6 +27,18 @@
 
 ClassImp(AliRICHHitMapA1)
 
+AliRICHHitMapA1::AliRICHHitMapA1()
+{
+// Default constructor
+    fSegmentation = 0;
+    fNpx          = 0;
+    fNpy          = 0;
+    fMaxIndex     = 0;
+    
+    fHitMap       = 0;
+    fDigits       = 0;
+}
+
 
 AliRICHHitMapA1::AliRICHHitMapA1(AliSegmentation *seg, TObjArray *dig)
 {
