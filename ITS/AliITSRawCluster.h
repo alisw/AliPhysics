@@ -164,21 +164,28 @@ public:
   AliITSRawClusterSDD() {
     // constructor
     fX=fZ=fQ=0;
-    fWing=fNsamples=0;
+    fWing=0;
     fNanodes=1;
     fAnode=fTime=fPeakAmplitude=0;
     fPeakPosition=-1;
     fMultiplicity=0;
+    fTstart=fTstop=fTstartf=fTstopf=0;
+    fAstart=fAstop=0;
   }
-  
-  AliITSRawClusterSDD(Int_t wing, Float_t Anode,Float_t Time,Float_t Charge,
-		      Float_t PeakAmplitude,Int_t PeakPosition,Float_t Asigma, Float_t Tsigma,Float_t DriftPath, Float_t AnodeOffset,Int_t Samples);
+    
+  AliITSRawClusterSDD(Int_t wing, Float_t Anode,Float_t Time, Float_t Charge, 
+              Float_t PeakAmplitude,Int_t PeakPosition,  Float_t Asigma, Float_t Tsigma, Float_t DriftPath, Float_t AnodeOffset,  Int_t Samples, 
+			   Int_t Tstart, Int_t Tstop, Int_t Tstartf, Int_t Tstopf, Int_t Anodes, Int_t Astart, Int_t Astop);
+  AliITSRawClusterSDD( const AliITSRawClusterSDD & source);
+//  AliITSRawClusterSDD(Int_t wing, Float_t Anode,Float_t Time,Float_t Charge,
+//		      Float_t PeakAmplitude,Int_t PeakPosition,Float_t Asigma, Float_t Tsigma,Float_t DriftPath, Float_t AnodeOffset,Int_t Samples);
   virtual ~AliITSRawClusterSDD() {
     // destructor
   }
   
   void Add(AliITSRawClusterSDD* clJ); 
   Bool_t Brother(AliITSRawClusterSDD* cluster,Float_t dz,Float_t dx);
+//  Bool_t Brother(AliITSRawClusterSDD* cluster);
   void PrintInfo();
   // Setters
   void SetX(Float_t x) {fX=x;}
@@ -186,9 +193,11 @@ public:
   void SetQ(Float_t q) {fQ=q;}
   void SetAnode(Float_t anode) {fAnode=anode;}
   void SetTime(Float_t time) {fTime=time;}
-  void SetWing(Int_t wing) {fWing=wing;}
+  void SetAsigma(Float_t asigma) {fAsigma=asigma;}
+  void SetTsigma(Float_t tsigma) {fTsigma=tsigma;}
+ void SetWing(Int_t wing) {fWing=wing;}
   void SetNanodes(Int_t na) {fNanodes=na;}
-  void SetNsamples(Int_t ns) {fNsamples=ns;}
+  void SetNsamples(Int_t ns) {fMultiplicity=ns;}
   void SetPeakAmpl(Float_t ampl) {fPeakAmplitude=ampl;}
   void SetPeakPos(Int_t pos) {fPeakPosition=pos;}
   // Getters
@@ -212,6 +221,14 @@ public:
     //T
     return fTime ;
   }
+  Float_t Asigma() const {
+    //Asigma
+    return fAsigma ;
+  }
+  Float_t Tsigma() const {
+    //Tsigma
+    return fTsigma ;
+  }
   Float_t W() const {
     //W
     return fWing ;
@@ -222,14 +239,42 @@ public:
   }
   Int_t Samples() const {
     //Samples
-    return fNsamples ;
+    return fMultiplicity;
   }
   Float_t PeakAmpl() const {
     //PeakAmpl
     return fPeakAmplitude ;
   }
+  Float_t SumAmpl() const {
+    //PeakAmpl
+    return fSumAmplitude ;
+  }
   Int_t PeakPos() {return fPeakPosition;}
-  
+
+  Int_t Tstart() const {
+    //Tstart
+    return fTstart ;
+  }
+  Int_t Tstartf() const {
+    //Tstartf
+    return fTstartf ;
+  }
+  Int_t Tstop() const {
+    //Tstop
+    return fTstop ;
+  }
+  Int_t Tstopf() const {
+    //Tstopf
+    return fTstopf ;
+  }
+  Int_t Astart() const {
+    //Astart
+    return fAstart ;
+  }
+  Int_t Astop() const {
+    //Astop
+    return fAstop ;
+  }
 public:
   
   Float_t   fX;                 // X of cluster
@@ -238,10 +283,18 @@ public:
   Int_t     fWing;              // Wing number
   Float_t   fAnode;             // Anode number
   Float_t   fTime;              // Drift Time
+  Float_t   fAsigma;            //
+  Float_t   fTsigma;            //
   Float_t   fPeakAmplitude;     // Peak Amplitude
+  Float_t   fSumAmplitude;      // Total Amplitude (for weighting)  
   Int_t     fPeakPosition;      // index of digit corresponding to peak
   Int_t     fNanodes;           // N of anodes used for the cluster
-  Int_t     fNsamples;          // N of samples used for the cluster
+  Int_t     fTstart;            // First sample in 1D cluster   
+  Int_t     fTstop;             // Last sample in 1D cluster 
+  Int_t     fTstartf;           // First sample in the full 2D cluster
+  Int_t     fTstopf;            // Last sample in the full 2D cluster  
+  Int_t     fAstart;            // First anode in the 2D cluster
+  Int_t     fAstop;             // last anode in the 2D cluster
   
   ClassDef(AliITSRawClusterSDD,1)  // AliITSRawCluster class for SDD
     };
