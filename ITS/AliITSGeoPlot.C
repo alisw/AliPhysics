@@ -489,8 +489,8 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
     }
     for (Int_t digit=0;digit<ndigits;digit++) {
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
-      Int_t iz=digs->fCoord1;  // cell number z
-      Int_t ix=digs->fCoord2;  // cell number x
+      Int_t iz=digs->GetCoord1();  // cell number z
+      Int_t ix=digs->GetCoord2();  // cell number x
       // Get local coordinates of the element 
       if(subd<2){
         seg->DetToLocal(ix,iz,lcoor[0],lcoor[2]);
@@ -509,11 +509,11 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
           for(Int_t digi2=0;digi2<ndigits;digi2++){
             if(ssdone[digi2]==0 && impaired){
               AliITSdigitSSD *dig2=(AliITSdigitSSD*)ITSdigits->UncheckedAt(digi2);
-              if(dig2->fCoord1 != iz && dig2->GetTrack(0)==digs->GetTrack(0) && dig2->GetTrack(0)>0){
+              if(dig2->GetCoord1() != iz && dig2->GetTrack(0)==digs->GetTrack(0) && dig2->GetTrack(0)>0){
                 ssdone[digi2]=2;
                 pair[digit]=digi2;
-                if(pside)nstrip=dig2->fCoord2;
-                if(!pside)pstrip=dig2->fCoord2;
+                if(pside)nstrip=dig2->GetCoord2();
+                if(!pside)pstrip=dig2->GetCoord2();
                 impaired=kFALSE;
               }
             }
@@ -522,8 +522,8 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
         }
       }
       if(subd<2 || (subd==2 && ssdone[digit]==1)){
-        Int_t coor1=digs->fCoord1;
-        Int_t coor2=digs->fCoord2;
+        Int_t coor1=digs->GetCoord1();
+        Int_t coor2=digs->GetCoord2();
         Int_t tra0=digs->GetTrack(0);
         if(verbose){
           cout<<"digit # "<<digit<<" fCoord1= "<<coor1<<" fCoord2= ";
@@ -539,8 +539,8 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
               cout<<endl;
               Int_t dtmp=pair[digit];
               AliITSdigitSSD *dig2=(AliITSdigitSSD*)ITSdigits->UncheckedAt(dtmp);
-              Int_t coor1b=dig2->fCoord1;
-              Int_t coor2b=dig2->fCoord2;
+              Int_t coor1b=dig2->GetCoord1();
+              Int_t coor2b=dig2->GetCoord2();
               Int_t tra0b=dig2->GetTrack(0);
               cout<<"(digit paired with digit #"<<dtmp<<endl;
               cout<<"with fCoord1= "<<coor1b<<" fCoord2= "<<coor2b;
