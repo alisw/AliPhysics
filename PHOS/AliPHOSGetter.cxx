@@ -37,8 +37,7 @@
 //     ................
 //  please->GetEvent(event) ;    // reads new event from galice.root
 //                  
-//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
-//*--         Completely redesigned by Dmitri Peressounko March 2001  
+//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)//*--         Completely redesigned by Dmitri Peressounko March 2001  
 //
 //*-- YS June 2001 : renamed the original AliPHOSIndexToObject and make
 //*--         systematic usage of TFolders without changing the interface        
@@ -46,7 +45,6 @@
 
 
 // --- ROOT system ---
-
 #include "TFile.h"
 #include "TTree.h"
 #include "TROOT.h"
@@ -169,9 +167,8 @@ AliPHOSGetter::~AliPHOSGetter(){
 //____________________________________________________________________________ 
 void AliPHOSGetter::CloseFile()
 {
-//   delete gAlice ; 
-//   gAlice = 0 ; 
-  fFile->Close() ; 
+  delete gAlice ;  
+  gAlice = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -179,14 +176,14 @@ AliPHOSGetter * AliPHOSGetter::GetInstance()
 {
   // Returns the pointer of the unique instance already defined
   
-  AliPHOSGetter * rv = 0 ;
-  if ( fgObjGetter )
-    rv = fgObjGetter ;
-  else
-    cout << "AliPHOSGetter::GetInstance ERROR: not yet initialized" << endl ;
-
-  fFile->cd() ;  
-  return rv ;
+  if ( fgObjGetter ) {
+    fFile->cd() ; 
+    return fgObjGetter ;
+  }
+  else {
+    //cout << "WARNING: AliPHOSGetter::GetInstance ERROR: not yet initialized" << endl ;
+    return 0 ; 
+  }
 }
 
 //____________________________________________________________________________ 
@@ -204,7 +201,7 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
     }
     else // another file than the existing one is required, scratch the getter
       fgObjGetter->~AliPHOSGetter() ;  // delete it already exists another version
- 
+  
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
 
   if (fgObjGetter->HasFailed() ) 
@@ -213,7 +210,8 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
   // Posts a few item to the white board (folders)
   // fgObjGetter->CreateWhiteBoard() ;
   
-  fFile->cd() ; 
+  if (fFile) 
+    fFile->cd() ; 
   return fgObjGetter ; 
   
 }
@@ -705,6 +703,12 @@ TObject** AliPHOSGetter::DigitizerRef(const char * name) const
 
   TTask * task = dynamic_cast<TTask*>(phos->GetListOfTasks()->FindObject(name)) ; 
 
+  cout << "AliPHOSGetter::DigitizerRef " << task->GetName() << endl ; 
+  cout << "AliPHOSGetter::DigitizerRef " << phos->GetName() << endl ; 
+  cout << "AliPHOSGetter::DigitizerRef " << task->GetListOfTasks() << endl ; 
+  cout << "AliPHOSGetter::DigitizerRef " << task->GetListOfTasks()->GetObjectRef(task) << endl ; 
+
+
   return phos->GetListOfTasks()->GetObjectRef(task) ;
 
 }
@@ -831,7 +835,7 @@ Bool_t AliPHOSGetter::PostClusterizer(AliPHOSClusterizer * clu) const
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
     if (fDebug) {
-      cout <<"WARNING: AliPHOSGetter::Post Rer -> //" << fTasksFolder << "/ReconstructionerPHOS not found!" << endl; 
+      cout <<"WARNING: AliPHOSGetter::Post Rer -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
       cout <<"INFO: AliPHOSGetter::Post Rer -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl; 
     }
     phos = new TTask("PHOS", "") ; 
@@ -923,7 +927,6 @@ Bool_t AliPHOSGetter::PostClusterizer(const char * name) const
   }
 
   AliPHOSClusterizerv1 * phoscl = new AliPHOSClusterizerv1() ;
-  phoscl->SetName(clun) ;
   phos->Add(phoscl) ;
   return kTRUE; 
   
@@ -1048,7 +1051,6 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
   TList * l = phos->GetListOfTasks() ;   
   TIter it(l) ;
   TString tsn(name);
-  tsn+=":tsm" ; 
   TTask * task ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
@@ -1107,7 +1109,7 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
 Bool_t AliPHOSGetter::PostRecParticles(const char * name) const 
 {  // -------------------- RecParticles ------------------------
   
-  // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/RecParticles/name
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS")) ; 
   
@@ -1220,7 +1222,6 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
   TList * l = phos->GetListOfTasks() ;   
   TIter it(l) ;
   TString pidname(name) ;
-  pidname+=":pidv1" ; 
   TTask * task ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
@@ -1404,8 +1405,9 @@ Int_t AliPHOSGetter::ReadTreeD()
   // read  the Digitizer
   if(!Digitizer(fDigitsTitle))
     PostDigitizer(fDigitsTitle) ;
-  digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
-  digitizerbranch->GetEntry(0) ;
+    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+  // digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
+  // digitizerbranch->GetEntry(0) ;
  
   return 0 ; 
 }
@@ -1583,8 +1585,9 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
   }  else { 
     if(!Clusterizer(fRecPointsTitle) )
       PostClusterizer(fRecPointsTitle) ;
-    clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
-    clusterizerbranch->GetEntry(0) ;
+    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+    //clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
+    //clusterizerbranch->GetEntry(0) ;
   }
   
   //------------------- TrackSegments ---------------------
@@ -1618,8 +1621,9 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
     // Read and Post the TrackSegment Maker
     if(!TrackSegmentMaker(fTrackSegmentsTitle))
       PostTrackSegmentMaker(fTrackSegmentsTitle) ;
-    tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
-    tsmakerbranch->GetEntry(0) ;
+    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+    //tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
+    //tsmakerbranch->GetEntry(0) ;
  }
   
   
@@ -1654,8 +1658,9 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
     // Read and Post the PID
     if(!PID(fRecParticlesTitle))
       PostPID(fRecParticlesTitle) ;
-    pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
-    pidbranch->GetEntry(0) ;
+    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+    //pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
+    //pidbranch->GetEntry(0) ;
   }
   return 0 ; 
 }
@@ -1687,7 +1692,6 @@ Int_t AliPHOSGetter::ReadTreeS(Int_t event)
   while ( (folder = static_cast<TFolder*>(next())) ) {
     TString fileName(folder->GetName()) ; 
     fileName.ReplaceAll("_","/") ; 
-    cout << "ALiPHOSGetter::ReadTreeS " << fileName.Data() << " " << fHeaderFile.Data() << endl ; 
     if(fHeaderFile.CompareTo(fileName) == 0 ) 
       treeS=gAlice->TreeS() ;
     else{
@@ -1741,9 +1745,9 @@ Int_t AliPHOSGetter::ReadTreeS(Int_t event)
     sdname+=folder->GetName() ;
     if(!SDigitizer(sdname) ) 
       PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
-
-    sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-    sdigitizerBranch->GetEntry(0) ;  
+    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+    //  sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
+    // sdigitizerBranch->GetEntry(0) ;  
   }    
   
   // After SDigits have been read from all files, return to the first one
@@ -2042,19 +2046,23 @@ void AliPHOSGetter::RemoveTask(TString opt, TString name) const
 {
   // remove a task from the folder
   // path is fTasksFolder/SDigitizer/PHOS/name
-
+  
   TTask * task = 0 ; 
   TTask * phos = 0 ; 
   TList * lofTasks = 0 ; 
 
-  if (opt == "S") {
+  if (opt == "S") { // SDigitizer
     task = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ;
     if (!task) 
       return ; 
   }
-
-  else if (opt == "D") {
+  else if (opt == "D") { // Digitizer
     task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ;
+    if (!task) 
+      return ; 
+  }
+  else if (opt == "C" || opt == "T" || opt == "P"  ) { // Clusterizer, TrackSegmentMaker, PID
+    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ;
     if (!task) 
       return ; 
   }
@@ -2071,6 +2079,7 @@ void AliPHOSGetter::RemoveTask(TString opt, TString name) const
   TObject * obj = lofTasks->FindObject(name) ; 
   if (obj) 
     lofTasks->Remove(obj) ;
+   
 }
 
 //____________________________________________________________________________ 
@@ -2082,14 +2091,14 @@ void AliPHOSGetter::RemoveObjects(TString opt, TString name) const
   TFolder * phos     = 0 ; 
   TFolder * phosmain = 0 ; 
 
-  if (opt == "H") {
+  if (opt == "H") { // Hits
     phos = dynamic_cast<TFolder*>(fHitsFolder->FindObject("PHOS")) ;
     if (!phos) 
       return ;
     name = "Hits" ; 
   }
 
-  else if ( opt == "S") {
+  else if ( opt == "S") { // SDigits
     phosmain = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ;
     if (!phosmain) 
       return ;
@@ -2098,11 +2107,36 @@ void AliPHOSGetter::RemoveObjects(TString opt, TString name) const
       return ;
   }
   
-  else if (opt == "D") {
+  else if (opt == "D") { // Digits
     phos = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("PHOS")) ;
     if (!phos) 
       return ;
   }
+
+  else if (opt == "RE") { // EMCARecPoints
+    phos = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/EMCARecPoints")) ;
+    if (!phos) 
+      return ;
+  }
+
+  else if (opt == "RC") { // CPVRecPoints
+    phos = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/CPVRecPoints")) ;
+    if (!phos) 
+      return ;
+  }  
+
+  else if (opt == "T") { // TrackSegments
+    phos = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/TrackSegments")) ;
+    if (!phos) 
+      return ;
+  }
+
+  else if (opt == "P") { // RecParticles
+    phos = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/RecParticles")) ;
+    if (!phos) 
+      return ;
+  }
+  
   else {
     cerr << "WARNING: AliPHOSGetter::RemoveObjects -> Unknown option " << opt.Data() << endl ; 
     return ; 

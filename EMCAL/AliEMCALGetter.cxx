@@ -161,7 +161,6 @@ AliEMCALGetter::~AliEMCALGetter()
   while ( (folder = static_cast<TFolder*>(next())) ) 
     emcalF->Remove(folder) ; 
 
-  fFile->Close() ;  
   delete fFile ; 
   fFile = 0 ;
 
@@ -178,9 +177,8 @@ void AliEMCALGetter::CreateWhiteBoard() const
 //____________________________________________________________________________ 
 void AliEMCALGetter::CloseFile()
 {
-//   delete gAlice ; 
-//   gAlice = 0 ; 
-  fFile->Close() ; 
+  delete gAlice ; 
+  gAlice = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -188,14 +186,14 @@ AliEMCALGetter * AliEMCALGetter::GetInstance()
 {
   // Returns the pointer of the unique instance already defined
   
-  AliEMCALGetter * rv = 0 ;
-  if ( fgObjGetter )
-    rv = fgObjGetter ;
-  else
-    cout << "AliEMCALGetter::GetInstance ERROR: not yet initialized" << endl ;
-  
-  fFile->cd() ; 
-  return rv ;
+  if ( fgObjGetter ) {
+    fFile->cd() ; 
+    return fgObjGetter ;
+  }
+  else {
+    // cout << "AliEMCALGetter::GetInstance ERROR: not yet initialized" << endl ;
+    return 0 ;
+  }
 }
 
 //____________________________________________________________________________ 
@@ -790,10 +788,18 @@ Bool_t AliEMCALGetter::PostClusterizer(const char * name) const
     tasks->Add(emcal) ; 
   } 
 
-  AliEMCALClusterizerv1 * emcalcl = new AliEMCALClusterizerv1() ;
+  TList * l = emcal->GetListOfTasks() ;   
+  TIter it(l) ;
   TString clun(name) ;
-  clun+=":clu-v1" ;
-  emcalcl->SetName(clun) ;
+  clun+=":clu" ; 
+  TTask * task ;
+  while((task = static_cast<TTask *>(it.Next()) )){
+    TString taskname(task->GetName()) ;
+    if(taskname.BeginsWith(clun))
+      return kTRUE ;
+  }
+
+  AliEMCALClusterizerv1 * emcalcl = new AliEMCALClusterizerv1() ;
   emcal->Add(emcalcl) ;
   return kTRUE; 
   
@@ -1244,8 +1250,10 @@ void AliEMCALGetter::ReadTreeD()
   // read  the Digitizer
   if(!Digitizer(fDigitsTitle))
     PostDigitizer(fDigitsTitle) ;
-  digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
-  digitizerbranch->GetEntry(0) ;
+
+  //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+  // digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
+  // digitizerbranch->GetEntry(0) ;
  
   
 }
@@ -1413,8 +1421,9 @@ void AliEMCALGetter::ReadTreeR()
   
   if(!Clusterizer(fRecPointsTitle) )
     PostClusterizer(fRecPointsTitle) ;
-  clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
-  clusterizerbranch->GetEntry(0) ;
+  //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+  //clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
+  //clusterizerbranch->GetEntry(0) ;
  
   
   //------------------- TrackSegments ---------------------
@@ -1451,8 +1460,9 @@ void AliEMCALGetter::ReadTreeR()
 //   // Read and Post the TrackSegment Maker
 //   if(!TrackSegmentMaker(fTrackSegmentsTitle))
 //     PostTrackSegmentMaker(fTrackSegmentsTitle) ;
-//   tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
-//   tsmakerbranch->GetEntry(0) ;
+     //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+//   //tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
+//   //tsmakerbranch->GetEntry(0) ;
   
   
 //   //------------ RecParticles ----------------------------
@@ -1489,8 +1499,9 @@ void AliEMCALGetter::ReadTreeR()
 //   // Read and Post the PID
 //   if(!PID(fRecParticlesTitle))
 //     PostPID(fRecParticlesTitle) ;
-//   pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
-//   pidbranch->GetEntry(0) ;
+      //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+//   //pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
+//   //pidbranch->GetEntry(0) ;
   
   
 }
@@ -1574,8 +1585,10 @@ void AliEMCALGetter::ReadTreeS(Int_t event)
     sdname+=folder->GetName() ;
     if(!SDigitizer(sdname) ) 
       PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
-    sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-    sdigitizerBranch->GetEntry(0) ;
+
+    //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
+    // sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
+    // sdigitizerBranch->GetEntry(0) ;
     
   }    
   
@@ -1924,22 +1937,27 @@ void AliEMCALGetter::RemoveTask(TString opt, TString name) const
   TTask * emcal = 0 ; 
   TList * lofTasks = 0 ; 
 
-  if (opt == "S") {
+  if (opt == "S") { // SDigitizer
     task = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ;
     if (!task) 
       return ; 
   }
   
-  else if (opt == "D") {
+  else if (opt == "D") { // Digitizer
     task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ;
     if (!task) 
       return ; 
   }
+  else if (opt == "C") { // Clusterizer
+    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ;
+    if (!task) 
+      return ; 
+  }
   else {
-    cerr << "WARNING: AliPHOSGetter::RemoveTask -> Unknown option " << opt.Data() << endl ; 
+    cerr << "WARNING: AliEMCALGetter::RemoveTask -> Unknown option " << opt.Data() << endl ; 
     return ; 
   }
-  
+    
   emcal =  dynamic_cast<TTask*>(task->GetListOfTasks()->FindObject("EMCAL")) ;
   if (!emcal)
     return ; 
@@ -1950,7 +1968,7 @@ void AliEMCALGetter::RemoveTask(TString opt, TString name) const
   if (obj) 
     lofTasks->Remove(obj) ;
 }
-
+  
 //____________________________________________________________________________ 
 void AliEMCALGetter::RemoveObjects(TString opt, TString name) const 
 {
@@ -1960,14 +1978,14 @@ void AliEMCALGetter::RemoveObjects(TString opt, TString name) const
   TFolder * emcal     = 0 ; 
   TFolder * emcalmain = 0 ; 
 
-  if (opt == "H") {
+  if (opt == "H") { // Hits
     emcal = dynamic_cast<TFolder*>(fHitsFolder->FindObject("EMCAL")) ;
     if (!emcal) 
       return ;
     name = "Hits" ; 
   }
   
-  else if ( opt == "S") {
+  else if ( opt == "S") { // SDigits
     emcalmain = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
     if (!emcalmain) 
       return ;
@@ -1976,11 +1994,24 @@ void AliEMCALGetter::RemoveObjects(TString opt, TString name) const
       return ;
   }
 
-  else if (opt == "D") {
+  else if (opt == "D") { // Digits
     emcal = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("EMCAL")) ;
     if (!emcal) 
       return ;
   }
+
+  else if (opt == "RT") { // Tower RecPoints
+    emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/TowerRecPoints")) ;
+    if (!emcal) 
+      return ;
+  }
+
+  else if (opt == "RP") { // Preshower RecPoints
+    emcal = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/PreShoRecPoints")) ;
+    if (!emcal) 
+      return ;
+  }
+
   else {
     cerr << "WARNING: AliEMCALGetter::RemoveObjects -> Unknown option " << opt.Data() << endl ; 
     return ; 
