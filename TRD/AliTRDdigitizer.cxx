@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2001/11/14 16:35:58  cblume
+Inherits now from AliDetector
+
 Revision 1.27  2001/11/14 10:50:45  cblume
 Changes in digits IO. Add merging of summable digits
 
@@ -1285,7 +1288,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
               Float_t signalAmp = signals->GetDataUnchecked(iRow,iCol,iTime);
               signalAmp *= fSDigitsScale;
-              signalAmp  = TMath::Min(signalAmp,1.0e9);
+              signalAmp  = TMath::Min(signalAmp,(Float_t)1.0e9);
               Int_t adc  = (Int_t) signalAmp;
               nDigits++;
               digits->SetDataUnchecked(iRow,iCol,iTime,adc);
