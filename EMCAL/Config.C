@@ -636,7 +636,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	//coment= comment.Append("HIJING Jet 100 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
-	gener->SetImpactParameterRange(10., 10.1);
+	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(1);
 	gener->SetPtJet(100.);
