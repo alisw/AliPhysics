@@ -1119,11 +1119,14 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
   
   char branchname[10];
   sprintf(branchname,"%s",GetName());
-  char *cd = strstr(opt,"D");
+  char *cdD = strstr(opt,"D");
   
-  if (fDigits && gAlice->TreeD() && cd) {
+  if (fDigits && gAlice->TreeD() && cdD) {
     gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
-    //    printf("* AliPHOS::MakeBranch * Making Branch %s for digits\n",branchname);
+  }
+  char *cdR = strstr(opt,"R");
+  if (fRecParticles && gAlice->TreeR() && cdR) {
+    gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize);
   }
 }
 

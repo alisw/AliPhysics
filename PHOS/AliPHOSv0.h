@@ -53,16 +53,17 @@ public:
   TrackSegmentsList *    TrackSegments(){return fTrackSegments ;}
   
 protected:
-  Float_t fPINElectronicNoise  ;         // Electronic Noise in the PIN
-  RecPointsList * fEmcClusters ;        //!  (!=do not stream)
+
+  Float_t fPINElectronicNoise  ;        // Electronic Noise in the PIN
+  RecPointsList * fEmcClusters ;        // The RecPoints (clusters) list in EMC 
   AliPHOSGeometry * fGeom ;             // geometry definition
   Int_t fNTmpHits ;                     //!  used internally for digitalization
-  RecPointsList * fPpsdClusters ;       //!
+  RecPointsList * fPpsdClusters ;       // The RecPoints (clusters) list in PPSD 
   AliPHOSReconstructioner * fReconstructioner ; // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
-  TClonesArray * fTmpHits ;             //!  idem
-  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ;
-  TrackSegmentsList * fTrackSegments ;  //! idem
-  RecParticlesList * fRecParticles ;    //! idem
+  TClonesArray * fTmpHits ;             //!  used internally for digitalization 
+  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
+  TrackSegmentsList * fTrackSegments ;  // The TrackSegment list in PHOS
+  RecParticlesList * fRecParticles ;    // The reconstructed particles list in PHOS
 
   ClassDef(AliPHOSv0,1)  // PHOS main class , version subatech
 

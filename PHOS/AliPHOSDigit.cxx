@@ -38,7 +38,7 @@ ClassImp(AliPHOSDigit)
   fNprimary = 0 ;  
   Int_t index ; 
   for (index = 1 ; index <= 3 ; index++)
-    SetPrimary(index, 0) ; 
+    SetPrimary(index, -1) ; 
 }
 
 //____________________________________________________________________________

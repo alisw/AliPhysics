@@ -52,7 +52,7 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , AliPHOSPpsd
 //____________________________________________________________________________
 AliPHOSTrackSegment::AliPHOSTrackSegment( const AliPHOSTrackSegment & ts) 
 {
- ( (AliPHOSTrackSegment &)ts ).Copy(*this) ; 
+  ( (AliPHOSTrackSegment &)ts ).Copy(*this) ; 
 }
 
 //____________________________________________________________________________

@@ -64,7 +64,7 @@ public:
   void   RelPosInAlice(const Int_t AbsId, TVector3 &  pos) ;             // gets the position of element (pad or Xtal) relative to 
                                                                          // Alice
   Bool_t RelToAbsNumbering(const Int_t * RelId, Int_t & AbsId) ;         // converts the absolute PHOS numbering to a relative 
-                                                                         // inlines
+                                                                       
 
   ///////////// PHOS related parameters
 
