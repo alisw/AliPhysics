@@ -1,0 +1,18 @@
+#-*- Mode: Makefile -*-
+
+include HLT/hlt.conf
+
+SRCS:= ITS/AliL3ITStrack.cxx ITS/AliL3ITStracker.cxx
+
+HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+
+DHDR:= ITS/AliL3ITSLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE += HLT/src HLT/hough HLT/comp HLT/misc TPC ITS STEER CONTAINERS
+
+SUBDIR:=ITS
