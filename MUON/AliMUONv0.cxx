@@ -111,23 +111,29 @@ void AliMUONv0::CreateGeometry()
 void AliMUONv0::CreateMaterials()
 {
 // Creates materials for coarse geometry
-    AliMaterial(15, "AIR$      ", 14.61,  7.3, .001205, 30423.24, 67500);
-    AliMaterial( 9, "ALUMINIUM$", 26.98, 13. , 2.7, 8.9, 37.2);
+// Air
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  AliMixture(15, "AIR$      ", aAir,  zAir, dAir,4, wAir);
+  //  AliMaterial(15, "AIR$      ", 14.61,  7.3, .001205, 30423.24, 67500);
+  AliMaterial( 9, "ALUMINIUM$", 26.98, 13. , 2.7, 8.9, 37.2);
 
-    Float_t epsil  = .001; // Tracking precision, 
-    Float_t stemax = -1.;  // Maximum displacement for multiple scat 
-    Float_t tmaxfd = -20.; // Maximum angle due to field deflection 
-    Float_t deemax = -.3;  // Maximum fractional energy loss, DLS 
-    Float_t stmin  = -.8;
-    Int_t isxfld   = gAlice->Field()->Integ();
-    Float_t sxmgmx = gAlice->Field()->Max();
-
-    //
-    //    Air 
-    AliMedium(1, "AIR_CH_US         ", 15, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(4, "ALU_CH_US         ",  9, 0, isxfld, sxmgmx, tmaxfd, fMaxStepAlu, 
+  Float_t epsil  = .001; // Tracking precision, 
+  Float_t stemax = -1.;  // Maximum displacement for multiple scat 
+  Float_t tmaxfd = -20.; // Maximum angle due to field deflection 
+  Float_t deemax = -.3;  // Maximum fractional energy loss, DLS 
+  Float_t stmin  = -.8;
+  Int_t isxfld   = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
+  
+  //
+  //    Air 
+  AliMedium(1, "AIR_CH_US         ", 15, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "ALU_CH_US         ",  9, 0, isxfld, sxmgmx, tmaxfd, fMaxStepAlu, 
 	    fMaxDestepAlu, epsil, stmin);
-
+  
 }
 
 void AliMUONv0::Init()
