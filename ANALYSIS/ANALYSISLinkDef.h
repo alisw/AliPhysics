@@ -21,6 +21,7 @@
 #pragma link C++ class AliClusterMap+;
 
 #pragma link C++ class AliReader+;
+#pragma link C++ class AliReaderAOD+;
 #pragma link C++ class AliReaderESD+;
 #pragma link C++ class AliReaderESDTree+;
 #pragma link C++ class AliReaderKineTree+;

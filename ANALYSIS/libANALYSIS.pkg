@@ -5,10 +5,11 @@ SRCS= AliAOD.cxx AliEventBuffer.cxx \
       AliAODParticleCut.cxx AliAODParticleBaseCut.cxx \
       AliAODPairCut.cxx AliAODPairBaseCut.cxx \
       AliEventCut.cxx AliEventBaseCut.cxx \
-      AliReader.cxx AliReaderESD.cxx AliReaderKineTree.cxx\
+      AliReader.cxx AliReaderAOD.cxx AliReaderKineTree.cxx \
+      AliReaderESD.cxx AliReaderESDTree.cxx \
       AliTrackPoints.cxx AliClusterMap.cxx \
       AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx AliFlowAnalysis.cxx \
-      AliReaderESDTree.cxx AliMuonAnalysis.cxx  \
+      AliMuonAnalysis.cxx  \
 
 HDRS= $(SRCS:.cxx=.h) 
 
