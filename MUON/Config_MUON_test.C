@@ -86,9 +86,9 @@ void Config(char directory[100]="", char option[6]="box")
   //=======================================================================
   if (!strcmp(option,"box")) {
     AliGenBox * gener = new AliGenBox(1);
-    gener->SetMomentumRange(17.,17.1);
-    gener->SetPhiRange(45.,45.01); //(-180., 180.);         
-      gener->SetThetaRange(4.000,4.001); //(2.000,9.000);
+    gener->SetMomentumRange(20.,20.1);
+    gener->SetPhiRange(45., 45.01);         
+    gener->SetThetaRange(4.000,4.001);
     gener->SetPart(13);           // Muons
     gener->SetOrigin(0.,0., 0.);  //vertex position
     gener->SetSigma(0.0, 0.0, 0.0);         //Sigma in (X,Y,Z) (cm) on IP position
@@ -118,12 +118,15 @@ void Config(char directory[100]="", char option[6]="box")
     gener->SetOrigin(0,0,0);          //vertex position    gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetForceDecay(kDiMuon);
     gener->SetTrackingFlag(1);
+    gener->Init();
   }
      
   //============================================================= 
   // Field (L3 0.4 T)
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k4kG);
-  gAlice->SetField(field);    
+   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k4kG);
+   gAlice->SetField(field);
+  //gAlice->SetField(2,1) ;  //(-999,2);
+
 
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");
