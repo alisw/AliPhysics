@@ -25,7 +25,7 @@ MUON/module.mk:		 MUON/libMUON.pkg
 LHC/module.mk:		 LHC/libLHC.pkg
 PDF/module.mk:		 PDF/libpdf.pkg
 PHOS/module.mk:		 PHOS/libPHOS.pkg
-PMD/module.mk:		 PMD/libPMD.pkg
+PMD/module.mk:		 PMD/libPMDbase.pkg PMD/libPMDsim.pkg PMD/libPMDrec.pkg
 PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg
 RALICE/module.mk:	 RALICE/libRALICE.pkg
 RAW/module.mk:           RAW/libRAW.pkg
@@ -43,5 +43,5 @@ TOF/module.mk:		 TOF/libTOF.pkg
 TPC/module.mk:		 TPC/libTPCbase.pkg TPC/libTPCsim.pkg TPC/libTPCrec.pkg TPC/libTPCfast.pkg
 TPHIC/module.mk:	 TPHIC/libTPHIC.pkg
 TRD/module.mk:		 TRD/libTRDbase.pkg TRD/libTRDsim.pkg TRD/libTRDrec.pkg TRD/libTRDfast.pkg
-VZERO/module.mk:	 VZERO/libVZERO.pkg
+VZERO/module.mk:	 VZERO/libVZERObase.pkg VZERO/libVZEROsim.pkg VZERO/libVZEROrec.pkg
 ZDC/module.mk:		 ZDC/libZDC.pkg
