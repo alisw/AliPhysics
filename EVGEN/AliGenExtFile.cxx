@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.16  2001/07/27 17:09:35  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.15  2001/01/23 13:29:37  morsch
 Add method SetParticleCode and enum type Code_t to handle both PDG (new ntuples)
 and GEANT3 codes (old ntuples) in input file.
@@ -52,23 +57,18 @@ Introduction of the Copyright and cvs Log
 */
 
 
-// Event generator that can read the old ALICE event format based on CW-ntuples
-// http://consult.cern.ch/alice/Internal_Notes/1995/32/abstract
-// .cwn file have to be converted to .root using h2root
-// Use SetFileName(file) to read from "file" 
-// Author: andreas.morsch@cern.ch
+// Event generator that using an instance of type AliGenReader
+// reads particles from a file and applies cuts. 
 
 #include <iostream.h>
 
 #include "AliGenExtFile.h"
-#include "AliMC.h"
 #include "AliRun.h"
 
-#include <TDirectory.h>
-#include <TDatabasePDG.h>
+#include <TParticle.h>
 #include <TFile.h>
-#include "TTree.h"
-#include <stdlib.h>
+#include <TTree.h>
+
 
  ClassImp(AliGenExtFile)
      AliGenExtFile::AliGenExtFile()
@@ -77,25 +77,19 @@ Introduction of the Copyright and cvs Log
 //  Constructor
     fName="ExtFile";
     fTitle="Primaries from ext. File";
-    fFileName="";
-    fTreeNtuple=0;
-    fNcurrent=0;
-    fCode = kGEANT3;
 //
 //  Read all particles
-    fNpart=-1;
+    fNpart  =- 1;
+    fReader =  0;
 }
 
 AliGenExtFile::AliGenExtFile(Int_t npart)
     :AliGenerator(npart)
 {
 //  Constructor
-    fName="ExtFile";
-    fTitle="Primaries from ext. File";
-    fFileName="";
-    fCode = kGEANT3;
-    fTreeNtuple=0;
-    fNcurrent=0;
+    fName   = "ExtFile";
+    fTitle  = "Primaries from ext. File";
+    fReader = 0;
 }
 
 AliGenExtFile::AliGenExtFile(const AliGenExtFile & ExtFile)
@@ -106,133 +100,95 @@ AliGenExtFile::AliGenExtFile(const AliGenExtFile & ExtFile)
 AliGenExtFile::~AliGenExtFile()
 {
 // Destructor
-    delete fTreeNtuple;
+    delete fReader;
 }
 
-//____________________________________________________________
-void AliGenExtFile::NtupleInit() 
+//___________________________________________________________
+void AliGenExtFile::Init()
 {
-//
-// reset the existing file environment and open a new root file if
-// the pointer to the Fluka tree is null
-    
-    TFile *pFile=0;
-    if (fTreeNtuple==0) {
-        if (!pFile) {
-	    pFile = new TFile(fFileName);
-	    pFile->cd();
-	    cout<<"I have opened "<<fFileName<<" file "<<endl;
-        }
-// get the tree address in the Fluka boundary source file
-	fTreeNtuple = (TTree*)gDirectory->Get("h888");
-    } else {
-        pFile = fTreeNtuple->GetCurrentFile();
-        pFile->cd();
-    }
-
-    TTree *h2=fTreeNtuple;
-//Set branch addresses
-    h2->SetBranchAddress("Nihead",&fNihead);
-    h2->SetBranchAddress("Ihead",fIhead);
-    h2->SetBranchAddress("Nrhead",&fNrhead);
-    h2->SetBranchAddress("Rhead",fRhead);
-    h2->SetBranchAddress("Idpart",&fIdpart);
-    h2->SetBranchAddress("Theta",&fTheta);
-    h2->SetBranchAddress("Phi",&fPhi);
-    h2->SetBranchAddress("P",&fP);
-    h2->SetBranchAddress("E",&fE);
+// Initialize
+    if (fReader) fReader->Init();
 }
 
-
-//____________________________________________________________
+    
 void AliGenExtFile::Generate()
 {
 // Generate particles
 
-  Float_t polar[3]= {0,0,0};
+  Float_t polar[3]  = {0,0,0};
   //
-  Float_t origin[3]={0,0,0};
+  Float_t origin[3] = {0,0,0};
   Float_t p[3];
   Float_t random[6];
-  Float_t prwn;
-  Int_t i, j, nt, nTracks=0;
+  Int_t i, j, nt;
   //
-  NtupleInit();
-  TTree *h2=fTreeNtuple;
-  Int_t nentries = (Int_t) h2->GetEntries();
-  // loop over number of particles
-  Int_t nb = (Int_t)h2->GetEvent(fNcurrent);
-  Int_t i5=fIhead[4];
-  Int_t i6=fIhead[5];
-
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
-  if(fVertexSmear==kPerTrack) {
+  if(fVertexSmear == kPerTrack) {
     Rndm(random,6);
-    for (j=0;j<3;j++) {
-	origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+    for (j = 0; j < 3; j++) {
+	origin[j] += fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
     }
   }
 
-  if (fNcurrent >= nentries) {
-      printf("\n No more entries !!! !\n");
+  Int_t nTracks = fReader->NextEvent(); 	
+  if (nTracks == 0) {
+      printf("\n No more events !!! !\n");
       return;
   }
-  
-	  
-  if (i5==0) {
-      printf("\n This should never happen !\n");
-  } else {
-      printf("\n Next event contains %d tracks! \n", i6);
-      nTracks=i6;
-  }
-  for (i=0; i<nTracks; i++) {
-      if (fCode == kGEANT3) fIdpart=gMC->PDGFromId(fIdpart);
-      Double_t amass = TDatabasePDG::Instance()->GetParticle(fIdpart)->Mass();
-      if(fE<=amass) {
-	Warning("Generate","Particle %d no %d E = %f mass = %f %f %f \n",
-		fIdpart,i,fE,amass, fPhi, fTheta);
-	prwn=0;
-      } else {
-	prwn=sqrt((fE+amass)*(fE-amass));
-      }
 
-      fTheta *= TMath::Pi()/180.;
-      fPhi    = (fPhi-180)*TMath::Pi()/180.;      
-      if(fTheta<fThetaMin || fTheta>fThetaMax ||
-	 fPhi<fPhiMin || fPhi>fPhiMax         ||
-	 prwn<fPMin || prwn>fPMax)          
-      {
-	  ;
+  for (i = 0; i < nTracks; i++) {
+      TParticle* iparticle = fReader->NextParticle();
+      Double_t  theta = iparticle->Theta();
+      Double_t  phi = iparticle->Phi();
+      if (phi > TMath::Pi()) phi -= 2.*TMath::Pi();
+      Double_t  pmom = iparticle->P();
+      Double_t  pz   = iparticle->Pz();
+      Double_t  e    = iparticle->Energy();
+      Double_t  pt   = iparticle->Pt();
+      Double_t  y;
+      
+      if ((e-pz) == 0) {
+	  y = 20.;
+      } else if ((e+pz) == 0.) {
+	  y = -20.;
       } else {
-	  p[0]=prwn*TMath::Sin(fTheta)*TMath::Cos(fPhi);
-	  p[1]=prwn*TMath::Sin(fTheta)*TMath::Sin(fPhi);      
-	  p[2]=prwn*TMath::Cos(fTheta);
-	  
-	  if(fVertexSmear==kPerTrack) {
-	      Rndm(random,6);
-	      for (j=0;j<3;j++) {
-		  origin[j]=fOrigin[j]
-		      +fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	      }
-	  }
-	  SetTrack(fTrackIt,-1,fIdpart,p,origin,polar,0,kPPrimary,nt);
+	  y = 0.5*TMath::Log((e+pz)/(e-pz));	  
       }
-      fNcurrent++;
-      nb = (Int_t)h2->GetEvent(fNcurrent); 
+       
+      if(theta < fThetaMin || theta > fThetaMax ||
+	 phi   < fPhiMin   || phi   > fPhiMax   ||
+	 pmom  < fPMin     || pmom  > fPMax     ||
+	 pt    < fPtMin    || pt    > fPtMax    ||
+	 y     < fYMin     || y     > fYMax        )
+      {
+	  printf("\n Not selected %d %f %f %f %f %f", i, theta, phi, pmom, pt, y);
+	  continue;
+      }
+      p[0] = iparticle->Px();
+      p[1] = iparticle->Py();
+      p[2] = iparticle->Pz();
+      Int_t idpart = iparticle->GetPdgCode();
+      if(fVertexSmear==kPerTrack) {
+	  Rndm(random,6);
+	  for (j = 0; j < 3; j++) {
+	      origin[j]=fOrigin[j]
+		  +fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+		  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	  }
+      }
+      SetTrack(fTrackIt,-1,idpart,p,origin,polar,0,kPPrimary,nt);
   }
- 
-    TFile *pFile=0;
+  TFile *pFile=0;
 // Get AliRun object or create it 
-    if (!gAlice) {
-	gAlice = (AliRun*)pFile->Get("gAlice");
-	if (gAlice) printf("AliRun object found on file\n");
-	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-    }
-    TTree *fAli=gAlice->TreeK();
-    if (fAli) pFile =fAli->GetCurrentFile();
-    pFile->cd();
+  if (!gAlice) {
+      gAlice = (AliRun*)pFile->Get("gAlice");
+      if (gAlice) printf("AliRun object found on file\n");
+      if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
+  }
+  TTree *fAli=gAlice->TreeK();
+  if (fAli) pFile =fAli->GetCurrentFile();
+  pFile->cd();
 }
 
 
