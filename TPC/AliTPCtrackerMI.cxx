@@ -1455,7 +1455,6 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
     //  return 0;
     //}
     return 1;
-    y=t.GetY();
   }
   //
   // update current shape info every 3 pad-row

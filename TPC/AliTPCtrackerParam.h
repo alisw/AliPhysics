@@ -47,7 +47,7 @@ class AliTPCtrackerParam:
   //                                                                        
   /////////////////////////////////////////////////////////////////////////
  public:
-  AliTPCtrackerParam(const Int_t coll=0,const Double_t Bz=0.4,const Int_t n=1,
+  AliTPCtrackerParam(Int_t coll=0, Double_t Bz=0.4, Int_t n=1,
 		     const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
   virtual ~AliTPCtrackerParam();
 

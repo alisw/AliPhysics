@@ -113,8 +113,8 @@ typedef struct {
 ClassImp(AliTPCtrackerParam)
 
 //-----------------------------------------------------------------------------
-AliTPCtrackerParam::AliTPCtrackerParam(const Int_t kcoll,const Double_t kBz,
-				       const Int_t kn, const char* evfoldname):
+AliTPCtrackerParam::AliTPCtrackerParam(Int_t kcoll, Double_t kBz,
+				       Int_t kn, const char* evfoldname):
   fEvFolderName(evfoldname) {
 //-----------------------------------------------------------------------------
 // This is the class conctructor 
