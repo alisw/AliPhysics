@@ -55,6 +55,14 @@ class AliHBTReaderPPprod: public AliHBTReader
     ClassDef(AliHBTReaderPPprod,1)
 };
 
+struct GoodTrack //data of good tracks produced by AliTPCComparison.C
+ {
+  Int_t lab;
+  Int_t code;
+  Float_t px,py,pz;
+  Float_t x,y,z;
+ };
+
 
 class AliGoodTracksPP
  { 
