@@ -81,7 +81,7 @@ public:
      Int_t GetRowNumber(Double_t x) const {
         //return pad row number for this x
        Double_t r;
-       if (fN < 63){
+       if (fN < 64){
 	 r=fRow[fN-1].GetX();
 	 if (x > r) return fN;
 	 r=fRow[0].GetX();
