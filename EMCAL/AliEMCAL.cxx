@@ -61,6 +61,7 @@ AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
   
   //fQATask = 0;
   fTreeQA = 0;
+  fGeom = 0;
 }
 
 //____________________________________________________________________________
