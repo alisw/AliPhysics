@@ -57,7 +57,7 @@ AliL3Histogram::AliL3Histogram(Char_t *name,Char_t *id,
 #endif
   fThreshold = 0;
 
-  fContent = new Double_t[fNcells];
+  fContent = new Int_t[fNcells];
   Reset();
 }
 
@@ -135,7 +135,7 @@ Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin)
   return xbin + ybin*(fNxbins+2);
 }
 
-Double_t AliL3Histogram::GetBinContent(Int_t bin)
+Int_t AliL3Histogram::GetBinContent(Int_t bin)
 {
   if(bin >= fNcells)
     {

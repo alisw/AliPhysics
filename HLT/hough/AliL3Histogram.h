@@ -12,7 +12,7 @@ class AliL3Histogram {
   
  private:
   
-  Double_t *fContent; //!
+  Int_t *fContent; //!
   Char_t fName[100];
   Int_t fNxbins;
   Int_t fNybins;
@@ -44,7 +44,7 @@ class AliL3Histogram {
   Int_t FindXbin(Double_t x);
   Int_t FindYbin(Double_t y);
   Int_t GetBin(Int_t xbin,Int_t ybin);
-  Double_t GetBinContent(Int_t bin);
+  Int_t GetBinContent(Int_t bin);
   void SetBinContent(Int_t xbin,Int_t ybin,Int_t value);
   void SetBinContent(Int_t bin,Int_t value);
   void AddBinContent(Int_t xbin,Int_t ybin,Int_t weight);
