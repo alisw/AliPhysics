@@ -96,6 +96,6 @@ void AliRunAction::EndOfRunAction(const G4Run* run)
     G4UImanager::GetUIpointer()->ApplyCommand("/aliEvent/verbose 1");
   }  
 
-  G4cout << "Number of events = " << run->GetNumberOfEvent() 
-         << " " << *fTimer << G4endl;
+  G4cout << "Time of this run:   " << *fTimer << G4endl;
+  G4cout << "Number of events processed: " << run->GetNumberOfEvent() << G4endl;
 }    
