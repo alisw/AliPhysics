@@ -458,10 +458,14 @@ Bool_t AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
 
     if(strcmp(d1,"fBFieldFactor")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fBFieldFactor=(Int_t)dummy;fBField=fBFieldFactor*0.2;}
     else if(strcmp(d1,"fNTimeBins")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNTimeBins=(Int_t)dummy;}
-    else if(strcmp(d1,"fNRowLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowLow=(Int_t)dummy;}    
-    if(fNRowLow != 63)
-      LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")
-	<<"Number of inner PadRows should be 63! Check and fgrep the code for 63 to see the consequences of this major change!"<<ENDLOG;
+    else if(strcmp(d1,"fNRowLow")==0)
+      {
+	fscanf(fptr,"%s %d %s",d2,&dummy,d3);
+	fNRowLow=(Int_t)dummy;
+	if(fNRowLow != 63)
+	  LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")
+	    <<"Number of inner PadRows should be 63! Check and fgrep the code for 63 to see the consequences of this major change!"<<ENDLOG;
+      }
     else if(strcmp(d1,"fNRowUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp=(Int_t)dummy;}
     else if(strcmp(d1,"fNRowUp1")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp1=(Int_t)dummy;}
     else if(strcmp(d1,"fNRowUp2")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp2=(Int_t)dummy;}
