@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/11/14 10:50:46  cblume
+Changes in digits IO. Add merging of summable digits
+
 Revision 1.2  2001/11/06 17:19:41  cblume
 Add detailed geometry and simple simulator
 
@@ -124,7 +127,10 @@ AliTRDpid::~AliTRDpid()
     fTrackArray = NULL;
   }
 
-  fFileKine->Close();
+  if (fFileKine) {
+    delete fFileKine;
+    fFileKine = NULL;
+  }
 
 }
 

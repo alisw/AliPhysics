@@ -14,7 +14,10 @@
  **************************************************************************/
  
 /*
-$Log$                                                          
+$Log$
+Revision 1.1  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+                                                          
 */
  
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,10 +41,7 @@ AliTRDsimple::AliTRDsimple():TObject()
   // AliTRDsimple default constructor
   //
 
-  fGenerator = new AliTRDsimpleGen();
-
-  // Create the MC object
-  new AliTRDsimpleMC("simple","Simplified Monte Carlo");
+  fGenerator = NULL;
                                                          
 }                                                                               
  
@@ -79,6 +79,20 @@ AliTRDsimple &AliTRDsimple::operator=(const AliTRDsimple &s)
   if (this != &s) ((AliTRDsimple &) s).Copy(*this);
   return *this;
  
+}
+ 
+//_____________________________________________________________________________
+void AliTRDsimple::Init()
+{
+  //
+  // Initialization
+  //
+
+  fGenerator = new AliTRDsimpleGen();
+
+  // Create the MC object
+  new AliTRDsimpleMC("simple","Simplified Monte Carlo");
+                                                         
 }
  
 //_____________________________________________________________________________

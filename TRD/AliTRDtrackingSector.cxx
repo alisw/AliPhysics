@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/05/28 17:07:58  hristov
+Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
+
 Revision 1.5  2000/12/08 16:07:02  cblume
 Update of the tracking by Sergei
 
@@ -55,7 +58,7 @@ AliTRDtrackingSector::~AliTRDtrackingSector()
   // Destructor
   //
 
-  delete[] fTimeBin;
+  delete fTimeBin;
 
 }
 

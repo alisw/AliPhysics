@@ -19,6 +19,7 @@ class AliTRDsimple : public TObject {
   virtual ~AliTRDsimple();
   AliTRDsimple &operator=(const AliTRDsimple &s);    
 
+  virtual void             Init();
   virtual void             Copy(TObject &s);
   virtual void             ProcessEvent(Int_t ievent);
 

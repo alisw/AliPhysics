@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/08/30 09:31:22  hristov
+The operator[] is replaced by At() or AddAt() in case of TObjArray.
+
 Revision 1.9  2001/07/27 13:03:15  hristov
 Default Branch split level set to 99
 
@@ -138,7 +141,6 @@ AliTRDsegmentArrayBase::~AliTRDsegmentArrayBase()
 
   if (fTree)      delete fTree;
   if (fTreeIndex) delete fTreeIndex;
-  if (fClass)     delete fClass;
 
 }
 
@@ -179,10 +181,6 @@ Bool_t AliTRDsegmentArrayBase::SetClass(Text_t *classname)
   // Sets the classname of the stored object
   //
 
-  if (fClass   != 0) {
-    delete fClass;
-    fClass = 0;
-  }
   if (fTree    != 0) {
     delete fTree;
     fTree      = 0;

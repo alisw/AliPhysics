@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/11/14 19:44:25  hristov
+Numeric const casted (Alpha)
+
 Revision 1.28  2001/11/14 16:35:58  cblume
 Inherits now from AliDetector
 
@@ -328,6 +331,17 @@ AliTRDdigitizer::~AliTRDdigitizer()
     delete fSDigitsManagerList;
     fSDigitsManagerList = NULL;
   }
+
+  if (fTRFsmp) {
+    delete fTRFsmp;
+    fTRFsmp = NULL;
+  }
+
+  if (fPRFsmp) {
+    delete fPRFsmp;
+    fPRFsmp = NULL;
+  }
+
 }
 
 //_____________________________________________________________________________
