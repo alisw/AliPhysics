@@ -1,4 +1,4 @@
-void readDigits(Int_t evNumber=1) 
+void readDigits() 
 {
  
   // Dynamically link some shared libs
@@ -6,19 +6,29 @@ void readDigits(Int_t evNumber=1)
     gROOT->LoadMacro("loadlibs.C");
     loadlibs();
   }
+  char filename[100];
+  sprintf(filename,"galice.root");
+  AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"read");
+  if (rl == 0x0)
+   {
+     cerr<<"Can not open session for file galice.root\n";
+     return;
+   }
+
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
   
-  // Connect the Root Galice file containing Geometry, Kine and Hits
-  TFile *file =  (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-  //TFile *file =  (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-  if (!file) file = new TFile("production.root","UPDATE");
+  AliSTART* START  = (AliSTART *)gAlice->GetDetector("START");
   
-  // Get AliRun object from file or create it if not on file
-  if (!gAlice) {
-    gAlice = (AliRun*)file->Get("gAlice");
-    if (gAlice) printf("AliRun object found on file\n");
-    if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-  }
-  char nameTD[8],nameTR[8];
+  rl->LoadHeader();
+  rl->LoadKinematics("READ");
+  Int_t retval;
+  AliLoader* lstart = rl->GetLoader("STARTLoader");
+
+  Int_t iNevents=rl->GetNumberOfEvents();
+  cout<<"  nevents   "<<iNevents<<endl;
+
+   char nameTD[8],nameTR[8];
 
   TH1F *hTimediff = new TH1F("hTimediff","Time difference",100,0,200);
   TH1F *hTimePs = new TH1F("hTimePs","Time in Ps",100,-200,200);
@@ -33,23 +43,33 @@ void readDigits(Int_t evNumber=1)
   TH1F *hBestTimeleft = new TH1F("hBestTimeleft","First time left",
 				 100,11000.,13000.);
    
+  //  digits = new AliSTARTdigit();
+  AliSTARTdigit *digits   ; // digits
   digits = new AliSTARTdigit();
+ 
   timeRight = new TArrayI(12);
   timeLeft = new TArrayI(12);
   ADCRight = new TArrayI(12);
   ADCLeft = new TArrayI(12);
 
  // Event ------------------------- LOOP  
-  for (Int_t j=0; j<evNumber; j++){
+  for (Int_t j=0; j<iNevents; j++){
     //  gAlice->GetEvent(j);
+    rl->GetEvent(j);
+    //   lstart->Dump();
+    lstart->LoadHits("READ");
+    lstart->LoadDigits("READ");
     sprintf(nameTD,"START_D_%d",j);
     printf("%s\n",nameTD);
-    TObject *td = (TObject*)gDirectory->Get(nameTD);
-    digits->Read(nameTD);
-  // digits->Dump();
+  TObject *td = (TObject*)gDirectory->Get(nameTD);
+  // td->Dump();
+    //   cout<<" td "<<td<<endl;
+  td->Read(nameTD);
+   digits->Read(nameTD);
+   //   digits->Read(nameTD);
   // digits->Print();
-    printf("time %d\n",digits->GetTimeDiff());
-    
+  printf("time %d\n",digits->GetTimeDiff());
+   
     if(digits->GetTimeDiff()!=999999){
       Int_t timediff = digits->GetTimeDiff();
       //     Double_t timePs=(timediff-128)*10.; // time in Ps channel_width =10ps

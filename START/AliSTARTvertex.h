@@ -17,7 +17,7 @@ class AliSTARTvertex   : public TObject {
  public:
     AliSTARTvertex() {}
     AliSTARTvertex(Int_t *);
-    void Reconstruct(Int_t);
+    void Reconstruct();
     Int_t GetVertex();
     virtual ~AliSTARTvertex() {}
     void Set(Int_t);

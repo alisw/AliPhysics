@@ -17,5 +17,6 @@
 #pragma link C++ class  AliSTARTdigit+;
 #pragma link C++ class  AliSTARTvertex+;
 #pragma link C++ class  AliSTARTDigitizer+;
+#pragma link C++ class  AliSTARTLoader+;
 
 #endif

@@ -41,7 +41,7 @@ AliSTARTvertex::AliSTARTvertex( Int_t * Zposit)
   Zposit = &fZposition ;
 }
 
-void AliSTARTvertex::Reconstruct(Int_t evNumber=1) 
+void AliSTARTvertex::Reconstruct() 
 {
   /***************************************************
   Resonstruct digits to vertex position
@@ -50,7 +50,26 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   Int_t timediff;
   Float_t timePs;
   char nameTD[8],nameTR[8];
+ char filename[100];
+  sprintf(filename,"galice.root");
+  AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"read");
+  if (rl == 0x0)
+   {
+     cerr<<"Can not open session for file galice.root\n";
+     return;
+   }
 
+  rl->LoadgAlice();
+  gAlice = rl->GetAliRun();
+  
+  AliSTART* START  = (AliSTART *)gAlice->GetDetector("START");
+  
+  rl->LoadHeader();
+  rl->LoadKinematics("READ");
+  Int_t retval;
+  AliLoader* lstart = rl->GetLoader("STARTLoader");
+  lstart->LoadDigits("READ");
+ 
   AliSTARTdigit *digits;
   AliSTARTvertex *fvertex;
  
@@ -60,31 +79,42 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
  // Event ------------------------- LOOP  
    
   // gAlice->GetEvent(evNumber);
-
-  sprintf(nameTD,"START_D_%d",evNumber);
-  TObject *td = (TObject*)gDirectory->Get(nameTD);
-  printf("%s\n",nameTD);
+  Int_t iNevents=rl->GetNumberOfEvents();
+  cout<<"  nevents   "<<iNevents<<endl;
   
-  if (!td) {
-    cerr<<"something wrong with output...."<<endl;
-    exit(111);
-  }
-  td->Read(nameTD);
-  digits->Read(nameTD);
-  if(digits->GetTimeDiff()<TMath::Abs(1000))
-    {
-      timediff=digits->GetTimeDiff();     //time in number of channels
-      timePs=(512-timediff)*2.5;       // time in Ps channel_width =10ps
-      cout<<"timediff "<< timediff<<" timePs "<<timePs<<endl;
-      // Float_t c = 299792458/1.e9;  //speed of light cm/ps
-      Float_t c = 0.3;  //speed of light mm/ps
-      Float_t Zposit=timePs*c;// for 0 vertex
-      cout<<" Zposit "<<Zposit<<endl;
-      fvertex->Set((Int_t) Zposit);
+  for (Int_t evNumber=0; evNumber<iNevents; evNumber++){
+    rl->GetEvent(evNumber);
+    lstart->LoadDigits("READ");
+    gDirectory->ls();
+
+    sprintf(nameTD,"START_D_%d",evNumber);
+    TObject *td = (TObject*)gDirectory->Get(nameTD);
+    printf("%s\n",nameTD);
+    //   td->Dump();
+    if (!td) {
+      cerr<<"something wrong with input...."<<endl;
+      exit(111);
+    }
+    td->Read(nameTD);
+    digits->Read(nameTD);
+    if(digits->GetTimeDiff()<TMath::Abs(1000))
+      {
+	timediff=digits->GetTimeDiff();     //time in number of channels
+	timePs=(512-timediff)*2.5;       // time in Ps channel_width =10ps
+	cout<<"timediff "<< timediff<<" timePs "<<timePs<<endl;
+	// Float_t c = 299792458/1.e9;  //speed of light cm/ps
+	Float_t c = 0.3;  //speed of light mm/ps
+	Float_t Zposit=timePs*c;// for 0 vertex
+	cout<<" Zposit "<<Zposit<<endl;
+	fvertex->Set((Int_t) Zposit);
       }
-  sprintf(nameTR,"START_R_%d",evNumber);
-  printf("%s\n",nameTR);
-  fvertex->Write(nameTR);
+    lstart->LoadRecPoints("UPDATE");
+    sprintf(nameTR,"START_R_%d",evNumber);
+    printf("%s\n",nameTR);
+    fvertex->Write(nameTR);
+
+
+  }
 }
 
 

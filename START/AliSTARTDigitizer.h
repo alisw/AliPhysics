@@ -4,6 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliDigitizer.h"
+#include "AliLoader.h"
+#include "AliRunLoader.h"
 
 class AliRunDigitizer;
 class AliSTART;
@@ -25,7 +27,7 @@ class AliSTARTDigitizer : public AliDigitizer {
   // Do the main work
   void Exec(Option_t* option=0) ;
   Bool_t RegisterPhotoE(AliSTARThitPhoton *hit);			//!!!
-  
+
   enum {kBgTag = -1};
 
 private:

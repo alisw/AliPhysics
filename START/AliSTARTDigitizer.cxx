@@ -37,6 +37,7 @@
 #include "AliPDG.h"
 #include "AliLoader.h"
 #include "AliRunLoader.h"
+#include "AliSTARTLoader.h"
 
 #include <stdlib.h>
 #include <Riostream.h>
@@ -92,6 +93,7 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 
   outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   outgime = outRL->GetLoader("STARTLoader");
+  cout<<" outgime "<<outgime<<endl;
 
 #ifdef DEBUG
   cout<<"AliSTARTDigitizer::>SDigits2Digits start...\n";
@@ -117,11 +119,12 @@ void AliSTARTDigitizer::Exec(Option_t* option)
   fRightADC = new TArrayI(12); 
   fLeftADC = new TArrayI(12); 
   
-
-  fHits = new TClonesArray ("AliSTARThit", 1000);
+  inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+  inRL->LoadgAlice();
+  
+  //  fHits = new TClonesArray ("AliSTARThit", 1000);
   fPhotons = new TClonesArray ("AliSTARThitPhoton", 10000);			//!!!
   AliSTART *START  = (AliSTART*) gAlice->GetDetector("START");
-
   AliSTARThit  *startHit;
   AliSTARThitPhoton  *startHitPhoton;						//!!!
   TBranch *brHits=0;
@@ -130,8 +133,6 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 
   Int_t nFiles=fManager->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;  inputFile++) {
-
- 
 
     besttimeright=9999.;
     besttimeleft=9999.;
@@ -143,18 +144,24 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 	timeright[i0]=0; timeleft[i0]=0;
 	CountEr[i0]=0;   CountEl[i0]=0;
       }
-    TClonesArray *STARThits = START->Hits ();
 
     inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+    //   AliSTARTLoader *pSTARTloader = (AliSTARTLoader*)fLoader;
+    //  pSTARTLoader->LoadHits("READ");
     ingime = inRL->GetLoader("STARTLoader");
+    cout<<" ingime "<<ingime<<endl;
+    //    AliSTARTLoader *pSTARTLoader ;
     ingime->LoadHits("READ");//probably it is necessary to load them before
+    ingime->LoadDigits("UPDATE");//probably it is necessary to load them before
     TClonesArray *STARThitsPhotons = START->Photons ();
+    TClonesArray *fHits = START->Hits ();
+    //    cout<<" Load  "<<AliSTARTLoader::LoadDigits()<<endl;
 
-
-   TTree *th = ingime->TreeH();
+    TTree *th = ingime->TreeH();
     brHits = th->GetBranch("START");
     brHitPhoton = th->GetBranch("STARThitPhoton");
     if (brHits) {
+      cout<<" brHits "<<endl;
       START->SetHitsAddressBranch(brHits,brHitPhoton);
     }else{
       cerr<<"EXEC Branch START hit not found"<<endl;
@@ -165,7 +172,9 @@ void AliSTARTDigitizer::Exec(Option_t* option)
     if (ntracks<=0) return;
     // Start loop on tracks in the photon hits containers 
     // for amplitude
+    /*
     if(brHitPhoton) {
+      cout<<"brHitPhoton "<<endl; 
       for (Int_t track=0; track<ntracks;track++) {
 	brHitPhoton -> GetEntry(track);;
 	nhits = STARThitsPhotons->GetEntriesFast();
@@ -182,13 +191,15 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 	} //hit photons
       } //track photons
     } // was photons
-
+    */
     // Start loop on tracks in the hits containers
+    cout<<" fHits "<<fHits<<endl;;
     for (Int_t track=0; track<ntracks;track++) {
       brHits->GetEntry(track);
-      nhits = STARThits->GetEntriesFast();
+      nhits = fHits->GetEntriesFast();
+      //  cout<<" brHits hits "<<nhits<<endl;
       for (hit=0;hit<nhits;hit++) {
-	startHit   = (AliSTARThit*) STARThits->UncheckedAt(hit);
+	startHit   = (AliSTARThit*) fHits->UncheckedAt(hit);
 	pmt=startHit->fPmt;
 	volume = startHit->fVolume;
 	if(volume==1){
@@ -281,7 +292,31 @@ void AliSTARTDigitizer::Exec(Option_t* option)
       {timeAv=999999; timeDiff=99999;}
 
 // trick to find out output dir:
-    outgime->WriteDigits("OVERWRITE");
+
+
+/*
+   // trick to find out output dir:
+    TTree *outTree = fManager->GetTreeD();
+    if (!outTree) {
+      cerr<<"something wrong with output...."<<endl;
+      exit(111);
+    }
+
+    Char_t nameDigits[20];
+    TDirectory *wd = gDirectory;
+    outTree->GetDirectory()->cd();
+    fdigits->Write(nameDigits);
+    cout<<nameDigits<<endl;
+    wd->cd();
+*/  
+    cout<<" outgime v konce "<<outgime<<endl;
+    outgime->Dump();
+    outgime->Print();
+    Char_t nameDigits[20];
+    sprintf(nameDigits,"START_D_%d",fManager->GetOutputEventNr());
+    fdigits->Write(nameDigits);
+
+    //    outgime->WriteDigits("OVERWRITE");
   }
 }
 
@@ -298,3 +333,4 @@ Bool_t AliSTARTDigitizer::RegisterPhotoE(AliSTARThitPhoton *hit)
     
     return kTRUE;
 }
+//----------------------------------------------------------------------------
