@@ -1,0 +1,25 @@
+      SUBROUTINE SXSROT(NMAT,THETA1,PHI1,THETA2,PHI2,THETA3,PHI3)
+C
+C *** INITIALISATION OF THE ALICE ZEBRA STRUCTURE ***
+C *** FCA 22-APR-1998 CERN EP ***
+C
+C CALLED BY : *_GEOM, *_ROTM, *_TMED
+C ORIGIN    : FEDERICO CARMINATI
+C
+#include "geant321/gcbank.inc"
+*KEND.
+*
+      NMAT=1
+      IF(JROTM.GT.0) THEN
+         NS=IQ(JROTM-2)
+         DO KZ=1,NS
+            IF(LQ(JROTM-KZ).EQ.0) THEN
+               NMAT=KZ
+               GOTO 10
+            ENDIF
+         ENDDO
+         NMAT=NS+1
+      ENDIF
+ 10   CALL GSROTM(NMAT,THETA1,PHI1,THETA2,PHI2,THETA3,PHI3)
+*
+ 999  END
