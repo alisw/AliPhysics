@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/10/22 14:45:33  alibrary
+Introducing Riostream.h
+
 Revision 1.5  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -39,7 +42,11 @@ Revision 1.14  2001/03/05 14:48:46  nilsen
 Fixed a reoccuring bug. Array sizes must be declare const.
 
 */
-
+//  Cluster Finder for
+//  Silicon
+//  Pixel
+//  developed by the Dubna group
+//
 #include <Riostream.h>
 #include "AliITSClusterFinderSPDdubna.h"
 #include "AliITSMapA1.h"
@@ -48,7 +55,6 @@ Fixed a reoccuring bug. Array sizes must be declare const.
 #include "AliITSRawCluster.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
 #include "AliRun.h"
 
 //#define DEBUG
@@ -266,13 +272,13 @@ void AliITSClusterFinderSPDdubna::TracksInCluster(){
     // get number of clusters for this module
     Int_t nofClusters = fClusters->GetEntriesFast();
     Int_t i, ix, iz, jx, jz, xstart, xstop, zstart, zstop, nclx, nclz;
-    const Int_t trmax = 100;
-    Int_t cltracks[trmax], itr, tracki, ii, is, js, ie, ntr, tr0, tr1, tr2;
+    const Int_t kTrmax = 100;
+    Int_t cltracks[kTrmax], itr, tracki, ii, is, js, ie, ntr, tr0, tr1, tr2;
 
     nofClusters -= fNclusters;
     for(i=0; i<nofClusters; i++) { 
 	ii = 0;
-	memset(cltracks,-1,sizeof(int)*trmax);
+	memset(cltracks,-1,sizeof(int)*kTrmax);
 	tr0=tr1=tr2=-1;
 	AliITSRawClusterSPD *clusterI = (AliITSRawClusterSPD*) fClusters->At(i);
 	nclx = clusterI->NclX();
@@ -301,15 +307,15 @@ void AliITSClusterFinderSPDdubna::TracksInCluster(){
 		} // end for itr
 	    } // ix pixel
 	}  // iz pixel
-	for(is=0; is<trmax; is++) { 
+	for(is=0; is<kTrmax; is++) { 
 	    if(cltracks[is]<0) continue;
-	    for(js=is+1; js<trmax; js++) { 
+	    for(js=is+1; js<kTrmax; js++) { 
 		if(cltracks[js]<0) continue;
 		if(cltracks[js]==cltracks[is]) cltracks[js]=-5;
 	    } // end for js
 	} // end for is
 	ntr = 0;
-	for(ie=0; ie<trmax; ie++) { 
+	for(ie=0; ie<kTrmax; ie++) { 
 	    if(cltracks[ie] >= 0) {
 		ntr=ntr+1;
 		if(ntr==1) tr0=cltracks[ie];

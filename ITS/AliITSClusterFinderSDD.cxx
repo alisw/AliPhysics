@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.29  2002/10/25 18:54:22  barbera
+  Various improvements and updates from B.S.Nilsen and T. Virgili
+
   Revision 1.28  2002/10/22 14:45:29  alibrary
   Introducing Riostream.h
 
@@ -36,9 +39,13 @@
   noise values).
 
  */
-
+// 
+//  Cluster finder 
+//  for Silicon
+//  Drift Detector
+//
 #include <Riostream.h>
-#include <TFile.h>
+
 #include <TMath.h>
 #include <math.h>
 
@@ -114,11 +121,11 @@ AliITSClusterFinderSDD::~AliITSClusterFinderSDD(){
 //______________________________________________________________________
 void AliITSClusterFinderSDD::SetCutAmplitude(Float_t nsigma){
     // set the signal threshold for cluster finder
-    Float_t baseline,noise,noise_after_el;
+    Float_t baseline,noise,noiseAfterEl;
 
     fResponse->GetNoiseParam(noise,baseline);
-    noise_after_el = ((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics();
-    fCutAmplitude = (Int_t)((baseline + nsigma*noise_after_el));
+    noiseAfterEl = ((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics();
+    fCutAmplitude = (Int_t)((baseline + nsigma*noiseAfterEl));
 }
 //______________________________________________________________________
 void AliITSClusterFinderSDD::Find1DClusters(){
@@ -465,22 +472,22 @@ void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Float_t *par,
     for( Int_t i=0; i<npeak; i++ ){
         if( integral != 0 ) integral[i] = 0.;
         Float_t sigmaA2 = par[k+4]*par[k+4]*2.;
-        Float_t T2 = par[k+3];   // PASCAL
-        if( electronics == 2 ) { T2 *= T2; T2 *= 2; } // OLA
+        Float_t t2 = par[k+3];   // PASCAL
+        if( electronics == 2 ) { t2 *= t2; t2 *= 2; } // OLA
         for( Int_t z=0; z<zdim; z++ ){
             for( Int_t x=0; x<xdim; x++ ){
                 Float_t z2 = (z-par[k+2])*(z-par[k+2])/sigmaA2;
                 Float_t x2 = 0.;
                 Float_t signal = 0.;
                 if( electronics == 1 ){ // PASCAL
-                    x2 = (x-par[k+1]+T2)/T2;
+                    x2 = (x-par[k+1]+t2)/t2;
                     signal = (x2>0.) ? par[k]*x2*exp(-x2+1.-z2) :0.0; // RCCR2
                 //  signal =(x2>0.) ? par[k]*x2*x2*exp(-2*x2+2.-z2 ):0.0;//RCCR
                 }else if( electronics == 2 ) { // OLA
-                    x2 = (x-par[k+1])*(x-par[k+1])/T2;
+                    x2 = (x-par[k+1])*(x-par[k+1])/t2;
                     signal = par[k]  * exp( -x2 - z2 );
                 } else {
-                    cout << "Wrong SDD Electronics =" << electronics << endl;
+		  Warning("PeakFunc","Wrong SDD Electronics = %d",electronics);
                     // exit( 1 );
                 } // end if electronicx
                 spe[x*zdim+z] += signal;
@@ -493,7 +500,7 @@ void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Float_t *par,
 }
 //__________________________________________________________________________
 Float_t AliITSClusterFinderSDD::ChiSqr( Int_t xdim, Int_t zdim, Float_t *spe,
-                                        Float_t *speFit ){
+                                        Float_t *speFit ) const{
     // EVALUATES UNNORMALIZED CHI-SQUARED
     Float_t chi2 = 0.;
     for( Int_t z=0; z<zdim; z++ ){
@@ -754,7 +761,10 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
         } // end if 
         Int_t xdim = tstop-tstart+3;
         Int_t zdim = astop-astart+3;
-        if(xdim > 50 || zdim > 30) { cout << "Warning: xdim: " << xdim << ", zdim: " << zdim << endl; continue; }
+        if(xdim > 50 || zdim > 30) { 
+	  Warning("ResolveClustersE","xdim: %d , zdim: %d ",xdim,zdim);
+	  continue;
+	}
         Float_t *sp = new Float_t[ xdim*zdim+1 ];
         memset( sp, 0, sizeof(Float_t)*(xdim*zdim+1) );
         
@@ -853,11 +863,9 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
             fClusters->RemoveAt( j );
             delete [] par;
         } else {  // something odd
-            cout << " --- Peak not found!!!!  minpeak=" << fMinPeak<< 
-                    " cluster peak=" << clusterJ->PeakAmpl() << 
-                    " module=" << fModule << endl; 
-            clusterJ->PrintInfo(); 
-            cout << " xdim=" << xdim-2 << " zdim=" << zdim-2 << endl << endl;
+	  Warning("ResolveClustersE","--- Peak not found!!!!  minpeak=%d ,cluster peak= %f , module= %d",fMinPeak,clusterJ->PeakAmpl(),fModule); 
+	  clusterJ->PrintInfo();
+	  Warning("ResolveClustersE"," xdim= %d zdim= %d",xdim-2,zdim-2);
         }
         delete [] sp;
     } // cluster loop
@@ -1295,7 +1303,7 @@ void AliITSClusterFinderSDD::FindRawClusters(Int_t mod){
     GetRecPoints();
 }
 //_______________________________________________________________________
-void AliITSClusterFinderSDD::Print(){
+void AliITSClusterFinderSDD::Print() const{
     // Print SDD cluster finder Parameters
 
     cout << "**************************************************" << endl;

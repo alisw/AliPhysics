@@ -34,15 +34,15 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder{
     Int_t     SortDigitsN(Int_t start, Int_t end);
     void      FillDigitsIndex();
     void      SortDigits();
-    void      FillClIndexArrays(Int_t* arrayP, Int_t *arrayN);
+    void      FillClIndexArrays(Int_t* arrayP, Int_t *arrayN) const;
     void      SortClusters(Int_t* arrayP, Int_t *arrayN);
     Int_t     SortClustersP(Int_t start, Int_t end,Int_t *array);
     Int_t     SortClustersN(Int_t start, Int_t end,Int_t *array);
     void      ClustersToPackages();
-    Int_t     GetDiff(Float_t *retx, Float_t *rety) {return 0;}
+    Int_t     GetDiff(Float_t *retx, Float_t *rety) const {return 0;}
     void      CalcStepFactor(Float_t Psteo, Float_t Nsteo );
     Bool_t GetCrossing(Float_t &x, Float_t &z); //x, y of strips crossing
-    void   GetCrossingError(Float_t&, Float_t&);//x, y of strips crossing err.
+    void   GetCrossingError(Float_t& dp, Float_t& dn);//x, y of strips crossing err.
 
     // Data memebers
     AliITS          *fITS;           //!Pointer to AliITS object
@@ -77,7 +77,6 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder{
     Int_t fSFF;              //!forward stepping factor 
     Int_t fSFB;              //!backward stepping factor 
 
- public:
     ClassDef(AliITSClusterFinderSSD, 1) //Class for clustering and reconstruction of space points in SSDs 
 
 };

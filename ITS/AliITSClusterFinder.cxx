@@ -12,7 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+//
+// Base Class used to find
+// the reconstructed points for ITS
+// See also AliITSClusterFinderSPD, AliITSClusterFinderSDD, 
+// AliITSClusterFinderSDD
+//
 #include "AliITSClusterFinder.h"
 #include "AliITSdigit.h"
 #include "AliRun.h"
@@ -217,7 +222,7 @@ void AliITSClusterFinder::FindRawClusters(Int_t module){
     delete digs;
 }
 //______________________________________________________________________
-Bool_t AliITSClusterFinder::IsNeighbor(TObjArray *digs,Int_t i,Int_t n[]){
+Bool_t AliITSClusterFinder::IsNeighbor(TObjArray *digs,Int_t i,Int_t n[]) const{
     // Locagical function which checks to see if digit i has a neighbor.
     // If so, then it returns kTRUE and its neighbor index j.
     // This routine checks if the digits are side by side or one before the

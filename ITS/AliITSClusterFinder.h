@@ -50,11 +50,11 @@ class AliITSClusterFinder :public TObject{
     virtual TClonesArray* Digits(){
 	return fDigits;
     }
-    virtual Int_t   NDigits() {
+    virtual Int_t   NDigits() const {
 	// Get Number of Digits
 	return fNdigits;
     }
-    AliITSMap   *Map()  {
+    AliITSMap   *Map() {
 	// map
 	return fMap;
     }
@@ -64,7 +64,7 @@ class AliITSClusterFinder :public TObject{
 			    AliITSRecPoint &rp);
     virtual void FindRawClusters(Int_t mod=0); // Finds cluster of digits.
     // Determins if digit i has a neighbor and if so that neighor index is j.
-    virtual Bool_t IsNeighbor(TObjArray *digs,Int_t i,Int_t j[]);
+    virtual Bool_t IsNeighbor(TObjArray *digs,Int_t i,Int_t j[]) const;
     // Given a cluster of digits, creates the nessesary RecPoint. May also
     // do some peak separation.
     virtual void CreateRecPoints(TObjArray *cluster,Int_t mod){};
@@ -92,7 +92,7 @@ class AliITSClusterFinder :public TObject{
     virtual void CorrectCOG(){
 	// correct COG
     }
-    virtual Bool_t Centered(AliITSRawCluster *cluster) {
+    virtual Bool_t Centered(AliITSRawCluster *cluster) const {
 	// cluster
 	return kTRUE;
     }
@@ -109,10 +109,10 @@ class AliITSClusterFinder :public TObject{
     // set the fitting methods in the derived classes
     // data members
 
-    TClonesArray       *fDigits;       //! digits
-    Int_t              fNdigits;       //! num of digits
-
+ 
  protected:
+    TClonesArray       *fDigits;       //! digits
+    Int_t              fNdigits;       //! num of digits 
     AliITSresponse     *fResponse;     //! response
     AliITSsegmentation *fSegmentation; //!segmentation
     Int_t              fNRawClusters;  //! in case we split the cluster

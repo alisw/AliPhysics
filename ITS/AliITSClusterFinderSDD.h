@@ -22,35 +22,35 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     virtual ~AliITSClusterFinderSDD();
 
     virtual void  SetCutAmplitude(Float_t nsigma=4);
-    virtual Int_t CutAmplitude() {// get cut amplitude
+    virtual Int_t CutAmplitude() const {// get cut amplitude
 	return fCutAmplitude;}
     virtual void SetDAnode(Float_t danode=4.2) {// setDAnode
 	fDAnode=danode;}
-    virtual Float_t DAnode() {// get DAnode
+    virtual Float_t DAnode() const {// get DAnode
 	return fDAnode;}
     virtual void SetDTime(Float_t dtime=75) {// SetDTime
 	fDTime=dtime;}
-    virtual Float_t DTime() {// get DTime
+    virtual Float_t DTime() const {// get DTime
 	return fDTime;}
     virtual void SetMinPeak(Int_t minpeak=10) {// SetMinPeak
 	fMinPeak=minpeak;}
-    virtual Int_t MinPeak() {// get MinPeak
+    virtual Int_t MinPeak() const {// get MinPeak
 	return fMinPeak;}
     virtual void SetMinCharge(Int_t mincharge=30) {// SetMinCharge
 	fMinCharge=mincharge;}
-    virtual Int_t MinCharge() {// get MinCharge
+    virtual Int_t MinCharge() const {// get MinCharge
 	return fMinCharge;}
     virtual void SetMinNCells(Int_t minc=3) {// setNCells
 	fMinNCells=minc;}
-    virtual Int_t MinNCells() {// get MinNCells
+    virtual Int_t MinNCells() const {// get MinNCells
 	return fMinNCells;}
     virtual void SetMaxNCells(Int_t maxc=10) {// setNCells
 	fMaxNCells=maxc;}
-    virtual Int_t MaxNCells() {// get MaxNCells
+    virtual Int_t MaxNCells() const {// get MaxNCells
 	return fMaxNCells;}
     virtual void SetTimeCorr(Float_t timec=19.3) {// setNCells
 	fTimeCorr=timec;}
-    virtual Float_t TimeCorr() {// get Time Correction (ns)
+    virtual Float_t TimeCorr() const{// get Time Correction (ns)
 	return fTimeCorr;}
 
     // Search for clusters
@@ -68,10 +68,10 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
 		       Int_t *niter, Float_t *chir );
     void  Minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0,
 		Float_t *steprm, Float_t *chisqr,Float_t *spe,Float_t *speFit);
-    Float_t ChiSqr( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit );
+    Float_t ChiSqr ( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit ) const;
     void  PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe,
 		   Float_t *Integral=0 );
-    void  Print();
+    void  Print() const;
 
  private:
     AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source); // copy ctor

@@ -12,15 +12,17 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+//
+//  Cluster finder
+//  for Silicon pixels
+//
+//
 #include "AliITSClusterFinderSPD.h"
 #include "AliITS.h"
-#include "AliITSgeom.h"
 #include "AliITSdigit.h"
 #include "AliITSRawCluster.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
 #include "AliRun.h"
 
 //#define DEBUG
