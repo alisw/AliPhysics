@@ -500,7 +500,7 @@ Int_t AliRawReaderDate::CheckData() const
 
     // check consistency of data size in the data header and in the sub event
     AliRawDataHeader* header = (AliRawDataHeader*) position;
-    if (fHeader->fSize != 0xFFFFFFFF) {
+    if (header->fSize != 0xFFFFFFFF) {
       if (position + header->fSize > end) {
 	result |= kErrSize;
 	position = end;
