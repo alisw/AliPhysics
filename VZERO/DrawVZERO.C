@@ -5,19 +5,15 @@ void DrawVZERO()
    gMC->Gsatt("alic", "seen", 0);
    gROOT->LoadMacro("ViewVZERO.C");
    gInterpreter->ProcessLine("ViewVZERO()");
-   gMC->Gdopt("hide", "off");
-   gMC->Gdopt("shad", "off");
+
+   gMC->Gdopt("hide", "on");
+   gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);
    gMC->SetClipBox(".");
+
    gMC->DefaultRange();
-   
-//  right part view  :
-
-//  gMC->Gdraw("alic", 0, 0, 0, 10, 10, 0.2, 0.2);
-
-    gMC->Gdraw("alic", 90, 0, 0, -70, 10, 0.9, 0.2 );
-    
-    gMC->Gdhead(1111, "VZERO Detector");
-
+   gMC->Gdraw("alic", 40, 30, 0, 13, 11, .05, .05);
+   gMC->Gdhead(1111, "VZERO detector");
+   gMC->Gdman(16, 6, "MAN");
 
 }
