@@ -839,11 +839,11 @@ Bool_t AliL3Transform::ReadInitFile(Char_t* pathname)
     }
     else if(strcmp(d1,"fCos[0]")==0){
       fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fCos[0]=(Double_t)ddummy;
-      for(Int_t i=1;i<fNSlice;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fCos[0]=(Double_t)ddummy;}
+      for(Int_t i=1;i<fNSlice;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fCos[i]=(Double_t)ddummy;}
     }
     else if(strcmp(d1,"fSin[0]")==0){
       fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fSin[0]=(Double_t)ddummy;
-      for(Int_t i=1;i<fNSlice;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fSin[0]=(Double_t)ddummy;}
+      for(Int_t i=1;i<fNSlice;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fSin[i]=(Double_t)ddummy;}
     }
   }
 
