@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/10/25 08:50:57  morsch
+New beamshield geometry with increased tolerances and insulation thickness.
+
 Revision 1.6  2001/04/23 23:12:41  morsch
 Overlap in closing cone corrected (thanks to Ivana Hrivnacova)
 
@@ -613,8 +616,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   flukaGeom->Comment("1st part: Beam pipe lateral struture (left)");
   flukaGeom->OnionCone(rf1, rf2,  6 , zstart, zvac1, posfluka, materialsA, fieldsA, cutsA);
-  for (i=0; i<7; i++) rf1[i]=rf2[i];
-  for (i=1; i<7; i++) rf2[i]=rf1[i]+dr11*TMath::Tan(thetaOpen1);
+  for (i=0; i<6; i++) rf1[i]=rf2[i];
+  for (i=1; i<6; i++) rf2[i]=rf1[i]+dr11*TMath::Tan(thetaOpen1);
   flukaGeom->OnionCone(rf1, rf2,  6 , zvac1, zvac1+dr11, posfluka, materialsA, fieldsA, cutsA);
   flukaGeom->Cone(rc1, rf2[5], rc1, rc1+dr11, zvac1 , zvac1+dr11, posfluka,"AIR", "MF", "$SHH");
 //
