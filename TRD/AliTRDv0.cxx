@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/02/11 14:25:27  cblume
+Geometry update, compressed hit structure
+
 Revision 1.18  2000/11/30 17:38:08  cblume
 Changes to get in line with new STEER and EVGEN
 
@@ -182,7 +185,8 @@ void AliTRDv0::StepManager()
   // Use pad plane as sensitive volume
   TString  cIdSens = "L";
   TString  cIdCurrent;
-  Char_t   cIdChamber[2];
+  Char_t   cIdChamber[3];
+           cIdChamber[2] = 0;
 
   const Int_t kNplan = AliTRDgeometry::Nplan();
 

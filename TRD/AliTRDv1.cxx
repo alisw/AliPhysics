@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2002/02/11 14:25:27  cblume
+Geometry update, compressed hit structure
+
 Revision 1.30  2001/05/21 16:45:47  hristov
 Last minute changes (C.Blume)
 
@@ -522,7 +525,8 @@ void AliTRDv1::StepManager()
   TString  cIdCurrent;
   TString  cIdSensDr = "J";
   TString  cIdSensAm = "K";
-  Char_t   cIdChamber[2];
+  Char_t   cIdChamber[3];
+           cIdChamber[2] = 0;
 
   TLorentzVector pos, mom;
 
