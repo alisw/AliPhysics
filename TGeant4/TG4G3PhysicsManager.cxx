@@ -19,7 +19,8 @@ TG4G3PhysicsManager::TG4G3PhysicsManager()
   : fLock(false),
     fCutVector(0),
     fControlVector(0) 
-{ 
+{
+// 
   if (fgInstance) {
     TG4Globals::Exception(
       "TG4G3PhysicsManager: attempt to create two instances of singleton.");
