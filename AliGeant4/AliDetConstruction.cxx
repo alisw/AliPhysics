@@ -23,7 +23,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("DIPO",   3, 2, 2, kStructure, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("FRAME",  2, 1, 1, kStructure, false);
+  detSwitch = new AliDetSwitch("FRAME",  3, 2, 2, kStructure, false);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("HALL",   1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
@@ -37,7 +37,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("FMD",    2, 0, 0);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("ITS",   10, 7, 7);
+  detSwitch = new AliDetSwitch("ITS",    7, 5, 5);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("MUON",   2, 1, 1);
   AddDetSwitch(detSwitch); 
@@ -171,9 +171,9 @@ void AliDetConstruction::CheckDetDependencies()
   
   // check dependencies  
   if (verTOF > -1) {
-    // TOF requires FRAMEv1 
-    if (verFRAME != 1) {
-      GetDetSwitch("FRAME")->SwitchOn(1);
+    // TOF requires FRAMEv1 - obsolete? 
+    if (verFRAME != 2) {
+      GetDetSwitch("FRAME")->SwitchOn(2);
       G4String text = "AliDetConstruction::CheckDetDependencies: \n";
       text = text + "    Switched TOF requires FRAME v1.\n"; 
       text = text + "    The det switch for FRAME has been changed."; 
