@@ -113,7 +113,7 @@ class AliMUON : public  AliDetector
     AliMUONRawCluster    *RawCluster(Int_t ichamber, Int_t icathod,
 				     Int_t icluster);
     // Inherited and overridden from AliModule:
-    virtual void RemapTrackHitIDs(Int_t * map);
+    //PH    virtual void RemapTrackHitIDs(Int_t * map);
 
   protected:
     AliMUON(const AliMUON& rMUON);

@@ -538,6 +538,7 @@ AliMUONMerger*  AliMUON::Merger()
 // Return pointer to merger
     return fMerger;
 }
+/* PH Commented out waiting for correct implementation
 //________________________________________________________________________
 void AliMUON::RemapTrackHitIDs(Int_t* map)
 {
@@ -564,4 +565,4 @@ void AliMUON::RemapTrackHitIDs(Int_t* map)
 		hit->SetTrack( map[hit->Track()] );
 	};
 };
-
+*/
