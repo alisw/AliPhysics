@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/01/20 16:35:27  morsch
+Increase mother volume for bellows.
+
 Revision 1.12  2000/12/21 16:41:06  morsch
 Coding convention clean-up (RS3)
 
@@ -621,7 +624,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[0] =  0.0;
     ptube[1] = 15.0;
     ptube[2] =  2.5;
-    gMC->Gsvolu("QI43","TUBE", idtmed[kInox], ptube, 3);
+    gMC->Gsvolu("QI43","TUBE", idtmed[kAir], ptube, 3);
     gMC->Gspos("QI43", 1, "QI33", 0.0, 0.0, 0.0, 0, "ONLY");
 // 
 // Connecting tube ->
@@ -633,7 +636,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[0] =  0.0;
     ptube[1] =  4.8;
     ptube[2] = 13.7;
-    gMC->Gsvolu("QI44","TUBE", idtmed[kInox], ptube, 3);
+    gMC->Gsvolu("QI44","TUBE", idtmed[kAir], ptube, 3);
     gMC->Gspos("QI44", 1, "QI34", 0.0, 0.0, 0.0, 0, "ONLY");
 // <-
 
@@ -644,8 +647,8 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] =  2.15;
     gMC->Gsvolu("QI35","TUBE", idtmed[kInox], ptube, 3);
     
-    ptube[0] =  4.80;
-    ptube[1] =  7.30;
+    ptube[0] =  0.00;
+    ptube[1] =  4.80;
     ptube[2] =  2.15;
     gMC->Gsvolu("QI45","TUBE", idtmed[kAir], ptube, 3);
     gMC->Gspos("QI45", 1, "QI35", 0.0, 0.0, 0.0, 0, "ONLY");
