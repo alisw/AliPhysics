@@ -221,7 +221,7 @@ AliMemoryWatcher::Frame(void) const
 }
 //_____________________________________________________________________________
 Int_t
-AliMemoryWatcher::Write(const char *, Int_t, Int_t)
+AliMemoryWatcher::WriteToFile()
 {
   // Stores the graphs in a file 
   if ( GraphVSIZE() ) GraphVSIZE()->Write("VSIZE",TObject::kOverwrite);

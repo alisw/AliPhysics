@@ -62,7 +62,7 @@ public:
   TGraph* GraphRSSIZE(void);
   TGraph* GraphTIME(void);
   TH2* Frame(void) const ;
-  Int_t       Write(const char *name=0, Int_t option=0, Int_t bufsize=0);
+  Int_t       WriteToFile();
   AliMemoryWatcher & operator = (const AliMemoryWatcher &) { return *this; } 
 private:
   Bool_t fUseMallinfo; // use mallinfo function instead of ps command

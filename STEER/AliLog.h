@@ -53,7 +53,7 @@ class AliLog: public TObject {
 
   static void  SetPrintRepetitions(Bool_t on);
 
-  static void  Write(const char* name, Int_t option = 0);
+  static void  WriteToFile(const char* name, Int_t option = 0);
 
   // the following public methods are used by the preprocessor macros 
   // and should not be called directly

@@ -684,7 +684,7 @@ void AliLog::SetPrintRepetitions(Bool_t on)
 
 
 //_____________________________________________________________________________
-void AliLog::Write(const char* name, Int_t option)
+void AliLog::WriteToFile(const char* name, Int_t option)
 {
 // write the log object with the given name and option to the current file
 
