@@ -9,15 +9,14 @@
 #include "AliMUONDigit.h"
 #include "TObjArray.h"
 
-class AliMUONTransientDigit : public AliMUONDigit {
- protected:
-    Int_t          fChamber;       // chamber number of pad
-    TObjArray     *fTrackList;     // List of tracks contributing
- public:
+class AliMUONTransientDigit : public AliMUONDigit 
+{
+  public:
     AliMUONTransientDigit() {fTrackList=0;}
     AliMUONTransientDigit(const AliMUONTransientDigit& digit);
     AliMUONTransientDigit(Int_t rpad, Int_t *digits);
     virtual ~AliMUONTransientDigit();
+
     Int_t Chamber() const {return fChamber;}
     Int_t GetNTracks() const {return fTrackList->GetEntriesFast();}
     Int_t GetTrack(Int_t i) const;
@@ -26,7 +25,11 @@ class AliMUONTransientDigit : public AliMUONDigit {
     void UpdateTrackList(Int_t track, Int_t charge);
     AliMUONTransientDigit & operator =(const AliMUONTransientDigit & rhs);
     
-    ClassDef(AliMUONTransientDigit,1)  // Transient digit for MUON
+  protected:
+    Int_t          fChamber;       // chamber number of pad
+    TObjArray     *fTrackList;     // List of tracks contributing
+
+  ClassDef(AliMUONTransientDigit,1)  // Transient digit for MUON
 };
 #endif
 

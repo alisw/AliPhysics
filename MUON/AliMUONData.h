@@ -35,8 +35,9 @@ class AliMUONGlobalTrigger;
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-class AliMUONData : public TNamed {
- public:
+class AliMUONData : public TNamed 
+{
+  public:
     AliMUONData();
     AliMUONData(AliLoader * loader, const char* name, const char* title);
     AliMUONData(const AliMUONData& rMUONData);
@@ -121,12 +122,7 @@ class AliMUONData : public TNamed {
     TTree*         TreeT() {return fLoader->TreeT(); }
     TTree*         TreeP() {return fLoader->TreeP(); }
 
- private:  
-    //descendant classes should
-    //use protected interface methods to access these folders
-
-  
- protected: 
+  protected: 
     AliLoader*  fLoader; //! Detector Loader pointer
     TClonesArray*   fHits;  // One event in treeH per primary track
     TObjArray*      fDigits; // One event in treeD and one branch per detection plane
@@ -147,7 +143,12 @@ class AliMUONData : public TNamed {
     Int_t           fNrectriggertracks; //! Number of reconstructed tracks
     Int_t           fSplitLevel; // Splitting of branches 0 no spitting (root files are smaller) 1 splitting (larger output files)
 
-    ClassDef(AliMUONData,2)
- };
+  private:  
+    //descendant classes should
+    //use protected interface methods to access these folders
+
+  
+  ClassDef(AliMUONData,2)
+};
 #endif
 
