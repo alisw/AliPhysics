@@ -21,11 +21,11 @@
 // --- AliRoot header files ---
 
 class AliPHOSFastRecParticle : public TParticle {
-
+  
  public:
   
   AliPHOSFastRecParticle() ;
-
+  
   AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp) ;  // ctor
   AliPHOSFastRecParticle(const TParticle & p) ;  // ctor
   virtual ~AliPHOSFastRecParticle(){
@@ -40,50 +40,49 @@ class AliPHOSFastRecParticle : public TParticle {
   } 
   virtual const Int_t GetNPrimaries() const {return 0 ;}
   virtual const TParticle * GetPrimary(Int_t index=0) const  {return 0 ;} 
-  
   const Int_t GetType() const { 
     // returns the type of the particle
     return fType ; 
   } 
   
   void SetPIDBit(UInt_t fSet)
-  {
-  fType |= (1<<fSet) ; 
-  } 
-   
+    {
+      fType |= (1<<fSet) ; 
+    } 
+  
   Bool_t TestPIDBit(UInt_t fTest){
-   if (fType & (1<<fTest) )
-     return  kTRUE ;	
-   else
-     return kFALSE ;
-   }
-
+    if (fType & (1<<fTest) )
+      return  kTRUE ;	
+    else
+      return kFALSE ;
+  }
+  
   Bool_t IsPhotonHiPu_LoEf()  {
     Bool_t pid=kFALSE ;
-    if(TestPIDBit(8)&&TestPIDBit(7)&&TestPIDBit(6)&& //PCA
-       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
-       TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
+    if(TestPIDBit(8)&& //PCA
+       TestPIDBit(5)&& //TOF
+       TestPIDBit(2))  //RCPV
       pid = kTRUE;
     return pid ;
   }
+  
   Bool_t IsPhotonMed_Pu_Ef(){
     Bool_t pid=kFALSE ;
-    if(TestPIDBit(7)&&TestPIDBit(6)&& //PCA
-       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
-       TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
+    if(TestPIDBit(7)&& //PCA
+       TestPIDBit(4)&& //TOF
+       TestPIDBit(1))  //RCPV
       pid = kTRUE ;
     return pid ;
   }
- 
+  
   Bool_t IsPhotonHiEf_LoPu()  {
     Bool_t pid=kFALSE ;
     if(TestPIDBit(6)&& //PCA
-       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
-       TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
+       TestPIDBit(3)&& //TOF
+       TestPIDBit(0))  //RCPV
       pid = kTRUE ;
     return pid ;
   }
-
   Bool_t IsPhoton()  {
     Bool_t pid=kFALSE ;
     if(IsPhotonHiEf_LoPu()) pid = kTRUE ;
@@ -123,7 +122,7 @@ class AliPHOSFastRecParticle : public TParticle {
       pid = kTRUE ;
     return pid ;
   }
-
+  
   Bool_t IsSlowChargedEM()  {
     Bool_t pid=kFALSE ;
     if(TestPIDBit(8)||TestPIDBit(7)||TestPIDBit(6))
@@ -139,23 +138,23 @@ class AliPHOSFastRecParticle : public TParticle {
     // sets the particle type 
     fType = type ; 
   }	    
- 
+  
   void SetIndexInList(Int_t val) { 
     // sets the value of the index in the list 
     fIndexInList = val ; 
-  } 
+  }
+  //This has to disappear
   enum EParticleType { kUNDEFINED=-1, 
 		       kNEUTRALEMFAST, kNEUTRALHAFAST,  kNEUTRALEMSLOW, kNEUTRALHASLOW, 
 		       kCHARGEDEMFAST, kCHARGEDHAFAST,  kCHARGEDEMSLOW, kCHARGEDHASLOW } ; 
   
-
+  
   typedef TClonesArray  FastRecParticlesList ; 
-
+  
  protected:
 
   Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
   Int_t fType ;        // particle type obtained by "virtual" reconstruction
-
  private:
 
 
