@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.44  2001/02/27 15:19:12  jbarbosa
+  Transition to SDigits.
+
   Revision 1.43  2001/02/23 17:19:06  jbarbosa
   Corrected photocathode definition in BuildGeometry().
 
@@ -340,8 +343,8 @@ void AliRICH::AddSDigit(Int_t *clhits)
 //
 
   //printf("fsdigits:%p, data: %d\n",fSDigits,clhits[2]);
-    TClonesArray &lSDigits = *fSDigits;
-    new(lSDigits[fNSDigits++]) AliRICHSDigit(clhits);
+  TClonesArray &lSDigits = *fSDigits;
+  new(lSDigits[fNSDigits++]) AliRICHSDigit(clhits);
 } 
 //_____________________________________________________________________________
 void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
@@ -351,8 +354,9 @@ void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
   // Add a RICH digit to the list
   //
 
-    TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
-    new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
+  //printf("fdigits:%p, data: %d\n",((TClonesArray*)(*fDchambers)[id]),digits[0]);
+  TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
+  new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
 }
 
 //_____________________________________________________________________________
@@ -1004,7 +1008,6 @@ void AliRICH::CreateGeometry()
     for (i = nspacers/3; i < (nspacers*2)/3; i++) {
 	zs = -11.6/2 + (nspacers/3 + TMath::Abs(nspacers/6) - i) * 12.2;
 	gMC->Gspos("SPAC", i, "FRE1", 0, 0., zs, idrotm[1019], "ONLY");  //Original settings 
-	printf("Spacer in %f\n", zs);
     }
     
     for (i = (nspacers*2)/3; i < nspacers; ++i) {
@@ -1031,7 +1034,7 @@ void AliRICH::CreateGeometry()
     gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2 + 2, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
-    printf("Opaque quartz in SRIC %f\n", 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2);
+//    printf("Opaque quartz in SRIC %f\n", 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2);
     gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");          //Original settings 
     gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2) - 2, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
     //gMC->Gspos("BARR", 1, "QUAR", - geometry->GetInnerFreonWidth()/2 - oqua_thickness, 0., 0., 0, "ONLY");           //Original settings (-21.65) 
@@ -1644,7 +1647,7 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
     char *cH = strstr(option,"H");
     char *cD = strstr(option,"D");
     char *cR = strstr(option,"R");
-    char *cS = strstr(option,"S");
+    //char *cS = strstr(option,"S");
 
     if (cH) {
       sprintf(branchname,"%sCerenkov",GetName());
@@ -1674,12 +1677,12 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
       Int_t i;
     
       for (i=0; i<kNCH ;i++) {
-	    sprintf(branchname,"%sDigits%d",GetName(),i+1);	
-	    if (fDchambers   && gAlice->TreeD()) {
-           gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                                    branchname, &((*fDchambers)[i]), kBufferSize, file) ;
-	   printf("Making Branch %sDigits%d\n",GetName(),i+1);
-	    }	
+	sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+	if (fDchambers   && gAlice->TreeD()) {
+	  gAlice->MakeBranchInTree(gAlice->TreeD(), 
+				   branchname, &((*fDchambers)[i]), kBufferSize, file) ;
+	  //printf("Making Branch %sDigits%d\n",GetName(),i+1);
+	}	
       }
     }
 
@@ -1729,14 +1732,14 @@ void AliRICH::SetTreeAddress()
     TTree *treeH = gAlice->TreeH();
     TTree *treeD = gAlice->TreeD();
     TTree *treeR = gAlice->TreeR();
-    TTree *treeS = gAlice->TreeS();
+    //TTree *treeS = gAlice->TreeS();
     
     if (treeH) {
       if (fCerenkovs) {
 	    branch = treeH->GetBranch("RICHCerenkov");
 	    if (branch) branch->SetAddress(&fCerenkovs);
 	}
-      if (fSDigits) {
+    if (fSDigits) {
 	branch = treeH->GetBranch("RICHSDigits");
 	if (branch) branch->SetAddress(&fSDigits);
       }
@@ -1753,6 +1756,7 @@ void AliRICH::SetTreeAddress()
     if (treeD) {
 	for (int i=0; i<kNCH; i++) {
 	    sprintf(branchname,"%sDigits%d",GetName(),i+1);
+	    printf ("Making Branch Digits%d",i+1);
 	    if (fDchambers) {
 		branch = treeD->GetBranch(branchname);
 		if (branch) branch->SetAddress(&((*fDchambers)[i]));
