@@ -473,7 +473,6 @@ void AliRun::FinishRun()
   // Clean detector information
   if (GetDebug()) Info("FinishRun"," fGenerator->FinishRun()");
   fGenerator->FinishRun();
-  
   fRunLoader->Synchronize();
 }
 
@@ -1351,9 +1350,10 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
 
   // check if initialisation has been done
   if (!fInitDone) InitMC(setup);
-  //Save current generator
+  // Save current generator
   AliGenerator *gen=Generator();
-
+  // If runloader has been initialized, set the number of events per file to nc1 * nc2
+  if (fRunLoader) fRunLoader->SetNumberOfEventsPerFile(nc1 * nc2);
   // Set new generator
   if (!gener) gener  = new AliLegoGenerator();
   ResetGenerator(gener);
@@ -1538,6 +1538,7 @@ void AliRun::Stepping()
   //
 
   Int_t id = DetFromMate(gMC->GetMedium());
+  
   if (id < 0) return;
 
   //
