@@ -102,7 +102,7 @@ AliMUONGeometryConstituent::~AliMUONGeometryConstituent()
 {
 //
   delete fTransformation;
-  delete fParam;
+  delete [] fParam;
 }
 
 //______________________________________________________________________________

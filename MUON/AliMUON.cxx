@@ -198,7 +198,16 @@ AliMUON::~AliMUON()
   if (fGeometryBuilders){
     fGeometryBuilders->Delete();
     delete fGeometryBuilders;
-  } 
+  }
+  if (fChambers){
+    fChambers->Delete();
+    delete fChambers;
+  }
+  if (fTriggerCircuits){
+    fTriggerCircuits->Delete();
+    delete fTriggerCircuits;
+  }
+  delete fMUONData;
 }
 //_____________________________________________________________________________
 void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)

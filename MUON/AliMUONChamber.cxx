@@ -47,10 +47,10 @@ ClassImp(AliMUONChamber)
     fSegmentation->AddAt(0,0);
     fSegmentation->AddAt(0,1);
     fResponse=0;
-    fGeometry = new AliMUONChamberGeometry(fId);
     fnsec=1;
     fReconstruction=0;
     fId=id;
+    fGeometry = new AliMUONChamberGeometry(fId);
     // to avoid mistakes if ChargeCorrelInit is not called
     fCurrentCorrel =1;
 }
@@ -62,6 +62,7 @@ AliMUONChamber::~AliMUONChamber()
     fSegmentation->Delete();
     delete fSegmentation;
   }
+  delete fGeometry;
 }
 
 AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber):TObject(rChamber)
