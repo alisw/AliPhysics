@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2002/03/13 07:55:04  jchudoba
+Correction of the errourness last commit.
+
 Revision 1.29  2001/06/21 14:54:37  morsch
 Put volumes of station 3 into DIPO if present. (A. de Falco)
 
@@ -677,7 +680,7 @@ void AliMUONv1::CreateGeometry()
      Float_t zoffs5 = 0;
      Float_t zoffs6 = 0;
 
-     if (gMC->VolId("DDIP")) {
+     if (gAlice->GetModule("DIPO")) {
        slats5Mother="DDIP";
        slats6Mother="DDIP";
 
