@@ -45,7 +45,7 @@ public:
   void  SetVerbose(Int_t val){fVerbose=val;}
   //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
   void  Flush();
-  Int_t GetFillWordsNum(){return EndingFillWords;}
+  Int_t GetFillWordsNum(){return fEndingFillWords;}
 private:
   //this method is used to pack bits into a word of 32 bits
   void  PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit);
@@ -65,11 +65,11 @@ private:
   Int_t fFlag;          //0 read  1 write
   Int_t fVerbose;       //verbose level
   fstream f;            //logical name of the I/O file
-  Int_t fMaskBackward;  
+  Int_t fMaskBackward;  //bit mask for backward reading of a file
   ULong_t fFilePosition;//'pointer' to the actual position in the file
   ULong_t fFileEnd;     //position of the last element of the file (File dimension)
   ULong_t fMiniHeaderPos;//Mini header position
-  Int_t  EndingFillWords;
+  Int_t  fEndingFillWords;//Few words at the end of the stream
   ClassDef(AliTPCBuffer160,1)
 };
 

@@ -32,9 +32,6 @@
 
 #include "AliTPCreco.h"
 
-class AliTPCClustersArray;
-class AliTPCcluster;
-
 //_____________________________________________________________________________
 class AliTPCtrack : public AliKalmanTrack {
 public:
@@ -43,6 +40,7 @@ public:
               const Double_t cc[15], Double_t xr, Double_t alpha); 
   AliTPCtrack(const AliKalmanTrack& t, Double_t alpha);
   AliTPCtrack(const AliTPCtrack& t);
+  virtual ~AliTPCtrack() {}
   Int_t PropagateToVertex(Double_t x0=36.66,Double_t rho=1.2e-3);
   Int_t Rotate(Double_t angle);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}

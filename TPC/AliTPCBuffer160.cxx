@@ -13,6 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
+// Interface to the Altro format
+// to read and write digits
+// To be used in Alice Data Challenges
+// and in the compression of the RAW data
+// Author: D.Favretto
+
 #include "TObjArray.h"
 #include "Riostream.h"
 #include <stdlib.h>
@@ -51,6 +59,7 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
 }
 
 AliTPCBuffer160::~AliTPCBuffer160(){
+  // destructor
   if (fFlag){
     //Last Buffer filled couldn't be full
     Flush();
@@ -94,48 +103,48 @@ AliTPCBuffer160& AliTPCBuffer160::operator=(const AliTPCBuffer160 &source){
 Int_t AliTPCBuffer160::GetNext(){
   //If there aren't elements anymore -1 is returned otherwise 
   //the next element is returned
-  ULong_t Mask=0xFFC00000;
+  ULong_t mask=0xFFC00000;
   ULong_t temp;
-  ULong_t Value;
+  ULong_t value;
   if (!fShift){
     if ( f.read((char*)fBuffer,sizeof(ULong_t)*5) ){
       fCurrentCell=0;
       fShift=22;
-      Value=fBuffer[fCurrentCell]&Mask;
-      Value=Value>>22;
+      value=fBuffer[fCurrentCell]&mask;
+      value=value>>22;
       fBuffer[fCurrentCell]=fBuffer[fCurrentCell]<<10;
-      return Value;      
+      return value;      
     }
     else return -1;
   }//end if
   else{
     if (fShift>=10){
-      Value=fBuffer[fCurrentCell]&Mask;
-      Value=Value>>22;
+      value=fBuffer[fCurrentCell]&mask;
+      value=value>>22;
       fShift-=10;
       fBuffer[fCurrentCell]=fBuffer[fCurrentCell]<<10;
     }
     else{
-      Value=fBuffer[fCurrentCell]&Mask;
+      value=fBuffer[fCurrentCell]&mask;
       fCurrentCell++;
       temp=fBuffer[fCurrentCell];
       temp=temp>>fShift;
-      temp=temp&Mask;
-      Value=Value|temp;
-      Value=Value>>22;
+      temp=temp&mask;
+      value=value|temp;
+      value=value>>22;
       fBuffer[fCurrentCell]=fBuffer[fCurrentCell]<<(10-fShift);
       fShift=22+fShift;
     }
-    return Value;
+    return value;
   }//end else
 }
 
 Int_t AliTPCBuffer160::GetNextBackWord(){
   //If there aren't elements anymore -1 is returned otherwise 
   //the next element is returned
-  ULong_t Mask=0x3FF;
+  ULong_t mask=0x3FF;
   ULong_t temp;
-  ULong_t Value;
+  ULong_t value;
   if (!fShift){
     if (fFilePosition){
       fFilePosition-=sizeof(ULong_t)*5;
@@ -144,34 +153,35 @@ Int_t AliTPCBuffer160::GetNextBackWord(){
       fCurrentCell=4;
       fShift=22;
       fMaskBackward=0xFF;
-      Value=fBuffer[fCurrentCell]&Mask;
+      value=fBuffer[fCurrentCell]&mask;
       fBuffer[fCurrentCell]=fBuffer[fCurrentCell]>>10;
-      return Value;      
+      return value;      
     }
     else return -1;
   }//end if
   else{
     if (fShift>=10){
-      Value=fBuffer[fCurrentCell]&Mask;
+      value=fBuffer[fCurrentCell]&mask;
       fShift-=10;
       fBuffer[fCurrentCell]=fBuffer[fCurrentCell]>>10;
     }
     else{
-      Value=fBuffer[fCurrentCell];
+      value=fBuffer[fCurrentCell];
       fCurrentCell--;
-      temp=fBuffer[fCurrentCell]&Mask;
+      temp=fBuffer[fCurrentCell]&mask;
       temp=temp&fMaskBackward;
       fMaskBackward=fMaskBackward>>2;
       temp=temp<<fShift;
-      Value=Value|temp;
+      value=value|temp;
       fBuffer[fCurrentCell]=fBuffer[fCurrentCell]>>(10-fShift);
       fShift=22+fShift;
     }
-    return Value;
+    return value;
   }//end else
 }
 
 void AliTPCBuffer160::Flush(){
+  // Flushes the internal buffer
   if(fFreeCellBuffer!=16){
     Int_t temp=fFreeCellBuffer;
     for(Int_t i=0;i<temp;i++){
@@ -235,13 +245,13 @@ void AliTPCBuffer160::ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &Row
 
 Int_t AliTPCBuffer160::ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber){
   Int_t temp;
-  EndingFillWords=0;
+  fEndingFillWords=0;
   do{
     temp=GetNextBackWord();
-    EndingFillWords++;
+    fEndingFillWords++;
     if (temp==-1)return -1;
   }while (temp==0x2AA);  
-  EndingFillWords--;
+  fEndingFillWords--;
   SecNumber=temp;
   RowNumber=GetNextBackWord();
   PadNumber=GetNextBackWord();
@@ -251,37 +261,37 @@ Int_t AliTPCBuffer160::ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,I
 
 void AliTPCBuffer160::WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSector,Int_t Detector,Int_t Flag ){
   //size msg errore sector number sub-sector number 0 for TPC 0 for uncompressed
-  Int_t DDLNumber;
-  ULong_t MiniHeader[3];
-  Int_t Version=1;
+  Int_t ddlNumber;
+  ULong_t miniHeader[3];
+  Int_t version=1;
   if(SecNumber<36)
-    DDLNumber=SecNumber*2+SubSector;
+    ddlNumber=SecNumber*2+SubSector;
   else
-    DDLNumber=72+(SecNumber-36)*4+SubSector;
-  //  cout<<"DDL number "<<DDLNumber<<endl;
-  for(Int_t i=0;i<3;i++)MiniHeader[i]=0;
-  Int_t MiniHeaderSize=(sizeof(ULong_t))*3;
-  PackWord(MiniHeader[1],Detector,0,7);
-  PackWord(MiniHeader[1],0x123456,8,31);
-  PackWord(MiniHeader[2],Version,0,7);
-  PackWord(MiniHeader[2],Flag,8,15);
-  PackWord(MiniHeader[2],DDLNumber,16,31);
+    ddlNumber=72+(SecNumber-36)*4+SubSector;
+  //  cout<<"DDL number "<<ddlNumber<<endl;
+  for(Int_t i=0;i<3;i++)miniHeader[i]=0;
+  Int_t miniHeaderSize=(sizeof(ULong_t))*3;
+  PackWord(miniHeader[1],Detector,0,7);
+  PackWord(miniHeader[1],0x123456,8,31);
+  PackWord(miniHeader[2],version,0,7);
+  PackWord(miniHeader[2],Flag,8,15);
+  PackWord(miniHeader[2],ddlNumber,16,31);
   if (!Size){
     //if size=0 it means that this mini header is a dummi mini header
     fMiniHeaderPos=f.tellp();
     //cout<<" Position of the DUMMY MH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
-    MiniHeader[0]=Size;
-    f.write((char*)(MiniHeader),MiniHeaderSize);
+    miniHeader[0]=Size;
+    f.write((char*)(miniHeader),miniHeaderSize);
   }//end if
   else{
-    ULong_t CurrentFilePos=f.tellp();
+    ULong_t currentFilePos=f.tellp();
     f.seekp(fMiniHeaderPos);
-    Size=CurrentFilePos-fMiniHeaderPos-MiniHeaderSize;
-    //cout<<"Current Position (Next MH) "<<CurrentFilePos<<" Position of the MH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
-    MiniHeader[0]=Size;
-    //cout<<"Mini Header Size:"<<MiniHeader[0]<<endl;
-    f.write((char*)(MiniHeader),MiniHeaderSize);
-    f.seekp(CurrentFilePos);
+    Size=currentFilePos-fMiniHeaderPos-miniHeaderSize;
+    //cout<<"Current Position (Next MH) "<<currentFilePos<<" Position of the MH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
+    miniHeader[0]=Size;
+    //cout<<"Mini Header Size:"<<miniHeader[0]<<endl;
+    f.write((char*)(miniHeader),miniHeaderSize);
+    f.seekp(currentFilePos);
   }
   return;
 }
@@ -290,39 +300,39 @@ void AliTPCBuffer160::WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSect
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliTPCBuffer160::PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit){
-  ULong_t DummyWord,OffSet;
-  Int_t   Length;
-  ULong_t Sum;
+  ULong_t dummyWord,offSet;
+  Int_t   length;
+  ULong_t sum;
   //The BaseWord is being filled with 1 from StartBit to StopBit
-  Length=StopBit-StartBit+1;
-  Sum=(ULong_t)TMath::Power(2,Length)-1;
-  if(Word > Sum){
+  length=StopBit-StartBit+1;
+  sum=(ULong_t)TMath::Power(2,length)-1;
+  if(Word > sum){
     cout<<"WARNING::Word to be filled is not within desired length"<<endl;
     exit(-1);
   }
-  OffSet=Sum;
-  OffSet<<=StartBit;
-  BaseWord=BaseWord|OffSet;
+  offSet=sum;
+  offSet<<=StartBit;
+  BaseWord=BaseWord|offSet;
   //The Word to be filled is shifted to the position StartBit
   //and the remaining  Left and Right bits are filled with 1
-  Sum=(ULong_t)TMath::Power(2,StartBit)-1;
-  DummyWord=0xFFFFFFFF<<Length;
-  DummyWord +=Word;
-  DummyWord<<=StartBit;
-  DummyWord+=Sum;
-  BaseWord=BaseWord&DummyWord;
+  sum=(ULong_t)TMath::Power(2,StartBit)-1;
+  dummyWord=0xFFFFFFFF<<length;
+  dummyWord +=Word;
+  dummyWord<<=StartBit;
+  dummyWord+=sum;
+  BaseWord=BaseWord&dummyWord;
   return;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliTPCBuffer160::UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t StopBit, ULong_t &Word){ 	
-  ULong_t OffSet;
-  Int_t Length;
-  Length=StopBit-StartBit+1;
-  OffSet=(ULong_t)TMath::Power(2,Length)-1;
-  OffSet<<=StartBit;
-  Word=PackedWord&OffSet;
+  ULong_t offSet;
+  Int_t length;
+  length=StopBit-StartBit+1;
+  offSet=(ULong_t)TMath::Power(2,length)-1;
+  offSet<<=StartBit;
+  Word=PackedWord&offSet;
   Word>>=StartBit;
   return;
 }

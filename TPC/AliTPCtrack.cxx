@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2003/02/19 08:57:04  hristov
+Control^M removed
+
 Revision 1.17  2003/02/19 08:49:46  hristov
 Track time measurement (S.Radomski)
 
@@ -44,16 +47,14 @@ Logs added
 
 //-----------------------------------------------------------------
 //           Implementation of the TPC track class
-//
-// Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//        This class is used by the AliTPCtracker class
+//      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
 #include <Riostream.h>
 
 #include "AliTPCtrack.h"
-#include "AliTPCcluster.h"
-#include "AliTPCClustersRow.h"
-#include "AliTPCClustersArray.h"
+#include "AliCluster.h"
 
 ClassImp(AliTPCtrack)
 
@@ -446,7 +447,9 @@ void AliTPCtrack::ResetCovariance() {
 
 ////////////////////////////////////////////////////////////////////////
 Double_t AliTPCtrack::Phi() const {
-
+//
+//
+//
   Double_t phi =  TMath::ASin(GetSnp()) + fAlpha;
   if (phi<0) phi+=2*TMath::Pi();
   if (phi>=2*TMath::Pi()) phi-=2*TMath::Pi();
