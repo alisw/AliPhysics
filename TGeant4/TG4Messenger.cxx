@@ -33,21 +33,27 @@ TG4Messenger::TG4Messenger(TG4GeometryManager* geometryManager,
 //
   fSetEMCmd
      = new G4UIcmdWithABool("/g4mc/setEM", this);
-  fSetEMCmd->SetGuidance("Set electromagnetic processes.");
+  fSetEMCmd->SetGuidance("Set electromagnetic physics.");
   fSetEMCmd->SetParameterName("EMControl", false);
   fSetEMCmd->AvailableForStates(PreInit);
 
-  fSetOpticalCmd
-     = new G4UIcmdWithABool("/g4mc/setOptical", this);
-  fSetOpticalCmd->SetGuidance("Set Cerenkov and optical processes.");
-  fSetOpticalCmd->SetParameterName("OpticalControl", false);
-  fSetOpticalCmd->AvailableForStates(PreInit);
+  fSetMuonCmd
+     = new G4UIcmdWithABool("/g4mc/setMuon", this);
+  fSetMuonCmd->SetGuidance("Set muon physics.");
+  fSetMuonCmd->SetParameterName("EMControl", false);
+  fSetMuonCmd->AvailableForStates(PreInit);
 
   fSetHadronCmd
      = new G4UIcmdWithABool("/g4mc/setHadron", this);
-  fSetHadronCmd->SetGuidance("Set hadron processes.");
+  fSetHadronCmd->SetGuidance("Set hadron physics.");
   fSetHadronCmd->SetParameterName("HadronControl", false);
   fSetHadronCmd->AvailableForStates(PreInit);
+
+  fSetOpticalCmd
+     = new G4UIcmdWithABool("/g4mc/setOptical", this);
+  fSetOpticalCmd->SetGuidance("Set Cerenkov and optical physics.");
+  fSetOpticalCmd->SetParameterName("OpticalControl", false);
+  fSetOpticalCmd->AvailableForStates(PreInit);
 
   fSetSpecialCutsCmd
      = new G4UIcmdWithABool("/g4mc/setSpecialCuts", this);
@@ -117,8 +123,9 @@ TG4Messenger::TG4Messenger(const TG4Messenger& right) {
 TG4Messenger::~TG4Messenger() {
 //
   delete fSetEMCmd;
-  delete fSetOpticalCmd;
+  delete fSetMuonCmd;
   delete fSetHadronCmd;
+  delete fSetOpticalCmd;
   delete fSetSpecialCutsCmd;
   delete fSetSpecialControlsCmd;
   delete fProcessActivationCmd;
@@ -152,15 +159,19 @@ void TG4Messenger::SetNewValue(G4UIcommand* command, G4String newValue)
 
   if (command == fSetEMCmd) {
     fPhysicsManager
-      ->SetEMPhysics(fSetOpticalCmd->GetNewBoolValue(newValue)); 
+      ->SetEMPhysics(fSetEMCmd->GetNewBoolValue(newValue)); 
   }    
-  else if (command == fSetOpticalCmd) {
+  if (command == fSetMuonCmd) {
     fPhysicsManager
-      ->SetOpticalPhysics(fSetOpticalCmd->GetNewBoolValue(newValue)); 
+      ->SetMuonPhysics(fSetMuonCmd->GetNewBoolValue(newValue)); 
   }    
   else if (command == fSetHadronCmd) {
     fPhysicsManager
       ->SetHadronPhysics(fSetHadronCmd->GetNewBoolValue(newValue)); 
+  }    
+  else if (command == fSetOpticalCmd) {
+    fPhysicsManager
+      ->SetOpticalPhysics(fSetOpticalCmd->GetNewBoolValue(newValue)); 
   }    
   else if (command == fSetSpecialCutsCmd) {
     fPhysicsManager

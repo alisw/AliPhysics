@@ -50,8 +50,9 @@ class TG4Messenger: public G4UImessenger
     TG4StepManager*           fStepManager;     //step manager
     
     G4UIcmdWithABool*  fSetEMCmd;             //setEM command   
-    G4UIcmdWithABool*  fSetOpticalCmd;        //setOptical command   
+    G4UIcmdWithABool*  fSetMuonCmd;           //setMuon command   
     G4UIcmdWithABool*  fSetHadronCmd;         //setHadron command   
+    G4UIcmdWithABool*  fSetOpticalCmd;        //setOptical command   
     G4UIcmdWithABool*  fSetSpecialCutsCmd;    //setSpecialCuts command   
     G4UIcmdWithABool*  fSetSpecialControlsCmd;//setSpecialControls command   
     G4UIcmdWithoutParameter*  fProcessActivationCmd; //.
