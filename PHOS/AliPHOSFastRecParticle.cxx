@@ -390,18 +390,18 @@ TString AliPHOSFastRecParticle::Name() const
     name = "Photon high purity, ";
 
   if      (IsPi0("low"))
-    name += "Pi0 low purity, ";
+    name = "Pi0 low purity, ";
   else if (IsPi0("medium"))
-    name += "Pi0 medium purity, ";
+    name = "Pi0 medium purity, ";
   else if (IsPi0("high"))
-    name += "Pi0 high purity, ";
+    name = "Pi0 high purity, ";
 
   if      (IsElectron("low"))
-    name += "Electron low purity, ";
+    name = "Electron low purity, ";
   else if (IsElectron("medium"))
-    name += "Electron medium purity, ";
+    name = "Electron medium purity, ";
   else if (IsElectron("high"))
-    name += "Electron high purity, ";
+    name = "Electron high purity, ";
 
   if     (IsHadron()) {
     name = "hadron";
