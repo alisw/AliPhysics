@@ -30,18 +30,16 @@
 //   myVisManager -> RegisterGraphicsSystem (new MyGraphicsSystem);
 
 
+#ifdef G4VIS_USE
+
+#include "TG4VisManager.h"
 #include "TG4Globals.h"
 
 #include <G4LogicalVolumeStore.hh>
 #include <G4PhysicalVolumeStore.hh>
-#include <G4PhysicalVolumeModel.hh>
-#include <G4LogicalVolumeModel.hh>
 #include <G4TransportationManager.hh>
 #include <G4Material.hh>
-
-#ifdef G4VIS_USE
-#include "TG4VisManager.h"
-
+#include <G4PhysicalVolumeModel.hh>
 #include <G4VVisManager.hh>
 
 // Supported drivers...
@@ -806,7 +804,6 @@ void TG4VisManager::Gdraw(const char *name,Float_t theta, Float_t phi, Float_t p
     pPV = pvList[i];
     G4LogicalVolume* pLV = pPV->GetLogicalVolume();
     G4VSolid* pSolid = pLV->GetSolid();
-
     successful = fpScene->AddRunDurationModel(new G4PhysicalVolumeModel(pPV));
     if (!successful) 
     {
