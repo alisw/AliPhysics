@@ -1,6 +1,8 @@
-enum gentype_t {hijing,hijingParam, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan};
+enum gentype_t {hijing, hijing_p, gun, box, pythia, 
+		param1, param2, param3, 
+		cocktail, fluka, halo, ntuple, scan, doublescan};
 
-gentype_t gentype=param;
+gentype_t gentype=param1;
 
 
 ntracks=1;
@@ -157,21 +159,72 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetEnergyCMS(5500.);
      break;
      
- case param:
+
+ case param1:
 //*******************************************************
-// Example for J/psi  Production from  Parameterisation *
+// Example for J/psi  Production from  Parameterisation 
+// using default library (AliMUONlib)                                       
 //*******************************************************
-     AliGenParam *gener = new AliGenParam(ntracks, upsilon_p);
+     AliGenParam *gener =
+	 new AliGenParam(ntracks,upsilon_p);
      gener->SetMomentumRange(0,999);
-     gener->SetPhiRange(0,360);
+     gener->SetPtRange(0,999);     
+     gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
-     gener->SetThetaRange(2,9);
-     
-     gener->SetPtRange(0,10);
-     gener->SetOrigin(0,0,0);          //vertex position
-     gener->SetSigma(0,0,0);//Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetForceDecay(dimuon);
      gener->SetCutOnChild(1);
+     gener->SetChildThetaRange(2,9);
+     gener->SetOrigin(0,0,0);          //vertex position
+     gener->SetSigma(0,0,5.3);         //Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetForceDecay(dimuon);
+     gener->SetTrackingFlag(0);
+     break;
+
+ case param2:
+//*******************************************************
+// Example for Omega  Production from  Parameterisation 
+// specifying library.                                       
+//*******************************************************
+     AliGenParam *gener = new AliGenParam(1000,new AliGenPHOSlib(), Omega);
+     gener->SetWeighting(non_analog);
+     gener->SetForceDecay(nodecay);
+     gener->SetPtRange(0,100);
+     gener->SetThetaRange(45,135);
+     gener->SetTrackingFlag(0);
+     break;
+
+ case param3:
+//*******************************************************
+// Example for Upsilon  Production from  Parameterisation 
+// specifying library.                                       
+// GSI style
+//*******************************************************
+     AliGenParam *gener = new AliGenParam(1000,new AliGenGSIlib(), upsilon_p, "MUON");
+     gener->SetMomentumRange(0,999);
+     gener->SetPtRange(0,999);     
+     gener->SetPhiRange(-180, 180);
+     gener->SetYRange(2.5,4);
+     gener->SetCutOnChild(1);
+     gener->SetChildThetaRange(2,9);
+     gener->SetOrigin(0,0,0);          //vertex position
+     gener->SetSigma(0,0,5.3);         //Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetForceDecay(dimuon);
+     gener->SetTrackingFlag(0);
+     break;
+     
+ case param4:
+//*******************************************************
+// Example for Omega  Production from  Parameterisation 
+// specifying library.
+// The alternative way.                                       
+//*******************************************************
+     AliGenLib* Lib=new AliGenPHOSlib();
+     AliGenParam *gener = new AliGenParam(50,Omega,            
+					       Lib->GetPt(Omega),
+					       Lib->GetY(Omega),
+					       Lib->GetIp(Omega));
+     gener->SetWeighting(non_analog);
+     gener->SetForceDecay(nodecay);
+     gener->SetTrackingFlag(0);
      break;
      
  case fluka:
