@@ -88,6 +88,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     Generator->SetVertexSmear(fVertexSmear);
     Generator->SetVertexSource(kContainer);
     Generator->SetTrackingFlag(fTrackIt);
+        
 //
 //  Add generator to list   
     char theName[256];
@@ -109,6 +110,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     //
     // Loop over generators and initialize
     while((entry = (AliGenCocktailEntry*)next())) {
+	if (fStack)  entry->Generator()->SetStack(fStack);
 	entry->Generator()->Init();
     }  
 }
