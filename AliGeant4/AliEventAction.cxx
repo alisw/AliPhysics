@@ -12,6 +12,7 @@
 #include "AliTrackingAction.h"
 #include "AliGlobals.h"
 #include "AliRun.h"
+#include "AliHeader.h"
 
 #include <G4Event.hh>
 #include <G4TrajectoryContainer.hh>
@@ -124,6 +125,11 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
 
   // verbose output 
   if (fVerboseLevel>0) {
+    G4cout << G4endl;
+    G4cout << ">>> End of Event " << event->GetEventID() << G4endl;
+  }
+
+  if (fVerboseLevel>1) {
     //G4int nofPrimaryTracks = trackingAction->GetNofPrimaryTracks();
     G4int nofPrimaryTracks = gAlice->GetHeader()->GetNprimary();
     G4int nofSavedTracks = gAlice->GetNtrack();
@@ -143,7 +149,7 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
   // aliroot finish event
   gAlice->FinishEvent();    
 
-  if (fVerboseLevel>0) {
+  if (fVerboseLevel>1) {
     // print time
     fTimer->Stop();
     G4cout << "Time of this event: " << *fTimer << G4endl;
