@@ -520,7 +520,7 @@ void  AliMUONGeometrySegmentation::IntegrationLimits(Int_t detElemId,
  
   if (!Notify(detElemId)) return;
 
-  return fCurrentSegmentation->IntegrationLimits(x1, x2, y1, y2);
+  fCurrentSegmentation->IntegrationLimits(x1, x2, y1, y2);
 }
 
 //______________________________________________________________________________
