@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2002/11/01 19:48:35  nilsen
+Fixed bug in material numbering for new FMD part of code. Removed large part
+of commented code (if still needed it is in AliITSvPPRasymm.cxx).
+
 Revision 1.3  2002/10/05 00:12:39  nilsen
 Added material to simulate services in front of the SPD, SDD, and SSD support
 structures. Modified folumes I212, I200, and I099 so that they do not go
@@ -44,8 +48,7 @@ Updated detailed geometry needed by FMD people for some studies
 ///////////////////////////////////////////////////////////////////////////////
 
 // See AliITSvPPRasymmFMD::StepManager().
-#include <iostream.h>
-#include <iomanip.h>
+#include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>
@@ -67,7 +70,6 @@ Updated detailed geometry needed by FMD people for some studies
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
-#include "AliGeant3.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
 #include "AliITShit.h"
@@ -4895,7 +4897,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(gMC->IsA()!=AliGeant3::Class()) {
+    if(strcmp(gMC->GetName(),"TGeant3")) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;
