@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.42  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.41  2000/07/13 16:19:09  fca
 Mainly coding conventions + some small bug fixes
 
@@ -462,6 +465,12 @@ void AliRun::FinishPrimary()
   //  const Int_t times=10;
   // This primary is finished, purify stack
   PurifyKine();
+
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
+    detector->FinishPrimary();
+  }
 
   // Write out hits if any
   if (gAlice->TreeH()) {
@@ -1284,6 +1293,18 @@ void AliRun::PurifyKine()
     }
   }
 #endif
+
+  // 
+  // This for detectors which have a special mapping mechanism
+  // for hits, such as TPC and TRD
+  //
+
+   TIter nextmod(fModules);
+   AliModule *detector;
+   while((detector = (AliModule*)nextmod())) {
+     detector->RemapTrackHitIDs(map);
+   }
+  
 
   fHgwmk=nkeep-1;
   particles.SetLast(fHgwmk);

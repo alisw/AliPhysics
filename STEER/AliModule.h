@@ -77,6 +77,9 @@ public:
   virtual void        PostTrack(){}
   virtual void        FinishEvent() {}
   virtual void        FinishRun() {}
+  virtual void        FinishPrimary() {}
+  virtual void        RemapTrackHitIDs(Int_t *map) {}
+
   //virtual void        Hits2Digits() {}
   virtual void        Init() {}
   virtual void        LoadPoints(Int_t ) {}
