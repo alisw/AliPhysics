@@ -31,7 +31,7 @@ class TG4ElementTable
     TG4ElementTable& operator=(const TG4ElementTable& right);
           
   private:
-    void Construct();
+    void Construct() const;
 
     // data members
     static TG4ElementTable*  fgInstance; //this instance

@@ -66,7 +66,7 @@ TG4ElementTable* TG4ElementTable::Instance()
 // private methods
 
 //_____________________________________________________________________________
-void TG4ElementTable::Construct() 
+void TG4ElementTable::Construct() const 
 { 
 // construct element table
 // ---
