@@ -374,11 +374,12 @@ void  AliPMD::Reconstruct() const
   
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
   AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder(runLoader);
+  pmdClus->Load();
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
     {
       pmdClus->Digits2RecPoints(iEvent);
     }
-
+  pmdClus->UnLoad("R");
   delete pmdClus;
 
 }

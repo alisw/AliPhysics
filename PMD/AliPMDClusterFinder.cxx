@@ -96,8 +96,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   pmdclust->SetDebug(fDebug);
   pmdclust->SetEdepCut(fEcut);
 
-  fPMDLoader->LoadDigits("READ");
-  fPMDLoader->LoadRecPoints("recreate");
   fRunLoader->GetEvent(ievt);
   //cout << " ***** Beginning::Digits2RecPoints *****" << endl;
   fTreeD = fPMDLoader->TreeD();
@@ -170,8 +168,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   ResetCellADC();
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
   fPMDLoader->WriteRecPoints("OVERWRITE");
-  fPMDLoader->UnloadRecPoints();
-  fPMDLoader->UnloadDigits();
 
   //   delete the pointers
   delete pmdclust;
@@ -220,6 +216,14 @@ void AliPMDClusterFinder::ResetRecpoint()
   // Clear the list of reconstructed points
   fNpoint = 0;
   if (fRecpoints) fRecpoints->Clear();
+}
+// ------------------------------------------------------------------------- //
+void AliPMDClusterFinder::Load()
+{
+  // Unload all the *.root files
+  //
+  fPMDLoader->LoadDigits("READ");
+  fPMDLoader->LoadRecPoints("recreate");
 }
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::UnLoad(Option_t *option)

@@ -43,6 +43,7 @@ class AliPMDClusterFinder
   void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
   void ResetCellADC();
   void ResetRecpoint();
+  void Load();
   void UnLoad(Option_t * option);
 
  protected:
@@ -64,7 +65,7 @@ class AliPMDClusterFinder
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,3) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,4) // To run PMD clustering
 };
 #endif
 
