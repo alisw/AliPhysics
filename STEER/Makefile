@@ -52,7 +52,7 @@ FFLAGS      = $(FOPT)
 SLIBRARY	= $(ALICE_ROOT)/lib/libSTEER.$(SL)
 ALIBRARY	= $(ALICE_ROOT)/lib/libSTEER.a
 
-default:	headers $(SLIBRARY)
+default:	$(SLIBRARY)
 
 $(ALICE_ROOT)/lib/libSTEER.$(SL):		$(OBJS)
 

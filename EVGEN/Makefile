@@ -50,7 +50,7 @@ FFLAGS      = $(FOPT)
 SLIBRARY	= $(ALICE_ROOT)/lib/libEVGEN.$(SL)
 ALIBRARY	= $(ALICE_ROOT)/lib/libEVGEN.a
 
-default:	$(SLIBRARY) headers
+default:	$(SLIBRARY)
 
 $(ALICE_ROOT)/lib/libEVGEN.$(SL):		$(OBJS)
 

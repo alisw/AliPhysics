@@ -594,12 +594,16 @@ void AliPHOSv2::StepManager(void)
 
   Int_t blrc[4]; // (box, layer, row, column) indices
   Float_t xyze[4]; // position wrt MRS and energy deposited
+  TLorentzVector pos;
 
   Int_t *IDTMED=fIdtmed->GetArray()-699;
 
   if(gMC->GetMedium()==IDTMED[700]){ // We are inside a CPV sensitive pad
 
-    gMC->TrackPosition(xyze);
+    gMC->TrackPosition(pos);
+    xyze[0]=pos[0];
+    xyze[1]=pos[1];
+    xyze[2]=pos[2];
     xyze[3]=gMC->Edep();
     
     gMC->CurrentVolOffID(3, blrc[0]);
@@ -613,7 +617,10 @@ void AliPHOSv2::StepManager(void)
 
   if(gMC->GetMedium()==IDTMED[699]){ // We are inside a PWO crystal
 
-    gMC->TrackPosition(xyze);
+    gMC->TrackPosition(pos);
+    xyze[0]=pos[0];
+    xyze[1]=pos[1];
+    xyze[2]=pos[2];
     xyze[3]=gMC->Edep();
 
     gMC->CurrentVolOffID(9, blrc[0]);
