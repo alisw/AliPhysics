@@ -35,6 +35,10 @@ AliJetEventParticles::AliJetEventParticles(Int_t size) :
       fJets[j][i]=0;    // Trigger jets
       fUQJets[j][i]=0;  // Unquenched trigger jets
     }
+  for (Int_t i = 0; i < 5; i++){
+    fHard[i][0]=0;
+    fHard[i][1]=0;
+  }
 }
 
 AliJetEventParticles::AliJetEventParticles(const AliJetEventParticles& source) :
@@ -69,6 +73,9 @@ AliJetEventParticles::AliJetEventParticles(const AliJetEventParticles& source) :
   for (Int_t i = 0; i < NUQTriggerJets(); i++){
     source.UQJet(i,fUQJets[0][i],fUQJets[1][i],fUQJets[2][i],fUQJets[3][i]);
   }
+
+  source.Hard(0,fHard[0][0],fHard[1][0],fHard[2][0],fHard[3][0],fHard[4][0]);
+  source.Hard(1,fHard[0][1],fHard[1][1],fHard[2][1],fHard[3][1],fHard[4][1]);
 }
 
 AliJetEventParticles::~AliJetEventParticles()
@@ -99,6 +106,10 @@ void  AliJetEventParticles::Reset(Int_t size)
       fJets[j][i]=0;    // Trigger jets
       fUQJets[j][i]=0;  // Unquenched trigger jets
     }
+  for (Int_t i = 0; i < 5; i++){
+    fHard[i][0]=0;
+    fHard[i][1]=0;
+  }
 } 
 
 void AliJetEventParticles::AddParticle(AliJetParticle* part)
@@ -204,6 +215,22 @@ void AliJetEventParticles::AddUQJet(Float_t p[4])
   }
 }
 
+void AliJetEventParticles::AddHard(Int_t i,Float_t px, Float_t py, Float_t pz, Float_t e, Float_t type)
+{
+  //
+  //  Add a had parton
+  //
+  if (i < 2) {
+    fHard[0][i] = px;
+    fHard[1][i] = py;
+    fHard[2][i] = pz;
+    fHard[3][i] = e;
+    fHard[4][i] = type;
+  } else {
+    printf("\nWarning: More than 2 partons !!\n");
+  }
+}
+
 void AliJetEventParticles::SetZQuench(Double_t z[4])
 {
   //
@@ -243,10 +270,10 @@ void AliJetEventParticles::TriggerJet(Int_t i, Float_t &p1, Float_t &p2, Float_t
   if (i >= fNJets) {
     printf("\nWarning: TriggerJet, index out of Range!!\n");
   } else {
-    p1 = fJets[0][i];
-    p2 = fJets[1][i];
-    p3 = fJets[2][i];
-    E  = fJets[3][i];
+    p1   = fJets[0][i];
+    p2   = fJets[1][i];
+    p3   = fJets[2][i];
+    E    = fJets[3][i];
   }
 }
 
@@ -273,10 +300,26 @@ void AliJetEventParticles::UQJet(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3,
   if (i >= fNUQJets) {
     printf("\nWarning: Unquenched Jets, index out of Range!!\n");
   } else {
-    p1 = fUQJets[0][i];
-    p2 = fUQJets[1][i];
-    p3 = fUQJets[2][i];
-    E = fUQJets[3][i];
+    p1   = fUQJets[0][i];
+    p2   = fUQJets[1][i];
+    p3   = fUQJets[2][i];
+    E    = fUQJets[3][i];
+  }
+}
+
+void AliJetEventParticles::Hard(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3, Float_t &E, Float_t &type) const
+{
+  //
+  // Give back jet #i
+  //
+  if (i >= 2) {
+    printf("\nWarning: Hard partons, index out of Range!!\n");
+  } else {
+    p1   = fHard[0][i];
+    p2   = fHard[1][i];
+    p3   = fHard[2][i];
+    E    = fHard[3][i];
+    type = fHard[4][i];
   }
 }
 
@@ -326,4 +369,3 @@ void AliJetEventParticles::Print(Option_t* /*t*/) const
   }
 
 }
-
