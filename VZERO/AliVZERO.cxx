@@ -57,8 +57,8 @@ AliVZERO::AliVZERO(const char *name, const char *title)
 
 //  fDigits       =  new TClonesArray("AliVZEROdigit",400) ; 
 
-  fThickness    =  3.1;   // total thickness of the V0R box
-  fThickness1   =  1.0;   // thickness of the thickest cell (2.5 in version 0)
+  fThickness    =  4.1;   // total thickness of the V0R box
+  fThickness1   =  0.7;   // thickness of the thickest cell (2.5 in version 0)
   
   fMaxStepQua   =  0.05; 
   fMaxStepAlu   =  0.01; 

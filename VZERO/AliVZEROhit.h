@@ -18,23 +18,25 @@ class AliVZEROhit : public AliHit {
 public:
   AliVZEROhit() {}
   AliVZEROhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  virtual ~AliVZEROhit() {}
-  virtual Int_t Volume() {return fVolume;};
-  virtual Int_t Copy() {return fCopy;};
-  virtual Float_t TrackPiD() {return fTrackPiD;};
-  virtual Float_t Tof() {return fTof;};
-  virtual Float_t Charge() {return fCharge;};
-  virtual Float_t RingNumber() {return fRingNumber;};
+  virtual ~AliVZEROhit() {};
   
-  virtual Float_t Pt()   {return fPt;};
-  virtual Float_t Pmom() {return fPmom;};
-  virtual Float_t Px()   {return fPx;};
-  virtual Float_t Py()   {return fPy;};
-  virtual Float_t Pz()   {return fPz;};
-  
-  Float_t Eloss()        {return fEloss;}
-  Float_t Tleng()        {return fTleng;}
-  
+  Int_t Volume()  {return fVolume;};
+  Int_t Copy()    {return fCopy;};
+  Float_t TrackPiD() {return fTrackPiD;};
+  Float_t Tof()   {return fTof;};
+  Float_t Charge() {return fCharge;};
+  Float_t RingNumber() {return fRingNumber;};
+  Float_t Pt()    {return fPt;};
+  Float_t Pmom()  {return fPmom;};
+  Float_t Px()    {return fPx;};
+  Float_t Py()    {return fPy;};
+  Float_t Pz()    {return fPz;};
+  Float_t Vx()    {return fVx;};
+  Float_t Vy()    {return fVy;};
+  Float_t Vz()    {return fVz;};
+  Float_t Eloss() {return fEloss;}
+  Float_t Tleng() {return fTleng;}
+ 
 private:
   Int_t   fVolume;                // Current volume ID
   Int_t   fCopy;                  // Copy number
@@ -50,7 +52,9 @@ private:
   Float_t fPx;
   Float_t fPy;
   Float_t fPz;
-  
+  Float_t fVx;
+  Float_t fVy;
+  Float_t fVz;
   Float_t fEloss;         //  energy loss  in VZERO detector
   Float_t fTleng;         //  track length in VZERO detector
   

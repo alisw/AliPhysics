@@ -762,8 +762,8 @@ void AliVZEROv0::BuildGeometry()
  
   parbox[0] =    0.;
   parbox[1] =  360.;
-  parbox[2] =    12;
-  parbox[3] =     2;
+  parbox[2] =   12.;
+  parbox[3] =    2.;
   parbox[4] =  -0.1/2.0;
   parbox[5] =  r0;
   parbox[6] =  r5;     
@@ -773,7 +773,7 @@ void AliVZEROv0::BuildGeometry()
   
   
   TPGON *V0CA = new TPGON("V0CA", "V0CA", "void",parbox[0], parbox[1],
-                            parbox[2],parbox[3]);
+                            Int_t(parbox[2]),Int_t(parbox[3]) );
 			    
   V0CA->DefineSection( 0, parbox[4], parbox[5], parbox[6] );
   V0CA->DefineSection( 1, parbox[7], parbox[8], parbox[9] ); 
@@ -795,7 +795,7 @@ void AliVZEROv0::BuildGeometry()
   parbox[9] =  r0; 
 
   TPGON  *V0IR = new TPGON("V0IR","V0IR","void",  parbox[0], parbox[1],
-                            parbox[2],parbox[3]);
+                            Int_t(parbox[2]),Int_t(parbox[3]) );
   V0IR->DefineSection( 0, parbox[4], parbox[5], parbox[6] );
   V0IR->DefineSection( 1, parbox[7], parbox[8], parbox[9] );
   
@@ -812,7 +812,7 @@ void AliVZEROv0::BuildGeometry()
   parbox[9] =  r5 + 1.0; 
 
   TPGON  *V0ER = new TPGON("V0ER","V0ER","void",  parbox[0], parbox[1],
-                            parbox[2],parbox[3]);
+                            Int_t(parbox[2]),Int_t(parbox[3]) );
   V0ER->DefineSection( 0, parbox[4], parbox[5], parbox[6] );
   V0ER->DefineSection( 1, parbox[7], parbox[8], parbox[9] );
   

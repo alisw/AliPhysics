@@ -44,7 +44,11 @@ AliVZEROhit::AliVZEROhit(Int_t shunt, Int_t track, Int_t* vol, Float_t* hits):
   fPy              = hits[12];
   fPz              = hits[13];
   
-  fEloss           = hits[14];
-  fTleng           = hits[15];
+  fVx              = hits[14];
+  fVy              = hits[15];
+  fVz              = hits[16];
+  
+  fEloss           = hits[17];
+  fTleng           = hits[18];
   
 }
