@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/07/20 14:32:44  kowal2
+Processing of many events possible now
+
 Revision 1.11  2001/05/23 08:50:10  hristov
 Weird inline removed
 
@@ -59,7 +62,9 @@ Splitted from AliTPCtracking
 #include "AliTPCClustersRow.h"
 
 
-AliTPCtracker::AliTPCtracker(const AliTPCParam *par)
+AliTPCtracker::AliTPCtracker(const AliTPCParam *par): 
+fkNIS(par->GetNInnerSector()/2), 
+fkNOS(par->GetNOuterSector()/2)
 {;
 //MI change only provisore - need change in the ITS code which depend on it
 }
