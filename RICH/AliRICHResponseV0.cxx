@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2001/02/23 17:39:02  jbarbosa
+  Removed verbose output.
+
   Revision 1.5  2001/02/23 17:25:08  jbarbosa
   Re-definition of IntPH() to accomodate for wire sag effect.
 
@@ -206,6 +209,7 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
   
   // This call to fill the time of flight
   gMC->TrackPosition(position);
+  //printf("Track position: %f %f %f %15.12f\n", position[0],position[1],position[2],position[3]);
   //
   // Generate photons
   for (i = 0; i <nfp; i++) {
@@ -233,6 +237,8 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
     mom[0]*=enfp;
     mom[1]*=enfp;
     mom[2]*=enfp;
+    //printf("Dir %f %f %f\n",dir[0],dir[1],dir[2]);
+    //printf("Momentum %15.12f %15.12f %15.12f\n",mom[0],mom[1],mom[2]);
     
     // Polarisation
     e1[0] = 0;
@@ -281,9 +287,13 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
     ++sNfeed;
 
     gAlice->SetTrack(Int_t(1), gAlice->CurrentTrack(), Int_t(50000051),
-		     mom,source,pol,position[3],
+		     mom[0],mom[1],mom[2],mom[3],source[0],source[1],source[2],position[3],pol[0],pol[1],pol[2],
 		     kPFeedBackPhoton, nt, 1.);
+    
+    //printf("Adding feedback with tof %f and going to %f %f %f\n",position[3],mom[0],mom[1],mom[2]);
   }
+  //if(sNfeed)
+    //printf("feedbacks produced:%d\n",sNfeed);
   return(sNfeed);
 }
 
