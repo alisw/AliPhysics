@@ -319,7 +319,7 @@ void AliMUONTrack::Fit()
   // minimization
   fgFitter->ExecuteCommand("MINIMIZE", arg, 0);
   // exit from Minuit
-  fgFitter->ExecuteCommand("EXIT", arg, 0); // necessary ????
+  //  fgFitter->ExecuteCommand("EXIT", arg, 0); // necessary ????
   // get results into "invBenP", "benC", "nonBenC" ("x", "y")
   fgFitter->GetParameter(0, parName, invBenP, errorParam, lower, upper);
   fgFitter->GetParameter(1, parName, benC, errorParam, lower, upper);
