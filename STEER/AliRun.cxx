@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.83  2002/04/04 13:16:17  jchudoba
+add possibility to write sdigits, digits and rec. points into separate files
+
 Revision 1.82  2002/03/12 11:06:03  morsch
 Add particle status code to argument list of SetTrack(..).
 
@@ -902,17 +905,17 @@ Int_t AliRun::GetEvent(Int_t event)
 
   // Get the stack from the header, set fStack to 0 if it 
   // fails to get event
-  if (fStack) delete fStack;
-  fStack = fHeader->Stack();
-  if (fStack) {
-    if (!fStack->GetEvent(event)) fStack = 0;
-  }
-
   //
   TFile *file = fTreeE->GetCurrentFile();
   char treeName[20];
   
   file->cd();
+
+  if (fStack) delete fStack;
+  fStack = fHeader->Stack();
+  if (fStack) {
+    if (!fStack->GetEvent(event)) fStack = 0;
+  }
 
   // Get Hits Tree header from file
   sprintf(treeName,"TreeH%d",event);
