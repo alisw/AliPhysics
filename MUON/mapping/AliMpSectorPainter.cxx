@@ -1,5 +1,9 @@
 // $Id$
 //
+// Class AliMpSectorPainter
+// ------------------------
+// Class for drawing a sector into canvas
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
   
 #include <TVirtualX.h>

@@ -4,7 +4,7 @@
 // Class AliMpVIndexed
 // -------------------
 // Class that defines the limits of global pad indices.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpVIndexed.h"

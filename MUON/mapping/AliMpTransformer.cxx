@@ -5,7 +5,7 @@
 // ------------------------
 // Class contains definition of transformation and
 // provides functions for transforming pads.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpTransformer.h"

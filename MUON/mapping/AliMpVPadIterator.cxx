@@ -4,7 +4,7 @@
 // Class AliMpVPadIterator
 // -----------------------
 // Abstract base class, which defines an iterator over pads
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpVPadIterator.h"

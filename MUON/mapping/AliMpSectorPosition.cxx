@@ -7,6 +7,7 @@
 // Only translation + reflection transformations can
 // be applied.
 //
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TError.h>

@@ -4,7 +4,7 @@
 // Class AliMpSector
 // -----------------
 // Class describing the sector of the MUON chamber of station 1.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TError.h>

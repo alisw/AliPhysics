@@ -4,7 +4,7 @@
 // Class AliMpRowSegmentPainter
 // ----------------------------
 // Class for drawing a motif into canvas
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
  
 #include <TVirtualX.h>

@@ -4,7 +4,7 @@
 // Class AliMpPad
 // ---------------
 // Class which encapsuate all informations about a pad
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

@@ -5,7 +5,7 @@
 // -------------------
 // Class describing the motif map container, where motifs are
 // mapped to their string IDs.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

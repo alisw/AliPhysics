@@ -8,6 +8,7 @@
 // the pads are placed from the offset (defined in the base class)
 // to the right.
 //
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TError.h>

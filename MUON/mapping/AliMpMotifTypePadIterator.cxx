@@ -4,7 +4,7 @@
 // Class AliMpMotifTypePadIterator
 // -------------------------------
 // Class, which defines an iterator over the pads of a given motif type
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpMotifTypePadIterator.h"

@@ -4,7 +4,7 @@
 // Class AliMpVRowSegment
 // ----------------------
 // Class describing an interface for a row segment.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TError.h>

@@ -5,7 +5,7 @@
 // ---------------
 // Class describing a zone composed of the zone segments.
 // The zone contains pads of the same dimensions.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpZone.h"

@@ -4,7 +4,7 @@
 // Class AliMpVPainter
 // --------------
 // Class for drawing objects into canvas
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
   
 #include <TROOT.h>

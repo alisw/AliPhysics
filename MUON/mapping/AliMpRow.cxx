@@ -4,7 +4,7 @@
 // Class AliMpRow
 // --------------
 // Class describing a row composed of the row segments.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

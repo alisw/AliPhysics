@@ -4,7 +4,7 @@
 // Class AliMpReader
 // -------------------
 // Class that takes care of reading the sector data.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #if !defined(__HP_aCC) && !defined(__alpha)

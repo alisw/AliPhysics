@@ -8,6 +8,7 @@
 // conversion between pad indices, pad location, pad position;
 // finding pad neighbour.
 //
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

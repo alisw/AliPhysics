@@ -4,7 +4,7 @@
 // Class AliMpRowPainter
 // ---------------------
 // Class for drawing a row into canvas
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
   
 #include <TVirtualX.h>

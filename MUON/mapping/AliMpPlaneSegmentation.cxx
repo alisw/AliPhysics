@@ -6,7 +6,6 @@
 // Class describing the segmentation of the plane.
 //
 // Transformation of pad characteristics according to sectors:
-//
 //   I.  ( posId,  Guassi ), ( i, j), ( x, y)         II. |  I.
 //  II.  ( posId', Guassi'), (-i, j), (-x, y)       _____ | ____
 // III.  (-posId,  Guassi),  (-i,-j), (-x,-y)             |
@@ -15,6 +14,7 @@
 // Where (posId', Guassi') is the location of the pad
 // in the clipped sector.
 //
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

@@ -7,6 +7,7 @@
 // The pair created by the default constructor is in invalide state,
 // setting one of values changes the state to valid.
 //
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

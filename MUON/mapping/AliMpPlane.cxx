@@ -4,7 +4,6 @@
 // Class AliMpPlane
 // ----------------
 // Class represents the plane composed of 4 sector positions:
-// 
 //   I.  FS                             II. |  I.
 //  II.  BS inverted in x             _____ | ____
 // III.  FS inverted in x, y                |
@@ -13,6 +12,7 @@
 // FS - front sector
 // BS - back sector    
 //
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

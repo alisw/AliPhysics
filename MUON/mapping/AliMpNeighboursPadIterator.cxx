@@ -4,7 +4,7 @@
 // Class AliMpNeighboursPadIterator
 // --------------------------------
 // Class, which defines an iterator over the pads surrounding a given pad
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TVector2.h>

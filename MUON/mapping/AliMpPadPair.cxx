@@ -5,7 +5,7 @@
 // ------------------
 // Wrap up for std::pair<AliMpPad, AliMpPad>
 // to avoid problems with CINT.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpPadPair.h"

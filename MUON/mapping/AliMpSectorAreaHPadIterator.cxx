@@ -5,7 +5,7 @@
 // ---------------------------------
 // Class, which defines an iterator over the pads 
 // inside a given area in a sector in horizontal direction.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>

@@ -5,7 +5,7 @@
 // Class AliMpPadRow
 // ------------------
 // Class describing a pad row composed of the pad row segments.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TError.h>

@@ -5,7 +5,7 @@
 // -------------------------------
 // Composite of iterator and transformer.
 // Transforms returned pad. 
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpTransformPadIterator.h"

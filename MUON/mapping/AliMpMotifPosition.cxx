@@ -1,6 +1,10 @@
 // $Id$
 //
-// Author: Ivana Hrivnacova, IPN Orsay
+// Class AliMpMotifPosition
+// ------------------------
+// Class that represents a placed motif.
+// Included in AliRoot: 2003/05/02
+// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TError.h>
 

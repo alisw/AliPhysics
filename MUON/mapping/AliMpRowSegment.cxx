@@ -5,7 +5,7 @@
 // ---------------------
 // Class describing a row segment composed of the 
 // the identic motifs.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TError.h>

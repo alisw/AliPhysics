@@ -4,7 +4,7 @@
 // Class AliMpSectorPadIterator
 // ----------------------------
 // Class, which defines an iterator over the pads of a sector
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpSectorPadIterator.h"

@@ -5,7 +5,7 @@
 // -----------------
 // Class that defines a motif with its unique ID
 // and the motif type.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <iomanip>

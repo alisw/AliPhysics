@@ -4,7 +4,7 @@
 // Class AliMpMotifType
 // --------------------
 // Class that defines the motif properties.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <stdlib.h>

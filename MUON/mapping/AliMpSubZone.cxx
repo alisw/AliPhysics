@@ -5,7 +5,7 @@
 // ------------------
 // Class describing a zone segment composed of the 
 // line segments with the same motif type.
-//
+// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>
