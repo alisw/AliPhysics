@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/11/07 15:52:09  cblume
+Update of tracking code for tilted pads
+
 Revision 1.14  2002/10/14 14:57:43  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -248,9 +251,14 @@ Bool_t AliTRDclusterizer::OpenOutput(const Char_t *name)
 
   if (strcmp(name,fInputFile->GetName()) != 0) {
     savedir = gDirectory;
-    printf("AliTRDclusterizer::OpenOutput -- ");
-    printf("Open the output file %s.\n",name);
-    fOutputFile = new TFile(name,"RECREATE");
+    if (fOutputFile->IsOpen()) {
+      fOutputFile->cd();
+    }
+    else {
+      printf("AliTRDclusterizer::OpenOutput -- ");
+      printf("Open the output file %s.\n",name);
+      fOutputFile = new TFile(name,"RECREATE");
+    }
   }
 
   // Create a tree for the cluster
