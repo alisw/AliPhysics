@@ -416,7 +416,7 @@ void AliPHOSAnalyze::Ls(){
   //reading event and copyng it to TConesArray of all photons
 
   TClonesArray * allRecParticleList  = new TClonesArray("AliPHOSRecParticle", 1000) ;
-  Int_t nRecParticles[nMixedEvents] ; // to mark boundaries of each event in the total list
+  Int_t * nRecParticles = new Int_t[nMixedEvents] ; // to mark boundaries of each event in the total list
   for(Int_t index = 0; index < nMixedEvents; index ++)
     nRecParticles[index] = 0 ;
   Int_t iRecPhot = 0 ;                // number of EM particles in total list
@@ -507,6 +507,7 @@ void AliPHOSAnalyze::Ls(){
   mfile->Write();
   mfile->Close();
   delete mfile ;
+  delete nRecParticles;
 
 }
 
