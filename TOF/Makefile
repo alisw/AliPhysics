@@ -9,7 +9,7 @@ PACKAGE = TOF
 
 # C++ sources
 
-SRCS  = AliTOF.cxx  AliTOFv0.cxx  AliTOFv1.cxx  AliTOFv2.cxx  AliTOFv3.cxx  AliTOFv4.cxx AliTOFv4T0.cxx AliTOFhit.cxx AliTOFhitT0.cxx AliTOFdigit.cxx AliTOFRawSector.cxx  AliTOFRoc.cxx  AliTOFRawDigit.cxx AliTOFDigitizer.cxx AliTOFSDigitizer.cxx AliTOFMerger.cxx  AliTOFv2FHoles.cxx AliTOFSDigit.cxx AliTOFHitMap.cxx AliTOFConstants.cxx AliTOFT0.cxx AliTOFPID.cxx AliTOFPad.cxx AliTOFRecHit.cxx AliTOFTrack.cxx AliTOFReconstructioner.cxx AliTOFProb.cxx
+SRCS  = AliTOF.cxx  AliTOFv0.cxx  AliTOFv1.cxx  AliTOFv2.cxx  AliTOFv3.cxx  AliTOFv4.cxx AliTOFv4T0.cxx AliTOFhit.cxx AliTOFhitT0.cxx AliTOFdigit.cxx AliTOFRawSector.cxx  AliTOFRoc.cxx  AliTOFRawDigit.cxx AliTOFDigitizer.cxx AliTOFSDigitizer.cxx AliTOFMerger.cxx  AliTOFv2FHoles.cxx AliTOFSDigit.cxx AliTOFHitMap.cxx AliTOFConstants.cxx AliTOFT0.cxx AliTOFPID.cxx AliTOFPad.cxx AliTOFRecHit.cxx AliTOFTrack.cxx AliTOFReconstructioner.cxx AliTOFProb.cxx AliTOFTrackV2.cxx AliTOFReconstructionerV2.cxx AliTOFDigitMap.cxx
 
 # C++ Headers
 

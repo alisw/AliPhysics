@@ -61,7 +61,7 @@ Int_t gDEBUG = 1;
 
 
 Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root", 
-		      TString fileNameHits="rfio:galice.root", 
+		      TString fileNameHits="galice.root", 
 		      Int_t nEvents = 1, Int_t firstEvent = 0, Int_t iITS = 0,
 		      Int_t iTPC = 0, Int_t iTRD = 0,Int_t iPHOS = 0, 
 		      Int_t iTOF = 1, Int_t iCopy = 1)
@@ -116,7 +116,7 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
 // TOF
   AliTOFSDigitizer *sdTOF;
   if (iTOF) {
-    sdTOF = new AliTOFSDigitizer(fileNameHits.Data(),fileNameSDigits.Data(),firstEvent,nEvents);
+    sdTOF = new AliTOFSDigitizer(fileNameHits.Data(),firstEvent,nEvents);
   }
 
 
