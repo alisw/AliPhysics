@@ -463,7 +463,7 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
           for(Int_t digi2=0;digi2<ndigits;digi2++){
             if(ssdone[digi2]==0 && impaired){
               AliITSdigitSSD *dig2=(AliITSdigitSSD*)ITSdigits->UncheckedAt(digi2);
-              if(dig2->fCoord1 != iz && dig2->GetTracks()[0]==digs->GetTracks()[0] && dig2->GetTracks()[0]>0){
+              if(dig2->fCoord1 != iz && dig2->GetTrack(0)==digs->GetTrack(0) && dig2->GetTrack(0)>0){
                 ssdone[digi2]=2;
                 pair[digit]=digi2;
                 if(pside)nstrip=dig2->fCoord2;
@@ -478,7 +478,7 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
       if(subd<2 || (subd==2 && ssdone[digit]==1)){
         Int_t coor1=digs->fCoord1;
         Int_t coor2=digs->fCoord2;
-        Int_t tra0=digs->GetTracks()[0];
+        Int_t tra0=digs->GetTrack(0);
         if(verbose){
           cout<<"digit # "<<digit<<" fCoord1= "<<coor1<<" fCoord2= "<<coor2<<" track "<<tra0<<" "<<endl;
           if(subd<2)cout<<"local coordinates -- x="<<lcoor[0]<<", z="<<lcoor[2]<<endl;
@@ -492,7 +492,7 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
               AliITSdigitSSD *dig2=(AliITSdigitSSD*)ITSdigits->UncheckedAt(dtmp);
               Int_t coor1b=dig2->fCoord1;
               Int_t coor2b=dig2->fCoord2;
-              Int_t tra0b=dig2->GetTracks()[0];
+              Int_t tra0b=dig2->GetTrack(0);
               cout<<"(digit paired with digit #"<<dtmp<<endl;
               cout<<"with fCoord1= "<<coor1b<<" fCoord2= "<<coor2b<<" track "<<tra0b<<")"<<endl;
             }
