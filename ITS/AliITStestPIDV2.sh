@@ -36,7 +36,7 @@ aliroot -q -b "$ALICE_ROOT/ITS/AliBarrelReconstructionV2.C($nev)"
 # the probable weights for the different particle kinds (electron, pion, kaon,
 # proton). These weights are under study now.
 #
-aliroot -q -b "$ALICE_ROOT/ITS/AliITSavePIDV2.C(0,$[$nev-1])" 
+aliroot -q -b "$ALICE_ROOT/ITS/AliITSSavePIDV2.C(0,$[$nev-1])" 
 #
 # This last line checks the ITS PID only, i.e. creates and draws
 #the dEdx-momentum plot (comment if it's not necessary)
