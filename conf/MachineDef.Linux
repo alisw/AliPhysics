@@ -9,7 +9,7 @@ F77	      = echo $*.F ; g77
 CC	      = echo $*.c ; gcc
 
 # Global optimisation
-OPT           = -O2
+OPT           = -O
 
 # Shared library suffix
 SL	      = so
