@@ -103,7 +103,7 @@ void AliRunAction::BeginOfRunAction(const G4Run* run)
   AliLego* lego = gAlice->Lego();
   if (lego) {
     GetSDConstruction()->SetLego(lego);
-    G4UImanager::GetUIpointer()->ApplyCommand("/aliEvent/verbose 0");
+    G4UImanager::GetUIpointer()->ApplyCommand("/aliVerbose/eventAction 0");
     G4UImanager::GetUIpointer()->ApplyCommand("/aliGenerator/set AliGenerator");
   }  
 
@@ -132,7 +132,7 @@ void AliRunAction::EndOfRunAction(const G4Run* run)
   AliLego* lego = gAlice->Lego();
   if (lego) {
     GetSDConstruction()->UnsetLego();
-    G4UImanager::GetUIpointer()->ApplyCommand("/aliEvent/verbose 1");
+    G4UImanager::GetUIpointer()->ApplyCommand("/aliVerbose/eventAction 0");
   }  
 
   // update graphics 
