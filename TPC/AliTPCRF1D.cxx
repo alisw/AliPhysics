@@ -36,6 +36,7 @@
 #include "TPad.h"
 #include "TStyle.h"
 #include "TH1.h"
+#include <TString.h>
 
 extern TStyle * gStyle; 
 
@@ -98,8 +99,11 @@ AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf):TObject(prf)
   memcpy(this, &prf, sizeof(prf)); 
   fcharge = new Float_t[fNRF];
   memcpy(fcharge,prf.fcharge, fNRF);
-  fGRF = new TF1(*(prf.fGRF)); 
-
+  fGRF = new TF1(*(prf.fGRF));
+  //PH Change the name (add 0 to the end)
+  TString s(fGRF->GetName());
+  s+="0";
+  fGRF->SetName(s.Data());
 }
 
 AliTPCRF1D & AliTPCRF1D::operator = (const AliTPCRF1D &prf)
@@ -111,6 +115,10 @@ AliTPCRF1D & AliTPCRF1D::operator = (const AliTPCRF1D &prf)
   fcharge = new Float_t[fNRF];
   memcpy(fcharge,prf.fcharge, fNRF);
   fGRF = new TF1(*(prf.fGRF));
+   //PH Change the name (add 0 to the end)
+  TString s(fGRF->GetName());
+  s+="0";
+  fGRF->SetName(s.Data());
   return (*this);
 }
 
@@ -173,7 +181,7 @@ void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF1("fun",funGauss,-5,5,1);
+  fGRF = new TF1("funGauss",funGauss,-5,5,1);
   funParam[0]=sigma;
   forigsigma=sigma;
   fGRF->SetParameters(funParam);
@@ -191,7 +199,7 @@ void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF1("fun",	funCosh, -5.,5.,2);   
+  fGRF = new TF1("funCosh",	funCosh, -5.,5.,2);   
   funParam[0]=sigma;
   fGRF->SetParameters(funParam);
   forigsigma=sigma;
@@ -209,7 +217,7 @@ void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF1("fun",	funGati, -5.,5.,2);   
+  fGRF = new TF1("funGati",	funGati, -5.,5.,2);   
   funParam[0]=padDistance;
   funParam[1]=K3;  
   fGRF->SetParameters(funParam);
@@ -311,9 +319,9 @@ void AliTPCRF1D::Streamer(TBuffer &R__b)
       AliTPCRF1D::Class()->ReadBuffer(R__b, this);
       //read functions
  
-      if (strncmp(fType,"Gauss",3)==0) {delete fGRF; fGRF = new TF1("fun",funGauss,-5.,5.,4);}
-      if (strncmp(fType,"Cosh",3)==0)  {delete fGRF; fGRF = new TF1("fun",funCosh,-5.,5.,4);}
-      if (strncmp(fType,"Gati",3)==0)  {delete fGRF; fGRF = new TF1("fun",funGati,-5.,5.,4);}  
+      if (strncmp(fType,"Gauss",3)==0) {delete fGRF; fGRF = new TF1("funGauss",funGauss,-5.,5.,4);}
+      if (strncmp(fType,"Cosh",3)==0)  {delete fGRF; fGRF = new TF1("funCosh",funCosh,-5.,5.,4);}
+      if (strncmp(fType,"Gati",3)==0)  {delete fGRF; fGRF = new TF1("funGati",funGati,-5.,5.,4);}  
       if (fGRF) fGRF->SetParameters(funParam);     
 
    } else {

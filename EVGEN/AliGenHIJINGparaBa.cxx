@@ -210,35 +210,35 @@ void AliGenHIJINGparaBa::Init()
     fETAkac = new TF1("etakac",&etakac,etaMin,etaMax,0);
     fETAba  = new TF1("etabaryon",&etabaryon,etaMin,etaMax,0);
 
-    TF1 *etaPic0 = new TF1("etapic",&etapic,    -7, 7, 0);
-    TF1 *etaKac0 = new TF1("etakac",&etakac,    -7, 7, 0);
-    TF1 *etaBar0 = new TF1("etabar",&etabaryon, -7, 7, 0);
+    TF1 etaPic0("etapic(-7,7)",&etapic,    -7, 7, 0);
+    TF1 etaKac0("etakac(-7,7)",&etakac,    -7, 7, 0);
+    TF1 etaBar0("etabar(-7,7)",&etabaryon, -7, 7, 0);
     
-    TF1 *ptPic0  = new TF1("ptpi",  &ptpi,     0., 15., 0);
-    TF1 *ptKac0  = new TF1("ptka",  &ptka,     0., 15., 0);
-    TF1 *ptBar0  = new TF1("ptbar", &ptbaryon, 0., 15., 0);
+    TF1 ptPic0("ptpi(0,15)",  &ptpi,     0., 15., 0);
+    TF1 ptKac0("ptka(0,15)",  &ptka,     0., 15., 0);
+    TF1 ptBar0("ptbar(0,15)", &ptbaryon, 0., 15., 0);
 
-    Float_t intETApi  = etaPic0->Integral(-0.5, 0.5);
-    Float_t intETAka  = etaKac0->Integral(-0.5, 0.5);
-    Float_t intETAba  = etaBar0->Integral(-0.5, 0.5);
+    Float_t intETApi  = etaPic0.Integral(-0.5, 0.5);
+    Float_t intETAka  = etaKac0.Integral(-0.5, 0.5);
+    Float_t intETAba  = etaBar0.Integral(-0.5, 0.5);
 
     Float_t scalePi   = 6979./(intETApi/1.5);
     Float_t scaleKa   =  657./(intETAka/2.0);
     Float_t scaleBa   =  364./(intETAba/2.0);
 
 //  Fraction of events corresponding to the selected pt-range    
-    Float_t intPt    = (0.837*ptPic0->Integral(0, 15)+
-			0.105*ptKac0->Integral(0, 15)+
-                        0.058*ptBar0->Integral(0, 15));
-    Float_t intPtSel = (0.837*ptPic0->Integral(fPtMin, fPtMax)+
-			0.105*ptKac0->Integral(fPtMin, fPtMax)+
-	                0.058*ptBar0->Integral(fPtMin, fPtMax));
+    Float_t intPt    = (0.837*ptPic0.Integral(0, 15)+
+			0.105*ptKac0.Integral(0, 15)+
+                        0.058*ptBar0.Integral(0, 15));
+    Float_t intPtSel = (0.837*ptPic0.Integral(fPtMin, fPtMax)+
+			0.105*ptKac0.Integral(fPtMin, fPtMax)+
+	                0.058*ptBar0.Integral(fPtMin, fPtMax));
     Float_t ptFrac   = intPtSel/intPt;
 
 //  Fraction of events corresponding to the selected eta-range    
-    Float_t intETASel  = (scalePi*etaPic0->Integral(etaMin, etaMax)+
-			  scaleKa*etaKac0->Integral(etaMin, etaMax)+
-	                  scaleBa*etaBar0->Integral(etaMin, etaMax));
+    Float_t intETASel  = (scalePi*etaPic0.Integral(etaMin, etaMax)+
+			  scaleKa*etaKac0.Integral(etaMin, etaMax)+
+	                  scaleBa*etaBar0.Integral(etaMin, etaMax));
 //  Fraction of events corresponding to the selected phi-range    
     Float_t phiFrac    = (fPhiMax-fPhiMin)/2/TMath::Pi();
 

@@ -287,7 +287,7 @@ void AliTPCPRF2D::SetGauss(Float_t sigmaX, Float_t sigmaY,
   fOrigSigmaY=sigmaY;
   sprintf(fType,"Gauss");
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF2("fun",funGauss2D,-5.,5.,-5.,5.,4);
+  fGRF = new TF2("funGauss2D",funGauss2D,-5.,5.,-5.,5.,4);
   
   funParam[0]=sigmaX;
   funParam[1]=sigmaY;  
@@ -320,7 +320,7 @@ void AliTPCPRF2D::SetCosh(Float_t sigmaX, Float_t sigmaY,
   fOrigSigmaY=sigmaY; 
   sprintf(fType,"Cosh");
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF2("fun",	funCosh2D,-5.,5.,-5.,5.,4);   
+  fGRF = new TF2("funCosh2D",	funCosh2D,-5.,5.,-5.,5.,4);   
   funParam[0]=sigmaX;
   funParam[1]=sigmaY;
   funParam[2]=fK;  
@@ -351,7 +351,7 @@ void AliTPCPRF2D::SetGati(Float_t K3X, Float_t K3Y,
   fPadDistance=padDistance;  
   sprintf(fType,"Gati");
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF2("fun",	funGati2D,-5.,5.,-5.,5.,5);  
+  fGRF = new TF2("funGati2D",	funGati2D,-5.,5.,-5.,5.,5);  
  
   funParam[0]=padDistance;
   funParam[1]=K3X;
@@ -654,11 +654,11 @@ void AliTPCPRF2D::Streamer(TBuffer &R__b)
       if (strncmp(fType,"User",3)!=0){
 	delete fGRF;  
         if (strncmp(fType,"Gauss",3)==0) 
-	  fGRF = new TF2("fun",funGauss2D,-5.,5.,-5.,5.,4);
+	  fGRF = new TF2("funGauss2D",funGauss2D,-5.,5.,-5.,5.,4);
         if (strncmp(fType,"Cosh",3)==0) 
-	  fGRF = new TF2("fun",funCosh2D,-5.,5.,-5.,5.,4);
+	  fGRF = new TF2("funCosh2D",funCosh2D,-5.,5.,-5.,5.,4);
         if (strncmp(fType,"Gati",3)==0) 
-	  fGRF = new TF2("fun",funGati2D,-5.,5.,-5.,5.,5);      
+	  fGRF = new TF2("funGati2D",funGati2D,-5.,5.,-5.,5.,5);      
         if (fGRF!=0) fGRF->SetParameters(funParam);
       }
       //calculate conversion coefitient to convert position to virtual wire

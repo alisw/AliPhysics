@@ -173,9 +173,9 @@ void AliGenParam::Init()
     
     fPtPara->SetNpx(npx);
     
-    fYPara  = new TF1("Y -Parametrization",fYParaFunc,fYMin,fYMax,0);
-    TF1* ptPara = new TF1("Pt-Parametrization",fPtParaFunc,0,15,0);
-    TF1* yPara  = new TF1("Y -Parametrization",fYParaFunc,-6,6,0);
+    fYPara  = new TF1("Y-Parametrization",fYParaFunc,fYMin,fYMax,0);
+    TF1 ptPara("Pt-Parametrization(0,15)",fPtParaFunc,0,15,0);
+    TF1 yPara("Y-Parametrization(-6,6)",fYParaFunc,-6,6,0);
 
 //
 // dN/dy| y=0
@@ -185,9 +185,9 @@ void AliGenParam::Init()
     fdNdy0=fYParaFunc(&y1,&y2);
 //
 // Integral over generation region
-    Float_t intYS  = yPara ->Integral(fYMin, fYMax);
-    Float_t intPt0 = ptPara->Integral(0,15);
-    Float_t intPtS = ptPara->Integral(fPtMin,fPtMax);
+    Float_t intYS  = yPara.Integral(fYMin, fYMax);
+    Float_t intPt0 = ptPara.Integral(0,15);
+    Float_t intPtS = ptPara.Integral(fPtMin,fPtMax);
     Float_t phiWgt=(fPhiMax-fPhiMin)/2./TMath::Pi();
     if (fAnalog == kAnalog) {
 	fYWgt  = intYS/fdNdy0;

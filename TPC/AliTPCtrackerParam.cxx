@@ -640,7 +640,7 @@ void AliTPCtrackerParam::AnalyzePulls(const Char_t *outName) {
 
   AliTPCkineGrid  pulls[5];
   TH1F *hDum = new TH1F("name","title",100,-7.,7.);
-  TF1 *g = new TF1("g","gaus");
+  TF1 g("g","gaus");
 
   InitializeKineGrid("pulls");
   InitializeKineGrid("DB");
@@ -736,29 +736,29 @@ void AliTPCtrackerParam::AnalyzePulls(const Char_t *outName) {
     // compute the sigma of the distributions
     for(Int_t i=0; i<nTotBins; i++) {
       if(hPulls0_[i].GetEntries()>10) {
-	g->SetRange(-3.*hPulls0_[i].GetRMS(),3.*hPulls0_[i].GetRMS());
+	g.SetRange(-3.*hPulls0_[i].GetRMS(),3.*hPulls0_[i].GetRMS());
 	hPulls0_[i].Fit("g","R,Q,N");
-	pulls[0].SetParam(i,g->GetParameter(2));
+	pulls[0].SetParam(i,g.GetParameter(2));
       } else pulls[0].SetParam(i,-1.);
       if(hPulls1_[i].GetEntries()>10) {
-	g->SetRange(-3.*hPulls1_[i].GetRMS(),3.*hPulls1_[i].GetRMS());
+	g.SetRange(-3.*hPulls1_[i].GetRMS(),3.*hPulls1_[i].GetRMS());
 	hPulls1_[i].Fit("g","R,Q,N");
-	pulls[1].SetParam(i,g->GetParameter(2));
+	pulls[1].SetParam(i,g.GetParameter(2));
       } else pulls[1].SetParam(i,-1.);
       if(hPulls2_[i].GetEntries()>10) {
-	g->SetRange(-3.*hPulls2_[i].GetRMS(),3.*hPulls2_[i].GetRMS());
+	g.SetRange(-3.*hPulls2_[i].GetRMS(),3.*hPulls2_[i].GetRMS());
 	hPulls2_[i].Fit("g","R,Q,N");
-	pulls[2].SetParam(i,g->GetParameter(2));
+	pulls[2].SetParam(i,g.GetParameter(2));
       } else pulls[2].SetParam(i,-1.);
       if(hPulls3_[i].GetEntries()>10) {
-	g->SetRange(-3.*hPulls3_[i].GetRMS(),3.*hPulls3_[i].GetRMS());
+	g.SetRange(-3.*hPulls3_[i].GetRMS(),3.*hPulls3_[i].GetRMS());
 	hPulls3_[i].Fit("g","R,Q,N");
-	pulls[3].SetParam(i,g->GetParameter(2));
+	pulls[3].SetParam(i,g.GetParameter(2));
       } else pulls[3].SetParam(i,-1.);
       if(hPulls4_[i].GetEntries()>10) {
-	g->SetRange(-3.*hPulls4_[i].GetRMS(),3.*hPulls4_[i].GetRMS());
+	g.SetRange(-3.*hPulls4_[i].GetRMS(),3.*hPulls4_[i].GetRMS());
 	hPulls4_[i].Fit("g","R,Q,N");
-	pulls[4].SetParam(i,g->GetParameter(2));
+	pulls[4].SetParam(i,g.GetParameter(2));
       } else pulls[4].SetParam(i,-1.);
     } // loop on bins
 
@@ -861,7 +861,7 @@ void AliTPCtrackerParam::AnalyzeResolutions(Int_t pdg) {
   TH1F *hDumP4 = new TH1F("nameP4","dC",100,-0.0005,0.0005);
   TH1F *hDumPt = new TH1F("namePt","dp_{T}/p_{T}",100,-0.5,0.5);
 
-  TF1 *g = new TF1("g","gaus");
+  TF1 g("g","gaus");
 
   // create histograms for the all the bins
   TH1F *hP0_=NULL;
@@ -909,19 +909,19 @@ void AliTPCtrackerParam::AnalyzeResolutions(Int_t pdg) {
   // compute the sigma of the distributions
   for(Int_t i=0; i<nPtBins; i++) {
     if(hP0_[i].GetEntries()>10) {
-      g->SetRange(-3.*hP0_[i].GetRMS(),3.*hP0_[i].GetRMS());
+      g.SetRange(-3.*hP0_[i].GetRMS(),3.*hP0_[i].GetRMS());
       hP0_[i].Fit("g","R,Q,N");
-      dP0[i] = g->GetParameter(2);
+      dP0[i] = g.GetParameter(2);
     } else dP0[i] = 0.;
     if(hP4_[i].GetEntries()>10) {
-      g->SetRange(-3.*hP4_[i].GetRMS(),3.*hP4_[i].GetRMS());
+      g.SetRange(-3.*hP4_[i].GetRMS(),3.*hP4_[i].GetRMS());
       hP4_[i].Fit("g","R,Q,N");
-      dP4[i] = g->GetParameter(2);
+      dP4[i] = g.GetParameter(2);
     } else dP4[i] = 0.;
     if(hPt_[i].GetEntries()>10) {
-      g->SetRange(-3.*hPt_[i].GetRMS(),3.*hPt_[i].GetRMS());
+      g.SetRange(-3.*hPt_[i].GetRMS(),3.*hPt_[i].GetRMS());
       hPt_[i].Fit("g","R,Q,N");
-      dPtToPt[i] = 100.*g->GetParameter(2);
+      dPtToPt[i] = 100.*g.GetParameter(2);
     } else dPtToPt[i] = 0.;
   } // loop on bins
 

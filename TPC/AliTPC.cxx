@@ -51,6 +51,8 @@
 #include <TTree.h>
 #include <TVector.h>
 #include <TVirtualMC.h>
+#include <TString.h>
+#include <TF2.h>
 
 #include "AliArrayBranch.h"
 #include "AliClusters.h"
@@ -1395,9 +1397,24 @@ void AliTPC::SetDefaults(){
     cerr<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !\n" ;
      exit(3);
   }
+
+  TString s;
   prfinner->Read("prf_07504_Gati_056068_d02");
+  //PH Set different names
+  s=prfinner->GetGRF()->GetName();
+  s+="in";
+  prfinner->GetGRF()->SetName(s.Data());
+
   prfouter1->Read("prf_10006_Gati_047051_d03");
+  s=prfouter1->GetGRF()->GetName();
+  s+="out1";
+  prfouter1->GetGRF()->SetName(s.Data());
+
   prfouter2->Read("prf_15006_Gati_047051_d03");  
+  s=prfouter2->GetGRF()->GetName();
+  s+="out2";
+  prfouter2->GetGRF()->SetName(s.Data());
+
   f->Close();
   savedir->cd();
 
