@@ -517,6 +517,9 @@ again:
       Error("Create", "failure to open file %s after %d tries", fname, kMaxRetry);
       return kFALSE;
    }
+   if (retry > 1)
+      Warning("Create", "succeeded to open file after %d retries", retry);
+
    if (fRawDB->IsZombie()) {
       if (fRawDB->GetErrno() == ENOSPC ||
           fRawDB->GetErrno() == 1018   ||   // SECOMERR
