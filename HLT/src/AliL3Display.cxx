@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
@@ -13,9 +15,11 @@
 #include <TParticle.h>
 
 #include "AliL3Evaluate.h"
+#ifdef use_aliroot
 #include "AliRun.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
+#endif
 #include "AliL3Transform.h"
 #include "AliL3Track.h"
 #include "AliL3TrackArray.h"
@@ -170,28 +174,29 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
       TPolyLine3D *current_line = &(line[j]);
       current_line = new TPolyLine3D(nHits,xcl,ycl,zcl,"");
       
-      current_line->SetLineColor(1);
+      current_line->SetLineColor(4);
       current_line->Draw("same");
             
     }
-  
-  /*Take this if you want black&white display for printing.
-    Char_t fname[256];
-    Int_t i;
-    Int_t color = 1;
-    for(i=0; i<10; i++)
+  /*
+  //Take this if you want black&white display for printing.
+  Char_t fname[256];
+  Int_t i;
+  Int_t color = 1;
+  c1->SetFillColor(10);
+  for(i=0; i<10; i++)
     {
-    sprintf(fname,"LS0%d",i);
-    geom->GetNode(fname)->SetLineColor(color);
-    sprintf(fname,"US0%d",i);
-    geom->GetNode(fname)->SetLineColor(color);
+      sprintf(fname,"LS0%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
+      sprintf(fname,"US0%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
     }
-    for(i=10; i<18; i++)
+  for(i=10; i<18; i++)
     {
-    sprintf(fname,"LS%d",i);
-    geom->GetNode(fname)->SetLineColor(color);
-    sprintf(fname,"US%d",i);
-    geom->GetNode(fname)->SetLineColor(color);
+      sprintf(fname,"LS%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
+      sprintf(fname,"US%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
     }
   */
   fGeom->Draw("same");
@@ -254,7 +259,7 @@ void AliL3Display::DisplayAll(Int_t min_hits)
   v->SetRange(-430,-560,-430,430,560,1710);
   c1->Clear();
   c1->SetFillColor(1);
-  c1->SetTheta(90.);
+  c1->SetTheta(180.);
   c1->SetPhi(0.);
   
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
@@ -271,7 +276,7 @@ void AliL3Display::DisplayAll(Int_t min_hits)
 	    xyz[0] = points[i].fX;
 	    xyz[1] = points[i].fY;
 	    xyz[2] = points[i].fZ;
-	    
+
 	    pm->SetPoint(i,xyz[0],xyz[1],xyz[2]); 
 	    
 	  }
@@ -306,7 +311,6 @@ void AliL3Display::DisplayAll(Int_t min_hits)
 	    continue;
 	  
 	  AliL3SpacePointData *points = fClusters[slice][patch];
-
 	  if(!points) {
 	    LOG(AliL3Log::kError,"AliL3Display::DisplayTracks","Clusterarray")
 	      <<"No points at slice "<<slice<<" patch "<<patch<<" pos "<<pos<<ENDLOG;
@@ -324,22 +328,43 @@ void AliL3Display::DisplayAll(Int_t min_hits)
       pm->Draw();
       TPolyLine3D *current_line = &(line[j]);
       current_line = new TPolyLine3D(nHits,xcl,ycl,zcl,"");
-      
       current_line->SetLineColor(4);
+      current_line->SetLineWidth(2);
       current_line->Draw("same");
     }
-
+  
+  
+  Char_t fname[256];
+  Int_t i;
+  Int_t color = 1;
+  c1->SetFillColor(10);
+  for(i=0; i<10; i++)
+    {
+      sprintf(fname,"LS0%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
+      sprintf(fname,"US0%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
+    }
+  for(i=10; i<18; i++)
+    {
+      sprintf(fname,"LS%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
+      sprintf(fname,"US%d",i);
+      fGeom->GetNode(fname)->SetLineColor(color);
+    }
+    
   fGeom->Draw("same");
   
   c1->x3d();
   
 }
 
+
 void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile,Char_t *type)
 {
   //Display the found clusters on this row together with the raw data.
   
-  
+#ifdef use_aliroot
   TFile *file = new TFile(digitsFile);
   AliTPCParam *param = (AliTPCParam*)file->Get("75x40_100x60");
   TTree *TD=(TTree*)file->Get("TreeD_75x40_100x60_0");
@@ -425,4 +450,8 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   histdig->Draw(type);
   histfast->Draw("psame");
   //histpart->Draw("psame");
+
+#endif
+  return;
 }
+
