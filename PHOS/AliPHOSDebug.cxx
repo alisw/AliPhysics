@@ -18,13 +18,7 @@
 //_________________________________________________________________________
 // Implementation version v1 of PHOS Manager class 
 //---
-// Layout EMC + PPSD has name GPS2:
-// Produces cumulated hits
-//---
 // Layout EMC + CPV  has name IHEP:
-// Produces hits for CPV, cumulated hits
-//---
-// Layout EMC + CPV + PPSD has name GPS:
 // Produces hits for CPV, cumulated hits
 //---
 //*-- Author: Yves Schutz (SUBATECH)
@@ -73,9 +67,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
 AliPHOSv0(name,title) 
 {
   // ctor : title is used to identify the layout
-  //        GPS2 = 5 modules (EMC + PPSD)
   //        IHEP = 5 modules (EMC + CPV )
-  //        MIXT = 4 modules (EMC + CPV ) and 1 module (EMC + PPSD)
   //
   // We store hits :
   //   - fHits (the "normal" one), which retains the hits associated with
@@ -110,7 +102,6 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
   AliPHOSv0(name,title)
 {
   // ctor : title is used to identify the layout
-  //        GPS2 = 5 modules (EMC + PPSD)   
 
   fPinElectronicNoise = 0.010 ;
 
@@ -551,40 +542,7 @@ void AliPHOSv1::StepManager(void)
   }
 
 
-  if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
-
-    if( gMC->CurrentVolID(copy) == gMC->VolId("PPCE") ) // We are inside a gas cell 
-    {
-      gMC->TrackPosition(pos) ;
-      xyze[0] = pos[0] ;
-      xyze[1] = pos[1] ;
-      xyze[2] = pos[2] ;
-      xyze[3] = gMC->Edep() ; 
-
-      if ( (xyze[3] != 0) || entered ) { // there is deposited energy or new particle entering  PPSD
-       	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
-	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
-	  relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();
-	}
-       	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
-      // 1-> GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() upper
-      //   > GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() lower
-       	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
-        gMC->CurrentVolID(relid[3]) ;        // get the column number 
-
-	// get the absolute Id number
-
-       	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
-
-	// add current hit to the hit list      
-	  AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid, pmom, xyd);
-
-
-      } // there is deposited energy 
-    } // We are inside the gas of the CPV  
-  } // GPS2 configuration
-
-  if ( name == "IHEP" || name == "MIXT" ) {       // ======> CPV is a IHEP's one
+  if ( name == "IHEP" ) {       // ======> CPV is a IHEP's one
 
     // Yuri Kharlov, 28 September 2000
 
@@ -672,9 +630,6 @@ void AliPHOSv1::StepManager(void)
     if ( (xyze[3] != 0) || entered ) {  // Track is inside the crystal and deposits some energy or just entered 
 
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
-
-      if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();      
 
       relid[1] = 0   ;                    // means PBW04
       gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module

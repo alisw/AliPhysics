@@ -46,7 +46,7 @@ AliPHOSCalibrationDB::AliPHOSCalibrationDB(const char* filename ,const char * da
   TNamed("AliPHOSCalibrationDB",database){
   //Creates the containers: we prepare places for all channels in PHOS
 
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance("GPS2","") ;
+  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance("IHEP","") ;
   fNChannels = geom->GetNModules()*geom->GetNPhi()*geom->GetNZ()+
                geom->GetNumberOfCPVPadsZ()*geom->GetNumberOfCPVPadsPhi()*geom->GetNModules() ;
   //Note, that to avoid shifting AbsId each time we access data, we do not use
