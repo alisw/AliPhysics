@@ -59,7 +59,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenFixed *gener = new AliGenFixed(ntracks);
      gener->SetMomentum(3);
-     gener->SetPhiRange(75);
+     gener->SetPhiRange(92);
      gener->SetThetaRange(90);
      gener->SetOrigin(0,0,0);                 //vertex position
      gener->SetPart(kPiPlus);                 //GEANT particle type
@@ -238,19 +238,19 @@ gener->Init();
 gAlice->SetField(0,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
 Int_t iMAG=0;
-Int_t iITS=0;
-Int_t iTPC=0;
-Int_t iTOF=0;
+Int_t iITS=1;
+Int_t iTPC=1;
+Int_t iTOF=1;
 Int_t iRICH=1;
 Int_t iZDC=0;
 Int_t iCASTOR=0;
-Int_t iTRD=0;
+Int_t iTRD=1;
 Int_t iABSO=0;
 Int_t iDIPO=0;
 Int_t iHALL=0;
-Int_t iFRAME=0;
+Int_t iFRAME=1;
 Int_t iSHIL=0;
-Int_t iPIPE=0;
+Int_t iPIPE=1;
 Int_t iFMD=0;
 Int_t iMUON=0;
 Int_t iPHOS=0;
@@ -357,7 +357,7 @@ if (TPC->IsVersion()==1) param->Write(param->GetTitle());
 
 if(iTOF) {
 //=================== TOF parameters ============================
-AliTOF *TOF  = new AliTOFvn("TOF","normal TOF");
+AliTOF *TOF  = new AliTOFv0("TOF","normal TOF");
 }
 
 if(iRICH) {
@@ -428,7 +428,7 @@ AliCASTOR *CASTOR  = new AliCASTORv1("CASTOR","normal CASTOR");
 if(iTRD) {
 //=================== TRD parameters ============================
 
-AliTRD *TRD  = new AliTRDvn("TRD","TRD version 0");
+AliTRD *TRD  = new AliTRDv0("TRD","TRD version 0");
 // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
 TRD->SetGasMix(0);
 }
