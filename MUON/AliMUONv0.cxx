@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/01/17 20:57:45  hristov
+Unused variable removed
+
 Revision 1.14  2000/12/21 22:42:55  morsch
 Constructor contains default set-up for segmentation.
 Record charged particles only.
@@ -154,7 +157,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //^^^^^^^^^
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationV01 *seg11=new AliMUONSegmentationV01;
+    AliMUONSegmentationV01 *seg11=new AliMUONSegmentationV01(4);
     
     seg11->SetSegRadii(rseg1);
 //  seg11->SetPadSize(3, 0.5);
@@ -165,7 +168,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     
     SetSegmentationModel(chamber-1, 1, seg11);
 //
-    AliMUONSegmentationV02 *seg12=new AliMUONSegmentationV02;
+    AliMUONSegmentationV02 *seg12=new AliMUONSegmentationV02(4);
     seg12->SetSegRadii(rseg1); 
 //  seg12->SetPadSize(0.75, 2.0);
     seg12->SetPadSize(0.6, 1.6); // smaller pad size
@@ -184,7 +187,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationV01 *seg21=new AliMUONSegmentationV01;
+    AliMUONSegmentationV01 *seg21=new AliMUONSegmentationV01(4);
     seg21->SetSegRadii(rseg1);
 //  seg21->SetPadSize(3, 0.5);
     seg21->SetPadSize(2.4, 0.4); // smaller pad size
@@ -193,7 +196,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     seg21->SetPadDivision(nseg1);
     SetSegmentationModel(chamber-1, 1, seg21);
 //
-    AliMUONSegmentationV02 *seg22=new AliMUONSegmentationV02;
+    AliMUONSegmentationV02 *seg22=new AliMUONSegmentationV02(4);
     seg22->SetSegRadii(rseg1); 
 //  seg22->SetPadSize(0.75, 2.);
     seg22->SetPadSize(0.6, 1.6); // smaller pad size
@@ -218,14 +221,14 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //^^^^^^^^^
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationV01 *seg31=new AliMUONSegmentationV01;
+    AliMUONSegmentationV01 *seg31=new AliMUONSegmentationV01(4);
     seg31->SetSegRadii(rseg2);
     seg31->SetPadSize(3.0, 0.5);
     seg31->SetDAnod(3.0/3./4);
     seg31->SetPadDivision(nseg2);
     SetSegmentationModel(chamber-1, 1, seg31);
 //
-    AliMUONSegmentationV02 *seg32=new AliMUONSegmentationV02;
+    AliMUONSegmentationV02 *seg32=new AliMUONSegmentationV02(4);
     seg32->SetSegRadii(rseg2); 
     seg32->SetPadSize(0.75, 2.0);
     seg32->SetPadDivision(nseg2);
@@ -241,14 +244,14 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationV01 *seg41=new AliMUONSegmentationV01;
+    AliMUONSegmentationV01 *seg41=new AliMUONSegmentationV01(4);
     seg41->SetSegRadii(rseg2);
     seg41->SetPadSize(3.0, 0.5);
     seg41->SetDAnod(3.0/3./4);
     seg41->SetPadDivision(nseg2);
     SetSegmentationModel(chamber-1, 1, seg41);
 //
-    AliMUONSegmentationV02 *seg42=new AliMUONSegmentationV02;
+    AliMUONSegmentationV02 *seg42=new AliMUONSegmentationV02(4);
     seg42->SetSegRadii(rseg2); 
     seg42->SetPadSize(0.75, 2.0);
     seg42->SetPadDivision(nseg2);
@@ -281,7 +284,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     
     chamber=5;
     SetNsec(chamber-1,2);
-    AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat;
+    AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat(4);
     seg51->SetNSlats(9); 
     seg51->SetShift(shift);  
     seg51->SetNPCBperSector(npcb5); 
@@ -292,7 +295,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     seg51->SetPadDivision(nseg3);
     SetSegmentationModel(chamber-1, 1, seg51);
     
-    AliMUONSegmentationSlatN *seg52=new AliMUONSegmentationSlatN;
+    AliMUONSegmentationSlatN *seg52=new AliMUONSegmentationSlatN(4);
     seg52->SetNSlats(9); 
     seg52->SetShift(shift);  
     seg52->SetNPCBperSector(npcb5); 
@@ -307,7 +310,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     
     chamber=6;
     SetNsec(chamber-1,2);
-    AliMUONSegmentationSlat *seg61=new AliMUONSegmentationSlat;
+    AliMUONSegmentationSlat *seg61=new AliMUONSegmentationSlat(4);
     seg61->SetNSlats(9); 
     seg61->SetShift(shift);  
     seg61->SetNPCBperSector(npcb5); 
@@ -318,7 +321,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     seg61->SetPadDivision(nseg3);
     SetSegmentationModel(chamber-1, 1, seg61);
     
-    AliMUONSegmentationSlatN *seg62=new AliMUONSegmentationSlatN;
+    AliMUONSegmentationSlatN *seg62=new AliMUONSegmentationSlatN(4);
     seg62->SetNSlats(9); 
     seg62->SetShift(shift);  
     seg62->SetNPCBperSector(npcb5); 
@@ -342,7 +345,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat;
+    AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat(4);
     Int_t npcb7[44] = {0,0,0,3,
 		       0,0,2,2,
 		       0,0,3,2,
@@ -368,7 +371,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     seg71->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg71);
     
-    AliMUONSegmentationSlatN *seg72=new AliMUONSegmentationSlatN;
+    AliMUONSegmentationSlatN *seg72=new AliMUONSegmentationSlatN(4);
     
     SetSegmentationModel(chamber-1, 2, seg72);
     seg72->SetNSlats(11);  
@@ -387,7 +390,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //^^^^^^^^^
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationSlat *seg81=new AliMUONSegmentationSlat;
+    AliMUONSegmentationSlat *seg81=new AliMUONSegmentationSlat(4);
     
     seg81->SetNSlats(11);  
     seg81->SetShift(shift);  
@@ -399,7 +402,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     seg81->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg81);
     
-    AliMUONSegmentationSlat *seg82=new AliMUONSegmentationSlatN;
+    AliMUONSegmentationSlat *seg82=new AliMUONSegmentationSlatN(4);
 
     SetSegmentationModel(chamber-1, 2, seg82);
     seg82->SetNSlats(11);  
@@ -423,7 +426,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat;
+    AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat(4);
     Int_t   npcb9[52] = {0,0,0,3,
 			 0,0,0,4,
 			 0,0,2,3,
@@ -452,7 +455,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     seg91->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg91);
     
-    AliMUONSegmentationSlatN *seg92=new AliMUONSegmentationSlatN;
+    AliMUONSegmentationSlatN *seg92=new AliMUONSegmentationSlatN(4);
     
     SetSegmentationModel(chamber-1, 2, seg92);
     seg92->SetNSlats(13);  
@@ -471,7 +474,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //^^^^^^^^^
     SetNsec(chamber-1,2);
 //
-    AliMUONSegmentationSlat *seg101=new AliMUONSegmentationSlat;
+    AliMUONSegmentationSlat *seg101=new AliMUONSegmentationSlat(4);
     
     seg101->SetNSlats(13);  
     seg101->SetShift(shift);  
@@ -483,7 +486,7 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
     seg101->SetPadDivision(nseg4);
     SetSegmentationModel(chamber-1, 1, seg101);
     
-    AliMUONSegmentationSlatN *seg102=new AliMUONSegmentationSlatN;
+    AliMUONSegmentationSlatN *seg102=new AliMUONSegmentationSlatN(4);
     
     SetSegmentationModel(chamber-1, 2, seg102);
     seg102->SetNSlats(13);  
