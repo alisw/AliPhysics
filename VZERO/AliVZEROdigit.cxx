@@ -17,21 +17,30 @@
 
 ClassImp(AliVZEROdigit)
 
+AliVZEROdigit::AliVZEROdigit()
+{
+  fCellNumber = 0;
+  fADC        = 0;
+}
+
 AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
   AliDigit(tracks){
   
   //
-  // Creates VZERO digits
-  //
+  // Creates VZERO digits  
   // Fills the AliVZEROdigit data members from the array digits. 
   //
   
-  fTrack      = tracks[0];
-  fEvent      = digits[0];
-  
+  fTrack      =  tracks[0];
+  fEvent      =  digits[0];  
 }
 
-
+AliVZEROdigit::AliVZEROdigit(Int_t eventnumber, Int_t cellnumber, Int_t adc)
+{  
+  fEvent      = eventnumber; 
+  fCellNumber = cellnumber;
+  fADC        = adc;
+}
 
 
 
