@@ -349,7 +349,7 @@ if ( "$?AG4_VISUALIZE" == 1 ) then
   setenv G4VIS_BUILD_DAWNFILE_DRIVER 1
   setenv G4VIS_USE_DAWN              1
   setenv G4VIS_USE_DAWNFILE          1
-  setenv G4DAWNFILE_VIEWER   david
+  #setenv G4DAWNFILE_VIEWER   david
   setenv DAWN_HOME ${G4_BASE}/tools/bin
   if ( "`echo ${PATH} | grep ${DAWN_HOME} `" == "" ) then
     setenv PATH "${PATH}:${DAWN_HOME}"
