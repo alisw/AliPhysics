@@ -86,32 +86,13 @@ class AliRICHDisplay : public AliDisplay {
  private:
     Int_t             fChamber;              //Chamber number
     Int_t             fCathode;              //Cathode number
-    Int_t             fZoomMode;             //=1 if in zoom mode
-    
     Bool_t            fDrawClusters;         //Flag True if Clusters to be drawn
     Bool_t            fDrawCoG;              //Flag True if CoG to be drawn
     Bool_t            fDrawRecHits;          //Flag True if rec hits to be drawn
     Float_t           fTheta;                //Viewing angle theta
     Float_t           fPhi;                  //Viewing angle phi
-    Float_t           fPsi;                  //Viewving angle psi (rotation on display)
-    Float_t           fRrange;               //Size of view in R
-    Float_t           fZrange;               //Size of view along Z
-    Float_t           fZoomX0[20];           //Low x range of zoom number i
-    Float_t           fZoomY0[20];           //Low y range of zoom number i
-    Float_t           fZoomX1[20];           //High x range of zoom number i
-    Float_t           fZoomY1[20];           //High y range of zoom number i
-    Int_t             fZooms;                //Number of zooms
-    Int_t             fHitsCuts;             //Number of hits surviving cuts
     Int_t             fClustersCuts;         //Number of clusters surviving cuts
-    TCanvas          *fCanvas;               //Pointer to the display canvas
-    TPad             *fTrigPad;              //Pointer to the trigger pad 
     TPad             *fColPad;               //Pointer to the colors pad 
-    TPad             *fButtons;              //Pointer to the buttons pad
-    TPad             *fPad;                  //Pointer to the event display main pad
-    TSlider          *fRangeSlider;          //Range slider
-    TButton          *fPickButton;           //Button to activate Pick mode
-    TButton          *fZoomButton;           //Button to activate Zoom mode
-    TArc             *fArcButton;            //Gren/Red button to show Pick/Zoom mode
     TObjArray        *fPoints;               //Array of points for each cathode
     TObjArray        *fPhits;                //Array of hit points for each chamber
     TObjArray        *fPCerenkovs;           //Array of cerenkov hits for each chamber

@@ -30,7 +30,6 @@ class AliRICHSegmentationV1 : public AliRICHSegmentationV0 {
     virtual void IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
  private:
-    Int_t fSector;             //Pad plane sector
     ClassDef(AliRICHSegmentationV1,1)
 };
 	

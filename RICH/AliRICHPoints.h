@@ -39,7 +39,6 @@ public:
   virtual void          Set3DMarker(Int_t i,TMarker3DBox *marker) {fMarker[i] = marker;}  
   virtual void          SetParticle(Int_t index) {fIndex = index;}
  protected:
-  Int_t            fIndex;            // Particle number in AliRun::fParticles
   Int_t            fHitIndex;         // Link to hit number 
   Int_t            fTrackIndex;       // Link to track number 
   Int_t            fDigitIndex;       // Link to digit 
