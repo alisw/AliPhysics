@@ -10,13 +10,17 @@
 #ifndef TG4_PHYSICS_CONSTRUCTOR_SPECIAL_CONTROLS_H
 #define TG4_PHYSICS_CONSTRUCTOR_SPECIAL_CONTROLS_H
 
-#include <G4VPhysicsConstructor.hh>
+#include "TG4VPhysicsConstructor.h"
+
 #include <globals.hh>
 
-class TG4PhysicsConstructorSpecialControls: public G4VPhysicsConstructor
+class TG4PhysicsConstructorSpecialControls: public TG4VPhysicsConstructor
 {
   public:
     TG4PhysicsConstructorSpecialControls(
+      const G4String& name = "Special controls");
+    TG4PhysicsConstructorSpecialControls(
+      G4int verboseLevel,
       const G4String& name = "Special controls");
     virtual ~TG4PhysicsConstructorSpecialControls();
 

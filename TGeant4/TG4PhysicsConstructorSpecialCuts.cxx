@@ -25,10 +25,16 @@
 //_____________________________________________________________________________
 TG4PhysicsConstructorSpecialCuts::TG4PhysicsConstructorSpecialCuts(
                                      const G4String& name)
-  : G4VPhysicsConstructor(name)
-{
+  : TG4VPhysicsConstructor(name) {
 //
-  SetVerboseLevel(1);
+}
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorSpecialCuts::TG4PhysicsConstructorSpecialCuts(
+                                     G4int verboseLevel,
+				     const G4String& name)
+  : TG4VPhysicsConstructor(name, verboseLevel) {
+//
 }
 
 //_____________________________________________________________________________
@@ -113,7 +119,7 @@ void TG4PhysicsConstructorSpecialCuts::ConstructProcess()
       }
     }
 
-    if (verboseLevel>0) {
+    if (VerboseLevel() > 0) {
       G4cout << "###  Special Cuts constructed. " << G4endl;
       G4cout << "     Special cuts process is defined for: " << G4endl 
              << "     ";

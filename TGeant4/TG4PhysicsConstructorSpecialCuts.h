@@ -10,13 +10,16 @@
 #ifndef TG4_PHYSICS_CONSTRUCTOR_SPECIAL_CUTS_H
 #define TG4_PHYSICS_CONSTRUCTOR_SPECIAL_CUTS_H
 
-#include <G4VPhysicsConstructor.hh>
+#include "TG4VPhysicsConstructor.h"
+
 #include <globals.hh>
 
-class TG4PhysicsConstructorSpecialCuts: public G4VPhysicsConstructor
+class TG4PhysicsConstructorSpecialCuts: public TG4VPhysicsConstructor
 {
   public:
     TG4PhysicsConstructorSpecialCuts(const G4String& name = "Special cuts");
+    TG4PhysicsConstructorSpecialCuts(G4int verboseLevel,
+                                     const G4String& name = "Special cuts");
     virtual ~TG4PhysicsConstructorSpecialCuts();
 
   protected:

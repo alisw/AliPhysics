@@ -19,10 +19,16 @@
 //_____________________________________________________________________________
 TG4PhysicsConstructorSpecialControls::TG4PhysicsConstructorSpecialControls(
                                      const G4String& name)
-  : G4VPhysicsConstructor(name)
-{
+  : TG4VPhysicsConstructor(name) {
 //
-  SetVerboseLevel(1);
+}
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorSpecialControls::TG4PhysicsConstructorSpecialControls(
+				     G4int verboseLevel, 
+                                     const G4String& name)
+  : TG4VPhysicsConstructor(name, verboseLevel) {
+//
 }
 
 //_____________________________________________________________________________
@@ -78,7 +84,7 @@ void TG4PhysicsConstructorSpecialControls::ConstructProcess()
       }
     }
 
-    if (verboseLevel>0) {
+    if (VerboseLevel() > 0) {
       G4cout << "### Special Controls constructed. " << G4endl;
       G4cout << "    Special controls process is defined for: " << G4endl
              << "    ";
