@@ -1,6 +1,4 @@
 #include <Riostream.h>
-#include "AliRun.h"
-#include "AliStack.h"
 #ifndef WIN32
 # define stuprf stuprf_
 #else

@@ -6,13 +6,13 @@ OPEN              8.                                                  SCRATCH
 OPEN             -9.                                                  OLD
 neuxsc.bin
 OPEN             12.                                                  OLD
-alice.pemf
+FlukaVmc.pemf
 OPEN            -13.                                                  OLD
 fluodt.dat
 OPEN            -14.                                                  OLD
 nuclear.bin
 OPEN             15.                                                  UNKNOWN
-abs.err
+FlukaVmc.err
 OPEN             16.                                                  SCRATCH
 OPEN              2.                                                  UNKNOWN
 ran.new                                                      

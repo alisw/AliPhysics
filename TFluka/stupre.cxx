@@ -1,5 +1,4 @@
 #include <Riostream.h>
-#include "AliRun.h"
 #ifndef WIN32
 # define stupre stupre_
 #else
@@ -83,8 +82,10 @@ void stupre()
     if (EMFSTK.ichemf[kp] == -1) flukaid = 3;
     else if (EMFSTK.ichemf[kp] == 0)  flukaid = 7;
     else if (EMFSTK.ichemf[kp] == 1)  flukaid = 4;
+    
     Int_t pdg       = fluka->PDGFromId(flukaid);
     Double_t e      = EMFSTK.etemf[kp] * emvgev;
+    if (flukaid + 6 < 0) printf("stupre: Calling PDGFromId for %10d %10d  \n", kp, flukaid);
     Double_t p      = sqrt(e * e - PAPROP.am[flukaid+6] * PAPROP.am[flukaid+6]);
     Double_t px     = p * EMFSTK.u[kp];
     Double_t pz     = p * EMFSTK.v[kp];

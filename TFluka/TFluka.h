@@ -266,11 +266,11 @@ class TFluka : public TVirtualMC {
   //
   // - Core input file name
   TString GetCoreInputFileName() const {return fCoreInputFileName;}
-  void SetCoreInputFileName(const char* file = "corealice.inp") {fCoreInputFileName = file;}
+  void SetCoreInputFileName(const char* file = "coreFlukaVmc.inp") {fCoreInputFileName = file;}
 
   // - Input file name
   TString GetInputFileName() const {return fInputFileName;}
-  void SetInputFileName(const char* file = "alice.inp") {fInputFileName = file;}
+  void SetInputFileName(const char* file = "FlukaVmc.inp") {fInputFileName = file;}
 
   // - Verbosity level
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
@@ -343,8 +343,8 @@ class TFluka : public TVirtualMC {
   
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
 
-  TString fInputFileName;     //Name of the real input file (e.g. alice.inp)
-  TString fCoreInputFileName; //Name of the input file (e.g. corealice.inp)
+  TString fInputFileName;     //Name of the real input file 
+  TString fCoreInputFileName; //Name of the input file 
 
   Int_t    fCaller; //Parameter to indicate who is the caller of the Fluka Draw
   Int_t    fIcode;  //Fluka Draw procedures formal parameter 

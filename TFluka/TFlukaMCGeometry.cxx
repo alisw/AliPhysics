@@ -860,9 +860,9 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
     cout << "Pemf files Error    " << countPemfError     << endl;
    cout << endl << endl;
    
-   sname = "cat peg/*.pemf > peg/alice.pemf";         
+   sname = "cat peg/*.pemf > peg/FlukaVmc.pemf";         
    gSystem->Exec(sname.Data());
-   sname = "mv peg/alice.pemf alice.pemf";
+   sname = "mv peg/FlukaVmc.pemf FlukaVmc.pemf";
    gSystem->Exec(sname.Data());
 }
 

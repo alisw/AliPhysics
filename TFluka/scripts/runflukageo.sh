@@ -26,8 +26,7 @@ cp $FLUPRO/random.dat old.seed
 ln -s fluka.out fort.11
 
 # Link the pemf and input file for alice
-ln -s $ALICE_ROOT/TFluka/input/alice.pemf .
-#ln -s $ALICE_ROOT/TFluka/input/alice.inp .
+ln -s $ALICE_ROOT/TFluka/input/FlukaVmc.pemf .
 
 #Link FlukaConfig.C as Config.C
 ln -fs $ALICE_ROOT/TFluka/macro/FlukaConfig.C Config.C
