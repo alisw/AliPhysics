@@ -53,6 +53,7 @@
 #pragma link C++ class  AliMUONRecoDisplay+;
 #pragma link C++ class  AliMUONMerger+;
 #pragma link C++ class  AliMUONFactory+;
+#pragma link C++ class  AliMUONDigitizer+;
 #endif
 
 
