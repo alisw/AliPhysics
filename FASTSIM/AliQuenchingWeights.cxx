@@ -1598,7 +1598,7 @@ Double_t  AliQuenchingWeights::GetMeanELoss(Int_t ipart,Double_t r) const
   return ret;
 }
 
-void AliQuenchingWeights::PlotDiscreteWeights(Double_t len) const
+void AliQuenchingWeights::PlotDiscreteWeights(Double_t len,Double_t qm) const
 {
   // plot discrete weights for given length
 
@@ -1609,50 +1609,58 @@ void AliQuenchingWeights::PlotDiscreteWeights(Double_t len) const
     c = new TCanvas("cdiscsh","Discrete Weight for Single Hard Scattering",0,0,500,400);
   c->cd();
 
-  TH2F *hframe = new TH2F("hdisc","",2,0,5.1,2,0,1);
+  TH2F *hframe = new TH2F("hdisc","",2,0,qm+.1,2,0,1.25);
   hframe->SetStats(0);
   if(fMultSoft) 
     hframe->SetXTitle("#hat{q} [GeV^{2}/fm]");
   else
     hframe->SetXTitle("#mu [GeV]");
-  hframe->SetYTitle("Probability #Delta E = 0 , p_{0}");
+  //hframe->SetYTitle("Probability #Delta E = 0 , p_{0}");
+  hframe->SetYTitle("p_{0} (discrete weight)");
   hframe->Draw();
 
-  TGraph *gq=new TGraph(20);
+  Int_t points=(Int_t)qm*4;
+  TGraph *gq=new TGraph(points);
   Int_t i=0;
   if(fMultSoft) {
-    for(Double_t q=0.05;q<=5.05;q+=0.25){
+    for(Double_t q=0.05;q<=qm+.05;q+=0.25){
       Double_t disc,cont;
       CalcMult(1,1.0,q,len,cont,disc);
       gq->SetPoint(i,q,disc);i++;
     }
   } else {
-    for(Double_t m=0.05;m<=5.05;m+=0.25){
+    for(Double_t m=0.05;m<=qm+.05;m+=0.25){
       Double_t disc,cont;
       CalcSingleHard(1,1.0,m,len,cont, disc);
       gq->SetPoint(i,m,disc);i++;
     }
   }
   gq->SetMarkerStyle(20);
-  gq->Draw("pl");
+  gq->SetMarkerColor(1);
+  gq->SetLineStyle(1);
+  gq->SetLineColor(1);
+  gq->Draw("l");
 
-  TGraph *gg=new TGraph(20);
+  TGraph *gg=new TGraph(points);
   i=0;
   if(fMultSoft){
-    for(Double_t q=0.05;q<=5.05;q+=0.25){
+    for(Double_t q=0.05;q<=qm+.05;q+=0.25){
       Double_t disc,cont;
       CalcMult(2,1.0,q,len,cont,disc);
       gg->SetPoint(i,q,disc);i++;
     }
   } else {
-    for(Double_t m=0.05;m<=5.05;m+=0.25){
+    for(Double_t m=0.05;m<=qm+.05;m+=0.25){
       Double_t disc,cont;
       CalcSingleHard(2,1.0,m,len,cont,disc);
       gg->SetPoint(i,m,disc);i++;
     }
   }
   gg->SetMarkerStyle(24);
-  gg->Draw("pl");
+  gg->SetMarkerColor(2);
+  gg->SetLineStyle(2);
+  gg->SetLineColor(2);
+  gg->Draw("l");
 
   TLegend *l1a = new TLegend(0.5,0.6,.95,0.8);
   l1a->SetFillStyle(0);
@@ -1660,8 +1668,8 @@ void AliQuenchingWeights::PlotDiscreteWeights(Double_t len) const
   Char_t label[100];
   sprintf(label,"L = %.1f fm",len);
   l1a->AddEntry(gq,label,"");
-  l1a->AddEntry(gq,"quark","pl");
-  l1a->AddEntry(gg,"gluon","pl");
+  l1a->AddEntry(gq,"quark projectile","l");
+  l1a->AddEntry(gg,"gluon projectile","l");
   l1a->Draw();
 
   c->Update();
@@ -1793,7 +1801,7 @@ void AliQuenchingWeights::PlotContWeightsVsL(Int_t itype,Double_t medval) const
   c->Update();
 }
 
-void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t e)  const
+void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t qm,Double_t e) const
 {
   // plot average energy loss for given length
   // and parton energy 
@@ -1815,7 +1823,7 @@ void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t e)  const
 
   TCanvas *c = new TCanvas(name,title,0,0,500,400);
   c->cd();
-  TH2F *hframe = new TH2F("avgloss",title,2,0,5.1,2,0,100);
+  TH2F *hframe = new TH2F("avgloss","",2,0,qm+.1,2,0,100);
   hframe->SetStats(0);
   if(fMultSoft) 
     hframe->SetXTitle("#hat{q} [GeV^{2}/fm]");
@@ -1826,28 +1834,30 @@ void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t e)  const
 
   TGraph *gq=new TGraph(20);
   Int_t i=0;
-  for(Double_t v=0.05;v<=5.05;v+=0.25){
+  for(Double_t v=0.05;v<=qm+.05;v+=0.25){
     TH1F *dummy=ComputeELossHisto(1,v,len,e);
     Double_t avgloss=dummy->GetMean();
     gq->SetPoint(i,v,avgloss);i++;
     delete dummy;
   }
-  gq->SetMarkerStyle(20);
+  gq->SetMarkerStyle(21);
   gq->Draw("pl");
 
-  TGraph *gg=new TGraph(20);
+  Int_t points=(Int_t)qm*4;
+  TGraph *gg=new TGraph(points);
   i=0;
-  for(Double_t v=0.05;v<=5.05;v+=0.25){
+  for(Double_t v=0.05;v<=qm+.05;v+=0.25){
     TH1F *dummy=ComputeELossHisto(2,v,len,e);
     Double_t avgloss=dummy->GetMean();
     gg->SetPoint(i,v,avgloss);i++;
     delete dummy;
   }
-  gg->SetMarkerStyle(24);
+  gg->SetMarkerStyle(20);
+  gg->SetMarkerColor(2);
   gg->Draw("pl");
 
-  TGraph *gratio=new TGraph(20);
-  for(Int_t i=0;i<20;i++){
+  TGraph *gratio=new TGraph(points);
+  for(Int_t i=0;i<points;i++){
     Double_t x,y,x2,y2;
     gg->GetPoint(i,x,y);
     gq->GetPoint(i,x2,y2);
@@ -1857,14 +1867,14 @@ void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t e)  const
   }
   gratio->SetLineStyle(4);
   gratio->Draw();
-  TLegend *l1a = new TLegend(0.5,0.6,.95,0.8);
+  TLegend *l1a = new TLegend(0.15,0.60,0.50,0.90);
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
   sprintf(label,"L = %.1f fm",len);
   l1a->AddEntry(gq,label,"");
-  l1a->AddEntry(gq,"quark","pl");
-  l1a->AddEntry(gg,"gluon","pl");
+  l1a->AddEntry(gq,"quark projectile","pl");
+  l1a->AddEntry(gg,"gluon projectile","pl");
   l1a->AddEntry(gratio,"gluon/quark/2.25*10","pl");
   l1a->Draw();
 
@@ -1934,7 +1944,7 @@ void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
     else gratio->SetPoint(i,x,0);
   }
   gratio->SetLineStyle(4);
-  gratio->Draw();
+  //gratio->Draw();
 
   TLegend *l1a = new TLegend(0.5,0.6,.95,0.8);
   l1a->SetFillStyle(0);
@@ -1944,7 +1954,7 @@ void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
   l1a->AddEntry(gq,label,"");
   l1a->AddEntry(gq,"quark","pl");
   l1a->AddEntry(gg,"gluon","pl");
-  l1a->AddEntry(gratio,"gluon/quark/2.25*10","pl");
+  //l1a->AddEntry(gratio,"gluon/quark/2.25*10","pl");
   l1a->Draw();
 
   c->Update();

@@ -133,16 +133,16 @@ class AliQuenchingWeights : public TObject {
 
   Double_t GetMeanELoss(Int_t ipart,Double_t medval,Double_t l) const;
   Double_t GetMeanELoss(Int_t ipart,Double_t medval,TH1F *hEll) const; 
-  Double_t GetMeanELoss(Int_t ipart,Double_t r) const; 
+  Double_t GetMeanELoss(Int_t ipart,Double_t r)                 const; 
   
-  void PlotDiscreteWeights(Double_t len=4)             const; 
-  void PlotContWeights(Int_t itype,Double_t len)       const;
-  void PlotContWeightsVsL(Int_t itype,Double_t medval) const;
-  void PlotAvgELoss(Double_t len ,Double_t e=1.e10)    const;
-  void PlotAvgELoss(TH1F *hEll,Double_t e=1.e10)       const;
-  void PlotAvgELossVsL(Double_t e=1.e10)               const;
-  void PlotAvgELossVsPt(Double_t medval,Double_t len)  const;
-  void PlotAvgELossVsPt(Double_t medval,TH1F *hEll)    const;
+  void PlotDiscreteWeights(Double_t len=4,Double_t qm=5)         const; 
+  void PlotContWeights(Int_t itype,Double_t len)                 const;
+  void PlotContWeightsVsL(Int_t itype,Double_t medval)           const;
+  void PlotAvgELoss(Double_t len,Double_t qm=5,Double_t e=1.e10) const;
+  void PlotAvgELoss(TH1F *hEll,Double_t e=1.e10)                 const;
+  void PlotAvgELossVsL(Double_t e=1.e10)                         const;
+  void PlotAvgELossVsPt(Double_t medval,Double_t len)            const;
+  void PlotAvgELossVsPt(Double_t medval,TH1F *hEll)              const;
 
  protected:
   Int_t GetIndex(Double_t len) const;
