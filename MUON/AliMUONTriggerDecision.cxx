@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.7  2001/03/20 13:32:37  egangler
+includes cleanup
+
 Revision 1.6  2001/01/26 21:57:09  morsch
 Use access functions to AliMUONDigit member data.
 
@@ -266,7 +269,6 @@ void AliMUONTriggerDecision::SetBit(){
 	}
 // apply condition on soft background	
 	Int_t testCharge=sumCharge-(Int_t(sumCharge/10))*10;
-	testCharge=sumCharge-testCharge*10;
 	if(sumCharge<=10||testCharge>0) {	  
 // code pad
 	  Int_t code=TMath::Abs(ix)*100+iy;
