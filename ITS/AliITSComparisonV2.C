@@ -111,7 +111,7 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
    { /*Load tracks*/
    TFile *ef=TFile::Open("AliESDs.root");
    if ((!ef)||(!ef->IsOpen())) {
-     TFile *ef=TFile::Open("AliESDits.root");
+     ef=TFile::Open("AliESDits.root");
      if ((!ef)||(!ef->IsOpen())) {
        ::Fatal("AliITSComparisonV2.C","Can't open AliESDits.root !");
      }
