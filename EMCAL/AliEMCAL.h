@@ -43,8 +43,6 @@ class AliEMCAL : public AliDetector {
 	  "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
 
   }
-  virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, 
-			 Int_t id, Float_t *hits ) = 0 ;
   virtual void  CreateMaterials() ;   
   virtual void  FinishRun() {WriteQA();}                  
   virtual AliEMCALGeometry * GetGeometry() const ;   
