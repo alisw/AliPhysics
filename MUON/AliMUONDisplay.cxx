@@ -78,16 +78,16 @@ ClassImp(AliMUONDisplay)
 AliMUONDisplay::AliMUONDisplay()
 {
 // Constructor
-    fPoints = 0;
-    fPhits = 0;
-    fRpoints = 0;
-    fCanvas = 0;
+    fPoints = 0x0;
+    fPhits = 0x0;
+    fRpoints = 0x0;
+    fCanvas = 0x0;
     fNextCathode = kFALSE; 
-    fColPad = 0;
+    fColPad = 0x0;
 }
 
 //_____________________________________________________________________________
-AliMUONDisplay::AliMUONDisplay(Int_t size)
+AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
 {
 // Create an event display object.
 // A canvas named "edisplay" is created with a vertical size in pixels
@@ -158,9 +158,9 @@ AliMUONDisplay::AliMUONDisplay(Int_t size)
     fZoomMode      = 1;
     fZooms         = 0;
     fClustersCuts  = 0;
-    fPoints        = 0;
-    fPhits         = 0;
-    fRpoints       = 0;
+    fPoints        = 0x0;
+    fPhits         = 0x0;
+    fRpoints       = 0x0;
     // Create colors
     CreateColors();
     // Create display canvas
@@ -225,6 +225,8 @@ AliMUONDisplay::AliMUONDisplay(Int_t size)
     fButtons->SetEditable(kFALSE);
     fCanvas->Update();
     fNextCathode = kFALSE; 
+    fLoader = loader;
+   
 }
 
 AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display):AliDisplay(display)
@@ -247,9 +249,9 @@ AliMUONDisplay::~AliMUONDisplay()
     delete fPhits;
     fPhits     = 0;
     //
-    if (fRpoints) fRpoints->Delete();
+    if (fRpoints != 0x0) fRpoints->Delete();
     delete fRpoints;
-    fRpoints     = 0;
+    fRpoints     = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -622,8 +624,12 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
     Float_t dx   = xmax-xmin;
     Float_t dy   = ymax-ymin;
     
+    AliRunLoader * RunLoader;
+    if (fLoader)
+      RunLoader = fLoader->GetRunLoader();
+    else
+      RunLoader = 0x0;
 
-    AliRunLoader * RunLoader = AliRunLoader::GetRunLoader("MUONFolder");
 
     if (strlen(option) == 0) {
 	TPaveText *title = new TPaveText(xmin +0.01*dx, ymax-0.09*dy, xmin +0.5*dx, ymax-0.01*dy);
@@ -781,6 +787,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     AliMUONChamber*       iChamber;
     AliSegmentation*      segmentation;
     AliMUONResponse*      response;
+   
+    pMUON->GetMUONData()->SetTreeAddress("D");
 
     TClonesArray *muonDigits  = pMUON->GetMUONData()->Digits(chamber-1);
     if (muonDigits == 0) return;
@@ -788,8 +796,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 //     gAlice->ResetDigits();
     Int_t nent = 0;
  
-   if (pMUON->GetLoader()->TreeD()) {
-     nent = (Int_t) pMUON->GetLoader()->TreeD()->GetEntries();
+   if (GetLoader()->TreeD()) {
+     nent = (Int_t) GetLoader()->TreeD()->GetEntries();
      printf(" entries %d \n", nent);
      //     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
      pMUON->GetMUONData()->GetCathode(cathode-1);
@@ -884,8 +892,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 //___________________________________________
 void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
 {
-// Read raw clusters info and store x,y,z info in arrays fRpoints
-// Loop on all detectors
+  // Read raw clusters info and store x,y,z info in arrays fRpoints
+  // Loop on all detectors
 
     if (chamber > 10) return;
     
@@ -894,10 +902,12 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*  iChamber;
     
+    pMUON->GetMUONData()->SetTreeAddress("RC");
     TClonesArray *muonRawClusters  = pMUON->GetMUONData()->RawClusters(chamber-1);
 
     if (muonRawClusters == 0) return;
 
+   
     Int_t nent = 0;
     if (pMUON->GetMUONData()->TreeR()) {
 	nent=(Int_t) pMUON->GetMUONData()->TreeR()->GetEntries();
@@ -906,7 +916,7 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
     
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
     if (nrawcl == 0) return;
-    if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
+    if (fRpoints == 0x0) fRpoints = new TObjArray(nrawcl);
     
     iChamber = &(pMUON->Chamber(chamber-1));
     Float_t zpos=iChamber->Z();  
@@ -925,14 +935,17 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
         points->SetHitIndex(-1);
         points->SetTrackIndex(-1);
         points->SetDigitIndex(-1);
-        points->SetPoint(iraw,mRaw->fX[0],mRaw->fY[0],zpos);
+	Float_t xrawcluster=mRaw->fX[0]; 
+	Float_t yrawcluster=mRaw->fY[0];
+        points->SetPoint(iraw, xrawcluster, yrawcluster, zpos);
+	//	printf("%f and %f\n",mRaw->fX[0],mRaw->fY[0]);
     }
 }
 //___________________________________________
 void AliMUONDisplay::LoadHits(Int_t chamber)
 {
-// Read hits info and store x,y,z info in arrays fPhits
-// Loop on all detectors
+  // Read hits info and store x,y,z info in arrays fPhits
+  // Loop on all detectors
 
     if (chamber > 14) return;
     Int_t track;
@@ -947,6 +960,7 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
     iChamber = &(pMUON->Chamber(chamber-1));
     Float_t zpos=iChamber->Z();
 
+    pMUON->GetMUONData()->SetTreeAddress("H");
     Int_t ntracks = (Int_t)pMUON->GetMUONData()->TreeH()->GetEntries(); //skowron
     Int_t nthits  = 0;
     for (track = 0; track < ntracks; track++) {
@@ -1059,8 +1073,7 @@ void AliMUONDisplay::NextCathode()
 void AliMUONDisplay::Trigger()
 {
   // returns Trigger Decision for current event
-  AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
-  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(pMUON->GetLoader());
+  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(GetLoader());
 
   //  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(1);
   decision->Trigger(); 
@@ -1124,8 +1137,11 @@ void AliMUONDisplay::SetView(Float_t theta, Float_t phi, Float_t psi)
 //_____________________________________________________________________________
 void AliMUONDisplay::ShowNextEvent(Int_t delta)
 {
-
-  AliRunLoader * RunLoader = AliRunLoader::GetRunLoader("MUONFolder");
+  AliRunLoader * RunLoader;
+  if (fLoader)
+    RunLoader = fLoader->GetRunLoader();
+  else
+    RunLoader = 0x0;
     
 //  Display (current event_number + delta)
 //    delta =  1  shown next event
@@ -1184,10 +1200,11 @@ void AliMUONDisplay::ResetRpoints()
   //
   // Reset array of points
   //
-    if (fRpoints) {
-	fRpoints->Delete();
+    if (fRpoints != 0x0) {
+      //	fRpoints->Delete();
+      fRpoints->Clear();
 	delete fRpoints;
-	fRpoints = 0;
+	fRpoints = 0x0;
     }
 }
 

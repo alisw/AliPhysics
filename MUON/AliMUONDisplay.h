@@ -19,6 +19,7 @@
 //#endif
 #include "AliDisplay.h"
 
+class AliLoader;
 class TCanvas;
 class TPad;
 class TList;
@@ -29,7 +30,7 @@ class TArc;
 class AliMUONDisplay : /*splaypublic TObject,*/ public AliDisplay {
 public:
                      AliMUONDisplay();
-                     AliMUONDisplay(Int_t size);
+                     AliMUONDisplay(Int_t size, AliLoader * loader=0x0);
 		     AliMUONDisplay(const AliMUONDisplay& display);
 		     
    virtual          ~AliMUONDisplay();
@@ -50,6 +51,7 @@ public:
    Int_t             GetZoomMode() {return fZoomMode;}
    Int_t             GetChamber() {return fChamber;}
    Int_t             GetCathode() {return fCathode;}
+   AliLoader*        GetLoader()  {return fLoader;}
    virtual void      LoadDigits(Int_t chamber, Int_t cathode);
    virtual void      LoadHits(Int_t chamber);
    virtual void      LoadCoG(Int_t chamber, Int_t cathode);
@@ -90,6 +92,9 @@ private:
    TObjArray        *fPhits;                //Array of hit points for each chamber
    TObjArray        *fRpoints;              //Array of cog points for each cathode
    Int_t            fNextCathode;           //Flagging next cathode
+   AliLoader*       fLoader;                //! MUON loader to get data
+
+
    ClassDef(AliMUONDisplay, 0)   //Utility class to display MUON events
 };
 

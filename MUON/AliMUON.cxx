@@ -51,6 +51,7 @@
 #include "AliLoader.h"
 #include "AliESD.h"
 #include "AliESDMuonTrack.h"
+#include "AliMC.h"
 #include "AliMUONLoader.h"
 #include "AliMUON.h"
 #include "AliMUONTriggerTrack.h"
@@ -241,7 +242,13 @@ void  AliMUON::SetTreeAddress()
   //  GetMUONData()->MakeBranch("D,RC");
   //  GetMUONData()->SetTreeAddress("H,D,RC");
   GetMUONData()->SetTreeAddress("H");
+
+  if (fHits !=  GetMUONData()->Hits())  {
+    if (gAlice->GetMCApp())
+      gAlice->GetMCApp()->AddHitList (fHits); // For purifyKine, only necessary when Hit list is created in AliMUONData
+  }
   fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector
+	    
 }
 
 //____________________________________________________________________

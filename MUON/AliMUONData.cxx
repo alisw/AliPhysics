@@ -431,8 +431,8 @@ void AliMUONData::MakeBranch(Option_t* option)
 
     if (fHits == 0x0)  {
 	fHits = new TClonesArray("AliMUONHit",1000);
-	if (gAlice->GetMCApp())
-	  gAlice->GetMCApp()->AddHitList (fHits);
+// 	if (gAlice->GetMCApp())
+// 	  gAlice->GetMCApp()->AddHitList (fHits);
     }
 	    
     fNhits = 0;
