@@ -292,7 +292,7 @@ Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)
   for (i=nl; i<=nu; i++) trackDEdx += sampleDEdx[i];
   trackDEdx /= (nu-nl+1);
 
-  cout<<" PID: "<<nc<<" "<<nl<<" "<<nu<<" "<<trackDEdx<<endl;
+  //  cout<<" PID: "<<nc<<" "<<nl<<" "<<nu<<" "<<trackDEdx<<endl;
   return trackDEdx;
 }
 
