@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/05/10 16:52:18  vicinanz
+New TOF version with holes for PHOS/RICH
+
 Revision 1.14.2.1  2000/05/10 09:37:16  vicinanz
 New version with Holes for PHOS/RICH
 
@@ -135,8 +138,8 @@ void AliTOFv1::BuildGeometry()
 
   // Define TOF basic volume
   
-  char NodeName0[6], NodeName1[6], NodeName2[6]; 
-  char NodeName3[6], NodeName4[6], RotMatNum[6];
+  char NodeName0[7], NodeName1[7], NodeName2[7]; 
+  char NodeName3[7], NodeName4[7], RotMatNum[7];
 
   new TBRIK("S_TOF_C","TOF box","void",
             120*0.5,hTof*0.5,fZlenC*0.5);
