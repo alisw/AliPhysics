@@ -59,7 +59,7 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
     fAbsorptionCoefficient = new Float_t[fSamples];
     fRefractionIndex       = new Float_t[fSamples];
     fQuantumEfficiency     = new Float_t[fSamples];
-    
+    fReflectivity          = new Float_t[fSamples];    
     
     for (Int_t i = 0; i < fSamples; i++) {
 	fEnergy[i]             = ppckov[i];
@@ -77,6 +77,11 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
 	//
 	// Flag is sensitive if quantum efficiency 0 < eff < 1 for at least one value.
 	if (effic[i] < 1. && effic[i] > 0.) fIsSensitive = 1;
+	// G3 way to define metal
+	if (rindex[0] == 0.) {
+	    fIsMetal = kTRUE;
+	    fReflectivity[i] = absco[i];
+	}
     }
     // Find global  maximum quantum efficiency
     if (fMaximumEfficiency > GetGlobalMaximumEfficiency()) {
@@ -111,6 +116,8 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
 	//
 	// Flag is sensitive if quantum efficiency 0 < eff < 1 for at least one value.
 	if (effic[i] < 1. && effic[i] > 0.) fIsSensitive = 1;
+	//
+
     }
     // Find global  maximum quantum efficiency
     if (fMaximumEfficiency > GetGlobalMaximumEfficiency()) {

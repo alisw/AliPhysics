@@ -20,7 +20,8 @@ Double_t rflctv(Double_t& wvlngt, Double_t& /*omgpho*/, Int_t& mmat)
     TFluka* fluka =  (TFluka*) gMC;
     TGeoMaterial*    material =  (TGeoMaterial*) (fluka->GetFlukaMaterials())->At(fluka->GetMaterialIndex(mmat));
     TFlukaCerenkov*  cerenkov = dynamic_cast<TFlukaCerenkov*> (material->GetCerenkovProperties());
-    Double_t y =  (cerenkov->GetReflectivityByWaveLength(wvlngt));
+    Double_t y = 0.;
+    if (cerenkov->IsMetal()) y =  (cerenkov->GetReflectivityByWaveLength(wvlngt));
     return (y);
 }
 }
