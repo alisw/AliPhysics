@@ -135,7 +135,7 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
       UInt_t *hitnum = gtrack->GetHitNumbers();
       if(nHits < min_hits) continue;
       TPolyMarker3D *pm = new TPolyMarker3D(nHits);
-      
+      Int_t hitcount=0;
       for(Int_t h=0; h<nHits; h++)
 	{
 	  UInt_t id=hitnum[h];
@@ -162,7 +162,9 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
 	  zcl[h] = xyz_tmp[2];
 	  
 	  pm->SetPoint(h,xcl[h],ycl[h],zcl[h]);
+	  hitcount++;
 	}
+      if(hitcount==0) continue;
       pm->SetMarkerColor(2);
       pm->Draw();
       TPolyLine3D *current_line = &(line[j]);
@@ -257,7 +259,7 @@ void AliL3Display::DisplayAll(Int_t min_hits)
   
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
-      for(Int_t p=0;p<1;p++)
+      for(Int_t p=0;p<6;p++)
 	{
 	  AliL3SpacePointData *points = fClusters[s][p];
 	  if(!points) continue;
@@ -293,12 +295,15 @@ void AliL3Display::DisplayAll(Int_t min_hits)
       UInt_t *hitnum = gtrack->GetHitNumbers();
       if(nHits < min_hits) continue;
       TPolyMarker3D *pm = new TPolyMarker3D(nHits);
+      Int_t hitcount=0;
       for(Int_t h=0; h<nHits; h++)
 	{
 	  UInt_t id=hitnum[h];
 	  Int_t slice = (id>>25) & 0x7f;
 	  Int_t patch = (id>>22) & 0x7;
 	  UInt_t pos = id&0x3fffff;	      
+	  if(slice < fMinSlice || slice > fMaxSlice)
+	    continue;
 	  
 	  AliL3SpacePointData *points = fClusters[slice][patch];
 
@@ -312,7 +317,9 @@ void AliL3Display::DisplayAll(Int_t min_hits)
 	  ycl[h] = points[pos].fY;
 	  zcl[h] = points[pos].fZ;
 	  pm->SetPoint(h,xcl[h],ycl[h],zcl[h]);
+	  hitcount++;
 	}
+      if(hitcount==0) continue;
       pm->SetMarkerColor(3);
       pm->Draw();
       TPolyLine3D *current_line = &(line[j]);
