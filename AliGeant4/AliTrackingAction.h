@@ -31,7 +31,7 @@ class AliTrackingAction : public TG4TrackingAction
     void PrepareNewEvent();
     virtual void PreTrackingAction(const G4Track* aTrack);
     virtual void PostTrackingAction(const G4Track* aTrack);
-    void SaveParticle(const G4Track* track, G4String processName);
+    void SaveParticle(const G4Track* track);
     void SaveAndDestroyTrack();
 
     // set methods
