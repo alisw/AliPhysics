@@ -33,6 +33,7 @@
 // --- AliRoot header files ---
 #include "AliConfig.h"
 #include "AliPHOSPID.h"
+#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSPID)
 
@@ -60,5 +61,7 @@ AliPHOSPID::AliPHOSPID(const TString alirunFileName, const TString eventFolderNa
 AliPHOSPID::~AliPHOSPID()
 {
   // dtor
+ //Remove this from the parental task before destroying
+  AliPHOSGetter::Instance()->PhosLoader()->CleanPIDTask();
 }
 

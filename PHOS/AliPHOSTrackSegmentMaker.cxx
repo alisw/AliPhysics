@@ -22,15 +22,12 @@
 
 
 // --- ROOT system ---
-//#include "TGeometry.h"
-  //#include "TFile.h"
-  //#include "TTree.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliPHOSTrackSegmentMaker.h"
-  //#include "AliHeader.h" 
+#include "AliPHOSGetter.h"
 
 ClassImp( AliPHOSTrackSegmentMaker) 
 
@@ -58,5 +55,7 @@ AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const TString alirunFileName,
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
 {
+ //Remove this from the parental task before destroying
+  AliPHOSGetter::Instance()->PhosLoader()->CleanTracker();
 }
 

@@ -27,6 +27,7 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSClusterizer.h"
+#include "AliPHOSGetter.h" 
 
 ClassImp(AliPHOSClusterizer)
 
@@ -57,6 +58,8 @@ AliPHOSClusterizer::~AliPHOSClusterizer()
 {
   // dtor
          
+ //Remove this from the parental task before destroying
+  AliPHOSGetter::Instance()->PhosLoader()->CleanReconstructioner();
 }
 
 
