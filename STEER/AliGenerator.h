@@ -15,11 +15,12 @@
 #include "TLorentzVector.h"
 #include "TArrayF.h"
 #include "TMCProcess.h"
-
+#include "AliCollisionGeometry.h"
 #include "AliRndm.h"
+
 class TGenerator;
 class AliStack;
-class AliCollisionGeometry;
+
 
 
 typedef enum { kNoSmear, kPerEvent, kPerTrack } VertexSmear_t;
