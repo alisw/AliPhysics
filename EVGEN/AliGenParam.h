@@ -6,23 +6,23 @@
 /* $Id$ */
 
 #include "AliGenerator.h"
-#include "GenTypeDefs.h"
+#include "AliDecayer.h"
 #include <TArrayI.h>
 
-class AliDecayer;
 class AliPythia;
 class TParticle;
 class AliGenLib;
 class TF1;
 
+typedef enum { kAnalog, kNonAnalog} Weighting_t;
 //-------------------------------------------------------------
 class AliGenParam : public AliGenerator
 {
  public:
     AliGenParam();
-    AliGenParam(Int_t npart, AliGenLib * Library, Param_t param, char* tname=0);
-    AliGenParam(Int_t npart, Param_t param, char* tname=0);
-    AliGenParam(Int_t npart, Param_t param,
+    AliGenParam(Int_t npart, AliGenLib * Library, Int_t param, char* tname = 0);
+    AliGenParam(Int_t npart, Int_t param, char* tname = 0);
+    AliGenParam(Int_t npart, Int_t param,
 		Double_t (*PtPara)(Double_t*, Double_t*),
 		Double_t (*YPara )(Double_t*, Double_t*),
 		Int_t    (*IpPara)(TRandom*)           );
@@ -32,22 +32,22 @@ class AliGenParam : public AliGenerator
     virtual void Generate();
     virtual void Init();
     // select particle type
-    virtual void SetParam(Param_t param=jpsi_p) {fParam=param;}
+    virtual void SetParam(Int_t param) {fParam = param;}
     // force decay type
-    virtual void SetForceDecay(Decay_t decay=dimuon) {fForceDecay=decay;}
-    virtual void SetWeighting(Weighting_t flag=analog) {fAnalog=flag;}	
-    virtual void SetCutOnChild(Int_t flag=0) {fCutOnChild=flag;}
-    virtual void SetChildMomentumRange(Float_t pmin=0, Float_t pmax=1.e10)
+    virtual void SetForceDecay(Decay_t decay = kDiMuon) {fForceDecay = decay;}
+    virtual void SetWeighting(Weighting_t flag = kAnalog) {fAnalog = flag;}	
+    virtual void SetCutOnChild(Int_t flag = 0) {fCutOnChild = flag;}
+    virtual void SetChildMomentumRange(Float_t pmin = 0, Float_t pmax = 1.e10)
 	{fChildPMin = pmin; fChildPMax = pmax;}
-    virtual void SetChildPtRange(Float_t ptmin=0, Float_t ptmax=20.)
+    virtual void SetChildPtRange(Float_t ptmin = 0, Float_t ptmax = 20.)
 	{fChildPtMin = ptmin; fChildPtMax = ptmax;}
-    virtual void SetChildPhiRange(Float_t phimin=-180., Float_t phimax=180)
+    virtual void SetChildPhiRange(Float_t phimin = -180., Float_t phimax = 180)
 	{fChildPhiMin = TMath::Pi()*phimin/180;
-	fChildPhiMax = TMath::Pi()*phimax/180;}
-    virtual void SetChildThetaRange(Float_t thetamin=0, Float_t thetamax=180)
+	fChildPhiMax  = TMath::Pi()*phimax/180;}
+    virtual void SetChildThetaRange(Float_t thetamin = 0, Float_t thetamax = 180)
 	{fChildThetaMin = TMath::Pi()*thetamin/180;
-	fChildThetaMax = TMath::Pi()*thetamax/180;}
-    virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt=delta;}
+	fChildThetaMax  = TMath::Pi()*thetamax/180;}
+    virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt = delta;}
     
     AliGenParam & operator=(const AliGenParam & rhs);
  protected:
@@ -56,7 +56,7 @@ class AliGenParam : public AliGenerator
     Int_t    (*fIpParaFunc )(TRandom*);    //! Pointer to particle type parametrisation function
     TF1* fPtPara;              // Transverse momentum parameterisation
     TF1* fYPara;               // Rapidity parameterisation
-    Param_t     fParam;        // Parameterisation type 
+    Int_t       fParam;        // Parameterisation type 
     Float_t     fdNdy0;        // central multiplicity per event
     Float_t     fYWgt;         // Y-weight
     Float_t     fPtWgt;        // Pt-weight

@@ -12,6 +12,7 @@ class AliGenPMDlib :
 public AliGenLib
 {
  public:
+     enum constants{kPion, kEta};
 // Neutral pions
     static Double_t PtPi0(Double_t *px, Double_t *dummy);
     static Double_t PtScal(Double_t pt, Int_t np);
@@ -22,9 +23,9 @@ public AliGenLib
     static Double_t YEta( Double_t *py, Double_t *dummy);
     static Int_t    IpEta(TRandom *ran);
 //
-    GenFunc   GetPt(Param_t param, const char* tname=0);
-    GenFunc   GetY (Param_t param, const char* tname=0);
-    GenFuncIp GetIp(Param_t param, const char* tname=0);    
+    GenFunc   GetPt(Int_t param, const char* tname=0);
+    GenFunc   GetY (Int_t param, const char* tname=0);
+    GenFuncIp GetIp(Int_t param, const char* tname=0);    
     ClassDef(AliGenPMDlib,0) // Library providing y and pT parameterisations
 };
 #endif

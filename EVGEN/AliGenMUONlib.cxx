@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.10  2000/06/29 21:08:27  morsch
 All paramatrisation libraries derive from the pure virtual base class AliGenLib.
 This allows to pass a pointer to a library directly to AliGenParam and avoids the
@@ -350,31 +353,31 @@ Int_t AliGenMUONlib::IpBeauty(TRandom *ran)
 }
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
-GenFunc AliGenMUONlib::GetPt(Param_t param,  const char* tname)
+GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname)
 {
 // Return pointer to pT parameterisation
     GenFunc func;
     switch (param) 
     {
-    case phi_p:
+    case kPhi:
 	func=PtPhi;
 	break;
-    case jpsi_p:
+    case kJpsi:
 	func=PtJpsi;
 	break;
-    case upsilon_p:
+    case kUpsilon:
 	func=PtUpsilon;
 	break;
-    case charm_p:
+    case kCharm:
 	func=PtCharm;
 	break;
-    case beauty_p:
+    case kBeauty:
 	func=PtBeauty;
 	break;
-    case pion_p:
+    case kPion:
 	func=PtPion;
 	break;
-    case kaon_p:
+    case kKaon:
 	func=PtKaon;
 	break;
     default:
@@ -384,31 +387,31 @@ GenFunc AliGenMUONlib::GetPt(Param_t param,  const char* tname)
     return func;
 }
 
-GenFunc AliGenMUONlib::GetY(Param_t param, const char* tname)
+GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname)
 {
 // Return pointer to y- parameterisation
     GenFunc func;
     switch (param) 
     {
-    case phi_p:
+    case kPhi:
 	func=YPhi;
 	break;
-    case jpsi_p:
+    case kJpsi:
 	func=YJpsi;
 	break;
-    case upsilon_p:
+    case kUpsilon:
 	func=YUpsilon;
 	break;
-    case charm_p:
+    case kCharm:
 	func=YCharm;
 	break;
-    case beauty_p:
+    case kBeauty:
 	func=YBeauty;
 	break;
-    case pion_p:
+    case kPion:
 	func=YPion;
 	break;
-    case kaon_p:
+    case kKaon:
 	func=YKaon;
 	break;
     default:
@@ -418,31 +421,31 @@ GenFunc AliGenMUONlib::GetY(Param_t param, const char* tname)
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
-GenFuncIp AliGenMUONlib::GetIp(Param_t param,  const char* tname)
+GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* tname)
 {
 // Return pointer to particle type parameterisation
     GenFuncIp func;
     switch (param) 
     {
-    case phi_p:
+    case kPhi:
 	func=IpPhi;
 	break;
-    case jpsi_p:
+    case kJpsi:
 	func=IpJpsi;
 	break;
-    case upsilon_p:
+    case kUpsilon:
 	func=IpUpsilon;
 	break;
-    case charm_p:
+    case kCharm:
 	func=IpCharm;
 	break;
-    case beauty_p:
+    case kBeauty:
 	func=IpBeauty;
 	break;
-    case pion_p:
+    case kPion:
 	func=IpPion;
 	break;
-    case kaon_p:
+    case kKaon:
 	func=IpKaon;
 	break;
     default:

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.27  2001/02/02 15:21:10  morsch
+Set high water mark after last particle.
+Use Vertex() method for Vertex.
+
 Revision 1.26  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -98,8 +102,8 @@ AliGenParam::AliGenParam()
 // Deafault constructor
     fPtPara = 0;
     fYPara  = 0;
-    fParam  = jpsi_p;
-    fAnalog = analog;
+    fParam  = 0;
+    fAnalog = kAnalog;
     SetCutOnChild();
     SetChildMomentumRange();
     SetChildPtRange();
@@ -111,7 +115,7 @@ AliGenParam::AliGenParam()
     sRandom = fRandom;
 }
 
-AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Param_t param, char* tname):AliGenerator(npart)
+AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* tname):AliGenerator(npart)
 {
 // Constructor using number of particles parameterisation id and library
     
@@ -122,7 +126,7 @@ AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Param_t param, char*
     fPtPara = 0;
     fYPara  = 0;
     fParam  = param;
-    fAnalog = analog;
+    fAnalog = kAnalog;
     fChildSelect.Set(5);
     for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
     SetForceDecay();
@@ -139,7 +143,7 @@ AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Param_t param, char*
 
 //____________________________________________________________
 
-AliGenParam::AliGenParam(Int_t npart, Param_t param, char* tname):AliGenerator(npart)
+AliGenParam::AliGenParam(Int_t npart, Int_t param, char* tname):AliGenerator(npart)
 {
 // Constructor using parameterisation id and number of particles
 //      
@@ -152,7 +156,7 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param, char* tname):AliGenerator(n
     fPtPara = 0;
     fYPara  = 0;
     fParam  = param;
-    fAnalog = analog;
+    fAnalog = kAnalog;
     fChildSelect.Set(5);
     for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
     SetForceDecay();
@@ -164,7 +168,7 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param, char* tname):AliGenerator(n
     SetDeltaPt(); 
 }
 
-AliGenParam::AliGenParam(Int_t npart, Param_t param,
+AliGenParam::AliGenParam(Int_t npart, Int_t param,
                          Double_t (*PtPara) (Double_t*, Double_t*),
                          Double_t (*YPara ) (Double_t* ,Double_t*),
 		         Int_t    (*IpPara) (TRandom *))		 
@@ -179,7 +183,7 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param,
     fPtPara = 0;
     fYPara  = 0;
     fParam  = param;
-    fAnalog = analog;
+    fAnalog = kAnalog;
     fChildSelect.Set(5);
     for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
     SetForceDecay();
@@ -239,7 +243,7 @@ void AliGenParam::Init()
     Float_t intPt0 = ptPara->Integral(0,15);
     Float_t intPtS = ptPara->Integral(fPtMin,fPtMax);
     Float_t phiWgt=(fPhiMax-fPhiMin)/2./TMath::Pi();
-    if (fAnalog == analog) {
+    if (fAnalog == kAnalog) {
 	fYWgt  = intYS/fdNdy0;
 	fPtWgt = intPtS/intPt0;
 	fParentWeight = fYWgt*fPtWgt*phiWgt/fNpart;
@@ -256,30 +260,30 @@ void AliGenParam::Init()
 //
     switch (fForceDecay) 
     {
-    case semielectronic:
-    case dielectron:
-    case b_jpsi_dielectron:
-    case b_psip_dielectron:
+    case kSemiElectronic:
+    case kDiElectron:
+    case kBJpsiDiElectron:
+    case kBPsiPrimeDiElectron:
 	fChildSelect[0]=11;	
 	break;
-    case semimuonic:
-    case dimuon:
-    case b_jpsi_dimuon:
-    case b_psip_dimuon:
+    case kSemiMuonic:
+    case kDiMuon:
+    case kBJpsiDiMuon:
+    case kBPsiPrimeDiMuon:
 	fChildSelect[0]=13;
 	break;
-    case pitomu:
+    case kPiToMu:
 	fChildSelect[0]=13;
 	break;
-    case katomu:
+    case kKaToMu:
 	fChildSelect[0]=13;
 	break;
-    case hadronicD:
+    case kHadronicD:
 // Implement me !!
 	break;
-    case nodecay:
+    case kNoDecay:
 	break;
-    case all:
+    case kAll:
 	break;
     }
 }
@@ -352,7 +356,7 @@ void AliGenParam::Generate()
 	  ty=Float_t(TMath::TanH(fYPara->GetRandom()));
 //
 // pT
-	  if (fAnalog == analog) {
+	  if (fAnalog == kAnalog) {
 	      pt=fPtPara->GetRandom();
 	      wgtp=fParentWeight;
 	      wgtch=fChildWeight;
@@ -390,7 +394,7 @@ void AliGenParam::Generate()
 // if fForceDecay == none Primary particle is tracked by GEANT 
 // (In the latest, make sure that GEANT actually does all the decays you want)	  
 //
-	  if (fForceDecay != nodecay) {
+	  if (fForceDecay != kNoDecay) {
 // Using lujet to decay particle
 	      Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
 	      TLorentzVector pmom(p[0], p[1], p[2], energy);
@@ -404,7 +408,7 @@ void AliGenParam::Generate()
 		  Int_t kf = iparticle->GetPdgCode();
 //
 // children
-		  if (ChildSelected(TMath::Abs(kf)) || fForceDecay==all)
+		  if (ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll)
 		  {
 		      pc[0]=iparticle->Px();
 		      pc[1]=iparticle->Py();

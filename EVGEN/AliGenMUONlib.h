@@ -11,6 +11,9 @@ class AliGenMUONlib :
   public AliGenLib
 {
  public:
+    enum constants{kPhi, kJpsi, kUpsilon, kCharm, kBeauty, kPion, kKaon};
+    
+    
 // pions
     static Double_t PtPion(Double_t *px, Double_t *dummy);
     static Double_t PtScal(Double_t pt, Int_t np);
@@ -43,9 +46,9 @@ class AliGenMUONlib :
     static Double_t YBeauty(Double_t *py, Double_t *dummy);
     static Int_t    IpBeauty(TRandom *ran);
 //
-    GenFunc   GetPt(Param_t param, const char* tname=0);
-    GenFunc   GetY (Param_t param, const char* tname=0);
-    GenFuncIp GetIp(Param_t param, const char* tname=0);    
+    GenFunc   GetPt(Int_t param, const char* tname=0);
+    GenFunc   GetY (Int_t param, const char* tname=0);
+    GenFuncIp GetIp(Int_t param, const char* tname=0);    
     ClassDef(AliGenMUONlib,0) // Library providing y and pT parameterisations
 };
 #endif

@@ -7,7 +7,6 @@
 
 #include <TObject.h>
 
-#include "GenTypeDefs.h"
 class TRandom;
 
 class AliGenLib :
@@ -18,9 +17,9 @@ class AliGenLib :
     virtual ~AliGenLib(){}
     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
     typedef Int_t    (*GenFuncIp)(TRandom *);    
-    virtual GenFunc   GetPt(Param_t param, const char *tname)   = 0;
-    virtual GenFunc   GetY (Param_t param, const char *tname)  = 0;
-    virtual GenFuncIp GetIp(Param_t param, const char *tname)  = 0;    
+    virtual GenFunc   GetPt(Int_t param, const char *tname)   = 0;
+    virtual GenFunc   GetY (Int_t param, const char *tname)  = 0;
+    virtual GenFuncIp GetIp(Int_t param, const char *tname)  = 0;    
     ClassDef(AliGenLib,0) // Library providing y and pT parameterisations
 };
 #endif

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.1  2000/09/08 15:37:58  morsch
 pt and y-parameterisations for PMD physics simulation.
 THIS VERSION IS JUST A TEMPLATE THE PT AND Y DISTRIBUTIONS HAVE TO BE CORRECTED !!!!.
@@ -146,16 +149,16 @@ Int_t AliGenPMDlib::IpEta(TRandom *)
 
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
-GenFunc AliGenPMDlib::GetPt(Param_t param,  const char* tname)
+GenFunc AliGenPMDlib::GetPt(Int_t param,  const char* tname)
 {
 // Return pointer to pT parameterisation
     GenFunc func=NULL;
     switch (param) 
     {
-    case Pion:
+    case kPion:
 	func=PtPi0;
 	break;
-    case Eta:
+    case kEta:
 	func=PtEta;
 	break;
     default:
@@ -165,16 +168,16 @@ GenFunc AliGenPMDlib::GetPt(Param_t param,  const char* tname)
     return func;
 }
 
-GenFunc AliGenPMDlib::GetY(Param_t param, const char* tname)
+GenFunc AliGenPMDlib::GetY(Int_t param, const char* tname)
 {
 // Return pointer to y- parameterisation
     GenFunc func=NULL;
     switch (param) 
     {
-    case Pion:
+    case kPion:
 	func=YPi0;
 	break;
-    case Eta:
+    case kEta:
 	func=YEta;
 	break;
     default:
@@ -185,16 +188,16 @@ GenFunc AliGenPMDlib::GetY(Param_t param, const char* tname)
 
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
-GenFuncIp AliGenPMDlib::GetIp(Param_t param,  const char* tname)
+GenFuncIp AliGenPMDlib::GetIp(Int_t param,  const char* tname)
 {
 // Return pointer to particle type parameterisation
     GenFuncIp func=NULL;
     switch (param) 
     {
-    case Pion:
+    case kPion:
 	func=IpPi0;
 	break;
-    case Eta:
+    case kEta:
 	func=IpEta;
 	break;
     default:

@@ -14,7 +14,7 @@ class TRandom;
 
 class AliGenGSIlib :public AliGenLib {
  public:
-
+    enum constants{kUpsilon};
 // Upsilon RITMAN   
     static Double_t PtUpsilonRitman( Double_t *px, Double_t *dummy );
     static Double_t YUpsilonRitman(Double_t *py, Double_t *dummy);
@@ -32,9 +32,9 @@ class AliGenGSIlib :public AliGenLib {
     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
     typedef Int_t    (*GenFuncIp)(TRandom *ran);
     
-    GenFunc   GetPt(Param_t param, const char * tname=0);
-    GenFunc   GetY(Param_t param,  const char * tname=0);
-    GenFuncIp GetIp(Param_t param, const char * tname=0);    
+    GenFunc   GetPt(Int_t param, const char * tname=0);
+    GenFunc   GetY(Int_t param,  const char * tname=0);
+    GenFuncIp GetIp(Int_t param, const char * tname=0);    
     static void SetDebug(Bool_t debug){fgDebug=debug;}
 private:
     static Bool_t fgDebug;  // Debug flag 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.5  2000/06/29 21:08:27  morsch
 All paramatrisation libraries derive from the pure virtual base class AliGenLib.
 This allows to pass a pointer to a library directly to AliGenParam and avoids the
@@ -412,29 +415,29 @@ ClassImp(AliGenPHOSlib)
 
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
- GenFunc AliGenPHOSlib::GetPt(Param_t param, const char* tname)
+ GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname)
 {
 // Return pinter to pT parameterisation
     GenFunc func;
     
     switch (param)
     {
-    case Pion:     
+    case kPion:     
         func=PtPion;
         break;
-    case Kaon:
+    case kKaon:
         func=PtKaon;
         break;
-    case Eta:
+    case kEta:
         func=PtEta;
         break;
-    case Omega:
+    case kOmega:
         func=PtOmega;
         break;
-    case Etaprime:
+    case kEtaPrime:
         func=PtEtaprime;
         break;
-    case Baryon:
+    case kBaryon:
         func=PtBaryon;
         break;
     default:
@@ -444,31 +447,31 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 
- GenFunc AliGenPHOSlib::GetY(Param_t param, const char* tname)
+ GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname)
 {
 // Return pointer to Y parameterisation
     GenFunc func;
     switch (param)
     {
-    case Pion:
+    case kPion:
         func=YPion;
         break;
-    case Kaon:
+    case kKaon:
         func=YKaon;
         break;
-    case Eta:
+    case kEta:
         func=YEta;
         break;
-    case Omega:
+    case kOmega:
         func=YOmega;
         break;
-    case Etaprime:
+    case kEtaPrime:
         func=YEtaprime;
         break;
-    case Phi:
+    case kPhi:
         func=YPhi;
         break;
-    case Baryon:
+    case kBaryon:
         func=YBaryon;
         break;
     default:
@@ -478,32 +481,32 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
- GenFuncIp AliGenPHOSlib::GetIp(Param_t param,  const char* tname)
+ GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname)
 {
 // Return pointer to particle composition
     GenFuncIp func;
     switch (param)
     {
-    case Pion:
+    case kPion:
         
         func=IpPion;
         break;
-    case Kaon:
+    case kKaon:
         func=IpKaon;
         break;
-    case Eta:
+    case kEta:
         func=IpEta;
         break;
-    case Omega:
+    case kOmega:
         func=IpOmega;
         break;
-    case Etaprime:
+    case kEtaPrime:
         func=IpEtaprime;
         break;
-    case Phi:
+    case kPhi:
         func=IpPhi;
         break;
-    case Baryon:
+    case kBaryon:
         func=IpBaryon;
         break;
     default:

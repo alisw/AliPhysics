@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.2  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -180,14 +183,14 @@ typedef Int_t (*GenFuncIp) (TRandom *);
 
 
 
-GenFunc AliGenGSIlib::GetPt(Param_t param, const char * tname)
+GenFunc AliGenGSIlib::GetPt(Int_t param, const char * tname)
 {
 // Return pointer to pT parameterisation
   GenFunc func=0;
   TString sname(tname);
   switch (param) 
     {
-    case upsilon_p:
+    case kUpsilon:
       if (sname=="MUON"){
 	func= PtUpsilonMUON;
 	break;
@@ -212,14 +215,14 @@ GenFunc AliGenGSIlib::GetPt(Param_t param, const char * tname)
 
 
 
-GenFunc AliGenGSIlib::GetY(Param_t param, const char * tname)
+GenFunc AliGenGSIlib::GetY(Int_t param, const char * tname)
 {
   // Return pointer to y- parameterisation
    GenFunc func=0;
     TString sname(tname);
     switch (param) 
     {
-    case upsilon_p:
+    case kUpsilon:
       if (sname=="MUON"){
 	func= YUpsilonMUON;
 	break;
@@ -244,14 +247,14 @@ GenFunc AliGenGSIlib::GetY(Param_t param, const char * tname)
 
 
 
-GenFuncIp AliGenGSIlib::GetIp(Param_t param, const char * tname)
+GenFuncIp AliGenGSIlib::GetIp(Int_t param, const char * tname)
 {
 // Return pointer to particle type parameterisation
     GenFuncIp func=0;
     TString sname(tname);
     switch (param) 
     {
-    case upsilon_p:
+    case kUpsilon:
       if (sname=="MUON"){
 	func=IpUpsilonMUON;
 	break;
