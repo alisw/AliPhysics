@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/27 15:21:24  morsch
+Shield composition after muon project leader meeting: 24/10/2000
+- 1 cm recess in steel for station 3
+- no heavy shielding between chambers for stations 1 and 2
+
 Revision 1.10  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -122,7 +127,7 @@ void AliSHILv0::CreateGeometry()
 #include "SHILConst.h"
 
 enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
-		kNiCuW=1720, kVacuum=1714, kAir=1714, kConcrete=1716,
+		kNiCuW=1720, kVacuum=1715, kAir=1714, kConcrete=1716,
 		kPolyCH2=1717, kSteel=1709, kInsulation=1713};	
 //
 // Material of the rear part of the shield
@@ -944,7 +949,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   tpar[0]=0.;
   tpar[1]=R43;
   tpar[2]=50.;
-  gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
+  gMC->Gsvolu("YAEM", "TUBE", idtmed[kVacuum], tpar, 3);
   tpar[0]=rAbs;
   tpar[1]=R43;
   tpar[2]=50.;

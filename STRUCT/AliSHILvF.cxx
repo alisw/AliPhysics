@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/01/31 11:55:27  hristov
+Loop variables declared once (required by HP)
+
 Revision 1.3  2001/01/30 12:28:27  morsch
 Recess station 1 changed do make space for chambers.
 
@@ -83,7 +86,7 @@ void AliSHILvF::CreateGeometry()
 #include "SHILConst.h"
 
 enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
-		kNiCuW=1720, kVacuum=1714, kAir=1714, kConcrete=1716,
+		kNiCuW=1720, kVacuum=1715, kAir=1714, kConcrete=1716,
 		kPolyCH2=1717, kSteel=1709, kInsulation=1713};	
 //
 // Material of the rear part of the shield
