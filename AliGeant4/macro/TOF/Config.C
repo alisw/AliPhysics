@@ -9,8 +9,6 @@ void Config(Int_t version)
     case 2: TOF  = new AliTOFv2("TOF", "TOFv2 detector"); break;
     case 3: TOF  = new AliTOFv3("TOF", "TOFv3 detector"); break;
     case 4: TOF  = new AliTOFv4("TOF", "TOFv4 detector"); break;
-    case 5: TOF  = new AliTOFv5("TOF", "TOFv5 detector"); break;
-    case 6: TOF  = new AliTOFv6("TOF", "TOFv6 detector"); break;
   }   
 
 //=================== TOF parameters ============================

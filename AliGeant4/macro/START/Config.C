@@ -5,6 +5,7 @@ void Config(Int_t version)
   AliSTART* START = 0;
   switch (version) {
     case 0: START  = new AliSTARTv0("START","START Detector"); break;
+    //case 1: START  = new AliSTARTv1("START","START Detector"); break;
   }  
 
 //=================== START parameters ============================
