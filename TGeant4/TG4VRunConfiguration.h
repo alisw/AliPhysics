@@ -11,6 +11,8 @@
 
 class TG4TrackingAction;
 class TG4SteppingAction;
+class TG4VSDConstruction;
+class TG4SDManager;
 
 class G4VUserDetectorConstruction;
 class G4VModularPhysicsList;
@@ -33,6 +35,7 @@ class TG4VRunConfiguration
 
     // get methods
     G4VModularPhysicsList* GetPhysicsList() const;
+    TG4VSDConstruction* GetSDConstruction() const;
 
   protected:
     TG4VRunConfiguration(const TG4VRunConfiguration& right);
@@ -45,6 +48,8 @@ class TG4VRunConfiguration
 
     // data members
     G4VUserDetectorConstruction*    fDetectorConstruction; //det construction
+    TG4VSDConstruction*             fSDConstruction;       //sensitive detectors 
+                                                           //construction
     G4VModularPhysicsList*          fPhysicsList;          //physics list
     G4VUserPrimaryGeneratorAction*  fPrimaryGenerator;     //primary generator
     G4UserRunAction*                fRunAction;            //run action
