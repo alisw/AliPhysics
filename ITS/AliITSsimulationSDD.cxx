@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.35  2002/09/09 17:23:28  nilsen
+  Minor changes in support of changes to AliITSdigitS?D class'.
+
   Revision 1.34  2002/06/07 16:32:28  nilsen
   Latest SDD changes to speed up the SDD simulation code.
 
@@ -811,8 +814,11 @@ void AliITSsimulationSDD::ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,
 void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     // Adds a Digit.
     Int_t size = AliITSdigitSPD::GetNTracks();
-    Int_t digits[3], tracks[size], hits[size];
-    Float_t phys, charges[size];
+    Int_t digits[3];
+    Int_t * tracks = new Int_t[size];
+    Int_t * hits = new Int_t[size];
+    Float_t phys;
+    Float_t * charges = new Float_t[size];
 
     if( fResponse->Do10to8() ) signal = Convert8to10( signal ); 
     digits[0] = i;
@@ -844,6 +850,9 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     }
 
     fITS->AddSimDigit( 1, phys, digits, tracks, hits, charges ); 
+    delete [] tracks;
+    delete [] hits;
+    delete [] charges;
 }
 
 /*

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/09/09 17:23:28  nilsen
+Minor changes in support of changes to AliITSdigitS?D class'.
+
 Revision 1.18  2002/08/21 22:11:13  nilsen
 Debug output now settable via a DEBUG flag.
 
@@ -584,10 +587,10 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
     static AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
 
     Int_t size = AliITSdigitSPD::GetNTracks();
-    Int_t digits[size];
-    Int_t tracks[size];
-    Int_t hits[size];
-    Float_t charges[size]; 
+    Int_t * digits = new Int_t[size];
+    Int_t * tracks = new Int_t[size];
+    Int_t * hits = new Int_t[size];
+    Float_t * charges = new Float_t[size]; 
     Int_t j1;
 
     for (Int_t r=1;r<=GetNPixelsZ();r++) {
@@ -622,6 +625,11 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
 	    } // end if of threshold condition
 	} // for c
     }// end do on pixels
+    delete [] digits;
+    delete [] tracks;
+    delete [] hits;
+    delete [] charges;
+
 }
 //______________________________________________________________________
 void AliITSsimulationSPD::SetFluctuations(AliITSpList *pList,Int_t module) {
