@@ -266,11 +266,11 @@ class TFluka : public TVirtualMC {
   //
   // - Core input file name
   TString GetCoreInputFileName() const {return fCoreInputFileName;}
-  void SetCoreInputFileName(const char* n) {fCoreInputFileName = n;}
+  void SetCoreInputFileName(const char* file = "corealice.inp") {fCoreInputFileName = file;}
 
   // - Input file name
   TString GetInputFileName() const {return fInputFileName;}
-  void SetInputFileName(const char* n) {fInputFileName = n;}
+  void SetInputFileName(const char* file = "alice.inp") {fInputFileName = file;}
 
   // - Verbosity level
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
@@ -318,7 +318,7 @@ class TFluka : public TVirtualMC {
   Int_t  GetDummyBoundary() const {return fDummyBoundary;}
   Bool_t IsDummyBoundary() const {return (fDummyBoundary==0)?kFALSE:kTRUE;}
   
-  void   SetGeneratePemf(Bool_t flag=kTRUE) {fGeneratePemf = flag;}
+  void   SetGeneratePemf(Bool_t flag = kTRUE) {fGeneratePemf = flag;}
   Bool_t IsGeneratePemf() const {return fGeneratePemf;}
   
   void   EnableField(Bool_t flag=kTRUE) {fFieldFlag = flag;}

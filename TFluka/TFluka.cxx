@@ -127,9 +127,11 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fUserScore(new TObjArray(100)) 
 {
   // create geometry interface
-  if (fVerbosityLevel >=3)
-    cout << "<== TFluka::TFluka(" << title << ") constructor called." << endl;
-
+   if (fVerbosityLevel >=3)
+       cout << "<== TFluka::TFluka(" << title << ") constructor called." << endl;
+   SetCoreInputFileName();
+   SetInputFileName();
+   SetGeneratePemf(kFALSE);
    fNVolumes      = 0;
    fCurrentFlukaRegion = -1;
    fDummyBoundary = 0;
@@ -1342,9 +1344,13 @@ fin:
       // flag = 0 no decays
       // flag = 1 decays, secondaries processed
       // flag = 2 decays, no secondaries stored
-      //gMC ->SetProcess("DCAY",1); // not available
+      //gMC ->SetProcess("DCAY",0); // not available
       else if ((strncmp(proc->GetName(),"DCAY",4) == 0) && proc->Flag() == 0) 
-	  cout << "SetProcess for flag=" << proc->GetName() << " value=" << proc->Flag() << " not avaliable!" << endl;
+	  cout << "SetProcess for flag =" << proc->GetName() << " value=" << proc->Flag() << " not avaliable!" << endl;
+      else if ((strncmp(proc->GetName(),"DCAY",4) == 0) && proc->Flag() == 1) {
+          // Nothing to do decays are switched on by default
+      }
+      
       
       // delta-ray
       // G3 default value: 2
