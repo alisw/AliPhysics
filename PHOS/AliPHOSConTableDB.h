@@ -41,15 +41,13 @@ public:
   //            "PHOS" - presents both PHOS and Proto ids
   void PlotProtoMap(Option_t * opt="Zoom") ; 
 
-  void Print(Option_t *option="") ;
-
   //Transforms channel number in prototype into AbsId number in PHOS
   Int_t Raw2AbsId(Int_t raw) ;
 
   //Transforms AbsId number in PHOS into channel number in prototype 
-  Int_t AbsId2Raw(Int_t AbsId) ;
+  Int_t AbsId2Raw(Int_t AbsId){return 0 ;} //To be implemented
 
-  virtual void Print(Option_t * option="")const ;
+  virtual void Print(Option_t * option="") const ;
 
 private:
   AliPHOSGeometry * fGeom ;   //!
