@@ -59,7 +59,10 @@ AliMUONClusterInput::~AliMUONClusterInput()
 // Destructor
     delete fgMinuit;
 }
-
+AliMUONClusterInput::AliMUONClusterInput(const AliMUONClusterInput& clusterInput):TObject(clusterInput)
+{
+  
+}
 
 void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2)
 {
