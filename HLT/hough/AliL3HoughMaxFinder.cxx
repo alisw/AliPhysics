@@ -112,10 +112,12 @@ AliL3TrackArray *AliL3HoughMaxFinder::FindMaxima(TH2F *hist,Int_t *rowrange,Int_
   return tracks;
 }
 
-void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
+AliL3TrackArray *AliL3HoughMaxFinder::FindPeak(TH2F *hist,Int_t t1,Double_t t2,Int_t t3)
 {
   //Attempt of a more sophisticated peak finder.
   
+  AliL3TrackArray *tracks = new AliL3TrackArray("AliL3HoughTrack");
+
   Int_t xmin = hist->GetXaxis()->GetFirst();
   Int_t xmax = hist->GetXaxis()->GetLast();
   Int_t ymin = hist->GetYaxis()->GetFirst();
@@ -125,25 +127,25 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
   Int_t *m = new Int_t[nbinsx];
   Int_t *m_low = new Int_t[nbinsx];
   Int_t *m_up = new Int_t[nbinsx];
+  
+  
+ recompute:  //this is a goto.
+  
   for(Int_t i=0; i<nbinsx; i++)
     {
       m[i]=0;
       m_low[i]=0;
       m_up[i]=0;
     }
-  
-
-  Int_t t1 = 2;
-  Double_t t2 = 0.95;
 
   Int_t max_x=0,sum=0,max_xbin=0,bin;
 
   for(Int_t xbin=xmin; xbin<=xmax; xbin++)
     {
-      for(Int_t ybin=ymin; ybin <= ymax - t1; ybin += t1)
+      for(Int_t ybin=ymin; ybin < ymax - t1; ybin++)
 	{
 	  sum = 0;
-	  for(Int_t y=ybin; y<=ybin+t1; y++)
+	  for(Int_t y=ybin; y < ybin+t1; y++)
 	    {
 	      //Inside window
 	      bin = hist->GetBin(xbin,y);
@@ -154,7 +156,7 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
 	    {
 	      m[xbin]=sum;
 	      m_low[xbin]=ybin;
-	      m_up[xbin]=ybin+t1;
+	      m_up[xbin]=ybin + t1 - 1;
 	    }
 	  
 	}
@@ -174,7 +176,7 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
     {
       if(m[xbin]*t2 < max_x)
 	{
-	  x_low = xbin;
+	  x_low = xbin+1;
 	  break;
 	}
     }
@@ -182,15 +184,29 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
     {
       if(m[xbin]*t2 < max_x)
 	{
-	  x_up = xbin;
+	  x_up = xbin-1;
 	  break;
 	}
     }
   
-  //  printf("xlow %f xup %f\n",hist->GetXaxis()->GetBinCenter(x_low),hist->GetXaxis()->GetBinCenter(x_up));
+  Double_t top=0,butt=0,value,x_peak;
+  if(x_up - x_low + 1 > t3)
+    {
+      t1 -= 1;
+      printf("\nxrange out if limit x_up %d x_low %d\n\n",x_low,x_up);
+      if(t1 > 1)
+	goto recompute;
+      else
+	{
+	  x_peak = hist->GetXaxis()->GetBinCenter(max_xbin);
+	  goto moveon;
+	}
+    }
+  
+  //printf("xlow %f xup %f\n",hist->GetXaxis()->GetBinCenter(x_low),hist->GetXaxis()->GetBinCenter(x_up));
+  //printf("Spread in x %d\n",x_up-x_low +1);
 
   //Now, calculate the center of mass in x-direction
-  Double_t top=0,butt=0,x_peak,value;
   for(Int_t xbin=x_low; xbin <= x_up; xbin++)
     {
       value = hist->GetXaxis()->GetBinCenter(xbin);
@@ -199,17 +215,24 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
     }
   x_peak = top/butt;
   
+ moveon:
   
   //Find the peak in y direction:
   Int_t x_l = hist->GetXaxis()->FindBin(x_peak);
+  if(hist->GetXaxis()->GetBinCenter(x_l) > x_peak)
+    x_l--;
+
   Int_t x_u = x_l + 1;
+  
+  if(hist->GetXaxis()->GetBinCenter(x_l) > x_peak || hist->GetXaxis()->GetBinCenter(x_u) <= x_peak)
+    printf("\nAliL3HoughMaxFinder::FindPeak : Wrong xrange %f %f %f\n\n",hist->GetXaxis()->GetBinCenter(x_l),x_peak,hist->GetXaxis()->GetBinCenter(x_u));
     
-  printf("xlow %f xup %f\n",hist->GetXaxis()->GetBinCenter(x_l),hist->GetXaxis()->GetBinCenter(x_u));
+    //printf("\nxlow %f xup %f\n",hist->GetXaxis()->GetBinCenter(x_l),hist->GetXaxis()->GetBinCenter(x_u));
 
   value=top=butt=0;
   
   //printf("ylow %f yup %f\n",hist->GetYaxis()->GetBinCenter(m_low[x_l]),hist->GetYaxis()->GetBinCenter(m_up[x_l]));
-  printf("ylow %f yup %f\n",hist->GetYaxis()->GetBinCenter(m_low[x_u]),hist->GetYaxis()->GetBinCenter(m_up[x_u]));
+  //printf("ylow %f yup %f\n",hist->GetYaxis()->GetBinCenter(m_low[x_u]),hist->GetYaxis()->GetBinCenter(m_up[x_u]));
   
   for(Int_t ybin=m_low[x_l]; ybin <= m_up[x_l]; ybin++)
     {
@@ -220,7 +243,7 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
     }
   Double_t y_peak_low = top/butt;
   
-  printf("y_peak_low %f\n",y_peak_low);
+  //printf("y_peak_low %f\n",y_peak_low);
 
   value=top=butt=0;
   for(Int_t ybin=m_low[x_u]; ybin <= m_up[x_u]; ybin++)
@@ -232,7 +255,7 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
     }
   Double_t y_peak_up = top/butt;
   
-  printf("y_peak_up %f\n",y_peak_up);
+  //printf("y_peak_up %f\n",y_peak_up);
 
   Double_t x_value_up = hist->GetXaxis()->GetBinCenter(x_u);
   Double_t x_value_low = hist->GetXaxis()->GetBinCenter(x_l);
@@ -240,11 +263,18 @@ void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
   Double_t y_peak = (y_peak_low*(x_value_up - x_peak) + y_peak_up*(x_peak - x_value_low))/(x_value_up - x_value_low);
 
 
-  peak[0] = x_peak;
-  peak[1] = y_peak;
+  //Find the weight:
+  bin = hist->FindBin(x_peak,y_peak);
+  Int_t weight = (Int_t)hist->GetBinContent(bin);
+
+  AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->NextTrack();
+  track->SetTrackParameters(x_peak,y_peak,weight);
+  
+  return tracks;
 
   //delete [] m;
   //delete [] m_low;
   //delete [] m_up;
   
 }
+
