@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2002/06/24 14:09:12  vicinanz
+review on materials and
+
 Revision 1.28  2002/05/08 13:24:50  vicinanz
 AliTOFanalyzeMatching.C macro added and minor changes to the AliTOF code
 
@@ -79,9 +82,7 @@ Introduction of the Copyright and cvs Log
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Time Of Flight: design of C.Williams                                     //
-//     									     //
+//
 //  This class contains the functions for version 1 of the Time Of Flight    //
 //  detector.                                                                //
 //
@@ -178,70 +179,74 @@ void AliTOFv1::BuildGeometry()
   const Float_t kangle = 2*kPi/kNTof;
   Float_t ang;
 
+  // define offset for nodes
+  Float_t zOffsetC = fZtof - fZlenC*0.5;
+  Float_t zOffsetB = fZtof - fZlenC - fZlenB*0.5;
+  Float_t zOffsetA = 0.;
   // Define TOF basic volume
   
   char nodeName0[7], nodeName1[7], nodeName2[7]; 
   char nodeName3[7], nodeName4[7], rotMatNum[7];
-
+  
   new TBRIK("S_TOF_C","TOF box","void",
-            120*0.5,khTof*0.5,fZlenC*0.5);
+            fStripLn*0.5,khTof*0.5,fZlenC*0.5);
   new TBRIK("S_TOF_B","TOF box","void",
-            120*0.5,khTof*0.5,fZlenB*0.5);
+            fStripLn*0.5,khTof*0.5,fZlenB*0.5);
   new TBRIK("S_TOF_A","TOF box","void",
-            120*0.5,khTof*0.5,fZlenA*0.5);
-
+            fStripLn*0.5,khTof*0.5,fZlenA*0.5);
+  
   for (Int_t nodeNum=1;nodeNum<19;nodeNum++){
-     
-      if (nodeNum<10) {
-           sprintf(rotMatNum,"rot50%i",nodeNum);
-           sprintf(nodeName0,"FTO00%i",nodeNum);
-           sprintf(nodeName1,"FTO10%i",nodeNum);
-           sprintf(nodeName2,"FTO20%i",nodeNum);
-           sprintf(nodeName3,"FTO30%i",nodeNum);
-           sprintf(nodeName4,"FTO40%i",nodeNum);
-      }
-      if (nodeNum>9) {
-           sprintf(rotMatNum,"rot5%i",nodeNum);
-           sprintf(nodeName0,"FTO0%i",nodeNum);
-           sprintf(nodeName1,"FTO1%i",nodeNum);
-           sprintf(nodeName2,"FTO2%i",nodeNum);
-           sprintf(nodeName3,"FTO3%i",nodeNum);
-           sprintf(nodeName4,"FTO4%i",nodeNum);
-      }
- 
-      new TRotMatrix(rotMatNum,rotMatNum,90,-20*nodeNum,90,90-20*nodeNum,0,0);
-      ang = (4.5-nodeNum) * kangle;
-
+    
+    if (nodeNum<10) {
+      sprintf(rotMatNum,"rot50%i",nodeNum);
+      sprintf(nodeName0,"FTO00%i",nodeNum);
+      sprintf(nodeName1,"FTO10%i",nodeNum);
+      sprintf(nodeName2,"FTO20%i",nodeNum);
+      sprintf(nodeName3,"FTO30%i",nodeNum);
+      sprintf(nodeName4,"FTO40%i",nodeNum);
+    }
+    if (nodeNum>9) {
+      sprintf(rotMatNum,"rot5%i",nodeNum);
+      sprintf(nodeName0,"FTO0%i",nodeNum);
+      sprintf(nodeName1,"FTO1%i",nodeNum);
+      sprintf(nodeName2,"FTO2%i",nodeNum);
+      sprintf(nodeName3,"FTO3%i",nodeNum);
+      sprintf(nodeName4,"FTO4%i",nodeNum);
+    }
+    
+    new TRotMatrix(rotMatNum,rotMatNum,90,-20*nodeNum,90,90-20*nodeNum,0,0);
+    ang = (4.5-nodeNum) * kangle;
+    
+    top->cd();
+    node = new TNode(nodeName0,nodeName0,"S_TOF_C",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),zOffsetC,rotMatNum);
+    node->SetLineColor(kColorTOF);
+    fNodes->Add(node); 
+    
+    top->cd(); 
+    node = new TNode(nodeName1,nodeName1,"S_TOF_C",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),-zOffsetC,rotMatNum);
+    node->SetLineColor(kColorTOF);
+    fNodes->Add(node); 
+    
+    top->cd();
+    node = new TNode(nodeName2,nodeName2,"S_TOF_B",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),zOffsetB,rotMatNum);
+    node->SetLineColor(kColorTOF);
+    fNodes->Add(node); 
+    
+    top->cd();
+    node = new TNode(nodeName3,nodeName3,"S_TOF_B",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),-zOffsetB,rotMatNum);
+    node->SetLineColor(kColorTOF);
+    fNodes->Add(node); 
+    
+    if (nodeNum<7 || nodeNum>11) {
       top->cd();
-      node = new TNode(nodeName0,nodeName0,"S_TOF_C",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),299.15,rotMatNum);
+      node = new TNode(nodeName4,nodeName4,"S_TOF_A",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),zOffsetA,rotMatNum);
       node->SetLineColor(kColorTOF);
       fNodes->Add(node); 
-
-      top->cd(); 
-      node = new TNode(nodeName1,nodeName1,"S_TOF_C",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),-299.15,rotMatNum);
-      node->SetLineColor(kColorTOF);
-      fNodes->Add(node); 
-
-      top->cd();
-      node = new TNode(nodeName2,nodeName2,"S_TOF_B",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),146.45,rotMatNum);
-      node->SetLineColor(kColorTOF);
-      fNodes->Add(node); 
-
-      top->cd();
-      node = new TNode(nodeName3,nodeName3,"S_TOF_B",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),-146.45,rotMatNum);
-      node->SetLineColor(kColorTOF);
-      fNodes->Add(node); 
-
-if (nodeNum<8 || nodeNum>12) {
-      top->cd();
-      node = new TNode(nodeName4,nodeName4,"S_TOF_A",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),0.,rotMatNum);
-      node->SetLineColor(kColorTOF);
-      fNodes->Add(node); 
-     } // Modules A which are not to be installed for PHOS holes.
+    } // Modules A which are not to be installed for PHOS holes.
   } // end loop on nodeNum
-
+  
 }
- 
+
 //_____________________________________________________________________________
 void AliTOFv1::CreateGeometry()
 {
