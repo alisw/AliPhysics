@@ -201,6 +201,7 @@ void TG4StepManager::SetMaxStep(Float_t step)
 
   // set max step
   userLimits->SetMaxAllowedStep(step*TG4G3Units::Length()); 
+
 }
 
 void TG4StepManager::SetMaxNStep(Int_t maxNofSteps)
@@ -938,7 +939,7 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
 
       // the index of the first secondary of this step
       G4int startIndex 
-        = secondaryTracks->entries() - nofSecondaries;
+        = secondaryTracks->size() - nofSecondaries;
              // (the secondaryTracks vector contains secondaries 
              // produced by the track at previous steps, too)
       G4Track* track 
@@ -999,7 +1000,7 @@ AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
 
     // the index of the first secondary of this step
     G4int startIndex 
-      = secondaryTracks->entries() - nofSecondaries;
+      = secondaryTracks->size() - nofSecondaries;
            // the secondaryTracks vector contains secondaries 
            // produced by the track at previous steps, too
 
