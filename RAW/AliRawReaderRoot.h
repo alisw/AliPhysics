@@ -14,6 +14,7 @@
 #include "AliRawReader.h"
 
 class AliRawEvent;
+class AliRawEquipment;
 class AliRawData;
 class TFile;
 class TBranch;
@@ -61,6 +62,8 @@ class AliRawReaderRoot: public AliRawReader {
     AliRawEvent*     fEvent;        // (super) event
     Int_t            fSubEventIndex; // index of current sub event
     AliRawEvent*     fSubEvent;     // current sub event
+    Int_t            fEquipmentIndex; // index of current equipment
+    AliRawEquipment* fEquipment;    // current equipment
     AliRawData*      fRawData;      // current raw data
     UChar_t*         fPosition;     // current position in the raw data
     UChar_t*         fEnd;          // end position of the current subevent

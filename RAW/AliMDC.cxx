@@ -61,6 +61,7 @@
 
 #include "AliRawEvent.h"
 #include "AliRawEventHeader.h"
+#include "AliRawEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawData.h"
 #include "AliStats.h"
@@ -390,33 +391,12 @@ Int_t AliMDC::Run()
 
          Int_t rawSize = subHeader.GetEventSize() - subHeader.HeaderSize();
 
-         // Read Equipment Header (in case of physics or calibration event)
-         if (header.GetType() == AliRawEventHeader::kPhysicsEvent ||
-             header.GetType() == AliRawEventHeader::kCalibrationEvent) {
-            AliRawEquipmentHeader &equipment = *subEvent->GetEquipmentHeader();
-            Int_t equipHeaderSize = equipment.HeaderSize();
-            if ((status = ReadEquipmentHeader(equipment, header.DataIsSwapped(),
-                                              ebdata)) != equipHeaderSize) {
-               if (status == 0) {
-                  Error("Run", "unexpected EOF reading equipment-header");
-                  break;
-               }
-               return 1;
-            }
-            toRead  -= equipHeaderSize;
-            rawSize -= equipHeaderSize;
-#ifdef USE_EB
-            ebdata = (char *)(ebvec[nsub].iov_base) + subHeader.HeaderSize() +
-                     equipHeaderSize;
-#endif
-         }
-
          // Make sure raw data less than left over bytes for current event
          if (rawSize > toRead) {
             ALIDEBUG(1) {
-               Warning("Run", "raw data size (%d) exceeds number of bytes "
-		       "to read (%d)\n", rawSize, toRead);
-	       subHeader.Dump();
+               Warning("Run", "raw data size (%d) exceeds number of "
+	               "bytes to read (%d)\n", rawSize, toRead);
+               subHeader.Dump();
             }
             if ((status = DumpEvent(toRead)) != toRead) {
                if (status == 0)
@@ -427,28 +407,79 @@ Int_t AliMDC::Run()
             continue;
          }
 
-         // Read sub-event raw data
-         AliRawData &subRaw = *subEvent->GetRawData();
-         if ((status = ReadRawData(subRaw, rawSize, ebdata)) != rawSize) {
-            if (status == 0) {
-               Error("Run", "unexpected EOF reading sub-event raw data");
-               break;
-            }
-            return 1;
-         }
-
-         if (callFilter) {
-#ifdef ALI_DATE
-            if (TEST_USER_ATTRIBUTE(subHeader.GetTypeAttribute(), 0))
-               Filter(subRaw);
-            else {
-               // set size of all sectors without hard track flag to 0
-               subRaw.SetSize(0);
-            }
+         // Read Equipment Headers (in case of physics or calibration event)
+         if (header.GetType() == AliRawEventHeader::kPhysicsEvent ||
+             header.GetType() == AliRawEventHeader::kCalibrationEvent) {
+            while (rawSize > 0) {
+               AliRawEquipment &equipment = *subEvent->NextEquipment();
+               AliRawEquipmentHeader &equipmentHeader = 
+                  *equipment.GetEquipmentHeader();
+               Int_t equipHeaderSize = equipmentHeader.HeaderSize();
+               if ((status = ReadEquipmentHeader(equipmentHeader, header.DataIsSwapped(),
+                                                 ebdata)) != equipHeaderSize) {
+                  if (status == 0) {
+                     Error("Run", "unexpected EOF reading equipment-header");
+                     break;
+                  }
+                  return 1;
+               }
+               toRead  -= equipHeaderSize;
+               rawSize -= equipHeaderSize;
+#ifdef USE_EB
+               ebdata = (char *)(ebvec[nsub].iov_base) +
+                        subHeader.HeaderSize() + equipHeaderSize;
 #endif
-         }
 
-         toRead -= rawSize;
+               // Read equipment raw data
+               AliRawData &subRaw = *equipment.GetRawData();
+	       Int_t eqSize = equipmentHeader.GetEquipmentSize() -
+                              equipHeaderSize;
+               if ((status = ReadRawData(subRaw, eqSize, ebdata)) != eqSize) {
+                  if (status == 0) {
+                     Error("Run", "unexpected EOF reading sub-event raw data");
+                     break;
+                  }
+                  return 1;
+               }
+               toRead  -= eqSize;
+               rawSize -= eqSize;
+
+               if (callFilter) {
+#ifdef ALI_DATE
+                  if (TEST_USER_ATTRIBUTE(subHeader.GetTypeAttribute(), 0))
+                     Filter(subRaw);
+                  else {
+                     // set size of all sectors without hard track flag to 0
+                     subRaw.SetSize(0);
+                  }
+#endif
+               }
+	    }
+
+         } else {  // Read only raw data but no equipment header
+            AliRawEquipment &equipment = *subEvent->NextEquipment();
+            AliRawData &subRaw = *equipment.GetRawData();
+            if ((status = ReadRawData(subRaw, rawSize, ebdata)) != rawSize) {
+               if (status == 0) {
+                  Error("Run", "unexpected EOF reading sub-event raw data");
+                  break;
+               }
+               return 1;
+            }
+            toRead  -= rawSize;
+
+            if (callFilter) {
+#ifdef ALI_DATE
+               if (TEST_USER_ATTRIBUTE(subHeader.GetTypeAttribute(), 0))
+                  Filter(subRaw);
+               else {
+                  // set size of all sectors without hard track flag to 0
+                  subRaw.SetSize(0);
+               }
+#endif
+            }
+	 }
+
          nsub++;
       }
 

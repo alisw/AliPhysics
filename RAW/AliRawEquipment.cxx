@@ -40,40 +40,34 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TObjArray.h>
+#include "AliRawEquipmentHeader.h"
+#include "AliRawData.h"
 
-#include "AliRawEventHeader.h"
 #include "AliRawEquipment.h"
 
-#include "AliRawEvent.h"
 
-
-ClassImp(AliRawEvent)
+ClassImp(AliRawEquipment)
 
 
 //______________________________________________________________________________
-AliRawEvent::AliRawEvent()
+AliRawEquipment::AliRawEquipment()
 {
-   // Create ALICE event object. If ownData is kFALSE we will use a static
-   // raw data object, otherwise a private copy will be made.
+   // Create ALICE equipment object.
 
-   fNEquipments = 0;
-   fNSubEvents  = 0;
-   fEvtHdr      = 0;
-   fEquipments  = 0;
-   fSubEvents   = 0;
+   fEqpHdr     = 0;
+   fRawData    = 0;
 }
 
 //______________________________________________________________________________
-AliRawEvent::AliRawEvent(const AliRawEvent& rawEvent): TObject(rawEvent)
+AliRawEquipment::AliRawEquipment(const AliRawEquipment& rawEquipment): TObject(rawEquipment)
 {
 // copy constructor
 
-  Fatal("AliRawEvent", "copy constructor not implemented");
+  Fatal("AliRawEquipment", "copy constructor not implemented");
 }
 
 //______________________________________________________________________________
-AliRawEvent& AliRawEvent::operator = (const AliRawEvent& /*rawEvent*/)
+AliRawEquipment& AliRawEquipment::operator = (const AliRawEquipment& /*rawEquipment*/)
 {
 // assignment operator
 
@@ -82,117 +76,42 @@ AliRawEvent& AliRawEvent::operator = (const AliRawEvent& /*rawEvent*/)
 }
 
 //______________________________________________________________________________
-AliRawEventHeader *AliRawEvent::GetHeader()
+AliRawEquipmentHeader *AliRawEquipment::GetEquipmentHeader()
 {
-   // Get event header part of AliRawEvent.
+   // Get equipment header part of AliRawEquipment.
 
-   if (!fEvtHdr)
-      fEvtHdr = new AliRawEventHeader;
+   if (!fEqpHdr)
+      fEqpHdr = new AliRawEquipmentHeader;
 
-   return fEvtHdr;
+   return fEqpHdr;
 }
 
 //______________________________________________________________________________
-AliRawEquipment *AliRawEvent::NextEquipment()
+AliRawData *AliRawEquipment::GetRawData()
 {
-   // Returns next equipment object.
+   // Get raw data part of AliRawEquipment.
 
-   if (!fEquipments)
-      fEquipments = new TObjArray(100); // arbitrary, probably enough to prevent resizing
+   if (!fRawData)
+      fRawData = new AliRawData;
 
-   if (fEquipments->GetSize() <= fNEquipments) {
-      fEquipments->Expand(fNEquipments+10);
-      Warning("NextEquipment", "expanded fEquipments by 10 to %d",
-              fEquipments->GetSize());
-   }
-
-   AliRawEquipment *eq;
-   if (!(eq = (AliRawEquipment *)fEquipments->At(fNEquipments))) {
-      eq = new AliRawEquipment;
-      fEquipments->AddAt(eq, fNEquipments);
-   }
-
-   fNEquipments++;
-
-   return eq;
+   return fRawData;
 }
 
 //______________________________________________________________________________
-AliRawEquipment *AliRawEvent::GetEquipment(Int_t index) const
+void AliRawEquipment::Reset()
 {
-   // Get specified equipment. Returns 0 if equipment does not exist.
-
-   if (!fEquipments)
-      return 0;
-
-   return (AliRawEquipment *) fEquipments->At(index);
-}
-
-//______________________________________________________________________________
-AliRawEvent *AliRawEvent::NextSubEvent()
-{
-   // Returns next sub-event object.
-
-   if (!fSubEvents)
-      fSubEvents = new TObjArray(100); // arbitrary, probably enough to prevent resizing
-
-   if (fSubEvents->GetSize() <= fNSubEvents) {
-      fSubEvents->Expand(fNSubEvents+10);
-      Warning("NextSubEvent", "expanded fSubEvents by 10 to %d",
-              fSubEvents->GetSize());
-   }
-
-   AliRawEvent *ev;
-   if (!(ev = (AliRawEvent *)fSubEvents->At(fNSubEvents))) {
-      ev = new AliRawEvent;
-      fSubEvents->AddAt(ev, fNSubEvents);
-   }
-
-   fNSubEvents++;
-
-   return ev;
-}
-
-//______________________________________________________________________________
-AliRawEvent *AliRawEvent::GetSubEvent(Int_t index) const
-{
-   // Get specified sub event. Returns 0 if sub event does not exist.
-
-   if (!fSubEvents)
-      return 0;
-
-   return (AliRawEvent *) fSubEvents->At(index);
-}
-
-//______________________________________________________________________________
-void AliRawEvent::Reset()
-{
-   // Reset the event in case it needs to be re-used (avoiding costly
+   // Reset the equipment in case it needs to be re-used (avoiding costly
    // new/delete cycle). We reset the size marker for the AliRawData
-   // objects and the sub event counter.
+   // object.
 
-   for (int i = 0; i < fNEquipments; i++) {
-      AliRawEquipment *eq = (AliRawEquipment *)fEquipments->At(i);
-      eq->Reset();
-   }
-   fNEquipments = 0;
-   for (int i = 0; i < fNSubEvents; i++) {
-      AliRawEvent *ev = (AliRawEvent *)fSubEvents->At(i);
-      ev->Reset();
-   }
-   fNSubEvents = 0;
+   GetRawData()->SetSize(0);
 }
 
 //______________________________________________________________________________
-AliRawEvent::~AliRawEvent()
+AliRawEquipment::~AliRawEquipment()
 {
    // Clean up event object. Delete also, possible, private raw data.
 
-   delete fEvtHdr;
-   if (fEquipments)
-      fEquipments->Delete();
-   delete fEquipments;
-   if (fSubEvents)
-      fSubEvents->Delete();
-   delete fSubEvents;
+   delete fEqpHdr;
+   delete fRawData;
 }

@@ -1,5 +1,5 @@
 SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
-	AliRawData.cxx AliRawEvent.cxx \
+	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
 	AliStats.cxx AliRawDB.cxx \
 	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
 	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
@@ -19,7 +19,7 @@ EHDRS:=$(ROOTSYS)/include/TH1F.h
 
 EDEFINE:= -DUSE_RDM
 
-DHDR:= LinkDef.h 
+DHDR:= RAWLinkDef.h 
 
 ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}

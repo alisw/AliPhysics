@@ -3,18 +3,11 @@
 ROOTH         = TH1.h
 
 SRCS          = AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
-		AliRawData.cxx AliRawEvent.cxx \
+		AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
 		AliStats.cxx AliRawDB.cxx \
 		AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
 		AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
-		AliRunDB.cxx AliMDC.cxx \
-		AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
-		AliRawReaderDate.cxx AliTPCBuffer160.cxx \
-		AliTPCHNode.cxx AliTPCHTable.cxx \
-		AliTPCCompression.cxx AliTPCRawStream.cxx \
-		AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
-		AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx \
-		AliITSRawStreamSDDv2.cxx AliVMERawStream.cxx
+		AliRunDB.cxx AliMDC.cxx
 
 HDRS          = $(SRCS:.cxx=.h) LinkDef.h
 
@@ -31,7 +24,6 @@ ALLDICT       = $(DICT) $(DICTH)
 ALLSRCS       = $(SRCS) $(HDRS) $(MAIN)
 ALLOBJS       = $(OBJS) $(MAINO)
 
-ALIRAW        = libRAW.so
 ALIMDC        = alimdc
 
 
@@ -47,40 +39,20 @@ ALIMDC        = alimdc
 
 ##### TARGETS #####
 
-all:            $(ALIRAW) $(ALIMDC)
+all:            $(ALIMDC)
 
-rdm:            $(ALIRAW) $(ALIMDC)
+rdm:            $(ALIMDC)
 
-smi:            $(ALIRAW) $(ALIMDC)
+smi:            $(ALIMDC)
 
-evb:            $(ALIRAW) $(ALIMDC)
+evb:            $(ALIMDC)
 
-hlt:            $(ALIRAW) $(ALIMDC)
-
-$(ALIRAW):      $(DICT) $(OBJS)
-		rm -f $(ALIRAW)
-                ifeq ($(ALICE_PLATFORM),aix)
-		   $(SHLD) -o $(ALIRAW) $(LIBS) -p 0 $(OBJS)
-                else
-                   ifeq ($(ALICE_PLATFORM),alpha)
-		      $(SHLD) -o $(ALIRAW) $(OBJS) -lcxxstd -lcxx -lexc -lots -lc
-                   else
-		      $(LD) $(SOFLAGS) $(LDFLAGS) $(OBJS) -o $(ALIRAW)
-                   endif
-                endif
-		chmod 555 $(ALIRAW)
-		@echo "$(ALIRAW) done"
+hlt:            $(ALIMDC)
 
 
-$(ALIMDC):      $(MAINO) $(ALIRAW)
-                ifeq ($(ALICE_PLATFORM),aix)
-		   ln -fs $(ALILRAW) libAliRaw.a
-		   $(LD) $(LDFLAGS) $(MAINO) libAliRaw.a \
-		   $(LIBS) -o $(ALIMDC)
-                else
-		   $(LD) $(LDFLAGS) $(MAINO) $(ALIRAW) \
-		   $(LIBS) -o $(ALIMDC)
-                endif
+$(ALIMDC):      $(MAINO) $(DICT) $(OBJS)
+		$(LD) $(LDFLAGS) $(MAINO) $(OBJS) \
+		$(LIBS) -o $(ALIMDC)
 		@if [ `id -u -n` = "alicemdc" ]; then \
 		   chmod 6755 alimdc; \
 		fi
@@ -105,4 +77,4 @@ clean:
 		@rm -f $(ALLOBJS) $(ALLDICT)
 
 distclean:      clean
-		@rm -f $(ALIMDC) $(ALIRAW)
+		@rm -f $(ALIMDC)

@@ -33,6 +33,7 @@
 #include "AliRawReaderRoot.h"
 #include "AliRawEvent.h"
 #include "AliRawEventHeader.h"
+#include "AliRawEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawData.h"
 
@@ -47,6 +48,8 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
   fEvent(NULL),
   fSubEventIndex(0),
   fSubEvent(NULL),
+  fEquipmentIndex(0),
+  fEquipment(NULL),
   fRawData(NULL),
   fPosition(NULL),
   fEnd(NULL)
@@ -89,6 +92,8 @@ AliRawReaderRoot::AliRawReaderRoot(AliRawEvent* event) :
   fEvent(event),
   fSubEventIndex(0),
   fSubEvent(NULL),
+  fEquipmentIndex(0),
+  fEquipment(NULL),
   fRawData(NULL),
   fPosition(NULL),
   fEnd(NULL)
@@ -105,6 +110,8 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
   fEvent(NULL),
   fSubEventIndex(rawReader.fSubEventIndex),
   fSubEvent(NULL),
+  fEquipmentIndex(rawReader.fEquipmentIndex),
+  fEquipment(NULL),
   fRawData(NULL),
   fPosition(NULL),
   fEnd(NULL)
@@ -146,7 +153,8 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
 
   if (fSubEventIndex > 0) {
     fSubEvent = fEvent->GetSubEvent(fSubEventIndex-1);
-    fRawData = fSubEvent->GetRawData();
+    fEquipment = fSubEvent->GetEquipment(fEquipmentIndex);
+    fRawData = fEquipment->GetRawData();
       fCount = 0;
     fHeader = (AliRawDataHeader*) ((UChar_t*) fRawData->GetBuffer() + 
       ((UChar_t*) rawReader.fHeader - 
@@ -231,8 +239,8 @@ UInt_t AliRawReaderRoot::GetLDCId() const
 {
 // get the LDC Id from the event header
 
-  if (!fEvent || !fEvent->GetSubEvent(fSubEventIndex)) return 0;
-  return fEvent->GetSubEvent(fSubEventIndex)->GetHeader()->GetLDCId();
+  if (!fEvent || !fSubEvent) return 0;
+  return fSubEvent->GetHeader()->GetLDCId();
 }
 
 UInt_t AliRawReaderRoot::GetGDCId() const
@@ -248,40 +256,40 @@ Int_t AliRawReaderRoot::GetEquipmentSize() const
 {
 // get the size of the equipment
 
-  if (!fEvent || !fEvent->GetEquipmentHeader()) return 0;
-  return fEvent->GetEquipmentHeader()->GetEquipmentSize();
+  if (!fEvent || !fEquipment || !fEquipment->GetEquipmentHeader()) return 0;
+  return fEquipment->GetEquipmentHeader()->GetEquipmentSize();
 }
 
 Int_t AliRawReaderRoot::GetEquipmentType() const
 {
 // get the type from the equipment header
 
-  if (!fEvent || !fEvent->GetEquipmentHeader()) return -1;
-  return fEvent->GetEquipmentHeader()->GetEquipmentType();
+  if (!fEvent || !fEquipment || !fEquipment->GetEquipmentHeader()) return -1;
+  return fEquipment->GetEquipmentHeader()->GetEquipmentType();
 }
 
 Int_t AliRawReaderRoot::GetEquipmentId() const
 {
 // get the ID from the equipment header
 
-  if (!fEvent || !fEvent->GetEquipmentHeader()) return -1;
-  return fEvent->GetEquipmentHeader()->GetId();
+  if (!fEvent || !fEquipment || !fEquipment->GetEquipmentHeader()) return -1;
+  return fEquipment->GetEquipmentHeader()->GetId();
 }
 
 const UInt_t* AliRawReaderRoot::GetEquipmentAttributes() const
 {
 // get the attributes from the equipment header
 
-  if (!fEvent || !fEvent->GetEquipmentHeader()) return NULL;
-  return fEvent->GetEquipmentHeader()->GetTypeAttribute();
+  if (!fEvent || !fEquipment || !fEquipment->GetEquipmentHeader()) return NULL;
+  return fEquipment->GetEquipmentHeader()->GetTypeAttribute();
 }
 
 Int_t AliRawReaderRoot::GetEquipmentElementSize() const
 {
 // get the basic element size from the equipment header
 
-  if (!fEvent || !fEvent->GetEquipmentHeader()) return 0;
-  return fEvent->GetEquipmentHeader()->GetBasicSizeType();
+  if (!fEvent || !fEquipment || !fEquipment->GetEquipmentHeader()) return 0;
+  return fEquipment->GetEquipmentHeader()->GetBasicSizeType();
 }
 
 
@@ -297,35 +305,50 @@ Bool_t AliRawReaderRoot::ReadHeader()
     // skip payload (if event was not selected)
     if (fCount > 0) fPosition += fCount;
 
-    // get the first or the next sub event if at the end of a sub event
-    if (!fSubEvent || (fPosition >= fEnd)) {
+    // get the first or the next equipment if at the end of an equipment
+    if (!fEquipment || (fPosition >= fEnd)) {
 
-      // check for end of event data
-      if (fSubEventIndex >= fEvent->GetNSubEvents()) return kFALSE;
-      fSubEvent = fEvent->GetSubEvent(fSubEventIndex++);
+      // get the first or the next sub event if at the end of a sub event
+      if (!fSubEvent || (fEquipmentIndex >= fSubEvent->GetNEquipments())) {
 
-      // check the magic word of the sub event
-      if (!fSubEvent->GetHeader()->IsValid()) {
-	Error("ReadHeader", "wrong magic number in sub event!");
-	fSubEvent->GetHeader()->Dump();
-	fErrorCode = kErrMagic;
-	return kFALSE;
+	// check for end of event data
+	if (fSubEventIndex >= fEvent->GetNSubEvents()) return kFALSE;
+	fSubEvent = fEvent->GetSubEvent(fSubEventIndex++);
+
+	// check the magic word of the sub event
+	if (!fSubEvent->GetHeader()->IsValid()) {
+	  Error("ReadHeader", "wrong magic number in sub event!");
+	  fSubEvent->GetHeader()->Dump();
+	  fErrorCode = kErrMagic;
+	  return kFALSE;
+	}
+
+	fEquipmentIndex = 0;
+	fEquipment = NULL;
+	fRawData = NULL;
       }
 
-      fRawData = fSubEvent->GetRawData();
+      // get the next equipment and raw data
       fCount = 0;
+      fEquipment = fSubEvent->GetEquipment(fEquipmentIndex++);
+      if (!fEquipment) continue;
+      fRawData = fEquipment->GetRawData();
+      if (!fRawData) {
+	fPosition = fEnd;
+	continue;
+      }
       fPosition = (UChar_t*) fRawData->GetBuffer();
       fEnd = ((UChar_t*) fRawData->GetBuffer()) + fRawData->GetSize();
     }
 
-    // continue with the next sub event if no data left in the payload
+    // continue with the next equipment if no data left in the payload
     if (fPosition >= fEnd) continue;
 
     // check that there are enough bytes left for the data header
     if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
       Error("ReadHeader", "could not read data header!");
       Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
-      fSubEvent->GetHeader()->Dump();
+      fEquipment->GetEquipmentHeader()->Dump();
       fCount = 0;
       fPosition = fEnd;
       fErrorCode = kErrNoDataHeader;
@@ -345,7 +368,7 @@ Bool_t AliRawReaderRoot::ReadHeader()
     if (fPosition + fCount > fEnd) {  
       Error("ReadHeader", "size in data header exceeds event size!");
       Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
-      fSubEvent->GetHeader()->Dump();
+      fEquipment->GetEquipmentHeader()->Dump();
       fCount = 0;
       fPosition = fEnd;
       fErrorCode = kErrSize;
@@ -396,6 +419,8 @@ Bool_t AliRawReaderRoot::Reset()
 
   fSubEventIndex = 0;
   fSubEvent = NULL;
+  fEquipmentIndex = 0;
+  fEquipment = NULL;
   fRawData = NULL;
   fHeader = NULL;
 
@@ -445,13 +470,15 @@ Int_t AliRawReaderRoot::CheckData() const
 
   AliRawEvent* subEvent = NULL;
   Int_t subEventIndex = 0;
+  AliRawEquipment* equipment = NULL;
+  Int_t equipmentIndex = 0;
   UChar_t* position = 0;
   UChar_t* end = 0;
   Int_t result = 0;
 
   while (kTRUE) {
-    // get the first or the next sub event if at the end of a sub event
-    if (!subEvent || (position >= end)) {
+    // get the first or the next sub event if at the end of an equipment
+    if (!subEvent || (equipmentIndex >= subEvent->GetNEquipments())) {
 
       // check for end of event data
       if (subEventIndex >= fEvent->GetNSubEvents()) return result;
@@ -463,10 +490,16 @@ Int_t AliRawReaderRoot::CheckData() const
 	return result;
       }
 
-      AliRawData* rawData = subEvent->GetRawData();
-      position = (UChar_t*) rawData->GetBuffer();
-      end = ((UChar_t*) rawData->GetBuffer()) + rawData->GetSize();
+      equipmentIndex = 0;
     }
+
+    // get the next equipment and raw data
+    equipment = subEvent->GetEquipment(equipmentIndex++);
+    if (!equipment) continue;
+    AliRawData* rawData = equipment->GetRawData();
+    if (!rawData) continue;
+    position = (UChar_t*) rawData->GetBuffer();
+    end = ((UChar_t*) rawData->GetBuffer()) + rawData->GetSize();
 
     // continue with the next sub event if no data left in the payload
     if (position >= end) continue;
@@ -474,21 +507,15 @@ Int_t AliRawReaderRoot::CheckData() const
     // check that there are enough bytes left for the data header
     if (position + sizeof(AliRawDataHeader) > end) {
       result |= kErrNoDataHeader;
-      position = end;
       continue;
     }
 
-    // check consistency of data size in the header and in the sub event
+    // check consistency of data size in the header and in the equipment
     AliRawDataHeader* header = (AliRawDataHeader*) position;
-    if (fHeader->fSize != 0xFFFFFFFF) {
+    if (header->fSize != 0xFFFFFFFF) {
       if (position + header->fSize > end) {
 	result |= kErrSize;
-	position = end;
-      } else {
-	position += header->fSize;
       }
-    } else {
-      position = end;
     }
   };
 

@@ -1,5 +1,5 @@
-#ifndef ALIRAWEVENT_H
-#define ALIRAWEVENT_H
+#ifndef ALIRAWEQUIPMENT_H
+#define ALIRAWEQUIPMENT_H
 // @(#)alimdc:$Name$:$Id$
 // Author: Fons Rademakers  26/11/99
 // Updated: Dario Favretto  15/04/2003
@@ -37,36 +37,28 @@
 
 
 // Forward class declarations
-class AliRawEventHeader;
-class AliRawEquipment;
+class AliRawEquipmentHeader;
+class AliRawData;
 
 
-class AliRawEvent : public TObject {
+class AliRawEquipment : public TObject {
 
 public:
-   AliRawEvent();
-   virtual ~AliRawEvent();
+   AliRawEquipment();
+   virtual ~AliRawEquipment();
 
-   AliRawEventHeader     *GetHeader();
-   Int_t                  GetNEquipments() const { return fNEquipments; }
-   AliRawEquipment       *NextEquipment();
-   AliRawEquipment       *GetEquipment(Int_t index) const;
-   Int_t                  GetNSubEvents() const { return fNSubEvents; }
-   AliRawEvent           *NextSubEvent();
-   AliRawEvent           *GetSubEvent(Int_t index) const;
+   AliRawEquipmentHeader *GetEquipmentHeader();
+   AliRawData            *GetRawData();
    void                   Reset();
 
 private:
-   Int_t                  fNEquipments; // number of valid equipments
-   Int_t                  fNSubEvents;  // number of valid sub-events
-   AliRawEventHeader     *fEvtHdr;      // event header object
-   TObjArray             *fEquipments;  // AliRawEquipment's
-   TObjArray             *fSubEvents;   // sub AliRawEvent's
+   AliRawEquipmentHeader *fEqpHdr;      // equipment header
+   AliRawData            *fRawData;     // raw data container
 
-   AliRawEvent(const AliRawEvent& rawEvent);
-   AliRawEvent& operator = (const AliRawEvent& rawEvent);
+   AliRawEquipment(const AliRawEquipment& rawEvent);
+   AliRawEquipment& operator = (const AliRawEquipment& rawEvent);
 
-   ClassDef(AliRawEvent,2)  // ALICE raw event object
+   ClassDef(AliRawEquipment,1)  // ALICE raw equipment object
 };
 
 #endif
