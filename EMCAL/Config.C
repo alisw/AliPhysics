@@ -6,7 +6,8 @@ enum PprRun_t
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj125, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj125, 
-    kJetPlusBg,    kGammaPlusBg, kParam_8000_Ecal, 
+    kJetPlusBg,    kGammaPlusBg, 
+    kParam_8000_Ecal, kParam_4000_Ecal, 
     kJets_100,
     kGammaGun, kGammaBox
 };
@@ -516,9 +517,21 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
 	gener->SetThetaRange(thmin,thmax);
 	break;
+
     case kParam_8000_Ecal:
 	//coment= comment.Append(":HIJINGparam N=8000 baryons");
 	AliGenHIJINGparaBa *gener = new AliGenHIJINGparaBa(82534);
+	gener->SetMomentumRange(0, 999999.);
+	gener->SetPhiRange(-180., 180.);
+	// Set pseudorapidity range from -8 to 8.
+	Float_t thmin = EtaToTheta( 5);   // theta min. <---> eta max
+	Float_t thmax = EtaToTheta(-5);  // theta max. <---> eta min 
+	gener->SetThetaRange(thmin,thmax);
+	break;
+
+    case kParam_4000_Ecal:
+	//coment= comment.Append(":HIJINGparam N=8000 baryons");
+	AliGenHIJINGparaBa *gener = new AliGenHIJINGparaBa(82534/2.);
 	gener->SetMomentumRange(0, 999999.);
 	gener->SetPhiRange(-180., 180.);
 	// Set pseudorapidity range from -8 to 8.
