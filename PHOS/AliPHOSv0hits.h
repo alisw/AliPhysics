@@ -25,7 +25,9 @@ public:
 
   virtual void   AddHit( Int_t primary, Int_t id, Float_t *hits ) ; 
 // adds a hit to the hit tree (any pre=digitalization is done here (so large root file !!) 
-  void           FinishEvent(void) ;          // makes the digits from the hits 
+  void            FinishEvent(void) ;          // makes the digits from the hits 
+  virtual void    StepManager(void) ;  // StepManager to keep current tack number in the hit
+
 protected:
 
   ClassDef(AliPHOSv0hits,1)  // Class AliPHOSv0 which allows to write ond disk al the information of the hits. 
