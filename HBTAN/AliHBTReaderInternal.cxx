@@ -143,21 +143,20 @@ Int_t AliHBTReaderInternal::ReadNext()
 
            for (Int_t s = 0; s < ttrack->GetNumberOfPids(); s++)
             {
-              if( pdgdb->GetParticle(ttrack->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
               if( Pass(ttrack->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
-                                          //if not take next partilce
-              
-              AliHBTParticle* track = new AliHBTParticle(*ttrack);
-              
-              //apart of setting PDG code of an incarnation
-              //it is necessary tu recalculate energy on the basis of
-              //new PDG code (mass) hypothesis
+                                                         //if not take next partilce
               TParticlePDG* pdgp = pdgdb->GetParticle(ttrack->GetNthPid(s));
               if (pdgp == 0x0)//PDG part corresponding to new incarnation
                {
                  Error("ReadNext","Particle code unknown to PDG DB.");
                  continue;
                }
+              
+              AliHBTParticle* track = new AliHBTParticle(*ttrack);
+              
+              //apart of setting PDG code of an incarnation
+              //it is necessary tu recalculate energy on the basis of
+              //new PDG code (mass) hypothesis
               Double_t mass = pdgp->Mass();//mass of new incarnation
               Double_t tEtot = TMath::Sqrt( ttrack->Px()*ttrack->Px() + 
                                             ttrack->Py()*ttrack->Py() + 
@@ -221,20 +220,19 @@ Int_t AliHBTReaderInternal::ReadNext()
 
            for (Int_t s = 0; s < ttrack->GetNumberOfPids(); s++)
             {
-              if( pdgdb->GetParticle(ttrack->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
               if( Pass(ttrack->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
-                                          //if not take next partilce
-              AliHBTParticle* track = new AliHBTParticle(*ttrack);
-              
-              //apart of setting PDG code of an incarnation
-              //it is necessary tu recalculate energy on the basis of
-              //new PDG code (mass) hypothesis
+                                                         //if not take next partilce
               TParticlePDG* pdgp = pdgdb->GetParticle(ttrack->GetNthPid(s));
               if (pdgp == 0x0)//PDG part corresponding to new incarnation
                {
                  Error("ReadNext","Particle code unknown to PDG DB.");
                  continue;
                }
+              AliHBTParticle* track = new AliHBTParticle(*ttrack);
+              
+              //apart of setting PDG code of an incarnation
+              //it is necessary tu recalculate energy on the basis of
+              //new PDG code (mass) hypothesis
               Double_t mass = pdgp->Mass();//mass of new incarnation
               Double_t tEtot = TMath::Sqrt( ttrack->Px()*ttrack->Px() + 
                                             ttrack->Py()*ttrack->Py() + 
