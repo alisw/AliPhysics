@@ -908,7 +908,6 @@ void AliRICH::CreateGeometry()
   gMC->Gspos("PCB ", 2, "SRIC ", 0.,  1.276 + Param()->GapThickness()/2 + .5 + 1.05, -pcX/4 - .5025 - 2.5, 0, "ONLY");
 
 //place chambers into mother volume ALIC
-  CreateChambers();
   for(int i=1;i<=kNCH;i++){
     AliMatrix(idrotm[1000+i],C(i)->ThetaXd(),C(i)->PhiXd(),
                              C(i)->ThetaYd(),C(i)->PhiYd(),
