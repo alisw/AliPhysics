@@ -31,9 +31,14 @@ void AliHBTCorrFitFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTP
  //Fills the numerator using pair from the same event
    partpair = CheckPair(partpair);
    if(partpair == 0x0) return; 
+   trackpair = CheckPair(trackpair);
+   if(trackpair == 0x0) return; 
    
    Double_t q = trackpair->GetQInv();
    Bool_t fill = kFALSE;
+   
+   Double_t weight = AliHBTLLWeights::Instance()->GetWeight(partpair);
+   fNumerator->Fill(q,weight);
    
    if ( (q < 0.15) && (fNPairsFitArea < 2.e+5))
      {
@@ -49,12 +54,10 @@ void AliHBTCorrFitFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTP
    
    if (fill)
     {  
-      Double_t weight = AliHBTLLWeights::Instance()->GetWeight(partpair);
-      fNumerator->Fill(q,weight);
       const AliHBTParticle& p1 = *(trackpair->Particle1());
       const AliHBTParticle& p2 = *(trackpair->Particle2());
       fNtuple->Fill(p1.Px(),p1.Py(),p1.Pz(),p1.Energy(),
-	p2.Px(),p2.Py(),p2.Pz(),p2.Energy());
+                    p2.Px(),p2.Py(),p2.Pz(),p2.Energy());
     }
 }
 /****************************************************************/

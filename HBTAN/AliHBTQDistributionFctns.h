@@ -9,6 +9,10 @@ class AliHBTQOutDistributionVsKtFctn;    //QOutCMSLC   Distribution Vs   Kt
 class AliHBTQSideDistributionVsKtFctn;   //QSideCMSLC  Distribution Vs   Kt
 class AliHBTQLongDistributionVsKtFctn;   //QLongCMSLC  Distribution Vs   Kt
 
+class AliHBTQOutDistributionVsQInvFctn;    //QOutCMSLC   Distribution Vs   QInv
+class AliHBTQSideDistributionVsQInvFctn;   //QSideCMSLC  Distribution Vs   QInv
+class AliHBTQLongDistributionVsQInvFctn;   //QLongCMSLC  Distribution Vs   QInv
+
 #include "AliHBTFunction.h"
 
 /***********************************************************************/
@@ -90,6 +94,64 @@ class AliHBTQInvDistributionVsKtFctn: public AliHBTOnePairFctn2D
     ClassDef(AliHBTQInvDistributionVsKtFctn,1)
  };
 
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTQOutDistributionVsQInvFctn: public AliHBTOnePairFctn2D
+ {
+  public: 
+   AliHBTQOutDistributionVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
+                             Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
+   virtual ~AliHBTQOutDistributionVsQInvFctn(){}
+   TH1* GetResult(){return GetNumerator();}
+   void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     y = partpair->GetQOutCMSLC();
+     x = partpair->GetQInv();
+    }
+  protected:
+  private:
+  public:
+    ClassDef(AliHBTQOutDistributionVsQInvFctn,1)
+ };
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTQSideDistributionVsQInvFctn: public AliHBTOnePairFctn2D
+ {
+  public: 
+   AliHBTQSideDistributionVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1.2, Double_t minXval = -0.1, 
+                             Int_t nYbins = 500, Double_t maxYval = 1.2, Double_t minYval =-1.2);
+   virtual ~AliHBTQSideDistributionVsQInvFctn(){}
+   TH1* GetResult(){return GetNumerator();}
+   void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     y = partpair->GetQSideCMSLC();
+     x = partpair->GetQInv();
+    }
+  protected:
+  private:
+  public:
+    ClassDef(AliHBTQSideDistributionVsQInvFctn,1)
+ };
+/***********************************************************************/
+/***********************************************************************/
+
+class AliHBTQLongDistributionVsQInvFctn: public AliHBTOnePairFctn2D
+ {
+  public: 
+   AliHBTQLongDistributionVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1.2, Double_t minXval = -0.1, 
+                             Int_t nYbins = 500, Double_t maxYval = 1.2, Double_t minYval =-1.2);
+   virtual ~AliHBTQLongDistributionVsQInvFctn(){}
+   TH1* GetResult(){return GetNumerator();}
+   void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     y = partpair->GetQLongCMSLC();
+     x = partpair->GetQInv();
+    }
+  protected:
+  private:
+  public:
+    ClassDef(AliHBTQLongDistributionVsQInvFctn,1)
+ };
 /***********************************************************************/
 /***********************************************************************/
 

@@ -1038,13 +1038,13 @@ void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills the numerator using pairs from the same event
   partpair  = CheckPair(partpair);
+  if( partpair == 0x0) return;
+  
   if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
     trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-  if( partpair ) 
-   { 
-     Double_t x = GetValue(trackpair,partpair);
-     fNumerator->Fill(x);
-   }
+    
+  Double_t x = GetValue(trackpair,partpair);
+  fNumerator->Fill(x);
 }
 /******************************************************************/
 
@@ -1052,13 +1052,13 @@ void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills the denumerator usin mixed pairs
   partpair  = CheckPair(partpair);
+  if( partpair == 0x0) return;
+  
   if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
     trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-  if( partpair )
-   { 
-     Double_t x = GetValue(trackpair,partpair);
-     fDenominator->Fill(x);
-   }
+    
+  Double_t x = GetValue(trackpair,partpair);
+  fDenominator->Fill(x);
 }
 /******************************************************************/
 /******************************************************************/
@@ -1110,14 +1110,14 @@ void AliHBTTwoPairFctn2D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 {
 //processes pair of particles coming from a same events (real pair)
   partpair  = CheckPair(partpair);  //check cuts
+  if (partpair == 0x0) return;
+  
   if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
     trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-  if( partpair ) 
-   { 
-     Double_t x,y;
-     GetValues(trackpair,partpair,x,y);
-     fNumerator->Fill(x,y);
-   }
+    
+  Double_t x,y;
+  GetValues(trackpair,partpair,x,y);
+  fNumerator->Fill(x,y);
 }
 /******************************************************************/
 
@@ -1125,14 +1125,14 @@ void AliHBTTwoPairFctn2D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 {
 //processes pair of particles coming from a different events (mixed pair)
   partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+  
   if (partpair->GetSwapedPair() == 0x0)//it means that Check pair returned swapped pair
     trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-  if( partpair ) 
-   { 
-     Double_t x,y;
-     GetValues(trackpair,partpair,x,y);
-     fDenominator->Fill(x,y);
-   }
+    
+  Double_t x,y;
+  GetValues(trackpair,partpair,x,y);
+  fDenominator->Fill(x,y);
 }
 
 /******************************************************************/
@@ -1187,14 +1187,15 @@ void AliHBTTwoPairFctn3D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills th numerator using pairs from the same event
   partpair  = CheckPair(partpair);
+  if( partpair == 0x0) return;
+  
   if (partpair->GetSwapedPair() == 0x0)//it means that CheckPair returned swapped pair
     trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-  if( partpair ) 
-   { 
-     Double_t x,y,z;
-     GetValues(trackpair,partpair,x,y,z);
-     fNumerator->Fill(x,y,z);
-   }
+    
+  Double_t x,y,z;
+  GetValues(trackpair,partpair,x,y,z);
+  fNumerator->Fill(x,y,z);
+   
 }
 /******************************************************************/
 
@@ -1202,15 +1203,14 @@ void AliHBTTwoPairFctn3D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHB
 {
   // Fills the denumerator using mixed pairs
   partpair  = CheckPair(partpair);
+  if( partpair == 0x0) return;
+  
   if (partpair->GetSwapedPair() == 0x0)//it means that CheckPair returned swapped pair
     trackpair = trackpair->GetSwapedPair();//so the track pair must be swapped as well
-  if( partpair ) 
-   { 
-     Double_t x,y,z;
-     GetValues(trackpair,partpair,x,y,z);
-     fDenominator->Fill(x,y,z);
-   }
-
+    
+  Double_t x,y,z;
+  GetValues(trackpair,partpair,x,y,z);
+  fDenominator->Fill(x,y,z);
 }
 
 /******************************************************************/
