@@ -3,8 +3,10 @@ AliVZEROLoader.cxx \
 AliVZERO.cxx \
 AliVZEROv2.cxx \
 AliVZEROv3.cxx \
+AliVZEROv4.cxx \
 AliVZEROhit.cxx \
-AliVZEROdigit.cxx
+AliVZEROdigit.cxx \
+AliVZERODigitizer.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
