@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Test macro for AliITSPid class and tracking version V2 // 
+// Rev. 25 July 2002 v3-08-03 + Root 3.02/07 + RedHat 6.2 //
 ////////////////////////////////////////////////////////////
 void
 AliITSSavePIDV2(Int_t evNumber1=0,Int_t evNumber2=0) {
@@ -63,7 +64,6 @@ TFile *fpid = new TFile("AliITStracksV2Pid.root","recreate");
    }// End for i (tracks)
  fpid->Write();
  }// End for nev (events)
- fpid->Close();
  file->Close();		 
  cout<<"File AliITStracksV2Pid.root written"<<endl;
  return;
