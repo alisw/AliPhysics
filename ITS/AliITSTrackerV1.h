@@ -40,7 +40,7 @@ class AliITSTrackerV1 : public TObject {
     AliITSTrackerV1(const AliITSTrackerV1 &cobj);
     ~AliITSTrackerV1();
     AliITSTrackerV1 &operator=(const AliITSTrackerV1 &obj);
-	 void DelMatrix(Int_t NumOfModules);
+//  void DelMatrix(Int_t NumOfModules);
     void DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file, Bool_t realmass=0);
     void RecursiveTracking(TList *trackITSlist);
     Int_t Intersection(AliITSTrackV1 &track, Int_t layer,Int_t &ladder,
