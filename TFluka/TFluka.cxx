@@ -2299,7 +2299,7 @@ void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
     Warning("GetSecondary","no secondaries available");
 } // end of GetSecondary
 
-TMCProcess TFluka::ProdProcess() const
+TMCProcess TFluka::ProdProcess(Int_t) const
 // Name of the process that has produced the secondary particles
 // in the current step
 {

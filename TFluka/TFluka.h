@@ -204,7 +204,7 @@ class TFluka : public TVirtualMC {
   virtual Int_t    NSecondaries() const ;
   virtual void     GetSecondary(Int_t isec, Int_t& particleId, 
 			TLorentzVector& position, TLorentzVector& momentum);
-  virtual TMCProcess ProdProcess() const ;
+  virtual TMCProcess ProdProcess(Int_t iproc) const ;
   virtual Int_t    StepProcesses(TArrayI &/*proc*/) const
     {printf("WARNING: StepProcesses not yet implemented !\n"); return -1;}
   
