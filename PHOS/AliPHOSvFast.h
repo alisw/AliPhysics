@@ -14,6 +14,8 @@
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
+#include <assert.h>
+
 // --- ROOT system ---
 #include "TClonesArray.h"
 #include "TRandom.h"
