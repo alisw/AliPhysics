@@ -155,21 +155,21 @@ Float_t AliITSsegmentationSPD::ZFromCol(Int_t col) {
 Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) {
     // Get pitch size in z direction for each colunm
 
-   Float_t pitchz = 425;
+   Float_t pitchz = 425.;
     if(col < 0){
 	pitchz = 0.0;
     } else if(col >=  31 && col <=  32) {
-	pitchz = 625;
+	pitchz = 625.;
     } else if(col >=  63 && col <=  64) {
-	pitchz = 625;
+	pitchz = 625.;
     } else if(col >=  95 && col <=  96) {
-	pitchz = 625;
+	pitchz = 625.;
     } else if(col >= 127 && col <= 128) {
-	pitchz = 625;
+	pitchz = 625.;
     } else if(col >= 159 && col <= 160) {
-	pitchz = 625;
+	pitchz = 625.;
     } else if(col>=192){
-	pitchz = 0.0;
+	pitchz = 425.;
     }
     return pitchz;
 }
