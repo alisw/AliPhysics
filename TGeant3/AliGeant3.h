@@ -18,8 +18,6 @@
 class AliGeant3 : public TGeant3
 {
 
-private:
-
 public:
   AliGeant3(const char *title);
   AliGeant3() {}
@@ -35,6 +33,8 @@ public:
   virtual void FinishGeometry();
   virtual void ProcessEvent();
   virtual void ProcessRun(Int_t nevent);
+
+private:
 
   ClassDef(AliGeant3,1) //Generic MonteCarlo Class
 

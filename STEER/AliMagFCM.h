@@ -19,7 +19,7 @@ public:
   virtual ~AliMagFCM() {delete fB;}
   virtual void Field(Float_t *x, Float_t *b);
   virtual void ReadField();
-  virtual void Copy(AliMagFCM &magf) const;
+  void Copy(AliMagFCM &magf) const;
   virtual AliMagFCM & operator=(const AliMagFCM &magf);
 
   Float_t Bx(const Int_t ix, const Int_t iy, const Int_t iz) {

@@ -93,7 +93,7 @@ public TObject {
     // Test points for auto calibration
     virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)                       = 0;
     // Draw the segmentation zones
-    virtual void Draw()                                                                 = 0;
+    virtual void Draw(const char *opt = "")                                             = 0;
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t, TF1*)                                               = 0;

@@ -13,8 +13,10 @@ FSRCS	     = galicef.F
 
 # C++ sources
 
-GSRCS          = TGeant3.cxx TPaveTree.cxx THIGZ.cxx \
-                 TGeant3GUI.cxx AliGeant3.cxx
+GSRCS          = TGeant3.cxx TPaveTree.cxx THIGZ.cxx AliGUIMedium.cxx \
+                 AliGeant3.cxx AliGUIMaterial.cxx AliDrawVolume.cxx \
+		 AliGUISliders.cxx AliGuiGeomDialog.cxx AliGuiGeomMain.cxx \
+		 AliGeant3GeometryGUI.cxx
 
 # C++ Headers
 

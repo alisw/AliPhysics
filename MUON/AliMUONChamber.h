@@ -108,7 +108,7 @@ public TObject
   virtual Float_t DGas() {return fdGas;}
   virtual Float_t DAlu() {return fdAlu;}  
 // assignment operator  
-  virtual AliMUONChamber& operator =(const AliMUONChamber& rhs);
+  AliMUONChamber& operator =(const AliMUONChamber& rhs);
   
  protected:
   Int_t   fId;   // chamber number

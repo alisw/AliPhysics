@@ -1,5 +1,5 @@
-#ifndef TGeant3_H 
-#define TGeant3_H 
+#ifndef TGEANT3_H 
+#define TGEANT3_H 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -523,53 +523,6 @@ typedef struct {
 
 class TGeant3 : public AliMC { 
 
-protected:
-  Int_t fNextVol;    // Iterator for GeomIter
-
-//--------------Declarations for ZEBRA--------------------- 
-  Int_t *fZiq, *fZlq; 
-  Float_t *fZq; 
-
-  Quest_t  *fQuest; 
-  Gcbank_t *fGcbank;
-  Gclink_t *fGclink; 
-  Gccuts_t *fGccuts; 
-  Gcmulo_t *fGcmulo; 
-  Gcmate_t *fGcmate; 
-  Gctpol_t *fGctpol; 
-  Gcnum_t  *fGcnum; 
-  Gcsets_t *fGcsets; 
-  Gcopti_t *fGcopti; 
-  Gctlit_t *fGctlit; 
-  Gcvdma_t *fGcvdma; 
-  Gcvolu_t *fGcvolu; 
-  Gckine_t *fGckine; 
-  Gcflag_t *fGcflag; 
-  Gctmed_t *fGctmed; 
-  Gcphys_t *fGcphys; 
-  Gcphlt_t *fGcphlt; 
-  Gcking_t *fGcking; 
-  Gckin2_t *fGckin2; 
-  Gckin3_t *fGckin3; 
-  Gctrak_t *fGctrak; 
-
-
-  // commons for GEANE
-  Ertrio_t *fErtrio;
-  Eropts_t *fEropts;
-  Eroptc_t *fEroptc;
-  Erwork_t *fErwork;
-
-  //Put here all volume names
-
-  char (*fVolNames)[5];           //! Names of geant volumes as C++ chars
-
-  enum {kMaxParticles = 100};
-
-  Int_t fNPDGCodes;
-
-  Int_t fPDGCode[kMaxParticles];
-
 public: 
   TGeant3(); 
   TGeant3(const char *title, Int_t nwgeant=0); 
@@ -577,6 +530,7 @@ public:
     delete [] fVolNames;
     fVolNames=0;}
   } 
+
   virtual void LoadAddress(); 
  
 ///////////////////////////////////////////////////////////////////////
@@ -600,7 +554,7 @@ public:
   Int_t PDGFromId(Int_t pdg) const;
   void  DefineParticles();
   const char* VolName(Int_t id) const;
-  Float_t Xsec(char*, Float_t, Int_t, Int_t);
+  Float_t Xsec(char* reac, Float_t energy, Int_t part, Int_t mate);
   void  TrackPosition(TLorentzVector &xyz) const;
   void  TrackMomentum(TLorentzVector &xyz) const;  
   Int_t NofVolumes() const;
@@ -621,7 +575,8 @@ public:
   Int_t  NSecondaries() const;
   Int_t  CurrentEvent() const;
   const char*  ProdProcess() const;
-  void   GetSecondary(Int_t, Int_t&, TLorentzVector&, TLorentzVector&);
+  void   GetSecondary(Int_t isec, Int_t& ipart, TLorentzVector &x, 
+		      TLorentzVector &p);
   void   StopTrack();
   void   StopEvent();
   Float_t MaxStep() const;
@@ -635,12 +590,21 @@ public:
   virtual Float_t Edep() const;
   virtual Float_t Etot() const;
   virtual void    Rndm(Float_t* r, const Int_t n) const;
-  virtual void    Material(Int_t&, const char*, Float_t, Float_t, Float_t, Float_t,
-			    Float_t, Float_t* buf=0, Int_t nwbuf=0);
-  virtual void    Mixture(Int_t&, const char*, Float_t*, Float_t*, Float_t, Int_t, Float_t*);
-  virtual void    Medium(Int_t&, const char*, Int_t, Int_t, Int_t, Float_t, Float_t, 
-		   Float_t, Float_t, Float_t, Float_t, Float_t* ubuf=0, Int_t nbuf=0);
-  virtual void    Matrix(Int_t&, Float_t, Float_t, Float_t, Float_t, Float_t, Float_t);
+
+  virtual void   Material(Int_t& kmat, const char* name, Float_t a, Float_t z,
+			   Float_t dens, Float_t radl, Float_t absl, 
+			   Float_t* buf=0, Int_t nwbuf=0);
+
+  virtual void   Mixture(Int_t& kmat, const char* name, Float_t* a,Float_t* z,
+			  Float_t dens, Int_t nlmat, Float_t* wmat);
+
+  virtual void   Medium(Int_t& kmed, const char* name, Int_t nmat, Int_t isvol,
+			Int_t ifield, Float_t fieldm, Float_t tmaxfd,
+			Float_t stemax, Float_t deemax, Float_t epsil,
+			Float_t stmin, Float_t* ubuf=0, Int_t nbuf=0);
+
+  virtual void   Matrix(Int_t& krot, Float_t thex, Float_t phix, Float_t they,
+			Float_t phiy, Float_t thez, Float_t phiz);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                         //
@@ -757,7 +721,7 @@ public:
    virtual  void  Grndmq(Int_t &is1, Int_t &is2, const Int_t iseq, const Text_t *chopt); 
  
       // functions from GGEOM 
-   virtual  void  Gdxyz(Int_t ); 
+   virtual  void  Gdxyz(Int_t it); 
    virtual  void  Gdcxyz(); 
 
       // functions from GGEOM 
@@ -786,8 +750,8 @@ public:
    virtual  void  Gsatt(const char *name, const char *att, Int_t val);
    virtual  void  Gfpara(const char *name, Int_t number, Int_t intext, Int_t& npar,
 			 Int_t& natt, Float_t* par, Float_t* att);
-   virtual  void  Gckpar(Int_t, Int_t, Float_t*);
-   virtual  void  Gckmat(Int_t, char*);
+   virtual  void  Gckpar(Int_t ish, Int_t npar, Float_t *par);
+   virtual  void  Gckmat(Int_t itmed, char *natmed);
     
       // functions from GDRAW 
    virtual  void  DefaultRange();
@@ -808,7 +772,8 @@ public:
    virtual  void  Gdtree(const char *name,Int_t levmax=15,Int_t ispec=0);
    virtual  void  GdtreeParent(const char *name,Int_t levmax=15,Int_t ispec=0);
 
-   virtual  void  WriteEuclid(const char*, const char*, Int_t, Int_t);
+   virtual  void  WriteEuclid(const char* filnam, const char* topvol, 
+			      Int_t number, Int_t nlevel);
 
    virtual  void  SetABAN(Int_t par=1);
    virtual  void  SetANNI(Int_t par=1);
@@ -858,6 +823,59 @@ public:
 
   virtual void FinishGeometry();
   virtual void BuildPhysics();
+
+protected:
+  Int_t fNextVol;    // Iterator for GeomIter
+
+//--------------Declarations for ZEBRA--------------------- 
+  Int_t *fZiq;                // Good Old IQ of Zebra
+  Int_t *fZlq;                // Good Old LQ of Zebra
+  Float_t *fZq;               // Good Old Q of Zebra
+
+  Quest_t  *fQuest;           // QUEST common structure
+  Gcbank_t *fGcbank;          // GCBANK common structure
+  Gclink_t *fGclink;          // GCLINK common structure
+  Gccuts_t *fGccuts;          // GCCUTS common structure
+  Gcmulo_t *fGcmulo;          // GCMULO common structure
+  Gcmate_t *fGcmate;          // GCMATE common structure
+  Gctpol_t *fGctpol;          // GCTPOL common structure
+  Gcnum_t  *fGcnum;           // GCNUM common structure
+  Gcsets_t *fGcsets;          // GCSETS common structure
+  Gcopti_t *fGcopti;          // GCOPTI common structure
+  Gctlit_t *fGctlit;          // GCTLIT common structure
+  Gcvdma_t *fGcvdma;          // GCVDMA common structure
+  Gcvolu_t *fGcvolu;          // GCVOLU common structure
+  Gckine_t *fGckine;          // GCKINE common structure
+  Gcflag_t *fGcflag;          // GCFLAG common structure
+  Gctmed_t *fGctmed;          // GCTMED common structure
+  Gcphys_t *fGcphys;          // GCPHYS common structure
+  Gcphlt_t *fGcphlt;          // GCPHLT common structure
+  Gcking_t *fGcking;          // GCKING common structure
+  Gckin2_t *fGckin2;          // GCKIN2 common structure
+  Gckin3_t *fGckin3;          // GCKIN3 common structure
+  Gctrak_t *fGctrak;          // GCTRAK common structure
+
+
+  // commons for GEANE
+  Ertrio_t *fErtrio;          // ERTRIO common structure
+  Eropts_t *fEropts;          // EROPTS common structure
+  Eroptc_t *fEroptc;          // EROPTC common structure
+  Erwork_t *fErwork;          // ERWORK common structure
+
+  //Put here all volume names
+
+  char (*fVolNames)[5];           //! Names of geant volumes as C++ chars
+
+  enum {kMaxParticles = 100};
+
+  Int_t fNPDGCodes;               // Number of PDG codes known by G3
+
+  Int_t fPDGCode[kMaxParticles];  // Translation table of PDG codes
+
+private:
+  TGeant3(const TGeant3 &) {}
+  TGeant3 & operator=(const TGeant3&) {return *this;}
+
 
    ClassDef(TGeant3,1)  //C++ interface to Geant basic routines 
 }; 

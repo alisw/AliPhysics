@@ -95,8 +95,8 @@ public:
   virtual void        SetEuclidFile(char *material,char *geometry=0);
   virtual void ReadEuclid(const char *filnam, char *topvol);
   virtual void ReadEuclidMedia(const char *filnam);
-  virtual AliModule& operator=(const AliModule &mod);
-  virtual void Copy(AliModule &mod) const;
+  AliModule& operator=(const AliModule &mod);
+  void Copy(AliModule &mod) const;
  
 protected:      
   // Data members

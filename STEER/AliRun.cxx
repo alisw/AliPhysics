@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.39  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -225,15 +228,6 @@ AliRun::AliRun(const char *name, const char *title)
   //
   // Create HitLists list
   fHitLists  = new TList();
-}
-
-//_____________________________________________________________________________
-AliRun::AliRun(const AliRun &run)
-{
-  // 
-  // Copy constructor
-  //
-  run.Copy(*this);
 }
 
 
@@ -1571,26 +1565,6 @@ void AliRun::StepManager(Int_t id)
     AliModule *det = (AliModule*)fModules->At(id);
     if(det) det->StepManager();
   }
-}
-
-//_____________________________________________________________________________
-AliRun& AliRun::operator = (const AliRun &run)
-{
-  //
-  // Assignment operator
-  //
-  if(this != &run) run.Copy(*this);
-  return (*this);
-}
-
-
-//_____________________________________________________________________________
-void AliRun::Copy(AliRun &/* run */) const
-{
-  //
-  // Copy *this onto run, not implemented for AliRun
-  //
-  Fatal("operator =","Assignment operator not implemented!\n");
 }
 
 //_____________________________________________________________________________

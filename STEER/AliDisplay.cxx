@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.7  1999/11/10 07:37:06  fca
 Pads do not inherit editability from canvas any more
 
@@ -323,6 +326,9 @@ void AliDisplay::ShowTrack(Int_t idx) {
 
 //----------------------------------------------------------------------------
 void AliDisplay::HideTrack(Int_t idx) {
+  //
+  // Hide track on display
+  //
    AliDetector *mTPC=(AliDetector*)gAlice->GetModule("TPC");
    TObjArray *points=mTPC->Points();
    int ntracks=points->GetEntriesFast();
@@ -761,6 +767,9 @@ void AliDisplay::Paint(Option_t *)
 //_____________________________________________________________________________
 void AliDisplay::SetPickMode()
 {
+  //
+  // Set Pick Mode -- disable zoom
+  //
    fZoomMode = 0;
 
    fArcButton->SetY1(fPickButton->GetYlowNDC()+0.5*fPickButton->GetHNDC());
@@ -770,6 +779,9 @@ void AliDisplay::SetPickMode()
 //_____________________________________________________________________________
 void AliDisplay::SetZoomMode()
 {
+  //
+  // Set Zoom Mode -- disable pick
+  //
    fZoomMode = 1;
 
    fArcButton->SetY1(fZoomButton->GetYlowNDC()+0.5*fZoomButton->GetHNDC());
@@ -779,6 +791,9 @@ void AliDisplay::SetZoomMode()
 //_____________________________________________________________________________
 void AliDisplay::SetPTcut(Float_t ptcut)
 {
+  //
+  // Set Pt Cut
+  //
    fPTcut = ptcut;
 
    if (!fPad) return;

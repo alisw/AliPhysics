@@ -23,7 +23,7 @@ public AliHitMap
     // Fill hits from list of digits into hit map
     virtual  void  FillHits();
     // Clear the hit map
-    virtual  void  Clear();
+    virtual  void  Clear(const char *opt = "");
     // Set a single hit
     virtual  void  SetHit(Int_t ix, Int_t iy, Int_t idigit);
     // Delete a single hit

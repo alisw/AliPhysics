@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.4  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -48,12 +51,3 @@ AliMC::AliMC(const char *name, const char *title) : TNamed(name,title)
     gMC=this;
   }
 }
-
-void AliMC::Copy(AliMC &mc) const
-{
-  //
-  // Copy *this onto mc -- not implemented
-  //
-  Fatal("Copy","Not implemented~\n");
-}
-

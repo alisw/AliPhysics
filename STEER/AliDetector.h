@@ -19,7 +19,7 @@ public:
   virtual ~AliDetector();
 
   // Inline functions
-  virtual void  Copy(AliDetector &det) const;
+          void  Copy(AliDetector &det) const;
   virtual int   GetNdigits() {return fNdigits;}
   virtual int   GetNhits()   {return fNhits;}
   TClonesArray *Digits() {return fDigits;}
@@ -27,7 +27,7 @@ public:
   TObjArray    *Points() {return fPoints;}
   Int_t         GetIshunt() {return fIshunt;}
   void          SetIshunt(Int_t ishunt) {fIshunt=ishunt;}
-  virtual AliDetector &operator=(const AliDetector &det) 
+  AliDetector &operator=(const AliDetector &det) 
   {det.Copy(*this); return (*this);}
   
   // Other methods

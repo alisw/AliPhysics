@@ -36,6 +36,7 @@ public AliMUONSegmentationV01 {
     virtual Int_t   Npy();
     // calculate sector from pad coordinates
     virtual Int_t   Sector(Int_t ix, Int_t iy);
+    virtual void Draw(const char *opt="") {}
     //
     // Transform from pad (wire) to real coordinates and vice versa
     // Transform from pad to real coordinates

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/12 08:56:32  fca
+Coding convention correction and warning removal
+
 Revision 1.4  1999/09/29 09:24:31  fca
 Introduction of the Copyright and cvs Log
 
@@ -122,8 +125,8 @@ Introduction of the Copyright and cvs Log
 # define itx    ITX
 #endif
 
-static Int_t npid = 0;
-static char cpar[1200];
+// static Int_t sNpid = 0;
+static char sCpar[1200];
 static TGeant3 *geant3=(TGeant3*)gMC;
 
 THIGZ *gHigz = 0;
@@ -132,14 +135,19 @@ ClassImp(THIGZ)
    
 //_______________________________________________________________
 THIGZ::THIGZ()
-      :TCanvas()
 {
+  //
+  // Default constructor
+  //
 }
    
 //_______________________________________________________________
 THIGZ::THIGZ(Int_t size)
       :TCanvas("higz","higz",size,size)
 {
+  //
+  // Standard Constructor
+  //
    gHigz = this;
    Reset();
    SetFillColor(10);
@@ -147,10 +155,16 @@ THIGZ::THIGZ(Int_t size)
 //_______________________________________________________________
 THIGZ::~THIGZ()
 {
+  //
+  // Destructor
+  //
 }
 //_______________________________________________________________
 Float_t THIGZ::Get(const char *name)
 {
+  //
+  // Get Attribute
+  //
    if (!strcmp(name,"FAIS")) return fFAIS;
    if (!strcmp(name,"FASI")) return fFASI;
    if (!strcmp(name,"LTYP")) return fLTYP;
@@ -177,6 +191,9 @@ Float_t THIGZ::Get(const char *name)
 //_______________________________________________________________
 void THIGZ::Set(const char *name, Float_t val)
 {
+  //
+  // Set Attribute
+  //
    if (!strcmp(name,"FAIS")) {fFAIS = Int_t(val); return;}
    if (!strcmp(name,"FASI")) {fFASI = Int_t(val); return;}
    if (!strcmp(name,"LTYP")) {fLTYP = Int_t(val); return;}
@@ -214,6 +231,9 @@ void THIGZ::Set(const char *name, Float_t val)
 //_______________________________________________________________
 void THIGZ::Reset(Option_t *)
 {
+  //
+  // Reset all attributes
+  //
    fFAIS = 0;
    fFASI = 1;
    fLTYP = 1;
@@ -391,20 +411,23 @@ extern "C" void type_of_call idawk(Int_t &)
 //_______________________________________________________________
 extern "C" void type_of_call ifa(Int_t &n,Float_t *x, Float_t *y)
 {
-//   printf("ifa called, n=%d, pname=%s, pid=%d, x1=%f, y1=%f,x2=%f, y2=%f, x3=%f, y3=%f\n",n,gHigz->fPname.Data(),gHigz->fPID,x[0],y[0],x[1],y[1],x[2],y[2]);
+//   printf("ifa called, n=%d, pname=%s, pid=%d, x1=%f, y1=%f,x2=%f, y2=%f, x3=%f, y3=%f\n",n,gHigz->Pname().Data(),gHigz->PID(),x[0],y[0],x[1],y[1],x[2],y[2]);
    TGraph *gr = new TGraph(n,x,y);
-   gr->SetFillColor(gHigz->fFACI);
+   gr->SetFillColor(gHigz->FACI());
    gr->Draw("f");
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call igbox(Float_t &x1,Float_t &x2,Float_t &y1,Float_t &y2)
 {
+  //
+  // Draw a box
+  //
    printf("igbox called, x1=%f, y1=%f, x2=%f, y2=%f\n",x1,y1,x2,y2);
    TBox *box = new TBox(x1,y1,x2,y2);
-   box->SetLineColor(gHigz->fPLCI);
-   box->SetFillColor(gHigz->fFACI);
-   box->SetFillStyle(gHigz->fFASI);
+   box->SetLineColor(gHigz->PLCI());
+   box->SetFillColor(gHigz->FACI());
+   box->SetFillStyle(gHigz->FASI());
    box->Draw();
 }
 
@@ -419,8 +442,12 @@ extern "C" void type_of_call ightor(Float_t &h,Float_t &l,Float_t &s,Float_t &r,
 //_______________________________________________________________
 extern "C" void type_of_call igpave(Float_t &x1,Float_t &x2,Float_t &yy1,Float_t &yy2,Float_t &,Int_t &isbox,Int_t &isfram,const char *, const Int_t)
 {
+  //
+  // Draw a pave
+  //
    char text[5];
-   strncpy(text,(char*)&gHigz->fPID,4);
+   Int_t pid=gHigz->PID();
+   strncpy(text,(char*)&pid,4);
    text[4] = 0;
    Float_t y1 = yy1;
    Float_t y2 = yy2;
@@ -441,7 +468,7 @@ extern "C" void type_of_call igpave(Float_t &x1,Float_t &x2,Float_t &yy1,Float_t
    pt->SetFillColor(isbox%1000);
    pt->SetLineColor(isfram%1000);
    pt->Draw();
-//   printf("igpave called, text=%s, Pname=%s, x1=%f, y1=%f, x2=%f, y2=%f, isbox=%d, isfram=%d\n",text,gHigz->fPname.Data(),x1,y1,x2,y2,isbox,isfram);
+//   printf("igpave called, text=%s, Pname=%s, x1=%f, y1=%f, x2=%f, y2=%f, isbox=%d, isfram=%d\n",text,gHigz->Pname().Data(),x1,y1,x2,y2,isbox,isfram);
 }
 
 //_______________________________________________________________
@@ -451,16 +478,16 @@ extern "C" void type_of_call igpid(Int_t &,const char *name,Int_t &pid,const cha
 extern "C" void type_of_call igpid(Int_t &,const char *name,const Int_t l1, Int_t &pid,const char *, const Int_t)
 #endif
 {
-   npid++;
-//   if(npid&100 == 0) printf("igpid called, npid=%d\n",npid);
-   strncpy(cpar,name,l1); cpar[l1] = 0;
-   gHigz->fPname = cpar;
-   gHigz->fPID = pid;
+  //   sNpid++;
+  //   if(sNpid&100 == 0) printf("igpid called, sNpid=%d\n",sNpid);
+   strncpy(sCpar,name,l1); sCpar[l1] = 0;
+   gHigz->SetPname(sCpar);
+   gHigz->SetPID(pid);
       
 //   char text[5];
-//   strncpy(text,(char*)&gHigz->fPID,4);
+//   strncpy(text,(char*)&gHigz->PID(),4);
 //   text[4] = 0;
-//   printf("igpid called, level=%d, name=%s, pid=%d, cpid=%s\n",level,cpar,pid,text);
+//   printf("igpid called, level=%d, name=%s, pid=%d, cpid=%s\n",level,sCpar,pid,text);
 }
 
 //_______________________________________________________________
@@ -470,9 +497,9 @@ extern "C" void type_of_call igq(const char *name,Float_t &rval, const Int_t l1)
 extern "C" void type_of_call igq(const char *name,const Int_t l1, Float_t &rval)
 #endif
 {
-   strncpy(cpar,name,l1); cpar[l1] = 0;
-//   printf("igq called, name=%s\n",cpar);
-   rval = gHigz->Get(cpar);
+   strncpy(sCpar,name,l1); sCpar[l1] = 0;
+//   printf("igq called, name=%s\n",sCpar);
+   rval = gHigz->Get(sCpar);
 }
 
 //_______________________________________________________________
@@ -495,9 +522,9 @@ extern "C" void type_of_call igset(const char *name,Float_t &rval, const Int_t l
 extern "C" void type_of_call igset(const char *name, const Int_t l1,Float_t &rval)
 #endif
 {
-   strncpy(cpar,name,l1); cpar[l1] = 0;
-//   printf("igset called, name=%s, rval=%f\n",cpar,rval);
-   gHigz->Set(cpar,rval);
+   strncpy(sCpar,name,l1); sCpar[l1] = 0;
+//   printf("igset called, name=%s, rval=%f\n",sCpar,rval);
+   gHigz->Set(sCpar,rval);
 }
 
 //_______________________________________________________________
@@ -518,15 +545,15 @@ extern "C" void type_of_call ipl(Int_t &n,Float_t *x,Float_t *y)
 //   printf("ipl called, n=%d, x[0]=%f,y[0]=%f, x[1]=%f, y[1]=%f\n",n,x[0],y[0],x[1],y[1]);
    if (n <= 2) {
       TLine *l = new TLine(x[0],y[0],x[1],y[1]);
-      l->SetLineColor(gHigz->fPLCI);
-      l->SetLineStyle(gHigz->fLTYP);
-      l->SetLineWidth(Short_t(gHigz->fLWID));
+      l->SetLineColor(gHigz->PLCI());
+      l->SetLineStyle(gHigz->LTYP());
+      l->SetLineWidth(Short_t(gHigz->LWID()));
       l->Draw();
    } else {
       TPolyLine *pl = new TPolyLine(n,x,y);
-      pl->SetLineColor(gHigz->fPLCI);
-      pl->SetLineStyle(gHigz->fLTYP);
-      pl->SetLineWidth(Short_t(gHigz->fLWID));
+      pl->SetLineColor(gHigz->PLCI());
+      pl->SetLineStyle(gHigz->LTYP());
+      pl->SetLineWidth(Short_t(gHigz->LWID()));
       pl->Draw();
    }
 }
@@ -534,11 +561,14 @@ extern "C" void type_of_call ipl(Int_t &n,Float_t *x,Float_t *y)
 //_______________________________________________________________
 extern "C" void type_of_call ipm(Int_t &n,Float_t *x,Float_t *y)
 {
+  //
+  // Draw PolyMarkers
+  //
    printf("ipm called, n=%d\n",n);
    TPolyMarker *pm = new TPolyMarker(n,x,y);
-   pm->SetMarkerColor(gHigz->fPMCI);
-   pm->SetMarkerStyle(gHigz->fMTYP);
-   pm->SetMarkerSize(gHigz->fMSCF);
+   pm->SetMarkerColor(gHigz->PMCI());
+   pm->SetMarkerStyle(gHigz->MTYP());
+   pm->SetMarkerSize(gHigz->MSCF());
    pm->Draw();
 }
 
@@ -570,35 +600,35 @@ extern "C" void type_of_call isfaci(Int_t &col)
 //   printf("isfaci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   gHigz->fFACI = color;
+   gHigz->SetFACI(color);
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call isfais(Int_t &is)
 {
 //   printf("isfais called, is=%d\n",is);
-   gHigz->fFAIS = is;
+   gHigz->SetFAIS(is);
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call isln(Int_t &ln)
 {
 //   printf("isln called, ln=%d\n",ln);
-   gHigz->fLTYP = ln;
+   gHigz->SetLTYP(ln);
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call ismk(Int_t &mk)
 {
 //   printf("ismk called, mk=%d\n",mk);
-   gHigz->fMTYP = mk;
+   gHigz->SetMTYP(mk);
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call islwsc(Float_t &wl)
 {
 //   printf("islwsc called, wl=%f\n",wl);
-   gHigz->fLWID = wl;
+   gHigz->SetLWID(wl);
 }
 
 //_______________________________________________________________
@@ -607,7 +637,7 @@ extern "C" void type_of_call isplci(Int_t &col)
 //   printf("isplci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   gHigz->fPLCI = color;
+   gHigz->SetPLCI(color);
 }
 
 //_______________________________________________________________
@@ -616,7 +646,7 @@ extern "C" void type_of_call ispmci(Int_t &col)
 //   printf("ispmci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   gHigz->fPMCI = color;
+   gHigz->SetPMCI(color);
 }
 
 //_______________________________________________________________
@@ -625,7 +655,7 @@ extern "C" void type_of_call istxci(Int_t &col)
 //   printf("istxci called, col=%d\n",col);
    Int_t color = col%1000;
 //   if (color > 10) color += 35;
-   gHigz->fTXCI = color;
+   gHigz->SetTXCI(color);
 }
 
 //_______________________________________________________________
@@ -645,32 +675,35 @@ extern "C" void type_of_call iswn(Int_t &,Float_t &x1,Float_t &x2,Float_t &y1,Fl
 //_______________________________________________________________
 extern "C" void type_of_call itx(Float_t &x,Float_t &y,const char *ptext, const Int_t l1p)
 {
-   if (gHigz->fPname == "Tree") return;
+   if (gHigz->Pname() == "Tree") return;
    Int_t l1=l1p;
-   strncpy(cpar,ptext,l1); cpar[l1] = 0;
-//printf("itx called, x=%f, y=%f, text=%s, l1=%d\n",x,y,cpar,l1);
+   strncpy(sCpar,ptext,l1); sCpar[l1] = 0;
+//printf("itx called, x=%f, y=%f, text=%s, l1=%d\n",x,y,sCpar,l1);
    while(l1) {
-      if (cpar[l1-1] != ' ' && cpar[l1-1] != '$') break;
+      if (sCpar[l1-1] != ' ' && sCpar[l1-1] != '$') break;
       l1--;
-      cpar[l1] = 0;
+      sCpar[l1] = 0;
    }
-   char *small = strstr(cpar,"<");
+   char *small = strstr(sCpar,"<");
    while(small && *small) {
       small[0] = tolower(small[1]);
       small++;
    }
-   TText *text = new TText(x,y,cpar);
-   text->SetTextColor(gHigz->fTXCI);
-   text->SetTextSize(gHigz->fCHHE);
-   text->SetTextFont(gHigz->fTXFP);
-   text->SetTextAlign(gHigz->fTXAL);
-   text->SetTextAngle(gHigz->fTANG);
+   TText *text = new TText(x,y,sCpar);
+   text->SetTextColor(gHigz->TXCI());
+   text->SetTextSize(gHigz->CHHE());
+   text->SetTextFont(gHigz->TXFP());
+   text->SetTextAlign(gHigz->TXAL());
+   text->SetTextAngle(gHigz->TANG());
    text->Draw();   
 }
 
 //_______________________________________________________________
 extern "C" void type_of_call hplint(Int_t &)
 {
+  //
+  // Initialize HPLOT
+  //
    printf("hplint called\n");
    new THIGZ(600);
 }
@@ -678,6 +711,9 @@ extern "C" void type_of_call hplint(Int_t &)
 //_______________________________________________________________
 extern "C" void type_of_call hplend()
 {
+  //
+  // End HPLOT
+  //
    printf("hplend called\n");
 }
 
@@ -692,6 +728,9 @@ extern "C" void type_of_call hplfra(Float_t &x1,Float_t &x2,Float_t &y1, Float_t
 //_______________________________________________________________
 extern "C" void type_of_call igmeta(Int_t &, Int_t &)
 {
+  //
+  // Open metafile
+  //
    printf("igmeta called\n");
 }
 
@@ -711,8 +750,11 @@ extern "C" Int_t type_of_call igiwty(Int_t &)
 //_______________________________________________________________
 extern "C" void type_of_call igqwk(Int_t &, const char *name, Float_t &rval, const Int_t l1)
 {
-   strncpy(cpar,name,l1); cpar[l1] = 0;
-//   printf("igqwk called, wid=%d, pname=%s\n",wid,cpar);
-   rval = gHigz->Get(cpar);
+  //
+  // Query Workstation type
+  //
+   strncpy(sCpar,name,l1); sCpar[l1] = 0;
+//   printf("igqwk called, wid=%d, pname=%s\n",wid,sCpar);
+   rval = gHigz->Get(sCpar);
 }
  

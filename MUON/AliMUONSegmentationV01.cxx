@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.3  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -453,7 +457,7 @@ void AliMUONSegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
     y[2]=x[2];
 }
 
-void AliMUONSegmentationV01::Draw()
+void AliMUONSegmentationV01::Draw(const char *)
 {
 // Draws the segmentation zones
 //

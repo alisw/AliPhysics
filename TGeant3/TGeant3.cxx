@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2000/07/12 08:56:30  fca
+Coding convention correction and warning removal
+
 Revision 1.29  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -510,7 +513,7 @@ extern "C"
 //
 // Geant3 global pointer
 //
-static Int_t defSize = 600;
+static const Int_t kDefSize = 600;
 
 ClassImp(TGeant3) 
  
@@ -567,7 +570,7 @@ void TGeant3::DefaultRange()
   // Set range of current drawing pad to 20x20 cm
   //
   if (!gHigz) {
-    new THIGZ(defSize); 
+    new THIGZ(kDefSize); 
     gdinit();
   }
   gHigz->Range(0,0,20,20);
@@ -580,7 +583,7 @@ void TGeant3::InitHIGZ()
   // Initialise HIGZ
   //
   if (!gHigz) {
-    new THIGZ(defSize); 
+    new THIGZ(kDefSize); 
     gdinit();
   }
 }
@@ -757,7 +760,7 @@ Int_t TGeant3::IdFromPDG(Int_t pdg) const
 {
   //
   // Return Geant3 code from PDG and pseudo ENDF code
-
+  //
   for(Int_t i=0;i<fNPDGCodes;++i)
     if(pdg==fPDGCode[i]) return i;
   return -1;
@@ -766,6 +769,9 @@ Int_t TGeant3::IdFromPDG(Int_t pdg) const
 //_____________________________________________________________________________
 Int_t TGeant3::PDGFromId(Int_t id) const 
 {
+  //
+  // Return PDG code and pseudo ENDF code from Geant3 code
+  //
   if(id>0 && id<fNPDGCodes) return fPDGCode[id];
   else return -1;
 }
@@ -863,11 +869,11 @@ void TGeant3::DefineParticles()
 
   TDatabasePDG *pdgDB = TDatabasePDG::Instance();
 
-  const Double_t autogev=0.9314943228;
-  const Double_t hslash = 1.0545726663e-27;
-  const Double_t erggev = 1/1.6021773349e-3;
-  const Double_t hshgev = hslash*erggev;
-  const Double_t yearstosec = 3600*24*365.25;
+  const Double_t kAu2Gev=0.9314943228;
+  const Double_t khSlash = 1.0545726663e-27;
+  const Double_t kErg2Gev = 1/1.6021773349e-3;
+  const Double_t khShGev = khSlash*kErg2Gev;
+  const Double_t kYear2Sec = 3600*24*365.25;
 //
 // Bottom mesons
 // mass and life-time from PDG
@@ -913,10 +919,10 @@ void TGeant3::DefineParticles()
 
 // pdg mass value, Hijing uses m=2.73.
   pdgDB->AddParticle("Omega(c)0","Omega(c)0",
-		     2.7040, kFALSE, hshgev/0.064e-12, +0.,"Baryon",  4332);
+		     2.7040, kFALSE, khShGev/0.064e-12, +0.,"Baryon",  4332);
   
   pdgDB->AddParticle("Omega(c)0 bar","Omega(c)0 bar",
-		     2.7040, kFALSE, hshgev/0.064e-12, -0.,"Baryon", -4332);
+		     2.7040, kFALSE, khShGev/0.064e-12, -0.,"Baryon", -4332);
 // mass value from Hijing
   pdgDB->AddParticle("Omega(c)*0","Omega(c)*0",
 		     2.8000, kFALSE, -1., +0.,"Baryon",  4334);
@@ -935,21 +941,21 @@ void TGeant3::DefineParticles()
  
 //
 //
-  pdgDB->AddParticle("Deuteron","Deuteron",2*autogev+8.071e-3,kTRUE,
+  pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
 		     0,1,"Ion",kion+10020);
   fPDGCode[fNPDGCodes++]=kion+10020;   // 45 = Deuteron
 
-  pdgDB->AddParticle("Triton","Triton",3*autogev+14.931e-3,kFALSE,
-		     hshgev/(12.33*yearstosec),1,"Ion",kion+10030);
+  pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
+		     khShGev/(12.33*kYear2Sec),1,"Ion",kion+10030);
   fPDGCode[fNPDGCodes++]=kion+10030;   // 46 = Triton
 
-  pdgDB->AddParticle("Alpha","Alpha",4*autogev+2.424e-3,kTRUE,
-		     hshgev/(12.33*yearstosec),2,"Ion",kion+20040);
+  pdgDB->AddParticle("Alpha","Alpha",4*kAu2Gev+2.424e-3,kTRUE,
+		     khShGev/(12.33*kYear2Sec),2,"Ion",kion+20040);
   fPDGCode[fNPDGCodes++]=kion+20040;   // 47 = Alpha
 
   fPDGCode[fNPDGCodes++]=0;   // 48 = geantino mapped to rootino
 
-  pdgDB->AddParticle("HE3","HE3",3*autogev+14.931e-3,kFALSE,
+  pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
 		     0,2,"Ion",kion+20030);
   fPDGCode[fNPDGCodes++]=kion+20030;   // 49 = HE3
 
@@ -1136,6 +1142,9 @@ const char* TGeant3::VolName(Int_t id) const
 //_____________________________________________________________________________
 void    TGeant3::SetCut(const char* cutName, Float_t cutValue)
 {
+  //
+  // Set transport cuts for particles
+  //
   if(!strcmp(cutName,"CUTGAM")) 
     fGccuts->cutgam=cutValue; 
   else if(!strcmp(cutName,"CUTGAM")) 
@@ -1164,6 +1173,9 @@ void    TGeant3::SetCut(const char* cutName, Float_t cutValue)
 //_____________________________________________________________________________
 void    TGeant3::SetProcess(const char* flagName, Int_t flagValue)
 {
+  //
+  // Set thresholds for different processes
+  //
   if(!strcmp(flagName,"PAIR")) 
     fGcphys->ipair=flagValue;
   else if(!strcmp(flagName,"COMP")) 
@@ -1201,6 +1213,9 @@ void    TGeant3::SetProcess(const char* flagName, Int_t flagValue)
 Float_t TGeant3::Xsec(char* reac, Float_t /* energy */, 
 		      Int_t part, Int_t /* mate */)
 {
+  //
+  // Calculate X-sections -- dummy for the moment
+  //
   if(!strcmp(reac,"PHOT"))
   {
     if(part!=22) {
@@ -1371,13 +1386,13 @@ const char* TGeant3::ProdProcess() const
   // in the current step
   //
   static char proc[5];
-  const Int_t ipmec[13] = { 5,6,7,8,9,10,11,12,21,23,25,105,108 };
+  const Int_t kIpMec[13] = { 5,6,7,8,9,10,11,12,21,23,25,105,108 };
   Int_t mec, km, im;
   //
   if(fGcking->ngkine>0) {
     for (km = 0; km < fGctrak->nmec; ++km) {
       for (im = 0; im < 13; ++im) {
-	if (fGctrak->lmec[km] == ipmec[im]) {
+	if (fGctrak->lmec[km] == kIpMec[im]) {
 	  mec = fGctrak->lmec[km];
 	  if (0 < mec && mec < 31) {
 	    strncpy(proc,(char *)&fGctrak->namec[mec - 1],4);
@@ -1421,6 +1436,9 @@ void    TGeant3::GetSecondary(Int_t isec, Int_t& ipart,
 //_____________________________________________________________________________
 void TGeant3::InitLego()
 {
+  //
+  // Set switches for lego transport
+  //
   SetSWIT(4,0);
   SetDEBU(0,0,0);  //do not print a message 
 }
@@ -1890,14 +1908,22 @@ void  TGeant3::Gftmed(Int_t numed, char *name, Int_t &nmat, Int_t &isvol,
 
 } 
 
+//_____________________________________________________________________________
 Float_t TGeant3::Gbrelm(Float_t z, Float_t t, Float_t bcut)
 {
-    return gbrelm(z,t,bcut);
+  //
+  // To calculate energy loss due to soft muon BREMSSTRAHLUNG
+  //
+  return gbrelm(z,t,bcut);
 }
 
+//_____________________________________________________________________________
 Float_t TGeant3::Gprelm(Float_t z, Float_t t, Float_t bcut)
 {
-    return gprelm(z,t,bcut);
+  //
+  // To calculate DE/DX in GeV*barn/atom for direct pair production by muons
+  //
+  return gprelm(z,t,bcut);
 }
  
 //_____________________________________________________________________________
@@ -3087,7 +3113,7 @@ void TGeant3::DrawOneSpec(const char *name)
   THIGZ *higzSpec = (THIGZ*)gROOT->FindObject("higzSpec");
   //printf("DrawOneSpec, gHigz=%x, higzSpec=%x\n",gHigz,higzSpec);
   if (higzSpec) gHigz     = higzSpec;
-  else          higzSpec = new THIGZ(defSize);
+  else          higzSpec = new THIGZ(kDefSize);
   higzSpec->SetName("higzSpec");
   higzSpec->cd();
   higzSpec->Clear();
@@ -3121,7 +3147,7 @@ void TGeant3::Gdtree(const char *name,Int_t levmax, Int_t isel)
   char vname[5];
   Vname(name,vname);
   gdtree(PASSCHARD(vname), levmax, isel PASSCHARL(vname)); 
-  gHigz->fPname = "";
+  gHigz->SetPname("");
 } 
 
 //_____________________________________________________________________________
@@ -3151,7 +3177,7 @@ void TGeant3::GdtreeParent(const char *name,Int_t levmax, Int_t isel)
 	strncpy(vname,(char*)&fZiq[fGclink->jvolum+i],4);
 	vname[4] = 0;           
 	gdtree(PASSCHARD(vname), levmax, isel PASSCHARL(vname)); 
-	gHigz->fPname = "";
+	gHigz->SetPname("");
 	return;
       }
     }
@@ -3604,6 +3630,9 @@ void TGeant3::Vname(const char *name, char *vname)
 //______________________________________________________________________________
 void TGeant3::Ertrgo()
 {
+  //
+  // Perform the tracking of the track Track parameters are in VECT
+  //
   ertrgo();
 }
 
@@ -3612,6 +3641,39 @@ void TGeant3::Ertrak(const Float_t *const x1, const Float_t *const p1,
 			const Float_t *x2, const Float_t *p2,
 			Int_t ipa,  Option_t *chopt)
 {
+  //************************************************************************
+  //*                                                                      *
+  //*          Perform the tracking of the track from point X1 to          *
+  //*                    point X2                                          *
+  //*          (Before calling this routine the user should also provide   *
+  //*                    the input informations in /EROPTS/ and /ERTRIO/   *
+  //*                    using subroutine EUFIL(L/P/V)                     *
+  //*                 X1       - Starting coordinates (Cartesian)          *
+  //*                 P1       - Starting 3-momentum  (Cartesian)          *
+  //*                 X2       - Final coordinates    (Cartesian)          *
+  //*                 P2       - Final 3-momentum     (Cartesian)          *
+  //*                 IPA      - Particle code (a la GEANT) of the track   *
+  //*                                                                      *
+  //*                 CHOPT                                                *
+  //*                     'B'   'Backward tracking' - i.e. energy loss     *
+  //*                                        added to the current energy   *
+  //*                     'E'   'Exact' calculation of errors assuming     *
+  //*                                        helix (i.e. pathlength not    *
+  //*                                        assumed as infinitesimal)     *
+  //*                     'L'   Tracking upto prescribed Lengths reached   *
+  //*                     'M'   'Mixed' prediction (not yet coded)         *
+  //*                     'O'   Tracking 'Only' without calculating errors *
+  //*                     'P'   Tracking upto prescribed Planes reached    *
+  //*                     'V'   Tracking upto prescribed Volumes reached   *
+  //*                     'X'   Tracking upto prescribed Point approached  *
+  //*                                                                      *
+  //*                Interface with GEANT :                                *
+  //*             Track parameters are in /CGKINE/ and /GCTRAK/            *
+  //*                                                                      *
+  //*          ==>Called by : USER                                         *
+  //*             Authors   M.Maire, E.Nagy  ********//*                     *
+  //*                                                                      *
+  //************************************************************************
   ertrak(x1,p1,x2,p2,ipa,PASSCHARD(chopt) PASSCHARL(chopt));
 }
         
@@ -3644,7 +3706,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
   //     this procedure fails, ordering starts from 1.
   //     Arrays IOTMED and IOMATE are used for this procedure
   //
-  const char shape[][5]={"BOX ","TRD1","TRD2","TRAP","TUBE","TUBS","CONE",
+  const char kShape[][5]={"BOX ","TRD1","TRD2","TRAP","TUBE","TUBS","CONE",
 			 "CONS","SPHE","PARA","PGON","PCON","ELTU","HYPE",
 			 "GTRA","CTUB"};
   Int_t i, end, itm, irm, jrm, k, nmed;
@@ -3673,7 +3735,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
   Int_t itmedc, nmatc, isvolc, ifieldc, nwbufc, isvol, nmat, ifield, nwbuf;
   Float_t fieldmc, tmaxfdc, stemaxc, deemaxc, epsilc, stminc, fieldm;
   Float_t tmaxf, stemax, deemax, epsil, stmin;
-  const char *f10000="!\n%s\n!\n";
+  const char *k10000="!\n%s\n!\n";
   //Open the input file
   end=strlen(filnam);
   for(i=0;i<end;i++) if(filnam[i]=='.') {
@@ -3874,7 +3936,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
   // *** write down the tracking medium definition
   //
   strcpy(card,"!       Tracking medium");
-  fprintf(lun,f10000,card);
+  fprintf(lun,k10000,card);
   //
   for(itm=1;itm<=fGcnum->ntmed;itm++) {
     if (iws[iadtmd+itm]>0) {
@@ -3904,7 +3966,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
       //* *** write down the rotation matrix
   //*
   strcpy(card,"!       Reperes");
-  fprintf(lun,f10000,card);
+  fprintf(lun,k10000,card);
   //
   for(irm=1;irm<=fGcnum->nrotm;irm++) {
     if (iws[iadrot+irm]>0) {
@@ -3918,7 +3980,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
   //* *** write down the volume definition
   //*
   strcpy(card,"!       Volumes");
-  fprintf(lun,f10000,card);
+  fprintf(lun,k10000,card);
   //*
   for(ivstak=1;ivstak<=nvstak;ivstak++) {
     ivo = iws[ivstak];
@@ -3932,7 +3994,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
       if (npar>0) {
 	if (ivstak>1) for(i=0;i<npar;i++) par[i]=fZq[jvo+7+i];
 	Gckpar (ish,npar,par);
-	fprintf(lun,"VOLU '%4s' '%4s' %3d %3d\n",name,shape[ish-1],iotmed[nmed],npar);
+	fprintf(lun,"VOLU '%4s' '%4s' %3d %3d\n",name,kShape[ish-1],iotmed[nmed],npar);
 	for(i=0;i<(npar-1)/6+1;i++) {
 	  fprintf(lun,"     ");
 	  left=npar-i*6;
@@ -3940,14 +4002,14 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
 	  fprintf(lun,"\n");
 	}
       } else {
-	fprintf(lun,"VOLU '%4s' '%4s' %3d %3d\n",name,shape[ish-1],iotmed[nmed],npar);
+	fprintf(lun,"VOLU '%4s' '%4s' %3d %3d\n",name,kShape[ish-1],iotmed[nmed],npar);
       }
     }
   }
   //*
   //* *** write down the division of volumes
   //*
-  fprintf(lun,f10000,"!       Divisions");
+  fprintf(lun,k10000,"!       Divisions");
   for(ivstak=1;ivstak<=nvstak;ivstak++) {
     ivo = TMath::Abs(iws[ivstak]);
     jvo  = fZlq[fGclink->jvolum-ivo];
@@ -3985,7 +4047,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
   //*
   //* *** write down the the positionnement of volumes
   //*
-  fprintf(lun,f10000,"!       Positionnements\n");
+  fprintf(lun,k10000,"!       Positionnements\n");
   //
   for(ivstak = 1;ivstak<=nvstak;ivstak++) {
     ivo = TMath::Abs(iws[ivstak]);

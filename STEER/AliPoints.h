@@ -15,7 +15,7 @@ public:
   AliPoints(const AliPoints& pts);
   AliPoints(Int_t nhits);
   virtual ~AliPoints();
-  virtual void          Copy(AliPoints &pts) const;
+  void          Copy(AliPoints &pts) const;
   virtual Int_t         DistancetoPrimitive(Int_t px, Int_t py);
   virtual void          ExecuteEvent(Int_t event, Int_t px, Int_t py);
   AliDetector          *GetDetector() {return fDetector;}
@@ -25,7 +25,7 @@ public:
   virtual void          InspectParticle(); // *MENU*
   virtual void          DumpParticle(); // *MENU*
   virtual Text_t       *GetObjectInfo(Int_t px, Int_t py);
-  virtual AliPoints &   operator=(const AliPoints &pts);
+  AliPoints &           operator=(const AliPoints &pts);
   virtual void          Propagate(); // *MENU*
   virtual void          SetDetector(AliDetector *det) {fDetector = det;}
   virtual void          SetParticle(Int_t index) {fIndex = index;}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/11 18:24:59  fca
+Coding convention corrections + few minor bug fixes
+
 Revision 1.5  2000/05/20 14:49:48  fca
 Call gdebug at the end of gustep
 
@@ -59,8 +62,12 @@ ClassImp(AliGeant3)
 AliGeant3::AliGeant3(const char *title) : 
   TGeant3(title) {}
 
+//____________________________________________________________________________
 void AliGeant3::FinishGeometry()
 {
+  //
+  // Finalise geometry construction
+  //
   TGeant3::FinishGeometry();
   //Create the color table
   SetColors();
@@ -71,6 +78,7 @@ void AliGeant3::Init()
 {
   //
   //=================Create Materials and geometry
+  //
   TObjArray *modules = gAlice->Modules();
   TIter next(modules);
   AliModule *detector;
@@ -89,6 +97,9 @@ void AliGeant3::Init()
 //____________________________________________________________________________
 void AliGeant3::ProcessRun(Int_t nevent)
 {
+  //
+  // Process the run
+  //
   Int_t todo = TMath::Abs(nevent);
   for (Int_t i=0; i<todo; i++) {
   // Process one run (one run = one event)
@@ -98,8 +109,12 @@ void AliGeant3::ProcessRun(Int_t nevent)
   }
 }
 
+//_____________________________________________________________________________
 void AliGeant3::ProcessEvent()
 {
+  //
+  // Process one event
+  //
   Gtrigi();
   Gtrigc();
   Gtrig();
@@ -699,7 +714,7 @@ void gustep()
   Int_t ipp, jk, id, nt;
   Float_t polar[3]={0,0,0};
   Float_t mom[3];
-  const char *chproc;
+  const char *kChproc;
   
   TGeant3* geant3 = (TGeant3*) gMC;
 
@@ -712,13 +727,13 @@ void gustep()
 
   // --- Add new created particles 
   if (gMC->NSecondaries() > 0) {
-    chproc=gMC->ProdProcess();
+    kChproc=gMC->ProdProcess();
     for (jk = 0; jk < geant3->Gcking()->ngkine; ++jk) {
       ipp = Int_t (geant3->Gcking()->gkin[jk][4]+0.5);
       // --- Skip neutrinos! 
       if (ipp != 4) {
 	gAlice->SetTrack(1,gAlice->CurrentTrack(),gMC->PDGFromId(ipp), geant3->Gcking()->gkin[jk], 
-			 geant3->Gckin3()->gpos[jk], polar,geant3->Gctrak()->tofg, chproc, nt);
+			 geant3->Gckin3()->gpos[jk], polar,geant3->Gctrak()->tofg, kChproc, nt);
       }
     }
   }

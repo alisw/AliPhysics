@@ -29,7 +29,6 @@ public:
    // Creators - distructors
    AliRun();
    AliRun(const char *name, const char *title);
-   AliRun(const AliRun &run);
    virtual ~AliRun();
 
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
@@ -116,8 +115,6 @@ public:
    virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
-   virtual  AliRun& operator = (const AliRun &run);
-   virtual  void Copy(AliRun &run) const;
 
 
    TTree         *TreeD() {return fTreeD;}
@@ -159,6 +156,11 @@ protected:
   TArrayF       fSummEnergy;   //Energy per event in each volume
   TArrayF       fSum2Energy;   //Energy squared per event in each volume
   TString       fConfigFunction; //Configuration file to be executed
+
+private:
+
+   AliRun(const AliRun &) {}
+   AliRun& operator = (const AliRun &) {return *this;}
 
    ClassDef(AliRun,3)      //Supervisor class for all Alice detectors
 };

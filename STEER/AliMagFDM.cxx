@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.1  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -34,6 +37,9 @@ const Int_t map, const Float_t factor, const Float_t fmax)
   : AliMagF(name,title,integ,map,factor,fmax)
   
 {
+  //
+  // Standard constructor for the Dipole field
+  //
   fType = kDipoMap;
 
   printf("Field Map for Muon Arm from IP till muon filter %s created: map= %d, factor= %f, file=%s\n",fName.Data(),map,factor,fTitle.Data());

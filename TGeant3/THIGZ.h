@@ -13,7 +13,7 @@
 
 class THIGZ : public TCanvas { 
 
-public:
+protected:
    Int_t     fFAIS;   //Fill Area Interior Style (0,1,2,3)
    Int_t     fFASI;   //Fill Area Style Index
    Int_t     fLTYP;   //Line TYPe
@@ -64,8 +64,42 @@ public:
    virtual void   SetLogz(Int_t value = 1);
    virtual void   SetTickx(Int_t value = 1);
    virtual void   SetTicky(Int_t value = 1);
-   virtual void   x3d(Option_t *option="");
+   virtual void   X3d(Option_t *option="");
         
+  virtual  Int_t     FAIS() const {return fFAIS;}
+  virtual  Int_t     FASI() const {return fFASI;}
+  virtual  Int_t     LTYP() const {return fLTYP;}
+  virtual  Float_t   BASL() const {return fBASL;}
+  virtual  Float_t   LWID() const {return fLWID;}
+  virtual  Int_t     MTYP() const {return fMTYP;}
+  virtual  Float_t   MSCF() const {return fMSCF;}
+  virtual  Int_t     PLCI() const {return fPLCI;}
+  virtual  Int_t     PMCI() const {return fPMCI;}
+  virtual  Int_t     FACI() const {return fFACI;}
+  virtual  Int_t     TXCI() const {return fTXCI;}
+  virtual  Int_t     TXAL() const {return fTXAL;}
+  virtual  Float_t   CHHE() const {return fCHHE;}
+  virtual  Float_t   TANG() const {return fTANG;}
+  virtual  Int_t     TXFP() const {return fTXFP;}
+  virtual  Int_t     BORD() const {return fBORD;}
+  virtual  Int_t     NCOL() const {return fNCOL;}
+  virtual  Int_t     DRMD() const {return fDRMD;}
+  virtual  Int_t     SYNC() const {return fSYNC;}
+  virtual  Int_t     CLIP() const {return fCLIP;}
+  virtual  Int_t     I2BUF() const {return f2BUF;}
+  virtual  Int_t     PID() const {return fPID;}
+  virtual  const char* Pname() const {return fPname.Data();}
+  virtual  void      SetPID(Int_t pid) {fPID=pid;}
+  virtual  void      SetFACI(Int_t faci) {fFACI=faci;}
+  virtual  void      SetFAIS(Int_t fais) {fFAIS=fais;}
+  virtual  void      SetLTYP(Int_t lin) {fLTYP=lin;}
+  virtual  void      SetMTYP(Int_t mk) {fMTYP=mk;}
+  virtual  void      SetLWID(Int_t lw) {fLWID=lw;}
+  virtual  void      SetPLCI(Int_t lcol) {fPLCI=lcol;}
+  virtual  void      SetPMCI(Int_t mcol) {fPMCI=mcol;}
+  virtual  void      SetTXCI(Int_t tcol) {fTXCI=tcol;}
+  virtual  void      SetPname(const char *name) {fPname=name;}
+
    ClassDef(THIGZ,1)  //Emulation of HIGZ for Root
 }; 
 
@@ -80,6 +114,6 @@ inline void THIGZ::SetLogy(Int_t) { }
 inline void THIGZ::SetLogz(Int_t) { }
 inline void THIGZ::SetTickx(Int_t) { }
 inline void THIGZ::SetTicky(Int_t) { }
-inline void THIGZ::x3d(Option_t *) { }
+inline void THIGZ::X3d(Option_t *) { }
     
 #endif 

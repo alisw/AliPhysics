@@ -127,7 +127,7 @@ public AliSegmentation {
     virtual void IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     // Draw the segmentation zones
-    virtual void Draw(){;}
+    virtual void Draw(const char * = ""){}
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}

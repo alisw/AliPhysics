@@ -18,7 +18,7 @@ public TObject {
     // Fill hits from list of digits into hit map
     virtual  void  FillHits()                                      =0;
     // Clear the hit map
-    virtual  void  Clear()                                         =0;
+    virtual  void  Clear(const char *opt = "")                     =0;
     // Set a single hit
     virtual  void  SetHit(Int_t ix, Int_t iy, Int_t idigit)        =0;
     // Delete a single hit

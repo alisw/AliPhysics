@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.16  2000/05/26 08:35:03  fca
 Move the check on z after z has been retrieved
 
@@ -62,6 +65,9 @@ AliLegoGenerator::AliLegoGenerator(Int_t ntheta, Float_t themin,
   fNphi(nphi), fThetaBin(ntheta), fPhiBin(-1), fCurTheta(0), fCurPhi(0)
   
 {
+  //
+  // Standard generator for Lego rays
+  //
   SetPhiRange(phimin,phimax);
   SetThetaRange(themin,themax);
   SetName("Lego");

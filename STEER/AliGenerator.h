@@ -27,7 +27,7 @@ class AliGenerator : public TNamed
     AliGenerator(const AliGenerator &gen);
     virtual ~AliGenerator();
     virtual void Init();
-    virtual void Copy(AliGenerator &gen) const;
+    void Copy(AliGenerator &gen) const;
     virtual void SetOrigin(Float_t ox, Float_t oy, Float_t oz)
 	{fOrigin[0]=ox;fOrigin[1]=oy;fOrigin[2]=oz;}
     virtual void SetOrigin(const TLorentzVector &o)
@@ -66,7 +66,7 @@ class AliGenerator : public TNamed
     virtual void SetMC(TGenerator *theMC) 
 	{if (!fgMCEvGen) fgMCEvGen =theMC;}
 
-    virtual AliGenerator & operator=(const AliGenerator &gen);
+    AliGenerator & operator=(const AliGenerator &gen);
 
   // Getters
 

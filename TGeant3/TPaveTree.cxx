@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/09/29 09:24:31  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -73,24 +76,6 @@ TPaveTree::~TPaveTree()
   //
   // Standard Destructor
   //
-}
-
-//_____________________________________________________________________________
-TPaveTree::TPaveTree(const TPaveTree &PaveTree)
-{
-  //
-  // Copy Constructor
-  //
-  ((TPaveTree&)PaveTree).Copy(*this);
-}
-
-//_____________________________________________________________________________
-void TPaveTree::Copy(TObject &obj)
-{
-  //
-  //  Copy this PaveTree to PaveTree
-  //
-  TPaveLabel::Copy(obj);
 }
 
 //_____________________________________________________________________________

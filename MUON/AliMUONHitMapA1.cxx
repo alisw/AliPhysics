@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -66,7 +70,7 @@ AliMUONHitMapA1::~AliMUONHitMapA1()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliMUONHitMapA1::Clear()
+void AliMUONHitMapA1::Clear(const char *)
 {
 // Clear hitmap
     memset(fHitMap,0,sizeof(int)*fMaxIndex);

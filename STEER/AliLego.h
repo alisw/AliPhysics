@@ -26,7 +26,7 @@ public:
 	  Float_t phimax,Float_t rmin,Float_t rmax,Float_t zmax);
   AliLego(const AliLego &lego) {lego.Copy(*this);}
   virtual ~AliLego();
-  virtual void  Copy(AliLego &lego) const;
+  void  Copy(AliLego &lego) const;
   virtual void  StepManager();
   virtual void  BeginEvent();
   virtual void  FinishEvent();

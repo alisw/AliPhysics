@@ -36,7 +36,7 @@ public:
    TSlider          *CutSlider() {return fCutSlider;}
    virtual void      ShowTrack(Int_t trackNumber); // *MENU*
    virtual void      HideTrack(Int_t trackNumber); // *MENU*
-   virtual void      Copy(AliDisplay &disp) const;
+           void      Copy(AliDisplay &disp) const;
    virtual void      DisableDetector(const char *name); // *MENU*
    virtual void      DisplayButtons();
    virtual Int_t     DistancetoPrimitive(Int_t px, Int_t py);
@@ -64,7 +64,7 @@ public:
    virtual void      SetZoomMode();
    virtual void      ShowNextEvent(Int_t delta=1);
    virtual void      UnZoom(); // *MENU*
-   virtual AliDisplay& operator= (const AliDisplay &disp);
+   AliDisplay&       operator= (const AliDisplay &disp);
    
 protected:
    Int_t             fZoomMode;             //=1 if in zoom mode

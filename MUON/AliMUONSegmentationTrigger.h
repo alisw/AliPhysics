@@ -25,6 +25,8 @@ public AliMUONSegmentationV0 {
   virtual void     SetHit(Float_t xhit, Float_t yhit);
   virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
       {SetHit(xhit, yhit);}
+
+  virtual void Draw(const char *opt="") {}
   
   ClassDef(AliMUONSegmentationTrigger,1) //Segmentation class for trigger
     protected:

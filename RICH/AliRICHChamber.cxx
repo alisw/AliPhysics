@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/06/30 16:48:58  dibari
+  New function GenerateTresholds() for pedestal simulation.
+
   Revision 1.3  2000/06/12 15:17:58  jbarbosa
   Cleaned up version.
 
@@ -48,7 +51,7 @@ AliRICHChamber::AliRICHChamber()
     frMin = 0.1;
     frMax = 140;
     fnsec = 1;
-    fIndexMap[50] = 0;
+    for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
 
 AliRICHChamber::AliRICHChamber(const AliRICHChamber& Chamber)

@@ -86,7 +86,7 @@ public AliMUONSegmentationV0 {
     void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
     //
     // Draw segmentation zones
-    virtual void Draw();
+    virtual void Draw(const char *opt="");
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t dum, TF1* func);

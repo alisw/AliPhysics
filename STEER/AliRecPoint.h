@@ -44,7 +44,7 @@ public:
  
   virtual void  AddDigit(AliDigitNew & digit) ;  // add a digit to the digit's indexes list  
   //  virtual void  AddTrack(AliTrack & track) ;  // add a track to the tracks list  
-  virtual void  Copy(AliRecPoint &recp) const;
+  void  Copy(AliRecPoint &recp) const;
   virtual void  GetCovarianceMatrix(TMatrix & mat) ;
   virtual AliGeometry * GetGeom() const { return fGeom; } 
   virtual void  GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) ; // return the global position in ALICE
@@ -58,7 +58,7 @@ public:
   virtual Int_t GetMaximumTrackMultiplicity() const { return  fMaxTrack; } 
   virtual Int_t GetTracksMultiplicity(void) const { return fMulTrack ; }
   virtual void  Print(Option_t * opt = "void") = 0 ; 
-  virtual AliRecPoint & operator= (const AliRecPoint &recp);
+  AliRecPoint & operator= (const AliRecPoint &recp);
   void          SetIndexInList(Int_t val) { fIndexInList = val ; } 
 
 
