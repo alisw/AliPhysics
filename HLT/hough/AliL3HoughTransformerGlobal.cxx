@@ -33,6 +33,7 @@ ClassImp(AliL3HoughTransformerGlobal)
 
 AliL3HoughTransformerGlobal::AliL3HoughTransformerGlobal()
 {
+  //default ctor
   fPadMin=0;
   fPadMax=0;
   fNActiveSlice=0;
@@ -47,6 +48,7 @@ AliL3HoughTransformerGlobal::AliL3HoughTransformerGlobal()
 
 AliL3HoughTransformerGlobal::AliL3HoughTransformerGlobal(Char_t *path,Int_t event)
 {
+  //normal ctor
   strcpy(fPath,path);
   fEvent=event;
   fMemHandler=0;
@@ -61,6 +63,7 @@ AliL3HoughTransformerGlobal::AliL3HoughTransformerGlobal(Char_t *path,Int_t even
 
 AliL3HoughTransformerGlobal::~AliL3HoughTransformerGlobal()
 {
+  //dtor
   if(fPadMin)
     delete [] fPadMin;
   if(fPadMax)
@@ -75,6 +78,7 @@ AliL3HoughTransformerGlobal::~AliL3HoughTransformerGlobal()
 
 void AliL3HoughTransformerGlobal::CreateHistograms(Float_t /*ptmin*/,Int_t nxbin,Int_t nybin)
 {
+  //create histograms for HT
   if(fPsi==0)
     {
       cerr<<"AliL3HoughTransformerGlobal::CreateHistograms : Call DefineRegion first"<<endl;
@@ -86,8 +90,8 @@ void AliL3HoughTransformerGlobal::CreateHistograms(Float_t /*ptmin*/,Int_t nxbin
 
 void AliL3HoughTransformerGlobal::TransformCircleC()
 {
-  
-  Seed *clusters = new Seed[1000];
+  //Hough Transform
+  AliL3Seed *clusters = new AliL3Seed[1000];
   Int_t nclusters = LoadClusterSeeds(clusters);
   
   Int_t i=0,sector,row,slice;
@@ -134,13 +138,13 @@ void AliL3HoughTransformerGlobal::TransformCircleC()
 	      AliL3Transform::XYZtoRPhiEta(rpe,xyz);
 	      rpe[0] = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	      
-	      Int_t eta_index = GetEtaIndex(rpe[2]);
+	      Int_t etaindex = GetEtaIndex(rpe[2]);
 	      
-	      AliL3Histogram *hist = GetHistogram(eta_index);
+	      AliL3Histogram *hist = GetHistogram(etaindex);
 	      
 	      for(Int_t l=0; l<nclusters; l++)
 		{
-		  if(clusters[l].fIndex != eta_index) continue;
+		  if(clusters[l].fIndex != etaindex) continue;
 		  psi = atan( (clusters[l].fRadius*sin(rpe[1])-rpe[0]*sin(clusters[l].fPhi))/
 			      (clusters[l].fRadius*cos(rpe[1])-rpe[0]*cos(clusters[l].fPhi)) );
 		  kappa = 2*sin(clusters[l].fPhi-psi)/clusters[l].fRadius;
@@ -158,7 +162,7 @@ void AliL3HoughTransformerGlobal::TransformCircleC()
 
 void AliL3HoughTransformerGlobal::TransformCircle()
 {
-  
+  //Hough Transform  
   Int_t i=0,sector,row,slice;
   UInt_t dummy=0;
   Float_t xyz[3],rpe[3],kappa,psi;
@@ -203,9 +207,9 @@ void AliL3HoughTransformerGlobal::TransformCircle()
 	      AliL3Transform::XYZtoRPhiEta(rpe,xyz);
 	      rpe[0] = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	      
-	      Int_t eta_index = GetEtaIndex(rpe[2]);
+	      Int_t etaindex = GetEtaIndex(rpe[2]);
 	      
-	      AliL3Histogram *hist = GetHistogram(eta_index);
+	      AliL3Histogram *hist = GetHistogram(etaindex);
 	      
 	      for(Int_t b=hist->GetFirstYbin(); b<=hist->GetLastYbin(); b++)
 		{
@@ -226,6 +230,7 @@ void AliL3HoughTransformerGlobal::TransformCircle()
 
 void AliL3HoughTransformerGlobal::VerifyTracks(AliL3TrackArray *tracks,Int_t &index)
 {
+  //remove tracks which do not cross the seed padrow
   for(int i=index; i<tracks->GetNTracks(); i++)
     {
       AliL3HoughTrack *tr = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
@@ -252,7 +257,7 @@ void AliL3HoughTransformerGlobal::VerifyTracks(AliL3TrackArray *tracks,Int_t &in
 
 void AliL3HoughTransformerGlobal::FindPeaks(AliL3Histogram *hist,Float_t eta)
 {
-  
+  //Peak Finder  
   fPeakFinder->Reset();
   fPeakFinder->SetHistogram(hist);
   fPeakFinder->FindAbsMaxima();
@@ -265,13 +270,13 @@ void AliL3HoughTransformerGlobal::FindPeaks(AliL3Histogram *hist,Float_t eta)
   track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
 }
 
-void AliL3HoughTransformerGlobal::Rotate(Float_t *xyz,Int_t rel_slice)
+void AliL3HoughTransformerGlobal::Rotate(Float_t *xyz,Int_t relslice)
 {
   //Rotate coordinates from one slice to the slice relative to it;
   //-1 means lower
   //1 means upper
 
-  Float_t angle = (Float_t)rel_slice*AliL3Transform::Deg2Rad(20);
+  Float_t angle = (Float_t)relslice*AliL3Transform::Deg2Rad(20);
   Float_t x=xyz[0],y=xyz[1];
   xyz[0] = x*cos(angle) - y*sin(angle);
   xyz[1] = x*sin(angle) + y*cos(angle);
@@ -344,6 +349,7 @@ void AliL3HoughTransformerGlobal::DefineRegion(Float_t minpt,Float_t /*linephi*/
 
 Float_t AliL3HoughTransformerGlobal::CalculateBorder(Float_t *xyz,Int_t charge)
 {
+  //Define Hough space borders
   Double_t lineradius = sqrt(pow(AliL3Transform::Row2X(fSeedPadRow),2) + pow(AliL3Transform::GetMaxY(fSeedPadRow),2));
 
   Double_t kappa = -charge*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/fPtMin;
@@ -444,6 +450,7 @@ Float_t AliL3HoughTransformerGlobal::CalculateBorder(Float_t *xyz,Int_t charge)
 
 void AliL3HoughTransformerGlobal::LoadActiveSlices(Bool_t binary)
 {
+  //Load active slices
   if(fMemHandler)
     UnloadActiveSlices();
   fMemHandler = new AliL3MemHandler*[(fNActiveSlice*2 + 1)];
@@ -481,6 +488,7 @@ void AliL3HoughTransformerGlobal::LoadActiveSlices(Bool_t binary)
 
 void AliL3HoughTransformerGlobal::UnloadActiveSlices()
 {
+  //Unload active slices
   if(!fMemHandler)
     return;
   for(Int_t i=0; i<=fNActiveSlice*2; i++)
@@ -492,8 +500,9 @@ void AliL3HoughTransformerGlobal::UnloadActiveSlices()
   fMemHandler=0;
 }
 
-Int_t AliL3HoughTransformerGlobal::LoadClusterSeeds(Seed *seeds)
+Int_t AliL3HoughTransformerGlobal::LoadClusterSeeds(AliL3Seed *seeds)
 {
+  //Load cluster seeds
   Char_t filename[1024];
   UInt_t npoints;
   sprintf(filename,"%s/hough/points_%d_%d_%d.raw",fPath,fEvent,GetSlice(),-1);
@@ -532,7 +541,7 @@ Int_t AliL3HoughTransformerGlobal::LoadClusterSeeds(Seed *seeds)
   return counter;
 }
 
-void AliL3HoughTransformerGlobal::DisplayActiveRegion(TH2F *hist,Int_t eta_index)
+void AliL3HoughTransformerGlobal::DisplayActiveRegion(TH2F *hist,Int_t etaindex)
 {
   //Fill the active region in a histogram
   
@@ -566,7 +575,7 @@ void AliL3HoughTransformerGlobal::DisplayActiveRegion(TH2F *hist,Int_t eta_index
 	      Rotate(xyz,i-1-fNActiveSlice);
 	      
 	      Double_t eta = AliL3Transform::GetEta(xyz);
-	      if(GetEtaIndex(eta) == eta_index)
+	      if(GetEtaIndex(eta) == etaindex)
 		hist->Fill(xyz[0],xyz[1]);
 	    }
 	  AliL3MemHandler::UpdateRowPointer(rowPt);

@@ -1,15 +1,15 @@
 // @(#) $Id$
 
-#ifndef ALIL3_HOUGHTEST
-#define ALIL3_HOUGHTEST
+#ifndef ALIL3HOUGHTEST_H
+#define ALIL3HOUGHTEST_H
 
 #include "AliL3RootTypes.h"
 
-struct SimData {
-  Int_t pads[10][10];//maximum 10 pads width
-  Int_t npads;
-  Int_t minpad;
-  Int_t mintime;
+struct AliL3SimData {
+  Int_t fPads[10][10];//maximum 10 pads width
+  Int_t fNPads; //number of pads
+  Int_t fMinpad; //??
+  Int_t fMintime; //??
 };
 
 class AliL3Histogram;
@@ -18,10 +18,6 @@ class TH3;
 class AliL3TrackArray;
 
 class AliL3HoughTest {
-  
- private:
-  SimData *fData;
-  Int_t fCurrentPatch;
 
  public:
   
@@ -40,7 +36,11 @@ class AliL3HoughTest {
   void TransformLines2Circle(TH3 *hist,AliL3TrackArray *tracks);
   void Transform2Center(AliL3Histogram *hist);
   
-  void FindAbsMaxima(TH3 *hist,Int_t zsearch,Float_t &max_x,Float_t &max_y,Float_t &max_z,Int_t &maxvalue);
+  void FindAbsMaxima(TH3 *hist,Int_t zsearch,Float_t &maxx,Float_t &maxy,Float_t &maxz,Int_t &maxvalue) const;
+  
+ private:
+  AliL3SimData *fData; //??
+  Int_t fCurrentPatch; //index of the current patch
   
   ClassDef(AliL3HoughTest,1) //Hough transform base class
 };

@@ -35,7 +35,7 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
   
   AliL3Histogram **fParamSpace; //!
 #ifdef do_mc
-  TrackIndex **fTrackID; //!
+  AliL3TrackIndex **fTrackID; //!
 #endif
   Bool_t fDoMC; // Calculate mc labels or not
   Bool_t fEtaOverlap; // Allow overlapping of eta slice or not

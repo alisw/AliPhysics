@@ -34,34 +34,38 @@ AliL3HoughTransformerVhdl::AliL3HoughTransformerVhdl()
   : AliL3HoughTransformerLUT()
 
 {
+  //default ctor
   fEpsilon=0;
   fSinEpsilon=0;
   fCosEpsilon=1;
   fIts=0;
 }
 
-AliL3HoughTransformerVhdl::AliL3HoughTransformerVhdl(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_its) 
-  : AliL3HoughTransformerLUT(slice,patch,n_eta_segments)
+AliL3HoughTransformerVhdl::AliL3HoughTransformerVhdl(Int_t slice,Int_t patch,Int_t netasegments,Int_t nits) 
+  : AliL3HoughTransformerLUT(slice,patch,netasegments)
 {
+  //normal ctor
   fEpsilon=0;
   fSinEpsilon=0;
   fCosEpsilon=1;
-  fIts=n_its;
+  fIts=nits;
 }
 
 AliL3HoughTransformerVhdl::~AliL3HoughTransformerVhdl()
 {
-
+  //dtor
 }
 
-void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Float_t pt_min,Int_t nybin,Float_t phimin,Float_t phimax)
+void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax)
 {
-  AliL3HoughTransformerLUT::CreateHistograms(nxbin,pt_min,nybin,phimin,phimax);
+  //Create histograms containing the hough space
+  AliL3HoughTransformerLUT::CreateHistograms(nxbin,ptmin,nybin,phimin,phimax);
 }
 
 void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
 					         Int_t nybin,Float_t ymin,Float_t ymax)
 {
+  //Create histograms containing the hough space
   AliL3HoughTransformerLUT::CreateHistograms(nxbin,xmin,xmax,nybin,ymin,ymax);
 
   fEpsilon=(ymax-ymin)/nybin;
@@ -77,9 +81,10 @@ void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Float_t xmin,Float_
   //cout << fEpsilon << " - " << (xmax-xmin)/nxbin << endl;
 }
 
-void AliL3HoughTransformerVhdl::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t /*n_its*/)
+void AliL3HoughTransformerVhdl::Init(Int_t slice,Int_t patch,Int_t netasegments,Int_t /*nits*/)
 {
-  AliL3HoughTransformerLUT::Init(slice,patch,n_eta_segments);
+  //Init hough transformer
+  AliL3HoughTransformerLUT::Init(slice,patch,netasegments);
 }
 
 void AliL3HoughTransformerVhdl::TransformCircle()
@@ -127,7 +132,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
       Float_t x2=x*x;
       Float_t y=0,y2=0;
       Float_t r2=0;
-      Float_t R2=0;
+      Float_t rr2=0;
       fLastPad=-1;
 
 
@@ -148,9 +153,9 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 	    y = CalcY(pad,row);
 	    y2 = y*y;
 	    r2 = x2 + y2;
-	    R2 = 1. / r2;
+	    rr2 = 1. / r2;
 	    for(Int_t b=0; b<fNPhi0; b++)
-	      fLUTKappa[b]=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+	      fLUTKappa[b]=rr2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
 
 	    //Fill the histogram along the phirange
 	    Float_t kappa=0;
@@ -158,27 +163,27 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 	    Float_t lastkappa=0;
 	    Float_t lastkappaprime=0;
 	    Int_t its=0;
-	    Float_t R2=1/(x*x+y*y);
-	    Float_t A=2*y*R2;
-	    Float_t B=-2*x*R2;
+	    Float_t rr2=1/(x*x+y*y);
+	    Float_t a=2*y*rr2;
+	    Float_t b=-2*x*rr2;
 
 	    //starting point
 	    Float_t phi = fLUTphi0[fNPhi0/2];
-	    kappa=A*cos(phi)+B*sin(phi);
-	    kappaprime=B*cos(phi)-A*sin(phi);
+	    kappa=a*cos(phi)+b*sin(phi);
+	    kappaprime=b*cos(phi)-a*sin(phi);
 	    its=fIts;
 	    lastkappa=kappa;
 	    lastkappaprime=kappaprime;
 	    //	  hist->Fill(kappa,phi,charge);
 
 	    for(Int_t b=fNPhi0/2+1; b<fNPhi0; b++){ 
-	      //Float_t exact_kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+	      //Float_t exact_kappa=rr2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
 	      
 	      phi=fLUTphi0[b];
 
 	      if(its==0) { //initialize or re-adjust values
-		kappa=A*cos(phi)+B*sin(phi); //equals exact_kappa!
-		kappaprime=B*cos(phi)-A*sin(phi);
+		kappa=a*cos(phi)+b*sin(phi); //equals exact_kappa!
+		kappaprime=b*cos(phi)-a*sin(phi);
 		its=fIts;
 	      } else {
 		//kappa=fCosEpsilon*lastkappa+fSinEpsilon*lastkappaprime;
@@ -194,21 +199,21 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 	    } // end positive running values
 
 	    phi = fLUTphi0[fNPhi0/2];
-	    kappa=A*cos(phi)+B*sin(phi);
-	    kappaprime=B*cos(phi)-A*sin(phi);
+	    kappa=a*cos(phi)+b*sin(phi);
+	    kappaprime=b*cos(phi)-a*sin(phi);
 	    its=fIts;
 	    lastkappa=kappa;
 	    lastkappaprime=kappaprime;
 	    //hist->Fill(kappa,fLUTphi0[b],charge);
 
 	    for(Int_t b=fNPhi0/2-1; b>=0; b--){ 
-	      //Float_t exact_kappa=R2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
+	      //Float_t exact_kappa=rr2*(y*fLUT2cosphi0[b]-x*fLUT2sinphi0[b]);
 
 	      Float_t phi = fLUTphi0[b];
 
 	      if(its==0) { //initialize or re-adjust values
-		kappa=A*cos(phi)+B*sin(phi); //equals exact_kappa!
-		kappaprime=B*cos(phi)-A*sin(phi);
+		kappa=a*cos(phi)+b*sin(phi); //equals exact_kappa!
+		kappaprime=b*cos(phi)-a*sin(phi);
 		its=fIts;
 	      } else {
 		//kappa=fCosEpsilon*lastkappa-fSinEpsilon*lastkappaprime;
@@ -230,17 +235,17 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 
 	  //find eta slice
 	  Float_t rz2 = 1 + (x*x+y*y)/(z*z);
-	  Int_t eta_index = FindIndex(rz2);
+	  Int_t etaindex = FindIndex(rz2);
 
-	  if(eta_index < 0 || eta_index >= fNEtas){
-	    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerVhdl::TransformCircle","Histograms")<<"No histograms corresponding to eta index value of "<<eta_index<<"."<<ENDLOG;
+	  if(etaindex < 0 || etaindex >= fNEtas){
+	    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerVhdl::TransformCircle","Histograms")<<"No histograms corresponding to eta index value of "<<etaindex<<"."<<ENDLOG;
 	    continue;
 	  }	  
 
 	  //Get the correct histogrampointer:
-	  AliL3Histogram *hist = fParamSpace[eta_index];
+	  AliL3Histogram *hist = fParamSpace[etaindex];
 	  if(!hist){
-	    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerVhdl::TransformCircle","Histograms")<<"Error getting histogram in index "<<eta_index<<"."<<ENDLOG;
+	    //LOG(AliL3Log::kWarning,"AliL3HoughTransformerVhdl::TransformCircle","Histograms")<<"Error getting histogram in index "<<etaindex<<"."<<ENDLOG;
 	    continue;
 	  }
 
@@ -275,14 +280,16 @@ void AliL3HoughTransformerVhdl::TransformCircle()
 
 void AliL3HoughTransformerVhdl::Print()
 {
+  //Print transformer params
   AliL3HoughTransformerLUT::Print();
 
   cout << "fEpsilon: " << fEpsilon << endl;
   cout << "fIts: " << fIts << endl;
 }
 
-void AliL3HoughTransformerVhdl::PrintVhdl()
+void AliL3HoughTransformerVhdl::PrintVhdl() const
 {
+  //Print all transformer params
   cout << "fSlice := " << GetSlice() << ";" << endl;
   cout << "fPatch := " << GetPatch() << ";" << endl;
   //cout << "fSector := " << fSector << ";" << endl;

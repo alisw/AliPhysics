@@ -31,37 +31,43 @@ ClassImp(AliL3HoughTransformerNew)
 
 AliL3HoughTransformerNew::AliL3HoughTransformerNew()
 {
-  fParamSpace=0;
+  //default ctor
+  fParamSpace3D=0;
 }
 
 AliL3HoughTransformerNew::AliL3HoughTransformerNew(Int_t slice,Int_t patch,Int_t netasegments) : AliL3HoughTransformer(slice,patch,netasegments)
 {
-  fParamSpace=0;
+  //normal ctor
+  fParamSpace3D=0;
 }
 AliL3HoughTransformerNew::~AliL3HoughTransformerNew()
 {
-  if(fParamSpace)
-    delete fParamSpace;
+  //dtor
+  if(fParamSpace3D)
+    delete fParamSpace3D;
 }
 
 void AliL3HoughTransformerNew::CreateHistograms(Int_t nxbins,Float_t xlow,Float_t xup,
 						Int_t nybins,Float_t ylow,Float_t yup,
 						Int_t nzbins,Float_t zlow,Float_t zup)
 {
+  //Create the histogram which contain the hough space
   Char_t name[1024];
   sprintf(name,"paramspace_%d",(Int_t)this);
-  fParamSpace = new TH3F(name,"",nxbins,xlow,xup,nybins,ylow,yup,nzbins,zlow,zup);
+  fParamSpace3D = new TH3F(name,"",nxbins,xlow,xup,nybins,ylow,yup,nzbins,zlow,zup);
 }
 
 void AliL3HoughTransformerNew::Reset()
 {
-  fParamSpace->Reset();
+  //Reset Hough space
+  fParamSpace3D->Reset();
 }
 
 
 
 void AliL3HoughTransformerNew::TransformLine(Int_t *rowrange,Float_t *phirange)
 {
+  //Hough Transform
   AliL3DigitRowData *tempPt = GetDataPointer();
   if(!tempPt)
     {
@@ -70,7 +76,7 @@ void AliL3HoughTransformerNew::TransformLine(Int_t *rowrange,Float_t *phirange)
       return;
     }
   
-  TH3 *hist = fParamSpace;
+  TH3 *hist = fParamSpace3D;
   for(Int_t i=AliL3Transform::GetFirstRow(GetPatch()); i<=AliL3Transform::GetLastRow(GetPatch()); i++)
     {
       AliL3DigitData *digPt = tempPt->fDigitData;
@@ -104,8 +110,8 @@ void AliL3HoughTransformerNew::TransformLine(Int_t *rowrange,Float_t *phirange)
 
 	  xyz[0] = xyz[0] - AliL3Transform::Row2X(rowrange[0]);
 	  Float_t x = xyz[0] + AliL3Transform::Row2X(rowrange[0]);
-	  Float_t R = sqrt(x*x + xyz[1]*xyz[1]);
-	  Float_t delta = atan(xyz[2]/R);
+	  Float_t r = sqrt(x*x + xyz[1]*xyz[1]);
+	  Float_t delta = atan(xyz[2]/r);
 	  for(Int_t xbin=hist->GetXaxis()->GetFirst(); xbin<=hist->GetXaxis()->GetLast(); xbin++)
 	    {
 	      Float_t theta = hist->GetXaxis()->GetBinCenter(xbin);
@@ -118,21 +124,22 @@ void AliL3HoughTransformerNew::TransformLine(Int_t *rowrange,Float_t *phirange)
   
 }
 
-struct Digit {
-  Int_t row;
-  Int_t charge;
-  Float_t y;
-  Float_t z;
-  Digit *next;
+struct AliL3Digit {
+  Int_t fRow;//padrow index
+  Int_t fCharge;//digits charge
+  Float_t fY;//Y coordinate of the digit
+  Float_t fZ;//Z coordinate of the digit
+  AliL3Digit *fNext;//pointer to the next digit
 };
 
-struct EtaContainer {
-  void *first;
-  void *last;
+struct AliL3EtaContainer {
+  void *fFirst;//pointer to the first digit in a sequence
+  void *fLast;//pointer to the last digit in a sequence
 };
 
 void AliL3HoughTransformerNew::TransformLineC(Int_t *rowrange,Float_t *phirange)
 {
+  //Hough Transform
   AliL3DigitRowData *tempPt = GetDataPointer();
   if(!tempPt)
     LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircleC","Data")
@@ -146,12 +153,12 @@ void AliL3HoughTransformerNew::TransformLineC(Int_t *rowrange,Float_t *phirange)
     }
   
   Int_t bound = (GetNEtaSegments()+1)*(AliL3Transform::GetNRows(GetPatch())+1);
-  EtaContainer *etaPt = new EtaContainer[bound];
-  memset(etaPt,0,bound*sizeof(EtaContainer));  
+  AliL3EtaContainer *etaPt = new AliL3EtaContainer[bound];
+  memset(etaPt,0,bound*sizeof(AliL3EtaContainer));  
   
-  Digit *digits = new Digit[counter];
-  cout<<"Allocating "<<counter*sizeof(Digit)<<" bytes to digitsarray"<<endl;
-  memset(digits,0,counter*sizeof(Digit));
+  AliL3Digit *digits = new AliL3Digit[counter];
+  cout<<"Allocating "<<counter*sizeof(AliL3Digit)<<" bytes to digitsarray"<<endl;
+  memset(digits,0,counter*sizeof(AliL3Digit));
 
   Int_t sector,row;
   Float_t xyz[3];
@@ -175,21 +182,21 @@ void AliL3HoughTransformerNew::TransformLineC(Int_t *rowrange,Float_t *phirange)
 	  Float_t phi = atan2(xyz[1],xyz[0]);
 	  if(phi < phirange[0] || phi > phirange[1]) continue;
 	  
-	  digits[counter].row = i;
-	  digits[counter].y = xyz[1];
-	  digits[counter].z = xyz[2];
-	  digits[counter].charge = charge;
+	  digits[counter].fRow = i;
+	  digits[counter].fY = xyz[1];
+	  digits[counter].fZ = xyz[2];
+	  digits[counter].fCharge = charge;
 	  
-	  Int_t eta_index = GetEtaIndex(eta);
-	  Int_t index = (GetNEtaSegments()+1)*(i-AliL3Transform::GetFirstRow(GetPatch())) + eta_index;
+	  Int_t etaindex = GetEtaIndex(eta);
+	  Int_t index = (GetNEtaSegments()+1)*(i-AliL3Transform::GetFirstRow(GetPatch())) + etaindex;
 	  
 	  if(index > 0 && index < bound) 
 	    {
-	      if(etaPt[index].first == 0)
-		etaPt[index].first = (void*)(&digits[counter]);
+	      if(etaPt[index].fFirst == 0)
+		etaPt[index].fFirst = (void*)(&digits[counter]);
 	      else
-		((Digit*)(etaPt[index].last))->next = &digits[counter];
-	      etaPt[index].last = (void*)(&digits[counter]);
+		((AliL3Digit*)(etaPt[index].fLast))->fNext = &digits[counter];
+	      etaPt[index].fLast = (void*)(&digits[counter]);
 	    }
 	  counter++;
 	}
@@ -198,41 +205,41 @@ void AliL3HoughTransformerNew::TransformLineC(Int_t *rowrange,Float_t *phirange)
   
   cout<<"Doing the combinatorics"<<endl;
   
-  Digit *dPt1,*dPt2;
-  TH3 *hist = fParamSpace;
+  AliL3Digit *dPt1,*dPt2;
+  TH3 *hist = fParamSpace3D;
   for(Int_t e=0; e<GetNEtaSegments(); e++)
     {
       for(Int_t i=rowrange[0]; i<=rowrange[1]; i++)
 	{
 	  Int_t index1 = (GetNEtaSegments()+1)*(i-AliL3Transform::GetFirstRow(GetPatch())) + e;
 	  
-	  for(dPt1 = (Digit*)etaPt[index1].first; dPt1 != 0; dPt1 = (Digit*)dPt1->next)
+	  for(dPt1 = (AliL3Digit*)etaPt[index1].fFirst; dPt1 != 0; dPt1 = (AliL3Digit*)dPt1->fNext)
 	    {
 	      for(Int_t j=i+1; j<=rowrange[1]; j++)
 		{
 		  Int_t index2 = (GetNEtaSegments()+1)*(j-AliL3Transform::GetFirstRow(GetPatch())) + e;
 		  
-		  for(dPt2 = (Digit*)etaPt[index2].first; dPt2 != 0; dPt2 = (Digit*)dPt2->next)
+		  for(dPt2 = (AliL3Digit*)etaPt[index2].fFirst; dPt2 != 0; dPt2 = (AliL3Digit*)dPt2->fNext)
 		    {
-		      if(dPt1->row == dPt2->row)
+		      if(dPt1->fRow == dPt2->fRow)
 			{
 			  cerr<<"same row; indexes "<<index1<<" "<<index2<<endl;
 			  exit(5);
 			}
 		      
 		      //Do the transform:
-		      Float_t x1 = AliL3Transform::Row2X(dPt1->row) - AliL3Transform::Row2X(rowrange[0]);
-		      Float_t x2 = AliL3Transform::Row2X(dPt2->row) - AliL3Transform::Row2X(rowrange[0]);
-		      Float_t y1 = dPt1->y;
-		      Float_t y2 = dPt2->y;
+		      Float_t x1 = AliL3Transform::Row2X(dPt1->fRow) - AliL3Transform::Row2X(rowrange[0]);
+		      Float_t x2 = AliL3Transform::Row2X(dPt2->fRow) - AliL3Transform::Row2X(rowrange[0]);
+		      Float_t y1 = dPt1->fY;
+		      Float_t y2 = dPt2->fY;
 		      Float_t theta = atan2(x2-x1,y1-y2);
 		      Float_t rho = x1*cos(theta)+y1*sin(theta);
-		      Float_t R1 = sqrt(pow(AliL3Transform::Row2X(dPt1->row),2) + pow(y1,2));
-		      Float_t delta1 = atan2(dPt1->z,R1);
-		      Float_t R2 = sqrt(pow(AliL3Transform::Row2X(dPt2->row),2) + pow(y2,2));
-		      Float_t delta2 = atan2(dPt2->z,R2);
-		      Float_t delta = (dPt1->charge*delta1+dPt2->charge*delta2)/(dPt1->charge+dPt2->charge);
-		      hist->Fill(theta,rho,delta,dPt1->charge+dPt2->charge);
+		      Float_t r1 = sqrt(pow(AliL3Transform::Row2X(dPt1->fRow),2) + pow(y1,2));
+		      Float_t delta1 = atan2(dPt1->fZ,r1);
+		      Float_t r2 = sqrt(pow(AliL3Transform::Row2X(dPt2->fRow),2) + pow(y2,2));
+		      Float_t delta2 = atan2(dPt2->fZ,r2);
+		      Float_t delta = (dPt1->fCharge*delta1+dPt2->fCharge*delta2)/(dPt1->fCharge+dPt2->fCharge);
+		      hist->Fill(theta,rho,delta,dPt1->fCharge+dPt2->fCharge);
 		    }
 		}
 	    }

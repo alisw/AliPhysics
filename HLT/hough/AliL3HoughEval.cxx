@@ -39,7 +39,7 @@ ClassImp(AliL3HoughEval)
 
 AliL3HoughEval::AliL3HoughEval()
 {
-  
+  //default ctor  
   fRemoveFoundTracks = kFALSE;
   fNumOfPadsToLook = 1;
   fNumOfRowsToMiss = 1;
@@ -50,6 +50,7 @@ AliL3HoughEval::AliL3HoughEval()
 
 AliL3HoughEval::~AliL3HoughEval()
 {
+  //dtor
   fHoughTransformer = 0;
   if(fRowPointers)
     {
@@ -61,6 +62,7 @@ AliL3HoughEval::~AliL3HoughEval()
 
 void AliL3HoughEval::InitTransformer(AliL3HoughBaseTransformer *transformer)
 {
+  //Init hough transformer
   fHoughTransformer = transformer;
   fSlice = fHoughTransformer->GetSlice();
   fPatch = fHoughTransformer->GetPatch();
@@ -92,7 +94,7 @@ void AliL3HoughEval::GenerateLUT()
   
 }
 
-Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Int_t *rowrange,Bool_t remove)
+Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrowscrossed,Int_t *rowrange,Bool_t remove)
 {
   //Look at rawdata along the road specified by the track candidates.
   //If track is good, return true, if not return false.
@@ -102,7 +104,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
   Int_t nrow=0,npixs=0;//,rows_crossed=0;
   Float_t xyz[3];
   
-  Int_t total_charge=0;//total charge along the road
+  Int_t totalcharge=0;//total charge along the road
   
   //for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
   for(Int_t padrow = rowrange[0]; padrow<=rowrange[1]; padrow++)
@@ -119,8 +121,8 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 	{
 	  track->GetLineCrossingPoint(padrow,xyz);
 	  xyz[0] += AliL3Transform::Row2X(track->GetFirstRow());
-	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
-	  xyz[2] = R*track->GetTgl();
+	  Float_t r = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+	  xyz[2] = r*track->GetTgl();
 	}
       
       AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
@@ -149,9 +151,9 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 	      if(pad > p) break;
 	      UShort_t time = digPt[j].fTime;
 	      Double_t eta = AliL3Transform::GetEta(fSlice,padrow,pad,time);
-	      Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);
-	      if(pixel_index != track->GetEtaIndex()) continue;
-	      total_charge += digPt[j].fCharge;
+	      Int_t pixelindex = fHoughTransformer->GetEtaIndex(eta);
+	      if(pixelindex != track->GetEtaIndex()) continue;
+	      totalcharge += digPt[j].fCharge;
 	      if(remove)
 		digPt[j].fCharge = 0; //Erease the track from image
 	      npixs++;
@@ -166,7 +168,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
   if(remove)
     return kTRUE;
   
-  nrows_crossed += nrow; //Update the number of rows crossed.
+  nrowscrossed += nrow; //Update the number of rows crossed.
   
   if(nrow >= rowrange[1]-rowrange[0]+1 - fNumOfRowsToMiss)//this was a good track
     {
@@ -183,7 +185,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 
 void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
 {
-  
+  //Find the corresponding eta slice hough space  
   Int_t sector,row;
   Float_t xyz[3];
   
@@ -236,9 +238,9 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
 		  if(pad > p) break;
 		  UShort_t time = digPt[j].fTime;
 		  Double_t eta = AliL3Transform::GetEta(fSlice,padrow,pad,time);
-		  Int_t pixel_index = (Int_t)(eta/etaslice);
-		  if(pixel_index > track->GetEtaIndex()+1) continue;
-		  if(pixel_index < track->GetEtaIndex()-1) break;
+		  Int_t pixelindex = (Int_t)(eta/etaslice);
+		  if(pixelindex > track->GetEtaIndex()+1) continue;
+		  if(pixelindex < track->GetEtaIndex()-1) break;
 		  fEtaHistos[ntr]->Fill(eta,digPt[j].fCharge);
 		}
 	    }
@@ -248,14 +250,14 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
   for(Int_t i=0; i<ntracks; i++)
     {
       AliL3Histogram1D *hist = fEtaHistos[i];
-      Int_t max_bin = hist->GetMaximumBin();
-      Double_t max_value = hist->GetBinContent(max_bin);
+      Int_t maxbin = hist->GetMaximumBin();
+      Double_t maxvalue = hist->GetBinContent(maxbin);
       AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
       if(!track) continue;
-      if(hist->GetBinContent(max_bin-1)<max_value && hist->GetBinContent(max_bin+1)<max_value)
+      if(hist->GetBinContent(maxbin-1)<maxvalue && hist->GetBinContent(maxbin+1)<maxvalue)
 	{
-	  track->SetWeight((Int_t)max_value,kTRUE); 
-	  track->SetEta(hist->GetBinCenter(max_bin));
+	  track->SetWeight((Int_t)maxvalue,kTRUE); 
+	  track->SetEta(hist->GetBinCenter(maxbin));
 	  track->SetNHits(track->GetWeight());
 	}
       else
@@ -271,7 +273,7 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
   //delete [] fEtaHistos;
 }
 
-void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
+void AliL3HoughEval::DisplayEtaSlice(Int_t etaindex,AliL3Histogram *hist)
 {
   //Display the current raw data inside the (slice,patch)
 
@@ -310,8 +312,8 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	  AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
 	  xyz[2] -= fZVertex;
 	  Double_t eta = AliL3Transform::GetEta(xyz);
-	  Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);//(Int_t)(eta/etaslice);
-	  if(pixel_index != eta_index) continue;
+	  Int_t pixelindex = fHoughTransformer->GetEtaIndex(eta);//(Int_t)(eta/etaslice);
+	  if(pixelindex != etaindex) continue;
 	  hist->Fill(xyz[0],xyz[1],charge);
 	}
     }

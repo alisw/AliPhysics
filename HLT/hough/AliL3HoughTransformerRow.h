@@ -45,7 +45,7 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   AliL3Histogram **fParamSpace; //!
 
 #ifdef do_mc
-  static TrackIndex **fgTrackID; //!
+  static AliL3TrackIndex **fgTrackID; //!
 #endif
   Bool_t fDoMC; // Do MC labels or not
 

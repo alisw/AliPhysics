@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3_HOUGHTRANSFORMERNEW
-#define ALIL3_HOUGHTRANSFORMERNEW
+#ifndef ALIL3HOUGHTRANSFORMERNEW_H
+#define ALIL3HOUGHTRANSFORMERNEW_H
 
 #include "AliL3RootTypes.h"
 #include "AliL3HoughTransformer.h"
@@ -12,10 +12,6 @@ class AliL3TrackArray;
 class AliL3HoughTrack;
  
 class AliL3HoughTransformerNew : public AliL3HoughTransformer {
-  
- private:
-  
-  TH3 *fParamSpace;
 
  public:
   AliL3HoughTransformerNew(); 
@@ -29,7 +25,11 @@ class AliL3HoughTransformerNew : public AliL3HoughTransformer {
   void TransformLine(Int_t *rowrange,Float_t *phirange);
   void TransformLineC(Int_t *rowrange,Float_t *phirange);
   
-  TH3 *GetHistogram() {return fParamSpace;}
+  TH3 *GetHistogram() {return fParamSpace3D;}
+  
+ private:
+  
+  TH3 *fParamSpace3D;//Histogram containing the hough space
   
   ClassDef(AliL3HoughTransformerNew,1) //Normal Hough transformation class
 

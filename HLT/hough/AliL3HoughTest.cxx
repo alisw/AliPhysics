@@ -29,23 +29,26 @@ ClassImp(AliL3HoughTest)
 
 AliL3HoughTest::AliL3HoughTest()
 {
+  //ctor
   fData=0;
 }
 
 
 AliL3HoughTest::~AliL3HoughTest()
 {
+  //dtor
   if(fData)
     delete [] fData;
 }
 
 Bool_t AliL3HoughTest::GenerateTrackData(Double_t pt,Double_t psi,Double_t tgl,Int_t sign,Int_t patch,Int_t minhits)
 {
+  //Generate digits according to given track parameters?
   fCurrentPatch=patch;
   if(fData)
     delete fData;
-  fData = new SimData[AliL3Transform::GetNRows(patch)];
-  memset(fData,0,AliL3Transform::GetNRows(patch)*sizeof(SimData));
+  fData = new AliL3SimData[AliL3Transform::GetNRows(patch)];
+  memset(fData,0,AliL3Transform::GetNRows(patch)*sizeof(AliL3SimData));
   
   AliL3ModelTrack *track = new AliL3ModelTrack();
   track->Init(0,patch);
@@ -117,7 +120,7 @@ Bool_t AliL3HoughTest::GenerateTrackData(Double_t pt,Double_t psi,Double_t tgl,I
 	      exit(5);
 	    }
 	  npads++;
-	  Int_t seq_charge = clustercharge*temp[j]/entries;
+	  Int_t seqcharge = clustercharge*temp[j]/entries;
 	  Int_t ntimes=0;
 	  for(Int_t k=0; k<AliL3Transform::GetNTimeBins(); k++)
 	    {
@@ -128,19 +131,19 @@ Bool_t AliL3HoughTest::GenerateTrackData(Double_t pt,Double_t psi,Double_t tgl,I
 		  cerr<<"AliL3HoughTest::GenerateTrackData : Wrong timeindex "<<tindex<<" "<<k<<" "<<mintime<<endl;
 		  exit(5);
 		}
-	      Int_t charge = seq_charge*temp2[k]/entries;
+	      Int_t charge = seqcharge*temp2[k]/entries;
 	      if(charge < 3 ) 
 		continue;
 	      if(charge > 1023)
 		charge=1023;
 	      //cout<<"row "<<i<<" pad "<<j<<" time "<<k<<" charge "<<charge<<endl;
 	      ntimes++;
-	      fData[rowindex].pads[index][tindex]=charge;
+	      fData[rowindex].fPads[index][tindex]=charge;
 	    }
 	}
-      fData[rowindex].minpad=minpad;
-      fData[rowindex].mintime=mintime;
-      fData[rowindex].npads=npads;
+      fData[rowindex].fMinpad=minpad;
+      fData[rowindex].fMintime=mintime;
+      fData[rowindex].fNPads=npads;
     }
   delete track;
   delete [] temp2;
@@ -151,35 +154,36 @@ Bool_t AliL3HoughTest::GenerateTrackData(Double_t pt,Double_t psi,Double_t tgl,I
 
 void AliL3HoughTest::Transform2Circle(AliL3Histogram *hist)
 {
+  //Hough trasnform
   if(!fData)
     {
       cerr<<"AliL3HoughTest::Transform : No data"<<endl;
       return;
     }
-  Float_t R,phi,phi0,kappa,xyz[3];
+  Float_t r,phi,phi0,kappa,xyz[3];
   Int_t pad,time,charge,sector,row;
   for(Int_t i=AliL3Transform::GetFirstRow(fCurrentPatch); i<=AliL3Transform::GetLastRow(fCurrentPatch); i++)
     {
       Int_t rowindex = i - AliL3Transform::GetFirstRow(fCurrentPatch);
       AliL3Transform::Slice2Sector(0,i,sector,row);
-      for(Int_t j=0; j<fData[rowindex].npads; j++)
+      for(Int_t j=0; j<fData[rowindex].fNPads; j++)
 	{
-	  pad = j + fData[rowindex].minpad;
+	  pad = j + fData[rowindex].fMinpad;
 	  for(Int_t k=0; k<10; k++)
 	    {
-	      time = k + fData[rowindex].mintime;
-	      charge = fData[rowindex].pads[j][k];
+	      time = k + fData[rowindex].fMintime;
+	      charge = fData[rowindex].fPads[j][k];
 	      if(charge == 0) continue;
 	      AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
 	      
-	      R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+	      r = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	      
 	      phi = AliL3Transform::GetPhi(xyz);
 	      
 	      for(Int_t k=hist->GetFirstYbin(); k<=hist->GetLastYbin(); k++)
 		{
 		  phi0 = hist->GetBinCenterY(k);
-		  kappa = 2*sin(phi-phi0)/R;
+		  kappa = 2*sin(phi-phi0)/r;
 		  hist->Fill(kappa,phi0,charge);
 		}
 	    }
@@ -189,23 +193,24 @@ void AliL3HoughTest::Transform2Circle(AliL3Histogram *hist)
 
 void AliL3HoughTest::Transform2CircleC(AliL3Histogram *hist)
 {
+  //Hough transform
   if(!fData)
     {
       cerr<<"AliL3HoughTest::TransformC : No data"<<endl;
       return;
     }
   Int_t pad1,pad2,time1,time2,charge1,charge2,sector,row;
-  Float_t r1,r2,phi1,phi2,phi_0,kappa,hit[3],hit2[3];
+  Float_t r1,r2,phi1,phi2,phi0,kappa,hit[3],hit2[3];
   for(Int_t i=AliL3Transform::GetFirstRow(fCurrentPatch); i<=AliL3Transform::GetLastRow(fCurrentPatch); i++)
     {
       Int_t rowindex1 = i - AliL3Transform::GetFirstRow(fCurrentPatch);
-      for(Int_t d1=0; d1<fData[rowindex1].npads; d1++)
+      for(Int_t d1=0; d1<fData[rowindex1].fNPads; d1++)
 	{
-	  pad1 = d1 + fData[rowindex1].minpad;
+	  pad1 = d1 + fData[rowindex1].fMinpad;
 	  for(Int_t j=0; j<10; j++)
 	    {
-	      time1 = j + fData[rowindex1].mintime;
-	      charge1 = fData[rowindex1].pads[d1][j];
+	      time1 = j + fData[rowindex1].fMintime;
+	      charge1 = fData[rowindex1].fPads[d1][j];
 	      if(charge1==0) continue;
 	      AliL3Transform::Slice2Sector(0,i,sector,row);
 	      AliL3Transform::Raw2Local(hit,sector,row,pad1,time1);
@@ -215,22 +220,22 @@ void AliL3HoughTest::Transform2CircleC(AliL3Histogram *hist)
 	      for(Int_t j=i+1; j<=AliL3Transform::GetLastRow(fCurrentPatch); j++)
 		{
 		  Int_t rowindex2 = j - AliL3Transform::GetFirstRow(fCurrentPatch);
-		  for(Int_t d2=0; d2<fData[rowindex2].npads; d2++)
+		  for(Int_t d2=0; d2<fData[rowindex2].fNPads; d2++)
 		    {
-		      pad2 = d2 + fData[rowindex2].minpad;
+		      pad2 = d2 + fData[rowindex2].fMinpad;
 		      for(Int_t k=0; k<10; k++)
 			{
-			  time2 = k + fData[rowindex2].mintime;
-			  charge2 = fData[rowindex2].pads[d2][k];
+			  time2 = k + fData[rowindex2].fMintime;
+			  charge2 = fData[rowindex2].fPads[d2][k];
 			  if(charge2==0) continue;
 			  AliL3Transform::Slice2Sector(0,j,sector,row);
 			  AliL3Transform::Raw2Local(hit2,sector,row,pad2,time2);
 			  r2 = sqrt(hit2[0]*hit2[0]+hit2[1]*hit2[1]);
 			  phi2 = atan2(hit2[1],hit2[0]);
-			  phi_0 = atan( (r2*sin(phi1) - r1*sin(phi2)) / (r2*cos(phi1) - r1*cos(phi2)) );
+			  phi0 = atan( (r2*sin(phi1) - r1*sin(phi2)) / (r2*cos(phi1) - r1*cos(phi2)) );
 			  
-			  kappa = 2*sin(phi1-phi_0) / r1;
-			  hist->Fill(kappa,phi_0,charge1+charge2);
+			  kappa = 2*sin(phi1-phi0) / r1;
+			  hist->Fill(kappa,phi0,charge1+charge2);
 			}
 		    }
 		}
@@ -250,12 +255,12 @@ void AliL3HoughTest::Transform2CircleF(AliL3Histogram *hist)
       return;
     }
   Int_t pad1,pad2,time1,time2,charge1,charge2,sector,row;
-  Float_t r1,r2,phi1,phi2,phi_0,kappa,hit[3],hit2[3];
+  Float_t r1,r2,phi1,phi2,phi0,kappa,hit[3],hit2[3];
   
   Int_t rowindex1 = 80 - AliL3Transform::GetFirstRow(fCurrentPatch);
-  for(Int_t d1=1; d1<fData[rowindex1].npads; d1++)
+  for(Int_t d1=1; d1<fData[rowindex1].fNPads; d1++)
     {
-      pad1 = d1 + fData[rowindex1].minpad;
+      pad1 = d1 + fData[rowindex1].fMinpad;
       
       AliL3Transform::Slice2Sector(0,80,sector,row);
       AliL3Transform::Raw2Local(hit,sector,row,pad1,0);
@@ -264,31 +269,31 @@ void AliL3HoughTest::Transform2CircleF(AliL3Histogram *hist)
       
       for(Int_t j=0; j<10; j++)
 	{
-	  time1 = j + fData[rowindex1].mintime;
-	  charge1 = fData[rowindex1].pads[d1][j];
+	  time1 = j + fData[rowindex1].fMintime;
+	  charge1 = fData[rowindex1].fPads[d1][j];
 	  if(charge1==0) continue;
 	  
 	  for(Int_t j=0; j<=AliL3Transform::GetLastRow(fCurrentPatch); j++)
 	    {
 	      if(j==80) continue;
 	      Int_t rowindex2 = j - AliL3Transform::GetFirstRow(fCurrentPatch);
-	      for(Int_t d2=0; d2<fData[rowindex2].npads; d2++)
+	      for(Int_t d2=0; d2<fData[rowindex2].fNPads; d2++)
 		{
-		  pad2 = d2 + fData[rowindex2].minpad;
+		  pad2 = d2 + fData[rowindex2].fMinpad;
 		  for(Int_t k=0; k<10; k++)
 		    {
-		      time2 = k + fData[rowindex2].mintime;
-		      charge2 = fData[rowindex2].pads[d2][k];
+		      time2 = k + fData[rowindex2].fMintime;
+		      charge2 = fData[rowindex2].fPads[d2][k];
 		      if(charge2==0) continue;
 		      AliL3Transform::Slice2Sector(0,j,sector,row);
 		      AliL3Transform::Raw2Local(hit2,sector,row,pad2,time2);
 		      r2 = sqrt(hit2[0]*hit2[0]+hit2[1]*hit2[1]);
 		      phi2 = atan2(hit2[1],hit2[0]);
-		      phi_0 = atan( (r2*sin(phi1) - r1*sin(phi2)) / (r2*cos(phi1) - r1*cos(phi2)) );
+		      phi0 = atan( (r2*sin(phi1) - r1*sin(phi2)) / (r2*cos(phi1) - r1*cos(phi2)) );
 		      
-		      kappa = 2*sin(phi1-phi_0) / r1;
-		      hist->Fill(kappa,phi_0,charge1+charge2);
-		      //cout<<"Filling "<<kappa<<" psi "<<phi_0<<" charge "<<charge1<<endl;
+		      kappa = 2*sin(phi1-phi0) / r1;
+		      hist->Fill(kappa,phi0,charge1+charge2);
+		      //cout<<"Filling "<<kappa<<" psi "<<phi0<<" charge "<<charge1<<endl;
 		    }
 		}
 	    }
@@ -299,6 +304,7 @@ void AliL3HoughTest::Transform2CircleF(AliL3Histogram *hist)
 
 void AliL3HoughTest::Transform2Line(AliL3Histogram *hist,Int_t *rowrange)
 {
+  //Hough transform
   if(!fData)
     {
       cerr<<"AliL3HoughTest::Transform2Line : No data"<<endl;
@@ -314,13 +320,13 @@ void AliL3HoughTest::Transform2Line(AliL3Histogram *hist,Int_t *rowrange)
       if(i>rowrange[1])
 	break;
       Int_t rowindex = i - AliL3Transform::GetFirstRow(fCurrentPatch);
-      for(Int_t d=0; d<fData[rowindex].npads; d++)
+      for(Int_t d=0; d<fData[rowindex].fNPads; d++)
 	{
-	  pad = d + fData[rowindex].minpad;
+	  pad = d + fData[rowindex].fMinpad;
 	  for(Int_t j=0; j<10; j++)
 	    {
-	      time = j + fData[rowindex].mintime;
-	      charge = fData[rowindex].pads[d][j];
+	      time = j + fData[rowindex].fMintime;
+	      charge = fData[rowindex].fPads[d][j];
 	      if(charge==0) continue;
 	      AliL3Transform::Slice2Sector(0,i,sector,row);
 	      AliL3Transform::Raw2Local(hit,sector,row,pad,time);
@@ -340,6 +346,7 @@ void AliL3HoughTest::Transform2Line(AliL3Histogram *hist,Int_t *rowrange)
 
 void AliL3HoughTest::Transform2LineC(AliL3Histogram *hist,Int_t *rowrange)
 {
+  //Hough transform?
   if(!fData)
     {
       cerr<<"AliL3HoughTest::Transform2Line : No data"<<endl;
@@ -351,13 +358,13 @@ void AliL3HoughTest::Transform2LineC(AliL3Histogram *hist,Int_t *rowrange)
   for(Int_t i=rowrange[0]; i<=rowrange[1]; i++)
     {
       Int_t rowindex1 = i - AliL3Transform::GetFirstRow(fCurrentPatch);
-      for(Int_t d1=0; d1<fData[rowindex1].npads; d1++)
+      for(Int_t d1=0; d1<fData[rowindex1].fNPads; d1++)
 	{
-	  pad1 = d1 + fData[rowindex1].minpad;
+	  pad1 = d1 + fData[rowindex1].fMinpad;
 	  for(Int_t j=0; j<10; j++)
 	    {
-	      time1 = j + fData[rowindex1].mintime;
-	      charge1 = fData[rowindex1].pads[d1][j];
+	      time1 = j + fData[rowindex1].fMintime;
+	      charge1 = fData[rowindex1].fPads[d1][j];
 	      if(charge1==0) continue;
 	      AliL3Transform::Slice2Sector(0,i,sector,row);
 	      AliL3Transform::Raw2Local(hit,sector,row,pad1,time1);
@@ -367,13 +374,13 @@ void AliL3HoughTest::Transform2LineC(AliL3Histogram *hist,Int_t *rowrange)
 	      for(Int_t i2=i+1; i2<=rowrange[1]; i2++)
 		{
 		  Int_t rowindex2 = i2 - AliL3Transform::GetFirstRow(fCurrentPatch);
-		  for(Int_t d2=0; d2<fData[rowindex2].npads; d2++)
+		  for(Int_t d2=0; d2<fData[rowindex2].fNPads; d2++)
 		    {
-		      pad2 = d2 + fData[rowindex2].minpad;
+		      pad2 = d2 + fData[rowindex2].fMinpad;
 		      for(Int_t k=0; k<10; k++)
 			{
-			  time2 = k + fData[rowindex2].mintime;
-			  charge2 = fData[rowindex2].pads[d2][k];
+			  time2 = k + fData[rowindex2].fMintime;
+			  charge2 = fData[rowindex2].fPads[d2][k];
 			  if(charge2==0) continue;
 			  AliL3Transform::Slice2Sector(0,i2,sector,row);
 			  AliL3Transform::Raw2Local(hit2,sector,row,pad2,time2);
@@ -393,6 +400,7 @@ void AliL3HoughTest::Transform2LineC(AliL3Histogram *hist,Int_t *rowrange)
 
 void AliL3HoughTest::FillImage(TH2 *hist,Int_t displayrow)
 {
+  //Draw digits data
   if(!fData)
     {
       cerr<<"AliL3HoughTest::FillImage : No data to fill"<<endl;
@@ -405,14 +413,14 @@ void AliL3HoughTest::FillImage(TH2 *hist,Int_t displayrow)
       if(displayrow >=0)
 	if(i != displayrow) continue;
 
-      //cout<<"row "<<i<<" npads "<<fData[rowindex].npads<<endl;
-      for(Int_t j=0; j<fData[rowindex].npads; j++)
+      //cout<<"row "<<i<<" fNPads "<<fData[rowindex].fNPads<<endl;
+      for(Int_t j=0; j<fData[rowindex].fNPads; j++)
 	{
-	  Int_t pad = j + fData[rowindex].minpad;
+	  Int_t pad = j + fData[rowindex].fMinpad;
 	  for(Int_t k=0; k<10; k++)
 	    {
-	      Int_t time = k + fData[rowindex].mintime;
-	      Int_t charge = fData[rowindex].pads[j][k];
+	      Int_t time = k + fData[rowindex].fMintime;
+	      Int_t charge = fData[rowindex].fPads[j][k];
 	      if(charge==0) continue;
 	      //cout<<i<<" "<<pad<<" "<<time<<" "<<charge<<endl;
 	      Float_t xyz[3];
@@ -432,6 +440,7 @@ void AliL3HoughTest::FillImage(TH2 *hist,Int_t displayrow)
 
 void AliL3HoughTest::Transform2Line3D(TH3 *hist,Int_t *rowrange,Float_t *phirange)
 {
+  //HT in 3D?
   if(!fData)
     {
       cerr<<"AliL3HoughTest::Transform2Line : No data"<<endl;
@@ -439,7 +448,7 @@ void AliL3HoughTest::Transform2Line3D(TH3 *hist,Int_t *rowrange,Float_t *phirang
     }
   
   Int_t pad,time,charge,sector,row;
-  Float_t hit[3],theta,rho,R,delta;
+  Float_t hit[3],theta,rho,r,delta;
   for(Int_t i=AliL3Transform::GetFirstRow(fCurrentPatch); i<=AliL3Transform::GetLastRow(fCurrentPatch); i++)
     {
       
@@ -449,13 +458,13 @@ void AliL3HoughTest::Transform2Line3D(TH3 *hist,Int_t *rowrange,Float_t *phirang
 	break;
       
       Int_t rowindex = i - AliL3Transform::GetFirstRow(fCurrentPatch);
-      for(Int_t d=0; d<fData[rowindex].npads; d++)
+      for(Int_t d=0; d<fData[rowindex].fNPads; d++)
 	{
-	  pad = d + fData[rowindex].minpad;
+	  pad = d + fData[rowindex].fMinpad;
 	  for(Int_t j=0; j<10; j++)
 	    {
-	      time = j + fData[rowindex].mintime;
-	      charge = fData[rowindex].pads[d][j];
+	      time = j + fData[rowindex].fMintime;
+	      charge = fData[rowindex].fPads[d][j];
 	      if(charge==0) continue;
 	      AliL3Transform::Slice2Sector(0,i,sector,row);
 	      AliL3Transform::Raw2Local(hit,sector,row,pad,time);
@@ -466,8 +475,8 @@ void AliL3HoughTest::Transform2Line3D(TH3 *hist,Int_t *rowrange,Float_t *phirang
 	      
 	      hit[0] = hit[0] - AliL3Transform::Row2X(rowrange[0]);
 	      Float_t x = hit[0] + AliL3Transform::Row2X(rowrange[0]);
-	      R = sqrt(x*x + hit[1]*hit[1]);
-	      delta = atan(hit[2]/R);
+	      r = sqrt(x*x + hit[1]*hit[1]);
+	      delta = atan(hit[2]/r);
 	      
 	      for(Int_t xbin=hist->GetXaxis()->GetFirst(); xbin<=hist->GetXaxis()->GetLast(); xbin++)
 		{
@@ -482,6 +491,7 @@ void AliL3HoughTest::Transform2Line3D(TH3 *hist,Int_t *rowrange,Float_t *phirang
 
 void AliL3HoughTest::Transform2LineC3D(TH3 *hist,Int_t *rowrange)
 {
+  //HT in 3D?
   if(!fData)
     {
       cerr<<"AliL3HoughTest::Transform2Line : No data"<<endl;
@@ -489,7 +499,7 @@ void AliL3HoughTest::Transform2LineC3D(TH3 *hist,Int_t *rowrange)
     }
   
   Int_t pad1,pad2,time1,time2,charge1,charge2,sector,row;
-  Float_t theta,rho,hit[3],hit2[3],R1,R2,delta,delta1,delta2;
+  Float_t theta,rho,hit[3],hit2[3],r1,r2,delta,delta1,delta2;
   for(Int_t i=AliL3Transform::GetFirstRow(fCurrentPatch); i<=AliL3Transform::GetLastRow(fCurrentPatch); i++)
     {
       if(i<rowrange[0])
@@ -497,35 +507,35 @@ void AliL3HoughTest::Transform2LineC3D(TH3 *hist,Int_t *rowrange)
       if(i>rowrange[1])
 	break;
       Int_t rowindex1 = i - AliL3Transform::GetFirstRow(fCurrentPatch);
-      for(Int_t d1=0; d1<fData[rowindex1].npads; d1++)
+      for(Int_t d1=0; d1<fData[rowindex1].fNPads; d1++)
 	{
-	  pad1 = d1 + fData[rowindex1].minpad;
+	  pad1 = d1 + fData[rowindex1].fMinpad;
 	  for(Int_t j=0; j<10; j++)
 	    {
-	      time1 = j + fData[rowindex1].mintime;
-	      charge1 = fData[rowindex1].pads[d1][j];
+	      time1 = j + fData[rowindex1].fMintime;
+	      charge1 = fData[rowindex1].fPads[d1][j];
 	      if(charge1==0) continue;
 	      AliL3Transform::Slice2Sector(0,i,sector,row);
 	      AliL3Transform::Raw2Local(hit,sector,row,pad1,time1);
-	      R1 = sqrt(hit[0]*hit[0]+hit[1]*hit[1]);
-	      delta1 = atan(hit[2]/R1);
+	      r1 = sqrt(hit[0]*hit[0]+hit[1]*hit[1]);
+	      delta1 = atan(hit[2]/r1);
 	      hit[0] = hit[0] - AliL3Transform::Row2X(rowrange[0]);
 	      
 	      for(Int_t i2=i+1; i2<=rowrange[1]; i2++)
 		{
 		  Int_t rowindex2 = i2 - AliL3Transform::GetFirstRow(fCurrentPatch);
-		  for(Int_t d2=0; d2<fData[rowindex2].npads; d2++)
+		  for(Int_t d2=0; d2<fData[rowindex2].fNPads; d2++)
 		    {
-		      pad2 = d2 + fData[rowindex2].minpad;
+		      pad2 = d2 + fData[rowindex2].fMinpad;
 		      for(Int_t k=0; k<10; k++)
 			{
-			  time2 = k + fData[rowindex2].mintime;
-			  charge2 = fData[rowindex2].pads[d2][k];
+			  time2 = k + fData[rowindex2].fMintime;
+			  charge2 = fData[rowindex2].fPads[d2][k];
 			  if(charge2==0) continue;
 			  AliL3Transform::Slice2Sector(0,i2,sector,row);
 			  AliL3Transform::Raw2Local(hit2,sector,row,pad2,time2);
-			  R2 = sqrt(hit2[0]*hit2[0]+hit2[1]*hit2[1]);
-			  delta2 = atan(hit2[2]/R2);
+			  r2 = sqrt(hit2[0]*hit2[0]+hit2[1]*hit2[1]);
+			  delta2 = atan(hit2[2]/r2);
 			  delta = (charge1*delta1 + charge2*delta2)/(charge1+charge2);
 			  hit2[0] = hit2[0] - AliL3Transform::Row2X(rowrange[0]);
 			  
@@ -542,7 +552,7 @@ void AliL3HoughTest::Transform2LineC3D(TH3 *hist,Int_t *rowrange)
 
 void AliL3HoughTest::TransformLines2Circle(TH3 *hist,AliL3TrackArray *tracks)
 {
-  
+  //Another HT? 
   for(Int_t i=0; i<tracks->GetNTracks(); i++)
     {
       AliL3HoughTrack *tr = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
@@ -551,13 +561,13 @@ void AliL3HoughTest::TransformLines2Circle(TH3 *hist,AliL3TrackArray *tracks)
       Float_t hit[3];
       tr->GetLineCrossingPoint(middlerow,hit);
       hit[0] += AliL3Transform::Row2X(tr->GetFirstRow());
-      Float_t R = sqrt(hit[0]*hit[0] + hit[1]*hit[1]);
-      hit[2] = R*tr->GetTgl();
+      Float_t r = sqrt(hit[0]*hit[0] + hit[1]*hit[1]);
+      hit[2] = r*tr->GetTgl();
       Float_t phi = atan2(hit[1],hit[0]);
       Float_t theta = tr->GetPsiLine() - AliL3Transform::Pi()/2;
       Float_t psi = 2*phi - theta;
-      Float_t kappa = 2/R*sin(phi-psi);
-      Float_t delta = atan(hit[2]/R);
+      Float_t kappa = 2/r*sin(phi-psi);
+      Float_t delta = atan(hit[2]/r);
       hist->Fill(kappa,psi,delta,tr->GetWeight());
       
     }
@@ -578,13 +588,13 @@ void AliL3HoughTest::Transform2Center(AliL3Histogram *hist)
   for(Int_t i=AliL3Transform::GetFirstRow(fCurrentPatch); i<=AliL3Transform::GetLastRow(fCurrentPatch); i++)
     {
       Int_t rowindex1 = i - AliL3Transform::GetFirstRow(fCurrentPatch);
-      for(Int_t d1=0; d1<fData[rowindex1].npads; d1++)
+      for(Int_t d1=0; d1<fData[rowindex1].fNPads; d1++)
 	{
-	  pad1 = d1 + fData[rowindex1].minpad;
+	  pad1 = d1 + fData[rowindex1].fMinpad;
 	  for(Int_t j=0; j<10; j++)
 	    {
-	      time1 = j + fData[rowindex1].mintime;
-	      charge1 = fData[rowindex1].pads[d1][j];
+	      time1 = j + fData[rowindex1].fMintime;
+	      charge1 = fData[rowindex1].fPads[d1][j];
 	      if(charge1==0) continue;
 	      AliL3Transform::Slice2Sector(0,i,sector,row);
 	      AliL3Transform::Raw2Local(hit,sector,row,pad1,time1);
@@ -594,13 +604,13 @@ void AliL3HoughTest::Transform2Center(AliL3Histogram *hist)
 	      for(Int_t j=i+1; j<=AliL3Transform::GetLastRow(fCurrentPatch); j++)
 		{
 		  Int_t rowindex2 = j - AliL3Transform::GetFirstRow(fCurrentPatch);
-		  for(Int_t d2=0; d2<fData[rowindex2].npads; d2++)
+		  for(Int_t d2=0; d2<fData[rowindex2].fNPads; d2++)
 		    {
-		      pad2 = d2 + fData[rowindex2].minpad;
+		      pad2 = d2 + fData[rowindex2].fMinpad;
 		      for(Int_t k=0; k<10; k++)
 			{
-			  time2 = k + fData[rowindex2].mintime;
-			  charge2 = fData[rowindex2].pads[d2][k];
+			  time2 = k + fData[rowindex2].fMintime;
+			  charge2 = fData[rowindex2].fPads[d2][k];
 			  if(charge2==0) continue;
 			  AliL3Transform::Slice2Sector(0,j,sector,row);
 			  AliL3Transform::Raw2Local(hit2,sector,row,pad2,time2);
@@ -618,9 +628,9 @@ void AliL3HoughTest::Transform2Center(AliL3Histogram *hist)
 }
 
 
-void AliL3HoughTest::FindAbsMaxima(TH3 *hist,Int_t zsearch,Float_t &max_x,Float_t &max_y,Float_t &max_z,Int_t &maxvalue)
+void AliL3HoughTest::FindAbsMaxima(TH3 *hist,Int_t zsearch,Float_t &maxx,Float_t &maxy,Float_t &maxz,Int_t &maxvalue) const
 {
-  
+  //Find peaks in the Hough space  
   TH1 *h1 = hist->Project3D("z");
       
   TAxis *z = hist->GetZaxis();
@@ -659,9 +669,9 @@ void AliL3HoughTest::FindAbsMaxima(TH3 *hist,Int_t zsearch,Float_t &max_x,Float_
 	      if(value > maxvalue)
 		{
 		  maxvalue=value;
-		  max_x = xvalue;
-		  max_y = yvalue;
-		  max_z = zpeak[i];
+		  maxx = xvalue;
+		  maxy = yvalue;
+		  maxz = zpeak[i];
 		}
 	    }
 	}

@@ -41,7 +41,7 @@ AliL3HoughClusterTransformer::AliL3HoughClusterTransformer()
 #endif
 }
 
-AliL3HoughClusterTransformer::AliL3HoughClusterTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
+AliL3HoughClusterTransformer::AliL3HoughClusterTransformer(Int_t slice,Int_t patch,Int_t netasegments) : AliL3HoughBaseTransformer(slice,patch,netasegments)
 {
   //Normal constructor
   fParamSpace = 0;
@@ -55,6 +55,7 @@ AliL3HoughClusterTransformer::AliL3HoughClusterTransformer(Int_t slice,Int_t pat
 
 AliL3HoughClusterTransformer::~AliL3HoughClusterTransformer()
 {
+  //dtor
   DeleteHistograms();
   if(fMemHandler)
     delete fMemHandler;
@@ -71,10 +72,11 @@ AliL3HoughClusterTransformer::~AliL3HoughClusterTransformer()
 #endif
 }
 
-//void AliL3HoughClusterTransformer::Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100){}
+//void AliL3HoughClusterTransformer::Init(Int_t slice=0,Int_t patch=0,Int_t netasegments=100){}
 
 void AliL3HoughClusterTransformer::DeleteHistograms()
 {
+  //Delete hough space histograms
   if(fParamSpace)
     {
       for(Int_t i=0; i<GetNEtaSegments(); i++)
@@ -86,7 +88,7 @@ void AliL3HoughClusterTransformer::DeleteHistograms()
     }
 }
 
-void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t pt_min,
+void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t ptmin,
 					     Int_t nybin,Float_t phimin,Float_t phimax)
 {
   //Create the histograms (parameter space).
@@ -94,11 +96,11 @@ void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t pt_min,
   //The arguments give the range and binning; 
   //nxbin = #bins in kappa
   //nybin = #bins in phi0
-  //pt_min = mimium Pt of track (corresponding to maximum kappa)
-  //phi_min = mimimum phi0 (degrees)
-  //phi_max = maximum phi0 (degrees)
+  //ptmin = mimium Pt of track (corresponding to maximum kappa)
+  //phimin = mimimum phi0 (degrees)
+  //phimax = maximum phi0 (degrees)
     
-  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt_min;
+  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/ptmin;
   Double_t torad = AliL3Transform::Pi()/180;
   CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
 }
@@ -106,6 +108,7 @@ void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t pt_min,
 void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
 						    Int_t nybin,Float_t ymin,Float_t ymax)
 {
+  //Create histograms which contain hough space
   Char_t histname[256];
   
   fParamSpace = new AliL3Histogram*[GetNEtaSegments()];
@@ -116,10 +119,10 @@ void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t xmin,Flo
     }
 #ifdef do_mc
   Int_t ncells = (nxbin+2)*(nybin+2);
-  cout<<"Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fTrackID"<<endl;
-  fTrackID = new TrackIndex*[GetNEtaSegments()];
+  cout<<"Allocating "<<GetNEtaSegments()*ncells*sizeof(AliL3TrackIndex)<<" bytes to fTrackID"<<endl;
+  fTrackID = new AliL3TrackIndex*[GetNEtaSegments()];
   for(Int_t i=0; i<GetNEtaSegments(); i++)
-    fTrackID[i] = new TrackIndex[ncells];
+    fTrackID[i] = new AliL3TrackIndex[ncells];
 #endif
   
 }
@@ -146,11 +149,11 @@ void AliL3HoughClusterTransformer::Reset()
   AliL3Histogram *hist = fParamSpace[0];
   Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
   for(Int_t i=0; i<GetNEtaSegments(); i++)
-    memset(fTrackID[i],0,ncells*sizeof(TrackIndex));
+    memset(fTrackID[i],0,ncells*sizeof(AliL3TrackIndex));
 #endif
 }
 
-Int_t AliL3HoughClusterTransformer::GetEtaIndex(Double_t eta)
+Int_t AliL3HoughClusterTransformer::GetEtaIndex(Double_t eta) const
 {
   //Return the histogram index of the corresponding eta. 
   
@@ -159,19 +162,21 @@ Int_t AliL3HoughClusterTransformer::GetEtaIndex(Double_t eta)
   return (Int_t)index;
 }
 
-inline AliL3Histogram *AliL3HoughClusterTransformer::GetHistogram(Int_t eta_index)
+inline AliL3Histogram *AliL3HoughClusterTransformer::GetHistogram(Int_t etaindex)
 {
-  if(!fParamSpace || eta_index >= GetNEtaSegments() || eta_index < 0)
+  //Returns the histogram which correspond to a given eta slice
+  if(!fParamSpace || etaindex >= GetNEtaSegments() || etaindex < 0)
     return 0;
-  if(!fParamSpace[eta_index])
+  if(!fParamSpace[etaindex])
     return 0;
-  return fParamSpace[eta_index];
+  return fParamSpace[etaindex];
 }
 
-Double_t AliL3HoughClusterTransformer::GetEta(Int_t eta_index,Int_t slice) const
+Double_t AliL3HoughClusterTransformer::GetEta(Int_t etaindex,Int_t slice) const
 {
-  Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
-  Double_t eta=(Double_t)((eta_index+0.5)*eta_slice);
+  //Returns eta associated with given eta slice
+  Double_t etaslice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
+  Double_t eta=(Double_t)((etaindex+0.5)*etaslice);
   if(slice>17) eta*=-1;
   return eta;
 }
@@ -185,13 +190,13 @@ void AliL3HoughClusterTransformer::FindClusters()
       return;
     }
 
-  const Int_t maxpoints=100000;
-  const Int_t pointsize = maxpoints * sizeof(AliL3SpacePointData);
+  const Int_t kMaxpoints=100000;
+  const Int_t kPointsize = kMaxpoints * sizeof(AliL3SpacePointData);
 
   fMemHandler = new AliL3MemHandler();
-  fClusters = (AliL3SpacePointData*)fMemHandler->Allocate(pointsize);
+  fClusters = (AliL3SpacePointData*)fMemHandler->Allocate(kPointsize);
   AliL3ClustFinderNew *cf = new AliL3ClustFinderNew();
-  cf->InitSlice(0,GetPatch(),AliL3Transform::GetFirstRow(GetPatch()),AliL3Transform::GetLastRow(GetPatch()),maxpoints);
+  cf->InitSlice(0,GetPatch(),AliL3Transform::GetFirstRow(GetPatch()),AliL3Transform::GetLastRow(GetPatch()),kMaxpoints);
   cf->SetDeconv(kFALSE);
   cf->SetOutputArray(fClusters);
   cf->Read(1,GetDataPointer());
@@ -205,9 +210,9 @@ void AliL3HoughClusterTransformer::TransformCircle()
   //Transform the input data with a circle HT.
   //The function loops over all the data, and transforms each cluster with the equations:
   // 
-  //kappa = 2/R*sin(phi - phi0)
+  //kappa = 2/r*sin(phi - phi0)
   //
-  //where R = sqrt(x*x +y*y), and phi = arctan(y/x)
+  //where r = sqrt(x*x +y*y), and phi = arctan(y/x)
   //
   //Each cluster then transforms into a curve in the (kappa,phi0)-space. In order to find
   //which histogram in which the pixel should be transformed, the eta-value is calcluated
@@ -228,21 +233,21 @@ void AliL3HoughClusterTransformer::TransformCircle()
       xyz[1] = fClusters[i].fY;
       xyz[2] = fClusters[i].fZ;
       Double_t eta = AliL3Transform::GetEta(xyz);
-      Int_t eta_index = GetEtaIndex(eta);
-      if(eta_index < 0 || eta_index >= GetNEtaSegments())
+      Int_t etaindex = GetEtaIndex(eta);
+      if(etaindex < 0 || etaindex >= GetNEtaSegments())
 	continue;
       
-      AliL3Histogram *hist = fParamSpace[eta_index];
+      AliL3Histogram *hist = fParamSpace[etaindex];
       
       //Do the transformation:
-      Double_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]); 
+      Double_t r = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]); 
       Double_t phi = AliL3Transform::GetPhi(xyz);
       
       //Fill the histogram along the phirange
       for(Int_t b=hist->GetFirstYbin(); b<=hist->GetLastYbin(); b++)
 	{
 	  Double_t phi0 = hist->GetBinCenterY(b);
-	  Double_t kappa = 2*sin(phi - phi0)/R;
+	  Double_t kappa = 2*sin(phi - phi0)/r;
 	  hist->Fill(kappa,phi0,1);
 #ifdef do_mc
 	  Int_t bin = hist->FindBin(kappa,phi0);
@@ -252,11 +257,11 @@ void AliL3HoughClusterTransformer::TransformCircle()
 	      if(label < 0) break;
 	      UInt_t c;
 	      for(c=0; c<MaxTrack; c++)
-		if(fTrackID[eta_index][bin].fLabel[c] == label || fTrackID[eta_index][bin].fNHits[c] == 0)
+		if(fTrackID[etaindex][bin].fLabel[c] == label || fTrackID[etaindex][bin].fNHits[c] == 0)
 		  break;
 	      if(c == MaxTrack-1) cerr<<"AliL3HoughClusterTransformer::TransformCircle : Array reached maximum!! "<<c<<endl;
-	      fTrackID[eta_index][bin].fLabel[c] = label;
-	      fTrackID[eta_index][bin].fNHits[c]++;
+	      fTrackID[etaindex][bin].fLabel[c] = label;
+	      fTrackID[etaindex][bin].fNHits[c]++;
 	    }
 #endif
 	}
@@ -331,27 +336,27 @@ void AliL3HoughClusterTransformer::TransformCircleC(Int_t */*row_range*/,Int_t /
 }
 
 
-Int_t AliL3HoughClusterTransformer::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi)
+Int_t AliL3HoughClusterTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi) const
 {
-
+  //Returns the mc label for a given bin in the hough space
 #ifdef do_mc
-  if(eta_index < 0 || eta_index > GetNEtaSegments())
+  if(etaindex < 0 || etaindex > GetNEtaSegments())
     {
-      cerr<<"AliL3HoughClusterTransformer::GetTrackID : Wrong etaindex "<<eta_index<<endl;
+      cerr<<"AliL3HoughClusterTransformer::GetTrackID : Wrong etaindex "<<etaindex<<endl;
       return -1;
     }
-  AliL3Histogram *hist = fParamSpace[eta_index];
+  AliL3Histogram *hist = fParamSpace[etaindex];
   Int_t bin = hist->FindBin(kappa,psi);
   Int_t label=-1;
   Int_t max=0;
   for(UInt_t i=0; i<MaxTrack; i++)
     {
-      Int_t nhits=fTrackID[eta_index][bin].fNHits[i];
+      Int_t nhits=fTrackID[etaindex][bin].fNHits[i];
       if(nhits == 0) break;
       if(nhits > max)
 	{
 	  max = nhits;
-	  label = fTrackID[eta_index][bin].fLabel[i];
+	  label = fTrackID[etaindex][bin].fLabel[i];
 	}
     }
   return label;

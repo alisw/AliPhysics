@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3_HOUGH_Eval
-#define ALIL3_HOUGH_Eval
+#ifndef ALIL3HOUGHEVAL_H
+#define ALIL3HOUGHEVAL_H
 
 #include "AliL3RootTypes.h"
 
@@ -14,33 +14,14 @@ class AliL3Histogram1D;
 
 class AliL3HoughEval {
   
- private:
-
-  Int_t fSlice;
-  Int_t fPatch;
-  Int_t fNrows;
-  Int_t fNEtaSegments;
-  Double_t fEtaMin;
-  Double_t fEtaMax;
-  Int_t fNumOfPadsToLook;
-  Int_t fNumOfRowsToMiss;
-  AliL3Histogram1D **fEtaHistos; //!
-  Float_t fZVertex;
-
-  //Flags
-  Bool_t fRemoveFoundTracks;
-  
-  AliL3HoughBaseTransformer *fHoughTransformer; //!
-  AliL3DigitRowData **fRowPointers; //!
-  
  public:
   AliL3HoughEval(); 
   virtual ~AliL3HoughEval();
   
   void InitTransformer(AliL3HoughBaseTransformer *transformer);
   void GenerateLUT();
-  void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
-  Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Int_t *rowrange,Bool_t remove=kFALSE);
+  void DisplayEtaSlice(Int_t etaindex,AliL3Histogram *hist);
+  Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t &nrowscrossed,Int_t *rowrange,Bool_t remove=kFALSE);
 #ifdef use_root
   void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks",Int_t treshold=0);
 #endif
@@ -56,6 +37,25 @@ class AliL3HoughEval {
   void SetSlice(Int_t i) {fSlice=i;}
   void SetZVertex(Float_t zvertex) {fZVertex=zvertex;}
 
+ private:
+
+  Int_t fSlice;//Index of the slice being processed
+  Int_t fPatch;//Index of the patch being processed
+  Int_t fNrows;//Number of padrows inside the patch
+  Int_t fNEtaSegments;//Number of eta slices
+  Double_t fEtaMin;//Minimum allowed eta
+  Double_t fEtaMax;//Maximum allowed eta
+  Int_t fNumOfPadsToLook;//Padrow search window
+  Int_t fNumOfRowsToMiss;//Maximum numbers of padrow which could be missed
+  AliL3Histogram1D **fEtaHistos; //!
+  Float_t fZVertex;//Z position of the primary vertex
+
+  //Flags
+  Bool_t fRemoveFoundTracks;//Remove the found tracks or not?
+  
+  AliL3HoughBaseTransformer *fHoughTransformer; //!
+  AliL3DigitRowData **fRowPointers; //!
+  
   ClassDef(AliL3HoughEval,1) //Hough transform verfication class
 
 };

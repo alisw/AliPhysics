@@ -41,8 +41,9 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
   fZVertex = 0.0;
 }
 
-AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Float_t zvertex)
+AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t netasegments,Float_t zvertex)
 {
+  //normal ctor
   fDigitRowData = 0;
 
   fSlice = 0;
@@ -54,18 +55,20 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int
   fUpperThreshold = 1023;
   fZVertex = zvertex;
 
-  Init(slice,patch,n_eta_segments);
+  Init(slice,patch,netasegments);
 }
 
 AliL3HoughBaseTransformer::~AliL3HoughBaseTransformer()
 {
+  //dtor
 }
 
-void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t /*n_seqs*/)
+void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t netasegments,Int_t /*n_seqs*/)
 {
+  //Transformer init
   fSlice = slice;
   fPatch = patch;
-  fNEtaSegments = n_eta_segments;
+  fNEtaSegments = netasegments;
   fEtaMin = 0;
   fEtaMax = fSlice < 18 ? 1. : -1.;
 }
