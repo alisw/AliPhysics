@@ -90,7 +90,6 @@
 #pragma link C++ class  AliITSHTable+;
 #pragma link C++ class  AliITSetfSDD+;
 // SSD simulation and reconstruction
-#pragma link C++ class  AliITSdictSSD+;
 #pragma link C++ class  AliITSdcsSSD+;
 #pragma link C++ class  AliITSclusterSSD+;
 #pragma link C++ class  AliITSpackageSSD+;
