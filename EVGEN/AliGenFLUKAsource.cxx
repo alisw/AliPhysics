@@ -21,6 +21,7 @@
 // Files can be chained. 
 // Author: andreas.morsch@cern.ch
 
+#include <RVersion.h>
 #include "TPDGCode.h"
 #include "TDatabasePDG.h"
 
