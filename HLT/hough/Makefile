@@ -10,7 +10,7 @@ PACKAGE = AliL3Hough
 # C++ sources
 
 
-SRCS	       = AliL3HoughTransformer.cxx AliL3HoughPixel.cxx  \
+SRCS	       = AliL3HoughTransformer.cxx AliL3Hough.cxx \
 		 AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerge.cxx 
 		 
 

@@ -9,7 +9,8 @@ struct AliL3Digits
   UChar_t fPad;
   UShort_t fTime;
   Int_t fIndex;
-  AliL3Digits *nextPhiRowPixel;
+  AliL3Digits *fNextVolumePixel;
+  //AliL3Digits *nextPhiRowPixel;
   AliL3Digits *nextRowPixel;
 };
 
@@ -40,6 +41,7 @@ class AliL3HoughTransformer : public TObject {
   
   AliL3HoughContainer *fRowContainer; //!
   AliL3HoughContainer *fPhiRowContainer; //!
+  AliL3HoughContainer *fVolume; //!
   Int_t fContainerBounds;
   Int_t fNDigits;
   Int_t **fIndex; //!
@@ -50,11 +52,11 @@ class AliL3HoughTransformer : public TObject {
 
  public:
   AliL3HoughTransformer(); 
-  AliL3HoughTransformer(Int_t slice,Int_t patch,Float_t *etarange,Int_t phi_segments);
+  AliL3HoughTransformer(Int_t slice,Int_t patch,Float_t *etarange);
+  AliL3HoughTransformer(Int_t slice,Int_t patch,Double_t *etarange=0,Int_t n_eta_segments=1);
   virtual ~AliL3HoughTransformer();
   
-  void Transform2Circle(TH2F *hist,Int_t middle_row);
-  void Transform2Circle(TH2F *hist);
+  void Transform2Circle(TH2F *hist,Int_t eta_index);
   void Transform2Line(TH2F *hist,Int_t ref_row,Int_t *rowrange,Double_t *phirange,TH2F *raw=0);
   void TransformLines2Circle(TH2F *hist,AliL3TrackArray *tracks);
   void GetPixels(Char_t *rootfile,TH2F *hist=0);

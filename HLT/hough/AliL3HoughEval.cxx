@@ -40,7 +40,7 @@ AliL3HoughEval::~AliL3HoughEval()
 }
 
 
-void AliL3HoughEval::LookInsideRoad(AliL3TrackArray *tracks,TH2F *hist,TH2F *fake)
+void AliL3HoughEval::LookInsideRoad(AliL3TrackArray *tracks,Bool_t remove,TH2F *hist)
 {
   //Look at rawdata along the road specified by the track candidates.
 
@@ -75,8 +75,6 @@ void AliL3HoughEval::LookInsideRoad(AliL3TrackArray *tracks,TH2F *hist,TH2F *fak
 	      continue;
 	    }
 	  
-	  if(fake)
-	    fake->Fill(xyz[0],xyz[1],1);
 	  Int_t npixs = 0;
 	  
 	  //Get the pixels along the track candidate
@@ -93,6 +91,9 @@ void AliL3HoughEval::LookInsideRoad(AliL3TrackArray *tracks,TH2F *hist,TH2F *fak
 	      if(fabs(xyz_pix[1] - xyz[1]) > num_of_pads_to_look*fTransform->GetPadPitchWidthLow()) continue; 
 	      npixs++;
 	      
+	      if(remove) //Remove this pixel from image
+		pixel->fIndex = -1;
+
 	      if(hist)
 		{
 		  //fTransform->Local2Global(xyz_pix,slice);

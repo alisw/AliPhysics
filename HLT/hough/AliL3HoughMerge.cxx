@@ -61,11 +61,3 @@ void AliL3HoughMerge::FillHisto(TH2F *merge_hist)
     }
 }
 
-/*
-void AliL3HoughMerge::MergeLines()
-{
-
-  
-
-}
-*/

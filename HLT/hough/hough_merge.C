@@ -2,8 +2,8 @@ void hough_merge(char *rootfile,Bool_t MC=false)
 {
   gStyle->SetOptStat(0);
   
-  Int_t xbin = 60;
-  Int_t ybin = 60;
+  Int_t xbin = 70;
+  Int_t ybin = 70;
   Float_t xrange[2] = {-0.006 , 0.006}; //Pt 0.1->4GeV 0.006-0.006
   //Float_t yrange[2] = {-0.17 , 0.17}; //slice 2 0.55->0.88
   Float_t yrange[2] = {-0.26 , 0.26}; //slice 2 0.55->0.88
@@ -11,91 +11,61 @@ void hough_merge(char *rootfile,Bool_t MC=false)
 
   Int_t xr[2] = {0,250};
   Int_t yr[2] = {-125,125};
-  TH1F *ntracks = new TH1F("ntracks","",100,0,200);
-  TH2F *raw = new TH2F("raw","",250,xr[0],xr[1],250,yr[0],yr[1]);
-  TH2F *road = new TH2F("road","",250,0,250,250,yr[0],yr[1]);
-  TH2F *fake = new TH2F("fake","",300,0,300,250,-125,125);
-  TH2F *peaks = new TH2F("peaks","",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
+  ntracks = new TH1F("ntracks","",100,0,200);
+  raw = new TH2F("raw","",250,xr[0],xr[1],250,yr[0],yr[1]);
+  road = new TH2F("road","",250,0,250,250,yr[0],yr[1]);
+  fake = new TH2F("fake","",300,0,300,250,-125,125);
+  peaks = new TH2F("peaks","",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
   peaks->SetMarkerStyle(3);
   peaks->SetMarkerColor(2);
+  road->SetMarkerStyle(6);
+
+  int slice = 2;
+  //float eta[2] = {0.3,0.4};
+  float eta[2] = {0.04,0.05};
   
-  int slice = 2,patch=0,n_phi_segments=40;
-  float eta[2] = {0.3,0.4};
-  // float eta[2] = {0.04,0.05};
-  
-  AliL3HoughTransformer *a;
-  AliL3HoughMaxFinder *b;
-  AliL3HoughEval *c = new AliL3HoughEval(slice);
-  AliL3HoughMerge *d = new AliL3HoughMerge(slice);
-  TH2F *hist;
+  b = new AliL3HoughMaxFinder("KappaPhi");
+  //hist = new TH2F("hist","Parameter space",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
+  TH2F **histos = new TH2F*[5];
   for(int pat=0; pat<5; pat++)
     {
-      a = new AliL3HoughTransformer(slice,pat,eta,n_phi_segments);
-      hist = new TH2F("hist","Parameter space",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
+      a = new AliL3HoughTransformer(slice,pat,eta);
+      histos[pat] = new TH2F("hist","Parameter space",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
       a->GetPixels(rootfile,raw);
-      a->Transform2Circle(hist,87);
-      
-      b = new AliL3HoughMaxFinder("KappaPhi");
-      AliL3TrackArray *tracks = b->FindMaxima(hist);
-      c->SetTransformer(a);
-      c->LookInsideRoad(tracks);
-      d->FillTracks(tracks,pat);
+      a->InitTemplates(hist);
+      a->Transform2Circle(hist);
       delete a;
-      delete b;
     }
-  return;
   
-
-  TH2F *merge_hist = new TH2F("merge_hist","Parameter space",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
-  
-  d->FillHisto(merge_hist);
-  
-  
-  b = new AliL3HoughMaxFinder(slice,pat);
-  b->FindMaxima(merge_hist);
-  
-  AliL3TrackArray *mtrs = b->GetTracks();
-  
-  c->CompareMC(rootfile,mtrs,eta);
-  
-  AliL3Transform *transform = new AliL3Transform();
-  for(int tr=0; tr<mtrs->GetNTracks(); tr++)
+  hist = new TH2F("hist","Parameter space",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
+  for(Int_t i=0; i<5; i++)
     {
-      AliL3HoughTrack *t = (AliL3HoughTrack*)mtrs->GetCheckedTrack(tr);
-      if(!t) {printf("NO TRACK11\n"); continue;}
-      if(t->GetMCid() < 0) {printf("Track %d was fake, weigth %d\n",tr,t->GetNHits()); continue;}
-      printf("Found pt %f weigth %d\n",t->GetPt(),t->GetNHits());
-      //printf("charge %f\n",t->GetCharge());
-      for(Int_t j=0; j<174; j++)
-	{
-	  Float_t xyz[3];
-	  if(!t->GetCrossingPoint(j,xyz)) 
-	    {
-	      printf("Track does not cross line\n");
-	      continue;
-	    }
-	  road->Fill(xyz[0],xyz[1],1);
-	  
-	}
-	
-      
+      hist->Add(histos[i],1);
     }
+  tracks = (AliL3TrackArray*)b->FindPeak(hist,4,0.95,5);
+  track = (AliL3HoughTrack*)tracks->GetCheckedTrack(0);
+  peaks->Fill(track->GetKappa(),track->GetPhi0(),1);
   
+  
+  for(Int_t padrow=0; padrow<174; padrow++)
+    {
+      Float_t xyz[3];
+      track->GetCrossingPoint(padrow,xyz);
+      road->Fill(xyz[0],xyz[1],1);
+    }
 
-  TCanvas *c1 = new TCanvas("c1","",800,800);
-  SetCanvasOptions(c1);
+  c1 = new TCanvas("c1","",1000,1000);
   c1->Divide(2,2);
   c1->cd(1);
-  merge_hist->Draw("box");
-  
-  //TCanvas *c2 = new TCanvas("c2","",2);
-  c1->cd(3);
+  hist->Draw("box");
+  peaks->Draw("same");
+  c1->cd(2);
   raw->Draw();
-
-  //TCanvas *c3 = new TCanvas("c3","",2);
-  c1->cd(4);
-  road->SetMarkerStyle(7);
+  c1->cd(3);
   road->Draw();
+  printf("Pt %f phi0 %f\n",track->GetPt(),track->GetPhi0());
+  return;
+  
 
   delete b;
   delete d;

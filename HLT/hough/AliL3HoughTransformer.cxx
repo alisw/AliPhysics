@@ -26,6 +26,7 @@ AliL3HoughTransformer::AliL3HoughTransformer()
   fPatch = 0;
   fRowContainer = 0;
   fPhiRowContainer = 0;
+  fVolume=0;
   fNumOfPadRows=0;
   fContainerBounds=0;
   fNDigits=0;
@@ -33,19 +34,39 @@ AliL3HoughTransformer::AliL3HoughTransformer()
 }
 
 
-AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Float_t *etarange,Int_t phi_segments)
+AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Float_t *etarange)
 {
   //Constructor
   
   fTransform = new AliL3Transform();
-  
 
   fEtaMin = etarange[0];
   fEtaMax = etarange[1];
   fSlice = slice; 
   fPatch = patch;
-  fNPhiSegments = phi_segments;
   fNumOfPadRows=NRowsSlice;
+}
+
+AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Double_t *etarange,Int_t n_eta_segments)
+{
+  
+  fTransform = new AliL3Transform();
+  if(etarange)
+    {
+      //assumes you want to look at a given etaslice only
+      fEtaMin = etarange[0];
+      fEtaMax = etarange[1];
+    }
+  else
+    {
+      //transform in all etaslices
+      fEtaMin = 0;
+      fEtaMax = slice < 18 ? 0.9 : -0.9;
+    }
+  fNumEtaSegments = n_eta_segments;
+  fSlice = slice;
+  fPatch = patch;
+  fNumOfPadRows = NRowsSlice;
 }
 
 
@@ -58,6 +79,8 @@ AliL3HoughTransformer::~AliL3HoughTransformer()
     delete fTransform;
   if(fPhiRowContainer)
     delete [] fPhiRowContainer;
+  if(fVolume)
+    delete [] fVolume;
   if(fIndex)
     {
       for(Int_t i=0; i<fNDigits; i++)
@@ -80,8 +103,9 @@ void AliL3HoughTransformer::InitTemplates(TH2F *hist)
     fIndex[i] = new Int_t[nbinsy+1];
     
   Int_t sector,row;
+  
   for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
-    {
+    {        
       
       for(pixel=(AliL3Digits*)fRowContainer[padrow].first; pixel!=0; pixel=(AliL3Digits*)pixel->nextRowPixel)
 	{
@@ -100,7 +124,7 @@ void AliL3HoughTransformer::InitTemplates(TH2F *hist)
 	      
 	      Double_t phi0 = hist->GetYaxis()->GetBinCenter(p);
 	      Double_t kappa = 2*sin(phi_pix-phi0)/r_pix;
-	      
+	      //printf("kappa %f phi0 %f\n",kappa,phi0);
 	      Int_t bin = hist->FindBin(kappa,phi0);
 	      if(fIndex[index][p]!=0)
 		printf("AliL3HoughTransformer::InitTemplates : Overlapping indexes\n");
@@ -210,81 +234,7 @@ void AliL3HoughTransformer::CountBins()
 }
 
 
-void AliL3HoughTransformer::Transform2Circle(TH2F *hist,Int_t middle_row)
-{
-  //Transformation is done with respect to local coordinates in slice.
-
-
-  AliL3Digits *pix1;
-  Int_t sector,row;
-  
-  //Define a common point
- 
-  /*
-    Double_t rowdist1 = fTransform->Row2X(middle_row-1);
-    Double_t rowdist2 = fTransform->Row2X(middle_row);
-    Double_t r_in_bundle = rowdist1 + (rowdist1-rowdist2)/2;
-  */
-  
-  Double_t r_in_bundle = fTransform->Row2X(middle_row);
-  //Make overlap between slices
-  Double_t phi_min = -15*ToRad;
-  Double_t phi_max = 15*ToRad;
-  
-  Double_t phi_slice = (phi_max - phi_min)/fNPhiSegments;
-  
-  for(Int_t p=0; p <= fNPhiSegments; p++)
-    {
-      Double_t phi_in_bundle = phi_min + p*phi_slice;
-      //printf("phi %f in slice %d patch %d middle row %f\n",phi_in_bundle/ToRad,fSlice,fPatch,r_in_bundle);
-      
-      for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
-	//for(Int_t padrow = middle_row; padrow <= 173; padrow++)
-	//for(Int_t padrow = 0; padrow <= middle_row; padrow++)
-	{
-	  
-	  for(pix1=(AliL3Digits*)fRowContainer[padrow].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextRowPixel)
-	    {
-	      
-	      Float_t xyz[3];
-	      fTransform->Slice2Sector(fSlice,padrow,sector,row);
-	      fTransform->Raw2Local(xyz,sector,row,pix1->fPad,pix1->fTime);
-	      //fTransform->Raw2Global(xyz,sector,row,pix1->fPad,pix1->fTime);
-	      
-	      Double_t r_pix = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-	      
-	      Double_t phi_pix = fTransform->GetPhi(xyz);
-	        	      
-	      //Double_t tanPhi0 = (r_pix*sin(phi_in_bundle)-r_in_bundle*sin(phi_pix))/(r_pix*cos(phi_in_bundle)-r_in_bundle*cos(phi_pix));
-	      Double_t tanPhi0 = (r_in_bundle*sin(phi_pix)-r_pix*sin(phi_in_bundle))/(r_in_bundle*cos(phi_pix)-r_pix*cos(phi_in_bundle));
-	      
-	      Double_t phi0 = atan(tanPhi0);
-	      //if(padrow > middle_row)
-	      //phi0 = -phi0;
-	      //if(phi0 < 0.55 || phi0 > 0.88) continue;
-	      
-	      Double_t angle = phi_pix - phi0;
-	      Double_t kappa = 2*sin(angle)/r_pix;
-	      
-	      //Double_t angle = phi_in_bundle - phi0;
-	      //Double_t kappa = 2*sin(angle)/r_in_bundle;
-
-	      //if(kappa < -0.006 || kappa > 0.006) continue;
-	      
-	      Short_t signal = pix1->fCharge;
-	      
-	      hist->Fill(kappa,phi0,signal);
-	      
-	      
-	    }
-	  
-	}
-    }
-  
-}
-
-
-void AliL3HoughTransformer::Transform2Circle(TH2F *hist)
+void AliL3HoughTransformer::Transform2Circle(TH2F *hist,Int_t eta_index)
 {
   //Transformation is done with respect to local coordinates in slice.
   //Transform every pixel into whole phirange, using parametrisation:
@@ -295,15 +245,21 @@ void AliL3HoughTransformer::Transform2Circle(TH2F *hist)
     
   Int_t nbinsy = hist->GetNbinsY();
 
+  Int_t totsignal=0,vol_index;
+  if(fNumEtaSegments==1)
+    eta_index=0; //only looking in one etaslice.
+
   for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
     {
-      
-      for(pix1=(AliL3Digits*)fRowContainer[padrow].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextRowPixel)
+      vol_index = eta_index*fNumOfPadRows + padrow;
+      //for(pix1=(AliL3Digits*)fRowContainer[padrow].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextRowPixel)
+      for(pix1=(AliL3Digits*)fVolume[vol_index].first; pix1!=0; pix1=(AliL3Digits*)pix1->fNextVolumePixel)
 	{
 	  
 	  Short_t signal = pix1->fCharge;
 	  Int_t index = pix1->fIndex;
-	  
+	  if(index < 0) continue; //This pixel has been removed.
+	  totsignal += signal;
 	  for(Int_t p=0; p <= nbinsy; p++)
 	    hist->AddBinContent(fIndex[index][p],signal);
 	  		  
@@ -311,7 +267,7 @@ void AliL3HoughTransformer::Transform2Circle(TH2F *hist)
       
     }
     
-  
+  printf("Total signal %d\n",totsignal);
 }
 
 /*
@@ -431,8 +387,8 @@ void AliL3HoughTransformer::Transform2Line(TH2F *hist,Int_t ref_row,Int_t *rowra
 	      printf("AliL3HoughTransformer::Transform2Line : index %d out of range \n",index);
 	      return;
 	    }
-	  //for(pix1=(AliL3Digits*)fRowContainer[padrow].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextRowPixel)
-	  for(pix1=(AliL3Digits*)fPhiRowContainer[index].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextPhiRowPixel)
+	  for(pix1=(AliL3Digits*)fRowContainer[padrow].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextRowPixel)
+	  //for(pix1=(AliL3Digits*)fPhiRowContainer[index].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextPhiRowPixel)
 	    {
 	      //printf("Transforming pixel in index %d pad %d time %d padrow %d\n",index,pix1->fPad,pix1->fTime,padrow);
 	      Float_t xyz[3];
@@ -479,7 +435,7 @@ void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
 
   Int_t digit_counter=0;
   Float_t xyz[3];
-  Double_t eta,phi;
+  Double_t eta;
   
   Int_t nrows = NRows[fPatch][1] - NRows[fPatch][0] + 1;
   printf("nrows %d slice %d patch %d\n",nrows,fSlice,fPatch);
@@ -490,18 +446,30 @@ void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
   memset(fRowContainer,0,fNumOfPadRows*sizeof(AliL3HoughContainer));
 
 
-  fContainerBounds = (fNPhiSegments+1)*(fNumOfPadRows+1);
-  printf("Allocating %d bytes to container of size %d\n",fContainerBounds*sizeof(AliL3HoughContainer),fContainerBounds);
-  if(fPhiRowContainer)
-    delete [] fPhiRowContainer;
-  fPhiRowContainer = new AliL3HoughContainer[fContainerBounds];
-  memset(fPhiRowContainer,0,fContainerBounds*sizeof(AliL3HoughContainer));
+  //fContainerBounds = (fNPhiSegments+1)*(fNumOfPadRows+1);
+  //printf("Allocating %d bytes to container of size %d\n",fContainerBounds*sizeof(AliL3HoughContainer),fContainerBounds);
 
-  Double_t phi_min = -10*ToRad;
-  Double_t phi_max = 10*ToRad;
-  Double_t delta_phi = (phi_max-phi_min)/fNPhiSegments;
+  /*
+    if(fPhiRowContainer)
+    delete [] fPhiRowContainer;
+    fPhiRowContainer = new AliL3HoughContainer[fContainerBounds];
+    memset(fPhiRowContainer,0,fContainerBounds*sizeof(AliL3HoughContainer));
+  */
+  fContainerBounds = (fNumEtaSegments+1)*(fNumOfPadRows+1);
+  if(fVolume)
+    delete [] fVolume;
+  fVolume = new AliL3HoughContainer[fContainerBounds];
+  memset(fVolume,0,fContainerBounds*sizeof(AliL3HoughContainer));
+  /*
+    Double_t phi_min = -10*ToRad;
+    Double_t phi_max = 10*ToRad;
+    Double_t delta_phi = (phi_max-phi_min)/fNPhiSegments;
+  */
+  Double_t eta_slice = (fEtaMax-fEtaMin)/fNumEtaSegments;
   Int_t index;
   digit_counter=0;
+
+  printf("\nLoading ALL pixels in slice\n\n");
 
   for (Int_t i=0; i<num_of_entries; i++) 
     { 
@@ -527,11 +495,12 @@ void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
 	
 	fTransform->Raw2Global(xyz,sector,row,pad,time);
 	eta = fTransform->GetEta(xyz);
+	
 	if(eta < fEtaMin || eta > fEtaMax) continue;
 	fTransform->Global2Local(xyz,sector);
 	
 	
-	phi = fTransform->GetPhi(xyz);
+	//phi = fTransform->GetPhi(xyz);
 	if(hist)
 	  hist->Fill(xyz[0],xyz[1],signal);
 	
@@ -548,20 +517,37 @@ void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
 	  ((AliL3Digits*)(fRowContainer[padrow].last))->nextRowPixel=dig;
 	fRowContainer[padrow].last = (void*)dig;
 	
-	Int_t phi_index = (Int_t)((phi-phi_min)/delta_phi);
-	index = phi_index*fNumOfPadRows + padrow;
-	if(phi_index > fContainerBounds || phi_index < 0)
+	//thisHit->etaIndex=(Int_t)((thisHit->GetEta()-fEtaMin)/etaSlice + 1);
+	Int_t eta_index = (Int_t)((eta-fEtaMin)/eta_slice);
+	index = eta_index*fNumOfPadRows + padrow;
+	if(index > fContainerBounds || index < 0)
 	  {
-	    printf("AliL3HoughTransform::GetPixels : index out of range %d\n",phi_index);
+	    
+	    //printf("AliL3HoughTransformer::GetPixels : index out of range %d %d eta_index %d padrow %d\n",index,fContainerBounds,eta_index,padrow);
 	    continue;
 	  }
-		
-	if(fPhiRowContainer[index].first == NULL)
-	  fPhiRowContainer[index].first = (void*)dig;
-	else
-	  ((AliL3Digits*)(fPhiRowContainer[index].last))->nextPhiRowPixel = dig;
-	fPhiRowContainer[index].last=(void*)dig;
 	
+	if(fVolume[index].first == NULL)
+	  fVolume[index].first = (void*)dig;
+	else
+	  ((AliL3Digits*)(fVolume[index].last))->fNextVolumePixel = dig;
+	fVolume[index].last = (void*)dig;
+	
+	/*
+	  Int_t phi_index = (Int_t)((phi-phi_min)/delta_phi);
+	  index = phi_index*fNumOfPadRows + padrow;
+	  if(phi_index > fContainerBounds || phi_index < 0)
+	  {
+	  printf("AliL3HoughTransform::GetPixels : index out of range %d\n",phi_index);
+	  continue;
+	  }
+	  
+	  if(fPhiRowContainer[index].first == NULL)
+	  fPhiRowContainer[index].first = (void*)dig;
+	  else
+	  ((AliL3Digits*)(fPhiRowContainer[index].last))->nextPhiRowPixel = dig;
+	  fPhiRowContainer[index].last=(void*)dig;
+	*/
       }while (digarr->Next());
       
     }
