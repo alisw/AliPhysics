@@ -13,6 +13,7 @@ class TGeometry;
 class TDatabasePDG;
 class TRandom;
 class TParticle;
+class TFile;
 #include <TArrayI.h>
 #include "TClonesArray.h"
 #include <TArrayF.h>
@@ -105,6 +106,7 @@ public:
    Bool_t         IsFolder() const {return kTRUE;}
    virtual AliLego* Lego() const {return fLego;}
    virtual  void  MakeTree(Option_t *option="KH", const char *file = 0);
+   void           MakeTree(Option_t *option, TFile *file);
 
    TObjArray     *Particles();
    TParticle     *Particle(Int_t i);
@@ -154,6 +156,17 @@ public:
    virtual  void EnergySummary();
    virtual  TDatabasePDG* PDGDB() const {return fPDGDB;}
 
+   TFile* InitTreeFile(Option_t *option, TString fileName);
+   TString GetTreeDFileName() const {return fTreeDFileName;}
+   TString GetTreeSFileName() const {return fTreeSFileName;}
+   TString GetTreeRFileName() const {return fTreeRFileName;}
+   void SetTreeDFileName(TString fileName){fTreeDFileName=fileName;}
+   void SetTreeSFileName(TString fileName){fTreeSFileName=fileName;}
+   void SetTreeRFileName(TString fileName){fTreeRFileName=fileName;}
+   TFile* GetTreeDFile() const {return fTreeDFile;}
+   TFile* GetTreeSFile() const {return fTreeSFile;}
+   TFile* GetTreeRFile() const {return fTreeRFile;}
+   
 
    TTree         *TreeD() {return fTreeD;}
    TTree         *TreeS() {return fTreeS;}
@@ -166,7 +179,7 @@ public:
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
-
+  TFile* InitFile(TString fileName="");
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
   Int_t          fEventNrInRun;      //! Current unique event number in run
@@ -202,12 +215,18 @@ protected:
   TString        fTransParName;      //  Name of the transport parameters file
   TString        fBaseFileName;      //  Name of the base root file
   AliStack*      fStack;             //! Particle Stack
+  TString        fTreeDFileName;     //!  name of the file with TreeD
+  TFile*         fTreeDFile;         //!  file with TreeD
+  TString        fTreeSFileName;     //!  name of the file with TreeS
+  TFile*         fTreeSFile;         //!  file with TreeS
+  TString        fTreeRFileName;     //!  name of the file with TreeR
+  TFile*         fTreeRFile;         //!  file with TreeR
 private:
 
    AliRun(const AliRun &right) 
      {}  
    AliRun& operator = (const AliRun &) {return *this;}
-   ClassDef(AliRun,5)      //Supervisor class for all Alice detectors
+   ClassDef(AliRun,6)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

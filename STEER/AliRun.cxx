@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.82  2002/03/12 11:06:03  morsch
+Add particle status code to argument list of SetTrack(..).
+
 Revision 1.81  2001/12/19 14:46:26  morsch
 Add possibility to disable StepManager() for each module separately.
 
@@ -307,6 +310,12 @@ AliRun::AliRun()
   fTransParName = "\0";
   fBaseFileName = ".\0";
   fDebug        = 0;
+  fTreeDFile = 0;
+  fTreeSFileName = "";
+  fTreeSFile = 0;
+  fTreeSFileName = "";
+  fTreeRFile = 0;
+  fTreeRFileName = "";
 }
 
 //_____________________________________________________________________________
@@ -334,6 +343,12 @@ AliRun::AliRun(const char *name, const char *title)
   fLego      = 0;
   fField     = 0;
   fConfigFunction    = "Config();";
+  fTreeDFile = 0;
+  fTreeSFileName = "";
+  fTreeSFile = 0;
+  fTreeSFileName = "";
+  fTreeRFile = 0;
+  fTreeRFileName = "";
 
   // Set random number generator
   gRandom = fRandom = new TRandom3();
@@ -390,6 +405,8 @@ AliRun::~AliRun()
   //
   // Default AliRun destructor
   //
+  TFile *curfil =0;
+  if(fTreeE)curfil=fTreeE->GetCurrentFile();
   delete fImedia;
   delete fField;
   delete fMC;
@@ -411,6 +428,28 @@ AliRun::~AliRun()
   delete fPDGDB;
   delete fMCQA;
   delete fHeader;
+  // avoid to delete TFile objects not owned by this object
+  // avoid multiple deletions
+  if(curfil == fTreeDFile) fTreeDFile=0;
+  if(curfil == fTreeSFile) fTreeSFile=0;
+  if(curfil == fTreeRFile) fTreeRFile=0;
+  if(fTreeSFile == fTreeDFile) fTreeSFile=0;
+  if(fTreeRFile == fTreeDFile) fTreeRFile=0;
+  if(fTreeRFile == fTreeSFile) fTreeRFile=0;
+  if(fTreeDFile){
+    if(fTreeDFile->IsOpen())fTreeDFile->Close();
+    delete fTreeDFile;
+  }
+  if(fTreeSFile){
+    if(fTreeSFile->IsOpen())fTreeSFile->Close();
+    delete fTreeSFile;
+  }
+  if(fTreeRFile){
+    if(fTreeRFile->IsOpen())fTreeRFile->Close();
+    delete fTreeRFile;
+  }
+  if (gROOT->GetListOfBrowsables())
+    gROOT->GetListOfBrowsables()->Remove(this);
 }
 
 //_____________________________________________________________________________
@@ -882,27 +921,71 @@ Int_t AliRun::GetEvent(Int_t event)
       Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
   }
 
+  // get current file name and compare with names containing trees S,D,R
+  TString curfilname=(TString)fTreeE->GetCurrentFile()->GetName();
+  if(fTreeDFileName==curfilname)fTreeDFileName="";
+  if(fTreeSFileName==curfilname)fTreeSFileName="";
+  if(fTreeRFileName==curfilname)fTreeRFileName="";
   // Get Digits Tree header from file
   sprintf(treeName,"TreeD%d",event);
-  fTreeD = (TTree*)gDirectory->Get(treeName);
+ 
+  if (!fTreeDFile && fTreeDFileName != "") {
+    InitTreeFile("D",fTreeDFileName);
+  }    
+  if (fTreeDFile) {    
+    fTreeD = (TTree*)fTreeDFile->Get(treeName);
+  } else {
+    fTreeD = (TTree*)file->Get(treeName);
+  }
   if (!fTreeD) {
     // Warning("GetEvent","cannot find Digits Tree for event:%d\n",event);
+  }
+  if(fTreeDFileName != ""){
+    if(fTreeDFileName==fTreeSFileName) {
+      fTreeSFileName = "";
+      fTreeSFile = fTreeDFile;
+    }
+    if(fTreeDFileName==fTreeRFileName) {
+      fTreeRFileName = "";
+      fTreeRFile = fTreeDFile;
+    }
   }
 
   file->cd();
 
   // Get SDigits Tree header from file
   sprintf(treeName,"TreeS%d",event);
-  fTreeS = (TTree*)gDirectory->Get(treeName);
+  if (!fTreeSFile && fTreeSFileName != "") {
+    InitTreeFile("S",fTreeSFileName);
+  } 
+  if (fTreeSFile) {
+    fTreeS = (TTree*)fTreeSFile->Get(treeName);
+  } else {
+    fTreeS = (TTree*)gDirectory->Get(treeName);
+  }
   if (!fTreeS) {
     // Warning("GetEvent","cannot find SDigits Tree for event:%d\n",event);
+  }
+
+  if(fTreeSFileName != ""){
+    if(fTreeSFileName==fTreeRFileName){
+      fTreeRFileName = "";
+      fTreeRFile = fTreeSFile;
+    }
   }
 
   file->cd();
   
   // Get Reconstruct Tree header from file
   sprintf(treeName,"TreeR%d",event);
-  fTreeR = (TTree*)gDirectory->Get(treeName);
+  if (!fTreeRFile && fTreeRFileName != "") {
+    InitTreeFile("R",fTreeRFileName);
+  } 
+  if(fTreeRFile) {
+    fTreeR = (TTree*)fTreeRFile->Get(treeName);
+  } else {
+    fTreeR = (TTree*)gDirectory->Get(treeName);
+  }
   if (!fTreeR) {
     //    printf("WARNING: cannot find Reconstructed Tree for event:%d\n",event);
   }
@@ -1031,6 +1114,8 @@ void AliRun::InitMC(const char *setup)
 
    fMCQA = new AliMCQA(fNdets);
 
+// JCH note: the following line is useless, AliConfig instance is already
+// created in AliMC ctor. But it does not hurt.
    AliConfig::Instance();
    //
    // Save stuff at the beginning of the file to avoid file corruption
@@ -1806,8 +1891,135 @@ TTree* AliRun::TreeK() {
   return fStack->TreeK();
 }
 
-
+////////////////////////////////////////////////////////////////////////
 void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 {
     fHeader->SetGenEventHeader(header);
 }
+////////////////////////////////////////////////////////////////////////
+TFile* AliRun::InitFile(TString fileName)
+{
+// 
+// create the file where the whole tree will be saved
+//
+  TDirectory *wd = gDirectory;
+  TFile* file = TFile::Open(fileName,"update");
+  gDirectory = wd;
+  if (!file->IsOpen()) {
+    Error("Cannot open file, %s\n",fileName);
+    return 0;
+  }
+  return file;
+}
+
+////////////////////////////////////////////////////////////////////////
+TFile* AliRun::InitTreeFile(Option_t *option, TString fileName)
+{
+  //
+  // create the file where one of the following trees will be saved
+  // trees:   S,D,R
+  //
+  Bool_t oS = (strstr(option,"S")!=0);
+  Bool_t oR = (strstr(option,"R")!=0);
+  Bool_t oD = (strstr(option,"D")!=0);
+  Bool_t none = !(oS || oR || oD);
+  TFile *ptr=0;
+  if(none){
+    Warning("InitTreeFile","wrong option - nothing done\n");
+  } else {
+    if (oS){
+      fTreeSFileName=fileName;
+      if (fTreeSFile) {
+        if (fTreeSFile->IsOpen()) {
+          Warning("InitTreeSFile","File already opened");
+        }
+      } else {
+        fTreeSFile = InitFile(fileName);
+      }
+      ptr = fTreeSFile;
+    }
+    if (oD){
+      fTreeDFileName=fileName;
+      if(oS)fTreeDFile = fTreeSFile;
+      if (fTreeDFile) {
+        if (fTreeDFile->IsOpen()) {
+          Warning("InitTreeDFile","File already opened");
+        }
+      } else {
+        fTreeDFile = InitFile(fileName);
+      }
+      ptr = fTreeDFile;
+    }
+    if (oR){
+      fTreeRFileName=fileName;
+      if(oS)fTreeRFile = fTreeSFile;
+      if(oD)fTreeRFile = fTreeDFile;
+      if (fTreeRFile) {
+        if (fTreeRFile->IsOpen()) {
+          Warning("InitTreeRFile","File already opened");
+        }
+      } else {
+        fTreeRFile = InitFile(fileName);
+      }
+      ptr = fTreeRFile;
+    }
+  }
+  return ptr;
+}
+////////////////////////////////////////////////////////////////////////
+void AliRun::MakeTree(Option_t *option, TFile *file)
+{
+  //
+  //  Create some trees in the separate file
+  //
+  const char *oD = strstr(option,"D");
+  const char *oR = strstr(option,"R");
+  const char *oS = strstr(option,"S");
+
+  TDirectory *cwd = gDirectory;
+  char hname[30];
+
+  if (oD) {
+    delete fTreeD;
+    sprintf(hname,"TreeD%d",fEvent);
+    file->cd();
+    fTreeD = static_cast<TTree*>(file->Get("hname"));
+    if (!fTreeD) {
+      fTreeD = new TTree(hname,"Digits");
+      fTreeD->Write(0,TObject::kOverwrite);
+    }
+    cwd->cd();
+  }
+  if (oS) {
+    delete fTreeS;
+    sprintf(hname,"TreeS%d",fEvent);
+    file->cd();
+    fTreeS = static_cast<TTree*>(file->Get("hname"));
+    if (!fTreeS) {
+      fTreeS = new TTree(hname,"SDigits");
+      fTreeS->Write(0,TObject::kOverwrite);
+    }
+    cwd->cd();
+  }
+
+  if (oR) {
+    delete fTreeR;
+    sprintf(hname,"TreeR%d",fEvent);
+    file->cd();
+    fTreeR = static_cast<TTree*>(file->Get("hname"));
+    if (!fTreeR) {
+      fTreeR = new TTree(hname,"RecPoint");
+      fTreeR->Write(0,TObject::kOverwrite);
+    }
+    cwd->cd();
+  }
+}
+////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
