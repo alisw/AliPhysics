@@ -55,7 +55,7 @@ class AliL3HoughTransformer : public TObject {
   Int_t fNDigits;
   Int_t **fBinTable; //!
   Int_t *fEtaIndex; //!
-  UChar_t **fTrackTable; //!
+  Char_t **fTrackTable; //!
   AliL3Histogram *fHistoPt;
   
   Int_t fSlice;
@@ -64,7 +64,7 @@ class AliL3HoughTransformer : public TObject {
  public:
   AliL3HoughTransformer(); 
   AliL3HoughTransformer(Int_t slice,Int_t patch,Float_t *etarange);
-  AliL3HoughTransformer(Int_t slice,Int_t patch,Double_t *etarange=0,Int_t n_eta_segments=1);
+  AliL3HoughTransformer(Int_t slice,Int_t patch,Double_t *etarange=0,Int_t n_eta_segments=90);
   virtual ~AliL3HoughTransformer();
 
   void InitTables();
@@ -72,6 +72,8 @@ class AliL3HoughTransformer : public TObject {
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr);
   void WriteTables();
   void SetHistogram(AliL3Histogram *hist) {fHistoPt = hist;}
+  Double_t CpuTime();
+  Int_t GetNumEtaSegments() {return fNumEtaSegments;}
   /*
     void Transform2Circle(TH2F *hist,Int_t eta_index);
     void Transform2Circle(TH2F **histos,Int_t n_eta_segments,UInt_t ndigits,AliL3DigitRowData *ptr);

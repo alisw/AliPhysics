@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <TH2.h>
+#include <time.h>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -119,10 +120,10 @@ void AliL3HoughTransformer::InitTables()
   for(Int_t i=0; i<etabounds; i++)
     fEtaIndex[i] = -1;
   
-  fTrackTable = new UChar_t*[fNumEtaSegments];
+  fTrackTable = new Char_t*[fNumEtaSegments];
   for(Int_t i=0; i<fNumEtaSegments; i++)
     {
-      fTrackTable[i] = new UChar_t[fBinTableBounds];
+      fTrackTable[i] = new Char_t[fBinTableBounds];
       for(Int_t j=0; j<fBinTableBounds; j++)
 	fTrackTable[i][j] = 0;
     }
@@ -177,8 +178,8 @@ void AliL3HoughTransformer::TransformTables(AliL3Histogram **histos,AliL3Histogr
   //Transform is done using LUT created in InitTables.
   //fTrackTable : table telling whether a specific pixel is active (nonzero):
   //fTrackTable = 0  ->  no track
-  //fTrackindex = 1  ->  track present
-  //fTrackindex = 2  ->  track has been removed (already found)
+  //fTrackindex > 0  ->  track present
+  //fTrackindex = -1  ->  track has been removed (already found)
   //fEtaIndex : table storing the etaindex -> used to find correct histogram to fill
   //fBinTable : table storing all the bins to fill for each nonzero pixel
     
@@ -195,7 +196,7 @@ void AliL3HoughTransformer::TransformTables(AliL3Histogram **histos,AliL3Histogr
 
   Int_t out_count=0,tot_count=0;
   Int_t index,ind;
-  
+
   for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
     {
       Int_t prow = i - NRows[fPatch][0];
@@ -207,8 +208,8 @@ void AliL3HoughTransformer::TransformTables(AliL3Histogram **histos,AliL3Histogr
 	  eta_index = fEtaIndex[ind];
 	  if(eta_index < 0) continue;  //pixel out of etarange
 	  
-	  if(fTrackTable[eta_index][index]==2) continue; //this pixel has already been removed. 
-	  fTrackTable[eta_index][index] = 1; //this pixel is now marked as active (it is nonzero)
+	  if(fTrackTable[eta_index][index]<0) continue; //this pixel has already been removed. 
+	  fTrackTable[eta_index][index]++; //this pixel is now marked as active (it is nonzero)
 	  
 	  tot_count++;
 	  hist = histos[eta_index];
@@ -272,6 +273,11 @@ void AliL3HoughTransformer::WriteTables()
       fprintf(file2,"\n");
     }
   fclose(file2);
+}
+
+Double_t AliL3HoughTransformer::CpuTime()
+{
+  return (Double_t)(clock()) / CLOCKS_PER_SEC;
 }
 
 /*
