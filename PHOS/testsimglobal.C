@@ -159,7 +159,7 @@ void testsimglobal(Int_t nevent = 1, const char *config="testconfig.C")
       for (index = 0 ; index < maxevent ; index++)
        {
 	 //get the number of the event
-         gime->Event(index) ; 
+         gime->Event(index,"H") ; 
          // get the number of cells reached during this event and fill the total multiplicity histogram
          Int_t n = gime->Hits()->GetEntries() ;
          nhits += n ; 
