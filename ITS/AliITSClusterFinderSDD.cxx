@@ -236,6 +236,8 @@ void AliITSClusterFinderSDD::Find1DClusters()
 	   Int_t its,peakpos=-1;
 	   Float_t n, baseline;
 	   fResponse->GetNoiseParam(n,baseline);
+	   n *= norm;
+	   baseline *= norm;
 	   for(its=tstart; its<=tstop; its++) {
 	     fadc=(float)fMap->GetSignal(idx,its);
 	     if(fadc>baseline)
@@ -257,7 +259,7 @@ void AliITSClusterFinderSDD::Find1DClusters()
 	     clusterMult++;
 	     if(its == tstop) {
 	       // charge from ADC back to nA 
-	       //clusterCharge /= norm;
+	       clusterCharge /= norm;
 	       if(clusterCharge <= 0.) printf("clusterCharge %f norm %f\n",clusterCharge,norm);
 	       clusterTime /= (clusterCharge/fTimeStep);   // ns
 	       clusterCharge *= (fTimeStep/160.);          // keV
@@ -272,8 +274,8 @@ void AliITSClusterFinderSDD::Find1DClusters()
 
 	   if(clusterCharge <= 0.) break;
 
-	   AliITSRawClusterSDD *clust = new AliITSRawClusterSDD(j+1,clusterAnode,clusterTime,clusterCharge,clusterPeakAmplitude,peakpos,0.,0.,clusterDriftPath,clusteranodePath,clusterMult);
-	   iTS->AddCluster(1,clust);
+	   AliITSRawClusterSDD clust(j+1,clusterAnode,clusterTime,clusterCharge,clusterPeakAmplitude,peakpos,0.,0.,clusterDriftPath,clusteranodePath,clusterMult);
+	   iTS->AddCluster(1,&clust);
 	   it = tstop;
 	} // ilcl
 	
@@ -385,7 +387,7 @@ void AliITSClusterFinderSDD::GetRecPoints()
   Int_t i;
   Int_t ix, iz, idx=-1;
   AliITSdigitSDD *dig=0;
-  // Int_t maxt=fSegmentation->Npx();
+  Int_t maxt=fSegmentation->Npx();
   Int_t ndigits=fDigits->GetEntriesFast();
   for(i=0; i<nofClusters; i++) { 
     AliITSRawClusterSDD *clusterI = (AliITSRawClusterSDD*)fClusters->At(i);
