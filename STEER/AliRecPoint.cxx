@@ -123,7 +123,7 @@ void AliRecPoint::AddDigit(AliDigitNew & digit)
     for ( index = 0 ; index < fMulDigit ; index++ )
       tempo[index] = fDigitsList[index] ; 
     
-    delete fDigitsList ; 
+    delete [] fDigitsList ; 
     fDigitsList = tempo ; 
   }
   
