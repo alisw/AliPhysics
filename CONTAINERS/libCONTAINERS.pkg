@@ -1,6 +1,6 @@
 
 SRCS= AliMemArray.cxx AliClassInfo.cxx  AliDataType.cxx\
-      AliObjectArray.cxx    TArrayOfArray.cxx  AliArrayBranch.cxx\
+      AliObjectArray.cxx    AliArrayBranch.cxx\
       AliSegmentID.cxx  AliSegmentArray.cxx \
       AliDigits.cxx AliArrayI.cxx AliArrayS.cxx \
       AliH2F.cxx
