@@ -21,7 +21,7 @@ AliL3Transform::AliL3Transform()
   //constructor
   
   LOG(AliL3Log::kWarning,"AliL3Transform::AliL3Transform()","Init")
-    <<"You are using the _old_ version of parameter inits. V3.06 only! Use the ctor AliL3Transform(char*) instead."<<ENDLOG;
+    <<"You are using the _old_ version of parameter inits. V3.06 only! Use the constructor AliL3Transform(char*) instead."<<ENDLOG;
   Init();
 }
 
@@ -36,6 +36,7 @@ AliL3Transform::~AliL3Transform(){
 /// old init function used by Anders for AliRoot version 3.06
 void AliL3Transform::Init()
 {
+  fVersion = 0;
   
   //sector:
   fNTimeBins = 446;
@@ -471,7 +472,9 @@ void AliL3Transform::Init(const Char_t* path){
 
   fclose(fptr);
   delete pathname;
+  fVersion=1; //new version
 }
+
 
 Double_t AliL3Transform::GetEta(Float_t *xyz)
 {

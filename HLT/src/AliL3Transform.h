@@ -24,11 +24,13 @@ class AliL3Transform {
   Double_t fSin[36]; //fill this following Init
   Double_t fX[176];  //fill this following Init
   Int_t fNPads[176]; //fill this following Init
+  Int_t fVersion; //flags which version one is using
+  void Init(); //old init used by Anders for AliRoot <= 3.06
  public:
   AliL3Transform();
   AliL3Transform(const char *pathname);
   virtual ~AliL3Transform();
-  void Init(); //old init used by Anders for AliRoot <= 3.06
+  Int_t getVersion(){return fVersion;}
   void Init(const Char_t* path); //new init for all AliRoot versions
 
   Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
@@ -65,4 +67,8 @@ class AliL3Transform {
 
 
 #endif
+
+
+
+
 
