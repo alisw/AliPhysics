@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2000/06/07 10:13:14  hristov
+Delete only existent objects.
+
 Revision 1.34  2000/05/18 10:45:38  fca
 Delete Particle Factory properly
 
@@ -1431,7 +1434,7 @@ void AliRun::SetCurrentTrack(Int_t track)
 //_____________________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
-		      const char *mecha, Int_t &ntr, Float_t weight=1)
+		      const char *mecha, Int_t &ntr, Float_t weight)
 { 
   //
   // Load a track on the stack
