@@ -813,7 +813,7 @@ void AliPHOSv0::CreateGeometryforSupport()
   par[4] =  geom->GetCradleWall(4) ;
   gMC->Gsvolu("PCRA", "TUBS", idtmed[716], par, 5) ;
 
-  par[0] -=  geom->GetCradleWallThickness() ;
+  par[0] +=  geom->GetCradleWallThickness() ;
   par[1] -=  geom->GetCradleWallThickness() ;
   par[2] -=  geom->GetCradleWallThickness() ;
   gMC->Gsvolu("PCRE", "TUBS", idtmed[798], par, 5) ;
