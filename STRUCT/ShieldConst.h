@@ -38,9 +38,9 @@
 // min acceptance angle
     const Float_t acc_min = 2. *kDegrad;     
 // opening angle of inner shielding cone
-    const Float_t theta_open  = 0.7*kDegrad;
+//    const Float_t theta_open  = 0.7*kDegrad;
     const Float_t theta_open1 = 1.1*kDegrad;
-//    const Float_t theta_open1 = 0.70*kDegrad;
+    const Float_t theta_open1 = 0.70*kDegrad;
     const Float_t theta_open2 = 0.8*kDegrad;
     const Float_t theta_open3 = 0.9*kDegrad;
 //
@@ -53,11 +53,8 @@
 //
 // radii defining the absorber
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// beam pipe outer radius
-//    const Float_t r_pipe   = 4.0;
-    const Float_t r_pipe   = 3.5;
 // absorber inner radius
-    const Float_t r_abs    = r_pipe+1.5;
+    const Float_t r_abs    = 4.95;
 
     const Float_t epsilon = .01;
     Float_t zr;
@@ -104,7 +101,10 @@
 // Steel Envelope
   const Float_t dRSteel1=2.;
   const Float_t dRSteel2=4.;
-  const Float_t R21=20.3;
+//  According to design
+//  const Float_t R21=20.3;
+//  to avoid overlap with 2deg line
+  const Float_t R21=19.4;
 //
 // 2nd Section
 // 
@@ -138,7 +138,9 @@
 //
 // Vacuum System
 //
-
+// beam pipe outer radius
+// absorber inner radius
+ 
   const Float_t d_tube=0.1;
   const Float_t d_insu=0.9;
   const Float_t d_enve=0.1;
