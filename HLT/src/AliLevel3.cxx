@@ -120,7 +120,7 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
       npatches = 1;
     }
 #endif
-
+  
   if(!binary && !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
@@ -140,7 +140,7 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
   SetClusterFinderParam();
 
   fEta[0] = 0.;
-  fEta[1] = 0.9;
+  fEta[1] = 1.1;
 
   fEvent=0;
 
@@ -256,7 +256,7 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
     fTrackData=0;
   }
   fBenchmark->Start("Global Merger");
-  //fGlobalMerger->AddAllTracks();
+  fGlobalMerger->AddAllTracks();
   //fGlobalMerger->Merge();
   fGlobalMerger->SlowMerge();
   fBenchmark->Stop("Global Merger");
@@ -280,6 +280,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
   fTrackMerger->Reset();
   fTrackMerger->SetRows(fRow[0]);
+  
+
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
     fFileHandler->Init(slice,patch,&fRow[patch][0]);
     UInt_t npoints=0;
@@ -291,10 +293,13 @@ void AliLevel3::ProcessSlice(Int_t slice){
         if(!fDoRoi){ 
           if(1){     //Binary to Memory
 	    fFileHandler->Free();
-            sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
+            if(fNPatch == 1)
+	      sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,-1);
+	    else
+	      sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
 	    if(!fFileHandler->SetBinaryInput(name)) return;
 	    digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
-            fFileHandler->CloseBinaryInput(); 
+	    fFileHandler->CloseBinaryInput(); 
           }
 
           if(0){     //Binary to Memory with Benchmark 
@@ -385,8 +390,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
       if((fXYClusterError>0)&&(fZClusterError>0))
 	fClusterFinder->SetCalcErr(kFALSE);
       fClusterFinder->SetOutputArray(points);
-      fClusterFinder->Read(ndigits,digits);
       fBenchmark->Start("Cluster Finder");
+      fClusterFinder->Read(ndigits,digits);
       fClusterFinder->ProcessDigits();
       fBenchmark->Stop("Cluster Finder");
       npoints = fClusterFinder->GetNumberOfClusters();
@@ -440,7 +445,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }
       fTrackMerger->SetVertex(fVertex);
     }
-    fTracker->InitSector(slice,fRow[patch]);//,fEta);
+    fTracker->InitSector(slice,fRow[patch],fEta);
     fTracker->SetVertex(fVertex);
     fBenchmark->Start("Tracker Read Hits");
     fTracker->ReadHits(npoints,points);
@@ -471,7 +476,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
     AliL3TrackSegmentData *trackdata0  = 
          (AliL3TrackSegmentData *) memory->Allocate(fTracker->GetTracks());
     memory->TrackArray2Memory(ntracks0,trackdata0,fTracker->GetTracks());
-    /*
+
     //write tracks
     if(fWriteOut){
       sprintf(name,"%stracks_tr_%d_%d.raw",fWriteOutPath,slice,patch);
@@ -479,7 +484,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       memory->Memory2Binary(ntracks0,trackdata0);
       memory->CloseBinaryOutput();
     }
-    */
+
     fInterMerger->Reset();
     fInterMerger->Init(fRow[patch],patch);
 
@@ -511,8 +516,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
   }
   fBenchmark->Start("Patch Merger");
   //fTrackMerger->SlowMerge();
-  //fTrackMerger->AddAllTracks();
-  fTrackMerger->Merge();
+  fTrackMerger->AddAllTracks();
+  //fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
   /*
   //write merged tracks
