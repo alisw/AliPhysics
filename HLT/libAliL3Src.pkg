@@ -26,7 +26,8 @@ src/AliL3Transform.cxx \
 src/AliL3Vertex.cxx \
 src/AliL3VertexArray.cxx \
 src/AliL3VertexFinder.cxx \
-src/AliLevel3.cxx
+src/AliLevel3.cxx \
+src/AliHLTReconstructor.cxx
 
 HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
 
