@@ -36,8 +36,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationSlatModule.cxx AliMUONSegmentationSlatModuleN.cxx \
 	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx \
 	       AliMUONRecoEvent.cxx AliMUONRecoDisplay.cxx \
-               AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx \
-               AliMUONDigitContainer.cxx
+               AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx 
 
 # C++ Headers
 
