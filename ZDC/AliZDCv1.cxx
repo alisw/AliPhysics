@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/30 17:23:47  coppedis
+Remove first corrector dipole and introduce digitization
+
 Revision 1.6  2000/11/22 11:33:10  coppedis
 Major code revision
 
@@ -1074,7 +1077,7 @@ Int_t AliZDCv1::Digitize(Int_t Det, Int_t Quad, Int_t Light)
 {
   // Evaluation of the ADC channel corresponding to the light yield Light
 
-//  printf("\n	Digitize -> Det = %d, Quad = %d, Light = %d\n", Det, Quad, Light);
+  printf("\n	Digitize -> Det = %d, Quad = %d, Light = %d\n", Det, Quad, Light);
   
   Int_t j,i;
   for(i=0; i<3; i++){
@@ -1089,7 +1092,7 @@ Int_t AliZDCv1::Digitize(Int_t Det, Int_t Quad, Int_t Light)
   Float_t Ped = gRandom->Gaus(fPedMean[Det-1][Quad],fPedSigma[Det-1][Quad]);
   Int_t ADCch = Int_t(Light*fPMGain[Det-1][Quad]*fADCRes+Ped);
   
-//  printf("	Ped = %f, ADCch = %d\n", Ped, ADCch);
+  printf("	Ped = %f, ADCch = %d\n", Ped, ADCch);
   return ADCch;
 }
 //_____________________________________________________________________________
@@ -1097,11 +1100,11 @@ void AliZDCv1::FinishEvent()
 {
   // Creation of the digits from hits 
 
-  if(fDebug == 1){
+//  if(fDebug == 1){
     printf("\n  Event Hits --------------------------------------------------------\n");  
     printf("\n	Num. of primary hits = %d\n", fNPrimaryHits);  
     fStHits->Print("");
-  }
+//  }
 
   TClonesArray &lDigits = *fDigits;
   
@@ -1141,11 +1144,11 @@ void AliZDCv1::FinishEvent()
      }
   }
   
-//  printf("\n	   PMCZN = %d, PMQZN[0] = %d, PMQZN[1] = %d, PMQZN[2] = %d, PMQZN[3] = %d\n"
-//         , PMCZN, PMQZN[0], PMQZN[1], PMQZN[2], PMQZN[3]);
-//  printf("\n	   PMCZP = %d, PMQZP[0] = %d, PMQZP[1] = %d, PMQZP[2] = %d, PMQZP[3] = %d\n"
-//         , PMCZP, PMQZP[0], PMQZP[1], PMQZP[2], PMQZP[3]);
-//  printf("\n	   PMZEM = %d\n", PMZEM);
+  printf("\n	 PMCZN = %d, PMQZN[0] = %d, PMQZN[1] = %d, PMQZN[2] = %d, PMQZN[3] = %d\n"
+	 , PMCZN, PMQZN[0], PMQZN[1], PMQZN[2], PMQZN[3]);
+  printf("\n	 PMCZP = %d, PMQZP[0] = %d, PMQZP[1] = %d, PMQZP[2] = %d, PMQZP[3] = %d\n"
+	 , PMCZP, PMQZP[0], PMQZP[1], PMQZP[2], PMQZP[3]);
+  printf("\n	 PMZEM = %d\n", PMZEM);
 
   // ------------------------------------    Hits2Digits
   // Digits for ZN
@@ -1186,10 +1189,10 @@ void AliZDCv1::FinishEvent()
   gAlice->TreeD()->Fill();
   gAlice->TreeD()->Write();
 
-  if(fDebug == 1){
+//  if(fDebug == 1){
     printf("\n  Event Digits -----------------------------------------------------\n");  
     fDigits->Print("");
-  }
+//  }
   
 }
 //_____________________________________________________________________________
@@ -1229,6 +1232,10 @@ void AliZDCv1::StepManager()
      (gMC->GetMedium() == fMedSensGR) || (gMC->GetMedium() == fMedSensF1) ||
      (gMC->GetMedium() == fMedSensF2) || (gMC->GetMedium() == fMedSensZEM) ||
      (gMC->GetMedium() == fMedSensPI)){
+     
+     for(j=0; j<=9; j++){
+        hits[j] = 0;
+     }
   
   // If particle interacts with beam pipe -> return
     if(gMC->GetMedium() == fMedSensPI){ 
