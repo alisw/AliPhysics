@@ -111,7 +111,7 @@ void AliL3HoughTransformerVhdl::TransformCircle()
       if(i != (Int_t)tempPt->fRow)
 	{
 	  LOG(AliL3Log::kError,"AliL3HoughTransformerVhdl::TransformCircle","Data")
-	    <<"AliL3HoughTransformerLUT::TransformCircle : Mismatching padrow numbering "<<i<<" != "<<(Int_t)tempPt->fRow<<endl;
+	    <<"AliL3HoughTransformerLUT::TransformCircle : Mismatching padrow numbering "<<i<<" != "<<(Int_t)tempPt->fRow<<ENDLOG;
 	  continue;
 	}
 

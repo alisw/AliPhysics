@@ -148,7 +148,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
   fDoIterative   = doit; 
   fAddHistograms = addhists;
 
-  AliL3Transform::Init(fPath);
+  AliL3Transform::Init(fPath,!fBinary);
   fNPatches = AliL3Transform::GetNPatches();
 
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
@@ -189,7 +189,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	  if(!fBinary)
 	    {
 	      Char_t filename[100];
-	      sprintf(filename,"%s/digitfile",fPath);
+	      sprintf(filename,"%s/digitfile.root",fPath);
 	      fMemHandler[i]->SetAliInput(filename);
 	    }
 	}

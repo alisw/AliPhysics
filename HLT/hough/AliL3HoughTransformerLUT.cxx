@@ -369,7 +369,7 @@ void AliL3HoughTransformerLUT::TransformCircle()
       if(i != (Int_t)tempPt->fRow)
 	{
 	  LOG(AliL3Log::kError,"AliL3HoughTransformerLUT::TransformCircle","Data")
-	    <<"AliL3HoughTransformerLUT::TransformCircle : Mismatching padrow numbering "<<i<<" != "<<(Int_t)tempPt->fRow<<endl;
+	    <<"AliL3HoughTransformerLUT::TransformCircle : Mismatching padrow numbering "<<i<<" != "<<(Int_t)tempPt->fRow<<ENDLOG;
 	  continue;
 	}
 
@@ -413,7 +413,7 @@ void AliL3HoughTransformerLUT::TransformCircle()
 	    hist->Fill(kappa,fLUTphi0[b],charge);
 	    //cout << kappa << " " << fLUTphi0[b] << " " << charge << endl;
 
-#ifdef do_mc
+#ifdef do_mcc
 	    if(fDoMC)
 	      {
 		Int_t bin = hist->FindBin(kappa,phi0);
@@ -446,7 +446,7 @@ Int_t AliL3HoughTransformerLUT::GetTrackID(Int_t eta_index,Double_t kappa,Double
       return -1;
     }
   
-#ifdef do_mc
+#ifdef do_mcc
   if(eta_index < 0 || eta_index > fNEtas)
     {
       cerr<<"AliL3HoughTransformer::GetTrackID : Wrong etaindex "<<eta_index<<endl;
