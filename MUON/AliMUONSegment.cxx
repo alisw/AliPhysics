@@ -32,6 +32,7 @@
 #include "AliMUONHitForRec.h" 
 #include "AliMUONTrackParam.h" 
 #include "AliRun.h" // for gAlice
+#include "AliLog.h" 
 
 ClassImp(AliMUONSegment) // Class implementation in ROOT context
 
@@ -106,7 +107,7 @@ AliMUONSegment::AliMUONSegment (const AliMUONSegment& theMUONSegment)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONSegment", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& rhs)
@@ -115,7 +116,7 @@ AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }

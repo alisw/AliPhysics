@@ -59,6 +59,7 @@
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMC.h"
+#include "AliLog.h"
 // to manage the same zoom on both cathodes
 
 
@@ -233,7 +234,7 @@ AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONDisplay", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 
@@ -1486,7 +1487,7 @@ AliMUONDisplay & AliMUONDisplay::operator = (const AliMUONDisplay & rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }

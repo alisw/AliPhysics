@@ -22,6 +22,7 @@
 #include "AliMUONChamber.h"
 #include "AliRun.h"
 #include "AliMUON.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONSegmentationV0)
 
@@ -37,7 +38,7 @@ AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmen
 {
 // Protected copy constructor
 
-  Fatal("AliMUONSegmentationV0", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 
@@ -340,7 +341,7 @@ AliMUONSegmentationV0::operator =(const AliMUONSegmentationV0 & rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }

@@ -13,6 +13,7 @@
 #include <TObjString.h>
 
 #include "AliMUONGeometryTransformStore.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONGeometryTransformStore)
 
@@ -50,8 +51,7 @@ AliMUONGeometryTransformStore::AliMUONGeometryTransformStore(
                                    const AliMUONGeometryTransformStore& rhs)
   : TObject(rhs)
 {
-  Fatal("Copy constructor", 
-        "Copy constructor is not implemented.");
+  AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -67,8 +67,7 @@ AliMUONGeometryTransformStore::operator = (const AliMUONGeometryTransformStore& 
   // check assignement to self
   if (this == &rhs) return *this;
 
-  Fatal("operator=", 
-        "Assignment operator is not implemented.");
+  AliFatal("Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -135,8 +134,8 @@ void AliMUONGeometryTransformStore::Add(Int_t detElemId,
     fDETransforms.AddAt(newTransform, GetDetElementIndex(detElemId));
   } 
   else 
-    Warning("Add", "The aligned volume %s is already present", 
-            alignedVolume.Data());  
+    AliWarning(Form("The aligned volume %s is already present", 
+            alignedVolume.Data()));  
 }		      
     
 //______________________________________________________________________________
@@ -197,7 +196,7 @@ AliMUONGeometryTransformStore::Get(Int_t detElemId) const
   if ( index >= 0 && index < fNofDetElems )
     return (const TGeoCombiTrans*)fDETransforms.At(index);
   else {
-    Warning("Get","Index %d out of limits", index);
+    AliWarning(Form("Index %d out of limits", index));
     return 0;  
   }  
 }  

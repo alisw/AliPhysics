@@ -32,6 +32,7 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTriggerTrack.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONData)
  
@@ -112,7 +113,7 @@ AliMUONData::AliMUONData(const AliMUONData& rMUONData):TNamed(rMUONData)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONData", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //_____________________________________________________________________________
@@ -161,7 +162,7 @@ AliMUONData& AliMUONData::operator=(const AliMUONData& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }    
@@ -322,7 +323,7 @@ Bool_t   AliMUONData::IsRawClusterBranchesInTree()
 {
   // Checking if there are RawCluster Branches In TreeR
   if (TreeR()==0x0) {
-    Error("TreeR","No treeR in memory");
+    AliError("No treeR in memory");
     return kFALSE;
   }
   else {
@@ -339,7 +340,7 @@ Bool_t   AliMUONData::IsDigitsBranchesInTree()
 {
   // Checking if there are RawCluster Branches In TreeR
   if (TreeD()==0x0) {
-    Error("TreeD","No treeD in memory");
+    AliError("No treeD in memory");
     return kFALSE;
   }
   else {
@@ -356,7 +357,7 @@ Bool_t   AliMUONData::IsTriggerBranchesInTree()
 {
   // Checking if there are Trigger Branches In TreeR
  if (TreeR()==0x0) {
-    Error("TreeR","No treeR in memory");
+    AliError("No treeR in memory");
     return kFALSE;
   }
   else {
@@ -373,7 +374,7 @@ Bool_t   AliMUONData::IsTriggerBranchesInTreeD()
 {
   // Checking if there are Trigger Branches In TreeR
  if (TreeD()==0x0) {
-    Error("TreeD","No treeD in memory");
+    AliError("No treeD in memory");
     return kFALSE;
   }
   else {
@@ -391,7 +392,7 @@ Bool_t   AliMUONData::IsTrackBranchesInTree()
 {
   // Checking if there are Track Branches In TreeT
   if (TreeT()==0x0) {
-    Error("TreeT","No treeT in memory");
+    AliError("No treeT in memory");
     return kFALSE;
   }
   else {
@@ -408,7 +409,7 @@ Bool_t   AliMUONData::IsTriggerTrackBranchesInTree()
 {
   // Checking if there are TriggerTrack Branches In TreeT
   if (TreeT()==0x0) {
-    Error("TreeT","No treeT in memory");
+    AliError("No treeT in memory");
     return kFALSE;
   }
   else {
@@ -561,7 +562,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     sprintf(branchname,"%sHits",GetName());  
     branch = TreeH()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch %s is already in tree.",GetName());
+      AliInfo(Form("MakeBranch","Branch %s is already in tree.",GetName()));
       return ;
     }
     branch = TreeH()->Branch(branchname,&fHits,kBufferSize);
@@ -590,7 +591,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       branch = 0x0;
       branch = TreeD()->GetBranch(branchname);
       if (branch) {  
-	Info("MakeBranch","Branch %s is already in tree.",GetName());
+	AliInfo(Form("Branch %s is already in tree.",GetName()));
 	return;
       }
       TClonesArray * digits = Digits(iDetectionPlane); 
@@ -612,7 +613,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
     branch = TreeD()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch GlobalTrigger is already in treeD.");
+      AliInfo(Form("Branch GlobalTrigger is already in treeD."));
       return ;
     }
     branch = TreeD()->Branch(branchname, &fGlobalTrigger, kBufferSize);
@@ -630,7 +631,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
     branch = TreeD()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch LocalTrigger is already in treeD.");
+      AliInfo(Form("Branch LocalTrigger is already in treeD."));
       return;
     }
     branch = TreeD()->Branch(branchname, &fLocalTrigger, kBufferSize);
@@ -660,7 +661,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       branch = 0x0;
       branch = TreeS()->GetBranch(branchname);
       if (branch) {  
-	Info("MakeBranch","Branch %s is already in tree.",GetName());
+	AliInfo(Form("Branch %s is already in tree.",GetName()));
 	return;
       }
       TClonesArray * sdigits = SDigits(iDetectionPlane); 
@@ -694,7 +695,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       branch = 0x0;
       branch = TreeR()->GetBranch(branchname);
       if (branch) {  
-	Info("MakeBranch","Branch %s is already in tree.",GetName());
+	AliInfo(Form("Branch %s is already in tree.",GetName()));
 	return;
       }
       branch = TreeR()->Branch(branchname, &((*fRawClusters)[i]),kBufferSize);
@@ -715,7 +716,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
     branch = TreeR()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch GlobalTrigger is already in treeR.");
+      AliInfo(Form("Branch GlobalTrigger is already in treeR."));
       return ;
     }
     branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize);
@@ -733,7 +734,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
     branch = TreeR()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch LocalTrigger is already in treeR.");
+      AliInfo(Form("Branch LocalTrigger is already in treeR."));
       return;
     }
     branch = TreeR()->Branch(branchname, &fLocalTrigger, kBufferSize);
@@ -746,7 +747,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     sprintf(branchname,"%sTrack",GetName());  
     branch = TreeT()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch %s is already in tree.",GetName());
+      AliInfo(Form("Branch %s is already in tree.",GetName()));
       return ;
     }
     branch = TreeT()->Branch(branchname,&fRecTracks,kBufferSize);
@@ -759,7 +760,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     sprintf(branchname,"%sTriggerTrack",GetName());  
     branch = TreeT()->GetBranch(branchname);
     if (branch) {  
-      Info("MakeBranch","Branch %s is already in tree.",GetName());
+      AliInfo(Form("Branch %s is already in tree.",GetName()));
       return ;
     }
     branch = TreeT()->Branch(branchname,&fRecTriggerTracks,kBufferSize);
@@ -893,7 +894,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
       branch->SetAddress(&fHits);
     }
     else { //can be invoked before branch creation
-      Warning("SetTreeAddress","(%s) Failed for Hits. Can not find branch in tree.",GetName());
+      AliWarning(Form("(%s) Failed for Hits. Can not find branch in tree.",GetName()));
     }
   }
   
@@ -925,7 +926,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
 	if (branch) {
 	  branch->SetAddress( &digits );
 	}
-	else Warning("SetTreeAddress","(%s) Failed for Digits Detection plane %d. Can not find branch in tree.",GetName(),i);
+	else AliWarning(Form("(%s) Failed for Digits Detection plane %d. Can not find branch in tree.",GetName(),i));
       }
     }
   }
@@ -933,13 +934,13 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     sprintf(branchname,"%sLocalTrigger",GetName());
     branch = TreeD()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fLocalTrigger);
-    else Warning("SetTreeAddress","(%s) Failed for LocalTrigger. Can not find branch in treeD.",GetName());
+    else AliWarning(Form("(%s) Failed for LocalTrigger. Can not find branch in treeD.",GetName()));
   }
   if ( TreeD() && fGlobalTrigger && cGLT) {
     sprintf(branchname,"%sGlobalTrigger",GetName());
     branch = TreeD()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fGlobalTrigger);
-    else Warning("SetTreeAddress","(%s) Failed for GlobalTrigger. Can not find branch in treeD.",GetName());
+    else AliWarning(Form("(%s) Failed for GlobalTrigger. Can not find branch in treeD.",GetName()));
   }
 
   //
@@ -962,7 +963,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
 	branch = TreeS()->GetBranch(branchname);
 	TClonesArray * sdigits = SDigits(i);
 	if (branch) branch->SetAddress( &sdigits );
-	else Warning("SetTreeAddress","(%s) Failed for SDigits Detection plane %d. Can not find branch in tree.",GetName(),i);
+	else AliWarning(Form("(%s) Failed for SDigits Detection plane %d. Can not find branch in tree.",GetName(),i));
       }
     }
   }
@@ -992,7 +993,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
       if (fRawClusters) {
 	branch = TreeR()->GetBranch(branchname);
 	if (branch) branch->SetAddress( &((*fRawClusters)[i]) );
-	else Warning("SetTreeAddress","(%s) Failed for RawClusters Detection plane %d. Can not find branch in tree.",GetName(),i);
+	else AliWarning(Form("(%s) Failed for RawClusters Detection plane %d. Can not find branch in tree.",GetName(),i));
       }
     }
   }
@@ -1000,13 +1001,13 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     sprintf(branchname,"%sLocalTrigger",GetName());
     branch = TreeR()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fLocalTrigger);
-    else Warning("SetTreeAddress","(%s) Failed for LocalTrigger. Can not find branch in treeR.",GetName());
+    else AliWarning(Form("(%s) Failed for LocalTrigger. Can not find branch in treeR.",GetName()));
   }
   if ( TreeR() && fGlobalTrigger && cTC) {
     sprintf(branchname,"%sGlobalTrigger",GetName());
     branch = TreeR()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fGlobalTrigger);
-    else Warning("SetTreeAddress","(%s) Failed for GlobalTrigger. Can not find branch in treeR.",GetName());
+    else AliWarning(Form("(%s) Failed for GlobalTrigger. Can not find branch in treeR.",GetName()));
   }
 
   if ( TreeT() ) {
@@ -1019,7 +1020,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     sprintf(branchname,"%sTrack",GetName());  
     branch = TreeT()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fRecTracks);
-    else Warning("SetTreeAddress","(%s) Failed for Tracks. Can not find branch in tree.",GetName());
+    else AliWarning(Form("(%s) Failed for Tracks. Can not find branch in tree.",GetName()));
   }
 // trigger tracks
   if ( TreeT() ) {
@@ -1032,7 +1033,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     sprintf(branchname,"%sTriggerTrack",GetName());  
     branch = TreeT()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fRecTriggerTracks);
-    else Warning("SetTreeAddress","(%s) Failed for Trigger Tracks. Can not find branch in tree.",GetName());
+    else AliWarning(Form("(%s) Failed for Trigger Tracks. Can not find branch in tree.",GetName()));
   }
 
 

@@ -25,6 +25,7 @@
 
 #include "AliMUONSt1SpecialMotif.h"
 
+
 //__________________________________________________________________________
 AliMUONSt1SpecialMotif::AliMUONSt1SpecialMotif(const TVector2& delta, 
                                                Double_t rotAngle)

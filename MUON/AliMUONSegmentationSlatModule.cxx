@@ -24,6 +24,7 @@
 #include <TArrayF.h>
 
 #include "AliMUONSegmentationSlatModule.h"
+#include "AliLog.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationSlatModule)
@@ -54,7 +55,7 @@ AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule(
 {
 // Protected copy constructor
 
-  Fatal("AliMUONSegmentationSlatModule", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 
@@ -74,7 +75,7 @@ AliMUONSegmentationSlatModule::operator=(
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }    

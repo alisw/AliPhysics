@@ -28,6 +28,7 @@
 #include "AliMUONChamber.h"
 #include "AliRun.h"
 #include "AliMUONConstants.h"
+#include "AliLog.h"
 //___________________________________________
 ClassImp(AliMUONSegmentationSlat)
 
@@ -56,7 +57,7 @@ AliMUONSegmentationSlat::AliMUONSegmentationSlat(const AliMUONSegmentationSlat& 
 {
 // Protected copy constructor
 
-  Fatal("AliMUONSegmentationSlatModule", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){
@@ -80,7 +81,7 @@ AliMUONSegmentationSlat::operator=(const AliMUONSegmentationSlat& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }    

@@ -57,6 +57,7 @@
 #include "AliLoader.h"
 #include "AliMUONTrackK.h" //AZ
 #include "AliMC.h"
+#include "AliLog.h"
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONEventReconstructor::fgkDefaultMinBendingMomentum = 3.0;
@@ -159,7 +160,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstr
 {
 // Protected copy constructor
 
-  Fatal("AliMUONEventReconstructor", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 AliMUONEventReconstructor & 
@@ -169,7 +170,7 @@ AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }
@@ -344,9 +345,8 @@ void AliMUONEventReconstructor::NextBkgGeantEvent(void)
     sprintf(treeName, "TreeK%d", fBkgGeantEventNumber);
     fBkgGeantTK = (TTree*)gDirectory->Get(treeName);
     if (!fBkgGeantTK) {
-      cout << "ERROR: cannot find Kine Tree for background event: " <<
-	fBkgGeantEventNumber << endl;
-      exit(0);
+		AliError(Form("cannot find Kine Tree for background event: %d",fBkgGeantEventNumber));
+      	exit(0);
     }
   }
   if (fBkgGeantTK) 
@@ -356,8 +356,7 @@ void AliMUONEventReconstructor::NextBkgGeantEvent(void)
   sprintf(treeName, "TreeH%d", fBkgGeantEventNumber);
   fBkgGeantTH = (TTree*)gDirectory->Get(treeName);
   if (!fBkgGeantTH) {
-    cout << "ERROR: cannot find Hits Tree for background event: " <<
-      fBkgGeantEventNumber << endl;
+	  AliError(Form("cannot find Hits Tree for background event: %d",fBkgGeantEventNumber));
       exit(0);
   }
   if (fBkgGeantTH && fBkgGeantHits) {
@@ -490,13 +489,13 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
          Int_t retval = fLoader->LoadHits();
          if ( retval)
           {
-            Error("MakeEventToBeReconstructed","Error occured while loading hits.");
+            AliError("Error occured while loading hits.");
             return;
           }
          treeH = fLoader->TreeH();
          if (treeH == 0x0)
           {
-           Error("MakeEventToBeReconstructed","Can not get TreeH");
+           AliError("Can not get TreeH");
            return;
           }
        }
@@ -780,9 +779,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
 
   nTRentries = Int_t(TR->GetEntries());
   if (nTRentries != 1) {
-    cout << "Error in AliMUONEventReconstructor::AddHitsForRecFromRawClusters"
-	 << endl;
-    cout << "nTRentries = " << nTRentries << " not equal to 1" << endl;
+    AliError(Form("nTRentries = %d not equal to 1 ",nTRentries));
     exit(0);
   }
   fLoader->TreeR()->GetEvent(0); // only one entry  
@@ -1040,9 +1037,7 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
     treeR->GetEvent(0); // only one entry  
 
     if (!(fMUONData->IsTriggerBranchesInTree())) {
-      cout << "Warning in AliMUONEventReconstructor::MakeTriggerTracks"
-	   << endl;
-      cout << "Trigger information is not avalaible, nTRentries = " << nTRentries << " not equal to 1" << endl;
+      AliWarning(Form("Trigger information is not avalaible, nTRentries = %d not equal to 1",nTRentries));
       return kFALSE;
     }
 

@@ -37,6 +37,7 @@
 #include "AliMUONGeometryConstituent.h"	
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONGeometryBuilder)
  
@@ -77,7 +78,7 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder(const AliMUONGeometryBuilder& rig
 {  
   // copy constructor (not implemented)
 
-  Fatal("AliMUONGeometryBuilder", "Copy constructor not provided.");
+  AliFatal("Copy constructor not provided.");
 }
 
 //______________________________________________________________________________
@@ -102,7 +103,7 @@ AliMUONGeometryBuilder::operator=(const AliMUONGeometryBuilder& right)
   // check assignement to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  AliFatal("Assignement operator not provided.");
     
   return *this;  
 }    
@@ -232,7 +233,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
         // virtual envelope + nof constituents = 0 
         //         => not allowed;
         //            empty virtual envelope has no sense 
-        Fatal("CreateGeometry", "Virtual envelope must have constituents.");
+        AliFatal("Virtual envelope must have constituents.");
         return;
       }
 
@@ -240,7 +241,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
         // non virtual envelope + nof constituents > 0 
         //        => not allowed;
         //           use VMC to place constituents
-        Fatal("CreateGeometry", "Non virtual envelope cannot have constituents.");
+        AliFatal("Non virtual envelope cannot have constituents.");
         return;
       }
 

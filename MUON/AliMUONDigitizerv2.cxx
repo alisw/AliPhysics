@@ -34,6 +34,7 @@
 #include "AliMUONDigit.h"
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONTransientDigit.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONDigitizerv2)
 
@@ -61,9 +62,7 @@ void AliMUONDigitizerv2::GenerateTransientDigits()
 // Loop over all chambers and s-digits in the input stream and create 
 // AliMUONTransientDigit objects from them. These are then added to fTDList.
 
-	if (GetDebug() > 1) 
-		Info("GenerateTransientDigits", "Generating transient digits using treeH = 0x%X");
-
+	AliDebug(2,"Generating transient digits using treeH = 0x%X");
 	//
 	// Loop over SDigits
 	Int_t ndig, k;
@@ -98,10 +97,7 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 // Makes a transient digit from the specified s-digit from the specified chamber. 
 // Once the digit is created it is added to the fTDList.
 
-	if (GetDebug() > 3)
-		Info("MakeTransientDigitFromSDigit", 
-			"Making transient digit from s-digit for chamber %d.", iChamber);
-	
+	AliDebug(4,Form("Making transient digit from s-digit for chamber %d.", iChamber));
 	Int_t digits[6];
 	//
 	// Creating a new TransientDigits from SDigit
@@ -116,10 +112,8 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 		
 	digits[5] = sDigit->Hit();    // Hit number in the list
 
-	if (GetDebug() > 4)
-		Info("MakeTransientDigitFromSDigit", 
-			"Made digit from sDigit 0x%X: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d",
-			(void*)sDigit, digits[0], digits[1], digits[2], digits[3], digits[5]);
+	AliDebug(5,Form("Made digit from sDigit 0x%X: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d",
+			(void*)sDigit, digits[0], digits[1], digits[2], digits[3], digits[5]));
 	
 	AliMUONTransientDigit* mTD = new AliMUONTransientDigit(iChamber, digits);
 	// Copy list of tracks and trackcharge
@@ -148,9 +142,7 @@ Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
 // If the s-digits are not loaded then the muon loader is used to load the
 // s-digits into memory.
 
-	if (GetDebug() > 2)
-		Info("InitInputData", "Loading s-digits in READ mode and setting the tree address.");
-
+	AliDebug(3,"Loading s-digits in READ mode and setting the tree address.");
 	fMUONData->SetLoader(muonloader);
 
 	if (muonloader->TreeS() == NULL)
@@ -158,7 +150,7 @@ Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
 		muonloader->LoadSDigits("READ");
 		if (muonloader->TreeS() == NULL)
 		{
-			Error("InitInputData", "Can not load the s-digits tree.");
+			AliError("Can not load the s-digits tree.");
 			return kFALSE;
 		};
 	};
@@ -172,7 +164,7 @@ void AliMUONDigitizerv2::CleanupInputData(AliMUONLoader* muonloader)
 {
 // Overridden to release and unload s-digits from memory.
 
-	if (GetDebug() > 2) Info("CleanupInputData", "Releasing loaded s-digits.");
+	AliDebug(3,"Releasing loaded s-digits.");
 	fMUONData->ResetSDigits();
 	muonloader->UnloadSDigits();
 };

@@ -41,6 +41,7 @@
 #include "AliMUONSegmentManuIndex.h"
 #include "AliMUONSegmentPosition.h"
 #include "AliMUONSegmentIndex.h"
+#include "AliLog.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationDetectionElement)
@@ -81,7 +82,7 @@ AliMUONSegmentationDetectionElement::AliMUONSegmentationDetectionElement(const A
 {
 // Protected copy constructor
 
-  Fatal("AliMUONSegmentationDetectionElementModule", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 //_________________________________________________
 AliMUONSegmentationDetectionElement::~AliMUONSegmentationDetectionElement(){
@@ -131,7 +132,7 @@ AliMUONSegmentIndex *  AliMUONSegmentationDetectionElement::FindIndexFromPositio
     }
   }
  if (!foundsegmentindex) {
-   Warning("FindIndexFromPosition","Not found Index for position x=%5.2f y=%5.2f \n",x,y);
+   AliWarning(Form("Not found Index for position x=%5.2f y=%5.2f \n",x,y));
  }    
  return foundsegmentindex;
 }
@@ -157,8 +158,8 @@ AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndex( const char 
   // Getting AliMUONSegmentIndex from name of AliMUONSegmentManuIndex
   if (fMapManuIndexIndex) return  (AliMUONSegmentIndex*)  fMapManuIndexIndex->GetValue(SegmentManuIndexName);
   else {
-    Warning("GetIndex","SegmentManuIndex %s out of DetectionElement Mapping %s",
-	    SegmentManuIndexName,fDetectionElementType.Data());
+    AliWarning(Form("SegmentManuIndex %s out of DetectionElement Mapping %s",
+	    SegmentManuIndexName,fDetectionElementType.Data()));
     return 0x0;
   }
 }
@@ -174,8 +175,8 @@ AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::GetManuIndex( con
   // Getting ManuIndex from manuname
   if (fMapIndexManuIndex) return (AliMUONSegmentManuIndex*) fMapIndexManuIndex->GetValue(SegmentIndexName);
   else {
-    Warning("GetManuIndex","SegmentIndex %s out of Detection Element mapping %s",
-	    SegmentIndexName,fDetectionElementType.Data());
+    AliWarning(Form("SegmentIndex %s out of Detection Element mapping %s",
+	    SegmentIndexName,fDetectionElementType.Data()));
     return 0x0;
   }
 }
@@ -196,7 +197,7 @@ void  AliMUONSegmentationDetectionElement::GetPadI(Float_t x, Float_t y, Int_t c
     pady = segmentindex->GetPadY();
   }
   else {
-    Warning("GetPadI","Not found Index for position x=%5.2f y=%5.2f \n",x,y);
+    AliWarning(Form("Not found Index for position x=%5.2f y=%5.2f \n",x,y));
   }    
 }
 //_________________________________________________
@@ -211,8 +212,8 @@ AliMUONSegmentPosition  * AliMUONSegmentationDetectionElement::GetPosition( cons
   // Getting position from indexname
   if (fMapIndexPosition) return (AliMUONSegmentPosition*) fMapIndexPosition->GetValue(SegmentIndexName);
   else {
-    Warning("GetPosition","SegmentIndex %s out of DetectionElement mapping %s",
-	    SegmentIndexName, fDetectionElementType.Data());
+    AliWarning(Form("SegmentIndex %s out of DetectionElement mapping %s",
+	    SegmentIndexName, fDetectionElementType.Data()));
     return 0x0;
   }
 }
@@ -228,8 +229,8 @@ AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::GetIndexFromPosition(
   // Getting index form positionname
   if (fMapPositionIndex) return  (AliMUONSegmentIndex*)  fMapPositionIndex->GetValue(PositionName);
   else {
-    Warning("GetIndexFromPosition","SegmentPosition %s out of DetectionElement Mapping %s",
-	    PositionName,fDetectionElementType.Data());
+    AliWarning(Form("SegmentPosition %s out of DetectionElement Mapping %s",
+	    PositionName,fDetectionElementType.Data()));
     return 0x0;
   }
 }
@@ -240,8 +241,8 @@ AliMUONSegmentManuIndex * AliMUONSegmentationDetectionElement::FindManuIndex( co
   // Getting AliMUONSegmentManuIndex objecto from manu index
   if (fMapManuIndexIndex) return (AliMUONSegmentManuIndex*) fMapManuIndexIndex->FindObject(ManuIndexName);
   else  {
-    Warning("FindManuIndex","SegmentManuIndex %s out of DetectionElement mapping %s",
-	    ManuIndexName,fDetectionElementType.Data());
+    AliWarning(Form("SegmentManuIndex %s out of DetectionElement mapping %s",
+	    ManuIndexName,fDetectionElementType.Data()));
     return 0x0;
   }
 }
@@ -252,8 +253,8 @@ AliMUONSegmentIndex * AliMUONSegmentationDetectionElement::FindIndex(const char*
   // Getting 
   if (fMapIndexPosition) return (AliMUONSegmentIndex *) fMapIndexPosition->FindObject(IndexName);
   else {
-    Warning("FindIndex","SegmentIndex %s out of DetectionElement mapping %s",
-	    IndexName,fDetectionElementType.Data());
+    AliWarning(Form("SegmentIndex %s out of DetectionElement mapping %s",
+	    IndexName,fDetectionElementType.Data()));
     return 0x0;
   }
 }
@@ -287,11 +288,11 @@ void    AliMUONSegmentationDetectionElement::Init(const char * DetectionElementT
   Int_t icathode;
   //Bendingplane
   icathode=0;
-  Info("ReadingSegmentationMappingFile","%s", fSegmentationMappingFileBending.Data());
+  AliInfo(Form("%s", fSegmentationMappingFileBending.Data()));
   ReadingSegmentationMappingFile(fSegmentationMappingFileBending ,icathode);
   //NonBendingplane
   icathode=1;
-  Info("Init","Reading mapping file is %s\n", fSegmentationMappingFileNonBending.Data());
+  AliInfo(Form("Reading mapping file is %s\n", fSegmentationMappingFileNonBending.Data()));
   ReadingSegmentationMappingFile(fSegmentationMappingFileNonBending,icathode);
   
 }
@@ -300,7 +301,7 @@ void AliMUONSegmentationDetectionElement::ReadingSegmentationMappingFile(TString
 { 
   ifstream in( infile,  ios::in);
   if (!in) {
-    Error("ReadingSegmentationMappingFile", "File not found.");
+    AliError("File not found.");
   }
   else {
     Int_t id, ix, iy, idmanu, idchannel;

@@ -17,7 +17,6 @@
 
 #include "AliMUONConstants.h"
 
-
 ClassImp(AliMUONConstants)
 
 Int_t   AliMUONConstants::fgNCh = 14;

@@ -33,6 +33,7 @@
 #include "AliMUONChamber.h"
 #include "AliRun.h" 
 #include "AliMagF.h" 
+#include "AliLog.h" 
 
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
 
@@ -231,9 +232,10 @@ void AliMUONTrackParam::ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackP
   if ((z1 > this->fZ) && (z2 > this->fZ)) {i1 = 0; i2 = 1;}
   else if ((z1 < this->fZ) && (z2 < this->fZ)) {i1 = 1; i2 = 0;}
   else {
-    cout << "ERROR in AliMUONTrackParam::CreateExtrapSegmentInStation" << endl;
-    cout << "Starting Z (" << this->fZ << ") in between z1 (" << z1 <<
-      ") and z2 (" << z2 << ") of station(0..) " << Station << endl;
+  	AliError(Form("Starting Z (%f) in between z1 (%f) and z2 (%f) of station(0..)%d",this->fZ,z1,z2,Station));
+//     cout << "ERROR in AliMUONTrackParam::CreateExtrapSegmentInStation" << endl;
+//     cout << "Starting Z (" << this->fZ << ") in between z1 (" << z1 <<
+//       ") and z2 (" << z2 << ") of station(0..) " << Station << endl;
   }
   extZ[i1] = z1;
   extZ[i2] = z2;

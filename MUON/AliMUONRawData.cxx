@@ -42,6 +42,7 @@
 
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
+#include "AliLog.h"
 
 const Int_t AliMUONRawData::fgkDefaultPrintLevel = 0;
 
@@ -96,7 +97,7 @@ AliMUONRawData::AliMUONRawData (const AliMUONRawData& rhs)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONRawData", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //_______________________________________________________________________
@@ -107,7 +108,7 @@ AliMUONRawData::operator=(const AliMUONRawData& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }
@@ -444,7 +445,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   }
 
   if (!nEntries)
-    Error("AliMUONRawData::WriteTriggerDDL","No Trigger information available");
+    AliError("No Trigger information available");
 
   buffer = new Int_t [680]; // [16(local)*5 words + 4 words]*8(reg) + 8 words = 680
 

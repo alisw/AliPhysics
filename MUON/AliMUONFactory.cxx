@@ -30,6 +30,7 @@
 #include "AliMUONSegmentationSlatN.h"
 #include "AliMUONSegmentationTriggerX.h"
 #include "AliMUONSegmentationTriggerY.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONFactory)
 
@@ -48,7 +49,7 @@ AliMUONFactory::AliMUONFactory(const AliMUONFactory& rhs)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONFactory", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //__________________________________________________________________________
@@ -65,7 +66,7 @@ AliMUONFactory&  AliMUONFactory::operator=(const AliMUONFactory& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }    
@@ -578,14 +579,8 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
       BuildStation5();
       BuildStation6();
     } 
-    else {
-      if(fMUON->GetDebug()) {
-	printf("\nAliMUONFactory: --------AliMUONFactory------------------------------");
-	printf("\nAliMUONFactory:  Non default version of MUON selected               ");
-	printf("\nAliMUONFactory:  You have to construct yourself the MUON elements !!");	
-	printf("\nAliMUONFactory: ----------------------------------------------------");
-      }
-    }
+    else
+	  AliDebug(0,"Non default version of MUON selected. You have to construct yourself the MUON elements !!");
 }
 
 //__________________________________________________________________________
@@ -615,6 +610,6 @@ void AliMUONFactory::BuildStation(AliMUON* where, Int_t stationNumber)
       case 5:  BuildStation5(); break;
       case 6:  BuildStation6(); break;
     
-      default: Fatal("Build", "Wrong station number");
+      default: AliFatal("Wrong station number");
     }  
 }         

@@ -17,6 +17,7 @@
 
 #include "AliMUONDigit.h"
 
+
 ClassImp(AliMUONDigit)
 //_____________________________________________________________________________
  AliMUONDigit::AliMUONDigit(const AliMUONDigit& digits):TObject(digits)

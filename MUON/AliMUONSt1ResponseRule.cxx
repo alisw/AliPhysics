@@ -30,7 +30,6 @@
 #include "AliMUONSt1ResponseRule.h"
 #include "AliMUONSt1ElectronicElement.h"
 #include "AliMUONSt1ResponseParameter.h"
-
 ClassImp(AliMUONSt1ResponseRule);
 
 //__________________________________________________________________________

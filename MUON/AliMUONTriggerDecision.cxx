@@ -29,6 +29,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliRawReader.h" // for raw data
+#include "AliLog.h"
 
 
 //----------------------------------------------------------------------
@@ -90,11 +91,11 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint, 
   fLoader = loader;
 
   // initialize container
-  if (data == 0)
-    Error("TriggerDecision","No MUONdata for trigger\n");
-  else
+  if (data == 0){
+    AliError("No MUONdata for trigger");
+  }else{
     fMUONData = data;
-
+  }
   // Loading AliRun master
   AliRunLoader* runloader = fLoader->GetRunLoader();
   if (runloader->GetAliRun() == 0x0) runloader->LoadgAlice();
@@ -133,7 +134,7 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs
 {
 // Protected copy constructor
 
-  Fatal("AliMUONTriggerDecision", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //----------------------------------------------------------------------
@@ -189,7 +190,7 @@ AliMUONTriggerDecision::operator=(const AliMUONTriggerDecision& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }    
@@ -296,8 +297,7 @@ void AliMUONTriggerDecision::SetBit(){
 
       TClonesArray *muonDigits = Digits(chamber-1);
       Int_t ndigits = muonDigits->GetEntriesFast();
-      if (fDebug>=3)
-	printf("\nFound %d digits in %p %d \n", ndigits, (void*)muonDigits,chamber-1);
+      AliDebug(3,Form("Found %d digits in %p %d", ndigits, (void*)muonDigits,chamber-1));
 
       AliMUONDigit  *mdig;
       
@@ -307,8 +307,7 @@ void AliMUONTriggerDecision::SetBit(){
   	Int_t ix=mdig->PadX();
   	Int_t iy=mdig->PadY();
 	cathode = mdig->Cathode() + 1;
-	if (fDebug>=3)
-	printf("cathode %d ix %d iy %d \n",cathode,ix,iy);
+	AliDebug(3,Form("cathode %d ix %d iy %d ",cathode,ix,iy));
 
 // get the sum of the coded charge 
 // see coding convention in AliMUONChamberTrigger::DisIntegration 	
@@ -1454,6 +1453,6 @@ void AliMUONTriggerDecision::Trigger2Trigger(AliRawReader* /*rawReader*/)
 {
 // call the Trigger Algorithm from raw data and fill TreeR 
 
-   Fatal("Trigger2Trigger","Trigger not implemented for raw data input");
+   AliFatal("Trigger not implemented for raw data input");
 
 }

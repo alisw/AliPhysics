@@ -38,6 +38,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONv1)
  
@@ -112,7 +113,7 @@ AliMUONv1::AliMUONv1(const AliMUONv1& right)
 {  
   // copy constructor (not implemented)
 
-  Fatal("AliMUONv1", "Copy constructor not provided.");
+  AliFatal("Copy constructor not provided.");
 }
 
 //___________________________________________
@@ -135,7 +136,7 @@ AliMUONv1& AliMUONv1::operator=(const AliMUONv1& right)
   // check assignement to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  AliFatal("Assignement operator not provided.");
     
   return *this;  
 }    
@@ -168,8 +169,7 @@ void AliMUONv1::Init()
    // 
    // Initialize Tracking Chambers
    //
-
-   if(fDebug) printf("\n%s: Start Init for version 1 - CPC chamber type\n\n",ClassName());
+   AliDebug(1,"Start Init for version 1 - CPC chamber type");
    Int_t i;
    for (i=0; i<AliMUONConstants::NCh(); i++) {
        ( (AliMUONChamber*) (*fChambers)[i])->Init();
@@ -179,14 +179,14 @@ void AliMUONv1::Init()
    // Initialize geometry
    //
    fGeometryBuilder->InitGeometry();
-   if(fDebug) printf("\n%s: Finished Init for version 1 - CPC chamber type\n",ClassName());
+   AliDebug(1,"Finished Init for version 1 - CPC chamber type");
 
    //cp 
-   if(fDebug) printf("\n%s: Start Init for Trigger Circuits\n",ClassName());
+   AliDebug(1,"Start Init for Trigger Circuits");
    for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) {
      ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
    }
-   if(fDebug) printf("%s: Finished Init for Trigger Circuits\n",ClassName());
+   AliDebug(1,"Finished Init for Trigger Circuits");
    //cp
 
    //
@@ -395,7 +395,7 @@ void AliMUONv1::StepManager()
       cerr << "   global position: "
            << x << ", " << y << ", " << z
            << endl;
-      Warning("StepManager", "DetElemId not identified.");
+      AliWarning("DetElemId not identified.");
     }  
     
     // One hit per chamber

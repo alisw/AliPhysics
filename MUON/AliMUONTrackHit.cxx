@@ -27,6 +27,7 @@
 
 #include "AliMUONTrackHit.h" 
 #include "AliMUONHitForRec.h" 
+#include "AliLog.h" 
 
 ClassImp(AliMUONTrackHit) // Class implementation in ROOT context
 
@@ -84,7 +85,6 @@ AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
   fNextTrackHitWithSameHitForRec = NULL;
   Hit->SetNTrackHits(Hit->GetNTrackHits() + 1);
 }
-
   //__________________________________________________________________________
 AliMUONTrackHit::~AliMUONTrackHit()
 {

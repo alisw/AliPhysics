@@ -15,6 +15,7 @@
 
 #include "AliMUONSubEventTrigger.h"
 
+
 ClassImp(AliMUONSubEventTrigger)
  
 //___________________________________________

@@ -63,7 +63,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t /*eloss*/, Float_t tof,
     
     segmentation->GetPadI(xhit,yhit,0,ix,iy);
     segmentation->SetPad(ix,iy);
-
+	
 // treatment of GEANT hits w/o corresponding strip (due to the fact that
 // the 2 geometries are computed in a very slightly different way) 
     if (ix==0&&iy==0) {
