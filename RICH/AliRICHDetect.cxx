@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.11  2001/02/27 15:21:46  jbarbosa
+  Transition to SDigits.
+
   Revision 1.10  2001/02/13 20:39:06  jbarbosa
   Changes to make it work with new IO.
 
@@ -153,7 +156,7 @@ void AliRICHDetect::Detect()
     if (pHits == 0) return;
     Int_t nhits = pHits->GetEntriesFast();
     if (nhits == 0) continue;
-    Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
+    //Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
     gAlice->TreeD()->GetEvent(1);
     AliRICHHit *mHit = 0;
     AliRICHDigit *points = 0;
