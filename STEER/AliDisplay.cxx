@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/11/30 07:12:48  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.10  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -561,7 +564,7 @@ void AliDisplay::DrawHits()
          pxyz  = pm->GetP();
          r     = TMath::Sqrt(pxyz[0]*pxyz[0] + pxyz[1]*pxyz[1]);
          theta = TMath::ATan2(r,TMath::Abs(pxyz[2]));
-         if(theta) eta = -TMath::Log(TMath::Tan(0.5*theta)); else eta = 1e10;
+         if(theta) eta = -TMath::Log(TMath::Abs(TMath::Tan(0.5*theta))); else eta = 1e10;
          if (pxyz[2] < 0) eta = -eta;
          if (eta < etamin || eta > etamax) continue;
          pm->Draw();
