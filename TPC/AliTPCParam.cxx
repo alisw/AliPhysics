@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/10/23 07:17:33  alibrary
+Introducing Riostream.h
+
 Revision 1.16  2002/10/14 14:57:42  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -152,7 +155,7 @@ Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
       if ( (xyz[0]>0) && (xyz[1]<0) ) angle=2*TMath::Pi()+angle;
     }
 
-  sector=Int_t((angle-fInnerAngleShift)/fInnerAngle);      
+  sector=Int_t(TMath::Nint((angle-fInnerAngleShift)/fInnerAngle));      
  
   Float_t cos,sin;
   AdjustCosSin(sector,cos,sin);
@@ -160,7 +163,7 @@ Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
 
   if (x1>fOuterRadiusLow)
     {
-      sector=Int_t((angle-fOuterAngleShift)/fOuterAngle)+fNInnerSector;      
+      sector=Int_t(TMath::Nint((angle-fOuterAngleShift)/fOuterAngle))+fNInnerSector;      
       if (xyz[2]<0) 	sector+=(fNOuterSector>>1);            
     }
     else   
