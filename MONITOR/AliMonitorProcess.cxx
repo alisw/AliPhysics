@@ -582,7 +582,13 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
 #endif
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructHLT(Int_t iEvent)
+Bool_t AliMonitorProcess::ReconstructHLT(
+#ifdef ALI_HLT
+  Int_t iEvent
+#else
+  /* Int_t iEvent */
+#endif
+)
 {
 // run the HLT cluster and track finder
 
@@ -714,7 +720,7 @@ void AliMonitorProcess::CheckForConnections()
 
   TSocket* socket;
   while ((socket = fServerSocket->Accept()) != (TSocket*)-1) {
-    socket->SetOption(kNoBlock,1);
+    socket->SetOption(kNoBlock, 1);
     char socketType[256];
     if (!socket->Recv(socketType, 255)) continue;
     if (strcmp(socketType, "client") == 0) {
@@ -776,12 +782,15 @@ void AliMonitorProcess::BroadcastHistos()
   for (Int_t iSocket = 0; iSocket < fSockets.GetEntriesFast(); iSocket++) {
     TSocket* socket = (TSocket*) fSockets[iSocket];
     if (!socket) continue;
+    socket->SetOption(kNoBlock, 0);
     if (!socket->IsValid() || (socket->Send(message) < 0)) {
       // remove the socket from the list if there was an error
       TInetAddress adr = socket->GetInetAddress();
       Info("BroadcastHistos", "disconnect client:\n %s (%s), port %d\n",
 	   adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
       delete fSockets.RemoveAt(iSocket);
+    } else {
+      socket->SetOption(kNoBlock, 1);
     }
   }
   fSockets.Compress();

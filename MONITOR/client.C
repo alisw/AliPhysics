@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "MONITOR/AliMonitorClient.h"
+#include "TSystem.h"
 #endif
 
 void client()
