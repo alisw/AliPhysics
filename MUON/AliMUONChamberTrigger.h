@@ -12,6 +12,7 @@
 class AliMUONClusterFinder;
 class AliMUONSegmentationTrigger ;
 class AliMUONResponseTrigger ;
+class AliMUONResponseTriggerV1 ;
 
 class AliMUONChamberTrigger:
 public AliMUONChamber {

@@ -12,9 +12,12 @@ public AliMUONResponseV0 {
  public:
   AliMUONResponseTrigger(){};
   virtual ~AliMUONResponseTrigger(){} 
-  // Charge disintegration
-  virtual Float_t  IntXY(AliSegmentation * segmentation);
+
   virtual Int_t    DigitResponse(Int_t digit);    
+
+  // Set the GenerCluster parameter       
+  virtual Int_t SetGenerCluster();
+
   ClassDef(AliMUONResponseTrigger,1) // Implementation of RPC response
     
 };

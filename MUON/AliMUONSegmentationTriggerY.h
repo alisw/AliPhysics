@@ -38,7 +38,7 @@ public AliMUONSegmentationTrigger {
   virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
        {SetHit(xhit, yhit);}
   // Current integration parameters
-  virtual void IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width);
+  virtual void IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& x4);
   // Current Pad during Integration
   // x-coordinate
   virtual Int_t  Ix();
@@ -52,7 +52,7 @@ public AliMUONSegmentationTrigger {
   
   // Get next neighbours 
   virtual void Neighbours
-    (Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2]);
+    (Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);
   //
   // Initialisation
   virtual void Init(Int_t chamber);    

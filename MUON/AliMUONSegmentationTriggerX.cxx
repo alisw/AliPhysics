@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/11/12 17:17:03  pcrochet
+BuildGeometry of AliMUON for trigger chambers delegated to AliMUONSegmentationTriggerX (same strategy as for tracking chambers)
+
 Revision 1.7  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -149,32 +152,46 @@ void AliMUONSegmentationTriggerX::SetPadSize(Float_t p1, Float_t p2)
 
 //------------------------------------------------------------------
 void AliMUONSegmentationTriggerX::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2]) 
-{
-// Returns list of next neighbours for given Pad (ix, iy)  
+Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]){
+// Returns list of 10 next neighbours for given X strip (ix, iy)  
+// neighbour number 4 in the list -                     
+// neighbour number 3 in the list  |                    
+// neighbour number 2 in the list  |_ Upper part             
+// neighbour number 1 in the list  |            
+// neighbour number 0 in the list -           
+//      X strip (ix, iy) 
+// neighbour number 5 in the list -       
+// neighbour number 6 in the list  | _ Lower part
+// neighbour number 7 in the list  |
+// neighbour number 8 in the list  | 
+// neighbour number 9 in the list -
+  
+  Int_t absiX = TMath::Abs(iX); 
+  Int_t numModule = ModuleNumber(absiX);   // module number Id.
+  Int_t nStrip = AliMUONTriggerConstants::NstripX(numModule); //numb of strips
+  Int_t iCandidateUp, iCandidateDo;
+  Int_t j;
 
-  Int_t absiX=TMath::Abs(iX); 
-  *Nlist = 0;
-    
-  if (absiX!=0) {                           
-    Int_t numModule=ModuleNumber(absiX);
-    
-    if (iY<AliMUONTriggerConstants::NstripX(numModule)-1) { // strip up in same module 
-      *Nlist=1;
-      Xlist[0]=absiX;
-      Ylist[0]=iY+1;
-    } 
-    
-    if (iY>0) {                               // strip down in same module
-      *Nlist=*Nlist+1;
-      Xlist[*Nlist-1]=absiX;
-      Ylist[*Nlist-1]=iY-1;
-    } 
-    
-    if (iX<0) {                               // left side of chamber 
-      for (Int_t i=0; i<*Nlist; i++) {Xlist[i]=-Xlist[i];}
+  *Nlist = 10;
+  for (Int_t i=0; i<10; i++) Xlist[i]=Ylist[i]=0;
+
+  if (iY < nStrip) {
+
+    for (Int_t i=0; i<5; i++) {
+      j = i + 5;
+      iCandidateUp = iY + (i + 1);
+      iCandidateDo = iY - (i + 1);
+      if (iCandidateUp < nStrip) { 
+	Xlist[i] = iX;
+	Ylist[i] = iCandidateUp;  
+      }
+      if (iCandidateDo >= 0) { 
+	Xlist[j] = iX;
+	Ylist[j] = iCandidateDo;  
+      }
     }
-  }
+    
+  } // iY < nStrip
 }
 
 //------------------------------------------------------------------   
@@ -279,7 +296,7 @@ Int_t AliMUONSegmentationTriggerX::Sector(Int_t ix, Int_t iy)
 
 //------------------------------------------------------------------   
 void AliMUONSegmentationTriggerX::
-IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width) 
+IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& x4) 
 { 
 // returns quantities needed to evaluate neighbour strip response
 
@@ -290,7 +307,16 @@ IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width)
   x1=fYhit;        // hit y position
   x2=ystrip;       // y coordinate of the main strip
   x3=fY;           // current strip real y coordinate  
-  width=StripSizeX(ix);   // width of the main strip 
+  //  width=StripSizeX(ix);   // width of the main strip 
+
+  // find the position of the 2 borders of the current strip
+  Float_t ymin = fYofxsmin[ModuleNumber(fIx)][fIy];
+  Float_t ymax = fYofxsmax[ModuleNumber(fIx)][fIy];
+  
+  // dist. between the hit and the closest border of the current strip
+  x4 = (TMath::Abs(ymax-x1) > TMath::Abs(ymin-x1)) ? 
+    TMath::Abs(ymin-x1):TMath::Abs(ymax-x1);    
+
 }
 
 //------------------------------------------------------------------   

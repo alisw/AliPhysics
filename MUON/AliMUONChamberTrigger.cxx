@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.6  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -53,6 +59,7 @@ Draft version
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONSegmentationTrigger.h"
 #include "AliMUONResponseTrigger.h"
+#include "AliMUONResponseTriggerV1.h"
 #include <TObjArray.h>
 #include <TMath.h>
 #include <iostream.h>
@@ -61,7 +68,7 @@ ClassImp(AliMUONChamberTrigger)
 
 //-------------------------------------------
 
-    AliMUONChamberTrigger::AliMUONChamberTrigger()
+AliMUONChamberTrigger::AliMUONChamberTrigger()
 {
 // Default constructor
 }
@@ -116,36 +123,48 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
       newclust[4][nnew]=segmentation->ISector();  // sector id
       newclust[5][nnew]=(Float_t) i;              // counter
       nnew++;
-      // set hits
-      segmentation->SetHit(xhit,yhit,zhit);
-      // get the list of nearest neighbours
-      Int_t nList, xList[2], yList[2];
-      segmentation->Neighbours(ix,iy,&nList,xList,yList);
-      
-      for (Int_t j=0; j<nList; j++){
+
+// cluster-size if AliMUONResponseTriggerV1, nothing if AliMUONResponseTrigger
+      if (((AliMUONResponseTrigger*) fResponse)->SetGenerCluster()) {
+  
+	// set hits
+	segmentation->SetHit(xhit,yhit,zhit);
+	// get the list of nearest neighbours
+	Int_t nList, xList[10], yList[10];
+	segmentation->Neighbours(ix,iy,&nList,xList,yList);
 	
-	// neighbour real coordinates (just for checks here)
-	Float_t x,y,z;
-	segmentation->GetPadC(xList[j],yList[j],x,y,z);
-	// set pad (fX fY & fIx fIy are the current pad coord. & Id.)
-	segmentation->SetPad(xList[j],yList[j]);
-	// get the chamber (i.e. current strip) response
-	qp=fResponse->IntXY(segmentation);	  
-	
-	if (qp > 0.5) {
-	  // --- store signal information for neighbours 
-	  newclust[0][nnew]=qp;                       // total charge
-	  newclust[1][nnew]=segmentation->Ix();       // ix-position of pad
-	  newclust[2][nnew]=segmentation->Iy();       // iy-position of pad
-	  newclust[3][nnew]=twentyNano;               // time of flight
-	  newclust[4][nnew]=segmentation->ISector();  // sector id
-	  newclust[5][nnew]=(Float_t) i;              // counter
-	  nnew++;
-	} // qp > 0.5  
-      } // loop on neighbour
-    } // endif hit w/o strip
-  } // loop over planes
+	qp = 0;
+	for (Int_t j=0; j<nList; j++){       // loop over neighbours	  
+	  if (xList[j]!=0) {                 // existing neighbour	    
+	    if (j==0||j==5||qp!=0) {         // built-up cluster-size
+	      
+	      // neighbour real coordinates (just for checks here)
+	      Float_t x,y,z;
+	      segmentation->GetPadC(xList[j],yList[j],x,y,z);
+	      // set pad (fx fy & fix fiy are the current pad coord. & Id.)
+	      segmentation->SetPad(xList[j],yList[j]);	  
+	      // get the chamber (i.e. current strip) response
+	      qp=fResponse->IntXY(segmentation);	  
+	      
+	      if (qp > 0.5) {		
+		// --- store signal information for neighbours 
+		newclust[0][nnew]=qp;                      // total charge
+		newclust[1][nnew]=segmentation->Ix();      // ix-pos. of pad
+		newclust[2][nnew]=segmentation->Iy();      // iy-pos. of pad
+		newclust[3][nnew]=twentyNano;              // time of flight
+		newclust[4][nnew]=segmentation->ISector(); // sector id
+		newclust[5][nnew]=(Float_t) i;             // counter
+		nnew++;
+	      } // qp > 0.5 
+	    } // built-up cluster-size
+	  } // existing neighbour
+	} // loop over neighbours
+      } // endif hit w/o strip
+    } // loop over planes
+  } // if AliMUONResponseTriggerV1
 }
+
+
 
 
 

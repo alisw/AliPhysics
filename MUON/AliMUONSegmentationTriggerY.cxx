@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.6  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -145,43 +148,60 @@ void AliMUONSegmentationTriggerY::SetPadSize(Float_t p1, Float_t p2)
 
 //------------------------------------------------------------------
 void AliMUONSegmentationTriggerY::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2])
-{
-// Returns list of next neighbours for given Pad (ix, iy)  
-  Int_t absiX=TMath::Abs(iX); 
-  *Nlist = 0;
+Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]){
+// Returns list of 10 next neighbours for given Y strip (ix, iy)  
+// neighbour number 9 8 7 6 5 (Y strip (ix, iy)) 0 1 2 3 4 in the list
+//                  \_______/                    \_______/
+//                    left                         right  
+// Note : should not be used to return a list of neighbours larger than 16 !
+
+  Int_t absiX = TMath::Abs(iX); 
+  Int_t numModule = ModuleNumber(absiX);   // module number Id.
+  Int_t nStrip = AliMUONTriggerConstants::NstripY(numModule); //numb of strips
+  Int_t iCandidateLeft, iCandidateRight;
+  Int_t iNewCandidateRight=0; 
+  Int_t iNewCandidateLeft=0;
+// first strip number on the right of the left module  
+  if ( (absiX-(Int_t(absiX/10))*10)!=1 && absiX!=52 ) 
+    iNewCandidateLeft = 
+      AliMUONTriggerConstants::NstripY(ModuleNumber(absiX-1))-1;
+  Int_t j;
   
-  if (absiX!=0) {                         
-    Int_t numModule=ModuleNumber(absiX);
-    
-    if (iY==AliMUONTriggerConstants::NstripY(numModule)-1) { // strip right 
-      if (absiX%10!=7) {
-	*Nlist=1;
-	Xlist[0]=absiX+1;
-	Ylist[0]=0;
-      } 
-    } else {
-      *Nlist=1;
-      Xlist[0]=absiX;
-      Ylist[0]=iY+1;
-    }
-    
-    if (iY==0) {                                            // strip left 
-      if (absiX%10!=1&&absiX!=52) {
-	*Nlist=*Nlist+1;
-	Xlist[*Nlist-1]=absiX-1;
-	Ylist[*Nlist-1]=AliMUONTriggerConstants::NstripY(numModule-1)-1;
-      } 
-    } else {
-      *Nlist=*Nlist+1;
-      Xlist[*Nlist-1]=absiX;
-      Ylist[*Nlist-1]=iY-1;
+  *Nlist = 10;
+  for (Int_t i=0; i<10; i++) Xlist[i]=Ylist[i]=0;
+
+  if (iY < nStrip) {
+
+    for (Int_t i=0; i<5; i++) {
+      j = i + 5;
+      iCandidateRight = iY + (i + 1);
+      iCandidateLeft  = iY - (i + 1);
+      if (iCandidateRight < nStrip) { // strip in same module  
+	Xlist[i] = absiX;
+	Ylist[i] = iCandidateRight;  
+      } else if ((absiX+1)%10!=8) {   // need to scan the module on the right
+	Xlist[i] = absiX+1;
+	Ylist[i] = iNewCandidateRight;  
+	iNewCandidateRight++;
+      }
+      
+      if (iCandidateLeft >=0 ) { // strip in same module
+	Xlist[j] = absiX;
+	Ylist[j] = iCandidateLeft;  
+      } else if ( iNewCandidateLeft !=0) {
+	Xlist[j] = absiX-1;
+	Ylist[j] = iNewCandidateLeft;  
+	iNewCandidateLeft--;
+      }
     }
     
     if (iX<0) {                                  // left side of chamber 
-      for (Int_t i=0; i<*Nlist; i++) {Xlist[i]=-Xlist[i];}
+      for (Int_t i=0; i<10; i++) { 
+	if (Xlist[i]!=0) Xlist[i]=-Xlist[i]; 
+      }
     }
-  }     
+    
+  } // iY < nStrip    
 }
 
 //------------------------------------------------------------------   
@@ -249,7 +269,7 @@ Float_t AliMUONSegmentationTriggerY::Dpy(Int_t isec) const
 void AliMUONSegmentationTriggerY::SetHit(Float_t xhit, Float_t yhit)
 { 
 // set hits during diintegration
-    AliMUONSegmentationTrigger::SetHit(xhit,yhit);
+  AliMUONSegmentationTrigger::SetHit(xhit,yhit);
 }
 
 //------------------------------------------------------------------   
@@ -275,7 +295,7 @@ Int_t AliMUONSegmentationTriggerY::Sector(Int_t ix, Int_t iy)
 
 //------------------------------------------------------------------   
 void AliMUONSegmentationTriggerY::
-IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width) 
+IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& x4) 
 { 
 // returns quantities needed to evaluate neighbour strip response
   Int_t ix,iy;
@@ -285,7 +305,16 @@ IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width)
   x1=fXhit;        // hit x position
   x2=xstrip;       // x coordinate of the main strip
   x3=fX;           // current strip real x coordinate  
-  width=StripSizeY(ix);   // width of the main strip 
+  //  width=StripSizeY(ix);   // width of the main strip 
+
+  // find the position of the 2 borders of the current strip
+  Float_t xmin = fXofysmin[ModuleNumber(fIx)][fIy];
+  Float_t xmax = fXofysmax[ModuleNumber(fIx)][fIy];
+
+  // dist. between the hit and the closest border of the current strip
+  x4 = (TMath::Abs(xmax-x1) > TMath::Abs(xmin-x1)) ? 
+    TMath::Abs(xmin-x1):TMath::Abs(xmax-x1);    
+
 }
 
 
