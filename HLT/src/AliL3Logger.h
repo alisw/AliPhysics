@@ -47,7 +47,7 @@ class AliL3Logger {
   ofstream *fof; //!
 #endif
 
-  ClassDef(AliL3Logger,1)
+  ClassDef(AliL3Logger,0)
 };
 
 #endif

@@ -22,7 +22,19 @@ Int_t AliL3Logger::fgFatal = AliL3Log::kFatal;
 AliL3Logger::AliL3Logger()
 {
   //constructor
-  gLogLevel=AliL3Log::fgAll;
+ if (!gLogP) {
+   //printf( "Setting gLogP...\n" );
+   //printf( "&gLogP: 0x%08lX\n", (unsigned long)&gLogP );
+   //printf( "gLogP: 0x%08lX\n", (unsigned long)gLogP );
+   gLogP = &MLUCLog::gLog;
+   //printf( "gLogP set\n" );
+ }
+ if (!gLogLevelP){
+   //printf( "Setting gLogLevelP...\n" );
+   gLogLevelP = &MLUCLog::gLogLevel;
+   //printf( "gLogLevelP set...\n" );
+ }
+ (*gLogLevelP)=AliL3Log::kAll;
   fdn = fso = fse = fsm =0;
   fof = 0;
 }
@@ -30,23 +42,23 @@ AliL3Logger::AliL3Logger()
 AliL3Logger::~AliL3Logger()
 {
   //destructor
-  if(fdn) {gLog.DelServer(fdn);delete fdn;}
-  if(fso) {gLog.DelServer(fso);delete fso;}
-  if(fse) {gLog.DelServer(fse);delete fse;}
-  if(fsm) {gLog.DelServer(fsm);delete fsm;}
+  if(fdn) {gLog->DelServer(fdn);delete fdn;}
+  if(fso) {gLog->DelServer(fso);delete fso;}
+  if(fse) {gLog->DelServer(fse);delete fse;}
+  if(fsm) {gLog->DelServer(fsm);delete fsm;}
   if(fof) {fof->close();delete fof;}
 }
 
 void AliL3Logger::Set(Int_t l)
 { 
   //set logger
-  gLogLevel |=l;
+  (*gLogLevel) |=l;
 }
 
 void AliL3Logger::UnSet(Int_t l)
 { 
   //unset logger
-  gLogLevel &=(~l);
+  (*gLogLevel) &=(~l);
 }
 
 void AliL3Logger::UseDevNull()
@@ -54,21 +66,21 @@ void AliL3Logger::UseDevNull()
   //use dev null
   if(fdn) return;
   fdn = new AliL3DevNullLogServer();
-  gLog.AddServer(dn);
+  gLog->AddServer(dn);
 }
 void AliL3Logger::UseStdout()
 {
   //use stdout
   if(fso)return;
   fso = new AliL3StdoutLogServer(); 
-  gLog.AddServer(fso);
+  gLog->AddServer(fso);
 }
 void AliL3Logger::UseStderr()
 {
   //use stderr
   if(fse) return;
   fse = new AliL3StderrLogServer();
-  gLog.AddServer(fse);
+  gLog->AddServer(fse);
 }
 
 void AliL3Logger::UseStream(Char_t *name)
@@ -81,31 +93,31 @@ void AliL3Logger::UseStream(Char_t *name)
   fof = new ofstream();
   fof->open(name);
   fsm = new  AliL3StreamLogServer(*fof);
-  gLog.AddServer(fsm);
+  gLog->AddServer(fsm);
 }
 
 void AliL3Logger::NotUseDevNull()
 {
   //not dev null
-  if(fdn) {gLog.DelServer(fdn);delete fdn;fdn=0;}
+  if(fdn) {gLog->DelServer(fdn);delete fdn;fdn=0;}
 }
 
 void AliL3Logger::NotUseStdout()
 {
   //not stdout
-  if(fso) {gLog.DelServer(fso);delete fso;fso=0;}
+  if(fso) {gLog->DelServer(fso);delete fso;fso=0;}
 }
 
 void AliL3Logger::NotUseStderr()
 {
   //not stderr
-  if(fse) {gLog.DelServer(fse);delete fse;fse=0;}
+  if(fse) {gLog->DelServer(fse);delete fse;fse=0;}
 }
 
 void AliL3Logger::NotUseStream()
 {
   //not stream
-  if(fsm) {gLog.DelServer(fsm);delete fsm;fsm=0;}
+  if(fsm) {gLog->DelServer(fsm);delete fsm;fsm=0;}
   if(fof) {fof->close();delete fof;fof=0;}
 }
 
