@@ -1133,11 +1133,10 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
    lfn += "/";
    lfn += gSystem->BaseName(stats->GetFileName());
 
-printf("AliEn: AddFile(%s, %s, %d)\n", lfn.Data(), stats->GetFileName(),
-       (int)stats->GetFileSize());
+   //printf("AliEn: AddFile(%s, %s, %d)\n", lfn.Data(), stats->GetFileName(),
+   //       (int)stats->GetFileSize());
 
-   // crashes on ia64
-   //g->AddFile(lfn, stats->GetFileName(), (int)stats->GetFileSize());
+   g->AddFile(lfn, stats->GetFileName(), (int)stats->GetFileSize());
 
    delete g;
 }
