@@ -1,4 +1,4 @@
-Int_t AliTPCDisplayClusters(Int_t eventn) {
+Int_t AliTPCDisplayClusters(Int_t eventn=0) {
    cerr<<"Displaying clusters...\n";
 
    TFile *file=TFile::Open("galice.root");
