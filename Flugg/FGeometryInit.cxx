@@ -289,6 +289,13 @@ void FGeometryInit::UpdateHistories(const G4NavigationHistory * history,
 }
 
 //*****************************************************************************
+int FGeometryInit::GetLastMaterialIndex() const
+{
+// Get last material index as known by FLUKA
+   const FlukaMaterialsTable *matTable = FlukaMaterial::GetMaterialTable();
+   int matsize = matTable->size();
+   return matsize+2;
+}   
 
 void FGeometryInit::createFlukaMatFile() {
   // last modification Sara Vanini 1/III/99
