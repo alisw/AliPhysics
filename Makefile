@@ -50,7 +50,7 @@ aliroot geant321 minicern pdf pythia6 hijing: FORCE
 	echo "Making in $$DIR" | $(PRETTY); \
 	${MAKE} -C $$DIR
 
-TGeant4 AliGeant4: FORCE
+TGeant4 AliGeant4 AliFluka : FORCE
 	@DIR=$@; \
 	echo "Making dependencies in $$DIR" | $(PRETTY); \
 	${MAKE} -C $$DIR depend;\
@@ -60,6 +60,13 @@ TGeant4 AliGeant4: FORCE
 cernlibs: geant321 pythia6 minicern pdf hijing
 
 geant4: TGeant4 AliGeant4
+
+Flugg: FORCE
+	@DIR=$@; \
+	echo "Making in $$DIR" | $(PRETTY); \
+	${MAKE} -C $$DIR/source
+
+fluka:  Flugg TGeant4 AliGeant4 AliFluka
 
 all:	cernlibs default
 
