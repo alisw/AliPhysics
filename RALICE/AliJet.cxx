@@ -30,8 +30,11 @@
 //    in an AliEvent.  
 //    In this way the AliJet just represents a 'logical structure' for the
 //    physics analysis which can be embedded in e.g. an AliEvent or AliVertex.
+//
+//    Note :
 //    Modifications made to the original tracks also affect the AliTrack objects
 //    which are stored in the AliJet. 
+//
 // b) SetTrackCopy(1).
 //    Of every 'added' track a private copy will be made of which the pointer
 //    will be stored.
@@ -160,10 +163,12 @@ void AliJet::Reset()
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::AddTrack(AliTrack& t)
 {
-// Add a track to the jet
+// Add a track to the jet.
+// Note : In case TrackCopy is set, the originally entered track
+//        will be automatically reset.
 // In case the maximum number of tracks has been reached
 // space will be extended to hold an additional amount of tracks as
-// was initially reserved
+// was initially reserved.
  if (!fTracks) fTracks=new TObjArray(fNtmax);
  if (fNtrk == fNtmax) // Check if maximum track number is reached
  {
@@ -175,15 +180,16 @@ void AliJet::AddTrack(AliTrack& t)
  fNtrk++;
  if (fTrackCopy)
  {
-  AliTrack* tx=new AliTrack(t);
-  fTracks->Add(tx);
+  fTracks->Add(t.Clone());
  }
  else
  {
   fTracks->Add(&t);
  }
+
  (*this)+=(Ali4Vector&)t;
  fQ+=t.GetCharge();
+
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::Info(TString f)

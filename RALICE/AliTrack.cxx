@@ -124,7 +124,7 @@ AliTrack::~AliTrack()
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::Reset()
 {
-// Reset all variables to 0
+// Reset all variables to 0 and delete all auto-generated decay tracks.
  fQ=0;
  fNdec=0;
  fNsig=0;

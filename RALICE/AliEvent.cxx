@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.2 2001/06/25 09:37:23 hristov Exp $
+// $Id: AliEvent.cxx,v 1.3 2001/07/04 15:59:20 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -22,8 +22,8 @@
 // and/or AliCalorimeters.
 //
 // The basic functionality of AliEvent is identical to the one of AliVertex.
-// So, an AliEvent may be regarded as the primary vertex with some
-// additional functionality compared to AliVertex.
+// So, an AliEvent may be used as the primary vertex with some additional
+// functionality compared to AliVertex.
 //
 // To provide maximal flexibility to the user, the two modes of track/jet/vertex
 // storage as described in AliJet and AliVertex can be used.
@@ -37,8 +37,11 @@
 //    file/tree. 
 //    In this way the AliEvent just represents a 'logical structure' for the
 //    physics analysis.
+//
+//    Note :
 //    Modifications made to the original calorimeters also affect the AliCalorimeter
 //    objects which are stored in the AliEvent. 
+//
 // b) SetCalCopy(1).
 //    Of every 'added' calorimeter a private copy will be made of which the pointer
 //    will be stored.
@@ -56,11 +59,6 @@
 // v1 contains the tracks 5,6 and 7   (sec. vertex)
 // v2 contains the jets 1 and 2       (sec. vertex)
 //
-//        AliCalorimeter emcal;
-//         ...
-//         ... // code to fill the calorimeter data
-//         ...
-//
 //        AliEvent evt;
 //
 // Specify the event object as the repository of all objects
@@ -71,9 +69,14 @@
 //
 // Fill the event structure with the basic objects
 // 
+//        AliCalorimeter emcal;
+//         ...
+//         ... // code to fill the calorimeter data
+//         ...
+//
 //        evt.AddCalorimeter(emcal);
 //
-//        AliTrack* tx;
+//        AliTrack* tx=new AliTrack();
 //        for (Int_t i=0; i<10; i++)
 //        {
 //         ...
@@ -81,6 +84,12 @@
 //         ...
 //         evt.AddTrack(tx);
 //         tx->Reset(); 
+//        }
+//
+//        if (tx)
+//        {
+//         delete tx;
+//         tx=0;
 //        }
 //
 // Build the event structure (vertices, jets, ...) for physics analysis
@@ -96,24 +105,24 @@
 //        }
 //
 //        AliVertex vp;
-//        tx=evt.GetTrack(1)
+//        tx=evt.GetTrack(1);
 //        vp.AddTrack(tx);
-//        tx=evt.GetTrack(2)
+//        tx=evt.GetTrack(2);
 //        vp.AddTrack(tx);
-//        tx=evt.GetTrack(3)
+//        tx=evt.GetTrack(3);
 //        vp.AddTrack(tx);
-//        tx=evt.GetTrack(4)
+//        tx=evt.GetTrack(4);
 //        vp.AddTrack(tx);
 //
 //        Float_t rp[3]={2.4,0.1,-8.5};
 //        vp.SetPosition(rp,"car");
 //
 //        AliVertex v1;
-//        tx=evt.GetTrack(5)
+//        tx=evt.GetTrack(5);
 //        v1.AddTrack(tx);
-//        tx=evt.GetTrack(6)
+//        tx=evt.GetTrack(6);
 //        v1.AddTrack(tx);
-//        tx=evt.GetTrack(7)
+//        tx=evt.GetTrack(7);
 //        v1.AddTrack(tx);
 //
 //        Float_t r1[3]={1.6,-3.2,5.7};
@@ -178,7 +187,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2001/06/25 09:37:23 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2001/07/04 15:59:20 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -295,7 +304,7 @@ void AliEvent::HeaderInfo()
  cout << " *AliEvent::Info* Run : " << fRun << " Event : " << fEvent;
  cout.fill('0');
  cout << " Date : " << setw(2) << day << "-" << c[month-1] << "-" << year
-      << " Time : " << setw(2) << hh << ":" << setw(2) << mm << ":" << setw(2) << ss << endl;
+      << " Time : " << setw(2) << hh << ":" << setw(2) << mm << ":" << setw(2) << ss;
  cout.fill(' ');
  cout << " Ncalorimeters : " << fNcals << endl;
 }
@@ -322,8 +331,7 @@ void AliEvent::AddCalorimeter(AliCalorimeter& c)
  fNcals++;
  if (fCalCopy)
  {
-  AliCalorimeter* cx=new AliCalorimeter(c);
-  fCalorimeters->AddLast(cx);
+  fCalorimeters->AddLast(c.Clone());
  }
  else
  {
@@ -405,8 +413,11 @@ AliCalorimeter* AliEvent::GetCalorimeter(TString name)
   for (Int_t i=0; i<fNcals; i++)
   {
    cx=(AliCalorimeter*)fCalorimeters->At(i);
-   s=cx->GetName();
-   if (s == name) return cx;
+   if (cx)
+   {
+    s=cx->GetName();
+    if (s == name) return cx;
+   }
   }
 
   return 0; // No matching name found

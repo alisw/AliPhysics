@@ -280,3 +280,8 @@
                 storage of (secondary) vertices.
 04-jul-2001 NvE Storage of calorimeters introduced in AliEvent and ResetVertices()
                 added to AliVertex.
+05-jul-2001 NvE Clone() facility used in AddTrack() etc... of AliEvent & co. instead of
+                "new" in the case of TrackCopy etc... This in order to enable 'permanent'
+                AliTrack etc... storage in AliEvent & co.
+                Also (Ali4Vector&) casting stmt. in AliVertex::ResetVertices() changed
+                to make it ANSI compatible for all compilers/platforms.  

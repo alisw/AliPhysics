@@ -33,8 +33,11 @@
 //    in an AliEvent.  
 //    In this way the AliVertex just represents a 'logical structure' for the
 //    physics analysis which can be embedded in e.g. an AliEvent or AliVertex.
+//
+//    Note :
 //    Modifications made to the original vertices also affect the AliVertex objects
-//    which are stored. 
+//    which are stored.
+// 
 // b) SetVertexCopy(1).
 //    Of every 'added' vertex a private copy will be made of which the pointer
 //    will be stored.
@@ -43,7 +46,7 @@
 //    stored. 
 //    This mode will allow 'adding' many different AliVertex objects by
 //    creating only one AliVertex instance in the main programme and using the
-//    AliVertex::Reset() and AliVertex::AddTrack and parameter setting memberfunctions.
+//    AliVertex::Reset, AliVertex::AddTrack and parameter setting memberfunctions.
 //
 // Coding example to make 3 vertices v1, v2 and v3.
 // ------------------------------------------------
@@ -281,8 +284,8 @@ void AliVertex::ResetVertices()
 // Reset the stored vertex list and delete all connecting tracks which
 // were generated automatically via connect=1 in AddVertex().
 // The max. number of vertices is set to the default value again.
-// All physics quantities are updated according to the remaining structure
-// of connected tracks.
+// All physics quantities are updated according to the removal of the
+// connecting tracks.
  AliTrack* t;
  if (fConnects)
  {
@@ -290,19 +293,14 @@ void AliVertex::ResetVertices()
   {
    t=(AliTrack*)fConnects->At(i);
    AliTrack* test=(AliTrack*)fTracks->Remove(t);
-   if (test) fNtrk--;
+   if (test)
+   {
+    fNtrk--;
+    (Ali4Vector&)(*this)-=(Ali4Vector&)(*t);
+    fQ-=t->GetCharge();
+   }
   }
   fTracks->Compress();
- }
-
- fQ=0;
- Double_t a[4]={0,0,0,0};
- Ali4Vector::SetVector(a,"sph");
- for (Int_t i=0; i<fNtrk; i++)
- {
-  t=GetTrack(i);
-  (*this)+=(Ali4Vector&)(*t);
-  fQ+=t->GetCharge();
  }
 
  fNvtx=0;
@@ -339,8 +337,7 @@ void AliVertex::AddJet(AliJet& j,Int_t tracks)
  fNjets++;
  if (fJetCopy)
  {
-  AliJet* jx=new AliJet(j);
-  fJets->Add(jx);
+  fJets->Add(j.Clone());
  }
  else
  {
@@ -386,8 +383,7 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
  fNvtx++;
  if (fVertexCopy)
  {
-  AliVertex* vx=new AliVertex(v);
-  fVertices->Add(vx);
+  fVertices->Add(v.Clone());
  }
  else
  {
