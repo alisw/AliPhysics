@@ -345,6 +345,14 @@ class TFluka : public TVirtualMC {
   
   Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
   TObjArray *GetFlukaMaterials();
+  //
+  // Dummy
+  virtual void SetRootGeometry() {;}
+  virtual Int_t        NofVolDaughters(const char* volName) const;
+  virtual const char*  VolDaughterName(const char* volName, Int_t i) const;
+  virtual Int_t        VolDaughterCopyNo(const char* volName, Int_t i) const;
+  virtual const char*  CurrentVolPath();
+  virtual void         ForceDecayTime(Float_t){;}
   private:
   void PrintHeader();
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
@@ -388,7 +396,30 @@ class TFluka : public TVirtualMC {
   TObjArray* fUserScore;             // List of user scoring options
   
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
+
+
+  // Temporary implementation of new functions
+  // To be removed with the next release
 };
+  inline Int_t TFluka::NofVolDaughters(const char* /*volName*/) const {
+    Warning("NofVolDaughters", "New function - not yet implemented.");
+    return 0;
+  }
+
+  inline const char*  TFluka::VolDaughterName(const char* /*volName*/, Int_t /*i*/) const {
+    Warning("VolDaughterName", "New function - not yet implemented.");
+    return "";
+  }
+
+  inline Int_t  TFluka::VolDaughterCopyNo(const char* /*volName*/, Int_t /*i*/) const {
+    Warning("VolDaughterCopyNo", "New function - not yet implemented.");
+    return 0;
+  }
+
+  inline const char* TFluka::CurrentVolPath() {
+    Warning("CurrentVolPath", "New function - not yet implemented.");
+    return "";
+  }
 
 #endif //TFLUKA
 
