@@ -451,7 +451,7 @@ Int_t AliEMCALSDigitizer::Layer2TowerID(Int_t ihit, Bool_t preshower){
   // This function should be one to one
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
   const AliEMCALGeometry * geom = gime->EMCALGeometry();
-  Int_t ieta  = (ihit/geom->GetNPhi())%geom->GetNZ(); // eta Tower Index
+  Int_t ieta  = ((ihit-1)/geom->GetNPhi())%geom->GetNZ(); // eta Tower Index
   Int_t iphi = (ihit-1)%(geom->GetNPhi())+1; //phi Tower Index
   Int_t it = -10;
   Int_t ipre = 0;

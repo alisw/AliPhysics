@@ -44,6 +44,9 @@ public:
   void     SetSDigitsBranch(const char * title ) ;
 
   Bool_t   operator == (const AliEMCALSDigitizer & sd) const ;
+  Int_t    Segment2TowerID(Int_t SegmentID){
+  return Layer2TowerID(SegmentID,kFALSE);
+}
 
 private:
   void     Init() ;
