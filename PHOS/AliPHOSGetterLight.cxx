@@ -20,13 +20,17 @@
 //
 //*-- Author :  D.Peressounko (RRC KI) 
 //////////////////////////////////////////////////////////////////////////////
+//Class designed to perform fast on-flight reconstruction of raw data
+//without writing it to file and without creation of all aliroot folder 
+//structure. This class keeps lists of (raw) digits, RecPoints TrackSegments and 
+//RecParticles for one (current) event. In addition, for convinience, it returns 
+//pointers to PHOS geometry, Clusterizser, TSMaker and PID maker.
 
 // --- ROOT system ---
-#include "TFile.h"
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliPHOSCalibrationDB.h"
+//#include "AliPHOSCalibrationDB.h"
 #include "AliPHOSGetterLight.h"
 
 ClassImp(AliPHOSGetterLight)
@@ -41,17 +45,18 @@ ClassImp(AliPHOSGetterLight)
   fCpvRecPoints = 0 ;
   fTS = 0;
   fRP = 0;
-  fcdb = 0 ;
+  //  fcdb = 0 ;
   fClusterizer = 0 ; 
   fTSM = 0 ;
   fPID = 0 ;
-  fRawDigits =kTRUE;
+  SetRawDigits(kTRUE) ;
+  //  fRawDigits =kTRUE;
   fgObjGetter = this ;
 }
 //____________________________________________________________________________ 
 AliPHOSGetterLight::AliPHOSGetterLight(const char* /*alirunFileName*/, const char* /*version*/, Option_t * /*openingOption*/):AliPHOSGetter(0) 
 {
-  // ctor
+  //Create containers of reconstructed objects for one event
   fDigits = new TClonesArray("AliPHOSDigit",256) ;
   fEmcRecPoints = new TObjArray(50) ;
   fEmcRecPoints->SetOwner(kTRUE) ;
@@ -60,20 +65,22 @@ AliPHOSGetterLight::AliPHOSGetterLight(const char* /*alirunFileName*/, const cha
   fTS = new TClonesArray("AliPHOSTrackSegment",50) ;
   fRP = new TClonesArray("AliPHOSRecParticle",50) ;
 
-  fcdb = 0 ;
+  //Objects which are not owned by Getter
+  //  fcdb = 0 ;
 
   fClusterizer = 0; 
   fTSM = 0 ;
   fPID = 0 ;
 
-  fRawDigits = kTRUE ;
+  SetRawDigits(kTRUE) ;
+  //  fRawDigits = kTRUE ;
   fgObjGetter = this ;
 }
 
 //____________________________________________________________________________ 
   AliPHOSGetterLight::~AliPHOSGetterLight()
 {
-  // ctor
+  //Delete containers owned by Getter and do not touch other pointers
   if(fDigits){ delete fDigits ; fDigits = 0 ;}
   if(fEmcRecPoints){ delete fEmcRecPoints; fEmcRecPoints = 0 ;}
   if(fCpvRecPoints){ delete fCpvRecPoints; fCpvRecPoints = 0 ;}
@@ -85,7 +92,6 @@ AliPHOSGetterLight * AliPHOSGetterLight::Instance(const char* alirunFileName, co
 {
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed
-  
   
   if(!fgObjGetter){ // first time the getter is called 
     fgObjGetter = (AliPHOSGetter*) new AliPHOSGetterLight(alirunFileName, version, openingOption) ;

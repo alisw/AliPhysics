@@ -98,8 +98,9 @@ public:
  
   
   //-----------------now getter's data--------------------------------------
-  virtual AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
-  virtual void ReadCalibrationDB(const char * /*name*/, const char * /*filename*/){ ;}
+  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
+  void ReadCalibrationDB(const char * /*name*/, const char * /*filename*/){ ;}
+  void SetCalibrationDB(AliPHOSCalibrationDB * cdb) {fcdb = cdb ;}
   
   //=========== Primaries ============
   virtual TClonesArray *    Primaries(void) ;
@@ -186,7 +187,7 @@ public:
   //========== Raw ===========
   virtual Int_t ReadRaw(Int_t event) ; 
 
-  virtual void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
+  void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
   virtual void PostClusterizer(AliPHOSClusterizer * clu) 
     const{PhosLoader()->PostClusterizer(clu) ; }
   virtual void PostPID(AliPHOSPID * pid) 
