@@ -454,8 +454,9 @@ void AliL3ClustFinder::WriteClusters(Int_t ncl,resx *r)
       Float_t fpad=(Float_t)r[j].pad/(Float_t)r[j].charge;
       Float_t ftime=(Float_t)r[j].t/(Float_t)r[j].charge;
       
-      if(fCurrentRow > 54) {thisrow = fCurrentRow-55; thissector = fCurrentSlice+36;}
-      else {thisrow = fCurrentRow; thissector = fCurrentSlice;}
+      fTransform->Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
+      //if(fCurrentRow > 54) {thisrow = fCurrentRow-55; thissector = fCurrentSlice+36;}
+      //else {thisrow = fCurrentRow; thissector = fCurrentSlice;}
       fTransform->Raw2Local(xyz,thissector,thisrow,fpad,ftime);
       if(xyz[0]==0) LOG(AliL3Log::kError,"AliL3ClustFinder","Cluster Finder")
 	<<AliL3Log::kDec<<"Zero cluster"<<ENDLOG;
@@ -473,7 +474,8 @@ void AliL3ClustFinder::WriteClusters(Int_t ncl,resx *r)
       fSpacePointData[counter].fZErr = fZErr;
       fSpacePointData[counter].fID = counter
                   +((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);//uli
-
+      if(fCurrentRow > 170)
+	printf("padrow %d X %f Y %f Z %f\n",fCurrentRow,xyz[0],xyz[1],xyz[2]);
       
       fNClusters++;
       counter++;

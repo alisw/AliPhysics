@@ -86,7 +86,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   else //complete sector
     {
       fRowMin = 0;
-      fRowMax = 173;
+      fRowMax = 175;
     }
   if(etarange)
     {
@@ -138,7 +138,7 @@ void AliL3ConfMapper::SetPointers()
 {
   //Data organization.
   //Allocate volumes, set conformal coordinates and pointers.
-  fNumRowSegmentPlusOne = 174;//fNumRowSegment+1;
+  fNumRowSegmentPlusOne = 176;//fNumRowSegment+1;
   fNumPhiSegmentPlusOne = fNumPhiSegment+1;
   fNumEtaSegmentPlusOne = fNumEtaSegment+1;
   fNumPhiEtaSegmentPlusOne = fNumPhiSegmentPlusOne*fNumEtaSegmentPlusOne;

@@ -47,7 +47,7 @@ class AliL3Track {
   
   Bool_t fIsLocal; //Track given in local coordinates.
 
-  UInt_t fHitNumbers[174];  //Array of hit numbers for this track
+  UInt_t fHitNumbers[176];  //Array of hit numbers for this track
 
  protected:
 

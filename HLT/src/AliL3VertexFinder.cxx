@@ -60,7 +60,7 @@ void AliL3VertexFinder::Read(Int_t ncluster, AliL3SpacePointData* hits ){
   //  analyze sector 
   // 
   
-  const Int_t seedRow = 173; 
+  const Int_t seedRow = 175; 
   const Int_t firstRow = seedRow-32;
   for(Int_t n=0;n<ncluster;n++){
     if(hits[n].fPadRow==seedRow)

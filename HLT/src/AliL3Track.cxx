@@ -51,7 +51,7 @@ AliL3Track::AliL3Track()
   fIsLocal=true;
   fRowRange[0]=0;
   fRowRange[1]=0;
-  memset(fHitNumbers,0,174*sizeof(UInt_t));
+  memset(fHitNumbers,0,176*sizeof(UInt_t));
 }
 
 void AliL3Track::Set(AliL3Track *tpt){

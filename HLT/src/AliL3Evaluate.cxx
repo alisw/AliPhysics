@@ -351,7 +351,7 @@ void AliL3Evaluate::EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t
 {
   //Make efficiency plots for tracking on patch level (before any merging).
   
-  Int_t row[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,173}};
+  Int_t row[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,175}};
   Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
   TObjArray *good_particles = DefineGoodTracks(slice,row[patch],good_number,particle_id);
   SetMinPoints(min_points);
@@ -369,7 +369,7 @@ void AliL3Evaluate::EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number
   //min_points = minimum points on track to be considered for evaluation
   //good_number = minimum hits (padrows) produced by simulated track for consideration.
 
-  Int_t row[2] = {0,173};
+  Int_t row[2] = {0,175};
   Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
   TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
 
@@ -387,7 +387,7 @@ void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number)
 {
   //Make efficiency plots for tracking on several slices.
   
-  Int_t row[2] = {0,173};
+  Int_t row[2] = {0,175};
   Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
   SetMinPoints(min_points);
   AssignIDs();
@@ -811,8 +811,8 @@ TNtuple *AliL3Evaluate::EvaluatePoints()
  
   TNtuple *ntuppel = new TNtuple("ntuppel","residuals","resy:ptgen:padrow:zHit:slice");
   
-  Int_t good_number=173;
-  Int_t row[2] = {0,173};
+  Int_t good_number=175;
+  Int_t row[2] = {0,175};
   UInt_t id;
   //Float_t yres_local;
   for(Int_t slice=fMinSlice; slice<=fMaxSlice; slice++)
@@ -909,8 +909,8 @@ TNtuple *AliL3Evaluate::EvaluateGEANT()
 {
   TNtuple *ntuppel = new TNtuple("ntuppel","residuals","resy:ptgen:padrow:zHit:slice");
   
-  Int_t good_number=173;
-  Int_t row[2] = {0,173};
+  Int_t good_number=175;
+  Int_t row[2] = {0,175};
       
   Float_t xyz_cross[3];
   Float_t xyz_cl[3];

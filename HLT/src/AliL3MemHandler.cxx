@@ -37,7 +37,7 @@ AliL3MemHandler::AliL3MemHandler(){
   fNUsed = 0;
   fNDigits = 0;
   
-  Int_t row[2] = {0,173};
+  Int_t row[2] = {0,175};
   Init(0,0,row);
   ResetROI();
 }

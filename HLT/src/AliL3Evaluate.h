@@ -36,7 +36,7 @@ class AliL3Evaluate : public TObject {
   Int_t fMinSlice;
   Int_t fMaxSlice;
   UInt_t fNcl[36][5];
-  Int_t fRowid[36][174];
+  Int_t fRowid[36][176];
   Int_t fMinPointsOnTrack;  //Minimum points on track to be considered.
   Bool_t fIsSlow;
   Bool_t fNoOverlap;

@@ -154,7 +154,7 @@ AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **
   for(Int_t i=0;i<ntrack;i++){
     nps+=tracks[i]->GetNHits();
   }
-  if(nps>174){
+  if(nps>176){
     LOG(AliL3Log::kWarning,"AliL3Merger::MultiMerge","Adding Points")
     <<AliL3Log::kDec<<"Too many Points: "<<nps<<ENDLOG;
     return 0;
@@ -163,7 +163,7 @@ AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **
   //create new track
   AliL3Track *newtrack = mergedtracks->NextTrack();
   //copy points
-  UInt_t nn[174];
+  UInt_t nn[176];
   nps = 0;
 
 //  for(Int_t i=0;i<ntrack;i++){
@@ -270,7 +270,7 @@ Bool_t AliL3Merger::IsTrack(AliL3Track *innertrack,AliL3Track *outertrack){
 
   if(innertrack->GetCharge()!=outertrack->GetCharge()) return kFALSE;
   if( (!innertrack->IsPoint()) || (!outertrack->IsPoint()) )  return kFALSE; 
-  if(innertrack->GetNHits()+outertrack->GetNHits()>174) return kFALSE;
+  if(innertrack->GetNHits()+outertrack->GetNHits()>176) return kFALSE;
 
   if(fabs(innertrack->GetPointY()-outertrack->GetPointY()) >fMaxY) return kFALSE;
   if(fabs(innertrack->GetPointZ()-outertrack->GetPointZ()) >fMaxZ) return kFALSE;

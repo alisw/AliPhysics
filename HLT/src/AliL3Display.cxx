@@ -39,7 +39,7 @@ AliL3Display::AliL3Display(Int_t *slice)
 {
   //Ctor. Specify which slices you want to look at.
 
-  TFile *file = new TFile("/nfs/david/subatom/alice/data/GEO/alice.geom");
+  TFile *file = new TFile("alice.geom");
   if(!file) printf("NO FILE\n");
   if(file->IsOpen())
     LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
@@ -121,9 +121,9 @@ void AliL3Display::DisplayTracks(Int_t min_hits)
     
   Int_t ntracks = fTracks->GetNTracks();
   TPolyLine3D *line = new TPolyLine3D[ntracks];
-  Float_t xcl[174];
-  Float_t ycl[174];
-  Float_t zcl[174];
+  Float_t xcl[176];
+  Float_t ycl[176];
+  Float_t zcl[176];
   
   for(Int_t j=0; j<ntracks; j++)
     {
@@ -278,9 +278,9 @@ void AliL3Display::DisplayAll(Int_t min_hits)
   
   Int_t ntracks = fTracks->GetNTracks();
   TPolyLine3D *line = new TPolyLine3D[ntracks];
-  Float_t xcl[174];
-  Float_t ycl[174];
-  Float_t zcl[174];
+  Float_t xcl[176];
+  Float_t ycl[176];
+  Float_t zcl[176];
   
   
   for(Int_t j=0; j<ntracks; j++)
