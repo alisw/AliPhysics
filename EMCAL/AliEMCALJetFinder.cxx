@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2002/11/21 17:01:40  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.28  2002/11/20 14:13:16  morsch
 - FindChargedJets() added.
 - Destructor corrected.
@@ -1434,7 +1437,7 @@ void AliEMCALJetFinder::FindTracksInJetCone()
 	Int_t nT0 = nT + nTB;
 	printf("Total number of tracks %d\n", nT0);
 	
-	if (nT0 > 50) nT0 = 50;
+	if (nT0 > 1000) nT0 = 1000;
 	
 	Float_t* ptT  = new Float_t[nT0];
 	Float_t* etaT = new Float_t[nT0];
@@ -1795,7 +1798,7 @@ void AliEMCALJetFinder::FindChargedJet()
 	Float_t phiJ   = TMath::ATan2(pyJ, pxJ);
 	Float_t thetaJ = TMath::ATan2(TMath::Sqrt(pxJ * pxJ + pyJ * pyJ), pzJ);
 	Float_t etaJ   = TMath::Log(TMath::Tan(thetaJ / 2.));
-	Float_t ptJ    = TMath::Sqrt(pxJ * pxJ + pyJ * pyJ);
+//	Float_t ptJ    = TMath::Sqrt(pxJ * pxJ + pyJ * pyJ);
 	
 //
 //      Sum up all energy
