@@ -74,7 +74,7 @@ AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg,
     fNpz           = fScaleSizeZ*fSegmentation->Npz();
     fNpx           = fScaleSizeX*fSegmentation->Npx();
     fMaxIndex      = fNpz*fNpx+fNpx;             // 2 halves of detector
-    fHitMapD       = new Double_t[fMaxIndex];
+    fHitMapD       = new Double_t[fMaxIndex+1];
     fMapThresholdD = 0.;
     fObjects       = 0;
     fNobjects      = 0;
@@ -92,7 +92,7 @@ AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg, TObjArray *obj,
     fNpz           = fSegmentation->Npz();
     fNpx           = fSegmentation->Npx();
     fMaxIndex      = fNpz*fNpx+fNpx;             // 2 halves of detector  
-    fHitMapD       = new Double_t[fMaxIndex];
+    fHitMapD       = new Double_t[fMaxIndex+1];
     fObjects       =  obj;
     if (fObjects) fNobjects = fObjects->GetEntriesFast();
     fMapThresholdD = thresh;
