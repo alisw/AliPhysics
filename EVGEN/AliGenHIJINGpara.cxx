@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/11/26 17:12:36  morsch
+Decay pi0 if requested.
+
 Revision 1.13  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -433,10 +436,10 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
     
     for (Int_t i = 1; i < np; i++)
     {
-	TParticle* iParticle =  (TParticle *) particles->At(1);
-	p[0]=iParticle->Px();
-	p[1]=iParticle->Py();
-	p[2]=iParticle->Pz();
+	TParticle* iParticle =  (TParticle *) particles->At(i);
+	p[0] = iParticle->Px();
+	p[1] = iParticle->Py();
+	p[2] = iParticle->Pz();
 	Int_t part = iParticle->GetPdgCode();
 	SetTrack(fTrackIt, 0, part, p, orig, polar, 0, kPDecay, nt, fParentWeight);
     }
