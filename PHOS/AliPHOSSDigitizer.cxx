@@ -106,7 +106,20 @@ AliPHOSSDigitizer::~AliPHOSSDigitizer()
     if ( fSplitFile->IsOpen() ) 
       fSplitFile->Close() ; 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+ // Close the root file
   gime->CloseFile() ; 
+
+ // remove the task from the folder list
+  gime->RemoveTask("S",GetName()) ;
+
+  TString name(GetName()) ; 
+  name.Remove(name.Index(":")) ; 
+
+ // remove the Hits from the folder list
+  gime->RemoveObjects("H",name) ;
+
+ // remove the SDigits from the folder list
+  gime->RemoveObjects("S", name) ;
 }
 
 //____________________________________________________________________________ 
@@ -343,6 +356,7 @@ void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName)
 
   gAlice->MakeTree("S",fSplitFile);
   cwd->cd() ; 
+  cout << "INFO: AliPHOSSDigitizer::SetSPlitMode -> SDigits will be stored in " << splitFileName.Data() << endl ; 
 }
 
 //__________________________________________________________________

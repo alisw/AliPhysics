@@ -136,6 +136,16 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
  if (fSplitFile)       
    if ( fSplitFile->IsOpen() )         
      fSplitFile->Close() ;
+ 
+ AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+ // Close the root file
+ gime->CloseFile() ; 
+ // remove the task from the folder list
+ gime->RemoveTask("D",GetName()) ;
+ // remove the Digits from the folder list
+ gime->RemoveObjects("D", GetName()) ;
+ // remove the SDigits from the folder list
+ gime->RemoveSDigits() ;
 
 }
 

@@ -106,8 +106,21 @@ AliEMCALSDigitizer::~AliEMCALSDigitizer()
   if (fSplitFile) 
     if ( fSplitFile->IsOpen() ) 
       fSplitFile->Close() ; 
+  // Close the root file
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
   gime->CloseFile() ; 
+
+  // remove the task from the folder list
+  gime->RemoveTask("S",GetName()) ;
+
+  TString name(GetName()) ; 
+  name.Remove(name.Index(":")) ; 
+
+ // remove the Hits from the folder list
+  gime->RemoveObjects("H",name) ;
+
+ // remove the SDigits from the folder list
+  gime->RemoveObjects("S", name) ;
 }
 
 //____________________________________________________________________________ 

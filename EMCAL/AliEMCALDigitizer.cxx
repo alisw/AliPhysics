@@ -195,6 +195,16 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   if (fSplitFile)       
     if ( fSplitFile->IsOpen() )
       fSplitFile->Close() ;
+  
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+  // Close the root file
+  gime->CloseFile() ; 
+  // remove the task from the folder list
+  gime->RemoveTask("S",GetName()) ;
+  // remove the Digits from the folder list
+  gime->RemoveObjects("D", GetName()) ;
+ // remove the SDigits from the folder list
+  gime->RemoveSDigits() ;
 
 }
 
