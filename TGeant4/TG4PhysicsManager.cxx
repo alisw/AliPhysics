@@ -11,9 +11,12 @@
 #include "TG4ModularPhysicsList.h"
 #include "TG4ParticlesManager.h"
 #include "TG4G3PhysicsManager.h"
+#include "TG4PhysicsConstructorGeneral.h"
 #include "TG4PhysicsConstructorEM.h"
-#include "TG4PhysicsConstructorOptical.h"
+#include "TG4PhysicsConstructorMuon.h"
 #include "TG4PhysicsConstructorHadron.h"
+#include "TG4PhysicsConstructorIon.h"
+#include "TG4PhysicsConstructorOptical.h"
 #include "TG4PhysicsConstructorSpecialCuts.h"
 #include "TG4PhysicsConstructorSpecialControls.h"
 #include "TG4GeometryServices.h"
@@ -24,6 +27,7 @@
 #include "AliDecayer.h"
 
 #include <G4ParticleDefinition.hh>
+#include <G4OpBoundaryProcess.hh>
 #include <G4VProcess.hh>
 #include <G3MedTable.hh>
 
@@ -36,8 +40,9 @@ TG4PhysicsManager::TG4PhysicsManager(TG4ModularPhysicsList* physicsList)
   : fPhysicsList(physicsList),
     fDecayer(0),
     fSetEMPhysics(true),
-    fSetOpticalPhysics(false),
+    fSetMuonPhysics(true),
     fSetHadronPhysics(false),
+    fSetOpticalPhysics(false),
     fSetSpecialCutsPhysics(false),
     fSetSpecialControlsPhysics(false)
 
@@ -353,17 +358,26 @@ void TG4PhysicsManager::CreatePhysicsConstructors()
 // and registeres them in the modular physics list.
 // ---
 
+  // general physics
+  fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorGeneral());
+
   // electromagnetic physics
   if (fSetEMPhysics) 
     fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorEM());
 
+  // muon physics
+  if (fSetMuonPhysics) 
+    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorMuon());
+
+  // hadron physics
+  if (fSetHadronPhysics) {
+    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorIon());
+    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorHadron());
+  }  
+
   // optical physics
   if (fSetOpticalPhysics) 
     fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorOptical());
-
-  // hadron physics
-  if (fSetHadronPhysics) 
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorHadron());
 
   if (fSetSpecialCutsPhysics) 
     fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorSpecialCuts());
@@ -525,5 +539,56 @@ AliMCProcess TG4PhysicsManager::GetMCProcess(const G4VProcess* process)
   if (!process) return kPNoProcess;
 
   return fProcessMCMap.GetMCProcess(process);
+}
+
+//_____________________________________________________________________________
+AliMCProcess TG4PhysicsManager::GetOpBoundaryStatus(const G4VProcess* process)
+{
+// Returns the AliMCProcess code according to the OpBoundary process
+// status.
+// ---
+ 
+  if (!process) return kPNoProcess;
+
+#ifdef TGEANT4_DEBUG
+  G4OpBoundaryProcess* opBoundary
+    = dynamic_cast<G4OpBoundaryProcess*>(process);
+    
+  if (!opBoundary) 
+    TG4Globals::Exception(
+      "TG4PhysicsManager::GetOpBoundaryStatus: Wrong process type.");
+    return kPNoProcess;
+  }
+  
+  return opBoundary;  
+#else
+  G4OpBoundaryProcess* opBoundary = (G4OpBoundaryProcess*)process;
+#endif  
+
+  switch (opBoundary->GetStatus()) {
+    // reflection
+    case FresnelReflection: 
+    case TotalInternalReflection:
+    case LambertianReflection: 
+    case LobeReflection:
+    case SpikeReflection: 
+    case BackScattering:
+       return kPLightReflection;
+       ;;
+
+    // refraction
+    case FresnelRefraction: 
+       return kPLightReflection;
+       ;;
+
+    // absorption
+    case Absorption:
+    case Detection: 
+       return kPLightAbsorption;
+       ;;
+  }
+  
+  // should not happen
+  return kPNoProcess;
 }
 

@@ -68,12 +68,14 @@ class TG4PhysicsManager
     void CreatePhysicsConstructors();
     void SetProcessActivation();  
     AliMCProcess GetMCProcess(const G4VProcess* process);
+    AliMCProcess GetOpBoundaryStatus(const G4VProcess* process);
 
     // set methods
     void SetPhysicsList(TG4ModularPhysicsList* physicsList);
     void SetEMPhysics(G4bool value);
-    void SetOpticalPhysics(G4bool value);
+    void SetMuonPhysics(G4bool value);
     void SetHadronPhysics(G4bool value);
+    void SetOpticalPhysics(G4bool value);
     void SetSpecialCutsPhysics(G4bool value);
     void SetSpecialControlsPhysics(G4bool value);
     
@@ -107,8 +109,9 @@ class TG4PhysicsManager
     TG4ProcessControlMap   fProcessControlMap; //the mapping between G4 processes
                                          //and G3 process controls
     G4bool  fSetEMPhysics;          //electromagnetic physics control
-    G4bool  fSetOpticalPhysics;     //optical physics control
+    G4bool  fSetMuonPhysics;        //muon physics control
     G4bool  fSetHadronPhysics;      //hadron physics control
+    G4bool  fSetOpticalPhysics;     //optical physics control
     G4bool  fSetSpecialCutsPhysics; //special cuts process control 
                                     //(under development)                  
     G4bool  fSetSpecialControlsPhysics;//special controls process control
@@ -132,11 +135,14 @@ inline void TG4PhysicsManager::SetPhysicsList(TG4ModularPhysicsList* physicsList
 inline void TG4PhysicsManager::SetEMPhysics(G4bool value)
 { fSetEMPhysics = value; }
 
-inline void TG4PhysicsManager::SetOpticalPhysics(G4bool value)
-{ fSetOpticalPhysics = value; }
+inline void TG4PhysicsManager::SetMuonPhysics(G4bool value)
+{ fSetMuonPhysics = value; }
 
 inline void TG4PhysicsManager::SetHadronPhysics(G4bool value)
 { fSetHadronPhysics = value; }
+
+inline void TG4PhysicsManager::SetOpticalPhysics(G4bool value)
+{ fSetOpticalPhysics = value; }
 
 inline void TG4PhysicsManager::SetSpecialCutsPhysics(G4bool value)
 { fSetSpecialCutsPhysics = value; }
