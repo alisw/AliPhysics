@@ -72,6 +72,8 @@
 #include "TClonesArray.h"
 #include "TTree.h"
 #include "TMath.h"
+#include "TROOT.h"
+#include "TFolder.h"
 
 // --- Standard library ---
 
@@ -107,6 +109,7 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName)
   ffileName = fileName ;
   fCorrection = 1.05 ;  //Value calculated for default parameters of reconstruction  
   fObjGetter = 0 ;  // should be instantiated
+ 
 }
 
 //____________________________________________________________________________
@@ -120,8 +123,6 @@ AliPHOSAnalyze::AliPHOSAnalyze(const AliPHOSAnalyze & ana)
 AliPHOSAnalyze::~AliPHOSAnalyze()
 {
   // dtor
-
-  if(fPHOS) {delete fPHOS     ; fPHOS    =0 ;}
 
 }
 //____________________________________________________________________________
@@ -147,9 +148,6 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   fObjGetter = AliPHOSIndexToObject::GetInstance(ffileName.Data(),branchName,branchTitle) ;
   fObjGetter->GetEvent(Nevent);
   
-  fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
-  fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );  
-
   //Plot Primary Particles
   TParticle * primary ;
   Int_t iPrimary ;
@@ -528,8 +526,7 @@ void AliPHOSAnalyze::Ls(){
 
 
   fObjGetter = AliPHOSIndexToObject::GetInstance(ffileName.Data(),"PHOSRP",branchTitle) ;
-  fGeom = AliPHOSGeometry::GetInstance(((AliPHOS*)gAlice->GetModule("PHOS"))->GetGeometry()->GetName(),
-				       ((AliPHOS*)gAlice->GetModule("PHOS"))->GetGeometry()->GetTitle() );
+  fGeom = fObjGetter->GetPHOSGeometry() ; 
 
   Int_t ievent;
   for ( ievent=0; ievent < fObjGetter->GetMaxEvent() ; ievent++){
@@ -647,6 +644,8 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
 
 
   fObjGetter = AliPHOSIndexToObject::GetInstance(ffileName.Data(),"PHOSRP",branchTitle) ;
+
+
   fGeom = AliPHOSGeometry::GetInstance(((AliPHOS*)gAlice->GetModule("PHOS"))->GetGeometry()->GetName(),
 				       ((AliPHOS*)gAlice->GetModule("PHOS"))->GetGeometry()->GetTitle() );
   

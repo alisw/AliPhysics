@@ -73,7 +73,6 @@ private:
   Int_t   fEvt ;                      //! the evt number being processed 
   AliPHOSGeometry * fGeom ;           //! the PHOS Geometry object
   AliPHOSIndexToObject * fObjGetter ; //! provides methods to retrieve objects from their index in a list
-  AliPHOSv1 * fPHOS ;                 //! the PHOS object from the root file 
   TString ffileName ;                 //! the root file that contains the data
 
 
