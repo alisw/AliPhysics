@@ -52,6 +52,8 @@ class AliITSsimulationSPDdubna : public AliITSsimulation {
 	return (AliITSsegmentationSPD*)fSegmentation;}
     AliITSresponseSPDdubna* GetResp(){ // Return pointer to Responce class
 	return (AliITSresponseSPDdubna*)fResponse;}
+    Double_t * CreateFindCellEdges(Double_t x0,Double_t x1,Double_t z0,
+				   Double_t z1,Int_t &n);
 
     AliITSMapA2  *fMapA2;        //! MapA2
     Float_t      fNoise;         //! Noise

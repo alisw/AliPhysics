@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/22 14:45:45  alibrary
+Introducing Riostream.h
+
 Revision 1.8  2002/10/14 14:57:08  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -86,13 +89,13 @@ AliITSsimulationSPDdubna::AliITSsimulationSPDdubna(AliITSsegmentation *seg,
     fModule = 0;
     fEvent = 0;
 
-    fNPixelsZ=fSegmentation->Npz();
-    fNPixelsX=fSegmentation->Npx();
+    fNPixelsZ=GetSeg()->Npz();
+    fNPixelsX=GetSeg()->Npx();
 
-    fResponse->GetNoiseParam(fNoise,fBaseline);
-    fResponse->SetDistanceOverVoltage(kmictocm*fSegmentation->Dy(),50.0);
+    GetResp()->GetNoiseParam(fNoise,fBaseline);
+    GetResp()->SetDistanceOverVoltage(kmictocm*GetSeg()->Dy(),50.0);
 
-//    fMapA2 = new AliITSMapA2(fSegmentation);
+//    fMapA2 = new AliITSMapA2(GetSeg());
     fMapA2 = 0;
 
     fpList = new AliITSpList(fNPixelsZ+1,fNPixelsX+1);
@@ -197,12 +200,12 @@ void AliITSsimulationSPDdubna::WriteSDigits(AliITSpList *pList){
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
 
     pList->GetMaxMapIndex(niz, nix);
-    for(iz=0; iz<niz; iz++)for(ix=0; ix<nix; ix++){
-	if(pList->GetSignalOnly(iz,ix)>0.0){
-	    aliITS->AddSumDigit(*(pList->GetpListItem(iz,ix)));
+    for(iz=0; iz<niz-1; iz++)for(ix=0; ix<nix-1; ix++){
+	if(pList->GetSignalOnly(iz+1,ix+1)>0.0){
+	    aliITS->AddSumDigit(*(pList->GetpListItem(iz+1,ix+1)));
 #ifdef DEBUG
 	    cout <<"SDigits " << iz << "," << ix << "," << 
-		*(pList->GetpListItem(iz,ix)) << endl;
+		*(pList->GetpListItem(iz+1,ix+1)) << endl;
 #endif
 	} // end if pList
     } // end for iz,ix
@@ -294,7 +297,7 @@ void AliITSsimulationSPDdubna::UpdateMapSignal(Int_t iz, Int_t ix, Int_t trk,
     //    none
 
 //    fMapA2->AddSignal(iz, ix, signal);
-    pList->AddSignal(iz,ix, trk, ht, fModule, signal);
+    pList->AddSignal(iz+1,ix+1, trk, ht, fModule, signal);
 }
 //______________________________________________________________________
 void AliITSsimulationSPDdubna::UpdateMapNoise(Int_t iz,
@@ -319,7 +322,7 @@ void AliITSsimulationSPDdubna::UpdateMapNoise(Int_t iz,
     //    none
 
 //    fMapA2->AddSignal(iz, ix, noise);
-    pList->AddNoise(iz,ix, fModule, noise);
+    pList->AddNoise(iz+1,ix+1, fModule, noise);
 }
 //______________________________________________________________________
 void AliITSsimulationSPDdubna::HitToDigit(AliITSmodule *mod, Int_t module,
@@ -346,19 +349,24 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod, Int_t module,
 #endif
 	if(mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)){
 	st =TMath::Sqrt(x1*x1+y1*y1+z1*z1);
-	if(st>0.0) for(t=0;t<1.0;t+=dt){ // Integrate over t
-	    tp = t+0.5*dt;
-	    el = GetResp()->GeVToCharge((Float_t)(dt*de));
+	if(st>0.0){
+	    st = (Double_t)((Int_t)(1.0E+04*st)); // number of microns
+	    if(st<=0.0) st = 1.0;
+	    dt = 1.0/st;
+	    for(t=0;t<1.0;t+=dt){ // Integrate over t
+		tp = t+0.5*dt;
+		el = GetResp()->GeVToCharge((Float_t)(dt*de));
 #ifdef DEBUG
-	    if(el<=0.0) cout << "el="<<el<<" dt="<<dt<<" de="<<de<<endl;
+		if(el<=0.0) cout << "el="<<el<<" dt="<<dt<<" de="<<de<<endl;
 #endif
-	    x = x0+x1*tp;
-	    y = y0+y1*tp;
-	    z = z0+z1*tp;
-	    GetSeg()->LocalToDet(x,z,ix,iz);
-	    sig = GetResp()->SigmaDiffusion1D(thick + y);
-	    SpreadCharge(x,y,z,ix,iz,el,sig,
-			 idtrack,mod->GetHitTrackIndex(h),h,mod->GetIndex());
+		x = x0+x1*tp;
+		y = y0+y1*tp;
+		z = z0+z1*tp;
+		GetSeg()->LocalToDet(x,z,ix,iz);
+		sig = GetResp()->SigmaDiffusion1D(thick + y);
+		SpreadCharge(x,y,z,ix,iz,el,sig,idtrack,
+			     mod->GetHitTrackIndex(h),h,mod->GetIndex());
+	    } // end for t
 	} else { // st == 0.0 deposit it at this point
 	    el = GetResp()->GeVToCharge((Float_t)de);
 	    x = x0;
@@ -370,7 +378,59 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod, Int_t module,
 			 idtrack,mod->GetHitTrackIndex(h),h,mod->GetIndex());
 	} // end if st>0.0
     }} // Loop over all hits h
-}
+}/*
+//______________________________________________________________________
+void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod, Int_t module,
+					    Int_t dummy,AliITSpList *pList){
+    // Does the charge distributions using Gaussian diffusion charge charing.
+    const Double_t kmictocm = 1.0e-4; // convert microns to cm.
+    TObjArray *hits = mod->GetHits();
+    Int_t nhits = hits->GetEntriesFast();
+    Int_t h,ix,iz,i,n;
+    Int_t idtrack;
+    Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
+    Double_t x,y,z,*ta,t,tp,st,dt=0.2,el,sig;
+    Double_t thick = kmictocm*GetSeg()->Dy();
+
+    if(nhits<=0) return;
+    for(h=0;h<nhits;h++){
+#ifdef DEBUG
+	cout << "Hits=" << h << "," << *(mod->GetHit(h)) << endl;
+#endif
+	if(mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)){
+	st =TMath::Sqrt(x1*x1+y1*y1+z1*z1);
+	if(st>0.0){
+	    st =TMath::Sqrt(x1*x1+y1*y1+z1*z1)*(ta[i+1]-ta[i]);
+	    ta = CreateFindCellEdges(x0,x1,z0,z1,n);
+	    for(i=0;i<n-1;i++){
+		dt = TMath::Min((1.0E-4)/st,);
+		for(t=ta[i];t<ta[i+1];t+=dt){ // Integrate over t
+		tp = t+0.5*dt;
+		el = GetResp()->GeVToCharge((Float_t)(dt*de));
+#ifdef DEBUG
+		if(el<=0.0) cout << "el="<<el<<" dt="<<dt<<" de="<<de<<endl;
+#endif
+		x = x0+x1*tp;
+		y = y0+y1*tp;
+		z = z0+z1*tp;
+		GetSeg()->LocalToDet(x,z,ix,iz);
+		sig = GetResp()->SigmaDiffusion1D(thick + y);
+		SpreadCharge(x,y,z,ix,iz,el,sig,idtrack,
+			     mod->GetHitTrackIndex(h),h,mod->GetIndex());
+	    } // end for t[i]
+	    delete[] t;
+	} else { // st == 0.0 deposit it at this point
+	    el = GetResp()->GeVToCharge((Float_t)de);
+	    x = x0;
+	    y = y0;
+	    z = z0;
+	    GetSeg()->LocalToDet(x,z,ix,iz);
+	    sig = GetResp()->SigmaDiffusion1D(thick + y);
+	    SpreadCharge(x,y,z,ix,iz,el,sig,
+			 idtrack,mod->GetHitTrackIndex(h),h,mod->GetIndex());
+	} // end if st>0.0
+    }} // Loop over all hits h
+    }*/
 //______________________________________________________________________
 void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t y0,
 					    Double_t z0,Int_t ix0,Int_t iz0,
@@ -388,7 +448,7 @@ void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t y0,
     Double_t x1,x2,z1,z2,s,sp;
 
     if(sig<=0.0) {
-	fpList->AddSignal(iz0,ix0,t,hi,mod,el);
+	fpList->AddSignal(iz0+1,ix0+1,t,hi,mod,el);
 	return;
     } // end if
     sp = 1.0/(sig*kRoot2);
@@ -422,8 +482,52 @@ void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t y0,
 #ifdef DEBUG
 	cout << " sp*z1=" << sp*z1 <<" sp*z2=" << sp*z2 << " s=" << s << endl;
 #endif
-	fpList->AddSignal(iz,ix,t,hi,mod,s*el);
+	fpList->AddSignal(iz+1,ix+1,t,hi,mod,s*el);
     } // end for ix, iz
+}
+//______________________________________________________________________
+Double_t *AliITSsimulationSPDdubna::CreateFindCellEdges(Double_t x0,Double_t x1,
+                                             Double_t z0,Double_t z1,Int_t &n){
+    // Note: This function is a potensial source for a memory leak. The memory
+    // pointed to in its return, must be deleted.
+    // Inputs:
+    //    Double_t x0   The starting location of the track step in x
+    //    Double_t x1   The distance allong x for the track step
+    //    Double_t z0   The starting location of the track step in z
+    //    Double_t z1   The distance allong z for the track step
+    // Output:
+    //    Int)t &n      The size of the array returned. Minimal n=2.
+    // Return:
+    //    The pointer to the array of track steps.
+    Int_t ix0,ix1,ix,iz0,iz1,iz,i;
+    Double_t x,z,lx,ux,lz,uz,a,b,c,d;
+    Double_t *t;
+
+    GetSeg()->LocalToDet(x0,z0,ix0,iz0);
+    GetSeg()->LocalToDet(x1,z1,ix1,iz1);
+    n = 2 + TMath::Abs(ix1-ix0) + TMath::Abs(iz1-iz0);
+    t = new Double_t[n];
+    t[0] = 0.0;
+    t[n-1] = 1.0;
+    x = x0;
+    z = z0;
+    for(i=1;i<n-1;i++){
+	GetSeg()->LocalToDet(x,z,ix,iz);
+	GetSeg()->CellBoundries(ix,iz,lx,ux,lz,uz);
+	a = (lx-x0)/x1;
+	if(a<=t[i-1]) a = 1.0;
+	b = (ux-x0)/x1;
+	if(b<=t[i-1]) b = 1.0;
+	c = (lz-z0)/z1;
+	if(c<=t[i-1]) c = 1.0;
+	d = (uz-z0)/z1;
+	if(d<=t[i-1]) d = 1.0;
+	t[i] = TMath::Min(TMath::Min(TMath::Min(a,b),c),d);
+	x = x0+x1*(t[i]*1.00000001);
+	z = z0+z1*(t[i]*1.00000001);
+	i++;
+    } // end for i
+    return t;
 }
 //______________________________________________________________________
 void AliITSsimulationSPDdubna::HitToSDigitOld(AliITSmodule *mod, Int_t module,
@@ -433,19 +537,19 @@ void AliITSsimulationSPDdubna::HitToSDigitOld(AliITSmodule *mod, Int_t module,
                                       // for 3.6 eV/pair 
     const Float_t kconv = 10000.;     // cm -> microns
 
-    Float_t spdLength = fSegmentation->Dz();
-    Float_t spdWidth = fSegmentation->Dx();
-    Float_t spdThickness = fSegmentation->Dy();
+    Float_t spdLength = GetSeg()->Dz();
+    Float_t spdWidth = GetSeg()->Dx();
+    Float_t spdThickness = GetSeg()->Dy();
     Float_t difCoef, dum;       
-    fResponse->DiffCoeff(difCoef,dum); 
+    GetResp()->DiffCoeff(difCoef,dum); 
     if(spdThickness > 290) difCoef = 0.00613;  
 
     Float_t zPix0 = 1e+6;
     Float_t xPix0 = 1e+6;
     Float_t yPrev = 1e+6;   
 
-    Float_t zPitch = fSegmentation->Dpz(0);
-    Float_t xPitch = fSegmentation->Dpx(0);
+    Float_t zPitch = GetSeg()->Dpz(0);
+    Float_t xPitch = GetSeg()->Dpx(0);
   
     TObjArray *fHits = mod->GetHits();
     module = mod->GetIndex();
@@ -619,9 +723,9 @@ void AliITSsimulationSPDdubna::HitToSDigitOld(AliITSmodule *mod, Int_t module,
 	    zPixn = (zPixn + spdLength/2.);  
 	    xPixn = (xPixn + spdWidth/2.);  
             Int_t nZpix, nXpix;
-            fSegmentation->GetPadIxz(xPixn,zPixn,nXpix,nZpix);
-	    zPitch = fSegmentation->Dpz(nZpix);
-            fSegmentation->GetPadTxz(xPixn,zPixn);
+            GetSeg()->GetPadIxz(xPixn,zPixn,nXpix,nZpix);
+	    zPitch = GetSeg()->Dpz(nZpix);
+            GetSeg()->GetPadTxz(xPixn,zPixn);
 	    // set the window for the integration
 	    Int_t jzmin = 1;  
 	    Int_t jzmax = 3; 
@@ -733,7 +837,7 @@ void AliITSsimulationSPDdubna::ChargeToSignal(AliITSpList *pList){
     // add noise and electronics, perform the zero suppression and add the
     // digit to the list
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
-    Float_t threshold = (float)fResponse->MinVal();
+    Float_t threshold = (float)GetResp()->MinVal();
     Int_t j;
 //    Int_t    digits[3], tracks[3], hits[3];
 //    Float_t  charges[3];
@@ -746,7 +850,7 @@ void AliITSsimulationSPDdubna::ChargeToSignal(AliITSpList *pList){
     for(Int_t iz=0; iz<fNPixelsZ; iz++){
 	for(Int_t ix=0; ix<fNPixelsX; ix++){
 	    electronics = fBaseline + fNoise*gRandom->Gaus();
-	    sig = pList->GetSignalOnly(iz,ix);
+	    sig = pList->GetSignalOnly(iz+1,ix+1);
 	    UpdateMapNoise(iz,ix,fModule,sig,electronics,pList);
 #ifdef DEBUG
 //	    cout << sig << "+" << electronics <<">threshold=" << threshold 
@@ -756,7 +860,7 @@ void AliITSsimulationSPDdubna::ChargeToSignal(AliITSpList *pList){
 		dig.fCoord1 = iz;
 		dig.fCoord2 = ix;
 		dig.fSignal = 1;
-		dig.fSignalSPD = (Int_t) pList->GetSignal(iz,ix);
+		dig.fSignalSPD = (Int_t) pList->GetSignal(iz+1,ix+1);
 		/*
 		digits[0] = iz;
 		digits[1] = ix;
@@ -764,11 +868,11 @@ void AliITSsimulationSPDdubna::ChargeToSignal(AliITSpList *pList){
 		for(j=0;j<nmaxtrk;j++){
 //		    charges[j] = 0.0;
 		    if (j<pList->GetNEnteries()) {
-			dig.fTracks[j] = pList->GetTrack(iz,ix,j);
-			dig.fHits[j]   = pList->GetHit(iz,ix,j);
+			dig.fTracks[j] = pList->GetTrack(iz+1,ix+1,j);
+			dig.fHits[j]   = pList->GetHit(iz+1,ix+1,j);
 			/*
-			tracks[j] = pList->GetTrack(iz,ix,j);
-			hits[j]   = pList->GetHit(iz,ix,j);
+			tracks[j] = pList->GetTrack(iz+1,ix+1,j);
+			hits[j]   = pList->GetHit(iz+1,ix+1,j);
 			*/
 		    }else { // Default values
 			dig.fTracks[j] = -3;
@@ -777,7 +881,7 @@ void AliITSsimulationSPDdubna::ChargeToSignal(AliITSpList *pList){
 			hits[j]   = -1;  */
 		    } // end if pList
 		} // end for j
-//		charges[0] = (Float_t) pList->GetSumSignal(iz,ix);
+//		charges[0] = (Float_t) pList->GetSumSignal(iz+1,ix+1);
 /*
 		if(tracks[0] == tracks[1] && tracks[0] == tracks[2]) {
 		    tracks[1] = -3;
@@ -798,7 +902,7 @@ void AliITSsimulationSPDdubna::ChargeToSignal(AliITSpList *pList){
 //		phys = 0.0;
 #ifdef DEBUG
 		cout << iz << "," << ix << "," << 
-		    *(pList->GetpListItem(iz,ix)) << endl;
+		    *(pList->GetpListItem(iz+1,ix+1)) << endl;
 #endif
 //		aliITS->AddSimDigit(0, phys, digits, tracks, hits, charges);
 		aliITS->AddSimDigit(0,&dig);
