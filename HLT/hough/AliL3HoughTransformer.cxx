@@ -745,6 +745,7 @@ void AliL3HoughTransformer::TransformLineC(Int_t *rowrange,Float_t *phirange)
   delete [] digits;
 }
 
+#ifdef do_mc
 Int_t AliL3HoughTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi) const
 {
   // Returns the MC label for a given peak found in the Hough space
@@ -754,7 +755,6 @@ Int_t AliL3HoughTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Double_t p
       return -1;
     }
   
-#ifdef do_mc
   if(etaindex < 0 || etaindex > GetNEtaSegments())
     {
       cerr<<"AliL3HoughTransformer::GetTrackID : Wrong etaindex "<<etaindex<<endl;
@@ -776,8 +776,18 @@ Int_t AliL3HoughTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Double_t p
     }
   //nhits = max;
   return label;
-#endif
+#else
+  Int_t AliL3HoughTransformer::GetTrackID(Int_t /*etaindex*/,Double_t /*kappa*/,Double_t /*psi*/) const
+{
+  // Returns the MC label for a given peak found in the Hough space
+  if(!fDoMC)
+    {
+      cerr<<"AliL3HoughTransformer::GetTrackID : Flag switched off"<<endl;
+      return -1;
+    }
+  
   cout<<"AliL3HoughTransformer::GetTrackID : Compile with do_mc flag!"<<endl;
   return -1;
+#endif
 }
 

@@ -716,10 +716,10 @@ void AliL3Modeller::CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigma
   */
 }
 
+#ifdef do_mc
 void AliL3Modeller::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 {
   // Gets track ID
-#ifdef do_mc
   AliL3DigitRowData *rowPt = (AliL3DigitRowData*)fRowData;
   
   trackID[0]=trackID[1]=trackID[2]=-2;
@@ -748,7 +748,11 @@ void AliL3Modeller::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 	}
       break;
     }
-#endif
+#else
+  void AliL3Modeller::GetTrackID(Int_t /*pad*/,Int_t /*time*/,Int_t */*trackID*/)
+{
+  // Does nothing if do_mc undefined
   return;
+#endif
 }
 

@@ -336,10 +336,10 @@ void AliL3HoughClusterTransformer::TransformCircleC(Int_t */*row_range*/,Int_t /
 }
 
 
+#ifdef do_mc
 Int_t AliL3HoughClusterTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi) const
 {
   //Returns the mc label for a given bin in the hough space
-#ifdef do_mc
   if(etaindex < 0 || etaindex > GetNEtaSegments())
     {
       cerr<<"AliL3HoughClusterTransformer::GetTrackID : Wrong etaindex "<<etaindex<<endl;
@@ -360,8 +360,12 @@ Int_t AliL3HoughClusterTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Dou
 	}
     }
   return label;
-#endif
+#else
+  Int_t AliL3HoughClusterTransformer::GetTrackID(Int_t /*etaindex*/,Double_t /*kappa*/,Double_t /*psi*/) const
+{
+  // Does nothing if do_mc undefinde
   cout<<"AliL3HoughClusterTransformer::GetTrackID : Compile with do_mc flag!"<<endl;
   return -1;
+#endif
 }
 

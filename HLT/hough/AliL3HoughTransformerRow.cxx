@@ -711,7 +711,7 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
   Int_t nbinx = h->GetNbinsX()+2;
 
   UChar_t lastpad;
-  Int_t lastetaindex;
+  Int_t lastetaindex=-1;
   AliL3EtaRow *etaclust = new AliL3EtaRow[netasegments];
 
   AliL3DigitRowData *tempPt = GetDataPointer();
@@ -859,7 +859,7 @@ void AliL3HoughTransformerRow::TransformCircleFromRawStream()
   Int_t lastbinx = h->GetLastXbin();
   Int_t nbinx = h->GetNbinsX()+2;
 
-  Int_t lastetaindex;
+  Int_t lastetaindex = -1;
   AliL3EtaRow *etaclust = new AliL3EtaRow[netasegments];
 
   if(!fTPCRawStream)
@@ -1019,14 +1019,17 @@ void AliL3HoughTransformerRow::TransformCircleFromRawStream()
   delete [] etaclust;
 }
 
-Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t alpha1,Double_t alpha2) const
-{
-  // Returns the MC label for a given peak found in the Hough space
 #ifndef do_mc
+Int_t AliL3HoughTransformerRow::GetTrackID(Int_t /*etaindex*/,Double_t /*alpha1*/,Double_t /*alpha2*/) const
+{
+  // Does nothing if do_mc undefined
   LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID","Data")
     <<"Flag switched off"<<ENDLOG;
   return -1;
 #else
+Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t alpha1,Double_t alpha2) const
+{
+  // Returns the MC label for a given peak found in the Hough space
   if(etaindex < 0 || etaindex > GetNEtaSegments())
     {
       LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID","Data")
@@ -1072,9 +1075,6 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t alpha1,Double
   }
   return label;
 #endif
-  LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID()","")
-    <<"Compile with do_mc flag!"<<ENDLOG;
-  return -1;
 }
 
 inline void AliL3HoughTransformerRow::FillClusterRow(UChar_t i,Int_t binx1,Int_t binx2,UChar_t *ngaps2,UChar_t *currentrow2,UChar_t *lastrow2

@@ -649,27 +649,35 @@ void AliL3ModelTrack::Print(Bool_t everything)
     }
 }
 
+#ifdef do_mc
 void AliL3ModelTrack::SetClusterLabel(Int_t row,Int_t *trackID)
 {
   // sets cluster label
-#ifdef do_mc
   AliL3ClusterModel *cl = GetClusterModel(row);
   cl->fTrackID[0] = trackID[0];
   cl->fTrackID[1] = trackID[1];
   cl->fTrackID[2] = trackID[2];
-#endif
+#else
+  void AliL3ModelTrack::SetClusterLabel(Int_t /*row*/,Int_t */*trackID*/)
+{
+  // Does nothing if do_mc undefined
   return;
+#endif
 }
 
+#ifdef do_mc
 void AliL3ModelTrack::GetClusterLabel(Int_t row,Int_t *trackID)
 {
   // gets cluster label
-#ifdef do_mc
   AliL3ClusterModel *cl = GetClusterModel(row);
   trackID[0] = cl->fTrackID[0];
   trackID[1] = cl->fTrackID[1];
   trackID[2] = cl->fTrackID[2];
-#endif
+#else
+  void AliL3ModelTrack::GetClusterLabel(Int_t /*row*/,Int_t */*trackID*/)
+{
+  // Does nothing if do_mc undefined
   return;
+#endif
 }
 

@@ -304,6 +304,7 @@ Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)
   return trackDEdx;
 }
 
+#ifdef do_mc
 Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
 { 
   //Returns the MCtrackID of the belonging clusters.
@@ -314,7 +315,6 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
   // - more than half of the innermost 10% of clusters were assigned incorrectly.
   
   
-#ifdef do_mc
   Int_t numofclusters = track->GetNumberOfPoints();
   AliS *s=new AliS[numofclusters];
   Int_t i;
@@ -409,6 +409,9 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
 
   return lab;
 #else //If we are running with mc_ids or not
+  Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track */*track*/)
+{ 
+  // Does nothing if do_mc undefined
   return 0;
 #endif
 
@@ -770,16 +773,20 @@ void AliL3Evaluate::CalculateResiduals()
 }
 
 enum tagprimary {kPrimaryCharged = 0x4000};
+#ifndef do_mc
+void AliL3Evaluate::EvaluatePoints(Char_t */*rootfile*/,Char_t */*exactfile*/,Char_t */*tofile*/,Int_t /*nevent*/,Bool_t /*offline*/,Bool_t /*sp*/)
+{
+  // Does nothing if do_mc undefined
+  
+  cerr<<"AliL3Evaluate::EvaluatePoints : Compile with do_mc flag!"<<endl;
+  return;
+#else
 void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *tofile,Int_t nevent,Bool_t offline,Bool_t sp)
 {
   //Compare points to the exact crossing points of track and padrows.
   //The input file to this function, contains the exact clusters calculated
   //in AliTPC::Hits2ExactClusters.
   
-#ifndef do_mc
-  cerr<<"AliL3Evaluate::EvaluatePoints : Compile with do_mc flag!"<<endl;
-  return;
-#else
   cout<<"Evaluating points"<<endl;
   TNtuple *ntuppel = new TNtuple("ntuppel_res","Cluster properties",
 				 "slice:padrow:charge:resy:resz:zHit:pt:beta:sigmaY2:sigmaZ2:psigmaY2:psigmaZ2");
@@ -953,14 +960,18 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 #endif
 }
 
+#ifndef do_mc
+void AliL3Evaluate::GetCFeff(Char_t */*path*/,Char_t */*outfile*/,Int_t /*nevent*/,Bool_t /*sp*/)
+{
+  // Does nothing if do_mc undefined
+  
+  cerr<<"AliL3Evaluate::GetCFeff : Compile with do_mc flag"<<endl;
+  return;
+#else
 void AliL3Evaluate::GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent,Bool_t sp)
 {
   //Evaluate the cluster finder efficiency.
   
-#ifndef do_mc
-  cerr<<"AliL3Evaluate::GetCFeff : Compile with do_mc flag"<<endl;
-  return;
-#else
   TNtuple *ntuppel = new TNtuple("ntuppel","Cluster finder efficiency","slice:row:ncrossings:nclusters");
   ntuppel->SetDirectory(0);
   
