@@ -264,15 +264,35 @@ Int_t AliMDC::Run()
    // Create new raw DB.
    AliRawDB *rawdb;
    if (fWriteMode == kRFIO)
-      rawdb = new AliRawRFIODB(event, esd, fMaxFileSize, fCompress);
+      rawdb = new AliRawRFIODB(event,
+#ifdef USE_HLT
+			       esd,
+#endif
+			       fMaxFileSize, fCompress);
    else if (fWriteMode == kROOTD)
-      rawdb = new AliRawRootdDB(event, esd, fMaxFileSize, fCompress);
+      rawdb = new AliRawRootdDB(event,
+#ifdef USE_HLT
+				esd,
+#endif
+				fMaxFileSize, fCompress);
    else if (fWriteMode == kCASTOR)
-      rawdb = new AliRawCastorDB(event, esd, fMaxFileSize, fCompress);
+      rawdb = new AliRawCastorDB(event,
+#ifdef USE_HLT
+				 esd,
+#endif
+				 fMaxFileSize, fCompress);
    else if (fWriteMode == kDEVNULL)
-      rawdb = new AliRawNullDB(event, esd, fMaxFileSize, fCompress);
+      rawdb = new AliRawNullDB(event,
+#ifdef USE_HLT
+			       esd,
+#endif
+			       fMaxFileSize, fCompress);
    else
-      rawdb = new AliRawDB(event, esd, fMaxFileSize, fCompress);
+      rawdb = new AliRawDB(event,
+#ifdef USE_HLT
+			   esd,
+#endif
+			   fMaxFileSize, fCompress);
 
    if (rawdb->IsZombie()) return 1;
    printf("Filling raw DB %s\n", rawdb->GetDBName());

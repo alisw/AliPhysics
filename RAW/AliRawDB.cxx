@@ -56,7 +56,9 @@ AliRawDB::AliRawDB(AliRawEvent *event,
    // Create a new raw DB containing at most maxsize bytes.
 
    fEvent    = event;
+#ifdef USE_HLT
    fESD      = esd;
+#endif
    fMaxSize  = maxsize;
    fCompress = compress;
 
@@ -261,7 +263,9 @@ void AliRawDB::Close()
 
    // Write the tree.
    fTree->Write();
+#ifdef USE_HLT
    fESDTree->Write();
+#endif
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();

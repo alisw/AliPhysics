@@ -49,7 +49,11 @@ public:
    virtual Int_t       GetNetopt() const { return 0; }
    virtual Bool_t      Create();
    virtual void        Close();
-   void                Fill() { fTree->Fill(); fESDTree->Fill(); }
+   void                Fill() { fTree->Fill();
+#ifdef USE_HLT
+                                fESDTree->Fill();
+#endif
+                              }
    Bool_t              FileFull() { return (fRawDB->GetBytesWritten() > fMaxSize) ?
                                     kTRUE : kFALSE; }
 
