@@ -26,16 +26,31 @@
 #include "AliPHOSGetter.h"
 #include "Riostream.h"
 #include "AliESD.h"
+#include "AliESDCaloTrack.h"
+#include "AliEMCALRecParticle.h"
+#include "AliPHOSRecParticle.h"
 
 void Ana() 
 {
   AliPHOSGetter * gime = AliPHOSGetter::Instance("galice.root") ; 
   Int_t nEvent = gime->MaxEvent() ;  
   Int_t event ; 
-  AliESD * esd ;
+  AliESD * esd = 0 ;
   for (event = 0 ; event < nEvent; event++) {
     esd = gime->ESD(event) ; 
-    esd->Print(); 
-    
+    esd->Print();  
+    Int_t index ;
+    AliESDCaloTrack * ct ; 
+    AliPHOSRecParticle * pp ; 
+    AliEMCALRecParticle * ep ;     
+    for (index = 0 ; index < esd->GetNumberOfCaloTracks() ; index++) {
+      ct = esd->GetCaloTrack(index) ;
+      pp = dynamic_cast<AliPHOSRecParticle*>(ct->GetRecParticle()) ; 
+      ep = dynamic_cast<AliEMCALRecParticle*>(ct->GetRecParticle()) ; 
+      if (pp) 
+	cout << "particle # " << index << " is from PHOS " << endl ; 
+      if(ep) 
+	cout << "particle # " << index << " is from EMCAL " << endl ; 
+    }
   }
 }
