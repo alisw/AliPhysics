@@ -21,12 +21,12 @@ class AliTOFSDigitizer: public TTask {
 
 public:
   AliTOFSDigitizer() ;          // ctor
-  AliTOFSDigitizer(char* HeaderFile, Int_t evNumber1=0, Int_t nEvents=1) ; // par ctor
+  AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=0, Int_t nEvents=1) ; // par ctor
 
   virtual ~AliTOFSDigitizer() ; // dtor
 
   virtual void  Exec(Option_t *verboseOption, Option_t *allEvents="noAll"); 
-  void SetSDigitsFile(char * file ) {;}
+  void SetSDigitsFile(const char* file ) {;}
   
   void InitParameters();
   virtual void PrintParameters() const ;
