@@ -498,7 +498,7 @@ void AliZDCv2::CreateBeamLine()
   // --  Insert horizontal Cu plates inside D1 
   // --   (to simulate the vacuum chamber)
   
-  boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.98+0.2)*(2.98+0.2));
+  boxpar[0] = TMath::Sqrt(tubpar[1]*tubpar[1]-(2.98+0.2)*(2.98+0.2)) - 0.05;
   boxpar[1] = 0.2/2.;
   boxpar[2] =945./2.;
   gMC->Gsvolu("MD1V", "BOX ", idtmed[6], boxpar, 3);
