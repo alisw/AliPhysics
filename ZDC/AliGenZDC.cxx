@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/04/20 10:10:25  coppedis
+Minor changes
+
 Revision 1.7  2001/03/15 16:13:28  coppedis
 Code review
 
@@ -289,7 +292,7 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
     }
     else if(fBeamCrossPlane==2.){
       tetdiv = fBeamCrossAngle;
-      fidiv = k2PI/4.;
+      fidiv = 3.*k2PI/4.;
     }
   }
 
