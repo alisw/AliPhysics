@@ -15,6 +15,8 @@ class TClonesArray;
 class AliEMCALHadronCorrection;
 
 class TH2F;
+class TH1F;
+class TCanvas;
 
 class AliEMCALJetFinder : public TTask {
  public:
@@ -60,6 +62,9 @@ class AliEMCALJetFinder : public TTask {
 
     Bool_t GetWriteKey() {return fWrite;}
     AliEMCALJet* GetJetT() {return fJetT[0];}
+    virtual void DrawHistsForTuning(Int_t mode=0);           // *MENU*
+    virtual void PrintParameters(Int_t mode=0);              // *MENU*
+    virtual const Char_t* GetFileNameForParameters(Char_t* dir="RES/");
 
     // Access to Results
     virtual Int_t   Njets();
@@ -69,12 +74,22 @@ class AliEMCALJetFinder : public TTask {
     virtual Float_t JetEtaL(Int_t);  
     virtual Float_t JetEtaW(Int_t);
     virtual TH2F* GetLego() {return fLego;}
+    TH2F*   GetLegoEMCAL() {return fhLegoEMCAL;}
+    TH2F*   GethEff() {return fhEff;}
+    TH1F*   GetCellEt() {return fhCellEt;}
+    TH1F*   GetCellEMCALEt() {return fhCellEMCALEt;}
+    TH1F*   GetTrackPt() {return fhTrackPt;}
+    TH1F*   GetTrackPtBcut() {return fhTrackPtBcut;}
+    void    DrawLego(Char_t *opt="lego");         // *MENU*
+    void    DrawLegoEMCAL(Char_t *opt="lego");    // *MENU*
+    void    DrawLegos();                          // *MENU*
     // I/O
     virtual void SetOutputFileName(char* name) {fOutFileName = name;}
     virtual void FillFromHits(Int_t flag = 0);
     virtual void FillFromHitFlaggedTracks(Int_t flag = 0);
     virtual void FillFromDigits(Int_t flag = 0);
     virtual void FillFromTracks(Int_t flag = 0, Int_t ich = 0);
+    virtual void FillFromParticles();
     virtual void FillFromPartons();
 
     virtual void SaveBackgroundEvent();
@@ -88,11 +103,22 @@ class AliEMCALJetFinder : public TTask {
     virtual void DumpLego();
     virtual void ResetMap();
     virtual Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);
+    virtual void RearrangeParticlesMemory(Int_t npart);
  protected:
     Bool_t                         fWrite;           // Key for writing
     TClonesArray*                  fJets;            //! List of Jets
     TH2F*                          fLego;            //! Lego Histo
-    TH2F*                          fLegoB;           //! Lego Histo Backg    
+    TH2F*                          fLegoB;           //! Lego Histo Backg
+    TH2F*                          fhLegoTracks;     //! Lego for Tracks
+    TH2F*                          fhLegoEMCAL;      //! Lego for EMCAL itself
+    TH2F*                          fhLegoHadrCorr;   //! Lego for hadron correction
+    TH2F*                          fhEff;            //! Hist. for controling eff.
+    TH1F*                          fhCellEt;         //! Et distr. for cells from fLego
+    TH1F*                          fhCellEMCALEt;    //! Et distr. for cells from fLegoEMCAL
+    TH1F*                          fhTrackPt;        //! Pt distr. for charge particles
+    TH1F*                          fhTrackPtBcut;    //! Pt distr. for charge particles + cut due to magnetic field
+    TH1F*                          fh;// ??
+    TCanvas*                       fC1;              //! first canvas for drawing
     AliEMCALJet*                   fJetT[10];        //! Jet temporary storage
     AliEMCALHadronCorrection*      fHadronCorrector; //! Pointer to hadronic correction
     Int_t                          fHCorrection;     //  Hadron correction flag
@@ -134,9 +160,9 @@ class AliEMCALJetFinder : public TTask {
     Float_t*                       fPhiB;            //! Phi  of tracks in Bg
 
     // parameter for jet_finder_ua1
+    Int_t                          fMode;            // key for BG subtraction
     Float_t                        fMinMove;         // min cone move 
     Float_t                        fMaxMove;         // max cone move
-    Int_t                          fMode;            // key for BG subtraction
     Float_t                        fPrecBg;          // max value of change for BG (in %)
     Int_t                          fError;           // error variables 
 
