@@ -6,6 +6,7 @@
  
 #include "AliDetector.h"
 #include "AliHit.h" 
+#include "AliDigit.h"
 #include "AliTRDconst.h"
 
 //_____________________________________________________________________________
@@ -22,8 +23,9 @@ protected:
 public:
   AliTRD();
   AliTRD(const char *name, const char *title);
-  virtual      ~AliTRD() {}
+  virtual      ~AliTRD();
   virtual void  AddHit(Int_t, Int_t*, Float_t*);
+  virtual void  AddDigit(Int_t*, Int_t*);    
   virtual void  BuildGeometry();
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
@@ -54,10 +56,32 @@ public:
 public:
   AliTRDhit() {}
   AliTRDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  virtual ~AliTRDhit() {}
+  virtual ~AliTRDhit() {};
  
   ClassDef(AliTRDhit,1)     // Hits for Transition Radiation Detector
 
 };
+
+//_____________________________________________________________________________
+class AliTRDdigit : public AliDigit {
+
+public:
+  Int_t        fSector;     // TRD sector number
+  Int_t        fChamber;    // TRD chamber number
+  Int_t        fPlane;      // TRD plane number
+  Int_t        fRow;        // Pad row number
+  Int_t        fCol;        // Pad col number
+  Int_t        fTime;       // Time bucket
+  Int_t        fSignal;     // Signal amplitude
+
+public:
+  AliTRDdigit() {};
+  AliTRDdigit(Int_t *tracks, Int_t *digits);
+  virtual ~AliTRDdigit() {};
+
+  ClassDef(AliTRDdigit,1)   // Digits for Transition Radiation Detector
+
+};
+
 
 #endif

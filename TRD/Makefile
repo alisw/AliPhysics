@@ -11,7 +11,8 @@ PACKAGE	      = TRD
 
 # C++ sources
 
-SRCS          = AliTRD.cxx	AliTRDv0.cxx      AliTRDv1.cxx    AliTRDv2.cxx 
+SRCS          = AliTRD.cxx AliTRDv0.cxx AliTRDv1.cxx AliTRDv2.cxx \
+		AliTRDmatrix.cxx AliTRDpixel.cxx
 
 # C++ Headers
 

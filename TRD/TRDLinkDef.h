@@ -9,5 +9,8 @@
 #pragma link C++ class  AliTRDv1;
 #pragma link C++ class  AliTRDv2;
 #pragma link C++ class  AliTRDhit;
+#pragma link C++ class  AliTRDdigit;
+#pragma link C++ class  AliTRDpixel;
+#pragma link C++ class  AliTRDmatrix;
 
 #endif

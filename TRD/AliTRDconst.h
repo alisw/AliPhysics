@@ -1,12 +1,10 @@
 //
-// Parameter for the TRD
+// Geometry parameter for the TRD
 //
-
-//_____________________________________________________________________________
-//  Geometry parameter
 
 const Int_t   kNsect   = 18;      // Number of sectors in the full detector
 const Int_t   kNplan   = 6;       // Number of planes of the TRD
+const Int_t   kNcham   = 5;       // Number of chambers in z-direction
 
 const Float_t kRmin    = 294.0;   // r-dimensions of the TRD
 const Float_t kRmax    = 368.0;
@@ -27,9 +25,6 @@ const Float_t kCcthick =   1.0;   // Thickness of the carbon frame
 
 const Float_t kCwidcha = (kSwidth2 - kSwidth1) / kSheight * (kCheight + kCspace);
 const Float_t kCcframe = kCheight - kCaframe;
-
-// Number of Radiator foils
-const Int_t   kRaFoils = 100;
 
 // Thicknesses of the the material layers
 const Float_t kSeThick = 0.02;                // Radiator seal

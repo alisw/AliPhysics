@@ -36,6 +36,8 @@ AliTRD::AliTRD()
 
   fIshunt      = 0;
   fGasMix      = 0;
+  fHits        = 0;
+  fDigits      = 0;
 
   // The chamber dimensions
   for (Int_t iplan = 0; iplan < kNplan; iplan++) {
@@ -64,7 +66,10 @@ AliTRD::AliTRD(const char *name, const char *title)
 
   // Allocate the hit array
   fHits   = new TClonesArray("AliTRDhit",  405);
-  
+
+  // Allocate the digits array
+  fDigits = new TClonesArray("AliTRDdigit",10000);
+   
   fIshunt = 0;
   fGasMix = 0;
 
@@ -79,7 +84,33 @@ AliTRD::AliTRD(const char *name, const char *title)
   SetMarkerColor(kWhite);   
 
 }
- 
+
+//_____________________________________________________________________________
+AliTRD::~AliTRD()
+{
+  //
+  // TRD destructor
+  //
+
+  fIshunt = 0;
+
+  delete fHits;
+  delete fDigits;
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::AddDigit(Int_t *tracks, Int_t *digits)
+{
+  //
+  // Add a digit for the TRD
+  //
+
+  TClonesArray &ldigits = *fDigits;
+  new(ldigits[fNdigits++]) AliTRDdigit(tracks,digits);
+
+}
+
 //_____________________________________________________________________________
 void AliTRD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
@@ -741,5 +772,30 @@ AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   fY       = hits[1];
   fZ       = hits[2];
   fQ       = hits[3];
+
+}
+
+ClassImp(AliTRDdigit)
+
+//_____________________________________________________________________________
+AliTRDdigit::AliTRDdigit(Int_t *tracks, Int_t *digits)
+            :AliDigit(tracks)
+{
+  //
+  // Create a TRD digit
+  //
+
+  // Store the volume hierarchy
+  fSector  = digits[0];
+  fChamber = digits[1];
+  fPlane   = digits[2];
+
+  // Store the row, pad, and time bucket number
+  fRow     = digits[3];
+  fCol     = digits[4];
+  fTime    = digits[5];
+
+  // Store the signal amplitude
+  fSignal  = digits[6];
 
 }
