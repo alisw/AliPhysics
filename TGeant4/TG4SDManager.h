@@ -1,6 +1,10 @@
 // $Id$
 // Category: digits+hits
 //
+// Author: I. Hrivnacova
+//
+// Class TG4SDManager
+// ------------------
 // Geant4 implementation of the MonteCarlo interface methods                    
 // for access to Geant4 geometry related with sensitive detectors.
 
