@@ -167,7 +167,8 @@ void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTPa
 
 void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p)
 {
-   Double_t sf = fR/p->Pt();//scaling factor for position transformation ->
+   Double_t r = fR + gRandom->Gaus(0.0, 1.0);
+   Double_t sf = r/p->Pt();//scaling factor for position transformation ->
                              //we move direction of string momentum but legth defined by r
    x = sf*p->Px();
    y = sf*p->Py();
