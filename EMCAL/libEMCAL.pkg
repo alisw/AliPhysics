@@ -3,35 +3,24 @@ FSRCS= jet_finder_ua1.F
 SRCS= \
 AliEMCAL.cxx \
 AliEMCALGeometry.cxx \
-AliEMCALHit.cxx \
 AliEMCALv0.cxx \
 AliEMCALv1.cxx \
+AliEMCALHit.cxx \
 AliEMCALDigit.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
-AliEMCALTick.cxx \
 AliEMCALGetter.cxx \
-AliEMCALJet.cxx \
 AliEMCALJetFinder.cxx \
+AliEMCALJet.cxx \
 AliEMCALFast.cxx \
+AliEMCALTick.cxx \
+AliEMCALRecPoint.cxx \
+AliEMCALTowerRecPoint.cxx \
+AliEMCALClusterizer.cxx \
+AliEMCALClusterizerv1.cxx \
 AliEMCALHadronCorrection.cxx \
-AliEMCALHadronCorrectionv0.cxx 
+AliEMCALHadronCorrectionv0.cxx
 
-HDRS= \
-AliEMCAL.h \
-AliEMCALGeometry.h \
-AliEMCALHit.h \
-AliEMCALv0.h \
-AliEMCALv1.h \
-AliEMCALDigit.h \
-AliEMCALSDigitizer.h \
-AliEMCALDigitizer.h \
-AliEMCALTick.h \
-AliEMCALGetter.h \
-AliEMCALJet.h \
-AliEMCALJetFinder.h \
-AliEMCALFast.h \
-AliEMCALHadronCorrection.h \
-AliEMCALHadronCorrectionv0.h 
+HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=EMCALLinkDef.h
