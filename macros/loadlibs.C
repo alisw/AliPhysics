@@ -33,4 +33,5 @@ void loadlibs ()
   gSystem->Load("libEMCAL");
   gSystem->Load("libdummyherwig");
   gSystem->Load("libTHerwig");
+  gSystem->Load("libVZERO");
 }
