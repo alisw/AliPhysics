@@ -1,7 +1,7 @@
 // $Id$
 
 /**
-   Macro for converting AliRoot digits into L3 RawData. 
+   Macro for converting AliRoot digits into HLT RawData. 
    Binary creates for each patch its own file. 
    Singlepatch uses one file per slice (sp=kTRUE). 
    Use altro=kFALSE if you dont want to 
@@ -41,7 +41,6 @@ binary(Char_t* inpath,Char_t *outpath,Int_t first,Int_t last,Int_t event,Bool_t 
   fFileHandler->CloseAliInput();
 }
 
- 
 void singlepatch(Char_t* inpath,Char_t *outpath,Int_t first=0, Int_t last=0,Int_t event=0,Bool_t altro=kTRUE)
 {
    

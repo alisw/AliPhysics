@@ -106,12 +106,9 @@ class AliL3MemHandler{
   Bool_t Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data);
   Bool_t TrackArray2Binary(AliL3TrackArray *array);
   Bool_t Binary2TrackArray(AliL3TrackArray *array);
-  Bool_t TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data,
-                                             AliL3TrackArray *array);
-  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,
-                                             AliL3TrackArray *array);
-  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,
-			   AliL3TrackArray *array,Int_t slice);
+  Bool_t TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array);
+  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array);
+  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice);
     
   //Memory Allocation
   UInt_t GetAllocatedSize(){return fSize;}  
@@ -142,9 +139,9 @@ class AliL3MemHandler{
   virtual Bool_t SetMCOutput(FILE *file){return 0;}
   virtual void CloseMCOutput(){return;}
   virtual Bool_t AliDigits2Binary(Int_t event=0,Bool_t altro=kFALSE){return 0;}
+  virtual Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE){return 0;}  
   virtual AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0){return 0;}
   virtual AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t eventmerge=kFALSE){return 0;}
-  virtual Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE){return 0;}  
   virtual void AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile){return;}
   virtual Bool_t AliPoints2Binary(Int_t eventn=0){return 0;}
   virtual AliL3SpacePointData *AliPoints2Memory(UInt_t & npoint,Int_t eventn=0){return 0;}
@@ -172,6 +169,14 @@ class AliL3MemHandler{
   virtual Int_t ReadRawPedestalsInput(){return 0;}
 
   virtual AliL3DigitRowData* RawData2Memory(UInt_t &nrow,Int_t event=-1){return 0;}
+  virtual Bool_t RawData2CompMemory(Int_t event=-1){return 0;}
+
+  //AliL3DDLDataFileHandler
+  virtual Bool_t SetReaderInput(Char_t *name,Bool_t add=kTRUE){return 0;}
+  virtual void CloseReaderInput(){};
+
+  virtual AliL3DigitRowData* DDLData2Memory(UInt_t &nrow,Int_t event=-1){return 0;}
+  virtual Bool_t DDLData2CompBinary(Int_t event=-1){return 0;}
 
   ClassDef(AliL3MemHandler,1) // Memory handler class
 };

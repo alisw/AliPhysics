@@ -860,6 +860,9 @@ Bool_t AliL3Transform::ReadInitFile(Char_t* pathname)
     return kFALSE;
   }
 
+  LOG(AliL3Log::kInformational,"AliL3Transform::Init","Config")
+    <<"Successfully loaded values from config file \""<<pathname<<"\""<<ENDLOG;
+
   return kTRUE;
 }
 
@@ -992,8 +995,8 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
   }
   
   fVersion=fV_aliroot;
-  fBFieldFactor=(Double_t)gAlice->Field()->Factor();
-  fSolenoidBField=(Double_t)gAlice->Field()->SolenoidField();
+  SetBFieldFactor((Double_t)gAlice->Field()->Factor());
+  SetSolenoidBField((Double_t)gAlice->Field()->SolenoidField());
   fPadPitchWidthLow=param->GetInnerPadPitchWidth();
   fPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fZWidth=param->GetZWidth();
@@ -1013,7 +1016,7 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
   fADCSat=param->GetADCSat();
   fZeroSup=param->GetZeroSup();
   fNSlice=fNSectorLow;
-
+    
   //now do the arrays
   for(Int_t i=0;i<fNRow;i++){
     Int_t sec,row;

@@ -16,12 +16,7 @@
 
 void read(Char_t *path="./",Int_t min=0,Int_t max=35)
 {
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  l.UseStderr();
-  //l.UseStream();
+  AliL3Transform::Init(path);
 
   for(Int_t slice=0; slice<35; slice++)
     {
@@ -63,20 +58,11 @@ void read(Char_t *path="./",Int_t min=0,Int_t max=35)
 
 void read_ali(Char_t *fname, Int_t sl=0, Int_t sh=35)
 {
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  l.UseStderr();
-  //l.UseStream();
-
-#if 0
   //need galice file or alirunfile.root link
   if(AliL3Transform::Init(fname,kTRUE))
   {
     cout << "created temp init file!" << endl;
   }
-#endif
 
   AliL3FileHandler *fileHandler = new AliL3FileHandler();
 
@@ -106,13 +92,6 @@ void read_ali(Char_t *fname, Int_t sl=0, Int_t sh=35)
 
 void read_pp(Char_t *path="./",Int_t min=0,Int_t max=35,Int_t ev=0)
 {
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  l.UseStderr();
-  //l.UseStream();
-
   AliL3Transform::Init(path);
 
   for(Int_t slice=min; slice<max; slice++)
@@ -157,13 +136,6 @@ void read_pp(Char_t *path="./",Int_t min=0,Int_t max=35,Int_t ev=0)
 
 void read_event_tree(Char_t *rootfile,Int_t startev=0)
 {
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
-  //l.UseStderr();
-  l.UseStream();
-
   AliL3FileHandler *handler = new AliL3FileHandler();
   if(!handler->SetAliInput(rootfile)){
     cerr<<" Error opening file: "<<rootfile<<endl;

@@ -227,6 +227,7 @@ void AliL3GlobalMerger::Merge(){
       if(track1->IsPoint()) {n1++;track1->CalculateReferencePoint(angle);}
     }
     for(Int_t s0=0;s0<ttt0->GetNTracks();s0++){
+      if(ismatched0[s0]) continue;
       AliL3Track *track0=ttt0->GetCheckedTrack(s0);
       if(!track0) continue;
       if(!track0->IsPoint()) continue;
@@ -246,15 +247,25 @@ void AliL3GlobalMerger::Merge(){
           if(r0<r1){
             MultiMerge(tout,track,2); 
             ismatched0[s0]=kTRUE;
-            ismatched1[s1]=kTRUE;
+	    ismatched1[s1]=kTRUE;
             ttt0->Remove(s0);
             ttt1->Remove(s1);
+	    break;
+	    /*
+	      The track is merged, so we will _not_ look for more matches.
+	      Because there could easily be more matches, if a track is being
+	      split within the sector.
+	      This bug was brought to you by Dr.Frankenfeld, and fixed 2 years
+	      later by ASV....
+	    */
           }
         }
       }
     }
-  LOG(AliL3Log::kInformational,"AliL3GlobalMerger::Merge","Result")
-  <<AliL3Log::kDec<<"slice0: "<<n0<<" slice1: "<<n1
-  <<" Merged Tracks: "<<tout->GetNTracks()<<ENDLOG;
+    LOG(AliL3Log::kInformational,"AliL3GlobalMerger::Merge","Result")
+      <<AliL3Log::kDec<<"slice0: "<<n0<<" slice1: "<<n1
+      <<" Merged Tracks: "<<tout->GetNTracks()<<ENDLOG;
+    delete [] ismatched0;
+    delete [] ismatched1;
   }
 }

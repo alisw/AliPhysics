@@ -694,3 +694,14 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t e
 
   return data;
 }
+
+Bool_t AliL3RawDataFileHandler::RawData2CompBinary(Int_t event)
+{
+  Bool_t out = kTRUE;
+  UInt_t ndigits=0;
+  AliL3DigitRowData *digits=0;
+  digits = RawData2Memory(ndigits,event);
+  out = Memory2CompBinary(ndigits,digits);
+  Free();
+  return out;
+}

@@ -69,9 +69,9 @@ class AliL3RawDataFileHandler:public AliL3MemHandler{
   Int_t GetPadMaxUsed(){return fPadMaxUsed;} 
   Short_t GetPedVal(){return fPedVal;}
   Int_t GetNChannels(){return fNChannels;}
-  //Int_t GetNTimeBins(){return fNTimeBins;}
 
   AliL3DigitRowData* RawData2Memory(UInt_t &nrow,Int_t event=-1);
+  Bool_t RawData2CompBinary(Int_t event=-1);
 
   ClassDef(AliL3RawDataFileHandler,1)   //RawData Filehandler class
 };

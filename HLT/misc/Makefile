@@ -16,6 +16,7 @@ include $(ALIHLT_TOPDIR)/Makefile.conf
 
 SRCS	= AliL3TransBit.cxx AliL3AltroMemHandler.cxx AliL3DataHandler.cxx \
           AliL3VHDLClusterFinder.cxx AliL3TPCMapping.cxx \
-          AliL3FFloat.cxx AliL3Stopwatch.cxx
+          AliL3FFloat.cxx AliL3Stopwatch.cxx AliL3DDLRawReader.cxx \
+          AliL3DDLRawReaderFile.cxx AliL3DDLTPCRawStream.cxx AliL3DDLDataFileHandler.cxx
 
 include $(ALIHLT_TOPDIR)/Makefile.rules

@@ -31,7 +31,7 @@
 //  file.Init(slice,patch);
 //
 //  UInt_t nrowss;
-//  AliL3DigitRowData *data = file.CompBinary2Memory(nrowss);
+//  AliL3DigitRowData *data = file.CompBinary2Memory(nrows);
 //  
 //  for(int i=0; i<nrows; i++) 
 //    {
@@ -1020,41 +1020,7 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & npoint,AliL3SpacePointData *data)
   }
 
   Int_t size = GetFileSize(); 
-/*
-  UInt_t  size,slice,patch,row[2];
-  AliL3EventDataTypeRoot datatype;
-  UInt_t node;
-  if(fread(&datatype,sizeof(AliL3EventDataTypeRoot),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&node,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&size,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&slice,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&patch,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(row,2*sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-*/
+
   npoint = size/sizeof(AliL3SpacePointData);
   if(fread(data,size,1,fInBinary)!=1){
     LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")

@@ -414,7 +414,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       if(!fRawSP){
 	AliL3Transform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
 	AliL3Transform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
-
+	
 	if(xyz[0]==0) LOG(AliL3Log::kError,"AliL3ClustFinder","Cluster Finder")
 	  <<AliL3Log::kDec<<"Zero cluster"<<ENDLOG;
 	if(fNClusters >= fMaxNClusters)
@@ -423,17 +423,18 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 	      <<AliL3Log::kDec<<"Too many clusters "<<fNClusters<<ENDLOG;
 	    return;
 	  }  
-
+	
 	fSpacePointData[counter].fX = xyz[0];
 	fSpacePointData[counter].fY = xyz[1];
 	fSpacePointData[counter].fZ = xyz[2];
+	
       } else {
-	fSpacePointData[counter].fCharge = list[j].fTotalCharge;
 	fSpacePointData[counter].fX = fCurrentRow;
 	fSpacePointData[counter].fY = fpad;
 	fSpacePointData[counter].fZ = ftime;
       }
-
+      
+      fSpacePointData[counter].fCharge = list[j].fTotalCharge;
       fSpacePointData[counter].fPadRow = fCurrentRow;
       fSpacePointData[counter].fSigmaY2 = fpad2;
       fSpacePointData[counter].fSigmaZ2  = ftime2;
