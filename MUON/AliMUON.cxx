@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.21  2000/06/27 08:54:41  morsch
+Problems with on constant array sizes (in hitMap, nmuon, xhit, yhit) corrected.
+
 Revision 1.20  2000/06/26 14:02:38  morsch
 Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
 
@@ -123,6 +126,7 @@ Log message added
 #include "AliMUONTriggerDecision.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliMUONClusterInput.h"
 #include "iostream.h"
 #include "AliCallf77.h" 
 #include "AliConst.h" 
@@ -1409,7 +1413,9 @@ void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 	    new(lhits2[n++]) AliMUONDigit(*digit);
 	}
 
-	if (rec) {	  
+	if (rec) {	 
+	    AliMUONClusterInput::Instance()->SetDigits(ich, dig1, dig2);
+	    
 	    rec->SetDigits(dig1, dig2);
 	    rec->SetChamber(ich);
 	    rec->FindRawClusters();

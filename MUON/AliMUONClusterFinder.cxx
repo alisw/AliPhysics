@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.4.4.2  2000/06/09 21:58:15  morsch
 Most coding rule violations corrected.
 
@@ -66,7 +69,7 @@ ClassImp(AliMUONClusterFinder)
  	TClonesArray *digits, Int_t chamber)   
 {
 // Constructor    
-    fSegmentation=segmentation;
+    fSegmentation[0]=segmentation;
     fResponse=response;
     
     fDigits=digits;
@@ -84,7 +87,7 @@ ClassImp(AliMUONClusterFinder)
     AliMUONClusterFinder::AliMUONClusterFinder()
 {
 // Default constructor
-    fSegmentation=0;
+    fSegmentation[0]=0;
     fResponse=0;
     fDigits=0;
     fNdigits = 0;
@@ -200,7 +203,7 @@ Bool_t AliMUONClusterFinder::Centered(AliMUONRawCluster *cluster)
     Int_t nn;
     Int_t x[kMaxNeighbours], y[kMaxNeighbours], xN[kMaxNeighbours], yN[kMaxNeighbours];
     
-    fSegmentation->Neighbours(ix,iy,&nn,x,y);
+    fSegmentation[0]->Neighbours(ix,iy,&nn,x,y);
     Int_t nd=0;
     for (Int_t i=0; i<nn; i++) {
 	if (fHitMap->TestHit(x[i],y[i]) == kUsed) {
@@ -284,7 +287,7 @@ void AliMUONClusterFinder::SplitByLocalMaxima(AliMUONRawCluster *c)
 	fIx[i]= fDig[i]->fPadX;
 	fIy[i]= fDig[i]->fPadY;
 	fQ[i] = fDig[i]->fSignal;
-	fSegmentation->GetPadCxy(fIx[i], fIy[i], fX[i], fY[i]);
+	fSegmentation[0]->GetPadCxy(fIx[i], fIy[i], fX[i], fY[i]);
     }
 //
 //  Find local maxima
@@ -295,7 +298,7 @@ void AliMUONClusterFinder::SplitByLocalMaxima(AliMUONRawCluster *c)
     Int_t nn;
     Int_t x[kMaxNeighbours], y[kMaxNeighbours];
     for (i=0; i<fMul; i++) {
-	fSegmentation->Neighbours(fIx[i], fIy[i], &nn, x, y);
+	fSegmentation[0]->Neighbours(fIx[i], fIy[i], &nn, x, y);
 	isLocal[i]=kTRUE;
 	for (j=0; j<nn; j++) {
 	    if (fHitMap->TestHit(x[j], y[j])==kEmpty) continue;
@@ -484,7 +487,7 @@ void  AliMUONClusterFinder::FillCluster(AliMUONRawCluster* c, Int_t flag)
 	}
 //
 	if (flag) {
-	    fSegmentation->GetPadCxy(ix, iy, x, y);
+	    fSegmentation[0]->GetPadCxy(ix, iy, x, y);
 	    c->fX[0] += q*x;
 	    c->fY[0] += q*y;
 	    c->fQ[0] += q;
@@ -493,20 +496,20 @@ void  AliMUONClusterFinder::FillCluster(AliMUONRawCluster* c, Int_t flag)
     
     if (flag) {
     	c->fX[0]/=c->fQ[0];
-     	c->fX[0]=fSegmentation->GetAnod(c->fX[0]);
+     	c->fX[0]=fSegmentation[0]->GetAnod(c->fX[0]);
      	c->fY[0]/=c->fQ[0]; 
 //
 //  apply correction to the coordinate along the anode wire
 //
      	x=c->fX[0];   
      	y=c->fY[0];
-     	fSegmentation->GetPadIxy(x, y, ix, iy);
-     	fSegmentation->GetPadCxy(ix, iy, x, y);
-     	Int_t isec=fSegmentation->Sector(ix,iy);
-    	TF1* cogCorr = fSegmentation->CorrFunc(isec-1);
+     	fSegmentation[0]->GetPadIxy(x, y, ix, iy);
+     	fSegmentation[0]->GetPadCxy(ix, iy, x, y);
+     	Int_t isec=fSegmentation[0]->Sector(ix,iy);
+    	TF1* cogCorr = fSegmentation[0]->CorrFunc(isec-1);
 	
      	if (cogCorr) {
-	    Float_t yOnPad=(c->fY[0]-y)/fSegmentation->Dpy(isec);
+	    Float_t yOnPad=(c->fY[0]-y)/fSegmentation[0]->Dpy(isec);
 	    c->fY[0]=c->fY[0]-cogCorr->Eval(yOnPad, 0, 0);
      	}
     }
@@ -564,7 +567,7 @@ void  AliMUONClusterFinder::FindCluster(Int_t i, Int_t j, AliMUONRawCluster &c){
 
 // Prepare center of gravity calculation
     Float_t x, y;
-    fSegmentation->GetPadCxy(i, j, x, y);
+    fSegmentation[0]->GetPadCxy(i, j, x, y);
     c.fX[0] += q*x;
     c.fY[0] += q*y;
     c.fQ[0] += q;
@@ -575,7 +578,7 @@ void  AliMUONClusterFinder::FindCluster(Int_t i, Int_t j, AliMUONRawCluster &c){
 //  
     Int_t nn;
     Int_t xList[kMaxNeighbours], yList[kMaxNeighbours];
-    fSegmentation->Neighbours(i,j,&nn,xList,yList);
+    fSegmentation[0]->Neighbours(i,j,&nn,xList,yList);
     for (Int_t in=0; in<nn; in++) {
 	Int_t ix=xList[in];
 	Int_t iy=yList[in];
@@ -593,7 +596,7 @@ void AliMUONClusterFinder::FindRawClusters()
   //
     if (!fNdigits) return;
 
-    fHitMap = new AliMUONHitMapA1(fSegmentation, fDigits);
+    fHitMap = new AliMUONHitMapA1(fSegmentation[0], fDigits);
 
     AliMUONDigit *dig;
 
@@ -620,7 +623,7 @@ void AliMUONClusterFinder::FindRawClusters()
 	FindCluster(i,j, c);
 	// center of gravity
 	c.fX[0] /= c.fQ[0];
-	c.fX[0]=fSegmentation->GetAnod(c.fX[0]);
+	c.fX[0]=fSegmentation[0]->GetAnod(c.fX[0]);
 	c.fY[0] /= c.fQ[0];
 //
 //  apply correction to the coordinate along the anode wire
@@ -628,12 +631,12 @@ void AliMUONClusterFinder::FindRawClusters()
 	Int_t ix,iy;
 	Float_t x=c.fX[0];   
 	Float_t y=c.fY[0];
-	fSegmentation->GetPadIxy(x, y, ix, iy);
-	fSegmentation->GetPadCxy(ix, iy, x, y);
-	Int_t isec=fSegmentation->Sector(ix,iy);
-	TF1* cogCorr=fSegmentation->CorrFunc(isec-1);
+	fSegmentation[0]->GetPadIxy(x, y, ix, iy);
+	fSegmentation[0]->GetPadCxy(ix, iy, x, y);
+	Int_t isec=fSegmentation[0]->Sector(ix,iy);
+	TF1* cogCorr=fSegmentation[0]->CorrFunc(isec-1);
 	if (cogCorr) {
-	    Float_t yOnPad=(c.fY[0]-y)/fSegmentation->Dpy(isec);
+	    Float_t yOnPad=(c.fY[0]-y)/fSegmentation[0]->Dpy(isec);
 	    c.fY[0]=c.fY[0]-cogCorr->Eval(yOnPad,0,0);
 	}
 //
@@ -664,13 +667,13 @@ CalibrateCOG()
     Float_t y[5];
     Int_t n, i;
     TF1 func;
-    if (fSegmentation) {
-	fSegmentation->GiveTestPoints(n, x, y);
+    if (fSegmentation[0]) {
+	fSegmentation[0]->GiveTestPoints(n, x, y);
 	for (i=0; i<n; i++) {
 	    Float_t xtest=x[i];
 	    Float_t ytest=y[i];	    
 	    SinoidalFit(xtest, ytest, func);
-	    fSegmentation->SetCorrFunc(i, new TF1(func));
+	    fSegmentation[0]->SetCorrFunc(i, new TF1(func));
 	}
     }
 }
@@ -689,7 +692,7 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
     Float_t xg[kns], yg[kns], xrg[kns], yrg[kns];
     Float_t xsig[kns], ysig[kns];
     
-    AliMUONSegmentation *segmentation=fSegmentation;
+    AliMUONSegmentation *segmentation=fSegmentation[0];
     
     Int_t ix,iy;
     segmentation->GetPadIxy(x,y,ix,iy);   
@@ -860,7 +863,7 @@ Bool_t AliMUONClusterFinder::SingleMathiesonFit(AliMUONRawCluster *c)
 //  Initialise global variables for fit
     Int_t i;
     fMul=c->fMultiplicity[0];
-    fgSegmentation=fSegmentation;
+    fgSegmentation=fSegmentation[0];
     fgResponse    =fResponse;
     fgNbins=fMul;
     Float_t qtot=0;
@@ -873,7 +876,7 @@ Bool_t AliMUONClusterFinder::SingleMathiesonFit(AliMUONRawCluster *c)
 	fIx[i]= fDig[i]->fPadX;
 	fIy[i]= fDig[i]->fPadY;
 	fQ[i] = fDig[i]->fSignal;
-	fSegmentation->GetPadCxy(fIx[i], fIy[i], fX[i], fY[i]);
+	fSegmentation[0]->GetPadCxy(fIx[i], fIy[i], fX[i], fY[i]);
 	fgix[i]=fIx[i];
 	fgiy[i]=fIy[i];
 	fgCharge[i]=Float_t(fQ[i]);
@@ -902,13 +905,13 @@ Bool_t AliMUONClusterFinder::SingleMathiesonFit(AliMUONRawCluster *c)
 // lower and upper limits
     static Double_t lower[2], upper[2];
     Int_t ix,iy;
-    fSegmentation->GetPadIxy(c->fX[0], c->fY[0], ix, iy);
-    Int_t isec=fSegmentation->Sector(ix, iy);
-    lower[0]=vstart[0]-fSegmentation->Dpx(isec)/2;
-    lower[1]=vstart[1]-fSegmentation->Dpy(isec)/2;
+    fSegmentation[0]->GetPadIxy(c->fX[0], c->fY[0], ix, iy);
+    Int_t isec=fSegmentation[0]->Sector(ix, iy);
+    lower[0]=vstart[0]-fSegmentation[0]->Dpx(isec)/2;
+    lower[1]=vstart[1]-fSegmentation[0]->Dpy(isec)/2;
     
-    upper[0]=lower[0]+fSegmentation->Dpx(isec);
-    upper[1]=lower[1]+fSegmentation->Dpy(isec);
+    upper[0]=lower[0]+fSegmentation[0]->Dpx(isec);
+    upper[1]=lower[1]+fSegmentation[0]->Dpy(isec);
     
 // step sizes
     static Double_t step[2]={0.0005, 0.0005};
@@ -943,7 +946,7 @@ Bool_t AliMUONClusterFinder::DoubleMathiesonFit(AliMUONRawCluster *c)
 //  Initialise global variables for fit
     Int_t i,j;
     
-    fgSegmentation=fSegmentation;
+    fgSegmentation=fSegmentation[0];
     fgResponse    =fResponse;
     fgNbins=fMul;
     Float_t qtot=0;
@@ -978,19 +981,19 @@ Bool_t AliMUONClusterFinder::DoubleMathiesonFit(AliMUONRawCluster *c)
 	Float_t(fQ[fIndLocal[0]]+fQ[fIndLocal[1]]);
 // lower and upper limits
     static Double_t lower[5], upper[5];
-    Int_t isec=fSegmentation->Sector(fIx[fIndLocal[0]], fIy[fIndLocal[0]]);
-    lower[0]=vstart[0]-fSegmentation->Dpx(isec);
-    lower[1]=vstart[1]-fSegmentation->Dpy(isec);
+    Int_t isec=fSegmentation[0]->Sector(fIx[fIndLocal[0]], fIy[fIndLocal[0]]);
+    lower[0]=vstart[0]-fSegmentation[0]->Dpx(isec);
+    lower[1]=vstart[1]-fSegmentation[0]->Dpy(isec);
     
-    upper[0]=lower[0]+2.*fSegmentation->Dpx(isec);
-    upper[1]=lower[1]+2.*fSegmentation->Dpy(isec);
+    upper[0]=lower[0]+2.*fSegmentation[0]->Dpx(isec);
+    upper[1]=lower[1]+2.*fSegmentation[0]->Dpy(isec);
     
-    isec=fSegmentation->Sector(fIx[fIndLocal[1]], fIy[fIndLocal[1]]);
-    lower[2]=vstart[2]-fSegmentation->Dpx(isec)/2;
-    lower[3]=vstart[3]-fSegmentation->Dpy(isec)/2;
+    isec=fSegmentation[0]->Sector(fIx[fIndLocal[1]], fIy[fIndLocal[1]]);
+    lower[2]=vstart[2]-fSegmentation[0]->Dpx(isec)/2;
+    lower[3]=vstart[3]-fSegmentation[0]->Dpy(isec)/2;
     
-    upper[2]=lower[2]+fSegmentation->Dpx(isec);
-    upper[3]=lower[3]+fSegmentation->Dpy(isec);
+    upper[2]=lower[2]+fSegmentation[0]->Dpx(isec);
+    upper[3]=lower[3]+fSegmentation[0]->Dpy(isec);
     
     lower[4]=0.;
     upper[4]=1.;

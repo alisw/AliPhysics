@@ -34,7 +34,7 @@ class AliMUONClusterFinder :
 // Set segmentation model    
     virtual void SetSegmentation(
 	AliMUONSegmentation *segmentation){
-	fSegmentation=segmentation;
+	fSegmentation[0]=segmentation;
     }
 // Set response model    
     virtual void SetResponse(AliMUONResponse *response) {
@@ -91,7 +91,7 @@ class AliMUONClusterFinder :
 protected:
     TClonesArray*           fDigits;         // Digits
     Int_t                   fNdigits;        // Number of Digits
-    AliMUONSegmentation*    fSegmentation;   // Chamber segmentation
+    AliMUONSegmentation*    fSegmentation[2];   // Chamber segmentation
     AliMUONResponse*        fResponse;       // Chamber Response
     TClonesArray*           fRawClusters;    // Raw Clusters
     Int_t                   fChamber;        // Chamber Number

@@ -11,6 +11,8 @@
 #include "AliMUONHitMap.h"
 #include "TF1.h"
 #include "AliMUONClusterFinder.h"
+#include "AliMUONSegmentation.h"
+
 class AliMUONClusterFinderVS : 
  public AliMUONClusterFinder
 {
@@ -26,8 +28,8 @@ class AliMUONClusterFinderVS :
 // Set segmentation model    
     virtual void SetSegmentation(AliMUONSegmentation *seg1, AliMUONSegmentation *seg2)
 	{
-	fSegmentation=seg1;
-	fSegmentation2=seg2;
+	fSegmentation[0]=seg1;
+	fSegmentation[1]=seg2;
 	}
 // Set pointer to digits
     virtual void SetDigits(TClonesArray *MUONdigits1, TClonesArray *MUONdigits2);
@@ -85,7 +87,6 @@ class AliMUONClusterFinderVS :
 protected:
     TClonesArray*           fDigits2;            // Digits
     Int_t                   fNdigits2;           // Number of Digits    
-    AliMUONSegmentation*    fSegmentation2;      // Chamber segmentation
     AliMUONHitMapA1*        fHitMap2;            // Hit Map
     AliMUONDigit*           fDig[100][2];        // current list of digits 
     Int_t                   fIx[100][2];         // current list of x-pad-coord.

@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/06/27 16:18:47  gosset
+Finally correct implementation of xm, ym, ixm, iym sizes
+when at least three local maxima on cathode 1 or on cathode 2
+
 Revision 1.3  2000/06/22 14:02:45  morsch
 Parameterised size of xm[], ym[], ixm[], iym[] correctly implemented (PH)
 Some HP scope problems corrected (PH)
@@ -49,6 +53,7 @@ Revised and extended SplitByLocalMaxima method (Isabelle Chevrot):
 #include "AliMUONHitMapA1.h"
 #include "AliRun.h"
 #include "AliMUON.h"
+#include "AliMUONClusterInput.h"
 
 #include <TTree.h>
 #include <TCanvas.h>
@@ -61,6 +66,7 @@ Revised and extended SplitByLocalMaxima method (Isabelle Chevrot):
 #include <iostream.h>
 
 //_____________________________________________________________________
+/*
 static AliMUONSegmentation* fgSegmentation[2];
 static AliMUONResponse*     fgResponse;
 static Int_t                fgix[500][2];
@@ -71,6 +77,7 @@ static Int_t                fgFirst=kTRUE;
 static Int_t                fgChargeTot[2];
 static Float_t              fgQtot[2];
 static TMinuit*             fgMyMinuit ;
+*/
 // This function is minimized in the double-Mathieson fit
 void fcnS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
@@ -87,7 +94,7 @@ ClassImp(AliMUONClusterFinderVS)
     :AliMUONClusterFinder(seg1, response, digits1, chamber)
 {
 // Constructor
-    fSegmentation2=seg2;
+    fSegmentation[1]=seg2;
     fDigits2=digits2;
     fNdigits2 = fDigits2->GetEntriesFast();
     fHitMap2=0;
@@ -99,7 +106,7 @@ ClassImp(AliMUONClusterFinderVS)
 	:AliMUONClusterFinder()
 {
 // Default constructor
-    fSegmentation2=0;
+    fSegmentation[1]=0;
     fDigits2=0;
     fNdigits2 = 0;
     fHitMap2 = 0;
@@ -115,7 +122,6 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS(
 
 void AliMUONClusterFinderVS::SetDigits(TClonesArray *MUONdigits1, TClonesArray *MUONdigits2) {
 // Set pointers to digit lists 
-
     fDigits=MUONdigits1;
     fNdigits = fDigits->GetEntriesFast();
     fDigits2=MUONdigits2;
@@ -126,7 +132,7 @@ void AliMUONClusterFinderVS::SetDigits(TClonesArray *MUONdigits1, TClonesArray *
 AliMUONSegmentation*  AliMUONClusterFinderVS::Segmentation(Int_t i)
 {
 // Return pointer to segmentation of cathode plane number 1 (i=0) or 2 (i=1)
-    return ((i==0)? fSegmentation : fSegmentation2);
+    return ((i==0)? fSegmentation[0] : fSegmentation[1]);
 }
 
 // Get Number of Digits
@@ -161,18 +167,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 // Split complex cluster by local maxima 
 
     Int_t cath, i;
-    
+
+    AliMUONClusterInput::Instance()->SetCluster(c);
+
     fMul[0]=c->fMultiplicity[0];
     fMul[1]=c->fMultiplicity[1];
 
 //
 //  dump digit information into arrays
 //
-    fgSegmentation[0]=Segmentation(0);
-    fgSegmentation[1]=Segmentation(1);
-    fgResponse    =fResponse;
-    fgNbins[0]=fMul[0];
-    fgNbins[1]=fMul[1];
+
     Float_t qtot;
     
     for (cath=0; cath<2; cath++) {
@@ -190,15 +194,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    // pad centre coordinates
 	    Segmentation(cath)->
 		GetPadCxy(fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath]);
-            // globals kUsed in fitting functions
-	    fgix[i][cath]=fIx[i][cath];
-	    fgiy[i][cath]=fIy[i][cath];
-	    fgCharge[i][cath]=Float_t(fQ[i][cath]);
-	    // total charge per cluster
-	    qtot+=fgCharge[i][cath];
 	} // loop over cluster digits
-	fgQtot[cath]=qtot;
-	fgChargeTot[cath]=Int_t(qtot);  
     }  // loop over cathodes
 
 
@@ -468,16 +464,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			    AliMUONRawCluster cnew;
 			    Int_t cath;    
 			    for (cath=0; cath<2; cath++) {
-			      cnew.fX[cath]=Float_t(xm[ico][1]);
-			      cnew.fY[cath]=Float_t(ym[ico][0]);
-			      cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
+				cnew.fX[cath]=Float_t(xm[ico][1]);
+				cnew.fY[cath]=Float_t(ym[ico][0]);
+				cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			      	for (i=0; i<fMul[cath]; i++) {
-				  cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
-				  fgSegmentation[cath]->SetPad(fgix[i][cath], fgiy[i][cath]);
+				    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+				    fSegmentation[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 				}
-			      fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
-			      fprintf(stderr,"mult_av %d\n",c->fMultiplicity[cath]);
-			      FillCluster(&cnew,cath);
+				fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
+				fprintf(stderr,"mult_av %d\n",c->fMultiplicity[cath]);
+				FillCluster(&cnew,cath);
 			    } 
 			    cnew.fClusterType=cnew.PhysicsContribution();
 			    AddRawCluster(cnew);
@@ -487,90 +483,90 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		}
 	    }
 	}
-
+	
 // ******* iacc = 2 *******
 // Two combinations found between the 2 cathodes
 	if (iacc==2) {
 
 // Was the same maximum taken twice
-		if ((accepted[0]&&accepted[1]) || (accepted[2]&&accepted[3])) {
-		    fprintf(stderr,"\n Maximum taken twice !!!\n");
+	    if ((accepted[0]&&accepted[1]) || (accepted[2]&&accepted[3])) {
+		fprintf(stderr,"\n Maximum taken twice !!!\n");
 
 // Have a try !! with that 
-		    if (accepted[0]&&accepted[3]) {
-			fXInit[0]=xm[0][1];
-			fYInit[0]=ym[0][0];
-			fXInit[1]=xm[1][1];
-			fYInit[1]=ym[1][0];
-		    } else {
-			fXInit[0]=xm[2][1];
-			fYInit[0]=ym[2][0];
-			fXInit[1]=xm[3][1];
-			fYInit[1]=ym[3][0];
-		    }
-		    fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
-		    chi2=CombiDoubleMathiesonFit(c);
-// 		    Int_t ndf = fgNbins[0]+fgNbins[1]-6;
-// 		    Float_t prob = TMath::Prob(chi2,ndf);
-// 		    prob2->Fill(prob);
-// 		    chi2_2->Fill(chi2);
-		    Split(c);
-
+		if (accepted[0]&&accepted[3]) {
+		    fXInit[0]=xm[0][1];
+		    fYInit[0]=ym[0][0];
+		    fXInit[1]=xm[1][1];
+		    fYInit[1]=ym[1][0];
 		} else {
-// No ghosts ! No Problems ! -  Perform one fit only !
-		    if (accepted[0]&&accepted[3]) {
-			fXInit[0]=xm[0][1];
-			fYInit[0]=ym[0][0];
-			fXInit[1]=xm[3][1];
-			fYInit[1]=ym[3][0];
-		    } else {
-			fXInit[0]=xm[1][1];
-			fYInit[0]=ym[1][0];
-			fXInit[1]=xm[2][1];
-			fYInit[1]=ym[2][0];
-		    }
-		    fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
-		    chi2=CombiDoubleMathiesonFit(c);
+		    fXInit[0]=xm[2][1];
+		    fYInit[0]=ym[2][0];
+		    fXInit[1]=xm[3][1];
+		    fYInit[1]=ym[3][0];
+		}
+		fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
+		chi2=CombiDoubleMathiesonFit(c);
 // 		    Int_t ndf = fgNbins[0]+fgNbins[1]-6;
 // 		    Float_t prob = TMath::Prob(chi2,ndf);
 // 		    prob2->Fill(prob);
 // 		    chi2_2->Fill(chi2);
-		    fprintf(stderr," chi2 %f\n",chi2);
-		    Split(c);
+		Split(c);
+		
+	    } else {
+// No ghosts ! No Problems ! -  Perform one fit only !
+		if (accepted[0]&&accepted[3]) {
+		    fXInit[0]=xm[0][1];
+		    fYInit[0]=ym[0][0];
+		    fXInit[1]=xm[3][1];
+		    fYInit[1]=ym[3][0];
+		} else {
+		    fXInit[0]=xm[1][1];
+		    fYInit[0]=ym[1][0];
+		    fXInit[1]=xm[2][1];
+		    fYInit[1]=ym[2][0];
 		}
-
+		fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
+		chi2=CombiDoubleMathiesonFit(c);
+// 		    Int_t ndf = fgNbins[0]+fgNbins[1]-6;
+// 		    Float_t prob = TMath::Prob(chi2,ndf);
+// 		    prob2->Fill(prob);
+// 		    chi2_2->Fill(chi2);
+		fprintf(stderr," chi2 %f\n",chi2);
+		Split(c);
+	    }
+	    
 // ******* iacc = 4 *******
 // Four combinations found between the 2 cathodes
 // Ghost !!
-	    } else if (iacc==4) {
+	} else if (iacc==4) {
 // Perform fits for the two possibilities !!	
-		fXInit[0]=xm[0][1];
-		fYInit[0]=ym[0][0];
-		fXInit[1]=xm[3][1];
-		fYInit[1]=ym[3][0];
-		fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
-		chi2=CombiDoubleMathiesonFit(c);
+	    fXInit[0]=xm[0][1];
+	    fYInit[0]=ym[0][0];
+	    fXInit[1]=xm[3][1];
+	    fYInit[1]=ym[3][0];
+	    fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
+	    chi2=CombiDoubleMathiesonFit(c);
 // 		Int_t ndf = fgNbins[0]+fgNbins[1]-6;
 // 		Float_t prob = TMath::Prob(chi2,ndf);
 // 		prob2->Fill(prob);
 // 		chi2_2->Fill(chi2);
-		fprintf(stderr," chi2 %f\n",chi2);
-		Split(c);
-		fXInit[0]=xm[1][1];
-		fYInit[0]=ym[1][0];
-		fXInit[1]=xm[2][1];
-		fYInit[1]=ym[2][0];
-		fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
-		chi2=CombiDoubleMathiesonFit(c);
+	    fprintf(stderr," chi2 %f\n",chi2);
+	    Split(c);
+	    fXInit[0]=xm[1][1];
+	    fYInit[0]=ym[1][0];
+	    fXInit[1]=xm[2][1];
+	    fYInit[1]=ym[2][0];
+	    fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
+	    chi2=CombiDoubleMathiesonFit(c);
 // 		ndf = fgNbins[0]+fgNbins[1]-6;
 // 		prob = TMath::Prob(chi2,ndf);
 // 		prob2->Fill(prob);
 // 		chi2_2->Fill(chi2);
-		fprintf(stderr," chi2 %f\n",chi2);
-		Split(c);
-	    }
+	    fprintf(stderr," chi2 %f\n",chi2);
+	    Split(c);
+	}
 
-	} else if (fNLocal[0]==2 &&  fNLocal[1]==1) {
+    } else if (fNLocal[0]==2 &&  fNLocal[1]==1) {
 //  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  (3) Two local maxima on cathode 1 and one maximum on cathode 2 
 //  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -584,16 +580,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 //  0-0, 0-1, 1-0, 1-1	
         ico=0;
 	for (im1=0; im1<2; im1++) {
-		xm[ico][0]=fX[fIndLocal[im1][0]][0];
-		ym[ico][0]=fY[fIndLocal[im1][0]][0];
-		xm[ico][1]=fX[fIndLocal[0][1]][1];
-		ym[ico][1]=fY[fIndLocal[0][1]][1];
-
-		ixm[ico][0]=fIx[fIndLocal[im1][0]][0];
-		iym[ico][0]=fIy[fIndLocal[im1][0]][0];
-		ixm[ico][1]=fIx[fIndLocal[0][1]][1];
-		iym[ico][1]=fIy[fIndLocal[0][1]][1];
-		ico++;
+	    xm[ico][0]=fX[fIndLocal[im1][0]][0];
+	    ym[ico][0]=fY[fIndLocal[im1][0]][0];
+	    xm[ico][1]=fX[fIndLocal[0][1]][1];
+	    ym[ico][1]=fY[fIndLocal[0][1]][1];
+	    
+	    ixm[ico][0]=fIx[fIndLocal[im1][0]][0];
+	    iym[ico][0]=fIy[fIndLocal[im1][0]][0];
+	    ixm[ico][1]=fIx[fIndLocal[0][1]][1];
+	    iym[ico][1]=fIy[fIndLocal[0][1]][1];
+	    ico++;
 	}
 // ico = 0 : first local maximum on cathodes 1 and 2
 // ico = 1 : second local maximum on cathode 1 and first on cathode 2
@@ -622,10 +618,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		accepted[ico]=kFALSE;
 	    }
 	}
-
+	
 	Float_t chi21 = 100;
 	Float_t chi22 = 100;
-
+	
 	if (accepted[0]) {
 	    fXInit[0]=xm[0][1];
 	    fYInit[0]=ym[0][0];
@@ -663,8 +659,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.fY[cath]=Float_t(ym[ico][0]);
 			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			for (i=0; i<fMul[cath]; i++) {
-			  cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
-			  fgSegmentation[cath]->SetPad(fgix[i][cath], fgiy[i][cath]);
+			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+			    fSegmentation[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
 			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
 			fprintf(stderr,"mult_av %d\n",c->fMultiplicity[cath]);
@@ -676,12 +672,12 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		}
 	    }
 	}
-	   
+	
 //  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  (3') One local maximum on cathode 1 and two maxima on cathode 2 
 //  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     } else if (fNLocal[0]==1 && fNLocal[1]==2) {
-
+	
 	Float_t xm[4][2], ym[4][2];
 	Float_t dpx, dpy, dx, dy;
 	Int_t ixm[4][2], iym[4][2];
@@ -691,16 +687,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 //  0-0, 0-1, 1-0, 1-1	
         ico=0;
 	for (im1=0; im1<2; im1++) {
-		xm[ico][0]=fX[fIndLocal[0][0]][0];
-		ym[ico][0]=fY[fIndLocal[0][0]][0];
-		xm[ico][1]=fX[fIndLocal[im1][1]][1];
-		ym[ico][1]=fY[fIndLocal[im1][1]][1];
-
-		ixm[ico][0]=fIx[fIndLocal[0][0]][0];
-		iym[ico][0]=fIy[fIndLocal[0][0]][0];
-		ixm[ico][1]=fIx[fIndLocal[im1][1]][1];
-		iym[ico][1]=fIy[fIndLocal[im1][1]][1];
-		ico++;
+	    xm[ico][0]=fX[fIndLocal[0][0]][0];
+	    ym[ico][0]=fY[fIndLocal[0][0]][0];
+	    xm[ico][1]=fX[fIndLocal[im1][1]][1];
+	    ym[ico][1]=fY[fIndLocal[im1][1]][1];
+	    
+	    ixm[ico][0]=fIx[fIndLocal[0][0]][0];
+	    iym[ico][0]=fIy[fIndLocal[0][0]][0];
+	    ixm[ico][1]=fIx[fIndLocal[im1][1]][1];
+	    iym[ico][1]=fIy[fIndLocal[im1][1]][1];
+	    ico++;
 	}
 // ico = 0 : first local maximum on cathodes 1 and 2
 // ico = 1 : first local maximum on cathode 1 and second on cathode 2
@@ -771,8 +767,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.fY[cath]=Float_t(ym[ico][0]);
 			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			for (i=0; i<fMul[cath]; i++) {
-			  cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
-			  fgSegmentation[cath]->SetPad(fgix[i][cath], fgiy[i][cath]);
+			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+			    fSegmentation[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
 			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
 			fprintf(stderr,"mult_av %d\n",c->fMultiplicity[cath]);
@@ -792,7 +788,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	
 	Int_t param = fNLocal[0]*fNLocal[1];
 	Int_t ii;
-	
+
 	Float_t ** xm = new Float_t * [param];
 	for (ii=0; ii<param; ii++) xm[ii]=new Float_t [2];
 	Float_t ** ym = new Float_t * [param];
@@ -820,9 +816,9 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		ico++;
 	    }
 	}
-
+	
 	Int_t nIco = ico;
-
+	
 	fprintf(stderr,"nIco %d\n",nIco);
 	for (ico=0; ico<nIco; ico++) {
 	    fprintf(stderr,"ico = %d\n",ico);
@@ -844,8 +840,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    cnew.fY[cath]=Float_t(ym[ico][0]);
 		    cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 		    for (i=0; i<fMul[cath]; i++) {
-		      cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
-		      fgSegmentation[cath]->SetPad(fgix[i][cath], fgiy[i][cath]);
+			cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
+			fSegmentation[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 		    }
 		    FillCluster(&cnew,cath);
 		} 
@@ -1287,8 +1283,8 @@ void AliMUONClusterFinderVS::FindRawClusters()
 
     if (!NDigits(0) && !NDigits(1)) return;
 
-    fHitMap  = new AliMUONHitMapA1(fSegmentation , fDigits);
-    fHitMap2 = new AliMUONHitMapA1(fSegmentation2, fDigits2);
+    fHitMap  = new AliMUONHitMapA1(fSegmentation[0] , fDigits);
+    fHitMap2 = new AliMUONHitMapA1(fSegmentation[1], fDigits2);
 
     AliMUONDigit *dig;
 
@@ -1375,44 +1371,14 @@ void AliMUONClusterFinderVS::FindRawClusters()
 Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t cath)
 {
 //
-//  Initialise global variables for fit
-    Int_t i;
-    fMul[cath]=c->fMultiplicity[cath];
-    fgSegmentation[0]=Segmentation(cath);
-    fgResponse    =fResponse;
-    fgNbins[0]=fMul[cath];
-    Float_t qtot=0;
-//
-//  dump digit information into arrays
-//
-    for (i=0; i<fMul[cath]; i++)
-    {
-	fDig[i][cath]= (AliMUONDigit*)Digits(cath)->UncheckedAt(c->fIndexMap[i][cath]);
-	fIx[i][cath]= fDig[i][cath]->fPadX;
-	fIy[i][cath]= fDig[i][cath]->fPadY;
-	fQ[i][cath] = fDig[i][cath]->fSignal;
-	Segmentation(cath)->GetPadCxy(fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath]);
-	fgix[i][0]=fIx[i][cath];
-	fgiy[i][0]=fIy[i][cath];
-	fgCharge[i][0]=Float_t(fQ[i][cath]);
-	qtot+=fgCharge[i][0];
-    }
-
-    fgQtot[0]=qtot;
-    fgChargeTot[0]=Int_t(qtot);
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     
-//
-    if (fgFirst) {
-	fgFirst=kFALSE;
-	fgMyMinuit = new TMinuit(5);
-    }
-
-    fgMyMinuit->SetFCN(fcnS1);
-    fgMyMinuit->mninit(2,10,7);
+    clusterInput.Fitter()->SetFCN(fcnS1);
+    clusterInput.Fitter()->mninit(2,10,7);
     Double_t arglist[20];
     Int_t ierflag=0;
     arglist[0]=1;
-//	fgMyMinuit->mnexcm("SET ERR",arglist,1,ierflag);
+//	clusterInput.Fitter()->mnexcm("SET ERR",arglist,1,ierflag);
 // Set starting values 
     static Double_t vstart[2];
     vstart[0]=c->fX[1];
@@ -1433,21 +1399,21 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
 // step sizes
     static Double_t step[2]={0.0005, 0.0005};
     
-    fgMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
-    fgMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
+    clusterInput.Fitter()->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
+    clusterInput.Fitter()->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
 // ready for minimisation	
-    fgMyMinuit->SetPrintLevel(1);
-    fgMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
+    clusterInput.Fitter()->SetPrintLevel(1);
+    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
-    fgMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("MIGRAD", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
     Double_t fmin, fedm, errdef;
     Int_t   npari, nparx, istat;
       
-    fgMyMinuit->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
+    clusterInput.Fitter()->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
     fFitStat=istat;
     
 // Print results
@@ -1456,8 +1422,8 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
     TString chname;
     Double_t epxz, b1, b2;
     Int_t ierflg;
-    fgMyMinuit->mnpout(0, chname, xrec, epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(1, chname, yrec, epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(0, chname, xrec, epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(1, chname, yrec, epxz, b1, b2, ierflg);	
     fXFit[cath]=xrec;
     fYFit[cath]=yrec;
     return fmin;
@@ -1467,13 +1433,9 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster *c)
 {
 // Perform combined Mathieson fit on both cathode planes
 //
-    if (fgFirst) {
-	fgFirst=kFALSE;
-	fgMyMinuit = new TMinuit(5);
-    }
-
-    fgMyMinuit->SetFCN(fcnCombiS1);
-    fgMyMinuit->mninit(2,10,7);
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
+    clusterInput.Fitter()->SetFCN(fcnCombiS1);
+    clusterInput.Fitter()->mninit(2,10,7);
     Double_t arglist[20];
     Int_t ierflag=0;
     arglist[0]=1;
@@ -1502,21 +1464,21 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster *c)
 // step sizes
     static Double_t step[2]={0.00001, 0.0001};
     
-    fgMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
-    fgMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
+    clusterInput.Fitter()->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
+    clusterInput.Fitter()->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
 // ready for minimisation	
-    fgMyMinuit->SetPrintLevel(1);
-    fgMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
+    clusterInput.Fitter()->SetPrintLevel(1);
+    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
-    fgMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("MIGRAD", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
     Double_t fmin, fedm, errdef;
     Int_t   npari, nparx, istat;
       
-    fgMyMinuit->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
+    clusterInput.Fitter()->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
     fFitStat=istat;
     
 // Print results
@@ -1525,8 +1487,8 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster *c)
     TString chname;
     Double_t epxz, b1, b2;
     Int_t ierflg;
-    fgMyMinuit->mnpout(0, chname, xrec, epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(1, chname, yrec, epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(0, chname, xrec, epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(1, chname, yrec, epxz, b1, b2, ierflg);	
     fXFit[0]=xrec;
     fYFit[0]=yrec;
     return fmin;
@@ -1536,29 +1498,9 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster *c, Int_t ca
 {
 //
 //  Initialise global variables for fit
-    Int_t i,j;
-    
-    fgSegmentation[0]=Segmentation(cath);
-    fgResponse    =fResponse;
-    fgNbins[0]=fMul[cath];
-    Float_t qtot=0;
-	
-    for (i=0; i<fMul[cath]; i++) {
-	fgix[i][0]=fIx[i][cath];
-	fgiy[i][0]=fIy[i][cath];
-	fgCharge[i][0]=Float_t(fQ[i][cath]);
-	qtot+=fgCharge[i][0];
-    }
-    fgQtot[0]=qtot;
-    fgChargeTot[0]=Int_t(qtot);
-    
-//
-    if (fgFirst) {
-	fgFirst=kFALSE;
-	fgMyMinuit = new TMinuit(5);
-    }
-    fgMyMinuit->SetFCN(fcnS2);
-    fgMyMinuit->mninit(5,10,7);
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
+    clusterInput.Fitter()->SetFCN(fcnS2);
+    clusterInput.Fitter()->mninit(5,10,7);
     Double_t arglist[20];
     Int_t ierflag=0;
     arglist[0]=1;
@@ -1591,73 +1533,36 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster *c, Int_t ca
 // step sizes
     static Double_t step[5]={0.0005, 0.0005, 0.0005, 0.0005, 0.0001};
     
-    fgMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
-    fgMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
-    fgMyMinuit->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],ierflag);
-    fgMyMinuit->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
-    fgMyMinuit->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
+    clusterInput.Fitter()->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
+    clusterInput.Fitter()->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
+    clusterInput.Fitter()->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],ierflag);
+    clusterInput.Fitter()->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
+    clusterInput.Fitter()->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
 // ready for minimisation	
-    fgMyMinuit->SetPrintLevel(-1);
-    fgMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
+    clusterInput.Fitter()->SetPrintLevel(-1);
+    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
-    fgMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("MIGRAD", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
 // Get fitted parameters
     Double_t xrec[2], yrec[2], qfrac;
     TString chname;
     Double_t epxz, b1, b2;
     Int_t ierflg;
-    fgMyMinuit->mnpout(0, chname, xrec[0], epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(1, chname, yrec[0], epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(2, chname, xrec[1], epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(3, chname, yrec[1], epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(4, chname, qfrac,   epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(0, chname, xrec[0], epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(1, chname, yrec[0], epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(2, chname, xrec[1], epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(3, chname, yrec[1], epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(4, chname, qfrac,   epxz, b1, b2, ierflg);	
 
     Double_t fmin, fedm, errdef;
     Int_t   npari, nparx, istat;
       
-    fgMyMinuit->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
+    clusterInput.Fitter()->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
     fFitStat=istat;
-    
-    
-//
-// One cluster for each maximum
-//
-    for (j=0; j<2; j++) {
-	AliMUONRawCluster cnew;
-	cnew.fChi2[0]=Float_t(fmin);
-	
-	if (fNPeaks == 0) {
-	    cnew.fNcluster[0]=-1;
-	    cnew.fNcluster[1]=fNRawClusters;
-	} else {
-	    cnew.fNcluster[0]=fNPeaks;
-	    cnew.fNcluster[1]=0;
-	}
-	cnew.fMultiplicity[0]=0;
-	cnew.fX[0]=Float_t(xrec[j]);
-	cnew.fY[0]=Float_t(yrec[j]);
-	if (j==0) {
-	    cnew.fQ[0]=Int_t(fgChargeTot[0]*qfrac);
-	} else {
-	    cnew.fQ[0]=Int_t(fgChargeTot[0]*(1-qfrac));
-	}
-	fgSegmentation[0]->SetHit(xrec[j],yrec[j]);
-	for (i=0; i<fMul[cath]; i++) {
-	    cnew.fIndexMap[cnew.fMultiplicity[0]][cath]=c->fIndexMap[i][cath];
-	    fgSegmentation[0]->SetPad(fgix[i][0], fgiy[i][0]);
-	    Float_t q1=fgResponse->IntXY(fgSegmentation[0]);
-	    cnew.fContMap[cnew.fMultiplicity[0]][0]=(q1*cnew.fQ[0])/Float_t(fQ[i][cath]);
-	    cnew.fMultiplicity[0]++;
-	}
-	FillCluster(&cnew,0,0);
-	cnew.fClusterType=cnew.PhysicsContribution();
-	AddRawCluster(cnew);
-	fNPeaks++;
-    }
     return kTRUE;
 }
 
@@ -1666,12 +1571,9 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster *c)
 //
 // Perform combined double Mathieson fit on both cathode planes
 //
-    if (fgFirst) {
-	fgFirst=kFALSE;
-	fgMyMinuit = new TMinuit(5);
-    }
-    fgMyMinuit->SetFCN(fcnCombiS2);
-    fgMyMinuit->mninit(6,10,7);
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
+    clusterInput.Fitter()->SetFCN(fcnCombiS2);
+    clusterInput.Fitter()->mninit(6,10,7);
     Double_t arglist[20];
     Int_t ierflag=0;
     arglist[0]=1;
@@ -1723,36 +1625,36 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster *c)
 // step sizes
     static Double_t step[6]={0.0005, 0.0005, 0.0005, 0.0005, 0.001, 0.001};
     
-    fgMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
-    fgMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
-    fgMyMinuit->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],ierflag);
-    fgMyMinuit->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
-    fgMyMinuit->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
-    fgMyMinuit->mnparm(5,"a1",vstart[5],step[5],lower[5],upper[5],ierflag);
+    clusterInput.Fitter()->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
+    clusterInput.Fitter()->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
+    clusterInput.Fitter()->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],ierflag);
+    clusterInput.Fitter()->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
+    clusterInput.Fitter()->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
+    clusterInput.Fitter()->mnparm(5,"a1",vstart[5],step[5],lower[5],upper[5],ierflag);
 // ready for minimisation	
-    fgMyMinuit->SetPrintLevel(-1);
-    fgMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
+    clusterInput.Fitter()->SetPrintLevel(-1);
+    clusterInput.Fitter()->mnexcm("SET OUT", arglist, 0, ierflag);
     arglist[0]= -1;
     arglist[1]= 0;
     
-    fgMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("MIGRAD", arglist, 0, ierflag);
-    fgMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("SET NOGR", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("MIGRAD", arglist, 0, ierflag);
+    clusterInput.Fitter()->mnexcm("EXIT" , arglist, 0, ierflag);
 // Get fitted parameters
     TString chname;
     Double_t epxz, b1, b2;
     Int_t ierflg;
-    fgMyMinuit->mnpout(0, chname, fXFit[0],  epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(1, chname, fYFit[0],  epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(2, chname, fXFit[1],  epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(3, chname, fYFit[1],  epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(4, chname, fQrFit[0], epxz, b1, b2, ierflg);	
-    fgMyMinuit->mnpout(5, chname, fQrFit[1], epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(0, chname, fXFit[0],  epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(1, chname, fYFit[0],  epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(2, chname, fXFit[1],  epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(3, chname, fYFit[1],  epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(4, chname, fQrFit[0], epxz, b1, b2, ierflg);	
+    clusterInput.Fitter()->mnpout(5, chname, fQrFit[1], epxz, b1, b2, ierflg);	
 
     Double_t fmin, fedm, errdef;
     Int_t   npari, nparx, istat;
       
-    fgMyMinuit->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
+    clusterInput.Fitter()->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
     fFitStat=istat;
     
     fChi2[0]=fmin;
@@ -1766,7 +1668,7 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 // One cluster for each maximum
 //
     Int_t i, j, cath;
-    
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     for (j=0; j<2; j++) {
 	AliMUONRawCluster cnew;
 	for (cath=0; cath<2; cath++) {
@@ -1783,16 +1685,16 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	    cnew.fX[cath]=Float_t(fXFit[j]);
 	    cnew.fY[cath]=Float_t(fYFit[j]);
 	    if (j==0) {
-		cnew.fQ[cath]=Int_t(fgChargeTot[cath]*fQrFit[cath]);
+		cnew.fQ[cath]=Int_t(clusterInput.TotalCharge(cath)*fQrFit[cath]);
 	    } else {
-		cnew.fQ[cath]=Int_t(fgChargeTot[cath]*(1-fQrFit[cath]));
+		cnew.fQ[cath]=Int_t(clusterInput.TotalCharge(cath)*(1-fQrFit[cath]));
 	    }
-	    fgSegmentation[cath]->SetHit(fXFit[j],fYFit[j]);
+	    fSegmentation[cath]->SetHit(fXFit[j],fYFit[j]);
 	    for (i=0; i<fMul[cath]; i++) {
 		cnew.fIndexMap[cnew.fMultiplicity[cath]][cath]=
 		    c->fIndexMap[i][cath];
-		fgSegmentation[cath]->SetPad(fgix[i][cath], fgiy[i][cath]);
-		Float_t q1=fgResponse->IntXY(fgSegmentation[cath]);
+		fSegmentation[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+		Float_t q1=fResponse->IntXY(fSegmentation[cath]);
 		cnew.fContMap[i][cath]
 		    =(q1*Float_t(cnew.fQ[cath]))/Float_t(fQ[i][cath]);
 		cnew.fMultiplicity[cath]++;
@@ -1808,97 +1710,21 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 }
 
 
-Float_t DiscrChargeS1(Int_t i,Double_t *par) 
-{
-// par[0]    x-position of cluster
-// par[1]    y-position of cluster
-
-   fgSegmentation[0]->SetPad(fgix[i][0], fgiy[i][0]);
-//  First Cluster
-   fgSegmentation[0]->SetHit(par[0],par[1]);
-   Float_t q1=fgResponse->IntXY(fgSegmentation[0]);
-    
-   Float_t value = fgQtot[0]*q1;
-   return value;
-}
-
-Float_t DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cath) 
-{
-// par[0]    x-position of cluster
-// par[1]    y-position of cluster
-
-   fgSegmentation[cath]->SetPad(fgix[i][cath], fgiy[i][cath]);
-//  First Cluster
-   fgSegmentation[cath]->SetHit(par[0],par[1]);
-   Float_t q1=fgResponse->IntXY(fgSegmentation[cath]);
-    
-   Float_t value = fgQtot[cath]*q1;
-   return value;
-}
-
-
-Float_t DiscrChargeS2(Int_t i,Double_t *par) 
-{
-// par[0]    x-position of first  cluster
-// par[1]    y-position of first  cluster
-// par[2]    x-position of second cluster
-// par[3]    y-position of second cluster
-// par[4]    charge fraction of first  cluster
-// 1-par[4]  charge fraction of second cluster
-
-   fgSegmentation[0]->SetPad(fgix[i][0], fgiy[i][0]);
-//  First Cluster
-   fgSegmentation[0]->SetHit(par[0],par[1]);
-   Float_t q1=fgResponse->IntXY(fgSegmentation[0]);
-    
-//  Second Cluster
-   fgSegmentation[0]->SetHit(par[2],par[3]);
-   Float_t q2=fgResponse->IntXY(fgSegmentation[0]);
-    
-   Float_t value = fgQtot[0]*(par[4]*q1+(1.-par[4])*q2);
-   return value;
-}
-
-Float_t DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cath) 
-{
-// par[0]    x-position of first  cluster
-// par[1]    y-position of first  cluster
-// par[2]    x-position of second cluster
-// par[3]    y-position of second cluster
-// par[4]    charge fraction of first  cluster
-// 1-par[4]  charge fraction of second cluster
-
-   fgSegmentation[cath]->SetPad(fgix[i][cath], fgiy[i][cath]);
-//  First Cluster
-   fgSegmentation[cath]->SetHit(par[0],par[1]);
-   Float_t q1=fgResponse->IntXY(fgSegmentation[cath]);
-    
-//  Second Cluster
-   fgSegmentation[cath]->SetHit(par[2],par[3]);
-   Float_t q2=fgResponse->IntXY(fgSegmentation[cath]);
-   Float_t value;
-   if (cath==0) {
-       value = fgQtot[0]*(par[4]*q1+(1.-par[4])*q2);
-   } else {
-       value = fgQtot[1]*(par[5]*q1+(1.-par[5])*q2);
-   }
-   return value;
-}
-
 //
 // Minimisation functions
 // Single Mathieson
 void fcnS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i;
     Float_t delta;
     Float_t chisq=0;
     Float_t qcont=0;
     Float_t qtot=0;
-    
-    for (i=0; i<fgNbins[0]; i++) {
-	Float_t q0=fgCharge[i][0];
-	Float_t q1=DiscrChargeS1(i,par);
+
+    for (i=0; i<clusterInput.Nmul(0); i++) {
+	Float_t q0=clusterInput.Charge(i,0);
+	Float_t q1=clusterInput.DiscrChargeS1(i,par);
 	delta=(q0-q1)/q0;
 	chisq+=delta*delta;
 	qcont+=q1;
@@ -1909,6 +1735,7 @@ void fcnS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 
 void fcnCombiS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i, cath;
     Float_t delta;
     Float_t chisq=0;
@@ -1918,35 +1745,35 @@ void fcnCombiS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 
     for (cath=0; cath<2; cath++) {
 //	chisq=0;
-	for (i=0; i<fgNbins[cath]; i++) {
-	    Float_t q0=fgCharge[i][cath];
-	    Float_t q1=DiscrChargeCombiS1(i,par,cath);
+	for (i=0; i<clusterInput.Nmul(cath); i++) {
+	    Float_t q0=clusterInput.Charge(i,cath);
+	    Float_t q1=clusterInput.DiscrChargeCombiS1(i,par,cath);
 	    //	    delta=(q0-q1);
 	    delta=(q0-q1)/q0;
 	    chisq+=delta*delta;
 	    qcont+=q1;
 	    qtot+=q0;
 	}
-//	if (cath == 0) chi2temp=chisq/fgNbins[cath];
+//	if (cath == 0) chi2temp=chisq/clusterInput.Nbins[cath];
     }
-//    chisq = chisq/fgNbins[1]+chi2temp; 
-    
+//    chisq = chisq/clusterInput.Nbins[1]+chi2temp; 
     f=chisq;
 }
 
 // Double Mathieson
 void fcnS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i;
     Float_t delta;
     Float_t chisq=0;
     Float_t qcont=0;
     Float_t qtot=0;
     
-    for (i=0; i<fgNbins[0]; i++) {
+    for (i=0; i<clusterInput.Nmul(0); i++) {
 
-	Float_t q0=fgCharge[i][0];
-	Float_t q1=DiscrChargeS2(i,par);
+	Float_t q0=clusterInput.Charge(i,0);
+	Float_t q1=clusterInput.DiscrChargeS2(i,par);
 	delta=(q0-q1)/q0;
 	chisq+=delta*delta;
 	qcont+=q1;
@@ -1959,6 +1786,7 @@ void fcnS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 // Double Mathieson
 void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
+    AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());    
     Int_t i, cath;
     Float_t delta;
     Float_t chisq=0;
@@ -1968,18 +1796,18 @@ void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 
     for (cath=0; cath<2; cath++) {
 //	chisq=0;
-	for (i=0; i<fgNbins[cath]; i++) {
-	    Float_t q0=fgCharge[i][cath];
-	    Float_t q1=DiscrChargeCombiS2(i,par,cath);
+	for (i=0; i<clusterInput.Nmul(cath); i++) {
+	    Float_t q0=clusterInput.Charge(i,cath);
+	    Float_t q1=clusterInput.DiscrChargeCombiS2(i,par,cath);
 	    //	    delta=(q0-q1);
 	    delta=(q0-q1)/q0;
 	    chisq+=delta*delta;
 	    qcont+=q1;
 	    qtot+=q0;
 	}
-//	if (cath == 0) chi2temp=chisq/fgNbins[cath];
+//	if (cath == 0) chi2temp=chisq/clusterInput.Nbins[cath];
     }
-//    chisq = chisq/fgNbins[1]+chi2temp; 	
+//    chisq = chisq/clusterInput.Nbins[1]+chi2temp; 	
     f=chisq;
 }
 
