@@ -361,7 +361,11 @@ void AliPHOSv1::StepManager(void)
 	qsum  += cpvDigit->GetQpad();
       }
     }
-    delete cpvDigits;
+    if (cpvDigits) {
+      cpvDigits->Delete();
+      delete cpvDigits;
+      cpvDigits=0;
+    }
   }
 
  
