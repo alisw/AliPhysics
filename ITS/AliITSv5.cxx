@@ -43,8 +43,8 @@ AliITSv5::AliITSv5(const char *name, const char *title)
   //
   // Standard constructor for the ITS
   //
-  fEuclidMaterial="$(ALICE_ROOT)/Euclid/ITSgeometry_60.tme";
-  fEuclidGeometry="$(ALICE_ROOT)/Euclid/ITSgeometry_60.euc";
+  fEuclidMaterial="$(ALICE_ROOT)/Euclid/ITSgeometry_5.tme";
+  fEuclidGeometry="$(ALICE_ROOT)/Euclid/ITSgeometry_5.euc";
 }
 
  
