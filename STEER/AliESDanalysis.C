@@ -16,6 +16,7 @@
   #include "TParticle.h"
 
   #include "AliRun.h"
+  #include "AliStack.h"
   #include "AliRunLoader.h"
   #include "AliLoader.h"
 
@@ -73,6 +74,7 @@ Int_t AliESDanalysis(Int_t nev=1) {
       return 1;
    }
    rl->LoadKinematics();
+   AliStack* stack = rl->Stack();
 
    TFile *ef=TFile::Open("AliESDs.root");
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
@@ -117,7 +119,7 @@ Int_t AliESDanalysis(Int_t nev=1) {
          nsel++;
 
          Int_t lab=TMath::Abs(t->GetLabel());
-         TParticle *part=gAlice->Particle(lab);
+         TParticle *part=stack->Particle(lab);
          Int_t code=part->GetPdgCode();
 
          Double_t r[10]; t->GetESDpid(r);
