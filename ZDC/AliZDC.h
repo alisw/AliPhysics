@@ -29,7 +29,7 @@ public:
   virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
   virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC
   virtual void  MakeBranch(Option_t* opt, const char *file=0);
-  virtual void  MakeBranchInTreeSD(TTree *treeSD, const char *file=0);
+  virtual void  MakeBranchInTreeS(TTree *treeS, const char *file=0);
   virtual void  MakeBranchInTreeD(TTree *treeD, const char *file=0);
   virtual void  MakeBranchInTreeR(TTree *treeD, const char *file=0);
   virtual void  Hits2SDigits();
@@ -37,8 +37,8 @@ public:
   virtual void  Hits2Digits();
   virtual void  Digits2Reco();
   TClonesArray  *Reconstructed()   const {return fRecPoints;}
-  virtual void  SetMerger(AliZDCMerger* merger);
-  virtual AliZDCMerger* Merger();
+  virtual void  SetMerger(AliZDCMerger* merger) {fMerger = merger;}
+  virtual AliZDCMerger* Merger() {return fMerger;}
   virtual void  StepManager() {}
     
   // Switching off the shower development in ZDCs
@@ -52,8 +52,6 @@ protected:
   
   Int_t        fNMergedhits;    // Number of Merged hits for background
   TClonesArray *fMergedHits;    // TCA for "merged" hits  
-  TTree	       *fTreeSD;	// TreeS for merging
-  TTree	       *fTreeMD;	// TreeD for merging
   
   Int_t        fNRecPoints;	// Number of RecPoints
   TClonesArray *fRecPoints;	// List of RecPoints
