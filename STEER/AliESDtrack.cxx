@@ -77,6 +77,11 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
     else if (mass<0.4) fR[2]=1.;    // the ITS reconstruction
     else fR[3]=1.;}                 //
     break;
+  case kTRDin: case kTRDout: case kTRDrefit:
+    fTRDncls=t->GetNumberOfClusters();
+    fTRDchi2=t->GetChi2();
+    fTRDsignal=t->GetPIDsignal();
+    break;
   default: 
     Error("UpdateTrackParams()","Wrong flag !\n");
     return kFALSE;
@@ -178,6 +183,17 @@ void AliESDtrack::SetTPCpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetTPCpid(Double_t *p) const {
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fTPCr[i];
+}
+
+//_______________________________________________________________________
+void    AliESDtrack::SetTRDpid(Int_t iSpecies, Float_t p)
+{
+  fTRDr[iSpecies] = p;
+}
+
+Float_t AliESDtrack::GetTRDpid(Int_t iSpecies) const
+{
+  return fTRDr[iSpecies];
 }
 
 //_______________________________________________________________________

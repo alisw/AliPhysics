@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2003/05/22 10:46:46  hristov
+Using access methods instead of data members
+
 Revision 1.18  2003/04/10 10:36:54  hristov
 Code for unified TPC/TRD tracking (S.Radomski)
 
@@ -72,6 +75,7 @@ Add the tracking code
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
 #include "../TPC/AliTPCtrack.h" 
+#include "AliESDtrack.h" 
 
 
 ClassImp(AliTRDtrack)
@@ -184,6 +188,62 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   fNRotate = 0;
 
   fAlpha = alpha;
+  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
+  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
+
+  Double_t x, p[5]; t.GetExternalParameters(x,p);
+
+  fX=x;
+
+  x = GetConvConst();  
+
+  fY=p[0];
+  fZ=p[1];
+  fT=p[3];
+  fC=p[4]/x;
+  fE=fC*fX - p[2];   
+
+  //Conversion of the covariance matrix
+  Double_t c[15]; t.GetExternalCovariance(c);
+
+  c[10]/=x; c[11]/=x; c[12]/=x; c[13]/=x; c[14]/=x*x;
+
+  Double_t c22=fX*fX*c[14] - 2*fX*c[12] + c[5];
+  Double_t c32=fX*c[13] - c[8];
+  Double_t c20=fX*c[10] - c[3], c21=fX*c[11] - c[4], c42=fX*c[14] - c[12];
+
+  fCyy=c[0 ];
+  fCzy=c[1 ];   fCzz=c[2 ];
+  fCey=c20;     fCez=c21;     fCee=c22;
+  fCty=c[6 ];   fCtz=c[7 ];   fCte=c32;   fCtt=c[9 ];
+  fCcy=c[10];   fCcz=c[11];   fCce=c42;   fCct=c[13]; fCcc=c[14];  
+
+  // Initialization [SR, GSI, 18.02.2003]
+  for(Int_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+    fdQdl[i] = 0;
+    fIndex[i] = 0;
+  }
+}              
+//_____________________________________________________________________________
+AliTRDtrack::AliTRDtrack(const AliESDtrack& t) 
+           :AliKalmanTrack() {
+  //
+  // Constructor from AliESDtrack
+  //
+
+  SetLabel(t.GetLabel());
+  SetChi2(0.);
+  SetMass(t.GetMass());
+  SetNumberOfClusters(0); 
+  // WARNING: cluster indices are NOT copied !!!
+
+  fdEdx=0;
+
+  fLhElectron = 0.0;
+  fNWrong = 0;
+  fNRotate = 0;
+
+  fAlpha = t.GetAlpha();
   if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
   else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
 

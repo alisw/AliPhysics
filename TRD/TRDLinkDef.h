@@ -47,5 +47,6 @@
 #pragma link C++ class  AliTRDarrayI+;
 #pragma link C++ class  AliTRDarrayF+;
 #pragma link C++ class  AliTRDparameter+;
+#pragma link C++ class  AliTRDPartID+;
 
 #endif

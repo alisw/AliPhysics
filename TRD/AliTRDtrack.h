@@ -13,6 +13,7 @@
 
 class AliTRDcluster;
 class AliTPCtrack;
+class AliESDtrack;
 
 const unsigned kMAX_CLUSTERS_PER_TRACK=210; 
 
@@ -27,6 +28,7 @@ public:
                const Double_t cc[15], Double_t xr, Double_t alpha);  
    AliTRDtrack(const AliTRDtrack& t);    
    AliTRDtrack(const AliKalmanTrack& t, Double_t alpha); 
+   AliTRDtrack(const AliESDtrack& t);    
 
    Int_t    Compare(const TObject *o) const;
    void     CookdEdx(Double_t low=0.05, Double_t up=0.70);   
@@ -42,6 +44,7 @@ public:
 
    void     GetCovariance(Double_t cov[15]) const;  
    Double_t GetdEdx()  const {return fdEdx;}
+   Double_t GetPIDsignal()  const {return GetdEdx();}
    Double_t GetEta()   const {return fE;}
 
    void     GetExternalCovariance(Double_t cov[15]) const ;   

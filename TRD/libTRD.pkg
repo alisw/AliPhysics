@@ -36,7 +36,8 @@ SRCS= AliTRD.cxx \
       AliTRDsimple.cxx \
       AliTRDsimpleMC.cxx \
       AliTRDsimpleGen.cxx \
-      AliTRDparameter.cxx
+      AliTRDparameter.cxx \
+      AliTRDPartID.cxx
 
 HDRS= $(SRCS:.cxx=.h)                
 

@@ -7,8 +7,10 @@
 #include "AliTracker.h" 
 #include "TObjArray.h" 
 #include "AliBarrelTrack.h"
+#include "AliESD.h"
 
 class TFile;
+class TTree;
 class TParticle;
 class TParticlePDG;
 
@@ -34,11 +36,12 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         Clusters2Tracks(const TFile *in, TFile *out);
   Int_t         PropagateBack(const TFile *in, TFile *out);
+  Int_t         PropagateBack(AliESD* event);
   //Int_t         Refit(const TFile *in, TFile *out);
 
   Int_t         LoadClusters() {LoadEvent(); return 0;};
   void          UnloadClusters() {UnloadEvent();};
-  AliCluster   *GetCluster(Int_t index) const { return (AliCluster*) fClusters->UncheckedAt(index); };
+  AliCluster   *GetCluster(Int_t index) const { if (index >= fNclusters) return NULL; return (AliCluster*) fClusters->UncheckedAt(index); };
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;  
   

@@ -132,6 +132,8 @@ Double_t AliKalmanTrack::Phi() const
   Double_t par[5];
   Double_t localX = GetX();
   GetExternalParameters(localX, par);
+  if (par[2] >  1.) par[2] =  1.;
+  if (par[2] < -1.) par[2] = -1.;
   Double_t phi = TMath::ASin(par[2]) + GetAlpha();
   while (phi < 0) phi += TMath::TwoPi();
   while (phi > TMath::TwoPi()) phi -= TMath::TwoPi();
@@ -233,7 +235,7 @@ Double_t AliKalmanTrack::P() const
   Double_t par[5];
   Double_t localX = GetX();
   GetExternalParameters(localX, par);
-  return 1. / TMath::Abs(par[4] * TMath::Sin(TMath::ATan(par[3])));
+  return 1. / TMath::Abs(par[4] * TMath::Cos(TMath::ATan(par[3])));
 }
 //_______________________________________________________________________
 void AliKalmanTrack::StartTimeIntegral() 

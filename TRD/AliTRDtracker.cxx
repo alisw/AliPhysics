@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.26  2003/04/10 10:36:54  hristov
+Code for unified TPC/TRD tracking (S.Radomski)
+
 Revision 1.25  2003/03/19 17:14:11  hristov
 Load/UnloadClusters added to the base class and the derived classes changed correspondingly. Possibility to give 2 input files for ITS and TPC tracks in PropagateBack. TRD tracker uses fEventN from the base class (T.Kuhr)
 
@@ -98,6 +101,7 @@ Add the tracking code
 #include "AliTRDgeometryDetail.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
+#include "AliTRDPartID.h"
 #include "../TPC/AliTPCtrack.h"
 
 #include "AliTRDtracker.h"
@@ -154,10 +158,10 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
   }
   else {
     in->cd();  
-    in->ls();
+//    in->ls();
     fGeom = (AliTRDgeometry*) in->Get("TRDgeometry");
     fPar  = (AliTRDparameter*) in->Get("TRDparameter");
-    fGeom->Dump();
+//    fGeom->Dump();
   }
 
   if(fGeom) {
@@ -754,6 +758,58 @@ Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
 
 }
 
+//_____________________________________________________________________________
+Int_t AliTRDtracker::PropagateBack(AliESD* event) {
+  //
+  // Gets seeds from ESD event. The seeds are AliTPCtrack's found and
+  // backpropagated by the TPC tracker. Each seed is first propagated 
+  // to the TRD, and then its prolongation is searched in the TRD.
+  // If sufficiently long continuation of the track is found in the TRD
+  // the track is updated, otherwise it's stored as originaly defined 
+  // by the TPC tracker.   
+  //  
+
+  Int_t found=0;  
+  Float_t foundMin = 40;
+
+  Int_t n = event->GetNumberOfTracks();
+  for (Int_t i=0; i<n; i++) {
+    AliESDtrack* seed=event->GetTrack(i);
+    ULong_t status=seed->GetStatus();
+    if ( (status & AliESDtrack::kTPCout ) == 0 ) continue;
+    if ( (status & AliESDtrack::kTRDout) != 0 ) continue;
+
+    Int_t lbl = seed->GetLabel();
+    AliTRDtrack *track = new AliTRDtrack(*seed);
+    track->SetSeedLabel(lbl);
+    fNseeds++;
+
+    Int_t expectedClr = FollowBackProlongation(*track);
+
+    Int_t foundClr = track->GetNumberOfClusters();
+    if (foundClr >= foundMin) {
+      if(foundClr >= 2) {
+	track->CookdEdx(); 
+//	CookLabel(track, 1-fLabelFraction);
+	UseClusters(track);
+      }
+      
+      // Propagate to outer reference plane [SR, GSI, 18.02.2003]
+//      track->PropagateTo(364.8);  why?
+      
+      seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
+      found++;
+    }
+
+  }
+  
+  cerr<<"Number of seeds: "<<fNseeds<<endl;  
+  cerr<<"Number of back propagated TRD tracks: "<<found<<endl;
+
+  return 0;
+
+}
+
 
 //---------------------------------------------------------------------------
 Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
@@ -1046,7 +1102,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
     if (fTrSec[s]->GetLayer(nr)->IsSensitive() != 
         fTrSec[s]->GetLayer(nr+1)->IsSensitive() ) {
 
-      if (IsStoringBarrel()) StoreBarrelTrack(&t, nRefPlane++, kTrackBack);
+//      if (IsStoringBarrel()) StoreBarrelTrack(&t, nRefPlane++, kTrackBack);
     }
 
     if (fTrSec[s]->GetLayer(nr-1)->IsSensitive() && 

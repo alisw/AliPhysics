@@ -23,14 +23,20 @@
   #include "AliTPCtracker.h"
   #include "AliITSgeom.h"
   #include "AliITStrackerV2.h"
+  #include "AliTRDtracker.h"
+  #include "AliTRDPartID.h"
   #include "AliITSpidESD.h"
 #endif
 
-Int_t AliESDtest(Int_t nev=1) { 
+Int_t AliESDtest(Int_t nev=1, 
+		 const char* fileNameITSClusters = "its.clusters.root",
+		 const char* fileNameTPCClusters = "tpc.clusters.root",
+		 const char* fileNameTRDClusters = "trd.clusters.root") { 
+
    //File with the TPC clusters
-   TFile *tpccf=TFile::Open("AliTPCclusters.root");
+   TFile *tpccf=TFile::Open(fileNameTPCClusters);
    if (!tpccf->IsOpen()) {
-      cerr<<"Can't open AliTPCclusters.root !\n"; 
+      cerr<<"Can't open "<<fileNameTPCClusters<<" !\n"; 
       return 2;
    }
    AliTPCParam *par=(AliTPCParam*)tpccf->Get("75x40_100x60_150x60");
@@ -44,9 +50,9 @@ Int_t AliESDtest(Int_t nev=1) {
    AliTPCpidESD tpcPID(parTPC);
 
    //File with the ITS clusters
-   TFile *itscf=TFile::Open("AliITSclustersV2.root");
+   TFile *itscf=TFile::Open(fileNameITSClusters);
    if (!itscf->IsOpen()) {
-      cerr<<"Can't open AliITSclustersV2.root !\n"; 
+      cerr<<"Can't open "<<fileNameITSClusters<<".root !\n"; 
       return 4;
    }
    AliITSgeom *geom=(AliITSgeom*)itscf->Get("AliITSgeom");
@@ -58,8 +64,30 @@ Int_t AliESDtest(Int_t nev=1) {
    //An instance of the ITS PID maker
    Double_t parITS[]={34.,0.12,3.};
    AliITSpidESD itsPID(parITS);
-   
-   TFile *ef=TFile::Open("AliESDs.root","new");
+
+   //File with the TRD clusters
+   TFile *trdcf=TFile::Open(fileNameTRDClusters);
+   if (!trdcf->IsOpen()) {
+      cerr<<"Can't open "<<fileNameTRDClusters<<".root !\n"; 
+      return 6;
+   }
+
+   //An instance of the TRD tracker
+   AliTRDtracker trdTracker(trdcf);
+
+   //An instance of the TRD PID maker
+   TFile* pidFile = TFile::Open("pid.root");
+   if (!pidFile->IsOpen()) {
+     cerr << "Can't get pid.root !\n";
+     return 7;
+   }
+   AliTRDPartID* trdPID = (AliTRDPartID*) pidFile->Get("AliTRDPartID");
+   if (!trdPID) {
+     cerr << "Can't get PID object !\n";
+     return 8;
+   }
+
+   TFile *ef=TFile::Open("AliESDs.root","RECREATE");
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
 
    TStopwatch timer;
@@ -81,11 +109,25 @@ Int_t AliESDtest(Int_t nev=1) {
 
      rc+=itsTracker.PropagateBack(event); 
      itsTracker.UnloadClusters();
+
      itsPID.MakePID(event);
      
      rc+=tpcTracker.PropagateBack(event);
      tpcTracker.UnloadClusters();
+
      tpcPID.MakePID(event);
+
+     trdTracker.SetEventNumber(i);
+     trdcf->cd();
+     trdTracker.LoadClusters();
+
+     rc+=trdTracker.PropagateBack(event);
+     trdTracker.UnloadClusters();
+
+     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
+       AliESDtrack* track = event->GetTrack(iTrack);
+       trdPID->MakePID(track);
+     }
 
     //Here is the combined PID
      AliESDpid::MakePID(event);
@@ -93,6 +135,7 @@ Int_t AliESDtest(Int_t nev=1) {
      if (rc==0) {
         Char_t ename[100]; 
         sprintf(ename,"%d",i);
+	ef->cd();
         if (!event->Write(ename)) rc++;
      } 
      if (rc) {
@@ -102,6 +145,8 @@ Int_t AliESDtest(Int_t nev=1) {
    }
    timer.Stop(); timer.Print();
 
+   pidFile->Close();
+   trdcf->Close();
    delete geom;
    itscf->Close();
    delete par;
