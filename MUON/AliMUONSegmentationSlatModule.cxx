@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.9  2001/01/26 21:25:48  morsch
 Empty default constructors and.
 
@@ -66,6 +69,8 @@ ClassImp(AliMUONSegmentationSlatModule)
 AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule() 
 {
 // Default constructor
+    fNDiv = 0;      
+    fDpxD = 0;  
 }
 
 AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule(Int_t nsec) 
