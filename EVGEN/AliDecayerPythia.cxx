@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/03/09 13:04:06  morsch
+Decay_t moved to AliDecayer.h
+
 Revision 1.4  2001/01/30 09:23:11  hristov
 Streamers removed (R.Brun)
 
@@ -54,29 +57,40 @@ ClassImp(AliDecayerPythia)
 extern "C" void type_of_call 
           py1ent(Int_t&, Int_t&, Double_t&, Double_t&, Double_t&);
 
+Bool_t AliDecayerPythia::fgInit = kFALSE;
+
 
 AliDecayerPythia::AliDecayerPythia()
 {
 // Default Constructor
     fPythia=AliPythia::Instance();
-    for (Int_t i=0; i< 501; i++) fBraPart[i]=1;
+    for (Int_t i=0; i< 501; i++) fBraPart[i]= 1.;
 }
 
 void AliDecayerPythia::Init()
 {
 // Initialisation
 //
+    if (!fgInit) {
+	fgInit = kTRUE;
+	fPythia->SetDecayTable();
+    }
+
 // Switch on heavy flavor decays
+    
     Int_t kc, i, j;
     Int_t heavy[8] = {411, 421, 431, 4122, 511, 521, 531, 5122};
-    
+    fPythia->ResetDecayTable();
     for (j=0; j < 8; j++) {
 	kc=fPythia->Pycomp(heavy[j]);
 	fPythia->SetMDCY(kc,1,1);
-	for (i=fPythia->GetMDCY(kc,2);i<fPythia->GetMDCY(kc,2)+fPythia->GetMDCY(kc,3); i++) {
+	for (i=fPythia->GetMDCY(kc,2); 
+	     i<fPythia->GetMDCY(kc,2)+fPythia->GetMDCY(kc,3); 
+	     i++) {
 	    fPythia->SetMDME(i,1,1);
 	}
     }
+
     ForceDecay();
 }
 
@@ -105,9 +119,6 @@ void AliDecayerPythia::ForceDecay()
 // Force a particle decay mode
     Decay_t decay=fDecay;
     
-//
-// Make clean
-// AllowAllDecays();
 //
 // select mode    
 
@@ -293,21 +304,6 @@ void AliDecayerPythia::ForceParticleDecay(Int_t particle, Int_t product, Int_t m
 	}
     }
 }
-
-
-void AliDecayerPythia::AllowAllDecays()
-{
-// Reset decay flags
-    Int_t i;
-    for (i=1; i<= 2000; i++) {
-	fPythia->SetMDME(i,1,1);
-    }
-//
-    for (i=0; i<501; i++){
-	fBraPart[i]=1;
-    }
-}
-
 
 void AliDecayerPythia::DefineParticles()
 {
