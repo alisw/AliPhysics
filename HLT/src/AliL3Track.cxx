@@ -218,12 +218,12 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   
   Double_t yHit = xyz[1];
   Double_t angle1 = atan2((yHit - GetCenterY()),(xHit - GetCenterX()));
-  if(angle1 < 0) angle1 += 2.*Pi;
+  if(angle1 < 0) angle1 += 2.*AliL3Transform::Pi();
   Double_t angle2 = atan2((GetFirstPointY() - GetCenterY()),(GetFirstPointX() - GetCenterX()));
-  if(angle2 < 0) angle2 += 2.*Pi;
+  if(angle2 < 0) angle2 += 2.*AliL3Transform::Pi();
   Double_t diff_angle = angle1 - angle2;
-  diff_angle = fmod(diff_angle,2*Pi);
-  if((GetCharge()*diff_angle) > 0) diff_angle = diff_angle - GetCharge()*2.*Pi;
+  diff_angle = fmod(diff_angle,2*AliL3Transform::Pi());
+  if((GetCharge()*diff_angle) > 0) diff_angle = diff_angle - GetCharge()*2.*AliL3Transform::Pi();
   Double_t s_tot = fabs(diff_angle)*GetRadius();
   Double_t zHit = GetFirstPointZ() + s_tot*GetTgl();
   xyz[2] = zHit;
@@ -233,7 +233,7 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 
 
 Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
-  // Global coordinate: crossing point with y = ax+ b; a=tan(angle-Pi/2);
+  // Global coordinate: crossing point with y = ax+ b; a=tan(angle-AliL3Transform::Pi()/2);
   //
   const Double_t rr=radius;//132; //position of referece plane
   const Double_t xr = cos(angle) *rr;
@@ -409,15 +409,15 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_
   
   //Get the z coordinate:
   Double_t angle1 = atan2((closest_y-GetCenterY()),(closest_x-GetCenterX()));
-  if(angle1 < 0) angle1 = angle1 + 2*Pi;
+  if(angle1 < 0) angle1 = angle1 + 2*AliL3Transform::Pi();
  
   Double_t angle2 = atan2((GetFirstPointY()-GetCenterY()),(GetFirstPointX()-GetCenterX()));
-  if(angle2 < 0) angle2 = angle2 + 2*Pi;
+  if(angle2 < 0) angle2 = angle2 + 2*AliL3Transform::Pi();
   
   Double_t diff_angle = angle1 - angle2;
-  diff_angle = fmod(diff_angle,2*Pi);
+  diff_angle = fmod(diff_angle,2*AliL3Transform::Pi());
   
-  if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*2*Pi;
+  if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*2*AliL3Transform::Pi();
   Double_t s_tot = fabs(diff_angle)*GetRadius();
   
   closest_z = GetFirstPointZ() - s_tot*GetTgl();

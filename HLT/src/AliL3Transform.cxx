@@ -52,6 +52,9 @@ Int_t AliL3Transform::fNSlice = 36 ;
 Int_t AliL3Transform::fNRow = 176 ;
 Double_t AliL3Transform::fNRotShift = 0.5 ;
 Double_t AliL3Transform::fPi = 3.141592653589793 ;
+Int_t AliL3Transform::fNPatches = 6;
+Int_t AliL3Transform::fRows[6][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
+Int_t AliL3Transform::fNRows[6] = {32,32,28,28,24,32};
 Double_t AliL3Transform::fX[176] = {84.570007324218750,
                                     85.320007324218750,
                                     86.070007324218750,

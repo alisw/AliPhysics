@@ -27,13 +27,21 @@ class AliL3Transform {
   static Int_t fNPads[176]; //fill this following Init
   static Double_t fX[176];  //fill this following Init
   static Int_t fVersion; //flags which version one is using
+  static Int_t fRows[6][2];
+  static Int_t fNRows[6];
+  static Int_t fNPatches;
 
  public:
   
   static void Init(const Char_t* path); //new init for all AliRoot versions
   
   static void SetBField(Double_t f) {fBField = f;}
+  static Int_t GetFirstRow(Int_t patch) {return fRows[patch][0];}
+  static Int_t GetLastRow(Int_t patch) {return fRows[patch][1];}
+  static Int_t GetNRows(Int_t patch) {return fNRows[patch];}
+  static Int_t GetNPatches() {return fNPatches;}
   static Double_t GetBField() {return fBField;}
+  static Double_t Pi() {return fPi;}
   static Int_t GetVersion(){return fVersion;}
   static Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
   static Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}
