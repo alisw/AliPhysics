@@ -23,7 +23,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliDecayer.cxx AliDecayerPythia.cxx \
                 AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
 	        AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
-         AliGenHBTprocessor.cxx 
+                AliGenHBTprocessor.cxx \
+		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx 
 # C++ Headers
 
 HDRS          = $(SRCS:.cxx=.h) $(ALICE_ROOT)/include/THijing.h \

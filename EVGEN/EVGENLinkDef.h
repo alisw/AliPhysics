@@ -43,6 +43,9 @@
 #pragma link C++ class  AliGenMevSim+;
 #pragma link C++ class  AliGenMC+;
 #pragma link C++ class  AliGenHBTprocessor+;
+#pragma link C++ class  AliGenReader+;
+#pragma link C++ class  AliGenReaderCwn++;
+#pragma link C++ class  AliGenReaderTreeK++;
 #endif
 
 
