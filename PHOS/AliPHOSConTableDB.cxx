@@ -44,6 +44,7 @@ ClassImp(AliPHOSConTableDB)
   fColOffset = 0 ;
   fGeom = 0;
   fAbsIdMap = 0 ;
+  fRawIdMap = 0 ;
 }
 
 //____________________________________________________________________________ 
@@ -54,6 +55,8 @@ ClassImp(AliPHOSConTableDB)
   fProtoColumns = 0 ;
   fRawOffset = 0 ;
   fColOffset = 0 ;
+  fAbsIdMap = 0 ;
+  fRawIdMap = 0 ;
 
   fGeom = AliPHOSGeometry::GetInstance("GPS2","") ;
 
@@ -64,6 +67,8 @@ ClassImp(AliPHOSConTableDB)
 {
   if(fAbsIdMap)
     delete [] fAbsIdMap ;
+  if(fRawIdMap)
+    delete [] fRawIdMap ;
 }
 
 //____________________________________________________________________________ 
@@ -79,15 +84,22 @@ void  AliPHOSConTableDB::BuildDB(void)
   fRawOffset = (fGeom->GetNPhi() - fProtoRaws)/2 ;
   fColOffset = (fGeom->GetNZ() - fProtoColumns )/ 2 ;
   fAbsIdMap = new TArrayS(fNcrInProto) ;
-  for(Int_t raw =0; raw < fProtoRaws; raw ++){
+  fMinAbsId = fGeom->GetNCristalsInModule()*2 +
+    fRawOffset*fGeom->GetNZ()+fColOffset+1 ;
+  fMaxAbsId = fGeom->GetNCristalsInModule()*2 +
+    (fRawOffset + fProtoRaws)*fGeom->GetNZ()- 
+     fColOffset ;
+  fRawIdMap = new TArrayS(fMaxAbsId-fMinAbsId+1) ;
+  for(Int_t raw =0; raw < fProtoRaws ; raw ++){
     for(Int_t col = 0; col < fProtoColumns ; col ++){
-      Int_t rawId = col*fProtoRaws + raw ;
+      Int_t rawId = raw*fProtoColumns + col ;
       Int_t rel[4] = {3,0,0,0} ; //We assume, that we deal with third module
-      rel[2]=raw + fRawOffset ;
-      rel[3]=col + fColOffset ;
+      rel[2]=raw + fRawOffset+1 ;
+      rel[3]=col + fColOffset+1 ;
       Int_t absId ;
       fGeom->RelToAbsNumbering(rel,absId) ;
       fAbsIdMap->AddAt(static_cast<UInt_t>(absId),rawId) ;
+      fRawIdMap->AddAt(static_cast<UInt_t>(rawId),absId-fMinAbsId) ;
     }
   }
 
@@ -135,6 +147,16 @@ void AliPHOSConTableDB::PlotProtoMap(Option_t * opt)
      hMapProto->Draw("textsame") ;
 
 } 
+//____________________________________________________________________________ 
+Int_t AliPHOSConTableDB::AbsId2Raw(Int_t absId){
+  //converts numbering of modules in PHOS into
+  //numbering in prototype
+  if(absId >= fMinAbsId && absId<=fMaxAbsId){    
+    return fRawIdMap->At(absId-fMinAbsId) ;
+  }
+  else
+    return -1 ;
+}
 //____________________________________________________________________________ 
 Int_t AliPHOSConTableDB::Raw2AbsId(Int_t rawId){
   //converts numbering of modules in prototipe into

@@ -30,6 +30,9 @@ public:
   //Calculate table from known numbe of raws/columns 
   //assuming that prototype is situated in the center of 3 PHOS mod.
   void BuildDB(void) ;
+  Int_t GetNchanels(){return fNcrInProto ; } 
+  Int_t GetNRaws(){return fProtoRaws ;} 
+  Int_t GetNColumns(){return fProtoColumns ;}
 
   //set the number of columns in prototype
   void SetNCols(Int_t ncolumns){fProtoColumns = ncolumns ;}
@@ -45,7 +48,7 @@ public:
   Int_t Raw2AbsId(Int_t raw) ;
 
   //Transforms AbsId number in PHOS into channel number in prototype 
-  Int_t AbsId2Raw(Int_t AbsId){return 0 ;} //To be implemented
+  Int_t AbsId2Raw(Int_t AbsId) ;
 
   virtual void Print(Option_t * option="") const ;
 
@@ -57,7 +60,10 @@ private:
   Int_t     fRawOffset ;        //correspondance
   Int_t     fColOffset ;        //map
   Int_t     fNcrInProto ;    //Number of channels in prototype
+  Int_t     fMinAbsId ;
+  Int_t     fMaxAbsId ;
   TArrayS * fAbsIdMap ;      //Map of correspondance between Raw and PHOS ID
+  TArrayS * fRawIdMap ;      //Map of correspondance between AbsId and Raw
 
   ClassDef(AliPHOSConTableDB,1)  // description 
 
