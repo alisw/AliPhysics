@@ -54,7 +54,7 @@ Int_t AliTPCComparison(Bool_t thcut=1.0) {
    }
 
    rl->LoadgAlice();
-   if (rl->GetAliRun()) 
+   if (rl->GetAliRun())
    AliKalmanTrack::SetConvConst(
      1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
    );
@@ -62,33 +62,13 @@ Int_t AliTPCComparison(Bool_t thcut=1.0) {
        cerr<<"AliTPCComparison.C :Can't get AliRun !\n";
        return 1;
    }
-   rl->UnloadgAlice();
+   //rl->UnloadgAlice();
   
    AliTPCLoader * tpcl = (AliTPCLoader *)rl->GetLoader("TPCLoader");
    if (tpcl == 0x0) {
        cerr<<"AliTPCComparison.C : Can not find TPCLoader\n";
        delete rl;
        return 3;
-   }
-
-   Int_t nentr=0,i=0; TObjArray tarray(MAX);
-   { /*Load tracks*/
-   
-     tpcl->LoadTracks();
-     
-     TTree *tracktree=tpcl->TreeT();
-     if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n"; return 4;}
-
-     TBranch *tbranch=tracktree->GetBranch("tracks");
-     nentr=(Int_t)tracktree->GetEntries();
-     AliTPCtrack *iotrack=0;
-     for (i=0; i<nentr; i++) {
-       iotrack=new AliTPCtrack;
-       tbranch->SetAddress(&iotrack);
-       tracktree->GetEvent(i);
-       tarray.AddLast(iotrack);
-     }   
-     tpcl->UnloadTracks();
    }
 
    /* Generate a list of "good" tracks */
@@ -133,6 +113,25 @@ Int_t AliTPCComparison(Bool_t thcut=1.0) {
       out.close();
    }
 
+   Int_t nentr=0,i=0; TObjArray tarray(MAX);
+   { /*Load tracks*/
+   
+     tpcl->LoadTracks();
+     
+     TTree *tracktree=tpcl->TreeT();
+     if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n"; return 4;}
+
+     TBranch *tbranch=tracktree->GetBranch("tracks");
+     nentr=(Int_t)tracktree->GetEntries();
+     AliTPCtrack *iotrack=0;
+     for (i=0; i<nentr; i++) {
+       iotrack=new AliTPCtrack;
+       tbranch->SetAddress(&iotrack);
+       tracktree->GetEvent(i);
+       tarray.AddLast(iotrack);
+     }   
+     tpcl->UnloadTracks();
+   }
 
    TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
    TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);
