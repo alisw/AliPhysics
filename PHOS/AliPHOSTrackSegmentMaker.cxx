@@ -56,6 +56,7 @@ AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const TString alirunFileName,
 AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
 {
  //Remove this from the parental task before destroying
-  AliPHOSGetter::Instance()->PhosLoader()->CleanTracker();
+  if(AliPHOSGetter::Instance()->PhosLoader())
+    AliPHOSGetter::Instance()->PhosLoader()->CleanTracker();
 }
 
