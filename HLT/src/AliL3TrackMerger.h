@@ -14,8 +14,8 @@ class AliL3TrackMerger : public AliL3Merger {
 
   Int_t fSubSector;
   Int_t fNSubSector;
-  Int_t fRowMin[5];
-  Int_t fRowMax[5];
+  Int_t *fRowMin;//!
+  Int_t *fRowMax;//!
   Bool_t fSlow;
   void SlowMerge(AliL3TrackArray *mergedtrack,AliL3TrackArray *tracksin,AliL3TrackArray *tracksout,Double_t xval);
   Int_t Merge(AliL3TrackArray *mergedtrack,AliL3TrackArray *tracksin,AliL3TrackArray *tracksout);

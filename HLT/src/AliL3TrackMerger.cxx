@@ -23,8 +23,8 @@ AliL3TrackMerger::AliL3TrackMerger(){
   Is2Global(kFALSE);
   fSlow = kFALSE;
   SetParameter();
-//  fRowMin = 0;
-//  fRowMax = 0;
+  fRowMin = 0;
+  fRowMax = 0;
 }
 
 
@@ -34,8 +34,8 @@ AliL3TrackMerger::AliL3TrackMerger(Int_t nsubsectors):AliL3Merger(nsubsectors){
   Is2Global(kFALSE);
   fSlow = kFALSE;
   SetParameter();
-  //fRowMin = new Int_t(nsubsectors);
-  //fRowMax = new Int_t(nsubsectors);
+  fRowMin = new Int_t[nsubsectors];
+  fRowMax = new Int_t[nsubsectors];
 }
 
 AliL3TrackMerger::~AliL3TrackMerger(){
