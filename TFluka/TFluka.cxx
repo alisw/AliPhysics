@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2003/01/31 12:18:53  morsch
+Corrected indices. (E. Futo)
+
 Revision 1.9  2002/12/06 12:41:29  morsch
 Mess from last merge cleaned up.
 
@@ -244,7 +247,8 @@ void TFluka::FinishGeometry() {
       printf("Finish Geometry: volName, media %d %s %d \n", i, volName.Data(), media);
       strcpy(tmp, volName.Data());
       tmp[4] = '\0';
-      flugg->SetMediumFromName(tmp, media);
+      flugg->SetMediumFromName(tmp, media, i+1);
+      fMediaByRegion[i] = media;
   }
 
   flugg->BuildMediaMap();
@@ -265,7 +269,9 @@ void TFluka::BuildPhysics() {
 void TFluka::ProcessEvent() {
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::ProcessEvent() called." << endl;
-
+  fApplication->GeneratePrimaries();
+  EPISOR.lsouit = true;
+  flukam(1);
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessEvent() called." << endl;
 }
@@ -280,13 +286,14 @@ void TFluka::ProcessRun(Int_t nevent) {
     cout << "\t* GLOBAL.fdrtr = " << (GLOBAL.lfdrtr?'T':'F') << endl;
     cout << "\t* Calling flukam again..." << endl;
   }
-  fApplication->GeneratePrimaries();
-  EPISOR.lsouit = true;
-  flukam(1);
-
+  fApplication->InitGeometry();
+  fApplication->BeginEvent();
+  ProcessEvent();
+  fApplication->FinishEvent();
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
 	 << endl;
+
 }
 
 //_____________________________________________________________________________
@@ -373,6 +380,8 @@ Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,
 		     Float_t *upar, Int_t np)  {
 //
 //  fVolumeMediaMap[TString(name)] = nmed;
+    printf("TFluka::Gsvolu() name = %s, nmed = %d\n", name, nmed);
+    
     TClonesArray &lvols = *fVolumeMediaMap;
     new(lvols[fNVolumes++]) 
         FlukaVolume(name, nmed);
@@ -391,6 +400,12 @@ Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,
 void TFluka::Gsdvn(const char *name, const char *mother, Int_t ndiv, 
 		   Int_t iaxis) {
 //
+//  The medium of the daughter is the one of the mother
+    Int_t volid = TFluka::VolId(mother);
+    Int_t med   = TFluka::VolId2Mate(volid);
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, med);
     fGeometryManager->Gsdvn(name, mother, ndiv, iaxis); 
 } 
 
@@ -476,6 +491,9 @@ void TFluka::WriteEuclid(const char* fileName, const char* topVol,
 //____________________________________________________________________________ 
 
 Int_t TFluka::GetMedium() const {
+//
+//  Get the medium number for the current fluka region
+//
     FGeometryInit* flugg = FGeometryInit::GetInstance();  
     return flugg->GetMedium(fCurrentFlukaRegion);
 }
@@ -502,8 +520,18 @@ Int_t TFluka::PDGFromId(Int_t id) const
   // Return PDG code and pseudo ENDF code from Fluka code
 
   //IPTOKP array goes from official to internal
+    if (id == 0) {
+	printf("PDGFromId: Error id = 0");
+	return -1;
+    }
+    
   Int_t intfluka = GetFlukaIPTOKP(id);
-  //MPKDHA() goes from internal to PDG
+    if (intfluka == 0) {
+	printf("PDGFromId: Error intfluka = 0");
+	return -1;
+    }
+
+    //MPKDHA() goes from internal to PDG
   return mpdgha(intfluka);
 }
 
@@ -859,8 +887,8 @@ TMCProcess TFluka::ProdProcess(Int_t isec) const
   const TMCProcess kIpPMuonNuclear = kPMuonNuclear;
   const TMCProcess kIpPPhotoFission = kPPhotoFission;
   const TMCProcess kIpPRayleigh = kPRayleigh;
-  const TMCProcess kIpPCerenkov = kPCerenkov;
-  const TMCProcess kIpPSynchrotron = kPSynchrotron;
+//  const TMCProcess kIpPCerenkov = kPCerenkov;
+//  const TMCProcess kIpPSynchrotron = kPSynchrotron;
 
   Int_t mugamma = TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11;
   if (fIcode == 102) return kIpPDecay;
@@ -895,6 +923,118 @@ TMCProcess TFluka::ProdProcess(Int_t isec) const
 //{
 //ck = total energy of the particl ???????????????? 
 //}
+
+
+Int_t TFluka::VolId2Mate(Int_t id) const
+{
+//
+// Returns the material number for a given volume ID
+//
+    printf("VolId2Mate %d %d\n", id, fMediaByRegion[id]); 
+    return fMediaByRegion[id-1];
+}
+
+const char* TFluka::VolName(Int_t id) const
+{
+//
+// Returns the volume name for a given volume ID
+//
+    FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[id-1]);
+    const char* name = vol->GetName();
+    printf("VolName %d %s \n", id, name);
+    return name;
+}
+
+Int_t TFluka::VolId(const Text_t* volName) const
+{
+//
+// Converts from volume name to volume ID.
+// Time consuming. (Only used during set-up)
+// Could be replaced by hash-table
+//
+    char tmp[5];
+    Int_t i =0;
+    for (i = 0; i < fNVolumes; i++)
+  {
+      FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[i]);
+      TString name = vol->GetName();
+      strcpy(tmp, name.Data());
+      tmp[4] = '\0';
+      if (!strcmp(tmp, volName)) break;
+  }
+    i++;
+
+    return i;
+}
+
+
+Int_t TFluka::CurrentVolID(Int_t& copyNo) const
+{
+//
+// Return the logical id and copy number corresponding to the current fluka region
+//
+    int ir = fCurrentFlukaRegion;
+    int id = (FGeometryInit::GetInstance())->CurrentVolID(ir, copyNo);
+    printf("CurrentVolID: %d %d %d \n", ir, id, copyNo); 
+    return id;
+
+} 
+
+Int_t TFluka::CurrentVolOffID(Int_t off, Int_t& copyNo) const
+{
+//
+// Return the logical id and copy number of off'th mother 
+// corresponding to the current fluka region
+//
+    if (off == 0) 
+	return CurrentVolID(copyNo);
+    
+    int ir = fCurrentFlukaRegion;
+    int id = (FGeometryInit::GetInstance())->CurrentVolOffID(ir, off, copyNo);
+    
+    printf("CurrentVolOffID: %d %d %d \n", ir, id, copyNo); 
+    if (id == -1) 
+	printf("CurrentVolOffID: Warning Mother not found !!!\n"); 
+    return id;
+}
+
+
+const char* TFluka::CurrentVolName() const
+{
+//
+// Return the current volume name
+//
+    Int_t copy;
+    Int_t id = TFluka::CurrentVolID(copy);
+    const char* name = TFluka::VolName(id);
+    printf("CurrentVolumeName: %d %s \n", fCurrentFlukaRegion,  name); 
+    return name;
+}
+
+const char* TFluka::CurrentVolOffName(Int_t off) const
+{
+//
+// Return the volume name of the off'th mother of the current volume
+//
+    Int_t copy;
+    Int_t id = TFluka::CurrentVolOffID(off, copy);
+    const char* name = TFluka::VolName(id);
+    printf("CurrentVolumeOffName: %d %s \n", fCurrentFlukaRegion,  name); 
+    return name;
+}
+
+Int_t TFluka::CurrentMaterial(Float_t &a, Float_t &z, 
+		      Float_t &dens, Float_t &radl, Float_t &absl) const
+{
+//
+//  Return the current medium number
+//
+    Int_t copy;
+    Int_t id  =  TFluka::CurrentVolID(copy);
+    Int_t med =  TFluka::VolId2Mate(id);
+    printf("CurrentMaterial: %d %d \n", fCurrentFlukaRegion,  med); 
+    return med;
+}
 
 
 // ===============================================================
@@ -1053,3 +1193,4 @@ void TFluka::FutoTest()
   
 
 } // end of FutoTest
+

@@ -115,15 +115,11 @@ class TFluka : public TVirtualMC {
   virtual void  WriteEuclid(const char*, const char*, Int_t, Int_t);
   
   // get methods
-  virtual Int_t VolId(const Text_t* volName) const
-    {printf("WARNING: VolId not yet implemented !\n"); return -1;}
-  virtual const char* VolName(Int_t id) const
-    {printf("WARNING: VolName not yet implemented !\n"); return "void";}
+  virtual Int_t VolId(const Text_t* volName) const;
+  virtual const char* VolName(Int_t id) const;
   virtual Int_t NofVolumes() const
-    {printf("WARNING: NofVolumes not yet implemented !\n"); return -1;}
-  virtual Int_t VolId2Mate(Int_t id) const
-    {printf("WARNING: VolId2Mate not yet implemented !\n"); return -1;}
-  
+    {printf("NofVolumes %d\n", fNVolumes); return fNVolumes;}
+  virtual Int_t VolId2Mate(Int_t id) const;
   //
   // methods for physics management
   // ------------------------------------------------
@@ -161,19 +157,14 @@ class TFluka : public TVirtualMC {
   
   // get methods
   // tracking volume(s) 
-  virtual Int_t    CurrentVolID(Int_t& copyNo) const
-    {printf("WARNING: CurrentVolID not yet implemented !\n"); return -1;}
-  virtual Int_t    CurrentVolOffID(Int_t off, Int_t& copyNo) const
-    {printf("WARNING: CurrentVolOffID not yet implemented !\n"); return -1;}
-  virtual const char* CurrentVolName() const
-    {printf("WARNING: CurrentVolName not yet implemented !\n"); return "void";}
-  virtual const char* CurrentVolOffName(Int_t off) const
-    {printf("WARNING: CurrentVolOffName not yet implemented !\n"); return "void";}
+  virtual Int_t    CurrentVolID(Int_t& copyNo) const;
+  virtual Int_t    CurrentVolOffID(Int_t off, Int_t& copyNo) const;
+  virtual const char* CurrentVolName() const;
+  virtual const char* CurrentVolOffName(Int_t off) const;
   virtual Int_t    CurrentMaterial(Float_t &a, Float_t &z, 
-				   Float_t &dens, Float_t &radl, Float_t &absl) const
-    {printf("WARNING: CurrentMaterial not yet implemented !\n"); return -1;}  
+				   Float_t &dens, Float_t &radl, Float_t &absl) const;
   virtual Int_t    CurrentEvent() const
-    {printf("WARNING: CurrentEvent not yet implemented !\n"); return -1;} 
+      {printf("WARNING: CurrentEvent not yet implemented !\n"); return -1;} 
   virtual void     Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
     {printf("WARNING: Gmtod not yet implemented !\n");}
   virtual void     Gmtod(Double_t* xm, Double_t* xd, Int_t iflag)
