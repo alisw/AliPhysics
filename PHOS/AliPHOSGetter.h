@@ -83,7 +83,7 @@ public:
   AliPHOSGeometry * PHOSGeometry() const ; 
   
   //========== Methods to read something from file ==========
-  void   Event(Int_t event, const char * opt = "HSDRP") ;    
+  void   Event(Int_t event, const char * opt = "HSDRTP") ;    
   void   Track(Int_t itrack) ;
   
   //-----------------now getter's data--------------------------------------
