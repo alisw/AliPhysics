@@ -30,6 +30,12 @@ class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 public:
 
   AliPHOSTrackSegmentMakerv1() ;                     
+  AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    assert(0==1) ; 
+  }
+   
   virtual ~ AliPHOSTrackSegmentMakerv1() ; // dtor
   
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
@@ -67,6 +73,13 @@ public:
 		       Float_t * maxAtEnergy, 
 		       TObjArray * emclist) ; //Unfolds overlaping clusters using TMinuit package
   virtual void UnsetUnfoldFlag() { fUnfoldFlag = kFALSE ; } 
+
+  AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
 
 private:
 

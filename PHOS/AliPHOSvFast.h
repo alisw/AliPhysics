@@ -30,6 +30,11 @@ public:
 
   AliPHOSvFast(void) ;
   AliPHOSvFast(const char *name, const char *title="") ;
+  AliPHOSvFast(const AliPHOSvFast & fast) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    assert(0==1) ; 
+  }
   virtual ~AliPHOSvFast(void) ;
 
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
@@ -53,6 +58,13 @@ public:
   Double_t     SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
   Double_t     SigmaP(Double_t energy, Int_t inc) ; // calulates the position resolution at a given Energy at a given incidence                           
   virtual void StepManager(void) ;          // does the tracking through PHOS and a preliminary digitalization
+
+  AliPHOSvFast & operator = (const AliPHOSvFast & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
   
 private:
   

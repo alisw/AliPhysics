@@ -58,6 +58,8 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 						 AliPHOSTrackSegmentMaker * Tracker,
 						 AliPHOSPID * Pid)
 {
+  // Initialisation
+
   fClusterizer        = Clusterizer ;
   fTrackSegmentMaker  = Tracker ;
   fPID                = Pid ; 

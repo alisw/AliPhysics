@@ -29,6 +29,11 @@ class AliPHOS : public AliDetector {
   AliPHOS() : AliDetector() {
     // default ctor
   } 
+  AliPHOS(const AliPHOS & phos) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    assert(0==1) ; 
+  }
   virtual ~AliPHOS() ; 
  
   virtual  void              CreateMaterials() ;                     // defines the material of the detector
@@ -48,8 +53,14 @@ class AliPHOS : public AliDetector {
     return fTrackSegments ;
   }
   virtual TString Version() {return TString(" ") ; } 
-
-
+ 
+  AliPHOS & operator = (const AliPHOS & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
+ 
  protected:
   
   AliPHOSRecPoint::RecPointsList * fEmcRecPoints ;         // The RecPoints (clusters) list in EMC 

@@ -30,7 +30,13 @@ public:
 
   AliPHOSReconstructioner(){} //ctor            
   AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
-			  AliPHOSPID * Identifier); //ctor            
+			  AliPHOSPID * Identifier); //ctor         
+  AliPHOSReconstructioner(const AliPHOSReconstructioner & phos) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    assert(0==1) ; 
+  }
+   
   ~AliPHOSReconstructioner(){} // dtor
 
   AliPHOSClusterizer * GetClusterizer() { return fClusterizer ; }
@@ -44,6 +50,13 @@ public:
 
   void SetDebugReconstruction(Bool_t deb) { fDebugReconstruction = deb; }
 
+  AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
+  
 
 private:
   

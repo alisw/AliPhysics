@@ -26,6 +26,12 @@ public:
   AliPHOSv0(void) ;
   AliPHOSv0(const char *name, const char *title="") ;
   AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
+  AliPHOSv0(const AliPHOSv0 & phos) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    assert(0==1) ; 
+  }
+ 
   virtual ~AliPHOSv0(void) ;
 
   virtual void   AddHit( Int_t primary, Int_t id, Float_t *hits ) ; // adds a pre-digitilized hit to the hit tree 
@@ -54,6 +60,13 @@ public:
   virtual void   SetTreeAddress(); 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
   virtual TString Version(void){ return TString("v0"); }
+
+  AliPHOSv0 & operator = (const AliPHOSv0 & rvalue)  {
+    // assignement operator requested by coding convention
+    // but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
 
 protected:
 
