@@ -1,5 +1,42 @@
 
 
+
+class AliTPCComparisonDraw: public TObject{
+public:
+  AliTPCComparisonDraw(){fTree = 0;}
+  void SetIO(const char *fname = "cmpTracks.root");
+  void ResPt();
+  void Eff();
+  //
+  TH1F * EffVsPt(const char* selection, const char * quality, Float_t min=0.15, Float_t max=3.);
+  TH1F * EffVsRM(const char* selection, const char * quality, Float_t min=90, Float_t max=250, Int_t nBins=10);
+  TH1F * EffVsRS(const char* selection, const char * quality, Float_t min=90, Float_t max=250, Int_t nBins=10);
+ 
+  TH1F * ResPtvsPt(const char* selection, const char * quality, Float_t min=0.15, Float_t max=5., Int_t nBins=10);
+  TH1F * MeanPtvsPt(const char* selection, const char * quality, Float_t min=0.15, Float_t max=5., Int_t nBins=10);
+  //
+  TH1F * ResdEdxvsN(const char* selection, const char * quality, Float_t min=50, Float_t max=150., Int_t nBins=10);
+  //  TH1F * MeandEdxvsN(const char* selection, const char * quality, Float_t min=50, Float_t max=150., Int_t nBins=10);
+ 
+
+  static void   AliLabelAxes(TH1* histo, const char* xAxisTitle, const char* yAxisTitle);
+  Double_t* CreateLogBins(Int_t nBins, Double_t xMin, Double_t xMax);
+  //
+  static TH1F*  CreateEffHisto(TH1F* hGen, TH1F* hRec);
+  static TH1F*  CreateResHisto(TH2F* hRes2, TH1F **phMean, 
+				Bool_t drawBinFits = kTRUE,Bool_t overflowBinFits = kFALSE);
+
+ 
+
+  TTree * fTree; //
+
+  ClassDef(AliTPCComparisonDraw,1)
+};
+ClassImp(AliTPCComparisonDraw)
+
+
+
+
 ////////////////////////////////////////////////////////////////////////
 //
 // Start of implementation of the class digitRow
@@ -22,7 +59,6 @@ public:
 
 //private:
   UChar_t fDig[kgRowBytes];
-
   ClassDef(digitRow,1)  // container for digit pattern
 };
 ClassImp(digitRow)
@@ -39,16 +75,19 @@ class AliTPCGenInfo: public TObject {
 public:
   AliTPCGenInfo();
   ~AliTPCGenInfo();
+  void Update();
 
-  AliTrackReference fTrackRef;      // track reference saved in the output tree
-  AliTrackReference fTrackRefOut;   // decay track reference saved in the output tree
+  AliTrackReference  fTrackRef;      // track reference saved in the output tree
+  AliTrackReference  fTrackRefOut;   // decay track reference saved in the output tree
+  AliTrackReference fTRdecay;       // track reference at decay point
   TParticle fParticle;           // generated particle 
   Int_t fLabel;                   // track label
   Int_t fEventNr;                 // event number
-
+  Int_t fMCtracks;                // indication of how many times the track is retuturned back
+  Int_t fPdg;                     //pdg code
   Float_t fDecayCoord[3];         // position of particle decay
   Double_t fVDist[4];             //distance of the particle vertex from primary vertex
-  
+  Bool_t fTPCdecay;               //indicates decay in TPC
   Int_t fRowsWithDigitsInn;    // number of rows with digits in the inner sectors
   Int_t fRowsWithDigits;       // number of rows with digits in the outer sectors
   Int_t fRowsTrackLength;      // last - first row with digit
@@ -125,7 +164,7 @@ public:
   Float_t fdEdx;           // reconstructed  dEdx      
   Int_t fFake;             // fake track
   Int_t fMultiple;         // number of reconstructions
-  TClonesArray *fTP;        //container with track  points 
+  TClonesArray *fTP;        //!container with track  points 
   void Reset();
   //
   ClassDef(AliTPCRecInfo,1)  // container for 
@@ -181,7 +220,7 @@ class TPCFindGenTracks {
 
 public:
   TPCFindGenTracks();
-  TPCFindGenTracks(char * fnGalice, char* fnRes    ="genTracks.root",
+  TPCFindGenTracks(const char * fnGalice, const char* fnRes    ="genTracks.root",
 		   Int_t nEvents=1, Int_t firstEvent=0);
   virtual ~TPCFindGenTracks();
   void Reset();
@@ -197,6 +236,8 @@ public:
   void SetNEvents(Int_t i) {fNEvents = i;}
   void SetDebug(Int_t level) {fDebug = level;}
   Int_t SetIO(Int_t eventNr);
+  Int_t CloseIOEvent();
+  Int_t CloseIO();
   Int_t SetIO();
   Float_t TR2LocalX(AliTrackReference *trackRef,
 		    AliTPCParam *paramTPC);
@@ -210,7 +251,7 @@ public:
   Int_t fFirstEventNr;            //! first event to process
   Int_t fNParticles;              //! number of particles in TreeK
   TTree *fTreeGenTracks;          //! output tree with generated tracks
-  char *fFnRes;                   //! output file name with stored tracks
+  char  fFnRes[1000];                   //! output file name with stored tracks
   TFile *fFileGenTracks;          //! output file with stored fTreeGenTracks
   //
   AliRunLoader * fLoader;         //! pointer to the run loader
@@ -223,6 +264,7 @@ public:
   AliTrackReference *fReferences; //! container with track references
   Int_t *fReferenceIndex0;        //! first index for given track
   Int_t *fReferenceIndex1;        //! last  index for given track
+  AliTrackReference *fDecayRef;   //! container with decay track references
   //
   AliTPCParam* fParamTPC;         //! AliTPCParam
   Double_t fVPrim[3];             //! primary vertex position
@@ -241,10 +283,8 @@ private:
   static const Int_t fgMaxTR = 1000000; // maximum number of  track refs
 
   static const Int_t fgMaxParticles = 2000000; // maximum number of generated particles
-  static const Double_t fgPtCut = .1; // do not store particles with generated pT less than this
-  static const Float_t fgTrackRefLocalXMax = 82.95;
-  static const Float_t fgTrackRefLocalXMaxDelta = 5.;
-
+  static const Double_t fgPtCut = 0.05; // do not store particles with generated pT less than this
+ 
   ClassDef(TPCFindGenTracks,1)    // class which creates and fills tree with TPCGenTrack objects
 };
 ClassImp(TPCFindGenTracks)
@@ -261,9 +301,9 @@ class TPCCmpTr {
 
 public:
   TPCCmpTr();
-  TPCCmpTr(char* fnGenTracks,
-	   char* fnCmpRes      ="cmpTracks.root", 
-	   char* fnGalice      ="galice.root",
+  TPCCmpTr(const char* fnGenTracks,
+	   const char* fnCmpRes      ="cmpTracks.root", 
+	   const char* fnGalice      ="galice.root",
 	   Int_t nEvents=1, Int_t firstEvent=0);
   virtual ~TPCCmpTr();
   void Reset();
@@ -290,11 +330,11 @@ private:
   Int_t fNEvents;                 //! number of events to process
   Int_t fFirstEventNr;            //! first event to process
   //
-  char *fFnCmp;                   //! output file name with cmp tracks
+  char  fFnCmp[1000];                   //! output file name with cmp tracks
   TFile *fFileCmp;                //! output file with cmp tracks
   TTree *fTreeCmp;                //! output tree with cmp tracks
   //
-  char *fFnGenTracks;             //! input file name with gen tracks
+  char  fFnGenTracks[1000];             //! input file name with gen tracks
   TFile *fFileGenTracks;
   TTree *fTreeGenTracks;
   //
@@ -323,4 +363,6 @@ private:
   ClassDef(TPCCmpTr,1)    // class which creates and fills tree with TPCGenTrack objects
 };
 ClassImp(TPCCmpTr)
+
+
 

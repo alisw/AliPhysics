@@ -1,48 +1,118 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Time Projection Chamber                                                  //
+//  Comparison macro for TPC                                                 //
+//  responsible: 
+//  marian.ivanov@cern.ch                                                    //
+//
+//
+// usage:
+
+//
+//  TO CREATE OF TREE WITH MC INFO
+
+//  .L AliTPCComparisonMI.C+
+//  TPCFindGenTracks *t = new TPCFindGenTracks("galice.root","genTracks.root",1,0)
+//  t->Exec()
+//  
+//  TO CREATE COMPARISON TREE
+//  TPCCmpTr *t2 = new TPCCmpTr("genTracks.root","cmpTracks.root","galice.root",1,0);
+//  t2->Exec()
+//
+//  EXAMPLE OF COMPARISON VISUALIZATION SESSION 
+//
+// .L AliTPCComparisonMI.C+
+// TCut cprim("cprim","MC.fVDist[3]<1");
+// TCut cprim("cprim","MC.fVDist[3]<1");
+// TCut crec("crec","fReconstructed==1");
+// TCut cteta1("cteta1","abs(MC.fTrackRef.Theta()/3.1415-0.5)<0.25");
+// TCut cpos1("cpos1","abs(MC.fParticle.fVz/sqrt(MC.fParticle.fVx*MC.fParticle.fVx+MC.fParticle.fVy*MC.fParticle.fVy))<1");
+// TCut csens("csens","abs(sqrt(fVDist[0]**2+fVDist[1]**2)-170)<50");
+// TCut cmuon("cmuon","abs(MC.fParticle.fPdgCode==-13)");
+//
+//
+// AliTPCComparisonDraw comp;
+// comp.SetIO();
+// (comp.EffVsPt("MC.fRowsWithDigits>120"+cteta1+cprim,"1"))->Draw()
+// (comp.EffVsRM("MC.fRowsWithDigits>20"+cteta1+cprim,"1"))->Draw()
+// (comp.EffVsRS("MC.fRowsWithDigits>20"+cteta1+cpos1,"1"))->Draw()
+//
+// (comp.ResPtvsPt("MC.fRowsWithDigits>20"+cteta1+cpos1,"1",0.15,2.))->Draw()
+// (comp.MeanPtvsPt("MC.fRowsWithDigits>20"+cteta1+cpos1,"1",0.15,2.))->Draw()
+// (comp.ResdEdxvsN("RC.fReconstructed==1&&MC.fPrim<1.5&&abs(MC.fParticle.fPdgCode)==211&&MC.fParticle.P()>0.35"+cteta1+cpos1+cprim,"1",100,160,4))->Draw() 
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "iostream.h"
 #include <stdio.h>
 #include <string.h>
+//ROOT includes
 #include "Rtypes.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TChain.h"
+#include "TCut.h"
 #include "TString.h"
 #include "TBenchmark.h"
 #include "TStopwatch.h"
 #include "TParticle.h"
+#include "TSystem.h"
+#include "TTimer.h"
+#include "TVector3.h"
+#include "TPad.h"
+#include "TCanvas.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TF1.h"
+#include "TText.h"
+#include "Getline.h"
+#include "TStyle.h"
+
+//ALIROOT includes
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliTPCtrack.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
-#include "TParticle.h"
 #include "AliTPC.h"
 #include "AliDetector.h"
 #include "AliTrackReference.h"
-#include "TSystem.h"
-#include "TTimer.h"
-#include "TVector3.h"
-//
-#include "iostream.h"  
-#include "Rtypes.h"
-#include "TSystem.h"
-#include "TTimer.h"
-#include "Getline.h"
-#include "TChain.h"
-#include "TString.h"
-#include "TFile.h"
 #include "AliRun.h"
-#include "AliTPCComparisonMI.h"
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"
 #include "AliComplexCluster.h"
-
-
+#include "AliTPCComparisonMI.h"
 #endif
+
+
+
+
+
+
+
  
 //
 //
-Bool_t ImportgAlice(TFile *file);
-TFile* OpenAliceFile(char *fn, Bool_t importgAlice = kFALSE, char *mode = "read");
 
 AliTPCParam * GetTPCParam(){
   AliTPCParamSR * par = new AliTPCParamSR;
@@ -50,28 +120,6 @@ AliTPCParam * GetTPCParam(){
   return par;
 }
 
-
-
-////////////////////////////////////////////////////////////////////////
-Bool_t ImportgAlice(TFile *file) {
-// read in gAlice object from the file
-  gAlice = (AliRun*)file->Get("gAlice");
-  if (!gAlice)  return kFALSE;
-  return kTRUE;
-}
-////////////////////////////////////////////////////////////////////////
-TFile* OpenAliceFile(char *fn, Bool_t importgAlice, char *mode) {
-  TFile *file = TFile::Open(fn,mode);
-  if (!file->IsOpen()) {
-    cerr<<"OpenAliceFile: cannot open file "<<fn<<" in mode "
-	<<mode<<endl;
-    return 0;
-  }
-  if (!importgAlice) return file;
-  if (ImportgAlice(file)) return file;
-  return 0;
-}
-////////////////////////////////////////////////////////////////////////
 
 //_____________________________________________________________________________
 Float_t TPCBetheBloch(Float_t bg)
@@ -105,13 +153,38 @@ Float_t TPCBetheBloch(Float_t bg)
 AliTPCGenInfo::AliTPCGenInfo()
 {
   fReferences  = 0;
+  fTRdecay.SetTrack(-1);
 }
 
 AliTPCGenInfo::~AliTPCGenInfo()
 {
   if (fReferences) delete fReferences;
   fReferences =0;
+  
 }
+
+void AliTPCGenInfo::Update()
+{
+  //
+  //
+  fMCtracks =1;
+  if (!fReferences) return;
+  Float_t direction=1;
+  //Float_t rlast=0;
+  for (Int_t iref =0;iref<fReferences->GetEntriesFast();iref++){
+    AliTrackReference * ref = (AliTrackReference *) fReferences->At(iref);
+    //Float_t r = (ref->X()*ref->X()+ref->Y()*ref->Y());
+    Float_t newdirection = ref->X()*ref->Px()+ref->Y()*ref->Py(); //inside or outside
+    if (iref==0) direction = newdirection;
+    if ( newdirection*direction<0){
+      //changed direction
+      direction = newdirection;
+      fMCtracks+=1;
+    }
+    //rlast=r;			    
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////
@@ -225,14 +298,15 @@ TPCFindGenTracks::TPCFindGenTracks()
 }
 
 ////////////////////////////////////////////////////////////////////////
-TPCFindGenTracks::TPCFindGenTracks(char * fnGalice, char* fnRes,
+TPCFindGenTracks::TPCFindGenTracks(const char * fnGalice, const char* fnRes,
 				   Int_t nEvents, Int_t firstEvent)
 {
   Reset();
   fFirstEventNr = firstEvent;
   fEventNr = firstEvent;
   fNEvents = nEvents;
-  fFnRes = fnRes;
+  //   fFnRes = fnRes;
+  sprintf(fFnRes,"%s",fnRes);
   //
   fLoader = AliRunLoader::Open(fnGalice);
   if (gAlice){
@@ -244,6 +318,12 @@ TPCFindGenTracks::TPCFindGenTracks(char * fnGalice, char* fnRes,
     cerr<<"Error occured while l"<<endl;
   }
   Int_t nall = fLoader->GetNumberOfEvents();
+  if (nEvents==0) {
+    nEvents =nall;
+    fNEvents=nall;
+    fFirstEventNr=0;
+  }    
+
   if (nall<=0){
     cerr<<"no events available"<<endl;
     fEventNr = 0;
@@ -261,13 +341,13 @@ void TPCFindGenTracks::Reset()
   fEventNr = 0;
   fNEvents = 0;
   fTreeGenTracks = 0;
-  fFnRes = "genTracks.root";
   fFileGenTracks = 0;
   fContainerDigitRow = 0;
   //
   fReferences = 0;
   fReferenceIndex0 = 0;
   fReferenceIndex1 = 0;
+  fDecayRef   = 0;
   //
   fDebug = 0;
   fVPrim[0] = -1000.;
@@ -278,7 +358,12 @@ void TPCFindGenTracks::Reset()
 ////////////////////////////////////////////////////////////////////////
 TPCFindGenTracks::~TPCFindGenTracks()
 {
-  ;
+  
+  if (fLoader){
+    fLoader->UnloadgAlice();
+    gAlice = 0;
+    delete fLoader;
+  }
 }
 
 
@@ -300,7 +385,6 @@ Int_t TPCFindGenTracks::SetIO(Int_t eventNr)
   //
   // 
   // SET INPUT
-  gAlice->GetEvent(eventNr);
   fLoader->SetEventNumber(eventNr);
   //
   fLoader->LoadHeader();
@@ -312,10 +396,27 @@ Int_t TPCFindGenTracks::SetIO(Int_t eventNr)
   //
   AliTPCLoader * tpcl = (AliTPCLoader*)fLoader->GetLoader("TPCLoader");
   tpcl->LoadDigits();
-  fTreeD = tpcl->TreeD();
-  
+  fTreeD = tpcl->TreeD();  
   return 0;
 }
+
+Int_t TPCFindGenTracks::CloseIOEvent()
+{
+  fLoader->UnloadHeader();
+  fLoader->UnloadKinematics();
+  fLoader->UnloadTrackRefs();
+  AliTPCLoader * tpcl = (AliTPCLoader*)fLoader->GetLoader("TPCLoader");
+  tpcl->UnloadDigits();
+  return 0;
+}
+
+Int_t TPCFindGenTracks::CloseIO()
+{
+  fLoader->UnloadgAlice();
+  return 0;
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////
 Int_t TPCFindGenTracks::Exec(Int_t nEvents, Int_t firstEventNr)
@@ -340,9 +441,10 @@ Int_t TPCFindGenTracks::Exec()
     fNParticles = fStack->GetNtrack();
     fContainerDigitRow = new digitRow[fNParticles];
     //
-    fReferences = new AliTrackReference[fgMaxTR];
+    fReferences      = new AliTrackReference[fgMaxTR];
     fReferenceIndex0 = new Int_t[fNParticles];
     fReferenceIndex1 = new Int_t[fNParticles];
+    fDecayRef        = new AliTrackReference[fNParticles];
 
     for (Int_t i = 0; i<fNParticles; i++) {
       fReferenceIndex0[i] = -1;
@@ -363,12 +465,14 @@ Int_t TPCFindGenTracks::Exec()
     delete [] fReferences;
     delete [] fReferenceIndex0;
     delete [] fReferenceIndex1;    
+    delete [] fDecayRef;
+    CloseIOEvent();
   }
-
+  //
+  CloseIO();
   CloseOutputFile();
 
   cerr<<"Exec finished"<<endl;
-  delete gAlice;
 
   timer.Stop();
   timer.Print();
@@ -462,22 +566,6 @@ Int_t TPCFindGenTracks::TreeKLoop()
     //
     //
     fMCInfo->fParticle = *(stack->Particle(iParticle));
-    if (fMCInfo->fParticle.GetLastDaughter()>0&&fMCInfo->fParticle.GetLastDaughter()<fNParticles){
-      TParticle * dparticle0 = 0;
-      if (fMCInfo->fParticle.GetDaughter(0)>0) dparticle0 = stack->Particle(fMCInfo->fParticle.GetDaughter(0));
-      TParticle * dparticle1 = 0;
-      if (fMCInfo->fParticle.GetDaughter(1)>0) dparticle1 = stack->Particle(fMCInfo->fParticle.GetDaughter(1));
-      if ((dparticle1)&&(dparticle1->P()>0.15)) {
-	fMCInfo->fDecayCoord[0] = dparticle1->Vx();
-	fMCInfo->fDecayCoord[1] = dparticle1->Vy();
-	fMCInfo->fDecayCoord[2] = dparticle1->Vz();
-      }
-      else 
-	fMCInfo->fDecayCoord[0]=1000000;
-    }else
-      fMCInfo->fDecayCoord[0]=1000000;
-    fMCInfo->fParticle = *(stack->ParticleFromTreeK(iParticle));
-    //
     //
     //
     fMCInfo->fLabel = iParticle;
@@ -503,14 +591,17 @@ Int_t TPCFindGenTracks::TreeKLoop()
     for (Int_t i = fReferenceIndex0[iParticle];i<=fReferenceIndex1[iParticle];i++){
       AliTrackReference  ref  = fReferences[i];
       AliTrackReference *ref2 = (AliTrackReference*) fMCInfo->fReferences->At(rfindex);
-      if (ref.GetTrack()!=iParticle)
-	printf("problem5\n");	
+      if (ref.GetTrack()!=iParticle){
+	//printf("problem5\n");	
+	continue;
+      }
       *ref2 = ref;
       rfindex++;
     }   
     //
     //
     ipdg = fMCInfo->fParticle.GetPdgCode();
+    fMCInfo->fPdg = ipdg;
     ppdg = pdg.GetParticle(ipdg);
     // calculate primary ionization per cm
     if (ppdg){
@@ -522,8 +613,26 @@ Int_t TPCFindGenTracks::TreeKLoop()
       //      Float_t betagama = fMCInfo->fParticle.P()/mass;
       Float_t betagama = p /mass;
       fMCInfo->fPrim = TPCBetheBloch(betagama);
+    }	
+    fMCInfo->fTPCdecay=kFALSE;
+    if (fDecayRef[iParticle].GetTrack()>0){
+      fMCInfo->fTRdecay  = fDecayRef[iParticle];
+      fMCInfo->fDecayCoord[0] = fMCInfo->fTRdecay.X();
+      fMCInfo->fDecayCoord[1] = fMCInfo->fTRdecay.Y();
+      fMCInfo->fDecayCoord[2] = fMCInfo->fTRdecay.Z();
+      if ( (fMCInfo->fTRdecay.R()<250)&&(fMCInfo->fTRdecay.R()>85) && (TMath::Abs(fMCInfo->fTRdecay.Z())<250) ){
+	fMCInfo->fTPCdecay=kTRUE;
+      }
     }
+    else{
+      fMCInfo->fTRdecay.SetTrack(-1);
+      fMCInfo->fDecayCoord[0] = 0;
+      fMCInfo->fDecayCoord[1] = 0;
+      fMCInfo->fDecayCoord[2] = 0;
+    }
+    fMCInfo->Update();
     //////////////////////////////////////////////////////////////////////
+    
     br->SetAddress(&fMCInfo);
     fTreeGenTracks->Fill();
 
@@ -628,6 +737,7 @@ Int_t TPCFindGenTracks::TreeTRLoop()
   if (fDebug > 1) cout<<"There are "<<nPrimaries<<" entries in TreeTR"<<endl;
   //
   //
+  //track references for TPC
   TBranch *TPCBranchTR  = treeTR->GetBranch("TPC");
   if (!TPCBranchTR) {
     cerr<<"TPC branch in TR not found"<<endl;
@@ -635,28 +745,61 @@ Int_t TPCFindGenTracks::TreeTRLoop()
   }
   TClonesArray* TPCArrayTR = new TClonesArray("AliTrackReference");
   TPCBranchTR->SetAddress(&TPCArrayTR);
+  //get decay point if exist
+  TBranch *runbranch  = treeTR->GetBranch("AliRun");
+  if (!runbranch) {
+    cerr<<"Run branch in TR not found"<<endl;
+    return 1;
+  }
+  TClonesArray* RunArrayTR = new TClonesArray("AliTrackReference");
+  runbranch->SetAddress(&RunArrayTR);
   //
   //
   //
   Int_t index     =  0;
   for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++) {
     TPCBranchTR->GetEntry(iPrimPart);
+    Float_t ptstart = 0;
     for (Int_t iTrackRef = 0; iTrackRef < TPCArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)TPCArrayTR->At(iTrackRef);      
+      AliTrackReference *trackRef = (AliTrackReference*)TPCArrayTR->At(iTrackRef);            
+      //
+      Int_t label = trackRef->GetTrack();
+      if (label<0  || label > fNParticles) {
+	continue;
+      }
+      if (fReferenceIndex0[label]<0) ptstart = trackRef->Pt();  //store pt at the TPC entrance
+      if (ptstart<fgPtCut) continue;
+
+      if (index>=fgMaxTR) continue;     //restricted size of buffer for TR
+      fReferences[index] = *trackRef;
+      fReferenceIndex1[label] = index;  // the last ref with given label
+      if (fReferenceIndex0[label]==-1) fReferenceIndex0[label] = index;   //the first index with label
+      index++;           
+    }
+    // get dacay position
+    runbranch->GetEntry(iPrimPart);    
+    for (Int_t iTrackRef = 0; iTrackRef < RunArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)RunArrayTR->At(iTrackRef);      
       //
       if (trackRef->Pt() < fgPtCut) continue;      
       Int_t label = trackRef->GetTrack();
       if (label<0  || label > fNParticles) {
 	continue;
       }
-      if (index>=fgMaxTR) continue;     //restricted size of buffer for TR
-      fReferences[index] = *trackRef;
-      fReferenceIndex1[label] = index;  // the last ref with given label
-      if (fReferenceIndex0[label]==-1) fReferenceIndex0[label] = index;   //the first index with label
-      index++;
-           
+      if (trackRef->R()>450) continue;   //not decay  in TPC
+      if (trackRef->Z()>450) continue;   //not decay  in TPC
+      if (!trackRef->TestBit(BIT(2))) continue;  //if not decay
+      
+      if (label>=fgMaxTR) continue;     //restricted size of buffer for TR
+      fDecayRef[label] = *trackRef;      
     }
+
   }
+  TPCArrayTR->Delete();
+  delete  TPCArrayTR;
+  RunArrayTR->Delete();
+  delete  RunArrayTR;
+
   return 0;
 }
 
@@ -682,14 +825,17 @@ TPCCmpTr::TPCCmpTr()
 }
 
 ////////////////////////////////////////////////////////////////////////
-TPCCmpTr::TPCCmpTr(char* fnGenTracks,
-		   char* fnCmp,
-		   char* fnGalice,
+TPCCmpTr::TPCCmpTr(const char* fnGenTracks,
+		   const char* fnCmp,
+		   const char* fnGalice,
 		   Int_t nEvents, Int_t firstEvent)
 {
   Reset();
-  fFnGenTracks = fnGenTracks;
-  fFnCmp = fnCmp;
+  //  fFnGenTracks = fnGenTracks;
+  //  fFnCmp = fnCmp;
+  sprintf(fFnGenTracks,"%s",fnGenTracks);
+  sprintf(fFnCmp,"%s",fnCmp);
+
   fFirstEventNr = firstEvent;
   fEventNr = firstEvent;
   fNEvents = nEvents;
@@ -697,7 +843,7 @@ TPCCmpTr::TPCCmpTr(char* fnGenTracks,
   //
   fLoader = AliRunLoader::Open(fnGalice);
   if (gAlice){
-    delete gAlice->GetRunLoader();
+    //delete gAlice->GetRunLoader();
     delete gAlice;
     gAlice = 0x0;
   }
@@ -705,6 +851,12 @@ TPCCmpTr::TPCCmpTr(char* fnGenTracks,
     cerr<<"Error occured while l"<<endl;
   }
   Int_t nall = fLoader->GetNumberOfEvents();
+  if (nEvents==0) {
+    nEvents =nall;
+    fNEvents=nall;
+    fFirstEventNr=0;
+  }    
+
   if (nall<=0){
     cerr<<"no events available"<<endl;
     fEventNr = 0;
@@ -713,6 +865,15 @@ TPCCmpTr::TPCCmpTr(char* fnGenTracks,
   if (firstEvent+nEvents>nall) {
     fEventNr = nall-firstEvent;
     cerr<<"restricted number of events availaible"<<endl;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////
+TPCCmpTr::~TPCCmpTr()
+{
+  if (fLoader) {
+    delete fLoader;
   }
 }
 
@@ -740,7 +901,7 @@ Int_t TPCCmpTr::SetIO(Int_t eventNr)
   //
   // 
   // SET INPUT
-  gAlice->GetEvent(eventNr);
+  //gAlice->GetEvent(eventNr);
   fLoader->SetEventNumber(eventNr);  
   //
   AliTPCLoader * tpcl = (AliTPCLoader*)fLoader->GetLoader("TPCLoader");
@@ -758,7 +919,7 @@ void TPCCmpTr::Reset()
   fEventNr = 0;
   fNEvents = 0;
   fTreeCmp = 0;
-  fFnCmp = "cmpTracks.root";
+  //  fFnCmp = "cmpTracks.root";
   fFileGenTracks = 0;
   fDebug = 0;
   //
@@ -770,11 +931,7 @@ void TPCCmpTr::Reset()
   fTracks   = 0;
   fTrackPoints =0;
 }
-////////////////////////////////////////////////////////////////////////
-TPCCmpTr::~TPCCmpTr()
-{
-  ;
-}
+
 ////////////////////////////////////////////////////////////////////////
 Int_t TPCCmpTr::Exec(Int_t nEvents, Int_t firstEventNr)
 {
@@ -830,11 +987,10 @@ Int_t TPCCmpTr::Exec()
   CloseOutputFile();
 
   cerr<<"Exec finished"<<endl;
-  delete gAlice;
-
   timer.Stop();
   timer.Print();
   return 0;
+
 }
 ////////////////////////////////////////////////////////////////////////
 Bool_t TPCCmpTr::ConnectGenTree()
@@ -929,7 +1085,8 @@ Int_t TPCCmpTr::TreeTLoop(Int_t eventNr)
   //
   // loop over all TPC reconstructed tracks and store info in memory
   //
-  
+  TStopwatch  timer;
+  timer.Start();
   
   if (!fTreeRecTracks) {
     cerr<<"Can't get a tree with TPC rec. tracks  "<<endl;
@@ -1005,7 +1162,9 @@ Int_t TPCCmpTr::TreeTLoop(Int_t eventNr)
       fMultiRecTracks[absLabel]++;
     }
   }  
-
+  printf("Time spended in TreeTLoop\n");
+  timer.Print();
+  
   if (fDebug > 2) cerr<<"end of TreeTLoop"<<endl;
 
   return 0;
@@ -1017,12 +1176,15 @@ Int_t TPCCmpTr::TreeGenLoop(Int_t eventNr)
 // loop over all entries for a given event, find corresponding 
 // rec. track and store in the fTreeCmp
 //
-  
+  TStopwatch timer;
+  timer.Start();
   Int_t entry = fNextTreeGenEntryToRead;
   Double_t nParticlesTR = fTreeGenTracks->GetEntriesFast();
   cerr<<"fNParticles, nParticlesTR, fNextTreeGenEntryToRead: "<<fNParticles<<" "
       <<nParticlesTR<<" "<<fNextTreeGenEntryToRead<<endl;
   TBranch * branch = fTreeCmp->GetBranch("RC");
+  branch->SetAddress(&fRecInfo); // set all pointers
+
   while (entry < nParticlesTR) {
     fTreeGenTracks->GetEntry(entry);
     entry++;
@@ -1085,9 +1247,7 @@ Int_t TPCCmpTr::TreeGenLoop(Int_t eventNr)
 
     } 
 
-    branch->SetAddress(&fRecInfo); // set all pointers
     fTreeCmp->Fill();
-
   }
   fTreeCmp->AutoSave();
   fTracks->Delete();
@@ -1096,9 +1256,414 @@ Int_t TPCCmpTr::TreeGenLoop(Int_t eventNr)
     fTrackPoints->Delete();
     delete fTrackPoints;
     fTrackPoints =0;
-  }
+  } 
+  printf("Time spended in TreeKLoop\n");
+  timer.Print();
   if (fDebug > 2) cerr<<"end of TreeKLoop"<<endl;
 
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+void AliTPCComparisonDraw::SetIO(const char *fname)
+{
+  //
+   TFile* file = TFile::Open(fname);
+   if (!file) {
+     printf("Could not open file  - generated new one\n"); 
+     TFile* filegen = TFile::Open("genTracks.root");
+     if (!filegen){
+       printf("FILE with MC information is generated\n"); 
+       TPCFindGenTracks *t = new TPCFindGenTracks("galice.root","genTracks.root",0);
+       t->Exec();
+       delete t;
+     }
+     filegen = TFile::Open("genTracks.root");
+     if (!filegen){
+       printf("COMPARISON  FILE COULDNT BE GENERATED \n");
+       return;
+     }
+     printf("COMPARISON  FILE IS GENERATED \n");
+     TPCCmpTr *t2 = new TPCCmpTr("genTracks.root","cmpTracks.root","galice.root",0);
+     t2->Exec();
+   }
+   file = TFile::Open(fname);
+   if (!file){
+     printf("Comparison file couldn't be generated\n"); 
+     return;
+   }
+   //
+   fTree = (TTree*) file->Get("TPCcmpTracks");
+   if (!fTree) {
+    printf("no track comparison tree found\n");
+    file->Close();
+    delete file;
+  }
+}
+
+void AliTPCComparisonDraw::ResPt()
+{
+ //
+  //
+  gStyle->SetOptFit();
+  TCanvas *c1=new TCanvas("TPC pt resolution","TPC pt resolution",0,0,700,850);
+  c1->Draw(); c1->cd();
+  TPad *p1=new TPad("p1","p1",0.01,0.51,.99,.99); 
+  p1->Draw();p1->cd(); 
+  p1->SetGridx(); p1->SetGridy();
+  //
+  c1->cd();
+  TPad *p2=new TPad("p2","p2",0.01,0.01,.99,.49); 
+  p2->Draw();p2->cd();
+  p2->SetGridx(); p2->SetGridy();
+  // 
+  //Default cuts
+  TCut cprim("cprim","MC.fVDist[3]<1");
+  TCut cnprim("cnprim","MC.fVDist[3]>1");
+  TCut cteta1("cteta1","abs(MC.fTrackRef.Theta()/3.1415-0.5)<0.25");
+  TCut cpos1("cpos1","abs(MC.fParticle.fVz/sqrt(MC.fParticle.fVx*MC.fParticle.fVx+MC.fParticle.fVy*MC.fParticle.fVy))<1");
+  //
+  c1->cd();  p1->cd();
+  TH1F* hisp = ResPtvsPt("MC.fRowsWithDigits>100"+cteta1+cpos1,"1",0.15,2.,6);
+  c1->cd(); 
+  c1->Draw();
+  p1->cd();
+  p1->Draw();
+  hisp->Draw(); 
+  //
+  c1->cd();  
+  c1->Draw();
+  p2->cd();
+  p2->Draw();
+  TH1F* his2 =  new TH1F("Ptresolution","Ptresolution",40,-5.,5.);
+  fTree->Draw("100.*(abs(1./fTPCTrack.Get1Pt())-MC.fTrackRef.Pt())/MC.fTrackRef.Pt()>>Ptresolution","MC.fRowsWithDigits>100&&RC.fTPCTrack.fN>50&&RC.fMultiple==1"+cteta1+cpos1+cprim);
+  AliLabelAxes(his2, "#Delta p_{t} / p_{t} [%]", "entries");
+  his2->Fit("gaus");
+  his2->Draw();
+ 
+}
+
+void AliTPCComparisonDraw::Eff()
+{
+  //
+  //
+  TCanvas *c1=new TCanvas("TPC efficiency","TPC efficiency",0,0,700,850);
+  c1->Draw(); c1->cd();
+  TPad *p1=new TPad("p1","p1",0.01,0.51,.99,.99); 
+  p1->Draw();p1->cd(); 
+  p1->SetGridx(); p1->SetGridy();
+  //
+  c1->cd();
+  TPad *p2=new TPad("p2","p2",0.01,0.01,.99,.49); 
+  p2->Draw();p2->cd();
+  p2->SetGridx(); p2->SetGridy();
+  // 
+  //Default cuts
+  TCut cprim("cprim","MC.fVDist[3]<1");
+  TCut cnprim("cnprim","MC.fVDist[3]>1");
+  TCut cteta1("cteta1","abs(MC.fTrackRef.Theta()/3.1415-0.5)<0.25");
+  TCut cpos1("cpos1","abs(MC.fParticle.fVz/sqrt(MC.fParticle.fVx*MC.fParticle.fVx+MC.fParticle.fVy*MC.fParticle.fVy))<1");
+  //
+  c1->cd();  p1->cd();
+  TH1F* hisp = EffVsPt("MC.fRowsWithDigits>100"+cteta1+cpos1+cprim,"RC.fTPCTrack.fN>50");
+  hisp->Draw();
+  //hisp->DrawClone(); 
+  TText * text = new TText(0.25,102.,"Primary particles");
+  text->SetTextSize(0.05);
+  text->Draw();
+  //
+  c1->cd();  p2->cd();
+  TH1F* hiss = EffVsPt("MC.fRowsWithDigits>100"+cteta1+cpos1+cnprim,"RC.fTPCTrack.fN>50");
+  hiss->Draw();
+  //hiss->DrawClone();
+  text = new TText(0.25,102.,"Secondary particles");
+  text->SetTextSize(0.05);
+  text->Draw();
+
+ 
+}
+
+
+TH1F * AliTPCComparisonDraw::EffVsPt(const char* selection, const char * quality, Float_t min, Float_t max)
+{
+  //
+  //
+  Int_t nBins = 10;
+  Double_t* bins = CreateLogBins(nBins, min, max);
+  TH1F* hGen = new TH1F("hGen", "gen. tracks", nBins, bins);
+  TH1F* hRec = new TH1F("hRec", "rec. tracks", nBins, bins);
+  
+  fTree->Draw("MC.fParticle.Pt()>>hGen", selection, "groff");
+  char selectionRec[256];
+  sprintf(selectionRec, "%s && RC.fReconstructed && %s", selection, quality);
+  fTree->Draw("MC.fParticle.Pt()>>hRec", selectionRec, "groff");
+
+  TH1F* hEff = CreateEffHisto(hGen, hRec);
+  AliLabelAxes(hEff, "p_{t} [GeV/c]", "#epsilon [%]");
+
+  delete hRec;
+  delete hGen;
+  delete[] bins;
+  return hEff;
+}
+
+
+TH1F * AliTPCComparisonDraw::EffVsRM(const char* selection, const char * quality, Float_t min, Float_t max, Int_t nBins)
+{
+  //
+  TH1F* hGen = new TH1F("hGen", "gen. tracks", nBins, min, max);
+  TH1F* hRec = new TH1F("hRec", "rec. tracks", nBins, min, max);
+  //  
+  fTree->Draw("sqrt(MC.fDecayCoord[0]*MC.fDecayCoord[0] + MC.fDecayCoord[1]*MC.fDecayCoord[1])>>hGen", selection, "groff");
+  char selectionRec[256];
+  sprintf(selectionRec, "%s && RC.fReconstructed && %s", selection, quality);
+  fTree->Draw("sqrt(MC.fDecayCoord[0]*MC.fDecayCoord[0] + MC.fDecayCoord[1]*MC.fDecayCoord[1])>>hRec", selectionRec, "groff");
+  //
+  TH1F* hEff = CreateEffHisto(hGen, hRec);
+  AliLabelAxes(hEff, "r_{vertex} [cm]", "#epsilon [%]");
+  //
+  delete hRec;
+  delete hGen;
+  return hEff;
+}
+
+TH1F * AliTPCComparisonDraw::EffVsRS(const char* selection, const char * quality, Float_t min, Float_t max, Int_t nBins)
+{
+  //
+  TH1F* hGen = new TH1F("hGen", "gen. tracks", nBins, min, max);
+  TH1F* hRec = new TH1F("hRec", "rec. tracks", nBins, min, max);
+  //  
+  fTree->Draw("sqrt(MC.fVDist[0]*MC.fVDist[0] + MC.fVDist[1]*MC.fVDist[1])>>hGen", selection, "groff");
+  char selectionRec[256];
+  sprintf(selectionRec, "%s && RC.fReconstructed && %s", selection, quality);
+  fTree->Draw("sqrt(MC.fVDist[0]*MC.fVDist[0] + MC.fVDist[1]*MC.fVDist[1])>>hRec", selectionRec, "groff");
+  //
+  TH1F* hEff = CreateEffHisto(hGen, hRec);
+  AliLabelAxes(hEff, "r_{vertex} [cm]", "#epsilon [%]");
+  //
+  delete hRec;
+  delete hGen;
+  return hEff;
+
+}
+
+TH1F * AliTPCComparisonDraw::ResPtvsPt(const char* selection, const char * quality, Float_t min, Float_t max, Int_t nBins)
+{
+  //
+  Double_t* bins = CreateLogBins(nBins, min, max);
+  Int_t nBinsRes = 30;
+  Double_t maxRes = 10.;
+  TH2F* hRes2 = new TH2F("hRes2", "residuals", nBins, bins, nBinsRes, -maxRes, maxRes);
+  
+  fTree->Draw("100.*(abs(1./fTPCTrack.Get1Pt())-MC.fTrackRef.Pt())/MC.fTrackRef.Pt():MC.fTrackRef.Pt()>>hRes2", selection, "groff");
+
+  TH1F* hMean=0;
+  TH1F* hRes = CreateResHisto(hRes2, &hMean);
+  AliLabelAxes(hRes, "p_{t} [GeV/c]", "#Delta p_{t} / p_{t} [%]");
+  //
+  delete hRes2;
+  delete[] bins;
+  return hRes;
+
+}
+
+TH1F * AliTPCComparisonDraw::MeanPtvsPt(const char* selection, const char * quality, Float_t min, Float_t max, Int_t nBins)
+{
+  //
+  Double_t* bins = CreateLogBins(nBins, min, max);
+  Int_t nBinsRes = 30;
+  Double_t maxRes = 10.;
+  TH2F* hRes2 = new TH2F("hRes2", "residuals", nBins, bins, nBinsRes, -maxRes, maxRes);
+  
+  fTree->Draw("100.*(1./fTPCTrack.Get1Pt()-MC.fTrackRef.Pt())/MC.fTrackRef.Pt():MC.fTrackRef.Pt()>>hRes2", selection, "groff");
+
+  TH1F* hMean=0;
+  TH1F* hRes = CreateResHisto(hRes2, &hMean);
+  AliLabelAxes(hRes, "p_{t} [GeV/c]", "mean p_{t} / p_{t} [%]");
+  //
+  delete hRes2;
+  delete[] bins;
+  if (!hMean) return 0;
+  return hMean;
+
+}
+
+
+TH1F * AliTPCComparisonDraw::ResdEdxvsN(const char* selection, const char * quality, Float_t min, Float_t max, Int_t nBins)
+{
+  //
+  Int_t nBinsRes = 15;
+
+  TH2F* hRes2 = new TH2F("hRes2", "residuals", nBins, min, max, nBinsRes, 34, 60);
+  
+  fTree->Draw("RC.fTPCTrack.fdEdx/MC.fPrim:RC.fTPCTrack.fN>>hRes2", selection, "groff");
+
+  TH1F* hMean=0;
+  TH1F* hRes = CreateResHisto(hRes2, &hMean);
+  AliLabelAxes(hRes, "N points", "sigma dEdx/Nprim [%]");
+  //
+  delete hRes2;
+  return hRes;
+
+}
+
+
+
+Double_t* AliTPCComparisonDraw::CreateLogBins(Int_t nBins, Double_t xMin, Double_t xMax)
+{
+  Double_t* bins = new Double_t[nBins+1];
+  bins[0] = xMin;
+  Double_t factor = pow(xMax/xMin, 1./nBins);
+  for (Int_t i = 1; i <= nBins; i++)
+    bins[i] = factor * bins[i-1];
+  return bins;
+}
+
+
+
+
+void AliTPCComparisonDraw::AliLabelAxes(TH1* histo, const char* xAxisTitle, const char* yAxisTitle)
+{
+  //
+  histo->GetXaxis()->SetTitle(xAxisTitle);
+  histo->GetYaxis()->SetTitle(yAxisTitle);
+}
+
+
+TH1F* AliTPCComparisonDraw::CreateEffHisto(TH1F* hGen, TH1F* hRec)
+{
+  //
+  Int_t nBins = hGen->GetNbinsX();
+  TH1F* hEff = (TH1F*) hGen->Clone("hEff");
+  hEff->SetTitle("");
+  hEff->SetStats(kFALSE);
+  hEff->SetMinimum(0.);
+  hEff->SetMaximum(110.);
+  //
+  for (Int_t iBin = 0; iBin <= nBins; iBin++) {
+    Double_t nGen = hGen->GetBinContent(iBin);
+    Double_t nRec = hRec->GetBinContent(iBin);
+    if (nGen > 0) {
+      Double_t eff = nRec/nGen;
+      hEff->SetBinContent(iBin, 100. * eff);
+      Double_t error = sqrt((eff*(1.-eff)+0.01) / nGen);      
+      //      if (error == 0) error = sqrt(0.1/nGen);
+      //
+      if (error == 0) error = 0.0001;
+      hEff->SetBinError(iBin, 100. * error);
+    } else {
+      hEff->SetBinContent(iBin, 100. * 0.5);
+      hEff->SetBinError(iBin, 100. * 0.5);
+    }
+  }
+  return hEff;
+}
+
+
+
+TH1F* AliTPCComparisonDraw::CreateResHisto(TH2F* hRes2, TH1F **phMean,  Bool_t drawBinFits, 
+		     Bool_t overflowBinFits)
+{
+  TVirtualPad* currentPad = gPad;
+  TAxis* axis = hRes2->GetXaxis();
+  Int_t nBins = axis->GetNbins();
+  TH1F* hRes, *hMean;
+  if (axis->GetXbins()->GetSize()){
+    hRes = new TH1F("hRes", "", nBins, axis->GetXbins()->GetArray());
+    hMean = new TH1F("hMean", "", nBins, axis->GetXbins()->GetArray());
+  }
+  else{
+    hRes = new TH1F("hRes", "", nBins, axis->GetXmin(), axis->GetXmax());
+    hMean = new TH1F("hMean", "", nBins, axis->GetXmin(), axis->GetXmax());
+
+  }
+  hRes->SetStats(false);
+  hRes->SetOption("E");
+  hRes->SetMinimum(0.);
+  //
+  hMean->SetStats(false);
+  hMean->SetOption("E");
+ 
+  // create the fit function
+  //TKFitGaus* fitFunc = new TKFitGaus("resFunc");
+  //   TF1 * fitFunc = new TF1("G","[3]+[0]*exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))",-3,3);
+  TF1 * fitFunc = new TF1("G","[0]*exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))",-3,3);
+  
+  fitFunc->SetLineWidth(2);
+  fitFunc->SetFillStyle(0);
+  // create canvas for fits
+  TCanvas* canBinFits = NULL;
+  Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  Int_t nx = Int_t(sqrt(nPads-1.));// + 1;
+  Int_t ny = (nPads-1) / nx + 1;
+  if (drawBinFits) {
+    canBinFits = (TCanvas*)gROOT->FindObject("canBinFits");
+    if (canBinFits) delete canBinFits;
+    canBinFits = new TCanvas("canBinFits", "fits of bins", 200, 100, 500, 700);
+    canBinFits->Divide(nx, ny);
+  }
+
+  // loop over x bins and fit projection
+  Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  for (Int_t bin = 1-dBin; bin <= nBins+dBin; bin++) {
+    if (drawBinFits) canBinFits->cd(bin + dBin);
+    TH1D* hBin = hRes2->ProjectionY("hBin", bin, bin);
+    //    
+    if (hBin->GetEntries() > 10) {
+      fitFunc->SetParameters(hBin->GetMaximum(),hBin->GetMean(),hBin->GetRMS());
+      hBin->Fit(fitFunc,"s");
+      Double_t sigma = TMath::Abs(fitFunc->GetParameter(2));
+
+      if (sigma > 0.){
+	hRes->SetBinContent(bin, TMath::Abs(fitFunc->GetParameter(2)));
+	hMean->SetBinContent(bin, fitFunc->GetParameter(1));	
+      }
+      else{
+	hRes->SetBinContent(bin, 0.);
+	hMean->SetBinContent(bin,0);
+      }
+      hRes->SetBinError(bin, fitFunc->GetParError(2));
+      hMean->SetBinError(bin, fitFunc->GetParError(1));
+      
+      //
+      //
+
+    } else {
+      hRes->SetBinContent(bin, 0.);
+      hRes->SetBinError(bin, 0.);
+      hMean->SetBinContent(bin, 0.);
+      hMean->SetBinError(bin, 0.);
+    }
+    
+
+    if (drawBinFits) {
+      char name[256];
+      if (bin == 0) {
+	sprintf(name, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
+      } else if (bin == nBins+1) {
+	sprintf(name, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
+      } else {
+	sprintf(name, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
+		axis->GetTitle(), axis->GetBinUpEdge(bin));
+      }
+      canBinFits->cd(bin + dBin);
+      hBin->SetTitle(name);
+      hBin->SetStats(kTRUE);
+      hBin->DrawCopy("E");
+      canBinFits->Update();
+      canBinFits->Modified();
+      canBinFits->Update();
+    }
+    
+    delete hBin;
+  }
+
+  delete fitFunc;
+  currentPad->cd();
+  *phMean = hMean;
+  return hRes;
+}
+
+
+
