@@ -25,14 +25,19 @@
 
 const G4int TG4XMLConvertor::fgkMaxVolumeNameLength   = 10;
 const G4int TG4XMLConvertor::fgkMaxMaterialNameLength = 20;
+const G4int TG4XMLConvertor::fgkDefaultNumWidth = 7;
+const G4int TG4XMLConvertor::fgkDefaultNumPrecision = 4;
 
 TG4XMLConvertor::TG4XMLConvertor(G4std::ofstream& outFile) 
   : fOutFile(outFile),
     fkBasicIndention("   "),
+    fNW(fgkDefaultNumWidth),
+    fNP(fgkDefaultNumPrecision),
     fIndention(fkBasicIndention),
     fRotationCounter(0)
 {
-//
+  fOutFile.width(fgkDefaultNumWidth);
+  fOutFile.precision(fgkDefaultNumPrecision);
 }
 
 TG4XMLConvertor::~TG4XMLConvertor() {
@@ -99,9 +104,9 @@ void TG4XMLConvertor::WriteBox(G4String lvName, const G4Box* box,
   fOutFile << fkBasicIndention << element1 << G4endl  
            << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7) << G4std::setprecision(2) << x << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << z 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << x << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << y << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << z 
 	   << element4 << G4endl << G4endl;
 }
  
@@ -131,13 +136,13 @@ void TG4XMLConvertor::WriteTubs(G4String lvName, const G4Tubs* tubs,
   fOutFile << fkBasicIndention << element1 << G4endl
 	   << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7)   << G4std::setprecision(2) << sphi << "  "
-           << G4std::setw(7)   << G4std::setprecision(2) << sphi+dphi
+           << G4std::setw(fNW)   << G4std::setprecision(fNP) << sphi << "  "
+           << G4std::setw(fNW)   << G4std::setprecision(fNP) << sphi+dphi
 	   << quota << G4endl 	   	   
 	   << indention        << element4
-           << G4std::setw(7) << G4std::setprecision(2) << rmin << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << rmax << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << hz 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << rmin << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << rmax << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << hz 
 	   << element5 << G4endl << G4endl;
 }  
 
@@ -170,15 +175,15 @@ void TG4XMLConvertor::WriteCons(G4String lvName, const G4Cons* cons,
   fOutFile << fkBasicIndention << element1 << G4endl
 	   << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7)   << G4std::setprecision(2) << sphi << "  "
-           << G4std::setw(7)   << G4std::setprecision(2) << sphi+dphi
+           << G4std::setw(fNW)   << G4std::setprecision(fNP) << sphi << "  "
+           << G4std::setw(fNW)   << G4std::setprecision(fNP) << sphi+dphi
 	   << quota << G4endl 	   	   
 	   << indention        << element4
-           << G4std::setw(7) << G4std::setprecision(2) << rmin1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << rmax1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << rmin2 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << rmax2 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << hz 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << rmin1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << rmin2 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << rmax1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << rmax2 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << hz 
 	   << element5 << G4endl << G4endl;
 }  
 
@@ -208,11 +213,11 @@ void TG4XMLConvertor::WriteTrd(G4String lvName, const G4Trd* trd,
   fOutFile << fkBasicIndention << element1 << G4endl
 	   << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7) << G4std::setprecision(2) << x1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x2 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y2 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << hz
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << x1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << x2 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << y1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << y2 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << hz
 	   << element4 << G4endl << G4endl;
 }  
 
@@ -260,21 +265,21 @@ void TG4XMLConvertor::WriteTrap(G4String lvName, const G4Trap* trap,
   fOutFile << fkBasicIndention << element1 << G4endl
 	   << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7) << G4std::setprecision(2) << x2 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x4 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << x3 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y2 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << dz 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << x2 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << x1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << x4 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << x3 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << y2 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << y1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << dz 
 	   << quota << G4endl
            << indention       << element4
-           << G4std::setw(7) << G4std::setprecision(2) << inc1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << inc2 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << inc1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << inc2 
 	   << quota << G4endl
 	   << indention       << element5
-           << G4std::setw(7) << G4std::setprecision(2) << alpha1 << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << alpha2 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << alpha1 << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << alpha2 
 	   << element6 << G4endl << G4endl;
 }  
 
@@ -314,18 +319,18 @@ void TG4XMLConvertor::WritePara(G4String lvName, const G4Para* para,
   fOutFile << fkBasicIndention << element1 << G4endl  
            << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7) << G4std::setprecision(2) << dx << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << dy << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << dz 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << dx << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << dy << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << dz 
 	   << quota << G4endl
 	   << indention        << element4
-           << G4std::setw(7) << G4std::setprecision(2) << alpha 
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << alpha 
 	   << quota << G4endl
 	   << indention        << element5
-           << G4std::setw(7) << G4std::setprecision(2) << theta
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << theta
 	   << quota << G4endl
 	   << indention        << element6
-           << G4std::setw(7) << G4std::setprecision(2) << phi 	   
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << phi 	   
 	   << element7 << G4endl << G4endl;
 }
  
@@ -362,8 +367,8 @@ void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone,
   fOutFile << fkBasicIndention << element1 << G4endl
 	   << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7) << G4std::setprecision(2) << sphi << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << ephi
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << sphi << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << ephi
 	   << element4 << G4endl;
 
   // write polyplane elements
@@ -375,9 +380,9 @@ void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone,
     G4double z    = zArray[i]/TG4G3Units::Length();
 
     fOutFile << indention << element5
-             << G4std::setw(7) << G4std::setprecision(2) << rmin << "  "
-             << G4std::setw(7) << G4std::setprecision(2) << rmax << "  " 
-             << G4std::setw(7) << G4std::setprecision(2) << z 
+             << G4std::setw(fNW) << G4std::setprecision(fNP) << rmin << "  "
+             << G4std::setw(fNW) << G4std::setprecision(fNP) << rmax << "  " 
+             << G4std::setw(fNW) << G4std::setprecision(fNP) << z 
 	     << element6
 	     << G4endl;
   }
@@ -423,8 +428,8 @@ void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhed
   fOutFile << fkBasicIndention << element1 << G4endl
 	   << indention        << element2 << G4endl
 	   << indention        << element3
-           << G4std::setw(7) << G4std::setprecision(2) << sphi << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << ephi
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << sphi << "  "
+           << G4std::setw(fNW) << G4std::setprecision(fNP) << ephi
 	   << quota << G4endl
 	   << indention       << element4 
 	   << nofSides
@@ -436,7 +441,7 @@ void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhed
     // set units    
     G4double rmin = rminArray[i]/TG4G3Units::Length();
     if (i>0) fOutFile << "  ";
-    fOutFile << G4std::setw(7) << G4std::setprecision(2) << rmin;
+    fOutFile << G4std::setw(fNW) << G4std::setprecision(fNP) << rmin;
   };
   fOutFile << quota << G4endl;
 
@@ -445,7 +450,7 @@ void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhed
     // set units
     G4double rmax = rmaxArray[i]/TG4G3Units::Length();
     if (i>0) fOutFile << "  ";
-    fOutFile << G4std::setw(7) << G4std::setprecision(2) << rmax;
+    fOutFile << G4std::setw(fNW) << G4std::setprecision(fNP) << rmax;
   };
   fOutFile << quota << G4endl;
 
@@ -454,7 +459,7 @@ void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhed
     // set units
     G4double z = zArray[i]/TG4G3Units::Length();
     if (i>0) fOutFile << "  ";
-    fOutFile << G4std::setw(7) << G4std::setprecision(2) << z;
+    fOutFile << G4std::setw(fNW) << G4std::setprecision(fNP) << z;
   };
   fOutFile << element8 << G4endl << G4endl;
 }  
@@ -739,9 +744,9 @@ void TG4XMLConvertor::WritePosition(G4String lvName, G4ThreeVector position)
   // write element
   fOutFile << fIndention
            << element1
-           << G4std::setw(8) << G4std::setprecision(2) << x << "  "
-           << G4std::setw(8) << G4std::setprecision(2) << y << "  "
-           << G4std::setw(8) << G4std::setprecision(2) << z
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << x << "  "
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << y << "  "
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << z
 	   << element2
 	   << G4endl;
 }  
@@ -794,9 +799,9 @@ void TG4XMLConvertor::WritePositionWithRotation(
   // write element
   fOutFile << fIndention
            << element1
-           << G4std::setw(8) << G4std::setprecision(2) << x << "  "
-           << G4std::setw(8) << G4std::setprecision(2) << y << "  "
-           << G4std::setw(8) << G4std::setprecision(2) << z << quota
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << x << "  "
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << y << "  "
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << z << quota
 	   << fIndention
 	   << element2 
 	   << G4std::setw(8) << G4std::setprecision(5) << xx << "  "  
@@ -867,11 +872,11 @@ void TG4XMLConvertor::WriteReplica(G4String lvName, G4PVReplica* pvr)
   // write element
   fOutFile << fIndention
            << element1
-           << G4std::setw(8) << G4std::setprecision(2) << nReplicas
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << nReplicas
 	   << element2
-           << G4std::setw(8) << G4std::setprecision(2) << value0
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << value0
 	   << element3	   
-           << G4std::setw(8) << G4std::setprecision(2) << dValue
+           << G4std::setw(fNW+1) << G4std::setprecision(fNP) << dValue
 	   << element4
 	   << G4endl;
 }  
