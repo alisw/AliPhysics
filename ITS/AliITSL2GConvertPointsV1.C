@@ -1,0 +1,114 @@
+// 
+// Macro to convert ITS local-coordinate points
+// into globa lones
+// 
+
+Int_t AliITSL2GConvertPoints 
+(const char* in_name = "ITS.RecPoints.root", 
+ const char* out_name = "ITS.Neural.PointsV1.root", Int_t nev = 0)
+{
+	TStopwatch timer;
+
+	// Open output file
+	TFile *in = new TFile(in_name);
+	TFile *out = new TFile(out_name, "recreate");
+	
+	// Load event files
+	if (gAlice) {
+		delete gAlice->GetRunLoader();
+		delete gAlice;
+		gAlice=0;
+	} 
+	AliRunLoader* rl = AliRunLoader::Open("galice.root");
+    if (rl == 0x0) {
+		cerr << "AliITSL2GConvertPoints.C : Can not open session." << endl;
+		return 3;
+	}
+    Int_t retval = rl->LoadgAlice();
+	if (retval) {
+		cerr << "AliITSL2GConvertPoints.C : LoadgAlice returned error" << endl;
+		return 3;
+	}
+	gAlice=rl->GetAliRun();
+	AliITSLoader* gime = (AliITSLoader*)rl->GetLoader("ITSLoader");
+	if (gime == 0x0) {
+		cerr << "AliITSL2GConvertPoints.C : can not get ITS loader" << endl;
+		return 3;
+	}
+	AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");
+	if (!ITS) {
+		cerr << "AliITSL2GConvertPoints.C : AliITS object not found on file" << endl;
+		return 3;
+	}  // end if !ITS
+	AliITSgeom *geom = (AliITSgeom*)ITS->GetITSgeom();
+	if(!geom) {
+		cerr << "AliITSL2GConvertPoints.C : AliITSgeom not found." << endl;
+		return 4;
+	} // end if
+	
+	// Tree of recpoints
+	Int_t nModules = 0;
+	TTree *TR = (TTree*)in->Get(Form("Event%d/TreeR", nev));
+	if (!TR) {
+		cout << "TreeR not found" << endl;
+		return;
+	}
+	nModules = (Int_t)TR->GetEntries();
+	if (!nModules) {
+		cout << "Empty TreeR!!!" << endl;
+		return;
+	}
+
+	timer.Start();
+	
+	// Converts and stores the ITS points into global coordinate format
+	Int_t pos = 0;
+	AliITSRecPoint *local = 0;
+	AliITSNeuralPoint *global = 0;
+	TTree *TP = new TTree("TreeP", "Event points in global coords");
+	TP->Branch("pos", &pos, "pos/I");
+	TP->Branch("Points", "AliITSNeuralPoint", &global);
+	
+	TObjArray *localArray = 0;
+	TR->SetBranchAddress("ITSRecPoints", &localArray);
+	Int_t module, layer, i, j, count, index;
+	Double_t locPos[3], globPos[3], locErr[3][3], globErr[3][3];
+	
+	for(module = 0; module < nModules; module++) {
+		TR->GetEvent(module);
+		if (module > geom->GetLastSSD()) {
+			cout << "Strange behavior: an entry greater than the last SSD index!" << endl;
+			continue;
+		}
+		AliITSgeomMatrix *gm = geom->GetGeomMatrix(module);
+		geom->GetModuleId(module, layer, i, j);
+		count = (Int_t)localArray->GetEntriesFast();
+		layer--;
+		if (layer < 0 || layer > 5) {
+			cout << "STRANGE layer value: " << layer << endl;
+			continue;
+		}
+		for (index = 0; index < count; index++) {
+			local = (AliITSRecPoint*)localArray->At(index);
+			global = new AliITSNeuralPoint(local, gm);
+			global->SetLayer(layer);
+			global->SetModule(module);
+			global->SetIndex(index);
+			global->SetUser(-1);
+			global->ConfMap(0.0, 0.0);
+			TP->Fill();
+			pos++;
+		}
+	}
+
+	timer.Stop();
+	timer.Print();
+	cout << TP->GetEntries() << " points collected" << endl;
+	
+	out->cd();
+	out->mkdir(Form("Event%d", nev));
+	out->cd(Form("Event%d", nev));
+	TP->Write(Form("TreeP", nev));
+	out->Close();
+}
+
