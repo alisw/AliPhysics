@@ -36,7 +36,7 @@ public:
   Int_t         LoadTPCTracks();
   Int_t         LoadTOFDigits();
   Int_t         LoadTRDTracks();
-  Int_t         SaveTracks(const Char_t* outname="tofTracks.root", const Int_t split=0);
+  Int_t         SaveTracks(const Char_t* outname="tofTracks.root", Int_t split=0);
   void          SetDbg(Int_t dbgflag)        {fdbg=dbgflag;}
   void          SetTOFDigitsFile(char * tofDigitsFile ) {fTOFDigitsFile=tofDigitsFile;}
   void          SetTPCBackTracksFile(char * tpcBackTracksFile ){fTPCBackTracksFile=tpcBackTracksFile;}

@@ -899,7 +899,7 @@ Bool_t AliTOFReconstructionerV2::DigitFinder(TArrayI *secArray, TArrayI *plaArra
 }
 
 //__________________________________________________________________
-Int_t AliTOFReconstructionerV2::SaveTracks(const Char_t *outname, const Int_t split)
+Int_t AliTOFReconstructionerV2::SaveTracks(const Char_t *outname, Int_t split)
 {
   //
   // save reconstructed tracks into 
