@@ -16,6 +16,7 @@
 #include <G4Cons.hh>
 #include <G4Trd.hh>
 #include <G4Trap.hh>
+#include <G4Para.hh>
 #include <G4Polycone.hh>
 #include <G4Polyhedra.hh>
 
@@ -277,6 +278,57 @@ void TG4XMLConvertor::WriteTrap(G4String lvName, const G4Trap* trap,
 	   << element6 << G4endl << G4endl;
 }  
 
+void TG4XMLConvertor::WritePara(G4String lvName, const G4Para* para, 
+                                G4String materialName)
+{
+// Writes G4Para solid.
+// ---
+
+  // get parameters
+  G4double dx = para->GetXHalfLength()/TG4G3Units::Length()*2.;
+  G4double dy = para->GetYHalfLength()/TG4G3Units::Length()*2.;
+  G4double dz = para->GetZHalfLength()/TG4G3Units::Length()*2.;
+  G4double tanAlpha     = para->GetTanAlpha();
+  G4ThreeVector symAxis = para->GetSymAxis();
+  
+  G4double alpha = atan(tanAlpha) / deg;
+  G4double theta = acos(symAxis.z()) / deg;
+  G4double phi;
+  if (theta == 0.)
+    phi = 0;
+  else        
+    phi = atan(symAxis.y()/symAxis.x()) / deg;
+
+  // compose element string template
+  G4String quota = "\"";
+  G4String element1 = "<para   name=\"" + lvName + quota;
+  G4String element2 = "material=\"" + materialName + quota;
+  G4String element3 = "X_Y_Z=\"";
+  G4String element4 = "alpha=\"";
+  G4String element5 = "theta=\"";
+  G4String element6 = "phi=  \"";
+  G4String element7 = "\" />";
+  G4String indention = fkBasicIndention + fkBasicIndention;
+  
+  // write element
+  fOutFile << fkBasicIndention << element1 << G4endl  
+           << indention        << element2 << G4endl
+	   << indention        << element3
+           << G4std::setw(7) << G4std::setprecision(2) << dx << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << dy << "  "
+           << G4std::setw(7) << G4std::setprecision(2) << dz 
+	   << quota << G4endl
+	   << indention        << element4
+           << G4std::setw(7) << G4std::setprecision(2) << alpha 
+	   << quota << G4endl
+	   << indention        << element5
+           << G4std::setw(7) << G4std::setprecision(2) << theta
+	   << quota << G4endl
+	   << indention        << element6
+           << G4std::setw(7) << G4std::setprecision(2) << phi 	   
+	   << element7 << G4endl << G4endl;
+}
+ 
 void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone, 
                                     G4String materialName)
 {
@@ -574,6 +626,12 @@ void TG4XMLConvertor::WriteSolid(G4String lvName, const G4VSolid* solid,
   const G4Trap* trap = dynamic_cast<const G4Trap*>(solid);
   if (trap) { 
     WriteTrap(lvName, trap, materialName); 
+    return;
+  }
+  
+  const G4Para* para = dynamic_cast<const G4Para*>(solid);
+  if (para) { 
+    WritePara(lvName, para, materialName); 
     return;
   }
   

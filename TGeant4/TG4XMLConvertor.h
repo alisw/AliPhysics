@@ -24,6 +24,7 @@ class G4Tubs;
 class G4Cons;
 class G4Trd;
 class G4Trap;
+class G4Para;
 class G4Polycone;
 class G4Polyhedra;
 
@@ -69,6 +70,7 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     void WriteCons(G4String lvName, const G4Cons* cons, G4String materialName); 
     void WriteTrd (G4String lvName, const G4Trd*  trd,  G4String materialName); 
     void WriteTrap(G4String lvName, const G4Trap* trap, G4String materialName); 
+    void WritePara(G4String lvName, const G4Para* para, G4String materialName); 
     void WritePolycone(G4String lvName, const G4Polycone* polycone, 
                    G4String materialName); 
     void WritePolyhedra(G4String lvName, const G4Polyhedra* polyhedra, 
