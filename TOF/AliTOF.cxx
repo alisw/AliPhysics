@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/01/26 19:57:42  hristov
+Major upgrade of AliRoot code
+
 Revision 1.17  2000/10/19 09:58:14  vicinanz
 Updated Hits2Digit procedure
 
@@ -398,7 +401,7 @@ void AliTOF::MakeBranch(Option_t* option, char *file)
   Char_t branchname[10];
   sprintf(branchname,"%s",GetName());
   
-  char *D = strstr(option,"D");
+  const char *D = strstr(option,"D");
 
   if (fDigits && gAlice->TreeD() && D){
      gAlice->MakeBranchInTree(gAlice->TreeD(), 

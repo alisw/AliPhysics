@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.48  2001/03/06 00:01:36  morsch
+Add  Digits2Reco() and FindClusters()
+Adapt call of cluster finder to new STEER.
+
 Revision 1.47  2001/03/05 08:38:36  morsch
 Digitization related methods moved to AliMUONMerger.
 
@@ -549,9 +553,9 @@ void AliMUON::MakeBranch(Option_t* option, char *file)
     
     AliDetector::MakeBranch(option,file);
     
-    char *cD = strstr(option,"D");
-    char *cR = strstr(option,"R");
-    char *cH = strstr(option,"H");
+    const char *cD = strstr(option,"D");
+    const char *cR = strstr(option,"R");
+    const char *cH = strstr(option,"H");
 
     if (fPadHits   && gAlice->TreeH() && cH) {
       gAlice->MakeBranchInTree(gAlice->TreeH(), 

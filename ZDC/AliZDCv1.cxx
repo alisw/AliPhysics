@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/02/23 16:48:28  coppedis
+Correct bug in ZEM hit definition
+
 Revision 1.13  2001/02/07 18:07:41  coppedis
 Modif for splitting
 
@@ -1243,7 +1246,7 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
   
   Char_t branchname[10];
   sprintf(branchname,"%s",GetName());
-  char *cD = strstr(opt,"D");
+  const char *cD = strstr(opt,"D");
 
   if (gAlice->TreeD() && cD) {
 

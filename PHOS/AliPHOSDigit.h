@@ -27,7 +27,7 @@
 
 class AliPHOSDigit : public AliDigitNew {
 
-  friend class ostream& operator << ( ostream& , const AliPHOSDigit&) ;
+  friend ostream& operator << ( ostream& , const AliPHOSDigit&) ;
 
  public:
   

@@ -9,8 +9,6 @@
 #include <TBRIK.h>
 
 class TShape;
-class ostream;
-class istream;
 
 class AliITSgeomSSD : public TObject {
 
@@ -94,8 +92,6 @@ istream &operator>>(istream &os,AliITSgeomSSD &source);
 
 //#include "AliITSgeomSSD.h"
 
-class ostream;
-class istream;
 
 class TShape;
 
@@ -127,8 +123,6 @@ istream &operator>>(istream &os,AliITSgeomSSD175 &source);
 
 //#include "AliITSgeomSSD.h"
 
-class ostream;
-class istream;
 
 class TShape;
 
@@ -160,8 +154,6 @@ istream &operator>>(istream &os,AliITSgeomSSD275and75 &source);
 
 //#include "AliITSgeomSSD.h"
 
-class ostream;
-class istream;
 class TShape;
 
 class AliITSgeomSSD75and275 : public AliITSgeomSSD {

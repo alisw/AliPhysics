@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.58  2001/03/09 14:27:26  morsch
+Fix for multiple events per file: inhibit decrease of size of  fParticleFileMap.
+
 Revision 1.57  2001/02/23 17:40:23  buncic
 All trees needed for simulation created in RunMC(). TreeR and its branches
 are now created in new RunReco() method.
@@ -1347,12 +1350,12 @@ void AliRun::MakeTree(Option_t *option, char *file)
   char hname[30];
   //
   // Analyse options
-  char *oK = strstr(option,"K");
-  char *oH = strstr(option,"H");
-  char *oE = strstr(option,"E");
-  char *oD = strstr(option,"D");
-  char *oR = strstr(option,"R");
-  char *oS = strstr(option,"S");
+  const char *oK = strstr(option,"K");
+  const char *oH = strstr(option,"H");
+  const char *oE = strstr(option,"E");
+  const char *oD = strstr(option,"D");
+  const char *oR = strstr(option,"R");
+  const char *oS = strstr(option,"S");
   //
   
   if (oK && !fTreeK) {
@@ -1733,9 +1736,9 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
   // can contain blank separated list of detector names). 
 
 
-   char *oS = strstr(option,"S");
-   char *oD = strstr(option,"D");
-   char *oR = strstr(option,"R");
+   const char *oS = strstr(option,"S");
+   const char *oD = strstr(option,"D");
+   const char *oR = strstr(option,"R");
    
    gAlice->GetEvent(0);
 

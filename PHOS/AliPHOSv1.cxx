@@ -307,7 +307,7 @@ void AliPHOSv1::SDigits2Digits(){
 void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 { 
 
-  char *cH ; 
+  const char *cH ; 
   // Create new branche in the current Root Tree in the digit Tree
   AliDetector::MakeBranch(opt) ;
 

@@ -247,7 +247,7 @@ void AliPHOSv4::MakeBranch(Option_t* opt, char *file)
   
   char branchname[10];
   sprintf(branchname,"%s",GetName());
-  char *cd = strstr(opt,"R");
+  const char *cd = strstr(opt,"R");
   
   if (fFastRecParticles && gAlice->TreeR() && cd) {
     gAlice->MakeBranchInTree(gAlice->TreeR(), 

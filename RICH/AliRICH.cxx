@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.45  2001/02/27 22:11:46  jbarbosa
+  Testing TreeS, removing of output.
+
   Revision 1.44  2001/02/27 15:19:12  jbarbosa
   Transition to SDigits.
 
@@ -1644,9 +1647,9 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
       
     AliDetector::MakeBranch(option,file);
    
-    char *cH = strstr(option,"H");
-    char *cD = strstr(option,"D");
-    char *cR = strstr(option,"R");
+    const char *cH = strstr(option,"H");
+    const char *cD = strstr(option,"D");
+    const char *cR = strstr(option,"R");
     //char *cS = strstr(option,"S");
 
     if (cH) {
@@ -2487,7 +2490,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 
     static Bool_t first=kTRUE;
     static TFile *pFile;
-    char *addBackground = strstr(option,"Add");
+    const char *addBackground = strstr(option,"Add");
     Int_t particle;
 
     FILE* points; //these will be the digits...

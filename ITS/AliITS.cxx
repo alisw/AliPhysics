@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2001/03/07 14:04:51  barbera
+Some vector dimensions increased to cope with full events
+
 Revision 1.37  2001/03/07 12:36:35  barbera
 A change added in the tracking part to manage delta rays
 
@@ -695,7 +698,7 @@ void AliITS::MakeTreeC(Option_t *option)
 
   cout << "AliITS::MakeTreeC" << endl;
 
-     char *optC = strstr(option,"C");
+     const char *optC = strstr(option,"C");
      if (optC && !fTreeC) fTreeC = new TTree("TC","Clusters in ITS");
      else return;
 
@@ -775,8 +778,8 @@ void AliITS::MakeBranch(Option_t* option, char *file)
 
   AliDetector::MakeBranch(option,file);
 
-  char *cD = strstr(option,"D");
-  char *cR = strstr(option,"R");
+  const char *cD = strstr(option,"D");
+  const char *cR = strstr(option,"R");
 
   if (cD) {
   //
@@ -910,7 +913,7 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
 
     static Bool_t first=kTRUE;
     static TFile *file;
-    char *addBgr = strstr(option,"Add");
+    const char *addBgr = strstr(option,"Add");
 
 
     if (addBgr ) {
@@ -1112,8 +1115,8 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
    Int_t ver = this->IsVersion(); 
    if(ver!=5 && ver!=7) return; 
 
-   char *all = strstr(opt,"All");
-   char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
+   const char *all = strstr(opt,"All");
+   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
 
    Int_t nmodules;
    InitModules(size,nmodules); 
@@ -1178,8 +1181,8 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
    Int_t ver = this->IsVersion(); 
    if(ver!=5) return; 
 
-   char *all = strstr(opt,"All");
-   char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
+   const char *all = strstr(opt,"All");
+   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
 
    static Bool_t first=kTRUE;
    if (!TreeC() && first) {
@@ -1261,8 +1264,8 @@ Option_t *option,Option_t *opt,Text_t *filename)
    Int_t ver = this->IsVersion(); 
    if(ver!=5) return; 
 
-   char *all = strstr(opt,"All");
-   char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
+   const char *all = strstr(opt,"All");
+   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
 
    Int_t nmodules;
    InitModules(size,nmodules);

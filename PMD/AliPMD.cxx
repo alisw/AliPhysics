@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/01/26 20:02:43  hristov
+Major upgrade of AliRoot code
+
 Revision 1.12  2000/12/04 08:48:18  alibrary
 Fixing problems in the HEAD
 
@@ -266,7 +269,7 @@ void AliPMD::MakeBranch(Option_t* option, char *file)
 {
     // Create Tree branches for the PMD
     
-    char *cR = strstr(option,"R");
+    const char *cR = strstr(option,"R");
     
     AliDetector::MakeBranch(option,file);
 

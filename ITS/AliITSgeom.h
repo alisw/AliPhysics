@@ -18,13 +18,11 @@
 // a specialized structure for ease of implementation.
 /////////////////////////////////////////////////////////////////////////
 #include <iostream.h>
+#include <fstream.h>
 #include <TObjArray.h>
 #include <TVector.h>
 
 #include "AliITSgeomMatrix.h"
-
-class ifstream;
-class ofstream;
 
 
 typedef enum {kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4} AliITSDetector;

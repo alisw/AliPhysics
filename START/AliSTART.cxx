@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/01/26 19:59:53  hristov
+Major upgrade of AliRoot code
+
 Revision 1.16  2001/01/17 10:56:08  hristov
 Corrections to destructors
 
@@ -230,7 +233,7 @@ void AliSTART::MakeBranch(Option_t* option, char *file)
 
   AliDetector::MakeBranch(option,file);
 
-  char *cD = strstr(option,"D");
+  const char *cD = strstr(option,"D");
   
   if (cD) {
     digits = new AliSTARTdigit();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2001/03/12 08:21:50  kowal2
+Corrected C++ bug in the material definitions
+
 Revision 1.30  2001/03/01 17:34:47  kowal2
 Correction due to the accuracy problem
 
@@ -1735,7 +1738,7 @@ void AliTPC::MakeBranch(Option_t* option, char *file)
 
   AliDetector::MakeBranch(option,file);
 
-  char *d = strstr(option,"D");
+  const char *d = strstr(option,"D");
 
   if (fDigits   && gAlice->TreeD() && d) {
     gAlice->MakeBranchInTree(gAlice->TreeD(), 
@@ -1958,7 +1961,7 @@ void AliTPC::MakeBranch2(Option_t *option,char *file)
   sprintf(branchname,"%s2",GetName());  
   //
   // Get the pointer to the header
-  char *cH = strstr(option,"H");
+  const char *cH = strstr(option,"H");
   //
   if (fTrackHits   && gAlice->TreeH() && cH) {    
     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHits, 

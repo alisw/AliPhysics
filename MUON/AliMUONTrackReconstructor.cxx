@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.8  2001/01/26 22:05:41  morsch
+Unresolved conflicts resolved.
+
 Revision 1.7  2001/01/26 21:54:46  morsch
 Use access functions to AliMUONHit member data.
 
@@ -203,7 +206,7 @@ void AliMUONTrackReconstructor::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgdEve
   // call tracking fortran program
   static Bool_t first=kTRUE;
   static TFile *pFile;
-  char *addBackground = strstr(option,"Add");
+  const char *addBackground = strstr(option,"Add");
   
   if (addBackground ) { // only in case of background with geant hits 
     if(first) {

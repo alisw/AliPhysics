@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/01/26 19:58:46  hristov
+Major upgrade of AliRoot code
+
 Revision 1.10  2001/01/17 10:50:50  hristov
 Corrections to destructors
 
@@ -285,14 +288,14 @@ void AliDetector::MakeBranch(Option_t *option, char *file)
   sprintf(branchname,"%s",GetName());
   //
   // Get the pointer to the header
-  char *cH = strstr(option,"H");
+  const char *cH = strstr(option,"H");
   //
   if (fHits && gAlice->TreeH() && cH) {
     gAlice->MakeBranchInTree(gAlice->TreeH(), 
                              branchname, &fHits, fBufferSize, file) ;
   }	
   
-  char *cD = strstr(option,"D");
+  const char *cD = strstr(option,"D");
 
   if (cD) {
     if (file) {

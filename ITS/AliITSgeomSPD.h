@@ -8,8 +8,6 @@
 #include <TObject.h>
 #include <TBRIK.h>
 
-class ostream;
-class istream;
 
 class TShape;
 
@@ -92,8 +90,6 @@ istream &operator>>(istream &os,AliITSgeomSPD &source);
 
 //#include "AliITSgeomSPD.h"
 
-class ostream;
-class istream;
 
 class AliITSgeomSPD300 : public AliITSgeomSPD {
 
@@ -125,8 +121,6 @@ istream &operator>>(istream &os,AliITSgeomSPD300 &source);
 
 // temporary - this will migrate into the segmentation class
 
-class ostream;
-class istream;
 
 class AliITSgeomSPD425Short : public AliITSgeomSPD {
 
@@ -158,8 +152,6 @@ istream &operator>>(istream &os,AliITSgeomSPD425Short &source);
 
 // temporary - this will migrate into the segmentation class
 
-class ostream;
-class istream;
 
 class AliITSgeomSPD425Long : public AliITSgeomSPD {
 
