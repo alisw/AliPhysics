@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.50  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.49  2001/03/12 17:45:48  hristov
 Changes needed on Sun with CC 5.0
 
@@ -235,6 +238,7 @@ Log message added
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliRun.h"
+#include "AliHeader.h"
 #include "AliMC.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONMerger.h"	
@@ -958,6 +962,14 @@ void AliMUON::Trigger(Int_t nev){
 void AliMUON::Digits2Reco()
 {
   FindClusters();
+  Int_t nev = gAlice->GetHeader()->GetEvent();
+  gAlice->TreeR()->Fill();
+  char hname[30];
+  sprintf(hname,"TreeR%d", nev);
+  gAlice->TreeR()->Write(hname);
+  gAlice->TreeR()->Reset();
+  ResetRawClusters();        
+  printf("\n End of cluster finding for event %d", nev);
 }
 
 void AliMUON::FindClusters()

@@ -64,15 +64,7 @@ void MUONrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 	cout << "nparticles  " << nparticles <<endl;
 	if (nev < evNumber1) continue;
 	if (nparticles <= 0) return;
-	gAlice->SetEvent(nev);
 	gAlice->RunReco("MUON");
-	gAlice->TreeR()->Fill();
-	char hname[30];
-	sprintf(hname,"TreeR%d", nev);
-	gAlice->TreeR()->Write(hname);
-	gAlice->TreeR()->Reset();
-	MUON->ResetRawClusters();        
-	printf("\n End of cluster finding for event %d", 0);
     }   // event loop 
 }
 
