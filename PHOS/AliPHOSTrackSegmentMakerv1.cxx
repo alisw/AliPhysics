@@ -161,7 +161,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * Dl, RecPointsList *
     Int_t maxAt[nMultipl] ;
     Float_t maxAtEnergy[nMultipl] ;
     Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
-    
+
     if(nMax <= 1 )     // if cluster is very flat (no pronounced maximum) then nMax = 0 
       emcOut->Add(emcRecPoint) ;
     else if (fUnfoldFlag) {

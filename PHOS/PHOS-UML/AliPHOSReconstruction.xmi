@@ -2715,7 +2715,7 @@
       </ownedElement>
       <ownedElement>
         <UseCase XMI.id = "S.100952">
-          <name>Make sub tracks</name>
+          <name>Make track segments</name>
           <visibility XMI.value = "public"/>
           <isAbstract XMI.value="false"/>
           <isLeaf XMI.value="false"/>
@@ -2754,14 +2754,14 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100952"/> </type>
-                <!-- Type is: Make sub tracks -->
+                <!-- Type is: Make track segments -->
               </AssociationEnd>
             </connection>
         </Association>
       </ownedElement>
       <ownedElement>
         <UseCase XMI.id = "S.100956">
-          <name>Save sub tracks to file</name>
+          <name>Save RecPoints, TrackSegments, RecParticles</name>
           <visibility XMI.value = "public"/>
           <isAbstract XMI.value="false"/>
           <isLeaf XMI.value="false"/>
@@ -2800,53 +2800,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100956"/> </type>
-                <!-- Type is: Save sub tracks to file -->
-              </AssociationEnd>
-            </connection>
-        </Association>
-      </ownedElement>
-      <ownedElement>
-        <UseCase XMI.id = "S.100960">
-          <name>Save methods and parameters to file</name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-        </UseCase>
-      </ownedElement>
-      <ownedElement>
-        <Association XMI.id="S.100961">
-          <name></name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-            <connection>
-              <AssociationEnd XMI.id = "S.100962">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100939"/> </type>
-                <!-- Type is: PHOS actor -->
-              </AssociationEnd>
-            </connection>
-            <connection>
-              <AssociationEnd XMI.id = "S.100963">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100960"/> </type>
-                <!-- Type is: Save methods and parameters to file -->
+                <!-- Type is: Save RecPoints, TrackSegments, RecParticles -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -4963,6 +4917,52 @@ resolution -->
           <!-- supertype is: AliPHOSTrackSegmentMaker -->
         </Generalization>
       </ownedElement>
+      <ownedElement>
+        <UseCase XMI.id = "S.102831">
+          <name>Guess the type of particle</name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+        </UseCase>
+      </ownedElement>
+      <ownedElement>
+        <Association XMI.id="S.102832">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+            <connection>
+              <AssociationEnd XMI.id = "S.102833">
+                <name></name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="true"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>1</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.100939"/> </type>
+                <!-- Type is: PHOS actor -->
+              </AssociationEnd>
+            </connection>
+            <connection>
+              <AssociationEnd XMI.id = "S.102834">
+                <name></name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="true"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>1</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.102831"/> </type>
+                <!-- Type is: Guess the type of particle -->
+              </AssociationEnd>
+            </connection>
+        </Association>
+      </ownedElement>
     </Model>
     <Class XMI.id = "S.100024">
       <name>Stack</name>
@@ -4979,14 +4979,6 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
-    <Class XMI.id = "S.100018">
-      <name>Double</name>
-      <visibility XMI.value = "public"/>
-      <isAbstract XMI.value="false"/>
-      <isLeaf XMI.value="false"/>
-      <isRoot XMI.value="false"/>
-      <isActive XMI.value = "false"/>
-    </Class>
     <Class XMI.id = "S.101154">
       <name>TClonesArray</name>
       <visibility XMI.value = "public"/>
@@ -4995,8 +4987,8 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.101111">
-      <name>GetGeometry</name>
+    <Class XMI.id = "S.100018">
+      <name>Double</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5005,6 +4997,14 @@ resolution -->
     </Class>
     <Class XMI.id = "S.101964">
       <name>AliPHOSTrackSegmentMaker*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101111">
+      <name>GetGeometry</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5082,14 +5082,6 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.101960">
-      <name>AliPHOSReconstructioner*</name>
-      <visibility XMI.value = "public"/>
-      <isAbstract XMI.value="false"/>
-      <isLeaf XMI.value="false"/>
-      <isRoot XMI.value="false"/>
-      <isActive XMI.value = "false"/>
-    </Class>
     <Class XMI.id = "S.101962">
       <name>TClonesArray*</name>
       <visibility XMI.value = "public"/>
@@ -5098,8 +5090,8 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.102623">
-      <name>getters</name>
+    <Class XMI.id = "S.101960">
+      <name>AliPHOSReconstructioner*</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5114,8 +5106,8 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.102794">
-      <name>AliPHOSEmcRecPoint*</name>
+    <Class XMI.id = "S.102623">
+      <name>getters</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5130,13 +5122,14 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <DataType XMI.id = "S.100004">
-      <name>void</name>
+    <Class XMI.id = "S.102794">
+      <name>AliPHOSEmcRecPoint*</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
-    </DataType>
+      <isActive XMI.value = "false"/>
+    </Class>
     <Class XMI.id = "S.101145">
       <name>TObjArray</name>
       <visibility XMI.value = "public"/>
@@ -5145,6 +5138,13 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
+    <DataType XMI.id = "S.100004">
+      <name>void</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+    </DataType>
     <Class XMI.id = "S.100012">
       <name>Character</name>
       <visibility XMI.value = "public"/>
@@ -5192,14 +5192,6 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.101101">
-      <name>RecPointsList</name>
-      <visibility XMI.value = "public"/>
-      <isAbstract XMI.value="false"/>
-      <isLeaf XMI.value="false"/>
-      <isRoot XMI.value="false"/>
-      <isActive XMI.value = "false"/>
-    </Class>
     <Class XMI.id = "S.101919">
       <name>Bool_t</name>
       <visibility XMI.value = "public"/>
@@ -5208,8 +5200,8 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.102659">
-      <name>fDigitsList</name>
+    <Class XMI.id = "S.101101">
+      <name>RecPointsList</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5218,6 +5210,14 @@ resolution -->
     </Class>
     <Class XMI.id = "S.101156">
       <name>AliPHOSTrackSegmentMaker</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102659">
+      <name>fDigitsList</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5240,16 +5240,16 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.100017">
-      <name>Float</name>
+    <Class XMI.id = "S.101118">
+      <name>Int_t</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.101118">
-      <name>Int_t</name>
+    <Class XMI.id = "S.100017">
+      <name>Float</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5271,16 +5271,16 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
-    <Class XMI.id = "S.102536">
-      <name>TMatrix*</name>
+    <Class XMI.id = "S.101819">
+      <name>more</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.101819">
-      <name>more</name>
+    <Class XMI.id = "S.102536">
+      <name>TMatrix*</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5303,14 +5303,6 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.100003">
-      <name>String</name>
-      <visibility XMI.value = "public"/>
-      <isAbstract XMI.value="false"/>
-      <isLeaf XMI.value="false"/>
-      <isRoot XMI.value="false"/>
-      <isActive XMI.value = "false"/>
-    </Class>
     <DataType XMI.id = "S.100006">
       <name>int</name>
       <visibility XMI.value = "public"/>
@@ -5318,16 +5310,8 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
-    <Class XMI.id = "S.100288">
-      <name>bool</name>
-      <visibility XMI.value = "public"/>
-      <isAbstract XMI.value="false"/>
-      <isLeaf XMI.value="false"/>
-      <isRoot XMI.value="false"/>
-      <isActive XMI.value = "false"/>
-    </Class>
-    <Class XMI.id = "S.100014">
-      <name>Boolean</name>
+    <Class XMI.id = "S.100003">
+      <name>String</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5342,8 +5326,31 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
+    <Class XMI.id = "S.100014">
+      <name>Boolean</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.100288">
+      <name>bool</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <DataType XMI.id = "S.100011">
       <name>double</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+    </DataType>
+    <DataType XMI.id = "S.100005">
+      <name>char</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5357,13 +5364,6 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <DataType XMI.id = "S.100005">
-      <name>char</name>
-      <visibility XMI.value = "public"/>
-      <isAbstract XMI.value="false"/>
-      <isLeaf XMI.value="false"/>
-      <isRoot XMI.value="false"/>
-    </DataType>
     <Class XMI.id = "S.102798">
       <name>AliPHOSAppsdRecPoint*</name>
       <visibility XMI.value = "public"/>
@@ -5380,14 +5380,6 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.102621">
-      <name>...</name>
-      <visibility XMI.value = "public"/>
-      <isAbstract XMI.value="false"/>
-      <isLeaf XMI.value="false"/>
-      <isRoot XMI.value="false"/>
-      <isActive XMI.value = "false"/>
-    </Class>
     <Class XMI.id = "S.102570">
       <name>MaximumDigitMultiplicity</name>
       <visibility XMI.value = "public"/>
@@ -5396,8 +5388,8 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.100016">
-      <name>Long</name>
+    <Class XMI.id = "S.102621">
+      <name>...</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -5406,6 +5398,14 @@ resolution -->
     </Class>
     <Class XMI.id = "S.101957">
       <name>AliPHOSGeometry*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.100016">
+      <name>Long</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>

@@ -4,7 +4,7 @@
       name="subtracking"
 >
   <group name="Fig0"
-       description="uci.uml.visual.FigClass[8, 156, 237, 146]"
+       description="uci.uml.visual.FigClass[8, 156, 237, 195]"
        href="S.100649"
        fill="1"
        fillcolor="-1"
@@ -18,7 +18,7 @@
       x="9"
       y="157"
       width="235"
-      height="144"
+      height="193"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -36,7 +36,7 @@
     >AliPHOSTrackSegmentMakerv1</text>
     <text name="Fig0.2"
       x="8"
-      y="171"
+      y="174"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -47,7 +47,7 @@
 public fR0 = 0</text>
     <text name="Fig0.3"
       x="8"
-      y="196"
+      y="206"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -66,7 +66,7 @@ public void UnfoldClusters()
 public void UnfoldingChiSquare()</text>
   </group>
   <group name="Fig1"
-       description="uci.uml.visual.FigClass[294, 148, 206, 112]"
+       description="uci.uml.visual.FigClass[294, 148, 228, 125]"
        href="S.100094"
        fill="1"
        fillcolor="-1"
@@ -79,8 +79,8 @@ public void UnfoldingChiSquare()</text>
     <rectangle name="Fig1.0"
       x="295"
       y="149"
-      width="204"
-      height="110"
+      width="226"
+      height="123"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -98,7 +98,7 @@ public void UnfoldingChiSquare()</text>
     >AliPHOSGeometry</text>
     <text name="Fig1.2"
       x="294"
-      y="163"
+      y="166"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -108,7 +108,7 @@ public void UnfoldingChiSquare()</text>
     >private many data</text>
     <text name="Fig1.3"
       x="294"
-      y="186"
+      y="184"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -123,7 +123,7 @@ public void AbsToRelNumbering()
 public and many(more getter/putter)</text>
   </group>
   <text name="Fig2"
-    x="441"
+    x="419"
     y="232"
     fill="1"
     fillcolor="-1"
@@ -133,7 +133,7 @@ public and many(more getter/putter)</text>
     textsize="10"
   >singleton</text>
   <group name="Fig3"
-       description="uci.uml.visual.FigClass[8, 360, 196, 146]"
+       description="uci.uml.visual.FigClass[8, 360, 270, 181]"
        href="S.100688"
        fill="1"
        fillcolor="-1"
@@ -146,8 +146,8 @@ public and many(more getter/putter)</text>
     <rectangle name="Fig3.0"
       x="9"
       y="361"
-      width="194"
-      height="144"
+      width="268"
+      height="179"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -165,7 +165,7 @@ public and many(more getter/putter)</text>
     >AliPHOSSubTrack</text>
     <text name="Fig3.2"
       x="8"
-      y="375"
+      y="378"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -178,7 +178,7 @@ private AliPHOSPpsdRecPoint* fPpsdLow
 private AliPHOSAppsdRecPoint* fPpsdUp</text>
     <text name="Fig3.3"
       x="8"
-      y="420"
+      y="438"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -187,15 +187,14 @@ private AliPHOSAppsdRecPoint* fPpsdUp</text>
       textsize="9"
     >public Float_t GetDistannceInPHOSPlane()
 public Float_t GetEnergy()
-public Bool_t GetMomentumDirection() 
+public Bool_t GetMomentumDirection()
 public Int_t GetParticuleType()
 public void GetPosition()
 public void Print()
-public void SetDispersionCutOff()
-</text>
+public void SetDispersionCutOff()</text>
   </group>
   <group name="Fig4"
-       description="uci.uml.visual.FigClass[296, 285, 216, 46]"
+       description="uci.uml.visual.FigClass[296, 285, 216, 55]"
        href="S.100334"
        fill="1"
        fillcolor="-1"
@@ -209,7 +208,7 @@ public void SetDispersionCutOff()
       x="297"
       y="286"
       width="214"
-      height="44"
+      height="53"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -227,7 +226,7 @@ public void SetDispersionCutOff()
     >AliPHOSEmcRecPoint</text>
     <text name="Fig4.2"
       x="296"
-      y="300"
+      y="303"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -237,7 +236,7 @@ public void SetDispersionCutOff()
     ></text>
     <text name="Fig4.3"
       x="296"
-      y="315"
+      y="321"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -247,7 +246,7 @@ public void SetDispersionCutOff()
     ></text>
   </group>
   <group name="Fig5"
-       description="uci.uml.visual.FigClass[296, 349, 168, 46]"
+       description="uci.uml.visual.FigClass[296, 349, 168, 55]"
        href="S.100336"
        fill="1"
        fillcolor="-1"
@@ -261,7 +260,7 @@ public void SetDispersionCutOff()
       x="297"
       y="350"
       width="166"
-      height="44"
+      height="53"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -279,7 +278,7 @@ public void SetDispersionCutOff()
     >AliPHOSPpsdRecPoint</text>
     <text name="Fig5.2"
       x="296"
-      y="364"
+      y="367"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -289,7 +288,7 @@ public void SetDispersionCutOff()
     ></text>
     <text name="Fig5.3"
       x="296"
-      y="379"
+      y="385"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -298,8 +297,8 @@ public void SetDispersionCutOff()
       textsize="9"
     ></text>
   </group>
-  <group name="Fig12"
-       description="uci.uml.visual.FigClass[32, 16, 157, 60]"
+  <group name="Fig6"
+       description="uci.uml.visual.FigClass[32, 16, 233, 69]"
        href="S.102715"
        fill="1"
        fillcolor="-1"
@@ -309,17 +308,17 @@ public void SetDispersionCutOff()
     <private>
     </private>
     
-    <rectangle name="Fig12.0"
+    <rectangle name="Fig6.0"
       x="33"
       y="17"
-      width="155"
-      height="58"
+      width="231"
+      height="67"
       fill="1"
-      fillcolor="-16711681"
+      fillcolor="-1"
       stroke="1"
-      strokecolor="-16711681"
+      strokecolor="-16777216"
     />
-    <text name="Fig12.1"
+    <text name="Fig6.1"
       x="32"
       y="16"
       fill="1"
@@ -329,9 +328,9 @@ public void SetDispersionCutOff()
       font="Dialog"
       textsize="9"
     >AliPHOSTrackSegmentMaker</text>
-    <text name="Fig12.2"
+    <text name="Fig6.2"
       x="32"
-      y="31"
+      y="34"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -339,9 +338,9 @@ public void SetDispersionCutOff()
       font="Dialog"
       textsize="9"
     >private Float_t fR0</text>
-    <text name="Fig12.3"
+    <text name="Fig6.3"
       x="32"
-      y="48"
+      y="52"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -351,7 +350,7 @@ public void SetDispersionCutOff()
     >public void MakeTrackSegments()
 public void SetMaxEmcPpsdDistance()</text>
   </group>
-  <group name="Fig6"
+  <group name="Fig7"
        description="uci.uml.visual.FigAssociation"
        href="S.100685"
        stroke="1"
@@ -363,7 +362,7 @@ public void SetMaxEmcPpsdDistance()</text>
       sourceFigNode="Fig0"
       destFigNode="Fig1"
     </private>
-    <path name="Fig6.1"
+    <path name="Fig7.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -376,7 +375,7 @@ public void SetMaxEmcPpsdDistance()</text>
               y="157" />
     </path>
   </group>
-  <group name="Fig7"
+  <group name="Fig8"
        description="uci.uml.visual.FigAssociation"
        href="S.100689"
        stroke="1"
@@ -388,7 +387,7 @@ public void SetMaxEmcPpsdDistance()</text>
       sourceFigNode="Fig0"
       destFigNode="Fig3"
     </private>
-    <path name="Fig7.1"
+    <path name="Fig8.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -396,12 +395,12 @@ public void SetMaxEmcPpsdDistance()</text>
       strokecolor="-16777216"
     >
       <moveto x="96"
-              y="302" />
+              y="351" />
       <lineto x="96"
               y="360" />
     </path>
   </group>
-  <group name="Fig8"
+  <group name="Fig9"
        description="uci.uml.visual.FigAssociation"
        href="S.100781"
        stroke="1"
@@ -413,7 +412,7 @@ public void SetMaxEmcPpsdDistance()</text>
       sourceFigNode="Fig3"
       destFigNode="Fig4"
     </private>
-    <path name="Fig8.1"
+    <path name="Fig9.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -428,7 +427,7 @@ public void SetMaxEmcPpsdDistance()</text>
               y="320" />
     </path>
   </group>
-  <group name="Fig9"
+  <group name="Fig10"
        description="uci.uml.visual.FigAssociation"
        href="S.100784"
        stroke="1"
@@ -440,20 +439,20 @@ public void SetMaxEmcPpsdDistance()</text>
       sourceFigNode="Fig3"
       destFigNode="Fig5"
     </private>
-    <path name="Fig9.1"
+    <path name="Fig10.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
       stroke="1"
       strokecolor="-16777216"
     >
-      <moveto x="203"
+      <moveto x="277"
               y="384" />
       <lineto x="297"
               y="384" />
     </path>
   </group>
-  <group name="Fig10"
+  <group name="Fig11"
        description="uci.uml.visual.FigAssociation"
        href="S.100787"
        stroke="1"
@@ -465,7 +464,7 @@ public void SetMaxEmcPpsdDistance()</text>
       sourceFigNode="Fig0"
       destFigNode="Fig4"
     </private>
-    <path name="Fig10.1"
+    <path name="Fig11.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -482,7 +481,7 @@ public void SetMaxEmcPpsdDistance()</text>
               y="286" />
     </path>
   </group>
-  <group name="Fig11"
+  <group name="Fig12"
        description="uci.uml.visual.FigAssociation"
        href="S.100790"
        stroke="1"
@@ -494,7 +493,7 @@ public void SetMaxEmcPpsdDistance()</text>
       sourceFigNode="Fig0"
       destFigNode="Fig5"
     </private>
-    <path name="Fig11.1"
+    <path name="Fig12.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -521,9 +520,9 @@ public void SetMaxEmcPpsdDistance()</text>
   >
     <private>
       sourcePortFig="Fig0.0"
-      destPortFig="Fig12.0"
+      destPortFig="Fig6.0"
       sourceFigNode="Fig0"
-      destFigNode="Fig12"
+      destFigNode="Fig6"
     </private>
     <path name="Fig13.1"
       description="uci.gef.FigPoly"
@@ -535,7 +534,7 @@ public void SetMaxEmcPpsdDistance()</text>
       <moveto x="80"
               y="157" />
       <lineto x="80"
-              y="75" />
+              y="84" />
     </path>
   </group>
 </pgml>

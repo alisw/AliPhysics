@@ -144,7 +144,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
       cout << "AnalyzeManyEvents > " << "Booking Histograms" << endl ; 
       BookingHistograms();
       Int_t ievent;
-      Int_t relid[4] ;
+      Int_t relid[4] ; 
       AliPHOSDigit * digit ;
       AliPHOSEmcRecPoint * emc ;
       AliPHOSPpsdRecPoint * ppsd ;
@@ -166,7 +166,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  fTrs->SetUnfoldFlag() ; 
 	  //========== Creates the particle identifier
 	  fPID = new AliPHOSPIDv1() ;
-	  fPID->SetShowerProfileCuts(0.5, 1.5, 0.5, 1.5 ) ; 
+	  fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
 	  fPID->Print() ; 	    
 	  //========== Creates the Reconstructioner  
 	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 

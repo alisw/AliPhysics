@@ -160,9 +160,11 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
   // Here comes something crummy ... but I do not know how to stream pointers
   // because AliPHOSDigit is in a TCLonesArray
 
-    if ( fNprimary > 3 )
+  if ( fNprimary > 3 ) {
       cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ; 
-    else {
+      fNprimary = 3 ;
+  }    
+  else {
       switch (fNprimary) {  
       case 1 :
 	SetPrimary(1, fPrimary[0]) ; 

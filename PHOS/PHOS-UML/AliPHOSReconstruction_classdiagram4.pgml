@@ -4,7 +4,7 @@
       name="TreeR"
 >
   <text name="Fig0"
-    x="-61"
+    x="-96"
     y="32"
     fill="1"
     fillcolor="-3618561"
@@ -14,7 +14,7 @@
     textsize="24"
   >TreeR</text>
   <text name="Fig1"
-    x="-188"
+    x="-285"
     y="104"
     fill="1"
     fillcolor="-1"
@@ -48,7 +48,7 @@
             y="120" />
   </path>
   <text name="Fig4"
-    x="-205"
+    x="-307"
     y="144"
     fill="1"
     fillcolor="-1"
@@ -58,7 +58,7 @@
     textsize="18"
   >PHOSPpsdClusters</text>
   <text name="Fig5"
-    x="-140"
+    x="-225"
     y="184"
     fill="1"
     fillcolor="-1"
@@ -68,7 +68,7 @@
     textsize="18"
   >PHOSSubTracks</text>
   <text name="Fig6"
-    x="-156"
+    x="-245"
     y="224"
     fill="1"
     fillcolor="-1"
@@ -126,7 +126,7 @@
             y="240" />
   </path>
   <text name="Fig11"
-    x="-67"
+    x="-103"
     y="296"
     fill="1"
     fillcolor="-3618561"
@@ -136,7 +136,7 @@
     textsize="24"
   >TreeD</text>
   <text name="Fig12"
-    x="111"
+    x="89"
     y="352"
     fill="1"
     fillcolor="-1"

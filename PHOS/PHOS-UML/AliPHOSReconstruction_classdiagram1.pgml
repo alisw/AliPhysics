@@ -28,7 +28,7 @@
       x="40"
       y="32"
       width="104"
-      height="28"
+      height="36"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -46,7 +46,7 @@
     >&lt;&lt;Interface&gt;&gt;</text>
     <text name="Fig0.3"
       x="41"
-      y="46"
+      y="51"
       fill="1"
       fillcolor="-56"
       stroke="0"
@@ -56,7 +56,7 @@
     >AliDetector</text>
     <text name="Fig0.4"
       x="40"
-      y="59"
+      y="67"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -66,7 +66,7 @@
     ></text>
   </group>
   <group name="Fig1"
-       description="uci.uml.visual.FigInterface[8, 128, 172, 64]"
+       description="uci.uml.visual.FigInterface[8, 128, 255, 68]"
        href="S.100078"
        fill="1"
        fillcolor="-56"
@@ -79,8 +79,8 @@
     <rectangle name="Fig1.0"
       x="9"
       y="129"
-      width="170"
-      height="62"
+      width="253"
+      height="66"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -89,8 +89,8 @@
     <rectangle name="Fig1.1"
       x="8"
       y="128"
-      width="172"
-      height="28"
+      width="255"
+      height="36"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -108,7 +108,7 @@
     >&lt;&lt;Interface&gt;&gt;</text>
     <text name="Fig1.3"
       x="9"
-      y="142"
+      y="147"
       fill="1"
       fillcolor="-56"
       stroke="0"
@@ -118,7 +118,7 @@
     >AliPHOS</text>
     <text name="Fig1.4"
       x="8"
-      y="155"
+      y="163"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -129,7 +129,7 @@
 public AliPHOSGeometry * GetGeometry()</text>
   </group>
   <group name="Fig2"
-       description="uci.uml.visual.FigClass[342, 212, 206, 112]"
+       description="uci.uml.visual.FigClass[342, 212, 228, 125]"
        href="S.100094"
        fill="1"
        fillcolor="-1"
@@ -142,8 +142,8 @@ public AliPHOSGeometry * GetGeometry()</text>
     <rectangle name="Fig2.0"
       x="343"
       y="213"
-      width="204"
-      height="110"
+      width="226"
+      height="123"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -161,7 +161,7 @@ public AliPHOSGeometry * GetGeometry()</text>
     >AliPHOSGeometry</text>
     <text name="Fig2.2"
       x="342"
-      y="227"
+      y="230"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -171,7 +171,7 @@ public AliPHOSGeometry * GetGeometry()</text>
     >private many data</text>
     <text name="Fig2.3"
       x="342"
-      y="250"
+      y="248"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -210,7 +210,7 @@ public and many(more getter/putter)</text>
       x="368"
       y="392"
       width="104"
-      height="28"
+      height="36"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -228,7 +228,7 @@ public and many(more getter/putter)</text>
     >&lt;&lt;Interface&gt;&gt;</text>
     <text name="Fig3.3"
       x="369"
-      y="406"
+      y="411"
       fill="1"
       fillcolor="-56"
       stroke="0"
@@ -238,7 +238,7 @@ public and many(more getter/putter)</text>
     >AliHit</text>
     <text name="Fig3.4"
       x="368"
-      y="419"
+      y="427"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -248,7 +248,7 @@ public and many(more getter/putter)</text>
     ></text>
   </group>
   <group name="Fig4"
-       description="uci.uml.visual.FigClass[336, 516, 146, 112]"
+       description="uci.uml.visual.FigClass[336, 516, 161, 113]"
        href="S.100125"
        fill="1"
        fillcolor="-1"
@@ -261,8 +261,8 @@ public and many(more getter/putter)</text>
     <rectangle name="Fig4.0"
       x="337"
       y="517"
-      width="144"
-      height="110"
+      width="159"
+      height="111"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -280,7 +280,7 @@ public and many(more getter/putter)</text>
     >AliPHOSHit</text>
     <text name="Fig4.2"
       x="336"
-      y="531"
+      y="534"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -291,7 +291,7 @@ public and many(more getter/putter)</text>
 private Int_t fId = 0</text>
     <text name="Fig4.3"
       x="336"
-      y="579"
+      y="581"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -326,7 +326,7 @@ public Int_t GetId()</text>
       x="104"
       y="576"
       width="104"
-      height="28"
+      height="36"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -344,7 +344,7 @@ public Int_t GetId()</text>
     >&lt;&lt;Interface&gt;&gt;</text>
     <text name="Fig5.3"
       x="105"
-      y="590"
+      y="595"
       fill="1"
       fillcolor="-56"
       stroke="0"
@@ -354,7 +354,7 @@ public Int_t GetId()</text>
     >AliDigit</text>
     <text name="Fig5.4"
       x="104"
-      y="603"
+      y="611"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -364,7 +364,7 @@ public Int_t GetId()</text>
     ></text>
   </group>
   <group name="Fig6"
-       description="uci.uml.visual.FigClass[152, 668, 146, 86]"
+       description="uci.uml.visual.FigClass[152, 668, 154, 111]"
        href="S.100160"
        fill="1"
        fillcolor="-1"
@@ -377,8 +377,8 @@ public Int_t GetId()</text>
     <rectangle name="Fig6.0"
       x="153"
       y="669"
-      width="144"
-      height="84"
+      width="152"
+      height="109"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -396,7 +396,7 @@ public Int_t GetId()</text>
     >AliPHOSDigit</text>
     <text name="Fig6.2"
       x="152"
-      y="683"
+      y="686"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -407,20 +407,20 @@ public Int_t GetId()</text>
 private Int_t fId = 0</text>
     <text name="Fig6.3"
       x="152"
-      y="708"
+      y="718"
       fill="1"
       fillcolor="-1"
       stroke="1"
       strokecolor="-16777216"
       font="Dialog"
       textsize="9"
-    >public void?? Compare()
+    >public void Compare()
 public Int_t GetAmp()
 public Bool_t IsSortable()
 public Int_t GetId()</text>
   </group>
   <text name="Fig7"
-    x="473"
+    x="451"
     y="320"
     fill="1"
     fillcolor="-1"
@@ -430,7 +430,7 @@ public Int_t GetId()</text>
     textsize="10"
   >singleton</text>
   <group name="Fig8"
-       description="uci.uml.visual.FigClass[16, 237, 256, 326]"
+       description="uci.uml.visual.FigClass[16, 237, 366, 447]"
        href="S.101042"
        fill="1"
        fillcolor="-1"
@@ -443,8 +443,8 @@ public Int_t GetId()</text>
     <rectangle name="Fig8.0"
       x="17"
       y="238"
-      width="254"
-      height="324"
+      width="364"
+      height="445"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -462,7 +462,7 @@ public Int_t GetId()</text>
     >AliPHOSv0</text>
     <text name="Fig8.2"
       x="16"
-      y="252"
+      y="255"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -479,7 +479,7 @@ private TObjArray* fTrackSegments
 private Int_t fNTmpHits</text>
     <text name="Fig8.3"
       x="16"
-      y="337"
+      y="371"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -603,7 +603,7 @@ public TObjArray TrqackSegments()</text>
       <moveto x="96"
               y="238" />
       <lineto x="96"
-              y="191" />
+              y="195" />
     </path>
   </group>
   <group name="Fig13"
@@ -625,7 +625,7 @@ public TObjArray TrqackSegments()</text>
       stroke="1"
       strokecolor="-16777216"
     >
-      <moveto x="271"
+      <moveto x="343"
               y="238" />
       <lineto x="343"
               y="238" />
@@ -650,7 +650,7 @@ public TObjArray TrqackSegments()</text>
       stroke="1"
       strokecolor="-16777216"
     >
-      <moveto x="271"
+      <moveto x="337"
               y="520" />
       <lineto x="337"
               y="520" />
@@ -676,7 +676,7 @@ public TObjArray TrqackSegments()</text>
       strokecolor="-16777216"
     >
       <moveto x="271"
-              y="562" />
+              y="669" />
       <lineto x="271"
               y="669" />
     </path>

@@ -97,12 +97,15 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
   // copies the digits with energy above thershold and sorts the list
   // according to increasing Id number
 
+  cout << "HOLA 1" << endl;
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
   Int_t relid[4] ;  
   
   TIter next(dl) ; 
   AliPHOSDigit * digit ;
   
+ 
+
   while ( (digit = (AliPHOSDigit *)next()) ) { 
 
 //     cout << " clusterizerv1 " << endl ;
@@ -114,18 +117,27 @@ void AliPHOSClusterizerv1::FillandSort(const DigitsList * dl, TObjArray * tl)
     Int_t id    = digit->GetId() ; 
     Float_t ene = Calibrate(digit->GetAmp()) ; 
     geom->AbsToRelNumbering(id, relid) ;
-    
     if(relid[1]==0){ // EMC
-      if ( ene > fEmcEnergyThreshold ) 
+      if ( ene > fEmcEnergyThreshold )
 	tl->Add(digit) ;
     }
 
     else { //Ppsd
       if ( ene > fPpsdEnergyThreshold )
-	tl->Add(digit) ;	
+	tl->Add(digit) ; 
     }
 
   }
+  cout << tl << endl;
+
+  TIter next2(tl) ; Int_t iii=0;
+  cout << "Entries is " << tl->GetEntries() << tl->GetLast() << endl;
+  while ( (digit = (AliPHOSDigit *)next2()) ) { 
+    cout << iii++ << "   "  << digit << " Amplitud is  " << digit->GetAmp() << endl;
+  }
+  cout << "HOLA de nuevo " << tl << endl;
+  tl->Print();
+  cout << "sort" << endl ;
   tl->Sort() ; 
 }
 

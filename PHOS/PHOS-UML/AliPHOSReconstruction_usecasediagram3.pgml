@@ -83,8 +83,8 @@
               y="125" />
     </path>
     <text name="Fig0.6"
-      x="76"
-      y="130"
+      x="64"
+      y="127"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -125,8 +125,8 @@
       strokecolor="-16777216"
     />
     <text name="Fig1.2"
-      x="190"
-      y="13"
+      x="172"
+      y="10"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -168,8 +168,8 @@ from TreeK</text>
       strokecolor="-16777216"
     />
     <text name="Fig2.2"
-      x="258"
-      y="82"
+      x="235"
+      y="77"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -212,8 +212,8 @@ the way of the particle</text>
       strokecolor="-16777216"
     />
     <text name="Fig3.2"
-      x="256"
-      y="221"
+      x="231"
+      y="218"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -255,8 +255,8 @@ response to this particle</text>
       strokecolor="-16777216"
     />
     <text name="Fig4.2"
-      x="80"
-      y="287"
+      x="59"
+      y="282"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -299,8 +299,8 @@ detected particle</text>
       strokecolor="-16777216"
     />
     <text name="Fig5.2"
-      x="512"
-      y="23"
+      x="490"
+      y="18"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -343,8 +343,8 @@ energy loss</text>
       strokecolor="-16777216"
     />
     <text name="Fig6.2"
-      x="531"
-      y="110"
+      x="503"
+      y="105"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -387,8 +387,8 @@ momentum smearing</text>
       strokecolor="-16777216"
     />
     <text name="Fig7.2"
-      x="532"
-      y="214"
+      x="506"
+      y="209"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -431,8 +431,8 @@ a charged or neutral hadron</text>
       strokecolor="-16777216"
     />
     <text name="Fig8.2"
-      x="544"
-      y="309"
+      x="522"
+      y="306"
       fill="0"
       fillcolor="-1"
       stroke="0"

@@ -70,10 +70,13 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
  void AliPHOSReconstructioner::Make(TClonesArray * dl, RecPointsList * emccl, RecPointsList * ppsdl, 
 				     TrackSegmentsList * trsl, RecParticlesList * rpl)
 {
-  fClusterizer->MakeClusters(dl, emccl, ppsdl);
-  
 
+  cout << "Clusterizing" << endl;
+  fClusterizer->MakeClusters(dl, emccl, ppsdl);
+
+  cout << "Segment Track  Maker" << endl;
   fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
 
+  cout << "Particle Maker" << endl;
   fPID->MakeParticles(trsl, rpl) ; 
 }
