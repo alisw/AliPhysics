@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------
 //           Implementation of the ESD track class
 //   ESD = Event Summary Data
-//   This is the class to deal with during the phisical analysis of data
+//   This is the class to deal with during the phisics analysis of data
 //      Origin: Iouri Belikov, CERN
 //      e-mail: Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
@@ -85,8 +85,12 @@ fRICHsignal(-1)
   fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
   fEMCALpos[0]=fEMCALpos[1]=fEMCALpos[2]=0.;
   Int_t i;
-  for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.; fTp[i]=0.;}
-  for (i=0; i<15; i++) { fRc[i]=0.; fCc[i]=0.; fIc[i]=0.; fOc[i]=0.; fTc[i]=0.;  }
+  for (i=0; i<5; i++)  { 
+    fRp[i]=fCp[i]=fIp[i]=fOp[i]=fXp[i]=fTp[i]=0.;
+  }
+  for (i=0; i<15; i++) { 
+    fRc[i]=fCc[i]=fIc[i]=fOc[i]=fXc[i]=fTc[i]=0.;  
+  }
   for (i=0; i<6; i++)  { fITSindex[i]=0; }
   for (i=0; i<180; i++){ fTPCindex[i]=0; }
   for (i=0; i<130; i++) { fTRDindex[i]=0; }
@@ -221,10 +225,12 @@ Double_t AliESDtrack::GetMass() const {
 }
 
 //_______________________________________________________________________
-Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
+Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
   //
   // This function updates track's running parameters 
   //
+  Bool_t rc=kTRUE;
+
   SetStatus(flags);
   fLabel=t->GetLabel();
 
@@ -321,25 +327,17 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
     break;
 
   case kTRDout:
-    { //requested by the PHOS/EMCAL  ("temporary solution")
-      Int_t i;
-      Double_t x=460.,buf[15];
-      if (t->PropagateTo(x,30.,0.)) {  
-         fOalpha=t->GetAlpha();
-         t->GetExternalParameters(x,buf); fOx=x;
-         for (i=0; i<5; i++) fOp[i]=buf[i];
-         t->GetExternalCovariance(buf);
-         for (i=0; i<15; i++) fOc[i]=buf[i];
-      }
-      x=450.;
-      if (t->PropagateTo(x,30.,0.)) {  
-         fXalpha=t->GetAlpha();
-         t->GetExternalParameters(x,buf); fXx=x;
-         for (i=0; i<5; i++) fXp[i]=buf[i];
-         t->GetExternalCovariance(buf);
-         for (i=0; i<15; i++) fXc[i]=buf[i];
-      }
-    }
+    //requested by the PHOS/EMCAL  ("temporary solution")
+    fOalpha=t->GetAlpha();
+    fOx=460.;
+    rc=GetExternalParametersAt(fOx,fOp);
+    t->GetExternalCovariance(fOc); //can be done better
+
+    fXalpha=t->GetAlpha();
+    fXx=450.;
+    rc=GetExternalParametersAt(fXx,fXp);
+    t->GetExternalCovariance(fXc); //can be done better
+
   case kTRDin: case kTRDrefit:
     fTRDLabel = t->GetLabel();
  
@@ -364,7 +362,7 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
     return kFALSE;
   }
 
-  return kTRUE;
+  return rc;
 }
 
 //_______________________________________________________________________
@@ -392,6 +390,28 @@ void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
   x=fRx;
   for (Int_t i=0; i<5; i++) p[i]=fRp[i];
 }
+
+//_______________________________________________________________________
+Bool_t AliESDtrack::GetExternalParametersAt(Double_t x, Double_t p[5]) const {
+  //---------------------------------------------------------------------
+  // This function returns external representation of the track parameters
+  // at the position given by the first argument 
+  //---------------------------------------------------------------------
+  Double_t dx=x-fRx;
+  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]/AliKalmanTrack::GetConvConst();
+
+  if (TMath::Abs(f2) >= 0.9999) return kFALSE;
+  
+  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  p[0] = fRp[0] + dx*(f1+f2)/(r1+r2);
+  p[1] = fRp[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fRp[3];
+  p[2] = f2;
+  p[3] = fRp[3];
+  p[4] = fRp[4];
+
+  return kTRUE;
+}
+
 //_______________________________________________________________________
 void AliESDtrack::GetExternalCovariance(Double_t cov[15]) const {
   //---------------------------------------------------------------------

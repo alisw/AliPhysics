@@ -7,7 +7,7 @@
 
 //-------------------------------------------------------------------------
 //                          Class AliESDtrack
-//   This is the class to deal with during the physical analysis of data
+//   This is the class to deal with during the physics analysis of data
 //      
 //         Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
@@ -23,7 +23,7 @@ public:
   virtual ~AliESDtrack();  
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
-  Bool_t UpdateTrackParams(AliKalmanTrack *t, ULong_t flags);
+  Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
   void SetIntegratedLength(Double_t l) {fTrackLength=l;}
   void SetIntegratedTimes(const Double_t *times);
   void SetESDpid(const Double_t *p);
@@ -33,6 +33,7 @@ public:
   Int_t GetLabel() const {return fLabel;}
   Double_t GetAlpha() const {return fRalpha;}
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
+  Bool_t GetExternalParametersAt(Double_t x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
@@ -190,16 +191,16 @@ protected:
   Double_t fTc[15];   // external cov. matrix of the track parameters
 
 //Track parameters at the radius of the PHOS
-  Double_t fOalpha;   // Track rotation angle
-  Double_t fOx;       // x-coordinate of the track reference plane
-  Double_t fOp[5];    // external track parameters
-  Double_t fOc[15];   // external cov. matrix of the track parameters
+  Double_t fOalpha;   //! Track rotation angle
+  Double_t fOx;       //! x-coordinate of the track reference plane
+  Double_t fOp[5];    //! external track parameters
+  Double_t fOc[15];   //! external cov. matrix of the track parameters
 
 //Track parameters at the radius of the EMCAL
-  Double_t fXalpha;   // Track rotation angle
-  Double_t fXx;       // x-coordinate of the track reference plane
-  Double_t fXp[5];    // external track parameters
-  Double_t fXc[15];   // external cov. matrix of the track parameters
+  Double_t fXalpha;   //! Track rotation angle
+  Double_t fXx;       //! x-coordinate of the track reference plane
+  Double_t fXp[5];    //! external track parameters
+  Double_t fXc[15];   //! external cov. matrix of the track parameters
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
@@ -249,7 +250,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,7)  //ESDtrack 
+  ClassDef(AliESDtrack,8)  //ESDtrack 
 };
 
 #endif 
