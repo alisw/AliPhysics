@@ -1,3 +1,5 @@
+// $Id$
+
 #include <iostream.h>
 
 void g4menu()

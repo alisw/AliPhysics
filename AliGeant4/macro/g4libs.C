@@ -1,3 +1,5 @@
+// $Id$
+
 #include <iostream.h>
 
 static Bool_t isGeant4 = false;
