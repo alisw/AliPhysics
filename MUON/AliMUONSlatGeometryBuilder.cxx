@@ -558,7 +558,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
 	ydiv += dydiv;
 	xdiv = 0.; 
-	if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
+	if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos((ydiv-dydiv/2.)/rmin) );
 	divpar[0] = (kPcbLength - xdiv)/2.; 
 	divpar[1] = dydiv/2. - epsilon;
 	divpar[2] = kSensWidth/2.; 
@@ -854,7 +854,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
       ydiv += dydiv;
       xdiv = 0.; 
-      if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
+      if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos((ydiv-dydiv/2.)/rmin) );
       divpar[0] = (kPcbLength - xdiv)/2.; 
       divpar[1] = dydiv/2. - epsilon;
       divpar[2] = kSensWidth/2.; 
@@ -1114,7 +1114,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
       ydiv += dydiv;
       xdiv = 0.; 
-      if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
+      if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos((ydiv-dydiv/2.)/rmin) );
       divpar[0] = (kPcbLength - xdiv)/2.; 
       divpar[1] = dydiv/2. - epsilon;
       divpar[2] = kSensWidth/2.; 
