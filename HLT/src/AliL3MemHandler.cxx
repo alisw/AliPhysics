@@ -226,7 +226,7 @@ void AliL3MemHandler::SetRandomCluster(Int_t maxnumber){
   if(fDigits) delete [] fDigits;
   fDigits = new AliL3RandomDigitData[fNRandom*9];
   if(fDPt) delete [] fDPt;
-  fDPt = (AliL3RandomDigitData **)new Int_t[fNRandom*9];
+  fDPt = new AliL3RandomDigitData *[fNRandom*9];
 }
 
 void AliL3MemHandler::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last){
