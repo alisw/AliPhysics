@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/01/21 12:53:50  morsch
+authors
+
 Revision 1.5  2002/01/21 12:47:47  morsch
 Possibility to include K0long and neutrons.
 
@@ -914,7 +917,7 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 //
 //
 // bending radies
-    Float_t rB = 3.3356 * pt / b;
+    Float_t rB = 333.56 * pt / b;
     
 //
 // check if particle is curling below EMCAL
