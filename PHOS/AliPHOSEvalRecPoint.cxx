@@ -826,7 +826,7 @@ void AliPHOSEvalRecPoint::MergeClosePoint()
   for (Int_t i=0;i<InWorkingPool(); i++)
     {
       TObject* obj = GetFromWorkingPool(i);
-      if(!(TObject*)this->IsEqual(obj))
+      if(!((TObject*)this)->IsEqual(obj))
 	{
 	  AliPHOSRecPoint* rp = (AliPHOSRecPoint*)obj;
 	  if(GetPHOSMod() == rp->GetPHOSMod())
