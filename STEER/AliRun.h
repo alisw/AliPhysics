@@ -147,6 +147,6 @@ public:
    ClassDef(AliRun,2)      //Supervisor class for all Alice detectors
 };
  
-EXTERN  AliRun *gAlice;
+R__EXTERN  AliRun *gAlice;
  
 #endif
