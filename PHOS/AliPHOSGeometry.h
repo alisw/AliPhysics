@@ -8,7 +8,7 @@
 //_________________________________________________________________________
 // Geometry class  for PHOS : singleton  
 // The EMC modules are parametrized so that any configuration can be easily implemented 
-// The title is used to identify the type of CPV used. So far only PPSD implemented
+// The title is used to identify the type of CPV used. PPSD and CPV are implemented
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
@@ -24,6 +24,10 @@
 // --- AliRoot header files ---
 
 #include "AliGeometry.h"
+#include "AliEMCAGeometry.h"
+#include "AliCPVBaseGeometry.h"
+#include "AliCPVGeometry.h"
+#include "AliPPSDGeometry.h"
 #include "AliPHOSRecPoint.h"
 
 
@@ -35,11 +39,10 @@ public:
     // default ctor 
     // must be kept public for root persistency purposes, but should never be called by the outside world
     fPHOSAngle = 0 ; 
-
   } ;  
+
   AliPHOSGeometry(const AliPHOSGeometry & geom) {
-    // cpy ctor requested by Coding Convention 
-    // but not yet needed
+    // cpy ctor requested by Coding Convention but not yet needed
     assert(0==1) ;
   } 
   
@@ -47,11 +50,10 @@ public:
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
   static AliPHOSGeometry * GetInstance() ; 
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat) const ;
-  virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ; 
+  virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ;
 
   AliPHOSGeometry & operator = (const AliPHOSGeometry  & rvalue) const {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *(GetInstance()) ; 
   }
@@ -66,256 +68,177 @@ public:
   static TString Radian(void) { 
     // a global for radian (rad)
     return TString("rad") ; 
-  } 
-   
+  }
+
   Bool_t AbsToRelNumbering(const Int_t AbsId, Int_t * RelId) ; // converts the absolute PHOS numbering to a relative 
-  void EmcModuleCoverage(const Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt = Radian() );    
+
+  void EmcModuleCoverage(const Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt = Radian() );
                                                          // calculates the angular coverage in theta and phi of a EMC module
   void EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt = Radian() ) ; 
-                                                                         // calculates the angular coverage in theta and phi of a 
-                                                                         // single crystal in a EMC module
+                                                         // calculates the angular coverage in theta and phi of a 
+                                                         // single crystal in a EMC module
 
   void ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & x, Double_t & z) ; 
-                                                                          // calculates the impact coordinates of a neutral particle  
-                                                                          // emitted in direction theta and phi in ALICE
+                                                         // calculates the impact coordinates of a neutral particle  
+                                                         // emitted in direction theta and phi in ALICE
  
   void   RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) ; // gets the position of element (pad or Xtal) relative to 
                                                                          // center of PHOS module  
   void   RelPosInAlice(const Int_t AbsId, TVector3 &  pos) ;             // gets the position of element (pad or Xtal) relative to 
                                                                          // Alice
   Bool_t RelToAbsNumbering(const Int_t * RelId, Int_t & AbsId) ;         // converts the absolute PHOS numbering to a relative 
+
+  Bool_t  IsInitialized(void)                  const { return fgInit ; }  
                                                                        
+  // Return general PHOS parameters
 
-  ///////////// PHOS related parameters
+  Int_t   GetNModules(void)                    const { return fNModules ; }
+  Float_t GetPHOSAngle(Int_t index)            const { return fPHOSAngle[index-1] ; }
 
-  Bool_t     IsInitialized(void)                  const { 
-    // 
-    return fgInit ; }  
-  Float_t    GetAirFilledBoxSize(Int_t index)     const { 
-    // Getter
-    return fAirFilledBoxSize[index] ;}
-  Float_t    GetCrystalHolderThickness(void)      const { 
-    // Getter
-    return fCrystalHolderThickness ; } 
-  Float_t    GetCrystalSize(Int_t index)          const { 
-    // Getter
-    return fXtlSize[index] ; }
-  Float_t    GetCrystalSupportHeight(void)        const { 
-    // Getter 
-    return fCrystalSupportHeight ; } 
-  Float_t    GetCrystalWrapThickness(void)        const { 
-    // Getter
-    return fCrystalWrapThickness;}
-  Float_t    GetGapBetweenCrystals(void)          const { 
-    // Getter
-    return fGapBetweenCrystals ; }
-  Float_t    GetIPtoCrystalSurface(void)          const { 
-    // Getter
-    return fIPtoCrystalSurface ; }
-  Float_t    GetIPtoOuterCoverDistance(void)      const { 
-    // Getter
-    return fIPtoOuterCoverDistance ; }
-  Float_t    GetIPtoPpsdUp(void)                  const { 
-    // Getter
-    return (fIPtoOuterCoverDistance - fPPSDBoxSize[1] + fPPSDModuleSize[1]/2 ); } 
-  Float_t    GetIPtoPpsdLow(void)                 const { 
-    // Getter
-    return (fIPtoOuterCoverDistance - fPPSDModuleSize[1]/2 ); } 
-  Float_t    GetIPtoTopLidDistance(void)          const { 
-    // Getter
-    return fIPtoTopLidDistance ; }
-  Float_t    GetLowerThermoPlateThickness(void)   const { 
-    // Getter
-    return fLowerThermoPlateThickness ; }
-  Float_t    GetLowerTextolitPlateThickness(void) const { 
-    // Getter
-    return fLowerTextolitPlateThickness ; }
-  Float_t    GetModuleBoxThickness(void)          const { 
-    // Getter
-    return fModuleBoxThickness ; }
-  Int_t      GetNPhi(void)                        const { 
-    // Getter
-    return fNPhi ; }
-  Int_t      GetNZ(void)                          const { 
-    // Getter
-    return fNZ ; }
-  Int_t      GetNModules(void)                    const { 
-    // Getter
-    return fNModules ; }
-  Float_t    GetOuterBoxSize(Int_t index)         const { 
-    // Getter
-    return fOuterBoxSize[index] ;    }
-  Float_t    GetOuterBoxThickness(Int_t index)    const { 
-    // Getter
-    return fOuterBoxThickness[index] ; } 
-  Float_t    GetPHOSAngle(Int_t index)            const { 
-    // Getter
-    return fPHOSAngle[index-1] ; } 
-  Float_t    GetPinDiodeSize(Int_t index)         const { 
-    // Getter
-    return fPinDiodeSize[index] ; }
-  Float_t    GetSecondUpperPlateThickness(void)   const { 
-    // Getter
-    return fSecondUpperPlateThickness ; }
-  Float_t    GetSupportPlateThickness(void)       const { 
-    // Getter
-    return fSupportPlateThickness ; }    
-  Float_t    GetTextolitBoxSize(Int_t index)      const { 
-    // Getter
-    return fTextolitBoxSize[index] ; }
-  Float_t    GetTextolitBoxThickness(Int_t index) const { 
-    // Getter
-    return fTextolitBoxThickness[index]; } 
-  Float_t    GetUpperPlateThickness(void)         const { 
-    // Getter
-    return fUpperPlateThickness ; }
-  Float_t    GetUpperCoolingPlateThickness(void)  const { 
-    // Getter
-    return fUpperCoolingPlateThickness ; }
+  // Return EMCA geometrical parameters
 
- 
-  ///////////// PPSD (PHOS PRE SHOWER DETECTOR)  related parameters
+  Float_t GetOuterBoxSize(Int_t index)         const { return fGeometryEMCA->GetOuterBoxSize(index);            }
+  Float_t GetAirFilledBoxSize(Int_t index)     const { return fGeometryEMCA->GetAirFilledBoxSize(index) ;       }
+  Float_t GetCrystalHolderThickness(void)      const { return fGeometryEMCA->GetCrystalHolderThickness() ;      }
+  Float_t GetCrystalSize(Int_t index)          const { return fGeometryEMCA->GetCrystalSize(index) ;            }
+  Float_t GetCrystalSupportHeight(void)        const { return fGeometryEMCA->GetCrystalSupportHeight() ;        }
+  Float_t GetCrystalWrapThickness(void)        const { return fGeometryEMCA->GetCrystalWrapThickness() ;        }
+  Float_t GetGapBetweenCrystals(void)          const { return fGeometryEMCA->GetGapBetweenCrystals() ;          }
+  Float_t GetIPtoCrystalSurface(void)          const { return fGeometryEMCA->GetIPtoCrystalSurface() ;          }
+  Float_t GetIPtoOuterCoverDistance(void)      const { return fGeometryEMCA->GetIPtoOuterCoverDistance() ;      }
+  Float_t GetLowerThermoPlateThickness(void)   const { return fGeometryEMCA->GetLowerThermoPlateThickness() ;   }
+  Float_t GetLowerTextolitPlateThickness(void) const { return fGeometryEMCA->GetLowerTextolitPlateThickness() ; }
+  Float_t GetModuleBoxThickness(void)          const { return fGeometryEMCA->GetModuleBoxThickness() ;          }
+  Int_t   GetNPhi(void)                        const { return fGeometryEMCA->GetNPhi() ;                        }
+  Int_t   GetNZ(void)                          const { return fGeometryEMCA->GetNZ() ;                          }
+  Float_t GetOuterBoxThickness(Int_t index)    const { return fGeometryEMCA->GetOuterBoxThickness(index) ;      }
+  Float_t GetPinDiodeSize(Int_t index)         const { return fGeometryEMCA->GetPinDiodeSize(index) ;           }
+  Float_t GetSecondUpperPlateThickness(void)   const { return fGeometryEMCA->GetSecondUpperPlateThickness() ;   }
+  Float_t GetSupportPlateThickness(void)       const { return fGeometryEMCA->GetSupportPlateThickness() ;       }
+  Float_t GetTextolitBoxSize(Int_t index)      const { return fGeometryEMCA->GetTextolitBoxSize(index) ;        }
+  Float_t GetTextolitBoxThickness(Int_t index) const { return fGeometryEMCA->GetTextolitBoxThickness(index);    }
+  Float_t GetUpperPlateThickness(void)         const { return fGeometryEMCA->GetUpperPlateThickness() ;         }
+  Float_t GetUpperCoolingPlateThickness(void)  const { return fGeometryEMCA->GetUpperCoolingPlateThickness() ;  }
 
+  // Return PPSD geometrical parameters
 
-  Float_t GetAnodeThickness(void)          const { 
-    // Getter
-    return fAnodeThickness ; } 
-  Float_t GetAvalancheGap(void)            const { 
-    // Getter
-    return fAvalancheGap ; }
-  Float_t GetCathodeThickness(void)        const { 
-    // Getter
-    return fCathodeThickness ; } 
-  Float_t GetCompositeThickness(void)      const { 
-    // Getter
-    return fCompositeThickness ; } 
-  Float_t GetConversionGap(void)           const { 
-    // Getter
-    return fConversionGap ; } 
-  Float_t GetLeadConverterThickness(void)  const { 
-    // Getter
-    return fLeadConverterThickness ; }
-  Float_t GetLeadToMicro2Gap(void)         const { 
-    // Getter
-    return fLeadToMicro2Gap ; }       
-  Float_t GetLidThickness(void)            const { 
-    // Getter
-    return fLidThickness ; }
-  Float_t GetMicromegas1Thickness(void)    const { 
-    // Getter
-    return fMicromegas1Thickness ; } 
-  Float_t GetMicromegas2Thickness(void)    const { 
-    // Getter
-    return fMicromegas2Thickness ; } 
-  Float_t GetMicromegasWallThickness(void) const { 
-    // Getter
-    return fMicromegasWallThickness ; } 
-  Float_t GetMicro1ToLeadGap(void)         const { 
-    // Getter
-    return fMicro1ToLeadGap ; } 
-  Int_t   GetNumberOfPadsPhi(void)         const { 
-    // Getter
-    return fNumberOfPadsPhi ; }
-  Int_t   GetNumberOfPadsZ(void)           const { 
-    // Getter
-    return fNumberOfPadsZ ; }
-  Int_t   GetNumberOfModulesPhi(void)      const { 
-    // Getter
-    return fNumberOfModulesPhi ; }          
-  Int_t   GetNumberOfModulesZ(void)        const { 
-    // Getter
-    return fNumberOfModulesZ ; }               
-  Float_t GetPCThickness(void)             const { 
-    // Getter
-    return fPCThickness ; }   
-  Float_t GetPhiDisplacement(void)         const { 
-    // Getter
-    return fPhiDisplacement ; }                           
-  Float_t GetPPSDBoxSize(Int_t index)      const { 
-    // Getter
-    return fPPSDBoxSize[index] ; }
-  Float_t GetPPSDModuleSize(Int_t index)   const { 
-    // Getter
-    return fPPSDModuleSize[index] ; } 
-  Float_t GetZDisplacement(void)           const { 
-    // Getter
-    return fZDisplacement ; }                           
- 
-  void SetLeadConverterThickness(Float_t e) ; // should ultimately disappear 
+  Float_t GetAnodeThickness(void)              const { return ((AliPPSDGeometry*) fGeometryCPV)->GetAnodeThickness();         }
+  Float_t GetAvalancheGap(void)                const { return ((AliPPSDGeometry*) fGeometryCPV)->GetAvalancheGap();           }
+  Float_t GetCathodeThickness(void)            const { return ((AliPPSDGeometry*) fGeometryCPV)->GetCathodeThickness();       }
+  Float_t GetCompositeThickness(void)          const { return ((AliPPSDGeometry*) fGeometryCPV)->GetCompositeThickness();     }
+  Float_t GetConversionGap(void)               const { return ((AliPPSDGeometry*) fGeometryCPV)->GetConversionGap();          }
+  Float_t GetLeadConverterThickness(void)      const { return ((AliPPSDGeometry*) fGeometryCPV)->GetLeadConverterThickness(); }
+  Float_t GetLeadToMicro2Gap(void)             const { return ((AliPPSDGeometry*) fGeometryCPV)->GetLeadToMicro2Gap();        }
+  Float_t GetLidThickness(void)                const { return ((AliPPSDGeometry*) fGeometryCPV)->GetLidThickness();           }
+  Float_t GetMicromegas1Thickness(void)        const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicromegas1Thickness();   }
+  Float_t GetMicromegas2Thickness(void)        const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicromegas2Thickness();   }
+  Float_t GetMicromegasWallThickness(void)     const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicromegasWallThickness();}
+  Float_t GetMicro1ToLeadGap(void)             const { return ((AliPPSDGeometry*) fGeometryCPV)->GetMicro1ToLeadGap();        }
+  Float_t GetPCThickness(void)                 const { return ((AliPPSDGeometry*) fGeometryCPV)->GetPCThickness();            }
+  Float_t GetPhiDisplacement(void)             const { return ((AliPPSDGeometry*) fGeometryCPV)->GetPhiDisplacement();        }
+  Float_t GetPPSDModuleSize(Int_t index)       const { return ((AliPPSDGeometry*) fGeometryCPV)->GetPPSDModuleSize(index);    }
+  Float_t GetZDisplacement(void)               const { return ((AliPPSDGeometry*) fGeometryCPV)->GetZDisplacement();          }
+
+  // Return CPV geometrical parameters
+
+  Bool_t  IsLeadConverterExists(void)          const { return ((AliCPVGeometry*) fGeometryCPV)->IsLeadConverterExists();      }
+  Float_t GetCPVActiveSize(Int_t index)        const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVActiveSize(index);         }
+  Int_t   GetNumberOfCPVChipsPhi(void)         const { return ((AliCPVGeometry*) fGeometryCPV)->GetNumberOfCPVChipsPhi();     }
+  Int_t   GetNumberOfCPVChipsZ(void)           const { return ((AliCPVGeometry*) fGeometryCPV)->GetNumberOfCPVChipsZ();       }
+  Float_t GetGassiplexChipSize(Int_t index)    const { return ((AliCPVGeometry*) fGeometryCPV)->GetGassiplexChipSize(index);  }
+  Float_t GetCPVGasThickness(void)             const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVGasThickness();         }
+  Float_t GetCPVTextoliteThickness(void)       const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVTextoliteThickness();   }
+  Float_t GetCPVCuNiFoilThickness(void)        const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVCuNiFoilThickness();    }
+  Float_t GetFTPosition(Int_t index)           const { return ((AliCPVGeometry*) fGeometryCPV)->GetFTPosition(index);         }
+  Float_t GetCPVFrameSize(Int_t index)         const { return ((AliCPVGeometry*) fGeometryCPV)->GetCPVFrameSize(index);       }
+
+  // Common PPSD and CPV parameters
+
+  Int_t   GetNumberOfCPVLayers(void)  const {
+    if      (strcmp(fName,"GPS2")==0) return 2;
+    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry*) fGeometryCPV)->GetNumberOfCPVLayers();
+    else                              return 0;
+  }
+
+  Float_t GetCPVBoxSize(Int_t index)  const { 
+    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetCPVBoxSize(index);
+    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry* ) fGeometryCPV)->GetCPVBoxSize(index);
+    else                              return 0;
+  }
+
+  Int_t   GetNumberOfModulesPhi(void) const {
+    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfModulesPhi();
+    else if (strcmp(fName,"IHEP")==0) return 1;
+    else                              return 0;
+  }
+
+  Int_t   GetNumberOfModulesZ(void)   const {
+    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfModulesZ();
+    else if (strcmp(fName,"IHEP")==0) return 1;
+    else                              return 0;
+  }
+
+  Int_t   GetNumberOfPadsPhi(void)    const { 
+    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfPadsPhi();
+    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry* ) fGeometryCPV)->GetNumberOfCPVPadsPhi();
+    else                              return 0;
+  }
+
+  Int_t   GetNumberOfPadsZ(void)      const { 
+    if      (strcmp(fName,"GPS2")==0) return ((AliPPSDGeometry*) fGeometryCPV)->GetNumberOfPadsZ();
+    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry* ) fGeometryCPV)->GetNumberOfCPVPadsZ();
+    else                              return 0;
+  }
+
+  Float_t GetPadSizePhi(void)         const {
+    if      (strcmp(fName,"GPS2")==0) return GetPPSDModuleSize(0) / GetNumberOfPadsPhi();
+    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry*) fGeometryCPV)->GetCPVPadSizePhi();
+    else                              return 0;
+  }
+
+  Float_t GetPadSizeZ(void)           const {
+    if      (strcmp(fName,"GPS2")==0) return GetPPSDModuleSize(2) / GetNumberOfPadsZ();
+    else if (strcmp(fName,"IHEP")==0) return ((AliCPVGeometry*) fGeometryCPV)->GetCPVPadSizeZ();
+    else                              return 0;
+  }
+
+  // Mixed EMCA and PPSD parameters
+
+  Float_t GetIPtoPpsdUp(void)                  const {
+    return (GetIPtoOuterCoverDistance() - GetCPVBoxSize(1) + GetPPSDModuleSize(1)/2 ); } 
+  Float_t GetIPtoTopLidDistance(void)          const { 
+    return  GetIPtoOuterCoverDistance() - GetCPVBoxSize(1) - 1. ; } 
+  Float_t GetIPtoPpsdLow(void)                 const { 
+    return (GetIPtoOuterCoverDistance() - GetPPSDModuleSize(1)/2 ); } 
+
+  // Mixed EMCA and CPV parameters
+
+  Float_t GetIPtoCPVDistance(void)             const {
+    return  GetIPtoOuterCoverDistance() - GetCPVBoxSize(1) - 1.0; }
+
 
 protected:
 
   AliPHOSGeometry(const Text_t* name, const Text_t* title="") : AliGeometry(name, title) { 
     // ctor only for internal usage (singleton)
     Init() ; 
-  }  
-  void Init(void) ;            // steering method for PHOS and CPV
-  void InitPHOS(void) ;        // defines the various PHOS geometry parameters
-  void InitPPSD(void) ;        // defines the various PPSD geometry parameters
+  }
+  void Init(void) ;            // steering method for PHOS and PPSD/CPV
 
 private:
 
-  void       SetPHOSAngles() ; // calculates the PHOS modules PHI angle
-  
-  ///////////// PHOS related parameters
+  Int_t                fNModules ;       // Number of modules constituing PHOS
+  Float_t             *fPHOSAngle ;      //[fNModules] Position angles of modules
+  TObjArray           *fRotMatrixArray ; // Liste of rotation matrices (one per phos module)
+  AliEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
+  AliCPVBaseGeometry  *fGeometryCPV ;    // Geometry object for CPV (either GPS2 or IHEP)
 
-  Float_t fAirFilledBoxSize[3] ;          // Air filled box containing one module
-  Float_t fAirThickness[3] ;              // Space filled with air between the module box and the Textolit box
-  Float_t fCrystalSupportHeight ;         // Height of the support of the crystal    
-  Float_t fCrystalWrapThickness ;         // Thickness of Tyvek wrapping the crystal
-  Float_t fCrystalHolderThickness ;       // Titanium holder of the crystal
-  Float_t fGapBetweenCrystals ;           // Total Gap between two adjacent crystals 
-  Float_t fIPtoOuterCoverDistance ;       // Distances from interaction point to outer cover 
-  Float_t fIPtoCrystalSurface ;           // Distances from interaction point to Xtal surface
-  Float_t fModuleBoxThickness ;           // Thickness of the thermo insulating box containing one crystals module 
-  Float_t fLowerTextolitPlateThickness ;  // Thickness of lower textolit plate
-  Float_t fLowerThermoPlateThickness ;    // Thickness of lower thermo insulating plate
-  Int_t   fNModules ;                     // Number of modules constituing PHOS
-  Int_t   fNPhi ;                         // Number of crystal units in X (phi) direction
-  Int_t   fNZ ;                           // Number of crystal units in Z direction
-  Float_t fOuterBoxSize[3] ;              // Size of the outer  thermo insulating foam box
-  Float_t fOuterBoxThickness[3] ;         // Thickness of the outer thermo insulating foam box
-  Float_t * fPHOSAngle ;                  //[fNModules] Position angles of modules
-  Float_t fPinDiodeSize[3] ;              // Size of the PIN Diode 
-  TObjArray *  fRotMatrixArray ;          // Liste of rotation matrices (one per phos module)
-  Float_t fSecondUpperPlateThickness ;    // Thickness of  upper polystyrene foam plate
-  Float_t fSupportPlateThickness ;        // Thickness of the Aluminium support plate  
-  Float_t fUpperCoolingPlateThickness ;   // Thickness of the upper cooling plate 
-  Float_t fUpperPlateThickness ;          // Thickness of the uper thermo insulating foam plate 
-  Float_t fTextolitBoxSize[3] ;           // Size of the Textolit box inside the insulating foam box
-  Float_t fTextolitBoxThickness[3] ;      // Thicknesses of th Textolit box
-  Float_t fXtlSize[3] ;                   // PWO4 crystal dimensions
-
-
-  ///////////// PPSD (PHOS PRE SHOWER DETECTOR)  related parameters
-
-  Float_t fAnodeThickness ;               // Thickness of the copper layer which makes the anode 
-  Float_t fAvalancheGap ;                 // Thickness of the gas in the avalanche stage
-  Float_t fCathodeThickness ;             // Thickeness of composite material ensuring rigidity of cathode
-  Float_t fCompositeThickness ;           // Thickeness of composite material ensuring rigidity of anode
-  Float_t fConversionGap ;                // Thickness of the gas in the conversion stage
-  Float_t fIPtoTopLidDistance ;           // Distance from interaction point to top lid of PPSD
-  Float_t fLeadConverterThickness ;       // Thickness of the Lead converter 
-  Float_t fLeadToMicro2Gap ;              // Thickness of the air gap between the Lead and Micromegas 2        
-  Float_t fLidThickness ;                 // Thickness of top lid 
-  Float_t fMicromegas1Thickness ;         // Thickness of the first downstream Micromegas 
-  Float_t fMicromegas2Thickness ;         // Thickness of the second downstream Micromegas 
-  Float_t fMicromegasWallThickness ;      // Thickness of the Micromegas leak tight box
-  Float_t fMicro1ToLeadGap ;              // Thickness of the air gap between Micromegas 1 and the Lead
-  Int_t   fNumberOfPadsPhi ;              // Number of pads on a micromegas module ;  
-  Int_t   fNumberOfPadsZ ;                // Number of pads on a micromegas module ;  
-  Int_t   fNumberOfModulesPhi ;           // Number of micromegas modules in phi
-  Int_t   fNumberOfModulesZ ;             // Number of micromegas modules in z
-  Float_t fPCThickness ;                  // Thickness of the printed circuit board of the anode   
-  Float_t fPhiDisplacement ;              // Phi displacement of micromegas1 with respect to micromegas2  
-  Float_t fPPSDBoxSize[3] ;               // Size of large box which contains PPSD; matches PHOS module size
-  Float_t fPPSDModuleSize[3] ;            // Size of an individual micromegas module
-  Float_t fZDisplacement ;                // Z displacement of micromegas1 with respect to micromegas2  
+  void                 SetPHOSAngles(); // calculates the PHOS modules PHI angle
 
   static AliPHOSGeometry * fgGeom ; // pointer to the unique instance of the singleton 
-  static Bool_t  fgInit ;            // Tells if geometry has been succesfully set up 
+  static Bool_t fgInit ;            // Tells if geometry has been succesfully set up 
 
-  ClassDef(AliPHOSGeometry,1)  // PHOS geometry class 
+  ClassDef(AliPHOSGeometry,1)       // PHOS geometry class 
 
 } ;
 
