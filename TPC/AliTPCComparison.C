@@ -340,7 +340,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       if (j==nhits-1) continue;
       AliTPChit *hit1=(AliTPChit*)hits->UncheckedAt(j+1);
       if (hit1->fQ != 0.) continue;
-      Int_t i=hit->fTrack;
+      Int_t i=hit->Track();
       TParticle *p = (TParticle*)particles->UncheckedAt(i);
       if (p->GetFirstMother()>=0) continue;  //secondary particle
       if (good[i] < 0x1000+0x800+2+good_number) continue;
@@ -350,11 +350,11 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       gt[nt].lab=i;
       gt[nt].code=p->GetPdgCode();
 //**** px py pz - in global coordinate system, x y z - in local !
-      gt[nt].px=hit->fX; gt[nt].py=hit->fY; gt[nt].pz=hit->fZ;
+      gt[nt].px=hit->X(); gt[nt].py=hit->Y(); gt[nt].pz=hit->Z();
       Float_t cs,sn; digp->AdjustCosSin(hit1->fSector,cs,sn);
-      gt[nt].x = hit1->fX*cs + hit1->fY*sn;
-      gt[nt].y =-hit1->fX*sn + hit1->fY*cs;
-      gt[nt].z = hit1->fZ;
+      gt[nt].x = hit1->X()*cs + hit1->Y()*sn;
+      gt[nt].y =-hit1->X()*sn + hit1->Y()*cs;
+      gt[nt].z = hit1->Z();
       nt++;
 
       cerr<<i<<"                \r";
