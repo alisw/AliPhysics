@@ -83,6 +83,7 @@ class AliHBTAnalysis: public AliAnalysis
      void   SetApparentVertex(Double_t x, Double_t y, Double_t z);//Sets apparent vertex
      
      static void PressAnyKey();//small utility function that helps to make comfortable macros
+
      
    protected:
      

@@ -13,7 +13,47 @@
 
 #include "AliHBTFunction.h"
 
-class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D
+class AliHBTCorrectedCorrelFctn: public AliHBTCorrelFunction
+{
+  public:
+    AliHBTCorrectedCorrelFctn();
+    virtual ~AliHBTCorrectedCorrelFctn(){}
+
+
+    void Smear(AliHBTPair* pair,AliHBTPair& smeared);
+    void Smear(AliVAODParticle* part, AliVAODParticle* smeared);
+
+    Double_t GetCoulombCorrection(AliHBTPair* /*pair*/){return 1.0;}
+
+  
+  protected:
+
+    //Parameters of Pt RMS
+    //linear dependence dPt/Pt from Pt itself 
+    Float_t fDPtOverPtA; //A of dPt/Pt 
+    Float_t fDPtOverPtB; //A of dPt/Pt 
+    Float_t fDPtOverPtAlpha; //A of dPt/Pt 
+    Float_t fDPtOverPtC; //A of dPt/Pt 
+    
+    //We assume that RMS of Theta and Phisangle depends on Pt Like A+B*(Pt)^Alpha
+    //Idea copied from Star HBT Maker (Fabrice Retiere)
+    //Parameters comes from Monte Carlo Resolution Analysis
+
+    Float_t fThetaA; //"A" parameter of theta RMS dependence
+    Float_t fThetaB; //"B" parameter of theta RMS dependence
+    Float_t fThetaAlpha; //"Alpha" parameter (power) of theta RMS dependence
+    Float_t fThetaC; //"C" parameter of theta RMS dependence
+
+    Float_t fPhiA;//"A" parameter of phi RMS dependence
+    Float_t fPhiB;//"B" parameter of phi RMS dependence
+    Float_t fPhiAlpha;//"Alpha" parameter (power) of phi RMS dependence
+    Float_t fPhiC;//"C" parameter of phi RMS dependence
+
+    ClassDef(AliHBTCorrectedCorrelFctn,1)
+};
+
+
+class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrectedCorrelFctn
 {
   public:
     AliHBTCorrectQInvCorrelFctn(const char* name = "qinvcorrectedCF", 
@@ -50,10 +90,7 @@ class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D
     
   protected:
     virtual void BuildHistos(Int_t nbins, Float_t max, Float_t min);
-    Double_t GetCoulombCorrection(AliHBTPair* /*pair*/){return 1.0;}
     Double_t GetValue(AliHBTPair * pair) const {return pair->GetQInv();}
-    void Smear(AliHBTPair* pair,AliHBTPair& smeared);
-    void Smear(AliVAODParticle* part, AliVAODParticle* smeared);
     Double_t GetModelValue(Double_t qinv);
 
     //Our ideal numerator 
@@ -63,22 +100,6 @@ class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D
     
     TH1D* fSmearedNumer; //! Numerator of smeard q
     TH1D* fSmearedDenom; //! Denominator of smeard q
-    
-    //Parameters of Pt RMS
-    //linear dependence dPt/Pt from Pt itself 
-    Float_t fDPtOverPtRMS; //RMS of dPt/Pt 
-    
-    //We assume that RMS of Theta and Phisangle depends on Pt Like A+B*(Pt)^Alpha
-    //Idea copied from Star HBT Maker (Fabrice Retiere)
-    //Parameters comes from Monte Carlo Resolution Analysis
-
-    Float_t fThetaA; //"A" parameter of theta RMS dependence
-    Float_t fThetaB; //"B" parameter of theta RMS dependence
-    Float_t fThetaAlpha; //"Alpha" parameter (power) of theta RMS dependence
-
-    Float_t fPhiA;//"A" parameter of phi RMS dependence
-    Float_t fPhiB;//"B" parameter of phi RMS dependence
-    Float_t fPhiAlpha;//"Alpha" parameter (power) of phi RMS dependence
     
     Double_t fR2;//square of radius
     Double_t fLambda;//Interception parameter

@@ -15,29 +15,110 @@
 //                                                   //
 ///////////////////////////////////////////////////////
 
-//Parameters fit from pi+ pi+ resolution analysis for pair with qinv<50MeV
-// chi2/NFD = 97/157
-// FCN=98.0971 FROM MIGRAD    STATUS=CONVERGED     332 CALLS         333 TOTAL
-//   EDM=2.13364e-12    STRATEGY= 1  ERROR MATRIX UNCERTAINTY   2.4 per cent
-//  EXT PARAMETER                                   STEP         FIRST
-//  NO.   NAME         VALUE          ERROR         SIZE      DERIVATIVE
-//   1   fThetaA     2.72546e-03   1.43905e-04  -0.00000e+00   5.54375e-02
-//   2   fThetaB     1.87116e-04   5.11862e-05   0.00000e+00   3.66500e-01
-//   3  fThetaAlpha -2.36868e+00   1.83230e-01   0.00000e+00  -7.01301e-05
+// dPt/Pt
+// root [19] rms->Fit(f,"","",0.1,2)
+//  FCN=7.0017 FROM MIGRAD    STATUS=CONVERGED     126 CALLS         127 TOTAL
+//                      EDM=2.28804e-15    STRATEGY= 1      ERROR MATRIX ACCURATE
+//    EXT PARAMETER                                   STEP         FIRST
+//  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE
+//    1  p0           5.78220e-03   3.14576e-05   4.97822e-09  -1.90059e-05
+//    2  p1           3.98063e-05   1.61877e-06   1.04380e-10   1.91454e-04
+//    3  p2          -2.78008e+00   2.13581e-02   1.66031e-06   3.16574e-06
+//    4  p3           5.07594e-04   4.79619e-05   1.29793e-08  -2.29242e-05
 
-// FCN=120.603 FROM MIGRAD    STATUS=CONVERGED     117 CALLS         118 TOTAL
-//  EDM=2.5153e-12    STRATEGY= 1  ERROR MATRIX UNCERTAINTY   2.4 per cent
-//  EXT PARAMETER                                   STEP         FIRST
-//  NO.   NAME         VALUE          ERROR         SIZE      DERIVATIVE
-//   1   fPhiA       1.93913e-03   1.31059e-04  -0.00000e+00  -5.87280e-02
-//   2   fPhiA       2.48687e-04   5.41251e-05   0.00000e+00  -1.87361e-01
-//   3  fPhiAlpha   -2.22649e+00   1.44503e-01   0.00000e+00   8.97538e-06
+
+// Phi
+// root [17] rms->Fit(f,"","",0.15,2.5)
+// Warning in <TH1D::Fit>: Abnormal termination of minimization.
+// FCN=33.4898 FROM MIGRAD    STATUS=FAILED         91 CALLS          92 TOTAL
+//                     EDM=1.19154e-15    STRATEGY= 1      ERR MATRIX APPROXIMATE
+//    EXT PARAMETER                APPROXIMATE        STEP         FIRST
+//   NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE
+//    1  p0           5.87693e-04   5.04254e-06   2.49187e-09   5.84546e-04
+//    2  p1           2.16488e-06   3.68880e-07   6.41507e-11  -7.36564e-02
+//    3  p2          -3.10218e+00   1.01695e-01   2.00177e-05   7.54285e-07
+//    4  p3          -1.79892e-05   5.44067e-06   2.15870e-09   4.11441e-04
+
+
+
+// Theta
+// root [14] rms->Fit(f,"","",0.1,3)
+//  FCN=8.9981 FROM MIGRAD    STATUS=CONVERGED      79 CALLS          80 TOTAL
+//                      EDM=3.03049e-17    STRATEGY= 1      ERR MATRIX NOT POS-DEF
+//  EXT PARAMETER                APPROXIMATE        STEP         FIRST
+//  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE
+//     1  p0          -1.68773e-02   2.67644e-05   8.04770e-09   4.48079e-05
+//     2  p1           1.78440e-02   2.65467e-05   8.50867e-09   6.43012e-05
+//     3  p2          -5.26559e-02   5.06308e-04   2.28595e-07  -1.63963e-05
+//     4  p3           2.00940e-04   1.14440e-05   3.98737e-09   1.78198e-05
+
 
 #include <TH1.h>
 #include <TH3.h>
 #include <TF1.h>
 #include <TRandom.h>
 #include <AliAODParticle.h>
+
+
+ClassImp(AliHBTCorrectedCorrelFctn)
+
+AliHBTCorrectedCorrelFctn::AliHBTCorrectedCorrelFctn():
+  fDPtOverPtA(5.78220e-03),
+  fDPtOverPtB(3.98063e-05),
+  fDPtOverPtAlpha(-2.78008),
+  fDPtOverPtC(5.07594e-04),
+  fThetaA(5.87693e-04),
+  fThetaB(2.16488e-06),
+  fThetaAlpha(-3.10218e+00),
+  fThetaC(-1.79892e-05),
+  fPhiA(-1.68773e-02),
+  fPhiB(1.78440e-02),
+  fPhiAlpha(-5.26559e-02),
+  fPhiC(2.00940e-04)
+{
+  //ctor
+}
+
+/******************************************************************/
+void AliHBTCorrectedCorrelFctn::Smear(AliHBTPair* pair,AliHBTPair& smeared)
+{
+//Smears pair
+  Smear(pair->Particle1(),smeared.Particle1());
+  Smear(pair->Particle2(),smeared.Particle2());
+  smeared.Changed();
+}
+/******************************************************************/
+
+void AliHBTCorrectedCorrelFctn::Smear(AliVAODParticle* part, AliVAODParticle* smeared)
+{
+ //Smears momenta
+  Double_t sin2theta = TMath::Sin(part->Theta());
+  sin2theta = sin2theta*sin2theta;
+  Double_t pt = part->Pt();
+  
+  Double_t sigmapt = fDPtOverPtA + fDPtOverPtB*TMath::Power(pt,fDPtOverPtAlpha) + fDPtOverPtC*pt;
+  Double_t dPtDivPt = gRandom->Gaus(0.0,sigmapt);
+  Double_t dphi = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fPhiAlpha) + fPhiC*pt);
+  Double_t dtheta = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fThetaAlpha) +fThetaC*pt);
+  
+  Double_t smearedPx = part->Px()*(1.0+dPtDivPt) - part->Py()*dphi;
+//  fourmom.setX(px*(1.0+dPtDivPt) - py*dphi);
+  Double_t smearedPy = part->Py()*(1.0+dPtDivPt) - part->Px()*dphi;
+//  fourmom.setY(py*(1.0+dPtDivPt) + px*dphi);
+  Double_t smearedPz = part->Pz()*(1.0+dPtDivPt) - pt*dtheta/sin2theta;
+//  fourmom.setZ(pz*(1.0+dPtDivPt) - pT*dtheta/sin2theta);
+  
+  Double_t mass2 = part->Mass()*part->Mass();
+  Double_t e = mass2 + smearedPx*smearedPx + 
+                       smearedPy*smearedPy + 
+                       smearedPz*smearedPz;
+	   
+  smeared->SetMomentum(smearedPx,smearedPy,smearedPz,TMath::Sqrt(e));
+}
+
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
 
 
 ClassImp(AliHBTCorrectQInvCorrelFctn)
@@ -49,13 +130,6 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const char* name,const 
   fMeasDenom(0x0),
   fSmearedNumer(0x0),
   fSmearedDenom(0x0),
-  fDPtOverPtRMS(0.004),
-  fThetaA(2.72e-03),
-  fThetaB(1.87e-04),
-  fThetaAlpha(-2.4),
-  fPhiA(1.94e-03),
-  fPhiB(2.5e-04),
-  fPhiAlpha(-2.2),
   fR2(0.0),
   fLambda(0.0),
   fRConvergenceTreshold(0.3),
@@ -75,13 +149,6 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(TH1D* measqinv,const ch
   fMeasDenom(0x0),
   fSmearedNumer(0x0),
   fSmearedDenom(0x0),
-  fDPtOverPtRMS(0.004),
-  fThetaA(2.72e-03),
-  fThetaB(1.87e-04),
-  fThetaAlpha(-2.4),
-  fPhiA(1.94e-03),
-  fPhiB(2.5e-04),
-  fPhiAlpha(-2.2),
   fR2(0.0),
   fLambda(0.0),
   fRConvergenceTreshold(0.3),
@@ -94,18 +161,12 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(TH1D* measqinv,const ch
 AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const char* name, const char* title,
 	            Int_t nbins, Float_t maxXval, Float_t minXval):
   AliHBTOnePairFctn1D(name,title,nbins,maxXval,minXval),
+  AliHBTCorrectedCorrelFctn(),
   fMeasCorrelFctn(0x0),
   fMeasNumer(0x0),
   fMeasDenom(0x0),
   fSmearedNumer(0x0),
   fSmearedDenom(0x0),
-  fDPtOverPtRMS(0.004),
-  fThetaA(2.72e-03),
-  fThetaB(1.87e-04),
-  fThetaAlpha(-2.4),
-  fPhiA(1.94e-03),
-  fPhiB(2.5e-04),
-  fPhiAlpha(-2.2),
   fR2(0.0),
   fLambda(0.0),
   fRConvergenceTreshold(0.3),
@@ -116,18 +177,12 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const char* name, const
 /******************************************************************/
 AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const AliHBTCorrectQInvCorrelFctn& in):
   AliHBTOnePairFctn1D(in),
+  AliHBTCorrectedCorrelFctn(),
   fMeasCorrelFctn(0x0),
   fMeasNumer(0x0),
   fMeasDenom(0x0),
   fSmearedNumer(0x0),
   fSmearedDenom(0x0),
-  fDPtOverPtRMS(0),
-  fThetaA(0),
-  fThetaB(0),
-  fThetaAlpha(0),
-  fPhiA(0),
-  fPhiB(0),
-  fPhiAlpha(0),
   fR2(0.0),
   fLambda(0.0),
   fRConvergenceTreshold(0),
@@ -224,41 +279,6 @@ void AliHBTCorrectQInvCorrelFctn::ProcessDiffEventParticles(AliHBTPair* pair)
   Double_t smearedcc = GetCoulombCorrection(&smearedpair);
   fSmearedDenom->Fill(smearedqinv,smearedcc);
   
-}
-/******************************************************************/
-void AliHBTCorrectQInvCorrelFctn::Smear(AliHBTPair* pair,AliHBTPair& smeared)
-{
-//Smears pair
-  Smear(pair->Particle1(),smeared.Particle1());
-  Smear(pair->Particle2(),smeared.Particle2());
-  smeared.Changed();
-}
-/******************************************************************/
-
-void AliHBTCorrectQInvCorrelFctn::Smear(AliVAODParticle* part, AliVAODParticle* smeared)
-{
- //Smears momenta
-  Double_t sin2theta = TMath::Sin(part->Theta());
-  sin2theta = sin2theta*sin2theta;
-  Double_t pt = part->Pt();
-
-  double dPtDivPt = gRandom->Gaus(0.0,fDPtOverPtRMS);
-  double dphi = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fPhiAlpha));
-  double dtheta = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fThetaAlpha));
-  
-  Double_t smearedPx = part->Px()*(1.0+dPtDivPt) - part->Py()*dphi;
-//  fourmom.setX(px*(1.0+dPtDivPt) - py*dphi);
-  Double_t smearedPy = part->Py()*(1.0+dPtDivPt) - part->Px()*dphi;
-//  fourmom.setY(py*(1.0+dPtDivPt) + px*dphi);
-  Double_t smearedPz = part->Pz()*(1.0+dPtDivPt) - pt*dtheta/sin2theta;
-//  fourmom.setZ(pz*(1.0+dPtDivPt) - pT*dtheta/sin2theta);
-  
-  Double_t mass2 = part->Mass()*part->Mass();
-  Double_t e = mass2 + smearedPx*smearedPx + 
-                       smearedPy*smearedPy + 
-                       smearedPz*smearedPz;
-	   
-  smeared->SetMomentum(smearedPx,smearedPy,smearedPz,TMath::Sqrt(e));
 }
 /******************************************************************/
 

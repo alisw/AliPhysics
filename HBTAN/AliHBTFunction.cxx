@@ -733,6 +733,21 @@ void AliHBTFunction3D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
 	               Int_t nzbins, Float_t zmax, Float_t zmin)
 {
   //Builds numerator and denominator histograms (3d-case)
+  
+   if (AliVAODParticle::GetDebug()>1) Info("BuildHistos","Enetered AliHBTFunction3D::BuildHistos(...)");
+   
+   if (fNumerator )
+    {
+      delete fNumerator;
+      fNumerator = 0x0;
+    }
+
+   if (fDenominator )
+    {
+      delete fDenominator;
+      fDenominator = 0x0;
+    }
+   
    TString numstr = fName + " Numerator";  //title and name of the 
                                            //numerator histogram
    TString denstr = fName + " Denominator";//title and name of the 

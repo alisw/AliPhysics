@@ -135,8 +135,6 @@ AliHBTRStarDistribution::AliHBTRStarDistribution(Int_t nXbins, Double_t maxXval,
 
 ClassImp(AliHBTRDistribution)
 
-AliHBTRDistribution x;
-
 AliHBTRDistribution::AliHBTRDistribution(Int_t nXbins, Double_t maxXval, Double_t minXval):
  AliHBTOnePairFctn1D(nXbins,maxXval,minXval)
 {
