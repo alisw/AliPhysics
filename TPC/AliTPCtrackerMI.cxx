@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2003/09/29 11:39:43  kowal2
+bug fix
+
 Revision 1.13  2003/09/29 11:28:19  kowal2
 completly rewritten
 
@@ -2273,7 +2276,7 @@ void AliTPCtrackerMI::SignClusters(TObjArray * arr, Float_t fnumber, Float_t fde
     if ((pt->GetDensityFirst(40)<0.75) && pt->GetNumberOfClusters()<meann) continue; 
     
     
-    Double_t mindens = TMath::Max(mdensity-sdensity*fdensity*bfactor,0.65);
+    Double_t mindens = TMath::Max(double(mdensity-sdensity*fdensity*bfactor),0.65);
     Double_t minn    = TMath::Max(Int_t(meann-fnumber*smeann*bfactor),50);
    
     //    if (pt->fBConstrain) mindens = TMath::Max(mdensity-sdensity*fdensity*bfactor,0.65);
@@ -2336,7 +2339,7 @@ void  AliTPCtrackerMI::StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0,
     return;
   }
 
-  for (Int_t i=row0; i++;i<maxindex){
+  for (Int_t i=row0; i<maxindex; i++){
     Int_t index = seed->GetClusterIndex2(i);
     if (index!=-1) foundable++;
     //if (!c) continue;
