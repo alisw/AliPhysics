@@ -46,8 +46,8 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
     
     b = sqrt(bc[0] * bc[0] + bc[1] * bc[1] + bc[2] * bc[2]);
     if (b) {
-	btx = bc[1]/b;
-	bty = bc[0]/b;
+	btx = bc[0]/b;
+	bty = bc[1]/b;
 	Double_t btt = btx * btx + bty * bty;
 	if (btt >= (Double_t) 1.) {
 	    btx /= TMath::Sqrt(btt);
@@ -55,7 +55,7 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
 	    b   /= TMath::Sqrt(btt);
 	    btz =  (Double_t) 0.;
 	} else {
-	    btz = TMath::Sqrt((Double_t) 1. -  btt);
+	    btz = TMath::Sign(TMath::Sqrt((Double_t) 1. -  btt), bc[2]);
 	}
     } else {
 	btx = 0.;
