@@ -16,7 +16,9 @@
 //_____________________________________________________________________________
 class AliITSclusterV2 : public AliCluster {
 public:
-  AliITSclusterV2() : AliCluster() {fQ=0; fLayer=0; fNz=1; fNy=1; fType=0;fDeltaProb=0;}
+  AliITSclusterV2() : AliCluster() {
+    fQ=0; fLayer=0; fNz=fNy=1; fType=0; fDeltaProb=0;
+  }
   AliITSclusterV2(Int_t *lab,Float_t *hit, Int_t *info) : AliCluster(lab,hit) {
     fIndex=lab[3];
     fQ=hit[4];
@@ -27,23 +29,27 @@ public:
     fType=0;
     fDeltaProb=0.;
   }
+
   void Use() {fQ=-fQ;}
+  void UnUse() {fQ=TMath::Abs(fQ);}
   void SetQ(Float_t q) {fQ=q;}
   void SetDetectorIndex(Int_t i) { fIndex=i; }
   void SetLayer(Int_t layer) {fLayer=layer;}
   void SetNz(Int_t nz) {fNz =nz;}
   void SetNy(Int_t ny){fNy=ny;}
   void SetChargeRatio(Float_t ratio) { fChargeRatio = ratio;}
+  void SetPhiR(Float_t y) { fChargeRatio=y; }
   void SetType(Int_t type){ fType=type;}
   void SetDeltaProbability(Float_t prob){fDeltaProb = prob;}
 
-  Int_t IsUsed() const {return (fQ<0) ? 1 : 0;}
+  Int_t IsUsed() const {return (fQ<0)?1:0;}
   Float_t GetQ() const {return TMath::Abs(fQ);}
   Int_t GetDetectorIndex() const { return 0x3FF&fIndex; }
   Int_t GetLayer() const {return fLayer;}
   Int_t GetNz() const {return fNz;}
   Int_t GetNy() const {return fNy;}
   Float_t GetChargeRatio() const {return fChargeRatio;}
+  Float_t GetPhiR() const {return fChargeRatio;}
   Int_t GetPindex() const { return 0xFFF00000&fIndex; }  //SSD clusters only
   Int_t GetNindex() const { return 0xFFC00&fIndex; }  //SSD clusters only
   Int_t GetType() const {return fType;}  // type of the cluster

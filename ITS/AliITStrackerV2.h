@@ -23,11 +23,14 @@ class AliITStrackerV2 : public AliTracker {
 public:
   AliITStrackerV2():AliTracker(){}
   AliITStrackerV2(const AliITSgeom *geom);
+  ~AliITStrackerV2(){}
   AliCluster *GetCluster(Int_t index) const;
-  AliITSclusterV2 *GetClusterLayer(Int_t layn, Int_t ncl) const
-                        {return fgLayers[layn].GetCluster(ncl);}
-  Int_t GetNumberOfClustersLayer(Int_t layn) const 
-                        {return fgLayers[layn].GetNumberOfClusters();}
+  AliITSclusterV2 *GetCluster(Int_t l, Int_t c) const {
+    return fgLayers[l].GetCluster(c);
+  }
+  Int_t GetNumberOfClustersLayer(Int_t n) const {
+     return fgLayers[n].GetNumberOfClusters();
+  }   
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
   Int_t Clusters2Tracks(AliESD *event);
@@ -55,24 +58,24 @@ public:
 
   class AliITSlayer {
   public:
+    enum {kNsector=5, kMaxClusterPerSector=kMaxClusterPerLayer/kNsector};
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
    ~AliITSlayer();
     Int_t InsertCluster(AliITSclusterV2 *c);
     void ResetClusters();
-    void SelectClusters(Double_t zmi,Double_t zma,Double_t ymi,Double_t yma);
+    Int_t SelectClusters(Float_t zmi, Float_t zma, Float_t ymi, Float_t yma);
     const AliITSclusterV2 *GetNextCluster(Int_t &ci);
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
-    AliITSclusterV2 *GetCluster(Int_t i) const {return fClusters[i];} 
+    AliITSclusterV2 *GetCluster(Int_t i) const { return fClusters[i]; } 
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
-    Int_t InRoad() const ;
-    Int_t GetNumberOfClusters() const {return fN;}
     Int_t GetNladders() const {return fNladders;}
     Int_t GetNdetectors() const {return fNdetectors;}
+    Int_t GetNumberOfClusters() const;
   protected:
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
@@ -80,14 +83,15 @@ public:
     Double_t fZOffset;          // offset of the first detector in Z
     Int_t fNdetectors;          // detectors/ladder
     AliITSdetector *fDetectors; // array of detectors
-    Int_t fN;                   // number of clusters
+
     AliITSclusterV2 *fClusters[kMaxClusterPerLayer]; // pointers to clusters
-    Double_t fZmax;      //    edges
-    Double_t fYmin;      //   of  the
-    Double_t fYmax;      //   "window"
-    Int_t fI;            // index of the current cluster within the "window"
-    Double_t fRoad;      // road defined by the cluster density
-    Int_t FindClusterIndex(Double_t z) const;
+    Int_t fN[kNsector];         // numbers of clusters sector by sector 
+
+    Int_t fIndex[kMaxClusterPerLayer]; // indexes of selected clusters 
+    Int_t fNsel;                       // number of selected clusters
+
+    Double_t fRoad;     // road defined by the cluster density
+    Int_t FindClusterIndex(Float_t z, Int_t s) const;
   };
 
 protected:

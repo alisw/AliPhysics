@@ -43,8 +43,7 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
   //--------------------------------------------------------------------
   AliITSgeom *g=(AliITSgeom*)geom;
 
-  Float_t x,y,z;
-  Int_t i;
+  Float_t x,y,z;  Int_t i;
   for (i=1; i<kMaxLayer+1; i++) {
     Int_t nlad=g->GetNladders(i);
     Int_t ndet=g->GetNdetectors(i);
@@ -72,6 +71,10 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
         Double_t phi=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
         phi+=TMath::Pi()/2;
         if (i==1) phi+=TMath::Pi();
+
+        if (phi<0) phi+=TMath::TwoPi();
+        else if (phi>=TMath::TwoPi()) phi-=TMath::TwoPi();
+
         Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
         Double_t r=x*cp+y*sp;
 
@@ -85,7 +88,7 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
   fI=kMaxLayer;
 
   fPass=0;
-  fConstraint[0]=1; fConstraint[1]=0;//-1;
+  fConstraint[0]=1; fConstraint[1]=0;
 
   Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV}; 
   SetVertex(xyz,ers);
@@ -119,11 +122,21 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
   for (Int_t i=0; i<kMaxLayer; i++) {
     Int_t ndet=fgLayers[i].GetNdetectors();
     Int_t jmax = j + fgLayers[i].GetNladders()*ndet;
+
+    Double_t r=fgLayers[i].GetR();
+    Double_t circ=TMath::TwoPi()*r;
+
     for (; j<jmax; j++) {           
       if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
       while (ncl--) {
         AliITSclusterV2 *c=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
+
+        Int_t idx=c->GetDetectorIndex();
+        Double_t y=r*fgLayers[i].GetDetector(idx).GetPhi()+c->GetY();
+        if (y>circ) y-=circ; else if (y<0) y+=circ;
+        c->SetPhiR(y);
+
         fgLayers[i].InsertCluster(new AliITSclusterV2(*c));
       }
       clusters->Delete();
@@ -482,14 +495,15 @@ void AliITStrackerV2::FollowProlongation() {
       return;
     }
 
+    fI--;
+
     Double_t zmin=track.GetZ() - dz; 
     Double_t zmax=track.GetZ() + dz;
     Double_t ymin=track.GetY() + r*phi - dy;
     Double_t ymax=track.GetY() + r*phi + dy;
-    layer.SelectClusters(zmin,zmax,ymin,ymax); 
-    fI--;
+    if (layer.SelectClusters(zmin,zmax,ymin,ymax)==0) 
+       if (fLayersNotToSkip[fI]) return;  
 
-    //take another prolongation
     if (!TakeNextProlongation()) 
        if (fLayersNotToSkip[fI]) return;
 
@@ -528,7 +542,8 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
   } 
 
   const AliITSclusterV2 *c=0; Int_t ci=-1;
-  Double_t chi2=12345.;
+  const AliITSclusterV2 *cc=0; Int_t cci=-1;
+  Double_t chi2=kMaxChi2;
   while ((c=layer.GetNextCluster(ci))!=0) {
     Int_t idet=c->GetDetectorIndex();
 
@@ -546,13 +561,16 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
     if (TMath::Abs(fTrackToFollow.GetZ() - c->GetZ()) > dz) continue;
     if (TMath::Abs(fTrackToFollow.GetY() - c->GetY()) > dy) continue;
 
-    chi2=fTrackToFollow.GetPredictedChi2(c); if (chi2<kMaxChi2) break;
+    Double_t ch2=fTrackToFollow.GetPredictedChi2(c); 
+    if (ch2 > chi2) continue;
+    chi2=ch2;
+    cc=c; cci=ci;
+    break;
   }
 
-  if (chi2>=kMaxChi2) return 0;
-  if (!c) return 0;
+  if (!cc) return 0;
 
-  if (!fTrackToFollow.Update(c,chi2,(fI<<28)+ci)) {
+  if (!fTrackToFollow.Update(cc,chi2,(fI<<28)+cci)) {
      //Warning("TakeNextProlongation","filtering failed !\n");
      return 0;
   }
@@ -561,7 +579,7 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
   if (TMath::Abs(fTrackToFollow.GetD())>4) return 0;
 
   fTrackToFollow.
-    SetSampledEdx(c->GetQ(),fTrackToFollow.GetNumberOfClusters()-1); //b.b.
+    SetSampledEdx(cc->GetQ(),fTrackToFollow.GetNumberOfClusters()-1); //b.b.
 
   {
   Double_t x0;
@@ -584,8 +602,14 @@ AliITStrackerV2::AliITSlayer::AliITSlayer() {
   //--------------------------------------------------------------------
   //default AliITSlayer constructor
   //--------------------------------------------------------------------
-  fN=0;
+  fR=0.; fPhiOffset=0.; fZOffset=0.;
+  fNladders=0; fNdetectors=0;
   fDetectors=0;
+  
+  for (Int_t i=0; i<kNsector; i++) fN[i]=0;
+  fNsel=0;
+
+  fRoad=2*fR*TMath::Sqrt(3.14/1.);//assuming that there's only one cluster
 }
 
 AliITStrackerV2::AliITSlayer::
@@ -597,8 +621,10 @@ AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd) {
   fNladders=nl; fNdetectors=nd;
   fDetectors=new AliITSdetector[fNladders*fNdetectors];
 
-  fN=0;
-  fI=0;
+  for (Int_t i=0; i<kNsector; i++) fN[i]=0;
+  fNsel=0;
+
+  for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
 
   fRoad=2*fR*TMath::Sqrt(3.14/1.);//assuming that there's only one cluster
 }
@@ -608,16 +634,20 @@ AliITStrackerV2::AliITSlayer::~AliITSlayer() {
   // AliITSlayer destructor
   //--------------------------------------------------------------------
   delete[] fDetectors;
-  for (Int_t i=0; i<fN; i++) delete fClusters[i];
+  ResetClusters();
 }
 
 void AliITStrackerV2::AliITSlayer::ResetClusters() {
   //--------------------------------------------------------------------
   // This function removes loaded clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<fN; i++) delete fClusters[i];
-  fN=0;
-  fI=0;
+   for (Int_t s=0; s<kNsector; s++) {
+       Int_t &n=fN[s];
+       while (n) {
+          n--;
+          delete fClusters[s*kMaxClusterPerSector+n];
+       }
+   }
 }
 
 void AliITStrackerV2::AliITSlayer::ResetRoad() {
@@ -625,37 +655,53 @@ void AliITStrackerV2::AliITSlayer::ResetRoad() {
   // This function calculates the road defined by the cluster density
   //--------------------------------------------------------------------
   Int_t n=0;
-  for (Int_t i=0; i<fN; i++) {
-     if (TMath::Abs(fClusters[i]->GetZ())<fR) n++;
+  for (Int_t s=0; s<kNsector; s++) {
+    Int_t i=fN[s];
+    while (i--) 
+       if (TMath::Abs(fClusters[s*kMaxClusterPerSector+i]->GetZ())<fR) n++;
   }
   if (n>1) fRoad=2*fR*TMath::Sqrt(3.14/n);
 }
 
 Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
   //--------------------------------------------------------------------
-  //This function adds a cluster to this layer
+  // This function inserts a cluster to this layer in increasing
+  // order of the cluster's fZ
   //--------------------------------------------------------------------
-  if (fN==kMaxClusterPerLayer) {
-    ::Error("InsertCluster","Too many clusters !\n");
-    return 1;
+  Float_t circ=TMath::TwoPi()*fR;
+  Int_t sec=Int_t(kNsector*c->GetPhiR()/circ);
+  Int_t &n=fN[sec];
+  if (n>=kMaxClusterPerSector) {
+     ::Error("InsertCluster","Too many clusters !\n");
+     return 1;
   }
-
-  if (fN==0) {fClusters[fN++]=c; return 0;}
-  Int_t i=FindClusterIndex(c->GetZ());
-  memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliITSclusterV2*));
-  fClusters[i]=c; fN++;
-
+  if (n==0) fClusters[sec*kMaxClusterPerSector]=c;
+  else {
+     Int_t i=FindClusterIndex(c->GetZ(),sec);
+     Int_t k=n-i+sec*kMaxClusterPerSector;
+     memmove(fClusters+i+1 ,fClusters+i,k*sizeof(AliITSclusterV2*));
+     fClusters[i]=c;
+  }
+  n++;
   return 0;
 }
 
-Int_t AliITStrackerV2::AliITSlayer::FindClusterIndex(Double_t z) const {
+Int_t 
+AliITStrackerV2::AliITSlayer::FindClusterIndex(Float_t z,Int_t s) const {
   //--------------------------------------------------------------------
-  // This function returns the index of the nearest cluster 
+  // For the sector "s", this function returns the index of the first 
+  // with its fZ >= "z". 
   //--------------------------------------------------------------------
-  if (fN==0) return 0;
-  if (z <= fClusters[0]->GetZ()) return 0;
-  if (z > fClusters[fN-1]->GetZ()) return fN;
-  Int_t b=0, e=fN-1, m=(b+e)/2;
+  Int_t nc=fN[s];
+  if (nc==0) return kMaxClusterPerSector*s;
+
+  Int_t b=kMaxClusterPerSector*s;
+  if (z <= fClusters[b]->GetZ()) return b;
+
+  Int_t e=b+nc-1;
+  if (z > fClusters[e]->GetZ()) return e+1;
+
+  Int_t m=(b+e)/2;
   for (; b<e; m=(b+e)/2) {
     if (z > fClusters[m]->GetZ()) b=m+1;
     else e=m; 
@@ -663,44 +709,71 @@ Int_t AliITStrackerV2::AliITSlayer::FindClusterIndex(Double_t z) const {
   return m;
 }
 
-void AliITStrackerV2::AliITSlayer::
-SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
+Int_t AliITStrackerV2::AliITSlayer::
+SelectClusters(Float_t zmin,Float_t zmax,Float_t ymin, Float_t ymax) {
   //--------------------------------------------------------------------
-  // This function sets the "window"
+  // This function selects clusters within the "window"
   //--------------------------------------------------------------------
-  fI=FindClusterIndex(zmin); fZmax=zmax;
-  Double_t circle=2*TMath::Pi()*fR;
-  if (ymax>circle) { ymax-=circle; ymin-=circle; }
-  fYmin=ymin; fYmax=ymax;
+    Float_t circ=fR*TMath::TwoPi();
+
+    if (ymin>circ) ymin-=circ; else if (ymin<0) ymin+=circ;
+    if (ymax>circ) ymax-=circ; else if (ymax<0) ymax+=circ;
+
+    Int_t i1=Int_t(kNsector*ymin/circ);
+    if (fN[i1]!=0) {
+       Float_t ym = (ymax<ymin) ? ymax+circ : ymax;
+       Int_t i=FindClusterIndex(zmin,i1), imax=i1*kMaxClusterPerSector+fN[i1];
+       for (; i<imax; i++) {
+           AliITSclusterV2 *c=fClusters[i];
+           if (c->IsUsed()) continue;
+           if (c->GetZ()>zmax) break;
+           if (c->GetPhiR()<=ymin) continue;
+           if (c->GetPhiR()>ym) continue;
+           fIndex[fNsel++]=i;
+       }
+    }
+
+    Int_t i2=Int_t(kNsector*ymax/circ);
+    if (i2==i1) return fNsel;
+
+    if (fN[i2]!=0) {
+       Float_t ym = (ymin>ymax) ? ymin-circ : ymin;
+       Int_t i=FindClusterIndex(zmin,i2), imax=i2*kMaxClusterPerSector+fN[i2];
+       for (; i<imax; i++) {
+           AliITSclusterV2 *c=fClusters[i];
+           if (c->IsUsed()) continue;
+           if (c->GetZ()>zmax) break;
+           if (c->GetPhiR()<=ym) continue;
+           if (c->GetPhiR()>ymax) continue;
+           fIndex[fNsel++]=i;
+       }
+    }
+
+    return fNsel;
 }
 
 const AliITSclusterV2 *AliITStrackerV2::AliITSlayer::GetNextCluster(Int_t &ci){
   //--------------------------------------------------------------------
   // This function returns clusters within the "window" 
   //--------------------------------------------------------------------
-  const AliITSclusterV2 *cluster=0;
-  for (Int_t i=fI; i<fN; i++) {
-    const AliITSclusterV2 *c=fClusters[i];
-    if (c->GetZ() > fZmax) break;
-    if (c->IsUsed()) continue;
-    const AliITSdetector &det=GetDetector(c->GetDetectorIndex());    
-    Double_t y=fR*det.GetPhi() + c->GetY();
-
-    if (y>2.*fR*TMath::Pi()) y -= 2*fR*TMath::Pi();
-    if (y>1.*fR*TMath::Pi() && fYmax<y) y -= 2*fR*TMath::Pi();
-
-    if (y<fYmin) continue;
-    if (y>fYmax) continue;
-    cluster=c; ci=i;
-    fI=i+1;
-    break; 
+  AliITSclusterV2 *c=0;
+  ci=-1;
+  if (fNsel) {
+     fNsel--;
+     ci=fIndex[fNsel]; 
+     c=fClusters[ci];
   }
-
-  return cluster;
+  return c; 
 }
 
-Int_t AliITStrackerV2::AliITSlayer::
-FindDetectorIndex(Double_t phi, Double_t z) const {
+Int_t AliITStrackerV2::AliITSlayer::GetNumberOfClusters() const {
+  Int_t n=0;
+  for (Int_t s=0; s<kNsector; s++) n+=fN[s];
+  return n; 
+}
+
+Int_t 
+AliITStrackerV2::AliITSlayer::FindDetectorIndex(Double_t phi,Double_t z)const {
   //--------------------------------------------------------------------
   //This function finds the detector crossed by the track
   //--------------------------------------------------------------------
@@ -848,28 +921,6 @@ Double_t AliITStrackerV2::GetEffectiveThickness(Double_t y,Double_t z) const
   return d/(xn*xn);
 }
 
-Int_t AliITStrackerV2::AliITSlayer::InRoad() const {
-  //--------------------------------------------------------------------
-  // This function returns number of clusters within the "window" 
-  //--------------------------------------------------------------------
-  Int_t ncl=0;
-  for (Int_t i=fI; i<fN; i++) {
-    const AliITSclusterV2 *c=fClusters[i];
-    if (c->GetZ() > fZmax) break;
-    if (c->IsUsed()) continue;
-    const AliITSdetector &det=GetDetector(c->GetDetectorIndex());    
-    Double_t y=fR*det.GetPhi() + c->GetY();
-
-    if (y>2.*fR*TMath::Pi()) y -= 2*fR*TMath::Pi();
-    if (y>1.*fR*TMath::Pi() && fYmax<y) y -= 2*fR*TMath::Pi();
-
-    if (y<fYmin) continue;
-    if (y>fYmax) continue;
-    ncl++;
-  }
-  return ncl;
-}
-
 Bool_t 
 AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,const AliITStrackV2 *c) {
   //--------------------------------------------------------------------
@@ -1010,10 +1061,8 @@ void AliITStrackerV2::UseClusters(const AliKalmanTrack *t, Int_t from) const {
   AliTracker::UseClusters(t,from);
 
   AliITSclusterV2 *c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(0));
-  //if (c->GetQ()>2) c->Use();
-  if (c->GetSigmaZ2()>0.1) c->Use();
+  if (c->GetSigmaZ2()>0.1) c->UnUse();
   c=(AliITSclusterV2 *)GetCluster(t->GetClusterIndex(1));
-  //if (c->GetQ()>2) c->Use();
-  if (c->GetSigmaZ2()>0.1) c->Use();
+  if (c->GetSigmaZ2()>0.1) c->UnUse();
 
 }
