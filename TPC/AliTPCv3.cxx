@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2001/06/12 07:07:41  kowal2
+New files for folder and stack
+
 Revision 1.27  2001/05/08 16:03:06  kowal2
 Geometry update according to the latest technical spec.
 
@@ -133,7 +136,7 @@ Introduction of the Copyright and cvs Log
 #include "AliPDG.h"
 #include <TInterpreter.h>
 #include "TLorentzVector.h"
-#include "AliTPCTrackHits.h"
+#include "AliTPCTrackHitsV2.h"
 
 ClassImp(AliTPCv3)
 //_____________________________________________________________________________
