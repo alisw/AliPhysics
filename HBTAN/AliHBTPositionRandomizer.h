@@ -10,20 +10,16 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "AliHBTReader.h"
-
+#include "AliReader.h"
 class AliHBTRndm;
-class AliHBTEvent;
-class AliHBTRun;
-class AliHBTParticle;
 class TH1I;
 
-class AliHBTPositionRandomizer: public AliHBTReader
+class AliHBTPositionRandomizer: public AliReader
 {
  public:
    enum EModelTypes{kGausBall,kCylinder,kCylinderSurf};
    AliHBTPositionRandomizer();
-   AliHBTPositionRandomizer(AliHBTReader* reader);
+   AliHBTPositionRandomizer(AliReader* reader);
    AliHBTPositionRandomizer(const AliHBTPositionRandomizer& in);
    
    virtual ~AliHBTPositionRandomizer();
@@ -33,23 +29,21 @@ class AliHBTPositionRandomizer: public AliHBTReader
    Int_t  Next(){return (fReader)?fReader->Next():1;}
    void   Rewind(){if(fReader) fReader->Rewind();}
    
-   Bool_t ReadsTracks() const {return (fReader)?fReader->ReadsTracks():kFALSE;}
-   Bool_t ReadsParticles() const {return (fReader)?fReader->ReadsParticles():kFALSE;}
+   Bool_t ReadsRec() const {return (fReader)?fReader->ReadsRec():kFALSE;}
+   Bool_t ReadsSim() const {return (fReader)?fReader->ReadsSim():kFALSE;}
    
-   Int_t  Read(AliHBTRun* particles, AliHBTRun *tracks);
-   
-   AliHBTEvent* GetParticleEvent() ;
-   AliHBTEvent* GetTrackEvent() ;
+   AliAOD* GetEventSim() ;
+   AliAOD* GetEventRec() ;
 
-   AliHBTEvent* GetParticleEvent(Int_t n);
-   AliHBTEvent* GetTrackEvent(Int_t n){return (fReader)?fReader->GetTrackEvent(n):0x0;}
-   Int_t GetNumberOfPartEvents(){return (fReader)?fReader->GetNumberOfPartEvents():0;}
-   Int_t GetNumberOfTrackEvents(){return (fReader)?fReader->GetNumberOfTrackEvents():0;}
+   AliAOD* GetEventSim(Int_t n);
+   AliAOD* GetEventRec(Int_t n){return (fReader)?fReader->GetEventRec(n):0x0;}
+   
+   Int_t GetNumberOfSimEvents(){return (fReader)?fReader->GetNumberOfSimEvents():0;}
+   Int_t GetNumberOfRecEvents(){return (fReader)?fReader->GetNumberOfRecEvents():0;}
    virtual TH1I* GetTrackCounter() const {return (fReader)?fReader->GetTrackCounter():0x0;}
    virtual void  WriteTrackCounter() const {if(fReader) fReader->WriteTrackCounter();}
 
-   void Randomize(AliHBTEvent* event) const;
-   void Randomize(AliHBTRun* run) const;
+   void Randomize(AliAOD* event) const;
    void SetEventVertex(Double_t x, Double_t y,Double_t z);
    
    void SetGaussianBall(Double_t r);
@@ -61,11 +55,11 @@ class AliHBTPositionRandomizer: public AliHBTReader
    
    
  protected:
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p);
+   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*p);
    Int_t ReadNext(){return (fReader)?fReader->Next():1;}
    
  private:
-   AliHBTReader* fReader;      // Pointer to reader
+   AliReader* fReader;      // Pointer to reader
    AliHBTRndm*   fRandomizer;  // Pointer to class that performs randomization according to some model
    
    Int_t    fModel;            //Defines what model is used
@@ -87,7 +81,7 @@ class AliHBTRndm: public TObject
   public:
    AliHBTRndm(){}
    virtual ~AliHBTRndm(){}
-   virtual void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p) const = 0;
+   virtual void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*p) const = 0;
    ClassDef(AliHBTRndm,1)
 };
 
@@ -98,7 +92,7 @@ class AliHBTRndmGaussBall: public AliHBTRndm
    AliHBTRndmGaussBall(Float_t r);
    AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz);
    virtual ~AliHBTRndmGaussBall(){}
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*/*particle*/) const;
+   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*/*particle*/) const;
   private:
    Float_t fRx; //Dispertion in x 
    Float_t fRy; //Dispertion in y
@@ -113,7 +107,7 @@ class AliHBTRndmCyllSurf: public AliHBTRndm
    AliHBTRndmCyllSurf(Float_t r, Float_t l):fR(r),fL(l){}
    virtual ~AliHBTRndmCyllSurf(){}
    
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle* particle) const;
+   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle* particle) const;
   private:
    Float_t fR; //Redius of cylinder
    Float_t fL; //Length of cylinder

@@ -10,9 +10,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <TRandom.h>
-#include "AliHBTRun.h"
-#include "AliHBTEvent.h"
-#include "AliHBTParticle.h"
+#include "AliAOD.h"
+#include "AliVAODParticle.h"
 
 
 ClassImp(AliHBTPositionRandomizer)
@@ -34,7 +33,7 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer():
 }
 /*********************************************************************/
 
-AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliHBTReader* reader):
+AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliReader* reader):
  fReader(reader),
  fRandomizer(new AliHBTRndmGaussBall(8.0)),
  fModel(0),
@@ -50,7 +49,7 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliHBTReader* reader):
 /*********************************************************************/
 
 AliHBTPositionRandomizer::AliHBTPositionRandomizer(const AliHBTPositionRandomizer& in):
- AliHBTReader(in),
+ AliReader(in),
  fReader(),
  fRandomizer(0x0),
  fModel(0),
@@ -80,71 +79,46 @@ AliHBTPositionRandomizer& AliHBTPositionRandomizer::operator=(const AliHBTPositi
 }
 /*********************************************************************/
 
-AliHBTEvent* AliHBTPositionRandomizer::GetParticleEvent() 
+AliAOD* AliHBTPositionRandomizer::GetEventSim() 
 {
  // gets from fReader and randomizes current particle event
  if (fReader == 0x0) return 0x0;
- AliHBTEvent *e =  fReader->GetParticleEvent();
+ AliAOD *e =  fReader->GetEventSim();
  if (e->IsRandomized() == kFALSE) Randomize(e);
  return e;
 }
 /*********************************************************************/
 
-AliHBTEvent* AliHBTPositionRandomizer::GetTrackEvent() 
+AliAOD* AliHBTPositionRandomizer::GetEventRec() 
 {
  // gets from fReader and randomizes current track event
  if (fReader == 0x0) return 0x0;
- AliHBTEvent *e =  fReader->GetTrackEvent();
+ AliAOD *e =  fReader->GetEventRec();
  if (fRandomizeTracks) if (e->IsRandomized() == kFALSE) Randomize(e);
  return e;
 }
 /*********************************************************************/
 
-Int_t AliHBTPositionRandomizer::Read(AliHBTRun* particles, AliHBTRun *tracks)
-{
-  //Reads all available events and randomizes them
-  if (fReader == 0x0) return 1;
-  if (AliHBTParticle::GetDebug() > 5) Info("Randomize(AliHBTRun*)","");
-  Int_t err = fReader->Read(particles,tracks);
-  if (err) return err;
-  Randomize(particles);
-  if (fRandomizeTracks) Randomize(tracks);
-  return 0;
-}
-/*********************************************************************/
-
-AliHBTEvent* AliHBTPositionRandomizer::GetParticleEvent(Int_t n)
+AliAOD* AliHBTPositionRandomizer::GetEventSim(Int_t n)
 {
 //returns event n
  if (fReader == 0x0) return 0x0;
- AliHBTEvent *e =  fReader->GetParticleEvent(n);
+ AliAOD *e =  fReader->GetEventSim(n);
  if (e->IsRandomized() == kFALSE) Randomize(e);
  return e;
 }
 
 /*********************************************************************/
-
-void AliHBTPositionRandomizer::Randomize(AliHBTRun* run) const
-{
-// randomizes postions of all particles in the run
-  if (run == 0x0) return;
-  if (AliHBTParticle::GetDebug() > 5) Info("Randomize(AliHBTRun*)","");
-  for (Int_t i = 0; i < run->GetNumberOfEvents(); i++)
-   {
-     Randomize(run->GetEvent(i));
-   }
-}
-/*********************************************************************/
-void AliHBTPositionRandomizer::Randomize(AliHBTEvent* event) const
+void AliHBTPositionRandomizer::Randomize(AliAOD* event) const
 {
 // randomizes postions of all particles in the event
   static const Double_t kfmtocm = 1.e-13;
-  if (AliHBTParticle::GetDebug() > 5) Info("Randomize(AliHBTEvent*)","");
+  if (AliVAODParticle::GetDebug() > 5) Info("Randomize(AliAOD*)","");
   if (event == 0x0) return;
 
   for (Int_t i = 0; i < event->GetNumberOfParticles(); i++)
    {
-     AliHBTParticle* p = event->GetParticle(i);
+     AliVAODParticle* p = event->GetParticle(i);
      Double_t x,y,z,t=0.0;
      fRandomizer->Randomize(x,y,z,p);
      
@@ -231,7 +205,7 @@ AliHBTRndmGaussBall::AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz):
 }
 /*********************************************************************/
 
-void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*/*particle*/) const
+void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle*/*particle*/) const
 {
 //randomizez gauss for each coordinate separately
   x = gRandom->Gaus(0.0,fRx);
@@ -246,7 +220,7 @@ void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTPa
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
-void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle* particle) const
+void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliVAODParticle* particle) const
 {
 //Randomizes x,y,z
    Double_t r = fR + gRandom->Gaus(0.0, 1.0);
