@@ -6,9 +6,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
+#ifndef no_root
 #include <TNtuple.h>
 #include <TFile.h>
+#endif
 
 #include "AliL3Histogram.h"
 #include "AliL3TrackArray.h"
@@ -32,7 +33,9 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder()
   fYPeaks=0;
   fNPeaks=0;
   fNMax=0;
+#ifndef no_root
   fNtuppel = 0;
+#endif
 }
 
 
@@ -51,7 +54,9 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histo
   fXPeaks = new Float_t[fNMax];
   fYPeaks = new Float_t[fNMax];
   fWeight = new Int_t[fNMax];
+#ifndef no_root
   fNtuppel = 0;
+#endif
   fThreshold=0;
 }
 
@@ -65,8 +70,10 @@ AliL3HoughMaxFinder::~AliL3HoughMaxFinder()
     delete [] fYPeaks;
   if(fWeight)
     delete [] fWeight;
+#ifndef no_root
   if(fNtuppel)
     delete fNtuppel;
+#endif
 }
 
 void AliL3HoughMaxFinder::Reset()
@@ -82,13 +89,15 @@ void AliL3HoughMaxFinder::Reset()
 
 void AliL3HoughMaxFinder::CreateNtuppel()
 {
-  fNtuppel = new TNtuple("ntuppel","Peak charateristics","kappa:phi0:weigth:content3:content5:content1:content7");
+#ifndef no_root
   //content#; neighbouring bins of the peak.
-  
+  fNtuppel = new TNtuple("ntuppel","Peak charateristics","kappa:phi0:weigth:content3:content5:content1:content7");
+#endif  
 }
 
 void AliL3HoughMaxFinder::WriteNtuppel(Char_t *filename)
 {
+#ifndef no_root
   TFile *file = TFile::Open(filename,"RECREATE");
   if(!file)
     {
@@ -97,6 +106,7 @@ void AliL3HoughMaxFinder::WriteNtuppel(Char_t *filename)
     }
   fNtuppel->Write();
   file->Close();
+#endif
 }
 
 void AliL3HoughMaxFinder::FindAbsMaxima()
@@ -146,6 +156,7 @@ void AliL3HoughMaxFinder::FindAbsMaxima()
   fWeight[fNPeaks] = (Int_t)max_value;
   fNPeaks++;
   
+#ifndef no_root
   if(fNtuppel)
     {
       Int_t bin3 = hist->GetBin(max_xbin-1,max_ybin);
@@ -155,7 +166,7 @@ void AliL3HoughMaxFinder::FindAbsMaxima()
       
       fNtuppel->Fill(max_x,max_y,max_value,hist->GetBinContent(bin3),hist->GetBinContent(bin5),hist->GetBinContent(bin1),hist->GetBinContent(bin7));
     }
-  
+#endif  
 }
 
 void AliL3HoughMaxFinder::FindBigMaxima()

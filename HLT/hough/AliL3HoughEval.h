@@ -3,7 +3,7 @@
 
 #include "AliL3RootTypes.h"
 
-
+class AliL3TrackArray;
 class AliL3HoughBaseTransformer;
 class AliL3HoughTrack;
 class AliL3DigitRowData;

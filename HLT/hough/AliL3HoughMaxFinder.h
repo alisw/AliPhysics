@@ -32,14 +32,16 @@ class AliL3HoughMaxFinder {
   
   Char_t fHistoType;
 
+#ifndef no_root
   TNtuple *fNtuppel; //!
-
+#endif
 
  public:
   AliL3HoughMaxFinder(); 
   AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histogram *hist=0);
   virtual ~AliL3HoughMaxFinder();
   void Reset();
+
   void CreateNtuppel();
   void WriteNtuppel(Char_t *filename);
 
@@ -103,3 +105,4 @@ inline Int_t AliL3HoughMaxFinder::GetWeight(Int_t i)
 }
 
 #endif
+
