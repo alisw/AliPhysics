@@ -65,7 +65,6 @@
 #include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
 #include "AliRICHRecHit3D.h"
-#include "AliRICHEllipse.h"
 
 ClassImp(AliRICHDisplay)
     
@@ -820,8 +819,6 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	   iChamber = &(pRICH->Chamber(chamber));
 	   AliRICHRecHit1D  *mRec1D;
 	   AliRICHPoints *points1D = 0;
-	   //AliRICHEllipse *ellipse = 0;
-	   //
 	   //loop over all rechits and store their position  
 	   
 	   points1D = new AliRICHPoints(nrechits1D);
@@ -839,19 +836,6 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     Float_t  vectorGlob[3];
 	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	     points1D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
-	     //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
-	     //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
-	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
-	     //printf("Generating ellipse %d\n",irec);
-	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec1D->fX,mRec1D->fY,mRec1D->fOmega,mRec1D->fTheta,mRec1D->fPhi,mRec1D->fEmissPoint);
-	     printf("Ring at x:%f, y:%f - Omega:%f rad, theta:%3.1f deg, phi:%3.1f deg\n",mRec1D->fX,mRec1D->fY,mRec1D->fOmega,mRec1D->fTheta*180/TMath::Pi(),mRec1D->fPhi*180/TMath::Pi());
-	     printf("fEmissPoint:%f\n",mRec1D->fEmissPoint);
-	     ellipse->CerenkovRingDrawing(chamber,irec);
-	     //ellipse->SetFillStyle(1001);
-	     ellipse->SetMarkerColor(38);
-	     ellipse->Draw();
-	     //marker->SetRefObject((TObject*)points1D);
-	     //points1D->Set3DMarker(0, marker); 
 	   }
 	 }
      }
@@ -875,7 +859,6 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	   iChamber = &(pRICH->Chamber(chamber));
 	   AliRICHRecHit3D  *mRec3D;
 	   AliRICHPoints *points3D = 0;
-	   //AliRICHEllipse *ellipse = 0;
 	   //
 	   //loop over all rechits and store their position  
 	   
@@ -896,17 +879,6 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     points3D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
 	     //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
 	     //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
-	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
-	     //printf("Generating ellipse %d\n",irec);
-	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta,mRec3D->fPhi,0.75);
-	     printf("Ring at x:%f, y:%f - Omega:%f rad, theta:%3.1f deg, phi:%3.1f deg\n",mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta*180/TMath::Pi(),mRec3D->fPhi*180/TMath::Pi());
-	     //ellipse->CerenkovRingDrawing(chamber,irec);
-	     //ellipse->SetFillStyle(1001);
-	     ellipse->CreatePoints(chamber);
-	     ellipse->SetMarkerStyle(7);
-	     ellipse->SetMarkerColor(42);
-	     ellipse->SetMarkerSize(1);
-	     ellipse->Draw();
 	     //marker->SetRefObject((TObject*)points3D);
 	     //points3D->Set3DMarker(0, marker); 
 	   }
