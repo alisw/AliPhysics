@@ -138,6 +138,8 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetVertexSmear(kPerEvent); 
 // no tracking
      gener->SetTrackingFlag(0);
+     break;
+     
  case pythia:
 //********************************************
 // Example for Charm  Production with Pythia *
