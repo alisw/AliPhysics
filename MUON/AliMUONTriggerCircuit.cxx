@@ -13,13 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /*
-
-
+$Log$
 */
+
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONPoints.h"
 #include "AliMUONTriggerCircuit.h"
+#include "AliMUONTriggerConstants.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
@@ -27,63 +28,6 @@
 #include "iostream.h"
 
 ClassImp(AliMUONTriggerCircuit)
-
-static Int_t circuitId[234]=
-{111, 121, 131, 141, 151, 161, 171,
- 211, 212, 221, 222, 231, 232, 241, 242, 251, 252, 261, 262, 271,
- 311, 312, 321, 322, 331, 332, 341, 342, 351, 352, 361, 362, 371,
- 411, 412, 413, 421, 422, 423, 424, 431, 432, 433, 434, 441, 442, 
- 451, 452, 461, 462, 471,
- 521, 522, 523, 524, 531, 532, 533, 534, 541, 542, 551, 552, 561, 562, 571, 
- 611, 612, 613, 621, 622, 623, 624, 631, 632, 633, 634, 641, 642,
- 651, 652, 661, 662, 671,
- 711, 712, 721, 722, 731, 732, 741, 742, 751, 752, 761, 762, 771,
- 811, 812, 821, 822, 831, 832, 841, 842, 851, 852, 861, 862, 871,
- 911, 921, 931, 941, 951, 961, 971,
- -111, -121, -131, -141, -151, -161, -171,
- -211, -212, -221, -222, -231, -232, -241, -242, -251, -252, -261, -262, -271,
- -311, -312, -321, -322, -331, -332, -341, -342, -351, -352, -361, -362, -371,
- -411, -412, -413, -421, -422, -423, -424, -431, -432, -433, -434, -441, -442, 
- -451, -452, -461, -462, -471,
- -521, -522, -523, -524, -531, -532, -533, -534, -541, -542, -551, -552, -561, -562, -571, 
- -611, -612, -613, -621, -622, -623, -624, -631, -632, -633, -634, -641, -642,
- -651, -652, -661, -662, -671,
- -711, -712, -721, -722, -731, -732, -741, -742, -751, -752, -761, -762, -771,
- -811, -812, -821, -822, -831, -832, -841, -842, -851, -852, -861, -862, -871,
- -911, -921, -931, -941, -951, -961, -971};
-
-static Int_t moduleId[63]=
-{11,12,13,14,15,16,17,
- 21,22,23,24,25,26,27,
- 31,32,33,34,35,36,37,
- 41,42,43,44,45,46,47,
- 51,52,53,54,55,56,57,
- 61,62,63,64,65,66,67,
- 71,72,73,74,75,76,77,
- 81,82,83,84,85,86,87,
- 91,92,93,94,95,96,97};
-
-static Int_t nStripX[63]=
-{16,16,16,16,16,16,16,
- 32,32,32,32,32,32,16,
- 32,32,32,32,32,32,16,
- 48,64,64,32,32,32,16,
- 0,64,64,32,32,32,16,
- 48,64,64,32,32,32,16,
- 32,32,32,32,32,32,16,
- 32,32,32,32,32,32,16,
- 16,16,16,16,16,16,16};
-
-static Int_t nStripY[63]=
-{8,8,8,8,8,8,16,
- 8,8,8,8,8,8,16,
- 16,16,16,16,16,8,16,
- 16,16,16,16,16,8,16,
- 0,8,16,16,16,8,16,
- 16,16,16,16,16,8,16,
- 16,16,16,16,16,8,16,
- 8,8,8,8,8,8,16,
- 8,8,8,8,8,8,16};
 
 //----------------------------------------------------------------------
 AliMUONTriggerCircuit::AliMUONTriggerCircuit() 
@@ -93,15 +37,16 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit()
   fx2m=0;
   fx2ud=0;
   fOrMud[0]=fOrMud[1]=0;
-  for (Int_t i=0; i<4; i++) {
+  Int_t i;  
+  for (i=0; i<4; i++) {
     for (Int_t j=0; j<32; j++) {      
       fXcode[i][j]=0;
       fYcode[i][j]=0;
     }
   }
-  for (Int_t i=0; i<16; i++) { fXpos11[i]=0.; }
-  for (Int_t i=0; i<31; i++) { fYpos11[i]=0.; }
-  for (Int_t i=0; i<63; i++) { fYpos21[i]=0.; }
+  for (i=0; i<16; i++) { fXpos11[i]=0.; }
+  for (i=0; i<31; i++) { fYpos11[i]=0.; }
+  for (i=0; i<63; i++) { fYpos21[i]=0.; }
 }
 
 //----------------------------------------------------------------------
@@ -120,7 +65,7 @@ AliMUONTriggerCircuit & AliMUONTriggerCircuit::operator=(const AliMUONTriggerCir
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuit::Init(Int_t iCircuit) {
 // initialize circuit characteristics
-  fidCircuit=circuitId[iCircuit];
+  fidCircuit=AliMUONTriggerConstants::CircuitId(iCircuit);
   LoadX2();
   LoadXCode();
   LoadYCode();
@@ -133,7 +78,7 @@ Int_t AliMUONTriggerCircuit::CircuitNumber(Int_t idCircuit){
 // returns circuit number iCircuit (0-234) corresponding to circuit idCircuit
   Int_t iCircuit=0;
   for (Int_t i=0; i<234; i++) {
-    if (circuitId[i]==idCircuit) {
+    if (AliMUONTriggerConstants::CircuitId(i)==idCircuit) {
       iCircuit=i;
       break;
     }
@@ -146,7 +91,7 @@ Int_t AliMUONTriggerCircuit::ModuleNumber(Int_t idModule){
   Int_t absidModule=TMath::Abs(idModule);
   Int_t iModule=0;
   for (Int_t i=0; i<63; i++) {
-    if (moduleId[i]==absidModule) { 
+    if (AliMUONTriggerConstants::ModuleId(i)==absidModule) { 
       iModule=i;
       break;
     }
@@ -170,8 +115,10 @@ void AliMUONTriggerCircuit::LoadX2() {
 // initialize fx2m, fx2ud and fOrMud
   
   Int_t idModule=Module(fidCircuit);        // corresponding module Id.
-  Int_t nStrX=nStripX[ModuleNumber(idModule)]; // and its number of X strips
-  Int_t nStrY=nStripY[ModuleNumber(idModule)]; // and its number of Y strips
+// and its number of X strips
+  Int_t nStrX=AliMUONTriggerConstants::NstripX(ModuleNumber(idModule)); 
+// and its number of Y strips
+  Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
   Int_t iPosCircuit=Position(fidCircuit); // position of circuit in module
   
 // first step : look at lower part 
@@ -179,7 +126,7 @@ void AliMUONTriggerCircuit::LoadX2() {
     if(idModule<91&&TMath::Abs(idModule)!=41&&idModule>-91) { 
       fOrMud[0]=1;
       Int_t idModuleD=(TMath::Abs(idModule)+10)*(TMath::Abs(idModule)/idModule); 
-      Int_t nStrD=nStripY[ModuleNumber(idModuleD)];
+      Int_t nStrD=AliMUONTriggerConstants::NstripY(ModuleNumber(idModuleD));
       
       if (nStrY!=nStrD    
 	  &&TMath::Abs(idModule)!=42&&TMath::Abs(idModule)!=52) {   
@@ -198,7 +145,7 @@ void AliMUONTriggerCircuit::LoadX2() {
     if ((idModule>17||idModule<-17)&&TMath::Abs(idModule)!=61) {  
       fOrMud[1]=1;
       Int_t idModuleU=(TMath::Abs(idModule)-10)*(TMath::Abs(idModule)/idModule); 
-      Int_t nStrU=nStripY[ModuleNumber(idModuleU)]; 
+      Int_t nStrU=AliMUONTriggerConstants::NstripY(ModuleNumber(idModuleU)); 
 
       if (nStrY!=nStrU    
 	  &&TMath::Abs(idModule)!=62&&TMath::Abs(idModule)!=52) {   
@@ -220,11 +167,13 @@ void AliMUONTriggerCircuit::LoadXCode(){
 // first part : fill XMC11 XMC12 and strips 8 to 24 (middle) XMC21 XMC22
   Int_t iStripCircMT1=0, iStripCircMT2=8;
   Int_t idModule=Module(fidCircuit);        // corresponding module Id.
-  Int_t nStrX=nStripX[ModuleNumber(idModule)]; // and its number of strips
+// and its number of strips
+  Int_t nStrX=AliMUONTriggerConstants::NstripX(ModuleNumber(idModule)); 
   Int_t iPosCircuit=Position(fidCircuit);   // position of circuit in module  
   Int_t sign=TMath::Abs(idModule)/idModule; // left or right 
+  Int_t istrip;
 
-  for (Int_t istrip=(iPosCircuit-1)*16; 
+  for (istrip=(iPosCircuit-1)*16; 
        istrip<(iPosCircuit-1)*16+16; istrip++) {
         
     fXcode[0][iStripCircMT1]=sign*(TMath::Abs(idModule)*100+istrip); 
@@ -241,17 +190,19 @@ void AliMUONTriggerCircuit::LoadXCode(){
   Int_t nStrD, nStrU;
 
   idModule=Module(fidCircuit); // corresponding module Id.
-  nStrX=nStripX[ModuleNumber(idModule)];  // number of X strips
+// number of X strips
+  nStrX=AliMUONTriggerConstants::NstripX(ModuleNumber(idModule));  
   sign=TMath::Abs(idModule)/idModule;
 
 // fill lower part (0 to 7)
   if (iPosCircuit==1) {                 // need to scan lower module 
     if(idModule<91&&TMath::Abs(idModule)!=41&&idModule>-91) { // non-existing
       idModuleD=sign*(TMath::Abs(idModule)+10);  // lower module Id
-      nStrD=nStripX[ModuleNumber(idModuleD)]; // and its number of strips
+// and its number of strips
+      nStrD=AliMUONTriggerConstants::NstripX(ModuleNumber(idModuleD)); 
       
       iStripCircMT2=0;
-      for (Int_t istrip=nStrD-8; istrip<nStrD; istrip++) {  
+      for (istrip=nStrD-8; istrip<nStrD; istrip++) {  
 	fXcode[2][iStripCircMT2]=sign*(TMath::Abs(idModuleD)*100+istrip); 
 	fXcode[3][iStripCircMT2]=sign*(TMath::Abs(idModuleD)*100+istrip); 
 	iStripCircMT2++;
@@ -261,7 +212,7 @@ void AliMUONTriggerCircuit::LoadXCode(){
   } else {                       // lower strips within same module 
     
     iStripCircMT2=0;
-    for (Int_t istrip=(iPosCircuit-1)*16-8; 
+    for (istrip=(iPosCircuit-1)*16-8; 
 	 istrip<(iPosCircuit-1)*16; istrip++) {  
       fXcode[2][iStripCircMT2]=sign*(TMath::Abs(idModule)*100+istrip); 
       fXcode[3][iStripCircMT2]=sign*(TMath::Abs(idModule)*100+istrip); 
@@ -274,10 +225,11 @@ void AliMUONTriggerCircuit::LoadXCode(){
       (iPosCircuit==3&&nStrX==48)||(iPosCircuit==4&&nStrX==64)) {   
     if ((idModule>17||idModule<-17)&&TMath::Abs(idModule)!=61) {  
       idModuleU=sign*(TMath::Abs(idModule)-10);  // upper module Id
-      nStrU=nStripX[ModuleNumber(idModuleU)]; // and its number of strips
+// and its number of strips
+      nStrU=AliMUONTriggerConstants::NstripX(ModuleNumber(idModuleU)); 
       
       iStripCircMT2=24;
-      for (Int_t istrip=0; istrip<8; istrip++) {  	  
+      for (istrip=0; istrip<8; istrip++) {  	  
 	fXcode[2][iStripCircMT2]=sign*(TMath::Abs(idModuleU)*100+istrip); 
 	fXcode[3][iStripCircMT2]=sign*(TMath::Abs(idModuleU)*100+istrip); 
 	iStripCircMT2++;
@@ -288,7 +240,7 @@ void AliMUONTriggerCircuit::LoadXCode(){
 	     (iPosCircuit==3&&nStrX>48)) { // upper strips within same mod. 
     
     iStripCircMT2=24;
-    for (Int_t istrip=(iPosCircuit-1)*16+16; 
+    for (istrip=(iPosCircuit-1)*16+16; 
 	 istrip<(iPosCircuit-1)*16+24; istrip++) {  
       fXcode[2][iStripCircMT2]=sign*(TMath::Abs(idModule)*100+istrip); 
       fXcode[3][iStripCircMT2]=sign*(TMath::Abs(idModule)*100+istrip); 
@@ -305,7 +257,8 @@ void AliMUONTriggerCircuit::LoadYCode(){
 // (upper and lower parts are filled in PreHandlingY of AliMUONTriggerDecision)
     
   Int_t idModule=Module(fidCircuit);        // corresponding module Id.
-  Int_t nStrY=nStripY[ModuleNumber(idModule)]; // its number of Y strips
+// and its number of Y strips
+  Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
   Int_t sign=TMath::Abs(idModule)/idModule; // left or right 
 
   for (Int_t istrip=0; istrip<nStrY; istrip++) {
@@ -323,6 +276,7 @@ void AliMUONTriggerCircuit::LoadYPos(){
   Int_t chamber, cathode;
   Int_t code, idModule, idStrip, idSector;
   Float_t x, y, width;
+  Int_t istrip;
 
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
   AliMUONChamber*  iChamber;
@@ -334,7 +288,7 @@ void AliMUONTriggerCircuit::LoadYPos(){
   iChamber = &(pMUON->Chamber(chamber-1));
   segmentation=iChamber->SegmentationModel(cathode);
   
-  for (Int_t istrip=0; istrip<16; istrip++) {
+  for (istrip=0; istrip<16; istrip++) {
     code=fXcode[0][istrip];           // decode current strip
     idModule=Int_t(code/100);           // corresponding module Id.
     idStrip=TMath::Abs(code-idModule*100); // corresp. strip number in module
@@ -352,7 +306,7 @@ void AliMUONTriggerCircuit::LoadYPos(){
   iChamber = &(pMUON->Chamber(chamber-1));
   segmentation=iChamber->SegmentationModel(cathode);
   
-  for (Int_t istrip=0; istrip<32; istrip++) {
+  for (istrip=0; istrip<32; istrip++) {
     code=fXcode[2][istrip];    // decode current strip
     idModule=Int_t(code/100);           // corresponding module Id.
     idStrip=TMath::Abs(code-idModule*100); // corresp. strip number in module
@@ -377,6 +331,7 @@ void AliMUONTriggerCircuit::LoadXPos(){
 // (middle, up or down) has(have) 16 strips
   
   Float_t x, y;
+  Int_t istrip;  
 
   Int_t chamber=11;
   Int_t cathode=2;
@@ -387,19 +342,20 @@ void AliMUONTriggerCircuit::LoadXPos(){
   segmentation=iChamber->SegmentationModel(cathode);
   
   Int_t idModule=Module(fidCircuit);        // corresponding module Id.  
-  Int_t nStrY=nStripY[ModuleNumber(idModule)]; // number of Y strips
+// number of Y strips
+  Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
   Int_t idSector=segmentation->Sector(idModule,0); // corresp. sector
   Float_t width=segmentation->Dpx(idSector);      // corresponding strip width
   
 // first case : up middle and down parts have all 8 or 16 strip 
   if ((nStrY==16)||(nStrY==8&&fx2m==0&&fx2ud==0)) { 
-    for (Int_t istrip=0; istrip<nStrY; istrip++) {
+    for (istrip=0; istrip<nStrY; istrip++) {
       segmentation->GetPadCxy(idModule,istrip,x,y); 
       fXpos11[istrip]=x;
     }
 // second case : mixing 8 and 16 strips within same circuit      
   } else {
-    for (Int_t istrip=0; istrip<nStrY; istrip++) {
+    for (istrip=0; istrip<nStrY; istrip++) {
       if (nStrY!=8) { cout << " bug in LoadXpos " << "\n";}
       segmentation->GetPadCxy(idModule,istrip,x,y); 
       fXpos11[2*istrip]=x-width/4.;
@@ -442,12 +398,12 @@ Int_t AliMUONTriggerCircuit::GetIdModule(){
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetNstripX() { 
 // returns the number of X strips in the module where the circuit is sitting
-  return nStripX[ModuleNumber(Module(fidCircuit))];
+  return AliMUONTriggerConstants::NstripX(ModuleNumber(Module(fidCircuit)));
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetNstripY() { 
 // returns the number of Y strips in the module where the circuit is sitting
-  return nStripY[ModuleNumber(Module(fidCircuit))];
+  return AliMUONTriggerConstants::NstripY(ModuleNumber(Module(fidCircuit)));
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetPosCircuit() { 
