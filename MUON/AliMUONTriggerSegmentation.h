@@ -5,14 +5,6 @@
 
 /* $Id: */
 
-//*********************************************************
-//  Segmentation classes for slat modules          
-//  This class works with local coordinates
-//  of the slats via the class AliMUONGeometrySegmentation
-//  This class contains the size of the slats and the
-//  and the differents PCB densities. 
-//*********************************************************
-
 #include  "AliMUONVGeometryDESegmentation.h"
 
 class TArrayF;
@@ -68,10 +60,9 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     virtual void     SetPadDivision(Int_t /*ndiv[4]*/){} // Set Slat Segmentation Parameters
     virtual void     SetPadSize(Float_t p1, Float_t p2); // Pad size Dx*Dy 
     virtual void     SetPcbBoards(Int_t /*n[4]*/){}           // Set Segmentation Zones (PCB Boards)
-    virtual void     SetLineNumber(Int_t iLineNumber);    
-    virtual void     SetNstrip(Int_t nStrip[7]); 
-    virtual void     SetStripYsize(Float_t stripYsize[7]);
-    virtual void     SetStripXsize(Float_t stripXsize[7]);
+// add to St345SlatSegmentation
+    virtual void     SetLineNumber(Int_t iLineNumber);
+    virtual Int_t    ModuleColNum(Int_t ixGlo);
     
     // The following function could be obsolet for this class, but they are pure virtual in AliSegmentation
     virtual void     GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t */*Nparallel*/, Int_t */*Offset*/){};
@@ -136,7 +127,7 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     Int_t       fIymin; // ! upper right x
     Int_t       fIymax; // ! upper right y 
 // add to St345SlatSegmentation
-    Int_t fLineNumber;        // line number of the RPC    
+    Int_t fLineNumber;        // line number of the RPC (1:9 - top:bottom)
     Int_t fNstrip[7];         // number of strips per module in RPC
     Float_t fStripYsize[7];   // strip Y size per module in RPC
     Float_t fStripXsize[7];   // strip X size per module in RPC

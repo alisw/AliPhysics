@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+//*********************************************************
+// Segmentation classe for trigger chambers.
+// The present version is a bit messy because, although the
+// x,y positions are local, most of the methods use global 
+// strip numbering. The conversion is made via GetPadLoc2Glo.
+// To be improved in the future.
+//*********************************************************
 
 #include <TArrayI.h>
 #include <TArrayF.h>
@@ -28,7 +35,7 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation()
   : AliMUONVGeometryDESegmentation(),
     fBending(0),
     fId(0),
-    fNsec(0),
+    fNsec(7),
     fNDiv(0),
     fDpxD(0),
     fDpyD(0), 
@@ -90,7 +97,7 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending)
     fRpcHalfYsize(0)
 {
   // Non default constructor
-  fNsec = 4;  // 4 sector densities at most per slat 
+  fNsec = 7;  // 4 sector densities at most per slat 
   fNDiv = new TArrayI(fNsec);      
   fDpxD = new TArrayF(fNsec);      
   fDpyD = new TArrayF(fNsec);      
@@ -130,63 +137,53 @@ AliMUONTriggerSegmentation& AliMUONTriggerSegmentation::operator=(const AliMUONT
   return *this;  
 }
 //----------------------------------------------------------------------
+Int_t AliMUONTriggerSegmentation::ModuleColNum(Int_t ixGlo)
+{
+// returns column number (from 0 to 6) in which the (global) module 
+// ixGlo is sitting (could return 7 if ixGlow=isec)
+    return TMath::Abs(ixGlo)-Int_t(TMath::Abs(ixGlo)/10)*10-1;
+}
+//----------------------------------------------------------------------
 Bool_t AliMUONTriggerSegmentation::HasPad(Int_t ix, Int_t iy)
 {
-// check if steping outside the limits
-    Bool_t hasPad=true;    
-    Int_t ixLoc = ix;
-    Int_t iyLoc = iy;    
+// check if steping outside the limits (iy=1,2... iyGlo=0,1...)
+    Bool_t hasPad = true;    
     Int_t ixGlo = 0;
-    Int_t iyGlo = 0;    
-    GetPadLoc2Glo(ixLoc, iyLoc, ixGlo, iyGlo);
-    Int_t iModule = TMath::Abs(ixGlo)-Int_t(TMath::Abs(ixGlo)/10)*10 - 1;    
-    if ((iy-1)>=fNstrip[iModule]) hasPad = false;
+    Int_t iyGlo = 0; 
+    GetPadLoc2Glo(ix, iy, ixGlo, iyGlo);
+    if (iyGlo>=fNstrip[ModuleColNum(ixGlo)]) hasPad = false;
     return hasPad;    
 }
 //____________________________________________________________________________
 Float_t AliMUONTriggerSegmentation::Dpx(Int_t isec) const
 {
-// Return x-strip width
-    Float_t size = 0.;    
-    Int_t iModule = TMath::Abs(isec)-Int_t(TMath::Abs(isec)/10)*10 - 1;    
-//    printf ("iModule = %i\n",iModule);    
-
-    if (iModule<7) {	
-	size = fStripXsize[iModule];    
-    } else if (iModule==7) {
-	size = fStripXsize[iModule-1]/2;    	
-    }    
-    return size;    
+// return x-strip width in sector isec
+    Float_t size = (isec<8) ? fStripXsize[isec-1] : fStripXsize[isec-2]/2.;
+    return size;
 }
 //____________________________________________________________________________
 Float_t AliMUONTriggerSegmentation::Dpy(Int_t  isec) const
 {
-// Return y-strip width
-    Float_t size = 0.;    
-    Int_t iModule = TMath::Abs(isec)-Int_t(TMath::Abs(isec)/10)*10 - 1;
-    if (iModule<7) {	
-	size = fStripYsize[iModule];    
-    } else if (iModule==7) {
-	size = fStripYsize[iModule-1];  
-    } 
-    return size;    
+// return y-strip width in sector isec
+    Float_t size = (isec<8) ? fStripYsize[isec-1] : fStripYsize[isec-2];
+    return size;
 }
 //----------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc, 
 					       Int_t &ixGlo, Int_t &iyGlo)
 {    
 // converts ixLoc & iyLoc into ixGlo & iyGLo (module,strip number)
-    ixGlo = 0;
-    iyGlo = 0;    
+    ixGlo = 0; // see AliMUONTriggerConstants::fgkModuleI
+    iyGlo = 0; // from 0 to (fNtrip-1) in module   
     if (fBending) { 
-	ixGlo = (10 * fLineNumber) + ixLoc;
+	ixGlo = 10*fLineNumber + ixLoc;
 	iyGlo = iyLoc - 1;
     } else if (!fBending) {	
 	Int_t iCountStrip = 0;	
-	for (Int_t iModule=0; iModule<7; iModule++) {		
+	for (Int_t iModule=0; iModule<fNsec; iModule++) {		
 	    for (Int_t iStrip=0; iStrip<fNstrip[iModule]; iStrip++) {
 		if ((ixLoc-1)==iCountStrip) {
-		    ixGlo = (10 * fLineNumber) + iModule + 1;
+		    ixGlo = 10*fLineNumber + iModule + 1;
 		    iyGlo = iStrip;
 		}
 		iCountStrip++;
@@ -199,38 +196,33 @@ void AliMUONTriggerSegmentation::GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc,
 //----------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 {
-    Int_t ixLoc = ix;
-    Int_t iyLoc = iy;    
     Int_t ixGlo = 0;
     Int_t iyGlo = 0;    
-    GetPadLoc2Glo(ixLoc, iyLoc, ixGlo, iyGlo);
-    ix = ixGlo;
-    iy = iyGlo;
+    GetPadLoc2Glo(ix, iy, ixGlo, iyGlo);
+//    ix = ixGlo;
+//    iy = iyGlo;
     
 // Returns real coordinates (x,y) for given pad coordinates (ix,iy)
     x = 0.;
     y = 0.;
-// find module number    
-    Int_t iModule = TMath::Abs(ix)-Int_t(TMath::Abs(ix)/10)*10 - 1;
+    Int_t iModule = ModuleColNum(ixGlo); // find column number (0-6)
     if (fBending) {
 	if (iModule==0) {
-	    x = (fModuleXmax[iModule] - fModuleXmin[iModule]) / 2.;
+	    x =  fStripXsize[iModule]/ 2.;
 	} else {	
-	x = fModuleXmax[iModule-1] +
-	    (fModuleXmax[iModule] - fModuleXmin[iModule]) / 2.;
-	}	
+	x = fModuleXmax[iModule-1] + fStripXsize[iModule]/2.;
+	}
 	y =  fModuleYmin[iModule] + 
-	    (iy * fStripYsize[iModule]) + fStripYsize[iModule]/2.;
+	    iyGlo*fStripYsize[iModule] + fStripYsize[iModule]/2.;
     } else if (!fBending) {
-	if (TMath::Abs(ixGlo)-Int_t(TMath::Abs(ixGlo)/10)*10==7 && iyGlo>7) {
-	    x = fModuleXmin[iModule] + 7 * fStripXsize[iModule] +
-		( (iy -8)* fStripXsize[iModule]/2.) + fStripXsize[iModule]/4.;
-	    y =  fModuleYmin[iModule] + fStripYsize[iModule] / 2.;	
+	if (ModuleColNum(ixGlo)==6 && iyGlo>7) {
+	    x = fModuleXmin[iModule] + 8*fStripXsize[iModule] +
+		(iyGlo-8)*fStripXsize[iModule]/2. + fStripXsize[iModule]/4.;
 	} else {	    
 	    x = fModuleXmin[iModule] + 
-		(iy * fStripXsize[iModule]) + fStripXsize[iModule]/2.;
-	    y =  fModuleYmin[iModule] + fStripYsize[iModule] / 2.;
+		iyGlo*fStripXsize[iModule] + fStripXsize[iModule]/2.;
 	}
+	y =  fModuleYmin[iModule] + fStripYsize[iModule] / 2.;
     }    
     x = x - fRpcHalfXsize;
     y = y - fRpcHalfYsize;
@@ -247,9 +239,9 @@ void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t 
     y = y + fRpcHalfYsize;
 // find module number    
     Int_t modNum=0;    
-    for (Int_t iModule=0; iModule<7; iModule++) { // modules
+    for (Int_t iModule=0; iModule<fNsec; iModule++) { // modules
 	if ( x > fModuleXmin[iModule] && x < fModuleXmax[iModule] ) {
-	    ix = (10 * fLineNumber) + iModule;
+	    ix = 10*fLineNumber + iModule;
 	    modNum = iModule;	    
 	}
     }
@@ -265,7 +257,7 @@ void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t 
 		yMin = yMax;
 		yMax = yMin + fStripYsize[modNum];
 		if (y > yMin && y < yMax) iy = iStrip;
-	    } else {
+	    } else if (!fBending) {
 		xMin = xMax;
 		xMax = xMin + fStripXsize[modNum];
 		if (x > xMin && x < xMax) iy = iStrip;
@@ -289,18 +281,6 @@ void AliMUONTriggerSegmentation::SetPadSize(Float_t p1, Float_t p2)
 //-------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetLineNumber(Int_t iLineNumber){
     fLineNumber = iLineNumber;    
-}
-//-------------------------------------------------------------------------
-void AliMUONTriggerSegmentation::SetNstrip(Int_t nStrip[7]){
-    for (Int_t i=0; i<7; i++) fNstrip[i]=nStrip[i];
-}
-//-------------------------------------------------------------------------
-void AliMUONTriggerSegmentation::SetStripYsize(Float_t stripYsize[7]){
-    for (Int_t i=0; i<7; i++) fStripYsize[i]=stripYsize[i];
-}
-//-------------------------------------------------------------------------
-void AliMUONTriggerSegmentation::SetStripXsize(Float_t stripXsize[7]){
-    for (Int_t i=0; i<7; i++) fStripXsize[i]=stripXsize[i];
 }
 //-------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetPad(Int_t ix, Int_t iy)
@@ -328,24 +308,42 @@ void AliMUONTriggerSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*zh
 //--------------------------------------------------------------------------
 Int_t AliMUONTriggerSegmentation::Sector(Int_t ix, Int_t iy) 
 {
-  // Determine segmentation zone from pad coordinates
-    Int_t ixLoc = ix;
-    Int_t iyLoc = iy;    
+// determine segmentation zone from pad coordinates (from 1 to 8)
     Int_t ixGlo = 0;
     Int_t iyGlo = 0;    
-    GetPadLoc2Glo(ixLoc, iyLoc, ixGlo, iyGlo);    
-    if (!fBending && 
-	TMath::Abs(ixGlo)-Int_t(TMath::Abs(ixGlo)/10)*10==7 && iyGlo>7) {
-	return ixGlo + 1; // different strip width within same module    
+    GetPadLoc2Glo(ix, iy, ixGlo, iyGlo);    
+    if (!fBending && ModuleColNum(ixGlo)==6 && iyGlo>7) {
+	return 8; // sector 8: diff. strip width within same module
     } else {
-	return ixGlo;
-    }	
+	return ModuleColNum(ixGlo)+1;
+    }
 }
 
 //-----------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::
 IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2) 
 {
+/*
+// need to return (only) x4 = dist. betwwen the hit and the closest border of
+// the current strip
+    Int_t ix,iy;
+    Float_t xstrip,ystrip;
+    GetPadI(fXhit,fYhit,ix,iy);  
+    GetPadC(ix,iy,xstrip,ystrip);  
+    x1=fYhit;        // hit y position
+    x2=ystrip;       // y coordinate of the main strip
+    x3=fY;           // current strip real y coordinate  
+    
+    // find the position of the 2 borders of the current strip
+    Float_t ymin = ystrip - fStripXsize[ModuleColNum(ixGlo)
+
+fYofxsmin[ModuleNumber(fIx)][fIy];
+    Float_t ymax = fYofxsmax[ModuleNumber(fIx)][fIy];
+    
+    // dist. between the hit and the closest border of the current strip
+    x4 = (TMath::Abs(ymax-x1) > TMath::Abs(ymin-x1)) ? 
+	TMath::Abs(ymin-x1):TMath::Abs(ymax-x1);
+*/
   //  Returns integration limits for current pad
   //
   x1=fXhit-fX-Dpx(fSector)/2.;
@@ -353,8 +351,9 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
   y1=fYhit-fY-Dpy(fSector)/2.;
   y2=y1+Dpy(fSector);    
   //    printf("\n Integration Limits %f %f %f %f %d %f", x1, x2, y1, y2, fSector, Dpx(fSector));
-
 }
+
+
 //-----------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::
 Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]) 
@@ -408,7 +407,7 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
     
     Float_t tmp = 0.;  
     Int_t npad = 0;  // number of pad in x and y
-    for (Int_t iModule=0; iModule<7; iModule++) { // modules	
+    for (Int_t iModule=0; iModule<fNsec; iModule++) { // modules	
 	fModuleXmin[iModule] = tmp;      
 	npad = npad + fNstrip[iModule];
 	if (fBending) {
@@ -417,7 +416,8 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
 	} else if (!fBending) {
 	    if (iModule<6) {
 		fModuleXmax[iModule] = 
-		    fModuleXmin[iModule] + fStripXsize[iModule]*fNstrip[iModule];
+		    fModuleXmin[iModule] + 
+		    fStripXsize[iModule]*fNstrip[iModule];
 	    } else if (iModule==6) { 
 		fModuleXmax[iModule] = 
 		    fModuleXmin[iModule] + 
@@ -434,22 +434,16 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
 	    for (Int_t iStrip=0; iStrip<fNstrip[iModule]; iStrip++) nStripMax++;
 	}
     } // loop on modules
-    
 
 // associate nStripMax
-  if (fBending) {
-      fNpx = 7;
-      fNpy = nStripMax;      
-  } else if (!fBending) {
-      fNpx = nStripMax;
-      fNpy = 1;      
-  }  
-
-// calculate half size in x & y (to shift the local coordinate ref. system)
+    fNpx = (fBending) ? fNsec : nStripMax;
+    fNpy = (fBending) ? nStripMax : 1;
+    
+// calculate half size in x & y (to shift local coordinate ref. system)
   fRpcHalfXsize = 0;
   fRpcHalfYsize = 0;  
   if (fBending) {
-      for (Int_t iModule=0; iModule<7; iModule++)  
+      for (Int_t iModule=0; iModule<fNsec; iModule++)  
 	  fRpcHalfXsize = fRpcHalfXsize + fStripXsize[iModule];      
       fRpcHalfYsize = fNstrip[1] * fStripYsize[1];
   } else if (!fBending) {
@@ -462,17 +456,15 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
 /*
   printf(" fNpx fNpy fRpcHalfXsize fRpcHalfYsize = %i %i %f %f \n",
 	 fNpx,fNpy,fRpcHalfXsize,fRpcHalfYsize);
-*/
 
-/*
-  for (Int_t iModule=0; iModule<7; iModule++) {
+  for (Int_t iModule=0; iModule<fNsec; iModule++) {
       printf(" iModule fModuleXmin fModuleXmax fModuleYmin fStripXsize fStripYsize %i %f %f %f %f %f\n",
 	     iModule,fModuleXmin[iModule],fModuleXmax[iModule],
 	     fModuleYmin[iModule],
 	     fStripXsize[iModule],fStripYsize[iModule]);
 	     }
 
-  for (Int_t iModule=0; iModule<7; iModule++) {
+  for (Int_t iModule=0; iModule<fNsec; iModule++) {
       printf(" iModule fNstrip fStripXsize fStripYsize %i %i %f %f \n",
 	     iModule,fNstrip[iModule],
 	     fStripXsize[iModule],fStripYsize[iModule]);
