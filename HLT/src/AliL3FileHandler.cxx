@@ -5,6 +5,7 @@
 
 #include "AliL3StandardIncludes.h"
 #include <TClonesArray.h>
+#include <TSystem.h>
 
 #include <AliTPCDigitsArray.h>
 #include <AliTPCClustersArray.h>
@@ -388,7 +389,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   //The arguments is a pointer to the data, and the name of the new AliROOT file.
   //Remember to pass the original AliROOT file (the one that contains the original
   //simulated data) to this object, in order to retrieve the MC id's of the digits.
-  
+
   if(!fInAli)
     {
       printf("AliL3FileHandler::AliDigits2RootFile : No rootfile\n");
@@ -419,18 +420,18 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   Bool_t create=kFALSE;
   TFile *digFile;
   
-  digFile = TFile::Open(new_digitsfile,"NEW");
-  if(digFile->IsOpen())
-    {    
+  if(gSystem->AccessPathName(new_digitsfile))
+    {
+      cout<<"AliL3FileHandler::AliDigits2RootFile : Creating new file :"<<new_digitsfile<<endl;
       create = kTRUE;
+      digFile = TFile::Open(new_digitsfile,"RECREATE");
       fParam->Write(fParam->GetTitle());
     }
   else
     {
-      LOG(AliL3Log::kDebug,"AliL3FileHandler::AliDigits2RootFile","Rootfile")
-	<<"Rootfile did already exist, so I will just open it for updates"<<ENDLOG;
+      create = kFALSE;
       digFile = TFile::Open(new_digitsfile,"UPDATE");
-      create=kFALSE;
+      
     }
   if(!digFile->IsOpen())
     {
