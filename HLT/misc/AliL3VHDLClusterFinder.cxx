@@ -21,7 +21,8 @@
 // Most important parameters:
 // fThreshold - threshold for noise clusters
 // fMatch - length in time for overlapping sequences
-//</pre> */
+//</pre> 
+*/
 
 ClassImp(AliL3VHDLClusterFinder)
 
@@ -100,7 +101,8 @@ void AliL3VHDLClusterFinder::ProcessDigits()
     fSeq.fPad2=sp;
     fSeq.fTime2=st; 
     fSeq.fMean=0;
-    if(tc!=0) fSeq.fMean=mt/tc;
+    //if(tc!=0) fSeq.fMean=mt/tc;
+    if(tc!=0) fSeq.fMean=rtime-i/2;    
     fSeq.fMerge=0;
     fSeq.fRow=rrow;
     fSeq.fLastPad=rpad;
@@ -181,7 +183,7 @@ void AliL3VHDLClusterFinder::CompareSeq()
 void AliL3VHDLClusterFinder::MergeSeq()
 {
 #ifdef DEBUG
-  fprintf(fdeb,"merged with Mean=%d TC=%d (new Merge=%d)\n",fSeqs[fPList[fRP]].fMean,fSeqs[fPList[fRP]].fTotalCharge,fSeqs[fPList[fRP]].fMerge+1);
+  fprintf(fdeb,"merged with Mean=%d TC=%d (new Merge=%d) %d %d\n",fSeqs[fPList[fRP]].fMean,fSeqs[fPList[fRP]].fTotalCharge,fSeqs[fPList[fRP]].fMerge+1,fRow,fPad);
 #endif
   if(fSeqs[fPList[fRP]].fRow==fSeq.fRow){
     LOG(AliL3Log::kWarning,"AliL3VHDLClusterFinder::","Memory Check")
@@ -211,7 +213,7 @@ void AliL3VHDLClusterFinder::MergeSeq()
 void AliL3VHDLClusterFinder::InsertSeq()
 {
 #ifdef DEBUG
-  fprintf(fdeb,"inserted\n");
+  fprintf(fdeb,"inserted %d %d\n",fRow,fPad);
 #endif
   NextFreeIndex();    //get next index
   fSeqs[fFirst]=fSeq; //store data
