@@ -132,14 +132,6 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
        delete iotrack;
        return 1;
     }
-   TFile *file = OpenTrackFile(currentdir);
-   if(file == 0x0)
-    {
-       Error("Read","Can not open the file with ITS tracks V1");
-       delete iotrack;
-       return 2;
-    }
-   
    if (gAlice->TreeE())//check if tree E exists
      {
       Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
@@ -154,6 +146,14 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
        delete iotrack;
        return 4;
      }
+
+   TFile *file = OpenTrackFile(currentdir);
+   if(file == 0x0)
+    {
+       Error("Read","Can not open the file with ITS tracks V1");
+       delete iotrack;
+       return 2;
+    }
     
    Int_t naccepted = 0;
    char tname[30];
@@ -185,9 +185,9 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
         Int_t label = iotrack->GetLabel();
         if (label < 0) 
          {
-           delete iotrack;
            continue;
          }
+
         TParticle *p = (TParticle*)gAlice->Particle(label);
         if(!p)
          {
