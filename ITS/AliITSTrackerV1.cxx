@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.14  2001/10/24 07:19:57  hristov
+Some pointer correctly initialised in one of the constructors
+
 Revision 1.13  2001/10/21 19:17:12  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -533,7 +536,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	// if(fPtref<0.2 ) fChi2max=20.;
 	//if(fPtref<0.2 ) fChi2max=10.;
 	//if(fPtref<0.1 ) fChi2max=5.;
-	cout << "\n Pt = " << fPtref <<"\n";  //stampa
+	//cout << "\n Pt = " << fPtref <<"\n";  //stampa
 	RecursiveTracking(list);   
 	list->Delete();
 	delete list;
@@ -567,11 +570,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	// cout<<" progressive track number = "<<j<<"\r";
 	// cout<<j<<"\r";
 	Int_t numOfCluster=(*fresult).GetNumClust();  
-	cout<<" progressive track number = "<<j<<"\n";    // stampa
+	//cout<<" progressive track number = "<<j<<"\n";    // stampa
 	Long_t labITS=(*fresult).GetLabel();
-	cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
+	//cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
 	Int_t lab=track->GetLabel();		    
-	cout << " TPC track label = " << lab <<"\n";      // stampa
+	//cout << " TPC track label = " << lab <<"\n";      // stampa
 	//propagation to vertex
 
 	Double_t rbeam=3.;
