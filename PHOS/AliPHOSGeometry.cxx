@@ -67,8 +67,15 @@ void AliPHOSGeometry::Init(void)
   // Initializes the PHOS parameters :
   //  IHEP is the Protvino CPV (cathode pad chambers)
   //  GPS2 is the Subatech Pre-Shower (two micromegas sandwiching a passive lead converter)
-  //  MIXT 4 PHOS modules withe the IHEP CPV qnd one PHOS module with the Subatche Pre-Shower
+  //  MIXT 4 PHOS modules withe the IHEP CPV and one PHOS module with the Subatech Pre-Shower
   
+  TString test(GetName()) ; 
+  if (test != "IHEP" && test != "GPS2" && test != "MIXT") {
+    cerr << "ERROR: " << ClassName() << "::Init -> " << test.Data() 
+	 << " is not a known geometry (choose among IHEP, GPS2 and MIXT)" << endl ; 
+    abort() ;
+  }
+
   fgInit     = kTRUE ; 
   
   fNModules     = 5;
@@ -102,13 +109,12 @@ void AliPHOSGeometry::Init(void)
   
 }
 
-
 //____________________________________________________________________________
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance() 
 { 
   // Returns the pointer of the unique instance; singleton specific
   
-  return (AliPHOSGeometry *) fgGeom ; 
+  return static_cast<AliPHOSGeometry *>( fgGeom ) ; 
 }
 
 //____________________________________________________________________________
