@@ -252,9 +252,8 @@ TFile* AliHBTReaderITSv1::OpenTrackFile(Int_t ndir)
       return 0x0;
     }
    TString filename = dirname + "/" + fITSTracksFileName;
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename.Data());
-   if (!file) file = new TFile(filename.Data());
-   
+
+   TFile *file = TFile::Open(filename.Data());   
    if (!file)
     {
       Error("Read","Can not open file %s",filename.Data());
