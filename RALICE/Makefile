@@ -13,7 +13,7 @@ SRCS  	      = Ali3Vector.cxx Ali4Vector.cxx AliBoost.cxx AliCalcluster.cxx \
 	AliCalmodule.cxx AliCalorimeter.cxx AliInvmass.cxx AliJet.cxx \
 	AliMath.cxx AliPosition.cxx AliRandom.cxx AliSample.cxx AliSignal.cxx \
 	AliTrack.cxx AliVertex.cxx Ali3VectorObj.cxx Ali4VectorObj.cxx \
-	AliPositionObj.cxx
+	AliPositionObj.cxx AliEvent.cxx
 
 
 # C++ Headers

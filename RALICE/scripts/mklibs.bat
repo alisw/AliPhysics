@@ -68,6 +68,8 @@ goto end
 :export
 echo *** Creation of ROOT loadable export libraries
 echo.
+rem --- Set the RALICE source directory as working directory
+cd ..
 rem --- Creation of ROOT dictionary ---
 rootcint zzzralicedict.cxx -c RALICEHeaders.h RALICELinkDef.h
 rem --- Compilation step ---
@@ -77,6 +79,9 @@ bindexplib ralice *.obj > ralice.def
 lib /nologo /machine:IX86 *.obj /def:ralice.def /out:ralice.lib
 rem --- Creation of the DLL ---
 link /nologo /machine:IX86 /DLL *.obj ralice.exp %mslink% /OUT:ralice.dll
+rem --- Move the created libs to the SCRIPTS subdirectory
+move ralice.lib .\scripts
+move ralice.dll .\scripts
 rem --- Delete all intermediate files --- 
 del .def
 del ralice.def
@@ -91,12 +96,17 @@ goto end
 :full
 echo *** Creation of ROOT loadable full version libraries
 echo.
+rem --- Set the RALICE source directory as working directory
+cd ..
 rem --- Creation of ROOT dictionary ---
 rootcint zzzralicedict.cxx -c RALICEHeaders.h RALICELinkDef.h
 rem --- Creation of the DLL ---
 cl %msdll% *.cxx /link %mslink% /OUT:ralice.dll
 rem --- Creation of the full version LIB ---
 lib /nologo /machine:IX86 *.obj /out:ralice.lib
+rem --- Move the created libs to the SCRIPTS subdirectory
+move ralice.lib .\scripts
+move ralice.dll .\scripts
 rem --- Delete all intermediate files --- 
 del .def
 del zzzralicedict.h

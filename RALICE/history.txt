@@ -251,3 +251,7 @@
                 to prevent problems.
 06-jun-2001 NvE CVS Date keyword introduced in 'Modified' field in .cxx files so that
                 the modification date is updated automatically in the html docs.
+09-jun-2001 NvE Script mklibs.bat modified to match its new location in the SCRIPTS
+                subdirectory and file RALICEHeaders.h moved back to the RALICE
+                directory again to enable universal installation scripts.
+                Also name AliEvent.cxx added in Makefile.
