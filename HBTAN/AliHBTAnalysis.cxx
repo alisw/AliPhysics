@@ -150,7 +150,15 @@ Int_t AliHBTAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
      Error("ProcessEvent","Analysis <<%s>> option not specified.",GetName());
      return 1;
    }
-  if ( Rejected(aodrec,aodsim) ) return 0;
+  if ( Rejected(aodrec,aodsim) ) 
+   {
+//     Double_t x = 0, y = 0, z = 0;
+//     aodrec->GetPrimaryVertex(x,y,z);
+//     Info("ProcessEvent","Event has vertex at %f %f %f",x,y,z);
+     Info("ProcessEvent","Nch is %d",aodsim->GetNumberOfCharged());
+     Info("ProcessEvent","%s: Event cut rejected this event",GetName());
+     return 0;
+   } 
   
   //Move event to the apparent vertex -> must be after the event cut
   //It is important for any cut that use any spacial coordiantes, 
@@ -1690,7 +1698,7 @@ void AliHBTAnalysis::FilterOut(AliAOD* out1, AliAOD* out2, AliAOD* in) const
      
      if (in2)
       {
-        out2->AddParticle(part);
+        out2->AddParticle(new AliAODParticle(*part));
         continue;
       }
    }
