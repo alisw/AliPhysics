@@ -151,31 +151,65 @@ void AliDetector::LoadPoints(Int_t)
   //
   if (fHits == 0) return;
   //
-  if (fPoints == 0) fPoints = new TObjArray(gAlice->GetNtrack());
   Int_t nhits = fHits->GetEntriesFast();
   if (nhits == 0) return;
+  Int_t tracks = gAlice->GetNtrack();
+  if (fPoints == 0) fPoints = new TObjArray(tracks);
   AliHit *ahit;
   //
+  Int_t *ntrk=new Int_t[tracks];
+  Int_t *limi=new Int_t[tracks];
+  Float_t **coor=new Float_t*[tracks];
+  for(Int_t i=0;i<tracks;i++) {
+    ntrk[i]=0;
+    coor[i]=0;
+    limi[i]=0;
+  }
+  //
   AliPoints *points = 0;
-  Int_t trko=-99, trk;
+  Float_t *fp=0;
+  Int_t trk;
+  Int_t chunk=nhits/4+1;
   //
   // Loop over all the hits and store their position
   for (Int_t hit=0;hit<nhits;hit++) {
     ahit = (AliHit*)fHits->UncheckedAt(hit);
-    if(trko!=(trk=ahit->GetTrack())) {
+    trk=ahit->GetTrack();
+    if(ntrk[trk]==limi[trk]) {
       //
       // Initialise a new track
-      trko=trk;
-      points = new AliPoints(nhits);
-      fPoints->AddAt(points,trk);
+      fp=new Float_t[3*(limi[trk]+chunk)];
+      if(coor[trk]) {
+	memcpy(fp,coor[trk],sizeof(Float_t)*3*limi[trk]);
+	delete [] coor[trk];
+      }
+      limi[trk]+=chunk;
+      coor[trk] = fp;
+    } else {
+      fp = coor[trk];
+    }
+    fp[3*ntrk[trk]  ] = ahit->fX;
+    fp[3*ntrk[trk]+1] = ahit->fY;
+    fp[3*ntrk[trk]+2] = ahit->fZ;
+    ntrk[trk]++;
+  }
+  //
+  for(trk=0; trk<tracks; ++trk) {
+    if(ntrk[trk]) {
+      points = new AliPoints();
       points->SetMarkerColor(GetMarkerColor());
-      points->SetMarkerStyle(GetMarkerStyle());
       points->SetMarkerSize(GetMarkerSize());
       points->SetDetector(this);
       points->SetParticle(trk);
+      points->SetPolyMarker(ntrk[trk],coor[trk],GetMarkerStyle());
+      fPoints->AddAt(points,trk);
+      delete [] coor[trk];
+      coor[trk]=0;
     }
-    points->SetPoint(hit,ahit->fX,ahit->fY,ahit->fZ);
   }
+  delete [] coor;
+  delete [] ntrk;
+  delete [] limi;
 }
 
 //_____________________________________________________________________________
