@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/11/02 12:55:45  jchudoba
+cleanup of the code, add const to Get methods
+
 Revision 1.5  2001/10/31 16:35:07  jchudoba
 some functionality move to AliMUONTransientDigit class
 
@@ -78,7 +81,7 @@ AliMUONMerger::~AliMUONMerger()
     if (fTrH1)       delete fTrH1;
     if (fHitsBgr)    delete fHitsBgr;
     if (fPadHitsBgr) delete fPadHitsBgr;
-    if (fHitMap)     delete fHitMap;
+    if (fHitMap)     delete [] fHitMap;
     if (fList)       delete fList;
     if (fBgrFile)    delete fBgrFile;
 }
@@ -86,12 +89,14 @@ AliMUONMerger::~AliMUONMerger()
 //------------------------------------------------------------------------
 Bool_t AliMUONMerger::Exists(const AliMUONPadHit *padhit) const
 {
+// test if the given padhit was already fired
     return (fHitMap[fNch]->TestHit(padhit->PadX(),padhit->PadY()));
 }
 
 //------------------------------------------------------------------------
 void AliMUONMerger::Update(AliMUONPadHit *padhit)
 {
+// add new contribution to the fired padhit
     AliMUONTransientDigit *pdigit = 
       static_cast<AliMUONTransientDigit*>(
       fHitMap[fNch]->GetHit(padhit->PadX(),padhit->PadY()));
@@ -118,6 +123,7 @@ void AliMUONMerger::Update(AliMUONPadHit *padhit)
 //------------------------------------------------------------------------
 void AliMUONMerger::CreateNew(AliMUONPadHit *padhit)
 {
+// add new transient digit to the list, update hit map
     fList->AddAtAndExpand(
 	new AliMUONTransientDigit(fNch,fDigits),fCounter);
     fHitMap[fNch]->SetHit(padhit->PadX(),padhit->PadY(),fCounter);

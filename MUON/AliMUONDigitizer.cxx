@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/11/02 12:55:45  jchudoba
+cleanup of the code, add const to Get methods
+
 Revision 1.4  2001/10/18 14:44:09  jchudoba
 Define constant MAXTRACKS for maximum number of tracks associated with 1 digit
 
@@ -80,7 +83,7 @@ AliMUONDigitizer::~AliMUONDigitizer()
 // Destructor
   if (fHits)       delete fHits;
   if (fPadHits)    delete fPadHits;
-  if (fHitMap)     delete fHitMap;
+  if (fHitMap)     delete [] fHitMap;
   if (fTDList)     delete fTDList;
 }
 
