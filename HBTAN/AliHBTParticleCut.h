@@ -63,6 +63,7 @@ class AliHBTParticleCut: public TObject
     virtual ~AliHBTParticleCut();
 
     virtual Bool_t Pass(AliHBTParticle*);
+    Bool_t IsEmpty() {return kFALSE;}
     
     void AddBasePartCut(AliHbtBaseCut*);
     
@@ -112,7 +113,8 @@ class AliHBTEmptyParticleCut:  public AliHBTParticleCut
     AliHBTEmptyParticleCut(){};
     virtual ~AliHBTEmptyParticleCut(){};
     
-    Bool_t Pass(AliHBTParticle*) {return kFALSE;} //accpept everything
+    Bool_t Pass(AliHBTParticle*){return kFALSE;} //accpept everything
+    Bool_t IsEmpty() {return kTRUE;}
 
     ClassDef(AliHBTEmptyParticleCut,1)
  
