@@ -28,6 +28,7 @@ src/AliL3VertexArray.cxx \
 src/AliL3VertexFinder.cxx \
 src/AliLevel3.cxx \
 src/AliHLTReconstructor.cxx \
+src/AliL3TPCtracker.cxx \
 src/AliL3Log.cxx \
 src/AliL3TPCBeamTestMemHandler.cxx
 
@@ -40,6 +41,6 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE += HLT/src HLT/hough HLT/comp HLT/misc TPC ITS STEER CONTAINERS RAW
+EINCLUDE += HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS TPC ITS STEER CONTAINERS RAW
 
 SUBDIR:=src

@@ -9,6 +9,7 @@
 #include "AliL3Track.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
+#include "AliL3HoughTransformerRow.h"
 
 #if __GNUC__ == 3
 using namespace std;
@@ -55,6 +56,9 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetEta(tpt->GetEta());
   SetTgl(tpt->GetTgl());
   SetPsi(tpt->GetPsi());
+  SetPterr(tpt->GetPterr());
+  SetTglerr(tpt->GetTglerr());
+  SetPsierr(tpt->GetPsierr());
   SetCenterX(tpt->GetCenterX());
   SetCenterY(tpt->GetCenterY());
   SetFirstPoint(tpt->GetFirstPointX(),tpt->GetFirstPointY(),tpt->GetFirstPointZ());
@@ -195,6 +199,26 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t eangle,Int_t we
   SetCenterY(yc);
   SetNHits(1); //just for the trackarray IO
   fIsHelix = true;
+}
+
+void AliL3HoughTrack::SetTrackParametersRow(Double_t alpha1,Double_t alpha2,Double_t eta,Int_t weight)
+{
+  //Set track parameters for HoughTransformerRow
+  //This includes curvature,emission angle and eta
+  Double_t psi = atan((alpha1-alpha2)/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
+  Double_t kappa = 2.0*(alpha1*cos(psi)-AliL3HoughTransformerRow::GetBeta1()*sin(psi));
+  SetTrackParameters(kappa,psi,weight);
+
+  Double_t zovr;
+  Double_t etaparam1 = AliL3HoughTransformerRow::GetEtaCalcParam1();
+  Double_t etaparam2 = AliL3HoughTransformerRow::GetEtaCalcParam2();
+  if(eta>0)
+    zovr = (etaparam1 - sqrt(etaparam1*etaparam1 - 4.*etaparam2*eta))/(2.*etaparam2);
+  else
+    zovr = -1.*(etaparam1 - sqrt(etaparam1*etaparam1 + 4.*etaparam2*eta))/(2.*etaparam2);
+  Double_t r = sqrt(1.+zovr*zovr);
+  Double_t exacteta = 0.5*log((1+zovr/r)/(1-zovr/r));
+  SetEta(exacteta);
 }
 
 void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t /*ref_row*/)

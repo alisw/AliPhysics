@@ -31,6 +31,7 @@
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3DDLDataFileHandler.h"
+#include "AliL3HoughKalmanTrack.h"
 
 #include "TThread.h"
 
@@ -1006,6 +1007,11 @@ void AliL3Hough::FindTrackCandidatesRow()
   for(Int_t i=0; i<npatches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
+      AliL3Histogram *h = tr->GetHistogram(0);
+      Float_t deltax = h->GetBinWidthX()*AliL3HoughTransformerRow::GetDAlpha();
+      Float_t deltay = h->GetBinWidthY()*AliL3HoughTransformerRow::GetDAlpha();
+      Float_t deltaeta = (tr->GetEtaMax()-tr->GetEtaMin())/tr->GetNEtaSegments()*AliL3HoughTransformerRow::GetDEta();
+      Float_t zvertex = tr->GetZVertex();
       fTracks[i]->Reset();
       fPeakFinder->Reset();
       
@@ -1022,31 +1028,29 @@ void AliL3Hough::FindTrackCandidatesRow()
 #endif
 	  fPeakFinder->SetThreshold(fPeakThreshold[i]);
 	  fPeakFinder->FindAdaptedRowPeaks(1,0,0);//Maxima finder for HoughTransformerRow
-
-	  //fPeakFinder->FindMaxima(fPeakThreshold[i]); //Simple maxima finder
 	}
   
       for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	{
 	  //	  if(fPeakFinder->GetWeight(k) < 0) continue;
 	  AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
-	  Float_t psi = atan((fPeakFinder->GetXPeak(k)-fPeakFinder->GetYPeak(k))/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
-	  Float_t kappa = 2.0*(fPeakFinder->GetXPeak(k)*cos(psi)-AliL3HoughTransformerRow::GetBeta1()*sin(psi));
-	  //	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
-	  track->SetTrackParameters(kappa,psi,fPeakFinder->GetWeight(k));
+	  Double_t starteta = tr->GetEta(fPeakFinder->GetStartEta(k),fCurrentSlice);
+	  Double_t endeta = tr->GetEta(fPeakFinder->GetEndEta(k),fCurrentSlice);
+	  Double_t eta = (starteta+endeta)/2.0;
+	  track->SetTrackParametersRow(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),eta,fPeakFinder->GetWeight(k));
+	  track->SetPterr(deltax); track->SetPsierr(deltay); track->SetTglerr(deltaeta);
 	  track->SetBinXY(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetXPeakSize(k),fPeakFinder->GetYPeakSize(k));
+	  track->SetZ0(zvertex);
 	  Int_t etaindex = (fPeakFinder->GetStartEta(k)+fPeakFinder->GetEndEta(k))/2;
 	  track->SetEtaIndex(etaindex);
-	  Float_t starteta = tr->GetEta(fPeakFinder->GetStartEta(k),fCurrentSlice);
-	  Float_t endeta = tr->GetEta(fPeakFinder->GetEndEta(k),fCurrentSlice);
-	  track->SetEta((starteta+endeta)/2.0);
-	  track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
+	  Int_t rows[2];
+	  ((AliL3HoughTransformerRow *)tr)->GetTrackLength(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),rows);
+	  track->SetRowRange(rows[0],rows[1]);
 	  track->SetSector(fCurrentSlice);
 	  track->SetSlice(fCurrentSlice);
 #ifdef do_mc
 	  Int_t label = tr->GetTrackID(etaindex,fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k));
 	  track->SetMCid(label);
-	  //	  cout<<"Track found with label "<<label<<" at "<<fPeakFinder->GetXPeak(k)<<" "<<fPeakFinder->GetYPeak(k)<<" with weight "<<fPeakFinder->GetWeight(k)<<endl; 
 #endif
 	}
       LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","")
@@ -1316,26 +1320,15 @@ Int_t AliL3Hough::FillESD(AliESD *esd)
       AliL3HoughTrack *tpt = (AliL3HoughTrack *)fGlobalTracks->GetCheckedTrack(i);
       if(!tpt) continue; 
       
-      AliESDHLTtrack *esdtrack = new AliESDHLTtrack(); 
-
-      esdtrack->SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
-      esdtrack->SetNHits(tpt->GetNHits());
-      esdtrack->SetFirstPoint(tpt->GetFirstPointX(),tpt->GetFirstPointY(),tpt->GetFirstPointZ());
-      esdtrack->SetLastPoint(tpt->GetLastPointX(),tpt->GetLastPointY(),tpt->GetLastPointZ());
-      esdtrack->SetPt(tpt->GetPt());
-      esdtrack->SetPsi(tpt->GetPsi());
-      esdtrack->SetTgl(tpt->GetTgl());
-      esdtrack->SetCharge(tpt->GetCharge());
-      esdtrack->SetMCid(tpt->GetMCid());
-      esdtrack->SetWeight(tpt->GetWeight());
-      esdtrack->SetSector(tpt->GetSector());
-      esdtrack->SetBinXY(tpt->GetBinX(),tpt->GetBinY(),tpt->GetSizeX(),tpt->GetSizeY());
-      esdtrack->SetPID(tpt->GetPID());
-      esdtrack->ComesFromMainVertex(tpt->ComesFromMainVertex());
-
-      esd->AddHLTHoughTrack(esdtrack);
+      if(tpt->GetWeight()<0) continue;
+      AliL3HoughKalmanTrack *tpctrack = new AliL3HoughKalmanTrack(*tpt);
+      if(!tpctrack) continue;
+      AliESDtrack *esdtrack2 = new AliESDtrack() ; 
+      esdtrack2->UpdateTrackParams(tpctrack,AliESDtrack::kTPCin);
+      esd->AddTrack(esdtrack2);
       nglobaltracks++;
-      delete esdtrack;
+      delete esdtrack2;
+      delete tpctrack;
     }
   return nglobaltracks;
 }

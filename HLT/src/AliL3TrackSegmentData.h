@@ -16,6 +16,9 @@ struct AliL3TrackSegmentData
 	Double_t fPt;
 	Double_t fPsi;
         Double_t fTgl;
+	Double_t fPterr;
+	Double_t fPsierr;
+        Double_t fTglerr;
         Int_t fCharge;
 #ifdef ROWHOUGHPARAMS
       /* needed for PDC */

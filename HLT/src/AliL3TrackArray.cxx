@@ -209,6 +209,9 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr){
     track->SetPt(trs->fPt);
     track->SetPsi(trs->fPsi);
     track->SetTgl(trs->fTgl);
+    track->SetPterr(trs->fPterr);
+    track->SetPsierr(trs->fPsierr);
+    track->SetTglerr(trs->fTglerr);
     track->SetNHits(trs->fNPoints);
     track->SetCharge(trs->fCharge);
     track->SetFirstPoint(trs->fX,trs->fY,trs->fZ);
@@ -237,11 +240,14 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t 
   for(Int_t i=0; i<ntracks; i++){
     AliL3Track *track = NextTrack(); 
     track->SetPt(trs->fPt);
+    track->SetPterr(trs->fPterr);
     Float_t psi[1];
     psi[0]=trs->fPsi;
     AliL3Transform::Local2GlobalAngle(psi,slice);
     track->SetPsi(psi[0]);
     track->SetTgl(trs->fTgl);
+    track->SetPsierr(trs->fPsierr);
+    track->SetTglerr(trs->fTglerr);
     track->SetNHits(trs->fNPoints);
     track->SetCharge(trs->fCharge);
     Float_t first[3];
@@ -304,11 +310,14 @@ UInt_t AliL3TrackArray::WriteTracks(AliL3TrackSegmentData* tr)
     tP->fY = track->GetFirstPointY();
     tP->fZ = track->GetFirstPointZ();
     tP->fPt = track->GetPt();
+    tP->fPterr = track->GetPterr();
     tP->fLastX = track->GetLastPointX();
     tP->fLastY = track->GetLastPointY();
     tP->fLastZ = track->GetLastPointZ();
     tP->fPsi = track->GetPsi();
     tP->fTgl = track->GetTgl();
+    tP->fPsierr = track->GetPsierr();
+    tP->fTglerr = track->GetTglerr();
     tP->fCharge = track->GetCharge();
     tP->fNPoints = track->GetNHits();
 #ifdef ROWHOUGHPARAMS
@@ -359,11 +368,14 @@ UInt_t AliL3TrackArray::WriteConfMapTracks(AliL3TrackSegmentData* tr)
 //    tP->fY = track->GetFirstPointY();
 //    tP->fZ = track->GetFirstPointZ();
     tP->fPt = track->GetPt();
+    tP->fPterr = track->GetPterr();
 //    tP->fLastX = track->GetLastPointX();
 //    tP->fLastY = track->GetLastPointY();
 //    tP->fLastZ = track->GetLastPointZ();
     tP->fPsi = track->GetPsi();
     tP->fTgl = track->GetTgl();
+    tP->fPsierr = track->GetPsierr();
+    tP->fTglerr = track->GetTglerr();
     tP->fCharge = track->GetCharge();
 #ifdef ROWHOUGHPARAMS
     tP->fTrackID = track->GetMCid();

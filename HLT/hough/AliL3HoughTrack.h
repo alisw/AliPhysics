@@ -17,6 +17,7 @@ class AliL3HoughTrack : public AliL3Track {
   Bool_t IsHelix() const {return fIsHelix;}
   void UpdateToFirstRow();
   void SetTrackParameters(Double_t kappa,Double_t eangle,Int_t weight);  
+  void SetTrackParametersRow(Double_t alpha1,Double_t alpha2,Double_t eta,Int_t weight);  
   void SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t refrow);
 
   Int_t GetWeight()  const {return fWeight;}

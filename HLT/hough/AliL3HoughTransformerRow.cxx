@@ -29,6 +29,11 @@ ClassImp(AliL3HoughTransformerRow)
 
 Float_t AliL3HoughTransformerRow::fgBeta1 = 1.0/AliL3Transform::Row2X(84);
 Float_t AliL3HoughTransformerRow::fgBeta2 = 1.0/(AliL3Transform::Row2X(158)*(1.0+tan(AliL3Transform::Pi()*10/180)*tan(AliL3Transform::Pi()*10/180)));
+Float_t AliL3HoughTransformerRow::fgDAlpha = 0.22;
+Float_t AliL3HoughTransformerRow::fgDEta   = 0.40;
+Double_t AliL3HoughTransformerRow::fgEtaCalcParam1 = 1.0289;
+Double_t AliL3HoughTransformerRow::fgEtaCalcParam2 = 0.15192;
+Double_t AliL3HoughTransformerRow::fgEtaCalcParam3 = 1./(32.*600.*600.);
 
 AliL3HoughTransformerRow::AliL3HoughTransformerRow()
 {
@@ -51,11 +56,9 @@ AliL3HoughTransformerRow::AliL3HoughTransformerRow()
 
   fStartPadParams = 0;
   fEndPadParams = 0;
-  fLUTr2 = 0;
+  fLUTr = 0;
   fLUTforwardZ = 0;
-  fLUTforwardZ2 = 0;
   fLUTbackwardZ = 0;
-  fLUTbackwardZ2 = 0;
 
 }
 
@@ -81,11 +84,9 @@ AliL3HoughTransformerRow::AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t
 
   fStartPadParams = 0;
   fEndPadParams = 0;
-  fLUTr2 = 0;
+  fLUTr = 0;
   fLUTforwardZ = 0;
-  fLUTforwardZ2 = 0;
   fLUTbackwardZ = 0;
-  fLUTbackwardZ2 = 0;
 
 }
 
@@ -197,35 +198,25 @@ AliL3HoughTransformerRow::~AliL3HoughTransformerRow()
       delete [] fEndPadParams;
       fEndPadParams = 0;
     }
-  if(fLUTr2)
+  if(fLUTr)
     {
       for(Int_t i = AliL3Transform::GetFirstRow(0); i<=AliL3Transform::GetLastRow(5); i++)
 	{
-	  if(!fLUTr2[i]) continue;
-	  delete [] fLUTr2[i];
+	  if(!fLUTr[i]) continue;
+	  delete [] fLUTr[i];
 	}
-      delete [] fLUTr2;
-      fLUTr2 = 0;
+      delete [] fLUTr;
+      fLUTr = 0;
     }
   if(fLUTforwardZ)
     {
       delete[] fLUTforwardZ;
       fLUTforwardZ=0;
     }
-  if(fLUTforwardZ2)
-    {
-      delete[] fLUTforwardZ2;
-      fLUTforwardZ2=0;
-    }
   if(fLUTbackwardZ)
     {
       delete[] fLUTbackwardZ;
       fLUTbackwardZ=0;
-    }
-  if(fLUTbackwardZ2)
-    {
-      delete[] fLUTbackwardZ2;
-      fLUTbackwardZ2=0;
     }
 }
 
@@ -455,8 +446,8 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 		  if((maxlastrow-maxfirstrow) < fTrackNRows[xbin + ybin*nxbins]) {
 		    fTrackNRows[xbin + ybin*nxbins] = maxlastrow-maxfirstrow;
 		    fInitialGapCount[xbin + ybin*nxbins] = 1;
-                    if((maxlastrow-maxfirstrow+1)<MIN_TRACK_LENGTH)
-                      fInitialGapCount[xbin + ybin*nxbins] = MAX_N_GAPS+1;
+		    if((maxlastrow-maxfirstrow+1)<MIN_TRACK_LENGTH)
+		      fInitialGapCount[xbin + ybin*nxbins] = MAX_N_GAPS+1;
 		    if(maxtrackpt < 0.9*0.1*AliL3Transform::GetSolenoidField())
 		      fInitialGapCount[xbin + ybin*nxbins] = MAX_N_GAPS;
 		    fTrackFirstRow[xbin + ybin*nxbins] = maxfirstrow;
@@ -487,8 +478,8 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 	<<"Transformer: Allocating about "<<nrows*100*sizeof(AliL3PadHoughParams)<<" bytes to fEndPadParams"<<ENDLOG;
       fEndPadParams = new AliL3PadHoughParams*[nrows];
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating about "<<nrows*100*sizeof(Float_t)<<" bytes to fLUTr2"<<ENDLOG;
-      fLUTr2 = new Float_t*[nrows];
+	<<"Transformer: Allocating about "<<nrows*100*sizeof(Float_t)<<" bytes to fLUTr"<<ENDLOG;
+      fLUTr = new Float_t*[nrows];
 
       Float_t beta1 = fgBeta1;
       Float_t beta2 = fgBeta2;
@@ -513,11 +504,11 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 
 	  fStartPadParams[i] = new AliL3PadHoughParams[npads];
 	  fEndPadParams[i] = new AliL3PadHoughParams[npads];
-	  fLUTr2[i] = new Float_t[npads];
+	  fLUTr[i] = new Float_t[npads];
 	  for(Int_t pad=0; pad<npads; pad++)
 	    {
 	      Float_t y = (pad-0.5*(npads-1))*padpitch;
-	      fLUTr2[i][pad] = x2 + y*y;
+	      fLUTr[i][pad] = sqrt(x2 + y*y);
 	      Float_t starty = (pad-0.5*npads)*padpitch;
 	      Float_t r1 = x2 + starty*starty;
 	      Float_t xoverr1 = x/r1;
@@ -601,22 +592,14 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 	<<"Transformer: Allocating "<<ntimebins*sizeof(Float_t)<<" bytes to fLUTforwardZ"<<ENDLOG;
       fLUTforwardZ = new Float_t[ntimebins];
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<ntimebins*sizeof(Float_t)<<" bytes to fLUTforwardZ2"<<ENDLOG;
-      fLUTforwardZ2 = new Float_t[ntimebins];
-      LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
 	<<"Transformer: Allocating "<<ntimebins*sizeof(Float_t)<<" bytes to fLUTbackwardZ"<<ENDLOG;
       fLUTbackwardZ = new Float_t[ntimebins];
-      LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<ntimebins*sizeof(Float_t)<<" bytes to fLUTbackwardZ2"<<ENDLOG;
-      fLUTbackwardZ2 = new Float_t[ntimebins];
       for(Int_t i=0; i<ntimebins; i++){
 	Float_t z;
 	z=AliL3Transform::GetZFast(0,i,GetZVertex());
 	fLUTforwardZ[i]=z;
-	fLUTforwardZ2[i]=z*z;
 	z=AliL3Transform::GetZFast(18,i,GetZVertex());
 	fLUTbackwardZ[i]=z;
-	fLUTbackwardZ2[i]=z*z;
       }
     }
 }
@@ -697,6 +680,11 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
 {
   //Do the Hough Transform
 
+  //Load the parameters used by the fast calculation of eta
+  Double_t etaparam1 = GetEtaCalcParam1();
+  Double_t etaparam2 = GetEtaCalcParam2();
+  Double_t etaparam3 = GetEtaCalcParam3();
+
   Int_t netasegments = GetNEtaSegments();
   Double_t etamin = GetEtaMin();
   Double_t etaslice = (GetEtaMax() - etamin)/netasegments;
@@ -726,15 +714,10 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
   Int_t ilastpatch = GetLastPatch();
   Int_t islice = GetSlice();
   Float_t *lutz;
-  Float_t *lutz2;
-  if(islice < 18) {
+  if(islice < 18)
     lutz = fLUTforwardZ;
-    lutz2 = fLUTforwardZ2;
-  }
-  else {
+  else
     lutz = fLUTbackwardZ;
-    lutz2 = fLUTbackwardZ2;
-  }
 
   //Loop over the padrows:
   for(UChar_t i=AliL3Transform::GetFirstRow(ipatch); i<=AliL3Transform::GetLastRow(ipatch); i++)
@@ -743,9 +726,7 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
       //Flush eta clusters array
       memset(etaclust,0,netasegments*sizeof(AliL3EtaRow));  
 
-      Float_t x = AliL3Transform::Row2X((Int_t)i);
-      Float_t x2 = x*x;
-      Float_t radius2=0;
+      Float_t radius=0;
 
       //Get the data on this padrow:
       AliL3DigitData *digPt = tempPt->fDigitData;
@@ -767,19 +748,14 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
 
 	  if(pad != lastpad)
 	    {
-	      radius2 = fLUTr2[(Int_t)i][(Int_t)pad];
+	      radius = fLUTr[(Int_t)i][(Int_t)pad];
 	      lastetaindex = -1;
 	    }
 
-	  //Transform data to local cartesian coordinates:
 	  Float_t z = lutz[(Int_t)time];
-	  Float_t z2 = lutz2[(Int_t)time];
-	  // Acceptance cut : to be verified
-	  //	  if(radius2<0.72406166*z2) continue;
-	  if(x2<0.8464*z2) continue;
-	  //Calculate the eta:
-	  Double_t r = sqrt(radius2+z2);
-	  Double_t eta = 0.5 * log((r+z)/(r-z));
+	  Double_t radiuscorr = radius*(1.+etaparam3*radius*radius);
+	  Double_t zovr = z/radiuscorr;
+	  Double_t eta = (etaparam1-etaparam2*fabs(zovr))*zovr;
 	  //Get the corresponding index, which determines which histogram to fill:
 	  Int_t etaindex = (Int_t)((eta-etamin)/etaslice);
 
@@ -846,6 +822,11 @@ void AliL3HoughTransformerRow::TransformCircleFromRawStream()
 {
   //Do the Hough Transform
 
+  //Load the parameters used by the fast calculation of eta
+  Double_t etaparam1 = GetEtaCalcParam1();
+  Double_t etaparam2 = GetEtaCalcParam2();
+  Double_t etaparam3 = GetEtaCalcParam3();
+
   Int_t netasegments = GetNEtaSegments();
   Double_t etamin = GetEtaMin();
   Double_t etaslice = (GetEtaMax() - etamin)/netasegments;
@@ -876,24 +857,17 @@ void AliL3HoughTransformerRow::TransformCircleFromRawStream()
   Int_t ilastpatch = GetLastPatch();
   Int_t islice = GetSlice();
   Float_t *lutz;
-  Float_t *lutz2;
-  if(islice < 18) {
+  if(islice < 18)
     lutz = fLUTforwardZ;
-    lutz2 = fLUTforwardZ2;
-  }
-  else {
+  else
     lutz = fLUTbackwardZ;
-    lutz2 = fLUTbackwardZ2;
-  }
 
   //Flush eta clusters array
   memset(etaclust,0,netasegments*sizeof(AliL3EtaRow));  
 
   UChar_t i=0;
   Int_t npads=0;
-  Float_t x=0;
-  Float_t x2=0;
-  Float_t radius2=0;
+  Float_t radius=0;
   UChar_t pad=0;
 
   //Loop over the rawdata:
@@ -926,9 +900,7 @@ void AliL3HoughTransformerRow::TransformCircleFromRawStream()
       //Flush eta clusters array
       memset(etaclust,0,netasegments*sizeof(AliL3EtaRow));  
 
-      x = AliL3Transform::Row2X((Int_t)i);
-      x2 = x*x;
-      radius2=0;
+      radius=0;
 
     }
 
@@ -946,7 +918,7 @@ void AliL3HoughTransformerRow::TransformCircleFromRawStream()
 	continue;
       }
       */
-      radius2 = fLUTr2[(Int_t)i][(Int_t)pad];
+      radius = fLUTr[(Int_t)i][(Int_t)pad];
       lastetaindex = -1;
     } 
 
@@ -963,14 +935,10 @@ void AliL3HoughTransformerRow::TransformCircleFromRawStream()
     if(fTPCRawStream->GetSignal() <= lowerthreshold)
       continue;
 
-    //Transform data to local cartesian coordinates:
     Float_t z = lutz[(Int_t)time];
-    Float_t z2 = lutz2[(Int_t)time];
-    //    if(radius2<0.72406166*z2) continue;
-    if(x2<0.8464*z2) continue;
-    //Calculate the eta:
-    Double_t r = sqrt(radius2+z2);
-    Double_t eta = 0.5 * log((r+z)/(r-z));
+    Double_t radiuscorr = radius*(1.+etaparam3*radius*radius);
+    Double_t zovr = z/radiuscorr;
+    Double_t eta = (etaparam1-etaparam2*fabs(zovr))*zovr;
     //Get the corresponding index, which determines which histogram to fill:
     Int_t etaindex = (Int_t)((eta-etamin)/etaslice);
 
@@ -1075,6 +1043,23 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t alpha1,Double
   }
   return label;
 #endif
+}
+
+Int_t AliL3HoughTransformerRow::GetTrackLength(Double_t alpha1,Double_t alpha2,Int_t *rows) const
+{
+  // Returns the track length for a given peak found in the Hough space
+
+  AliL3Histogram *hist = fParamSpace[0];
+  Int_t bin = hist->FindBin(alpha1,alpha2);
+  if(bin==-1) {
+    LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackLength()","")
+      <<"Track candidate outside Hough space boundaries: "<<alpha1<<" "<<alpha2<<ENDLOG;
+    return -1;
+  }
+  rows[0] = fTrackFirstRow[bin];
+  rows[1] = fTrackLastRow[bin];
+  
+  return 0;
 }
 
 inline void AliL3HoughTransformerRow::FillClusterRow(UChar_t i,Int_t binx1,Int_t binx2,UChar_t *ngaps2,UChar_t *currentrow2,UChar_t *lastrow2
@@ -1271,11 +1256,9 @@ void AliL3HoughTransformerRow::SetTransformerArrays(AliL3HoughTransformerRow *tr
 
     fStartPadParams = tr->fStartPadParams;
     fEndPadParams = tr->fEndPadParams;
-    fLUTr2 = tr->fLUTr2;
+    fLUTr = tr->fLUTr;
     fLUTforwardZ = tr->fLUTforwardZ;
-    fLUTforwardZ2 = tr->fLUTforwardZ2;
     fLUTbackwardZ = tr->fLUTbackwardZ;
-    fLUTbackwardZ2 = tr->fLUTbackwardZ2;
 
     fParamSpace = tr->fParamSpace;
 

@@ -15,6 +15,7 @@
 #pragma link C++ class AliL3HoughTransformerRow;
 #ifndef macosx
 #pragma link C++ class AliL3HoughTrack;
+#pragma link C++ class AliL3HoughKalmanTrack;
 #endif
 #pragma link C++ class AliL3HoughMaxFinder;
 #pragma link C++ class AliL3HoughEval;

@@ -18,28 +18,17 @@
 
 #include <AliITStrackV2.h>
 
-class AliESDHLTtrack;
-
 class AliL3ITStrack : public AliITStrackV2 {
 public:
   AliL3ITStrack();
+  AliL3ITStrack(AliESDtrack& t);
   AliL3ITStrack(const AliL3ITStrack& t);
-  AliL3ITStrack(AliESDHLTtrack& t, Double_t zvertex) throw (const Char_t *);
-  AliL3ITStrack(const AliESDHLTtrack& t, Double_t zvertex) throw (const Char_t *);
 
   Int_t Compare(const TObject *o) const;
 
-  // Set and get the pointer to the HLT ESD track
-  AliESDHLTtrack *GetESDHLTtrack() const {return fESDHLTtrack; }
-  void SetESDHLTtrack(AliESDHLTtrack *esdhlttrack) { fESDHLTtrack = esdhlttrack; }
   Bool_t GetPxPyPzAt(Double_t x,Double_t *p) const;
 
-protected:
-  void Set(const AliESDHLTtrack& t, Double_t zvertex) throw (const Char_t *);
-
-  AliESDHLTtrack *fESDHLTtrack;   //! pointer to the connected ESD HLT track
-
-  ClassDef(AliL3ITStrack,1)   //HLT ITS reconstructed track
+  ClassDef(AliL3ITStrack,2)   //HLT ITS reconstructed track
 };
 
 #endif

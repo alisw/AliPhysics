@@ -50,6 +50,10 @@ class AliL3Track {
   Double_t GetR0() const {return fR0;}
   Double_t GetZ0() const {return fFirstPoint[2];}
   Float_t GetPID() const {return fPID;}
+
+  Double_t GetPterr() const {return fPterr;}
+  Double_t GetPsierr() const {return fPsierr;}
+  Double_t GetTglerr() const {return fTanlerr;}
   
   Double_t GetKappa() const {return fKappa;}
   Double_t GetRadius() const {return fRadius;}

@@ -68,16 +68,15 @@ Int_t AliL3ITStracker::Clusters2Tracks(AliESD *event) {
 
   {/* Read HLT ESD tracks */
     Int_t nentr;
-    nentr=event->GetNumberOfHLTHoughTracks();
+    nentr=event->GetNumberOfTracks();
     Info("Clusters2Tracks", "Number of ESD HLT tracks: %d\n", nentr);
     while (nentr--) {
 
-      AliESDHLTtrack *esd=event->GetHLTHoughTrack(nentr);
-      if (esd->GetWeight() > 500) continue;
+      AliESDtrack *esd=event->GetTrack(nentr);
 
       AliL3ITStrack *t=0;
       try {
-        t=new AliL3ITStrack(*esd,GetZ());
+        t=new AliL3ITStrack(*esd);
       } catch (const Char_t *msg) {
         Warning("Clusters2Tracks",msg);
         delete t;
@@ -106,11 +105,9 @@ Int_t AliL3ITStracker::Clusters2Tracks(AliESD *event) {
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
      for (Int_t i=0; i<nentr; i++) {
-       //       Info("Clusters2Tracks"," %d ",i);
        AliL3ITStrack *t=(AliL3ITStrack*)itsTracks.UncheckedAt(i);
        if (t==0) continue;              //this track has been already tracked
        Int_t tpcLabel=t->GetLabel(); //save the TPC track label
-       //       Info("Clusters2Tracks","Pt:%f",1/t->Get1Pt());
        ResetTrackToFollow(*t);
        ResetBestTrack();
 
@@ -131,10 +128,7 @@ Int_t AliL3ITStracker::Clusters2Tracks(AliESD *event) {
        fBestTrack.SetLabel(tpcLabel);
        fBestTrack.CookdEdx();
        CookLabel(&fBestTrack,0.); //For comparison only
-       // Specific to the AliL3ITStracker
-       //       fBestTrack.UpdateESDtrack(AliESDtrack::kITSin);
-       t->GetESDHLTtrack()->UpdateTrackParams(&fBestTrack);
-       //
+       fBestTrack.UpdateESDtrack(AliESDtrack::kITSin);
        UseClusters(&fBestTrack);
        delete itsTracks.RemoveAt(i);
        ntrk++;
@@ -152,55 +146,8 @@ Int_t AliL3ITStracker::PropagateBack(AliESD *event) {
   //--------------------------------------------------------------------
   // This functions propagates reconstructed ITS tracks back
   //--------------------------------------------------------------------
-  Int_t nentr=event->GetNumberOfHLTHoughTracks();
-  Info("PropagateBack", "Number of HLT ESD tracks: %d\n", nentr);
-
-  Int_t ntrk=0;
-  for (Int_t i=0; i<nentr; i++) {
-     AliESDHLTtrack *esd=event->GetHLTHoughTrack(i);
-     if (esd->GetWeight() > 500) continue;
-
-     AliL3ITStrack *t=0;
-     try {
-        t=new AliL3ITStrack(*esd,GetZ());
-     } catch (const Char_t *msg) {
-        Warning("PropagateBack",msg);
-        delete t;
-        continue;
-     }
-
-     ResetTrackToFollow(*t);
-
-     // propagete to vertex [SR, GSI 17.02.2003]
-     // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
-     if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) {
-       if (fTrackToFollow.PropagateToVertex()) {
-          fTrackToFollow.StartTimeIntegral();
-       }
-       fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
-     }
-
-     fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
-     if (RefitAt(49.,&fTrackToFollow,t)) {
-        if (CorrectForDeadZoneMaterial(&fTrackToFollow)!=0) {
-          Warning("PropagateBack",
-                  "failed to correct for the material in the dead zone !\n");
-          delete t;
-          continue;
-        }
-        fTrackToFollow.SetLabel(t->GetLabel());
-        //fTrackToFollow.CookdEdx();
-        CookLabel(&fTrackToFollow,0.); //For comparison only
-	//	cout<<" Backtrack "<<fTrackToFollow.GetLabel()<<" "<<fTrackToFollow.GetNumberOfClusters()<<" "<<fTrackToFollow.fFakeRatio<<endl;
-	fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSout);
-        //UseClusters(&fTrackToFollow);
-        ntrk++;
-     }
-     delete t;
-  }
-
-  Info("PropagateBack","Number of back propagated HLT ITS tracks: %d\n",ntrk);
-
+  Int_t nentr=event->GetNumberOfTracks();
+  Info("PropagateBack", "The method is not yet implemented! %d\n", nentr);
   return 0;
 }
 
@@ -210,7 +157,7 @@ Int_t AliL3ITStracker::RefitInward(AliESD *event) {
   // "inward propagated" TPC tracks
   //--------------------------------------------------------------------
 
-  Int_t nentr=event->GetNumberOfHLTHoughTracks();
+  Int_t nentr=event->GetNumberOfTracks();
   Info("RefitInward", "The method is not yet implemented! %d",nentr);
   return 0;
 }

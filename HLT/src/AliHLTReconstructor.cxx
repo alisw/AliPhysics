@@ -32,6 +32,12 @@
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackArray.h"
 
+#include "AliRun.h"
+#include "AliITS.h"
+#include "AliITSgeom.h"
+#include "AliL3ITStracker.h"
+#include "AliL3TPCtracker.h"
+
 #if __GNUC__== 3
 using namespace std;
 #endif
@@ -46,7 +52,7 @@ AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor()
   AliL3Log::fgLevel=AliL3Log::kWarning;
 #endif
   fDoTracker=1;
-  fDoHough=1;
+  fDoHough=0;
   fDoBench=0;
   fDoCleanUp=1;
 }
@@ -158,6 +164,8 @@ void AliHLTReconstructor::ReconstructWithConformalMapping(AliRunLoader* runLoade
 void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const
 {
   //reconstruct with hough
+  //not used anymore, Hough tracking is moved out of the local
+  //reconstruction chain
   Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
 
   Float_t zvertex = 0;
@@ -305,4 +313,46 @@ void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) con
 
   delete fTracks;
 }
+
+AliTracker* AliHLTReconstructor::CreateTracker(AliRunLoader* runLoader) const
+{
+  //Create HLT trackers for TPC and ITS
+
+  TString opt = GetOption();
+  if(!opt.CompareTo("TPC")) {
+    // Create Hough tracker for TPC
+    return new AliL3TPCtracker(runLoader);
+  }
+  if(!opt.CompareTo("ITS")) {
+    // Create ITS tracker
+    AliITSgeom* geom = GetITSgeom(runLoader);
+    if (!geom) return NULL;
+    return new AliL3ITStracker(geom);
+  }
+
+  return NULL;
+}
+
+//_____________________________________________________________________________
+AliITSgeom* AliHLTReconstructor::GetITSgeom(AliRunLoader* runLoader) const
+{
+// get the ITS geometry
+
+  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+  if (!runLoader->GetAliRun()) {
+    Error("GetITSgeom", "couldn't get AliRun object");
+    return NULL;
+  }
+  AliITS* its = (AliITS*) runLoader->GetAliRun()->GetDetector("ITS");
+  if (!its) {
+    Error("GetITSgeom", "couldn't get ITS detector");
+    return NULL;
+  }
+  if (!its->GetITSgeom()) {
+    Error("GetITSgeom", "no ITS geometry available");
+    return NULL;
+  }
+  return its->GetITSgeom();
+}
+
 #endif

@@ -38,6 +38,7 @@
 #pragma link C++ class AliL3Evaluate; 
 #ifdef use_reconstruction
 #pragma link C++ class AliHLTReconstructor;
+#pragma link C++ class AliL3TPCtracker;
 #endif
 #endif
 

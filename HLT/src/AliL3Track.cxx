@@ -78,6 +78,9 @@ void AliL3Track::Set(AliL3Track *tpt)
   SetPt(tpt->GetPt());
   SetPsi(tpt->GetPsi());
   SetTgl(tpt->GetTgl());
+  SetPterr(tpt->GetPterr());
+  SetPsierr(tpt->GetPsierr());
+  SetTglerr(tpt->GetTglerr());
   SetCharge(tpt->GetCharge());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
 #ifdef do_mc

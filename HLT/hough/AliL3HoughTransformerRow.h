@@ -13,7 +13,6 @@ struct AliL3EtaRow {
   UChar_t fStartPad; //First pad in the cluster
   UChar_t fEndPad; //Last pad in the cluster
   Bool_t fIsFound; //Is the cluster already found
-  Float_t fStartY; //Y position of the first pad in the cluster
 #ifdef do_mc
   Int_t fMcLabels[MaxTrack]; //Array to store mc labels inside cluster
 #endif
@@ -51,6 +50,7 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   AliL3Histogram *GetHistogram(Int_t etaindex);
   Double_t GetEta(Int_t etaindex,Int_t slice) const;
   Int_t GetTrackID(Int_t etaindex,Double_t alpha1,Double_t alpha2) const;
+  Int_t GetTrackLength(Double_t alpha1,Double_t alpha2,Int_t *rows) const;
   UChar_t *GetGapCount(Int_t etaindex) const { return fGapCount[etaindex]; }
   UChar_t *GetCurrentRowCount(Int_t etaindex) const { return fCurrentRowCount[etaindex]; }
   UChar_t *GetPrevBin(Int_t etaindex) const { return fPrevBin[etaindex]; }
@@ -61,6 +61,11 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   UChar_t *GetTrackLastRow() const { return fTrackLastRow; }
   static Float_t GetBeta1() {return fgBeta1;}
   static Float_t GetBeta2() {return fgBeta2;}
+  static Float_t GetDAlpha() {return fgDAlpha;}
+  static Float_t GetDEta() {return fgDEta;}
+  static Double_t GetEtaCalcParam1() {return fgEtaCalcParam1;}
+  static Double_t GetEtaCalcParam2() {return fgEtaCalcParam2;}
+  static Double_t GetEtaCalcParam3() {return fgEtaCalcParam3;}
 
   void SetTPCRawStream(AliTPCRawStream *rawstream) {fTPCRawStream=rawstream;}
 
@@ -83,12 +88,10 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
 
   AliL3PadHoughParams **fStartPadParams; //!
   AliL3PadHoughParams **fEndPadParams; //!
-  Float_t **fLUTr2; //!
+  Float_t **fLUTr; //!
 
   Float_t *fLUTforwardZ; //!
-  Float_t *fLUTforwardZ2; //!
   Float_t *fLUTbackwardZ; //!
-  Float_t *fLUTbackwardZ2; //!
 
   AliL3Histogram **fParamSpace; //!
 
@@ -110,6 +113,9 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   void SetTransformerArrays(AliL3HoughTransformerRow *tr);
 
   static Float_t fgBeta1,fgBeta2; // Two curves which define the Hough space
+  static Float_t fgDAlpha, fgDEta; // Correlation factor between Hough space bin size and resolution
+  static Double_t fgEtaCalcParam1, fgEtaCalcParam2; // Parameters used for fast calculation of eta during the binning of Hough space
+  static Double_t fgEtaCalcParam3; // Parameter used during the eta binning of the Hough Space in order to account for finite track radii
 
   AliTPCRawStream *fTPCRawStream; // Pointer to the raw stream in case of fast reading of the raw data (fast_raw flag)
 

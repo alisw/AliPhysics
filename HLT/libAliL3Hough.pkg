@@ -17,6 +17,7 @@ hough/AliL3HoughMaxFinder.cxx \
 hough/AliL3HoughMerger.cxx \
 hough/AliL3HoughTest.cxx \
 hough/AliL3HoughTrack.cxx \
+hough/AliL3HoughKalmanTrack.cxx \
 hough/AliL3HoughTransformer.cxx \
 hough/AliL3HoughTransformerGlobal.cxx \
 hough/AliL3HoughTransformerLUT.cxx \
