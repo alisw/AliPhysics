@@ -7,7 +7,9 @@
 // Revision of includes 07/05/2004
 
 #include <TObject.h>
+#include "AliMUONTrack.h" //AZ
 
+class TArrayD;
 class TMatrixD;
 class AliMUONEventReconstructor;
 class TClonesArray;
@@ -16,7 +18,8 @@ class AliMUONSegment;
 class AliMUON;
 class AliMUONHitForRec;
 
-class AliMUONTrackK : public TObject {
+//AZ class AliMUONTrackK : public TObject {
+class AliMUONTrackK : public AliMUONTrack {
 
  public:
 
@@ -48,7 +51,16 @@ class AliMUONTrackK : public TObject {
   void Kill(void); // kill track candidate
   void Branson(void); // Branson correction
   void GoToZ(Double_t zEnd); // propagate track to given Z
-  void GoToVertex(void); // propagate track to the vertex
+  void GoToVertex(Int_t iflag); // propagate track to the vertex
+  Bool_t Smooth(void); // apply smoother
+  Double_t GetChi2PerPoint(Int_t iPoint) const; // return Chi2 at point
+  void Print(FILE *lun) const; // print track information
+  AliMUONHitForRec* GetHitLastOk(void); // get hit before the skipped one
+  Int_t GetStation0(void); // return seed station number
+  Int_t DebugLevel(void) const {return fgDebug;} // return debug level
+  void SetDebugLevel(Int_t iDebug) {fgDebug = iDebug;} // set debug level
+  void FillMUONTrack(void); // set track parameters as for AliMUONTrack
+  void SetTrackParam(AliMUONTrackParam *trackParam, TMatrixD *par, Double_t z); // fill AliMUONTrackParam object
 
   // What is necessary for sorting TClonesArray's
   Bool_t IsSortable() const { return kTRUE; }
@@ -63,6 +75,7 @@ class AliMUONTrackK : public TObject {
 
  private:
  
+  static Int_t fgDebug; // debug level
   static Int_t fgNOfPoints; // number of points in event
   static AliMUON *fgMUON; // pointer to MUON module  
   static AliMUONEventReconstructor *fgEventReconstructor; // pointer to event reconstructor
@@ -84,23 +97,48 @@ class AliMUONTrackK : public TObject {
   TMatrixD *fCovariance; // covariance matrix
   TMatrixD *fWeight; //! weight matrix (inverse of covariance)
 
+  // For smoother
+  TObjArray *fParExtrap; //! extrapolated track parameters
+  TObjArray *fParFilter; //! filtered track parameters
+  TObjArray *fParSmooth; //! smoothed track parameters
+
+  TObjArray *fCovExtrap; //! extrapolated covariance matrices
+  TObjArray *fCovFilter; //! filtered covariance matrices
+
+  TObjArray *fJacob; //! Jacobian matrices
+  Int_t fNSteps; //!
+  TArrayD *fSteps; //!
+  TArrayD *fChi2Array; //!
+  TArrayD *fChi2Smooth; //!
+
   // Functions
 
   void EvalCovariance(Double_t dZ);
   void ParPropagation(Double_t zEnd);
-  void WeightPropagation(Double_t zEnd);
+  void WeightPropagation(Double_t zEnd, Bool_t smooth);
   void MSThin(Int_t sign);
   void MSLine(Double_t dZ, Double_t X0);
   Bool_t FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int_t iFB, AliMUONHitForRec *&hitAdd);
   void TryPoint(TMatrixD &point, const TMatrixD &pointWeight, TMatrixD &trackParTmp, Double_t &dChi2);
   void SetGeantParam(Double_t *VGeant3, Int_t iFB);
   void GetFromGeantParam(Double_t *VGeant3, Int_t iFB);
-  void Recover(void);
+  Bool_t Recover(void);
+  void AddMatrices(AliMUONTrackK *trackK, Double_t dChi2, AliMUONHitForRec *hitAdd);
+  void CreateMatrix(TObjArray *objArray);
+  void RemoveMatrices(Double_t zEnd);
+  void RemoveMatrices(AliMUONTrackK* trackK);
+  void Outlier();
+  void SortHits(Int_t iflag, TObjArray *array);
+  void DropBranches(Int_t imax, TObjArray *hits);
+  void DropBranches(AliMUONSegment *segment);
+  Bool_t ExistDouble(AliMUONHitForRec *hit);
+  Bool_t ExistDouble(void);
 
   private:
    // Some constants
    static const Int_t fgkSize; // number of track parameters
    static const Int_t fgkNSigma; //4; // acceptance window width in sigmas
+   static const Double_t fgkChi2max; //25; // chi2 cut in smoother for outlier detection
    static const Int_t fgkTriesMax; // max number of attempts to find exact position during tracking
    static const Double_t fgkEpsilon; // tracking precision (cm)
 

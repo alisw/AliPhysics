@@ -52,6 +52,7 @@ class AliMUONTrack : public TObject
 
   TObjArray* GetTrackHitsPtr(void) const {return fTrackHitsPtr;}
   Int_t GetNTrackHits(void) const {return fNTrackHits;}
+  void SetNTrackHits(Int_t nTrackHits) {fNTrackHits = nTrackHits;}
   Int_t GetFitMCS(void) const {return fFitMCS;}
   Int_t GetFitNParam(void) const {return fFitNParam;}
   Int_t GetFitStart(void) const {return fFitStart;}

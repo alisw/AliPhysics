@@ -109,7 +109,8 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   fNRecTriggerTracks = 0; // really needed or GetEntriesFast sufficient ????
   // Memory allocation for the TClonesArray of hits on reconstructed tracks
   // Is 100 the right size ????
-  fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
+  //AZ fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
+  fRecTrackHitsPtr = new TClonesArray("AliMUONTrackHit", 100);
   fNRecTrackHits = 0; // really needed or GetEntriesFast sufficient ????
 
   // Sign of fSimpleBValue according to sign of Bx value at (50,50,-950).
@@ -973,12 +974,15 @@ void AliMUONEventReconstructor::MakeTracks(void)
   ResetTrackHits();
   if (fTrackMethod == 2) { //AZ - Kalman filter
     MakeTrackCandidatesK();
+    if (fRecTracksPtr->GetEntriesFast() == 0) return;
     // Follow tracks in stations(1..) 3, 2 and 1
     FollowTracksK();
     // Remove double tracks
     RemoveDoubleTracksK();
     // Propagate tracks to the vertex thru absorber
     GoToVertex();
+    // Fill AliMUONTrack data members
+    FillMUONTrack();
   } else { 
     // Look for candidates from at least 3 aligned points in stations(1..) 4 and 5
     MakeTrackCandidates();
@@ -1569,6 +1573,19 @@ void AliMUONEventReconstructor::UpdateHitForRecAtHit()
 }
 
   //__________________________________________________________________________
+void AliMUONEventReconstructor::FillMUONTrack()
+{
+  // Set track parameters at hits for Kalman track. Fill fTrackParamAtHit of AliMUONTrack's
+  AliMUONTrackK *track;
+  track = (AliMUONTrackK*) fRecTracksPtr->First();
+  while (track) {
+    track->FillMUONTrack();
+    track = (AliMUONTrackK*) fRecTracksPtr->After(track);
+  } 
+  return;
+}
+
+  //__________________________________________________________________________
 void AliMUONEventReconstructor::EventDump(void)
 {
   // Dump reconstructed event (track parameters at vertex and at first hit),
@@ -1728,74 +1745,75 @@ void AliMUONEventReconstructor::FollowTracksK(void)
 {
   // Follow tracks using Kalman filter
   Bool_t ok;
-  Int_t icand, ichamBeg, ichamEnd, chamBits;
+  Int_t icand, ichamBeg = 0, ichamEnd, chamBits;
   Double_t zDipole1, zDipole2;
   AliMUONTrackK *trackK;
   AliMUONHitForRec *hit;
   AliMUONRawCluster *clus;
   TClonesArray *rawclusters;
-  AliMUON *pMUON;
   clus = 0; rawclusters = 0;
 
-  zDipole1 = GetSimpleBPosition() - GetSimpleBLength()/2;
-  zDipole2 = zDipole1 + GetSimpleBLength();
+  //AZ(z->-z) zDipole1 = GetSimpleBPosition() - GetSimpleBLength()/2;
+  //AZ(z->-z) zDipole2 = zDipole1 + GetSimpleBLength();
+  zDipole1 = GetSimpleBPosition() + GetSimpleBLength()/2;
+  zDipole2 = zDipole1 - GetSimpleBLength();
 
   // Print hits
-  pMUON  = (AliMUON*) gAlice->GetModule("MUON");
-  for (Int_t i1=0; i1<fNHitsForRec; i1++) {
-    hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[i1]);
-    //if (hit->GetTHTrack() > 1 || hit->GetGeantSignal() == 0) continue;
-    /*
-    cout << " Hit #" << hit->GetChamberNumber() << " ";
-    cout << hit->GetBendingCoor() << " ";
-    cout << hit->GetNonBendingCoor() << " ";
-    cout << hit->GetZ() << " ";
-    cout << hit->GetGeantSignal() << " ";
-    cout << hit->GetTHTrack() << endl;
-    */
-    /*
-    printf(" Hit # %d %10.4f %10.4f %10.4f",
-           hit->GetChamberNumber(), hit->GetBendingCoor(),
-           hit->GetNonBendingCoor(), hit->GetZ());
-    if (fRecGeantHits) {
-      // from GEANT hits
-      printf(" %3d %3d \n", hit->GetGeantSignal(), hit->GetTHTrack());
-    } else {
-      // from raw clusters
-      rawclusters = pMUON->RawClustAddress(hit->GetChamberNumber());
-      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->
-                                               GetHitNumber());
-      printf("%3d", clus->fTracks[1]-1);
-      if (clus->fTracks[2] != 0) printf("%3d \n", clus->fTracks[2]-1);
-      else printf("\n");
+  trackK = (AliMUONTrackK*) ((*fRecTracksPtr)[0]);
+  if (trackK->DebugLevel() > 0) {
+    for (Int_t i1=0; i1<fNHitsForRec; i1++) {
+      hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[i1]);
+      //if (hit->GetTHTrack() > 1 || hit->GetGeantSignal() == 0) continue;
+      printf(" Hit # %d %10.4f %10.4f %10.4f",
+             hit->GetChamberNumber(), hit->GetBendingCoor(),
+             hit->GetNonBendingCoor(), hit->GetZ());
+      if (fRecGeantHits) {
+        // from GEANT hits
+	printf(" %3d %3d \n", hit->GetGeantSignal(), hit->GetTHTrack());
+      } else {
+	// from raw clusters
+	rawclusters = fMUONData->RawClusters(hit->GetChamberNumber());
+	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->
+                                                 GetHitNumber());
+	printf("%3d", clus->GetTrack(1)-1);
+	if (clus->GetTrack(2) != 0) printf("%3d \n", clus->GetTrack(2)-1);
+	else printf("\n");
+      } // if (fRecGeantHits)
     }
-    */
-  }
+  } // if (trackK->DebugLevel() > 0)
 
   icand = -1;
-  Int_t nSeeds = fNRecTracks; // starting number of seeds
+  Int_t nSeeds;
+  nSeeds = fNRecTracks; // starting number of seeds
   // Loop over track candidates
   while (icand < fNRecTracks-1) {
     icand ++;
+    if (trackK->DebugLevel()>0) cout << " *** Kalman track candidate No. " << icand << endl;
     trackK = (AliMUONTrackK*) ((*fRecTracksPtr)[icand]);
+    if (trackK->GetRecover() < 0) continue; // failed track
 
     // Discard candidate which will produce the double track
+    /*
     if (icand > 0) {
       ok = CheckCandidateK(icand,nSeeds);
       if (!ok) {
-        //trackK->SetRecover(-1); // mark candidate to be removed
-        //continue;
+        trackK->SetRecover(-1); // mark candidate to be removed
+        continue;
       }
     }
+    */
 
     ok = kTRUE;
     if (trackK->GetRecover() == 0) hit = (AliMUONHitForRec*) 
                                    trackK->GetHitOnTrack()->Last(); // last hit
-    else hit = (AliMUONHitForRec*) (*trackK->GetHitOnTrack())[1]; // 2'nd hit
-    ichamBeg = hit->GetChamberNumber();
+    //else hit = (AliMUONHitForRec*) (*trackK->GetHitOnTrack())[1]; // 2'nd hit
+    else hit = trackK->GetHitLastOk(); // hit where track stopped
+    if (hit) ichamBeg = hit->GetChamberNumber();
     ichamEnd = 0;
     // Check propagation direction
-    if (trackK->GetTrackDir() > 0) {
+    if (hit == NULL) ichamBeg = ichamEnd;
+    //AZ(z->-z) else if (trackK->GetTrackDir() > 0) {
+    else if (trackK->GetTrackDir() < 0) {
       ichamEnd = 9; // forward propagation
       ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
       if (ok) {
@@ -1803,6 +1821,8 @@ void AliMUONEventReconstructor::FollowTracksK(void)
         ichamEnd = 6; // backward propagation
 	// Change weight matrix and zero fChi2 for backpropagation
         trackK->StartBack();
+	//AZ trackK->SetTrackDir(-1);
+	trackK->SetTrackDir(1);
         ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kTRUE,zDipole1,zDipole2);
         ichamBeg = ichamEnd;
         ichamEnd = 0;
@@ -1820,21 +1840,34 @@ void AliMUONEventReconstructor::FollowTracksK(void)
     }
 
     if (ok) {
-      trackK->SetTrackDir(-1);
+      //AZ trackK->SetTrackDir(-1);
+      trackK->SetTrackDir(1);
       trackK->SetBPFlag(kFALSE);
       ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
     }
-    if (ok) trackK->SetTrackQuality(0); // compute "track quality"
-    else trackK->SetRecover(-1); // mark candidate to be removed
+    if (!ok) { trackK->SetRecover(-1); continue; } // mark candidate to be removed
+
+    // Apply smoother
+    if (trackK->GetRecover() >= 0) {
+      ok = trackK->Smooth();
+      if (!ok) trackK->SetRecover(-1); // mark candidate to be removed
+    }
 
     // Majority 3 of 4 in first 2 stations
+    if (!ok) continue;
     chamBits = 0;
+    Double_t chi2_max = 0;
     for (Int_t i=0; i<trackK->GetNTrackHits(); i++) {
       hit = (AliMUONHitForRec*) (*trackK->GetHitOnTrack())[i];
-      chamBits |= BIT(hit->GetChamberNumber()-1);
+      chamBits |= BIT(hit->GetChamberNumber());
+      if (trackK->GetChi2PerPoint(i) > chi2_max) chi2_max = trackK->GetChi2PerPoint(i);
     }
-    //if (!((chamBits&3)==3 || (chamBits>>2&3)==3)) trackK->SetRecover(-1); 
-                                 //mark candidate to be removed
+    if (!((chamBits&3)==3 || (chamBits>>2&3)==3) && chi2_max > 25) {
+      //trackK->Recover();
+      trackK->SetRecover(-1); //mark candidate to be removed
+      continue;
+    }
+    if (ok) trackK->SetTrackQuality(0); // compute "track quality"
   } // while
 
   for (Int_t i=0; i<fNRecTracks; i++) {
@@ -1893,13 +1926,14 @@ void AliMUONEventReconstructor::RemoveDoubleTracksK(void)
 
   // Loop over first track of the pair
   track1 = (AliMUONTrackK*) fRecTracksPtr->First();
+  Int_t debug = track1->DebugLevel();
   while (track1) {
     // Loop over second track of the pair
     track2 = (AliMUONTrackK*) fRecTracksPtr->After(track1);
     while (track2) {
       // Check whether or not to keep track2
       if (!track2->KeepTrack(track1)) {
-        cout << " Killed track: " << 1/(*track2->GetTrackParameters())(4,0) <<
+        if (debug >= 0) cout << " Killed track: " << 1/(*track2->GetTrackParameters())(4,0) <<
 	  " " << track2->GetTrackQuality() << endl;
         trackToKill = track2;
         track2 = (AliMUONTrackK*) fRecTracksPtr->After(track2);
@@ -1911,7 +1945,7 @@ void AliMUONEventReconstructor::RemoveDoubleTracksK(void)
   } // track1
 
   fNRecTracks = fRecTracksPtr->GetEntriesFast();
-  cout << " Number of Kalman tracks: " << fNRecTracks << endl;
+  if (debug >= 0) cout << " Number of Kalman tracks: " << fNRecTracks << endl;
 }
 
 //__________________________________________________________________________
@@ -1924,8 +1958,22 @@ void AliMUONEventReconstructor::GoToVertex(void)
   zVertex = 0;
   for (Int_t i=0; i<fNRecTracks; i++) {
     //((AliMUONTrackK*)(*fRecTracksPtr)[i])->Branson();
-    //((AliMUONTrackK*)(*fRecTracksPtr)[i])->GoToZ(zVertex); // w/out absorber
     ((AliMUONTrackK*)(*fRecTracksPtr)[i])->SetTrackQuality(1); // compute Chi2
-    ((AliMUONTrackK*)(*fRecTracksPtr)[i])->GoToVertex(); // with absorber
+    //((AliMUONTrackK*)(*fRecTracksPtr)[i])->GoToZ(zVertex); // w/out absorber
+    ((AliMUONTrackK*)(*fRecTracksPtr)[i])->GoToVertex(1); // with absorber
   }
+}
+
+//__________________________________________________________________________
+void AliMUONEventReconstructor::SetTrackMethod(Int_t iTrackMethod)
+{
+  // Set track method and recreate track container if necessary
+  
+  fTrackMethod = iTrackMethod == 2 ? 2 : 1;
+  if (fTrackMethod == 2) {
+    if (fRecTracksPtr) delete fRecTracksPtr;
+    fRecTracksPtr = new TClonesArray("AliMUONTrackK", 10);
+    cout << " *** Tracking with the Kalman filter *** " << endl;
+  } else cout << " *** Traditional tracking *** " << endl;
+
 }
