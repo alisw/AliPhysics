@@ -130,7 +130,8 @@ fi
 # Alice Geant4 install directory
 #
 export AG4_INSTALL=$ALICE_ROOT/AliGeant4
-export G3G4_NOREFLECTION=1
+export G3TOG4=1
+export G3G4_NO_REFLECTION=1
 
 # Set variables depending on other variables
 # if opacs is selected then select also visualize
