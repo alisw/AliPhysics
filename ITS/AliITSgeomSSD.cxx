@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2.4.6  2000/06/11 20:30:21  barbera
+Minore changes.
+
 Revision 1.2.4.2  2000/03/04 23:55:59  nilsen
 Fixed up the comments/documentation
 

@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.2.6  2000/06/12 18:10:03  barbera
+fixed posible compilation errors on HP unix
+
+Revision 1.1.2.5  2000/06/11 20:30:36  barbera
+Minore changes.
+
+Revision 1.4  2000/06/10 20:34:37  nilsen
+Fixed compilation warning with HP unix.
+
 Revision 1.3  2000/06/10 10:43:04  nilsen
 Fixed bug in copy and operator =.
 
@@ -52,10 +61,10 @@ const Int_t   knbinz = 279;    // number of pixels along z direction.
 
     // correct detector size for bin size.
     fdx = 0.0;
-    for(Int_t i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
+    for(i=0;i<fNbinx;i++) fdx +=fBinSizeX[i];
     fdx *= 0.5;
     fdz = 0.0;
-    for(Int_t i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
+    for(i=0;i<fNbinz;i++) fdz +=fBinSizeZ[i];
     fdz *= 0.5;
 
     fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",

@@ -15,6 +15,15 @@
 
 /*
 $Log$
+Revision 1.1.2.6  2000/06/12 18:10:18  barbera
+fixed posible compilation errors on HP unix
+
+Revision 1.1.2.5  2000/06/11 20:30:56  barbera
+Minore changes.
+
+Revision 1.4  2000/06/10 20:34:22  nilsen
+Fixed compilation warning with HP unix.
+
 Revision 1.3  2000/06/10 10:42:49  nilsen
 Fixed bug in copy and operator =.
 
@@ -182,6 +191,7 @@ void AliITSgeomSPD425::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
 //----------------------------------------------------------------------
 void AliITSgeomSPD425::Streamer(TBuffer &R__b){
     // Streamer function for the class AliITSgeomSPD425.
+    Int_t i;
     UInt_t R__s, R__c;
 
     if(R__b.IsReading()){
@@ -201,11 +211,11 @@ void AliITSgeomSPD425::Streamer(TBuffer &R__b){
 	    R__b >> fNbinx;
 	    if(fBinSizeX!=0) delete[] fBinSizeX;
 	    fBinSizeX = new Float_t[fNbinx];
-	    for(Int_t i=0;i<fNbinx;i++) R__b >> fBinSizeX[i];
+	    for(i=0;i<fNbinx;i++) R__b >> fBinSizeX[i];
 	    R__b >> fNbinz;
 	    if(fBinSizeZ!=0) delete[] fBinSizeZ;
 	    fBinSizeZ = new Float_t[fNbinz];
-	    for(Int_t i=0;i<fNbinz;i++) R__b >> fBinSizeZ[i];
+	    for(i=0;i<fNbinz;i++) R__b >> fBinSizeZ[i];
 	    R__b.CheckByteCount(R__s, R__c, AliITSgeomSPD425::IsA());
 	} // end if R__v==1
     } else { // IsWriting.
@@ -216,9 +226,9 @@ void AliITSgeomSPD425::Streamer(TBuffer &R__b){
 	R__b << fdy;
 	R__b << fdz;
 	R__b << fNbinx;
-	for(Int_t i=0;i<fNbinx;i++) R__b << fBinSizeX[i];
+	for(i=0;i<fNbinx;i++) R__b << fBinSizeX[i];
 	R__b << fNbinz;
-	for(Int_t i=0;i<fNbinz;i++) R__b << fBinSizeZ[i];
+	for(i=0;i<fNbinz;i++) R__b << fBinSizeZ[i];
 	R__b.SetByteCount(R__c, kTRUE);
     } // end if R__b.IsReading()
 }

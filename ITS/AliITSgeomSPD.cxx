@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2.4.5  2000/06/11 20:30:05  barbera
+Minore changes.
+
 Revision 1.3  2000/03/07 18:46:59  nilsen
 Merged form ITS-working to HEAD. Minor changes
 
