@@ -10,7 +10,7 @@ PACKAGE = AliL3Hough
 # C++ sources
 
 
-SRCS	       = AliL3HoughTransformer.cxx AliL3Hough.cxx \
+SRCS	       = AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
 		 AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
 		 AliL3Histogram.cxx AliL3Histogram1D.cxx GetGoodParticles.cxx AliL3ClusterFinder.cxx
 
@@ -38,7 +38,7 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -g -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC \
+CXXFLAGS      = $(CXXOPTS) -g -Wall -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC \
 		-I$(ALICE_ROOT)/CONTAINERS -I$(HOME)/level3code/src 	
 
 #CXXFLAGS      = $(CXXOPTS) -g -Wall -I$(ROOTSYS)/include -I. -I $(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/include/ -DCOMPILING

@@ -14,7 +14,6 @@
 #pragma link C++ class AliL3VertexFinder;
 #pragma link C++ class AliL3VertexArray;
 #pragma link C++ class AliL3Track;
-#pragma link C++ class AliL3HoughTrack;
 #pragma link C++ class AliL3ConfMapTrack;
 #pragma link C++ class AliL3ConfMapFit;
 #pragma link C++ class AliL3Transform;

@@ -13,7 +13,7 @@ PACKAGE = AliL3
 SRCS	       = AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
 	         AliL3ConfMapTrack.cxx AliL3ConfMapFit.cxx AliL3Track.cxx\
 		 AliL3Transform.cxx AliL3TrackMerger.cxx AliL3VertexArray.cxx \
-                 AliL3Vertex.cxx AliL3VertexFinder.cxx AliL3HoughTrack.cxx\
+                 AliL3Vertex.cxx AliL3VertexFinder.cxx \
                  AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinder.cxx \
                  AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
                  AliL3MemHandler.cxx AliL3FileHandler.cxx AliL3Evaluate.cxx \
