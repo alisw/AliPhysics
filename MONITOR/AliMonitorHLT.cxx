@@ -190,7 +190,7 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
     if(!track) continue;
     track->CalculateHelix();
     track->GetClosestPoint(&vertex,xc,yc,zc);
-    if(fabs(zc)>10.) continue;
+    if(TMath::Abs(zc)>10.) continue;
     fTrackPt->Fill(track->GetPt());
     fTrackEta->Fill(track->GetPseudoRapidity());
     fTrackPhi->Fill(track->GetPsi() * TMath::RadToDeg());
