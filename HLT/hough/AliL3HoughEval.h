@@ -9,7 +9,7 @@ class AliL3Transform;
 class AliL3HoughTrack;
 class AliL3DigitRowData;
 class AliL3Histogram;
-
+class AliL3Histogram1D;
 
 class AliL3HoughEval : public TObject {
   
@@ -23,7 +23,8 @@ class AliL3HoughEval : public TObject {
   Double_t fEtaMax;
   Int_t fNumOfPadsToLook;
   Int_t fNumOfRowsToMiss;
-  
+  AliL3Histogram1D **fEtaHistos; //!
+
   //Flags
   Bool_t fRemoveFoundTracks;
   
@@ -33,14 +34,18 @@ class AliL3HoughEval : public TObject {
   
  public:
   AliL3HoughEval(); 
-  AliL3HoughEval(AliL3HoughTransformer *transform);
   virtual ~AliL3HoughEval();
   
+  void InitTransformer(AliL3HoughTransformer *transformer);
   void GenerateLUT();
   void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
   Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Bool_t remove=kFALSE);
   void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks");
+  void FindEta(AliL3TrackArray *tracks);
   
+  //Getters
+  AliL3Histogram1D *GetEtaHisto(Int_t i) {if(!fEtaHistos) return 0; if(!fEtaHistos[i]) return 0; return fEtaHistos[i];}
+
   //Setters:
   void RemoveFoundTracks() {fRemoveFoundTracks = kTRUE;}
   void SetNumOfRowsToMiss(Int_t i) {fNumOfRowsToMiss = i;}

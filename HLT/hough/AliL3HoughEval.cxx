@@ -2,9 +2,10 @@
 //Last Modified: 28.6.01
 
 #include <math.h>
-#include <TTree.h>
+#include <TH1.h>
 #include <TFile.h>
 
+#include "AliL3MemHandler.h"
 #include "GetGoodParticles.h"
 #include "AliL3TrackArray.h"
 #include "AliL3Logging.h"
@@ -14,56 +15,59 @@
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
 #include "AliL3Histogram.h"
+#include "AliL3Histogram1D.h"
 #include "AliL3Defs.h"
 
 ClassImp(AliL3HoughEval)
 
 AliL3HoughEval::AliL3HoughEval()
 {
-    
-}
-
-AliL3HoughEval::AliL3HoughEval(AliL3HoughTransformer *transformer)
-{
   
-  fHoughTransformer = transformer;
   fTransform = new AliL3Transform();
-  
-  fSlice = fHoughTransformer->GetSlice();
-  fPatch = fHoughTransformer->GetPatch();
-  fNrows = NRows[fPatch][1] - NRows[fPatch][0] + 1;
-  fNEtaSegments = fHoughTransformer->GetNEtaSegments();
-  fEtaMin = fHoughTransformer->GetEtaMin();
-  fEtaMax = fHoughTransformer->GetEtaMax();
   fRemoveFoundTracks = kFALSE;
   fNumOfPadsToLook = 1;
   fNumOfRowsToMiss = 1;
-  GenerateLUT();
+  fEtaHistos=0;
+  
 }
+
 
 AliL3HoughEval::~AliL3HoughEval()
 {
+  fHoughTransformer = 0;
   if(fTransform)
     delete fTransform;
   if(fRowPointers)
     delete [] fRowPointers;
 }
 
+void AliL3HoughEval::InitTransformer(AliL3HoughTransformer *transformer)
+{
+  fHoughTransformer = transformer;
+  fSlice = fHoughTransformer->GetSlice();
+  fPatch = fHoughTransformer->GetPatch();
+  fNrows = NRows[fPatch][1] - NRows[fPatch][0] + 1;
+  fNEtaSegments = fHoughTransformer->GetNEtaSegments();
+  fEtaMin = fHoughTransformer->GetEtaMin();
+  fEtaMax = fHoughTransformer->GetEtaMax();
+  GenerateLUT();
+}
+
 void AliL3HoughEval::GenerateLUT()
 {
-  //Generate a LUT, to limit the access to raw data
+  //Generate a Look-up table, to limit the access to raw data
   
   fRowPointers = new AliL3DigitRowData*[fNrows];
 
   AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fHoughTransformer->GetDataPointer();
   if(!tempPt)
-    printf("AliL3HoughEval::GenerateLUT : Zero data pointer\n");
+    printf("\nAliL3HoughEval::GenerateLUT : Zero data pointer\n");
   
   for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
     {
       Int_t prow = i - NRows[fPatch][0];
       fRowPointers[prow] = tempPt;
-      fHoughTransformer->UpdateDataPointer(tempPt);
+      AliL3MemHandler::UpdateRowPointer(tempPt);
     }
   
 }
@@ -78,6 +82,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   Int_t nrow=0,npixs=0;
   Float_t xyz[3];
   
+  Int_t total_charge=0;//total charge along the road
   Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
   for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
     {
@@ -107,8 +112,8 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	  AliL3DigitData *digPt = tempPt->fDigitData;
 	  for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	    {
+	      if(digPt->fCharge <= fHoughTransformer->GetThreshold()) continue;
 	      UChar_t pad = digPt[j].fPad;
-	      
 	      if(pad < p) continue;
 	      if(pad > p) break;
 	      UShort_t time = digPt[j].fTime;
@@ -116,8 +121,9 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	      Int_t pixel_index = (Int_t)(eta/etaslice);
 	      if(pixel_index > eta_index) continue;
 	      if(pixel_index != eta_index) break;
+	      total_charge += digPt[j].fCharge;
 	      if(remove)
-		digPt[j].fCharge = 0; //Delete the track from image
+		digPt[j].fCharge = 0; //Erease the track from image
 	      npixs++;
 	    }
 	}
@@ -132,7 +138,10 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   
   if(nrow >= fNrows - fNumOfRowsToMiss)//this was a good track
     {
+      Double_t eta_track = (Double_t)eta_index*etaslice;
       track->SetEtaIndex(eta_index);
+      track->SetWeight(total_charge,kTRUE);
+      track->SetEta(eta_track);
       if(fRemoveFoundTracks)
 	LookInsideRoad(track,eta_index,kTRUE);
       return kTRUE;
@@ -141,9 +150,98 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
     return kFALSE;
 }
 
+void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
+{
+  
+  Int_t sector,row;
+  Float_t xyz[3];
+  
+  Int_t ntracks = tracks->GetNTracks();
+  fEtaHistos = new AliL3Histogram1D*[ntracks];
+  
+  Char_t hname[100];
+  for(Int_t i=0; i<ntracks; i++)
+    {
+      sprintf(hname,"etahist_%d",i);
+      fEtaHistos[i] = new AliL3Histogram1D(hname,hname,100,0,1);
+    }
+  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  
+  for(Int_t ntr=0; ntr<ntracks; ntr++)
+    {
+      AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(ntr);
+      if(!track) continue;
+      for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
+	{
+	  Int_t prow = padrow - NRows[fPatch][0];
+	  
+	  if(!track->GetCrossingPoint(padrow,xyz))  
+	    {
+	      printf("AliL3HoughEval::LookInsideRoad : Track does not cross line!!\n");
+	      continue;
+	    }
+	  
+	  fTransform->Slice2Sector(fSlice,padrow,sector,row);
+	  fTransform->Local2Raw(xyz,sector,row);
+	  
+	  //Get the timebins for this pad
+	  AliL3DigitRowData *tempPt = fRowPointers[prow];
+	  if(!tempPt) 
+	    {
+	      printf("AliL3HoughEval::LookInsideRoad : Zero data pointer\n");
+	      continue;
+	    }
+	  
+	  //Look at both sides of the pad:
+	  for(Int_t p=(Int_t)rint(xyz[1])-fNumOfPadsToLook; p<=(Int_t)rint(xyz[1])+fNumOfPadsToLook; p++)
+	    {
+	      AliL3DigitData *digPt = tempPt->fDigitData;
+	      for(UInt_t j=0; j<tempPt->fNDigit; j++)
+		{
+		  UChar_t pad = digPt[j].fPad;
+		  
+		  if(pad < p) continue;
+		  if(pad > p) break;
+		  UShort_t time = digPt[j].fTime;
+		  Double_t eta = fTransform->GetEta(padrow,pad,time);
+		  Int_t pixel_index = (Int_t)(eta/etaslice);
+		  if(pixel_index > track->GetEtaIndex()+1) continue;
+		  if(pixel_index < track->GetEtaIndex()-1) break;
+		  fEtaHistos[ntr]->Fill(eta,digPt[j].fCharge);
+		}
+	    }
+	}
+    }
+  
+  for(Int_t i=0; i<ntracks; i++)
+    {
+      AliL3Histogram1D *hist = fEtaHistos[i];
+      Int_t max_bin = hist->GetMaximumBin();
+      Double_t max_value = hist->GetBinContent(max_bin);
+      AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
+      if(!track) continue;
+      if(hist->GetBinContent(max_bin-1)<max_value && hist->GetBinContent(max_bin+1)<max_value)
+	{
+	  track->SetWeight((Int_t)max_value,kTRUE); 
+	  track->SetEta(hist->GetBinCenter(max_bin));
+	  track->SetNHits(track->GetWeight());
+	}
+      else
+	{
+	  track->SetWeight(0);
+	  tracks->Remove(i); //remove this track, because it was not a peak
+	}    
+    }
+  tracks->Compress();
+  
+  //for(Int_t i=0; i<ntracks; i++)
+  //delete fEtaHistos[i];
+  //delete [] fEtaHistos;
+}
+
 void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 {
-  //Display the current raw data inside the slice
+  //Display the current raw data inside the (slice,patch)
 
   if(!hist)
     {
@@ -164,6 +262,11 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	}
       
       AliL3DigitData *digPt = tempPt->fDigitData;
+      if((Int_t)tempPt->fRow != padrow)
+	{
+	  printf("\nAliL3HoughEval::DisplayEtaSlice : Mismatching padrows!!!\n");
+	  return;
+	}
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	{
 	  UChar_t pad = digPt[j].fPad;
@@ -223,35 +326,60 @@ void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile)
       particles[i]=0;
       ftracks[i]=0;
     }
-
+  
+  TH1F *ptgood = new TH1F("ptgood","ptgood",5,0,2);
+  TH1F *ptfound = new TH1F("ptfound","ptgood",5,0,2);
+  TH1F *pteff = new TH1F("pteff","pteff",5,0,2);
+  TH1F *etafound = new TH1F("etafound","etafound",5,0,1);
+  TH1F *etagood = new TH1F("etagood","etagood",5,0,1);
+  TH1F *etaeff = new TH1F("etaeff","etaeff",5,0,1);
+  
   Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
   for(Int_t i=0; i<tracks->GetNTracks(); i++)
     {
       AliL3HoughTrack *tr = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
       if(!tr) continue;
+      //if(tr->GetWeight()<14000) continue;
       Int_t trackindex = tr->GetEtaIndex();
       if(trackindex <0 || trackindex >= fNEtaSegments) continue;
       ftracks[trackindex]++;
+      ptfound->Fill(tr->GetPt());
+      etafound->Fill(tr->GetEta());
     }
   for(Int_t i=0; i<nt; i++)
     {
-      if(goodtracks[i].nhits < 150) continue;
-      if(goodtracks[i].pt < 0.5) continue;
+      if(goodtracks[i].nhits < 174) continue;
+      if(goodtracks[i].pt < 0.2) continue;
       Int_t particleindex = (Int_t)(goodtracks[i].eta/etaslice);
       if(particleindex < 0 || particleindex >= fNEtaSegments) continue;
       particles[particleindex]++;
+      ptgood->Fill(goodtracks[i].pt);
+      etagood->Fill(goodtracks[i].eta);
     }
   
   Double_t found=0;
   Double_t good =0;
   for(Int_t i=0; i<fNEtaSegments; i++)
     {
-      printf("Slice %d : Found tracks %d, good tracks %d\n",i,ftracks[i],particles[i]);
+      //printf("Slice %d : Found tracks %d, good tracks %d\n",i,ftracks[i],particles[i]);
       found += ftracks[i];
       good += particles[i];
     }
   printf("And the total efficiency was: %f\n",found/good);
 
+  ptgood->Sumw2(); ptfound->Sumw2();
+  etagood->Sumw2(); etafound->Sumw2();
+  pteff->Divide(ptfound,ptgood,1,1,"b");
+  etaeff->Divide(etafound,etagood,1,1,"b");
+  TFile *file = TFile::Open("eff.root","RECREATE");
+  ptgood->Write();
+  ptfound->Write();
+  pteff->Write();
+  etafound->Write();
+  etagood->Write();
+  etaeff->Write();
+  file->Close();
+  
   delete [] particles;
   delete [] ftracks;
   
