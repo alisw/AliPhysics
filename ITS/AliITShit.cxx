@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/01/30 09:23:13  hristov
+Streamers removed (R.Brun)
+
 Revision 1.10  2001/01/26 20:01:19  hristov
 Major upgrade of AliRoot code
 
@@ -42,6 +45,7 @@ Introduction of the Copyright and cvs Log
 
 */
 
+#include <iostream.h>
 
 #include <TMath.h>
 #include <TRandom.h>
@@ -466,4 +470,59 @@ TParticle * AliITShit::GetParticle(){
 // particle can be found. See the TParticle class.
 ////////////////////////////////////////////////////////////////////////
     return gAlice->Particle(GetTrack());
+}  
+//----------------------------------------------------------------------
+void AliITShit::Print(ostream *os){
+////////////////////////////////////////////////////////////////////////
+// Standard output format for this class.
+////////////////////////////////////////////////////////////////////////
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+    Int_t fmt;
+#endif
+ 
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    fmt = os->setf(ios::hex); // set hex for fStatus only.
+    *os << fStatus << " ";
+    fmt = os->setf(ios::dec); // every thing else decimel.
+    *os << fLayer << " " << fLadder << " " << fDet << " ";;
+    *os << fPx << " " << fPy << " " << fPz << " ";
+    *os << fDestep << " " << fTof;
+    *os << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
 }
+//----------------------------------------------------------------------
+void AliITShit::Read(istream *is){
+////////////////////////////////////////////////////////////////////////
+// Standard input format for this class.
+////////////////////////////////////////////////////////////////////////
+ 
+    *is >> fStatus >> fLayer >> fLadder >> fDet >> fPx >> fPy >> fPz >>
+	   fDestep >> fTof;
+    return;
+}
+//----------------------------------------------------------------------
+ostream &operator<<(ostream &os,AliITShit &p){
+////////////////////////////////////////////////////////////////////////
+// Standard output streaming function.
+////////////////////////////////////////////////////////////////////////
+ 
+    p.Print(&os);
+    return os;
+}
+//----------------------------------------------------------------------
+istream &operator>>(istream &is,AliITShit &r){
+////////////////////////////////////////////////////////////////////////
+// Standard input streaming function.
+////////////////////////////////////////////////////////////////////////
+ 
+    r.Read(&is);
+    return is;
+}
+//----------------------------------------------------------------------
