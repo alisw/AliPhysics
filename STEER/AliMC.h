@@ -65,6 +65,7 @@ public:
   virtual Float_t Edep() const =0;
   virtual Float_t Etot() const =0;
   virtual const char*   VolName(Int_t) const=0;
+  virtual Float_t Xsec(char*, Float_t, Int_t, Int_t)=0;
   virtual void    Gstpar(Int_t, const char *, Float_t)=0;
   virtual Int_t   Gsvolu(const char*, const char*, Int_t, Float_t*, Int_t)=0;
   virtual void    Gsdvn(const char*, const char*, Int_t, Int_t)=0;
