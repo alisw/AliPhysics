@@ -23,10 +23,10 @@
 #include "AliMUON.h"
 
 ClassImp(AliMUONSegmentationV0)
-//     AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmentation)
-// {
-// // Dummy copy constructor
-// }
+  AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmentation):AliSegmentation(segmentation)
+{
+  // Dummy copy constructor
+}
 
     void AliMUONSegmentationV0::Init(Int_t  chamber)
 {
