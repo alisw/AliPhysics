@@ -1,5 +1,7 @@
-#ifndef PMDrecpoint_H
-#define PMDrecpoint_H
+#ifndef PMDrecpoint1_H
+#define PMDrecpoint1_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 //-----------------------------------------------------//
 //                                                     //
 //                                                     //
@@ -14,7 +16,7 @@
 #include "TObject.h"
 #include "TClonesArray.h"
 
-class AliPMDrecpoint : public TObject
+class AliPMDrecpoint1 : public TObject
 {
   
  protected:
@@ -28,11 +30,11 @@ class AliPMDrecpoint : public TObject
   */
 
  public:
-  AliPMDrecpoint();
-  AliPMDrecpoint(Float_t * /* clusdata */);
-  AliPMDrecpoint(AliPMDrecpoint *pmdrecpoint) {*this = *pmdrecpoint;}
+  AliPMDrecpoint1();
+  AliPMDrecpoint1(Float_t * /* clusdata */);
+  AliPMDrecpoint1(AliPMDrecpoint1 *pmdrecpoint) {*this = *pmdrecpoint;}
   
-  virtual ~AliPMDrecpoint();
+  virtual ~AliPMDrecpoint1();
 
   Float_t GetDetector() const;
   Float_t GetSMNumber() const;
@@ -42,7 +44,7 @@ class AliPMDrecpoint : public TObject
   Float_t GetClusCells() const;
   Float_t GetClusRadius() const;
   
-  ClassDef(AliPMDrecpoint,1)
+  ClassDef(AliPMDrecpoint1,2)
 };
 
 #endif
