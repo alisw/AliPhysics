@@ -63,7 +63,7 @@ AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager)
 {
   // ctor which should be used
   //  fDebug =0;
-#ifgef DEBUG
+#ifdef DEBUG
      Info("AliFMDDigitizer"," processed");
 #endif
 }
