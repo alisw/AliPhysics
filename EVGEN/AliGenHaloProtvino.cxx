@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.9  2002/05/28 13:49:17  morsch
+- Udates for new pressure table
+- calculate time
+- first provisions for real events.
+
 Revision 1.8  2002/03/22 13:00:25  morsch
 Initialize sum to 0. (Jiri Chudoba).
 
@@ -156,13 +161,14 @@ void AliGenHaloProtvino::Init()
 //  Transform into interaction rates
 //
     const Float_t crossSection = 0.094e-28;     // m^2
-    const Float_t pFlux        = 1.e11/25.e-9;  // 1/s
+    Float_t pFlux[5] = {0.2, 0.2, 0.3, 0.3, 1.0};
 
     for (j = 0; j <  5; j++) {
+	pFlux[j] *= 1.e11/25.e-9;
 	for (i = 0; i < 21; i++)  
 	{
-	    fG1[i][j] = fG1[i][j] * crossSection * pFlux; // 1/m/s 
-	    fG2[i][j] = fG2[i][j] * crossSection * pFlux; // 1/m/s
+	    fG1[i][j] = fG1[i][j] * crossSection * pFlux[j]; // 1/m/s 
+	    fG2[i][j] = fG2[i][j] * crossSection * pFlux[j]; // 1/m/s
 	}
     }
     
