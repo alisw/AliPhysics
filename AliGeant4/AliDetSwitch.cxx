@@ -7,11 +7,12 @@
 #include "AliGlobals.h"
 
 AliDetSwitch::AliDetSwitch(G4String detName, G4int nofVersions, 
-                 G4int defaultVersion, AliModuleType modType, 
-		 G4bool isStandalone)
+                 G4int defaultVersion, G4int pprVersion,
+		 AliModuleType modType, G4bool isStandalone)
   : fDetName(detName),
     fNofVersions(nofVersions),
     fDefaultVersion(defaultVersion),
+    fPPRVersion(pprVersion),
     fIsStandalone(isStandalone),
     fType(modType),
     fSwitchedVersion(-1)
@@ -24,6 +25,7 @@ AliDetSwitch::AliDetSwitch(const AliDetSwitch& right) {
   fDetName = right.fDetName;
   fNofVersions = right.fNofVersions;
   fDefaultVersion = right.fDefaultVersion;
+  fPPRVersion = right.fPPRVersion;
   fIsStandalone = right.fIsStandalone;
   fType = right.fType;
   fSwitchedVersion = right.fSwitchedVersion;
@@ -42,6 +44,7 @@ AliDetSwitch& AliDetSwitch::operator=(const AliDetSwitch& right)
   fDetName = right.fDetName;
   fNofVersions = right.fNofVersions;
   fDefaultVersion = right.fDefaultVersion;
+  fPPRVersion = right.fPPRVersion;
   fSwitchedVersion = right.fSwitchedVersion;
   fType = right.fType;
   fIsStandalone = right.fIsStandalone;
@@ -90,6 +93,14 @@ void AliDetSwitch::SwitchOnDefault()
 // ---
 
   fSwitchedVersion = fDefaultVersion;
+}
+
+void AliDetSwitch::SwitchOnPPR()
+{
+// Switchs on the default version.
+// ---
+
+  fSwitchedVersion = fPPRVersion;
 }
 
 void AliDetSwitch::SwitchOff()
