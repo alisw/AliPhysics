@@ -442,3 +442,42 @@ void AliITSsegmentationSPD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
     z += 0.5*kconv*fCellSizeZ[iz]; // add 1/2 of cell iz for center location.
     return; // Found x and z, return.
 }
+//______________________________________________________________________
+void AliITSsegmentationSPD::CellBoundries(Int_t ix,Int_t iz,
+					  Double_t &xl,Double_t &xu,
+					  Double_t &zl,Double_t &zu)
+{
+// Transformation from Detector cell coordiantes to Geant detector centerd 
+// local coordinates (cm).
+// Input:
+// Int_t    ix        detector x cell coordinate. Has the range 0<=ix<fNpx.
+// Int_t    iz        detector z cell coordinate. Has the range 0<=iz<fNpz.
+// Output:
+// Double_t   xl       detector local coordinate cell lower bounds x in cm
+//                    with respect to the center of the sensitive volume.
+// Double_t   xu       detector local coordinate cell upper bounds x in cm 
+//                    with respect to the center of the sensitive volume.
+// Double_t   zl       detector local coordinate lower bounds z in cm with
+//                    respect to the center of the sensitive volulme.
+// Double_t   zu       detector local coordinate upper bounds z in cm with 
+//                    respect to the center of the sensitive volulme.
+// If ix and or iz is outside of the segmentation range a value of -0.5*Dx()
+// and -0.5*Dx() or -0.5*Dz() and -0.5*Dz() are returned.
+    Int_t i,j;
+    const Float_t kconv = 1.0E-04; // converts microns to cm.
+    Float_t x,z;
+
+    xl = xu = x = -0.5*kconv*Dx(); // default value.
+    zl = zu = z = -0.5*kconv*Dz(); // default value.
+    if(ix<0 || ix>=Npx()) return; // outside of detector
+    if(iz<0 || iz>=Npz()) return; // outside of detctor
+    for(i=0;i<ix;i++) x += kconv*fCellSizeX[i]; // sum up to cell ix-1
+    xl = x;
+    x += kconv*fCellSizeX[ix];
+    xu = x;
+    for(j=0;j<iz;j++) z += kconv*fCellSizeZ[j]; // sum up cell iz-1
+    zl = z;
+    z += kconv*fCellSizeZ[iz];
+    zu = z;
+    return; // Found x and z, return.
+}
