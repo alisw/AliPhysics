@@ -35,6 +35,8 @@
 #pragma link C++ class  AliRecPoint;
 #pragma link C++ class  AliSegmentation;
 #pragma link C++ class  AliHitMap;
+#pragma link C++ class  AliCluster;
+#pragma link C++ class  AliKalmanTrack-;
 #endif
 
 
