@@ -45,11 +45,10 @@ AliHBTReaderTPC::
 /********************************************************************/
 AliHBTReaderTPC::
 AliHBTReaderTPC(TObjArray* dirs,
-                  const Char_t* trackfilename = "AliTPCtracks.root",
-                  const Char_t* clusterfilename = "AliTPCclusters.root",
-                  const Char_t* galicefilename = "galice.root"):AliHBTReader(dirs),
-                  fTrackFileName(trackfilename),
-                 fClusterFileName(clusterfilename),fGAliceFileName(galicefilename)
+                  const Char_t* trackfilename, const Char_t* clusterfilename,
+                  const Char_t* galicefilename):
+                  AliHBTReader(dirs), fTrackFileName(trackfilename),
+                  fClusterFileName(clusterfilename),fGAliceFileName(galicefilename)
 
 {
   //constructor, 
