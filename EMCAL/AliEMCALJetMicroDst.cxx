@@ -32,19 +32,18 @@
 #include <TString.h>
 #include <TParticle.h>
 #include "AliMC.h"
-#include <TH1.h>
 #include <TH2.h>
 #include <TH1F.h>
 
 
 ClassImp(AliEMCALJetMicroDst)
 
-TString nameTree("jetMDST"); // 7-feb-2002
+TString gAliNameTree("jetMDST"); // 7-feb-2002
 
-//TH1F*  hPtPart, *hNJet, *hPtJet;
-//TH2F*  hEtaPhiPart, *hEtaPhiJet;
-//TH1F*  hNcell, *hCellId, *hCellEt, *hSumEt;
-//TH1F*  hNgrid, *hGridId, *hGridEt, *hSumEtGrForJF;
+//TH1F*  fhPtPart, *fhNJet, *fhPtJet;
+//TH2F*  fhEtaPhiPart, *fhEtaPhiJet;
+//TH1F*  fhNcell, *fhCellId, *fhCellEt, *fhSumEt;
+//TH1F*  fhNgrid, *fhGridId, *fhGridEt, *fhSumEtGrForJF;
 
 extern "C" void sgpdge_(Int_t &i, Int_t &pdggea);
 
@@ -58,25 +57,25 @@ AliEMCALJetMicroDst::AliEMCALJetMicroDst(char *name, char *tit) : TNamed(name,ti
 //  Don't add histos to the current directory
 //  TH1::AddDirectory(0);
   gROOT->cd();
-  hPtPart     = new TH1F("hPtPart","P_{T} for partons", 300, 0., 300.);
+  fhPtPart     = new TH1F("fhPtPart","P_{T} for partons", 300, 0., 300.);
   // 16-jan-2002 - new limit fo phi 
-  hEtaPhiPart = new TH2F("hEtaPhiPart","#eta #phi distr.for partons after HSc", 
+  fhEtaPhiPart = new TH2F("fhEtaPhiPart","#eta #phi distr.for partons after HSc", 
 		       28, -0.7, 0.7, 21, 0.0, (2.0/3.0)*TMath::Pi());
 
-  hNJet  = new TH1F("hNJet","number of jets", 11, -0.5, 10.5);
-  hPtJet = new TH1F("hPtJet","P_{T} for jets", 500, 0., 500.);
-  hEtaPhiJet = new TH2F("hEtaPhiJet","#eta #phi distr.for jets (W)", 
+  fhNJet  = new TH1F("fhNJet","number of jets", 11, -0.5, 10.5);
+  fhPtJet = new TH1F("fhPtJet","P_{T} for jets", 500, 0., 500.);
+  fhEtaPhiJet = new TH2F("fhEtaPhiJet","#eta #phi distr.for jets (W)", 
 		       28, -0.7, 0.7, 21, 0.0, (2.0/3.0)*TMath::Pi());
 
-  hNcell  = new TH1F("hNcell","#cell with de>0.0 for EMCAL", 1400, 0.0, 14000.);
-  hCellId = new TH1F("hCellId","cell ID with de>0.0 for EMCAL", 1400, 0.0, 14000.);
-  hCellEt = new TH1F("hCellEt","cell Et for EMCAL", 1000, 0.0, 10.);
-  hSumEt  = new TH1F("hSumEt","sum Et for EMCAL", 1000, 0.0, 1000.);
+  fhNcell  = new TH1F("fhNcell","#cell with de>0.0 for EMCAL", 1400, 0.0, 14000.);
+  fhCellId = new TH1F("fhCellId","cell ID with de>0.0 for EMCAL", 1400, 0.0, 14000.);
+  fhCellEt = new TH1F("fhCellEt","cell Et for EMCAL", 1000, 0.0, 10.);
+  fhSumEt  = new TH1F("fhSumEt","sum Et for EMCAL", 1000, 0.0, 1000.);
 
-  hNgrid  = new TH1F("hNgrid","#cell with de>0.0 in EMCAL grid for JF", 1400, 0.0, 14000.);
-  hGridId = new TH1F("hGridId","cell ID with de>0.0 in EMCAL grid for JF", 1400, 0.0, 14000.);
-  hGridEt = new TH1F("hGridEt","cell Et in EMCAL grid for JF", 1000, 0.0, 10.);
-  hSumEtGrForJF  = new TH1F("hSumEtGrForJF","sum Et in EMCAL grid for JF", 1000, 0.0, 1000.);
+  fhNgrid  = new TH1F("fhNgrid","#cell with de>0.0 in EMCAL grid for JF", 1400, 0.0, 14000.);
+  fhGridId = new TH1F("fhGridId","cell ID with de>0.0 in EMCAL grid for JF", 1400, 0.0, 14000.);
+  fhGridEt = new TH1F("fhGridEt","cell Et in EMCAL grid for JF", 1000, 0.0, 10.);
+  fhSumEtGrForJF  = new TH1F("fhSumEtGrForJF","sum Et in EMCAL grid for JF", 1000, 0.0, 1000.);
 
   fListHist = MoveHistsToList("Hist For AliEMCALJetMicroDst", kFALSE); 
 }
@@ -89,6 +88,7 @@ AliEMCALJetMicroDst::~AliEMCALJetMicroDst()
 
 Bool_t AliEMCALJetMicroDst::Create(TFile *file)
 {
+  // Creates the DST file
   if(!file) {
     Error("Create", "define TFile for output\n");
     return kFALSE;
@@ -96,7 +96,7 @@ Bool_t AliEMCALJetMicroDst::Create(TFile *file)
   fFile     = file;
   fFileName = fFile->GetName();
   fFile->cd();
-  fTree = new TTree(nameTree.Data(),"Temporary micro DST for jets analysis");
+  fTree = new TTree(gAliNameTree.Data(),"Temporary micro DST for jets analysis");
   // for jet calibration - 4-mar-2003
   fTree->Branch("fdecone", &fdecone, "fdecone/F");
   fTree->Branch("fptcone", &fptcone, "fptcone/F");
@@ -234,7 +234,7 @@ Bool_t AliEMCALJetMicroDst::Initialize(TFile *file)
 	// Initialize method
   if(file) fFile = file; 
   fFile->cd();
-  fTree = (TTree*)fFile->Get(nameTree.Data());
+  fTree = (TTree*)fFile->Get(gAliNameTree.Data());
   if(!fTree) return kFALSE;
   // for jet calibration - 4-mar-2003
   fTree->SetBranchAddress("fdecone",&fdecone);
@@ -296,7 +296,8 @@ void AliEMCALJetMicroDst::Print(Option_t* option) const
 }
 
 void AliEMCALJetMicroDst::Fill(AliRun *run, AliEMCALJetFinder* jetFinder, Int_t modeFilling)
-{//  modeFilling >=1 - fill info for EMCAL grid
+{
+  //  modeFilling >=1 - fill info for EMCAL grid
   if(!run) run = gAlice;
   AliGenEventHeader* evHeader = run->GetHeader()->GenEventHeader();
   TString tmp(evHeader->ClassName());
@@ -331,6 +332,7 @@ void AliEMCALJetMicroDst::Fill(AliRun *run, AliEMCALJetFinder* jetFinder, Int_t 
 
 void AliEMCALJetMicroDst::FillPartons(AliGenHijingEventHeader *header)
 {
+  //Make partons arrays
   TLorentzVector parton[4];
   header->GetJets(parton[0], parton[1], parton[2], parton[3]);
 
@@ -343,7 +345,8 @@ void AliEMCALJetMicroDst::FillPartons(AliGenHijingEventHeader *header)
 }
 
 void AliEMCALJetMicroDst::FillPartons()
-{// for case of Pythia -> get info from full event record
+{
+  // for case of Pythia -> get info from full event record
 
   fnpart = 2;
   TParticle *mPart;
@@ -359,6 +362,7 @@ void AliEMCALJetMicroDst::FillPartons()
 
 void AliEMCALJetMicroDst::FillJets(AliEMCALJetFinder* jetFinder)
 {
+  // Fill Jets
   fnjet = 0;
   if(fDebug>1) Info("FillJets", "Debug"); 
   if(!jetFinder) {
@@ -370,7 +374,7 @@ void AliEMCALJetMicroDst::FillJets(AliEMCALJetFinder* jetFinder)
     if(fDebug>1) Warning("FillJets", "wrong value of jetFinder->Njets() %i ", fnjet); 
     fnjet = 10;
   }
-  //  hNJet->Fill(njet);
+  //  fhNJet->Fill(njet);
   if(fDebug>1) Info("FillJets", "njet %i", fnjet); 
   if(fnjet){
     for(Int_t i=0; i<fnjet; i++){
@@ -385,6 +389,7 @@ void AliEMCALJetMicroDst::FillJets(AliEMCALJetFinder* jetFinder)
 
 void AliEMCALJetMicroDst::FillEtForEMCAL(AliEMCALJetFinder* jetFinder)
 {
+  // Fill Et for EMCAL
    fncell = 0;
    TH2F *hid = jetFinder->GetLegoEMCAL();
    if(!hid) return;
@@ -420,6 +425,7 @@ void AliEMCALJetMicroDst::FillEtForEMCAL(AliEMCALJetFinder* jetFinder)
 
 void AliEMCALJetMicroDst::FillEtForGrid(AliEMCALJetFinder* jetFinder)
 {
+  // Fill ET for Grid
    TH2F *hid = jetFinder->GetLego();
    if(!hid) return;
 
@@ -428,6 +434,7 @@ void AliEMCALJetMicroDst::FillEtForGrid(AliEMCALJetFinder* jetFinder)
 
 void AliEMCALJetMicroDst::FillArrays(TH2* hid, Int_t &n, Int_t *id, Float_t *et)
 {
+  // Fill arays
    n = 0;
    Double_t de = 0.;
    Int_t neta = hid->GetNbinsX(), nphi = hid->GetNbinsY();
@@ -447,7 +454,8 @@ void AliEMCALJetMicroDst::FillArrays(TH2* hid, Int_t &n, Int_t *id, Float_t *et)
 }
 
 void AliEMCALJetMicroDst::FillChargeParticles(AliEMCALJetFinder* jetFinder)
-{// 28-jan-2003 for fullness ; 18-mar - sometimes 
+{
+  // 28-jan-2003 for fullness ; 18-mar - sometimes 
   fnchp = 0;
   Int_t gid=0;
   for(Int_t i=0; i<jetFinder->fNt; i++) {
@@ -465,39 +473,41 @@ void AliEMCALJetMicroDst::FillChargeParticles(AliEMCALJetFinder* jetFinder)
 }
 
 void AliEMCALJetMicroDst::FillJetsControl()
-{  // see FillJets(AliEMCALJetFinder* jetFinder) and FillPartons
-  hNJet->Fill(fnjet);
+{  
+  // see FillJets(AliEMCALJetFinder* jetFinder) and FillPartons
+  fhNJet->Fill(fnjet);
   for(Int_t i=0; i<fnjet; i++){
-     hPtJet->Fill(fjet[i]);
-     hEtaPhiJet->Fill(fjetaw[i],fjphiw[i]); 
+     fhPtJet->Fill(fjet[i]);
+     fhEtaPhiJet->Fill(fjetaw[i],fjphiw[i]); 
   }
 
   for(Int_t i=0; i < fnpart; i++){
-     hEtaPhiPart->Fill(fxeta[i], fxphi[i]);
-     hPtPart->Fill(fxpt[i]);
+     fhEtaPhiPart->Fill(fxeta[i], fxphi[i]);
+     fhPtPart->Fill(fxpt[i]);
   }
 
   Double_t sum = 0.0;
-  hNcell->Fill(fncell);
+  fhNcell->Fill(fncell);
   for(Int_t i=0; i < fncell; i++){
-    hCellId->Fill(fidcell[i]);
-    hCellEt->Fill(fetcell[i]);
+    fhCellId->Fill(fidcell[i]);
+    fhCellEt->Fill(fetcell[i]);
     sum += Double_t(fetcell[i]);
   }
-  hSumEt->Fill(sum);
+  fhSumEt->Fill(sum);
 
   sum = 0.0;
-  hNgrid->Fill(fngrid);
+  fhNgrid->Fill(fngrid);
   for(Int_t i=0; i < fngrid; i++){
-    hGridId->Fill(fidgrid[i]);
-    hGridEt->Fill(fetgrid[i]);
+    fhGridId->Fill(fidgrid[i]);
+    fhGridEt->Fill(fetgrid[i]);
     sum += Double_t(fetgrid[i]);
   }
-  hSumEtGrForJF->Fill(sum);
+  fhSumEtGrForJF->Fill(sum);
 }
 
 Int_t AliEMCALJetMicroDst::GetEntry(Int_t entry)
-{ // Read contents of entry.
+{ 
+  // Read contents of entry.
    if (!fTree) {
       Error("GetEntry", "define TTree");
       return -1;
@@ -505,8 +515,9 @@ Int_t AliEMCALJetMicroDst::GetEntry(Int_t entry)
    return fTree->GetEntry(entry);
 }
 
-Bool_t AliEMCALJetMicroDst::GetParton(Int_t i, Float_t& pt, Float_t& eta, Float_t& phi)
+Bool_t AliEMCALJetMicroDst::GetParton(Int_t i, Float_t& pt, Float_t& eta, Float_t& phi) const
 {
+  // Get parton
   if(i>=0 && i<fnpart) {
     pt  = fxpt[i];
     eta = fxeta[i];
@@ -515,8 +526,9 @@ Bool_t AliEMCALJetMicroDst::GetParton(Int_t i, Float_t& pt, Float_t& eta, Float_
   } else return kFALSE; 
 }
 
-Bool_t AliEMCALJetMicroDst::GetParton(Int_t i, TVector3& vec)
+Bool_t AliEMCALJetMicroDst::GetParton(Int_t i, TVector3& vec) const
 {
+  // Get Parton
   static Float_t pt, eta, phi;
 
   if(!GetParton(i, pt, eta, phi)) return kFALSE;
@@ -525,8 +537,9 @@ Bool_t AliEMCALJetMicroDst::GetParton(Int_t i, TVector3& vec)
   return kTRUE;
 }
 
-Bool_t AliEMCALJetMicroDst::GetJet(Int_t i,Int_t mode,Float_t& pt, Float_t& eta, Float_t& phi)
-{// mode=1(W) mode=any(L)
+Bool_t AliEMCALJetMicroDst::GetJet(Int_t i,Int_t mode,Float_t& pt, Float_t& eta, Float_t& phi) const
+{
+  // mode=1(W) mode=any(L)
   if(i>=0 && i<fnjet) {
     pt  = fjet[i];
     if(mode==1) {
@@ -540,8 +553,9 @@ Bool_t AliEMCALJetMicroDst::GetJet(Int_t i,Int_t mode,Float_t& pt, Float_t& eta,
   } else return kFALSE; 
 }
 
-Bool_t AliEMCALJetMicroDst::GetJet(Int_t i, Int_t mode, TVector3& vec)
+Bool_t AliEMCALJetMicroDst::GetJet(Int_t i, Int_t mode, TVector3& vec) const 
 {
+  // Get Jet
   static Float_t pt, eta, phi;
 
   if(!GetJet(i, mode, pt, eta, phi)) return kFALSE;
@@ -551,6 +565,7 @@ Bool_t AliEMCALJetMicroDst::GetJet(Int_t i, Int_t mode, TVector3& vec)
 
 void AliEMCALJetMicroDst::Test()
 {
+  // Test
   if(!fFile || !fTree ) {
     Info("Test", "define file with proper TTree !");
     return;
@@ -560,15 +575,15 @@ void AliEMCALJetMicroDst::Test()
     nb = fTree->GetEntry(i);  
     nbytes += nb;
     for(Int_t j=0; j<fnpart; j++){
-      hEtaPhiPart->Fill(fxeta[j], fxphi[j]);
-      hPtPart->Fill(fxpt[j]);
+      fhEtaPhiPart->Fill(fxeta[j], fxphi[j]);
+      fhPtPart->Fill(fxpt[j]);
     }
 
-    hNJet->Fill(fnjet);
+    fhNJet->Fill(fnjet);
     if(fnjet){
       for(Int_t j=0; j<fnjet; j++) {
-        hPtJet->Fill(fjet[j]);
-        hEtaPhiJet->Fill(fjetaw[j],fjphiw[j]); 
+        fhPtJet->Fill(fjet[j]);
+        fhEtaPhiJet->Fill(fjetaw[j],fjphiw[j]); 
       }
     }
   }
@@ -576,7 +591,8 @@ void AliEMCALJetMicroDst::Test()
 }
 
 void AliEMCALJetMicroDst::FillVector(Float_t pt, Float_t eta, Float_t phi, TVector3& vec)
-{ // service function 
+{ 
+  // service function 
   static Float_t px, py, pz;
 
   px = pt*TMath::Cos(phi);
@@ -586,8 +602,9 @@ void AliEMCALJetMicroDst::FillVector(Float_t pt, Float_t eta, Float_t phi, TVect
   vec.SetXYZ(px, py, pz);
 }
 
-void AliEMCALJetMicroDst::GetEtaPhi(Int_t id, Double_t &eta, Double_t &phi)
-{ // see AliEMCALGeometry 
+void AliEMCALJetMicroDst::GetEtaPhi(Int_t id, Double_t &eta, Double_t &phi) const
+{ 
+  // see AliEMCALGeometry 
   static Int_t ieta, iphi, nphi=144, neta=96;
   static Double_t phiMax=(2.0/3.0)*TMath::Pi(), phiMin=0.0;
   static Double_t phiStep=(phiMax-phiMin)/nphi, phiBeg = phiMin + phiStep/2.; 
@@ -605,8 +622,9 @@ void AliEMCALJetMicroDst::GetEtaPhi(Int_t id, Double_t &eta, Double_t &phi)
   phi  = phiBeg + phiStep*(iphi-1);
 }
 
-TVector3& AliEMCALJetMicroDst::GetCellVector(Int_t i)
+TVector3& AliEMCALJetMicroDst::GetCellVector(Int_t i) const 
 {
+  // Get cell vector
   static Double_t eta,phi;
   static TVector3 vec;
   vec.SetXYZ(0.,0.,0.);
@@ -617,8 +635,9 @@ TVector3& AliEMCALJetMicroDst::GetCellVector(Int_t i)
   return vec;
 }
 
-TVector3& AliEMCALJetMicroDst::GetGridVector(Int_t i)
+TVector3& AliEMCALJetMicroDst::GetGridVector(Int_t i) const 
 {
+  // Get grid vector
   static Double_t eta,phi;
   static TVector3 vec;
   vec.SetXYZ(0.,0.,0.);
@@ -629,8 +648,9 @@ TVector3& AliEMCALJetMicroDst::GetGridVector(Int_t i)
   return vec;
 }
 
-Double_t AliEMCALJetMicroDst::GetSumInCone(TVector3 &jet,Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet)
+Double_t AliEMCALJetMicroDst::GetSumInCone(TVector3 &jet,Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet) const 
 {
+  // Get Sum in cone
   static Double_t sum=0.;
   static TVector3 cell(0., 0., 0.);
   if(nc<=0 || et==0 || eta==0 || phi==0) {
@@ -651,8 +671,9 @@ Double_t AliEMCALJetMicroDst::GetSumInCone(TVector3 &jet,Int_t nc, Float_t *et,F
   return sum;
 }
 
-Double_t AliEMCALJetMicroDst::GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut, Double_t rJet)
+Double_t AliEMCALJetMicroDst::GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut, Double_t rJet) 
 {
+  // Get EMCAL Et in cone
   Int_t nc = fncell;
   if(nc<=0) return 0.;
 
@@ -672,14 +693,16 @@ Double_t AliEMCALJetMicroDst::GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut
   return eTotal;
 }
 
-Double_t AliEMCALJetMicroDst::GetTpcPtInCone(TVector3 &jet,Double_t cellEtCut, Double_t rJet)
+Double_t AliEMCALJetMicroDst::GetTpcPtInCone(TVector3 &jet,Double_t cellEtCut, Double_t rJet) 
 {
+  // Get TPC PT in cone
   if(fnchp<=0) return 0.;
   return GetSumInCone(jet, fnchp, fppt,fpeta,fpphi, cellEtCut,rJet);
 }
 
-Double_t AliEMCALJetMicroDst::GetSum(Int_t n, Float_t *ar, Double_t cut)
-{ // 25-apr-2003
+Double_t AliEMCALJetMicroDst::GetSum(Int_t n, Float_t *ar, Double_t cut) const 
+{ 
+  // 25-apr-2003
   Double_t sum=0.0;
   if(n<=0 || ar==0) return sum;
   for(Int_t i=0; i<n; i++) {if(ar[i]>=cut) sum += Double_t(ar[i]);}
@@ -688,6 +711,7 @@ Double_t AliEMCALJetMicroDst::GetSum(Int_t n, Float_t *ar, Double_t cut)
 
 void AliEMCALJetMicroDst::Close()
 {
+  // Close
   fFile->Write(); 
   fTree->Print(); 
   fFile->Close();
@@ -695,15 +719,17 @@ void AliEMCALJetMicroDst::Close()
   fTree = 0;
 }
 
-void AliEMCALJetMicroDst::Browse(TBrowser* b)
+void AliEMCALJetMicroDst::Browse(TBrowser* b) const 
 {
+  // Browse
    if(fTree)      b->Add((TObject*)fTree);
    if(fListHist)  b->Add((TObject*)fListHist);
    //   TObject::Browse(b);
 }
 
-Bool_t  AliEMCALJetMicroDst::IsPythiaDst()
+Bool_t  AliEMCALJetMicroDst::IsPythiaDst() const 
 {
+  // Is Pythia DST
   TString st(GetTitle());
   if(st.Contains("py",TString::kIgnoreCase)||!st.Contains("hijing", TString::kIgnoreCase)) return kTRUE;
   else return kFALSE;
@@ -711,12 +737,14 @@ Bool_t  AliEMCALJetMicroDst::IsPythiaDst()
 
 Bool_t  AliEMCALJetMicroDst::IsFolder() const
 {
+  // Is folder
   if(fTree || fListHist) return kTRUE;
   else                   return kFALSE;
 }
 
 TList* AliEMCALJetMicroDst::MoveHistsToList(char* name, Bool_t putToBrowser)
 {
+  // Move HIST to list
   gROOT->cd();
   TIter nextHist(gDirectory->GetList());
   TList *list = new TList;

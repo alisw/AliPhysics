@@ -28,6 +28,8 @@ class AliEMCALJetMicroDst: public TNamed {
   public:
   AliEMCALJetMicroDst(char *name="jetMicroDst",
   char *tit="jet Micro Dst for preparation of proposal");
+  AliEMCALJetMicroDst(const  AliEMCALJetMicroDst &) : TNamed("", ""){
+    Fatal("cpy ctor", "not implemented") ; }
   virtual ~AliEMCALJetMicroDst();
   Bool_t  Create(TFile *file);
   Bool_t  Create(const char  *fname);
@@ -49,43 +51,46 @@ class AliEMCALJetMicroDst: public TNamed {
   void    Print(Option_t* option="") const;                          // *MENU* 
   Int_t   GetEntry(Int_t entry);
   void    Test();
-  Int_t   GetNpart() {return fnpart;}
-  Bool_t  GetParton(Int_t i, Float_t& pt, Float_t& eta, Float_t& phi);
-  Bool_t  GetParton(Int_t i, TVector3& vec);
-  Int_t   GetNjet() {return fnjet;} 
-  Bool_t  GetJet(Int_t i,Int_t mode, Float_t& pt,Float_t& eta,Float_t& phi);
-  Bool_t  GetJet(Int_t i,Int_t mode, TVector3& vec);
+  Int_t   GetNpart() const {return fnpart;}
+  Bool_t  GetParton(Int_t i, Float_t& pt, Float_t& eta, Float_t& phi) const ;
+  Bool_t  GetParton(Int_t i, TVector3& vec) const ;
+  Int_t   GetNjet() const {return fnjet;} 
+  Bool_t  GetJet(Int_t i,Int_t mode, Float_t& pt,Float_t& eta,Float_t& phi) const ;
+  Bool_t  GetJet(Int_t i,Int_t mode, TVector3& vec) const ;
   static  void FillVector(Float_t pt, Float_t eta, Float_t phi, TVector3& vec);
-  void    GetEtaPhi(Int_t id, Double_t &eta, Double_t &phi);
-  TVector3& GetCellVector(Int_t i);
-  TVector3& GetGridVector(Int_t i);
+  void    GetEtaPhi(Int_t id, Double_t &eta, Double_t &phi) const ;
+  TVector3& GetCellVector(Int_t i) const ;
+  TVector3& GetGridVector(Int_t i) const ;
   // 13-apr-2003
-  Double_t GetSumInCone(TVector3 &jet, Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet);
-  Double_t GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5);
-  Double_t GetTpcPtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5);
-  Double_t GetSum(Int_t n, Float_t *ar, Double_t cut=0.0);
+  Double_t GetSumInCone(TVector3 &jet, Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet) const ;
+  Double_t GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5) ;
+  Double_t GetTpcPtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5)  ;
+  Double_t GetSum(Int_t n, Float_t *ar, Double_t cut=0.0) const ;
   Double_t GetSumEmcal(Double_t cut=0.0) {return GetSum(fncell, fetcell, cut);}
   Double_t GetSumTpc(Double_t cut=0.0) {return GetSum(fnchp, fppt, cut);}
 
   void    SetDebug(Int_t flag) {fDebug = flag;}
   Float_t GetDebug() const  {return fDebug;}
 
-  TTree* GetTree() {return fTree;}
-  TFile* GetFile() {return fFile;}
+  TTree* GetTree() const {return fTree;}
+  TFile* GetFile() const {return fFile;}
   void   Close();
 
-  Bool_t  IsPythiaDst();
+  Bool_t  IsPythiaDst() const ;
   virtual Bool_t  IsFolder() const;
-  virtual void Browse(TBrowser* b);
+  virtual void Browse(TBrowser* b) const ;
 
   static TList *MoveHistsToList(char* name="List of Hist", Bool_t putToBrowser=kTRUE);
+
+  AliEMCALJetMicroDst & operator = (const AliEMCALJetMicroDst &) {
+    Fatal("operator =", "not implemented") ; return *this ; }
+  
   private:
   
   Float_t fpphi[20000]; //[nchp]
   Int_t   fDebug;	// debug flag
   TFile*  fFile;	// filename
   TTree*  fTree;	// Tree pointer
-  TString fName;	// name
   TList*  fListHist;    //!
   TString fFileName;    // for convenience
 
@@ -117,20 +122,20 @@ class AliEMCALJetMicroDst: public TNamed {
   Int_t   fpid[20000];  //[nchp]
   Float_t fppt[20000];  //[nchp]
   Float_t fpeta[20000]; //[nchp]
-  TH1F*  hPtPart; //hist
-  TH1F*	 hNJet;	//hist
-  TH1F*  hPtJet;	//hist
-  TH2F*  hEtaPhiPart;	//hist
-  TH2F*  hEtaPhiJet;	//hist
-  TH1F*  hNcell;	//hist
-  TH1F*	  hCellId;	//hist
-  TH1F*	  hCellEt;	//hist
+  TH1F*  fhPtPart; //hist
+  TH1F*	 fhNJet;	//hist
+  TH1F*  fhPtJet;	//hist
+  TH2F*  fhEtaPhiPart;	//hist
+  TH2F*  fhEtaPhiJet;	//hist
+  TH1F*  fhNcell;	//hist
+  TH1F*	 fhCellId;	//hist
+  TH1F*	 fhCellEt;	//hist
   	
-  TH1F*	  hSumEt;	//hist
-  TH1F*  hNgrid;	//hist
-  TH1F*	  hGridId;	//hist
-  TH1F*  hGridEt;	//hist
-  TH1F* hSumEtGrForJF;	//hist
+  TH1F*	 fhSumEt;	//hist
+  TH1F*  fhNgrid;	//hist
+  TH1F*	 fhGridId;	//hist
+  TH1F*  fhGridEt;	//hist
+  TH1F*  fhSumEtGrForJF;	//hist
 
 
   ClassDef(AliEMCALJetMicroDst,2) // Micro Dst for jet analysis
