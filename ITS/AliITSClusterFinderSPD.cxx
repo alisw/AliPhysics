@@ -109,29 +109,29 @@ void AliITSClusterFinderSPD::FindRawClusters(Int_t module){
 //    scanf("%d",ndig);
     for(ndig=0; ndig<ndigits; ndig++) {
 	dig= (AliITSdigitSPD*)fDigits->UncheckedAt(ndig);
-	digx[digitcount] = dig->fCoord2+1;  //starts at 1
-	digz[digitcount] = dig->fCoord1+1;  //starts at 1
-	digtr1[digitcount] = dig->fTracks[0];
+	digx[digitcount] = dig->GetCoord2()+1;  //starts at 1
+	digz[digitcount] = dig->GetCoord1()+1;  //starts at 1
+	digtr1[digitcount] = dig->GetTrack(0);
 	digtr2[digitcount] = -3;
 	digtr3[digitcount] = -3;
 	//cout << "digtr1["<<digitcount <<"]="<<digtr1[digitcount];
 	//cout << " fTracks["<<0<<"]="<<dig->fTracks[0]<<": ";
 	i=1;
-	while(digtr1[digitcount]==dig->fTracks[i] && i<dig->GetNTracks()) i++;
+	while(digtr1[digitcount]==dig->GetTrack(i) && i<dig->GetNTracks()) i++;
 	//cout << " fTracks["<<i<<"]="<<dig->fTracks[i];
 	if(i<dig->GetNTracks()){
-	    digtr2[digitcount] = dig->fTracks[i];
+	    digtr2[digitcount] = dig->GetTrack(i);
 	    //cout << "digtr2["<<digitcount <<"]="<<digtr2[digitcount]<<": ";
-	    while((digtr1[digitcount]==dig->fTracks[i] || 
-		   digtr2[digitcount]==dig->fTracks[i] )&&
+	    while((digtr1[digitcount]==dig->GetTrack(i) || 
+		   digtr2[digitcount]==dig->GetTrack(i))&&
 		  i<=dig->GetNTracks()) i++;
-	    if(i<dig->GetNTracks()) digtr3[digitcount] = dig->fTracks[i];
+	    if(i<dig->GetNTracks()) digtr3[digitcount] = dig->GetTrack(i);
 	    //cout << " fTracks["<<i<<"]=";
 	    //if(i<dig->GetNTracks()) cout <<dig->fTracks[i];
 	    //cout << "digtr3["<<digitcount <<"]="<<digtr3[digitcount];
 	} // end if
 	//cout<<endl;
-	digtr4[digitcount] = dig->fSignal;
+	digtr4[digitcount] = dig->GetSignal();
 	digitcount++;
     } // end for ndig
     ClusterFinder(digitcount,digx,digz,digtr1,digtr2,digtr3,digtr4,

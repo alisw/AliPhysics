@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.33  2003/07/21 14:20:51  masera
+  Fix to track labes in SDD Rec-points
+
   Revision 1.31.2.1  2003/07/16 13:18:04  masera
   Proper fix to track labels associated to SDD rec-points
 
@@ -1300,9 +1303,9 @@ void AliITSClusterFinderSDD::GetRecPoints(){
         rnew.SetSigmaX2(kRMSx*kRMSx);
         rnew.SetSigmaZ2(kRMSz*kRMSz);
 
-        if(dig) rnew.fTracks[0]=dig->fTracks[0];
-        if(dig) rnew.fTracks[1]=dig->fTracks[1];
-        if(dig) rnew.fTracks[2]=dig->fTracks[2];
+        if(dig) rnew.fTracks[0]=dig->GetTrack(0);
+        if(dig) rnew.fTracks[1]=dig->GetTrack(1);
+        if(dig) rnew.fTracks[2]=dig->GetTrack(2);
 
         iTS->AddRecPoint(rnew);
     } // I clusters

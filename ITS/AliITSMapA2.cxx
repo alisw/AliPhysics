@@ -146,8 +146,8 @@ void  AliITSMapA2::FillMap(){
     AliITSdigit *dig;
     for (Int_t ndig=0; ndig<ndigits; ndig++) {
 	dig = (AliITSdigit*)fObjects->UncheckedAt(ndig);
-	Double_t signal = (Double_t)(dig->fSignal);
-	if (signal > fMapThresholdD) SetHit(dig->fCoord1,dig->fCoord2,signal);
+	Double_t signal = (Double_t)(dig->GetSignal());
+	if (signal > fMapThresholdD) SetHit(dig->GetCoord1(),dig->GetCoord2(),signal);
     } // end for ndig
 }
 //______________________________________________________________________

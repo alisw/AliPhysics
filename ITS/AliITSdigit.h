@@ -46,7 +46,7 @@ class AliITSdigit: public TObject  {
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
 
- public:
+ protected:
     Int_t fCoord1; // Cell number on Z axis (SPD+SDD), flag for side type (SSD)
     Int_t fCoord2; // Cell number on X axis (SPD+SDD), strip number (SSD)
     Int_t fSignal; // Signal in ADC counts
@@ -68,6 +68,8 @@ class AliITSdigitSPD: public AliITSdigit {
     virtual ~AliITSdigitSPD(){/*destructor*/}
     // returns the array size used to store Tracks and Hits
     static Int_t GetNTracks() {return fkSspd;}
+    // returns the signal in electrons
+    Int_t GetSignalSPD() {return fSignalSPD;}
     // returns pointer to the array of tracks which make this digit
     virtual Int_t *GetTracks() {return &fTracks[0];}
      //returns the pointer to the array of hits which made this digit
@@ -81,6 +83,8 @@ class AliITSdigitSPD: public AliITSdigit {
     //copy the array trks[fkSspd] into fTracks
     virtual void SetTracks(const Int_t *trks){
 	for(Int_t i=0;i<fkSspd;i++) fTracks[i]=trks[i];}
+    // set signal in electrons
+    void SetSignalSPD(Int_t sig) {fSignalSPD = sig;}
     //copy the array hits[fkSspd] into fHits
     virtual void SetHits(const Int_t *hits){
 	for(Int_t i=0;i<fkSspd;i++) fHits[i]=hits[i];}
@@ -91,10 +95,9 @@ class AliITSdigitSPD: public AliITSdigit {
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
 
- private:
+ protected:
     static const Int_t fkSspd = 10; // size of fTracks and fHits arrays
     
- public:  
     // debugging  -- goes to the dictionary
     Int_t fTracks[fkSspd]; //[fkSspd] tracks making this digit 
     Int_t fHits[fkSspd];   //[fkSspd] hits associated to the tracks
@@ -145,10 +148,9 @@ class AliITSdigitSDD: public AliITSdigit {
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
 
- private:
+ protected:
     static const Int_t fkSsdd = 10; // size of fTracks and fHits arrays
     
- public:
     // debugging  -- goes to the dictionary
     Int_t   fTracks[fkSsdd];   //[fkSsdd] tracks making this digit 
     Int_t   fHits[fkSsdd];     //[fkSsdd] hits associated to the tracks
@@ -184,7 +186,7 @@ class AliITSTransientDigit : public AliITSdigitSDD {
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
 
- public:
+ protected:
     TObjArray *fTrackList;  // track list 
 
     ClassDef(AliITSTransientDigit,1)  // Transient digit for set: ITS
@@ -232,10 +234,9 @@ class AliITSdigitSSD: public AliITSdigit {
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
 
- private:
+ protected:
     static const Int_t fkSssd = 10; // size of fTracks and fHits arrays
     
- public:
     // debugging  -- goes to the dictionary
     Int_t fTracks[fkSssd]; //[fkSssd] tracks making this digit 
     Int_t fHits[fkSssd];   //[fkSssd] hits associated to the tracks

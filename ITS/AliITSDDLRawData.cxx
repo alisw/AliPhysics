@@ -83,9 +83,9 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
     }
     for (Int_t digit=0;digit<ndigits;digit++) {
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
-      iz=digs->fCoord1;  // If iz==0, N side and if iz=1 P side
-      ix=digs->fCoord2;  // Strip Numbar
-      is=digs->fSignal;  // ADC Signal
+      iz=digs->GetCoord1();  // If iz==0, N side and if iz=1 P side
+      ix=digs->GetCoord2();  // Strip Numbar
+      is=digs->GetSignal();  // ADC Signal
       // cout<<" Module:"<<mod-500<<" N/P side:"<<iz<<" Strip Number:"<<ix<<" Amplidute:"<<is-1<<endl;
       if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" Mod: "<<modR<<" N/P: "<<iz<<" Strip: "<<ix<<" Value: "<<is-1<<endl;
@@ -127,9 +127,9 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       ftxt.open("SDDdigits.txt",ios::app);
     for (Int_t digit=0;digit<ndigits;digit++) {
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
-      iz=digs->fCoord1;  // Anode
-      ix=digs->fCoord2;  // Time
-      is=digs->fSignal;  // ADC Signal
+      iz=digs->GetCoord1();  // Anode
+      ix=digs->GetCoord2();  // Time
+      is=digs->GetSignal();  // ADC Signal
       if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" MID:"<<modR<<" An:"<<iz<<" T:"<<ix<<" A:"<<is<<endl;
       //      cout<<"Amplitude value:"<<is<<" Time Bucket:"<<ix<<" Anode:"<<iz<<endl;
@@ -199,8 +199,8 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
        *     So, the cell number in Z direction varies from 0 to 159.  Therefore,
        *     to get the chip address (0 to 4), we need to divide column number by 32.
        *     ---------------------------------------------------------------------*/
-      iz=digs->fCoord1;  // Cell number in Z direction 
-      ix=digs->fCoord2;  // Cell number in X direction
+      iz=digs->GetCoord1();  // Cell number in Z direction 
+      ix=digs->GetCoord2();  // Cell number in X direction
       chipNo=iz/32;
       if(fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" Mod:"<<mod<<" Row:"<<ix<<" Col:"<<iz<<endl;

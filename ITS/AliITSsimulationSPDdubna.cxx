@@ -846,28 +846,19 @@ void AliITSsimulationSPDdubna::ChargeToSignal(AliITSpList *pList){
 //		 << endl;
 #endif
 	    if (sig+electronics > threshold) {
-		dig.fCoord1 = iz;
-		dig.fCoord2 = ix;
-		dig.fSignal = 1;
-		dig.fSignalSPD = (Int_t) pList->GetSignal(iz+1,ix+1);
-		/*
-		digits[0] = iz;
-		digits[1] = ix;
-		digits[2] = 1; */
+		dig.SetCoord1(iz);
+		dig.SetCoord2(ix);
+		dig.SetSignal(1);
+		Int_t sigspd = (Int_t) pList->GetSignal(iz+1,ix+1);
+		dig.SetSignalSPD(sigspd);
 		for(j=0;j<nmaxtrk;j++){
 //		    charges[j] = 0.0;
 		    if (j<pList->GetNEnteries()) {
-			dig.fTracks[j] = pList->GetTrack(iz+1,ix+1,j);
-			dig.fHits[j]   = pList->GetHit(iz+1,ix+1,j);
-			/*
-			tracks[j] = pList->GetTrack(iz+1,ix+1,j);
-			hits[j]   = pList->GetHit(iz+1,ix+1,j);
-			*/
+			dig.SetTrack(j,pList->GetTrack(iz+1,ix+1,j));
+			dig.SetHit(j,pList->GetHit(iz+1,ix+1,j));
 		    }else { // Default values
-			dig.fTracks[j] = -3;
-			dig.fHits[j]   = -1;
-/*			tracks[j] = -2; //noise
-			hits[j]   = -1;  */
+			dig.SetTrack(j,-3);
+			dig.SetHit(j,-3);
 		    } // end if pList
 		} // end for j
 //		charges[0] = (Float_t) pList->GetSumSignal(iz+1,ix+1);

@@ -272,7 +272,7 @@ void AliITSClusterFinderSPDdubna::TracksInCluster(){
 		if(ind == 0 && iz == 0 && ix == 0 && i > 0) continue;
 		AliITSdigitSPD *dig = (AliITSdigitSPD*)fMap->GetHit(jz,jx);
 		for(itr=0; itr<3; itr++) { 
-		    tracki = dig->fTracks[itr];
+		    tracki = dig->GetTrack(i);
 		    if(tracki >= 0) {
 			ii += 1;
 			if(ii < 99) cltracks[ii-1] = tracki;
