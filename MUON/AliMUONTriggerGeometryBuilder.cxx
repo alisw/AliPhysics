@@ -148,6 +148,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    iChamber = &fMUON->Chamber(10+icount);
 	    Float_t zpos = - iChamber->Z();	     
 	    
+/* removed 03/18/05
 // Flange between beam shielding and RPC 
 	    tpar[0]= kRMIN[istation];
 	    tpar[1]= kRMAX[istation];
@@ -159,6 +160,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    //gMC->Gspos(volFlange,1,"ALIC",0.,0.,zpos,0,"MANY");
 	    iChamber->GetGeometry()->GetEnvelopeStore()
 	      ->AddEnvelope(volFlange, 0, false, "MANY");
+*/
 	    
 // scaling factor
 	    Float_t zRatio = zpos / zpos1;
@@ -256,7 +258,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[5],iVolNum++,TGeoTranslation(xpos, ypos,0.),3,dpar);
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[12],iVolNum++,TGeoTranslation(xpos,-ypos,0.),3,dpar);
 	    GetEnvelopes(10+icount)->AddEnvelopeConstituentParam(volAlu,volEnv[14],iVolNum++,TGeoTranslation(xpos, ypos,0.),3,dpar);
-    
+
 // chamber type D, E and F (same size)
 // D	    
 	    yEnvPsave = yEnvP;
