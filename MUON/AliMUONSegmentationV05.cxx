@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.4  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -49,7 +53,6 @@ ClassImp(AliMUONSegmentationV05)
 
 void AliMUONSegmentationV05::Init(Int_t chamber)
 {
-    printf("\n Initialise Segmentation V05 \n");
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -58,6 +61,10 @@ void AliMUONSegmentationV05::Init(Int_t chamber)
 //  Segmentation is defined by rectangular modules approximating
 //  concentric circles as shown below
 //
+
+    printf("\n Initialise Segmentation V05 \n");
+
+
 //  PCB module size in cm
     const Float_t kDxPCB=40, kDyPCB=40;
 //  PCB distribution (7 rows with 1+3 segmentation regions)

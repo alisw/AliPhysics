@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/12/07 10:41:51  hristov
+fCorr replaced by fCorrA
+
 Revision 1.12  2000/12/06 11:55:41  morsch
 Introduce  SetOffsetY(Float_t off) method as simplified simulation of pad staggering.
 fOffset is the staggering offset in y.
@@ -368,10 +371,11 @@ void AliMUONSegmentationV01::NextPad()
 }
 
 Int_t AliMUONSegmentationV01::MorePads()
+
+{
 // Stopping condition for the iterator over pads
 //
 // Are there more pads in the integration region
-{
     return  (fIx != -1  || fIy != -1);
 /*
     if ((fX >= fXmax  && fIy >= fIymax) || fY==0) {
@@ -612,11 +616,13 @@ void AliMUONSegmentationV01::Draw(const char* opt) const
 }
 void AliMUONSegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
 {
+// Set the correction function
     (*fCorrA)[isec]=func;
 }
 
 TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec) const
 { 
+// Get correction function
     return (TF1*) (*fCorrA)[isec];
 }
 
@@ -626,3 +632,4 @@ AliMUONSegmentationV01& AliMUONSegmentationV01::operator
 // Dummy assignment operator
     return *this;
 }
+

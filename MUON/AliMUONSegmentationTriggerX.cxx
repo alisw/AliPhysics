@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/11/20 21:44:17  pcrochet
+some modifications to account for the new class AliMUONResponseTriggerV1
+
 Revision 1.8  2000/11/12 17:17:03  pcrochet
 BuildGeometry of AliMUON for trigger chambers delegated to AliMUONSegmentationTriggerX (same strategy as for tracking chambers)
 
@@ -322,7 +325,7 @@ IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& x4)
 //------------------------------------------------------------------   
 void AliMUONSegmentationTriggerX::Draw(const char* opt) const
 {
-  
+// Draw method for event display  
   if (!strcmp(opt,"eventdisplay")) { 
     TNode *node, *nodeS;
     char nameChamber[10], nameNode[10];
@@ -385,5 +388,7 @@ void AliMUONSegmentationTriggerX::Draw(const char* opt) const
     }
   }
 }
+
+
 
 

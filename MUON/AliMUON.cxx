@@ -14,6 +14,11 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.40  2000/11/29 20:32:26  gosset
+Digitize:
+1. correction for array index out of bounds
+2. one printout commented
+
 Revision 1.39  2000/11/12 17:17:03  pcrochet
 BuildGeometry of AliMUON for trigger chambers delegated to AliMUONSegmentationTriggerX (same strategy as for tracking chambers)
 
@@ -226,6 +231,8 @@ ClassImp(AliMUON)
 //___________________________________________
 AliMUON::AliMUON()
 {
+// Default Constructor
+//
    fIshunt       = 0;
    fHits         = 0;
    fPadHits      = 0;
@@ -356,6 +363,7 @@ AliMUON::AliMUON(const AliMUON& rMUON)
 
 AliMUON::~AliMUON()
 {
+// Destructor
     printf("Calling AliMUON destructor !!!\n");
     
     Int_t i;
@@ -443,6 +451,7 @@ void AliMUON::AddLocalTrigger(Int_t *localtr)
 //___________________________________________
 void AliMUON::BuildGeometry()
 {
+// Geometry for event display
   for (Int_t i=0; i<7; i++) {
     for (Int_t j=0; j<2; j++) {
       Int_t id=2*i+j+1;
@@ -606,6 +615,7 @@ void AliMUON::ResetTrigger()
 //____________________________________________
 void AliMUON::SetPadSize(Int_t id, Int_t isec, Float_t p1, Float_t p2)
 {
+// Set the pad size for chamber id and cathode isec
     Int_t i=2*(id-1);
     ((AliMUONChamber*) (*fChambers)[i])  ->SetPadSize(isec,p1,p2);
     ((AliMUONChamber*) (*fChambers)[i+1])->SetPadSize(isec,p1,p2);
@@ -633,6 +643,7 @@ void AliMUON::SetChambersZToDefault()
 //___________________________________________
 void AliMUON::SetChargeSlope(Int_t id, Float_t p1)
 {
+// Set the inverse charge slope for chamber id
     Int_t i=2*(id-1);
     ((AliMUONChamber*) (*fChambers)[i])->SetChargeSlope(p1);
     ((AliMUONChamber*) (*fChambers)[i+1])->SetChargeSlope(p1);
@@ -641,6 +652,7 @@ void AliMUON::SetChargeSlope(Int_t id, Float_t p1)
 //___________________________________________
 void AliMUON::SetChargeSpread(Int_t id, Float_t p1, Float_t p2)
 {
+// Set sigma of charge spread for chamber id
     Int_t i=2*(id-1);
     ((AliMUONChamber*) (*fChambers)[i])->SetChargeSpread(p1,p2);
     ((AliMUONChamber*) (*fChambers)[i+1])->SetChargeSpread(p1,p2);
@@ -649,6 +661,7 @@ void AliMUON::SetChargeSpread(Int_t id, Float_t p1, Float_t p2)
 //___________________________________________
 void AliMUON::SetSigmaIntegration(Int_t id, Float_t p1)
 {
+// Set integration limits for charge spread
     Int_t i=2*(id-1);
     ((AliMUONChamber*) (*fChambers)[i])->SetSigmaIntegration(p1);
     ((AliMUONChamber*) (*fChambers)[i+1])->SetSigmaIntegration(p1);
@@ -657,6 +670,7 @@ void AliMUON::SetSigmaIntegration(Int_t id, Float_t p1)
 //___________________________________________
 void AliMUON::SetMaxAdc(Int_t id, Int_t p1)
 {
+// Set maximum number for ADCcounts (saturation)
     Int_t i=2*(id-1);
     ((AliMUONChamber*) (*fChambers)[i])->SetMaxAdc(p1);
     ((AliMUONChamber*) (*fChambers)[i+1])->SetMaxAdc(p1);
@@ -665,29 +679,34 @@ void AliMUON::SetMaxAdc(Int_t id, Int_t p1)
 //___________________________________________
 void AliMUON::SetMaxStepGas(Float_t p1)
 {
+// Set stepsize in gas
      fMaxStepGas=p1;
 }
 
 //___________________________________________
 void AliMUON::SetMaxStepAlu(Float_t p1)
 {
+// Set step size in Alu
     fMaxStepAlu=p1;
 }
 
 //___________________________________________
 void AliMUON::SetMaxDestepGas(Float_t p1)
 {
+// Set maximum step size in Gas
     fMaxDestepGas=p1;
 }
 
 //___________________________________________
 void AliMUON::SetMaxDestepAlu(Float_t p1)
 {
+// Set maximum step size in Alu
     fMaxDestepAlu=p1;
 }
 //___________________________________________
 void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
 {
+// Set acceptance cuts 
    fAccCut=acc;
    fAccMin=angmin*TMath::Pi()/180;
    fAccMax=angmax*TMath::Pi()/180;
@@ -707,22 +726,26 @@ void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
 //___________________________________________
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
 {
+// Set the segmentation for chamber id cathode isec
     ((AliMUONChamber*) (*fChambers)[id])->SetSegmentationModel(isec, segmentation);
 
 }
 //___________________________________________
 void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
 {
+// Set the response for chamber id
     ((AliMUONChamber*) (*fChambers)[id])->SetResponseModel(response);
 }
 
 void   AliMUON::SetReconstructionModel(Int_t id, AliMUONClusterFinderVS *reconst)
 {
+// Set ClusterFinder for chamber id
     ((AliMUONChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
 }
 
 void   AliMUON::SetNsec(Int_t id, Int_t nsec)
 {
+// Set number of segmented cathods for chamber id
     ((AliMUONChamber*) (*fChambers)[id])->SetNsec(nsec);
 }
 
@@ -1318,6 +1341,9 @@ void AliMUON::Trigger(Int_t nev){
 //____________________________________________
 void AliMUON::FindClusters(Int_t nev,Int_t lastEntry)
 {
+//
+//  Perform cluster finding
+//
     TClonesArray *dig1, *dig2;
     Int_t ndig, k;
     dig1 = new TClonesArray("AliMUONDigit",1000);
@@ -1505,6 +1531,8 @@ AliMUONPadHit* AliMUON::FirstPad(AliMUONHit*  hit, TClonesArray *clusters)
 
 AliMUONPadHit* AliMUON::NextPad(TClonesArray *clusters) 
 {
+// Get next pad (in iterator) 
+//
     AliMUON::fCurIterPad++;
     if (AliMUON::fCurIterPad <= AliMUON::fMaxIterPad) {
 	return (AliMUONPadHit*) clusters->UncheckedAt(AliMUON::fCurIterPad-1);
@@ -1516,6 +1544,9 @@ AliMUONPadHit* AliMUON::NextPad(TClonesArray *clusters)
 
 AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t icluster)
 {
+//
+//  Return rawcluster (icluster) for chamber ichamber and cathode icathod
+//  Obsolete ??
     TClonesArray *muonRawCluster  = RawClustAddress(ichamber);
     ResetRawClusters();
     TTree *treeR = gAlice->TreeR();

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/06 09:20:43  morsch
+AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
+Draw() method. This avoids code and parameter replication.
+
 Revision 1.5  2000/10/26 19:32:04  morsch
 Problem with iteration over y-pads for 2nd cathode corrected.
 
@@ -158,6 +162,8 @@ SetPad(Int_t ix, Int_t iy)
 void AliMUONSegmentationSlatModule::
 SetHit(Float_t x, Float_t y)
 {
+// Set current hit 
+//
     fXhit = x;
     fYhit = y;
     
@@ -261,10 +267,10 @@ void AliMUONSegmentationSlatModule::NextPad()
 
 
 Int_t AliMUONSegmentationSlatModule::MorePads()
+{
 // Stopping condition for the iterator over pads
 //
 // Are there more pads in the integration region
-{
     
     return  (fIx != -1  || fIy != -1);
 }
@@ -342,7 +348,6 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
 void AliMUONSegmentationSlatModule::Init(Int_t chamber)
 {
-    printf("\n Initialise Segmentation SlatModule \n");
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -352,6 +357,8 @@ void AliMUONSegmentationSlatModule::Init(Int_t chamber)
 //  concentric circles as shown below
 //
 //  PCB module size in cm
+    printf("\n Initialise Segmentation SlatModule \n");
+
     fDxPCB=40;
     fDyPCB=40;
 //

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/26 19:32:04  morsch
+Problem with iteration over y-pads for 2nd cathode corrected.
+
 Revision 1.4  2000/10/25 19:56:55  morsch
 Handle correctly slats with less than 3 segmentation zones.
 
@@ -137,11 +140,12 @@ void AliMUONSegmentationSlatModuleN::NextPad()
 }
 
 Int_t AliMUONSegmentationSlatModuleN::MorePads()
+{
 // Stopping condition for the iterator over pads
 //
 //
 // Are there more pads in the integration region
-{
+
     if (fIy == -1) {
 	return 0;
     } else {
@@ -152,8 +156,6 @@ Int_t AliMUONSegmentationSlatModuleN::MorePads()
 void AliMUONSegmentationSlatModuleN::
 Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 {
-
-    
 // Returns list of next neighbours for given Pad (iX, iY)
 //
 //
@@ -216,7 +218,6 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
 void AliMUONSegmentationSlatModuleN::Init(Int_t chamber)
 {
-    printf("\n Initialise Segmentation SlatModuleN \n");
 //
 //  Fill the arrays fCx (x-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -226,6 +227,10 @@ void AliMUONSegmentationSlatModuleN::Init(Int_t chamber)
 //  concentric circles as shown below
 //
 //  PCB module size in cm
+
+    printf("\n Initialise Segmentation SlatModuleN \n");
+
+
     fDxPCB=40;
     fDyPCB=40;
 //

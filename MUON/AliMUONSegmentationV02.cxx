@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/18 08:41:32  morsch
+Make NextPad() and MorePads() to iterate until the end.
+
 Revision 1.5  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -90,9 +93,10 @@ AliMUONSegmentationV01::GetPadI(y, x, iy, ix);
 
 void AliMUONSegmentationV02::
 GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
+{
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
-{
+
     AliMUONSegmentationV01::GetPadC(iy, ix, y, x);
 }
 void AliMUONSegmentationV02::SetPad(Int_t ix,Int_t iy)
@@ -140,11 +144,12 @@ void AliMUONSegmentationV02::NextPad()
 }
 
 Int_t AliMUONSegmentationV02::MorePads()
+{
 // Stopping condition for the iterator over pads
 //
 //
 // Are there more pads in the integration region
-{
+
     return  (fIx != -1  || fIy != -1);
 /*
     if ((fY >= fYmax  && fIx >= fIxmax) || fX==0) {

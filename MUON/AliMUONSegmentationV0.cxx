@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.9  2000/11/06 09:20:43  morsch
+AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
+Draw() method. This avoids code and parameter replication.
+
 Revision 1.8  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -197,10 +201,11 @@ void AliMUONSegmentationV0::NextPad()
 }
 
 Int_t AliMUONSegmentationV0::MorePads()
+{
 // Stopping condition for the iterator over pads
 //
 // Are there more pads in the integration region ? 
-{
+
     if (fIx == fIxmax && fIy == fIymax) {
 	return 0;
     } else {
@@ -274,9 +279,10 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
 Float_t AliMUONSegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y
 , Int_t *dummy)
+{
 // Returns the square of the distance between 1 pad
 // labelled by its Channel numbers and a coordinate
-{
+
   Float_t x,y;
   GetPadC(iX,iY,x,y);
   return (x-X)*(x-X) + (y-Y)*(y-Y);

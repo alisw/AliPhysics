@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/08 13:01:40  morsch
+Chamber half-planes of stations 3-5 at different z-positions.
+
 Revision 1.6  2000/11/06 09:20:43  morsch
 AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
 Draw() method. This avoids code and parameter replication.
@@ -272,6 +275,7 @@ Int_t AliMUONSegmentationSlat::ISector()
 
 Int_t AliMUONSegmentationSlat::Sector(Int_t ix, Int_t iy)
 {
+// Returns sector for pad coordiantes (ix,iy)
     Int_t ixlocal, iylocal, iregion, islat;
 
     GlobalToLocal(ix,iy,islat,ixlocal,iylocal);
@@ -525,6 +529,8 @@ CreateSlatModule()
 
 void AliMUONSegmentationSlat::Draw(const char* opt) const
 {
+// Draw method for event display
+// 
   if (!strcmp(opt,"eventdisplay")) { 
     const int kColorMUON1 = kYellow;
     const int kColorMUON2 = kBlue; 

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.5  2000/10/04 18:50:05  morsch
 In Init(): (*fDpxD)[fNsec-1]=fDpx;
 
@@ -53,7 +57,7 @@ ClassImp(AliMUONSegmentationV04)
 
 void AliMUONSegmentationV04::Init(Int_t chamber)
 {
-    printf("\n Initialise Segmentation V04 \n");
+
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
@@ -63,6 +67,8 @@ void AliMUONSegmentationV04::Init(Int_t chamber)
 //  concentric circles as shown below
 //
 //  PCB module size in cm
+    printf("\n Initialise Segmentation V04 \n");
+
     const Float_t kDxPCB=40, kDyPCB=40;
 //  PCB distribution (7 rows with 1+3 segmentation regions)
     const Int_t kpcb[7][4] = {{1, 2, 2, 2}, 
