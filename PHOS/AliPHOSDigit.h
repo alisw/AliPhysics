@@ -60,7 +60,6 @@ class AliPHOSDigit : public AliDigitNew {
   Int_t fNprimary ;         // Number of primaries
   Int_t fNMaxPrimary ;      //! Max Number of primaries
   Int_t fPrimary[5] ;       // Array of primaries      
-  Int_t fShiftOffset ;      // offset to be applied to the primary article numbering in case of event mixing
   Float_t fTime ;           // Calculcated time 
     
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS 

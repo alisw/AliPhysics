@@ -235,8 +235,8 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	  if(fManager)
 	    primaryoffset = fManager->GetMask(i) ; 
 	  else
-	    primaryoffset = i ;
-	  curSDigit->ShiftPrimary(i) ;
+	    primaryoffset = 10000000*i ;
+	  curSDigit->ShiftPrimary(primaryoffset) ;
 	  
 	  a = curSDigit->GetAmp() ;
 	  b = a /fTimeSignalLength ;
