@@ -168,7 +168,7 @@ AliGenEventHeader*  AliHeader::GenEventHeader() const
 }
 
 //_______________________________________________________________________
-void AliHeader::Copy(AliHeader&) const
+void AliHeader::Copy(TObject&) const
 {
   Fatal("Copy","Not implemented\n");
 }

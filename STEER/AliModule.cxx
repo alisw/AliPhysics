@@ -182,7 +182,7 @@ AliModule::~AliModule()
 }
  
 //_______________________________________________________________________
-void AliModule::Copy(AliModule & /* mod */) const
+void AliModule::Copy(TObject & /* mod */) const
 {
   //
   // Copy *this onto mod, not implemented for AliModule
@@ -205,16 +205,6 @@ void AliModule::Disable()
   while((node = dynamic_cast<TNode*>(next()))) {
     node->SetVisibility(-1);
   }   
-}
-
-//_______________________________________________________________________
-Int_t AliModule::DistancetoPrimitive(Int_t, Int_t) const
-{
-  //
-  // Return distance from mouse pointer to object
-  // Dummy routine for the moment
-  //
-  return 9999;
 }
 
 //_______________________________________________________________________

@@ -36,7 +36,7 @@ public:
   {lego.Copy(*this);return(*this);}
 
 private:
-  void Copy(AliLego &lego) const;
+  void Copy(TObject &lego) const;
   void DumpVolumes();
   
 private:

@@ -57,7 +57,7 @@ public:
 
 
 protected:
-  void  Copy(AliRecPoint &recp) const;
+  void  Copy(TObject &recp) const;
 
   Float_t       fAmp ;        // summed amplitude of digits 
   AliGeometry * fGeom ;       //! pointer to the geometry class 

@@ -123,7 +123,7 @@ AliMC::~AliMC()
 }
 
 //_______________________________________________________________________
-void AliMC::Copy(AliMC &) const
+void AliMC::Copy(TObject &) const
 {
   //dummy Copy function
   Fatal("Copy","Not implemented!\n");

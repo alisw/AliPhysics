@@ -20,7 +20,7 @@ public:
     AliFieldMap(const char *name, const char *title);
     AliFieldMap(const AliFieldMap &mag);
     virtual ~AliFieldMap();
-    void Copy(AliFieldMap &map) const;
+    void Copy(TObject &map) const;
     virtual AliFieldMap & operator=(const AliFieldMap &map);
 
     virtual void Field(Float_t *x, Float_t *b);

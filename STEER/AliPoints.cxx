@@ -82,17 +82,17 @@ AliPoints::~AliPoints()
 }
 
 //_______________________________________________________________________
-void AliPoints::Copy(AliPoints &pts) const
+void AliPoints::Copy(TObject &pts) const
 {
   //
   // Copy *this onto pts
   //
   if(this != &pts) {
     ((TPolyMarker3D*)this)->Copy(dynamic_cast<TPolyMarker3D&>(pts));
-    pts.fGLList = fGLList;
-    pts.fLastPoint = fLastPoint;
-    pts.fDetector = fDetector;
-    pts.fIndex = fIndex;
+    (dynamic_cast<AliPoints&>(pts)).fGLList = fGLList;
+    (dynamic_cast<AliPoints&>(pts)).fLastPoint = fLastPoint;
+    (dynamic_cast<AliPoints&>(pts)).fDetector = fDetector;
+    (dynamic_cast<AliPoints&>(pts)).fIndex = fIndex;
   }
 }
 

@@ -85,7 +85,7 @@ class AliStack : public TVirtualMCStack
     Bool_t KeepPhysics(TParticle* part);
     
   private:
-    void Copy(AliStack &st) const;
+    void Copy(TObject &st) const;
 
     // data members
     TClonesArray  *fParticles;         //! Pointer to list of particles

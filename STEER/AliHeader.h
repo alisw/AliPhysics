@@ -53,7 +53,7 @@ public:
   
 protected:
 
-  void Copy(AliHeader& head) const;
+  void Copy(TObject& head) const;
 
   Int_t         fRun;         //Run number
   Int_t         fNvertex;     //Number of vertices

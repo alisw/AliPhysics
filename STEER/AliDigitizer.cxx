@@ -54,7 +54,7 @@ AliDigitizer::AliDigitizer(const AliDigitizer &dig):
 }
 
 //_______________________________________________________________________
-void AliDigitizer::Copy(AliDigitizer &) const
+void AliDigitizer::Copy(TObject &) const
 {
   Fatal("Copy","Not yet implemented\n");
 }

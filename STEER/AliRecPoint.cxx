@@ -152,29 +152,29 @@ void AliRecPoint::AddDigit(AliDigitNew & digit)
 // }
 
 //_______________________________________________________________________
-void AliRecPoint::Copy(AliRecPoint& recp) const
+void AliRecPoint::Copy(TObject& recp) const
 {
   //
   // Copy *this onto pts
   //
   // Copy all first
   if(this != &recp) {
-    ((TObject*) this)->Copy(dynamic_cast<TObject&>(recp));
-    recp.fAmp = fAmp;
-    recp.fGeom = fGeom;
-    recp.fIndexInList = fIndexInList;
-    recp.fLocPos = fLocPos;
-    recp.fLocPosM = new TMatrix(*fLocPosM);
-    recp.fMaxDigit = fMaxDigit;
-    recp.fMulDigit = fMulDigit;
-    recp.fMaxTrack = fMaxTrack;
-    recp.fMulTrack = fMulTrack;
+    ((TObject*) this)->Copy(recp);
+    (dynamic_cast<AliRecPoint&>(recp)).fAmp = fAmp;
+    (dynamic_cast<AliRecPoint&>(recp)).fGeom = fGeom;
+    (dynamic_cast<AliRecPoint&>(recp)).fIndexInList = fIndexInList;
+    (dynamic_cast<AliRecPoint&>(recp)).fLocPos = fLocPos;
+    (dynamic_cast<AliRecPoint&>(recp)).fLocPosM = new TMatrix(*fLocPosM);
+    (dynamic_cast<AliRecPoint&>(recp)).fMaxDigit = fMaxDigit;
+    (dynamic_cast<AliRecPoint&>(recp)).fMulDigit = fMulDigit;
+    (dynamic_cast<AliRecPoint&>(recp)).fMaxTrack = fMaxTrack;
+    (dynamic_cast<AliRecPoint&>(recp)).fMulTrack = fMulTrack;
     
     // Duplicate pointed objects
-    recp.fDigitsList = new Int_t[fMulDigit];
-    memcpy(recp.fDigitsList,fDigitsList,fMulDigit*sizeof(Int_t));
-    recp.fTracksList = new Int_t[fMulTrack];
-    memcpy(recp.fTracksList,fTracksList,fMulTrack*sizeof(Int_t));
+    (dynamic_cast<AliRecPoint&>(recp)).fDigitsList = new Int_t[fMulDigit];
+    memcpy((dynamic_cast<AliRecPoint&>(recp)).fDigitsList,fDigitsList,fMulDigit*sizeof(Int_t));
+    (dynamic_cast<AliRecPoint&>(recp)).fTracksList = new Int_t[fMulTrack];
+    memcpy((dynamic_cast<AliRecPoint&>(recp)).fTracksList,fTracksList,fMulTrack*sizeof(Int_t));
   }
 }
 

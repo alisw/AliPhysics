@@ -31,7 +31,7 @@ public:
   virtual void          SetParticle(Int_t index) {fIndex = index;}
   
 protected:
-  void Copy(AliPoints &pts) const;
+  void Copy(TObject &pts) const;
 
   AliDetector     *fDetector;    //Pointer to AliDetector object
   Int_t            fIndex;       //Particle number in AliRun::fParticles

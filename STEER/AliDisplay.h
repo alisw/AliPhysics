@@ -36,7 +36,7 @@ public:
    TSlider          *CutSlider() {return fCutSlider;}
    virtual void      ShowTrack(Int_t trackNumber); // *MENU*
    virtual void      HideTrack(Int_t trackNumber) const; // *MENU*
-           void      Copy(AliDisplay &disp) const;
+           void      Copy(TObject &disp) const;
    virtual void      DisableDetector(const char *name); // *MENU*
    virtual void      DisplayButtons();
    virtual Int_t     DistancetoPrimitive(Int_t px, Int_t py);

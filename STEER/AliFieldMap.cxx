@@ -263,7 +263,7 @@ void AliFieldMap::Field(Float_t *x, Float_t *b)
 }
 
 //_______________________________________________________________________
-void AliFieldMap::Copy(AliFieldMap & /* magf */) const
+void AliFieldMap::Copy(TObject & /* magf */) const
 {
   //
   // Copy *this onto magf -- Not implemented

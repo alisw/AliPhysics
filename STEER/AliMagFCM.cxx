@@ -251,7 +251,7 @@ void AliMagFCM::ReadField()
 }
 
 //_______________________________________________________________________
-void AliMagFCM::Copy(AliMagFCM & /* magf */) const
+void AliMagFCM::Copy(TObject & /* magf */) const
 {
   //
   // Copy *this onto magf -- Not implemented

@@ -259,7 +259,7 @@ void AliLego::FinishRun()
 }
 
 //_______________________________________________________________________
-void AliLego::Copy(AliLego&) const
+void AliLego::Copy(TObject&) const
 {
   //
   // Copy *this onto lego -- not implemented

@@ -52,7 +52,7 @@ protected:
 private:
   void DrawPaveLabel(TPaveLabel *&pv);
   Int_t GetHBin(const char* hname);
-  void Copy(AliMCQA& qa) const;
+  void Copy(TObject& qa) const;
 
   ClassDef(AliMCQA,1)  //Quality Assurance class for the MC
 };

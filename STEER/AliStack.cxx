@@ -100,7 +100,7 @@ AliStack::AliStack(const AliStack& st):
 }
 
 //_______________________________________________________________________
-void AliStack::Copy(AliStack&) const
+void AliStack::Copy(TObject&) const
 {
   Fatal("Copy","Not implemented!\n");
 }

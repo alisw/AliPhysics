@@ -197,11 +197,12 @@ AliMemoryWatcher::Frame(void) const
   return h;
 }
 //_____________________________________________________________________________
-void 
-AliMemoryWatcher::Write(void)
+Int_t
+AliMemoryWatcher::Write(const char *, Int_t, Int_t)
 {
   // Stores the graphs in a file 
   if ( GraphVSIZE() ) GraphVSIZE()->Write("VSIZE",TObject::kOverwrite);
   if ( GraphRSSIZE() ) GraphRSSIZE() ->Write("RSSIZE",TObject::kOverwrite);
   if ( GraphTIME() ) GraphTIME()->Write("TIME",TObject::kOverwrite);
+  return 0;
 }

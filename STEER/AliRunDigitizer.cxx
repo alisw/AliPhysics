@@ -210,7 +210,7 @@ AliRunDigitizer::AliRunDigitizer(const AliRunDigitizer& dig):
 }
 //_______________________________________________________________________
 
-void AliRunDigitizer::Copy(AliRunDigitizer&) const
+void AliRunDigitizer::Copy(TObject&) const
 {
   Fatal("Copy","Not installed\n");
 }

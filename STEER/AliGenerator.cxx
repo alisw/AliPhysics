@@ -209,7 +209,7 @@ AliGenerator & AliGenerator::operator=(const AliGenerator &gen)
 }
 
 //_______________________________________________________________________
-void AliGenerator::Copy(AliGenerator &/* gen */) const
+void AliGenerator::Copy(TObject &/* gen */) const
 {
   //
   // Copy *this onto gen

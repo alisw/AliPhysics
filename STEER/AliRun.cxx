@@ -216,7 +216,7 @@ AliRun::~AliRun()
 }
 
 //_______________________________________________________________________
-void AliRun::Copy(AliRun &) const
+void AliRun::Copy(TObject &) const
 {
   Fatal("Copy","Not implemented!\n");
 }

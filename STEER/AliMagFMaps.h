@@ -36,7 +36,7 @@ public:
       {magf.Copy(*this); return *this;}
 
 protected:
-    void Copy(AliMagFMaps &magf) const;
+    void Copy(TObject &magf) const;
 
     AliFieldMap* fFieldMap[3];     // Field maps
     Float_t      fSolenoid;        // Solenoid field setting

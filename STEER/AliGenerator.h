@@ -38,7 +38,7 @@ class AliGenerator : public TNamed, public AliRndm
     AliGenerator(const AliGenerator &gen);
     virtual ~AliGenerator();
     virtual void Init();
-    void Copy(AliGenerator &gen) const;
+    void Copy(TObject &gen) const;
     virtual void SetOrigin(Float_t ox, Float_t oy, Float_t oz);
     virtual void SetOrigin(const TLorentzVector &o);
     virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz);

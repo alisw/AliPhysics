@@ -23,7 +23,7 @@ public:
   virtual void    SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
   virtual Float_t SolenoidField() const {return fSolenoid;}
   
-  void Copy(AliMagFCM &magf) const;
+  void Copy(TObject &magf) const;
   virtual AliMagFCM & operator=(const AliMagFCM &magf)
     {magf.Copy(*this); return *this;}
 

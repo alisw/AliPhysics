@@ -93,7 +93,6 @@ public:
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
   virtual void        Disable();
-  virtual Int_t       DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual void        Enable();
   virtual void        PreTrack(){}
   virtual void        PostTrack(){}
@@ -145,7 +144,7 @@ public:
     {mod.Copy(*this); return (*this);}
  
 protected:      
-  void Copy(AliModule &mod) const;
+  void Copy(TObject &mod) const;
 
   // Data members
   

@@ -36,7 +36,7 @@ public:
   void PrintValues() const;
 
 private:
-  void Copy(AliTrackMap &trm) const;
+  void Copy(TObject &trm) const;
 
   Int_t fSize;             // size of the array
   Int_t *fArray;           //[fSize] actual map

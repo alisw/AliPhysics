@@ -171,7 +171,7 @@ AliMCQA::AliMCQA(Int_t ndets):
 }
 
 //_______________________________________________________________________
-void AliMCQA::Copy(AliMCQA &) const
+void AliMCQA::Copy(TObject &) const
 {
   Fatal("Copy ctor","Not implemented!\n");
 }

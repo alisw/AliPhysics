@@ -217,7 +217,7 @@ void AliDetector::Browse(TBrowser *b)
 }
 
 //_______________________________________________________________________
-void AliDetector::Copy(AliDetector &) const
+void AliDetector::Copy(TObject &) const
 {
   //
   // Copy *this onto det -- not implemented

@@ -100,7 +100,7 @@ public:
 
 
 private:
-   void Copy (AliMC &mc) const;
+   void Copy (TObject &mc) const;
    AliGenerator  *fGenerator;         //  Generator used in the MC
    TArrayF        fEventEnergy;       //! Energy deposit for current event
    TArrayF        fSummEnergy;        //! Energy per event in each volume

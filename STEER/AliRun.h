@@ -150,7 +150,7 @@ protected:
 
   AliRunLoader  *fRunLoader;         //!run getter - written as a separate object
 private:
-  void Copy(AliRun &arun) const;
+  void Copy(TObject &arun) const;
 
   ClassDef(AliRun,8)      //Supervisor class for all Alice detectors
 };

@@ -101,7 +101,7 @@ public:
   void      SetDebug(Int_t level) {fDebug = level;}
 
 private:
-  void Copy(AliRunDigitizer& dig) const;
+  void Copy(TObject& dig) const;
   Bool_t            ConnectInputTrees();
   Bool_t            InitGlobal();
   Bool_t            InitOutputGlobal();

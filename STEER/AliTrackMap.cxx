@@ -73,7 +73,7 @@ AliTrackMap::AliTrackMap(Int_t size, Int_t *array):
 }
 
 //_______________________________________________________________________
-void AliTrackMap::Copy(AliTrackMap& ) const
+void AliTrackMap::Copy(TObject& ) const
 {
   Fatal("Copy","Not implemented\n");
 }

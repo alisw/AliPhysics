@@ -57,7 +57,7 @@ public:
   TGraph* GraphRSSIZE(void);
   TGraph* GraphTIME(void);
   TH2* Frame(void) const ;
-  void Write(void);
+  Int_t       Write(const char *name=0, Int_t option=0, Int_t bufsize=0);
   AliMemoryWatcher & operator = (const AliMemoryWatcher &) { return *this; } 
 private:
   Int_t fPID;          // PID of the process to watch

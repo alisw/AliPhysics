@@ -234,7 +234,7 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
 }
 
 //_______________________________________________________________________
-void AliMagFMaps::Copy(AliMagFMaps & /* magf */) const
+void AliMagFMaps::Copy(TObject & /* magf */) const
 {
   //
   // Copy *this onto magf -- Not implemented

@@ -38,7 +38,7 @@ class AliDigitizer: public TTask {
 
 protected:
     Int_t GetNInputStreams() const;
-    void Copy(AliDigitizer &dig) const;
+    void Copy(TObject &dig) const;
 
     AliRunDigitizer *fManager;   // Pointer to the Digitizer manager
     

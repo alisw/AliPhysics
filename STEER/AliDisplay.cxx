@@ -342,7 +342,7 @@ void AliDisplay::Clear(Option_t *)
 }
 
 //_____________________________________________________________________________
-void AliDisplay::Copy(AliDisplay &) const
+void AliDisplay::Copy(TObject &) const
 {
   //
   // Copy *this onto disp -- not implemented
