@@ -11,7 +11,7 @@
 #include "AliGlobals.h"
 #include "AliLVStructure.h"
 #include "AliModule.h"
-#ifdef ALICE_VISUALIZE
+#ifdef G4VIS_USE
 #include "AliColourStore.h"
 #endif
 
@@ -19,7 +19,7 @@
 
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
-#ifdef ALICE_VISUALIZE
+#ifdef G4VIS_USE
 #include <G4Colour.hh>
 #include <G4VisAttributes.hh>
 #endif

@@ -36,7 +36,7 @@ class AliLVStructure
 
     // set methods
     void SetVerboseLevel(G4int verbose); 
-#ifdef ALICE_VISUALIZE
+#ifdef G4VIS_USE
     void SetTreeVisibility(G4bool visibility);       
     void SetTreeColour(const G4String& colName);
 #endif             

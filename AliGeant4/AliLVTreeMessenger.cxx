@@ -10,7 +10,7 @@
 #include "AliLVTreeMessenger.h"
 #include "AliLVTree.h"
 #include "AliGlobals.h"
-#ifdef ALICE_VISUALIZE
+#ifdef G4VIS_USE
 #include "AliColourStore.h"
 #endif
 
