@@ -1,5 +1,5 @@
-#ifndef SHIL_Hv0
-#define SHIL_Hv0
+#ifndef ALISHILV0_H
+#define ALISHILV0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -21,7 +21,13 @@ public:
   virtual void  CreateGeometry();
   virtual void  Init();
   virtual Int_t IsVersion() const {return 0;}
+  virtual void  SetPbCone(Bool_t flag=kTRUE) {fPbCone=flag;}
+	  
+ protected:
+  Bool_t fPbCone;
+  
   ClassDef(AliSHILv0,1)  // Muon Shield Class (Open Geometry)
+      
 };
 
 #endif
