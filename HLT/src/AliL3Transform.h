@@ -6,6 +6,7 @@
 class AliL3Transform {
 
  private:
+  const static Double_t fBFACT;
   
   static Double_t fBField;
   static Int_t fBFieldFactor;
@@ -31,7 +32,6 @@ class AliL3Transform {
   static Int_t fRows[6][2];
   static Int_t fNRows[6];
   static Int_t fNPatches;
-  
   static Double_t fDiffT; //Transversal diffusion constant
   static Double_t fDiffL; //Longitudinal diffusion constant
   static Double_t fAnodeWireSpacing; 
@@ -42,16 +42,18 @@ class AliL3Transform {
   static Double_t fTimeSigma; //Minimal longitudinal width
 
  public:
-  
+
   static void Init(const Char_t* path); //new init for all AliRoot versions
-  
   static void SetBField(Double_t f) {fBField = f;}
+
   static Int_t GetFirstRow(Int_t patch) {return fRows[patch][0];}
   static Int_t GetLastRow(Int_t patch) {return fRows[patch][1];}
   static Int_t GetNRows(Int_t patch) {return fNRows[patch];}
   static Int_t GetNRows() {return fNRow;}
   static Int_t GetNPatches() {return fNPatches;}
   static Double_t GetBField() {return fBField;}
+  static Double_t GetBFact() {return fBFACT;}
+  static Double_t GetBFieldValue() {return (fBField*fBFACT);}
   static Double_t Pi() {return fPi;}
   static Int_t GetVersion(){return fVersion;}
   static Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
@@ -96,8 +98,3 @@ class AliL3Transform {
   ClassDef(AliL3Transform,1)
 };
 #endif
-
-
-
-
-

@@ -40,6 +40,7 @@
 
 ClassImp(AliL3Transform)
 
+const Double_t AliL3Transform::fBFACT = 0.0029980;
 Double_t AliL3Transform::fBField = 0.2;
 Int_t AliL3Transform::fBFieldFactor = 1;
 Int_t AliL3Transform::fVersion = 0;
