@@ -4,8 +4,8 @@ enum PprRun_t
     kParam_8000,   kParam_4000,  kParam_2000, 
     kHijing_cent1, kHijing_cent2, 
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
-    kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj125, 
-    kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj125
+    kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
+    kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200
 };
 
 enum PprGeo_t 
@@ -539,10 +539,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(1);
-	gener->SetPtMinJet(25.);
+	gener->SetPtJet(25.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.3,0.3);
+	gener->SetJetPhiRange(75., 165.);   
 	break;
 
     case kHijing_jj50:
@@ -552,10 +553,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(1);
-	gener->SetPtMinJet(50.);
+	gener->SetPtJet(50.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.3,0.3);
+	gener->SetJetPhiRange(75., 165.);   
 	break;
 
     case kHijing_jj75:
@@ -565,10 +567,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(1);
-	gener->SetPtMinJet(75.);
+	gener->SetPtJet(75.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.3,0.3);
+	gener->SetJetPhiRange(75., 165.);   
 	break;
 
     case kHijing_jj100:
@@ -578,23 +581,25 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(1);
-	gener->SetPtMinJet(100.);
+	gener->SetPtJet(100.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.3,0.3);
+	gener->SetJetPhiRange(75., 165.);   
 	break;
 
-    case kHijing_jj125:
-	comment = comment.Append("HIJING Jet 125 GeV");
+    case kHijing_jj200:
+	comment = comment.Append("HIJING Jet 200 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(1);
-	gener->SetPtMinJet(125.);
+	gener->SetPtJet(200.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.3,0.3);
+	gener->SetJetPhiRange(75., 165.);   
 	break;
 //
 // Gamma-Jet
@@ -606,10 +611,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(2);
-	gener->SetPtMinJet(25.);
+	gener->SetPtJet(25.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.12, 0.12);
+        gener->SetJetPhiRange(220., 320.);
 	break;
 
     case kHijing_gj50:
@@ -619,10 +625,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(2);
-	gener->SetPtMinJet(50.);
+	gener->SetPtJet(50.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.12, 0.12);
+        gener->SetJetPhiRange(220., 320.);
 	break;
 
     case kHijing_gj75:
@@ -632,10 +639,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(2);
-	gener->SetPtMinJet(75.);
+	gener->SetPtJet(75.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.12, 0.12);
+        gener->SetJetPhiRange(220., 320.);
 	break;
 
     case kHijing_gj100:
@@ -645,23 +653,25 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(2);
-	gener->SetPtMinJet(100.);
+	gener->SetPtJet(100.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.12, 0.12);
+        gener->SetJetPhiRange(220., 320.);
 	break;
 
-    case kHijing_gj125:
-	comment = comment.Append("HIJING Gamma 125 GeV");
+    case kHijing_gj200:
+	comment = comment.Append("HIJING Gamma 200 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(0., 5.);
 	// trigger
 	gener->SetTrigger(2);
-	gener->SetPtMinJet(125.);
+	gener->SetPtJet(200.);
 	gener->SetRadiation(isw);
-	gener->JetEtaRange(-0.3,0.3);
-	gener->JetPhiRange(15.,105.);   
+	gener->SetSimpleJets(!isw);
+	gener->SetJetEtaRange(-0.12, 0.12);
+        gener->SetJetPhiRange(220., 320.);
 	break;
     }
     return gener;
