@@ -28,10 +28,22 @@
 #include "AliRawReader.h"
 #include "AliESDPmdTrack.h"
 #include "AliESD.h"
+#include "AliLog.h"
 
 ClassImp(AliPMDReconstructor)
 
-
+//_____________________________________________________________________________
+void AliPMDReconstructor::Init(AliRunLoader* runLoader) 
+{
+  // Initialize the reconstructor 
+  AliDebug(1, Form("Init called with runloader 0x%x", runLoader));
+  if (!runLoader)
+    { 
+      AliWarning("Init : No run loader");
+      return;
+    }
+}
+    
 //_____________________________________________________________________________
 void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
@@ -39,7 +51,6 @@ void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder(runLoader);
   pmdClus->Load();
-  //  pmdClus->SetDebug(1);
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
     {
       pmdClus->Digits2RecPoints(iEvent);
@@ -48,7 +59,8 @@ void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
   delete pmdClus;
 
 }
-//_____________________________________________________________________________
+// ------------------------------------------------------------------------ //
+
 void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader,
 				      AliRawReader *rawReader) const
 {
@@ -59,29 +71,50 @@ void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   Int_t iEvent = 0;
   while (rawReader->NextEvent()) {
-    //    pmdClus.SetDebug(1);
     pmdClus.Digits2RecPoints(iEvent,rawReader);
-    
     iEvent++;
   }
   pmdClus.UnLoadClusters();
   
 }
 
+
 // ------------------------------------------------------------------------ //
 
-void AliPMDReconstructor::FillESD(AliRunLoader* runLoader,AliESD* esd) const
+void AliPMDReconstructor::Reconstruct(AliRawReader *rawReader,
+				      TTree *clustersTree) const
 {
-  AliLoader* loader = runLoader->GetLoader("PMDLoader");
-  if (!loader) {
-    Error("Reconstruct", "PMD loader not found");
-    return;
-  }
-  loader->LoadRecPoints("READ");
+// reconstruct clusters from Raw Data
 
-  TTree *treeR = loader->TreeR();
-  AliPMDtracker pmdtracker;
-  pmdtracker.LoadClusters(treeR);
-  pmdtracker.Clusters2Tracks(esd);
-  loader->UnloadRecPoints();
+  AliPMDClusterFinder pmdClus;
+  pmdClus.Digits2RecPoints(rawReader, clustersTree);
+
 }
+
+// ------------------------------------------------------------------------ //
+
+//void AliPMDReconstructor::FillESD(AliRunLoader* runLoader,AliESD* esd) const
+//{
+//  AliLoader* loader = runLoader->GetLoader("PMDLoader");
+//  if (!loader) {
+//    AliError("PMD loader not found");
+//    return;
+//  }
+//  loader->LoadRecPoints("READ");
+//  TTree *treeR = loader->TreeR();
+//  AliPMDtracker pmdtracker;
+//  pmdtracker.LoadClusters(treeR);
+//  pmdtracker.Clusters2Tracks(esd);
+//  loader->UnloadRecPoints();
+//}
+
+// ------------------------------------------------------------------------ //
+void AliPMDReconstructor::FillESD(AliRawReader* /*rawReader*/,
+				  TTree* clustersTree, AliESD* esd) const
+{
+  AliPMDtracker pmdtracker;
+  pmdtracker.LoadClusters(clustersTree);
+  pmdtracker.Clusters2Tracks(esd);
+}
+
+
