@@ -1,4 +1,3 @@
-#include <Riostream.h>
 #include "AliHBTLLWeights.h"
 #include "AliPDG.h"
 #include "AliHBTPair.h"
@@ -32,10 +31,6 @@ extern "C" void type_of_call fsiw();
 /**************************************************************/
 
 ClassImp(AliHBTLLWeights)  
-
-//Interface to Richard Lednicky's weight alghorithm (Fortran implementation)
-//Ludmila Malinina JINR
-//Piotr Krzysztof Skowronski CERN/WUT
  
 AliHBTLLWeights* AliHBTLLWeights::fgLLWeights=NULL; 
 
@@ -50,19 +45,17 @@ AliHBTLLWeights::AliHBTLLWeights()
     SetQuantumStatistics();
     SetColoumb();
     SetTest();
+  
 }
 
 
  AliHBTLLWeights* AliHBTLLWeights::Instance()
 {                                                                                             
-  if (fgLLWeights) 
-   { 
-     return fgLLWeights;                                                                   
-   } 
-  else 
-   {                                                                                  
-    fgLLWeights = new AliHBTLLWeights();                                                        
-    return fgLLWeights;                                                                   
+    if (fgLLWeights) {                                                                        
+      return fgLLWeights;                                                                   
+   } else {                                                                                  
+   fgLLWeights = new AliHBTLLWeights();                                                        
+      return fgLLWeights;                                                                   
   }                                                                                         
 }                                                                                             
                                             
@@ -71,60 +64,65 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
 {
     AliHBTParticle *part1 = partpair->Particle1();
     AliHBTParticle *part2 = partpair->Particle2();
-   
+
     if ( (part1 == 0x0) || (part2 == 0x0))
-     {
+      {
       Error("GetWeight","Null particle pointer");
       return 0.0;
-     }
+      }
+
    
     Double_t part1Momentum[]={part1->Px(),part1->Py(),part1->Pz()};
     Double_t part2Momentum[]={part2->Px(),part2->Py(),part2->Pz()};
               
-   
-    if ( (part1->Px() == part2->Px()) && (part1->Py() == part2->Py()) 
-       && (part1->Pz() == part2->Pz()) )
-      {//if particles have the same momentum 
-        return 0.0;
-      }
+    if ( (part1->Px() == part2->Px()) && 
+         (part1->Py() == part2->Py()) && 
+         (part1->Pz() == part2->Pz()) )
+    {
+    return 0.0;
+    }
 
              
-    if ((!fRandomPosition) && (part1->Vx()  == part2->Vx()) && (part1->Vy()  == part2->Vy())
-          && (part1->Vz()  == part2->Vz()) )
-      { //if particles have the same position       
-       return 0.0;
-      }
+    if ((!fRandomPosition) && 
+    (part1->Vx()  == part2->Vx()) && (part1->Vy()  == part2->Vy())
+    && (part1->Vz()  == part2->Vz()) )
+    {        
+    return 0.0;
+    }
 
-//put momenta of particles in LAB into Fortran commons
 
-    FSI_MOM.P1X=part1Momentum[0];
-    FSI_MOM.P1Y=part1Momentum[1];
-    FSI_MOM.P1Z=part1Momentum[2];
+
+        FSI_MOM.P1X=part1Momentum[0];
+        FSI_MOM.P1Y=part1Momentum[1];
+        FSI_MOM.P1Z=part1Momentum[2];
       
-    FSI_MOM.P2X=part2Momentum[0];
-    FSI_MOM.P2Y=part2Momentum[1];
-    FSI_MOM.P2Z=part2Momentum[2];
-        
-    if (fRandomPosition) 
-     {
-       Double_t rxcm = fsigma*gRandom->Gaus();
-       Double_t rycm = fsigma*gRandom->Gaus();
-       Double_t rzcm = fsigma*gRandom->Gaus();   
-    
-       FSI_PRF.X=rxcm*fwcons;
-       FSI_PRF.Y=rycm*fwcons;
-       FSI_PRF.Z=rzcm*fwcons;
-       FSI_PRF.T=0.;
+        FSI_MOM.P2X=part2Momentum[0];
+        FSI_MOM.P2Y=part2Momentum[1];
+        FSI_MOM.P2Z=part2Momentum[2];
+                
+        if (fRandomPosition){
 
-       Double_t rps=rxcm*rxcm+rycm*rycm+rzcm*rzcm;
-       Double_t rp=TMath::Sqrt(rps);
-       FSI_PRF.RP=rp;
-       FSI_PRF.RPS=rps;
-     }    
-          
-    ltran12();
-    fsiw();
-    return LEDWEIGHT.WEIN;
+        Double_t rxcm = fsigma*gRandom->Gaus();
+        Double_t rycm = fsigma*gRandom->Gaus();
+        Double_t rzcm = fsigma*gRandom->Gaus();   
+        
+        FSI_PRF.X=rxcm*fwcons;
+        FSI_PRF.Y=rycm*fwcons;
+        FSI_PRF.Z=rzcm*fwcons;
+        FSI_PRF.T=0.;
+
+        Double_t rps=rxcm*rxcm+rycm*rycm+rzcm*rzcm;
+        Double_t rp=TMath::Sqrt(rps);
+        FSI_PRF.RP=rp;
+        FSI_PRF.RPS=rps;
+
+        }        
+              
+        ltran12();
+        fsiw();
+
+        return LEDWEIGHT.WEIN;
+
  }
  
 /************************************************************/
@@ -134,74 +132,75 @@ void AliHBTLLWeights::Init()
 
 //initial parameters of model
 
-  FSI_NS.NS = approximationModel;  
-  
-  if(!ftest) LEDWEIGHT.ITEST=0;
+      FSI_NS.NS = approximationModel;      
+      
+      if(!ftest){LEDWEIGHT.ITEST=0;}
     
-  if(ftest)
-   {
-     LEDWEIGHT.ITEST=1;
-     if(fColoumbSwitch) FSI_NS.ICH =1;
-     else FSI_NS.ICH=0;
-     
-     if(fStrongInterSwitch) FSI_NS.ISI=1;
-     else FSI_NS.ISI=0;
-   
-     if(fQuantStatSwitch) FSI_NS.IQS=1;
-     else FSI_NS.IQS=0;
-   
-     if(fColWithResidNuclSwitch) FSI_NS.I3C=1;
-     else FSI_NS.I3C=0;
-   }
-  
-  if(fRandomPosition) LEDWEIGHT.IRANPOS=1;
-  else LEDWEIGHT.IRANPOS=0;
+      if(ftest){
+      LEDWEIGHT.ITEST=1;
+      if(fColoumbSwitch){FSI_NS.ICH =1;}
+      else{FSI_NS.ICH=0;}
+      if(fStrongInterSwitch){FSI_NS.ISI=1;}
+      else{FSI_NS.ISI=0;}
+      if(fQuantStatSwitch){FSI_NS.IQS=1;}
+      else{FSI_NS.IQS=0;}
+      if(fColWithResidNuclSwitch){FSI_NS.I3C=1;}
+      else{FSI_NS.I3C=0;}
+      }
+      
+      if(fRandomPosition){LEDWEIGHT.IRANPOS=1;}
+      else{LEDWEIGHT.IRANPOS=0;}
 
-  if ( (fPID1 == 0) || (fPID2 == 0) )
-   {
-    Fatal("Init","Particles types are not set");
-    return;//pro forma
-   }
 
-  FSI_NS.LL = GetPairCode(fPID1,fPID2);
-   
-  if (FSI_NS.LL == 0) 
-   {
-     Fatal("Init","Particles types are not supported");
-     return;//pro forma
-   }
+     if ( (fPID1 == 0) || (fPID2 == 0) )
+      {
+        Fatal("Init","Particles types are not set");
+        return;//pro forma
+      }
 
-  TParticlePDG* tpart1 = TDatabasePDG::Instance()->GetParticle(fPID1);
-  if (tpart1 == 0x0)
-   {
-     Fatal("init","We can not find particle with ID=%d in our DataBase",fPID1);
-     return;
-   }
-  
-  FSI_POC.AM1=tpart1->Mass();
-  FSI_POC.C1=tpart1->Charge(); 
+      FSI_NS.LL = GetPairCode(fPID1,fPID2);
+       
+      if (FSI_NS.LL == 0) 
+       {
+         Fatal("Init","Particles types are not supported");
+         return;//pro forma
+       }
 
-  TParticlePDG* tpart2 = TDatabasePDG::Instance()->GetParticle(fPID2);
-  if (tpart2 == 0x0)
-   {
-     Fatal("init","We can not find particle with ID=%d in our DataBase",fPID2);
-     return;
-   }
 
-  FSI_POC.AM2=tpart2->Mass();
-  FSI_POC.C1=tpart2->Charge();
+      TParticlePDG* tpart1 = TDatabasePDG::Instance()->GetParticle(fPID1);
+      if (tpart1 == 0x0)
+       {
+         Fatal("init","We can not find particle with ID=%d in our DataBase",fPID1);
+         return;
+       }
+      
+      FSI_POC.AM1=tpart1->Mass();
+      FSI_POC.C1=tpart1->Charge(); 
 
-  led_bldata();
-  fsiini();
+      TParticlePDG* tpart2 = TDatabasePDG::Instance()->GetParticle(fPID2);
+//mlv
+      
+      
+
+      if (tpart2 == 0x0)
+       {
+         Fatal("init","We can not find particle with ID=%d in our DataBase",fPID2);
+         return;
+       }
+
+      FSI_POC.AM2=tpart2->Mass();
+      FSI_POC.C1=tpart2->Charge();
+
+      led_bldata();
+      fsiini();
 
 
 //constants for radii simulation 
 
-  if(fRandomPosition)
-   {
-    fsigma =TMath::Sqrt(2.)*fRadius;     
-    fwcons =FSI_CONS.W;
-   } 
+      if(fRandomPosition){
+       fsigma =TMath::Sqrt(2.)*fRadius;     
+       fwcons =FSI_CONS.W;
+      } 
 } 
 
 Int_t AliHBTLLWeights::GetPairCode(const AliHBTPair* partpair)
@@ -240,6 +239,11 @@ Int_t AliHBTLLWeights::GetPairCode(Int_t pid1,Int_t pid2)
     lpid=pid2*chargefactor;
     swap = kTRUE;
    }
+
+//mlv
+   hpid=pid1;
+   lpid=pid2;
+
 
 //Determine the pair code
   switch (hpid) //switch on first  particle id
@@ -284,6 +288,7 @@ Int_t AliHBTLLWeights::GetPairCode(Int_t pid1,Int_t pid2)
       break;
 
      case kPiPlus:
+     
       switch (lpid)
        {
          case kPiPlus:
