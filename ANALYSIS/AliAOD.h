@@ -50,7 +50,7 @@ public:
   void                     Move(Double_t x, Double_t y, Double_t z);//moves all spacial coordinates about this vector
   virtual void             SetOwner(Bool_t owner);
   virtual void             Print(Option_t* /*option*/ = 0);
-  TClass*            GetParticleClass();
+  TClass*                  GetParticleClass();
 private:
   TClonesArray            *fParticles;   // array of AOD particles, AliAOD is owner of particles
   Bool_t                   fIsRandomized;//flag indicating if positions of particles were randomized - used by HBTAN
