@@ -228,7 +228,7 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
       Int_t ntracks = (Int_t) treeH->GetEntries();
       for (itrack = 0; itrack < ntracks; itrack++) {
 	if (GetDebug()>2) cerr<<"AliMUONDigitizerv1::Exec itrack = "<<itrack<<endl;
-	fHits->Delete();
+	fHits->Clear();
 	branchHits->GetEntry(itrack);
 	//
 	//  Loop over hits
