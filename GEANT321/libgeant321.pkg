@@ -953,7 +953,7 @@ gcinit.F \
 SRCS=comad/gcadd.cxx 
  
 ifeq ($(PLATFORM),linux)
-   PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))  
+#   PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))  
 endif
 
 

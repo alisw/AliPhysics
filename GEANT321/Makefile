@@ -58,7 +58,7 @@ CFLAGS      := $(COPT) $(CLIBCOPT) $(CLIBDEFS) -I.
 
 FFLAGS      := $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -I.
 ifeq ($(PLATFORM),linux)
-   FFLAGS      := $(filter-out -O%,$(FFLAGS))  
+#   FFLAGS      := $(filter-out -O%,$(FFLAGS))  
 endif
  
 ##### TARGETS #####
