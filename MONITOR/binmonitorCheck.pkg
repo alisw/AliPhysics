@@ -1,0 +1,16 @@
+SRCS:=monitorCheck.cxx
+
+EINCLUDE+=TPC CONTAINERS ITS RAW
+
+
+ifdef DATE_ROOT
+
+ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS}
+ELIBS:= STEER RAW monitor shift pythia6 pdf microcern
+EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
+
+else
+
+ELIBS:= pythia6 pdf microcern
+
+endif
