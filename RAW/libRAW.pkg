@@ -1,5 +1,6 @@
 SRCS:=  AliRawEvent.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
+	AliRawReaderDate.cxx \
 	AliTPCBuffer160.cxx AliTPCHuffman.cxx AliTPCCompression.cxx \
 	AliTPCRawStream.cxx \
 	AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
