@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.62  2001/10/21 19:23:21  nilsen
+Added function to allow to limit which detectors to digitize and reconstruct.
+The default is All. This change makes no changes to any root file.
+
 Revision 1.61  2001/10/11 15:26:07  mariana
 Correct HitsToFastRecPoints
 
@@ -277,12 +281,18 @@ ClassImp(AliITS)
 
 //______________________________________________________________________
 AliITS::AliITS() : AliDetector() {
-    // Default initialiser for ITS
+    // Default initializer for ITS
     //      The default constructor of the AliITS class. In addition to
     // creating the AliITS class it zeros the variables fIshunt (a member
     // of AliDetector class), fEuclidOut, and fIdN, and zeros the pointers
     // fITSpoints, fIdSens, and fIdName. The AliDetector default constructor
     // is also called.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      Blank ITS class.
 
     fIshunt     = 0;   // not zeroed in AliDetector.
 
@@ -316,10 +326,10 @@ AliITS::AliITS() : AliDetector() {
 }
 //______________________________________________________________________
 AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
-    // Default initialiser for ITS
-    //     The constructor of the AliITS class. In addition to creating the
-    // AliITS class, it allocates memory for the TClonesArrays fHits and
-    // fDigits, and for the TObjArray fITSpoints. It also zeros the variables
+    //     The standard Constructor for the ITS class. In addition to 
+    // creating the AliITS class, it allocates memory for the TClonesArrays 
+    // fHits, fSDigits, fDigits, fITSpoints, and the TObjArray of fCtype 
+    // (clusters). It also zeros the variables
     // fIshunt (a member of AliDetector class), fEuclidOut, and fIdN, and zeros
     // the pointers fIdSens and fIdName. To help in displaying hits via the
     // ROOT macro display.C AliITS also sets the marker color to red. The
@@ -327,6 +337,13 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
     // are used by the constructor of AliDetector class. See AliDetector
     // class for a description of these parameters and its constructor
     // functions.
+    // Inputs:
+    //      const char *name      Detector name. Should always be "ITS"
+    //      const char *title     Detector title.
+    // Outputs:
+    //      none.
+    // Return:
+    //      An ITS class.
 
     fIshunt     = 0;  // not zeroed in AliDetector
     fHits       = new TClonesArray("AliITShit", 1560);//not done in AliDetector
@@ -344,7 +361,6 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
     fNDetTypes  = kNTYPES;
     fDetTypes   = new TObjArray(fNDetTypes);
 
-//    fSDigits    = new TObjArray(1000);
     fSDigits    = new TClonesArray("AliITSpListItem",1000);
     fNSDigits   = 0;
 
@@ -369,16 +385,22 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
 }
 //______________________________________________________________________
 AliITS::~AliITS(){
-    // Default distructor for ITS
+    // Default destructor for ITS.
     //     The default destructor of the AliITS class. In addition to deleting
     // the AliITS class it deletes the memory pointed to by the fHits, fDigits,
-    // fIdSens, fIdName, and fITSpoints.
+    // fSDigits, fCtype, fITSmodules, fITSgeom, fRecPoints, fIdSens, fIdName, 
+    // fITSpoints, fDetType and it's contents.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     delete fHits;
     delete fSDigits;
     delete fDigits;
     delete fRecPoints;
-//  delete fIdName;        // TObjArray of TObjStrings
     if(fIdName!=0) delete[] fIdName;  // Array of TStrings
     if(fIdSens!=0) delete[] fIdSens;
     if(fITSmodules!=0) {
@@ -408,41 +430,67 @@ AliITS::~AliITS(){
 }
 //______________________________________________________________________
 AliITS::AliITS(AliITS &source){
-    // copy constructor
+    // Copy constructor. This is a function which is not allowed to be
+    // done to the ITS. It exits with an error.
+    // Inputs:
+    //      AliITS &source  An AliITS class.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     if(this==&source) return;
-    Error("AliITS::Copy constructor",
+    Error("Copy constructor",
 	  "You are not allowed to make a copy of the AliITS");
     exit(1);
 }
 //______________________________________________________________________
 AliITS& AliITS::operator=(AliITS &source){
-    // assignment operator
+    // Assignment operator. This is a function which is not allowed to be
+    // done to the ITS. It exits with an error.
+    // Inputs:
+    //      AliITS &source  An AliITS class.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     if(this==&source) return *this;
-    Error("AliITS::operator=",
-	  "You are not allowed to make a copy of the AliITS");
+    Error("operator=","You are not allowed to make a copy of the AliITS");
     exit(1);
     return *this; //fake return
 }
 //______________________________________________________________________
-Int_t AliITS::DistancetoPrimitive(Int_t , Int_t ){
+Int_t AliITS::DistancetoPrimitive(Int_t,Int_t){
     // Distance from mouse to ITS on the screen. Dummy routine
     //     A dummy routine used by the ROOT macro display.C to allow for the
     // use of the mouse (pointing device) in the macro. In general this should
     // never be called. If it is it returns the number 9999 for any value of
     // x and y.
+    // Inputs:
+    //      Int_t     Dummy screen coordinate.
+    //      Int_t     Dummy screen coordinate.
+    // Outputs:
+    //      none.
+    // Return:
+    //      Int_t     Dummy = 9999 distance to ITS.
 
     return 9999;
 }
 //______________________________________________________________________
 void AliITS::Init(){
-    // Initialise ITS after it has been built
+    // Initializer ITS after it has been built
     //     This routine initializes the AliITS class. It is intended to be
     // called from the Init function in AliITSv?. Besides displaying a banner
     // indicating that it has been called it initializes the array fIdSens
     // and sets the default segmentation, response, digit and raw cluster
     // classes therefore it should be called after a call to CreateGeometry.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     Int_t i;
 
     SetDefaults();
@@ -451,7 +499,13 @@ void AliITS::Init(){
 }
 //______________________________________________________________________
 void AliITS::SetDefaults(){
-    // sets the default segmentation, response, digit and raw cluster classes
+    // sets the default segmentation, response, digit and raw cluster classes.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     if(fDebug) printf("%s: SetDefaults\n",ClassName());
 
@@ -485,7 +539,7 @@ void AliITS::SetDefaults(){
     } // end if
     const char *kData1=(iDetType->GetResponseModel())->DataType();
     const char *kopt=iDetType->GetResponseModel()->ZeroSuppOption();
-    if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
+    if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D")) || strstr(kData1,"real") ){
 	iDetType->ClassNames("AliITSdigit","AliITSRawClusterSDD");
     } else iDetType->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
 
@@ -505,12 +559,18 @@ void AliITS::SetDefaults(){
 
     if (kNTYPES>3) {
 	Warning("SetDefaults",
-		"Only the three basic detector types are initialised!");
+		"Only the three basic detector types are initialized!");
     }  // end if
 }
 //______________________________________________________________________
 void AliITS::SetDefaultSimulation(){
-    // sets the default simulation
+    // sets the default simulation.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     AliITSDetType *iDetType;
     iDetType=DetType(0);
@@ -540,7 +600,13 @@ void AliITS::SetDefaultSimulation(){
 }
 //______________________________________________________________________
 void AliITS::SetDefaultClusterFinders(){
-    // sets the default cluster finders
+    // Sets the default cluster finders. Used in finding RecPoints.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     MakeTreeC();
     AliITSDetType *iDetType;
@@ -583,6 +649,16 @@ void AliITS::SetDefaultClusterFinders(){
 //______________________________________________________________________
 void AliITS::MakeBranch(Option_t* option, const char *file){
     // Creates Tree branches for the ITS.
+    // Inputs:
+    //      Option_t *option    String of Tree types S,D, and/or R.
+    //      const char *file    String of the file name where these branches
+    //                          are to be stored. If blank then these branches
+    //                          are written to the same tree as the Hits were
+    //                          read from.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     const char *cS = strstr(option,"S");
     const char *cD = strstr(option,"D");
     const char *cR = strstr(option,"R");
@@ -596,6 +672,12 @@ void AliITS::MakeBranch(Option_t* option, const char *file){
 //______________________________________________________________________
 void AliITS::SetTreeAddress(){
     // Set branch address for the Trees.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     TTree *treeS = gAlice->TreeS();
     TTree *treeD = gAlice->TreeD();
     TTree *treeR = gAlice->TreeR();
@@ -608,38 +690,87 @@ void AliITS::SetTreeAddress(){
 }
 //______________________________________________________________________
 AliITSDetType* AliITS::DetType(Int_t id){
-    //return pointer to id detector type
+    // Return pointer to id detector type.
+    // Inputs:
+    //      Int_t id   detector id number.
+    // Outputs:
+    //      none.
+    // Return:
+    //      returned, a pointer to a AliITSDetType.
 
     return ((AliITSDetType*) fDetTypes->At(id));
 }
 //______________________________________________________________________
 void AliITS::SetResponseModel(Int_t id, AliITSresponse *response){
-    //set the response model for the id detector type
+    // Set the response model for the id detector type.
+    // Inputs:
+    //      Int_t id        detector id number.
+    //      AliITSresponse* a pointer containing an instance of AliITSresponse
+    //                      to be stored/owned b y AliITSDetType.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     ((AliITSDetType*) fDetTypes->At(id))->ResponseModel(response);
 }
 //______________________________________________________________________
 void AliITS::SetSegmentationModel(Int_t id, AliITSsegmentation *seg){
-    //set the segmentation model for the id detector type
+    // Set the segmentation model for the id detector type.
+    // Inputs:
+    //      Int_t id            detector id number.
+    //      AliITSsegmentation* a pointer containing an instance of 
+    //                          AliITSsegmentation to be stored/owned b y 
+    //                          AliITSDetType.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     ((AliITSDetType*) fDetTypes->At(id))->SegmentationModel(seg);
 }
 //______________________________________________________________________
 void AliITS::SetSimulationModel(Int_t id, AliITSsimulation *sim){
-    //set the simulation model for the id detector type
+    // Set the simulation model for the id detector type.
+    // Inputs:
+    //      Int_t id        detector id number.
+    //      AliITSresponse* a pointer containing an instance of AliITSresponse
+    //                      to be stored/owned b y AliITSDetType.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
    ((AliITSDetType*) fDetTypes->At(id))->SimulationModel(sim);
 
 }
 //______________________________________________________________________
 void AliITS::SetReconstructionModel(Int_t id, AliITSClusterFinder *reconst){
-    //set the cluster finder model for the id detector type
+    // Set the cluster finder model for the id detector type.
+    // Inputs:
+    //      Int_t id             detector id number.
+    //      AliITSClusterFinder* a pointer containing an instance of 
+    //                           AliITSClusterFinder to be stored/owned b y 
+    //                           AliITSDetType.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     ((AliITSDetType*) fDetTypes->At(id))->ReconstructionModel(reconst);
 }
 //______________________________________________________________________
 void AliITS::SetClasses(Int_t id, const char *digit, const char *cluster){
-    //set the digit and cluster classes to be used for the id detector type
+    // Set the digit and cluster classes name to be used for the id detector
+    // type.
+    // Inputs:
+    //      Int_t id            detector id number.
+    //      const char *digit   Digit class name for detector id.
+    //      const char *cluster Cluster class name for detector id.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     ((AliITSDetType*) fDetTypes->At(id))->ClassNames(digit,cluster);
 }
@@ -651,13 +782,29 @@ void AliITS::AddHit(Int_t track, Int_t *vol, Float_t *hits){
     // necessary new space for the hit information and passes the variable
     // track, and the pointers *vol and *hits to the AliITShit constructor
     // function.
+    // Inputs:
+    //      Int_t   track   Track number which produced this hit.
+    //      Int_t   *vol    Array of Integer Hit information. See AliITShit.h
+    //      Float_t *hits   Array of Floating Hit information.  see AliITShit.h
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     TClonesArray &lhits = *fHits;
     new(lhits[fNhits++]) AliITShit(fIshunt,track,vol,hits);
 }
 //______________________________________________________________________
 void AliITS::InitModules(Int_t size,Int_t &nmodules){
-    //initialize the modules array
+    // Initialize the modules array.
+    // Inputs:
+    //      Int_t size  Size of array of the number of modules to be
+    //                  created. If size <=0 then the number of modules
+    //                  is gotten from AliITSgeom class kept in fITSgeom.
+    // Outputs:
+    //      Int_t &nmodules The number of modules existing.
+    // Return:
+    //      none.
 
     if(fITSmodules){ 
 	fITSmodules->Delete();
@@ -668,8 +815,7 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
 
     if(size<=0){ // default to using data stored in AliITSgeom
 	if(fITSgeom==0) {
-	    Error("AliITS::InitModules",
-		  "in AliITS::InitModule fITSgeom not defined\n");
+	    Error("InitModules","fITSgeom not defined");
 	    return;
 	} // end if fITSgeom==0
 	nl = fITSgeom->GetNlayers();
@@ -693,7 +839,19 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
 void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 			 Option_t *option,Text_t *filename){
     // fill the modules with the sorted by module hits; add hits from
-    // background if option=Add
+    // background if option=Add.
+    // Inputs:
+    //      Int_t evnt       Event to be processed.
+    //      Int_t bgrev      Background Hit tree number.
+    //      Int_t nmodules   Not used.
+    //      Option_t *option String indicating if merging hits or not. To
+    //                       merge hits set equal to "Add". Otherwise no
+    //                       background hits are considered.
+    //      Test_t *filename File name containing the background hits..
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     static TTree *trH1;                 //Tree with background hits
     static TClonesArray *fHits2;        //List of hits for one track only
     static Bool_t first=kTRUE;
@@ -717,8 +875,7 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 	sprintf(treeName,"TreeH%d",bgrev);
 	trH1 = (TTree*)gDirectory->Get(treeName);
 	if (!trH1) {
-	    Error("AliITS::FillModules","cannot find Hits Tree for event:%d\n",
-		  bgrev);
+	    Error("FillModules","cannot find Hits Tree for event:%d",bgrev);
 	} // end if !trH1
 	// Set branch addresses
 	TBranch *branch;
@@ -783,25 +940,43 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 }
 //______________________________________________________________________
 void AliITS::ClearModules(){
-    //clear the modules TObjArray
+    // Clear the modules TObjArray.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     if(fITSmodules) fITSmodules->Delete();
 }
 //______________________________________________________________________
-void AliITS::MakeBranchS(const char *file){
-    // Creates Tree branche for the ITS summable digits.
+void AliITS::MakeBranchS(const char *fl){
+    // Creates Tree Branch for the ITS summable digits.
+    // Inputs:
+    //      cont char *fl  File name where SDigits branch is to be written
+    //                     to. If blank it write the SDigits to the same
+    //                     file in which the Hits were found.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     Int_t buffersize = 4000;
     char branchname[30];
 
     // only one branch for SDigits.
     sprintf(branchname,"%s",GetName());
     if(fSDigits && gAlice->TreeS()){
-	MakeBranchInTree(gAlice->TreeS(),branchname,&fSDigits,buffersize,file);
+	MakeBranchInTree(gAlice->TreeS(),branchname,&fSDigits,buffersize,fl);
     } // end if
 }
 //______________________________________________________________________
 void AliITS::SetTreeAddressS(TTree *treeS){
     // Set branch address for the ITS summable digits Trees.
+    // Inputs:
+    //      TTree *treeS   Tree containing the SDigits.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     char branchname[30];
 
     if(!treeS) return;
@@ -813,6 +988,14 @@ void AliITS::SetTreeAddressS(TTree *treeS){
 //______________________________________________________________________
 void AliITS::MakeBranchD(const char *file){
     // Creates Tree branches for the ITS.
+    // Inputs:
+    //      cont char *file  File name where Digits branch is to be written
+    //                       to. If blank it write the SDigits to the same
+    //                       file in which the Hits were found.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     Int_t buffersize = 4000;
     char branchname[30];
 
@@ -840,6 +1023,12 @@ void AliITS::MakeBranchD(const char *file){
 //______________________________________________________________________
 void AliITS::SetTreeAddressD(TTree *treeD){
     // Set branch address for the Trees.
+    // Inputs:
+    //      TTree *treeD   Tree containing the Digits.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     char branchname[30];
     const char *det[3] = {"SPD","SDD","SSD"};
     TBranch *branch;
@@ -864,8 +1053,12 @@ void AliITS::SetTreeAddressD(TTree *treeD){
 //______________________________________________________________________
 void AliITS::Hits2SDigits(){
     // Standard Hits to summable Digits function.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
-    return; // Using Hits inplace of the larger sDigits.
+    return; // Using Hits in place of the larger sDigits.
     AliHeader *header=gAlice->GetHeader(); // Get event number from this file.
     // Do the Hits to Digits operation. Use Standard input values.
     // Event number from file, no background hit merging , use size from
@@ -875,6 +1068,10 @@ void AliITS::Hits2SDigits(){
 //______________________________________________________________________
 void AliITS::Hits2PreDigits(){
     // Standard Hits to summable Digits function.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     AliHeader *header=gAlice->GetHeader(); // Get event number from this file.
     // Do the Hits to Digits operation. Use Standard input values.
@@ -885,12 +1082,20 @@ void AliITS::Hits2PreDigits(){
 //______________________________________________________________________
 void AliITS::SDigits2Digits(){
     // Standard Summable digits to Digits function.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     Hits2Digits();
 }
 //______________________________________________________________________
 void AliITS::Hits2Digits(){
     // Standard Hits to Digits function.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     AliHeader *header=gAlice->GetHeader(); // Get event number from this file.
     // Do the Hits to Digits operation. Use Standard input values.
@@ -904,18 +1109,43 @@ void AliITS::HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be
-    // initialised for all versions - for the moment it is only for v5 !
-    // 7 is the SDD beam test version
+    // initialized for all versions - for the moment it is only for v5 !
+    // 7 is the SDD beam test version. Dummy routine. Hits are ITS's Summable
+    // Digits.
+    // Inputs:
+    //      Int_t evnt       Event to be processed.
+    //      Int_t bgrev      Background Hit tree number.
+    //      Int_t nmodules   Not used.
+    //      Option_t *option String indicating if merging hits or not. To
+    //                       merge hits set equal to "Add". Otherwise no
+    //                       background hits are considered.
+    //      Test_t *filename File name containing the background hits..
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     return; // using Hits instead of the larger sdigits.
 }
 //______________________________________________________________________
 void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 			  Option_t *option, Option_t *opt,Text_t *filename){
-    // keep galice.root for signal and name differently the file for 
+    //   Keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be
-    // initialised for all versions - for the moment it is only for v5 !
-    // 7 is the SDD beam test version
+    // initialized for all versions - for the moment it is only for v5 !
+    // 7 is the SDD beam test version.
+    // Inputs:
+    //      Int_t evnt       Event to be processed.
+    //      Int_t bgrev      Background Hit tree number.
+    //      Int_t nmodules   Not used.
+    //      Option_t *option String indicating if merging hits or not. To
+    //                       merge hits set equal to "Add". Otherwise no
+    //                       background hits are considered.
+    //      Test_t *filename File name containing the background hits..
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     if(!GetITSgeom()) return; // need transformations to do digitization.
     AliITSgeom *geom = GetITSgeom();
@@ -942,7 +1172,7 @@ void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 	sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
 	if (!sim) {
 	    Error("HitsToSDigits",
-		  "The simulation class was not instantiated!");
+		  "The simulation class was not instanciated!");
 	    exit(1);
 	} // end if !sim
 	mod      = (AliITSmodule *)fITSmodules->At(module);
@@ -965,14 +1195,24 @@ void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 //______________________________________________________________________
 void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 			  Option_t *option, Option_t *opt,Text_t *filename){
-    // keep galice.root for signal and name differently the file for 
+    //   Keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be
-    // initialised for all versions - for the moment it is only for v5 !
-    // 7 is the SDD beam test version  
-/*    Int_t ver = this->IsVersion(); 
-    if(ver!=5 && ver!=7 && ver!=8 && ver!=9) return; 
-*/
+    // initialized for all versions - for the moment it is only for v5 !
+    // 7 is the SDD beam test version.
+    // Inputs:
+    //      Int_t evnt       Event to be processed.
+    //      Int_t bgrev      Background Hit tree number.
+    //      Int_t nmodules   Not used.
+    //      Option_t *option String indicating if merging hits or not. To
+    //                       merge hits set equal to "Add". Otherwise no
+    //                       background hits are considered.
+    //      Test_t *filename File name containing the background hits..
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+
     if(!GetITSgeom()) return; // need transformations to do digitization.
     AliITSgeom *geom = GetITSgeom();
 
@@ -998,7 +1238,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 	sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
 	if (!sim) {
 	    Error("HitsToDigits",
-		  "The simulation class was not instantiated!");
+		  "The simulation class was not instanciated!");
 	    exit(1);
 	} // end if !sim
 	mod      = (AliITSmodule *)fITSmodules->At(module);
@@ -1007,26 +1247,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 	gAlice->TreeD()->Fill(); 
 	ResetDigits();
     } // end for module
-/*
-    Int_t id,module;
-    Int_t first,last;
-    for (id=0;id<kNTYPES;id++) {
-        if (!all && !det[id]) continue;
-	AliITSDetType *iDetType=DetType(id); 
-	sim = (AliITSsimulation*)iDetType->GetSimulationModel();
-	if(geom) {
-	    first = geom->GetStartDet(id);
-	    last = geom->GetLastDet(id);
-	} else first=last=0;
-	for(module=first;module<=last;module++) {
-	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
-	    sim->DigitiseModule(mod,module,evNumber);
-	    // fills all branches - wasted disk space
-	    gAlice->TreeD()->Fill(); 
-	    ResetDigits();
-	} // loop over modules
-    } // loop over detector types
-*/
+
     ClearModules();
 
     gAlice->TreeD()->GetEntries();
@@ -1039,14 +1260,22 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
 }
 //______________________________________________________________________
 void AliITS::ResetSDigits(){
-    // Reset the Summable Digits array
+    // Reset the Summable Digits array.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     if (fSDigits) fSDigits->Clear();
     fNSDigits = 0;
 }
 //______________________________________________________________________
 void AliITS::ResetDigits(){
-    // Reset number of digits and the digits array for the ITS detector
+    // Reset number of digits and the digits array for the ITS detector.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     if (!fDtype) return;
 
@@ -1058,28 +1287,54 @@ void AliITS::ResetDigits(){
 }
 //______________________________________________________________________
 void AliITS::ResetDigits(Int_t i){
-    // Reset number of digits and the digits array for this branch
+    // Reset number of digits and the digits array for this branch.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     if (fDtype->At(i))    ((TClonesArray*)fDtype->At(i))->Clear();
     if (fNdtype)  fNdtype[i]=0;
 }
 //______________________________________________________________________
 void AliITS::AddSumDigit(AliITSpListItem &sdig){
-    // adds the a module full of summable digits to the summable digits tree.
+    // Adds the a module full of summable digits to the summable digits tree.
+    // Inputs:
+    //      AliITSpListItem &sdig   SDigit to be added to SDigits tree.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     TClonesArray &lsdig = *fSDigits;
     new(lsdig[fNSDigits++]) AliITSpListItem(sdig);
 }
 //______________________________________________________________________
 void AliITS::AddRealDigit(Int_t id, Int_t *digits){
-    // add a real digit - as coming from data
+    //   Add a real digit - as coming from data.
+    // Inputs:
+    //      Int_t id        Detector type number.
+    //      Int_t *digits   Integer array containing the digits info. See 
+    //                      AliITSdigit.h
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
     new(ldigits[fNdtype[id]++]) AliITSdigit(digits);
 }
 //______________________________________________________________________
 void AliITS::AddSimDigit(Int_t id, AliITSdigit *d){
-    // add a simulated digit
+    //    Add a simulated digit.
+    // Inputs:
+    //      Int_t id        Detector type number.
+    //      AliITSdigit *d  Digit to be added to the Digits Tree. See 
+    //                      AliITSdigit.h
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
 
@@ -1098,7 +1353,22 @@ void AliITS::AddSimDigit(Int_t id, AliITSdigit *d){
 //______________________________________________________________________
 void AliITS::AddSimDigit(Int_t id,Float_t phys,Int_t *digits,Int_t *tracks,
 			 Int_t *hits,Float_t *charges){
-    // add a simulated digit to the list
+    //   Add a simulated digit to the list.
+    // Inputs:
+    //      Int_t id        Detector type number.
+    //      Float_t phys    Physics indicator. See AliITSdigits.h
+    //      Int_t *digits   Integer array containing the digits info. See 
+    //                      AliITSdigit.h
+    //      Int_t *tracks   Integer array [3] containing the track numbers that
+    //                      contributed to this digit.
+    //      Int_t *hits     Integer array [3] containing the hit numbers that
+    //                      contributed to this digit.
+    //      Float_t *charge Floating point array of the signals contributed
+    //                      to this digit by each track.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
     switch(id){
@@ -1116,7 +1386,14 @@ void AliITS::AddSimDigit(Int_t id,Float_t phys,Int_t *digits,Int_t *tracks,
 }
 //______________________________________________________________________
 void AliITS::MakeTreeC(Option_t *option){
-    // create a separate tree to store the clusters
+    //   Create a separate tree to store the clusters.
+    // Inputs:
+    //      Option_t *option  string which must contain "C" otherwise
+    //                        no Cluster Tree is created.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     const char *optC = strstr(option,"C");
     if (optC && !fTreeC) fTreeC = new TTree("TC","Clusters in ITS");
@@ -1144,7 +1421,13 @@ void AliITS::MakeTreeC(Option_t *option){
 }
 //______________________________________________________________________
 void AliITS::GetTreeC(Int_t event){
-    // get the clusters tree for this event and set the branch address
+    //    Get the clusters tree for this event and set the branch address.
+    // Inputs:
+    //      Int_t event    Event number for the cluster tree.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     char treeName[20];
     char branchname[30];
     const char *det[3] = {"SPD","SDD","SSD"};
@@ -1176,13 +1459,20 @@ void AliITS::GetTreeC(Int_t event){
 	    } // end if fCtype
 	} // end for i
     } else {
-	Error("AliITS::GetTreeC",
-	      "cannot find Clusters Tree for event:%d\n",event);
+	Error("GetTreeC","cannot find Clusters Tree for event:%d",event);
     } // end if fTreeC
 }
 //______________________________________________________________________
 void AliITS::AddCluster(Int_t id, AliITSRawCluster *c){
-    // add a cluster to the list
+    //   Add a cluster to the list.
+    // Inputs:
+    //      Int_t id             Detector type number.
+    //      AliITSRawCluster *c  Cluster class to be added to the tree of
+    //                           clusters.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     TClonesArray &lc = *((TClonesArray*)fCtype->At(id));
 
@@ -1200,17 +1490,24 @@ void AliITS::AddCluster(Int_t id, AliITSRawCluster *c){
 }
 //______________________________________________________________________
 void AliITS::ResetClusters(){
-    // Reset number of clusters and the clusters array for ITS
+    // Reset number of clusters and the clusters array for ITS.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     Int_t i;
-    for (i=0;i<kNTYPES;i++ ) {
-	if (fCtype->At(i))    ((TClonesArray*)fCtype->At(i))->Clear();
-	if (fNctype)  fNctype[i]=0;
-    } // end for i
+    for (i=0;i<kNTYPES;i++ ) ResetClusters(i);
 }
 //______________________________________________________________________
 void AliITS::ResetClusters(Int_t i){
-    // Reset number of clusters and the clusters array for this branch
+    //    Reset number of clusters and the clusters array for this branch.
+    // Inputs:
+    //      Int_t i        Detector type number.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     if (fCtype->At(i))    ((TClonesArray*)fCtype->At(i))->Clear();
     if (fNctype)  fNctype[i]=0;
@@ -1218,25 +1515,36 @@ void AliITS::ResetClusters(Int_t i){
 //______________________________________________________________________
 void AliITS::MakeBranchR(const char *file){
     // Creates Tree branches for the ITS Reconstructed points.
-    Int_t buffersize = 4000;
+    // Inputs:
+    //      cont char *file  File name where RecPoints branch is to be written
+    //                       to. If blank it write the SDigits to the same
+    //                       file in which the Hits were found.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+    Int_t buffsz = 4000;
     char branchname[30];
 
-//    sprintf(branchname,"%s",GetName());
     // only one branch for rec points for all detector types
     sprintf(branchname,"%sRecPoints",GetName());
     if (fRecPoints && gAlice->TreeR()) {
-	MakeBranchInTree(gAlice->TreeR(),branchname, &fRecPoints,
-			 buffersize,file) ;
+	MakeBranchInTree(gAlice->TreeR(),branchname,&fRecPoints,buffsz,file);
     } // end if
 }
 //______________________________________________________________________
 void AliITS::SetTreeAddressR(TTree *treeR){
     // Set branch address for the Reconstructed points Trees.
+    // Inputs:
+    //      TTree *treeR   Tree containing the RecPoints.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
     char branchname[30];
 
     if(!treeR) return;
     TBranch *branch;
-//    sprintf(branchname,"%s",GetName());
     sprintf(branchname,"%sRecPoints",GetName());
     branch = treeR->GetBranch(branchname);
     if (branch) branch->SetAddress(&fRecPoints);
@@ -1244,6 +1552,13 @@ void AliITS::SetTreeAddressR(TTree *treeR){
 //______________________________________________________________________
 void AliITS::AddRecPoint(const AliITSRecPoint &r){
     // Add a reconstructed space point to the list
+    // Inputs:
+    //      const AliITSRecPoint &r RecPoint class to be added to the tree
+    //                              of reconstructed points TreeR.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
 
     TClonesArray &lrecp = *fRecPoints;
     new(lrecp[fNRecPoints++]) AliITSRecPoint(r);
@@ -1254,10 +1569,21 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
     // the condition below will disappear when the geom class will be
-    // initialised for all versions - for the moment it is only for v5 !
-/*    Int_t ver = this->IsVersion(); 
-    if(ver!=5 && ver!=8 && ver!=9) return;
-*/
+    // initialized for all versions - for the moment it is only for v5 !
+    // Inputs:
+    //      Int_t evnt       Event to be processed.
+    //      Int_t bgrev      Background Hit tree number.
+    //      Int_t size       Size used by InitModules. See InitModules.
+    //      Option_t *opt0   Option passed to FillModules. See FillModules.
+    //      Option_t *opt1   String indicating if merging hits or not. To
+    //                       merge hits set equal to "Add". Otherwise no
+    //                       background hits are considered.
+    //      Test_t *flnm     File name containing the background hits..
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+
     if(!GetITSgeom()) return;
     AliITSgeom *geom = GetITSgeom();
 
@@ -1282,7 +1608,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
 	sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
 	if (!sim) {
 	    Error("HitsToFastPoints",
-		  "The simulation class was not instantiated!");
+		  "The simulation class was not instanciated!");
 	    exit(1);
 	} // end if !sim
 	mod      = (AliITSmodule *)fITSmodules->At(module);
@@ -1290,30 +1616,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
 	gAlice->TreeR()->Fill(); 
 	ResetRecPoints();
     } // end for module
-/*
-    Int_t id,module;
-    for (id=0;id<kNTYPES;id++) {
-        if (!all && !det[id]) continue;
-	AliITSDetType *iDetType=DetType(id); 
-	sim = (AliITSsimulation*)iDetType->GetSimulationModel();
-	if (!sim) {
-	    Error("HitsToFastPoints",
-		  "The simulation class was not instantiated!");
-	    exit(1);
-	} // end if !sim
-        Int_t first,last;
-        if(geom) {
-	    first = geom->GetStartDet(id);
-	    last = geom->GetLastDet(id);
-        } else first=last=0;
-	for(module=first;module<=last;module++) {
-	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
-	    sim->CreateFastRecPoints(mod,module,gRandom);
-	    gAlice->TreeR()->Fill(); 
-	    ResetRecPoints();
-	} // loop over modules
-    } // loop over detector types
-*/
+
     ClearModules();
 
     char hname[30];
@@ -1324,7 +1627,11 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
 }
 //______________________________________________________________________
 void AliITS::Digits2Reco(){
-    // find clusters and reconstruct space points
+    // Find clusters and reconstruct space points.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     AliHeader *header=gAlice->GetHeader();
     // to Digits to RecPoints for event in file, all digits in file, and
@@ -1335,11 +1642,20 @@ void AliITS::Digits2Reco(){
 void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
     // cluster finding and reconstruction of space points
     // the condition below will disappear when the geom class will be
-    // initialised for all versions - for the moment it is only for v5 !
-    // 7 is the SDD beam test version  
-/*    Int_t ver = this->IsVersion(); 
-    if(ver!=5 && ver!=8 && ver!=9) return;
-*/
+    // initialized for all versions - for the moment it is only for v5 !
+    // 7 is the SDD beam test version
+    // Inputs:
+    //      Int_t evNumber   Event number to be processed.
+    //      Int_t lastentry  Offset for module when not all of the modules
+    //                       are processed.
+    //      Option_t *opt    String indicating which ITS sub-detectors should
+    //                       be processed. If ="All" then all of the ITS
+    //                       sub detectors are processed.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+
     if(!GetITSgeom()) return;
     AliITSgeom *geom = GetITSgeom();
     
@@ -1364,7 +1680,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
         TClonesArray *itsDigits  = this->DigitsAddress(id);
 	if (!rec) {
 	    Error("DigitsToRecPoints",
-		  "The reconstruction class was not instantiated!");
+		  "The reconstruction class was not instanciated!");
 	    exit(1);
 	} // end if !rec
 	this->ResetDigits();
@@ -1378,32 +1694,6 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
 	ResetClusters();
     } // end for module
 
-/*
-    Int_t id,module;
-    for (id=0;id<kNTYPES;id++) {
-        if (!all && !det[id]) continue;
-	AliITSDetType *iDetType=DetType(id); 
-	rec = (AliITSClusterFinder*)iDetType->GetReconstructionModel();
-        TClonesArray *itsDigits  = this->DigitsAddress(id);
-        Int_t first,last;
-	if(geom) {
-	    first = geom->GetStartDet(id);
-	    last = geom->GetLastDet(id);
-	} else first=last=0;
-	printf("first module - last module %d %d\n",first,last);
-	for(module=first;module<=last;module++) {
-	    this->ResetDigits();
-	    if (all) gAlice->TreeD()->GetEvent(lastentry+module);
-	    else gAlice->TreeD()->GetEvent(lastentry+(module-first));
-	    Int_t ndigits = itsDigits->GetEntriesFast();
-	    if (ndigits) rec->FindRawClusters(module);
-	    gAlice->TreeR()->Fill(); 
-	    ResetRecPoints();
-	    treeC->Fill();
-	    ResetClusters();
-	} // loop over modules
-    } // loop over detector types
-*/
     gAlice->TreeR()->GetEntries();
     treeC->GetEntries();
 
@@ -1419,7 +1709,11 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
 }
 //______________________________________________________________________
 void AliITS::ResetRecPoints(){
-    // Reset number of rec points and the rec points array
+    // Reset number of rec points and the rec points array.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
 
     if (fRecPoints) fRecPoints->Clear();
     fNRecPoints = 0;
