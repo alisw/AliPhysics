@@ -915,7 +915,7 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
 
   if (!tx) continue;
 
-  charge=tx->GetCharge();
+  charge=static_cast<int>(tx->GetCharge());
 
   TPolyLine3D* line=new TPolyLine3D();
   fLines->Add(line);

@@ -313,3 +313,6 @@
                 In this way possible memory leaks can always be prevented.
                 Also automatic extrapolation and confidence level calculation of associated
                 veto hits introduced in AliCalorimeter and AliCalcluster.
+28-oct-2002 NvE "Riostream.h" introduced to replace the standard C++ includes and 
+                static_cast<int> introduced in AliVertex::Draw to prevent a warning
+                message for the new gcc compiler version.

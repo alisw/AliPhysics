@@ -5,7 +5,7 @@
 
 // $Id$
 
-#include <iostream.h>
+#include "Riostream.h"
  
 #include "AliSignal.h"
  
