@@ -7,7 +7,6 @@ void ViewRICH()
    gMC->Gsatt("QUAR","seen",1);
    gMC->Gsatt("SPAC","seen",1);
    gMC->Gsatt("OQUA","seen",1);
-   gMC->Gsatt("BARR","seen",1);
    gMC->Gsatt("META","seen",1);
    gMC->Gsatt("GAP ","seen",1);
    gMC->Gsatt("CSI ","seen",1);

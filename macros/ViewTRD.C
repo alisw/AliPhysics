@@ -1,10 +1,10 @@
 void ViewTRD()
 {
-gMC->Gsatt("B077","seen",0);
+gMC->Gsatt("B077","seen",1);
 //gMC->Gsatt("B076","seen",1);
-gMC->Gsatt("B071","seen",0);
-gMC->Gsatt("B074","seen",0);
-gMC->Gsatt("B075","seen",0);
+gMC->Gsatt("B071","seen",1);
+gMC->Gsatt("B074","seen",1);
+//gMC->Gsatt("B075","seen",1);
 /*gMC->Gsatt("B080","seen",0);
 gMC->Gsatt("B042","seen",0);
 gMC->Gsatt("B045","seen",0);
@@ -21,12 +21,12 @@ gMC->Gsatt("B056","seen",0);
 gMC->Gsatt("B059","seen",0);
 gMC->Gsatt("B072","seen",0);
 */
-gMC->Gsatt("BTR1","seen",0);
-gMC->Gsatt("BTO1","seen",0);
-gMC->Gsatt("BTR2","seen",0);
-gMC->Gsatt("BTO2","seen",0);
-gMC->Gsatt("BTR3","seen",0);
-gMC->Gsatt("BTO3","seen",0);
+gMC->Gsatt("BTR1","seen",1);
+gMC->Gsatt("BTO1","seen",1);
+gMC->Gsatt("BTR2","seen",1);
+gMC->Gsatt("BTO2","seen",1);
+//gMC->Gsatt("BTR3","seen",1);
+//gMC->Gsatt("BTO3","seen",1);
 /*
 gMC->Gsatt("B043","seen",0);
 gMC->Gsatt("B046","seen",0);
@@ -42,18 +42,19 @@ gMC->Gsatt("B062","seen",0);
 gMC->Gsatt("B073","seen",0);
 */
 
-gMC->Gsatt("UAFI","seen",1);
-gMC->Gsatt("UAFM","seen",1);
-gMC->Gsatt("UAFO","seen",1);
-gMC->Gsatt("UAII","seen",0);
-gMC->Gsatt("UAIM","seen",0);
-gMC->Gsatt("UAIO","seen",0);
-gMC->Gsatt("UCFI","seen",0);
-gMC->Gsatt("UCFM","seen",0);
-gMC->Gsatt("UCFO","seen",0);
-gMC->Gsatt("UCII","seen",0);
-gMC->Gsatt("UCIM","seen",0);
-gMC->Gsatt("UCIO","seen",0);
+// gMC->Gsatt("UAFI","seen",1);
+// gMC->Gsatt("UAFM","seen",1);
+// gMC->Gsatt("UAFO","seen",1);
+// gMC->Gsatt("UAII","seen",0);
+// gMC->Gsatt("UAIM","seen",0);
+// gMC->Gsatt("UAIO","seen",0);
+// gMC->Gsatt("UCFI","seen",0);
+// gMC->Gsatt("UCFM","seen",0);
+// gMC->Gsatt("UCFO","seen",0);
+// gMC->Gsatt("UCII","seen",0);
+// gMC->Gsatt("UCIM","seen",0);
+// gMC->Gsatt("UCIO","seen",0);
+/*
 gMC->Gsatt("UL01","seen",1);
 gMC->Gsatt("UL02","seen",1);
 gMC->Gsatt("UL03","seen",1);
@@ -65,7 +66,8 @@ gMC->Gsatt("UL08","seen",1);
 gMC->Gsatt("UL09","seen",1);
 gMC->Gsatt("UL10","seen",1);
 gMC->Gsatt("UL11","seen",1);
-gMC->Gsatt("TRD1","seen",0);
-gMC->Gsatt("TRD2","seen",0);
-gMC->Gsatt("TRD3","seen",0);
+*/
+// gMC->Gsatt("TRD1","seen",0);
+// gMC->Gsatt("TRD2","seen",0);
+// gMC->Gsatt("TRD3","seen",0);
 }

@@ -11,12 +11,12 @@ void ViewFRAME()
   gMC->Gsatt("B047","seen",0);
   gMC->Gsatt("B051","seen",0);
   gMC->Gsatt("B049","seen",0);
-  gMC->Gsatt("B039","seen",1);
+  //  gMC->Gsatt("B039","seen",1);
   gMC->Gsatt("B033","seen",0);
   gMC->Gsatt("B063","seen",1);
   gMC->Gsatt("B065","seen",1);
   gMC->Gsatt("B067","seen",1);
-  gMC->Gsatt("B069","seen",1);
+  //  gMC->Gsatt("B069","seen",1);
   gMC->Gsatt("B056","seen",1);
   gMC->Gsatt("B059","seen",1);
   gMC->Gsatt("B072","seen",1);
@@ -35,7 +35,7 @@ void ViewFRAME()
   gMC->Gsatt("B064","seen",1);
   gMC->Gsatt("B066","seen",1);
   gMC->Gsatt("B068","seen",1);
-  gMC->Gsatt("B070","seen",1);
+  //  gMC->Gsatt("B070","seen",1);
   gMC->Gsatt("B062","seen",1);
   gMC->Gsatt("B073","seen",1);
 }

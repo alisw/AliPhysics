@@ -13,6 +13,4 @@ void ViewHALL()
   gMC->Gsatt("HHF2","seen",1);
   gMC->Gsatt("HPIL","seen",1);
   gMC->Gsatt("HMBS","seen",1);
-  gMC->Gsatt("HBBS","seen",1);
-  gMC->Gsatt("HPBS","seen",1);
 }
