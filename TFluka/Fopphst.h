@@ -71,8 +71,8 @@ typedef struct {
     Double_t tpropp [mostck];
     Double_t apropp [mostck];
     Double_t cmpopp [mostck];
-    Double_t sparok [mkbmx1][mostck];
-    Int_t    ispork [mkbmx2][mostck];
+    Double_t sparok [mostck][mkbmx1];
+    Int_t    ispork [mostck][mkbmx2];
     Int_t    loopph [mostck];
     Int_t    louopp [mostck];
     Int_t    nregop [mostck];
