@@ -57,7 +57,7 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader) const
   // the global tracking.
  
   TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName("Default") ;  
+  TString branchName(runLoader->GetEventFolder()->GetName() ) ;  
   
   AliEMCALClusterizerv1 clu(headerFile, branchName);
   clu.SetEventRange(0, -1) ; // do all the events
@@ -75,24 +75,27 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   // Called by AliReconstruct after Reconstruct() and global tracking and vertxing 
   //Creates the tracksegments and Recparticles
   
+  Int_t eventNumber = runLoader->GetEventNumber() ;
+
   TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName("Default") ;  
+  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
 
   AliEMCALPIDv1 pid(headerFile, branchName);
 
-  Int_t eventNumber = runLoader->GetEventNumber() ;
+
   // do current event; the loop over events is done by AliReconstruction::Run()
-  Info("FillESD 1", "%d", eventNumber) ;
   pid.SetEventRange(eventNumber, eventNumber) ; 
   if ( Debug() ) 
-   pid.ExecuteTask("deb all") ;
+    pid.ExecuteTask("deb all") ;
   else 
     pid.ExecuteTask("") ;
-  
+ 
   // Creates AliESDtrack from AliEMCALRecParticles 
   AliEMCALGetter::Instance()->Event(eventNumber, "P") ; 
   TClonesArray *recParticles = AliEMCALGetter::Instance()->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
+  esd->SetNumberOfEMCALParticles(nOfRecParticles) ; 
+  esd->SetFirstEMCALParticle(esd->GetNumberOfTracks()) ; 
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliEMCALRecParticle * rp = dynamic_cast<AliEMCALRecParticle*>(recParticles->At(recpart));
     if (Debug()) 
@@ -102,9 +105,9 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     Double_t xyz[3];
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
       xyz[ixyz] = rp->GetPos()[ixyz];
-    //et->SetEMCALposition(xyz) ; 
-    //et->SetEMCALsignal  (rp->Energy()) ; 
-    //et->SetEMCALpid     (rp->GetPID()) ;
+    et->SetEMCALposition(xyz) ; 
+    et->SetEMCALsignal  (rp->Energy()) ; 
+    et->SetEMCALpid     (rp->GetPID()) ;
     // add the track to the esd object
     esd->AddTrack(et);
     delete et;
