@@ -339,9 +339,8 @@ for (Int_t k=0; k<nc; k++) {
          Double_t r=layer.GetR();
          if (fI==2 || fI==4) {             
             Double_t rs=0.5*(fLayers[fI-1].GetR() + r);
-            Double_t ds=0.034; if (fI==4) ds=0.039;
-            Double_t dx0r=ds/21.82*2.33, dr=ds*2.33;
-            if (!fTrackToFollow.PropagateTo(rs,1*dx0r,dr)) throw "";
+            Double_t d=0.011; if (fI==4) d=0.0053;
+            if (!fTrackToFollow.PropagateTo(rs,-d)) throw "";
          }
 
          Double_t x,y,z;

@@ -69,6 +69,7 @@ AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) {
   fC40=c[10]/x; fC41=c[11]/x; fC42=c[12]/x; fC43=c[13]/x; fC44=c[14]/x/x;
 
   if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
+
 }
 
 //____________________________________________________________________________
@@ -271,7 +272,7 @@ Int_t AliITStrackV2::CorrectForMaterial(Double_t d, Double_t x0) {
   //Multiple scattering******************
   if (d!=0) {
     //Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
-     Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*d*9.36*2.33;
+     Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
      fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
      fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
      fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
