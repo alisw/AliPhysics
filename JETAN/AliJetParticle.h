@@ -54,6 +54,11 @@ class AliJetParticle : public TObject
 
   void Clear(Option_t *t="");
   void Print(Option_t *t="") const;
+  ULong_t Hash() const {return fIdxInEvent;}
+  Bool_t IsEqual(const TObject *obj) const 
+    {return fIdxInEvent == ((AliJetParticle*)obj)->GetUID();}
+  Bool_t IsSortable() const {return kTRUE;}
+  Int_t  Compare(const TObject *obj) const;
 
   protected:
   void Calculate();     //calculate values
