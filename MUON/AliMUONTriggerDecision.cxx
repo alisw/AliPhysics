@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.8  2001/03/20 16:13:01  pcrochet
+bug fixed in the rejection of soft background (thanks to FM)
+
 Revision 1.7  2001/03/20 13:32:37  egangler
 includes cleanup
 
@@ -246,9 +249,15 @@ void AliMUONTriggerDecision::SetBit(){
       if (muonDigits == 0) return;
       
       gAlice->ResetDigits();
+      Int_t nent = 0;
       
-      Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-      gAlice->TreeD()->GetEvent(nent-2+cathode-1);
+      if (gAlice->TreeD()) {
+	nent = (Int_t) gAlice->TreeD()->GetEntries();
+	//printf(" entries %d \n", nent);
+	//     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
+	gAlice->TreeD()->GetEvent(cathode-1);
+      }
+      
       Int_t ndigits = muonDigits->GetEntriesFast();
       if (ndigits == 0) return;
       
