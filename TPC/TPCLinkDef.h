@@ -54,6 +54,7 @@
 
 
 #pragma link C++ class AliTPCclusterer-;
+#pragma link C++ class AliTPCDigitizer;
 
 
 

@@ -19,7 +19,7 @@ SRCS          = AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cx
 		AliTPCClustersArray.cxx AliH2F.cxx \
                 AliTPCcluster.cxx AliTPCclusterer.cxx \
                 AliTPCtrack.cxx AliTPCtracker.cxx \
-		AliTPCTrackHits.cxx
+		AliTPCTrackHits.cxx AliTPCDigitizer.cxx
 
 
 # C++ Headers

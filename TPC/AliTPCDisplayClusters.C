@@ -1,4 +1,4 @@
-Int_t AliTPCDisplayClusters(Int_t eventn=0) {
+Int_t AliTPCDisplayClusters(Int_t eventn=0, Int_t noiseth=15) {
    cerr<<"Displaying clusters...\n";
 
    TFile *file=TFile::Open("galice.root");
@@ -36,6 +36,7 @@ Int_t AliTPCDisplayClusters(Int_t eventn=0) {
        while (ncl--) {
            AliTPCcluster *cl=(AliTPCcluster*)clrow[ncl];
            Double_t x=dig->GetPadRowRadii(sec,row), y=cl->GetY(), z=cl->GetZ();
+	   if (cl->GetQ()<noiseth) continue;
            Float_t cs, sn, tmp;
            dig->AdjustCosSin(sec,cs,sn);
            tmp = x*cs-y*sn; y= x*sn+y*cs; x=tmp;
@@ -49,9 +50,26 @@ Int_t AliTPCDisplayClusters(Int_t eventn=0) {
    cf->Close();
 
    TGeometry *geom=(TGeometry*)file->Get("AliceGeom");
+   TList *list = geom->GetListOfNodes();
+   TNode * main = (geom->GetListOfNodes())->First();
+   TIter next(main->GetListOfNodes());
+   TNode  *module=0;
+   while((module = (TNode*)next())) {
+     char ch[100];
+     sprintf(ch,"%s\n",module->GetTitle());
+     //printf("%s\n",module->GetTitle());
+     if (ch[0]=='T'&&ch[1]=='P' && ch[2]=='C')  //if TPC draw
+       module->SetVisibility(3);
+     else
+       module->SetVisibility(-1);
+   }
+     
+   
    geom->Draw("same");
+   //v->Draw();
    c1->Modified(); c1->Update(); 
 
    file->Close();
    return 0;
 }
+
