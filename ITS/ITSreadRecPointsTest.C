@@ -61,14 +61,14 @@ void ITSreadRecPointsTest (Int_t evNumber1=0,Int_t evNumber2=0)
      TClonesArray *ITSrec  = ITS->RecPoints();
      for (Int_t mod=0; mod<nent; mod++) {
        ITS->ResetRecPoints();
-       TR->GetEvent(mod+1);
+       TR->GetEvent(mod);
        Int_t nrecp = ITSrec->GetEntries();
        if (nrecp) printf("Found %d rec points for module %d \n",nrecp,mod);
        if (!nrecp) continue;
 
        for (Int_t irec=0;irec<nrecp;irec++) {
 		recp   = (AliITSRecPoint*)ITSrec->UncheckedAt(irec);
-		printf("%d %f %f %d %d %d\n",irec,recp->GetX(),recp->GetZ(),recp->fTracks[0],recp->fTracks[1],recp->fTracks[2]);
+		printf("%d %f %f %d %d %d\n",irec,recp->GetX(),recp->GetZ(),recp->GetLabel(0),recp->GetLabel(1),recp->GetLabel(2));
 
        }
      }        
