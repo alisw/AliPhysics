@@ -346,7 +346,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
    tracker->LoadOuterSectors();
        
   /*  commentato per eliminazione good
-  GoodTrack gt[15000];
+  GoodTrack gt[30000];
   Int_t ngood=0;
   ifstream in("itsgood_tracks");
 
@@ -358,7 +358,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
 	  >>gt[ngood].ptg >>gt[ngood].flag) {
     ngood++;
     cerr<<ngood<<'\r';
-    if (ngood==15000) {
+    if (ngood==30000) {
       cerr<<"Too many good tracks !\n";
       break;
     }
