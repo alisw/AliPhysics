@@ -9,6 +9,7 @@
 #include "AliGenerator.h"
 #include "GenTypeDefs.h"
 #include <THijing.h>
+#include <TString.h>
 #include <TArrayI.h>
 
 class TArrayI;
@@ -27,12 +28,15 @@ class AliGenHijing : public AliGenerator
     virtual void    Init();
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
-    virtual void    SetReferenceFrame(char* frame="CMS     ") {fFrame=frame;}
-    virtual void    SetProjectile(char* proj="A       ", Int_t a=208, Int_t z=97)
+    virtual void    SetReferenceFrame(TString frame=TString("CMS"))
+	{fFrame=frame;}
+    virtual void    SetProjectile(TString proj=TString("A"),
+				  Int_t a=208, Int_t z=82)
 	{fProjectile = proj;
 	fAProjectile = a;
 	fZProjectile = z;}    
-    virtual void    SetTarget(char* tar="A       ", Int_t a=208, Int_t z=97)
+    virtual void    SetTarget(TString tar=TString("A"),
+			      Int_t a=208, Int_t z=82)
 	{fTarget = tar;
 	fATarget = a;
 	fZTarget =z;}    
@@ -51,37 +55,38 @@ class AliGenHijing : public AliGenerator
     AliGenHijing &  operator=(const AliGenHijing & rhs);
 // Physics Routines	    
     virtual void EvaluateCrossSections();
-    
  protected:
     Bool_t SelectFlavor(Int_t pid);
+    void   MakeHeader();
+
  protected:
-    char       *fFrame;         // Reference frame 
-    char       *fProjectile;    // Projectile
-    char       *fTarget;        // Target
-    Int_t       fAProjectile;   // Projectile A
-    Int_t       fZProjectile;   // Projectile Z
-    Int_t       fATarget;       // Target A
-    Int_t       fZTarget;       // Target Z
+    TString     fFrame;         // Reference frame 
+    TString     fProjectile;    // Projectile
+    TString     fTarget;        // Target
+    Int_t       fAProjectile;    // Projectile A
+    Int_t       fZProjectile;    // Projectile Z
+    Int_t       fATarget;        // Target A
+    Int_t       fZTarget;        // Target Z
     Float_t     fMinImpactParam; // minimum impact parameter
     Float_t     fMaxImpactParam; // maximum impact parameter	
-    Int_t       fKeep;          // Flag to keep full event information
-    Int_t       fQuench;        // Flag to switch on jet quenching
-    Int_t       fShadowing;     // Flag to switch on voclear effects on parton distribution function
-    Int_t       fDecaysOff;     // Flag to turn off decays of pi0, K_s, D, Lambda, sigma
-    Int_t       fTrigger;       // Trigger type
-    Int_t       fEvaluate;      // Evaluate total and partial cross-sections
-    Int_t       fSelectAll;     // Flag to write the full event
-    Int_t       fFlavor;        // Selected particle flavor 4: charm+beauty 5: beauty
-    Decay_t     fForceDecay;    // Decay channel  are forced
-    Float_t     fEnergyCMS;     // Centre of mass energy
-    Float_t     fKineBias;      // Bias from kinematic selection
-    Int_t       fTrials;        // Number of trials
-    TArrayI     fParentSelect;  // Parent particles to be selected 
-    TArrayI     fChildSelect;   // Decay products to be selected
-    Float_t     fXsection;      // Cross-section
-    THijing    *fHijing;        // Hijing
-    Float_t     fPtHardMin;     // lower pT-hard cut 
-    Float_t     fPtHardMax;     // higher pT-hard cut
+    Int_t       fKeep;           // Flag to keep full event information
+    Int_t       fQuench;         // Flag to switch on jet quenching
+    Int_t       fShadowing;      // Flag to switch on voclear effects on parton distribution function
+    Int_t       fDecaysOff;      // Flag to turn off decays of pi0, K_s, D, Lambda, sigma
+    Int_t       fTrigger;        // Trigger type
+    Int_t       fEvaluate;       // Evaluate total and partial cross-sections
+    Int_t       fSelectAll;      // Flag to write the full event
+    Int_t       fFlavor;         // Selected particle flavor 4: charm+beauty 5: beauty
+    Decay_t     fForceDecay;     // Decay channel  are forced
+    Float_t     fEnergyCMS;      // Centre of mass energy
+    Float_t     fKineBias;       // Bias from kinematic selection
+    Int_t       fTrials;         // Number of trials
+    TArrayI     fParentSelect;   // Parent particles to be selected 
+    TArrayI     fChildSelect;    // Decay products to be selected
+    Float_t     fXsection;       // Cross-section
+    THijing    *fHijing;         // Hijing
+    Float_t     fPtHardMin;      // lower pT-hard cut 
+    Float_t     fPtHardMax;      // higher pT-hard cut
 
  private:
     // check if particle is selected as parent particle

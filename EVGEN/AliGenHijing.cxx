@@ -15,12 +15,16 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 14:15:05  morsch
+Add possibility for heavy flavor selection: charm and beauty.
+
 Revision 1.1  2000/06/09 20:47:27  morsch
 AliGenerator interface class to HIJING using THijing (test version)
 
 */
 
 #include "AliGenHijing.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliRun.h"
 
 #include <TArrayI.h>
@@ -68,6 +72,10 @@ AliGenHijing::~AliGenHijing()
 void AliGenHijing::Init()
 {
 // Initialisation
+    fFrame.Resize(8);
+    fTarget.Resize(8);
+    fProjectile.Resize(8);
+    
     SetMC(new THijing(fEnergyCMS, fFrame, fProjectile, fTarget, 
 		      fAProjectile, fZProjectile, fATarget, fZTarget, 
 		      fMinImpactParam, fMaxImpactParam));
@@ -337,6 +345,24 @@ Bool_t AliGenHijing::SelectFlavor(Int_t pid)
     return ((fFlavor==4 && (ifl==4 || ifl==5))  || 
 	    (fFlavor==5 &&  ifl==5));
 
+}
+
+void AliGenHijing::MakeHeader()
+{
+// Builds the event header, to be called after each event
+    AliGenHijingEventHeader* header = new AliGenHijingEventHeader("Hijing");
+//    header->SetDate(date);
+//    header->SetRunNumber(run);
+//    header->SetEventNumber(event);
+    header->SetNProduced(fHijing->GetNATT());
+    header->SetImpactParameter(fHijing->GetHINT1(19));
+    header->SetTotalEnergy(fHijing->GetEATT());
+    header->SetHardScatters(fHijing->GetJATT());
+    header->SetParticipants(fHijing->GetNP(), fHijing->GetNT());
+    header->SetCollisions(fHijing->GetN0(),
+			  fHijing->GetN01(),
+			  fHijing->GetN10(),
+			  fHijing->GetN11());
 }
 
 AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
