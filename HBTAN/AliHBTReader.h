@@ -42,7 +42,7 @@ class AliHBTReader: public TNamed
     
     void                 SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
     void                 SetEventBuffering(Bool_t flag){fBufferEvents = flag;}
-    
+    void          SetBlend(Bool_t flag = kTRUE){fBlend=flag;}
     virtual Int_t GetNumberOfDirs() const {return (fDirs)?fDirs->GetEntries():0;}
   protected:
     
@@ -63,17 +63,19 @@ class AliHBTReader: public TNamed
     Bool_t        fIsRead;//!flag indicating if the data are already read
     Bool_t        fBufferEvents;//flag indicating if the data should be bufferred
     
+    Bool_t        fBlend;// flag indicating if randomly change positions of the particles after reading
     virtual Int_t ReadNext() = 0; //this methods reads next event and put result in fTracksEvent and/or fParticlesEvent
     Bool_t Pass(AliHBTParticle*);
     Bool_t Pass(Int_t pid);
-
+    void Blend();
+    
     TString& GetDirName(Int_t);
     
   private:
   
   public:
-    ClassDef(AliHBTReader,2)//version 2 - TNamed as parental class
-    
+    ClassDef(AliHBTReader,3)//version 2 - TNamed as parental class
+                            //version 3 - Blending added
 };
 
 #endif

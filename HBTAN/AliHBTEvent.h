@@ -42,6 +42,7 @@ class AliHBTEvent: public TObject
     Bool_t  IsOwner() {return fOwner;}
     void    SetRandomized(Bool_t rd = kTRUE){fRandomized = rd;}
     Bool_t  IsRandomized()const {return fRandomized;}
+    void    SwapParticles(Int_t i, Int_t j);//swaps particles positions; used by AliHBTEvent::Blend
   protected:
     Int_t  fSize;       //!current size of the array
     AliHBTParticle ** fParticles; //!array of pointers to the particles

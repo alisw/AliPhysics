@@ -150,3 +150,15 @@ void AliHBTEvent::Expand()
  delete [] fParticles; //delete old array
   fParticles = tmpParticles; //copy new pointer to the array of pointers to particles
 }
+/**************************************************************************/ 
+
+void AliHBTEvent::SwapParticles(Int_t i, Int_t j)
+{
+//swaps particles positions; used by AliHBTEvent::Blend
+  if ( (i<0) || (i>=fNParticles)) return;
+  if ( (j<0) || (j>=fNParticles)) return;
+  
+  AliHBTParticle* tmp = fParticles[i];
+  fParticles[i] = fParticles[j];
+  fParticles[j] = tmp;
+}

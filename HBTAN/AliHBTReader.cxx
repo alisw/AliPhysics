@@ -4,6 +4,7 @@
 #include <TObjString.h>
 #include <TObjArray.h>
 #include <TClass.h>
+#include <TRandom.h>
 
 #include "AliHBTParticleCut.h"
 #include "AliHBTEvent.h"
@@ -66,6 +67,8 @@ Int_t AliHBTReader::Next()
 //moves to next event
   if ( ReadNext() == kTRUE)
      return kTRUE;
+  
+  if (fBlend) Blend();
   
   if (fBufferEvents)
    {
@@ -303,4 +306,17 @@ TString& AliHBTReader::GetDirName(Int_t entry)
   if (gDebug > 0) Info("GetDirName","Returned ok %s",dir->String().Data());
   return dir->String();
 }
+/*************************************************************************************/
 
+void AliHBTReader::Blend()
+{
+  //randomly change positions of the particles after reading
+  //is used to check if some distr depends on order of particles
+  //(tracking gives particles Pt sorted)
+  for (Int_t i = 2; i < fParticlesEvent->GetNumberOfParticles(); i++)
+   {
+     Int_t with = gRandom->Integer(i);
+     fParticlesEvent->SwapParticles(i,with);
+     if (fTracksEvent) fTracksEvent->SwapParticles(i,with);
+   }
+}
