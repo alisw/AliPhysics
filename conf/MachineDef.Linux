@@ -32,11 +32,12 @@ CLIBFOPT      =
 
 # Additional directories for dependencies
 
-DEPINC	      = `rm -f /tmp/d.cxx; touch /tmp/d.cxx ; \
-                 g++ -v -c /tmp/d.cxx -o /dev/null 2>&1 | \
+DEPINC	      = `rm -f /tmp/d_$$$$.cxx; touch /tmp/d_$$$$.cxx ; \
+                 g++ -v -c /tmp/d_$$$$.cxx -o /dev/null 2>&1 | \
                  awk 'BEGIN {i=0} {if(substr($$0,1,10)=="End of sea") i=0; \
                  if(i==1) printf "%s",$$sub(" ","-I")" "; \
-                 if(substr($$0,1,10) == "\#include <") i=1}' ; rm /tmp/d.cxx`
+                 if(substr($$0,1,10) == "\#include <") i=1}' ; \
+                 rm /tmp/d_$$$$.cxx`
 		
 LD            = g++
 LDFLAGS       = $(OPT)
