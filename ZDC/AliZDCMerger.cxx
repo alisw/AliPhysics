@@ -66,7 +66,7 @@ AliZDCMerger::AliZDCMerger()
     fFnSpecp     = 0;
     fSpecpFile   = 0;
     fNMhits	 = 0;
-     
+    fMHits       = 0;
 }
 
 //____________________________________________________________________________
