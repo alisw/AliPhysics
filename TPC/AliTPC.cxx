@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2001/01/26 19:57:19  hristov
+Major upgrade of AliRoot code
+
 Revision 1.27  2001/01/13 17:29:33  kowal2
 Sun compiler correction
 
@@ -1630,8 +1633,12 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
           if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
 	  xyz[0]=tpcHit->X();
 	  xyz[1]=tpcHit->Y();
-	  xyz[2]=tpcHit->Z();	  
-	  xyz[3]= (Float_t) (-gasgain*TMath::Log(gRandom->Rndm()));
+	  xyz[2]=tpcHit->Z();	
+	  //
+	  // protection for the nonphysical avalanche size (10**6 maximum)
+	  //  
+	  xyz[3]= (Float_t) 
+           (-gasgain*TMath::Log(gRandom->Rndm()*(1.-1.93e-22)+1.928e-22));  
 	  index[0]=1;
 	  
 	  TransportElectron(xyz,index); //MI change -august	  
