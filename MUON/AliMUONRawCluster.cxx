@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 22:04:50  morsch
 Was before in DataStructures.cxx
 
@@ -48,7 +51,7 @@ AliMUONRawCluster::AliMUONRawCluster() {
     fNcluster[0]=fNcluster[1]=-1;
 }
 
-Int_t AliMUONRawCluster::Compare(TObject *obj)
+Int_t AliMUONRawCluster::Compare(const TObject *obj) const
 {
   /*
          AliMUONRawCluster *raw=(AliMUONRawCluster *)obj;

@@ -35,7 +35,7 @@ class AliITSRecPoint : public TObject {
     fQ=-fQ;
   }
   Int_t IsUsed() const {return (fQ<0) ? 1 : 0;} // checks Use condision
-  Int_t Compare(TObject *o) {
+  Int_t Compare(const TObject *o) const {
     //to be defined
     return 0;
   } 

@@ -46,7 +46,7 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack& t) {
 }
 
 //_____________________________________________________________________________
-Int_t AliKalmanTrack::Compare(TObject *o) {
+Int_t AliKalmanTrack::Compare(const TObject *o) const {
   //-----------------------------------------------------------------
   // This function compares tracks according to the their curvature
   //-----------------------------------------------------------------

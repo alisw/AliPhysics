@@ -19,7 +19,7 @@ public:
                const Double_t cc[15], Double_t xr, Double_t alpha);  
    AliTRDtrack(const AliTRDtrack& t);    
 
-   Int_t  Compare(TObject *o);
+   Int_t  Compare(const TObject *o) const;
 
    Double_t GetAlpha() const {return fAlpha;}
    Double_t GetC()     const {return fC;}

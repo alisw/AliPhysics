@@ -35,7 +35,7 @@ class AliMUONTrackHit : public TObject {
   Bool_t IsSortable () const {
     // necessary for sorting TClonesArray of TrackHit's
     return kTRUE; }
-  Int_t Compare(TObject* TrackHit); // "Compare" function for sorting
+  Int_t Compare(const TObject* TrackHit) const; // "Compare" function for sorting
 
  protected:
  private:

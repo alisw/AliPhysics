@@ -19,7 +19,7 @@ public:
   AliKalmanTrack() {fN=0; fChi2=0; fLab=-3141593;}
   AliKalmanTrack(const AliKalmanTrack& t);
   virtual ~AliKalmanTrack() {}
-  Int_t Compare(TObject *o);
+  Int_t Compare(const TObject *o) const;
   void SetLabel(Int_t lab) {fLab=lab;} 
 
   Double_t GetPredictedChi2(const AliCluster *cluster) const;

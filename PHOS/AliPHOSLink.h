@@ -27,7 +27,7 @@ public:
   virtual ~AliPHOSLink(){
     // dtor
   }
-  Int_t   Compare(TObject * obj) ;
+  Int_t   Compare(const TObject * obj) const;
   Int_t   GetEmc(void) { 
     // returns the index of EMC
     return fEmcN; 

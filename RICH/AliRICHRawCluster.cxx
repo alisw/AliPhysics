@@ -15,6 +15,10 @@
 
 /*
   $Log$
+  Revision 1.2  2000/10/02 15:51:49  jbarbosa
+  Fixed forward declarations.
+  Moved constructor into implementation file.
+
   Revision 1.1  2000/06/12 15:27:26  jbarbosa
   Cleaned up version.
 
@@ -43,7 +47,7 @@ AliRICHRawCluster :: AliRICHRawCluster()
   fNcluster[0]=fNcluster[1]=-1;
 }
 
-Int_t AliRICHRawCluster::Compare(TObject *obj)
+Int_t AliRICHRawCluster::Compare(const TObject *obj) const
 {
 
 // Compare two clusters

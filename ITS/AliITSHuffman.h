@@ -29,7 +29,7 @@ class AliITSHNode: public TObject  {
     // is sortable
     return kTRUE;
   }
-  Int_t Compare(TObject *obj);
+  Int_t Compare(const TObject *obj) const;
   
   ClassDef(AliITSHNode,1)     //HuffT node object for set:ITS
 

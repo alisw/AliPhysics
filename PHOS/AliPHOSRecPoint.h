@@ -45,7 +45,7 @@ class AliPHOSRecPoint : public AliRecPoint {
     assert(0==1) ; 
   }
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
-  virtual Int_t   Compare(TObject * obj) { 
+  virtual Int_t   Compare(const TObject * obj) const { 
     // check why this is done
     assert(0==1) ; return 1 ; 
   }   

@@ -128,7 +128,7 @@ Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSEmcRecPoint::Compare(TObject * obj)
+Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
 {
   // Compares two RecPoints according to their position in the PHOS modules
 

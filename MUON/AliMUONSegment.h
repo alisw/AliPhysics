@@ -79,7 +79,7 @@ class AliMUONSegment : public TObject {
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable() const { return kTRUE; }
-  Int_t Compare(TObject* Segment); // "Compare" function for sorting
+  Int_t Compare(const TObject* Segment) const; // "Compare" function for sorting
  protected:
  private:
   AliMUONHitForRec* fHitForRecPtr1; // pointer to HitForRec in first chamber

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/20 12:45:27  gosset
+New "EventReconstructor..." structure,
+	hopefully more adapted to tree/streamer.
+"AliMUONEventReconstructor::RemoveDoubleTracks"
+	to keep only one track among similar ones.
+
 Revision 1.4  2000/07/18 16:04:06  gosset
 AliMUONEventReconstructor package:
 * a few minor modifications and more comments
@@ -115,7 +121,7 @@ AliMUONTrackHit::~AliMUONTrackHit()
 }
 
   //__________________________________________________________________________
-Int_t AliMUONTrackHit::Compare(TObject* TrackHit)
+Int_t AliMUONTrackHit::Compare(const TObject* TrackHit) const
 {
   // "Compare" function to sort with increasing Z.
   // Returns -1 (0, +1) if Z of current TrackHit

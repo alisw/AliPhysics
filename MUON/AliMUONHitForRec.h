@@ -61,7 +61,7 @@ class AliMUONHitForRec : public TObject {
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable() const { return kTRUE; }
-  Int_t Compare(TObject* HitForRec); // "Compare" function for sorting
+  Int_t Compare(const TObject* HitForRec) const; // "Compare" function for sorting
  protected:
  private:
   Double_t fBendingCoor; // coordinate (cm) in bending plane

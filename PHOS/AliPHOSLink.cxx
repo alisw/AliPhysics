@@ -41,7 +41,7 @@ ClassImp(AliPHOSLink)
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSLink::Compare(TObject * obj)
+Int_t AliPHOSLink::Compare(const TObject * obj) const
 {
   // Compare according to the distance between EMC and PPSD RecPoints in a track segment 
 

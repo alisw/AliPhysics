@@ -129,7 +129,7 @@ Bool_t AliPHOSCpvRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSCpvRecPoint::Compare(TObject * obj)
+Int_t AliPHOSCpvRecPoint::Compare(const TObject * obj) const
 {
   // Compares two RecPoints according to their position in the PHOS modules
 

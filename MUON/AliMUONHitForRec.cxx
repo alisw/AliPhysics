@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/01/26 21:46:33  morsch
+Use access functions to MUONHit, ... data members.
+
 Revision 1.4  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -119,7 +122,7 @@ AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& MUONHitFo
     return *this;
 }
   //__________________________________________________________________________
-Int_t AliMUONHitForRec::Compare(TObject* Hit)
+Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
 {
   // "Compare" function to sort with increasing chamber number.
   // Returns -1 (0, +1) if ChamberNumber of current HitForRec

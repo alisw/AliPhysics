@@ -29,7 +29,7 @@ public:
     // dtor
   }
   virtual void AddDigit(AliPHOSDigit & digit, Float_t Energy) ;
-  Int_t   Compare(TObject * obj) ;                    // method to sort clusters
+  Int_t   Compare(const TObject * obj) const;                    // method to sort clusters
 
   Float_t GetDelta(void) {
     // returns the parameter used for sorting

@@ -80,7 +80,7 @@ void AliPHOSPpsdRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSPpsdRecPoint::Compare(TObject * obj)
+Int_t AliPHOSPpsdRecPoint::Compare(const TObject * obj) const
 {
   // Compares according to the position
   

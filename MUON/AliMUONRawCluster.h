@@ -34,7 +34,7 @@ public:
    virtual ~AliMUONRawCluster() {}
    Float_t GetRadius(Int_t i) {return TMath::Sqrt(fX[i]*fX[i]+fY[i]*fY[i]);}
    Bool_t IsSortable() const {return kTRUE;}
-   Int_t  Compare(TObject *obj);
+   Int_t  Compare(const TObject *obj) const;
    Int_t PhysicsContribution();
    static Int_t BinarySearch(Float_t r, TArrayF ccord, Int_t from, Int_t upto);
    static void  SortMin(Int_t *idx,Float_t *xdarray, Float_t *xarray,

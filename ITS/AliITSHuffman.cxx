@@ -61,7 +61,7 @@ AliITSHNode&
 }
 
 //____________________________________________
-Int_t AliITSHNode::Compare(TObject *obj)
+Int_t AliITSHNode::Compare(const TObject *obj) const
 {
   // function called by Sort method of TObjArray
 

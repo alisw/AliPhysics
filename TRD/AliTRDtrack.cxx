@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/12/08 16:07:02  cblume
+Update of the tracking by Sergei
+
 Revision 1.3  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
 
@@ -100,7 +103,7 @@ void AliTRDtrack::GetCovariance(Double_t cc[15]) const {
 }    
 
 //_____________________________________________________________________________
-Int_t AliTRDtrack::Compare(TObject *o) {
+Int_t AliTRDtrack::Compare(const TObject *o) const {
 
 // Compares tracks according to their Y2
 

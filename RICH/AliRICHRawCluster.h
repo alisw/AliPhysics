@@ -34,7 +34,7 @@ public:
     Float_t GetRadius() {return TMath::Sqrt(fX*fX+fY*fY);}
     
     Bool_t IsSortable() const {return kTRUE;}
-    Int_t  Compare(TObject *obj);
+    Int_t  Compare(const TObject *obj) const;
     Int_t PhysicsContribution();
     static Int_t BinarySearch(Float_t r, TArrayF coord, Int_t from, Int_t upto);
     static void  SortMin(Int_t *idx,Float_t *xdarray,Float_t *xarray,Float_t *yarray,Float_t *qarray,Int_t ntr);
