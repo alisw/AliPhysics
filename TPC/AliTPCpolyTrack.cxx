@@ -12,6 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//------------------------------------------------------------------
+// this class is used for a simple
+// track fitting using the polynom
+// bending in both directions are allowed
+//-----------------------------------------------------------------
 
 
 #include "AliTPCpolyTrack.h"
