@@ -905,8 +905,8 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("BTR3", 2, "B075", 0.,  295.75, -10.8,            0, "ONLY");
 
       gMC->Gspos("BTO1", 1, "B071", 0.,    0.00, 42.69,            0, "ONLY");
-      gMC->Gspos("BTO2", 1, "B071", 0.,    0.00, 42.69,            0, "ONLY");
-      gMC->Gspos("BTO3", 1, "B071", 0.,    0.00, 42.69,            0, "ONLY");
+      gMC->Gspos("BTO2", 1, "B074", 0.,    0.00, 42.69,            0, "ONLY");
+      gMC->Gspos("BTO3", 1, "B075", 0.,    0.00, 42.69,            0, "ONLY");
 
   }
   
