@@ -65,7 +65,7 @@ class TG4GeometryManager
   		         Float_t &dens, Float_t &radl, Float_t &absl,
 		         Float_t* ubuf, Int_t& nbuf); 
     void  Gstpar(Int_t itmed, const char *param, Float_t parval); 
-    void  Gsckov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+    void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
 			 Float_t *absco, Float_t *effic, Float_t *rindex); 
 
     // functions from GGEOM 

@@ -460,8 +460,9 @@ void  TG4GeometryManager::Gstpar(Int_t itmed, const char *param,
 } 
  
  
-void  TG4GeometryManager::Gsckov(Int_t itmed, Int_t npckov, Float_t* ppckov,
-			 Float_t* absco, Float_t* effic, Float_t* rindex)
+void  TG4GeometryManager::SetCerenkov(Int_t itmed, Int_t npckov, 
+                             Float_t* ppckov, Float_t* absco, Float_t* effic, 
+			     Float_t* rindex)
 {
 //
 //  Geant3 desription:
@@ -506,7 +507,7 @@ void  TG4GeometryManager::Gsckov(Int_t itmed, Int_t npckov, Float_t* ppckov,
   // get material of medium from table
   G3MedTableEntry* medium = G3Med.get(itmed);
   if (!medium) {
-    G4String text = "TG4GeometryManager::Gsckov: \n";
+    G4String text = "TG4GeometryManager::SetCerenkov: \n";
     text = text + "    Medium not found."; 
     G4Exception(text);
   }  
