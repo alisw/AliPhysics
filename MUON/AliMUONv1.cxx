@@ -547,6 +547,10 @@ void AliMUONv1::StepManager()
 
   if (idvol == -1) return;
 
+  // Filling TrackRefs file for MUON. Our Track references are the active volume of the chambers
+  if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting() ) )     
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+  
    if( gMC->IsTrackEntering() ) {
      Float_t theta = fTrackMomentum.Theta();
      if ((TMath::Pi()-theta)*kRaddeg>=15.) gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
