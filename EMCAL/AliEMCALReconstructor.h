@@ -20,6 +20,7 @@ class AliEMCALClusterizer ;
 class AliEMCALPID ;
 class AliEMCALSDigitizer ;
 class AliESD ;
+class AliRawReaderFile ; 
 
 // --- Standard library ---
 
@@ -41,7 +42,8 @@ public:
   Bool_t                     Debug() const { return fDebug ; }
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
-
+  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReaderFile * rawreader) const ;
+  
   
   AliEMCALReconstructor & operator = (const AliEMCALReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed

@@ -22,6 +22,7 @@ class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
 class AliPHOSSDigitizer ;
 class AliESD ;
+class AliRawReaderFile ; 
 
 // --- Standard library ---
 
@@ -43,6 +44,7 @@ public:
   static Bool_t              Debug() { return fgDebug ; }
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
+  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReaderFile * rawreader) const ;
 
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed

@@ -31,6 +31,7 @@
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALPIDv1.h"
 #include "AliEMCALGetter.h"
+#include "AliRawReaderFile.h"
 
 ClassImp(AliEMCALReconstructor)
 
@@ -58,6 +59,28 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader) const
  
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName(runLoader->GetEventFolder()->GetName() ) ;  
+  
+  AliEMCALClusterizerv1 clu(headerFile, branchName);
+  clu.SetEventRange(0, -1) ; // do all the events
+  if ( Debug() ) 
+    clu.ExecuteTask("deb all") ; 
+  else 
+    clu.ExecuteTask("") ;  
+
+}
+
+//____________________________________________________________________________
+void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReaderFile* rawreader) const 
+{
+  // method called by AliReconstruction; 
+  // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
+  // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
+  // the global tracking.
+  // Here we reconstruct from Raw Data
+  
+  rawreader->Reset() ; 
+  TString headerFile(runLoader->GetFileName()) ; 
+  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
   
   AliEMCALClusterizerv1 clu(headerFile, branchName);
   clu.SetEventRange(0, -1) ; // do all the events
