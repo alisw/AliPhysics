@@ -30,7 +30,7 @@ void loadlibs ()
   gSystem->Load("libZDC");
   gSystem->Load("libCRT");
   gSystem->Load("libVZERO");
-  //  gSystem->Load("libEMCAL");
+  gSystem->Load("libEMCAL");
   gSystem->Load("libCONTAINERS");
 
   // The following lines have to be commented on Darwin
