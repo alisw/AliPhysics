@@ -11,6 +11,7 @@
 
 // --- ROOT system ---
 #include "TClonesArray.h"
+#include "TH1.h"
 
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
@@ -18,6 +19,7 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSPID.h"
+#include "AliPHOSCPV.h"
 
 class AliPHOSv1 : public AliPHOSv0 {
 
@@ -44,6 +46,7 @@ public:
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   ResetDigits() ; 
+  virtual void   ResetHits() ; 
   virtual void   ResetReconstruction() ; // Reset reconstructed objects
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
     // sets the reconstructionner object to be used
@@ -64,6 +67,13 @@ public:
     return *this ; 
   }
 
+  // IHEP's CPV specific functions
+
+  CPVModule &GetCPVModule(int n) { return *(CPVModule*)fCPVModules->operator[](n); }
+  void       CPVDigitize (TLorentzVector p, Float_t *xy, Int_t moduleNumber, TClonesArray *digits) ;
+  Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
+  Double_t   CPVCumulPadResponse(Double_t x, Double_t y) ;
+
 protected:
 
   Float_t fDigitThreshold ;                       // Threshold for the digit registration 
@@ -72,6 +82,8 @@ protected:
   AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
+
+  TClonesArray * fCPVModules;                     // Array of CPV modules for the IHEP's version of CPV
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 
