@@ -12,7 +12,10 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN \
         TPHIC FASTSIM microcern RAW AliL3Src AliL3Comp AliL3Misc AliL3Hough
-# g2c_sh
+ifeq (macosx,$(ALICE_TARGET))
+# On Mac OS X gcc we need g2c
+ELIBS+=g2c
+endif
 
 # The two variables below are used for the creation of profile target.
 # ARLIBS stands for ARchive LIBrarieS and for each module one wants to profile
@@ -69,3 +72,8 @@ ARLIBS:= \
    RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAW.a
 
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
+
+ifeq (macosx,$(ALICE_TARGET))
+# On Mac OS X gcc we need g2c
+SHLIBS+=-lg2c
+endif
