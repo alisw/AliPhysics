@@ -130,7 +130,7 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   fPosZN[2] = 11650.; 
   fPosZP[0] = -23.9;
   fPosZP[1] = 0.;
-  fPosZP[2] = 11650.; 
+  fPosZP[2] = 11600.; 
   fFibZN[0] = 0.;
   fFibZN[1] = 0.01825;
   fFibZN[2] = 50.;
@@ -617,7 +617,7 @@ void AliZDCv2::CreateZDC()
   gMC->Gspos("ZNF4", 1, "ZNG4", 0., 0., 0., 0, "ONLY");
   
   // --- Position the neutron calorimeter in ZDC 
-  gMC->Gspos("ZNEU", 1, "ZDC ", fPosZN[0], fPosZN[1], fPosZN[2] - fDimZN[2], 0, "ONLY");
+  gMC->Gspos("ZNEU", 1, "ZDC ", fPosZN[0], fPosZN[1], fPosZN[2]+fDimZN[2], 0, "ONLY");
   
 
   // -------------------------------------------------------------------------------
@@ -664,7 +664,7 @@ void AliZDCv2::CreateZDC()
   
 
   // --- Position the proton calorimeter in ZDC 
-  gMC->Gspos("ZPRO", 1, "ZDC ", fPosZP[0], fPosZP[1], fPosZP[2]-fDimZP[2], 0, "ONLY");
+  gMC->Gspos("ZPRO", 1, "ZDC ", fPosZP[0], fPosZP[1], fPosZP[2]+fDimZP[2], 0, "ONLY");
     
   
   // -------------------------------------------------------------------------------
