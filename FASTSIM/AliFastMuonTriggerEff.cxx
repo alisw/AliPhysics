@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2003/01/06 10:13:09  morsch
+First commit.
+
 */
 
 
@@ -70,7 +73,7 @@ void AliFastMuonTriggerEff::InitTree()
     Double_t        len50, hen50, leff, heff;
     Double_t        vLPt[50];
     Double_t        vHPt[50];
-    Char_t file[100]="$(ALICE_ROOT)/data/vettorpara.root";
+    Char_t file[100]="$(ALICE_ROOT)/FASTSIM/data/vettorpara.root";
 //
 //  Avoid memory leak in case of reinitialization
     if(fZones!=0) {
