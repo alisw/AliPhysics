@@ -13,6 +13,7 @@
 #pragma link C++ enum   StrucFunc_t;
 #pragma link C++ enum   Weighting_t;
 #pragma link C++ class  AliGenHIJINGpara+;
+#pragma link C++ class  AliGenHIJINGparaBa+;
 #pragma link C++ class  AliGenFixed+;
 #pragma link C++ class  AliGenBox+;
 #pragma link C++ class  AliGenParam+;
@@ -47,6 +48,8 @@
 #pragma link C++ class  AliGenReader+;
 #pragma link C++ class  AliGenReaderCwn++;
 #pragma link C++ class  AliGenReaderTreeK++;
+#pragma link C++ class  AliGenReaderEcalHijing++;
+#pragma link C++ class  AliGenReaderEcalJets++;
 #endif
 
 

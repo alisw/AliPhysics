@@ -9,7 +9,8 @@ PACKAGE = EVGEN
 
 # C++ sources
 
-SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
+SRCS          = AliGenHIJINGpara.cxx AliGenHIJINGparaBa.cxx \
+		AliGenBox.cxx AliGenFixed.cxx \
 		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
 		AliGenLib.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
@@ -24,7 +25,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
 	        AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
                 AliGenHBTprocessor.cxx \
-		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx 
+		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
+		AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx
 # C++ Headers
 
 HDRS          = $(SRCS:.cxx=.h) $(ALICE_ROOT)/include/THijing.h \
