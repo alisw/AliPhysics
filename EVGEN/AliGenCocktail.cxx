@@ -45,7 +45,7 @@ AliGenCocktail::AliGenCocktail()
     flnk2 = 0;
     fNGenerators=0;
     fEntries = 0;
-    
+    fRandom  = kFALSE;
 }
 
 AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail):
@@ -114,6 +114,26 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	if (fStack)  entry->Generator()->SetStack(fStack);
 	entry->Generator()->Init();
     }  
+
+    next.Reset();
+
+    if (fRandom) {
+	fProb.Set(fNGenerators);
+	next.Reset();
+	Float_t sum = 0.;
+	while((entry = (AliGenCocktailEntry*)next())) {
+	    sum += entry->Rate();
+	} 
+
+	next.Reset();
+	Int_t i = 0;
+	Float_t psum = 0.;
+	while((entry = (AliGenCocktailEntry*)next())) {
+	    psum +=  entry->Rate() / sum;
+	    fProb[i++] = psum;
+	}
+    }
+	next.Reset();
 }
 
   void AliGenCocktail::FinishRun()
@@ -148,36 +168,56 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     eventVertex.Set(3);
     for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
 
-    
-  //
-    // Loop over generators and generate events
-    Int_t igen=0;
-    
-    while((entry = (AliGenCocktailEntry*)next())) {
-	igen++;
-	if (igen ==1) {
-	    entry->SetFirst(0);
-	} else {
-	    entry->SetFirst((partArray->GetEntriesFast())+1);
-	}
+    if (!fRandom) {
+	//
+	// Loop over generators and generate events
+	Int_t igen=0;
+	
+	while((entry = (AliGenCocktailEntry*)next())) {
+	    igen++;
+	    if (igen ==1) {
+		entry->SetFirst(0);
+	    } else {
+		entry->SetFirst((partArray->GetEntriesFast())+1);
+	    }
 //
 //      Handle case in which current generator needs collision geometry from previous generator
 //
-	gen = entry->Generator();
-	if (gen->NeedsCollisionGeometry())
-	{
-	    if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
+	    gen = entry->Generator();
+	    if (gen->NeedsCollisionGeometry())
 	    {
-		gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
-	    } else {
-		Fatal("Generate()", "No Collision Geometry Provided");
+		if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
+		{
+		    gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
+		} else {
+		    Fatal("Generate()", "No Collision Geometry Provided");
+		}
 	    }
+	    entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	    entry->Generator()->Generate();
+	    entry->SetLast(partArray->GetEntriesFast());
+	    preventry = entry;
+	}  
+    } else {
+	//
+	// Select a generator randomly
+	//
+	Int_t i;
+	Float_t p0 =  gRandom->Rndm();
+
+	for (i = 0; i < fNGenerators; i++) {
+	    if (p0 < fProb[i]) break;
 	}
+
+	entry = (AliGenCocktailEntry*) fEntries->At(i);
+	entry->SetFirst(0);
+	gen = entry->Generator();
 	entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
 	entry->Generator()->Generate();
 	entry->SetLast(partArray->GetEntriesFast());
-	preventry = entry;
-    }  
+    }
+    
+    
     next.Reset();
 // Header
     AliGenEventHeader* header = new AliGenEventHeader("AliGenCocktail");

@@ -11,8 +11,10 @@
 //
 
 #include "AliGenerator.h"
+#include <TArrayF.h>
 
 class AliGenCocktailEntry;
+class TArrayF;
 
 
 class AliGenCocktail : public AliGenerator
@@ -26,6 +28,8 @@ class AliGenCocktail : public AliGenerator
     virtual void FinishRun();
     virtual void Generate();
     virtual void SetVertexSmear(VertexSmear_t smear);
+    virtual void SetRandomise(Bool_t flag) {fRandom = flag;}
+	    
     //
     // Add a new generator to the list
     virtual void AddGenerator
@@ -40,9 +44,12 @@ class AliGenCocktail : public AliGenerator
 
  protected:
     Int_t fNGenerators;   // Number of generators booked
+    Bool_t fRandom;       // Flag to select random generator from list
+    TArrayF  fProb;       // Probability of an event (if fRandom == kTRUE)
     TList  *fEntries;     // List of Generators
     TObjLink *flnk1;      // ! Iterator for first generator
     TObjLink *flnk2;      // ! Iterator for second generator
+    
 //
  private:
     void Copy(TObject &arun) const;
