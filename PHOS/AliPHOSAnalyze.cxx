@@ -485,7 +485,7 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
     // Create and fill arrays of hits for each CPV module
       
     Int_t nOfModules = fGeom->GetNModules();
-    TClonesArray *hitsPerModule[nOfModules];
+    TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
     for (Int_t iModule=0; iModule < nOfModules; iModule++)
       hitsPerModule[iModule] = new TClonesArray("AliPHOSCPVHit",100);
 
@@ -515,7 +515,6 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	  xzgen[1] = cpvHit->GetY();
 	  ipart    = cpvHit->GetIpart();
 	  TClonesArray &lhits = *(TClonesArray *)hitsPerModule[iModule];
-//  	  new(lhits[hitsPerModule[iModule]->GetEntriesFast()]) AliPHOSCPVHit(p,xzgen,ipart);
 	  new(lhits[hitsPerModule[iModule]->GetEntriesFast()]) AliPHOSCPVHit(*cpvHit);
 	}
 	cpvModule.Clear();
@@ -570,6 +569,7 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       hNrpX->Fill(rpMultX);
       hNrpZ->Fill(rpMultZ);
     }
+    delete [] hitsPerModule;
   }
   // Save histograms
 
