@@ -42,12 +42,11 @@ AliHBTFunction::AliHBTFunction(const char* name,const char* title):TNamed(name,t
 
 AliHBTFunction::~AliHBTFunction()
  {
-  if (fPairCut) delete fPairCut;
+  delete fPairCut;
  }
 /******************************************************************/
 
-void AliHBTFunction::
-Write()
+void AliHBTFunction::Write()
  {
    if (GetNumerator()) GetNumerator()->Write();
    if (GetDenominator()) GetDenominator()->Write();
@@ -98,8 +97,7 @@ void AliHBTFunction::SetPairCut(AliHBTPairCut* cut)
 
 /******************************************************************/
 
-void AliHBTFunction::
-Rename(const Char_t * name)
+void AliHBTFunction::Rename(const Char_t * name)
  {
  //renames the function and histograms
   SetName(name);
@@ -118,8 +116,7 @@ Rename(const Char_t * name)
   
  }
 
-void AliHBTFunction::
-Rename(const Char_t * name, const Char_t * title)
+void AliHBTFunction::Rename(const Char_t * name, const Char_t * title)
  {
  //renames and retitle the function and histograms
  
