@@ -266,3 +266,5 @@
                 introduced for AliTrack and AliJet.
                 For AliTrack there is an additional GetMt(j) to provide the Mt
                 value for the jth mass hypothesis.                
+14-jun-2001 NvE Memberfunction GetRapidity() introduced for AliTrack and AliJet
+                and accuracy improved in Ali3Vector::GetPseudoRapidity().

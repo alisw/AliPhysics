@@ -443,11 +443,13 @@ Double_t Ali3Vector::GetPseudoRapidity()
 // Provide the pseudo-rapidity w.r.t. the z-axis.
 // In other words : eta=-log(tan(theta/2))
 // The error on the scalar result (pseudo-rap.) is updated accordingly
+ Double_t pi=acos(-1.);
  Double_t v[3];
  GetVector(v,"sph");
  Double_t thetahalf=v[1]/2.;
- Double_t arg=tan(thetahalf);
- Double_t eta=0;
+ Double_t arg=0;
+ if (v[1]<pi) arg=tan(thetahalf);
+ Double_t eta=9999;
  if (arg>0) eta=-log(arg);
  Double_t e[3];
  GetErrors(e,"sph");

@@ -681,14 +681,20 @@ Double_t AliTrack::GetPt()
 Double_t AliTrack::GetPl()
 {
 // Provide long. momentum value w.r.t. z-axis.
+// Note : the returned value can also be negative.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetPl().
  Ali3Vector v;
  v=GetVecLong();
- Double_t norm=v.GetNorm();
+
+ Double_t pl=v.GetNorm();
  fDresult=v.GetResultError();
 
- return norm;
+ Double_t a[3];
+ v.GetVector(a,"sph");
+ if (cos(a[1])<0) pl=-pl;
+
+ return pl;
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliTrack::GetEt()
@@ -704,6 +710,7 @@ Double_t AliTrack::GetEt()
 Double_t AliTrack::GetEl()
 {
 // Provide long. energy value w.r.t. z-axis.
+// Note : the returned value can also be negative.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetEl().
  Double_t el=GetScaLong();
@@ -747,5 +754,28 @@ Double_t AliTrack::GetMt(Int_t j)
 
  fDresult=sqrt(dmt2);
  return mt;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetRapidity()
+{
+// Provide rapidity value w.r.t. z-axis.
+// The error on the value can be obtained by GetResultError()
+// after invokation of GetRapidity().
+// Note : Also GetPseudoRapidity() is available since this class is
+//        derived from Ali4Vector.
+ Double_t e=GetEnergy();
+ Double_t de=GetResultError();
+ Double_t pl=GetPl();
+ Double_t dpl=GetResultError();
+ Double_t sum=e+pl;
+ Double_t dif=e-pl;
+
+ Double_t y=9999,dy2=0;
+ if (sum && dif) y=0.5*log(sum/dif);
+
+ if (sum*dif) dy2=(1./(sum*dif))*(pow((pl*de),2)+pow((e*dpl),2));
+
+ fDresult=sqrt(dy2);
+ return y;
 }
 ///////////////////////////////////////////////////////////////////////////

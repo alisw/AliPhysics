@@ -38,6 +38,7 @@ class AliJet : public TObject,public Ali4Vector
   Double_t GetEt();                  // Provide trans. energy w.r.t. z-axis
   Double_t GetEl();                  // Provide long. energy w.r.t. z-axis
   Double_t GetMt();                  // Provide trans. mass w.r.t. z-axis
+  Double_t GetRapidity();            // Provide rapidity value w.r.t. z-axis
 
  protected:
   void SetNtinit(Int_t n=2); // Set the initial max. number of tracks for this Jet
