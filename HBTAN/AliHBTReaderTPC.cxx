@@ -21,7 +21,6 @@
 #include <AliStack.h>
 #include <AliMagF.h>
 #include <AliTPCtrack.h>
-#include <AliTPCParam.h>
 #include <AliTPCLoader.h>
 
 #include "AliHBTEvent.h"
@@ -425,18 +424,6 @@ Int_t AliHBTReaderTPC::OpenNextSession()
    }
   AliKalmanTrack::SetConvConst(1000/0.299792458/mf);
 
-
-  fRunLoader->CdGAFile();
-  AliTPCParam *aTPCParam= (AliTPCParam*)gDirectory->Get("75x40_100x60");
-  if (!aTPCParam) 
-   {
-    aTPCParam=(AliTPCParam *)gDirectory->Get("75x40_100x60_150x60");
-    if (!aTPCParam) 
-     { 
-       DoOpenError("TPC parameters have not been found !\n");
-       return 1;
-     }
-   }
 
   if (fTPCLoader->LoadTracks())
    {
