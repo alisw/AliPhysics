@@ -405,7 +405,8 @@ Int_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined ITS clusters 
   //---------------------------------------------------------------------
-  for (Int_t i=0; i<180; i++) idx[i]=fTPCindex[i];  // MI I prefer some constant
+  if (idx!=0)
+    for (Int_t i=0; i<180; i++) idx[i]=fTPCindex[i];  // MI I prefer some constant
   return fTPCncls;
 }
 
@@ -427,7 +428,8 @@ Int_t AliESDtrack::GetTRDclusters(UInt_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined TRD clusters 
   //---------------------------------------------------------------------
-  for (Int_t i=0; i<90; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
+  if (idx!=0)
+    for (Int_t i=0; i<90; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
   return fTRDncls;
 }
 
