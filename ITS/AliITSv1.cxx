@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/10/22 08:16:49  fca
+Correct destructors, thanks to I.Hrivnacova
+
 Revision 1.10  1999/10/06 19:56:50  fca
 Add destructor
 
@@ -67,13 +70,7 @@ AliITSv1::AliITSv1() {
     fId1Name[4] = "ITS5";
     fId1Name[5] = "ITS6";
 }
-//_____________________________________________________________________________
-AliITSv1::~AliITSv1() {
-    //
-    // Standard destructor for the ITS
-    //
-  delete [] fId1Name;
-}  
+
 //_____________________________________________________________________________
 AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){ 
     //
@@ -94,9 +91,7 @@ AliITSv1::~AliITSv1() {
     //
     // Standard destructor for the ITS
     //
-  for (Int_t i=0;i<fId1N;++i) delete [] fId1Name[i];
   delete [] fId1Name;
-  fId1Name = 0;
 }
 
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/10/22 08:16:49  fca
+Correct destructors, thanks to I.Hrivnacova
+
 Revision 1.9  1999/10/06 19:56:50  fca
 Add destructor
 
@@ -69,21 +72,13 @@ AliITSv3::AliITSv3() {
     fId3Name[5] = "ITS6";
     fMinorVersionV3=1;
 }
+
 //_____________________________________________________________________________
 AliITSv3::~AliITSv3() {
     //
     // Standard destructor for the ITS
     //
   delete [] fId3Name;
-}  
-//_____________________________________________________________________________
-AliITSv3::~AliITSv3() {
-    //
-    // Standard destructor for the ITS
-    //
-  for (Int_t i=0;i<fId3N;++i) delete [] fId3Name[i];
-  delete [] fId3Name;
-  fId3Name = 0;
 }
 
 //_____________________________________________________________________________
