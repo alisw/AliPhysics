@@ -101,7 +101,7 @@ void AliVertex::Add(AliVertex& v)
  // Update 4-momentum for current vertex
  fNvtx++;
  fVertices->Add(&v);
- (Ali4Vector)(*this)+=v;
+ (*(Ali4Vector*)this)+=v;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::Info(TString f)
