@@ -29,6 +29,7 @@ class AliJetEventParticles: public TObject
   void SetVertex(Float_t v1,Float_t v2, Float_t v3){fVertexX=v1;fVertexY=v2;fVertexZ=v3;}
   void SetHeader(TString& s){fHeader=s;}
   void Reset(Int_t size=-1); //deletes all entries
+  void Clear(Option_t *option="") {TObject::Clear(option);Reset();}
   
   //adds particle to the event
   void AddParticle(AliJetParticle* p);  
@@ -55,10 +56,15 @@ class AliJetEventParticles: public TObject
   void     TriggerJet(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3, Float_t &E)          const;
   void     UQJet(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3, Float_t &E)               const;
   void     Hard(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3, Float_t &E, Float_t &type) const;
+  void     Hard(Int_t i, Float_t p[4], Float_t &type) const;
   Double_t GetXJet() const {return fXJet;}
   Double_t GetYJet() const {return fYJet;}    
   void     GetZQuench(Double_t z[4]) const;
   TString  getHeader() const {return fHeader;}
+
+  Float_t  GetImpact() const {return fImpact;}
+  Int_t    GetNhard()  const {return fNHardScatters;}
+  Int_t    GetNpart()  const {return fNwNwColl;}
 
   void     SetXYJet(Double_t x, Double_t y); 
   void     SetZQuench(Double_t z[4]);
@@ -69,7 +75,11 @@ class AliJetEventParticles: public TObject
   void     AddUQJet(Float_t p[4]);
   void     AddHard(Int_t i,Float_t px, Float_t py, Float_t pz, Float_t e, Float_t type);
 
-  void Print(Option_t *t="") const;
+  void     SetImpact(Float_t b){fImpact=b;}
+  void     SetNhard(Int_t n){fNHardScatters=n;}
+  void     SetNpart(Int_t n){fNwNwColl=n;}
+
+  void     Print(Option_t *t="") const;
 
   protected:
   TString fHeader;          //   event description
@@ -90,6 +100,10 @@ class AliJetEventParticles: public TObject
   Float_t  fHard[5][2];     // Hard partons
   Double_t fZquench[4];     // Quenching fraction
 
-  ClassDef(AliJetEventParticles,4) //class AliJetEventParticles
+  Float_t fImpact;          // impact parameter
+  Int_t   fNHardScatters;   // number of hard scatterings
+  Int_t   fNwNwColl;        // number of Nwounded-Nwounded collisions
+
+  ClassDef(AliJetEventParticles,5) //class AliJetEventParticles
 };
 #endif

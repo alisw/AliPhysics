@@ -26,7 +26,10 @@ AliJetEventParticles::AliJetEventParticles(Int_t size) :
   fNJets(0),
   fNUQJets(0),
   fXJet(-1),
-  fYJet(-1)
+  fYJet(-1),
+  fImpact(0.),
+  fNHardScatters(0),
+  fNwNwColl(0)
 {
   // Default Constructor
   for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
@@ -52,7 +55,10 @@ AliJetEventParticles::AliJetEventParticles(const AliJetEventParticles& source) :
   fNJets(source.NTriggerJets()),
   fNUQJets(source.NUQTriggerJets()),
   fXJet(source.GetXJet()),
-  fYJet(source.GetXJet())
+  fYJet(source.GetXJet()),
+  fImpact(source.GetImpact()),
+  fNHardScatters(source.GetNhard()),
+  fNwNwColl(source.GetNpart())
 {
   //copy constructor
   for(Int_t i =0; i<fNParticles; i++)
@@ -100,6 +106,9 @@ void  AliJetEventParticles::Reset(Int_t size)
   fNUQJets=0;
   fXJet=-1;
   fYJet=-1;
+  fImpact=0.;
+  fNHardScatters=0;
+  fNwNwColl=0;
   for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
   for (Int_t i = 0; i < 10; i++) 
     for (Int_t j = 0; j < 4; j++) {
@@ -319,6 +328,22 @@ void AliJetEventParticles::Hard(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3, 
     p2   = fHard[1][i];
     p3   = fHard[2][i];
     E    = fHard[3][i];
+    type = fHard[4][i];
+  }
+}
+
+void AliJetEventParticles::Hard(Int_t i, Float_t p[4], Float_t &type) const
+{
+  //
+  // Give back jet #i
+  //
+  if (i >= 2) {
+    printf("\nWarning: Hard partons, index out of Range!!\n");
+  } else {
+    p[0]   = fHard[0][i];
+    p[1]   = fHard[1][i];
+    p[2]   = fHard[2][i];
+    p[3]   = fHard[3][i];
     type = fHard[4][i];
   }
 }
