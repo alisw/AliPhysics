@@ -3,27 +3,29 @@
 #include <TList.h> 
 #include <TTree.h> 
 #include <TVector.h>
-#include <TMatrix.h>
-#include <TObjectTable.h>
+//#include <TObjectTable.h>
 
 #include "AliITStracking.h"
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRad.h"
 #include "AliITStrack.h"
+#include "AliITSgeoinfo.h"
 
 ClassImp(AliITStracking)
  
 
 AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference, 
-                AliITS *aliITS, TObjArray *rpoints, Double_t Ptref, Int_t **vettid, Bool_t flagvert,  AliITSRad *rl) {										 
+                AliITS *aliITS, TObjArray *rpoints, Double_t Ptref, Int_t **vettid, Bool_t flagvert,  
+					 AliITSRad *rl, AliITSgeoinfo *geoinfo) {										 
 ///////////////////////   This function perform the tracking in ITS detectors /////////////////////
 ///////////////////////     reference is a pointer to the final best track    ///////////////////// 
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // The authors  thank   Mariana Bondila to have help them to resolve some problems.  July-2000                                                      
 
-  Rlayer[0]=4.; Rlayer[1]=7.;  Rlayer[2]=14.9;  Rlayer[3]=23.8;  Rlayer[4]=39.1;  Rlayer[5]=43.6;
+  //Rlayer[0]=4.; Rlayer[1]=7.;  Rlayer[2]=14.9;  Rlayer[3]=23.8;  Rlayer[4]=39.1;  Rlayer[5]=43.6; //vecchio
   
   Int_t index;   
   for(index =0; index<trackITSlist->GetSize(); index++) {
@@ -72,16 +74,17 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
     Int_t layerInit = (*trackITS).GetLayer();
     Int_t layernew = layerInit - 2;  // -1 for new layer, -1 for matrix index 
 					  
-    Int_t NLadder[]= {20, 40, 14, 22, 34, 38}; 
-    Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; 
+    //Int_t NLadder[]= {20, 40, 14, 22, 34, 38};   //vecchio
+    //Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; //vecchio
 				 		
     TList listoftrack;    	 
     Int_t ladp, ladm, detp,detm,ladinters,detinters; 	
     Int_t layerfin=layerInit-1;
-    Double_t Rfin=Rlayer[layerfin-1];
+    //Double_t Rfin=Rlayer[layerfin-1];  // vecchio
+	 Double_t Rfin=geoinfo->Avrad[layerfin-1];  // nuovo
     // cout<<"Prima di intersection \n";
 
-    Int_t  outinters=NewIntersection(*trackITS, Rfin, layerfin, ladinters, detinters);
+    Int_t  outinters=NewIntersection(*trackITS, Rfin, layerfin, ladinters, detinters, geoinfo);
 	 	 
    // cout<<" outinters = "<<outinters<<"\n";
    //  cout<<" Layer ladder detector intersection ="<<layerfin<<" "<<ladinters<<" "<<detinters<<"\n";
@@ -95,8 +98,10 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
       Int_t lycur=layerfin;                                            
       ladp=ladinters+1;
       ladm=ladinters-1;
-      if(ladm <= 0) ladm=NLadder[layerfin-1];  
-      if(ladp > NLadder[layerfin-1]) ladp=1;		
+      //if(ladm <= 0) ladm=NLadder[layerfin-1];  //vecchio
+		if(ladm <= 0) ladm=geoinfo->Nlad[layerfin-1];    //nuovo
+      //if(ladp > NLadder[layerfin-1]) ladp=1;		//vecchio
+		if(ladp > geoinfo->Nlad[layerfin-1]) ladp=1;  //nuovo
       detp=detinters+1;
       detm=detinters-1;
       Int_t idetot=1;
@@ -104,18 +109,21 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
       Touclad(3)=ladinters; Touclad(4)=ladm; Touclad(5)=ladp;
       Touclad(6)=ladinters; Touclad(7)=ladm; Touclad(8)=ladp;
       Toucdet(0)=detinters; Toucdet(1)=detinters; Toucdet(2)=detinters;
-      if(detm > 0 && detp <= NDetector[layerfin-1]) {
+      //if(detm > 0 && detp <= NDetector[layerfin-1]) {   //vecchio
+		if(detm > 0 && detp <= geoinfo->Ndet[layerfin-1]) {     //nuovo
         idetot=9;
         Toucdet(3)=detm; Toucdet(4)=detm; Toucdet(5)=detm;	   
         Toucdet(6)=detp; Toucdet(7)=detp; Toucdet(8)=detp;
       }
 	 
-      if(detm > 0 && detp > NDetector[layerfin-1]) {
+      //if(detm > 0 && detp > NDetector[layerfin-1]) {  //vecchio
+		if(detm > 0 && detp > geoinfo->Ndet[layerfin-1]) {   //nuovo
         idetot=6;
         Toucdet(3)=detm; Toucdet(4)=detm; Toucdet(5)=detm;
       }
 	 
-      if(detm <= 0 && detp <= NDetector[layerfin-1]) {
+      //if(detm <= 0 && detp <= NDetector[layerfin-1]) {  //vecchio
+		if(detm <= 0 && detp <= geoinfo->Ndet[layerfin-1]) {   //nuovo
         idetot=6;
         Toucdet(3)=detp; Toucdet(4)=detp; Toucdet(5)=detp;
       }
@@ -283,7 +291,7 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 
     //gObjectTable->Print();   // stampa memoria
 	 
-    AliITStracking(&listoftrack, reference, aliITS, rpoints,Ptref,vettid,flagvert,rl);          
+    AliITStracking(&listoftrack, reference, aliITS, rpoints,Ptref,vettid,flagvert,rl, geoinfo);          
     listoftrack.Delete();
   } // end of for on tracks
 
@@ -291,8 +299,8 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 
 }   
 
-
-Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t layer, Int_t &ladder, Int_t &detector) { 
+Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t layer, Int_t &ladder, 
+Int_t &detector, AliITSgeoinfo *geoinfo) { 
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // Found the intersection and the detector 
 
@@ -306,28 +314,35 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
 
   //////////////////////////////////      limits for Geometry 5      /////////////////////////////
   
-  Int_t NLadder[]= {20, 40, 14, 22, 34, 38};
-  Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; 
+  //Int_t NLadder[]= {20, 40, 14, 22, 34, 38};
+  //Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; 
 
-  Float_t Detx[]= {0.64, 0.64, 3.509, 3.509, 3.65, 3.65 };
-  Float_t Detz[]= {4.19, 4.19, 3.75 , 3.75 , 2   , 2    };
+  //Float_t Detx[]= {0.64, 0.64, 3.509, 3.509, 3.65, 3.65 };
+  //Float_t Detz[]= {4.19, 4.19, 3.75 , 3.75 , 2   , 2    };
+
   ////////////////////////////////////////////////////////////////////////////////////////////////  
   
   TVector det(9);
   TVector ListDet(2);
   TVector DistZCenter(2);  
   AliITSgeom *g1 = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
+  
   Int_t iz=0; 
   Double_t epsz=1.2;
   Double_t epszpixel=0.05;
 
   Int_t iD;
-  for(iD = 1; iD<= NDetector[layer-1]; iD++) {
+  //for(iD = 1; iD<= NDetector[layer-1]; iD++) {   //vecchio
+  for(iD = 1; iD<= geoinfo->Ndet[layer-1]; iD++) {
     g1->GetCenterThetaPhi(layer,1,iD,det);
-    Double_t zmin=det(2)-Detz[layer-1];
-    if(iD==1) zmin=det(2)-(Detz[layer-1])*epsz;		
-    Double_t zmax=det(2)+Detz[layer-1];
-    if(iD==NDetector[layer-1]) zmax=det(2)+(Detz[layer-1])*epsz;
+    //Double_t zmin=det(2)-Detz[layer-1];   //vecchio
+	 Double_t zmin=det(2)-geoinfo->Detz[layer-1];   //nuovo
+    //if(iD==1) zmin=det(2)-(Detz[layer-1])*epsz;		//vecchio
+	 if(iD==1) zmin=det(2)-(geoinfo->Detz[layer-1])*epsz;		//nuovo
+    //Double_t zmax=det(2)+Detz[layer-1];    //vecchio
+	 Double_t zmax=det(2)+geoinfo->Detz[layer-1];    //nuovo
+    //if(iD==NDetector[layer-1]) zmax=det(2)+(Detz[layer-1])*epsz;  //vecchio
+	 if(iD==geoinfo->Ndet[layer-1]) zmax=det(2)+(geoinfo->Detz[layer-1])*epsz;   //nuovo
     //added to take into account problem on drift
     if(layer == 4 || layer==3) zmin=zmin-epszpixel; zmax=zmax+epszpixel;
     //cout<<"zmin zinters zmax det(2)= "<<zmin<<" "<<zinters<<" "<<zmax<<" "<<det(2)<<"\n";	
@@ -352,7 +367,8 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
   Double_t pigre=TMath::Pi();
   
   Int_t iLd;   
-  for(iLd = 1; iLd<= NLadder[layer-1]; iLd++) {
+  //for(iLd = 1; iLd<= NLadder[layer-1]; iLd++) {   //vecchio
+  for(iLd = 1; iLd<= geoinfo->Nlad[layer-1]; iLd++) {  //nuovo
           g1->GetCenterThetaPhi(layer,iLd,detector,det);
   Double_t phidet=PhiDef(Double_t(det(0)),Double_t(det(1)));
   // cout<<" layer phidet e det(6) = "<< layer<<" "<<phidet<<" "<<det(6)<<"\n"; getchar();
@@ -360,12 +376,16 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
  // Double_t phiconfr=0.0;
   //cout<<" phiconfr inizio =  "<<phiconfr <<"\n"; getchar();  
   local[1]=local[2]=0.;  
-  local[0]= -(Detx[layer-1]);
-  if(layer==1)    local[0]= (Detx[layer-1]);  //take into account different reference system
+  //local[0]= -(Detx[layer-1]);  //vecchio
+  local[0]= -(geoinfo->Detx[layer-1]);    //nuovo
+  //if(layer==1)    local[0]= (Detx[layer-1]);  //take into account different reference system  //vecchio
+  if(layer==1)    local[0]= (geoinfo->Detx[layer-1]);  //take into account different reference system   //nuovo
   g2->LtoG(layer,iLd,detector,local,global);
   xmax=global[0]; ymax=global[1];
-  local[0]= (Detx[layer-1]);
-  if(layer==1)    local[0]= -(Detx[layer-1]);  //take into account different reference system  
+  //local[0]= (Detx[layer-1]);   //vecchio
+  local[0]= (geoinfo->Detx[layer-1]);   //nuovo
+  //if(layer==1)    local[0]= -(Detx[layer-1]);  //take into account different reference system //vecchio
+  if(layer==1)    local[0]= -(geoinfo->Detx[layer-1]);  //take into account different reference system //nuovo 
   g2->LtoG(layer,iLd,detector,local,global);
   xmin=global[0]; ymin=global[1];
   Double_t phimin=PhiDef(xmin,ymin);

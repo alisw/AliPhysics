@@ -1,15 +1,11 @@
 #ifndef ALIITSTRACKING_H
 #define ALIITSTRACKING_H
 
-#include <TObject.h>
-#include <TList.h>
-
-class TObjArray;
-class TVector;
-class TMatrix;
+//class TObjArray;
 class AliITStrack;
 class AliITS;
 class AliITSRad;
+class AliITSgeoinfo;
 
 class AliITStracking : public TObject {
 
@@ -22,9 +18,10 @@ public:
   AliITStracking() {;}
 
   AliITStracking(TList *trackITSlist,AliITStrack *reference,AliITS *obj,TObjArray *fpoints,
-                 Double_t Ptref, Int_t **vettid, Bool_t flagvert, AliITSRad *rl );
+                 Double_t Ptref, Int_t **vettid, Bool_t flagvert, AliITSRad *rl, AliITSgeoinfo *geoinfo);
 
-  Int_t NewIntersection(AliITStrack &track, Double_t rk,Int_t layer, Int_t &ladder, Int_t &detector );
+  Int_t NewIntersection(AliITStrack &track, Double_t rk,Int_t layer, Int_t &ladder, Int_t &detector,
+  AliITSgeoinfo *geoinfo);
   Double_t PhiDef(Double_t x, Double_t y);
 
   void KalmanFilter(AliITStrack *newtrack, TVector &cluster, Double_t sigma[2]);  
