@@ -28,9 +28,13 @@ AliITSresponseSDD::AliITSresponseSDD()
    SetDiffCoeff();
    SetDriftSpeed();
    SetNSigmaIntegration();
+   SetNLookUp();
    // SetClock();
    SetNoiseParam();
-   SetMagicValue();
+   SetNoiseAfterElectronics();
+   SetElectronics();
+   SetDynamicRange();
+   SetChargeLoss();
    SetMinVal();
    SetParamOptions();
    SetZeroSupp();
@@ -38,7 +42,6 @@ AliITSresponseSDD::AliITSresponseSDD()
    SetFilenames();
    SetOutputOption();
    SetDo10to8();
-
 }
 
 //__________________________________________________________________________
@@ -49,7 +52,9 @@ AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &source){
   for(i=0;i<8;i++){this->fCPar[i] = source.fCPar[i];}
   this->fNoise = source.fNoise;
   this->fBaseline = source.fBaseline;
-  this->fTopValue = source.fTopValue;
+  this->fNoiseAfterEl = source.fNoiseAfterEl;
+  this->fDynamicRange = source.fDynamicRange;
+  this->fChargeLoss = source.fChargeLoss;
   this->fTemperature = source.fTemperature;
   this->fDriftSpeed = source.fDriftSpeed;
   this->fNsigmas = source.fNsigmas;
@@ -74,7 +79,9 @@ AliITSresponseSDD&
   for(i=0;i<8;i++){this->fCPar[i] = source.fCPar[i];}
   this->fNoise = source.fNoise;
   this->fBaseline = source.fBaseline;
-  this->fTopValue = source.fTopValue;
+  this->fNoiseAfterEl = source.fNoiseAfterEl;
+  this->fDynamicRange = source.fDynamicRange;
+  this->fChargeLoss = source.fChargeLoss;
   this->fTemperature = source.fTemperature;
   this->fDriftSpeed = source.fDriftSpeed;
   this->fNsigmas = source.fNsigmas;
@@ -110,3 +117,40 @@ void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8])
 	cp[i]=fCPar[i];
     }
 }
+
+void AliITSresponseSDD::Print()
+{
+  // Print SDD response Parameters
+
+   cout << "**************************************************" << endl;
+   cout << "   Silicon Drift Detector Response Parameters    " << endl;
+   cout << "**************************************************" << endl;
+   cout << "Diffusion Coefficients: " << fDiffCoeff << ", " << fDiffCoeff1 << endl;
+
+   cout << "Hardware compression parameters: " << endl; 
+   for(Int_t i=0; i<8; i++) cout << "fCPar[" << i << "] = " << fCPar[i] << endl;
+   cout << "Noise before electronics (arbitrary units): " << fNoise << endl;
+   cout << "Baseline (ADC units): " << fBaseline << endl;
+   cout << "Noise after electronics (ADC units): " << fNoiseAfterEl << endl;
+
+   cout << "Dynamic Range: " << fDynamicRange << endl;
+   cout << "Charge Loss: " << fChargeLoss << endl;
+   cout << "Temperature: " << fTemperature << endl;
+   cout << "Drift Speed: " << fDriftSpeed << endl;
+   cout << "Electronics (1=PASCAL, 2=OLA): " << fElectronics << endl;
+
+   cout << "N. of Sigma for signal integration: " << fNsigmas << endl;
+   cout << "N. of bins in lookup table: " << fNcomps << endl;
+
+   cout << "Max. ADC Value: " << fMaxAdc << endl;
+   cout << "Min. Value: " << fMinVal << endl;
+
+   cout << "Zero suppression flag: " << fZeroSuppFlag << endl; 
+   cout << "**************************************************" << endl;
+  
+
+
+}
+
+
+

@@ -24,15 +24,25 @@ public TObject {
     // Configuration methods
     //
 
+    // Set Electronics
+    virtual void    SetElectronics(Int_t p1) {}
+    // Get Electronics
+    virtual Int_t Electronics()  {return 0;}                       
+
     // Set maximum Adc-count value
     virtual void    SetMaxAdc(Float_t p1) {}
     // Get maximum Adc-count value
     virtual Float_t MaxAdc()  {return 0.;}                       
 
     // Set maximum Adc-top value
-    virtual void    SetMagicValue(Float_t p1) {}
+    virtual void    SetDynamicRange(Float_t p1) {}
     // Get maximum Adc-top value
-    virtual Float_t MagicValue()  {return 0.0;}                       
+    virtual Float_t DynamicRange()  {return 0.0;}                       
+
+    // Set Charge Loss Linear Coefficient
+    virtual void    SetChargeLoss(Float_t p1) {}
+    // Get Charge Loss Linear Coefficient
+    virtual Float_t ChargeLoss()  {return 0.0;}                       
 
     // Diffusion coefficient
     virtual void    SetDiffCoeff(Float_t, Float_t) {}
@@ -93,6 +103,12 @@ public TObject {
     virtual void    SetNSigmaIntegration(Float_t p1) {}
     // Get number of sigmas over which cluster disintegration is performed
     virtual Float_t NSigmaIntegration() {return 0.;}
+    // Set number of bins for the gaussian lookup table
+    virtual void    SetNLookUp(Int_t p1) {}
+    // Get number of bins for the gaussian lookup table
+    virtual Int_t GausNLookUp() {return 0;}
+    // Get scaling factor for bin i-th from the gaussian lookup table
+    virtual Float_t GausLookUp(Int_t) {return 0.;}
     // Set sigmas of the charge spread function
     virtual void    SetSigmaSpread(Float_t p1, Float_t p2) {}
     // Get sigmas for the charge spread 

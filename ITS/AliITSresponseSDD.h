@@ -1,9 +1,10 @@
 #ifndef ALIITSRESPONSESDD_H
 #define ALIITSRESPONSESDD_H
 
+#include "TArrayF.h"
+#include <TString.h>
+#include <iostream.h>
 #include "AliITSresponse.h"
-
-class TString;
 
 // response for SDD
 
@@ -20,8 +21,18 @@ public:
   }
   AliITSresponseSDD(const AliITSresponseSDD &source); // copy constructor
   AliITSresponseSDD& operator=(const AliITSresponseSDD &source); // ass. op.
+
+  virtual void SetElectronics(Int_t p1=1) {
+    // Electronics: Pascal or OLA
+    fElectronics=p1;
+  }
   
-  virtual void    SetMaxAdc(Float_t p1=1024) {
+  virtual Int_t Electronics() {
+    // Electronics: 1 = Pascal; 2 = OLA
+    return fElectronics;
+  }
+  
+  virtual void    SetMaxAdc(Float_t p1=1024.) {
     // Adc-count saturation value
     fMaxAdc=p1;
   }
@@ -30,17 +41,25 @@ public:
     return fMaxAdc;
   }                       
   
-  virtual void    SetMagicValue(Float_t p1=900.) {
-    // Set maximum Adc-top value
-    fTopValue=p1;
-    //it was 96.95
+  virtual void    SetChargeLoss(Float_t p1=0.01) {
+    // Set Linear Charge Loss Steepness  
+    fChargeLoss=p1;
   }
-  virtual Float_t MagicValue()  {
-    // Get maximum Adc-top value
-    return fTopValue;
+  virtual Float_t ChargeLoss()  {
+    // Get Charge Loss Coefficient
+    return fChargeLoss;
   }                       
   
-  virtual void    SetDiffCoeff(Float_t p1=2.8,Float_t p2=28.) {
+  virtual void    SetDynamicRange(Float_t p1=132.) {
+    // Set Dynamic Range
+    fDynamicRange=p1;
+  }
+  virtual Float_t DynamicRange()  {
+    // Get Dynamic Range
+    return fDynamicRange;
+  }                       
+  
+  virtual void    SetDiffCoeff(Float_t p1=3.23,Float_t p2=30.) {
     // Diffusion coefficients
     fDiffCoeff=p1;
     fDiffCoeff1=p2;
@@ -51,7 +70,7 @@ public:
     diff1 = fDiffCoeff1;
   } 
   
-  virtual void    SetDriftSpeed(Float_t p1=7.5) {
+  virtual void    SetDriftSpeed(Float_t p1=7.3) {
     // Drift velocity
     fDriftSpeed=p1;
   }
@@ -87,14 +106,22 @@ public:
     strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());
   }
   
-  virtual  void  SetNoiseParam(Float_t n=1.75, Float_t b=10.){
+  virtual  void  SetNoiseParam(Float_t n=8.3, Float_t b=20.){
     // Noise and baseline
     fNoise=n; fBaseline=b;
+  }   
+  virtual  void  SetNoiseAfterElectronics(Float_t n=1.6){
+    // Noise after electronics (ADC units)
+    fNoiseAfterEl=n;
   }   
   virtual  void  GetNoiseParam(Float_t &n, Float_t &b) {
     // get noise param
     n=fNoise; b=fBaseline;
   }  
+  virtual  Float_t  GetNoiseAfterElectronics(){
+    // Noise after electronics (ADC units)
+    return fNoiseAfterEl;
+  }   
 
   virtual  void  SetDo10to8(Bool_t bitcomp=kTRUE) {
     // set the option for 10 to 8 bit compression
@@ -106,7 +133,7 @@ public:
     return fBitComp;
   }   
   
-  virtual void    SetZeroSupp (const char *opt="2D") {
+  virtual void    SetZeroSupp (const char *opt="1D") {
     // Zero-suppression option - could be 1D, 2D or non-ZS 
     fOption=opt;
   }
@@ -149,13 +176,27 @@ public:
   
   //  
   // Detector type response methods
-  virtual void    SetNSigmaIntegration(Float_t p1=4.) {
+  virtual void    SetNSigmaIntegration(Float_t p1=3.) {
     // Set number of sigmas over which cluster disintegration is performed
     fNsigmas=p1;
   }
   virtual Float_t NSigmaIntegration() {
     // Get number of sigmas over which cluster disintegration is performed
     return fNsigmas;
+  }
+  virtual void SetNLookUp(Int_t p1=121) {
+    // Set number of sigmas over which cluster disintegration is performed
+    fNcomps=p1;
+    fGaus = new TArrayF(fNcomps+1);
+    for(Int_t i=0; i<=fNcomps; i++) {
+      Float_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
+      (*fGaus)[i] = exp(-((x*x)/2));
+ //     cout << "fGaus[" << i << "]: " << fGaus->At(i) << endl;
+    }
+  }
+  virtual Int_t GausNLookUp() { 
+    // Get number of intervals in which the gaussian lookup table is divided
+    return fNcomps;
   }
   virtual void    SetSigmaSpread(Float_t p1, Float_t p2) {
     // Set sigmas of the charge spread function
@@ -172,23 +213,31 @@ public:
     // Charge disintegration 
     return 0.;
   }
-  
-  
+  virtual Float_t GausLookUp(Int_t i) {
+    if(i<0 || i>=fNcomps) return 0.;
+    return fGaus->At(i);
+  }
+  virtual void    Print();
+    
 protected:
   
   Int_t     fCPar[8];        // Hardware compression parameters
-  
   Float_t   fNoise;          // Noise
   Float_t   fBaseline;       // Baseline
-  Float_t   fTopValue;       // still unclear to me 
+  Float_t   fNoiseAfterEl;   // Noise after electronics
+  Float_t   fDynamicRange;   // Set Dynamic Range 
+  Float_t   fChargeLoss;     // Set Linear Coefficient for Charge Loss 
   Float_t   fTemperature;    // Temperature 
   Float_t   fDriftSpeed;     // Drift velocity
+  Int_t     fElectronics;    // Electronics
   
   Float_t    fMaxAdc;        // Adc saturation value
   Float_t    fDiffCoeff;     // Diffusion Coefficient (scaling the time)
   Float_t    fDiffCoeff1;    // Diffusion Coefficient (constant term)
   Float_t    fNsigmas;       // Number of sigmas over which charge disintegration 
                              // is performed 
+  TArrayF   *fGaus;          // Gaussian lookup table for signal generation
+  Int_t      fNcomps;        // Number of samplings along the gaussian
   
   Int_t      fZeroSuppFlag;  // Zero-suppression flag
   Int_t      fMinVal;        // Min value used in 2D zero-suppression algo
