@@ -1,4 +1,5 @@
 void Digits2RecParticles(){
+  gSystem->Setenv("CONFIG_SPLIT_FILE","1") ;   
 
   TFile * fRootFile = TFile::Open("galice.root","update");
 
@@ -31,6 +32,11 @@ void Digits2RecParticles(){
   gAlice->GetEvent(0) ;
 
   gAlice->TreeD()->GetEvent(0) ;
+
+  if (gSystem->Getenv("CONFIG_SPLIT_FILE"))    
+   if(gAlice->TreeR() == 0) gAlice->MakeTree("R","Reco.PHOS.root");
+  else 
+   if(gAlice->TreeR() == 0) gAlice->MakeTree("R");    
 
   //=========== Do the reconstruction
   fPHOS->Reconstruction(fRec);    
