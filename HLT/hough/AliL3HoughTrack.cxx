@@ -8,6 +8,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Defs.h"
 #include "AliL3HoughTrack.h"
+#include "AliL3Transform.h"
 
 //_____________________________________________________________
 // AliL3HoughTrack
@@ -111,7 +112,7 @@ void AliL3HoughTrack::UpdateToFirstRow()
     Double_t x0    = GetR0() * cos(GetPhi0()) ;
     Double_t y0    = GetR0() * sin(GetPhi0()) ;
   */
-  Double_t rc    = GetRadius();//fabs(GetPt()) / ( BFACT * BField )  ;
+  Double_t rc    = GetRadius();//fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
   Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / fabs(GetCharge()) ;
   Double_t xc    = GetCenterX();//x0 - rc * cos(tPhi0) ;
   Double_t yc    = GetCenterY();//y0 - rc * sin(tPhi0) ;
@@ -173,7 +174,7 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   fMinDist = 100000;
   SetKappa(kappa);
   SetPhi0(phi);
-  Double_t pt = fabs(BFACT*BField/kappa);
+  Double_t pt = fabs(BFACT*AliL3Transform::GetBField()/kappa);
   SetPt(pt);
   Double_t radius = 1/fabs(kappa);
   SetRadius(radius);
