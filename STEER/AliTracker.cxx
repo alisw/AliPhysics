@@ -47,13 +47,7 @@ AliTracker::AliTracker():
   //--------------------------------------------------------------------
   // The default constructor.
   //--------------------------------------------------------------------
-  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
-  if (!runLoader) AliFatal("Can't get the default run loader");
-  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
-  if (!runLoader->GetAliRun()) AliFatal("Can't get the AliRun object");
-  AliMagF *field=runLoader->GetAliRun()->Field();
-  if (field==0) AliFatal("Can't access the field map !");
-  SetFieldMap(field);
+  if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
 }
 
 void AliTracker::SetFieldMap(const AliMagF* map) {
