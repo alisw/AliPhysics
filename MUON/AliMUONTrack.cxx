@@ -927,15 +927,15 @@ L60:
             a[j + k*l] = a[k + j*l];
         }
     }
-    delete localVERTs;
-    delete localVERTq;
-    delete localVERTpp;
+    delete [] localVERTs;
+    delete [] localVERTq;
+    delete [] localVERTpp;
     return;
 //*-*-                  failure return
 L100:
-    delete localVERTs;
-    delete localVERTq;
-    delete localVERTpp;
+    delete [] localVERTs;
+    delete [] localVERTq;
+    delete [] localVERTpp;
     ifail = 1;
 } /* mnvertLocal */
 
