@@ -69,7 +69,7 @@ class AliHBTQSideCMSLCCorrelFctn: public AliHBTOnePairFctn1D
  public:
    AliHBTQSideCMSLCCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0):
                         AliHBTOnePairFctn1D(nbins,maxXval,minXval){}
-   virtual ~AliHBTQSideCMSLCCorrelFctn(){};
+   virtual ~AliHBTQSideCMSLCCorrelFctn(){}
    TH1* GetResult();
  protected:
    Double_t GetValue(AliHBTPair * pair){return TMath::Abs(pair->GetQSideCMSLC());}
