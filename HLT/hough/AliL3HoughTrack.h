@@ -20,6 +20,8 @@ class AliL3HoughTrack : public AliL3Track {
  
   Bool_t fIsHelix;
 
+  Float_t fBinX,fBinY,fSizeX,fSizeY;
+
  public:
   AliL3HoughTrack(); 
   virtual ~AliL3HoughTrack();
@@ -40,6 +42,11 @@ class AliL3HoughTrack : public AliL3Track {
   Double_t GetEta() const {return fEta;}
   Int_t GetSlice()  const {return fSlice;}
   void GetLineCrossingPoint(Int_t padrow,Float_t *xy);
+
+  Float_t    GetBinX()   const {return fBinX;}
+  Float_t    GetBinY()   const {return fBinY;}
+  Float_t    GetSizeX()  const {return fSizeX;}
+  Float_t    GetSizeY()  const {return fSizeY;}
   
   void SetHelixTrue() {fIsHelix=kTRUE;}
   void SetSlice(Int_t slice) {fSlice=slice;}
@@ -49,6 +56,8 @@ class AliL3HoughTrack : public AliL3Track {
   void SetBestMCid(Int_t f,Double_t min_dist);
   void SetDLine(Double_t f) {fDLine=f;}
   void SetPsiLine(Double_t f) {fPsiLine=f;}
+
+  void SetBinXY(Float_t binx,Float_t biny,Float_t sizex,Float_t sizey) {fBinX = binx; fBinY = biny; fSizeX = sizex; fSizeY = sizey;}
 
   ClassDef(AliL3HoughTrack,1) //Track class for Hough tracklets
 

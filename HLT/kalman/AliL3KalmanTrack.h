@@ -59,6 +59,7 @@ class AliL3KalmanTrack : public AliL3Track {
 
   AliL3KalmanTrack();
   virtual ~AliL3KalmanTrack();
+Int_t MakeSeed(AliL3Track *track, AliL3SpacePointData *points0, UInt_t pos0, Int_t slice0, AliL3SpacePointData *points1, UInt_t pos1, Int_t slice1, AliL3SpacePointData *points2, UInt_t pos2, Int_t slice2);
   Int_t Init(AliL3Track *track, AliL3SpacePointData *points, UInt_t pos,Int_t slice);
   Int_t Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t slice);
   Int_t UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int_t slice);
@@ -150,6 +151,7 @@ class AliL3KalmanTrack : public AliL3Track {
   Int_t PropagateOfflineTrack(Double_t x, Double_t y, Double_t z, Double_t ey, Double_t ez);
   Int_t UpdateOfflineTrack(Double_t x, Double_t y, Double_t z, Double_t ey, Double_t ez);
   Float_t GetChisqIncrementOfflineTrack(Double_t y, Double_t z, Double_t ey, Double_t ez);
+  
 };
 
 #endif

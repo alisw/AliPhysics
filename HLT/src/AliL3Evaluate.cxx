@@ -199,6 +199,23 @@ AliL3Evaluate::~AliL3Evaluate()
   if(fNtupleRes) delete fNtupleRes;
 }
 
+void AliL3Evaluate::AssignPIDs()
+{
+  fTracks->QSort();
+  LOG(AliL3Log::kDebug,"AliL3Evaluate::AssignPIDs","Track Loop")
+    <<"Assigning pid to the found tracks...."<<ENDLOG;
+  for(Int_t i=0; i<fTracks->GetNTracks(); i++)
+    {
+      AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(i);
+      if(!track) continue; 
+      if(track->GetNumberOfPoints() < fMinPointsOnTrack)
+	track->SetPID(0);
+      else {
+	Float_t pid = GetTrackPID(track);
+	track->SetPID(pid);
+      }
+    }
+}
   
 void AliL3Evaluate::AssignIDs()
 {
@@ -224,6 +241,60 @@ void AliL3Evaluate::AssignIDs()
   //cout<<"Found "<<fGoodFound<<" good tracks "<<endl;
 }
 
+Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)
+{
+  track->CalculateHelix();
+  // Track dEdx
+  Int_t nc=track->GetNHits();
+  UInt_t *hits = track->GetHitNumbers();
+  Float_t sampleDEdx[159];
+  for (Int_t iHit = 0; iHit < nc; iHit++) {
+    UInt_t hitID = hits[iHit];
+    Int_t iSector = (hitID>>25) & 0x7f;
+    Int_t patch = (hitID>>22) & 0x7;
+    UInt_t position = hitID&0x3fffff;
+    AliL3SpacePointData *points = fClusters[iSector][patch];
+    if(!points) continue; 
+    if(position>=fNcl[iSector][patch]) 
+      {
+	LOG(AliL3Log::kError,"AliL3Evaluate::GetMCTrackLabel","Clusterarray")
+	  <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
+	continue;
+      }
+    UChar_t padrow = points[position].fPadRow;
+    Float_t pWidth = AliL3Transform::GetPadPitchWidthLow();
+    if (padrow>63)
+      pWidth = AliL3Transform::GetPadPitchWidthUp(); 
+    Float_t corr=1.; if (padrow>63) corr=0.67;
+    sampleDEdx[iHit] = points[position].fCharge/pWidth*corr;
+    Double_t crossingangle = track->GetCrossingAngle(padrow,iSector);
+    Double_t s = sin(crossingangle);
+    Double_t t = track->GetTgl();
+    sampleDEdx[iHit] *= sqrt((1-s*s)/(1+t*t));
+  }
+
+  /* Cook dEdx */
+  Int_t i;
+  Int_t swap;//stupid sorting
+  do {
+    swap=0;
+    for (i=0; i<nc-1; i++) {
+      if (sampleDEdx[i]<=sampleDEdx[i+1]) continue;
+      Float_t tmp=sampleDEdx[i];
+      sampleDEdx[i]=sampleDEdx[i+1]; sampleDEdx[i+1]=tmp;
+      swap++;
+    }
+  } while (swap);
+
+  Double_t low=0.05; Double_t up=0.7;
+  Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
+  Float_t trackDEdx=0;
+  for (i=nl; i<=nu; i++) trackDEdx += sampleDEdx[i];
+  trackDEdx /= (nu-nl+1);
+
+  cout<<" PID: "<<nc<<" "<<nl<<" "<<nu<<" "<<trackDEdx<<endl;
+  return trackDEdx;
+}
 
 struct S {Int_t lab; Int_t max;};
 Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){ 

@@ -8,6 +8,7 @@
 #include "AliL3RootTypes.h"
 
 class AliL3Vertex;
+class AliL3SpacePointData;
 
 class AliL3Track {
   
@@ -57,6 +58,7 @@ class AliL3Track {
 
   UInt_t fHitNumbers[159];  //Array of hit numbers for this track
 
+  Float_t fPID;
  public:
   
   AliL3Track();
@@ -74,6 +76,9 @@ class AliL3Track {
   Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   Double_t GetDistance(Double_t x0,Double_t x1){return 0;}
   void UpdateToFirstPoint();
+
+  Float_t GetPID() {return fPID;}
+  void    SetPID(Float_t pid) {fPID=pid;}
 
   void GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z);
   void Rotate(Int_t slice,Bool_t tolocal=kFALSE);
@@ -124,6 +129,7 @@ class AliL3Track {
 
   Int_t GetFirstRow() const {return fRowRange[0];}
   Int_t GetLastRow()  const {return fRowRange[1];}
+  Int_t GetSector()   const {return fSector;}
 
   UInt_t *GetHitNumbers() {return fHitNumbers;}
 

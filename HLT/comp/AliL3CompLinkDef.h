@@ -11,6 +11,7 @@
 #pragma link C++ class AliL3ModelTrack; 
 #endif
 #pragma link C++ class AliL3Compress; 
+#pragma link C++ class AliL3CompressAC; 
 #pragma link C++ class AliL3ClusterFitter; 
 #pragma link C++ class AliL3DataCompressor; 
 #pragma link C++ class AliL3ClusterModel; 

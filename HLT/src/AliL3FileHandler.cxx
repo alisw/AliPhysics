@@ -139,6 +139,9 @@ AliL3FileHandler::AliL3FileHandler(Bool_t b)
 {
   //Default constructor
   fInAli = 0;
+#ifdef use_newio
+  fUseRunLoader = kFALSE;
+#endif
   fParam = 0;
   fMC =0;
   fDigits=0;
@@ -276,6 +279,7 @@ Bool_t AliL3FileHandler::SetAliInput(Char_t *name)
 Bool_t AliL3FileHandler::SetAliInput(AliRunLoader *runLoader)
 {
   fInAli=runLoader;
+  fUseRunLoader = kTRUE;
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
     <<"Pointer to AliRunLoader = 0x0 "<<ENDLOG;
@@ -308,14 +312,18 @@ Bool_t AliL3FileHandler::SetAliInput(TFile *file)
 
 void AliL3FileHandler::CloseAliInput()
 {
+#ifdef use_newio
+  if(fUseRunLoader) return;
+#endif
   if(!fInAli){
-    LOG(AliL3Log::kWarning,"AliL3FileHandler::CloseAliInput","File Close")
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::CloseAliInput","RunLoader")
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
 #ifndef use_newio
   if(fInAli->IsOpen()) fInAli->Close();
 #endif
+
   delete fInAli;
   fInAli = 0;
 }
@@ -470,7 +478,6 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
-  //  Int_t ndigits[entries];
   Int_t * ndigits = new Int_t[entries];
   Float_t xyz[3];
 
@@ -535,7 +542,6 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
 	continue;
       }
 
-      //tempPt->fRow = lrow;
       tempPt->fNDigit = ndigits[lrow];
 
       Int_t localcount=0;
@@ -626,7 +632,6 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
-  //  Int_t ndigits[entries];
   Int_t * ndigits = new Int_t[entries];
   Int_t lslice,lrow;
   Int_t zerosupval=AliL3Transform::GetZeroSup();
@@ -634,6 +639,8 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 
   for(Int_t r=fRowMin;r<=fRowMax;r++){
     Int_t n=fIndex[fSlice][r];
+
+    ndigits[r] = 0;
 
     if(n!=-1){//data on that row
       fDigitsTree->GetEvent(n);
@@ -646,7 +653,6 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 	continue;
       }
 
-      ndigits[lrow] = 0;
       fDigits->ExpandBuffer();
       fDigits->ExpandTrackBuffer();
       for(Int_t i=0; i<fDigits->GetNCols(); i++){
@@ -783,7 +789,6 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 	continue;
       }
 
-      //tempPt->fRow = lrow;
       tempPt->fNDigit = ndigits[lrow];
 
       Int_t localcount=0;
@@ -917,7 +922,7 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
     }
     Byte_t *tmp = (Byte_t*)tempPt;
     Int_t size = sizeof(AliL3DigitRowData)
-      + ndigits[lrow]*sizeof(AliL3DigitData);
+      + ndigits[r]*sizeof(AliL3DigitData);
     tmp += size;
     tempPt = (AliL3DigitRowData*)tmp;
   }

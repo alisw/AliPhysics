@@ -220,7 +220,6 @@ AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **
   //create new track
   AliL3Track *newtrack = mergedtracks->NextTrack();
   //copy points
-  //  UInt_t nn[AliL3Transform::GetNRows()];
   UInt_t * nn = new UInt_t[AliL3Transform::GetNRows()];
   nps = 0;
   

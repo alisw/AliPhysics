@@ -10,6 +10,7 @@
 #include "AliL3Track.h"
 #include "AliL3Transform.h"
 #include "AliL3Vertex.h"
+#include "AliL3SpacePointData.h"
 
 #if __GNUC__ == 3
 using namespace std;
@@ -55,6 +56,7 @@ AliL3Track::AliL3Track()
   SetFirstPoint(0,0,0);
   SetLastPoint(0,0,0);
   memset(fHitNumbers,0,159*sizeof(UInt_t));
+  fPID = 0;
 }
 
 void AliL3Track::Set(AliL3Track *tpt){
@@ -73,6 +75,8 @@ void AliL3Track::Set(AliL3Track *tpt){
 #ifdef do_mc
   SetMCid(tpt->GetMCid());
 #endif
+  SetPID(tpt->GetPID());
+  SetSector(tpt->GetSector());
 }
 
 Int_t AliL3Track::Compare(const AliL3Track *track) const
@@ -502,3 +506,4 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_
   
   closest_z = GetFirstPointZ() - s_tot*GetTgl();
 }
+

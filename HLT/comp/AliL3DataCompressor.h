@@ -36,28 +36,8 @@ class AliL3DataCompressor {
 #else
   FILE *fOutputFile;
 #endif
-  
   UInt_t fNcl[36][6];
-  
-  /*
-  static Int_t fNumPadBits;
-  static Int_t fNumTimeBits;
-  static Int_t fNumChargeBits;
-  static Int_t fNumPadShapeBits;
-  static Int_t fNumTimeShapeBits;
-  
-  static Float_t fPadResidualStep1;
-  static Float_t fPadResidualStep2;
-  static Float_t fPadResidualStep3;
-  static Float_t fTimeResidualStep1;
-  static Float_t fTimeResidualStep2;
-  static Float_t fTimeResidualStep3;
-  static Float_t fPadSigma2Step1;
-  static Float_t fPadSigma2Step2;
-  static Float_t fTimeSigma2Step;
-  static Int_t fClusterCharge;
-  */
- 
+   
   void SelectRemainingClusters();
   void ExpandTrackData(AliL3TrackArray *tracks);
   void ReadUncompressedData(TempCluster **clusters,Int_t *ncl,const Int_t maxpoints);
@@ -88,31 +68,13 @@ class AliL3DataCompressor {
   virtual void FillData(Int_t minhits,Bool_t expand);
   virtual void WriteRemaining(Bool_t select);
   void DetermineMinBits();
-  void CompressAndExpand();
+  void CompressAndExpand(Bool_t arithmetic_coding=kTRUE);
   void RestoreData(Bool_t remaining_only=kFALSE);
   void DoBench(Char_t *fname="benchmark");
   void DoNotCompress() {fNoCompression=kTRUE;}
 
-  /*
-  void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shapepad,Int_t shapetime);
-  void SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
-  void SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
-  */
   Int_t GetNusedClusters() {return fNusedClusters;}
   Int_t GetNunusedClusters() {return fNunusedClusters;}
-
-  /*
-  static const Int_t GetNPadBits() {return fNumPadBits;}
-  static const Int_t GetNTimeBits() {return fNumTimeBits;}
-  static const Int_t GetNChargeBits() {return fNumChargeBits;}
-  static const Int_t GetNPadShapeBits() {return fNumPadShapeBits;}
-  static const Int_t GetNTimeShapeBits() {return fNumTimeShapeBits;}
-  static const Float_t GetPadSigma2Step(Int_t patch) {return patch < 2 ? fPadSigma2Step1 : fPadSigma2Step2;}
-  static const Float_t GetTimeSigma2Step() {return fTimeSigma2Step;}
-  static const Int_t GetClusterCharge() {return fClusterCharge;}
-  static const Float_t GetPadResidualStep(Int_t row);
-  static const Float_t GetTimeResidualStep(Int_t row);
-  */
 
   ClassDef(AliL3DataCompressor,1) 
 

@@ -142,3 +142,21 @@ const Float_t AliL3DataCompressorHelper::GetTimePrecisionFactor()
       return 1;
     }
 }
+
+
+Int_t AliL3DataCompressorHelper::Nint(Double_t x)
+{
+   // Round to nearest integer. Rounds half integers 
+   // to the nearest even integer.
+
+   Int_t i=0;
+   if (x >= 0) {
+      i = Int_t(x + 0.5);
+      if (x + 0.5 == Double_t(i) && i & 1) i--;
+   } else {
+      i = Int_t(x - 0.5);
+      if (x - 0.5 == Double_t(i) && i & 1) i++;
+
+   }
+   return i;
+}

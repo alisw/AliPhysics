@@ -96,6 +96,9 @@ AliL3Hough::AliL3Hough()
 #ifdef use_aliroot
   //just be sure that index is empty for new event
     AliL3FileHandler::CleanStaticIndex(); 
+#ifdef use_newio
+    fRunLoader = 0;
+#endif
 #endif
 }
 
@@ -128,6 +131,9 @@ AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bi
 #ifdef use_aliroot
   //just be sure that index is empty for new event
     AliL3FileHandler::CleanStaticIndex(); 
+#ifdef use_newio
+    fRunLoader = 0;
+#endif
 #endif
 }
 
@@ -243,7 +249,8 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments,kFALSE,kFALSE);
       }
 
-      fHoughTransformer[i]->CreateHistograms(fNBinX[i],fLowPt[i],fNBinY[i],-fPhi[i],fPhi[i]);
+      //      fHoughTransformer[i]->CreateHistograms(fNBinX[i],fLowPt[i],fNBinY[i],-fPhi[i],fPhi[i]);
+      fHoughTransformer[i]->CreateHistograms(fNBinX[i],-fLowPt[i],fLowPt[i],fNBinY[i],-fPhi[i],fPhi[i]);
       //fHoughTransformer[i]->CreateHistograms(fLowPt[i],fUpperPt[i],fPtRes[i],fNBinY[i],fPhi[i]);
 
       fHoughTransformer[i]->SetLowerThreshold(fThreshold[i]);
@@ -264,9 +271,18 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	      /* In case of reading digits file */
 	      fMemHandler[i] = new AliL3FileHandler(kTRUE); //use static index
 	      if(!fBinary) {
-		Char_t filename[1024];
-		sprintf(filename,"%s/digitfile.root",fPath);
-		fMemHandler[i]->SetAliInput(filename);
+#if use_newio
+		if(!fRunLoader) {
+#endif
+		  Char_t filename[1024];
+		  sprintf(filename,"%s/digitfile.root",fPath);
+		  fMemHandler[i]->SetAliInput(filename);
+#if use_newio
+		}
+		else {
+		  fMemHandler[i]->SetAliInput(fRunLoader);
+		}
+#endif
 	      }
 	    }
 	    else {
@@ -286,7 +302,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 #endif
     }
 
-  fPeakFinder = new AliL3HoughMaxFinder("KappaPhi",1000);
+  fPeakFinder = new AliL3HoughMaxFinder("KappaPhi",50000);
   fMerger = new AliL3HoughMerger(fNPatches);
   fInterMerger = new AliL3HoughIntMerger();
   fGlobalMerger = 0;
@@ -332,7 +348,7 @@ void AliL3Hough::SetTransformerParams(Float_t ptres,Float_t ptmin,Float_t ptmax,
   fNBinY[patch] = ny;
   fPhi[patch] = psi;
 }
-
+/*
 void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patch)
 {
 
@@ -349,6 +365,36 @@ void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patc
       fNBinY[i] = ny;
       fNBinX[i] = nx;
       fPhi[i] = psi;
+      i++;
+    }
+}
+*/
+void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patch)
+{
+
+
+  Int_t mrow=79;
+  Double_t lineradius = sqrt(pow(AliL3Transform::Row2X(mrow),2) + pow(AliL3Transform::GetMaxY(mrow),2));
+  Double_t alpha1 = AliL3Transform::GetMaxY(mrow)/pow(lineradius,2);
+  Double_t kappa = 1*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/ptmin;
+  Double_t psi = AliL3Transform::Deg2Rad(10) - asin(lineradius*kappa/2);
+  cout<<"Calculated psi range "<<psi<<" in patch "<<patch<<endl;
+  AliL3HoughTrack track;
+  track.SetTrackParameters(kappa,psi,1);
+  Float_t hit[3];
+  Int_t mrow2 = 158;
+  track.GetCrossingPoint(mrow2,hit);
+  Double_t lineradius2 = sqrt(pow(AliL3Transform::Row2X(mrow2),2) + pow(AliL3Transform::GetMaxY(mrow2),2));
+  Double_t alpha2 = hit[1]/pow(lineradius2,2);
+  cout<<"Calculated alphas range "<<alpha1<<" "<<alpha2<<" in patch "<<patch<<endl;
+
+  Int_t i=0;
+  while(i < 6)
+    {
+      fLowPt[i] = 1.15*alpha1;
+      fNBinY[i] = ny;
+      fNBinX[i] = nx;
+      fPhi[i] = 1.15*alpha2;
       i++;
     }
 }
@@ -635,10 +681,15 @@ void AliL3Hough::AddAllHistogramsRows()
   initTime = GetCpuTime();
   fBenchmark->Start("Add HistogramsRows");
 
+  UChar_t *tracknrows = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackNRows();
+  UChar_t *trackfirstrow = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackFirstRow();
+  UChar_t *tracklastrow = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackLastRow();
+
   for(Int_t i=0; i<fNEtaSegments; i++)
     {
       UChar_t *rowcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetRowCount(i);
       UChar_t *gapcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetGapCount(i);
+      UChar_t *currentrowcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetCurrentRowCount(i);
 
       AliL3Histogram *hist = fHoughTransformer[0]->GetHistogram(i);
       Int_t xmin = hist->GetFirstXbin();
@@ -651,9 +702,12 @@ void AliL3Hough::AddAllHistogramsRows()
 	  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
 	    {
 	      Int_t bin = hist->GetBin(xbin,ybin);
-	      if(gapcount[bin] < 3)
-		//		hist->AddBinContent(bin,rowcount[bin]);
-		hist->AddBinContent(bin,rowcount[bin]/gapcount[bin]);
+	      if(tracklastrow[bin] > (currentrowcount[bin] + 1))
+		 gapcount[bin]++;
+	      if(gapcount[bin] < MAX_N_GAPS)
+		if(rowcount[bin] >= MIN_TRACK_LENGTH)
+		  if(((Int_t)rowcount[bin] + (Int_t)gapcount[bin])>=((Int_t)tracknrows[bin]-MAX_MISS_ROWS))
+		    hist->AddBinContent(bin,(rowcount[bin]+trackfirstrow[bin]+159-tracklastrow[bin]));
 	    }
 	}
     }
@@ -685,10 +739,87 @@ void AliL3Hough::AddTracks()
   fGlobalTracks->AddTracks(fTracks[0],0,fCurrentSlice);
 }
 
+void AliL3Hough::FindTrackCandidatesRow()
+{
+  if(fVersion != 4) {
+    LOG(AliL3Log::kError,"AliL3Hough::FindTrackCandidatesRow()","")
+      <<"Incompatible Peak Finder version!"<<ENDLOG;
+    return;
+  }
+
+  //Look for peaks in histograms, and find the track candidates
+  Int_t n_patches;
+  if(fAddHistograms)
+    n_patches = 1; //Histograms have been added.
+  else
+    n_patches = fNPatches;
+  
+  Double_t initTime,cpuTime;
+  initTime = GetCpuTime();
+  fBenchmark->Start("Find Maxima");
+  for(Int_t i=0; i<n_patches; i++)
+    {
+      AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
+      fTracks[i]->Reset();
+      fPeakFinder->Reset();
+      
+      for(Int_t j=0; j<fNEtaSegments; j++)
+	{
+	  AliL3Histogram *hist = tr->GetHistogram(j);
+	  if(hist->GetNEntries()==0) continue;
+	  fPeakFinder->SetHistogram(hist);
+	  fPeakFinder->SetEtaSlice(j);
+#ifdef do_mc
+	  LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","")
+	    <<"Starting "<<j<<" etaslice"<<ENDLOG;
+#endif
+	  fPeakFinder->SetThreshold(fPeakThreshold[i]);
+	  fPeakFinder->FindAdaptedRowPeaks(1,0,0);//Maxima finder for HoughTransformerRow
+
+	  //fPeakFinder->FindMaxima(fPeakThreshold[i]); //Simple maxima finder
+	}
+  
+      for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
+	{
+	  if(fPeakFinder->GetWeight(k) < 0) continue;
+	  AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
+	  Float_t psi = atan((fPeakFinder->GetXPeak(k)-fPeakFinder->GetYPeak(k))/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
+	  Float_t kappa = 2.0*(fPeakFinder->GetXPeak(k)*cos(psi)-AliL3HoughTransformerRow::GetBeta1()*sin(psi));
+	  //	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
+	  track->SetTrackParameters(kappa,psi,fPeakFinder->GetWeight(k));
+	  track->SetBinXY(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetXPeakSize(k),fPeakFinder->GetYPeakSize(k));
+	  Int_t etaindex = (fPeakFinder->GetStartEta(k)+fPeakFinder->GetEndEta(k))/2;
+	  track->SetEtaIndex(etaindex);
+	  Float_t starteta = tr->GetEta(fPeakFinder->GetStartEta(k),fCurrentSlice);
+	  Float_t endeta = tr->GetEta(fPeakFinder->GetEndEta(k),fCurrentSlice);
+	  track->SetEta((starteta+endeta)/2.0);
+	  track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
+	  track->SetSector(fCurrentSlice);
+	  track->SetSlice(fCurrentSlice);
+#ifdef do_mc
+	  Int_t label = tr->GetTrackID(etaindex,fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k));
+	  track->SetMCid(label);
+	  //	  cout<<"Track found with label "<<label<<" at "<<fPeakFinder->GetXPeak(k)<<" "<<fPeakFinder->GetYPeak(k)<<" with weight "<<fPeakFinder->GetWeight(k)<<endl; 
+#endif
+	}
+      LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","")
+	<<"Found "<<fTracks[i]->GetNTracks()<<" tracks in patch "<<i<<ENDLOG;
+      fTracks[i]->QSort();
+    }
+  fBenchmark->Stop("Find Maxima");
+  cpuTime = GetCpuTime() - initTime;
+  LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","Timing")
+    <<"Maxima finding done in "<<cpuTime*1000<<" ms"<<ENDLOG;
+}
+
 void AliL3Hough::FindTrackCandidates()
 {
-  //Look for peaks in histograms, and find the track candidates
-  
+  if(fVersion == 4) {
+    LOG(AliL3Log::kError,"AliL3Hough::FindTrackCandidatesRow()","")
+      <<"Incompatible Peak Finder version!"<<ENDLOG;
+    return;
+  }
+
   Int_t n_patches;
   if(fAddHistograms)
     n_patches = 1; //Histograms have been added.
@@ -709,14 +840,11 @@ void AliL3Hough::FindTrackCandidates()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
-
+#ifdef do_mc
+	  cout<<"Starting "<<j<<" etaslice"<<endl;
+#endif
 	  fPeakFinder->SetThreshold(fPeakThreshold[i]);
-	  if(fVersion != 4) {
-	    fPeakFinder->FindAdaptedPeaks(fKappaSpread,fPeakRatio);
-	    //fPeakFinder->FindMaxima(fPeakThreshold[i]); //Simple maxima finder
-	  }
-	  else /* row transformer needs different peak finder method */
-	    fPeakFinder->FindAdaptedRowPeaks(1,2,0);
+	  fPeakFinder->FindAdaptedPeaks(fKappaSpread,fPeakRatio);
 	  
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
@@ -725,11 +853,6 @@ void AliL3Hough::FindTrackCandidates()
 	      track->SetEtaIndex(j);
 	      track->SetEta(tr->GetEta(j,fCurrentSlice));
 	      track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
-#ifdef do_mc
-	      Int_t label = tr->GetTrackID(j,fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k));
-	      track->SetMCid(label);
-	      cout<<"Track found with label "<<label<<" at "<<fPeakFinder->GetXPeak(k)<<" "<<fPeakFinder->GetYPeak(k)<<" with weight "<<fPeakFinder->GetWeight(k)<<endl; 
-#endif
 	    }
 	}
       cout<<"Found "<<fTracks[i]->GetNTracks()<<" tracks in patch "<<i<<endl;

@@ -149,7 +149,6 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
   
   Int_t nrows=fRowMax-fRowMin+1;
   Int_t ndigitcount=0;
-  //  Int_t ndigits[nrows];
   Int_t * ndigits = new Int_t[nrows];
   UShort_t ***charges=new UShort_t**[nrows];
   for(Int_t r=fRowMin;r<=fRowMax;r++){

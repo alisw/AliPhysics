@@ -82,7 +82,8 @@ CXXFLAGS       = -O2 -Wall -ggdb $(CXXGCC3FLAGS) $(EXTRACXXFLAGS)
 LDFLAGS        = -O2 $(EXTRALDFLAGS) $(LIBS)
 STATICLDFLAGS  = -O2 $(PROFILEFLAGS) $(EXTRALDFLAGS) $(STATICLIBS)
 
-PRGS	= runit read runvhdlcf runhough runvhdlhough runtracker
+
+PRGS	=  runit read runvhdlcf runhough runvhdlhough runtracker tpcbeamtesttracker tpcbeamtestdisplay
 STPRGS	= 
 UTILS   = ccfile gettransform
 STUTILS = gettransform_st runit_st
@@ -121,6 +122,14 @@ runit_st: runit.sto
 runtracker: runtracker.o
 	$(LD) $< $(STATICLDFLAGS) -o $@
 
+#TPC Test cluster finder and tracker
+tpcbeamtesttracker: tpcbeamtesttracker.o
+	$(LD) $< $(LDFLAGS) -o $@
+
+#TPC Test display
+tpcbeamtestdisplay: tpcbeamtestdisplay.o
+	$(LD) $< $(LDFLAGS) -o $@
+
 #read l3 raw data, print it and convert to altro data
 read: read.o
 	$(LD) $< $(LDFLAGS) -o $@
@@ -153,6 +162,5 @@ speedtest: speedtest.cxx
 	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
 clean :
-	rm -f *.o *.sto $(PRGS) $(UTILS) $(STPRGS) $(STUTILS) $(UTILS_not_working)
-
+	rm -f *.o *.sto gmon.out $(PRGS) $(UTILS) $(STPRGS) $(STUTILS) $(UTILS_not_working)
 

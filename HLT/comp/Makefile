@@ -15,7 +15,7 @@ endif
 include $(ALIHLT_TOPDIR)/Makefile.conf
 
 SRCS =  AliL3Modeller.cxx AliL3ClusterFitter.cxx \
-        AliL3Compress.cxx  AliL3DataCompressor.cxx 
+        AliL3Compress.cxx  AliL3DataCompressor.cxx AliL3CompressAC.cxx
 
 ifneq ($(ARCH),Darwin)
 SRCS += AliL3DataCompressorHelper.cxx AliL3ModelTrack.cxx

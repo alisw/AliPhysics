@@ -17,9 +17,18 @@ struct AliL3TrackSegmentData
 	Double_t fPsi;
         Double_t fTgl;
         Int_t fCharge;
-#ifdef ROWHOUGH
+#ifdef ROWHOUGHPARAMS
+      /* needed for PDC */
         UInt_t  fWeight;
         Int_t  fTrackID;
+        Int_t  fRowRange1;
+        Int_t  fRowRange2;
+        Int_t  fSector;
+        Float_t  fPID;
+        Float_t  fBinX;
+        Float_t  fBinY;
+        Float_t  fBinXSize;
+        Float_t  fBinYSize;
 #endif
 	UInt_t  fNPoints;
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)

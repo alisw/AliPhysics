@@ -3,6 +3,7 @@
 #ifndef ALIL3_HISTOGRAM
 #define ALIL3_HISTOGRAM
 
+#include "AliL3StandardIncludes.h"
 #include "AliL3RootTypes.h"
 #include "AliL3StandardIncludes.h"
 

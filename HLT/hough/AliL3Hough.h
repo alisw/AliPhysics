@@ -17,6 +17,10 @@ class AliL3HoughIntMerger;
 class AliL3HoughGlobalMerger;
 class AliL3Benchmark;
 
+#ifdef use_newio
+#include <AliRunLoader.h>
+#endif
+
 class AliL3Hough {
   
  private:
@@ -61,6 +65,10 @@ class AliL3Hough {
   AliL3HoughGlobalMerger *fGlobalMerger; //!
   AliL3Benchmark *fBenchmark; //!
 
+#ifdef use_newio
+  AliRunLoader *fRunLoader;
+#endif
+
   void CleanUp();
   Double_t GetCpuTime();
   
@@ -69,7 +77,11 @@ class AliL3Hough {
   AliL3Hough(); 
   AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0);
   virtual ~AliL3Hough();
-  
+
+#ifdef use_newio  
+  void SetRunLoader(AliRunLoader *runloader) {fRunLoader = runloader;}
+#endif
+
   void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0,Float_t zvertex=0.0);
   void Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE);
 
@@ -83,6 +95,7 @@ class AliL3Hough {
   void MergeEtaSlices();
 
   void FindTrackCandidates();
+  void FindTrackCandidatesRow();
   void AddAllHistograms();
   void AddAllHistogramsRows();
   Int_t Evaluate(Int_t road_width=1,Int_t nrowstomiss=1);

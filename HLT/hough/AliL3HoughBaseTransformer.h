@@ -9,12 +9,8 @@
 const UInt_t MaxTrack=100;
 struct TrackIndex {
   Int_t fLabel[MaxTrack];
-#ifdef ROWHOUGH
   UChar_t fNHits[MaxTrack];
   UChar_t fCurrentRow[MaxTrack];
-#else
-  Int_t fNHits[MaxTrack];
-#endif
 };
 typedef struct TrackIndex TrackIndex;
 #endif

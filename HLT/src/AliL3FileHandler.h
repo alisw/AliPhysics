@@ -27,9 +27,11 @@ class AliL3FileHandler:public AliL3MemHandler{
  protected:
 #ifdef use_newio
   AliRunLoader *fInAli;
+  Bool_t fUseRunLoader;
 #else
   TFile *fInAli;
 #endif
+
   AliTPCParam *fParam;
   virtual Bool_t SetAliInput();
   AliSimDigits *fDigits;

@@ -20,7 +20,7 @@ AliL3KalmanTrack::AliL3KalmanTrack()
 {
   fX = 0;
 
-  fMaxChi2 = 12;
+  fMaxChi2 = 1000;
   // Constructor
 }
 
@@ -29,17 +29,76 @@ AliL3KalmanTrack::~AliL3KalmanTrack()
   // Destructor
 }
 
+Int_t AliL3KalmanTrack::MakeSeed(AliL3Track *track, AliL3SpacePointData *points0, UInt_t pos0, Int_t slice0, AliL3SpacePointData *points1, UInt_t pos1, Int_t slice1, AliL3SpacePointData *points2, UInt_t pos2, Int_t slice2)
+{
+  Float_t xyz[3];
+  xyz[0] = points0[pos0].fX;
+  xyz[1] = points0[pos0].fY;
+  AliL3Transform::Global2LocHLT(xyz,slice0);  
+  fX = xyz[0];
+  fP0 = xyz[1];
+  fP1 = points0[pos0].fZ; 
+
+  xyz[0] = points1[pos1].fX;
+  xyz[1] = points1[pos1].fY;
+  AliL3Transform::Global2LocHLT(xyz,slice1);
+  Float_t x2 = xyz[0];
+  Float_t y2 = xyz[1];
+  Float_t z2 = points1[pos1].fZ;
+
+  xyz[0] = points2[pos2].fX;
+  xyz[1] = points2[pos2].fY;
+  AliL3Transform::Global2LocHLT(xyz,slice2);
+  Float_t x3 = 0;//xyz[0];
+  Float_t y3 = 0;//xyz[1];
+  Float_t z3 = 0;//points2[pos2].fZ; 
+
+
+  fP2 = f2(fX,fP0,x2,y2,x3,y3);
+  fP3 = f3(fX,fP0,x2,y2,fP1,z2);
+  if (TMath::Abs(fP3) > 1.2) return 0;
+  fP4 = f4(fX,fP0,x2,y2,x3,y3);
+  if (TMath::Abs(fP4) >= 0.0066) return 0;
+
+  Float_t sy1=points0[pos0].fSigmaY2, sz1=points0[pos0].fSigmaZ2;
+  Float_t sy2=points2[pos2].fSigmaY2, sz2=points2[pos2].fSigmaZ2;
+  //Double_t sy3=400*3./12., sy=0.1, sz=0.1;
+  Float_t sy3=25000*fP4*fP4+0.1, sy=0.1, sz=0.1;
+  
+  Float_t f40=(f4(fX,fP0+sy,x2,y2,x3,y3)-fP4)/sy;
+  Float_t f42=(f4(fX,fP0,x2,y2+sy,x3,y3)-fP4)/sy;
+  Float_t f43=(f4(fX,fP0,x2,y2,x3,y3+sy)-fP4)/sy;
+  Float_t f20=(f2(fX,fP0+sy,x2,y2,x3,y3)-fP2)/sy;
+  Float_t f22=(f2(fX,fP0,x2,y2+sy,x3,y3)-fP2)/sy;
+  Float_t f23=(f2(fX,fP0,x2,y2,x3,y3+sy)-fP2)/sy;
+  Float_t f30=(f3(fX,fP0+sy,x2,y2,fP1,z2)-fP3)/sy;
+  Float_t f31=(f3(fX,fP0,x2,y2,fP1+sz,z2)-fP3)/sz;
+  Float_t f32=(f3(fX,fP0,x2,y2+sy,fP1,z2)-fP3)/sy;
+  Float_t f34=(f3(fX,fP0,x2,y2,fP1,z2+sz)-fP3)/sz;
+
+  fC00=sy1;
+  fC10=0.;       fC11=sz1;
+  fC20=f20*sy1;  fC21=0.;       fC22=f20*sy1*f20+f22*sy2*f22+f23*sy3*f23;
+  fC30=f30*sy1;  fC31=f31*sz1;  fC32=f30*sy1*f20+f32*sy2*f22;
+  fC33=f30*sy1*f30+f31*sz1*f31+f32*sy2*f32+f34*sz2*f34;
+  fC40=f40*sy1; fC41=0.; fC42=f40*sy1*f20+f42*sy2*f22+f43*sy3*f23;
+  fC43=f30*sy1*f40+f32*sy2*f42;
+  fC44=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
+
+  return 1;  
+} 
+
 Int_t AliL3KalmanTrack::Init(AliL3Track *track, AliL3SpacePointData *points, UInt_t pos, Int_t slice)
 {
 
-  Float_t xyz[3];
+  // Can also find seed for x4 by track->CalculateHelix() and fP4 = track->GetKappa()
+  // See if it's any difference in the time it takes. ??
+  //track->CalculateHelix();
 
+  Float_t xyz[3];
   xyz[0] = points[pos].fX;
   xyz[1] = points[pos].fY;
-
-  // NB! I think boolean variable in the command under is true if single slice.
-  // Better do a test if it is signle slice, and if so set it true.??.
-  AliL3Transform::Global2Local(xyz,slice);
+  AliL3Transform::Global2LocHLT(xyz,slice);
   
   fX = xyz[0];
 
@@ -47,43 +106,51 @@ Int_t AliL3KalmanTrack::Init(AliL3Track *track, AliL3SpacePointData *points, UIn
   fP1 = points[pos].fZ; 
   fP3 = track->GetTgl(); //cout << fP3; 
   if (TMath::Abs(fP3) > 1.2) return 0; //From AliTPCtrackerMI
-  fP4 = 0.5*(-track->GetCharge()*1./track->GetPt())*0.0029980*AliL3Transform::GetBField(); // Calculation of the curvature 
+
+  // The expression for fP4 is from ALICE internal note: ALICE/97-24, June 27, 1997
+  // Is this consistent with what's used in AliTPCtrack and AliTPCtracker ?? 
+  // Except for the factor 0.5, it is somewhat consistent with the calculation of Pt in AliTPCtrack.
+  // When I plot fP4, it is more consistent with offline if the factor 1/2 is included.
+  //fP4 = (-track->GetCharge()*1./(track->GetPt()/(0.0029980*AliL3Transform::GetBField()))); 
+  fP4 = 0.5*(-track->GetCharge()*1./(track->GetPt()/(0.0029980*AliL3Transform::GetBField()))); 
+  //cout << fP4 << endl;
+  //fP4 = 0.5*track->GetKappa();
   if (TMath::Abs(fP4) >= 0.0066) return 0; // From AliTPCtrackerMI
-
-
-  Float_t firstXY[2];
+  
+  /*Float_t firstXY[2];
   firstXY[0] = track->GetFirstPointX();
   firstXY[1] = track->GetFirstPointY();
-
-  AliL3Transform::Global2Local(firstXY,slice);
-
-  //cout << firstXY[0] << endl;
-
+  AliL3Transform::Global2LocHLT(firstXY,slice);
+  */
   //Float_t centerX = track->GetFirstPointX() - ((track->GetPt()/(0.0029980*AliL3Transform::GetBField())) * TMath::Cos(track->GetPsi() + track->GetCharge() * 0.5 * 3.14159265358979323846));
-  Float_t centerX = firstXY[0] - ((track->GetPt()/(0.0029980*AliL3Transform::GetBField())) * TMath::Cos(track->GetPsi() + track->GetCharge() * 0.5 * 3.14159265358979323846));
-  //Float_t centerY = track->GetFirstPointY() - ((track->GetPt()/(0.0029980*AliL3Transform::GetBField())) * TMath::Sin(track->GetPsi() + track->GetCharge() * 0.5 * 3.14159265358979323846));
+  //Float_t centerX = firstXY[0] - ((track->GetPt()/(0.0029980*AliL3Transform::GetBField())) * TMath::Cos(track->GetPsi() + track->GetCharge() * 0.5 * 3.14159265358979323846));
+  
+  //fP2 = fP4*centerX; // Curvature times center of curvature
+  // track->GetPointPsi() is almost always zero, why??. Still it's good for seed.
+  fP2 = TMath::Sin(track->GetPointPsi());  
 
-  fP2 = fP4*centerX; // Curvature times center of curvature
-
+  //cout << track->GetPt() << endl;
   if (TMath::Abs(fP4*fX - fP2) >= 0.9) // What's this??
     {
       return 0;
     }
-  //cout << track->GetCharge() << endl; 
+
   //cout << "AliL3KalmanTrack::Init, " << fP0 << " " << fP1 << " " << fP2 << " " << fP3 << " " << fP4 << endl;
-  //cout << fP4 << endl;
   //Float_t num = 12;
 
-  fC00 = points[pos].fSigmaY2; 
+  fC00 = points[pos].fSigmaY2;
   fC10 = 0; fC11 = points[pos].fSigmaZ2;
   fC20 = 0; fC21 = 0; fC22 = 5e-05;
   fC30 = 0; fC31 = 0; fC32 = 0; fC33 = 5e-05;
   fC40 = 0; fC41 = 0; fC42 = 0; fC43 = 0; fC44 = 5e-09;
-  /*fC00 = points[pos].fSigmaY2;
+  /*Float_t num = 12;
+  fC00 = points[pos].fSigmaY2;
   fC10 = 0; fC11 = points[pos].fSigmaZ2;
-  fC20 = 0; fC21 = 0; fC22 = (0.1/TMath::Sqrt(num))*(0.1/TMath::Sqrt(num));
-  fC30 = 0; fC31 = -points[pos].fSigmaZ2; fC32 = 0; fC33 = 2*(points[pos].fSigmaZ2);
-  fC40 = -points[pos].fSigmaY2; fC41 = 0; fC42 = 0; fC43 = 0; fC44 = 2*(points[pos].fSigmaY2);*/
+  fC20 = 0.0005; fC21 = 0; fC22 = 5.5e-05;
+  fC30 = 0.0001; fC31 = 0.001;
+  fC32 = 5.5e-06; fC33 = 6.5e-05;
+  fC40 = 5e-06;
+  fC41 = 0; fC42 = 4e-07; fC43 = 4e-08; fC44 = 3e-09;*/
   //cout << "Init: errors " << fC00 << " " << fC11 << " " << fC22 << " " << fC33 << " " << fC44 << endl;
 
   fChisq = 0;
@@ -123,7 +190,8 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t
   xyz[0] = points[pos].fX;
   xyz[1] = points[pos].fY;
 
-  AliL3Transform::Global2Local(xyz,slice);
+  //AliL3Transform::Global2Local(xyz,slice);
+  AliL3Transform::Global2LocHLT(xyz,slice);
   
   Float_t Xnew = xyz[0];
   Float_t dx = Xnew - Xold; //cout << Xnew << endl;
@@ -135,8 +203,8 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t
     }
   
   // R must be approx. of the radius of the circle based on
-  // the old and new spacepoint. What then is Cod and Cnew??
-  // C has something to do with curvature at least.
+  // the old and new spacepoint. What then is Cold and Cnew??
+  // C has something to do with curvature at least (curvature times x).
 
   Float_t Cold = fP4*Xold - fP2; 
   //if (TMath::Abs(Cold) >= 1.0) Cold = 0.9;
@@ -175,7 +243,7 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t
   Float_t f13 = dx*CC/CR;
   Float_t f14 = dx*fP3*(CR*XX-CC*(Rold*Xnew-Cnew*Cold*Xold/Rold + Rnew*Xold-Cold*Cnew*Xnew/Rnew))/(CR*CR);
 
-  // b = C*ft // This? 
+  // b = C*ft // This? MUST BE (f*C)t = Ct*ft??, that gives the expressions under at least.
   Float_t b00=f02*fC20 + f04*fC40;
   Float_t b01=f12*fC20 + f14*fC40 + f13*fC30;
   Float_t b10=f02*fC21 + f04*fC41;
@@ -192,7 +260,7 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t
   Float_t a01 = f02*b21 + f04*b41;
   Float_t a11 = f12*b21 + f14*b41+f13*b31;
 
-  //F*C*Ft = C + (a + b + bt) /This is the covariance matrix, the samll t 
+  //F*C*Ft = C + (a + b + bt) , This is the covariance matrix, the samll t 
   // means transform. Then F must be df/dx 
   fC00 += a00 + 2*b00;
   fC10 += a01 + b01 + b10;
@@ -205,7 +273,7 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t
   fC41 += b41;
 
   // Multiple scattering (from AliTPCtrack::PropagateTo)
-  // Shold this be included??
+  // Should this be included??
   /*
   Float_t d = TMath::Sqrt((Xold-Xnew)*(Xold-Xnew)+(Yold-fP0)*(Yold-fP0)+(Zold-fP1)*(Zold-fP1));
   Float_t Pt = (1e-9*TMath::Abs(fP4)/fP4 + fP4 * (1000/0.299792458/4));
@@ -267,11 +335,11 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos, Int_t
       fC44 = oldfC44;
 
       return value;
-      }
+    }
   
   else 
     return value;
-  //return UpdateTrack(points, pos);
+  //return UpdateTrack(points, pos, slice);
 }
 
 Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int_t slice)
@@ -283,7 +351,8 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int
   xyz[0] = points[pos].fX;
   xyz[1] = points[pos].fY;
   
-  AliL3Transform::Global2Local(xyz,slice);
+  //AliL3Transform::Global2Local(xyz,slice);
+  AliL3Transform::Global2LocHLT(xyz,slice);
   
   //fX = points[pos].fX; 
   fX = xyz[0];
@@ -292,6 +361,15 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int
   Float_t sigmaY2 = points[pos].fSigmaY2;
   Float_t sigmaZ2 = points[pos].fSigmaZ2;
   Float_t sigmaYZ = 0;
+
+  // points[pos].fSigmaY2 and Z2 is needed in calculation of chisq. 
+  // There use realSigmaZ2(z2), because sigmaY2(Z2) are changed underneath
+  // ANother possibility is to give realSigmaY2(Z2)(YZ) after += fC00(11)10 calculations. 
+  // After all it is these that are used in chisq calculation. 
+  // NB! In that case GetChisqIncrement must be changed so fC00(11)(10) are not added twice??. 
+  // Check if it's any change in timing.
+  Float_t realSigmaY2 = sigmaY2;
+  Float_t realSigmaZ2 = sigmaZ2;
 
   sigmaY2 += fC00;
   sigmaZ2 += fC11;
@@ -317,11 +395,11 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int
 
   // Deviation between the predicted and measured values of y and z 
   //Float_t dy = points[pos].fY-fP0; //cout << "dy = " << dy;
-  Float_t dy = xyz[1] - fP0; //cout << "dy = " << dy;
-  Float_t dz = points[pos].fZ-fP1; //cout << ", dz = " << dz << endl; 
+  Float_t dy = xyz[1] - fP0; //cout << dy << endl;;
+  Float_t dz = points[pos].fZ-fP1; //cout << dz << endl; 
   //cout << "Measured " << xyz[2] << " " << points[pos].fZ << endl;
 
-  // Prediction of fP2 and fP4
+  // Update of fP2 and fP4
   Float_t cur = fP4 + k40*dy + k41*dz; 
   Float_t eta = fP2 + k20*dy + k21*dz;
 
@@ -349,6 +427,7 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int
   Float_t c41 = fC41;
 
   // Filtered covariance matrix
+  // This is how it is in AliTPCtrack::Update
   fC00 -= k00*fC00 + k01*fC10;
   fC10 -= k00*c10 + k01*fC11;
   fC11 -= k10*c10 + k11*fC11;
@@ -364,19 +443,41 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos, Int
   fC42 -= k20*c40 + k21*c41;
   fC43 -= k40*c30 + k41*c31;
   fC44 -= k40*c40 + k41*c41;
-  //cout << "AliL3KalmanTrack::Update, error " << fC00 << " " << fC11 << " " << fC22 << " " << fC33 << " " << fC44 << endl;
+  
+  // Alternative filtering
+  // This is how (I think) it should be from the Kalman filter equations, and the C-matrix in Propagate ??
+  /*Float_t c00 = fC00;
+  Float_t c11 = fC11;
+  fC00 -= k00*fC00 + k01*fC10;
+  fC10 -= k10*c00 + k11*fC10;
+  fC11 -= k10*c10 + k11*fC11;
+  fC20 -= k20*c00 + k21*c10;
+  fC21 -= k20*c10 + k21*c11;
+  fC22 -= k20*c20 + k21*c21;
+  fC30 -= k30*c00 + k31*c10;
+  fC31 -= k30*c10 + k31*c11;
+  fC32 -= k30*c20 + k31*c21;
+  fC33 -= k30*c30 + k31*c31;
+  fC40 -= k40*c00 + k41*c10;
+  fC41 -= k40*c10 + k41*c11;
+  fC42 -= k40*c20 + k41*c21;
+  fC43 -= k40*c30 + k41*c31;
+  fC44 -= k40*c40 + k41*c41;*/
 
-  sigmaY2 = sigmaY2*det;
+  /*  sigmaY2 = sigmaY2*det;
   sigmaZ2 = sigmaZ2*det;
-  sigmaYZ = sigmaYZ*det;
+  sigmaYZ = sigmaYZ*det;*/
   //cout << "AliL3KalmanTrack::Update, Chi2 = " << GetChisq() << endl;
   //cout << "AliKalmanTrack::Update, sigmaY2 = " << sigmaY2 << " sigmaZ2 = " << sigmaZ2 << " sigmaYZ = " << sigmaYZ << " dy = " << dy << " dz = " << dz << endl;
+
   // Calculate increase of chisquare
-  fChisq = GetChisq() + GetChisqIncrement(xyz[1],sigmaY2,points[pos].fZ,sigmaZ2);
-  //cout << "fChisq = " << fChisq << endl;
+  //fChisq = GetChisq() + GetChisqIncrement(xyz[1],sigmaY2,points[pos].fZ,sigmaZ2);
+  fChisq = GetChisq() + GetChisqIncrement(xyz[1],realSigmaY2,points[pos].fZ,realSigmaZ2);
+  //fChisq = GetChisq() + GetChisqIncrement(points[pos].fY,realSigmaY2,points[pos].fZ,realSigmaZ2);
+ //cout << "fChisq = " << fChisq << endl;
 //(dy*sigmaY2*dy + 2*sigmaYZ*dy*dz + dz*sigmaZ2*dz) / (sigmaY2*sigmaZ2 - sigmaYZ*sigmaYZ);
   // Must at some point make an cut on chisq. Here?
-  //if (fChisq > fMaxChi2) return 0;
+  //  if (fChisq > fMaxChi2) return 0;
 
   return 1;
 } 
@@ -399,7 +500,8 @@ Float_t AliL3KalmanTrack::GetChisqIncrement(Float_t y, Float_t error_y, Float_t 
   Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
   
   Double_t dy=y - fP0, dz=z - fP1;
-  //cout << "AliTPCtrack::GetPredictedChi2, r00 = " << r00 << " r11 = " << r11 << " ro1 = " << r01 << " dy = " << dy << " dz = " << dz << endl;
+  //cout << det << endl;
+  //cout << "dy = " << dy << " , dz = " << dz << " , r00 = " << r00 << " , r01 = " << r01 << " r11 = " << r11 << endl;
   return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;
 }
 
@@ -658,7 +760,7 @@ Int_t AliL3KalmanTrack::UpdateOfflineTrack(Double_t x, Double_t y, Double_t z, D
   Float_t k40 = fC40*sigmaY2 + fC41*sigmaYZ, k41 = fC40*sigmaYZ + fC41*sigmaZ2;
   //cout << "x = " << fX << endl;
   // Deviation between the predicted and measured values of y and z
-  Float_t dy = y-fP0; //cout << "dy = " << dy;
+  Float_t dy = y-fP0; //cout << dy << endl;
   Float_t dz = z-fP1; //cout << ", dz = " << dz << endl;
   //cout << "Measured " << points[pos].fY << " " << points[pos].fZ << endl;
   

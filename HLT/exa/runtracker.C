@@ -32,6 +32,7 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
   //Set your configuration here:
   AliLevel3::EFileType filetype=AliLevel3::kRoot; //Input is RLE binary files or rootfile.
   Bool_t pileup=kFALSE; //Assume input is pileup event = non RLE binary files.
+  Bool_t nonvertex = kFALSE; //Set this to true if a second nonvertex contrained tracking pass should be performed.
   Int_t npatches = 1;   //Options; 1, 2 and 6.
 #ifdef __CINT__
   Char_t trackparams[] = "SetTrackingParameters_4000bf04.C"; //Set this to correspond 
@@ -95,12 +96,25 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
 			   rowscopetracklet,rowscopetrack,
 			   min_pt_fit,maxangle,goodDist,hitChi2Cut,
 			   goodHitChi2,trackChi2Cut,50,maxphi,maxeta,kTRUE);
+      
+      if(nonvertex)
+	{
+	  //Set parameters for nonvertextracking
+	  a->SetTrackerParam(phi_segments,eta_segments,trackletlength,tracklength,
+			     rowscopetracklet,rowscopetrack,
+			     min_pt_fit,maxangle,goodDist,hitChi2Cut,
+			     goodHitChi2,trackChi2Cut,50,maxphi,maxeta,kFALSE);
+	}
 #endif
 
       if(pileup)
 	a->DoPileup();
       //a->DoRoi();    /*do region of interest*/
       //a->DoMc();     /*do monte carlo identification*/
+      
+      if(nonvertex)
+	a->DoNonVertexTracking(); /*2 tracking passes, last without vertex contraint.*/
+      
       a->WriteFiles(opath); /*enable output*/
       a->ProcessEvent(minslice,maxslice);
       Char_t bname[100];

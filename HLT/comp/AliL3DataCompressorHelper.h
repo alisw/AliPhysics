@@ -49,6 +49,13 @@ class AliL3DataCompressorHelper {
   static const Float_t GetPadPrecisionFactor();
   static const Float_t GetTimePrecisionFactor();
 
+  //taken from TMath
+  static Int_t Nint(Double_t x); 
+  inline static Int_t Abs(Int_t d)
+   { return (d > 0) ? d : -d; }
+  inline static Double_t Abs(Double_t d)
+   { return (d > 0) ? d : -d; }
+
   ClassDef(AliL3DataCompressorHelper,1) 
 
 };

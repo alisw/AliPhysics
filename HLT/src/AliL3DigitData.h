@@ -13,6 +13,10 @@ struct AliL3DigitData
   UShort_t fCharge;
   UChar_t fPad;
   UShort_t fTime;
+#ifdef IA64
+  UChar_t dummy1;
+  UChar_t dummy2;
+#endif
 };
 typedef struct AliL3DigitData AliL3DigitData;
 

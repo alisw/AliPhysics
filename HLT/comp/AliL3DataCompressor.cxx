@@ -10,7 +10,7 @@
 #include "AliL3Transform.h"
 #include "AliL3MemHandler.h"
 #include "AliL3SpacePointData.h"
-#include "AliL3Compress.h"
+#include "AliL3CompressAC.h"
 #include "AliL3TrackArray.h"
 #include "AliL3ModelTrack.h"
 #include "AliL3Benchmark.h"
@@ -31,7 +31,6 @@
 
 #ifdef use_root
 #include <TFile.h>
-#include <TMath.h>
 #include <TDirectory.h>
 #include <TSystem.h>
 #include <TH2F.h>
@@ -39,6 +38,7 @@
 
 #include "AliL3DataCompressorHelper.h"
 #include "AliL3DataCompressor.h"
+#include <math.h>
 
 #if __GNUC__ == 3
 using namespace std;
@@ -411,6 +411,8 @@ void AliL3DataCompressor::ExpandTrackData(AliL3TrackArray *tracks)
   
 }
 
+
+
 void AliL3DataCompressor::DetermineMinBits()
 {
   //Make a pass through the modelled data (after FillData has been done) to determine
@@ -434,11 +436,11 @@ void AliL3DataCompressor::DetermineMinBits()
       for(Int_t padrow=0; padrow<AliL3Transform::GetNRows(); padrow++)
 	{
 	  if(!track->IsPresent(padrow)) continue;
-	  dpad = TMath::Abs(TMath::Nint(track->GetClusterModel(padrow)->fDPad));
-	  dtime = TMath::Abs(TMath::Nint(track->GetClusterModel(padrow)->fDTime));
-	  charge = TMath::Abs((Int_t)track->GetClusterModel(padrow)->fDCharge);
-	  dsigmaY = TMath::Abs(TMath::Nint(track->GetClusterModel(padrow)->fDSigmaY));
-	  dsigmaZ = TMath::Abs(TMath::Nint(track->GetClusterModel(padrow)->fDSigmaZ));
+	  dpad = AliL3DataCompressorHelper::Abs(AliL3DataCompressorHelper::Nint(track->GetClusterModel(padrow)->fDPad));
+	  dtime = AliL3DataCompressorHelper::Abs(AliL3DataCompressorHelper::Nint(track->GetClusterModel(padrow)->fDTime));
+	  charge = AliL3DataCompressorHelper::Abs((Int_t)track->GetClusterModel(padrow)->fDCharge);
+	  dsigmaY = AliL3DataCompressorHelper::Abs(AliL3DataCompressorHelper::Nint(track->GetClusterModel(padrow)->fDSigmaY));
+	  dsigmaZ = AliL3DataCompressorHelper::Abs(AliL3DataCompressorHelper::Nint(track->GetClusterModel(padrow)->fDSigmaZ));
 	  if(dpad > maxpad)
 	    maxpad=dpad;
 	  if(dtime > maxtime)
@@ -452,11 +454,11 @@ void AliL3DataCompressor::DetermineMinBits()
 	}
     }
   cout<<"maxpad "<<maxpad<<" maxtime "<<maxtime<<" maxcharge "<<maxcharge<<endl;
-  npadbits = (Int_t)TMath::Ceil(TMath::Log(maxpad)/TMath::Log(2)) + 1; //need 1 extra bit to encode the sign
-  ntimebits = (Int_t)TMath::Ceil(TMath::Log(maxtime)/TMath::Log(2)) + 1;
-  nchargebits = (Int_t)TMath::Ceil(TMath::Log(maxcharge)/TMath::Log(2)); //Store as a absolute value
+  npadbits = (Int_t)ceil(log(Double_t(maxpad))/log(2.)) + 1; //need 1 extra bit to encode the sign
+  ntimebits = (Int_t)ceil(log(Double_t(maxtime))/log(2.)) + 1;
+  nchargebits = (Int_t)ceil(log(Double_t(maxcharge))/log(2.)); //Store as a absolute value
   if(fWriteClusterShape)
-    nshapebits = (Int_t)TMath::Ceil(TMath::Log(maxsigma)/TMath::Log(2)) + 1;
+    nshapebits = (Int_t)ceil(log(Double_t(maxsigma))/log(2.)) + 1;
   
   nchargebits = AliL3DataCompressorHelper::GetNChargeBits();
   cout<<"Updating bitnumbers; pad "<<npadbits<<" time "<<ntimebits<<" charge "<<nchargebits<<" shape "<<nshapebits<<endl;
@@ -649,14 +651,18 @@ void AliL3DataCompressor::SelectRemainingClusters()
   
 }
 
-void AliL3DataCompressor::CompressAndExpand()
+void AliL3DataCompressor::CompressAndExpand(Bool_t arithmetic_coding)
 {
   //Read tracks/clusters from file, compress data and uncompress it. Write compression rates to file.
   if(fNoCompression)
     return;
   
   cout<<"Compressing and expanding data"<<endl;
-  AliL3Compress *comp = new AliL3Compress(-1,-1,fPath,fWriteClusterShape,fEvent);
+  AliL3Compress *comp = 0;
+  if(arithmetic_coding)
+    comp = new AliL3CompressAC(-1,-1,fPath,fWriteClusterShape,fEvent);
+  else
+    comp = new AliL3Compress(-1,-1,fPath,fWriteClusterShape,fEvent);
   comp->CompressFile();
   comp->ExpandFile();
   comp->PrintCompRatio(fCompRatioFile);
@@ -698,7 +704,7 @@ void AliL3DataCompressor::RestoreData(Bool_t remaining_only)
   
   if(!remaining_only)
     ReadUncompressedData(clusters,ncl,maxpoints);
-  
+    
   if(fKeepRemaining)
     ReadRemaining(clusters,ncl,maxpoints);
   
@@ -762,8 +768,8 @@ void AliL3DataCompressor::RestoreData(Bool_t remaining_only)
 	      
 	      c->SetSigmaY2(clPt[counter]->sigmaY2*pow(AliL3Transform::GetPadPitchWidth(patch),2));
 	      c->SetSigmaZ2(clPt[counter]->sigmaZ2*pow(AliL3Transform::GetZWidth(),2));
-	      Int_t pad = TMath::Nint(clPt[counter]->pad);
-	      Int_t time = TMath::Nint(clPt[counter]->time);
+	      Int_t pad = AliL3DataCompressorHelper::Nint(clPt[counter]->pad);
+	      Int_t time = AliL3DataCompressorHelper::Nint(clPt[counter]->time);
 	      
 	      if(pad < 0)
 		pad=0;
@@ -822,8 +828,7 @@ void AliL3DataCompressor::RestoreData(Bool_t remaining_only)
 
 void AliL3DataCompressor::ReadUncompressedData(TempCluster **clusters,Int_t *ncl,const Int_t maxpoints)
 {
-
-
+  
   AliL3Compress *comp = new AliL3Compress(-1,-1,fPath,fWriteClusterShape,fEvent);
   if(fNoCompression)
     {
@@ -838,6 +843,7 @@ void AliL3DataCompressor::ReadUncompressedData(TempCluster **clusters,Int_t *ncl
   
   AliL3TrackArray *tracks = comp->GetTracks();
   
+  //Float_t totcounter=0,pcounter=0,tcounter=0;
   Int_t charge;
   Float_t pad,time,sigmaY2,sigmaZ2;
   for(Int_t i=0; i<tracks->GetNTracks(); i++)
@@ -876,7 +882,6 @@ void AliL3DataCompressor::ReadUncompressedData(TempCluster **clusters,Int_t *ncl
 	  ncl[slice]++;
 	}
     }
-
   delete comp;
 }
 

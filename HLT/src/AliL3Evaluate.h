@@ -92,11 +92,13 @@ class AliL3Evaluate {
   void FillEffHistos();
   void FillEffHistosNAIVE();
   void CalcEffHistos();
+  void AssignPIDs();
   void AssignIDs();
   void GetGoodParticles(Char_t *particle_file,Int_t event=-1,Int_t *padrowrange=0);
   void GetFastClusterIDs(Char_t *path);
   void GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent=0,Bool_t sp=kFALSE);
   Int_t GetMCTrackLabel(AliL3Track *track);
+  Float_t GetTrackPID(AliL3Track *track);
   void CalculateResiduals();
   void EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *tofile,Int_t nevent=1,Bool_t offline=kFALSE,Bool_t sp=kFALSE);
   Float_t GetCrossingAngle(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);

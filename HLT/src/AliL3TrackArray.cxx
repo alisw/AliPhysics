@@ -199,11 +199,15 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr){
     track->SetFirstPoint(trs->fX,trs->fY,trs->fZ);
     track->SetLastPoint(trs->fLastX,trs->fLastY,trs->fLastZ);
     track->SetHits( trs->fNPoints, trs->fPointIDs );
-#ifdef ROWHOUGH
+#ifdef ROWHOUGHPARAMS
     if(GetTrackType()=='h') {
       ((AliL3HoughTrack *)track)->SetWeight(trs->fWeight);
-      track->SetMCid(trs->fTrackID);
+      ((AliL3HoughTrack *)track)->SetBinXY(trs->fBinX,trs->fBinY,trs->fBinXSize,trs->fBinYSize);
     }
+    track->SetMCid(trs->fTrackID);
+    track->SetRowRange(trs->fRowRange1,trs->fRowRange2);
+    track->SetSector(trs->fSector);
+    track->SetPID(trs->fPID);
 #endif
     UChar_t *tmpP = (UChar_t*)trs;
     tmpP += sizeof(AliL3TrackSegmentData)+trs->fNPoints*sizeof(UInt_t);
@@ -236,11 +240,15 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t 
     UChar_t *tmpP = (UChar_t*)trs;
     tmpP += sizeof(AliL3TrackSegmentData)+trs->fNPoints*sizeof(UInt_t);
     trs = (AliL3TrackSegmentData*)tmpP;
-#ifdef ROWHOUGH
+#ifdef ROWHOUGHPARAMS
     if(GetTrackType()=='h') {
       ((AliL3HoughTrack *)track)->SetWeight(trs->fWeight);
-      track->SetMCid(trs->fTrackID);
+      ((AliL3HoughTrack *)track)->SetBinXY(trs->fBinX,trs->fBinY,trs->fBinXSize,trs->fBinYSize);
     }
+    track->SetMCid(trs->fTrackID);
+    track->SetRowRange(trs->fRowRange1,trs->fRowRange2);
+    track->SetSector(slice);
+    track->SetPID(trs->fPID);
 #endif
   }
 }
@@ -282,11 +290,19 @@ UInt_t AliL3TrackArray::WriteTracks(AliL3TrackSegmentData* tr){
     tP->fTgl = track->GetTgl();
     tP->fCharge = track->GetCharge();
     tP->fNPoints = track->GetNHits();
-#ifdef ROWHOUGH
+#ifdef ROWHOUGHPARAMS
     if(GetTrackType()=='h') {
       tP->fWeight = ((AliL3HoughTrack *)track)->GetWeight();
-      tP->fTrackID = track->GetMCid();
+      tP->fBinX = ((AliL3HoughTrack *)track)->GetBinX();
+      tP->fBinY = ((AliL3HoughTrack *)track)->GetBinY();
+      tP->fBinXSize = ((AliL3HoughTrack *)track)->GetSizeX();
+      tP->fBinYSize = ((AliL3HoughTrack *)track)->GetSizeY();
     }
+    tP->fTrackID = track->GetMCid();
+    tP->fRowRange1 = track->GetFirstRow();
+    tP->fRowRange2 = track->GetLastRow();
+    tP->fSector = track->GetSector();
+    tP->fPID = track->GetPID();
 #endif
     pP = (UInt_t*)track->GetHitNumbers();
     for (UInt_t j=0;j<tP->fNPoints;j++){
@@ -327,6 +343,13 @@ UInt_t AliL3TrackArray::WriteConfMapTracks(AliL3TrackSegmentData* tr){
     tP->fPsi = track->GetPsi();
     tP->fTgl = track->GetTgl();
     tP->fCharge = track->GetCharge();
+#ifdef ROWHOUGHPARAMS
+    tP->fTrackID = track->GetMCid();
+    tP->fRowRange1 = track->GetFirstRow();
+    tP->fRowRange2 = track->GetLastRow();
+    tP->fSector = track->GetSector();
+    tP->fPID = track->GetPID();
+#endif
     tP->fNPoints = track->GetNHits();
     pP = (UInt_t*)track->GetHitNumbers();
     for (UInt_t j=0;j<tP->fNPoints;j++){

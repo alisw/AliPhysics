@@ -8,6 +8,10 @@
 #include <TFile.h>
 #endif
 
+#ifdef use_newio
+class AliRunLoader;
+#endif
+
 #include "AliL3DigitData.h"
 #include "AliL3RootTypes.h"
 
@@ -55,7 +59,9 @@ class AliLevel3 : public TObject {
   Float_t fEta[2];
   
   Char_t *fInputFile;//!
-
+#ifdef use_newio
+  AliRunLoader *fRunLoader;
+#endif
   Char_t fPath[256];
   Char_t fWriteOutPath[256];
   
@@ -85,8 +91,11 @@ class AliLevel3 : public TObject {
  public:
   AliLevel3 ();
   AliLevel3(Char_t *infile);
+#ifdef use_newio
+  AliLevel3(AliRunLoader *rl);
+#endif
   virtual ~AliLevel3();
-  enum EFileType {kBinary, kBinary8, kRoot, kRaw, kDate};
+  enum EFileType {kBinary, kBinary8, kRoot, kRaw, kDate, kRunLoader};
   void Init(Char_t *path,EFileType filetype=kBinary,Int_t npatches=6);
   void SetMergerParameters(Double_t maxy=1.2,Double_t maxz=1.6,Double_t maxkappa=0.003,
 			   Double_t maxpsi=0.02,Double_t maxtgl=0.03);

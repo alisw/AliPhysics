@@ -12,6 +12,10 @@ class AliL3TrackSegmentData;
 class AliL3TrackArray;
 class AliL3RandomPointData;
 
+#ifdef use_newio
+class AliRunLoader;
+#endif
+
 class AliL3MemHandler{
  private:
   
@@ -133,6 +137,9 @@ class AliL3MemHandler{
   //virtual functions:
   virtual void FreeDigitsTree() {return;}
   virtual Bool_t SetAliInput(char */*name*/){return 0;}
+#ifdef use_newio
+  virtual Bool_t SetAliInput(AliRunLoader */*runloader*/){return 0;}
+#endif
   virtual void CloseAliInput(){return;} 
   virtual Bool_t IsDigit(Int_t /*i*/=0){return 0;}
   virtual Bool_t SetMCOutput(char */*name*/){return 0;}

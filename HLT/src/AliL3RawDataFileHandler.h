@@ -29,6 +29,8 @@ class AliL3RawDataFileHandler:public AliL3MemHandler{
   Short_t **fPedestals;//! pedestal values, if not used, fPedVal is used
   Short_t fPedVal;
 
+  Short_t **fCharges;//! charge values read from pointer or from file
+
   Bool_t fConvert;
   Int_t Convert4(Int_t i);     //big2little and vice versa
   Short_t Convert2(Short_t i); //big2little and vice versa
@@ -40,13 +42,16 @@ class AliL3RawDataFileHandler:public AliL3MemHandler{
   void FreeAll(); //like AliL3MemHandler::Free() or AliL3FileHandler::FreeDigitsTree
 
   Bool_t SetRawInput(Char_t *name);
-  Bool_t SetRawInput(ifstream *file);
+  Bool_t SetRawInput(STDIF *file);
   void CloseRawInput(); 
   Int_t ReadRawInput();
+
+  Int_t ReadRawInputPointer(Char_t const *ptr);
+
   Short_t** GetRawData(Int_t &channels, Int_t & timebins);
 
   Bool_t SetRawOutput(Char_t *name);
-  Bool_t SetRawOutput(ofstream *file);
+  Bool_t SetRawOutput(STDOF *file);
   void CloseRawOutput(); 
   Int_t StoreRawData(Short_t **charges);
 
@@ -56,7 +61,7 @@ class AliL3RawDataFileHandler:public AliL3MemHandler{
   Int_t ReadMappingFile();
   
   Bool_t SetRawPedestalsInput(Char_t *name);
-  Bool_t SetRawPedestalsInput(ifstream *file);
+  Bool_t SetRawPedestalsInput(STDIF *file);
   void CloseRawPedestalsInput(); 
   Int_t ReadRawPedestalsInput();
 

@@ -15,6 +15,8 @@ endif
 
 include $(ALIHLT_TOPDIR)/Makefile.conf
 
-SRCS	= AliD0toKpi.cxx
+SRCS	= AliD0toKpi.cxx AliD0Trigger.cxx 
 
 include $(ALIHLT_TOPDIR)/Makefile.rules
+
+INCLUDES += -I$(ALICE_ROOT)/ITS

@@ -24,13 +24,22 @@ class AliL3HoughMaxFinder {
  private:
 
   Int_t fThreshold;
+  Int_t fCurrentEtaSlice;
   AliL3Histogram *fCurrentHisto;  //!
   
   Float_t fGradX;
   Float_t fGradY;
   Float_t *fXPeaks; //!
   Float_t *fYPeaks; //!
+  Int_t *fSTARTXPeaks; //!
+  Int_t *fSTARTYPeaks; //!
+  Int_t *fENDXPeaks; //!
+  Int_t *fENDYPeaks; //!
+  Int_t *fSTARTETAPeaks; //!
+  Int_t *fENDETAPeaks; //!
   Int_t *fWeight;   //!
+  Int_t fN1PeaksPrevEtaSlice;
+  Int_t fN2PeaksPrevEtaSlice;
   Int_t fNPeaks;
   Int_t fNMax;
   
@@ -66,11 +75,16 @@ class AliL3HoughMaxFinder {
   void SetGradient(Float_t x,Float_t y) {fGradX=x; fGradY=y;}
   void SetThreshold(Int_t f) {fThreshold = f;}
   void SetHistogram(AliL3Histogram *hist) {fCurrentHisto = hist;}
+  void SetEtaSlice(Int_t etaslice) {fCurrentEtaSlice = etaslice;}
   
   //Getters:
   Float_t GetXPeak(Int_t i);
   Float_t GetYPeak(Int_t i);
+  Float_t GetXPeakSize(Int_t i);
+  Float_t GetYPeakSize(Int_t i);
   Int_t GetWeight(Int_t i);
+  Int_t GetStartEta(Int_t i);
+  Int_t GetEndEta(Int_t i);
   Int_t GetEntries() {return fNPeaks;}
 
   ClassDef(AliL3HoughMaxFinder,1) //Maximum finder class
@@ -106,6 +120,26 @@ inline Int_t AliL3HoughMaxFinder::GetWeight(Int_t i)
       return 0;
     }
   return fWeight[i];
+}
+
+inline Int_t AliL3HoughMaxFinder::GetStartEta(Int_t i)
+{
+  if(i<0 || i>fNMax)
+    {
+      STDCERR<<"AliL3HoughMaxFinder::GetStartEta : Invalid index "<<i<<STDENDL;
+      return 0;
+    }
+  return fSTARTETAPeaks[i];
+}
+
+inline Int_t AliL3HoughMaxFinder::GetEndEta(Int_t i)
+{
+  if(i<0 || i>fNMax)
+    {
+      STDCERR<<"AliL3HoughMaxFinder::GetStartEta : Invalid index "<<i<<STDENDL;
+      return 0;
+    }
+  return fENDETAPeaks[i];
 }
 
 #endif

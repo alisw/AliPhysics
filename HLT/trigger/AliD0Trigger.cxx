@@ -86,6 +86,7 @@ bool AliD0Trigger::FindV0(){
   double V0[4]={0,0,0,0};
   bestV0[0]=0;  bestV0[1]=0;  bestV0[2]=0;
   
+  //Do not get right values
   Gxpos=posTrack->GetX()*cos(posTrack->GetAlpha())-posTrack->GetY()*sin(posTrack->GetAlpha());
   Gypos=posTrack->GetX()*sin(posTrack->GetAlpha())+posTrack->GetY()*cos(posTrack->GetAlpha());
   Gxneg=negTrack->GetX()*cos(negTrack->GetAlpha())-negTrack->GetY()*sin(negTrack->GetAlpha());
@@ -113,8 +114,8 @@ bool AliD0Trigger::FindV0(){
   Fc=pow(t,2)-(4*pow(q,2)*pow(r1,2))+(4*pow(q,2)*pow(b1,2));
   
   if(pow(Fb,2)-(4*Fa*Fc)>=0){
-    y1=(-Fb+(sqrt(pow(Fb,2)-(4*Fa*Fc))))/(2*Fa);  //noe feil her. floating point
-    y2=(-Fb-(sqrt(pow(Fb,2)-(4*Fa*Fc))))/(2*Fa);  //trolig negativ under rot 
+    y1=(-Fb+(sqrt(pow(Fb,2)-(4*Fa*Fc))))/(2*Fa);  
+    y2=(-Fb-(sqrt(pow(Fb,2)-(4*Fa*Fc))))/(2*Fa);  
     
     x1=sqrt(pow(r1,2)-pow((y1-b1),2))+a1;    
     x2=sqrt(pow(r1,2)-pow((y2-b1),2))+a1;    
@@ -164,6 +165,8 @@ bool AliD0Trigger::FindV0(){
   return goodV0;	
 }
 void AliD0Trigger::FindMomentaAtVertex(){
+
+  //This method moves the momenta to the secondary vertex
 
   double r1=fabs(1/(AliL3Transform::GetBFact()*Bfield*posTrack->Get1Pt()));
   double r2=fabs(1/(AliL3Transform::GetBFact()*Bfield*negTrack->Get1Pt()));
@@ -216,12 +219,12 @@ void AliD0Trigger::FindMomentaAtVertex(){
 }
 Bool_t AliD0Trigger::PointingAngle(){
 
-  TVector3 mom(momenta[0]+momenta[3],momenta[1]+momenta[4],momenta[2]+momenta[5]);
+  TVector3 mom(Px(),Py(),Pz());
   TVector3 flight(bestV0[0]-primaryVertex[0],bestV0[1]-primaryVertex[1],bestV0[2]-primaryVertex[2]);
 
   double pta = mom.Angle(flight);
 
-  if(cos(pta)<cutPointAngle)
+  if(cos(pta)>cutPointAngle)
     return true;
   else
     return false;
@@ -318,11 +321,9 @@ bool AliD0Trigger::CosThetaStar()
 
   ctsD0bar = (qL2/gamma-beta*TMath::Sqrt(pStar*pStar+kMK*kMK))/pStar;
 
-  if(TMath::Abs(ctsD0) > cutCosThetaStar){
-    if(TMath::Abs(ctsD0bar) > cutCosThetaStar){
+  if(fabs(ctsD0) > cutCosThetaStar || fabs(ctsD0bar) > cutCosThetaStar){
       goodtheta=true;
     }
-  }
   return goodtheta;
 }
 bool AliD0Trigger::pTchild()
@@ -339,4 +340,10 @@ bool AliD0Trigger::pTchild()
     }
   }
   return goodpT;
+}
+void AliD0Trigger::SetV0(double v[3])
+{
+  bestV0[0]=v[0];
+  bestV0[1]=v[1];
+  bestV0[2]=v[2];
 }

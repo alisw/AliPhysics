@@ -29,6 +29,17 @@ ClassImp(AliL3RawDataFileHandler)
 
 AliL3RawDataFileHandler::AliL3RawDataFileHandler()
 {
+  fConvert=kTRUE;
+  fInRaw = 0;
+  fInRawPed = 0;
+  fMapping = 0;
+  fPedestals=0;
+  fCharges=0;
+  fOutRaw = 0;
+  fRow=0;
+  fPad=0;
+  fRowPad=0;
+
   FreeAll();
 
   if((sizeof(Int_t) != 4) || (sizeof(Short_t) != 2)){
@@ -53,17 +64,19 @@ void AliL3RawDataFileHandler::FreeAll()
     delete[] fRowPad;
   }
   if(fPedestals) delete[] fPedestals;
+  if(fCharges) delete[] fCharges;
   if(fOutRaw) CloseRawOutput();
-
   fConvert=kTRUE;
   fInRaw = 0;
   fInRawPed = 0;
-  fOutRaw = 0;
   fMapping = 0;
-  fNChannels=0;
+  fPedestals=0;
+  fCharges=0;
+  fOutRaw = 0;
   fRow=0;
   fPad=0;
   fRowPad=0;
+  fNChannels=0;
   fRowMinUsed=AliL3Transform::GetNRows();
   fRowMaxUsed=0;
   fPadMinUsed=255;
@@ -71,7 +84,6 @@ void AliL3RawDataFileHandler::FreeAll()
   fNTimeBins=0;
   for(Int_t i=0;i<AliL3Transform::GetNRows();i++) fNPads[i]=0;
   fPedVal=0;
-  fPedestals=0;
 }
 
 Bool_t AliL3RawDataFileHandler::SetRawInput(Char_t *name)
@@ -113,7 +125,6 @@ Bool_t AliL3RawDataFileHandler::SetRawInput(ifstream *file)
 
   //Open the raw data file with given file.
   fInRaw = file;
-
 #if defined(__HP_aCC) || defined(__DECCXX)
   if(!fInRaw->rdbuf()->is_open()){
 #else
@@ -251,7 +262,6 @@ Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(ifstream *file)
 
   //Open the raw data file with given file.
   fInRawPed = file;
-
 #if defined(__HP_aCC) || defined(__DECCXX)
   if(!fInRawPed->rdbuf()->is_open()){
 #else
@@ -373,6 +383,7 @@ Int_t AliL3RawDataFileHandler::ReadMappingFile()
     //cout << i << " " << row << " " << pad << endl;
   }
 
+  CloseMappingFile();
   return fNChannels;
 }
 
@@ -401,7 +412,6 @@ inline Short_t AliL3RawDataFileHandler::Convert2(Short_t s)
 Int_t AliL3RawDataFileHandler::ReadRawInput()
 {
   //Read data from cosmics file into memory
-
   if(!fInRaw){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadRawInput","File Open")
       <<"No Input avalible: no object ifstream"<<ENDLOG;
@@ -438,14 +448,14 @@ Int_t AliL3RawDataFileHandler::ReadRawInput()
     fInRaw->read((Char_t*)&dummy2,sizeof(dummy2));
     UShort_t channel = Convert2(dummy2);
     if(channel>fNChannels){
-    LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::ReadRawInput","Data Inconsistency")
-      <<AliL3Log::kDec<<"Channel number must be smaller then fNChannels "<<channel<<" "<<fNChannels<<ENDLOG;
-    return 0;
+      LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::ReadRawInput","Data Inconsistency")
+	<<AliL3Log::kDec<<"Channel number must be smaller then fNChannels "<<channel<<" "<<fNChannels<<ENDLOG;
+      return 0;
     }
   }
-
-  fInRaw->read((Char_t*)&dummy4,sizeof(dummy4));
-  Int_t numofChannelsTest = Convert4(dummy4);
+  
+   fInRaw->read((Char_t*)&dummy4,sizeof(dummy4));
+   Int_t numofChannelsTest = Convert4(dummy4);
 
   if (numofChannelsTest != (Int_t)fNChannels){
     LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::ReadRawInput","Data Inconsistency")
@@ -462,8 +472,98 @@ Int_t AliL3RawDataFileHandler::ReadRawInput()
       <<AliL3Log::kDec<<"fNTimeBins does not match AliL3Transformer, check AliL3Transform::Init() "<<fNTimeBins<<" "<<AliL3Transform::GetNTimeBins()<<ENDLOG;
   }
 
+  //assign array
+  if(fCharges) delete[] fCharges;
+  fCharges=new Short_t*[fNChannels];
+  for(UInt_t c=0;c<fNChannels;c++) fCharges[c]=new Short_t[fNTimeBins];
+
+  //read data
+  for(UInt_t channel = 0; channel < fNChannels; channel++){
+    for(Int_t timebin = 0 ; timebin < fNTimeBins ; timebin++){
+      Short_t dummy2;
+      fInRaw->read((Char_t*)&dummy2,sizeof(dummy2));//1024012));
+      Short_t charge = Convert2(dummy2);
+
+      //Pedestal substraction
+      if(fPedestals) charge-=fPedestals[channel][timebin];
+      else charge-=fPedVal;
+      if(charge<0) charge=0;
+
+      fCharges[channel][timebin]=charge;
+    }
+  }
   return fNChannels;
 }
+
+Int_t AliL3RawDataFileHandler::ReadRawInputPointer(const Char_t *ptr)
+{
+  //Read data from cosmics pointer into memory
+  if(!ptr){
+    LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadRawInputPointer","Pointer")
+      <<"Pointer equals 0x0!"<<ENDLOG;
+    return 0; 
+  }
+  Int_t dummy4;
+  Short_t dummy2;
+  dummy4=*(Int_t*)ptr; ptr+=sizeof(dummy4);
+  if(dummy4==(Int_t)fNChannels) fConvert=kFALSE;
+  else {
+    Int_t knumofChannels = Convert4(dummy4);    
+    if(knumofChannels!=(Int_t)fNChannels){
+      LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadRawInputPointer","Data Inconsistency")
+	<<"Number of Channels should be equal to fNChannels "<<knumofChannels<<" "<<fNChannels<<ENDLOG;
+      return 0;
+    }
+  }
+  //read used altrochannels (for the moment
+  //this information is not really needed as
+  //all channels per FEC are used
+  for(UInt_t i = 0 ; i < fNChannels ; i++){
+    dummy2=*(Short_t*)ptr; ptr+=sizeof(dummy2);
+    UShort_t channel = Convert2(dummy2);
+    if(channel>fNChannels){
+      LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::ReadRawInputPointer","Data Inconsistency")
+	<<AliL3Log::kDec<<"Channel number must be smaller then fNChannels "<<channel<<" "<<fNChannels<<ENDLOG;
+      return 0;
+    }
+  }
+  dummy4=*(Int_t*)ptr; ptr+=sizeof(dummy4);
+  Int_t numofChannelsTest = Convert4(dummy4);
+  if (numofChannelsTest != (Int_t)fNChannels){
+    LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::ReadRawInputPointer","Data Inconsistency")
+      <<AliL3Log::kDec<<"Number of test channels should be equal to fNChannels "<<numofChannelsTest<<" "<<fNChannels<<ENDLOG;
+    return 0;
+  }
+  //Timebins
+  dummy4=*(Int_t*)ptr; ptr+=sizeof(Int_t);
+  fNTimeBins=Convert4(dummy4);
+  if(fNTimeBins!=AliL3Transform::GetNTimeBins()){
+    LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadRawInputPointer","Data Inconsistency")
+      <<AliL3Log::kDec<<"fNTimeBins does not match AliL3Transformer, check AliL3Transform::Init() "<<fNTimeBins<<" "<<AliL3Transform::GetNTimeBins()<<ENDLOG;
+  }
+  //assign array
+  if(fCharges) delete[] fCharges;
+  fCharges=new Short_t*[fNChannels];
+  for(UInt_t c=0;c<fNChannels;c++) fCharges[c]=new Short_t[fNTimeBins];
+  //read data
+  for(UInt_t channel = 0; channel < fNChannels; channel++){
+    for(Int_t timebin = 0 ; timebin < fNTimeBins ; timebin++){
+      Short_t dummy2=*(Short_t*)ptr;
+      Short_t charge = Convert2(dummy2);
+
+      //Pedestal substraction
+      if(fPedestals) charge-=fPedestals[channel][timebin];
+      else charge-=fPedVal;
+      if(charge<0) charge=0;
+
+      fCharges[channel][timebin]=charge;
+      ptr+=sizeof(dummy2);
+    }
+  }
+  
+  return fNChannels;
+}
+
 
 Short_t** AliL3RawDataFileHandler::GetRawData(Int_t &channels, Int_t &timebins)
 {
@@ -609,12 +709,12 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
       fPedestals[channel][timebin]=charge;
     }
   }
-
+  CloseRawPedestalsInput();
   return fNChannels;
 }
 
-  AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t /*event*/)
-{                                           //event is not used
+AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t /*event*/)
+{
   AliL3DigitRowData *data = 0;
   nrow=0;
 
@@ -628,31 +728,11 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
     }
   }
   
-  //Read the data
-  //  Short_t charges[fNChannels][fNTimeBins];
-  Short_t ** charges = new Short_t*[fNChannels];
-  for (UInt_t iii=0; iii<fNChannels; iii++)
-    charges[iii] = new Short_t[fNTimeBins];
-  for(UInt_t channel = 0; channel < fNChannels; channel++){
-    for(Int_t timebin = 0 ; timebin < fNTimeBins ; timebin++){
-      Short_t dummy2;
-      fInRaw->read((Char_t*)&dummy2,sizeof(dummy2));
-      Short_t charge = Convert2(dummy2);
-
-      //Pedestal substraction
-      if(fPedestals) charge-=fPedestals[channel][timebin];
-      else charge-=fPedVal;
-      if(charge<0) charge=0;
-
-      charges[channel][timebin]=charge;
-    }
-  }
 
   //get data size
   Int_t nrows=0;
   Int_t ndigitcount=0;
-  //  Int_t ndigits[AliL3Transform::GetNRows()];
-  Int_t * ndigits = new Int_t[AliL3Transform::GetNRows()];
+  Int_t *ndigits=new Int_t[AliL3Transform::GetNRows()];
   for(Int_t i=0;i<AliL3Transform::GetNRows();i++) ndigits[i]=0;
 
   //no need to search for slice/sector given by init
@@ -668,7 +748,7 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
       if(channel==-1) continue; //no data on that channel;
 
       for(Int_t timebin = 0 ; timebin < fNTimeBins ; timebin++){
-	Int_t dig=charges[channel][timebin];
+	Int_t dig=fCharges[channel][timebin];
 	
 	if(dig <= AliL3Transform::GetZeroSup()) continue;
 	if(dig >= AliL3Transform::GetADCSat())
@@ -689,7 +769,7 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
     ndigitcounttest+=ndigits[slrow];
   if(ndigitcount!=ndigitcounttest)
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::RawData2Memory","Digits")
-    <<AliL3Log::kDec<<"Found Inconsistency "<<ndigitcount<<" != "<<ndigitcounttest<<ENDLOG;
+      <<AliL3Log::kDec<<"Found Inconsistency "<<ndigitcount<<" != "<<ndigitcounttest<<ENDLOG;
     
   Int_t size = sizeof(AliL3DigitData)*ndigitcount
     + nrows*sizeof(AliL3DigitRowData);
@@ -717,7 +797,7 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
       if(channel==-1) continue; //no data on that channel;
 
       for(Int_t timebin = 0 ; timebin < fNTimeBins ; timebin++){
-	Int_t dig=charges[channel][timebin];
+	Int_t dig=fCharges[channel][timebin];
 	
 	if(dig <= AliL3Transform::GetZeroSup()) continue;
 	if(dig >= AliL3Transform::GetADCSat())
@@ -727,15 +807,15 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
 	//AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
 	//if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2])) continue;
 
-        tempPt->fDigitData[localcount].fCharge=(UShort_t)dig;
-        tempPt->fDigitData[localcount].fPad=(UChar_t)pad;
-        tempPt->fDigitData[localcount].fTime=(UShort_t)timebin;
+	tempPt->fDigitData[localcount].fCharge=(UShort_t)dig;
+	tempPt->fDigitData[localcount].fPad=(UChar_t)pad;
+	tempPt->fDigitData[localcount].fTime=(UShort_t)timebin;
 #ifdef do_mc
 	tempPt->fDigitData[localcount].fTrackID[0] = 0;
 	tempPt->fDigitData[localcount].fTrackID[1] = 0;
 	tempPt->fDigitData[localcount].fTrackID[2] = 0;
 #endif
-        localcount++;
+	localcount++;
 	ndigitcounttest2++;
       } //time
     } //pad 
@@ -747,20 +827,16 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
 
     Byte_t *tmp = (Byte_t*)tempPt;
     Int_t size = sizeof(AliL3DigitRowData)
-                                      + ndigits[slrow]*sizeof(AliL3DigitData);
+      + ndigits[slrow]*sizeof(AliL3DigitData);
     tmp += size;
     tempPt = (AliL3DigitRowData*)tmp;
   }//row
 
   if(ndigitcount!=ndigitcounttest2)
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::RawData2Memory","Digits")
-    <<AliL3Log::kDec<<"Found Inconsistency "<<ndigitcount<<" != "<<ndigitcounttest2<<ENDLOG;
+      <<AliL3Log::kDec<<"Found Inconsistency "<<ndigitcount<<" != "<<ndigitcounttest2<<ENDLOG;
 
   delete [] ndigits;
-  for (UInt_t iii=0; iii<fNChannels; iii++)
-    delete [] charges[iii];
-  delete [] charges;
-
   return data;
 }
 

@@ -653,8 +653,8 @@ void AliL3Compress::PrintCompRatio(ofstream *outfile)
     }
   
   Float_t compratio = (Float_t)(compress_size + remain_size)/(Float_t)digit_size;
-  Float_t entropy[2];
-  Int_t track_size = GetEntropy(entropy[0],entropy[1])*sizeof(AliL3TrackModel);
+  Float_t entropy[3];
+  Int_t track_size = GetEntropy(entropy[0],entropy[1],entropy[2])*sizeof(AliL3TrackModel);
   if(outfile)
     {
       ofstream &out = *outfile;
@@ -673,7 +673,7 @@ void AliL3Compress::PrintCompRatio(ofstream *outfile)
   cout<<"Entropy of residuals : "<<entropy[0]<<" "<<entropy[1]<<endl;
 }
 
-Int_t AliL3Compress::GetEntropy(Float_t &pad_entropy,Float_t &time_entropy)
+Int_t AliL3Compress::GetEntropy(Float_t &pad_entropy,Float_t &time_entropy,Float_t &charge_entropy)
 {
   //Calculate the entropy of the quantized residuals in both directions
   
@@ -682,8 +682,10 @@ Int_t AliL3Compress::GetEntropy(Float_t &pad_entropy,Float_t &time_entropy)
   const Int_t nmax=100000;
   Float_t pads[nmax];
   Float_t times[nmax];
+  Float_t charge[nmax];
   memset(&pads[0],0,nmax*sizeof(Float_t));
   memset(&times[0],0,nmax*sizeof(Float_t));
+  memset(&charge[0],0,nmax*sizeof(Float_t));
   Float_t counter=0;
 
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
@@ -695,26 +697,31 @@ Int_t AliL3Compress::GetEntropy(Float_t &pad_entropy,Float_t &time_entropy)
 	  if(!track->IsPresent(padrow)) continue;
 	  Int_t dpad = abs((Int_t)rint(track->GetClusterModel(padrow)->fDPad));
 	  Int_t dtime = abs((Int_t)rint(track->GetClusterModel(padrow)->fDTime));
-	  if(dpad >= nmax || dtime >= nmax)
+	  Int_t dcharge = (Int_t)track->GetClusterModel(padrow)->fDCharge;
+	  if(dpad >= nmax || dtime >= nmax || dcharge >= nmax)
 	    {
-	      cerr<<"AliL3Compress::GetEntropy : Quantization out of range: "<<dpad<<" "<<dtime<<endl;
+	      cerr<<"AliL3Compress::GetEntropy : Quantization out of range: "<<dpad<<" "<<dtime<<" "<<dcharge<<endl;
 	      break;
 	    }
 	  pads[dpad]++;
 	  times[dtime]++;
+	  charge[dcharge]++;
 	  counter++;
 	}
     }
-  pad_entropy=time_entropy=0;
+  pad_entropy=time_entropy=charge_entropy=0;
   for(Int_t i=0; i<nmax; i++)
     {
       if(pads[i]>0)
 	pad_entropy += (pads[i]/counter)*(log(pads[i]/counter)/log(2.0));
       if(times[i]>0)
 	time_entropy += (times[i]/counter)*(log(times[i]/counter)/log(2.0));
+      if(charge[i]>0)
+	charge_entropy += (charge[i]/counter)*(log(charge[i]/counter)/log(2.0));
     }
   
   pad_entropy*=-1;
   time_entropy*=-1;
+  charge_entropy*=-1;
   return fTracks->GetNTracks();
 }

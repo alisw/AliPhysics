@@ -12,6 +12,10 @@
 #include <TStopwatch.h>
 #endif
 
+#ifdef use_newio
+#include <AliRunLoader.h>
+#endif
+
 #include "AliL3Logging.h"
 #include "AliLevel3.h"
 #include "AliL3ConfMapper.h"
@@ -63,7 +67,17 @@ AliLevel3::AliLevel3()
   //In that case the path to where the binary files are located has to be
   //passed to the AliLevel::Init function.
   
+  fVertexFinder=0;
+  fVertex=0;
+  fTracker=0;
+  fTrackMerger=0;
+  fInterMerger=0;
+  fFileHandler=0;
+  fGlobalMerger=0;
   fInputFile=0;
+#ifdef use_newio
+  fRunLoader=0;
+#endif
 }
 
 AliLevel3::AliLevel3(Char_t *infile)
@@ -71,17 +85,62 @@ AliLevel3::AliLevel3(Char_t *infile)
   //Constructor to use for when input is anything else but binary files,
   //meaning rootfiles or raw files.
   
+  fVertexFinder=0;
+  fVertex=0;
+  fTracker=0;
+  fTrackMerger=0;
+  fInterMerger=0;
+  fFileHandler=0;
+  fGlobalMerger=0;
   fInputFile = infile;
+#ifdef use_newio
+  fRunLoader=0;
+#endif
 }
+
+#ifdef use_newio
+AliLevel3::AliLevel3(AliRunLoader *rl)
+{
+  //Constructor to use when input is aliroot runloader
+  fVertexFinder=0;
+  fVertex=0;
+  fTracker=0;
+  fTrackMerger=0;
+  fInterMerger=0;
+  fFileHandler=0;
+  fGlobalMerger=0;
+  fInputFile=0;
+#ifdef use_newio
+  fRunLoader = rl;
+#endif
+}
+#endif
 
 void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
 {
-  if((filetype!=kBinary) && (filetype!=kDate) && !fInputFile)
+#ifndef use_newio
+  if (filetype==kRunLoader){
+    LOG(AliL3Log::kError,"AliLevel3::Init","Files")
+	<<"You have not supplied the input rootfile; if you want "
+	<<"to run with RunLoader use -Duse_newio for compiling!"<<ENDLOG;
+  }
+#endif
+
+  if((filetype!=kBinary) && (filetype!=kDate) 
+       && (!filetype!=kRunLoader)&& !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
 	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
       return;
     }
+#if use_newio
+  if((filetype==kRunLoader) && !fRunLoader)
+    {
+      LOG(AliL3Log::kError,"AliLevel3::Init","Files")
+	<<"You have not supplied the input runloader; use the appropriate ctor!"<<ENDLOG;
+      return;
+    }
+#endif
   
   fWriteOut = kFALSE;
   fPileUp = kFALSE;
@@ -153,7 +212,14 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
   }else if(filetype==kDate){
     fFileHandler = new AliL3DDLDataFileHandler();
     fFileHandler->SetReaderInput(fInputFile,-1);
-  }else{
+  }
+#if use_newio
+  else if(filetype==kRunLoader){
+    fFileHandler = new AliL3FileHandler(kTRUE); //static version
+    fFileHandler->SetAliInput(fRunLoader);
+  }
+#endif
+  else{
     fFileHandler = new AliL3MemHandler();
   }
 #else

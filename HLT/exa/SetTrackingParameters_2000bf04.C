@@ -28,5 +28,5 @@ void SetTrackingParameters(AliLevel3 *tracker)
 			   rowscopetracklet,rowscopetrack,
 			   min_pt_fit,maxangle,goodDist,hitChi2Cut,
 			   goodHitChi2,trackChi2Cut,50,maxphi,maxeta,kTRUE);
-  
+  tracker->SetMergerParameters(2,3,0.003,0.1,0.05);
 }

@@ -23,6 +23,8 @@
 #include "TNtuple.h"
 #include "TTimer.h"
 
+#include "Riostream.h"
+
 /*
   AliL3Kalman
 */
@@ -113,6 +115,7 @@ void AliL3Kalman::LoadTracks(Int_t event, Bool_t sp)
     }
 
   // Load tracks
+  //sprintf(fname,"%s/kalmantracks_%d.raw",fPath,event);
   sprintf(fname,"%s/tracks_%d.raw",fPath,event);
   AliL3FileHandler *tfile = new AliL3FileHandler();
   if(!tfile->SetBinaryInput(fname)){
@@ -172,19 +175,24 @@ void AliL3Kalman::ProcessTracks()
 
       Bool_t save = kTRUE;
 
-      if (InitKalmanTrack(kalmantrack, track) == 0)
+      /*if (InitKalmanTrack(kalmantrack, track) == 0)
+	{
+	  save = kFALSE;
+	  continue;
+	  }*/
+      
+      if (MakeKalmanSeed(kalmantrack,track) ==0)
 	{
 	  save = kFALSE;
 	  continue;
 	}
-      
 
       if (Propagate(kalmantrack, track) == 0) 
 	{
 	  save = kFALSE;
 	}
-      
-      if (save) {
+
+      if (save) {// cout << track->GetPt() << endl;
 	Float_t x[5]; 
 	kalmantrack->GetStateVector(x);
 	Float_t c[15]; 
@@ -215,6 +223,14 @@ void AliL3Kalman::ProcessTracks()
 	// Add the track to the trackarray	
 	AliL3Track *outtrack = (AliL3Track*)fKalmanTracks->NextTrack();
 	outtrack->Set(track);
+	// SET THE PARAMETERS ACCORDING TO KALMAN FILTER
+	outtrack->SetTgl(x[3]);
+	// The factor 2 in the expression for Pt is not included in the similar offline expression. However
+	// it should be like this if I use a factor 1/2 in the calculation of par4??
+	//outtrack->SetPt(1/(2*TMath::Abs(1e-9*TMath::Abs(x[4])/x[4] + x[4])/(0.0029980*AliL3Transform::GetBField())));
+	//outtrack->SetPt(1/(TMath::Abs(x[4])/0.0029980*AliL3Transform::GetBField()));
+	outtrack->SetPsi(x[2]);
+	//outtrack->Set(track);
 
 	// Fill the ntuple with the state vector, covariance matrix and
 	// chisquare
@@ -253,6 +269,34 @@ void AliL3Kalman::ProcessTracks()
 
   delete kalmanTree;
   
+}
+
+Int_t AliL3Kalman::MakeKalmanSeed(AliL3KalmanTrack *kalmantrack, AliL3Track *track)
+{
+  Int_t num_of_clusters = track->GetNumberOfPoints();
+
+  UInt_t *hitnum = track->GetHitNumbers();
+  UInt_t id;
+
+  id = hitnum[0];
+  Int_t slice0 = (id>>25) & 0x7f;
+  Int_t patch0 = (id>>22) & 0x7;	
+  UInt_t pos0 = id&0x3fffff;
+  AliL3SpacePointData *points0 = fClusters[slice0][patch0];
+
+  id = hitnum[Int_t(num_of_clusters/2)];
+  Int_t slice1 = (id>>25) & 0x7f;
+  Int_t patch1 = (id>>22) & 0x7;	
+  UInt_t pos1 = id&0x3fffff;
+  AliL3SpacePointData *points1 = fClusters[slice1][patch1];
+
+  id = hitnum[num_of_clusters-1];
+  Int_t slice2 = (id>>25) & 0x7f;
+  Int_t patch2 = (id>>22) & 0x7;	
+  UInt_t pos2 = id&0x3fffff;
+  AliL3SpacePointData *points2 = fClusters[slice2][patch2];
+
+  return kalmantrack->MakeSeed(track, points0, pos0, slice0, points1, pos1, slice1, points2, pos2, slice2);
 }
 
 Int_t AliL3Kalman::InitKalmanTrack(AliL3KalmanTrack *kalmantrack, AliL3Track *track)

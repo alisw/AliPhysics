@@ -34,11 +34,7 @@ typedef struct AliL3RemainingCluster AliL3RemainingCluster;
 struct AliL3RemainingRow {
   Byte_t fPadRow;       //1 byte
   UShort_t fNClusters;  //2 bytes
-#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  AliL3RemainingCluster fClusters[1];
-#else
   AliL3RemainingCluster fClusters[0];
-#endif
 };
 typedef struct AliL3RemainingRow AliL3RemainingRow;
 

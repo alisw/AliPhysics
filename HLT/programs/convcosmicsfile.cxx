@@ -17,6 +17,14 @@ using namespace std;
 //#define DEBUG
 //#define NOCONV
 
+//this flag is for the cosmics/pubsub test
+//#define ADDFILESIZE
+
+#ifdef ADDFILESIZE
+#include <sys/stat.h>
+struct stat stat_results;
+#endif
+
 Int_t Convert4(Int_t i)
 { //BigEndian i0i1i2i3 -> LittleEndian i3i2i1i0
 #ifdef NOCONV
@@ -49,8 +57,6 @@ Short_t Convert2(Short_t s)
 #endif
 }
 
-
-
 int main(Int_t argc, Char_t **argv)
 {
   //p1 -> filename
@@ -72,9 +78,6 @@ int main(Int_t argc, Char_t **argv)
     islittle=1;
   }
 
-  Char_t sname[1024];
-  sprintf(sname,"%s.conv",fname);
-
   ifstream *in = new ifstream();
   in->open(fname,fstream::binary);
   if(!in->is_open()){
@@ -82,6 +85,12 @@ int main(Int_t argc, Char_t **argv)
     exit(1);
   }
 
+  Char_t sname[1024];
+#ifdef ADDFILESIZE
+  sprintf(sname,"%s.added",fname);
+#else
+  sprintf(sname,"%s.conv",fname);
+#endif
   ofstream *out = new ofstream();
   out->open(sname,fstream::in | fstream::out | fstream::binary | fstream::trunc);
   if(!in->is_open()){
@@ -89,8 +98,19 @@ int main(Int_t argc, Char_t **argv)
     exit(1);
   }
 
+
   Int_t dummy4;
   Short_t dummy2;
+#ifdef ADDFILESIZE
+  if (stat(fname, &stat_results) == 0){
+    dummy4=stat_results.st_size/4;
+    cout << "Add file size: " << dummy4 << endl;
+  } else {
+    cerr << "Error stating input file " << fname << endl;
+    exit(1);
+  }
+  out->write((Char_t*)&dummy4,sizeof(dummy4));
+#endif
 
   in->read((Char_t*)&dummy4,sizeof(dummy4));
   const Int_t knumofChannels = Convert4(dummy4);

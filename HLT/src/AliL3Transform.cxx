@@ -1449,14 +1449,14 @@ Double_t AliL3Transform::Row2X(Int_t slicerow){
   return fX[slicerow];
 }
 
-Double_t AliL3Transform::GetZFast(Int_t slice, Int_t time, Float_t /*vertex*/)
+Double_t AliL3Transform::GetZFast(Int_t slice, Int_t time, Float_t vertex)
 {
-  Double_t ret=0;
+  Double_t z=fZWidth*time-fZOffset;
   if(slice < 18)
-    ret=fZLength-fZWidth*time+fZOffset;
+    z=fZLength-z-vertex;
   else
-    ret=fZWidth*time-fZOffset-fZLength;
-  return ret;
+    z=z-fZLength-vertex;
+  return z;
 }
 
 void AliL3Transform::Local2Global(Float_t *xyz,Int_t slice)
@@ -1739,10 +1739,10 @@ void AliL3Transform::PrintCompileOptions()
   cout << "NOT using Monte Carlo Info: -Ddo_mc was not given." << endl;
 #endif
 
-#ifdef ROWHOUGH
-  cout << "Using row transformer version: -DROWHOUGH was given." << endl;
+#ifdef ROWHOUGHPARAMS
+  cout << "Using extended AliL3TrackSegmentData: -DROWHOUGHPARAMS was given." << endl;
 #else
-  cout << "NOT using row transformer version: -DROWHOUGH was not given." << endl;
+  cout << "NOT using extended AliL3TrackSegmentData: -DROWHOUGHPARAMS was not given." << endl;
 #endif
 
 #ifdef use_newio

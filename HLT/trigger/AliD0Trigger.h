@@ -2,6 +2,7 @@
 #define AliD0_Trigger
 
 #include "AliL3RootTypes.h"
+#include <math.h>
 
 class AliITStrackV2;
 
@@ -23,6 +24,7 @@ class AliD0Trigger {
   virtual ~AliD0Trigger();
 
   void SetTracks(AliITStrackV2 * posT, AliITStrackV2 * negT);
+  void SetV0(double v[3]);
   bool FindInvMass();
   bool FindV0();
   bool FindV0offline(double v[3]);
@@ -38,6 +40,8 @@ class AliD0Trigger {
   double Py(){return (momenta[1]+momenta[4]);}
   double Pz(){return (momenta[2]+momenta[5]);}
   double Energy();
+  //double Eta(){return atanh(cos(atan(Pt()/Pz())));}
+  double Eta(){return 0.5*(log((P()+Pz())/(P()-Pz())));}
   bool pTchild();
 
   ClassDef(AliD0Trigger,1) 

@@ -39,6 +39,9 @@ else
 ALIROOTSTR = "Unknown"
 endif
 DEFSTR += -DALIROOTVERSION=\"$(ALIROOTSTR)\"
+ifeq ($(ALIROOTST),HEAD)
+DEFSTR += -Duse_reconstruction
+endif
 endif
 
 ifeq ($(DOMC),1)
@@ -46,7 +49,7 @@ DEFSTR += -Ddo_mc
 endif
 
 ifeq ($(USEROWHOUGH),1)
-DEFSTR += -DROWHOUGH
+DEFSTR += -DROWHOUGHPARAMS
 endif
 
 ifneq ($(NOLOGGING),1)

@@ -6,6 +6,7 @@
 #include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
+#include "AliL3Track.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
 
@@ -26,7 +27,7 @@ using namespace std;
 ClassImp(AliL3HoughTrack)
 
 
-AliL3HoughTrack::AliL3HoughTrack()
+    AliL3HoughTrack::AliL3HoughTrack() : AliL3Track()
 {
   //Constructor
   
@@ -37,6 +38,7 @@ AliL3HoughTrack::AliL3HoughTrack()
   fIsHelix = true;
   fEtaIndex = -1;
   fEta = 0;
+  ComesFromMainVertex(kTRUE);
 }
 
 AliL3HoughTrack::~AliL3HoughTrack()
@@ -59,17 +61,17 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
   SetSlice(tpt->GetSlice());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
-#ifdef ROWHOUGH
   SetMCid(tpt->GetMCid());
-#endif
-  /*
-    fWeight = tpt->GetWeight();
-    fDLine = tpt->GetDLine();
-    fPsiLine = tpt->GetPsiLine();
-    SetNHits(tpt->GetWeight());
-    SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
-    fIsHelix = false;
-  */
+  SetBinXY(tpt->GetBinX(),tpt->GetBinY(),tpt->GetSizeX(),tpt->GetSizeY());
+  SetSector(tpt->GetSector());
+  return;
+
+  fWeight = tpt->GetWeight();
+  fDLine = tpt->GetDLine();
+  fPsiLine = tpt->GetPsiLine();
+  SetNHits(tpt->GetWeight());
+  SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
+  fIsHelix = false;
 }
 
 Int_t AliL3HoughTrack::Compare(const AliL3Track *tpt) const

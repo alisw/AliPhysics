@@ -1,10 +1,10 @@
-/* @(#) $Id$ */
+// @(#) $Id$
 
 #ifndef AliL3FitUtilities
 #define AliL3FitUtilities
 
-/* This we do because this file is read both with c and c++ compiler, 
-   and extern "C" is needed only in case of c++. */
+//This we do because this file is read both with c and c++ compiler, 
+//and extern "C" is needed only in case of c++.
 #ifdef __cplusplus
 extern "C" 
 #endif
@@ -30,6 +30,8 @@ int lev_marq_fit( double x[], double y[], double sig[], int NPT, double a[], int
 #define NR_END 1
 #define FREE_ARG char*
 #define EPSILON             1.0E-12
+//#define TRUE 1
+//#define FALSE 1
 #define FIT_PTS     2000
 #define  FIT_MAXPAR   41
 #define NUM_PARS 5
@@ -41,7 +43,7 @@ struct DPOINT {
 };
 typedef struct DPOINT DPOINT;
 
-extern  DPOINT *plane;
+extern  DPOINT *plane; //!
 
 typedef struct { 
 					long   float_size;

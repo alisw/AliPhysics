@@ -1,4 +1,4 @@
-/* @(#) $Id$ */
+// @(#) $Id$
 
 /************************** Start of BITIO.H *************************/
 
@@ -14,9 +14,10 @@ typedef struct bit_file {
     int pacifier_counter;
 } BIT_FILE;
 
+//#ifdef __STDC__
 
-/* The following we do because this file is read both by
-   C and C++ compiler. */
+//The following we do because this file is read both by
+//C and C++ compiler.
 #ifdef __cplusplus
 extern "C" BIT_FILE     *OpenInputBitFile( char *name );
 extern "C" BIT_FILE     *OpenOutputBitFile( char *name );
@@ -59,3 +60,5 @@ void          FilePrintBinary();
 #endif  /* _BITIO_H */
 
 /*************************** End of BITIO.H **************************/
+
+

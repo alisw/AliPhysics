@@ -3,6 +3,12 @@
 // Author: Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group
 
+#ifdef use_root
+#include <Riostream.h>
+#else
+#include <iostream.h>
+#endif
+
 #include "AliL3RootTypes.h"
 #include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
@@ -50,11 +56,7 @@ AliL3DDLRawReaderFile::AliL3DDLRawReaderFile(const Char_t* name, Bool_t addnum)
   strcpy(fFileName,name);
   if (!addnum) {
     fFileNumber = -1;
-#ifndef __DECCXX
     fStream = new fstream(fFileName, ios::binary|ios::in);
-#else
-    fStream = new fstream(fFileName, ios::in);
-#endif
   } else {
     fFileNumber = 0;
     fStream = NULL;
@@ -71,11 +73,7 @@ AliL3DDLRawReaderFile::~AliL3DDLRawReaderFile()
   if(fFileName) delete fFileName;
 
   if (fStream) {
-#if defined(__HP_aCC) || defined(__DECCXX)
-    if (fStream->rdbuf()->is_open()) fStream->close();
-#else
     if (fStream->is_open()) fStream->close();
-#endif
     delete fStream;
   }
   delete fMiniHeader;
@@ -85,11 +83,7 @@ AliL3DDLRawReaderFile::~AliL3DDLRawReaderFile()
 Bool_t AliL3DDLRawReaderFile::OpenNextFile()
 {
   if (fStream) {
-#if defined(__HP_aCC) || defined(__DECCXX)
-    if (fStream->rdbuf()->is_open()) fStream->close();
-#else
     if (fStream->is_open()) fStream->close();
-#endif
     delete fStream;
     fStream = NULL;
   }
@@ -103,16 +97,8 @@ Bool_t AliL3DDLRawReaderFile::OpenNextFile()
   Char_t fileName[1024];
   sprintf(fileName, "%s%d", fFileName, fFileNumber);
 
-#ifndef __DECCXX
   fStream = new fstream(fileName, ios::binary|ios::in);
-#else
-  fStream = new fstream(fileName, ios::in);
-#endif
-#if defined(__HP_aCC) || defined(__DECCXX)
-  return (fStream->rdbuf()->is_open());
-#else
   return (fStream->is_open());
-#endif
 }
 
 Bool_t AliL3DDLRawReaderFile::ReadMiniHeader()
@@ -177,11 +163,7 @@ Bool_t AliL3DDLRawReaderFile::Reset()
   // reset the current stream position to the beginning of the file
 
   if ((fFileNumber > 0) && fStream) {
-#if defined(__HP_aCC) || defined(__DECCXX)
-    if (fStream->rdbuf()->is_open()) fStream->close();
-#else
     if (fStream->is_open()) fStream->close();
-#endif
     delete fStream;
     fStream = NULL;
     fFileNumber = 0;
@@ -189,11 +171,7 @@ Bool_t AliL3DDLRawReaderFile::Reset()
 
   if (!fStream) {
     if (fFileNumber < 0) {
-#ifndef __DECCXX
       fStream = new fstream(fFileName, ios::binary|ios::in);
-#else
-      fStream = new fstream(fFileName, ios::in);
-#endif
     } else {
       if (!OpenNextFile()){
 	LOG(AliL3Log::kError,"AliL3DDLRawReaderFile::Reset","Data")

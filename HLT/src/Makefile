@@ -21,7 +21,7 @@ SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx \
           AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinderNew.cxx \
           AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
           AliL3MemHandler.cxx AliLevel3.cxx AliL3Benchmark.cxx  \
-          AliL3Fitter.cxx AliL3RawDataFileHandler.cxx
+          AliL3Fitter.cxx AliL3RawDataFileHandler.cxx 
 
 ifeq ($(ARCH),Darwin)
 EXTRA_SRCS = AliL3HoughTrack.cxx AliL3ModelTrack.cxx \
@@ -38,7 +38,7 @@ OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
-SRCS += AliL3Display.cxx AliL3FileHandler.cxx AliL3Evaluate.cxx
+SRCS += AliL3Display.cxx AliL3FileHandler.cxx AliL3Evaluate.cxx AliHLTReconstructor.cxx
 HDRS = $(SRCS:.cxx=.h)  $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif

@@ -39,6 +39,7 @@ class AliL3Kalman {
   void Init();
   void LoadTracks(Int_t event, Bool_t sp);
   void ProcessTracks();
+  Int_t MakeKalmanSeed(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
   Int_t InitKalmanTrack(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
   Int_t Propagate(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
   Int_t Update(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
