@@ -43,13 +43,15 @@ class AliL3Histogram : public TObject {
   void SetBinContent(Int_t bin,Int_t value);
   void AddBinContent(Int_t xbin,Int_t ybin,Int_t weight);
   void AddBinContent(Int_t bin,Int_t weight);
+  void Add(AliL3Histogram *h1,Double_t weight=1);
   void Draw(Char_t *option="hist");
+  
 
   TH2F *GetRootHisto() {return fRootHisto;}
   Double_t GetXmin() {return fXmin;}
   Double_t GetXmax() {return fXmax;}
   Double_t GetYmin() {return fYmin;}
-  Double_t GetYmax() {return fXmax;}
+  Double_t GetYmax() {return fYmax;}
   Double_t GetBinCenterX(Int_t xbin);
   Double_t GetBinCenterY(Int_t ybin);
   Int_t GetFirstXbin() {return fFirstXbin;}
