@@ -45,5 +45,6 @@ LHC/module.mk:		 LHC/libLHC.pkg
 TFluka/module.mk:        TFluka/libTFluka.pkg
 Flugg/module.mk:         Flugg/libFlugg.pkg
 VZERO/module.mk:         VZERO/libVZERO.pkg
+HLT/module.mk:           HLT/libAliL3Src.pkg  HLT/libAliL3Hough.pkg  HLT/libAliL3Misc.pkg  HLT/libAliL3Comp.pkg
 
 
