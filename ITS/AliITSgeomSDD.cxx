@@ -15,15 +15,30 @@
 
 /*
 $Log$
+Revision 1.2.4.2  2000/03/04 23:55:35  nilsen
+Fixed up comments/documentation.
+
+Revision 1.2.4.1  2000/01/12 19:03:32  nilsen
+This is the version of the files after the merging done in December 1999.
+See the ReadMe110100.txt file for details
+
+Revision 1.2  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliITSgeomSDD.h"
 
 ClassImp(AliITSgeomSDD)
 AliITSgeomSDD::AliITSgeomSDD(){
-    //
-    // default constructor
-    //
-    fShapeSDD = new TBRIK("ActiveSDD","Active volume of SDD","SDD SI CHIP",
-			    3.0E-2/2.,7.25/2.,7.53/2.);
+////////////////////////////////////////////////////////////////////////
+//    default constructor
+////////////////////////////////////////////////////////////////////////
+
+    Float_t dx = 3.5;  // cm. (Geant 3.12 units) Orthonormal to y and z
+    Float_t dy = 0.014;  // cm. (Geant 3.12 units) Radialy from the Beam Pipe
+    Float_t dz = 3.763;  // cm. (Geant 3.12 units) Allong the Beam Pipe
+
+    fShapeSDD = new TBRIK("ActiveSDD","Active volume of SDD","SDD SI DET",
+			    dx,dy,dz);
 }
