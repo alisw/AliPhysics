@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "AliTPCCompression.h"
-#include "AliTPCBuffer160.h"
+#include "AliAltroBuffer.h"
 #include "AliTPCDDLRawData.h"
 #include "AliRawDataHeader.h"
 
@@ -72,10 +72,10 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
   };
   DataPad data;
 
-  //AliTPCBuffer160 is used in write mode to generate raw data file
+  //AliAltroBuffer is used in write mode to generate raw data file
   char  filename[15];
   Int_t ddlNumber=0;
-  AliTPCBuffer160 *buffer=NULL;
+  AliAltroBuffer *buffer=NULL;
   Int_t pSecNumber=-1;  //Previous Sector number
   Int_t pRowNumber=-1;  //Previous Row number  
   Int_t pPadNumber=-1;  //Previous Pad number
@@ -98,7 +98,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
       else
 	ddlNumber=72+(data.Sec-36)*4+data.SubSec;
       sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
-      buffer=new AliTPCBuffer160(filename,1);
+      buffer=new AliAltroBuffer(filename,1);
       //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
       buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
       bunchLength=1;
@@ -134,7 +134,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
 	    else
 	      ddlNumber=72+(data.Sec-36)*4+data.SubSec;
 	    sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
-	    buffer=new AliTPCBuffer160(filename,1);
+	    buffer=new AliAltroBuffer(filename,1);
 	    buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
 	    pSubSector=data.SubSec;
 	  }//end if
@@ -290,9 +290,9 @@ void AliTPCDDLRawData::RawDataAltro(const char* inputFileName, const char* outpu
   };
   DataPad data;
 
-  //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
+  //AliAltroBuffer is used in write mode to generate AltroFormat.dat file
   Info("RawDataAltro", "Creating &s", outputFileName);
-  AliTPCBuffer160 *buffer=new AliTPCBuffer160(outputFileName,1);
+  AliAltroBuffer *buffer=new AliAltroBuffer(outputFileName,1);
 
   UInt_t count=0;
   Int_t pSecNumber=-1;  //Previous Sector number
