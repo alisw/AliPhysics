@@ -140,6 +140,10 @@ class AliTRDsimpleMC : public TVirtualMC {
   // Action methods
   virtual void          StopTrack() { };
   virtual void          StopEvent() { };   
+//change is in 4.0.5 (which is not yet tagged) (rdm)
+#if ROOT_VERSION_CODE >= 262148
+  virtual void          StopRun()   { }
+#endif
 
   // Set methods
   virtual void          SetMaxStep(Double_t step)                                         { fMaxStep = step; };
@@ -234,7 +238,12 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual void          FinishGeometry()                                                  { };
   virtual void          BuildPhysics()                                                    { };
   virtual void          ProcessEvent();
+//change is in 4.0.5 (which is not yet tagged) (rdm)
+#if ROOT_VERSION_CODE >= 262148
+  virtual Bool_t        ProcessRun(Int_t )                                                { return kTRUE; }
+#else
   virtual void          ProcessRun(Int_t )                                                { };
+#endif
   //virtual TMCGeomType   GetMCGeomType() const                                             { return kGeant3; }
 
   // External Decayer
