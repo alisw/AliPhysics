@@ -1204,13 +1204,13 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
 
    // check if directory exists, if not create it
    Grid_ResultHandle_t res = 0;
-   //if (!(res = g->OpenDir(lfn))) {
+   if (!(res = g->OpenDir(lfn))) {
       // directory does not exist, create it
-      if (g->Mkdir(lfn, kTRUE) == -1) {
+      if (g->Mkdir(lfn) == -1) {
          Error("UpdateAliEn", "cannot create directory %s", lfn.Data());
          lfn = kAlienDir;
       }
-   //}
+   }
    if (res) g->CloseResult(res);
 
    lfn += "/";
