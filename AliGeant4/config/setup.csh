@@ -720,6 +720,12 @@ if ( "`echo ${SHLIBVAR} | grep ${G4INSTALL}/lib/${G4SYSTEM} `" == "" ) then
   endif
   set SHLIBVAR="${G4INSTALL}/lib/${G4SYSTEM}:${SHLIBVAR}"
 endif
+if ( "`echo ${SHLIBVAR} | grep ${CLHEP_BASE_DIR}/lib `" = "" ) then
+  if [ "$VERBOSE" = "YES" ]; then
+    echo Adding ${CLHEP_BASE_DIR}/lib to the shared libraries path...
+  endif
+  set SHLIBVAR="${SHLIBVAR}:${CLHEP_BASE_DIR}/lib"
+fi
 
 setenv $SHLIBVARNAME $SHLIBVAR
 
