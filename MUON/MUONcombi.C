@@ -1,5 +1,7 @@
 void MUONcombi (Int_t evNumber=0) 
 {
+    const Float_t runWeight = 4.e8;
+    
 // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
@@ -8,6 +10,8 @@ void MUONcombi (Int_t evNumber=0)
       delete gAlice;
       gAlice = 0;
    }
+
+   
 //
 // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
@@ -28,18 +32,23 @@ void MUONcombi (Int_t evNumber=0)
    if (nparticles <= 0) return;
 //
 //
-   TH1F *dmass = new TH1F("dmass","Dimuon-Mass Distribution"
-			  ,25,0.,5.);
+   TH1F *dmass  = new TH1F("dmass","Dimuon-Mass Distribution"
+			  ,100,0.,5.);
+   
    TH1F *dmassc = new TH1F("dmassc","Dimuon-Mass Distribution"
-			   ,50,0.,10.);
+			   ,200,0.,10.);
    TH1F *dmassd = new TH1F("dmassd","Dimuon-Mass Distribution"
-			   ,50,0.,10.);
+			   ,200,0.,10.);
 
    TH1F *pt     = new TH1F("pt","pT-single"
 			   ,50,0.,10.);
+   TH1F *hCont[10];
+   
 //
 //  Generator Loop
 //
+
+   Int_t i=0;
    
    AliGenCocktailEntry *Entry, *e1, *e2;
    AliGenCocktail*  Cocktail = (AliGenCocktail*) gAlice->Generator();
@@ -50,20 +59,21 @@ void MUONcombi (Int_t evNumber=0)
        ) {
        Entry->PrintInfo();
      }
-//                   Pairs of Generators
 //
 // Initialize Combinator 
+//
    AliDimuCombinator* Combinator = new AliDimuCombinator();
-   Combinator->SetEtaCut(-5, 5);
-   Combinator->SetPtMin(0.0);   
-
-   Int_t i=0;
+   Combinator->SetEtaCut(2.5, 4.);
+   Combinator->SetPtMin(1.0);   
+   
+   i=0;
+   
 //
 // Single Muon  Loop  
 //
    Combinator->ResetRange();
    
-
+   
 
    for(Muon=Combinator->FirstMuon();
        Muon; 
@@ -75,9 +85,9 @@ void MUONcombi (Int_t evNumber=0)
        Float_t ptm   = Muon->Pt();
        Float_t eta   = Muon->Eta();
        
-       printf("\n Particle %d Parent %d first child %d last child %d",
-	      i,parent, chfirst, chlast);
-       printf("\n Particle pt, eta: %f , %f ", ptm, eta);
+//       printf("\n Particle %d Parent %d first child %d last child %d",
+//	      i,parent, chfirst, chlast);
+//       printf("\n Particle pt, eta: %f , %f ", ptm, eta);
        i++;       
    }
 //
@@ -88,33 +98,20 @@ void MUONcombi (Int_t evNumber=0)
    TParticle* Muon2;
 
    Combinator->ResetRange();
-/*
-   for (Combinator->FirstMuonPairSelected(Muon1,Muon2);
-	(Muon1 && Muon2);
-	Combinator->NextMuonPairSelected(Muon1,Muon2))
-   {
-       pt1 = Muon1->Pt();
-       pt2 = Muon2->Pt();       
-       Float_t mass = Combinator->Mass(Muon1, Muon2);
-       Float_t wgt  = Combinator->Weight(Muon1, Muon2);
-       pt->Fill(pt1, wgt);
-       pt->Fill(pt2, wgt);
-       Float_t smeared_mass = mass;
-       Combinator->SmearGauss(0.05*mass, smeared_mass);
-       if (Combinator->Correlated(Muon1, Muon2)) {
-	   dmassc->Fill(mass, wgt);
-       } else {
-	   dmass->Fill(mass, wgt);
-       }
-    }
-*/
+
 //
 //   Dimuon Loop controlled by Generator Loop
 //
+   Float_t  sig = 0;
+   Int_t  icont = 0;
+   char name[30];   
    for (Cocktail->FirstGeneratorPair(e1,e2);
 	(e1&&e2);
 	Cocktail->NextGeneratorPair(e1,e2)
        ){
+
+       sprintf(name, "%s-%s", e1->GetName(), e2->GetName());
+       hCont[icont] = new TH1F(name,"Dimuon-Mass Distribution",100,0.,5.);
        printf("\n ----------------------------------------------------");
        e1->PrintInfo();
        e2->PrintInfo();
@@ -129,23 +126,30 @@ void MUONcombi (Int_t evNumber=0)
 	   pt1 = Muon1->Pt();
 	   pt2 = Muon2->Pt();       
 	   Float_t mass = Combinator->Mass(Muon1, Muon2);
-	   Float_t wgt  = Combinator->Weight(Muon1, Muon2);
+	   Float_t wgt  = runWeight*Combinator->Weight(Muon1, Muon2)*
+	       Combinator->DecayProbability(Muon1)*
+	       Combinator->DecayProbability(Muon2);
 	   pt->Fill(pt1, wgt);
 	   pt->Fill(pt2, wgt);
 	   Float_t smeared_mass = mass;
-	   Combinator->SmearGauss(0.05*mass, smeared_mass);
-	   Float_t DecayWeight =
-	       Combinator->DecayProbability(Muon2)*
-	       Combinator->DecayProbability(Muon2);
-//	   if (TMath::Min(pt1,pt2) > -0.5*TMath::Max(pt1,pt2)+2.) {
+	   Combinator->SmearGauss(0.02*mass, smeared_mass);
+	   
+	   if (TMath::Min(pt1,pt2) > -0.5*TMath::Max(pt1,pt2)+2.) {
 	       if (Combinator->Correlated(Muon1, Muon2)) {
 		   dmassc->Fill(smeared_mass, wgt);
+		   sig += wgt;
+	       } else {
+// account for the fact that we sum like-sign and unlike-sign		   
+		   wgt *= 0.5;
 	       }
-		   dmass->Fill(smeared_mass, wgt);
-		   dmassd->Fill(smeared_mass, wgt*DecayWeight);
-//	   }
+	       dmass->Fill(smeared_mass, wgt);
+	       hCont[icont]->Fill(smeared_mass, wgt);
+	   }
        } // Dimuon Loop
+       icont++;
    }// Generator Loop
+   printf("\n Signal %e \n \n", sig);
+   
 //
 //Create a canvas, set the view range, show histograms
 //
