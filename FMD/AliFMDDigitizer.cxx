@@ -150,7 +150,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
   Int_t nFiles=GetManager()->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;inputFile++) 
    {
-    cout<<" event "<<fManager->GetOutputEventNr()<<endl;
+     //    cout<<" event "<<fManager->GetOutputEventNr()<<endl;
     if (fFMD)
      {
 
@@ -175,7 +175,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
       TClonesArray *fFMDhits = fFMD->Hits ();
       
       Int_t ntracks    = (Int_t) tH->GetEntries();
-      cout<<"Number of tracks TreeH"<<ntracks<<endl;
+      //      cout<<"Number of tracks TreeH"<<ntracks<<endl;
       for (Int_t track = 0; track < ntracks; track++)
        {
          brHits->GetEntry(track);
@@ -222,18 +222,18 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
    } //iRing
 
    TTree* treeD = outgime->TreeD();
-   cout<<" treeD "<<treeD;
+   //   cout<<" treeD "<<treeD;
    if (treeD == 0x0) {
      outgime->MakeTree("D");
      treeD = outgime->TreeD();
-     cout<<" After MakeTree "<<treeD<<endl;
+     //     cout<<" After MakeTree "<<treeD<<endl;
    }
-   cout<<" Before reset "<<treeD<<endl;
+   //   cout<<" Before reset "<<treeD<<endl;
    //   treeD->Clear();
    treeD->Reset();
    fFMD->MakeBranchInTreeD(treeD);
    brD = treeD->GetBranch("FMD");
-   cout<<" Make branch "<<brD<<endl;
+   //   cout<<" Make branch "<<brD<<endl;
 
    treeD->Fill();  //this operator does not work for events >1
    //PH   treeD->Print();
