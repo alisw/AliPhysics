@@ -2,6 +2,45 @@
 // Author: Fons Rademakers  26/11/99
 // Updated: Dario Favretto  15/04/2003
 
+/**************************************************************************
+ * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// AliRawEvent                                                          //
+//                                                                      //
+// Set of classes defining the ALICE RAW event format. The AliRawEvent  //
+// class defines a RAW event. It consists of an AliEventHeader object   //
+// an AliEquipmentHeader object, an AliRawData object and an array of   //
+// sub-events, themselves also being AliRawEvents. The number of        //
+// sub-events depends on the number of DATE LDC's.                      //
+// The AliRawEvent objects are written to a ROOT file using different   //
+// technologies, i.e. to local disk via AliRawDB or via rfiod using     //
+// AliRawRFIODB or via rootd using AliRawRootdDB or to CASTOR via       //
+// rootd using AliRawCastorDB (and for performance testing there is     //
+// also AliRawNullDB).                                                  //
+// The AliRunDB class provides the interface to the run and file        //
+// catalogues (AliEn or plain MySQL).                                   //
+// The AliStats class provides statics information that is added as     //
+// a single keyed object to each raw file.                              //
+// The AliTagDB provides an interface to a TAG database.                //
+// The AliMDC class is usid by the "alimdc" stand-alone program         //
+// that reads data directly from DATE.                                  //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #if defined(__DECCXX)
@@ -27,6 +66,7 @@
 #include <TSQLResult.h>
 #include <TUrl.h>
 #include <TGrid.h>
+#include <TH1.h>
 
 #if defined(__APPLE__)
 #undef Free
@@ -1831,32 +1871,14 @@ Int_t AliMDC::DumpEvent(Int_t toRead)
    return nrecv;
 }
 
-#ifdef USE_HLT
-#include <AliTPCL3Tunnel.h>
-#endif
-
 //______________________________________________________________________________
 Int_t AliMDC::Filter(AliRawData &raw)
 {
    // Call 3rd level filter for this raw data segment.
 
 #ifdef USE_HLT
-   AliTPCL3Tunnel *tunnel = 0;
-   if (!tunnel) {
-      // initialisation
-      tunnel = new AliTPCL3Tunnel(Form("%s/TPCparams.root",
-                                       gSystem->Getenv("ALITPC")));
-   }
 
-   Int_t obytes, nbytes;
-   obytes = nbytes = raw.GetSize();
-   char *outbuf = tunnel->EvalTrack((char *)raw.GetBuffer(), nbytes);
-
-   raw.SetSize(nbytes);
-   memcpy(raw.GetBuffer(), outbuf, nbytes);
-
-   printf("Filter called for event %d: reduced from %d to %d\n", fNumEvents,
-          obytes, nbytes);
+   // Add HLT code here
 
 #else
 
