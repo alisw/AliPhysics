@@ -13,6 +13,7 @@
 #pragma link C++ class AliStats;
 #pragma link C++ class AliRawDB;
 #pragma link C++ class AliRawRFIODB;
+#pragma link C++ class AliRawCastorDB;
 #pragma link C++ class AliRawRootdDB;
 #pragma link C++ class AliRawNullDB;
 #pragma link C++ class AliTagDB;

@@ -20,12 +20,13 @@
 #include <errno.h>
 
 #include <TBuffer.h>
-#include <TH1.h>
 #include <TSystem.h>
 #include <TError.h>
 #include <TStopwatch.h>
 #include <TSQLServer.h>
 #include <TSQLResult.h>
+#include <TUrl.h>
+#include <TGrid.h>
 
 #if defined(__APPLE__)
 #undef Free
@@ -48,6 +49,7 @@ ClassImp(AliRawData)
 ClassImp(AliStats)
 ClassImp(AliRawDB)
 ClassImp(AliRawRFIODB)
+ClassImp(AliRawCastorDB)
 ClassImp(AliRawRootdDB)
 ClassImp(AliRawNullDB)
 ClassImp(AliTagDB)
@@ -56,7 +58,7 @@ ClassImp(AliRunDB)
 ClassImp(AliMDC)
 
 // Which MDC is this...
-const Int_t kMDC = 4;
+const Int_t kMDC = 5;
 
 // Fixed file system locations for the different DB's
 #ifdef USE_RDM
@@ -65,14 +67,20 @@ const char *kRawDBFS[2] = { "/tmp/mdc1", "/tmp/mdc2" };
 const char *kTagDBFS    = "/tmp/mdc1/tags";
 const char *kRunDBFS    = "/tmp/mdc1/meta";
 const char *kRFIOFS     = "rfio:/castor/cern.ch/user/r/rdm";
+const char *kCastorFS   = "castor:/castor/cern.ch/user/r/rdm";
 const char *kRootdFS    = "root://localhost//tmp/mdc1";
+const char *kAlienHost  = "alien://aliens7.cern.ch:15000/?direct";
+const char *kAlienDir   = "/alice_mdc/DC";
 #else
 const char *kFifo       = "/tmp/alimdc.fifo";
-const char *kRawDBFS[2] = { "/scratch/mdc1", "/scratch/mdc2" };
-const char *kTagDBFS    = "/scratch/mdc1/tags";
-const char *kRunDBFS    = "/scratch/mdc1/meta";
-const char *kRFIOFS     = "rfio:/castor/cern.ch/lcg/alicemdc4";
+const char *kRawDBFS[2] = { "/data1/mdc", "/data2/mdc" };
+const char *kTagDBFS    = "/data1/mdc/tags";
+const char *kRunDBFS    = "/data1/mdc/meta";
+const char *kRFIOFS     = "rfio:/castor/cern.ch/lcg/dc5";
+const char *kCastorFS   = "castor:/castor/cern.ch/lcg/dc5";
 const char *kRootdFS    = "root://localhost//tmp/mdc1";
+const char *kAlienHost  = "alien://aliens7.cern.ch:15000/?direct";
+const char *kAlienDir   = "/alice_mdc/DC";
 #endif
 
 // Maximum size of tag db files
@@ -372,6 +380,7 @@ void AliStats::WriteToDB(AliRawDB *rawdb)
    AliRunDB *rundb = new AliRunDB;
    rundb->Update(this);
    rundb->UpdateRDBMS(this);
+   rundb->UpdateAliEn(this);
    delete rundb;
 }
 
@@ -580,8 +589,8 @@ AliRawRFIODB::AliRawRFIODB(AliRawEvent *event, Double_t maxsize, Int_t compress)
       // THESE ENVIRONMENT SYMBOLS ARE NOW DEFINED BY THE ALICE DATE SETUP
       // THEREFORE WE SHALL NOT USE ANY HARDCODED VALUES BUT RATHER USE
       // WHATEVER HAS BEEN SET IN THE DATE SITE
-      //gSystem->Setenv("STAGE_POOL", "mdc4");
-      //gSystem->Setenv("STAGE_HOST", "lxshare003d");
+      //gSystem->Setenv("STAGE_POOL", "lcg00");
+      //gSystem->Setenv("STAGE_HOST", "stage013");
       init = 1;
    }
 #endif
@@ -649,8 +658,106 @@ void AliRawRFIODB::Close()
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   if (AliMDC::DeleteFiles())
-      gSystem->Exec(Form("rfrm %s", fRawDB->GetName()));
+   if (AliMDC::DeleteFiles()) {
+      TUrl u(fRawDB->GetName());
+      gSystem->Exec(Form("rfrm %s", u.GetFile()));
+   }
+
+   delete fRawDB;
+   fRawDB = 0;
+}
+
+
+//______________________________________________________________________________
+AliRawCastorDB::AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compress)
+   : AliRawDB(event, maxsize, compress, kFALSE)
+{
+   // Create a new raw DB that will be accessed via CASTOR and rootd.
+
+#ifndef USE_RDM
+   static int init = 0;
+   // Set STAGE_POOL environment variable to current host
+   if (!init) {
+      // THESE ENVIRONMENT SYMBOLS ARE NOW DEFINED BY THE ALICE DATE SETUP
+      // THEREFORE WE SHALL NOT USE ANY HARDCODED VALUES BUT RATHER USE
+      // WHATEVER HAS BEEN SET IN THE DATE SITE
+      //gSystem->Setenv("STAGE_POOL", "lcg00");
+      //gSystem->Setenv("STAGE_HOST", "stage013");
+      init = 1;
+   }
+#endif
+
+   if (!Create())
+      MakeZombie();
+   else
+      fRawDB->UseCache(50, 0x200000);  //0x100000 = 1MB)
+}
+
+//______________________________________________________________________________
+const char *AliRawCastorDB::GetFileName()
+{
+   // Return filename based on hostname and date and time. This will make
+   // each file unique. Also the directory will be made unique for each
+   // day by adding the date to the fs. Assumes there is always enough
+   // space on the device.
+
+   static TString fname;
+
+   TString fs  = kCastorFS;
+   TString fsr = kRFIOFS;
+   TDatime dt;
+
+   // make a new subdirectory for each day
+   fs += "/adc-";
+   fs += dt.GetDate();
+
+   fsr += "/adc-";
+   fsr += dt.GetDate();
+
+   Long_t id, size, flags, time;
+   if (gSystem->GetPathInfo(fsr, &id, &size, &flags, &time) == 1) {
+      // directory does not exist, create it
+      if (gSystem->mkdir(fsr, kTRUE) == -1) {
+         Error("GetFileName", "cannot create dir %s, using %s", fsr.Data(),
+               kRFIOFS);
+         fs = kCastorFS;
+      }
+   }
+   // FIXME: should check if fs is a directory
+
+   TString hostname = gSystem->HostName();
+   Int_t pos;
+   if ((pos = hostname.Index(".")) != kNPOS)
+      hostname.Remove(pos);
+
+   fname = fs + "/" + hostname + "_";
+   fname += dt.GetDate();
+   fname += "_";
+   fname += dt.GetTime();
+   fname += ".root";
+
+   return fname;
+}
+
+//______________________________________________________________________________
+void AliRawCastorDB::Close()
+{
+   // Close raw CASTOR/rootd DB.
+
+   if (!fRawDB) return;
+
+   fRawDB->cd();
+
+   // Write the tree.
+   fTree->Write();
+
+   // Close DB, this also deletes the fTree
+   fRawDB->Close();
+
+   if (AliMDC::DeleteFiles()) {
+      TUrl u(fRawDB->GetName());
+      gSystem->Exec(Form("rfrm %s", u.GetFile()));
+   }
 
    delete fRawDB;
    fRawDB = 0;
@@ -1016,6 +1123,26 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
 }
 
 //______________________________________________________________________________
+void AliRunDB::UpdateAliEn(AliStats *stats)
+{
+   // Record file in AliEn catalog.
+
+   TGrid *g = TGrid::Connect(kAlienHost, "");
+
+   TString lfn = kAlienDir;
+   lfn += "/";
+   lfn += gSystem->BaseName(stats->GetFileName());
+
+printf("AliEn: AddFile(%s, %s, %d)\n", lfn.Data(), stats->GetFileName(),
+       (int)stats->GetFileSize());
+
+   // crashes on ia64
+   //g->AddFile(lfn, stats->GetFileName(), (int)stats->GetFileSize());
+
+   delete g;
+}
+
+//______________________________________________________________________________
 void AliRunDB::Close()
 {
    // Close run database.
@@ -1035,8 +1162,7 @@ public:
 
 //______________________________________________________________________________
 AliMDC::AliMDC(Int_t fd, Int_t compress, Double_t maxFileSize, Bool_t useFilter,
-               Bool_t useRFIO, Bool_t useROOTD, Bool_t useDEVNULL,
-               Bool_t useLoop, Bool_t delFiles)
+               EWriteMode mode, Bool_t useLoop, Bool_t delFiles)
 {
    // Create MDC processor object.
 
@@ -1044,9 +1170,7 @@ AliMDC::AliMDC(Int_t fd, Int_t compress, Double_t maxFileSize, Bool_t useFilter,
    fCompress     = compress;
    fMaxFileSize  = maxFileSize;
    fUseFilter    = useFilter;
-   fUseRFIO      = useRFIO;
-   fUseRootd     = useROOTD;
-   fUseDevNull   = useDEVNULL;
+   fWriteMode    = mode;
    fUseLoop      = useLoop;
    fUseFifo      = kFALSE;
    fUseEb        = kFALSE;
@@ -1086,11 +1210,13 @@ AliMDC::AliMDC(Int_t fd, Int_t compress, Double_t maxFileSize, Bool_t useFilter,
           fUseFifo ? "fifo" : (fUseEb ? "eb" : "file"), fMaxFileSize,
           fUseFilter ? "on" : "off", fUseLoop ? "yes" : "no", fCompress,
           fgDeleteFiles ? "yes" : "no");
-   if (fUseRFIO)
+   if (fWriteMode == kRFIO)
       printf(", use RFIO\n");
-   else if (fUseRootd)
+   else if (fWriteMode == kROOTD)
       printf(", use rootd\n");
-   else if (fUseDevNull)
+   else if (fWriteMode == kCASTOR)
+      printf(", use CASTOR/rootd\n");
+   else if (fWriteMode == kDEVNULL)
       printf(", write raw data to /dev/null\n");
    else
       printf("\n");
@@ -1136,11 +1262,13 @@ Int_t AliMDC::Run()
 
    // Create new raw DB.
    AliRawDB *rawdb;
-   if (fUseRFIO)
+   if (fWriteMode == kRFIO)
       rawdb = new AliRawRFIODB(event, fMaxFileSize, fCompress);
-   else if (fUseRootd)
+   else if (fWriteMode == kROOTD)
       rawdb = new AliRawRootdDB(event, fMaxFileSize, fCompress);
-   else if (fUseDevNull)
+   else if (fWriteMode == kCASTOR)
+      rawdb = new AliRawCastorDB(event, fMaxFileSize, fCompress);
+   else if (fWriteMode == kDEVNULL)
       rawdb = new AliRawNullDB(event, fMaxFileSize, fCompress);
    else
       rawdb = new AliRawDB(event, fMaxFileSize, fCompress);
@@ -1149,8 +1277,10 @@ Int_t AliMDC::Run()
    printf("Filling raw DB %s\n", rawdb->GetDBName());
 
    // Create new tag DB.
-   AliTagDB *tagdb;
-   if (fUseDevNull)
+   AliTagDB *tagdb = 0;
+#if 0
+   // no tagdb for the time being to get maximum speed
+   if (fWriteMode == kDEVNULL)
       tagdb = new AliTagNullDB(event->GetHeader(), kMaxTagFileSize);
    else
       tagdb = new AliTagDB(event->GetHeader(), kMaxTagFileSize);
@@ -1158,6 +1288,7 @@ Int_t AliMDC::Run()
       tagdb = 0;
    else
       printf("Filling tag DB %s\n", tagdb->GetDBName());
+#endif
 
    // Create AliStats object
    AliStats *stats = new AliStats(rawdb->GetDBName(), fCompress, fUseFilter);
@@ -1381,7 +1512,7 @@ Int_t AliMDC::Run()
       }
 
       // Check size of tag db
-      if (tagdb->FileFull()) {
+      if (tagdb && tagdb->FileFull()) {
          if (!tagdb->NextFile())
             tagdb = 0;
          else

@@ -302,6 +302,21 @@ public:
 };
 
 
+class AliRawCastorDB : public AliRawDB {
+
+private:
+   const char *GetFileName();
+
+public:
+   AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
+   ~AliRawCastorDB() { Close(); }
+
+   void Close();
+
+   ClassDef(AliRawCastorDB,0)  // Raw DB via CASTOR and rootd
+};
+
+
 class AliRawRootdDB : public AliRawDB {
 
 private:
@@ -391,6 +406,7 @@ public:
 
    void Update(AliStats *stats);
    void UpdateRDBMS(AliStats *stats);
+   void UpdateAliEn(AliStats *stats);
    void Close();
 
    ClassDef(AliRunDB,0)  // Run (bookkeeping) DB
@@ -399,20 +415,21 @@ public:
 
 class AliMDC : public TObject {
 
+public:
+   enum EWriteMode { kLOCAL, kRFIO, kROOTD, kCASTOR, kDEVNULL };
+
 private:
-   Int_t     fFd;          // DATE input stream
-   Int_t     fCompress;    // compression factor used for raw output DB
-   Int_t     fNumEvents;   // number of events processed
-   Int_t     fDebugLevel;  // controls debug print-out
-   Double_t  fMaxFileSize; // maximum size of raw output DB
-   Bool_t    fUseFifo;     // read from fifo, file otherwise
-   Bool_t    fUseEb;       // use event builder API instead of fifo
-   Bool_t    fUseFilter;   // use 3rd level trigger filter
-   Bool_t    fUseRFIO;     // write directly to RFIO file
-   Bool_t    fUseRootd;    // write directly to rootd file
-   Bool_t    fUseDevNull;  // write to /dev/null
-   Bool_t    fUseLoop;     // loop on input source (must be file)
-   Bool_t    fStopLoop;    // break from endless loop (triggered by SIGUSR1)
+   Int_t      fFd;          // DATE input stream
+   Int_t      fCompress;    // compression factor used for raw output DB
+   Int_t      fNumEvents;   // number of events processed
+   Int_t      fDebugLevel;  // controls debug print-out
+   Double_t   fMaxFileSize; // maximum size of raw output DB
+   EWriteMode fWriteMode;   // write mode (local, rfio, rootd, castor, /dev/null)
+   Bool_t     fUseFifo;     // read from fifo, file otherwise
+   Bool_t     fUseEb;       // use event builder API instead of fifo
+   Bool_t     fUseFilter;   // use 3rd level trigger filter
+   Bool_t     fUseLoop;     // loop on input source (must be file)
+   Bool_t     fStopLoop;    // break from endless loop (triggered by SIGUSR1)
 
    static Bool_t fgDeleteFiles;
 
@@ -427,8 +444,7 @@ private:
 
 public:
    AliMDC(Int_t fd, Int_t compress, Double_t maxFileSize, Bool_t useFilter,
-          Bool_t useRFIO, Bool_t useROOTD, Bool_t useDEVNULL,
-          Bool_t useLoop, Bool_t delFiles);
+          EWriteMode mode, Bool_t useLoop, Bool_t delFiles);
    ~AliMDC() { }
 
    Int_t  Run();

@@ -69,7 +69,8 @@ static void Usage(const char *prognam)
       fprintf(stderr, " <filter> = state of 3rd level filter (0 or 1)\n");
       fprintf(stderr, " <compmode> = compression level (see TFile)\n");
       fprintf(stderr, "    (precede by - to use RFIO, -0 is RFIO and 0 compression)\n");
-      fprintf(stderr, "    (precede by + to use rootd, -0 is rootd and 0 compression)\n");
+      fprintf(stderr, "    (precede by + to use rootd, +0 is rootd and 0 compression)\n");
+      fprintf(stderr, "    (precede by %% to use Castor/rootd, %%0 is Castor/rootd and 0 compression)\n");
       fprintf(stderr, "    (precede by @ to use /dev/null as sink)\n");
 #ifdef USE_EB
       fprintf(stderr, " [date_file] = optional input file (default reads from DATE EventBuffer)\n");
@@ -114,7 +115,7 @@ int main(int argc, char **argv)
    }
 #endif
 
-   Bool_t   useRFIO = kFALSE, useROOTD = kFALSE, useDEVNULL = kFALSE;
+   AliMDC::EWriteMode wmode = AliMDC::kLOCAL;
    Bool_t   useFilter = kFALSE, useLoop = kFALSE;
    Bool_t   delFiles = kFALSE;
    Int_t    fd = -1, compress;
@@ -136,13 +137,16 @@ int main(int argc, char **argv)
       useFilter = kTRUE;
 
    if (argv[3][0] == '-') {
-      useRFIO = kTRUE;
+      wmode = AliMDC::kRFIO;
       compress = atoi(argv[3]+1);
    } else if (argv[3][0] == '+') {
-      useROOTD = kTRUE;
+      wmode = AliMDC::kROOTD;
+      compress = atoi(argv[3]+1);
+   } else if (argv[3][0] == '%') {
+      wmode = AliMDC::kCASTOR;
       compress = atoi(argv[3]+1);
    } else if (argv[3][0] == '@') {
-      useDEVNULL = kTRUE;
+      wmode = AliMDC::kDEVNULL;
       compress = atoi(argv[3]+1);
    } else
       compress = atoi(argv[3]);
@@ -164,8 +168,7 @@ int main(int argc, char **argv)
    }
 
    // Create MDC processor object and process input stream
-   AliMDC mdcproc(fd, compress, maxFileSize, useFilter, useRFIO, useROOTD,
-                  useDEVNULL, useLoop, delFiles);
+   AliMDC mdcproc(fd, compress, maxFileSize, useFilter, wmode, useLoop, delFiles);
 
 #ifdef USE_DEBUG
    mdcproc.SetDebugLevel(3);

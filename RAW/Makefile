@@ -5,7 +5,7 @@ include $(ROOTSYS)/test/Makefile.arch
 LDFLAGS      += -Wl,-rpath,/ROOT/Linux/CurrentRelease/root/lib \
                 -Wl,-rpath,/date/smi/linux \
                 -Wl,-rpath,/date/dim/linux \
-                -Wl,-rpath,/adcRoot/alimdc4
+                -Wl,-rpath,/adcRoot/alimdc5
 
 ifneq ($(findstring rdm,$(MAKECMDGOALS)),)
 CXXFLAGS += -DUSE_RDM
