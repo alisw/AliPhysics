@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.7  2002/04/15 08:04:01  alla
+Digits and reconstruction with TObject
+
 Revision 1.6  2001/10/19 05:29:38  alla
 bug in meduim fixed
 
@@ -86,8 +89,8 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   printf("%s\n",nameTD);
   
   if (!td) {
-    cerr<<"something wrong with output...."<<exit;
-    return;
+    cerr<<"something wrong with output...."<<endl;
+    exit(111);
   }
   td->Read(nameTD);
   digits->Read(nameTD);
@@ -104,13 +107,13 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
       }
     TTree *outTree = gAlice->TreeR();
     if (!outTree) {
-      cerr<<"something wrong with output...."<<exit;
-      return;
+      cerr<<"something wrong with output...."<<endl;
+      exit(111);
     }
     TTree *outTreeR = gAlice->TreeR();
     if (!outTreeR) {
-      cerr<<"something wrong with output...."<<exit;
-      return;
+      cerr<<"something wrong with output...."<<endl;
+      exit(111);
     }
   sprintf(nameTR,"START_R_%d",evNumber);
   printf("%s\n",nameTR);

@@ -117,7 +117,8 @@ void AliSTARTDigitizer::Exec(Option_t* option)
     if (brHits) {
       START->SetHitsAddressBranch(brHits);
     }else{
-      cerr<<"EXEC Branch START hit not found"<<exit;
+      cerr<<"EXEC Branch START hit not found"<<endl;
+      exit(111);
     } 
     Int_t ntracks    = (Int_t) th->GetEntries();
     if (ntracks<=0) return;
@@ -180,8 +181,8 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 // trick to find out output dir:
     TTree *outTree = fManager->GetTreeD();
     if (!outTree) {
-      cerr<<"something wrong with output...."<<exit;
-      return;
+      cerr<<"something wrong with output...."<<endl;
+      exit(111);
     }
     TDirectory *wd = gDirectory;
     outTree->GetDirectory()->cd();
