@@ -1,4 +1,19 @@
 #include "AliHBTReaderInternal.h"
+//_________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// class AliHBTReaderInternal                                            //
+//                                                                       //
+// Multi file reader for Internal Data Format                            //
+//                                                                       //
+// This reader reads data created by itself                              //
+//   (method AliHBTReaderInternal::Write)                                //
+// Data are stored in form of tree of TClonesArray of AliHBTParticle's   //
+//                                                                       //
+// Piotr.Skowronski@cern.ch                                              //
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html  //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 #include <TTree.h>
 #include <TFile.h>
