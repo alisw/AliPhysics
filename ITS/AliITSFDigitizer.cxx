@@ -107,7 +107,7 @@ void AliITSFDigitizer::Exec(Option_t* opt){
 	Error("Exec","Can not get TOF Loader from Output Run Loader.");
 	return;
     }
-    if(strstr(opt,"deb"){
+    if(strstr(opt,"deb")){
 	Info("Exec","sim=%p, outrl=%p, outgime=%p",sim,outrl,outgime);
     }
     TTree* outputTreeR = outgime->TreeR();
