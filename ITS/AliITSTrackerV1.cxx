@@ -50,7 +50,7 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
 
   fITS = IITTSS;
   fPtref=0.;
-  fChi2max=0.;     //aggiunto il 31-7-2001
+  fChi2max=0.;     
   fflagvert=flag;
   Int_t imax=200,jmax=450;
   frl = new AliITSRad(imax,jmax);
@@ -188,7 +188,7 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
   *fITS = *cobj.fITS;
   *fresult = *cobj.fresult;
   fPtref = cobj.fPtref;
-  fChi2max = cobj.fChi2max;    //aggiunto il 31-7-2001
+  fChi2max = cobj.fChi2max;    
   **fvettid = **cobj.fvettid;
   fflagvert = cobj.fflagvert;
   Int_t imax=200,jmax=450;
@@ -256,7 +256,7 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
   *fITS = *obj.fITS;
   *fresult = *obj.fresult;
   fPtref = obj.fPtref;
-  fChi2max = obj.fChi2max;      //aggiunto il 31-7-2001
+  fChi2max = obj.fChi2max;      
   **fvettid = **obj.fvettid;
   fflagvert = obj.fflagvert;
   Int_t imax=200,jmax=450;
@@ -320,13 +320,6 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
 
 
   printf("begin DoTracking - file %p\n",file);
-  /* commentato eliminazione good   
-  struct GoodTrack {
-    Int_t lab,code;
-    Float_t px,py,pz,x,y,z,pxg,pyg,pzg,ptg;
-    Bool_t flag;
-  };
-  */
 
   gAlice->GetEvent(evNumber);  //modificato per gestire hbt
  
@@ -345,35 +338,15 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
    tracker->LoadInnerSectors();
    tracker->LoadOuterSectors();
        
-  /*  commentato per eliminazione good
-  GoodTrack gt[30000];
-  Int_t ngood=0;
-  ifstream in("itsgood_tracks");
-
-  cerr<<"Reading itsgood tracks...\n";
-  while (in>>gt[ngood].lab>>gt[ngood].code
-	  >>gt[ngood].px >>gt[ngood].py>>gt[ngood].pz
-	  >>gt[ngood].x  >>gt[ngood].y >>gt[ngood].z
-	  >>gt[ngood].pxg  >>gt[ngood].pyg >>gt[ngood].pzg
-	  >>gt[ngood].ptg >>gt[ngood].flag) {
-    ngood++;
-    cerr<<ngood<<'\r';
-    if (ngood==30000) {
-      cerr<<"Too many good tracks !\n";
-      break;
-    }
-  }
-  if (!in.eof()) cerr<<"Read error (itsgood_tracks) !\n";
-  */
   
 // Load tracks
   TFile *tf=TFile::Open("AliTPCtracksSorted.root");  //modificato per hbt
   if (!tf->IsOpen()) {cerr<<"Can't open AliTPCtracksSorted.root !\n"; return ;}
   TObjArray tracks(200000);
-  char tname[100];                 //aggiunto per hbt
-  sprintf(tname,"TreeT_TPC_%d",evNumber);  //aggiunto per hbt
+  char tname[100];                 
+  sprintf(tname,"TreeT_TPC_%d",evNumber); 
   
-   TTree *tracktree=(TTree*)tf->Get(tname);   //modificato per hbt
+   TTree *tracktree=(TTree*)tf->Get(tname);   
    if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n";}   
   TBranch *tbranch=tracktree->GetBranch("tracks");
   Int_t nentr=(Int_t)tracktree->GetEntries();
@@ -394,40 +367,6 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   Int_t nt = tracks.GetEntriesFast();
   cerr<<"Number of found tracks "<<nt<<endl;
   
-  /*  commentato eliminazione good
-  TVector dataOut(10);
-  Int_t kkk=0;
-  
-  Double_t ptg=0.,pxg=0.,pyg=0.,pzg=0.;
-
-  //////////////////////////////  good tracks definition in TPC  ////////////////////////////////
-      
-  ofstream out1 ("AliITSTrag.out");
-  Int_t countpos=0,countneg=0;
-  Int_t i;
-  //for (i=0; i<ngood; i++) out1 << gt[i].ptg << "\n";
-  for (i=0; i<ngood; i++) {
-    out1 << gt[i].ptg << "\n";
-    Int_t codpar=gt[i].code;
-    if(codpar==2212 || codpar==-11 || codpar==-13 || codpar==211 || codpar==321 || codpar==3222
-	 || codpar==213 || codpar==323 || codpar==10323 || codpar==3224 || codpar==2224 || codpar==2214
-	 || codpar==-1114 || codpar==-3112 || codpar==-3312 || codpar==3224 || codpar==-3114 || codpar==-3314
-	 || codpar==411 || codpar==431 || codpar==413 || codpar==433 || codpar==-15 || codpar==4232
-	 || codpar==4222 || codpar==4322 || codpar==4422 || codpar==4412 || codpar==4432 || codpar==4224 
-	 ||codpar==4214 || codpar==4324 || codpar==4424 || codpar==4414 || codpar==4434 || codpar==4444)
-    countpos++;
-	 if(codpar==-2212 || codpar==11 || codpar==13 || codpar==-211 || codpar==-321 || codpar==3112
-	 || codpar==-213 || codpar==-323 || codpar==-10323 || codpar==3114 || codpar==1114 || codpar==-2224
-	 || codpar==-2214 || codpar==33112 || codpar==-3222 || codpar==3114 || codpar==3314 || codpar==3334 
-	 || codpar==-3224 || codpar==-411 || codpar==-431 || codpar==-413 || codpar==-433 || codpar==15 
-	 || codpar==-4422 || codpar==-4432 || codpar==-4214 || codpar==-4324 || codpar==-4424 || codpar==-4434 
-	 || codpar==-444)
-	 countneg++; 		   
-  }
-  out1.close();
-  cout<<"number of positive particles in good tracks = "<<countpos<<"\n";
-  cout<<"number of nrgative particles in good tracks = "<<countneg<<"\n"; //getchar();
-*/
 
   TVector vec(5);
   TTree *tr=gAlice->TreeR();
@@ -442,8 +381,8 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   
   for (mod=0; mod<nent; mod++) {
     fvettid[mod]=0;
-    fITS->ResetRecPoints();  // nuova
-    gAlice->TreeR()->GetEvent(mod); //first entry in TreeR is empty
+    fITS->ResetRecPoints();  
+    gAlice->TreeR()->GetEvent(mod); 
     numbpoints = frecPoints->GetEntries();
     totalpoints+=numbpoints;
     np[mod] = numbpoints;
@@ -465,33 +404,12 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   AliITSIOTrack *ioTrack=0;
   tracktree1.Branch("ITStracks","AliITSIOTrack",&ioTrack,32000,0);
 
- // ofstream out ("AliITSTra.out");   //commentato eliminazione good
-
   
   Int_t j;       
   for (j=minTr; j<=maxTr; j++) {     
     track=(AliTPCtrack*)tracks.UncheckedAt(j);
-//    Int_t flaglab=0;
     if (!track) continue;
-    /*  commentato eliminazione good
-    ////// elimination of not good tracks ////////////	 
-    Int_t ilab=TMath::Abs(track->GetLabel());
-    Int_t iii;
-    for (iii=0;iii<ngood;iii++) {
-	 //cout<<" ilab, gt[iii].lab = "<<ilab<<" "<<gt[iii].lab<<"\n"; getchar();
-      if (ilab==gt[iii].lab) { 
-	flaglab=1;
-	ptg=gt[iii].ptg; 
-	pxg=gt[iii].pxg;
-	pyg=gt[iii].pyg;
-	pzg=gt[iii].pzg;	
-	break;
-      }
-    }
-	 //cout<<" j flaglab =  " <<j<<" "<<flaglab<<"\n";  getchar();
-    if (!flaglab) continue;  
-	 //cout<<" j =  " <<j<<"\n";  getchar();
-    */
+
     
 	 //////   propagation to the end of TPC //////////////
     Double_t xk=77.415;
@@ -518,15 +436,12 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
 
 	 AliITSTrackV1 trackITS(*track);
 	 
-	 //if(fresult) delete fresult;    //attenzione deve essere modificata hbt
+	 if(fresult){ delete fresult; fresult=0;}   	 
 	 fresult = new AliITSTrackV1(trackITS);	 
 
 	 AliITSTrackV1 primaryTrack(trackITS);
 	 
 	 vgeant=(*fresult).GetVertex();
-	 
-	 
-
 	 
 			  
   // Definition of dv and zv for vertex constraint	
@@ -568,7 +483,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   
   fPtref=TMath::Abs( (trackITS).GetPt() );
   
-		 if(fPtref>1.0) fChi2max=40.;          //aggiunto il 31-7-2001
+		 if(fPtref>1.0) fChi2max=40.;         
 		 if(fPtref<=1.0) fChi2max=20.;
 		  if(fPtref<0.4 ) fChi2max=100.;
 		  if(fPtref<0.2 ) fChi2max=40.;		  
@@ -577,14 +492,9 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
 		   //if(fPtref<0.2 ) fChi2max=10.;
 		 //if(fPtref<0.1 ) fChi2max=5.;	
    
-   /*
-     if(fPtref > 1.0 ) fChi2max=30.; 
-     if(fPtref >= 0.6 && fPtref<=1.0) fChi2max=40.;     	  
-     if(fPtref <= 0.6 && fPtref>0.2) fChi2max=40.;            
-     if(fPtref <= 0.2 ) fChi2max=8.;
-   */  					 	  
+				 	  
   //cout << "\n Pt = " << fPtref <<"\n";  //stampa
-  RecursiveTracking(list);  // nuova ITS 
+  RecursiveTracking(list);   
   list->Delete();
   delete list;
 
@@ -648,7 +558,6 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
     Double_t duepi=2.*TMath::Pi();	 
     if(phivertex>duepi) phivertex-=duepi;
     if(phivertex<0.) phivertex+=duepi;
-    //Double_t dtot=TMath::Sqrt(dr*dr+dz*dz);
 	 
 //////////////////////////////////////////////////////////////////////////////////////////    	
   
@@ -704,8 +613,6 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
    //cout<<" labITS = "<<labITS<<"\n";
 	//cout<<" phi z dr tgl c = "<<phi<<" "<<z<<" "<<dr<<" "<<tgl<<" "<<c<<"\n";  getchar();	   
 
-    // dataOut(kkk) = ptg; kkk++; dataOut(kkk)=labITS; kkk++; dataOut(kkk)=lab; kkk++;	//commentato per eliminazione good	
-
       for (il=0;il<6;il++) {
         idpoint=(*fresult).GetIdPoint(il);
         idmodule=(*fresult).GetIdModule(il);
@@ -713,41 +620,12 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
 	ioTrack->SetIdPoint(il,idpoint);
         ioTrack->SetIdModule(il,idmodule);
       }
- /*  commentato eliminazione good   
-      //cout<<"  +++++++++++++  pt e ptg = "<<pt<<" "<<ptg<<"  ++++++++++\n"; getchar();
 
-       ///////////////////////////////
-      Double_t difpt= (pt-ptg)/ptg*100.;
-		//cout<<" difpt = "<<difpt<<"\n"; getchar();  	            	                
-      dataOut(kkk)=difpt; kkk++;                                             
-      Double_t lambdag=TMath::ATan(pzg/ptg);
-      Double_t   lam=TMath::ATan(tgl);      
-      Double_t diflam = (lam - lambdag)*1000.;
-      dataOut(kkk) = diflam; kkk++;	    	  			    
-      Double_t phig=TMath::ATan2(pyg,pxg);  if(phig<0) phig=2.*TMath::Pi()+phig;       
-      Double_t phi=phivertex;
-      Double_t signC=0.; 
-      if(c>0) signC=1.; else signC=-1.;
-        
-      Double_t difphi = (phi - phig)*1000.;
-      dataOut(kkk)=difphi; kkk++;
-      dataOut(kkk)=dtot*1.e4; kkk++;
-      dataOut(kkk)=dr*1.e4; kkk++;
-      dataOut(kkk)=dz*1.e4; kkk++;
-      dataOut(kkk)=signC; kkk++; 
-      Int_t r;
-      for (r=0; r<10; r++) { out<<dataOut(r)<<" ";}
-      out<<"\n";
-      kkk=0;  
-   */		
 	    
     } // end if on numOfCluster
   //gObjectTable->Print();    // stampa memoria     
   }  //  end for (int j=minTr; j<=maxTr; j++)
-  
- // out.close();  //commentato eliminazione good
-  
- 
+   
   static Bool_t first=kTRUE;
   static TFile *tfile;
 
@@ -777,8 +655,8 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   printf("delete vectors\n");
   if(np) delete [] np;
   if(fvettid) delete [] fvettid;
-  if(fresult) delete fresult;
-  
+  if(fresult) {delete fresult; fresult=0;}
+
 }
 
 
@@ -791,9 +669,28 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 // The authors  thank   Mariana Bondila to have help them to resolve some problems.  July-2000                                                      
 
   //Rlayer[0]=4.; Rlayer[1]=7.;  Rlayer[2]=14.9;  Rlayer[3]=23.8;  Rlayer[4]=39.1;  Rlayer[5]=43.6; //vecchio
+
+ ////////////////////// 
+   Float_t sigmaphil[6], sigmazl[6];
+	sigmaphil[0]=1.44e-6/(fAvrad[0]*fAvrad[0]);
+	sigmaphil[1]=1.44e-6/(fAvrad[1]*fAvrad[1]);
+	sigmaphil[2]=1.444e-5/(fAvrad[2]*fAvrad[2]);
+	sigmaphil[3]=1.444e-5/(fAvrad[3]*fAvrad[3]);
+	sigmaphil[4]=4e-6/(fAvrad[4]*fAvrad[4]);
+	sigmaphil[5]=4e-6/(fAvrad[5]*fAvrad[5]);
+	
+	sigmazl[0]=1e-2;
+	sigmazl[1]=1e-2;
+	sigmazl[2]=7.84e-4;
+	sigmazl[3]=7.84e-4;
+	sigmazl[4]=0.6889;
+	sigmazl[5]=0.6889;	
+ /////////////////////////////////////////////////////////// 
+
   
   Int_t index; 
-  AliITSgeom *g1 = fITS->GetITSgeom();     
+  AliITSgeom *g1 = fITS->GetITSgeom();
+  AliITSRecPoint *recp;        
   for(index =0; index<trackITSlist->GetSize(); index++) {
     AliITSTrackV1 *trackITS = (AliITSTrackV1 *) trackITSlist->At(index);
 
@@ -819,7 +716,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
       continue;	
     }
 
-    if(trackITS->Getfnoclust()>=2)  continue;   //aggiunto il 30-7-2001    
+    if(trackITS->Getfnoclust()>=2)  continue;      
     Float_t numClustNow = trackITS->GetNumClust();
     if(numClustNow) { 
       chi2Now = trackITS->GetChi2();
@@ -827,15 +724,15 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 
      if(numClustNow<numClustRef && chi2Now>fresult->GetChi2()) continue;  
 		
-      //cout<<" chi2Now =  "<<chi2Now<<"\n";   //commentato il 30-7-2001
+      //cout<<" chi2Now =  "<<chi2Now<<"\n";   
   //  commentato il 30-7-2001   
      chi2Now/=numClustNow;   
      if(fPtref > 1.0 && chi2Now > 30.) continue; 
      if((fPtref >= 0.6 && fPtref<=1.0) && chi2Now > 40.) continue;     	  
     // if((fPtref <= 0.6 && fPtref>0.2)&& chi2Now > 40.) continue;            
     // if(fPtref <= 0.2 && chi2Now > 8.) continue;
-     if((fPtref <= 0.6 && fPtref>0.2)&& chi2Now > 30.) continue;  //modificato il 28-9          
-     if(fPtref <= 0.2 && chi2Now > 7.) continue;                   //modificato il 28-9
+     if((fPtref <= 0.6 && fPtref>0.2)&& chi2Now > 30.) continue;            
+     if(fPtref <= 0.2 && chi2Now > 7.) continue;                  
          
      
      /////////////////////////////   
@@ -872,6 +769,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
       detp=detinters+1;
       detm=detinters-1;
       Int_t idetot=1;
+		/*
       toucLad(0)=ladinters; toucLad(1)=ladm; toucLad(2)=ladp;
       toucLad(3)=ladinters; toucLad(4)=ladm; toucLad(5)=ladp;
       toucLad(6)=ladinters; toucLad(7)=ladm; toucLad(8)=ladp;
@@ -891,6 +789,79 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
         idetot=6;
         toucDet(3)=detp; toucDet(4)=detp; toucDet(5)=detp;
       }
+		*/
+ 	    Float_t epsphi=5.0, epsz=5.0;                  
+          if(fPtref<0.2) {epsphi=3.; epsz=3.;}     
+ ////////////////////////////////////////////////////////////////////////////
+////   nuova definizione idetot e toucLad e toucDet to be transformed in a method
+//  these values could be modified
+      Float_t pigre=TMath::Pi();
+      Float_t rangephi=5., rangez=5.;
+		if(layerfin==1 || layerfin ==2){
+		rangephi=40.*epsphi*TMath::Sqrt(sigmaphil[layerfin-1]+(*trackITS).GetSigmaphi());
+		rangez = 40.*epsz*TMath::Sqrt(sigmazl[layerfin-1]+(*trackITS).GetSigmaZ());
+		}
+		if(layerfin==3 || layerfin ==4){
+		//rangephi=30.*fepsphi*TMath::Sqrt(sigmaphil[layerfin-1]+(*trackITS).GetSigmaphi());
+		//rangez = 40.*fepsz*TMath::Sqrt(sigmazl[layerfin-1]+(*trackITS).GetSigmaZ());
+		rangephi=40.*epsphi*TMath::Sqrt(sigmaphil[layerfin-1]+(*trackITS).GetSigmaphi());
+		rangez = 50.*epsz*TMath::Sqrt(sigmazl[layerfin-1]+(*trackITS).GetSigmaZ());		
+		}	
+		if(layerfin==5 || layerfin ==6){
+		rangephi=20.*epsphi*TMath::Sqrt(sigmaphil[layerfin-1]+(*trackITS).GetSigmaphi());
+		rangez =5.*epsz*TMath::Sqrt(sigmazl[layerfin-1]+(*trackITS).GetSigmaZ());
+		}			
+		Float_t phinters, zinters;
+		phinters=(*trackITS).Getphi();
+		zinters=(*trackITS).GetZ();
+		Float_t  distz;
+		Float_t phicm, phicp, distphim, distphip;
+		phicm=phinters;
+		if(phinters>fphimax[layerfin-1][ladm]) phicm=phinters-2*pigre;
+		distphim=TMath::Abs(phicm-fphimax[layerfin-1][ladm]);
+	        phicp=phinters;
+		if(phinters>fphimin[layerfin-1][ladp]) phicp=phinters-2.*pigre;
+		distphip=TMath::Abs(phicp-fphimin[layerfin-1][ladp]);						
+		Int_t flagzmin=0;
+		Int_t flagzmax=0;
+		idetot=1;
+		toucLad(0)=ladinters; toucDet(0)=detinters;			
+		if(detm>0) distz=TMath::Abs(zinters-fzmax[layerfin-1][detm-1]);
+		if(detm>0 && rangez>=distz){
+		   flagzmin=1; 
+		   idetot++; toucLad(idetot-1)=ladinters; toucDet(idetot-1)=detm;
+		   if(rangephi>=distphim){
+			   idetot++; toucLad(idetot-1)=ladm; toucDet(idetot-1)=detinters;
+				idetot++; toucLad(idetot-1)=ladm; toucDet(idetot-1)=detm;
+		   }
+			if(rangephi>=distphip){
+			   idetot++; toucLad(idetot-1)=ladp; toucDet(idetot-1)=detinters;
+				idetot++; toucLad(idetot-1)=ladp; toucDet(idetot-1)=detm;
+		   }
+	  }  //end detm>0....		 
+	  if(detp<=fNdet[layerfin-1]) distz=TMath::Abs(zinters-fzmin[layerfin-1][detp-1]);
+	  if(detp<=fNdet[layerfin-1] && rangez>=distz){
+	    flagzmax=1;
+		 idetot++; toucLad(idetot-1)=ladinters; toucDet(idetot-1)=detp;
+		 if(rangephi>=distphim){
+			 idetot++; toucLad(idetot-1)=ladm; toucDet(idetot-1)=detp;
+			 if(flagzmin == 0) {idetot++; toucLad(idetot-1)=ladm; toucDet(idetot-1)=detinters;}
+		 }
+		 if(rangephi>=distphip){
+			 idetot++; toucLad(idetot-1)=ladp; toucDet(idetot-1)=detp;
+			 if(flagzmin == 0) {idetot++; toucLad(idetot-1)=ladp; toucDet(idetot-1)=detinters;}
+		 }
+	  }  //end detm<fNdet[.......	
+	  
+	  
+	  if(flagzmin == 0 && flagzmax==0){
+		   if(rangephi>=distphim){idetot++; toucLad(idetot-1)=ladm; toucDet(idetot-1)=detinters;}	
+			if(rangephi>=distphip){idetot++; toucLad(idetot-1)=ladp; toucDet(idetot-1)=detinters;}	  
+	  }  
+		
+///////////////////////////////////////////////////////////////////////////////////////////////////     
+      		
+		
       Int_t iriv; 	
       for (iriv=0; iriv<idetot; iriv++) {  //for on detectors
 
@@ -899,13 +870,14 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
         /*** Rec points sorted by module *****/
         /**************************************/
 
-        Int_t index;
-        AliITSRecPoint *recp;
-		 index = g1->GetModuleIndex(lycur,toucLad(iriv),toucDet(iriv));  
+        Int_t indexmod;       //mod ott
+       // AliITSRecPoint *recp;
+		 indexmod = g1->GetModuleIndex(lycur,toucLad(iriv),toucDet(iriv));
+		 //mod ott 
 		  fITS->ResetRecPoints();   
-        gAlice->TreeR()->GetEvent(index); 
-
+        gAlice->TreeR()->GetEvent(indexmod); 
         Int_t npoints=frecPoints->GetEntries();
+		  /* mod ott
         Int_t *indlist=new Int_t[npoints+1];
         Int_t counter=0;
         Int_t ind;
@@ -924,7 +896,17 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
           if(indlist[ind] < 0) recp=0;
 	       else recp = (AliITSRecPoint*)frecPoints->UncheckedAt(indlist[ind]);
 
-	  if((!recp)  )  break;	
+	  if((!recp)  )  break;
+	  */
+/////////////////////////new       
+		 Int_t indnew;
+		 for(indnew=0; indnew<npoints; indnew++){
+			if (*(fvettid[indexmod]+indnew)==0)
+			 recp =(AliITSRecPoint*)frecPoints->UncheckedAt(indnew);
+			else
+			continue;
+			
+///////////////////////////////////////////////////////////////////////		  	
 	  TVector cluster(3),vecclust(9);
 	  vecclust(6)=vecclust(7)=vecclust(8)=-1.;
 	  Double_t sigma[2];               
@@ -943,12 +925,13 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
           vecclust(2)=global[2];
 
 	  	  	  	  	  	     
-          vecclust(3) = (float)recp->fTracks[0]; 
-          vecclust(4) = (float)indlist[ind];
-          vecclust(5) = (float)index;
-          vecclust(6) = (float)recp->fTracks[0];
-          vecclust(7) = (float)recp->fTracks[1];
-          vecclust(8) = (float)recp->fTracks[2];
+          vecclust(3) = (Float_t)recp->fTracks[0]; 
+          //vecclust(4) = (Float_t)indlist[ind];
+	       vecclust(4) = (Float_t)indnew;			 
+          vecclust(5) = (Float_t)indexmod;    //mod ott
+          vecclust(6) = (Float_t)recp->fTracks[0];
+          vecclust(7) = (Float_t)recp->fTracks[1];
+          vecclust(8) = (Float_t)recp->fTracks[2];
      
           sigma[0] = (Double_t)  recp->GetSigmaX2();	   
 	       sigma[1] = (Double_t) recp->GetSigmaZ2();
@@ -961,15 +944,11 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	 // cout<<" layer = "<<play<<"\n";
 	 // cout<<" cluster prima = "<<vecclust(0)<<" "<<vecclust(1)<<" "
 	 // <<vecclust(2)<<"\n"; getchar();    
-          //cluster(1)= cluster(1)-trackITS->Getalphaprov();  //provvisorio;
-			 //if(cluster(1)<0.) cluster(1)+=2.*TMath::Pi(); //provvisorio
-			 //cout<<" cluster(1) dopo = "<<cluster(1)<< " alphaprov = "<<trackITS->Getalphaprov()<<"\n"; 			 
+
           Float_t sigmatotphi, sigmatotz;
    		  		  
-          //Float_t epsphi=3.2, epsz=3.; 
-	   //    Float_t epsphi=4.0, epsz=4.0; 
-	    Float_t epsphi=5.0, epsz=5.0;       //come prima a luglio           
-          if(fPtref<0.2) {epsphi=3.; epsz=3.;}
+	   // Float_t epsphi=5.0, epsz=5.0;                 
+       //if(fPtref<0.2) {epsphi=3.; epsz=3.;}
 		  		  
           Double_t rTrack=(*trackITS).Getrtrack();
           Double_t sigmaphi=sigma[0]/(rTrack*rTrack);
@@ -1015,8 +994,8 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	  //fTimerKalman->Continue(); 	                                   // timer
                                                          
 	  if(fflagvert){	 
-	    KalmanFilterVert(newTrack,cluster,sigmanew);             //come prima
-	 // KalmanFilterVert(newTrack,cluster,sigmanew,chi2pred);    //modificata il 30-7-2001  //come prima in kalman filter
+	    KalmanFilterVert(newTrack,cluster,sigmanew);             
+	 // KalmanFilterVert(newTrack,cluster,sigmanew,chi2pred);    
 	  }
 	  else{
 	    KalmanFilter(newTrack,cluster,sigmanew);
@@ -1031,7 +1010,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 
         }   // end of for(;;) on rec points 
 
-        delete [] indlist;
+       // delete [] indlist;  //mod ott
   
       }  // end of for on detectors
      
@@ -1503,7 +1482,7 @@ void AliITSTrackerV1::KalmanFilterVert(AliITSTrackV1 *newTrack,TVector &cluster,
 					 	
  	//cout<<" chi2 kalman = "<<chi2<<"\n";  getchar(); 
        newTrack->SetChi2(newTrack->GetChi2()+chi2);   
- //   newTrack->SetChi2(newTrack->GetChi2()+chi2pred);  //aggiunta il 30-7-2001  
+ //   newTrack->SetChi2(newTrack->GetChi2()+chi2pred);    
    
 } 
 

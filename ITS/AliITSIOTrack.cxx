@@ -18,12 +18,8 @@ AliITSIOTrack::AliITSIOTrack() {
   for (Int_t i=0;i<6;i++) {fIdModules[i]=fIdPoints[i]=-1; fIdPoints[i]=-1;}
   fStateVPhi=0.; fStateVZ=0.; fStateVD=0.; fStateVTgl=0.; fStateVC=0.;
   fRadius=0.; fCharge=0; 
-  fC00=fC10=fC11=fC20=fC21=fC22=fC30=fC31=fC32=fC33=fC40=fC41=fC42=fC43=fC44=0.;      
-///////////////////////////////
-   fCode=0;
-   fPxg=0.;
-   fPyg=0.;
-   fPzg=0.;
+  fC00=fC10=fC11=fC20=fC21=fC22=fC30=fC31=fC32=fC33=fC40=fC41=fC42=fC43=fC44=0.; 
+
 }
    
 
