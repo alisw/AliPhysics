@@ -36,27 +36,22 @@
 #include <TVector.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TStopwatch.h>
 
 #include "TParticle.h"
 #include "AliRun.h"
-#include "AliLoader.h"
 #include "AliITS.h"
-#include "AliITSsegmentationSSD.h"
 #include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSSD.h"
 #include "AliITSgeom.h"
 #include "AliITSRecPoint.h"
-#include "stdlib.h"
 #include "AliKalmanTrack.h" 
 #include "AliMagF.h"
 #include "AliITSTrackV1.h"
 #include "AliITSIOTrack.h"
 #include "AliITSRad.h"   
-#include "../TPC/AliTPCtracker.h"
+#include "AliTPCtracker.h"
 #include "AliITSTrackerV1.h"
-#include "AliITSVertex.h"
 #include "AliITSPid.h"
 #include "AliMC.h"
 
@@ -236,14 +231,14 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////// allocate memory and define vector fNRecPoints and matrices fRecCylR, fRecCylPhi, fRecCylZ /////////////
 	gAlice->GetEvent(evnumber);
-  Int_t NumOfModules = g1->GetIndexMax();
-  fRecCylR = new Double_t *[NumOfModules];
-  fRecCylPhi = new Double_t *[NumOfModules]; 
-  fRecCylZ = new Double_t *[NumOfModules];
+  Int_t numOfModules = g1->GetIndexMax();
+  fRecCylR = new Double_t *[numOfModules];
+  fRecCylPhi = new Double_t *[numOfModules]; 
+  fRecCylZ = new Double_t *[numOfModules];
   AliITSRecPoint *recp;
-  fNRecPoints = new Int_t[NumOfModules];
+  fNRecPoints = new Int_t[numOfModules];
    
-		 for(Int_t module=0; module<NumOfModules; module++) {				
+		 for(Int_t module=0; module<numOfModules; module++) {				
 		  fITS->ResetRecPoints();		     
         gAlice->TreeR()->GetEvent(module);		  
 		  frecPoints=fITS->RecPoints();
@@ -342,17 +337,17 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) : TObject(cobj) {
 
 
 	AliITSgeom *g1 = fITS->GetITSgeom();  
-   Int_t NumOfModules = g1->GetIndexMax();
+   Int_t numOfModules = g1->GetIndexMax();
 	/*
-  fRecCylR = new Float_t *[NumOfModules];
-  fRecCylPhi = new Float_t *[NumOfModules]; 
-  fRecCylZ = new Float_t *[NumOfModules];
+  fRecCylR = new Float_t *[numOfModules];
+  fRecCylPhi = new Float_t *[numOfModules]; 
+  fRecCylZ = new Float_t *[numOfModules];
   */
-  fRecCylR = new Double_t *[NumOfModules];
-  fRecCylPhi = new Double_t *[NumOfModules]; 
-  fRecCylZ = new Double_t *[NumOfModules];  
-  fNRecPoints = new Int_t[NumOfModules];	
-		for(Int_t module=0; module<NumOfModules; module++) {		
+  fRecCylR = new Double_t *[numOfModules];
+  fRecCylPhi = new Double_t *[numOfModules]; 
+  fRecCylZ = new Double_t *[numOfModules];  
+  fNRecPoints = new Int_t[numOfModules];	
+		for(Int_t module=0; module<numOfModules; module++) {		
 		  Int_t nRecPoints=fNRecPoints[module]=cobj.fNRecPoints[module];
 		  /*
 		  fRecCylR[module] = new Float_t[nRecPoints];
@@ -371,8 +366,11 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) : TObject(cobj) {
 		}	 
  
 }
-void AliITSTrackerV1::DelMatrix(Int_t NumOfModules) { 
-  for(Int_t mod=0; mod<NumOfModules; mod++) {
+/*
+//______________________________________________________________________
+void AliITSTrackerV1::DelMatrix(Int_t numOfModules) {
+  // cleanup of some data members
+  for(Int_t mod=0; mod<numOfModules; mod++) {
     delete fRecCylR[mod];
 	 delete fRecCylPhi[mod];
 	 delete fRecCylZ[mod];
@@ -381,6 +379,7 @@ void AliITSTrackerV1::DelMatrix(Int_t NumOfModules) {
 	 delete fRecCylPhi;
 	 delete fRecCylZ;
 }
+*/
 //______________________________________________________________________
 AliITSTrackerV1::~AliITSTrackerV1(){
     // Origin  A. Badala' and G.S. Pappalardo:
@@ -404,7 +403,7 @@ AliITSTrackerV1::~AliITSTrackerV1(){
 	 
 }
 //______________________________________________________________________
-AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
+AliITSTrackerV1 &AliITSTrackerV1::operator=(const AliITSTrackerV1 &obj) {
     // Origin  A. Badala' and G.S. Pappalardo:
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
     // assignement operator
@@ -463,12 +462,12 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
     } // end for im1
 
 	AliITSgeom *g1 = fITS->GetITSgeom();  
-   Int_t NumOfModules = g1->GetIndexMax();
-  fRecCylR = new Double_t *[NumOfModules];
-  fRecCylPhi = new Double_t *[NumOfModules]; 
-  fRecCylZ = new Double_t *[NumOfModules];  
-  fNRecPoints = new Int_t[NumOfModules];  
-	  for(Int_t module=0; module<NumOfModules; module++) {		  
+   Int_t numOfModules = g1->GetIndexMax();
+  fRecCylR = new Double_t *[numOfModules];
+  fRecCylPhi = new Double_t *[numOfModules]; 
+  fRecCylZ = new Double_t *[numOfModules];  
+  fNRecPoints = new Int_t[numOfModules];  
+	  for(Int_t module=0; module<numOfModules; module++) {		  
 		  Int_t nRecPoints=fNRecPoints[module]=obj.fNRecPoints[module];
 		  fRecCylR[module] = new Double_t[nRecPoints];
 		  fRecCylPhi[module] = new Double_t[nRecPoints];
@@ -1693,3 +1692,4 @@ void AliITSTrackerV1::KalmanFilterVert(AliITSTrackV1 *newTrack,
     newTrack->SetChi2(newTrack->GetChi2()+chi2);   
     //   newTrack->SetChi2(newTrack->GetChi2()+chi2pred);
 }
+

@@ -25,7 +25,7 @@
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITShit.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSPD.h"
 #include "AliITSmodule.h"
 #include "AliITSMapA2.h"
 #include "AliITSpList.h"

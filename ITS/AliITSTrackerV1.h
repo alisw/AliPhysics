@@ -31,16 +31,15 @@ class TMatrix;
 class AliITSTrackV1;
 class AliITS;
 class AliITSRad;
-class AliITSgeoinfo;
 class TStopwatch;
 
 class AliITSTrackerV1 : public TObject {
  public:
     AliITSTrackerV1();
-	AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag);
+    AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag);
     AliITSTrackerV1(const AliITSTrackerV1 &cobj);
     ~AliITSTrackerV1();
-    AliITSTrackerV1 &operator=(AliITSTrackerV1 obj);
+    AliITSTrackerV1 &operator=(const AliITSTrackerV1 &obj);
 	 void DelMatrix(Int_t NumOfModules);
     void DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file, Bool_t realmass=0);
     void RecursiveTracking(TList *trackITSlist);
@@ -52,6 +51,7 @@ class AliITSTrackerV1 : public TObject {
 			  Double_t sigma[2]);
     //void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster,
     //                      Double_t sigma[2], Double_t chi2pred);
+
  private:
     AliITS* fITS;              //! pointer to AliITS
     AliITSTrackV1 *fresult;    // result is a pointer to the final best track

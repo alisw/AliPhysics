@@ -29,7 +29,9 @@
 #include <TMath.h>
 #include "AliITS.h"
 #include "AliITSgeom.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSPD.h"
+#include "AliITSdigitSDD.h"
+#include "AliITSdigitSSD.h"
 #include "AliITSDDLRawData.h"
 
 ClassImp(AliITSDDLRawData)

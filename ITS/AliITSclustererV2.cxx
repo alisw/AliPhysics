@@ -19,7 +19,9 @@
 #include <TTree.h>
 #include <TClonesArray.h>
 #include "AliITSgeom.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSPD.h"
+#include "AliITSdigitSDD.h"
+#include "AliITSdigitSSD.h"
 #include "AliMC.h"
 
 ClassImp(AliITSclustererV2)

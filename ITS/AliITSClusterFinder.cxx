@@ -20,7 +20,9 @@
 //
 
 #include "AliITSClusterFinder.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSPD.h"
+#include "AliITSdigitSDD.h"
+#include "AliITSdigitSSD.h"
 #include "AliRun.h"
 #include "AliITS.h"
 

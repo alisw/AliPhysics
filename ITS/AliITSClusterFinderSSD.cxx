@@ -22,7 +22,7 @@
 #include <TArrayI.h>
 #include "AliRun.h"
 #include "AliITS.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSSD.h"
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSMapA1.h"

@@ -13,51 +13,66 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-////////////////////////////////////////////////
-//  Digits classes for all ITS detectors      //
-////////////////////////////////////////////////
 #include <TObjArray.h>
-#include <TArrayI.h>
-#include <TArrayF.h>
-#include <TMath.h>
-#include "AliITSdigit.h"
+#include "AliITSTransientDigit.h"
+
+///////////////////////////////////////////////////////////////////
+//                                                               //
+// Class used internally by AliITSsimulationSDD
+// for SDD digitisation
+// It is not currently used any longer
+// The methods in ALiITSsimulationSDD using it are currently commented out
+//                                                               //
+///////////////////////////////////////////////////////////////////
+
+ClassImp(AliITSTransientDigit)
 
 //______________________________________________________________________
-ClassImp(AliITSdigit)
-AliITSdigit::AliITSdigit(const Int_t *digits) {
-  // Creates a real data digit object
+AliITSTransientDigit::AliITSTransientDigit(Float_t phys,const Int_t *digits): 
+    AliITSdigitSDD(phys,digits) {
+    // Creates a digit object in a list of digits to be updated
 
-  fCoord1       = digits[0];
-  fCoord2       = digits[1];
-  fSignal       = digits[2];
+    fTrackList   = new TObjArray;  
+}
+//__________________________________________________________________________
+AliITSTransientDigit::AliITSTransientDigit(const AliITSTransientDigit &source):
+ AliITSdigitSDD(source){
+    // Copy Constructor 
+    if(&source == this) return;
+    this->fTrackList = source.fTrackList;
+    return;
+}
+//_________________________________________________________________________
+AliITSTransientDigit& AliITSTransientDigit::operator=(
+    const AliITSTransientDigit &source) {
+    // Assignment operator
+    if(&source == this) return *this;
+    this->fTrackList = source.fTrackList;
+    return *this;
 }
 //______________________________________________________________________
-void AliITSdigit::Print(ostream *os){
+void AliITSTransientDigit::Print(ostream *os){
     //Standard output format for this class
 
-    *os << fCoord1 <<","<< fCoord2 <<","<< fSignal;
+    AliITSdigitSDD::Print(os);
 }
 //______________________________________________________________________
-void AliITSdigit::Read(istream *os){
+void AliITSTransientDigit::Read(istream *os){
     //Standard input for this class
 
-    *os >> fCoord1 >> fCoord2 >> fSignal;
+    AliITSdigitSDD::Read(os);
 }
 //______________________________________________________________________
-ostream &operator<<(ostream &os,AliITSdigit &source){
+ostream &operator<<(ostream &os,AliITSTransientDigit &source){
     // Standard output streaming function.
 
     source.Print(&os);
     return os;
 }
 //______________________________________________________________________
-istream &operator>>(istream &os,AliITSdigit &source){
+istream &operator>>(istream &os,AliITSTransientDigit &source){
     // Standard output streaming function.
 
     source.Read(&os);
     return os;
 }
-
-

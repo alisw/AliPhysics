@@ -18,7 +18,7 @@
 #include <Riostream.h>
 #include "TArrayI.h"
 #include "TClonesArray.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSSD.h"
 #include "AliITSclusterSSD.h"
 
 ClassImp(AliITSclusterSSD)

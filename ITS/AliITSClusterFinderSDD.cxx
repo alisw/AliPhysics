@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.35  2003/11/10 16:33:50  masera
+  Changes to obey our coding conventions
+
   Revision 1.34  2003/09/11 13:48:52  masera
   Data members of AliITSdigit classes defined as protected (They were public)
 
@@ -67,7 +70,7 @@
 #include "AliITSClusterFinderSDD.h"
 #include "AliITSMapA1.h"
 #include "AliITS.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSDD.h"
 #include "AliITSRawClusterSDD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentation.h"

@@ -24,7 +24,7 @@
 #include "AliITSClusterFinderSPDdubna.h"
 #include "AliITSMapA1.h"
 #include "AliITS.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSPD.h"
 #include "AliITSRawClusterSPD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentation.h"

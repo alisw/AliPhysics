@@ -32,7 +32,7 @@
 #include "AliITSdcsSSD.h"
 #include "AliITS.h"
 #include "AliITShit.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSSD.h"
 #include "AliRun.h"
 #include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
