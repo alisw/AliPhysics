@@ -255,42 +255,27 @@ gener->Init();
 ===========================================================
  csh Script for the full reconstruction
 ===========================================================
+
+
 aliroot -b << EOF  
-gAlice->Run(NumberOfEvents,"YourConfig.C");
+AliSimulation MuonSim("YourConfig.C")
+MuonSim.Run(XXX)
 .q
 EOF
 
 aliroot -b << EOF
-AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
-manager->SetInputStream(0,"galice.root");
-AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
-manager->AddDigitizer(dMUON);
-manager->Exec("deb");
-.q.
-EOF
-
-aliroot -b << EOF
-AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
-manager->SetInputStream(0,"galice.root");
-AliMUONDigitizer* dMUON   = new AliMUONDigitizerv2(manager);
-manager->AddDigitizer(dMUON);
-manager->Exec("deb");
+AliReconstruction MuonRec("galice.root")
+MuonRec.SetRunVertexFinder(kFALSE)
+MuonRec.SetRunLocalReconstruction("MUON")
+MuonRec.SetFillESD("MUON")
+MuonRec.Run()
 .q
 EOF
-
-aliroot -b << EOF
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONChallengeTest.C++
-MUONRecoTest("galice.root");
-.q
-EOF
-
 
 aliroot -b << EOF  
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONmassPlot_NewIO.C++
+.L $ALICE_ROOT/MUON/MUONmassPlot_ESD.C++
 MUONmassPlot("galice.root",0,99999);
 .q
 EOF
