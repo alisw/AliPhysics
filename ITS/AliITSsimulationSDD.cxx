@@ -1086,8 +1086,7 @@ Int_t AliITSsimulationSDD::Convert8to10(Int_t signal) const {
 	else  return (256+((signal-192)<<3)+4);
     } // end if signal < 224
     if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
-    else  return (512+((signal-224)<<4)+7);
-    return 0;
+    return (512+((signal-224)<<4)+7);
 }
 //______________________________________________________________________
 AliITSMap*   AliITSsimulationSDD::HitMap(Int_t i){
