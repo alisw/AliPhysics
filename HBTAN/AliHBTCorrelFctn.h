@@ -49,11 +49,12 @@ class AliHBTOutSideLongFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunc
     virtual  ~AliHBTOutSideLongFctn(){}
 
     TH1* GetResult();
+    void UseAbsoluteValues(Bool_t flag){fAbs = flag;}
  
   protected:
-    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const
-      { x=TMath::Abs(pair->GetQOutCMSLC()); y=TMath::Abs(pair->GetQSideCMSLC()); z=TMath::Abs(pair->GetQLongCMSLC());} 
-
+    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const;
+    
+    Bool_t fAbs;//flag indicating if absolute values of qout, qside and qlong should be histogrammed
   ClassDef(AliHBTOutSideLongFctn,1)
 };
 

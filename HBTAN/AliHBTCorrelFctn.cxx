@@ -49,7 +49,8 @@ ClassImp(AliHBTOutSideLongFctn)
 AliHBTOutSideLongFctn::AliHBTOutSideLongFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                                                    Int_t nYbins, Double_t maxYval, Double_t minYval,
                                                    Int_t nZbins, Double_t maxZval, Double_t minZval):
- AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+ AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval),
+ fAbs(kTRUE)
 {
 //ctor
   fWriteNumAndDen = kTRUE;//change default behaviour
@@ -64,6 +65,23 @@ TH1* AliHBTOutSideLongFctn::GetResult()
  fRatio = GetRatio(Scale());
  return fRatio;
 }
+
+void AliHBTOutSideLongFctn::GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const
+{ 
+  //calculates values of that function
+  //qout qside and qlong
+  
+  x=pair->GetQOutCMSLC(); 
+  y=pair->GetQSideCMSLC(); 
+  z=pair->GetQLongCMSLC();
+  if (fAbs)
+   {
+     x = TMath::Abs(x);
+     y = TMath::Abs(y);
+     z = TMath::Abs(z);
+   }
+} 
+
 /*************************************************************************************/ 
 
 ClassImp(AliHBTQOutCMSLCCorrelFctn)
