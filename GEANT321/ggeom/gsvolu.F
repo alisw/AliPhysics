@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.2  2001/03/20 06:36:27  alibrary
+* 100 parameters now allowed for geant shapes
+*
 * Revision 1.1.1.1  1999/05/18 15:55:17  fca
 * AliRoot sources
 *
@@ -84,6 +87,7 @@ C
      +       A4,' IVO = ',I6)
          CALL GMAIL(0,0)
          CALL MZDROP(IXCONS,LQ(JVOLUM-IVO),' ')
+         STOP
       ENDIF
       GO TO 30
 C
