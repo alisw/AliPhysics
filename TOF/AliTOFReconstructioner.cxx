@@ -385,7 +385,7 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
       } 
     }
 
-    Float_t * toftime = new Float_t toftime[fMaxAllTracks]; 
+    Float_t * toftime = new Float_t[fMaxAllTracks]; 
     InitArray(toftime, fMaxAllTracks);
     AliTOFPad* pixelArray = new AliTOFPad[fMaxPixels];
     Int_t* iTOFpixel        = new Int_t[fMaxAllTracks];
