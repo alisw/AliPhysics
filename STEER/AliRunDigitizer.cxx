@@ -260,13 +260,10 @@ void AliRunDigitizer::Digitize(Option_t* option)
 // If gAlice is already in memory, use it
   SetDebug(10);
   
-  if (gAlice == 0x0)
+  if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) 
    {
-    if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) 
-     {
-       Error("Digitize","Error occured while getting gAlice from Input 0");
-       return;
-     }
+     Error("Digitize","Error occured while getting gAlice from Input 0");
+     return;
    }
     
   if (!InitGlobal()) //calls Init() for all (sub)digitizers

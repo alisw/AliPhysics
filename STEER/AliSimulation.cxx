@@ -367,8 +367,6 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
   }
 
   if (!manager->GetListOfTasks()->IsEmpty()) {
-    delete fRunLoader;
-    fRunLoader = NULL;
     Info("RunDigitization", "executing digitization");
     manager->Exec("");
   }
