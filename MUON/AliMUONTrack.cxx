@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.7  2000/09/19 15:50:46  gosset
+TrackChi2MCS function: covariance matrix better calculated,
+taking into account missing planes...
+
 Revision 1.6  2000/07/20 12:45:27  gosset
 New "EventReconstructor..." structure,
 	hopefully more adapted to tree/streamer.
@@ -66,7 +70,7 @@ Addition of files for track reconstruction in C++
 
 #include <TClonesArray.h>
 #include <TMath.h>
-#include <TMatrix.h>
+#include <TMatrixD.h>
 #include <TObjArray.h>
 #include <TVirtualFitter.h>
 
@@ -301,7 +305,7 @@ void AliMUONTrack::Fit()
   // choice of function to be minimized according to fFitMCS
   if (fFitMCS == 0) fgFitter->SetFCN(TrackChi2);
   else fgFitter->SetFCN(TrackChi2MCS);
-  arg[0] = 1;
+  arg[0] = -1;
   fgFitter->ExecuteCommand("SET PRINT", arg, 1); // More printing !!!!
   // Parameters according to "fFitStart"
   // (should be a function to be used at every place where needed ????)
@@ -319,13 +323,15 @@ void AliMUONTrack::Fit()
 			 trackParam->GetNonBendingSlope(),
 			 0.001, -0.5, 0.5);
   if (fFitNParam == 5) {
-    // set last 2 Minuit parameters (no limits for the search: min=max=0)
+    // set last 2 Minuit parameters
+    // mandatory limits in Bending to avoid NaN values of parameters
     fgFitter->SetParameter(3, "X",
 			   trackParam->GetNonBendingCoor(),
-			   0.03, 0.0, 0.0);
+			   0.03, -500.0, 500.0);
+    // mandatory limits in non Bending to avoid NaN values of parameters
     fgFitter->SetParameter(4, "Y",
 			   trackParam->GetBendingCoor(),
-			   0.10, 0.0, 0.0);
+			   0.10, -500.0, 500.0);
   }
   // search without gradient calculation in the function
   fgFitter->ExecuteCommand("SET NOGRADIENT", arg, 0);
@@ -517,8 +523,8 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
   Double_t hbc1, hbc2, pbc1, pbc2;
   Double_t hnbc1, hnbc2, pnbc1, pnbc2;
   Int_t numberOfHit = trackBeingFitted->GetNTrackHits();
-  TMatrix *covBending = new TMatrix(numberOfHit, numberOfHit);
-  TMatrix *covNonBending = new TMatrix(numberOfHit, numberOfHit);
+  TMatrixD *covBending = new TMatrixD(numberOfHit, numberOfHit);
+  TMatrixD *covNonBending = new TMatrixD(numberOfHit, numberOfHit);
   Double_t *msa2 = new Double_t[numberOfHit];
 
   // Predicted coordinates and  multiple scattering angles are first calculated
@@ -583,7 +589,23 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
       }
     } // for (hitNumber2 = hitNumber1;...
   } // for (hitNumber1 = 0;...
-
+  // Normalization of covariance matrices
+  Double_t normCovBending2 = covBending->E2Norm();
+  Double_t normCovNonBending2 = covNonBending->E2Norm();
+  (*covBending) *= 1/normCovBending2;
+  (*covNonBending) *= 1/normCovNonBending2;
+//   if (covBending->Determinant() < 1.e-33) {
+//     printf(" *** covBending *** \n");
+//     covBending->Print();
+//     printf(" *** covNonBending *** \n");
+//     covNonBending->Print();
+//     cout << " number of hits " <<  numberOfHit << endl;
+//     cout << "Momentum = " << 1/Param[0] <<endl;
+//     cout << "normCovBending = " << normCovBending2 << endl; 
+//     cout << "normCovNonBending = " << normCovNonBending2 << endl; 
+//     exit(0);
+    
+//   }
   // Inverts covariance matrix 
   goodDeterminant = kTRUE;
   // check whether the Invert method returns flag if matrix cannot be inverted,
@@ -608,6 +630,9 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
   // Calculates Chi2
   if (goodDeterminant) {
     // with Multiple Scattering if inversion correct
+    // Inverse  matrices without normalization
+    (*covBending) *= 1/normCovBending2;
+    (*covNonBending) *= 1/normCovNonBending2;
     for (hitNumber1 = 0; hitNumber1 < numberOfHit ; hitNumber1++) { 
       hit1 = (AliMUONTrackHit*) (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber1];
       hbc1 = hit1->GetHitForRecPtr()->GetBendingCoor();

@@ -29,6 +29,30 @@ class AliMUONSegment : public TObject {
   AliMUONHitForRec* GetHitForRec2(void) {
     // Get fHitForRecPtr2
     return fHitForRecPtr2;}
+  Double_t GetBendingCoor(void) {
+    // Get fBendingCoor
+    return fBendingCoor;}
+  void SetBendingCoor(Double_t BendingCoor) {
+    // Set fBendingCoor
+    fBendingCoor = BendingCoor;}
+  Double_t GetBendingSlope(void) {
+    // Get fBendingSlope
+    return fBendingSlope;}
+  void SetBendingSlope(Double_t BendingSlope) {
+    // Set fBendingSlope
+    fBendingSlope = BendingSlope;}
+  Double_t GetNonBendingCoor(void) {
+    // Get fNonBendingCoor
+    return fNonBendingCoor;}
+  void SetNonBendingCoor(Double_t NonBendingCoor) {
+    // Set fNonBendingCoor
+    fNonBendingCoor = NonBendingCoor;}
+  Double_t GetNonBendingSlope(void) {
+    // Get fNonBendingSlope
+    return fNonBendingSlope;}
+  void SetNonBendingSlope(Double_t NonBendingSlope) {
+    // Set fNonBendingSlope
+    fNonBendingSlope = NonBendingSlope;}
   Double_t GetBendingCoorReso2(void) {
     // Get fBendingCoorReso2
     return fBendingCoorReso2;}

@@ -31,6 +31,10 @@ class AliMUONEventReconstructor : public TObject {
   // Get and Set, Set to defaults
   Double_t GetMinBendingMomentum(void) {return fMinBendingMomentum;}
   void SetMinBendingMomentum(Double_t MinBendingMomentum) {fMinBendingMomentum = MinBendingMomentum;}
+  Double_t GetMaxBendingMomentum(void) {return fMaxBendingMomentum;}
+  void SetMaxBendingMomentum(Double_t MaxBendingMomentum) {fMaxBendingMomentum = MaxBendingMomentum;}
+  Double_t GetMaxChi2(void) {return fMaxChi2;}
+  void SetMaxChi2(Double_t MaxChi2) {fMaxChi2 = MaxChi2;}
   Double_t GetMaxSigma2Distance(void) {return fMaxSigma2Distance;}
   void SetMaxSigma2Distance(Double_t MaxSigma2Distance) {fMaxSigma2Distance = MaxSigma2Distance;}
   Double_t GetBendingResolution(void) {return fBendingResolution;}
@@ -84,6 +88,9 @@ class AliMUONEventReconstructor : public TObject {
 
   // Parameters for event reconstruction
   Double_t fMinBendingMomentum; // minimum value (GeV/c) of momentum in bending plane
+  // Parameters for event reconstruction
+  Double_t fMaxBendingMomentum; // maximum value (GeV/c) of momentum in bending plane
+  Double_t fMaxChi2; // maximum Chi2 per degree of Freedom
   Double_t fMaxSigma2Distance; // maximum square distance in units of the variance (maximum chi2)
   Double_t fRMin[kMaxMuonTrackingChambers]; // minimum radius (cm)
   Double_t fRMax[kMaxMuonTrackingChambers]; // maximum radius (cm)
