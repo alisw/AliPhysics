@@ -64,8 +64,12 @@ void g1wr(G4double& pSx, G4double& pSy, G4double& pSz, G4double* pV,
   G4ThreeVector partLoc(pSx,pSy,pSz);
   partLoc *= 10.0; // in millimeters!
   static G4ThreeVector partLocOld = partLoc;
-  static G4ThreeVector oldLocalPoint = 
-    ptrNavig->ComputeLocalPoint(partLocOld);
+
+// change because of geant4 6.0
+//static G4ThreeVector oldLocalPoint = 
+//  ptrNavig->ComputeLocalPoint(partLocOld);
+ static G4ThreeVector oldLocalPoint =
+    ptrNavig->GetGlobalToLocalTransform().TransformPoint(partLocOld);
   
   G4ThreeVector pVec(pV[0],pV[1],pV[2]);
   const G4double physStep=G4double(propStep*10.);
@@ -227,7 +231,14 @@ void g1wr(G4double& pSx, G4double& pSy, G4double& pSz, G4double* pV,
   //changed from last located point (otherwise troubles come 
   //when fluka changes location or particle because G4 computes 
   //from last located point).
-  G4ThreeVector newLocalPoint = ptrNavig->ComputeLocalPoint(partLoc);
+
+// change because of geant4 6.0
+//G4ThreeVector newLocalPoint = ptrNavig->ComputeLocalPoint(partLoc);
+  G4ThreeVector newLocalPoint =
+    ptrNavig->GetGlobalToLocalTransform().TransformPoint(partLoc);
+
+
+
   G4double moveLenSq = (newLocalPoint-oldLocalPoint).mag2();
   if(moveLenSq>=kCarTolerance*kCarTolerance) 
     ptrNavig->LocateGlobalPointWithinVolume(partLoc);
@@ -337,7 +348,9 @@ void g1wr(G4double& pSx, G4double& pSy, G4double& pSz, G4double* pV,
   }
   else if(newRegErr<0) 
     newReg=newRegErr;
-  
+//======================= Endre print ===================  
+printf("\nWrapG1 mreg=%d",newReg);
+//======================= Endre print ===================  
   
   //compute output variables (in cm.!)
   //final step
@@ -361,7 +374,11 @@ void g1wr(G4double& pSx, G4double& pSy, G4double& pSz, G4double* pV,
   ptrGeoInit->SetLttcFlagGeant(LttcFlagGeant);
   
   partLocOld=partLoc;
-  oldLocalPoint = ptrNavig->ComputeLocalPoint(partLocOld);
+
+// change because of geant4 6.0
+//oldLocalPoint = ptrNavig->ComputeLocalPoint(partLocOld);
+  oldLocalPoint =
+    ptrNavig->GetGlobalToLocalTransform().TransformPoint(partLocOld);
   
   //compute new position
   G4ThreeVector oldPos = G4ThreeVector(pSx,pSy,pSz);

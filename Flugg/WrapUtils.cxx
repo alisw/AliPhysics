@@ -169,7 +169,7 @@ bool EqualHistories(const G4NavigationHistory* ptrFirstHist,
 ////////////////////////////////////////////////////////////////////////
 // PrintHeader
 ////////////////////////////////////////////////////////////////////////
-G4std::ostream& PrintHeader(G4std::ostream& os, const char* title) {
+std::ostream& PrintHeader(std::ostream& os, const char* title) {
   os << "*\n" << "*\n" << "*\n";
   os << "*********************  " << title << " *********************\n"
      << "*\n";

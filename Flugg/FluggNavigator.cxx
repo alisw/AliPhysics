@@ -28,7 +28,7 @@
 
 #include "FluggNavigator.hh"
 #include "G4ios.hh"
-#include "g4std/iomanip"
+#include <iomanip.h>
 
 #ifdef G4GEOMETRY_DEBUG
 # define G4DEBUG_NAVIGATION 1

@@ -63,8 +63,9 @@ void nrmlwr(G4double& pSx, G4double& pSy, G4double& pSz,
   G4ThreeVector normalGlob;
   
   //normal computing
-  if(ptrNavig->IsExitNormalValid()) {
-    normalLoc=ptrNavig->GetLocalExitNormal();
+  G4bool* valid;
+  normalLoc=ptrNavig->GetLocalExitNormal(valid);
+  if(valid) {
     normalLoc *= -1;        
     
     //global cooordinates normal

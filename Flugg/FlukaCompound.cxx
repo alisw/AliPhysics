@@ -49,7 +49,7 @@ void FlukaCompound::AddElement(G4int index, G4double fraction) {
   }
 }
 
-G4std::ostream& FlukaCompound::PrintCompounds(G4std::ostream& os) {
+std::ostream& FlukaCompound::PrintCompounds(std::ostream& os) {
   PrintHeader(os, "COMPOUNDS");  
   
   for (FlukaCompoundsIterator i = fFlukaCompounds.begin(); 
@@ -62,7 +62,7 @@ G4std::ostream& FlukaCompound::PrintCompounds(G4std::ostream& os) {
   return os;
 }
 
-G4std::ostream& operator<<(G4std::ostream& os, const FlukaCompound& flucomp) {
+std::ostream& operator<<(std::ostream& os, const FlukaCompound& flucomp) {
   G4int nmats = flucomp.GetNMaterials();
   G4String matName = flucomp.GetName();
   G4String matRealName = flucomp.GetRealName().substr(0,8);
@@ -76,15 +76,15 @@ G4std::ostream& operator<<(G4std::ostream& os, const FlukaCompound& flucomp) {
   G4int counttothree = 0;
   os << setw10 <<"COMPOUND  ";
   for (G4int i = 0; i < nmats; i++) {
-    os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+    os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
     os << setw10
        << setfixed
-       << G4std::setprecision(6)
+       << std::setprecision(6)
        << flucomp.GetMaterialFraction(i);
-    os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+    os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
     os << setw10
        << setfixed
-       << G4std::setprecision(1)
+       << std::setprecision(1)
        << G4double(flucomp.GetMaterialIndex(i));
     counttothree++;
     if (counttothree == 3 ) {

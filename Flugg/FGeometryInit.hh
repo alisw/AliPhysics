@@ -66,6 +66,7 @@ public:
   inline G4int GetLttcFlagGeant();
   void SetLttcFlagGeant(G4int);
   void PrintJrLtGeant();
+  void Init();
 
   //Map access methods
   void  BuildMediaMap();
@@ -79,7 +80,7 @@ public:
 
 protected:
   void BuildRegionsMap();
-  void PrintRegionsMap(G4std::ostream& os);
+  void PrintRegionsMap(std::ostream& os);
   void BuildMaterialTables();
   FlukaMaterial* BuildFlukaMaterialFromElement(const G4Element* element, 
 					       G4double matDensity);
@@ -88,9 +89,9 @@ protected:
   FlukaCompound* BuildFlukaCompoundFromMaterial(const G4Material* material); 
   FlukaCompound* BuildFlukaCompoundFromElement(const G4Element* element,
 					       G4double matDensity);
-  void PrintMaterialTables(G4std::ostream& os);
-  void PrintAssignmat(G4std::ostream& os);
-  void PrintMagneticField(G4std::ostream& os);
+  void PrintMaterialTables(std::ostream& os);
+  void PrintAssignmat(std::ostream& os);
+  void PrintMagneticField(std::ostream& os);
 
 private:    
   FGeometryInit();	//costructor
@@ -111,17 +112,17 @@ private:
   G4int  fNRegions;
   int* fRegionMediumMap;
     
-  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fRegionVolumeMap;
-  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fMediumVolumeMap;
-  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fVolIdVolumeMap;
+  std::map<G4VPhysicalVolume*, int, std::less<G4VPhysicalVolume*> > fRegionVolumeMap;
+  std::map<G4VPhysicalVolume*, int, std::less<G4VPhysicalVolume*> > fMediumVolumeMap;
+  std::map<G4VPhysicalVolume*, int, std::less<G4VPhysicalVolume*> > fVolIdVolumeMap;
 
-  G4std::map<G4Material*, FlukaMaterial*, G4std::less<G4Material*> > G4FlukaMaterialMap;
-  G4std::map<G4Material*, FlukaCompound*, G4std::less<G4Material*> > G4FlukaCompoundMap;
+  std::map<G4Material*, FlukaMaterial*, std::less<G4Material*> > G4FlukaMaterialMap;
+  std::map<G4Material*, FlukaCompound*, std::less<G4Material*> > G4FlukaCompoundMap;
   //G4int NOfMaterials;
 };
 
-typedef  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> >::const_iterator RegionIterator;
-typedef  G4std::vector<G4Material*>::const_iterator MatTableIterator;
+typedef  std::map<G4VPhysicalVolume*, int, std::less<G4VPhysicalVolume*> >::const_iterator RegionIterator;
+typedef  std::vector<G4Material*>::const_iterator MatTableIterator;
 
 
 //Include the file with the inline methods

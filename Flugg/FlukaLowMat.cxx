@@ -6,10 +6,10 @@ FlukaLowMat::FlukaLowMat(const G4String& name, FlukaMaterial* fmat):
   fFlukaMaterial(fmat){
 }
 
-G4std::ostream& operator<<(G4std::ostream& os, const FlukaLowMat& flowmat){
+std::ostream& operator<<(std::ostream& os, const FlukaLowMat& flowmat){
   os << setw10 << "LOW-MAT   ";
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
-  os << setw10 << setfixed << G4std::setprecision(1) 
+  os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
+  os << setw10 << setfixed << std::setprecision(1) 
      << G4double(flowmat.GetIndex());
   os << setw10 << " " 
      << setw10 << " " 

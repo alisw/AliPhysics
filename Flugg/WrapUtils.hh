@@ -31,10 +31,10 @@ bool EqualHistories(const G4NavigationHistory*,
 		    const G4NavigationHistory*);
 
 // Common print utilities used in FGeometryInit.cc
-inline G4std::ostream& setw10(G4std::ostream& os) { return os << G4std::setw(10);}
-inline G4std::ostream& setscientific(G4std::ostream& os) { return os << G4std::setiosflags(G4std::ios::scientific);}
-inline G4std::ostream& setfixed(G4std::ostream& os) { return os << G4std::setiosflags(G4std::ios::fixed);}
-G4std::ostream& PrintHeader(G4std::ostream& os, const char* title);
+inline std::ostream& setw10(std::ostream& os) { return os << std::setw(10);}
+inline std::ostream& setscientific(std::ostream& os) { return os << std::setiosflags(std::ios::scientific);}
+inline std::ostream& setfixed(std::ostream& os) { return os << std::setiosflags(std::ios::fixed);}
+std::ostream& PrintHeader(std::ostream& os, const char* title);
 G4String ToFlukaString(G4String str);
 
 #endif

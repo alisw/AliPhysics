@@ -8,10 +8,10 @@ class FlukaLowMat;
 #include <map>
 
 class FlukaMaterial;
-typedef G4std::map<G4String, FlukaMaterial*, G4std::less<G4String> > FlukaMaterialsTable;
-typedef G4std::map<G4String, FlukaMaterial*, G4std::less<G4String> >::const_iterator FlukaMaterialsIterator;
-typedef G4std::map<G4int, FlukaMaterial*, G4std::less<G4int> > FlukaMaterialsIndexTable;
-typedef G4std::map<G4int, FlukaMaterial*, G4std::less<G4int> >::const_iterator FlukaMaterialsIndexIterator;
+typedef std::map<G4String, FlukaMaterial*, std::less<G4String> > FlukaMaterialsTable;
+typedef std::map<G4String, FlukaMaterial*, std::less<G4String> >::const_iterator FlukaMaterialsIterator;
+typedef std::map<G4int, FlukaMaterial*, std::less<G4int> > FlukaMaterialsIndexTable;
+typedef std::map<G4int, FlukaMaterial*, std::less<G4int> >::const_iterator FlukaMaterialsIndexIterator;
 
 class FlukaMaterial {
 public:
@@ -46,8 +46,8 @@ public:
     return &fFlukaMaterials;}
   static FlukaMaterial* GetFlukaMaterial(const G4String& name) { 
     return fFlukaMaterials[name];}
-  static G4std::ostream& PrintMaterialsByName(G4std::ostream& os);
-  static G4std::ostream& PrintMaterialsByIndex(G4std::ostream& os);
+  static std::ostream& PrintMaterialsByName(std::ostream& os);
+  static std::ostream& PrintMaterialsByIndex(std::ostream& os);
 
 protected:
   //Other
@@ -68,7 +68,7 @@ public:
 
 };
 
-G4std::ostream& operator<<(G4std::ostream& os, const FlukaMaterial& material);
+std::ostream& operator<<(std::ostream& os, const FlukaMaterial& material);
 
 
 #endif

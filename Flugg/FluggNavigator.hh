@@ -11,7 +11,7 @@ class FluggNavigator : public G4Navigator
 {
   public:
 
-  friend G4std::ostream& operator << (G4std::ostream &os, const FluggNavigator &n);
+  friend std::ostream& operator << (std::ostream &os, const FluggNavigator &n);
 
   FluggNavigator();
     // Constructor - initialisers and setup.

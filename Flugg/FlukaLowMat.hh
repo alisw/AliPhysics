@@ -27,7 +27,7 @@ public:
 
 inline G4int FlukaLowMat::GetIndex() const {return fFlukaMaterial->GetIndex();}
 
-G4std::ostream& operator<<(G4std::ostream& os, const FlukaLowMat& flowmat);
+std::ostream& operator<<(std::ostream& os, const FlukaLowMat& flowmat);
 
 #endif
 

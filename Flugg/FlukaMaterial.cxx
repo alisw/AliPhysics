@@ -65,7 +65,7 @@ G4String FlukaMaterial::GetRealName() const {
   return GetName();
 }
 
-G4std::ostream& FlukaMaterial::PrintMaterialsByName(G4std::ostream& os) {
+std::ostream& FlukaMaterial::PrintMaterialsByName(std::ostream& os) {
   PrintHeader(os, "MATERIALS");
   for (FlukaMaterialsIterator i = fFlukaMaterials.begin(); 
        i != fFlukaMaterials.end(); 
@@ -78,7 +78,7 @@ G4std::ostream& FlukaMaterial::PrintMaterialsByName(G4std::ostream& os) {
   return os;
 }
 
-G4std::ostream& FlukaMaterial::PrintMaterialsByIndex(G4std::ostream& os) {
+std::ostream& FlukaMaterial::PrintMaterialsByIndex(std::ostream& os) {
   PrintHeader(os, "MATERIALS");
   for (FlukaMaterialsIndexIterator i = fFlukaIndexMaterials.begin(); 
        i != fFlukaIndexMaterials.end(); 
@@ -91,39 +91,39 @@ G4std::ostream& FlukaMaterial::PrintMaterialsByIndex(G4std::ostream& os) {
   return os;
 }
 
-G4std::ostream& operator<<(G4std::ostream& os, const FlukaMaterial& material){
+std::ostream& operator<<(std::ostream& os, const FlukaMaterial& material){
   os << setw10 << "MATERIAL  ";
 
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+  os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
   G4double Z = G4double(material.GetZ());
   if (Z <= 0)
     os << setw10 << " ";
   else
     os << setw10 
        << setfixed
-       << G4std::setprecision(1) 
+       << std::setprecision(1) 
        << Z;
   
   G4double A = material.GetA();
   if (A <= 0)
     os << setw10 << " ";
   else
-    os << setw10 << G4std::setprecision(3)
+    os << setw10 << std::setprecision(3)
        << A;
 
   G4double density = material.GetDensity();
   if (density <=0)
     density = 0.999;
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+  os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
   os << setw10 
      << setscientific
-     << G4std::setprecision(3) 
+     << std::setprecision(3) 
      << density;
 
-  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+  os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
   os << setw10 
      << setfixed
-     << G4std::setprecision(1) 
+     << std::setprecision(1) 
      << G4double(material.GetIndex());
 
   os << setw10 << " ";

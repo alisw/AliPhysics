@@ -77,7 +77,18 @@ FGeometryInit::~FGeometryInit() {
   G4cout << "<== Flugg FGeometryInit::FGeometryInit()" << G4endl;
 }
 
-
+void FGeometryInit::Init() {
+// Build and initialize G4 geometry
+   setDetector();
+   setMotherVolume(); 
+   closeGeometry();
+   InitHistories();   
+   InitJrLtGeantArray(); 
+   InitHistArray();
+   createFlukaMatFile();
+}   
+   
+     
 void FGeometryInit::closeGeometry() {
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "==> Flugg FGeometryInit::closeGeometry()" << G4endl;
@@ -296,13 +307,13 @@ void FGeometryInit::createFlukaMatFile() {
 
   //Regions map
   BuildRegionsMap();
-  G4std::ofstream vos("Volumes_index.inp");
+  std::ofstream vos("Volumes_index.inp");
   PrintRegionsMap(vos);
   vos.close();
 
   //Materials and compounds
   BuildMaterialTables();
-  G4std::ofstream fos("flukaMat.inp");  
+  std::ofstream fos("flukaMat.inp");  
   PrintMaterialTables(fos);
   PrintAssignmat(fos);
   PrintMagneticField(fos);
@@ -342,7 +353,7 @@ void FGeometryInit::BuildRegionsMap() {
 #endif
 }
 
-void FGeometryInit::PrintRegionsMap(G4std::ostream& os) {
+void FGeometryInit::PrintRegionsMap(std::ostream& os) {
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "==> Flugg FGeometryInit::PrintRegionsMap()" << G4endl;
 #endif
@@ -360,9 +371,9 @@ void FGeometryInit::PrintRegionsMap(G4std::ostream& os) {
     int index = (*i).second;
 
     //Print index and region name in some fixed format
-    os.setf(G4std::ios::left, G4std::ios::adjustfield);
+    os.setf(std::ios::left, std::ios::adjustfield);
     os << setw10 << index;
-    os << G4std::setw(20) << ptrVol->GetName() << G4std::setw(20) << "";
+    os << std::setw(20) << ptrVol->GetName() << std::setw(20) << "";
 
     //If volume is a replica... print some more stuff
     if(ptrVol->IsReplicated()) {
@@ -372,8 +383,8 @@ void FGeometryInit::PrintRegionsMap(G4std::ostream& os) {
       G4double offset = -1;
       G4bool consum = false;
       ptrVol->GetReplicationData(axis, nRep, width, offset, consum);
-      os.setf(G4std::ios::left, G4std::ios::adjustfield);
-      os << setw10 << "Repetion Nb: " << G4std::setw(3) << nRep;
+      os.setf(std::ios::left, std::ios::adjustfield);
+      os << setw10 << "Repetion Nb: " << std::setw(3) << nRep;
     }
     os << G4endl;
     
@@ -652,7 +663,7 @@ FGeometryInit::BuildFlukaCompoundFromElement(const G4Element* element,
 #endif
 }
 
-void FGeometryInit::PrintMaterialTables(G4std::ostream& os) {
+void FGeometryInit::PrintMaterialTables(std::ostream& os) {
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "==> Flugg FGeometryInit::PrintMaterialTables()" << G4endl;
 #endif
@@ -684,7 +695,7 @@ void FGeometryInit::PrintMaterialTables(G4std::ostream& os) {
 
 ////////////////////////////////////////////////////////////////////////
 // 
-void FGeometryInit::PrintAssignmat(G4std::ostream& os) {
+void FGeometryInit::PrintAssignmat(std::ostream& os) {
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "==> Flugg FGeometryInit::PrintAssignmat()" << G4endl;
 #endif
@@ -726,7 +737,7 @@ void FGeometryInit::PrintAssignmat(G4std::ostream& os) {
     
     //Print card
     os << setw10 << "ASSIGNMAT ";
-    os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+    os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
     os << setw10 << setfixed << G4double(matIndex);
     os << setw10 << setfixed << G4double(iFlukaRegion);
     os << setw10 << "0.0";
@@ -742,7 +753,7 @@ void FGeometryInit::PrintAssignmat(G4std::ostream& os) {
 }
 
 
-void FGeometryInit::PrintMagneticField(G4std::ostream& os) {
+void FGeometryInit::PrintMagneticField(std::ostream& os) {
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "==> Flugg FGeometryInit::PrintMagneticField()" << G4endl;
 #endif
@@ -771,9 +782,9 @@ void FGeometryInit::PrintMagneticField(G4std::ostream& os) {
 	os << setw10 << "";
 	os << setw10 << "";
 	os << setw10 << "";
-	os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
+	os.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
 	os << setw10 << setfixed
-	   << G4std::setprecision(4) << B[0]
+	   << std::setprecision(4) << B[0]
 	   << setw10 << B[1]
 	   << setw10 << B[2]
 	   << G4endl;
@@ -811,11 +822,23 @@ int FGeometryInit::CurrentVolOffID(int ir, int off, int& copyNo)
     G4VPhysicalVolume*     physicalvol = (*pVolStore)[ir- 1];
     G4VPhysicalVolume*     mother = physicalvol; 
 
-    int level = off;
-    while (level > 0) { 
-	if (mother) mother = mother->GetMother();
-	level--;
-    }
+    int index;
+//============================================================================
+    if (mother) {
+  // Check touchable depth
+  //
+       if (ptrTouchHist->GetHistoryDepth() < off) {
+          mother = 0;
+       } else {                                                                                                                                                             
+          // Get the off-th mother
+          index = ptrTouchHist->GetHistoryDepth() - off;
+          // in the touchable history volumes are ordered
+          // from top volume up to mother volume;
+          // the touchable volume is not in the history	                                                                                
+          mother = ptrTouchHist->GetHistory()->GetVolume(index);
+       }
+    }	
+//============================================================================
     
     int id;
     
@@ -856,8 +879,10 @@ void  FGeometryInit::Gmtod(double* xm, double* xd, int iflag)
     
     if (iflag == 1) {
 	pGlob *= 10.0; // in mm
-	pLoc = 
-	    ptrNavig->ComputeLocalPoint(pGlob);
+// change because of geant 4 6.0
+//	pLoc = ptrNavig->ComputeLocalPoint(pGlob);
+        pLoc = ptrNavig->GetGlobalToLocalTransform().TransformPoint(pGlob);
+
 	pLoc /= 10.0;  // in cm
     } else if (iflag == 2) {
 	pLoc = 

@@ -7,8 +7,8 @@
 #include <map>
 
 class FlukaCompound;
-typedef G4std::map<G4String, FlukaCompound*, G4std::less<G4String> > FlukaCompoundsTable;
-typedef G4std::map<G4String, FlukaCompound*, G4std::less<G4String> >::const_iterator FlukaCompoundsIterator;
+typedef std::map<G4String, FlukaCompound*, std::less<G4String> > FlukaCompoundsTable;
+typedef std::map<G4String, FlukaCompound*, std::less<G4String> >::const_iterator FlukaCompoundsIterator;
 
 class FlukaCompound {
 public:
@@ -45,7 +45,7 @@ public:
   //Static
   static inline const FlukaCompoundsTable* GetCompoundTable();
   static inline const FlukaCompound* GetFlukaCompound(const G4String& name);
-  static G4std::ostream& PrintCompounds(G4std::ostream& os);
+  static std::ostream& PrintCompounds(std::ostream& os);
 
 public:
   G4int     fNMaterials; //Number of elements in total
@@ -69,7 +69,7 @@ inline const FlukaCompound* FlukaCompound::GetFlukaCompound(const G4String& name
 
 
 //Ostream operator
-G4std::ostream& operator<<(G4std::ostream& os, const FlukaCompound& flucomp);
+std::ostream& operator<<(std::ostream& os, const FlukaCompound& flucomp);
 
 #endif
 
