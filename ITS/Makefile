@@ -39,7 +39,8 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSstatistics.cxx AliITSstatistics2.cxx \
                 AliITStrack.cxx AliITStracking.cxx AliITSiotrack.cxx \
 		AliITSRad.cxx \
-		AliITSvtest.cxx		
+		AliITSvtest.cxx	\
+                AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx	
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 #		AliITStrack.cxx
 
