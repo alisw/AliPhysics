@@ -182,63 +182,64 @@ Bool_t AliReconstruction::Run()
   }
   if (!fRunTracking && fFillESD.IsNull()) return kTRUE;
 
-  // get loaders and trackers
-  fITSLoader = fRunLoader->GetLoader("ITSLoader");
-  if (!fITSLoader) {
-    Error("Run", "no ITS loader found");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
+  if (fRunTracking) {
+    // get loaders and trackers
+    fITSLoader = fRunLoader->GetLoader("ITSLoader");
+    if (!fITSLoader) {
+      Error("Run", "no ITS loader found");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    fITSTracker = NULL;
+    if (aliRun->GetDetector("ITS")) {
+      fITSTracker = aliRun->GetDetector("ITS")->CreateTracker();
+    }
+    if (!fITSTracker) {
+      Error("Run", "couldn't create a tracker for ITS");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    
+    fTPCLoader = fRunLoader->GetLoader("TPCLoader");
+    if (!fTPCLoader) {
+      Error("Run", "no TPC loader found");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    fTPCTracker = NULL;
+    if (aliRun->GetDetector("TPC")) {
+      fTPCTracker = aliRun->GetDetector("TPC")->CreateTracker();
+    }
+    if (!fTPCTracker) {
+      Error("Run", "couldn't create a tracker for TPC");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    
+    fTRDLoader = fRunLoader->GetLoader("TRDLoader");
+    if (!fTRDLoader) {
+      Error("Run", "no TRD loader found");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    fTRDTracker = NULL;
+    if (aliRun->GetDetector("TRD")) {
+      fTRDTracker = aliRun->GetDetector("TRD")->CreateTracker();
+    }
+    if (!fTRDTracker) {
+      Error("Run", "couldn't create a tracker for TRD");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    
+    fTOFLoader = fRunLoader->GetLoader("TOFLoader");
+    if (!fTOFLoader) {
+      Error("Run", "no TOF loader found");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    fTOFTracker = NULL;
+    if (aliRun->GetDetector("TOF")) {
+      fTOFTracker = aliRun->GetDetector("TOF")->CreateTracker();
+    }
+    if (!fTOFTracker) {
+      Error("Run", "couldn't create a tracker for TOF");
+      if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
   }
-  fITSTracker = NULL;
-  if (aliRun->GetDetector("ITS")) {
-    fITSTracker = aliRun->GetDetector("ITS")->CreateTracker();
-  }
-  if (!fITSTracker) {
-    Error("Run", "couldn't create a tracker for ITS");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
-  }
-
-  fTPCLoader = fRunLoader->GetLoader("TPCLoader");
-  if (!fTPCLoader) {
-    Error("Run", "no TPC loader found");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
-  }
-  fTPCTracker = NULL;
-  if (aliRun->GetDetector("TPC")) {
-    fTPCTracker = aliRun->GetDetector("TPC")->CreateTracker();
-  }
-  if (!fTPCTracker) {
-    Error("Run", "couldn't create a tracker for TPC");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
-  }
-
-  fTRDLoader = fRunLoader->GetLoader("TRDLoader");
-  if (!fTRDLoader) {
-    Error("Run", "no TRD loader found");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
-  }
-  fTRDTracker = NULL;
-  if (aliRun->GetDetector("TRD")) {
-    fTRDTracker = aliRun->GetDetector("TRD")->CreateTracker();
-  }
-  if (!fTRDTracker) {
-    Error("Run", "couldn't create a tracker for TRD");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
-  }
-
-  fTOFLoader = fRunLoader->GetLoader("TOFLoader");
-  if (!fTOFLoader) {
-    Error("Run", "no TOF loader found");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
-  }
-  fTOFTracker = NULL;
-  if (aliRun->GetDetector("TOF")) {
-    fTOFTracker = aliRun->GetDetector("TOF")->CreateTracker();
-  }
-  if (!fTOFTracker) {
-    Error("Run", "couldn't create a tracker for TOF");
-    if (fStopOnError) {CleanUp(); return kFALSE;}
-  }
-
   // create the ESD output file
   TFile* file = TFile::Open("AliESDs.root", "RECREATE");
   if (!file->IsOpen()) {
