@@ -650,10 +650,15 @@ void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
   // This function calculates dE/dX within the "low" and "up" cuts.
   // Origin: Boris Batyunya, JINR, Boris.Batiounia@cern.ch 
   //-----------------------------------------------------------------
-  Int_t i;
-  Int_t nc=4;
   // The clusters order is: SSD-2, SSD-1, SDD-2, SDD-1, SPD-2, SPD-1
-  // Take only SSD and SDD
+
+  Int_t i;
+  Int_t nc=0;
+  for (i=0; i<GetNumberOfClusters(); i++) {
+    Int_t idx=GetClusterIndex(i);
+    idx=(idx&0xf0000000)>>28;
+    if (idx>1) nc++; // Take only SSD and SDD
+  }
 
   Int_t swap;//stupid sorting
   do {
@@ -671,7 +676,7 @@ void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
                                            // nu=2
   Float_t dedx=0;
   for (i=nl; i<nu; i++) dedx += fdEdxSample[i];
-  dedx /= (nu-nl);
+  if (nu-nl>0) dedx /= (nu-nl);
 
   SetdEdx(dedx);
 }

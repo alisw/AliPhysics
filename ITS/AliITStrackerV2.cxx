@@ -84,6 +84,17 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
 
   Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV}; 
   SetVertex(xyz,ers);
+
+  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
+  fLastLayerToTrackTo=kLastLayerToTrackTo;
+
+}
+
+void AliITStrackerV2::SetLayersNotToSkip(Int_t *l) {
+  //--------------------------------------------------------------------
+  //This function set masks of the layers which must be not skipped
+  //--------------------------------------------------------------------
+  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=l[i];
 }
 
 Int_t AliITStrackerV2::LoadClusters() {
@@ -251,7 +262,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
           while (TakeNextProlongation()) FollowProlongation();
        }
 
-       if (fBestTrack.GetNumberOfClusters() < kMaxLayer-kLayersToSkip)continue;
+       if (fBestTrack.GetNumberOfClusters() == 0) continue;
 
        if (fConstraint[fPass]) {
 	  if (!RefitAt(3.7, t, &fBestTrack)) continue;
@@ -504,9 +515,7 @@ void AliITStrackerV2::FollowProlongation() {
   //--------------------------------------------------------------------
   //This function finds a track prolongation 
   //--------------------------------------------------------------------
-  Int_t tryAgain=kLayersToSkip;
-
-  while (fI) {
+  while (fI>fLastLayerToTrackTo) {
     Int_t i=fI-1;
 
     AliITSlayer &layer=fLayers[i];
@@ -520,7 +529,7 @@ void AliITStrackerV2::FollowProlongation() {
        if (i==1) {rs=9.; d=0.0097; x0=42;}
        if (!fTrackToFollow.PropagateTo(rs,d,x0)) {
 	 //Warning("FollowProlongation","propagation failed !\n");
-         break;
+         return;
        }
     }
 
@@ -528,13 +537,13 @@ void AliITStrackerV2::FollowProlongation() {
     Double_t x,y,z;  
     if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) {
       //Warning("FollowProlongation","failed to estimate track !\n");
-      break;
+      return;
     }
     Double_t phi=TMath::ATan2(y,x);
     Int_t idet=layer.FindDetectorIndex(phi,z);
     if (idet<0) {
       //Warning("FollowProlongation","failed to find a detector !\n");
-      break;
+      return;
     }
 
     //propagate to the intersection
@@ -542,7 +551,7 @@ void AliITStrackerV2::FollowProlongation() {
     phi=det.GetPhi();
     if (!fTrackToFollow.Propagate(phi,det.GetR())) {
       //Warning("FollowProlongation","propagation failed !\n");
-      break;
+      return;
     }
     fTrackToFollow.SetDetectorIndex(idet);
 
@@ -560,16 +569,16 @@ void AliITStrackerV2::FollowProlongation() {
     if (dz < 0.5*TMath::Abs(track.GetTgl())) dz=0.5*TMath::Abs(track.GetTgl());
     if (dz > kMaxRoad) {
       //Warning("FollowProlongation","too broad road in Z !\n");
-      break;
+      return;
     }
 
-    if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+dz) break;
+    if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+dz) return;
 
     //Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
     if (dy < 0.5*TMath::Abs(track.GetSnp())) dy=0.5*TMath::Abs(track.GetSnp());
     if (dy > kMaxRoad) {
       //Warning("FollowProlongation","too broad road in Y !\n");
-      break;
+      return;
     }
 
     Double_t zmin=track.GetZ() - dz; 
@@ -580,8 +589,8 @@ void AliITStrackerV2::FollowProlongation() {
     fI--;
 
     //take another prolongation
-    if (!TakeNextProlongation()) if (!tryAgain--) break;
-    tryAgain=kLayersToSkip;
+    if (!TakeNextProlongation()) 
+       if (fLayersNotToSkip[fI]) return;
 
   } 
 

@@ -31,6 +31,9 @@ public:
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
 
+  void SetLastLayerToTrackTo(Int_t l=0) {fLastLayerToTrackTo=l;} 
+  void SetLayersNotToSkip(Int_t *l);
+
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
 
   class AliITSdetector {
@@ -104,6 +107,9 @@ private:
   AliITStrackV2 fTrackToFollow;          // followed track
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
+
+  Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
+  Int_t fLastLayerToTrackTo;             // the innermost layer to track to
 
   ClassDef(AliITStrackerV2,1)   //ITS tracker V2
 };

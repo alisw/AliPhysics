@@ -1,10 +1,10 @@
 #ifndef __CINT__
-  #include <Riostream.h>
-  #include "AliITSgeom.h"
-  #include "AliITStrackerV2.h"
-
+  #include "Riostream.h"
   #include "TFile.h"
   #include "TStopwatch.h"
+
+  #include "AliITSgeom.h"
+  #include "AliITStrackerV2.h"
 #endif
 
 Int_t AliITSFindTracksV2(Int_t nev=1) {  //number of events to process
@@ -30,9 +30,12 @@ Int_t AliITSFindTracksV2(Int_t nev=1) {  //number of events to process
      tracker.SetEventNumber(i);
      //Double_t xyz[]={0.,0.,0.}, ers[]={0.,0.,0.01};//main vertex with errors
      //tracker.SetVertex(xyz,ers);
-     //Int_t flag[]={1};                                   //some default flags
-     //flag[0]= 0; tracker.SetupFirstPass(flag);           //no constraint
-     //flag[0]=-1; tracker.SetupSecondPass(flag);          //skip second pass
+     //Int_t flag[]={1};                                 //some default flags
+     //flag[0]= 0; tracker.SetupFirstPass(flag);         //no constraint
+     //flag[0]=-1; tracker.SetupSecondPass(flag);        //skip second pass
+     //tracker.SetLastLayerToTrackTo(2);            //track down to the layer 2
+     //Int_t mask[6]={1,1,0,0,0,0};                 //not to skip pixels !
+     //tracker.SetLayersNotToSkip(mask);            //
      rc=tracker.Clusters2Tracks(in,out);
    }
    timer.Stop(); timer.Print();
