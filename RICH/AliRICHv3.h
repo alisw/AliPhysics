@@ -6,6 +6,8 @@
 
 #include "AliRICH.h"
 
+class AliRICHSDigit;
+
 class AliRICHv3 : public AliRICH 
 {    
 public:
@@ -18,6 +20,18 @@ public:
   virtual void   CreateGeometry();  
   virtual void   BuildGeometry();   
   virtual void   Init();            // Makes nothing for a while          
+          void   DiagnosticsFE(Int_t evNumber1,Int_t evNumber2);
+          void   DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2);
+         Int_t   Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res);
+  void     SetGeometryModel(Int_t c,AliRICHGeometry *pRICHGeo)                    {C(c)->SetGeometryModel(pRICHGeo);}
+  void     SetSegmentationModel(Int_t c, AliSegmentation *pAliSeg)                {C(c)->SetSegmentationModel(pAliSeg);}
+  void     SetResponseModel(Int_t c, AliRICHResponse *pRICHRes)                   {C(c)->SetResponseModel(pRICHRes);}
+  void     SetReconstructionModel(Int_t c, AliRICHClusterFinder *pRICHReco)       {C(c)->SetReconstructionModel(pRICHReco);}
+  AliRICHGeometry* GetGeometryModel(Int_t c=1)                               const{return C(c)->GetGeometryModel();}    
+  AliSegmentation* GetSegmentationModel(Int_t c=1)                           const{return C(c)->GetSegmentationModel();}
+  AliRICHResponse* GetResponseModel(Int_t c=1)                               const{return C(c)->GetResponseModel();}
+  void MakeBranch(Option_t* option);//virtual
+  void SetTreeAddress();//virtual
 private:
   Double_t* RotateXY(const Double_t* r, Double_t a);//Rotation in the X-Y plane in G3 notation
   ClassDef(AliRICHv3,1)  //RICH full version, configurable with azimuthal rotation	

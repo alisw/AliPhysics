@@ -24,6 +24,11 @@
 #include <TVector3.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h> //for kNuetron
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TStyle.h>
 
 #include "AliConst.h"
 #include "AliMagF.h"
@@ -33,6 +38,11 @@
 #include "AliRICHSegmentationV1.h"
 #include "AliRICHv3.h"
 #include "AliRun.h"
+#include "AliRICHRecHit3D.h"
+#include "AliRICHRawCluster.h"
+#include "AliRICHDigit.h"
+#include "AliRICHRecHit1D.h"
+
 
 ClassImp(AliRICHv3)
 
@@ -55,13 +65,11 @@ AliRICHv3::AliRICHv3(const char *sName, const char *sTitle)
    AliRICHSegmentationV1 *pRICHSegmentation=new AliRICHSegmentationV1;     // ??? to be moved to AlRICHChamber::named ctor
    AliRICHResponseV0     *pRICHResponse    =new AliRICHResponseV0;         // ??? to be moved to AlRICHChamber::named ctor
      
-   fChambers = new TObjArray(kNCH);
-   for (Int_t i=0; i<kNCH; i++){    
-      fChambers->AddAt(new AliRICHChamber,i); // ??? to be changed to named ctor of AliRICHChamber
+   for (Int_t i=1; i<=kNCH; i++){    
       SetGeometryModel(i,pRICHGeometry);
       SetSegmentationModel(i,pRICHSegmentation);
       SetResponseModel(i,pRICHResponse);
-      ((AliRICHChamber*)fChambers->At(i))->Init(i); // ??? to be removed     
+      C(i)->Init(i); // ??? to be removed     
    }
   if(GetDebug())Info("named ctor","Stop.");
 }//AliRICHv3::ctor(const char *pcName, const char *pcTitle)
@@ -72,7 +80,7 @@ AliRICHv3::~AliRICHv3()
    if(GetDebug()) cout<<ClassName()<<"::dtor()>\n";
       
    if(fChambers) {
-     AliRICHChamber *ch =C(0); 
+     AliRICHChamber *ch =C(1); 
      if(ch) {
        delete ch->GetGeometryModel();
        delete ch->GetResponseModel();
@@ -1082,7 +1090,7 @@ void AliRICHv3::StepManager()
 		    cherenkovLoss  += destep;
 		    ckovData[7]=cherenkovLoss;
 		    
-		    ckovData[17] = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);//for photons in CsI 
+		    ckovData[17] = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kPhoton);//for photons in CsI 
 		    		    
 		    if (fNsdigits > (Int_t)ckovData[8]) {
 			ckovData[8]= ckovData[8]+1;
@@ -1291,3 +1299,1853 @@ void AliRICHv3::StepManager()
       }//is MIP?
     /*************************************************End of MIP treatment**************************************/
 }//void AliRICHv3::StepManager()
+//__________________________________________________________________________________________________
+Int_t AliRICHv3::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
+{//calls the charge disintegration method of the current chamber and adds all generated sdigits to the list of digits
+   
+   Int_t iChamber=kBad,iPadX=kBad,iPadY=kBad,iAdc=kBad,iTrack=kBad;
+   Float_t list[4][500];
+   Int_t iNdigits;
+  ((AliRICHChamber*)fChambers->At(idvol))->DisIntegration(eloss, xhit, yhit, iNdigits, list, res);
+    Int_t ic=0;
+    
+  for(Int_t i=0; i<iNdigits; i++) {
+    if(Int_t(list[0][i]) > 0) {
+	    ic++;
+	    iAdc = Int_t(list[0][i]);
+	    iPadX = Int_t(list[1][i]);
+	    iPadY = Int_t(list[2][i]);
+	    iChamber = Int_t(list[3][i]);
+	    AddSDigit(iChamber,iPadX,iPadY,iAdc,iTrack);
+	}
+  }
+    
+  if(fLoader->TreeS()){
+    fLoader->TreeS()->Fill();
+    fLoader->WriteSDigits("OVERWRITE");
+  }
+   return iNdigits;
+}//Int_t AliRICHv3::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res)
+//__________________________________________________________________________________________________
+void AliRICHv3::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
+{
+  
+  Int_t NpadX = 162;                 // number of pads on X
+  Int_t NpadY = 162;                 // number of pads on Y
+  
+  Int_t Pad[162][162];
+  for (Int_t i=0;i<NpadX;i++) {
+    for (Int_t j=0;j<NpadY;j++) {
+      Pad[i][j]=0;
+    }
+  }
+  
+  //  Create some histograms
+
+  TH1F *pionspectra1 = new TH1F("pionspectra1","Pion Spectra",200,-4,2);
+  TH1F *pionspectra2 = new TH1F("pionspectra2","Pion Spectra",200,-4,2);
+  TH1F *pionspectra3 = new TH1F("pionspectra3","Pion Spectra",200,-4,2);
+  TH1F *protonspectra1 = new TH1F("protonspectra1","Proton Spectra",200,-4,2);
+  TH1F *protonspectra2 = new TH1F("protonspectra2","Proton Spectra",200,-4,2);
+  TH1F *protonspectra3 = new TH1F("protonspectra3","Proton Spectra",200,-4,2);
+  TH1F *kaonspectra1 = new TH1F("kaonspectra1","Kaon Spectra",100,-4,2);
+  TH1F *kaonspectra2 = new TH1F("kaonspectra2","Kaon Spectra",100,-4,2);
+  TH1F *kaonspectra3 = new TH1F("kaonspectra3","Kaon Spectra",100,-4,2);
+  TH1F *electronspectra1 = new TH1F("electronspectra1","Electron Spectra",100,-4,2);
+  TH1F *electronspectra2 = new TH1F("electronspectra2","Electron Spectra",100,-4,2);
+  TH1F *electronspectra3 = new TH1F("electronspectra3","Electron Spectra",100,-4,2);
+  TH1F *muonspectra1 = new TH1F("muonspectra1","Muon Spectra",100,-4,2);
+  TH1F *muonspectra2 = new TH1F("muonspectra2","Muon Spectra",100,-4,2);
+  TH1F *muonspectra3 = new TH1F("muonspectra3","Muon Spectra",100,-4,2);
+  TH1F *neutronspectra1 = new TH1F("neutronspectra1","Neutron Spectra",100,-4,2);
+  TH1F *neutronspectra2 = new TH1F("neutronspectra2","Neutron Spectra",100,-4,2);
+  TH1F *neutronspectra3 = new TH1F("neutronspectra2","Neutron Spectra",100,-4,2);
+  TH1F *chargedspectra1 = new TH1F("chargedspectra1","Charged particles above 1 GeV Spectra",100,-1,3);
+  TH1F *chargedspectra2 = new TH1F("chargedspectra2","Charged particles above 1 GeV Spectra",100,-1,3);
+  TH1F *chargedspectra3 = new TH1F("chargedspectra2","Charged particles above 1 GeV Spectra",100,-1,3);
+  TH1F *pionptspectrafinal = new TH1F("pionptspectrafinal","Primary Pions Transverse Momenta at HMPID",20,0,5);
+  TH1F *pionptspectravertex = new TH1F("pionptspectravertex","Primary Pions Transverse Momenta at vertex",20,0,5);
+  TH1F *kaonptspectrafinal = new TH1F("kaonptspectrafinal","Primary Kaons Transverse Momenta at HMPID",20,0,5);
+  TH1F *kaonptspectravertex = new TH1F("kaonptspectravertex","Primary Kaons Transverse Momenta at vertex",20,0,5);
+  //TH1F *hitsPhi = new TH1F("hitsPhi","Distribution of phi angle of incidence",100,-180,180);
+  TH1F *hitsTheta = new TH1F("hitsTheta","Distribution of Theta angle of incidence, all tracks",100,0,50);
+  TH1F *hitsTheta500MeV = new TH1F("hitsTheta500MeV","Distribution of Theta angle of incidence, 0.5-1 GeV primary tracks",100,0,50);
+  TH1F *hitsTheta1GeV = new TH1F("hitsTheta1GeV","Distribution of Theta angle of incidence, 1-2 GeV primary tracks",100,0,50);
+  TH1F *hitsTheta2GeV = new TH1F("hitsTheta2GeV","Distribution of Theta angle of incidence, 2-3 GeV primary tracks",100,0,50);
+  TH1F *hitsTheta3GeV = new TH1F("hitsTheta3GeV","Distribution of Theta angle of incidence, >3 GeV primary tracks",100,0,50);
+  TH2F *production = new TH2F("production","Mother production vertices",100,-300,300,100,0,600);
+   
+   
+   
+
+//   Start loop over events 
+
+  Int_t pion=0, kaon=0, proton=0, electron=0, positron=0, neutron=0, highneutrons=0, muon=0;
+  Int_t chargedpions=0,primarypions=0,highprimarypions=0,chargedkaons=0,primarykaons=0,highprimarykaons=0;
+  Int_t photons=0, primaryphotons=0, highprimaryphotons=0;
+  TRandom* random=0;
+
+   for (int nev=0; nev<= evNumber2; nev++) {
+       Int_t nparticles = gAlice->GetEvent(nev);
+       
+
+       if (nev < evNumber1) continue;
+       if (nparticles <= 0) return;
+       
+// Get pointers to RICH detector and Hits containers
+       
+       AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH");
+     
+       TTree *treeH = TreeH();
+       Int_t ntracks =(Int_t) treeH->GetEntries();
+            
+// Start loop on tracks in the hits containers
+       
+       for (Int_t track=0; track<ntracks;track++) {
+	   printf ("Processing Track: %d\n",track);
+	   gAlice->ResetHits();
+	   treeH->GetEvent(track);
+	   	   	   
+	   for(AliRICHhit* mHit=(AliRICHhit*)pRICH->FirstHit(-1); 
+	       mHit;
+	       mHit=(AliRICHhit*)pRICH->NextHit()) 
+	     {
+	       //Int_t nch  = mHit->fChamber;              // chamber number
+	       //Float_t x  = mHit->X();                    // x-pos of hit
+	       //Float_t y  = mHit->Z();                    // y-pos
+	       //Float_t z  = mHit->Y();
+	       //Float_t phi = mHit->Phi();                 //Phi angle of incidence
+	       Float_t theta = mHit->Theta();             //Theta angle of incidence
+	       Float_t px = mHit->MomX();
+	       Float_t py = mHit->MomY();
+	       Int_t index = mHit->Track();
+	       Int_t particle = (Int_t)(mHit->Particle());    
+	       Float_t R;
+	       Float_t PTfinal;
+	       Float_t PTvertex;
+
+	      TParticle *current = gAlice->Particle(index);
+	      
+	      //Float_t energy=current->Energy(); 
+
+	      R=TMath::Sqrt(current->Vx()*current->Vx() + current->Vy()*current->Vy());
+	      PTfinal=TMath::Sqrt(px*px + py*py);
+	      PTvertex=TMath::Sqrt(current->Px()*current->Px() + current->Py()*current->Py());
+	      
+	      
+
+	      if (TMath::Abs(particle) < 10000000)
+		{
+		  hitsTheta->Fill(theta,(float) 1);
+		  if (R<5)
+		    {
+		      if (PTvertex>.5 && PTvertex<=1)
+			{
+			  hitsTheta500MeV->Fill(theta,(float) 1);
+			}
+		      if (PTvertex>1 && PTvertex<=2)
+			{
+			  hitsTheta1GeV->Fill(theta,(float) 1);
+			}
+		      if (PTvertex>2 && PTvertex<=3)
+			{
+			  hitsTheta2GeV->Fill(theta,(float) 1);
+			}
+		      if (PTvertex>3)
+			{
+			  hitsTheta3GeV->Fill(theta,(float) 1);
+			}
+		    }
+		  
+		}
+
+	      //if (nch == 3)
+		//{
+	      
+	      if (TMath::Abs(particle) < 50000051)
+		{
+		  //if (TMath::Abs(particle) == 50000050 || TMath::Abs(particle) == 2112)
+		  if (TMath::Abs(particle) == 2112 || TMath::Abs(particle) == 50000050)
+		    {
+		      //gMC->Rndm(&random, 1);
+		      if (random->Rndm() < .1)
+			production->Fill(current->Vz(),R,(float) 1);
+		      if (TMath::Abs(particle) == 50000050)
+			//if (TMath::Abs(particle) > 50000000)
+			{
+			  photons +=1;
+			  if (R<5)
+			    {
+			      primaryphotons +=1;
+			      if (current->Energy()>0.001)
+				highprimaryphotons +=1;
+			    }
+			}	
+		      if (TMath::Abs(particle) == 2112)
+			{
+			  neutron +=1;
+			  if (current->Energy()>0.0001)
+			    highneutrons +=1;
+			}
+		    }
+		  if (TMath::Abs(particle) < 50000000)
+		    {
+		      production->Fill(current->Vz(),R,(float) 1);
+		    }
+		  //mip->Fill(x,y,(float) 1);
+		}
+	      
+	      if (TMath::Abs(particle)==211 || TMath::Abs(particle)==111)
+		{
+		  if (R<5)
+		    {
+		      pionptspectravertex->Fill(PTvertex,(float) 1);
+		      pionptspectrafinal->Fill(PTfinal,(float) 1);
+		    }
+		}
+	      
+	      if (TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
+		  || TMath::Abs(particle)==311)
+		{
+		  if (R<5)
+		    {
+		      kaonptspectravertex->Fill(PTvertex,(float) 1);
+		      kaonptspectrafinal->Fill(PTfinal,(float) 1);
+		    }
+		}
+	      
+	      
+	      if (TMath::Abs(particle)==211 || TMath::Abs(particle)==111)
+		{
+		  pionspectra1->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (current->Vx()>5 && current->Vy()>5 && current->Vz()>5)
+		    pionspectra2->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (R>250 && R<450)
+		    {
+		      pionspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		    }
+		  pion +=1;
+		  if (TMath::Abs(particle)==211)
+		    {
+		      chargedpions +=1;
+		      if (R<5)
+			{
+			  primarypions +=1;
+			  if (current->Energy()>1)
+			    highprimarypions +=1;
+			}
+		    }	
+		}
+	      if (TMath::Abs(particle)==2212)
+		{
+		  protonspectra1->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  //ptspectra->Fill(Pt,(float) 1);
+		  if (current->Vx()>5 && current->Vy()>5 && current->Vz()>5)
+		    protonspectra2->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (R>250 && R<450)
+		    protonspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  proton +=1;
+		}
+	      if (TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
+		  || TMath::Abs(particle)==311)
+		{
+		  kaonspectra1->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  //ptspectra->Fill(Pt,(float) 1);
+		  if (current->Vx()>5 && current->Vy()>5 && current->Vz()>5)
+		    kaonspectra2->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (R>250 && R<450)
+		    kaonspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  kaon +=1;
+		  if (TMath::Abs(particle)==321)
+		    {
+		      chargedkaons +=1;
+		      if (R<5)
+			{
+			  primarykaons +=1;
+			  if (current->Energy()>1)
+			    highprimarykaons +=1;
+			}
+		    }
+		}
+	      if (TMath::Abs(particle)==11)
+		{
+		  electronspectra1->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  //ptspectra->Fill(Pt,(float) 1);
+		  if (current->Vx()>5 && current->Vy()>5 && current->Vz()>5)
+		    electronspectra2->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (R>250 && R<450)
+		    electronspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (particle == 11)
+		    electron +=1;
+		  if (particle == -11)
+		    positron +=1;
+		}
+	      if (TMath::Abs(particle)==13)
+		{
+		  muonspectra1->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  //ptspectra->Fill(Pt,(float) 1);
+		  if (current->Vx()>5 && current->Vy()>5 && current->Vz()>5)
+		    muonspectra2->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (R>250 && R<450)
+		    muonspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  muon +=1;
+		}
+	      if (TMath::Abs(particle)==2112)
+		{
+		  neutronspectra1->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  //ptspectra->Fill(Pt,(float) 1);
+		  if (current->Vx()>5 && current->Vy()>5 && current->Vz()>5)
+		    neutronspectra2->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		  if (R>250 && R<450)
+		    {
+		      neutronspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		    }
+		  neutron +=1;
+		}
+	      if(TMath::Abs(particle)==211 || TMath::Abs(particle)==2212 || TMath::Abs(particle)==321)
+		{
+		  if (current->Energy()-current->GetCalcMass()>1)
+		    {
+		      chargedspectra1->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		      if (current->Vx()>5 && current->Vy()>5 && current->Vz()>5)
+			chargedspectra2->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		      if (R>250 && R<450)
+			chargedspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
+		    }
+		}
+	      // Fill the histograms
+	      //Nh1+=nhits;
+	      //h->Fill(x,y,(float) 1);
+	      //}
+	      //}
+	   }          
+	   
+       }
+       
+   }
+   //   }
+
+   TStyle *mystyle=new TStyle("Plain","mystyle");
+   mystyle->SetPalette(1,0);
+   mystyle->cd();
+   
+   //Create canvases, set the view range, show histograms
+
+    TCanvas *c2 = new TCanvas("c2","Angles of incidence",150,150,100,150);
+    c2->Divide(2,2);
+    //c2->SetFillColor(42);
+    
+    c2->cd(1);
+    hitsTheta500MeV->SetFillColor(5);
+    hitsTheta500MeV->Draw();
+    c2->cd(2);
+    hitsTheta1GeV->SetFillColor(5);
+    hitsTheta1GeV->Draw();
+    c2->cd(3);
+    hitsTheta2GeV->SetFillColor(5);
+    hitsTheta2GeV->Draw();
+    c2->cd(4);
+    hitsTheta3GeV->SetFillColor(5);
+    hitsTheta3GeV->Draw();
+    
+            
+   
+    TCanvas *c15 = new TCanvas("c15","Mothers Production Vertices",50,50,600,600);
+    c15->cd();
+    production->SetFillColor(42);
+    production->SetXTitle("z (m)");
+    production->SetYTitle("R (m)");
+    production->Draw();
+
+    TCanvas *c10 = new TCanvas("c10","Pt Spectra",50,50,600,700);
+    c10->Divide(2,2);
+    c10->cd(1);
+    pionptspectravertex->SetFillColor(5);
+    pionptspectravertex->SetXTitle("Pt (GeV)");
+    pionptspectravertex->Draw();
+    c10->cd(2);
+    pionptspectrafinal->SetFillColor(5);
+    pionptspectrafinal->SetXTitle("Pt (GeV)");
+    pionptspectrafinal->Draw();
+    c10->cd(3);
+    kaonptspectravertex->SetFillColor(5);
+    kaonptspectravertex->SetXTitle("Pt (GeV)");
+    kaonptspectravertex->Draw();
+    c10->cd(4);
+    kaonptspectrafinal->SetFillColor(5);
+    kaonptspectrafinal->SetXTitle("Pt (GeV)");
+    kaonptspectrafinal->Draw();
+   
+  
+   TCanvas *c16 = new TCanvas("c16","Particles Spectra II",150,150,600,350);
+   c16->Divide(2,1);
+   
+   c16->cd(1);
+   //TCanvas *c13 = new TCanvas("c13","Electron Spectra",400,10,600,700);
+   electronspectra1->SetFillColor(5);
+   electronspectra1->SetXTitle("log(GeV)");
+   electronspectra2->SetFillColor(46);
+   electronspectra2->SetXTitle("log(GeV)");
+   electronspectra3->SetFillColor(10);
+   electronspectra3->SetXTitle("log(GeV)");
+   //c13->SetLogx();
+   electronspectra1->Draw();
+   electronspectra2->Draw("same");
+   electronspectra3->Draw("same");
+   
+   c16->cd(2);
+   //TCanvas *c14 = new TCanvas("c14","Muon Spectra",400,10,600,700);
+   muonspectra1->SetFillColor(5);
+   muonspectra1->SetXTitle("log(GeV)");
+   muonspectra2->SetFillColor(46);
+   muonspectra2->SetXTitle("log(GeV)");
+   muonspectra3->SetFillColor(10);
+   muonspectra3->SetXTitle("log(GeV)");
+   //c14->SetLogx();
+   muonspectra1->Draw();
+   muonspectra2->Draw("same");
+   muonspectra3->Draw("same");
+   
+   //c16->cd(3);
+   //TCanvas *c16 = new TCanvas("c16","Neutron Spectra",400,10,600,700);
+   //neutronspectra1->SetFillColor(42);
+   //neutronspectra1->SetXTitle("log(GeV)");
+   //neutronspectra2->SetFillColor(46);
+   //neutronspectra2->SetXTitle("log(GeV)");
+   //neutronspectra3->SetFillColor(10);
+   //neutronspectra3->SetXTitle("log(GeV)");
+   //c16->SetLogx();
+   //neutronspectra1->Draw();
+   //neutronspectra2->Draw("same");
+   //neutronspectra3->Draw("same");
+
+   TCanvas *c9 = new TCanvas("c9","Particles Spectra",150,150,600,700);
+   //TCanvas *c9 = new TCanvas("c9","Pion Spectra",400,10,600,700);
+   c9->Divide(2,2);
+   
+   c9->cd(1);
+   pionspectra1->SetFillColor(5);
+   pionspectra1->SetXTitle("log(GeV)");
+   pionspectra2->SetFillColor(46);
+   pionspectra2->SetXTitle("log(GeV)");
+   pionspectra3->SetFillColor(10);
+   pionspectra3->SetXTitle("log(GeV)");
+   //c9->SetLogx();
+   pionspectra1->Draw();
+   pionspectra2->Draw("same");
+   pionspectra3->Draw("same");
+   
+   c9->cd(2);
+   //TCanvas *c10 = new TCanvas("c10","Proton Spectra",400,10,600,700);
+   protonspectra1->SetFillColor(5);
+   protonspectra1->SetXTitle("log(GeV)");
+   protonspectra2->SetFillColor(46);
+   protonspectra2->SetXTitle("log(GeV)");
+   protonspectra3->SetFillColor(10);
+   protonspectra3->SetXTitle("log(GeV)");
+   //c10->SetLogx();
+   protonspectra1->Draw();
+   protonspectra2->Draw("same");
+   protonspectra3->Draw("same");
+   
+   c9->cd(3);
+   //TCanvas *c11 = new TCanvas("c11","Kaon Spectra",400,10,600,700); 
+   kaonspectra1->SetFillColor(5);
+   kaonspectra1->SetXTitle("log(GeV)");
+   kaonspectra2->SetFillColor(46);
+   kaonspectra2->SetXTitle("log(GeV)");
+   kaonspectra3->SetFillColor(10);
+   kaonspectra3->SetXTitle("log(GeV)");
+   //c11->SetLogx();
+   kaonspectra1->Draw();
+   kaonspectra2->Draw("same");
+   kaonspectra3->Draw("same");
+   
+   c9->cd(4);
+   //TCanvas *c12 = new TCanvas("c12","Charged Particles Spectra",400,10,600,700);
+   chargedspectra1->SetFillColor(5);
+   chargedspectra1->SetXTitle("log(GeV)");
+   chargedspectra2->SetFillColor(46);
+   chargedspectra2->SetXTitle("log(GeV)");
+   chargedspectra3->SetFillColor(10);
+   chargedspectra3->SetXTitle("log(GeV)");
+   //c12->SetLogx();
+   chargedspectra1->Draw();
+   chargedspectra2->Draw("same");
+   chargedspectra3->Draw("same");
+   
+
+
+   printf("*****************************************\n");
+   printf("* Particle                   *  Counts  *\n");
+   printf("*****************************************\n");
+
+   printf("* Pions:                     *   %4d   *\n",pion);
+   printf("* Charged Pions:             *   %4d   *\n",chargedpions);
+   printf("* Primary Pions:             *   %4d   *\n",primarypions);
+   printf("* Primary Pions (p>1GeV/c):  *   %4d   *\n",highprimarypions);
+   printf("* Kaons:                     *   %4d   *\n",kaon);
+   printf("* Charged Kaons:             *   %4d   *\n",chargedkaons);
+   printf("* Primary Kaons:             *   %4d   *\n",primarykaons);
+   printf("* Primary Kaons (p>1GeV/c):  *   %4d   *\n",highprimarykaons);
+   printf("* Muons:                     *   %4d   *\n",muon);
+   printf("* Electrons:                 *   %4d   *\n",electron);
+   printf("* Positrons:                 *   %4d   *\n",positron);
+   printf("* Protons:                   *   %4d   *\n",proton);
+   printf("* All Charged:               *   %4d   *\n",(chargedpions+chargedkaons+muon+electron+positron+proton));
+   printf("*****************************************\n");
+   //printf("* Photons:                   *   %3.1f   *\n",photons); 
+   //printf("* Primary Photons:           *   %3.1f   *\n",primaryphotons);
+   //printf("* Primary Photons (p>1MeV/c):*   %3.1f   *\n",highprimaryphotons);
+   //printf("*****************************************\n");
+   //printf("* Neutrons:                  *   %3.1f   *\n",neutron);
+   //printf("* Neutrons (p>100keV/c):     *   %3.1f   *\n",highneutrons);
+   //printf("*****************************************\n");
+
+   if (gAlice->TreeD())
+     {
+       gAlice->TreeD()->GetEvent(0);
+   
+       Float_t occ[7]; 
+       Float_t sum=0;
+       Float_t mean=0; 
+       printf("\n*****************************************\n");
+       printf("* Chamber   * Digits      * Occupancy   *\n");
+       printf("*****************************************\n");
+       
+       for (Int_t ich=0;ich<7;ich++)
+	 {
+	   TClonesArray *Digits = DigitsAddress(ich);    //  Raw clusters branch
+	   Int_t ndigits = Digits->GetEntriesFast();
+	   occ[ich] = Float_t(ndigits)/(160*144);
+	   sum += Float_t(ndigits)/(160*144);
+	   printf("*   %d      *    %d      *   %3.1f%%     *\n",ich,ndigits,occ[ich]*100);
+	 }
+       mean = sum/7;
+       printf("*****************************************\n");
+       printf("* Mean occupancy          *   %3.1f%%     *\n",mean*100);
+       printf("*****************************************\n");
+     }
+ 
+  printf("\nEnd of analysis\n");
+   
+}//void AliRICHv3::DiagnosticsFE(Int_t evNumber1,Int_t evNumber2)
+//__________________________________________________________________________________________________
+void AliRICHv3::DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2)
+{
+
+AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
+   AliRICHSegmentationV0*  segmentation;
+   AliRICHChamber*       chamber;
+   
+   chamber = &(pRICH->Chamber(0));
+   segmentation=(AliRICHSegmentationV0*) chamber->GetSegmentationModel();
+
+   Int_t NpadX = segmentation->Npx();                 // number of pads on X
+   Int_t NpadY = segmentation->Npy();                 // number of pads on Y
+    
+   Int_t xmin= -NpadX/2;  
+   Int_t xmax=  NpadX/2;
+   Int_t ymin= -NpadY/2;
+   Int_t ymax=  NpadY/2;
+
+   Float_t PTfinal = 0;
+   Int_t pionCount = 0;
+   Int_t kaonCount = 0;
+   Int_t protonCount = 0;
+   
+   TH2F *feedback = 0;
+   TH2F *mip = 0;
+   TH2F *cerenkov = 0;
+   TH2F *h = 0;
+   TH1F *hitsX = 0;
+   TH1F *hitsY = 0;
+
+   TH2F *hc0 = new TH2F("hc0","Zoom on center of central chamber",150,-25,25,150,-45,5);
+
+   if (diaglevel == 1)
+     {
+       printf("Single Ring Hits\n");
+       feedback = new TH2F("feedback","Feedback hit distribution",150,-20,20,150,-35,5);
+       mip = new TH2F("mip","Mip hit distribution",150,-20,20,150,-35,5);
+       cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-20,20,150,-35,5);
+       h = new TH2F("h","Detector hit distribution",150,-20,20,150,-35,5);
+       hitsX = new TH1F("hitsX","Distribution of hits along x-axis",150,-50,50);
+       hitsY = new TH1F("hitsY","Distribution of hits along z-axis",150,-50,50);
+     }       
+   else
+     {
+       printf("Full Event Hits\n");
+       
+       feedback = new TH2F("feedback","Feedback hit distribution",150,-300,300,150,-300,300);
+       mip = new TH2F("mip","Mip hit distribution",150,-300,300,150,-300,300);
+       cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-300,300,150,-300,300);
+       h = new TH2F("h","Detector hit distribution",150,-300,300,150,-300,300); 
+       hitsX = new TH1F("digitsX","Distribution of hits along x-axis",200,-300,300);
+       hitsY = new TH1F("digitsY","Distribution of hits along z-axis",200,-300,300);
+     }
+   
+
+
+   TH2F *hc1 = new TH2F("hc1","Chamber 1 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
+   TH2F *hc2 = new TH2F("hc2","Chamber 2 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
+   TH2F *hc3 = new TH2F("hc3","Chamber 3 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
+   TH2F *hc4 = new TH2F("hc4","Chamber 4 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
+   TH2F *hc5 = new TH2F("hc5","Chamber 5 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
+   TH2F *hc6 = new TH2F("hc6","Chamber 6 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
+   TH2F *hc7 = new TH2F("hc7","Chamber 7 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
+      
+   TH1F *Clcharge = new TH1F("Clcharge","Cluster Charge Distribution",500,0.,500.);
+   TH1F *ckovangle = new TH1F("ckovangle","Cerenkov angle per photon",100,.35,.8);
+   TH1F *hckphi = new TH1F("hckphi","Cerenkov phi angle per photon",620,-3.1,3.1);
+   TH1F *mother = new TH1F("mother","Cerenkovs per Mip",75,0.,75.);
+   TH1F *radius = new TH1F("radius","Mean distance to Mip",100,0.,20.);
+   TH1F *phspectra1 = new TH1F("phspectra1","Detected Photon Spectra",200,5.,10.);
+   TH1F *phspectra2 = new TH1F("phspectra2","Produced Photon Spectra",200,5.,10.);
+   TH1F *totalphotonstrack = new TH1F("totalphotonstrack","Produced Photons per Mip",100,200,700.);
+   TH1F *totalphotonsevent = new TH1F("totalphotonsevent","Produced Photons per Mip",100,200,700.);
+   //TH1F *feedbacks = new TH1F("feedbacks","Produced Feedbacks per Mip",50,0.5,50.);
+   TH1F *padnumber = new TH1F("padnumber","Number of pads per cluster",50,-0.5,50.);
+   TH1F *padsev = new TH1F("padsev","Number of pads hit per MIP",50,0.5,100.);
+   TH1F *clusev = new TH1F("clusev","Number of clusters per MIP",50,0.5,50.);
+   TH1F *photev = new TH1F("photev","Number of detected photons per MIP",50,0.5,50.);
+   TH1F *feedev = new TH1F("feedev","Number of feedbacks per MIP",50,0.5,50.);
+   TH1F *padsmip = new TH1F("padsmip","Number of pads per event inside MIP region",50,0.5,50.);
+   TH1F *padscl = new TH1F("padscl","Number of pads per event from cluster count",50,0.5,100.);
+   TH1F *pionspectra = new TH1F("pionspectra","Pion Spectra",200,.5,10.);
+   TH1F *protonspectra = new TH1F("protonspectra","Proton Spectra",200,.5,10.);
+   TH1F *kaonspectra = new TH1F("kaonspectra","Kaon Spectra",100,.5,10.);
+   TH1F *chargedspectra = new TH1F("chargedspectra","Charged particles above 1 GeV Spectra",100,.5,10.);
+   TH1F *hitsPhi = new TH1F("hitsPhi","Distribution of phi angle of incidence",50,0,360);
+   TH1F *hitsTheta = new TH1F("hitsTheta","Distribution of theta angle of incidence",50,0,15);
+   TH1F *Omega1D = new TH1F("omega","Reconstructed Cerenkov angle per track",50,.5,1);
+   TH1F *Theta = new TH1F("theta","Reconstructed theta incidence angle per track",100,0,15);
+   TH1F *Phi = new TH1F("phi","Reconstructed phi incidence per track",100,0,360);
+   TH1F *Omega3D = new TH1F("omega","Reconstructed Cerenkov angle per track",100,.35,.8);
+   TH1F *PhotonCer = new TH1F("photoncer","Reconstructed Cerenkov angle per photon",100,.35,.8);
+   TH2F *PadsUsed = new TH2F("padsused","Pads Used for Reconstruction",100,-30,30,100,-30,30);
+   TH1F *MeanRadius = new TH1F("radius","Mean Radius for reconstructed track",100,0.,20.);
+   TH2F *identification = new TH2F("identification","Particle Identification",100,1,5,100,0,.8);
+   TH1F *OriginalOmega = new TH1F("Original Omega","Cerenkov angle per track",100,.35,.8);
+   TH1F *OriginalPhi = new TH1F("Original Phi","Distribution of phi angle of incidence per track",100,0,360);
+   TH1F *OriginalTheta = new TH1F("Original Theta","Distribution of theta angle per track",100,0,15);
+   TH1F *OmegaError = new TH1F("Omega Error","Difference between original an reconstructed cerenkov angle",100,0,.2);
+   TH1F *PhiError = new TH1F("Phi Error","Difference between original an reconstructed phi angle",100,0,360);
+   TH1F *ThetaError = new TH1F("Theta Error","Difference between original an reconstructed phi angle",100,0,15);
+
+
+//   Start loop over events 
+
+   Int_t Nh=0;
+   Int_t pads=0;
+   Int_t Nh1=0;
+   Int_t mothers[80000];
+   Int_t mothers2[80000];
+   Float_t mom[3];
+   Int_t nraw=0;
+   Int_t phot=0;
+   Int_t feed=0;
+   Int_t padmip=0;
+   Float_t x=0,y=0;
+
+   Float_t chiSquareOmega = 0;
+   Float_t chiSquareTheta = 0;
+   Float_t chiSquarePhi = 0;
+
+   Float_t recEffEvent = 0;
+   Float_t recEffTotal = 0;
+
+   Float_t trackglob[3];
+   Float_t trackloc[3];
+
+   
+   for (Int_t i=0;i<100;i++) mothers[i]=0;
+
+   for (int nev=0; nev<= evNumber2; nev++) {
+       Int_t nparticles = gAlice->GetEvent(nev);
+       
+
+       //cout<<"nev  "<<nev<<endl;
+       printf ("\n**********************************\nProcessing Event: %d\n",nev);
+       //cout<<"nparticles  "<<nparticles<<endl;
+       printf ("Particles       : %d\n\n",nparticles);
+       if (nev < evNumber1) continue;
+       if (nparticles <= 0) return;
+       
+// Get pointers to RICH detector and Hits containers
+       
+
+       TTree *TH = TreeH(); 
+       Stat_t ntracks = TH->GetEntries();
+
+       // Start loop on tracks in the hits containers
+       //Int_t Nc=0;
+       for (Int_t track=0; track<ntracks;track++) {
+	   
+	 printf ("\nProcessing Track: %d\n",track);
+	 gAlice->ResetHits();
+	 TH->GetEvent(track);
+	 Int_t nhits = pRICH->Hits()->GetEntriesFast();
+	 if (nhits) Nh+=nhits;
+	 printf("Hits            : %d\n",nhits);
+	 for(AliRICHhit* mHit=(AliRICHhit*)pRICH->FirstHit(-1); 
+	     mHit;
+	     mHit=(AliRICHhit*)pRICH->NextHit()) 
+	   {
+	     Int_t nch  = mHit->Chamber();              // chamber number
+	     trackglob[0] = mHit->X();                 // x-pos of hit
+	     trackglob[1] = mHit->Y();
+	     trackglob[2] = mHit->Z();                 // y-pos of hit
+	     //x  = mHit->X();                           // x-pos of hit
+	     //y  = mHit->Z();                           // y-pos
+	     Float_t phi = mHit->Phi();                 //Phi angle of incidence
+	     Float_t theta = mHit->Theta();             //Theta angle of incidence
+	     Int_t index = mHit->Track();
+	     Int_t particle = (Int_t)(mHit->Particle());        
+	     //Int_t freon = (Int_t)(mHit->fLoss);    
+	     Float_t px = mHit->MomX();
+	     Float_t py = mHit->MomY();
+	     
+	     if (TMath::Abs(particle) < 10000000)
+	       {
+		 PTfinal=TMath::Sqrt(px*px + py*py);
+	       }
+	
+	     chamber = &(pRICH->Chamber(nch-1));
+	     
+	     
+	     chamber->GlobaltoLocal(trackglob,trackloc);
+	     
+	     chamber->LocaltoGlobal(trackloc,trackglob);
+	     
+       
+	     x=trackloc[0];
+	     y=trackloc[2];
+	     
+	     hitsX->Fill(x,(float) 1);
+	     hitsY->Fill(y,(float) 1);
+	       
+	      
+	      TParticle *current = (TParticle*)gAlice->Particle(index);
+
+	      hitsTheta->Fill(theta,(float) 1);
+	     
+	      if (current->GetPdgCode() < 10000000)
+		{
+		  mip->Fill(x,y,(float) 1);
+		  hitsPhi->Fill(TMath::Abs(phi),(float) 1);
+		}
+	      
+	      if (TMath::Abs(particle)==211 || TMath::Abs(particle)==111)
+		{
+		  pionspectra->Fill(current->Energy() - current->GetCalcMass(),(float) 1);
+		}
+	      if (TMath::Abs(particle)==2212)
+		{
+		  protonspectra->Fill(current->Energy() - current->GetCalcMass(),(float) 1);
+		}
+	      if (TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
+		  || TMath::Abs(particle)==311)
+		{
+		  kaonspectra->Fill(current->Energy() - current->GetCalcMass(),(float) 1);
+		}
+	      if(TMath::Abs(particle)==211 || TMath::Abs(particle)==2212 || TMath::Abs(particle)==321)
+		{
+		  if (current->Energy() - current->GetCalcMass()>1)
+		    chargedspectra->Fill(current->Energy() - current->GetCalcMass(),(float) 1);
+		}
+	      //printf("Hits:%d\n",hit);
+	      //printf ("Chamber number:%d x:%f y:%f\n",nch,x,y);
+              // Fill the histograms
+	      Nh1+=nhits;
+	      h->Fill(x,y,(float) 1);
+		  //}
+              //}
+	   }
+	   
+	   Int_t ncerenkovs = pRICH->Cerenkovs()->GetEntriesFast();
+	   //if (current->GetPdgCode() < 50000051 && current->GetPdgCode() > 50000040)
+	   //totalphotonsevent->Fill(ncerenkovs,(float) 1);
+
+ 	   if (ncerenkovs) {
+	     printf("Cerenkovs       : %d\n",ncerenkovs);
+	     totalphotonsevent->Fill(ncerenkovs,(float) 1);
+	     for (Int_t hit=0;hit<ncerenkovs;hit++) {
+	       AliRICHCerenkov* cHit = (AliRICHCerenkov*) pRICH->Cerenkovs()->UncheckedAt(hit);
+	       Int_t nchamber = cHit->fChamber;     // chamber number
+	       Int_t index =    cHit->Track();
+	       //Int_t pindex =   (Int_t)(cHit->fIndex);
+	       trackglob[0] = cHit->X();                 // x-pos of hit
+	       trackglob[1] = cHit->Y();
+	       trackglob[2] = cHit->Z();                 // y-pos of hit
+	       //Float_t cx  =      cHit->X();                // x-position
+	       //Float_t cy  =      cHit->Z();                // y-position
+	       Int_t cmother =  cHit->fCMother;      // Index of mother particle
+	       Int_t closs =    (Int_t)(cHit->fLoss);           // How did the particle get lost? 
+	       Float_t cherenkov = cHit->fCerenkovAngle;   //production cerenkov angle
+	       
+	       chamber = &(pRICH->Chamber(nchamber-1));
+	     
+	       //printf("Nch:%d\n",nch);
+	       
+	       chamber->GlobaltoLocal(trackglob,trackloc);
+	     
+	       chamber->LocaltoGlobal(trackloc,trackglob);
+	     
+       
+	       Float_t cx=trackloc[0];
+	       Float_t cy=trackloc[2];
+	       
+	       //printf ("Cerenkov hit number %d/%d, X:%f, Y:%f\n",hit,ncerenkovs,cx,cy); 
+
+
+	       //printf("Particle:%9d\n",index);
+		 		 
+	       TParticle *current = (TParticle*)gAlice->Particle(index);
+	       Float_t energyckov = current->Energy();
+	       
+	       if (current->GetPdgCode() == 50000051)
+		 {
+		   if (closs==4)
+		     {
+		       feedback->Fill(cx,cy,(float) 1);
+		       feed++;
+		     }
+		 }
+	       if (current->GetPdgCode() == 50000050)
+		 {
+		   
+		   if (closs !=4)
+		     {
+		       phspectra2->Fill(energyckov*1e9,(float) 1);
+		     }
+		       
+		   if (closs==4)
+		     {
+		       cerenkov->Fill(cx,cy,(float) 1); 
+		       
+		       //printf ("Cerenkov hit number %d/%d, X:%d, Y:%d\n",hit,ncerenkovs,cx,cy); 
+		       
+		       //TParticle *MIP = (TParticle*)gAlice->Particle(cmother);
+		       AliRICHhit* mipHit = (AliRICHhit*) pRICH->Hits()->UncheckedAt(0);
+		       mom[0] = current->Px();
+		       mom[1] = current->Py();
+		       mom[2] = current->Pz();
+		       //mom[0] = cHit->fMomX;
+		       // mom[1] = cHit->fMomZ;
+		       //mom[2] = cHit->fMomY;
+		       //Float_t energymip = MIP->Energy();
+		       //Float_t Mip_px = mipHit->fMomFreoX;
+		       //Float_t Mip_py = mipHit->fMomFreoY;
+		       //Float_t Mip_pz = mipHit->fMomFreoZ;
+		       //Float_t Mip_px = MIP->Px();
+		       //Float_t Mip_py = MIP->Py();
+		       //Float_t Mip_pz = MIP->Pz();
+		       
+		       
+		       
+		       //Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
+		       //Float_t rt = TMath::Sqrt(r);
+		       //Float_t Mip_r = Mip_px*Mip_px + Mip_py*Mip_py + Mip_pz*Mip_pz;	
+		       //Float_t Mip_rt = TMath::Sqrt(Mip_r);
+		       //Float_t coscerenkov = (mom[0]*Mip_px + mom[1]*Mip_py + mom[2]*Mip_pz)/(rt*Mip_rt+0.0000001);
+		       //Float_t cherenkov = TMath::ACos(coscerenkov);
+		       ckovangle->Fill(cherenkov,(float) 1);                           //Cerenkov angle calculus
+		       //printf("Cherenkov: %f\n",cherenkov);
+		       Float_t ckphi=TMath::ATan2(mom[0], mom[2]);
+		       hckphi->Fill(ckphi,(float) 1);
+		       
+		       
+		       //Float_t mix = MIP->Vx();
+		       //Float_t miy = MIP->Vy();
+		       Float_t mx = mipHit->X();
+		       Float_t my = mipHit->Z();
+		       //printf("FX %e, FY %e, VX %e, VY %e\n",cx,cy,mx,my);
+		       Float_t dx = trackglob[0] - mx;
+		       Float_t dy = trackglob[2] - my;
+		       //printf("Dx:%f, Dy:%f\n",dx,dy);
+		       Float_t final_radius = TMath::Sqrt(dx*dx+dy*dy);
+		       //printf("Final radius:%f\n",final_radius);
+		       radius->Fill(final_radius,(float) 1);
+		       
+		       phspectra1->Fill(energyckov*1e9,(float) 1);
+		       phot++;
+		     }
+		   for (Int_t nmothers=0;nmothers<=ntracks;nmothers++){
+		     if (cmother == nmothers){
+		       if (closs == 4)
+			 mothers2[cmother]++;
+		       mothers[cmother]++;
+		     }
+		   } 
+		 }
+	     }
+	   }
+	   
+
+	   if(gAlice->TreeR())
+	     {
+	       Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
+	       gAlice->TreeR()->GetEvent(nent-1);
+	       TClonesArray *Rawclusters = pRICH->RawClustAddress(2);    //  Raw clusters branch
+	       //printf ("Rawclusters:%p",Rawclusters);
+	       Int_t nrawclusters = Rawclusters->GetEntriesFast();
+	       	       
+	       if (nrawclusters) {
+		 printf("Raw Clusters    : %d\n",nrawclusters);
+		 for (Int_t hit=0;hit<nrawclusters;hit++) {
+		   AliRICHRawCluster* rcHit = (AliRICHRawCluster*) pRICH->RawClustAddress(2)->UncheckedAt(hit);
+		   //Int_t nchamber = rcHit->fChamber;     // chamber number
+		   //Int_t nhit = cHit->fHitNumber;        // hit number
+		   Int_t qtot = rcHit->fQ;                 // charge
+		   Float_t fx  =  rcHit->fX;                 // x-position
+		   Float_t fy  =  rcHit->fY;                 // y-position
+		   //Int_t type = rcHit->fCtype;             // cluster type ?   
+		   Int_t mult = rcHit->fMultiplicity;      // How many pads form the cluster
+		   pads += mult;
+		   if (qtot > 0) {
+		     //printf ("fx: %d, fy: %d\n",fx,fy);
+		     if (fx>(x-4) && fx<(x+4)  && fy>(y-4) && fy<(y+4)) {
+		       //printf("There %d \n",mult);
+		       padmip+=mult;
+		     } else {
+		       padnumber->Fill(mult,(float) 1);
+		       nraw++;
+		       if (mult<4) Clcharge->Fill(qtot,(float) 1);
+		     }
+		     
+		   }
+		 }
+	       }
+	       
+	       
+	       TClonesArray *RecHits1D = pRICH->RecHitsAddress1D(2);
+	       Int_t nrechits1D = RecHits1D->GetEntriesFast();
+	       //printf (" nrechits:%d\n",nrechits);
+	       
+	       if(nrechits1D)
+		 {
+		   for (Int_t hit=0;hit<nrechits1D;hit++) {
+		     AliRICHRecHit1D* recHit1D = (AliRICHRecHit1D*) pRICH->RecHitsAddress1D(2)->UncheckedAt(hit);
+		     Float_t r_omega = recHit1D->fOmega;                  // Cerenkov angle
+		     Float_t *cer_pho = recHit1D->fCerPerPhoton;        // Cerenkov angle per photon
+		     Int_t *padsx = recHit1D->fPadsUsedX;           // Pads Used fo reconstruction (x)
+		     Int_t *padsy = recHit1D->fPadsUsedY;           // Pads Used fo reconstruction (y)
+		     Int_t goodPhotons = recHit1D->fGoodPhotons;    // Number of pads used for reconstruction
+		     
+		     Omega1D->Fill(r_omega,(float) 1);
+		     
+		     for (Int_t i=0; i<goodPhotons; i++)
+		       {
+			 PhotonCer->Fill(cer_pho[i],(float) 1);
+			 PadsUsed->Fill(padsx[i],padsy[i],1);
+			 //printf("Angle:%f, pad: %d %d\n",cer_pho[i],padsx[i],padsy[i]);
+		       }
+		     
+		     //printf("Omega: %f, Theta: %f, Phi: %f\n",r_omega,r_theta,r_phi);
+		   }
+		 }
+
+	       
+	       TClonesArray *RecHits3D = pRICH->RecHitsAddress3D(2);
+	       Int_t nrechits3D = RecHits3D->GetEntriesFast();
+	       //printf (" nrechits:%d\n",nrechits);
+	       
+	       if(nrechits3D)
+		 {
+		   recEffEvent = 0;
+		   
+		   //for (Int_t hit=0;hit<nrechits3D;hit++) {
+		   AliRICHRecHit3D* recHit3D = (AliRICHRecHit3D*) pRICH->RecHitsAddress3D(2)->UncheckedAt(track);
+		   Float_t r_omega    = recHit3D->fOmega;                  // Cerenkov angle
+		   Float_t r_theta    = recHit3D->fTheta;                  // Theta angle of incidence
+		   Float_t r_phi      = recHit3D->fPhi;                    // Phi angle if incidence
+		   Float_t meanradius = recHit3D->fMeanRadius;              // Mean radius for reconstructed point
+		   Float_t originalOmega = recHit3D->fOriginalOmega;       // Real Cerenkov angle
+		   Float_t originalTheta = recHit3D->fOriginalTheta;       // Real incidence angle
+		   Float_t originalPhi = recHit3D->fOriginalPhi;           // Real azimuthal angle
+		   
+		   
+		   //correction to track cerenkov angle
+		   originalOmega = (Float_t) ckovangle->GetMean();
+		   
+		   if(diaglevel == 4)
+		     {
+		       printf("\nMean cerenkov angle: %f\n", originalOmega);
+		       printf("Reconstructed cerenkov angle: %f\n",r_omega);
+		     }
+		   
+		   Float_t omegaError = TMath::Abs(originalOmega - r_omega);
+		   Float_t thetaError = TMath::Abs(originalTheta - r_theta);
+		   Float_t phiError   = TMath::Abs(originalPhi - r_phi);
+		   
+		   
+		   if(TMath::Abs(omegaError) < 0.015)
+		     recEffEvent += 1;
+		   
+		   Omega3D->Fill(r_omega,(float) 1);
+		   Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);
+		   Phi->Fill(r_phi*180/TMath::Pi()-180,(float) 1);
+		   MeanRadius->Fill(meanradius,(float) 1);
+		   identification->Fill(PTfinal, r_omega,1);
+		   OriginalOmega->Fill(originalOmega, (float) 1);
+		   OriginalTheta->Fill(originalTheta, (float) 1);
+		   OriginalPhi->Fill(TMath::Abs(originalPhi), (float) 1);
+		   OmegaError->Fill(omegaError, (float) 1);
+		   ThetaError->Fill(thetaError, (float) 1);
+		   PhiError->Fill(phiError, (float) 1);
+		   
+		   recEffEvent = recEffEvent;
+		   recEffTotal += recEffEvent;
+		   
+		   Float_t pioncer = acos(sqrt((.139*.139+PTfinal*PTfinal)/(PTfinal*PTfinal*1.285*1.285)));
+		   Float_t kaoncer = acos(sqrt((.439*.439+PTfinal*PTfinal)/(PTfinal*PTfinal*1.285*1.285)));
+		   Float_t protoncer = acos(sqrt((.938*.938+PTfinal*PTfinal)/(PTfinal*PTfinal*1.285*1.285)));
+
+		   Float_t piondist = TMath::Abs(r_omega - pioncer);
+		   Float_t kaondist = TMath::Abs(r_omega - kaoncer);
+		   Float_t protondist = TMath::Abs(r_omega - protoncer);
+
+		   if(diaglevel == 4)
+		     {
+		       if(pioncer<r_omega)
+			 {
+			   printf("Identified as a PION!\n");
+			   pionCount += 1;
+			 }
+		       if(kaoncer<r_omega && pioncer>r_omega)
+			 {
+			   if(kaondist>piondist)
+			     {
+			       printf("Identified as a PION!\n");
+			       pionCount += 1;
+			     }
+			   else
+			     {
+			       printf("Identified as a KAON!\n");
+			       kaonCount += 1;
+			     }
+			 }			 }
+		       if(protoncer<r_omega && kaoncer>r_omega)
+			 {
+			   if(kaondist>protondist)
+			     {
+			       printf("Identified as a PROTON!\n");
+			       protonCount += 1;
+			     }
+			   else
+			     {
+			       printf("Identified as a KAON!\n");
+			       pionCount += 1;
+			     }
+			 }
+		       if(protoncer>r_omega)
+			 {
+			   printf("Identified as a PROTON!\n");
+			   protonCount += 1;
+			 }
+
+		       printf("\nReconstruction efficiency: %5.2f%%\n", recEffEvent*100);
+		 }
+	     }
+       }
+   
+       
+       for (Int_t nmothers=0;nmothers<ntracks;nmothers++){
+	 totalphotonstrack->Fill(mothers[nmothers],(float) 1);
+	 mother->Fill(mothers2[nmothers],(float) 1);
+       }
+       
+       clusev->Fill(nraw,(float) 1);
+       photev->Fill(phot,(float) 1);
+       feedev->Fill(feed,(float) 1);
+       padsmip->Fill(padmip,(float) 1);
+       padscl->Fill(pads,(float) 1);
+       phot = 0;
+       feed = 0;
+       pads = 0;
+       nraw=0;
+       padmip=0;
+       
+       
+       
+       gAlice->ResetDigits();
+       gAlice->TreeD()->GetEvent(0);
+       
+       if (diaglevel < 4)
+	 {
+	   
+	   
+	   TClonesArray *Digits  = pRICH->DigitsAddress(2);
+	   Int_t ndigits = Digits->GetEntriesFast();
+	   printf("Digits          : %d\n",ndigits);
+	   padsev->Fill(ndigits,(float) 1);
+	   for (Int_t hit=0;hit<ndigits;hit++) {
+	     AliRICHDigit* dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
+	     Int_t qtot = dHit->Signal();                // charge
+	     Int_t ipx  = dHit->PadX();               // pad number on X
+	     Int_t ipy  = dHit->PadY();               // pad number on Y
+	     //printf("%d, %d\n",ipx,ipy);
+	     if( ipx<=100 && ipy <=100) hc0->Fill(ipx,ipy,(float) qtot);
+	   }
+	 }
+       
+       if (diaglevel == 5)
+	 {
+	   for (Int_t ich=0;ich<7;ich++)
+	     {
+	       TClonesArray *Digits = pRICH->DigitsAddress(ich);    //  Raw clusters branch
+	       Int_t ndigits = Digits->GetEntriesFast();
+	       //printf("Digits:%d\n",ndigits);
+	       padsev->Fill(ndigits,(float) 1); 
+	       if (ndigits) {
+		 for (Int_t hit=0;hit<ndigits;hit++) {
+		   AliRICHDigit* dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
+		   Int_t qtot = dHit->Signal();                // charge
+		   Int_t ipx  = dHit->PadX();               // pad number on X
+		   Int_t ipy  = dHit->PadY();               // pad number on Y
+		   if( ipx<=100 && ipy <=100 && ich==2) hc0->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==0) hc1->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==1) hc2->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==2) hc3->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==3) hc4->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==4) hc5->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==5) hc6->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==6) hc7->Fill(ipx,ipy,(float) qtot);
+		 }
+	       }
+	     }
+	 }
+   }
+   
+   if(diaglevel == 4)
+     {
+
+       Stat_t omegaE;
+       Stat_t thetaE;
+       Stat_t phiE;
+       
+       Stat_t omegaO;
+       Stat_t thetaO;
+       Stat_t phiO;
+       
+       for(Int_t i=0;i<99;i++)
+	 {
+	   omegaE = OriginalOmega->GetBinContent(i);
+	   if(omegaE != 0)
+	     {
+	       omegaO = Omega3D->GetBinContent(i);
+	       chiSquareOmega += (TMath::Power(omegaE,2) - TMath::Power(omegaO,2))/omegaO;
+	     }
+
+  	   thetaE = OriginalTheta->GetBinContent(i);
+	   if(thetaE != 0)
+	     {
+	       thetaO = Theta->GetBinContent(i);
+	       chiSquareTheta += (TMath::Power(thetaE,2) - TMath::Power(thetaO,2))/thetaO;
+	     }
+
+	   phiE = OriginalPhi->GetBinContent(i);
+	   if(phiE != 0)
+	     {
+	       phiO = Phi->GetBinContent(i);
+	       chiSquarePhi += (TMath::Power(phiE,2) - TMath::Power(phiO,2))/phiO;
+	     }
+	 }
+
+       
+
+       printf("\nChi square test values:   Omega - %f\n", chiSquareOmega);
+       printf("                          Theta - %f\n", chiSquareTheta);
+       printf("                          Phi   - %f\n", chiSquarePhi);
+       
+       printf("\nKolmogorov test values:   Omega - %5.4f\n", Omega3D->KolmogorovTest(OriginalOmega));
+       printf("                          Theta - %5.4f\n", Theta->KolmogorovTest(OriginalTheta));
+       printf("                          Phi   - %5.4f\n", Phi->KolmogorovTest(OriginalPhi));
+
+       recEffTotal = recEffTotal/evNumber2;
+       printf("\nTotal reconstruction efficiency: %5.2f%%\n", recEffTotal*100);
+       printf("\n Pions: %d\n Kaons: %d\n Protons:%d\n",pionCount, kaonCount, protonCount);
+
+     }
+   
+   
+   //Create canvases, set the view range, show histograms
+
+   TCanvas *c1 = 0;
+   TCanvas *c2 = 0;
+   TCanvas *c3 = 0;
+   TCanvas *c4 = 0;
+   TCanvas *c5 = 0;
+   TCanvas *c6 = 0;
+   TCanvas *c7 = 0;
+   TCanvas *c8 = 0;
+   TCanvas *c9 = 0;
+   TCanvas *c10 = 0;
+   TCanvas *c11 = 0;
+   TCanvas *c12 = 0;
+   TCanvas *c13 = 0;
+
+   
+   TStyle *mystyle=new TStyle("Plain","mystyle");
+   mystyle->SetPalette(1,0);
+   mystyle->SetFuncColor(2);
+   mystyle->SetDrawBorder(0);
+   mystyle->SetTitleBorderSize(0);
+   mystyle->SetOptFit(1111);
+   mystyle->cd();
+
+   
+   TClonesArray *RecHits3D = pRICH->RecHitsAddress3D(2);
+   Int_t nrechits3D = RecHits3D->GetEntriesFast();
+   TClonesArray *RecHits1D = pRICH->RecHitsAddress1D(2);
+   Int_t nrechits1D = RecHits1D->GetEntriesFast();
+
+  switch(diaglevel)
+     {
+     case 1:
+       
+       c1 = new TCanvas("c1","Alice RICH digits",50,50,300,350);
+       hc0->SetXTitle("ix (npads)");
+       hc0->Draw("colz");
+	
+       c2 = new TCanvas("c2","Hits per type",100,100,600,700);
+       c2->Divide(2,2);
+       //c4->SetFillColor(42);
+
+       c2->cd(1);
+       feedback->SetXTitle("x (cm)");
+       feedback->SetYTitle("y (cm)");
+       feedback->Draw("colz");
+       
+       c2->cd(2);
+       //mip->SetFillColor(5);
+       mip->SetXTitle("x (cm)");
+       mip->SetYTitle("y (cm)");
+       mip->Draw("colz");
+       
+       c2->cd(3);
+       //cerenkov->SetFillColor(5);
+       cerenkov->SetXTitle("x (cm)");
+       cerenkov->SetYTitle("y (cm)"); 
+       cerenkov->Draw("colz");
+       
+       c2->cd(4);
+       //h->SetFillColor(5);
+       h->SetXTitle("x (cm)");
+       h->SetYTitle("y (cm)");
+       h->Draw("colz");
+
+       c3 = new TCanvas("c3","Hits distribution",150,150,600,350);
+       c3->Divide(2,1);
+       //c10->SetFillColor(42);
+       
+       c3->cd(1);
+       hitsX->SetFillColor(5);
+       hitsX->SetXTitle("(cm)");
+       hitsX->Draw();
+       
+       c3->cd(2);
+       hitsY->SetFillColor(5);
+       hitsY->SetXTitle("(cm)");
+       hitsY->Draw();
+       
+      
+       break;
+     case 2:
+       
+       c4 = new TCanvas("c4","Photon Spectra",50,50,600,350);
+       c4->Divide(2,1);
+       
+       c4->cd(1);
+       phspectra2->SetFillColor(5);
+       phspectra2->SetXTitle("energy (eV)");
+       phspectra2->Draw();
+       c4->cd(2);
+       phspectra1->SetFillColor(5);
+       phspectra1->SetXTitle("energy (eV)");
+       phspectra1->Draw();
+       
+       c5 = new TCanvas("c5","Particles Spectra",100,100,600,700);
+       c5->Divide(2,2);
+       
+       c5->cd(1);
+       pionspectra->SetFillColor(5);
+       pionspectra->SetXTitle("(GeV)");
+       pionspectra->Draw();
+       
+       c5->cd(2);
+       protonspectra->SetFillColor(5);
+       protonspectra->SetXTitle("(GeV)");
+       protonspectra->Draw();
+       
+       c5->cd(3);
+       kaonspectra->SetFillColor(5);
+       kaonspectra->SetXTitle("(GeV)");
+       kaonspectra->Draw();
+       
+       c5->cd(4);
+       chargedspectra->SetFillColor(5);
+       chargedspectra->SetXTitle("(GeV)");
+       chargedspectra->Draw();
+
+       break;
+       
+     case 3:
+
+       
+       if(gAlice->TreeR())
+	 {
+	   c6=new TCanvas("c6","Clusters Statistics",50,50,600,700);
+	   c6->Divide(2,2);
+	   
+	   c6->cd(1);
+	   Clcharge->SetFillColor(5);
+	   Clcharge->SetXTitle("ADC counts");
+	   if (evNumber2>10)
+	     {
+	       Clcharge->Fit("expo");
+	     }
+	   Clcharge->Draw();
+	   
+	   c6->cd(2);
+	   padnumber->SetFillColor(5);
+	   padnumber->SetXTitle("(counts)");
+	   padnumber->Draw();
+	   
+	   c6->cd(3);
+	   clusev->SetFillColor(5);
+	   clusev->SetXTitle("(counts)");
+	   if (evNumber2>10)
+	     {
+	       clusev->Fit("gaus");
+	       //gaus->SetLineColor(2);
+	       //gaus->SetLineWidth(3);
+	     }
+	   clusev->Draw();
+	   
+	   c6->cd(4);
+	   padsmip->SetFillColor(5);
+	   padsmip->SetXTitle("(counts)");
+	   padsmip->Draw(); 
+	 }
+       
+       if(evNumber2<1)
+	 {
+	   c11 = new TCanvas("c11","Cherenkov per Mip",400,10,600,700);
+	   mother->SetFillColor(5);
+	   mother->SetXTitle("counts");
+	   mother->Draw();
+	 }
+
+       c7 = new TCanvas("c7","Production Statistics",100,100,600,700);
+       c7->Divide(2,2);
+       //c7->SetFillColor(42);
+       
+       c7->cd(1);
+       totalphotonsevent->SetFillColor(5);
+       totalphotonsevent->SetXTitle("Photons (counts)");
+       if (evNumber2>10)
+	   {
+	     totalphotonsevent->Fit("gaus");
+	     //gaus->SetLineColor(2);
+	     //gaus->SetLineWidth(3);
+	   }
+       totalphotonsevent->Draw();
+       
+       c7->cd(2);
+       photev->SetFillColor(5);
+       photev->SetXTitle("(counts)");
+       if (evNumber2>10)
+	 {
+	   photev->Fit("gaus");
+	   //gaus->SetLineColor(2);
+	   //gaus->SetLineWidth(3);
+	 }
+       photev->Draw();
+       
+       c7->cd(3);
+       feedev->SetFillColor(5);
+       feedev->SetXTitle("(counts)");
+       if (evNumber2>10)
+	 {
+	   feedev->Fit("gaus");
+	 }
+       feedev->Draw();
+
+       c7->cd(4);
+       padsev->SetFillColor(5);
+       padsev->SetXTitle("(counts)");
+       if (evNumber2>10)
+	 {
+	   padsev->Fit("gaus");
+	 }
+       padsev->Draw();
+
+       break;
+
+     case 4:
+       
+
+       if(nrechits3D)
+	 {
+	   c8 = new TCanvas("c8","3D reconstruction of Phi angle",50,50,300,1050);
+	   c8->Divide(1,3);
+	   //c2->SetFillColor(42);
+	   
+	   
+	   // data per hit
+	   c8->cd(1);
+	   hitsPhi->SetFillColor(5);
+	   if (evNumber2>10)
+	     hitsPhi->Fit("gaus");
+	   hitsPhi->Draw();
+	   
+	    //data per track
+	   c8->cd(2);
+	   OriginalPhi->SetFillColor(5);
+	   if (evNumber2>10)
+	     OriginalPhi->Fit("gaus");
+	   OriginalPhi->Draw();
+
+	   //recontructed data
+	   c8->cd(3);
+	   Phi->SetFillColor(5);
+	   if (evNumber2>10)
+	     Phi->Fit("gaus");
+	   Phi->Draw();
+
+	   c9 = new TCanvas("c9","3D reconstruction of theta angle",75,75,300,1050);
+	   c9->Divide(1,3);
+
+	   // data per hit
+	   c9->cd(1);
+	   hitsTheta->SetFillColor(5);
+	   if (evNumber2>10)
+	     hitsTheta->Fit("gaus");
+	   hitsTheta->Draw();
+	   
+	   //data per track
+	   c9->cd(2);
+	   OriginalTheta->SetFillColor(5);
+	   if (evNumber2>10)
+	     OriginalTheta->Fit("gaus");
+	   OriginalTheta->Draw();
+
+	   //recontructed data
+	   c9->cd(3);
+	   Theta->SetFillColor(5);
+	   if (evNumber2>10)
+	     Theta->Fit("gaus");
+	   Theta->Draw();
+
+	   c10 = new TCanvas("c10","3D reconstruction of cherenkov angle",100,100,300,1050);
+	   c10->Divide(1,3);
+
+	   // data per hit
+	   c10->cd(1);
+	   ckovangle->SetFillColor(5);
+	   ckovangle->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     ckovangle->Fit("gaus");
+	   ckovangle->Draw();
+	   
+	   //data per track
+	   c10->cd(2);
+	   OriginalOmega->SetFillColor(5);
+	   OriginalOmega->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     OriginalOmega->Fit("gaus");
+	   OriginalOmega->Draw();
+
+	   //recontructed data
+	   c10->cd(3);
+	   Omega3D->SetFillColor(5);
+	   Omega3D->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     Omega3D->Fit("gaus");
+	   Omega3D->Draw(); 
+
+
+	   c11 = new TCanvas("c11","3D reconstruction of mean radius",125,125,300,700);
+	   c11->Divide(1,2);
+
+	   // data per hit
+	   c11->cd(1);
+	   radius->SetFillColor(5);
+	   radius->SetXTitle("radius (cm)");
+	   radius->Draw();
+
+	   //recontructed data
+	   c11->cd(2);
+	   MeanRadius->SetFillColor(5);
+	   MeanRadius->SetXTitle("radius (cm)");
+	   MeanRadius->Draw();
+
+	   
+	   c12 = new TCanvas("c12","Cerenkov angle vs. Momentum",150,150,550,350);
+
+	   c12->cd(1);
+	   identification->SetFillColor(5);
+	   identification->SetXTitle("Momentum (GeV/c)");
+	   identification->SetYTitle("Cherenkov angle (radians)");
+	   
+	   TF1 *pionplot = new TF1("pion","acos(sqrt((.139*.139+x*x)/(x*x*1.285*1.285)))",1,5);
+	   TF1 *kaonplot = new TF1("kaon","acos(sqrt((.439*.439+x*x)/(x*x*1.285*1.285)))",1,5);
+	   TF1 *protonplot = new TF1("proton","acos(sqrt((.938*.938+x*x)/(x*x*1.285*1.285)))",1,5);
+	   
+	   identification->Draw();
+
+	   pionplot->SetLineColor(5);
+	   pionplot->Draw("same");
+
+	   kaonplot->SetLineColor(4);
+	   kaonplot->Draw("same");
+
+	   protonplot->SetLineColor(3);
+	   protonplot->Draw("same");
+
+	   c13 = new TCanvas("c13","Reconstruction Errors",200,200,900,350);
+	   c13->Divide(3,1);
+
+	   c13->cd(1);
+	   PhiError->SetFillColor(5);
+	   if (evNumber2>10)
+	     PhiError->Fit("gaus");
+	   PhiError->Draw();
+	   c13->cd(2);
+	   ThetaError->SetFillColor(5);
+	   if (evNumber2>10)
+	     ThetaError->Fit("gaus");
+	   ThetaError->Draw();
+	   c13->cd(3);
+	   OmegaError->SetFillColor(5);
+	   OmegaError->SetXTitle("angle (radians)");
+	   if (evNumber2>10)
+	     OmegaError->Fit("gaus");
+	   OmegaError->Draw();
+	   
+	 }
+       
+       if(nrechits1D)
+	 {
+	   c9 = new TCanvas("c9","1D Reconstruction",100,100,1100,700);
+	   c9->Divide(3,2);
+	   //c5->SetFillColor(42);
+	   
+	   c9->cd(1);
+	   ckovangle->SetFillColor(5);
+	   ckovangle->SetXTitle("angle (radians)");
+	   ckovangle->Draw();
+	   
+	   c9->cd(2);
+	   radius->SetFillColor(5);
+	   radius->SetXTitle("radius (cm)");
+	   radius->Draw();
+	   
+	   c9->cd(3);
+	   hc0->SetXTitle("pads");
+	   hc0->Draw("box"); 
+	   
+	   c9->cd(5);
+	   Omega1D->SetFillColor(5);
+	   Omega1D->SetXTitle("angle (radians)");
+	   Omega1D->Draw();
+	   
+	   c9->cd(4);
+	   PhotonCer->SetFillColor(5);
+	   PhotonCer->SetXTitle("angle (radians)");
+	   PhotonCer->Draw();
+	   
+	   c9->cd(6);
+	   PadsUsed->SetXTitle("pads");
+	   PadsUsed->Draw("box"); 
+	 }
+       
+       break;
+       
+     case 5:
+       
+       printf("Drawing histograms.../n");
+
+       c10 = new TCanvas("c10","Alice RICH digits",50,50,1200,700);
+       c1->Divide(4,2);
+       
+       c10->cd(1);
+       hc1->SetXTitle("ix (npads)");
+       hc1->Draw("box");
+       c10->cd(2);
+       hc2->SetXTitle("ix (npads)");
+       hc2->Draw("box");
+       c10->cd(3);
+       hc3->SetXTitle("ix (npads)");
+       hc3->Draw("box");
+       c10->cd(4);
+       hc4->SetXTitle("ix (npads)");
+       hc4->Draw("box");
+       c10->cd(5);
+       hc5->SetXTitle("ix (npads)");
+       hc5->Draw("box");
+       c10->cd(6);
+       hc6->SetXTitle("ix (npads)");
+       hc6->Draw("box");
+       c10->cd(7);
+       hc7->SetXTitle("ix (npads)");
+       hc7->Draw("box");
+       c10->cd(8);
+       hc0->SetXTitle("ix (npads)");
+       hc0->Draw("box");
+       c11 = new TCanvas("c11","Hits per type",100,100,600,700);
+       c11->Divide(2,2);
+       
+       c11->cd(1);
+       feedback->SetXTitle("x (cm)");
+       feedback->SetYTitle("y (cm)");
+       feedback->Draw();
+       
+       c11->cd(2);
+       mip->SetXTitle("x (cm)");
+       mip->SetYTitle("y (cm)");
+       mip->Draw();
+       
+       c11->cd(3);
+       cerenkov->SetXTitle("x (cm)");
+       cerenkov->SetYTitle("y (cm)"); 
+       cerenkov->Draw();
+       
+       c11->cd(4);
+       h->SetXTitle("x (cm)");
+       h->SetYTitle("y (cm)");
+       h->Draw();
+
+       c12 = new TCanvas("c12","Hits distribution",150,150,600,350);
+       c12->Divide(2,1);
+       
+       c12->cd(1);
+       hitsX->SetFillColor(5);
+       hitsX->SetXTitle("(cm)");
+       hitsX->Draw();
+       
+       c12->cd(2);
+       hitsY->SetFillColor(5);
+       hitsY->SetXTitle("(cm)");
+       hitsY->Draw();
+       
+       break;
+       
+     }
+       
+
+   printf("\nEnd of analysis\n");
+   printf("**********************************\n");
+}//void AliRICHv3::DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2)
+
+//__________________________________________________________________________________________________
+void AliRICHv3::MakeBranch(Option_t* option)
+{//Create Tree branches for the RICH.
+  if(GetDebug())Info("MakeBranch","Start with option= %s.",option);
+    
+  const Int_t kBufferSize = 4000;
+  char branchname[20];
+      
+   
+  const char *cH = strstr(option,"H");
+  const char *cD = strstr(option,"D");
+  const char *cR = strstr(option,"R");
+  const char *cS = strstr(option,"S");
+
+
+  if(cH&&TreeH()){
+    if(!fHits) fHits=new TClonesArray("AliRICHhit",1000  );
+    if(!fCerenkovs) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000);
+    MakeBranchInTree(TreeH(),"RICHCerenkov", &fCerenkovs, kBufferSize, 0) ;
+
+    if(!fSDigits) fSDigits    = new TClonesArray("AliRICHdigit",100000);
+    MakeBranchInTree(TreeH(),"RICHSDigits", &fSDigits, kBufferSize, 0) ;
+  }     
+  AliDetector::MakeBranch(option);//this is after cH because we need to guarantee that fHits array is created
+      
+  if(cS&&fLoader->TreeS()){  
+    if(!fSDigits) fSDigits=new TClonesArray("AliRICHdigit",100000);
+    MakeBranchInTree(fLoader->TreeS(),"RICH",&fSDigits,kBufferSize,0) ;
+  }
+   
+  int i;
+  if (cD&&fLoader->TreeD()){
+    if(!fDchambers){
+      fDchambers=new TObjArray(kNCH);    // one branch for digits per chamber
+      for(i=0;i<kNCH;i++){ 
+        fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+      }       
+    }
+    for (i=0; i<kNCH ;i++) 
+      {
+        sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+        MakeBranchInTree(fLoader->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, 0);
+      }
+   }
+
+  if (cR&&gAlice->TreeR()){//one branch for raw clusters per chamber
+    Int_t i;
+    if (fRawClusters == 0x0 ) 
+     {
+       fRawClusters = new TObjArray(kNCH);
+       for (i=0; i<kNCH ;i++) 
+         {
+           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
+         }
+     }
+     
+    if (fRecHits1D == 0x0) 
+     {
+        fRecHits1D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
+         }
+     }
+
+    if (fRecHits3D == 0x0) 
+     {
+        fRecHits3D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
+         }
+     }
+       
+    for (i=0; i<kNCH ;i++){
+       sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
+       MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, 0);
+       sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
+       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, 0);
+       sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);  
+       MakeBranchInTree(fLoader->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, 0);
+     }
+   }//if (cR && gAlice->TreeR())
+  if(GetDebug())Info("MakeBranch","Stop.");   
+}
+//______________________________________________________________________________
+void AliRICHv3::SetTreeAddress()
+{//Set branch address for the Hits and Digits Tree.
+  if(GetDebug())Info("SetTreeAddress","Start.");
+  
+  char branchname[20];
+  Int_t i;
+
+    
+  TBranch *branch;
+  TTree *treeH = fLoader->TreeH();
+  TTree *treeD = fLoader->TreeD();
+  TTree *treeR = fLoader->TreeR();
+  TTree *treeS = fLoader->TreeS();
+    
+  if(treeH){
+    if(GetDebug())Info("SetTreeAddress","tree H is requested.");
+    if(fHits==0x0) fHits=new TClonesArray("AliRICHhit",1000); 
+    
+    branch = treeH->GetBranch("RICHCerenkov");
+    if(branch){
+      if (fCerenkovs == 0x0) fCerenkovs  = new TClonesArray("AliRICHCerenkov",1000); 
+        branch->SetAddress(&fCerenkovs);
+    }
+       
+      branch = treeH->GetBranch("RICHSDigits");
+      if (branch) 
+       {
+         if (fSDigits == 0x0) fSDigits    = new TClonesArray("AliRICHdigit",100000);
+         branch->SetAddress(&fSDigits);
+       }
+  }//if(treeH)
+ 
+   //this is after TreeH because we need to guarantee that fHits array is created
+  AliDetector::SetTreeAddress();
+    
+  if(treeS){
+    if(GetDebug())Info("SetTreeAddress","tree S is requested.");
+    branch = treeS->GetBranch("RICH");
+    if(branch){
+      if(!fSDigits) fSDigits=new TClonesArray("AliRICHdigit",100000);
+      branch->SetAddress(&fSDigits);
+    }
+  }
+    
+    
+  if(treeD){
+    if(GetDebug())Info("SetTreeAddress","tree D is requested.");
+
+      if (fDchambers == 0x0) 
+        {
+           fDchambers = new TObjArray(kNCH);
+           for (i=0; i<kNCH ;i++) 
+             {
+               fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
+             }
+        }
+      
+      for (i=0; i<kNCH; i++) {
+        sprintf(branchname,"%sDigits%d",GetName(),i+1);
+        if (fDchambers) {
+           branch = treeD->GetBranch(branchname);
+           if (branch) branch->SetAddress(&((*fDchambers)[i]));
+        }
+      }
+    }
+    
+  if(treeR){
+    if(GetDebug())Info("SetTreeAddress","tree R is requested.");
+
+    if (fRawClusters == 0x0 ) 
+     {
+       fRawClusters = new TObjArray(kNCH);
+       for (i=0; i<kNCH ;i++) 
+         {
+           fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
+         }
+     }
+     
+    if (fRecHits1D == 0x0) 
+     {
+        fRecHits1D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
+         }
+     }
+
+    if (fRecHits3D == 0x0) 
+     {
+        fRecHits3D = new TObjArray(kNCH);
+        for (i=0; i<kNCH ;i++) 
+         {
+          fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
+         }
+     }
+    
+    for (i=0; i<kNCH; i++) {
+	  sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
+	  if (fRawClusters) {
+	      branch = treeR->GetBranch(branchname);
+	      if (branch) branch->SetAddress(&((*fRawClusters)[i]));
+	  }
+    }
+      
+    for (i=0; i<kNCH; i++) {
+	sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
+	if (fRecHits1D) {
+	  branch = treeR->GetBranch(branchname);
+	  if (branch) branch->SetAddress(&((*fRecHits1D)[i]));
+	  }
+     }
+      
+     for (i=0; i<kNCH; i++) {
+	sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
+	if (fRecHits3D) {
+	  branch = treeR->GetBranch(branchname);
+	  if (branch) branch->SetAddress(&((*fRecHits3D)[i]));
+	  }
+      } 
+      
+  }//if(treeR)
+  if(GetDebug())Info("SetTreeAddress","Stop.");
+}//void AliRICHv3::SetTreeAddress()

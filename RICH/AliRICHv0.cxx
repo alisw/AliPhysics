@@ -13,97 +13,64 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-
-/////////////////////////////////////////////////////////////
-//  Manager and hits classes for set: RICH default version //
-/////////////////////////////////////////////////////////////
-
-#include "Riostream.h"
-
-#include <TNode.h> 
-#include <TRandom.h> 
-#include <TTUBE.h>
-#include <TVirtualMC.h>
-
-#include "AliConst.h" 
-#include "AliPDG.h" 
-#include "AliRICHGeometry.h"
-#include "AliRICHResponse.h"
-#include "AliRICHResponseV0.h"
-#include "AliRICHSegmentationV0.h"
 #include "AliRICHv0.h"
-#include "AliRun.h"
+#include <TVirtualMC.h>
+#include <TPDGCode.h>
+#include "AliRICHConst.h" 
+#include <AliRun.h>
+#include <TLorentzVector.h>
 
 ClassImp(AliRICHv0)
-    
-//___________________________________________
+//__________________________________________________________________________________________________
 AliRICHv0::AliRICHv0(const char *name, const char *title)
           :AliRICH(name,title)
 {
-//
-// Version 0
-// Default Segmentation, no hits
-    AliRICHSegmentationV0* segmentation = new AliRICHSegmentationV0;
-//
-//  Segmentation parameters
-    segmentation->SetPadSize(0.84,0.80);
-    segmentation->SetDAnod(0.84/2);
-//
-//  Geometry parameters
-    AliRICHGeometry* geometry = new AliRICHGeometry;
-    geometry->SetGapThickness(8);
-    geometry->SetProximityGapThickness(.4);
-    geometry->SetQuartzLength(131);
-    geometry->SetQuartzWidth(126.2);
-    geometry->SetQuartzThickness(.5);
-    geometry->SetOuterFreonLength(131);
-    geometry->SetOuterFreonWidth(40.3);
-    geometry->SetInnerFreonLength(131);
-    geometry->SetInnerFreonWidth(40.3);
-    geometry->SetFreonThickness(1.5);
-//
-//  Response parameters
-    AliRICHResponseV0*  response   = new AliRICHResponseV0;
-    response->SetSigmaIntegration(5.);
-    response->SetChargeSlope(27.);
-    response->SetChargeSpread(0.18, 0.18);
-    response->SetMaxAdc(4096);
-    response->SetAlphaFeedback(0.036);
-    response->SetEIonisation(26.e-9);
-    response->SetSqrtKx3(0.77459667);
-    response->SetKx2(0.962);
-    response->SetKx4(0.379);
-    response->SetSqrtKy3(0.77459667);
-    response->SetKy2(0.962);
-    response->SetKy4(0.379);
-    response->SetPitch(0.25);
-    response->SetWireSag(0);                     // 1->On, 0->Off
-    response->SetVoltage(2150);                  // Should only be 2000, 2050, 2100 or 2150
-//
-//    AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
-    
-    fCkovNumber=0;
-    fFreonProd=0;
-    Int_t i=0;
-    
-    fChambers = new TObjArray(kNCH);
-    for (i=0; i<kNCH; i++) {
-      
-      //PH      (*fChambers)[i] = new AliRICHChamber();  
-      fChambers->AddAt(new AliRICHChamber(), i);  
-      
-    }
-  
-    for (i=0; i<kNCH; i++) {
-      SetGeometryModel(i,geometry);
-      SetSegmentationModel(i, segmentation);
-      SetResponseModel(i, response);
-    }
+  if(GetDebug())Info("named ctor","Start.");
+  if(GetDebug())Info("named ctor","Stop.");
 }//name ctor
-//______________________________________________________________________________
+//__________________________________________________________________________________________________
 void AliRICHv0::StepManager()
 {//
+//  if(!gMC->IsNewTrack()) return;
+ 
+  char *sParticle;
+  switch(gMC->TrackPid()){
+    case kProton:
+      sParticle="p";break;
+    case kNeutron:
+      sParticle="n";break;
+    case kGamma:
+      sParticle="gamma";break;
+    case 50000050:
+      sParticle="photon";break;
+    default:
+      sParticle="not known";break;
+  }
+
+  Info("StepManager","Event=%i hunt=%i TID=%i PID=%s Mass=%f Charge=%i",
+                      gMC->CurrentEvent(),
+                                fIshunt,
+                                        gAlice->GetCurrentTrackNumber(),
+                                               sParticle,
+                                                      gMC->TrackMass(),
+                                                              gMC->TrackCharge());
+  Info("StepManager","Flags:Alive(%i) Disap(%i) Enter(%i) Exit(%i) Inside(%i) Out(%i) Stop(%i) New(%i)",
+                            gMC->IsTrackAlive(),
+                                      gMC->IsTrackDisappeared(),
+                                                gMC->IsTrackEntering(),
+                                                          gMC->IsTrackExiting(),
+                                                                    gMC->IsTrackInside(),
+                                                                          gMC->IsTrackOut(),
+                                                                                  gMC->IsTrackStop(),
+                                                                                       gMC->IsNewTrack());
+  Info("StepManager","Volume=%s of volume=%s",
+                      gMC->CurrentVolName(),gMC->CurrentVolOffName(1));
+
+//  Info("StepManager","TrackPID %i Particle %i",
+//                     gMC->TrackPid(),gAlice->Particles()[gAlice->CurrentTrack()]
+  TLorentzVector x4;
+  gMC->TrackPosition(x4);
+  Info("StepManager","x=%f y=%f z=%f r=%f theta=%f phi=%f\n",
+                      x4.X(),x4.Y(),x4.Z(),x4.Rho(),x4.Theta()*r2d,x4.Phi()*r2d);  
 }//AliRICHv0::StepManager()
-//______________________________________________________________________________
+//__________________________________________________________________________________________________
