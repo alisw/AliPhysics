@@ -11,10 +11,10 @@ AliHBTMonitorFunction.cxx       AliHBTTwoTrackEffFctn.cxx \
 AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx \
 AliHBTMonDistributionFctns.cxx  AliHBTMonResolutionFctns.cxx \
 AliHBTLLWeights.cxx             AliHBTWeightFctn.cxx \
-AliHBTWeightsPID.cxx          AliHBTWeightTheorFctn.cxx \
-AliHBTPositionRandomizer.cxx AliHBTEventBuffer.cxx \
+AliHBTWeightsPID.cxx            AliHBTWeightTheorFctn.cxx \
+AliHBTPositionRandomizer.cxx    AliHBTEventBuffer.cxx \
 AliHBTCorrFitFctn.cxx AliHBTCorrectCorrelFctn.cxx \
-AliHBTTrackPoints.cxx
+AliHBTTrackPoints.cxx AliHBTClusterMap.cxx
 FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 
 HDRS:= $(SRCS:.cxx=.h)

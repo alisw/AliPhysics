@@ -22,6 +22,7 @@ enum AliHBTPairCutProperty
   kHbtPairCutPropQOutCMSLC,
   kHbtPairCutPropQLongCMSLC,
   kHbtPairCutPropAvSepar,
+  kHbtPairCutPropClOverlap,
   kHbtPairCutPropNone
 };
 
@@ -50,7 +51,8 @@ class AliHBTPairCut: public TNamed
   void SetQOutCMSLRange(Double_t min, Double_t max);
   void SetQSideCMSLRange(Double_t min, Double_t max);
   void SetQLongCMSLRange(Double_t min, Double_t max);
-  void SetAvSeparationRange(Double_t min,Double_t max = 10e5);
+  void SetAvSeparationRange(Double_t min,Double_t max = 10e5);//Anti-Merging Cut
+  void SetClusterOverlapRange(Double_t min,Double_t max);//Anti-Splitting Max range -0.5 1.0
       
   AliHBTParticleCut* GetFirstPartCut() const {return fFirstPartCut;}
   AliHBTParticleCut* GetSecondPartCut() const {return fSecondPartCut;}
@@ -225,6 +227,18 @@ class AliHBTAvSeparationCut: public AliHbtBasePairCut
  protected:
   virtual Double_t  GetValue(AliHBTPair* pair) const;
   ClassDef(AliHBTAvSeparationCut,1)
+};
+
+class AliHBTCluterOverlapCut: public AliHbtBasePairCut
+{
+ public:
+  AliHBTCluterOverlapCut(Double_t min = 0.0, Double_t max = 1e5):
+    AliHbtBasePairCut(min,max,kHbtPairCutPropClOverlap){}
+  virtual ~AliHBTCluterOverlapCut(){}
+  
+ protected:
+  virtual Double_t  GetValue(AliHBTPair* pair) const;
+  ClassDef(AliHBTCluterOverlapCut,1)
 };
   
 #endif

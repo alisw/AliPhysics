@@ -13,6 +13,7 @@
 #include "AliHBTPair.h"
 #include "AliHBTParticleCut.h"
 #include "AliHBTTrackPoints.h"
+#include "AliHBTClusterMap.h"
 
 ClassImp(AliHBTPairCut)
 const Int_t AliHBTPairCut::fgkMaxCuts = 50;
@@ -237,6 +238,21 @@ void AliHBTPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 }
 /**********************************************************/
 
+void AliHBTPairCut::SetClusterOverlapRange(Double_t min,Double_t max)
+{
+  //sets cluster overlap factor cut ->Anti-Splitting cut
+  //cluster overlap factor ranges between 
+  // -0.5 (in all padrows both tracks have cluters) 
+  // and 1 (in all padrows one track has cluter and second has not)
+  // When Overlap Factor is 1 this pair of tracks in highly probable to be
+  // splitted track: one particle that is recontructed twise
+  // STAR uses range from -0.5 to 0.6 
+  
+  AliHbtBasePairCut* cut= FindCut(kHbtPairCutPropClOverlap);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliHBTCluterOverlapCut(min,max);
+}
+
 AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
 {
   // Find the cut corresponding to "property"
@@ -316,21 +332,45 @@ ClassImp(AliHBTAvSeparationCut)
 Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const 
 {
   //chacks if avarage distance of two tracks is in given range
-  Warning("Pass","Checking Av Separation."); 
   AliHBTTrackPoints* tpts1 = pair->Particle1()->GetTrackPoints();
   if ( tpts1 == 0x0)
    {
-     Warning("Pass","Track 1 does not have Track Points. Pair NOT Passed.");
+     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
      return -10e5;
    }
 
   AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
   if ( tpts2 == 0x0)
    {
-     Warning("Pass","Track 2 does not have Track Points. Pair NOT Passed.");
+     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
      return -10e5;
    }
    
   return tpts1->AvarageDistance(*tpts2);
 }
 
+ClassImp(AliHBTCluterOverlapCut)
+
+Double_t  AliHBTCluterOverlapCut::GetValue(AliHBTPair* pair) const
+{
+  //Returns Cluter Overlap Factor
+  //It ranges between -0.5 (in all padrows both tracks have cluters) 
+  // and 1 (in all padrows one track has cluter and second has not)
+  // When Overlap Factor is 1 this pair of tracks in highly probable to be
+  // splitted track: one particle that is recontructed twise
+
+  AliHBTClusterMap* cm1 = pair->Particle1()->GetClusterMap();
+  if ( cm1 == 0x0)
+   {
+     Warning("GetValue","Track 1 does not have Cluster Map. Returning -0.5.");
+     return -.5;
+   }
+
+  AliHBTClusterMap* cm2 = pair->Particle2()->GetClusterMap();
+  if ( cm2 == 0x0)
+   {
+     Warning("GetValue","Track 2 does not have Cluster Map. Returning -0.5.");
+     return -.5;
+   }
+  return cm1->GetOverlapFactor(*cm2);
+}

@@ -22,10 +22,7 @@
 #include "AliHBTRun.h"
 #include "AliHBTEvent.h"
 #include "AliHBTReader.h"
-#include "AliHBTParticle.h"
-#include "AliHBTParticleCut.h"
 #include "AliHBTPair.h"
-#include "AliHBTPairCut.h"
 #include "AliHBTFunction.h"
 #include "AliHBTMonitorFunction.h"
 #include "AliHBTEventBuffer.h"
@@ -61,12 +58,16 @@ AliHBTAnalysis::AliHBTAnalysis():
   fTrackMonitorFunctions ( new AliHBTMonOneParticleFctn* [fgkFctnArraySize]),    
   fParticleAndTrackMonitorFunctions ( new AliHBTMonTwoParticleFctn* [fgkFctnArraySize]),    
   fPairCut(new AliHBTEmptyPairCut()),//empty cut - accepts all particles
-  fAntiMergingCut(0x0),
   fBufferSize(2),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
-  fIsOwner(kFALSE)
+  fIsOwner(kFALSE),
+  fPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
+  fPass1(&AliHBTAnalysis::PassPartAndTrack1), //used onluy by ProcessTracksAndParticles
+  fPass2(&AliHBTAnalysis::PassPartAndTrack2),
+  fPassPairProp(&AliHBTAnalysis::PassPairPropPartAndTrack)
  {
    //default constructor
+   
  }
 /*************************************************************************************/ 
 
@@ -86,10 +87,13 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   fTrackMonitorFunctions(0x0),
   fParticleAndTrackMonitorFunctions(0x0),
   fPairCut(0x0),
-  fAntiMergingCut(0x0),
   fBufferSize(fgkDefaultBufferSize),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
-  fIsOwner(kFALSE)
+  fIsOwner(kFALSE),
+  fPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
+  fPass1(&AliHBTAnalysis::PassPartAndTrack1),
+  fPass2(&AliHBTAnalysis::PassPartAndTrack2),
+  fPassPairProp(&AliHBTAnalysis::PassPairPropPartAndTrack)
  {
 //copy constructor
    Fatal("AliHBTAnalysis(const AliHBTAnalysis&)","Sensless");
@@ -119,7 +123,6 @@ AliHBTAnalysis::~AliHBTAnalysis()
    delete [] fParticleAndTrackMonitorFunctions; 
 
    delete fPairCut; // always have an copy of an object - we create we dstroy
-   delete fAntiMergingCut;
  }
 
 /*************************************************************************************/ 
@@ -269,7 +272,9 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
 //In order to minimize calling AliRun::GetEvent (we need at one time particles from different events),
 //the loops are splited
   
-// cuta on particles only
+// cut on particles only -- why?
+// - PID: when we make resolution analysis we want to take only tracks with correct PID
+// We need cut on tracks because there are data characteristic to 
   
   AliHBTParticle * part1, * part2;
   AliHBTParticle * track1, * track2;
@@ -352,9 +357,9 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
 //            return;
 //          }
          
-         Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
+         Bool_t firstcut = (this->*fPass1)(part1,track1);
          if (fBufferSize != 0) 
-           if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
+           if ( (firstcut == kFALSE) || ( (this->*fPass2)(part1,track1) == kFALSE ) )
             {
               //accepted by any cut
               // we have to copy because reader keeps only one event
@@ -383,9 +388,9 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
             track2= trackEvent->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
-            if(fPairCut->Pass(partpair) ) //check pair cut 
+            if( (this->*fPass)(partpair,trackpair) ) //check pair cut 
               { //do not meets crietria of the pair cut, try with swapped pairs
-                if( fPairCut->Pass(partpair->GetSwapedPair()) )
+                if( (this->*fPass)(partpair->GetSwapedPair(),trackpair->GetSwapedPair()) )
                   continue; //swaped pairs do not meet criteria of pair cut as well, take next particle
                 else 
                  { //swaped pair meets all the criteria
@@ -435,9 +440,9 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
                 track2= trackEvent2->GetParticle(l);
                 trackpair->SetParticles(track1,track2);
 
-                if( fPairCut->Pass(partpair) ) //check pair cut
+                if( (this->*fPass)(partpair,trackpair) ) //check pair cut
                   { //do not meets crietria of the 
-                    if( fPairCut->Pass(partpair->GetSwapedPair()) )
+                    if( (this->*fPass)(partpair->GetSwapedPair(),trackpair->GetSwapedPair()) )
                       continue;
                     else 
                      {
@@ -450,10 +455,6 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
                   tmptrackpair = trackpair;
                   tmppartpair = partpair;
                  }
-
-                //Anti merging cut is only on tracks makes the background
-                if (fAntiMergingCut) 
-                  if (fAntiMergingCut->Pass(trackpair)) continue;
 
                 for(ii = 0;ii<fNParticleFunctions;ii++)
                   fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
@@ -590,10 +591,6 @@ void AliHBTAnalysis::ProcessTracks()
                   tmptrackpair = trackpair;
                  }
                  
-                //Anti merging cut is only on tracks makes the background
-                if (fAntiMergingCut) 
-                  if (fAntiMergingCut->Pass(trackpair)) continue;
-
                 for(ii = 0;ii<fNTrackFunctions;ii++)
                   fTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair);
                  
@@ -729,18 +726,6 @@ void AliHBTAnalysis::ProcessParticles()
        }
       partEvent1 = partbuffer.Push(partEvent1); 
     }//while (fReader->Next() == kFALSE)
-}
-/*************************************************************************************/ 
-
-void AliHBTAnalysis::SetAntiMergingCut(Float_t x)
-{
-  if (x < 0)
-   {
-     Error("SetAntiMergingCut","Value less then 0");
-     return;
-   }
-  if (fAntiMergingCut == 0x0) fAntiMergingCut = new AliHBTAvSeparationCut(x);
-  else fAntiMergingCut->SetMinimum(x);
 }
 /*************************************************************************************/
 
@@ -1035,7 +1020,7 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
             track2= trackEvent2->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
-            if( (fPairCut->PassPairProp(trackpair)) ) //check pair cut
+            if( (this->*fPassPairProp)(partpair,trackpair) ) //check pair cut
              { //do not meets crietria of the pair cut
               continue; 
              }
@@ -1077,7 +1062,7 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
             track2= trackEvent3->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
-            if( (fPairCut->PassPairProp(trackpair)) ) //check pair cut
+            if( (this->*fPassPairProp)(partpair,trackpair) ) //check pair cut
              { //do not meets crietria of the pair cut
               continue; 
              }
@@ -1370,9 +1355,6 @@ void AliHBTAnalysis::FilterOut(AliHBTEvent* outpart1, AliHBTEvent* outpart2, Ali
   outtrack1->Reset();
   outtrack2->Reset();
   
-  AliHBTParticleCut *cut1 = fPairCut->GetFirstPartCut();
-  AliHBTParticleCut *cut2 = fPairCut->GetSecondPartCut();
-  
   Bool_t in1, in2;
   
   for (Int_t i = 0; i < inpart->GetNumberOfParticles(); i++)
@@ -1381,8 +1363,8 @@ void AliHBTAnalysis::FilterOut(AliHBTEvent* outpart1, AliHBTEvent* outpart2, Ali
      part = inpart->GetParticle(i);
      track = intrack->GetParticle(i);
      
-     if ( (cut1->Pass(track))  ) in1 = kFALSE; //if part  is rejected by cut1, in1 is false
-     if ( (cut2->Pass(track))  ) in2 = kFALSE; //if part  is rejected by cut2, in2 is false
+     if ( ((this->*fPass1)(part,track))  ) in1 = kFALSE; //if part  is rejected by cut1, in1 is false
+     if ( ((this->*fPass2)(part,track))  ) in2 = kFALSE; //if part  is rejected by cut2, in2 is false
      
      if (gDebug)//to be removed in real analysis     
      if ( in1 && in2 ) //both cuts accepted, should never happen, just in case
@@ -1479,7 +1461,44 @@ Bool_t AliHBTAnalysis::IsNonIdentAnalysis()
  
  return kTRUE;
 }
+/*************************************************************************************/ 
 
+void AliHBTAnalysis::SetCutsOnParticles()
+{
+ // -- aplies only to Process("TracksAndParticles")
+ // (ProcessTracksAndParticles and ProcessTracksAndParticlesNonIdentAnal)
+ // Only particles properties are checkes against cuts
+  fPass = &AliHBTAnalysis::PassPart;
+  fPass1 = &AliHBTAnalysis::PassPart1;
+  fPass2 = &AliHBTAnalysis::PassPart2;
+  fPassPairProp = &AliHBTAnalysis::PassPairPropPart;
+  
+}
+/*************************************************************************************/ 
+
+void AliHBTAnalysis::SetCutsOnTracks()
+{
+ // -- aplies only to Process("TracksAndParticles")
+ // (ProcessTracksAndParticles and ProcessTracksAndParticlesNonIdentAnal)
+ // Only tracks properties are checkes against cuts
+  fPass = &AliHBTAnalysis::PassTrack;
+  fPass1 = &AliHBTAnalysis::PassTrack1;
+  fPass2 = &AliHBTAnalysis::PassTrack2;
+  fPassPairProp = &AliHBTAnalysis::PassPairPropTrack;
+ 
+}
+/*************************************************************************************/ 
+
+void AliHBTAnalysis::SetCutsOnTracksAndParticles()
+{
+ // -- aplies only to Process("TracksAndParticles")
+ // (ProcessTracksAndParticles and ProcessTracksAndParticlesNonIdentAnal)
+ // Both, tracks and particles, properties are checked against cuts
+  fPass = &AliHBTAnalysis::PassPartAndTrack;
+  fPass1 = &AliHBTAnalysis::PassPartAndTrack1;
+  fPass2 = &AliHBTAnalysis::PassPartAndTrack2;
+  fPassPairProp = &AliHBTAnalysis::PassPairPropPartAndTrack;
+}
 /*************************************************************************************/ 
 
 void AliHBTAnalysis::PressAnyKey()
@@ -1495,4 +1514,5 @@ void AliHBTAnalysis::PressAnyKey()
    }
 }
 
+/*************************************************************************************/ 
 

@@ -21,6 +21,7 @@
 
 class TParticle;
 class AliHBTTrackPoints;
+class AliHBTClusterMap;
 
 class AliHBTParticle : public TObject
 {
@@ -115,7 +116,9 @@ public:
   
   void           SetTrackPoints(AliHBTTrackPoints* tpts){fTrackPoints = tpts;}
   AliHBTTrackPoints* GetTrackPoints() const {return fTrackPoints;}
-      
+  void           SetClusterMap(AliHBTClusterMap* cm){fClusterMap = cm;}
+  AliHBTClusterMap* GetClusterMap() const {return fClusterMap;}
+  
   static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
   static Int_t   GetDebug(){return fgDebug;}
   static Int_t   fgDebug; //debug printout level
@@ -143,6 +146,8 @@ private:
   Double_t       fVt;                   // t of production vertex
 
   AliHBTTrackPoints* fTrackPoints;      // track positions along trajectory - used by anti-merging cut
+  AliHBTClusterMap*  fClusterMap;       // bit map of cluters occupation; 1 if has cluter on given layer/padrow/...
+    
   ClassDef(AliHBTParticle,3)  // TParticle vertex particle information
 };
 

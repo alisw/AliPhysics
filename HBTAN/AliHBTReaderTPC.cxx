@@ -31,7 +31,7 @@
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
 #include "AliHBTTrackPoints.h"
-
+#include "AliHBTClusterMap.h"
 
 
 ClassImp(AliHBTReaderTPC)
@@ -44,6 +44,7 @@ AliHBTReaderTPC::AliHBTReaderTPC():
  fUseMagFFromRun(kTRUE),
  fNTrackPoints(0),
  fdR(0.0),
+ fClusterMap(kFALSE),
  fNClustMin(0),
  fNClustMax(150),
  fNChi2PerClustMin(0.0),
@@ -101,6 +102,7 @@ AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs, const Char_t* galicefilename):
  fUseMagFFromRun(kTRUE),
  fNTrackPoints(0),
  fdR(0.0),
+ fClusterMap(kFALSE),
  fNClustMin(0),
  fNClustMax(150),
  fNChi2PerClustMin(0.0),
@@ -285,7 +287,12 @@ Int_t AliHBTReaderTPC::ReadNext()
           AliHBTTrackPoints* tpts = new AliHBTTrackPoints(fNTrackPoints,iotrack,fdR);
           track->SetTrackPoints(tpts);
         }
-        
+       if (  fClusterMap ) 
+        {
+          AliHBTClusterMap* cmap = new AliHBTClusterMap(iotrack);
+          track->SetClusterMap(cmap);
+        }
+    
        fParticlesEvent->AddParticle(part);
        fTracksEvent->AddParticle(track);
       }

@@ -43,8 +43,9 @@ class AliHBTReaderTPC: public AliHBTReader
     void          SetC44Range(Float_t min, Float_t max);
     void          SetNumberOfTrackPoints(Int_t n = 5,Float_t dr = 30.0) {fNTrackPoints = n; fdR = dr;}
     Int_t         GetNumberOfTrackPoints() const {return fNTrackPoints;}
+    void          SetClusterMap(Bool_t flag = kTRUE){fClusterMap = flag;}
+
   protected:
-    //in the future this class is will read global tracking
     Int_t         ReadNext();
     Int_t         OpenNextSession();
     void          DoOpenError(const char* msgfmt, ...);
@@ -56,8 +57,14 @@ class AliHBTReaderTPC: public AliHBTReader
     Bool_t        fUseMagFFromRun;//flag indicating if using field specified in gAlice (kTRUE)
                                // or enforece other defined by fMagneticField
     
-    Int_t         fNTrackPoints;//number of track points
+    Int_t         fNTrackPoints;//number of track points; if==0 track points are not created
     Float_t       fdR;//spacing between points (along radius) in cm
+                      //Track Points are needed for Anti-Merging Cut
+    
+    Bool_t        fClusterMap;//Flag indicating if Claster Map should be created for each track
+                              //Claster map is needed for Anti-Splitting Cut
+
+    //Cut Parameters specific to TPC tracks
         
     Int_t         fNClustMin;//Number of clusters min value
     Int_t         fNClustMax;//Number of clusters max value
@@ -83,6 +90,7 @@ class AliHBTReaderTPC: public AliHBTReader
   private:
     
     Bool_t CheckTrack(AliTPCtrack* t);
+
   public:
     ClassDef(AliHBTReaderTPC,3)
 };

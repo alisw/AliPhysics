@@ -6,6 +6,7 @@
  
 #pragma link C++ class AliHBTAnalysis+;
 #pragma link C++ class AliHBTParticle+;
+#pragma link C++ class AliHBTPair+;
 #pragma link C++ class AliHBTEvent+;
 #pragma link C++ class AliHBTRun+;
 #pragma link C++ class AliHBTEventBuffer+;
@@ -34,7 +35,6 @@
 #pragma link C++ class AliHBTMonTwoParticleFctn2D+;
 #pragma link C++ class AliHBTMonTwoParticleFctn3D+;
 
-#pragma link C++ class AliHBTPair+;
 #pragma link C++ class AliHBTParticleCut-;
 #pragma link C++ class AliHBTEmptyParticleCut-;
 #pragma link C++ class AliHBTPairCut-;
@@ -49,6 +49,7 @@
 #pragma link C++ class AliHBTQOutCMSLCCut+;
 #pragma link C++ class AliHBTQLongCMSLCCut+;
 #pragma link C++ class AliHBTAvSeparationCut+;
+#pragma link C++ class AliHBTCluterOverlapCut+;
     
 #pragma link C++ class AliHBTMomentumCut+;
 #pragma link C++ class AliHBTPtCut+;
@@ -77,6 +78,7 @@
 #pragma link C++ class AliHBTReaderInternal+;
 
 #pragma link C++ class AliHBTTrackPoints+;
+#pragma link C++ class AliHBTClusterMap+;
     
 #pragma link C++ class AliHBTQInvCorrelFctn+;
 #pragma link C++ class AliHBTTwoKStarCorrelFctn+;

@@ -25,7 +25,9 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
                 char *outfile = "hbtanalysis.root")
  {
    
-  AliHBTTrackPoints::SetDebug(1);
+//  AliHBTTrackPoints::SetDebug(1);
+  AliHBTParticle::SetDebug(0);
+  
 //HBT Anlysis Macro
 //Anlyzes TPC recontructed tracks and simulated particles that corresponds to them
 
@@ -68,6 +70,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   /***********************************************************/
   //Create analysis and reader
   AliHBTAnalysis * analysis = new AliHBTAnalysis();
+  analysis->SetCutsOnTracks();
   
   AliHBTReader* reader;
   Int_t kine = strcmp(datatype,"Kine");
@@ -91,7 +94,8 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   else if(!TPC)
    {
     reader = new AliHBTReaderTPC();
-    ((AliHBTReaderTPC*)reader)->SetNumberOfTrackPoints(5,30.);
+    //((AliHBTReaderTPC*)reader)->SetNumberOfTrackPoints(5,30.);
+    ((AliHBTReaderTPC*)reader)->SetClusterMap();
    }
   else if(!ITSv1)
    {
@@ -146,7 +150,8 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   Float_t qinvmax = 0.05;//50MeV
   paircut->SetQInvRange(qinvmin,qinvmax);  
   
- // paircut->SetAvSeparationRange(10.,10000.);  
+ // paircut->SetAvSeparationRange(10.); //AntiMerging
+  paircut->SetClusterOverlapRange(-.5,1.0);//AntiSplitting
   
 //  AliHBTParticleCut* partcut= new AliHBTParticleCut();
 //  partcut->SetPID(kPiPlus);
@@ -155,7 +160,6 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
 //  paircut->SetSecondPartCut(partcut);
   
   analysis->SetGlobalPairCut(paircut);
-  analysis->SetAntiMergingCut(5.);//in cm
   
   /***********************************************************/    
   /*****   W E I G H T S        ******************************/    
