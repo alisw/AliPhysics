@@ -5,6 +5,7 @@
 
 #include "TGeant4.h"
 #include "TG4Messenger.h"
+#include "TG4VRunConfiguration.h"
 #include "TG4GeometryManager.h" 
 #include "TG4PhysicsManager.h" 
 #include "TG4StepManager.h" 
@@ -30,7 +31,7 @@ TGeant4::TGeant4(const char* name, const char* title,
   //G4cout << "TG4GeometryManager has been created." << endl;
   
   // create physics manager  
-  fPhysicsManager = new TG4PhysicsManager();
+  fPhysicsManager = new TG4PhysicsManager(configuration->GetPhysicsList());
   // add verbose level
   //G4cout << "TG4GeometryManager has been created." << endl;
   
@@ -66,7 +67,7 @@ TGeant4::TGeant4(const char* name, const char* title,
   //G4cout << "TG4GeometryManager has been created." << endl;
   
   // create physics manager  
-  fPhysicsManager = new TG4PhysicsManager();
+  fPhysicsManager = new TG4PhysicsManager(configuration->GetPhysicsList());
   // add verbose level
   //G4cout << "TG4GeometryManager has been created." << endl;
   
