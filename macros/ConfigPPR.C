@@ -1172,6 +1172,24 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	comment = comment.Append(" Cocktail for TRD at 5.5 TeV");
 	AliGenCocktail *gener  = new AliGenCocktail();
 	
+	AliGenParam *phi = new AliGenParam(10,
+                                           new AliGenMUONlib(),
+                                           AliGenMUONlib::kPhi,
+                                           "Vogt PbPb");
+
+	phi->SetPtRange(0, 100);
+	phi->SetYRange(-1., +1.);
+	phi->SetForceDecay(kDiElectron);
+
+	AliGenParam *omega = new AliGenParam(10,
+					     new AliGenMUONlib(),
+					     AliGenMUONlib::kOmega,
+					     "Vogt PbPb");
+
+	omega->SetPtRange(0, 100);
+	omega->SetYRange(-1., +1.);
+	omega->SetForceDecay(kDiElectron);
+	
 	AliGenParam *jpsi = new AliGenParam(10,
 					    new AliGenMUONlib(),
 					    AliGenMUONlib::kJpsiFamily,
@@ -1214,6 +1232,8 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	beautyJ->SetYRange(-1.5, +1.5);
 	beautyJ->SetForceDecay(kBJpsiDiElectron);
 
+	gener->AddGenerator(phi,"Phi",1);
+	gener->AddGenerator(omega,"Omega",1);
 	gener->AddGenerator(jpsi,"J/psi",1);
 	gener->AddGenerator(ups,"Upsilon",1);
 	gener->AddGenerator(charm,"Charm",1);
