@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/03/15 17:21:54  nilsen
+Removed zero-ing of fModules variable in constructors.
+
 Revision 1.9  2000/10/04 19:46:39  barbera
 Corrected by F. Carminati for v3.04
 
@@ -187,8 +190,16 @@ void AliITSmodule::MedianHitG(Int_t index,
    y2l = l[1];
    z2l = l[2];
 
-   xMl = (-y1l / (y2l-y1l))*(x2l-x1l) + x1l;
-   zMl = (-y1l / (y2l-y1l))*(z2l-z1l) + z1l;
+   // Modified by N.Carrer. In very rare occasions the track may be just
+   // tangent to the module. Therefore the entrance and exit points have the
+   // same y.
+   if( (y2l-y1l) != 0.0 ) {
+     xMl = (-y1l / (y2l-y1l))*(x2l-x1l) + x1l;
+     zMl = (-y1l / (y2l-y1l))*(z2l-z1l) + z1l;
+   } else {
+     xMl = 0.5*(x1l+x2l);
+     zMl = 0.5*(z1l+z2l);
+   }
 
    l[0] = xMl;
    l[1] = yMl;
@@ -371,9 +382,17 @@ void AliITSmodule::MedianHitL(Int_t index,
    itsHit1->GetPositionL(x1l,y1l,z1l);
    itsHit2->GetPositionL(x2l,y2l,z2l);
 
-   xMl = (-y1l / (y2l-y1l))*(x2l-x1l) + x1l;
    yMl = 0.0;
-   zMl = (-y1l / (y2l-y1l))*(z2l-z1l) + z1l;	     
+   // Modified by N.Carrer. In very rare occasions the track may be just
+   // tangent to the module. Therefore the entrance and exit points have the
+   // same y.
+   if( (y2l-y1l) != 0.0 ) {
+     xMl = (-y1l / (y2l-y1l))*(x2l-x1l) + x1l;
+     zMl = (-y1l / (y2l-y1l))*(z2l-z1l) + z1l;	     
+   } else {
+     xMl = 0.5*(x1l+x2l);
+     zMl = 0.5*(z1l+z2l);
+   }
 }
 //___________________________________________________________________________
 void AliITSmodule::MedianHit(Int_t index,
