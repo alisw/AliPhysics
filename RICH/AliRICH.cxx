@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.34  2000/11/10 18:12:12  jbarbosa
+  Bug fix for AliRICHCerenkov (thanks to P. Hristov)
+
   Revision 1.33  2000/11/02 10:09:01  jbarbosa
   Minor bug correction (some pointers were not initialised in the default constructor)
 
@@ -451,7 +454,7 @@ void AliRICH::CreateGeometry()
     // --- Define the RICH detector 
     //     External aluminium box 
     par[0] = 68.8;
-    par[1] = 11.5;                 //Original Settings
+    par[1] = 13;                 //Original Settings
     par[2] = 70.86;
     /*par[0] = 73.15;
     par[1] = 11.5;
@@ -460,12 +463,26 @@ void AliRICH::CreateGeometry()
     
     //     Air 
     par[0] = 66.3;
-    par[1] = 11.5;                 //Original Settings
+    par[1] = 13;                 //Original Settings
     par[2] = 68.35;
     /*par[0] = 66.55;
     par[1] = 11.5;
     par[2] = 64.8;*/
     gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3);
+    
+    //    Air 2 (cutting the lower part of the box)
+    
+    par[0] = 1.25;
+    par[1] = 3;                 //Original Settings
+    par[2] = 70.86;
+    gMC->Gsvolu("AIR2", "BOX ", idtmed[1000], par, 3);
+
+    //    Air 3 (cutting the lower part of the box)
+    
+    par[0] = 66.3;
+    par[1] = 3;                 //Original Settings
+    par[2] = 1.2505;
+    gMC->Gsvolu("AIR3", "BOX ", idtmed[1000], par, 3);
     
     //     Honeycomb 
     par[0] = 66.3;
@@ -605,6 +622,28 @@ void AliRICH::CreateGeometry()
     par[2] = 20.;
     gMC->Gsvolu("GRID", "TUBE", idtmed[1006], par, 3);
 
+    // Wire supports
+    // Bar of metal
+    
+    par[0] = csi_width/2;
+    par[1] = 1.05;
+    par[2] = 1.05;
+    gMC->Gsvolu("WSMe", "BOX ", idtmed[1009], par, 3);
+
+    // Ceramic pick up (base)
+    
+    par[0] =  csi_width/2;
+    par[1] = .25;
+    par[2] = 1.05;
+    gMC->Gsvolu("WSG1", "BOX ", idtmed[1010], par, 3);
+
+    // Ceramic pick up (head)
+
+    par[0] = csi_width/2;
+    par[1] = .1;
+    par[2] = .1;
+    gMC->Gsvolu("WSG2", "BOX ", idtmed[1010], par, 3);
+
     // Aluminium supports for methane and CsI
     // Short bar
 
@@ -635,12 +674,66 @@ void AliRICH::CreateGeometry()
     par[2] = geometry->GetQuartzLength()/2 + 68.35 - geometry->GetQuartzLength()/2;
     gMC->Gsvolu("SFLG", "BOX", idtmed[1009], par, 3);
     
-      
+    // PCB backplane
     
+    par[0] = csi_width/2;
+    par[1] = .25;
+    par[2] = csi_length/4 -.5025;
+    gMC->Gsvolu("PCB ", "BOX", idtmed[1011], par, 3);
 
+    
+    // Backplane supports
+
+    // Aluminium slab
+    
+    par[0] = 33.15;
+    par[1] = 2;
+    par[2] = 21.65;
+    gMC->Gsvolu("BACK", "BOX", idtmed[1009], par, 3);
+    
+    // Big hole
+    
+    par[0] = 9.05;
+    par[1] = 2;
+    par[2] = 4.4625;
+    gMC->Gsvolu("BKHL", "BOX", idtmed[1000], par, 3);
+
+    // Small hole
+    
+    par[0] = 5.7;
+    par[1] = 2;
+    par[2] = 4.4625;
+    gMC->Gsvolu("BKHS", "BOX", idtmed[1000], par, 3);
+
+    // Place holes inside backplane support
+
+    gMC->Gspos("BKHS", 1, "BACK", .8 + 5.7,0., .6 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHS", 2, "BACK", -.8 - 5.7,0., .6 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHS", 3, "BACK", .8 + 5.7,0., -.6 - 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHS", 4, "BACK", -.8 - 5.7,0., -.6 - 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHS", 5, "BACK", .8 + 5.7,0., .6 + 8.925 + 1.2 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHS", 6, "BACK", -.8 - 5.7,0., .6 + 8.925 + 1.2 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHS", 7, "BACK", .8 + 5.7,0., -.6 - 8.925 - 1.2 - 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHS", 8, "BACK", -.8 - 5.7,0., -.6 - 8.925 - 1.2 - 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 1, "BACK", .8 + 11.4 + 1.6 + 9.05, 0., .6 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 2, "BACK", -.8 - 11.4 - 1.6 - 9.05, 0., .6 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 3, "BACK", .8 + 11.4 + 1.6 + 9.05, 0., -.6 - 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 4, "BACK", -.8 - 11.4 - 1.6 - 9.05, 0., -.6 - 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 5, "BACK", .8 + 11.4+ 1.6 + 9.05, 0., .6 + 8.925 + 1.2 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 6, "BACK", -.8 - 11.4 - 1.6 - 9.05, 0., .6 + 8.925 + 1.2 + 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 7, "BACK", .8 + 11.4 + 1.6 + 9.05, 0., -.6 - 8.925 - 1.2 - 4.4625, 0, "ONLY");
+    gMC->Gspos("BKHL", 8, "BACK", -.8 - 11.4 - 1.6 - 9.05, 0., -.6 - 8.925 - 1.2 - 4.4625, 0, "ONLY");
+
+    
+  
     // --- Places the detectors defined with GSVOLU 
     //     Place material inside RICH 
-    gMC->Gspos("SRIC", 1, "RICH", 0., 0., 0., 0, "ONLY");
+    gMC->Gspos("SRIC", 1, "RICH", 0.,0., 0., 0, "ONLY");
+    gMC->Gspos("AIR2", 1, "RICH", 66.3 + 1.2505, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.5, 0., 0, "ONLY");
+    gMC->Gspos("AIR2", 2, "RICH", -66.3 - 1.2505, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.5, 0., 0, "ONLY");
+    gMC->Gspos("AIR3", 1, "RICH", 0.,  1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.5, -68.35 - 1.25, 0, "ONLY");
+    gMC->Gspos("AIR3", 2, "RICH", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .376 -.5 - 3.5,  68.35 + 1.25, 0, "ONLY");
+    
       
     gMC->Gspos("ALUM", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .376 -.025, 0., 0, "ONLY");
     gMC->Gspos("HONE", 1, "SRIC", 0., 1.276- geometry->GetGapThickness()/2  - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .188, 0., 0, "ONLY");
@@ -734,6 +827,28 @@ void AliRICH::CreateGeometry()
     gMC->Gspos("GAP ", 1, "META", 0., geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 - 0.0001, 0., 0, "ONLY");
     gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
     gMC->Gspos("CSI ", 1, "SRIC", 0., 1.276 + geometry->GetGapThickness()/2 + .25, 0., 0, "ONLY");
+   
+    // Wire support placing
+
+    gMC->Gspos("WSG2", 1, "GAP ", 0., geometry->GetProximityGapThickness()/2 - .1, 0., 0, "ONLY");
+    gMC->Gspos("WSG1", 1, "CSI ", 0., 0., 0., 0, "ONLY");
+    gMC->Gspos("WSMe", 1, "SRIC ", 0., 1.276 + geometry->GetGapThickness()/2 + .5 + 1.05, 0., 0, "ONLY");
+
+    // Backplane placing
+    
+    gMC->Gspos("BACK", 1, "SRIC ", -33.15, 1.276 + geometry->GetGapThickness()/2 + .5 + 2.1 + 2, 43.3, 0, "ONLY");
+    gMC->Gspos("BACK", 2, "SRIC ", 33.15, 1.276 + geometry->GetGapThickness()/2 + .5 + 2.1 + 2 , 43.3, 0, "ONLY");
+    gMC->Gspos("BACK", 3, "SRIC ", -33.15, 1.276 + geometry->GetGapThickness()/2 + .5 + 2.1 + 2, 0., 0, "ONLY");
+    gMC->Gspos("BACK", 4, "SRIC ", 33.15, 1.276 + geometry->GetGapThickness()/2 + .5 + 2.1 + 2, 0., 0, "ONLY");
+    gMC->Gspos("BACK", 5, "SRIC ", 33.15, 1.276 + geometry->GetGapThickness()/2 + .5 + 2.1 + 2, -43.3, 0, "ONLY");
+    gMC->Gspos("BACK", 6, "SRIC ", -33.15, 1.276 + geometry->GetGapThickness()/2 + .5 + 2.1 + 2, -43.3, 0, "ONLY");
+
+    // PCB placing
+    
+    gMC->Gspos("PCB ", 1, "SRIC ", 0.,  1.276 + geometry->GetGapThickness()/2 + .5 + 1.05, csi_width/4 + .5025 + 1.2, 0, "ONLY");
+    gMC->Gspos("PCB ", 2, "SRIC ", 0.,  1.276 + geometry->GetGapThickness()/2 + .5 + 1.05, -csi_width/4 - .5025 - 1.2, 0, "ONLY");
+   
+    
 
     //printf("Position of the gap: %f to %f\n", 1.276 + geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 - .2, 1.276 + geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 + .2);
     
@@ -1029,6 +1144,14 @@ void AliRICH::CreateMaterials()
     zal    = 13.;
     densal = 2.7;
     radlal = 8.9;
+
+    // --- Glass parameters
+
+    Float_t aglass[5]={12.01, 28.09, 16.,   10.8,  23.};
+    Float_t zglass[5]={ 6.,   14.,    8.,    5.,   11.};
+    Float_t wglass[5]={ 0.5,  0.105, 0.355, 0.03,  0.01};
+    Float_t dglass=1.74;
+
     
     AliMaterial(1, "Air     $", 14.61, 7.3, .001205, 30420., 67500);
     AliMaterial(6, "HON", ahon, zhon, denshon, radlhon, 0);
@@ -1040,6 +1163,8 @@ void AliRICH::CreateMaterials()
     AliMixture(41, "METG", amet, zmet, densmet, nlmatmet, wmatmet);
     AliMaterial(11, "GRI", agri, zgri, densgri, radlgri, 0);
     AliMaterial(50, "ALUM", aal, zal, densal, radlal, 0);
+    AliMixture(32, "GLASS",aglass, zglass, dglass, 5, wglass);
+    AliMaterial(31, "COPPER$",   63.54,    29.,   8.96,  1.4, 0.);
     
     tmaxfd = -10.;
     stemax = -.1;
@@ -1057,6 +1182,8 @@ void AliRICH::CreateMaterials()
     AliMedium(8, "QUARZOO$", 21, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
     AliMedium(9, "GAP$", 41, 1, isxfld, sxmgmx,tmaxfd, .1, -deemax, epsil, -stmin);
     AliMedium(10, "ALUMINUM$", 50, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(11, "GLASS", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMedium(12, "PCB_COPPER", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
     
 
     geant3->Gsckov(idtmed[1000], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
@@ -1069,6 +1196,7 @@ void AliRICH::CreateMaterials()
     geant3->Gsckov(idtmed[1007], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
     geant3->Gsckov(idtmed[1008], 26, ppckov, abscoMethane, efficAll, rIndexMethane);
     geant3->Gsckov(idtmed[1009], 26, ppckov, abscoGrid, efficGrid, rIndexGrid);
+    geant3->Gsckov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll, rIndexOpaqueQuarz);
 }
 
 //___________________________________________
