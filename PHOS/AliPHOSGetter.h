@@ -39,7 +39,7 @@ class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSSDigitizer ;
 class AliPHOSEmcRecPoint ;
-class AliPHOSRecPoint ;
+class AliPHOSCpvRecPoint ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegment ;
 class AliPHOSTrackSegmentMaker ;
@@ -65,99 +65,99 @@ class AliPHOSGetter : public TObject {
     // dtor
   }
   
-  void Post(const char * file, const char * opt, const char * name = 0, const Int_t event=-1) const ;  
-  void  Event(Int_t event) ; // reads event from file 
-  Int_t EventNumber()       { return (Int_t) gAlice->GetEvNumber() ; }
-  Int_t MaxEvent()          { return (Int_t) gAlice->TreeE()->GetEntries() ; }
+  Bool_t PostGeometry( void ) const ;  
+  Bool_t PostHits(void ) const ;  
+  Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
+  Bool_t PostDigits(       const char * name ) const ;  
+  Bool_t PostRecPoints(    const char * name ) const ;  
+  Bool_t PostTrackSegments(const char * name) const ;  
+  Bool_t PostRecParticles( const char * name) const ;  
+
+  Bool_t PostClusterizer( const char * name) const ;  
+  Bool_t PostClusterizer(AliPHOSClusterizer * clu) const ;  
+  Bool_t PostSDigitizer (AliPHOSSDigitizer * sdigitizer) const ;  
+  Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
+  Bool_t PostDigitizer (AliPHOSDigitizer * digitizer) const ;  
+  Bool_t PostDigitizer  ( const char * name) const ;  
+  Bool_t PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tsm) const ;  
+  Bool_t PostTrackSegmentMaker(const char * name ) const ;  
+  Bool_t PostPID  (AliPHOSPID * pid) const ;  
+  Bool_t PostPID  (       const char * name ) const ;  
+  Bool_t PostQA   (       const char * headerFile ) const ;
+  
+
+  void   Event(const Int_t event, const char * opt = "HSDRQ") ;    
+  void   Track(Int_t itrack) ;
+
+  //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
+  void   ReadTreeS(TTree * treeS,Int_t input) ;
+  
+  Int_t  EventNumber()       { return (Int_t) gAlice->GetEvNumber() ; }
+  Int_t  MaxEvent()          { return (Int_t) gAlice->TreeE()->GetEntries() ; }
   static AliPHOSGetter * GetInstance(const char* headerFile,
-				     const char* branchTitle = "No Name" ) ; 
-  static AliPHOSGetter * GetInstance() ; 
-  const AliPHOS * PHOS() const ;  
-  const AliPHOSGeometry * PHOSGeometry() const  ; 
- 
-  // Alarms
+				     const char* branchTitle = "Default" ) ; 
+  static AliPHOSGetter *   GetInstance() ; 
+
+  const  AliPHOS *         PHOS() const ;  
+  const  AliPHOSGeometry * PHOSGeometry() const  ; 
+   // Alarms
   TFolder * Alarms(const char * name = 0) const { return (TFolder*)(ReturnO("Alarms", name)) ; }
 
   // QA Tasks
   TTask * QATasks(const char * name = 0) const { return (TTask*)(ReturnT("QATasks", name)) ; }
 
   // Hits
-  TClonesArray * Hits(const char * name = 0) const { return (TClonesArray*)(ReturnO("Hits", name)) ; }
-  const AliPHOSHit * Hit(Int_t index)
-    {if( Hits() ) return (AliPHOSHit*)(Hits()->At(index)); 
-      return 0 ;} 
-  const Int_t NHits() 
-    {if( Hits() ) return Hits()->GetEntriesFast(); 
-     return 0 ;} 
+        TClonesArray *  Hits(void) const { return (TClonesArray*)(ReturnO("Hits")) ; }
+
   // SDigits
-  TClonesArray * SDigits(const char * name = 0, const char * file=0) const { 
-    return (TClonesArray*)(ReturnO("SDigits", name, file)) ; }
-  const AliPHOSDigit *        SDigit(Int_t index)
-    {if( SDigits() ) return (AliPHOSDigit*)(SDigits()->At(index)); 
-      return 0 ;} 
-  const Int_t                 NSDigits() 
-    {if( SDigits() ) return SDigits()->GetEntriesFast(); 
-     return 0 ;} 
-  AliPHOSSDigitizer *   SDigitizer(const char * name =0) const { return ((AliPHOSSDigitizer*)(ReturnT("SDigitizer", name))) ; }
+        TClonesArray *  SDigits(const char * name = 0, const char * file=0) const 
+	                              { return (TClonesArray*)(ReturnO("SDigits", name, file)) ; }
+
+   AliPHOSSDigitizer *  SDigitizer(const char * name =0) const 
+                                      { return ((AliPHOSSDigitizer*)(ReturnT("SDigitizer", name))) ; }
+
   // Digits
-  TClonesArray *        Digits(const char * name = 0) const { return (TClonesArray*)(ReturnO("Digits", name)) ; }
-  const AliPHOSDigit *        Digit(Int_t index) 
-                          {if( Digits() ) return (AliPHOSDigit*)Digits()->At(index); 
-			  return 0 ;} 
-  const Int_t                 NDigits() 
-                          {if( Digits() ) return Digits()->GetEntriesFast(); 
-			  return 0 ;} 
-  AliPHOSDigitizer *    Digitizer(const char * name =0) const { return (AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ; }
+        TClonesArray *  Digits(const char * name = 0)   const 
+                             { return (TClonesArray*)(ReturnO("Digits", name)) ; }
+    AliPHOSDigitizer *  Digitizer(const char * name =0) const 
+                             { return (AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ; }
+
   // RecPoints
-  TObjArray * EmcRecPoints(const char * name = 0, const char * file=0) const { 
-    return (TObjArray*)(ReturnO("EmcRecPoints", name, file)) ; }
-  const AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) 
-    { if(EmcRecPoints()) return (AliPHOSEmcRecPoint*)EmcRecPoints()->At(index); return 0 ;} 
-  const Int_t NEmcRecPoints() 
-    { if(EmcRecPoints()) return EmcRecPoints()->GetEntriesFast(); return 0 ;} 
-  TObjArray * CpvRecPoints(const char * name = 0, const char * file=0) const { 
-    return (TObjArray*)(ReturnO("CpvRecPoints", name, file)) ; }
-  const AliPHOSRecPoint * CpvRecPoint(Int_t index) 
-    { if(CpvRecPoints()) return (AliPHOSRecPoint*)CpvRecPoints()->At(index); return 0 ;}  
-  const Int_t NCpvRecPoints() 
-    { if(CpvRecPoints()) return CpvRecPoints()->GetEntriesFast(); return 0 ;}  
+  TObjArray * EmcRecPoints(const char * name = 0) const { 
+              return (TObjArray*)(ReturnO("EmcRecPoints", name)) ; }
+  TObjArray * CpvRecPoints(const char * name = 0) const { 
+              return (TObjArray*)(ReturnO("CpvRecPoints", name)) ; }
+
   AliPHOSClusterizer * Clusterizer (const char * name =0) const 
-    { return (AliPHOSClusterizer*)(ReturnT("Clusterizer", name)) ; }
+              { return (AliPHOSClusterizer*)(ReturnT("Clusterizer", name)) ; }
+
   // TrackSegments
-  TClonesArray * TrackSegments(const char * name = 0, const char * file=0) const { 
-    return (TClonesArray*)(ReturnO("TrackSegments", name, file)) ; }
-  const AliPHOSTrackSegment * TrackSegment(Int_t index) 
-    { if(TrackSegments()) return (AliPHOSTrackSegment*)TrackSegments()->At(index); return 0 ;} 
-  const Int_t NTrackSegments() 
-    { if(TrackSegments()) return TrackSegments()->GetEntriesFast(); return 0 ;} 
+  TClonesArray * TrackSegments(const char * name = 0) const 
+                   { return (TClonesArray*)(ReturnO("TrackSegments", name)) ; }
   AliPHOSTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const 
-    { return (AliPHOSTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ; }
+                   { return (AliPHOSTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ; }
+
   // RecParticles
-  TClonesArray * RecParticles(const char * name = 0, const char * file=0) const { 
-    return (TClonesArray*)(ReturnO("RecParticles", name, file)) ; }
-  const AliPHOSRecParticle * RecParticle(Int_t index) 
-    { if(RecParticles()) return (AliPHOSRecParticle*)RecParticles()->At(index); return 0 ;} 
-  const Int_t NRecParticles() 
-    { if(RecParticles()) return RecParticles()->GetEntriesFast(); return 0 ;} 
-  AliPHOSPID * PID(const char * name =0) const 
-    { return (AliPHOSPID*)(ReturnT("PID", name)) ; }
+  TClonesArray * RecParticles(const char * name = 0) const  
+                   { return (TClonesArray*)(ReturnO("RecParticles", name)) ; }
+    AliPHOSPID * PID(const char * name =0) const 
+                   { return (AliPHOSPID*)(ReturnT("PID", name)) ; }
+
   // Primaries
   const TParticle *           Primary(Int_t index) const ;
   const Int_t                 NPrimaries()const { return fNPrimaries; }
 
-  void  SetDebug(TString opt) {fDebug = opt;} // Set debug level
+  void  SetDebug(Int_t level) {fDebug = level;} // Set debug level
 
   AliPHOSGetter & operator = (const AliPHOSGetter & ) {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention, but not needed
     abort() ;
     return *this ; 
   }
-  void ReadTreeQA() ;
   
  private:
 
-  AliPHOSGetter(const char* headerFile, const char* branchTitle =0) ; 
+  AliPHOSGetter(const char* headerFile, const char* branchTitle ="Default") ; 
   void CreateWhiteBoard() const ; 
   const TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
   const TTask * ReturnT(TString what,TString name=0) const ; 
@@ -165,25 +165,41 @@ class AliPHOSGetter : public TObject {
   void ReadTreeD() ;
   void ReadTreeH() ;
   void ReadTreeR() ;
-  void ReadTreeS() ;
+  void ReadTreeS(Int_t event) ;
+  void ReadTreeQA() ;
   void ReadPrimaries() ;
+
+  TClonesArray ** HitsRef(void) const ;
+  TClonesArray ** SDigitsRef(const char * name, const char * file = 0 ) const;
+  TClonesArray ** DigitsRef (const char * name)   const ;
+  TObjArray    ** EmcRecPointsRef (const char * name) const ;
+  TObjArray    ** CpvRecPointsRef (const char * name) const ;
+  TClonesArray ** TrackSegmentsRef(const char * name)   const ;
+  TClonesArray ** RecParticlesRef (const char * name)   const ;
+
+  AliPHOSSDigitizer        ** SDigitizerRef (const char * name) const ; 
+  AliPHOSDigitizer         ** DigitizerRef  (const char * name) const ; 
+  AliPHOSClusterizer       ** ClusterizerRef(const char * name) const ; 
+  AliPHOSTrackSegmentMaker ** TSMakerRef    (const char * name) const ; 
+  AliPHOSPID               ** PIDRef        (const char * name) const ; 
 
  private:
 
-  TString        fHeaderFile ;    //!
-  TString        fTrackSegmentsTitle ;//!
-  TString        fRecPointsTitle ;//!
-  TString        fRecParticlesTitle ;//!
-  TString        fDigitsTitle ;   //!
-  TString        fSDigitsTitle ;  //!
+  TString        fHeaderFile ;        //! File in which gAlice lives
+  TString        fBranchTitle ;       //!
+  TString        fTrackSegmentsTitle ;//! 
+  TString        fRecPointsTitle ;    //!
+  TString        fRecParticlesTitle ; //!
+  TString        fDigitsTitle ;       //!
+  TString        fSDigitsTitle ;      //!
 
-  TString        fDebug ;         // Debug level
+  Int_t          fDebug ;             // Debug level
 
-  Int_t          fNPrimaries ;    //! # of primaries
+  Int_t          fNPrimaries ;        //! # of primaries
   
-  TObjArray *    fPrimaries ;     //! list of lists of primaries-for the case of mixing
+  TObjArray *    fPrimaries ;         //! list of lists of primaries-for the case of mixing
 
-  static AliPHOSGetter * fgObjGetter ; // pointer to the unique instance of the singleton 
+  static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
 
   ClassDef(AliPHOSGetter,1)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
