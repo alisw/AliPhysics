@@ -49,7 +49,7 @@ class AliGenPythia : public AliGenMC
     // Set initial and final state gluon radiation
     virtual void    SetGluonRadiation(Int_t iIn, Int_t iFin)
 	{fGinit = iIn; fGfinal = iFin;}
-    virtual void    SetPtKick(Float_t kt)
+    virtual void    SetPtKick(Float_t kt = 1.)
 	{fPtKick = kt;}
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy = 5500) {fEnergyCMS = energy;}

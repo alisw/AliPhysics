@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.64  2002/11/15 00:43:06  morsch
+Changes for kPyJets
+- initial and final state g-radiation + pt-kick default
+- trigger based on parton clusters (using pyclus)
+- trigger jets are stored in header.
+
 Revision 1.63  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -227,6 +233,7 @@ AliGenPythia::AliGenPythia()
   SetJetEtRange();
   SetGammaPhiRange();
   SetGammaEtaRange();
+  SetPtKick();
 }
 
 AliGenPythia::AliGenPythia(Int_t npart)
@@ -260,6 +267,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetJetEtRange();
     SetGammaPhiRange();
     SetGammaEtaRange();
+    SetPtKick();
     // Options determining what to keep in the stack (Heavy flavour generation)
     fStackFillOpt = kFlavorSelection; // Keep particle with selected flavor
     fFeedDownOpt = kTRUE;             // allow feed down from higher family
@@ -322,11 +330,15 @@ void AliGenPythia::Init()
     fPythia->SetMSTP(61,fGinit);
 //  final state radiation
     fPythia->SetMSTP(71,fGfinal);
-//
-    fPythia->SetMSTP(91,1);
-    fPythia->SetMSTU(16,1);	
-    fPythia->SetMSTJ(1,1);
-//
+//  pt - kick
+    if (fPtKick > 0.) {
+	fPythia->SetMSTP(91,1);
+	fPythia->SetPARP(91,fPtKick);
+    } else {
+	fPythia->SetMSTP(91,0);
+    }
+    
+ //
 //  Parent and Children Selection
     switch (fProcess) 
     {
