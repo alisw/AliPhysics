@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -200,8 +203,8 @@ void AliDIPOv1::CreateMaterials()
   // Create Materials for Dipole Magnet version 1
   //
   
-  Int_t ISXFLD   = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t isxfld   = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };
@@ -231,32 +234,32 @@ void AliDIPOv1::CreateMaterials()
   
   //    Air 
 
-  AliMedium(1, "AIR_DI_US         ", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(2, "AIR_DI_US         ", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(3, "AIR_L3_US         ", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "AIR_DI_US         ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "AIR_DI_US         ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "AIR_L3_US         ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Aluminum 
   
-  AliMedium(8, "ALU_DI_US         ", 9, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(11, "ALU_DI_SH         ", 9, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(8, "ALU_DI_US         ", 9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(11, "ALU_DI_SH         ", 9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Iron 
   
-  AliMedium(31, "FE_NF_US          ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(32, "FE_DI_US          ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(33, "FE_L3_US          ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(34, "FE_NF_SH          ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(35, "FE_DI_SH          ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(36, "FE_L3_SH          ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(31, "FE_NF_US          ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(32, "FE_DI_US          ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(33, "FE_L3_US          ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(34, "FE_NF_SH          ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(35, "FE_DI_SH          ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(36, "FE_L3_SH          ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Vacuum 
   
-  AliMedium(37, "VA_NF_US          ", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(38, "VA_DI_US          ", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(39, "VA_L3_US          ", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(37, "VA_NF_US          ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(38, "VA_DI_US          ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(39, "VA_L3_US          ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Steel 
   
-  AliMedium(75, "ST_L3_US          ", 24, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(75, "ST_L3_US          ", 24, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 

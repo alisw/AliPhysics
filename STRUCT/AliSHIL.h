@@ -1,5 +1,5 @@
-#ifndef SHIL_H
-#define SHIL_H
+#ifndef ALISHIL_H
+#define ALISHIL_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

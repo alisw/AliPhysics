@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,8 +205,8 @@ void AliMAG::CreateMaterials()
   // Create materials for L3 magnet
   //
   
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
   // --- Define the various materials for GEANT --- 
@@ -233,18 +236,18 @@ void AliMAG::CreateMaterials()
   
   //    IRON 
   
-  AliMedium(10, "FE_C0             ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(30, "FE_C1             ", 30, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(10, "FE_C0             ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(30, "FE_C1             ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //     ALUMINUM 
 
-  AliMedium(9, "ALU_C0            ",  9, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(29, "ALU_C1            ", 29, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(9, "ALU_C0            ",  9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(29, "ALU_C1            ", 29, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //     AIR 
   
-  AliMedium(15, "AIR_C0            ", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(35, "AIR_C1            ", 35, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_C0            ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(35, "AIR_C1            ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.7  2000/02/23 16:25:24  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 Revision 1.6  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -33,12 +37,14 @@ ClassImp(AliPIPEv0)
 //_____________________________________________________________________________
 AliPIPEv0::AliPIPEv0()
 {
+// Constructor
 }
 
 //_____________________________________________________________________________
 AliPIPEv0::AliPIPEv0(const char *name, const char *title)
   : AliPIPE(name,title)
 {
+// Constructor
 }
 
  
@@ -59,8 +65,8 @@ void AliPIPEv0::CreateGeometry()
 */
 //End_Html
 
-  const char *pipename = "$(ALICE_ROOT)/Euclid/bpipeb.euc";
-  const char *pumpname = "$(ALICE_ROOT)/Euclid/bpumpa.euc";
+  const char *kPipeName = "$(ALICE_ROOT)/Euclid/bpipeb.euc";
+  const char *kPumpName = "$(ALICE_ROOT)/Euclid/bpumpa.euc";
   char *filtmp;
   char topvol[5];
   printf("Create PIPEv0 geometry ");
@@ -69,28 +75,28 @@ void AliPIPEv0::CreateGeometry()
 
 //
 // The peam pipe up to the Front Absorber
-  filtmp=gSystem->ExpandPathName(pipename);
+  filtmp=gSystem->ExpandPathName(kPipeName);
   FILE *file = fopen(filtmp,"r");
   delete [] filtmp;
   if(file) {
     fclose(file);
     printf(" Reading PIPE \n");
-    ReadEuclid(pipename,topvol);
+    ReadEuclid(kPipeName,topvol);
   } else {
-    printf(" THE GEOM FILE %s DOES NOT EXIST !\n",pipename);
+    printf(" THE GEOM FILE %s DOES NOT EXIST !\n",kPipeName);
     exit(1);
   }
 //
 // The Ion Pump
-  filtmp=gSystem->ExpandPathName(pumpname);
+  filtmp=gSystem->ExpandPathName(kPumpName);
   file = fopen(filtmp,"r");
   delete [] filtmp;
   if(file) {
     fclose(file);
     printf(" Reading PUMP \n");
-    ReadEuclid(pumpname,topvol);
+    ReadEuclid(kPumpName,topvol);
   } else {
-    printf(" THE GEOM FILE %s DOES NOT EXIST !\n",pumpname);
+    printf(" THE GEOM FILE %s DOES NOT EXIST !\n",kPumpName);
     exit(1);
   }
 //
@@ -114,22 +120,25 @@ void AliPIPEv0::CreateGeometry()
 //___________________________________________
 void AliPIPEv0::DrawModule()
 {
+// Set drawing options
+    ;
 }
 
 //___________________________________________
 void AliPIPEv0::CreateMaterials()
 {
+// Create materials and media from Euclid file
   printf("Create PIPEv0 materials\n");
-  const char *name = "$(ALICE_ROOT)/Euclid/pipe.tme";
+  const char *kName = "$(ALICE_ROOT)/Euclid/pipe.tme";
   char *filtmp;
-  filtmp=gSystem->ExpandPathName(name);
+  filtmp=gSystem->ExpandPathName(kName);
   FILE *file = fopen(filtmp,"r");
   delete [] filtmp;
   if(file) {
     fclose(file);
-    ReadEuclidMedia(name);
+    ReadEuclidMedia(kName);
   } else {
-    printf(" THE MEDIA FILE %s DOES NOT EXIST !\n",name);
+    printf(" THE MEDIA FILE %s DOES NOT EXIST !\n",kName);
     exit(1);
   }
 }

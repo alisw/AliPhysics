@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,7 +95,7 @@ void AliBODY::CreateGeometry()
   */
   //End_Html
 
-  Float_t DALIC[10];
+  Float_t dALIC[10];
   Int_t *idtmed = fIdtmed->GetArray()+1;
   //
   if(gAlice->GetModule("ZDC")) {
@@ -100,41 +103,42 @@ void AliBODY::CreateGeometry()
     // If the ZDC is present we have an asymmetric box
     // made by a four sides polygone
     //
-    DALIC[0]=45;
-    DALIC[1]=360;
-    DALIC[2]=4;
-    DALIC[3]=2;
-    DALIC[4]=-3000;
-    DALIC[5]=0;
-    DALIC[6]=2000;
-    DALIC[7]=15000;
-    DALIC[8]=0;
-    DALIC[9]=2000;
-    gMC->Gsvolu("ALIC","PGON",idtmed[1],DALIC,10);
+    dALIC[0]=45;
+    dALIC[1]=360;
+    dALIC[2]=4;
+    dALIC[3]=2;
+    dALIC[4]=-3000;
+    dALIC[5]=0;
+    dALIC[6]=2000;
+    dALIC[7]=15000;
+    dALIC[8]=0;
+    dALIC[9]=2000;
+    gMC->Gsvolu("ALIC","PGON",idtmed[1],dALIC,10);
   } else {
     //
     // If the ZDC is not present make just a BOX
     //
-    DALIC[0]=2000;
-    DALIC[1]=2000;
-    DALIC[2]=3000;
-    gMC->Gsvolu("ALIC","BOX ",idtmed[1],DALIC,3);
+    dALIC[0]=2000;
+    dALIC[1]=2000;
+    dALIC[2]=3000;
+    gMC->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
   }
 }
  
 //_____________________________________________________________________________
 void AliBODY::CreateMaterials()
 {
-  Int_t ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+// Create materials and media
+  Int_t isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   //
   AliMaterial(1,"Vacuum  $",1.e-16,1.e-16,1.e-16,1.e16,1.e16);
   AliMaterial(2,"Air     $",14.61,7.3,0.001205,30420,67500);
   AliMaterial(3,"Be      $", 9.01,4 ,1.848   ,35.30,36.70);
   //
-  AliMedium(1,"Vacuum  $",1,0,ISXFLD,SXMGMX,10,1,0.1,0.1,10);
-  AliMedium(2,"Air     $",2,0,ISXFLD,SXMGMX,10,-1,-0.1,0.1 ,-10);
-  AliMedium(3,"Be pipe $",3,0,ISXFLD,SXMGMX,10,0.1,0.1,0.01,0.01);
+  AliMedium(1,"Vacuum  $",1,0,isxfld,sxmgmx,10,1,0.1,0.1,10);
+  AliMedium(2,"Air     $",2,0,isxfld,sxmgmx,10,-1,-0.1,0.1 ,-10);
+  AliMedium(3,"Be pipe $",3,0,isxfld,sxmgmx,10,0.1,0.1,0.01,0.01);
 }
  
 //_____________________________________________________________________________

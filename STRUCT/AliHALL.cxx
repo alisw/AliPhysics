@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/01/12 15:33:28  morsch
+Muon filter removed
+
 Revision 1.6  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -99,16 +102,14 @@ void AliHALL::CreateGeometry()
 
   
   Float_t r2;
-  Float_t phid, phim, tpar[3], pbox[3], zfil_out, h, r, tspar[5];
+  Float_t phid, phim, tpar[3], pbox[3], h, r, tspar[5];
   Float_t w1, dh, am, bm, dl,cm, hm, dr, dx, xl;
   Int_t idrotm[1999];
   Float_t trdpar[4], trapar[11], hullen;
-  Float_t dz, phi, par[3], zfil_in;
+  Float_t dz, phi, par[3], zFilterIn;
   
   Int_t *idtmed = fIdtmed->GetArray()-1899;
   
-  zfil_in  = 1471.;
-  zfil_out = 1591.;
   //     RB24/26 TUNNEL FLOOR 
   
   r   = 220.;
@@ -290,8 +291,8 @@ void AliHALL::CreateMaterials()
   //
   
 
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,28.086,39.1,40.08,55.85 };
   Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };
@@ -324,21 +325,21 @@ void AliHALL::CreateMaterials()
   
   //     IRON 
   
-  AliMedium(10, "FE_C0             ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(30, "FE_C1             ", 30, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(50, "FE_C2             ", 50, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(10, "FE_C0             ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(30, "FE_C1             ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(50, "FE_C2             ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Air 
   
-  AliMedium(15, "AIR_C0           ", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(35, "AIR_C1           ", 35, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(55, "AIR_C2           ", 55, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_C0           ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(35, "AIR_C1           ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(55, "AIR_C2           ", 55, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Concrete 
   
-  AliMedium(17, "CC_C0            ", 17, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(37, "CC_C1            ", 37, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(57, "CC_C2            ", 57, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(17, "CC_C0            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(37, "CC_C1            ", 37, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(57, "CC_C2            ", 57, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2000/02/23 16:25:24  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 Revision 1.7  1999/11/01 20:42:42  fca
 FRAME version 1 is now the symmetric one.
 
@@ -36,12 +40,14 @@ ClassImp(AliFRAMEv1)
 //_____________________________________________________________________________
 AliFRAMEv1::AliFRAMEv1()
 {
+// Constructor
 }
 
 //_____________________________________________________________________________
 AliFRAMEv1::AliFRAMEv1(const char *name, const char *title)
   : AliFRAME(name,title)
 {
+// Constructor
   printf("Create FRAMEv1 object\n");  
   fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame1099i.euc";
   fEuclidMaterial="$(ALICE_ROOT)/Euclid/frame.tme";
@@ -96,6 +102,7 @@ void AliFRAMEv1::CreateGeometry()
 //___________________________________________
 void AliFRAMEv1::CreateMaterials()
 {
+// Create materials and media (from Euclid file)
   char *filetmp;
   printf("Create FRAMEv1 materials\n");
   filetmp = gSystem->ExpandPathName(fEuclidMaterial.Data());

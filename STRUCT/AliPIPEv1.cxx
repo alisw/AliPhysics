@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,22 +72,22 @@ void AliPIPEv1::CreateGeometry()
   */
   //End_Html
 
-  Float_t tpar[3], dzmo, zpos, abs_d, abs_l;
+  Float_t tpar[3], dzmo, zpos, absorberDistance, absorberEnd;
   Float_t r2, dr;
 
-  const Double_t z_flange = 150;
+  const Double_t kZFlange = 150;
   
   Int_t *idtmed = fIdtmed->GetArray()-1999;
   
   
-  abs_d   = 90.;  // DEFINES DRIFT LENGTH 
+  absorberDistance   = 90.;  // DEFINES DRIFT LENGTH 
   //z_nose  = 102.;
   //z_cone  = 285.;
   //theta1  = 24.;  // 1. angle defining the front absorber 
   //theta2  = 5.;   // 2. angle defining the front absorbe 
   //acc_max = 9.;   // ANGLE POLAIRE MAXIMUM 
   //acc_min = 2.;   // ANGLE POLAIRE MINIMUM DE DETECTION 
-  abs_l   = 503.;
+  absorberEnd   = 503.;
   //d_steel = 1.;   // THICKNESS OF STEEL SUPPORT 
   //d_poly  = 7.5;
   //d_pb    = 2.5;
@@ -126,14 +129,14 @@ void AliPIPEv1::CreateGeometry()
   
   tpar[0] = 0.;
   tpar[1] = 3.;
-  tpar[2] = (abs_d + 700.) / 2.;
-  dzmo = tpar[2] - abs_d;
+  tpar[2] = (absorberDistance + 700.) / 2.;
+  dzmo = tpar[2] - absorberDistance;
   gMC->Gsvolu("QQMO", "TUBE", idtmed[2015], tpar, 3);
   gMC->Gspos("QQMO", 1, "ALIC", 0., 0., -dzmo, 0, "ONLY");
   
   //       BEAM PIPE IN DRIFT SPACE 
   
-  //     -30-z_flange 
+  //     -30-kZFlange 
   tpar[0] = 0.;
   tpar[1] = 3.;
   tpar[2] = 30;
@@ -160,10 +163,10 @@ void AliPIPEv1::CreateGeometry()
   
   
   
-  //     -30 - Z_FLANGE 
+  //     -30 - kZFlange 
   tpar[0] = 0.;
   tpar[1] = 3.;
-  tpar[2] = (z_flange - 30)/2;
+  tpar[2] = (kZFlange - 30)/2;
   gMC->Gsvolu("QDT5", "TUBE", idtmed[2015], tpar, 3);
   
   tpar[0] = 2.9;
@@ -174,7 +177,7 @@ void AliPIPEv1::CreateGeometry()
   
   //     STRAIGHT STEEL PIECE 
   
-  zpos    = -z_flange;
+  zpos    = -kZFlange;
   r2      = 2.9;
   dr      = .015;
   tpar[0] = 0.;
@@ -193,7 +196,7 @@ void AliPIPEv1::CreateGeometry()
   tpar[1] = 5.7;
   tpar[2] = 2.;
   gMC->Gsvolu("QN63", "TUBE", idtmed[2018], tpar, 3);
-  zpos = tpar[2] - z_flange;
+  zpos = tpar[2] - kZFlange;
   gMC->Gspos("QN63", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
   
   
@@ -202,27 +205,27 @@ void AliPIPEv1::CreateGeometry()
   
   if (gAlice->GetModule("ABSO") == 0) {
     
-    gMC->Gspos("QN63", 2, "ALIC", 0., 0., z_flange, 0, "ONLY");
+    gMC->Gspos("QN63", 2, "ALIC", 0., 0., kZFlange, 0, "ONLY");
     r2      = 2.9;
     dr      = .1;
     tpar[0] = 0.;
     tpar[1] = r2 + dr;
-    tpar[2] = (z_flange - abs_d) / 2.;
+    tpar[2] = (kZFlange - absorberDistance) / 2.;
     gMC->Gsvolu("QDT8", "TUBE", idtmed[2015], tpar, 3);
     tpar[0] = r2;
     gMC->Gsvolu("QTB8", "TUBE", idtmed[2004], tpar, 3);
     gMC->Gspos("QTB8", 1, "QDT8", 0., 0., 0., 0, "ONLY");
-    zpos    = abs_d + tpar[2];
+    zpos    = absorberDistance + tpar[2];
     gMC->Gspos("QDT8", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
     dr      = .015;
     tpar[0] = 0.;
     tpar[1] = r2 + dr;
-    tpar[2] = (abs_l - z_flange) / 2.;
+    tpar[2] = (absorberEnd - kZFlange) / 2.;
     gMC->Gsvolu("QDTS", "TUBE", idtmed[2015], tpar, 3);
     tpar[0] = r2;
     gMC->Gsvolu("QTBS", "TUBE", idtmed[2018], tpar, 3);
     gMC->Gspos("QTBS", 1, "QDTS", 0., 0., 0., 0, "ONLY");
-    zpos = tpar[2] + z_flange;
+    zpos = tpar[2] + kZFlange;
     gMC->Gspos("QDTS", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
   }
   if (gAlice->GetModule("SHIL") == 0) {
@@ -230,12 +233,12 @@ void AliPIPEv1::CreateGeometry()
     dr      = .015;
     tpar[0] = 0.;
     tpar[1] = r2 + dr;
-    tpar[2] = (700. - abs_l) / 2.;
+    tpar[2] = (700. - absorberEnd) / 2.;
     gMC->Gsvolu("QDT9", "TUBE", idtmed[2015], tpar, 3);
     tpar[0] = r2;
     gMC->Gsvolu("QTB9", "TUBE", idtmed[2018], tpar, 3);
     gMC->Gspos("QTB9", 1, "QDT9", 0., 0., 0., 0, "ONLY");
-    zpos = abs_l + tpar[2];
+    zpos = absorberEnd + tpar[2];
     gMC->Gspos("QDT9", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
   }
 }
@@ -284,8 +287,8 @@ void AliPIPEv1::CreateMaterials()
   // Create materials for beam pipe
   //
 
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };
@@ -314,18 +317,18 @@ void AliPIPEv1::CreateMaterials()
   
   //    Air 
   
-  AliMedium(15, "AIR_L3_US", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_L3_US", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Beryllium 
   
-  AliMedium(5, "BE_L3_US", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "BE_L3_US", 5, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Vacuum 
   
-  AliMedium(16, "VA_L3_US", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16, "VA_L3_US", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Steel 
   
-  AliMedium(19, "ST_L3_US", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(19, "ST_L3_US", 19, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 

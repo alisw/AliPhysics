@@ -1,5 +1,5 @@
-#ifndef DIPOv2_H
-#define DIPOv2_H
+#ifndef ALIDIPOV2_H
+#define ALIDIPOV2_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/10/06 19:57:07  fca
+Correct materials in pipe
+
 Revision 1.5  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -360,8 +363,8 @@ void AliPIPEv3::CreateMaterials()
   // Create materials for beam pipe
   //
 
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };
@@ -391,24 +394,24 @@ void AliPIPEv3::CreateMaterials()
   
   //    Air 
   
-  AliMedium(15, "AIR_L3_US", 15, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_L3_US", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Beryllium 
   
-  AliMedium(5, "BE_L3_US", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "BE_L3_US", 5, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
   
     //    Aluminium 
   
-  AliMedium(4, "AL_L3_US", 4, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "AL_L3_US", 4, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
   //   Vacuum
 
-  AliMedium(16, "VA_L3_US", 16, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16, "VA_L3_US", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Steel 
   
-  AliMedium(19, "ST_L3_US", 19, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(19, "ST_L3_US", 19, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 //
 void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
@@ -428,8 +431,8 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
   // Thus apear the constants 0.293 and 0.707.
   //
 
-  const Float_t const1 = .293;
-  const Float_t const2 = .707;
+  const Float_t kConst1 = .293;
+  const Float_t kConst2 = .707;
 
   // Local variables
   Int_t j, nwave;
@@ -440,16 +443,16 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
 
   // Function Body
 
-  dcone1[0] = const1 * pitch / 2;
+  dcone1[0] = kConst1 * pitch / 2;
   dcone1[1] = rundul;
   dcone1[2] = dcone1[1] + thick;
-  dcone1[3] = dcone1[1] + const2 * pitch;
+  dcone1[3] = dcone1[1] + kConst2 * pitch;
   dcone1[4] = dcone1[3] + thick;
 
-  dcone2[0] = const2 * pitch / 2;
+  dcone2[0] = kConst2 * pitch / 2;
   dcone2[1] = dcone1[3];
   dcone2[2] = dcone1[4];
-  dcone2[3] = dcone2[1] + const1 * pitch;
+  dcone2[3] = dcone2[1] + kConst1 * pitch;
   dcone2[4] = dcone2[3] + thick;
 
   dcone3[0] = dcone2[0];
@@ -467,13 +470,13 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
   dcone5[0] = dcone1[0];
   dcone5[1] = dcone1[1] - thick;
   dcone5[2] = dcone1[1];
-  dcone5[3] = dcone5[1] - const2 * pitch;
+  dcone5[3] = dcone5[1] - kConst2 * pitch;
   dcone5[4] = dcone5[3] + thick;
 
   dcone6[0] = dcone2[0];
   dcone6[1] = dcone5[3];
   dcone6[2] = dcone5[4];
-  dcone6[3] = dcone6[1] - const1 * pitch;
+  dcone6[3] = dcone6[1] - kConst1 * pitch;
   dcone6[4] = dcone6[3] + thick;
   dcone7[0] = dcone6[0];
   dcone7[1] = dcone6[3];

@@ -1,5 +1,5 @@
-#ifndef HALL_H
-#define HALL_H
+#ifndef ALIHALL_H
+#define ALIHALL_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
