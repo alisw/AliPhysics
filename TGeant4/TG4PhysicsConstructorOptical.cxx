@@ -37,9 +37,11 @@ TG4PhysicsConstructorOptical::~TG4PhysicsConstructorOptical() {
 //_____________________________________________________________________________
 void TG4PhysicsConstructorOptical::ConstructParticle()
 {
-// The particles are constructed in the 
-// TG4ModularPhysicsList.
+// Instantiates particles.
 // ---
+
+  // optical photon
+  G4OpticalPhoton::OpticalPhotonDefinition();
 }
 
 //_____________________________________________________________________________
@@ -60,10 +62,10 @@ void TG4PhysicsConstructorOptical::ConstructProcess()
   //theRayleighScatteringProcess->DumpPhysicsTable();
 
   // add verbose 
-  //theCerenkovProcess->SetVerboseLevel(1);
-  //theAbsorptionProcess->SetVerboseLevel(1);
-  //theRayleighScatteringProcess->SetVerboseLevel(1);
-  //theBoundaryProcess->SetVerboseLevel(1);
+  theCerenkovProcess->SetVerboseLevel(0);
+  theAbsorptionProcess->SetVerboseLevel(0);
+  theRayleighScatteringProcess->SetVerboseLevel(0);
+  theBoundaryProcess->SetVerboseLevel(0);
 
   G4int maxNumPhotons = 300;
 

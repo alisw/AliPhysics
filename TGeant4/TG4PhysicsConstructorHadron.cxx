@@ -6,108 +6,19 @@
 // Class TG4PhysicsConstructorHadron
 // ---------------------------------
 // See the class description in the header file.
-// According to the corresponding part of:
-// ExN04PhysicsList.cc,v 1.7 1999/12/15 14:49:26 gunter
-// GEANT4 tag Name: geant4-01-01
+// According to ExN04HadronPhysics.cc,v 1.1.2.1 2001/06/28 19:07:37 gunter Exp
+// GEANT4 tag Name: geant4-03-02
 
 #include "TG4PhysicsConstructorHadron.h"
 #include "TG4ProcessControlMap.h"
 #include "TG4ProcessMCMap.h"
+#include "TG4Globals.h"
 
 #include <G4ParticleDefinition.hh>
 #include <G4ProcessManager.hh>
-
-// Hadron Processes
-#include <G4HadronElasticProcess.hh>
-#include <G4PionPlusInelasticProcess.hh>
-#include <G4PionMinusInelasticProcess.hh>
-#include <G4KaonPlusInelasticProcess.hh>
-#include <G4KaonZeroSInelasticProcess.hh>
-#include <G4KaonZeroLInelasticProcess.hh>
-#include <G4KaonMinusInelasticProcess.hh>
-#include <G4ProtonInelasticProcess.hh>
-#include <G4AntiProtonInelasticProcess.hh>
-#include <G4NeutronInelasticProcess.hh>
-#include <G4AntiNeutronInelasticProcess.hh>
-#include <G4LambdaInelasticProcess.hh>
-#include <G4AntiLambdaInelasticProcess.hh>
-#include <G4SigmaPlusInelasticProcess.hh>
-#include <G4SigmaMinusInelasticProcess.hh>
-#include <G4AntiSigmaPlusInelasticProcess.hh>
-#include <G4AntiSigmaMinusInelasticProcess.hh>
-#include <G4XiZeroInelasticProcess.hh>
-#include <G4XiMinusInelasticProcess.hh>
-#include <G4AntiXiZeroInelasticProcess.hh>
-#include <G4AntiXiMinusInelasticProcess.hh>
-#include <G4DeuteronInelasticProcess.hh>
-#include <G4TritonInelasticProcess.hh>
-#include <G4AlphaInelasticProcess.hh>
-#include <G4OmegaMinusInelasticProcess.hh>
-#include <G4AntiOmegaMinusInelasticProcess.hh>
-
-// Low-energy Models
-#include <G4LElastic.hh>
-#include <G4LEPionPlusInelastic.hh>
-#include <G4LEPionMinusInelastic.hh>
-#include <G4LEKaonPlusInelastic.hh>
-#include <G4LEKaonZeroSInelastic.hh>
-#include <G4LEKaonZeroLInelastic.hh>
-#include <G4LEKaonMinusInelastic.hh>
-#include <G4LEProtonInelastic.hh>
-#include <G4LEAntiProtonInelastic.hh>
-#include <G4LENeutronInelastic.hh>
-#include <G4LEAntiNeutronInelastic.hh>
-#include <G4LELambdaInelastic.hh>
-#include <G4LEAntiLambdaInelastic.hh>
-#include <G4LESigmaPlusInelastic.hh>
-#include <G4LESigmaMinusInelastic.hh>
-#include <G4LEAntiSigmaPlusInelastic.hh>
-#include <G4LEAntiSigmaMinusInelastic.hh>
-#include <G4LEXiZeroInelastic.hh>
-#include <G4LEXiMinusInelastic.hh>
-#include <G4LEAntiXiZeroInelastic.hh>
-#include <G4LEAntiXiMinusInelastic.hh>
-#include <G4LEDeuteronInelastic.hh>
-#include <G4LETritonInelastic.hh>
-#include <G4LEAlphaInelastic.hh>
-#include <G4LEOmegaMinusInelastic.hh>
-#include <G4LEAntiOmegaMinusInelastic.hh>
-
-// High-energy Models
-#include <G4HEPionPlusInelastic.hh>
-#include <G4HEPionMinusInelastic.hh>
-#include <G4HEKaonPlusInelastic.hh>
-#include <G4HEKaonZeroInelastic.hh>
-#include <G4HEKaonZeroInelastic.hh>
-#include <G4HEKaonMinusInelastic.hh>
-#include <G4HEProtonInelastic.hh>
-#include <G4HEAntiProtonInelastic.hh>
-#include <G4HENeutronInelastic.hh>
-#include <G4HEAntiNeutronInelastic.hh>
-#include <G4HELambdaInelastic.hh>
-#include <G4HEAntiLambdaInelastic.hh>
-#include <G4HESigmaPlusInelastic.hh>
-#include <G4HESigmaMinusInelastic.hh>
-#include <G4HEAntiSigmaPlusInelastic.hh>
-#include <G4HEAntiSigmaMinusInelastic.hh>
-#include <G4HEXiZeroInelastic.hh>
-#include <G4HEXiMinusInelastic.hh>
-#include <G4HEAntiXiZeroInelastic.hh>
-#include <G4HEAntiXiMinusInelastic.hh>
-#include <G4HEOmegaMinusInelastic.hh>
-#include <G4HEAntiOmegaMinusInelastic.hh>
-
-// Stopping processes
-#ifdef TRIUMF_STOP_PIMINUS
-#include <G4PionMinusAbsorptionAtRest.hh>
-#else
-#include <G4PiMinusAbsorptionAtRest.hh>
-#endif
-#ifdef TRIUMF_STOP_KMINUS
-#include <G4KaonMinusAbsorption.hh>
-#else
-#include <G4KaonMinusAbsorptionAtRest.hh>
-#endif
+#include <G4MesonConstructor.hh>
+#include <G4BaryonConstructor.hh>
+#include <G4ShortLivedConstructor.hh>
 
 //_____________________________________________________________________________
 TG4PhysicsConstructorHadron::TG4PhysicsConstructorHadron(const G4String& name)
@@ -118,8 +29,807 @@ TG4PhysicsConstructorHadron::TG4PhysicsConstructorHadron(const G4String& name)
 }
 
 //_____________________________________________________________________________
+TG4PhysicsConstructorHadron::TG4PhysicsConstructorHadron(
+                                     const TG4PhysicsConstructorHadron& right)
+{
+//
+  TG4Globals::Exception("TG4PhysicsConstructorHadron is protected from copying.");
+}
+
+//_____________________________________________________________________________
 TG4PhysicsConstructorHadron::~TG4PhysicsConstructorHadron() {
 //
+  for (G4int i=0; i<fOtherProcesses.size(); i++) delete fOtherProcesses[i];
+}
+
+// operators
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorHadron& 
+TG4PhysicsConstructorHadron::operator=(const TG4PhysicsConstructorHadron &right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+  
+  TG4Globals::Exception(
+    "TG4PhysicsConstructorHadron is protected from assigning.");
+
+  return *this;
+}
+
+
+// private methods
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForPionPlus()
+{
+// Construct processes for pi+.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4PionPlus::PionPlus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEPionPlusModel = new G4LEPionPlusInelastic();
+  fHEPionPlusModel = new G4HEPionPlusInelastic();
+  fPionPlusInelastic.RegisterMe(fLEPionPlusModel);
+  fPionPlusInelastic.RegisterMe(fHEPionPlusModel);
+  pManager->AddDiscreteProcess(&fPionPlusInelastic);
+
+  pManager->AddProcess(&fPionPlusIonisation, ordInActive, 2, 2);
+  pManager->AddProcess(&fPionPlusMult);
+
+  // set ordering
+  pManager->SetProcessOrdering(&fPionPlusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fPionPlusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fElasticProcess, kHADR); 
+  controlMap->Add(&fPionPlusInelastic, kHADR); 
+  controlMap->Add(&fPionPlusIonisation, kLOSS); 
+  controlMap->Add(&fPionPlusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fElasticProcess, kPHElastic); 
+  mcMap->Add(&fPionPlusInelastic, kPHInhelastic); 
+  mcMap->Add(&fPionPlusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fPionPlusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForPionMinus()
+{
+// Construct processes for pi-.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager = G4PionMinus::PionMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEPionMinusModel = new G4LEPionMinusInelastic();
+  fHEPionMinusModel = new G4HEPionMinusInelastic();
+  fPionMinusInelastic.RegisterMe(fLEPionMinusModel);
+  fPionMinusInelastic.RegisterMe(fHEPionMinusModel);
+  pManager->AddDiscreteProcess(&fPionMinusInelastic);
+
+  pManager->AddProcess(&fPionMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fPionMinusMult);
+  pManager->SetProcessOrdering(&fPionMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fPionMinusMult, idxPostStep, 1);
+
+  pManager->AddRestProcess(&fPionMinusAbsorption, ordDefault);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fPionMinusInelastic, kHADR); 
+  controlMap->Add(&fPionMinusIonisation, kLOSS); 
+  controlMap->Add(&fPionMinusMult, kMULS); 
+  controlMap->Add(&fPionMinusAbsorption, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fPionMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fPionMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fPionMinusMult, kPMultipleScattering); 
+  mcMap->Add(&fPionMinusAbsorption, kPNuclearAbsorption); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForKaonPlus()
+{
+// Construct processes for K+.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4KaonPlus::KaonPlus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEKaonPlusModel = new G4LEKaonPlusInelastic();
+  fHEKaonPlusModel = new G4HEKaonPlusInelastic();
+  fKaonPlusInelastic.RegisterMe(fLEKaonPlusModel);
+  fKaonPlusInelastic.RegisterMe(fHEKaonPlusModel);
+  pManager->AddDiscreteProcess(&fKaonPlusInelastic);
+
+  pManager->AddProcess(&fKaonPlusIonisation, ordInActive, 2, 2);
+  pManager->AddProcess(&fKaonPlusMult);
+
+  // set ordering
+  pManager->SetProcessOrdering(&fKaonPlusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fKaonPlusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fKaonPlusInelastic, kHADR); 
+  controlMap->Add(&fKaonPlusIonisation, kLOSS); 
+  controlMap->Add(&fKaonPlusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fKaonPlusInelastic, kPHInhelastic); 
+  mcMap->Add(&fKaonPlusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fKaonPlusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForKaonMinus()
+{
+// Construct processes for K-.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager = G4KaonMinus::KaonMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEKaonMinusModel = new G4LEKaonMinusInelastic();
+  fHEKaonMinusModel = new G4HEKaonMinusInelastic();
+  fKaonMinusInelastic.RegisterMe(fLEKaonMinusModel);
+  fKaonMinusInelastic.RegisterMe(fHEKaonMinusModel);
+  pManager->AddDiscreteProcess(&fKaonMinusInelastic);
+
+  pManager->AddProcess(&fKaonMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fKaonMinusMult);
+  pManager->SetProcessOrdering(&fKaonMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fKaonMinusMult, idxPostStep, 1);
+
+  pManager->AddRestProcess(&fKaonMinusAbsorption, ordDefault);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fKaonMinusInelastic, kHADR); 
+  controlMap->Add(&fKaonMinusIonisation, kLOSS); 
+  controlMap->Add(&fKaonMinusMult, kMULS); 
+  controlMap->Add(&fKaonMinusAbsorption, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fKaonMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fKaonMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fKaonMinusMult, kPMultipleScattering); 
+  mcMap->Add(&fKaonMinusAbsorption, kPNuclearAbsorption); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForKaonZeroLong()
+{
+// Construct processes for K0L.
+// ---
+
+  // add process
+  G4ProcessManager* pManager 
+    = G4KaonZeroLong::KaonZeroLong()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEKaonZeroLModel = new G4LEKaonZeroLInelastic();
+  fHEKaonZeroLModel = new G4HEKaonZeroInelastic();
+  fKaonZeroLInelastic.RegisterMe(fLEKaonZeroLModel);
+  fKaonZeroLInelastic.RegisterMe(fHEKaonZeroLModel);
+  pManager->AddDiscreteProcess(&fKaonZeroLInelastic);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fKaonZeroLInelastic, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fKaonZeroLInelastic, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForKaonZeroShort()
+{
+// Construct processes for K0S.
+// ---
+
+  // add process
+  G4ProcessManager* pManager 
+    = G4KaonZeroShort::KaonZeroShort()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEKaonZeroSModel = new G4LEKaonZeroSInelastic();
+  fHEKaonZeroSModel = new G4HEKaonZeroInelastic();
+  fKaonZeroSInelastic.RegisterMe(fLEKaonZeroSModel);
+  fKaonZeroSInelastic.RegisterMe(fHEKaonZeroSModel);
+  pManager->AddDiscreteProcess(&fKaonZeroSInelastic);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fKaonZeroSInelastic, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fKaonZeroSInelastic, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForProton()
+{
+// Construct processes for proton.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4Proton::Proton()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEProtonModel = new G4LEProtonInelastic();
+  fHEProtonModel = new G4HEProtonInelastic();
+  fProtonInelastic.RegisterMe(fLEProtonModel);
+  fProtonInelastic.RegisterMe(fHEProtonModel);
+  pManager->AddDiscreteProcess(&fProtonInelastic);
+
+  pManager->AddProcess(&fProtonIonisation, ordInActive, 2, 2);
+  pManager->AddProcess(&fProtonMult);
+
+  // set ordering
+  pManager->SetProcessOrdering(&fProtonMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fProtonMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fProtonInelastic, kHADR); 
+  controlMap->Add(&fProtonIonisation, kLOSS); 
+  controlMap->Add(&fProtonMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fProtonInelastic, kPHInhelastic); 
+  mcMap->Add(&fProtonIonisation, kPEnergyLoss); 
+  mcMap->Add(&fProtonMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiProton()
+{
+// Construct processes for anti-proton.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager = G4AntiProton::AntiProton()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiProtonModel = new G4LEAntiProtonInelastic();
+  fHEAntiProtonModel = new G4HEAntiProtonInelastic();
+  fAntiProtonInelastic.RegisterMe(fLEAntiProtonModel);
+  fAntiProtonInelastic.RegisterMe(fHEAntiProtonModel);
+  pManager->AddDiscreteProcess(&fAntiProtonInelastic);
+
+  pManager->AddProcess(&fAntiProtonIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fAntiProtonMult);
+  pManager->SetProcessOrdering(&fAntiProtonMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fAntiProtonMult, idxPostStep, 1);
+
+  pManager->AddRestProcess(&fAntiProtonAnnihilation);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiProtonInelastic, kHADR); 
+  controlMap->Add(&fAntiProtonIonisation, kLOSS); 
+  controlMap->Add(&fAntiProtonMult, kMULS); 
+  controlMap->Add(&fAntiProtonAnnihilation, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiProtonInelastic, kPHInhelastic); 
+  mcMap->Add(&fAntiProtonIonisation, kPEnergyLoss); 
+  mcMap->Add(&fAntiProtonMult, kPMultipleScattering); 
+  mcMap->Add(&fAntiProtonAnnihilation, kPPbarAnnihilation); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForNeutron()
+{
+// Construct processes for neutron.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4Neutron::Neutron()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLENeutronModel = new G4LENeutronInelastic();
+  fHENeutronModel = new G4HENeutronInelastic();
+  fNeutronInelastic.RegisterMe(fLENeutronModel);
+  fNeutronInelastic.RegisterMe(fHENeutronModel);
+  pManager->AddDiscreteProcess(&fNeutronInelastic);
+
+  //fNeutronFissionModel = new G4LFission();
+  //fNeutronFission.RegisterMe(fNeutronFissionModel);
+  //pManager->AddDiscreteProcess(&NeutronFission);
+
+  //fNeutronCaptureModel = new G4LCapture();
+  //fNeutronCapture.RegisterMe(fNeutronCaptureModel);
+  //pManager->AddDiscreteProcess(&fNeutronCapture);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fNeutronInelastic, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fNeutronInelastic, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiNeutron()
+{
+// Construct processes for anti-neutron.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4AntiNeutron::AntiNeutron()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiNeutronModel = new G4LEAntiNeutronInelastic();
+  fHEAntiNeutronModel = new G4HEAntiNeutronInelastic();
+  fAntiNeutronInelastic.RegisterMe(fLEAntiNeutronModel);
+  fAntiNeutronInelastic.RegisterMe(fHEAntiNeutronModel);
+  pManager->AddDiscreteProcess(&fAntiNeutronInelastic);
+
+  pManager->AddRestProcess(&fAntiNeutronAnnihilation);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiNeutronInelastic, kHADR); 
+  controlMap->Add(&fAntiNeutronAnnihilation, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiNeutronInelastic, kPHInhelastic); 
+  mcMap->Add(&fAntiNeutronAnnihilation, kPNoProcess);   
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForLambda()
+{
+// Construct processes for Lambda.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4Lambda::Lambda()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLELambdaModel = new G4LELambdaInelastic();
+  fHELambdaModel = new G4HELambdaInelastic();
+  fLambdaInelastic.RegisterMe(fLELambdaModel);
+  fLambdaInelastic.RegisterMe(fHELambdaModel);
+  pManager->AddDiscreteProcess(&fLambdaInelastic);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fLambdaInelastic, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fLambdaInelastic, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiLambda()
+{
+// Construct processes for anti-Lambda.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4AntiLambda::AntiLambda()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiLambdaModel = new G4LEAntiLambdaInelastic();
+  fHEAntiLambdaModel = new G4HEAntiLambdaInelastic();
+  fAntiLambdaInelastic.RegisterMe(fLEAntiLambdaModel);
+  fAntiLambdaInelastic.RegisterMe(fHEAntiLambdaModel);
+  pManager->AddDiscreteProcess(&fAntiLambdaInelastic);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiLambdaInelastic, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiLambdaInelastic, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForSigmaMinus()
+{
+// Construct processes for Sigma-.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager = G4SigmaMinus::SigmaMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLESigmaMinusModel = new G4LESigmaMinusInelastic();
+  fHESigmaMinusModel = new G4HESigmaMinusInelastic();
+  fSigmaMinusInelastic.RegisterMe(fLESigmaMinusModel);
+  fSigmaMinusInelastic.RegisterMe(fHESigmaMinusModel);
+  pManager->AddDiscreteProcess(&fSigmaMinusInelastic);
+
+  pManager->AddProcess(&fSigmaMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fSigmaMinusMult);
+  pManager->SetProcessOrdering(&fSigmaMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fSigmaMinusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fSigmaMinusInelastic, kHADR); 
+  controlMap->Add(&fSigmaMinusIonisation, kLOSS); 
+  controlMap->Add(&fSigmaMinusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fSigmaMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fSigmaMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fSigmaMinusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiSigmaMinus()
+{
+// Construct processes for anti-Sigma-.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager 
+    = G4AntiSigmaMinus::AntiSigmaMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiSigmaMinusModel = new G4LEAntiSigmaMinusInelastic();
+  fHEAntiSigmaMinusModel = new G4HEAntiSigmaMinusInelastic();
+  fAntiSigmaMinusInelastic.RegisterMe(fLEAntiSigmaMinusModel);
+  fAntiSigmaMinusInelastic.RegisterMe(fHEAntiSigmaMinusModel);
+  pManager->AddDiscreteProcess(&fAntiSigmaMinusInelastic);
+
+  pManager->AddProcess(&fAntiSigmaMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fAntiSigmaMinusMult);
+  pManager->SetProcessOrdering(&fAntiSigmaMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fAntiSigmaMinusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiSigmaMinusInelastic, kHADR); 
+  controlMap->Add(&fAntiSigmaMinusIonisation, kLOSS); 
+  controlMap->Add(&fAntiSigmaMinusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiSigmaMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fAntiSigmaMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fAntiSigmaMinusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForSigmaPlus()
+{
+// Construct processes for Sigma+.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager = G4SigmaPlus::SigmaPlus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLESigmaPlusModel = new G4LESigmaPlusInelastic();
+  fHESigmaPlusModel = new G4HESigmaPlusInelastic();
+  fSigmaPlusInelastic.RegisterMe(fLESigmaPlusModel);
+  fSigmaPlusInelastic.RegisterMe(fHESigmaPlusModel);
+  pManager->AddDiscreteProcess(&fSigmaPlusInelastic);
+
+  pManager->AddProcess(&fSigmaPlusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fSigmaPlusMult);
+  pManager->SetProcessOrdering(&fSigmaPlusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fSigmaPlusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fSigmaPlusInelastic, kHADR); 
+  controlMap->Add(&fSigmaPlusIonisation, kLOSS); 
+  controlMap->Add(&fSigmaPlusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fSigmaPlusInelastic, kPHInhelastic); 
+  mcMap->Add(&fSigmaPlusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fSigmaPlusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiSigmaPlus()
+{
+// Construct processes for anti-Sigma+.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager 
+    = G4AntiSigmaPlus::AntiSigmaPlus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiSigmaPlusModel = new G4LEAntiSigmaPlusInelastic();
+  fHEAntiSigmaPlusModel = new G4HEAntiSigmaPlusInelastic();
+  fAntiSigmaPlusInelastic.RegisterMe(fLEAntiSigmaPlusModel);
+  fAntiSigmaPlusInelastic.RegisterMe(fHEAntiSigmaPlusModel);
+  pManager->AddDiscreteProcess(&fAntiSigmaPlusInelastic);
+
+  pManager->AddProcess(&fAntiSigmaPlusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fAntiSigmaPlusMult);
+  pManager->SetProcessOrdering(&fAntiSigmaPlusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fAntiSigmaPlusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiSigmaPlusInelastic, kHADR); 
+  controlMap->Add(&fAntiSigmaPlusIonisation, kLOSS); 
+  controlMap->Add(&fAntiSigmaPlusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiSigmaPlusInelastic, kPHInhelastic); 
+  mcMap->Add(&fAntiSigmaPlusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fAntiSigmaPlusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForXiMinus()
+{
+// Construct processes for Xi-.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager = G4XiMinus::XiMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEXiMinusModel = new G4LEXiMinusInelastic();
+  fHEXiMinusModel = new G4HEXiMinusInelastic();
+  fXiMinusInelastic.RegisterMe(fLEXiMinusModel);
+  fXiMinusInelastic.RegisterMe(fHEXiMinusModel);
+  pManager->AddDiscreteProcess(&fXiMinusInelastic);
+
+  pManager->AddProcess(&fXiMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fXiMinusMult);
+  pManager->SetProcessOrdering(&fXiMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fXiMinusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fXiMinusInelastic, kHADR); 
+  controlMap->Add(&fXiMinusIonisation, kLOSS); 
+  controlMap->Add(&fXiMinusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fXiMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fXiMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fXiMinusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiXiMinus()
+{
+// Construct processes for anti-Xi-.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager 
+    = G4AntiXiMinus::AntiXiMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiXiMinusModel = new G4LEAntiXiMinusInelastic();
+  fHEAntiXiMinusModel = new G4HEAntiXiMinusInelastic();
+  fAntiXiMinusInelastic.RegisterMe(fLEAntiXiMinusModel);
+  fAntiXiMinusInelastic.RegisterMe(fHEAntiXiMinusModel);
+  pManager->AddDiscreteProcess(&fAntiXiMinusInelastic);
+
+  pManager->AddProcess(&fAntiXiMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fAntiXiMinusMult);
+  pManager->SetProcessOrdering(&fAntiXiMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fAntiXiMinusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiXiMinusInelastic, kHADR); 
+  controlMap->Add(&fAntiXiMinusIonisation, kLOSS); 
+  controlMap->Add(&fAntiXiMinusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiXiMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fAntiXiMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fAntiXiMinusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForXiZero()
+{
+// Construct processes for Xi0.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4XiZero::XiZero()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEXiZeroModel = new G4LEXiZeroInelastic();
+  fHEXiZeroModel = new G4HEXiZeroInelastic();
+  fXiZeroInelastic.RegisterMe(fLEXiZeroModel);
+  fXiZeroInelastic.RegisterMe(fHEXiZeroModel);
+  pManager->AddDiscreteProcess(&fXiZeroInelastic);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fXiZeroInelastic, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fXiZeroInelastic, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiXiZero()
+{
+// Construct processes for anti-Xi0.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4AntiXiZero::AntiXiZero()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiXiZeroModel = new G4LEAntiXiZeroInelastic();
+  fHEAntiXiZeroModel = new G4HEAntiXiZeroInelastic();
+  fAntiXiZeroInelastic.RegisterMe(fLEAntiXiZeroModel);
+  fAntiXiZeroInelastic.RegisterMe(fHEAntiXiZeroModel);
+  pManager->AddDiscreteProcess(&fAntiXiZeroInelastic);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiXiZeroInelastic, kHADR); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiXiZeroInelastic, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForOmegaMinus()
+{
+// Construct processes for Omega-.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager = G4OmegaMinus::OmegaMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEOmegaMinusModel = new G4LEOmegaMinusInelastic();
+  fHEOmegaMinusModel = new G4HEOmegaMinusInelastic();
+  fOmegaMinusInelastic.RegisterMe(fLEOmegaMinusModel);
+  fOmegaMinusInelastic.RegisterMe(fHEOmegaMinusModel);
+  pManager->AddDiscreteProcess(&fOmegaMinusInelastic);
+
+  pManager->AddProcess(&fOmegaMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fOmegaMinusMult);
+  pManager->SetProcessOrdering(&fOmegaMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fOmegaMinusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fOmegaMinusInelastic, kHADR); 
+  controlMap->Add(&fOmegaMinusIonisation, kLOSS); 
+  controlMap->Add(&fOmegaMinusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fOmegaMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fOmegaMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fOmegaMinusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForAntiOmegaMinus()
+{
+// Construct processes for pi+.
+// ---
+
+  // add process & set ordering
+  G4ProcessManager* pManager 
+    = G4AntiOmegaMinus::AntiOmegaMinus()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+
+  fLEAntiOmegaMinusModel = new G4LEAntiOmegaMinusInelastic();
+  fHEAntiOmegaMinusModel = new G4HEAntiOmegaMinusInelastic();
+  fAntiOmegaMinusInelastic.RegisterMe(fLEAntiOmegaMinusModel);
+  fAntiOmegaMinusInelastic.RegisterMe(fHEAntiOmegaMinusModel);
+  pManager->AddDiscreteProcess(&fAntiOmegaMinusInelastic);
+
+  pManager->AddProcess(&fAntiOmegaMinusIonisation, ordInActive, 2, 2);
+
+  pManager->AddProcess(&fAntiOmegaMinusMult);
+  pManager->SetProcessOrdering(&fAntiOmegaMinusMult, idxAlongStep, 1);
+  pManager->SetProcessOrdering(&fAntiOmegaMinusMult, idxPostStep, 1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAntiOmegaMinusInelastic, kHADR); 
+  controlMap->Add(&fAntiOmegaMinusIonisation, kLOSS); 
+  controlMap->Add(&fAntiOmegaMinusMult, kMULS); 
+
+  // map to G3 ALIMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAntiOmegaMinusInelastic, kPHInhelastic); 
+  mcMap->Add(&fAntiOmegaMinusIonisation, kPEnergyLoss); 
+  mcMap->Add(&fAntiOmegaMinusMult, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorHadron::ConstructProcessForOther()
+{
+// Construct processes for other hadrons.
+// ---
+
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() ){
+    G4ParticleDefinition* particle = theParticleIterator->value();
+    G4ProcessManager* pManager = particle->GetProcessManager();
+    G4int nofAlongStepProcesses 
+      = pManager->GetAlongStepProcessVector()->length();
+
+    if ( !particle->IsShortLived()       &&
+         particle->GetPDGCharge() != 0.0 &&
+         nofAlongStepProcesses == 1      && 
+         particle->GetParticleName() != "chargedgeantino") {
+	
+      // create processes
+      G4VProcess* aMultipleScattering = new G4MultipleScattering();
+      G4VProcess* anIonisation = new G4hIonisation();
+
+      // add processes
+      pManager->AddProcess(anIonisation, ordInActive, 2, 2);
+      pManager->AddProcess(aMultipleScattering);
+
+      // set ordering
+      pManager->SetProcessOrdering(aMultipleScattering, idxAlongStep, 1);
+      pManager->SetProcessOrdering(aMultipleScattering, idxPostStep, 1);
+
+      // map to G3 controls
+      TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+      controlMap->Add(anIonisation, kLOSS); 
+      controlMap->Add(aMultipleScattering, kMULS); 
+
+      // map to AliMCProcess codes
+      TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+      mcMap->Add(anIonisation, kPEnergyLoss); 
+      mcMap->Add(aMultipleScattering, kPMultipleScattering); 
+      
+      // keep for deleting 
+      fOtherProcesses.push_back(aMultipleScattering);
+      fOtherProcesses.push_back(anIonisation);
+    }
+  }    
 }
 
 // protected methods
@@ -127,433 +837,57 @@ TG4PhysicsConstructorHadron::~TG4PhysicsConstructorHadron() {
 //_____________________________________________________________________________
 void TG4PhysicsConstructorHadron::ConstructParticle()
 {
-// The particles are constructed in the 
-// TG4ModularPhysicsList.
+// Construct all hadrons.
 // ---
+
+  //  Construct all mesons
+  G4MesonConstructor pMesonConstructor;
+  pMesonConstructor.ConstructParticle();
+
+  //  Construct all barions
+  G4BaryonConstructor pBaryonConstructor;
+  pBaryonConstructor.ConstructParticle();
+
+  //  Construct  resonances and quarks
+  G4ShortLivedConstructor pShortLivedConstructor;
+  pShortLivedConstructor.ConstructParticle();  
 }
 
 //_____________________________________________________________________________
 void TG4PhysicsConstructorHadron::ConstructProcess()
 {
-// Makes discrete physics processes for the hadrons, at present limited
-// to those particles with GHEISHA interactions (INTRC > 0).
-// The processes are: Elastic scattering and Inelastic scattering.
-//
-// F.W.Jones  09-JUL-1998
+// Construct all hadronic processes.
 // ---
 
-   TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
-   TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  // Elastic Process
+  fElasticModel = new G4LElastic();
+  fElasticProcess.RegisterMe(fElasticModel);
+  
+  ConstructProcessForPionPlus();
+  ConstructProcessForPionMinus();
+  ConstructProcessForKaonPlus();
+  ConstructProcessForKaonMinus();
+  ConstructProcessForKaonZeroLong();
+  ConstructProcessForKaonZeroShort();
+  ConstructProcessForProton();
+  ConstructProcessForAntiProton();
+  ConstructProcessForNeutron();
+  ConstructProcessForAntiNeutron();
+  ConstructProcessForLambda();
+  ConstructProcessForAntiLambda();
+  ConstructProcessForSigmaMinus();
+  ConstructProcessForAntiSigmaMinus();
+  ConstructProcessForSigmaPlus();
+  ConstructProcessForAntiSigmaPlus();
+  ConstructProcessForXiMinus();
+  ConstructProcessForAntiXiMinus();
+  ConstructProcessForXiZero();
+  ConstructProcessForAntiXiZero();
+  ConstructProcessForOmegaMinus();
+  ConstructProcessForAntiOmegaMinus();
+  ConstructProcessForOther();
 
-   G4HadronElasticProcess* theElasticProcess = 
-                                    new G4HadronElasticProcess;
-   G4LElastic* theElasticModel = new G4LElastic;
-   theElasticProcess->RegisterMe(theElasticModel);
-
-   // map to G3 controls, ALIMCProcess codes
-   controlMap->Add(theElasticProcess, kHADR); 
-   mcMap->Add(theElasticProcess, kPHElastic); 
-
-   theParticleIterator->reset();
-   while ((*theParticleIterator)()) {
-      G4ParticleDefinition* particle = theParticleIterator->value();
-      G4ProcessManager* pmanager = particle->GetProcessManager();
-      G4String particleName = particle->GetParticleName();
-     
-      if (particleName == "pi+") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4PionPlusInelasticProcess* theInelasticProcess = 
-                                new G4PionPlusInelasticProcess("inelastic");
-         G4LEPionPlusInelastic* theLEInelasticModel = 
-                                new G4LEPionPlusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEPionPlusInelastic* theHEInelasticModel = 
-                                new G4HEPionPlusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "pi-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4PionMinusInelasticProcess* theInelasticProcess = 
-                                new G4PionMinusInelasticProcess("inelastic");
-         G4LEPionMinusInelastic* theLEInelasticModel = 
-                                new G4LEPionMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEPionMinusInelastic* theHEInelasticModel = 
-                                new G4HEPionMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-#ifdef TRIUMF_STOP_PIMINUS
-         G4PionMinusAbsorptionAtRest* theAbsorption
-	   = new G4PionMinusAbsorptionAtRest; 
-         pmanager->AddRestProcess(theAbsorption, ordDefault);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theAbsorption, kHADR); 
-         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
-#else
-         G4String prcNam = "PiMinusAbsorptionAtRest";
-         G4PiMinusAbsorptionAtRest* theAbsorption
-	   = new G4PiMinusAbsorptionAtRest(prcNam); 
-         pmanager->AddRestProcess(theAbsorption, ordDefault);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theAbsorption, kHADR); 
-         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
-#endif
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "kaon+") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4KaonPlusInelasticProcess* theInelasticProcess = 
-                                  new G4KaonPlusInelasticProcess("inelastic");
-         G4LEKaonPlusInelastic* theLEInelasticModel = 
-                                  new G4LEKaonPlusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEKaonPlusInelastic* theHEInelasticModel = 
-                                  new G4HEKaonPlusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "kaon0S") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4KaonZeroSInelasticProcess* theInelasticProcess = 
-                             new G4KaonZeroSInelasticProcess("inelastic");
-         G4LEKaonZeroSInelastic* theLEInelasticModel = 
-                             new G4LEKaonZeroSInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEKaonZeroInelastic* theHEInelasticModel = 
-                             new G4HEKaonZeroInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "kaon0L") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4KaonZeroLInelasticProcess* theInelasticProcess = 
-                             new G4KaonZeroLInelasticProcess("inelastic");
-         G4LEKaonZeroLInelastic* theLEInelasticModel = 
-                             new G4LEKaonZeroLInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEKaonZeroInelastic* theHEInelasticModel = 
-                             new G4HEKaonZeroInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "kaon-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4KaonMinusInelasticProcess* theInelasticProcess = 
-                                 new G4KaonMinusInelasticProcess("inelastic");
-         G4LEKaonMinusInelastic* theLEInelasticModel = 
-                                 new G4LEKaonMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEKaonMinusInelastic* theHEInelasticModel = 
-                                 new G4HEKaonMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-#ifdef TRIUMF_STOP_KMINUS
-         G4KaonMinusAbsorption* theAbsorption = new G4KaonMinusAbsorption;
-         pmanager->AddRestProcess(theAbsorption, ordDefault);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theAbsorption, kHADR); 
-         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
-#else
-         G4KaonMinusAbsorptionAtRest* theAbsorption 
-	   = new G4KaonMinusAbsorptionAtRest;
-         pmanager->AddRestProcess(theAbsorption, ordDefault);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theAbsorption, kHADR); 
-         mcMap->Add(theAbsorption, kPNuclearAbsorption); 
-#endif
-      }
-      else if (particleName == "proton") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4ProtonInelasticProcess* theInelasticProcess = 
-                                    new G4ProtonInelasticProcess("inelastic");
-         G4LEProtonInelastic* theLEInelasticModel = new G4LEProtonInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEProtonInelastic* theHEInelasticModel = new G4HEProtonInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "anti_proton") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiProtonInelasticProcess* theInelasticProcess = 
-                                new G4AntiProtonInelasticProcess("inelastic");
-         G4LEAntiProtonInelastic* theLEInelasticModel = 
-                                new G4LEAntiProtonInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiProtonInelastic* theHEInelasticModel = 
-                                new G4HEAntiProtonInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "neutron") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4NeutronInelasticProcess* theInelasticProcess = 
-                                    new G4NeutronInelasticProcess("inelastic");
-         G4LENeutronInelastic* theLEInelasticModel = 
-                                    new G4LENeutronInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HENeutronInelastic* theHEInelasticModel = 
-                                    new G4HENeutronInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }  
-      else if (particleName == "anti_neutron") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiNeutronInelasticProcess* theInelasticProcess = 
-                               new G4AntiNeutronInelasticProcess("inelastic");
-         G4LEAntiNeutronInelastic* theLEInelasticModel = 
-                               new G4LEAntiNeutronInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiNeutronInelastic* theHEInelasticModel = 
-                               new G4HEAntiNeutronInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "lambda") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4LambdaInelasticProcess* theInelasticProcess = 
-                                    new G4LambdaInelasticProcess("inelastic");
-         G4LELambdaInelastic* theLEInelasticModel = new G4LELambdaInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HELambdaInelastic* theHEInelasticModel = new G4HELambdaInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "anti_lambda") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiLambdaInelasticProcess* theInelasticProcess = 
-                                new G4AntiLambdaInelasticProcess("inelastic");
-         G4LEAntiLambdaInelastic* theLEInelasticModel = 
-                                new G4LEAntiLambdaInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiLambdaInelastic* theHEInelasticModel = 
-                                new G4HEAntiLambdaInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "sigma+") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4SigmaPlusInelasticProcess* theInelasticProcess = 
-                                 new G4SigmaPlusInelasticProcess("inelastic");
-         G4LESigmaPlusInelastic* theLEInelasticModel = 
-                                 new G4LESigmaPlusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HESigmaPlusInelastic* theHEInelasticModel = 
-                                 new G4HESigmaPlusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "sigma-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4SigmaMinusInelasticProcess* theInelasticProcess = 
-                                 new G4SigmaMinusInelasticProcess("inelastic");
-         G4LESigmaMinusInelastic* theLEInelasticModel = 
-                                 new G4LESigmaMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HESigmaMinusInelastic* theHEInelasticModel = 
-                                 new G4HESigmaMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "anti_sigma+") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiSigmaPlusInelasticProcess* theInelasticProcess = 
-                             new G4AntiSigmaPlusInelasticProcess("inelastic");
-         G4LEAntiSigmaPlusInelastic* theLEInelasticModel = 
-                                 new G4LEAntiSigmaPlusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiSigmaPlusInelastic* theHEInelasticModel = 
-                                 new G4HEAntiSigmaPlusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "anti_sigma-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiSigmaMinusInelasticProcess* theInelasticProcess = 
-                            new G4AntiSigmaMinusInelasticProcess("inelastic");
-         G4LEAntiSigmaMinusInelastic* theLEInelasticModel = 
-                                 new G4LEAntiSigmaMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiSigmaMinusInelastic* theHEInelasticModel = 
-                                 new G4HEAntiSigmaMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "xi0") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4XiZeroInelasticProcess* theInelasticProcess = 
-                            new G4XiZeroInelasticProcess("inelastic");
-         G4LEXiZeroInelastic* theLEInelasticModel = 
-                                 new G4LEXiZeroInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEXiZeroInelastic* theHEInelasticModel = 
-                                 new G4HEXiZeroInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "xi-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4XiMinusInelasticProcess* theInelasticProcess = 
-                            new G4XiMinusInelasticProcess("inelastic");
-         G4LEXiMinusInelastic* theLEInelasticModel = 
-                                 new G4LEXiMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEXiMinusInelastic* theHEInelasticModel = 
-                                 new G4HEXiMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "anti_xi0") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiXiZeroInelasticProcess* theInelasticProcess = 
-                            new G4AntiXiZeroInelasticProcess("inelastic");
-         G4LEAntiXiZeroInelastic* theLEInelasticModel = 
-                                 new G4LEAntiXiZeroInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiXiZeroInelastic* theHEInelasticModel = 
-                                 new G4HEAntiXiZeroInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "anti_xi-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiXiMinusInelasticProcess* theInelasticProcess = 
-                            new G4AntiXiMinusInelasticProcess("inelastic");
-         G4LEAntiXiMinusInelastic* theLEInelasticModel = 
-                                 new G4LEAntiXiMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiXiMinusInelastic* theHEInelasticModel = 
-                                 new G4HEAntiXiMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "deuteron") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4DeuteronInelasticProcess* theInelasticProcess = 
-                            new G4DeuteronInelasticProcess("inelastic");
-         G4LEDeuteronInelastic* theLEInelasticModel = 
-                                 new G4LEDeuteronInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "triton") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4TritonInelasticProcess* theInelasticProcess = 
-                            new G4TritonInelasticProcess("inelastic");
-         G4LETritonInelastic* theLEInelasticModel = 
-                                 new G4LETritonInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "alpha") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AlphaInelasticProcess* theInelasticProcess = 
-                            new G4AlphaInelasticProcess("inelastic");
-         G4LEAlphaInelastic* theLEInelasticModel = 
-                                 new G4LEAlphaInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "omega-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4OmegaMinusInelasticProcess* theInelasticProcess = 
-                            new G4OmegaMinusInelasticProcess("inelastic");
-         G4LEOmegaMinusInelastic* theLEInelasticModel = 
-                                 new G4LEOmegaMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEOmegaMinusInelastic* theHEInelasticModel = 
-                                 new G4HEOmegaMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-      else if (particleName == "anti_omega-") {
-         pmanager->AddDiscreteProcess(theElasticProcess);
-         G4AntiOmegaMinusInelasticProcess* theInelasticProcess = 
-                            new G4AntiOmegaMinusInelasticProcess("inelastic");
-         G4LEAntiOmegaMinusInelastic* theLEInelasticModel = 
-                                 new G4LEAntiOmegaMinusInelastic;
-         theInelasticProcess->RegisterMe(theLEInelasticModel);
-         G4HEAntiOmegaMinusInelastic* theHEInelasticModel = 
-                                 new G4HEAntiOmegaMinusInelastic;
-         theInelasticProcess->RegisterMe(theHEInelasticModel);
-         pmanager->AddDiscreteProcess(theInelasticProcess);
-         // map to G3 controls, ALIMCProcess codes
-         controlMap->Add(theInelasticProcess, kHADR); 
-         mcMap->Add(theInelasticProcess, kPHInhelastic); 
-      }
-   }
-
-   if (verboseLevel>0)
+  if (verboseLevel>0)
      G4cout << "### Hadron physics constructed." << G4endl;
 }
 

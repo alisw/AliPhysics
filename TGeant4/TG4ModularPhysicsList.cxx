@@ -27,17 +27,15 @@
 #include <G4ProcessTable.hh>
 #include <G4Decay.hh>
 
-const G4bool TG4ModularPhysicsList::fgkDefaultCutValue = 1.0 * mm;
+const G4double TG4ModularPhysicsList::fgkDefaultCutValue = 1.0 * mm;
 
 //_____________________________________________________________________________
 TG4ModularPhysicsList::TG4ModularPhysicsList()
-  : G4VModularPhysicsList(),
-    fExtDecayer(0)
-{
+  : G4VModularPhysicsList() {
 //
   defaultCutValue = fgkDefaultCutValue;
 
-  SetVerboseLevel(1);
+  SetVerboseLevel(2);
 }
 
 //_____________________________________________________________________________
@@ -104,14 +102,6 @@ void TG4ModularPhysicsList::ConstructParticle()
   // lock physics manager
   TG4G3PhysicsManager* g3PhysicsManager = TG4G3PhysicsManager::Instance();
   g3PhysicsManager->Lock();  
- 
-  // create all particles
-  ConstructAllBosons();
-  ConstructAllLeptons();
-  ConstructAllMesons();
-  ConstructAllBaryons();
-  ConstructAllIons();
-  ConstructAllShortLiveds();
   
   // create particles for registered physics
   G4VModularPhysicsList::ConstructParticle();
@@ -126,108 +116,10 @@ void TG4ModularPhysicsList::ConstructProcess()
   // create processes for registered physics
   G4VModularPhysicsList::ConstructProcess();
 
-  ConstructGeneral();
-
   // verbose
-  if (verboseLevel>1) PrintAllProcesses();
+  if (verboseLevel>1) DumpAllProcesses();
 }
 
-//_____________________________________________________________________________
-void TG4ModularPhysicsList::ConstructAllBosons()
-{
-// Construct all bosons
-// ---
-
-  G4BosonConstructor pConstructor;
-  pConstructor.ConstructParticle();
-}
-
-//_____________________________________________________________________________
-void TG4ModularPhysicsList::ConstructAllLeptons()
-{
-// Construct all leptons
-// ---
-
-  G4LeptonConstructor pConstructor;
-  pConstructor.ConstructParticle();
-}
-
-//_____________________________________________________________________________
-void TG4ModularPhysicsList::ConstructAllMesons()
-{
-// Construct all mesons
-// ---
-
-  G4MesonConstructor pConstructor;
-  pConstructor.ConstructParticle();
-}
-
-//_____________________________________________________________________________
-void TG4ModularPhysicsList::ConstructAllBaryons()
-{
-// Construct all barions
-// ---
-
-  G4BaryonConstructor pConstructor;
-  pConstructor.ConstructParticle();
-}
-
-//_____________________________________________________________________________
-void TG4ModularPhysicsList::ConstructAllIons()
-{
-// Construct light ions
-// ---
-
-  G4IonConstructor pConstructor;
-  pConstructor.ConstructParticle();  
-}
-
-//_____________________________________________________________________________
-void TG4ModularPhysicsList::ConstructAllShortLiveds()
-{
-// Construct  resonaces and quarks
-// ---
-
-  G4ShortLivedConstructor pConstructor;
-  pConstructor.ConstructParticle();  
-}
-
-//_____________________________________________________________________________
-void TG4ModularPhysicsList::ConstructGeneral()
-{
-// Constructs general processes.
-// ---
-
-  // Add Decay Process
-  G4Decay* theDecayProcess = new G4Decay();
-
-  // Set external decayer
-  AliDecayer* aliDecayer = gMC->Decayer(); 
-  if (aliDecayer) {
-    TG4ExtDecayer* tg4Decayer = new TG4ExtDecayer(aliDecayer);
-       // the tg4Decayer is deleted in G4Decay destructor
-    tg4Decayer->SetVerboseLevel(1);   
-    theDecayProcess->SetExtDecayer(tg4Decayer);
-    
-    if (verboseLevel>0) G4cout << "### External decayer is set" << G4endl;
-  } 
-
-  theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    G4ProcessManager* pmanager = particle->GetProcessManager();
-    if (theDecayProcess->IsApplicable(*particle)) { 
-      pmanager ->AddProcess(theDecayProcess);
-      // set ordering for PostStepDoIt and AtRestDoIt
-      pmanager ->SetProcessOrdering(theDecayProcess, idxPostStep);
-      pmanager ->SetProcessOrdering(theDecayProcess, idxAtRest);
-    }
-  }
-  
-  // map to G3 controls
-  TG4ProcessControlMap* processMap = TG4ProcessControlMap::Instance();
-  processMap->Add(theDecayProcess, kDCAY); 
-}
 
 // public methods
 
@@ -251,7 +143,7 @@ void TG4ModularPhysicsList::SetCuts()
 
 #ifdef G4VERBOSE    
   if (verboseLevel >1){
-    G4cout << "G4VUserPhysicsList::SetCutsWithDefault:";
+    G4cout << "TG4ModularPhysicsList::SetCutsWithDefault:";
     G4cout << "CutLength : " << cut/mm << " (mm)" << G4endl;
   }  
 #endif
@@ -343,7 +235,7 @@ void TG4ModularPhysicsList::PrintAllProcesses() const
 // ---
 
   G4cout << "TG4ModularPhysicsList processes: " << G4endl;
-  G4cout << "========================= " << G4endl;
+  G4cout << "================================ " << G4endl;
  
   G4ProcessTable* processTable = G4ProcessTable::GetProcessTable();
   G4ProcessTable::G4ProcNameVector* processNameList 
@@ -351,6 +243,33 @@ void TG4ModularPhysicsList::PrintAllProcesses() const
 
   for (G4int i=0; i <processNameList->size(); i++){
     G4cout << "   " << (*processNameList)[i] << G4endl;
+  }  
+}
+
+//_____________________________________________________________________________
+void TG4ModularPhysicsList::DumpAllProcesses() const
+{
+// Dumps all particles and their processes.
+// ---
+
+  G4cout << "TG4ModularPhysicsList particles and processes: " << G4endl;
+  G4cout << "============================================== " << G4endl;
+ 
+  theParticleIterator->reset();
+  while ((*theParticleIterator)())
+  {
+    // print particle name
+    G4cout << "Particle: " 
+           << theParticleIterator->value()->GetParticleName()
+	   << G4endl;
+
+    // dump particle processes
+    G4ProcessVector* processVector 
+      = theParticleIterator->value()->GetProcessManager()->GetProcessList();
+    for (G4int i=0; i<processVector->length(); i++)
+      (*processVector)[i]->DumpInfo();
+      
+    G4cout << G4endl;  
   }  
 }
 
