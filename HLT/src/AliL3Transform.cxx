@@ -49,8 +49,8 @@ void AliL3Transform::Init()
   fPadPitchWidthUp = 0.600000;
   fZWidth = 0.56599998474121093750;
   fZSigma = 0.22880849748219134199;
-  fZLength = 2.5;
   fZOffset = 0.68642549244657402596;
+  fZLength = 250.;
 
   //slices:
   fNSlice = 36;
@@ -506,7 +506,6 @@ Double_t AliL3Transform::GetEta(Int_t padrow,Int_t pad,Int_t time)
 
 Double_t AliL3Transform::GetPhi(Float_t *xyz)
 {
-  
   Double_t phi = atan2(xyz[1],xyz[0]);
   //if(phi<0) phi=phi+2*TMath::Pi();
   return phi;
@@ -600,7 +599,6 @@ void AliL3Transform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t pad,F
     xyz[2]=fZLength-xyz[2];
   else
     xyz[2]=xyz[2]-fZLength;
-
 }
 
 void AliL3Transform::Local2Global(Float_t *xyz,Int_t sector,Int_t row)
@@ -667,8 +665,8 @@ void AliL3Transform::Local2Raw(Float_t *xyz,Int_t sector,Int_t row)
   Int_t nos=fNSectorUp;
  
   if ((sector<nis/2) || ((sector-nis)<nos/2)) sign=1; 
-  xyz[2]=250-sign*xyz[2];
-  xyz[2]=(xyz[2]+3.*fZSigma)/fZWidth;
+  xyz[2]=fZLength-sign*xyz[2];
+  xyz[2]=(xyz[2]+fZOffset)/fZWidth;
 }
 
 void AliL3Transform::Global2Raw(Float_t *xyz,Int_t sector,Int_t row)

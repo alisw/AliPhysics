@@ -39,20 +39,23 @@ class AliL3Transform {
   Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}
   Double_t GetPadPitchWidth(Int_t patch) {if(patch<=2) return fPadPitchWidthLow; else return fPadPitchWidthUp;}
   Double_t GetZWidth() {return fZWidth;}
+  Double_t GetZLength() {return fZLength;}
+  Double_t GetZOffset() {return fZOffset;}
+  Int_t GetNSectorLow() {return fNSectorLow;}
+  Int_t GetNSectorUp() {return fNSectorUp;}
   
   Bool_t Slice2Sector(Int_t slice, Int_t slicerow, Int_t &sector, Int_t &row) const;
-
   Bool_t Sector2Slice(Int_t &slice, Int_t sector) const;
   Bool_t Sector2Slice(Int_t &slice, Int_t &slicerow, Int_t sector, Int_t row) const;
-  
-  Double_t Row2X(Int_t slicerow);
+
   Int_t GetNPads(Int_t row){return (row<fNRow)?fNPads[row]:0;}
   Int_t GetNTimeBins(){return fNTimeBins;}
-
+  Double_t Row2X(Int_t slicerow);
+  Double_t GetMaxY(Int_t slicerow);
   Double_t GetEta(Float_t *xyz);
   Double_t GetEta(Int_t row, Int_t pad, Int_t time);
   Double_t GetPhi(Float_t *xyz);
-  Double_t GetMaxY(Int_t slicerow);
+
   void XYZtoRPhiEta(Float_t *rpe, Float_t *xyz);
   void Local2Global(Float_t *xyz, Int_t slice);
   void Local2GlobalAngle(Float_t *angle, Int_t slice);
@@ -67,8 +70,6 @@ class AliL3Transform {
   
   ClassDef(AliL3Transform,1) //Transformation class for ALICE TPC
 };
-
-
 #endif
 
 
