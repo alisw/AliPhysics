@@ -1,4 +1,5 @@
-SRCS= AliAOD.cxx AliEventBuffer.cxx \
+SRCS= TGliteXmlEventlist.cxx\
+      AliAOD.cxx AliEventBuffer.cxx \
       AliRunAnalysis.cxx AliAnalysis.cxx \
       AliVAODParticle.cxx AliAODParticle.cxx \
       AliAODPair.cxx   AliAODRun.cxx     \
