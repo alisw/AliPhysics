@@ -24,3 +24,5 @@ DHDR:= RAWLinkDef.h
 ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
 endif
+
+EXPORT:=AliRawReader.h
