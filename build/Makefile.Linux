@@ -10,14 +10,14 @@ CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
 OPT           = -O -g
 
 ifeq ($(CCMAJORV),2)
-CXXOPTS       = $(OPT) -W -Wall -fPIC -pipe
+CXXOPTS       = $(OPT) -W -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
 else
-CXXOPTS       = $(OPT) -W -Wall -fPIC -pipe -fmessage-length=0
+CXXOPTS       = $(OPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
 endif
 COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore
 CXXFLAGS      = $(CXXOPTS)
-CFLAGS	      = -Wall -fPIC -pipe
+CFLAGS	      = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
 
 # rootcint flags
 CINTFLAGS     = 
