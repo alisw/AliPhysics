@@ -54,6 +54,9 @@
 #include "AliConst.h"
 #include "AliMC.h"
 #include "AliPHOSGeometry.h"
+#include "AliQAIntCheckable.h"
+#include "AliQAFloatCheckable.h"
+#include "AliQAMeanChecker.h"
 
 ClassImp(AliPHOSv1)
 
@@ -136,6 +139,58 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   }
 
   delete newHit;
+}
+
+//____________________________________________________________________________
+void AliPHOSv1::FinishPrimary() 
+{
+  // called at the end of each track (primary) by AliRun
+  // hits are reset for each new track
+  // accumulate the total hit-multiplicity
+
+  if ( fQAHitsMul ) 
+    fQAHitsMul->Update( fHits->GetEntriesFast() ) ; 
+
+}
+
+//____________________________________________________________________________
+void AliPHOSv1::FinishEvent() 
+{
+  // called at the end of each event by AliRun
+  // accumulate the hit-multiplicity and total energy per block 
+  // if the values have been updated check it
+
+  if ( fQATotEner ) { 
+    if ( fQATotEner->HasChanged() ) {
+      fQATotEner->CheckMe() ; 
+      fQATotEner->Reset() ; 
+    }
+  }
+  
+  Int_t i ; 
+  if ( fQAHitsMulB && fQATotEnerB ) {
+    for (i = 0 ; i <  fGeom->GetNModules() ; i++) {
+      AliQAIntCheckable * ci = (AliQAIntCheckable*)(*fQAHitsMulB)[i] ;  
+      AliQAFloatCheckable* cf = (AliQAFloatCheckable*)(*fQATotEnerB)[i] ; 
+      if ( ci->HasChanged() ) { 
+	ci->CheckMe() ;  
+	ci->Reset() ;
+      } 
+      if ( cf->HasChanged() ) { 
+	cf->CheckMe() ; 
+	cf->Reset() ;
+      }
+    } 
+  }
+  
+  // check the total multiplicity 
+  
+  if ( fQAHitsMul ) {
+    if ( fQAHitsMul->HasChanged() ) { 
+      fQAHitsMul->CheckMe() ; 
+      fQAHitsMul->Reset() ; 
+    }
+  } 
 }
 
 //____________________________________________________________________________
