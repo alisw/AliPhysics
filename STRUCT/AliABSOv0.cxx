@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/10/14 14:57:34  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.11.6.1  2002/07/24 10:08:27  alibrary
 Updating VirtualMC
 
@@ -162,7 +165,7 @@ void AliABSOv0::CreateGeometry()
     Float_t dTube=0.1;                     // tube thickness
     Float_t dInsu=0.5;                     // insulation thickness
     Float_t dEnve=0.1;                     // protective envelope thickness
-    Float_t dFree=0.5;                     // clearance thickness
+    //    Float_t dFree=0.5;                     // clearance thickness
 
 
 // Mother volume and outer shielding: Pb
@@ -274,8 +277,8 @@ void AliABSOv0::CreateGeometry()
   dz = zW-dZ+cpar[0];
   gMC->Gspos("ACNO", 1, "AWIN", 0., 0., dz, 0, "ONLY");
 
-  Float_t zWW = 383.5;
 /*  
+  Float_t zWW = 383.5;
   cpar[0] = (zRear-dRear-zWW)/2.;
   cpar[1] = rAbs + (zWW-zOpen) *  TMath::Tan(thetaOpen1);
   cpar[2] =  zWW * TMath::Tan(accMin);
@@ -497,7 +500,7 @@ void AliABSOv0::CreateGeometry()
   AliMatrix(idrotm[1601], 180., 0., 90., 0., 90., 270.);
   gMC->Gsvolu("ASST", "TRAP", idtmed[kSteel], trap, 11);
   dz = (600.+zRear+2.)/2.+(trap[4]-trap[8])/2.;
-  Float_t dy =  170.+trap[0];
+  //  Float_t dy =  170.+trap[0];
   
 //  gMC->Gspos("ASST", 1, "ALIC", 0.,  dy, dz, idrotm[1600], "ONLY");
 //  gMC->Gspos("ASST", 2, "ALIC", 0., -dy, dz, idrotm[1601], "ONLY");
