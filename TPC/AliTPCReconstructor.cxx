@@ -25,6 +25,7 @@
 #include "AliTPCReconstructor.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
+#include "AliRawReader.h"
 #include "AliTPCclustererMI.h"
 #include "AliTPCtrackerMI.h"
 #include "AliTPCpidESD.h"
@@ -75,6 +76,42 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   loader->UnloadRecPoints();
   loader->UnloadDigits();
+}
+
+//_____________________________________________________________________________
+void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
+				      AliRawReader* rawReader) const
+{
+// reconstruct clusters from raw data
+
+  AliLoader* loader = runLoader->GetLoader("TPCLoader");
+  if (!loader) {
+    Error("Reconstruct", "TPC loader not found");
+    return;
+  }
+  loader->LoadRecPoints("recreate");
+
+  AliTPCParam* param = GetTPCParam(runLoader);
+  if (!param) return;
+  AliTPCclustererMI clusterer(param);
+
+  Int_t iEvent = 0;
+  while (rawReader->NextEvent()) {
+    runLoader->GetEvent(iEvent++);
+
+    TTree* treeClusters = loader->TreeR();
+    if (!treeClusters) {
+      loader->MakeTree("R");
+      treeClusters = loader->TreeR();
+    }
+
+    clusterer.SetOutput(treeClusters);
+    clusterer.Digits2Clusters(rawReader);
+         
+    loader->WriteRecPoints("OVERWRITE");
+  }
+
+  loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________

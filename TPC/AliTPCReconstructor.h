@@ -16,6 +16,8 @@ public:
   virtual ~AliTPCReconstructor() {};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
+  virtual void         Reconstruct(AliRunLoader* runLoader,
+				   AliRawReader* rawReader) const;
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
 
