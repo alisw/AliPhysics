@@ -28,7 +28,7 @@ Binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
 
   for(int slice=first; slice<=last; slice++){
     for(int patch=0;patch<npatch;patch++){
-      cerr<<"reading slice: "<<slice<<" patch: "<<patch<<" and storing to: "<<path<<"digits_"<<slice<<"_"<<patch<<".raw"<<endl;
+      cerr<<"reading slice: "<<slice<<" patch: "<<patch<<" and storing to: "<<path<<"/digits_"<<slice<<"_"<<patch<<".raw"<<endl;
       fFileHandler->Free();
       fFileHandler->Init(slice,patch);      
       sprintf(name,"%s/digits_%d_%d.raw",path,slice,patch);
