@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.6  2000/06/09 21:57:40  morsch
 Most coding rule violations corrected.
 
@@ -59,7 +62,6 @@ Log messages included
 #include <TView.h>
 #include <TMath.h>
 
-const Int_t kMaxNipx=400, kMaxNipy=800;
  
 ClassImp(AliMUONPoints)
 
