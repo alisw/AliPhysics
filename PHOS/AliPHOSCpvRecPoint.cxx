@@ -253,7 +253,8 @@ void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight,TClonesArray * digi
   
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
 
   Int_t iDigit;
 
@@ -299,7 +300,8 @@ void AliPHOSCpvRecPoint::EvalClusterLengths(TClonesArray * digits)
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
 
   const Int_t kMaxLeng=20;
   Int_t idX[kMaxLeng], idZ[kMaxLeng];
