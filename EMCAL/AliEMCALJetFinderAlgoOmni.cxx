@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.13  2004/03/26 01:00:38  mhorner
+Implementing Marco's optimisations
+
 Revision 1.12  2004/03/15 19:59:37  mhorner
 Pyhtia comparison extended
 
@@ -766,17 +769,22 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 		 fPhiInit = fJetPhi;
 		 fEtaB = fJetEta;
 		 fPhiB = fJetPhi;
+		 Int_t testflag = 1;
+		 do
+		   {
 		 fJetESum = 0.0;
 		 fJetEtaSum = 0.0;
 		 fJetPhiSum = 0.0;
        
          //Step 6. Find Jet Eta and Phi
 		 //Loop over all units in the array to find the ones in the jet cone and determine contrib to Jet eta, phi
-		 do
-		   {
 		     for(Int_t count1=0; count1<fNumUnits; count1++)		   
 		       {
-			 if(fUnit[count1].GetUnitID() == seedID) continue;   //skip unit if the jetseed to avoid doublecounting
+			 if(fUnit[count1].GetUnitID() == seedID && testflag)
+			 {
+				 testflag=0;
+				 continue;   //skip unit if the jetseed to avoid doublecounting
+			 }
 			 if(fUnit[count1].GetUnitFlag() == kOutJet)
 			   {
 			     fDEta = fUnit[count1].GetUnitEta() - fJetEta;
