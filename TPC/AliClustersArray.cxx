@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.4  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -51,9 +54,7 @@ Clusters handling in a new data structure
 #include  <TROOT.h>
 #include "AliSegmentID.h"
 #include "TObjArray.h"
-#include "AliSegmentArray.h"
 
-#include "AliCluster.h"
 #include "AliClusters.h"
 #include "AliDetectorParam.h"
 #include "AliClustersArray.h"

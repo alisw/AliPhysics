@@ -8,6 +8,9 @@
 ////////////////////////////////////////////////
 //  Manager class for AliClustersArray        //
 ////////////////////////////////////////////////
+
+#include "AliSegmentArray.h"
+
 class AliDetectorParam;
 class AliClustersFinder;
 
@@ -25,7 +28,7 @@ protected:
   AliDetectorParam * fParam;      //pointer to detector parameters 
   AliClustersFinder * fClFinder; //!pointer to cluster finder object
   TClass *fClusterType; //!
-  ClassDef(AliClustersArray,1) 
+  ClassDef(AliClustersArray,1) // Cluster manager
 private:
   AliClustersArray(const AliClustersArray& r); //dummy copy constructor
   AliClustersArray &operator=(const AliClustersArray& r);//dummy assignment operator

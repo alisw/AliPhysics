@@ -16,7 +16,7 @@
 class AliArrayI: public TObject ,public TArrayI {
 public:
   void Expand(Int_t n);
-  ClassDef(AliArrayI,1) 
+  ClassDef(AliArrayI,1) // Array handling
 };
 
 #endif //ALIARRAY_I

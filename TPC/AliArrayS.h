@@ -17,6 +17,6 @@
 class AliArrayS:  public TObject,public TArrayS {
 public:
   void Expand(Int_t n);
-  ClassDef(AliArrayS,1) 
+  ClassDef(AliArrayS,1) // Array handling
 };
 #endif //ALIARRAYS_H
