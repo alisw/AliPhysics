@@ -6,6 +6,7 @@
 /aliDet/switchOn FRAME
 
 /g4mc/setEM false
+/g4mc/setMuon false
 /aliRun/initialize
 
 /aliDet/body/setFrame ALIC
