@@ -47,7 +47,7 @@ public AliDecayer
     
     
  private:
-    AliPythia*  fPythia;          //  Pointer to AliPythia
+    AliPythia*  fPythia;          //  ! Pointer to AliPythia
     Decay_t     fDecay;           //  Forced decay mode
     Float_t     fBraPart[501];    //  Branching ratios
 
