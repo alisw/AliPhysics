@@ -1,3 +1,5 @@
+#include "AliHBTQResolutionFctns.h"
+
 //__________________________________________________________________
 ////////////////////////////////////////////////////////////////////
 //                                                                //
@@ -15,7 +17,6 @@
 //                                                                //
 ////////////////////////////////////////////////////////////////////
 
-#include "AliHBTQResolutionFctns.h"
 
 
 /******************************************************************/
@@ -56,6 +57,18 @@ AliHBTQOutResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
  Rename("QOutResolVsQInv","Q_{Out} Resolution vs. Q_{Inv}");
 }
 /******************************************************************/
+
+void AliHBTQOutResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Qoutsim-Qoutrec for y
+  //returns Qinv for x
+  Double_t tqout = trackpair->GetQOutCMSLC();
+  y = partpair->GetQOutCMSLC() - tqout;
+  if (tqout < 0.0) y = -y;
+  x = partpair->GetQInv();
+}
+
+/******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
@@ -68,6 +81,16 @@ AliHBTQSideResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 {
 //ctor
  Rename("QSideResolVsQInv","Q_{Side} Resolution vs. Q_{Inv}");
+}
+/******************************************************************/
+
+void AliHBTQSideResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair,  Double_t& x, Double_t& y)
+{
+  //returns Qsidesim-Qsiderec for y
+  //returns Qinv for x
+  y = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
+  if (trackpair->GetQSideCMSLC() < 0.0) y = -y;
+  x = partpair->GetQInv();
 }
 
 /******************************************************************/
@@ -83,6 +106,16 @@ AliHBTQLongResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 {
 //ctor
  Rename("QLongResolVsQInv","Q_{Long} Resolution vs. Q_{Inv}");
+}
+/******************************************************************/
+
+void AliHBTQLongResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Qlongsim-Qlongrec for y
+  //returns Qinv for x
+  y = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
+  if (trackpair->GetQLongCMSLC() < 0.0) y = -y;
+  x = partpair->GetQInv();
 }
 
 /******************************************************************/
@@ -113,7 +146,16 @@ AliHBTQOutResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 //ctor
  Rename("QOutResolVsKt","Q_{Out} Resolution vs. K_{t} ");
 }
+/******************************************************************/
 
+void AliHBTQOutResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Qoutsim-Qoutrec for y
+  //returns Kt for x
+  y = partpair->GetQOutCMSLC() - trackpair->GetQOutCMSLC();
+  if (trackpair->GetQOutCMSLC() < 0.0) y = -y;
+  x = partpair->GetKt();
+}
 
 /******************************************************************/
 /******************************************************************/
@@ -127,6 +169,16 @@ AliHBTQSideResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 {
 //ctor
  Rename("QSideResolVsKt","Q_{Side} Resolution vs. K_{t} ");
+}
+/******************************************************************/
+
+void AliHBTQSideResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Qsidesim-Qsiderec for y
+  //returns Kt for x
+  y = partpair->GetQSideCMSLC() - trackpair->GetQSideCMSLC();
+  if (trackpair->GetQSideCMSLC() < 0.0) y = -y;
+  x = partpair->GetKt();
 }
 
 /******************************************************************/
@@ -142,7 +194,16 @@ AliHBTQLongResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 //ctor
  Rename("QLongResolVsKt","Q_{Long} Resolution vs. K_{t} ");
 }
+/******************************************************************/
 
+void AliHBTQLongResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Qlongsim-Qlongrec for y
+  //returns Kt for x
+  y = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
+  if (trackpair->GetQLongCMSLC() < 0.0) y = -y;
+  x = partpair->GetKt();
+}
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
@@ -203,6 +264,17 @@ AliHBTPairThetaResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
  Rename("PairThetaResolVsQInv","Pair Theta Angle Resolution vs. Q_{Inv} ");
 }
 /******************************************************************/
+
+void AliHBTPairThetaResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+ {
+  //returns Pair Theta sim - Pair Theta rec for y
+  //returns Qinv for x
+   Double_t partTheta = partpair->Particle1()->Theta() - partpair->Particle2()->Theta();
+   Double_t trackTheta = trackpair->Particle1()->Theta() - trackpair->Particle2()->Theta();
+   y = partTheta - trackTheta;
+   x = partpair->GetQInv();
+ }
+/******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
@@ -215,6 +287,17 @@ AliHBTPairThetaResolVsPairThetaFctn(Int_t nXbins, Double_t maxXval, Double_t min
 {
 //ctor
  Rename("PairThetaResolVsPairTheta","Pair Theta Angle Resolution vs. Pair Theta ");
+}
+/******************************************************************/
+void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Pair Theta sim - Pair Theta rec for y
+  //returns Pair Theta sim for x
+  Double_t partTheta = partpair->Particle1()->Theta() - partpair->Particle2()->Theta();
+  Double_t trackTheta = trackpair->Particle1()->Theta() - trackpair->Particle2()->Theta();
+  y = partTheta - trackTheta;
+  if (trackTheta < 0.0) y = -y;
+  x = trackTheta;
 }
 /******************************************************************/
 /******************************************************************/
