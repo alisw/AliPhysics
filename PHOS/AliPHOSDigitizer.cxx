@@ -123,11 +123,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   InitParameters() ; 
   fDefaultInit = kTRUE ; 
   
-  const AliRunDigitizer * rd = Manager() ; 
-  if (rd) {
-    AliStream * st = static_cast<AliStream*>(rd->GetInputStreams()->At(0))  ;
-    fSDigitsFileName = st->GetFileNames()->At(0)->GetName() ;
-  }
+  fSDigitsFileName = GetInputFileName(0, 0) ;
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(fSDigitsFileName, GetName()) ; 
   gime->Event(0,"S") ; 
   fHitsFileName = gime->SDigitizer()->GetTitle() ; 
@@ -625,10 +621,16 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName)
   // Diverts the Digits in a file separate from the hits file
   
   // I guess it is not going to work if we do merging
-  if (fManager) {
-    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
-    return ; 
-  }
+//   if (fManager) {
+//     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
+//     return ; 
+//   }
+
+  cout << "AliPHOSDigitizer::SetSplitFile " << gDirectory->GetName() << endl ;  
+  cout << "AliPHOSDigitizer::SetSplitFile " << gAlice->GetTreeDFileName() << endl ;  
+  cout << "AliPHOSDigitizer::SetSplitFile " <<  splitFileName.Data() << endl ;
+  
+  SetTitle(splitFileName) ; 
 
   TDirectory * cwd = gDirectory ;
   if ( !(gAlice->GetTreeDFileName() == splitFileName) ) {
@@ -672,33 +674,27 @@ void AliPHOSDigitizer::Print(Option_t* option)const {
   if( strcmp(GetName(), "") != 0 ){
     
     cout << "------------------- "<< GetName() << " -------------" << endl ;
-    const AliRunDigitizer * rd = Manager() ; 
-    if (rd) {
-      Int_t ninput = rd->GetInputStreams()->GetEntries() ;
-      Int_t index = 0 ; 
-      const AliStream * st = 0 ; 
-      TString out("") ; 
-      for (index = 0 ; index < ninput ; index++) { 
-	st = static_cast<AliStream*>(rd->GetInputStreams()->At(index))  ;
-	if (index == 0 ) 
-	  out = st->GetFileNames()->At(0)->GetName() ; 
-	cout << "Adding SDigits " << GetName() << " from " << 	st->GetFileNames()->At(0)->GetName() << endl ; 
-      }
-      cout << endl ;
-      cout << "Writing digits to " <<  out.Data() << endl ;   
-    }
-    else { 
-      AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
-      gime->Folder("sdigits")  ;
-      cout << "Digitizing sDigits from file(s): " <<endl ;
-      TCollection * folderslist = gime->Folder("sdigits")->GetListOfFolders() ; 
-      TIter next(folderslist) ; 
-      TFolder * folder = 0 ; 
+
+    const Int_t nStreams = GetNInputStreams() ; 
+    if (nStreams) {
+      Int_t index = 0 ;  
+      for (index = 0 ; index < nStreams ; index++)  
+	cout << "Adding SDigits " << GetName() << " from " <<  GetInputFileName(index, 0) << endl ; 
       
-      while ( (folder = (TFolder*)next()) ) {
-	if ( folder->FindObject(GetName())  ) 
-	  cout << "Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
-      }
+      cout << endl ;
+      cout << "Writing digits to " <<   GetInputFileName(0, 0) << endl ;   
+    } else { 
+//       AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
+//       gime->Folder("sdigits")  ;
+//       cout << "Digitizing sDigits from file(s): " <<endl ;
+//       TCollection * folderslist = gime->Folder("sdigits")->GetListOfFolders() ; 
+//       TIter next(folderslist) ; 
+//       TFolder * folder = 0 ; 
+      
+//       while ( (folder = (TFolder*)next()) ) {
+// 	if ( folder->FindObject(GetName())  ) 
+      cout << "Adding SDigits " << GetName() << " from " << GetSDigitsFileName() << endl ; 
+//      }
       cout << endl ;
       cout << "Writing digits to " << GetTitle() << endl ;
     }    

@@ -120,11 +120,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   SetTitle("aliroot") ;  
   fDefaultInit = kFALSE ; 
   
-  const AliRunDigitizer * rd = Manager() ; 
-  if (rd) {
-    AliStream * st = static_cast<AliStream*>(rd->GetInputStreams()->At(0))  ;
-    fSDigitsFileName = st->GetFileNames()->At(0)->GetName() ;
-  }
+  fSDigitsFileName = GetInputFileName(0, 0) ;
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance(fSDigitsFileName, GetName()) ; 
   gime->Event(0,"S") ; 
   fHitsFileName = gime->SDigitizer()->GetTitle() ; 
@@ -565,32 +561,26 @@ void AliEMCALDigitizer::Print(Option_t* option)const {
   if( strcmp(GetName(), "") != 0) {
     
     cout << "------------------- "<< GetName() << " -------------" << endl ;
-    const AliRunDigitizer * rd = Manager() ; 
-    if (rd) {
-      Int_t ninput = rd->GetInputStreams()->GetEntries() ;
-      Int_t index = 0 ; 
-      const AliStream * st = 0 ; 
-      TString out("") ; 
-      for (index = 0 ; index < ninput ; index++) { 
-	st = static_cast<AliStream*>(rd->GetInputStreams()->At(index))  ;
-	if (index == 0 ) 
-	  out = st->GetFileNames()->At(0)->GetName() ; 
-	cout << "Adding SDigits " << GetName() << " from " << 	st->GetFileNames()->At(0)->GetName() << endl ; 
-      }
-      cout << endl ;
-      cout << "Writing digits to " <<  out.Data() << endl ;   
-    } else { 
-      AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
-      gime->Folder("sdigits")  ;
-      cout << "Digitizing sDigits from file(s): " <<endl ;
-      TCollection * folderslist = gime->Folder("sdigits")->GetListOfFolders() ; 
-      TIter next(folderslist) ; 
-      TFolder * folder = 0 ; 
+    const Int_t nStreams = GetNInputStreams() ; 
+    if (nStreams) {
+      Int_t index = 0 ;  
+      for (index = 0 ; index < nStreams ; index++)  
+	cout << "Adding SDigits " << GetName() << " from " <<  GetInputFileName(index, 0) << endl ; 
       
-      while ( (folder = (TFolder*)next()) ) {
-	if ( folder->FindObject(GetName())  ) 
-	  cout << "Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
-      }
+      cout << endl ;
+      cout << "Writing digits to " <<   GetInputFileName(0, 0) << endl ;   
+    } else { 
+//       AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
+//       gime->Folder("sdigits")  ;
+//       cout << "Digitizing sDigits from file(s): " <<endl ;
+//       TCollection * folderslist = gime->Folder("sdigits")->GetListOfFolders() ; 
+//       TIter next(folderslist) ; 
+//       TFolder * folder = 0 ; 
+      
+//       while ( (folder = (TFolder*)next()) ) {
+// 	if ( folder->FindObject(GetName())  ) 
+      cout << "Adding SDigits " << GetName() << " from " << GetSDigitsFileName() << endl ; 
+//      }
       cout << endl ;
       cout << "Writing digits to " << GetTitle() << endl ;
     }       
@@ -720,6 +710,8 @@ void AliEMCALDigitizer::SetSplitFile(const TString splitFileName)
     cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
     return ; 
   }
+
+  SetTitle(splitFileName) ; 
 
   TDirectory * cwd = gDirectory ;
   if ( !(gAlice->GetTreeDFileName() == splitFileName) ) {
