@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/10/14 14:57:00  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.10.4.2  2002/07/24 09:27:50  alibrary
 Updating on VirtualMC
 
@@ -349,10 +352,7 @@ Bool_t AliITSmodule::MedianHitG(AliITShit *h1,AliITShit *h2,
    h1->GetPositionG(x1l,y1l,z1l);
    h2->GetPositionG(x2l,y2l,z2l);
 
-   // Modified by N.Carrer. In very rare occasions the track may be just
-   // tangent to the module. Therefore the entrance and exit points have the
-   // same y.
-   if( (y2l-y1l) != 0.0 ) {
+   if((y2l*y1l)<0.) {
      xMl = (-y1l / (y2l-y1l))*(x2l-x1l) + x1l;
      zMl = (-y1l / (y2l-y1l))*(z2l-z1l) + z1l;
    } else {
@@ -397,10 +397,7 @@ void AliITSmodule::MedianHitG(Int_t index,
    y2l = l[1];
    z2l = l[2];
 
-   // Modified by N.Carrer. In very rare occasions the track may be just
-   // tangent to the module. Therefore the entrance and exit points have the
-   // same y.
-   if( (y2l-y1l) != 0.0 ) {
+   if((y2l*y1l)<0.) {
      xMl = (-y1l / (y2l-y1l))*(x2l-x1l) + x1l;
      zMl = (-y1l / (y2l-y1l))*(z2l-z1l) + z1l;
    } else {
@@ -428,10 +425,7 @@ Bool_t AliITSmodule::MedianHitL( AliITShit *itsHit1,
    itsHit2->GetPositionL(x2l,y2l,z2l);
 
    yMl = 0.0;
-   // Modified by N.Carrer. In very rare occasions the track may be just
-   // tangent to the module. Therefore the entrance and exit points have the
-   // same y.
-   if( (y2l-y1l) != 0.0 ) {
+   if((y2l*y1l)<0.) {
      xMl = (-y1l / (y2l-y1l))*(x2l-x1l) + x1l;
      zMl = (-y1l / (y2l-y1l))*(z2l-z1l) + z1l;	     
    } else {
