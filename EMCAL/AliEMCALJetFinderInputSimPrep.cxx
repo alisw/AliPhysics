@@ -381,6 +381,29 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
 	                }
 		}
 	   break;
+	   case kNoNeutronNeutrinoKlong:
+  	        if ( mPart->GetPdgCode() != kNeutron 	&&
+	             mPart->GetPdgCode() != kNeutronBar &&
+		     mPart->GetPdgCode() != kK0Long 	&&
+		     mPart->GetPdgCode() != kNuE	&&
+                     mPart->GetPdgCode() != kNuEBar     &&
+                     mPart->GetPdgCode() != kNuMu       &&
+                     mPart->GetPdgCode() != kNuMuBar    &&
+                     mPart->GetPdgCode() != kNuTau      &&
+                     mPart->GetPdgCode() != kNuTauBar   )
+     		{
+     			if (fDebug > 5) Info("FillTracks","Storing charged track");
+     			if (fSmearType == kSmear ||
+     					fSmearType == kSmearEffic ){
+     				Smear(mPart);/*
+     						TParticle *tmp = Smear(MPart);
+     						fInputObject.AddTrack(tmp);
+     						delete tmp;*/
+     			}else{
+     				fInputObject.AddTrack(*mPart);
+     			}
+     		}
+	   break;
 	   default:
 	   break;
 	   delete mPart;
@@ -506,7 +529,7 @@ if (fDebug > 1) Info("FillParticles","Beginning FillParticles");
 		if (pdgP->Charge() != 0 || mPart->GetPdgCode() == kPi0  ||
 			mPart->GetPdgCode() == kGamma     )
 		{
-			if (fDebug > 5) Info("FillTracks","Storing charged track");
+			if (fDebug > 5) Info("FillTracks","Storing kEMChargedPi0 track");
 			if (fSmearType == kSmear ||
 	                    fSmearType == kSmearEffic ){
 				Smear(mPart);/*
@@ -517,6 +540,29 @@ if (fDebug > 1) Info("FillParticles","Beginning FillParticles");
 	                 fInputObject.AddTrack(*mPart);
 	                }
 		}
+	   break;
+	   case kNoNeutronNeutrinoKlong:
+  	        if ( mPart->GetPdgCode() != kNeutron 	&&
+	             mPart->GetPdgCode() != kNeutronBar &&
+		     mPart->GetPdgCode() != kK0Long 	&&
+		     mPart->GetPdgCode() != kNuE	&&
+                     mPart->GetPdgCode() != kNuEBar     &&
+                     mPart->GetPdgCode() != kNuMu       &&
+                     mPart->GetPdgCode() != kNuMuBar    &&
+                     mPart->GetPdgCode() != kNuTau      &&
+                     mPart->GetPdgCode() != kNuTauBar   )
+     		{
+     			if (fDebug > 5) Info("FillTracks","Storing kNoNeutronNeutrinoKlong track");
+     			if (fSmearType == kSmear ||
+     					fSmearType == kSmearEffic ){
+     				Smear(mPart);/*
+     						TParticle *tmp = Smear(MPart);
+     						fInputObject.AddTrack(tmp);
+     						delete tmp;*/
+     			}else{
+     				fInputObject.AddTrack(*mPart);
+     			}
+     		}
 	   break;
 	   default:
 	   break;
