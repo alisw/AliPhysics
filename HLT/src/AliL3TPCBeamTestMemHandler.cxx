@@ -6,7 +6,7 @@
 // AliL3TPCBeamTestMemHandler
 //
 // Author: C. Loizides <loizides@ikf.uni-frankfurt.de>
-//*-- Copyright &copy ALICE HLT Group
+// -- Copyright &copy ALICE HLT Group
 </pre>
 */
 
