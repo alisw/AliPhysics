@@ -6,7 +6,7 @@
    Singlepatch uses one file per slice (sp=kTRUE). 
 */
 
-Binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
+binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
 
   if(sp) {
     singlepatch(in,first,last,path);
@@ -76,6 +76,6 @@ void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
   
 }
 
-void MakeInitFile(Char_t *f,Char_t *path="./"){
+void make_init_file(Char_t *f,Char_t *path="./"){
   AliL3Transform::MakeInitFile(f,path);
 }
