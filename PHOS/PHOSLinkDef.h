@@ -59,4 +59,7 @@
 #pragma link C++ class AliPHOSConTableDB+;
 #pragma link C++ class AliPHOSCalibrator+;
 #pragma link C++ class AliPHOSCalibrationData+;
+#pragma link C++ class AliPHOSJetFinder+;
+#pragma link C++ class AliPHOSJet+;
+
 #endif
