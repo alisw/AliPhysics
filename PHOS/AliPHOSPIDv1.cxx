@@ -568,7 +568,7 @@ void  AliPHOSPIDv1::MakePID()
   const Int_t kSPECIES = AliESDtrack::kSPECIESN ;
   Double_t pid[kSPECIES] = {0., 0., 0., 0., 0., 0.} ;  
   Int_t nparticles = AliPHOSGetter::Instance()->RecParticles()->GetEntriesFast() ;
-  const Int_t kMAXPARTICLES = 200 ; 
+  const Int_t kMAXPARTICLES = 2000 ; 
   if (nparticles >= kMAXPARTICLES) 
     Error("MakePID", "Change size of MAXPARTICLES") ; 
   Double_t stof[kSPECIES][kMAXPARTICLES] ;
