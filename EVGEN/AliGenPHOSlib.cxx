@@ -36,6 +36,9 @@
 //      GPS @ SUBATECH,  Nantes , France  (October 1999)
 //     http://www-subatech.in2p3.fr/~photons/subatech
 //     martinez@subatech.in2p3.fr
+//  Additional particle species simulation options has been added: 
+//  Charged Pion, Charged Kaons, KLong Proton, Anti-Proton, Neutron, 
+//  Anti-Neutron --> Changes made by Gustavo Conesa in November 2004
 //======================================================================
 
 #include "TMath.h"
@@ -116,6 +119,22 @@ ClassImp(AliGenPHOSlib)
         return 111  ;
       }
     }
+}
+ Int_t AliGenPHOSlib::IpChargedPion(TRandom *ran)
+{
+//                 particle composition pi+, pi0, pi-
+//
+
+     Float_t random = ran->Rndm();
+
+     if ( (2.*random)  < 1. ) 
+       {
+	 return 211 ;
+       } 
+     else
+       {  
+	 return -211 ;
+       }
 }
 
 //End Pions
@@ -230,6 +249,29 @@ Double_t AliGenPHOSlib::YPi0Flat( Double_t */*py*/, Double_t *)
       }
     }
 }
+
+ Int_t AliGenPHOSlib::IpChargedKaon(TRandom *ran)
+{
+//                 particle composition
+//
+  
+  Float_t random = ran->Rndm();
+  
+  if (random < 0.5) {       
+    return  321;   //   K+
+  } else {
+    return -321;   // K-
+  }
+  
+  
+}
+Int_t AliGenPHOSlib::IpKaon0L(TRandom *)
+{
+  //                 particle composition
+  //
+  
+	return  130;   // K^0 long
+}
 // End Kaons
 //============================================================================
 //============================================================================
@@ -297,7 +339,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
 //
         return 221 ;
 }
-// End Pi0Flat
+// End EtaFlat
 //============================================================================
 //============================================================================
 //    O  M  E  G  A  S
@@ -454,8 +496,39 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t */*py*/, Double_t *)
       }
     }
 }
+
+ Int_t AliGenPHOSlib::IpProton(TRandom *)
+{
+//                 particle composition
+//  
+        return  2212;   //   p
+
+}
+ Int_t AliGenPHOSlib::IpAProton(TRandom *)
+{
+//                 particle composition
+//  
+        return  -2212;   //   p bar
+
+}
+
+ Int_t AliGenPHOSlib::IpNeutron(TRandom *)
+{
+//                 particle composition
+//  
+        return  2112;   //   n
+
+}
+ Int_t AliGenPHOSlib::IpANeutron(TRandom *)
+{
+//                 particle composition
+//  
+        return  -2112;   //   n
+
+}
 // End Baryons
 //===================================================================
+
 
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
@@ -465,116 +538,138 @@ GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* /*tname*/) const
     GenFunc func;
     
     switch (param)
-    {
-    case kPion:     
+      {
+      case kPion:     
         func=PtPion;
         break;
-    case kPi0Flat:     
+      case kPi0Flat:     
         func=PtPi0Flat;
         break;
-    case kKaon:
+      case kKaon:
         func=PtKaon;
         break;
-    case kEta:
+      case kEta:
         func=PtEta;
         break;
-    case kEtaFlat:
+      case kEtaFlat:
         func=PtEtaFlat;
         break;
-    case kOmega:
+      case kOmega:
         func=PtOmega;
         break;
-    case kEtaPrime:
+      case kEtaPrime:
         func=PtEtaprime;
         break;
-    case kBaryon:
+      case kBaryon:
         func=PtBaryon;
         break;
-    default:
+      default:
         func=0;
         printf("<AliGenPHOSlib::GetPt> unknown parametrisationn");
-    }
+      }
     return func;
 }
 
 GenFunc AliGenPHOSlib::GetY(Int_t param, const char* /*tname*/) const
 {
-// Return pointer to Y parameterisation
-    GenFunc func;
-    switch (param)
+  // Return pointer to Y parameterisation
+  GenFunc func;
+  switch (param)
     {
     case kPion:
-        func=YPion;
-        break;
+      func=YPion;
+      break;
     case kPi0Flat:
-        func=YPi0Flat;
-        break;
+      func=YPi0Flat;
+      break;
     case kKaon:
-        func=YKaon;
-        break;
+      func=YKaon;
+      break;
     case kEta:
-        func=YEta;
-        break;
-   case kEtaFlat:
-        func=YEtaFlat;
-        break;
+      func=YEta;
+      break;
+    case kEtaFlat:
+      func=YEtaFlat;
+      break;
     case kOmega:
-        func=YOmega;
-        break;
+      func=YOmega;
+      break;
     case kEtaPrime:
-        func=YEtaprime;
-        break;
+      func=YEtaprime;
+      break;
     case kPhi:
-        func=YPhi;
-        break;
+      func=YPhi;
+      break;
     case kBaryon:
-        func=YBaryon;
-        break;
+      func=YBaryon;
+      break;
     default:
-        func=0;
-        printf("<AliGenPHOSlib::GetY> unknown parametrisationn");
+      func=0;
+      printf("<AliGenPHOSlib::GetY> unknown parametrisationn");
     }
-    return func;
+  return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
 GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* /*tname*/) const
 {
-// Return pointer to particle composition
-    GenFuncIp func;
-    switch (param)
+  // Return pointer to particle composition
+  GenFuncIp func;
+  switch (param)
     {
     case kPion:       
-        func=IpPion;
-        break;
+      func=IpPion;
+      break;
+    case kChargedPion:       
+      func=IpChargedPion;
+      break;
     case kPi0Flat:       
-        func=IpPi0Flat;
-        break;
+      func=IpPi0Flat;
+      break;
     case kKaon:
-        func=IpKaon;
-        break;
+      func=IpKaon;
+      break;
+    case kChargedKaon:
+      func=IpChargedKaon;
+      break;
+    case kKaon0L:
+      func=IpKaon0L;
+      break;
     case kEta:
-        func=IpEta;
-        break;
+      func=IpEta;
+      break;
     case kEtaFlat:
-        func=IpEtaFlat;
-        break;
-	
+      func=IpEtaFlat;
+      break;
+      
     case kOmega:
-        func=IpOmega;
-        break;
+      func=IpOmega;
+      break;
     case kEtaPrime:
-        func=IpEtaprime;
-        break;
+      func=IpEtaprime;
+      break;
     case kPhi:
-        func=IpPhi;
-        break;
+      func=IpPhi;
+      break;
     case kBaryon:
-        func=IpBaryon;
-        break;
+      func=IpBaryon;
+      break;
+    case kProton:
+      func=IpProton;
+      break;
+    case kAProton:
+      func=IpAProton;
+      break;
+    case kNeutron:
+      func=IpNeutron;
+      break;
+    case kANeutron:
+      func=IpANeutron;
+      break;
+      
     default:
-        func=0;
-        printf("<AliGenPHOSlib::GetIp> unknown parametrisationn");
+      func=0;
+      printf("<AliGenPHOSlib::GetIp> unknown parametrisationn");
     }
-    return func;
+  return func;
 }
 
