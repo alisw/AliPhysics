@@ -96,11 +96,6 @@ AliRoot$(VERSION).tar.gz AliLibs$(VERSION).tar.gz AliOffline$(VERSION).tar.gz:
 		--exclude Make-depend --exclude '*html/gif' \
                 `cat /tmp/saves` 
 
-alidepend:
-		@for i in $(ALIROOT_DIRS) ; do \
-                    ${MAKE} -C $$i depend ; \
-                done
-
 htmldocnew:		FORCE
 		@for i in $(ALIROOT_DIRS) ; do \
 		    echo "Making HTML doc for $$i" ; \
