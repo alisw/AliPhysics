@@ -41,10 +41,10 @@ protected:
     Int_t GetNInputStreams() const;
     void Copy(TObject &dig) const;
 
-    AliRunDigitizer *fManager;   // Pointer to the Digitizer manager
+    AliRunDigitizer *fManager;   //! Pointer to the Digitizer manager
     Bool_t fRegionOfInterest;    // Flag for digitization only in region of interest
     
-    ClassDef(AliDigitizer,1) // Base class for detector digitizers
+    ClassDef(AliDigitizer,2) // Base class for detector digitizers
 };
 
 #endif // ALIDIGITIZER_H
