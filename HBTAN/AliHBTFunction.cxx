@@ -343,7 +343,7 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
 //                                                   //
 ///////////////////////////////////////////////////////
 
-ClassImp( AliHBTFunction1D )
+ClassImp( AliHBTFunction2D )
 
 const Int_t AliHBTFunction2D::fgkDefaultNBinsX = 200;//default number of Bins in X axis in histograms
 const Float_t AliHBTFunction2D::fgkDefaultMinX = 0.0;//Default min value of X axis in histograms
