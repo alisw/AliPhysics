@@ -1115,13 +1115,13 @@ void TFluka::TrackPosition(TLorentzVector& position) const
 // TRACKR.ytrack = y-position of the last point
 // TRACKR.ztrack = z-position of the last point
   Int_t caller = GetCaller();
-  if (caller == 3 || caller == 6 || caller == 11 || caller == 12) { //bxdraw,endraw,usdraw
+  if (caller == 3 || caller == 6 || caller == 11 || caller == 12 || caller == 50) { //bxdraw,endraw,usdraw,ckov
     position.SetX(GetXsco());
     position.SetY(GetYsco());
     position.SetZ(GetZsco());
     position.SetT(TRACKR.atrack);
   }
-  else if (caller == 4) { // mgdraw
+  else if (caller == 4) { // mgdraw,mgdraw resuming
     position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
     position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
     position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
@@ -1147,12 +1147,12 @@ void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
 // TRACKR.ytrack = y-position of the last point
 // TRACKR.ztrack = z-position of the last point
   Int_t caller = GetCaller();
-  if (caller == 3 || caller == 6 || caller == 11 || caller == 12) { //bxdraw,endraw,usdraw
+  if (caller == 3 || caller == 6 || caller == 11 || caller == 12 || caller == 50) { //bxdraw,endraw,usdraw,ckov
     x = GetXsco();
     y = GetYsco();
     z = GetZsco();
   }
-  else if (caller == 4 || caller == 5) { // mgdraw, sodraw
+  else if (caller == 4 || caller == 5) { // mgdraw, sodraw, mgdraw resuming
     x = TRACKR.xtrack[TRACKR.ntrack];
     y = TRACKR.ytrack[TRACKR.ntrack];
     z = TRACKR.ztrack[TRACKR.ntrack];
@@ -1233,12 +1233,14 @@ Double_t TFluka::TrackStep() const
 // Return the length in centimeters of the current step
 // TRACKR.ctrack = total curved path
   Int_t caller = GetCaller();
-  if (caller == 11 || caller==12 || caller == 3 || caller == 6) //bxdraw,endraw,usdraw
+  if (caller == 11 || caller==12 || caller == 3 || caller == 6 || caller == 50) //bxdraw,endraw,usdraw, ckov
     return 0.0;
   else if (caller == 4) //mgdraw
     return TRACKR.ctrack;
-  else
-    return -1.0;
+  else {
+    Warning("TrackStep", "track step not available");
+    return 0.0;
+  }  
 }
 
 //______________________________________________________________________________ 
@@ -1246,10 +1248,12 @@ Double_t TFluka::TrackLength() const
 {
 // TRACKR.cmtrck = cumulative curved path since particle birth
   Int_t caller = GetCaller();
-  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
+  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6 || caller == 50) //bxdraw,endraw,mgdraw,usdraw,ckov
     return TRACKR.cmtrck;
-  else 
-    return -1.0;
+  else {
+    Warning("TrackLength", "track length not available");
+    return 0.0;
+  } 
 }
 
 //______________________________________________________________________________ 
@@ -1258,10 +1262,12 @@ Double_t TFluka::TrackTime() const
 // Return the current time of flight of the track being transported
 // TRACKR.atrack = age of the particle
   Int_t caller = GetCaller();
-  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
+  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6 || caller == 50) //bxdraw,endraw,mgdraw,usdraw,ckov
     return TRACKR.atrack;
-  else 
-    return -1;
+  else {
+    Warning("TrackTime", "track time not available");
+    return 0.0;
+  }   
 }
 
 //______________________________________________________________________________ 
@@ -1278,8 +1284,10 @@ Double_t TFluka::Edep() const
 // TRACKR.dtrack = energy deposition of the jth deposition event
 
   // If coming from bxdraw we have 2 steps of 0 length and 0 edep
+  // If coming from usdraw we just signal particle production - no edep
+  // If just first time after resuming, no edep for the primary
   Int_t caller = GetCaller();
-  if (caller == 11 || caller==12) return 0.0;
+  if (caller == 11 || caller==12 || caller==6) return 0.0;
   Double_t sum = 0;
   for ( Int_t j=0;j<TRACKR.mtrack;j++) {
     sum +=TRACKR.dtrack[j];  
