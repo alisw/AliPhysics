@@ -265,14 +265,14 @@ void AliPHOSFastRecParticle::Print(Option_t * opt)const
   
   TString message ; 
   message  = "AliPHOSFastRecParticle > type is  %s\n" ; 
-  message += "                         Energy = %f\n" ; 
-  message += "                         Px     = %f\n" ; 
-  message += "                         Py     = %f\n" ;
-  message += "                         Pz     = %f\n" ;
+  message += "                         Energy = %e\n" ; 
+  message += "                         Px     = %e\n" ; 
+  message += "                         Py     = %e\n" ;
+  message += "                         Pz     = %e\n" ;
   Info("Print", message.Data(), 
        Name().Data(), 
-       fE, 
-       fPx, 
-       fPy,
-       fPz ); 
+       Energy(), 
+       Px(), 
+       Py(),
+       Pz() ); 
 }

@@ -698,16 +698,16 @@ void AliPHOSEmcRecPoint::Print(Option_t * option) const
 
   Int_t iDigit;
   for(iDigit=0; iDigit<fMulDigit; iDigit++)
-    Info("Print", " %d ", fDigitsList[iDigit] ) ;  
+    printf(" %d ", fDigitsList[iDigit] ) ;  
   
   Info("Print", " Energies = ") ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    Info("Print", " %f ", fEnergyList[iDigit] ) ;
-  
+    printf(" %f ", fEnergyList[iDigit] ) ;
+  printf("\n") ; 
    Info("Print", " Primaries  ") ;
   for(iDigit = 0;iDigit < fMulTrack; iDigit++)
-    Info("Print", " %d ", fTracksList[iDigit]) ;
-	
+    printf(" %d ", fTracksList[iDigit]) ;
+  printf("\n") ; 	
   message  = "       Multiplicity    = %d" ;
   message += "       Cluster Energy  = %f" ; 
   message += "       Number of primaries %d" ; 
