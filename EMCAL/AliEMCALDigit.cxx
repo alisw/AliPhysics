@@ -47,7 +47,7 @@ ClassImp(AliEMCALDigit)
 
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fNMaxPrimary = 5 ; 
+  fNMaxPrimary = 21 ; 
   fNiparent     = 0 ;
   fNMaxiparent = fNMaxPrimary*10;
 }
@@ -57,7 +57,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 {  
   // ctor with all data 
 
-  fNMaxPrimary = 5 ; 
+  fNMaxPrimary = 21 ; 
   fNMaxiparent = fNMaxPrimary*10;
   fAmp         = DigEnergy ;
   fId          = id ;

@@ -42,6 +42,6 @@ class AliEMCALv1 : public AliEMCALv0 {
 
  private:
     Double_t fSamplingFraction ; // Sampling Fraction of Calorimeter E = f*Elos  
-
+    Double_t fLayerToPreshowerRatio ; // Scaling for elos in First two Scintillator Layers (PreShower)
 };
 #endif // AliEMCALV1_H

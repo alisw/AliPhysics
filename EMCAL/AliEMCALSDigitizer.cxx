@@ -92,7 +92,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
   fNevents = 0 ;      
   fSDigitsTitle = sDigitsTitle ;
   fHeadersFile = headerFile ;
-  fSDigits = new TClonesArray("AliEMCALDigit",1000);
+  fSDigits = new TClonesArray("AliEMCALDigit",30000);
   fHits    = new TClonesArray("AliEMCALHit",1000);
 
   TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
@@ -140,7 +140,7 @@ void AliEMCALSDigitizer::Init(){
     }
     
     fHits    = new TClonesArray("AliEMCALHit",1000);
-    fSDigits = new TClonesArray("AliEMCALDigit",1000);
+    fSDigits = new TClonesArray("AliEMCALDigit",30000);
     
     // add Task to //root/Tasks folder
     TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
@@ -203,35 +203,36 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
         Bool_t newsdigit = kTRUE; 
 // Assign primary number only if contribution is significant
         if( hit->GetEnergy() > fPrimThreshold)
-   curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), (((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1 ) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
+   curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), (((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1 ) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
         else
-   curSDigit =  new AliEMCALDigit( -1               , -1               ,(((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1 ) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
-     cout << "Hit ID = " <<hit->GetId() << endl ; 
-     cout << "ID for detector = " << curSDigit->GetId() << endl ;  
-           cout << hit->GetEnergy() << " - hit energy   -   Digit Energy - " << curSDigit->GetAmp() << endl;
+   curSDigit =  new AliEMCALDigit( -1               , -1               ,(((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1 ) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
+     //cout << "Hit ID = " <<hit->GetId() << endl ; 
+     //cout << "ID for detector = " << curSDigit->GetId() << endl ;  
+         //  cout << hit->GetEnergy() << " - hit energy   -   Digit Energy - " << curSDigit->GetAmp() << endl;
       for(Int_t check= 0; check < nSdigits ; check++) {
           sdigit = (AliEMCALDigit *)fSDigits->At(check);
           if( sdigit->GetId() == curSDigit->GetId())   
-            { cout << "SDigit - Get Amp  " << sdigit->GetAmp() << endl ; 
+            {// cout << "SDigit - Get Amp  " << sdigit->GetAmp() << endl ; 
              *sdigit = *sdigit + *curSDigit ;
               newsdigit = kFALSE;
-            cout << " and after addition " << sdigit->GetAmp() << endl ; 
+          //  cout << " and after addition " << sdigit->GetAmp() << endl ; 
            }
           }
      if (newsdigit) 
          { new((*fSDigits)[nSdigits])  AliEMCALDigit(*curSDigit);
 	  nSdigits++ ;  
-	cout << "Detector nsdigits = " << nSdigits << endl ; }
+	//cout << "Detector nsdigits = " << nSdigits << endl ;
+             }
         newsdigit = kTRUE;  
          
 
         if( hit->GetEnergy() > fPrimThreshold)
-      curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), ((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
+      curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), ((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
         else
-    curSDigit =  new AliEMCALDigit( -1               , -1               ,((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
+    curSDigit =  new AliEMCALDigit( -1               , -1               ,((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
  
       if((hit->GetId()/geom->GetNPhi()) < (2*geom->GetNZ())) 
-       { cout << "ID for Preshower = " << curSDigit->GetId()  << endl ;
+       { //cout << "ID for Preshower = " << curSDigit->GetId()  << endl ;
         for(Int_t check= 0; check < nSdigits; check++) {
           sdigit = (AliEMCALDigit *)fSDigits->At(check);
           if( sdigit->GetId() == curSDigit->GetId())   
@@ -243,12 +244,12 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
      if (newsdigit) 
          { new((*fSDigits)[nSdigits])  AliEMCALDigit(*curSDigit);
 	  nSdigits++ ;  
-	cout << "Preshower nsdigits = " << nSdigits << endl ;}
+	//cout << "Preshower nsdigits = " << nSdigits << endl ;
+           }
         newsdigit=kTRUE;	
       } 
      } 
     } // loop over tracks
-    
     fSDigits->Sort() ;
     
     nSdigits = fSDigits->GetEntriesFast() ;

@@ -67,6 +67,7 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
 
     fNhits = 0;
     fSamplingFraction = 12.9 ; 
+    fLayerToPreshowerRatio = 5.0/6.0; 
     fIshunt     =  1; // All hits are associated with primary particles
 }
 //______________________________________________________________________
@@ -153,7 +154,7 @@ void AliEMCALv1::StepManager(void){
     if(xyze[3] > 0.){// Track is inside the crystal and deposits some energy
 	absid = (id[0]-1)*(fGeom->GetNPhi()) + id[1];
         if((absid/fGeom->GetNPhi()) < (2*fGeom->GetNZ()))
-        {xyze[3] = 5*xyze[3]/6 ;}  //                                             Preshower readout must be scaled
+        {xyze[3] = fLayerToPreshowerRatio*xyze[3] ;}  //                                             Preshower readout must be scaled
         AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyze, pmom);
     } // there is deposited energy
 }
