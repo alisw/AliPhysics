@@ -11,8 +11,6 @@
 #pragma link C++ class  AliRICHcluster+;
 #pragma link C++ class  AliRICHreco+;
 #pragma link C++ class  AliRICHChamber+;
-#pragma link C++ class  AliRICHPoints+;
-#pragma link C++ class  AliRICHDisplay+;
 #pragma link C++ class  AliRICHMap+;
 #pragma link C++ class  AliRICHClusterFinder+;
 #pragma link C++ class  AliRICHRecon+;

@@ -1,5 +1,5 @@
 SRCS   =  AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx\
-	 AliRICHParam.cxx AliRICHDisplay.cxx AliRICHPoints.cxx\
+	 AliRICHParam.cxx \
 	 AliRICHClusterFinder.cxx AliRICHMap.cxx\
 	 AliRICHChamber.cxx AliRICHRecon.cxx\
          AliRICHDisplFast.cxx\
