@@ -146,4 +146,6 @@
 #pragma link C++ class AliITSDigitizer+;
 #pragma link C++ class AliITSFDigitizer+;
 #pragma link C++ class AliITSFindClustersV2+;
+// Raw data
+#pragma link C++ class AliITSDDLRawData+;
 #endif

@@ -1,0 +1,76 @@
+/* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/////////////////////////////////////////////////////
+// Class used for read-write the ALTRO data format //
+/////////////////////////////////////////////////////
+
+/*This class is an interface between the altro format file and the 
+  user, and can be used in write or read mode
+  In the write mode a new altro file is created and filled using the method FillBuffer().
+  The name of the file is specified as parameter in the constructor as well as the type mode.
+  In the Read mode the specified file is open and the values can be read using the
+  methods GetNext() and GetNextBackWord().
+  The first method is used to read the file forward while the second is used to read backward 
+*/
+
+#ifndef AliTPCBUFFER160_H
+#define AliTPCBUFFER160_H
+
+class AliTPCBuffer160:public TObject{
+public:
+  AliTPCBuffer160(){}//default constructor
+  AliTPCBuffer160(const char* fileName,Int_t flag);//constructor
+  virtual ~AliTPCBuffer160();//destructor
+  AliTPCBuffer160(const AliTPCBuffer160 &source); // copy constructor
+  AliTPCBuffer160& operator=(const AliTPCBuffer160 &source); // ass. op.
+  void  FillBuffer(Int_t Val);
+  //this method returmn the number of free cells of the internal buffer
+  Int_t GetFreeCellNumber()const{return fFreeCellBuffer;}
+  //this method return the next word of 10 bit (reading the file backward) if it exists -1 otherwise
+  Int_t GetNextBackWord();
+  //this method return the next word of 10 bit (reading the file forward) if it exists -1 otherwise
+  Int_t GetNext();
+  //this method is used to write tha trailer
+  void  WriteTrailer(Int_t WordsNumber,Int_t PadNumber,Int_t RowNumber,Int_t SecNumber);
+  //this method is used to read the trailer when the file is read forward
+  void  ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber);
+  //this method is used to read the trailer when the file is read backward
+  Int_t ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber);
+  //this methos is used to write the Mini header
+  void  WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSector,Int_t Detector,Int_t Flag );
+  //this methos is used to set the verbose level 
+  //level  0 no output messages
+  //level !=0 some messages are displayed during the run
+  void  SetVerbose(Int_t val){fVerbose=val;}
+  //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
+  void  Flush();
+  Int_t GetFillWordsNum(){return EndingFillWords;}
+private:
+  //this method is used to pack bits into a word of 32 bits
+  void  PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit);
+  //this method is used to read a precise number of bits from a word of 32 bits
+  void  UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t StopBit, ULong_t &Word);
+
+  ULong_t fBuffer[5];   //Buffer dimension is 32*5=160 bits and it contains 16 values
+                        //A value is never splitted in two Buffer
+
+
+  Int_t fShift;         //This variable contains the number of free bits in the current cel of
+                        //the Buffer after that the value Val is been inserted.
+                        //size of Int_t is 32 bit that is the same size of a cell of Buffer so 
+                        //the shift operation are perfomend only on value Val.
+  Int_t fCurrentCell;   //This variable contains the cell number of the cell currently used 
+  Int_t fFreeCellBuffer;//number of free cells of the buffer
+  Int_t fFlag;          //0 read  1 write
+  Int_t fVerbose;       //verbose level
+  fstream f;            //logical name of the I/O file
+  Int_t fMaskBackward;  
+  ULong_t fFilePosition;//'pointer' to the actual position in the file
+  ULong_t fFileEnd;     //position of the last element of the file (File dimension)
+  ULong_t fMiniHeaderPos;//Mini header position
+  Int_t  EndingFillWords;
+  ClassDef(AliTPCBuffer160,1)
+};
+
+#endif

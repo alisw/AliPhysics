@@ -1,0 +1,81 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TFile.h"
+#include "AliTPCBuffer.h"
+#endif
+
+
+void AliTPCDDL(char* FileName,Int_t eth=0){
+  //eth is a threshold.
+  //Digits stored into a file have an amplitude value greater than eth
+  TFile *cf=TFile::Open(FileName);
+  // old geometry (3.07)
+  //AliTPCParamSR *param =(AliTPCParamSR *)cf->Get("75x40_100x60");
+  // if new geometry comment out the line above and uncomment the one below
+  AliTPCParamSR *param =(AliTPCParamSR *)cf->Get("75x40_100x60_150x60");
+  AliTPCDigitsArray *digarr=new AliTPCDigitsArray;
+  digarr->Setup(param);
+  char  cname[100];
+  //old geometry
+  //sprintf(cname,"TreeD_75x40_100x60_%d",eventn);
+  // if new geometry comment out the line above and uncomment the one below
+  Int_t eventn=0;
+  sprintf(cname,"TreeD_75x40_100x60_150x60_%d",eventn);
+  digarr->ConnectTree(cname);
+  AliTPCBuffer *b=new AliTPCBuffer("AliTPCDDL.dat");
+  Int_t nrows=Int_t(digarr->GetTree()->GetEntries());
+  cout<<"Number of entries "<<nrows<<endl;
+  Int_t PSector=-1;
+  Int_t SubSec=0;
+  for (Int_t n=0; n<nrows; n++) {
+    AliSimDigits *digrow=(AliSimDigits*)digarr->LoadEntry(n);
+
+    Int_t sec,row; // sector and row number (in the TPC)
+    param->AdjustSectorRow(digrow->GetID(),sec,row);   
+    // cout<<sec<<" row "<<row<<endl;
+    if(PSector!=sec){
+      SubSec=0;
+      PSector=sec;
+    }//end if
+
+    if(sec<36){
+      //inner sector [0;35]
+      if(row!=30)
+	//the whole row is written into the output file
+	b->WriteRowBinary(eth,digrow,0,0,0,sec,SubSec,row);
+      else{
+	//only the pads in the range [37;48] are written into the output file
+	b->WriteRowBinary(eth,digrow,37,48,1,sec,SubSec,row);
+	SubSec=1;
+	//only the pads outside the range [37;48] are written into the output file
+	b->WriteRowBinary(eth,digrow,37,48,2,sec,SubSec,row);
+      }//end else
+    }//end if
+    else{
+      //outer sector [36;71]
+      if(row==54)SubSec=2;
+      if((row!=27)&&(row!=76))
+	b->WriteRowBinary(eth,digrow,0,0,0,sec,SubSec,row);
+      else{
+	if(row==27){
+	  //only the pads outside the range [43;46] are written into the output file
+	  b->WriteRowBinary(eth,digrow,43,46,2,sec,SubSec,row);
+	  SubSec=1;
+	  //only the pads in the range [43;46] are written into the output file
+	  b->WriteRowBinary(eth,digrow,43,46,1,sec,SubSec,row);
+	}
+	if(row==76){
+	  //only the pads outside the range [33;88] are written into the output file
+	  b->WriteRowBinary(eth,digrow,33,88,2,sec,SubSec,row);
+	  SubSec=3;
+	  //only the pads in the range [33;88] are written into the output file
+	  b->WriteRowBinary(eth,digrow,33,88,1,sec,SubSec,row);
+	}
+      }
+    }//end else
+  }//end for
+  cf->Close();
+  cout<<"File created !"<<endl;
+  cout<<"Total number of digits: "<<b->GetDigNumber()<<endl;
+  delete b;
+  return;
+}//end AliTPCDataChallenge
