@@ -103,7 +103,7 @@ void AliSTARTDigitizer::Exec(Option_t* option)
   Float_t timeleft[13]={13*0};
   Float_t channelWidth=2.5; //ps
   Int_t channelWidthADC=1; //ps
-  Int_t thresholdAmpl=10;
+  //  Int_t thresholdAmpl=10;
 
   ftimeRightTDC = new TArrayI(12); 
   ftimeLeftTDC = new TArrayI(12); 
@@ -210,12 +210,12 @@ void AliSTARTDigitizer::Exec(Option_t* option)
     
     besttimerightGaus=gRandom->Gaus(besttimeright,0.05);
     //    cout<<" besttimerightGaus "<<besttimerightGaus<<endl;
-    bestRightADC=(Int_t) besttimerightGaus*1000/channelWidth;
+    bestRightADC=Int_t (besttimerightGaus*1000/channelWidth);
     Float_t koef=69.7/350.;
     besttimeleft=koef*besttimeleft;
     besttimeleftGaus=gRandom->Gaus(besttimeleft,0.05);
     
-    bestLeftADC=(Int_t) besttimeleftGaus*1000/channelWidth;
+    bestLeftADC=Int_t (besttimeleftGaus*1000/channelWidth);
     timediff=besttimerightGaus-besttimeleftGaus;
     cout<<" timediff in ns "<<timediff<<" z= "<<timediff*30<<endl;
     meanTime=(besttimerightGaus+besttimeleftGaus)/2.;

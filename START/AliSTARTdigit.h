@@ -15,11 +15,11 @@ class AliSTARTdigit: public TObject  {
     virtual ~AliSTARTdigit() {}
     void SetTimeDiff(Int_t time) {fTimeDiff=time;}
     void SetMeanTime(Int_t time) {fTimeAverage=time;}
-    Stat_t  GetTimeDiff() {return fTimeDiff;}
-    Stat_t  GetMeanTime() {return fTimeAverage;}
-    Stat_t  GetBestTimeRight() {return fTimeBestRight ;}
-    Stat_t  GetBestTimeLeft() {return fTimeBestLeft ;}
-    Stat_t  GetSumADCRight() {return fSumADCRight ;}
+    Int_t  GetTimeDiff() {return fTimeDiff;}
+    Int_t  GetMeanTime() {return fTimeAverage;}
+    Int_t  GetBestTimeRight() {return fTimeBestRight ;}
+    Int_t  GetBestTimeLeft() {return fTimeBestLeft ;}
+    Int_t  GetSumADCRight() {return fSumADCRight ;}
     void Print(); 
     void SetTimeBestRight( Int_t time) {fTimeBestRight = time;}
     void SetTimeBestLeft( Int_t time) {fTimeBestLeft = time;}
