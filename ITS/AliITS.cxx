@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/10/09 22:18:12  barbera
+Bug fixes from MAriana to le AliITStest.C run correctly
+
 Revision 1.23  2000/10/05 20:47:42  nilsen
 fixed dependencies of include files. Tryed but failed to get a root automaticly
 generates streamer function to work. Modified SetDefaults.
@@ -133,6 +136,7 @@ the AliITS class.
 #include "AliITSresponse.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSresponseSPD.h"
+#include "AliITSresponseSPDbari.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSsegmentationSSD.h"
