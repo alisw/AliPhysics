@@ -9,6 +9,7 @@ SRCS:=  AliTPCLoader.cxx \
 	
 
 HDRS:= $(SRCS:.cxx=.h)
+HDRS:= $(filter-out AliTPCTrackHitsInterfaces.h, $(HDRS))
 
 DHDR:= TPCbaseLinkDef.h
 
