@@ -259,6 +259,15 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual void          SetExternalDecayer(AliDecayer* )                                  { };
   virtual AliDecayer   *Decayer() const                                                   { return 0; };
 
+#if ROOT_VERSION_CODE>=262913
+  virtual void SetRootGeometry() {}
+  virtual Int_t NofVolDaughters(const char*) const {return 0;}
+  virtual const char* VolDaughterName(const char*, Int_t) const {return 0x0;}
+  virtual Int_t VolDaughterCopyNo(const char*, Int_t) const {return 0;}
+  virtual void ForceDecayTime(Float_t) {}
+  virtual const char* CurrentVolPath() {return 0x0;}
+#endif
+
  protected:
 
   enum {
