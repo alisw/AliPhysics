@@ -1,26 +1,24 @@
 #include "AliHBTPairCut.h"
 #include "AliHBTPair.h"
-#include <Riostream.h>
-
 
 ClassImp(AliHBTPairCut)
 const Int_t AliHBTPairCut::fkgMaxCuts = 50;
 /**********************************************************/
 
-AliHBTPairCut::AliHBTPairCut()
+AliHBTPairCut::AliHBTPairCut():
+  fNCuts(0)
 {
 //constructor
   fFirstPartCut = new AliHBTEmptyParticleCut(); //empty cuts
   fSecondPartCut= new AliHBTEmptyParticleCut(); //empty cuts
     
   fCuts = new AliHbtBasePairCut*[fkgMaxCuts];
-  fNCuts = 0;
 }
 /**********************************************************/
 
 AliHBTPairCut::AliHBTPairCut(const AliHBTPairCut& in)
 {
- //copy constructor
+//copy constructor
  fCuts = new AliHbtBasePairCut*[fkgMaxCuts];
  fNCuts = in.fNCuts;
 
@@ -37,6 +35,11 @@ AliHBTPairCut::AliHBTPairCut(const AliHBTPairCut& in)
 AliHBTPairCut::~AliHBTPairCut()
 {
 //destructor
+  if (fFirstPartCut != fSecondPartCut)
+   {
+     delete fSecondPartCut;
+   }
+  delete fFirstPartCut;
   for (Int_t i = 0;i<fNCuts;i++)
    {
      delete fCuts[i];
@@ -68,17 +71,16 @@ Bool_t AliHBTPairCut::Pass(AliHBTPair* pair)
 //if NOT   returns    TRUE
  if(!pair) 
   {
-    Warning("Pass()","No Pasaran! We never accept NULL pointers");
+    Warning("Pass","No Pasaran! We never accept NULL pointers");
     return kTRUE;
   }
  
  //check particle's cuts
- if( (   fFirstPartCut->Pass( pair->Particle1() )   ) || 
-     (   fSecondPartCut->Pass(pair->Particle2() )   )   )
+ if( ( fFirstPartCut->Pass( pair->Particle1()) ) || 
+     ( fSecondPartCut->Pass(pair->Particle2()) )   )
    {  
      return kTRUE;
    }
-// cout<<"passed "<<pair->Particle1()->GetPdgCode()<<"  "<<pair->Particle2()->GetPdgCode()<<endl;
  return PassPairProp(pair);
 }
 /**********************************************************/
@@ -93,7 +95,6 @@ Bool_t AliHBTPairCut::PassPairProp(AliHBTPair* pair)
    {
     if ( (fCuts[i]->Pass(pair)) ) return kTRUE; //if one of the cuts reject, then reject
    }
-// cout<<"passed "<<pair->Particle1()->GetPdgCode()<<"  "<<pair->Particle2()->GetPdgCode()<<endl;
  return kFALSE;
 }
 /**********************************************************/
@@ -179,6 +180,14 @@ void AliHBTPairCut::SetKtRange(Double_t min, Double_t max)
 }
 /**********************************************************/
 
+void AliHBTPairCut::SetKStarRange(Double_t min, Double_t max)
+{
+  AliHBTKStarCut* cut= (AliHBTKStarCut*)FindCut(kHbtPairCutPropKStar);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliHBTKStarCut(min,max);
+}
+/**********************************************************/
+
 AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
 {
  for (Int_t i = 0;i<fNCuts;i++)
@@ -194,7 +203,7 @@ AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
 
 void AliHBTPairCut::Streamer(TBuffer &b)
 {
-     // Stream all objects in the array to or from the I/O buffer.
+  // Stream all objects in the array to or from the I/O buffer.
 
    UInt_t R__s, R__c;
    if (b.IsReading()) 
@@ -202,6 +211,10 @@ void AliHBTPairCut::Streamer(TBuffer &b)
       Version_t v = b.ReadVersion(&R__s, &R__c);
       if (v > -1)
        {
+        delete fFirstPartCut;
+        delete fSecondPartCut;
+        fFirstPartCut = 0x0;
+        fSecondPartCut = 0x0;
         TObject::Streamer(b);
         b >> fFirstPartCut;
         b >> fSecondPartCut;
