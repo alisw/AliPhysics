@@ -162,7 +162,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* di
   
   // add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
+  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+  phostasks->Add(this) ; 
 
 
   fIsInitialized = kTRUE ;
@@ -204,7 +205,7 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
 
 //____________________________________________________________________________
 Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Float_t * maxAtEnergy,
-				    Int_t nPar, Float_t * fitparameters)
+				    Int_t nPar, Float_t * fitparameters) const
 { 
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
   // The initial values for fitting procedure are set equal to the positions of local maxima.
@@ -320,7 +321,8 @@ void AliPHOSClusterizerv1::Init()
 
     // add Task to //root/Tasks folder
     TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    roottasks->Add(this) ; 
+    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+    phostasks->Add(this) ; 
 
     fIsInitialized = kTRUE ;
   }
@@ -461,7 +463,7 @@ Bool_t AliPHOSClusterizerv1::ReadDigits()
 	if( strcmp(digitizerBranch->GetName(),"AliPHOSDigitizer") == 0) 
 	  digitizerNotFound = kFALSE ;
     }
-    
+   
   }
   
   if(digitizerNotFound || phosNotFound){
@@ -588,6 +590,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
     while ((sb=(TBranch*)next())) {
       sb->SetFile(filename);
     }   
+
     cwd->cd();
   }
     
@@ -619,10 +622,10 @@ void AliPHOSClusterizerv1::WriteRecPoints()
     cwd->cd();
   }
   
-  
   emcBranch->Fill() ;
   cpvBranch->Fill() ;
   clusterizerBranch->Fill() ;
+//    gAlice->TreeR()->Fill() ;    // YK 28.05.01  
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }
@@ -646,7 +649,7 @@ void AliPHOSClusterizerv1::MakeClusters()
   while ( (digit = (AliPHOSDigit *)nextdigit()) ) { // scan over the list of digits
     AliPHOSRecPoint * clu = 0 ; 
 
-    TArrayI clusterdigitslist(1000) ;   
+    TArrayI clusterdigitslist(1500) ;   
     Int_t index ;
 
     if (( IsInEmc (digit) && Calibrate(digit->GetAmp()) > fEmcClusteringThreshold  ) || 
@@ -1031,7 +1034,8 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::Print(Option_t * option)const
 {
-  // Prints the parameters of the clusterizer
+  // Print clusterizer parameters
+
   if(fIsInitialized){
     
     // Print parameters
