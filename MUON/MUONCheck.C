@@ -300,7 +300,7 @@ void MUONTestTrigger (char * filename="galice.root", Int_t event2Check=0){
   }
   
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
-  MUONLoader->LoadRecPoints("READ");
+  MUONLoader->LoadDigits("READ");
   // Creating MUON data container
   AliMUONData muondata(MUONLoader,"MUON","MUON");
   
@@ -316,7 +316,7 @@ void MUONTestTrigger (char * filename="galice.root", Int_t event2Check=0){
     RunLoader->GetEvent(ievent);
     
     muondata.SetTreeAddress("GLT"); 
-    muondata.GetTrigger();
+    muondata.GetTriggerD();
     
     globalTrigger = muondata.GlobalTrigger();
     localTrigger = muondata.LocalTrigger();
