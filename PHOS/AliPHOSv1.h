@@ -11,17 +11,12 @@
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
-#include "TClonesArray.h"
-
+class TClonesArray ;
+class TLorentzVector ;
 class TFile;
 
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
-#include "AliPHOSGeometry.h"
-#include "AliPHOSReconstructioner.h"
-#include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSPID.h"
-#include "AliPHOSCPVDigit.h"
 
 class AliPHOSv1 : public AliPHOSv0 {
 
@@ -29,35 +24,31 @@ public:
 
   AliPHOSv1(void) ;
   AliPHOSv1(const char *name, const char *title="") ;
-  AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
   AliPHOSv1(const AliPHOSv1 & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    assert(0==1) ; 
+    abort() ; 
   }
   virtual ~AliPHOSv1(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits) ; 
-  Float_t        Calibrate(Int_t amp){ return (amp - fDigitizeA)/fDigitizeB ; }
-  Int_t          Digitize(Float_t Energy){ return (Int_t ) (fDigitizeA + Energy*fDigitizeB); }
-  virtual void   Hits2SDigits() ;
+  // Float_t        Calibrate(Int_t amp){ return (amp - fDigitizeA)/fDigitizeB ; }
+  // Int_t          Digitize(Float_t Energy){ return (Int_t ) (fDigitizeA + Energy*fDigitizeB); }
+  // virtual void   Hits2SDigits() ;
   virtual void   MakeBranch(Option_t* opt, char *file=0 ) ;
-  void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
-  void           ResetClusters(){} ;
-  virtual void   SDigits2Digits() ;  
+  // void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
+  // void           ResetClusters(){} ;
+  // virtual void   SDigits2Digits() ;  
   virtual Int_t  IsVersion(void) const {
     // Gives the version number 
     return 1 ; 
   }
 
-  virtual void   ResetReconstruction() ; // Reset reconstructed objects
-  void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
+  //  virtual void   ResetReconstruction() ; // Reset reconstructed objects
+  // void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
     // sets the reconstructionner object to be used
-    fReconstructioner = &Reconstructioner ;
-  }  
-  void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
-  void           SetPpsdEnergyThreshold(Float_t enth)      { fPpsdEnergyThreshold = enth ; } 
-  void           SetCpvEnergyThreshold(Float_t enth)       { fCpvEnergyThreshold = enth ; } 
+  //   fReconstructioner = &Reconstructioner ;
+  // }  
 
   virtual void   StepManager(void) ;                              
   virtual TString Version(void){ 
@@ -67,7 +58,7 @@ public:
 
   AliPHOSv1 & operator = (const AliPHOSv1 & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    abort() ;
     return *this ; 
   }
 
@@ -77,15 +68,6 @@ public:
 
 protected:
 
-  Float_t fDigitThreshold ;                       // Threshold for the digit registration 
-  Float_t fPpsdEnergyThreshold;                   //PPSD
-  Float_t fCpvEnergyThreshold;                    //CPV  
-  Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
-  Float_t fDigitizeA ;                            //Parameters of the 
-  Float_t fDigitizeB ;                            //digitization 
-  Int_t   fnSdigits ; 
-  AliPHOSReconstructioner  * fReconstructioner ;  // Clusterization and subtracking procedures
-  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

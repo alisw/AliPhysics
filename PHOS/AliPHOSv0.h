@@ -11,16 +11,11 @@
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
-#include "TClonesArray.h"
 
 class TFile;
 
 // --- AliRoot header files ---
 #include "AliPHOS.h"
-#include "AliPHOSGeometry.h"
-#include "AliPHOSReconstructioner.h"
-#include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSPID.h"
 
 class AliPHOSv0 : public AliPHOS {
 
@@ -34,7 +29,7 @@ class AliPHOSv0 : public AliPHOS {
   AliPHOSv0(const AliPHOSv0 & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    assert(0==1) ; 
+    abort() ; 
   } 
   virtual ~AliPHOSv0(void){
     // dtor
@@ -42,7 +37,7 @@ class AliPHOSv0 : public AliPHOS {
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
     // useless since there are no hits
-    assert(0==1) ; 
+    abort() ; 
   }
   virtual void   BuildGeometry(void) ;             // creates the geometry for the ROOT display
   void           BuildGeometryforPHOS(void) ;      // creates the PHOS geometry for the ROOT display
@@ -72,7 +67,7 @@ class AliPHOSv0 : public AliPHOS {
   
   AliPHOSv0 & operator = (const AliPHOSv0 & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    abort() ;
     return *this ; 
   }
   

@@ -46,6 +46,7 @@
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliMC.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSv0)
 
@@ -734,16 +735,16 @@ void AliPHOSv0::CreateGeometryforPHOS()
   dphos[1] =  fGeom->GetOuterBoxSize(1) / 2.0 ;
   dphos[2] =  fGeom->GetOuterBoxSize(2) / 2.0 ;
 
-  gMC->Gsvolu("EMCA", "BOX ", idtmed[706], dphos, 3) ;
+  gMC->Gsvolu("PEMC", "BOX ", idtmed[706], dphos, 3) ;
 
   Float_t yO =  - fGeom->GetCPVBoxSize(1)  / 2.0 ;
 
-    gMC->Gspos("EMCA", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
+    gMC->Gspos("PEMC", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
   if ( strcmp( fGeom->GetName(),"MIXT") == 0 && fGeom->GetNPPSDModules() > 0) 
-    gMC->Gspos("EMCA", 1, "PHO1", 0.0, yO, 0.0, 0, "ONLY") ; 
+    gMC->Gspos("PEMC", 1, "PHO1", 0.0, yO, 0.0, 0, "ONLY") ; 
 
   // ---
-  // --- Define Textolit Wall box, position inside EMCA ---
+  // --- Define Textolit Wall box, position inside PEMC ---
   // --- Textolit Wall box dimentions ---
  
  
@@ -756,7 +757,7 @@ void AliPHOSv0::CreateGeometryforPHOS()
 
   yO =   (  fGeom->GetOuterBoxThickness(1) -   fGeom->GetUpperPlateThickness() ) / 2.  ;
    
-  gMC->Gspos("PTXW", 1, "EMCA", 0.0, yO, 0.0, 0, "ONLY") ;
+  gMC->Gspos("PTXW", 1, "PEMC", 0.0, yO, 0.0, 0, "ONLY") ;
 
   // --- 
   // --- Define Upper Polystyrene Foam Plate, place inside PTXW ---
@@ -1017,7 +1018,7 @@ void AliPHOSv0::CreateGeometryforPPSD()
   mppsd[1] = fGeom->GetPPSDModuleSize(1) / 2.0 ;  
   mppsd[2] = fGeom->GetPPSDModuleSize(2) / 2.0 ;
 
-  gMC->Gsvolu("MPPS", "BOX ", idtmed[708], mppsd, 3) ;  
+  gMC->Gsvolu("PMPP", "BOX ", idtmed[708], mppsd, 3) ;  
  
   // Inside mppsd :
   // 1. The Top Lid made of epoxy (FR4) 
@@ -1027,11 +1028,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
   tlppsd[1] = fGeom->GetLidThickness() / 2.0 ;
   tlppsd[2] = fGeom->GetPPSDModuleSize(2) / 2.0 ;
 
-  gMC->Gsvolu("TLPS", "BOX ", idtmed[708], tlppsd, 3) ; 
+  gMC->Gsvolu("PTLP", "BOX ", idtmed[708], tlppsd, 3) ; 
 
   Float_t  y0 = ( fGeom->GetMicromegas1Thickness() - fGeom->GetLidThickness() ) / 2. ; 
 
-  gMC->Gspos("TLPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PTLP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
  
   // 2. the upper panel made of composite material
 
@@ -1040,11 +1041,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
   upppsd[1] = fGeom->GetCompositeThickness() / 2.0 ;
   upppsd[2] = ( fGeom->GetPPSDModuleSize(2) - fGeom->GetMicromegasWallThickness() ) / 2.0 ;
  
-  gMC->Gsvolu("UPPS", "BOX ", idtmed[709], upppsd, 3) ; 
+  gMC->Gsvolu("PUPP", "BOX ", idtmed[709], upppsd, 3) ; 
   
   y0 = y0 - fGeom->GetLidThickness() / 2. - fGeom->GetCompositeThickness() / 2. ; 
 
-  gMC->Gspos("UPPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PUPP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // 3. the anode made of Copper
   
@@ -1053,11 +1054,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
   anppsd[1] = fGeom->GetAnodeThickness() / 2.0 ; 
   anppsd[2] = ( fGeom->GetPPSDModuleSize(2) - fGeom->GetMicromegasWallThickness() ) / 2.0  ; 
 
-  gMC->Gsvolu("ANPS", "BOX ", idtmed[710], anppsd, 3) ; 
+  gMC->Gsvolu("PANP", "BOX ", idtmed[710], anppsd, 3) ; 
   
   y0 = y0 - fGeom->GetCompositeThickness() / 2. - fGeom->GetAnodeThickness()  / 2. ; 
   
-  gMC->Gspos("ANPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PANP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // 4. the conversion gap + avalanche gap filled with gas
 
@@ -1066,15 +1067,15 @@ void AliPHOSv0::CreateGeometryforPPSD()
   ggppsd[1] = ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2.0 ; 
   ggppsd[2] = ( fGeom->GetPPSDModuleSize(2) - fGeom->GetMicromegasWallThickness() ) / 2.0 ;
 
-  gMC->Gsvolu("GGPS", "BOX ", idtmed[715], ggppsd, 3) ; 
+  gMC->Gsvolu("PGGP", "BOX ", idtmed[715], ggppsd, 3) ; 
   
   // --- Divide GGPP in X (phi) and Z directions --
-  gMC->Gsdvn("GROW", "GGPS", fGeom->GetNumberOfPadsPhi(), 1) ;
-  gMC->Gsdvn("GCEL", "GROW", fGeom->GetNumberOfPadsZ() ,  3) ;
+  gMC->Gsdvn("PROW", "PGGP", fGeom->GetNumberOfPadsPhi(), 1) ;
+  gMC->Gsdvn("PCEL", "PROW", fGeom->GetNumberOfPadsZ() ,  3) ;
 
   y0 = y0 - fGeom->GetAnodeThickness() / 2.  - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. ; 
 
-  gMC->Gspos("GGPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PGGP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
 
 
   // 6. the cathode made of Copper
@@ -1084,11 +1085,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
   cappsd[1] = fGeom->GetCathodeThickness() / 2.0 ; 
   cappsd[2] = ( fGeom->GetPPSDModuleSize(2) - fGeom->GetMicromegasWallThickness() ) / 2.0  ;
 
-  gMC->Gsvolu("CAPS", "BOX ", idtmed[710], cappsd, 3) ; 
+  gMC->Gsvolu("PCAP", "BOX ", idtmed[710], cappsd, 3) ; 
 
   y0 = y0 - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. - fGeom->GetCathodeThickness()  / 2. ; 
 
-  gMC->Gspos("CAPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PCAP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // 7. the printed circuit made of G10       
 
@@ -1101,7 +1102,7 @@ void AliPHOSv0::CreateGeometryforPPSD()
 
   y0 = y0 - fGeom->GetCathodeThickness() / 2. - fGeom->GetPCThickness()  / 2. ; 
 
-  gMC->Gspos("PCPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PCPS", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // 8. the lower panel made of composite material
 						    
@@ -1110,11 +1111,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
   lpppsd[1] = fGeom->GetCompositeThickness() / 2.0 ; 
   lpppsd[2] = ( fGeom->GetPPSDModuleSize(2) - fGeom->GetMicromegasWallThickness() ) / 2.0 ;
 
-  gMC->Gsvolu("LPPS", "BOX ", idtmed[709], lpppsd, 3) ; 
+  gMC->Gsvolu("PLPP", "BOX ", idtmed[709], lpppsd, 3) ; 
  
   y0 = y0 - fGeom->GetPCThickness() / 2. - fGeom->GetCompositeThickness()  / 2. ; 
 
-  gMC->Gspos("LPPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PLPP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // Position the  fNumberOfModulesPhi x fNumberOfModulesZ modules (mppsd) inside PPSD to cover a PHOS module
   // the top and bottom one's (which are assumed identical) :
@@ -1131,8 +1132,8 @@ void AliPHOSv0::CreateGeometryforPPSD()
       Float_t z = ( fGeom->GetCPVBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2. ;
 
       for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { // the number of micromegas modules in z per PHOS module
-	gMC->Gspos("MPPS", ++copyNumbertop, "PPSD", x, yt, z, 0, "ONLY") ;
-	gMC->Gspos("MPPS", ++copyNumberbot, "PPSD", x, yb, z, 0, "ONLY") ; 
+	gMC->Gspos("PMPP", ++copyNumbertop, "PPSD", x, yt, z, 0, "ONLY") ;
+	gMC->Gspos("PMPP", ++copyNumberbot, "PPSD", x, yb, z, 0, "ONLY") ; 
 	z = z - fGeom->GetPPSDModuleSize(2) ;
       } // end of Z module loop   
       x = x -  fGeom->GetPPSDModuleSize(0) ; 
@@ -1146,11 +1147,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
    uappsd[1] = fGeom->GetMicro1ToLeadGap() / 2.0 ; 
    uappsd[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
 
-  gMC->Gsvolu("UAPPSD", "BOX ", idtmed[798], uappsd, 3) ; 
+  gMC->Gsvolu("PUAPPS", "BOX ", idtmed[798], uappsd, 3) ; 
 
   y0 = ( fGeom->GetCPVBoxSize(1) - 2 * fGeom->GetMicromegas1Thickness() - fGeom->GetMicro1ToLeadGap() ) / 2. ; 
 
-  gMC->Gspos("UAPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PUAPPS", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
 
    // 2. Lead converter
  
@@ -1159,11 +1160,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
   lcppsd[1] = fGeom->GetLeadConverterThickness() / 2.0 ; 
   lcppsd[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
  
-  gMC->Gsvolu("LCPPSD", "BOX ", idtmed[712], lcppsd, 3) ; 
+  gMC->Gsvolu("PLCPPS", "BOX ", idtmed[712], lcppsd, 3) ; 
   
   y0 = y0 - fGeom->GetMicro1ToLeadGap() / 2. - fGeom->GetLeadConverterThickness() / 2. ; 
 
-  gMC->Gspos("LCPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PLCPPS", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // 3. Lower air gap
 
@@ -1172,11 +1173,11 @@ void AliPHOSv0::CreateGeometryforPPSD()
   lappsd[1] = fGeom->GetLeadToMicro2Gap() / 2.0 ; 
   lappsd[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
 
-  gMC->Gsvolu("LAPPSD", "BOX ", idtmed[798], lappsd, 3) ; 
+  gMC->Gsvolu("PLAPPS", "BOX ", idtmed[798], lappsd, 3) ; 
     
   y0 = y0 - fGeom->GetLeadConverterThickness() / 2. - fGeom->GetLeadToMicro2Gap()  / 2. ; 
   
-  gMC->Gspos("LAPPSD", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PLAPPS", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
    
 }
 
@@ -1233,24 +1234,24 @@ void AliPHOSv0::CreateGeometryforCPV()
   par[0] = fGeom->GetCPVBoxSize(0) / 2.0 ;  
   par[1] = fGeom->GetCPVBoxSize(1) / 2.0 ; 
   par[2] = fGeom->GetCPVBoxSize(2) / 2.0 ;
-  gMC->Gsvolu("CPV ", "BOX ", idtmed[798], par, 3) ;
+  gMC->Gsvolu("PCPV", "BOX ", idtmed[798], par, 3) ;
   
   y = fGeom->GetOuterBoxSize(1) / 2.0 ;
-  gMC->Gspos("CPV ", 1, "PHOS", 0.0, y, 0.0, 0, "ONLY") ; 
+  gMC->Gspos("PCPV", 1, "PHOS", 0.0, y, 0.0, 0, "ONLY") ; 
   
   // Gassiplex board
   
   par[0] = fGeom->GetGassiplexChipSize(0)/2.;
   par[1] = fGeom->GetGassiplexChipSize(1)/2.;
   par[2] = fGeom->GetGassiplexChipSize(2)/2.;
-  gMC->Gsvolu("CPVC","BOX ",idtmed[707],par,3);
+  gMC->Gsvolu("PCPC","BOX ",idtmed[707],par,3);
   
   // Cu+Ni foil covers Gassiplex board
 
   par[1] = fGeom->GetCPVCuNiFoilThickness()/2;
-  gMC->Gsvolu("CPVD","BOX ",idtmed[710],par,3);
+  gMC->Gsvolu("PCPD","BOX ",idtmed[710],par,3);
   y      = -(fGeom->GetGassiplexChipSize(1)/2 - par[1]);
-  gMC->Gspos("CPVD",1,"CPVC",0,y,0,0,"ONLY");
+  gMC->Gspos("PCPD",1,"PCPC",0,y,0,0,"ONLY");
 
   // Position of the chip inside CPV
 
@@ -1264,7 +1265,7 @@ void AliPHOSv0::CreateGeometryforCPV()
     for (Int_t iz=0; iz<fGeom->GetNumberOfCPVChipsZ(); iz++) {
       copy++;
       z = zStep * (iz+1) - fGeom->GetCPVActiveSize(1)/2;
-      gMC->Gspos("CPVC",copy,"CPV",x,y,z,0,"ONLY");
+      gMC->Gspos("PCPC",copy,"PCPV",x,y,z,0,"ONLY");
     }
   }
 
@@ -1273,52 +1274,52 @@ void AliPHOSv0::CreateGeometryforCPV()
   par[0] = fGeom->GetCPVActiveSize(0)        / 2;
   par[1] = fGeom->GetCPVTextoliteThickness() / 2;
   par[2] = fGeom->GetCPVActiveSize(1)        / 2;
-  gMC->Gsvolu("CPVF","BOX ",idtmed[707],par,3);
+  gMC->Gsvolu("PCPF","BOX ",idtmed[707],par,3);
 
   // Argon gas volume
 
   par[1] = (fGeom->GetFTPosition(2) - fGeom->GetFTPosition(1) - fGeom->GetCPVTextoliteThickness()) / 2;
-  gMC->Gsvolu("CPVG","BOX ",idtmed[715],par,3);
+  gMC->Gsvolu("PCPG","BOX ",idtmed[715],par,3);
 
   for (Int_t i=0; i<4; i++) {
     y = fGeom->GetCPVFrameSize(1) / 2 - fGeom->GetFTPosition(i) + fGeom->GetCPVTextoliteThickness()/2;
-    gMC->Gspos("CPVF",i+1,"CPV",0,y,0,0,"ONLY");
+    gMC->Gspos("PCPF",i+1,"PCPV",0,y,0,0,"ONLY");
     if(i==1){
       y-= (fGeom->GetFTPosition(2) - fGeom->GetFTPosition(1)) / 2;
-      gMC->Gspos("CPVG",1,"CPV ",0,y,0,0,"ONLY");
+      gMC->Gspos("PCPG",1,"PCPV ",0,y,0,0,"ONLY");
     }
   }
 
   // Dummy sensitive plane in the middle of argone gas volume
 
   par[1]=0.001;
-  gMC->Gsvolu("CPVQ","BOX ",idtmed[715],par,3);
-  gMC->Gspos ("CPVQ",1,"CPVG",0,0,0,0,"ONLY");
+  gMC->Gsvolu("PCPQ","BOX ",idtmed[715],par,3);
+  gMC->Gspos ("PCPQ",1,"PCPG",0,0,0,0,"ONLY");
 
   // Cu+Ni foil covers textolite
 
   par[1] = fGeom->GetCPVCuNiFoilThickness() / 2;
-  gMC->Gsvolu("CPV1","BOX ",idtmed[710],par,3);
+  gMC->Gsvolu("PCP1","BOX ",idtmed[710],par,3);
   y = fGeom->GetCPVTextoliteThickness()/2 - par[1];
-  gMC->Gspos ("CPV1",1,"CPVF",0,y,0,0,"ONLY");
+  gMC->Gspos ("PCP1",1,"PCPF",0,y,0,0,"ONLY");
 
   // Aluminum frame around CPV
 
   par[0] = fGeom->GetCPVFrameSize(0)/2;
   par[1] = fGeom->GetCPVFrameSize(1)/2;
   par[2] = fGeom->GetCPVBoxSize(2)  /2;
-  gMC->Gsvolu("CFR1","BOX ",idtmed[701],par,3);
+  gMC->Gsvolu("PCF1","BOX ",idtmed[701],par,3);
 
   par[0] = fGeom->GetCPVBoxSize(0)/2 - fGeom->GetCPVFrameSize(0);
   par[1] = fGeom->GetCPVFrameSize(1)/2;
   par[2] = fGeom->GetCPVFrameSize(2)/2;
-  gMC->Gsvolu("CFR2","BOX ",idtmed[701],par,3);
+  gMC->Gsvolu("PCF2","BOX ",idtmed[701],par,3);
 
   for (Int_t j=0; j<=1; j++) {
     x = TMath::Sign(1,2*j-1) * (fGeom->GetCPVBoxSize(0) - fGeom->GetCPVFrameSize(0)) / 2;
-    gMC->Gspos("CFR1",j+1,"CPV", x,0,0,0,"ONLY");
+    gMC->Gspos("PCF1",j+1,"PCPV", x,0,0,0,"ONLY");
     z = TMath::Sign(1,2*j-1) * (fGeom->GetCPVBoxSize(2) - fGeom->GetCPVFrameSize(2)) / 2;
-    gMC->Gspos("CFR2",j+1,"CPV",0, 0,z,0,"ONLY");
+    gMC->Gspos("PCF2",j+1,"PCPV",0, 0,z,0,"ONLY");
   }
 
 }
