@@ -8,7 +8,8 @@
 // Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////////
-//  Manager and hits classes for set:MUON version 0    //
+//  Manager and hits classes for set:
+//  MUON version 0: Coarse geometry, no hits 
 /////////////////////////////////////////////////////////
  
 #include "AliMUON.h"

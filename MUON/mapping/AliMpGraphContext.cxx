@@ -36,11 +36,14 @@ AliMpGraphContext::AliMpGraphContext():
 
 //_____________________________________________________________________________
 AliMpGraphContext::AliMpGraphContext(const AliMpGraphContext& right) 
-  : TObject(right) 
+  : TObject(right),
+    fColor(right.fColor),
+    fPadPosition(right.fPadPosition),
+    fPadDimensions(right.fPadDimensions),
+    fRealPosition(right.fRealPosition),
+    fRealDimensions(right.fRealDimensions)     
 {
-// protected copy constructor
-
-  Fatal("AliMpGraphContext", "Copy constructor not provided.");
+// Copy constructor
 }
 
 //_____________________________________________________________________________
@@ -52,7 +55,11 @@ AliMpGraphContext::operator=(const AliMpGraphContext& right)
   // check assignement to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  fColor = right.fColor;
+  fPadPosition = right.fPadPosition;
+  fPadDimensions = right.fPadDimensions;
+  fRealPosition = right.fRealPosition;
+  fRealDimensions = right.fRealDimensions;
     
   return *this;  
 }    

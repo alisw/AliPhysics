@@ -8,7 +8,6 @@
 // conversion between pad indices, pad location, pad position;
 // finding pad neighbour.
 //
-// Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>
@@ -35,7 +34,8 @@
 ClassImp(AliMpSectorSegmentation)
 
 #ifdef WITH_ROOT
-const Double_t AliMpSectorSegmentation::fgkSeparator = 10000.;
+const Double_t AliMpSectorSegmentation::fgkS1 = 10000.;
+const Double_t AliMpSectorSegmentation::fgkS2 = 100.;
 #endif
 
 //______________________________________________________________________________
@@ -97,13 +97,10 @@ AliMpSectorSegmentation::operator=(const AliMpSectorSegmentation& right)
 //______________________________________________________________________________
 Long_t AliMpSectorSegmentation::GetIndex(const TVector2& vector2) const
 {
-// Converts the twovector to long.
+// Converts the two vector to long.
 // ---
 
-  if (vector2.X() >= fgkSeparator || vector2.Y() >= fgkSeparator)
-    Fatal("GetIndex", "Index out of limit.");
-      
-  return Long_t(vector2.X()*fgkSeparator + vector2.Y() + 1.);
+  return Long_t(TMath::Floor((vector2.X()*fgkS1 + vector2.Y())*fgkS2));
 }  
 
 //______________________________________________________________________________
@@ -112,8 +109,8 @@ TVector2  AliMpSectorSegmentation::GetVector(Long_t index) const
 // Converts the long index to twovector.
 // ---
 
-  return TVector2(TMath::Floor((index-1.)/fgkSeparator), 
-                  (index-1.) - TMath::Floor((index-1.)/fgkSeparator)*fgkSeparator);
+  return TVector2( TMath::Floor(index/fgkS1)/fgkS2,
+                   (index - TMath::Floor(index/fgkS1)*fgkS1)/fgkS2 );
 }  
 #endif
 
@@ -134,7 +131,7 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
       fPadDimensionsMap[zoneID*10] = zone->GetPadDimensions();
 #endif
 #ifdef WITH_ROOT
-      fPadDimensionsMap.Add((Long_t)(zoneID*10), 
+     fPadDimensionsMap.Add((Long_t)(zoneID*10), 
                             GetIndex(zone->GetPadDimensions()));
 #endif
     }
@@ -525,13 +522,12 @@ Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
     TVector2 dimensions =  GetVector(value);
     if (AliMpConstants::IsEqual(dimensions, pad.Dimensions()))
       return (Int_t)key;
-  }  
- return 0;
-
+  } 
 #endif
 
   // Should never happen
-  Fatal("Zone(AliMpPad)", "not found");
+  Error("Zone(AliMpPad)", "not found");
+  cerr << pad << endl;
   return 0;
 }  
 
@@ -594,3 +590,35 @@ Bool_t AliMpSectorSegmentation::CircleTest(const AliMpIntPair& indices) const
   
   return true;
 }
+
+//______________________________________________________________________________
+void AliMpSectorSegmentation::PrintZones() const
+{
+// Prints all zones and pads dimensions from the map.
+// ---
+
+  cout << "Zones: " << endl;
+
+#ifdef WITH_STL
+  PadDimensionsMapCIterator it;
+  for (it = fPadDimensionsMap.begin(); it != fPadDimensionsMap.end(); ++it) {
+    cout << "    zone: " <<   setw(4) << it->first;
+    cout << "    pad dimensions: ( " 
+         << it->second.X() << ", " << it->second.Y() << ")" << endl; 
+  }
+#endif
+
+#ifdef WITH_ROOT
+  PadDimensionsMapCIterator it(&fPadDimensionsMap);
+  Long_t key, value;
+  while ( it.Next(key, value) ) {
+    //cout << "Iterating over: " << key << ", " << value << endl;
+    TVector2 dimensions =  GetVector(value);
+
+    cout << "    zone: " <<   setw(4) << key;
+    cout << "    pad dimensions: ( " 
+         << dimensions.X() << ", " << dimensions.Y() << ")" << endl; 
+  }
+#endif
+}
+  

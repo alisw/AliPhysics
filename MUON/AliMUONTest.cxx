@@ -121,14 +121,12 @@ AliMUONTest::CreateSt1Segmentation(Int_t chamberId, Int_t cathod)
 
   // Configure  St1 chamber segmentations
   if (cathod == 0) {
-    // bending plane
     segmentation->Add(id0,      bendSt1);
     segmentation->Add(id0 +  1, nonbendSt1);
     segmentation->Add(id0 + 50, bendSt1);
     segmentation->Add(id0 + 51, nonbendSt1);
   }
   else if (cathod == 1) {
-    // non-bending plane
     segmentation->Add(id0,      nonbendSt1);
     segmentation->Add(id0 +  1, bendSt1);
     segmentation->Add(id0 + 50, nonbendSt1);

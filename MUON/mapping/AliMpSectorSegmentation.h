@@ -54,6 +54,7 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     Bool_t HasMotifPosition(Int_t motifPositionID) const;
     TVector2 GetMinPadDimensions() const;
     Bool_t CircleTest(const AliMpIntPair& indices) const;
+    void   PrintZones() const;
 
   protected:
     AliMpSectorSegmentation(const AliMpSectorSegmentation& right);
@@ -61,8 +62,8 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 
   private:
 #ifdef WITH_ROOT
-    static const Double_t   fgkSeparator;  // the separator used for conversion
-                                           // of TVector2 to Long_t
+    static const Double_t   fgkS1;  // the separators used for conversion
+    static const Double_t   fgkS2;  // of TVector2 to Long_t
     
     // methods
     Long_t    GetIndex(const TVector2& vector2) const;
