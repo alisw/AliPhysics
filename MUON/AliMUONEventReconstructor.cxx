@@ -489,6 +489,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
     cout << "enter AddHitsForRecFromGEANT with TH: " << TH << endl;
   if (TH == NULL) return;
   AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  AliMUONData * muondata = pMUON->GetMUONData();
   // Security on MUON ????
   // See whether it could be the same for signal and background ????
   // Loop over tracks in tree
@@ -497,23 +498,24 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
     cout << "ntracks: " << ntracks << endl;
   fMuons = 0; //AZ
   for (Int_t track = 0; track < ntracks; track++) {
-    gAlice->ResetHits();
+    muondata->ResetHits();
     TH->GetEvent(track);
     // Loop over hits
     Int_t hit = 0;
     hitBits = 0; // AZ
     chamBits = 0; // AZ
     Int_t itrack = track; //AZ
-    for (AliMUONHit* mHit = (AliMUONHit*) pMUON->FirstHit(-1); 
-	 mHit;
-	 mHit = (AliMUONHit*) pMUON->NextHit(), hit++) {
-      Int_t ipart = TMath::Abs ((Int_t) mHit->Particle()); //AZ
-      //itrack = mHit->Track(); //AZ
-      //AZNewHitForRecFromGEANT(mHit,track, hit, 1);
-      if (NewHitForRecFromGEANT(mHit,track, hit, 1) && ipart == 13
-      //if (NewHitForRecFromGEANT(mHit,itrack-1, hit, 1) && ipart == 13 
-          && itrack <= 2) chamBits |= BIT(mHit->Chamber()-1); //AZ - set bit
-    } // end of hit loop
+
+    Int_t ihit, nhits=0;
+      nhits = (Int_t) muondata->Hits()->GetEntriesFast();
+      AliMUONHit* mHit=0x0;
+      for(ihit=0; ihit<nhits; ihit++) {
+	mHit = static_cast<AliMUONHit*>(muondata->Hits()->At(ihit));
+	Int_t ipart = TMath::Abs ((Int_t) mHit->Particle()); //AZ
+	if (NewHitForRecFromGEANT(mHit,track, hit, 1) && ipart == 13
+	    //if (NewHitForRecFromGEANT(mHit,itrack-1, hit, 1) && ipart == 13 
+	    && itrack <= 2) chamBits |= BIT(mHit->Chamber()-1); //AZ - set bit
+      }
     if (chamBits&3 && chamBits>>2&3 && chamBits>>4&3 && chamBits>>6&3 && 
         chamBits>>8&3 && ((chamBits>>6&3)==3 || (chamBits>>8&3)==3)) 
       fMuons += 1; //AZ

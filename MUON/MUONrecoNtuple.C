@@ -218,13 +218,15 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadHits("READ");
   MUONLoader->LoadRecPoints("READ");
+  AliMUONData  * muondata = MUON->GetMUONData();
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
 
   // Initializations
-  // AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-  MUON->SetTreeAddress(); 
+  //AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  
+  //MUON->SetTreeAddress(); 
   AliMUONEventReconstructor *Reco = new AliMUONEventReconstructor();
 
   Reco->SetRecGeantHits(RecGeantHits);
@@ -244,6 +246,7 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   for (Int_t event = FirstEvent; event < LastEvent; event++) {
     cout << "Event: " << event << endl;
     RunLoader->GetEvent(event);   
+    muondata->SetTreeAddress("H,RC");
     //     Int_t nparticles = gAlice->GetEvent(event);
     //      cout << "nparticles: " << nparticles << endl;
     // prepare background file and/or event if necessary
