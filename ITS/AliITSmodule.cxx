@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/10 16:07:18  fca
+Release version of ITS code
+
 Revision 1.3.4.2  2000/03/02 21:42:29  nilsen 
 Linked AliDetector::fDigit to AliITSmodule::fDigitsM and AliITS::fITSRecPoints
 to AliITSmodule::fRecPointsM. Renamed AliITSmodule::fPointsM to fRecPointsM.
@@ -37,9 +40,14 @@ Introduction of the Copyright and cvs Log
 
 */
 
+#include <TArrayI.h>
+
 
 #include "AliRun.h"
 #include "AliITS.h"
+#include "AliITShit.h"
+#include "AliITSmodule.h"
+#include "AliITSgeom.h"
 
 ClassImp(AliITSmodule)
 
@@ -117,6 +125,7 @@ AliITSmodule& AliITSmodule::operator=(const AliITSmodule &source){
 Int_t AliITSmodule::AddHit(AliITShit* hit,Int_t t,Int_t h) {
 // Hits management
 
+  //printf("AddHit: beginning hit %p t h %d %d\n",hit,t,h);
     fHitsM->AddLast(new AliITShit(*hit));
     Int_t fNhitsM = fHitsM->GetEntriesFast();
     if(fNhitsM-1>=fTrackIndex->GetSize()){ // need to expand the TArrayI

@@ -7,10 +7,11 @@
 
 #include <TObject.h>
 #include <TObjArray.h>
-#include <TArrayI.h>
 
 class AliITS;
 class AliITShit;
+class TArrayI;
+
 
 class AliITSmodule:public TObject{
 
