@@ -1,14 +1,52 @@
-//Authors: Mihaela Gheata, Andrei Gheata 09/10/00
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
+/*
+$Log$
+*/
+
+//Authors: Mihaela Gheata, Andrei Gheata 09/10/00
 ////////////////////////////////////////////////////////////////////
 //                                                                //
-// AliMUONRecoEvent and  AliMUONRecoTrack and AliMUONRecoDisplay  //
+// AliMUONRecoEvent, AliMUONRecoTrack (and AliMUONRecoDisplay)    //
 //                                                                //
-// This header contains all classes needed for storing MUON       //
-// reconstructed events . The tree of reconstructed               //
-// events is constructed and filled during the FillEvent() method //
-// of AliMUONEventReconstructor class, when all reconstruction    //
-// information is available.                                      //
+// Theses classes are used to store and retrieve                  //
+// MUON reconstructed events.                                     //
+// The corresponding tree is constructed and filled               //
+// during the FillEvent() method of AliMUONEventReconstructor,    //
+// when all reconstruction information is available.              //
+//                                                                //
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//                                                                //
+// AliMUONRecoEvent                                               //
+//                                                                //
+// This class handles an array of reconstructed tracks.           //
+// It provides :                                                  //
+//	- filling the tracks array according to the information   //
+//        stored in AliMUONEventReconstructor class ;             //
+//	- printing event and track informations : event numer,    //
+//	  number of tracks, hits positions, reconstr. mometum.    //
+//                                                                //
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//                                                                //
+// AliMUONRecoTrack                                               //
+//                                                                //
+// This class represents a reconstructed muon track               //
+// in the tree of reconstructed events.                           //
 //                                                                //
 ////////////////////////////////////////////////////////////////////
 

@@ -1,15 +1,13 @@
-// Authors : M.Gheata, A.Gheata 09/10/00
-#ifndef MUON_RECEVENT
-#define MUON_RECEVENT
+#ifndef MUON_RECOEVENT
+#define MUON_RECOEVENT
 
-////////////////////////////////////////////////////////////////////
-//                                                                //
-// AliMUONRecoEvent and AliMUONRecoTrack                          //
-//                                                                //
-// This header contains all classes needed for storing MUON       //
-// reconstructed events in a tree                                 //
-//                                                                //
-////////////////////////////////////////////////////////////////////
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/*$Id$*/
+
+
+// Authors : M.Gheata, A.Gheata 09/10/00
 
 #include <TObject.h>
 #include <TFile.h>
@@ -19,20 +17,18 @@
 
 class AliMUONRecoTrack;
 
-
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
 // AliMUONRecoEvent                                                //
 //                                                                 //
 // This class handles an array of reconstructed tracks.            //
 // It provides :                                                   //
-//	- filling the tracks array according the information stored//
-//	in AliMUONEventReconstructor class ;                       //
+//	- filling the tracks array according to the information    //
+//        stored in AliMUONEventReconstructor class ;              //
 //	- printing event and track informations : event number,    //
-//	number of tracks, hits positions, reconstr. momentum.      //
+//	  number of tracks, hits positions, reconstr. momentum.    //
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
-
 
 class AliMUONRecoEvent:public TObject {
 

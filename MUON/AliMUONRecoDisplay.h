@@ -1,34 +1,11 @@
-// Authors : M.Gheata, A.Gheata 09/10/00
-#ifndef MUON_RECDISPLAY
-#define MUON_RECDISPLAY
+#ifndef MUON_RECODISPLAY
+#define MUON_RECODISPLAY
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-//////////////////////////////////////////////////////////////////////
-//                                                                  //
-// AliMUONRecoDisplay						    //
-//								    //
-// This class subclasses AliDisplay and provides display of         //
-// reconstructed tracks with following functionality : 		    //
-//	- front/top/side/3D display of MUON reconstructed tracks    //
-//        as polylines ;                                            //
-//	- context menu activated when the main pad is right-clicked //
-//	The context menu contains following functions :		    //
-//	* SetDrawHits()	- switches on or off Geant hits ;	    //
-//	* CutMomentum()	- displays only tracks within Pmin - Pmax   //
-//	* ListTracks()	- prints ID and momentum info. for all	    //
-//	tracks within momentum range Pmin,Pmax ;		    //
-//	* Highlight()	- shows only one selected reco. track	    //
-//	and its best matching Geant track;			    //
-//	* UnHighlight()	- self explaining;			    //
-//	* RecoEfficiency() - compute reco. efficiency for all events//
-//        from galice.root file; also fake track percentage; make   //
-//        plots for momentum precision                              //
-//      * XYPlot()      - make X-Y plots of reconstructed and       //
-//        generated tracks in all chambers                          //
-//								    //
-//      Starting : generate and reconstruct events, then use the    //
-//                 MUONrecodisplay.C macro                          //
-//                                                                  //
-//////////////////////////////////////////////////////////////////////
+/*$Id$*/
+
+// Authors : M.Gheata, A.Gheata 09/10/00
 
 #include <TApplication.h>
 #include <TROOT.h>
@@ -54,6 +31,7 @@ private:
    void               MapEvent(Int_t nevent);
    Bool_t             IsReconstructible(Int_t track);
 //data members
+   Int_t              fEvent;                   // current event number
    AliMUONRecoEvent  *fEvGen;                   // Geant event
    AliMUONRecoEvent  *fEvReco;                  // reconstructed event
    TFile             *fFile;                    // file with reco. event tree
@@ -66,12 +44,14 @@ private:
    Double_t           fMinMomentum;             // min. cut of momentum
    Double_t           fMaxMomentum;             // max. cut of momentum
    Bool_t             fPrinted;			// tracks info switch
+   Bool_t             fEmpty;                   // true if current reco. event empty
 
 public:
    AliMUONRecoDisplay(Int_t nevent=0);
    virtual             ~AliMUONRecoDisplay();
    virtual void       DrawHits();
    virtual void       DrawView(Float_t theta, Float_t phi, Float_t psi = 0);
+   Bool_t             Event(Int_t nevent);
    virtual void       SetDrawHits(Bool_t hits = kTRUE); 	// *MENU*
    virtual void       ShowNextEvent(Int_t delta = 1);
    void               ListTracks();      			// *MENU*

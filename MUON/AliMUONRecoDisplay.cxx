@@ -1,4 +1,50 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log$
+*/
+
 //Authors: Mihaela Gheata, Andrei Gheata 09/10/00
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+// AliMUONRecoDisplay						    //
+//								    //
+// This class subclasses AliDisplay and provides display of         //
+// reconstructed tracks with following functionality : 		    //
+//	- front/top/side/3D display of MUON reconstructed tracks    //
+//        as polylines ;                                            //
+//	- context menu activated when the main pad is right-clicked //
+//	The context menu contains following functions :		    //
+//	* SetDrawHits()	- switches on or off Geant hits ;	    //
+//	* CutMomentum()	- displays only tracks within Pmin - Pmax   //
+//	* ListTracks()	- prints ID and momentum info. for all	    //
+//	tracks within momentum range Pmin,Pmax ;		    //
+//	* Highlight()	- shows only one selected reco. track	    //
+//	and its best matching Geant track;			    //
+//	* UnHighlight()	- self explaining;			    //
+//	* RecoEfficiency() - compute reco. efficiency for all events//
+//        from galice.root file; also fake track percentage; make   //
+//        plots for momentum precision                              //
+//      * XYPlot()      - make X-Y plots of reconstructed and       //
+//        generated tracks in all chambers                          //
+//								    //
+//      Starting : generate and reconstruct events, then use the    //
+//                 MUONrecodisplay.C macro                          //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
 
 #include <iostream.h>
 #include <AliRun.h>
@@ -30,10 +76,8 @@ AliMUONRecoDisplay::AliMUONRecoDisplay(Int_t nevent)
       cout << "Tree of reconstructed events not found on file. Abort.\n";
       gApplication->Terminate(0);
    }
-   if (nevent > fTree->GetEntries()) {
-      cout << "Event number out of range. Aborting.\n";
-      gApplication->Terminate(0);
-   }
+   fEvent = nevent;
+   fEmpty = kFALSE;
    TBranch *branch = fTree->GetBranch("Event");
    branch->SetAddress(&fEvReco);
    
@@ -41,6 +85,10 @@ AliMUONRecoDisplay::AliMUONRecoDisplay(Int_t nevent)
 
    TFile *galice_file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
    galice_file->cd();
+   if (nevent > gAlice->TreeE()->GetEntries() - 1) {
+      cout << "Event number out of range !\n";
+      gApplication->Terminate(0);
+   }
    gAlice->GetEvent(nevent);
 
 
@@ -51,6 +99,7 @@ AliMUONRecoDisplay::AliMUONRecoDisplay(Int_t nevent)
    fHighlited   = -1;
    fMinMomentum = 0;
    fMaxMomentum = 999;
+   // map this event
    MapEvent(nevent);
 }
 
@@ -68,6 +117,25 @@ AliMUONRecoDisplay::~AliMUONRecoDisplay()
    }
    delete fEvGen;
 }
+//-------------------------------------------------------------------
+Bool_t AliMUONRecoDisplay::Event(Int_t nevent)
+{
+   fEvent = nevent;
+   for (Int_t entry=0; entry<fTree->GetEntries(); entry++) {
+      fTree->GetEntry(entry);
+      if (fEvReco->GetNoEvent() == nevent) return kTRUE;
+   }
+   cout << "Event number " << nevent << " empty\n";
+   fRecoTracks = 0;
+   fPolyRecoList = 0;
+   fGenTracks = 0;
+   fPolyGenList = 0;
+   fHighlited   = -1;
+   fMinMomentum = 0;
+   fMaxMomentum = 999;
+   
+   return kFALSE;
+}
 
 //-------------------------------------------------------------------
 void AliMUONRecoDisplay::MapEvent(Int_t nevent)
@@ -75,13 +143,17 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
 // get generated event (nevent) from galice.root and corresponding
 // reconstructed event from tree_reco.root; 
    cout << "mapping event " << nevent << endl;
+   fEvent = nevent;
+   fEmpty = kFALSE;
    fFile->cd();
-   fTree->GetEntry(nevent);
+   // check if the event is not empty and make fEvReco to point to it
+   fEmpty = !Event(nevent);
    // just testing
-   if (!fEvReco) {
-      cout << "failed to load reco event ! Correct this.\n";
-      gApplication->Terminate(0);
-   }
+//   if (!fEvReco) {
+//      cout << "failed to load reco event ! Correct this.\n";
+//      gApplication->Terminate(0);
+//   }
+   if (fEmpty) return;
    fRecoTracks   = fEvReco->TracksPtr();
    fPolyRecoList = MakePolyLines3D(fRecoTracks);   
    // clear previous event
@@ -136,6 +208,7 @@ void AliMUONRecoDisplay::XYPlot()
 //  - open cyan squares : generated muons that were not reconstructed
 //  - filled green circles : reco. tracks (accurate)
 //  - filled red squares   : fake tracks 
+   if (fEmpty) return;
    Double_t kMaxRadius[10];
    kMaxRadius[0] =  kMaxRadius[1] = 91.5;
    kMaxRadius[2] =  kMaxRadius[3] = 122.5;
@@ -243,7 +316,7 @@ void AliMUONRecoDisplay::RecoEfficiency(Int_t first, Int_t last)
 // reconstructed tracks (accurate) over total number of generated
 // reconstructible muons. Make histogram for momentum precision and profile
 // of mean momentum precision versus total momentum (generated)
-   Int_t nevents = (Int_t)fTree->GetEntries();
+   Int_t nevents = (Int_t)gAlice->TreeE()->GetEntries();
    if (last > nevents) last = nevents - 1;
    if (first < 0) first = 0;
    nevents = last - first + 1;
@@ -275,6 +348,11 @@ void AliMUONRecoDisplay::RecoEfficiency(Int_t first, Int_t last)
       galice_file->cd();
       gAlice->GetEvent(event);
       MapEvent(event);
+      if (fEmpty) {
+      // skip empty events
+         fEmpty = kFALSE;
+	 continue;
+      }
       generated += fGenTracks->GetEntriesFast();
       // loop reco. tracks
       for (track=0; track<fRecoTracks->GetEntriesFast(); track++) {
@@ -324,6 +402,7 @@ void AliMUONRecoDisplay::ShowNextEvent(Int_t delta)
       gAlice->Clear();
       Int_t currentEvent = gAlice->GetHeader()->GetEvent();
       Int_t newEvent     = currentEvent + delta;
+      if (newEvent<0 || newEvent>(gAlice->TreeE()->GetEntries() - 1)) return;
       Int_t nparticles = gAlice->GetEvent(newEvent);
       cout << "Event : " << newEvent << " with " << nparticles << " particles\n";
       if (!gAlice->TreeH()) return;
@@ -340,6 +419,7 @@ Bool_t AliMUONRecoDisplay::IsReconstructible(Int_t track)
 {
 // true if at least three hits in first 2 stations, 3 in last 2 stations
 // and one in station 3
+   if (fEmpty) return kFALSE;
    AliDetector *MUON = gAlice->GetDetector("MUON");
    Bool_t chHit[10];
    Int_t ch;
@@ -415,6 +495,7 @@ Int_t AliMUONRecoDisplay::GetBestMatch(Int_t indr, Float_t tolerance)
 //	non-bending resolution) and minimum number of fake hits;
 // If no match is found within a given tolerance, the method is called recursively
 //      with increasing tolerance, until tolerance = 10;
+   if (fEmpty) return -1;
    if (indr<0 || indr>=fRecoTracks->GetEntriesFast()) return -1;
    AliMUONRecoTrack *rtrack = (AliMUONRecoTrack*)fRecoTracks->UncheckedAt(indr);
    AliMUONRecoTrack *gtrack = 0;
@@ -425,7 +506,7 @@ Int_t AliMUONRecoDisplay::GetBestMatch(Int_t indr, Float_t tolerance)
 // loop over all Geant tracks
    for (Int_t indg=0; indg<fGenTracks->GetEntriesFast(); indg++) {
       gtrack = (AliMUONRecoTrack*)fGenTracks->UncheckedAt(indg);
-	if (!gtrack) continue;
+      if (!gtrack) continue;
       Int_t ncompat = 0;      // number of compat. hits for this track
       Int_t nfake = 0;        // number of fakes
       // loop chambers to find compatible hits
@@ -438,7 +519,7 @@ Int_t AliMUONRecoDisplay::GetBestMatch(Int_t indr, Float_t tolerance)
          yghit = gtrack->GetPosY(ch);
          dX = TMath::Abs(xghit-xrhit);
          dY = TMath::Abs(yghit-yrhit);
-         if (dX<tolerance*0.144 && dY<tolerance*0.01) {      // within 3 sigma resolution
+         if (dX<tolerance*0.144 && dY<tolerance*0.01) {// within tol*sigma resolution
             ncompat++;
             continue;      // compatible hit
          } else nfake++;      // fake hit
@@ -470,26 +551,31 @@ Int_t AliMUONRecoDisplay::GetBestMatch(Int_t indr, Float_t tolerance)
 //-------------------------------------------------------------------
 void AliMUONRecoDisplay::Highlight(Int_t track)
 {
-// Highlight the specified track 
+// Highlight the specified track
+   if (fEmpty) return; 
    if (fHighlited >=0) UnHighlight();
    if (track<0 || track>fPolyRecoList->GetEntries()) return;
    TPolyLine3D *line = (TPolyLine3D*)fPolyRecoList->UncheckedAt(track);
    line->SetLineColor(kYellow);
    line->SetLineWidth(1);
    fHighlited = track;
-   DrawView(15,-45,135);
+//   DrawView(15,-45,135);
+   fPad->cd();
+   Draw();
 }
 
 //-------------------------------------------------------------------
 void AliMUONRecoDisplay::UnHighlight()
 {
 // Unhighlight a previous highlighted track
-   if (fHighlited < 0) return;      // nothing to do
+   if (fHighlited < 0 || fEmpty) return;      // nothing to do
    TPolyLine3D *line = (TPolyLine3D*)fPolyRecoList->UncheckedAt(fHighlited);
    line->SetLineColor(kRed);
    line->SetLineWidth(1);
    fHighlited = -1;
-   DrawView(0,-90);
+//   DrawView(0,-90);
+   fPad->cd();
+   Draw();
 }
 
 //-------------------------------------------------------------------
@@ -553,6 +639,7 @@ void AliMUONRecoDisplay::DrawHits()
       }
    }
    // draw reconstructed tracks
+   if (fEmpty) return;
    TPolyLine3D *line, *gline;
    Int_t bestMatch;
    Double_t px,py,pz,p;
@@ -590,6 +677,7 @@ void AliMUONRecoDisplay::ListTracks()
 {
 // List momentum information of all reconstructed traccks within fPmin and fPmax
 //	cuts, as well as their best matching Geant tracks
+   if (fEmpty) return;
    cout << "================================================================\n";
    printf("Reconstructed tracks with momentum in range : %g , %g [GeV/c]\n",
          fMinMomentum, fMaxMomentum);
@@ -613,6 +701,7 @@ void AliMUONRecoDisplay::ListTracks()
 TClonesArray* AliMUONRecoDisplay::MakePolyLines3D(TClonesArray *tracklist)
 {
 // Makes the list of polylines3D corresponding to the list of tracks
+   if (fEmpty) return 0;
    if (tracklist!=fRecoTracks && tracklist!=fGenTracks) return 0;
    Bool_t reco = (tracklist==fRecoTracks)?kTRUE:kFALSE;
    // make sure there is no other list in memory
@@ -662,6 +751,7 @@ TClonesArray* AliMUONRecoDisplay::MakePolyLines3D(TClonesArray *tracklist)
 void AliMUONRecoDisplay::PolyLineInfo(TClonesArray *line3Dlist)
 {
 // Prints information (x, y, z coordinates) for all constructed polylines
+   if (fEmpty) return;
    if (line3Dlist) {
       TPolyLine3D *polyline = 0;
       for(Int_t trackIndex=0; trackIndex<line3Dlist->GetEntries(); trackIndex++) {
