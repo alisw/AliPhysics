@@ -324,7 +324,10 @@ Bool_t AliRawReaderDate::ReadHeader()
 
 	// check for end of event data
 	if (fPosition >= ((UChar_t*)fEvent)+fEvent->eventSize) return kFALSE;
-	if (fSubEvent) {
+        if (!TEST_SYSTEM_ATTRIBUTE(fEvent->eventTypeAttribute, 
+                                   ATTR_SUPER_EVENT)) {
+	  fSubEvent = fEvent;   // no super event
+	} else if (fSubEvent) {
 	  fSubEvent = (eventHeaderStruct*) (((UChar_t*)fSubEvent) + 
 					    fSubEvent->eventSize);
 	} else {
@@ -529,7 +532,10 @@ Int_t AliRawReaderDate::CheckData() const
 
       // check for end of event data
       if (position >= ((UChar_t*)fEvent)+fEvent->eventSize) return result;
-      if (subEvent) {
+      if (!TEST_SYSTEM_ATTRIBUTE(fEvent->eventTypeAttribute, 
+                                 ATTR_SUPER_EVENT)) {
+        subEvent = fEvent;   // no super event
+      } else if (subEvent) {
 	subEvent = (eventHeaderStruct*) (((UChar_t*)subEvent) + 
 					 subEvent->eventSize);
       } else {
