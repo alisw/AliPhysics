@@ -103,6 +103,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   //fQAFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
   fTasksFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
 
+  fFailed = kFALSE ; 
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
 
     //open headers file
@@ -116,7 +117,8 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
       
       if (!file->IsOpen()) {
 	cerr << "ERROR : AliEMCALGetter::AliEMCALGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
-	abort() ; 
+       	fFailed = kTRUE ;
+        return ;  
       }
       
       gAlice = static_cast<AliRun *>(file->Get("gAlice")) ;
@@ -125,7 +127,8 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
 
   if (!gAlice) {
     cerr << "ERROR : AliEMCALGetter::AliEMCALGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
-    abort() ; 
+    fFailed = kTRUE ;
+    return ; 
   }
   if (!EMCAL()) {
     if (fDebug)
