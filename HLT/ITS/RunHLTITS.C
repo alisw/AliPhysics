@@ -2,7 +2,47 @@
 // tracks stored in the ESD and stores the output tracks in a
 // separate ESD file AliESDits.root
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+  #include <TMath.h>
+  #include <TError.h>
+  #include <Riostream.h>
+  #include <TH1F.h>
+  #include <TH2F.h>
+  #include <TNtuple.h>
+  #include <TProfile2D.h>
+  #include <TF1.h>
+  #include <TGraphErrors.h>
+  #include <TTree.h>
+  #include <TParticle.h>
+  #include <TCanvas.h>
+  #include <TFile.h>
+  #include <TROOT.h>
+  #include <TStopwatch.h>
+  #include <TSystem.h>
+
+  #include "AliStack.h"
+  #include "AliHeader.h"
+  #include "AliTrackReference.h"
+  #include "AliRunLoader.h"
+  #include "AliITS.h"
+  #include "AliITSLoader.h"
+  #include "AliITSgeom.h"
+  #include "AliITStrackerV2.h"
+  #include "AliRun.h"
+  #include "AliESD.h"
+  #include "AliMagF.h"
+  #include "AliGenEventHeader.h"
+
+  #include "AliL3ITStrack.h"
+  #include "AliL3ITStracker.h"
+  #include "AliL3ITSVertexerZ.h"
+#endif
+
+//extern TSystem *gSystem;
+
 Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
+
+  //  gSystem->Load("libAliL3ITS.so");
 
   TStopwatch timer;
   timer.Start();
@@ -32,6 +72,7 @@ Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
    }
    gAlice=rl->GetAliRun();
        
+   AliTracker::SetFieldMap(gAlice->Field());
 
    AliKalmanTrack::SetConvConst(
       1000/0.299792458/gAlice->Field()->SolenoidField()
@@ -49,7 +90,9 @@ Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
       cerr<<"AliESDtest.C : Can not find the ITS detector !"<<endl;
       return 4;
    }
-   AliITSgeom *geom = dITS->GetITSgeom();
+   //   AliITSgeom *geom = dITS->GetITSgeom();
+   AliITSgeom *geom = new AliITSgeom();
+   geom->ReadNewFile("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det");
 
    //An instance of the HLT ITS tracker
    AliL3ITStracker itsTracker(geom);
@@ -73,22 +116,39 @@ Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
 
      cerr<<"\n\nProcessing event number : "<<i<<endl;
      tree->GetEvent(i);
-     
      rl->GetEvent(i);
 
      TArrayF v(3);     
      rl->GetHeader()->GenEventHeader()->PrimaryVertex(v);
      Double_t vtx[3]={v[0],v[1],v[2]};
      Double_t cvtx[3]={0.005,0.005,0.010};
-     AliESDVertex vertex1(vtx,cvtx);
-     event->SetVertex(&vertex1);
+     cout<<"MC vertex position: "<<v[2]<<endl;
 
-     Double_t vtx[3];
-     Double_t cvtx[3];
-     AliESDVertex *vertex = event->GetVertex();
-     vertex->GetXYZ(vtx);
-     vertex->GetSigmaXYZ(cvtx);
-     itsTracker.SetVertex(vtx,cvtx);
+     AliL3ITSVertexerZ vertexer("null");
+     AliESDVertex* vertex = NULL;
+     TStopwatch timer2;
+     timer2.Start();
+     TTree* treeClusters = itsl->TreeR();
+     //     vertex = vertexer.FindVertexForCurrentEvent(i);
+     //     AliESDVertex *vertex = vertexer.FindVertexForCurrentEvent(geom,treeClusters);
+     vertex = new AliESDVertex(vtx,cvtx);
+     timer2.Stop();
+     timer2.Print();
+     if(!vertex){
+       cerr<<"Vertex not found"<<endl;
+       vertex = new AliESDVertex(vtx,cvtx);
+     }
+     else {
+       vertex->SetTruePos(vtx);  // store also the vertex from MC
+     }
+
+     event->SetVertex(vertex);
+
+     Double_t vtxPos[3];
+     Double_t vtxErr[3];
+     vertex->GetXYZ(vtxPos);
+     vertex->GetSigmaXYZ(vtxErr);
+     itsTracker.SetVertex(vtxPos,vtxErr);
 
      TTree *itsTree=itsl->TreeR();
      if (!itsTree) {
