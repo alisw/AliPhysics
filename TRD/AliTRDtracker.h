@@ -56,7 +56,7 @@ class AliTRDtracker : public AliTracker {
   Int_t         ReadClusters(TObjArray *array, TTree *in);
   Int_t         CookSectorIndex(Int_t gs) const { return kTrackingSectors - 1 - gs; }
   AliTRDcluster * GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin);
-
+  Int_t         GetLastPlane(AliTRDtrack * track); //return last updated plane
 
   Float_t  GetSeedGap()       const {return fgkSeedGap;}   
   Int_t    GetMaxGap()        const {return fMaxGap;}   
@@ -108,10 +108,13 @@ class AliTRDtracker : public AliTracker {
      void           GetPropagationParameters(Double_t y, Double_t z,
                                 Double_t &dx, Double_t &rho, Double_t &x0, 
                                 Bool_t &lookForCluster) const;
+     Int_t          GetZone( Double_t z) const;
      Int_t          Find(Double_t y) const; 
      void           SetZmax(Int_t cham, Double_t center, Double_t w)
                       { fZc[cham] = center;  fZmax[cham] = w; }
-     void           SetYmax(Double_t w) { fYmax = w; }
+     void           SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
+     void           SetHoles(Bool_t* holes);
+     void           SetYmax(Double_t w, Double_t wsensitive) { fYmax = w; fYmaxSensitive = wsensitive; }
      Double_t       GetYmax() const { return fYmax; }
      Double_t       GetZmax(Int_t c) const { return fZmax[c]; }
      Double_t       GetZc(Int_t c) const { return fZc[c]; }
@@ -123,10 +126,11 @@ class AliTRDtracker : public AliTracker {
      Bool_t         IsSensitive() const {return (fTimeBinIndex>=0)? kTRUE: kFALSE;}
                        
      void    Clear() {for(Int_t i=0; i<fN; i++) fClusters[i] = NULL; fN = 0;}
-                   
+     Bool_t  IsHole(Int_t zone) const  { return fIsHole[zone];}              
    private:     
 
      Int_t         fN;          // this is fN
+     Int_t         fSec;        // sector mumber
      AliTRDcluster **fClusters; // array of pointers to clusters
      UInt_t        *fIndex;     // array of cluster indexes
      Double_t       fX;         // x coordinate of the middle plane
@@ -136,7 +140,10 @@ class AliTRDtracker : public AliTracker {
      Int_t          fTimeBinIndex;  // plane * F(local_tb)  
      Double_t       fZc[kZones];  // Z position of the center for 5 active areas
      Double_t       fZmax[kZones]; // half of active area length in Z
+     Double_t       fZmaxSensitive[kZones]; //sensitive area for detection Z     
+     Bool_t         fIsHole[kZones]; //is hole in given sector       
      Double_t       fYmax;        // half of active area length in Y
+     Double_t       fYmaxSensitive;        // half of active area length in Y
 
      Bool_t         fHole;        // kTRUE if there is a hole in the layer
      Double_t       fHoleZc;      // Z of the center of the hole 
@@ -233,7 +240,7 @@ class AliTRDtracker : public AliTracker {
   Bool_t                fAddTRDseeds;      // Something else
 
   Bool_t                fNoTilt;           // No tilt, or what?
- 
+  Bool_t                fHoles[5][18];     // holes
   
   Bool_t AdjustSector(AliTRDtrack *track); 
  

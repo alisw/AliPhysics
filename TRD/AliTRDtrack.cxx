@@ -23,7 +23,7 @@
 #include "AliTRDtrack.h"
 #include "../TPC/AliTPCtrack.h" 
 #include "AliESDtrack.h" 
-
+#include "AliTRDclusterCorrection.h"
 
 ClassImp(AliTRDtrack)
 
@@ -60,7 +60,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   fLhElectron = 0.0;
   fNWrong = 0;
   fNRotate = 0;
-
+  fStopped = 0;
   Double_t q = TMath::Abs(c->GetQ());
   Double_t s = fX*fC - fE, t=fT;
   if(s*s < 1) q *= TMath::Sqrt((1-s*s)/(1+t*t));
@@ -90,7 +90,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
   fLhElectron = 0.0;
   fNWrong = t.fNWrong;
   fNRotate = t.fNRotate;
-
+  fStopped = t.fStopped;
   fAlpha=t.fAlpha;
   fX=t.fX;
 
@@ -135,6 +135,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   fLhElectron = 0.0;
   fNWrong = 0;
   fNRotate = 0;
+  fStopped = 0;
 
   fAlpha = alpha;
   if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
@@ -194,6 +195,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
 
   fLhElectron = 0.0;
   fNWrong = 0;
+  fStopped = 0;
   fNRotate = 0;
 
   fAlpha = t.GetAlpha();
@@ -371,10 +373,10 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
 
   if (xk == fX) return 1;
 
-  if (TMath::Abs(fC*xk - fE) >= 0.99999) {
-    Int_t n=GetNumberOfClusters();
-    if (n>4) cerr << n << " AliTRDtrack: Propagation failed, \tPt = " 
-                  << GetPt() << "\t" << GetLabel() << "\t" << GetMass() << endl;
+  if (TMath::Abs(fC*xk - fE) >= 0.90000) {
+    //    Int_t n=GetNumberOfClusters();
+    //if (n>4) cerr << n << " AliTRDtrack: Propagation failed, \tPt = " 
+    //              << GetPt() << "\t" << GetLabel() << "\t" << GetMass() << endl;
     return 0;
   }
 
@@ -432,14 +434,27 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
 
   Double_t ey=fC*fX - fE, ez=fT;
   Double_t xz=fC*ez, zz1=ez*ez+1, xy=fE+ey;
-
+  
   fCee += (2*ey*ez*ez*fE+1-ey*ey+ez*ez+fE*fE*ez*ez)*theta2;
   fCte += ez*zz1*xy*theta2;
   fCtt += zz1*zz1*theta2;
   fCce += xz*ez*xy*theta2;
   fCct += xz*zz1*theta2;
   fCcc += xz*xz*theta2;
-
+  /*
+  Double_t dc22 = (1-ey*ey+xz*xz*fX*fX)*theta2;
+  Double_t dc32 = (xz*fX*zz1)*theta2;
+  Double_t dc33 = (zz1*zz1)*theta2;
+  Double_t dc42 = (xz*fX*xz)*theta2;
+  Double_t dc43 = (zz1*xz)*theta2;
+  Double_t dc44 = (xz*xz)*theta2; 
+  fCee += dc22;
+  fCte += dc32;
+  fCtt += dc33;
+  fCce += dc42;
+  fCct += dc43;
+  fCcc += dc44;
+  */
   //Energy losses************************
   if((5940*beta2/(1-beta2+1e-10) - beta2) < 0) return 0;
 
@@ -468,8 +483,8 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
   Bool_t fNoTilt = kTRUE;
   if(TMath::Abs(h01) > 0.003) fNoTilt = kFALSE;
   // add angular effect to the error contribution -  MI
-  Float_t tangent2 = TMath::Abs(fC*fX-fE);
-  if (tangent2 < 0.99999){
+  Float_t tangent2 = (fC*fX-fE)*(fC*fX-fE);
+  if (tangent2 < 0.90000){
     tangent2 = tangent2/(1.-tangent2);
   }
   Float_t errang = tangent2*0.04; //
@@ -491,9 +506,9 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
 
 
   if(fNoTilt) {
-    if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-      Int_t n=GetNumberOfClusters();
-      if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
+    if (TMath::Abs(cur*fX-eta) >= 0.90000) {
+      //      Int_t n=GetNumberOfClusters();
+      //if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
       return 0;
     }
     fY += k00*dy + k01*dz;
@@ -509,11 +524,11 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
     dy=dy+h01*dz;
     Float_t add=0;
     if (TMath::Abs(dz)>padlength/2.){
-      //Float_t dy2 = c->GetY() - fY;
-      //Float_t sign = (dz>0) ? -1.: 1.;
-      //dy2+=h01*sign*padlength/2.;	
-      //dy = dy2;
-      add =1;
+      Float_t dy2 = c->GetY() - fY;
+      Float_t sign = (dz>0) ? -1.: 1.;
+      dy2+=h01*sign*padlength/2.;	
+      dy  = dy2;
+      add = 0;
     }
    
 
@@ -533,9 +548,9 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
 
 
     cur=fC + k40*dy + k41*dz; eta=fE + k20*dy + k21*dz;
-    if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-      Int_t n=GetNumberOfClusters();
-      if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
+    if (TMath::Abs(cur*fX-eta) >= 0.90000) {
+      //      Int_t n=GetNumberOfClusters();
+      //if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
       return 0;
     }                           
     fY += k00*dy + k01*dz;
@@ -582,18 +597,36 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index, 
   return 1;     
 }                     
 //_____________________________________________________________________________
-Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index, Double_t h01)
+Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index, Double_t h01, 
+			    Int_t plane)
 {
   // Assignes found cluster to the track and updates track information
 
   Bool_t fNoTilt = kTRUE;
   if(TMath::Abs(h01) > 0.003) fNoTilt = kFALSE;
-  // add angular effect to the error contribution -  MI
-  Double_t tangent2 = TMath::Abs(fC*fX-fE);
-  if (tangent2 < 0.99999){
+  // add angular effect to the error contribution and make correction  -  MI
+  AliTRDclusterCorrection *corrector = AliTRDclusterCorrection::GetCorrection();
+  // 
+  Double_t tangent2 = (fC*fX-fE)*(fC*fX-fE);
+  if (tangent2 < 0.90000){
     tangent2 = tangent2/(1.-tangent2);
   }
+  Double_t tangent = TMath::Sqrt(tangent2);
+  if ((fC*fX-fE)<0) tangent*=-1;
+  Double_t correction = 0;
   Double_t errang = tangent2*0.04; //
+  if (corrector!=0){
+  //if (0){
+    correction = corrector->GetCorrection(plane,c->GetLocalTimeBin(),tangent);
+    if (TMath::Abs(correction)>0){
+      //if we have info 
+      errang     = corrector->GetSigma(plane,c->GetLocalTimeBin(),tangent);
+      errang    *= errang;      
+      errang    += tangent2*0.04;
+    }
+  }
+
+  //
   Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12.);
 
   Double_t r00=c->GetSigmaY2() +errang, r01=0., r11=c->GetSigmaZ2()*10000.;
@@ -612,9 +645,9 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
 
 
   if(fNoTilt) {
-    if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-      Int_t n=GetNumberOfClusters();
-      if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
+    if (TMath::Abs(cur*fX-eta) >= 0.90000) {
+      //      Int_t n=GetNumberOfClusters();
+      //if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
       return 0;
     }
     fY += k00*dy + k01*dz;
@@ -624,17 +657,17 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
     fC  = cur;
   }
   else {
-    Double_t xu_factor = 10000.;  // empirical factor set by C.Xu
+    Double_t xu_factor = 1000.;  // empirical factor set by C.Xu
                                 // in the first tilt version      
     dy=c->GetY() - fY; dz=c->GetZ() - fZ;     
-    dy=dy+h01*dz;
+    dy=dy+h01*dz+correction;
     Double_t add=0;
     if (TMath::Abs(dz)>padlength/2.){
       //Double_t dy2 = c->GetY() - fY;
       //Double_t sign = (dz>0) ? -1.: 1.;
-      //dy2+=h01*sign*padlength/2.;	
+      //dy2-=h01*sign*padlength/2.;	
       //dy = dy2;
-      add =1;
+      add =1.;
     }
     Double_t s00 = c->GetSigmaY2()+errang+add;  // error pad
     Double_t s11 = c->GetSigmaZ2()*xu_factor;   // error pad-row
@@ -655,9 +688,9 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
     //
     //Update measurement
     cur=fC + k40*dy + k41*dz; eta=fE + k20*dy + k21*dz;
-    if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-      Int_t n=GetNumberOfClusters();
-      if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
+    if (TMath::Abs(cur*fX-eta) >= 0.90000) {
+      //Int_t n=GetNumberOfClusters();
+      //      if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
       return 0;
     }                           
     fY += k00*dy + k01*dz;
@@ -735,7 +768,7 @@ Int_t AliTRDtrack::Rotate(Double_t alpha)
   fE=fE*ca + (fC*y1 + sqrt(1.- r1*r1))*sa;
 
   Double_t r2=fC*fX - fE;
-  if (TMath::Abs(r2) >= 0.99999) {
+  if (TMath::Abs(r2) >= 0.90000) {
     Int_t n=GetNumberOfClusters();
     if (n>4) cerr<<n<<" AliTRDtrack warning: Rotation failed !\n";
     return 0;
@@ -865,8 +898,8 @@ void AliTRDtrack::ResetCovariance(Float_t mult) {
   //
 
   fCyy*=mult;
-  fCzy*=mult;  fCzz*=mult;
-  fCey*=mult;  fCez*=mult;  fCee*=mult;
-  fCty*=mult;  fCtz*=mult;  fCte*=mult;  fCtt*=mult;
-  fCcy*=mult;  fCcz*=mult;  fCce*=mult;  fCct*=mult;  fCcc*=mult;  
+  fCzy*=0.;  fCzz*=mult;
+  fCey*=0.;  fCez*=0.;  fCee*=mult;
+  fCty*=0.;  fCtz*=0.;  fCte*=0.;  fCtt*=mult;
+  fCcy*=0.;  fCcz*=0.;  fCce*=0.;  fCct*=0.;  fCcc*=mult;  
 }                                                         

@@ -74,7 +74,7 @@ public:
    UInt_t * GetIndexes()  {return fIndex;}
   
 
-   Double_t GetYat(Double_t xk) const {
+   Double_t GetYat(Double_t xk) const {     
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
 // Needed for matching with the TOF (I.Belikov)
@@ -83,6 +83,8 @@ public:
       Double_t c2=fC*xk - fE, r2=TMath::Sqrt(1.- c2*c2);
       return fY + (xk-fX)*(c1+c2)/(r1+r2);
    }
+   void SetStop(Bool_t stop) {fStopped=stop;}
+   Bool_t GetStop() const {return fStopped;}
 
    Int_t    PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
    void     ResetCovariance();   
@@ -104,7 +106,7 @@ public:
    Int_t    Update(const AliTRDcluster* c, Double_t chi2, UInt_t i, 
                    Double_t h01);
    Int_t    UpdateMI(const AliTRDcluster* c, Double_t chi2, UInt_t i, 
-                   Double_t h01);
+                   Double_t h01, Int_t plane);
 
   //
   void GetBarrelTrack(AliBarrelTrack *track);
@@ -122,7 +124,7 @@ protected:
 
    Double_t fAlpha;       // rotation angle
    Double_t fX;           // running local X-coordinate of the track (time bin)
-
+   Bool_t   fStopped;     // track stop indication
 
    Double_t fY;             // Y-coordinate of the track
    Double_t fZ;             // Z-coordinate of the track
