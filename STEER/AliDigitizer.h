@@ -7,30 +7,28 @@
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Abstract Base Class for Detector specific Merging/Digitization   
+//  Base Class for Detector specific Merging/Digitization   
 //                  
 //  Author: Jiri Chudoba (CERN)
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "TNamed.h"
+#include "TTask.h"
+
 class AliRunDigitizer;
 
-class AliDigitizer: public TNamed {
+class AliDigitizer: public TTask {
 
  public:
     AliDigitizer();                               // default ctor - dummy
     AliDigitizer(AliRunDigitizer *manager);       // ctor to be used          
     virtual ~AliDigitizer();
-    virtual Bool_t Init() = 0;
-    virtual void Digitize() = 0;
-    Int_t GetDebug() {return fDebug;}             // get debug level
-    void SetDebug(Int_t level){fDebug = level;}   // set debug level
+    virtual Bool_t Init() {return kTRUE;}
+//    virtual void Digitize() = 0;
+
+ protected:
+    AliRunDigitizer *fManager;
     
-private:
-
-    Int_t fDebug;                                 // debug level
-
     ClassDef(AliDigitizer,1)
 };
 

@@ -20,6 +20,7 @@
 #include "TClonesArray.h"
 #include "TTree.h"
 #include "TParticle.h"
+#include "TTask.h"
 
 #define MAXDETECTORS 20
 #define MAXSTREAMSTOMERGE  4
@@ -29,14 +30,13 @@
 class AliDigitizer;
 class AliMergeCombi;
 
-class AliRunDigitizer: public TNamed {
+class AliRunDigitizer: public TTask {
 
 public:
-  AliRunDigitizer();
-  AliRunDigitizer(Int_t nInputStream, Int_t sperb);
+  AliRunDigitizer(Int_t nInputStream=1, Int_t sperb=1);
   virtual ~AliRunDigitizer();
   void      AddDigitizer(AliDigitizer *digitizer);
-  void      SetOutputFile(TString fn) {fOutputFileName = fn;}
+  void      SetOutputFile(TString fn);
   TString   GetOutputFile() {return fOutputFileName;}
   void      SetOutputDir(TString dn) {fOutputDirName = dn;}
   TString   GetOutputDir() {return fOutputDirName;}
@@ -54,8 +54,11 @@ public:
   TTree*    GetInputTreeH(Int_t i) const {return fArrayTreeH[i];}
   TTree*    GetInputTreeTPCS(Int_t i) const {return fArrayTreeTPCS[i];}
   TTree*    GetTreeD() const {return fTreeD;}
-  void      Digitize();
+  void      Digitize(Option_t* option = 0);
+  void      Exec(Option_t *option) {this->Digitize();}
+  void      ExecuteTask(Option_t* option = 0);
 
+  
 // Nr of particles in all input files for a given event
 //     (as numbered in the output file)
   Int_t GetNParticles(Int_t event);
@@ -84,10 +87,6 @@ public:
   void      SetDebug(Int_t level) {fDebug = level;}
   
 private:
-  AliDigitizer *    fDigitizers[MAXDETECTORS];  //! pointers to registered
-                                                //  digitizers
-// the constant 20 corresponds to  MAXDETECTORS = 20 - could be done better
-  Int_t             fNDigitizers;         //! nr. of registered digitizers
   Int_t             fkMASK[MAXSTREAMSTOMERGE];  //! masks for track ids from
                                               //  different source files
   Int_t             fkMASKSTEP;           // step to increase MASK for
@@ -104,7 +103,7 @@ private:
   Int_t             fNinputs;             // nr of input streams - can be taken from the TClonesArray dimension
   Int_t             fNinputsGiven;        // nr of input streams given by user
   TClonesArray *    fInputStreams;        // input streams
-  TClonesArray *    fInputFiles;          // current input files
+  TFile *          fInputFiles[MAXSTREAMSTOMERGE];   //! p. to current input files
   TTree *           fArrayTreeS[MAXSTREAMSTOMERGE];   //! array with p. to TreeS
   TTree *           fArrayTreeTPCS[MAXSTREAMSTOMERGE];   //! array with p. to TreeD_75x40_100x60_x (TPC Sdigits)
   TTree *           fArrayTreeH[MAXSTREAMSTOMERGE];   //! array with p. to TreeH
@@ -120,7 +119,7 @@ private:
   void              FinishGlobal();
   Int_t             fDebug;                //! specifies debug level, 0 is min
   
-  ClassDef(AliRunDigitizer,1)
+  ClassDef(AliRunDigitizer,2)
 };
 
 #endif // ALIRUNDIGITIZER_H
