@@ -45,7 +45,7 @@ Float_t ZpitchFromCol300(Int_t col) {
   return 300.0;
 }
 //_____________________________________________________________________________
-Float_t  AliITSsegmentationSPD::ColFromZ(Float_t z) {
+Float_t ColFromZ(Float_t z) {
 // hard-wired - keep it like this till we can parametrise 
 // and get rid of AliITSgeomSPD425
 // Get column number for each z-coordinate taking into account the 
@@ -85,7 +85,7 @@ Float_t  AliITSsegmentationSPD::ColFromZ(Float_t z) {
 }
 
 //_____________________________________________________________________________
-Float_t  AliITSsegmentationSPD::ZFromCol(Int_t col) {
+Float_t ZFromCol(Int_t col) {
 // same comments as above
 // Get z-coordinate for each colunm number
 
@@ -123,21 +123,21 @@ Float_t  AliITSsegmentationSPD::ZFromCol(Int_t col) {
   return z;
 }
 //______________________________________________________________________
-Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) {
+Float_t ZpitchFromCol(Int_t col) {
 // Get pitch size in z direction for each colunm
 
     Float_t pitchz = 425;
     if(col < 0){
 	pitchz = 0.0;
-    } else if(col >=  31 && col <=  32) {  
+    } else if(col >=  31 && col <=  32) {
 	pitchz = 625;
-    } else if(col >=  63 && col <=  64) {  
+    } else if(col >=  63 && col <=  64) {
 	pitchz = 625;
-    } else if(col >=  95 && col <=  96) {  
+    } else if(col >=  95 && col <=  96) {
 	pitchz = 625;
-    } else if(col >= 127 && col <= 128) {  
+    } else if(col >= 127 && col <= 128) {
 	pitchz = 625;
-    } else if(col >= 159 && col <= 160) {  
+    } else if(col >= 159 && col <= 160) {
 	pitchz = 625;
     } else if(col>=192){
 	pitchz = 0.0;
@@ -183,7 +183,17 @@ AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSsegmentationSPD &source){
   // copy constructor
    *this = source;
 }
-//------------------------------
+//----------------------------------------------------------------------
+void AliITSsegmentationSPD::SetBinSize(Float_t *x,Float_t *z){
+    // Fills the array of pixel sizes in x, microns
+    // The input array x must have 256 elements.
+    Int_t i;
+
+    for(i=0;i<256;i++) fCellSizeX[i] = x[i];
+    for(i=0;i<280;i++) fCellSizeX[i] = z[i];
+    return;
+}
+//----------------------------------------------------------------------
 void AliITSsegmentationSPD::Init300(){
 // Initialize infromation for 6 read out chip 300X50 micron pixel SPD 
 // detectors. This chip is 150 microns thick by 1.28 cm in x by 8.37 cm

@@ -28,13 +28,13 @@ public AliITSsegmentation {
     virtual void    SetNPads(Int_t p1, Int_t p2);
     // Returns the maximum number of cells (digits) posible
     virtual Int_t   GetNPads(){return fNpx*fNpz;}
+    // Set Pixel Size Array in x and z, microns.
+    virtual void    SetBinSize(Float_t *x,Float_t *z);
 
     // Transform from real to pixel coordinates
-    virtual void    GetPadIxz
-         (Float_t x,Float_t z,Int_t &ix,Int_t &iz);
+    virtual void    GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz);
     // Transform from pixel to real coordinates
-    virtual void    GetPadCxz
-         (Int_t ix,Int_t iz,Float_t &x,Float_t &z);
+    virtual void    GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t &z);
     // Transform from real global to local coordinates
     virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l) {}
     // Transform from real local to global coordinates
@@ -72,12 +72,9 @@ public AliITSsegmentation {
     // Maximum number of Pixels in z
     virtual Int_t    Npz(){return fNpz;}
     //
-    // Get next neighbours 
+    // Get next neighbours
     virtual void Neighbours
        (Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]);
-    Float_t ColFromZ(Float_t z);
-    Float_t ZFromCol(Int_t col);
-    Float_t ZpitchFromCol(Int_t col);
 
     
   protected:
