@@ -31,7 +31,7 @@ public:
   virtual ~AliPHOSv1(void) ;
 
   virtual void   Copy(AliPHOSv1 & phos) ; 
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits) ; 
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t id, Float_t *hits) ; 
   virtual void   FinishEvent() ;
   virtual void   FinishPrimary() ;
   virtual Int_t  IsVersion(void) const {

@@ -22,15 +22,11 @@
 //*-- Author: Maxime Volkov (RRC KI) & Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 
 // --- ROOT system ---
-#include "TVector3.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliPHOSHit.h"
-#include "AliRun.h"
-#include "AliPHOSGeometry.h"
-#include "AliPHOS.h"
 
 ClassImp(AliPHOSHit)
   
@@ -43,14 +39,13 @@ ClassImp(AliPHOSHit)
   fZ       = hit.fZ ; 
   fId      = hit.fId ; 
   fELOS    = hit.fELOS ;
-  fPrimary = hit.fPrimary ; 
   fTrack   = hit.fTrack ; 
   fTime    = hit.fTime  ;
   
 } 
 
 //____________________________________________________________________________
-AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits): AliHit(shunt, track)
+AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t track, Int_t id, Float_t *hits): AliHit(shunt, track)
 {
   //
   // Create a CPV hit object
@@ -62,49 +57,6 @@ AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_
   fTime       = hits[3] ;
   fId         = id ;
   fELOS       = hits[4] ;
-  fPrimary    = primary ;
-}
-//____________________________________________________________________________
-Float_t AliPHOSHit::X() const
-{
-  //  if(fX < -1000.){
-    TVector3  pos ;
-    AliPHOS * phos = static_cast<AliPHOS*> (gAlice->GetDetector("PHOS")) ;
-    phos->GetGeometry() ->RelPosInAlice(GetId(),  pos) ;
-    return pos.X() ;
-    //    fX = pos.X() ;
-    //    fY = pos.Y() ;
-    //    fZ = pos.Z() ;
-    //  }
-    //  return fX;
-}
-//____________________________________________________________________________
-Float_t AliPHOSHit::Y() const
-{
-  //  if(fY < -1000.){
-    TVector3  pos ;
-    AliPHOS * phos = static_cast<AliPHOS*> (gAlice->GetDetector("PHOS")) ;
-    phos->GetGeometry() ->RelPosInAlice(GetId(),  pos) ;
-    return pos.Y(); 
-    //    fX = pos.X() ;
-    //    fY = pos.Y() ;
-    //    fZ = pos.Z() ;
-    //  }
-    //  return fY;
-}
-//____________________________________________________________________________
-Float_t AliPHOSHit::Z() const
-{
-  //  if(fY < -1000.){
-    TVector3  pos ;
-    AliPHOS * phos = static_cast<AliPHOS*> (gAlice->GetDetector("PHOS")) ;
-    phos->GetGeometry() ->RelPosInAlice(GetId(),  pos) ;
-    return pos.Z() ;
-    //    fX = pos.X() ;
-    //    fY = pos.Y() ;
-    //    fZ = pos.Z() ;
-    //  }
-    //  return fZ;
 }
 //____________________________________________________________________________
 Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
@@ -113,7 +65,7 @@ Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 
   Bool_t rv = kFALSE ; 
 
-  if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetPrimary() ) )
+  if ( (fId == rValue.GetId()) && ( fTrack == rValue.GetPrimary() ) )
     rv = kTRUE;
   
   return rv;
@@ -132,17 +84,4 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue)
    return *this;
 
 }
-
-//____________________________________________________________________________
-// Commented out by Yu.Kharlov 4.09.2003
-// ostream& operator << (ostream& out, const AliPHOSHit& hit) 
-// {
-//   // Print out Id and energy 
-  
-//   //out << "AliPHOSHit = " << hit.GetId() << " " << hit.GetEnergy() << "  " << hit.GetTime() << endl ;
-//   AliWarning("operator <<", "Implement differently") ; 
-//   return out ;
-// }
-
-
 

@@ -29,7 +29,7 @@ class AliPHOSHit : public AliHit {
     // default ctor 
   }
   AliPHOSHit(const AliPHOSHit & hit) ; 
-  AliPHOSHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t id, Float_t *hits);
+  AliPHOSHit(Int_t shunt, Int_t tracknumber, Int_t id, Float_t *hits);
   virtual ~AliPHOSHit(void) {
     // dtor 
   }  
@@ -44,7 +44,7 @@ class AliPHOSHit : public AliHit {
   }
   Int_t   GetPrimary(void)  const { 
     // returns the primary particle id at the origine of this hit 
-    return fPrimary ; 
+    return fTrack ; 
   }
 
   Float_t GetTime(void)     const {
@@ -52,9 +52,6 @@ class AliPHOSHit : public AliHit {
     return fTime ;
   }
 
-  virtual Float_t X() const ;
-  virtual Float_t Y() const ;
-  virtual Float_t Z() const ;
 
   Bool_t operator == (AliPHOSHit const &rValue) const ;
   AliPHOSHit operator + (const AliPHOSHit& rValue) ;
@@ -64,7 +61,6 @@ class AliPHOSHit : public AliHit {
 
   Int_t          fId ;        // Absolute Id number of PHOS Xtal or PPSD pad
   Float_t        fELOS ;      // Energy deposited
-  Int_t          fPrimary ;   // Primary particles at the origine of the hit
   Float_t        fTime ;      // Time of the energy deposition
 
   ClassDef(AliPHOSHit,1)  // Hit for PHOS

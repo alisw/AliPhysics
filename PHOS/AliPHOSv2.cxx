@@ -64,13 +64,13 @@ void AliPHOSv2::Copy(AliPHOSv2 & phos)
 }
 
 //____________________________________________________________________________
-void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
+void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
 
   AliPHOSHit *newHit ;
 
-  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
+  newHit = new AliPHOSHit(shunt, primary, Id, hits) ;
 
   new((*fHits)[fNhits]) AliPHOSHit(*newHit) ;    
   fNhits++ ;

@@ -184,7 +184,7 @@ void AliPHOSv1::Copy(AliPHOSv1 & phos)
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
+void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
   // A PHOS hit is the sum of all hits in a single crystal from one primary and within some time gate
@@ -195,7 +195,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   Bool_t deja = kFALSE ;
   AliPHOSGeometry * geom = GetGeometry() ; 
 
-  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
+  newHit = new AliPHOSHit(shunt, primary, Id, hits) ;
 
   for ( hitCounter = fNhits-1 ; hitCounter >= 0 && !deja ; hitCounter-- ) {
     curHit = dynamic_cast<AliPHOSHit*>((*fHits)[hitCounter]) ;
@@ -287,7 +287,6 @@ void AliPHOSv1::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber() ; 
   TString name      =  GetGeometry()->GetName() ; 
 
   Int_t moduleNumber ;
@@ -372,7 +371,9 @@ void AliPHOSv1::StepManager(void)
 
       xyzte[3] = gMC->TrackTime() ;
       xyzte[4] = cpvDigit->GetQpad() ;                          // amplitude in a pad
-      AddHit(fIshunt, -1, tracknumber, absid, xyzte);      // -1: No need in primary for CPV
+
+      Int_t primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
+      AddHit(fIshunt, primary, absid, xyzte);  
       
       if (cpvDigit->GetQpad() > 0.02) {
 	xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
@@ -414,7 +415,9 @@ void AliPHOSv1::StepManager(void)
 	vert[1]=part->Vy() ;
 	vert[2]=part->Vz() ;
 	gMC -> Gmtod (vert, vertd, 1);    // transform coordinate from master to daughter system
-	if(vertd[1]<-GetGeometry()->GetCrystalSize(1)/2.-0.1){ //Particle is created in foront of PHOS 0.1 to get rid of numerical errors 
+	if(vertd[1]<-GetGeometry()->GetCrystalSize(1)/2.-0.1){ //Particle is created in foront of PHOS 
+	                                                       //0.1 to get rid of numerical errors 
+	  part->SetBit(kKeepBit);
 	  while ( parent != -1 ) {
 	    part = gAlice->GetMCApp()->Particle(parent) ; 
 	    part->SetBit(kKeepBit);
@@ -451,26 +454,30 @@ void AliPHOSv1::StepManager(void)
       //Calculates de energy deposited in the crystal  
       xyzte[4] = fAPDFactor * lightYield  ;
       
-      Int_t primary =-1 ;
-      if(fIshunt == 1)
-	 primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
-      else if(fIshunt == 2){
-         primary = gAlice->GetMCApp()->GetCurrentTrackNumber() ;
-         TParticle * part = gAlice->GetMCApp()->Particle(primary) ;
-         while ( !part->TestBit(kKeepBit) ) {
-           primary = part->GetFirstMother() ;
-           if(primary == -1) break ; //there is a possibility that particle passed e.g. thermal isulator and hits a side 
-                                     //surface of the crystal. In this case it may have no primary at all. 
-                                     //We can not easily separate this case from the case when this is part of the shower, 
-                                     //developed in the neighboring crystal.
-           part = gAlice->GetMCApp()->Particle(primary) ;
-         }
+      Int_t primary ;
+      if(fIshunt == 2){
+	primary = gAlice->GetMCApp()->GetCurrentTrackNumber() ;
+	TParticle * part = gAlice->GetMCApp()->Particle(primary) ;
+	while ( !part->TestBit(kKeepBit) ) {
+	  primary = part->GetFirstMother() ;
+	  if(primary == -1){	    
+	    primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
+	    break ; //there is a possibility that particle passed e.g. thermal isulator and hits a side 
+	  //surface of the crystal. In this case it may have no primary at all. 
+	  //We can not easily separate this case from the case when this is part of the shower, 
+	  //developed in the neighboring crystal.
+	  }
+	  part = gAlice->GetMCApp()->Particle(primary) ;
+	}
       }
+      else
+	primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
 
-	 
+      
+      
       // add current hit to the hit list
       // Info("StepManager","%d %d", primary, tracknumber) ; 
-      AddHit(fIshunt, primary,tracknumber, absid, xyzte);
+      AddHit(fIshunt, primary, absid, xyzte);
       
       // fill the relevant QA Checkables
       fQATotEner->Update( xyzte[4] ) ;                                             // total energy in PHOS
