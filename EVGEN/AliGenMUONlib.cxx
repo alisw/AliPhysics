@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2003/03/13 11:54:39  morsch
+Limited pT range for parameterized Upsilon and J/Psi pT distributions.
+
 Revision 1.19  2003/02/24 16:46:11  morsch
 New parameterisation for Psi and Upsilon (PbPb)
 
@@ -238,6 +241,30 @@ Double_t AliGenMUONlib::PtJpsiPbPb( Double_t *px, Double_t *dummy)
     }
     return y;
 }
+Double_t AliGenMUONlib::PtJpsiPP( Double_t *px, Double_t *dummy)
+{
+// J/Psi pT spectrum
+//
+// R. Vogt 2002
+// pp 14 TeV
+// MRST HO
+// mc = 1.4 GeV, pt-kick 1 GeV
+//
+    Float_t x = px[0];
+    Float_t c[4] = {8.47471e+00, -1.93567e+00, 1.50271e-01, -5.51212e-03};
+ 
+    Double_t y;
+    if (x < 10.) {
+	Int_t j;
+	y = c[j = 3];
+	while (j > 0) y  = y * x +c[--j];
+	y = x * TMath::Exp(y);
+    } else {
+	y = 0.;
+    }
+    return y;
+}
+
 //
 //               y-distribution
 //____________________________________________________________
@@ -276,6 +303,36 @@ Double_t AliGenMUONlib::YJpsiPbPb( Double_t *px, Double_t *dummy)
     if (x < 4.) {
 	y = 31.754;
     } else if (x < 6) {
+	Int_t j;
+	y = c[j = 4];
+	while (j > 0) y  = y * x + c[--j];
+    } else {
+	y =0.;
+    }
+    
+    return y;
+}
+
+Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t *dummy)
+{
+
+//
+// J/Psi y
+//
+//
+// R. Vogt 2002
+// pp 14  TeV
+// MRST HO
+// mc = 1.4 GeV, pt-kick 1 GeV
+//
+
+    Double_t c[5] = {1.38532e+00, 1.00596e+02, -3.46378e+01, 3.94172e+00, -1.48319e-01};
+    Double_t x = TMath::Abs(px[0]);
+    Double_t y;
+    
+    if (x < 2.5) {
+	y = 96.455 - 0.8483 * x * x;
+    } else if (x < 7.9) {
 	Int_t j;
 	y = c[j = 4];
 	while (j > 0) y  = y * x + c[--j];
@@ -339,6 +396,34 @@ Double_t AliGenMUONlib::PtUpsilonPbPb( Double_t *px, Double_t *dummy)
     return y;
 }
 
+Double_t AliGenMUONlib::PtUpsilonPP( Double_t *px, Double_t *dummy)
+{
+
+//
+// Upsilon pT
+//
+//
+// R. Vogt 2002
+// pp 14 TeV
+// MRST HO
+// mc = 1.4 GeV, pt-kick 1 GeV
+//
+    Float_t x = px[0];
+    Double_t c[8] = {-7.93955e+00, 1.06306e+01, -5.21392e+00, 1.19703e+00,   
+		     -1.45718e-01, 8.95151e-03, -2.04806e-04, -1.13053e-06};
+    
+    Double_t y;
+    if (x < 10.) {
+	Int_t j;
+	y = c[j = 7];
+	while (j > 0) y  = y * x +c[--j];
+	y = x * TMath::Exp(y);
+    } else {
+	y = 0.;
+    }
+    return y;
+}
+
 //
 //                    y-distribution
 //
@@ -377,6 +462,29 @@ Double_t AliGenMUONlib::YUpsilonPbPb( Double_t *px, Double_t *dummy)
         
     Double_t x = px[0];
     if (TMath::Abs(x) > 5.55) return 0.;
+    Int_t j;
+    Double_t y = c[j = 6];
+    while (j > 0) y  = y * x +c[--j];
+    return y;
+}
+
+Double_t AliGenMUONlib::YUpsilonPP( Double_t *px, Double_t *dummy)
+{
+
+//
+// Upsilon y
+//
+//
+// R. Vogt 2002
+// p p  14. TeV
+// MRST HO
+// mc = 1.4 GeV, pt-kick 1 GeV
+//
+    Double_t c[7] = {8.91936e-01, -6.46645e-07, -1.52774e-02, 4.28677e-08, -7.01517e-04, 
+		     -6.20539e-10, 1.29943e-05};
+                
+    Double_t x = px[0];
+    if (TMath::Abs(x) > 6.2) return 0.;
     Int_t j;
     Double_t y = c[j = 6];
     while (j > 0) y  = y * x +c[--j];
@@ -579,15 +687,19 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	func=PtEta;
 	break;
     case kJpsi:
-	if (sname == "Vogt") {
+	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=PtJpsiPbPb;
+	} else if (sname == "Vogt pp") {
+	    func=PtJpsiPP;
 	} else {
 	    func=PtJpsi;
 	}
 	break;
     case kUpsilon:
-	if (sname == "Vogt") {
+	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=PtUpsilonPbPb;
+	} else if (sname == "Vogt pp") {
+	    func=PtUpsilonPP;
 	} else {
 	    func=PtUpsilon;
 	}
@@ -629,15 +741,20 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	func=YOmega;
 	break;
     case kJpsi:
-	if (sname == "Vogt") {
+	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=YJpsiPbPb;
+	} else if (sname == "Vogt pp"){
+	    func=YJpsiPP;
 	} else {
 	    func=YJpsi;
 	}
+	
 	break;
     case kUpsilon:
-	if (sname == "Vogt") {
+	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=YUpsilonPbPb;
+	} else if (sname == "Vogt pp") {
+	    func = YUpsilonPP;
 	} else {
 	    func=YUpsilon;
 	}

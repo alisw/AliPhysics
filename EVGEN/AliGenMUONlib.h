@@ -47,12 +47,16 @@ class AliGenMUONlib :
     static Double_t YJpsi(Double_t *py, Double_t *dummy);
     static Double_t PtJpsiPbPb( Double_t *px, Double_t *dummy);
     static Double_t YJpsiPbPb(Double_t *py, Double_t *dummy);
+    static Double_t PtJpsiPP( Double_t *px, Double_t *dummy);
+    static Double_t YJpsiPP(Double_t *py, Double_t *dummy);
     static Int_t    IpJpsi(TRandom *ran);
 // Upsilon    
     static Double_t PtUpsilon( Double_t *px, Double_t *dummy );
     static Double_t YUpsilon(Double_t *py, Double_t *dummy);
     static Double_t PtUpsilonPbPb( Double_t *px, Double_t *dummy );
     static Double_t YUpsilonPbPb(Double_t *py, Double_t *dummy);
+    static Double_t PtUpsilonPP( Double_t *px, Double_t *dummy );
+    static Double_t YUpsilonPP(Double_t *py, Double_t *dummy);
     static Int_t    IpUpsilon(TRandom *ran);
 //
 // Charm    
