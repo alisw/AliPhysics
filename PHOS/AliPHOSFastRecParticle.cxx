@@ -89,6 +89,7 @@ ClassImp(AliPHOSFastRecParticle) ;
   fPolarTheta  = p.fPolarTheta;
   fPolarPhi    = p.fPolarPhi;
   fParticlePDG = p.fParticlePDG; 
+
 }
 
 //____________________________________________________________________________
@@ -156,18 +157,6 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   
   }
 
-}
-
-//____________________________________________________________________________
-Int_t * AliPHOSFastRecParticle::GetPrimaries(Int_t & number) 
-{
-  // Retrieves the unique primary particle at the origine of the present reconstruced particle
-
-  number = 1 ; 
-  Int_t * list = new Int_t[1] ;
-  list[0] = fPrimary ; 
-  
-  return list ;
 }
 
 //____________________________________________________________________________
