@@ -200,7 +200,7 @@ void AliMAG::CreateGeometry()
   gMC->Gspos("L3FX", 1, "L3DX", 0., 0., 0., 0, "MANY");
   gMC->Gspos("L3IX", 1, "L3DX", 0., 0., 0., 0, "MANY");
 
-  if(!strcmp(gMC->GetName(),"TGeant3")) {
+  if(!strcmp(gMC->GetName(),"TGeant3") || !strcmp(gMC->GetName(),"TFluka")) {
 
     gMC->Gspos("L3O1", 1, "L3FR", 0., 30., 0., 0, "MANY");
     gMC->Gspos("L3O2", 1, "L3IR", 0., 30., 0., 0, "MANY");
