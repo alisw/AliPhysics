@@ -461,7 +461,7 @@ Int_t AliEMCALGetter::ReadTreeH()
     
   // gets TreeH from the root file (EMCAL.Hit.root)
   if ( !IsLoaded("H") ) {
-    EmcalLoader()->LoadHits("UPDATE") ;
+    EmcalLoader()->LoadHits("READ") ;
     SetLoaded("H") ; 
   }  
   return Hits()->GetEntries() ; 
@@ -521,8 +521,8 @@ Int_t AliEMCALGetter::ReadTreeS()
   
   // gets TreeS from the root file (EMCAL.SDigits.root)
    if ( !IsLoaded("S") ) {
-    EmcalLoader()->LoadSDigits("UPDATE") ;
-    EmcalLoader()->LoadSDigitizer("UPDATE") ;
+    EmcalLoader()->LoadSDigits("READ") ;
+    EmcalLoader()->LoadSDigitizer("READ") ;
     SetLoaded("S") ; 
   }
 
