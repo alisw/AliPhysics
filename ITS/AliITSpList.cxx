@@ -230,24 +230,46 @@ void AliITSpListItem::AddSignal(Int_t track,Int_t hit,Int_t module,
 	fSignal[i] += signal;
 	flg = kTRUE;
     } // end for i & if.
-    if(flg){ // resort arrays.  fkSize is small use Insertin sort.
-	for(i=1;i<fkSize;i++){
-	    trk = fTrack[i];
-	    hts = fHits[i];
-	    sig = fSignal[i];
-	    j = i-1;
-	    while(j>=0 && fSignal[i]>signal){
-		fTrack[j+1]  = fTrack[j];
-		fHits[j+1]   = fHits[j];
-		fSignal[j+1] = fSignal[j];
-		j--;
-	    } // end while
-	    fTrack[j+1]  = trk;
-	    fHits[j+1]   = hts;
-	    fSignal[j+1] = sig;
-	} // end if i
-	return;
-    } // end if added to existing and resorted array
+ 
+    if(flg){ // the arrays are already sorted with the possible exception
+             // of one element
+      j=0;
+      for(i=0;i<fkSize-1;i++){
+        if(fSignal[i]<fSignal[i+1]){
+          j=i+1;
+          break;
+        }
+      }
+      /* debug printouts
+      if(j>0){
+        cout<<"AliITSpListItem::AddSignal - before sorting - signal="<<signal<<" mod="<<module<<endl;
+        for(i=0;i<fkSize-1;i++)cout<<fSignal[i]<<" ";
+        cout<<fSignal[fkSize-1]<<endl;
+      }
+      */
+      for(i=j;i>0;i--){
+        if(fSignal[i]>fSignal[i-1]){
+          trk = fTrack[i-1];
+          hts = fHits[i-1];
+          sig = fSignal[i-1];
+          fTrack[i-1]=fTrack[i];
+          fHits[i-1]=fHits[i];
+          fSignal[i-1]=fSignal[i];
+          fTrack[i]=trk;
+          fHits[i]=hts;
+          fSignal[i]=sig;
+        }
+      }
+      /*  debug printouts
+      if(j>0){
+        cout<<"AliITSpListItem::AddSignal - after sorting\n";
+        for(i=0;i<fkSize-1;i++)cout<<fSignal[i]<<" ";
+        cout<<fSignal[fkSize-1]<<endl;
+      }
+      */
+      return;
+    }
+
     // new entry add it in order.
     // if this signal is <= smallest then don't add it.
     if(signal <= fSignal[fkSize-1]) return;
@@ -256,10 +278,10 @@ void AliITSpListItem::AddSignal(Int_t track,Int_t hit,Int_t module,
 	    fSignal[i+1] = fSignal[i];
 	    fTrack[i+1]  = fTrack[i];
 	    fHits[i+1]   = fHits[i];
-	}else{;
-	    fSignal[i] = signal;
-	    fTrack[i]  = track;
-	    fHits[i]   = hit;
+	}else{
+      fSignal[i+1] = signal;    // changed m.m.
+      fTrack[i+1]  = track;     // changed m.m. 
+      fHits[i+1]   = hit;       // changed m.m.
 	    return; // put it in the right place, now exit.
 	} //  end if
     } // end if; end for i
