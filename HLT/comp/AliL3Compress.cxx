@@ -765,8 +765,8 @@ void AliL3Compress::WriteRootFile(Char_t *newrootfile)
       cerr<<"AliL3Compress::WriteRootFile() : Error opening file: "<<fname<<endl;
       return;
     }
-  const Int_t rows[2] = {AliL3Transform::GetFirstRow(fPatch),AliL3Transform::GetLastRow(fPatch)};
-  file->Init(fSlice,fPatch,rows);
+
+  file->Init(fSlice,fPatch);
   file->AliDigits2RootFile(rowPt,newrootfile);
   file->CloseAliInput();
 

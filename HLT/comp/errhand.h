@@ -16,3 +16,4 @@ void fatal_error();
 #endif  /* _ERRHAND_H */
 
 /************************** End of ERRHAND.H *************************/
+
