@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/11/23 14:34:08  cblume
+Fixed bug in expansion routine of arrays (initialize buffers properly)
+
 Revision 1.14  2000/11/20 08:54:44  cblume
 Switch off compression as default
 
@@ -136,6 +139,7 @@ AliTRDdigitizer::AliTRDdigitizer():TNamed()
   fTRD           = NULL;
   fGeo           = NULL;
   fPRF           = NULL;
+  fPRFsmp        = NULL;
   fTRF           = NULL;
   fTRFint        = NULL;
 
@@ -157,10 +161,16 @@ AliTRDdigitizer::AliTRDdigitizer():TNamed()
   fTRFOn         = 0;
   fDriftVelocity = 0.0;
 
+  fPRFbin        = 0;
+  fPRFlo         = 0.0;
+  fPRFhi         = 0.0;
+  fPRFwid        = 0.0;
+  fPRFpad        = 0;
   fTRFbin        = 0;
   fTRFlo         = 0.0;
   fTRFhi         = 0.0;
   fTRFwid        = 0.0;
+
   fCompress      = kTRUE;
   fVerbose       = 1;
 
@@ -178,10 +188,14 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   fDigits        = NULL;
   fTRD           = NULL;
   fGeo           = NULL;
+  fPRF           = NULL;
+  fPRFsmp        = NULL;
+  fTRF           = NULL;
+  fTRFint        = NULL;
 
   fEvent         = 0;
 
-  fCompress      = kFALSE;
+  fCompress      = kTRUE;
   fVerbose       = 1;
 
   Init();
@@ -269,6 +283,16 @@ void AliTRDdigitizer::Copy(TObject &d)
   fPRF->Copy(*((AliTRDdigitizer &) d).fPRF);
   fTRF->Copy(*((AliTRDdigitizer &) d).fTRF);
 
+  ((AliTRDdigitizer &) d).fPRFbin        = fPRFbin;
+  ((AliTRDdigitizer &) d).fPRFlo         = fPRFlo;
+  ((AliTRDdigitizer &) d).fPRFhi         = fPRFhi;
+  ((AliTRDdigitizer &) d).fPRFwid        = fPRFwid;
+  ((AliTRDdigitizer &) d).fPRFpad        = fPRFpad;
+  if (((AliTRDdigitizer &) d).fPRFsmp) delete ((AliTRDdigitizer &) d).fPRFsmp;
+  ((AliTRDdigitizer &) d).fPRFsmp = new Float_t[fPRFbin];
+  for (Int_t iBin = 0; iBin < fPRFbin; iBin++) {
+    ((AliTRDdigitizer &) d).fPRFsmp[iBin] = fPRFsmp[iBin];
+  }                                                                             
   ((AliTRDdigitizer &) d).fTRFbin        = fTRFbin;
   ((AliTRDdigitizer &) d).fTRFlo         = fTRFlo;
   ((AliTRDdigitizer &) d).fTRFhi         = fTRFhi;
@@ -321,14 +345,25 @@ Int_t AliTRDdigitizer::PadResponse(Float_t signal, Float_t dist, Float_t *pad)
   // Applies the pad response
   //
 
-  if (fPRF) {
-    pad[0] = TMath::Max(fPRF->Eval(-1.0 - dist,0,0) * signal,0.0);
-    pad[1] = TMath::Max(fPRF->Eval(     - dist,0,0) * signal,0.0);
-    pad[2] = TMath::Max(fPRF->Eval( 1.0 - dist,0,0) * signal,0.0);
+  Int_t iBin =  ((Int_t) (( - dist - fPRFlo) / fPRFwid));
+
+  Int_t iBin0 = iBin - fPRFpad;
+  Int_t iBin1 = iBin;
+  Int_t iBin2 = iBin + fPRFpad;
+
+  if ((iBin0 >= 0) && (iBin2 < fPRFbin)) {
+
+    pad[0] = signal * fPRFsmp[iBin0];
+    pad[1] = signal * fPRFsmp[iBin1];
+    pad[2] = signal * fPRFsmp[iBin2];
+
     return 1;
+
   }
   else {
+
     return 0;
+
   }
 
 }
@@ -380,8 +415,13 @@ void AliTRDdigitizer::Init()
   fOmegaTau      = 17.6 * 12.0 * 0.2 * 0.01;
 
   // The pad response function
-  fPRFOn         = 1;
-  fPRF           = new TF1("PRF","[0]*([1]+exp(-x*x/(2.0*[2])))",-3,3);
+  fPRFOn         =  1;
+  fPRFlo         = -3.0;
+  fPRFhi         =  3.0;
+  fPRFbin        = 1200;
+  fPRFwid        = (fPRFhi - fPRFlo) / ((Float_t) fPRFbin);
+  fPRFpad        = ((Int_t) (1.0 / fPRFwid));
+  fPRF           = new TF1("PRF","[0]*([1]+exp(-x*x/(2.0*[2])))",fPRFlo,fPRFhi);
   fPRF->SetParameter(0, 0.8872);
   fPRF->SetParameter(1,-0.00573);
   fPRF->SetParameter(2, 0.454 * 0.454);
@@ -420,6 +460,22 @@ void AliTRDdigitizer::IntegrateTRF()
   for (Int_t iBin = 0; iBin < fTRFbin; iBin++) {
     Float_t bin = iBin * binWidth + loTRF - 0.5 * timeBin;
     fTRFint[iBin] = fTRF->Integral(bin,bin + timeBin);
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitizer::SamplePRF()
+{
+  //
+  // Samples the pad response function
+  //
+
+  if (fPRFsmp) delete fPRFsmp;
+  fPRFsmp = new Float_t[fPRFbin];
+  for (Int_t iBin = 0; iBin < fPRFbin; iBin++) {
+    Float_t bin = (((Float_t ) iBin) + 0.5) * fPRFwid + fPRFlo;
+    fPRFsmp[iBin] = TMath::Max(fPRF->Eval(bin),0.0);
   }
 
 }
@@ -552,6 +608,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
     fLorentzFactor = 1.0;
   }
 
+  // Create the sampled PRF
+  SamplePRF();
+
   // Create the integrated TRF
   IntegrateTRF();
 
@@ -629,6 +688,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
       if (((Int_t) q) == 0) continue;
 
       if (detector != detectorOld) {
+
         if (fVerbose > 1) {
           printf("AliTRDdigitizer::MakeDigits -- ");
           printf("Get new container. New det = %d, Old det = %d\n"
@@ -638,7 +698,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
         if ((fCompress) && (detectorOld > -1)) {
           if (fVerbose > 1) {
             printf("AliTRDdigitizer::MakeDigits -- ");
-            printf("Compress the old container ... ");
+            printf("Compress the old container ...");
 	  }
           signals->Compress(1,0);
           for (iDict = 0; iDict < kNDict; iDict++) {

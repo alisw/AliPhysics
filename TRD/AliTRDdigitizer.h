@@ -101,6 +101,12 @@ class AliTRDdigitizer : public TNamed {
   Float_t              fLorentzFactor;   // Factor due to Lorentz force
   Int_t                fPRFOn;           // Switch for the pad response
   TF1                 *fPRF;             // Pad response function
+  Float_t             *fPRFsmp;          //!Sampled pad response
+  Int_t                fPRFbin;          // Number of bins for the PRF
+  Float_t              fPRFlo;           // Lower boundary of the PRF
+  Float_t              fPRFhi;           // Higher boundary of the PRF
+  Float_t              fPRFwid;          // Bin width of the sampled PRF
+  Int_t                fPRFpad;          // Distance to next pad in PRF
   Int_t                fTRFOn;           // Switch for the time response
   TF1                 *fTRF;             // Time response function of the shaper
   Float_t             *fTRFint;          //!Integrated time response
@@ -119,6 +125,7 @@ class AliTRDdigitizer : public TNamed {
   virtual Int_t        PadResponse(Float_t signal, Float_t dist, Float_t *pad);
   virtual Float_t      TimeResponse(Float_t time);  
   virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
+  virtual void         SamplePRF();
   virtual void         IntegrateTRF();
 
   ClassDef(AliTRDdigitizer,2)            // Produces TRD-Digits
