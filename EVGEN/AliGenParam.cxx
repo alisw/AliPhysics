@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/03/27 10:58:41  morsch
+Initialize decayer before generation. Important if run inside cocktail.
+
 Revision 1.28  2001/03/09 13:01:41  morsch
 - enum constants for paramterisation type (particle family) moved to AliGen*lib.h
 - use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
@@ -409,49 +412,56 @@ void AliGenParam::Generate()
 // select decay particles
 	      Int_t np=fDecayer->ImportParticles(particles);
 	      Int_t ncsel=0;
-	      for (i = 1; i<np; i++) {
-		  TParticle *  iparticle = (TParticle *) particles->At(i);
-		  Int_t kf = iparticle->GetPdgCode();
+
+	      if (np >1) {
+		  TParticle* iparticle =  (TParticle *) particles->At(0);
+		  Int_t ipF = iparticle->GetFirstDaughter();
+		  Int_t ipL = iparticle->GetLastDaughter();	      
+		  for (i = ipF-1; i<ipL; i++) {
+		      iparticle = (TParticle *) particles->At(i);
+		      Int_t kf = iparticle->GetPdgCode();
 //
 // children
-		  if (ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll)
-		  {
-		      pc[0]=iparticle->Px();
-		      pc[1]=iparticle->Py();
-		      pc[2]=iparticle->Pz();
-		      och[0]=origin0[0]+iparticle->Vx()/10;
-		      och[1]=origin0[1]+iparticle->Vy()/10;
-		      och[2]=origin0[2]+iparticle->Vz()/10;
-		      if (fCutOnChild) {
-			  Float_t ptChild=TMath::Sqrt(pc[0]*pc[0]+pc[1]*pc[1]);
-			  Float_t pChild=TMath::Sqrt(ptChild*ptChild+pc[2]*pc[2]);
-			  Float_t thetaChild=TMath::ATan2(ptChild,pc[2]);
-			  Float_t phiChild=TMath::ATan2(pc[1],pc[0]);
-			  Bool_t childok = 
-			      ((ptChild    > fChildPtMin    && ptChild    <fChildPtMax)      &&
-			       (pChild     > fChildPMin     && pChild     <fChildPMax)       &&
-			       (thetaChild > fChildThetaMin && thetaChild <fChildThetaMax)   &&
-			       (phiChild   > fChildPhiMin   && phiChild   <fChildPhiMax));
-			  if(childok)
-			  {
+		      if (ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll)
+		      {
+			  pc[0]=iparticle->Px();
+			  pc[1]=iparticle->Py();
+			  pc[2]=iparticle->Pz();
+			  och[0]=origin0[0]+iparticle->Vx()/10;
+			  och[1]=origin0[1]+iparticle->Vy()/10;
+			  och[2]=origin0[2]+iparticle->Vz()/10;
+			  if (fCutOnChild) {
+			      Float_t ptChild=TMath::Sqrt(pc[0]*pc[0]+pc[1]*pc[1]);
+			      Float_t pChild=TMath::Sqrt(ptChild*ptChild+pc[2]*pc[2]);
+			      Float_t thetaChild=TMath::ATan2(ptChild,pc[2]);
+			      Float_t phiChild=TMath::ATan2(pc[1],pc[0]);
+			      Bool_t childok = 
+				  ((ptChild    > fChildPtMin    && ptChild    <fChildPtMax)      &&
+				   (pChild     > fChildPMin     && pChild     <fChildPMax)       &&
+				   (thetaChild > fChildThetaMin && thetaChild <fChildThetaMax)   &&
+				   (phiChild   > fChildPhiMin   && phiChild   <fChildPhiMax));
+			      if(childok)
+			      {
+				  pch[ncsel][0]=pc[0];
+				  pch[ncsel][1]=pc[1];
+				  pch[ncsel][2]=pc[2];
+				  kfch[ncsel]=kf;
+				  ncsel++;
+			      } else {
+				  ncsel=-1;
+				  break;
+			      } // child kine cuts
+			  } else {
 			      pch[ncsel][0]=pc[0];
 			      pch[ncsel][1]=pc[1];
 			      pch[ncsel][2]=pc[2];
 			      kfch[ncsel]=kf;
 			      ncsel++;
-			  } else {
-			      ncsel=-1;
-			      break;
-			  } // child kine cuts
-		      } else {
-			  pch[ncsel][0]=pc[0];
-			  pch[ncsel][1]=pc[1];
-			  pch[ncsel][2]=pc[2];
-			  kfch[ncsel]=kf;
-			  ncsel++;
-		      } // if child selection
-		  } // select muon
-	      } // decay particle loop
+			  } // if child selection
+		      } // select muon
+		  } // decay particle loop
+	      } // if decay products
+	      
 	      Int_t iparent;
 	      if ((fCutOnChild && ncsel >0) || !fCutOnChild){
 		  ipa++;
