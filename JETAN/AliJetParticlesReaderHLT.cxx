@@ -117,6 +117,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
   v.SetX(vertexpos[0]);
   v.SetY(vertexpos[1]);
   v.SetZ(vertexpos[2]);
+  
   Double_t xc=0.,yc=0.,zc=0.;
   for (Int_t i = 0;i<ntr; i++) {
     AliESDHLTtrack *kesdtrack;
@@ -144,9 +145,9 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
     Float_t py=kesdtrack->GetPy();
     Float_t pz=kesdtrack->GetPz();
 
-    if(fTrackerType){
+    if(0&&fTrackerType){
       //if(!kesdtrack->ComesFromMainVertex()) continue;
-      //cout << kesdtrack->GetPx() << " " << kesdtrack->GetPy() << " " << kesdtrack->GetPz() << endl;
+      cout << kesdtrack->GetPx() << " " << kesdtrack->GetPy() << " " << kesdtrack->GetPt() << endl;
       l3.SetFirstPoint(kesdtrack->GetFirstPointX(),kesdtrack->GetFirstPointY(),kesdtrack->GetFirstPointZ());
       l3.SetLastPoint(kesdtrack->GetLastPointX(),kesdtrack->GetLastPointY(),kesdtrack->GetLastPointZ());
       l3.SetCharge(kesdtrack->GetCharge());
@@ -162,10 +163,11 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
       px=l3.GetPx();
       py=l3.GetPy();
       pz=l3.GetPz();
-      //cout << px << " " << py << " " << pz << endl;
     }
 
     const Float_t kpt=TMath::Sqrt(px*px+py*py);
+    //cout << px << " " << py << " " << " " << kpt << endl;
+
     const Float_t kp=TMath::Sqrt(pz*pz+kpt*kpt);
     const Float_t keta=0.5*TMath::Log((kp+pz+1e-30)/(kp-pz+1e-30)); 
     const Float_t kphi=TMath::Pi()+TMath::ATan2(-py,-px);
@@ -176,3 +178,67 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
 
   return kTRUE;
 }
+
+#if 0
+  SetChi2(0.);
+  if(t.GetNHits()==1)
+    SetNumberOfClusters(0);
+  else
+    SetNumberOfClusters(t.GetNHits());
+  SetLabel(t.GetMCid());
+  SetMass(0.13957);
+
+  fdEdx=0;
+  fAlpha = fmod((t.GetSector()+0.5)*(2*TMath::Pi()/18),2*TMath::Pi());
+  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
+  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
+
+  //First the emiision angle
+  Double_t psi = t.GetPsi()-(t.GetSector()+0.5)*(2*TMath::Pi()/18);
+
+  //Then local x,y coordinates
+  Double_t radius = t.GetPt()*GetConvConst();
+  Double_t xhit = 82.97; //Position at first TPC padrow
+  Double_t trackphi0 = psi + (-t.GetCharge())*TMath::Pi()/2;
+  Double_t x0 = t.GetFirstPointX()*TMath::Cos(fAlpha) + t.GetFirstPointY()*TMath::Sin(fAlpha);
+  Double_t y0 = t.GetFirstPointY()*TMath::Cos(fAlpha) - t.GetFirstPointX()*TMath::Sin(fAlpha);
+  Double_t centerx = radius *  cos(trackphi0) + x0;
+  Double_t centery = radius *  sin(trackphi0) + y0;
+  Double_t aa = (xhit - centerx)*(xhit - centerx);
+  Double_t r2 = radius*radius;
+  if(aa > r2) throw "AliITStrackV2: conversion failed !\n";
+  Double_t aa2 = sqrt(r2 - aa);
+  Double_t y1 = centery + aa2;
+  Double_t y2 = centery - aa2;
+  Double_t yhit = y1;
+  if(fabs(y2) < fabs(y1)) yhit = y2;
+
+  //Local z coordinate
+  Double_t angle1 = atan2((yhit - centery),(xhit - centerx));
+  if(angle1 < 0) angle1 += 2.*TMath::Pi();
+  Double_t angle2 = atan2((x0-centery),(y0-centerx));
+  if(angle2 < 0) angle2 += 2.*TMath::Pi();
+  Double_t diffangle = angle1 - angle2;
+  diffangle = fmod(diffangle,2.*TMath::Pi());
+  if(((-t.GetCharge())*diffangle) < 0) diffangle = diffangle - (-t.GetCharge())*2.*TMath::Pi();
+  Double_t stot = fabs(diffangle)*radius;
+  Double_t zhit;
+  if(t.GetNHits()==1)
+    zhit = zvertex + stot*t.GetTgl();
+  else
+    zhit = t.GetFirstPointZ() + stot*t.GetTgl();
+
+  //Local sine of track azimuthal angle
+  if((-t.GetCharge())<0)
+    radius = -radius;
+  Double_t sinbeta = -1.*(centerx - xhit)/radius;
+
+  //Filling of the track paramaters
+  fX=xhit;
+  fP0=yhit;
+  fP1=zhit;
+  fP2=sinbeta;
+  fP3=t.GetTgl();
+  fP4=1./radius;
+#endif
+
