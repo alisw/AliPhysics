@@ -507,6 +507,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESD* event)
 	      AliESDtrack track;
 	      track.UpdateTrackParams(pt,AliESDtrack::kTRDin);
 	      event->AddTrack(&track);
+	      //	      track.SetTRDtrack(new AliTRDtrack(*pt));
             }        
           }
           delete fSeeds->RemoveAt(i);
@@ -535,7 +536,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
   //  
 
   Int_t found=0;  
-  Float_t foundMin = 40;
+  Float_t foundMin = 20;
 
   Int_t n = event->GetNumberOfTracks();
   for (Int_t i=0; i<n; i++) {
@@ -569,24 +570,29 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     if (foundClr >= foundMin) {
       if(foundClr >= 2) {
 	track->CookdEdx(); 
-//	CookLabel(track, 1-fgkLabelFraction);
+	CookLabel(track, 1-fgkLabelFraction);
 	UseClusters(track);
       }
       
       // Propagate to outer reference plane [SR, GSI, 18.02.2003]
-//      track->PropagateTo(364.8);  why?
+      //      track->PropagateTo(364.8);  why?
       
       //seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
       //found++;
+      seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
     }
 
     //Propagation to the TOF (I.Belikov)
     
     if (track->GetStop()==kFALSE){
-      
+      if (track->GetNumberOfClusters()>15) seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
+
       Double_t xtof=371.;
       Double_t c2=track->GetC()*xtof - track->GetEta();
-      if (TMath::Abs(c2)>=0.85) continue;
+      if (TMath::Abs(c2)>=0.85) {
+	delete track;
+	continue;
+      }
       Double_t xTOF0 = 371. ;          
       PropagateToOuterPlane(*track,xTOF0); 
       //      
@@ -606,12 +612,14 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       
       if (track->PropagateTo(xtof)) {
 	seed->UpdateTrackParams(track, AliESDtrack::kTRDout);    
+	seed->SetTRDtrack(new AliTRDtrack(*track));
 	if (track->GetNumberOfClusters()>foundMin) found++;
       }
     }else{
       if (track->GetNumberOfClusters()>15&&track->GetNumberOfClusters()>0.5*expectedClr){
 	seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
 	seed->SetStatus(AliESDtrack::kTRDStop);    
+	seed->SetTRDtrack(new AliTRDtrack(*track));
 	found++;
       }
     }
@@ -1467,7 +1475,7 @@ Int_t AliTRDtracker::PropagateToTPC(AliTRDtrack& t)
     if(!t.PropagateTo(x,radLength,rho)) return 0;
     AdjustSector(&t);
     if(!t.PropagateTo(x,radLength,rho)) return 0;
-  }
+  } 
   return 1;
 }         
 
@@ -2548,7 +2556,8 @@ Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster* c) {
   Int_t det = c->GetDetector();    
   Int_t plane = fGeom->GetPlane(det);
 
-  if((plane == 1) || (plane == 3) || (plane == 5)) h01=-h01;
+  //if((plane == 1) || (plane == 3) || (plane == 5)) h01=-h01;
+  if((plane == 0) || (plane == 2) || (plane == 4)) h01=-h01;
 
   if(fNoTilt) h01 = 0;
   

@@ -202,6 +202,11 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
 
   Double_t x, p[5]; t.GetExternalParameters(x,p);
+  //Conversion of the covariance matrix
+  Double_t c[15]; t.GetExternalCovariance(c);
+  if (t.GetStatus()&AliESDtrack::AliESDtrack::kTRDbackup){
+    t.GetTRDExternalParameters(x,p,c);
+  }
 
   fX=x;
 
@@ -213,8 +218,6 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   fC=p[4]/x;
   fE=fC*fX - p[2];   
 
-  //Conversion of the covariance matrix
-  Double_t c[15]; t.GetExternalCovariance(c);
 
   c[10]/=x; c[11]/=x; c[12]/=x; c[13]/=x; c[14]/=x*x;
 
@@ -604,7 +607,7 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
   Bool_t fNoTilt = kTRUE;
   if(TMath::Abs(h01) > 0.003) fNoTilt = kFALSE;
   // add angular effect to the error contribution and make correction  -  MI
-  AliTRDclusterCorrection *corrector = AliTRDclusterCorrection::GetCorrection();
+  //AliTRDclusterCorrection *corrector = AliTRDclusterCorrection::GetCorrection();
   // 
   Double_t tangent2 = (fC*fX-fE)*(fC*fX-fE);
   if (tangent2 < 0.90000){
@@ -612,8 +615,9 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
   }
   Double_t tangent = TMath::Sqrt(tangent2);
   if ((fC*fX-fE)<0) tangent*=-1;
-  Double_t correction = 0;
+  Double_t correction = 0*plane;
   Double_t errang = tangent2*0.04; //
+  /*
   if (corrector!=0){
   //if (0){
     correction = corrector->GetCorrection(plane,c->GetLocalTimeBin(),tangent);
@@ -624,7 +628,7 @@ Int_t AliTRDtrack::UpdateMI(const AliTRDcluster *c, Double_t chisq, UInt_t index
       errang    += tangent2*0.04;
     }
   }
-
+  */
   //
   Double_t padlength = TMath::Sqrt(c->GetSigmaZ2()*12.);
 
