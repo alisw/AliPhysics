@@ -15,6 +15,7 @@
 #include <G4PVReplica.hh>
 #include <G4Material.hh>
 #include <G4VSolid.hh>
+#include <G4ReflectedSolid.hh>
 #include <G4Box.hh>
 #include <G4Tubs.hh>
 #include <G4Cons.hh>
@@ -624,49 +625,58 @@ void TG4XMLConvertor::WriteSolid(G4String lvName, const G4VSolid* solid,
   // to be removed when materials are supported
   materialName = "Hydrogen";
   
-  const G4Box* box = dynamic_cast<const G4Box*>(solid);
+  const G4ReflectedSolid* reflSolid
+    = dynamic_cast<const G4ReflectedSolid*>(solid);
+
+  const G4VSolid* consSolid;
+  if (reflSolid) 
+    consSolid = reflSolid->GetConstituentMovedSolid();
+  else  
+    consSolid = solid;  
+  
+  const G4Box* box = dynamic_cast<const G4Box*>(consSolid);
   if (box) { 
     WriteBox(lvName, box, materialName); 
     return;
   }
   
-  const G4Tubs* tubs = dynamic_cast<const G4Tubs*>(solid);
+  const G4Tubs* tubs = dynamic_cast<const G4Tubs*>(consSolid);
   if (tubs) { 
     WriteTubs(lvName, tubs, materialName); 
     return;
   }
   
-  const G4Cons* cons = dynamic_cast<const G4Cons*>(solid);
+  const G4Cons* cons = dynamic_cast<const G4Cons*>(consSolid);
   if (cons) { 
     WriteCons(lvName, cons, materialName); 
     return;
   }
   
-  const G4Trd* trd = dynamic_cast<const G4Trd*>(solid);
+  const G4Trd* trd = dynamic_cast<const G4Trd*>(consSolid);
   if (trd) { 
     WriteTrd(lvName, trd, materialName); 
     return;
   }
   
-  const G4Trap* trap = dynamic_cast<const G4Trap*>(solid);
+  const G4Trap* trap = dynamic_cast<const G4Trap*>(consSolid);
   if (trap) { 
     WriteTrap(lvName, trap, materialName); 
     return;
   }
   
-  const G4Para* para = dynamic_cast<const G4Para*>(solid);
+  const G4Para* para = dynamic_cast<const G4Para*>(consSolid);
   if (para) { 
     WritePara(lvName, para, materialName); 
     return;
   }
   
-  const G4Polycone* polycone = dynamic_cast<const G4Polycone*>(solid);
+  const G4Polycone* polycone = dynamic_cast<const G4Polycone*>(consSolid);
   if (polycone) { 
     WritePolycone(lvName, polycone, materialName); 
     return;
   }
   
-  const G4Polyhedra* polyhedra = dynamic_cast<const G4Polyhedra*>(solid);
+  const G4Polyhedra* polyhedra = dynamic_cast<const G4Polyhedra*>(consSolid);
   if (polyhedra) { 
     WritePolyhedra(lvName, polyhedra, materialName); 
     return;
