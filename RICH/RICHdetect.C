@@ -6,9 +6,12 @@ RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0) {
 	loadlibs();
     }
     else {
-      //delete gAlice;
+      delete gAlice;
       gAlice = 0;
     }
+    
+    galice=0;
+
 // Connect the Root Galice file containing Geometry, Kine and Hits
     
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");

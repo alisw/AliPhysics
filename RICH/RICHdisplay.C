@@ -6,10 +6,11 @@ RICHdisplay (Int_t nevent=0) {
 	loadlibs();
     }
     else {
-      //delete gAlice;
+      delete gAlice;
       gAlice = 0;
     }
     
+    galice=0;
     
 // Connect the Root Galice file containing Geometry, Kine and Hits
     
