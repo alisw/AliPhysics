@@ -18,9 +18,6 @@ binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
   char name[256];
   const Int_t npatch = 6;
   
-  //read init file
-  
-
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
 
@@ -95,5 +92,12 @@ void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
 }
 
 void make_init_file(Char_t *f,Char_t *path="./"){
+  AliL3Logger l;
+  //l.UnSet(AliL3Logger::kDebug);
+  //l.UnSet(AliL3Logger::kAll);
+  //l.Set(AliL3Logger::kInformational);
+  l.UseStderr();
+  //l.UseStream();
+
   AliL3Transform::MakeInitFile(f,path);
 }
