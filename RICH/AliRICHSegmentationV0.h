@@ -12,7 +12,7 @@
 class AliRICHSegmentationV0 :
 public AliSegmentation {
  public:
-    AliRICHSegmentationV0(){}
+  AliRICHSegmentationV0();
     virtual ~AliRICHSegmentationV0(){}
     //    
     // Set Chamber Segmentation Parameters
