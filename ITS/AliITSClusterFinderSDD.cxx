@@ -407,6 +407,7 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 										  Int_t *peakX, Int_t *peakZ, Float_t *peakAmp, Float_t minpeak )
 {
 	Int_t npeak = 0;    // # peaks
+    Int_t i,j;
 
 	// search peaks
 	for( Int_t z=1; z<zdim-1; z++ )
@@ -435,10 +436,10 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 
 	// search groups of peaks with same amplitude.
 	Int_t *Flag = new Int_t[npeak];
-	for( Int_t i=0; i<npeak; i++ ) Flag[i] = 0;
-	for( Int_t i=0; i<npeak; i++ )
+	for( i=0; i<npeak; i++ ) Flag[i] = 0;
+	for( i=0; i<npeak; i++ )
 	{
-		for( Int_t j=0; j<npeak; j++ )
+		for( j=0; j<npeak; j++ )
 		{
 			if( i==j) continue;
 			if( Flag[j] > 0 ) continue;
@@ -451,11 +452,11 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 	}
 
 	// make average of peak groups	
-	for( Int_t i=0; i<npeak; i++ )
+	for( i=0; i<npeak; i++ )
 	{
 		Int_t nFlag = 1;
 		if( Flag[i] <= 0 ) continue;
-		for( Int_t j=0; j<npeak; j++ )
+		for( j=0; j<npeak; j++ )
 		{
 			if( i==j ) continue;
 			if( Flag[j] != Flag[i] ) continue;
@@ -851,6 +852,8 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 {
 	// The function to resolve clusters if the clusters overlapping exists
 
+  Int_t i;
+
 	AliITS *iTS = (AliITS*)gAlice->GetModule( "ITS" );
 	// get number of clusters for this module
 	Int_t nofClusters = fClusters->GetEntriesFast();
@@ -921,7 +924,7 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 			
 			// Initial paramiters in cell dimentions
 			Int_t k1 = 1;
-			for( Int_t i=0; i<npeak; i++ ) {
+			for( i=0; i<npeak; i++ ) {
 			  par[k1] = peakAmp1[i];
 			  par[k1+1] = peakX1[i]; // local time pos. [timebin]
 			  par[k1+2] = peakZ1[i]; // local anode pos. [anodepitch]
@@ -947,7 +950,7 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 			PeakFunc( xdim, zdim, par, sp, Integral );
 			
 			k1 = 1;
-			for( Int_t i=0; i<npeak; i++ ) 
+			for( i=0; i<npeak; i++ ) 
 			{
 				peakAmp[i] = par[k1];
 				peakX[i] = par[k1+1];
@@ -958,7 +961,7 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 			}
 			
 			// calculate paramiter for new clusters
-			for( Int_t i=0; i<npeak; i++ )
+			for( i=0; i<npeak; i++ )
 			{
 				AliITSRawClusterSDD clusterI( *clusterJ );
 				Int_t newAnode = peakZ1[i]-1 + astart;
