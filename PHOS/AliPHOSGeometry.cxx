@@ -480,21 +480,25 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 
 //____________________________________________________________________________
 
-TVector3 AliPHOSGeometry::GetCpvModuleCenter(Int_t module) const
+TVector3 AliPHOSGeometry::GetModuleCenter(char *det, Int_t module) const
 {
-  // Returns a position of the center of the CPV module
-  Float_t rCPV  = GetIPtoCPVDistance();
+  // Returns a position of the center of the CPV or EMC module
+  Float_t rDet ;
+  if      (det == "CPV") rDet  = GetIPtoCPVDistance   ();
+  else if (det == "EMC") rDet  = GetIPtoCrystalSurface();
+  else Fatal("GetModuleCenter","Wrong detector name %s",det);
+
   Float_t angle = GetPHOSAngle(module); // (40,20,0,-20,-40) degrees
   angle *= TMath::Pi()/180;
   angle += 3*TMath::Pi()/2.;
-  return TVector3(rCPV*TMath::Cos(angle), rCPV*TMath::Sin(angle), 0.);
+  return TVector3(rDet*TMath::Cos(angle), rDet*TMath::Sin(angle), 0.);
 }
 
 //____________________________________________________________________________
 
-TVector3 AliPHOSGeometry::Global2LocalCpv(TVector3 globalPosition, Int_t module) const
+TVector3 AliPHOSGeometry::Global2Local(TVector3 globalPosition, Int_t module) const
 {
-  // Transforms a global position of the CPV point to the local coordinate system
+  // Transforms a global position of the rec.point to the local coordinate system
   Float_t angle = GetPHOSAngle(module); // (40,20,0,-20,-40) degrees
   angle *= TMath::Pi()/180;
   angle += 3*TMath::Pi()/2.;
