@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.6  2000/10/02 21:28:06  fca
 Removal of useless dependecies via forward declarations
 
@@ -38,11 +41,11 @@ Introduction of the Copyright and cvs Log
 	 :AliGenerator(-1)
 {
 // Constructor
-    fXmin=0;
-    fXmax=0;
+    fXCmin=0;
+    fXCmax=0;
     fNx=1;
-    fYmin=0;
-    fYmax=0;
+    fYCmin=0;
+    fYCmax=0;
     fNy=1;
     fZmin=0;
     fZmax=0;
@@ -56,11 +59,11 @@ AliGenScan::AliGenScan(Int_t npart)
     :AliGenerator(npart)
 {
 // Constructor
-    fXmin=0;
-    fXmax=0;
+    fXCmin=0;
+    fXCmax=0;
     fNx=1;
-    fYmin=0;
-    fYmax=0;
+    fYCmin=0;
+    fYCmax=0;
     fNy=1;
     fZmin=0;
     fZmax=0;
@@ -78,11 +81,11 @@ void AliGenScan::SetRange(Int_t nx, Float_t xmin, Float_t xmax,
 		     Int_t nz, Float_t zmin, Float_t zmax)
 {
 // Define the grid
-    fXmin=xmin;
-    fXmax=xmax;
+    fXCmin=xmin;
+    fXCmax=xmax;
     fNx=nx;
-    fYmin=ymin;
-    fYmax=ymax;
+    fYCmin=ymin;
+    fYCmax=ymax;
     fNy=ny;
     fZmin=zmin;
     fZmax=zmax;
@@ -108,13 +111,13 @@ void AliGenScan::Generate()
   
   //
   if (fNy > 0) {
-      dx=(fXmax-fXmin)/fNx;
+      dx=(fXCmax-fXCmin)/fNx;
   } else {
       dx=1e10;
   }
 
   if (fNy > 0) {
-      dy=(fYmax-fYmin)/fNy;
+      dy=(fYCmax-fYCmin)/fNy;
   } else {
       dy=1e10;
   }
@@ -128,8 +131,8 @@ void AliGenScan::Generate()
       for (Int_t iy=0; iy<fNy; iy++) {
 	  for (Int_t iz=0; iz<fNz; iz++){
 	      Rndm(random,6);
-	      origin[0]=fXmin+ix*dx+2*(random[0]-0.5)*fOsigma[0];
-	      origin[1]=fYmin+iy*dy+2*(random[1]-0.5)*fOsigma[1];
+	      origin[0]=fXCmin+ix*dx+2*(random[0]-0.5)*fOsigma[0];
+	      origin[1]=fYCmin+iy*dy+2*(random[1]-0.5)*fOsigma[1];
 	      origin[2]=fZmin+iz*dz+2*(random[2]-0.5)*fOsigma[2];	     
 	      pmom=fPMin+random[3]*(fPMax-fPMin);
 	      theta=fThetaMin+random[4]*(fThetaMax-fThetaMin);

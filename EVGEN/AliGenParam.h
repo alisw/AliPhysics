@@ -60,7 +60,6 @@ class AliGenParam : public AliGenerator
     Float_t     fdNdy0;        // central multiplicity per event
     Float_t     fYWgt;         // Y-weight
     Float_t     fPtWgt;        // Pt-weight
-    Weighting_t fAnalog;       // Flag for anolog or pt-weighted generation
     Float_t     fBias;         // Biasing factor
     Int_t       fTrials;       // Number of trials
     Decay_t     fForceDecay;   // Decay channel forced

@@ -24,16 +24,16 @@ public:
     virtual void Generate();
     virtual void SetPart(Int_t part) {fIpart=part;}   
  protected:
-    Float_t fXmin;     // Minimum x on grid
-    Float_t fXmax;     // Maximum x on grid
-    Int_t   fNx;       // Number of divisions in x
-    Float_t fYmin;     // Minimum y on grid
-    Float_t fYmax;     // Maximum y on grid
-    Int_t   fNy;       // Number of divisions in y
-    Float_t fZmin;     // Minimum z on grid
-    Float_t fZmax;     // Maximum z on grid
-    Int_t   fNz;       // Number of divisions in z
-    Int_t   fIpart;    // Particle type
+    Float_t fXCmin;     // Minimum x on grid
+    Float_t fXCmax;     // Maximum x on grid
+    Int_t   fNx;        // Number of divisions in x
+    Float_t fYCmin;     // Minimum y on grid
+    Float_t fYCmax;     // Maximum y on grid
+    Int_t   fNy;        // Number of divisions in y
+    Float_t fZmin;      // Minimum z on grid
+    Float_t fZmax;      // Maximum z on grid
+    Int_t   fNz;        // Number of divisions in z
+    Int_t   fIpart;     // Particle type
     
    
   ClassDef(AliGenScan,1) //Partcles on a regular grid
