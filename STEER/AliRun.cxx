@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2000/03/22 18:08:07  fca
+Rationalisation of the virtual MC interfaces
+
 Revision 1.26  2000/03/22 13:42:26  fca
 SetGenerator does not replace an existing generator, ResetGenerator does
 
@@ -1130,7 +1133,9 @@ void AliRun::PurifyKine()
 	
 	// Old and new are different, have to copy
 	partnew = (TParticle *)particles.UncheckedAt(nkeep);
-	*partnew = *part;
+	// Change due to a bug in the HP compiler
+	//	*partnew = *part;
+	memcpy(partnew,part,sizeof(TParticle));
       } else partnew = part;
       
       // as the parent is always *before*, it must be already
