@@ -13,52 +13,36 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-//_________________________________________________________________________
-//
-// This  constructs Digits out of Hits
-//
+///_________________________________________________________________________
+///
+/// This class constructs Digits out of Hits
+///
+///
 
 // --- Standard library ---
-#include <Riostream.h>
-#include <stdlib.h>
 
 // --- ROOT system ---
-#include <TFile.h>
-#include <TFolder.h>
-#include <TROOT.h>
-#include <TSystem.h>
 #include <TTree.h>
-#include <TVirtualMC.h>
 
 // --- AliRoot header files ---
 #include "AliVZEROConst.h"
 #include "AliRun.h"
 #include "AliVZERO.h"
 #include "AliVZEROhit.h"
-#include "AliHit.h"
-#include "AliDetector.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
-#include "AliConfig.h"
 #include "AliRunDigitizer.h"
-#include "AliDigitizer.h"
-#include "AliHeader.h"
-#include "AliStack.h"
-#include "AliVZERODigitizer.h"
 #include "AliVZEROdigit.h"
-#include "AliMC.h"
+#include "AliVZERODigitizer.h"
 
 ClassImp(AliVZERODigitizer)
 
  AliVZERODigitizer::AliVZERODigitizer()
 {
-   if (!fDigits) fDigits = new TClonesArray("AliVZEROdigit", 1000);
-   
-   fNevents = 0 ;     
-   fDigits = 0 ;
+  // default constructor
+
    fNdigits = 0;
-   fHits = 0 ;
-   fRunLoader = 0;
+   fDigits = 0 ;
   
    fPhotoCathodeEfficiency =   0.18;
    fPMVoltage              =  768.0;
@@ -72,11 +56,8 @@ ClassImp(AliVZERODigitizer)
 {
   // constructor
   
-  fNevents = 0;     
-  fDigits = 0;
   fNdigits = 0;
-  fHits = 0;
-  fRunLoader = 0;
+  fDigits = 0 ;
   
   fPhotoCathodeEfficiency =   0.18;
   fPMVoltage              =  768.0;
@@ -91,148 +72,129 @@ ClassImp(AliVZERODigitizer)
   if (fDigits) {
     fDigits->Delete();
     delete fDigits;
-    fDigits=0; }
+    fDigits=0; 
+  }
 }
 
-//____________________________________________________________________________
-void AliVZERODigitizer::OpengAliceFile(const char *file)
+//_____________________________________________________________________________
+Bool_t AliVZERODigitizer::Init()
 {
-  // Loads galice.root file and corresponding header, kinematics
-  // hits and  digits 
-  
-  fRunLoader = AliRunLoader::Open(file,AliConfig::GetDefaultEventFolderName(),
-                                  "UPDATE");
-  
-  if (!fRunLoader)
-   {
-     Error("Open","Can not open session for file %s.",file);
-   }
-  
-  fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
-  fRunLoader->LoadKinematics();
+  // Initialises the digitizer
 
-  gAlice = fRunLoader->GetAliRun();
-  
-  if (gAlice)
-    { printf("<AliVZEROdigitizer::Open> ");
-      printf("AliRun object found on file.\n");}
-  else
-    { printf("<AliVZEROdigitizer::Open> ");
-      printf("Could not find AliRun object.\n");}
-    
-  // Initialise Hit and Digit arrays
-  fHits   = new TClonesArray ("AliVZEROhit", 1000);
+  // Initialises the Digit array
   fDigits = new TClonesArray ("AliVZEROdigit", 1000);
 
-  fVZERO  = (AliVZERO*) gAlice->GetDetector("VZERO");
-  fVZEROLoader = fRunLoader->GetLoader("VZEROLoader");
-  
-  if (fVZEROLoader == 0x0){
-      cerr<<"Hits2Digits : Can not find VZERO or VZEROLoader\n";}
-    
-  Int_t retval = fVZEROLoader->LoadHits("read");
-  if (retval){
-     Error("Open","Error occured while loading hits... Exiting.");
-     return;}
-      
-  fVZEROLoader->LoadDigits("recreate");  
+  return kTRUE;
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::Exec() 
- { 
-
+void AliVZERODigitizer::Exec(Option_t* /*option*/) 
+{ 
+  //
+  // Creates digits from hits
+  //
+  
   fNdigits = 0;
-  Int_t N; 
   Int_t map[96];
-  Int_t cell = 0;
   Float_t cPM = fPhotoCathodeEfficiency * fPMGain;
              
   for(Int_t i=0; i<96; i++) map[i] = 0; 
           
-  fNevents = (Int_t) fRunLoader->TreeE()->GetEntries ();  
-  printf(" Number of events in file =  %d \n", fNevents);
-  
-  for (Int_t ievent = 0; ievent < fNevents; ievent++){
+  AliRunLoader* outRunLoader = 
+    AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    
+  if (!outRunLoader) {
+    Error("Exec", "Can not get output Run Loader");
+    return;
+  }
+  AliLoader* outLoader = outRunLoader->GetLoader("VZEROLoader");
+  if (!outLoader) {
+    Error("Exec", "Can not get output VZERO Loader");
+    return;
+  }
+
+  outLoader->LoadDigits("update");
+  if (!outLoader->TreeD()) outLoader->MakeTree("D");
+  outLoader->MakeDigitsContainer();
+  TTree* treeD = outLoader->TreeD();
+  Int_t bufsize = 16000;
+  treeD->Branch("VZERODigit", &fDigits, bufsize); 
+
+  for (Int_t iInput = 0; iInput < fManager->GetNinputs(); iInput++) {
+    AliRunLoader* runLoader = 
+      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
+    AliLoader* loader = runLoader->GetLoader("VZEROLoader");
+    if (!loader) {
+      Error("Exec", "Can not get VZERO Loader for input %d", iInput);
+      continue;
+    }
+    if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+
+    AliVZERO* vzero = (AliVZERO*) runLoader->GetAliRun()->GetDetector("VZERO");
+    if (!vzero) {
+      Error("Exec", "No VZERO detector for input %d", iInput);
+      continue;
+    }
       
-      for(Int_t i=0; i<96; i++) map[i] = 0;     
-      
-      fRunLoader->GetEvent(ievent);
-      
-      fTreeH = fVZEROLoader->TreeH();
-      if (fTreeH == 0x0)
-       { Error("Exec","Cannot get TreeH");
-         return; }
+    loader->LoadHits();
+    TTree* treeH = loader->TreeH();
+    if (!treeH) {
+      Error("Exec", "Cannot get TreeH for input %d", iInput);
+      continue; 
+    }
+    TClonesArray* hits = vzero->Hits();
              
-      fTreeD = fVZEROLoader->TreeD();
-      if (fTreeD == 0x0)
-      { fVZEROLoader->MakeTree("D");
-        fVZEROLoader->MakeDigitsContainer();
-        fTreeD = fVZEROLoader->TreeD(); }
-        
-      Int_t bufsize = 16000;
-      fTreeD->Branch("VZERODigit", &fDigits, bufsize); 
-      
-//    Now make Digits from hits
-
-      if (fVZERO)
-       {
-         fHits = fVZERO->Hits();
+//  Now makes Digits from hits
          
-         Int_t ntracks = (Int_t) fTreeH->GetEntries ();
-//       printf(" Number of Tracks in the TreeH = %d \n", ntracks);
-         for (Int_t track = 0; track < ntracks; track++)
-           {
-             gAlice->ResetHits ();
-             fTreeH->GetEvent(track);
-             fParticle = fRunLoader->Stack()->Particle(track);
-             Int_t nhits = fHits->GetEntriesFast();
-             for (Int_t hit = 0; hit < nhits; hit++)
-                 {
-                   fVZEROHit = (AliVZEROhit *)fHits->UncheckedAt(hit);
-                   N    = fVZEROHit->Nphot();
-                   cell = fVZEROHit->Cell();                                    
-                   map[cell] = map[cell] + N;
-                 }           // hit   loop
-           }                 // track loop
-            
-           Int_t icount = 0; 
-           
-           for(Int_t i=0; i<96; i++) {
-              Float_t q1 = Float_t ( map[i] )* cPM * kQe;
-              Float_t noise = gRandom->Gaus(10.5,3.22);
-              Float_t PMresponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
-                                  + noise*1e-3;
-              map[i] = Int_t( PMresponse * 200.0);
-              if(map[i] > 3) {
-                 icount++;
-//               printf(" Event, cell, adc = %d %d %d\n", ievent, i, map[i]);
-                 AddDigit(ievent, i, map[i]);} 
-            }
+    Int_t nTracks = (Int_t) treeH->GetEntries();
+    for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+      vzero->ResetHits();
+      treeH->GetEvent(iTrack);
+      Int_t nHits = hits->GetEntriesFast();
+      for (Int_t iHit = 0; iHit < nHits; iHit++) {
+	AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
+	Int_t nPhot = hit->Nphot();
+	Int_t cell  = hit->Cell();                                    
+	map[cell] += nPhot;
+      }           // hit   loop
+    }             // track loop
 
-           fTreeD->Reset();
-           fTreeD->Fill();
-           ResetDigit();
-           fVZEROLoader->WriteDigits("OVERWRITE");  
-           fVZEROLoader->UnloadDigits();     
-      }                     // VZERO loop
-    }  //event loop
+    loader->UnloadHits();
+
+  }               // input loop
+            
+  for (Int_t i=0; i<96; i++) {
+    Float_t q1 = Float_t ( map[i] )* cPM * kQe;
+    Float_t noise = gRandom->Gaus(10.5,3.22);
+    Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
+      + noise*1e-3;
+    map[i] = Int_t( pmResponse * 200.0);
+    if(map[i] > 3) {
+//    printf(" Event, cell, adc = %d %d %d\n", outRunLoader->GetEventNumber(),i, map[i]);
+      AddDigit(i, map[i]);
+    } 
+  }
+
+  treeD->Fill();
+  outLoader->WriteDigits("OVERWRITE");  
+  outLoader->UnloadDigits();     
+  ResetDigit();
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t eventnumber, Int_t cellnumber, Int_t adc) 
+void AliVZERODigitizer::AddDigit(Int_t cellnumber, Int_t adc) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
-  new(ldigits[fNdigits++]) AliVZEROdigit(eventnumber,cellnumber,adc);
+  new(ldigits[fNdigits++]) AliVZEROdigit(cellnumber,adc);
 }
 //____________________________________________________________________________
 void AliVZERODigitizer::ResetDigit()
 {
+//
 // Clears Digits
+//
   fNdigits = 0;
-  if (fDigits) fDigits->Clear();
+  if (fDigits) fDigits->Delete();
 }

@@ -42,6 +42,8 @@ public:
   virtual Int_t  IsVersion() const = 0;
   virtual void   Init();
   virtual AliLoader* MakeLoader(const char* topfoldername);
+  virtual void   Hits2Digits();
+  virtual void   Digits2Raw();
   virtual void   SetTreeAddress();  
   virtual void   MakeBranch(Option_t *option) =0;
   virtual void   DrawModule() {};
@@ -53,6 +55,8 @@ public:
   virtual void   SetMaxStepAlu(Float_t p1);
   virtual void   SetMaxDestepQua(Float_t p1);
   virtual void   SetMaxDestepAlu(Float_t p1);
+
+  AliDigitizer*  CreateDigitizer(AliRunDigitizer* manager) const;
 
 protected:
 
