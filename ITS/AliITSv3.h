@@ -1,5 +1,5 @@
-#ifndef ITSv3_H
-#define ITSv3_H
+#ifndef ALIITSV3_H
+#define ALIITSV3_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////////////
  
 #include "AliITS.h"
+#include "AliITSgeom.h"
  
 class AliITSv3 : public AliITS {
 
@@ -32,7 +33,8 @@ public:
    virtual void   SetMinorVersion(Int_t version) {fMinorVersionV3=version;}
    virtual void   StepManager();
    
-   ClassDef(AliITSv3,1)  //Hits manager for set:ITS version 3
+   ClassDef(AliITSv3,1)  //Hits manager for set:ITS version 3, TP detailed geometry
 };
  
 #endif
+

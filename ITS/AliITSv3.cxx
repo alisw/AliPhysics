@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.11.4.2  2000/03/04 23:46:02  nilsen
+Fixed up the comments/documentation.
+
+Revision 1.11.4.1  2000/01/12 19:03:33  nilsen
+This is the version of the files after the merging done in December 1999.
+See the ReadMe110100.txt file for details
+
+Revision 1.11  1999/10/22 08:25:25  fca
+remove double definition of destructors
+
 Revision 1.10  1999/10/22 08:16:49  fca
 Correct destructors, thanks to I.Hrivnacova
 
@@ -30,10 +40,10 @@ Introduction of the Copyright and cvs Log
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Inner Traking System version 3                                           //
-//  This class contains the base procedures for the Inner Tracking System    //
-//                                                                           //
+//
+//  Inner Traking System version 3
+//  This class contains the base procedures for the Inner Tracking System
+//
 // Authors: R. Barbera, A. Morsch.
 // version 3.
 // Created  1998.
@@ -41,10 +51,13 @@ Introduction of the Copyright and cvs Log
 //  NOTE: THIS IS THE OLD detailed TP-like geometry of the ITS. THIS WILL NOT 
 // WORK with the geometry or module classes or any analysis classes. You are 
 // strongly encouraged to uses AliITSv5.
-//                                                                           //
-//                                                                           //
+//
 ///////////////////////////////////////////////////////////////////////////////
- 
+
+// See AliITSv3::StepManager().
+#define ALIITSPRINTGEOM 0 // default. don't print out gemetry information
+//#define ALIITSPRINTGEOM 1 // print out geometry information
+
 #include <TMath.h>
 #include <TRandom.h>
 #include <TVector.h>
@@ -59,9 +72,9 @@ ClassImp(AliITSv3)
  
 //_____________________________________________________________________________
 AliITSv3::AliITSv3() {
-    //
-    // Default constructor for ITS
-    //
+////////////////////////////////////////////////////////////////////////
+//    Standard default constructor for the ITS version 3.
+////////////////////////////////////////////////////////////////////////
     fId3N = 6;
     fId3Name = new char*[fId3N];
     fId3Name[0] = "ITS1";
@@ -72,20 +85,19 @@ AliITSv3::AliITSv3() {
     fId3Name[5] = "ITS6";
     fMinorVersionV3=1;
 }
-
 //_____________________________________________________________________________
 AliITSv3::~AliITSv3() {
-    //
-    // Standard destructor for the ITS
-    //
+////////////////////////////////////////////////////////////////////////
+//    Standard destructor for the ITS version 3.
+////////////////////////////////////////////////////////////////////////
   delete [] fId3Name;
 }
 
 //_____________________________________________________________________________
 AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
-    //
-    // Standard constructor for ITS
-    // 
+////////////////////////////////////////////////////////////////////////
+//    Standard constructor for the ITS version 3.
+////////////////////////////////////////////////////////////////////////
     fId3N = 6;
     fId3Name = new char*[fId3N];
     fId3Name[0] = "ITS1";
@@ -99,11 +111,9 @@ AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
  
 //_____________________________________________________________________________
 void AliITSv3::CreateGeometry(){
-  //
-  // Create ITS geometry for version 3
-  //
-  //
-
+////////////////////////////////////////////////////////////////////////
+//    This routine creates and defines the version 3 geometry of the ITS.
+////////////////////////////////////////////////////////////////////////
   
   const Float_t xx[14] = {  0.000,  0.000,-14.002, -6.288,-25.212,-16.292,
                           -35.713,-26.401,-45.340,-36.772,-18.740,-12.814,
@@ -4622,22 +4632,19 @@ void AliITSv3::CreateGeometry(){
     gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
   }
   fMinorVersion = fMinorVersionV3;
-}
- 
+} 
 //_____________________________________________________________________________
-void AliITSv3::CreateMaterials()
-{
-  //
-  // Create Materials for ITS
-  //
+void AliITSv3::CreateMaterials(){
+////////////////////////////////////////////////////////////////////////
+//     Create Materials for ITS as defined in AliITS::CreateMaterials().
+////////////////////////////////////////////////////////////////////////
    AliITS::CreateMaterials();
 }
-
 //_____________________________________________________________________________
 void AliITSv3::Init(){
-    //
-    // Initialise its after it is built
-    //
+////////////////////////////////////////////////////////////////////////
+//     Initialise the ITS after it has been created.
+////////////////////////////////////////////////////////////////////////
     Int_t i,j,l;
 
     fIdN       = fId3N;;
@@ -4653,19 +4660,36 @@ void AliITSv3::Init(){
     AliITS::Init();
     fMajorVersion = 3;
     fMinorVersion = fMinorVersionV3;
-} 
-
+}
 //_____________________________________________________________________________
-void AliITSv3::StepManager()
-{
-  //
-  // Called at every step in ITS
-  //
+void AliITSv3::StepManager(){
+////////////////////////////////////////////////////////////////////////
+//    Called for every step in the ITS, then calles the AliITShit class
+// creator with the information to be recoreded about that hit.
+//     The value of the macro ALIITSPRINTGEOM if set to 1 will allow the
+// printing of information to a file which can be used to create a .det
+// file read in by the routine CreateGeometry(). If set to 0 or any other
+// value except 1, the default behavior, then no such file is created nor
+// it the extra variables and the like used in the printing allocated.
+////////////////////////////////////////////////////////////////////////
   Int_t         copy, id;
   Float_t       hits[8];
   Int_t         vol[4];
   TLorentzVector position, momentum;
   TClonesArray &lhits = *fHits;
+#if ALIITSPRINTGEOM==1
+  FILE          *fp;
+  Int_t         i;
+  Float_t       xl[3],xt[3],angl[6];
+//  Float_t       par[20],att[20];
+  Float_t      mat[9];
+  static Bool_t first=kTRUE,printit[6][50][50];
+  if(first){ for(copy1=0;copy1<6;copy1++)for(copy2=0;copy2<50;copy2++)
+      for(id=0;id<50;id++) printit[copy1][copy2][id] = kTRUE;
+  first = kFALSE;
+  }
+  // end if first
+#endif
   //
   // Track status
   vol[3] = 0;
@@ -4678,7 +4702,7 @@ void AliITSv3::StepManager()
   if(gMC->IsTrackAlive())       vol[3] += 64;
   //
   // Fill hit structure.
-  if(gMC->TrackCharge() && gMC->Edep()) {
+  if(!(gMC->TrackCharge())) return;
     //
     // Only entering charged tracks
     if((id=gMC->CurrentVolID(copy))==fIdSens[0]) {  
@@ -4725,21 +4749,73 @@ void AliITSv3::StepManager()
     hits[6]=gMC->Edep();
     hits[7]=gMC->TrackTime();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-  }      
+#if ALIITSPRINTGEOM==1
+  if(printit[vol[0]][vol[2]][vol[1]]){
+      printit[vol[0]][vol[2]][vol[1]] = kFALSE;
+      xl[0] = xl[1] = xl[2] = 0.0;
+      gMC->Gdtom(xl,xt,1);
+      for(i=0;i<9;i++) mat[i] = 0.0;
+      mat[0] = mat[4] = mat[8] = 1.0;  // default with identity matrix
+      xl[0] = 1.0;
+      xl[1] = xl[2] =0.0;
+      gMC->Gdtom(xl,&(mat[0]),2);
+      xl[1] = 1.0;
+      xl[0] = xl[2] =0.0;
+      gMC->Gdtom(xl,&(mat[3]),2);
+      xl[2] = 1.0;
+      xl[1] = xl[0] =0.0;
+      gMC->Gdtom(xl,&(mat[6]),2);
+
+      angl[0] = TMath::ACos(mat[2]);
+      if(mat[2]==1.0) angl[0] = 0.0;
+      angl[1] = TMath::ATan2(mat[1],mat[0]);
+      if(angl[1]<0.0) angl[1] += 2.0*TMath::Pi();
+
+      angl[2] = TMath::ACos(mat[5]);
+      if(mat[5]==1.0) angl[2] = 0.0;
+      angl[3] = TMath::ATan2(mat[4],mat[3]);
+      if(angl[3]<0.0) angl[3] += 2.0*TMath::Pi();
+
+      angl[4] = TMath::ACos(mat[8]);
+      if(mat[8]==1.0) angl[4] = 0.0;
+      angl[5] = TMath::ATan2(mat[7],mat[6]);
+      if(angl[5]<0.0) angl[5] += 2.0*TMath::Pi();
+
+      for(i=0;i<6;i++) angl[i] *= 180.0/TMath::Pi(); // degrees
+//      i = gMC->CurrentVolID(copy);
+//      gMC->Gfpara(gMC->CurrentVolName(),copy,1,copy1,copy2,par,att);
+      fp = fopen("ITSgeometry_v5.det","a");
+      fprintf(fp,"%2d %2d %2d %9e %9e %9e %9e %9e %9e %9e %9e %9e ",
+	      vol[0],vol[2],vol[1], // layer ladder detector
+	      xt[0],xt[1],xt[2],    // Translation vector
+	      angl[0],angl[1],angl[2],angl[3],angl[4],angl[5] // Geant rotaion
+                                                           // angles (degrees)
+	      );
+      fprintf(fp,"%9e %9e %9e %9e %9e %9e %9e %9e %9e",
+	     mat[0],mat[1],mat[2],mat[3],mat[4],mat[5],mat[6],mat[7],mat[8]
+	  );  // Adding the rotation matrix.
+      fprintf(fp,"\n");
+      fclose(fp);
+  } // end if printit[layer][ladder][detector]
+#endif
 }
-
 //____________________________________________________________________________
-void AliITSv3::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliITSv3.
-
+void AliITSv3::Streamer(TBuffer &R__b){
+////////////////////////////////////////////////////////////////////////
+//    A dummy Streamer function for this class AliITSv3. By default it
+// only streams the AliITS class as it is required. Since this class
+// dosen't contain any "real" data to be saved, it doesn't.
+////////////////////////////////////////////////////////////////////////
    if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITS::Streamer(R__b);
-      // This information does not need to be read. It is "hard wired"
-      // into this class via its creators.
-      //R__b >> fId3N;
-      //R__b.ReadArray(fId3Name);
+      Version_t R__v = R__b.ReadVersion();
+      if (R__v==1) {
+	  AliITS::Streamer(R__b);
+	  // This information does not need to be read. It is "hard wired"
+	  // into this class via its creators.
+	  //R__b >> fId3N;
+	  //R__b.ReadArray(fId3Name);
+      }else{
+      } // end if
    } else {
       R__b.WriteVersion(AliITSv3::IsA());
       AliITS::Streamer(R__b);
@@ -4747,5 +4823,5 @@ void AliITSv3::Streamer(TBuffer &R__b)
       // into this class via its creators.
       //R__b << fId3N;
       //R__b.WriteArray(fId3Name, __COUNTER__);
-   }
+   } // end if R__b.IsReading()
 }

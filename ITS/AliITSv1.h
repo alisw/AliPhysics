@@ -1,5 +1,5 @@
-#ifndef ITSv1_H
-#define ITSv1_H
+#ifndef ALIITSV1_H
+#define ALIITSV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////////////
  
 #include "AliITS.h"
+#include "AliITSgeom.h"
  
 class AliITSv1 : public AliITS {
 
@@ -29,7 +30,7 @@ public:
   virtual void   DrawModule();
   virtual void   StepManager();
   
-   ClassDef(AliITSv1,1)  //Hits manager for set:ITS version 1
+   ClassDef(AliITSv1,1)  //Hits manager for set:ITS version 1 cource Geometry
 };
  
 #endif

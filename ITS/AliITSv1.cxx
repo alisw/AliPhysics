@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.14.2.1  2000/03/04 23:45:19  nilsen
+Fixed up the comments/documentation.
+
+Revision 1.14  1999/11/25 06:52:56  fca
+Correct value of drca
+
 Revision 1.13.2.1  1999/11/25 06:52:21  fca
 Correct value of drca
 
@@ -67,9 +73,9 @@ ClassImp(AliITSv1)
  
 //_____________________________________________________________________________
 AliITSv1::AliITSv1() {
-    //
-    // Default constructor for the ITS
-    //
+////////////////////////////////////////////////////////////////////////
+//    Standard default constructor for the ITS version 1.
+////////////////////////////////////////////////////////////////////////
     fId1N = 6;
     fId1Name = new char*[fId1N];
     fId1Name[0] = "ITS1";
@@ -79,12 +85,11 @@ AliITSv1::AliITSv1() {
     fId1Name[4] = "ITS5";
     fId1Name[5] = "ITS6";
 }
-
 //_____________________________________________________________________________
-AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){ 
-    //
-    // Standard constructor for the ITS
-    //
+AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
+////////////////////////////////////////////////////////////////////////
+//    Standard constructor for the ITS version 1.
+////////////////////////////////////////////////////////////////////////
     fId1N = 6;
     fId1Name = new char*[fId1N];
     fId1Name[0] = "ITS1";
@@ -94,27 +99,18 @@ AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
     fId1Name[4] = "ITS5";
     fId1Name[5] = "ITS6";
 }
- 
 //_____________________________________________________________________________
 AliITSv1::~AliITSv1() {
-    //
-    // Standard destructor for the ITS
-    //
+////////////////////////////////////////////////////////////////////////
+//    Standard destructor for the ITS version 1.
+////////////////////////////////////////////////////////////////////////
   delete [] fId1Name;
 }
-
 //_____________________________________________________________________________
-void AliITSv1::CreateGeometry()
-{
-  //
-  // Create geometry for version 1 of the ITS
-  //
-  //
-  // Create Geometry for ITS version 0
-  //
-  //
-  
-
+void AliITSv1::CreateGeometry(){
+////////////////////////////////////////////////////////////////////////
+//    This routine defines and Creates the geometry for version 1 of the ITS.
+////////////////////////////////////////////////////////////////////////
   
   Float_t drcer[6] = { 0.,0.,.08,.08,0.,0. };           //CERAMICS THICKNESS
   Float_t drepx[6] = { 0.,0.,0.,0.,.5357,.5357 };       //EPOXY THICKNESS
@@ -491,21 +487,18 @@ void AliITSv1::CreateGeometry()
     gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
   }
 }
-
 //_____________________________________________________________________________
-void AliITSv1::CreateMaterials()
-{
-  //
-  // Create the materials for ITS
-  //
+void AliITSv1::CreateMaterials(){
+////////////////////////////////////////////////////////////////////////
+//     Create Materials for ITS as defined in AliITS::CreateMaterials().
+////////////////////////////////////////////////////////////////////////
   AliITS::CreateMaterials();
 }
-
 //_____________________________________________________________________________
 void AliITSv1::Init(){
-    //
-    // Initialise the ITS after it has been built
-    //
+////////////////////////////////////////////////////////////////////////
+//     Initialise the ITS after it has been created.
+////////////////////////////////////////////////////////////////////////
     Int_t i,j,l;
 
     fIdN       = fId1N;;
@@ -524,12 +517,10 @@ void AliITSv1::Init(){
 }  
  
 //_____________________________________________________________________________
-void AliITSv1::DrawModule()
-{ 
-  //
-  // Draw a shaded view of the FMD version 1
-  //
-
+void AliITSv1::DrawModule(){
+////////////////////////////////////////////////////////////////////////
+//     Draw a shaded view of the FMD version 1.
+////////////////////////////////////////////////////////////////////////
   
   // Set everything unseen
   gMC->Gsatt("*", "seen", -1);
@@ -574,13 +565,12 @@ void AliITSv1::DrawModule()
   gMC->Gdhead(1111, "Inner Tracking System Version 1");
   gMC->Gdman(17, 6, "MAN");
 }
-
 //_____________________________________________________________________________
-void AliITSv1::StepManager()
-{ 
-  //
-  // Called at every step in the ITS
-  //
+void AliITSv1::StepManager(){
+////////////////////////////////////////////////////////////////////////
+//    Called for every step in the ITS, then calles the AliITShit class
+// creator with the information to be recoreded about that hit.
+////////////////////////////////////////////////////////////////////////
   Int_t         copy, id;
   Float_t       hits[8];
   Int_t         vol[4];
@@ -598,7 +588,7 @@ void AliITSv1::StepManager()
   if(gMC->IsTrackAlive())       vol[3] += 64;
   //
   // Fill hit structure.
-  if(gMC->TrackCharge() && gMC->Edep()) {
+  if( !(gMC->TrackCharge()) ) return;
     //
     // Only entering charged tracks
     if((id=gMC->CurrentVolID(copy))==fIdSens[0]) {  
@@ -645,13 +635,14 @@ void AliITSv1::StepManager()
     hits[6]=gMC->Edep();
     hits[7]=gMC->TrackTime();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-  }      
 }
-
 //____________________________________________________________________________
-void AliITSv1::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliITSv1.
+void AliITSv1::Streamer(TBuffer &R__b){
+////////////////////////////////////////////////////////////////////////
+//    A dummy Streamer function for this class AliITSv1. By default it
+// only streams the AliITS class as it is required. Since this class
+// dosen't contain any "real" data to be saved, it doesn't.
+////////////////////////////////////////////////////////////////////////
 
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
@@ -667,5 +658,5 @@ void AliITSv1::Streamer(TBuffer &R__b)
       // into this class via its creators.
       //R__b << fId1N;
       //R__b.WriteArray(fId1Name, __COUNTER__);
-   }
+   } // end if R__b.IsReading()
 }

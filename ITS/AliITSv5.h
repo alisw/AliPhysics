@@ -1,5 +1,5 @@
-#ifndef ITSv5_H
-#define ITSv5_H
+#ifndef ALIITSV5_H
+#define ALIITSV5_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -30,7 +30,7 @@ public:
            virtual Int_t IsVersion() const {return 5;}
            virtual void  StepManager();
   
-  ClassDef(AliITSv5,1)  //Hits manager for ITS version 5
+  ClassDef(AliITSv5,1)  //Hits manager for ITS version 5 Official detailed geometry
 };
  
 #endif
