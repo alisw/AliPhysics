@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/02/08 16:50:50  morsch
+Add name and title in constructor.
+
 Revision 1.18  2001/11/12 14:31:00  morsch
 Memory leaks fixed. (M. Bondila)
 
@@ -142,6 +145,8 @@ void AliGenExtFile::Generate()
   }
 
   for (i = 0; i < nTracks; i++) {
+
+      
       TParticle* iparticle = fReader->NextParticle();
       Double_t  theta = iparticle->Theta();
       Double_t  phi = iparticle->Phi();
@@ -151,7 +156,6 @@ void AliGenExtFile::Generate()
       Double_t  e    = iparticle->Energy();
       Double_t  pt   = iparticle->Pt();
       Double_t  y;
-      
       if ((e-pz) == 0) {
 	  y = 20.;
       } else if ((e+pz) == 0.) {
@@ -183,7 +187,6 @@ void AliGenExtFile::Generate()
 	  }
       }
       SetTrack(fTrackIt,-1,idpart,p,origin,polar,0,kPPrimary,nt);
-      delete iparticle;
    }
   TFile *pFile=0;
 // Get AliRun object or create it 
