@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.12  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -98,6 +101,7 @@ Addition of files for track reconstruction in C++
 //__________________________________________________________________________
 
 #include <iostream.h>
+#include <stdlib.h>
 
 #include <TRandom.h>
 #include <TFile.h>
