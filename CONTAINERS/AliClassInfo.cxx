@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/01 16:01:22  kowal2
+Classes for handling the new hits structures
+
 */
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -44,6 +47,7 @@ $Log$
 
 #include "TROOT.h"
 #include "iostream.h"
+#include "AliDataType.h"
 
 ClassImp(AliClassInfo)
 
@@ -76,14 +80,15 @@ AliClassInfo * AliClassInfo::GenerClassInfo(const char * classname)
   //
   if ( (!info) &&  (gROOT->GetType(classname),kTRUE)){ 
     //if data type information exist
-    char line[100];
+    //    char line[100];
     //    sprintf(line,"(*((AliClassInfo**)%p))= new AliDataType(\"%s\");",
     //	    &info,classname);
-    sprintf(line,"new AliDataType(\"%s\");",
-    	    classname);
+    // sprintf(line,"new AliDataType(\"%s\");",
+    //    classname);
 
     //cout<<line<<"\n";
-    gROOT->ProcessLine(line);
+    //   gROOT->ProcessLine(line);
+    new AliDataType(classname);
     info = AliClassInfo::FindClassInfo(classname);
   }   
   if (info) return info;
