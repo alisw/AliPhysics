@@ -67,7 +67,7 @@
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
-
+#include "AliMUONRawData.h"
 
 // Defaults parameters for Z positions of chambers
 // taken from values for "stations" in AliMUON::AliMUON
@@ -132,11 +132,6 @@ AliMUON::AliMUON(const char *name, const char *title)
     fCurIterPad(0),
     fMerger(0)
 {
-//Begin_Html
-/*
-<img src="gif/alimuon.gif">
-*/
-//End_Html
 
   fIshunt =  0;
 
@@ -455,6 +450,17 @@ void AliMUON::Hits2SDigits()
     dMUON->Exec("");
   }
   fLoader->UnloadHits();
+}
+//_____________________________________________________________________
+void AliMUON::Digits2Raw()
+{
+  // convert digits of the current event to raw data
+  AliMUONRawData* rawData;
+
+  rawData = new AliMUONRawData(fLoader);
+  if (!rawData->WriteRawData()) Info("MUON","pb writting raw data");
+  delete rawData;
+  return;
 }
 //_______________________________________________________________________
 AliLoader* AliMUON::MakeLoader(const char* topfoldername)

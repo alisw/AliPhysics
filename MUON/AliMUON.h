@@ -61,6 +61,9 @@ class AliMUON : public  AliDetector
     virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     virtual void   SDigits2Digits();      
     virtual void   Hits2SDigits();
+    virtual void   Digits2Raw();
+
+
     // Configuration Methods (per station id)
     //
     // Set Chamber Segmentation Parameters

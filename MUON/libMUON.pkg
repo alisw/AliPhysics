@@ -35,7 +35,11 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONRecoEvent.cxx AliMUONRecoTrack.cxx AliMUONRecoDisplay.cxx \
                AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx AliMUONDigitizerv1.cxx AliMUONDigitizerv2.cxx AliMUONSDigitizerv1.cxx \
                AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx \
-               AliMUONLoader.cxx AliMUONData.cxx  AliMUONDataInterface.cxx 
+               AliMUONLoader.cxx AliMUONData.cxx  AliMUONDataInterface.cxx \
+               AliMUONDDLTracker.cxx \
+               AliMUONRawData.cxx
+
+
 
 SRCS     += AliMUONSt1Segmentation.cxx AliMUONSt1Response.cxx \
 	    AliMUONSt1ElectronicElement.cxx AliMUONSt1SpecialMotif.cxx \
