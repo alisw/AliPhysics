@@ -32,7 +32,6 @@ class TTask ;
 #include "AliRunLoader.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRecPoint.h"
-#include "AliEMCALTowerRecPoint.h" 
 #include "AliEMCALTrackSegment.h"
 #include "AliEMCALClusterizer.h"
 #include "AliEMCALTrackSegmentMaker.h" 
@@ -138,7 +137,7 @@ class AliEMCALLoader : public AliLoader {
   void MakeDigitsArray();
   /****  R e c P o i n t s  ****/
   TObjArray * ECARecPoints();
-  const AliEMCALTowerRecPoint * ECARecPoint(Int_t index) ;
+  const AliEMCALRecPoint * ECARecPoint(Int_t index) ;
   void MakeRecPointsArray();
   /****   T r a c k S e g m e n t s ****/
   TClonesArray * TrackSegments();
@@ -281,11 +280,11 @@ inline TObjArray * AliEMCALLoader::ECARecPoints()
 
 /******************************************************************************/
 
-inline const AliEMCALTowerRecPoint * AliEMCALLoader::ECARecPoint(Int_t index)
+inline const AliEMCALRecPoint * AliEMCALLoader::ECARecPoint(Int_t index)
 {
   TObjArray* tcarr = ECARecPoints();
   if (tcarr)
-    return dynamic_cast<const AliEMCALTowerRecPoint*>(tcarr->At(index));
+    return dynamic_cast<const AliEMCALRecPoint*>(tcarr->At(index));
   return 0x0; 
 }
 

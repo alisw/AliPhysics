@@ -21,7 +21,6 @@ class TPrincipal ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-class AliEMCALTowerRecPoint ;
 class AliEMCALRecPoint ;
 
 #include "AliEMCALPID.h"
@@ -40,7 +39,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
 
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
   Float_t  GetCalibratedEnergy    (Float_t e)                 const;
-  TVector3 GetMomentumDirection(AliEMCALTowerRecPoint * emc)const ;
+  TVector3 GetMomentumDirection(AliEMCALRecPoint * emc)const ;
 
   virtual void Print(Option_t * option) const ;
  

@@ -19,7 +19,7 @@
 // --- AliRoot header files ---
 #include "AliEMCALTrackSegmentMaker.h"
 
-class AliEMCALTowerRecPoint ;
+class AliEMCALRecPoint ;
 
 class  AliEMCALTrackSegmentMakerv1 : public AliEMCALTrackSegmentMaker {
 
@@ -38,7 +38,7 @@ public:
   virtual const Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
 
   virtual void   Exec(Option_t * option) ;
-  Float_t HowClose(AliEMCALTowerRecPoint * ec, AliEMCALTowerRecPoint * rp, Bool_t &toofar) const ;
+  Float_t HowClose(AliEMCALRecPoint * ec, AliEMCALRecPoint * rp, Bool_t &toofar) const ;
           void   MakeLinks() const;      //Evaluates distances(links) between recpoints
           void   MakePairs() ;           //Finds pairs(triplets) with smallest link
   virtual void   Print(Option_t * option) const ;

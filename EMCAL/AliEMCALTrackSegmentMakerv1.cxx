@@ -84,7 +84,7 @@ const TString AliEMCALTrackSegmentMakerv1::BranchName() const
 }
 
 //____________________________________________________________________________
-Float_t  AliEMCALTrackSegmentMakerv1::HowClose(AliEMCALTowerRecPoint * ec, AliEMCALTowerRecPoint * rp, Bool_t &toofar)const
+Float_t  AliEMCALTrackSegmentMakerv1::HowClose(AliEMCALRecPoint * ec, AliEMCALRecPoint * rp, Bool_t &toofar)const
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
   // Clusters are sorted in "rows" and "columns" of width 1 cm
@@ -93,8 +93,10 @@ Float_t  AliEMCALTrackSegmentMakerv1::HowClose(AliEMCALTowerRecPoint * ec, AliEM
   Float_t delta = 10. ;  // large enough to be ineffective ??! 
 
  
-  TVector3 vecEC = ec->XYZInAlice() ;
-  TVector3 vecRP = rp->XYZInAlice() ;
+  TVector3 vecEC;
+  TVector3 vecRP;
+  ec->GetGlobalPosition(vecEC);
+  rp->GetGlobalPosition(vecRP);
   
   Float_t pro = TMath::Abs(1 - (vecEC * vecRP / ( vecEC.Mag() * vecRP.Mag() ))) ; 
 
@@ -146,20 +148,20 @@ void  AliEMCALTrackSegmentMakerv1::MakeLinks()const
   fPRELinkArray->Clear() ;    
   fHCALinkArray->Clear() ;    
 
-  AliEMCALTowerRecPoint * pre ;
-  AliEMCALTowerRecPoint * eca ;
-  AliEMCALTowerRecPoint * hca ;
+  AliEMCALRecPoint * pre ;
+  AliEMCALRecPoint * eca ;
+  AliEMCALRecPoint * hca ;
 
   Int_t iPRELink  = 0 ;
   Int_t iHCALink  = 0 ;
     
   Int_t iECARP;
   for(iECARP = 0; iECARP < aECARecPoints->GetEntriesFast(); iECARP++ ) {
-    eca = dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(iECARP)) ;
+    eca = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(iECARP)) ;
     Bool_t toofar = kTRUE ;        
     Int_t iPRERP = 0 ;    
     for(iPRERP = 0; iPRERP < aPRERecPoints->GetEntriesFast(); iPRERP++ ) { 
-      pre = dynamic_cast<AliEMCALTowerRecPoint *>(aPRERecPoints->At(iPRERP)) ;
+      pre = dynamic_cast<AliEMCALRecPoint *>(aPRERecPoints->At(iPRERP)) ;
       Float_t prod = HowClose(eca, pre, toofar) ;    
       if(toofar)
 	break ;	 
@@ -170,7 +172,7 @@ void  AliEMCALTrackSegmentMakerv1::MakeLinks()const
     toofar = kTRUE ; 
     Int_t iHCARP = 0 ;    
     for(iHCARP = 0; iHCARP < aHCARecPoints->GetEntriesFast(); iHCARP++ ) { 
-      hca = dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(iHCARP)) ;
+      hca = dynamic_cast<AliEMCALRecPoint *>(aHCARecPoints->At(iHCARP)) ;
       Float_t prod = HowClose(eca, hca, toofar) ;    
       if(toofar)
 	break ;	 
@@ -223,7 +225,7 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
   for(index = 0; index < nHCA; index ++)
     hcaExist[index] = kTRUE ;
   
-  AliEMCALTowerRecPoint * null = 0 ; 
+  AliEMCALRecPoint * null = 0 ; 
  // Finds the smallest links and makes pairs of PRE and ECAL clusters with largest scalar product 
  
   TIter nextPRE(fPRELinkArray) ;
@@ -236,8 +238,8 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
       if(preExist[linkPRE->GetOther()]){ // PRE still exist
 	
 	new ((* trackSegments)[fNTrackSegments]) 
-	  AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(linkPRE->GetECA())) , 
-			       dynamic_cast<AliEMCALTowerRecPoint *>(aPRERecPoints->At(linkPRE->GetOther())), null) ;
+	  AliEMCALTrackSegment(dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(linkPRE->GetECA())) , 
+			       dynamic_cast<AliEMCALRecPoint *>(aPRERecPoints->At(linkPRE->GetOther())), null) ;
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++ ;
 	if (gDebug == 2 ) 
@@ -271,14 +273,14 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
 	  }
 	}
 	if (found){
-	  ts->SetHCARecPoint( dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(linkHCA->GetOther())) ) ;
+	  ts->SetHCARecPoint( dynamic_cast<AliEMCALRecPoint *>(aHCARecPoints->At(linkHCA->GetOther())) ) ;
 	  if (gDebug == 2 ) 
 	    printf("MakePairs: ECAL section with PRE and HCAL sections") ;
 	} 	
 	if (!found) {
 	  new ((* trackSegments)[fNTrackSegments]) 
-	    AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(linkHCA->GetECA())), null,
-				 dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(linkHCA->GetOther()))) ; 
+	    AliEMCALTrackSegment(dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(linkHCA->GetECA())), null,
+				 dynamic_cast<AliEMCALRecPoint *>(aHCARecPoints->At(linkHCA->GetOther()))) ; 
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++ ;
 	if (gDebug == 2 ) 
@@ -298,7 +300,7 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
     for(iECARP = 0; iECARP < nECA  ; iECARP++ ){
       if(ecaExist[iECARP] > 0 ){
 	new ((*trackSegments)[fNTrackSegments])  
-	  AliEMCALTrackSegment(dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(iECARP)), null, null) ;
+	  AliEMCALTrackSegment(dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(iECARP)), null, null) ;
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++;    
 	if( gDebug == 2 ) 

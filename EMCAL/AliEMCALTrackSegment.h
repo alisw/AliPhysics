@@ -18,7 +18,7 @@ class TClonesArray ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliEMCALTowerRecPoint.h" 
+#include "AliEMCALRecPoint.h" 
 class AliEMCALRecPoint ; 
 
 class AliEMCALTrackSegment : public TObject  {
@@ -26,7 +26,7 @@ class AliEMCALTrackSegment : public TObject  {
 public:
 
   AliEMCALTrackSegment() {} 
-  AliEMCALTrackSegment(AliEMCALTowerRecPoint * ec) ; 
+  AliEMCALTrackSegment(AliEMCALRecPoint * ec) ; 
   AliEMCALTrackSegment(const AliEMCALTrackSegment & ts) ;  // ctor                   
   virtual ~AliEMCALTrackSegment() {  } 
 

@@ -24,7 +24,7 @@
 // --- AliRoot header files ---
 
 #include "AliEMCALClusterizer.h"
-class AliEMCALTowerRecPoint ; 
+class AliEMCALRecPoint ; 
 class AliEMCALDigit ;
 class AliEMCALDigitizer ;
 class AliEMCALGeometry ;
@@ -78,13 +78,13 @@ private:
   const TString BranchName() const ; 
   void    GetCalibrationParameters(void) ;
   
-  Bool_t  FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDigit ** MaxAt, Float_t * maxAtEnergy, 
+  Bool_t  FindFit(AliEMCALRecPoint * emcRP, AliEMCALDigit ** MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
   void InitParameters() ;
 
   virtual void   MakeUnfolding() const;
-  void           UnfoldCluster(AliEMCALTowerRecPoint * /*iniEmc*/, Int_t /*Nmax*/, 
+  void           UnfoldCluster(AliEMCALRecPoint * /*iniEmc*/, Int_t /*Nmax*/, 
 			       AliEMCALDigit ** /*maxAt*/,
 			       Float_t * /*maxAtEnergy*/ ) const; //Unfolds cluster using TMinuit package
   void           PrintRecPoints(Option_t * option) ;

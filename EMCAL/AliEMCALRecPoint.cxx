@@ -14,22 +14,23 @@
  **************************************************************************/
 /* $Id$ */
 //_________________________________________________________________________
-//  Base Class for EMCAL Reconstructed Points  
-//  Why should I put meaningless comments
-//  just to satisfy
-//  the code checker                
+//  Reconstructed Points for the EMCAL
+//  A RecPoint is a cluster of digits
 //*-- Author: Yves Schutz (SUBATECH)
+//*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
+//*-- Author: Heather Gray (LBL) merged AliEMCALRecPoint and AliEMCALTowerRecPoint 02/04
 
 // --- ROOT system ---
 #include "TPad.h"
 #include "TGraph.h"
 #include "TPaveText.h"
 #include "TClonesArray.h"
+#include "TMath.h" 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliGenerator.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRecPoint.h"
@@ -43,22 +44,131 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   : AliRecPoint()
 {
   // ctor
-
   fMaxTrack = 0 ;
-  fTheta = fPhi = 0. ; 
-  fEMCALArm = 0;
-  fECASection = kFALSE ; 
+  fMulDigit   = 0 ;  
+  fAmp   = 0. ;   
+  fCoreEnergy = 0 ; 
+  fEnergyList = 0 ;
+  fTime = 0. ;
+  fLocPos.SetX(0.)  ;      //Local position should be evaluated
+  fCoreRadius = 10;        //HG Check this
 }
 
 //____________________________________________________________________________
 AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
 {
   // ctor
-  
   fMaxTrack = 200 ;
-  fTheta = fPhi = 0. ; 
-  fEMCALArm = 1;
+  fMulDigit   = 0 ;  
+  fAmp   = 0. ;   
+  fCoreEnergy = 0 ; 
+  fEnergyList = 0 ;
+  fTime = -1. ;
+  fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
+  fCoreRadius = 10;        //HG Check this
+}
+//____________________________________________________________________________
+AliEMCALRecPoint::~AliEMCALRecPoint()
+{
+  // dtor
+  if ( fEnergyList )
+    delete[] fEnergyList ; 
+}
+
+//____________________________________________________________________________
+void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
+{
+  // Adds a digit to the RecPoint
+  // and accumulates the total amplitude and the multiplicity 
   
+  if(fEnergyList == 0)
+    fEnergyList =  new Float_t[fMaxDigit]; 
+
+  if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
+    fMaxDigit*=2 ; 
+    Int_t * tempo = new ( Int_t[fMaxDigit] ) ; 
+    Float_t * tempoE =  new ( Float_t[fMaxDigit] ) ;
+
+    Int_t index ;     
+    for ( index = 0 ; index < fMulDigit ; index++ ){
+      tempo[index]  = fDigitsList[index] ;
+      tempoE[index] = fEnergyList[index] ; 
+    }
+    
+    delete [] fDigitsList ; 
+    fDigitsList =  new ( Int_t[fMaxDigit] ) ;
+ 
+    delete [] fEnergyList ;
+    fEnergyList =  new ( Float_t[fMaxDigit] ) ;
+
+    for ( index = 0 ; index < fMulDigit ; index++ ){
+      fDigitsList[index] = tempo[index] ;
+      fEnergyList[index] = tempoE[index] ; 
+    }
+ 
+    delete [] tempo ;
+    delete [] tempoE ; 
+  } // if
+  
+  fDigitsList[fMulDigit]   = digit.GetIndexInList()  ; 
+  fEnergyList[fMulDigit]   = Energy ;
+  fMulDigit++ ; 
+  fAmp += Energy ; 
+
+}
+//____________________________________________________________________________
+Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * digit2 ) const
+{
+  // Tells if (true) or not (false) two digits are neighbours
+  // A neighbour is defined as being two digits which share a corner
+  
+  Bool_t areNeighbours = kFALSE ;
+  
+  AliEMCALGeometry * geom =  (AliEMCALGetter::Instance())->EMCALGeometry();
+
+  Int_t relid1[2] ; 
+  geom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
+
+  Int_t relid2[2] ; 
+  geom->AbsToRelNumbering(digit2->GetId(), relid2) ; 
+  
+  Int_t rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
+  Int_t coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
+
+  if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
+    areNeighbours = kTRUE ;
+  
+  return areNeighbours;
+}
+
+//____________________________________________________________________________
+Int_t AliEMCALRecPoint::Compare(const TObject * obj) const
+{
+  // Compares two RecPoints according to their position in the EMCAL modules
+
+  Float_t delta = 1 ; //Width of "Sorting row". If you change this 
+                      //value (what is senseless) change as well delta in
+                      //AliEMCALTrackSegmentMakerv* and other RecPoints...
+  Int_t rv ; 
+
+  AliEMCALRecPoint * clu = (AliEMCALRecPoint *)obj ; 
+
+  TVector3 locpos1; 
+  GetLocalPosition(locpos1);
+  TVector3 locpos2;  
+  clu->GetLocalPosition(locpos2);  
+
+  Int_t rowdif = (Int_t)TMath::Ceil(locpos1.X()/delta)-(Int_t)TMath::Ceil(locpos2.X()/delta) ;
+  if (rowdif> 0) 
+    rv = 1 ;
+  else if(rowdif < 0) 
+    rv = -1 ;
+  else if(locpos1.Y()>locpos2.Y()) 
+    rv = -1 ;
+  else 
+    rv = 1 ; 
+
+  return rv ; 
 }
 
 //____________________________________________________________________________
@@ -67,11 +177,12 @@ Int_t AliEMCALRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
   // Compute distance from point px,py to  a AliEMCALRecPoint considered as a Tmarker
   // Compute the closest distance of approach from point px,py to this marker.
   // The distance is computed in pixels units.
+  // HG Still need to update -> Not sure what this should achieve
 
   TVector3 pos(0.,0.,0.) ;
-  GetLocalPosition( pos) ;
+  GetLocalPosition(pos) ;
   Float_t x =  pos.X() ;
-  Float_t y =  pos.Z() ;
+  Float_t y =  pos.Y() ;
   const Int_t kMaxDiff = 10;
   Int_t pxm  = gPad->XtoAbsPixel(x);
   Int_t pym  = gPad->YtoAbsPixel(y);
@@ -90,7 +201,7 @@ Int_t AliEMCALRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
  }
 
 //______________________________________________________________________________
-void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
+void AliEMCALRecPoint::ExecuteEvent(Int_t /*event*/, Int_t, Int_t)
 {
   // Execute action corresponding to one event
   // This member function is called when a AliEMCALRecPoint is clicked with the locator
@@ -100,7 +211,7 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
 
   //  static Int_t pxold, pyold;
 
-  static TGraph *  digitgraph = 0 ;
+  /* static TGraph *  digitgraph = 0 ;
   static TPaveText* clustertext = 0 ;
   
   if (!gPad->IsEditable()) return;
@@ -113,7 +224,7 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
     AliEMCALGeometry * emcalgeom =  (AliEMCALGetter::Instance())->EMCALGeometry() ;
 
     Int_t iDigit;
-    Int_t relid[3] ;
+    Int_t relid[2] ;
   
     const Int_t kMulDigit=AliEMCALRecPoint::GetDigitsMultiplicity() ;
     Float_t * xi = new Float_t [kMulDigit] ; 
@@ -166,29 +277,204 @@ break;
     
     break;
     
-  }
+    }*/
 }
 //____________________________________________________________________________
-void AliEMCALRecPoint::EvalAll(Float_t /*logWeight*/,TClonesArray * digits) 
+void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) 
 {
-  //evaluates (if necessary) all RecPoint data members 
+  // Evaluates all shower parameters
 
-  EvalPrimaries(digits) ;
+  EvalLocalPosition(logWeight, digits) ;
+  EvalElipsAxis(logWeight, digits) ;
+  EvalDispersion(logWeight, digits) ;
+  EvalCoreEnergy(logWeight, digits);
+  EvalTime(digits) ;
+
+  //EvalPrimaries(digits) ;
 }
 
 //____________________________________________________________________________
-void AliEMCALRecPoint::EvalEMCALArm(AliEMCALDigit * digit) 
+void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
 {
-  // Returns the EMCAL module in which the RecPoint is found
+  // Calculates the dispersion of the shower at the origin of the RecPoint
 
+  Float_t d    = 0. ;
+  Float_t wtot = 0. ;
 
-  if( fEMCALArm == 0){
-  Int_t relid[3] ; 
+  AliEMCALDigit * digit ;
+ 
+  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
   
-  AliEMCALGeometry * emcalgeom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  // Calculates the centre of gravity in the local EMCAL-module coordinates   
+  Int_t iDigit;
 
-  emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-  fEMCALArm = relid[0];
+  if (!fLocPos.X() || !fLocPos.Y()) 
+    EvalLocalPosition(logWeight, digits) ;
+  
+  const Float_t kDeg2Rad = TMath::DegToRad() ; 
+    
+  Float_t cluEta =  fLocPos.X() ; 
+  Float_t cluPhi =  fLocPos.Y() ; 
+  Float_t cluR =  fLocPos.Z() ; 
+  
+  if (gDebug == 2) 
+    printf("EvalDispersion: eta,phi,r = %f,%f,%f", cluEta, cluPhi, cluR) ;
+  
+  // Calculates the dispersion in coordinates 
+  wtot = 0.;
+  for(iDigit=0; iDigit < fMulDigit; iDigit++) {
+    digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
+    Float_t etai = 0.;
+    Float_t phii = 0.;
+    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+    phii = phii * kDeg2Rad;
+    if (gDebug == 2) 
+      printf("EvalDispersion: id = %d, etai,phii = %f,%f", digit->GetId(), etai, phii) ;
+
+    Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    d += w * ( (etai-cluEta)*(etai-cluEta) + (phii-cluPhi)*(phii-cluPhi) ) ; 
+    wtot+=w ;
+  }
+  
+  if ( wtot > 0 ) 
+    d /= wtot ;
+  else 
+    d = 0. ; 
+
+  fDispersion = TMath::Sqrt(d) ;
+ 
+}
+
+//____________________________________________________________________________
+void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)
+{
+  // Calculates the center of gravity in the local EMCAL-module coordinates 
+  Float_t wtot = 0. ;
+ 
+  //  Int_t relid[3] ;
+  
+  AliEMCALDigit * digit ;
+  AliEMCALGeometry * geom  =  (AliEMCALGetter::Instance())->EMCALGeometry();
+  Int_t iDigit;
+  Float_t cluEta = 0;
+  Float_t cluPhi = 0;
+  const Float_t kDeg2Rad = TMath::DegToRad();
+
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = dynamic_cast<AliEMCALDigit *>(digits->At(fDigitsList[iDigit])) ;
+
+    Float_t etai ;
+    Float_t phii ;
+    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+    phii = phii * kDeg2Rad;
+    Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+    cluEta += (etai * w) ;
+    cluPhi += (phii * w );
+    wtot += w ;
+  }
+
+  if ( wtot > 0 ) { 
+    cluEta /= wtot ;
+    cluPhi /= wtot ;
+  } else {
+    cluEta = -1 ; 
+    cluPhi = -1.; 
+  }
+  
+  fLocPos.SetX(cluEta);
+  fLocPos.SetY(cluPhi);
+  fLocPos.SetZ(geom->GetIP2ECASection());
+    
+  if (gDebug==2)
+    printf("EvalLocalPosition: eta,phi,r = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
+  fLocPosM = 0 ;
+}
+
+//______________________________________________________________________________
+void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
+{
+  // This function calculates energy in the core, 
+  // i.e. within a radius rad = 3cm around the center. Beyond this radius
+  // in accordance with shower profile the energy deposition 
+  // should be less than 2%
+
+  AliEMCALDigit * digit ;
+  const Float_t kDeg2Rad = TMath::DegToRad() ;
+  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();    
+  Int_t iDigit;
+
+  if (!fLocPos.X() || !fLocPos.Y() ) {
+    EvalLocalPosition(logWeight, digits);
+  }
+  
+  for(iDigit=0; iDigit < fMulDigit; iDigit++) {
+    digit = (AliEMCALDigit *) ( digits->At(fDigitsList[iDigit]) ) ;
+    Float_t etai = 0. ;
+    Float_t phii = 0. ;
+    geom->PosInAlice(digit->GetId(), etai, phii);
+    phii = phii * kDeg2Rad;
+  
+    Float_t distance = TMath::Sqrt((etai-fLocPos.X())*(etai-fLocPos.X())+(phii-fLocPos.Y())*(phii-fLocPos.Y())) ;
+    if(distance < fCoreRadius)
+      fCoreEnergy += fEnergyList[iDigit] ;
+  }
+  
+}
+//____________________________________________________________________________
+void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
+{
+  // Calculates the axis of the shower ellipsoid in eta and phi
+
+  Double_t wtot = 0. ;
+  Double_t x    = 0.;
+  Double_t z    = 0.;
+  Double_t dxx  = 0.;
+  Double_t dzz  = 0.;
+  Double_t dxz  = 0.;
+
+  AliEMCALDigit * digit ;
+
+  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+
+  Int_t iDigit;
+  
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
+    Float_t etai = 0. ;
+    Float_t phii = 0. ; 
+    geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+    Double_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    dxx  += w * etai * etai ;
+    x    += w * etai ;
+    dzz  += w * phii * phii ;
+    z    += w * phii ; 
+    dxz  += w * etai * etai ; 
+    wtot += w ;
+  }
+  if ( wtot > 0 ) { 
+    dxx /= wtot ;
+    x   /= wtot ;
+    dxx -= x * x ;
+    dzz /= wtot ;
+    z   /= wtot ;
+    dzz -= z * z ;
+    dxz /= wtot ;
+    dxz -= x * z ;
+
+    fLambda[0] =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    if(fLambda[0] > 0)
+      fLambda[0] = TMath::Sqrt(fLambda[0]) ;
+    else
+      fLambda[0] = 0;
+    
+    fLambda[1] =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    if(fLambda[1] > 0) //To avoid exception if numerical errors lead to negative lambda.
+      fLambda[1] = TMath::Sqrt(fLambda[1]) ;
+    else
+      fLambda[1]= 0. ;
+  } else { 
+    fLambda[0]= 0. ;
+    fLambda[1]= 0. ;
   }
 }
 
@@ -243,27 +529,124 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
 }
 
 //____________________________________________________________________________
-void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
-{
-  // returns the position of the cluster in the global reference system of ALICE
-  
-  AliEMCALGeometry * emcalgeom = AliEMCALGetter::Instance()->EMCALGeometry();  
-  gpos.SetX(fPhi) ;
-  if ( IsInECA() ) 
-    gpos.SetY(emcalgeom->GetIP2ECASection()) ;
-  else 
-    Fatal("GetGlobalPosition", "Unexpected tower section") ; 
-  gpos.SetZ(fTheta) ; 
-}
-
-//____________________________________________________________________________
 void AliEMCALRecPoint::GetLocalPosition(TVector3 & lpos) const
 {
-  // returns the position of the cluster in the global reference system of ALICE
+  // returns the position of the cluster in the local reference system of ALICE
+  // X = eta, Y = phi, Z = r (a constant for the EMCAL)
   
   lpos.SetX(fLocPos.X()) ;
   lpos.SetY(fLocPos.Y()) ;
   lpos.SetZ(fLocPos.Z()) ;
+}
+
+//____________________________________________________________________________
+void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
+{
+  // returns the position of the cluster in the global reference system of ALICE
+  // These are now the Cartesian X, Y and Z
+
+  AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
+  Int_t absid = geom->TowerIndexFromEtaPhi(fLocPos.X(), TMath::RadToDeg()*fLocPos.Y());
+  geom->XYZFromIndex(absid, gpos);
+}
+
+//____________________________________________________________________________
+Float_t AliEMCALRecPoint::GetMaximalEnergy(void) const
+{
+  // Finds the maximum energy in the cluster
+  
+  Float_t menergy = 0. ;
+
+  Int_t iDigit;
+
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+ 
+    if(fEnergyList[iDigit] > menergy) 
+      menergy = fEnergyList[iDigit] ;
+  }
+  return menergy ;
+}
+
+//____________________________________________________________________________
+Int_t AliEMCALRecPoint::GetMultiplicityAtLevel(Float_t H) const
+{
+  // Calculates the multiplicity of digits with energy larger than H*energy 
+  
+  Int_t multipl   = 0 ;
+  Int_t iDigit ;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+
+    if(fEnergyList[iDigit] > H * fAmp) 
+      multipl++ ;
+  }
+  return multipl ;
+}
+
+//____________________________________________________________________________
+Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
+					       Float_t locMaxCut,TClonesArray * digits) const
+{ 
+  // Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
+  // energy difference between two local maxima
+
+  AliEMCALDigit * digit ;
+  AliEMCALDigit * digitN ;
+  
+  Int_t iDigitN ;
+  Int_t iDigit ;
+
+  for(iDigit = 0; iDigit < fMulDigit; iDigit++)
+    maxAt[iDigit] = (AliEMCALDigit*) digits->At(fDigitsList[iDigit])  ;
+  
+  for(iDigit = 0 ; iDigit < fMulDigit; iDigit++) {   
+    if(maxAt[iDigit]) {
+      digit = maxAt[iDigit] ;
+          
+      for(iDigitN = 0; iDigitN < fMulDigit; iDigitN++) {	
+	digitN = (AliEMCALDigit *) digits->At(fDigitsList[iDigitN]) ; 
+	
+	if ( AreNeighbours(digit, digitN) ) {
+	  if (fEnergyList[iDigit] > fEnergyList[iDigitN] ) {    
+	    maxAt[iDigitN] = 0 ;
+	    // but may be digit too is not local max ?
+	    if(fEnergyList[iDigit] < fEnergyList[iDigitN] + locMaxCut) 
+	      maxAt[iDigit] = 0 ;
+	  }
+	  else {
+	    maxAt[iDigit] = 0 ;
+	    // but may be digitN too is not local max ?
+	    if(fEnergyList[iDigit] > fEnergyList[iDigitN] - locMaxCut) 
+	      maxAt[iDigitN] = 0 ; 
+	  } 
+	} // if Areneighbours
+      } // while digitN
+    } // slot not empty
+  } // while digit
+  
+  iDigitN = 0 ;
+  for(iDigit = 0; iDigit < fMulDigit; iDigit++) { 
+    if(maxAt[iDigit] ){
+      maxAt[iDigitN] = maxAt[iDigit] ;
+      maxAtEnergy[iDigitN] = fEnergyList[iDigit] ;
+      iDigitN++ ; 
+    }
+  }
+  return iDigitN ;
+}
+//____________________________________________________________________________
+void AliEMCALRecPoint::EvalTime(TClonesArray * digits){
+  // time is set to the time of the digit with the maximum energy
+
+  Float_t maxE = 0;
+  Int_t maxAt = 0;
+  for(Int_t idig=0; idig < fMulDigit; idig++){
+    if(fEnergyList[idig] > maxE){
+      maxE = fEnergyList[idig] ;
+      maxAt = idig;
+    }
+  }
+  fTime = ((AliEMCALDigit*) digits->At(fDigitsList[maxAt]))->GetTime() ;
+  
 }
 
 //______________________________________________________________________________
@@ -286,4 +669,18 @@ void AliEMCALRecPoint::Paint(Option_t *)
   }
   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
   gPad->PaintPolyMarker(1,&x,&y,"") ;
+}
+
+//______________________________________________________________________________
+Float_t AliEMCALRecPoint::EtaToTheta(Float_t arg) const
+{
+  //Converts Theta (Radians) to Eta(Radians)
+  return (2.*TMath::ATan(TMath::Exp(-arg)));
+}
+
+//______________________________________________________________________________
+Float_t AliEMCALRecPoint::ThetaToEta(Float_t arg) const
+{
+  //Converts Eta (Radians) to Theta(Radians)
+  return (-1 * TMath::Log(TMath::Tan(0.5 * arg)));
 }

@@ -37,7 +37,6 @@ class AliEMCAL ;
 class AliEMCALGeometry ; 
 class AliEMCALClusterizer ; 
 class AliEMCALRecPoint ; 
-class AliEMCALTowerRecPoint ; 
 class AliEMCALTrackSegmentMaker ;
 class AliEMCALTrackSegment ; 
 class AliEMCALPID ; 
@@ -133,7 +132,7 @@ class AliEMCALGetter : public TObject {
   
   //========== RecPoints =============
   TObjArray *             ECARecPoints() const;
-  AliEMCALTowerRecPoint * ECARecPoint(Int_t index) const{ return static_cast<AliEMCALTowerRecPoint *>(ECARecPoints()->At(index)) ;}    
+  AliEMCALRecPoint * ECARecPoint(Int_t index) const{ return static_cast<AliEMCALRecPoint *>(ECARecPoints()->At(index)) ;}    
   TTree *                 TreeR() const ;
   AliEMCALClusterizer *   Clusterizer()  ;
   TString                 GetRecPointsFileName() const { return EmcalLoader()->GetRecPointsFileName() ; } 
