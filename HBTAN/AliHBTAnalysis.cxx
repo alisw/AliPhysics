@@ -828,9 +828,9 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
   AliHBTParticle * part1, * part2;
   AliHBTParticle * track1, * track2;
 
-  AliHBTEvent * trackEvent1,*partEvent1;
-  AliHBTEvent * trackEvent2,*partEvent2;
-  AliHBTEvent * trackEvent3,*partEvent3;
+  AliHBTEvent * trackEvent1=0x0,*partEvent1=0x0;
+  AliHBTEvent * trackEvent2=0x0,*partEvent2=0x0;
+  AliHBTEvent * trackEvent3=0x0,*partEvent3=0x0;
 
   AliHBTEvent * rawtrackEvent, *rawpartEvent;
   
@@ -985,9 +985,9 @@ void AliHBTAnalysis::ProcessTracksNonIdentAnal()
 {
   AliHBTParticle * track1, * track2;
 
-  AliHBTEvent * trackEvent1;
-  AliHBTEvent * trackEvent2;
-  AliHBTEvent * trackEvent3;
+  AliHBTEvent * trackEvent1=0x0;
+  AliHBTEvent * trackEvent2=0x0;
+  AliHBTEvent * trackEvent3=0x0;
 
   AliHBTEvent * rawtrackEvent;
   
