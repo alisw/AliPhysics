@@ -38,6 +38,7 @@
 #include <TROOT.h>
 #include <TVirtualMC.h>
 
+#include "AliLog.h"
 #include "AliMC.h"
 #include "AliMCQA.h"
 #include "AliModule.h"
@@ -172,7 +173,7 @@ AliMCQA::AliMCQA(Int_t ndets):
 //_______________________________________________________________________
 void AliMCQA::Copy(TObject &) const
 {
-  Fatal("Copy ctor","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________

@@ -25,6 +25,7 @@
 #include "AliLegoGenerator.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliLog.h"
 
 ClassImp(AliLegoGenerator)
 
@@ -94,11 +95,11 @@ void AliLegoGenerator::Generate()
    // Prepare for next step
    if(fCoor1Bin>=fNCoor1-1)
      if(fCoor2Bin>=fNCoor2-1) {
-       Warning("Generate","End of Lego Generation");
+       AliWarning("End of Lego Generation");
        return;
      } else { 
        fCoor2Bin++;
-       printf("Generating rays in phi bin:%d\n",fCoor2Bin);
+       AliDebug(1, Form("Generating rays in phi bin:%d",fCoor2Bin));
        fCoor1Bin=0;
      } else fCoor1Bin++;
 

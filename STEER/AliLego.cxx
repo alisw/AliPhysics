@@ -51,6 +51,7 @@
 #include "TString.h"
 #include "TVirtualMC.h"
 
+#include "AliLog.h"
 #include "AliDebugVolume.h"
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
@@ -143,7 +144,7 @@ AliLego::AliLego(const char *title, Int_t ntheta, Float_t thetamin,
 //
    fVolumesFwd     = new TClonesArray("AliDebugVolume",1000);
    fVolumesBwd     = new TClonesArray("AliDebugVolume",1000);
-   fDebug          = gAlice->GetDebug();
+   fDebug          = AliDebugLevel();
 }
 
 //_______________________________________________________________________
@@ -187,7 +188,7 @@ AliLego::AliLego(const char *title, AliLegoGenerator* generator):
 
   fVolumesFwd     = new TClonesArray("AliDebugVolume",1000);
   fVolumesBwd     = new TClonesArray("AliDebugVolume",1000);
-  fDebug          = gAlice->GetDebug();
+  fDebug          = AliDebugLevel();
 }
 
 //_______________________________________________________________________
@@ -215,7 +216,7 @@ void AliLego::BeginEvent()
   fTotGcm2 = 0;
 
   if (fDebug) {
-    if (fErrorCondition) DumpVolumes();
+    if (fErrorCondition) ToAliDebug(1, DumpVolumes());
     fVolumesFwd->Delete();
     fVolumesBwd->Delete();
     fStepsForward    = 0;
@@ -254,7 +255,7 @@ void AliLego::FinishRun()
   fHistAbso->Delete(); fHistAbso=0;
   fHistGcm2->Delete(); fHistGcm2=0;
   //
-  if (fErrorCondition) DumpVolumes();
+  if (fErrorCondition) ToAliError(DumpVolumes());
 }
 
 //_______________________________________________________________________
@@ -263,7 +264,7 @@ void AliLego::Copy(TObject&) const
   //
   // Copy *this onto lego -- not implemented
   //
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________
@@ -405,8 +406,8 @@ void AliLego::StepManager()
         AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesFwd)[fStepsBackward]);
         if (! (tmp->IsVEqual(vol, copy)) && (!fErrorCondition)) 
           {
-            printf("\n Problem at (x,y,z): %d %f %f %f, volumes: %s %s step: %f\n", 
-                   fStepsBackward, pos[0], pos[1], pos[2], tmp->GetName(), vol, step);
+            AliWarning(Form("Problem at (x,y,z): %d %f %f %f, volumes: %s %s step: %f\n", 
+			    fStepsBackward, pos[0], pos[1], pos[2], tmp->GetName(), vol, step));
             fErrorCondition = 1;
           } 
       } // Debug

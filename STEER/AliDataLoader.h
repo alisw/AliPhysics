@@ -110,7 +110,6 @@ class AliDataLoader: public TNamed
    void Synchronize();
 
   protected:
-   Int_t              GetDebug() const;
    AliRunLoader*      GetRunLoader();//gets the run-loader from event folder
 
   private:
@@ -175,7 +174,6 @@ class AliBaseLoader: public TNamed
     virtual void       RemoveFromBoard(TObject* obj) = 0;
     
     AliDataLoader*     GetDataLoader() const;
-    Int_t              GetDebug() const;
 
     Bool_t             fIsLoaded;    //!  flag indicating if data are loaded
     Bool_t             fStoreInTopOfFile;// if true, data are stored in top of file ->Indicates fDoNotReload == kTRUE

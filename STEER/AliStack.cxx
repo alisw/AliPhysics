@@ -31,6 +31,7 @@
 #include <TParticlePDG.h>
 #include <TTree.h>
 
+#include "AliLog.h"
 #include "AliHit.h"
 #include "AliModule.h"
 #include "AliRun.h"
@@ -104,7 +105,7 @@ AliStack::AliStack(const AliStack& st):
 //_______________________________________________________________________
 void AliStack::Copy(TObject&) const
 {
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________
@@ -169,8 +170,8 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		 vpos[0], vpos[1], vpos[2], tof, polar[0], polar[1], polar[2],
 		 mech, ntr, weight, is);
     } else {
-	Warning("PushTrack", "Particle type %d not defined in PDG Database !\n", pdg);
-	Warning("PushTrack", "Particle skipped !\n");
+	AliWarning(Form("Particle type %d not defined in PDG Database !", pdg));
+	AliWarning("Particle skipped !");
     }
 }
 
@@ -233,7 +234,7 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
       if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
     }
     else {
-      printf("Error in AliStack::PushTrack: Parent %d does not exist\n",parent);
+      AliError(Form("Parent %d does not exist",parent));
     }
   } 
   else { 
@@ -608,7 +609,7 @@ void AliStack::FinishEvent()
       
       // When all primaries were filled no particle!=0
       // should be left => to be removed later.
-      if (allFilled) printf("Why != 0 part # %d?\n",i);
+      if (allFilled) AliWarning(Form("Why != 0 part # %d?\n",i));
     }
     else 
      {
@@ -720,9 +721,9 @@ TParticle* AliStack::Particle(Int_t i)
     // and the fParticleFileMap[i] give the same;
     // give the fatal error if not
     if (entry != fParticleFileMap[i]) {
-      Fatal("Particle",
+      AliFatal(Form(
         "!! The algorithmic way and map are different: !!\n entry: %d map: %d",
-	entry, fParticleFileMap[i]); 
+	entry, fParticleFileMap[i])); 
     } 
       
     TreeK()->GetEntry(entry);
@@ -772,7 +773,7 @@ Int_t AliStack::GetCurrentParentTrackNumber() const
   if (current) 
     return current->GetFirstMother();
   else {
-    Warning("GetCurrentParentTrackNumber", "Current track not found in the stack");
+    AliWarning("Current track not found in the stack");
     return -1;
   }  
 }
@@ -934,7 +935,7 @@ TTree* AliStack::TreeK()
      AliRunLoader *rl = AliRunLoader::GetRunLoader(fEventFolderName);
      if (rl == 0x0)
       {
-        Fatal("TreeK","Can not get RunLoader from event folder named %s",fEventFolderName.Data());
+        AliFatal(Form("Can not get RunLoader from event folder named %s",fEventFolderName.Data()));
         return 0x0;//pro forma
       }
     fTreeK = rl->TreeK();
@@ -945,10 +946,7 @@ TTree* AliStack::TreeK()
     else
      {
       //don't panic - could be Lego
-      if (AliLoader::GetDebug()) 
-       { 
-         Warning("TreeK","Can not get TreeK from RL. Ev. Folder is %s",fEventFolderName.Data());
-       } 
+      AliWarning(Form("Can not get TreeK from RL. Ev. Folder is %s",fEventFolderName.Data()));
      }
    }
   return fTreeK;//never reached
@@ -960,12 +958,12 @@ void AliStack::ConnectTree()
 //
 //  Creates branch for writing particles
 //
-  if (AliLoader::GetDebug()) Info("ConnectTree","Connecting TreeK");
+  AliDebug(1, "Connecting TreeK");
   if (fTreeK == 0x0)
    {
     if (TreeK() == 0x0)
      {
-      Fatal("ConnectTree","Parameter is NULL");//we don't like such a jokes
+      AliFatal("Parameter is NULL");//we don't like such a jokes
       return;
      }
     return;//in this case TreeK() calls back this method (ConnectTree) 
@@ -975,35 +973,32 @@ void AliStack::ConnectTree()
 
  //  Create a branch for particles   
   
-  if (AliLoader::GetDebug()) 
-   Info("ConnectTree","Tree name is %s",fTreeK->GetName());
+  AliDebug(2, Form("Tree name is %s",fTreeK->GetName()));
    
   if (fTreeK->GetDirectory())
    {
-     if (AliLoader::GetDebug())    
-      Info("ConnectTree","and dir is %s",fTreeK->GetDirectory()->GetName());
+     AliDebug(2, Form("and dir is %s",fTreeK->GetDirectory()->GetName()));
    }    
   else
-    Warning("ConnectTree","DIR IS NOT SET !!!");
+    AliWarning("DIR IS NOT SET !!!");
   
   TBranch *branch=fTreeK->GetBranch(AliRunLoader::GetKineBranchName());
   if(branch == 0x0)
    {
     branch = fTreeK->Branch(AliRunLoader::GetKineBranchName(), "TParticle", &fParticleBuffer, 4000);
-    if (AliLoader::GetDebug()) Info("ConnectTree","Creating Branch in Tree");
+    AliDebug(2, "Creating Branch in Tree");
    }  
   else
    {
-    if (AliLoader::GetDebug()) Info("ConnectTree","Branch Found in Tree");
+    AliDebug(2, "Branch Found in Tree");
     branch->SetAddress(&fParticleBuffer);
    }
   if (branch->GetDirectory())
    {
-    if (AliLoader::GetDebug()) 
-      Info("ConnectTree","Branch Dir Name is %s",branch->GetDirectory()->GetName());
+    AliDebug(1, Form("Branch Dir Name is %s",branch->GetDirectory()->GetName()));
    } 
   else
-    Warning("ConnectTree","Branch Dir is NOT SET");
+    AliWarning("Branch Dir is NOT SET");
 }
 //__________________________________________________________________________________________
 
@@ -1031,7 +1026,7 @@ Bool_t AliStack::GetEvent()
 
     if (TreeK() == 0x0) //forces connecting
      {
-      Error("GetEvent","cannot find Kine Tree for current event\n");
+      AliError("cannot find Kine Tree for current event");
       return kFALSE;
      }
       

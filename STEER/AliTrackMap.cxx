@@ -34,6 +34,7 @@
 
 #include <Riostream.h>
 
+#include "AliLog.h"
 #include "AliTrackMap.h"
 
 ClassImp(AliTrackMap)
@@ -75,7 +76,7 @@ AliTrackMap::AliTrackMap(Int_t size, Int_t *array):
 //_______________________________________________________________________
 void AliTrackMap::Copy(TObject& ) const
 {
-  Fatal("Copy","Not implemented\n");
+  AliFatal("Not implemented");
 }
 
 //_______________________________________________________________________
@@ -95,7 +96,7 @@ Int_t AliTrackMap::At(Int_t label) const
   // label label
   //
   if (label < 0 || label >= fSize) {
-    cerr<<"AliTrackMap::At: label "<<label<<" out of range, fSize = "<<fSize<<endl;
+    AliError(Form("label %d out of range, fSize = %d", label, fSize));
     return kOutOfBounds;
   }
   return fArray[label];

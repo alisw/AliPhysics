@@ -55,6 +55,7 @@
 class TTask;
 #include <TTree.h>
 
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliConfig.h"
 #include "AliLoader.h"
@@ -178,7 +179,7 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
  if(topfolder == 0x0)
   {
     TString errmsg("Parameter is NULL");
-    Error("AliRunLoader(TFolder*)","%s",errmsg.Data());
+    AliError(errmsg.Data());
     throw errmsg;
     return;
   }
@@ -190,7 +191,7 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
     errmsg+=fEventFolder->GetName();
     errmsg+=" object named "+fgkRunLoaderName+" already exists. I am confused ...";
 
-    Error("AliRunLoader(const char*)","%s",errmsg.Data());
+    AliError(errmsg.Data());
     throw errmsg;
     return;//never reached
   }
@@ -204,7 +205,7 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
 
 void AliRunLoader::Copy(TObject &) const 
 {
-  Fatal("Copy","Not implemented");
+  AliFatal("Not implemented");
 }
 /**************************************************************************/
 
@@ -216,26 +217,23 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
   
   if (evno < 0)
    {
-     Error("GetEvent","Can not give the event with negative number");
+     AliError("Can not give the event with negative number");
      return 4;
    }
 
   if (evno >= GetNumberOfEvents())
    {
-     Error("GetEvent","There is no event with number %d",evno);
+     AliError(Form("There is no event with number %d",evno));
      return 3;
    }
   
-  if (GetDebug()) 
-   {
-     Info("GetEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("GetEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("GetEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("GetEvent","          GETTING EVENT  %d",evno);
-     Info("GetEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("GetEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("GetEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-   }
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, Form("          GETTING EVENT  %d",evno));
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
    
   fCurrentEvent = evno;
 
@@ -247,7 +245,7 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
      retval = TreeE()->GetEvent(fCurrentEvent);
      if ( retval == 0)
       {
-        Error("GetEvent","Cannot find event: %d\n ",fCurrentEvent);
+        AliError(Form("Cannot find event: %d\n ",fCurrentEvent));
         return 5;
       }
    }
@@ -260,13 +258,13 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
    }
   else
    {
-     Warning("GetEvent","Stack not found in header");
+     AliWarning("Stack not found in header");
    }
   
   retval = SetEvent();
   if (retval)
    {
-     Error("GetEvent","Error occured while setting event %d",evno);
+     AliError(Form("Error occured while setting event %d",evno));
      return 1;
    }
    
@@ -274,7 +272,7 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
   retval = fTrackRefsDataLoader->GetEvent();
   if (retval)
    {
-     Error("GetEvent","Error occured while GetEvent for Track References. Event %d",evno);
+     AliError(Form("Error occured while GetEvent for Track References. Event %d",evno));
      return 2;
    }
 
@@ -282,7 +280,7 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
   fKineDataLoader->GetEvent();
   if (retval)
    {
-     Error("GetEvent","Error occured while GetEvent for Kinematics. Event %d",evno);
+     AliError(Form("Error occured while GetEvent for Kinematics. Event %d",evno));
      return 2;
    }
 
@@ -296,8 +294,8 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
      retval = loader->GetEvent();
      if (retval)
       {
-       Error("GetEvent","Error occured while getting event for %s. Event %d.",
-              loader->GetDetectorName().Data(), evno);
+       AliError(Form("Error occured while getting event for %s. Event %d.",
+		     loader->GetDetectorName().Data(), evno));
        return 3;
       }
    }
@@ -316,13 +314,13 @@ Int_t AliRunLoader::SetEvent()
   retval = fKineDataLoader->SetEvent();
   if (retval)
    {
-     Error("SetEvent","SetEvent for Kinamtics Data Loader retutned error.");
+     AliError("SetEvent for Kinamtics Data Loader retutned error.");
      return retval;
    }
   retval = fTrackRefsDataLoader->SetEvent(); 
   if (retval)
    {
-     Error("SetEvent","SetEvent for Track References Data Loader retutned error.");
+     AliError("SetEvent for Track References Data Loader retutned error.");
      return retval;
    }
 
@@ -333,7 +331,7 @@ Int_t AliRunLoader::SetEvent()
      retval = loader->SetEvent();
      if (retval)
       {
-        Error("SetEvent","SetEvent for %s Data Loader retutned error.",loader->GetName());
+        AliError(Form("SetEvent for %s Data Loader retutned error.",loader->GetName()));
         return retval;
       }
    }
@@ -360,9 +358,7 @@ AliRunLoader* AliRunLoader::Open
 //in case of error returns NULL
  
  static const TString kwebaddress("http://alisoft.cern.ch/people/skowron/codedoc/split/index.html");
- if (AliLoader::GetDebug()) 
-  ::Info("AliRunLoader::Open",
-         "\n\n\nNew I/O strcture: See more info:\n %s\n\n\n",kwebaddress.Data());
+ AliDebugClass(1,Form("\n\n\nNew I/O strcture: See more info:\n %s\n\n\n",kwebaddress.Data()));
  
  AliRunLoader* result = 0x0;
  
@@ -376,7 +372,7 @@ AliRunLoader* AliRunLoader::Open
     TFolder* fold = dynamic_cast<TFolder*>(obj);
     if (fold == 0x0)
      {
-      ::Error("AliRunLoader::Open","Such a obejct already exists in top alice folder and it is not a folder.");
+      AliErrorClass("Such a obejct already exists in top alice folder and it is not a folder.");
       return 0x0;
      }
     
@@ -384,23 +380,21 @@ AliRunLoader* AliRunLoader::Open
     result = AliRunLoader::GetRunLoader(eventfoldername);
     if (result == 0x0)
      {
-       ::Error("AliRunLoader::Open",
-               "Folder %s already exists, and can not find session there. Can not mount.",eventfoldername);
+       AliErrorClass(Form("Folder %s already exists, and can not find session there. Can not mount.",eventfoldername));
        return 0x0;
      }
 
     if (result->GetFileName().CompareTo(filename) != 0)
      {
-       ::Error("AliRunLoader::Open","Other file is mounted in demanded folder. Can not mount.");
+       AliErrorClass("Other file is mounted in demanded folder. Can not mount.");
        return 0x0;
      }
 
     //check if now is demanded (re)creation 
     if ( AliLoader::TestFileOption(option) == kFALSE)
      {
-       ::Error("AliRunLoader::Open",
-               "Session already exists in folder %s and this session option is %s. Unable to proceed.",
-                eventfoldername,option);
+       AliErrorClass(Form("Session already exists in folder %s and this session option is %s. Unable to proceed.",
+			  eventfoldername,option));
        return 0x0;
      }
      
@@ -409,13 +403,12 @@ AliRunLoader* AliRunLoader::Open
     if ( (tmpstr.CompareTo("update",TString::kIgnoreCase) == 0) && 
          (result->fGAFile->IsWritable() == kFALSE) )
      { 
-       ::Error("AliRunLoader::Open",
-               "Session already exists in folder %s and is not writable while this session option is %s. Unable to proceed.",
-                eventfoldername,option);
+       AliErrorClass(Form("Session already exists in folder %s and is not writable while this session option is %s. Unable to proceed.",
+			  eventfoldername,option));
        return 0x0;
      }
      
-    ::Warning("AliRunLoader::Open","Session is already opened and mounted in demanded folder");	
+    AliWarningClass("Session is already opened and mounted in demanded folder");	
     return result;
   } //end of checking in case of existance of object named identically that folder session is being opened
  
@@ -423,13 +416,13 @@ AliRunLoader* AliRunLoader::Open
  TFile * gAliceFile = TFile::Open(filename,option);//open a file
  if (!gAliceFile) 
   {//null pointer returned
-    ::Fatal("AliRunLoader::Open","Can not open file %s.",filename);
+    AliFatalClass(Form("Can not open file %s.",filename));
     return 0x0;
   }
   
  if (gAliceFile->IsOpen() == kFALSE)
   {//pointer to valid object returned but file is not opened
-    ::Error("AliRunLoader::Open","Can not open file %s.",filename);
+    AliErrorClass(Form("Can not open file %s.",filename));
     return 0x0;
   }
  
@@ -437,20 +430,19 @@ AliRunLoader* AliRunLoader::Open
  //else create new AliRunLoader
  if ( AliLoader::TestFileOption(option) )
   { 
-    if (AliLoader::GetDebug()) 
-     ::Info("AliRunLoader::Open","Reading RL from file");
+    AliDebugClass(1, "Reading RL from file");
     
     result = dynamic_cast<AliRunLoader*>(gAliceFile->Get(fgkRunLoaderName));//get the run Loader from the file
     if (result == 0x0)
      {//didn't get
-       ::Error("AliRunLoader::Open","Can not find run-Loader in file %s.",filename);
+       AliErrorClass(Form("Can not find run-Loader in file %s.",filename));
        delete gAliceFile;//close the file
        return 0x0;
      }
     Int_t tmp = result->SetEventFolderName(eventfoldername);//mount a event folder   
     if (tmp)//if SetEvent  returned error
      {
-       ::Error("AliRunLoader::Open","Can not mount event in folder %s.",eventfoldername);
+       AliErrorClass(Form("Can not mount event in folder %s.",eventfoldername));
        delete result; //delete run-Loader
        delete gAliceFile;//close the file
        return 0x0;
@@ -458,15 +450,14 @@ AliRunLoader* AliRunLoader::Open
   }
  else
   {
-    if (AliLoader::GetDebug()) 
-      ::Info("AliRunLoader::Open","Creating new AliRunLoader. Folder name is %s",eventfoldername);
+    AliDebugClass(1, Form("Creating new AliRunLoader. Folder name is %s",eventfoldername));
     try
      {  
        result = new AliRunLoader(eventfoldername);
      }
     catch (TString& errmsg)
      {
-       ::Error("Open","AliRunLoader constrcutor has thrown exception: %s\n",errmsg.Data());
+       AliErrorClass(Form("AliRunLoader constrcutor has thrown exception: %s\n",errmsg.Data()));
        delete result;
        delete gAliceFile;//close the file
        return 0x0;
@@ -485,8 +476,7 @@ AliRunLoader* AliRunLoader::Open
   }
  else dirname = fname.Remove(nsl);//slash found
  
- if (AliLoader::GetDebug()) 
-  ::Info("AliRunLoader::Open","Dir name is : %s",dirname.Data());
+ AliDebugClass(1, Form("Dir name is : %s",dirname.Data()));
  
  result->SetDirName(dirname); 
  result->SetGAliceFile(gAliceFile);//set the pointer to gAliceFile
@@ -503,7 +493,7 @@ Int_t AliRunLoader::GetNumberOfEvents()
     retval = LoadHeader();
     if (retval) 
      {
-       Error("GetNumberOfEvents","Error occured while loading header");
+       AliError("Error occured while loading header");
        return -1;
      }
   }
@@ -514,26 +504,26 @@ Int_t AliRunLoader::GetNumberOfEvents()
 void AliRunLoader::MakeHeader()
 {
  //Makes header and connects it to header tree (if it exists)
-  if (GetDebug()) Info("MakeHeader","");
+  AliDebug(1, "");
   if(fHeader == 0x0)
    {
-     if (GetDebug()) Info("MakeHeader","Creating new Header Object");
+     AliDebug(1, "Creating new Header Object");
      fHeader= new AliHeader();
    }
   TTree* tree = TreeE();
   if (tree)
    {
-     if (GetDebug()) Info("MakeHeader","Got Tree from folder.");
+     AliDebug(1, "Got Tree from folder.");
      TBranch* branch = tree->GetBranch(fgkHeaderBranchName);
      if (branch == 0x0)
       {
-        if (GetDebug()) Info("MakeHeader","Creating new branch");
+        AliDebug(1, "Creating new branch");
         branch = tree->Branch(fgkHeaderBranchName, "AliHeader", &fHeader, 4000, 0);
         branch->SetAutoDelete(kFALSE);
       }
      else
       {
-        if (GetDebug()) Info("MakeHeader","Got Branch from Tree");
+        AliDebug(1, "Got Branch from Tree");
         branch->SetAddress(&fHeader);
         tree->GetEvent(fCurrentEvent);
         fStack = fHeader->Stack(); //should be safe - if we created Stack, header returns pointer to the same object
@@ -544,11 +534,11 @@ void AliRunLoader::MakeHeader()
          }
         else
         {
-          if (GetDebug()) Info("MakeHeader","Haeder do not have a stack.");
+          AliDebug(1, "Header does not have a stack.");
         }
       }
    } 
-  if (GetDebug()) Info("MakeHeader","Exiting MakeHeader method");
+  AliDebug(1, "Exiting MakeHeader method");
 }
 /**************************************************************************/
 
@@ -574,7 +564,7 @@ void AliRunLoader::MakeTree(Option_t *option)
    { 
      if (fKineDataLoader->GetBaseLoader(0)->IsLoaded() == kFALSE)
       {
-        Error("MakeTree(\"K\")","Load Kinematics first");
+        AliError("Load Kinematics first");
       }
      else
       {
@@ -609,20 +599,20 @@ Int_t AliRunLoader::LoadgAlice()
 //Loads gAlice from file
  if (GetAliRun())
   {
-    Warning("LoadgAlice","AliRun is already in folder. Unload first.");
+    AliWarning("AliRun is already in folder. Unload first.");
     return 0;
   }
  AliRun* alirun = dynamic_cast<AliRun*>(fGAFile->Get(fgkGAliceName));
  if (alirun == 0x0)
   {
-    Error("LoadgAlice"," Can not find gAlice in file %s",fGAFile->GetName());
+    AliError(Form("Can not find gAlice in file %s",fGAFile->GetName()));
     return 2;
   }
  alirun->SetRunLoader(this);
  if (gAlice)
   {
-    Warning("LoadgAlice","gAlice already exists. Putting retrived object in folder named %s",
-             GetEventFolder()->GetName());
+    AliWarning(Form("gAlice already exists. Putting retrived object in folder named %s",
+		    GetEventFolder()->GetName()));
   }
  else
   {
@@ -638,33 +628,33 @@ Int_t AliRunLoader::LoadHeader()
 //loads treeE and reads header object for current event
  if (TreeE())
   {
-     Warning("LoadHeader","Header is already loaded. Use ReloadHeader to force reload. Nothing done");
+     AliWarning("Header is already loaded. Use ReloadHeader to force reload. Nothing done");
      return 0;
   }
  
  if (GetEventFolder() == 0x0)
   {
-    Error("LoadHeader","Event folder not specified yet");
+    AliError("Event folder not specified yet");
     return 1;
   }
 
  if (fGAFile == 0x0)
   {
-    Error("LoadHeader","Session not opened. Use AliRunLoader::Open");
+    AliError("Session not opened. Use AliRunLoader::Open");
     return 2;
   }
  
  if (fGAFile->IsOpen() == kFALSE)
   {
-    Error("LoadHeader","Session not opened. Use AliRunLoader::Open");
+    AliError("Session not opened. Use AliRunLoader::Open");
     return 2;
   }
 
  TTree* tree = dynamic_cast<TTree*>(fGAFile->Get(fgkHeaderContainerName));
  if (tree == 0x0)
   {
-    Error("LoadHeader","Can not find header tree named %s in file %s",
-           fgkHeaderContainerName.Data(),fGAFile->GetName());
+    AliError(Form("Can not find header tree named %s in file %s",
+		  fgkHeaderContainerName.Data(),fGAFile->GetName()));
     return 2;
   }
 
@@ -684,7 +674,7 @@ Int_t AliRunLoader::LoadKinematics(Option_t* option)
  Int_t retval = fKineDataLoader->GetBaseLoader(0)->Load(option);
  if (retval)
   {
-    Error("LoadKinematics","Error occured while loading kinamatics tree.");
+    AliError("Error occured while loading kinamatics tree.");
     return retval;
   }
  if (fStack) 
@@ -692,7 +682,7 @@ Int_t AliRunLoader::LoadKinematics(Option_t* option)
     retval = fStack->GetEvent();
     if ( retval == kFALSE)
      {
-       Error("LoadKinematics","Error occured while loading kinamatics tree.");
+       AliError("Error occured while loading kinamatics tree.");
        return retval;
      }
     
@@ -708,13 +698,13 @@ Int_t AliRunLoader::OpenDataFile(const TString& filename,TFile*& file,TDirectory
   {
     if (file->IsOpen() == kFALSE)
      {//pointer is not null but file is not opened
-       Warning("OpenDataFile","Pointer to file is not null, but file is not opened");//risky any way
+       AliWarning("Pointer to file is not null, but file is not opened");//risky any way
        delete file;
        file = 0x0; //proceed with opening procedure
      }
     else
      { 
-       Warning("OpenDataFile","File  %s already opened",filename.Data());
+       AliWarning(Form("File  %s already opened",filename.Data()));
        return 0;
      }
   }
@@ -724,7 +714,7 @@ Int_t AliRunLoader::OpenDataFile(const TString& filename,TFile*& file,TDirectory
   {
    if(file->IsOpen() == kTRUE)
     {
-     Warning("OpenDataFile","File %s already opened by sombody else.",file->GetName());
+     AliWarning(Form("File %s already opened by sombody else.",file->GetName()));
      return 0;
     }
   }
@@ -732,12 +722,12 @@ Int_t AliRunLoader::OpenDataFile(const TString& filename,TFile*& file,TDirectory
  file = TFile::Open(filename,opt);
  if (file == 0x0)
   {//file is null
-    Error("LoadKinematics","Can not open file %s",filename.Data());
+    AliError(Form("Can not open file %s",filename.Data()));
     return 1;
   }
  if (file->IsOpen() == kFALSE)
   {//file is not opened
-   Error("LoadKinematics","Can not open file %s",filename.Data());
+    AliError(Form("Can not open file %s",filename.Data()));
    return 1;
   }
   
@@ -746,7 +736,7 @@ Int_t AliRunLoader::OpenDataFile(const TString& filename,TFile*& file,TDirectory
  dir = AliLoader::ChangeDir(file,fCurrentEvent);
  if (dir == 0x0)
   {
-    Error("OpenKineFile","Can not change to root directory in file %s",filename.Data());
+    AliError(Form("Can not change to root directory in file %s",filename.Data()));
     return 3;
   }
  return 0; 
@@ -756,7 +746,7 @@ Int_t AliRunLoader::OpenDataFile(const TString& filename,TFile*& file,TDirectory
 TTree* AliRunLoader::TreeE() const
 {
  //returns the tree from folder; shortcut method
- if (GetDebug() > 10) fEventFolder->ls();
+ if (AliDebugLevel() > 10) fEventFolder->ls();
  TObject *obj = fEventFolder->FindObject(fgkHeaderContainerName);
  return (obj)?dynamic_cast<TTree*>(obj):0x0;
 }
@@ -801,7 +791,7 @@ Int_t AliRunLoader::WriteGeometry(Option_t* /*opt*/)
   TGeometry* geo = GetAliRun()->GetGeometry();
   if (geo == 0x0)
    {
-     Error("WriteGeometry","Can not get geometry from gAlice");
+     AliError("Can not get geometry from gAlice");
      return 1;
    }
   geo->Write();
@@ -812,17 +802,17 @@ Int_t AliRunLoader::WriteGeometry(Option_t* /*opt*/)
 Int_t AliRunLoader::WriteHeader(Option_t* opt)
 {
 //writes treeE
-  if (GetDebug()) Info("WriteHeader","  WRITING HEADER");
+  AliDebug(1, "WRITING HEADER");
   
   TTree* tree = TreeE();
   if ( tree == 0x0)
    {
-     Warning("WriteHeader","Can not find Header Tree in Folder");
+     AliWarning("Can not find Header Tree in Folder");
      return 0;
    } 
   if (fGAFile->IsWritable() == kFALSE)
    {
-     Error("WriteHeader","File %s is not writable",fGAFile->GetName());
+     AliError(Form("File %s is not writable",fGAFile->GetName()));
      return 1;
    }
 
@@ -832,7 +822,7 @@ Int_t AliRunLoader::WriteHeader(Option_t* opt)
      TString tmp(opt);
      if(tmp.Contains("OVERWRITE",TString::kIgnoreCase) == 0)
       {//if it is not used -  give an error message and return an error code
-        Error("WriteHeader","Tree already exisists. Use option \"OVERWRITE\" to overwrite previous data");
+        AliError("Tree already exisists. Use option \"OVERWRITE\" to overwrite previous data");
         return 3;
       }
    }
@@ -840,7 +830,7 @@ Int_t AliRunLoader::WriteHeader(Option_t* opt)
   tree->SetDirectory(fGAFile);
   tree->Write(0,TObject::kOverwrite);
 
-  if (GetDebug()) Info("WriteHeader","WRITTEN\n\n");
+  AliDebug(1, "WRITTEN\n\n");
   
   return 0;
 }
@@ -880,7 +870,7 @@ Int_t AliRunLoader::WriteHits(Option_t* opt)
      res = loader->WriteHits(opt);
      if (res)
       {
-        Error("WriteHits","Failed to write hits for %s (%d)",loader->GetDetectorName().Data(),res);
+        AliError(Form("Failed to write hits for %s (%d)",loader->GetDetectorName().Data(),res));
         result = 1;
       }
    }
@@ -900,7 +890,7 @@ Int_t AliRunLoader::WriteSDigits(Option_t* opt)
      res = loader->WriteSDigits(opt);
      if (res)
       {
-        Error("WriteSDigits","Failed to write summable digits for %s.",loader->GetDetectorName().Data());
+        AliError(Form("Failed to write summable digits for %s.",loader->GetDetectorName().Data()));
         result = 1;
       }
    }
@@ -920,7 +910,7 @@ Int_t AliRunLoader::WriteDigits(Option_t* opt)
      res = loader->WriteDigits(opt);
      if (res)
       {
-        Error("WriteDigits","Failed to write digits for %s.",loader->GetDetectorName().Data());
+        AliError(Form("Failed to write digits for %s.",loader->GetDetectorName().Data()));
         result = 1;
       }
    }
@@ -940,8 +930,8 @@ Int_t AliRunLoader::WriteRecPoints(Option_t* opt)
      res = loader->WriteRecPoints(opt);
      if (res)
       {
-        Error("WriteRecPoints","Failed to write Reconstructed Points for %s.",
-              loader->GetDetectorName().Data());
+        AliError(Form("Failed to write Reconstructed Points for %s.",
+		      loader->GetDetectorName().Data()));
         result = 1;
       }
    }
@@ -961,8 +951,8 @@ Int_t AliRunLoader::WriteTracks(Option_t* opt)
      res = loader->WriteTracks(opt);
      if (res)
       {
-        Error("WriteTracks","Failed to write Tracks for %s.",
-              loader->GetDetectorName().Data());
+        AliError(Form("Failed to write Tracks for %s.",
+		      loader->GetDetectorName().Data()));
         result = 1;
       }
    }
@@ -984,7 +974,7 @@ Int_t AliRunLoader::SetEventFolderName(const TString& name)
 //sets top folder name for this run; of alread
   if (name.IsNull())
    {
-     Error("SetTopFolderName","Name is empty");
+     AliError("Name is empty");
      return 1;
    }
   
@@ -995,7 +985,7 @@ Int_t AliRunLoader::SetEventFolderName(const TString& name)
      TFolder* fold = dynamic_cast<TFolder*>(obj);
      if (fold == 0x0)
       {
-       Error("SetTopFolderName","Such a obejct already exists in top alice folder and it is not a folder.");
+       AliError("Such a obejct already exists in top alice folder and it is not a folder.");
        return 2;
       }
      //folder which was found is our folder
@@ -1005,7 +995,7 @@ Int_t AliRunLoader::SetEventFolderName(const TString& name)
       }
      else
       {
-       Error("SetTopFolderName","Such a folder already exists in top alice folder. Can not mount.");
+       AliError("Such a folder already exists in top alice folder. Can not mount.");
        return 2;
       }
    }
@@ -1024,7 +1014,7 @@ Int_t AliRunLoader::SetEventFolderName(const TString& name)
     fTrackRefsDataLoader = new AliDataLoader(fgkDefaultTrackRefsFileName,fgkTrackRefsContainerName,"Track References");
    
   //build the event folder structure
-  if (GetDebug()) Info("SetEventFolderName","Creating new event folder named %s",name.Data());
+  AliDebug(1, Form("Creating new event folder named %s",name.Data()));
   fEventFolder = AliConfig::Instance()->BuildEventFolder(name,"Event Folder");
   fEventFolder->Add(this);//put myself to the folder to accessible for all
   
@@ -1051,7 +1041,7 @@ void AliRunLoader::AddLoader(AliLoader* loader)
  //Adds the Loader for given detector 
   if (loader == 0x0) //if null shout and exit
    {
-     Error("AddLoader","Parameter is NULL");
+     AliError("Parameter is NULL");
      return;
    }
   loader->SetDirName(fUnixDirName);
@@ -1070,7 +1060,7 @@ void AliRunLoader::AddLoader(AliDetector* det)
 
    if (get) 
     {
-      if (GetDebug()) Info("AddLoader","Detector: %s   Loader : %s",det->GetName(),get->GetName());
+      AliDebug(1, Form("Detector: %s   Loader : %s",det->GetName(),get->GetName()));
       AddLoader(get);
     }
  }
@@ -1092,7 +1082,7 @@ AliLoader* AliRunLoader::GetLoader(AliDetector* det) const
  if(det == 0x0) return 0x0;
  TString getname(det->GetName());
  getname+="Loader";
- if (GetDebug()) Info("GetLoader(AliDetector* det)"," Loader name is %s",getname.Data());
+ AliDebug(1, Form(" Loader name is %s",getname.Data()));
  return GetLoader(getname);
 }
 
@@ -1147,14 +1137,14 @@ Int_t AliRunLoader::LoadHits(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  if (GetDebug()) Info("LoadHits","Loading Hits");
+  AliDebug(1, "Loading Hits");
   TObjArray* loaders;
   TObjArray arr;
 
   const char* oAll = strstr(detectors,"all");
   if (oAll)
    {
-     if (GetDebug()) Info("LoadHits","Option is All");
+     AliDebug(1, "Option is All");
      loaders = fLoaders;
    }
   else
@@ -1163,16 +1153,16 @@ Int_t AliRunLoader::LoadHits(Option_t* detectors,Option_t* opt)
      loaders = &arr;//get the pointer array
    }   
 
-  if (GetDebug()) Info("LoadHits","For detectors. Number of detectors chosen for loading %d",loaders->GetEntries());
+  AliDebug(1, Form("For detectors. Number of detectors chosen for loading %d",loaders->GetEntries()));
   
   TIter next(loaders);
   AliLoader *loader;
   while((loader = (AliLoader*)next())) 
    {
-    if (GetDebug()) Info("LoadHits","    Calling LoadHits(%s) for %s",opt,loader->GetName());
+    AliDebug(1, Form("    Calling LoadHits(%s) for %s",opt,loader->GetName()));
     loader->LoadHits(opt);
    }
-  if (GetDebug()) Info("LoadHits","Done");
+  AliDebug(1, "Done");
   return 0;
 } 
 
@@ -1522,7 +1512,7 @@ AliLoader* AliRunLoader::GetDetectorLoader(const char* detname, const char* even
 //run loader object
   AliRunLoader* runLoader = GetRunLoader(eventfoldername);
   if (!runLoader) {
-    ::Error("AliRunLoader::GetDetectorLoader","No run loader found");
+    AliErrorClass("No run loader found");
     return NULL;
   }
   return runLoader->GetDetectorLoader(detname);
@@ -1538,7 +1528,7 @@ AliLoader* AliRunLoader::GetDetectorLoader(const char* detname)
   sprintf(loadername, "%sLoader", detname);
   AliLoader* loader = GetLoader(loadername);
   if (!loader) {
-    Error("GetDetectorLoader", "No loader for %s found", detname);
+    AliError(Form("No loader for %s found", detname));
     return NULL;
   }
   return loader;
@@ -1717,7 +1707,7 @@ void AliRunLoader::GetListOfDetectors(const char * namelist,TObjArray& pointerar
        }
       else
        {
-        Error("GetListOfDetectors","Can not find Loader for %s",buff);
+        AliError(Form("Can not find Loader for %s",buff));
        }
         
       buff[0] = 0;
@@ -1732,7 +1722,7 @@ void AliRunLoader::Clean(const TString& name)
   TObject* obj = GetEventFolder()->FindObject(name);
   if(obj)
    {
-     if (GetDebug()) Info("Clean(const TString&)","name=%s, cleaning %s.",GetName(),name.Data());
+     AliDebug(1, Form("name=%s, cleaning %s.",GetName(),name.Data()));
      GetEventFolder()->Remove(obj);
      delete obj;
    }
@@ -1793,7 +1783,7 @@ TTask* AliRunLoader::GetRunQATask()
  TFolder* topf = AliConfig::Instance()->GetTaskFolder();
  if (topf == 0x0)
   {
-    ::Error("AliRunLoader::GetRunQATask","Can not get task folder from AliConfig");
+    AliErrorClass("Can not get task folder from AliConfig");
     return 0x0;
   }
  TObject* obj = topf->FindObjectAny(AliConfig::Instance()->GetQATaskName());
@@ -1860,7 +1850,7 @@ void AliRunLoader::UnloadgAlice()
 //Unloads gAlice
  if (gAlice == GetAliRun())
   {
-   if (GetDebug()) Info("UnloadgAlice","Set gAlice = 0x0");
+   AliDebug(1, "Set gAlice = 0x0");
    gAlice = 0x0;//if gAlice is the same that in folder (to be deleted by the way of folder)
   }
  AliRun* alirun = GetAliRun();
@@ -1920,7 +1910,7 @@ const TString AliRunLoader::SetFileOffset(const TString& fname)
   const TString& offfsetdotroot = offset + dotroot;
   TString out = fname;
   out = out.ReplaceAll(dotroot,offfsetdotroot);
-  if (GetDebug()) Info("SetFileOffset"," in=%s out=%s",fname.Data(),out.Data());
+  AliDebug(1, Form(" in=%s out=%s",fname.Data(),out.Data()));
   return out;
 }
 /*****************************************************************************/ 

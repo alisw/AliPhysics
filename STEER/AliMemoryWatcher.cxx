@@ -50,6 +50,7 @@ class assert ;
 #include <malloc.h>
 #endif
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliMemoryWatcher.h"
 // --- ROOT system ---
 #include "TSystem.h"
@@ -124,7 +125,7 @@ void AliMemoryWatcher::Watch(Int_t x)
       fTIME[fSize] = fTimer->CpuTime();
       fSize++;
 #else
-      ::Fatal("Watch","Please SetUseMallinfo to kFALSE on this system");
+      AliFatal("Please SetUseMallinfo to kFALSE on this system");
 #endif
     } else {
       static Int_t vsize, rssize;
@@ -146,7 +147,7 @@ void AliMemoryWatcher::Watch(Int_t x)
   }
   else {
     fDisabled=true;
-    Error("watch", "I'm full !" ) ;
+    AliError("I'm full !" ) ;
   }
 }
 //_____________________________________________________________________________

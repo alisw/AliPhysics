@@ -27,6 +27,7 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
  
+#include "AliLog.h"
 #include "AliDetector.h"
 #include "AliGenerator.h"
 #include "AliHeader.h"
@@ -48,7 +49,6 @@ AliMC::AliMC() :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
-  fDebug(0),
   fImedia(0),
   fTransParName("\0"),
   fMCQA(0),
@@ -68,7 +68,6 @@ AliMC::AliMC(const char *name, const char *title) :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
-  fDebug(0),
   fImedia(new TArrayI(1000)),
   fTransParName("\0"),
   fMCQA(0),
@@ -93,7 +92,6 @@ AliMC::AliMC(const AliMC &mc) :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
-  fDebug(0),
   fImedia(0),
   fTransParName("\0"),
   fMCQA(0),
@@ -127,7 +125,7 @@ AliMC::~AliMC()
 void AliMC::Copy(TObject &) const
 {
   //dummy Copy function
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________
@@ -140,14 +138,14 @@ void  AliMC::ConstructGeometry()
     TStopwatch stw;
     TIter next(gAlice->Modules());
     AliModule *detector;
-    if (GetDebug()) Info("ConstructGeometry","Geometry creation:");
+    AliDebug(1, "Geometry creation:");
     while((detector = dynamic_cast<AliModule*>(next()))) {
       stw.Start();
       // Initialise detector materials and geometry
       detector->CreateMaterials();
       detector->CreateGeometry();
-      printf("%10s R:%.2fs C:%.2fs\n",
-             detector->GetName(),stw.RealTime(),stw.CpuTime());
+      AliInfo(Form("%10s R:%.2fs C:%.2fs",
+		   detector->GetName(),stw.RealTime(),stw.CpuTime()));
     }
 }
 
@@ -158,7 +156,7 @@ void  AliMC::InitGeometry()
   // Initialize detectors and display geometry
   //
 
-   printf("Initialisation:\n");
+   AliInfo("Initialisation:");
     TStopwatch stw;
     TIter next(gAlice->Modules());
     AliModule *detector;
@@ -167,8 +165,8 @@ void  AliMC::InitGeometry()
       // Initialise detector and display geometry
       detector->Init();
       detector->BuildGeometry();
-      printf("%10s R:%.2fs C:%.2fs\n",
-	     detector->GetName(),stw.RealTime(),stw.CpuTime());
+      AliInfo(Form("%10s R:%.2fs C:%.2fs",
+		   detector->GetName(),stw.RealTime(),stw.CpuTime()));
     }
  
 }
@@ -200,11 +198,11 @@ void AliMC::ResetGenerator(AliGenerator *generator)
   //
   if(fGenerator)
     if(generator)
-      Warning("ResetGenerator","Replacing generator %s with %s\n",
-	      fGenerator->GetName(),generator->GetName());
+      AliWarning(Form("Replacing generator %s with %s",
+		      fGenerator->GetName(),generator->GetName()))
     else
-      Warning("ResetGenerator","Replacing generator %s with NULL\n",
-	      fGenerator->GetName());
+      AliWarning(Form("Replacing generator %s with NULL",
+		      fGenerator->GetName()));
   fGenerator = generator;
 }
 
@@ -212,15 +210,12 @@ void AliMC::ResetGenerator(AliGenerator *generator)
 void AliMC::FinishRun()
 {
   // Clean generator information
-  if (GetDebug()) Info("FinishRun"," fGenerator->FinishRun()");
+  AliDebug(1, "fGenerator->FinishRun()");
   fGenerator->FinishRun();
 
   //Output energy summary tables
-  if (GetDebug()) {
-    Info("FinishRun"," EnergySummary()");
-    EnergySummary();
-  }
-
+  AliDebug(1, "EnergySummary()");
+  ToAliDebug(1, EnergySummary());
 }
 
 //_______________________________________________________________________
@@ -355,16 +350,13 @@ void AliMC::BeginEvent()
   //
   // Clean-up previous event
   // Energy scores
-  if (GetDebug()) 
-   {
-     Info("BeginEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("BeginEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("BeginEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("BeginEvent","          BEGINNING EVENT               ");
-     Info("BeginEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("BeginEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-     Info("BeginEvent",">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-   }
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, "          BEGINNING EVENT               ");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     
     AliRunLoader *runloader=gAlice->GetRunLoader();
 
@@ -377,7 +369,7 @@ void AliMC::BeginEvent()
   //Set the next event in Run Loader -> Cleans trees (TreeK and all trees in detectors),
   gAlice->SetEventNrInRun(gAlice->GetEventNrInRun()+1);
   runloader->SetEventNumber(gAlice->GetEventNrInRun());// sets new files, cleans the previous event stuff, if necessary, etc.,  
-  if (GetDebug()) Info("BeginEvent","EventNr is %d",gAlice->GetEventNrInRun());
+  AliDebug(1, Form("EventNr is %d",gAlice->GetEventNrInRun()));
      
   fEventEnergy.Reset();  
     // Clean detector information
@@ -389,11 +381,11 @@ void AliMC::BeginEvent()
   
   if(gAlice->Lego() == 0x0)
    { 
-     if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTree(K)");
+     AliDebug(1, "fRunLoader->MakeTree(K)");
      runloader->MakeTree("K");
    }
    
-  if (GetDebug()) Info("BeginEvent","  gMC->SetStack(fRunLoader->Stack())");
+  AliDebug(1, "gMC->SetStack(fRunLoader->Stack())");
   gMC->SetStack(gAlice->GetRunLoader()->Stack());//Was in InitMC - but was moved here 
                                      //because we don't have guarantee that 
                                      //stack pointer is not going to change from event to event
@@ -413,13 +405,13 @@ void AliMC::BeginEvent()
    }
   
 
-  if (GetDebug()) Info("BeginEvent","  ResetHits()");
+  AliDebug(1, "ResetHits()");
   ResetHits();
   
-  if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTree(H)");
+  AliDebug(1, "fRunLoader->MakeTree(H)");
   runloader->MakeTree("H");
   
-  if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTrackRefsContainer()");
+  AliDebug(1, "fRunLoader->MakeTrackRefsContainer()");
   runloader->MakeTrackRefsContainer();//for insurance
 
 
@@ -428,11 +420,11 @@ void AliMC::BeginEvent()
   AliModule *detector;
   while((detector = (AliModule*)next()))
    {
-    if (GetDebug()) Info("BeginEvent","  %s->MakeBranch(H)",detector->GetName());
+    AliDebug(2, Form("%s->MakeBranch(H)",detector->GetName()));
     detector->MakeBranch("H"); 
-    if (GetDebug()) Info("BeginEvent","  %s->MakeBranchTR()",detector->GetName());
+    AliDebug(2, Form("%s->MakeBranchTR()",detector->GetName()));
     detector->MakeBranchTR();
-    if (GetDebug()) Info("BeginEvent","  %s->SetTreeAddress()",detector->GetName());
+    AliDebug(2, Form("%s->SetTreeAddress()",detector->GetName()));
     detector->SetTreeAddress();
    }
   // make branch for AliRun track References
@@ -534,7 +526,7 @@ void AliMC::FinishEvent()
   AliStack* stack = runloader->Stack();
   if ( (header == 0x0) || (stack == 0x0) )
    {//check if we got header and stack. If not cry and exit aliroot
-    Fatal("AliRun","Can not get the stack or header from LOADER");
+    AliFatal("Can not get the stack or header from LOADER");
     return;//never reached
    }  
   // Update Header information 
@@ -554,7 +546,7 @@ void AliMC::FinishEvent()
    }
   else
    {
-    Error("FinishEvent","Can not get TreeE from RL");
+    AliError("Can not get TreeE from RL");
    }
   
   if(gAlice->Lego() == 0x0)
@@ -564,16 +556,13 @@ void AliMC::FinishEvent()
      runloader->WriteHits("OVERWRITE");
    }
    
-  if (GetDebug()) 
-   { 
-     Info("FinishEvent","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-     Info("FinishEvent","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-     Info("FinishEvent","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-     Info("FinishEvent","          FINISHING EVENT               ");
-     Info("FinishEvent","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-     Info("FinishEvent","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-     Info("FinishEvent","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-   }
+  AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+  AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+  AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+  AliDebug(1, "          FINISHING EVENT               ");
+  AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+  AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+  AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 }
 
 //_______________________________________________________________________
@@ -645,8 +634,8 @@ void AliMC::MediaTable()
 	det->HiMedium() = 0;
       } else {
 	if(det->HiMedium() > fImedia->GetSize()) {
-	  Error("MediaTable","Increase fImedia from %d to %d",
-		fImedia->GetSize(),det->HiMedium());
+	  AliError(Form("Increase fImedia from %d to %d",
+			fImedia->GetSize(),det->HiMedium()));
 	  return;
 	}
 	// Tag all materials in rage as belonging to detector kz
@@ -658,7 +647,8 @@ void AliMC::MediaTable()
   }
   //
   // Print summary table
-  printf(" Traking media ranges:\n");
+  AliInfo("Tracking media ranges:");
+  ToAliInfo(
   for(i=0;i<(ndets-1)/6+1;i++) {
     for(k=0;k< (6<ndets-i*6?6:ndets-i*6);k++) {
       ind=i*6+k;
@@ -671,6 +661,7 @@ void AliMC::MediaTable()
     }
     printf("\n");
   }
+  )
 }
 
 //_______________________________________________________________________
@@ -701,15 +692,8 @@ void AliMC::ReadTransPar()
   lun=fopen(filtmp,"r");
   delete [] filtmp;
   if(!lun) {
-    Warning("ReadTransPar","File %s does not exist!\n",fTransParName.Data());
+    AliWarning(Form("File %s does not exist!",fTransParName.Data()));
     return;
-  }
-  //
-  if(fDebug) {
-    printf(" "); for(i=0;i<60;i++) printf("*"); printf("\n");
-    printf(" *%59s\n","*");
-    printf(" *       Please check carefully what you are doing!%10s\n","*");
-    printf(" *%59s\n","*");
   }
   //
   while(1) {
@@ -723,10 +707,6 @@ void AliMC::ReadTransPar()
     if(iret<0) {
       //End of file
       fclose(lun);
-      if(fDebug){
-	printf(" *%59s\n","*");
-	printf(" "); for(i=0;i<60;i++) printf("*"); printf("\n");
-      }
       return;
     }
     // Read the end of line
@@ -741,7 +721,7 @@ void AliMC::ReadTransPar()
     if(!iret) continue;
     if(iret<0) {
       //reading error
-      Warning("ReadTransPar","Error reading file %s\n",fTransParName.Data());
+      AliWarning(Form("Error reading file %s",fTransParName.Data()));
       continue;
     }
     // Check that the module exist
@@ -753,31 +733,31 @@ void AliMC::ReadTransPar()
       if(0<=itmed && itmed < 100) {
 	ktmed=idtmed[itmed];
 	if(!ktmed) {
-	  Warning("ReadTransPar","Invalid tracking medium code %d for %s\n",itmed,mod->GetName());
+	  AliWarning(Form("Invalid tracking medium code %d for %s",itmed,mod->GetName()));
 	  continue;
 	}
 	// Set energy thresholds
 	for(kz=0;kz<kncuts;kz++) {
 	  if(cut[kz]>=0) {
-	    if(fDebug) printf(" *  %-6s set to %10.3E for tracking medium code %4d for %s\n",
-		   kpars[kz],cut[kz],itmed,mod->GetName());
+	    AliDebug(2, Form("%-6s set to %10.3E for tracking medium code %4d for %s",
+			     kpars[kz],cut[kz],itmed,mod->GetName()));
 	    gMC->Gstpar(ktmed,kpars[kz],cut[kz]);
 	  }
 	}
 	// Set transport mechanisms
 	for(kz=0;kz<knflags;kz++) {
 	  if(flag[kz]>=0) {
-	    if(fDebug) printf(" *  %-6s set to %10d for tracking medium code %4d for %s\n",
-		   kpars[kncuts+kz],flag[kz],itmed,mod->GetName());
+	    AliDebug(2, Form("%-6s set to %10d for tracking medium code %4d for %s",
+			     kpars[kncuts+kz],flag[kz],itmed,mod->GetName()));
 	    gMC->Gstpar(ktmed,kpars[kncuts+kz],Float_t(flag[kz]));
 	  }
 	}
       } else {
-	Warning("ReadTransPar","Invalid medium code %d *\n",itmed);
+	AliWarning(Form("Invalid medium code %d",itmed));
 	continue;
       }
     } else {
-      if(fDebug) printf("%s::ReadTransParModule: %s not present\n",ClassName(),detName);
+      AliDebug(1, Form("%s not present",detName));
       continue;
     }
   }
@@ -985,7 +965,7 @@ void  AliMC::AddTrackReference(Int_t label){
   //
   // add a trackrefernce to the list
   if (!fTrackReferences) {
-    cerr<<"Container trackrefernce not active\n";
+    AliError("Container trackrefernce not active");
     return;
   }
   Int_t nref = fTrackReferences->GetEntriesFast();

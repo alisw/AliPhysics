@@ -32,6 +32,7 @@
 #include "TStopwatch.h"
 #include "TTree.h"
 
+#include "AliLog.h"
 #include "AliDetector.h"
 #include "AliHit.h"
 #include "AliLoader.h"
@@ -66,18 +67,18 @@ void AliTrackMapper::CreateMap(Int_t nEvents, Int_t firstEventNr,
   timer.Start();
   
   TFile *fileMap=TFile::Open(fnMap,"new");
-  if (!fileMap->IsOpen()) {cerr<<"Can't open output file "<<fnMap<<"!\n"; return;}
+  if (!fileMap->IsOpen()) {AliErrorClass(Form("Can't open output file %s!", fnMap)); return;}
 
   AliRunLoader* rl = AliRunLoader::Open(fnHits);
-  if (rl == 0x0) {cerr<<"Can't open input file "<<fnHits<<"!\n"; return;}
+  if (rl == 0x0) {AliErrorClass(Form("Can't open input file %s!\n", fnHits)); return;}
   if (rl->LoadgAlice())
     {
-      ::Error("AliTrackMapper::CreateMap","Error occured while loading AliRun");
+      AliErrorClass("Error occured while loading AliRun");
       return;
     }
     
   if (!(gAlice=rl->GetAliRun())) {
-    cerr<<"gAlice have not been found on session !\n";
+    AliErrorClass("gAlice have not been found on session !");
     return;
   }
   
@@ -107,7 +108,7 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap,AliRunLoader* rl)
 
   TTree *treeK = rl->TreeK();
   if (!treeK) {
-    cerr<<"Error: Event "<<eventNr<<", treeK not found."<<endl;
+    AliErrorClass(Form("Event %d, treeK not found.", eventNr));
     return -1;
   }
   Int_t nAllParticles = static_cast<Int_t>(treeK->GetEntries());
@@ -117,7 +118,7 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap,AliRunLoader* rl)
 
   TObjArray *modules = gAlice->Detectors();
   if (!modules) {
-    cerr<<"TObjArray with modules not found."<<endl;
+    AliErrorClass("TObjArray with modules not found.");
     return -1;
   }
   Int_t nModules = static_cast<Int_t>(modules->GetEntries());
@@ -129,26 +130,25 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap,AliRunLoader* rl)
     AliLoader* loader = detector->GetLoader();
     if (loader == 0x0)
      {
-       ::Warning("AliTrackMapper::CreateMap",
-                 "Can not get loader from detector %s.",detector->GetName());
+       AliWarningClass(Form("Can not get loader from detector %s.",
+		       detector->GetName()));
        continue;
      }
     Int_t retval = loader->LoadHits();
     if (retval) {
-      ::Error("AliTrackMapper::CreateMap",
-            "Event %d: error occured while loading hits for %s",
-            eventNr,detector->GetName());
+      AliErrorClass(Form("Event %d: error occured while loading hits for %s",
+			 eventNr,detector->GetName()));
       return -1;
      }
     
     TTree *treeH = loader->TreeH();
     if (!treeH) {
-      ::Error("AliTrackMapper::CreateMap","Event %d: Can not get TreeH for %s",
-             eventNr,detector->GetName());
+      AliErrorClass(Form("Event %d: Can not get TreeH for %s",
+			 eventNr,detector->GetName()));
       return -1;
      }
     Int_t treeHEntries = static_cast<Int_t>(treeH->GetEntries());
-    if (fDEBUG > 1) cout<<"treeHEntries "<<treeHEntries<<endl;
+    AliDebugClass(2, Form("treeHEntries %d", treeHEntries));
      
     detector->ResetHits();
     
@@ -163,18 +163,17 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap,AliRunLoader* rl)
        label=hit->Track();       
        if (lastLabel != label) {
          if (label < 0 || label >= nAllParticles) {
-           cerr<<"Error: label out of range. ";
-           cerr<<"Event "<<eventNr<<" treeHIndex "<<treeHIndex<<" label = "<<label<<endl;
+           AliErrorClass(Form("label out of range. Event %d treeHIndex %d label = %d",
+			      eventNr, treeHIndex, label));
            return -2;
          }
          if (trackMap[label] >=0 && trackMap[label] != treeHIndex) {
-           cerr<<"Error: different treeHIndex for label "<<label
-              <<" indeces: "<<trackMap[label]<<" != "<<treeHIndex;
-           cerr<<" event "<<eventNr<<" detector "<<detector->GetName()<<endl;
+           AliErrorClass(Form("different treeHIndex for label %d indeces: %d != %d event %d detector %s",
+			      label, trackMap[label], treeHIndex, eventNr, detector->GetName()));
            return -3;
          }
          trackMap[label] = treeHIndex;
-         if (fDEBUG > 2) cout<<"treeHIndex, label = "<<treeHIndex<<" "<<label<<endl;
+         AliDebugClass(3, Form("treeHIndex, label = %d %d", treeHIndex, label));
          lastLabel = label;
        }
       }
@@ -182,11 +181,11 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap,AliRunLoader* rl)
     loader->UnloadHits();
   }//loop over modules
 
-  if (fDEBUG > 2) {
+  ToAliDebugClass(3,
     for (Int_t i = 0; i < nAllParticles; i++) {
       cout<<eventNr<<"\t"<<i<<"\t"<<trackMap[i]<<endl;
     }
-  }
+  )
   fileMap->cd();
   AliTrackMap* trackMapObject = new AliTrackMap(nAllParticles, trackMap);
   trackMapObject->SetEventNr(eventNr);
@@ -204,12 +203,12 @@ AliTrackMap* AliTrackMapper::LoadTrackMap(Int_t eventNr, const char* fnMap, TFil
   // the file fileMap
   //
   fileMap=TFile::Open(fnMap);
-  if (!fileMap->IsOpen()) {cerr<<"Can't open file "<<fnMap<<" with map!\n"; return 0;}
+  if (!fileMap->IsOpen()) {AliErrorClass(Form("Can't open file %s with map!", fnMap)); return 0;}
   char mapName[20];
   sprintf(mapName,"AliTrackMap_%5.5d",eventNr);
   AliTrackMap* trackMapObject = dynamic_cast<AliTrackMap*>(fileMap->Get(mapName));
   if (!trackMapObject) {
-    cerr<<"Error: map named "<<mapName<<" not found."<<endl;
+    AliErrorClass(Form("map named %s not found.", mapName));
     return 0;
   }
   return trackMapObject;

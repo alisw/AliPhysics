@@ -50,6 +50,7 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 // 
+#include "AliLog.h"
 #include "AliDetector.h"
 #include "AliDisplay.h"
 #include "AliHeader.h"
@@ -74,7 +75,6 @@ AliRun::AliRun():
   fEvent(0),
   fEventNrInRun(0),
   fEventsPerRun(0),
-  fDebug(0),
   fModules(0),
   fGeometry(0),
   fMCApp(0),
@@ -103,7 +103,6 @@ AliRun::AliRun(const AliRun& arun):
   fEvent(0),
   fEventNrInRun(0),
   fEventsPerRun(0),
-  fDebug(0),
   fModules(0),
   fGeometry(0),
   fMCApp(0),
@@ -131,7 +130,6 @@ AliRun::AliRun(const char *name, const char *title):
   fEvent(0),
   fEventNrInRun(0),
   fEventsPerRun(0),
-  fDebug(0),
   fModules(new TObjArray(77)), // Support list for the Detectors
   fGeometry(0),
   fMCApp(0),
@@ -214,7 +212,7 @@ AliRun::~AliRun()
 //_______________________________________________________________________
 void AliRun::Copy(TObject &) const
 {
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________
@@ -295,7 +293,7 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
     fField = new AliMagFDM("Map4",filename,type,scale,maxField);
     fField->ReadField();
   } else {
-    Warning("SetField","Invalid map %d\n",version);
+    AliWarning(Form("Invalid map %d",version));
   }
 }
 
@@ -304,7 +302,7 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
 void AliRun::InitLoaders()
 {
   //creates list of getters
-  if (GetDebug()) Info("InitLoaders","");
+  AliDebug(1, "");
   TIter next(fModules);
   AliModule *mod;
   while((mod = (AliModule*)next()))
@@ -313,11 +311,11 @@ void AliRun::InitLoaders()
      AliDetector *det = dynamic_cast<AliDetector*>(mod);
      if (det) 
       {
-        if (GetDebug()) Info("InitLoaders"," Adding %s ",det->GetName());
+        AliDebug(2, Form("Adding %s", det->GetName()));
         fRunLoader->AddLoader(det);
       }
    }
-  if (GetDebug()) Info("InitLoaders","Done");
+  AliDebug(1, "Done");
 }
 //_____________________________________________________________________________
 
@@ -329,7 +327,7 @@ void AliRun::FinishRun()
   
   if(fLego) 
    {
-    if (GetDebug()) Info("FinishRun"," Finish Lego");
+    AliDebug(1, "Finish Lego");
     fRunLoader->CdGAFile();
     fLego->FinishRun();
    }
@@ -338,11 +336,11 @@ void AliRun::FinishRun()
   TIter next(fModules);
   AliModule *detector;
   while((detector = dynamic_cast<AliModule*>(next()))) {
-    if (GetDebug()) Info("FinishRun"," %s->FinishRun()",detector->GetName());
+    AliDebug(2, Form("%s->FinishRun()", detector->GetName()));
     detector->FinishRun();
   }
   
-  if (GetDebug()) Info("FinishRun"," fRunLoader->WriteHeader(OVERWRITE)");
+  AliDebug(1, "fRunLoader->WriteHeader(OVERWRITE)");
   fRunLoader->WriteHeader("OVERWRITE");
 
   // Write AliRun info and all detectors parameters
@@ -351,7 +349,7 @@ void AliRun::FinishRun()
   fRunLoader->Write(0,TObject::kOverwrite);//write RunLoader itself
   
   // Clean tree information
-  if (GetDebug()) Info("FinishRun"," fRunLoader->Stack()->FinishRun()");
+  AliDebug(1, "fRunLoader->Stack()->FinishRun()");
   fRunLoader->Stack()->FinishRun();
 
   if(fMCApp) fMCApp->FinishRun();
@@ -419,7 +417,7 @@ Int_t AliRun::GetEvent(Int_t event)
 //
   if (fRunLoader == 0x0)
    {
-     Error("GetEvent","RunLoader is not set. Can not load data.");
+     AliError("RunLoader is not set. Can not load data.");
      return -1;
    }
 /*****************************************/ 
@@ -537,7 +535,7 @@ void AliRun::InitMC(const char *setup)
   Announce();
 
   if(fInitDone) {
-    Warning("Init","Cannot initialise AliRun twice!\n");
+    AliWarning("Cannot initialise AliRun twice!");
     return;
   }
     
@@ -620,12 +618,12 @@ void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
   // Main function to be called to reconstruct Alice event
   // 
    Int_t nev = fRunLoader->GetNumberOfEvents();
-   if (GetDebug()) Info("RunReco","Found %d events",nev);
+   AliDebug(1, Form("Found %d events", nev));
    Int_t nFirst = first;
    Int_t nLast  = (last < 0)? nev : last;
    
    for (Int_t nevent = nFirst; nevent <= nLast; nevent++) {
-     if (GetDebug()) Info("RunReco","Processing event %d",nevent);
+     AliDebug(1, Form("Processing event %d", nevent));
      GetEvent(nevent);
      Digits2Reco(selected);
    }
@@ -683,7 +681,7 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
        
        if (oS) 
         {
-          if (GetDebug()) Info("Tree2Tree","Processing Hits2SDigits for %s ...",detector->GetName());
+          AliDebug(1, Form("Processing Hits2SDigits for %s ...", detector->GetName()));
           loader->LoadHits("read");
           if (loader->TreeS() == 0x0) loader->MakeTree("S");
           detector->MakeBranch(option);
@@ -694,7 +692,7 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
         }  
        if (oD) 
         {
-          if (GetDebug()) Info("Tree2Tree","Processing SDigits2Digits for %s ...",detector->GetName());
+          AliDebug(1, Form("Processing SDigits2Digits for %s ...", detector->GetName()));
           loader->LoadSDigits("read");
           if (loader->TreeD() == 0x0) loader->MakeTree("D");
           detector->MakeBranch(option);
@@ -705,7 +703,7 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
         } 
        if (oR) 
         {
-          if (GetDebug()) Info("Tree2Tree","Processing Digits2Reco for %s ...",detector->GetName());
+          AliDebug(1, Form("Processing Digits2Reco for %s ...", detector->GetName()));
           loader->LoadDigits("read");
           if (loader->TreeR() == 0x0) loader->MakeTree("R");
           detector->MakeBranch(option);
@@ -829,7 +827,7 @@ void AliRun::Field(const Double_t* x, Double_t *b) const
     for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
   } 
   else {
-    printf("No mag field defined!\n");
+    AliError("No mag field defined!");
     b[0]=b[1]=b[2]=0.;
   }
 }      
@@ -866,7 +864,7 @@ Int_t AliRun::GetEvNumber() const
 //Returns number of current event  
   if (fRunLoader == 0x0)
    {
-     Error("GetEvent","RunLoader is not set. Can not load data.");
+     AliError("RunLoader is not set. Can not load data.");
      return -1;
    }
 
@@ -885,13 +883,13 @@ void AliRun::SetRunLoader(AliRunLoader* rloader)
   TString evfoldname;
   TFolder* evfold = fRunLoader->GetEventFolder();
   if (evfold) evfoldname = evfold->GetName();
-  else Warning("SetRunLoader","Did not get Event Folder from Run Loader");
+  else AliWarning("Did not get Event Folder from Run Loader");
   
   if ( fRunLoader->GetAliRun() )
    {//if alrun already exists in folder
     if (fRunLoader->GetAliRun() != this )
      {//and is different than this - crash
-       Fatal("AliRun","AliRun is already in Folder and it is not this object");
+       AliFatal("AliRun is already in Folder and it is not this object");
        return;//pro forma
      }//else do nothing
    }
@@ -912,11 +910,11 @@ void AliRun::SetRunLoader(AliRunLoader* rloader)
         AliLoader* loader = fRunLoader->GetLoader(detector);
         if (loader == 0x0)
          {
-           Error("SetRunLoader","Can not get loader for detector %s",detector->GetName());
+           AliError(Form("Can not get loader for detector %s", detector->GetName()));
          }
         else
          {
-           if (GetDebug()) Info("SetRunLoader","Setting loader for detector %s",detector->GetName());
+           AliDebug(1, Form("Setting loader for detector %s", detector->GetName()));
            detector->SetLoader(loader);
          }
       }
@@ -932,11 +930,26 @@ void AliRun::AddModule(AliModule* mod)
   if (strlen(mod->GetName()) == 0) return;
   if (GetModuleID(mod->GetName()) >= 0) return;
   
-  if (GetDebug()) Info("AddModule","%s",mod->GetName());
+  AliDebug(1, mod->GetName());
   if (fRunLoader == 0x0) AliConfig::Instance()->Add(mod);
   else AliConfig::Instance()->Add(mod,fRunLoader->GetEventFolder()->GetName());
 
   Modules()->Add(mod);
   
   fNdets++;
+}
+
+
+//_______________________________________________________________________
+Int_t AliRun::GetDebug() const
+{
+  AliWarning("Don't use this method any more, use AliDebug instead");
+  return AliDebugLevel();
+}
+
+//_______________________________________________________________________
+void AliRun::SetDebug(Int_t level)
+{
+  AliWarning("Don't use this method any more, use AliLog instead");
+  AliLog::SetClassDebugLevel("AliRun", level);
 }

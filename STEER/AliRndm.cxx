@@ -29,6 +29,7 @@
 #include "TSystem.h"
 
 #include "AliRndm.h"
+#include "AliLog.h"
 
 ClassImp(AliRndm)
 
@@ -54,7 +55,7 @@ AliRndm::AliRndm(const AliRndm& rn):
 //_______________________________________________________________________
 void AliRndm::Copy(AliRndm&) const
 {
-  ::Fatal("Copy","Not implemented\n");
+  AliFatalClass("Not implemented");
 }
 
 
@@ -83,7 +84,7 @@ void AliRndm::ReadRandom(const char *filename)
   TFile *file = new TFile(fntmp,"r");
   delete [] fntmp;
   if(!file) {
-    printf("AliRndm:: Could not open file %s\n",filename);
+    AliErrorClass(Form("Could not open file %s",filename));
   } else {
     if(!fRandom) fRandom = new TRandom();
     fRandom->Read("Random");
@@ -102,7 +103,7 @@ void AliRndm::WriteRandom(const char *filename) const
   TFile *file = new TFile(fntmp,"new");
   delete [] fntmp;
   if(!file) {
-    printf("AliRndm:: Could not open file %s\n",filename);
+    AliErrorClass(Form("Could not open file %s",filename));
   } else {
     fRandom->Write();
     file->Close();

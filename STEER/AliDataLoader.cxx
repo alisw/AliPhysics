@@ -33,6 +33,7 @@
 #include <TString.h>
 #include <TBits.h>
 
+#include "AliLog.h"
 #include "AliRunLoader.h"
 
 ClassImp(AliDataLoader)
@@ -74,8 +75,7 @@ AliDataLoader::AliDataLoader(const char* filename, const char* contname, const c
 // creates a 0 loader, depending on option, default "T" is specialized loader for trees
 // else standard object loader
 // trees needs special care, becouse we need to set dir before writing
-  if (GetDebug())
-   Info("AliDataLoader","File name is %s",fFileName.Data());
+  AliDebug(1, Form("File name is %s",fFileName.Data()));
    
   TString option(opt);
   AliBaseLoader* bl;
@@ -89,12 +89,12 @@ AliDataLoader::AliDataLoader(const char* filename, const char* contname, const c
 /*****************************************************************************/ 
 AliDataLoader::AliDataLoader(const AliDataLoader& source):TNamed(source) {
   // copy constructor
-  Fatal("AliDataLoader","Copy constructor not implemented");
+  AliFatal("Copy constructor not implemented");
 }
 /*****************************************************************************/ 
 AliDataLoader& AliDataLoader::operator=(const AliDataLoader& /*source*/) {
   // Assignment operator
-  Fatal("AliDataLoader","Assignment operator not implemented");
+  AliFatal("Assignment operator not implemented");
   return *this;
 }
 /*****************************************************************************/ 
@@ -112,7 +112,7 @@ Int_t  AliDataLoader::SetEvent()
  AliRunLoader* rl = GetRunLoader();
  if (rl == 0x0)
   {
-    Error("SetEvent","Can not get RunGettr");
+    AliError("Can not get RunGettr");
     return 1;
   }
  
@@ -131,14 +131,14 @@ Int_t  AliDataLoader::SetEvent()
      {
        delete fFile;
        fFile = 0x0;
-       if (GetDebug()) Info("SetEvent","Reloading new file. File opt is %s",fFileOption.Data());
+       AliDebug(1, Form("Reloading new file. File opt is %s",fFileOption.Data()));
        OpenFile(fFileOption);
      }
 
     fDirectory = AliLoader::ChangeDir(fFile,evno);
     if (fDirectory == 0x0)
       {
-        Error("SetEvent","Can not chage directory in file %s",fFile->GetName());
+        AliError(Form("Can not chage directory in file %s",fFile->GetName()));
         return 1;
       }
    }
@@ -189,13 +189,13 @@ Int_t AliDataLoader::OpenFile(Option_t* opt)
    {
      if(fFile->IsOpen() == kTRUE)
        {
-         Warning("OpenFile"," File %s already opened. First close it.",fFile->GetName());
+         AliWarning(Form(" File %s already opened. First close it.",fFile->GetName()));
          return 0;
        }
      else
        {
-         Warning("OpenFile","Pointer to file %s is not null, but file is not opened",
-                fFile->GetName());
+         AliWarning(Form("Pointer to file %s is not null, but file is not opened",
+			 fFile->GetName()));
          delete fFile;
          fFile = 0x0;
        }
@@ -208,8 +208,8 @@ Int_t AliDataLoader::OpenFile(Option_t* opt)
    {
      if(fFile->IsOpen() == kTRUE)
        {
-         Warning("OpenFile","File %s already opened by sombody else. First close it.",
-                 fFile->GetName());
+         AliWarning(Form("File %s already opened by sombody else. First close it.",
+			 fFile->GetName()));
          return 0;
        }
    }
@@ -218,12 +218,12 @@ Int_t AliDataLoader::OpenFile(Option_t* opt)
   fFile = TFile::Open(fname,fFileOption);//open the file
   if (fFile == 0x0)
    {//file is null
-     Error("OpenFile","Can not open file %s",fname.Data());
+     AliError(Form("Can not open file %s",fname.Data()));
      return 1;
    }
   if (fFile->IsOpen() == kFALSE)
    {//file is null
-     Error("OpenFile","Can not open file %s",fname.Data());
+     AliError(Form("Can not open file %s",fname.Data()));
      return 1;
    }
 
@@ -232,7 +232,7 @@ Int_t AliDataLoader::OpenFile(Option_t* opt)
   AliRunLoader* rg = GetRunLoader();
   if (rg == 0x0)
    {
-     Error("OpenFile","Can not find Run-Loader in folder.");
+     AliError("Can not find Run-Loader in folder.");
      return 2;
    }
   Int_t evno = rg->GetEventNumber();
@@ -240,7 +240,7 @@ Int_t AliDataLoader::OpenFile(Option_t* opt)
   fDirectory = AliLoader::ChangeDir(fFile,evno);
   if (fDirectory == 0x0)
    {
-     Error("OpenFile","Can not chage fDirectory in file %s.",fFile->GetName());
+     AliError(Form("Can not chage fDirectory in file %s.",fFile->GetName()));
      return 3; 
    }
   return 0;
@@ -297,7 +297,7 @@ Int_t AliDataLoader::Reload()
        retval = bl->Load(fFileOption);
        if (retval) 
         {
-         Error("Reload","Error occur while loading %s",bl->GetName());
+         AliError(Form("Error occur while loading %s",bl->GetName()));
          return retval;
         }
      }
@@ -310,9 +310,8 @@ Int_t AliDataLoader::Reload()
 Int_t AliDataLoader::WriteData(Option_t* opt)
 {
 //Writes primary data ==  first BaseLoader
-  if (GetDebug())
-   Info("WriteData","Writing %s container for %s data. Option is %s.",
-          GetBaseLoader(0)->GetName(),GetName(),opt);
+  AliDebug(1, Form("Writing %s container for %s data. Option is %s.",
+		   GetBaseLoader(0)->GetName(),GetName(),opt));
   return GetBaseLoader(0)->WriteData(opt);
 }
 /*****************************************************************************/ 
@@ -329,12 +328,11 @@ Int_t  AliDataLoader::SetEventFolder(TFolder* eventfolder)
  //sets the event folder
  if (eventfolder == 0x0)
   {
-    Error("SetEventFolder","Stupid joke. Argument is NULL");
+    AliError("Stupid joke. Argument is NULL");
     return 1;
   }
- if (GetDebug()) 
-   Info("SetFolder","name = %s Setting Event Folder named %s.",
-         GetName(),eventfolder->GetName());
+ AliDebug(1, Form("name = %s Setting Event Folder named %s.",
+		  GetName(),eventfolder->GetName()));
 
  fEventFolder = eventfolder;
  return 0;
@@ -346,11 +344,11 @@ Int_t  AliDataLoader::SetFolder(TFolder* folder)
   // Sets the folder and the data loaders
  if (folder == 0x0)
   {
-    Error("SetFolder","Stupid joke. Argument is NULL");
+    AliError("Stupid joke. Argument is NULL");
     return 1;
   }
  
- if (GetDebug()) Info("SetFolder","name = %s Setting folder named %s.",GetName(),folder->GetName());
+ AliDebug(1, Form("name = %s Setting folder named %s.",GetName(),folder->GetName()));
  
  fFolder = folder;
  TIter next(fBaseLoaders);
@@ -368,7 +366,7 @@ Int_t  AliDataLoader::SetFolder(TFolder* folder)
 TFolder* AliDataLoader::GetEventFolder()
 {
 //get EVENT folder (data that are changing from event to event, even in single run)
-  if (GetDebug()) Info("GetEventFolder","EF = %#x");
+  AliDebug(1, "EF = %#x");
   return fEventFolder;
 }
 /*****************************************************************************/ 
@@ -380,7 +378,7 @@ AliRunLoader* AliDataLoader::GetRunLoader()
   TFolder* ef = GetEventFolder();
   if (ef == 0x0)
    {
-     Error("GetRunLoader","Can not get event folder.");
+     AliError("Can not get event folder.");
      return 0;
    }
   rg = dynamic_cast<AliRunLoader*>(ef->FindObject(AliRunLoader::GetRunLoaderName()));
@@ -398,8 +396,7 @@ void AliDataLoader::CloseFile()
      if (bl->IsLoaded()) return;
    }
   
-  if (GetDebug())
-    Info("CloseFile","Closing and deleting (object) file.");
+  AliDebug(1, "Closing and deleting (object) file.");
     
   delete fFile;
   fFile = 0x0;
@@ -431,18 +428,14 @@ void AliDataLoader::SetFileNameSuffix(const TString& suffix)
   //adds the suffix before ".root", 
   //e.g. TPC.Digits.root -> TPC.DigitsMerged.root
   //made on Jiri Chudoba demand
-  if (GetDebug()) 
-   {
-     Info("SetFileNameSuffix","suffix=%s",suffix.Data());
-     Info("SetFileNameSuffix","   Digits File Name before: %s",fFileName.Data());
-   }
+  AliDebug(1, Form("suffix=%s",suffix.Data()));
+  AliDebug(1, Form("   Digits File Name before: %s",fFileName.Data()));
    
   static TString dotroot(".root");
   const TString& suffixdotroot = suffix + dotroot;
   fFileName = fFileName.ReplaceAll(dotroot,suffixdotroot);
 
-  if (GetDebug()) 
-    Info("SetDigitsFileNameSuffix","                    after : %s",fFileName.Data());
+  AliDebug(1, Form("                    after : %s",fFileName.Data()));
 }
 /*****************************************************************************/ 
 
@@ -472,7 +465,7 @@ const TString AliDataLoader::SetFileOffset(const TString& fname)
   const TString& offfsetdotroot = offset + dotroot;
   TString out = fname;
   out = out.ReplaceAll(dotroot,offfsetdotroot);
-  if (GetDebug()) Info("SetFileOffset","in=%s  out=%s.",fname.Data(),out.Data());
+  AliDebug(1, Form("in=%s  out=%s.",fname.Data(),out.Data()));
   return out;
 
 }
@@ -495,21 +488,13 @@ void AliDataLoader::SetCompressionLevel(Int_t cl)
 }
 /*****************************************************************************/ 
 
-Int_t AliDataLoader::GetDebug() const 
-{ 
-  //it is not inline bacause AliLoader.h includes AliDataLoaer.h 
-  //and there is circular depenedence
- return AliLoader::GetDebug();
-}
-/*****************************************************************************/ 
-
 void AliDataLoader::MakeTree()
 {
   // Makes tree for the current data loader
   AliTreeLoader* tl = dynamic_cast<AliTreeLoader*>(fBaseLoaders->At(0));
   if (tl == 0x0)
    {
-     Error("MakeTree","Can not make a tree because main base loader is not a tree loader");
+     AliError("Can not make a tree because main base loader is not a tree loader");
      return;
    }
   tl->MakeTree();
@@ -556,15 +541,15 @@ void AliDataLoader::AddBaseLoader(AliBaseLoader* bl)
 
  if (bl == 0x0)
   {
-    Warning("AddBaseLoader","Pointer is null.");
+    AliWarning("Pointer is null.");
     return;
   }
  
  TObject* obj = fBaseLoaders->FindObject(bl->GetName());
  if (obj)
   {
-    Error("AddBaseLoader","Can not add this base loader.");
-    Error("AddBaseLoader","There exists already base loader which manages data named %s for this detector.");
+    AliError("Can not add this base loader.");
+    AliError(Form("There exists already base loader which manages data named %s for this detector.",obj->GetName()));
     return;
   }
  
@@ -602,19 +587,19 @@ TTree* AliDataLoader::Tree() const
 void  AliDataLoader::SetDirName(TString& dirname)
 {
   // Sets the directory name where the files will be stored
-  if (GetDebug()>9) Info("SetDirName","FileName before %s",fFileName.Data());
+  AliDebug(10, Form("FileName before %s",fFileName.Data()));
 
   Int_t n = fFileName.Last('/');
 
-  if (GetDebug()>9) Info("SetDirName","Slash found on pos %d",n);
+  AliDebug(10, Form("Slash found on pos %d",n));
 
   if (n > 0) fFileName = fFileName.Remove(0,n+1);
 
-  if (GetDebug()>9) Info("SetDirName","Core FileName %s",fFileName.Data());
+  AliDebug(10, Form("Core FileName %s",fFileName.Data()));
 
   fFileName = dirname + "/" + fFileName;
 
-  if (GetDebug()>9) Info("SetDirName","FileName after %s",fFileName.Data());
+  AliDebug(10, Form("FileName after %s",fFileName.Data()));
 }
 /*****************************************************************************/ 
 AliObjectLoader* AliDataLoader::GetBaseDataLoader()
@@ -646,7 +631,7 @@ void AliDataLoader::SetBaseDataLoader(AliBaseLoader* bl)
 //sets data base loader
   if (bl == 0x0)
    {
-     Error("SetBaseDataLoader","Parameter is null");
+     AliError("Parameter is null");
      return;
    }
   if (GetBaseDataLoader()) delete GetBaseDataLoader();
@@ -658,7 +643,7 @@ void AliDataLoader::SetBaseTaskLoader(AliTaskLoader* bl)
 //sets Task base loader
   if (bl == 0x0)
    {
-     Error("SetBaseTaskLoader","Parameter is null");
+     AliError("Parameter is null");
      return;
    }
   if (GetBaseTaskLoader()) delete GetBaseTaskLoader();
@@ -670,7 +655,7 @@ void AliDataLoader::SetBaseQALoader(AliBaseLoader* bl)
 //sets QA base loader
   if (bl == 0x0)
    {
-     Error("SetBaseQALoader","Parameter is null");
+     AliError("Parameter is null");
      return;
    }
   if (GetBaseQALoader()) delete GetBaseQALoader();
@@ -682,7 +667,7 @@ void AliDataLoader::SetBaseQATaskLoader(AliTaskLoader* bl)
 //sets QA Task base loader
   if (bl == 0x0)
    {
-     Error("SetBaseQATaskLoader","Parameter is null");
+     AliError("Parameter is null");
      return;
    }
   if (GetBaseQATaskLoader()) delete GetBaseQATaskLoader();
@@ -729,12 +714,12 @@ AliBaseLoader::AliBaseLoader(const TString& name,  AliDataLoader* dl, Bool_t sto
 /*****************************************************************************/ 
 AliBaseLoader::AliBaseLoader(const AliBaseLoader& source):TNamed(source) {
   // copy constructor
-  Fatal("AliBaseLoader","Copy constructor not implemented");
+  AliFatal("Copy constructor not implemented");
 }
 /*****************************************************************************/ 
 AliBaseLoader& AliBaseLoader::operator=(const AliBaseLoader& /*source*/) {
   // Assignment operator
-  Fatal("AliBaseLoader","Assignment operator not implemented");
+  AliFatal("Assignment operator not implemented");
   return *this;
 }
 /*****************************************************************************/ 
@@ -742,13 +727,11 @@ AliBaseLoader& AliBaseLoader::operator=(const AliBaseLoader& /*source*/) {
 Int_t AliBaseLoader::Load(Option_t* opt)
 {
   // Loads and posts the data
-  if (GetDebug())
-    Info("Load","data type = %s, option = %s",GetName(),opt);
+  AliDebug(1, Form("data type = %s, option = %s",GetName(),opt));
 
   if (Get())
    {
-     if (GetDebug())
-       Warning("Load","Data <<%s>> are already loaded. Use ReloadData to force reload. Nothing done",GetName());
+     AliWarning(Form("Data <<%s>> are already loaded. Use ReloadData to force reload. Nothing done",GetName()));
      return 0;
    }
   
@@ -758,10 +741,10 @@ Int_t AliBaseLoader::Load(Option_t* opt)
    {
      if (GetDataLoader()->IsOptionContrary(opt) == kTRUE)
        {
-         Error("Load","Data Type %s, Container Name %s", GetDataLoader()->GetName(),GetName());
-         Error("Load","File was already opened in READ-ONLY mode, while now WRITEABLE access is requested.");
-         Error("Load","Use AliDataLoader::SetOption to enforce change of access mode OR");
-         Error("Load","Load previosly loaded data with coherent option.");
+         AliError(Form("Data Type %s, Container Name %s", GetDataLoader()->GetName(),GetName()));
+         AliError("File was already opened in READ-ONLY mode, while now WRITEABLE access is requested.");
+         AliError("Use AliDataLoader::SetOption to enforce change of access mode OR");
+         AliError("Load previosly loaded data with coherent option.");
          return 10;
        }
    }
@@ -770,7 +753,7 @@ Int_t AliBaseLoader::Load(Option_t* opt)
      retval = GetDataLoader()->OpenFile(opt);
      if (retval) 
       {
-        Error("Load","Error occured while opening <<%s>> file",GetName());
+        AliError(Form("Error occured while opening <<%s>> file",GetName()));
         return retval;
       }
    }
@@ -786,7 +769,7 @@ Int_t AliBaseLoader::Load(Option_t* opt)
   retval = Post();
   if (retval)
    {
-    Error("Load","Error occured while posting %s from file to folder.",GetName());
+    AliError(Form("Error occured while posting %s from file to folder.",GetName()));
     return retval;
    }
   
@@ -801,7 +784,7 @@ Int_t AliBaseLoader::Post()
 
   if ( GetDirectory() == 0x0)
    {
-     Error("Post","%s directory is NULL. Load before.",GetDataLoader()->GetName());
+     AliError(Form("%s directory is NULL. Load before.",GetDataLoader()->GetName()));
      return 2; 
    }
   
@@ -817,15 +800,12 @@ Int_t AliBaseLoader::Post()
     Int_t fileupdate = GetDataLoader()->GetFileOption().CompareTo("update",TString::kIgnoreCase);
     if ( fileupdate == 0)
      { //if it is, it is normal that there is no data yet
-       if (GetDebug())
-        {
-         Info("Post","Can not find %s in file %s (file is opened in UPDATE mode).",
-               GetName(),GetDataLoader()->GetFile()->GetName());
-        }
+       AliDebug(1, Form("Can not find %s in file %s (file is opened in UPDATE mode).",
+			GetName(),GetDataLoader()->GetFile()->GetName()));
      }
     else
      {
-        Error("Post","Can not find %s in file %s", GetName(),GetDataLoader()->GetFile()->GetName());
+        AliError(Form("Can not find %s in file %s", GetName(),GetDataLoader()->GetFile()->GetName()));
         return 5;
      }
    }
@@ -838,25 +818,25 @@ Int_t AliBaseLoader::Post(TObject* data)
 //Posts data container to proper folders
  if (data == 0x0)
   {
-    Error("Post","Pointer to object is NULL");
+    AliError("Pointer to object is NULL");
     return 1;
   }
 
  if ( fName.CompareTo(data->GetName()) != 0)
    {
-     Fatal("Post(TObject*)","Object name is <<%s>> while <<%s>> expected",data->GetName(),GetName());
+     AliFatal(Form("Object name is <<%s>> while <<%s>> expected",data->GetName(),GetName()));
      return -1;//pro forma
    }
    
  TObject* obj = Get();
  if (data == obj)
   {
-    if (GetDebug()) Warning("Post","This object was already posted.");
+    AliWarning("This object was already posted.");
     return 0;
   }
  if (obj)
   {
-    Warning("PostData","Object named %s already exitsts in data folder. Removing it",GetName());
+    AliWarning(Form("Object named %s already exitsts in data folder. Removing it",GetName()));
     Clean();
   }
  return AddToBoard(data);
@@ -867,14 +847,13 @@ Int_t AliBaseLoader::WriteData(Option_t* opt)
 {
 //Writes data defined by di object
 //opt might be "OVERWRITE" in case of forcing overwriting
-  if (GetDebug()) 
-    Info("WriteData","Writing %s container for %s data. Option is %s.",
-          GetName(),GetDataLoader()->GetName(),opt);
+  AliDebug(1, Form("Writing %s container for %s data. Option is %s.",
+		   GetName(),GetDataLoader()->GetName(),opt));
   
   TObject *data = Get();
   if(data == 0x0)
    {//did not get, nothing to write
-     Warning("WriteData","Tree named %s not found in folder. Nothing to write.",GetName());
+     AliWarning(Form("Tree named %s not found in folder. Nothing to write.",GetName()));
      return 0;
    }
   
@@ -886,14 +865,14 @@ Int_t AliBaseLoader::WriteData(Option_t* opt)
      if (GetDataLoader()->OpenFile("UPDATE"))
       {  
         //oops, can not open the file, give an error message and return error code
-        Error("WriteData","Can not open hits file. %s ARE NOT WRITTEN",GetName());
+        AliError(Form("Can not open hits file. %s ARE NOT WRITTEN",GetName()));
         return 1;
       }
    }
 
   if (GetDataLoader()->IsFileWritable() == kFALSE)
    {
-     Error("WriteData","File %s is not writable",GetDataLoader()->GetFileName().Data());
+     AliError(Form("File %s is not writable",GetDataLoader()->GetFileName().Data()));
      return 2;
    }
   
@@ -906,18 +885,18 @@ Int_t AliBaseLoader::WriteData(Option_t* opt)
      const char *oOverWrite = strstr(opt,"OVERWRITE");
      if(!oOverWrite)
       {//if it is not used -  give an error message and return an error code
-        Error("WriteData","Tree already exisists. Use option \"OVERWRITE\" to overwrite previous data");
+        AliError("Tree already exisists. Use option \"OVERWRITE\" to overwrite previous data");
         return 3;
       }
    }
   
-  if (GetDebug()) Info("WriteData","DataName = %s, opt = %s, data object name = %s",
-                   GetName(),opt,data->GetName());
-  if (GetDebug()) Info("WriteData","File Name = %s, Directory Name = %s Directory's File Name = %s",
+  AliDebug(1, Form("DataName = %s, opt = %s, data object name = %s",
+                   GetName(),opt,data->GetName()));
+  AliDebug(1, Form("File Name = %s, Directory Name = %s Directory's File Name = %s",
                    GetDataLoader()->GetFile()->GetName(),GetDirectory()->GetName(),
-                   GetDirectory()->GetFile()->GetName());
+                   GetDirectory()->GetFile()->GetName()));
   
-  if (GetDebug()) Info("WriteData","Writing data");
+  AliDebug(1, "Writing data");
   data->Write(0,TObject::kOverwrite);
 
   fIsLoaded = kTRUE;  // Just to ensure flag is on. Object can be posted manually to folder structure, not using loader.
@@ -942,12 +921,11 @@ Int_t AliBaseLoader::Reload()
 void AliBaseLoader::Clean()
 {
 //removes objects from folder/task
-  if (GetDebug()) Info("Clean","%s %s",GetName(),GetDataLoader()->GetName());
+  AliDebug(1, Form("%s %s",GetName(),GetDataLoader()->GetName()));
   TObject* obj = Get();
   if(obj)
    { 
-     if (GetDebug()) 
-       Info("Clean","cleaning %s.",GetName());
+     AliDebug(1, Form("cleaning %s.",GetName()));
      RemoveFromBoard(obj);
      delete obj;
    }
@@ -967,17 +945,11 @@ AliDataLoader* AliBaseLoader::GetDataLoader() const
   // Returns pointer to the data loader
  if (fDataLoader == 0x0) 
   {
-    Fatal("GetDataLoader","Pointer to Data Loader is NULL");
+    AliFatal("Pointer to Data Loader is NULL");
   }
  return fDataLoader;
 }
 /*****************************************************************************/ 
-
-Int_t AliBaseLoader::GetDebug() const 
-{ 
-  // Returns debug level
- return (Int_t)AliLoader::GetDebug();
-}
 
 TDirectory* AliBaseLoader::GetDirectory() const
 {
@@ -1011,7 +983,7 @@ TFolder* AliObjectLoader::GetFolder() const
   TFolder* df = GetDataLoader()->GetFolder();
   if (df == 0x0)
    {
-     Fatal("GetFolder","Data Folder is NULL");
+     AliFatal("Data Folder is NULL");
    }
   return df;
 }
@@ -1019,12 +991,12 @@ TFolder* AliObjectLoader::GetFolder() const
 AliObjectLoader::AliObjectLoader(const AliObjectLoader& source):
   AliBaseLoader(source) {
   // copy constructor
-  Fatal("AliObjectLoader","Copy constructor not implemented");
+  AliFatal("Copy constructor not implemented");
 }
 /*****************************************************************************/ 
 AliObjectLoader& AliObjectLoader::operator=(const AliObjectLoader& /*source*/) {
   // Assignment operator
-  Fatal("AliObjectLoader","Assignment operator not implemented");
+  AliFatal("Assignment operator not implemented");
   return *this;
 }
 /*****************************************************************************/ 
@@ -1071,12 +1043,12 @@ AliTreeLoader::AliTreeLoader(const TString& name, AliDataLoader* dl,Bool_t store
 AliTreeLoader::AliTreeLoader(const AliTreeLoader& source):
   AliObjectLoader(source) {
   // copy constructor
-  Fatal("AliTreeLoader","Copy constructor not implemented");
+  AliFatal("Copy constructor not implemented");
 }
 /*****************************************************************************/ 
 AliTreeLoader& AliTreeLoader::operator=(const AliTreeLoader& /*source*/) {
   // Assignment operator
-  Fatal("AliTreeLoader","Assignment operator not implemented");
+  AliFatal("Assignment operator not implemented");
   return *this;
 }
 
@@ -1087,14 +1059,13 @@ Int_t AliTreeLoader::WriteData(Option_t* opt)
 //Writes data defined by di object
 //opt might be "OVERWRITE" in case of forcing overwriting
 
-  if (GetDebug()) 
-    Info("WriteData","Writing %s container for %s data. Option is %s.",
-          GetName(),GetDataLoader()->GetName(),opt);
+  AliDebug(1, Form("Writing %s container for %s data. Option is %s.",
+		   GetName(),GetDataLoader()->GetName(),opt));
 
   TObject *data = Get();
   if(data == 0x0)
    {//did not get, nothing to write
-     Warning("WriteData","Tree named %s not found in folder. Nothing to write.",GetName());
+     AliWarning(Form("Tree named %s not found in folder. Nothing to write.",GetName()));
      return 0;
    }
   
@@ -1106,14 +1077,14 @@ Int_t AliTreeLoader::WriteData(Option_t* opt)
      if (GetDataLoader()->OpenFile("UPDATE"))
       {  
         //oops, can not open the file, give an error message and return error code
-        Error("WriteData","Can not open hits file. %s ARE NOT WRITTEN",GetName());
+        AliError(Form("Can not open hits file. %s ARE NOT WRITTEN",GetName()));
         return 1;
       }
    }
 
   if (GetDataLoader()->IsFileWritable() == kFALSE)
    {
-     Error("WriteData","File %s is not writable",GetDataLoader()->GetFileName().Data());
+     AliError(Form("File %s is not writable",GetDataLoader()->GetFileName().Data()));
      return 2;
    }
   
@@ -1126,22 +1097,22 @@ Int_t AliTreeLoader::WriteData(Option_t* opt)
      const char *oOverWrite = strstr(opt,"OVERWRITE");
      if(!oOverWrite)
       {//if it is not used -  give an error message and return an error code
-        Error("WriteData","Tree already exisists. Use option \"OVERWRITE\" to overwrite previous data");
+        AliError("Tree already exisists. Use option \"OVERWRITE\" to overwrite previous data");
         return 3;
       }
    }
   
-  if (GetDebug()) Info("WriteData","DataName = %s, opt = %s, data object name = %s",
-                   GetName(),opt,data->GetName());
-  if (GetDebug()) Info("WriteData","File Name = %s, Directory Name = %s Directory's File Name = %s",
+  AliDebug(1, Form("DataName = %s, opt = %s, data object name = %s",
+                   GetName(),opt,data->GetName()));
+  AliDebug(1, Form("File Name = %s, Directory Name = %s Directory's File Name = %s",
                    GetDataLoader()->GetFile()->GetName(),GetDirectory()->GetName(),
-                   GetDirectory()->GetFile()->GetName());
+                   GetDirectory()->GetFile()->GetName()));
   
   //if a data object is a tree set the directory
   TTree* tree = dynamic_cast<TTree*>(data);
   if (tree) tree->SetDirectory(GetDirectory()); //forces setting the directory to this directory (we changed dir few lines above)
   
-  if (GetDebug()) Info("WriteData","Writing tree");
+  AliDebug(1, "Writing tree");
   data->Write(0,TObject::kOverwrite);
 
   fIsLoaded = kTRUE;  // Just to ensure flag is on. Object can be posted manually to folder structure, not using loader.
@@ -1156,19 +1127,17 @@ void AliTreeLoader::MakeTree()
 //this virtual method creates the tree in the file
   if (Tree()) 
    {
-    if (GetDebug()) 
-      Info("MakeTree","name = %s, Data Name = %s Tree already exists.",
-            GetName(),GetDataLoader()->GetName());
+    AliDebug(1, Form("name = %s, Data Name = %s Tree already exists.",
+		     GetName(),GetDataLoader()->GetName()));
     return;//tree already made 
    }
-  if (GetDebug()) 
-    Info("MakeTree","Making Tree named %s.",GetName());
+  AliDebug(1, Form("Making Tree named %s.",GetName()));
    
   TString dtypename(GetDataLoader()->GetName());
   TTree* tree = new TTree(GetName(), dtypename + " Container"); //make a tree
   if (tree == 0x0)
    {
-     Error("MakeTree","Can not create %s tree.",GetName());
+     AliError(Form("Can not create %s tree.",GetName()));
      return;
    }
   tree->SetAutoSave(1000000000); //no autosave
@@ -1201,12 +1170,12 @@ AliTaskLoader::AliTaskLoader(const TString& name, AliDataLoader* dl, TTask* pare
 AliTaskLoader::AliTaskLoader(const AliTaskLoader& source):
   AliBaseLoader(source) {
   // copy constructor
-  Fatal("AliTaskLoader","Copy constructor not implemented");
+  AliFatal("Copy constructor not implemented");
 }
 /*****************************************************************************/ 
 AliTaskLoader& AliTaskLoader::operator=(const AliTaskLoader& /*source*/) {
   // Assignment operator
-  Fatal("AliTaskLoader","Assignment operator not implemented");
+  AliFatal("Assignment operator not implemented");
   return *this;
 }
 /*****************************************************************************/ 
@@ -1215,12 +1184,11 @@ void AliTaskLoader::Clean()
 //removes tasl from parental task
 // DO NOT DELETE OBJECT contrary to BaseLoader
 //
-  if (GetDebug()) Info("Clean","%s %s",GetName(),GetDataLoader()->GetName());
+  AliDebug(1, Form("Clean","%s %s",GetName(),GetDataLoader()->GetName()));
   TObject* obj = Get();
   if(obj)
    { 
-     if (GetDebug()) 
-       Info("Clean","cleaning %s.",GetName());
+     AliDebug(1, Form("cleaning %s.",GetName()));
      RemoveFromBoard(obj);
    }
 }
@@ -1239,7 +1207,7 @@ Int_t AliTaskLoader::AddToBoard(TObject* obj)
   TTask* task = dynamic_cast<TTask*>(obj);
   if (task == 0x0)
    {
-     Error("AddToBoard","To TTask board can be added only tasks.");
+     AliError("To TTask board can be added only tasks.");
      return 1;
    }
   GetParentalTask()->Add(task);

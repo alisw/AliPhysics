@@ -27,6 +27,7 @@
 
 #include <TSystem.h>
 
+#include "AliLog.h"
 #include "AliFieldMap.h"
 
 ClassImp(AliFieldMap)
@@ -134,8 +135,8 @@ void AliFieldMap::ReadField()
   Int_t   ix, iy, iz, ipx, ipy, ipz;
   Float_t bx, by, bz;
   char *fname = 0;
-  printf("%s: Reading Magnetic Field Map %s from file %s\n",
-	 ClassName(),fName.Data(),fTitle.Data());
+  AliInfo(Form("Reading Magnetic Field Map %s from file %s",
+	       fName.Data(),fTitle.Data()));
 
   fname   = gSystem->ExpandPathName(fTitle.Data());
   magfile = fopen(fname,"r");
@@ -273,7 +274,7 @@ void AliFieldMap::Copy(TObject & /* magf */) const
   //
   // Copy *this onto magf -- Not implemented
   //
-  Fatal("Copy","Not implemented!\n");
+  AliFatal("Not implemented!");
 }
 
 //_______________________________________________________________________

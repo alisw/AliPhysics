@@ -19,14 +19,13 @@
 #include <TError.h>
 
 //AliRoot includes
+#include <AliLog.h>
 #include <AliRun.h>
 #include <AliRunLoader.h>
 #include <AliRunDigitizer.h>
 #include <AliDigitizer.h>
 #include <AliDetector.h>
 #include "AliConfig.h"
-
-Int_t  AliLoader::fgDebug = 0;
 
 const TString AliLoader::fgkDefaultHitsContainerName("TreeH");
 const TString AliLoader::fgkDefaultDigitsContainerName = "TreeD";
@@ -77,8 +76,7 @@ AliLoader::AliLoader(const Char_t* detname,const Char_t* eventfoldername):
  fQAFolder(0x0)
 {
   //ctor
-   if (GetDebug()) Info("AliLoader(const Char_t* detname,const Char_t* eventfoldername)",
-        "detname = %s eventfoldername = %s",detname,eventfoldername);
+   AliDebug(1, Form("detname = %s eventfoldername = %s",detname,eventfoldername));
 
    //try to find folder eventfoldername in top alice folder
    //safe because GetTopFolder will abort in case of failure
@@ -116,7 +114,7 @@ AliLoader::AliLoader(const AliLoader& source):TNamed(source) {
   // dummy copy constructor
   if(&source==this)return;
   
-  Fatal("AliLoader","Copy constructor not implemented. Aborting");
+  AliFatal("Copy constructor not implemented. Aborting");
   return;
 }
 
@@ -125,7 +123,7 @@ AliLoader& AliLoader::operator=(const AliLoader& source) {
   // dummy assignment operator
   if(&source==this) return *this;
   
-  Fatal("AliLoader","Assignment operator not implemented. Aborting");
+  AliFatal("Assignment operator not implemented. Aborting");
   return *this;
 }
 
@@ -197,12 +195,12 @@ void AliLoader::AddDataLoader(AliDataLoader* dl)
   //
   if (dl == 0x0)
    {
-     Error("AddDataLoader","Pointer is NULL");
+     AliError("Pointer is NULL");
      return;
    }
   if (fDataLoaders->FindObject(dl->GetName()))
    {
-     Error("AddDataLoader","Such a loader exists");
+     AliError("Such a loader exists");
      return;
    }
   fDataLoaders->AddLast(dl);
@@ -255,7 +253,7 @@ Int_t AliLoader::GetEvent()
     retval = dl->GetEvent();
     if (retval)
      {
-       Error("GetEvent","Error occured while GetEvent for %s",dl->GetName());
+       AliError(Form("Error occured while GetEvent for %s",dl->GetName()));
        return retval;
      }
   }
@@ -288,7 +286,7 @@ TFolder* AliLoader::GetDataFolder()
    
    if (!fDataFolder)
     {
-     Fatal("GetDataFolder","Can not find AliRoot data folder. Aborting");
+     AliFatal("Can not find AliRoot data folder. Aborting");
      return 0x0;
     }
   }
@@ -306,7 +304,7 @@ TFolder* AliLoader::GetTasksFolder()
    
    if (!fTasksFolder)
     {
-     Fatal("GetTasksFolder","Can not find tasks folder. Aborting");
+     AliFatal("Can not find tasks folder. Aborting");
      return 0x0;
     }
   }
@@ -324,7 +322,7 @@ TFolder* AliLoader::GetModulesFolder()
    
    if (!fModuleFolder)
     {
-     Fatal("GetModulesFolder","Can not find modules folder. Aborting");
+     AliFatal("Can not find modules folder. Aborting");
      return 0x0;
     }
   }
@@ -343,7 +341,7 @@ TFolder* AliLoader::GetQAFolder()
 
      if (fQAFolder == 0x0)
       {
-       Fatal("GetQAFolder","Can not find Quality Assurance folder. Aborting");
+       AliFatal("Can not find Quality Assurance folder. Aborting");
        return 0x0;
       }
    }
@@ -395,7 +393,7 @@ TTask* AliLoader::QAtask(const char* name) const
   TTask* qat = AliRunLoader::GetRunQATask();
   if ( qat == 0x0 ) 
    {
-    Error("QAtask","Can not get RunQATask. (Name:%s)",GetName());
+    AliError(Form("Can not get RunQATask. (Name:%s)",GetName()));
     return 0x0;
    }
   
@@ -404,7 +402,7 @@ TTask* AliLoader::QAtask(const char* name) const
   
   if ( dqat == 0x0 ) 
    {
-    Error("QAtask","Can not find QATask in RunQATask for %s",GetDetectorName().Data());
+    AliError(Form("Can not find QATask in RunQATask for %s",GetDetectorName().Data()));
     return 0x0;
    }
   
@@ -420,7 +418,7 @@ TTask* AliLoader::QAtask(const char* name) const
     if(taskname.BeginsWith(name))
       return task ;
    }
-  Error("QAtask","Can not find sub-task with name starting with %s in task %s",name,dqat->GetName());
+  AliError(Form("Can not find sub-task with name starting with %s in task %s",name,dqat->GetName()));
   return 0x0;   
 }
 /*****************************************************************************/ 
@@ -433,19 +431,18 @@ TDirectory* AliLoader::ChangeDir(TFile* file, Int_t eventno)
  
  if (file == 0x0)
   {
-    ::Error("AliLoader::ChangeDir","File is null");
+    AliErrorClass("File is null");
     return 0x0;
   }
  if (file->IsOpen() == kFALSE)
   {
-    ::Error("AliLoader::ChangeDir","File is not opened");
+    AliErrorClass("File is not opened");
     return 0x0;
   }
 
  TString dirname("Event");
  dirname+=eventno;
- if (AliLoader::fgDebug > 1) 
-   ::Info("AliLoader::ChangeDir","Changing Dir to %s in file %s.",dirname.Data(),file->GetName());
+ AliDebugClass(1, Form("Changing Dir to %s in file %s.",dirname.Data(),file->GetName()));
 
  Bool_t result;
  
@@ -453,22 +450,21 @@ TDirectory* AliLoader::ChangeDir(TFile* file, Int_t eventno)
 
  if (dir == 0x0)
   {
-    if (AliLoader::fgDebug > 1)
-     ::Info("AliLoader::ChangeDir","Can not find directory %s in file %s, creating...",
-            dirname.Data(),file->GetName());
+    AliDebugClass(1, Form("Can not find directory %s in file %s, creating...",
+		     dirname.Data(),file->GetName()));
     
     if (file->IsWritable() == kFALSE)
      {
-       ::Error("AliLoader::ChangeDir","Can not create directory. File %s in not writable.",
-                file->GetName());
+       AliErrorClass(Form("Can not create directory. File %s in not writable.",
+		     file->GetName()));
        return 0x0;
      }
             
     TDirectory* newdir = file->mkdir(dirname);
     if (newdir == 0x0)
      {
-       ::Error("AliLoader::ChangeDir","Failed to create new directory in file %s.",
-               file->GetName());
+       AliErrorClass(Form("Failed to create new directory in file %s.",
+		     file->GetName()));
        return 0x0;
      }
     result = file->cd(dirname);
@@ -656,7 +652,7 @@ void AliLoader::CleanFolders()
    AliDataLoader* dl;
    while ((dl = (AliDataLoader*)next()))
     { 
-      if (GetDebug()) Info("CleanFolders","name = %s cleaning",dl->GetName());
+      AliDebug(1, Form("name = %s cleaning",dl->GetName()));
       dl->Clean();
     }
  }
@@ -669,7 +665,7 @@ void AliLoader::CleanSDigitizer()
 //removes and deletes detector task from Run Task
  if ( GetSDigitsDataLoader()->GetBaseTaskLoader() == 0x0 )
   {
-    Warning("CleanSDigitizer","Task Loader for SDigits does not exist");
+    AliWarning("Task Loader for SDigits does not exist");
     return;
   }
  GetSDigitsDataLoader()->GetBaseTaskLoader()->Clean();
@@ -681,7 +677,7 @@ void AliLoader::CleanDigitizer()
 //removes and deletes detector task from Run Task
  if ( GetDigitsDataLoader()->GetBaseTaskLoader() == 0x0 )
   {
-    Warning("CleanDigitizer","Task Loader for Digits does not exist");
+    AliWarning("Task Loader for Digits does not exist");
     return;
   }
  GetDigitsDataLoader()->GetBaseTaskLoader()->Clean();
@@ -693,7 +689,7 @@ void AliLoader::CleanReconstructioner()
 //removes and deletes detector Reconstructioner from Run Reconstructioner
  if ( GetRecPointsDataLoader()->GetBaseTaskLoader() == 0x0 )
   {
-    Warning("CleanSDigitizer","Task Loader for SDigits does not exist");
+    AliWarning("Task Loader for SDigits does not exist");
     return;
   }
  GetRecPointsDataLoader()->GetBaseTaskLoader()->Clean();
@@ -705,7 +701,7 @@ void AliLoader::CleanTracker()
 //removes and deletes detector task from Run Task
  if ( GetTracksDataLoader()->GetBaseTaskLoader() == 0x0 )
   {
-    Warning("CleanTracker","Task Loader for Tracks does not exist");
+    AliWarning("Task Loader for Tracks does not exist");
     return;
   }
  GetTracksDataLoader()->GetBaseTaskLoader()->Clean();
@@ -718,7 +714,7 @@ void AliLoader::CleanPIDTask()
 
  if (  GetRecParticlesDataLoader()->GetBaseTaskLoader() == 0x0 )
   {
-    Warning("CleanPIDTask","Task Loader for Reconstructed Particles does not exist");
+    AliWarning("Task Loader for Reconstructed Particles does not exist");
     return;
   }
   GetRecParticlesDataLoader()->GetBaseTaskLoader()->Clean();
@@ -736,7 +732,7 @@ Int_t AliLoader::ReloadAll()
    Int_t err = dl->Reload();
    if (err)
     {
-      Error("ReloadAll","Reload returned error for %s",dl->GetName());
+      AliError(Form("Reload returned error for %s",dl->GetName()));
       return err;
     }
   }
@@ -761,7 +757,7 @@ Int_t  AliLoader::SetEventFolder(TFolder* eventfolder)
   //sets the event folder
  if (eventfolder == 0x0)
   {
-    Error("SetEventFolder","Stupid joke. Argument is NULL");
+    AliError("Stupid joke. Argument is NULL");
     return 1;
   }
 
@@ -788,17 +784,17 @@ Int_t AliLoader::Register(TFolder* eventFolder)
 //creation of folder structure as well (some detectors needs folders 
 //alrady in constructors)
 
- if (GetDebug()) Info("Register","Name is %s.",GetName());
+ AliDebug(1, Form("Name is %s.",GetName()));
  if (eventFolder == 0x0)
   {
-    Error("Register","Event folder is not set.");
+    AliError("Event folder is not set.");
     return 1;
   }
  Int_t retval = AliConfig::Instance()->AddDetector(eventFolder,fDetectorName,fDetectorName);
  if(retval)
   {
-    Error("SetEventFolder","Can not create tasks and/or folders for %s. Event folder name is %s",
-          fDetectorName.Data(),eventFolder->GetName());
+    AliError(Form("Can not create tasks and/or folders for %s. Event folder name is %s",
+		  fDetectorName.Data(),eventFolder->GetName()));
     return retval;
   }
  SetEventFolder(eventFolder);
@@ -879,8 +875,7 @@ void AliLoader::Clean(const TString& name)
   TObject* obj = GetDetectorDataFolder()->FindObject(name);
   if(obj)
    {
-     if (GetDebug())
-       Info("Clean(const TString&)","name=%s, cleaning %s.",GetName(),name.Data());
+     AliDebug(1, Form("name=%s, cleaning %s.",GetName(),name.Data()));
      GetDetectorDataFolder()->Remove(obj);
      delete obj;
    }
@@ -896,6 +891,27 @@ Bool_t AliLoader::IsOptionWritable(const TString& opt)
   if (opt.CompareTo("create",TString::kIgnoreCase)) return kTRUE;
   if (opt.CompareTo("update",TString::kIgnoreCase)) return kTRUE;
   return kFALSE;
+}
+/*****************************************************************************/ 
+
+Int_t AliLoader::GetDebug()
+{
+  AliWarningClass("Don't use this method any more, use AliDebug instead");
+  return AliDebugLevelClass();
+}
+/*****************************************************************************/ 
+
+void AliLoader::SetDebug(Int_t deb)
+{
+  // Sets debug level
+  AliLog::SetClassDebugLevel("AliRunLoader", deb);
+  AliLog::SetClassDebugLevel("AliLoader", deb);
+  AliLog::SetClassDebugLevel("AliDataLoader", deb);
+  AliLog::SetClassDebugLevel("AliBaseLoader", deb);
+  AliLog::SetClassDebugLevel("AliObjectLoader", deb);
+  AliLog::SetClassDebugLevel("AliTreeLoader", deb);
+  AliLog::SetClassDebugLevel("AliTaskLoader", deb);
+  AliLog::SetClassDebugLevel("AliConfig", deb);
 }
 /*****************************************************************************/ 
 

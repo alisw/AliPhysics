@@ -57,7 +57,7 @@ public:
    Int_t          GetEventNrInRun() const {return fEventNrInRun;}
    Int_t          GetEventsPerRun() const {return fEventsPerRun;}
    Int_t          GetNdets() const {return fNdets;}
-   Int_t          GetDebug() const {return fDebug;}
+   Int_t          GetDebug() const;
    AliModule     *GetModule(const char *name) const;
    AliDetector   *GetDetector(const char *name) const;
    Int_t          GetModuleID(const char *name) const;
@@ -91,7 +91,7 @@ public:
                           Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  RunReco(const char *detector=0, Int_t first = 0, Int_t last = 0);
-   virtual  void  SetDebug(Int_t level=0) {fDebug = level;}
+   virtual  void  SetDebug(Int_t level=0);
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, const char* filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);
@@ -136,7 +136,6 @@ protected:
   Int_t          fEvent;             //! Current event number (from 1)
   Int_t          fEventNrInRun;      //! Current unique event number in run
   Int_t          fEventsPerRun;      //  Number of events per run
-  Int_t          fDebug;             //  Debug flag
   TObjArray     *fModules;           //  List of Detectors
   TGeometry     *fGeometry;          //  Pointer to geometry
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
@@ -155,7 +154,7 @@ protected:
 private:
   void Copy(TObject &arun) const;
 
-  ClassDef(AliRun,9)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,10)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

@@ -295,8 +295,8 @@ class AliLoader: public TNamed
     static Bool_t      TestFileOption(Option_t* opt);//checks is file is created from scratch
     static Bool_t      IsOptionWritable(const TString& opt);
     
-    static Int_t GetDebug() {return fgDebug;}
-    static void        SetDebug(Int_t deb = 1){fgDebug = deb;}//Sets debugging information
+    static Int_t       GetDebug();
+    static void        SetDebug(Int_t deb = 1);//Sets debugging information
     
    protected:
 
@@ -371,8 +371,6 @@ class AliLoader: public TNamed
    private:
     //descendant classes should
     //use protected interface methods to access these folders
-
-    static Int_t       fgDebug; //debug flag for loaders
 
     ClassDef(AliLoader,2)
  };

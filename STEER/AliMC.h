@@ -65,8 +65,6 @@ public:
    virtual  void  ResetHits();
    virtual  void  TrackingLimits( Float_t rmax=1.e10, Float_t zmax=1.e10)
     {fTrRmax=rmax; fTrZmax=zmax;}
-   Int_t          GetDebug() const {return fDebug;}
-   virtual  void  SetDebug(Int_t level=0) {fDebug = level;}
    virtual  void  Init();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  Browse(TBrowser *b);
@@ -114,7 +112,6 @@ private:
    TArrayF        fSum2Energy;        //! Energy squared per event in each volume
    Float_t        fTrRmax;            //  Maximum radius for tracking
    Float_t        fTrZmax;            //  Maximu z for tracking
-   Int_t          fDebug;             //  Debug flag
    TArrayI       *fImedia;            //! Array of correspondence between media and detectors
    TString        fTransParName;      //  Name of the transport parameters file
    AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
@@ -122,7 +119,7 @@ private:
    TList         *fHitLists;          //! Lists of hits to be remapped by PurifyKine
   TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
     
-    ClassDef(AliMC,1)
+    ClassDef(AliMC,2)
 };
 
  

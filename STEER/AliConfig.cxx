@@ -40,6 +40,7 @@
 #include "AliDetector.h"
 #include "AliGenerator.h" 
 #include "AliLoader.h"
+#include "AliLog.h"
 
 enum 
  {
@@ -130,7 +131,7 @@ AliConfig::AliConfig():
   // Default constructor, mainly to keep coding conventions
   //
   fgInstance=0;//never mind, its going to exit in next step
-  Fatal("ctor","Constructor should not be called for a singleton\n");
+  AliFatal("Constructor should not be called for a singleton");
 }
 //____________________________________________________________________________
 
@@ -147,8 +148,7 @@ AliConfig::AliConfig(const AliConfig& conf):
   //
   fgInstance=0;
     
-  Fatal("copy ctor",
-   "Copy constructor should not be called for a singleton\n");
+  AliFatal("Copy constructor should not be called for a singleton");
 }
 //____________________________________________________________________________
 
@@ -159,8 +159,7 @@ AliConfig& AliConfig::operator=(const AliConfig& /*conf*/)
   //
   fgInstance=0;
     
-  Fatal("Assignment operator",
-   "Assignment operator should not be called for a singleton\n");
+  AliFatal("Assignment operator should not be called for a singleton");
   return *this;
 }
 //____________________________________________________________________________
@@ -178,7 +177,7 @@ AliConfig::AliConfig(const char *name, const char *title):
   //Main AliRoot Folder
   if (fTopFolder == 0x0)
    {
-     Fatal("AliConfig(const char*, const char*)","Can not create Top Alice Folder.");
+     AliFatal("Can not create Top Alice Folder.");
      return;//never reached
    }
   fTopFolder->SetOwner();
@@ -250,12 +249,12 @@ Int_t AliConfig::AddSubTask(const char *taskname, const char* name,const char* t
 //Create new task named 'name' and titled 'title' 
 //as a subtask of the task named 'taskname'
 
-   if (AliLoader::GetDebug()) Info("AddSubTask","Try to get folder named %s",taskname);
+   AliDebug(1, Form("Try to get folder named %s",taskname));
    TObject* obj = fTopFolder->FindObject(taskname);
    TTask * task = (obj)?dynamic_cast<TTask*>(obj):0x0;
    if (task)
      {
-      if (AliLoader::GetDebug()) Info("AddSubTask","          Got");
+      AliDebug(1, "          Got");
       TTask * subtask = static_cast<TTask*>(task->GetListOfTasks()->FindObject(name));
       if (!subtask) 
         {
@@ -264,12 +263,12 @@ Int_t AliConfig::AddSubTask(const char *taskname, const char* name,const char* t
         }
       else
        {
-         Warning("AddSubTask","Task named \"%s\" already exists in Task %s\n",name,taskname);
+         AliWarning(Form("Task named \"%s\" already exists in Task %s",name,taskname));
        }
      }
    else
      {
-       Error("AddSubTask","Can not find task %s to put a new task in.",taskname);
+       AliError(Form("Can not find task %s to put a new task in.",taskname));
        return 1;
      }
   return 0;
@@ -316,9 +315,8 @@ void AliConfig::Add(AliModule* obj,const char* eventfolder)
   // Adds module to the event folder
   TString path(eventfolder);
   path = path + "/" + fgkModuleFolderName;
-  if (AliLoader::GetDebug())
-    Info("Add(AliModule*)","module name = %s, Ev. Fold. Name is %s.",
-         obj->GetName(),eventfolder);
+  AliDebug(1, Form("module name = %s, Ev. Fold. Name is %s.",
+		   obj->GetName(),eventfolder));
   AddInFolder(path, obj);
 }
 //____________________________________________________________________________
@@ -330,7 +328,7 @@ Int_t AliConfig::AddDetector(TFolder* evntfolder, const char *name, const char* 
  retval = CreateDetectorFolders(evntfolder,name,title);
  if (retval)
   {
-    Error("AddDetector","CreateDetectorFolders returned error for detector %s",name);
+    AliError(Form("CreateDetectorFolders returned error for detector %s",name));
     return retval;
   }
  return 0; 
@@ -344,7 +342,7 @@ Int_t AliConfig::AddDetector(const char* evntfoldername,const char *name, const 
  retval = CreateDetectorFolders(evntfoldername,name,title);
  if (retval)
   {
-    Error("AddDetector","CreateDetectorFolders returned error for detector %s",name);
+    AliError(Form("CreateDetectorFolders returned error for detector %s",name));
     return retval;
   }
 // retval = CreateDetectorTasks(name,title);
@@ -360,16 +358,14 @@ Int_t AliConfig::AddDetector(const char* evntfoldername,const char *name, const 
 void  AliConfig::Add(AliDetector * obj,const char* eventfolder)
 {
   // Adds new AliDetector objest to the correspondent event folder
-  if (AliLoader::GetDebug()) 
-    Info("Add(AliDetector*)","detector name = %s, Ev. Fold. Name is %s.",
-        obj->GetName(),eventfolder);
+  AliDebug(1, Form("detector name = %s, Ev. Fold. Name is %s.",
+		   obj->GetName(),eventfolder));
 
   TObject* foundobj = GetTopFolder()->FindObject(eventfolder);
   TFolder* evfolder = (foundobj)?dynamic_cast<TFolder*>(foundobj):0x0;
   if (evfolder == 0x0)
    {
-     Fatal("Add(AliDetector * obj,const char* eventfolder)",
-           "Can not find folder %s while adding detector %s",eventfolder,obj->GetName());
+     AliFatal(Form("Can not find folder %s while adding detector %s",eventfolder,obj->GetName()));
      return;
    } 
   CreateDetectorFolders(evfolder, obj->GetName(), obj->GetTitle());
@@ -389,8 +385,7 @@ Int_t  AliConfig::CreateDetectorFolders(const char* evntfoldername,const char *n
  TFolder* evfolder = dynamic_cast<TFolder*>(GetTopFolder()->FindObject(evntfoldername));
  if (evfolder == 0x0)
   {
-   Error("CreateDetectorFolders",
-         "Can not find folder %s while adding detector %s",evntfoldername,name);
+   AliError(Form("Can not find folder %s while adding detector %s",evntfoldername,name));
    return 1;
   }
  return CreateDetectorFolders(evfolder,name,title);
@@ -411,7 +406,7 @@ Int_t  AliConfig::CreateDetectorFolders(TFolder* evntfolder,const char *name, co
     tmp = AddSubFolder(evntfolder,fDetectorFolder[i],name,title);
     if (tmp)
      {
-      Error("AddDetector(TFolder*","Failed to create subfolder of %s for detector %s",fDetectorFolder[i].Data(),name);
+      AliError(Form("Failed to create subfolder of %s for detector %s",fDetectorFolder[i].Data(),name));
       return 1;
      }
     i++;
@@ -430,8 +425,8 @@ Int_t AliConfig::CreateDetectorTasks(const char *name, const char* title)
                        name+fDetectorTask[i],(fDetectorTask[i]+" for ")+title);
       if (tmp)
        {
-         Error("CreateDetectorTasks","Error occured while creating task for %s in %s.",
-                name,fDetectorTask[i-1].Data());
+         AliError(Form("Error occured while creating task for %s in %s.",
+		       name,fDetectorTask[i-1].Data()));
          return 1;
        }
       i++;
@@ -475,7 +470,7 @@ void    AliConfig::Add (char *list)
   
   while (token != NULL)
     { 
-      Info("Add(char *list)","Configuring token=%s",token);
+      AliInfo(Form("Configuring token=%s",token));
       
       TObject *obj;
       TIter   next (dirlist);
@@ -522,11 +517,11 @@ void    AliConfig::Add (char *list)
       
       if (strlen(found.Data())) 
         {
-          Info("Add(char *list)","found=%s  => OK",found.Data());
+          AliInfo(Form("found=%s  => OK",found.Data()));
         } 
       else 
         {
-          Error("Add(char *list)"," => FAILED.");
+          AliError(" => FAILED.");
           exit(1); 
         }   	    
       
@@ -738,7 +733,7 @@ Int_t AliConfig::AddSubFolder(TFolder* topfolder, const char* infoler,
 
  if (topfolder == 0x0)//check if exists top folder
   {
-   Error("AddSubFodler(TFolder*, ....","Parameter TFolder* points to NULL.");
+   AliError("Parameter TFolder* points to NULL.");
    return 1;
   }
  
@@ -748,7 +743,7 @@ Int_t AliConfig::AddSubFolder(TFolder* topfolder, const char* infoler,
  folder = dynamic_cast<TFolder*>(topfolder->FindObject(infoler));
  if (folder == 0x0) //check if we got inolder
   {
-   Error("AddSubFodler(TFolder*, ....","Can not find folder %s in folder %s.",infoler,topfolder->GetName());
+   AliError(Form("Can not find folder %s in folder %s.",infoler,topfolder->GetName()));
    return 1;
   }
  obj = folder->FindObject(newfoldname); //see if such a subfolder already exists
@@ -757,7 +752,7 @@ Int_t AliConfig::AddSubFolder(TFolder* topfolder, const char* infoler,
    TFolder *newfolder = folder->AddFolder(newfoldname,newfoldtitle);//add the desired subfolder
    if (newfolder == 0x0) //check if we managed
     {
-     Error("AddSubFodler(TFolder*, ....","Can not create folder %s in folder %s",newfoldname,infoler);
+     AliError(Form("Can not create folder %s in folder %s",newfoldname,infoler));
      return 2;
     }
    else return 0;//success
@@ -766,11 +761,9 @@ Int_t AliConfig::AddSubFolder(TFolder* topfolder, const char* infoler,
  TFolder* fol = dynamic_cast<TFolder*>(obj);
  if (fol == 0x0)
    {
-     Error("AddSubFodler(TFolder*, ....",
-	   "Object named %s already exists in folder %s AND IT IS NOT A FOLDER",newfoldname,infoler);
+     AliError(Form("Object named %s already exists in folder %s AND IT IS NOT A FOLDER",newfoldname,infoler));
      return 3;
    }
- Warning("AddSubFodler(TFolder*, ....",
-	 "Folder named %s already exists in folder %s",newfoldname,infoler);
+ AliWarning(Form("Folder named %s already exists in folder %s",newfoldname,infoler));
  return 0;
 }
