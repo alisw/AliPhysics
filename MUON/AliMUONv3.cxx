@@ -39,7 +39,7 @@
 #include "AliMUONFactory.h"
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"

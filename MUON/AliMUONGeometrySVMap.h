@@ -1,7 +1,10 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
 //
 // Class AliMUONGeometrySVMap
-// -----------------------------------
+// --------------------------
 // As the detection element frame is different from the
 // frame of the sensitive volume(s) defined in Geant,
 // the sensitive volumes have to be mapped to the detection 

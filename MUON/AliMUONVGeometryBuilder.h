@@ -16,28 +16,27 @@
 #include <fstream>
 
 #include <TObject.h>
+#include <TObjArray.h>
 
 class TGeoTranslation;
 class TGeoRotation;
 class TGeoCombiTrans;
-class TObjArray;
 
-class AliMUONChamber;
-class AliMUONChamberGeometry;
+class AliMUONGeometryModule;
 class AliMUONGeometryEnvelopeStore;
-class AliMUONGeometryTransformStore;
+class AliMUONGeometryStore;
 class AliMUONGeometrySVMap;
 
 class AliMUONVGeometryBuilder : public TObject
 {
   public:
     AliMUONVGeometryBuilder(const TString& fileName,
-                            AliMUONChamber* ch1,
-                            AliMUONChamber* ch2 = 0,
-                            AliMUONChamber* ch3 = 0,
-                            AliMUONChamber* ch4 = 0,
-                            AliMUONChamber* ch5 = 0,
-                            AliMUONChamber* ch6 = 0);
+                            AliMUONGeometryModule* mg1,
+                            AliMUONGeometryModule* mg2 = 0,
+                            AliMUONGeometryModule* mg3 = 0,
+                            AliMUONGeometryModule* mg4 = 0,
+                            AliMUONGeometryModule* mg5 = 0,
+                            AliMUONGeometryModule* mg6 = 0);
     AliMUONVGeometryBuilder();
     virtual ~AliMUONVGeometryBuilder();
   
@@ -74,6 +73,14 @@ class AliMUONVGeometryBuilder : public TObject
 		  // The sensitive volumes Ids for each chamber
 		  // should be defined and set to its geometry class. 
 
+    // access to module geometries
+    Int_t  NofGeometries() const;
+    AliMUONGeometryModule* Geometry(Int_t i) const;
+                  // In difference from protected GetGeometry()
+		  // this function access geometry via index and not
+		  // via moduleId
+
+
   protected:
     AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
 
@@ -81,10 +88,10 @@ class AliMUONVGeometryBuilder : public TObject
     AliMUONVGeometryBuilder& operator = (const AliMUONVGeometryBuilder& rhs);
 
     // methods
-    AliMUONChamber*                GetChamber(Int_t chamberId) const;
-    AliMUONGeometryEnvelopeStore*  GetEnvelopes(Int_t chamberId) const;
-    AliMUONGeometryTransformStore* GetTransforms(Int_t chamberId) const;
-    AliMUONGeometrySVMap*          GetSVMap(Int_t chamberId) const;
+    AliMUONGeometryModule*         GetGeometry(Int_t moduleId) const;
+    AliMUONGeometryEnvelopeStore*  GetEnvelopes(Int_t moduleId) const;
+    AliMUONGeometryStore*          GetDetElements(Int_t moduleId) const;
+    AliMUONGeometrySVMap*          GetSVMap(Int_t moduleId) const;
     
   private:
     //methods
@@ -92,7 +99,7 @@ class AliMUONVGeometryBuilder : public TObject
     void     MapSV(const TString&path, const TString& volName, 
                   Int_t detElemId) const;
 
-    void FillData(Int_t chamberId, 
+    void FillData(Int_t moduleId, Int_t nofDetElements, 
                   Double_t x, Double_t y, Double_t z,
 		  Double_t a1, Double_t a2, Double_t a3, 
  		  Double_t a4, Double_t a5, Double_t a6) const; 
@@ -122,10 +129,18 @@ class AliMUONVGeometryBuilder : public TObject
     // data members
     TString     fTransformFileName; // the name file with transformations 
     TString     fSVMapFileName;     // the name file with sensitive volume map 
-    TObjArray*  fChambers; // the chambers which geometry will be built
-                           // by this builder
+    TObjArray*  fModuleGeometries;  // the modules geometries that will be built
+                                    // by this builder
     
-  ClassDef(AliMUONVGeometryBuilder,2) // MUON chamber geometry base class
+  ClassDef(AliMUONVGeometryBuilder,3) // MUON chamber geometry base class
 };
+
+// inline functions
+
+inline Int_t  AliMUONVGeometryBuilder::NofGeometries() const
+{ return fModuleGeometries->GetEntriesFast(); }
+
+inline AliMUONGeometryModule* AliMUONVGeometryBuilder::Geometry(Int_t i) const
+{ return (AliMUONGeometryModule*)fModuleGeometries->At(i); }
 
 #endif //ALI_MUON_V_GEOMETRY_BUILDER_H

@@ -1,7 +1,10 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
 //
 // Class AliMUONGeometryEnvelopeStore
-// -----------------------------
+// ----------------------------------
 // Class for definititon of the temporary volume envelopes
 // used in geometry construction
 //
@@ -21,18 +24,19 @@ class TArrayI;
 
 class AliMUONChamber;
 class AliMUONGeometryEnvelope;
-class AliMUONGeometryTransformStore;
+class AliMUONGeometryStore;
 
 class AliMUONGeometryEnvelopeStore : public TObject
 {
   public:
-    AliMUONGeometryEnvelopeStore(AliMUONGeometryTransformStore* transforms);
+    AliMUONGeometryEnvelopeStore(AliMUONGeometryStore* detElements);
     AliMUONGeometryEnvelopeStore();
     AliMUONGeometryEnvelopeStore(const AliMUONGeometryEnvelopeStore& rhs);
     virtual ~AliMUONGeometryEnvelopeStore();
 
     // operators  
-    AliMUONGeometryEnvelopeStore& operator = (const AliMUONGeometryEnvelopeStore& rhs);
+    AliMUONGeometryEnvelopeStore& 
+    operator = (const AliMUONGeometryEnvelopeStore& rhs);
   
     // methods
         
@@ -114,6 +118,7 @@ class AliMUONGeometryEnvelopeStore : public TObject
  
     // get methods
     const TObjArray*  GetEnvelopes() const;
+    Int_t             GetNofDetElements() const;
 
   private:
     // methods
@@ -121,13 +126,14 @@ class AliMUONGeometryEnvelopeStore : public TObject
     Bool_t AlignEnvelope(AliMUONGeometryEnvelope* envelope) const;
  
     // data members
-    AliMUONGeometryTransformStore* fDETransforms; // det elements transformations
     TObjArray*  fEnvelopes; // the envelopes names and transformations
 		            // wrt to the chamber position in mother volume                                 
+    AliMUONGeometryStore*  fDetElements; // detection elements
+                            // used for alignement of enevelopes
     Bool_t      fDebug;     // Switch for debugging  
     Bool_t      fAlign;     // option to read transformations from a file
  
-  ClassDef(AliMUONGeometryEnvelopeStore,1) // MUON envelope store
+  ClassDef(AliMUONGeometryEnvelopeStore,2) // Geometry envelope store
 };
 
 // inline functions

@@ -34,7 +34,9 @@
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONGeometryBuilder.h"	
+#include "AliMUONGeometryModule.h"	
 #include "AliMUONGeometrySVMap.h"	
+#include "AliMUONGeometryDetElement.h"	
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -161,8 +163,6 @@ void AliMUONv1::CreateMaterials()
   fGeometryBuilder->CreateMaterials();
 }
 
-#include "AliMUONChamberGeometry.h"	
-#include "AliMUONGeometryTransformStore.h"	
 //___________________________________________
 void AliMUONv1::Init()
 {
@@ -199,14 +199,15 @@ void AliMUONv1::Init()
        cout << "Chamber: " << i+1 << endl;
        cout << "===================" << endl; 
      
-       Chamber(i).GetGeometry()
-	   ->GetTransformStore()->Print("");
+       // To do - move PrintLocalTransforms to geometryModule
+       //Chamber(i).GetGeometry()
+       //	   ->GetDetElementStore()->PrintLocalTransforms();
  
        Chamber(i).GetGeometry()
 	   ->GetSVMap()->Print("");
      }
      cout << endl;
-   }  
+   } 
 }
 
 //__________________________________________________________________
@@ -374,13 +375,14 @@ void AliMUONv1::StepManager()
     }
     
     // Detection elements ids
-    AliMUONGeometryTransformStore* transforms
-      =  Chamber(iChamber-1).GetGeometry()->GetTransformStore();
-    const TGeoCombiTrans* kTransform
-      = transforms->FindBySensitiveVolume(CurrentVolumePath());
-      
+    AliMUONGeometryModule* geometry
+      = Chamber(iChamber-1).GetGeometry();
+
+    AliMUONGeometryDetElement* detElement
+      = geometry->FindBySensitiveVolume(CurrentVolumePath());
+
     Int_t detElemId = 0;
-    if (kTransform) detElemId = kTransform->GetUniqueID(); 
+    if (detElement) detElemId = detElement->GetUniqueID(); 
  
     if (!detElemId) {
       cerr << "Chamber id: "

@@ -21,7 +21,7 @@
 
 // --- MUON includes ---
 #include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONChamber)	
@@ -64,7 +64,7 @@ AliMUONChamber::AliMUONChamber(Int_t id)
     fSegmentation->AddAt(0,0);
     fSegmentation->AddAt(0,1);
 
-    fGeometry = new AliMUONChamberGeometry(fId);
+    fGeometry = new AliMUONGeometryModule(fId);
 }
 
 AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)

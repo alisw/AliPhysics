@@ -24,20 +24,23 @@
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
 
+#include "AliLog.h"
+
 #include "AliMUONTriggerGeometryBuilder.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONTriggerGeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONTriggerGeometryBuilder::AliMUONTriggerGeometryBuilder(AliMUON* muon)
  : AliMUONVGeometryBuilder("trigger.dat",
-                           &muon->Chamber(10), &muon->Chamber(11),
-                           &muon->Chamber(12),&muon->Chamber(13)),
+                           muon->Chamber(10).GetGeometry(), 
+			   muon->Chamber(11).GetGeometry(),
+                           muon->Chamber(12).GetGeometry(),
+			   muon->Chamber(13).GetGeometry()),
    fMUON(muon)
 {
 // Standard constructor
@@ -126,7 +129,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
     const Float_t kZp=+3.6;     
 
     AliMUONChamber *iChamber, *iChamber1;
-    iChamber1 = GetChamber(10);
+    iChamber1 = &fMUON->Chamber(10);
     Float_t zpos1=-iChamber1->Z(); 
     
 // ratio of zpos1m/zpos1p and inverse for first plane
@@ -142,7 +145,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    icount = Int_t(iplane*TMath::Power(2,0))+
 		Int_t(istation*TMath::Power(2,1));
 	    
-	    iChamber = GetChamber(10+icount);
+	    iChamber = &fMUON->Chamber(10+icount);
 	    Float_t zpos = - iChamber->Z();	     
 	    
 // Flange between beam shielding and RPC 
@@ -330,22 +333,22 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
     Double_t zpos1, zpos2;    
     AliMUONChamber *iChamber1, *iChamber2;
 
-    iChamber1 = GetChamber(10);
+    iChamber1 = &fMUON->Chamber(10);
     zpos1= - iChamber1->Z(); 
     iChamber1->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos1));
     
-    iChamber2 = GetChamber(11);
+    iChamber2 = &fMUON->Chamber(11);
     zpos2 = - iChamber2->Z(); 
     iChamber2->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos2));
 
-    iChamber1 = GetChamber(12);
+    iChamber1 = &fMUON->Chamber(12);
     zpos1 = - iChamber1->Z(); 
     iChamber1->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos1));
     
-    iChamber2 = GetChamber(13);
+    iChamber2 = &fMUON->Chamber(13);
     zpos2 = - iChamber2->Z(); 
     iChamber2->GetGeometry()
 	->SetTranslation(TGeoTranslation(0., 0., zpos2));
@@ -357,9 +360,9 @@ void AliMUONTriggerGeometryBuilder::SetSensitiveVolumes()
 // Defines the sensitive volumes for trigger station chambers.
 // ---
 
-  GetChamber(10)->GetGeometry()->SetSensitiveVolume("SG1A");
-  GetChamber(11)->GetGeometry()->SetSensitiveVolume("SG2A");
-  GetChamber(12)->GetGeometry()->SetSensitiveVolume("SG3A");
-  GetChamber(13)->GetGeometry()->SetSensitiveVolume("SG4A");
+  GetGeometry(10)->SetSensitiveVolume("SG1A");
+  GetGeometry(11)->SetSensitiveVolume("SG2A");
+  GetGeometry(12)->SetSensitiveVolume("SG3A");
+  GetGeometry(13)->SetSensitiveVolume("SG4A");
 }
 

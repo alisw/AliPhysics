@@ -33,6 +33,7 @@ class AliMUONReconstHit;
 class AliMUONMerger;
 class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
+class AliMUONGeometryDEIndexing;
 class AliESD;
 
 class AliMUON : public  AliDetector 
@@ -131,7 +132,8 @@ class AliMUON : public  AliDetector
     Int_t                 fSplitLevel;         // Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           // List of Tracking Chambers
     TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
-    AliMUONGeometryBuilder*  fGeometryBuilder; // Geometry buiulder 
+    AliMUONGeometryBuilder*     fGeometryBuilder; // Geometry builder 
+    AliMUONGeometryDEIndexing*  fDEIndexing;   // Geometry DE indexing 
    
     //
     Bool_t   fAccCut;          //Transport acceptance cut
@@ -150,7 +152,7 @@ class AliMUON : public  AliDetector
     // Background eent for event mixing
     AliMUONMerger *fMerger;   // ! pointer to merger
     
-    ClassDef(AliMUON,4)  // MUON Detector base class
+    ClassDef(AliMUON,5)  // MUON Detector base class
 };
 #endif
 

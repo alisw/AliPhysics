@@ -60,7 +60,9 @@
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONGeometryBuilder.h"
+#include "AliMUONCommonGeometryBuilder.h"
 #include "AliMUONVGeometryBuilder.h"	
+#include "AliMUONGeometryDEIndexing.h"	
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
 #include "AliMUONRawData.h"
@@ -92,6 +94,7 @@ AliMUON::AliMUON()
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
+    fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -118,6 +121,7 @@ AliMUON::AliMUON(const char *name, const char *title)
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
+    fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -133,6 +137,25 @@ AliMUON::AliMUON(const char *name, const char *title)
   fIshunt =  0;
 
   SetMarkerColor(kRed);//
+    
+  // Geometry builder
+  fGeometryBuilder = new AliMUONGeometryBuilder(this);
+  
+  // Common geometry definitions
+  fGeometryBuilder
+    ->AddBuilder(new AliMUONCommonGeometryBuilder(this));
+
+  // Define the global transformation:
+  // Transformation from the old ALICE coordinate system to a new one:
+  // x->-x, z->-z 
+  TGeoRotation* rotGlobal 
+    = new TGeoRotation("rotGlobal", 90., 180., 90., 90., 180., 0.);
+  fGeometryBuilder
+    ->SetGlobalTransformation (TGeoCombiTrans(0., 0., 0., rotGlobal));
+
+  // Detection elements indexing
+  fDEIndexing = new AliMUONGeometryDEIndexing();
+
 //
 // Creating List of Chambers
     Int_t ch;
@@ -169,9 +192,6 @@ AliMUON::AliMUON(const char *name, const char *title)
     for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
       fTriggerCircuits->AddAt(new AliMUONTriggerCircuit(),circ);          
     }
-    
-    // Geometry builder
-    fGeometryBuilder = new AliMUONGeometryBuilder(this);
 }
 
 //____________________________________________________________________
@@ -201,6 +221,7 @@ AliMUON::~AliMUON()
   }
   delete fMUONData;
   delete fGeometryBuilder;
+  delete fDEIndexing;
 }
 
 //________________________________________________________________________

@@ -25,19 +25,21 @@
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
 
+#include "AliLog.h"
+
 #include "AliMUONSt2GeometryBuilder.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSt2GeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONSt2GeometryBuilder::AliMUONSt2GeometryBuilder(AliMUON* muon)
  : AliMUONVGeometryBuilder("st2.dat",
-                           &muon->Chamber(2), &muon->Chamber(3)),
+                           muon->Chamber(2).GetGeometry(), 
+			   muon->Chamber(3).GetGeometry()),
    fMUON(muon)
 {
 // Standard constructor
@@ -114,9 +116,9 @@ void AliMUONSt2GeometryBuilder::CreateGeometry()
      Int_t irot2;
      fMUON->AliMatrix(irot2,  90.,  90., 90., 180., 0., 0.);
 
-     AliMUONChamber* iChamber = GetChamber(2);
+     AliMUONChamber* iChamber = &fMUON->Chamber(2);
      AliMUONChamber* iChamber1 = iChamber;
-     AliMUONChamber* iChamber2 = GetChamber(3);
+     AliMUONChamber* iChamber2 = &fMUON->Chamber(3);
      
      // Half of the total thickness of frame crosses (including DAlu)
      // for each chamber in stations 1 and 2:
@@ -455,12 +457,12 @@ void AliMUONSt2GeometryBuilder::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = GetChamber(2);
+  AliMUONChamber* iChamber1 = &fMUON->Chamber(2);
   Double_t zpos1 = - iChamber1->Z(); 
   iChamber1->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = GetChamber(3);
+  AliMUONChamber* iChamber2 = &fMUON->Chamber(3);
   Double_t zpos2 = - iChamber2->Z(); 
   iChamber2->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos2));
@@ -472,6 +474,6 @@ void AliMUONSt2GeometryBuilder::SetSensitiveVolumes()
 // Defines the sensitive volumes for station2 chambers.
 // ---
 
-  GetChamber(2)->GetGeometry()->SetSensitiveVolume("S03G");
-  GetChamber(3)->GetGeometry()->SetSensitiveVolume("S04G");
+  GetGeometry(2)->SetSensitiveVolume("S03G");
+  GetGeometry(3)->SetSensitiveVolume("S04G");
 }

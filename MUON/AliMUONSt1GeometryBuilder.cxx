@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
 //
 // Class AliMUONSt1GeometryBuilder
@@ -10,19 +25,21 @@
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
 
+#include "AliLog.h"
+
 #include "AliMUONSt1GeometryBuilder.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSt1GeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder(AliMUON* muon)
  : AliMUONVGeometryBuilder("st1.dat",
-                           &muon->Chamber(0), &muon->Chamber(1)),
+                           muon->Chamber(0).GetGeometry(), 
+			   muon->Chamber(1).GetGeometry()),
    fMUON(muon)
 {
 // Standard constructor
@@ -100,8 +117,8 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
      Int_t irot2;
      fMUON->AliMatrix(irot2,  90.,  90., 90., 180., 0., 0.);
 
-     AliMUONChamber* iChamber1 = GetChamber(0);
-     AliMUONChamber* iChamber2 = GetChamber(1);
+     AliMUONChamber* iChamber1 = &fMUON->Chamber(0);
+     AliMUONChamber* iChamber2 = &fMUON->Chamber(1);
      AliMUONChamber* iChamber = iChamber1;
 
      // DGas decreased from standard one (0.5)
@@ -284,12 +301,12 @@ void AliMUONSt1GeometryBuilder::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = GetChamber(0);
+  AliMUONChamber* iChamber1 = &fMUON->Chamber(0);
   Double_t zpos1= - iChamber1->Z(); 
   iChamber1->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = GetChamber(1);
+  AliMUONChamber* iChamber2 = &fMUON->Chamber(1);
   Double_t zpos2 = - iChamber2->Z(); 
   iChamber2->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos2));
@@ -301,6 +318,6 @@ void AliMUONSt1GeometryBuilder::SetSensitiveVolumes()
 // Defines the sensitive volumes for station1 chambers.
 // ---
 
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("S01G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("S02G");
+  GetGeometry(0)->SetSensitiveVolume("S01G");
+  GetGeometry(1)->SetSensitiveVolume("S02G");
 }

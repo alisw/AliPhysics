@@ -7,16 +7,8 @@
 #pragma link C++ class AliMUONv1+; 
 #pragma link C++ class AliMUONv3+; 
 
-#pragma link C++ class AliMUONGeometryBuilder+; 
-#pragma link C++ class AliMUONVGeometryBuilder+; 
-#pragma link C++ class AliMUONGeometryConstituent+; 
-#pragma link C++ class AliMUONGeometryEnvelope+;
-#pragma link C++ class AliMUONGeometryEnvelopeStore+;
-#pragma link C++ class AliMUONGeometryTransformStore+;
-#pragma link C++ class AliMUONGeometrySVMap+;
-#pragma link C++ class AliMUONStringIntMap+;
-
-#pragma link C++ class AliMUONChamberGeometry+; 
+#pragma link C++ class AliMUONGeometryDEIndexing+;
+#pragma link C++ class AliMUONCommonGeometryBuilder+;
 #pragma link C++ class AliMUONSt1GeometryBuilder+; 
 #pragma link C++ class AliMUONSt1GeometryBuilderV2+; 
 #pragma link C++ class AliMUONSt2GeometryBuilder+; 
@@ -35,6 +27,7 @@
 #pragma link C++ class AliMUONSegmentationSlat+; 
 #pragma link C++ class AliMUONSegmentationSlatN+; 
 #pragma link C++ class AliMUONSt1Segmentation+; 
+#pragma link C++ class AliMUONSt12QuadrantSegmentation+; 
 
 #pragma link C++ class AliMUONResponse+; 
 #pragma link C++ class AliMUONResponseV0+; 
@@ -56,6 +49,8 @@
 #pragma link C++ class AliMUONDigitizerv2+; 
 #pragma link C++ class AliMUONSDigitizerv1+; 
 #pragma link C++ class AliMUONMerger+; 
+
+#pragma link C++ class AliMUONTest+; 
 #endif
 
 

@@ -13,7 +13,7 @@
 #include "AliMUONResponse.h"
 
 class AliMUONClusterFinderVS;
-class AliMUONChamberGeometry;
+class AliMUONGeometryModule;
 
 class AliMUONChamber : public TObject
 {
@@ -117,8 +117,8 @@ class AliMUONChamber : public TObject
   virtual void SetChargeCorrel(Float_t correl) {fResponse->SetChargeCorrel(correl);}
 
 // geometry  
-  void SetGeometry(AliMUONChamberGeometry* geometry) {fGeometry = geometry;}
-  AliMUONChamberGeometry* GetGeometry() const {return fGeometry; }
+  void SetGeometry(AliMUONGeometryModule* geometry) {fGeometry = geometry;}
+  AliMUONGeometryModule* GetGeometry() const {return fGeometry; }
 
   
  protected:
@@ -138,8 +138,8 @@ class AliMUONChamber : public TObject
   TObjArray              *fSegmentation;    // pointer to segmentation
   AliMUONClusterFinderVS *fReconstruction;  // pointer to reconstruction
   AliMUONResponse        *fResponse;        // pointer to response
-  AliMUONChamberGeometry *fGeometry;        // pointer to geometry
-  ClassDef(AliMUONChamber,2) // Muon tracking chamber class
+  AliMUONGeometryModule  *fGeometry;        // pointer to geometry
+  ClassDef(AliMUONChamber,3) // Muon tracking chamber class
 };
 
 #endif

@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
 //
 // Class AliMUONSlatGeometryBuilder
@@ -21,14 +36,15 @@
 #include <TGeoMatrix.h>
 #include <Riostream.h>
 
+#include "AliRun.h"
+#include "AliLog.h"
+
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONConstants.h"
-#include "AliRun.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSlatGeometryBuilder)
 
@@ -36,9 +52,12 @@ ClassImp(AliMUONSlatGeometryBuilder)
 //______________________________________________________________________________
 AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder(AliMUON* muon)
  : AliMUONVGeometryBuilder("slat.dat",
-                           &muon->Chamber(4), &muon->Chamber(5), 
-                           &muon->Chamber(6), &muon->Chamber(7), 
-			   &muon->Chamber(8), &muon->Chamber(9)),
+                           muon->Chamber(4).GetGeometry(), 
+			   muon->Chamber(5).GetGeometry(), 
+                           muon->Chamber(6).GetGeometry(), 
+			   muon->Chamber(7).GetGeometry(), 
+			   muon->Chamber(8).GetGeometry(), 
+			   muon->Chamber(9).GetGeometry()),
    fMUON(muon)
 {
 // Standard constructor
@@ -216,19 +235,19 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
   if (fStations[2])
     {
       //********************************************************************
-	//                            Station 3                             **
-	//********************************************************************
-	// indices 1 and 2 for first and second chambers in the station
-	// iChamber (first chamber) kept for other quanties than Z,
-	// assumed to be the same in both chambers
+      //                            Station 3                             **
+      //********************************************************************
+      // indices 1 and 2 for first and second chambers in the station
+      // iChamber (first chamber) kept for other quanties than Z,
+      // assumed to be the same in both chambers
 
-	iChamber = GetChamber(4);
+      iChamber = &fMUON->Chamber(4);
       iChamber1 = iChamber;
-      iChamber2 = GetChamber(5);
+      iChamber2 = &fMUON->Chamber(5);
      
       //iChamber1->GetGeometry()->SetDebug(kTRUE);
       //iChamber2->GetGeometry()->SetDebug(kTRUE);
-
+ 
       if (gAlice->GetModule("DIPO")) {
 	// if DIPO is preset, the whole station will be placed in DDIP volume
 	iChamber1->GetGeometry()->SetMotherVolume("DDIP");
@@ -607,9 +626,9 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     //      // assumed to be the same in both chambers
     //      corrected geometry (JP. Cussonneau, Ch. Finck)
  
-    iChamber = GetChamber(6);
+    iChamber = &fMUON->Chamber(6);
     iChamber1 = iChamber;
-    iChamber2 = GetChamber(7);
+    iChamber2 = &fMUON->Chamber(7);
 
     const Int_t   kNslats4          = 7;  // number of slats per quadrant
     const Int_t   kNPCB4[kNslats4]  = {5, 6, 5, 5, 4, 3, 2}; // n PCB per slat
@@ -868,9 +887,9 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     //      // assumed to be the same in both chambers
     //      corrected geometry (JP. Cussonneau, Ch. Finck)
 
-    iChamber = GetChamber(8);
+    iChamber = &fMUON->Chamber(8);
     iChamber1 = iChamber;
-    iChamber2 = GetChamber(9);
+    iChamber2 = &fMUON->Chamber(9);
  
     const Int_t   kNslats5         = 7;  // number of slats per quadrant
     const Int_t   kNPCB5[kNslats5] = {5, 6, 6, 6, 5, 4, 3}; // n PCB per slat
@@ -1124,32 +1143,32 @@ void AliMUONSlatGeometryBuilder::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = GetChamber(4);
+  AliMUONChamber* iChamber1 = &fMUON->Chamber(4);
   Double_t zpos1 = - iChamber1->Z(); 
   iChamber1->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = GetChamber(5);
+  AliMUONChamber* iChamber2 = &fMUON->Chamber(5);
   Double_t zpos2 = - iChamber2->Z(); 
   iChamber2->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos2));
 
- iChamber1 = GetChamber(6);
+ iChamber1 = &fMUON->Chamber(6);
   zpos1 = - iChamber1->Z(); 
   iChamber1->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos1));
 
-  iChamber2 = GetChamber(7);
+  iChamber2 = &fMUON->Chamber(7);
   zpos2 = - iChamber2->Z(); 
   iChamber2->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos2));
 
- iChamber1 = GetChamber(8);
+ iChamber1 = &fMUON->Chamber(8);
   zpos1 = - iChamber1->Z(); 
   iChamber1->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos1));
 
-  iChamber2 = GetChamber(9);
+  iChamber2 = &fMUON->Chamber(9);
   zpos2 = - iChamber2->Z(); 
   iChamber2->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos2));
@@ -1162,12 +1181,12 @@ void AliMUONSlatGeometryBuilder::SetSensitiveVolumes()
 // Defines the sensitive volumes for slat stations chambers.
 // ---
 
-  GetChamber(4)->GetGeometry()->SetSensitiveVolume("S05G");
-  GetChamber(5)->GetGeometry()->SetSensitiveVolume("S06G");
-  GetChamber(6)->GetGeometry()->SetSensitiveVolume("S07G");
-  GetChamber(7)->GetGeometry()->SetSensitiveVolume("S08G");
-  GetChamber(8)->GetGeometry()->SetSensitiveVolume("S09G");
-  GetChamber(9)->GetGeometry()->SetSensitiveVolume("S10G");
+  GetGeometry(4)->SetSensitiveVolume("S05G");
+  GetGeometry(5)->SetSensitiveVolume("S06G");
+  GetGeometry(6)->SetSensitiveVolume("S07G");
+  GetGeometry(7)->SetSensitiveVolume("S08G");
+  GetGeometry(8)->SetSensitiveVolume("S09G");
+  GetGeometry(9)->SetSensitiveVolume("S10G");
 }
 
 //______________________________________________________________________________

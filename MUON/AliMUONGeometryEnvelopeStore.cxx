@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // $Id$
 //
 // Class AliMUONGeometryEnvelopeStore
@@ -14,8 +29,9 @@
 #include <Riostream.h>
 
 #include "AliMUONGeometryEnvelopeStore.h"
-#include "AliMUONGeometryTransformStore.h"
 #include "AliMUONGeometryEnvelope.h"
+#include "AliMUONGeometryDetElement.h"
+#include "AliMUONGeometryStore.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
 
@@ -23,10 +39,10 @@ ClassImp(AliMUONGeometryEnvelopeStore)
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(
-                                 AliMUONGeometryTransformStore* transforms)
+                                 AliMUONGeometryStore* detElements)
  : TObject(),
-   fDETransforms(transforms),
    fEnvelopes(0),
+   fDetElements(detElements),
    fDebug(false),
    fAlign(false)
 {
@@ -39,8 +55,8 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(
 //______________________________________________________________________________
 AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore()
  : TObject(),
-   fDETransforms(0),
    fEnvelopes(0),
+   fDetElements(0),
    fDebug(false),
    fAlign(false)
 {
@@ -113,13 +129,14 @@ Bool_t AliMUONGeometryEnvelopeStore::AlignEnvelope(
   Int_t detElemId = envelope->GetUniqueID();
   if (detElemId == 0) return false;
   
-  const TGeoCombiTrans* kTransform = fDETransforms->Get(detElemId);
-  if (!kTransform) {
+  AliMUONGeometryDetElement* detElement 
+    = (AliMUONGeometryDetElement*) fDetElements->Get(detElemId);
+  if (!detElement) {
     AliWarning("Transformation not found.");
     return false;
   };
 
-  envelope->SetTransform(*kTransform);
+  envelope->SetTransform(*(detElement->GetLocalTransformation()));
   return true;
 }  
 
@@ -598,3 +615,16 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
   envelope->AddConstituentParam(name, copyNo, transform, npar, param);
 }
 
+//______________________________________________________________________________
+Int_t AliMUONGeometryEnvelopeStore::GetNofDetElements() const
+{
+// Returns the number od envelopes with detElemId>0.
+// ---  					   
+
+  Int_t nofDetElems = 0;
+  
+  for(Int_t i=0; i<fEnvelopes->GetEntriesFast(); i++) 
+    if ( fEnvelopes->At(i)->GetUniqueID() > 0 ) nofDetElems++;
+  
+  return nofDetElems;
+}

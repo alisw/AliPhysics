@@ -24,7 +24,7 @@
 
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliMUONConstants.h"
 #include "AliMUONFactory.h"
 #include "AliMUONHit.h"

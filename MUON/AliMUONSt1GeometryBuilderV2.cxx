@@ -47,15 +47,16 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 
+#include "AliRun.h"
+#include "AliMagF.h"
+#include "AliLog.h"
+
 #include "AliMUONSt1GeometryBuilderV2.h"
 #include "AliMUONSt1SpecialMotif.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
-#include "AliRun.h"
-#include "AliMagF.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSt1GeometryBuilderV2)
 
@@ -113,7 +114,8 @@ const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
   : AliMUONVGeometryBuilder("st1V2.dat",
-                            &muon->Chamber(0), &muon->Chamber(1)),
+                            muon->Chamber(0).GetGeometry(), 
+			    muon->Chamber(1).GetGeometry()),
     fMUON(muon)
 {
    // set path to mapping data files
@@ -2530,12 +2532,12 @@ void AliMUONSt1GeometryBuilderV2::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
-  AliMUONChamber* iChamber1 = GetChamber(0);
+  AliMUONChamber* iChamber1 = &fMUON->Chamber(0);
   Double_t zpos1 = - iChamber1->Z(); 
   iChamber1->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos1));
 
-  AliMUONChamber* iChamber2 = GetChamber(1);
+  AliMUONChamber* iChamber2 = &fMUON->Chamber(1);
   Double_t zpos2 = - iChamber2->Z(); 
   iChamber2->GetGeometry()
     ->SetTranslation(TGeoTranslation(0., 0., zpos2));
@@ -2547,28 +2549,28 @@ void AliMUONSt1GeometryBuilderV2::SetSensitiveVolumes()
 // Defines the sensitive volumes for station2 chambers.
 // ---
 
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SA1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SB1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SC1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SD1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SE1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SF1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SG1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SH1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SI1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SJ1G");
-  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SK1G");
+  GetGeometry(0)->SetSensitiveVolume("SA1G");
+  GetGeometry(0)->SetSensitiveVolume("SB1G");
+  GetGeometry(0)->SetSensitiveVolume("SC1G");
+  GetGeometry(0)->SetSensitiveVolume("SD1G");
+  GetGeometry(0)->SetSensitiveVolume("SE1G");
+  GetGeometry(0)->SetSensitiveVolume("SF1G");
+  GetGeometry(0)->SetSensitiveVolume("SG1G");
+  GetGeometry(0)->SetSensitiveVolume("SH1G");
+  GetGeometry(0)->SetSensitiveVolume("SI1G");
+  GetGeometry(0)->SetSensitiveVolume("SJ1G");
+  GetGeometry(0)->SetSensitiveVolume("SK1G");
     
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SA2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SB2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SC2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SD2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SE2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SF2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SG2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SH2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SI2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SJ2G");
-  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SK2G");
+  GetGeometry(1)->SetSensitiveVolume("SA2G");
+  GetGeometry(1)->SetSensitiveVolume("SB2G");
+  GetGeometry(1)->SetSensitiveVolume("SC2G");
+  GetGeometry(1)->SetSensitiveVolume("SD2G");
+  GetGeometry(1)->SetSensitiveVolume("SE2G");
+  GetGeometry(1)->SetSensitiveVolume("SF2G");
+  GetGeometry(1)->SetSensitiveVolume("SG2G");
+  GetGeometry(1)->SetSensitiveVolume("SH2G");
+  GetGeometry(1)->SetSensitiveVolume("SI2G");
+  GetGeometry(1)->SetSensitiveVolume("SJ2G");
+  GetGeometry(1)->SetSensitiveVolume("SK2G");
 }
 

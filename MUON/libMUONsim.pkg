@@ -1,12 +1,8 @@
+# $Id$
+
 SRCS:= AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
-       AliMUONGeometryBuilder.cxx \
-       AliMUONVGeometryBuilder.cxx \
-       AliMUONGeometryConstituent.cxx \
-       AliMUONGeometryEnvelope.cxx \
-       AliMUONGeometryEnvelopeStore.cxx \
-       AliMUONGeometryTransformStore.cxx \
-       AliMUONGeometrySVMap.cxx \
-       AliMUONChamberGeometry.cxx \
+       AliMUONGeometryDEIndexing.cxx \
+       AliMUONCommonGeometryBuilder.cxx \
        AliMUONSt1GeometryBuilder.cxx \
        AliMUONSt1GeometryBuilderV2.cxx \
        AliMUONSt2GeometryBuilder.cxx \
@@ -24,6 +20,7 @@ SRCS:= AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
        AliMUONSegmentationSlat.cxx \
        AliMUONSegmentationSlatN.cxx \
        AliMUONSt1Segmentation.cxx \
+       AliMUONSt12QuadrantSegmentation.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \
        AliMUONSt1Response.cxx \
@@ -42,7 +39,8 @@ SRCS:= AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
        AliMUONDigitizerv1.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \
-       AliMUONMerger.cxx 
+       AliMUONMerger.cxx \
+       AliMUONTest.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

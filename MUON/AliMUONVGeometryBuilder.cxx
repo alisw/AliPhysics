@@ -17,7 +17,7 @@
 //
 // Class AliMUONVGeometryBuilder
 // -----------------------------
-// Abstract base class for geometry construction per chamber(s).
+// Abstract base class for geometry construction per geometry module(s).
 // Author: Ivana Hrivnacova, IPN Orsay
 // 23/01/2004
 
@@ -28,14 +28,14 @@
 #include <TVirtualMC.h>
 
 #include "AliMUONVGeometryBuilder.h"
-#include "AliMUONChamber.h"
-#include "AliMUONChamberGeometry.h"
-#include "AliMUONGeometryTransformStore.h"
+#include "AliMUONGeometryModule.h"
+#include "AliMUONGeometryDetElement.h"
+#include "AliMUONGeometryStore.h"
 #include "AliMUONGeometrySVMap.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
-#include "AliMUONConstants.h"
+#include "AliMUONVGeometryDEIndexing.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONVGeometryBuilder)
@@ -46,25 +46,25 @@ const TString AliMUONVGeometryBuilder::fgkOutFileNameSuffix = ".out";
 
 //______________________________________________________________________________
 AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const TString& fileName,
-                                AliMUONChamber* ch1, AliMUONChamber* ch2,
-                                AliMUONChamber* ch3, AliMUONChamber* ch4,
-                                AliMUONChamber* ch5, AliMUONChamber* ch6)
+                            AliMUONGeometryModule* mg1, AliMUONGeometryModule* mg2,
+                            AliMUONGeometryModule* mg3, AliMUONGeometryModule* mg4,
+                            AliMUONGeometryModule* mg5, AliMUONGeometryModule* mg6)
  : TObject(),
    fTransformFileName(fgkTransformFileNamePrefix+fileName),
    fSVMapFileName(fgkSVMapFileNamePrefix+fileName),
-   fChambers(0)
+   fModuleGeometries(0)
  {
 // Standard constructor
 
-  // Create the chambers array
-  fChambers = new TObjArray();
+  // Create the module geometries array
+  fModuleGeometries = new TObjArray();
   
-  if (ch1) fChambers->Add(ch1);
-  if (ch2) fChambers->Add(ch2);
-  if (ch3) fChambers->Add(ch3);
-  if (ch4) fChambers->Add(ch4);
-  if (ch5) fChambers->Add(ch5);
-  if (ch6) fChambers->Add(ch6);
+  if (mg1) fModuleGeometries->Add(mg1);
+  if (mg2) fModuleGeometries->Add(mg2);
+  if (mg3) fModuleGeometries->Add(mg3);
+  if (mg4) fModuleGeometries->Add(mg4);
+  if (mg5) fModuleGeometries->Add(mg5);
+  if (mg6) fModuleGeometries->Add(mg6);
 }
 
 
@@ -73,7 +73,7 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder()
  : TObject(),
    fTransformFileName(),
    fSVMapFileName(),
-   fChambers(0)
+   fModuleGeometries(0)
 {
 // Default constructor
 }
@@ -91,9 +91,9 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& 
 //______________________________________________________________________________
 AliMUONVGeometryBuilder::~AliMUONVGeometryBuilder() {
 //
-  if (fChambers) {
-    fChambers->Clear(); // Sets pointers to 0 sinche it is not the owner
-    delete fChambers;
+  if (fModuleGeometries) {
+    fModuleGeometries->Clear(); // Sets pointers to 0 since it is not the owner
+    delete fModuleGeometries;
   }
 }
 
@@ -147,8 +147,9 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     TString volName(path0(npos1, npos2-npos1));  
     
     // Check if it is sensitive volume
-    Int_t chamberId = AliMUONConstants::GetChamberId(detElemId);
-    AliMUONChamberGeometry* geometry = GetChamber(chamberId)->GetGeometry();
+    Int_t moduleId = AliMUONVGeometryDEIndexing::Instance()
+                     ->GetModuleId(detElemId);
+    AliMUONGeometryModule* geometry = GetGeometry(moduleId);
     if (geometry->IsSensitiveVolume(volName)) {
       //cout << ".. adding to the map  " 
       //     <<  path0 << "  "  << detElemId << endl;
@@ -182,21 +183,24 @@ void AliMUONVGeometryBuilder::MapSV(const TString& /*path0*/,
   AliWarning("Not yet available");
 }     
 
+
 //______________________________________________________________________________
-void AliMUONVGeometryBuilder::FillData(Int_t chamberId,
+void AliMUONVGeometryBuilder::FillData(Int_t moduleId, Int_t nofDetElements,
                   Double_t x, Double_t y, Double_t z,
 		  Double_t a1, Double_t a2, Double_t a3,
  		  Double_t a4, Double_t a5, Double_t a6) const 
 {
-// Fill the transformation of the chamber.
+// Fill the transformation of the module.
 // ---
 
-  chamberId--;
-      // Chambers numbers in the file are starting from 1
-
-  GetChamber(chamberId)->GetGeometry()
+  moduleId--;
+      // Modules numbers in the file are starting from 1
+      
+  GetGeometry(moduleId)
+    ->GetDEIndexing()->SetNofDetElements(nofDetElements);    
+  GetGeometry(moduleId)
     ->SetTranslation(TGeoTranslation(x, y, z));
-  GetChamber(chamberId)->GetGeometry()
+  GetGeometry(moduleId)
     ->SetRotation(TGeoRotation("rot", a1, a2, a3, a4, a5, a6));
 }		   
   
@@ -210,12 +214,9 @@ void AliMUONVGeometryBuilder::FillData(
 // Fill the transformation of the detection element.
 // ---
 
-  // Chamber Id
-  Int_t chamberId = AliMUONConstants::GetChamberId(detElemId);
-
-  // Get chamber transformations
-  AliMUONGeometryTransformStore* transforms 
-    = GetTransforms(chamberId);     
+  // Module Id
+  Int_t moduleId 
+    = AliMUONVGeometryDEIndexing::GetModuleId(detElemId);
 
   // Compose path
   TString path = ComposePath(volName, copyNo);
@@ -224,8 +225,12 @@ void AliMUONVGeometryBuilder::FillData(
   TGeoCombiTrans transform(path, x, y, z, 
                            new TGeoRotation(path, a1, a2, a3, a4, a5, a6));
     
-  // Add detection element transformation 
-  transforms->Add(detElemId, path, transform); 
+  // Get detection element store
+  AliMUONGeometryStore* detElements = GetDetElements(moduleId);     
+
+  // Add detection element
+  detElements->Add(detElemId,
+     new AliMUONGeometryDetElement(detElemId, path, transform)); 
 }		   
   
 //______________________________________________________________________________
@@ -235,11 +240,12 @@ void AliMUONVGeometryBuilder::FillData(
 // Fill the mapping of the sensitive volume path to the detection element.
 // ---
 
-  // Chamber Id
-  Int_t chamberId = AliMUONConstants::GetChamberId(detElemId);
+  // Module Id
+  Int_t moduleId 
+    = AliMUONVGeometryDEIndexing::GetModuleId(detElemId);
 
-  // Get chamber transformations
-  AliMUONGeometrySVMap* svMap = GetSVMap(chamberId);     
+  // Get module sensitive volumes map
+  AliMUONGeometrySVMap* svMap = GetSVMap(moduleId);     
 
   // Map the sensitive volume to detection element
   svMap->Add(sensVolumePath, detElemId); 
@@ -248,18 +254,19 @@ void AliMUONVGeometryBuilder::FillData(
 //______________________________________________________________________________
 TString  AliMUONVGeometryBuilder::ReadData1(ifstream& in) const
 {
-// Reads and fills chambers transformations from a file
+// Reads and fills modules transformations from a file
 // Returns true, if reading finished correctly.
 // ---
 
   TString key("CH");
   while ( key == TString("CH") ) {
-    Int_t id;
+    Int_t id, n;
     Double_t  x, y, z;
     Double_t  a1, a2, a3, a4, a5, a6;
     TString dummy;
   
     in >> id;
+    in >> n;
     in >> dummy;
     in >> x;
     in >> y;
@@ -279,7 +286,7 @@ TString  AliMUONVGeometryBuilder::ReadData1(ifstream& in) const
     //	 << endl;   
 	 
     // Fill data
-    FillData(id, x, y, z, a1, a2, a3, a4, a5, a6);
+    FillData(id, n, x, y, z, a1, a2, a3, a4, a5, a6);
     
     // Go to next line
     in >> key;
@@ -386,7 +393,14 @@ void AliMUONVGeometryBuilder::WriteTransform(ofstream& out,
   out << "   rot: ";
   Double_t a1, a2, a3, a4, a5, a6;
   TGeoRotation* rotation = transform->GetRotation();
-  rotation->GetAngles(a1, a2, a3, a4, a5, a6);
+  if (rotation) { 
+    rotation->GetAngles(a1, a2, a3, a4, a5, a6);
+  }
+  else {
+    TGeoRotation rotation2; 
+    rotation2.GetAngles(a1, a2, a3, a4, a5, a6);
+  }  
+      
   out << setw(8) << setprecision(4) << a1 << "  " 
       << setw(8) << setprecision(4) << a2 << "  " 
       << setw(8) << setprecision(4) << a3 << "  " 
@@ -398,19 +412,18 @@ void AliMUONVGeometryBuilder::WriteTransform(ofstream& out,
 //______________________________________________________________________________
 void AliMUONVGeometryBuilder::WriteData1(ofstream& out) const
 {
-// Writes chamber transformations
+// Writes modules transformations
 // ---
 
-  for (Int_t i=0; i<fChambers->GetEntriesFast(); i++) {
-    AliMUONChamber* chamber 
-      = (AliMUONChamber*)fChambers->At(i);
-    AliMUONChamberGeometry* chamberGeometry
-       = chamber->GetGeometry();
+  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
     const TGeoCombiTrans* transform 
-      = chamberGeometry->GetTransformation();    
+      = geometry->GetTransformation();    
 
     out << "CH " 
-        << setw(4) << chamber->GetId() + 1 << "  ";
+        << setw(4) << geometry->GetModuleId() + 1 << "  "
+        << setw(4) << geometry->GetDetElementStore()->GetNofEntries() << "  ";
     
     WriteTransform(out, transform);
   }
@@ -424,13 +437,11 @@ void AliMUONVGeometryBuilder::WriteData2(ofstream& out) const
 // ---
 
 
-  for (Int_t i=0; i<fChambers->GetEntriesFast(); i++) {
-    AliMUONChamber* chamber 
-      = (AliMUONChamber*)fChambers->At(i);
-    AliMUONChamberGeometry* chamberGeometry
-       = chamber->GetGeometry();
+  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
     const TObjArray* envelopes 
-      = chamberGeometry->GetEnvelopeStore()->GetEnvelopes();    
+      = geometry->GetEnvelopeStore()->GetEnvelopes();    
 
     for (Int_t j=0; j<envelopes->GetEntriesFast(); j++) {
       AliMUONGeometryEnvelope* envelope
@@ -459,13 +470,11 @@ void AliMUONVGeometryBuilder::WriteData3(ofstream& out) const
 // from the sensitive volume map
 // ---
 
-  for (Int_t i=0; i<fChambers->GetEntriesFast(); i++) {
-    AliMUONChamber* chamber 
-      = (AliMUONChamber*)fChambers->At(i);
-    AliMUONChamberGeometry* chamberGeometry
-       = chamber->GetGeometry();
+  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
     AliMUONGeometrySVMap* svMap
-      = chamberGeometry->GetSVMap();
+      = geometry->GetSVMap();
 
     svMap->WriteMap(out);
     out << endl;  
@@ -477,14 +486,18 @@ void AliMUONVGeometryBuilder::WriteData3(ofstream& out) const
 //
 
 //______________________________________________________________________________
-AliMUONChamber*  AliMUONVGeometryBuilder::GetChamber(Int_t chamberId) const
+AliMUONGeometryModule*  
+AliMUONVGeometryBuilder::GetGeometry(Int_t moduleId) const
 {
-// Returns the chamber specified by chamberId
+// Returns the module geometry specified by moduleId
 // ---
 
-  for (Int_t i=0; i<fChambers->GetEntriesFast(); i++) {
-    AliMUONChamber* chamber = (AliMUONChamber*)fChambers->At(i);
-    if ( chamber->GetId() == chamberId) return chamber;
+  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
+
+    if ( geometry->GetModuleId() == moduleId) return geometry;
   }   
   
   return 0;
@@ -492,53 +505,54 @@ AliMUONChamber*  AliMUONVGeometryBuilder::GetChamber(Int_t chamberId) const
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelopeStore*  
-AliMUONVGeometryBuilder::GetEnvelopes(Int_t chamberId) const
+AliMUONVGeometryBuilder::GetEnvelopes(Int_t moduleId) const
 {
-// Returns the envelope store of the chamber specified by chamberId
+// Returns the envelope store of the module geometry specified by moduleId
 // ---
 
-  AliMUONChamber* chamber = GetChamber(chamberId);
+  AliMUONGeometryModule* geometry = GetGeometry(moduleId);
   
-  if (!chamber) {
-    AliFatal(Form("Chamber %d is not defined", chamberId)); 
+  if (!geometry) {
+    AliFatal(Form("Module geometry %d is not defined", moduleId)); 
     return 0;
   }
   
-  return chamber->GetGeometry()->GetEnvelopeStore();
+  return geometry->GetEnvelopeStore();
 }  
 
 //______________________________________________________________________________
-AliMUONGeometryTransformStore*  
-AliMUONVGeometryBuilder::GetTransforms(Int_t chamberId) const
+AliMUONGeometryStore*  
+AliMUONVGeometryBuilder::GetDetElements(Int_t moduleId) const
 {
-// Returns the transformation store of the chamber specified by chamberId
+// Returns the detection elemnts store of the module geometry specified 
+// by moduleId
 // ---
 
-  AliMUONChamber* chamber = GetChamber(chamberId);
+  AliMUONGeometryModule* geometry = GetGeometry(moduleId);
   
-  if (!chamber) {
-    AliFatal(Form("Chamber %d is not defined", chamberId)); 
+  if (!geometry) {
+    AliFatal(Form("Module geometry %d is not defined", moduleId)); 
     return 0;
   }
   
-  return chamber->GetGeometry()->GetTransformStore();
+  return geometry->GetDetElementStore();
 }  
 
 //______________________________________________________________________________
 AliMUONGeometrySVMap*  
-AliMUONVGeometryBuilder::GetSVMap(Int_t chamberId) const
+AliMUONVGeometryBuilder::GetSVMap(Int_t moduleId) const
 {
-// Returns the transformation store of the chamber specified by chamberId
+// Returns the transformation store of the module geometry specified by moduleId
 // ---
 
-  AliMUONChamber* chamber = GetChamber(chamberId);
+  AliMUONGeometryModule* geometry = GetGeometry(moduleId);
   
-  if (!chamber) {
-    AliFatal(Form("Chamber %d is not defined", chamberId)); 
+  if (!geometry) {
+    AliFatal(Form("Geometry %d is not defined", moduleId)); 
     return 0;
   }
   
-  return chamber->GetGeometry()->GetSVMap();
+  return geometry->GetSVMap();
 }  
 
 //
@@ -546,20 +560,22 @@ AliMUONVGeometryBuilder::GetSVMap(Int_t chamberId) const
 //
 
 //______________________________________________________________________________
-void  AliMUONVGeometryBuilder:: FillTransformations() const
+void  AliMUONVGeometryBuilder::FillTransformations() const
 {
 // Fills transformations store from defined geometry.
 // ---
 
-  for (Int_t i=0; i<fChambers->GetEntriesFast(); i++) {
-    AliMUONChamber* chamber 
-      = (AliMUONChamber*)fChambers->At(i);
-    AliMUONChamberGeometry* chamberGeometry
-       = chamber->GetGeometry();
+  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
     const TObjArray* envelopes 
-      = chamberGeometry->GetEnvelopeStore()->GetEnvelopes();    
-    AliMUONGeometryTransformStore* transforms 
-      = chamberGeometry->GetTransformStore();     
+      = geometry->GetEnvelopeStore()->GetEnvelopes();    
+    
+    AliMUONGeometryStore* detElements = geometry->GetDetElementStore(); 
+      
+    // Set nof detection elements to the indexing
+    geometry->GetDEIndexing()
+      ->SetNofDetElements(geometry->GetEnvelopeStore()->GetNofDetElements()); 
 
     for (Int_t j=0; j<envelopes->GetEntriesFast(); j++) {
       AliMUONGeometryEnvelope* envelope
@@ -575,7 +591,8 @@ void  AliMUONVGeometryBuilder:: FillTransformations() const
       const TGeoCombiTrans* transform = envelope->GetTransformation(); 
 
       // Add detection element transformation 
-      transforms->Add(detElemId, path, *transform); 
+      detElements->Add(detElemId,
+        new AliMUONGeometryDetElement(detElemId, path, *transform)); 
     }  
   }
 }
@@ -586,18 +603,16 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps() const
 // Clear the SV maps in memory and fill them from defined geometry.
 // ---
 
-  for (Int_t i=0; i<fChambers->GetEntriesFast(); i++) {
-    AliMUONChamber* chamber 
-      = (AliMUONChamber*)fChambers->At(i);
-    AliMUONChamberGeometry* chamberGeometry
-       = chamber->GetGeometry();
+  for (Int_t i=0; i<fModuleGeometries->GetEntriesFast(); i++) {
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fModuleGeometries->At(i);
     
     // Clear the map   
-    chamberGeometry->GetSVMap()->Clear();
+    geometry->GetSVMap()->Clear();
      
     // Fill the map from geometry
     const TObjArray* envelopes 
-      = chamberGeometry->GetEnvelopeStore()->GetEnvelopes();    
+      = geometry->GetEnvelopeStore()->GetEnvelopes();    
 
     for (Int_t j=0; j<envelopes->GetEntriesFast(); j++) {
       AliMUONGeometryEnvelope* envelope
@@ -607,9 +622,9 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps() const
       if(envelope->GetUniqueID() == 0) continue;
        
       TString path0("/ALIC.1");
-      if (chamberGeometry->GetMotherVolume() != "ALIC") {
+      if (geometry->GetMotherVolume() != "ALIC") {
         path0 += "/";
-	path0 += ComposePath(chamberGeometry->GetMotherVolume(), 1);
+	path0 += ComposePath(geometry->GetMotherVolume(), 1);
       }  
        
       if (!envelope->IsVirtual()) {
@@ -638,6 +653,10 @@ Bool_t  AliMUONVGeometryBuilder::ReadTransformations() const
 // Reads transformations from a file
 // Returns true, if reading finished correctly.
 // ---
+
+  // No reading
+  // if builder is not associated with any geometry module
+  if (fModuleGeometries->GetEntriesFast() == 0) return false;
 
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");
@@ -675,6 +694,10 @@ Bool_t  AliMUONVGeometryBuilder::ReadSVMap() const
 // Returns true, if reading finished correctly.
 // ---
 
+  // No reading
+  // if builder is not associated with any geometry module
+  if (fModuleGeometries->GetEntriesFast() == 0) return false;
+
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");
   filePath += "/MUON/data/";
@@ -709,6 +732,10 @@ Bool_t  AliMUONVGeometryBuilder::WriteTransformations() const
 // Returns true, if writing finished correctly.
 // ---
 
+  // No writing
+  // if builder is not associated with any geometry module
+  if (fModuleGeometries->GetEntriesFast() == 0) return false;
+
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");
   filePath += "/MUON/data/";
@@ -737,6 +764,10 @@ Bool_t  AliMUONVGeometryBuilder::WriteSVMap(Bool_t rebuild) const
 // Writes sensitive volume map into a file
 // Returns true, if writing finished correctly.
 // ---
+
+  // No writing
+  // if builder is not associated with any geometry module
+  if (fModuleGeometries->GetEntriesFast() == 0) return false;
 
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");

@@ -1,0 +1,23 @@
+# $Id$
+#
+# The framework classes for geometry construction
+# (not dependent on MUON) 
+#
+
+SRCS  =  AliMUONGeometryConstituent.cxx \
+	 AliMUONGeometryEnvelope.cxx \
+	 AliMUONGeometryEnvelopeStore.cxx \
+	 AliMUONGeometryDetElement.cxx \
+	 AliMUONGeometrySVMap.cxx \
+	 AliMUONGeometryModule.cxx \
+	 AliMUONVGeometryDEIndexing.cxx \
+	 AliMUONVGeometryBuilder.cxx \
+	 AliMUONGeometryBuilder.cxx \
+	 AliMUONGeometryStore.cxx \
+	 AliMUONGeometrySegmentation.cxx 
+
+HDRS =  $(SRCS:.cxx=.h) 
+
+EINCLUDE:= RAW MUON/mapping
+
+DHDR:= MUONLinkDefGeometry.h
