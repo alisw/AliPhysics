@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/10/29 09:53:40  morsch
+Constants start with k. Warnings corrected.
+
 Revision 1.5  2002/10/14 14:57:39  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -1793,12 +1796,14 @@ void AliSHILv2::CreateGeometry()
 //
       par0[ 0]  = 0.;
       par0[ 1]  = 360.;
-      par0[ 2]  = 18.;
+      par0[ 2]  = 11.;
   
       par0[ 3]  = -dl;
       par0[ 5]  = 30.+(kZch32-kZConeE)*TMath::Tan(kThetaOpenPbO);
       par0[ 4]  = par0[ 5] - 4.;
+
 //    4th station
+
       par0[ 6]  = -dz + kZch41 - 4.;
       par0[ 8]  = 30.+(kZch41-4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
       par0[ 7]  = par0[ 8] -4.;
@@ -1814,61 +1819,34 @@ void AliSHILv2::CreateGeometry()
       par0[15]  = -dz + kZch41;
       par0[17]  = 37.5;  
       par0[16]  = 33.5;
-                      
-      par0[18]  = -dz + kZch42;
+
+//    5th station
+
+      par0[18]  = -dz + kZch51;
       par0[20]  = 37.5;
       par0[19]  = 33.5;
 
-      par0[21]  = -dz + kZch42;
-      par0[23]  = 30.+(kZch42-kZConeE)*TMath::Tan(kThetaOpenPbO);  
+      par0[21]  = -dz + kZch52;
+      par0[23]  = 37.5;
       par0[22]  = 33.5;
 
-      par0[24]  = -dz + kZch42 + 4.;
-      par0[26]  = 30.+(kZch42+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
+      par0[24]  = -dz + kZch52;
+      par0[26]  = 30.+(kZch52-kZConeE)*TMath::Tan(kThetaOpenPbO);
       par0[25]  = 33.5;
 
-      par0[27]  = -dz + kZch42 + 4.;
-      par0[29]  = 30.+(kZch42+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
-      par0[28]  = par0[29] - 4.;
+      par0[27]  = -dz + kZch52 + 4.;
+      par0[29]  = 30.+(kZch52+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
+      par0[28]  = 33.5;
 
-//    5th station
-      par0[30]  = -dz + kZch51 - 4.;
-      par0[32]  = 30.+(kZch51-4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
+      par0[30]  = -dz + kZch52 + 4.;
+      par0[32]  = 30.+(kZch52+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
       par0[31]  = par0[32] - 4.;
-      
-      par0[33]  = -dz + kZch51 - 4.;
+
+      par0[33]  = +dl;
       par0[35]  = par0[32];
-      par0[34]  = 33.5;
+      par0[34]  = par0[31];
 
-      par0[36]  = -dz + kZch51;
-      par0[38]  = 30.+(kZch51-kZConeE)*TMath::Tan(kThetaOpenPbO);
-      par0[37]  = 33.5;
-
-      par0[39]  = -dz + kZch51;
-      par0[41]  = 37.5;
-      par0[40]  = 33.5;
-
-      par0[42]  = -dz + kZch52;
-      par0[44]  = 37.5;
-      par0[43]  = 33.5;
-
-      par0[45]  = -dz + kZch52;
-      par0[47]  = 30.+(kZch52-kZConeE)*TMath::Tan(kThetaOpenPbO);
-      par0[46]  = 33.5;
-
-      par0[48]  = -dz + kZch52 + 4.;
-      par0[50]  = 30.+(kZch52+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
-      par0[49]  = 33.5;
-
-      par0[51]  = -dz + kZch52 + 4.;
-      par0[53]  = 30.+(kZch52+4.-kZConeE)*TMath::Tan(kThetaOpenPbO);
-      par0[52]  = par0[53] - 4.;
-
-      par0[54]  = +dl;
-      par0[56]  = par0[53];
-      par0[55]  = par0[52];
-
-      gMC->Gsvolu("YOSE",    "PCON", idtmed[kSteel], par0, 57);
+      gMC->Gsvolu("YOSE",    "PCON", idtmed[kSteel], par0, 36);
       gMC->Gspos ("YOSE", 1, "YOPB", 0., 0., 0., 0, "ONLY");
 //
 //    Concrete replacing lead
