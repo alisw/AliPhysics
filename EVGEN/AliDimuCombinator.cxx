@@ -15,13 +15,13 @@
 
 /* $Id$ */
 
-/*  
- Class for dimuon analysis and fast dimuon simulation.
- It provides single and dimuon iterators, cuts, weighting, kinematic
- It uses the AliRun particle tree.
- Comments and suggestions to 
- andreas.morsch@cern.ch
-*/
+// 
+// Class for dimuon analysis and fast dimuon simulation.
+// It provides single and dimuon iterators, cuts, weighting, kinematic
+// It uses the AliRun particle tree.
+// Comments and suggestions to 
+// andreas.morsch@cern.ch
+
 
 #include <TClonesArray.h>
 #include <TParticle.h>
@@ -65,8 +65,10 @@ AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)
 //
 //                       Iterators
 // 
-TParticle* AliDimuCombinator::Particle(Int_t i)
+TParticle* AliDimuCombinator::Particle(Int_t i) const
 {
+//  Return next particle
+//
     return gAlice->GetMCApp()->Particle(i);
 }
 
@@ -165,7 +167,7 @@ void AliDimuCombinator::NextPartnerSelected()
 }
 
 
-TParticle*  AliDimuCombinator::Partner()
+TParticle*  AliDimuCombinator::Partner() const
 {
 // Returns current partner for muon to form a dimuon
     return fMuon2;
@@ -240,7 +242,7 @@ void AliDimuCombinator::SetSecondRange(Int_t from, Int_t to)
 //                       Selection
 //
 
-Bool_t AliDimuCombinator::Selected(TParticle* part)
+Bool_t AliDimuCombinator::Selected(TParticle* part) const
 {
 // Selection cut for single muon 
 //
@@ -253,7 +255,7 @@ Bool_t AliDimuCombinator::Selected(TParticle* part)
     }
 }
 
-Bool_t AliDimuCombinator::Selected(TParticle* part1, TParticle* part2)
+Bool_t AliDimuCombinator::Selected(TParticle* part1, TParticle* part2) const
 {
 // Selection cut for dimuons
 //
@@ -262,7 +264,7 @@ Bool_t AliDimuCombinator::Selected(TParticle* part1, TParticle* part2)
 //
 //                       Kinematics
 //
-Float_t AliDimuCombinator::Mass(TParticle* part1, TParticle* part2)
+Float_t AliDimuCombinator::Mass(TParticle* part1, TParticle* part2) const
 {
 // Invariant mass
 //
@@ -279,7 +281,7 @@ Float_t AliDimuCombinator::Mass(TParticle* part1, TParticle* part2)
     }
 }
 
-Float_t AliDimuCombinator::PT(TParticle* part1, TParticle* part2)
+Float_t AliDimuCombinator::PT(TParticle* part1, TParticle* part2) const
 {
 // Transverse momentum of dimuons
 //
@@ -289,14 +291,14 @@ Float_t AliDimuCombinator::PT(TParticle* part1, TParticle* part2)
     return TMath::Sqrt(px*px+py*py);
 }
 
-Float_t AliDimuCombinator::Pz(TParticle* part1, TParticle* part2)
+Float_t AliDimuCombinator::Pz(TParticle* part1, TParticle* part2) const
 {
 // Pz of dimuon system
 //
     return part1->Pz()+part2->Pz();
 }
 
-Float_t AliDimuCombinator::Y(TParticle* part1, TParticle* part2)
+Float_t AliDimuCombinator::Y(TParticle* part1, TParticle* part2) const
 {
 // Rapidity of dimuon system
 //
@@ -307,7 +309,7 @@ Float_t AliDimuCombinator::Y(TParticle* part1, TParticle* part2)
 }
 //                  Response
 //
-void AliDimuCombinator::SmearGauss(Float_t width, Float_t & value)
+void AliDimuCombinator::SmearGauss(Float_t width, Float_t & value) const
 {
 // Apply gaussian smearing
 //
@@ -316,7 +318,7 @@ void AliDimuCombinator::SmearGauss(Float_t width, Float_t & value)
 //              Weighting
 // 
 
-Float_t AliDimuCombinator::DecayProbability(TParticle* part)
+Float_t AliDimuCombinator::DecayProbability(TParticle* part) const
 {
 // Calculate decay probability for muons from pion and kaon decays
 // 
@@ -365,7 +367,7 @@ Float_t AliDimuCombinator::DecayProbability(TParticle* part)
 //End_Html
 
 
-Float_t AliDimuCombinator::Weight(TParticle* part1, TParticle* part2)
+Float_t AliDimuCombinator::Weight(TParticle* part1, TParticle* part2) const
 {
 // Dimuon weight
 
@@ -432,39 +434,32 @@ Indeed the 2 muons come from the same mother so the
 //End_Html
 
 
-Float_t AliDimuCombinator::Weight(TParticle* part)
+Float_t AliDimuCombinator::Weight(TParticle* part) const
 {
 // Single muon weight
     return (part->GetWeight())*(Parent(part)->GetWeight())*fRate1;
 }
 
-Bool_t  AliDimuCombinator::Correlated(TParticle* part1, TParticle* part2)
+Bool_t  AliDimuCombinator::Correlated(TParticle* part1, TParticle* part2) const
 {
 // Check if muons are correlated
 //
     if ((Origin(part1) >= 0) && Origin(part1) == Origin(part2)) {
-/*
-	printf("\n origin %d %d ", 
-	       Type(Particle(Origin(part1))),
-	       Type(Particle(Origin(part2))));
-	printf("\n parent %d %d \n \n ", 
-	       Type(Parent(part1)),
-	       Type(Parent(part2)));
-*/	
+
 	return kTRUE;
     } else {
 	return kFALSE;
     }
 }
 
-TParticle* AliDimuCombinator::Parent(TParticle* part)
+TParticle* AliDimuCombinator::Parent(TParticle* part) const
 {
 // Return pointer to parent
 //
     return Particle(part->GetFirstMother());
 }
 
-Int_t AliDimuCombinator::Origin(TParticle* part)
+Int_t AliDimuCombinator::Origin(TParticle* part) const
 {
 // Return pointer to primary particle
 //
@@ -482,7 +477,7 @@ Int_t AliDimuCombinator::Origin(TParticle* part)
     return iparent;
 }
 
-Int_t AliDimuCombinator::Type(TParticle *part) 
+Int_t AliDimuCombinator::Type(TParticle *part)  const
 {
 // Return particle type for 
 return part->GetPdgCode();
