@@ -108,8 +108,7 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
 }
 //______________________________________________________________________
 void AliEMCALv1::StepManager(void){
-  // Accumulates hits as long as the track stays in a single
-  // crystal or PPSD gas Cell
+  // Accumulates hits as long as the track stays in a tower
 
   Int_t          id[2];           // (layer, phi, Eta) indices
   // position wrt MRS and energy deposited
@@ -171,7 +170,7 @@ void AliEMCALv1::StepManager(void){
       Int_t absid = tower ; 
       if (layer <= geom->GetNPRLayers() )
 	absid += geom->GetNZ() * geom->GetNPhi() ;
-      else if (layer > geom->GetNECLayers() )
+      else if (layer > geom->GetNECLayers() + geom->GetNPRLayers() )
 	absid += 2 * geom->GetNZ() * geom->GetNPhi() ;
       else {
 	Int_t nlayers = geom->GetNPRLayers()+ geom->GetNECLayers()+ geom->GetNHCLayers() ;
