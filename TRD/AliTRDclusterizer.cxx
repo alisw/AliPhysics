@@ -230,6 +230,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     branch->SetAddress(&detRecPoints);
     fClusterTree->Fill();
 
+    delete detRecPoints;
+
     return kTRUE;
 
   }

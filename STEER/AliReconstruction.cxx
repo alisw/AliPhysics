@@ -281,6 +281,7 @@ Bool_t AliReconstruction::Run()
       Error("Run", "writing ESD failed");
       if (fStopOnError) {CleanUp(file); return kFALSE;}
     }
+    delete esd;
   }
 
   CleanUp(file);

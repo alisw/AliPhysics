@@ -2508,7 +2508,10 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     Int_t ns=Int_t(alpha/fSectors->GetAlpha())%fN;
     alpha =ns*fSectors->GetAlpha() + fSectors->GetAlphaShift();
     alpha-=seed->GetAlpha();  
-    if (!seed->Rotate(alpha)) continue;
+    if (!seed->Rotate(alpha)) {
+      delete seed;
+      continue;
+    }
     seed->fEsd = esd;
     //
     //seed->PropagateTo(fSectors->GetX(0));
@@ -3921,6 +3924,7 @@ Int_t AliTPCtrackerMI::ReadSeeds(const TFile *inp) {
 Int_t AliTPCtrackerMI::Clusters2Tracks (AliESD *esd)
 {
   //
+  if (fSeeds) DeleteSeeds();
   fEvent = esd;
   Clusters2Tracks();
   if (!fSeeds) return 1;
@@ -3979,7 +3983,8 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
     CookLabel(pt,0.1); //For comparison only
     //if ((pt->IsActive() || (pt->fRemoval==10) )&& nc>50 &&pt->GetNumberOfClusters()>0.4*pt->fNFoundable){
     if ((pt->IsActive() || (pt->fRemoval==10) )){
-      cerr<<found++<<'\r';      
+      found++;      
+      if (fDebug>0) cerr<<found<<'\r';      
       pt->fLab2 = i;
     }
     else
@@ -4424,19 +4429,19 @@ Int_t AliTPCtrackerMI::PropagateBack(TObjArray * arr)
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed *pt = (AliTPCseed*)arr->UncheckedAt(i);
     if (pt) { 
-      AliTPCseed *pt2 = new AliTPCseed(*pt);
+      //AliTPCseed *pt2 = new AliTPCseed(*pt);
       fSectors = fInnerSec;
       //FollowBackProlongation(*pt,fInnerSec->GetNRows()-1);
       //fSectors = fOuterSec;
       FollowBackProlongation(*pt,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1);
      
-      if (fDebug>1 && pt->GetNumberOfClusters()<20 && pt->GetLabel()>0 ){
-	Error("PropagateBack","Not prolonged track %d",pt->GetLabel());
-	fSectors = fInnerSec;
-	//FollowBackProlongation(*pt2,fInnerSec->GetNRows()-1);
-	//fSectors = fOuterSec;
-	FollowBackProlongation(*pt2,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1);
-      }
+      //if (fDebug>1 && pt->GetNumberOfClusters()<20 && pt->GetLabel()>0 ){
+      //	Error("PropagateBack","Not prolonged track %d",pt->GetLabel());
+      //	fSectors = fInnerSec;
+      //FollowBackProlongation(*pt2,fInnerSec->GetNRows()-1);
+      //fSectors = fOuterSec;
+      //FollowBackProlongation(*pt2,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1);
+      //}
     }      
   }
   return 0;

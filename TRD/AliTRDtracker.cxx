@@ -962,6 +962,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       }
     }
 
+    delete track;
     
     //End of propagation to the TOF
     //if (foundClr>foundMin)
