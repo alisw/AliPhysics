@@ -147,7 +147,7 @@ private:
    Bool_t  fOwner;        //!if true object owns fRawData buffer
 
 public:
-   AliRawData() { fSize = fBufSize = 0; fRawData = 0; fOwner = kFALSE; }
+   AliRawData() { fSize = fBufSize = 0; fRawData = 0; fOwner = kTRUE; }
    virtual ~AliRawData() { if (fOwner) delete [] fRawData; }
 
    void  SetSize(Int_t size) {
