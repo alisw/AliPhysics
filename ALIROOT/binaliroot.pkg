@@ -37,6 +37,8 @@ ARLIBS:= \
    STRUCT/tgt_$(ALICE_TARGET)/G__STRUCT.o $(LIBPATH)/libSTRUCT.a \
    TPC/tgt_$(ALICE_TARGET)/G__TPC.o $(LIBPATH)/libTPC.a \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
-   CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a
+   CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a \
+   RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAW.a \
+   MONITOR/tgt_$(ALICE_TARGET)/G__MONITOR.o $(LIBPATH)/libMONITOR.a
 
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
