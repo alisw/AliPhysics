@@ -1,6 +1,15 @@
 #ifndef ALIHBTREADERKINETREE_H
 #define ALIHBTREADERKINETREE_H
-
+//_______________________________________________________________________
+/////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTReaderKineTree
+//
+// Reader for Kinematics
+//
+// Piotr.Skowronski@cern.ch
+//
+/////////////////////////////////////////////////////////////////////////
 #include "AliHBTReader.h"
 #include <TString.h>
 
@@ -15,8 +24,11 @@ class AliHBTReaderKineTree: public AliHBTReader
     
     AliHBTReaderKineTree(TString&);
     AliHBTReaderKineTree(TObjArray*,const Char_t *filename="galice.root");
+    AliHBTReaderKineTree(const AliHBTReaderKineTree& in);
 
     virtual ~AliHBTReaderKineTree();
+
+    AliHBTReaderKineTree& operator=(const AliHBTReaderKineTree& in);
     
     void          Rewind();
     
@@ -28,13 +40,11 @@ class AliHBTReaderKineTree: public AliHBTReader
     Int_t         OpenNextFile();
    
     TString       fFileName;//file name 
-    AliRunLoader* fRunLoader;
+    AliRunLoader* fRunLoader;//!Pointer to loader
     
-    static const TString fgkEventFolderName;
+    static const TString fgkEventFolderName; //Event folder name that session are mounter
     
    private:
-   
-   public:
      ClassDef(AliHBTReaderKineTree,2)
  };
 

@@ -1,20 +1,23 @@
 #include "AliHBTReaderKineTree.h"
+//_______________________________________________________________________
+/////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTReaderKineTree
+//
+// Reader for Kinematics
+//
+// Piotr.Skowronski@cern.ch
+//
+/////////////////////////////////////////////////////////////////////////
 
 #include <TString.h>
-#include <TObjString.h>
-#include <TTree.h>
-#include <TFile.h>
 #include <TParticle.h>
 
-#include <AliRun.h>
 #include <AliRunLoader.h>
 #include <AliStack.h>
-#include <AliHeader.h>
 
-#include "AliHBTRun.h"
 #include "AliHBTEvent.h"
 #include "AliHBTParticle.h"
-#include "AliHBTParticleCut.h"
 
 ClassImp(AliHBTReaderKineTree)
 /**********************************************************/
@@ -43,6 +46,16 @@ AliHBTReaderKineTree::AliHBTReaderKineTree(TObjArray* dirs,const Char_t *filenam
 {
   //ctor
 }
+
+/**********************************************************/
+AliHBTReaderKineTree::AliHBTReaderKineTree(const AliHBTReaderKineTree& in):
+ AliHBTReader(in),
+ fFileName(in.fFileName),
+ fRunLoader(0x0)
+{
+  //cpy ctor
+}
+
 /**********************************************************/
 
 AliHBTReaderKineTree::~AliHBTReaderKineTree()
@@ -51,9 +64,20 @@ AliHBTReaderKineTree::~AliHBTReaderKineTree()
   delete fRunLoader;
 }
 /**********************************************************/
+AliHBTReaderKineTree& AliHBTReaderKineTree::operator=(const AliHBTReaderKineTree& in)
+{
+//Assiment operator
+  if (this == &in) return *this;
+  AliHBTReader::operator=(in);
+  delete fRunLoader;
+  fRunLoader = 0x0;
+  return * this;
+}
+/**********************************************************/
 
 void AliHBTReaderKineTree::Rewind()
 {
+//Rewinds to the beginning
   delete fRunLoader;
   fRunLoader = 0x0;
   fCurrentDir = 0;

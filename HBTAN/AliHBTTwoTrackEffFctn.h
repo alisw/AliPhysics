@@ -38,7 +38,7 @@ class AliHBTTwoTrackEffFctn3D: public AliHBTOnePairFctn3D
     void ProcessDiffEventParticles(AliHBTPair* /*pair*/){}
 
   protected:
-    void GetValues(AliHBTPair*,Double_t&, Double_t&,Double_t&);
+    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z);
   private:
     ClassDef(AliHBTTwoTrackEffFctn3D,1)
  };

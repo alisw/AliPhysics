@@ -1,5 +1,17 @@
 /* $Id$ */
 
+//_____________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTWeightTheorQInvFctn
+//
+// This function allows to obtain Q_inv correlation function with weights
+// calculated by Lednicky's alghorithm.
+// Numerator is filled with weighted events. Weights are attributed to simulated particles.
+// Weights are calculated with corresponding simulated particles momenta.
+// Denominator is filled with mixing unweighted simulated particles.
+// One needs only simulated pairs, so 
+// this function is of class AliHBTOnePairFctn1D.
 //-----------------------------------------------------------
 // This class introduces the weights calculated according 
 // with functions of efficiency of identification (TPC+TOF) 
