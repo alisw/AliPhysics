@@ -263,7 +263,8 @@ void AliFastMuonTriggerEff::InitTree()
 }
 
 void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,
-                Float_t theta, Float_t phi,Float_t& effLow, Float_t& effHigh)
+                Float_t theta, Float_t phi,Float_t& effLow, Float_t& effHigh,
+		Float_t& /*eff*/)
 {
 //
 //  Trigger efficiency for pt, theta, phi (low and high cut)

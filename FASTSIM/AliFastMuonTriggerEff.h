@@ -16,8 +16,12 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     virtual ~AliFastMuonTriggerEff(){;}
     virtual void    Init();
     virtual void    Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi,
-			     Float_t& effLow, Float_t& effHigh);
+			     Float_t& effLow, Float_t& effHigh, Float_t& eff);
     virtual Float_t Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi);
+    virtual void    Evaluate(Float_t   p,  Float_t  theta , Float_t   phi,
+			     Float_t& pS,  Float_t& thetaS, Float_t&  phiS) {
+      AliFastResponse::Evaluate(p, theta , phi, pS, thetaS, phiS);
+    }
     virtual Float_t Evaluate(Float_t pt, Float_t theta, Float_t phi) {
       return AliFastResponse::Evaluate(pt, theta, phi);
     }

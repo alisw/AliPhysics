@@ -23,6 +23,9 @@ class AliFastMuonTrackingRes :  public AliFastResponse {
     virtual Float_t Evaluate(AliFastParticle* part) {
       return AliFastResponse::Evaluate(part);
     }
+    virtual Float_t Evaluate(Float_t  pt,  Float_t  theta , Float_t   phi) {
+      return AliFastResponse::Evaluate(pt,theta,phi);
+    }
  protected:
     Float_t              fBackground;   // Background level
     Float_t              fCharge;       // Current charge
