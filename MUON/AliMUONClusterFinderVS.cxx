@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.13  2000/10/23 13:38:23  morsch
+Set correct z-coordinate when cluster is split.
+
 Revision 1.12  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -441,6 +444,8 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			    for (cath=0; cath<2; cath++) {
 				cnew.fX[cath]=Float_t(xm[ico][1]);
 				cnew.fY[cath]=Float_t(ym[ico][0]);
+				cnew.fZ[cath]=fZPlane;
+				
 				cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			      	for (i=0; i<fMul[cath]; i++) {
 				    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
@@ -632,6 +637,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    for (cath=0; cath<2; cath++) {
 			cnew.fX[cath]=Float_t(xm[ico][1]);
 			cnew.fY[cath]=Float_t(ym[ico][0]);
+			cnew.fZ[cath]=fZPlane;
 			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
@@ -740,6 +746,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    for (cath=0; cath<2; cath++) {
 			cnew.fX[cath]=Float_t(xm[ico][1]);
 			cnew.fY[cath]=Float_t(ym[ico][0]);
+			cnew.fZ[cath]=fZPlane;
 			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
@@ -813,6 +820,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		for (cath=0; cath<2; cath++) {
 		    cnew.fX[cath]=Float_t(xm[ico][1]);
 		    cnew.fY[cath]=Float_t(ym[ico][0]);
+		    cnew.fZ[cath]=fZPlane;
 		    cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 		    for (i=0; i<fMul[cath]; i++) {
 			cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
