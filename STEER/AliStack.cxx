@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/03/12 11:06:03  morsch
+Add particle status code to argument list of SetTrack(..).
+
 Revision 1.18  2002/02/20 16:14:41  hristov
 fParticleBuffer points to object which doesn't belong to AliStack, do not delete it (J.Chudoba)
 
@@ -84,7 +87,6 @@ New files for folders and Stack
 #include "AliRun.h"
 #include "AliModule.h"
 #include "AliHit.h"
-//#include "ETrackBits.h"
 
 ClassImp(AliStack)
 
@@ -365,7 +367,11 @@ void AliStack::PurifyKine()
     if(i<=fHgwmk) map[i]=i ; 
     else {
       map[i] = -99;
-      if((part=(TParticle*) particles.At(i))) { 
+      if((part=(TParticle*) particles.At(i))) {
+//
+//        Check of this track should be kept for physics reasons 
+	  if (KeepPhysics(part)) KeepTrack(i);
+//
           part->ResetBit(kDaughtersBit);
           part->SetFirstDaughter(-1);
           part->SetLastDaughter(-1);
@@ -459,6 +465,34 @@ void AliStack::PurifyKine()
    fNtrack=nkeep;
    fHgwmk=nkeep-1;
    //   delete [] map;
+}
+
+Bool_t AliStack::KeepPhysics(TParticle* part)
+{
+    //
+    // Some particles have to kept on the stack for reasons motivated
+    // by physics analysis. Decision is put here.
+    //
+    Bool_t keep = kFALSE;
+    //
+    // Keep first-generation daughter from primaries with heavy flavor 
+    //
+    Int_t parent = part->GetFirstMother();
+    if (parent >= 0 && parent <= fHgwmk) {
+	TParticle* father = (TParticle*) Particles()->At(parent);
+	Int_t kf = father->GetPdgCode();
+	kf = TMath::Abs(kf);
+	Int_t kfl = kf;
+	// meson ?
+	if  (kfl > 10) kfl/=100;
+	// baryon
+	if (kfl > 10) kfl/=10;
+	if (kfl > 10) kfl/=10;
+	if (kfl >= 4) {
+	    keep = kTRUE;
+	}
+    }
+    return keep;
 }
 
 //_____________________________________________________________________________
@@ -785,7 +819,6 @@ void AliStack::MakeTree(Int_t event, const char *file)
   TBranch *branch=0;
   // Make Kinematics Tree
   char hname[30];
-//    printf("\n MakeTree called %d", event);
   if (!fTreeK) {
     sprintf(hname,"TreeK%d",event);
     fTreeK = new TTree(hname,"Kinematics");
@@ -821,7 +854,6 @@ void AliStack::FinishRun()
     }
 }
 
-//_____________________________________________________________________________
 Bool_t AliStack::GetEvent(Int_t event)
 {
 //
@@ -848,5 +880,3 @@ Bool_t AliStack::GetEvent(Int_t event)
     ResetArrays(size);
     return kTRUE;
 }
-
-//----------------------------------------------------------------------

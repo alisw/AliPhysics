@@ -72,6 +72,7 @@ class AliStack : public TObject
     void  CleanParents();
     void  ResetArrays(Int_t size);
     TParticle* GetNextParticle();
+    Bool_t KeepPhysics(TParticle* part);
     
   private:
     // data members
