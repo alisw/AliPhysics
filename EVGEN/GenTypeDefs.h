@@ -29,7 +29,7 @@ StrucFunc_t;
 typedef enum
 {
     analog,
-    non_analo
+    non_analog
 }
 Weighting_t;
 #endif

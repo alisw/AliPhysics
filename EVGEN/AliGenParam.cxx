@@ -90,7 +90,7 @@ void AliGenParam::Init()
   Float_t IntPt0 = PtPara->Integral(0,15);
   Float_t IntPtS = PtPara->Integral(fPtMin,fPtMax);
   Float_t PhiWgt=(fPhiMax-fPhiMin)/2./TMath::Pi();
-  if (fAnalog) {
+  if (fAnalog == analog) {
      fYWgt  = IntYS/fdNdy0;
      fPtWgt = IntPtS/IntPt0;
      fParentWeight = fYWgt*fPtWgt*PhiWgt/fNpart;
@@ -179,7 +179,7 @@ void AliGenParam::Generate()
 	  ty=Float_t(TMath::TanH(fYPara->GetRandom()));
 //
 // pT
-	  if (fAnalog) {
+	  if (fAnalog == analog) {
 	      pt=fPtPara->GetRandom();
 	      wgtp=fParentWeight;
 	      wgtch=fChildWeight;
