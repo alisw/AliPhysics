@@ -131,9 +131,9 @@ class AliGenGSIlib :public AliGenLib {
     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
     typedef Int_t    (*GenFuncIp)(TRandom *ran);
     
-    GenFunc   GetPt(Int_t param, const char * tname=0);
-    GenFunc   GetY(Int_t param,  const char * tname=0);
-    GenFuncIp GetIp(Int_t param, const char * tname=0);    
+    GenFunc   GetPt(Int_t param, const char * tname=0) const;
+    GenFunc   GetY(Int_t param, const char * tname=0) const;
+    GenFuncIp GetIp(Int_t param, const char * tname=0) const;    
 
   ClassDef(AliGenGSIlib,0)
 };
