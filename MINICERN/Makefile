@@ -87,6 +87,7 @@ FSRCS	= dummies.F hbcdf.F fzdummies.F \
 	  packlib/kernlib/kerngen/tcgens/vfill.F \
 	  packlib/kernlib/kerngen/tcgens/vmax.F \
 	  packlib/kernlib/kerngen/tcgens/vmod.F \
+	  packlib/kernlib/kerngen/tcgens/vscale.F \
 	  packlib/kernlib/kerngen/tcgens/vunit.F \
 	  packlib/kernlib/kerngen/tcgens/vzero.F \
 	  packlib/kernlib/kernnum/e104fort/fint.F \
