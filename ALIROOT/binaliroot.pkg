@@ -1,9 +1,39 @@
 SRCS:=aliroot.cxx
 CSRCS:=fpu.c
 
-ELIBSDIR:= $(ALICE)/geant3/lib/tgt_$(ALICE_TARGET)
+ELIBSDIR:=
 
 ELIBS:= MUON TPC ITS PMD TRD FMD TOF PHOS CRT RICH ZDC VZERO EMCAL STRUCT \
 START EVGEN STEER CONTAINERS pythia6 pdf THijing hijing TMEVSIM \
 mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN FASTSIM microcern
 
+# The two variables below are used for the creation of profile target.
+# ARLIBS stands for ARchive LIBrarieS and for each module one wants to profile
+# consists of dictionary object file and static library itself.
+# The shared libraries for modules without profiling are listed in the second
+# variable SHLIBS (SHared LIBrarieS).
+# Please note that the order of static libraries is important, the ones
+# which provide code for the others have to be placed after their "clients".
+# For example ITS uses TPC code, TPC uses CONTAINERS code, so the order has
+# to be ITS TPC CONTAINERS 
+
+ARLIBS:= \
+   FMD/tgt_$(ALICE_TARGET)/G__FMD.o $(LIBPATH)/libFMD.a \
+   CRT/tgt_$(ALICE_TARGET)/G__CRT.o $(LIBPATH)/libCRT.a \
+   RICH/tgt_$(ALICE_TARGET)/G__RICH.o $(LIBPATH)/libRICH.a \
+   ZDC/tgt_$(ALICE_TARGET)/G__ZDC.o $(LIBPATH)/libZDC.a \
+   VZERO/tgt_$(ALICE_TARGET)/G__VZERO.o $(LIBPATH)/libVZERO.a \
+   EMCAL/tgt_$(ALICE_TARGET)/G__EMCAL.o $(LIBPATH)/libEMCAL.a \
+   START/tgt_$(ALICE_TARGET)/G__START.o $(LIBPATH)/libSTART.a \
+   TOF/tgt_$(ALICE_TARGET)/G__TOF.o $(LIBPATH)/libTOF.a \
+   TRD/tgt_$(ALICE_TARGET)/G__TRD.o $(LIBPATH)/libTRD.a \
+   PMD/tgt_$(ALICE_TARGET)/G__PMD.o $(LIBPATH)/libPMD.a \
+   MUON/tgt_$(ALICE_TARGET)/G__MUON.o $(LIBPATH)/libMUON.a \
+   PHOS/tgt_$(ALICE_TARGET)/G__PHOS.o $(LIBPATH)/libPHOS.a \
+   ITS/tgt_$(ALICE_TARGET)/G__ITS.o $(LIBPATH)/libITS.a \
+   STRUCT/tgt_$(ALICE_TARGET)/G__STRUCT.o $(LIBPATH)/libSTRUCT.a \
+   TPC/tgt_$(ALICE_TARGET)/G__TPC.o $(LIBPATH)/libTPC.a \
+   STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
+   CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a
+
+SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lFASTSIM -lmicrocern

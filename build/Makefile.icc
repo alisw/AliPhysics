@@ -35,6 +35,11 @@ SOFLAGS       = -Wl,-soname,$(notdir $@) -shared -O
 SHLIB         =
 SOEXT 	      = so
 
+ALLD	      = ar
+ALFLAGS       = cr
+ALLIB         = 
+AEXT 	      = a
+
 # additional ROOT libraries
 ROOTLIBS  += -lcrypt 
 
@@ -42,7 +47,7 @@ ROOTLIBS  += -lcrypt
 DEPENDFFLAGS = $(FFLAGS)
 
 LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
-GLIBS         = -L/usr/X11R6/lib -lX11  $(LIBNOVER)
+GLIBS         = $(LIBNOVER)
 
 #System libraries
 SYSLIBS =

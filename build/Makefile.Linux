@@ -35,6 +35,11 @@ SOFLAGS       = -O2 -shared -Wl
 SHLIB         = -lg2c
 SOEXT 	      = so
 
+ALLD	      = ar
+ALFLAGS       = cr
+ALLIB         = 
+AEXT 	      = a
+
 # additional ROOT libraries
 ROOTLIBS  += -lcrypt 
 

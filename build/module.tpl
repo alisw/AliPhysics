@@ -102,9 +102,11 @@ endif
 #The actual library file
 
 @PACKAGE@LIB:=$(LIBPATH)/lib@PACKAGE@.$(SOEXT)
+@PACKAGE@ALIB:=$(LIBPATH)/lib@PACKAGE@.$(AEXT)
 
 #Add this to the modules libs
 @MODULE@LIBS += $(@PACKAGE@LIB)
+@MODULE@ALIBS += $(@PACKAGE@ALIB)
 
 #The actual binary file
 
@@ -117,6 +119,7 @@ endif
 
 ifeq ($(TYPE),lib)
 ALLLIBS += $(@PACKAGE@LIB)
+ALLALIBS += $(@PACKAGE@ALIB)
 BINLIBS += -l@PACKAGE@
 else
 ALLEXECS += $(@PACKAGE@BIN)
@@ -154,11 +157,30 @@ endif
       cd $(CURDIR) ; rm -rf $$TMPDIR
 	  $(MUTE)chmod a-w $@
 
+$(@PACKAGE@ALIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
+ifndef ALIQUIET
+	  @echo "***** Linking static library $@ *****"
+endif
+	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
+	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
+	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
+      rm -f $(CURDIR)/$@ ;\
+	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
+      cd $(CURDIR) ; rm -rf $$TMPDIR
+	  $(MUTE)chmod a-w $@
+
+
 $(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Making executable $@ *****"
 endif
-	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@ 
+ifeq ($(ALIPROFILE),YES)
+	@echo "Not implemented yet"
+	$(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(ARLIBS) $(SHLIBS) $(LIBS) $(EXEFLAGS) -o $@
+#$(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@
+else
+	  $(MUTE)$(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(LIBS) $(EXEFLAGS) -o $@
+endif
 
 $(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk
 ifndef ALIQUIET
@@ -176,7 +198,7 @@ endif
 #Different targets for the module
 
 ifeq ($(TYPE),lib)
-all-@PACKAGE@: $(@PACKAGE@LIB)
+all-@PACKAGE@: $(@PACKAGE@LIB $(@PACKAGE@ALIB)
 else
 all-@PACKAGE@: $(@PACKAGE@BIN)
 endif

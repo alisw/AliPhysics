@@ -53,6 +53,20 @@ endif
 ##################################################################
 
 ##################################################################
+# 
+#               Check if called with profile
+
+ifeq ($(ALIPROFILE),YES)
+override ALICE_TARGET:=$(ALICE_TARGET)PROF
+FFLAGS += -pg
+CXXFLAGS += -pg
+CFLAGS += -pg
+SOFLAGS += -pg
+LDFLAGS += -pg
+endif
+##################################################################
+
+##################################################################
 #
 #                   Modules to build 
 
@@ -187,14 +201,18 @@ include build/dummy.d
 
 # targets
 
-.PHONY:		alilibs aliroot makedistr clean htmldoc
+.PHONY:		alilibs aliroot makedistr clean htmldoc profile
 
 modules: $(patsubst %,%/module.mk,$(MODULES)) 	
 
 
 aliroot: $(BINPATH) $(ALLEXECS) alilibs bin
 
+ifeq ($(ALIPROFILE),YES)
+alilibs: $(LIBPATH) $(ALLLIBS) $(ALLALIBS) lib modules
+else
 alilibs: $(LIBPATH) $(ALLLIBS) lib modules
+endif
 
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
 makedistr: $(MODULES)	 
@@ -211,6 +229,11 @@ ifndef ALIQUIET
 	@echo "***** Entering DEBUG mode. *****"
 endif
 	@(export ALIDEBUG=YES && $(MAKE))
+profile:
+ifndef ALIQUIET
+	@echo "***** Entering PROFILE mode. *****"
+endif
+	@(export ALIPROFILE=YES && $(MAKE))
 lib: 
 	@mkdir lib
 	@mkdir lib/tgt_$(ALICE_TARGET)
