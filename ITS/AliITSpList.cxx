@@ -246,19 +246,28 @@ void AliITSpListItem::AddSignal(Int_t track,Int_t hit,Int_t module,
 	    fHits[j+1]   = hts;
 	    fSignal[j+1] = sig;
 	} // end if i
-    }else{ // new entry add it in order.
-	if(!(signal <= fSignal[fkSize-1])) for(i=fkSize-2;i>=0;i--){
-	    if(signal > fSignal[i]){
-		fSignal[i+1] = fSignal[i];
-		fTrack[i+1]  = fTrack[i];
-		fHits[i+1]   = fHits[i];
-	    }else{
-		fSignal[i] = signal;
-		fTrack[i]  = track;
-		fHits[i]   = hit;
-	    } //  end if
-	} // end if; end for i
-    } // end if flg
+	return;
+    } // end if added to existing and resorted array
+    // new entry add it in order.
+    // if this signal is <= smallest then don't add it.
+    if(signal <= fSignal[fkSize-1]) return;
+    for(i=fkSize-2;i>=0;i--){
+	if(signal > fSignal[i]){
+	    fSignal[i+1] = fSignal[i];
+	    fTrack[i+1]  = fTrack[i];
+	    fHits[i+1]   = fHits[i];
+	}else{;
+	    fSignal[i] = signal;
+	    fTrack[i]  = track;
+	    fHits[i]   = hit;
+	    return; // put it in the right place, now exit.
+	} //  end if
+    } // end if; end for i
+    // Still haven't found the right place. Must be at top of list.
+    fSignal[0] = signal;
+    fTrack[0]  = track;
+    fHits[0]   = hit;
+    return;
 }
 //______________________________________________________________________
 void AliITSpListItem::AddNoise(Int_t module,Int_t index,Double_t noise){
