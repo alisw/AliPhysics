@@ -215,7 +215,7 @@ void testsimexam (Int_t nevent=1, const char *config="testconfig.C")
       hisba.Delete() ;
       hisbanrg.Delete() ; 
       file->Close();
-      gSystem->Exec("uuencode $ALICE_ROOT/PHOS/galice.root galice.root | mail -s 'PHOS INSTALLATION ERROR  ' schutz@in2p3.fr"); 
+      // gSystem->Exec("uuencode $ALICE_ROOT/PHOS/galice.root galice.root | mail -s 'PHOS INSTALLATION ERROR  ' schutz@in2p3.fr"); 
    
     }
   cerr<<" _____________________________________________________________ "<<endl;
