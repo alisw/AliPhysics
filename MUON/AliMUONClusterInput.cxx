@@ -91,16 +91,16 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesAr
     fSegmentation[1]=iChamber->SegmentationModel(2);
     fNseg = 2;
     if (chamber < AliMUONConstants::NTrackingCh()) {
-      if (chamber > 3 ) {
-	fgMathieson->SetPitch(AliMUONConstants::PitchSlat());
-	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3Slat());
-	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3Slat());
-	fChargeCorrel = AliMUONConstants::ChargeCorrelSlat();
+      if (chamber > 1 ) {
+	fgMathieson->SetPitch(AliMUONConstants::Pitch());
+	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3());
+	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3());
+	fChargeCorrel = AliMUONConstants::ChargeCorrel();
       } else {
-	fgMathieson->SetPitch(AliMUONConstants::PitchSt12());
-	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3St12());
-	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3St12());
-	fChargeCorrel = AliMUONConstants::ChargeCorrelSt12();
+	fgMathieson->SetPitch(AliMUONConstants::PitchSt1());
+	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3St1());
+	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3St1());
+	fChargeCorrel = AliMUONConstants::ChargeCorrelSt1();
       }
     }
 }

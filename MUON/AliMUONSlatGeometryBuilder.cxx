@@ -131,7 +131,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
   // sensitive area: 40*40 cm**2
   const Float_t kSensLength = 40.; 
   const Float_t kSensHeight = 40.; 
-  const Float_t kSensWidth  = 0.5; // according to TDR fig 2.120 
+  const Float_t kSensWidth  = AliMUONConstants::Pitch()*2;// 0.5 cm, according to TDR fig 2.120 
   const Int_t kSensMaterial = idGas;
   //     const Float_t kYoverlap   = 1.5; 
 
