@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -200,7 +203,7 @@ void AliTRDgeometryDetail::CreateGeometry(Int_t *idtmed)
     ypos      = 0.;
     zpos      = fgkCheight    - fgkSheight/2. - kcaframeOff - caframe/2. 
               + (iplan-1) * (fgkCheight + fgkCspace);
-    gMC->Gsposp("UAFI",iplan         ,"TRD1",xpos,ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UAFI",iplan         ,"TRD1",xpos,ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the aluminum frame
     parCha[0] = fCwidth[iplan-1]/2.   - fgkCathick;
@@ -220,7 +223,7 @@ void AliTRDgeometryDetail::CreateGeometry(Int_t *idtmed)
     ypos      = 0.;
     zpos      = fgkCcframe/2. - fgkSheight/2. 
               + (iplan-1) * (fgkCheight + fgkCspace);
-    gMC->Gsposp("UCFI",iplan         ,"TRD1",xpos,ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UCFI",iplan         ,"TRD1",xpos,ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the carbon frame
     parCha[0] = fCwidth[iplan-1]/2.   - fgkCcthick;
@@ -245,8 +248,8 @@ void AliTRDgeometryDetail::CreateGeometry(Int_t *idtmed)
     ypos      = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]/2.;
     zpos      = fgkCheight    - fgkSheight/2. - kcaframeOff - caframe/2.
               + (iplan-1) * (fgkCheight + fgkCspace);
-    gMC->Gsposp("UAFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
-    gMC->Gsposp("UAFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UAFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UAFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the aluminum frame
     parCha[0] = fCwidth[iplan-1]/2.      - fgkCathick;
@@ -267,8 +270,8 @@ void AliTRDgeometryDetail::CreateGeometry(Int_t *idtmed)
     ypos      = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]/2.;
     zpos      = fgkCcframe/2. - fgkSheight/2. 
               + (iplan-1) * (fgkCheight + fgkCspace);
-    gMC->Gsposp("UCFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
-    gMC->Gsposp("UCFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UCFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UCFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the carbon frame
     parCha[0] = fCwidth[iplan-1]/2.      - fgkCcthick;
@@ -296,8 +299,8 @@ void AliTRDgeometryDetail::CreateGeometry(Int_t *idtmed)
     ypos      = fClengthI[iplan-1]/2. + fClengthM1[iplan-1] + fClengthO1[iplan-1]/2.;
     zpos      = fgkCheight    - fgkSheight/2. - kcaframeOff - caframe/2.
               + (iplan-1) * (fgkCheight + fgkCspace);
-    gMC->Gsposp("UAFO",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
-    gMC->Gsposp("UAFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UAFO",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UAFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the aluminum frame
     parCha[0] = fCwidth[iplan-1]/2.      - fgkCathick;
@@ -318,8 +321,8 @@ void AliTRDgeometryDetail::CreateGeometry(Int_t *idtmed)
     ypos      = fClengthI[iplan-1]/2. + fClengthM1[iplan-1] + fClengthO1[iplan-1]/2.;
     zpos      = fgkCcframe/2. - fgkSheight/2. 
               + (iplan-1) * (fgkCheight + fgkCspace);
-    gMC->Gsposp("UCFO",iplan,         "TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
-    gMC->Gsposp("UCFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UCFO",iplan,         "TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UCFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the carbon frame
     parCha[0] = fCwidth[iplan-1]/2.      - fgkCcthick;
