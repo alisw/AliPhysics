@@ -13,6 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/*
+$Log$
+*/
+
+
 //-----------------------------------------------------------------
 //           Implementation of the TPC track class
 //
