@@ -104,24 +104,31 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   fTasksFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
 
   fFailed = kFALSE ; 
+ 
+  if (!fFile) 
+    fFile = new TFile() ; 
+
+  if (fFile->IsOpen() )
+    fFile->Close() ; 
+		   
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
 
     //open headers file
-    TFile * file = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
+    fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
     
-    if(file == 0){    //if file was not opened yet, read gAlice
-      if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
-	file =	TFile::Open(fHeaderFile.Data(),rw) ;
-      else
-	file = new TFile(fHeaderFile.Data(),rw) ;
+    if(fFile == 0){    //if file was not opened yet, read gAlice
+      //      if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
+	fFile =	TFile::Open(fHeaderFile.Data(),rw) ;
+	//else
+	//fFile = new TFile(fHeaderFile.Data(),rw) ;
       
-      if (!file->IsOpen()) {
+      if (!fFile->IsOpen()) {
 	cerr << "ERROR : AliEMCALGetter::AliEMCALGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
        	fFailed = kTRUE ;
         return ;  
       }
       
-      gAlice = static_cast<AliRun *>(file->Get("gAlice")) ;
+      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
     }
   }
 
@@ -148,6 +155,7 @@ AliEMCALGetter::~AliEMCALGetter(){
     delete fPrimaries ; 
   }
 
+  delete fFile ; 
 }
 
 //____________________________________________________________________________ 
