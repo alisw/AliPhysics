@@ -24,7 +24,7 @@ protected:
 public:
    AliITSv3();
    AliITSv3(const char *name, const char *title);
-   virtual       ~AliITSv3() {}
+   virtual       ~AliITSv3() ;
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();
    virtual void   Init();   

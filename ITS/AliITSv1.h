@@ -21,7 +21,7 @@ private:
 public:
   AliITSv1();
   AliITSv1(const char *name, const char *title);
-  virtual       ~AliITSv1() {}
+  virtual       ~AliITSv1() ;
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init(); 

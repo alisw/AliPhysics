@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  1999/10/05 08:05:09  fca
+Minor corrections for uninitialised variables.
+
 Revision 1.7  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
@@ -64,6 +67,16 @@ AliITSv3::AliITSv3() {
     fMinorVersionV3=1;
 }
  
+//_____________________________________________________________________________
+AliITSv3::~AliITSv3() {
+    //
+    // Standard destructor for the ITS
+    //
+  for (Int_t i=0;i<fId3N;++i) delete [] fId3Name[i];
+  delete [] fId3Name;
+  fId3Name = 0;
+}
+
 //_____________________________________________________________________________
 AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
     //

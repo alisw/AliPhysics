@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/10/05 08:05:09  fca
+Minor corrections for uninitialised variables.
+
 Revision 1.8  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
@@ -77,6 +80,16 @@ AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
     fId1Name[5] = "ITS6";
 }
  
+//_____________________________________________________________________________
+AliITSv1::~AliITSv1() {
+    //
+    // Standard destructor for the ITS
+    //
+  for (Int_t i=0;i<fId1N;++i) delete [] fId1Name[i];
+  delete [] fId1Name;
+  fId1Name = 0;
+}
+
 //_____________________________________________________________________________
 void AliITSv1::CreateGeometry()
 {
