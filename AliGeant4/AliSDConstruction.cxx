@@ -45,8 +45,10 @@ void AliSDConstruction::InitializeModules()
   TObjArray* modules = gAlice->Modules();
   TIter next(modules);
   AliModule* module;
-  while((module = (AliModule*)next())) 
+  while((module = (AliModule*)next())) {
     module->Init();
+    module->BuildGeometry();
+  }
 }  
 
 //_____________________________________________________________________________
