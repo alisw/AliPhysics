@@ -71,7 +71,6 @@ void Config()
     {
         int     nParticles = 10000;
     }
-    //AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
     
     /*********************************************************************************/
     /*********************************************************************************/
@@ -82,46 +81,47 @@ void Config()
 
 
     
-    AliGenCocktailAfterBurner = gener = new AliGenCocktailAfterBurner();
-    //gener->SetMomentumRange(0, 999);
+    AliGenCocktailAfterBurner* gener = new AliGenCocktailAfterBurner();
     gener->SetPhiRange(0, 360);
-    gener->SetThetaRange(35., 145.);
+    gener->SetThetaRange(40., 140.);
     gener->SetOrigin(0, 0, 0);  //vertex position
     gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
     
     /*****************     HIJING PARAMETRIZATION    ********************************/    
     
-    AliGenHIJINGpara *g2 = new AliGenHIJINGpara(10);
-    g2->SetMomentumRange(0, 999);
+    //AliGenHIJINGpara *g2 = new AliGenHIJINGpara(5);
+    //g2->SetMomentumRange(0, 999);
     
     /*****************        G E N   B O X       ***********************************/    
     
-    //AliGenBox *g1 = new AliGenBox(5);
-    // g1->SetMomentumRange(0, 3);
+   // AliGenBox *g1 = new AliGenBox(5);
+   // g1->SetMomentumRange(0, 3);
    // g1->SetOrigin(0,0,0);        //vertex position
    // g1->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
    // g1->SetPart(310);        //K0short(310), Lambda(3122)
    
 
     /*****************     M E V S I M    ********************************/    
-
     
     AliMevSimConfig *c = new AliMevSimConfig(1);
     c->SetRectPlane(1);                                 // reaction plane control, model 4
- 
+    c->SetGrid(80,80);
+    
     AliGenMevSim *g3 = new AliGenMevSim(c);
+    g3->SetPtRange(0.001, 3); 
+    g3->SetMomentumRange(0.1, 3); 
+    
     g3->SetTrackingFlag(1);
     g3->SetOrigin(0.0, 0.0, 0.0);
     g3->SetSigma(0.0, 0.0, 0.0);
-    g3->SetMomentumRange(0.1, 3);
+    //g3->SetEtaCutRange(-4,4);       
  
-    AliMevSimParticle *piPlus = new AliMevSimParticle(kPiPlus,   600, 1, 0.18, 0.01, 3, 0.1, 0.0, 0.0);
-    AliMevSimParticle *piMinus = new AliMevSimParticle(kPiMinus, 600, 1, 0.18, 0.01, 3, 0.1, 0.0, 0.0);
+    AliMevSimParticle *piPlus = new AliMevSimParticle(kPiPlus, 3000, 3, 0.2, 0.01, 3, 0.1, 0.0, 0.0);
+    AliMevSimParticle *piMinus = new AliMevSimParticle(kPiMinus, 3000, 3, 0.2, 0.01, 3, 0.1, 0.0, 0.0);
     //AliMevSimParticle *KPlus = new AliMevSimParticle(kKPlus, 10, 0, 0.25, 0.0, 2, 0.15, 0.0, 0.0 );
     //AliMevSimParticle *KMinus = new AliMevSimParticle(kKMinus, 10, 0, 0.25, 0.0, 2, 0.15, 0.0, 0.0 );
     //AliMevSimParticle *protonPlus = new AliMevSimParticle(kProton, 3, 0,  0.4, 0.0, 2, 0.15, 0.0, 0.0);
     //AliMevSimParticle *protonMinus = new AliMevSimParticle(kProtonBar, 2, 0, 0.4, 0.0, 2, 0.15, 0.0, 0.0);
- 
  
     g3->AddParticleType(piPlus);
     g3->AddParticleType(piMinus);
@@ -129,6 +129,7 @@ void Config()
     //g3->AddParticleType(KMinus);
     //g3->AddParticleType(protonPlus);
     //g3->AddParticleType(protonMinus);
+    
     
     /*****************     H B T   P R O C E S S O R    ********************************/    
     
@@ -139,22 +140,23 @@ void Config()
     hbtp->SetSwitchCoulomb(0);
     hbtp->SetSwitchCoherence(0);
     hbtp->SetSwitchFermiBose(1);
+    hbtp->SetDeltap(0.1);
     hbtp->SetDelChi(0.1);
-    hbtp->SetLambda(1.0);
-    hbtp->SetQ0(6.0);
-    hbtp->SetR0(6.0);
-    hbtp->SetRParallel(6.0);
-    hbtp->SetR1d(6.0);
-    hbtp->SetRSide(6.0);
-    hbtp->SetRLong(6.0);
-    hbtp->SetROut(6.0);
+    hbtp->SetLambda(0.5);
+    hbtp->SetQ0(8.0);
+    hbtp->SetR0(8.0);
+    hbtp->SetRParallel(8.0);
+    hbtp->SetR1d(8.0);
+    hbtp->SetRSide(8.0);
+    hbtp->SetRLong(8.0);
+    hbtp->SetROut(8.0);
     hbtp->SetPtRange(0.1,0.98);
     hbtp->SetPIDs(211,-211); //pi+ pi-
     hbtp->SetSwitchType(3);  // fit both the like and unlike pair correl
     
     /***********************************************************************************/
     
-    gener->AddGenerator(g2,"HIJING PARAMETRIZATION",1);
+   // gener->AddGenerator(g2,"HIJING PARAMETRIZATION",1);
    // gener->AddGenerator(g1,"BOX (K0short)",1);
     gener->AddGenerator(g3,"MEVSIM",1);
     
@@ -168,6 +170,8 @@ void Config()
     //gener->SetVertexSmear(perTrack); 
 
     gAlice->SetField(-999, 2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
+//    gAlice->SetField(-999, 2, 2.);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
+     //Last number indicates the scale factor 
 
     Int_t   iABSO = 1;
     Int_t   iCASTOR = 0;
@@ -269,11 +273,11 @@ void Config()
     AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
     ITS->SetMinorVersion(2);                                         // don't touch this parameter if you're not an ITS developer
     ITS->SetReadDet(kFALSE);                                         // don't touch this parameter if you're not an ITS developer
-    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+    ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
     ITS->SetRails(1);	           // 1 --> rails in ; 0 --> rails out
     ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
     //
