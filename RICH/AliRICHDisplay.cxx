@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2000/06/30 16:49:34  dibari
+  Different call for ring drawing.
+
   Revision 1.4  2000/06/12 15:21:08  jbarbosa
   Cleaned up version.
 
@@ -43,6 +46,8 @@
 #include <TView.h>
 #include <TText.h>
 #include <TPolyMarker3D.h>
+#include <TAtt3D.h>
+#include <TAttLine.h>
 #include <TPolyMarker.h>
 #include <TPaveLabel.h>
 #include <TPaveText.h>

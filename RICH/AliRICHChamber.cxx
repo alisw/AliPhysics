@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2000/07/13 16:19:45  fca
+  Mainly coding conventions + some small bug fixes
+
   Revision 1.4  2000/06/30 16:48:58  dibari
   New function GenerateTresholds() for pedestal simulation.
 
@@ -35,6 +38,12 @@
 #include <TLorentzVector.h>
 #include <TParticle.h>
 #include <TRandom.h>
+#include <TObjArray.h>
+#include <TRotMatrix.h>
+#include <AliRICHTresholdMap.h>
+#include <AliRICHSegmentation.h>
+#include <AliRICHGeometry.h>
+#include <AliRICHResponse.h>
 
 ClassImp(AliRICHChamber)	
     

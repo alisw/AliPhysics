@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/06/12 19:01:29  morsch
+  Clean-up bug in Centered() corrected.
+
   Revision 1.3  2000/06/12 15:49:44  jbarbosa
   Removed verbose output.
 
@@ -43,6 +46,7 @@
 #include <TTree.h>
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TF1.h>
 #include <TPad.h>
 #include <TGraph.h> 
 #include <TPostScript.h> 

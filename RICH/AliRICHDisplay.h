@@ -15,7 +15,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 //#ifndef ROOT_TObject
-#include <TObject.h>
 #include <TPolyMarker3D.h>
 #include <TAttLine.h>
 #include <TAtt3D.h>

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/06/12 15:26:36  jbarbosa
+  Cleaned up version.
+
   Revision 1.2  2000/05/18 13:43:54  jbarbosa
   Added the ShowRing function.
 
@@ -39,7 +42,10 @@
 #include <TPad.h>
 #include <TView.h>
 #include <TMath.h>
+#include <TPolyMarker3D.h>
+#include <TMarker3DBox.h>
 
+#include <AliRICH.h>
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
 #include "AliRun.h"

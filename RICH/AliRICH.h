@@ -106,12 +106,12 @@ class AliRICH : public  AliDetector {
     TClonesArray         *fPadHits;            // List of clusters
     TObjArray            *fDchambers;          // List of digits
     TClonesArray         *fCerenkovs;          // List of cerenkovs
-    Int_t                *fNdch;               // Number of digits
+    Int_t                fNdch[kNCH];               // Number of digits
     Text_t               *fFileName;           // Filename for event mixing
     TObjArray            *fRawClusters;        // List of raw clusters
     TObjArray            *fRecHits;            // List of rec. hits
-    Int_t                *fNrawch;             // Number of raw clusters
-    Int_t                *fNrechits;           // Number of rec hits 
+    Int_t                fNrawch[kNCH];             // Number of raw clusters
+    Int_t                fNrechits[kNCH];           // Number of rec hits 
     Int_t                 fDebugLevel;          // Source debugging level
 
     Int_t fCkovNumber;                   // Number of Cerenkov photons

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/06/30 16:33:43  dibari
+  Several changes (ring drawing, fiducial selection, etc.)
+
   Revision 1.3  2000/06/15 15:47:12  jbarbosa
   Corrected compilation errors on HP-UX (replaced pow with TMath::Power)
 
@@ -42,6 +45,7 @@
 #include "AliRICHConst.h"
 #include "AliRICHPoints.h"
 #include "AliConst.h"
+#include "AliRICHHitMap.h"
 
 #include <TParticle.h>
 #include <TMath.h>
