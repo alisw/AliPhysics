@@ -13,13 +13,7 @@ class AliITSRecPoint : public TObject {
 
  public:
 
-  AliITSRecPoint() {
-    // default creator
-    fTracks[0]=fTracks[1]=fTracks[2]=-3; 
-    fX=fZ=fQ=fdEdX=0.;
-    fSigmaX2=fSigmaZ2=0.;
-   }
-
+  AliITSRecPoint();
   virtual ~AliITSRecPoint() {}; // distructor
   Bool_t IsSortable() const {return kTRUE;} // allows for sorting
   Int_t   GetLabel(Int_t i) {return fTracks[i];} // get track label
