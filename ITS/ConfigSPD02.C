@@ -50,18 +50,18 @@ void Config(){
     if (gSystem->Getenv("CONFIG_NPARTICLES")){
         int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     }else{
-        int     nParticles = 50;
+        int     nParticles = 1;
     } // end if
     //*********************************************
     // Example for Moving Particle Gun            *
     //*********************************************
     AliGenBox *gener = new AliGenBox(nParticles);
     gener->SetMomentumRange(100.,300.);
-    gener->SetPhiRange(0,0.01);
-    gener->SetThetaRange(0.0, 1.0);
-    gener->SetOrigin(0.,0.,-100.);
+    gener->SetPhiRange(0,0.1);
+    gener->SetThetaRange(0.0, .1);
+    gener->SetOrigin(0.,0.,-50.);
     //vertex position
-    gener->SetSigma(1.0,1.00,0); //Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetSigma(0.1,0.1,0.0); //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetPart(211);                //GEANT particle type
     gener->Init();
     // Activate this line if you want the vertex smearing to happen
@@ -69,9 +69,9 @@ void Config(){
     //
     //gener->SetVertexSmear(perTrack); 
     // Field (L3 0.4 T)
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
+    //AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
     rootfile->cd();
-    gAlice->SetField(field);
+    //gAlice->SetField(field);
 
     Int_t   iHALL  =  0;
     Int_t   iITS   =  1;
