@@ -13,6 +13,7 @@
 #include <globals.hh>
 
 class AliModule;
+class AliMCQA;
 
 class G4HCofThisEvent;
 class G4Step;
@@ -31,14 +32,17 @@ class AliSensitiveDetector : public TG4VSensitiveDetector
     AliSensitiveDetector& operator=(const AliSensitiveDetector& right);
   
     // methods
+    virtual void Initialize(G4HCofThisEvent*HCE);
     virtual void UserProcessHits(const G4Track* track, const G4Step* step);
     
   protected:  
     AliSensitiveDetector();
     
   private:
-    // data members
+    // data members    
     AliModule*       fModule;      //AliModule
+    G4int            fModuleID;    //AliModule index in AliRun::fModules
+    AliMCQA*         fMCQA;        //AliMCQA    
 };
 
 #endif //ALI_SENSITIVE_DETECTOR_H
