@@ -33,7 +33,7 @@ class AliGenGSIlib :public AliGenLib {
     static void SetDebug(Bool_t debug){fgDebug=debug;}
 private:
     static Bool_t fgDebug;  // Debug flag 
-  ClassDef(AliGenGSIlib,1)
+  ClassDef(AliGenGSIlib,0)
 };
 
 #endif

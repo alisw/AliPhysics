@@ -18,7 +18,7 @@ public TObject
     virtual GenFunc   GetPt(Param_t param, const char *tname)   = 0;
     virtual GenFunc   GetY (Param_t param, const char *tname)  = 0;
     virtual GenFuncIp GetIp(Param_t param, const char *tname)  = 0;    
-    ClassDef(AliGenLib,1) // Library providing y and pT parameterisations
+    ClassDef(AliGenLib,0) // Library providing y and pT parameterisations
 };
 #endif
 

@@ -43,7 +43,7 @@ public AliGenLib
     GenFunc   GetPt(Param_t param, const char* tname=0);
     GenFunc   GetY (Param_t param, const char* tname=0);
     GenFuncIp GetIp(Param_t param, const char* tname=0);    
-    ClassDef(AliGenPHOSlib,1) // Library providing y and pT parameterisations
+    ClassDef(AliGenPHOSlib,0) // Library providing y and pT parameterisations
 };
 #endif
 

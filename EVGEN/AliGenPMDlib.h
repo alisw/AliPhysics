@@ -24,7 +24,7 @@ public AliGenLib
     GenFunc   GetPt(Param_t param, const char* tname=0);
     GenFunc   GetY (Param_t param, const char* tname=0);
     GenFuncIp GetIp(Param_t param, const char* tname=0);    
-    ClassDef(AliGenPMDlib,1) // Library providing y and pT parameterisations
+    ClassDef(AliGenPMDlib,0) // Library providing y and pT parameterisations
 };
 #endif
 
