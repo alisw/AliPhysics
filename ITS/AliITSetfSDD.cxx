@@ -47,8 +47,8 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif)
   fA0 = 16500.; // AL: 16500.;  // TB: 24000.; // 26000.; // 24000.; // 18000.; 
 
   if(amplif == 2) fA0 = 24000.;
-  cout << "fA0: " << fA0 << endl;
-  cout << "fTimeDelay: " << fTimeDelay << endl;
+//  cout << "fA0: " << fA0 << endl;
+//  cout << "fTimeDelay: " << fTimeDelay << endl;
   Int_t i,j;
   for(i=0; i<kMaxNofPoles; i++) {
     fZeroM[i] = 0.;
