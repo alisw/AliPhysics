@@ -69,7 +69,8 @@ void AliL3HoughTrack::SetEta(Double_t f)
   
   fEta = f;
   Double_t theta = 2*atan(exp(-1.*fEta));
-  Double_t tgl = tan(theta);
+  Double_t dipangle = Pi/2 - theta;
+  Double_t tgl = tan(dipangle);
   SetTgl(tgl);
 }
 
@@ -90,8 +91,9 @@ void AliL3HoughTrack::UpdateToFirstRow()
       <<AliL3Log::kDec<<"Track does not cross padrow "<<GetFirstRow()<<" centerx "
       <<GetCenterX()<<" centery "<<GetCenterY()<<" Radius "<<GetRadius()<<" tgl "<<GetTgl()<<ENDLOG;
   
-  printf("Track with eta %f tgl %f crosses at x %f y %f z %f on padrow %d\n",GetEta(),GetTgl(),xyz[0],xyz[1],xyz[2],GetFirstRow());
-
+  //printf("Track with eta %f tgl %f crosses at x %f y %f z %f on padrow %d\n",GetEta(),GetTgl(),xyz[0],xyz[1],xyz[2],GetFirstRow());
+  //printf("Before: first %f %f %f tgl %f center %f %f charge %d\n",GetFirstPointX(),GetFirstPointY(),GetFirstPointZ(),GetTgl(),GetCenterX(),GetCenterY(),GetCharge());
+  
   Double_t radius = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 
   //Get the track parameters
@@ -123,7 +125,7 @@ void AliL3HoughTrack::UpdateToFirstRow()
   if ( deltat < 0.      ) deltat += 2. * pi ;
   if ( deltat > 2.*pi ) deltat -= 2. * pi ;
   Double_t z = GetZ0() + rc * GetTgl() * deltat ;
- 
+  
   
   Double_t xExtra = radius * cos(phi) ;
   Double_t yExtra = radius * sin(phi) ;
@@ -137,18 +139,19 @@ void AliL3HoughTrack::UpdateToFirstRow()
   if ( tPsi < 0.        ) tPsi += 2. * pi ;
   
   //And finally, update the track parameters
-  SetCenterX(xc);
-  SetCenterY(yc);
   SetR0(radius);
   SetPhi0(phi);
   SetZ0(z);
   SetPsi(tPsi);
   SetFirstPoint(xyz[0],xyz[1],z);
+  //printf("After: first %f %f %f tgl %f center %f %f charge %d\n",GetFirstPointX(),GetFirstPointY(),GetFirstPointZ(),GetTgl(),GetCenterX(),GetCenterY(),GetCharge());
+  
+  //printf("First point set %f %f %f\n",xyz[0],xyz[1],z);
   
   //Also, set the coordinates of the point where track crosses last padrow:
   GetCrossingPoint(GetLastRow(),xyz);
   SetLastPoint(xyz[0],xyz[1],xyz[2]);
-  printf("last point %f %f %f\n",xyz[0],xyz[1],xyz[2]);
+  //printf("last point %f %f %f\n",xyz[0],xyz[1],xyz[2]);
 }
 
 void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weight)
@@ -163,21 +166,18 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   Double_t radius = 1/fabs(kappa);
   SetRadius(radius);
   SetFirstPoint(0,0,0);
-  SetPsi(phi);
-
-  SetCharge((Int_t)copysign(1,kappa));
+  SetPsi(phi); //Psi = Phi when first point is vertex
+  SetR0(0);
   Double_t charge = -1.*kappa;
-  Double_t trackPhi0 = GetPhi0() + charge*0.5*Pi/fabs(charge);
-
-  //The first point on track is origo:
-  Double_t x0=0;
-  Double_t y0=0;
-
-  Double_t xc = x0 - GetRadius() * cos(trackPhi0) ;
-  Double_t yc = y0 - GetRadius() * sin(trackPhi0) ;
+  SetCharge((Int_t)copysign(1.,charge));
+  
+  Double_t trackPhi0 = GetPsi() + charge*0.5*Pi/fabs(charge);
+  Double_t xc = GetFirstPointX() - GetRadius() * cos(trackPhi0) ;
+  Double_t yc = GetFirstPointY() - GetRadius() * sin(trackPhi0) ;
   SetCenterX(xc);
   SetCenterY(yc);
   fIsHelix = true;
+  
 }
 
 void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t ref_row)
