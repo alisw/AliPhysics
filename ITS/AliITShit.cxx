@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/22 14:45:42  alibrary
+Introducing Riostream.h
+
 Revision 1.19  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -608,7 +611,7 @@ void AliITShit::Print(ostream *os){
     Int_t fmt;
 #endif
 #else
-#if defined __ICC
+#if defined __ICC || defined __ECC
     ios::fmtflags fmt;
 #else
     Int_t fmt;

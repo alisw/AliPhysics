@@ -5,6 +5,15 @@
 *  Internal double-precision
 *            copy vectors as floating normally
 #endif
+#if defined(CERNLIB_LXIA64)
+#if 0
+*
+* Take normal LINUX as basis for Itanium
+#endif
+#ifndef CERNLIB_LINUX
+#define CERNLIB_LINUX
+#endif
+#endif
 #if defined(CERNLIB_MSDOS)
 #include "kdos.h"
 #endif

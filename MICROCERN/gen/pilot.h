@@ -2,6 +2,14 @@
 *               define UNIX when LINUX defined
 
 
+#if defined(CERNLIB_LXIA64)
+*
+* Take normal LINUX as basis for Itanium
+#ifndef CERNLIB_LINUX
+#define CERNLIB_LINUX
+#endif
+#endif
+
 #if ((defined(CERNLIB_LINUX))||(defined (CERNLIB_SUN)))
 #ifndef CERNLIB_UNIX
 #define CERNLIB_UNIX

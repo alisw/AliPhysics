@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/10/22 14:45:41  alibrary
+Introducing Riostream.h
+
 Revision 1.16  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -202,7 +205,7 @@ void AliITSgeomSPD::Print(ostream *os) const {
     Int_t fmt;
 #endif
 #else
-#if defined __ICC
+#if defined __ICC || defined __ECC
     ios::fmtflags fmt;
 #else
     Int_t fmt;
@@ -265,6 +268,9 @@ istream &operator>>(istream &is,AliITSgeomSPD &r){
 
 /*
 $Log$
+Revision 1.17  2002/10/22 14:45:41  alibrary
+Introducing Riostream.h
+
 Revision 1.16  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -387,6 +393,9 @@ istream &operator>>(istream &is,AliITSgeomSPD300 &r){
 //=====================================================================
 /*
 $Log$
+Revision 1.17  2002/10/22 14:45:41  alibrary
+Introducing Riostream.h
+
 Revision 1.16  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -539,6 +548,9 @@ istream &operator>>(istream &is,AliITSgeomSPD425Short &r){
 
 /*
 $Log$
+Revision 1.17  2002/10/22 14:45:41  alibrary
+Introducing Riostream.h
+
 Revision 1.16  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 

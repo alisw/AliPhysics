@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/10/31 10:16:40  hristov
+Minor corrections for warnings on Alpha
+
 Revision 1.16  2002/10/22 14:45:40  alibrary
 Introducing Riostream.h
 
@@ -709,7 +712,7 @@ void AliITSgeomMatrix::Print(ostream *os){
     Int_t fmt;
 #endif
 #else
-#if defined __ICC
+#if defined __ICC || defined __ECC
     ios::fmtflags fmt;
 #else
     Int_t fmt;

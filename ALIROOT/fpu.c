@@ -1,4 +1,6 @@
 #ifdef __linux
+#ifdef __ia64
+#else
 #include <fpu_control.h>
 void __attribute__ ((constructor))
      trapfpe () {
@@ -6,6 +8,7 @@ void __attribute__ ((constructor))
 				      _FPU_MASK_OM);
   _FPU_SETCW(cw);
 }
+#endif
 #else
 void trapfpe () {}
 #endif

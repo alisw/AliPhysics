@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2002/10/14 14:55:33  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.10.6.1  2002/08/28 15:06:49  alibrary
 Updating to v3-09-01
 
@@ -82,7 +85,7 @@ int xargc=0;
   extern "C" int __mb_cur_max=0; 
 #endif 
 
-int gcbank_[4000000];
+//int gcbank_[4000000];
 
 //_____________________________________________________________________________
 int main(int argc, char **argv)
