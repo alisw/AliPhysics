@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/03/16 15:32:06  morsch
+Corrections of overlap with beam shield and dipole (A. de Falco)
+
 Revision 1.24  2001/03/14 17:22:15  pcrochet
 Geometry of the trigger chambers : a vertical gap of has been introduced around x=0 according fig.3.27 of the TDR (P.Dupieux)
 
@@ -2017,15 +2020,12 @@ void AliMUONv1::StepManager()
   Float_t        destep, step;
 
   static Float_t eloss, eloss2, xhit, yhit, zhit, tof, tlength;
-  const  Float_t kBig=1.e10;
-  //  modifs perso
+  const  Float_t kBig = 1.e10;
   static Float_t hits[15];
 
   TClonesArray &lhits = *fHits;
 
   //
-  // Set maximum step size for gas
-  // numed=gMC->GetMedium();
   //
   // Only charged tracks
   if( !(gMC->TrackCharge()) ) return; 
@@ -2035,10 +2035,10 @@ void AliMUONv1::StepManager()
   idvol=-1;
   id=gMC->CurrentVolID(copy);
   
-    for (Int_t i=1; i<=AliMUONConstants::NCh(); i++) {
+    for (Int_t i = 1; i <= AliMUONConstants::NCh(); i++) {
       if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()){ 
-	  vol[0]=i; 
-	  idvol=i-1;
+	  vol[0] = i; 
+	  idvol  = i-1;
       }
     }
     if (idvol == -1) return;
@@ -2048,8 +2048,6 @@ void AliMUONv1::StepManager()
   gMC->TrackMomentum(mom);
 
   ipart  = gMC->TrackPid();
-  //Int_t ipart1 = gMC->IdFromPDG(ipart);
-  //printf("ich, ipart %d %d \n",vol[0],ipart1);
 
   //
   // momentum loss and steplength in last step
@@ -2063,45 +2061,41 @@ void AliMUONv1::StepManager()
       Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
       Double_t rt = TMath::Sqrt(tc);
       Double_t pmom = TMath::Sqrt(tc+mom[2]*mom[2]);
-      Double_t tx=mom[0]/pmom;
-      Double_t ty=mom[1]/pmom;
-      Double_t tz=mom[2]/pmom;
-      Double_t s=((AliMUONChamber*)(*fChambers)[idvol])
+      Double_t tx = mom[0]/pmom;
+      Double_t ty = mom[1]/pmom;
+      Double_t tz = mom[2]/pmom;
+      Double_t s  = ((AliMUONChamber*)(*fChambers)[idvol])
 	  ->ResponseModel()
 	  ->Pitch()/tz;
       theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
       phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
       hits[0] = Float_t(ipart);         // Geant3 particle type
-      hits[1] = pos[0]+s*tx;                 // X-position for hit
-      hits[2] = pos[1]+s*ty;                 // Y-position for hit
-      hits[3] = pos[2]+s*tz;                 // Z-position for hit
+      hits[1] = pos[0]+s*tx;            // X-position for hit
+      hits[2] = pos[1]+s*ty;            // Y-position for hit
+      hits[3] = pos[2]+s*tz;            // Z-position for hit
       hits[4] = theta;                  // theta angle of incidence
       hits[5] = phi;                    // phi angle of incidence 
-      hits[8] = (Float_t) fNPadHits;   // first padhit
+      hits[8] = (Float_t) fNPadHits;    // first padhit
       hits[9] = -1;                     // last pad hit
-
-      // modifs perso
-      hits[10] = mom[3]; // hit momentum P
-      hits[11] = mom[0]; // Px/P
-      hits[12] = mom[1]; // Py/P
-      hits[13] = mom[2]; // Pz/P
-      // fin modifs perso
+      hits[10] = mom[3];                // hit momentum P
+      hits[11] = mom[0];                // Px
+      hits[12] = mom[1];                // Py
+      hits[13] = mom[2];                // Pz
       tof=gMC->TrackTime();
-      hits[14] = tof;    // Time of flight
-      // phi angle of incidence
-      tlength = 0;
-      eloss   = 0;
-      eloss2  = 0;
-      xhit    = pos[0];
-      yhit    = pos[1];      
-      zhit    = pos[2];      
+      hits[14] = tof;                   // Time of flight
+      tlength  = 0;
+      eloss    = 0;
+      eloss2   = 0;
+      xhit     = pos[0];
+      yhit     = pos[1];      
+      zhit     = pos[2];      
       Chamber(idvol).ChargeCorrelationInit();
       // Only if not trigger chamber
 
       
       
 
-      if(idvol<AliMUONConstants::NTrackingCh()) {
+      if(idvol < AliMUONConstants::NTrackingCh()) {
 	  //
 	  //  Initialize hit position (cursor) in the segmentation model 
 	  ((AliMUONChamber*) (*fChambers)[idvol])
@@ -2127,33 +2121,34 @@ void AliMUONv1::StepManager()
       Float_t globalPos[3] = {pos[0], pos[1], pos[2]};
       gMC->Gmtod(globalPos,localPos,1); 
 
-      if(idvol<AliMUONConstants::NTrackingCh()) {
+      if(idvol < AliMUONConstants::NTrackingCh()) {
 // tracking chambers
 	  x0 = 0.5*(xhit+pos[0]);
 	  y0 = 0.5*(yhit+pos[1]);
 	  z0 = 0.5*(zhit+pos[2]);
-	  //	  z0 = localPos[2];
       } else {
 // trigger chambers
-	  x0=xhit;
-	  y0=yhit;
-//	  z0=yhit;
-	  z0=0.;
+	  x0 = xhit;
+	  y0 = yhit;
+	  z0 = 0.;
       }
       
 
       if (eloss >0)  MakePadHits(x0,y0,z0,eloss,tof,idvol);
       
 	  
-      hits[6]=tlength;
-      hits[7]=eloss2;
+      hits[6] = tlength;   // track length
+      hits[7] = eloss2;    // de/dx energy loss
+
       if (fNPadHits > (Int_t)hits[8]) {
-	  hits[8]= hits[8]+1;
-	  hits[9]= (Float_t) fNPadHits;
+	  hits[8] = hits[8]+1;
+	  hits[9] = (Float_t) fNPadHits;
       }
-    
+//
+//    new hit 
+      
       new(lhits[fNhits++]) 
-	  AliMUONHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+	  AliMUONHit(fIshunt, gAlice->CurrentTrack(), vol,hits);
       eloss = 0; 
       //
       // Check additional signal generation conditions 

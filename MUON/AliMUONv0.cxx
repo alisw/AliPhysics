@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/01/27 08:50:50  morsch
+Call non default constructors of segmentation classes.
+
 Revision 1.15  2001/01/17 20:57:45  hristov
 Unused variable removed
 
@@ -692,15 +695,11 @@ void AliMUONv0::StepManager()
       hits[5] = phi;                        // phi angle of incidence 
       hits[8] = -1;                         // first padhit
       hits[9] = -1;                         // last pad hit
-
-      // modifs personel
-      hits[10] = mom[3]; // hit Energy
-      hits[11] = mom[0]; // Px
-      hits[12] = mom[1]; // Py
-      hits[13] = mom[2]; // Pz
-      hits[14] = gMC->TrackTime();
-      
-      // fin modifs perso
+      hits[10] = mom[3];                    // hit Energy
+      hits[11] = mom[0];                    // Px
+      hits[12] = mom[1];                    // Py
+      hits[13] = mom[2];                    // Pz
+      hits[14] = gMC->TrackTime();          // time of flight
       new(lhits[fNhits++]) 
 	  AliMUONHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 

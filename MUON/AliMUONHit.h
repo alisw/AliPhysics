@@ -24,9 +24,9 @@ class AliMUONHit : public AliHit {
     Int_t   PHfirst()  {return fPHfirst;}
     Int_t   PHlast()   {return fPHlast;}
     Float_t Momentum() {return fPTot;}
-    Float_t Cx()       {return fCxHit;}
-    Float_t Cy()       {return fCyHit;}
-    Float_t Cz()       {return fCzHit;}
+    Float_t Px()       {return fPx;}
+    Float_t Py()       {return fPy;}
+    Float_t Pz()       {return fPz;}
  private:
     Int_t     fChamber;       // Chamber number
     Float_t   fParticle;      // Geant3 particle type
@@ -39,9 +39,9 @@ class AliMUONHit : public AliHit {
     Int_t     fPHlast;        // last padhit
 
     Float_t   fPTot;          // hit local momentum P
-    Float_t   fCxHit;         // Px/P
-    Float_t   fCyHit;         // Py/P
-    Float_t   fCzHit;         // Pz/P
+    Float_t   fPx;            // Px
+    Float_t   fPy;            // Py
+    Float_t   fPz;            // Pz
     
     ClassDef(AliMUONHit,1)    //Hit object for MUON
 };
