@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/01/30 09:23:15  hristov
+Streamers removed (R.Brun)
+
 Revision 1.6  2000/09/07 11:23:27  kowal2
 Improved algoritms, coding convensions applied.
 
@@ -131,6 +134,7 @@ ClassImp(AliTPCPRF2D)
 AliTPCPRF2D::AliTPCPRF2D()
 {
   //default constructor for response function object
+  fcharge = 0;
   fNChargeArray = 0;
   fChargeArray = 0;
   fNPRF =fgkNPRF ;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/01/26 19:57:22  hristov
+Major upgrade of AliRoot code
+
 Revision 1.4  2000/10/05 16:08:15  kowal2
 Changes due to a new class AliComplexCluster. Forward declarations.
 
@@ -102,6 +105,7 @@ ClassImp(AliTPCClusterFinder)
 AliTPCClusterFinder::AliTPCClusterFinder()
 {
   fDigits =0;
+  fCells = 0;
   fDimX = 0;
   fDimY = 0;
   fNoiseTh = 3;
@@ -118,6 +122,7 @@ AliTPCClusterFinder::AliTPCClusterFinder()
 
 
   fDetectorParam = 0;
+  fDetectorIndex = 0;
   ResetStatus(); 
   fBFit = kFALSE;
   fMinuit= new TMinuit(5);
