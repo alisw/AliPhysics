@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.10  2000/12/21 22:12:41  morsch
 Clean-up of coding rule violations,
 
@@ -332,7 +335,7 @@ void AliMUONSegmentationTriggerX::Draw(const char* opt) const
 // Draw method for event display  
   if (!strcmp(opt,"eventdisplay")) { 
     TNode *node, *nodeS;
-    char nameChamber[10], nameNode[10];
+    char nameChamber[10], nameNode[11];
     char nameSense1[10], nameSense2[10], nameSense3[10], nameSense4[10];
     
     TNode* top=gAlice->GetGeometry()->GetNode("alice"); 
