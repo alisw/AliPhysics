@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2001/10/05 12:02:01  vicinanz
+Minor improvements on Merger and SDigitizer
+
 Revision 1.27  2001/10/02 13:03:13  vicinanz
 Minor improvements on the code
 
@@ -262,7 +265,7 @@ void AliTOF::CreateTOFFolders()
   fReTask = new TTask(GetName(), tempo);
   aliceRe->Add(fReTask) ;
 
-  delete tempo ;
+  delete [] tempo ;
  
   // creates the TOF geometry  folder
   geomF->AddFolder("TOF", "Geometry for TOF") ;
