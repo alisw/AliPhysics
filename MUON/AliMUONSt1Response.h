@@ -14,10 +14,15 @@
 // Individual pedestals or noise levels can be controlled separately. 
 // The current pulse height responses do not contain any physics
 
+#include <map>
+#ifndef __HP_aCC
+  using std::map;
+#endif
+
 #include <TString.h>
 #include <TList.h>
+
 #include "AliMUONResponseV0.h"
-#include "AliMUONSt1Types.h"
 #include "AliMUONSt1ElectronicElement.h"
 
 class AliMpPlane;
@@ -48,6 +53,10 @@ public:
 
 
 private:
+    // typedefs
+    typedef map<string, AliMUONSt1ResponseParameter*> ParamsMap;
+    typedef map<string, TList*>  ListMap;
+
     // operators
     AliMUONSt1Response& operator=(const AliMUONSt1Response & rhs);
 
@@ -106,9 +115,9 @@ private:
 
     Int_t fChamber;                // The chamber number
 
-    TParamsMap fParams;  //! internal parameter list
-    TListMap   fRegions; //! internal list of regions
-    TList      fTrashList; //!internal trash list 
+    ParamsMap  fParams;    //! internal parameter list
+    ListMap    fRegions;   //! internal list of regions
+    TList      fTrashList; //! internal trash list 
 
   ClassDef(AliMUONSt1Response,1) // Overall detector response
 };

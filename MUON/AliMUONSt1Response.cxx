@@ -23,8 +23,6 @@
 // Individual pedestals or noise levels can be controlled separately. 
 // The current pulse height responses do not contain any physics
 
-#include <vector>
-
 #include <TMath.h>
 #include <TRandom.h>
 #include <TSystem.h>
@@ -162,23 +160,26 @@ void AliMUONSt1Response::SetIniFileName(Int_t plane,const TString& fileName)
 
 
 //__________________________________________________________________________
-void AliMUONSt1Response::ReadCouplesOfIntRanges(const string& value,TList* list,AliMUONSt1ElectronicElement::TDescription descr) 
+void AliMUONSt1Response::ReadCouplesOfIntRanges(const string& value,
+                             TList* list,
+			     AliMUONSt1ElectronicElement::TDescription descr) 
 {
 // Decode couplets of integer ranges (enclosed within parenthesis and 
 // separated by a comma, eg. (12/20,33/60) for ranges 12 to 20 and 33 to 60) 
 // and save these ranges in <list> 
-  vector<string> lstCpl = decoder::SplitNtuples(value);
-  for (unsigned int n=0;n<lstCpl.size();n++){ // for each (..,..) couplet
-    vector<string> lst = decoder::SplitList(lstCpl[n],","); 
+
+  StringVector lstCpl = decoder::SplitNtuples(value);
+  for (UInt_t n=0;n<lstCpl.size();n++){ // for each (..,..) couplet
+    StringVector lst = decoder::SplitList(lstCpl[n],","); 
                                               // should have 2 elements
     if (lst.size() != 2) {
       Warning("ReadIniFile","Bad pad definition");
       continue;
     }
-    vector<pair <int,int> > lst1 = decoder::DecodeListOfIntRanges(lst[0],";");
-    vector<pair <int,int> > lst2 = decoder::DecodeListOfIntRanges(lst[1],";");
-    for (unsigned int u1=0;u1<lst1.size();u1++){
-      for (unsigned int u2=0;u2<lst2.size();u2++){
+    IntPairVector lst1 = decoder::DecodeListOfIntRanges(lst[0],";");
+    IntPairVector lst2 = decoder::DecodeListOfIntRanges(lst[1],";");
+    for (UInt_t u1=0;u1<lst1.size();u1++){
+      for (UInt_t u2=0;u2<lst2.size();u2++){
 	AliMUONSt1ElectronicElement* elem 
       	  = new AliMUONSt1ElectronicElement(descr);
 	fTrashList.Add(elem);
@@ -192,23 +193,25 @@ void AliMUONSt1Response::ReadCouplesOfIntRanges(const string& value,TList* list,
 
 
 //__________________________________________________________________________
-void AliMUONSt1Response::ReadCouplesOfFloatRanges(const string& value,TList* list)
+void AliMUONSt1Response::ReadCouplesOfFloatRanges(const string& value,
+                                                  TList* list)
 {
 // Decode couplets of floating point ranges (enclosed within parenthesis and 
 // separated by a comma, eg. (12./20.,33./60.) for ranges 12. to 20. and 33. to 60.) 
 // and save these ranges in <list> 
-  vector<string> lstCpl = decoder::SplitNtuples(value);
-  for (unsigned int n=0;n<lstCpl.size();n++){ // for each (..,..) couplets
-    vector<string> lst = decoder::SplitList(lstCpl[n],","); 
+
+  StringVector lstCpl = decoder::SplitNtuples(value);
+  for (UInt_t n=0;n<lstCpl.size();n++){ // for each (..,..) couplets
+    StringVector lst = decoder::SplitList(lstCpl[n],","); 
                                               // should have 2 elements
     if (lst.size() != 2) {
       Warning("ReadIniFile","Bad pad definition");
       continue;
     }
-    vector<pair <double,double> > lst1 = decoder::DecodeListOfFloatRanges(lst[0],";");
-    vector<pair <double,double> > lst2 = decoder::DecodeListOfFloatRanges(lst[1],";");
-    for (unsigned int u1=0;u1<lst1.size();u1++){
-      for (unsigned int u2=0;u2<lst2.size();u2++){
+    DoublePairVector lst1 = decoder::DecodeListOfFloatRanges(lst[0],";");
+    DoublePairVector lst2 = decoder::DecodeListOfFloatRanges(lst[1],";");
+    for (UInt_t u1=0;u1<lst1.size();u1++){
+      for (UInt_t u2=0;u2<lst2.size();u2++){
 	AliMUONSt1ElectronicElement* elem 
       	  = new AliMUONSt1ElectronicElement(AliMUONSt1ElectronicElement::kXY);
 	fTrashList.Add(elem);
@@ -222,15 +225,17 @@ void AliMUONSt1Response::ReadCouplesOfFloatRanges(const string& value,TList* lis
 
 
 //__________________________________________________________________________
-void AliMUONSt1Response::SetPairToParam(const string& name,const string& value,AliMUONSt1ResponseParameter* param) const
+void AliMUONSt1Response::SetPairToParam(const string& name, const string& value,
+                                        AliMUONSt1ResponseParameter* param) const
 {
 // set a (name,value) pair to <param>
+
   TString path = fgkTopDir + fgkDataDir ;
   const char* nm = name.c_str();
   if (fgkStateName.CompareTo(nm,TString::kIgnoreCase)==0){
     param->SetState(atoi(value.c_str()));
   } else if (fgkPedestalName.CompareTo(nm,TString::kIgnoreCase)==0){
-    vector<string> lst = decoder::SplitList(value," ");
+    StringVector lst = decoder::SplitList(value," ");
     if ((lst.size()>0) && (fgkNotName.CompareTo(lst[0].c_str(),TString::kIgnoreCase)==0)){
       param->UnSetPedestal();
     } else if ((lst.size()>1) && (fgkValueName.CompareTo(lst[0].c_str(),TString::kIgnoreCase)==0)){
@@ -241,7 +246,7 @@ void AliMUONSt1Response::SetPairToParam(const string& name,const string& value,A
       param->SetPedestal(atof(lst[1].c_str()),atof(lst[2].c_str()));
     }
   } else if (fgkNoiseName.CompareTo(nm,TString::kIgnoreCase)==0){
-    vector<string> lst = decoder::SplitList(value," ");
+    StringVector lst = decoder::SplitList(value," ");
     if ((lst.size()>1) && (fgkValueName.CompareTo(lst[0].c_str(),TString::kIgnoreCase)==0)){
       param->SetNoise(atof(lst[1].c_str()));
     } else if ((lst.size()>1) && (fgkFileName.CompareTo(lst[0].c_str(),TString::kIgnoreCase)==0)){
@@ -252,16 +257,16 @@ void AliMUONSt1Response::SetPairToParam(const string& name,const string& value,A
   } else if (fgkNofSigmaName.CompareTo(nm,TString::kIgnoreCase)==0){
     param->SetNofSigma(atoi(value.c_str()));
   } else if (fgkStickyOnName.CompareTo(nm,TString::kIgnoreCase)==0){
-    vector< pair<int,int> > lst = decoder::DecodeListOfIntRanges(value);
-    for (unsigned int i=0;i<lst.size();i++){
-      for (int j=lst[i].first;(j<12) && (j<=lst[i].second);j++){
+    IntPairVector lst = decoder::DecodeListOfIntRanges(value);
+    for (UInt_t i=0;i<lst.size();i++){
+      for (Int_t j=lst[i].first;(j<12) && (j<=lst[i].second);j++){
 	param->SetStickyBitOn(j);
       }
     }
   } else if (fgkStickyOffName.CompareTo(nm,TString::kIgnoreCase)==0){
-    vector< pair<int,int> > lst = decoder::DecodeListOfIntRanges(value);
-    for (unsigned int i=0;i<lst.size();i++){
-      for (int j=lst[i].first;(j<12) && (j<=lst[i].second);j++){
+    IntPairVector lst = decoder::DecodeListOfIntRanges(value);
+    for (UInt_t i=0;i<lst.size();i++){
+      for (Int_t j=lst[i].first;(j<12) && (j<=lst[i].second);j++){
 	param->SetStickyBitOff(j);
       }
     }
@@ -270,9 +275,11 @@ void AliMUONSt1Response::SetPairToParam(const string& name,const string& value,A
 
 
 //__________________________________________________________________________
-void AliMUONSt1Response::SetPairToListElem(const string& name,const string& value,TList* list)
+void AliMUONSt1Response::SetPairToListElem(const string& name, 
+                                const string& value, TList* list)
 {
 // set a (name,value) pair to <list>
+
   const char* nm = name.c_str();
   if (fgkIJName.CompareTo(nm,TString::kIgnoreCase)==0){
     ReadCouplesOfIntRanges(value,list,AliMUONSt1ElectronicElement::kIJ);
@@ -281,8 +288,8 @@ void AliMUONSt1Response::SetPairToListElem(const string& name,const string& valu
   } else if (fgkMGName.CompareTo(nm,TString::kIgnoreCase)==0){
     ReadCouplesOfIntRanges(value,list,AliMUONSt1ElectronicElement::kMG);
   } else if (fgkMName.CompareTo(nm,TString::kIgnoreCase)==0){
-    vector< pair<int,int> > lst = decoder::DecodeListOfIntRanges(value);
-    for (unsigned int i=0;i<lst.size();i++){
+    IntPairVector lst = decoder::DecodeListOfIntRanges(value);
+    for (UInt_t i=0;i<lst.size();i++){
       AliMUONSt1ElectronicElement* elem 
         = new AliMUONSt1ElectronicElement(AliMUONSt1ElectronicElement::kM);
       fTrashList.Add(elem);
@@ -299,6 +306,7 @@ void AliMUONSt1Response::SetPairToListElem(const string& name,const string& valu
 void AliMUONSt1Response::ReadIniFile(Int_t plane)
 {
   //Read the ini file and fill the <plane>th structures 
+
   TString path = fgkTopDir + fgkDataDir ;
   //read .ini file
   if (gSystem->AccessPathName(path+fIniFileName[plane],kReadPermission)){
@@ -314,14 +322,15 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane)
 
 //__________________________________________________________________________
 void AliMUONSt1Response::ReadIniFile(Int_t plane,const TString& fileName,
-                                    Bool_t rdParam,Bool_t rdRegion,Bool_t rdRule)
+                                     Bool_t rdParam,Bool_t rdRegion,Bool_t rdRule)
 {
   //Read the given ini file and fill the <plane>th structures 
+
   cout<<"Reading parameter file "<<fileName<<endl;
   AliMUONSt1IniReader iniFile(fileName.Data());
-  AliMUONSt1IniReader::TChapter chap;
-  AliMUONSt1IniReader::TValueList vals;
-  AliMUONSt1IniReader::TValueList::iterator itValue;
+  AliMUONSt1IniReader::Chapter chap;
+  AliMUONSt1IniReader::ValueList vals;
+  AliMUONSt1IniReader::ValueList::iterator itValue;
   while (!iniFile.Eof()){
     chap = iniFile.MakeCurrentChapter();
     TString chapName = chap.first.c_str();
@@ -331,13 +340,13 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane,const TString& fileName,
         string name =  (*itValue).first;
         string value = (*itValue).second;
         if (fgkIncludeName.CompareTo(name.c_str(),TString::kIgnoreCase)==0){
-          vector<string> lst = decoder::SplitList(value,":");
+          StringVector lst = decoder::SplitList(value,":");
           if (lst.size()>0){
             TString inFileName = TString(gSystem->DirName(fileName))+"/" + lst[0].c_str();
             Bool_t inParam=kFALSE,inRegion=kFALSE,inRule=kFALSE;
             if (lst.size()>1) {
-              vector<string> lst2 = decoder::SplitList(lst[1],",");
-              for (unsigned int k=0;k<lst2.size();k++){
+              StringVector lst2 = decoder::SplitList(lst[1],",");
+              for (UInt_t k=0;k<lst2.size();k++){
                 if (fgkParameterName.CompareTo(lst2[k].c_str(),TString::kIgnoreCase)==0){
                   inParam=kTRUE;
                 } else if (fgkRegionName.CompareTo(lst2[k].c_str(),TString::kIgnoreCase)==0){
@@ -392,14 +401,14 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane,const TString& fileName,
         string name =  (*itValue).first;
         string value = (*itValue).second;
         if (fgkZoneName.CompareTo(name.c_str(),TString::kIgnoreCase)==0){
-          vector< pair<int,int> > lst = decoder::DecodeListOfIntRanges(value);
-          for (unsigned int i=0;i<lst.size();i++){
-            for (int j=lst[i].first;(j<=fgkNofZones) && (j<=lst[i].second);j++) {
+          IntPairVector lst = decoder::DecodeListOfIntRanges(value);
+          for (UInt_t i=0;i<lst.size();i++){
+            for (Int_t j=lst[i].first;(j<=fgkNofZones) && (j<=lst[i].second);j++) {
               if (j>0) zones[j-1] = kTRUE;
             }
           }
         } else if (fgkRegionName.CompareTo(name.c_str(),TString::kIgnoreCase)==0){
-          TListMap::iterator it = fRegions.find(value);
+          ListMap::iterator it = fRegions.find(value);
           if (it != fRegions.end()){
             if (!rule) {
 	      rule = new AliMUONSt1ResponseRule();
@@ -417,7 +426,7 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane,const TString& fileName,
         string name =  (*itValue).first;
         string value = (*itValue).second;
         if (fgkParameterName.CompareTo(name.c_str(),TString::kIgnoreCase)==0){
-          TParamsMap::iterator it = fParams.find(value);
+          ParamsMap::iterator it = fParams.find(value);
           if (it != fParams.end()){
             AliMUONSt1ResponseParameter* param = (*it).second;
             for (i=0;i<fgkNofZones;i++) if (zones[i]) {
@@ -430,7 +439,7 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane,const TString& fileName,
       if (rule) fRulesList[plane].AddFirst(rule);
     }
   }
-  for (TListMap::iterator it = fRegions.begin() ; it != fRegions.end(); ++it) delete (*it).second;
+  for (ListMap::iterator it = fRegions.begin() ; it != fRegions.end(); ++it) delete (*it).second;
 }
 
 
@@ -439,6 +448,7 @@ void AliMUONSt1Response::ReadFiles()
 {
 // Define the current response rules with respect to the description
 // given in the "configChamber1.ini" and "configChamber2.ini" files.
+
   Int_t i;
   TString path = fgkTopDir + fgkDataDir ;
 
@@ -473,6 +483,7 @@ void AliMUONSt1Response::ReadFiles()
 Float_t AliMUONSt1Response::IntPH(Float_t eloss)
 {
   // Calculate charge from given ionization energy lost.
+
   Int_t nel;
   nel= Int_t(eloss*1.e9/20); 
   Float_t charge=0;
@@ -487,9 +498,10 @@ Float_t AliMUONSt1Response::IntPH(Float_t eloss)
 
 
 //__________________________________________________________________________
-AliMpZone* AliMUONSt1Response::FindZone(AliMpSector* sector,Int_t posId) const
+AliMpZone* AliMUONSt1Response::FindZone(AliMpSector* sector, Int_t posId) const
 {
 // to be moved to AliMpSector::
+
   for (Int_t izone=1;izone<=sector->GetNofZones();izone++){
     AliMpZone* zone = sector->GetZone(izone);
     for (Int_t isub=0;isub<zone->GetNofSubZones();isub++){
@@ -504,8 +516,7 @@ AliMpZone* AliMUONSt1Response::FindZone(AliMpSector* sector,Int_t posId) const
 
 
 //__________________________________________________________________________
-
-Int_t  AliMUONSt1Response::DigitResponse(Int_t digit,AliMUONTransientDigit* where)
+Int_t  AliMUONSt1Response::DigitResponse(Int_t digit, AliMUONTransientDigit* where)
 {
   // returns the electronic response of pad located at <where>, when
   // a charge <digit> is present
@@ -589,6 +600,7 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit,AliMUONTransientDigit* wher
 void AliMUONSt1Response::PrintStatistics() const
 {
 // Show the results of the statistics
+
   cout<<"The DigitResponse() method was called "<<fCountNofCalls<<" times"<<endl;
   cout<<" it was unable to find the pad corresponding to the given indices "
       <<fCountUnknownIndices<<" times ("
