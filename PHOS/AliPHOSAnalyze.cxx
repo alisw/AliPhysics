@@ -148,7 +148,8 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
       AliPHOSDigit * digit ;
       AliPHOSEmcRecPoint * emc ;
       AliPHOSPpsdRecPoint * ppsd ;
-      AliPHOSTrackSegment * tracksegment ;
+      //      AliPHOSTrackSegment * tracksegment ;
+      AliPHOSRecParticle * recparticle;
       for ( ievent=0; ievent<Nevents; ievent++)
 	{  
           if (ievent==0)  cout << "AnalyzeManyEvents > " << "Starting Analyzing " << endl ; 
@@ -216,43 +217,43 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		}
 	    }
 	  //========== TRackSegments in the event
-	  TIter nextTrackSegment(fPHOS->TrackSegments() ) ; 
-	  while((tracksegment = (AliPHOSTrackSegment *)nextTrackSegment())) 
+	  TIter nextRecParticle(fPHOS->RecParticles() ) ; 
+	  while((recparticle = (AliPHOSRecParticle *)nextRecParticle())) 
 	    {
-	      if ( tracksegment->GetPHOSMod() == module )
+	      if ( recparticle->GetPHOSTrackSegment()->GetPHOSMod() == module )
 		{ 
-		  AliPHOSRecParticle recpart(tracksegment) ; 
-		  switch(recpart.GetType())
+		  cout << "Particle type is " << recparticle->GetType() << endl ;  
+		  switch(recparticle->GetType())
 		    {
 		    case kGAMMA:
-		      fhPhotonEnergy->Fill(recpart.Energy() ) ; 
+		      fhPhotonEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhPhotonPositionX->Fill(recpart. ) ;
 		      //fhPhotonPositionY->Fill(recpart. ) ;                 
-		      //cout << "PHOTON" << endl;
+		      cout << "PHOTON" << endl;
 		      break;
 		    case kELECTRON:
-		      fhElectronEnergy->Fill(recpart.Energy() ) ; 
+		      fhElectronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhElectronPositionX->Fill(recpart. ) ;
 		      //fhElectronPositionY->Fill(recpart. ) ; 
-		      //cout << "ELECTRON" << endl;
+		      cout << "ELECTRON" << endl;
 		      break;
 		    case kNEUTRALHADRON:
-		      fhNeutralHadronEnergy->Fill(recpart.Energy() ) ; 
+		      fhNeutralHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralHadronPositionX->Fill(recpart. ) ;
 		      //fhNeutralHadronPositionY->Fill(recpart. ) ; 
-		      //cout << "NEUTRAl HADRON" << endl;
+		      cout << "NEUTRAl HADRON" << endl;
 		      break ;
 		    case kNEUTRALEM:
-		      fhNeutralEMEnergy->Fill(recpart.Energy() ) ; 
+		      fhNeutralEMEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralEMPositionX->Fill(recpart. ) ;
 		      //fhNeutralEMPositionY->Fill(recpart. ) ; 
 		      //cout << "NEUTRAL EM" << endl;
 		      break ;
 		    case kCHARGEDHADRON :
-		      fhChargedHadronEnergy->Fill(recpart.Energy() ) ; 
+		      fhChargedHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhChargedHadronPositionX->Fill(recpart. ) ;
 		      //fhChargedHadronPositionY->Fill(recpart. ) ; 
-		      //cout << "CHARGED HADRON" << endl;
+		      cout << "CHARGED HADRON" << endl;
 		      break ;
 		      
 		    }
