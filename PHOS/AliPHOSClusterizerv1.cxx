@@ -149,7 +149,7 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
     Init() ;
 
   if(strstr(option,"tim"))
-    gBenchmark->Start("PHOSClusterizerv1"); 
+    gBenchmark->Start("PHOSClusterizer"); 
   
   if(strstr(option,"print"))
     Print("") ; 
@@ -604,8 +604,8 @@ void AliPHOSClusterizerv1::MakeClusters()
 
   TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  emcRecPoints->Clear() ;
-  cpvRecPoints->Clear() ;
+  emcRecPoints->Delete() ;
+  cpvRecPoints->Delete() ;
   
   TClonesArray * digits = gime->Digits() ; 
   TClonesArray * digitsC =  (TClonesArray*)digits->Clone() ;
