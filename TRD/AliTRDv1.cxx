@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  1999/11/02 17:20:19  fca
+initialise nbytes before using it
+
 Revision 1.14  1999/11/02 17:15:54  fca
 Correct ansi scoping not accepted by HP compilers
 
@@ -873,7 +876,7 @@ void AliTRDv1::StepManager()
       hits[3] = qTot;
 
       // The sector number
-      Float_t phi = pos[1] != 0 ? TMath::Atan2(pos[0],pos[1]) : (pos[0] > 0 ? 180. : 0.);
+      Float_t phi = pos[1] != 0 ? kRaddeg*TMath::ATan2(pos[0],pos[1]) : (pos[0] > 0 ? 180. : 0.);
       vol[0] = ((Int_t) (phi / 20)) + 1;
 
       // The chamber number 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/11/02 16:35:56  fca
+New version of TRD introduced
+
 Revision 1.11  1999/11/01 20:41:51  fca
 Added protections against using the wrong version of FRAME
 
@@ -346,7 +349,7 @@ void AliTRDv0::StepManager()
       hits[3] = 0;
 
       // The sector number
-      Float_t phi = hits[1] != 0 ? TMath::Atan2(hits[0],hits[1]) : (hits[0] > 0 ? 180. : 0.);
+      Float_t phi = hits[1] != 0 ? kRaddeg*TMath::ATan2(hits[0],hits[1]) : (hits[0] > 0 ? 180. : 0.);
       vol[0] = ((Int_t) (phi / 20)) + 1;
 
       // The chamber number 
