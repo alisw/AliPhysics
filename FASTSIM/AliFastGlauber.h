@@ -29,6 +29,8 @@ class AliFastGlauber : public TObject {
     static Double_t WSz            (Double_t *xx, Double_t *par);
     static Double_t WSta           (Double_t *xx, Double_t *par);
     static Double_t WStarfi        (Double_t *xx, Double_t *par);
+    static Double_t WKParticipants (Double_t *xx, Double_t *par);
+    static Double_t WParticipants  (Double_t *xx, Double_t *par);    
     static Double_t WStaa          (Double_t *xx, Double_t *par);
     static Double_t WSgeo          (Double_t *xx, Double_t *par);
     static Double_t WSbinary       (Double_t *xx, Double_t *par);
@@ -43,6 +45,7 @@ class AliFastGlauber : public TObject {
     void DrawWSb();
     void DrawThickness();
     void DrawOverlap();
+    void DrawParticipants();
     void DrawGeo();
     void DrawBinary();
     void DrawN();    
@@ -62,8 +65,7 @@ class AliFastGlauber : public TObject {
     void GetRandom(Float_t& b, Float_t& p, Float_t& mult);
     void GetRandom(Int_t& bin, Bool_t& hard);
     Float_t GetRandomImpactParameter(Float_t bmin, Float_t bmax);
-
-
+    Float_t GetNumberOfParticipants(Float_t b);
     void SetLengthDefinition(Int_t def=1) { fEllDef=def; }
     void SetCentralityClass(Double_t xsecFrLow=0.0,Double_t xsecFrUp=0.1);    
     void StoreAlmonds();
@@ -89,6 +91,8 @@ class AliFastGlauber : public TObject {
     static TF1*    fgWSz;            // Wood-Saxon Function (b = b0, z)
     static TF1*    fgWSta;           // Thickness Function
     static TF2*    fgWStarfi;        // Kernel for Overlap Function
+    static TF2*    fgWKParticipants; // Kernel for number of participants
+    static TF1*    fgWParticipants;  // Number of participants
     static TF1*    fgWStaa;          // Overlap Function
     static TF2*    fgWAlmond;        // Interaction Almond
     static TF1*    fgWPathLength0;   // Path Length as a function of phi

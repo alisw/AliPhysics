@@ -54,6 +54,8 @@ TF1*    AliFastGlauber::fgWPathLength0   = NULL;
 TF1*    AliFastGlauber::fgWPathLength    = NULL;
 TF1*    AliFastGlauber::fgWEnergyDensity = NULL;   
 TF1*    AliFastGlauber::fgWIntRadius     = NULL;   
+TF2*    AliFastGlauber::fgWKParticipants = NULL; 
+TF1*    AliFastGlauber::fgWParticipants  = NULL; 
 Float_t AliFastGlauber::fgBMax           = 0.;
 
 AliFastGlauber::AliFastGlauber()
@@ -108,7 +110,14 @@ void AliFastGlauber::Init(Int_t mode)
     fgWStarfi = new TF2("WStarfi", WStarfi, 0., fgBMax, 0., TMath::Pi(), 1);
     fgWStarfi->SetParameter(0, 0.);     
     fgWStarfi->SetNpx(200);     
-    fgWStarfi->SetNpy(20);     
+    fgWStarfi->SetNpy(20);    
+//
+//  Participants Kernel
+//
+    fgWKParticipants = new TF2("WKParticipants", WKParticipants, 0., fgBMax, 0., TMath::Pi(), 1);
+    fgWKParticipants->SetParameter(0, 0.);     
+    fgWKParticipants->SetNpx(200);     
+    fgWKParticipants->SetNpy(20);      
 //
 //  Almond shaped interaction region
 //
@@ -153,10 +162,18 @@ void AliFastGlauber::Init(Int_t mode)
     if (! mode) {
 	fgWStaa = new TF1("WStaa", WStaa, 0., fgBMax, 0);
 	fgWStaa->SetNpx(100);
+	fgWParticipants = new TF1("WParticipants", WParticipants, 0., fgBMax, 0);
+	fgWParticipants->SetNpx(100);
+
     } else {
 	TFile* f = new TFile("$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root");
 	fgWStaa = (TF1*) f->Get("WStaa");
+	fgWParticipants = (TF1*) f->Get("WParticipants");
     }
+    
+//
+//  Participants
+//
     
 //
     fgWEnergyDensity = new TF1("WEnergyDensity", WEnergyDensity, 0., 2. * fWSr0, 1);
@@ -198,6 +215,16 @@ void AliFastGlauber::DrawOverlap()
     TCanvas *c2 = new TCanvas("c2","Overlap",400,10,600,700);
     c2->cd();
     fgWStaa->Draw();
+}
+
+void AliFastGlauber::DrawParticipants()
+{
+//
+//  Draw Number of Participants
+//
+    TCanvas *c2 = new TCanvas("c2","Participants",400,10,600,700);
+    c2->cd();
+    fgWParticipants->Draw();
 }
 
 void AliFastGlauber::DrawThickness()
@@ -395,6 +422,30 @@ Double_t AliFastGlauber::WStarfi(Double_t* x, Double_t* par)
     return y;
 }
 
+Double_t AliFastGlauber::WKParticipants(Double_t* x, Double_t* par)
+{
+//
+//  Kernel for number of participants
+//
+    Double_t b    = par[0];
+    Double_t r1   = x[0];
+    Double_t phi  = x[1];
+    Double_t r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
+    Double_t xsi  = fgWSta->Eval(r2) * 5.6;
+    Double_t a = 208;
+    Double_t sum = a * xsi;
+    Double_t y   = sum;
+    for (Int_t i = 1; i <= 208; i++)
+    {
+	a--;
+	sum *= (-xsi) * a / Float_t(i+1);
+	y  += sum;
+    }
+    
+    y    = r1 * fgWSta->Eval(r1) * y;
+    return y;
+}
+
 
 Double_t AliFastGlauber::WAlmond(Double_t* x, Double_t* par)
 {
@@ -588,6 +639,28 @@ Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* /*par*/)
     return y;
 }
 
+Double_t AliFastGlauber::WParticipants(Double_t* x, Double_t* /*par*/)
+{
+//
+//  Overlap function
+//
+    Double_t b    = x[0];
+    fgWKParticipants->SetParameter(0, b);
+//
+//  MC Integration
+//
+    Double_t y = 0;
+    for (Int_t i = 0; i < 100000; i++)
+    {
+	Double_t phi = TMath::Pi() * gRandom->Rndm();
+	Double_t b1  = fgBMax      * gRandom->Rndm();	
+	y += fgWKParticipants->Eval(b1, phi);
+    }
+    y *= 4. *  208. * TMath::Pi() * fgBMax / 100000.;
+    return y;
+}
+
+
 Double_t AliFastGlauber::WSgeo(Double_t* x, Double_t* /*par*/)
 {
 //
@@ -728,6 +801,7 @@ void AliFastGlauber::GetRandom(Int_t& bin, Bool_t& hard)
 }
 
 
+
 Float_t  AliFastGlauber::GetRandomImpactParameter(Float_t bmin, Float_t bmax)
 {
     //
@@ -747,6 +821,15 @@ Double_t AliFastGlauber::CrossSection(Double_t b1, Double_t b2)
     //
     
     return fgWSgeo->Integral(b1, b2)/100.;
+}
+
+Float_t AliFastGlauber::GetNumberOfParticipants(Float_t  b)
+{
+    //
+    // Gives back the number of participants for impact parameter b
+    //
+    
+    return (fgWParticipants->Eval(b));
 }
 
 Double_t AliFastGlauber::FractionOfHardCrossSection(Double_t b1, Double_t b2)
@@ -963,18 +1046,17 @@ void AliFastGlauber::GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,
   return;
 }
 
-void AliFastGlauber::GetLengthsForPythia(Int_t n,Double_t* phi,Double_t* ell,
-					 Double_t b)
+void AliFastGlauber::GetLengthsForPythia(Int_t n,Double_t* phi,Double_t* ell, Double_t b)
 {
   //
   // Returns lenghts for n partons with azimuthal angles phi[n] 
   // from random b, x0, y0
   //
-  Double_t x0,y0;
-  if(b<0.) GetRandomBHard(b);
+  Double_t x0, y0;
+  if(b < 0.) GetRandomBHard(b);
   GetRandomXY(x0,y0);
 
-  for(Int_t i=0; i<n; i++) ell[i] = CalculateLength(b,x0,y0,phi[i]);
+  for(Int_t i = 0; i< n; i++) ell[i] = CalculateLength(b,x0,y0,phi[i]);
 
   return;
 }
