@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/03/12 17:02:20  morsch
+Change in calculation of rapidity, include case in which numerically e == pz.
+
 Revision 1.4  2001/11/27 13:13:07  morsch
 Maximum lifetime for long-lived particles to be put on the stack is parameter.
 It can be set via SetMaximumLifetime(..).
@@ -142,7 +145,7 @@ Bool_t AliGenMC::KinematicSelection(TParticle *particle, Int_t flag)
     Float_t phi   = Float_t(TMath::ATan2(Double_t(py),Double_t(px)));
     Double_t y, y0;
 
-    if (TMath::Abs(pz) != e) {
+    if (TMath::Abs(pz) <  e) {
 	y = 0.5*TMath::Log((e+pz)/(e-pz));
     } else {
 	y = 1.e10;
