@@ -121,6 +121,7 @@ AliRun::AliRun(const char *name, const char *title)
   fTreeR     = 0;
   fTrRmax    = 1.e10;
   fTrZmax    = 1.e10;
+  fGenerator = 0;
   fInitDone  = kFALSE;
   fLego      = 0;
   fField     = 0;
