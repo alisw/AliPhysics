@@ -51,7 +51,7 @@ else
 INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 endif
 
-SRCS	= AliTransBit.cxx
+SRCS	= AliTransBit.cxx AliL3AltroMemHandler.cxx
 
 DICT = AliL3MiscCint.cxx
 DICTH = AliL3MiscCint.h
