@@ -26,12 +26,12 @@ AliGenParam::AliGenParam()
 {
   fPtPara = 0;
   fYPara  = 0;
-  fIpart  = 0;
-  fAnalog = 1;
+  fParam  = jpsi_p;
+  fAnalog = analog;
 }
 
 //____________________________________________________________
-AliGenParam::AliGenParam(Int_t npart, Int_t Ipart) 
+AliGenParam::AliGenParam(Int_t npart, Param_t param) 
 //				   Double_t (*PtPara)(Double_t*, Double_t*), 
 //				   Double_t (*YPara) (Double_t* ,Double_t*))
     :AliGenerator(npart)
@@ -39,14 +39,14 @@ AliGenParam::AliGenParam(Int_t npart, Int_t Ipart)
   //
   //  fName="HMESONpara";
   //  fTitle="Heavy Mesons Parametrisation";
-  fPtParaFunc = AliGenMUONlib::GetPt(Ipart);
-  fYParaFunc  = AliGenMUONlib::GetY(Ipart);
-  fIpParaFunc = AliGenMUONlib::GetIp(Ipart);
+  fPtParaFunc = AliGenMUONlib::GetPt(param);
+  fYParaFunc  = AliGenMUONlib::GetY(param);
+  fIpParaFunc = AliGenMUONlib::GetIp(param);
   
   fPtPara = 0;
   fYPara  = 0;
-  fIpart  = Ipart;
-  fAnalog = 1;
+  fParam  = param;
+  fAnalog = analog;
   fChildSelect.Set(5);
   for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
   ForceDecay();
@@ -72,8 +72,11 @@ void AliGenParam::Init()
   */
   //End_Html
  
-  fPtPara = new TF1("Pt-Parametrization",fPtParaFunc,0,15,0);
-  fYPara  = new TF1("Y -Parametrization",fYParaFunc,-6,6,0);
+  fPtPara = new TF1("Pt-Parametrization",fPtParaFunc,fPtMin,fPtMax,0);
+  fYPara  = new TF1("Y -Parametrization",fYParaFunc,fYMin,fYMax,0);
+  TF1* PtPara = new TF1("Pt-Parametrization",fPtParaFunc,0,15,0);
+  TF1* YPara  = new TF1("Y -Parametrization",fYParaFunc,-6,6,0);
+
 //
 // dN/dy| y=0
   Double_t y1=0;
@@ -82,9 +85,9 @@ void AliGenParam::Init()
   fdNdy0=fYParaFunc(&y1,&y2);
 //
 // Integral over generation region
-  Float_t IntYS  = fYPara ->Integral(fYMin, fYMax);
-  Float_t IntPt0 = fPtPara->Integral(0,15);
-  Float_t IntPtS = fPtPara->Integral(fPtMin,fPtMax);
+  Float_t IntYS  = YPara ->Integral(fYMin, fYMax);
+  Float_t IntPt0 = PtPara->Integral(0,15);
+  Float_t IntPtS = PtPara->Integral(fPtMin,fPtMax);
   Float_t PhiWgt=(fPhiMax-fPhiMin)/2./TMath::Pi();
   if (fAnalog) {
      fYWgt  = IntYS/fdNdy0;
@@ -113,6 +116,12 @@ void AliGenParam::Init()
     case dimuon:
     case b_jpsi_dimuon:
     case b_psip_dimuon:
+	fChildSelect[0]=13;
+	break;
+    case pitomu:
+	fChildSelect[0]=13;
+	break;
+    case katomu:
 	fChildSelect[0]=13;
 	break;
     }
@@ -205,6 +214,8 @@ void AliGenParam::Generate()
 
 	  Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
 	  fPythia->DecayParticle(Ipart,energy,theta,phi);
+//	  fPythia->LuList(1);
+	  
 //
 // select muons
 	  TObjArray* particles = fPythia->GetPrimaries() ;
@@ -222,7 +233,7 @@ void AliGenParam::Generate()
 		  origin[0]=origin0[0]+iparticle->GetVx()/10;
 		  origin[1]=origin0[1]+iparticle->GetVy()/10;
 		  origin[2]=origin0[2]+iparticle->GetVz()/10;
-		  gAlice->SetTrack(1,iparent,fPythia->GetGeantCode(kf),
+		  gAlice->SetTrack(fTrackIt,iparent,fPythia->GetGeantCode(kf),
 				   p,origin,polar,
   				   0,"Decay",nt,wgtch);
 		  gAlice->KeepTrack(nt);
