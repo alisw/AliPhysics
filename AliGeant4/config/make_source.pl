@@ -49,9 +49,9 @@ for( $i = 0 ; $i < $#DIRLIST+1 ; $i++ ) {
     chdir $DIRPATH;
 
     $CATSTRING = "\"Category: " . $CAT . "\"";
-    @FILELIST_H   = `find . -maxdepth 1 -name \"*.h\" -exec grep -l  $CATSTRING  {} \\;`;
-    @FILELIST_ICC = `find . -maxdepth 1 -name \"*.icc\" -exec grep -l  $CATSTRING  {} \\;`;
-    @FILELIST_CXX = `find . -maxdepth 1 -name \"*.cxx\" -exec grep -l  $CATSTRING  {} \\;`;
+    @FILELIST_H   = `find . -name \"*.h\" -exec grep -l  $CATSTRING  {} \\;`;
+    @FILELIST_ICC = `find . -name \"*.icc\" -exec grep -l  $CATSTRING  {} \\;`;
+    @FILELIST_CXX = `find . -name \"*.cxx\" -exec grep -l  $CATSTRING  {} \\;`;
 
     print "Processing category: " . $CAT . "\n"; 
     $CATDIRPATH = "source" . "/" . $CAT;
@@ -85,7 +85,7 @@ for( $i = 0 ; $i < $#DIRLIST+1 ; $i++ ) {
       @TEMP = split('/',$FILEPATH);
       $FILE = @TEMP[@TEMP - 1];
       chop $FILE;
-      print "   Linking file " . $FILE . " in " . $SRCPATH . "\n";
+      print "   Linking file " . $FILE . "\n";
       $FILEBASE = $RELDIRPATH . "/" . $FILE;
       `ln -s $FILEBASE $FILE`;
     }
