@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2000/05/26 17:30:08  jbarbosa
+  Cerenkov angle now stored within cerenkov data structure.
+
   Revision 1.7  2000/05/18 10:31:36  jbarbosa
   Fixed positioning of spacers inside freon.
   Fixed positioning of proximity gap
@@ -925,7 +928,7 @@ void AliRICHv0::StepManager()
     static Int_t   vol[2];
     Int_t          ipart;
     static Float_t hits[18];
-    static Float_t Ckov_data[18];
+    static Float_t Ckov_data[19];
     TLorentzVector Position;
     TLorentzVector Momentum;
     Float_t        pos[3];
@@ -937,6 +940,7 @@ void AliRICHv0::StepManager()
     Float_t        destep, step;
     Float_t        ranf[2];
     Int_t          NPads;
+    Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
     const  Float_t big=1.e10;
        
@@ -1182,26 +1186,35 @@ void AliRICHv0::StepManager()
 			Ckov_data[9]= (Float_t) fNPadHits;
 		    }
 
-		    TParticle *MIP = (TParticle*)(*gAlice->Particles())[Ckov_data[10]];
-		    TClonesArray *Hits = RICH->Hits();
-		    AliRICHHit *mipHit = (AliRICHHit*) (Hits->UncheckedAt(0));
-		    mom[0] = current->Px();
-		    mom[1] = current->Py();
-		    mom[2] = current->Pz();
-		    Float_t energyckov = current->Energy();
-		    Float_t energymip = MIP->Energy();
-		    Float_t Mip_px = mipHit->fMomX;
-		    Float_t Mip_py = mipHit->fMomY;
-		    Float_t Mip_pz = mipHit->fMomZ;
-		    		    
-		    Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
-		    Float_t rt = TMath::Sqrt(r);
-		    Float_t Mip_r = Mip_px*Mip_px + Mip_py*Mip_py + Mip_pz*Mip_pz;	
-		    Float_t Mip_rt = TMath::Sqrt(Mip_r);
-		    Float_t coscerenkov = (mom[0]*Mip_px + mom[1]*Mip_py + mom[2]*Mip_pz)/(rt*Mip_rt);
-		    Float_t cherenkov = TMath::ACos(coscerenkov);
-		    Ckov_data[17]=cherenkov;
-
+		    Ckov_data[17] = NPads;
+		    //printf("Npads:%d",NPads);
+		    
+		    //TClonesArray *Hits = RICH->Hits();
+		    AliRICHHit *mipHit =  (AliRICHHit*) (fHits->UncheckedAt(0));
+		    if (mipHit)
+		      {
+			mom[0] = current->Px();
+			mom[1] = current->Py();
+			mom[2] = current->Pz();
+			Float_t Mip_px = mipHit->fMomX;
+			Float_t Mip_py = mipHit->fMomY;
+			Float_t Mip_pz = mipHit->fMomZ;
+			
+			Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
+			Float_t rt = TMath::Sqrt(r);
+			Float_t Mip_r = Mip_px*Mip_px + Mip_py*Mip_py + Mip_pz*Mip_pz;	
+			Float_t Mip_rt = TMath::Sqrt(Mip_r);
+			if ((rt*Mip_rt) > 0)
+			  {
+			    coscerenkov = (mom[0]*Mip_px + mom[1]*Mip_py + mom[2]*Mip_pz)/(rt*Mip_rt);
+			  }
+			else
+			  {
+			    coscerenkov = 0;
+			  }
+			Float_t cherenkov = TMath::ACos(coscerenkov);
+			Ckov_data[18]=cherenkov;
+		      }
 		    //if (sector != -1)
 		    //{
 		    AddHit(gAlice->CurrentTrack(),vol,Ckov_data);
@@ -1323,6 +1336,8 @@ void AliRICHv0::StepManager()
 		      if(gMC->TrackPid() == kNeutron)
 			printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
 		      NPads = MakePadHits(xhit,yhit,eloss,idvol,mip);
+		      hits[17] = NPads;
+		      //printf("Npads:%d",NPads);
 		    }
 		}
 		
@@ -1351,6 +1366,8 @@ void AliRICHv0::StepManager()
 		    if(gMC->TrackPid() == kNeutron)
 		      printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
 		    NPads = MakePadHits(xhit,yhit,eloss,idvol,mip);
+		    hits[17] = NPads;
+		    //printf("Npads:%d",NPads);
 		  }
 		xhit     = Localpos[0];
 		yhit     = Localpos[2]; 
