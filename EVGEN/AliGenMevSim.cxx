@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/03/24 10:04:44  morsch
+MevSim interfaced through AliGenerator, first commit (Sylwester Radomski et al.)
+
 */
 
 //
@@ -116,6 +119,8 @@ void AliGenMevSim::Generate()
   // Temporary solution
   //
 
+  Int_t i;
+
   PDG_t pdg;
   Float_t orgin[3] = {0,0,0};
   Float_t polar[3] = {0,0,0};
@@ -134,7 +139,7 @@ void AliGenMevSim::Generate()
   orgin[2] = fVertex[2];
 
   cout << "Vertex ";
-  for (Int_t i =0; i<3; i++)
+  for (i =0; i<3; i++)
     cout << orgin[i] << "\t";
   cout << endl;
 
@@ -149,7 +154,7 @@ void AliGenMevSim::Generate()
   cout << "Found " << nParticles << " particles ..." << endl;
 
 
-  for (Int_t i=0; i<nParticles; i++) {
+  for (i=0; i<nParticles; i++) {
     
     particle = (TParticle*) (*particles)[i];
 
