@@ -51,7 +51,8 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
   //clusters are sorted in "rows" and "columns" of width geom->GetCrystalSize(0),
   fDelta = fR0 + geom->GetCrystalSize(0) ;
-  fMinuit = new TMinuit(100) ; 
+  fMinuit = new TMinuit(100) ;
+  fUnfoldFlag = kTRUE ; 
 }
 
 //____________________________________________________________________________
@@ -161,9 +162,9 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * Dl, RecPointsList *
     Float_t maxAtEnergy[nMultipl] ;
     Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
     
-    if(nMax <= 1)     // if cluster is very flat (no pronounced maximum) then nMax = 0 
+    if(nMax <= 1 )     // if cluster is very flat (no pronounced maximum) then nMax = 0 
       emcOut->Add(emcRecPoint) ;
-    else {
+    else if (fUnfoldFlag) {
       UnfoldClusters(Dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy, emcOut) ;
       emcIn->Remove(emcRecPoint); 
       emcIn->Compress() ;

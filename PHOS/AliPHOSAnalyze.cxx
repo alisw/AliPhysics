@@ -162,7 +162,8 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  fClu->SetLocalMaxCut(0.03) ;
 	  fClu->SetCalibrationParameters(0., 0.00000001) ;  
 	  //========== Creates the track segment maker
-	  fTrs = new AliPHOSTrackSegmentMakerv1()  ; 
+	  fTrs = new AliPHOSTrackSegmentMakerv1()  ;
+	  fTrs->SetUnfoldFlag() ; 
 	  //========== Creates the particle identifier
 	  fPID = new AliPHOSPIDv1() ;
 	  fPID->SetShowerProfileCuts(0.5, 1.5, 0.5, 1.5 ) ; 

@@ -37,6 +37,8 @@ public:
   virtual void MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl, TrackSegmentsList * trsl ) = 0  ; 
                                          // does the job
   virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
+  virtual void SetUnfoldFlag() ;
+  virtual void UnsetUnfoldFlag() ; 
 
 private:
 
