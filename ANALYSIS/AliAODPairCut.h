@@ -35,6 +35,9 @@ class AliAODPairCut: public TNamed
   virtual void AddBasePairCut(AliAODPairBaseCut* cut);
   
   virtual void Print();
+
+  void SetDeltaERange(Double_t min, Double_t max);
+  void SetDeltaPRange(Double_t min, Double_t max);
   
   void SetQInvRange(Double_t min, Double_t max);
   void SetKtRange(Double_t min, Double_t max);

@@ -197,6 +197,7 @@ void AliAODPairCut::SetQInvRange(Double_t min, Double_t max)
   else fCuts[fNCuts++] = new AliAODQInvCut(min,max);
 }
 /**********************************************************/
+
 void AliAODPairCut::SetQOutCMSLRange(Double_t min, Double_t max)
 {
   // set range of accepted QOut in CMS
@@ -204,8 +205,8 @@ void AliAODPairCut::SetQOutCMSLRange(Double_t min, Double_t max)
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODQOutLCMSCut(min,max);
 }
-
 /**********************************************************/
+
 void AliAODPairCut::SetQSideCMSLRange(Double_t min, Double_t max)
 {
   // set range of accepted QSide in CMS
@@ -215,6 +216,7 @@ void AliAODPairCut::SetQSideCMSLRange(Double_t min, Double_t max)
 }
 
 /**********************************************************/
+
 void AliAODPairCut::SetQLongCMSLRange(Double_t min, Double_t max)
 {
   // set range of accepted QLong in CMS
@@ -222,12 +224,29 @@ void AliAODPairCut::SetQLongCMSLRange(Double_t min, Double_t max)
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODQLongLCMSCut(min,max);
 }
+/**********************************************************/
 
+void AliAODPairCut::SetDeltaERange(Double_t min, Double_t max)
+{
+  // set range of accepted DeltaE
+  AliAODKtCut* cut= (AliAODKtCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropDeltaE);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliAODDeltaECut(min,max);
+}
+/**********************************************************/
+
+void AliAODPairCut::SetDeltaPRange(Double_t min, Double_t max)
+{
+  // set range of accepted DeltaP
+  AliAODKtCut* cut= (AliAODKtCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropDeltaP);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliAODDeltaPCut(min,max);
+}
 /**********************************************************/
 
 void AliAODPairCut::SetKtRange(Double_t min, Double_t max)
 {
-  // set range of accepted Kt (?)
+  // set range of accepted Kt (avarage transverse pair momentum)
   AliAODKtCut* cut= (AliAODKtCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropKt);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODKtCut(min,max);
@@ -236,7 +255,7 @@ void AliAODPairCut::SetKtRange(Double_t min, Double_t max)
 
 void AliAODPairCut::SetKStarRange(Double_t min, Double_t max)
 {
-  // set range of accepted KStar (?)
+  // set range of accepted KStar (invariant pair momentum difference (fourvector))
   AliAODKStarCut* cut= (AliAODKStarCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropKStar);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODKStarCut(min,max);
