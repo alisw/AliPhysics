@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.1.4.2  2000/04/10 11:37:42  kowal2
 
 Digits handling in a new data structure
@@ -31,8 +34,6 @@ Digits handling in a new data structure
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
 #include "AliTPCParam.h" 
-#include "AliTPCParam.h"
-#include "AliTPCRF1D.h"
 #include "AliTPCPRF2D.h"
 
 #include "TObjArray.h"
@@ -47,8 +48,7 @@ Digits handling in a new data structure
 #include "AliSimDigits.h"
 #include "AliDigitsArray.h" 
 #include "AliTPCDigitsArray.h"
-//#include "TClonesArray.h"
-#include "TDirectory.h"
+#include <TDirectory.h>
 
 
 

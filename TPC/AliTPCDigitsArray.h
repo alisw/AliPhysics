@@ -6,30 +6,21 @@
 /* $Id$ */
 
 ////////////////////////////////////////////////
-//  Manager class for TPC   clusters                   //
+//  Manager class for TPC digits                   //
 ////////////////////////////////////////////////
 
-#include "AliDetector.h"
-#include "AliHit.h" 
+
 #include "AliDigits.h" 
-#include "AliSegmentArray.h"
 #include "AliDigitsArray.h"
 #include "AliTPCParam.h" 
 
-#include <TMatrix.h>
-#include <TTree.h>
-#include <TClonesArray.h>
-
-
-class TClonesArray;
-class TObjArray;
-class AliTPCPRF2D;
-class AliTPCRF1D;
+class AliDigits;
+class AliDetectorParam;
 
 class AliTPCDigitsArray : public AliDigitsArray {
 public:
   AliTPCDigitsArray(Bool_t sim=kTRUE);
-  ~AliTPCDigitsArray();
+  virtual   ~AliTPCDigitsArray();
   AliDigits *  GetRow(Int_t sector,Int_t row); //return pointer to row from array
   AliDigits *  CreateRow(Int_t sector, Int_t row); //
   AliDigits *  LoadRow(Int_t sector,Int_t row);
@@ -38,14 +29,12 @@ public:
   Bool_t Setup(AliDetectorParam *param);  
   
   Bool_t IsSimulated(){return fBSim;}
-  Bool_t  Update(); //
+  Bool_t  Update(); 
 private:  
-  //AliTPCPRF2D * fPRF;           //x and y pad response function object
-  //AliTPCRF1D * fRF;             //z (time) response function object
   Bool_t fBSim;             //signalize if we have digits with track ID
   Int_t  fCompression;      //default compression for AliDigits - used in storing
   Int_t  fTrackLevel;        //default level for track ID storing
-  ClassDef(AliTPCDigitsArray,1) 
+  ClassDef(AliTPCDigitsArray,1) // TPC digits manager
 };
   
 #endif //ALITPCCLUSTERSARRAY_H

@@ -9,27 +9,19 @@
 //  Manager class for TPC   clusters                   //
 ////////////////////////////////////////////////
 
-#include "AliDetector.h"
-#include "AliHit.h" 
-#include "AliDigit.h" 
-#include "AliSegmentArray.h"
+
 #include "AliClustersArray.h"
-#include "AliTPCParam.h" 
+ 
 
-#include <TMatrix.h>
-#include <TTree.h>
-#include <TClonesArray.h>
-#include <TClass.h>
 
-class TClonesArray;
-class TObjArray;
+
+
 class AliTPCClustersRow;
-//class TClass;
 
 class AliTPCClustersArray : public AliClustersArray {
 public:
   AliTPCClustersArray();
-  ~AliTPCClustersArray();
+  virtual ~AliTPCClustersArray();
   AliTPCClustersRow * GetRow(Int_t sector,Int_t row);  
   AliTPCClustersRow * CreateRow(Int_t sector, Int_t row); //
   AliTPCClustersRow * LoadRow(Int_t sector,Int_t row);
@@ -43,7 +35,7 @@ protected:
   //void MakeTree(); 
  
 private:   
-  ClassDef(AliTPCClustersArray,1) 
+  ClassDef(AliTPCClustersArray,1) // Cluster manager 
 };
   
 #endif //ALITPCCLUSTERSARRAY_H

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.1  2000/06/09 07:09:29  kowal2
 
 Clustering and tracking classes are splitted from the simulation ones
@@ -40,7 +43,7 @@ Clusters handling in a new data structure
 #include "AliTPC.h"
 #include "AliTPCParam.h" 
 #include "AliSegmentArray.h" 
-#include "AliCluster.h"
+#include "AliComplexCluster.h"
 #include "AliClusters.h"
 #include "AliClustersArray.h" 
 #include "AliTPCClustersRow.h" 
@@ -48,6 +51,7 @@ Clusters handling in a new data structure
 #include "AliTPCClustersArray.h"
 #include "TClonesArray.h"
 #include "TDirectory.h"
+#include <TClass.h>
 
 
 
@@ -150,23 +154,6 @@ Bool_t AliTPCClustersArray::Update()
 }
 
 
-/*
-void AliTPCClustersArray::MakeTree()
-{
-  //  AliSegmentID  segment;
-  if (fClusterType==0) {
-    Error("AliTPCCLustersArray", "cluster type isn't adjusted");
-    return;
-  }
-  AliClusters * psegment = (AliClusters *)NewSegment();  
-  psegment->SetClass(fClusterType->GetName());  
-  psegment->SetArray(100);
-  if (fTree) delete fTree;
-  fTree = new TTree("Segment Tree","Tree with segments");
-  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,1);
-  delete psegment;
-}              
-*/
 AliSegmentID * AliTPCClustersArray::NewSegment()
 {
   //
