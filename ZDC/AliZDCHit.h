@@ -26,9 +26,6 @@ public:
 
   // Data members
   Int_t      fVolume[2];    //Array of volumes
-  Float_t    fX;	    //X-coord. in the hall RS
-  Float_t    fY;	    //Y-coord. in the hall RS
-  Float_t    fZ;	    //Z-coord. in the hall RS
   Float_t    fPrimKinEn;    //Primary particle energy
   Float_t    fXImpact;      //x-coord. of the impact point over the ZDC
   Float_t    fYImpact;      //y-coord. of the impact point over the ZDC
