@@ -244,7 +244,7 @@ void AliPHOS::CreateMaterials()
 
   // The Silicon of the pin diode to read out the calorimeter crystal               -> idtmed[705] 
  AliMedium(6, "Si PIN       $", 6, 0,
-	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.01, 0.01, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.01, 0.00001, 0, 0) ;
 
  // The thermo insulating material of the box which contains the calorimeter module -> idtmed[706]
   AliMedium(7, "Thermo Insul.$", 7, 0,
@@ -303,8 +303,21 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[701], "LOSS",3.) ;
   gMC->Gstpar(idtmed[701], "DRAY",1.) ;
   // --- and in PIN diode
+  //setting local cuts to 10 keV OHO 20.04.2001
   gMC->Gstpar(idtmed[705], "LOSS",3) ;
   gMC->Gstpar(idtmed[705], "DRAY",1) ;
+  gMC->Gstpar(idtmed[705], "STRA",1.);
+  gMC->Gstpar(idtmed[705], "CUTGAM",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "CUTELE",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "CUTNEU",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "CUTHAD",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "CUTMUO",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "BCUTE",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "BCUTM",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "DCUTE",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "DCUTM",1.E-5) ;
+  gMC->Gstpar(idtmed[705], "PPCUTM",1.E-5) ;
+  //
   // --- and in the passive convertor
   gMC->Gstpar(idtmed[712], "LOSS",3) ;
   gMC->Gstpar(idtmed[712], "DRAY",1) ;

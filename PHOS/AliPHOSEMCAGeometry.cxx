@@ -59,10 +59,16 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
   fIPtoOuterCoverDistance = 447.0 ;      
   fIPtoCrystalSurface     = 460.0 ;  
   
-  fPinDiodeSize[0] = 1.71 ;   //Values given by Odd Harald feb 2000  
-  fPinDiodeSize[1] = 0.0280 ; // 0.0280 is the depth of active layer in the silicon     
-  fPinDiodeSize[2] = 1.61 ;    
-  
+  //fPinDiodeSize[0] = 1.71 ;   //Values of ame PIN diode  
+  //fPinDiodeSize[1] = 0.0280 ; // 0.0280 is the depth of active layer
+  //fPinDiodeSize[2] = 1.61 ;    
+ 
+  fPinDiodeSize[0] = 0.5000 ;    // APD 5 mm side
+  //fPinDiodeSize[1] = 0.0200 ;  // APD bulk thickness
+  fPinDiodeSize[1] = 0.0100 ;    // APD bulk thickness
+  //According to Y. M. (cms) is it 50 micrometer I use 100 micrometers
+  fPinDiodeSize[2] = 0.5000 ;    // APD 5 mm side 
+ 
   fUpperCoolingPlateThickness   = 0.06 ; 
   fSupportPlateThickness        = 10.0 ;
   fLowerThermoPlateThickness    =  3.0 ; 
