@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.4  2000/01/18 16:12:08  morsch
+Bug in calculation of number of volume divisions and number of positionings corrected
+Browser for Material and Media properties added
+
 Revision 1.3  1999/11/14 14:31:14  fca
 Correct small error and remove compilation warnings on HP
 
@@ -305,15 +309,21 @@ void AliGeant3GeometryGUI::ReadMaterials()
 		new AliGUIMedium(itm, imat, natmed, isvol, ifield, fieldm, 
 				      tmaxfd, stemax, deemax, epsil, stmin);
 	    (*fMedia)[NEntries-1]=medium;
-	    for (Int_t j=1; j<=22; j++) {
-		medium->SetPar(j,Cut(itm,j));
-	    }
-	    for (Int_t j=23; j<=26; j++) {
-		medium->SetPar(j,Cut(itm,j+3));
-	    }
-	    for (Int_t j=27; j<=29; j++) {
-		medium->SetPar(j,Cut(itm,j+4));
-	    }
+        { //Begin local scope for j
+          for (Int_t j=1; j<=22; j++) {
+            medium->SetPar(j,Cut(itm,j));
+          }
+        } //End local scope for j
+        { //Begin local scope for j
+          for (Int_t j=23; j<=26; j++) {
+            medium->SetPar(j,Cut(itm,j+3));
+          }
+        } //End local scope for j
+        { //Begin local scope for j
+          for (Int_t j=27; j<=29; j++) {
+            medium->SetPar(j,Cut(itm,j+4));
+          }
+        } //End local scope for j
 //
 // Add to ComboBox
 	    fPanel->AddMedium(medium, NEntries);
@@ -859,7 +869,8 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
 
    fF31 = new TGCompositeFrame(fF3, 60, 20, kVerticalFrame);
    fF3->AddFrame(fF31,fL2);
-   for (Int_t i=0; i<8; i++) {
+   { //Begin local scope for i
+     for (Int_t i=0; i<8; i++) {
        Int_t idT=i+1;       
        fHframeM[i] = new TGHorizontalFrame(fF31, 400, 100, kFixedWidth);
        fF31->AddFrame(fHframeM[i], Bly);
@@ -869,7 +880,8 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
        fLabelM[i] = new TGLabel(fHframeM[i], LabelTextM[i]);
        fHframeM[i]->AddFrame(fLabelM[i], Bfly1);
        fHframeM[i]->AddFrame(fTehM[i], Bfly1);
-   }
+     }
+   } //End local scope for i
   tf->AddFrame(fF3, fL2);
   fMediaCombo->Resize(200, 20);
   fMediaCombo->Associate(this);
@@ -902,12 +914,13 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
    fF6->AddFrame(fF61, fL2);
    fParticleCombo = new TGComboBox(fF61, 3);
    fF61->AddFrame(fParticleCombo, fL2);
-   int i;
-   for (i = 0; i < 24; i++) {
-      char tmp[20];
-      sprintf(tmp, "%s", LabelTextPart[i]);
-      fParticleCombo->AddEntry(tmp, i+1);
-   }
+   { //Begin local scope for i
+     for (Int_t i = 0; i < 24; i++) {
+       char tmp[20];
+       sprintf(tmp, "%s", LabelTextPart[i]);
+       fParticleCombo->AddEntry(tmp, i+1);
+     }
+   } //End local scope for i
    fParticleCombo->Select(1);
    fParticleCombo->Resize(100, 20);
    fParticleCombo->Associate(this);
@@ -917,11 +930,13 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
    fF6->AddFrame(fF63, fL2);
    fMechanismCombo = new TGComboBox(fF63, 4);
    fF63->AddFrame(fMechanismCombo, fL2);
-   for (i = 0; i < 24; i++) {
-      char tmp[20];
-      sprintf(tmp, "%s", LabelTextMechanism[i]);
-      fMechanismCombo->AddEntry(tmp, i+1);
-   }
+   { //Begin local scope for i
+     for (Int_t i = 0; i < 24; i++) {
+       char tmp[20];
+       sprintf(tmp, "%s", LabelTextMechanism[i]);
+       fMechanismCombo->AddEntry(tmp, i+1);
+     }
+   } //End local scope for i
    fMechanismCombo->Select(1);
    fMechanismCombo->Resize(100, 20);
    fMechanismCombo->Associate(this);

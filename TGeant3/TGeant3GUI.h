@@ -294,6 +294,9 @@ private:
     ClassDef(AliGUIMaterial,1) // Material Object for GUI 
 };
 
+
+const static Int_t kNPars=33;
+
 class AliGUIMedium : public TObject 
 {
 public:
@@ -326,8 +329,7 @@ public:
     virtual void  SetItemId(Int_t id) {fItem=id;}
     
  private:
-    const static Int_t fNPars=33;
-    Float_t fPars[fNPars];   // special medium parameters
+    Float_t fPars[kNPars];   // special medium parameters
     Int_t   fId;             // Id number of the Medium
     Int_t   fIdMat;          // Associated material
     char*   fName;           // Name of the Medium
