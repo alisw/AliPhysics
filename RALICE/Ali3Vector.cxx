@@ -326,7 +326,7 @@ void Ali3Vector::GetErrors(Double_t* e,TString f)
     if (v[2] && rxy2)
     {
      dtheta2+=rxy2*pow(v[2],2)*(pow((v[0]*fDx),2)+pow((v[1]*fDy),2)) /
-              pow(((pow(v[3],2)*rxy2)+pow(rxy2,2)),2);
+              pow(((pow(v[2],2)*rxy2)+pow(rxy2,2)),2);
     }
    }
    else

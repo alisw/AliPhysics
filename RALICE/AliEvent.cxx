@@ -121,28 +121,15 @@ AliEvent::AliEvent()
  fDaytime.Set();
  fRun=0;
  fEvent=0;
- AliVertex::AliVertex();
 }
 ///////////////////////////////////////////////////////////////////////////
-AliEvent::AliEvent(Int_t n)
+AliEvent::AliEvent(Int_t n): AliVertex(n)
 {
 // Create an event to hold initially a maximum of n tracks
 // All variables initialised to default values
  fDaytime.Set();
  fRun=0;
  fEvent=0;
- if (n > 0)
- {
-  AliVertex::AliVertex(n);
- }
- else
- {
-  cout << endl;
-  cout << " *AliEvent* Initial max. number of tracks entered : " << n << endl;
-  cout << " This is invalid. Default initial maximum will be used." << endl;
-  cout << endl;
-  AliVertex::AliVertex();
- }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::~AliEvent()
