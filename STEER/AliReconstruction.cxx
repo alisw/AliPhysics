@@ -27,7 +27,8 @@
 //                                                                           //
 // The Run method returns kTRUE in case of successful execution.             //
 // The name of the galice file can be changed from the default               //
-// "galice.root" by                                                          //
+// "galice.root" by passing it as argument to the AliReconstruction          //
+// constructor or by                                                         //
 //                                                                           //
 //   rec.SetGAliceFile("...");                                               //
 //                                                                           //
@@ -74,27 +75,52 @@ ClassImp(AliReconstruction)
 
 
 //_____________________________________________________________________________
-AliReconstruction::AliReconstruction(const char* name, const char* title) :
-  TNamed(name, title)
+AliReconstruction::AliReconstruction(const char* gAliceFilename,
+				     const char* name, const char* title) :
+  TNamed(name, title),
+
+  fRunReconstruction("ALL"),
+  fRunTracking(kTRUE),
+  fFillESD("ALL"),
+  fGAliceFileName(gAliceFilename),
+  fStopOnError(kFALSE),
+
+  fRunLoader(NULL),
+  fITSLoader(NULL),
+  fITSTracker(NULL),
+  fTPCLoader(NULL),
+  fTPCTracker(NULL),
+  fTRDLoader(NULL),
+  fTRDTracker(NULL),
+  fTOFLoader(NULL),
+  fTOFTracker(NULL)
 {
 // create reconstruction object with default parameters
 
-  Init();
 }
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
-  TNamed(rec)
+  TNamed(rec),
+
+  fRunReconstruction(rec.fRunReconstruction),
+  fRunTracking(rec.fRunTracking),
+  fFillESD(rec.fFillESD),
+  fGAliceFileName(rec.fGAliceFileName),
+  fStopOnError(rec.fStopOnError),
+
+  fRunLoader(NULL),
+  fITSLoader(NULL),
+  fITSTracker(NULL),
+  fTPCLoader(NULL),
+  fTPCTracker(NULL),
+  fTRDLoader(NULL),
+  fTRDTracker(NULL),
+  fTOFLoader(NULL),
+  fTOFTracker(NULL)
 {
 // copy constructor
 
-  fRunReconstruction = rec.fRunReconstruction;
-  fRunTracking = rec.fRunTracking;
-  fStopOnError = rec.fStopOnError;
-
-  fGAliceFileName = rec.fGAliceFileName;
-
-  fRunLoader = NULL;
 }
 
 //_____________________________________________________________________________
@@ -112,21 +138,7 @@ AliReconstruction::~AliReconstruction()
 {
 // clean up
 
-}
-
-//_____________________________________________________________________________
-void AliReconstruction::Init()
-{
-// set default parameters
-
-  fRunReconstruction = "ALL";
-  fRunTracking = kTRUE;
-  fFillESD = "ALL";
-  fStopOnError = kFALSE;
-
-  fGAliceFileName = "galice.root";
-
-  fRunLoader = NULL;
+  CleanUp();
 }
 
 
@@ -145,25 +157,27 @@ Bool_t AliReconstruction::Run()
 // run the reconstruction
 
   // open the run loader
-  if (fRunLoader) delete fRunLoader;
   fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
   if (!fRunLoader) {
     Error("Run", "no run loader found in file %s", 
 	  fGAliceFileName.Data());
+    CleanUp();
     return kFALSE;
   }
   fRunLoader->LoadgAlice();
-  gAlice = fRunLoader->GetAliRun();
-  if (!gAlice) {
+  AliRun* aliRun = fRunLoader->GetAliRun();
+  if (!aliRun) {
     Error("Run", "no gAlice object found in file %s", 
 	  fGAliceFileName.Data());
+    CleanUp();
     return kFALSE;
   }
+  gAlice = aliRun;
 
   // local reconstruction
   if (!fRunReconstruction.IsNull()) {
     if (!RunReconstruction(fRunReconstruction)) {
-      if (fStopOnError) return kFALSE;
+      if (fStopOnError) {CleanUp(); return kFALSE;}
     }
   }
   if (!fRunTracking && fFillESD.IsNull()) return kTRUE;
@@ -172,64 +186,64 @@ Bool_t AliReconstruction::Run()
   fITSLoader = fRunLoader->GetLoader("ITSLoader");
   if (!fITSLoader) {
     Error("Run", "no ITS loader found");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
   fITSTracker = NULL;
-  if (gAlice->GetDetector("ITS")) {
-    fITSTracker = gAlice->GetDetector("ITS")->CreateTracker();
+  if (aliRun->GetDetector("ITS")) {
+    fITSTracker = aliRun->GetDetector("ITS")->CreateTracker();
   }
   if (!fITSTracker) {
     Error("Run", "couldn't create a tracker for ITS");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
 
   fTPCLoader = fRunLoader->GetLoader("TPCLoader");
   if (!fTPCLoader) {
     Error("Run", "no TPC loader found");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
   fTPCTracker = NULL;
-  if (gAlice->GetDetector("TPC")) {
-    fTPCTracker = gAlice->GetDetector("TPC")->CreateTracker();
+  if (aliRun->GetDetector("TPC")) {
+    fTPCTracker = aliRun->GetDetector("TPC")->CreateTracker();
   }
   if (!fTPCTracker) {
     Error("Run", "couldn't create a tracker for TPC");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
 
   fTRDLoader = fRunLoader->GetLoader("TRDLoader");
   if (!fTRDLoader) {
     Error("Run", "no TRD loader found");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
   fTRDTracker = NULL;
-  if (gAlice->GetDetector("TRD")) {
-    fTRDTracker = gAlice->GetDetector("TRD")->CreateTracker();
+  if (aliRun->GetDetector("TRD")) {
+    fTRDTracker = aliRun->GetDetector("TRD")->CreateTracker();
   }
   if (!fTRDTracker) {
     Error("Run", "couldn't create a tracker for TRD");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
 
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   if (!fTOFLoader) {
     Error("Run", "no TOF loader found");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
   fTOFTracker = NULL;
-  if (gAlice->GetDetector("TOF")) {
-    fTOFTracker = gAlice->GetDetector("TOF")->CreateTracker();
+  if (aliRun->GetDetector("TOF")) {
+    fTOFTracker = aliRun->GetDetector("TOF")->CreateTracker();
   }
   if (!fTOFTracker) {
     Error("Run", "couldn't create a tracker for TOF");
-    if (fStopOnError) return kFALSE;
+    if (fStopOnError) {CleanUp(); return kFALSE;}
   }
 
   // create the ESD output file
   TFile* file = TFile::Open("AliESDs.root", "RECREATE");
   if (!file->IsOpen()) {
     Error("Run", "opening AliESDs.root failed");
-    if (fStopOnError) return kFALSE;    
+    if (fStopOnError) {CleanUp(file); return kFALSE;}    
   }
 
   // loop over events
@@ -237,21 +251,21 @@ Bool_t AliReconstruction::Run()
     Info("Run", "processing event %d", iEvent);
     AliESD* esd = new AliESD;
     fRunLoader->GetEvent(iEvent);
-    esd->SetRunNumber(gAlice->GetRunNumber());
-    esd->SetEventNumber(gAlice->GetEvNumber());
-    esd->SetMagneticField(fRunLoader->GetAliRun()->Field()->SolenoidField());
+    esd->SetRunNumber(aliRun->GetRunNumber());
+    esd->SetEventNumber(aliRun->GetEvNumber());
+    esd->SetMagneticField(aliRun->Field()->SolenoidField());
 
     // barrel tracking
     if (fRunTracking) {
       if (!RunTracking(esd)) {
-	if (fStopOnError) return kFALSE;
+	if (fStopOnError) {CleanUp(file); return kFALSE;}
       }
     }
 
     // fill ESD
     if (!fFillESD.IsNull()) {
       if (!FillESD(esd, fFillESD)) {
-	if (fStopOnError) return kFALSE;
+	if (fStopOnError) {CleanUp(file); return kFALSE;}
       }
     }
 
@@ -264,11 +278,11 @@ Bool_t AliReconstruction::Run()
     file->cd();
     if (!esd->Write(name)) {
       Error("Run", "writing ESD failed");
-      if (fStopOnError) return kFALSE;
+      if (fStopOnError) {CleanUp(file); return kFALSE;}
     }
   }
 
-  file->Close();
+  CleanUp(file);
 
   return kTRUE;
 }
@@ -283,7 +297,7 @@ Bool_t AliReconstruction::RunReconstruction(const TString& detectors)
   stopwatch.Start();
 
   TString detStr = detectors;
-  TObjArray* detArray = gAlice->Detectors();
+  TObjArray* detArray = fRunLoader->GetAliRun()->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -347,7 +361,7 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
     return kFALSE;
   }
 
-  gAlice->GetDetector("TPC")->FillESD(esd); // preliminary PID
+  fRunLoader->GetAliRun()->GetDetector("TPC")->FillESD(esd); // preliminary PID
   AliESDpid::MakePID(esd);                  // for the ITS tracker
 
   // ITS tracking
@@ -450,7 +464,7 @@ Bool_t AliReconstruction::FillESD(AliESD* esd, const TString& detectors)
   stopwatch.Start();
 
   TString detStr = detectors;
-  TObjArray* detArray = gAlice->Detectors();
+  TObjArray* detArray = fRunLoader->GetAliRun()->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -505,4 +519,27 @@ Bool_t AliReconstruction::IsSelected(TString detName, TString& detectors) const
   while (detectors.EndsWith(" ")) detectors.Remove(detectors.Length()-1, 1);
 
   return result;
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::CleanUp(TFile* file)
+{
+// delete trackers and the run loader and close and delete the file
+
+  delete fITSTracker;
+  fITSTracker = NULL;
+  delete fTPCTracker;
+  fTPCTracker = NULL;
+  delete fTRDTracker;
+  fTRDTracker = NULL;
+  delete fTOFTracker;
+  fTOFTracker = NULL;
+
+  delete fRunLoader;
+  fRunLoader = NULL;
+
+  if (file) {
+    file->Close();
+    delete file;
+  }
 }
