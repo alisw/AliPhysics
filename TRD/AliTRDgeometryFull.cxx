@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2003/09/18 09:06:07  cblume
+Geometry update, Removal of compiler warnings
+
 Revision 1.10  2002/11/21 22:38:47  alibrary
 Removing AliMC and AliMCProcess
 
@@ -947,9 +950,9 @@ void AliTRDgeometryFull::CreateServices(Int_t *idtmed)
   // The rotation matrices
   const Int_t kNmatrix = 3;
   Int_t   matrix[kNmatrix];
-  gMC->Matrix(matrix[0],100.0,0.0,90.0,90.0, 0.0,0.0);
-  gMC->Matrix(matrix[1], 80.0,0.0,90.0,90.0, 0.0,0.0);
-  gMC->Matrix(matrix[2],  0.0,0.0,90.0,90.0,90.0,0.0);
+  gMC->Matrix(matrix[0],100.0,  0.0, 90.0, 90.0, 10.0,  0.0);
+  gMC->Matrix(matrix[1], 80.0,  0.0, 90.0, 90.0, 10.0,180.0);
+  gMC->Matrix(matrix[2],  0.0,  0.0, 90.0, 90.0, 90.0,  0.0);
 
   AliTRDparameter *parameter = new AliTRDparameter("par","TRD parameter");
 
