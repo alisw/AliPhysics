@@ -13,4 +13,14 @@
 #pragma link C++ class  AliPMDv1+;
 #pragma link C++ class  AliPMDhit+;
 #pragma link C++ class  AliPMDRecPoint+;
+#pragma link C++ class  AliPMDLoader+;
+#pragma link C++ class  AliPMDUtility+;
+#pragma link C++ class  AliPMDcell+;
+#pragma link C++ class  AliPMDsdigit+;
+#pragma link C++ class  AliPMDdigit+;
+#pragma link C++ class  AliPMDrecpoint+;
+#pragma link C++ class  AliPMDcluster+;
+#pragma link C++ class  AliPMDClustering+;
+#pragma link C++ class  AliPMDDigitizer+;
+#pragma link C++ class  AliPMDClusterFinder+;
 #endif

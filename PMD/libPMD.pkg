@@ -1,5 +1,4 @@
-SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDRecPoint.cxx
-       
+SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDRecPoint.cxx AliPMDLoader.cxx AliPMDUtility.cxx AliPMDcell.cxx AliPMDsdigit.cxx AliPMDdigit.cxx AliPMDrecpoint.cxx AliPMDcluster.cxx AliPMDClustering.cxx AliPMDDigitizer.cxx AliPMDClusterFinder.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
