@@ -39,7 +39,8 @@ SRCS= AliTRD.cxx \
       AliTRDparameter.cxx \
       AliTRDPartID.cxx    \
       AliTRDclusterMI.cxx	\
-      AliTRDclusterizerMI.cxx	
+      AliTRDclusterizerMI.cxx	\
+      AliTRDclusterCorrection.cxx	
 
 HDRS= $(SRCS:.cxx=.h)                
 
