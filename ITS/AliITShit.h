@@ -157,6 +157,12 @@ class AliITShit : public AliHit {
 	const {// returns the initial position in the Global frame and the
 	// time of flight
 	x=fx0;y=fy0;z=fz0,tof=fTof;return;};
+    // Returns particle 3 position at this hit in global coordinates.
+    virtual void GetPositionG0(Double_t &x,Double_t &y,Double_t &z,
+			       Double_t &tof)
+	const {// returns the initial position in the Global frame and the
+	// time of flight
+	x=fx0;y=fy0;z=fz0,tof=fTof;return;};
     virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z);
     // Returns particle 3 position at this hit in local coordinates.
     virtual void GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof);
@@ -167,6 +173,9 @@ class AliITShit : public AliHit {
     // Returns particle 3 position and the time of flight at this hit
     // in local coordinates.
 	 Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;t=tf;}
+    // Returns particle 3 initial position and the time of flight at this hit
+    // in local coordinates.
+    virtual void GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t);
     virtual Float_t GetXL();
     // Returns particle X position at this hit in local coordinates.
     virtual Float_t GetYL();
