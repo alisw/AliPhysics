@@ -15,8 +15,8 @@
 
 /*
 $Log$
-Revision 1.9  1999/09/29 09:24:33  fca
-Introduction of the Copyright and cvs Log
+Revision 1.1  1999/10/15 15:35:20  fca
+New version for frame1099 with and without holes
 
 */
 
