@@ -19,6 +19,8 @@
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
+
+#include <stdlib.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom.h>

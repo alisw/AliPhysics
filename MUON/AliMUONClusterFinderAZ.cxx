@@ -1,5 +1,6 @@
 #include "AliMUONClusterFinderAZ.h"
 
+#include <stdlib.h>
 #include <fcntl.h>
 #include <Riostream.h>
 #include <TROOT.h>

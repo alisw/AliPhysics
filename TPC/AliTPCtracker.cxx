@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2002/11/19 11:50:08  hristov
+Removing CONTAINERS (Yu.Belikov)
+
 Revision 1.19  2002/07/19 07:31:40  kowal2
 Improvement in tracking by J. Belikov
 
@@ -82,6 +85,7 @@ Splitted from AliTPCtracking
 #include "AliTPCParam.h"
 #include "AliClusters.h"
 
+#include <stdlib.h>
 //_____________________________________________________________________________
 AliTPCtracker::AliTPCtracker(const AliTPCParam *par): 
 AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
