@@ -83,7 +83,7 @@ void anal (Int_t evNumber=0)
 	 trdHit   = (AliTRDhit*)TRDhits->UncheckedAt(hit);
          ipart    = trdHit->fTrack;
          particle = (TParticle*)Particles->UncheckedAt(ipart);
-         plane = trdHit->fPlane;
+         plane = trdHit->fX;//Plane;
          hTRD->Fill(plane);
          if (particle->GetFirstMother() < 0) hTRDprim->Fill(plane);
        }

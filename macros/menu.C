@@ -1,6 +1,8 @@
+TControlBar *menu;
+
 void menu(const char *config="Config.C")
 {
-   TControlBar *menu = new TControlBar("vertical","gAlice menu");
+   menu = new TControlBar("vertical","gAlice menu");
    menu->AddButton("    Help to run gAlice    ","AliceHelp()", "Explains how to use gAlice menus");
    menu->AddButton("Run",             "gAlice->Run()","Process an Alice event");
    menu->AddButton("Run Lego",        "gAlice->RunLego()","Special run to generate the radl/absl lego plots");
