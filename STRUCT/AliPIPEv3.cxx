@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/06/11 12:38:00  morsch
 Coding rule violations corrected
 
@@ -117,8 +120,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[2]=bepar[2];
   //
   gMC->Gsvolu("QQBE", "TUBE", idtmed[2004], bepar, 3);
-  gMC->Gsvolu("VAC1", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC1", 1, "QQBE", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC1", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC1", 1, "QQBE", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QQBE", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
   
   // now beam pipes only in negative z-part for use in PMD.
@@ -133,8 +136,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[2]=flange[2];
   //
   gMC->Gsvolu("QFL1", "TUBE", idtmed[2018], flange, 3);
-  gMC->Gsvolu("VAC2", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC2", 1, "QFL1", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC2", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC2", 1, "QFL1", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QFL1", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
   
   // Aluminium alloy beam pipe, 1mm thick, 230 cm long
@@ -147,8 +150,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=alpar[2];
   gMC->Gsvolu("QQAL", "TUBE", idtmed[2003], alpar, 3);
-  gMC->Gsvolu("VAC3", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC3", 1, "QQAL", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC3", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC3", 1, "QQAL", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QQAL", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
  
@@ -163,8 +166,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
   gMC->Gsvolu("QSS1", "TUBE", idtmed[2018], sspar, 3);
-  gMC->Gsvolu("VAC4", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC4", 1, "QSS1", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC4", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC4", 1, "QSS1", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QSS1", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 
@@ -179,8 +182,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=flange[2];
   gMC->Gsvolu("QFL2", "TUBE", idtmed[2018], flange, 3);
-  gMC->Gsvolu("VAC5", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC5", 1, "QFL2", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC5", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC5", 1, "QFL2", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QFL2", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 
@@ -195,8 +198,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
   gMC->Gsvolu("QSS2", "TUBE", idtmed[2018], sspar, 3);
-  gMC->Gsvolu("VAC6", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC6", 1, "QSS2", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC6", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC6", 1, "QSS2", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QSS2", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 
@@ -226,8 +229,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
   gMC->Gsvolu("QSS3", "TUBE", idtmed[2018], sspar, 3);
-  gMC->Gsvolu("VAC7", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC7", 1, "QSS3", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC7", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC7", 1, "QSS3", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QSS3", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
   // *************
@@ -249,8 +252,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
   gMC->Gsvolu("QSS4", "TUBE", idtmed[2018], sspar, 3);
-  gMC->Gsvolu("VAC8", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC8", 1, "QSS4", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC8", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC8", 1, "QSS4", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QSS4", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
   // SS Flange 2.2 cm thick, ID=5.8 cm, OD=9.8 cm
@@ -264,8 +267,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=flange[2];
   gMC->Gsvolu("QFL3", "TUBE", idtmed[2018], flange, 3);
-  gMC->Gsvolu("VAC9", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VAC9", 1, "QFL3", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QAC9", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QAC9", 1, "QFL3", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QFL3", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 //Total of 3150 mm from vertex on the negative side upto this point.
@@ -281,8 +284,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
   gMC->Gsvolu("QSS5", "TUBE", idtmed[2018], sspar, 3);
-  gMC->Gsvolu("VA10", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VA10", 1, "QSS5", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QA10", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QA10", 1, "QSS5", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QSS5", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 // 
@@ -315,8 +318,8 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=flange[2];
   gMC->Gsvolu("QFL4", "TUBE", idtmed[2018], flange, 3);
-  gMC->Gsvolu("VC11", "TUBE", idtmed[2015], vacpar, 3);
-  gMC->Gspos("VC11", 1, "QFL4", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("QC11", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("QC11", 1, "QFL4", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("QFL4", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 }
