@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 Revision 1.6  1999/09/29 09:24:12  fca
 Introduction of the Copyright and cvs Log
 
@@ -198,20 +201,16 @@ void AliGenFLUKAsource::Generate()
     
 
 	irwn++;
-	printf("\n Particle type: %f \n \n ", Ip);
-	
-	if (Ip ==7){
-	    prwn=Ekin;
-	    part=1;
-	} else if (Ip == 8) {
-	    prwn=Ekin*sqrt(1. + 2.*0.93956563/Ekin);
-	    part=13;
-	} else {
-	    part=ifluge[int(Ip)-1];
-	    gMC->Gfpart(part, name, itrtyp,  
-			amass, charge, tlife); 
-	    prwn=Ekin*sqrt(1. + 2.*amass/Ekin);
-	}
+//
+// PDG code from FLUKA particle type (Ip)
+	part=ifluge[int(Ip)-1];	
+//
+// Calculate momentum from kinetic energy and mass of the particle
+	gMC->Gfpart(part, name, itrtyp,  
+		    amass, charge, tlife); 
+	prwn=Ekin*sqrt(1. + 2.*amass/Ekin);
+
+
 	origin[0]=Yi;
 	origin[1]=Xi;
 	origin[2]=Zi;
