@@ -21,9 +21,12 @@ class AliESDtrack;
 class AliHBTTrackPoints: public TObject
 {
   public:
+    enum ETypes{kITS = 1};
+
     AliHBTTrackPoints();
     AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr=30, Float_t r0 = 84.1); //min TPC R  = 84.1; max TPC R =  246.6cm, 
     AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t dr=30,Float_t r0 = 84.1); //min TPC R  = 84.1; max TPC R =  246.6cm, 
+    AliHBTTrackPoints(AliHBTTrackPoints::ETypes type, AliESDtrack* track);
     AliHBTTrackPoints(const AliHBTTrackPoints& in);
     
     virtual ~AliHBTTrackPoints();
@@ -35,8 +38,11 @@ class AliHBTTrackPoints: public TObject
     void  SetDebug(Int_t deblevel){fgDebug = deblevel;} 
     static void testtpc(Int_t entr);
     static void testesd(Int_t entr,const char* fname = "AliESDs.root");
+
   protected:
     void MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* par, Double_t c, Double_t alpha);
+    void MakeITSPoints(AliESDtrack* track);
+    
   private:
     Int_t    fN;//number of points
     Float_t* fX;//[fN]positions at x

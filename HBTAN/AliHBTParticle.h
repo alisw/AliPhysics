@@ -118,6 +118,10 @@ public:
   
   void           SetTrackPoints(AliHBTTrackPoints* tpts){fTrackPoints = tpts;}
   AliHBTTrackPoints* GetTrackPoints() const {return fTrackPoints;}
+
+  void           SetITSTrackPoints(AliHBTTrackPoints* tpts){fITSTrackPoints = tpts;}
+  AliHBTTrackPoints* GetITSTrackPoints() const {return fITSTrackPoints;}
+  
   void           SetClusterMap(AliHBTClusterMap* cm){fClusterMap = cm;}
   AliHBTClusterMap* GetClusterMap() const {return fClusterMap;}
   
@@ -146,7 +150,9 @@ private:
   Double_t       fVz;                   // z of production vertex
   Double_t       fVt;                   // t of production vertex
 
-  AliHBTTrackPoints* fTrackPoints;      // track positions along trajectory - used by anti-merging cut
+  AliHBTTrackPoints* fTrackPoints;      // track positions along trajectory - used by anti-merging cut 
+  AliHBTTrackPoints* fITSTrackPoints;   // track position at first pixels
+  
   AliHBTClusterMap*  fClusterMap;       // bit map of cluters occupation; 1 if has cluter on given layer/padrow/...
     
   static Int_t   fgDebug; //debug printout level

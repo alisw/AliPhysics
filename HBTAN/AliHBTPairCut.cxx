@@ -131,6 +131,16 @@ Bool_t AliHBTPairCut::PassPairProp(AliHBTPair* pair) const
 }
 /**********************************************************/
 
+void AliHBTPairCut::Print()
+{
+ //Prints the cut
+  for (Int_t i = 0;i<fNCuts;i++)
+    {
+      fCuts[i]->Dump();
+    }
+}
+/**********************************************************/
+
 void AliHBTPairCut::SetFirstPartCut(AliHBTParticleCut* cut)
 {
   // set cut for the first particle
@@ -229,12 +239,22 @@ void AliHBTPairCut::SetKStarRange(Double_t min, Double_t max)
   else fCuts[fNCuts++] = new AliHBTKStarCut(min,max);
 }
 /**********************************************************/
+
 void AliHBTPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 {
   //sets avarage separation cut ->Anti-Merging cut
   AliHbtBasePairCut* cut= FindCut(kHbtPairCutPropAvSepar);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTAvSeparationCut(min,max);
+}
+/**********************************************************/
+
+void AliHBTPairCut::SetPixelSeparation(Double_t drphi, Double_t dz)
+{
+  //Anti-Merging Cut for first pixel layer
+  AliHbtBasePairCut* cut= FindCut(kHbtPairCutPropPixelSepar);
+  if(cut) cut->SetRange(drphi,dz);//In this cut fMin is drphi, and fMax dz
+  else fCuts[fNCuts++] = new AliHBTPixelSeparationCut(drphi,dz);
 }
 /**********************************************************/
 
@@ -351,6 +371,54 @@ Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const
    }
    
   return tpts1->AvarageDistance(*tpts2);
+}
+/******************************************************************/
+
+ClassImp(AliHBTPixelSeparationCut)
+
+Bool_t AliHBTPixelSeparationCut::Pass(AliHBTPair* pair) const
+{
+ //Checks if two tracks do not cross first pixels too close to each other
+ //If two tracks use the same cluster in pixels they are given
+ //the same position what skews theta angles (both are the same)
+ //These guys create artificial correlation in non-id analyses
+ //which is positive for identical polar angles (Qlong=0) 
+ //and negative for a little bit different theta angle (Qlong=epsilon)
+ //Such tracks "attracks" each other.
+ 
+  AliHBTTrackPoints* tpts1 = pair->Particle1()->GetITSTrackPoints();
+  if ( tpts1 == 0x0)
+   {//it could be simulated pair
+     Warning("Pass","Track 1 does not have ITS Track Points. Pair NOT Passed.");
+     return kTRUE;//reject 
+   }
+
+  AliHBTTrackPoints* tpts2 = pair->Particle2()->GetITSTrackPoints();
+  if ( tpts2 == 0x0)
+   {
+     Warning("Pass","Track 2 does not have ITS Track Points. Pair NOT Passed.");
+     return kTRUE;//reject 
+   }
+  Float_t  x1=0.0,y1=0.0,z1=0.0,x2=0.0,y2=0.0,z2=0.0;
+  tpts1->PositionAt(0,x1,y1,z1);
+  tpts2->PositionAt(0,x2,y2,z2);
+  
+//  Info("Pass","rphi %f z %f",fMin,fMax);
+//  Info("Pass","P1: %f %f %f", x1,y1,z1);
+//  Info("Pass","P2: %f %f %f", x2,y2,z2);
+  
+  Double_t dz = TMath::Abs(z1-z2);
+  
+  //fMax encodes treshold valaue of distance in Z
+  if (dz > fMax) return kFALSE;//pair accepted
+  
+  Double_t drphi = TMath::Hypot(x1-x2,y1-y2);
+  
+  //fMin encodes treshold valaue of distance in r-phi
+  if (drphi > fMin) return kFALSE;
+  
+  Info("Pass","Rejected !!!!!");
+  return kTRUE;//they are too close, rejected
 }
 /******************************************************************/
 

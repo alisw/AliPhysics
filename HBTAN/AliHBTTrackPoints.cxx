@@ -1,3 +1,4 @@
+#include "AliHBTTrackPoints.h"
 //_________________________________
 ////////////////////////////////////////////////////////////
 //                                                        //
@@ -17,9 +18,9 @@
 #include <TMath.h>
 
 #include "AliESDtrack.h"
-#include "AliHBTTrackPoints.h"
 #include "AliTPCtrack.h"
 #include "AliTrackReference.h"
+#include "AliITStrackV2.h"
 
 ClassImp(AliHBTTrackPoints)
 
@@ -31,6 +32,32 @@ AliHBTTrackPoints::AliHBTTrackPoints():
  fZ(0x0)
 {
   //constructor
+}
+/***************************************************************/
+
+AliHBTTrackPoints::AliHBTTrackPoints(AliHBTTrackPoints::ETypes type, AliESDtrack* track):
+ fN(0),
+ fX(0x0),
+ fY(0x0),
+ fZ(0x0)
+{
+  //constructor
+  switch (type)
+   {
+     case kITS:
+       //Up to now we keep only point in pixels
+       //Used only in non-id analysis
+       fN = 1;
+       fX = new Float_t[fN];
+       fY = new Float_t[fN];
+       fZ = new Float_t[fN];
+       MakeITSPoints(track);
+       break;
+
+     default:
+       Info("AliHBTTrackPoints","Not recognized type");
+   }
+   
 }
 /***************************************************************/
 
@@ -131,6 +158,16 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Fl
   Double_t c=track->GetC();
   MakePoints(dr,r0,x,par,c,alpha);
 }  
+/***************************************************************/
+
+AliHBTTrackPoints::~AliHBTTrackPoints()
+{
+  //destructor
+  delete [] fX;
+  delete [] fY;
+  delete [] fZ;
+}
+/***************************************************************/
 
 void AliHBTTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* par, Double_t c, Double_t alpha)
 {
@@ -235,15 +272,23 @@ void AliHBTTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t
 }
 /***************************************************************/
 
-AliHBTTrackPoints::~AliHBTTrackPoints()
+void AliHBTTrackPoints::MakeITSPoints(AliESDtrack* track)
 {
-  //destructor
-  delete [] fX;
-  delete [] fY;
-  delete [] fZ;
+//Calculates points in ITS
+// z=R*Pz/Pt
+ AliITStrackV2 itstrack(*track,kTRUE);
+ Double_t x,y,z;
+ itstrack.GetGlobalXYZat(4.0,x,y,z);
+ fX[0] = x;
+ fY[0] = y;
+ fZ[0] = z;
+ 
+//  Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
+//             fX[0],fY[0],fZ[0],4.0,TMath::Hypot(fX[0],fY[0]));
+ 
 }
-/***************************************************************/
 
+/***************************************************************/
 void AliHBTTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
 {
   //returns position at point n

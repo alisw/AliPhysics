@@ -27,6 +27,7 @@ enum AliHBTPairCutProperty
   kHbtPairCutPropDeltaPt,
   kHbtPairCutPropAvSepar,
   kHbtPairCutPropClOverlap,
+  kHbtPairCutPropPixelSepar,
   kHbtPairCutPropNone
 };
 /******************************************************************/
@@ -50,6 +51,8 @@ class AliHBTPairCut: public TNamed
   
   virtual void AddBasePairCut(AliHbtBasePairCut* cut);
   
+  virtual void Print();
+  
   void SetQInvRange(Double_t min, Double_t max);
   void SetKtRange(Double_t min, Double_t max);
   void SetKStarRange(Double_t min, Double_t max);
@@ -57,6 +60,7 @@ class AliHBTPairCut: public TNamed
   void SetQSideCMSLRange(Double_t min, Double_t max);
   void SetQLongCMSLRange(Double_t min, Double_t max);
   void SetAvSeparationRange(Double_t min,Double_t max = 10e5);//Anti-Merging Cut
+  void SetPixelSeparation(Double_t drphi=0.01,Double_t dz = 0.08);//Anti-Merging Cut for first pixel layer
   void SetClusterOverlapRange(Double_t min,Double_t max);//Anti-Splitting Max range -0.5 1.0
       
   AliHBTParticleCut* GetFirstPartCut() const {return fFirstPartCut;}
@@ -279,6 +283,21 @@ class AliHBTAvSeparationCut: public AliHbtBasePairCut
  protected:
   virtual Double_t  GetValue(AliHBTPair* pair) const;
   ClassDef(AliHBTAvSeparationCut,1)
+};
+/******************************************************************/
+  
+class AliHBTPixelSeparationCut: public AliHbtBasePairCut
+{
+//Anti merging cut for the first layer of pixels
+ public:
+  AliHBTPixelSeparationCut(Double_t deltarphi = 0.01, Double_t deltaz = 0.08):
+    AliHbtBasePairCut(deltarphi,deltaz,kHbtPairCutPropPixelSepar){}
+  virtual ~AliHBTPixelSeparationCut(){}
+  Bool_t   Pass(AliHBTPair* pair) const;
+
+ protected:
+  virtual Double_t  GetValue(AliHBTPair* /*pair*/) const {return 0.0;}//not used
+  ClassDef(AliHBTPixelSeparationCut,1)
 };
 /******************************************************************/
 

@@ -10,6 +10,8 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
+
 #include <TPDGCode.h>
 #include <TString.h>
 #include <TObjString.h>
@@ -23,6 +25,7 @@
 #include <AliRunLoader.h>
 #include <AliStack.h>
 #include <AliESDtrack.h>
+#include <AliKalmanTrack.h>
 #include <AliESD.h>
 
 #include "AliHBTRun.h"
@@ -45,6 +48,7 @@ AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename, const Char_t* galfil
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
+ fITSTrackPoints(kFALSE),
  fMustTPC(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
@@ -92,6 +96,7 @@ AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename, cons
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
+ fITSTrackPoints(kFALSE),
  fMustTPC(kFALSE),
  fNTPCClustMin(0),
  fNTPCClustMax(150),
@@ -257,12 +262,17 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
    
   Float_t mf = esd->GetMagneticField(); 
 
-  if ( (mf == 0.0) && (fNTrackPoints > 0) )
+  if ( (mf == 0.0) && ((fNTrackPoints > 0) || fITSTrackPoints) )
    {
       Error("ReadESD","Magnetic Field is 0 and Track Points Demended. Skipping to next event.");
       return 1;
    }
-
+  if (fITSTrackPoints)
+   {
+     Info("ReadESD","Magnetic Field is %f",mf/10.);
+     AliKalmanTrack::SetMagneticField(mf/10.);
+   }
+   
   AliStack* stack = 0x0;
   if (fReadParticles && fRunLoader)
    {
@@ -410,6 +420,13 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
        {
          tpts = new AliHBTTrackPoints(fNTrackPoints,esdtrack,mf,fdR);
        }
+      
+      AliHBTTrackPoints* itstpts = 0x0;
+      if (fITSTrackPoints) 
+       {
+         itstpts = new AliHBTTrackPoints(AliHBTTrackPoints::kITS,esdtrack);
+       }
+      
 
       AliHBTClusterMap* cmap = 0x0; 
       if (  fClusterMap ) 
@@ -464,6 +481,11 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
            track->SetTrackPoints(tpts); 
          }
 
+        if (itstpts)
+         {
+           track->SetITSTrackPoints(itstpts); 
+         }
+
         if (cmap) 
          { 
            track->SetClusterMap(cmap);
@@ -486,8 +508,26 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
       {
         delete particle;//particle was not stored in event
         delete tpts;
+        delete itstpts;
         delete cmap;
       }
+     else
+      {
+        if (particle->P() < 0.00001)
+         {
+           Info("ReadNext","###################################");
+           Info("ReadNext","###################################");
+           Info("ReadNext","Track Label %d",esdtrack->GetLabel());
+           TParticle *p = stack->Particle(esdtrack->GetLabel());
+           Info("ReadNext","");
+           p->Print();
+           Info("ReadNext","");
+           particle->Print();
+           TString command("touch BadInput");
+           ofstream sfile("BadEvent",ios::out);
+           sfile<<fCurrentDir<<endl;
+         }
+      } 
 
    }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
 
