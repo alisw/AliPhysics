@@ -3,7 +3,7 @@ FLUGGDUMMYSRCS := G4SDManager.cxx G4VUserDetectorConstruction.cxx \
 FLUGGDUMMYHDRS := $(FLUGGDUMMYSRCS:.cxx=.hh)
 FLUGGWRAPSRCS := WrapDN.cxx WrapG1.cxx WrapG1RT.cxx \
 		 WrapIncrHist.cxx WrapIniHist.cxx WrapInit.cxx WrapLookDB.cxx \
-		 WrapLookFX.cxx WrapLookMG.cxx WrapLookZ.cxx WrapMag.cxx \
+		 WrapLookFX.cxx WrapLookMG.cxx WrapLookZ.cxx \
 		 WrapNorml.cxx WrapReg.cxx WrapSavHist.cxx WrapUtils.cxx
 FLUGGWRAPHDRS := WrapUtils.hh Wrappers.hh
 FLUGGOTHERSRCS := FluggNavigator.cxx FGeometryInit.cxx \
