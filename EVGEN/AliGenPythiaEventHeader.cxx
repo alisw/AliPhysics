@@ -15,8 +15,42 @@
 
 /*
 $Log$
+Revision 1.1  2001/07/13 09:34:53  morsch
+Event header class for Pythia added.
+
 */
 
 #include "AliGenPythiaEventHeader.h"
 ClassImp(AliGenPythiaEventHeader)
 
+
+void AliGenPythiaEventHeader::AddJet(Float_t px, Float_t py, Float_t pz, Float_t e)
+{
+//
+//  Add a jet 
+//
+    if (fNJets < 10) {
+	fJets[0][fNJets] = px;
+	fJets[1][fNJets] = py;
+	fJets[2][fNJets] = pz;
+	fJets[3][fNJets] = e;
+	fNJets++;
+    } else {
+	printf("\nWarning: More than 10 jets triggered !!\n");
+    }
+}
+
+void AliGenPythiaEventHeader::TriggerJet(Int_t i, Float_t p[4])
+{
+//
+// Give back jet #i
+//
+    if (i >= fNJets) {
+	printf("\nWarning: TriggerJet, index out of Range!!\n");
+    } else {
+	p[0] = fJets[0][i];
+	p[1] = fJets[1][i];
+	p[2] = fJets[2][i];
+	p[3] = fJets[3][i];
+    }
+}
