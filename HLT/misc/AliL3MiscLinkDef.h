@@ -7,6 +7,6 @@
 #pragma link C++ class AliTransBit; 
 #pragma link C++ class AliTransBit_v1; 
 #pragma link C++ class AliTransBit_v2; 
-
+#pragma link C++ class AliL3AltroMemHandler;
 #endif
 
