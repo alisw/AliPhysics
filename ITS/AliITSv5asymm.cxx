@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.11  2001/03/23 00:12:23  nilsen
+Set Reading of AliITSgeom data from Geant3 common blocks as the default and
+not a .det file. Removed redundent calls to BuildGeometry.
+
 Revision 1.10  2001/02/14 14:22:58  nilsen
 Now looking in the right director for the old .det.
 
@@ -689,7 +693,7 @@ void AliITSv5asymm::InitAliITSgeom(){
 
     if(fITSgeom!=0) delete fITSgeom;
     nlad[0]=20;nlad[1]=40;nlad[2]=14;nlad[3]=22;nlad[4]=34;nlad[5]=38;
-    ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=22;ndet[5]=25;
+    ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=23;ndet[5]=26;
     fITSgeom = new AliITSgeom(0,6,nlad,ndet,mod);
     mod = -1;
     for(lay=1;lay<=nlayers;lay++){
