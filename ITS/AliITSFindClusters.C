@@ -41,7 +41,7 @@ Int_t AliITSFindClusters() {
    // SDD
    Float_t baseline = 10.;
    Float_t noise = 1.67;
-   Float_t thres = baseline+3.*noise;
+   Int_t thres = baseline+3.*noise;
 
    AliITSDetType *iDetType=ITS->DetType(1);
    AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
