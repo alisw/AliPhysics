@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.57  2002/05/22 13:22:53  morsch
+Process kPyMbNonDiffr added.
+
 Revision 1.56  2002/04/26 10:30:01  morsch
 Option kPyBeautyPbMNR added. (N. Carrer).
 
@@ -269,7 +272,10 @@ void AliGenPythia::Init()
 
 
     fPythia->SetCKIN(3,fPtHardMin);
-    fPythia->SetCKIN(4,fPtHardMax);    
+    fPythia->SetCKIN(4,fPtHardMax);
+    fPythia->SetCKIN(7,fYHardMin);
+    fPythia->SetCKIN(8,fYHardMax);
+    
     if (fNucA1 > 0 && fNucA2 > 0) fPythia->SetNuclei(fNucA1, fNucA2);  
     // Fragmentation?
     if (fFragmentation) {
@@ -605,9 +611,9 @@ Int_t  AliGenPythia::GenerateMB()
 	    nc++;
 	    if (ks == 1) trackIt = 1;
 	    Int_t ipa = iparticle->GetFirstMother()-1;
-
+	    
 	    iparent = (ipa > -1) ? pParent[ipa] : -1;
-
+	    
 //
 // store track information
 	    p[0] = iparticle->Px();
@@ -618,7 +624,7 @@ Int_t  AliGenPythia::GenerateMB()
 	    origin[2] = fOrigin[2]+iparticle->Vz()/10.;
 	    Float_t tof=kconv*iparticle->T();
 	    SetTrack(fTrackIt*trackIt, iparent, kf, p, origin, polar,
-			 tof, kPPrimary, nt, 1., ks);
+		     tof, kPPrimary, nt, 1., ks);
 	    KeepTrack(nt);
 	    pParent[i] = nt;
 	} // select particle
