@@ -47,6 +47,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
             Int_t nxN;
             Int_t hitprim;
             Int_t partcode;
+            Int_t ntrover;
             Float_t x;
             Float_t z;
             Float_t dx;
@@ -62,6 +63,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
             Int_t nxN;
             Int_t noverlaps;
             Int_t noverprim;
+            Int_t ntrover;
             Float_t qclP;
             Float_t qclN;
             Float_t qrec;
@@ -82,6 +84,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
           ntuple->Branch("nxN",&ntuple_st.nxN,"nxN/I");
           ntuple->Branch("hitprim",&ntuple_st.hitprim,"hitprim/I");
           ntuple->Branch("partcode",&ntuple_st.partcode,"partcode/I");
+          ntuple->Branch("ntrover",&ntuple_st.ntrover,"ntrover/I");
           ntuple->Branch("x",&ntuple_st.x,"x/F");
           ntuple->Branch("z",&ntuple_st.z,"z/F");
           ntuple->Branch("dx",&ntuple_st.dx,"dx/F");
@@ -101,6 +104,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
           ntuple1->Branch("dz",&ntuple1_st.dz,"dz/F");
 	  ntuple1->Branch("noverlaps",&ntuple1_st.noverlaps,"noverlaps/I");
           ntuple1->Branch("noverprim",&ntuple1_st.noverprim,"noverprim/I");
+          ntuple1->Branch("ntrover",&ntuple1_st.ntrover,"ntrover/I");
 
           ntuple2 = new TTree("ntuple2","Demo ntuple2");
           ntuple2->Branch("nxP",&ntuple2_st.nxP,"nxP/I");
@@ -229,8 +233,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
      printf("det type %d first2, last2 %d %d \n",2,first2,last2);
 
      // module loop for the SSD
-     for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
-     //for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option
+     //for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
+     for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option
 
        TTree *TR = gAlice->TreeR();
        Int_t nentrec=TR->GetEntries();
@@ -254,10 +258,10 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
        totclust += nclusters;
        //if (nclusters) printf("Found %d clusters for module %d\n",nrecc,mod);
        
-       //AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod+first2);
+       AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod+first2);
        // for the "SSD" option
 
-       AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
+       //AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
        // for the "ALL" option
 
        //       printf("Mod: %X\n",Mod);
@@ -279,6 +283,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
 	 Int_t nxP = itsClu->fMultiplicity;
 	 Int_t nxN = itsClu->fMultiplicityN;
+	 Int_t ntrover = itsClu->fNtracks;
 	 Float_t qclP = itsClu->fSignalP;     // in ADC
 	 Float_t qclN = itsClu->fSignalN;     // in ADC
 	 //Float_t dq = qclP - qclN;
@@ -296,7 +301,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	 Int_t tr2 = itsPnt->GetLabel(ii);
          Int_t ii = 2;
 	 Int_t tr3 = itsPnt->GetLabel(ii);
-
+	 //cout<<"pnt,ntrover,tr1,tr2,tr3 ="<<pnt<<","<<ntrover<<","<<tr1<<","<<tr2<<","<<tr3<<endl;
 	 // fill ntuple2
 	     ntuple2_st.nxP = nxP;
              ntuple2_st.nxN = nxN;
@@ -338,6 +343,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
    //  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0, 211 - i+
    //  310 - K0s, 321 - K+, 2112 - n, 2212 - p, 3122 - lambda
 
+	   //cout<<"hit,hitstat,track,partcode,parent ="<<hit<<","<<hitstat<<","<<track<<","<<partcode<<","<<parent<<endl;
            Float_t pmod = itsHit->GetParticle()->P(); // the momentum at the
 	                                              // vertex
 	   pmod *= 1.0e+3;
@@ -359,7 +365,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
 	  // Consider the hits only with the track number equaled to one
 	  // of the recpoint
-	  if(track == tr1) flagtrack = 1;
+	  if((track == tr1) || (track == tr2) || (track == tr3)) flagtrack = 1;
+	  //cout<<"!!Ok: track,tr1,tr2,tr3 ="<<track<<","<<tr1<<","<<tr2<<","<<tr3<<endl;
 
          if(flagtrack == 1) {     // the hit corresponds to the recpoint
 
@@ -383,7 +390,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
 
 	  // x,z resolution colculation
-          if(hitstat == 68 || hitsat == 33) {
+          if((hitstat == 68 || hitsat == 33) && dray == 0) {
   	     Float_t xmed = (xhit + xhit0)/2;
 	     Float_t zmed = (zhit + zhit0)/2;
 	     Float_t xdif = xmed - xrec;
@@ -403,6 +410,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
              ntuple_st.nxN = nxN;
 	     ntuple_st.hitprim = hitprim;
              ntuple_st.partcode = partcode;
+             ntuple_st.ntrover = ntrover;
 	     ntuple_st.x = xrec/1000;
              ntuple_st.z = zrec/1000;
 	     ntuple_st.dx = xdif;
@@ -451,6 +459,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	  noverprim -= 1;
 	  ntuple1_st.noverlaps = noverlaps;
 	  ntuple1_st.noverprim = noverprim;
+          ntuple1_st.ntrover = ntrover;
 
 	  //if(qcut < 0.18) ntuple1->Fill();
 	  ntuple1->Fill();

@@ -310,6 +310,7 @@ public:
     fSignalP=0;
     fSignalN=0;
     fStatus=-1;
+    fNtracks=0;
   }
   AliITSRawClusterSSD(Float_t Prob,Int_t Sp,Int_t Sn);
   virtual ~AliITSRawClusterSSD() {
@@ -336,6 +337,8 @@ public:
                            //               1 - ghost 
                            //               2 - EIC ? 
                            //               3 - single side 
+  Int_t fNtracks;          // Number of tracks created the cluster
+
   
   // Float_t fProbability;    // The probability that this is a "real" point
   // Int_t  fIndexMapN[100];  // indices of digits for Nside - the corresponding

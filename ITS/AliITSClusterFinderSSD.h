@@ -5,6 +5,7 @@
 
 #include <TMath.h>
 #include "AliITSClusterFinder.h"
+#include "AliITSsegmentationSSD.h"
 
 class TArrayI;
 class AliITSclusterSSD;
@@ -19,14 +20,8 @@ public:
 		
   virtual ~AliITSClusterFinderSSD();
 
+  void FindRawClusters(Int_t module);    
 
-  void FindRawClusters(Int_t mod);
-
-  /*
-  void SetAlpha1(Float_t a) {fAlpha1 =a;}
-  void SetAlpha2(Float_t a) {fAlpha2 =a;}
-  void SetAlpha3(Float_t a) {fAlpha3 =a;}
-  */
  protected:
    
   void      InitReconstruction();

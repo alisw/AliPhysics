@@ -1,5 +1,4 @@
 #include <iostream.h>
-
 #include "AliITSdigit.h"
 #include "AliITSclusterSSD.h"
 
@@ -8,13 +7,14 @@ ClassImp(AliITSclusterSSD)
 AliITSclusterSSD::AliITSclusterSSD()
 {
   // default constructor
+
 	fSide        = kTRUE;
 	fDigits      = 0;
 	fNDigits     = 0;
 	fDigitsIndex = 0;
         fNCrosses    = 0;
 	fTotalSignal = -1;
-	fNTrack      = -1;
+	fNTracks      = -1;
 	fLeftNeighbour  = kFALSE;
 	fRightNeighbour = kFALSE;
 	fCrossedClusterIndexes = new TArrayI(300);
@@ -28,7 +28,7 @@ AliITSclusterSSD::AliITSclusterSSD
    TObjArray *Digits, Bool_t side)
 {
   // non-default constructor
-  
+
 	fNDigits = ndigits;
 	fDigits = Digits;
 	fSide = side;
@@ -38,7 +38,7 @@ AliITSclusterSSD::AliITSclusterSSD
 	fLeftNeighbour  = kFALSE;
 	fRightNeighbour = kFALSE;
 	fTotalSignal =-1;
-	fNTrack      = -1;
+	fNTracks    = -1;
         fConsumed=kFALSE;
 }
 /*************************************************************************/
@@ -53,6 +53,7 @@ AliITSclusterSSD::~AliITSclusterSSD()
 AliITSclusterSSD::AliITSclusterSSD(const AliITSclusterSSD &OneSCluster)
 {
   // copy constructor
+
   if (this == &OneSCluster) return;
   fNDigits = OneSCluster.fNDigits;
   fSide=OneSCluster.fSide;
@@ -61,7 +62,7 @@ AliITSclusterSSD::AliITSclusterSSD(const AliITSclusterSSD &OneSCluster)
   fLeftNeighbour  = OneSCluster.fLeftNeighbour;
   fRightNeighbour = OneSCluster.fRightNeighbour;
   fTotalSignal =-1;
-  fNTrack      = -1;
+  fNTracks     = -1;
   fNCrosses = OneSCluster.fNCrosses;
   fConsumed = OneSCluster.fConsumed;
   Int_t i;
@@ -80,6 +81,7 @@ AliITSclusterSSD::AliITSclusterSSD(const AliITSclusterSSD &OneSCluster)
 AliITSclusterSSD& AliITSclusterSSD::operator=(const AliITSclusterSSD & OneSCluster)
 {
   // assignment operator
+
   if (this == &OneSCluster) return *this;
   fNDigits = OneSCluster.fNDigits;
   fSide=OneSCluster.fSide;
@@ -88,7 +90,7 @@ AliITSclusterSSD& AliITSclusterSSD::operator=(const AliITSclusterSSD & OneSClust
   fLeftNeighbour  = OneSCluster.fLeftNeighbour;
   fRightNeighbour = OneSCluster.fRightNeighbour;
   fTotalSignal =-1;
-  fNTrack      = -1;
+  fNTracks     = -1;
   fNCrosses = OneSCluster.fNCrosses;
   fConsumed = OneSCluster.fConsumed;
   Int_t i;
@@ -274,49 +276,43 @@ Int_t  *AliITSclusterSSD::GetTracks(Int_t &nt)
 {
   // return the track number of the cluster
   Int_t *tidx=0;
-  Int_t i, bit;
+  Int_t i, j;
+  Int_t bit =0;
+  Int_t ntracks=0;
   nt=0;
 
-  
+  for (i=0;i<10;i++) {
+       fTrack[i] = -2;
+  }
    
-   fNTrack =0;
-   for (i=0;i<10;i++)
-    {
-     fTrack[i] = 0;
-    }
-   
-   tidx=GetDigit(0)->GetTracks();
-	 
-   for (i = 0; i<3;i++)
-   {
-    fTrack[i]=tidx[i];
-    if (fTrack[i] != 0) fNTrack++;
-   }
-   for (i = 1; i<fNDigits; i++)
-   {
-    tidx=GetDigit(i)->GetTracks();
-    for (Int_t j = 0; j<3;j++)
-    {
-     bit = 1;
-     if (tidx[j]==0) break;
-     for (Int_t k = 0; k < fNTrack;k++)
-      {
-       if (tidx[j]==fTrack[k]) bit =0;
-      }
-     if (bit) fTrack[fNTrack++]=tidx[j];	
-    }
-   }
-	
- 
-  if (fNTrack > 10)
-   {
-     cout<<"\n\n Error AliITSclusterSSD::GetTracks  OUT  "<<fNDigits<<"   "<<fNTrack<<"\n\n\n\n\n";
-     
-   }
+  //cout<<"GetTrack start -------: fNDigits ="<<fNDigits<<endl;
 
- 
- nt = fNTrack;
- if(!nt) return 0;
+  for (i = 0; i<fNDigits; i++) {
+     tidx=GetDigit(i)->GetTracks();
+     for (j = 0; j<3;j++) {
+       if (tidx[j] >= 0) {
+	 if(ntracks == 0){
+         ntracks++; 
+         fTrack[ntracks-1] = tidx[j];
+	 }else if(tidx[j] != fTrack[ntracks-1]){
+          ntracks++; 
+          if(ntracks > 9) {
+           bit = 1;
+           break;
+	  }
+          fTrack[ntracks-1] = tidx[j];
+	 }
+       }
+       //cout<<"digit,dtrack,tidx,bit ="<<i<<","<<j<<","<<tidx[j]<<","<<bit<<endl; 
+       //if(ntracks>0) cout<<"digit,dtrack,fTrack,ntracks ="<<i<<","<<j<<","<<fTrack[ntracks-1]<<","<<ntracks<<endl; 
+     } // 3-tracks loop for the digit 
+     if(bit == 1) break;
+  } // digit loop
+
+  SetNTracks(ntracks); 
+  nt = ntracks;
+  //if(nt == 0) cout<<"!!! No tracks"<<endl;
+  //cout<<"GetTracks: nt,fTrack0,fTrack1,fTrack2 ="<< nt<<","<<fTrack[0]<<","<<fTrack[1]<<","<<fTrack[2]<<endl;
  return &(fTrack[0]);
 }
 /***********************************************************/

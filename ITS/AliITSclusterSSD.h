@@ -101,6 +101,18 @@ public:
                                            // comment to be written
                                            fLeftNeighbour=nei;
                                            }
+
+  void   SetNTracks(Int_t ntracks) {
+    // set ntracks
+    fNTracks=ntracks;
+  }
+
+
+  Int_t          GetNTracks(){
+                           // comment to be written
+                           return fNTracks;
+                           }
+
   Bool_t          GetSide(){
                            // comment to be written
                            return fSide;
@@ -139,7 +151,7 @@ protected:
   
   Float_t         fTotalSignal;     // comment to be written
   Int_t           fTrack[10];       // comment to be written
-  Int_t           fNTrack;          // comment to be written
+  Int_t           fNTracks;         // comment to be written
 
   Double_t        CentrOfGravity();
   Double_t        EtaAlgorithm();
