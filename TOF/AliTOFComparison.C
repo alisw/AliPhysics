@@ -328,7 +328,7 @@ Int_t good_tracks_tof(GoodTrackTOF *gt, const Int_t max) {
       }
       if (TMath::Abs(p->Vx())>0.1) continue;
       if (TMath::Abs(p->Vy())>0.1) continue;
-      if (TMath::Abs(p->Vz())>0.1) continue;
+      //      if (TMath::Abs(p->Vz())>0.1) continue;
 
       gt[nt].lab=lab;
       gt[nt].code=p->GetPdgCode();
