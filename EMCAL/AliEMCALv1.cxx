@@ -66,7 +66,7 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
     gAlice->AddHitList(fHits);
 
     fNhits = 0;
-
+    fSamplingFraction = 12.9 ; 
     fIshunt     =  1; // All hits are associated with primary particles
 }
 //______________________________________________________________________
@@ -83,8 +83,8 @@ AliEMCALv1::~AliEMCALv1(){
 void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t iparent, Float_t ienergy, 
 			Int_t id, Float_t * hits,Float_t * p){
     // Add a hit to the hit list.
-    // A PHOS hit is the sum of all hits in a single crystal
-    //   or in a single PPSD gas cell
+    // An EMCAL hit is the sum of all hits in a single segment 
+    //   originating from the same enterring particle 
     Int_t hitCounter;
     
     AliEMCALHit *newHit;
@@ -122,19 +122,19 @@ void AliEMCALv1::StepManager(void){
     TLorentzVector pos; // Lorentz vector of the track current position.
     TLorentzVector mom; // Lorentz vector of the track current momentum.
     Int_t tracknumber =  gAlice->CurrentTrack();
-    Int_t primary;
+    Int_t primary = 0;
     static Int_t iparent = 0;
     static Float_t ienergy = 0;
-    Int_t copy;
+    Int_t copy = 0;
 
 
- if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)) 
+ if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)) // This Particle in enterring the Calorimeter 
  {
     iparent = tracknumber;
     gMC->TrackMomentum(mom);
     ienergy = mom[3]; 
 }
- if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { //  We are inside a PBWO crysta
+ if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { // We are in a Scintillator Layer 
 
     gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
     gMC->CurrentVolID(id[1]); // get the phi number inside the layer
@@ -144,7 +144,7 @@ void AliEMCALv1::StepManager(void){
     xyze[0] = pos[0];
     xyze[1] = pos[1];
     xyze[2] = pos[2];
-    xyze[3] = gMC->Edep();
+    xyze[3] = fSamplingFraction*(gMC->Edep()); // Correct for sampling calorimeter
     pmom[0] = mom[0];
     pmom[1] = mom[1];
     pmom[2] = mom[2];
@@ -152,7 +152,9 @@ void AliEMCALv1::StepManager(void){
     
     if(xyze[3] > 0.){// Track is inside the crystal and deposits some energy
 	absid = (id[0]-1)*(fGeom->GetNPhi()) + id[1];
-	AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyze, pmom);
+        if((absid/fGeom->GetNPhi()) < (2*fGeom->GetNZ()))
+        {xyze[3] = 5*xyze[3]/6 ;}  //                                             Preshower readout must be scaled
+        AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyze, pmom);
     } // there is deposited energy
 }
 }

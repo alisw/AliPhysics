@@ -17,8 +17,8 @@
 
 //_________________________________________________________________________
 //  Hits class for EMCAL    
-//  A hit in EMCAL is the sum of all hits in a single crystal
-//               
+//  A hit in EMCAL is the sum of all hits in a single segment
+//  from a single enterring particle             
 //*-- Author: Sahal Yacoob (LBL / UCT)
 // Based on AliPHOSHit
 
@@ -80,7 +80,7 @@ AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit){
 AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, Float_t ienergy, Int_t id,
 			 Float_t *hits,Float_t *p):AliHit(shunt, track){
     //
-    // Create a CPV hit object
+    // Create an EMCAL  hit object
     //
     fX          = hits[0];
     fY          = hits[1];
@@ -98,7 +98,7 @@ AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, 
 //______________________________________________________________________
 Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const{ 
     // Two hits are identical if they have the same Id and originat
-    // from the same primary
+    // from the same enterring Particle 
     Bool_t rv = kFALSE;
 
     if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetIparent()) )

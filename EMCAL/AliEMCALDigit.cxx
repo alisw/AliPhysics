@@ -13,17 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id:  */
 
 //_________________________________________________________________________
-//  EMCAL digit: Id
-//              energy
-//              3 identifiers for the primary particle(s) at the origine of the digit
-//  The digits are made in FinishEvent() by summing all the hits in a single EMCAL crystal or PPSD gas cell
-//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,
-//   it is not possible to stream such an array... (beyond my understqnding!)
+//  EMCAL digit: 
+//      A Digit is the sum of the energy lost in an EMCAL Tower
+//      It also stores information on Primary, and enterring particle
+//      tracknumbers Digits are created using AliEMCALSDigitizer, followed
+//      by AliEMCALDigitizer 
 //
-//*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
+//*-- Author: Sahal Yacoob (LBL)
+// based on : AliPHOSDigit
+//__________________________________________________________________________ 
 
 
 // --- ROOT system ---

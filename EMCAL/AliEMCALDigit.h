@@ -6,14 +6,14 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  EMCAL digit: Id
-//              energy
-//              3 identifiers for the primary particle(s) at the origine of the digit
-//  The digits are made in FinishEvent() by summing all the hits in a single EMCAL crystal or PPSD gas cell
-//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,
-//   it is not possible to stream such an array... (beyond my understqnding!)
+//  EMCAL digit: 
+// 
+//  A  Digit is the sum of energy in a Tower (Hit sum) and stores information, about primaries
+//  and enterring particle contributing to a Digit
 //
-//*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)
+//*-- Author: Sahal Yacoob (LBL)
+// based on : AliPHOSDigit
+//___________________________________________________________________________
 
 // --- ROOT system ---
 
@@ -51,7 +51,7 @@ class AliEMCALDigit : public AliDigitNew {
     return kTRUE ; }
   void    SetAmp(Int_t Amp) { 
     // sets the amplitude data member 
-    fAmp=Amp ; } 
+    fAmp= Amp ; } 
   void ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
   
  private:

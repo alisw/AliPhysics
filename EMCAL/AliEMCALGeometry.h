@@ -63,7 +63,6 @@ public:
   const Float_t GetAirGap() const { return fAirGap ; }
   const Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
   const Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
-  const Float_t GetArm1ZOffset() const {return fArm1ZOffset ;}
   const Float_t GetIPDistance()   const { return  fIPDistance  ; } 
   const Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
   const Float_t GetShellThickness() const { return fShellThickness ; }
@@ -88,12 +87,11 @@ private:
 
   // geometry
   Float_t fAirGap ;                  // Distance between envelop and active material 
-  Float_t fArm1PhiMin ;              // Minimum phi angle covered by Arm 1 
-  Float_t fArm1PhiMax ;              // Maximum phi angle covered by Arm 1       
-  Float_t fArm1ZOffset ;             // Distance from z = 0 of Arm 1
+  Float_t fArm1PhiMin ;              // Minimum angular position of EMCAL in Phi (degrees)
+  Float_t fArm1PhiMax ;              // Maximum angular position of EMCAL in Phi (degrees)
 
 // It is assumed that Arm1 and Arm2 have the same following parameters
-  Float_t fEnvelop[3] ;              // the GEANT TUB that contains the 2 arms
+  Float_t fEnvelop[3] ;              // the GEANT TUB for the detector 
   Float_t fIPDistance ;              // Distance of the inner surface to the interaction point
   Float_t fShellThickness ;          // Total thickness in (x,y) direction
   Float_t fZLength ;                 // Total length in z direction
@@ -102,7 +100,7 @@ private:
   Int_t fNZ ;                      // Number of Towers in the Z direction
   Int_t fNPhi ;                    //Number of Towers in the Phi Direction
  
-  ClassDef(AliEMCALGeometry,1)       // EMCAL geometry class 
+  ClassDef(AliEMCALGeometry,2)       // EMCAL geometry class 
 
 } ;
 

@@ -42,7 +42,7 @@ class AliEMCALv0 : public AliEMCAL {
   virtual void BuildGeometry();// creates the geometry for the ROOT display
   virtual void CreateGeometry() ;// creates the geometry for GEANT
 
-  virtual AliEMCALGeometry * GetGeometry() {
+  virtual AliEMCALGeometry * GetGeometry() const {
     // gets the pointer to the AliEMCALGeometry unique instance
     return fGeom ;
   }
@@ -67,7 +67,7 @@ class AliEMCALv0 : public AliEMCAL {
   
  protected:
 
-  ClassDef(AliEMCALv0,1)  // Implementation of EMCAL manager class for layout EMC+PPSD
+  ClassDef(AliEMCALv0,1)  // Implementation of EMCAL manager class for midrapidity barrel layout between 0 and 120 degrees 
     
     };
     

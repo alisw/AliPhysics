@@ -18,7 +18,13 @@
 //_________________________________________________________________________
 // Geometry class  for EMCAL : singleton  
 // EMCAL consists of layers of scintillator and lead
-//                  
+// Places the the Barrel Geometry of The EMCAL at Midrapidity
+// between 0 and 120 degrees of Phi and
+// -0.7 to 0.7 in eta 
+// Number of Modules and Layers may be controlled by 
+// the name of the instance defined               
+// EMCALArch2x has more modules along both phi and eta
+// EMCALArchxa has less Layers in the Radial Direction
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //     and  : Yves Schutz (SUBATECH)
 //     and  : Jennifer Klay (LBL)

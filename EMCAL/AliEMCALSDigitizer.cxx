@@ -1,4 +1,4 @@
-/**************************************************************************
+/*************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -18,7 +18,7 @@
 //_________________________________________________________________________
 // This is a TTask that makes SDigits out of Hits
 // A Summable Digits is the sum of all hits originating 
-// from one primary in one active cell
+// from one in one tower of the EMCAL 
 // A threshold for assignment of the primary to SDigit is applied 
 // SDigits are written to TreeS, branch "EMCAL"
 // AliEMCALSDigitizer with all current parameters is written 
@@ -41,7 +41,8 @@
 //             deb all  - print # and list of produced SDigits
 //             tim - print benchmarking information
 //
-//*-- Author :  Dmitri Peressounko (SUBATECH & KI) 
+//*-- Author : Sahal Yacoob (LBL)
+// based on  : AliPHOSSDigitzer 
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -73,7 +74,7 @@ ClassImp(AliEMCALSDigitizer)
   // ctor
   fA = 0;
   fB = 10000000. ;
-  fPrimThreshold = 0.001 ;
+  fPrimThreshold = 0.01 ;
   fNevents = 0 ;     
   fSDigits = 0 ;
   fHits = 0 ;
@@ -87,7 +88,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
   // ctor
   fA = 0;
   fB = 10000000.;
-  fPrimThreshold = 0.001 ;
+  fPrimThreshold = 0.01 ;
   fNevents = 0 ;      
   fSDigitsTitle = sDigitsTitle ;
   fHeadersFile = headerFile ;
@@ -191,51 +192,59 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
       
       //=========== Get the EMCAL branch from Hits Tree for the Primary track itrack
       branch->GetEntry(itrack,0);
-      AliEMCAL * EMCAL = (AliEMCAL *) gAlice->GetDetector("EMCAL") ;
+      AliEMCALv0 * EMCAL = (AliEMCALv0 *) gAlice->GetDetector("EMCAL") ;
       AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance( EMCAL->GetGeometry()->GetName(), EMCAL->GetGeometry()->GetTitle() );
  
       Int_t i;
       for ( i = 0 ; i < fHits->GetEntries() ; i++ ) {
 	AliEMCALHit * hit = (AliEMCALHit*)fHits->At(i) ;
-        AliEMCALDigit curSDigit = AliEMCALDigit(1,1,1,1);
-        AliEMCALDigit *sdigit ;
- 
-	// Assign primary number only if contribution is significant
-     
+        AliEMCALDigit  * curSDigit = 0  ;
+        AliEMCALDigit * sdigit ;
+        Bool_t newsdigit = kTRUE; 
+// Assign primary number only if contribution is significant
         if( hit->GetEnergy() > fPrimThreshold)
-          curSDigit =  AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), (((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
+   curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), (((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1 ) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
         else
-          curSDigit =  AliEMCALDigit( -1               , -1               ,(((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
-	
-        for(Int_t check= 0; check < nSdigits; check++) {
+   curSDigit =  new AliEMCALDigit( -1               , -1               ,(((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1 ) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
+     cout << "Hit ID = " <<hit->GetId() << endl ; 
+     cout << "ID for detector = " << curSDigit->GetId() << endl ;  
+           cout << hit->GetEnergy() << " - hit energy   -   Digit Energy - " << curSDigit->GetAmp() << endl;
+      for(Int_t check= 0; check < nSdigits ; check++) {
           sdigit = (AliEMCALDigit *)fSDigits->At(check);
-          if( (((hit->GetId()/geom->GetNPhi())%geom->GetNZ()) == ((sdigit->GetId()/geom->GetNPhi())%geom->GetNZ()))  && ((hit->GetId()%geom->GetNPhi()) == (sdigit->GetId()%geom->GetNPhi()))) 
-           { 
-             *sdigit = *sdigit + curSDigit ;
+          if( sdigit->GetId() == curSDigit->GetId())   
+            { cout << "SDigit - Get Amp  " << sdigit->GetAmp() << endl ; 
+             *sdigit = *sdigit + *curSDigit ;
+              newsdigit = kFALSE;
+            cout << " and after addition " << sdigit->GetAmp() << endl ; 
            }
-     else 
-         { new((*fSDigits)[nSdigits])  AliEMCALDigit(curSDigit);
-	  nSdigits++ ; } 
-	}
-  
+          }
+     if (newsdigit) 
+         { new((*fSDigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+	  nSdigits++ ;  
+	cout << "Detector nsdigits = " << nSdigits << endl ; }
+        newsdigit = kTRUE;  
+         
 
         if( hit->GetEnergy() > fPrimThreshold)
-          curSDigit =  AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), ((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
+      curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), ((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
         else
-          curSDigit =  AliEMCALDigit( -1               , -1               ,((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
+    curSDigit =  new AliEMCALDigit( -1               , -1               ,((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * (hit->GetId()%(geom->GetNPhi()+1))), Digitize( hit->GetEnergy() ) ) ;
  
       if((hit->GetId()/geom->GetNPhi()) < (2*geom->GetNZ())) 
-       {
+       { cout << "ID for Preshower = " << curSDigit->GetId()  << endl ;
         for(Int_t check= 0; check < nSdigits; check++) {
           sdigit = (AliEMCALDigit *)fSDigits->At(check);
-          if( (((hit->GetId()/geom->GetNPhi())%geom->GetNZ()) == ((sdigit->GetId()/geom->GetNPhi())%geom->GetNZ()))  && ((hit->GetId()%geom->GetNPhi()) == (sdigit->GetId()%geom->GetNPhi()))) 
+          if( sdigit->GetId() == curSDigit->GetId())   
            { 
-             *sdigit = *sdigit + curSDigit ;
+             *sdigit = *sdigit + *curSDigit ;
+             newsdigit = kFALSE ;
+            }
            }
-     else 
-         { new((*fSDigits)[nSdigits])  AliEMCALDigit(curSDigit);
-	  nSdigits++ ; } 
-	}
+     if (newsdigit) 
+         { new((*fSDigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+	  nSdigits++ ;  
+	cout << "Preshower nsdigits = " << nSdigits << endl ;}
+        newsdigit=kTRUE;	
       } 
      } 
     } // loop over tracks

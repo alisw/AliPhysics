@@ -43,7 +43,7 @@ class AliEMCAL : public AliDetector {
 
 
   virtual void   CreateMaterials() ;                     
-  virtual AliEMCALGeometry * GetGeometry()  = 0 ;   
+  //virtual AliEMCALGeometry * GetGeometry()  = 0 ;   
   Int_t   IsVersion(void) const { return -1 ; } 
   virtual void  SetTreeAddress() ;               
   virtual TString Version() {return TString(" ") ; }  

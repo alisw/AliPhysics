@@ -6,9 +6,11 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Task Class for making SDigits in EMCAL      
+//  Task Class for making Digits in EMCAL      
 //                  
-//*-- Author: Dmitri Peressounko(SUBATECH & KI)
+//*-- Author: Sahal Yacoob (LBL)
+// based on : AliPHOSDigit
+//_________________________________________________________________________ 
 
 
 // --- ROOT system ---
@@ -25,7 +27,7 @@ class AliEMCALDigitizer: public TTask {
 
 public:
   AliEMCALDigitizer() ;          // ctor
-  AliEMCALDigitizer(const char *headerFile,const char * sDigitsBranchTitle = 0) ; 
+  AliEMCALDigitizer(const char *headerFile,const char * sDigitsBranchTitle = "Default") ; 
   virtual ~AliEMCALDigitizer() ;       
 
   void    Digitize(Option_t *option);            // Make Digits from SDigits stored in fSDigits
@@ -38,7 +40,7 @@ public:
   char *  GetDigitsBranch ()const { return (char*)fDigitsTitle.Data() ;}
   TClonesArray * GetHeadersFiles(){ return fHeaderFiles ;}
   TArrayI*    GetCurrentEvents()  { return fIevent ;}
-
+  Int_t   DigitizeEnergy(Float_t energy, Int_t absId) ;
   void    MixWith(char* HeaderFile, char* SDigitsTitle =0) ; // Add another one file to mix
   virtual void    Print(Option_t* option)const ;
   void    Reset() ;   //restarts starts event processing from 0 event(s)
@@ -62,7 +64,7 @@ private:
   TString        fDigitsTitle ;     // Title of the Digits Branch  
   TClonesArray * fSDigits ;         // ! Lists of SDigits 
   TClonesArray * fDigits ;          // ! Final list of digits
-  AliEMCALSDigitizer * fSDigitizer ; // ! SDigitizer to extarct some sdigitizing parameters
+  AliEMCALSDigitizer * fSDigitizer ; // ! SDigitizer to extract some sdigitizing parameters
   Int_t   fNinputs ;                // Number of input files
   Bool_t  fInitialized ;            // 
   TArrayI * fIevent ;               // events to read at the next ReadSDigits() call

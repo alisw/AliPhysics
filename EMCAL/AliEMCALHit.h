@@ -7,7 +7,7 @@
 
 //_________________________________________________________________________
 //  Hits class for EMCAL    
-//  A hit in EMCAL is the sum of all hits from the same primary
+//  A hit in EMCAL is the sum of all hits from the same Entering particle 
 //  in the same segment of scintillator. 
 //               
 //*-- Author: Sahal Yacoob (LBL /UCT) 
@@ -46,12 +46,12 @@ class AliEMCALHit : public AliHit {
  private:
     Int_t          fId;        // Absolute Id number EMCAL segment
     Float_t        fELOS;      // Energy deposited
-    Int_t          fPrimary;   // Primary particles at the origine of the hit
+    Int_t          fPrimary;   // Primary particles at the origin of the hit
     Float_t        fPx;      // Primary partical enetrence momentum/energy
     Float_t        fPy;      // Primary partical enetrence momentum/energy
     Float_t        fPz;      // Primary partical enetrence momentum/energy
     Float_t        fPe;      // Primary partical enetrence momentum/energy
-    Int_t          fIparent;   // Parent particle that enterred emcal
+    Int_t          fIparent;   // Parent particle that entered emcal
     Float_t        fIenergy;   // Initial energy of parent particle that enterred the emcal
     ClassDef(AliEMCALHit,2)  // Hit for EMCAL
 

@@ -9,7 +9,7 @@
 // Implementation version v1 of EMCAL Manager class 
 //*--                  
 //*-- Author: Sahal Yacoob (LBL / UCT) 
-//*--  and  : Jennifer Klay
+//*--  and  : Jennifer Klay (LBL)
 //#include <assert.h>
 
 // --- ROOT system ---
@@ -38,7 +38,10 @@ class AliEMCALv1 : public AliEMCALv0 {
     AliEMCALv1 & operator = (const AliEMCALv0 & rvalue){abort();return *this;}
   
  protected:
-    ClassDef(AliEMCALv1,1)//Implementation of EMCAL manager class for layout EMC+PPSD
+    ClassDef(AliEMCALv1,2)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+
+ private:
+    Double_t fSamplingFraction ; // Sampling Fraction of Calorimeter E = f*Elos  
 
 };
 #endif // AliEMCALV1_H

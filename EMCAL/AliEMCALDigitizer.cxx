@@ -16,10 +16,10 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//*-- Author :  Dmitri Peressounko (SUBATECH & Kurchatov Institute) 
+// 
 //////////////////////////////////////////////////////////////////////////////
-// Class performs digitization of Summable digits (in the EMCAL case this is just
-// sum of contributions of all primary particles into given cell). 
+// Class performs digitization of Summable digits 
+//  
 // In addition it performs mixing of summable digits from different events.
 //
 // For each event two branches are created in TreeD:
@@ -48,7 +48,11 @@
 //                       // deb - prints number of produced digits
 //                       // deb all - prints list of produced digits
 //                       // timing  - prints time used for digitization
+////////////////////////////////////////////////////////////////////////////////////
 //
+//*-- Author: Sahal Yacoob (LBL)
+// based on : AliPHOSDigitizer
+//_________________________________________________________________________________
 
 // --- ROOT system ---
 #include "TFile.h"
@@ -81,8 +85,8 @@ ClassImp(AliEMCALDigitizer)
 
   fSDigitizer = 0 ;
   fNinputs = 1 ;
-  fPinNoise = 0.01 ;
-  fEMCDigitThreshold = 0.01 ;
+  fPinNoise = 0.00 ;
+  fEMCDigitThreshold = 0.00 ;
   fInitialized = kFALSE ;
 
   fHeaderFiles = 0;
@@ -114,14 +118,14 @@ void AliEMCALDigitizer::Init(){
     file->cd() ;
     
     fSDigitsTitles = new TClonesArray("TObjString",1);
-    new((*fSDigitsTitles)[0]) TObjString("") ;   
+    new((*fSDigitsTitles)[0]) TObjString("Default") ;   
     
     fSDigits      = new TClonesArray("TClonesArray",1) ;
     new((*fSDigits)[0]) TClonesArray("AliEMCALDigit",1000) ;
 
     fSDigitizer = 0 ;
     
-    fDigitsTitle = "" ;
+    fDigitsTitle = "Default" ;
     
     fDigits = new TClonesArray("AliEMCALDigit",200000) ;
     
@@ -168,7 +172,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *sDigitsT
     
   fDigits = new TClonesArray("AliEMCALDigit",200000) ;
   
-  fDigitsTitle = "" ; 
+  fDigitsTitle = "Default" ; 
 
   
   fSDigitizer = 0 ;
@@ -182,8 +186,8 @@ AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *sDigitsT
   
   fNinputs = 1 ;
   
-  fPinNoise = 0.01 ;
-  fEMCDigitThreshold = 0.01 ;
+  fPinNoise = 0.0001 ;
+  fEMCDigitThreshold = 0.001 ;
   
   // add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
@@ -258,11 +262,11 @@ void AliEMCALDigitizer::Digitize(Option_t *option) {
 
   fDigits->Clear() ;
 
-  AliEMCAL * EMCAL = (AliEMCAL *) gAlice->GetDetector("EMCAL") ;   
+  AliEMCALv0 * EMCAL = (AliEMCALv0 *) gAlice->GetDetector("EMCAL") ;   
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance( EMCAL->GetGeometry()->GetName(), EMCAL->GetGeometry()->GetTitle() );
 
   //Making digits with noise, first EMC
-  Int_t nEMC = geom->GetNPhi()*geom->GetNZ();
+  Int_t nEMC = 2*geom->GetNPhi()*geom->GetNZ();
   Int_t absID ;
   TString name      =  geom->GetName() ;
   
@@ -285,9 +289,10 @@ void AliEMCALDigitizer::Digitize(Option_t *option) {
     Int_t nSDigits = sdigits->GetEntries() ;     
     for(isdigit=0;isdigit< nSDigits; isdigit++){
       curSDigit = (AliEMCALDigit *)sdigits->At(isdigit) ;
-      if(inputs)                                       //Shift primaries for non-background sdigits
+     if(inputs)                                       //Shift primaries for non-background sdigits
 	curSDigit->ShiftPrimary(inputs) ;
       digit = (AliEMCALDigit *)fDigits->At(curSDigit->GetId() - 1);
+     cout << curSDigit->GetAmp() << "   and   "  << digit->GetAmp() << endl ; 
       *digit = *digit + *curSDigit ;
     }  
   }
@@ -295,7 +300,7 @@ void AliEMCALDigitizer::Digitize(Option_t *option) {
 
   //remove digits below thresholds
   for(absID = 0; absID < nEMC ; absID++)
-    if(fSDigitizer->Calibrate(((AliEMCALDigit*)fDigits->At(absID))->GetAmp()) < fEMCDigitThreshold)
+   if(fSDigitizer->Calibrate(((AliEMCALDigit*)fDigits->At(absID))->GetAmp()) < fEMCDigitThreshold)
       fDigits->RemoveAt(absID) ;
   
   fDigits->Compress() ;  
@@ -310,9 +315,29 @@ void AliEMCALDigitizer::Digitize(Option_t *option) {
   for (i = 0 ; i < ndigits ; i++) { 
     AliEMCALDigit * digit = (AliEMCALDigit *) fDigits->At(i) ; 
     digit->SetIndexInList(i) ;     
+    cout << digit->GetAmp() << "is amp" << endl;    
+    Float_t energy = fSDigitizer->Calibrate(digit->GetAmp()) ;
+    cout << energy << " = energy " << endl;
+    energy = energy*1000 ;
+    cout << energy << " = energy " << endl;
+    digit->SetAmp(DigitizeEnergy(energy,digit->GetId()) ) ;
+    cout << digit->GetAmp() << "is amp" << endl;    
+    cout << 100*energy/12.9 << endl ;
   }
 }
 //____________________________________________________________________________
+
+Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
+ { Int_t chanel ;
+  //if(absId <= fEmcCrystals){ //digitize as EMC
+    chanel = (Int_t) TMath::Ceil(energy) ;
+    //if(chanel > fNADCemc ) chanel =  fNADCemc ;
+ // }
+  return chanel ;
+}
+//____________________________________________________________________________
+
+
 void AliEMCALDigitizer::WriteDigits(){
 
   // Made TreeD in the output file. Check if branch already exists: if yes, exits 

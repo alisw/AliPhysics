@@ -8,7 +8,9 @@
 //_________________________________________________________________________
 //  Task Class for making SDigits in EMCAL      
 //                  
-//*-- Author: Dmitri Peressounko(SUBATECH & KI)
+//*-- Author: Sahal Yacoob (LBL)
+// based on : AliPHOSSDigitizer
+//_________________________________________________________________________
 
 
 // --- ROOT system ---
@@ -22,7 +24,7 @@ class AliEMCALSDigitizer: public TTask {
 
 public:
   AliEMCALSDigitizer() ;          // ctor
-  AliEMCALSDigitizer(const char* HeaderFile,const char *SdigitsTitle = 0) ; 
+  AliEMCALSDigitizer(const char* HeaderFile,const char *SdigitsTitle = "Default") ; 
   virtual ~AliEMCALSDigitizer() ; // dtor
 
   Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
@@ -55,7 +57,7 @@ private:
   TString fHeadersFile ;    //input file
   Bool_t         fIsInitialized ; 
   TClonesArray * fSDigits ; //! list of SDigits
-  TClonesArray * fHits ;    //!
+  TClonesArray * fHits ;    //! 
 
   ClassDef(AliEMCALSDigitizer,1)  // description 
 
