@@ -26,25 +26,29 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 //  Histos
     TH1F* massHU = new TH1F("massHU", "Mass Spectrum:                ", 500, 5, 15.);
     TH1F* massHS = new TH1F("massHS", "Mass Spectrum Smeared:        ", 500, 5, 15.);
+    TH2F* etaH   = new TH2F("etaH",   "eta vs etas        ", 100, 0., 5., 100, 0., 5.);
+    TH1F* etadH  = new TH1F("etaH",   "eta vs etas        ", 100, -1., 1.);
 //
 //                        Construction
 //
-//  Output file
-    TFile*  file         = new TFile(filename, "recreate");
-//  Create stack
-    AliStack* stack      = new AliStack(10000);
-    stack->MakeTree(0, filename);
+    AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
+    
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(nev);
+    rl->LoadKinematics("RECREATE");
+    rl->MakeTree("E");
+    gAlice->SetRunLoader(rl);
 
-//  Create Header
-    AliHeader* header    = new AliHeader();
-//  Create Header Tree
-    TTree* treeE         = new TTree("TE","Headers");
-    treeE->Branch("Header", "AliHeader", &header, 4000, 0);
-    treeE->Write();
+//  Create stack
+    rl->MakeStack();
+    AliStack* stack      = rl->Stack();
+ 
+//  Header
+    AliHeader* header = rl->GetHeader();
 //
 //  Create and Initialize Generator
     AliGenerator *gener = CreateGenerator();
-    AliPythia* pyth = AliPythia::Instance();
+    gener->Init();
     gener->SetStack(stack);
     
 //
@@ -56,17 +60,17 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 
 	printf("\n \n Event number %d \n \n", iev);
 	
+
 //  Initialize event
 	header->Reset(0,iev);
+	rl->SetEventNumber(iev);
 	stack->Reset();
-	stack->BeginEvent(iev);
-
+	rl->MakeTree("K");
 //  Generate event
 	gener->Generate();
 		
 //  Analysis
 	Int_t npart = stack->GetNprimary();
-//	printf("Analyse %d Particles\n", npart);
 	for (Int_t part=0; part<npart; part++) {
 	    TParticle *MPart = stack->Particle(part);
 	    Int_t mpart  = MPart->GetPdgCode();
@@ -102,7 +106,6 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 	    Float_t deta   = eta1 - eta2;
 	    Float_t m      =  TMath::Sqrt(2. * pt1 * pt2 * (TMath::CosH(deta) - TMath::Cos(dphi)));
 
-	    printf("Mass %f %f %f\n", m, phid1, phid2);
 	    massHU->Fill(m);
 // Smear
 	    // the mu+
@@ -113,12 +116,21 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 	    eff->SetCharge(1);
 	    acc->SetCharge(1);
 	    res->Evaluate(p1, thetad1, phid1, ps1, thetas1, phis1);
+
+	    
 	    Float_t effp     = eff->Evaluate(pt1, thetad1, phid1);
 	    Float_t accp     = acc->Evaluate(pt1, thetad1, phid1);
 	    trigeff->Evaluate(1, pt1, thetad1, phid1, trigeffpL, trigeffpH);
 	    thetas1 *= TMath::Pi()/180.;
 	    phis1 *= TMath::Pi()/180.;
-
+	    Float_t etas;
+	    
+	    if (TMath::Tan(thetas1/2.) > 0.) {
+		etas  = -TMath::Log(TMath::Tan(thetas1/2.));
+		etaH->Fill(etas, eta1);
+		etadH->Fill(etas-eta1);
+	    }
+	    
 	    // the mu- 
 	    res->SetCharge(-1);
 	    acc->SetCharge(-1);
@@ -129,62 +141,65 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 	    trigeff->Evaluate(-1, pt2, thetad2, phid2, trigeffnL, trigeffnH);
 	    thetas2 *= TMath::Pi()/180.;
 	    phis2 *= TMath::Pi()/180.;
- 
+	    if (TMath::Tan(thetas2/2.) > 0) {
+		etas  = -TMath::Log(TMath::Tan(thetas2/2.));
+		etaH->Fill(etas, eta2);
+		etadH->Fill(etas-eta2);
+	    }
+	    
 	    dphi   = phis1 - phis2;
-	    etas1  = - TMath::Log(TMath::Tan(thetas1/2.));
-	    etas2  = - TMath::Log(TMath::Tan(thetas2/2.));	    
+	    etas1  = - TMath::Log(TMath::Abs(TMath::Tan(thetas1/2.)+1e-4));
+	    etas2  = - TMath::Log(TMath::Abs(TMath::Tan(thetas2/2.)+1e-4));	    
 	    deta   = etas1 - etas2;
 	    pts1   = ps1 * TMath::Sin(thetas1);
 	    pts2   = ps2 * TMath::Sin(thetas2);	    
 	    
 	    m      =  TMath::Sqrt(2. * pts1 * pts2 * (TMath::CosH(deta) - TMath::Cos(dphi)));
-//	    Float_t wgt = effn * effp * accn * accp * trigeffpH * trigeffnH;
-	    Float_t wgt = accn * accp * effp * effn ;
+	    Float_t wgt = effn * effp * accn * accp * trigeffpH * trigeffnH;
 	    printf("Mass %f\n", m);
 	    if (pts1 > 0. && pts2 > 0.)
 	    massHS->Fill(m, wgt);
 	}
 	
 //  Finish event
-	header->SetNprimary(stack->GetNprimary());
-	header->SetNtrack(stack->GetNtrack());  
 //      I/O
 //	
-//	stack->FinishEvent();
-//	header->SetStack(stack);
-//	treeE->Fill();
-//	(stack->TreeK())->Write(0,TObject::kOverwrite);
+	stack->FinishEvent();
+	header->SetStack(stack);
+	rl->TreeE()->Fill();
+	header->SetNprimary(stack->GetNprimary());
+	header->SetNtrack(stack->GetNtrack());  
     } // event loop
     TCanvas *c1 = new TCanvas("c1","Canvas 1",400,10,600,700);
     massHU->Draw();
     massHS->Draw("same");
+
+    TCanvas *c2 = new TCanvas("c2","Canvas 2",400,10,600,700);
+    etaH->Draw();
     
 //
 //                         Termination
 //  Generator
     gener->FinishRun();
-//  Header
-    treeE->Write(0,TObject::kOverwrite);
-    delete treeE;   treeE = 0;
 //  Stack
     stack->FinishRun();
 //  Write file
+    rl->WriteHeader("OVERWRITE");
     gener->Write();
-    file->Write();
+    rl->Write();
 }
 
 
 AliGenerator*  CreateGenerator()
 {
     AliGenParam *gener 
-	= new AliGenParam(200000, AliGenMUONlib::kUpsilon, "");
+	= new AliGenParam(2000, AliGenMUONlib::kUpsilon, "");
         
     gener->SetMomentumRange(0,999);
     gener->SetPtRange(0,100.);
     gener->SetPhiRange(-180, 180);
-//    gener->SetYRange(2.5,4);
-    gener->SetYRange(-6. , 6.);
-    gener->SetCutOnChild(0);
+    gener->SetYRange(2.5,4);
+    gener->SetCutOnChild(1);
     gener->SetChildThetaRange(2.0,9.);
     gener->SetForceDecay(kDiMuon);
 
