@@ -54,6 +54,12 @@ public AliSegmentation {
     virtual Int_t   Npx() const {return fNpx;}
     // Max number of Pads in y
     virtual Int_t   Npy() const {return fNpy;}
+    // Dead zone width
+    virtual Float_t   DeadZone() const {return fDeadZone;}
+    
+    // Getters for padplane dimensions
+    virtual Float_t GetPadPlaneWidth()  const {return fPadPlane_Width;}
+    virtual Float_t GetPadPlaneLength() const {return fPadPlane_Length;}
     
 
     // set pad position
@@ -108,10 +114,6 @@ public AliSegmentation {
     // Function for systematic corrections
     virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
 
-    // Getters for padplane dimensions
-    virtual Float_t    GetPadPlaneWidth()  {return fPadPlane_Width;}
-    virtual Float_t    GetPadPlaneLength() {return fPadPlane_Length;}
-    
     virtual TF1* CorrFunc(Int_t) const {return fCorr;} 
     ClassDef(AliRICHSegmentationV0,1)
 	protected:
@@ -129,6 +131,7 @@ public AliSegmentation {
     Int_t      fSector;          // Current padplane
     Float_t    fWireD;           // wire pitch
     
+    Float_t fDeadZone;               //width of deadzones beteween CsI padplanes
     Float_t fPadPlane_Width;         //width of CsI padplanes
     Float_t fPadPlane_Length;        //length of CsI padplanes
 
