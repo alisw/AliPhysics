@@ -73,5 +73,10 @@ ROOTGLIBS     = -lGpad -lGui -lGX11 -lX3d  -lXpm
  
 # CERN Libraries 
 
+ifeq ($(PLATFORM),alpha)
+CLIBS         = $(LIBDIR)/libminicern.a
+else
 CLIBS         = -lminicern
+endif
+
 G3LIBS        = -lgeant321
