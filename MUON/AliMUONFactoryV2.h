@@ -35,6 +35,7 @@ class AliMUONFactoryV2 : public  AliMUONFactory {
     AliMUONFactoryV2& operator=(const AliMUONFactoryV2& rhs);
 
   private:
+    Bool_t IsGeometryDefined(Int_t ichamber);
     void BuildCommon();
     void BuildStation1();
     void BuildStation2();

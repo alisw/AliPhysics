@@ -420,13 +420,18 @@ void AliMUONTriggerCircuit::LoadYPos2(){
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
   AliMUONChamber*  iChamber;
   AliMUONGeometrySegmentation* segmentation;    
-
+  
 // first plane (11)
   chamber=11;
   cathode=1;
   iChamber = &(pMUON->Chamber(chamber-1));
   segmentation=iChamber->SegmentationModel2(cathode);
   
+  if (!segmentation) {
+    AliWarning("Segmentation not defined.");
+    return;
+  }  
+
   for (istrip=0; istrip<16; istrip++) {
     code=fXcode[0][istrip];           // decode current strip
     idModule=Int_t(code/100);           // corresponding module Id.
@@ -482,6 +487,11 @@ void AliMUONTriggerCircuit::LoadXPos2(){
   AliMUONGeometrySegmentation*  segmentation; 
   iChamber = &(pMUON->Chamber(chamber-1));
   segmentation=iChamber->SegmentationModel2(cathode);
+  
+  if (!segmentation) {
+    AliWarning("Segmentation not defined.");
+    return;
+  }  
   
   Int_t idModule=Module(fIdCircuit);        // corresponding module Id.  
 // number of Y strips

@@ -32,6 +32,7 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryStore.h"
 #include "AliMUONGeometrySegmentation.h"
+#include "AliMUONVGeometryDEIndexing.h"
 #include "AliMUONSt12QuadrantSegmentation.h"
 #include "AliMUONSt345SlatSegmentation.h"
 #include "AliMUONTriggerSegmentation.h"
@@ -93,6 +94,22 @@ AliMUONFactoryV2&  AliMUONFactoryV2::operator=(const AliMUONFactoryV2& rhs)
   return *this;  
 }    
           
+//__________________________________________________________________________
+Bool_t AliMUONFactoryV2::IsGeometryDefined(Int_t ichamber)
+{
+// Return true, if det elements for the chamber with the given ichamber Id
+// are defined in geometry (the geometry builder for this chamber was activated)
+
+  if ( ! fMUON ||
+       ! fMUON->Chamber(ichamber).GetGeometry() ||
+       ! fMUON->Chamber(ichamber).GetGeometry()->GetDEIndexing() ||
+       ! fMUON->Chamber(ichamber).GetGeometry()->GetDEIndexing()->GetNofDetElements() )
+       
+    return kFALSE;
+  
+  return kTRUE;
+}  
+
 //__________________________________________________________________________
 void AliMUONFactoryV2::BuildCommon() 
 {
@@ -967,14 +984,14 @@ void AliMUONFactoryV2::Build(AliMUON* where, const char* what)
     fMUON->SetMaxStepGas(0.1);
     fMUON->SetMaxStepAlu(0.1);
 
-    // Build all stations
+    // Build stations
     BuildCommon();
-    BuildStation1();
-    BuildStation2();
-    BuildStation3();
-    BuildStation4();
-    BuildStation5();
-    BuildStation6();
+    if (IsGeometryDefined(0))  BuildStation1();
+    if (IsGeometryDefined(2))  BuildStation2();
+    if (IsGeometryDefined(4))  BuildStation3();
+    if (IsGeometryDefined(6))  BuildStation4();
+    if (IsGeometryDefined(8))  BuildStation5();
+    if (IsGeometryDefined(10)) BuildStation6();
   } 
   else
     AliDebug(0,"Non default version of MUON selected. You have to construct yourself the MUON elements !!");
