@@ -606,3 +606,18 @@ Double_t AliAODPair::GetRStar()
 
   return rstar;
 }
+
+void   AliAODPair::MirrorSecond()
+{
+//makes local copy of the second particle and mirrors their momenta
+//for its deletion is responsible who calls this method
+  fPart2 = (AliVAODParticle*)fPart2->Clone();
+  fPart2->SetMomentum(-fPart2->Px(),-fPart2->Py(),-fPart2->Pz(),fPart2->E());
+}
+
+void   AliAODPair::DeleteSecond()
+{
+//Deletes second particle
+  delete fPart2;
+  fPart2 = 0x0;
+}

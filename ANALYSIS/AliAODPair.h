@@ -72,6 +72,8 @@ class AliAODPair: public TObject
    virtual Double_t GetRStar() ;
    virtual Double_t GetR() ;//returns distance between particle production points   
    
+   void   MirrorSecond();
+   void   DeleteSecond();
  protected:
    AliVAODParticle* fPart1;  //pointer to first particle
    AliVAODParticle* fPart2;  //pointer to second particle
@@ -170,10 +172,10 @@ void AliAODPair::SetParticles(AliVAODParticle* p1,AliVAODParticle* p2)
 {
  //sets the particle to the pair
  
- fPart1 = p1;
+ fPart1 = p1; 
  fPart2 = p2;
  if (fSwappedPair) //if we have Swapped (so we are not)
-   fSwappedPair->SetParticles(p2,p1); //set particles for him too
+   fSwappedPair->SetParticles(fPart2,p1); //set particles for him too
  Changed();
  //and do nothing until will be asked for
 } 
