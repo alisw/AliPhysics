@@ -10,7 +10,7 @@
 // List of MonteCarlo processes
 //
 
-static const Int_t kMaxMCProcess = 33;
+static const Int_t kMaxMCProcess = 34;
 
 enum AliMCProcess
 {
@@ -97,7 +97,7 @@ static const char * const AliMCProcessName[kMaxMCProcess] = {
   "Cerenkov feed back photon",
   "Cerenkov photon reflection",
   "Cerenkov photon refraction",
-  "Synchrotron radiation"
+  "Synchrotron radiation",
   "Unknown process"
 };
 
