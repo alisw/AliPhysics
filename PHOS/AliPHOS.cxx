@@ -19,8 +19,6 @@
 // --- galice header files ---
 #include "AliPHOS.h"
 #include "AliRun.h"
-#include "AliMC.h" 
-#include "TGeant3.h"
 
 //______________________________________________________________________________
 

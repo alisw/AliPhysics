@@ -7,14 +7,11 @@
 #include "TRandom.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "TBRIK.h"
-#include "TNode.h"
 #include "TMath.h"
 
 // --- galice header files ---
 #include "AliPHOSv1.h"
 #include "AliRun.h"
-#include "TGeant3.h" 
 
 ClassImp(AliPHOSv1)
 
