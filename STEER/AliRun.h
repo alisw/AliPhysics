@@ -94,8 +94,8 @@ public:
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
    virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") 
   {RunMC(nevent,setup);}
-   virtual  void  RunLego(const char *setup="Config.C",Int_t ntheta=60,Float_t themin=2,Float_t themax=178,
-			  Int_t nphi=60,Float_t phimin=0,Float_t phimax=360,Float_t rmin=0,
+   virtual  void  RunLego(const char *setup="Config.C",Int_t nc1=60,Float_t c1min=2,Float_t c1max=178,
+			  Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
 			  Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  SetCurrentTrack(Int_t track);                           
