@@ -14,7 +14,7 @@
 #pragma link C++ class  AliTOFv2+;
 #pragma link C++ class  AliTOFv3+;
 #pragma link C++ class  AliTOFv4+;
-#pragma link C++ class  AliTOFv2FHoles.cxx+;
+#pragma link C++ class  AliTOFv2FHoles+;
 
 #pragma link C++ class  AliTOFhit+;
 
