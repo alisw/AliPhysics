@@ -87,7 +87,7 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
                  gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>
                  gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
          ngood++;
-         cerr<<ngood<<'\r';
+	 //PH         cerr<<ngood<<'\r';
          if (ngood==MAX) {
             cerr<<"Too many good tracks !\n";
             break;
@@ -109,9 +109,12 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
 
    TObjArray tarray(2000);
    { /*Load tracks*/
-   TFile *ef=TFile::Open("AliESDits.root");
+   TFile *ef=TFile::Open("AliESDs.root");
    if ((!ef)||(!ef->IsOpen())) {
-      ::Fatal("AliITSComparisonV2.C","Can't open AliESDits.root !");
+     TFile *ef=TFile::Open("AliESDits.root");
+     if ((!ef)||(!ef->IsOpen())) {
+       ::Fatal("AliITSComparisonV2.C","Can't open AliESDits.root !");
+     }
    }
    TKey *key=0;
    TIter next(ef->GetListOfKeys());
@@ -272,21 +275,28 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
 
    TCanvas *c1=new TCanvas("c1","",0,0,700,850);
 
+   Int_t minc=33; 
+
    TPad *p1=new TPad("p1","",0,0.3,.5,.6); p1->Draw();
    p1->cd(); p1->SetFillColor(42); p1->SetFrameFillColor(10); 
-   hp->SetFillColor(4);  hp->SetXTitle("(mrad)"); hp->Fit("gaus"); c1->cd();
+   hp->SetFillColor(4);  hp->SetXTitle("(mrad)"); 
+   if (hp->GetEntries()<minc) hp->Draw(); else hp->Fit("gaus"); c1->cd();
 
    TPad *p2=new TPad("p2","",0.5,.3,1,.6); p2->Draw(); 
    p2->cd(); p2->SetFillColor(42); p2->SetFrameFillColor(10);
-   hl->SetXTitle("(mrad)"); hl->Fit("gaus"); c1->cd();
+   hl->SetXTitle("(mrad)");
+   if (hl->GetEntries()<minc) hl->Draw(); else hl->Fit("gaus"); c1->cd();
 
    TPad *p3=new TPad("p3","",0,0,0.5,0.3); p3->Draw();
    p3->cd(); p3->SetFillColor(42); p3->SetFrameFillColor(10); 
-   hpt->SetXTitle("(%)"); hpt->Fit("gaus"); c1->cd();
+   hpt->SetXTitle("(%)");
+   if (hpt->GetEntries()<minc) hpt->Draw(); else hpt->Fit("gaus"); c1->cd();
 
    TPad *p4=new TPad("p4","",0.5,0,1,0.3); p4->Draw();
    p4->cd(); p4->SetFillColor(42); p4->SetFrameFillColor(10);
-   hmpt->SetXTitle("(micron)"); hmpt->Fit("gaus"); hz->Draw("same"); c1->cd();
+   hmpt->SetXTitle("(micron)");
+   if (hmpt->GetEntries()<minc) hmpt->Draw(); else hmpt->Fit("gaus"); 
+   hz->Draw("same"); c1->cd();
    //hfound->Sumw2();
    //hptw->Sumw2(); 
    //hg->SetMaximum(333);
@@ -329,13 +339,18 @@ Int_t AliITSComparisonV2(Float_t ptcutl=0.2, Float_t ptcuth=10.) {
    p6->cd(); p6->SetFillColor(42); p6->SetFrameFillColor(10); 
    he->SetFillColor(2); he->SetFillStyle(3005);  
    he->SetXTitle("Arbitrary Units"); 
-   he->Fit("gaus"); c2->cd();
+   if (he->GetEntries()<minc) he->Draw(); else he->Fit("gaus"); c2->cd();
 
    TPad *p7=new TPad("p7","",0.,0.5,1.,1.); p7->Draw(); 
    p7->cd(); p7->SetFillColor(42); p7->SetFrameFillColor(10);
    hep->SetXTitle("p (Gev/c)"); hep->SetYTitle("dE/dX (Arb. Units)"); 
    hep->Draw(); c1->cd();
-   
+
+   TFile fc("AliITSComparisonV2.root","RECREATE");
+   c1->Write();
+   c2->Write();
+   fc.Close();
+
    return 0;
 }
 
