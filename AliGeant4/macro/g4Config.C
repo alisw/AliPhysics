@@ -26,7 +26,7 @@ void Config()
   gMC   ->SetProcess("DCAY",1);
   gMC ->SetProcess("PAIR",1);
   gMC ->SetProcess("COMP",1);
-  //gMC ->SetProcess("PHOT",1);
+  gMC ->SetProcess("PHOT",1);
   gMC ->SetProcess("PFIS",0);
   gMC ->SetProcess("DRAY",0);
   gMC ->SetProcess("ANNI",1);
