@@ -23,12 +23,15 @@
 // February 2004
 //_________________________________________________________________________
 #include "TFile.h"
+#include "TMath.h"
 #include "AliPHOSGetter.h"
 #include "Riostream.h"
 #include "AliESD.h"
+#include "AliESDtrack.h"
 #include "AliESDCaloTrack.h"
 #include "AliEMCALRecParticle.h"
 #include "AliPHOSRecParticle.h"
+#include "AliKalmanTrack.h"
 
 void Ana() 
 {
@@ -40,17 +43,52 @@ void Ana()
     esd = gime->ESD(event) ; 
     esd->Print();  
     Int_t index ;
+    // Calorimeter tracks 
     AliESDCaloTrack * ct ; 
     AliPHOSRecParticle * pp ; 
-    AliEMCALRecParticle * ep ;     
+    AliEMCALRecParticle * ep ; 
     for (index = 0 ; index < esd->GetNumberOfCaloTracks() ; index++) {
       ct = esd->GetCaloTrack(index) ;
       pp = dynamic_cast<AliPHOSRecParticle*>(ct->GetRecParticle()) ; 
       ep = dynamic_cast<AliEMCALRecParticle*>(ct->GetRecParticle()) ; 
-      if (pp) 
-	cout << "particle # " << index << " is from PHOS " << endl ; 
-      if(ep) 
-	cout << "particle # " << index << " is from EMCAL " << endl ; 
+      if (pp) { 
+	TVector3 pos = pp->GetPos() ;
+	cout << "PHOS particle # " << index << " pos " << 
+	  TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y() + pos.Z()*pos.Z() ) << endl ; 
+      }
+      if(ep) { 
+ 	TVector3 pos = ep->GetPos() ;
+	cout << "EMCAL particle # " << index << " pos " << 
+	  TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y() + pos.Z()*pos.Z() ) << endl ; 
+      }
+    }
+    //Charged tracks from central tracking
+    AliESDtrack * cp ; 
+    for (index = 0 ; index < esd->GetNumberOfTracks() ; index++) {
+      cp = esd->GetTrack(index) ;
+      ULong_t status = cp->GetStatus() ; 
+
+      // check if the tracks comes out of TRD
+      if ((status & AliESDtrack::kTRDout)==0) 
+	continue;
+      if ((status & AliESDtrack::kTRDStop)!=0) 
+	continue;
+
+      // Gets the Global coordinate of the track at the entrance of PHOS 
+      Double_t xyzAtPHOS[3] ; 
+      cp->GetOuterXYZ(xyzAtPHOS) ; 
+      // cout << xyzAtPHOS[0] << " " << xyzAtPHOS[1] << " "<< xyzAtPHOS[2]  << endl ; 
+      //cout << TMath::Sqrt(xyzAtPHOS[0]*xyzAtPHOS[0] + xyzAtPHOS[1]*xyzAtPHOS[1] + xyzAtPHOS[2]*xyzAtPHOS[2]) << endl ;  
+     
+      // Does the matching with PHOS/EMCAL
+//       for (index = 0 ; index < esd->GetNumberOfCaloTracks() ; index++) {
+// 	ct = esd->GetCaloTrack(index) ;
+// 	pp = dynamic_cast<AliPHOSRecParticle*>(ct->GetRecParticle()) ; 
+// 	ep = dynamic_cast<AliEMCALRecParticle*>(ct->GetRecParticle()) ; 
+// 	if (pp) {
+// 	  TVector3 pos = pp->GetPos() ; 
+// 	}
+//       }
     }
   }
 }
