@@ -22,16 +22,16 @@
 
 
 class AliPHOSv3 : public AliPHOSv1 {
-
-public:
-
+  
+ public:
+  
   AliPHOSv3(void) ; 
   AliPHOSv3(const char *name, const char *title="") ;
   //  AliPHOSv3(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
   virtual ~AliPHOSv3(void) {
     // dtor
   } 
-                            
+  
   virtual Int_t   IsVersion(void) const { 
     // Gives the version number 
     return 3 ; 
@@ -40,16 +40,37 @@ public:
     // returns the version number 
     return TString("v3") ; 
   }   
-  virtual void   StepManager(void) ;    
+  virtual void   StepManager(void) ;
   
-private:
+  Float_t GetLightYieldMean()         const { return  fLightYieldMean ;}
+  Float_t GetLightYieldAttenuation()  const { return  fLightYieldAttenuation ;}
+  Float_t GetRecalibrationFactor()    const { return  fRecalibrationFactor ;}
+  Float_t GetAPDGain()                const { return  fAPDGain ;}
+  Float_t GetIntrinsicPINEfficiency() const { return  fIntrinsicPINEfficiency ;}
+  Float_t GetElectronsPerGeV()        const { return  fElectronsPerGeV ;}
+
+  void    SetLightYieldMean(Float_t LightYieldMean) 
+    {fLightYieldMean = LightYieldMean;}
+  void    SetLightYieldAttenuation(Float_t LightYieldAttenuation)
+    {fLightYieldAttenuation = LightYieldAttenuation;}
+  void    SetIntrinsicPINEfficiency(Float_t IntrinsicPINEfficiency) 
+    {fIntrinsicPINEfficiency = IntrinsicPINEfficiency;}
+  void    SetRecalibrationFactor(Float_t RecalibrationFactor) 
+    {fRecalibrationFactor = RecalibrationFactor;}
+  void    SetElectronsPerGeV(Float_t ElectronsPerGeV) 
+    {fElectronsPerGeV = ElectronsPerGeV;}
+  void    SetAPDGain(Float_t APDGain) 
+    {fAPDGain = APDGain;}
+ 
+ private:
   
   Float_t fLightYieldMean ;         // Mean lightyield in the PbOW4 xtal per GeV (Poisson distribution)
   Float_t fIntrinsicPINEfficiency ; // Photo efficiency of the PIN diode   
   Float_t fLightYieldAttenuation ;  // Attenuation of the light through the crystal
   Float_t fRecalibrationFactor ;    // Recalibration factor
   Float_t fElectronsPerGeV ;        // Number of electrons per GeV created in the PIN by a ionizing particle
-
+  Float_t fAPDGain ;                // APD Gain
+  
   ClassDef(AliPHOSv3,1)  // Implementation of PHOS manager class for layout EMC+PPSD with light transport, MIPS in PIN and electronic noise
 
 };
