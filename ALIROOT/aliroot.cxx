@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/05/16 14:57:07  alibrary
+New files for folders and Stack
+
 Revision 1.4  2000/12/20 08:39:37  fca
 Support for Cerenkov and process list in Virtual MC
 
@@ -83,7 +86,7 @@ int main(int argc, char **argv)
   // in the event.
   
   // Create new configuration 
-  new AliConfig ("Folders","Alice data exchange");
+  new AliConfig ();
   
   new AliRun("gAlice","The ALICE Off-line Simulation Framework");
     

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.64  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.62  2001/04/06 11:12:33  morsch
 Clear fParticles after each event. (Ivana Hrivnacova)
 
@@ -639,7 +642,7 @@ void AliRun::FinishRun()
   
   // Write AliRun info and all detectors parameters
   Write(0,TObject::kOverwrite);
-  
+
   // Clean tree information
 
   fStack->FinishRun();
@@ -962,6 +965,7 @@ void AliRun::InitMC(const char *setup)
 
    fMCQA = new AliMCQA(fNdets);
 
+   AliConfig *config = AliConfig::Instance();
    //
    // Save stuff at the beginning of the file to avoid file corruption
    Write();

@@ -5,7 +5,10 @@
 
 /* $Id$ */
 /* 
- * $Log$ 
+ * $Log$
+ * Revision 1.1  2001/05/16 14:57:22  alibrary
+ * New files for folders and Stack
+ * 
  */
 
 #include <TFolder.h>
@@ -50,8 +53,7 @@ class AliConfig : public TNamed {
 
     static AliConfig*  fInstance;
     
-    ClassDef(AliConfig,1) 
-
+    ClassDef(AliConfig,1) //Configuration class for AliRun
 };				// end class AliConfig
 
 #endif

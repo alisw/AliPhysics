@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.12  2001/03/12 17:47:03  hristov
 Changes needed on Sun with CC 5.0
 
@@ -149,23 +152,25 @@ void AliDetector::Publish(const char *dir, void *address, const char *name)
   // Register pointer to detector objects. 
   // 
   TFolder *topFolder = (TFolder *)gROOT->FindObjectAny("/Folders");
-  TFolder *folder = (TFolder *)topFolder->FindObjectAny(dir);
-  // TFolder *folder = (TFolder *)gROOT->FindObjectAny(dir);
-  if (!folder)  {
-    cerr << "Cannot register: Missing folder: " << dir << endl;
-  } else {
-    TFolder *subfolder = (TFolder *) folder->FindObjectAny(this->GetName()); 
+  if  (topFolder) { 
+    TFolder *folder = (TFolder *)topFolder->FindObjectAny(dir);
+    // TFolder *folder = (TFolder *)gROOT->FindObjectAny(dir);
+    if (!folder)  {
+      cerr << "Cannot register: Missing folder: " << dir << endl;
+    } else {
+      TFolder *subfolder = (TFolder *) folder->FindObjectAny(this->GetName()); 
 
-    if(!subfolder)
-       subfolder = folder->AddFolder(this->GetName(),this->GetTitle());
-    if (address) {
-      TObject **obj = (TObject **) address;
-      if ((*obj)->InheritsFrom(TCollection::Class())) {
-         TCollection *collection = (TCollection *) (*obj); 
-         if (name)
-           collection->SetName(name);
+      if(!subfolder)
+         subfolder = folder->AddFolder(this->GetName(),this->GetTitle());
+      if (address) {
+        TObject **obj = (TObject **) address;
+        if ((*obj)->InheritsFrom(TCollection::Class())) {
+           TCollection *collection = (TCollection *) (*obj); 
+           if (name)
+             collection->SetName(name);
+        } 
+        subfolder->Add(*obj);
       } 
-      subfolder->Add(*obj);
     }  
   }
 }

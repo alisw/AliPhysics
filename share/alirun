@@ -6,6 +6,9 @@
 # modification history
 #
 # $Log$
+# Revision 1.6  2001/05/16 14:57:30  alibrary
+# New files for folders and Stack
+#
 #
 # Revision 1.5  2001/02/23 17:33:40  buncic
 # Added alifs wrapper for CASTOR and alirun modified accordingly.
@@ -163,6 +166,7 @@ then
   exec $ALIRUN_SHELL -norc  -noprofile $0 $*
 fi
 
+
 ###########################################################################
 AliRun()
 ###########################################################################
@@ -177,6 +181,38 @@ AliRun()
    printf "              [-n event #]\n"
    printf "              <-c <command ...>>\n"
    exit
+}
+
+###########################################################################
+AliSetRoot()
+###########################################################################
+{
+  ALICE_ROOT=$1;                       export ALICE_ROOT
+  ALICE=`dirname $ALICE_ROOT`;         export ALICE          
+  ALICE_LEVEL=`basename $ALICE_ROOT`;  export ALICE_LEVEL
+  ALICE_TARGET=`uname`;                export ALICE_TARGET
+  ROOTSYS=$2;                          export ROOTSYS
+  
+  LD_LIBRARY_PATH=$ROOTSYS/lib
+
+  if [ -f $ALICE/bin/changeRoot.sh ]
+  then
+    .   $ALICE/bin/changeRoot.sh \
+              $ALICE $ALICE_LEVEL $ALICE_TARGET $ROOTSYS
+  fi
+
+  if [ ! -x $ALICE_BIN/aliroot -o ! -x $ROOTSYS/bin/root ]
+  then
+     printf "Invalid Alice library directory: %s\n" $1
+     exit 1 
+  fi
+
+  LD_LIBRARY_PATH=${ROOTSYS}/lib:${ALICE_LIB}; export LD_LIBRARY_PATH
+  PATH=${ALICE_BIN}:${ROOTSYS}/bin:${PATH}; export PATH
+
+  printf "ALICE environment reset to %s\n" $ALICE_ROOT
+  which root
+  which aliroot
 }
 
 ###########################################################################
@@ -475,6 +511,7 @@ OUTPUT=.
 CMDLIST=""
 FORK="FALSE"
 FORK_LSF="FALSE"
+BATCH="FALSE"
 ECHO=""
 NEVENTS=1
 USE_CACHE="file->UseCache()"
@@ -516,6 +553,15 @@ do
         -trace)
             shift 1
             set -vx
+            ;;
+        -setroot)
+            shift 1
+            AliSetRoot $1 $2
+            shift 1
+            ;;
+        -batch)
+            shift 1
+            BATCH="TRUE"
             ;;
         -echo)
             shift 1
@@ -661,9 +707,9 @@ then
   $MKDIR -p $CONFIG_OUTDIR
 fi
 
-mkdir -p $ALIRUN_TMPDIR
-
 CONFIG_FILE=$CONFIG_FILE_PREFIX$CONFIG_OUTDIR/$FILE; export CONFIG_FILE
+
+mkdir -p $ALIRUN_TMPDIR
 
 trap Cleanup 2
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 */
 
 #include "TString.h"
@@ -53,7 +56,7 @@ AliConfig* AliConfig::Instance ()
   // Instance method for singleton class
   //
         if(fInstance == 0) {
-		    fInstance = new AliConfig ();
+		    fInstance = new AliConfig ("Folders","Alice data exchange");
 		}
 		return fInstance;
 }
