@@ -49,8 +49,8 @@ class AliGenParam : public AliGenMC
     Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
     Double_t (*fYParaFunc )(Double_t*, Double_t*); //! Pointer to Y parametrisation function
     Int_t    (*fIpParaFunc )(TRandom*);    //! Pointer to particle type parametrisation function
-    TF1* fPtPara;              // Transverse momentum parameterisation
-    TF1* fYPara;               // Rapidity parameterisation
+    TF1* fPtPara;              //!Transverse momentum parameterisation
+    TF1* fYPara;               //!Rapidity parameterisation
     Int_t       fParam;        // Parameterisation type 
     Float_t     fdNdy0;        // central multiplicity per event
     Float_t     fYWgt;         // Y-weight
