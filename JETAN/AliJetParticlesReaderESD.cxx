@@ -83,12 +83,14 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
      return kFALSE;
    }
 
-  //TDatabasePDG* pdgdb = TDatabasePDG::Instance();
-  //if (pdgdb == 0)
-  //{
-  //   Error("ReadESD","Can not get PDG Database Instance.");
-  //   return kFALSE;
-  // }
+  /*
+  TDatabasePDG* pdgdb = TDatabasePDG::Instance();
+  if (pdgdb == 0)
+  {
+     Error("ReadESD","Can not get PDG Database Instance.");
+     return kFALSE;
+  }
+  */
    
   Float_t mf = esd->GetMagneticField(); 
   if (mf <= 0.0)  
@@ -155,9 +157,7 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
        kesdtrack->GetConstrainedXYZ(xyz);
      } else {
        if(!kesdtrack->GetPxPyPzAt(0,mom)) continue;
-       xyz[0]=0;xyz[1]=0;xyz[2]=0;
-       //kesdtrack->GetPxPyPz(mom);
-       //kesdtrack->GetXYZ(xyz);
+       kesdtrack->GetXYZAt(0, xyz);
      }
      const Float_t kmass=kesdtrack->GetMass();
      const Float_t kp2=mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2];
