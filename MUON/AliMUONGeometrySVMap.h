@@ -42,7 +42,7 @@ class AliMUONStringIntMap : public TObject
     Bool_t  Add(const TString& first, Int_t second);
     Int_t   Get(const TString& first) const;
     Int_t   GetNofItems() const;
-    void    Clear();
+    virtual void Clear(Option_t* /*option*/ ="");
     virtual void Print(const char* /*option*/ = "") const;
     void Print(const TString& key, ofstream& out) const;
     
@@ -75,7 +75,7 @@ class AliMUONGeometrySVMap : public TObject
     void AddPosition(const TString& volumePath, 
              const TGeoTranslation& globalPosition);  
 
-    void Clear();
+    virtual void Clear(Option_t* /*option*/ ="");
     void ClearPositions();
     void SortPositions();
     virtual void Print(Option_t* option) const;

@@ -129,7 +129,7 @@ Int_t  AliMUONStringIntMap::GetNofItems() const
 }  
 
 //______________________________________________________________________________
-void  AliMUONStringIntMap::Clear()
+void  AliMUONStringIntMap::Clear(Option_t* /*option*/)
 {
 // Deletes the elements
 // ---
@@ -286,7 +286,7 @@ void AliMUONGeometrySVMap::AddPosition(const TString& volumePath,
 }		      
     
 //______________________________________________________________________________
-void AliMUONGeometrySVMap::Clear()
+void AliMUONGeometrySVMap::Clear(Option_t* /*option*/)
 {
 // Clears the sensitive volumes map
 

@@ -574,7 +574,7 @@ void AliMUONSt1Segmentation::GiveTestPoints(Int_t& n, Float_t* x, Float_t* y) co
 }
 
 //______________________________________________________________________________
-void AliMUONSt1Segmentation::Draw(const char * /*opt*/) const
+void AliMUONSt1Segmentation::Draw(const char * /*opt*/)
 {
 // Draw the segmentation zones.
 // (Called from AliMUON::BuildGeometry)

@@ -146,8 +146,8 @@ class AliMUONGeometrySegmentation : public TObject
     virtual void GiveTestPoints(Int_t detElemId,
                           Int_t& n, Float_t* xg, Float_t* yg) const;
                    // Test points for auto calibration
-    virtual void Draw(Int_t detElemId,
-                          const char *opt = "") const;
+    virtual void Draw(const char *opt = "");
+    virtual void Draw(Int_t detElemId, const char *opt = "");
                    // Draw the segmentation zones
 
     // Function for systematic corrections
@@ -166,7 +166,7 @@ class AliMUONGeometrySegmentation : public TObject
 
   private:
     // methods
-    Bool_t Notify(Int_t detElemId) const;
+    Bool_t OwnNotify(Int_t detElemId) const;
   
     // data members
     mutable  Int_t                           fCurrentDetElemId;  
