@@ -19,6 +19,7 @@
 
 AliModulesComposition::AliModulesComposition()
   : fAllLVSensitive(false),
+    fForceAllLVSensitive(false),
     fReadGeometry(false),
     fWriteGeometry(false),
     fMagneticField(0)    
@@ -109,6 +110,11 @@ void AliModulesComposition::ConstructModules()
   for (G4int i=0; i<nofDets; i++) {
     fModuleConstructionVector[i]->Configure();
   }  
+  if (fForceAllLVSensitive)
+    SetAllLVSensitiveToModules(fForceAllLVSensitive);
+      // override the setAllLVSensitive by Config.in macro
+      // if required
+     
   for (G4int i=0; i<nofDets; i++) {
     G4cout << "Module " << fModuleConstructionVector[i]->GetDetName()
            << " will be constructed now." << G4endl;
@@ -119,6 +125,11 @@ void AliModulesComposition::ConstructModules()
   G4int nofModules = fMoreModulesConstruction->GetNofModules();
   if (nofModules>0) {
     fMoreModulesConstruction->Configure();
+    if (fForceAllLVSensitive)
+      SetAllLVSensitiveToModules(fForceAllLVSensitive);
+        // override the setAllLVSensitive by Config.in macro
+        // if required
+
     G4cout << "Dependent modules will be constructed now." << G4endl;
     fMoreModulesConstruction->Construct();
   }  
