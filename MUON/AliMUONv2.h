@@ -85,20 +85,20 @@ class AliMUONv2 : public  AliMUONv1
     static const GReal_t fgkHzGas;         // ArCO2 Gas
         
     // Sensitive copper pads, foam layer, PCB and electronics model parameters
-    static const GReal_t fgkHxHole;
-    static const GReal_t fgkHyHole;
-    static const GReal_t fgkHxBergPlastic;
-    static const GReal_t fgkHyBergPlastic;
-    static const GReal_t fgkHxBergCopper;
-    static const GReal_t fgkHyBergCopper;
-    static const GReal_t fgkHxKapton;
-    static const GReal_t fgkHyKapton;
-    static const GReal_t fgkHxDaughter;
-    static const GReal_t fgkHyDaughter;
-    static const GReal_t fgkOffsetX;
-    static const GReal_t fgkOffsetY;
-    static const GReal_t fgkDeltaFilleEtamX;
-    static const GReal_t fgkDeltaFilleEtamY;
+    static const GReal_t fgkHxHole;   // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHyHole;   // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHxBergPlastic; // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHyBergPlastic; // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHxBergCopper;  // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHyBergCopper;  // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHxKapton;      // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHyKapton;      // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHxDaughter;    // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkHyDaughter;    // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkOffsetX;       // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkOffsetY;       // Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkDeltaFilleEtamX;// Sensitive copper pads, foam layer, PCB and electronics model parameters
+    static const GReal_t fgkDeltaFilleEtamY;// Sensitive copper pads, foam layer, PCB and electronics model parameters
 
     static const GReal_t fgkDeltaQuadLHC; //LHC Origin wrt Quadrant Origin
     static const GReal_t fgkFrameOffset;  

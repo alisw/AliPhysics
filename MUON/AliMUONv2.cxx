@@ -597,7 +597,7 @@ void AliMUONv2::CreateFrame(Int_t chamber)
 // SQFx is the Quadrant Far side layer for chamber <x> ( posZ in (3.25,6.25] ).
 //---
 
-const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
+const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 
   // tracking medias
   Int_t* idtmed = fIdtmed->GetArray()-1099;
@@ -998,9 +998,9 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
   Float_t alp2VSS = -3.20;  
   
 // LateralSight (reference point) - 3 per quadrant, only 1 programmed for now
-  Float_t VSInRad  = 0.6;
-  Float_t VSOutRad  = 1.3;
-  Float_t VSLen  = hzFrameThickness; 
+  Float_t vSInRad  = 0.6;
+  Float_t vSOutRad  = 1.3;
+  Float_t vSLen  = hzFrameThickness; 
   
 //---
 
@@ -1017,26 +1017,26 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
 
 // InArcFrame parameters
-  Float_t IAF  = 15.70;
-  Float_t OAF  = 17.55;
+  Float_t iAF  = 15.70;
+  Float_t oAF  = 17.55;
   Float_t hzAF  = hzFrameThickness;
-  Float_t AFphi1  = 0.0;
-  Float_t AFphi2  = 90.0;
+  Float_t aFphi1  = 0.0;
+  Float_t aFphi2  = 90.0;
 
 //---
 
 // ScrewsInFrame parameters HEAD
-  Float_t SCRUHMI  = 0.;
-  Float_t SCRUHMA  = 0.690/2.;
-  Float_t SCRUHLE  = 0.4/2.;
+  Float_t sCRUHMI  = 0.;
+  Float_t sCRUHMA  = 0.690/2.;
+  Float_t sCRUHLE  = 0.4/2.;
 // ScrewsInFrame parameters MIDDLE
-  Float_t SCRUMMI  = 0.;
-  Float_t SCRUMMA  = 0.39/2.;
-  Float_t SCRUMLE  = hzFrameThickness;
+  Float_t sCRUMMI  = 0.;
+  Float_t sCRUMMA  = 0.39/2.;
+  Float_t sCRUMLE  = hzFrameThickness;
 // ScrewsInFrame parameters NUT
-  Float_t SCRUNMI  = 0.;
-  Float_t SCRUNMA  = 0.78/2.;
-  Float_t SCRUNLE  = 0.8/2.;   
+  Float_t sCRUNMI  = 0.;
+  Float_t sCRUNMA  = 0.78/2.;
+  Float_t sCRUNLE  = 0.8/2.;   
   
        // ___________________Make volumes________________________
 
@@ -1437,9 +1437,9 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     gMC->Gsvolu("SQ38","TRAP",idAlu,par,11);
 
     // LateralSight
-    par[0] = VSInRad;
-    par[1] = VSOutRad;
-    par[2] = VSLen;       
+    par[0] = vSInRad;
+    par[1] = vSOutRad;
+    par[2] = vSLen;       
     gMC->Gsvolu("SQ39","TUBE",idFrameEpoxy,par,3);   
 
 //---
@@ -1456,33 +1456,33 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     gMC->Gsvolu("SQ41","BOX",idFrameEpoxy,par,3);
 
     // InArcFrame 
-    par[0] = IAF;
-    par[1] = OAF; 
+    par[0] = iAF;
+    par[1] = oAF; 
     par[2] = hzAF;  
-    par[3] = AFphi1; 
-    par[4] = AFphi2;
+    par[3] = aFphi1; 
+    par[4] = aFphi2;
 
     gMC->Gsvolu("SQ42","TUBS",idFrameEpoxy,par,5);
 
 //---
     // ScrewsInFrame - 3 sections in order to avoid overlapping volumes
     // Screw Head, in air
-    par[0] = SCRUHMI;
-    par[1] = SCRUHMA; 
-    par[2] = SCRUHLE;  
+    par[0] = sCRUHMI;
+    par[1] = sCRUHMA; 
+    par[2] = sCRUHLE;  
 
     gMC->Gsvolu("SQ43","TUBE",idInox,par,3);
     
     // Middle part, in the Epoxy
-    par[0] = SCRUMMI;
-    par[1] = SCRUMMA;
-    par[2] = SCRUMLE;
+    par[0] = sCRUMMI;
+    par[1] = sCRUMMA;
+    par[2] = sCRUMLE;
     gMC->Gsvolu("SQ44","TUBE",idInox,par,3);
     
     // Screw nut, in air
-    par[0] = SCRUNMI;
-    par[1] = SCRUNMA;
-    par[2] = SCRUNLE;   
+    par[0] = sCRUNMI;
+    par[1] = sCRUNMA;
+    par[2] = sCRUNLE;   
     gMC->Gsvolu("SQ45","TUBE",idInox,par,3);     
    }
               
@@ -1490,19 +1490,19 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
         
     // InVFrame  
     posX = hxInVFrame;
-    posY = 2.0*hyInHFrame+2.*hyH1mm+IAF+hyInVFrame;        
+    posY = 2.0*hyInHFrame+2.*hyH1mm+iAF+hyInVFrame;        
     posZ = 0.;
     gMC->Gspos("SQ00",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
     //Flat 7.5mm vertical section
     posX = 2.0*hxInVFrame+hxV1mm;
-    posY = 2.0*hyInHFrame+2.*hyH1mm+IAF+hyV1mm;
+    posY = 2.0*hyInHFrame+2.*hyH1mm+iAF+hyV1mm;
     posZ = 0.;
     gMC->Gspos("SQ01",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
     
     // TopFrameAnode place 2 layers of TopFrameAnode cuboids  
     posX = hxTFA;
-    posY = 2.*hyInHFrame+2.*hyH1mm+IAF+2.*hyInVFrame+hyTFA;   
+    posY = 2.*hyInHFrame+2.*hyH1mm+iAF+2.*hyInVFrame+hyTFA;   
     posZ = hzOuterFrameInox;
     gMC->Gspos("SQ02",1,QuadrantMLayerName(chamber),posX, posY, posZ,0,"ONLY"); 
     posZ = posZ+hzOuterFrameInox;
@@ -1579,70 +1579,70 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     gMC->Gspos("SQ16",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY"); 
 
     // OutEdgeFrame 
-    Float_t XCenter[8]; 
-    Float_t YCenter[8];
+    Float_t xCenter[8]; 
+    Float_t yCenter[8];
     
-    XCenter[0] = 73.201 + fgkDeltaQuadLHC;
-    XCenter[1] = 78.124 + fgkDeltaQuadLHC; 
-    XCenter[2] = 82.862 + fgkDeltaQuadLHC;
-    XCenter[3] = 87.418 + fgkDeltaQuadLHC; 
+    xCenter[0] = 73.201 + fgkDeltaQuadLHC;
+    xCenter[1] = 78.124 + fgkDeltaQuadLHC; 
+    xCenter[2] = 82.862 + fgkDeltaQuadLHC;
+    xCenter[3] = 87.418 + fgkDeltaQuadLHC; 
     
-    YCenter[0] = 68.122 + fgkDeltaQuadLHC;
-    YCenter[1] = 62.860 + fgkDeltaQuadLHC;   
-    YCenter[2] = 57.420 + fgkDeltaQuadLHC;
-    YCenter[3] = 51.800 + fgkDeltaQuadLHC; 
+    yCenter[0] = 68.122 + fgkDeltaQuadLHC;
+    yCenter[1] = 62.860 + fgkDeltaQuadLHC;   
+    yCenter[2] = 57.420 + fgkDeltaQuadLHC;
+    yCenter[3] = 51.800 + fgkDeltaQuadLHC; 
       
-    XCenter[4] = 68.122 + fgkDeltaQuadLHC;
-    XCenter[5] = 62.860 + fgkDeltaQuadLHC; 
-    XCenter[6] = 57.420 + fgkDeltaQuadLHC;
-    XCenter[7] = 51.800 + fgkDeltaQuadLHC; 
+    xCenter[4] = 68.122 + fgkDeltaQuadLHC;
+    xCenter[5] = 62.860 + fgkDeltaQuadLHC; 
+    xCenter[6] = 57.420 + fgkDeltaQuadLHC;
+    xCenter[7] = 51.800 + fgkDeltaQuadLHC; 
     
-    YCenter[4] = 73.210 + fgkDeltaQuadLHC;
-    YCenter[5] = 78.124 + fgkDeltaQuadLHC; 
-    YCenter[6] = 82.862 + fgkDeltaQuadLHC;
-    YCenter[7] = 87.418 + fgkDeltaQuadLHC; 
+    yCenter[4] = 73.210 + fgkDeltaQuadLHC;
+    yCenter[5] = 78.124 + fgkDeltaQuadLHC; 
+    yCenter[6] = 82.862 + fgkDeltaQuadLHC;
+    yCenter[7] = 87.418 + fgkDeltaQuadLHC; 
       
     posZ = -1.0*hzOuterFrameInox;     
-    gMC->Gspos("SQ17",1,QuadrantMLayerName(chamber), XCenter[0], YCenter[0], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ17",2,QuadrantMLayerName(chamber), XCenter[4], YCenter[4], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ17",1,QuadrantMLayerName(chamber), xCenter[0], yCenter[0], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ17",2,QuadrantMLayerName(chamber), xCenter[4], yCenter[4], posZ, rot3,"ONLY");
 
-    gMC->Gspos("SQ19",1,QuadrantMLayerName(chamber), XCenter[1], YCenter[1], posZ, rot2,"ONLY");   
-    gMC->Gspos("SQ19",2,QuadrantMLayerName(chamber), XCenter[5], YCenter[5], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ19",1,QuadrantMLayerName(chamber), xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
+    gMC->Gspos("SQ19",2,QuadrantMLayerName(chamber), xCenter[5], yCenter[5], posZ, rot3,"ONLY");
 
-    gMC->Gspos("SQ21",1,QuadrantMLayerName(chamber), XCenter[2], YCenter[2], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ21",2,QuadrantMLayerName(chamber), XCenter[6], YCenter[6], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ21",1,QuadrantMLayerName(chamber), xCenter[2], yCenter[2], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ21",2,QuadrantMLayerName(chamber), xCenter[6], yCenter[6], posZ, rot3,"ONLY");
     
-    gMC->Gspos("SQ23",1,QuadrantMLayerName(chamber), XCenter[3], YCenter[3], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ23",2,QuadrantMLayerName(chamber), XCenter[7], YCenter[7], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ23",1,QuadrantMLayerName(chamber), xCenter[3], yCenter[3], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ23",2,QuadrantMLayerName(chamber), xCenter[7], yCenter[7], posZ, rot3,"ONLY");
      
     posZ = posZ+hzOuterFrameEpoxy;
    
-    gMC->Gspos("SQ18",1,QuadrantMLayerName(chamber), XCenter[0], YCenter[0], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ18",2,QuadrantMLayerName(chamber), XCenter[4], YCenter[4], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ18",1,QuadrantMLayerName(chamber), xCenter[0], yCenter[0], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ18",2,QuadrantMLayerName(chamber), xCenter[4], yCenter[4], posZ, rot3,"ONLY");
     
-    gMC->Gspos("SQ20",1,QuadrantMLayerName(chamber), XCenter[1], YCenter[1], posZ, rot2,"ONLY");   
-    gMC->Gspos("SQ20",2,QuadrantMLayerName(chamber), XCenter[5], YCenter[5], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ20",1,QuadrantMLayerName(chamber), xCenter[1], yCenter[1], posZ, rot2,"ONLY");   
+    gMC->Gspos("SQ20",2,QuadrantMLayerName(chamber), xCenter[5], yCenter[5], posZ, rot3,"ONLY");
 
-    gMC->Gspos("SQ22",1,QuadrantMLayerName(chamber), XCenter[2], YCenter[2], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ22",2,QuadrantMLayerName(chamber), XCenter[6], YCenter[6], posZ, rot3,"ONLY");
+    gMC->Gspos("SQ22",1,QuadrantMLayerName(chamber), xCenter[2], yCenter[2], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ22",2,QuadrantMLayerName(chamber), xCenter[6], yCenter[6], posZ, rot3,"ONLY");
        
-    gMC->Gspos("SQ24",1,QuadrantMLayerName(chamber), XCenter[3], YCenter[3], posZ, rot2,"ONLY");
-    gMC->Gspos("SQ24",2,QuadrantMLayerName(chamber), XCenter[7], YCenter[7], posZ, rot3,"ONLY");  
+    gMC->Gspos("SQ24",1,QuadrantMLayerName(chamber), xCenter[3], yCenter[3], posZ, rot2,"ONLY");
+    gMC->Gspos("SQ24",2,QuadrantMLayerName(chamber), xCenter[7], yCenter[7], posZ, rot3,"ONLY");  
 
 //---    
         
 // OutVFrame
-    posX = 2.*hxInVFrame+IAF+2.*hxInHFrame-hxOutVFrame+2.*hxV1mm;
+    posX = 2.*hxInVFrame+iAF+2.*hxInHFrame-hxOutVFrame+2.*hxV1mm;
     posY = 2.*hyInHFrame+hyOutVFrame;    
     posZ = 0.;              
     gMC->Gspos("SQ25",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
-    Float_t TOPY = posY+hyOutVFrame;
-    Float_t OUTX = posX;
+    Float_t tOPY = posY+hyOutVFrame;
+    Float_t oUTX = posX;
 
 // OutVFrame corner
-    posX = OUTX;
-    posY = TOPY+((bl1OCTF+tl1OCTF)/2.);
+    posX = oUTX;
+    posY = tOPY+((bl1OCTF+tl1OCTF)/2.);
     posZ = 0.;     
     gMC->Gspos("SQ26",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY"); 
 
@@ -1671,16 +1671,16 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     gMC->Gspos("SQ29",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
 
 // SuppLateralPositionner - 2 copies 
-    posX = 90.2-fgkNearFarLHC;
-    posY = 5.00-fgkNearFarLHC;    
+    posX = 90.2-kfgkNearFarLHC;
+    posY = 5.00-kfgkNearFarLHC;    
     posZ = hzLateralPosnAl-fgkMotherThick2;             
     gMC->Gspos("SQ30",1,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;            
     gMC->Gspos("SQ30",2,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
 // LateralPositionner - 2 copies - Face view
-    posX = 92.175-fgkNearFarLHC-2.*hxLPP;
-    posY = 5.00-fgkNearFarLHC;   
+    posX = 92.175-kfgkNearFarLHC-2.*hxLPP;
+    posY = 5.00-kfgkNearFarLHC;   
     posZ =2.0*hzLateralPosnAl+hzLateralPosnInoxFace-fgkMotherThick2;              
     gMC->Gspos("SQ31",1,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;             
@@ -1692,8 +1692,8 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ32",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // middle layer
 
-    posX = 92.175-fgkNearFarLHC+hxLPF-hxLPP; 
-    posY = 5.0000-fgkNearFarLHC;    
+    posX = 92.175-kfgkNearFarLHC+hxLPF-hxLPP; 
+    posY = 5.0000-kfgkNearFarLHC;    
     posZ = fgkMotherThick2-hzLPNF;              
     gMC->Gspos("SQ33",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // near layer
     posZ = -1.*posZ;
@@ -1705,8 +1705,8 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ34",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");  
 
-    posX = 95.73-fgkNearFarLHC;
-    posY = 33.26-fgkNearFarLHC;
+    posX = 95.73-kfgkNearFarLHC;
+    posY = 33.26-kfgkNearFarLHC;
     posZ = 2.0*hzLateralSightAl+hzVerticalCradleAl-fgkMotherThick2;               
     gMC->Gspos("SQ34",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");
     posZ = -1.0*posZ;              
@@ -1718,8 +1718,8 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ35",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
 
-    posX = 97.29-fgkNearFarLHC;
-    posY = 23.02-fgkNearFarLHC;   
+    posX = 97.29-kfgkNearFarLHC;
+    posY = 23.02-kfgkNearFarLHC;   
     posZ = 2.0*hzLateralSightAl+hzVerticalCradleAl-fgkMotherThick2;          
     gMC->Gspos("SQ35",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");    
     posZ = -1.0*posZ;          
@@ -1731,8 +1731,8 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ36",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
 
-    posX = 98.31-fgkNearFarLHC;
-    posY = 12.77-fgkNearFarLHC;        
+    posX = 98.31-kfgkNearFarLHC;
+    posY = 12.77-kfgkNearFarLHC;        
 
     posZ = 2.0*hzLateralSightAl+hzVerticalCradleAl-fgkMotherThick2;         
     gMC->Gspos("SQ36",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");       
@@ -1751,8 +1751,8 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     gMC->Gspos("SQ37",3,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");          
              
 // LateralSightSupport - 2 copies
-    posX = 98.53-fgkNearFarLHC;
-    posY = 10.00-fgkNearFarLHC;    
+    posX = 98.53-kfgkNearFarLHC;
+    posY = 10.00-kfgkNearFarLHC;    
     posZ = hzLateralSightAl-fgkMotherThick2;
     gMC->Gspos("SQ38",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;             
@@ -1767,13 +1767,13 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
 
 // InHFrame
-    posX = 2.0*hxInVFrame+2.*hxV1mm+IAF+hxInHFrame;
+    posX = 2.0*hxInVFrame+2.*hxV1mm+iAF+hxInHFrame;
     posY = hyInHFrame;
     posZ = 0.;       
     gMC->Gspos("SQ40",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
  
 // Flat 7.5mm horizontal section
-    posX = 2.0*hxInVFrame+2.*hxV1mm+IAF+hxH1mm;
+    posX = 2.0*hxInVFrame+2.*hxV1mm+iAF+hxH1mm;
     posY = 2.0*hyInHFrame+hyH1mm;
     posZ = 0.;
     gMC->Gspos("SQ41",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
@@ -1791,25 +1791,25 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
          
 // Screws on IHEpoxyFrame
 
-     const Int_t NumberOfScrewsIH = 14;    // no. of screws on the IHEpoxyFrame
-     const Float_t offX = 5.;              // inter-screw distance 
+     const Int_t knumberOfScrewsIH = 14;    // no. of screws on the IHEpoxyFrame
+     const Float_t koffX = 5.;              // inter-screw distance 
 
      // first screw coordinates 
      scruX[0] = 21.07;                  
      scruY[0] = -2.23; 
      // other screw coordinates      
-     for (Int_t i = 1;i<NumberOfScrewsIH;i++){   
-     scruX[i] = scruX[i-1]+offX; 
+     for (Int_t i = 1;i<knumberOfScrewsIH;i++){   
+     scruX[i] = scruX[i-1]+koffX; 
      scruY[i] = scruY[0];
      }    
      // Position the volumes on the frames
-     for (Int_t i = 0;i<NumberOfScrewsIH;i++){
+     for (Int_t i = 0;i<knumberOfScrewsIH;i++){
      posX = fgkDeltaQuadLHC + scruX[i];
      posY = fgkDeltaQuadLHC + scruY[i];
      posZ = 0.;   
-     gMC->Gspos("SQ43",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-SCRUHLE, 0, "ONLY");      
+     gMC->Gspos("SQ43",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");      
      gMC->Gspos("SQ44",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY");
-     gMC->Gspos("SQ45",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+SCRUNLE, 0, "ONLY"); 
+     gMC->Gspos("SQ45",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY"); 
      }
      // special screw coordinates
      scruX[63] = 16.3;  
@@ -1817,61 +1817,61 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
      posX = fgkDeltaQuadLHC + scruX[63];
      posY = fgkDeltaQuadLHC + scruY[63];
      posZ = 0.;            
-     gMC->Gspos("SQ43",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-SCRUHLE, 0, "ONLY");
+     gMC->Gspos("SQ43",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");
      gMC->Gspos("SQ44",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
-     gMC->Gspos("SQ45",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+SCRUNLE, 0, "ONLY");  
+     gMC->Gspos("SQ45",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY");  
      
 // Screws on the IVEpoxyFrame
   
-    const Int_t NumberOfScrewsIV = 15;     // no. of screws on the IVEpoxyFrame
-    const Float_t offY = 5.;               // inter-screw distance 
-    Int_t FirstScrew = 58;
-    Int_t LastScrew = 44;
+    const Int_t knumberOfScrewsIV = 15;     // no. of screws on the IVEpoxyFrame
+    const Float_t koffY = 5.;               // inter-screw distance 
+    Int_t firstScrew = 58;
+    Int_t lastScrew = 44;
  
     // first (special) screw coordinates
-    scruX[FirstScrew-1] = -2.23; 
-    scruY[FirstScrew-1] = 16.3; 
+    scruX[firstScrew-1] = -2.23; 
+    scruY[firstScrew-1] = 16.3; 
     // second (repetitive) screw coordinates
-    scruX[FirstScrew-2] = -2.23; 
-    scruY[FirstScrew-2] = 21.07;     
+    scruX[firstScrew-2] = -2.23; 
+    scruY[firstScrew-2] = 21.07;     
     // other screw coordinates      
-    for (Int_t i = FirstScrew-3;i>LastScrew-2;i--){   
-    scruX[i] = scruX[FirstScrew-2];
-    scruY[i] = scruY[i+1]+offY;
+    for (Int_t i = firstScrew-3;i>lastScrew-2;i--){   
+    scruX[i] = scruX[firstScrew-2];
+    scruY[i] = scruY[i+1]+koffY;
     }
     
-    for (Int_t i = 0;i<NumberOfScrewsIV;i++){
-    posX = fgkDeltaQuadLHC + scruX[i+LastScrew-1];
-    posY = fgkDeltaQuadLHC + scruY[i+LastScrew-1];
+    for (Int_t i = 0;i<knumberOfScrewsIV;i++){
+    posX = fgkDeltaQuadLHC + scruX[i+lastScrew-1];
+    posY = fgkDeltaQuadLHC + scruY[i+lastScrew-1];
     posZ = 0.;       
-    gMC->Gspos("SQ43",i+LastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-SCRUHLE, 0, "ONLY");     
-    gMC->Gspos("SQ44",i+LastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
-    gMC->Gspos("SQ45",i+LastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+SCRUNLE, 0, "ONLY");
+    gMC->Gspos("SQ43",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");     
+    gMC->Gspos("SQ44",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ45",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY");
     }    
     
 // Screws on the OVEpoxyFrame
   
-    const Int_t NumberOfScrewsOV = 10;     // no. of screws on the OVEpoxyFrame
+    const Int_t knumberOfScrewsOV = 10;     // no. of screws on the OVEpoxyFrame
 
-    FirstScrew = 15;
-    LastScrew = 25;
+    firstScrew = 15;
+    lastScrew = 25;
  
     // first (repetitive) screw coordinates
-    scruX[FirstScrew-1] = 90.9; 
-    scruY[FirstScrew-1] = -2.23;  // true value
+    scruX[firstScrew-1] = 90.9; 
+    scruY[firstScrew-1] = -2.23;  // true value
  
     // other screw coordinates      
-    for (Int_t i = FirstScrew; i<LastScrew; i++ ){   
-    scruX[i] = scruX[FirstScrew-1];
-    scruY[i] = scruY[i-1]+offY;
+    for (Int_t i = firstScrew; i<lastScrew; i++ ){   
+    scruX[i] = scruX[firstScrew-1];
+    scruY[i] = scruY[i-1]+koffY;
     }
-    for (Int_t i = 0;i<NumberOfScrewsOV;i++){
-    posX = fgkDeltaQuadLHC + scruX[i+FirstScrew-1];
-    posY = fgkDeltaQuadLHC + scruY[i+FirstScrew-1];
+    for (Int_t i = 0;i<knumberOfScrewsOV;i++){
+    posX = fgkDeltaQuadLHC + scruX[i+firstScrew-1];
+    posY = fgkDeltaQuadLHC + scruY[i+firstScrew-1];
     posZ = 0.;   
-    gMC->Gspos("SQ43",i+FirstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-SCRUHLE, 0, "ONLY");     
-    gMC->Gspos("SQ44",i+FirstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
-    gMC->Gspos("SQ45",i+FirstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+SCRUNLE, 0, "ONLY"); 
+    gMC->Gspos("SQ43",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");     
+    gMC->Gspos("SQ44",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
+    gMC->Gspos("SQ45",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY"); 
     }
       
 // Inner Arc of Frame, screw positions and numbers-1
@@ -1885,9 +1885,9 @@ const Float_t fgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posX = fgkDeltaQuadLHC + scruX[i+58];
     posY = fgkDeltaQuadLHC + scruY[i+58];
     posZ = 0.;   
-    gMC->Gspos("SQ43",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-SCRUHLE, 0, "ONLY");    
+    gMC->Gspos("SQ43",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");    
     gMC->Gspos("SQ44",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY");
-    gMC->Gspos("SQ45",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+SCRUNLE, 0, "ONLY");
+    gMC->Gspos("SQ45",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY");
     }
 }
 
@@ -2015,7 +2015,7 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
   
   GReal_t posX,posY,posZ;
   
-  IntVector already_done;
+  IntVector alreadydone;
   for (Int_t irow=0;irow<sector->GetNofRows();irow++){ // for each row
     AliMpRow* row = sector->GetRow(irow);
 
@@ -2058,8 +2058,8 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
 
           Int_t motifPosId = seg->GetMotifPositionId(motifNum);
           
-          if (find(already_done.begin(),already_done.end(),motifPosId)
-              != already_done.end()) continue; // don't treat the same motif twice
+          if (find(alreadydone.begin(),alreadydone.end(),motifPosId)
+              != alreadydone.end()) continue; // don't treat the same motif twice
           
           AliMUONSt1SpecialMotif spMot = specialMap[motifPosId];
           AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(motifPosId);
@@ -2078,7 +2078,7 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
           gMC->Gspos(fgkDaughterName, motifPosId, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
-          already_done.push_back(motifPosId);// mark this motif as done
+          alreadydone.push_back(motifPosId);// mark this motif as done
 	}		
       }// end of special motif case
     }
