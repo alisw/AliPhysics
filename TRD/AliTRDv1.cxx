@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/11/10 14:58:36  cblume
+Introduce additional hit with amplitude 0 at the chamber borders
+
 Revision 1.23  2000/11/01 14:53:21  cblume
 Merge with TRD-develop
 
@@ -512,6 +515,7 @@ void AliTRDv1::StepManager()
   Int_t    qTot;
 
   Float_t  hits[3];
+  Float_t  moms[3];
   Float_t  random[1];
   Float_t  charge;
   Float_t  aMass;
@@ -560,12 +564,15 @@ void AliTRDv1::StepManager()
 
       // The hit coordinates
       gMC->TrackPosition(pos);
+      hits[0] = pos[0];
+      hits[1] = pos[1];
+      hits[2] = pos[2];
 
       // The track momentum
       gMC->TrackMomentum(mom);
-      hits[0] = mom[0];
-      hits[1] = mom[1];
-      hits[2] = mom[2];
+      moms[0] = mom[0];
+      moms[1] = mom[1];
+      moms[2] = mom[2];
 
       // The sector number (0 - 17)
       // The numbering goes clockwise and starts at y = 0
@@ -618,7 +625,7 @@ void AliTRDv1::StepManager()
         new(lhits[fNhits++]) AliTRDhit(fIshunt
                                       ,gAlice->CurrentTrack()
                                       ,det
-                                      ,hits
+                                      ,moms
                                       ,0);
       }
 
