@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/11/08 16:36:33  hristov
+Updated V2 stream of tracking (Yu.Belikov). The new long waited features are: 1) Possibility to pass the primary vertex position to the trackers (both for the TPC and the ITS) 2) Possibility to specify the number of tracking passes together with applying (or not applying) the vertex constraint (ITS only) 3) Possibility to make some use of partial PID provided by the TPC when doing tracking in the ITS (ITS only) 4) V0 reconstruction with a helix minimisation of the DCA. (new macros: AliV0FindVertices.C and AliV0Comparison.C) 4a) ( Consequence of the 4) )  All the efficiencies and resolutions are from now on calculated including *secondary*particles* too. (Don't be surprised by the drop in efficiency etc)
+
 Revision 1.14  2001/10/21 19:04:55  hristov
 Several patches were done to adapt the barel reconstruction to the multi-event case. Some memory leaks were corrected. (Yu.Belikov)
 
@@ -107,7 +110,10 @@ AliTPCtracker::~AliTPCtracker() {
   //------------------------------------------------------------------
   delete[] fInnerSec;
   delete[] fOuterSec;
-  fSeeds->Delete(); delete fSeeds;
+  if (fSeeds) {
+    fSeeds->Delete(); 
+    delete fSeeds;
+  }
 }
 
 //_____________________________________________________________________________
