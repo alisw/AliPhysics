@@ -78,7 +78,9 @@ void AliALIFE::VolumeHeader()
 void AliALIFE:: Cylinder(Float_t rmin, Float_t rmax, 
 			 Float_t zmin, Float_t zmax, 
 			 Float_t pos[3], 
-			 char* Material, char* Field, char* Cuts) 
+			 const char* Material,
+			 const char* Field,
+			 const char* Cuts) 
 {
 // Simple cylinder
 //
@@ -114,8 +116,8 @@ void AliALIFE:: Cylinder(Float_t rmin, Float_t rmax,
 }
 
 void AliALIFE::OnionCylinder(Float_t* r, Int_t nr, Float_t zmin, Float_t zmax,
-			     Float_t pos[3], char** Materials, 
-			     char** Fields, char** Cuts) 
+			     Float_t pos[3], const char** Materials, 
+			     const char** Fields, const char** Cuts) 
 {
 //
 // Concentric cylinders
@@ -174,7 +176,9 @@ void AliALIFE::Cone(Float_t rmin1, Float_t rmin2,
 		     Float_t rmax1, Float_t rmax2,
 		     Float_t zmin, Float_t zmax, 
 		     Float_t pos[3], 
-		     char* Material, char* Field, char* Cuts) 
+		     const char* Material,
+		     const char* Field,
+		     const char* Cuts) 
 {
 // Simple cone 
 
@@ -265,8 +269,8 @@ void AliALIFE::Cone(Float_t rmin1, Float_t rmin2,
 
 void AliALIFE::OnionCone (Float_t* r1, Float_t* r2, Int_t nr, 
 			  Float_t zmin, Float_t zmax,
-			  Float_t pos[3], char** Materials, char** Fields,
-			  char** Cuts) 
+			  Float_t pos[3], const char** Materials,
+			  const char** Fields, const char** Cuts) 
 {
 // Concentric cones
 //
@@ -381,7 +385,9 @@ void AliALIFE::OnionCone (Float_t* r1, Float_t* r2, Int_t nr,
 void AliALIFE::PolyCone(Float_t* rmin, Float_t* rmax, Float_t* z, 
 			Int_t nz,
 			Float_t pos[3], 
-			char* Material, char* Field, char* Cuts) 
+			const char* Material,
+			const char* Field,
+			const char* Cuts) 
 {
 //
 // Equivalent to the Geant3 PCON
@@ -397,7 +403,8 @@ void AliALIFE::PolyCone(Float_t* rmin, Float_t* rmax, Float_t* z,
 void AliALIFE::OnionPolyCone(Float_t** r, Float_t* z,
 			     Int_t nr, Int_t nz,
 			     Float_t pos[3], 
-			     char** Materials, char** Fields, char** Cuts)
+			     const char** Materials,
+			     const char** Fields,const  char** Cuts)
 {
 //
 // Concentric PCONS
@@ -419,7 +426,7 @@ void AliALIFE::OnionPolyCone(Float_t** r, Float_t* z,
     }
 }
 
-void AliALIFE::Comment(char* Comment)
+void AliALIFE::Comment(const char* Comment)
 {
 // Insert comment line
     fprintf(fFile1,"*%s\n", Comment);        

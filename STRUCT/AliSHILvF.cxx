@@ -599,11 +599,11 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 // begin Fluka
 //
   Float_t rf1[10], rf2[10];
-  char* materialsA[7] 
+  const char* materialsA[7] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "AIR"};
-  char* fieldsA[7] 
+  const char* fieldsA[7] 
       = {"MF", "MF", "MF", "MF", "MF", "MF"};
-  char* cutsA[7] 
+  const char* cutsA[7] 
       = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
   
   if (fWriteGeometry) {
@@ -656,13 +656,13 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
 //
 // begin Fluka
-  char* materialsB[5] 
+  const char* materialsB[5] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR"};
   
-  char* fieldsB[5] 
+  const char* fieldsB[5] 
       = {"MF", "MF", "MF", "MF", "MF"};
  
-  char* cutsB[5] 
+  const char* cutsB[5] 
       = {"$SHH","$SHH","$SHH","$SHH","$SHH"};
      
   if (fWriteGeometry) {
@@ -750,11 +750,11 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   Float_t r3V = 0.;
   
   if (fWriteGeometry) {
-   char* materials1[8] 
+   const char* materials1[8] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "NIW", "NIW", "STEEL"};
-  char* fields1[8] 
+   const char* fields1[8] 
       = {"MF", "MF", "MF", "MF", "MF", "MF", "MF", "MF"};
-  char* cuts1[8] 
+   const char* cuts1[8] 
       = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
 
   flukaGeom->Comment("2nd part: Beam shield lateral struture (0)");

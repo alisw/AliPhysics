@@ -624,11 +624,11 @@ void AliSHILv2::CreateGeometry()
   rf2[5]=par1[7];
   rf2[6]=0.; //PH This has to be checked
   
-  char* materialsA[7] 
+  const char* materialsA[7] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "AIR"};
-  char* fieldsA[7] 
+  const char* fieldsA[7] 
       = {"MF", "MF", "MF", "MF", "MF", "MF"};
-  char* cutsA[7] 
+  const char* cutsA[7] 
       = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
 
   flukaGeom->Comment("1st part: Beam pipe lateral struture (left)");
@@ -667,13 +667,13 @@ void AliSHILv2::CreateGeometry()
 
 //
 // begin Fluka
-  char* materialsB[5] 
+  const char* materialsB[5] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR"};
   
-  char* fieldsB[5] 
+  const char* fieldsB[5] 
       = {"MF", "MF", "MF", "MF", "MF"};
  
-  char* cutsB[5] 
+  const char* cutsB[5] 
       = {"$SHH","$SHH","$SHH","$SHH","$SHH"};
 
   rf1[0]=rf2[0]=0.;
@@ -756,11 +756,11 @@ void AliSHILv2::CreateGeometry()
 //
 // begin Fluka
 
-  char* materials1[8] 
+  const char* materials1[8] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "NIW", "NIW", "STEEL"};
-  char* fields1[8] 
+  const char* fields1[8] 
       = {"MF", "MF", "MF", "MF", "MF", "MF", "MF", "MF"};
-  char* cuts1[8] 
+  const char* cuts1[8] 
       = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
 
   flukaGeom->Comment("2nd part: Beam shield lateral struture (0)");

@@ -19,31 +19,43 @@ class AliALIFE : public  TObject {
     void Cylinder(Float_t rmin, Float_t rmax,
 		  Float_t zmin, Float_t zmax,
 		  Float_t pos[3],
-		  char* Material, char* Field="MF", char* Cuts="$UNSHIELDED");
+		  const char* Material, 
+		  const char* Field="MF", 
+		  const char* Cuts="$UNSHIELDED");
     void OnionCylinder(Float_t* r, Int_t nr, Float_t zmin, Float_t zmax,
 		       Float_t pos[3],
-		       char** Materials, char** Fields=0, char** Cuts=0);
+		       const char** Materials,
+		       const char** Fields=0,
+		       const char** Cuts=0);
     
     void Cone(Float_t rmin1, Float_t rmin2,
 	      Float_t rmax1, Float_t rmax2,
 	      Float_t zmin, Float_t zmax,
 	      Float_t pos[3],
-	      char* Material, char* Field="MF", char* Cuts="$UNSHIELDED");
+	      const char* Material, 
+	      const char* Field="MF", 
+	      const char* Cuts="$UNSHIELDED");
     
     void OnionCone(Float_t* r1, Float_t* r2, Int_t nr,
 		   Float_t zmin, Float_t zmax,
 		   Float_t pos[3],
-		   char** Materials, char** Fields=0, char** Cuts=0);
+		   const char** Materials,
+		   const char** Fields=0,
+		   const char** Cuts=0);
 
     void PolyCone(Float_t* rmin, Float_t* rmax, Float_t* z, Int_t nz,
 		  Float_t pos[3], 
-		  char* Material, char* Field="MF", char* Cuts="$UNSHIELDED");
+		  const char* Material, 
+		  const char* Field="MF", 
+		  const char* Cuts="$UNSHIELDED");
 
     void OnionPolyCone(Float_t** r , Float_t* z, Int_t nr, Int_t nz,
 		       Float_t pos[3], 
-		       char** Materials, char** Fields=0, char** Cuts=0);
+		       const char** Materials,
+		       const char** Fields=0,
+		       const char** Cuts=0);
     
-    void Comment(char* Comment);
+    void Comment(const char* Comment);
 
     void Finish(Bool_t remove = 0);
 

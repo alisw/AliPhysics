@@ -463,7 +463,7 @@ void AliFRAMEv2::CreateGeometry()
 
 // The internal frame
 //
-  char*  module[3] = {"B071\0", "B074\0", "B075\0"};
+  const char*  module[3] = {"B071\0", "B074\0", "B075\0"};
 //
 //
 //  Mother Volumes
