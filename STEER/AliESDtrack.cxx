@@ -438,58 +438,84 @@ Double_t AliESDtrack::GetP() const {
   return pt*TMath::Sqrt(1.+ fRp[3]*fRp[3]);
 }
 
-void AliESDtrack::GetConstrainedPxPyPz(Double_t *p) const {
+Bool_t Local2GlobalMomentum(Double_t p[3],Double_t alpha) {
+  //----------------------------------------------------------------
+  // This function performs local->global transformation of the
+  // track momentum.
+  // When called, the arguments are:
+  //    p[0] = 1/pt of the track;
+  //    p[1] = sine of local azim. angle of the track momentum;
+  //    p[2] = tangent of the track momentum dip angle;
+  //   alpha - rotation angle. 
+  // The result is returned as:
+  //    p[0] = px
+  //    p[1] = py
+  //    p[2] = pz
+  // Results for (nearly) straight tracks are meaningless !
+  //----------------------------------------------------------------
+  if (TMath::Abs(p[0])<=0)        return kFALSE;
+  if (TMath::Abs(p[1])> 0.999999) return kFALSE;
+
+  Double_t pt=1./TMath::Abs(p[0]);
+  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
+  Double_t r=TMath::Sqrt(1 - p[1]*p[1]);
+  p[0]=pt*(r*cs - p[1]*sn); p[1]=pt*(p[1]*cs + r*sn); p[2]=pt*p[2];
+
+  return kTRUE;
+}
+
+Bool_t Local2GlobalPosition(Double_t r[3],Double_t alpha) {
+  //----------------------------------------------------------------
+  // This function performs local->global transformation of the
+  // track position.
+  // When called, the arguments are:
+  //    r[0] = local x
+  //    r[1] = local y
+  //    r[2] = local z
+  //   alpha - rotation angle. 
+  // The result is returned as:
+  //    r[0] = global x
+  //    r[1] = global y
+  //    r[2] = global z
+  //----------------------------------------------------------------
+  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha), x=r[0];
+  r[0]=x*cs - r[1]*sn; r[1]=x*sn + r[1]*cs;
+
+  return kTRUE;
+}
+
+Bool_t AliESDtrack::GetConstrainedPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the constrained global track momentum components
   // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
-  if (TMath::Abs(fCp[4])<=0) {
-    p[0]=p[1]=p[2]=0;
-    return;
-  }
-  if (TMath::Abs(fCp[2]) > 0.999999) {
-     p[0]=p[1]=p[2]=0;
-     return;
-  }
-  Double_t pt=1./TMath::Abs(fCp[4]);
-  Double_t cs=TMath::Cos(fCalpha), sn=TMath::Sin(fCalpha);
-  Double_t r=TMath::Sqrt(1-fCp[2]*fCp[2]);
-  p[0]=pt*(r*cs - fCp[2]*sn); p[1]=pt*(fCp[2]*cs + r*sn); p[2]=pt*fCp[3];
+  p[0]=fCp[4]; p[1]=fCp[2]; p[2]=fCp[3];
+  return Local2GlobalMomentum(p,fCalpha);
+}  
+
+Bool_t AliESDtrack::GetConstrainedXYZ(Double_t *r) const {
+  //---------------------------------------------------------------------
+  // This function returns the constrained global track position
+  //---------------------------------------------------------------------
+  r[0]=fCx; r[1]=fCp[0]; r[2]=fCp[1];
+  return Local2GlobalPosition(r,fCalpha);
 }
 
-void AliESDtrack::GetConstrainedXYZ(Double_t *xyz) const {
-  //---------------------------------------------------------------------
-  // This function returns the global track position
-  //---------------------------------------------------------------------
-  Double_t cs=TMath::Cos(fCalpha), sn=TMath::Sin(fCalpha);
-  xyz[0]=fCx*cs - fCp[0]*sn; xyz[1]=fCx*sn + fCp[0]*cs; xyz[2]=fCp[1];
-}
-
-void AliESDtrack::GetPxPyPz(Double_t *p) const {
+Bool_t AliESDtrack::GetPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
   // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
-  if (TMath::Abs(fRp[4])<=0) {
-     p[0]=p[1]=p[2]=0;
-     return;
-  }
-  if (TMath::Abs(fRp[2]) > 0.999999) {
-     p[0]=p[1]=p[2]=0;
-     return;
-  }
-  Double_t pt=1./TMath::Abs(fRp[4]);
-  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
-  Double_t r=TMath::Sqrt(1-fRp[2]*fRp[2]);
-  p[0]=pt*(r*cs - fRp[2]*sn); p[1]=pt*(fRp[2]*cs + r*sn); p[2]=pt*fRp[3];
+  p[0]=fRp[4]; p[1]=fRp[2]; p[2]=fRp[3];
+  return Local2GlobalMomentum(p,fRalpha);
 }
 
-void AliESDtrack::GetXYZ(Double_t *xyz) const {
+Bool_t AliESDtrack::GetXYZ(Double_t *r) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
   //---------------------------------------------------------------------
-  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
-  xyz[0]=fRx*cs - fRp[0]*sn; xyz[1]=fRx*sn + fRp[0]*cs; xyz[2]=fRp[1];
+  r[0]=fRx; r[1]=fRp[0]; r[2]=fRp[1];
+  return Local2GlobalPosition(r,fRalpha);
 }
 
 void AliESDtrack::GetCovariance(Double_t cv[21]) const {
@@ -545,26 +571,23 @@ void AliESDtrack::GetCovariance(Double_t cv[21]) const {
   cv[20]=m35*(fRc[9]*m35+fRc[13]*m45)+m45*(fRc[13]*m35+fRc[14]*m45);
 }
 
-void AliESDtrack::GetInnerPxPyPz(Double_t *p) const {
+Bool_t AliESDtrack::GetInnerPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
   // af the entrance of the TPC
   //---------------------------------------------------------------------
-  if (fIx==0) {p[0]=p[1]=p[2]=0.; return;}
-  Double_t phi=TMath::ASin(fIp[2]) + fIalpha;
-  Double_t pt=1./TMath::Abs(fIp[4]);
-  p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fIp[3]; 
+  p[0]=fIp[4]; p[1]=fIp[2]; p[2]=fIp[3];
+  return Local2GlobalMomentum(p,fIalpha);
 }
 
-void AliESDtrack::GetInnerXYZ(Double_t *xyz) const {
+Bool_t AliESDtrack::GetInnerXYZ(Double_t *r) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
   // af the entrance of the TPC
   //---------------------------------------------------------------------
-  if (fIx==0) {xyz[0]=xyz[1]=xyz[2]=0.; return;}
-  Double_t phi=TMath::ATan2(fIp[0],fIx) + fIalpha;
-  Double_t r=TMath::Sqrt(fIx*fIx + fIp[0]*fIp[0]);
-  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fIp[1]; 
+  if (fIx==0) return kFALSE;
+  r[0]=fIx; r[1]=fIp[0]; r[2]=fIp[1];
+  return Local2GlobalPosition(r,fIalpha);
 }
 
 void AliESDtrack::GetInnerExternalParameters(Double_t &x, Double_t p[5]) const 
@@ -602,21 +625,13 @@ Bool_t AliESDtrack::GetPxPyPzAt(Double_t x,Double_t *p) const {
   // This function returns the global track momentum components
   // at the position "x" using the helix track approximation
   //---------------------------------------------------------------------
-  Double_t dx=x-fRx;
-  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]/AliKalmanTrack::GetConvConst();
-
-  if (TMath::Abs(f2) >= 0.9999) return kFALSE;
-  
-  Double_t r2=TMath::Sqrt(1.- f2*f2);
-
-  Double_t pt=1./TMath::Abs(fRp[4]);
-  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
-  p[0]=pt*(r2*cs - f2*sn); p[1]=pt*(f2*cs + r2*sn); p[2]=pt*fRp[3];
-
-  return kTRUE;
+  p[0]=fRp[4]; 
+  p[1]=fRp[2]+(x-fRx)*fRp[4]/AliKalmanTrack::GetConvConst(); 
+  p[2]=fRp[3];
+  return Local2GlobalMomentum(p,fRalpha);
 }
 
-Bool_t AliESDtrack::GetXYZAt(Double_t x, Double_t *xyz) const {
+Bool_t AliESDtrack::GetXYZAt(Double_t x, Double_t *r) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
   // af the radius "x" using the helix track approximation
@@ -627,13 +642,10 @@ Bool_t AliESDtrack::GetXYZAt(Double_t x, Double_t *xyz) const {
   if (TMath::Abs(f2) >= 0.9999) return kFALSE;
   
   Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
-  Double_t y = fRp[0] + dx*(f1+f2)/(r1+r2);
-  Double_t z = fRp[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fRp[3];
-
-  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
-  xyz[0]=x*cs - y*sn; xyz[1]=x*sn + y*cs; xyz[2]=z;
-
-  return kTRUE;
+  r[0] = x;
+  r[1] = fRp[0] + dx*(f1+f2)/(r1+r2);
+  r[2] = fRp[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fRp[3];
+  return Local2GlobalPosition(r,fRalpha);
 }
 
 //_______________________________________________________________________

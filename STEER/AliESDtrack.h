@@ -55,8 +55,8 @@ public:
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
   Double_t GetP() const;
-  void GetPxPyPz(Double_t *p) const;
-  void GetXYZ(Double_t *r) const;
+  Bool_t GetPxPyPz(Double_t *p) const;
+  Bool_t GetXYZ(Double_t *r) const;
   void GetCovariance(Double_t cov[21]) const;
   Int_t GetSign() const {return (fRp[4]>0) ? 1 : -1;} 
 
@@ -67,11 +67,11 @@ public:
   void GetConstrainedExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetConstrainedExternalCovariance(Double_t cov[15]) const;
 
-  void GetConstrainedPxPyPz(Double_t *p) const;
-  void GetConstrainedXYZ(Double_t *r) const;
+  Bool_t GetConstrainedPxPyPz(Double_t *p) const;
+  Bool_t GetConstrainedXYZ(Double_t *r) const;
 
-  void GetInnerPxPyPz(Double_t *p) const;
-  void GetInnerXYZ(Double_t *r) const;
+  Bool_t GetInnerPxPyPz(Double_t *p) const;
+  Bool_t GetInnerXYZ(Double_t *r) const;
   void GetInnerExternalParameters(Double_t &x, Double_t p[5]) const;//skowron
   void GetInnerExternalCovariance(Double_t cov[15]) const;//skowron
   Double_t GetInnerAlpha() const {return fIalpha;}
