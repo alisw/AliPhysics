@@ -82,6 +82,7 @@
 #include "AliRawRootdDB.h"
 #include "AliRawNullDB.h"
 #include "AliTagDB.h"
+#include "AliRunDB.h"
 
 #include "AliMDC.h"
 
@@ -250,9 +251,11 @@ Int_t AliMDC::Run()
    ALIDEBUG(3)
      AliL3Log::fgLevel=AliL3Log::kNone;
 #endif
-   if (!AliL3Transform::Init("./", kFALSE)) {
-     Error("Run","HLT initialization failed!");
-     return 1;
+   if (fUseFilter) {
+     if (!AliL3Transform::Init("./", kFALSE)) {
+      Error("Run","HLT initialization failed!");
+       return 1;
+     }
    }
 
    AliESD *esd = new AliESD;
@@ -537,7 +540,8 @@ Int_t AliMDC::Run()
                 rawdb->GetBytesWritten() / timer.RealTime() / 1000000.);
 
          // Write stats object to raw db, run db, MySQL and AliEn
-         stats->WriteToDB(rawdb);
+	 rawdb->WriteStats(stats);
+	 AliRunDB::WriteStats(stats);
          delete stats;
 
          if (!rawdb->NextFile()) {
@@ -581,7 +585,8 @@ Int_t AliMDC::Run()
           rawdb->GetBytesWritten() / timer.RealTime() / 1000000.);
 
    // Write stats to raw db and run db and delete stats object
-   stats->WriteToDB(rawdb);
+   rawdb->WriteStats(stats);
+   AliRunDB::WriteStats(stats);
    delete stats;
 
    // Close the raw DB

@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 include HLT/hlt.conf
 
 EDEFINE      := ${HLTDEFS}
@@ -7,10 +9,7 @@ PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
-	AliStats.cxx AliRawDB.cxx \
-	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
-	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
-	AliRunDB.cxx AliMDC.cxx \
+	AliStats.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
 	AliRawReaderDate.cxx \
 	AliBitPacking.cxx AliAltroBuffer.cxx \
@@ -25,8 +24,6 @@ HDRS:= $(SRCS:.cxx=.h)
 EHDRS:=$(shell root-config --incdir)/TH1F.h
 
 EINCLUDE+=HLT/src HLT/hough HLT/comp
-
-EDEFINE+= -DUSE_RDM -DUSE_HLT
 
 DHDR:= RAWLinkDef.h 
 

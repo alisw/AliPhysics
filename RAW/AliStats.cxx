@@ -109,29 +109,3 @@ void AliStats::Fill(Float_t time)
    fRTHist->Fill(fChunk, time);
    fChunk += 1.0;
 }
-
-//______________________________________________________________________________
-void AliStats::WriteToDB(AliRawDB *rawdb)
-{
-   // Write stats to raw DB, local run DB and global MySQL DB.
-
-   AliRawEventHeader &header = *rawdb->GetEvent()->GetHeader();
-
-   // Write stats into RawDB
-   TDirectory *ds = gDirectory;
-   rawdb->GetDB()->cd();
-   SetEvents(rawdb->GetEvents());
-   SetLastId(header.GetRunNumber(), header.GetEventInRun());
-   SetFileSize(rawdb->GetBytesWritten());
-   SetCompressionFactor(rawdb->GetCompressionFactor());
-   SetEndTime();
-   Write("stats");
-   ds->cd();
-
-   // Write stats also in the bookkeeping RunDB
-   AliRunDB *rundb = new AliRunDB(kTRUE);
-   rundb->Update(this);
-   rundb->UpdateRDBMS(this);
-   rundb->UpdateAliEn(this);
-   delete rundb;
-}

@@ -32,6 +32,7 @@
 
 #include "AliRawEvent.h"
 #include "AliRawEventHeader.h"
+#include "AliStats.h"
 #include "AliMDC.h"
 
 #ifdef USE_HLT
@@ -278,6 +279,25 @@ void AliRawDB::Close()
 
    delete fRawDB;
    fRawDB = 0;
+}
+
+//______________________________________________________________________________
+void AliRawDB::WriteStats(AliStats* stats)
+{
+   // Write stats to raw DB, local run DB and global MySQL DB.
+
+   AliRawEventHeader &header = *GetEvent()->GetHeader();
+
+   // Write stats into RawDB
+   TDirectory *ds = gDirectory;
+   GetDB()->cd();
+   stats->SetEvents(GetEvents());
+   stats->SetLastId(header.GetRunNumber(), header.GetEventInRun());
+   stats->SetFileSize(GetBytesWritten());
+   stats->SetCompressionFactor(GetCompressionFactor());
+   stats->SetEndTime();
+   stats->Write("stats");
+   ds->cd();
 }
 
 //______________________________________________________________________________

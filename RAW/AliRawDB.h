@@ -27,6 +27,7 @@
 
 // Forward class declarations
 class AliRawEvent;
+class AliStats;
 class TFile;
 
 #ifdef USE_HLT
@@ -51,6 +52,8 @@ public:
    void                Fill() { fTree->Fill(); fESDTree->Fill(); }
    Bool_t              FileFull() { return (fRawDB->GetBytesWritten() > fMaxSize) ?
                                     kTRUE : kFALSE; }
+
+   void         WriteStats(AliStats* stats);
 
    Bool_t       NextFile();
 

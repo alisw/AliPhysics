@@ -203,3 +203,15 @@ void AliRunDB::Close()
    if (fRunDB) fRunDB->Close();
    delete fRunDB;
 }
+
+
+//______________________________________________________________________________
+void AliRunDB::WriteStats(AliStats* stats)
+{
+   // Write stats also in the bookkeeping RunDB
+   AliRunDB *rundb = new AliRunDB(kTRUE);
+   rundb->Update(stats);
+   rundb->UpdateRDBMS(stats);
+   rundb->UpdateAliEn(stats);
+   delete rundb;
+}

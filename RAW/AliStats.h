@@ -26,7 +26,6 @@
 
 
 // Forward class declarations
-class AliRawDB;
 class TH1F;
 
 
@@ -46,7 +45,6 @@ public:
    void SetFileSize(Double_t size) { fFileSize = size; }
    void SetCompressionFactor(Float_t comp) { fCompFactor = comp; }
    void Fill(Float_t time);
-   void WriteToDB(AliRawDB *rawdb);
 
    Int_t       GetEvents() const { return fEvents; }
    Int_t       GetFirstRun() const { return fFirstRun; }

@@ -33,6 +33,8 @@ public:
    void UpdateAliEn(AliStats *stats);
    void Close();
 
+   static void WriteStats(AliStats* stats);
+
 private:
    TFile  *fRunDB;     // run database
 

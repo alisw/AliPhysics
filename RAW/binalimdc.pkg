@@ -7,7 +7,16 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-SRCS:=alimdc_main.cxx
+ESRCS:= AliMDC.cxx AliRawDB.cxx \
+	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
+	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
+	AliRunDB.cxx
+
+SRCS:= alimdc_main.cxx ${ESRCS}
+
+HDRS:= $(ESRCS:.cxx=.h)
+
+DHDR:=MDCLinkDef.h 
 
 EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
 EDEFINE+= -DUSE_RDM -DUSE_HLT

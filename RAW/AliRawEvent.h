@@ -35,6 +35,10 @@
 #include <TObject.h>
 #endif
 
+#ifndef ROOT_TObjArray
+#include <TObjArray.h>
+#endif
+
 
 // Forward class declarations
 class AliRawEventHeader;

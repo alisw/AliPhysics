@@ -10,15 +10,6 @@
 #pragma link C++ class AliRawEquipment;
 #pragma link C++ class AliRawData;
 #pragma link C++ class AliStats;
-#pragma link C++ class AliRawDB;
-#pragma link C++ class AliRawRFIODB;
-#pragma link C++ class AliRawCastorDB;
-#pragma link C++ class AliRawRootdDB;
-#pragma link C++ class AliRawNullDB;
-#pragma link C++ class AliTagDB;
-#pragma link C++ class AliTagNullDB;
-#pragma link C++ class AliRunDB;
-#pragma link C++ class AliMDC;
 #pragma link C++ class AliRawReader+;
 #pragma link C++ class AliRawReaderFile+;
 #pragma link C++ class AliRawReaderRoot+;
