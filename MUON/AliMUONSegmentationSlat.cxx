@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/06 09:00:47  morsch
+Segmentation class for chambers built out of slats.
+
 */
 
 #include "AliMUONSegmentationSlat.h"
@@ -202,8 +205,8 @@ void AliMUONSegmentationSlat::SetSymmetry(Int_t   ix,   Int_t iy)
 void AliMUONSegmentationSlat::SetSymmetry(Float_t  x, Float_t  y)
 {
 // Set set signs for symmetry transformation
-    fSym[0]=Int_t (TMath::Sign(1.,x));
-    fSym[1]=Int_t (TMath::Sign(1.,y));
+    fSym[0]=Int_t (TMath::Sign((Float_t)1.,x));
+    fSym[1]=Int_t (TMath::Sign((Float_t)1.,y));
 }
 
 void AliMUONSegmentationSlat::
@@ -222,9 +225,9 @@ GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
     Slat(islat)->GetPadI(xlocal, ylocal, ix, iy);
     for (i=0; i<islat; i++) iy+=Slat(islat)->Npy();
 
-    ix=ix*Int_t(TMath::Sign(1.,x));    
+    ix=ix*Int_t(TMath::Sign((Float_t)1.,x));    
 // Transform y 
-    iy=iy*Int_t(TMath::Sign(1.,y));   
+    iy=iy*Int_t(TMath::Sign((Float_t)1.,y));   
 }
 
 void AliMUONSegmentationSlat::

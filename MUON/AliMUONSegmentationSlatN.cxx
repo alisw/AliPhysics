@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/06 09:00:47  morsch
+Segmentation class for chambers built out of slats.
+
 */
 
 #include "AliMUONSegmentationSlatN.h"
@@ -126,8 +129,8 @@ GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
 	}
     }
 // Determine sign depending on quadrant
-    ix=ix*Int_t(TMath::Sign(1.,x));
-    iy=iy*Int_t(TMath::Sign(1.,y));    
+    ix=ix*Int_t(TMath::Sign((Float_t)1.,x));
+    iy=iy*Int_t(TMath::Sign((Float_t)1.,y));    
 
 }
 
