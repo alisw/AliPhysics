@@ -1561,9 +1561,9 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
       }
     }
 
-  if ( !phosemcrpfound ) {
+  if ( !phosemcrpfound || !phoscpvrpfound || !clusterizerfound) {
     if (fDebug)
-      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
+      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecPoints and/or Clusterizer with name " 
 	   << fRecPointsTitle << endl ;
  
   } else { 
@@ -1571,22 +1571,10 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
       PostRecPoints(fRecPointsTitle) ;
     emcbranch->SetAddress(EmcRecPointsRef(fRecPointsTitle)) ;
     emcbranch->GetEntry(0) ;
-  }
-  
-  if ( !phoscpvrpfound ) {
-    if (fDebug)
-      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
-	   << fRecPointsTitle << endl ; 
-  } else { 
+
     cpvbranch->SetAddress(CpvRecPointsRef(fRecPointsTitle)) ; 
-    cpvbranch->GetEntry(0) ;
-  }   
-  
-  if ( !clusterizerfound ) {
-    if (fDebug)
-      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Can not find Clusterizer with title " 
-	   << fRecPointsTitle << endl ; 
-  }  else { 
+    cpvbranch->GetEntry(0) ;  
+    
     if(!Clusterizer(fRecPointsTitle) )
       PostClusterizer(fRecPointsTitle) ;
     //!!!!!!!!!!!!!!!!!!!!!!!!!! Weird problem, the following line causes a seg fault
