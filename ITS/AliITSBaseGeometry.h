@@ -769,7 +769,7 @@ istream &operator>>(istream &os,AliITSPGonData &source);
 /////////////////////////////////////////////////////////////////////////
 #include <TObject.h>
 
-class AliModule;
+#include "AliModule.h"
 class TString;
 class TVector3;
 
