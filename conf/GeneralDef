@@ -52,7 +52,7 @@ BINDIR = $(ALICE_ROOT)/bin/tgt_$(ALICE_TARGET)
 VERSION		= 3.02pre
  
 # Which makedepend
-MAKEDEPEND    = $(ROOTSYS)/bin/makedepend
+MAKEDEPEND    = $(ROOTSYS)/bin/rmkdepend
 
 # Root libraries
  

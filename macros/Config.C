@@ -112,9 +112,7 @@ if(iFRAME) {
 //=================== FRAME parameters ============================
 
 AliFRAME *FRAME  = new AliFRAMEv0("FRAME","Space Frame");
-// Uncomment the following line to obtain the closed version
-// of the space frame. The default is the version with holes
-// FRAME->SetEuclidFile("$(ALICE_ROOT)/Euclid/frame.tme","$(ALICE_ROOT)/Euclid/frame1099i.euc");
+
 }
 
 if(iSHIL) {
