@@ -12,8 +12,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#include "TObject.h"
 
-class AliTOFGeometry{
+class AliTOFGeometry: public TObject{
 
  public:
   AliTOFGeometry();

@@ -33,7 +33,6 @@
 #include <Riostream.h>
 
 #include "AliRun.h"
-#include "AliTOF.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFdigit.h"
 

@@ -41,6 +41,7 @@
 #include "AliDigitizer.h"
 #include "AliRunDigitizer.h"
 
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
@@ -77,7 +78,7 @@ AliTOFDigitizer::~AliTOFDigitizer()
 
 //---------------------------------------------------------------------
 
-void AliTOFDigitizer::Exec(Option_t* option)
+void AliTOFDigitizer::Exec(Option_t* /*option*/)
 {
   //
   // Perform digitization and merging.
@@ -89,7 +90,7 @@ void AliTOFDigitizer::Exec(Option_t* option)
   // - the sdigits container is used to create the array of AliTOFdigit.
   //
 
-  if(strstr(option,"deb")) cout<<"AliTOFDigitizer::Exec\n";
+  AliDebug(1, "");
 
 
   // get the ptr to TOF detector
@@ -104,14 +105,14 @@ void AliTOFDigitizer::Exec(Option_t* option)
   AliRunLoader* outrl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   if (outrl == 0x0)
    {
-     Error("Exec","Can not find Run Loader in output folder.");
+     AliError("Can not find Run Loader in output folder.");
      return;
    }
    
   AliLoader* outgime = outrl->GetLoader("TOFLoader");
   if (outgime == 0x0)
    {
-     Error("Exec","Can not get TOF Loader from Output Run Loader.");
+     AliError("Can not get TOF Loader from Output Run Loader.");
      return;
    }
   
@@ -195,8 +196,7 @@ void AliTOFDigitizer::CreateDigits()
     Bool_t isSDigitBad = (sector<0 || sector>17 || plate<0 || plate >4 || padz<0 || padz>1 || padx<0 || padx>47);
     
     if (isSDigitBad) {
-      cout << "<AliTOFSDigits2Digits>  strange sdigit found" << endl;
-      abort();
+      AliFatal("strange sdigit found");
     }
     //-------------------------------------------------------
     
@@ -246,14 +246,14 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
   if (rl == 0x0)
    {
-     Error("ReadSDigit","Can not find Run Loader in input %d folder.",inputFile);
+     AliError(Form("Can not find Run Loader in input %d folder.",inputFile));
      return;
    }
 
   AliLoader* gime = rl->GetLoader("TOFLoader");
   if (gime == 0x0)
    {
-     Error("ReadSDigit","Can not get TOF Loader from Input %d Run Loader.",inputFile);
+     AliError(Form("Can not get TOF Loader from Input %d Run Loader.",inputFile));
      return;
    }
 
@@ -263,13 +263,13 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
      Int_t retval = gime->LoadSDigits();
      if (retval) 
       {
-         Error("ReadSDigit","Error occured while loading S. Digits for Input %d",inputFile);
+         AliError(Form("Error occured while loading S. Digits for Input %d",inputFile));
          return;
       }
      currentTreeS=gime->TreeS();
      if (currentTreeS == 0x0)
       {
-         Error("ReadSDigit","Can not get S. Digits Tree for Input %d",inputFile);
+         AliError(Form("Can not get S. Digits Tree for Input %d",inputFile));
          return;
       }
    } 
@@ -280,7 +280,7 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
   TBranch* tofBranch=currentTreeS->GetBranch("TOF");
 
   if(!tofBranch){
-    Fatal("ReadSDigit","TOF branch not found for input %d",inputFile);
+    AliFatal(Form("TOF branch not found for input %d",inputFile));
   }
   
   tofBranch->SetAddress(&sdigitsDummyContainer);           

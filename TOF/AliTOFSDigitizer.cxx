@@ -39,6 +39,7 @@
 #include <TTask.h>
 #include <TTree.h>
 
+#include "AliLog.h"
 #include "AliDetector.h"
 #include "AliLoader.h"
 #include "AliRun.h"
@@ -92,7 +93,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
     fRunLoader = AliRunLoader::Open(HeaderFile);//open session and mount on default event folder
   if (fRunLoader == 0x0)
     {
-      Fatal("AliTOFSDigitizer","Event is not loaded. Exiting");
+      AliFatal("Event is not loaded. Exiting");
       return;
     }
 
@@ -106,10 +107,10 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
   else fEvent2 = 1;
   
   if (!(fEvent2>fEvent1)) {
-    cout << " ERROR: fEvent2 = " << fEvent2 << " <= fEvent1 = " << fEvent1 << endl;
+    AliError(Form("fEvent2 = %d <= fEvent1 = %d", fEvent2, fEvent1));
     fEvent1 = 0;
     fEvent2 = 1;
-    cout << " Correction: fEvent2 = " << fEvent2 << " <= fEvent1 = " << fEvent1 << endl;
+    AliError(Form("Correction: fEvent2 = %d <= fEvent1 = %d", fEvent2, fEvent1));
   }
   
   // init parameters for sdigitization
@@ -118,7 +119,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   if (fTOFLoader == 0x0)
     {
-      Fatal("AliTOFSDigitizer","Can not find TOF loader in event. Exiting.");
+      AliFatal("Can not find TOF loader in event. Exiting.");
       return;
     }
   fTOFLoader->PostSDigitizer(this);
@@ -218,7 +219,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
   AliTOF *tof = (AliTOF *) gAlice->GetDetector("TOF");
   
   if (!tof) {
-    Error("AliTOFSDigitizer","TOF not found");
+    AliError("TOF not found");
     return;
   }
   
@@ -409,14 +410,14 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     if (tof->SDigits()) tof->ResetSDigits();
     
     if (strstr(verboseOption,"all")) {
-      cout << "---------------------------------------- \n";
-      cout << "       <AliTOFSDigitizer>    \n";
-      cout << "After sdigitizing " << nselectedHitsinEv << " hits" << " in event " << iEvent << endl;
+      AliInfo("----------------------------------------");
+      AliInfo("       <AliTOFSDigitizer>    ");
+      AliInfo(Form("After sdigitizing %d hits in event %d", nselectedHitsinEv, iEvent));
       //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
-      cout << ntotalsdigitsinEv << " digits have been created \n";
-      cout << "(" << nsignalsdigitsinEv << " due to signals and " <<  nnoisesdigitsinEv << " due to border effect) \n";
-      cout << ntotalupdatesinEv << " total updates of the hit map have been performed in current event \n";
-      cout << "---------------------------------------- \n";
+      AliInfo(Form("%d digits have been created", ntotalsdigitsinEv));
+      AliInfo(Form("(%d due to signals and %d due to border effect)", nsignalsdigitsinEv, nnoisesdigitsinEv));
+      AliInfo(Form("%d total updates of the hit map have been performed in current event", ntotalupdatesinEv));
+      AliInfo("----------------------------------------");
     }
 
   } //event loop on events
@@ -434,27 +435,27 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
   
   nHitsFromSec=nselectedHits-nHitsFromPrim;
   if(strstr(verboseOption,"all")){
-    cout << "---------------------------------------- \n";
-    cout << "---------------------------------------- \n";
-    cout << "-----------SDigitization Summary-------- \n";
-    cout << "       <AliTOFSDigitizer>     \n";
-    cout << "After sdigitizing " << nselectedHits << " hits  \n";
-    cout << "in " << (fEvent2-fEvent1) << " events  \n";
+    AliInfo("----------------------------------------");
+    AliInfo("----------------------------------------");
+    AliInfo("-----------SDigitization Summary--------");
+    AliInfo("       <AliTOFSDigitizer>     ");
+    AliInfo(Form("After sdigitizing %d hits", nselectedHits));
+    AliInfo(Form("in %d events", fEvent2-fEvent1));
 //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
-    cout << ntotalsdigits << " sdigits have been created \n";
-    cout << "(" << nsignalsdigits << " due to signals and " 
-         <<  nnoisesdigits << " due to border effect) \n";
-    cout << ntotalupdates << " total updates of the hit map have been performed \n";
-    cout << "in " << nlargeTofDiff << " cases the time of flight difference is greater than 200 ps \n";
+    AliInfo(Form("%d sdigits have been created", ntotalsdigits));
+    AliInfo(Form("(%d due to signals and " 
+		 "%d due to border effect)", nsignalsdigits, nnoisesdigits));
+    AliInfo(Form("%d total updates of the hit map have been performed", ntotalupdates));
+    AliInfo(Form("in %d cases the time of flight difference is greater than 200 ps", nlargeTofDiff));
   }
 
 
   if(strstr(verboseOption,"tim") || strstr(verboseOption,"all")){
     gBenchmark->Stop("TOFSDigitizer");
-    cout << "AliTOFSDigitizer: \n";
-    cout << "   took " << gBenchmark->GetCpuTime("TOFSDigitizer") << " seconds in order to make sdigits " 
-	 <<  gBenchmark->GetCpuTime("TOFSDigitizer")/(fEvent2-fEvent1) << " seconds per event \n";
-    cout << " +++++++++++++++++++++++++++++++++++++++++++++++++++  \n";
+    AliInfo("AliTOFSDigitizer:");
+    AliInfo(Form("   took %f seconds in order to make sdigits " 
+	 "%f seconds per event", gBenchmark->GetCpuTime("TOFSDigitizer"), gBenchmark->GetCpuTime("TOFSDigitizer")/(fEvent2-fEvent1)));
+    AliInfo(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ");
   }
 
 }
@@ -470,15 +471,14 @@ void AliTOFSDigitizer::SelectSectorAndPlate(Int_t sector, Int_t plate)
 {
   Bool_t isaWrongSelection=(sector < 0) || (sector >= AliTOFGeometry::NSectors()) || (plate < 0) || (plate >= AliTOFGeometry::NPlates());
   if(isaWrongSelection){
-    cout << "You have selected an invalid value for sector or plate " << endl;
-    cout << "The correct range for sector is [0,"<< AliTOFGeometry::NSectors()-1 <<"]\n";
-    cout << "The correct range for plate  is [0,"<< AliTOFGeometry::NPlates()-1  <<"]\n";
-    cout << "By default we continue sdigitizing all hits in all plates of all sectors \n";
+    AliError("You have selected an invalid value for sector or plate ");
+    AliError(Form("The correct range for sector is [0,%d]", AliTOFGeometry::NSectors()-1));
+    AliError(Form("The correct range for plate  is [0,%d]",  AliTOFGeometry::NPlates()-1));
+    AliError("By default we continue sdigitizing all hits in all plates of all sectors");
   } else {
     fSelectedSector=sector;
     fSelectedPlate =plate;
-    cout << "SDigitizing only hits in plate " << fSelectedPlate << " of the sector " 
-         << fSelectedSector << endl;
+    AliInfo(Form("SDigitizing only hits in plate %d of the sector %d", fSelectedPlate, fSelectedSector));
   }
 }
 

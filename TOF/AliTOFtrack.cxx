@@ -23,6 +23,7 @@
 
 #include <Riostream.h>
 #include <TObject.h>   
+#include "AliLog.h" 
 #include "AliTOFtrack.h" 
 #include "AliESDtrack.h" 
 
@@ -320,14 +321,14 @@ Int_t AliTOFtrack::Rotate(Double_t alpha)
 
   Double_t r2=fC*fX - fE;
   if (TMath::Abs(r2) >= 0.90000) {
-    cerr<<" AliTOFtrack warning: Rotation failed !\n";
+    AliWarning("Rotation failed !");
     return 0;
   }
 
   if((r2*r2) > 1) return 0;
   Double_t y0=fY + sqrt(1.- r2*r2)/fC;
   if ((fY-y0)*fC >= 0.) {
-    cerr<<" AliTOFtrack warning: Rotation failed !!!\n";
+    AliWarning("Rotation failed !!!");
     return 0;
   }
 

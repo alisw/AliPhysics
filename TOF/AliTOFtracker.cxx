@@ -26,10 +26,9 @@
 #include "AliTOFtracker.h"
 #include "AliTOFtrack.h"
 #include "TClonesArray.h"
-#include "TError.h"
+#include "AliLog.h"
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
-#include "AliTOF.h"
 #include "AliRun.h"
 #include "AliModule.h"
 
@@ -91,7 +90,7 @@ void AliTOFtracker::Init() {
   AliModule* frame=gAlice->GetModule("FRAME"); 
 
   if(!frame) {
-    Error("Init","Could Not load FRAME! Assume Frame with Holes \n");
+    AliError("Could Not load FRAME! Assume Frame with Holes");
     fHoles=true;
   } else{
     if(frame->IsVersion()==1) {fHoles=false;}    
@@ -136,9 +135,9 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   //Second Step with Looser Matching Criterion
   MatchTracks(kTRUE);
 
-  Info("PropagateBack","Number of matched tracks: %d",fnmatch);
-  Info("PropagateBack","Number of good matched tracks: %d",fngoodmatch);
-  Info("PropagateBack","Number of bad  matched tracks: %d",fnbadmatch);
+  AliInfo(Form("Number of matched tracks: %d",fnmatch));
+  AliInfo(Form("Number of good matched tracks: %d",fngoodmatch));
+  AliInfo(Form("Number of bad  matched tracks: %d",fnbadmatch));
 
   //Update the matched ESD tracks
 
@@ -444,7 +443,7 @@ Int_t AliTOFtracker::LoadClusters(TTree *dTree) {
 
   TBranch *branch=dTree->GetBranch("TOF");
   if (!branch) { 
-    Error("LoadClusters"," can't get the branch with the TOF digits !\n");
+    AliError("can't get the branch with the TOF digits !");
     return 1;
   }
 
@@ -453,7 +452,7 @@ Int_t AliTOFtracker::LoadClusters(TTree *dTree) {
 
   dTree->GetEvent(0);
   Int_t nd=digits->GetEntriesFast();
-  Info("LoadClusters","number of digits: %d",nd);
+  AliInfo(Form("number of digits: %d",nd));
 
   for (Int_t i=0; i<nd; i++) {
     AliTOFdigit *d=(AliTOFdigit*)digits->UncheckedAt(i);
@@ -492,7 +491,7 @@ Int_t AliTOFtracker::InsertCluster(AliTOFcluster *c) {
   //This function adds a cluster to the array of clusters sorted in Z
   //--------------------------------------------------------------------
   if (fN==kMaxCluster) {
-    Error("InsertCluster","Too many clusters !\n");
+    AliError("Too many clusters !");
     return 1;
   }
 

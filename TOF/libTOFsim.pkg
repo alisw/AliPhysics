@@ -1,0 +1,15 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS  = AliTOF.cxx  AliTOFv4T0.cxx  \
+	AliTOFhit.cxx  AliTOFhitT0.cxx  \
+	AliTOFHitMap.cxx  \
+	AliTOFSDigit.cxx  AliTOFSDigitizer.cxx  \
+	AliTOFdigit.cxx  AliTOFDigitizer.cxx  \
+	AliTOFDigitMap.cxx  \
+	AliTOFDDLRawData.cxx  \
+        AliTOFT0.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR=TOFsimLinkDef.h

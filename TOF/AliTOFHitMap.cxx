@@ -36,6 +36,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 
+#include "AliLog.h"
 #include "AliTOFHitMap.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFGeometry.h"
@@ -118,7 +119,7 @@ Int_t AliTOFHitMap::CheckedIndex(Int_t *vol) const
     (vol[4]/*-1*/);                                       // padz
 
     if (index >= fMaxIndex) {
-      Error("AliTOFHitMap","CheckedIndex - input outside bounds");
+      AliError("CheckedIndex - input outside bounds");
 	return -1;
     } else {
 	return index;

@@ -48,6 +48,7 @@
 #include <TObject.h>
 #include <TVirtualMC.h>
 
+#include "AliLog.h"
 #include "AliConst.h"
 #include "AliRun.h"
 #include "AliTOFv4T0.h"
@@ -78,20 +79,19 @@ AliTOFv4T0::AliTOFv4T0(const char *name, const char *title)
 
   AliModule* frame=gAlice->GetModule("FRAME");
   if(!frame) {
-    Error("Ctor","TOF needs FRAME to be present\n");
-    exit(1);
+    AliFatal("TOF needs FRAME to be present");
   } else{
     
     if (fTOFGeometry) delete fTOFGeometry;
     fTOFGeometry = new AliTOFGeometry();
 
     if(frame->IsVersion()==1) {
-      cout << " Frame version " << frame->IsVersion() << endl; 
-      cout << " Full Coverage for TOF" << endl;
+      AliInfo(Form("Frame version %d", frame->IsVersion())); 
+      AliInfo("Full Coverage for TOF");
       fTOFHoles=false;}    
     else {
-      cout << " Frame version " << frame->IsVersion() << endl; 
-      cout << " TOF with Holes for PHOS " << endl;
+      AliInfo(Form("Frame version %d", frame->IsVersion())); 
+      AliInfo("TOF with Holes for PHOS");
       fTOFHoles=true;}      
   }
   fTOFGeometry->SetHoles(fTOFHoles);
@@ -276,8 +276,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   par[0] = xFLT*0.5;
   par[1] = yFLT*0.5;
   
-  if (fDebug) cout << ClassName() <<
-		": ************************* TOF geometry **************************"<<endl;
+  AliDebug(1, "************************* TOF geometry **************************");
   
   par[2] = (zFLTA *0.5);
   gMC->Gsvolu("FLTA", "BOX ", idtmed[512], par, 3); // Insensitive Freon
@@ -462,9 +461,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     Float_t zpos = tan(ang)*radius;
     Float_t ypos= fTOFGeometry->GetHeights(2,istrip);
     gMC->Gspos("FSTR",AliTOFGeometry::NStripA()-istrip,"FLTA",0.,ypos, zpos,idrotm[0],  "ONLY");
-    if(fDebug>=1) {
-      printf("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i \n",ypos,zpos,tan(ang)*radius ,ang*kRaddeg,istrip);
-    }
+    AliDebug(1, Form("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i",ypos,zpos,tan(ang)*radius ,ang*kRaddeg,istrip));
   }
 
   
@@ -478,9 +475,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     Float_t zpos = tan(ang)*radius+(zFLTA*0.5+zFLTB*0.5+db);
     Float_t ypos= fTOFGeometry->GetHeights(3,istrip);
     gMC->Gspos("FSTR",istrip+1,"FLTB",0.,ypos, zpos,idrotm[nrot],  "ONLY");
-    if(fDebug>=1) {
-      printf("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i \n",ypos,zpos,tan(ang)*radius,ang*kRaddeg,istrip);
-    }
+    AliDebug(1, Form("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i",ypos,zpos,tan(ang)*radius,ang*kRaddeg,istrip));
   }
 
   
@@ -494,9 +489,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     Float_t zpos = tan(ang)*radius+(zFLTC*0.5+zFLTB+zFLTA*0.5+db*2);
     Float_t ypos= fTOFGeometry->GetHeights(4,istrip);
     gMC->Gspos("FSTR",istrip+1,"FLTC",0.,ypos, zpos,idrotm[nrot],  "ONLY");
-    if(fDebug>=1) {
-      printf("y = %f,  z = %f, z coord = %f, Rot ang = %f, St. %2i \n",ypos,zpos,tan(ang)*radius,ang*kRaddeg,istrip);
-    }
+    AliDebug(1, Form("y = %f,  z = %f, z coord = %f, Rot ang = %f, St. %2i",ypos,zpos,tan(ang)*radius,ang*kRaddeg,istrip));
   }
    
   ////////// Layers after strips /////////////////
@@ -907,13 +900,11 @@ void AliTOFv4T0::Init()
   //
   // Initialise the detector after the geometry has been defined
   //
-  if(fDebug) {   
-    printf("%s: **************************************"
+  AliDebug(1, "**************************************"
            "  TOF  "
-           "**************************************\n",ClassName());
-    printf("\n%s:   Version 4 of TOF initialing, "
-	   "symmetric TOF - Full Coverage version\n",ClassName());
-  }
+           "**************************************");
+  AliDebug(1, "  Version 4 of TOF initialing, "
+	   "symmetric TOF - Full Coverage version");
   
   AliTOF::Init();
   
@@ -924,11 +915,9 @@ void AliTOFv4T0::Init()
   fIdFLTB = gMC->VolId("FLTB");
   fIdFLTC = gMC->VolId("FLTC");
 
-  if(fDebug) {   
-    printf("%s: **************************************"
+  AliDebug(1, "**************************************"
            "  TOF  "
-           "**************************************\n",ClassName());
-  }
+           "**************************************");
 }
  
 //_____________________________________________________________________________
@@ -990,7 +979,7 @@ void AliTOFv4T0::StepManager()
 
     
     if (TMath::Abs(ppad[1])>1) {
-      Warning("StepManager","Abs(ppad) > 1");
+      AliWarning("Abs(ppad) > 1");
       ppad[1]=TMath::Sign((Float_t)1,ppad[1]);
     }
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;

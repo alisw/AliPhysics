@@ -33,6 +33,7 @@
 #include "TArrayF.h"
 #include "TArrayI.h"
 
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliTOF.h"
 #include "AliTOFGeometry.h"
@@ -161,9 +162,8 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
       }
       // write warning about many tracks going to this pad
       if (iTrack == kMAXDIGITS) {
-	cerr<<"WARNING: AliTOFSDigit::Update  Many hits in the padhit"<<endl;
-	cerr<<"         ";
-	//	PrintPad();
+	AliWarning("Many hits in the padhit");
+	//	ToAliWarning(PrintPad());
       }
     }
   } else {
@@ -221,9 +221,8 @@ void AliTOFSDigit::Update(AliTOFSDigit* sdig)
 	}
 	// write warning about many tracks going to this pad
 	if (iTrack == kMAXDIGITS) {
-	  cerr<<"WARNING: AliTOFSDigit::Update  Many hits in the padhit"<<endl;
-	  cerr<<"         ";
-	  //	PrintPad();
+	  AliWarning("Many hits in the padhit");
+	  //	ToAliWarning(PrintPad());
 	}
       }
     } else {

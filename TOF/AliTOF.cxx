@@ -57,6 +57,7 @@
 #include <TTree.h>
 #include <TVirtualMC.h>
 
+#include "AliLog.h"
 #include "AliConfig.h"
 #include "AliHeader.h"
 #include "AliConst.h"
@@ -90,7 +91,6 @@ AliTOF::AliTOF()
   fDigits   = 0 ;
   fReconParticles = 0x0;
   fName="TOF";
-  fMerger = 0x0;
   fTZero  = kFALSE;
   fTOFGeometry = 0;
 }
@@ -111,23 +111,22 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fDTask  = 0x0;
   fReTask = 0x0;
   fReconParticles= 0x0;
-  fMerger = 0x0;
   fTOFGeometry = 0;
 
   if (strstr(option,"tzero")){
     fHits   = new TClonesArray("AliTOFhitT0",  1000);
     fTZero = kTRUE;
-    cout << "tzero option requires AliTOFv4T0 as TOF version (check Your Config.C)" << endl;
+    AliWarning("tzero option requires AliTOFv4T0 as TOF version (check Your Config.C)");
   }else{
     fHits   = new TClonesArray("AliTOFhit",  1000);
     fTZero = kFALSE;
   }
   if (gAlice==0) {
-     Fatal("AliTOF","gAlice==0 !");
+     AliFatal("gAlice==0 !");
   }
   if (gAlice->GetMCApp()->GetHitLists())
      gAlice->GetMCApp()->AddHitList(fHits);
-  else Error("AliTOF","gAlice->GetHitLists()==0");
+  else AliError("gAlice->GetHitLists()==0");
 
   fIshunt  = 0;
   fSDigits = new TClonesArray("AliTOFSDigit", 1000);
@@ -138,7 +137,6 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fDTask = 0x0;
   fReTask = 0x0;
   fReconParticles = 0x0;
-  fMerger = 0x0;
 
   //
   // Digitization parameters
@@ -359,7 +357,7 @@ void AliTOF::DrawModule() const
   // Draw a shaded view of the common part of the TOF geometry
   //
 
-   cout << " Drawing of AliTOF"<< endl; 
+  AliInfo(" Drawing of AliTOF"); 
   // Set everything unseen
   gMC->Gsatt("*", "seen", -1);
   // 
@@ -579,6 +577,11 @@ void AliTOF::Init()
   // Set id of TOF sensitive volume
   if (IsVersion() !=0) fIdSens=gMC->VolId("FPAD");
   //
+  // Save the geometry
+  TDirectory* saveDir = gDirectory;
+  gAlice->GetRunLoader()->CdGAFile();
+  fTOFGeometry->Write("TOFGeometry");
+  saveDir->cd();
 }
 
 //____________________________________________________________________________
@@ -638,51 +641,13 @@ void AliTOF::Makehits(Bool_t hits)
    if (hits &&  (IsVersion()!=0))
       fIdSens = gMC->VolId("FPAD");
    else
-      cout << "Option for writing the TOF-hits branch on TreeH: disabled" << endl;
+      AliInfo("Option for writing the TOF-hits branch on TreeH: disabled");
 }
 
 //____________________________________________________________________________
 void AliTOF::FinishEvent()
 {
 // do nothing
-}
-
-//___________________________________________
-void AliTOF::SDigits2Digits()
-{
-//
-// Generate digits performing merging
-//
-  /*
-    int nparticles = gAlice->GetNtrack();
-    cout << "Particles       :" <<nparticles<<endl;
-    if (nparticles > 0 ) {
-      
-      AliTOF::Hits2Digits();
-      
-    }
-  */
-  cout<<"AliTOF::SDigits2Digits"<<endl; 
-    if (fMerger) {
-      fMerger->Init();
-      cout<<"AliTOF::SDigits2Digits Init"<<endl; 
-      fMerger->Digitise();
-      cout<<"AliTOF::SDigits2Digits Digitise() "<<endl; 
-     }
-}
-
-//---------------------------------------------------------------------
-void   AliTOF::SetMerger(AliTOFMerger* merger)
-{
-// Set pointer to merger
-    fMerger = merger;
-}
-
-//---------------------------------------------------------------------
-AliTOFMerger*  AliTOF::Merger()
-{
-// Return pointer to merger
-    return fMerger;
 }
 
 //---------------------------------------------------------------------
@@ -696,7 +661,7 @@ void AliTOF::Hits2SDigits()
   
   AliRunLoader * rl = fLoader->GetRunLoader();
   AliTOFSDigitizer sd((rl->GetFileName()).Data());
-  if (GetDebug()) sd.Print("");
+  ToAliDebug(1, sd.Print(""));
 
   sd.Exec("") ;
 
@@ -710,14 +675,14 @@ void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
 //
 
   if ((evNumber2-evNumber1)==1) 
-      cout << "<AliTOF::Hits2SDigits>: I am making sdigits for the " << evNumber1 << "th event \n";
+      AliDebug(1, Form("I am making sdigits for the %dth event", evNumber1))
   else if ((evNumber2-evNumber1)>1)
-      cout << "<AliTOF::Hits2SDigits>: I am making sdigits for the events from the " 
-           << evNumber1 << "th to the " << evNumber2-1 << "th \n";
+      AliDebug(1, Form("I am making sdigits for the events from the " 
+		       "%dth to the %dth", evNumber1, evNumber2-1));
  
   AliRunLoader * rl = fLoader->GetRunLoader();
   AliTOFSDigitizer sd((rl->GetFileName()).Data(),evNumber1,evNumber2) ;
-  if (GetDebug()) sd.Print("");
+  ToAliDebug(1, sd.Print(""));
 
   sd.Exec("") ;
 
@@ -796,14 +761,14 @@ void AliTOF::Digits2Raw()
 
   TTree* digits = fLoader->TreeD();
   if (!digits) {
-    Error("Digits2Raw", "no digits tree");
+    AliError("no digits tree");
     return;
   }
   
   AliTOFDDLRawData rawWriter;
   rawWriter.SetVerbose(0);
   
-  Info("Digits2Raw", "Formatting raw data for TOF");
+  AliInfo("Formatting raw data for TOF");
   digits->GetEvent(0);
   rawWriter.RawDataTOF(digits->GetBranch("TOF"));  
 

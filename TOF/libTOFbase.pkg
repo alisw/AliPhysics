@@ -1,0 +1,10 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS  = AliTOFGeometry.cxx  \
+	AliTOFdigit.cxx
+
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR=TOFbaseLinkDef.h

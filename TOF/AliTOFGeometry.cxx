@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2004/06/15 15:27:59  decaro
+TOF raw data: preliminary implementation and style changes
+
 Revision 1.5  2004/04/20 14:37:22  hristov
 Using TMath::Abs instead of fabs, arrays of variable size created/deleted correctly (HP,Sun)
 
@@ -51,6 +54,7 @@ Revision 0.01  2003/12/04 S.Arcelli
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliLog.h"
 #include "AliConst.h"
 #include "AliTOFGeometry.h"
 
@@ -424,15 +428,15 @@ Int_t AliTOFGeometry::GetPadX(Float_t *pos)
 
   Int_t isector = GetSector(pos);
   if(isector == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iPadX;}
   Int_t iplate =  GetPlate(pos);
   if(iplate == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iPadX;} 
   Int_t istrip =  GetStrip(pos);
   if(istrip == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iPadX;}
 
 
@@ -468,7 +472,7 @@ Int_t AliTOFGeometry::GetPlate(Float_t *pos)
 
   Int_t isector = GetSector(pos);
   if(isector == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iPlate;}
  
   Float_t x = pos[0];
@@ -504,11 +508,11 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos)
 
   Int_t isector = GetSector(pos);
   if(isector == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iStrip;}
   Int_t iplate =  GetPlate(pos);
   if(iplate == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iStrip;} 
 
 
@@ -551,15 +555,15 @@ Int_t AliTOFGeometry::GetPadZ(Float_t *pos)
 
   Int_t isector = GetSector(pos);
   if(isector == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iPadZ;}
   Int_t iplate =  GetPlate(pos);
   if(iplate == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iPadZ;} 
   Int_t istrip =  GetStrip(pos);
   if(istrip == -1){  
-    cout << "Detector Index could not be determined" << endl;
+    AliError("Detector Index could not be determined");
     return iPadZ;}
 
 

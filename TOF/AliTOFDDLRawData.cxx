@@ -31,6 +31,7 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TMath.h>
+#include "AliLog.h"
 #include "AliTOF.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFdigit.h"
@@ -93,7 +94,7 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
   ofstream ftxt;
   if(!ndigits) 
     {
-      Error("GetDigits", "No found TOF digits\n");      
+      AliError("No found TOF digits");
       return;
     }
 

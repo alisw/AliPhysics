@@ -3,7 +3,7 @@ SRCS  = AliTOF.cxx  AliTOFGeometry.cxx  AliTOFv4T0.cxx  \
 	AliTOFT0.cxx  \
 	AliTOFHitMap.cxx  \
 	AliTOFSDigit.cxx  AliTOFSDigitizer.cxx  \
-	AliTOFMerger.cxx  AliTOFDigitMap.cxx  \
+	AliTOFDigitMap.cxx  \
 	AliTOFdigit.cxx  AliTOFDigitizer.cxx  \
 	AliTOFDDLRawData.cxx  \
         AliTOFtrack.cxx  AliTOFtracker.cxx  AliTOFReconstructor.cxx  \

@@ -22,13 +22,11 @@ class TDirectory;
 class TString ;  
 class TTask ;
 class TFolder ;
-class AliTOFMerger;
 
 #include "TObject.h"
 #include "TTree.h" 
 #include "AliDetector.h"
 #include <Riostream.h>
-#include "AliTOFMerger.h"
 #include "AliTOFSDigitizer.h"
 #include "AliTOFGeometry.h"
 
@@ -73,9 +71,6 @@ public:
   //virtual void   DrawDetectorStripsinFrame()=0;
           void    CreateTOFFolders();
   Bool_t    CheckOverlap(Int_t* vol, Float_t* digit, Int_t Track);
-  virtual void    SDigits2Digits();
-  virtual void    SetMerger(AliTOFMerger* merger);
-  virtual AliTOFMerger* Merger();
   //virtual void    Hits2Digits();   
   virtual void    Hits2SDigits();
   virtual void    Hits2SDigits(Int_t evNumber1, Int_t evNumber2);
@@ -99,7 +94,6 @@ protected:
   TClonesArray* fSDigits; //! List of summable digits
   Int_t   fNSDigits;      //! Number of sdigits
   TClonesArray* fReconParticles; // List of reconstructed particles
-  AliTOFMerger *fMerger;  // ! pointer to merger
 
   //Float_t fGapA;     //  Gap beetween tilted strip in A-type plate
   //Float_t fGapB;     //  Gap beetween tilted strip in B-type plate

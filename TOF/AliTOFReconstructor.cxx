@@ -25,8 +25,9 @@
 #include "AliTOFReconstructor.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
-#include "AliTOF.h"
 #include "AliTOFtracker.h"
+#include "AliLog.h"
+#include <TFile.h>
 
 
 ClassImp(AliTOFReconstructor)
@@ -64,19 +65,11 @@ AliTOFGeometry* AliTOFReconstructor::GetTOFGeometry(AliRunLoader* runLoader) con
 {
 // get the TOF parameters
 
-  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
-  if (!runLoader->GetAliRun()) {
-    Error("GetTOFGeometry", "couldn't get AliRun object");
+  runLoader->CdGAFile();
+  AliTOFGeometry* tofGeom = (AliTOFGeometry*) gFile->Get("TOFGeometry"); 
+  if (!tofGeom) {
+    AliError("no TOF geometry available");
     return NULL;
   }
-  AliTOF* tof = (AliTOF*) runLoader->GetAliRun()->GetDetector("TOF");
-  if (!tof) {
-    Error("GetTOFGeometry", "couldn't get TOF detector");
-    return NULL;
-  }
-  if (!tof->GetGeometry()) {
-    Error("GetTOFGeometry", "no TOF geometry available");
-    return NULL;
-  }
-  return tof->GetGeometry();
+  return tofGeom;
 }
