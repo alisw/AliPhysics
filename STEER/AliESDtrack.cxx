@@ -15,9 +15,10 @@
 
 //-----------------------------------------------------------------
 //           Implementation of the ESD track class
+//   ESD = Event Summary Data
 //   This is the class to deal with during the phisical analysis of data
-//
-//      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//      Origin: Iouri Belikov, CERN
+//      e-mail: Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
 #include "TMath.h"
@@ -75,6 +76,7 @@ fTOFsignal(0)
 
 //_______________________________________________________________________
 Float_t AliESDtrack::GetMass() const {
+  // Returns the mass of the most probable particle type
   Float_t max=0.;
   Int_t k=-1;
   for (Int_t i=0; i<kSPECIES; i++) {
@@ -233,22 +235,26 @@ void AliESDtrack::GetExternalCovariance(Double_t c[15]) const {
 
 //_______________________________________________________________________
 void AliESDtrack::GetIntegratedTimes(Double_t *times) const {
+  // Returns the array with integrated times for each particle hypothesis
   for (Int_t i=0; i<kSPECIES; i++) times[i]=fTrackTime[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetIntegratedTimes(const Double_t *times) {
+  // Sets the array with integrated times for each particle hypotesis
   for (Int_t i=0; i<kSPECIES; i++) fTrackTime[i]=times[i];
 }
 
 //_______________________________________________________________________
-void AliESDtrack::SetITSpid(const Double_t *p) {  
+void AliESDtrack::SetITSpid(const Double_t *p) {
+  // Sets values for the probability of each particle type (in ITS)
   for (Int_t i=0; i<kSPECIES; i++) fITSr[i]=p[i];
   SetStatus(AliESDtrack::kITSpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetITSpid(Double_t *p) const {
+  // Gets the probability of each particle type (in ITS)
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fITSr[i];
 }
 
@@ -272,56 +278,66 @@ Int_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
 
 //_______________________________________________________________________
 void AliESDtrack::SetTPCpid(const Double_t *p) {  
+  // Sets values for the probability of each particle type (in TPC)
   for (Int_t i=0; i<kSPECIES; i++) fTPCr[i]=p[i];
   SetStatus(AliESDtrack::kTPCpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTPCpid(Double_t *p) const {
+  // Gets the probability of each particle type (in TPC)
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fTPCr[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetTRDpid(const Double_t *p) {  
+  // Sets values for the probability of each particle type (in TRD)
   for (Int_t i=0; i<kSPECIES; i++) fTRDr[i]=p[i];
   SetStatus(AliESDtrack::kTRDpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTRDpid(Double_t *p) const {
+  // Gets the probability of each particle type (in TRD)
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fTRDr[i];
 }
 
 //_______________________________________________________________________
 void    AliESDtrack::SetTRDpid(Int_t iSpecies, Float_t p)
 {
+  // Sets the probability of particle type iSpecies to p (in TRD)
   fTRDr[iSpecies] = p;
 }
 
 Float_t AliESDtrack::GetTRDpid(Int_t iSpecies) const
 {
+  // Returns the probability of particle type iSpecies (in TRD)
   return fTRDr[iSpecies];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetTOFpid(const Double_t *p) {  
+  // Sets the probability of each particle type (in TOF)
   for (Int_t i=0; i<kSPECIES; i++) fTOFr[i]=p[i];
   SetStatus(AliESDtrack::kTOFpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTOFpid(Double_t *p) const {
+  // Gets probabilities of each particle type (in TOF)
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fTOFr[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetESDpid(const Double_t *p) {  
+  // Sets the probability of each particle type for the ESD track
   for (Int_t i=0; i<kSPECIES; i++) fR[i]=p[i];
   SetStatus(AliESDtrack::kESDpid);
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetESDpid(Double_t *p) const {
+  // Gets probability of each particle type for the ESD track
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fR[i];
 }
 

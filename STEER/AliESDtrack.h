@@ -104,15 +104,15 @@ protected:
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[kSPECIES]; //! "detector response probabilities" (for the PID)
   
-  Double_t fVertexX;
-  Double_t fVertexY;
-  Double_t fVertexZ;
+  Double_t fVertexX; // X coordinate of point of closest approach to the vertex
+  Double_t fVertexY; // Y coordinate of point of closest approach to the vertex
+  Double_t fVertexZ; // Z coordinate of point of closest approach to the vertex
   
-  Double_t fVertexPx;
-  Double_t fVertexPy;
-  Double_t fVertexPz;
+  Double_t fVertexPx; // Px at point of closest approach to the vertex
+  Double_t fVertexPy; // Py at point of closest approach to the vertex
+  Double_t fVertexPz; // Pz at point of closest approach to the vertex
   
-  Bool_t   fVertex;
+  Bool_t   fVertex; // TRUE if the track was prolongated to the vertex
   
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
