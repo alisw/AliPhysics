@@ -13,6 +13,7 @@ class AliHBTPair: public TObject
 {
  public:
    AliHBTPair(Bool_t rev = kFALSE); //contructor
+   AliHBTPair(AliHBTParticle* part1, AliHBTParticle* part2, Bool_t rev = kFALSE); //contructor
    virtual ~AliHBTPair(){}
    void SetParticles(AliHBTParticle*,AliHBTParticle*); //sets particles in the pair
    AliHBTPair* GetSwapedPair() {return fSwapedPair;} //returns pair with swapped particles
@@ -20,11 +21,12 @@ class AliHBTPair: public TObject
    AliHBTParticle* Particle1() const {return fPart1;} //returns pointer to first particle
    AliHBTParticle* Particle2() const {return fPart2;} //returns pointer to decond particle
    
+   void Changed();
    //Center Mass System - Longitudinally Comoving
    
    Double_t GetInvMass(); //returns invariant mass of the pair
-   
-
+    
+  
    Double_t GetQInv(); //returns Q invariant
    Double_t GetQSideCMSLC(); //returns Q Side CMS longitudionally co-moving
    Double_t GetQOutCMSLC(); //returns Q out CMS longitudionally co-moving
@@ -120,9 +122,15 @@ void AliHBTPair::SetParticles(AliHBTParticle* p1,AliHBTParticle* p2)
  fPart2 = p2;
  if (fSwapedPair) //if we have Swaped (so we are not)
    fSwapedPair->SetParticles(p2,p1); //set particles for him too
- 
- // Resel all calculations (flags)
+ Changed();
+ //and do nothing until will be asked for
+} 
+/****************************************************************/
 
+inline
+void AliHBTPair::Changed()
+{
+ // Resel all calculations (flags)
  fChanged           = kTRUE;
  fSumsNotCalc       = kTRUE;
  fDiffsNotCalc      = kTRUE;
@@ -135,10 +143,7 @@ void AliHBTPair::SetParticles(AliHBTParticle* p1,AliHBTParticle* p2)
  fKtNotCalc         = kTRUE;
  fKStarNotCalc      = kTRUE;
  fQInvLNotCalc      = kTRUE;
- 
- //and do nothing until will be asked for
 }
-/****************************************************************/
 /****************************************************************/
 inline 
 void AliHBTPair::CalculateInvMassSqr()

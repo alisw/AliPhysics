@@ -3,9 +3,10 @@
 
 ClassImp(AliHBTPair)
 
-//value of rev 
 /************************************************************************/
-AliHBTPair::AliHBTPair(Bool_t rev)
+AliHBTPair::AliHBTPair(Bool_t rev):
+ fPart1(0x0),
+ fPart2(0x0)
  {
 //value of rev defines if it is Swaped
 //if you pass kTRUE swpaped pair will NOT be created
@@ -16,6 +17,21 @@ AliHBTPair::AliHBTPair(Bool_t rev)
   
  }
 /************************************************************************/
+
+AliHBTPair::AliHBTPair(AliHBTParticle* part1, AliHBTParticle* part2, Bool_t rev):
+ fPart1(part1),
+ fPart2(part2)
+ {
+//value of rev defines if it is Swaped
+//if you pass kTRUE swpaped pair will NOT be created
+//though you wont be able to get the swaped pair from this pair
+
+  if(!rev) fSwapedPair = new AliHBTPair(part2,part1,kTRUE); //if false create swaped pair
+  else fSwapedPair = 0x0; //if true set the pointer to NULL
+  
+ }
+/************************************************************************/
+
 Double_t AliHBTPair::GetInvMass()
 {
 //Returns qinv value for a pair
