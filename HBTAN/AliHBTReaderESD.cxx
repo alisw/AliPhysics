@@ -17,8 +17,6 @@
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
 
-AliHBTReaderESD r;
-
 ClassImp(AliHBTReaderESD)
 
 AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename, const Char_t* galfilename):
@@ -142,6 +140,12 @@ Int_t AliHBTReaderESD::ReadNext()
         esdtrack->GetPxPyPz(mom);
         esdtrack->GetXYZ(pos);
         
+        Double_t extx;
+        Double_t extp[5];
+        esdtrack->GetExternalParameters(extx,extp);
+        
+        Int_t charge = (extp[4] > 0)?-1:1;//if curvature=-charg/Pt is positive charge is negative
+        
         //Particle from kinematics
         AliHBTParticle* particle = 0;
         Bool_t keeppart = kFALSE;
@@ -154,7 +158,9 @@ Int_t AliHBTReaderESD::ReadNext()
               Error("ReadNext","Can not find track with such label.");
               continue;
             }
+//           if(p->GetPdgCode()<0) charge = -1;
            particle = new AliHBTParticle(*p,i);
+           
          }
          
         //Here we apply Bayes' formula
@@ -180,7 +186,7 @@ Int_t AliHBTReaderESD::ReadNext()
               msg+="\n    ";
               msg+=s;
               msg+="(";
-              msg+=GetSpeciesPdgCode((ESpecies)s);
+              msg+=charge*GetSpeciesPdgCode((ESpecies)s);
               msg+="): ";
               msg+=w[s];
               msg+=" (";
@@ -194,7 +200,7 @@ Int_t AliHBTReaderESD::ReadNext()
          {
            if (w[s] == 0.0) continue;
 
-           Int_t pdgcode = GetSpeciesPdgCode((ESpecies)s);
+           Int_t pdgcode = charge*GetSpeciesPdgCode((ESpecies)s);
            if(Pass(pdgcode)) continue; //check if we are intersted with particles of this type 
 
            Double_t mass = pdgdb->GetParticle(pdgcode)->Mass();
@@ -208,7 +214,7 @@ Int_t AliHBTReaderESD::ReadNext()
             {
               if (k == s) continue;
               if (w[k] == 0.0) continue;
-              track->SetPIDprobability(GetSpeciesPdgCode( (ESpecies)k ),w[k]);
+              track->SetPIDprobability(charge*GetSpeciesPdgCode( (ESpecies)k ),w[k]);
             }
            if(Pass(track))//check if meets all criteria of any of our cuts
                           //if it does not delete it and take next good track
