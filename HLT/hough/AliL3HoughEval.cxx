@@ -89,18 +89,32 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   
   Int_t sector,row;
   
-  Int_t nrow=0,npixs=0;
+  Int_t nrow=0,npixs=0,rows_crossed=0;
   Float_t xyz[3];
   
   Int_t total_charge=0;//total charge along the road
   Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  
+  Float_t maxrow=300;
+  Double_t angle=Pi/18;
+  track->CalculateEdgePoint(angle);
+  if(!track->IsPoint())
+    {
+      track->CalculateEdgePoint(-1.*angle);
+      if(track->IsPoint())
+	maxrow = track->GetPointX();
+    }
+  else
+    maxrow = track->GetPointX();
+
   for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
     {
+      if(fTransform->Row2X(padrow) > maxrow) break;//The track has left this slice
+      rows_crossed++;
       Int_t prow = padrow - NRows[fPatch][0];
-      
       if(!track->GetCrossingPoint(padrow,xyz))  
 	{
-	  printf("AliL3HoughEval::LookInsideRoad : Track does not cross line!!; pt %f phi0 %f\n",track->GetPt(),track->GetPhi0());
+	  //printf("AliL3HoughEval::LookInsideRoad : Track does not cross line!!; pt %f phi0 %f\n",track->GetPt(),track->GetPhi0());
 	  continue;
 	}
       
@@ -146,7 +160,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   if(remove)
     return kTRUE;
   
-  if(nrow >= fNrows - fNumOfRowsToMiss)//this was a good track
+  if(nrow >= rows_crossed - fNumOfRowsToMiss)//this was a good track
     {
       Double_t eta_track = (Double_t)eta_index*etaslice;
       track->SetEtaIndex(eta_index);
