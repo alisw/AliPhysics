@@ -58,7 +58,7 @@ protected:
   Int_t        fNRecPoints;	// Number of RecPoints
   TClonesArray *fRecPoints;	// List of RecPoints
 
-  ClassDef(AliZDC,1)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,2)  	// Zero Degree Calorimeter base class
 };
  
 #endif

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2002/02/04 09:18:08  coppedis
+Merging and reconstruction code review
+
 Revision 1.26.2.2  2001/11/12 18:41:44  hristov
 All the changes from the head are merged to the release
 
@@ -129,7 +132,7 @@ AliZDC::AliZDC()
   
   fIshunt     = 1;
   fNoShower   = 0;
-  fMerger     = 0;
+  fMerger     = new AliZDCMerger();
 
   fHits       = 0;
   fNhits      = 0;
@@ -444,8 +447,9 @@ void AliZDC::Hits2SDigits()
     // ### Initialise merging
     fMerger -> InitMerging();
 
-    TFile *bgrFile  = fMerger->BgrFile();
+    TFile *bgrFile = fMerger->BgrFile();
     bgrFile->cd();
+
     // SDigits tree
     Int_t fNEvBgr = fMerger->EvNum();
     char treeSDBgrName[20];
@@ -633,7 +637,9 @@ void AliZDC::Digits2Reco()
   printf("\n    NDetSpecN = %d, NDetSpecP = %d\n",NDetSpecN, NDetSpecP);
   
   //  ---      Number of generated spectator nucleons and impact parameter
-  // Fit results for neutrons (Nspectator n true vs. EZN)
+  // --------------------------------------------------------------------------------------------------
+  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
+  /*// Fit results for neutrons (Nspectator n true vs. EZN)
   TF1 *fZNCen = new TF1("fZNCen",
       "(-2.116909+sqrt(2.116909*2.116909-4*(-0.00651)*(14.556798-x)))/(2*(-0.00651))",0.,158.5);
   TF1 *fZNPer = new TF1("fZNPer",
@@ -647,22 +653,59 @@ void AliZDC::Digits2Reco()
   TF1 *fZDCCen = new TF1("fZDCCen",
       "(-1.867335+sqrt(1.867335*1.867335-4*(-0.004119)*(19.100289-x)))/(2*(-0.004119))",0.,220.4);
   TF1 *fZDCPer = new TF1("fZDCPer",
-      "(-22.429097-sqrt(22.429097*22.429097-4*(-0.072435)*(-1482.034526-x)))/(2*(-0.072435))",0.,220.4);
-  // Fit results for b (b vs. EZDC)
+      "(-22.429097-sqrt(22.429097*22.429097-4*(-0.072435)*(-1482.034526-x)))/(2*(-0.072435))",0.,220.4);*/
+  // --------------------------------------------------------------------------------------------------
+  // [1] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
+  // Fit results for neutrons (Nspectator n true vs. EZN)
+  TF1 *fZNCen = new TF1("fZNCen",
+      "(-2.287920+sqrt(2.287920*2.287920-4*(-0.007629)*(11.921710-x)))/(2*(-0.007629))",0.,164.);
+  TF1 *fZNPer = new TF1("fZNPer",
+      "(-37.812280-sqrt(37.812280*37.812280-4*(-0.190932)*(-1709.249672-x)))/(2*(-0.190932))",0.,164.);
+  // Fit results for protons (Nspectator p true vs. EZP)
+  TF1 *fZPCen = new TF1("fZPCen",
+       "(-1.321353+sqrt(1.321353*1.321353-4*(-0.007283)*(3.550697-x)))/(2*(-0.007283))",0.,60.);
+  TF1 *fZPPer = new TF1("fZPPer",
+      "(-42.643308-sqrt(42.643308*42.643308-4*(-0.310786)*(-1402.945615-x)))/(2*(-0.310786))",0.,60.);
+  // Fit results for total number of spectators (Nspectators true vs. EZDC)
+  TF1 *fZDCCen = new TF1("fZDCCen",
+      "(-1.934991+sqrt(1.934991*1.934991-4*(-0.004080)*(15.111124-x)))/(2*(-0.004080))",0.,225.);
+  TF1 *fZDCPer = new TF1("fZDCPer",
+      "(-34.380639-sqrt(34.380639*34.380639-4*(-0.104251)*(-2612.189017-x)))/(2*(-0.104251))",0.,225.);
+  // --------------------------------------------------------------------------------------------------
+  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
+  /*// Fit results for b (b vs. EZDC)
   //TF1 *fbCen = new TF1("fbCen","0.611543+0.052231*x-0.000112*x*x+0.000000374*x*x*x",0.,222.);
   //TF1 *fbPer = new TF1("fbPer","16.552010-0.023866*x-0.00001*x*x",0.,222.);
   TF1 *fbCen = new TF1("fbCen","0.612769+0.051929*x-0.0001074*x*x+0.0000003724*x*x*x",0.,225.);
-  TF1 *fbPer = new TF1("fbPer","16.6131016-0.026053*x+0.000006893*x*x",0.,225.);
+  TF1 *fbPer = new TF1("fbPer","16.6131016-0.026053*x+0.000006893*x*x",0.,225.);*/
+  // --------------------------------------------------------------------------------------------------
+  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
+  TF1 *fbCen = new TF1("fbCen","-0.056923+0.079703*x-0.0004301*x*x+0.000001366*x*x*x",0.,220.);
+  TF1 *fbPer = new TF1("fbPer","17.943998-0.046846*x+0.000074*x*x",0.,220.);
+  // --------------------------------------------------------------------------------------------------
   // Evaluating Nspectators and b from ZEM energy
-  TF1 *fZEMn  = new TF1("fZEMn","124.2-0.0566*x+0.000006014*x*x",0.,3500.);
+  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
+  /*TF1 *fZEMn  = new TF1("fZEMn","124.2-0.0566*x+0.000006014*x*x",0.,3500.);
   TF1 *fZEMp  = new TF1("fZEMp","81.3-0.03834*x+0.000004359*x*x",0.,3500.);
   TF1 *fZEMsp = new TF1("fZEMsp","205.6-0.09567*x+0.00001056*x*x",0.,3500.);
-  TF1 *fZEMb  = new TF1("fZEMb","15.8-0.02084*x+2.802e-5*x*x-2.007e-8*x*x*x+6.586e-12*x*x*x*x-8.042e-16*x*x*x*x*x",0.,3500.);
+  TF1 *fZEMb  = new TF1("fZEMb","15.8-0.02084*x+2.802e-5*x*x-2.007e-8*x*x*x+6.586e-12*x*x*x*x-8.042e-16*x*x*x*x*x",0.,3500.);*/
+  // --------------------------------------------------------------------------------------------------
+  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
+  TF1 *fZEMn  = new TF1("fZEMn","126.2-0.05399*x+0.000005679*x*x",0.,4000.);
+  TF1 *fZEMp  = new TF1("fZEMp","82.49-0.03611*x+0.00000385*x*x",0.,4000.);
+  TF1 *fZEMsp = new TF1("fZEMsp","208.7-0.09006*x+0.000009526*x*x",0.,4000.);
+  TF1 *fZEMb  = new TF1("fZEMb","16.06-0.01633*x+1.44e-5*x*x-6.778e-9*x*x*x+1.438e-12*x*x*x*x-1.112e-16*x*x*x*x*x",0.,4000.);
   
   Int_t NGenSpecN=0, NGenSpecP=0, NGenSpec=0;
   Double_t ImpPar=0;
-  Float_t EZEMCut = 360.; // Cut value for Ezem (GeV)
-  if(ZEMenergy >= EZEMCut){
+  // Cut value for Ezem (GeV)
+  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
+  //Float_t EZEMCut = 360.; 
+  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
+  Float_t EZEMCut = 420.;
+  Float_t DeltaEZEMSup = 690.; 
+  Float_t DeltaEZEMInf = 270.; 
+  if(ZEMenergy > (EZEMCut+DeltaEZEMSup)){
     NGenSpecN = (Int_t) (fZNCen->Eval(ZNenergy));
     NGenSpecP = (Int_t) (fZPCen->Eval(ZPenergy));
     NGenSpec  = (Int_t) (fZDCCen->Eval(ZDCenergy));
@@ -670,7 +713,7 @@ void AliZDC::Digits2Reco()
     //printf("    fZNCen = %f, fZPCen = %f, fZDCCen = %f\n",fZNCen->Eval(ZNenergy),
     //            fZPCen->Eval(ZPenergy),fZDCCen->Eval(ZDCenergy));
   }
-  else if(ZEMenergy < EZEMCut){
+  else if(ZEMenergy < (EZEMCut-DeltaEZEMInf)){
     NGenSpecN = (Int_t) (fZNPer->Eval(ZNenergy)); 
     NGenSpecP = (Int_t) (fZPPer->Eval(ZPenergy));
     NGenSpec  = (Int_t) (fZDCPer->Eval(ZDCenergy));
@@ -678,14 +721,23 @@ void AliZDC::Digits2Reco()
     //printf("    fZNPer = %f, fZPPer = %f, fZDCPer = %f\n",fZNPer->Eval(ZNenergy),
     //            fZPPer->Eval(ZPenergy),fZDCPer->Eval(ZDCenergy));
   }
-  if(ZNenergy>158.5)  NGenSpecN = (Int_t) (fZEMn->Eval(ZEMenergy));
+  else if(ZEMenergy >= (EZEMCut-DeltaEZEMInf) && ZEMenergy <= (EZEMCut+DeltaEZEMSup)){
+    NGenSpecN = (Int_t) (fZEMn->Eval(ZEMenergy));
+    NGenSpecP = (Int_t) (fZEMp->Eval(ZEMenergy));
+    NGenSpec  = (Int_t)(fZEMsp->Eval(ZEMenergy));
+    ImpPar    =  fZEMb->Eval(ZEMenergy);
+    //printf("    Nspec ZEM = %f, Nspec ZDC = %f\n",fZEMsp->Eval(ZNenergy),fZDCPer->Eval(ZDCenergy));
+  }
+  // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
+  /*if(ZNenergy>158.5)  NGenSpecN = (Int_t) (fZEMn->Eval(ZEMenergy));
   if(ZPenergy>58.91)  NGenSpecP = (Int_t) (fZEMp->Eval(ZEMenergy));
   if(ZDCenergy>220.4) NGenSpec  = (Int_t)(fZEMsp->Eval(ZEMenergy));
-  if(ZDCenergy>225.)  ImpPar    =          fZEMb->Eval(ZEMenergy);
-  /*if(ZNenergy>158.5)  NGenSpecN = -999;
-  if(ZPenergy>58.91)  NGenSpecP = -999;
-  if(ZDCenergy>220.4) NGenSpec  = -999;
-  if(ZDCenergy>225.)  ImpPar    = -999;*/
+  if(ZDCenergy>225.)  ImpPar    =          fZEMb->Eval(ZEMenergy);*/
+  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
+  if(ZNenergy>162.)  NGenSpecN = (Int_t) (fZEMn->Eval(ZEMenergy));
+  if(ZPenergy>59.75)  NGenSpecP = (Int_t) (fZEMp->Eval(ZEMenergy));
+  if(ZDCenergy>221.5) NGenSpec  = (Int_t)(fZEMsp->Eval(ZEMenergy));
+  if(ZDCenergy>220.)  ImpPar    =  fZEMb->Eval(ZEMenergy);
   
   if(NGenSpecN>125)    NGenSpecN=125;
   else if(NGenSpecN<0) NGenSpecN=0;
@@ -693,13 +745,14 @@ void AliZDC::Digits2Reco()
   else if(NGenSpecP<0) NGenSpecP=0;
   if(NGenSpec>207)     NGenSpec=207;
   else if(NGenSpec<0)  NGenSpec=0;
-  printf("    NRecSpecN = %d, NRecSpecP = %d, NRecSpec = %d\n",NGenSpecN,NGenSpecP,NGenSpec);
+  //printf("    NRecSpecN = %d, NRecSpecP = %d, NRecSpec = %d\n",NGenSpecN,NGenSpecP,NGenSpec);
   
   //  ---      Number of participants
   Int_t NPart, NPartTot;
-  NPart = 208-NGenSpecN-NGenSpecP;
-  NPartTot = 208-NGenSpec;
-  printf("	###	NPart(ZP+ZN) = %d, NPart(ZDC) = %d, b = %f fm\n",NPart,NPartTot,ImpPar);
+  NPart = 207-NGenSpecN-NGenSpecP;
+  NPartTot = 207-NGenSpec;
+  //printf("	###	NPart(ZP+ZN) = %d, NPart(ZDC) = %d, b = %f fm\n",NPart,NPartTot,ImpPar);
+  printf("	###	NPart = %d, b = %f fm\n",NPartTot,ImpPar);
   
   //  ---     Writing RecPoints TCA
   // Allocate the RecPoints TCA 
