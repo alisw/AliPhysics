@@ -575,7 +575,7 @@ void AliITShit::Print(ostream *os){
     Int_t fmt;
 #endif
 #else
-#if defined __ICC || defined __ECC || defined _xlc_
+#if defined __ICC || defined __ECC || defined __xlC__
     ios::fmtflags fmt;
 #else
     Int_t fmt;
