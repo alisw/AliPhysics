@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/10/29 09:53:40  morsch
+Constants start with k. Warnings corrected.
+
 
 Revision 1.19  2002/10/14 14:57:39  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
@@ -145,8 +148,8 @@ void AliSHILv0::CreateGeometry()
   */
   //End_Html
 
-    Float_t cpar[5], cpar0[5], tpar[3], par1[39], pars1[100], par2[27], par3[27], 
-	par4[21], par0[45];
+    Float_t cpar[5], cpar0[5], tpar[3], par1[39], pars1[100], par2[36], par3[27], 
+	par4[24], par0[87];
     Float_t dz, dZ;
   
     Int_t *idtmed = fIdtmed->GetArray()-1699;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/23 06:47:56  alibrary
+Introducing Riostream.h
+
 Revision 1.8  2002/10/14 14:55:34  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -656,7 +659,7 @@ void AliCRTv0::StepManager()
   TLorentzVector pos;
   TLorentzVector mom;
 
-  static Float_t hits[13];
+  static Float_t hits[14];
   Int_t tracknumber = gAlice->CurrentTrack();
 
   static Float_t eloss;

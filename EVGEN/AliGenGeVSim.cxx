@@ -534,7 +534,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
       fPtYHist = (TH2D*)gROOT->FindObject(buff);
     }
 
-    if (!fPtYHist) Error(where, msg[4], pdg);
+    if (!fPtYHist) Error(where, msg[3], pdg);
   }
 
 }
