@@ -47,7 +47,7 @@ public:
   public:
     AliITSdetector(){}
     AliITSdetector(Double_t r,Double_t phi) {fR=r; fPhi=phi;}
-    void *operator new(size_t s,AliITSdetector *p) {return p;}
+    void *operator new(size_t /*s*/,AliITSdetector *p) {return p;}
     Double_t GetR()   const {return fR;}
     Double_t GetPhi() const {return fPhi;}
   private:
@@ -64,7 +64,7 @@ public:
     void ResetClusters();
     void SelectClusters(Double_t zmi,Double_t zma,Double_t ymi,Double_t yma);
     const AliITSclusterV2 *GetNextCluster(Int_t &ci);
-    void *operator new(size_t s, AliITSlayer *p) {return p;}
+    void *operator new(size_t /*s*/, AliITSlayer *p) {return p;}
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
