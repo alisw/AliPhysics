@@ -16,6 +16,10 @@
 
 /*
 $Log$
+Revision 1.8  2002/01/21 16:05:31  morsch
+- different phi-bin for hadron correction
+- provisions for background mixing.
+
 Revision 1.7  2002/01/21 15:47:18  morsch
 Bending radius correctly in cm.
 
@@ -1038,7 +1042,7 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 // if not calculate delta phi
     Float_t phi = TMath::ACos(1.-rEMCAL*rEMCAL/(2.*rB*rB));
     dPhi = TMath::ATan2(1.-TMath::Cos(phi), TMath::Sin(phi));
-    dPhi = TMath::Sign(dPhi, charge);
+    dPhi = -TMath::Sign(dPhi, charge);
 //    
     return dPhi;
     
