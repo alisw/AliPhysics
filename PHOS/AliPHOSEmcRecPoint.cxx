@@ -146,7 +146,7 @@ Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
   
   Bool_t aren = kFALSE ;
   
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   Int_t relid1[4] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
@@ -167,8 +167,8 @@ Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
 Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
 {
   // Compares two RecPoints according to their position in the PHOS modules
-
-  Float_t delta = 1 ; //Width of "Sorting row". If you changibg this 
+  
+  const Float_t delta = 1 ; //Width of "Sorting row". If you changibg this 
                       //value (what is senseless) change as vell delta in
                       //AliPHOSTrackSegmentMakerv* and other RecPoints...
   Int_t rv ; 
@@ -216,7 +216,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) const
   //  and switched off when the mouse button is released.
   
   
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance();
   
   static TGraph *  digitgraph = 0 ;
   
@@ -342,7 +342,7 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
 
   AliPHOSDigit * digit ;
  
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance();
 
  // Calculates the center of gravity in the local PHOS-module coordinates 
   
@@ -401,7 +401,7 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance();
 
   Int_t iDigit;
 
@@ -451,7 +451,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance();
 
   Int_t iDigit;
 
@@ -523,7 +523,7 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance() ;
 
   Int_t iDigit;
 
@@ -636,7 +636,6 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
 void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
   // Evaluates all shower parameters
-
   EvalLocalPosition(logWeight, digits) ;
   EvalElipsAxis(logWeight, digits) ;
   EvalMoments(logWeight, digits) ;
@@ -658,7 +657,7 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   Int_t iDigit;
 
@@ -675,7 +674,6 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
     wtot += w ;
 
   }
-
   x /= wtot ;
   z /= wtot ;
 
@@ -684,8 +682,12 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   Float_t parb = 6.52 ; 
 
   Float_t xo,yo,zo ; //Coordinates of the origin
-  gAlice->Generator()->GetOrigin(xo,yo,zo) ;
-
+  //We should check all 3 possibilities to avoid seg.v.
+  if(gAlice && gAlice->GetMCApp() && gAlice->Generator())
+    gAlice->Generator()->GetOrigin(xo,yo,zo) ;
+  else{
+    xo=yo=zo=0.;
+  }
   Float_t phi = phosgeom->GetPHOSAngle(relid[0]) ;
 
   //Transform to the local ref.frame
@@ -763,6 +765,9 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax( AliPHOSDigit **  maxAt, Float_t 
       digit = maxAt[iDigit] ;
           
       for(iDigitN = 0; iDigitN < fMulDigit; iDigitN++) {	
+	if(iDigit == iDigitN)
+	  continue ;
+	
 	digitN = (AliPHOSDigit *) digits->At(fDigitsList[iDigitN]) ; 
 	
 	if ( AreNeighbours(digit, digitN) ) {
