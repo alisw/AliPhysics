@@ -3,10 +3,9 @@
 
 #include <AliLoader.h>
 #include "AliDataLoader.h"
-#include <AliSTART.h>
 #include "AliSTARTdigit.h"
 #include "AliSTARTvertex.h"
-
+class AliSTART;
 class AliSTARTLoader: public AliLoader
  {
  public:
@@ -42,13 +41,13 @@ class AliSTARTLoader: public AliLoader
    Int_t     PostRecPoints(){return fVertexDataLoader.GetBaseDataLoader()->Post();}
    
 
-    // DATA
-    AliDataLoader fDigitsDataLoader;
-    
-    AliDataLoader fVertexDataLoader;
-    
+   // DATA
+   AliDataLoader fDigitsDataLoader; //digits loader
+   
+   AliDataLoader fVertexDataLoader;  // RecPoints (vertex position) loader
+   
  public:
-    ClassDef(AliSTARTLoader,1)
+   ClassDef(AliSTARTLoader,1)
       };
  
 #endif

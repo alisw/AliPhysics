@@ -14,7 +14,20 @@
  **************************************************************************/
 
 /* $Id$ */
+/////////////////////////////////////////////////////////////////////////
+//  Class AliSTARTdigit for START digits
+//  fTimeRight  - right side TOF signal
+//  fTimeLeft  - left side TOF signal
+//  fTimeBestRight - TOF first particle on the right side
+//  TimeBestLeft - TOF first particle on the left side
+//  fTimeAverage = (fTimeBestRight + TimeBestLeft ) /2. START signal
+//  fTimeDiff = fTimeBestRight - TimeBestLeft  
+//
+///////////////////////////////////////////////////////////////////////
 
+
+
+ 
 #include <TArrayI.h>
 #include "AliSTARTdigit.h"
 #include <Riostream.h>
@@ -24,6 +37,7 @@ ClassImp(AliSTARTdigit)
 //------------------------------------
  AliSTARTdigit::AliSTARTdigit() : TObject()
 {
+  //ctor
   fTimeAverage=9999;
   fTimeDiff=9999;
   fTimeBestRight=9999;
@@ -37,6 +51,7 @@ ClassImp(AliSTARTdigit)
 //-----------------------------------
 void AliSTARTdigit::SetTimeRight (TArrayI &o)
 {
+  ////////////////////////////////////////
   fTimeRight = new TArrayI(12);  
 
   Int_t i;
@@ -49,7 +64,7 @@ void AliSTARTdigit::SetTimeRight (TArrayI &o)
 //--------------------------------------------
 void AliSTARTdigit::SetTimeLeft (TArrayI &o)
 {
-
+  //
   fTimeLeft  = new TArrayI(12);  
   Int_t i;
   for (i=0; i<12; i++)
@@ -61,7 +76,7 @@ void AliSTARTdigit::SetTimeLeft (TArrayI &o)
 //--------------------------------------------
 void AliSTARTdigit::GetTimeLeft (TArrayI &o)
 {
-
+  //
   Int_t i;
   for (i=0; i<12; i++)
     {
@@ -71,7 +86,7 @@ void AliSTARTdigit::GetTimeLeft (TArrayI &o)
 //--------------------------------------------
 void AliSTARTdigit::GetTimeRight (TArrayI &o)
 {
-
+  //
   Int_t i;
   for (i=0; i<12; i++)
     {
@@ -81,7 +96,7 @@ void AliSTARTdigit::GetTimeRight (TArrayI &o)
 //--------------------------------------------
 void AliSTARTdigit::GetADCLeft (TArrayI &o)
 {
-
+  //
   Int_t i;
   for (i=0; i<12; i++)
     {
@@ -91,7 +106,7 @@ void AliSTARTdigit::GetADCLeft (TArrayI &o)
 //--------------------------------------------
 void AliSTARTdigit::GetADCRight (TArrayI &o)
 {
-
+  //
  Int_t i;
   for (i=0; i<12; i++)
     {
@@ -101,7 +116,7 @@ void AliSTARTdigit::GetADCRight (TArrayI &o)
 //--------------------------------------------
 void AliSTARTdigit::SetADCLeft (TArrayI &o)
 {
-
+  //
   fADCLeft  = new TArrayI(12);  
   Int_t i;
   //  Float_t fProcessKoef=1; // for pb 0.001
@@ -127,6 +142,7 @@ void AliSTARTdigit::SetADCRight (TArrayI &o)
 //------------------------------------------------------
 void AliSTARTdigit::Print()
 {
+  //
   printf("AliSTARTdigit: fTimeAverage=%d, fTimeDiff=%d\n",
 	 fTimeAverage, fTimeDiff);
   cout<<" BestTimeRigh "<<fTimeBestRight<<

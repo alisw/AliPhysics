@@ -14,6 +14,54 @@
  **************************************************************************/
 
 /* $Id$ */
+// AliSTARThit is the hit class for the START. Hits are the information
+// that comes from a Monte Carlo at each step as a particle mass through
+// sensitive detector elements as particles are transported through a
+// detector.
+//
+// Data members:
+//
+// Int_t fTrack
+//     See AliHit for a full description. The track number of the track
+// that made this hit.
+//
+// Float_t fX
+//     See AliHit for a full description. The global x position of the
+// hit (in the standard units of the Monte Carlo).
+//
+// Float_t fY
+//     See AliHit for a full description. The global y position of the
+// hit (in the standard units of the Monte Carlo).
+//
+// Float_t fZ
+//     See AliHit for a full description. The global z position of the
+// hit (in the standard units of the Monte Carlo).
+//
+// Int_t fStatus
+//     The track status flag. This flag indicates the track status
+// at the time of creating this hit. It is made up of the following 8
+// status bits from highest order to lowest order bits
+// 0           :  IsTrackAlive():    IsTrackStop():IsTrackDisappeared():
+// IsTrackOut():IsTrackExiting():IsTrackEntering():IsTrackInside()     .
+// See AliMC for a description of these functions. If the function is
+// true then the bit is set to one, otherwise it is zero.
+//
+// Int_t fVolume
+//     The number of the START detector that contains this hit.
+//     0 - right array; 1 - left array 
+// Int_t fPmt 
+// the number of PMT tube that contains hit
+// Float_t fEdep
+//     The energy lost by the particle during the step ending in this
+// hit. The units are those determined by the Monte Carlo.
+//
+// Float_t fTime
+//     The time of flight associated with the particle  in this
+// hit. The time is typically measured from the point of creation of the
+// original particle (if this particle is a daughter).  The units
+// are those determined by the Monte Carlo.
+///////////////////////////////////////////////////////////////////////
+  
 
 #include "AliSTARThit.h"
 

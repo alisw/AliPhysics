@@ -5,7 +5,7 @@
 
 /* $Id$ */
 #include <TObject.h>
-#include <TArrayI.h>
+class TArrayI;
 
 //___________________________________________
 class AliSTARTdigit: public TObject  {

@@ -195,10 +195,10 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
       //  cout<<" brHits hits "<<nhits<<endl;
       for (hit=0;hit<nhits;hit++) {
 	startHit   = (AliSTARThit*) fHits->UncheckedAt(hit);
-	pmt=startHit->fPmt;
-	volume = startHit->fVolume;
+	pmt=startHit->Pmt();
+	volume = startHit->Volume();
 	if(volume==1){
-	  timeright[pmt] = startHit->fTime;
+	  timeright[pmt] = startHit->Time();
 	  if(timeright[pmt]<besttimeright)
 	    //&&CountEr[pmt-1]>thresholdAmpl)
 	    {
@@ -206,7 +206,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  } //timeright
 	}//time for right shoulder
 	if(volume==2){            
-	  timeleft[pmt] = startHit->fTime;
+	  timeleft[pmt] = startHit->Time();
 	  if(timeleft[pmt]<besttimeleft)
 	    //&&CountEl[pmt-1]>thresholdAmpl) 
 	    {
