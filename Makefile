@@ -183,7 +183,7 @@ ifneq ($(MAKECMDGOALS),depend )
 #           Don't include if cleaning of any sort
 ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
 #$(warning INCLUDEFILES=$(INCLUDEFILES))
-include $(INCLUDEFILES)
+-include $(INCLUDEFILES)
 endif
 endif
 #############################################################
