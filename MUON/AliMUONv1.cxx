@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2002/07/23 10:02:46  morsch
+All volume names start with "S".
+
 Revision 1.32  2002/05/02 12:51:10  morsch
 For G4: gMC->VolId(...) replaced by gAlice->GetModule(...).
 
@@ -211,6 +214,7 @@ void AliMUONv1::CreateGeometry()
      Float_t dframep1 = 11.0;
 //      Bool_t frameCrosses=kFALSE;     
      Bool_t frameCrosses=kTRUE;     
+     Float_t *dum=0;
      
 //      Float_t dframez=0.9;
      // Half of the total thickness of frame crosses (including DAlu)
@@ -799,8 +803,8 @@ void AliMUONv1::CreateGeometry()
      gMC->Gsvolu("S06P","BOX",pcbMaterial,pcbpar,3);
  
      // create the sensitive volumes,
-     gMC->Gsvolu("S05G","BOX",sensMaterial,0,0);
-     gMC->Gsvolu("S06G","BOX",sensMaterial,0,0);
+     gMC->Gsvolu("S05G","BOX",sensMaterial,dum,0);
+     gMC->Gsvolu("S06G","BOX",sensMaterial,dum,0);
 
 
      // create the vertical frame volume 
@@ -1030,8 +1034,8 @@ void AliMUONv1::CreateGeometry()
  
      // create the sensitive volumes,
 
-     gMC->Gsvolu("S07G","BOX",sensMaterial,0,0);
-     gMC->Gsvolu("S08G","BOX",sensMaterial,0,0);
+     gMC->Gsvolu("S07G","BOX",sensMaterial,dum,0);
+     gMC->Gsvolu("S08G","BOX",sensMaterial,dum,0);
 
      // create the vertical frame volume 
 
@@ -1233,8 +1237,8 @@ void AliMUONv1::CreateGeometry()
  
      // create the sensitive volumes,
 
-     gMC->Gsvolu("S09G","BOX",sensMaterial,0,0);
-     gMC->Gsvolu("S10G","BOX",sensMaterial,0,0);
+     gMC->Gsvolu("S09G","BOX",sensMaterial,dum,0);
+     gMC->Gsvolu("S10G","BOX",sensMaterial,dum,0);
 
      // create the vertical frame volume 
 
