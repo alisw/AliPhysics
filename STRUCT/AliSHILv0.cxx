@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/04/03 08:13:40  fca
+Introduce extra scope for non ANSI compliant C++ compilers
+
 Revision 1.3  2000/01/17 10:29:30  morsch
 Overlap between Shield and Absorber due to limited numerical precision removed
 by displacing the Shield by epsilon = 0.01 cm.
@@ -65,6 +68,9 @@ AliSHILv0::AliSHILv0(const char *name, const char *title)
   SetMarkerColor(7);
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
+  // Pb  cone not yet compatible with muon chamber inner radii
+  // Switched off by default
+  fPbCone=kFALSE;
 }
  
 //_____________________________________________________________________________
@@ -85,19 +91,26 @@ void AliSHILv0::CreateGeometry()
   */
   //End_Html
 
-  Float_t cpar[5], cpar0[5], tpar[3], par1[39], par2[21], par3[27], par4[21], par0[42];
-  Float_t dz, DZ;
+    Float_t cpar[5], cpar0[5], tpar[3], par1[39], par2[27], par3[27], 
+	par4[21], par0[42];
+    Float_t dz, dZ;
   
-  Int_t *idtmed = fIdtmed->GetArray()-1699;
+    Int_t *idtmed = fIdtmed->GetArray()-1699;
 
-#include "ShieldConst.h"
+#include "ABSOSHILConst.h"
+#include "SHILConst.h"
+
+  typedef enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
+		kNiCuW=1720, kVacuum=1714, kAir=1714, kConcrete=1716,
+		kPolyCH2=1717, kSteel=1709, kInsulation=1713};	
+  
 //
 // Mother volume
 //
-  Float_t d_rear1=d_rear-epsilon;
-
-  Float_t zstart=abs_l-d_rear1;
-
+  Float_t dRear1=dRear;
+  
+  Float_t zstart=zRear-dRear1;
+  
   par0[0]  = 0.;
   par0[1]  = 360.;
   par0[2]  = 13.;
@@ -107,13 +120,13 @@ void AliSHILv0::CreateGeometry()
 //
   par0[3]  = -dl;
   par0[4]  = 0.;
-  par0[5]  = zstart * TMath::Tan(acc_min);
+  par0[5]  = zstart * TMath::Tan(accMin);
 
-  par0[6]  = -dl+d_rear1;
+  par0[6]  = -dl+dRear1;
   par0[7]  = 0.;
-  par0[8]  = abs_l * TMath::Tan(acc_min);
+  par0[8]  = zRear * TMath::Tan(accMin);
 
-  par0[9]  = -dl+d_rear1;
+  par0[9]  = -dl+dRear1;
   par0[10]  = 0.;
   par0[11]  = R11;
 
@@ -131,9 +144,9 @@ void AliSHILv0::CreateGeometry()
 
   par0[21] = -dz+zvac6;
   par0[22] = 0.;
-  par0[23] = zvac6 * TMath::Tan(acc_min);
+  par0[23] = zvac6 * TMath::Tan(accMin);
 
-  par0[24] = -dz+zcone_e;
+  par0[24] = -dz+zConeE;
   par0[25] = 0.;
   par0[26] = 30.;
 
@@ -157,40 +170,39 @@ void AliSHILv0::CreateGeometry()
   par0[40] = 0.;
   par0[41] = R43;
 
-  gMC->Gsvolu("YMOT", "PCON", idtmed[1755], par0, 42);
+  gMC->Gsvolu("YMOT", "PCON", idtmed[kVacuum], par0, 42);
   dz=zstart+dl;
   gMC->Gspos("YMOT", 1, "ALIC", 0., 0., dz, 0, "ONLY");  
 //
 
-  DZ=-dl;
+  dZ=-dl;
 
 //
 // First section: bellows below and behind front absorber 
 // 
 //
-
   par1[0]  = 0.;
   par1[1]  = 360.;
   par1[2]  = 12.;
   dl=(zvac4-zstart)/2.;
   
   par1[3]  = -dl;
-  par1[4]  = r_abs+(zstart-abs_c) * TMath::Tan(theta_open1);
-  par1[5]  = zstart * TMath::Tan(acc_min);
+  par1[4]  = rAbs+(zstart-zOpen) * TMath::Tan(thetaOpen1);
+  par1[5]  = zstart * TMath::Tan(accMin);
 
   par1[6]  = -dl+zvac1-zstart;
-  par1[7]  = r_abs+ (zvac1-abs_c) * TMath::Tan(theta_open1);
-  par1[8]  = zvac1 * TMath::Tan(acc_min);
+  par1[7]  = rAbs+ (zvac1-zOpen) * TMath::Tan(thetaOpen1);
+  par1[8]  = zvac1 * TMath::Tan(accMin);
 
   par1[9]  = par1[6]+dr11;
   par1[10] = par1[7]+dr11;
-  par1[11] = (zvac1+dr11) * TMath::Tan(acc_min);
+  par1[11] = (zvac1+dr11) * TMath::Tan(accMin);
 
-  par1[12] = -dl+d_rear1;
+  par1[12] = -dl+dRear1;
   par1[13] = par1[10];
-  par1[14] = abs_l * TMath::Tan(acc_min);
+  par1[14] = zRear * TMath::Tan(accMin);
 
-  par1[15] = -dl+d_rear1;
+  par1[15] = -dl+dRear1;
   par1[16] = par1[10];
   par1[17] = R11;
 
@@ -219,34 +231,30 @@ void AliSHILv0::CreateGeometry()
   par1[35] = R11;
 
   par1[36] = -dl+zvac4-zstart;
-  par1[37] = par1[34]+(zvac4-zvac3)*TMath::Tan(theta_open2);
+  par1[37] = par1[34]+(zvac4-zvac3)*TMath::Tan(thetaOpen2);
   par1[38] = R11;
 
   Float_t r2=par1[34];
-  
-  gMC->Gsvolu("YGO1", "PCON", idtmed[1760], par1, 39);
+  Float_t rBox=par1[31]-0.1;
 
+  gMC->Gsvolu("YGO1", "PCON", idtmed[kNiCuW], par1, 39);
   { // Begin local scope for i
-    for (Int_t i=4; i<38; i+=3) par1[i]  = 0;
+      for (Int_t i=4; i<38; i+=3) par1[i]  = 0;
   } // End local scope for i
-  gMC->Gsvolu("YMO1", "PCON", idtmed[1755], par1, 39);
-
+  gMC->Gsvolu("YMO1", "PCON", idtmed[kVacuum+40], par1, 39);
   gMC->Gspos("YGO1", 1, "YMO1", 0., 0., 0., 0, "ONLY");  
-
-  DZ+=dl;
-  gMC->Gspos("YMO1", 1, "YMOT", 0., 0., DZ, 0, "ONLY");  
-  DZ+=dl;
+  dZ+=dl;
+  gMC->Gspos("YMO1", 1, "YMOT", 0., 0., dZ, 0, "ONLY");  
+  dZ+=dl;
 
 //
 // Steel envelope
   tpar[0]=R11-dRSteel1;
   tpar[1]=R11;
-  tpar[2]=dl-d_rear1/2;
-  gMC->Gsvolu("YSE1", "TUBE", idtmed[1718], tpar, 3);
+  tpar[2]=dl-dRear1/2;
+  gMC->Gsvolu("YSE1", "TUBE", idtmed[kNiCuW], tpar, 3);
   dz=dl-tpar[2];
-  
-  gMC->Gspos("YSE1", 1, "YGO1", 0., 0., dz, 0, "ONLY");  
-
+  gMC->Gspos("YSE1", 1, "YGO1", 0., 0., dz, 0, "ONLY");
 //
 // 1st section: vacuum system
 //
@@ -256,26 +264,26 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=rB1;
   tpar[1]=rB1+hB1;
   tpar[2]=eB1/2.;
-  gMC->Gsvolu("YB11", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YB11", "TUBE", idtmed[kSteel+40], tpar, 3);
   Float_t dl1=tpar[2];
   
   tpar[0]=rB1+hB1-eB1;
   tpar[1]=rB1+hB1;
   tpar[2]=(lB1/2.-2.*eB1)/2.;
-  gMC->Gsvolu("YB12", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YB12", "TUBE", idtmed[kSteel+40], tpar, 3);
   Float_t dl2=tpar[2];
 
   tpar[0]=rB1-eB1;
   tpar[1]=rB1;
   tpar[2]=lB1/8.;
-  gMC->Gsvolu("YB13", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YB13", "TUBE", idtmed[kSteel+40], tpar, 3);
   Float_t dl3=tpar[2];
 
 
   tpar[0]=0;
   tpar[1]=rB1+hB1;
   tpar[2]=lB1/2.;
-  gMC->Gsvolu("YBU1", "TUBE", idtmed[1755], tpar, 3);
+  gMC->Gsvolu("YBU1", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
   dz=-tpar[2]+dl3;
   gMC->Gspos("YB13", 1, "YBU1", 0., 0., dz, 0, "ONLY"); 
@@ -296,18 +304,18 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=0;
   tpar[1]=rB1+hB1;
   tpar[2]=10.*lB1/2.;
-  gMC->Gsvolu("YBM1", "TUBE", idtmed[1755], tpar, 3);
+  gMC->Gsvolu("YBM1", "TUBE", idtmed[kVacuum+40], tpar, 3);
   dz=-tpar[2]+lB1/2.;
   { // Begin local scope for i
-    for (Int_t i=0; i<10; i++) {
-      gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0.,dz , 0, "ONLY"); 
-      dz+=lB1;
-    }
+      for (Int_t i=0; i<10; i++) {
+	  gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0., dz, 0, "ONLY"); 
+	  dz+=lB1;
+      }
   } // End local scope for i
   dz=-dl+(zvac1-zstart)+dr11+tpar[2];
   gMC->Gspos("YBM1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-  dz=dl-dr13-(zvac4-zvac3)-tpar[2]-(dr11-dr13);
+  dz=dl-dr13-(zvac4-zvac3)-tpar[2];
   gMC->Gspos("YBM1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
 //
@@ -316,18 +324,18 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=0;
   tpar[1]=rF1;
   tpar[2]=dF1/2.;
-  gMC->Gsvolu("YFM1", "TUBE", idtmed[1755], tpar, 3);
+  gMC->Gsvolu("YFM1", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
-  tpar[0]=rF1-d_flange;
+  tpar[0]=rF1-2.;
   tpar[1]=rF1;
   tpar[2]=dF1/2.;
-  gMC->Gsvolu("YF11", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YF11", "TUBE", idtmed[kSteel+40], tpar, 3);
   gMC->Gspos("YF11", 1, "YFM1", 0., 0., 0., 0, "ONLY"); 
 
   tpar[0]=rB1;
-  tpar[1]=rF1-d_flange;
-  tpar[2]=d_flange/2.;
-  gMC->Gsvolu("YF12", "TUBE", idtmed[1758], tpar, 3);
+  tpar[1]=rF1-2.;
+  tpar[2]=dFlange/2.;
+  gMC->Gsvolu("YF12", "TUBE", idtmed[kSteel+40], tpar, 3);
   dz=-dF1/2.+tpar[2];
   gMC->Gspos("YF12", 1, "YFM1", 0., 0., dz, 0, "ONLY"); 
   dz= dF1/2.-tpar[2];
@@ -336,200 +344,246 @@ void AliSHILv0::CreateGeometry()
   dz=-dl+(zvac2-zstart);
   gMC->Gspos("YFM1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-
 //
 // pipe between flange and bellows
-  tpar[0]=rB1-d_tube;
+  tpar[0]=rB1-dTubeS;
   tpar[1]=rB1;
   tpar[2]=2.*(dB1+dr12-10.*lB1)/4.;
-  gMC->Gsvolu("YPF1", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YPF1", "TUBE", idtmed[kSteel+40], tpar, 3);
+ 
   dz=-dl+(zvac2-zstart)-dF1/2.-tpar[2];
   gMC->Gspos("YPF1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
   dz=-dl+(zvac2-zstart)+dF1/2.+tpar[2];
   gMC->Gspos("YPF1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-//
 // pipe and heating jackets outside bellows
 //
 // left side
   cpar0[0]=(zvac1-zstart)/2;
-  cpar0[1]=r_vacu+(zstart-abs_c)*TMath::Tan(theta_open1);
-  cpar0[2]=r_abs +(zstart-abs_c)*TMath::Tan(theta_open1);
-  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(theta_open1);
-  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(theta_open1);
-  gMC->Gsvolu("YV11", "CONE", idtmed[1758], cpar0, 5);
+  cpar0[1]=rVacu+(zstart-zOpen)*TMath::Tan(thetaOpen1)-0.05;
+  cpar0[2]=rAbs +(zstart-zOpen)*TMath::Tan(thetaOpen1);
+  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(thetaOpen1);
+  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(thetaOpen1);
+  gMC->Gsvolu("YV11", "CONE", idtmed[kSteel+40], cpar0, 5);
 //
 // insulation
+  dTubeS=0.15;
   cpar[0]=cpar0[0];
-  cpar[1]=cpar0[1]+d_tube;
-  cpar[2]=cpar0[1]+d_tube+d_insu;
-  cpar[3]=cpar0[3]+d_tube;
-  cpar[4]=cpar0[3]+d_tube+d_insu;
-  gMC->Gsvolu("YI11", "CONE", idtmed[1753], cpar, 5);
+  cpar[1]=cpar0[1]+0.15;
+  cpar[2]=cpar0[1]+0.65;
+  cpar[3]=cpar0[3]+0.15;
+  cpar[4]=cpar0[3]+0.65;
+  gMC->Gsvolu("YI11", "CONE", idtmed[kInsulation+40], cpar, 5);
   gMC->Gspos("YI11", 1, "YV11", 0., 0., 0., 0, "ONLY"); 
 //
 // clearance
-  cpar[1]=cpar0[2]-d_prot-d_free;
-  cpar[2]=cpar0[2]-d_prot;
-  cpar[3]=cpar0[4]-d_prot-d_free;
-  cpar[4]=cpar0[4]-d_prot;
-  gMC->Gsvolu("YP11", "CONE", idtmed[1755], cpar, 5);
+  cpar[1]=cpar0[1]+0.75;
+  cpar[2]=cpar0[1]+1.25;
+  cpar[3]=cpar0[3]+0.75;
+  cpar[4]=cpar0[3]+1.25;
+  gMC->Gsvolu("YP11", "CONE", idtmed[kVacuum+40], cpar, 5);
   gMC->Gspos("YP11", 1, "YV11", 0., 0., 0., 0, "ONLY"); 
   
   dz=-dl+cpar0[0];
   gMC->Gspos("YV11", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
-
 // right side
+  dTubeS=0.35;
+  dVacuS+=0.25;
+  
   cpar0[0]=(zvac4-zvac3)/2;
-  cpar0[1]=r2-d_vacu;
-  cpar0[2]=r2       ;
-  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(theta_open2);
-  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(theta_open2);
-  gMC->Gsvolu("YV12", "CONE", idtmed[1758], cpar0, 5);
+  cpar0[1]=rB1;
+  cpar0[2]=cpar0[1]+dVacuS;
+
+  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(thetaOpenB);
+  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(thetaOpenB);
+  gMC->Gsvolu("YV12", "CONE", idtmed[kSteel], cpar0, 5);
+  Float_t r2V=cpar0[3];
 //
 // insulation
   cpar[0]=cpar0[0];
-  cpar[1]=cpar0[1]+d_tube;
-  cpar[2]=cpar0[1]+d_tube+d_insu;
-  cpar[3]=cpar0[3]+d_tube;
-  cpar[4]=cpar0[3]+d_tube+d_insu;
-  gMC->Gsvolu("YI12", "CONE", idtmed[1753], cpar, 5);
+  cpar[1]=cpar0[1]+dTubeS;
+  cpar[2]=cpar0[1]+dTubeS+dInsuS;
+  cpar[3]=cpar0[3]+dTubeS;
+  cpar[4]=cpar0[3]+dTubeS+dInsuS;
+  gMC->Gsvolu("YI12", "CONE", idtmed[kInsulation], cpar, 5);
   gMC->Gspos("YI12", 1, "YV12", 0., 0., 0., 0, "ONLY"); 
+
 //
 // clearance
-  cpar[1]=cpar0[2]-d_prot-d_free;
-  cpar[2]=cpar0[2]-d_prot;
-  cpar[3]=cpar0[4]-d_prot-d_free;
-  cpar[4]=cpar0[4]-d_prot;
-  gMC->Gsvolu("YP12", "CONE", idtmed[1755], cpar, 5);
+  cpar[1]=cpar0[1]+dTubeS+dInsuS+dEnveS;
+  cpar[2]=cpar0[1]+dTubeS+dInsuS+dEnveS+dFreeS;
+  cpar[3]=cpar0[3]+dTubeS+dInsuS+dEnveS;
+  cpar[4]=cpar0[3]+dTubeS+dInsuS+dEnveS+dFreeS;
+  gMC->Gsvolu("YP12", "CONE", idtmed[kAir], cpar, 5);
   gMC->Gspos("YP12", 1, "YV12", 0., 0., 0., 0, "ONLY"); 
   
   dz=dl-cpar0[0];
   gMC->Gspos("YV12", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
-
 //
 // Second Section
+// Between first and second bellow section
+//
 
   par2[0]  = 0.;
   par2[1]  = 360.;
-  par2[2]  = 6.;
+  par2[2]  = 7.;
   dl=(zvac7-zvac4)/2.;
-  
+// recess station 1   
   par2[3]  = -dl;
-  par2[4]  = r2+(zvac4-zvac3) * TMath::Tan(theta_open2);
+  par2[4]  = r2+(zvac4-zvac3) * TMath::Tan(thetaOpen2);
   par2[5]  = R11;
-  
+// recess station 2   
   par2[6]  = -dl;
   par2[7]  = par2[4];
   par2[8]  = R21;
 
   par2[9]  = -dl+(zvac6-zvac4);
-  par2[10]  = r2+(zvac6-zvac3) * TMath::Tan(theta_open2);
+  par2[10]  = r2+(zvac6-zvac3) * TMath::Tan(thetaOpen2);
   par2[11]  = R21;
 
   par2[12] = -dl+(zvac6-zvac4);
   par2[13] = par2[10];
-  par2[14] = zvac6*TMath::Tan(acc_min);
+  par2[14] = zvac6*TMath::Tan(accMin);
 
-  par2[15] = -dl+(zcone_e-zvac4);
-  par2[16] = r2+(zcone_e-zvac3) * TMath::Tan(theta_open2);
-  par2[17] = 30.;
+// Start of Pb section
+  par2[15] = -dl+(zPb-zvac4);
+  par2[16] = r2+(zPb-zvac3) * TMath::Tan(thetaOpen2);
+  par2[17] = zPb*TMath::Tan(accMin);
 
-  par2[18] = -dl+(zvac7-zvac4);
-  par2[19] = r2+(zvac7-zvac3) * TMath::Tan(theta_open2);
+//
+// end of cone following 2 deg line
+  par2[18] = -dl+(zConeE-zvac4);
+  par2[19] = r2+(zConeE-zvac3) * TMath::Tan(thetaOpen2);
   par2[20] = 30.;
 
+  par2[21] = -dl+(zvac7-zvac4);
+  par2[22] = r2+(zvac7-zvac3) * TMath::Tan(thetaOpen2);
+  par2[23] = 30.;
+
+
+  gMC->Gsvolu("YGO2", "PCON", idtmed[kNiCuW+40], par2, 24);
+//
+// Lead cone option replacing Tungsten 
+//
+  Float_t parPb[12];
+  parPb[0]  = 0.;
+  parPb[1]  = 360.;
+  parPb[2]  = 3.;
+  Float_t dlPb=(zvac7-zPb)/2.;
   
-  gMC->Gsvolu("YGO2", "PCON", idtmed[1760], par2, 21);
-
+  parPb[3]  = -dlPb;
+  parPb[4]  = 17.657;
+  parPb[5]  = zPb*TMath::Tan(accMin);
+  
+  parPb[6]  = -dlPb+(zConeE-zPb);
+  parPb[7]  = parPb[4]+(zConeE-zPb)*TMath::Tan(thetaOpenPb);
+  parPb[8]  = 30.;
+  
+  parPb[9]   = dlPb;
+  parPb[10]  = parPb[7]+(zvac7-zConeE)*TMath::Tan(thetaOpenPb);
+  parPb[11]  = 30.;
+  gMC->Gsvolu("YXO2", "PCON", idtmed[kPb], parPb, 12);	  
+  gMC->Gspos("YXO2", 1, "YGO2", 0., 0., (zPb-zvac4)/2., 0, "ONLY");  
+  
   { // Begin local scope for i
-    for (Int_t i=4; i<20; i+=3) par2[i]  = 0;
+      for (Int_t i=4; i<23; i+=3) par2[i]  = 0;
   } // End local scope for i
-      
-  gMC->Gsvolu("YMO2", "PCON", idtmed[1755], par2, 21);
+          
+  gMC->Gsvolu("YMO2", "PCON", idtmed[kVacuum+40], par2, 24);
   gMC->Gspos("YGO2", 1, "YMO2", 0., 0., 0., 0, "ONLY");  
-
-  DZ+=dl;
-  gMC->Gspos("YMO2", 1, "YMOT", 0., 0., DZ, 0, "ONLY");  
-  DZ+=dl;
+  dZ+=dl;
+  gMC->Gspos("YMO2", 1, "YMOT", 0., 0., dZ, 0, "ONLY");  
+  dZ+=dl;
 //
 // Steel envelope
 //
   tpar[0]=R11-dRSteel1;
   tpar[1]=R21;
   tpar[2]=2;
-  gMC->Gsvolu("YS21", "TUBE", idtmed[1718], tpar, 3);
+  gMC->Gsvolu("YS21", "TUBE", idtmed[kSteel], tpar, 3);
   dz=-dl+tpar[2];
   gMC->Gspos("YS21", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
   dz+=tpar[2];
   tpar[0]=R21-dRSteel2;
   tpar[1]=R21;
   tpar[2]=(zvac6-zvac5)/2.;
-  gMC->Gsvolu("YS22", "TUBE", idtmed[1718], tpar, 3);
+  gMC->Gsvolu("YS22", "TUBE", idtmed[kSteel], tpar, 3);
   dz+=tpar[2];
   gMC->Gspos("YS22", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
   dz+=tpar[2];
   
   cpar[0]=2.;
   cpar[1]=R21-dRSteel2;
-  cpar[2]=zvac6 * TMath::Tan(acc_min);
+  cpar[2]=zvac6 * TMath::Tan(accMin);
   cpar[3]=cpar[1];
-  cpar[4]=cpar[2]+4.*TMath::Tan(acc_min);
+  cpar[4]=cpar[2]+4.*TMath::Tan(accMin);
 
-  gMC->Gsvolu("YS23", "CONE", idtmed[1718], cpar, 5);
+  gMC->Gsvolu("YS23", "CONE", idtmed[kSteel], cpar, 5);
   dz+=cpar[0];
   gMC->Gspos("YS23", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
   dz+=cpar[0];
 
-  cpar[0]=(zcone_e-zvac6-4.)/2;
+  cpar[0]=(zPb-zvac6-4.)/2;
   cpar[2]=cpar[4];
-  cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(acc_min);
+  cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
   cpar[1]=cpar[2]-dRSteel2;
   cpar[3]=cpar[4]-dRSteel2;
 
-  gMC->Gsvolu("YS24", "CONE", idtmed[1718], cpar, 5);
+  gMC->Gsvolu("YS24", "CONE", idtmed[kSteel], cpar, 5);
   dz+=cpar[0];
   gMC->Gspos("YS24", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
   dz+=cpar[0];
 
+  cpar[0]=(zConeE-zPb)/2;
+  cpar[2]=cpar[4];
+  cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
+  cpar[1]=cpar[2]-dRSteel2;
+  cpar[3]=cpar[4]-dRSteel2;
+
+  gMC->Gsvolu("YS25", "CONE", idtmed[kSteel], cpar, 5);
+  dz=-dlPb+cpar[0];
+  gMC->Gspos("YS25", 1, "YXO2", 0., 0., dz, 0, "ONLY");  
+  dz+=cpar[0];
+
   tpar[0]=26.;
   tpar[1]=30.;
-  tpar[2]=(zvac7-zcone_e)/2.;
+  tpar[2]=(zvac7-zConeE)/2.;
 
-  gMC->Gsvolu("YS25", "TUBE", idtmed[1718], tpar, 3);
+  gMC->Gsvolu("YS26", "TUBE", idtmed[kSteel], tpar, 3);
   dz+=tpar[2];
-  gMC->Gspos("YS25", 1, "YGO2", 0., 0., dz, 0, "ONLY");  
+  gMC->Gspos("YS26", 1, "YXO2", 0., 0., dz, 0, "ONLY");  
   dz+=tpar[2];
-
+  
 //
 // 2nd section: vacuum system 
-
+//
   cpar0[0]=(zvac7-zvac4)/2;
-  cpar0[1]=r2-d_vacu+(zvac4-zvac3)*TMath::Tan(theta_open2);
-  cpar0[2]=r2       +(zvac4-zvac3)*TMath::Tan(theta_open2);
-  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(theta_open2);
-  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(theta_open2);
-  gMC->Gsvolu("YV21", "CONE", idtmed[1758], cpar0, 5);
+  cpar0[1]=r2V;
+  cpar0[2]=r2V+dVacuS;
+  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(thetaOpenB);
+  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(thetaOpenB);
+  gMC->Gsvolu("YV21", "CONE", idtmed[kSteel+40], cpar0, 5);
 //
 // insulation
   cpar[0]=cpar0[0];
-  cpar[1]=cpar0[1]+d_tube;
-  cpar[2]=cpar0[1]+d_tube+d_insu;
-  cpar[3]=cpar0[3]+d_tube;
-  cpar[4]=cpar0[3]+d_tube+d_insu;
-  gMC->Gsvolu("YI21", "CONE", idtmed[1753], cpar, 5);
+  cpar[1]=cpar0[1]+dTubeS;
+  cpar[2]=cpar0[1]+dTubeS+dInsuS;
+  cpar[3]=cpar0[3]+dTubeS;
+  cpar[4]=cpar0[3]+dTubeS+dInsuS;
+  gMC->Gsvolu("YI21", "CONE", idtmed[kInsulation+40], cpar, 5);
   gMC->Gspos("YI21", 1, "YV21", 0., 0., 0., 0, "ONLY"); 
 //
 // clearance
-  cpar[1]=cpar0[2]-d_prot-d_free;
-  cpar[2]=cpar0[2]-d_prot;
-  cpar[3]=cpar0[4]-d_prot-d_free;
-  cpar[4]=cpar0[4]-d_prot;
-  gMC->Gsvolu("YP21", "CONE", idtmed[1755], cpar, 5);
+  cpar[1]=cpar0[1]+dTubeS+dInsuS+dEnveS;
+  cpar[2]=cpar0[1]+dTubeS+dInsuS+dEnveS+dFreeS;
+  cpar[3]=cpar0[3]+dTubeS+dInsuS+dEnveS;
+  cpar[4]=cpar0[3]+dTubeS+dInsuS+dEnveS+dFreeS;
+  gMC->Gsvolu("YP21", "CONE", idtmed[kAir+40], cpar, 5);
   gMC->Gspos("YP21", 1, "YV21", 0., 0., 0., 0, "ONLY"); 
   
   dz=0.;
   gMC->Gspos("YV21", 1, "YMO2", 0., 0., dz, 0, "ONLY"); 
+
 
 //
 // Third Section: Bellows and Flange 
@@ -540,7 +594,7 @@ void AliSHILv0::CreateGeometry()
   dl=(zvac9-zvac7)/2.;
   
   par3[3]  = -dl;
-  par3[4]  = r2+(zvac7-zvac3) * TMath::Tan(theta_open2);
+  par3[4]  = r2+(zvac7-zvac3) * TMath::Tan(thetaOpen2);
   par3[5]  = 30.;
 
   par3[6]  = -dl+dr21;
@@ -570,16 +624,23 @@ void AliSHILv0::CreateGeometry()
   par3[24] = par3[21]+dr23;
   par3[25] = par3[22]-dr23;
   par3[26] = 30.;
-
+//
+  rBox=par3[22]-0.1;
   Float_t r3=par3[25];
   
-  gMC->Gsvolu("YGO3", "PCON", idtmed[1760], par3, 27);
+  gMC->Gsvolu("YGO3", "PCON", idtmed[kNiCuW+40], par3, 27);
 
+  parPb[0]  = dl;
+  parPb[1]  = parPb[10];
+  parPb[2]  = 30;
+  parPb[3]  = parPb[1]+2.*dl*TMath::Tan(thetaOpenPb);
+  parPb[4]  = 30;
+  gMC->Gsvolu("YXO3", "CONE", idtmed[kPb], parPb, 5);
+  gMC->Gspos("YXO3", 1, "YGO3", 0., 0., 0., 0, "ONLY");  
   { // Begin local scope for i
-    for (Int_t i=4; i<26; i+=3) par3[i]  = 0;
+      for (Int_t i=4; i<26; i+=3) par3[i]  = 0;
   } // End local scope for i
-      
-  gMC->Gsvolu("YMO3", "PCON", idtmed[1755], par3, 27);
+  gMC->Gsvolu("YMO3", "PCON", idtmed[kVacuum+40], par3, 27);
   gMC->Gspos("YGO3", 1, "YMO3", 0., 0., 0., 0, "ONLY");  
 
 //
@@ -587,11 +648,11 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=26;
   tpar[1]=30;
   tpar[2]=dl;
-  gMC->Gsvolu("YS31", "TUBE", idtmed[1718], tpar, 3);
-  gMC->Gspos("YS31", 1, "YGO3", 0., 0., 0., 0, "ONLY");  
-  DZ+=dl;
-  gMC->Gspos("YMO3", 1, "YMOT", 0., 0., DZ, 0, "ONLY");  
-  DZ+=dl;
+  gMC->Gsvolu("YS31", "TUBE", idtmed[kSteel], tpar, 3);
+  gMC->Gspos("YS31", 1, "YXO3", 0., 0., 0., 0, "ONLY");  
+  dZ+=dl;
+  gMC->Gspos("YMO3", 1, "YMOT", 0., 0., dZ, 0, "ONLY");  
+  dZ+=dl;
 
 //
 // 3rd section: vacuum system
@@ -602,26 +663,26 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=rB2;
   tpar[1]=rB2+hB2;
   tpar[2]=eB2/2.;
-  gMC->Gsvolu("YB21", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YB21", "TUBE", idtmed[kSteel+40], tpar, 3);
   dl1=tpar[2];
   
   tpar[0]=rB2+hB2-eB2;
   tpar[1]=rB2+hB2;
   tpar[2]=(lB2/2.-2.*eB2)/2.;
-  gMC->Gsvolu("YB22", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YB22", "TUBE", idtmed[kSteel+40], tpar, 3);
   dl2=tpar[2];
 
   tpar[0]=rB2-eB2;
   tpar[1]=rB2;
   tpar[2]=lB2/8.;
-  gMC->Gsvolu("YB23", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YB23", "TUBE", idtmed[kSteel+40], tpar, 3);
   dl3=tpar[2];
 
 
   tpar[0]=0;
   tpar[1]=rB2+hB2;
   tpar[2]=lB2/2.;
-  gMC->Gsvolu("YBU2", "TUBE", idtmed[1755], tpar, 3);
+  gMC->Gsvolu("YBU2", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
   dz=-tpar[2]+dl3;
   gMC->Gspos("YB23", 1, "YBU2", 0., 0., dz, 0, "ONLY"); 
@@ -642,15 +703,14 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=0;
   tpar[1]=rB2+hB2;
   tpar[2]=7.*lB2/2.;
-  gMC->Gsvolu("YBM2", "TUBE", idtmed[1755], tpar, 3);
+  gMC->Gsvolu("YBM2", "TUBE", idtmed[kVacuum+40], tpar, 3);
   dz=-tpar[2]+lB2/2.;
   { // Begin local scope for i
-    for (Int_t i=0; i<7; i++) {
-      gMC->Gspos("YBU2", i+1 , "YBM2", 0., 0.,dz , 0, "ONLY"); 
-      dz+=lB2;
-    }
+      for (Int_t i=0; i<7; i++) {
+	  gMC->Gspos("YBU2", i+1 , "YBM2", 0., 0.,dz , 0, "ONLY"); 
+	  dz+=lB2;
+      }
   } // End local scope for i
-
   dz=-dl+dr21+tpar[2];
   gMC->Gspos("YBM2", 1, "YMO3", 0., 0., dz, 0, "ONLY"); 
 
@@ -663,18 +723,18 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=0;
   tpar[1]=rF2;
   tpar[2]=dF2/2.;
-  gMC->Gsvolu("YFM2", "TUBE", idtmed[1755], tpar, 3);
+  gMC->Gsvolu("YFM2", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
-  tpar[0]=rF2-d_flange;
+  tpar[0]=rF2-dFlange;
   tpar[1]=rF2;
   tpar[2]=dF2/2.;
-  gMC->Gsvolu("YF21", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YF21", "TUBE", idtmed[kSteel+40], tpar, 3);
   gMC->Gspos("YF21", 1, "YFM2", 0., 0., 0., 0, "ONLY"); 
 
   tpar[0]=rB2;
-  tpar[1]=rF2-d_flange;
-  tpar[2]=d_flange/2.;
-  gMC->Gsvolu("YF22", "TUBE", idtmed[1758], tpar, 3);
+  tpar[1]=rF2-dFlange;
+  tpar[2]=dFlange/2.;
+  gMC->Gsvolu("YF22", "TUBE", idtmed[kSteel+40], tpar, 3);
   dz=-dF2/2.+tpar[2];
   gMC->Gspos("YF22", 1, "YFM2", 0., 0., dz, 0, "ONLY"); 
   dz= dF2/2.-tpar[2];
@@ -686,10 +746,10 @@ void AliSHILv0::CreateGeometry()
 
 //
 // pipe between flange and bellows
-  tpar[0]=rB2-d_tube;
+  tpar[0]=rB2-dTubeS;
   tpar[1]=rB2;
   tpar[2]=2.*(dB2+dr22-7.*lB2)/4.;
-  gMC->Gsvolu("YPF2", "TUBE", idtmed[1758], tpar, 3);
+  gMC->Gsvolu("YPF2", "TUBE", idtmed[kSteel+40], tpar, 3);
   dz=dr21/2.-dr23/2.-dF2/2.-tpar[2];
   gMC->Gspos("YPF2", 1, "YMO3", 0., 0., dz, 0, "ONLY"); 
   dz=dr21/2.-dr23/2.+dF2/2.+tpar[2];
@@ -708,7 +768,7 @@ void AliSHILv0::CreateGeometry()
   par4[5]  = 30.;
 
   par4[6]  = -dl+(zvac10-zvac9);
-  par4[7]  = r3+(zvac10-zvac9) * TMath::Tan(theta_open3);
+  par4[7]  = r3+(zvac10-zvac9) * TMath::Tan(thetaOpen3);
   par4[8]  = 30.;
 
   par4[9]  = par4[6];
@@ -716,7 +776,7 @@ void AliSHILv0::CreateGeometry()
   par4[11] = R42;
 
   par4[12] = -dl+(zvac11-zvac9);
-  par4[13] = r3+(zvac11-zvac9) * TMath::Tan(theta_open3);
+  par4[13] = r3+(zvac11-zvac9) * TMath::Tan(thetaOpen3);
   par4[14] = R42;
 
   par4[15] = par4[12];
@@ -724,31 +784,47 @@ void AliSHILv0::CreateGeometry()
   par4[17] = R43;
 
   par4[18] = -dl+(zvac12-zvac9);
-  par4[19] = r_abs;
+  par4[19] = rAbs;
   par4[20] = R43;
 
-  gMC->Gsvolu("YGO4", "PCON", idtmed[1760], par4, 21);
-  { // Begin local scope for i
-    for (Int_t i=4; i<20; i+=3) par4[i]  = 0;
-  } // End local scope for i
-      
+  gMC->Gsvolu("YGO4", "PCON", idtmed[kNiCuW+40], par4, 21);
 
-  gMC->Gsvolu("YMO4", "PCON", idtmed[1755], par4, 21);
+  parPb[0]  = (zvac10-zvac9)/2.;
+  parPb[1]  = parPb[3];
+  parPb[2]  = 30;
+  parPb[3]  = parPb[1]+2.*parPb[0]*TMath::Tan(thetaOpenPb);
+  parPb[4]  = 30;
+  gMC->Gsvolu("YXO4", "CONE", idtmed[kPb], parPb, 5);
+  gMC->Gspos("YXO4", 1, "YGO4", 0., 0., -dl+parPb[0], 0, "ONLY");  
+
+  parPb[0]  = (zvac12-zvac10)/2.;
+  parPb[1]  = parPb[3];
+  parPb[2]  = 31.;
+  parPb[3]  = parPb[1]+2.*parPb[0]*TMath::Tan(thetaOpenPb);
+  parPb[4]  = 31.;
+  gMC->Gsvolu("YXO5", "CONE", idtmed[kPb], parPb, 5);
+  gMC->Gspos("YXO5", 1, "YGO4", 0., 0., -dl+(zvac10-zvac9)+parPb[0], 0, "ONLY");  
+  { // Begin local scope for i
+      for (Int_t i=4; i<20; i+=3) par4[i]  = 0;
+  } // End local scope for i
+
+  gMC->Gsvolu("YMO4", "PCON", idtmed[kVacuum+40], par4, 21);
   gMC->Gspos("YGO4", 1, "YMO4", 0., 0., 0., 0, "ONLY");  
 
 
-  DZ+=dl;
-  gMC->Gspos("YMO4", 1, "YMOT", 0., 0., DZ, 0, "ONLY");  
-  DZ+=dl;
+
+  dZ+=dl;
+  gMC->Gspos("YMO4", 1, "YMOT", 0., 0., dZ, 0, "ONLY");  
+  dZ+=dl;
 //
 // Closing concrete cone 
 //
   cpar[0]=(zvac12-zvac11)/2.;
-  cpar[1] = r3+(zvac11-zvac9) * TMath::Tan(theta_open3);
+  cpar[1] = r3+(zvac11-zvac9) * TMath::Tan(thetaOpen3);
   cpar[2] = cpar[1]+0.001;
-  cpar[3] = r_abs;
+  cpar[3] = rAbs;
   cpar[4] = cpar[2];
-  gMC->Gsvolu("YCC4", "CONE", idtmed[1752], cpar, 5);
+  gMC->Gsvolu("YCC4", "CONE", idtmed[kConcrete+40], cpar, 5);
   dz=dl-cpar[0];
   gMC->Gspos("YCC4", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
 //
@@ -758,23 +834,23 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=26.;
   tpar[1]=30.;
   tpar[2]=(zvac10-zvac9)/2.;
-  gMC->Gsvolu("YS41", "TUBE", idtmed[1718], tpar, 3);
+  gMC->Gsvolu("YS41", "TUBE", idtmed[kSteel], tpar, 3);
   dz+=tpar[2];
-  gMC->Gspos("YS41", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
+  gMC->Gspos("YS41", 1, "YXO4", 0., 0., 0., 0, "ONLY");  
   dz+=tpar[2];
-
-  tpar[0]=26.;
+/*
+  tpar[0]=30.;
   tpar[1]=R41;
   tpar[2]=2.;
-  gMC->Gsvolu("YS42", "TUBE", idtmed[1718], tpar, 3);
+  gMC->Gsvolu("YS42", "TUBE", idtmed[kSteel], tpar, 3);
   dz+=tpar[2];
   gMC->Gspos("YS42", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
   dz+=tpar[2];
-
+*/
   tpar[0]=R41-dRSteel2;
   tpar[1]=R41;
-  tpar[2]=(zvac11-zvac10-4)/2.;
-  gMC->Gsvolu("YS43", "TUBE", idtmed[1718], tpar, 3);
+  tpar[2]=(zvac11-zvac10)/2.;
+  gMC->Gsvolu("YS43", "TUBE", idtmed[kSteel], tpar, 3);
   dz+=tpar[2];
   gMC->Gspos("YS43", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
 //
@@ -783,60 +859,79 @@ void AliSHILv0::CreateGeometry()
   tpar[0]=R41;
   tpar[1]=R42;
   tpar[2]=(zvac11-zvac10)/2.;
-  gMC->Gsvolu("YPBI", "TUBE", idtmed[1752], tpar, 3);
-  dz-=4;
+  gMC->Gsvolu("YPBI", "TUBE", idtmed[kPb+40], tpar, 3);
+  dz-=0;
   gMC->Gspos("YPBI", 1, "YGO4", 0., 0., dz, 0, "ONLY"); 
 
   tpar[0]=R42-5;
   tpar[1]=R42;
   tpar[2]=(zvac11-zvac10)/2.;
-  gMC->Gsvolu("YPBO", "TUBE", idtmed[1712], tpar, 3);
+  gMC->Gsvolu("YPBO", "TUBE", idtmed[kPb], tpar, 3);
   gMC->Gspos("YPBO", 1, "YPBI", 0., 0., 0., 0, "ONLY"); 
   
 //
 // rear Fe shield
 //
 
-  tpar[0]=R42;
+  tpar[0]=31.;
   tpar[1]=R43;
   tpar[2]=(zvac12-zvac11)/2.;
-  gMC->Gsvolu("YFEI", "TUBE", idtmed[1749], tpar, 3);
+  gMC->Gsvolu("YFEI", "TUBE", idtmed[kFe+40], tpar, 3);
   dz=dl-tpar[2];
   gMC->Gspos("YFEI", 1, "YGO4", 0., 0., dz, 0, "ONLY"); 
 
-  tpar[0]=R42;
+  tpar[0]=31.;
   tpar[1]=R43;
   tpar[2]=2.5;
-  gMC->Gsvolu("YFEO", "TUBE", idtmed[1709], tpar, 3);
+  gMC->Gsvolu("YFEO", "TUBE", idtmed[kFe], tpar, 3);
   dz=-(zvac12-zvac11)/2.+tpar[2];
   gMC->Gspos("YFEO", 1, "YFEI", 0., 0., dz, 0, "ONLY"); 
+//
+// Magnet element 
+//
+  tpar[0]=0.;
+  tpar[1]=R43;
+  tpar[2]=50.;
+  gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
+  tpar[0]=rAbs;
+  tpar[1]=R43;
+  tpar[2]=50.;
+  gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
+  gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
 
+//
+
+  dz=zvac12+50.;
+  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
+
+
+// 
 //
 // 4th section: vacuum system 
 //
 // up to closing cone
   cpar0[0]=(zvac11-zvac9)/2;
-  cpar0[1]=r3-d_vacu;
+  cpar0[1]=r3-dVacuS;
   cpar0[2]=r3;
-  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(theta_open3);
-  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(theta_open3);
-  gMC->Gsvolu("YV31", "CONE", idtmed[1758], cpar0, 5);
+  cpar0[3]=cpar0[1]+2.*cpar0[0]*TMath::Tan(thetaOpen3);
+  cpar0[4]=cpar0[2]+2.*cpar0[0]*TMath::Tan(thetaOpen3);
+  gMC->Gsvolu("YV31", "CONE", idtmed[kSteel+40], cpar0, 5);
 //
 // insulation
   cpar[0]=cpar0[0];
-  cpar[1]=cpar0[1]+d_tube;
-  cpar[2]=cpar0[1]+d_tube+d_insu;
-  cpar[3]=cpar0[3]+d_tube;
-  cpar[4]=cpar0[3]+d_tube+d_insu;
-  gMC->Gsvolu("YI31", "CONE", idtmed[1753], cpar, 5);
+  cpar[1]=cpar0[1]+dTubeS;
+  cpar[2]=cpar0[1]+dTubeS+dInsuS;
+  cpar[3]=cpar0[3]+dTubeS;
+  cpar[4]=cpar0[3]+dTubeS+dInsuS;
+  gMC->Gsvolu("YI31", "CONE", idtmed[kInsulation+40], cpar, 5);
   gMC->Gspos("YI31", 1, "YV31", 0., 0., 0., 0, "ONLY"); 
 //
 // clearance
-  cpar[1]=cpar0[2]-d_prot-d_free;
-  cpar[2]=cpar0[2]-d_prot;
-  cpar[3]=cpar0[4]-d_prot-d_free;
-  cpar[4]=cpar0[4]-d_prot;
-  gMC->Gsvolu("YP31", "CONE", idtmed[1755], cpar, 5);
+  cpar[1]=cpar0[2]-dProtS-dFreeS;
+  cpar[2]=cpar0[2]-dProtS;
+  cpar[3]=cpar0[4]-dProtS-dFreeS;
+  cpar[4]=cpar0[4]-dProtS;
+  gMC->Gsvolu("YP31", "CONE", idtmed[kVacuum+40], cpar, 5);
   gMC->Gspos("YP31", 1, "YV31", 0., 0., 0., 0, "ONLY"); 
   
   dz=-dl+cpar[0];
@@ -844,27 +939,27 @@ void AliSHILv0::CreateGeometry()
 //
 // closing cone
   cpar0[0]=(zvac12-zvac11)/2;
-  cpar0[1]=r3-d_vacu+(zvac11-zvac9)*TMath::Tan(theta_open3);
-  cpar0[2]=r3       +(zvac11-zvac9)*TMath::Tan(theta_open3);
-  cpar0[3]=r_vacu;
-  cpar0[4]=r_abs;
-  gMC->Gsvolu("YV32", "CONE", idtmed[1758], cpar0, 5);
+  cpar0[1]=r3-dVacuS+(zvac11-zvac9)*TMath::Tan(thetaOpen3);
+  cpar0[2]=r3       +(zvac11-zvac9)*TMath::Tan(thetaOpen3);
+  cpar0[3]=rVacu;
+  cpar0[4]=rAbs;
+  gMC->Gsvolu("YV32", "CONE", idtmed[kSteel+40], cpar0, 5);
 //
 // insulation
   cpar[0]=cpar0[0];
-  cpar[1]=cpar0[1]+d_tube;
-  cpar[2]=cpar0[1]+d_tube+d_insu;
-  cpar[3]=cpar0[3]+d_tube;
-  cpar[4]=cpar0[3]+d_tube+d_insu;
-  gMC->Gsvolu("YI32", "CONE", idtmed[1753], cpar, 5);
+  cpar[1]=cpar0[1]+dTubeS;
+  cpar[2]=cpar0[1]+dTubeS+dInsuS;
+  cpar[3]=cpar0[3]+dTubeS;
+  cpar[4]=cpar0[3]+dTubeS+dInsuS;
+  gMC->Gsvolu("YI32", "CONE", idtmed[kInsulation+40], cpar, 5);
   gMC->Gspos("YI32", 1, "YV32", 0., 0., 0., 0, "ONLY"); 
 //
 // clearance
-  cpar[1]=cpar0[2]-d_prot-d_free;
-  cpar[2]=cpar0[2]-d_prot;
-  cpar[3]=cpar0[4]-d_prot-d_free;
-  cpar[4]=cpar0[4]-d_prot;
-  gMC->Gsvolu("YP32", "CONE", idtmed[1755], cpar, 5);
+  cpar[1]=cpar0[2]-dProtS-dFreeS;
+  cpar[2]=cpar0[2]-dProtS;
+  cpar[3]=cpar0[4]-dProtS-dFreeS;
+  cpar[4]=cpar0[4]-dProtS;
+  gMC->Gsvolu("YP32", "CONE", idtmed[kVacuum+40], cpar, 5);
   gMC->Gspos("YP32", 1, "YV32", 0., 0., 0., 0, "ONLY"); 
   
   dz=dl-cpar[0];
@@ -872,58 +967,87 @@ void AliSHILv0::CreateGeometry()
 //
 //
 // MUON trigger wall
-// 
-  tpar[0] = 30.;
+//  
+  tpar[0] = 50.;
   tpar[1] = 310.;
-  tpar[2] = (zfil_out - zfil_in) / 2.;
-  gMC->Gsvolu("YFIM", "TUBE", idtmed[1749], tpar, 3);
-  dz = (zfil_in + zfil_out) / 2.;
+  tpar[2] = (zFilterOut - zFilterIn) / 2.;
+  gMC->Gsvolu("YFIM", "TUBE", idtmed[kFe+40], tpar, 3);
+  dz = (zFilterIn + zFilterOut) / 2.;
   tpar[2] -= 10.;
-  gMC->Gsvolu("YFII","TUBE", idtmed[1709], tpar, 3);
+  gMC->Gsvolu("YFII","TUBE", idtmed[kFe], tpar, 3);
   gMC->Gspos("YFII", 1, "YFIM", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("YFIM", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 //
 // Shielding close to chamber
 //
-  
-  cpar[0]=(zch1-dzch-1.-abs_l)/2.;
+  cpar[0]=(zch1-dzch-1.-zRear)/2.;
   cpar[1]=R11;
-  cpar[2]=abs_l*TMath::Tan(acc_min);
+  cpar[2]=zRear*TMath::Tan(accMin);
   cpar[3]=R11;
-  cpar[4]=(abs_l+2.*cpar[0])*TMath::Tan(acc_min);
-  gMC->Gsvolu("YCS1", "CONE", idtmed[1720], cpar, 5);
-  dz=abs_l+cpar[0];
+  cpar[4]=(zRear+2.*cpar[0])*TMath::Tan(accMin);
+  gMC->Gsvolu("YCS1", "CONE", idtmed[kNiCuW], cpar, 5);
+  dz=zRear+cpar[0];
   gMC->Gspos("YCS1", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 
   cpar[0]=(zvac4-(zch1+dzch+1.))/2.;
   cpar[1]=R11;
-  cpar[2]=(zvac4-2.*cpar[0])*TMath::Tan(acc_min);
+  cpar[2]=(zvac4-2.*cpar[0])*TMath::Tan(accMin);
   cpar[3]=R11;
   cpar[4]=R21;
-  gMC->Gsvolu("YCS2", "CONE", idtmed[1720], cpar, 5);
+  gMC->Gsvolu("YCS2", "CONE", idtmed[kNiCuW], cpar, 5);
   dz=zvac4-cpar[0];
   gMC->Gspos("YCS2", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+
+  cpar[0]=(dzch-1.);
+  cpar[1]=R11;
+  cpar[2]=(zch1-dzch+1.)*TMath::Tan(accMin);
+  cpar[3]=R11;
+  cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
+  gMC->Gsvolu("YCS3", "CONE", idtmed[kNiCuW], cpar, 5);
+  dz=zch1;
+  gMC->Gspos("YCS3", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 
 
   cpar[0]=(zch2-dzch-1.-zvac4)/2.;
   cpar[1]=R21;
-  cpar[2]=zvac4*TMath::Tan(acc_min);
+  cpar[2]=zvac4*TMath::Tan(accMin);
   cpar[3]=R21;
-  cpar[4]=(zvac4+2.*cpar[0])*TMath::Tan(acc_min);
-  gMC->Gsvolu("YCS3", "CONE", idtmed[1720], cpar, 5);
+  cpar[4]=(zvac4+2.*cpar[0])*TMath::Tan(accMin);
+  gMC->Gsvolu("YCS4", "CONE", idtmed[kNiCuW], cpar, 5);
   dz=zvac4+cpar[0];
-  gMC->Gspos("YCS3", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("YCS4", 1, "ALIC", 0., 0., dz, 0, "ONLY");
   
 
   cpar[0]=(zvac6-(zch2+dzch+1.))/2.;
   cpar[1]=R21;
-  cpar[2]=(zvac6-2.*cpar[0])*TMath::Tan(acc_min);
+  cpar[2]=(zvac6-2.*cpar[0])*TMath::Tan(accMin);
   cpar[3]=R21;
-  cpar[4]=zvac6*TMath::Tan(acc_min);
-  gMC->Gsvolu("YCS4", "CONE", idtmed[1720], cpar, 5);
+  cpar[4]=zvac6*TMath::Tan(accMin);
+  gMC->Gsvolu("YCS5", "CONE", idtmed[kNiCuW], cpar, 5);
   dz=zvac6-cpar[0];
-  gMC->Gspos("YCS4", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("YCS5", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 
+  cpar[0]=(dzch-1.);
+  cpar[1]=R21;
+  cpar[2]=(zch2-dzch+1.)*TMath::Tan(accMin);
+  cpar[3]=R21;
+  cpar[4]=cpar[2]+2.*cpar[0]*TMath::Tan(accMin);
+  gMC->Gsvolu("YCS6", "CONE", idtmed[kNiCuW], cpar, 5);
+  dz=zch2;
+  gMC->Gspos("YCS6", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+//
+// Outer Pb Cone
+  if (fPbCone) {
+      cpar[0]=(zFilterIn-zConeE)/2.;
+      cpar[1]=30.;
+      cpar[2]=30.001;
+      cpar[3]=30.;
+      cpar[4]=30.+2.*cpar[0]*TMath::Tan(thetaOpenPbO);
+      
+      gMC->Gsvolu("YOPB", "CONE", idtmed[kPb], cpar, 5);
+      dz=zConeE+cpar[0];
+      gMC->Gspos("YOPB", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+  }
 }
 
 void AliSHILv0::Init()
@@ -943,11 +1067,6 @@ void AliSHILv0::Init()
   for(i=0;i<80;i++) printf("*");
   printf("\n");
 }
-
- 
-
-
-
 
 
 
