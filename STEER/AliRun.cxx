@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2000/04/07 11:12:34  fca
+G4 compatibility changes
+
 Revision 1.28  2000/04/05 06:51:06  fca
 Workaround for an HP compiler problem
 
@@ -123,6 +126,7 @@ AliRun::AliRun()
   fLego      = 0;
   fPDGDB     = 0;        //Particle factory object!
   fHitLists  = 0;
+  fConfigFunction    = "\0";
 }
 
 //_____________________________________________________________________________
@@ -149,6 +153,7 @@ AliRun::AliRun(const char *name, const char *title)
   fInitDone  = kFALSE;
   fLego      = 0;
   fField     = 0;
+  fConfigFunction    = "Config();";
   
   gROOT->GetListOfBrowsables()->Add(this,name);
   //
@@ -805,7 +810,7 @@ void AliRun::InitMC(const char *setup)
   //
 
   gROOT->LoadMacro(setup);
-  gInterpreter->ProcessLine("Config();");
+  gInterpreter->ProcessLine(fConfigFunction.Data());
 
   gMC->DefineParticles();  //Create standard MC particles
 
@@ -1494,6 +1499,11 @@ void AliRun::Streamer(TBuffer &R__b)
       fHeader.SetEvent(0);
       fPDGDB     = TDatabasePDG::Instance();        //Particle factory object!
     }
+    if(R__v>2) {
+      fConfigFunction.Streamer(R__b);
+    } else {
+      fConfigFunction="Config();";
+    }
   } else {
     R__b.WriteVersion(AliRun::IsA());
     TNamed::Streamer(R__b);
@@ -1510,5 +1520,6 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b << fTrZmax;
     R__b << fGenerator;
     R__b << fPDGDB;        //Particle factory object!
+    fConfigFunction.Streamer(R__b);
   }
 } 

@@ -58,6 +58,7 @@ protected:
   TArrayF       fEventEnergy;  //Energy deposit for current event
   TArrayF       fSummEnergy;   //Energy per event in each volume
   TArrayF       fSum2Energy;   //Energy squared per event in each volume
+  TString       fConfigFunction; //Configuration file to be executed
 
   
 public:
@@ -97,10 +98,16 @@ public:
    AliDetector   *GetDetector(const char *name);
    Int_t          GetModuleID(const char *name);
    virtual  Int_t GetEvent(Int_t event);
-  virtual  void  SetEvent(Int_t event) {fEvent=event;}
+   virtual  void  SetEvent(Int_t event) {fEvent=event;}
+   virtual  void  SetConfigFunction(const char * config="Config();") 
+    {fConfigFunction=config;}
+   virtual  const char *GetConfigFunction() const 
+    {return fConfigFunction.Data();}
    TGeometry     *GetGeometry();
    AliHeader     *GetHeader() {return &fHeader;}
-   virtual  void  GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom, Float_t &e, Float_t *vpos, Float_t *polar, Float_t &tof);
+   virtual  void  GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
+			       Float_t &e, Float_t *vpos, Float_t *polar, 
+			       Float_t &tof);
    Int_t          GetNtrack() {return fNtrack;}
    virtual  Int_t GetPrimary(Int_t track);
    virtual  void  InitMC(const char *setup="Config.C");
@@ -152,7 +159,7 @@ public:
 
   // --------------------------- commons -------------------------------------
 
-   ClassDef(AliRun,2)      //Supervisor class for all Alice detectors
+   ClassDef(AliRun,3)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;
