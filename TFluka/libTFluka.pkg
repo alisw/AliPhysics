@@ -1,5 +1,5 @@
 # Sources
-SRCS:=  TFluka.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx endraw.cxx sodraw.cxx usdraw.cxx FlukaVolume.cxx
+SRCS:=  TFluka.cxx magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx endraw.cxx sodraw.cxx usdraw.cxx FlukaVolume.cxx
 FSRCS:= FLUKA_input.f 
 
 # Headers
