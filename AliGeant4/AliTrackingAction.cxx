@@ -249,7 +249,7 @@ void AliTrackingAction::SaveParticle(const G4Track* track,
        TParticle(pdg, ks, motherIndex1, motherIndex1, 
          firstDaughter, lastDaughter, px, py, pz, e, vx, vy, vz, t);
   particle->SetPolarisation(polX, polY, polZ);
-  particle->SetBit(Keep_Bit, false); 
+  particle->SetBit(kKeepBit, false); 
 }
 
 G4int AliTrackingAction::GetParticleIndex(G4int trackID)
