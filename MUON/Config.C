@@ -6,19 +6,22 @@ Int_t ntracks=1;
 void Config()
 
 {
-new AliGeant3("C++ Interface to Geant3");
+ gSystem->Load("libgeant321");
+ new     TGeant3("C++ Interface to Geant3");
+
+ 
 
 //=======================================================================
 //  Create the output file
    
  TFile *rootfile = new TFile("galice.root","recreate");
  rootfile->SetCompressionLevel(2);
- TGeant3 *geant3 = (TGeant3*)gMC;
  AliDecayer* decayer = new AliDecayerPythia();
  decayer->SetForceDecay(kAll);
  decayer->Init();
  gMC->SetExternalDecayer(decayer);
 
+ TGeant3 *geant3 = (TGeant3*)gMC;
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
 geant3->SetTRIG(1);          //Number of events to be processed 
@@ -160,9 +163,8 @@ AliGenPythia *gener = new AliGenPythia(ntracks);
      gener->SetPtRange(0,100);
      //gener->SetOrigin(0,0,0);          // vertex position
      //gener->SetVertexSmear(kPerEvent);
-     //gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP
-position
-     gener->SetStrucFunc(kDO_Set_1);
+     //gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetStrucFunc(kDOSet1);
      gener->SetProcess(kPyCharm);
      gener->SetEnergyCMS(5500.);
      break;              
@@ -190,6 +192,7 @@ position
 //*******************************************************
      AliGenParam *gener = new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
      gener->SetMomentumRange(0,999);
+     gener->SetPtRange(0,100.);
      gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);

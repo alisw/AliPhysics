@@ -10,7 +10,10 @@ Int_t ntracks=1;
 void Config()
 
 {
-new AliGeant3("C++ Interface to Geant3");
+
+ gSystem->Load("libgeant321");
+ new     TGeant3("C++ Interface to Geant3");
+ TGeant3 *geant3 = (TGeant3*)gMC;
 
 //=======================================================================
 //  Create the output file
@@ -194,6 +197,7 @@ position
 //*******************************************************
      AliGenParam *gener = new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
      gener->SetMomentumRange(0,999);
+     gener->SetPtRange(0.,100.);
      gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);

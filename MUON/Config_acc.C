@@ -5,8 +5,9 @@ Int_t ntracks=1000;
 
 void Config()
 {
-
-new AliGeant3("C++ Interface to Geant3");
+    gSystem->Load("libgeant321");
+    new     TGeant3("C++ Interface to Geant3");
+    TGeant3 *geant3 = (TGeant3*)gMC;
 
 //=======================================================================
 //  Create the output file
@@ -75,7 +76,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetPhiRange(-360,360);
      gener->SetThetaRange(2., 10.);
      gener->SetOrigin(25,25,510.5);   
-     gener->SetVertexSmear(perTrack); 
+     gener->SetVertexSmear(kPerTrack); 
      //vertex position
      gener->SetSigma(1.8, 1.8,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kProton);                    //GEANT particle type
@@ -130,10 +131,9 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
      gener->SetOrigin(0,0,0);          // vertex position
-     gener->SetVertexSmear(perEvent); 
+     gener->SetVertexSmear(kPerEvent); 
      gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
-//     gener->SetStrucFunc(DO_Set_1);
-     gener->SetProcess(mb); 
+     gener->SetProcess(kPyCharm); 
      gener->SetEnergyCMS(5500.);
      break;
      
@@ -141,15 +141,15 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
 //*******************************************************
 // Example for J/psi  Production from  Parameterisation *
 //*******************************************************
-     AliGenParam *gener = new AliGenParam(ntracks,upsilon_p);
-//     AliGenParam *gener = new AliGenParam(ntracks, jpsi_p);
+     AliGenParam *gener = new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
      gener->SetMomentumRange(0,999);
+     gener->SetPtRange(0,100.);
      gener->SetPhiRange(0,360);
      gener->SetYRange(2.5,4);
      gener->SetPtRange(0,50);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetForceDecay(dimuon);
+     gener->SetForceDecay(kDiMuon);
      gener->SetCutOnChild(1);
      gener->SetChildThetaRange(2,9);
      gener->SetTrackingFlag(1);
@@ -182,7 +182,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetThetaRange(0.104,33.52);
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,5.6);         //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetVertexSmear(perTrack); 
+     gener->SetVertexSmear(kPerTrack); 
      gener->SetTrackingFlag(1);
      break;
 
@@ -203,13 +203,8 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-4, cut,  cut,  cut, cut,  cut, 1
      gener->SetPhiRange(0,360);
      gener->SetThetaRange(45.,135);
     
-     pions   = new AliGenParam(100, pion_p);
-//     kaons   = new AliGenParam(10 , kaon_p);
-//     protons = new AliGenParam(10 , proton_p);
+     pions   = new AliGenParam(100, AliGenMUONlib::kPion);
      gener->AddGenerator(pions  , "Pions"  , 100);
-//     gener->AddGenerator(kaons  , "Kaons"  , 10);
-//     gener->AddGenerator(protons, "Protons", 10);
-	 
      break;
  }
  
