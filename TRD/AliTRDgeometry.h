@@ -101,7 +101,7 @@ class AliTRDgeometry : public AliGeometry {
 
   virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const; 
   virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos) const;   
-
+  virtual Bool_t   Impact(const TParticle * particle) const {return kTRUE;}
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 
 
  protected:
