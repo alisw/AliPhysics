@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,14 +117,12 @@ void AliPMDv1::CreateInside()
   //  Int_t idrotm[100];
   Int_t num_mod;
   Int_t jhrotc,jhrotac;
-  Int_t jhrotd;
 //  const Float_t delx=78.8;
   const Float_t delx=76.75;
   //  const Float_t dely=delx*root3_2;
 //  const Float_t delz=1.6/2.;
   AliMatrix(jhrotc, 90., 30.,   90.,  120., 0., 0.);
   AliMatrix(jhrotac, 90., 330., 90., 240., 0., 0.);
-  AliMatrix(jhrotd, 90., 90., 90., 180., 90., 0.);
   Float_t x1= delx*root3_4;
   Float_t x2= delx*root3_4 + delx*root3_2;
   Float_t x3= delx*root3_4 + 2*delx*root3_2;
