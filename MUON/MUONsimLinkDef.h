@@ -3,7 +3,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliMUON+; 
 #pragma link C++ class AliMUONv0+; 
 #pragma link C++ class AliMUONv3+; 
 
