@@ -47,7 +47,6 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , AliPHOSPpsd
   if( ppsdRP2  ) 
     fPpsdLow = ppsdRP2 ;
 
-  fCutOnDispersion = 1.5 ; 
 }
 
 //____________________________________________________________________________
@@ -141,15 +140,7 @@ void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
        fEmcRecPoint->GetLocalPosition(pos) ;
        textTS = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+5,pos.Z()+15,"") ;
        Text_t  line1[40] ;
-       if (GetPartType() == kGAMMA ) 
-	 sprintf(line1,"PHOTON") ;
-       if (GetPartType() == kELECTRON ) 
-	 sprintf(line1,"ELECTRON") ;
-       if (GetPartType() == kNEUTRAL ) 
-	 sprintf(line1,"NEUTRAL") ;
-       if (GetPartType() == kCHARGEDHADRON ) 
-	 sprintf(line1,"CHARGED HADRON") ;
-
+       sprintf(line1,"See RecParticle for ID") ;
        textTS ->AddText(line1) ;
        textTS ->Draw("");
        gPad->Update() ; 
@@ -223,37 +214,6 @@ TVector3 AliPHOSTrackSegment::GetMomentumDirection()
   return dir ;  
 }
 
-//____________________________________________________________________________
-Int_t AliPHOSTrackSegment::GetPartType()  
-{  
-  // Returns 0 - gamma
-  //         1 - e+, e-
-  //         2 - neutral   
-  //         3 - charged hadron
-
-  Int_t typeofparticle = kGAMMA ;
-                            
-  if( fPpsdUp == 0 ) {     // Neutral
-
-    if( fPpsdLow == 0 )    // Neutral  
-      typeofparticle = kNEUTRAL ;   
-    else                   // Gamma
-      typeofparticle = kGAMMA ;               
-
-  }
-
-  else {             // Charged           
-
-    if( fEmcRecPoint->GetDispersion() > fCutOnDispersion) 
-      typeofparticle = kCHARGEDHADRON ;
-    else  
-      typeofparticle = kELECTRON ;  
-  
-  }
-  
-  return   typeofparticle ;                     
-
-}
 
 //____________________________________________________________________________
 void AliPHOSTrackSegment::GetPosition( TVector3 & pos ) 

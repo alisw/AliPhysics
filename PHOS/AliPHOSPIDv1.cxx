@@ -34,7 +34,8 @@ ClassImp( AliPHOSPIDv1)
 
 
 //____________________________________________________________________________
- AliPHOSPIDv1::AliPHOSPIDv1() 
+ AliPHOSPIDv1::AliPHOSPIDv1(): fCutOnDispersion(1.5) 
+
 {
   // ctor
 
@@ -55,11 +56,48 @@ void  AliPHOSPIDv1::GetParticleType(TrackSegmentsList * trsl, RecParticlesList *
   TIter next(trsl) ; 
   AliPHOSTrackSegment * tracksegment ; 
   Int_t index = 0 ; 
-
+  AliPHOSRecParticle * rp ; 
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
-    new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ; 
+    new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
+    rp = (AliPHOSRecParticle *)(*rpl)[index] ; 
+    Int_t type =  rp->GetType() ;  
+    if ( type == kNEUTRAL ) { // resolve neutral baryon from photon
+      AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
+      Float_t * lambda = new Float_t[2]; 
+      recp->GetElipsAxis(lambda) ; 
+      if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
+	   ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )
+	type = kGAMMA ; 
+      else 
+	type = kNEUTRON ; 
+      delete lambda ; 
+   }
+    if (type == kCHARGED) { 
+      if( tracksegment->GetEmcRecPoint()->GetDispersion() > fCutOnDispersion)  // shower dispersion cut
+	type = kCHARGEDHADRON ;
+      else  
+	type = kELECTRON ; 
+    } 
+    rp->SetType(type) ; 
     index++ ; 
   }
     
 }
 
+//____________________________________________________________________________
+void  AliPHOSPIDv1:: Print() 
+{
+  cout << "AliPHOSPIDv1 : cuts for the particle idendification based on the shower profile " << endl 
+       << fLambda1m << " < value1 < " << fLambda1M << endl 
+       << fLambda2m << " < value2 < " << fLambda2M << endl ;  
+
+}
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::SetShowerProfileCuts(Float_t l1m, Float_t l1M, Float_t l2m, Float_t l2M)
+{
+  fLambda1m = l1m ; 
+  fLambda1M = l1M ; 
+  fLambda2m = l2m ; 
+  fLambda2M = l2M ; 
+}

@@ -64,16 +64,16 @@ private:
   TH2F * fhConvertorEmc    ;   // 2d Convertor versus Emc energies
   TH1F * fhPhotonEnergy    ;   // Spectrum of detected photons
   TH1F * fhElectronEnergy  ;   // Spectrum of detected electrons
-  TH1F * fhNeutralEnergy   ;   // Spectrum of detected neutrals
-  TH1F * fhChargedEnergy   ;   // Spectrum of detected charged
+  TH1F * fhNeutronEnergy   ;   // Spectrum of detected neutrals
+  TH1F * fhChargedHadronEnergy   ;   // Spectrum of detected charged
   TH1F * fhPhotonPositionX ;   // X distribution of detected photons
   TH1F * fhElectronPositionX ; // X distribution of detected electrons
-  TH1F * fhNeutralPositionX  ; // X distribution of detected neutrals
-  TH1F * fhChargedPositionX  ; // X distribution of detected charged
+  TH1F * fhNeutronPositionX  ; // X distribution of detected neutrals
+  TH1F * fhChargedHadronPositionX  ; // X distribution of detected charged
   TH1F * fhPhotonPositionY   ; // Y distribution of detected photons
   TH1F * fhElectronPositionY ; // Y distribution of detected electrons
-  TH1F * fhNeutralPositionY  ; // Y distribution of detected neutrals
-  TH1F * fhChargedPositionY  ; // Y distribution of detected charged
+  TH1F * fhNeutronPositionY  ; // Y distribution of detected neutrals
+  TH1F * fhChargedHadronPositionY  ; // Y distribution of detected charged
 
 
 ClassDef(AliPHOSAnalyze,1)  // PHOS event analyzis , version 1

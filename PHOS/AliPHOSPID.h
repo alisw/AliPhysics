@@ -37,6 +37,8 @@ public:
   virtual ~AliPHOSPID() ; // dtor
 
   virtual void GetParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl) {} ; 
+  virtual void SetShowerProfileCuts(Float_t, Float_t, Float_t, Float_t) {} ; 
+  virtual void SetDispersionCutOff(Float_t ) {}    
 
   ClassDef(AliPHOSPID,1)  // Particle Identifier interface, version 1
 

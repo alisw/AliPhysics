@@ -164,6 +164,8 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  fTrs = new AliPHOSTrackSegmentMakerv1()  ; 
 	  //========== Creates the particle identifier
 	  fPID = new AliPHOSPIDv1() ;
+	  fPID->SetShowerProfileCuts(0.5, 1.5, 0.5, 1.5 ) ; 
+	  fPID->Print() ; 	    
 	  //========== Creates the Reconstructioner  
 	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
 	  //========== Event Number
@@ -219,31 +221,32 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	    {
 	      if ( tracksegment->GetPHOSMod() == module )
 		{ 
-		  switch(tracksegment->GetPartType())
+		  AliPHOSRecParticle recpart(tracksegment) ; 
+		  switch(recpart.GetType())
 		    {
-		    case 0:
-		      fhPhotonEnergy->Fill(tracksegment->GetEnergy() ) ; 
-		      //		      fhPhotonPositionX->Fill(tracksegment-> ) ;
-		      //fhPhotonPositionY->Fill(tracksegment-> ) ;                 
+		    case kGAMMA:
+		      fhPhotonEnergy->Fill(recpart.Energy() ) ; 
+		      //fhPhotonPositionX->Fill(recpart. ) ;
+		      //fhPhotonPositionY->Fill(recpart. ) ;                 
 		      //cout << "PHOTON" << endl;
 		      break;
-		    case 1 :
-		      fhElectronEnergy->Fill(tracksegment->GetEnergy() ) ; 
-		      //fhElectronPositionX->Fill(tracksegment-> ) ;
-		      //fhElectronPositionY->Fill(tracksegment-> ) ; 
+		    case kELECTRON:
+		      fhElectronEnergy->Fill(recpart.Energy() ) ; 
+		      //fhElectronPositionX->Fill(recpart. ) ;
+		      //fhElectronPositionY->Fill(recpart. ) ; 
 		      //cout << "ELECTRON" << endl;
 		      break;
-		    case 2 :
-		      fhNeutralEnergy->Fill(tracksegment->GetEnergy() ) ; 
-		      //fhNeutralPositionX->Fill(tracksegment-> ) ;
-		      //fhNeutralPositionY->Fill(tracksegment-> ) ; 
-		      //cout << "NEUTRAL" << endl;
+		    case kNEUTRON:
+		      fhNeutronEnergy->Fill(recpart.Energy() ) ; 
+		      //fhNeutronPositionX->Fill(recpart. ) ;
+		      //fhNeutronPositionY->Fill(recpart. ) ; 
+		      //cout << "NEUTRON" << endl;
 		      break ;
-		    case 3 :
-		      fhChargedEnergy->Fill(tracksegment->GetEnergy() ) ; 
-		      //fhChargedPositionX->Fill(tracksegment-> ) ;
-		      //fhChargedPositionY->Fill(tracksegment-> ) ; 
-		      //cout << "CHARGED" << endl;
+		    case kCHARGEDHADRON :
+		      fhChargedHadronEnergy->Fill(recpart.Energy() ) ; 
+		      //fhChargedHadronPositionX->Fill(recpart. ) ;
+		      //fhChargedHadronPositionY->Fill(recpart. ) ; 
+		      //cout << "CHARGED HADRON" << endl;
 		      break ;
 		      
 		    }
@@ -280,16 +283,16 @@ void  AliPHOSAnalyze::BookingHistograms()
   fhConvertorEmc     = new TH2F("hConvertorEmc",  "hConvertorEmc",      200,  1. ,  3., 200, 0., 3.e-5);
   fhPhotonEnergy     = new TH1F("hPhotonEnergy",  "hPhotonEnergy",     1000,  0. ,  30.);
   fhElectronEnergy   = new TH1F("hElectronEnergy","hElectronEnergy",   1000,  0. ,  30.);
-  fhNeutralEnergy    = new TH1F("hNeutralEnergy", "hNeutralEnergy",    1000,  0. ,  30.);
-  fhChargedEnergy    = new TH1F("hChargedEnergy", "hChargedEnergy",    1000,  0. ,  30.);
+  fhNeutronEnergy    = new TH1F("hNeutronEnergy", "hNeutronEnergy",    1000,  0. ,  30.);
+  fhChargedHadronEnergy    = new TH1F("hChargedHadronEnergy", "hChargedHadronEnergy",    1000,  0. ,  30.);
   fhPhotonPositionX  = new TH1F("hPhotonPositionX","hPhotonPositionX",   500,-80. , 80.);
   fhElectronPositionX= new TH1F("hElectronPositionX","hElectronPositionX",500,-80. , 80.);
-  fhNeutralPositionX  = new TH1F("hNeutralPositionX","hNeutralPositionX",500,-80. , 80.);
-  fhChargedPositionX  = new TH1F("hChargedPositionX","hChargedPositionX",500,-80. , 80.);
+  fhNeutronPositionX  = new TH1F("hNeutronPositionX","hNeutronPositionX",500,-80. , 80.);
+  fhChargedHadronPositionX  = new TH1F("hChargedHadronPositionX","hChargedHadronPositionX",500,-80. , 80.);
   fhPhotonPositionY  = new TH1F("hPhotonPositionY","hPhotonPositionY",   500,-80. , 80.);
   fhElectronPositionY= new TH1F("hElectronPositionY","hElectronPositionY",500,-80. , 80.);
-  fhNeutralPositionY  = new TH1F("hNeutralPositionY","hNeutralPositionY",500,-80. , 80.);
-  fhChargedPositionY  = new TH1F("hChargedPositionY","hChargedPositionY",500,-80. , 80.);
+  fhNeutronPositionY  = new TH1F("hNeutronPositionY","hNeutronPositionY",500,-80. , 80.);
+  fhChargedHadronPositionY  = new TH1F("hChargedHadronPositionY","hChargedHadronPositionY",500,-80. , 80.);
 
 }
 //____________________________________________________________________________
@@ -753,15 +756,15 @@ void AliPHOSAnalyze::SavingHistograms()
   if (fhPhotonEnergy)      fhPhotonEnergy->Write() ;
   if (fhPhotonPositionX)   fhPhotonPositionX->Write() ;
   if (fhPhotonPositionY)   fhPhotonPositionX->Write() ;
-  if (fhElectronEnergy)      fhElectronEnergy->Write() ;
+  if (fhElectronEnergy)    fhElectronEnergy->Write() ;
   if (fhElectronPositionX) fhElectronPositionX->Write() ;
   if (fhElectronPositionY) fhElectronPositionX->Write() ;
-  if (fhNeutralEnergy)     fhNeutralEnergy->Write() ;
-  if (fhNeutralPositionX)  fhNeutralPositionX->Write() ;
-  if (fhNeutralPositionY)  fhNeutralPositionX->Write() ;
-  if (fhChargedEnergy)     fhChargedEnergy->Write() ;
-  if (fhChargedPositionX)  fhChargedPositionX->Write() ;
-  if (fhChargedPositionY)  fhChargedPositionX->Write() ;
+  if (fhNeutronEnergy)     fhNeutronEnergy->Write() ;
+  if (fhNeutronPositionX)  fhNeutronPositionX->Write() ;
+  if (fhNeutronPositionY)  fhNeutronPositionX->Write() ;
+  if (fhChargedHadronEnergy)     fhChargedHadronEnergy->Write() ;
+  if (fhChargedHadronPositionX)  fhChargedHadronPositionX->Write() ;
+  if (fhChargedHadronPositionY)  fhChargedHadronPositionX->Write() ;
 
   output.Write();
   output.Close();

@@ -35,13 +35,24 @@ ClassImp(AliPHOSRecParticle)
   // ctor
  
   fPHOSTrackSegment = new AliPHOSTrackSegment(*ts) ; 
-  fType             = ts->GetPartType() ; 
   fE                = ts->GetEnergy() ; 
   TVector3 momdir   = ts->GetMomentumDirection() ;
   fPx               = fE * momdir.X() ; 
   fPy               = fE * momdir.Y() ; 
   fPz               = fE * momdir.Z() ; 
 
+  fType = kUNDEFINED ; // undefined
+                            
+  if( ts->GetPpsdUp() == 0 ) {     // Neutral
+
+    if( ts->GetPpsdLow() == 0 )    // Neutral  
+      fType = kNEUTRAL ;   
+    else                           // Gamma
+      fType = kGAMMA ;               
+  }
+  else                            // Charged           
+    fType = kCHARGED ;   
+  
 }
 
 //____________________________________________________________________________
@@ -49,17 +60,20 @@ TString AliPHOSRecParticle::Name()
 {
   TString  name ; 
   switch (fType) {
-  case kGAMMA :
+  case kGAMMA:
     name = "PHOTON" ;
     break ; 
-   case kELECTRON :
+   case kELECTRON:
      name = "ELECTRON" ;
     break ; 
-  case kNEUTRAL :
+  case kNEUTRAL:
     name = "NEUTRAL" ;
     break ; 
    case kCHARGEDHADRON:
     name = "CHARGED HADRON" ;
+    break ; 
+  case kNEUTRON:
+    name = "NEUTRAL BARYON" ; 
     break ; 
   }
   return name ; 

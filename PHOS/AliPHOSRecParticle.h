@@ -23,6 +23,14 @@
 
 #include "AliPHOSTrackSegment.h"
 
+const static Int_t kUNDEFINED     = -1; 
+const static Int_t kGAMMA         = 0 ; 
+const static Int_t kELECTRON      = 1 ;
+const static Int_t kNEUTRAL       = 2 ;  
+const static Int_t kCHARGED       = 3 ;  
+const static Int_t kCHARGEDHADRON = 4 ;  
+const static Int_t kNEUTRON       = 5 ;  
+
 class AliPHOSRecParticle : public TParticle {
 
 public:
@@ -35,7 +43,8 @@ public:
   AliPHOSTrackSegment * GetPHOSTrackSegment() { return fPHOSTrackSegment ; } 
   Int_t GetType() { return fType ; } 
   TString Name() ; 
-  void Print() ;   
+  void Print() ; 
+  void SetType(Int_t type) { fType = type ; } 
 
 private:
 

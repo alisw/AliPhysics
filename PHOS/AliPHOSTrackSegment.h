@@ -27,11 +27,6 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 
-const static Int_t kGAMMA         = 0 ; 
-const static Int_t kELECTRON      = 1 ;
-const static Int_t kNEUTRAL       = 2 ;  
-const static Int_t kCHARGEDHADRON = 3 ;  
-
 class AliPHOSTrackSegment : public TObject  {
 
 public:
@@ -46,16 +41,17 @@ public:
   virtual Int_t  DistancetoPrimitive(Int_t px, Int_t py);
   virtual void   Draw(Option_t * option="") ;
   virtual void   ExecuteEvent(Int_t event, Int_t px, Int_t py);
-  Int_t GetPartType() ;                    // Returns 0 - gamma, 1 - e+, e- ;  2 - neutral hadron ; 3 - charged hadron
   Float_t GetEnergy(){ return fEmcRecPoint->GetTotalEnergy() ;}   // Returns energy in EMC
   
   Float_t GetDistanceInPHOSPlane(void) ;   // Computes in PHOS plane the relative position between EMC and PPSD clusters 
   virtual Int_t  GetPHOSMod(void) {return fEmcRecPoint->GetPHOSMod();  }
   TVector3 GetMomentumDirection() ;        // Returns the momentum direction
   void GetPosition( TVector3 & pos ) ;     // Returns positions of hit
+  AliPHOSEmcRecPoint * GetEmcRecPoint() const { return fEmcRecPoint ; } 
+  AliPHOSPpsdRecPoint * GetPpsdLow() const { return fPpsdLow ; } 
+  AliPHOSPpsdRecPoint * GetPpsdUp() const { return fPpsdUp ; } 
   virtual  void  Paint(Option_t * option="");
   void Print() ;
-  void SetDispersionCutOff(Float_t Dcut) {fCutOnDispersion = Dcut ; }    
   
   
 private:
@@ -64,7 +60,6 @@ private:
   AliPHOSPpsdRecPoint * fPpsdLow ;
   AliPHOSPpsdRecPoint * fPpsdUp ;
   
-  Float_t fCutOnDispersion ;   
 
   ClassDef(AliPHOSTrackSegment,1)  // description , version 1
 
