@@ -187,6 +187,7 @@ AliHBTLLWeights::AliHBTLLWeights():
  fNuclCharge(0.0),
  fRandomPosition(kFALSE),
  fRadius(0.0),
+ fOneMinusLambda(0.0),
  fPID1(0),
  fPID2(0),
  fSigma(0.0)
@@ -206,6 +207,7 @@ AliHBTLLWeights::AliHBTLLWeights(const AliHBTLLWeights &/*source*/):
  fNuclCharge(0.0),
  fRandomPosition(kFALSE),
  fRadius(0.0),
+ fOneMinusLambda(0.0),
  fPID1(0),
  fPID2(0),
  fSigma(0.0)
@@ -236,7 +238,7 @@ AliHBTLLWeights* AliHBTLLWeights::Instance()
    return fgLLWeights; 
   } 
 }     
-                      
+/************************************************************/
 
 Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
 {
@@ -254,7 +256,7 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
    }
 
 
-//eats a lot of time
+//takes a lot of time
   if ( (part1->Px() == part2->Px()) && 
        (part1->Py() == part2->Py()) && 
        (part1->Pz() == part2->Pz()) )
@@ -270,6 +272,11 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
       return 0.0;
     }
 
+  if(fOneMinusLambda)//implemetation of non-zero intetcept parameter 
+   {
+     if( gRandom->Rndm() < fOneMinusLambda ) return 1.0;
+   }
+    
   FSI_MOM.P1X = part1->Px();
   FSI_MOM.P1Y = part1->Py();
   FSI_MOM.P1Z = part1->Pz();

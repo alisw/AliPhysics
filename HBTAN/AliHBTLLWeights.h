@@ -27,13 +27,14 @@ class AliHBTLLWeights: public TObject
      void SetQuantumStatistics(Bool_t qss = kTRUE);//IQS: quantum statistics for the two particles ON (OFF) //if non-identical particles automatically off
      void SetStrongInterSwitch(Bool_t sis = kTRUE);//ISI: strong interaction between the two particles ON (OFF)
      void SetColWithResidNuclSwitch(Bool_t crn = kTRUE);//I3C: Coulomb interaction with residual nucleus ON (OFF)  
+     void SetLambda(Double_t la){fOneMinusLambda=1.-la;}  //lambda=haoticity
      void SetApproxModel(Int_t ap);//sets  Model of Approximation (NS in Fortran code)
      void SetRandomPosition(Bool_t rp = kTRUE); //ON=kTRUE(OFF=kFALSE)
      void SetR1dw(Double_t R);   //spherical source model radii                                                                           		                                                                                                        
      void SetParticlesTypes(Int_t pid1, Int_t pid2); //set AliRoot particles types   
      void SetNucleusCharge(Double_t ch); // not used now  (see comments in fortran code)
      void SetNucleusMass(Double_t mass); // (see comments in fortran code)
-
+     
    protected:
      
      Bool_t fTest;           //flag indicating if parameters listed below are to be calculated automatically (0)
@@ -48,7 +49,8 @@ class AliHBTLLWeights: public TObject
      
      Bool_t   fRandomPosition;//flag indicating if positions of particles shuold be randomized according to parameters below
      Double_t fRadius;        //radius used for randomizing particle vertex position
-
+     
+     Double_t fOneMinusLambda; //1 - intercept parameter
      
      Int_t fApproximationModel; //approximation used to calculate Bethe-Salpeter amplitude see SetApproxModel for more comments
 
