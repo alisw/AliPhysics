@@ -320,7 +320,9 @@ AliMUONGeometryModule::GetDetElement(Int_t detElemId) const
      = (AliMUONGeometryDetElement*) fDetElements->Get(detElemId);
 
    if (!detElement) {
-     AliError(Form("Detection element %d not found", detElemId));
+     AliErrorStream() 
+       << "Detection element " << detElemId
+       << " not found in module " << fModuleId << endl;
      return 0;
    }  
 

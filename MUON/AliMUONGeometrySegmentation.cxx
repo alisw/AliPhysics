@@ -22,6 +22,10 @@
 //
 // Author:Ivana Hrivnacova, IPN Orsay
 
+/* $Id$ */
+
+#include <Riostream.h>
+
 #include "AliLog.h"
 
 #include "AliMUONGeometrySegmentation.h"
@@ -32,7 +36,6 @@
 
 
 ClassImp(AliMUONGeometrySegmentation)
-
 
 //______________________________________________________________________________
 AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
@@ -241,7 +244,7 @@ Bool_t  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
 
 
 //______________________________________________________________________________
-void AliMUONGeometrySegmentation::Init(Int_t /*chamber*/)
+void AliMUONGeometrySegmentation::Init(Int_t chamber)
 {
 // Initialize segmentation.
 // Check that all detection elements have segmanetation set
@@ -256,9 +259,14 @@ void AliMUONGeometrySegmentation::Init(Int_t /*chamber*/)
     Int_t detElemId = detElements->GetEntry(i)->GetUniqueID();
 
     // Check segmentation
-    if (! fDESegmentations->Get(detElemId) )
+    if (! fDESegmentations->Get(detElemId) ) {
       AliError(Form("Detection element %d has not a segmentation set.",
-               detElements->GetEntry(i)->GetUniqueID())); 
+               detElements->GetEntry(i)->GetUniqueID()));
+    }
+    else {	        
+      // Initialize DE Segmentation
+      ((AliSegmentation*)fDESegmentations->Get(detElemId))->Init(chamber);
+    }  	       
   }	           
 }
  
@@ -549,7 +557,6 @@ Int_t AliMUONGeometrySegmentation::SigGenCond(Int_t detElemId,
   return fCurrentSegmentation->SigGenCond(xl, yl, zl);
  }
 
-
 //______________________________________________________________________________
 void  AliMUONGeometrySegmentation::SigGenInit(Int_t detElemId,
                                        Float_t xg, Float_t yg, Float_t zg)
@@ -563,6 +570,14 @@ void  AliMUONGeometrySegmentation::SigGenInit(Int_t detElemId,
 
   Float_t xl, yl, zl;
   fCurrentDetElement->Global2Local(xg, yg, zg, xl, yl, zl); 
+
+  if (!fCurrentSegmentation->HasPad(xl, yl, zl)) {
+    AliWarningStream()
+         << "No pad at " << detElemId 
+         << " global position: " << xg << "  " << yg << "  " << zg
+         << " local position: " << xl << "  " << yl << "  " << zl << endl;
+    return ;
+  }  
 
   fCurrentSegmentation->SigGenInit(xl, yl, zl);
 }		    
