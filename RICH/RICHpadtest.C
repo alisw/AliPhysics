@@ -74,7 +74,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
      {
        printf("Single Ring Hits\n");
        TH2F *feedback = new TH2F("feedback","Feedback hit distribution",150,-30,30,150,-30,30);
-       TH2F *mip = new TH2F("mip","Mip hit distribution",30,-3,3,30,-3,3);
+       TH2F *mip = new TH2F("mip","Mip hit distribution",150,-3,3,150,-3,3);
        TH2F *cerenkov = new TH2F("cerenkov","Cerenkov hit distribution",150,-30,30,150,-30,30);
        TH2F *h = new TH2F("h","Detector hit distribution",150,-30,30,150,-30,30);
        TH1F *hitsX = new TH1F("hitsX","Distribution of hits along x-axis",150,-30,30);
@@ -259,44 +259,47 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
           }
 	   
 	   Int_t ncerenkovs = Cerenkovs->GetEntriesFast();
+	   //if (current->GetPdgCode() < 50000051 && current->GetPdgCode() > 50000040)
+	   //totalphotonsevent->Fill(ncerenkovs,(float) 1);
 
 	   if (ncerenkovs) {
-	       for (Int_t hit=0;hit<ncerenkovs;hit++) {
+	     totalphotonsevent->Fill(ncerenkovs,(float) 1);
+	     for (Int_t hit=0;hit<ncerenkovs;hit++) {
 		   cHit = (AliRICHCerenkov*) Cerenkovs->UncheckedAt(hit);
 		   Int_t nchamber = cHit->fChamber;     // chamber number
 		   Int_t index =    cHit->fTrack;
 		   Int_t pindex =   cHit->fIndex;
-		   Int_t cx  =      cHit->fX;                // x-position
-		   Int_t cy  =      cHit->fZ;                // y-position
+		   Float_t cx  =      cHit->fX;                // x-position
+		   Float_t cy  =      cHit->fZ;                // y-position
 		   Int_t cmother =  cHit->fCMother;      // Index of mother particle
 		   Int_t closs =    cHit->fLoss;           // How did the particle get lost? 
 		  //printf ("Cerenkov hit, X:%d, Y:%d\n",cx,cy); 
 
-		  
-		 
+		 		 
 		   TParticle *current = (TParticle*)(*gAlice->Particles())[index];
 		   Float_t energyckov = current->Energy();
 		   
 		   if (current->GetPdgCode() == 50000051)
-		   {
+		     {
 		       if (closs==4)
-		       {
+			 {
 			   feedback->Fill(cx,cy,(float) 1);
 			   feed++;
-		       }
-		   }
+			 }
+		     }
 		   if (current->GetPdgCode() == 50000050)
-		   {
-		     
-		     totalphotonsevent->Fill(ncerenkovs,(float) 1);
-		     phspectra2->Fill(energyckov*1e9,(float) 1);
-		     
-		     if (closs==4)
-		       {
-			 cerenkov->Fill(cx,cy,(float) 1);
-			 
-			 
-			 
+		     {
+		       
+		       if (closs !=4)
+			 {
+			   phspectra2->Fill(energyckov*1e9,(float) 1);
+			 }
+		       
+		       if (closs==4)
+			 {
+			   cerenkov->Fill(cx,cy,(float) 1); 
+			   
+		 			 
 			 TParticle *MIP = (TParticle*)(*gAlice->Particles())[cmother];
 			 mipHit = (AliRICHHit*) Hits->UncheckedAt(0);
 			 mom[0] = current->Px();
@@ -365,13 +368,15 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 		   Int_t mult = rcHit->fMultiplicity;      // How many pads form the cluster
 		   pads += mult;
 		   if (qtot > 0) {
-		       if (fx>-4 && fx<4 && fy>-4 && fy<4) {
-			   padmip+=mult;
-		       } else {
-			   padnumber->Fill(mult,(float) 1);
-			   nraw++;
-			   if (mult<4) Clcharge->Fill(qtot,(float) 1);
-		       }
+		     //printf ("fx: %d, fy: %d\n",fx,fy);
+		     if (fx>(-4) && fx<4  && fy>(-4) && fy<4) {
+		       //printf("There %d \n",mult);
+		       padmip+=mult;
+		     } else {
+		       padnumber->Fill(mult,(float) 1);
+		       nraw++;
+		       if (mult<4) Clcharge->Fill(qtot,(float) 1);
+		     }
 		   }
 	       }
 	   }
@@ -422,38 +427,53 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        nraw=0;
        padmip=0;
 
-       TClonesArray *Digits = RICH->DigitsAddress(2);    //  Raw clusters branch
-       Int_t ndigits = Digits->GetEntriesFast();
-       //printf("Digits:%d\n",ndigits);
-       padsev->Fill(ndigits,(float) 1);
-       
-       for (Int_t ich=0;ich<7;ich++)
+       if (diaglevel < 4)
 	 {
-	   TClonesArray *Digits = RICH->DigitsAddress(ich);    //  Raw clusters branch
+
+	   TClonesArray *Digits = RICH->DigitsAddress(2);    //  Raw clusters branch
 	   Int_t ndigits = Digits->GetEntriesFast();
 	   //printf("Digits:%d\n",ndigits);
-	   padsev->Fill(ndigits,(float) 1); 
-	   if (ndigits) {
-	     for (Int_t hit=0;hit<ndigits;hit++) {
-	       dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
-	       //Int_t nchamber = padHit->fChamber;     // chamber number
-	       //Int_t nhit = dHit->fHitNumber;          // hit number
-	       Int_t qtot = dHit->fSignal;                // charge
-	       Int_t ipx  = dHit->fPadX;               // pad number on X
-	       Int_t ipy  = dHit->fPadY;               // pad number on Y
-	       //Int_t iqpad  = dHit->fQpad;           // charge per pad
-	       //Int_t rpad  = dHit->fRSec;            // R-position of pad
-	       //printf ("Pad hit, PadX:%d, PadY:%d\n",ipx,ipy);
-	       if( ipx<=100 && ipy <=100 && ich==2) hc0->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==0) hc1->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==1) hc2->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==2) hc3->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==3) hc4->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==4) hc5->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==5) hc6->Fill(ipx,ipy,(float) qtot);
-	       if( ipx<=162 && ipy <=162 && ich==6) hc7->Fill(ipx,ipy,(float) qtot);
-	     }
+	   padsev->Fill(ndigits,(float) 1);
+	   for (Int_t hit=0;hit<ndigits;hit++) {
+	     dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
+	     Int_t qtot = dHit->fSignal;                // charge
+	     Int_t ipx  = dHit->fPadX;               // pad number on X
+	     Int_t ipy  = dHit->fPadY;               // pad number on Y
+	     //printf("%d, %d\n",ipx,ipy);
+	     if( ipx<=100 && ipy <=100) hc0->Fill(ipx,ipy,(float) qtot);
 	   }
+	 }
+
+       if (diaglevel == 5)
+	 {
+	   for (Int_t ich=0;ich<7;ich++)
+	     {
+	       TClonesArray *Digits = RICH->DigitsAddress(ich);    //  Raw clusters branch
+	       Int_t ndigits = Digits->GetEntriesFast();
+	       //printf("Digits:%d\n",ndigits);
+	       padsev->Fill(ndigits,(float) 1); 
+	       if (ndigits) {
+		 for (Int_t hit=0;hit<ndigits;hit++) {
+		   dHit = (AliRICHDigit*) Digits->UncheckedAt(hit);
+		   //Int_t nchamber = padHit->fChamber;     // chamber number
+		   //Int_t nhit = dHit->fHitNumber;          // hit number
+		   Int_t qtot = dHit->fSignal;                // charge
+		   Int_t ipx  = dHit->fPadX;               // pad number on X
+		   Int_t ipy  = dHit->fPadY;               // pad number on Y
+		   //Int_t iqpad  = dHit->fQpad;           // charge per pad
+		   //Int_t rpad  = dHit->fRSec;            // R-position of pad
+		   //printf ("Pad hit, PadX:%d, PadY:%d\n",ipx,ipy);
+		   if( ipx<=100 && ipy <=100 && ich==2) hc0->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==0) hc1->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==1) hc2->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==2) hc3->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==3) hc4->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==4) hc5->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==5) hc6->Fill(ipx,ipy,(float) qtot);
+		   if( ipx<=162 && ipy <=162 && ich==6) hc7->Fill(ipx,ipy,(float) qtot);
+		 }
+	       }
+	     }
 	 }
    }
        
