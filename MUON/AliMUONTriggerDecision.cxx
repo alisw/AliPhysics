@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2001/01/26 21:57:09  morsch
+Use access functions to AliMUONDigit member data.
+
 Revision 1.5  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -57,7 +60,6 @@ Author and responsible for the code: Philippe Crochet
 #include "AliMUONHitMapA1.h"
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONPoints.h"
 #include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.5  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.4  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -30,7 +33,6 @@ pow replaced by TMath::Power
 #include "TTree.h"
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONPoints.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TROOT.h"

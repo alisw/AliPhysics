@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.7  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.6  2000/07/13 16:19:44  fca
 Mainly coding conventions + some small bug fixes
 
@@ -35,7 +41,6 @@ problem with HP compiler solved (PH), static variables removed : now defined in 
 
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONPoints.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerConstants.h"
 #include "AliSegmentation.h"
