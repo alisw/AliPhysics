@@ -26,7 +26,6 @@ public:
   // CPV functions
 
   virtual Int_t   GetNumberOfCPVLayers(void)        { return  fNumberOfCPVLayers;        }
-  virtual Bool_t  IsLeadConverterExists(void)       { return  fLeadConverterExists;      }
   virtual Int_t   GetNumberOfCPVPadsPhi(void)       { return  fNumberOfCPVPadsPhi ;      }
   virtual Int_t   GetNumberOfCPVPadsZ(void)         { return  fNumberOfCPVPadsZ ;        }
   virtual Float_t GetCPVPadSizePhi(void)            { return  fCPVPadSizePhi;            }
@@ -42,34 +41,10 @@ public:
   virtual Float_t GetFTPosition(Int_t index)        { return  fFTPosition[index];        }
   virtual Float_t GetCPVFrameSize(Int_t index)      { return  fCPVFrameSize[index];      }
 
-  // PPSD functions cannot be used for CPV
-
-  virtual Float_t GetAnodeThickness(void)          { AssertPPSD("GetAnodeThickness");          return 0; }
-  virtual Float_t GetAvalancheGap(void)            { AssertPPSD("GetAvalancheGap");            return 0; }
-  virtual Float_t GetCathodeThickness(void)        { AssertPPSD("GetCathodeThickness");        return 0; }
-  virtual Float_t GetCompositeThickness(void)      { AssertPPSD("GetCompositeThickness");      return 0; }
-  virtual Float_t GetConversionGap(void)           { AssertPPSD("GetConversionGap");           return 0; }
-  virtual Float_t GetLeadConverterThickness(void)  { AssertPPSD("GetLeadConverterThickness");  return 0; }
-  virtual Float_t GetLeadToMicro2Gap(void)         { AssertPPSD("GetLeadToMicro2Gap");         return 0; }
-  virtual Float_t GetLidThickness(void)            { AssertPPSD("GetLidThickness");            return 0; }
-  virtual Float_t GetMicromegas1Thickness(void)    { AssertPPSD("GetMicromegas1Thickness");    return 0; }
-  virtual Float_t GetMicromegas2Thickness(void)    { AssertPPSD("GetMicromegas2Thickness");    return 0; }
-  virtual Float_t GetMicromegasWallThickness(void) { AssertPPSD("GetMicromegasWallThickness"); return 0; }
-  virtual Float_t GetMicro1ToLeadGap(void)         { AssertPPSD("GetMicro1ToLeadGap");         return 0; }
-  virtual Float_t GetPCThickness(void)             { AssertPPSD("GetPCThickness");             return 0; }
-  virtual Float_t GetPhiDisplacement(void)         { AssertPPSD("GetPhiDisplacement");         return 0; }
-  virtual Float_t GetPPSDModuleSize(Int_t index)   { AssertPPSD("GetPPSDModuleSize");          return 0; }
-  virtual Float_t GetZDisplacement(void)           { AssertPPSD("GetZDisplacement");           return 0; }
-  virtual Int_t   GetNumberOfPadsPhi(void)         { AssertPPSD("GetNumberOfPadsPhi");         return 0; }
-  virtual Int_t   GetNumberOfPadsZ(void)           { AssertPPSD("GetNumberOfPadsZ");           return 0; }
-  virtual Int_t   GetNumberOfModulesPhi(void)      { AssertPPSD("GetNumberOfModulesPhi");      return 0; }
-  virtual Int_t   GetNumberOfModulesZ(void)        { AssertPPSD("GetNumberOfModulesZ");        return 0; }
-  virtual void    SetLeadConverterThickness(Float_t x) { AssertPPSD("SetLeadConverterThickness");       }
  
 private:
 
   Int_t   fNumberOfCPVLayers;      // Number of CPV identical layers
-  Bool_t  fLeadConverterExists;    // kTRUE if the lead converter between CPV layers exists
   Int_t   fNumberOfCPVPadsPhi;     // Number of CPV pads in phi
   Int_t   fNumberOfCPVPadsZ;       // Number of CPV pads in z
   Float_t fCPVPadSizePhi;          // CPV pad size in phi
@@ -85,10 +60,6 @@ private:
   Float_t fFTPosition[4];          // Positions of the 4 PCB vs the CPV box center
   Float_t fCPVFrameSize[3];        // CPV frame size (0 - in phi, 1 - in z, 2 - thickness (along ALICE radius))
 
-  void    AssertPPSD(char* name) {
-    printf("Function AliCPVGeometry::%s should not be called for CPV geometry\n",name);
-    assert(0==1) ;
-  }
 
   ClassDef(AliPHOSCPVGeometry,1)       // CPV geometry base class 
 

@@ -17,17 +17,16 @@
 
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
-// Layout EMC + PPSD has name GPS2  
-// Layout EMC + CPV  has name IHEP
 // An object of this class does not produce hits nor digits
 // It is the one to use if you do not want to produce outputs in TREEH or TREED
 //                  
-//*-- Author: Yves Schutz (SUBATECH)
+//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 
 
 // --- ROOT system ---
 
 #include "TBRIK.h"
+#include "TTRD1.h"
 #include "TNode.h"
 #include "TRandom.h"
 #include "TGeometry.h"
@@ -59,14 +58,11 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   AliPHOS(name,title)
 {
   // ctor : title is used to identify the layout
-  //        GPS2 = 5 modules (EMC + PPSD)
-  //        IHEP = 5 modules (EMC + CPV)
-  //        MIXT = 4 modules (EMC + CPV) and 1 module (EMC + PPSD)
  
   // create the geometry parameters object  
   // and post it to a folder (Post retrieves the correct geometry)
   AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->PostGeometry() ; 
-
+  
 }
 
 //____________________________________________________________________________
@@ -103,410 +99,70 @@ void AliPHOSv0::BuildGeometry()
   */
   //END_HTML  
   
-  AliPHOSGeometry * geom = GetGeometry() ; 
-
-  this->BuildGeometryforPHOS() ; 
-  if      (strcmp(geom->GetName(),"GPS2") == 0)
-    this->BuildGeometryforPPSD() ;
-  else if (strcmp(geom->GetName(),"IHEP") == 0)
-    this->BuildGeometryforCPV() ;
-  else if (strcmp(geom->GetName(),"MIXT") == 0) {
-    this->BuildGeometryforPPSD() ;
-    this->BuildGeometryforCPV() ;
-  }
-  else
-    cout << "AliPHOSv0::BuildGeometry : no charged particle identification system installed: "
-	 << "Geometry name = " << geom->GetName() << endl; 
-
+  this->BuildGeometryforEMC() ; 
+  this->BuildGeometryforCPV() ;
+  
 }
 
 //____________________________________________________________________________
-void AliPHOSv0:: BuildGeometryforPHOS(void)
+void AliPHOSv0:: BuildGeometryforEMC(void)
 {
- // Build the PHOS-EMC geometry for the ROOT display
-
+  // Build the PHOS-EMC geometry for the ROOT display
+  
   const Int_t kColorPHOS = kRed ;
   const Int_t kColorXTAL = kBlue ;
-
+  
   Double_t const kRADDEG = 180.0 / kPI ;
-
+  
   AliPHOSGeometry * geom = GetGeometry() ; 
+  AliPHOSEMCAGeometry * emcg = geom->GetEMCAGeometry() ;
+  Float_t * boxparams = emcg->GetEMCParams() ;
 
-  new TBRIK( "OuterBox", "PHOS box", "void", geom->GetOuterBoxSize(0)/2, 
-                                             geom->GetOuterBoxSize(1)/2, 
-                                             geom->GetOuterBoxSize(2)/2 );
-
-  // Textolit Wall box, position inside PHOS 
+  new TTRD1("OuterBox", "PHOS box", "void",boxparams[0],boxparams[1],boxparams[2], boxparams[3] );
   
-  new TBRIK( "TextolitBox", "PHOS Textolit box ", "void", geom->GetTextolitBoxSize(0)/2, 
-                                                          geom->GetTextolitBoxSize(1)/2, 
-                                                          geom->GetTextolitBoxSize(2)/2);
-
-  // Polystyrene Foam Plate
-
-  new TBRIK( "UpperFoamPlate", "PHOS Upper foam plate", "void", geom->GetTextolitBoxSize(0)/2, 
-                                                                geom->GetSecondUpperPlateThickness()/2, 
-                                                                geom->GetTextolitBoxSize(2)/2 ) ; 
-
-  // Air Filled Box
- 
-  new TBRIK( "AirFilledBox", "PHOS air filled box", "void", geom->GetAirFilledBoxSize(0)/2, 
-                                                            geom->GetAirFilledBoxSize(1)/2, 
-                                                            geom->GetAirFilledBoxSize(2)/2 );
-
+  
   // Crystals Box
-
-  Float_t xtlX = geom->GetCrystalSize(0) ; 
-  Float_t xtlY = geom->GetCrystalSize(1) ; 
-  Float_t xtlZ = geom->GetCrystalSize(2) ; 
-
-  Float_t xl =  geom->GetNPhi() * ( xtlX + 2 * geom->GetGapBetweenCrystals() ) / 2.0 + geom->GetModuleBoxThickness() ;
-  Float_t yl =  ( xtlY + geom->GetCrystalSupportHeight() + geom->GetCrystalWrapThickness() + geom->GetCrystalHolderThickness() ) / 2.0 
-             + geom->GetModuleBoxThickness() / 2.0 ;
-  Float_t zl =  geom->GetNZ() * ( xtlZ + 2 * geom->GetGapBetweenCrystals() ) / 2.0 +  geom->GetModuleBoxThickness() ;
   
-  new TBRIK( "CrystalsBox", "PHOS crystals box", "void", xl, yl, zl ) ;
-
-// position PHOS into ALICE
-
-  Float_t r = geom->GetIPtoOuterCoverDistance() + geom->GetOuterBoxSize(1) / 2.0 ;
+  Float_t * cribox = emcg->GetInnerThermoHalfSize() ;  
+  new TBRIK( "CrystalsBox", "PHOS crystals box", "void", cribox[0], cribox[2], cribox[1] ) ;
+  
+  // position PHOS into ALICE
+  
+  Float_t r = geom->GetIPtoOuterCoverDistance() + boxparams[3] ;
   Int_t number = 988 ; 
-  Float_t pphi =  TMath::ATan( geom->GetOuterBoxSize(0)  / ( 2.0 * geom->GetIPtoOuterCoverDistance() ) ) ;
-  pphi *= kRADDEG ;
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
- 
+  
   char * nodename = new char[20] ;  
   char * rotname  = new char[20] ; 
 
+  new TRotMatrix("cribox", "cribox", 90, 0, 90, 90, 0, 0);  
+
   for( Int_t i = 1; i <= geom->GetNModules(); i++ ) { 
-   Float_t angle = pphi * 2 * ( i - geom->GetNModules() / 2.0 - 0.5 ) ;
-   sprintf(rotname, "%s%d", "rot", number++) ;
-   new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
-   top->cd();
-   sprintf(nodename,"%s%d", "Module", i) ;    
-   Float_t x =  r * TMath::Sin( angle / kRADDEG ) ;
-   Float_t y = -r * TMath::Cos( angle / kRADDEG ) ;
-   TNode * outerboxnode = new TNode(nodename, nodename, "OuterBox", x, y, 0, rotname ) ;
-   outerboxnode->SetLineColor(kColorPHOS) ;
-   fNodes->Add(outerboxnode) ;
-   outerboxnode->cd() ; 
-   // now inside the outer box the textolit box
-   y = ( geom->GetOuterBoxThickness(1) -  geom->GetUpperPlateThickness() ) / 2.  ;
-   sprintf(nodename,"%s%d", "TexBox", i) ;  
-   TNode * textolitboxnode = new TNode(nodename, nodename, "TextolitBox", 0, y, 0) ; 
-   textolitboxnode->SetLineColor(kColorPHOS) ;
-   fNodes->Add(textolitboxnode) ;
-   // upper foam plate inside outre box
-   outerboxnode->cd() ; 
-   sprintf(nodename, "%s%d", "UFPlate", i) ;
-   y =  ( geom->GetTextolitBoxSize(1) - geom->GetSecondUpperPlateThickness() ) / 2.0 ;
-   TNode * upperfoamplatenode = new TNode(nodename, nodename, "UpperFoamPlate", 0, y, 0) ; 
-   upperfoamplatenode->SetLineColor(kColorPHOS) ;
-   fNodes->Add(upperfoamplatenode) ;  
-   // air filled box inside textolit box (not drawn)
-   textolitboxnode->cd();
-   y = ( geom->GetTextolitBoxSize(1) - geom->GetAirFilledBoxSize(1) ) / 2.0 -  geom->GetSecondUpperPlateThickness() ;
-   sprintf(nodename, "%s%d", "AFBox", i) ;
-   TNode * airfilledboxnode = new TNode(nodename, nodename, "AirFilledBox", 0, y, 0) ; 
-   fNodes->Add(airfilledboxnode) ; 
-   // crystals box inside air filled box
-   airfilledboxnode->cd() ; 
-   y = geom->GetAirFilledBoxSize(1) / 2.0 - yl 
-       - ( geom->GetIPtoCrystalSurface() - geom->GetIPtoOuterCoverDistance() - geom->GetModuleBoxThickness() 
-       -  geom->GetUpperPlateThickness() -  geom->GetSecondUpperPlateThickness() ) ; 
-   sprintf(nodename, "%s%d", "XTBox", i) ; 
-   TNode * crystalsboxnode = new TNode(nodename, nodename, "CrystalsBox", 0, y, 0) ;    
-   crystalsboxnode->SetLineColor(kColorXTAL) ; 
-   fNodes->Add(crystalsboxnode) ; 
+
+    Float_t angle = geom->GetPHOSAngle(i) ;
+    sprintf(rotname, "%s%d", "rot", number++) ;
+    new TRotMatrix(rotname, rotname, 90, angle, 0,  0,  90,  270 + angle);
+
+    top->cd();
+    sprintf(nodename,"%s%d", "Module", i) ;    
+    Float_t x =  r * TMath::Sin( angle / kRADDEG ) ;
+    Float_t y = -r * TMath::Cos( angle / kRADDEG ) ;
+    TNode * outerboxnode = new TNode(nodename, nodename, "OuterBox", x, y, 0, rotname ) ;
+    outerboxnode->SetLineColor(kColorPHOS) ;
+    fNodes->Add(outerboxnode) ;
+    outerboxnode->cd() ; 
+
+    Float_t z = -boxparams[3] - geom->GetIPtoOuterCoverDistance() + 
+                 cribox[1] +  geom->GetIPtoCrystalSurface() ;
+    TNode * crystalsboxnode = new TNode(nodename, nodename, "CrystalsBox", 0, 0, z) ;    
+    crystalsboxnode->SetLineColor(kColorXTAL) ; 
+    fNodes->Add(crystalsboxnode) ; 
   }
 
   delete[] rotname ;  
   delete[] nodename ;
 }
 
-//____________________________________________________________________________
-void AliPHOSv0:: BuildGeometryforPPSD(void)
-{
- //  Build the PHOS-PPSD geometry for the ROOT display
- //BEGIN_HTML
-  /*
-    <H2>
-     PPSD displayed by root
-    </H2>
-    <UL>
-    <LI> Zoom on PPSD: Front View
-    <P>
-    <CENTER>
-    <IMG Align=BOTTOM ALT="PPSD Front View" SRC="../images/AliPHOSv0PPSDFrontView.gif"> 
-    </CENTER></P></LI>
-    <LI> Zoom on PPSD: Perspective View
-    <P>
-    <CENTER>
-    <IMG Align=BOTTOM ALT="PPSD Prespective View" SRC="../images/AliPHOSv0PPSDPerspectiveView.gif"> 
-    </CENTER></P></LI>
-    </UL>
-  */
-  //END_HTML  
-  Double_t const kRADDEG = 180.0 / kPI ;
-
-  const Int_t kColorPHOS = kRed ;
-  const Int_t kColorPPSD = kGreen ;
-  const Int_t kColorGas  = kBlue ;  
-  const Int_t kColorAir  = kYellow ; 
-
-  AliPHOSGeometry * geom = GetGeometry() ; 
-
-  // Box for a full PHOS module
-
-  new TBRIK( "PPSDBox", "PPSD box", "void",  geom->GetCPVBoxSize(0)/2, 
-                                             geom->GetCPVBoxSize(1)/2, 
-	                                     geom->GetCPVBoxSize(2)/2 );
-
-  // Box containing one micromegas module 
-
-  new TBRIK( "PPSDModule", "PPSD module", "void",  geom->GetPPSDModuleSize(0)/2, 
-                                                   geom->GetPPSDModuleSize(1)/2, 
-	                                           geom->GetPPSDModuleSize(2)/2 );
- // top lid
-
-  new TBRIK ( "TopLid", "Micromegas top lid", "void",  geom->GetPPSDModuleSize(0)/2,
-                                                       geom->GetLidThickness()/2,
-                                                       geom->GetPPSDModuleSize(2)/2 ) ; 
- // composite panel (top and bottom)
-
-  new TBRIK ( "TopPanel", "Composite top panel", "void",  ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() )/2,
-                                                            geom->GetCompositeThickness()/2,
-                                                          ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() )/2 ) ;  
-  
-  new TBRIK ( "BottomPanel", "Composite bottom panel", "void",  ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() )/2,
-                                                                  geom->GetCompositeThickness()/2,
-                                                                ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() )/2 ) ; 
- // gas gap (conversion and avalanche)
-
-  new TBRIK ( "GasGap", "gas gap", "void",  ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() )/2,
-	                                    ( geom->GetConversionGap() +  geom->GetAvalancheGap() )/2,
-                                            ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() )/2 ) ; 
-
- // anode and cathode 
-
-  new TBRIK ( "Anode", "Anode", "void",  ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() )/2,
-                                           geom->GetAnodeThickness()/2,
-                                         ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() )/2 ) ; 
-
-  new TBRIK ( "Cathode", "Cathode", "void",  ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() )/2,
-                                               geom->GetCathodeThickness()/2,
-                                             ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() )/2 ) ; 
- // PC  
-
-  new TBRIK ( "PCBoard", "Printed Circuit", "void",  ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() )/2,
-                                                       geom->GetPCThickness()/2,
-                                                     ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() )/2 ) ; 
- // Gap between Lead and top micromegas
-
-  new TBRIK ( "LeadToM", "Air Gap top", "void", geom->GetCPVBoxSize(0)/2,
-                                                geom->GetMicro1ToLeadGap()/2,
-                                                geom->GetCPVBoxSize(2)/2  ) ;  
- 
-// Gap between Lead and bottom micromegas
-
-  new TBRIK ( "MToLead", "Air Gap bottom", "void", geom->GetCPVBoxSize(0)/2,
-                                                   geom->GetLeadToMicro2Gap()/2,
-                                                   geom->GetCPVBoxSize(2)/2  ) ; 
- // Lead converter
-   
-  new TBRIK ( "Lead", "Lead converter", "void", geom->GetCPVBoxSize(0)/2,
-                                                geom->GetLeadConverterThickness()/2,
-                                                geom->GetCPVBoxSize(2)/2  ) ; 
-
-     // position PPSD into ALICE
-
-  char * nodename = new char[20] ;  
-  char * rotname  = new char[20] ; 
-
-  Float_t r = geom->GetIPtoTopLidDistance() + geom->GetCPVBoxSize(1) / 2.0 ;
-  Int_t number = 988 ; 
-  TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
- 
-  Int_t firstModule = 0 ; 
-  if      (strcmp(geom->GetName(),"GPS2") == 0) 
-    firstModule = 1;
-  else if (strcmp(geom->GetName(),"MIXT") == 0) 
-    firstModule = geom->GetNModules() - geom->GetNPPSDModules() + 1;
-  
-  for( Int_t i = firstModule; i <= geom->GetNModules(); i++ ) { // the number of PHOS modules
-    Float_t angle = geom->GetPHOSAngle(i) ;
-    sprintf(rotname, "%s%d", "rotg", number+i) ;
-    new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
-    top->cd();
-    sprintf(nodename, "%s%d", "Moduleg", i) ;    
-    Float_t x =  r * TMath::Sin( angle / kRADDEG ) ;
-    Float_t y = -r * TMath::Cos( angle / kRADDEG ) ;
-    TNode * ppsdboxnode = new TNode(nodename , nodename ,"PPSDBox", x, y, 0, rotname ) ;
-    ppsdboxnode->SetLineColor(kColorPPSD) ;
-    fNodes->Add(ppsdboxnode) ;
-    ppsdboxnode->cd() ;
-    // inside the PPSD box: 
-    //   1.   fNumberOfModulesPhi x fNumberOfModulesZ top micromegas
-    x = ( geom->GetCPVBoxSize(0) - geom->GetPPSDModuleSize(0) ) / 2. ;  
-    {
-      for ( Int_t iphi = 1; iphi <= geom->GetNumberOfModulesPhi(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
-	Float_t z = ( geom->GetCPVBoxSize(2) - geom->GetPPSDModuleSize(2) ) / 2. ;
-	TNode * micro1node ; 
-	for ( Int_t iz = 1; iz <= geom->GetNumberOfModulesZ(); iz++ ) { // the number of micromegas modules in z per PHOS module
-	  y = ( geom->GetCPVBoxSize(1) - geom->GetMicromegas1Thickness() ) / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Mic1", i, iphi, iz) ;
-	  micro1node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
-	  micro1node->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(micro1node) ; 
-	  // inside top micromegas
-	  micro1node->cd() ; 
-	  //      a. top lid
-	  y = ( geom->GetMicromegas1Thickness() - geom->GetLidThickness() ) / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Lid", i, iphi, iz) ;
-	  TNode * toplidnode = new TNode(nodename, nodename, "TopLid", 0, y, 0) ;
-	  toplidnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(toplidnode) ; 
-	  //      b. composite panel
-	  y = y - geom->GetLidThickness() / 2. - geom->GetCompositeThickness() / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "CompU", i, iphi, iz) ;
-	  TNode * compupnode = new TNode(nodename, nodename, "TopPanel", 0, y, 0) ;
-	  compupnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(compupnode) ; 
-	  //      c. anode
-	  y = y - geom->GetCompositeThickness() / 2. - geom->GetAnodeThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Ano", i, iphi, iz) ;
-	  TNode * anodenode = new TNode(nodename, nodename, "Anode", 0, y, 0) ;
-	  anodenode->SetLineColor(kColorPHOS) ;  
-	  fNodes->Add(anodenode) ; 
-	  //      d.  gas 
-	  y = y - geom->GetAnodeThickness() / 2. - ( geom->GetConversionGap() +  geom->GetAvalancheGap() ) / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "GGap", i, iphi, iz) ;
-	  TNode * ggapnode = new TNode(nodename, nodename, "GasGap", 0, y, 0) ;
-	  ggapnode->SetLineColor(kColorGas) ;  
-	  fNodes->Add(ggapnode) ;          
-	  //      f. cathode
-	  y = y - ( geom->GetConversionGap() +  geom->GetAvalancheGap() ) / 2. - geom->GetCathodeThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Cathode", i, iphi, iz) ;
-	  TNode * cathodenode = new TNode(nodename, nodename, "Cathode", 0, y, 0) ;
-	  cathodenode->SetLineColor(kColorPHOS) ;  
-	  fNodes->Add(cathodenode) ;        
-	  //      g. printed circuit
-	  y = y - geom->GetCathodeThickness() / 2. - geom->GetPCThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "PC", i, iphi, iz) ;
-	  TNode * pcnode = new TNode(nodename, nodename, "PCBoard", 0, y, 0) ;
-	  pcnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(pcnode) ;        
-	  //      h. composite panel
-	  y = y - geom->GetPCThickness() / 2. - geom->GetCompositeThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "CompDown", i, iphi, iz) ;
-	  TNode * compdownnode = new TNode(nodename, nodename, "BottomPanel", 0, y, 0) ;
-	  compdownnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(compdownnode) ;   
-	  z = z - geom->GetPPSDModuleSize(2) ;
-	  ppsdboxnode->cd() ;
-	} // end of Z module loop     
-	x = x -  geom->GetPPSDModuleSize(0) ; 
-	ppsdboxnode->cd() ;
-      } // end of phi module loop
-    }
-    //   2. air gap      
-    ppsdboxnode->cd() ;
-    y = ( geom->GetCPVBoxSize(1) - 2 * geom->GetMicromegas1Thickness() - geom->GetMicro1ToLeadGap() ) / 2. ; 
-    sprintf(nodename, "%s%d", "GapUp", i) ;
-    TNode * gapupnode = new TNode(nodename, nodename, "LeadToM", 0, y, 0) ;
-    gapupnode->SetLineColor(kColorAir) ;  
-    fNodes->Add(gapupnode) ;        
-    //   3. lead converter
-    y = y - geom->GetMicro1ToLeadGap() / 2. - geom->GetLeadConverterThickness() / 2. ; 
-    sprintf(nodename, "%s%d", "LeadC", i) ;
-    TNode * leadcnode = new TNode(nodename, nodename, "Lead", 0, y, 0) ;
-    leadcnode->SetLineColor(kColorPPSD) ;  
-    fNodes->Add(leadcnode) ;        
-    //   4. air gap
-    y = y - geom->GetLeadConverterThickness() / 2. - geom->GetLeadToMicro2Gap()  / 2. ; 
-    sprintf(nodename, "%s%d", "GapDown", i) ;
-    TNode * gapdownnode = new TNode(nodename, nodename, "MToLead", 0, y, 0) ;
-    gapdownnode->SetLineColor(kColorAir) ;  
-    fNodes->Add(gapdownnode) ;        
-    //    5.  fNumberOfModulesPhi x fNumberOfModulesZ bottom micromegas
-    x = ( geom->GetCPVBoxSize(0) - geom->GetPPSDModuleSize(0) ) / 2. - geom->GetPhiDisplacement() ;  
-    {
-      for ( Int_t iphi = 1; iphi <= geom->GetNumberOfModulesPhi(); iphi++ ) { 
-	Float_t z = ( geom->GetCPVBoxSize(2) - geom->GetPPSDModuleSize(2) ) / 2.  - geom->GetZDisplacement() ;;
-	TNode * micro2node ; 
-	for ( Int_t iz = 1; iz <= geom->GetNumberOfModulesZ(); iz++ ) { 
-	  y = - ( geom->GetCPVBoxSize(1) - geom->GetMicromegas2Thickness() ) / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Mic2", i, iphi, iz) ;
-	  micro2node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
-	  micro2node->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(micro2node) ; 
-	  // inside bottom micromegas
-	  micro2node->cd() ; 
-	  //      a. top lid
-
-	  y = ( geom->GetMicromegas2Thickness() - geom->GetLidThickness() ) / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Lidb", i, iphi, iz) ;
-
-	  TNode * toplidbnode = new TNode(nodename, nodename, "TopLid", 0, y, 0) ;
-	  toplidbnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(toplidbnode) ; 
-	  //      b. composite panel
-
-	  y = y - geom->GetLidThickness() / 2. - geom->GetCompositeThickness() / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "CompUb", i, iphi, iz) ;
-
-	  TNode * compupbnode = new TNode(nodename, nodename, "TopPanel", 0, y, 0) ;
-	  compupbnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(compupbnode) ; 
-	  //      c. anode
-
-	  y = y - geom->GetCompositeThickness() / 2. - geom->GetAnodeThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Anob", i, iphi, iz) ;
-
-	  TNode * anodebnode = new TNode(nodename, nodename, "Anode", 0, y, 0) ;
-	  anodebnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(anodebnode) ; 
-	  //      d. conversion gas
-
-	  y = y - geom->GetAnodeThickness() / 2. - ( geom->GetConversionGap() +  geom->GetAvalancheGap() )  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "GGapb", i, iphi, iz) ;
-
-	  TNode * ggapbnode = new TNode(nodename, nodename, "GasGap", 0, y, 0) ;
-	  ggapbnode->SetLineColor(kColorGas) ;  
-	  fNodes->Add(ggapbnode) ;           
-	  //      f. cathode
-
-	  y = y - ( geom->GetConversionGap() + geom->GetAvalancheGap() ) / 2. - geom->GetCathodeThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "Cathodeb", i, iphi, iz) ;
-
-	  TNode * cathodebnode = new TNode(nodename, nodename, "Cathode", 0, y, 0) ;
-	  cathodebnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(cathodebnode) ;        
-	  //      g. printed circuit
-	  y = y - geom->GetCathodeThickness() / 2. - geom->GetPCThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "PCb", i, iphi, iz) ;
-	  TNode * pcbnode = new TNode(nodename, nodename, "PCBoard", 0, y, 0) ;
-	  pcbnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(pcbnode) ;        
-	  //      h. composite pane
-	  y = y - geom->GetPCThickness() / 2. - geom->GetCompositeThickness()  / 2. ; 
-	  sprintf(nodename, "%s%d%d%d", "CompDownb", i, iphi, iz) ;
-	  TNode * compdownbnode = new TNode(nodename, nodename, "BottomPanel", 0, y, 0) ;
-	  compdownbnode->SetLineColor(kColorPPSD) ;  
-	  fNodes->Add(compdownbnode) ;        
-       	  z = z - geom->GetPPSDModuleSize(2) ;
-	  ppsdboxnode->cd() ;
-	} // end of Z module loop     
-	x = x -  geom->GetPPSDModuleSize(0) ; 
-	ppsdboxnode->cd() ;
-      } // end of phi module loop
-    }
-  } // PHOS modules
- 
-  delete[] rotname ;  
-  delete[] nodename ; 
-
-}
 
 //____________________________________________________________________________
 void AliPHOSv0:: BuildGeometryforCPV(void)
@@ -572,15 +228,12 @@ void AliPHOSv0:: BuildGeometryforCPV(void)
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
 
   Int_t lastModule = 0 ;
-  if      (strcmp(geom->GetName(),"IHEP") == 0) 
-    lastModule = geom->GetNModules();
-  else if (strcmp(geom->GetName(),"MIXT") == 0) 
-    lastModule = geom->GetNModules() - geom->GetNPPSDModules();
+  lastModule = geom->GetNModules();
   
   for( Int_t i = 1; i <= lastModule; i++ ) { // the number of PHOS modules
-
+    
     // One CPV module
-
+    
     Float_t angle = geom->GetPHOSAngle(i) ;
     sprintf(rotname, "%s%d", "rotg", number+i) ;
     new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
@@ -662,79 +315,49 @@ void AliPHOSv0::CreateGeometry()
   // Get pointer to the array containing media indeces
   Int_t *idtmed = fIdtmed->GetArray() - 699 ;
 
-  // Create a box a PHOS module.
-  // In case of MIXT geometry 2 different boxes are needed
-
-  Float_t bigbox[3] ; 
-  bigbox[0] =   geom->GetOuterBoxSize(0) / 2.0 ;
-  bigbox[1] = ( geom->GetOuterBoxSize(1) + geom->GetCPVBoxSize(1) ) / 2.0 ;
-  bigbox[2] =   geom->GetOuterBoxSize(2) / 2.0 ;
+  // Create a PHOS module.
   
-    gMC->Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
-
-  if ( strcmp( geom->GetName(),"MIXT") == 0 && geom->GetNPPSDModules() > 0) 
-    gMC->Gsvolu("PHO1", "BOX ", idtmed[798], bigbox, 3) ;
+  gMC->Gsvolu("PHOS", "TRD1", idtmed[798], geom->GetPHOSParams(), 4) ;        
   
-    this->CreateGeometryforPHOS() ; 
-  if      ( strcmp( geom->GetName(), "GPS2") == 0  ) 
-    this->CreateGeometryforPPSD() ;
-  else if ( strcmp( geom->GetName(), "IHEP") == 0  ) 
-    this->CreateGeometryforCPV() ;
-  else if ( strcmp( geom->GetName(), "MIXT") == 0  ) {
-    this->CreateGeometryforPPSD() ;
-    this->CreateGeometryforCPV() ;
-  }
-  else
-    cout << "AliPHOSv0::CreateGeometry : no charged particle identification system installed" << endl; 
+  this->CreateGeometryforEMC() ; 
 
+  this->CreateGeometryforCPV() ;
+  
   this->CreateGeometryforSupport() ; 
   
   // --- Position  PHOS mdules in ALICE setup ---
   
   Int_t idrotm[99] ;
   Double_t const kRADDEG = 180.0 / kPI ;
+  Float_t * phosParams = geom->GetPHOSParams() ;
   
-  Int_t lastModule;
-  if (strcmp(geom->GetName(),"MIXT") == 0) 
-    lastModule = geom->GetNModules() - geom->GetNPPSDModules();
-  else
-    lastModule = geom->GetNModules();
-
   Int_t i;
-  for( i = 1; i <= lastModule ; i++ ) {
+  for( i = 1; i <= geom->GetNModules()  ; i++ ) {
     
     Float_t angle = geom->GetPHOSAngle(i) ;
-    AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
- 
-    Float_t r = geom->GetIPtoOuterCoverDistance() + ( geom->GetOuterBoxSize(1) + geom->GetCPVBoxSize(1) ) / 2.0 ;
-
+    AliMatrix(idrotm[i-1], 90.,angle, 0., 0., 90., 270. +angle) ;
+    
+    Float_t r = geom->GetIPtoOuterCoverDistance() + phosParams[3] ;
+    
     Float_t xP1 =  r * TMath::Sin( angle / kRADDEG ) ;
     Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
-
+    
     gMC->Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
- 
-  } // for GetNModules
-
-  for( i = lastModule+1; i <= geom->GetNModules(); i++ ) {
     
-    Float_t angle = geom->GetPHOSAngle(i) ;
-    AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
- 
-    Float_t r = geom->GetIPtoOuterCoverDistance() + ( geom->GetOuterBoxSize(1) + geom->GetCPVBoxSize(1) ) / 2.0 ;
-
-    Float_t xP1 =  r * TMath::Sin( angle / kRADDEG ) ;
-    Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
-
-    gMC->Gspos("PHO1", i-lastModule, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
- 
-  } // for GetNModules
+  } 
 
 }
 
 //____________________________________________________________________________
-void AliPHOSv0::CreateGeometryforPHOS()
+void AliPHOSv0::CreateGeometryforEMC()
 {
   // Create the PHOS-EMC geometry for GEANT
+  // Author: Dmitri Peressounko August 2001
+  // The used coordinate system: 
+  //   1. in Module: X along longer side, Y out of beam, Z along shorter side (along beam)
+  //   2. In Strip the same: X along longer side, Y out of beam, Z along shorter side (along beam)
+
+
     //BEGIN_HTML
   /*
     <H2>
@@ -750,465 +373,216 @@ void AliPHOSv0::CreateGeometryforPHOS()
   Int_t *idtmed = fIdtmed->GetArray() - 699 ;
 
   AliPHOSGeometry * geom = GetGeometry() ; 
+  AliPHOSEMCAGeometry * emcg = geom->GetEMCAGeometry() ;
 
-  // ---
-  // --- Define PHOS box volume, fPUFPill with thermo insulating foam ---
-  // --- Foam Thermo Insulating outer cover dimensions ---
-  // --- Put it in bigbox = PHOS
+  // ======= Define the strip ===============
 
-  Float_t dphos[3] ; 
-  dphos[0] =  geom->GetOuterBoxSize(0) / 2.0 ;
-  dphos[1] =  geom->GetOuterBoxSize(1) / 2.0 ;
-  dphos[2] =  geom->GetOuterBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PEMC", "BOX ", idtmed[706], dphos, 3) ;
-
-  Float_t yO =  - geom->GetCPVBoxSize(1)  / 2.0 ;
-
-    gMC->Gspos("PEMC", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
-  if ( strcmp( geom->GetName(),"MIXT") == 0 && geom->GetNPPSDModules() > 0) 
-    gMC->Gspos("PEMC", 1, "PHO1", 0.0, yO, 0.0, 0, "ONLY") ; 
-
-  // ---
-  // --- Define Textolit Wall box, position inside PEMC ---
-  // --- Textolit Wall box dimentions ---
- 
- 
-  Float_t dptxw[3];
-  dptxw[0] = geom->GetTextolitBoxSize(0) / 2.0 ;
-  dptxw[1] = geom->GetTextolitBoxSize(1) / 2.0 ;
-  dptxw[2] = geom->GetTextolitBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PTXW", "BOX ", idtmed[707], dptxw, 3);
-
-  yO =   (  geom->GetOuterBoxThickness(1) -   geom->GetUpperPlateThickness() ) / 2.  ;
+  gMC->Gsvolu("PSTR", "BOX ", idtmed[716], emcg->GetStripHalfSize(), 3) ;  //Made of stell
    
-  gMC->Gspos("PTXW", 1, "PEMC", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // --- 
-  // --- Define Upper Polystyrene Foam Plate, place inside PTXW ---
-  // --- immediately below Foam Thermo Insulation Upper plate ---
-
-  // --- Upper Polystyrene Foam plate thickness ---
- 
-  Float_t  dpufp[3] ;
-  dpufp[0] = geom->GetTextolitBoxSize(0) / 2.0 ; 
-  dpufp[1] = geom->GetSecondUpperPlateThickness() / 2. ;
-  dpufp[2] = geom->GetTextolitBoxSize(2) /2.0 ; 
-
-  gMC->Gsvolu("PUFP", "BOX ", idtmed[703], dpufp, 3) ;
-  
-  yO = ( geom->GetTextolitBoxSize(1) -  geom->GetSecondUpperPlateThickness() ) / 2.0 ;
-  
-  gMC->Gspos("PUFP", 1, "PTXW", 0.0, yO, 0.0, 0, "ONLY") ;
-  
-  // ---
-  // --- Define air-filled box, place inside PTXW ---
-  // --- Inner AIR volume dimensions ---
- 
-
-  Float_t  dpair[3] ;
-  dpair[0] = geom->GetAirFilledBoxSize(0) / 2.0 ;
-  dpair[1] = geom->GetAirFilledBoxSize(1) / 2.0 ;
-  dpair[2] = geom->GetAirFilledBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PAIR", "BOX ", idtmed[798], dpair, 3) ;
-  
-  yO = ( geom->GetTextolitBoxSize(1) -  geom->GetAirFilledBoxSize(1) ) / 2.0 -   geom->GetSecondUpperPlateThickness() ;
-  
-  gMC->Gspos("PAIR", 1, "PTXW", 0.0, yO, 0.0, 0, "ONLY") ;
-
-// --- Dimensions of PbWO4 crystal ---
-
-  Float_t xtlX =  geom->GetCrystalSize(0) ; 
-  Float_t xtlY =  geom->GetCrystalSize(1) ; 
-  Float_t xtlZ =  geom->GetCrystalSize(2) ; 
-
-  Float_t dptcb[3] ;  
-  dptcb[0] =  geom->GetNPhi() * ( xtlX + 2 *  geom->GetGapBetweenCrystals() ) / 2.0 + geom->GetModuleBoxThickness() ;
-  dptcb[1] = ( xtlY +  geom->GetCrystalSupportHeight() +  geom->GetCrystalWrapThickness() + geom->GetCrystalHolderThickness() ) / 2.0 
-             + geom->GetModuleBoxThickness() / 2.0 ;
-  dptcb[2] = geom->GetNZ() * ( xtlZ + 2 * geom->GetGapBetweenCrystals() ) / 2.0 +  geom->GetModuleBoxThickness() ;
-  
-  gMC->Gsvolu("PTCB", "BOX ", idtmed[706], dptcb, 3) ;
-
-  yO =  geom->GetAirFilledBoxSize(1) / 2.0 - dptcb[1] 
-       - ( geom->GetIPtoCrystalSurface() - geom->GetIPtoOuterCoverDistance() - geom->GetModuleBoxThickness() 
-       -  geom->GetUpperPlateThickness() -  geom->GetSecondUpperPlateThickness() ) ;
-  
-  gMC->Gspos("PTCB", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define Crystal BLock filled with air, position it inside PTCB ---
-  Float_t dpcbl[3] ; 
-  
-  dpcbl[0] = geom->GetNPhi() * ( xtlX + 2 * geom->GetGapBetweenCrystals() ) / 2.0 ;
-  dpcbl[1] = ( xtlY + geom->GetCrystalSupportHeight() + geom->GetCrystalWrapThickness() + geom->GetCrystalHolderThickness() ) / 2.0 ;
-  dpcbl[2] = geom->GetNZ() * ( xtlZ + 2 * geom->GetGapBetweenCrystals() ) / 2.0 ;
-  
-  gMC->Gsvolu("PCBL", "BOX ", idtmed[798], dpcbl, 3) ;
-  
-  // --- Divide PCBL in X (phi) and Z directions --
-  gMC->Gsdvn("PROW", "PCBL", Int_t (geom->GetNPhi()), 1) ;
-  gMC->Gsdvn("PCEL", "PROW", Int_t (geom->GetNZ()), 3) ;
-
-  yO = -geom->GetModuleBoxThickness() / 2.0 ;
-  
-  gMC->Gspos("PCBL", 1, "PTCB", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define STeel (actually, it's titanium) Cover volume, place inside PCEL
-  Float_t  dpstc[3] ; 
-  
-  dpstc[0] = ( xtlX + 2 * geom->GetCrystalWrapThickness() ) / 2.0 ;
-  dpstc[1] = ( xtlY + geom->GetCrystalSupportHeight() + geom->GetCrystalWrapThickness() + geom->GetCrystalHolderThickness() ) / 2.0 ;
-  dpstc[2] = ( xtlZ + 2 * geom->GetCrystalWrapThickness()  + 2 *  geom->GetCrystalHolderThickness() ) / 2.0 ;
-  
-  gMC->Gsvolu("PSTC", "BOX ", idtmed[704], dpstc, 3) ;
-
-  gMC->Gspos("PSTC", 1, "PCEL", 0.0, 0.0, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define Tyvek volume, place inside PSTC ---
-  Float_t  dppap[3] ;
-
-  dppap[0] = xtlX / 2.0 + geom->GetCrystalWrapThickness() ;
-  dppap[1] = ( xtlY + geom->GetCrystalSupportHeight() + geom->GetCrystalWrapThickness() ) / 2.0 ;
-  dppap[2] = xtlZ / 2.0 + geom->GetCrystalWrapThickness() ;
-  
-  gMC->Gsvolu("PPAP", "BOX ", idtmed[702], dppap, 3) ;
-  
-  yO = ( xtlY + geom->GetCrystalSupportHeight() + geom->GetCrystalWrapThickness() ) / 2.0 
-              - ( xtlY +  geom->GetCrystalSupportHeight() +  geom->GetCrystalWrapThickness() + geom->GetCrystalHolderThickness() ) / 2.0 ;
-   
-  gMC->Gspos("PPAP", 1, "PSTC", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define PbWO4 crystal volume, place inside PPAP ---
-  Float_t  dpxtl[3] ; 
-
-  dpxtl[0] = xtlX / 2.0 ;
-  dpxtl[1] = xtlY / 2.0 ;
-  dpxtl[2] = xtlZ / 2.0 ;
-  
-  gMC->Gsvolu("PXTL", "BOX ", idtmed[699], dpxtl, 3) ;
-
-  yO = ( xtlY + geom->GetCrystalSupportHeight() + geom->GetCrystalWrapThickness() ) / 2.0 - xtlY / 2.0 - geom->GetCrystalWrapThickness() ;
-  
-  gMC->Gspos("PXTL", 1, "PPAP", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define crystal support volume, place inside PPAP ---
-  Float_t dpsup[3] ; 
-
-  dpsup[0] = xtlX / 2.0 + geom->GetCrystalWrapThickness()  ;
-  dpsup[1] = geom->GetCrystalSupportHeight() / 2.0 ;
-  dpsup[2] = xtlZ / 2.0 +  geom->GetCrystalWrapThickness() ;
-
-  gMC->Gsvolu("PSUP", "BOX ", idtmed[798], dpsup, 3) ;
-
-  yO =  geom->GetCrystalSupportHeight() / 2.0 - ( xtlY +  geom->GetCrystalSupportHeight() + geom->GetCrystalWrapThickness() ) / 2.0 ;
-
-  gMC->Gspos("PSUP", 1, "PPAP", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define PIN-diode volume and position it inside crystal support ---
-  // --- right behind PbWO4 crystal
-
-  // --- PIN-diode dimensions ---
-
- 
-  Float_t dppin[3] ;
-  dppin[0] = geom->GetPinDiodeSize(0) / 2.0 ;
-  dppin[1] = geom->GetPinDiodeSize(1) / 2.0 ;
-  dppin[2] = geom->GetPinDiodeSize(2) / 2.0 ;
- 
-  gMC->Gsvolu("PPIN", "BOX ", idtmed[705], dppin, 3) ;
- 
-  yO = geom->GetCrystalSupportHeight() / 2.0 - geom->GetPinDiodeSize(1) / 2.0 ;
- 
-  gMC->Gspos("PPIN", 1, "PSUP", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define Upper Cooling Panel, place it on top of PTCB ---
-  Float_t dpucp[3] ;
- // --- Upper Cooling Plate thickness ---
- 
-  dpucp[0] = dptcb[0] ;
-  dpucp[1] = geom->GetUpperCoolingPlateThickness() ;
-  dpucp[2] = dptcb[2] ;
-  
-  gMC->Gsvolu("PUCP", "BOX ", idtmed[701], dpucp,3) ;
-  
-  yO = geom->GetAirFilledBoxSize(1) / 2. 
-    -( geom->GetIPtoCrystalSurface()  - geom->GetIPtoOuterCoverDistance()    - geom->GetModuleBoxThickness()
-      -geom->GetUpperPlateThickness() - geom->GetSecondUpperPlateThickness() - geom->GetUpperCoolingPlateThickness() ) ; 
-  
-  gMC->Gspos("PUCP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define Al Support Plate, position it inside PAIR ---
-  // --- right beneath PTCB ---
- // --- Al Support Plate thickness ---
- 
-  Float_t dpasp[3] ;
-  dpasp[0] =  geom->GetAirFilledBoxSize(0) / 2.0 ;
-  dpasp[1] = geom->GetSupportPlateThickness() / 2.0 ;
-  dpasp[2] =  geom->GetAirFilledBoxSize(2) / 2.0 ;
-  
-  gMC->Gsvolu("PASP", "BOX ", idtmed[701], dpasp, 3) ;
-  
-  yO = (  geom->GetAirFilledBoxSize(1) - geom->GetSupportPlateThickness() ) / 2. 
-       -  ( geom->GetIPtoCrystalSurface() - geom->GetIPtoOuterCoverDistance()
-           - geom->GetUpperPlateThickness() - geom->GetSecondUpperPlateThickness() + dpcbl[1] * 2 ) ;
-  
-  gMC->Gspos("PASP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define Thermo Insulating Plate, position it inside PAIR ---
-  // --- right beneath PASP ---
-  // --- Lower Thermo Insulating Plate thickness ---
-  
-  Float_t dptip[3] ;
-  dptip[0] = geom->GetAirFilledBoxSize(0) / 2.0 ;
-  dptip[1] = geom->GetLowerThermoPlateThickness() / 2.0 ;
-  dptip[2] = geom->GetAirFilledBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PTIP", "BOX ", idtmed[706], dptip, 3) ;
-
-  yO =  ( geom->GetAirFilledBoxSize(1) - geom->GetLowerThermoPlateThickness() ) / 2. 
-       -  ( geom->GetIPtoCrystalSurface() - geom->GetIPtoOuterCoverDistance() - geom->GetUpperPlateThickness() 
-            - geom->GetSecondUpperPlateThickness() + dpcbl[1] * 2 + geom->GetSupportPlateThickness() ) ;
-
-  gMC->Gspos("PTIP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
-
-  // ---
-  // --- Define Textolit Plate, position it inside PAIR ---
-  // --- right beneath PTIP ---
-  // --- Lower Textolit Plate thickness ---
- 
-  Float_t dptxp[3] ;
-  dptxp[0] = geom->GetAirFilledBoxSize(0) / 2.0 ;
-  dptxp[1] = geom->GetLowerTextolitPlateThickness() / 2.0 ;
-  dptxp[2] = geom->GetAirFilledBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PTXP", "BOX ", idtmed[707], dptxp, 3) ;
-
-  yO =  ( geom->GetAirFilledBoxSize(1) - geom->GetLowerTextolitPlateThickness() ) / 2. 
-       -  ( geom->GetIPtoCrystalSurface() - geom->GetIPtoOuterCoverDistance() - geom->GetUpperPlateThickness() 
-            - geom->GetSecondUpperPlateThickness() + dpcbl[1] * 2 + geom->GetSupportPlateThickness() 
-            +  geom->GetLowerThermoPlateThickness() ) ;
-
-  gMC->Gspos("PTXP", 1, "PAIR", 0.0, yO, 0.0, 0, "ONLY") ;
-
-}
-
-//____________________________________________________________________________
-void AliPHOSv0::CreateGeometryforPPSD()
-{
-  // Create the PHOS-PPSD geometry for GEANT
-  //BEGIN_HTML
-  /*
-    <H2>
-    Geant3 geometry tree of PHOS-PPSD in ALICE
-    </H2>
-    <P><CENTER>
-    <IMG Align=BOTTOM ALT="PPSD geant tree" SRC="../images/PPSDinAlice.gif"> 
-    </CENTER><P>
-  */
-  //END_HTML  
-
-  // Get pointer to the array containing media indexes
-  Int_t *idtmed = fIdtmed->GetArray() - 699 ;
-
-  AliPHOSGeometry * geom = GetGeometry() ; 
-
-  // The box containing all ppsd's for one PHOS module filled with air 
-  Float_t ppsd[3] ; 
-  ppsd[0] = geom->GetCPVBoxSize(0) / 2.0 ;  
-  ppsd[1] = geom->GetCPVBoxSize(1) / 2.0 ; 
-  ppsd[2] = geom->GetCPVBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PPSD", "BOX ", idtmed[798], ppsd, 3) ;
-
-  Float_t yO =  geom->GetOuterBoxSize(1) / 2.0 ;
-
-  if ( strcmp( geom->GetName(),"MIXT") == 0 && geom->GetNPPSDModules() > 0) 
-    gMC->Gspos("PPSD", 1, "PHO1", 0.0, yO, 0.0, 0, "ONLY") ; 
-  else
-    gMC->Gspos("PPSD", 1, "PHOS", 0.0, yO, 0.0, 0, "ONLY") ; 
-
-  // Now we build a micromegas module
-  // The box containing the whole module filled with epoxy (FR4)
-
-  Float_t mppsd[3] ;  
-  mppsd[0] = geom->GetPPSDModuleSize(0) / 2.0 ;  
-  mppsd[1] = geom->GetPPSDModuleSize(1) / 2.0 ;  
-  mppsd[2] = geom->GetPPSDModuleSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PMPP", "BOX ", idtmed[708], mppsd, 3) ;  
- 
-  // Inside mppsd :
-  // 1. The Top Lid made of epoxy (FR4) 
-
-  Float_t tlppsd[3] ; 
-  tlppsd[0] = geom->GetPPSDModuleSize(0) / 2.0 ; 
-  tlppsd[1] = geom->GetLidThickness() / 2.0 ;
-  tlppsd[2] = geom->GetPPSDModuleSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PTLP", "BOX ", idtmed[708], tlppsd, 3) ; 
-
-  Float_t  y0 = ( geom->GetMicromegas1Thickness() - geom->GetLidThickness() ) / 2. ; 
-
-  gMC->Gspos("PTLP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
- 
-  // 2. the upper panel made of composite material
-
-  Float_t upppsd[3] ; 
-  upppsd[0] = ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() ) / 2.0 ;
-  upppsd[1] = geom->GetCompositeThickness() / 2.0 ;
-  upppsd[2] = ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() ) / 2.0 ;
- 
-  gMC->Gsvolu("PUPP", "BOX ", idtmed[709], upppsd, 3) ; 
-  
-  y0 = y0 - geom->GetLidThickness() / 2. - geom->GetCompositeThickness() / 2. ; 
-
-  gMC->Gspos("PUPP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-  // 3. the anode made of Copper
-  
-  Float_t anppsd[3] ; 
-  anppsd[0] = ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() ) / 2.0 ; 
-  anppsd[1] = geom->GetAnodeThickness() / 2.0 ; 
-  anppsd[2] = ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() ) / 2.0  ; 
-
-  gMC->Gsvolu("PANP", "BOX ", idtmed[710], anppsd, 3) ; 
-  
-  y0 = y0 - geom->GetCompositeThickness() / 2. - geom->GetAnodeThickness()  / 2. ; 
-  
-  gMC->Gspos("PANP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-  // 4. the conversion gap + avalanche gap filled with gas
-
-  Float_t ggppsd[3] ; 
-  ggppsd[0] = ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() ) / 2.0 ;
-  ggppsd[1] = ( geom->GetConversionGap() +  geom->GetAvalancheGap() ) / 2.0 ; 
-  ggppsd[2] = ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() ) / 2.0 ;
-
-  gMC->Gsvolu("PGGP", "BOX ", idtmed[715], ggppsd, 3) ; 
-  
-  // --- Divide GGPP in X (phi) and Z directions --
-  gMC->Gsdvn("PPRO", "PGGP", geom->GetNumberOfPadsPhi(), 1) ;
-  gMC->Gsdvn("PPCE", "PPRO", geom->GetNumberOfPadsZ() ,  3) ;
-
-  y0 = y0 - geom->GetAnodeThickness() / 2.  - ( geom->GetConversionGap() +  geom->GetAvalancheGap() ) / 2. ; 
-
-  gMC->Gspos("PGGP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-
-  // 6. the cathode made of Copper
-
-  Float_t cappsd[3] ;
-  cappsd[0] = ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() ) / 2.0 ;
-  cappsd[1] = geom->GetCathodeThickness() / 2.0 ; 
-  cappsd[2] = ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() ) / 2.0  ;
-
-  gMC->Gsvolu("PCAP", "BOX ", idtmed[710], cappsd, 3) ; 
-
-  y0 = y0 - ( geom->GetConversionGap() +  geom->GetAvalancheGap() ) / 2. - geom->GetCathodeThickness()  / 2. ; 
-
-  gMC->Gspos("PCAP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-  // 7. the printed circuit made of G10       
-
-  Float_t pcppsd[3] ; 
-  pcppsd[0] = ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() ) / 2,.0 ; 
-  pcppsd[1] = geom->GetPCThickness() / 2.0 ; 
-  pcppsd[2] = ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() ) / 2.0 ;
-
-  gMC->Gsvolu("PCPS", "BOX ", idtmed[711], cappsd, 3) ; 
-
-  y0 = y0 - geom->GetCathodeThickness() / 2. - geom->GetPCThickness()  / 2. ; 
-
-  gMC->Gspos("PCPS", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-  // 8. the lower panel made of composite material
-						    
-  Float_t lpppsd[3] ; 
-  lpppsd[0] = ( geom->GetPPSDModuleSize(0) - geom->GetMicromegasWallThickness() ) / 2.0 ; 
-  lpppsd[1] = geom->GetCompositeThickness() / 2.0 ; 
-  lpppsd[2] = ( geom->GetPPSDModuleSize(2) - geom->GetMicromegasWallThickness() ) / 2.0 ;
-
-  gMC->Gsvolu("PLPP", "BOX ", idtmed[709], lpppsd, 3) ; 
- 
-  y0 = y0 - geom->GetPCThickness() / 2. - geom->GetCompositeThickness()  / 2. ; 
-
-  gMC->Gspos("PLPP", 1, "PMPP", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-  // Position the  fNumberOfModulesPhi x fNumberOfModulesZ modules (mppsd) inside PPSD to cover a PHOS module
-  // the top and bottom one's (which are assumed identical) :
-
-   Float_t yt = ( geom->GetCPVBoxSize(1) - geom->GetMicromegas1Thickness() ) / 2. ; 
-   Float_t yb = - ( geom->GetCPVBoxSize(1) - geom->GetMicromegas2Thickness() ) / 2. ; 
-
-   Int_t copyNumbertop = 0 ; 
-   Int_t copyNumberbot = geom->GetNumberOfModulesPhi() *  geom->GetNumberOfModulesZ() ; 
-
-   Float_t x  = ( geom->GetCPVBoxSize(0) - geom->GetPPSDModuleSize(0) ) / 2. ;  
-
-   for ( Int_t iphi = 1; iphi <= geom->GetNumberOfModulesPhi(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
-      Float_t z = ( geom->GetCPVBoxSize(2) - geom->GetPPSDModuleSize(2) ) / 2. ;
-
-      for ( Int_t iz = 1; iz <= geom->GetNumberOfModulesZ(); iz++ ) { // the number of micromegas modules in z per PHOS module
-	gMC->Gspos("PMPP", ++copyNumbertop, "PPSD", x, yt, z, 0, "ONLY") ;
-	gMC->Gspos("PMPP", ++copyNumberbot, "PPSD", x, yb, z, 0, "ONLY") ; 
-	z = z - geom->GetPPSDModuleSize(2) ;
-      } // end of Z module loop   
-      x = x -  geom->GetPPSDModuleSize(0) ; 
-    } // end of phi module loop
-
-   // The Lead converter between two air gaps
-   // 1. Upper air gap
-
-   Float_t uappsd[3] ;
-   uappsd[0] = geom->GetCPVBoxSize(0) / 2.0 ;
-   uappsd[1] = geom->GetMicro1ToLeadGap() / 2.0 ; 
-   uappsd[2] = geom->GetCPVBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PUAPPS", "BOX ", idtmed[798], uappsd, 3) ; 
-
-  y0 = ( geom->GetCPVBoxSize(1) - 2 * geom->GetMicromegas1Thickness() - geom->GetMicro1ToLeadGap() ) / 2. ; 
-
-  gMC->Gspos("PUAPPS", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-   // 2. Lead converter
- 
-  Float_t lcppsd[3] ; 
-  lcppsd[0] = geom->GetCPVBoxSize(0) / 2.0 ;
-  lcppsd[1] = geom->GetLeadConverterThickness() / 2.0 ; 
-  lcppsd[2] = geom->GetCPVBoxSize(2) / 2.0 ;
- 
-  gMC->Gsvolu("PLCPPS", "BOX ", idtmed[712], lcppsd, 3) ; 
-  
-  y0 = y0 - geom->GetMicro1ToLeadGap() / 2. - geom->GetLeadConverterThickness() / 2. ; 
-
-  gMC->Gspos("PLCPPS", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
-
-  // 3. Lower air gap
-
-  Float_t lappsd[3] ; 
-  lappsd[0] = geom->GetCPVBoxSize(0) / 2.0 ; 
-  lappsd[1] = geom->GetLeadToMicro2Gap() / 2.0 ; 
-  lappsd[2] = geom->GetCPVBoxSize(2) / 2.0 ;
-
-  gMC->Gsvolu("PLAPPS", "BOX ", idtmed[798], lappsd, 3) ; 
+      // --- define air volume (cell of the honeycomb)
+      gMC->Gsvolu("PCEL", "BOX ", idtmed[798], emcg->GetAirCellHalfSize(), 3);
+
+      // --- define wrapped crystal and put it into AirCell
+
+      gMC->Gsvolu("PWRA", "BOX ", idtmed[702], emcg->GetWrappedHalfSize(), 3);
+      Float_t * pin = emcg->GetAPDHalfSize() ; 
+      Float_t * preamp = emcg->GetPreampHalfSize() ;
+      Float_t y = (emcg->GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
+      gMC->Gspos("PWRA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;
     
-  y0 = y0 - geom->GetLeadConverterThickness() / 2. - geom->GetLeadToMicro2Gap()  / 2. ; 
-  
-  gMC->Gspos("PLAPPS", 1, "PPSD", 0.0, y0, 0.0, 0, "ONLY") ; 
-   
-}
+      // --- Define crystall and put it into wrapped crystall ---
+      gMC->Gsvolu("PXTL", "BOX ", idtmed[699], emcg->GetCrystalHalfSize(), 3) ;
+      gMC->Gspos("PXTL", 1, "PWRA", 0.0, 0.0, 0.0, 0, "ONLY") ;
+      
+      // --- define APD/PIN preamp and put it into AirCell
+ 
+      gMC->Gsvolu("PPIN", "BOX ", idtmed[705], emcg->GetAPDHalfSize(), 3) ;
+      Float_t * crystal = emcg->GetCrystalHalfSize() ;
+      y = crystal[1] + emcg->GetAirGapLed() /2 - preamp[1]; 
+      gMC->Gspos("PPIN", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;
 
+      gMC->Gsvolu("PREA", "BOX ", idtmed[711], emcg->GetPreampHalfSize(), 3) ;   // Here I assumed preamp
+                                                                                 // as a printed Circuit
+      y = crystal[1] + emcg->GetAirGapLed() /2 + pin[1]  ;                  // May it should be changed
+      gMC->Gspos("PREA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;                    // to ceramics?
+   
+
+      // --- Fill strip with wrapped cristalls in Air Cells
+
+      Float_t* splate = emcg->GetSupportPlateHalfSize();  
+      y = -splate[1] ;
+      Float_t* acel = emcg->GetAirCellHalfSize() ;
+      Int_t icel ;
+      for(icel = 1; icel <= emcg->GetNCellsInStrip(); icel++){
+	Float_t x = (2*icel - 1 - emcg->GetNCellsInStrip())* acel[0] ;
+	gMC->Gspos("PCEL", icel, "PSTR", x, y, 0.0, 0, "ONLY") ;
+      }
+
+      // --- define the support plate, hole in it and position it in strip ----
+      gMC->Gsvolu("PSUP", "BOX ", idtmed[701], emcg->GetSupportPlateHalfSize(), 3) ;
+
+      gMC->Gsvolu("PSHO", "BOX ", idtmed[798], emcg->GetSupportPlateInHalfSize(), 3) ;
+      Float_t z = emcg->GetSupportPlateThickness()/2 ;
+      gMC->Gspos("PSHO", 1, "PSUP", 0.0, 0.0, z, 0, "ONLY") ;
+
+      y = acel[1] ;
+      gMC->Gspos("PSUP", 1, "PSTR", 0.0, y, 0.0, 0, "ONLY") ;
+
+
+    // ========== Fill module with strips and put them into inner thermoinsulation=============
+      gMC->Gsvolu("PTII", "BOX ", idtmed[706], emcg->GetInnerThermoHalfSize(), 3) ;     
+
+      Float_t * inthermo = emcg->GetInnerThermoHalfSize() ;
+      Float_t * strip = emcg->GetStripHalfSize() ;
+      y = inthermo[1] - strip[1] ;
+      Int_t irow;
+      Int_t nr = 1 ;
+      Int_t icol ;
+
+      for(irow = 0; irow < emcg->GetNStripX(); irow ++){
+	Float_t x = (2*irow + 1 - emcg->GetNStripX())* strip[0] ;
+	for(icol = 0; icol < emcg->GetNStripZ(); icol ++){
+	  z = (2*icol + 1 - emcg->GetNStripZ()) * strip[2] ;
+	  gMC->Gspos("PSTR", nr, "PTII", x, y, z, 0, "ONLY") ;
+	  nr++ ;
+	}
+      }
+	  
+
+   // ------- define the air gap between thermoinsulation and cooler
+      gMC->Gsvolu("PAGA", "BOX ", idtmed[798], emcg->GetAirGapHalfSize(), 3) ;   
+      Float_t * agap = emcg->GetAirGapHalfSize() ;
+      y = agap[1] - inthermo[1]  ;
+      
+      gMC->Gspos("PTII", 1, "PAGA", 0.0, y, 0.0, 0, "ONLY") ;
+
+
+
+   // ------- define the Al passive cooler 
+      gMC->Gsvolu("PCOR", "BOX ", idtmed[701], emcg->GetCoolerHalfSize(), 3) ;   
+      Float_t * cooler = emcg->GetCoolerHalfSize() ;
+      y = cooler[1] - agap[1]  ;
+      
+      gMC->Gspos("PAGA", 1, "PCOR", 0.0, y, 0.0, 0, "ONLY") ;
+
+   // ------- define the outer thermoinsulating cover
+      gMC->Gsvolu("PTIO", "TRD1", idtmed[706], emcg->GetOuterThermoParams(), 4) ;        
+      Float_t * outparams = emcg->GetOuterThermoParams() ; 
+
+      Int_t idrotm[99] ;
+      AliMatrix(idrotm[1], 90.0, 0.0, 0.0, 0.0, 90.0, 270.0) ;
+      // Frame in outer thermoinsulation and so on: z out of beam, y along beam, x across beam
+ 
+      z = outparams[3] - cooler[1] ;
+      gMC->Gspos("PCOR", 1, "PTIO", 0., 0.0, z, idrotm[1], "ONLY") ;
+       
+  // -------- Define the outer Aluminium cover -----
+      gMC->Gsvolu("PCOL", "TRD1", idtmed[701], emcg->GetAlCoverParams(), 4) ;        
+      Float_t * covparams = emcg->GetAlCoverParams() ; 
+      z = covparams[3] - outparams[3] ;
+      gMC->Gspos("PTIO", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
+
+ // --------- Define front fiberglass cover -----------
+      gMC->Gsvolu("PFGC", "BOX ", idtmed[717], emcg->GetFiberGlassHalfSize(), 3) ;  
+      z = - outparams[3] ;
+      gMC->Gspos("PFGC", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
+
+ //=============This is all with cold section==============
+
+
+      //------ Warm Section --------------
+      gMC->Gsvolu("PWAR", "BOX ", idtmed[701], emcg->GetWarmAlCoverHalfSize(), 3) ; 
+      Float_t * warmcov = emcg->GetWarmAlCoverHalfSize() ;
+
+      // --- Define the outer thermoinsulation ---
+      gMC->Gsvolu("PWTI", "BOX ", idtmed[706], emcg->GetWarmThermoHalfSize(), 3) ; 
+      Float_t * warmthermo = emcg->GetWarmThermoHalfSize() ;
+      z = -warmcov[2] + warmthermo[2] ;
+
+      gMC->Gspos("PWTI", 1, "PWAR", 0., 0.0, z, 0, "ONLY") ;     
+
+      // --- Define cables area and put in it T-supports ---- 
+      gMC->Gsvolu("PCA1", "BOX ", idtmed[718], emcg->GetTCables1HalfSize(), 3) ; 
+      Float_t * cbox = emcg->GetTCables1HalfSize() ;
+
+      gMC->Gsvolu("PBE1", "BOX ", idtmed[701], emcg->GetTSupport1HalfSize(), 3) ;
+      Float_t * beams = emcg->GetTSupport1HalfSize() ;
+      Int_t isup ;
+      for(isup = 0; isup < emcg->GetNTSuppots(); isup++){
+	Float_t x = -cbox[0] + beams[0] + (2*beams[0]+emcg->GetTSupportDist())*isup ;
+	gMC->Gspos("PBE1", isup, "PCA1", x, 0.0, 0.0, 0, "ONLY") ;
+      }
+
+      z = -warmthermo[2] + cbox[2] ;
+      gMC->Gspos("PCA1", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
+
+      gMC->Gsvolu("PCA2", "BOX ", idtmed[718], emcg->GetTCables2HalfSize(), 3) ; 
+      Float_t * cbox2 = emcg->GetTCables2HalfSize() ;
+
+      gMC->Gsvolu("PBE2", "BOX ", idtmed[701], emcg->GetTSupport2HalfSize(), 3) ;
+      for(isup = 0; isup < emcg->GetNTSuppots(); isup++){
+	Float_t x = -cbox[0] + beams[0] + (2*beams[0]+emcg->GetTSupportDist())*isup ;
+	gMC->Gspos("PBE2", isup, "PCA2", x, 0.0, 0.0, 0, "ONLY") ;
+      }
+
+      z = -warmthermo[2] + 2*cbox[2] + cbox2[2];
+      gMC->Gspos("PCA2", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
+
+
+  // --- Define frame ---
+      gMC->Gsvolu("PFRX", "BOX ", idtmed[716], emcg->GetFrameXHalfSize(), 3) ; 
+      Float_t * posit = emcg->GetFrameXPosition() ;
+      gMC->Gspos("PFRX", 1, "PWTI", posit[0],  posit[1], posit[2], 0, "ONLY") ;
+      gMC->Gspos("PFRX", 2, "PWTI", posit[0], -posit[1], posit[2], 0, "ONLY") ;
+
+      gMC->Gsvolu("PFRZ", "BOX ", idtmed[716], emcg->GetFrameZHalfSize(), 3) ; 
+      posit = emcg->GetFrameZPosition() ;
+      gMC->Gspos("PFRZ", 1, "PWTI", posit[0], posit[1],  posit[2], 0, "ONLY") ;
+      gMC->Gspos("PFRZ", 2, "PWTI", -posit[0], posit[1], posit[2], 0, "ONLY") ;
+
+ // --- Define Fiber Glass support ---
+      gMC->Gsvolu("PFG1", "BOX ", idtmed[717], emcg->GetFGupXHalfSize(), 3) ; 
+      posit = emcg->GetFGupXPosition() ;
+      gMC->Gspos("PFG1", 1, "PWTI", posit[0],  posit[1], posit[2], 0, "ONLY") ;
+      gMC->Gspos("PFG1", 2, "PWTI", posit[0], -posit[1], posit[2], 0, "ONLY") ;
+
+      gMC->Gsvolu("PFG2", "BOX ", idtmed[717], emcg->GetFGupZHalfSize(), 3) ; 
+      posit = emcg->GetFGupZPosition() ;
+      gMC->Gspos("PFG2", 1, "PWTI",  posit[0], posit[1], posit[2], 0, "ONLY") ;
+      gMC->Gspos("PFG2", 2, "PWTI", -posit[0], posit[1], posit[2], 0, "ONLY") ;
+
+      gMC->Gsvolu("PFG3", "BOX ", idtmed[717], emcg->GetFGlowXHalfSize(), 3) ; 
+      posit = emcg->GetFGlowXPosition() ;
+      gMC->Gspos("PFG3", 1, "PWTI", posit[0],  posit[1], posit[2], 0, "ONLY") ;
+      gMC->Gspos("PFG3", 2, "PWTI", posit[0], -posit[1], posit[2], 0, "ONLY") ;
+
+      gMC->Gsvolu("PFG4", "BOX ", idtmed[717], emcg->GetFGlowZHalfSize(), 3) ; 
+      posit = emcg->GetFGlowZPosition() ;
+      gMC->Gspos("PFG4", 1, "PWTI",  posit[0], posit[1], posit[2], 0, "ONLY") ;
+      gMC->Gspos("PFG4", 2, "PWTI", -posit[0], posit[1], posit[2], 0, "ONLY") ;
+
+      // --- Define Air Gap for FEE electronics ----- 
+
+      gMC->Gsvolu("PAFE", "BOX ", idtmed[798], emcg->GetFEEAirHalfSize(), 3) ; 
+      posit = emcg->GetFEEAirPosition() ;
+      gMC->Gspos("PAFE", 1, "PWTI",  posit[0], posit[1], posit[2], 0, "ONLY") ;
+
+      // Define the EMC module volume and combine Cool and Warm sections
+
+      gMC->Gsvolu("PEMC", "TRD1", idtmed[798], emcg->GetEMCParams(), 4) ;        
+
+      z =  - warmcov[2] ;
+      gMC->Gspos("PCOL", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
+      z = covparams[3] ;
+      gMC->Gspos("PWAR", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
+
+
+      // Put created EMC geometry into PHOS volume
+      
+      z = geom->GetCPVBoxSize(1) / 2. ;
+      gMC->Gspos("PEMC", 1, "PHOS", 0., 0., z, 0, "ONLY") ; 
+            
+}
 
 //____________________________________________________________________________
 void AliPHOSv0::CreateGeometryforCPV()
@@ -1265,9 +639,13 @@ void AliPHOSv0::CreateGeometryforCPV()
   par[1] = geom->GetCPVBoxSize(1) / 2.0 ; 
   par[2] = geom->GetCPVBoxSize(2) / 2.0 ;
   gMC->Gsvolu("PCPV", "BOX ", idtmed[798], par, 3) ;
-  
-  y = geom->GetOuterBoxSize(1) / 2.0 ;
-  gMC->Gspos("PCPV", 1, "PHOS", 0.0, y, 0.0, 0, "ONLY") ; 
+
+  Float_t * emcParams = geom->GetEMCAGeometry()->GetEMCParams() ;
+  z = - emcParams[3] ;
+  Int_t rotm ;
+  AliMatrix(rotm, 90.,0., 0., 0., 90., 90.) ;
+
+  gMC->Gspos("PCPV", 1, "PHOS", 0.0, 0.0, z, rotm, "ONLY") ; 
   
   // Gassiplex board
   
@@ -1436,9 +814,8 @@ void AliPHOSv0::CreateGeometryforSupport()
   // --- The wall of the cradle
   // --- The wall is empty: steel thin walls and air inside
 
-  par[1] =  TMath::Sqrt(
-			TMath::Power((geom->GetIPtoOuterCoverDistance() + geom->GetOuterBoxSize(1)),2) +
-			TMath::Power((geom->GetOuterBoxSize(0)/2),2)) + 10.;
+  par[1] =  TMath::Sqrt(TMath::Power((geom->GetIPtoCPVDistance() + geom->GetOuterBoxSize(3)),2) +
+			TMath::Power((geom->GetOuterBoxSize(1)/2),2))+10. ;
   par[0] =  par[1] - geom->GetCradleWall(1) ;
   par[2] =  geom->GetCradleWall(2) / 2.0 ;
   par[3] =  geom->GetCradleWall(3) ;
@@ -1452,8 +829,8 @@ void AliPHOSv0::CreateGeometryforSupport()
   gMC->Gspos ("PCRE", 1, "PCRA", 0.0, 0.0, 0.0, 0, "ONLY") ; 
 
   for (i=0; i<2; i++) {
-    z0 = (2*i-1) * (geom->GetOuterBoxSize(2) + geom->GetCradleWall(2)) / 2.0 ;
-    gMC->Gspos("PCRA", i, "ALIC", 0.0, 0.0, z0, 0, "ONLY") ; 
+    z0 = (2*i-1) * (geom->GetOuterBoxSize(2) + geom->GetCradleWall(2) )/ 2.0  ;
+        gMC->Gspos("PCRA", i, "ALIC", 0.0, 0.0, z0, 0, "ONLY") ; 
   }
 
   // --- The "wheels" of the cradle
@@ -1466,7 +843,7 @@ void AliPHOSv0::CreateGeometryforSupport()
   y0 = -(geom->GetRailsDistanceFromIP() - geom->GetRailRoadSize(1) -
 	 geom->GetCradleWheel(1)/2) ;
   for (i=0; i<2; i++) {
-    z0 = (2*i-1) * ((geom->GetOuterBoxSize(2) + geom->GetCradleWheel(2)) / 2.0 +
+    z0 = (2*i-1) * ((geom->GetOuterBoxSize(2) + geom->GetCradleWheel(2))/ 2.0 +
                     geom->GetCradleWall(2));
     for (j=0; j<2; j++) {
       copy = 2*i + j;
@@ -1481,22 +858,20 @@ void AliPHOSv0::CreateGeometryforSupport()
 Float_t AliPHOSv0::ZMin(void) const
 {
   // Overall dimension of the PHOS (min)
-  // Take it twice more than the PHOS module size
 
   AliPHOSGeometry * geom = GetGeometry() ; 
 
-  return -geom->GetOuterBoxSize(2);
+  return -geom->GetOuterBoxSize(2)/2.;
 }
 
 //____________________________________________________________________________
 Float_t AliPHOSv0::ZMax(void) const
 {
   // Overall dimension of the PHOS (max)
-  // Take it twice more than the PHOS module size
 
   AliPHOSGeometry * geom = GetGeometry() ; 
 
-  return  geom->GetOuterBoxSize(2);
+  return  geom->GetOuterBoxSize(2)/2.;
 }
 
 //____________________________________________________________________________

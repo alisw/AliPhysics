@@ -52,14 +52,14 @@ AliPHOSSupportGeometry::AliPHOSSupportGeometry()
   fRailOuterSize[1] = fRailPart1[1]*2 + fRailPart2[1] + fRailPart3[1];
   fRailOuterSize[2] = fRailLength;
 
-  fDistanceBetwRails = 402.5;
+  fDistanceBetwRails = 420.0;
   fRailsDistanceFromIP = 610.;
 
   fRailRoadSize[0] = fDistanceBetwRails + fRailOuterSize[0];
   fRailRoadSize[1] = fRailOuterSize[1];
   fRailRoadSize[2] = fRailOuterSize[2];
 
-  fCradleWallThickness = 1.0;
+  fCradleWallThickness = 2.0;
 
   fCradleWall[0] =   0.;  // Inner radius, to be defined from PHOS parameters
   fCradleWall[1] =  65.;  // Diff. between outer and inner radii

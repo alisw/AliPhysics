@@ -37,77 +37,152 @@ public:
     assert(0==1) ;
     return *this ; 
   }
-  Float_t    GetAirFilledBoxSize(Int_t index)     const { 
-    return fAirFilledBoxSize[index] ;}
-  Float_t    GetCrystalHolderThickness(void)      const { 
-    return fCrystalHolderThickness ; } 
-  Float_t    GetCrystalSize(Int_t index)          const { 
-    return fXtlSize[index] ; }
-  Float_t    GetCrystalSupportHeight(void)        const { 
-    return fCrystalSupportHeight ; } 
-  Float_t    GetCrystalWrapThickness(void)        const { 
-    return fCrystalWrapThickness;}
-  Float_t    GetGapBetweenCrystals(void)          const { 
-    return fGapBetweenCrystals ; }
+
+  Float_t * GetStripHalfSize()   {return fStripHalfSize ;}
+  Float_t * GetAirCellHalfSize() {return fAirCellHalfSize ;}
+  Float_t * GetWrappedHalfSize() {return fWrappedHalfSize ;}
+  Float_t   GetAirGapLed() const {return fAirGapLed ;}
+  Float_t * GetCrystalHalfSize() {return fCrystalHalfSize ;}
+  Float_t * GetSupportPlateHalfSize() { return fSupportPlateHalfSize ;}
+  Float_t * GetSupportPlateInHalfSize() {return fSupportPlateInHalfSize ;}
+  Float_t   GetSupportPlateThickness(void)   const { return fSupportPlateThickness ; }    
+
+  Float_t * GetPreampHalfSize() {return fPreampHalfSize ;}
+  Float_t * GetAPDHalfSize(void) {return fPinDiodeHalfSize ; }
+  Float_t * GetOuterThermoParams(void) {return  fOuterThermoParams ; }
+  Float_t * GetCoolerHalfSize(void) {return fCoolerHalfSize ;}
+  Float_t * GetAirGapHalfSize(void) {return fAirGapHalfSize; }
+  Float_t * GetInnerThermoHalfSize(void) {return  fInnerThermoHalfSize ; }
+  Float_t * GetAlCoverParams() {return fAlCoverParams ; }
+  Float_t * GetFiberGlassHalfSize() {return fFiberGlassHalfSize ; }
+  Float_t * GetWarmAlCoverHalfSize() {return fWarmAlCoverHalfSize ;}
+  Float_t * GetWarmThermoHalfSize() {return fWarmThermoHalfSize ;}
+  Float_t * GetTSupport1HalfSize() {return fTSupport1HalfSize ;}
+  Float_t * GetTSupport2HalfSize() {return fTSupport2HalfSize ;}
+  Float_t * GetTCables1HalfSize() {return fTCables1HalfSize ; }
+  Float_t * GetTCables2HalfSize() {return fTCables2HalfSize ; }
+  Float_t   GetTSupportDist() {return fTSupportDist ; }
+  Float_t * GetFrameXHalfSize() {return fFrameXHalfSize ;}
+  Float_t * GetFrameZHalfSize() {return fFrameZHalfSize ;}
+  Float_t * GetFrameXPosition() {return fFrameXPosition ;}
+  Float_t * GetFrameZPosition() {return fFrameZPosition ;}
+  Float_t * GetFGupXHalfSize()  {return fFGupXHalfSize ; }
+  Float_t * GetFGupXPosition()  {return fFGupXPosition ; }
+  Float_t * GetFGupZHalfSize()  {return fFGupZHalfSize ; }
+  Float_t * GetFGupZPosition()  {return fFGupZPosition ; }
+  Float_t * GetFGlowXHalfSize()  {return fFGlowXHalfSize ; }
+  Float_t * GetFGlowXPosition()  {return fFGlowXPosition ; }
+  Float_t * GetFGlowZHalfSize()  {return fFGlowZHalfSize ; }
+  Float_t * GetFGlowZPosition()  {return fFGlowZPosition ; }
+  Float_t * GetFEEAirHalfSize()  {return fFEEAirHalfSize ; }
+  Float_t * GetFEEAirPosition()  {return fFEEAirPosition ; }
+  Float_t * GetEMCParams() {return fEMCParams ;}
+
   Float_t    GetIPtoCrystalSurface(void)          const { 
     return fIPtoCrystalSurface ; }
   Float_t    GetIPtoOuterCoverDistance(void)      const { 
     return fIPtoOuterCoverDistance ; }
-  Float_t    GetLowerThermoPlateThickness(void)   const { 
-    return fLowerThermoPlateThickness ; }
-  Float_t    GetLowerTextolitPlateThickness(void) const { 
-    return fLowerTextolitPlateThickness ; }
-  Float_t    GetModuleBoxThickness(void)          const { 
-    return fModuleBoxThickness ; }
-  Int_t      GetNPhi(void)                        const { 
-    return fNPhi ; }
-  Int_t      GetNZ(void)                          const { 
-    return fNZ ; }
-  Float_t    GetOuterBoxSize(Int_t index)         const { 
-    return fOuterBoxSize[index] ;    }
-  Float_t    GetOuterBoxThickness(Int_t index)    const { 
-    return fOuterBoxThickness[index] ; } 
-  Float_t    GetPinDiodeSize(Int_t index)         const { 
-    return fPinDiodeSize[index] ; }
-  Float_t    GetSecondUpperPlateThickness(void)   const { 
-    return fSecondUpperPlateThickness ; }
-  Float_t    GetSupportPlateThickness(void)       const { 
-    return fSupportPlateThickness ; }    
-  Float_t    GetTextolitBoxSize(Int_t index)      const { 
-    return fTextolitBoxSize[index] ; }
-  Float_t    GetTextolitBoxThickness(Int_t index) const { 
-    return fTextolitBoxThickness[index]; } 
-  Float_t    GetUpperPlateThickness(void)         const { 
-    return fUpperPlateThickness ; }
-  Float_t    GetUpperCoolingPlateThickness(void)  const { 
-    return fUpperCoolingPlateThickness ; }
+  Float_t    GetCrystalSize(Int_t index)  const {return 2.*fCrystalHalfSize[index] ; }
+
+  
+  Int_t     GetNCellsInStrip() const { return fNCellsInStrip;}
+  Int_t     GetNStripX()       const { return fNStripX ; }
+  Int_t     GetNStripZ()       const { return fNStripZ ; }
+  Int_t     GetNTSuppots()     const { return fNTSupports; }
+  Int_t     GetNPhi(void)      const { return fNPhi ; }
+  Int_t     GetNZ(void)        const { return fNZ ; }
+
  
 private:
 
-  Float_t fAirFilledBoxSize[3] ;          // Air filled box containing one module
-  Float_t fAirThickness[3] ;              // Space filled with air between the module box and the Textolit box
-  Float_t fCrystalSupportHeight ;         // Height of the support of the crystal    
-  Float_t fCrystalWrapThickness ;         // Thickness of Tyvek wrapping the crystal
-  Float_t fCrystalHolderThickness ;       // Titanium holder of the crystal
-  Float_t fGapBetweenCrystals ;           // Total Gap between two adjacent crystals 
+  Float_t fStripHalfSize[3]   ;
+  Float_t fAirCellHalfSize[3] ;
+  Float_t fWrappedHalfSize[3] ;
+  Float_t fSupportPlateHalfSize[3] ;
+  Float_t fSupportPlateInHalfSize[3] ;
+  Float_t fCrystalHalfSize[3] ;
+  Float_t fAirGapLed ;
+  Float_t fStripWallWidthOut ; // Side to another strip  
+  Float_t fStripWallWidthIn ; 
+  Float_t fTyvecThickness ; 
+  Float_t fTSupport1HalfSize[3] ;
+  Float_t fTSupport2HalfSize[3] ;
+  Float_t fPreampHalfSize[3] ;
+  Float_t fPinDiodeHalfSize[3] ;              // Size of the PIN Diode 
+
+  Float_t fOuterThermoParams[4] ; 
+  Float_t fCoolerHalfSize[3] ; 
+  Float_t fAirGapHalfSize[3] ;
+  Float_t fInnerThermoHalfSize[3] ;
+  Float_t fAlCoverParams[4] ;
+  Float_t fFiberGlassHalfSize[3] ;
+
+
+  Float_t fInnerThermoWidthX ;
+  Float_t fInnerThermoWidthY ;
+  Float_t fInnerThermoWidthZ ;
+  Float_t fAirGapWidthX ;
+  Float_t fAirGapWidthY ;
+  Float_t fAirGapWidthZ ;
+  Float_t fCoolerWidthX ;
+  Float_t fCoolerWidthY ;
+  Float_t fCoolerWidthZ ;
+  Float_t fAlCoverThickness ;
+  Float_t fOuterThermoWidthXUp ;
+  Float_t fOuterThermoWidthXLow;
+  Float_t fOuterThermoWidthY ;
+  Float_t fOuterThermoWidthZ ;
+  Float_t fAlFrontCoverX  ;
+  Float_t fAlFrontCoverZ  ; 
+  Float_t fFiberGlassSup2X ;
+  Float_t fFiberGlassSup1X ; 
+  Float_t fFrameHeight ; 
+  Float_t fFrameThickness ; 
+  Float_t fAirSpaceFeeX ;
+  Float_t fAirSpaceFeeZ ;
+  Float_t fAirSpaceFeeY ;
+  Float_t fTCables2HalfSize[3] ; 
+  Float_t fTCables1HalfSize[3] ; 
+  Float_t fWarmUpperThickness ;
+  Float_t fWarmBottomThickness ;
+  Float_t fWarmAlCoverWidthX ;
+  Float_t fWarmAlCoverWidthY ;
+  Float_t fWarmAlCoverWidthZ ;
+  Float_t fWarmAlCoverHalfSize[3] ;
+  Float_t fWarmThermoHalfSize[3] ;
+  Float_t fFiberGlassSup1Y ;
+  Float_t fFiberGlassSup2Y ;
+  Float_t fTSupportDist ;
+  Float_t fTSupport1Thickness ;
+  Float_t fTSupport2Thickness ;
+  Float_t fTSupport1Width ;
+  Float_t fTSupport2Width ;
+  Float_t fFrameXHalfSize[3] ;
+  Float_t fFrameZHalfSize[3] ;
+  Float_t fFrameXPosition[3] ;
+  Float_t fFrameZPosition[3] ;
+  Float_t fFGupXHalfSize[3] ;
+  Float_t fFGupXPosition[3] ;
+  Float_t fFGupZHalfSize[3] ;
+  Float_t fFGupZPosition[3] ;
+  Float_t fFGlowXHalfSize[3] ;
+  Float_t fFGlowXPosition[3] ;
+  Float_t fFGlowZHalfSize[3] ;
+  Float_t fFGlowZPosition[3] ;
+  Float_t fFEEAirHalfSize[3] ;
+  Float_t fFEEAirPosition[3] ;
+  Float_t fEMCParams[4] ;
   Float_t fIPtoOuterCoverDistance ;       // Distances from interaction point to outer cover 
   Float_t fIPtoCrystalSurface ;           // Distances from interaction point to Xtal surface
-  Float_t fModuleBoxThickness ;           // Thickness of the thermo insulating box containing one crystals module 
-  Float_t fLowerTextolitPlateThickness ;  // Thickness of lower textolit plate
-  Float_t fLowerThermoPlateThickness ;    // Thickness of lower thermo insulating plate
-  Int_t   fNPhi ;                         // Number of crystal units in X (phi) direction
-  Int_t   fNZ ;                           // Number of crystal units in Z direction
-  Float_t fOuterBoxSize[3] ;              // Size of the outer  thermo insulating foam box
-  Float_t fOuterBoxThickness[3] ;         // Thickness of the outer thermo insulating foam box
-  Float_t fPinDiodeSize[3] ;              // Size of the PIN Diode 
-  Float_t fSecondUpperPlateThickness ;    // Thickness of  upper polystyrene foam plate
-  Float_t fSupportPlateThickness ;        // Thickness of the Aluminium support plate  
-  Float_t fUpperCoolingPlateThickness ;   // Thickness of the upper cooling plate 
-  Float_t fUpperPlateThickness ;          // Thickness of the uper thermo insulating foam plate 
-  Float_t fTextolitBoxSize[3] ;           // Size of the Textolit box inside the insulating foam box
-  Float_t fTextolitBoxThickness[3] ;      // Thicknesses of th Textolit box
-  Float_t fXtlSize[3] ;                   // PWO4 crystal dimensions
-  TObjArray *fRotMatrixArray ;            // List of rotation matrices (one per phos module)
+
+  Float_t fSupportPlateThickness ;        // Thickness of the Aluminium support plate for Strip   
+
+  Int_t  fNCellsInStrip ;
+  Int_t  fNStripX ;
+  Int_t  fNStripZ ;
+  Int_t  fNTSupports ;
+  Int_t  fNPhi ;                         // Number of crystal units in X (phi) direction
+  Int_t  fNZ ;                           // Number of crystal units in Z direction
 
   ClassDef(AliPHOSEMCAGeometry,1)         // EMCA geometry class 
 

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/11/09 15:49:04  martinez
+  Coding convention rules obeyed
+
   Revision 1.1  2000/11/03 16:28:21  schutz
   CPV geometry class to correct previous name-convetion rule violation
 
@@ -45,7 +48,6 @@ AliPHOSCPVGeometry::AliPHOSCPVGeometry()
 
   // Initializes the CPV parameters
   fNumberOfCPVLayers     = 1;
-  fLeadConverterExists   = kFALSE;
   fNumberOfCPVPadsPhi    = 128;
   fNumberOfCPVPadsZ      = 64;
   fCPVPadSizePhi         = 1.13;
@@ -58,11 +60,6 @@ AliPHOSCPVGeometry::AliPHOSCPVGeometry()
   fCPVFrameSize[0]       = 2.5;
   fCPVFrameSize[1]       = 5.1;
   fCPVFrameSize[2]       = 2.5;
-  fCPVActiveSize[0]      = fNumberOfCPVPadsPhi * fCPVPadSizePhi;
-  fCPVActiveSize[1]      = fNumberOfCPVPadsZ   * fCPVPadSizeZ;
-  fCPVBoxSize[0]         = fCPVActiveSize[0] + 2 * fCPVFrameSize[0];
-  fCPVBoxSize[1]         = fCPVFrameSize[1] * fNumberOfCPVLayers + 0.1;
-  fCPVBoxSize[2]         = fCPVActiveSize[1] + 2 * fCPVFrameSize[2];
   fGassiplexChipSize[0]  = 4.2;
   fGassiplexChipSize[1]  = 0.1;
   fGassiplexChipSize[2]  = 6.0;
@@ -70,6 +67,12 @@ AliPHOSCPVGeometry::AliPHOSCPVGeometry()
   fFTPosition[1]         = 2.2;
   fFTPosition[2]         = 3.6;
   fFTPosition[3]         = 5.1;
-}
 
+  fCPVActiveSize[0]      = fNumberOfCPVPadsPhi * fCPVPadSizePhi;
+  fCPVActiveSize[1]      = fNumberOfCPVPadsZ   * fCPVPadSizeZ;
+  fCPVBoxSize[0]         = fCPVActiveSize[0] + 2 * fCPVFrameSize[0];
+  fCPVBoxSize[1]         = fCPVFrameSize[1] * fNumberOfCPVLayers + 0.1;
+  fCPVBoxSize[2]         = fCPVActiveSize[1] + 2 * fCPVFrameSize[2];
+
+}
 //____________________________________________________________________________

@@ -49,7 +49,6 @@ AliPHOS:: AliPHOS() : AliDetector()
 {
   // Create folder and task hierarchy
   fName="PHOS";
-  fTreeQA = 0 ;
   CreatePHOSWhiteBoard();
 
 }
@@ -58,7 +57,6 @@ AliPHOS:: AliPHOS() : AliDetector()
 AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title) 
 {
   // Create folder and task hierarchy
-  fTreeQA = 0 ; 
   CreatePHOSWhiteBoard(); 
 }
 
@@ -72,115 +70,103 @@ void AliPHOS::CreatePHOSWhiteBoard()
   //  add the Alice QA Alarms
   // this should be done of course by AliRun
   //==================== BEG TO BE DONE BY AliRUN ===========================
-  if ( ! (gROOT->GetRootFolder()->FindObject("YSAlice")) ) {
-    TFolder *alice = gROOT->GetRootFolder()->AddFolder("YSAlice","Alice Folder") ;  
-    gROOT->GetListOfBrowsables()->Add(alice, "YSAlice") ;
-    
-    TFolder * aliceF  = alice->AddFolder("WhiteBoard", "Alice memory Folder") ; 
-    //  make it the owner of the objects that it contains
-    aliceF->SetOwner() ;
-    // geometry folder 
-    aliceF->AddFolder("Geometry", "Geometry objects") ; 
-    // alarms folder
-    TFolder * alarmsF = aliceF->AddFolder("QAAlarms", "Alarms raised by QA check") ; 
-    // Hits folder
-    TFolder * hitsF = aliceF->AddFolder("Hits", "Hits") ; 
-    // SDigits folder
-    TFolder * sdigitsF = aliceF->AddFolder("SDigits", "Summable Digits") ; 
-    // Digits folder
-    TFolder * digitsF = aliceF->AddFolder("Digits", "Digits") ; 
-    // RecPoints folder
-    TFolder * rpointsF = aliceF->AddFolder("RecPoints", "RecPoints") ; 
-    // TrackSegments folder
-    TFolder * tsF = aliceF->AddFolder("TrackSegments", "TrackSegments") ; 
-    // RecParticles folder
-    TFolder * rparticlesF = aliceF->AddFolder("RecParticles", "RecParticles") ; 
-    //  make it the owner of the objects that it contains
-    alarmsF->SetOwner() ;
-    hitsF->SetOwner() ;
-    sdigitsF->SetOwner() ;
-    digitsF->SetOwner() ;
-    rpointsF->SetOwner() ;
-    tsF->SetOwner() ;
-    rparticlesF->SetOwner() ;
-    
-    // Tasks folder
-    TFolder * aliceT  = alice->AddFolder("tasks", "Alice tasks Folder") ; 
-    //  make it the owner of the objects that it contains
-    aliceT->SetOwner() ;
-    
-    TTask * aliceQA = new TTask("QA", "Alice QA tasks") ;
-    aliceT->Add(aliceQA); 
-    
-    TTask * aliceSD = new TTask("SDigitizer", "Alice SDigitizer") ;
-    aliceT->Add(aliceSD); 
-    
-    TTask * aliceDi = new TTask("Digitizer", "Alice Digitizer") ;
-    aliceT->Add(aliceDi); 
-    
-    TTask * aliceRe = new TTask("Reconstructioner", "Alice Reconstructioner") ;
-    aliceT->Add(aliceRe); 
-    
+  TFolder *alice = gROOT->GetRootFolder()->AddFolder("YSAlice","Alice Folder") ;  
+  gROOT->GetListOfBrowsables()->Add(alice, "YSAlice") ;
+
+  TFolder * aliceF  = alice->AddFolder("WhiteBoard", "Alice memory Folder") ; 
+  //  make it the owner of the objects that it contains
+  aliceF->SetOwner() ;
+  // geometry folder 
+  TFolder * geomF = aliceF->AddFolder("Geometry", "Geometry objects") ; 
+  // alarms folder
+  TFolder * alarmsF = aliceF->AddFolder("QAAlarms", "Alarms raised by QA check") ; 
+  // Hits folder
+  TFolder * hitsF = aliceF->AddFolder("Hits", "Hits") ; 
+  // SDigits folder
+  TFolder * sdigitsF = aliceF->AddFolder("SDigits", "Summable Digits") ; 
+  // Digits folder
+  TFolder * digitsF = aliceF->AddFolder("Digits", "Digits") ; 
+  // RecPoints folder
+  TFolder * rpointsF = aliceF->AddFolder("RecPoints", "RecPoints") ; 
+  // TrackSegments folder
+  TFolder * tsF = aliceF->AddFolder("TrackSegments", "TrackSegments") ; 
+  // RecParticles folder
+  TFolder * rparticlesF = aliceF->AddFolder("RecParticles", "RecParticles") ; 
+  //  make it the owner of the objects that it contains
+  alarmsF->SetOwner() ;
+  hitsF->SetOwner() ;
+  sdigitsF->SetOwner() ;
+  digitsF->SetOwner() ;
+  rpointsF->SetOwner() ;
+  tsF->SetOwner() ;
+  rparticlesF->SetOwner() ;
+
+  // Tasks folder
+  TFolder * aliceT  = alice->AddFolder("tasks", "Alice tasks Folder") ; 
+  //  make it the owner of the objects that it contains
+  aliceT->SetOwner() ;
+
+  TTask * aliceQA = new TTask("QA", "Alice QA tasks") ;
+  aliceT->Add(aliceQA); 
+ 
+  TTask * aliceSD = new TTask("SDigitizer", "Alice SDigitizer") ;
+  aliceT->Add(aliceSD); 
+
+  TTask * aliceDi = new TTask("Digitizer", "Alice Digitizer") ;
+  aliceT->Add(aliceDi); 
+
+  TTask * aliceRe = new TTask("Reconstructioner", "Alice Reconstructioner") ;
+  aliceT->Add(aliceRe); 
+
   //==================== END TO BE DONE BY AliRUN ===========================
-  }
+
   // =================== Creating PHOS related folders
   char * tempo = new char[80] ; 
 
   // creates the PHOSQA (QAChecker knows how to add itself in the tasks list)
   sprintf(tempo, "%sCheckers container",GetName() ) ; 
   fQATask = new AliPHOSQAChecker(GetName(), tempo);  
-  
+
   // creates the PHOS SDigitizer and adds it to alice main SDigitizer task 
   sprintf(tempo, "%sSDigitizers container",GetName() ) ; 
   TTask * sdT = new TTask(GetName(), tempo);   
-  TTask * task = (TTask*)(gROOT->GetRootFolder()->FindObjectAny("SDigitizer")) ; 
-  task->Add(sdT) ; 
+  aliceSD->Add(sdT) ; 
 
   // creates the PHOS Digitizer and adds it to alice main Digitizer task 
   sprintf(tempo, "%sDigitizers container",GetName() ) ; 
   TTask * dT = new TTask(GetName(), tempo);   
-  task = (TTask*)(gROOT->GetRootFolder()->FindObjectAny("Digitizer")) ; 
-  task->Add(dT) ; 
+  aliceDi->Add(dT) ; 
 
   // creates the PHOS reconstructioner and adds it to alice main Reconstructioner task 
   sprintf(tempo, "%s Reconstructioner container",GetName() ) ; 
   TTask * reT = new TTask(GetName(), tempo); 
-  task = (TTask*)(gROOT->GetRootFolder()->FindObjectAny("Reconstructioner")) ; 
-  task->Add(reT) ; 
+  aliceRe->Add(reT) ; 
 
   // creates the PHOS clusterizer, tracksegment maker and PID and adds it to the PHOS Reconstructioner task
 
   delete tempo ;  
 
   // creates the PHOS geometry  folder
-  TFolder * folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("Geometry")) ; 
-  folder->AddFolder("PHOS", "Geometry for PHOS") ; 
+  geomF->AddFolder("PHOS", "Geometry for PHOS") ; 
   // creates the PHOSQA alarm folder
-  folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("QAAlarms")) ; 
-  folder->AddFolder("PHOS", "QA alarms from PHOS") ; 
+  alarmsF->AddFolder("PHOS", "QA alarms from PHOS") ; 
   // creates the PHOS Hits folder
-  folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("Hits")) ;
-  folder->AddFolder("PHOS", "Hits for PHOS") ; 
+  hitsF->AddFolder("PHOS", "Hits for PHOS") ; 
   // creates the PHOS Summable Digits folder
-  folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("SDigits")) ;
-  folder->AddFolder("PHOS", "Summable Digits for PHOS") ; 
+  sdigitsF->AddFolder("PHOS", "Summable Digits for PHOS") ; 
   // creates the PHOS Digits folder
-  folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("Digits")) ;
-  folder->AddFolder("PHOS", "Digits for PHOS") ; 
+  digitsF->AddFolder("PHOS", "Digits for PHOS") ; 
   // creates the PHOS RecPoints folder
-  folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("RecPoints")) ;
-  TFolder * prpF = folder->AddFolder("PHOS", "RecPoints for PHOS") ;
+  TFolder * prpF = rpointsF->AddFolder("PHOS", "RecPoints for PHOS") ;
   // creates the PHOS EMC RecPoints folder
   prpF->AddFolder("emc", "EMC RecPoints for PHOS") ;
   // creates the PHOS CPV RecPoints folder
   prpF->AddFolder("cpv", "CPV RecPoints for PHOS") ;
   
   // creates the PHOS TrackSegments folder
-  folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("TrackSegments")) ;
-  folder->AddFolder("PHOS", "Track Segments for PHOS") ; 
+  tsF->AddFolder("PHOS", "Track Segments for PHOS") ; 
   // creates the PHOS RecParticles folder
-  folder = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("RecParticles")) ;
-  folder->AddFolder("PHOS", "RecParticles for PHOS") ;
+  rparticlesF->AddFolder("PHOS", "RecParticles for PHOS") ;
  
 }
 //____________________________________________________________________________
@@ -188,71 +174,11 @@ AliPHOS::~AliPHOS()
 {  
   // remove the alice folder and alice QA task that PHOS creates instead of AliRun
   
-  // remove and delete the PHOS related items in folders
-  // Geometry 
-  TFolder * foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("Geometry")) ; 
-  TFolder * folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-  // QA Alarms
-  foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("QAAlarms")) ;
-  folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-  // Hits
-  foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("Hits")) ;
-  folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-  // SDigits
-  foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("SDigits")) ;
-  folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-  // Digits
-  foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("Digits")) ;
-  folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-  // RecPoints
-  foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("RecPoints")) ;
-  folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-   // TrackSegments
-  foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("TrackSegments")) ;
-  folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-   // RecParticles
-  foldera = (TFolder*)(gROOT->GetRootFolder()->FindObjectAny("RecParticles")) ;
-  folderp = (TFolder*)foldera->FindObject("PHOS") ;
-  folderp->Clear() ; 
-  foldera->Remove(folderp) ; 
-
-  //QA tasks
-  TTask * taska = (TTask*)gROOT->FindObjectAny("QA") ; 
-  TTask * taskp = (TTask*)taska->GetListOfTasks()->FindObject("PHOS") ; 
-  //  taskp->GetListOfTasks()->Delete() ; 
-  taska->GetListOfTasks()->Remove(taskp) ; 
-
-  //SDigitizer tasks
-  taska = (TTask*)gROOT->FindObjectAny("SDigitizer") ; 
-  taskp = (TTask*)taska->GetListOfTasks()->FindObject("PHOS") ; 
-  taskp->GetListOfTasks()->Delete() ; 
-  taska->GetListOfTasks()->Remove(taskp) ; 
-
-  //Digitizer tasks
-  taska = (TTask*)gROOT->FindObjectAny("Digitizer") ; 
-  taskp = (TTask*)taska->GetListOfTasks()->FindObject("PHOS") ; 
-  taskp->GetListOfTasks()->Delete() ; 
-  taska->GetListOfTasks()->Remove(taskp) ; 
-
-  //Reconstructioner tasks
-  taska = (TTask*)gROOT->FindObjectAny("Reconstructioner") ; 
-  taskp = (TTask*)taska->GetListOfTasks()->FindObject("PHOS") ; 
-  taskp->GetListOfTasks()->Delete() ; 
-  taska->GetListOfTasks()->Remove(taskp) ; 
+  // remove and delete the PHOS QA tasks
+  TTask * aliceQA = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/QA") ; 
+  fQATask->GetListOfTasks()->Delete() ;
+  aliceQA->GetListOfTasks()->Remove(fQATask) ; 
+  delete fQATask ;  
   
   // remove and delete aliceQA (should be done by AliRun) 
 }
@@ -317,7 +243,7 @@ void AliPHOS::CreateMaterials()
   Float_t aTI[2] = {12.011, 1.00794} ;
   Float_t zTI[2] = {6.0, 1.0} ;
   Float_t wTI[2] = {1.0, 1.0} ;
-  Float_t dTI = 0.1 ;
+  Float_t dTI = 0.04 ;
 
   AliMixture(7, "Thermo Insul.$", aTI, zTI, dTI, -2, wTI) ;
 
@@ -399,6 +325,28 @@ void AliPHOS::CreateMaterials()
 
   // --- Stainless steel (let it be pure iron) ---
   AliMaterial(17, "Steel$", 55.845, 26, 7.87, 1.76, 0., 0, 0) ;
+
+
+  // --- Fiberglass ---
+  Float_t aFG[4] = {16.0, 28.09, 12.011, 1.00794} ;
+  Float_t zFG[4] = {8.0, 14.0, 6.0, 1.0} ;
+  Float_t wFG[4] = {292.0, 68.0, 462.0, 736.0} ;
+  Float_t dFG    = 1.9 ;
+
+  AliMixture(18, "Fibergla$", aFG, zFG, dFG, -4, wFG) ;
+
+  // --- Cables in Air box  ---
+  // SERVICES
+
+  Float_t aCA[4] = { 1.,12.,55.8,63.5 };
+  Float_t zCA[4] = { 1.,6.,26.,29. }; 
+  Float_t wCA[4] = { .014,.086,.42,.48 };
+  Float_t dCA    = 0.8 ;  //this density is raw estimation, if you know better - correct
+
+  AliMixture(19, "Cables  $", aCA, zCA, dCA, -4, wCA) ;
+
+
+
  
   // --- Air ---
   AliMaterial(99, "Air$", 14.61, 7.3, 0.001205, 30420., 67500., 0, 0) ;
@@ -478,6 +426,14 @@ void AliPHOS::CreateMaterials()
   // Stainless steel                                                                -> idtmed[716]
   AliMedium(17, "Steel     $", 17, 0,
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ;
+
+  // Fibergalss                                                                     -> idtmed[717]
+  AliMedium(18, "Fiberglass$", 18, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+  // Cables in air                                                                  -> idtmed[718]
+  AliMedium(19, "Cables    $", 19, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // Air                                                                            -> idtmed[798] 
   AliMedium(99, "Air          $", 99, 0,
