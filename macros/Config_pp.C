@@ -462,7 +462,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
     gener->SetThetaRange(0., 180.);
     gener->SetYRange(-12,12);
     gener->SetPtRange(0,1000);
-    gener->SetStrucFunc(kCTEQ_4L);   
+    gener->SetStrucFunc(kCTEQ4L);   
     gener->SetProcess(kPyMb);
     gener->SetEnergyCMS(14000.);
     break;
