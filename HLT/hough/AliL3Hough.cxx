@@ -134,7 +134,8 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
   Init(); //do the rest
 }
 
-void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE){
+void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE)
+{
   fDoIterative   = doit; 
   fAddHistograms = addhists;
 
@@ -155,13 +156,13 @@ void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE){
       default:
 	fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
       }
-
+                  
       fHoughTransformer[i]->CreateHistograms(fNBinX,fLowPt,fNBinY,-fPhi,fPhi);
       fHoughTransformer[i]->SetLowerThreshold(fThreshold);
-
+      
       LOG(AliL3Log::kInformational,"AliL3Hough::Init","Version")
 	<<"Initializing Hough transformer version "<<fVersion<<ENDLOG;
-
+      
       fEval[i] = new AliL3HoughEval();
       fTracks[i] = new AliL3TrackArray("AliL3HoughTrack");
       if(fUse8bits)
@@ -182,7 +183,7 @@ void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE){
 #endif
     }
 
-  fPeakFinder = new AliL3HoughMaxFinder("KappaPhi",100);
+  fPeakFinder = new AliL3HoughMaxFinder("KappaPhi",1000);
   fMerger = new AliL3HoughMerger(fNPatches);
   fInterMerger = new AliL3HoughIntMerger();
   fGlobalMerger = 0;
@@ -428,57 +429,32 @@ Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
       return 0;
     }
   
-  InitEvaluate();
-  
   Int_t removed_tracks=0;
   AliL3TrackArray *tracks=0;
-  Int_t *total_rows=0;
-  if(fAddHistograms)
-    {    
-      tracks = fTracks[0];
-      total_rows = new Int_t[tracks->GetNTracks()];
-      for(Int_t i=0; i<tracks->GetNTracks(); i++)
-	total_rows[i]=0;
-    }
 
-  for(Int_t i=0; i<fNPatches; i++)
+  if(fAddHistograms)
     {
-      fEval[i]->InitTransformer(fHoughTransformer[i]);
-      fEval[i]->SetNumOfPadsToLook(road_width);
-      fEval[i]->SetNumOfRowsToMiss(nrowstomiss);
-      if(!fAddHistograms)
-	tracks = fTracks[i];
-      
-      for(Int_t j=0; j<tracks->GetNTracks(); j++)
+      tracks = fTracks[0];
+      for(Int_t i=0; i<tracks->GetNTracks(); i++)
 	{
-	  AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(j);
-	  if(!track)
-	    {
-	      LOG(AliL3Log::kWarning,"AliL3Hough::Evaluate","Track array")
-		<<"Track object missing!"<<ENDLOG;
-	      continue;
-	    }
-	  
-	  Bool_t result = fEval[i]->LookInsideRoad(track,total_rows[j]);
-	  if(!fAddHistograms)//the track crossed too few good padrows (padrows with signal) in the patch, so remove it
-	    {
-	      if(result == kFALSE)
-		tracks->Remove(j);
-	    }
-	}
-      if(!fAddHistograms)
-	{
-	  tracks->Compress();
-	  tracks->QSort(); 
-	  fMerger->FillTracks(tracks,i); //Copy tracks to the track merger
+	  AliL3Track *track = tracks->GetCheckedTrack(i);
+	  if(!track) continue;
+	  track->SetNHits(0);
 	}
     }
+  
+  
+  for(Int_t i=0; i<fNPatches; i++)
+    EvaluatePatch(i,road_width,nrowstomiss);
+  
   
   if(fAddHistograms) //Here we check the tracks globally; how many good rows (padrows with signal) did it cross in the slice
     {
       for(Int_t j=0; j<tracks->GetNTracks(); j++)
 	{
-	  if(total_rows[j] < AliL3Transform::GetNRows() - nrowstomiss)
+	  AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(j);
+	  
+	  if(track->GetNHits() < AliL3Transform::GetNRows() - nrowstomiss)
 	    {
 	      tracks->Remove(j);
 	      removed_tracks++;
@@ -487,11 +463,60 @@ Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
       tracks->Compress();
       tracks->QSort();
     }
-  
-  if(total_rows)
-    delete [] total_rows;
-  
+    
   return removed_tracks;
+}
+
+void AliL3Hough::EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss)
+{
+  //Evaluate patch i.
+  
+  fEval[i]->InitTransformer(fHoughTransformer[i]);
+  fEval[i]->SetNumOfPadsToLook(road_width);
+  fEval[i]->SetNumOfRowsToMiss(nrowstomiss);
+  //fEval[i]->RemoveFoundTracks();
+  
+  AliL3TrackArray *tracks=0;
+  
+  if(!fAddHistograms)
+    tracks = fTracks[i];
+  else
+    tracks = fTracks[0];
+  
+  Int_t nrows=0;
+  for(Int_t j=0; j<tracks->GetNTracks(); j++)
+    {
+      AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(j);
+      if(!track)
+	{
+	  LOG(AliL3Log::kWarning,"AliL3Hough::EvaluatePatch","Track array")
+	    <<"Track object missing!"<<ENDLOG;
+	  continue;
+	} 
+      nrows=0;
+      Bool_t result = fEval[i]->LookInsideRoad(track,nrows);
+      if(fAddHistograms)
+	{
+	  Int_t pre=track->GetNHits();
+	  track->SetNHits(pre+nrows);
+	}
+      //else//the track crossed too few good padrows (padrows with signal) in the patch, so remove it
+      //{
+      if(result == kFALSE)
+	tracks->Remove(j);
+      //}
+    }
+  
+  tracks->Compress();
+  /*
+    if(!fAddHistograms)
+    {
+    tracks->Compress();
+    tracks->QSort(); 
+    fMerger->FillTracks(tracks,i); //Copy tracks to the track merger
+    }
+  */
+
 }
 
 void AliL3Hough::EvaluateWithEta()

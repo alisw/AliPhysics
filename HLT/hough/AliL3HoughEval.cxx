@@ -93,22 +93,6 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
   
   Int_t total_charge=0;//total charge along the road
     
-  /*
-  //Check if the track is leaving the sector at some point
-  //This does not work, if the track is bending _in_ to the slice.....
-  Float_t maxrow=300;
-  Double_t angle=AliL3Transform::Pi()/18;
-  track->CalculateEdgePoint(angle);
-  if(!track->IsPoint())
-    {
-      track->CalculateEdgePoint(-1.*angle);
-      if(track->IsPoint())
-	maxrow = track->GetPointX();
-    }
-  else
-    maxrow = track->GetPointX();
-  */
-  
   for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
     {
       //if(AliL3Transform::Row2X(padrow) > maxrow) break;//The track has left this slice
@@ -147,7 +131,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 	      Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
 	      Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);
 	      if(pixel_index > track->GetEtaIndex()) continue;
-	      if(pixel_index != track->GetEtaIndex()) break;
+	      if(pixel_index != track->GetEtaIndex()) continue;
 	      total_charge += digPt[j].fCharge;
 	      if(remove)
 		digPt[j].fCharge = 0; //Erase the track from image
