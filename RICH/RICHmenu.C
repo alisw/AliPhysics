@@ -17,7 +17,7 @@ RICHmenu(Int_t nev=1)
   char *str="\"Number of events %d\"";
   
    TControlBar *menu = new TControlBar("vertical","RICH menu");
-   menu->AddButton("      Help for RICH      ","RICHHelp()", "Explains how to use RICH menus");
+   menu->AddButton("      Help for RICH      ","gSystem->Exec(\"less RICHHelp.txt\");", "Explains how to use RICH menus");
    menu->AddButton("Configure",            "gSystem->Exec(\"rconfig\"); gSystem->Exit(0);","Configure the simulation");
    //menu->AddButton("Run",               "RICHInit(nev)","Process an Alice event - WARNING: Overwrites previous data file!");
    menu->AddButton("Run",               "gAlice->Run(events)","Process an Alice event - WARNING: Overwrites previous data file!");
