@@ -62,19 +62,18 @@ AliFMDv2::AliFMDv2(const char *name, const char *title):
 void AliFMDv2::CreateGeometry()
 {
  //
-  // Create the geometry of Forward Multiplicity Detector version 0
+  // Create the geometry of Forward Multiplicity Detector version 2
   //
-  //Detector consists of 6 volumes: 
-  // 1st covered pseudorapidity interval from 3.3 to 2.0
+  //Detector consists of 5 volumes: 
+  // 1st covered pseudorapidity interval from 3.4 to 2.0
   // and placed on 65cm in Z-direction;
-  // 2nd - from 2.0 to 1.6 and Z=85 cm;
+  // 2nd - from 2.2 to 1.7 and Z=85 cm;
   // 3d  - the same pseudorapidity interval as the 1st 
   // but on the other side from the interaction point z=-65cm;
   // 4th - simmetricaly with the 2nd : 
   // pseudorapidity from 2.0 to 1.6, Z=-85cm   
   // 5th - from 3.6 to 4.7, Z=-270cm
-  // 6th - from 4.5 to 5.5 , Z=-630cm.
-  // Each part has 400mkm Si (sensetive area, detector itself),
+  // Each part has 300mkm Si (sensetive area, detector itself),
   // 0.75cm of plastic simulated electronics material,
   // Al support ring 2cm thickness and 1cm width placed on 
   // the outer radius of each Si disk;
@@ -134,7 +133,7 @@ void AliFMDv2::CreateGeometry()
       ppcon[4]=rin[ifmd]+0.1;
       ppcon[5]=rout[ifmd]+0.1;
       
-      ppcon[6]=ppcon[3]+zSi+2*zPCB+2*NylonTube[2];
+      ppcon[6]=ppcon[3]+2*zSi+2*zPCB+2*NylonTube[2];
       ppcon[7]=rin[ifmd]+0.1;
       ppcon[8]=rout[ifmd]+0.1;
       
@@ -146,7 +145,6 @@ void AliFMDv2::CreateGeometry()
       ppcon[13]=RinHoneyComb[ifmd]+0.1;
       ppcon[14]=RoutHoneyComb[ifmd]+0.1;
       zFMD=z[ifmd]+wideSupport/2.;
-      //      cout<<" Si "<<ifmd+1<<" "<<zFMD<<" "<<ppcon[12]<<endl;
       gMC->Gsvolu(nameFMD,"PCON",idtmed[0],ppcon,15);
       if (z[ifmd] >0){  
 	gMC->Gspos(nameFMD,1,"ALIC",0,0,z[ifmd],0, "ONLY");}
@@ -181,9 +179,7 @@ void AliFMDv2::CreateGeometry()
       sprintf(nameLChips,"GHL%d",ifmd+1);
       gMC->Gsvolu(nameLChips,"TUBE", idtmed[5], par, 0); // Si chips
       sprintf(nameGL10,"G1L%d",ifmd+1);
-      gMC->Gsvolu(nameGL10,"TUBE", idtmed[2], par, 0);  //G10 plate
-     
-     
+      gMC->Gsvolu(nameGL10,"TUBE", idtmed[2], par, 0); // Last G10
       par[0]=rin[ifmd]; // pipe size
       par[1]=rout[ifmd];
       par[2]=zSi/2;
@@ -196,7 +192,7 @@ void AliFMDv2::CreateGeometry()
       gMC->Gsposp(namePCB,1,nameFMD,0,0,zInside,0, "ONLY",par,3);
       zInside += zPCB;
       gMC->Gsposp(namePCB,2,nameFMD,0,0,zInside,0, "ONLY",par,3);
-      Float_t NulonTubeBegin=zInside+2*zPCB;
+      Float_t NulonTubeBegin=zInside+2.5*zPCB;
       par[2]=zPCB/2-0.02;
       Float_t zInPCB = -zPCB/2+par[2];
       gMC->Gsposp(nameG10,1,namePCB,0,0,zInPCB,0, "ONLY",par,3);
@@ -250,8 +246,8 @@ void AliFMDv2::CreateGeometry()
     fRingsSi1=256*3;
     // fRingsSi1=3; // for drawing only
     fSectorsSi2=40;
-    fRingsSi2=128*3;
-    // fRingsSi2=3; //for  drawing onl
+     fRingsSi2=128*3;
+     //  fRingsSi2=3; //for  drawing onl
     if(ifmd==1||ifmd==3)
       { 
 	gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);
