@@ -33,7 +33,6 @@ public:
                         {return fgLayers[layn].GetNumberOfClusters();}
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
-  Int_t Clusters2Tracks(TTree *in, TTree *out);
   Int_t Clusters2Tracks(AliESD *event);
   Int_t PropagateBack(AliESD *event);
   Int_t RefitInward(AliESD *event);
@@ -80,6 +79,7 @@ public:
     Int_t GetNumberOfClusters() const {return fN;}
     Int_t GetNladders() const {return fNladders;}
     Int_t GetNdetectors() const {return fNdetectors;}
+    Int_t FindClusterIndex(Double_t z) const;
   protected:
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
@@ -95,7 +95,6 @@ public:
     Double_t fYmax;      //   "window"
     Int_t fI;            // index of the current cluster within the "window"
     Double_t fRoad;      // road defined by the cluster density
-    Int_t FindClusterIndex(Double_t z) const;
   };
   
 protected:
