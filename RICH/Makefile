@@ -9,8 +9,8 @@ PACKAGE = RICH
 
 # C++ sources
 
-SRCS          = AliRICH.cxx AliRICHv0.cxx AliRICHDisplay.cxx AliRICHPoints.cxx AliRICHHitMap.cxx AliRICHSegResV0.cxx AliRICHSegResV1.cxx AliRICHClusterFinder.cxx \
-DataStructures.cxx AliRICHChamber.cxx AliRICHDetect.cxx 
+SRCS          = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHDisplay.cxx AliRICHPoints.cxx AliRICHHitMap.cxx AliRICHSegResV0.cxx AliRICHSegResV1.cxx AliRICHClusterFinder.cxx \
+DataStructures.cxx AliRICHChamber.cxx AliRICHDetect.cxx AliRICHPatRec.cxx
 
 # C++ Headers
 
