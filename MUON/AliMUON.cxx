@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.32  2000/10/06 09:08:10  morsch
+Built geometry includes slat geometry for event display.
+
 Revision 1.31  2000/10/02 21:28:08  fca
 Removal of useless dependecies via forward declarations
 
@@ -1208,8 +1211,8 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		    Int_t   nch   = mHit->fChamber-1;  // chamber number
 		    if (nch >9) continue;
 		    iChamber = &(pMUON->Chamber(nch));
-		    Int_t rmin = (Int_t)iChamber->RInner();
-		    Int_t rmax = (Int_t)iChamber->ROuter();
+//		    Int_t rmin = (Int_t)iChamber->RInner();
+//		    Int_t rmax = (Int_t)iChamber->ROuter();
                     Float_t xbgr=mHit->X();
 		    Float_t ybgr=mHit->Y();
 		    Bool_t cond=kFALSE;
