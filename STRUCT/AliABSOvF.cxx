@@ -332,7 +332,7 @@ void AliABSOvF::CreateGeometry()
   flukaGeom->SetDefaultVolume("*ACR02","*ACR02" );
   flukaGeom->OnionCylinder(r, 6 , zAbsStart, zOpen, pos, materialsB, fieldsB, cutsB);
   flukaGeom->Cone(rAbs, rAbs, -rAbs, -rAbs, zTwoDeg, zOpen, pos, 
-	      "NIW", "MF", "$SHS");  
+	      "NIW", "MF", "$SHH");  
 //
 // end Fluka
 
@@ -393,7 +393,7 @@ void AliABSOvF::CreateGeometry()
   flukaGeom->Comment("Front Absorber Conical Section");
   flukaGeom->OnionCone(r1, r2,  7 , zOpen, zRear-dRear, pos, materialsA, fieldsA, cutsA);
   flukaGeom->Cone(r1[6], r2[6], -1., -1., 
-	      zOpen, zRear-dRear, pos, "NIW", "MF", "$SHS"); 
+	      zOpen, zRear-dRear, pos, "NIW", "MF", "$SHH"); 
 
   flukaGeom->Finish();
   delete flukaGeom;
