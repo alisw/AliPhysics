@@ -31,23 +31,15 @@
 #include "TArrayI.h"
 #include "TRandom.h"
 #include "TGeometry.h"
-  //#include "TFolder.h"
 #include "TROOT.h"
-  //#include "TTree.h"
-
 
 // --- Standard library ---
-
-//#include <string.h>
-//#include <stdlib.h>
 
 // --- AliRoot header files ---
 
 #include "AliPHOSv0.h"
 #include "AliRun.h"
-  //#include "AliConst.h"
 #include "AliPHOSGeometry.h"
-  //#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSv0)
 

@@ -31,17 +31,11 @@
 
 
 // --- ROOT system ---
-
-#include "TBRIK.h"
-#include "TNode.h"
 #include "TRandom.h"
-#include "TTree.h"
 #include "TParticle.h"
+#include "TClonesArray.h"
 
 // --- Standard library ---
-
-#include <string.h>
-#include <stdlib.h>
 
 // --- AliRoot header files ---
 
@@ -49,7 +43,6 @@
 #include "AliPHOSHit.h"
 #include "AliPHOSCPVDigit.h"
 #include "AliRun.h"
-#include "AliConst.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSQAIntCheckable.h"
 #include "AliPHOSQAFloatCheckable.h"

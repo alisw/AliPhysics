@@ -28,7 +28,8 @@
 
 // --- ROOT system ---
 
-#include "TTree.h"
+#include "TTree.h"  
+#include "TClonesArray.h" 
 
 // --- Standard library ---
 

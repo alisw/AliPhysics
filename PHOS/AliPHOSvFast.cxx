@@ -29,19 +29,15 @@
 #include "TBRIK.h"
 #include "TNode.h"
 #include "TParticle.h"
-#include "TTree.h"
 #include "TGeometry.h"
-#include "TFile.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliPHOSFastRecParticle.h"
-#include "AliPHOSGeometry.h"
 #include "AliPHOSvFast.h"
 #include "AliPHOSGetter.h"
 #include "AliRun.h"
-#include "AliConst.h"
 
 ClassImp(AliPHOSvFast)
 
