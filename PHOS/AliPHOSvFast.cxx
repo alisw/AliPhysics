@@ -347,8 +347,8 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
   else
     test = rp.GetPdgCode() ; 
 
-  Info("MakeType", "SHOULD NOT BE USED until values of probabilities are properly set ") ;
-  assert(1==0) ;    // NB: ALL VALUES SHOULD BE CHECKED !!!!
+  Fatal("MakeType", "SHOULD NOT BE USED until values of probabilities are properly set ") ;
+   // NB: ALL VALUES SHOULD BE CHECKED !!!!
   switch (test) { 
 
   case 22:    // it's a photon              // NB: ALL VALUES SHOLD BE CHECKED !!!!
