@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/09/18 10:41:35  morsch
+Add possibility to use nuclear structure functions from PDF library V8.
+
 Revision 1.8  2000/09/06 14:26:24  morsch
 Decayer functionality of AliPythia has been moved to AliDecayerPythia.
 Class is now a singleton.
@@ -80,8 +83,8 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 //
 //    primordial pT
 	SetMSTP(91,1);
-	SetPARP(91,1);
-	SetPARP(93,3);
+	SetPARP(91,1.);
+	SetPARP(93,5.);
 //
 	break;
     case beauty:
