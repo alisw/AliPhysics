@@ -66,7 +66,7 @@ Bool_t AliHBTReader::Pass(AliHBTParticle* p)
     }
    //if no particle is specified, we pass all particles
    //excluding NULL pointers, of course
-   
+  if ( fCuts->GetEntriesFast() == 0 ) return kFALSE; //if no cut specified accept all particles
   for(Int_t i=0; i<fCuts->GetEntriesFast(); i++)   
    {
      AliHBTParticleCut &cut = *((AliHBTParticleCut*)fCuts->At(i));
@@ -85,6 +85,8 @@ Bool_t  AliHBTReader::Pass(Int_t pid)
 
  if(pid == 0)
   return kTRUE;
+
+ if ( fCuts->GetEntriesFast() == 0 ) return kFALSE; //if no cut specified accept all particles
   
  for(Int_t i=0; i<fCuts->GetEntriesFast(); i++)   
    {
