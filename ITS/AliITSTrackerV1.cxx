@@ -52,71 +52,6 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
   Int_t imax=200,jmax=450;
   frl = new AliITSRad(imax,jmax);
 
-}
-
-AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
-//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
-// copy constructor
-    
-    *fITS = *cobj.fITS;
-	 *fresult = *cobj.fresult;
-    fPtref = cobj.fPtref;
-	 //frecPoints = fITS->RecPoints();
-	 //*frecPoints = *cobj.frecPoints;
-	 **fvettid = **cobj.fvettid;
-	 fflagvert = cobj.fflagvert;
-	 Int_t imax=200,jmax=450;
-	 frl = new AliITSRad(imax,jmax);	 
-	 *frl = *cobj.frl;
-	 Int_t i;
-	 for(i=0; i<6; i++) {
-	   fNlad[i] = cobj.fNlad[i];
-      fNdet[i] = cobj.fNdet[i]; 
-	   fAvrad[i] = cobj.fAvrad[i];
-	   fDetx[i] = cobj.fDetx[i];
-	   fDetz[i] = cobj.fDetz[i];
-	}
-
-}
-
-AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
-//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
-// assignement operator
-
-    *fITS = *obj.fITS;
-	 *fresult = *obj.fresult;
-    fPtref = obj.fPtref;
-	 **fvettid = **obj.fvettid;
-	 fflagvert = obj.fflagvert;
-	 Int_t imax=200,jmax=450;
-	 frl = new AliITSRad(imax,jmax);	 
-	 *frl = *obj.frl;
-	 Int_t i;
-	 for(i=0; i<6; i++) {
-	   fNlad[i] = obj.fNlad[i];
-      fNdet[i] = obj.fNdet[i]; 
-	   fAvrad[i] = obj.fAvrad[i];
-	   fDetx[i] = obj.fDetx[i];
-	   fDetz[i] = obj.fDetz[i];
-	}
-
-  return *this;
-  
-}
-
-
-//________________________________________________________________
-
-
-void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file) {
-//Origin   A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
-//The method needs the event number, the minimum and maximum order number of TPC tracks that 
-//are to be tracked trough the ITS, and the file where the recpoints are registered.
-//The method can be called by a macro. It preforms the tracking for all good TPC tracks
-
-
-  printf("begin DoTracking - file %p\n",file);
-  
 ///////////////////////////////////////  gets information on geometry ///////////////////////////////////  
 
   AliITSgeom *g1 = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom(); 
@@ -163,13 +98,83 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   //cout<<"    Detx     Detz\n";
   //for(Int_t la=0; la<6; la++) cout<<"    "<<fDetx[la]<<"     "<<fDetz[la]<<"\n";
   //getchar();
-//////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////// gets magnetic field factor ////////////////////////////////
+
+  AliMagF * fieldPointer = gAlice->Field();
+  fFieldFactor = (Double_t)fieldPointer->Factor();
+  //cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  
- //Int_t imax=200,jmax=450;
- //frl = new AliITSRad(imax,jmax);
- //cout<<" dopo costruttore AliITSRad\n"; getchar();
+}
+
+AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
+//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
+// copy constructor
     
+    *fITS = *cobj.fITS;
+	 *fresult = *cobj.fresult;
+    fPtref = cobj.fPtref;
+	 //frecPoints = fITS->RecPoints();
+	 //*frecPoints = *cobj.frecPoints;
+	 **fvettid = **cobj.fvettid;
+	 fflagvert = cobj.fflagvert;
+	 Int_t imax=200,jmax=450;
+	 frl = new AliITSRad(imax,jmax);	 
+	 *frl = *cobj.frl;
+	 fFieldFactor = cobj.fFieldFactor;
+	 Int_t i;
+	 for(i=0; i<6; i++) {
+	   fNlad[i] = cobj.fNlad[i];
+      fNdet[i] = cobj.fNdet[i]; 
+	   fAvrad[i] = cobj.fAvrad[i];
+	   fDetx[i] = cobj.fDetx[i];
+	   fDetz[i] = cobj.fDetz[i];
+	}
+
+}
+
+AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
+//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
+// assignement operator
+
+    *fITS = *obj.fITS;
+	 *fresult = *obj.fresult;
+    fPtref = obj.fPtref;
+	 **fvettid = **obj.fvettid;
+	 fflagvert = obj.fflagvert;
+	 Int_t imax=200,jmax=450;
+	 frl = new AliITSRad(imax,jmax);	 
+	 *frl = *obj.frl;
+	 fFieldFactor = obj.fFieldFactor;
+	 Int_t i;
+	 for(i=0; i<6; i++) {
+	   fNlad[i] = obj.fNlad[i];
+      fNdet[i] = obj.fNdet[i]; 
+	   fAvrad[i] = obj.fAvrad[i];
+	   fDetx[i] = obj.fDetx[i];
+	   fDetz[i] = obj.fDetz[i];
+	}
+
+  return *this;
+  
+}
+
+
+//________________________________________________________________
+
+
+void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file) {
+//Origin   A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
+//The method needs the event number, the minimum and maximum order number of TPC tracks that 
+//are to be tracked trough the ITS, and the file where the recpoints are registered.
+//The method can be called by a macro. It preforms the tracking for all good TPC tracks
+
+
+  printf("begin DoTracking - file %p\n",file);
+      
   struct GoodTrack {
     Int_t lab,code;
     Float_t px,py,pz,x,y,z,pxg,pyg,pzg,ptg;
@@ -179,8 +184,8 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
 
   gAlice->GetEvent(0);
  
-    AliKalmanTrack *kkprov;
-    kkprov->SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());  
+  AliKalmanTrack *kkprov;
+  kkprov->SetConvConst(100/0.299792458/0.2/fFieldFactor);  
 
 
   TFile *cf=TFile::Open("AliTPCclusters.root");  
@@ -407,7 +412,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   list->AddLast(&trackITS);
   
   fPtref=TMath::Abs( (trackITS).GetPt() );
-  //cout << "\n Pt = " << fPtref <<"\n";  //stampa
+  cout << "\n Pt = " << fPtref <<"\n";  //stampa
 
   RecursiveTracking(list);  // nuova ITS 
   list->Delete();
@@ -442,11 +447,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
     // cout<<" progressive track number = "<<j<<"\r";
    // cout<<j<<"\r";
     Int_t numOfCluster=(*fresult).GetNumClust();  
-    //cout<<" progressive track number = "<<j<<"\n";    // stampa
+    cout<<" progressive track number = "<<j<<"\n";    // stampa
     Long_t labITS=(*fresult).GetLabel();
-    //cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
+    cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
     int lab=track->GetLabel();		    
-    //cout << " TPC track label = " << lab <<"\n";      // stampa
+    cout << " TPC track label = " << lab <<"\n";      // stampa
 	 
 	     
 //propagation to vertex

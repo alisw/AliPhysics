@@ -67,6 +67,8 @@ class AliITSTrackerV1 : public TObject {
 	 Float_t fDetx[6];          // Semidimension of detectors along x axis for a given layer
 	 Float_t fDetz[6];          // Semidimension of detectors along z axis for a given layer
 	 
+	 Double_t fFieldFactor;      // Magnetic filed factor
+	 
 
     ClassDef(AliITSTrackerV1,1)
 };

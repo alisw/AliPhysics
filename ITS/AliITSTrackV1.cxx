@@ -12,6 +12,7 @@
 #include "AliITSRad.h"
 #include "AliITSTrackV1.h"
 #include "AliGenerator.h"
+#include "AliMagF.h"
 
 
 ClassImp(AliITSTrackV1)
@@ -35,7 +36,16 @@ AliITSTrackV1::AliITSTrackV1() {
   frtrack=0.; 
   fd2.ResizeTo(6);
   ftgl2.ResizeTo(6); 
-  fdtgl.ResizeTo(6);   
+  fdtgl.ResizeTo(6);
+  
+//////////////////////////////////////// gets magnetic field factor ////////////////////////////////
+
+  AliMagF * fieldPointer = gAlice->Field();
+  fFieldFactor = (Double_t)fieldPointer->Factor();
+  //cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+   
 }
 
 
@@ -76,6 +86,8 @@ AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) {
   fC40=cobj.fC40; fC41=cobj.fC41; fC42=cobj.fC42; fC43=cobj.fC43; fC44=cobj.fC44; 
  
   *fClusterInTrack = *cobj.fClusterInTrack;
+  
+  fFieldFactor=cobj.fFieldFactor;
  
   for(i=0; i<cobj.flistCluster->GetSize(); i++) 
     flistCluster->AddLast(cobj.flistCluster->At(i));
@@ -86,6 +98,15 @@ AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj)
 { 
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 // special constructor to convert a TPC track into an ITS track
+
+//////////////////////////////////////// gets magnetic field factor ////////////////////////////////
+
+  AliMagF * fieldPointer = gAlice->Field();
+  fFieldFactor = (Double_t)fieldPointer->Factor();
+  //cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
   fTPCtrack = &obj;
   fVertex.ResizeTo(3); 
@@ -478,8 +499,8 @@ void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double
   Double_t phi=fX0;
   
   if(phi<0.174 ) s(5)=s(5)+0.012; 
-   if(phi>6.1 ) s(5)=s(5)+0.012; // to take into account rail 
-   if(phi>2.96 && phi<3.31 ) s(5)=s(5)+0.012;   
+  if(phi>6.1 ) s(5)=s(5)+0.012; // to take into account rail 
+  if(phi>2.96 && phi<3.31 ) s(5)=s(5)+0.012;   
   
    
   Double_t tgl=fX3;
@@ -539,8 +560,7 @@ void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double
   Double_t sign=1.;
   if(fX4 < 0.) sign=-1.; 
   pt=sign*p/sqcl; 
-  Double_t cc=(0.299792458*0.2)/(pt*100.);
-  //Double_t CC=(0.299792458*0.5)/(pt*100.);
+  Double_t cc=(0.299792458*0.2*fFieldFactor)/(pt*100.);
   fX4=cc;
   
 }

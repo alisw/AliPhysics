@@ -135,17 +135,18 @@ public:
   TMatrix        *fClusterInTrack;      // matrix of clusters belonging to the  track
                                         // row index = layer-1; 
                                         // cols index = master coordinates of the clusters
-  
-  
-  Double_t          fDv;                 // radial impact parameter for vertex  constraint
-  Double_t          fZv;                 // longitudinal impact parameter for vertex constraint
-  Double_t          fsigmaDv;            // sigma for Dv extraction
-  Double_t          fsigmaZv;            // sigma for Zv extraction
-  TVector           fd2;                 // C(2,2)  for primary track
-  TVector           ftgl2;               // C(3,3)  for primary track
-  TVector           fdtgl;               // C(2,3)  for primary track
 
-  Double_t          fxoTPC;              // cohordinate xo of the helix center, got from the TPC track 
+  Double_t        fFieldFactor;         // magnetic field factor													 
+													   
+  Double_t          fDv;                // radial impact parameter for vertex  constraint
+  Double_t          fZv;                // longitudinal impact parameter for vertex constraint
+  Double_t          fsigmaDv;           // sigma for Dv extraction
+  Double_t          fsigmaZv;           // sigma for Zv extraction
+  TVector           fd2;                // C(2,2)  for primary track
+  TVector           ftgl2;              // C(3,3)  for primary track
+  TVector           fdtgl;              // C(2,3)  for primary track
+
+  Double_t          fxoTPC;             // cohordinate xo of the helix center, got from the TPC track 
   		   
  // Int_t freq; //provvisorio	   
 
