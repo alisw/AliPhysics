@@ -158,19 +158,19 @@ void AliInvmass::SetPhiSwitch(Int_t i)
  if (i==0) fNewphi=0;
 }
 ////////////////////////////////////////////////////////////////////////////////
-Int_t AliInvmass::GetStorageMode()
+Int_t AliInvmass::GetStorageMode() const
 {
 // Provide mode of storage for the result arrays for inv. mass and comb. background
  return fMode;
 }
 ////////////////////////////////////////////////////////////////////////////////
-Int_t AliInvmass::GetThetaSwitch()
+Int_t AliInvmass::GetThetaSwitch() const
 {
 // Provide the theta switching flag
  return fNewtheta;
 }
 ////////////////////////////////////////////////////////////////////////////////
-Int_t AliInvmass::GetPhiSwitch()
+Int_t AliInvmass::GetPhiSwitch() const
 {
 // Provide the phi switching flag
  return fNewphi;

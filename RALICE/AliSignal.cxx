@@ -128,7 +128,7 @@ AliSignal::~AliSignal()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal::AliSignal(AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
+AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
 {
 // Copy constructor
  fSignals=0;
@@ -341,7 +341,7 @@ void AliSignal::AddSignal(Double_t sig,Int_t j)
  fSignals->AddAt(sum,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSignal::GetSignal(Int_t j,Int_t mode)
+Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
 {
 // Provide value of the j-th (default j=1) signal slot.
 // Note : The first signal slot is at j=1.
@@ -419,7 +419,7 @@ void AliSignal::SetSignalError(Double_t dsig,Int_t j)
  fDsignals->AddAt(float(dsig),j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSignal::GetSignalError(Int_t j)
+Float_t AliSignal::GetSignalError(Int_t j) const
 {
 // Provide error of the j-th (default j=1) signal slot.
 // Note : The first signal slot is at j=1.
@@ -439,7 +439,7 @@ Float_t AliSignal::GetSignalError(Int_t j)
  return err;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::Data(TString f)
+void AliSignal::Data(TString f) const
 {
 // Provide all signal information within the coordinate frame f.
 
@@ -456,7 +456,7 @@ void AliSignal::Data(TString f)
  List(-1);
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::List(Int_t j)
+void AliSignal::List(Int_t j) const
 {
 // Provide signal information for the j-th slot.
 // The first slot is at j=1.
@@ -578,7 +578,7 @@ void AliSignal::List(Int_t j)
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetNvalues()
+Int_t AliSignal::GetNvalues() const
 {
 // Provide the number of values for this signal.
  Int_t n=0;
@@ -586,7 +586,7 @@ Int_t AliSignal::GetNvalues()
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetNerrors()
+Int_t AliSignal::GetNerrors() const
 {
 // Provide the number specified errors on the values for this signal.
  Int_t n=0;
@@ -594,7 +594,7 @@ Int_t AliSignal::GetNerrors()
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetNwaveforms()
+Int_t AliSignal::GetNwaveforms() const
 {
 // Provide the number specified waveforms for this signal.
  Int_t n=0;
@@ -602,7 +602,7 @@ Int_t AliSignal::GetNwaveforms()
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-TH1F* AliSignal::GetWaveform(Int_t j)
+TH1F* AliSignal::GetWaveform(Int_t j) const
 {
 // Provide pointer to the j-th waveform histogram.
  TH1F* waveform=0;
@@ -727,7 +727,7 @@ void AliSignal::DeleteWaveform(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetNlinks(TObject* obj,Int_t j)
+Int_t AliSignal::GetNlinks(TObject* obj,Int_t j) const
 {
 // Provide the number of links to the specified object for the j-th slot.
 // If j=0 (default) all slots will be scanned for the specified object.
@@ -753,7 +753,7 @@ Int_t AliSignal::GetNlinks(TObject* obj,Int_t j)
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliSignal::GetLink(Int_t j,Int_t k)
+TObject* AliSignal::GetLink(Int_t j,Int_t k) const
 {
 // Provide pointer of the object linked to the j-th slot at position k.
 
@@ -935,7 +935,7 @@ void AliSignal::ResetLinks(TObject* obj,Int_t j,Int_t k)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,TArrayI& ks)
+Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,TArrayI& ks) const
 {
 // Provide the slot and position indices of all the storage locations
 // of the specified object.
@@ -969,7 +969,7 @@ Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,TArrayI& ks)
  return nrefs;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetIndices(TObject* obj,Int_t j,TArrayI& ks)
+Int_t AliSignal::GetIndices(TObject* obj,Int_t j,TArrayI& ks) const
 {
 // Provide the position indices of all the storage locations of the
 // specified object in the j-th slot of this AliSignal.
@@ -1005,7 +1005,7 @@ Int_t AliSignal::GetIndices(TObject* obj,Int_t j,TArrayI& ks)
  return nrefs;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,Int_t k)
+Int_t AliSignal::GetIndices(TObject* obj,TArrayI& js,Int_t k) const
 {
 // Provide the slot indices of all the storage locations of the
 // specified object for the k-th position in this AliSignal.
@@ -1060,7 +1060,7 @@ void AliSignal::SetSwapMode(Int_t swap)
  fLinks->SetSwapMode(swap);
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSignal::GetSwapMode()
+Int_t AliSignal::GetSwapMode() const
 {
 // Provide swapmode flag of the link storage.
  Int_t swap=0; 
@@ -1068,7 +1068,7 @@ Int_t AliSignal::GetSwapMode()
  return swap;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliSignal::Clone(const char* name)
+TObject* AliSignal::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

@@ -499,3 +499,8 @@
 12-mar-2004 NvE Additional "cout << endl;" in front of AliCollider initialisation message in order to always
                 have the initialisation message starting on a new line. On some systems the fortran
                 carriage control of the pure Pythia doesn't get treated correctly.
+04-apr-2004 NvE SetMass() invoked from AliTrack::Set3Momentum to get also the energy properly initialised.
+09-apr-2004 NvE Support for specification of unit scale introduced in AliPosition.
+19-apr-2004 NvE Memberfunction GetPrimed introduced for Ali3Vector.
+04-may-2004 NvE Various memberfunctions declared "const" to satisfy the strict Alice coding rules
+                and also to allow better compiler optimisation.

@@ -44,7 +44,7 @@ AliCalmodule::~AliCalmodule()
 // Default destructor
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalmodule::AliCalmodule(AliCalmodule& m) : AliSignal(m)
+AliCalmodule::AliCalmodule(const AliCalmodule& m) : AliSignal(m)
 {
 // Copy constructor
  fRow=m.fRow;
@@ -95,19 +95,19 @@ void AliCalmodule::SetClusteredSignal(Double_t sig)
  fSigc=sig;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalmodule::GetRow()
+Int_t AliCalmodule::GetRow() const
 {
 // Provide the row number of the module
  return fRow;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalmodule::GetColumn()
+Int_t AliCalmodule::GetColumn() const
 {
 // Provide the column number of the module
  return fCol;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalmodule::GetClusteredSignal()
+Float_t AliCalmodule::GetClusteredSignal() const
 {
 // Provide the signal of the module after clustering.
  Int_t dead=GetDeadValue();
@@ -121,7 +121,7 @@ Float_t AliCalmodule::GetClusteredSignal()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliCalmodule::Clone(const char* name)
+TObject* AliCalmodule::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

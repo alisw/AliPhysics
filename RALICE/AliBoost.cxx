@@ -81,7 +81,7 @@ AliBoost::~AliBoost()
 // Default destructor.
 }
 ///////////////////////////////////////////////////////////////////////////
-AliBoost::AliBoost(AliBoost& b) : TObject(b)
+AliBoost::AliBoost(const AliBoost& b) : TObject(b)
 {
 // Copy constructor
  fBeta=b.fBeta;
@@ -141,7 +141,7 @@ void AliBoost::Set4Momentum(Ali4Vector& p)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector AliBoost::GetBetaVector()
+Ali3Vector AliBoost::GetBetaVector() const
 {
 // Provide the beta 3-vector.
  return fBeta;
@@ -164,7 +164,7 @@ Double_t AliBoost::GetGamma()
  return fGamma;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliBoost::GetResultError()
+Double_t AliBoost::GetResultError() const
 {
 // Provide the error on the result of an operation yielding a scalar.
 // E.g. GetBeta() or GetGamma()

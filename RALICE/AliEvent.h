@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.13 2003/12/18 09:28:06 nick Exp $
+// $Id: AliEvent.h,v 1.15 2004/02/06 15:25:07 nick Exp $
 
 #include <math.h>
  
@@ -20,37 +20,37 @@ class AliEvent : public AliVertex
   AliEvent();                             // Default constructor
   AliEvent(Int_t n);                      // Create an event to hold initially n tracks
   virtual ~AliEvent();                    // Default destructor
-  AliEvent(AliEvent& evt);                // Copy constructor
-  virtual TObject* Clone(const char* name=""); // Make a deep copy and provide its pointer
+  AliEvent(const AliEvent& evt);          // Copy constructor
+  virtual TObject* Clone(const char* name="") const; // Make a deep copy and provide its pointer
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   void SetDayTime(TTimeStamp& stamp);     // Set the date and time stamp exactly as specified (1 ns accuracy)
   void SetDayTime(TDatime& stamp);        // Set date and time stamp interpreted as local time (1 s accuracy)
   void SetRunNumber(Int_t run);           // Set the run number
   void SetEventNumber(Int_t evt);         // Set the event number
   void SetProjectile(Int_t a,Int_t z,Double_t pnuc,Int_t id=0); // Set projectile A, Z, p per nucleon and id
-  Int_t GetProjectileA();                 // Provide A value of the projectile
-  Int_t GetProjectileZ();                 // Provide Z value of the projectile
-  Double_t GetProjectilePnuc();           // Provide the projectile momentum value per nucleon
-  Int_t GetProjectileId();                // Provide the user defined particle ID of the projectile
+  Int_t GetProjectileA() const;           // Provide A value of the projectile
+  Int_t GetProjectileZ() const;           // Provide Z value of the projectile
+  Double_t GetProjectilePnuc() const;     // Provide the projectile momentum value per nucleon
+  Int_t GetProjectileId() const;          // Provide the user defined particle ID of the projectile
   void SetTarget(Int_t a,Int_t z,Double_t pnuc,Int_t id=0); // Set target A, Z, p per nucleon and id
-  Int_t GetTargetA();                     // Provide A value of the target
-  Int_t GetTargetZ();                     // Provide Z value of the target
-  Double_t GetTargetPnuc();               // Provide the target momentum value per nucleon
-  Int_t GetTargetId();                    // Provide the user defined particle ID of the target
+  Int_t GetTargetA() const;               // Provide A value of the target
+  Int_t GetTargetZ() const;               // Provide Z value of the target
+  Double_t GetTargetPnuc() const;         // Provide the target momentum value per nucleon
+  Int_t GetTargetId() const;              // Provide the user defined particle ID of the target
   void Reset();                           // Reset all values
-  TTimeStamp GetDayTime();                // Provide the date and time stamp
-  Int_t GetRunNumber();                   // Provide the run number
-  Int_t GetEventNumber();                 // Provide the event number
-  virtual void HeaderData();              // Print the event header information
+  TTimeStamp GetDayTime() const;          // Provide the date and time stamp
+  Int_t GetRunNumber() const;             // Provide the run number
+  Int_t GetEventNumber() const;           // Provide the event number
+  virtual void HeaderData() const;        // Print the event header information
   virtual void Data(TString f="car");     // Print the event info within coordinate frame f
   void SetDevCopy(Int_t j);               // (De)activate creation of private copies of the devices
-  Int_t GetDevCopy();                     // Provide DevCopy flag value      
+  Int_t GetDevCopy() const;               // Provide DevCopy flag value      
   void AddDevice(TObject& d);             // Add a device to the event
   void AddDevice(TObject* d) { AddDevice(*d); }
-  Int_t GetNdevices();                    // Provide the number of devices
-  void ShowDevices();                     // Provide on overview of the available devices
-  TObject* GetDevice(Int_t i);            // Provide i-th device of the event
-  TObject* GetDevice(TString name);       // Provide device with name "name"
+  Int_t GetNdevices() const;              // Provide the number of devices
+  void ShowDevices() const;               // Provide on overview of the available devices
+  TObject* GetDevice(Int_t i) const;      // Provide i-th device of the event
+  TObject* GetDevice(TString name) const; // Provide device with name "name"
 
  protected:
   TTimeStamp fDaytime;      // The date and time stamp
@@ -67,6 +67,6 @@ class AliEvent : public AliVertex
   TObjArray* fDevices;      // Array to hold the pointers to the various devices
   Int_t fDevCopy;           // Flag to denote creation of private copies of the devices
 
- ClassDef(AliEvent,12) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,13) // Creation and investigation of an Alice physics event.
 };
 #endif

@@ -170,7 +170,7 @@ void AliJet::SetOwner(Bool_t own)
  fTrackCopy=mode;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliJet::AliJet(AliJet& j) : TNamed(j),Ali4Vector(j)
+AliJet::AliJet(const AliJet& j) : TNamed(j),Ali4Vector(j)
 {
 // Copy constructor
  fNtinit=j.fNtinit;
@@ -351,7 +351,7 @@ void AliJet::ListAll(TString f)
  }
 } 
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliJet::GetNtracks()
+Int_t AliJet::GetNtracks() const
 {
 // Return the current number of tracks of this jet
  return fNtrk;
@@ -373,7 +373,7 @@ Double_t AliJet::GetMomentum()
  return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector AliJet::Get3Momentum()
+Ali3Vector AliJet::Get3Momentum() const
 {
 // Return the the total jet 3-momentum
  Ali3Vector p=Get3Vector();
@@ -394,13 +394,13 @@ Double_t AliJet::GetInvmass()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliJet::GetCharge()
+Float_t AliJet::GetCharge() const
 {
 // Return the total charge of the jet
  return fQ;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack* AliJet::GetTrack(Int_t i)
+AliTrack* AliJet::GetTrack(Int_t i) const
 {
 // Return the i-th track of this jet
  if (!fTracks)
@@ -423,7 +423,7 @@ AliTrack* AliJet::GetTrack(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack* AliJet::GetIdTrack(Int_t id)
+AliTrack* AliJet::GetIdTrack(Int_t id) const
 {
 // Return the track with user identifier "id" of this jet
  AliTrack* tx=0;
@@ -566,7 +566,7 @@ void AliJet::SetTrackCopy(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliJet::GetTrackCopy()
+Int_t AliJet::GetTrackCopy() const
 {
 // Provide value of the TrackCopy mode.
 // 0 ==> No private copies are made; pointers of original tracks are stored.
@@ -580,13 +580,13 @@ void AliJet::SetId(Int_t id)
  fUserId=id;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliJet::GetId()
+Int_t AliJet::GetId() const
 {
 // Provide the user defined identifier of this jet.
  return fUserId;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliJet::Clone(const char* name)
+TObject* AliJet::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

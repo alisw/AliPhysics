@@ -28,7 +28,7 @@ class Ali4Vector
   void Set3Vector(Ali3Vector& v);                   // Set the 3-vector part of v
   void Set3Vector(Double_t* v,TString f);           // Set the 3-vector part of v in frame f
   void Set3Vector(Float_t*  v,TString f);           // Set the 3-vector part of v in frame f
-  Ali3Vector Get3Vector();                          // Provide the 3-vector part of v
+  Ali3Vector Get3Vector() const;                    // Provide the 3-vector part of v
   void SetInvariant(Double_t v2,Double_t dv2=0);    // Set the Lorentz invariant (with error)
   void SetInvariantError(Double_t dv2);             // Set error on the Lorentz invariant
   Double_t GetInvariant();                          // Provide the Lorentz invariant
@@ -38,7 +38,7 @@ class Ali4Vector
   void GetErrors(Float_t*  v,TString f);            // Provide errors of vector v^i in frame f
   virtual void Data(TString f="car");               // Print contravariant components in frame f
   Double_t Dot(Ali4Vector& q);                      // Provide dot product v^i*q_i
-  Double_t GetResultError();                        // Provide error on scalar result (e.g. Dot)
+  Double_t GetResultError() const;                  // Provide error on scalar result (e.g. Dot)
   Ali4Vector operator+(Ali4Vector& q);              // Add contravariant vector q
   Ali4Vector operator-(Ali4Vector& q);              // Subtract contravariant vector q
   Ali4Vector operator*(Double_t s);                 // Multiply contravariant vector with scalar s
@@ -47,11 +47,11 @@ class Ali4Vector
   Ali4Vector& operator-=(Ali4Vector& q);            // Subtract contravariant vector q
   Ali4Vector& operator*=(Double_t s);               // Multiply with scalar s
   Ali4Vector& operator/=(Double_t s);               // Divide by scalar s
-  Int_t GetScalarFlag();                            // Provide the fScalar flag value
-  Ali3Vector GetVecTrans();                         // Provide transverse vector part w.r.t. z-axis
-  Ali3Vector GetVecLong();                          // Provide longitudinal vector part w.r.t. z-axis
+  Int_t GetScalarFlag() const;                      // Provide the fScalar flag value
+  Ali3Vector GetVecTrans() const;                   // Provide transverse vector part w.r.t. z-axis
+  Ali3Vector GetVecLong() const;                    // Provide longitudinal vector part w.r.t. z-axis
   Double_t GetPseudoRapidity();                     // Provide pseudorapidity of vector part w.r.t z-axis
-  Ali3Vector GetBetaVector();                       // Provide the beta 3-vector
+  Ali3Vector GetBetaVector() const;                 // Provide the beta 3-vector
   Double_t GetBeta();                               // Provide the norm of the beta 3-vector, i.e. v/c
   Double_t GetGamma();                              // Provide the Lorentz gamma factor
 
@@ -66,6 +66,6 @@ class Ali4Vector
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,6) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,7) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

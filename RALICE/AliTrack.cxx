@@ -178,7 +178,7 @@ AliTrack::~AliTrack()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack::AliTrack(AliTrack& t) : TNamed(t),Ali4Vector(t)
+AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
 {
 // Copy constructor
  Init();
@@ -295,8 +295,11 @@ void AliTrack::Reset()
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::Set3Momentum(Ali3Vector& p)
 {
-// Set the track parameters according to the 3-momentum p
+// Set the track parameters according to the 3-momentum p.
+// In case the mass was not yet set, the energy is set to correspond to m=0. 
  Set3Vector(p);
+ Double_t inv=GetInvariant();
+ if (inv<0) SetMass(0.);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::Set4Momentum(Ali4Vector& p)
@@ -470,7 +473,7 @@ Double_t AliTrack::GetMomentum()
  return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector AliTrack::Get3Momentum()
+Ali3Vector AliTrack::Get3Momentum() const
 {
 // Provide the track 3-momentum
  return (Ali3Vector)Get3Vector();
@@ -500,7 +503,7 @@ Double_t AliTrack::GetMass()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliTrack::GetCharge()
+Float_t AliTrack::GetCharge() const
 {
 // Provide the particle charge
  return fQ;
@@ -595,7 +598,7 @@ void AliTrack::Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms)
  ((AliTrack*)fDecays->At(1))->SetMass(m2);
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetNdecay()
+Int_t AliTrack::GetNdecay() const
 {
 // Provide the number of decay produced tracks
  Int_t ndec=0;
@@ -603,7 +606,7 @@ Int_t AliTrack::GetNdecay()
  return ndec;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack* AliTrack::GetDecayTrack(Int_t j)
+AliTrack* AliTrack::GetDecayTrack(Int_t j) const
 {
 // Provide decay produced track number j
 // Note : j=1 denotes the first decay track
@@ -673,7 +676,7 @@ void AliTrack::RemoveSignals()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetNsignals()
+Int_t AliTrack::GetNsignals() const
 {
 // Provide the number of related AliSignals.
  Int_t nsig=0;
@@ -681,7 +684,7 @@ Int_t AliTrack::GetNsignals()
  return nsig;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal* AliTrack::GetSignal(Int_t j)
+AliSignal* AliTrack::GetSignal(Int_t j) const
 {
 // Provide the related AliSignal number j.
 // Note : j=1 denotes the first signal.
@@ -759,7 +762,7 @@ void AliTrack::RemoveTrackHypotheses()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetNhypotheses()
+Int_t AliTrack::GetNhypotheses() const
 {
 // Provide the number of track hypotheses.
  Int_t nhyp=0;
@@ -767,7 +770,7 @@ Int_t AliTrack::GetNhypotheses()
  return nhyp;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack* AliTrack::GetTrackHypothesis(Int_t j)
+AliTrack* AliTrack::GetTrackHypothesis(Int_t j) const
 {
 // Provide the j-th track hypothesis.
 // Note : j=1 denotes the first hypothesis.
@@ -1050,7 +1053,7 @@ void AliTrack::SetId(Int_t id)
  fUserId=id;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetId()
+Int_t AliTrack::GetId() const
 {
 // Provide the user defined unique identifier of this track.
  return fUserId;
@@ -1101,13 +1104,13 @@ void AliTrack::SetNdf(Int_t ndf)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliTrack::GetChi2()
+Float_t AliTrack::GetChi2() const
 {
 // Provide the chi-squared value of the track fit.
  return fChi2;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetNdf()
+Int_t AliTrack::GetNdf() const
 {
 // Provide the number of degrees of freedom for the track fit.
  return fNdf;
@@ -1119,7 +1122,7 @@ void AliTrack::SetParticleCode(Int_t code)
  fCode=code;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetParticleCode()
+Int_t AliTrack::GetParticleCode() const
 {
 // Provide the user defined particle id code.
  return fCode;
@@ -1143,13 +1146,13 @@ void AliTrack::SetProb(Double_t prob)
  fProb=prob;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliTrack::GetProb()
+Float_t AliTrack::GetProb() const
 {
 // Provide the hypothesis probability for this track.
  return fProb;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliTrack::Clone(const char* name)
+TObject* AliTrack::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

@@ -204,7 +204,7 @@ void Ali3Vector::SetVector(Double_t* v,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetVector(Double_t* v,TString f)
+void Ali3Vector::GetVector(Double_t* v,TString f) const
 {
 // Provide vector according to reference frame f
  Int_t frame=0;
@@ -255,7 +255,7 @@ void Ali3Vector::SetVector(Float_t* v,TString f)
  SetVector(vec,f);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetVector(Float_t* v,TString f)
+void Ali3Vector::GetVector(Float_t* v,TString f) const
 {
 // Provide vector according to reference frame f
  Double_t vec[3];
@@ -317,7 +317,7 @@ void Ali3Vector::SetErrors(Double_t* e,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetErrors(Double_t* e,TString f)
+void Ali3Vector::GetErrors(Double_t* e,TString f) const
 {
 // Provide errors according to reference frame f
  Int_t frame=0;
@@ -428,7 +428,7 @@ void Ali3Vector::SetErrors(Float_t* e,TString f)
  SetErrors(vec,f);
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::GetErrors(Float_t* e,TString f)
+void Ali3Vector::GetErrors(Float_t* e,TString f) const
 {
 // Provide errors according to reference frame f
  Double_t vec[3];
@@ -439,7 +439,7 @@ void Ali3Vector::GetErrors(Float_t* e,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3Vector::Data(TString f)
+void Ali3Vector::Data(TString f) const
 {
 // Print vector components according to reference frame f
  if (f=="car" || f=="sph" || f=="cyl")
@@ -525,14 +525,14 @@ Double_t Ali3Vector::Dot(Ali3Vector& q)
  return dotpro;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t Ali3Vector::GetResultError()
+Double_t Ali3Vector::GetResultError() const
 {
 // Provide the error on the result of an operation yielding a scalar
 // E.g. GetNorm() or Dot()
  return fDresult;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali3Vector::Cross(Ali3Vector& q)
+Ali3Vector Ali3Vector::Cross(Ali3Vector& q) const
 {
 // Provide the cross product of the current vector with vector q
 // Error propagation is performed automatically
@@ -567,7 +567,7 @@ Ali3Vector Ali3Vector::Cross(Ali3Vector& q)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali3Vector::operator+(Ali3Vector& q)
+Ali3Vector Ali3Vector::operator+(Ali3Vector& q) const
 {
 // Add vector q to the current vector
 // Error propagation is performed automatically
@@ -591,7 +591,7 @@ Ali3Vector Ali3Vector::operator+(Ali3Vector& q)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali3Vector::operator-(Ali3Vector& q)
+Ali3Vector Ali3Vector::operator-(Ali3Vector& q) const
 {
 // Subtract vector q from the current vector
 // Error propagation is performed automatically
@@ -615,7 +615,7 @@ Ali3Vector Ali3Vector::operator-(Ali3Vector& q)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali3Vector::operator*(Double_t s)
+Ali3Vector Ali3Vector::operator*(Double_t s) const
 {
 // Multiply the current vector with a scalar s.
 // Error propagation is performed automatically.
@@ -637,7 +637,7 @@ Ali3Vector Ali3Vector::operator*(Double_t s)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali3Vector::operator/(Double_t s)
+Ali3Vector Ali3Vector::operator/(Double_t s) const
 {
 // Divide the current vector by a scalar s
 // Error propagation is performed automatically
@@ -765,7 +765,7 @@ Ali3Vector& Ali3Vector::operator/=(Double_t s)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali3Vector::GetVecTrans()
+Ali3Vector Ali3Vector::GetVecTrans() const
 {
 // Provide the transverse vector w.r.t. z-axis.
 // Error propagation is performed automatically
@@ -792,7 +792,7 @@ Ali3Vector Ali3Vector::GetVecTrans()
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali3Vector::GetVecLong()
+Ali3Vector Ali3Vector::GetVecLong() const
 {
 // Provide the longitudinal vector w.r.t. z-axis.
 // Error propagation is performed automatically
@@ -819,6 +819,33 @@ Ali3Vector Ali3Vector::GetVecLong()
  v.SetVector(a,"sph");
  v.SetErrors(ea,"sph");
   
+ return v;
+}
+///////////////////////////////////////////////////////////////////////////
+Ali3Vector Ali3Vector::GetPrimed(TRotMatrix* m) const
+{
+// Provide vector components (and errors) in a rotated frame.
+// The orientation of the rotated frame is described by the TRotMatrix
+// input argument.
+ Ali3Vector v=*this;
+ if (!m) return v;
+
+ Double_t* mat=m->GetMatrix();
+
+ Double_t a[3],aprim[3];
+
+ GetVector(a,"car");
+ aprim[0]=a[0]*mat[0]+a[1]*mat[1]+a[2]*mat[2];
+ aprim[1]=a[0]*mat[3]+a[1]*mat[4]+a[2]*mat[5];
+ aprim[2]=a[0]*mat[6]+a[1]*mat[7]+a[2]*mat[8];
+ v.SetVector(aprim,"car");
+
+ GetErrors(a,"car");
+ aprim[0]=sqrt(pow(a[0]*mat[0],2)+pow(a[1]*mat[1],2)+pow(a[2]*mat[2],2));
+ aprim[1]=sqrt(pow(a[0]*mat[3],2)+pow(a[1]*mat[4],2)+pow(a[2]*mat[5],2));
+ aprim[2]=sqrt(pow(a[0]*mat[6],2)+pow(a[1]*mat[7],2)+pow(a[2]*mat[8],2));
+ v.SetErrors(aprim,"car");
+
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -249,7 +249,7 @@ void AliVertex::SetOwner(Bool_t own)
  AliJet::SetOwner(own);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliVertex::AliVertex(AliVertex& v) : AliJet(v.fNtinit),AliPosition(v)
+AliVertex::AliVertex(const AliVertex& v) : AliJet(v.fNtinit),AliPosition(v)
 {
 // Copy constructor
  Init();
@@ -683,13 +683,13 @@ void AliVertex::Dumps(AliVertex* v,Int_t n,TString f)
  }
 } 
 //////////////////////////////////////////////////////////////////////////
-Int_t AliVertex::GetNvertices()
+Int_t AliVertex::GetNvertices() const
 {
 // Return the current number of (secondary) vertices
  return fNvtx;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliVertex* AliVertex::GetVertex(Int_t i)
+AliVertex* AliVertex::GetVertex(Int_t i) const
 {
 // Return the i-th (secondary) vertex of the current vertex
  if (!fVertices)
@@ -712,7 +712,7 @@ AliVertex* AliVertex::GetVertex(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliVertex* AliVertex::GetIdVertex(Int_t id)
+AliVertex* AliVertex::GetIdVertex(Int_t id) const
 {
 // Return the (sec.) vertex with user identifier "id"
  AliVertex* vx=0;
@@ -761,7 +761,7 @@ void AliVertex::SetVertexCopy(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliVertex::GetVertexCopy()
+Int_t AliVertex::GetVertexCopy() const
 {
 // Provide value of the VertexCopy mode.
 // 0 ==> No private copies are made; pointers of original vertices are stored.
@@ -769,13 +769,13 @@ Int_t AliVertex::GetVertexCopy()
  return fVertexCopy;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliVertex::GetNjets()
+Int_t AliVertex::GetNjets() const
 {
 // Return the current number of jets
  return fNjets;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliJet* AliVertex::GetJet(Int_t i)
+AliJet* AliVertex::GetJet(Int_t i) const
 {
 // Return the i-th jet of the current vertex
  if (!fJets)
@@ -798,7 +798,7 @@ AliJet* AliVertex::GetJet(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliJet* AliVertex::GetIdJet(Int_t id)
+AliJet* AliVertex::GetIdJet(Int_t id) const
 {
 // Return the jet with user identifier "id"
  AliJet* jx=0;
@@ -847,7 +847,7 @@ void AliVertex::SetJetCopy(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliVertex::GetJetCopy()
+Int_t AliVertex::GetJetCopy() const
 {
 // Provide value of the JetCopy mode.
 // 0 ==> No private copies are made; pointers of original jets are stored.
@@ -855,7 +855,7 @@ Int_t AliVertex::GetJetCopy()
  return fJetCopy;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliVertex::IsConnectTrack(AliTrack* t)
+Int_t AliVertex::IsConnectTrack(AliTrack* t) const
 {
 // Indicate whether a track from the tracklist was created via the
 // connection of a (secondary) vertex or not.
@@ -869,7 +869,7 @@ Int_t AliVertex::IsConnectTrack(AliTrack* t)
  return connect;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliVertex::IsJetTrack(AliTrack* t)
+Int_t AliVertex::IsJetTrack(AliTrack* t) const
 {
 // Indicate whether a track from the tracklist was created via the
 // addition of a jet or not.
@@ -992,7 +992,7 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliVertex::Clone(const char* name)
+TObject* AliVertex::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

@@ -255,19 +255,19 @@ void AliSample::Compute()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSample::GetDimension()
+Int_t AliSample::GetDimension() const
 {
 // Provide the dimension of a certain sample
  return fDim;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliSample::GetN()
+Int_t AliSample::GetN() const
 {
 // Provide the number of entries of a certain sample
  return fN;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSample::GetSum(Int_t i)
+Float_t AliSample::GetSum(Int_t i) const
 {
 // Provide the sum of a certain variable
  if (fDim < i)
@@ -281,7 +281,7 @@ Float_t AliSample::GetSum(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSample::GetMean(Int_t i)
+Float_t AliSample::GetMean(Int_t i) const
 {
 // Provide the mean of a certain variable
  if (fDim < i)
@@ -295,7 +295,7 @@ Float_t AliSample::GetMean(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSample::GetVar(Int_t i)
+Float_t AliSample::GetVar(Int_t i) const
 {
 // Provide the variance of a certain variable
  if (fDim < i)
@@ -309,7 +309,7 @@ Float_t AliSample::GetVar(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSample::GetSigma(Int_t i)
+Float_t AliSample::GetSigma(Int_t i) const
 {
 // Provide the standard deviation of a certain variable
  if (fDim < i)
@@ -323,7 +323,7 @@ Float_t AliSample::GetSigma(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSample::GetCov(Int_t i,Int_t j)
+Float_t AliSample::GetCov(Int_t i,Int_t j) const
 {
 // Provide the covariance between variables i and j
  if ((fDim < i) || (fDim < j))
@@ -339,7 +339,7 @@ Float_t AliSample::GetCov(Int_t i,Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSample::GetCor(Int_t i,Int_t j)
+Float_t AliSample::GetCor(Int_t i,Int_t j) const
 {
 // Provide the correlation between variables i and j
  if ((fDim < i) || (fDim < j))
@@ -355,7 +355,7 @@ Float_t AliSample::GetCor(Int_t i,Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Data()
+void AliSample::Data() const
 {
 // Printing of statistics of all variables
  for (Int_t i=0; i<fDim; i++)
@@ -366,7 +366,7 @@ void AliSample::Data()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Data(Int_t i)
+void AliSample::Data(Int_t i) const
 {
 // Printing of statistics of ith variable
  if (fDim < i)
@@ -381,7 +381,7 @@ void AliSample::Data(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Data(Int_t i,Int_t j)
+void AliSample::Data(Int_t i,Int_t j) const
 {
 // Printing of covariance and correlation between variables i and j
  if ((fDim < i) || (fDim < j))

@@ -159,7 +159,7 @@ void AliObjMatrix::SetOwner(Int_t own)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetOwner()
+Int_t AliObjMatrix::GetOwner() const
 {
 // Provide the owner flag for the stored objects.
  return fOwn;
@@ -189,7 +189,7 @@ void AliObjMatrix::SetSwapMode(Int_t swap)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetSwapMode()
+Int_t AliObjMatrix::GetSwapMode() const
 {
 // Provide the swap mode flag for this matrix.
  return fSwap;
@@ -369,7 +369,7 @@ void AliObjMatrix::RemoveObjects(TObject* obj,Int_t row,Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliObjMatrix::GetObject(Int_t row,Int_t col)
+TObject* AliObjMatrix::GetObject(Int_t row,Int_t col) const
 {
 // Provide a pointer to the object stored at the matrix location (row,col).
 // In case no object was stored at the indicated location or the location
@@ -396,7 +396,7 @@ TObject* AliObjMatrix::GetObject(Int_t row,Int_t col)
  return obj;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliObjMatrix::GetObject(Int_t j)
+TObject* AliObjMatrix::GetObject(Int_t j) const
 {
 // Provide a pointer to the j-th stored object.
 // In case the index j is invalid, a value 0 will be returned.
@@ -428,19 +428,19 @@ TObjArray* AliObjMatrix::GetObjects()
  return fObjects;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetMaxRow()
+Int_t AliObjMatrix::GetMaxRow() const
 {
 // Provide the maximum row number index.
  return fMaxrow;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetMaxColumn()
+Int_t AliObjMatrix::GetMaxColumn() const
 {
 // Provide the maximum column number index.
  return fMaxcol;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetNobjects()
+Int_t AliObjMatrix::GetNobjects() const
 {
 // Provide the number of stored objects.
  Int_t nobj=0;
@@ -449,7 +449,7 @@ Int_t AliObjMatrix::GetNobjects()
  return nobj;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetNrefs(TObject* obj)
+Int_t AliObjMatrix::GetNrefs(TObject* obj) const
 {
 // Provide the number of stored references to the specified object.
 // If obj=0 the total number of stored references for all objects is returned.
@@ -466,7 +466,7 @@ Int_t AliObjMatrix::GetNrefs(TObject* obj)
  return nrefs;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,TArrayI& cols)
+Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,TArrayI& cols) const
 {
 // Provide the (row,col) indices of all the storage locations of the
 // specified object.
@@ -528,7 +528,7 @@ Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,TArrayI& cols)
  return nrefs;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetIndices(TObject* obj,Int_t row,TArrayI& cols)
+Int_t AliObjMatrix::GetIndices(TObject* obj,Int_t row,TArrayI& cols) const
 {
 // Provide the column indices of all the storage locations of the
 // specified object in the specified row of the matrix.
@@ -629,7 +629,7 @@ Int_t AliObjMatrix::GetIndices(TObject* obj,Int_t row,TArrayI& cols)
  return jref;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,Int_t col)
+Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,Int_t col) const
 {
 // Provide the row indices of all the storage locations of the
 // specified object in the specified column of the matrix.

@@ -73,7 +73,7 @@ AliCalcluster::~AliCalcluster()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalcluster::AliCalcluster(AliCalcluster& c) : AliSignal(c)
+AliCalcluster::AliCalcluster(const AliCalcluster& c) : AliSignal(c)
 {
 // Copy constructor
  fRow=c.fRow;
@@ -137,25 +137,25 @@ AliCalcluster::AliCalcluster(AliCalmodule& m) : AliSignal()
  SetName("AliCalcluster [sig, sig11, sig33, sig55,...]");
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalcluster::GetRow()
+Int_t AliCalcluster::GetRow() const
 {
 // Provide the row number of the cluster center
  return fRow;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalcluster::GetColumn()
+Int_t AliCalcluster::GetColumn() const
 {
 // Provide the column number of the cluster center
  return fCol;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalcluster::GetNmodules()
+Int_t AliCalcluster::GetNmodules() const
 {
 // Provide the number of modules in the cluster
  return fNmods;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalcluster::GetRowDispersion()
+Float_t AliCalcluster::GetRowDispersion() const
 {
 // Provide the normalised row dispersion of the cluster.
  Float_t sig=GetSignal();
@@ -169,7 +169,7 @@ Float_t AliCalcluster::GetRowDispersion()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalcluster::GetColumnDispersion()
+Float_t AliCalcluster::GetColumnDispersion() const
 {
 // Provide the normalised column dispersion of the cluster
  Float_t sig=GetSignal();
@@ -347,13 +347,13 @@ void AliCalcluster::AddVetoSignal(AliSignal& s,Int_t extr)
  fNvetos++;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalcluster::GetNvetos()
+Int_t AliCalcluster::GetNvetos() const
 {
 // Provide the number of veto signals associated to the cluster
  return fNvetos;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal* AliCalcluster::GetVetoSignal(Int_t i)
+AliSignal* AliCalcluster::GetVetoSignal(Int_t i) const
 {
 // Provide access to the i-th veto signal of this cluster.
 // Note : The first hit corresponds to i=1.
@@ -377,7 +377,7 @@ AliSignal* AliCalcluster::GetVetoSignal(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalcluster::GetVetoLevel()
+Float_t AliCalcluster::GetVetoLevel() const
 {
 // Provide the confidence level of best associated veto signal.
  Float_t cl=0;
@@ -400,7 +400,7 @@ Float_t AliCalcluster::GetVetoLevel()
  return clmax;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalcluster::HasVetoHit(Double_t cl)
+Int_t AliCalcluster::HasVetoHit(Double_t cl) const
 {
 // Investigate if cluster has an associated veto hit with conf. level > cl.
 // Returns 1 if there is such an associated veto hit, otherwise returns 0.

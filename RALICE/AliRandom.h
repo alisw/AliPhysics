@@ -16,10 +16,10 @@ class AliRandom : public TObject
   AliRandom(Int_t seed);                       // Constructor with user defined seed
   AliRandom(Int_t seed,Int_t cnt1,Int_t cnt2); // User defined starting point
   virtual ~AliRandom();                        // Destructor
-  Int_t GetSeed();                             // Provide current seed value
-  Int_t GetCnt1();                             // Provide current counter value cnt1
-  Int_t GetCnt2();                             // Provide current counter value cnt2
-  void Data();                                 // Print current seed, cnt1 and cnt2
+  Int_t GetSeed() const;                       // Provide current seed value
+  Int_t GetCnt1() const;                       // Provide current counter value cnt1
+  Int_t GetCnt2() const;                       // Provide current counter value cnt2
+  void Data() const;                           // Print current seed, cnt1 and cnt2
   Float_t Uniform();                           // Uniform dist. within <0,1>
   Float_t Uniform(Float_t a,Float_t b);        // Uniform dist. within <a,b>
   void Uniform(Float_t* vec,Int_t n);          // n uniform randoms in <0,1>
@@ -47,6 +47,6 @@ class AliRandom : public TObject
   Float_t fYamin,fYamax; //! The min. and max. y values of the area function
   Int_t* fIbins;         //! The bin numbers of the random x candidates
  
- ClassDef(AliRandom,2) // Generate universal random numbers on all common machines.
+ ClassDef(AliRandom,3) // Generate universal random numbers on all common machines.
 };
 #endif

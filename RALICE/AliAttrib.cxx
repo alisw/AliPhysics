@@ -82,7 +82,7 @@ AliAttrib::~AliAttrib()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliAttrib::AliAttrib(AliAttrib& a)
+AliAttrib::AliAttrib(const AliAttrib& a)
 {
 // Copy constructor
  fGains=0;
@@ -123,7 +123,7 @@ AliAttrib::AliAttrib(AliAttrib& a)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetNgains()
+Int_t AliAttrib::GetNgains() const
 {
 // Provide the number of specified gains for this attribute.
  Int_t n=0;
@@ -131,7 +131,7 @@ Int_t AliAttrib::GetNgains()
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetNoffsets()
+Int_t AliAttrib::GetNoffsets() const
 {
 // Provide the number of specified offsets for this attribute.
  Int_t n=0;
@@ -139,7 +139,7 @@ Int_t AliAttrib::GetNoffsets()
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetNcalflags()
+Int_t AliAttrib::GetNcalflags() const
 {
 // Provide the number of specified calib. flags for this attribute.
  Int_t n=0;
@@ -147,7 +147,7 @@ Int_t AliAttrib::GetNcalflags()
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetNnames()
+Int_t AliAttrib::GetNnames() const
 {
 // Provide the maximum number of specified names for this attribute.
  Int_t n=0;
@@ -256,7 +256,7 @@ void AliAttrib::SetCalFlags(Int_t gainflag,Int_t offsetflag,Int_t j)
  fCalflags->AddAt(word,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetGainFlag(Int_t j)
+Int_t AliAttrib::GetGainFlag(Int_t j) const
 {
 // Provide gain flag of the j-th (default j=1) attribute slot.
 //
@@ -284,7 +284,7 @@ Int_t AliAttrib::GetGainFlag(Int_t j)
  return gflag;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetOffsetFlag(Int_t j)
+Int_t AliAttrib::GetOffsetFlag(Int_t j) const
 {
 // Provide offset flag of the j-th (default j=1) attribute slot.
 //
@@ -312,7 +312,7 @@ Int_t AliAttrib::GetOffsetFlag(Int_t j)
  return oflag;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliAttrib::GetGain(Int_t j)
+Float_t AliAttrib::GetGain(Int_t j) const
 {
 // Provide gain value of the j-th (default j=1) attribute slot.
 // The first attribute slot is at j=1.
@@ -336,7 +336,7 @@ Float_t AliAttrib::GetGain(Int_t j)
  return gain;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliAttrib::GetOffset(Int_t j)
+Float_t AliAttrib::GetOffset(Int_t j) const
 {
 // Provide offset value of the j-th (default j=1) attribute slot.
 // The first attribute slot at j=1.
@@ -669,7 +669,7 @@ void AliAttrib::DecreaseEdgeValue(Int_t j)
  SetEdgeValue(edge-1,j);
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetEdgeValue(Int_t j)
+Int_t AliAttrib::GetEdgeValue(Int_t j) const
 {
 // Provide edge value of the j-th (default j=1) attribute slot.
 // Note : The first attribute slot is at j=1.
@@ -693,7 +693,7 @@ Int_t AliAttrib::GetEdgeValue(Int_t j)
  return edge;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetDeadValue(Int_t j)
+Int_t AliAttrib::GetDeadValue(Int_t j) const
 {
 // Provide dead value of the j-th (default j=1) attribute slot.
 // Note : The first attribute slot is at j=1.
@@ -749,7 +749,7 @@ void AliAttrib::SetSlotName(TString s,Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TString AliAttrib::GetSlotName(Int_t j)
+TString AliAttrib::GetSlotName(Int_t j) const
 {
 // Provide the user defined name for the j-th (default j=1) slot. 
 // Note : The first attribute slot is at j=1.
@@ -772,7 +772,7 @@ TString AliAttrib::GetSlotName(Int_t j)
  return s;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliAttrib::GetSlotIndex(TString name)
+Int_t AliAttrib::GetSlotIndex(TString name) const
 {
 // Provide the slot index for the matching name.
 // If no matching name is found, 0 is returned.
@@ -794,7 +794,7 @@ Int_t AliAttrib::GetSlotIndex(TString name)
  return index;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliAttrib::List(Int_t j)
+void AliAttrib::List(Int_t j) const
 {
 // Provide attribute information for the j-th slot.
 // The first slot is at j=1.

@@ -16,23 +16,23 @@
 class AliCalcluster : public AliSignal
 {
  public:
-  AliCalcluster();                   // Default constructor, all data initialised to 0
-  virtual ~AliCalcluster();          // Default destructor
-  AliCalcluster(AliCalcluster& c);   // Copy constructor
-  AliCalcluster(AliCalmodule& m);    // Create new cluster starting at module m
-  Int_t GetRow();                    // Return row number of cluster center
-  Int_t GetColumn();                 // Return column number of cluster center
-  Int_t GetNmodules();               // Return number of modules in cluster
-  Float_t GetRowDispersion();        // Return normalised row dispersion of cluster
-  Float_t GetColumnDispersion();     // Return normalised column dispersion of cluster
-  void Start(AliCalmodule& m);       // Reset cluster data to start with module m
-  void Add(AliCalmodule& m);         // Add module data to cluster
+  AliCalcluster();                         // Default constructor, all data initialised to 0
+  virtual ~AliCalcluster();                // Default destructor
+  AliCalcluster(const AliCalcluster& c);   // Copy constructor
+  AliCalcluster(AliCalmodule& m);          // Create new cluster starting at module m
+  Int_t GetRow() const;                    // Return row number of cluster center
+  Int_t GetColumn() const;                 // Return column number of cluster center
+  Int_t GetNmodules() const;               // Return number of modules in cluster
+  Float_t GetRowDispersion() const;        // Return normalised row dispersion of cluster
+  Float_t GetColumnDispersion() const;     // Return normalised column dispersion of cluster
+  void Start(AliCalmodule& m);             // Reset cluster data to start with module m
+  void Add(AliCalmodule& m);               // Add module data to cluster
   void AddVetoSignal(AliSignal& s,Int_t extr=1); // Associate (extrapolated) signal
   void AddVetoSignal(AliSignal* s,Int_t extr=1) { AddVetoSignal(*s,extr); }
-  AliSignal* GetVetoSignal(Int_t j); // Access to veto signal number j
-  Int_t GetNvetos();                 // Provide the number of veto signals
-  Float_t GetVetoLevel();            // Provide confidence level of best associated veto hit
-  Int_t HasVetoHit(Double_t cl);     // Check for ass. veto hit with conf. level > cl
+  AliSignal* GetVetoSignal(Int_t j) const; // Access to veto signal number j
+  Int_t GetNvetos() const;                 // Provide the number of veto signals
+  Float_t GetVetoLevel() const;            // Provide confidence level of best associated veto hit
+  Int_t HasVetoHit(Double_t cl) const;     // Check for ass. veto hit with conf. level > cl
  
  protected:
   Int_t fRow;            // Row index of the central module of the cluster
@@ -43,6 +43,6 @@ class AliCalcluster : public AliSignal
   Int_t fNvetos;         // The number of associated veto signals
   TObjArray* fVetos;     // The array of associated veto signals
  
- ClassDef(AliCalcluster,4) // Description of a cluster of calorimeter modules.
+ ClassDef(AliCalcluster,5) // Description of a cluster of calorimeter modules.
 };
 #endif

@@ -49,12 +49,12 @@ AliMath::~AliMath()
 // Destructor
 }
 ///////////////////////////////////////////////////////////////////////////
-AliMath::AliMath(AliMath& m) : TObject(m)
+AliMath::AliMath(const AliMath& m) : TObject(m)
 {
 // Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::Gamma(Double_t z)
+Double_t AliMath::Gamma(Double_t z) const
 {
 // Computation of gamma(z) for all z>0.
 //
@@ -75,7 +75,7 @@ Double_t AliMath::Gamma(Double_t z)
  return exp(v);
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::Gamma(Double_t a,Double_t x)
+Double_t AliMath::Gamma(Double_t a,Double_t x) const
 {
 // Computation of the incomplete gamma function P(a,x)
 //
@@ -106,7 +106,7 @@ Double_t AliMath::Gamma(Double_t a,Double_t x)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::LnGamma(Double_t z)
+Double_t AliMath::LnGamma(Double_t z) const
 {
 // Computation of ln[gamma(z)] for all z>0.
 //
@@ -149,7 +149,7 @@ Double_t AliMath::LnGamma(Double_t z)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::GamSer(Double_t a,Double_t x)
+Double_t AliMath::GamSer(Double_t a,Double_t x) const
 {
 // Computation of the incomplete gamma function P(a,x)
 // via its series representation.
@@ -190,7 +190,7 @@ Double_t AliMath::GamSer(Double_t a,Double_t x)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::GamCf(Double_t a,Double_t x)
+Double_t AliMath::GamCf(Double_t a,Double_t x) const
 {
 // Computation of the incomplete gamma function P(a,x)
 // via its continued fraction representation.
@@ -240,7 +240,7 @@ Double_t AliMath::GamCf(Double_t a,Double_t x)
  return (1.-v);
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::Erf(Double_t x)
+Double_t AliMath::Erf(Double_t x) const
 {
 // Computation of the error function erf(x).
 //
@@ -249,7 +249,7 @@ Double_t AliMath::Erf(Double_t x)
  return (1.-Erfc(x));
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::Erfc(Double_t x)
+Double_t AliMath::Erfc(Double_t x) const
 {
 // Computation of the complementary error function erfc(x).
 //
@@ -283,7 +283,7 @@ Double_t AliMath::Erfc(Double_t x)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::Prob(Double_t chi2,Int_t ndf,Int_t mode)
+Double_t AliMath::Prob(Double_t chi2,Int_t ndf,Int_t mode) const
 {
 // Computation of the probability for a certain Chi-squared (chi2)
 // and number of degrees of freedom (ndf).
@@ -353,7 +353,7 @@ Double_t AliMath::Prob(Double_t chi2,Int_t ndf,Int_t mode)
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::BesselI0(Double_t x)
+Double_t AliMath::BesselI0(Double_t x) const
 {
 // Computation of the modified Bessel function I_0(x) for any real x.
 //
@@ -392,7 +392,7 @@ Double_t AliMath::BesselI0(Double_t x)
  return result;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::BesselK0(Double_t x)
+Double_t AliMath::BesselK0(Double_t x) const
 {
 // Computation of the modified Bessel function K_0(x) for positive real x.
 //
@@ -435,7 +435,7 @@ Double_t AliMath::BesselK0(Double_t x)
  return result;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::BesselI1(Double_t x)
+Double_t AliMath::BesselI1(Double_t x) const
 {
 // Computation of the modified Bessel function I_1(x) for any real x.
 //
@@ -475,7 +475,7 @@ Double_t AliMath::BesselI1(Double_t x)
  return result;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::BesselK1(Double_t x)
+Double_t AliMath::BesselK1(Double_t x) const
 {
 // Computation of the modified Bessel function K_1(x) for positive real x.
 //
@@ -518,7 +518,7 @@ Double_t AliMath::BesselK1(Double_t x)
  return result;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::BesselK(Int_t n,Double_t x)
+Double_t AliMath::BesselK(Int_t n,Double_t x) const
 {
 // Computation of the Integer Order Modified Bessel function K_n(x)
 // for n=0,1,2,... and positive real x.
@@ -556,7 +556,7 @@ Double_t AliMath::BesselK(Int_t n,Double_t x)
  return bk;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliMath::BesselI(Int_t n,Double_t x)
+Double_t AliMath::BesselI(Int_t n,Double_t x) const
 {
 // Computation of the Integer Order Modified Bessel function I_n(x)
 // for n=0,1,2,... and any real x.

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.18 2004/01/12 08:23:22 nick Exp $
+// $Id: AliEvent.cxx,v 1.20 2004/02/06 15:25:07 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -201,7 +201,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2004/01/12 08:23:22 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2004/02/06 15:25:07 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -261,7 +261,7 @@ AliEvent::~AliEvent()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliEvent::AliEvent(AliEvent& evt) : AliVertex(evt)
+AliEvent::AliEvent(const AliEvent& evt) : AliVertex(evt)
 {
 // Copy constructor.
  fDaytime=evt.fDaytime;
@@ -390,19 +390,19 @@ void AliEvent::SetEventNumber(Int_t evt)
  fEvent=evt;
 }
 ///////////////////////////////////////////////////////////////////////////
-TTimeStamp AliEvent::GetDayTime()
+TTimeStamp AliEvent::GetDayTime() const
 {
 // Provide the date and time stamp for this event
  return fDaytime;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetRunNumber()
+Int_t AliEvent::GetRunNumber() const
 {
 // Provide the run number for this event
  return fRun;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetEventNumber()
+Int_t AliEvent::GetEventNumber() const
 {
 // Provide the event number for this event
  return fEvent;
@@ -418,25 +418,25 @@ void AliEvent::SetProjectile(Int_t a,Int_t z,Double_t pnuc,Int_t id)
  fIdProj=id;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetProjectileA()
+Int_t AliEvent::GetProjectileA() const
 {
 // Provide the projectile A value.
  return fAproj;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetProjectileZ()
+Int_t AliEvent::GetProjectileZ() const
 {
 // Provide the projectile Z value.
  return fZproj;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliEvent::GetProjectilePnuc()
+Double_t AliEvent::GetProjectilePnuc() const
 {
 // Provide the projectile momentum value per nucleon.
  return fPnucProj;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetProjectileId()
+Int_t AliEvent::GetProjectileId() const
 {
 // Provide the user defined particle ID of the projectile.
  return fIdProj;
@@ -452,31 +452,31 @@ void AliEvent::SetTarget(Int_t a,Int_t z,Double_t pnuc,Int_t id)
  fIdTarg=id;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetTargetA()
+Int_t AliEvent::GetTargetA() const
 {
 // Provide the target A value.
  return fAtarg;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetTargetZ()
+Int_t AliEvent::GetTargetZ() const
 {
 // Provide the target Z value.
  return fZtarg;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliEvent::GetTargetPnuc()
+Double_t AliEvent::GetTargetPnuc() const
 {
 // Provide the target momentum value per nucleon.
  return fPnucTarg;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetTargetId()
+Int_t AliEvent::GetTargetId() const
 {
 // Provide the user defined particle ID of the target.
  return fIdTarg;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::HeaderData()
+void AliEvent::HeaderData() const
 {
 // Provide event header information
  const char* name=GetName();
@@ -500,7 +500,7 @@ void AliEvent::Data(TString f)
  AliVertex::Data(f);
 } 
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetNdevices()
+Int_t AliEvent::GetNdevices() const
 {
 // Provide the number of stored devices
  Int_t ndevs=0;
@@ -579,7 +579,7 @@ void AliEvent::SetDevCopy(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetDevCopy()
+Int_t AliEvent::GetDevCopy() const
 {
 // Provide value of the DevCopy mode.
 // 0 ==> No private copies are made; pointers of original devices are stored.
@@ -598,7 +598,7 @@ Int_t AliEvent::GetDevCopy()
  return fDevCopy;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliEvent::GetDevice(Int_t i)
+TObject* AliEvent::GetDevice(Int_t i) const
 {
 // Return the i-th device of this event.
 // The first device corresponds to i=1.
@@ -623,7 +623,7 @@ TObject* AliEvent::GetDevice(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliEvent::GetDevice(TString name)
+TObject* AliEvent::GetDevice(TString name) const
 {
 // Return the device with name tag "name"
  if (!fDevices)
@@ -648,7 +648,7 @@ TObject* AliEvent::GetDevice(TString name)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::ShowDevices()
+void AliEvent::ShowDevices() const
 {
 // Provide an overview of the available devices.
  Int_t ndevs=GetNdevices();
@@ -672,7 +672,7 @@ void AliEvent::ShowDevices()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliEvent::Clone(const char* name)
+TObject* AliEvent::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

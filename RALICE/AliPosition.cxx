@@ -37,6 +37,14 @@
 //
 // All angles are in radians.
 //
+// The unit scale for the coordinates can be defined by the user
+// via the SetUnitScale() memberfunction.
+// This enables standardised expressions using numerical values of
+// physical constants by means of the GetUnitScale() memberfunction.
+// By default the unit scale is set to cm, corresponding to invokation
+// of SetUnitScale(0.01).
+//   
+//
 // Example :
 // ---------
 //
@@ -60,7 +68,9 @@ ClassImp(AliPosition) // Class implementation to enable ROOT I/O
  
 AliPosition::AliPosition()
 {
-// Creation of an AliPosition object and initialisation of parameters
+// Creation of an AliPosition object and initialisation of parameters.
+// The unit scale for position coordinates is initialised to cm.
+ fScale=0.01;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition::~AliPosition()
@@ -71,6 +81,7 @@ AliPosition::~AliPosition()
 AliPosition::AliPosition(const AliPosition& p) : Ali3Vector(p)
 {
 // Copy constructor
+ fScale=p.fScale;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPosition::SetPosition(Double_t* r,TString f)
@@ -79,7 +90,7 @@ void AliPosition::SetPosition(Double_t* r,TString f)
  SetVector(r,f);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPosition(Double_t* r,TString f)
+void AliPosition::GetPosition(Double_t* r,TString f) const
 {
 // Provide position according to reference frame f
  GetVector(r,f);
@@ -91,7 +102,7 @@ void AliPosition::SetPosition(Float_t* r,TString f)
  SetVector(r,f);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPosition(Float_t* r,TString f)
+void AliPosition::GetPosition(Float_t* r,TString f) const
 {
 // Provide position according to reference frame f
  GetVector(r,f);
@@ -119,7 +130,7 @@ void AliPosition::SetPositionErrors(Double_t* r,TString f)
  SetErrors(r,f);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPositionErrors(Double_t* r,TString f)
+void AliPosition::GetPositionErrors(Double_t* r,TString f) const
 {
 // Provide position errors according to reference frame f
  GetErrors(r,f);
@@ -131,7 +142,7 @@ void AliPosition::SetPositionErrors(Float_t* r,TString f)
  SetErrors(r,f);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPositionErrors(Float_t* r,TString f)
+void AliPosition::GetPositionErrors(Float_t* r,TString f) const
 {
 // Provide position errors according to reference frame f
  GetErrors(r,f);
@@ -147,12 +158,56 @@ void AliPosition::ResetPosition()
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliPosition::GetDistance(AliPosition& p)
 {
-// Provide distance to position p.
+// Provide distance of the current AliPosition to position p.
 // The error on the result can be obtained as usual by invoking
 // GetResultError() afterwards. 
- Ali3Vector d=(Ali3Vector)((*this)-p);
+//
+// In the case of two positions with different unit scales, the distance
+// will be provided in the unit scale of the current AliPosition.
+// This implies that in such cases the results of r.GetDistance(q) and
+// q.GetDistance(r) will be numerically different.
+// As such it is possible to obtain a correctly computed distance between
+// positions which have different unit scales.
+// However, it is recommended to work always with one single unit scale.
+//
+ Ali3Vector d=(Ali3Vector)p;
+ Float_t pscale=p.GetUnitScale();
+ if ((pscale/fScale > 1.1) || (fScale/pscale > 1.1)) d=d*(pscale/fScale);
+ Ali3Vector q=(Ali3Vector)(*this);
+ d=d-q;
  Double_t dist=d.GetNorm();
  fDresult=d.GetResultError();
  return dist;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliPosition::SetUnitScale(Float_t s)
+{
+// Set the unit scale for the position coordinates.
+// The scale is normalised w.r.t. the meter, so setting the unit scale
+// to 0.01 means that all position coordinates are in cm.
+// By default the unit scale is set to cm in the AliPosition constructor.
+// It is recommended to use one single unit scale throughout a complete
+// analysis and/or simulation project.
+//
+// Note : This memberfunction does not modify the numerical values of
+//        the position coordinates.
+//        It only specifies their numerical meaning.
+// 
+ if (s>0.)
+ {
+  fScale=s;
+ }
+ else
+ {
+  cout << " *AliPosition::SetUnitScale* Invalid argument s = " << s << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliPosition::GetUnitScale() const
+{
+// Provide the unit scale for the position coordinates.
+// The scale is normalised w.r.t. the meter, so a unit scale of 0.01
+// means that all position coordinates are in cm.
+ return fScale;
 }
 ///////////////////////////////////////////////////////////////////////////

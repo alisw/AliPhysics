@@ -167,7 +167,7 @@ AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TNamed()
  SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TNamed(c)
+AliCalorimeter::AliCalorimeter(const AliCalorimeter& c) : TNamed(c)
 {
 // Copy constructor
  fClusters=0;
@@ -247,7 +247,7 @@ AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TNamed(c)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetNrows()
+Int_t AliCalorimeter::GetNrows() const
 {
 // Provide the number of rows for the calorimeter module matrix
  Int_t nrows=fNrows;
@@ -255,7 +255,7 @@ Int_t AliCalorimeter::GetNrows()
  return nrows;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetNcolumns()
+Int_t AliCalorimeter::GetNcolumns() const
 {
 // Provide the number of columns for the calorimeter module matrix
  Int_t ncols=fNcolumns;
@@ -489,7 +489,7 @@ void AliCalorimeter::Reset(Int_t mode)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalorimeter::GetSignal(Int_t row,Int_t col,Int_t mode)
+Float_t AliCalorimeter::GetSignal(Int_t row,Int_t col,Int_t mode) const
 {
 // Provide the signal of a certain calorimeter module.
 // In case the module was marked dead, 0 is returned.
@@ -879,7 +879,7 @@ void AliCalorimeter::SetPosition(Int_t row,Int_t col,Ali3Vector& r)
  if (m) m->SetPosition(r);
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetEdgeValue(Int_t row,Int_t col)
+Int_t AliCalorimeter::GetEdgeValue(Int_t row,Int_t col) const
 {
 // Provide the value of the edge flag of a certain module.
 
@@ -915,7 +915,7 @@ Int_t AliCalorimeter::GetEdgeValue(Int_t row,Int_t col)
  return edge;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetDeadValue(Int_t row,Int_t col)
+Int_t AliCalorimeter::GetDeadValue(Int_t row,Int_t col) const
 {
 // Provide the value of the dead flag of a certain module
 
@@ -951,7 +951,7 @@ Int_t AliCalorimeter::GetDeadValue(Int_t row,Int_t col)
  return dead;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetGainFlag(Int_t row,Int_t col)
+Int_t AliCalorimeter::GetGainFlag(Int_t row,Int_t col) const
 {
 // Provide the value of the gain flag of a certain module.
 
@@ -987,7 +987,7 @@ Int_t AliCalorimeter::GetGainFlag(Int_t row,Int_t col)
  return gf;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetOffsetFlag(Int_t row,Int_t col)
+Int_t AliCalorimeter::GetOffsetFlag(Int_t row,Int_t col) const
 {
 // Provide the value of the offset flag of a certain module.
 
@@ -1023,7 +1023,7 @@ Int_t AliCalorimeter::GetOffsetFlag(Int_t row,Int_t col)
  return of;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalorimeter::GetGain(Int_t row,Int_t col)
+Float_t AliCalorimeter::GetGain(Int_t row,Int_t col) const
 {
 // Provide the gain value of a certain module.
 // See the memberfunction GetSignal() for a definition of the gain value.
@@ -1071,7 +1071,7 @@ Float_t AliCalorimeter::GetGain(Int_t row,Int_t col)
  return gain;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalorimeter::GetOffset(Int_t row,Int_t col)
+Float_t AliCalorimeter::GetOffset(Int_t row,Int_t col) const
 {
 // Provide the offset value of a certain module.
 // See the memberfunction GetSignal() for a definition of the offset value.
@@ -1119,7 +1119,7 @@ Float_t AliCalorimeter::GetOffset(Int_t row,Int_t col)
  return offset;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::GetPosition(Int_t row,Int_t col,Float_t* vec,TString f)
+void AliCalorimeter::GetPosition(Int_t row,Int_t col,Float_t* vec,TString f) const
 {
 // Return the position in user coordinates for a certain calorimeter module
  vec[0]=0;
@@ -1130,7 +1130,7 @@ void AliCalorimeter::GetPosition(Int_t row,Int_t col,Float_t* vec,TString f)
  if (p) p->GetVector(vec,f);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition* AliCalorimeter::GetPosition(Int_t row,Int_t col)
+AliPosition* AliCalorimeter::GetPosition(Int_t row,Int_t col) const
 {
 // Access to the position of a certain calorimeter module.
 
@@ -1153,7 +1153,7 @@ AliPosition* AliCalorimeter::GetPosition(Int_t row,Int_t col)
  return m;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalorimeter::GetClusteredSignal(Int_t row,Int_t col)
+Float_t AliCalorimeter::GetClusteredSignal(Int_t row,Int_t col) const
 {
 // Provide the module signal after clustering.
 
@@ -1174,7 +1174,7 @@ Float_t AliCalorimeter::GetClusteredSignal(Int_t row,Int_t col)
  return sig;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetNsignals()
+Int_t AliCalorimeter::GetNsignals() const
 {
 // Provide the number of modules that contain a signal
 // Note : The number of modules marked 'dead' but which had a signal
@@ -1446,7 +1446,7 @@ void AliCalorimeter::AddRing(Int_t row, Int_t col, Int_t n)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetNclusters()
+Int_t AliCalorimeter::GetNclusters() const
 {
 // Provide the number of clusters
  Int_t nclu=0;
@@ -1454,7 +1454,7 @@ Int_t AliCalorimeter::GetNclusters()
  return nclu;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalcluster* AliCalorimeter::GetCluster(Int_t j)
+AliCalcluster* AliCalorimeter::GetCluster(Int_t j) const
 {
 // Provide cluster number j
 // Note : j=1 denotes the first cluster
@@ -1473,7 +1473,7 @@ AliCalcluster* AliCalorimeter::GetCluster(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalmodule* AliCalorimeter::GetModule(Int_t j)
+AliCalmodule* AliCalorimeter::GetModule(Int_t j) const
 {
 // Provide 'fired' module number j
 // Note : j=1 denotes the first 'fired' module
@@ -1492,7 +1492,7 @@ AliCalmodule* AliCalorimeter::GetModule(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalmodule* AliCalorimeter::GetModule(Int_t row,Int_t col)
+AliCalmodule* AliCalorimeter::GetModule(Int_t row,Int_t col) const
 {
 // Provide access to module (row,col).
 // Note : first module is at (1,1).
@@ -1634,7 +1634,7 @@ void AliCalorimeter::AddVetoSignal(AliSignal& s)
  fVetos->Add(sx);
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetNvetos()
+Int_t AliCalorimeter::GetNvetos() const
 {
 // Provide the number of veto signals associated to the calorimeter.
  Int_t nvetos=0;
@@ -1642,7 +1642,7 @@ Int_t AliCalorimeter::GetNvetos()
  return nvetos;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal* AliCalorimeter::GetVetoSignal(Int_t i)
+AliSignal* AliCalorimeter::GetVetoSignal(Int_t i) const
 {
 // Provide access to the i-th veto signal of this calorimeter
 // Note : The first hit corresponds to i=1
@@ -1674,14 +1674,14 @@ void AliCalorimeter::SetSwapMode(Int_t swap)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetSwapMode()
+Int_t AliCalorimeter::GetSwapMode() const
 {
 // Provide the swap mode for the module and position matrices.
 // For further details see the documentation of AliObjMatrix.
  return fSwap;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliCalorimeter::Clone(const char* name)
+TObject* AliCalorimeter::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

@@ -17,35 +17,35 @@
 class AliVertex : public AliJet,public AliPosition
 {
  public:
-  AliVertex();                            // Default constructor
-  AliVertex(Int_t n);                     // Create a vertex to hold initially n tracks
-  virtual ~AliVertex();                   // Default destructor
-  AliVertex(AliVertex& v);                // Copy constructor
-  virtual TObject* Clone(const char* name=""); // Make a deep copy and provide its pointer
-  virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
-  virtual void Reset();                   // Reset all values and stored vertex and jet lists
-  void ResetVertices();                   // Reset stored vertex list
-  void AddJet(AliJet& j,Int_t tracks=1);  // Add a jet (and its tracks) to the vertex
-  void AddVertex(AliVertex& v,Int_t connect=1);// Add (and connect) a (sec.) vertex to the current vertex
+  AliVertex();                             // Default constructor
+  AliVertex(Int_t n);                      // Create a vertex to hold initially n tracks
+  virtual ~AliVertex();                    // Default destructor
+  AliVertex(const AliVertex& v);           // Copy constructor
+  virtual TObject* Clone(const char* name="") const; // Make a deep copy and provide its pointer
+  virtual void SetOwner(Bool_t own=kTRUE); // Set ownership of all added objects
+  virtual void Reset();                    // Reset all values and stored vertex and jet lists
+  void ResetVertices();                    // Reset stored vertex list
+  void AddJet(AliJet& j,Int_t tracks=1);   // Add a jet (and its tracks) to the vertex
+  void AddVertex(AliVertex& v,Int_t connect=1); // Add (and connect) a (sec.) vertex to the current vertex
   void AddJet(AliJet* j,Int_t tracks=1)    { AddJet(*j,tracks); }
   void AddVertex(AliVertex* v,Int_t connect=1) { AddVertex(*v,connect); }
-  virtual void Data(TString f="car");     // Print the vertex info within coordinate frame f
-  virtual void List(TString f="car");     // Print vertex prim. track information for coord. frame f
-  virtual void ListAll(TString f="car");  // Print prim. + sec. vertex full track info for coord. frame f
-  Int_t GetNvertices();                   // Return the number of (secondary) vertices
-  AliVertex* GetVertex(Int_t i);          // Provide i-th (secondary) vertex
-  AliVertex* GetIdVertex(Int_t id);       // Provide the vertex with user identifier "id"
-  void SetNvmax(Int_t n=2);               // Set the initial max. number of (secondary) vertices
-  void SetVertexCopy(Int_t j);            // (De)activate creation of private copies in fVertices
-  Int_t GetVertexCopy();                  // Provide VertexCopy flag value      
-  Int_t GetNjets();                       // Return the number of jets
-  AliJet* GetJet(Int_t i);                // Provide i-th jet
-  AliJet* GetIdJet(Int_t id);             // Provide the jet with user identifier "id"
-  void SetNjmax(Int_t n=2);               // Set the initial max. number of jets
-  void SetJetCopy(Int_t j);               // (De)activate creation of private copies in fJets
-  Int_t GetJetCopy();                     // Provide JetCopy flag value      
-  Int_t IsConnectTrack(AliTrack* t);      // Indicate if track is created by vertex connection
-  Int_t IsJetTrack(AliTrack* t);          // Indicate if track is resulting from jet addition
+  virtual void Data(TString f="car");      // Print the vertex info within coordinate frame f
+  virtual void List(TString f="car");      // Print vertex prim. track information for coord. frame f
+  virtual void ListAll(TString f="car");   // Print prim. + sec. vertex full track info for coord. frame f
+  Int_t GetNvertices() const;              // Return the number of (secondary) vertices
+  AliVertex* GetVertex(Int_t i) const;     // Provide i-th (secondary) vertex
+  AliVertex* GetIdVertex(Int_t id) const;  // Provide the vertex with user identifier "id"
+  void SetNvmax(Int_t n=2);                // Set the initial max. number of (secondary) vertices
+  void SetVertexCopy(Int_t j);             // (De)activate creation of private copies in fVertices
+  Int_t GetVertexCopy() const;             // Provide VertexCopy flag value      
+  Int_t GetNjets() const;                  // Return the number of jets
+  AliJet* GetJet(Int_t i) const;           // Provide i-th jet
+  AliJet* GetIdJet(Int_t id) const;        // Provide the jet with user identifier "id"
+  void SetNjmax(Int_t n=2);                // Set the initial max. number of jets
+  void SetJetCopy(Int_t j);                // (De)activate creation of private copies in fJets
+  Int_t GetJetCopy() const;                // Provide JetCopy flag value      
+  Int_t IsConnectTrack(AliTrack* t) const; // Indicate if track is created by vertex connection
+  Int_t IsJetTrack(AliTrack* t) const;     // Indicate if track is resulting from jet addition
   virtual void Draw(Option_t*) { Draw(1,1,0); } // Override TObject::Draw for default event display
   virtual void Draw(Int_t secs,Int_t cons=1,Int_t jets=0); // Draw the vertex in an event display
 
@@ -66,6 +66,6 @@ class AliVertex : public AliJet,public AliPosition
  private:
   void Dumps(AliVertex* v,Int_t n,TString f); // Recursively print all sec. vertices
  
- ClassDef(AliVertex,8) // Creation and investigation of an AliVertex.
+ ClassDef(AliVertex,9) // Creation and investigation of an AliVertex.
 };
 #endif

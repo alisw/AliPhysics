@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.10 2004/02/13 11:08:16 nick Exp $
+// $Id: AliCollider.cxx,v 1.11 2004/03/12 09:18:24 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -108,7 +108,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2004/02/13 11:08:16 $ Utrecht University
+//- Modified: NvE $Date: 2004/03/12 09:18:24 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -258,7 +258,7 @@ void AliCollider::SetVertexMode(Int_t mode)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCollider::GetVertexMode()
+Int_t AliCollider::GetVertexMode() const
 {
 // Provide the current mode for vertex structure creation.
  return fVertexmode;
@@ -273,7 +273,7 @@ void AliCollider::SetResolution(Double_t res)
  fResolution=fabs(res);
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliCollider::GetResolution()
+Double_t AliCollider::GetResolution() const
 {
 // Provide the current resolution (in cm) for resolving (sec.) vertices.
  return fResolution;
@@ -286,7 +286,7 @@ void AliCollider::SetRunNumber(Int_t run)
  fRunnum=run;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCollider::GetRunNumber()
+Int_t AliCollider::GetRunNumber() const
 {
 // Provide the user defined run number.
  return fRunnum;
@@ -299,7 +299,7 @@ void AliCollider::SetPrintFreq(Int_t n)
  fPrintfreq=n;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCollider::GetPrintFreq()
+Int_t AliCollider::GetPrintFreq() const
 {
 // Provide the user selected print frequency.
  return fPrintfreq;
@@ -875,7 +875,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  if (fOutTree && fSelect) fOutTree->Fill();
 }
 ///////////////////////////////////////////////////////////////////////////
-AliEvent* AliCollider::GetEvent(Int_t select)
+AliEvent* AliCollider::GetEvent(Int_t select) const
 {
 // Provide pointer to the generated event structure.
 //
@@ -1010,7 +1010,7 @@ void AliCollider::SelectEvent(Int_t id)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCollider::GetSelectionFlag()
+Int_t AliCollider::GetSelectionFlag() const
 {
 // Return the value of the selection flag for the total event.
 // When the event passed the selection criteria as specified via
@@ -1063,7 +1063,7 @@ void AliCollider::SetSpectatorPmin(Float_t pmin)
  fSpecpmin=pmin;
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCollider::GetSpectatorPmin()
+Float_t AliCollider::GetSpectatorPmin() const
 {
 // Provide the minimal spectator momentum in GeV/c.
  return fSpecpmin;

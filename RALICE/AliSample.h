@@ -21,17 +21,17 @@ class AliSample
   void Remove(Float_t x, Float_t y);            // Remove value from 2-dim. sample
   void Enter(Float_t x, Float_t y, Float_t z);  // Enter value for 3-dim. sample
   void Remove(Float_t x, Float_t y, Float_t z); // Remove value from 3-dim. sample
-  Int_t GetDimension();                         // Provide dimension of the sample
-  Int_t GetN();                                 // Provide the number of entries
-  Float_t GetSum(Int_t i);                      // Provide sum for i-th variable
-  Float_t GetMean(Int_t i);                     // Provide mean for i-th variable
-  Float_t GetVar(Int_t i);                      // Provide variance for i-th variable
-  Float_t GetSigma(Int_t i);                    // Standard deviation for i-th variable
-  Float_t GetCov(Int_t i, Int_t j);             // Covariance for i-th and j-th variable
-  Float_t GetCor(Int_t i, Int_t j);             // Correlation for i-th and j-th variable
-  void Data();                                  // Stat. info for the complete sample
-  void Data(Int_t i);                           // Stat. info for the i-th variable
-  void Data(Int_t i, Int_t j);                  // Stat. info for i-th and j-th variable
+  Int_t GetDimension() const;                   // Provide dimension of the sample
+  Int_t GetN() const;                           // Provide the number of entries
+  Float_t GetSum(Int_t i) const;                // Provide sum for i-th variable
+  Float_t GetMean(Int_t i) const;               // Provide mean for i-th variable
+  Float_t GetVar(Int_t i) const;                // Provide variance for i-th variable
+  Float_t GetSigma(Int_t i) const;              // Standard deviation for i-th variable
+  Float_t GetCov(Int_t i, Int_t j) const;       // Covariance for i-th and j-th variable
+  Float_t GetCor(Int_t i, Int_t j) const;       // Correlation for i-th and j-th variable
+  void Data() const;                            // Stat. info for the complete sample
+  void Data(Int_t i) const;                     // Stat. info for the i-th variable
+  void Data(Int_t i, Int_t j) const;            // Stat. info for i-th and j-th variable
  
  private:
   Int_t fDim;                      // Dimension of the sample

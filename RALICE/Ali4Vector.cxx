@@ -297,7 +297,7 @@ Double_t Ali4Vector::GetScalar()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t Ali4Vector::GetResultError()
+Double_t Ali4Vector::GetResultError() const
 {
 // Provide the error on the result of an operation yielding a scalar
 // E.g. GetScalar(), GetInvariant() or Dot()
@@ -439,7 +439,7 @@ Double_t Ali4Vector::GetInvariant()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali4Vector::Get3Vector()
+Ali3Vector Ali4Vector::Get3Vector() const
 {
 // Provide the 3-vector part
  return fV;
@@ -742,13 +742,13 @@ Ali4Vector& Ali4Vector::operator/=(Double_t s)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t Ali4Vector::GetScalarFlag()
+Int_t Ali4Vector::GetScalarFlag() const
 {
 // Provide the value of the fScalar flag (for internal use only).
  return fScalar;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali4Vector::GetVecTrans()
+Ali3Vector Ali4Vector::GetVecTrans() const
 {
 // Provide the transverse vector part w.r.t. z-axis.
 // Error propagation is performed automatically
@@ -756,7 +756,7 @@ Ali3Vector Ali4Vector::GetVecTrans()
  return fV.GetVecTrans();
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali4Vector::GetVecLong()
+Ali3Vector Ali4Vector::GetVecLong() const
 {
 // Provide the longitudinal vector part w.r.t. z-axis.
 // Error propagation is performed automatically
@@ -820,7 +820,7 @@ Double_t Ali4Vector::GetPseudoRapidity()
  return eta;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector Ali4Vector::GetBetaVector()
+Ali3Vector Ali4Vector::GetBetaVector() const
 {
 // Provide the beta 3-vector corresponding to this 4-vector.
  Ali3Vector beta;

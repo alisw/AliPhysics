@@ -300,25 +300,25 @@ void AliRandom::Unpack(Int_t seed,Int_t& i,Int_t& j,Int_t& k,Int_t& l)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliRandom::GetSeed()
+Int_t AliRandom::GetSeed() const
 {
 // Provide the current seed value
  return fSeed;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliRandom::GetCnt1()
+Int_t AliRandom::GetCnt1() const
 {
 // Provide the current value of the counter cnt1
  return fCnt1;
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliRandom::GetCnt2()
+Int_t AliRandom::GetCnt2() const
 {
 // Provide the current value of the counter cnt2
  return fCnt2;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliRandom::Data()
+void AliRandom::Data() const
 {
 // Print the current seed, cnt1 and cnt2 values
  cout << " *Random* seed = " << fSeed

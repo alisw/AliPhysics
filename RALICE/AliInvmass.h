@@ -21,9 +21,9 @@ class AliInvmass : public TObject
   void SetStorageMode(Int_t m);                    // Set storage mode (1=single, 2=multiple)
   void SetThetaSwitch(Int_t i=1);                  // Enable (1/0) new theta for comb. bkg. reco.
   void SetPhiSwitch(Int_t i=1);                    // Enable (1/0) new phi for comb. bkg. reco.
-  Int_t GetStorageMode();                          // Provide storage mode
-  Int_t GetThetaSwitch();                          // Provide theta switch flag
-  Int_t GetPhiSwitch();                            // Provide phi switch flag
+  Int_t GetStorageMode() const;                    // Provide storage mode
+  Int_t GetThetaSwitch() const;                    // Provide theta switch flag
+  Int_t GetPhiSwitch() const;                      // Provide phi switch flag
   TObjArray* Invmass(TObjArray* a1,TObjArray* a2); // Two-particle inv. mass reco.
   TObjArray* CombBkg(TObjArray* a1,TObjArray* a2); // Two-particle comb. background reco.
 
@@ -40,6 +40,6 @@ class AliInvmass : public TObject
  private:
   void Combine(TObjArray* a1,TObjArray* a2); // Make two-particle combinations
 
- ClassDef(AliInvmass,1) // Construction of invariant mass and combinatorial background.
+ ClassDef(AliInvmass,2) // Construction of invariant mass and combinatorial background.
 };
 #endif
