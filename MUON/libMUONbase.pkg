@@ -20,5 +20,5 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONbaseLinkDef.h
 
-EINCLUDE:= RAW
+EINCLUDE:= RAW MUON/mapping
 
