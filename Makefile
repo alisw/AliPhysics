@@ -4,10 +4,6 @@
 #         Developed on idea of Boris Polichtchouk (Boris.Polichtchouk@cern.ch), 15/4/2001
 
 
-##### include general path/location macros #####
-override ALICE_TARGET := $(shell root-config --arch)
-override ALICE_ROOT   := $(shell pwd)
-
 ifdef ALIVERBOSE
 MUTE:=
 else
@@ -92,7 +88,7 @@ ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       CRT RICH START STRUCT EVGEN RALICE ALIFAST VZERO \
       THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN \
       THerwig TEPEMGEN EPEMGEN FASTSIM TPHIC RAW MONITOR DISPLAY ANALYSIS \
-      JETAN HLT
+      JETAN HLT TFluka
 
 CERNMODULES := PDF PYTHIA6 HIJING MICROCERN HERWIG
 
@@ -119,14 +115,13 @@ MODDIRS := $(MODULES)
 #      The module directory will be added by each module
 #
 
-CXXFLAGS += -I$(ALICE_ROOT)/include
-CXXFLAGS += -I$(shell root-config --incdir)
+GENINC     := -I$(ALICE_ROOT)/include -I$(shell root-config --incdir)
 
-CINTFLAGS += -I$(ALICE_ROOT)/include
-CINTFLAGS += -I$(shell root-config --incdir)
+CXXFLAGS   += $(GENINC)
+CXXFLAGSNO += $(GENINC)
+CINTFLAGS  += $(GENINC)
+DEPINC     += $(GENINC)
 
-DEPINC += -I$(ALICE_ROOT)/include
-DEPINC += -I$(shell root-config --incdir)
 #############################################################
 
 
