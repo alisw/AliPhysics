@@ -11,7 +11,7 @@
 #include "TGTextBuffer.h"
 #include "TGLabel.h"
 
-class AliDrawVolume;
+class AliG3Volume;
 
 class AliGUISliders : public  TGCompositeFrame {
 public:
@@ -38,6 +38,6 @@ private:
    //   ClassDef(AliGUISliders,1)  // Window containing sliders 
 };
 
-R__EXTERN AliDrawVolume  *gCurrentVolume;
+R__EXTERN AliG3Volume  *gCurrentVolume;
 
 #endif

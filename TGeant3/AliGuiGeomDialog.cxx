@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/13 16:19:10  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.8  2000/07/12 08:56:32  fca
 Coding convention correction and warning removal
 
@@ -49,7 +52,7 @@ The new geometry viewer from A.Morsch
 
 #include "AliGuiGeomDialog.h"
 #include "AliGUISliders.h"
-#include "AliDrawVolume.h"
+#include "AliG3Volume.h"
 
 AliGuiGeomDialog::AliGuiGeomDialog(const TGWindow *p, const TGWindow *main, UInt_t w,
                        UInt_t h, UInt_t options)

@@ -15,7 +15,7 @@ class TGTab;
 class TGTextBuffer;
 class TGTextEntry;
 class TGDoubleHSlider;
-class AliDrawVolume;
+class AliG3Volume;
 
 class AliGuiGeomDialog : public TGTransientFrame {
 public:
@@ -50,6 +50,6 @@ private:
   {return *this;}
 };
 
-R__EXTERN AliDrawVolume  *gCurrentVolume;
+R__EXTERN AliG3Volume  *gCurrentVolume;
 
 #endif
