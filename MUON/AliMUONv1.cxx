@@ -23,7 +23,6 @@
 #include <TF1.h>
 #include <TClonesArray.h>
 #include <TRandom.h> 
-#include <TGeoMatrix.h>
 #include <TVirtualMC.h>
 
 #include "AliMUONv1.h"
@@ -33,10 +32,7 @@
 #include "AliMUONFactory.h"
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
-#include "AliMUONVGeometryBuilder.h"	
-#include "AliMUONChamberGeometry.h"	
-#include "AliMUONGeometryEnvelope.h"	
-#include "AliMUONGeometryConstituent.h"	
+#include "AliMUONGeometryBuilder.h"	
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -46,31 +42,39 @@ ClassImp(AliMUONv1)
 //___________________________________________
 AliMUONv1::AliMUONv1() 
   : AliMUON(),
-    fTrackMomentum(), fTrackPosition(),fGlobalTransformation(0) 
+    fStepManagerVersionOld(kFALSE),
+    fAngleEffect(kTRUE),
+    fStepMaxInActiveGas(0.6),
+    fStepSum(0x0),
+    fDestepSum(0x0),
+    fTrackMomentum(), 
+    fTrackPosition(),
+    fElossRatio(0x0),
+    fAngleEffect10(0x0),
+    fAngleEffectNorma(0x0)
 {
-// Constructor
-    fChambers   = 0;
-    fStepManagerVersionOld  = kFALSE;
-    fAngleEffect = kTRUE;
-    fStepMaxInActiveGas     = 0.6;
-    fStepSum    =  0x0;
-    fDestepSum  =  0x0;
-    fElossRatio =  0x0;
-    fAngleEffect10   = 0x0;
-    fAngleEffectNorma= 0x0;
+// Default constructor
 } 
+
 //___________________________________________
 AliMUONv1::AliMUONv1(const char *name, const char *title)
-  : AliMUON(name,title), fTrackMomentum(), fTrackPosition()
+  : AliMUON(name,title), 
+    fStepManagerVersionOld(kFALSE),
+    fAngleEffect(kTRUE),
+    fStepMaxInActiveGas(0.6),
+    fStepSum(0x0),
+    fDestepSum(0x0),
+    fTrackMomentum(), 
+    fTrackPosition(),
+    fElossRatio(0x0),
+    fAngleEffect10(0x0),
+    fAngleEffectNorma(0x0)
 {
-// Constructor
+// Standard onstructor
+
     // By default include all stations
     AliMUONFactory factory;
     factory.Build(this, title);
-
-    fStepManagerVersionOld = kFALSE;
-    fAngleEffect = kTRUE;
-    fStepMaxInActiveGas = 0.6;
 
     fStepSum   = new Float_t [AliMUONConstants::NCh()];
     fDestepSum = new Float_t [AliMUONConstants::NCh()];
@@ -98,13 +102,6 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
     fAngleEffectNorma->SetParameter(1,-6.809e-01);
     fAngleEffectNorma->SetParameter(2,5.151e-02);
     fAngleEffectNorma->SetParameter(3,-1.490e-03);
-
-    // Define the global transformation:
-    // Transformation from the old ALICE coordinate system to a new one:
-    // x->-x, z->-z 
-    TGeoRotation* rotGlobal 
-      = new TGeoRotation("rotGlobal", 90., 180., 90., 90., 180., 0.);
-    fGlobalTransformation = new TGeoCombiTrans(0., 0., 0., rotGlobal);
 }
 
 //_____________________________________________________________________________
@@ -121,7 +118,11 @@ AliMUONv1::~AliMUONv1()
 {
 // Destructor
 
-  delete fGlobalTransformation;
+  delete [] fStepSum;
+  delete [] fDestepSum;
+  delete fElossRatio;
+  delete fAngleEffect10;
+  delete fAngleEffectNorma;  
 }
 
 //_____________________________________________________________________________
@@ -141,94 +142,50 @@ AliMUONv1& AliMUONv1::operator=(const AliMUONv1& right)
 void AliMUONv1::CreateGeometry()
 {
 //
-// Construct geometry using geometry builders.
+// Construct geometry using geometry builder
 //
 
-  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
-
-    // Get the builder
-    AliMUONVGeometryBuilder* builder
-      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
-
-    // Create geometry with each builder
-    if (builder) {
-      builder->CreateGeometry();
-      builder->SetTransformations();
-    }
-  }
-
-  for (Int_t j=0; j<AliMUONConstants::NCh(); j++) {
-
-    AliMUONChamberGeometry* geometry = Chamber(j).GetGeometry();
-
-    if (!geometry) continue;
-          // Skip chambers with not defined geometry  
-	  
-    // Loop over envelopes
-    const TObjArray* kEnvelopes = geometry->GetEnvelopes();
-    for (Int_t k=0; k<kEnvelopes->GetEntriesFast(); k++) {
-
-      // Get envelope
-      AliMUONGeometryEnvelope* env = (AliMUONGeometryEnvelope*)kEnvelopes->At(k);
-      const TGeoCombiTrans* kEnvTrans = env->GetTransformation();
-      const char* only = "ONLY";
-      if (env->IsMANY()) only = "MANY";
-
-      if (env->IsVirtual() && env->GetConstituents()->GetEntriesFast() == 0 ) {
-        // virtual envelope + nof constituents = 0 
-        //         => not allowed;
-        //            empty virtual envelope has no sense 
-        Fatal("CreateGeometry", "Virtual envelope must have constituents.");
-        return;
-      }
-
-      if (!env->IsVirtual() && env->GetConstituents()->GetEntriesFast() > 0 ) {
-        // non virtual envelope + nof constituents > 0 
-        //        => not allowed;
-        //           use VMC to place constituents
-        Fatal("CreateGeometry", "Non virtual envelope cannot have constituents.");
-        return;
-      }
-
-      if (!env->IsVirtual() && env->GetConstituents()->GetEntriesFast() == 0 ) {
-        // non virtual envelope + nof constituents = 0 
-        //        => place envelope in ALICE by composed transformation:
-        //           Tglobal * Tch * Tenv
-
-        // Compound chamber transformation with the envelope one
-        TGeoHMatrix total 
-	  = (*fGlobalTransformation) * 
-	    (*geometry->GetTransformation()) * 
-	    (*kEnvTrans);
-        PlaceVolume(env->GetName(), geometry->GetMotherVolume(),
-	            env->GetCopyNo(), total, 0, 0, only);
-      }
-
-      if (env->IsVirtual() && env->GetConstituents()->GetEntriesFast() > 0 ) {
-        // virtual envelope + nof constituents > 0 
-        //         => do not place envelope and place constituents
-        //            in ALICE by composed transformation:
-        //            Tglobal * Tch * Tenv * Tconst   
-
-        for  (Int_t l=0; l<env->GetConstituents()->GetEntriesFast(); l++) {
-          AliMUONGeometryConstituent* constituent
-            = (AliMUONGeometryConstituent*)env->GetConstituents()->At(l);
-
-          // Compound chamber transformation with the envelope one + the constituent one
-          TGeoHMatrix total 
-	    = (*fGlobalTransformation) *
-	      (*geometry->GetTransformation()) * 
-	      (*kEnvTrans) * 
-	      (*constituent->GetTransformation());
-
-          PlaceVolume(constituent->GetName(), geometry->GetMotherVolume(),
-	              constituent->GetCopyNo(), total,
-                      constituent->GetNpar(), constituent->GetParam(), only);
-        }
-      }
-    } 
-  }
+  fGeometryBuilder->CreateGeometry();
 }
+
+//________________________________________________________________
+void AliMUONv1::CreateMaterials()
+{
+//
+// Construct materials using geometry builder
+//
+
+  fGeometryBuilder->CreateMaterials();
+}
+
+//___________________________________________
+void AliMUONv1::Init()
+{
+   // 
+   // Initialize Tracking Chambers
+   //
+
+   if(fDebug) printf("\n%s: Start Init for version 1 - CPC chamber type\n\n",ClassName());
+   Int_t i;
+   for (i=0; i<AliMUONConstants::NCh(); i++) {
+       ( (AliMUONChamber*) (*fChambers)[i])->Init();
+   }
+   
+   //
+   // Initialize geometry
+   //
+   fGeometryBuilder->InitGeometry();
+   if(fDebug) printf("\n%s: Finished Init for version 1 - CPC chamber type\n",ClassName());
+
+   //cp 
+   if(fDebug) printf("\n%s: Start Init for Trigger Circuits\n",ClassName());
+   for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) {
+     ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
+   }
+   if(fDebug) printf("%s: Finished Init for Trigger Circuits\n",ClassName());
+   //cp
+}
+
 //__________________________________________________________________
 Int_t  AliMUONv1::GetChamberId(Int_t volId) const
 {
@@ -246,278 +203,6 @@ Int_t  AliMUONv1::GetChamberId(Int_t volId) const
 
   return 0;
 }
-//________________________________________________________________
-void AliMUONv1::CreateMaterials()
-{
-
-  // *** DEFINITION OF AVAILABLE MUON MATERIALS *** 
-  //
-  //     Ar-CO2 gas (80%+20%)
-    Float_t ag1[3]   = { 39.95,12.01,16. };
-    Float_t zg1[3]   = { 18.,6.,8. };
-    Float_t wg1[3]   = { .8,.0667,.13333 };
-    Float_t dg1      = .001821;
-    //
-    //     Ar-buthane-freon gas -- trigger chambers 
-    Float_t atr1[4]  = { 39.95,12.01,1.01,19. };
-    Float_t ztr1[4]  = { 18.,6.,1.,9. };
-    Float_t wtr1[4]  = { .56,.1262857,.2857143,.028 };
-    Float_t dtr1     = .002599;
-    //
-    //     Ar-CO2 gas 
-    Float_t agas[3]  = { 39.95,12.01,16. };
-    Float_t zgas[3]  = { 18.,6.,8. };
-    Float_t wgas[3]  = { .74,.086684,.173316 };
-    Float_t dgas     = .0018327;
-    //
-    //     Ar-Isobutane gas (80%+20%) -- tracking 
-    Float_t ag[3]    = { 39.95,12.01,1.01 };
-    Float_t zg[3]    = { 18.,6.,1. };
-    Float_t wg[3]    = { .8,.057,.143 };
-    Float_t dg       = .0019596;
-    //
-    //     Ar-Isobutane-Forane-SF6 gas (49%+7%+40%+4%) -- trigger 
-    Float_t atrig[5] = { 39.95,12.01,1.01,19.,32.066 };
-    Float_t ztrig[5] = { 18.,6.,1.,9.,16. };
-    Float_t wtrig[5] = { .49,1.08,1.5,1.84,0.04 };
-    Float_t dtrig    = .0031463;
-    //
-    //     bakelite 
-
-    Float_t abak[3] = {12.01 , 1.01 , 16.};
-    Float_t zbak[3] = {6.     , 1.   , 8.};
-    Float_t wbak[3] = {6.     , 6.   , 1.}; 
-    Float_t dbak = 1.4;
-
-    Float_t epsil, stmin, deemax, tmaxfd, stemax;
-
-    Int_t iSXFLD   = gAlice->Field()->Integ();
-    Float_t sXMGMX = gAlice->Field()->Max();
-    //
-    // --- Define the various materials for GEANT --- 
-    AliMaterial(9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-    AliMaterial(10, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
-    // Air
-    Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
-    Float_t zAir[4]={6.,7.,8.,18.};
-    Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
-    Float_t dAir = 1.20479E-3;
-    AliMixture(15, "AIR$      ", aAir,  zAir, dAir,4, wAir);
-    //    AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
-    AliMixture(19, "Bakelite$", abak, zbak, dbak, -3, wbak);
-    AliMixture(20, "ArC4H10 GAS$", ag, zg, dg, 3, wg);
-    AliMixture(21, "TRIG GAS$", atrig, ztrig, dtrig, -5, wtrig);
-    AliMixture(22, "ArCO2 80%$", ag1, zg1, dg1, 3, wg1);
-    AliMixture(23, "Ar-freon $", atr1, ztr1, dtr1, 4, wtr1);
-    AliMixture(24, "ArCO2 GAS$", agas, zgas, dgas, 3, wgas);
-    // materials for slat: 
-    //     Sensitive area: gas (already defined) 
-    //     PCB: copper 
-    //     insulating material and frame: vetronite
-    //     walls: carbon, rohacell, carbon 
-  Float_t aglass[5]={12.01, 28.09, 16.,   10.8,  23.};
-  Float_t zglass[5]={ 6.,   14.,    8.,    5.,   11.};
-  Float_t wglass[5]={ 0.5,  0.105, 0.355, 0.03,  0.01};
-  Float_t dglass=1.74;
-
-  // rohacell: C9 H13 N1 O2
-  Float_t arohac[4] = {12.01,  1.01, 14.010, 16.};
-  Float_t zrohac[4] = { 6.,    1.,    7.,     8.};
-  Float_t wrohac[4] = { 9.,   13.,    1.,     2.};
-  Float_t drohac    = 0.03;
-
-  AliMaterial(31, "COPPER$",   63.54,    29.,   8.96,  1.4, 0.);
-  AliMixture(32, "Vetronite$",aglass, zglass, dglass,    5, wglass);
-  AliMaterial(33, "Carbon$",   12.01,     6.,  2.265, 18.8, 49.9);
-  AliMixture(34, "Rohacell$", arohac, zrohac, drohac,   -4, wrohac); 
-
-
-    epsil  = .001; // Tracking precision, 
-    stemax = -1.;  // Maximum displacement for multiple scat 
-    tmaxfd = -20.; // Maximum angle due to field deflection 
-    deemax = -.3;  // Maximum fractional energy loss, DLS 
-    stmin  = -.8;
-    //
-    //    Air 
-    AliMedium(1, "AIR_CH_US         ", 15, 1, iSXFLD, sXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-    //
-    //    Aluminum 
-
-    AliMedium(4, "ALU_CH_US          ", 9, 0, iSXFLD, sXMGMX, tmaxfd, fMaxStepAlu, 
-	    fMaxDestepAlu, epsil, stmin);
-    AliMedium(5, "ALU_CH_US          ", 10, 0, iSXFLD, sXMGMX, tmaxfd, fMaxStepAlu, 
-	    fMaxDestepAlu, epsil, stmin);
-    //
-    //    Ar-isoC4H10 gas 
-
-    AliMedium(6, "AR_CH_US          ", 20, 1, iSXFLD, sXMGMX, tmaxfd, fMaxStepGas, 
-	    fMaxDestepGas, epsil, stmin);
-//
-    //    Ar-Isobuthane-Forane-SF6 gas 
-
-    AliMedium(7, "GAS_CH_TRIGGER    ", 21, 1, iSXFLD, sXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-
-    AliMedium(8, "BAKE_CH_TRIGGER   ", 19, 0, iSXFLD, sXMGMX, tmaxfd, fMaxStepAlu, 
-	    fMaxDestepAlu, epsil, stmin);
-
-    AliMedium(9, "ARG_CO2   ", 22, 1, iSXFLD, sXMGMX, tmaxfd, fMaxStepGas, 
-	    fMaxDestepAlu, epsil, stmin);
-    // tracking media for slats: check the parameters!! 
-    AliMedium(11, "PCB_COPPER        ", 31, 0, iSXFLD, sXMGMX, tmaxfd, 
-	      fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-    AliMedium(12, "VETRONITE         ", 32, 0, iSXFLD, sXMGMX, tmaxfd, 
-	      fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-    AliMedium(13, "CARBON            ", 33, 0, iSXFLD, sXMGMX, tmaxfd, 
-	      fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-    AliMedium(14, "Rohacell          ", 34, 0, iSXFLD, sXMGMX, tmaxfd, 
-	      fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-
-
-
-  //.Materials specific to stations
-  // created via builders
-  
-  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
-
-    // Get the builder
-    AliMUONVGeometryBuilder* builder
-      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
-
-    // Create materials with each builder
-    if (builder) builder->CreateMaterials();
-  }
-}
-
-//______________________________________________________________________________
-void AliMUONv1::PlaceVolume(const TString& name, const TString& mName, 
-                            Int_t copyNo, const TGeoHMatrix& matrix, 
-			    Int_t npar, Double_t* param, const char* only) const
-{
-// Place the volume specified by name with the given transformation matrix
-// ---
-
-  // Do not apply global transformation 
-  // if mother volume == DDIP
-  // (as it is applied on this volume)
-  TGeoHMatrix transform(matrix);
-  if (mName == TString("DDIP")) {
-    transform = (*fGlobalTransformation) * transform;
-               // To be changed to (*fGlobalTransformation).inverse()
-	       // when available in TGeo
-	       // To make this correct also for a general case when
-	       // (*fGlobalTransformation) * *fGlobalTransformation) != 1
-  }	       
-     
-  // Decompose transformation
-  const Double_t* xyz = transform.GetTranslation();
-  const Double_t* rm = transform.GetRotationMatrix();
-	
-  //cout << "Got translation: "
-  //     << xyz[0] << " " << xyz[1] << " " << xyz[2] << endl;
-	
-  //cout << "Got rotation: "
-  //     << rm[0] << " " << rm[1] << " " << rm[2] << endl
-  //     << rm[3] << " " << rm[4] << " " << rm[5] << endl
-  //     << rm[6] << " " << rm[7] << " " << rm[8] << endl;
-
-  // Check for presence of rotation
-  // (will be nice to be available in TGeo)
-  const Double_t kTolerance = 1e-04;
-  Bool_t isRotation = true; 
-  if (TMath::Abs(rm[0] - 1.) < kTolerance &&
-      TMath::Abs(rm[1] - 0.) < kTolerance &&
-      TMath::Abs(rm[2] - 0.) < kTolerance &&
-      TMath::Abs(rm[3] - 0.) < kTolerance &&
-      TMath::Abs(rm[4] - 1.) < kTolerance &&
-      TMath::Abs(rm[5] - 0.) < kTolerance &&
-      TMath::Abs(rm[6] - 0.) < kTolerance &&
-      TMath::Abs(rm[7] - 0.) < kTolerance &&
-      TMath::Abs(rm[8] - 1.) < kTolerance) isRotation = false; 
-
-  Int_t krot = 0;
-  if (isRotation) {
-    TGeoRotation rot;
-    rot.SetMatrix(const_cast<Double_t*>(transform.GetRotationMatrix()));
-    Double_t theta1, phi1, theta2, phi2, theta3, phi3;
-    rot.GetAngles(theta1, phi1, theta2, phi2, theta3, phi3);
-	
-    //cout << "angles: " 
-    //     << theta1 << " " << phi1 << " "
-    //     << theta2 << " " << phi2 << " "
-    //     << theta3 << " " << phi3 << endl;
-	
-    AliMatrix(krot, theta1, phi1, theta2, phi2, theta3, phi3);
-  }	
-	
-  // Place the volume in ALIC
-  if (npar == 0)
-    gMC->Gspos(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only);
-  else 
-    gMC->Gsposp(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only,
-                param, npar);
-
-} 
-
-//___________________________________________
-void AliMUONv1::Init()
-{
-   // 
-   // Initialize Tracking Chambers
-   //
-
-   if(fDebug) printf("\n%s: Start Init for version 1 - CPC chamber type\n\n",ClassName());
-   Int_t i;
-   for (i=0; i<AliMUONConstants::NCh(); i++) {
-       ( (AliMUONChamber*) (*fChambers)[i])->Init();
-   }
-   
-   //
-   // Set the chamber (sensitive region) GEANT identifier
-   //
-   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
-
-    // Get the builder
-    AliMUONVGeometryBuilder* builder
-      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
-
-    // Set sesitive volumes with each builder
-    if (builder) builder->SetSensitiveVolumes();
-  }
-
-/*
-   //
-   // Set the chamber (sensitive region) GEANT identifier
-   ((AliMUONChamber*)(*fChambers)[0])->SetGid(gMC->VolId("S01G"));
-   ((AliMUONChamber*)(*fChambers)[1])->SetGid(gMC->VolId("S02G"));
-
-   ((AliMUONChamber*)(*fChambers)[2])->SetGid(gMC->VolId("S03G"));
-   ((AliMUONChamber*)(*fChambers)[3])->SetGid(gMC->VolId("S04G"));
-
-   ((AliMUONChamber*)(*fChambers)[4])->SetGid(gMC->VolId("S05G"));
-   ((AliMUONChamber*)(*fChambers)[5])->SetGid(gMC->VolId("S06G"));
-
-   ((AliMUONChamber*)(*fChambers)[6])->SetGid(gMC->VolId("S07G"));
-   ((AliMUONChamber*)(*fChambers)[7])->SetGid(gMC->VolId("S08G"));
-
-   ((AliMUONChamber*)(*fChambers)[8])->SetGid(gMC->VolId("S09G"));
-   ((AliMUONChamber*)(*fChambers)[9])->SetGid(gMC->VolId("S10G"));
-
-   ((AliMUONChamber*)(*fChambers)[10])->SetGid(gMC->VolId("SG1A"));
-   ((AliMUONChamber*)(*fChambers)[11])->SetGid(gMC->VolId("SG2A"));
-   ((AliMUONChamber*)(*fChambers)[12])->SetGid(gMC->VolId("SG3A"));
-   ((AliMUONChamber*)(*fChambers)[13])->SetGid(gMC->VolId("SG4A"));
-*/
-   if(fDebug) printf("\n%s: Finished Init for version 1 - CPC chamber type\n",ClassName());
-
-   //cp 
-   if(fDebug) printf("\n%s: Start Init for Trigger Circuits\n",ClassName());
-   for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) {
-     ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
-   }
-   if(fDebug) printf("%s: Finished Init for Trigger Circuits\n",ClassName());
-   //cp
-}
-
 //_______________________________________________________________________________
 void AliMUONv1::StepManager()
 {

@@ -42,10 +42,11 @@ class AliMUONv1 : public AliMUON
    AliMUONv1(const AliMUONv1& right);
    AliMUONv1&  operator = (const AliMUONv1& right);
 
+   virtual Int_t  GetChamberId(Int_t volId) const;
+
    Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
    Bool_t  fAngleEffect; // Angle Effect along wires, Default is true
    Float_t fStepMaxInActiveGas;    // Step max in active gas default 0.6cm
-   virtual Int_t  GetChamberId(Int_t volId) const;
 
    // StepManager 
    Float_t *  fStepSum; //!
@@ -56,8 +57,7 @@ class AliMUONv1 : public AliMUON
    TF1 *          fElossRatio;    // Ratio of particle mean eloss with respect MIP's 
    TF1 *          fAngleEffect10; // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
    TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
-   TGeoCombiTrans* fGlobalTransformation; // global transformation 
-                                  // applied to the whole geometry 
+
  private:
    // method
    void PlaceVolume(const TString& name, const TString& mName, Int_t copyNo, 

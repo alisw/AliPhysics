@@ -80,6 +80,8 @@
 #pragma link C++ class  AliMUONSt1SpecialMotif+;
 #pragma link C++ class  AliMUONSt1ResponseParameter+;
 #pragma link C++ class  AliMUONSt1ResponseRule+;
+#pragma link C++ class  AliMUONGeometryBuilder+;
+#pragma link C++ class  AliMUONVGeometryBuilder+;
 #pragma link C++ class  AliMUONChamberGeometry+;
 #pragma link C++ class  AliMUONGeometryConstituent+;
 #pragma link C++ class  AliMUONGeometryEnvelope+;
@@ -88,7 +90,6 @@
 #pragma link C++ class  AliMUONSt2GeometryBuilder+;
 #pragma link C++ class  AliMUONSlatGeometryBuilder+;
 #pragma link C++ class  AliMUONTriggerGeometryBuilder+;
-#pragma link C++ class  AliMUONVGeometryBuilder+;
 #include "MUONLinkDefMapping.h"
 
 #endif

@@ -11,6 +11,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONSegmentationDetectionElement.cxx AliMUONSegmentIndex.cxx \
                AliMUONSegmentManuIndex.cxx AliMUONSegmentPosition.cxx\
                AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
+	       AliMUONGeometryBuilder.cxx \
                AliMUONChamberGeometry.cxx AliMUONGeometryConstituent.cxx AliMUONGeometryEnvelope.cxx \
                AliMUONVGeometryBuilder.cxx AliMUONSt1GeometryBuilder.cxx AliMUONSt1GeometryBuilderV2.cxx \
                AliMUONSt2GeometryBuilder.cxx AliMUONSlatGeometryBuilder.cxx \

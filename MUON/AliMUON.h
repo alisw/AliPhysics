@@ -31,6 +31,7 @@ class AliMUONPadHit;
 class AliMUONRawCluster;
 class AliMUONReconstHit;
 class AliMUONMerger;
+class AliMUONGeometryBuilder;
 class AliMUONVGeometryBuilder;
 class AliESD;
 
@@ -44,6 +45,7 @@ class AliMUON : public  AliDetector
     void           AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder);
     virtual void   BuildGeometry();
     AliMUONData*   GetMUONData() {return fMUONData;}
+    AliMUONGeometryBuilder*  GetGeometryBuilder() {return fGeometryBuilder;}
     virtual Int_t  IsVersion()   const {return 0;}
 
     // MUONLoader definition
@@ -125,8 +127,8 @@ class AliMUON : public  AliDetector
     AliMUONData*          fMUONData;           // Data container for MUON subsystem  
     Int_t                 fSplitLevel;         // Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           // List of Tracking Chambers
-    TObjArray            *fGeometryBuilders;   // List of Geometry Builders
     TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
+    AliMUONGeometryBuilder*  fGeometryBuilder; // Geometry buiulder 
    
     //
     Bool_t   fAccCut;          //Transport acceptance cut

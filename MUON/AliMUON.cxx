@@ -45,25 +45,21 @@
 #include <TVector.h>
 #include <TVirtualMC.h>
 
-#include "AliConst.h" 
-#include "AliHeader.h"
-#include "AliHitMap.h"
+//#include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliRunDigitizer.h"
 #include "AliMC.h"
 #include "AliRun.h"	
-#include "AliMUONLoader.h"
 #include "AliMUON.h"
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
 #include "AliMUONHit.h"
-#include "AliMUONHitMapA1.h"
 #include "AliMUONMerger.h"	
 #include "AliMUONPadHit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerCircuit.h"
+#include "AliMUONGeometryBuilder.h"
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
@@ -93,8 +89,8 @@ AliMUON::AliMUON()
     fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
-    fGeometryBuilders(0),
     fTriggerCircuits(0),
+    fGeometryBuilder(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -119,8 +115,8 @@ AliMUON::AliMUON(const char *name, const char *title)
     fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
-    fGeometryBuilders(0),
     fTriggerCircuits(0),
+    fGeometryBuilder(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -140,7 +136,6 @@ AliMUON::AliMUON(const char *name, const char *title)
 // Creating List of Chambers
     Int_t ch;
     fChambers = new TObjArray(AliMUONConstants::NCh());
-    fGeometryBuilders = new TObjArray(AliMUONConstants::NCh());
 
     // Loop over stations
     for (Int_t st = 0; st < AliMUONConstants::NCh() / 2; st++) {
@@ -173,6 +168,9 @@ AliMUON::AliMUON(const char *name, const char *title)
     for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
       fTriggerCircuits->AddAt(new AliMUONTriggerCircuit(),circ);          
     }
+    
+    // Geometry builder
+    fGeometryBuilder = new AliMUONGeometryBuilder(this);
 }
 
 //____________________________________________________________________
@@ -192,10 +190,6 @@ AliMUON::~AliMUON()
   fIshunt  = 0;
   if (fMerger) delete fMerger;
 
-  if (fGeometryBuilders){
-    fGeometryBuilders->Delete();
-    delete fGeometryBuilders;
-  }
   if (fChambers){
     fChambers->Delete();
     delete fChambers;
@@ -205,6 +199,7 @@ AliMUON::~AliMUON()
     delete fTriggerCircuits;
   }
   delete fMUONData;
+  delete fGeometryBuilder;
 }
 
 //________________________________________________________________________
@@ -225,7 +220,7 @@ void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
 // Adds the geometry builder to the list
 // ---
 
-  fGeometryBuilders->Add(geomBuilder);
+  fGeometryBuilder->AddBuilder(geomBuilder);
 }
 
 //____________________________________________________________________
@@ -318,6 +313,7 @@ void AliMUON::SetMaxAdc(Int_t id, Int_t p1)
     ((AliMUONChamber*) fChambers->At(i))->SetMaxAdc(p1);
     ((AliMUONChamber*) fChambers->At(i+1))->SetMaxAdc(p1);
 }
+
 //__________________________________________________________________
 void AliMUON::SetMaxStepGas(Float_t p1)
 {
@@ -342,6 +338,7 @@ void AliMUON::SetMaxDestepAlu(Float_t p1)
 // Set maximum step size in Alu
   fMaxDestepAlu=p1;
 }
+
 //___________________________________________________________________
 void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
 {
@@ -394,6 +391,7 @@ Float_t  AliMUON::GetMaxDestepAlu() const
   
   return fMaxDestepAlu;
 }
+
 //____________________________________________________________________
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
 {
