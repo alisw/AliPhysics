@@ -128,30 +128,18 @@ extern "C" {
     cout << "\t\t+ Name = " << particle->GetName() << endl;
     cout << "\t\t+ PDG/Fluka code = " << particle->GetPdgCode() 
 	 << " / " << fluka->IdFromPDG(particle->GetPdgCode()) << endl;
-    cout << "\t\t+ E = " << particle->Energy() << " GeV" << endl;
     cout << "\t\t+ P = (" 
 	 << particle->Px() << " , "
 	 << particle->Py() << " , "
 	 << particle->Pz() << " ) --> "
 	 << particle->P() << " GeV" << endl;
-    cout << "\t\t+ M = " << particle->GetMass() << " GeV" << endl;
-    cout << "\t\t+ Initial point = ( " 
-	 << particle->Vx() << " , "
-	 << particle->Vy() << " , "
-	 << particle->Vz() << " )"
-	 << endl;    
-    cout << "\t\t+ Polarisation = ( " 
-	 << polarisation.Px() << " , "
-	 << polarisation.Py() << " , "
-	 << polarisation.Pz() << " )"
-	 << endl;    
     /* Lstack is the stack counter: of course any time source is called it
      * must be =0
      */
     
     STACK.lstack++;
-    cout << "\t* Storing particle parameters in the stack, lstack = " 
-	 << STACK.lstack << endl;
+    //cout << "\t* Storing particle parameters in the stack, lstack = " 
+    //	 << STACK.lstack << endl;
     /* Wt is the weight of the particle*/
     STACK.wt[STACK.lstack] = oneone;
     STARS.weipri += STACK.wt[STACK.lstack];
@@ -240,9 +228,6 @@ extern "C" {
     STACK.ya [STACK.lstack] = particle->Vy();
     STACK.za [STACK.lstack] = particle->Vz();
     
-    // Some printout
-    cout << "\t* Particle information transfered to stack..." << endl;
-    
     /*  Calculate the total kinetic energy of the primaries: don't change*/
     Int_t st_ilo =  STACK.ilo[STACK.lstack];
     if ( st_ilo != 0 )
@@ -273,9 +258,6 @@ extern "C" {
     geohsm ( STACK.nhspnt[STACK.lstack], igeohsm1, igeohsm2, LTCLCM.mlattc );
     STACK.nlattc[STACK.lstack] = LTCLCM.mlattc;
     soevsv();
-    
-    cout << "\t* EPISOR.lsouit = " << (EPISOR.lsouit?'T':'F') << endl;
-    cout << "\t* " << STACK.lstack << " particles in the event" << endl;
     TVirtualMCApplication::Instance()->PreTrack();
 #ifdef METHODDEBUG
     cout << "<== source(" << nomore << ")" << endl;
