@@ -8,7 +8,12 @@ void DrawTPC()
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);
    gMC->SetClipBox(".");
-   gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+   gMC->SetClipBox("TPMW",-300,300,-300,300,254.,270.);
+   gMC->SetClipBox("TESR",-300,300,-300,300,254.,270.);
+   gMC->SetClipBox("TSSW",-300,300,-300,300,283.,284.);
+   gMC->SetClipBox("TSWC",-300,300,-300,300,283.,284.);  
+
+   gMC->SetClipBox("*", 0, 300, -300, 300, -290, 290);
    gMC->DefaultRange();
    gMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .025, .025);
    gMC->Gdhead(1111, "Time Projection Chamber");

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.8.4.4  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -287,22 +290,22 @@ void AliTPCParam::SetDefault()
   //
   //set default parameters
   //
-  const static  Int_t kMaxRows=600; 
+  //const static  Int_t kMaxRows=600; 
   //
   //sector default parameters
   //
-  const static  Float_t kInnerRadiusLow = 87.35;
-  const static  Float_t kOuterRadiusLow = 131.2;
-  const static  Float_t kInnerRadiusUp  = 130.6;
-  const static  Float_t kOuterRadiusUp  = 252.2;
+  const static  Float_t kInnerRadiusLow = 82.97;
+  const static  Float_t kOuterRadiusLow = 133.58;
+  const static  Float_t kInnerRadiusUp  = 133.17;
+  const static  Float_t kOuterRadiusUp  = 247.78;
   const static  Float_t kInnerAngle = 20; // 20 degrees
   const static  Float_t kInnerAngleShift = 10;
   const static  Float_t kOuterAngle = 20; //  20 degrees
   const static  Float_t kOuterAngleShift = 10;
   const static  Float_t kInnerFrameSpace = 1.5;
   const static  Float_t kOuterFrameSpace = 1.5;
-  const static  Float_t kInnerWireMount = 1.15;
-  const static  Float_t kOuterWireMount = 1.15;
+  const static  Float_t kInnerWireMount = 1.370825926;
+  const static  Float_t kOuterWireMount = 1.370825926;
   const static  Float_t kZLength =250.;
   const static  Int_t   kGeometryType = 0; //straight rows 
   //

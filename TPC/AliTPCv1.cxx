@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.17.2.4  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -61,7 +64,7 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Time Projection Chamber version 1 -- detailed TPC and fast simulation    //
-//                                                                           //
+//                                                                           // 
 //Begin_Html
 /*
 <img src="picts/AliTPCv1Class.gif">
@@ -97,7 +100,7 @@ AliTPCv1::AliTPCv1(const char *name, const char *title)
   //
   // Standard constructor for Time Projection Chamber
   //
-  fIdSens1=fIdSens2=0;
+  fIdSens=fIdLSec=fIdUSec=0;
 
   SetGasMixt(2,20,10,-1,0.9,0.1,0.);
 
@@ -108,14 +111,16 @@ AliTPCv1::AliTPCv1(const char *name, const char *title)
 //_____________________________________________________________________________
 void AliTPCv1::CreateGeometry()
 {
-  //
+  //-------------------------------------------------------------
   // Creates geometry for Time Projection Chamber version 1
-  // Detailed geometry -- Fast simulation
-  // Origin M.Kowalski 
-  //
+  // Detailed geometry -- Fast simulation - space points
+  // at the pad-rows centers
+  // Origin M.Kowalski, INP Cracow, Marek.Kowalski@ifj.edu.pl
+  //-----------------------------------------------------------
+
   //Begin_Html
   /*
-    <img src="picts/AliTPCv1.gif">
+    <img src="picts/AliTPC.gif">
   */
   //End_Html
   //Begin_Html
@@ -123,294 +128,1436 @@ void AliTPCv1::CreateGeometry()
     <img src="picts/AliTPCv1Tree.gif">
   */
   //End_Html
+  Float_t dm[50];
+
+  Int_t *idtmed = fIdtmed->GetArray(); // TPC media
+
+  Int_t idrotm[120]; // rotation matrices
+
+  Int_t nRotMat = 0; // actual number of rotation matrices
 
 
-  Int_t *idtmed = fIdtmed->GetArray();
+  //
+  //  Mother volume (Air) - all volumes will be positioned in it
+  //
+  
+  dm[0]=0.;
+  dm[1]=360.;
+  dm[2]=12.;
 
-  Float_t dm[21];
-  Int_t idrotm[120];
-
-  Int_t nRotMat = 0;
-
-
-  // ---------------------------------------------------- 
-  //          FIELD CAGE WITH ENDCAPS - G10
-  //          THIS IS ALSO A TPC MOTHER VOLUME 
-  // ---------------------------------------------------- 
-
-  dm[0] = 76.;
-  dm[1] = 278.;
-  dm[2] = 275.;
-
-  gMC->Gsvolu("TPC ", "TUBE", idtmed[8], dm, 3); 
-
-  //-----------------------------------------------------
-  //  Endcap cover c-fibre 0.86% X0
-  //-----------------------------------------------------
-
-  dm[0] = 78.;
-  dm[1] = 258.;
-  dm[2] = 0.95;
-
-  gMC->Gsvolu("TPEC","TUBE",idtmed[10],dm,3);
-
-  //-----------------------------------------------------
-  // Drift gas , leave 2 cm at the outer radius
-  // and inner raddius
-  //-----------------------------------------------------
-
-  dm[0] = 78.;
-  dm[1] = 258.;
-  dm[2] = 250.;
-
-  gMC->Gsvolu("TGAS", "TUBE", idtmed[3], dm, 3);
-
-
-  //------------------------------------------------------
-  //  membrane holder - carbon fiber
-  //------------------------------------------------------
-
-
-  gMC->Gsvolu("TPMH","TUBE",idtmed[6],dm,0);
-
-  dm[0] = 252.;
-  dm[1] = 258.;
-  dm[2] = 0.2;
-
-  gMC->Gsposp("TPMH",1,"TGAS",0.,0.,0.,0,"ONLY",dm,3);
+  //
  
-  dm[0] = 78.;
-  dm[1] = 82.;
-  dm[2] = 0.1;
+  dm[3]= -283.7;
+  dm[4]= 66.2;
+  dm[5]= 277.95;
 
-  gMC->Gsposp("TPMH",2,"TGAS",0.,0.,0.,0,"ONLY",dm,3);
+  //
 
-  //----------------------------------------------------------
-  //  HV membrane - 25 microns of mylar
-  //----------------------------------------------------------
+  dm[6]= -255.6;
+  dm[7]= 66.2;
+  dm[8]= 277.95;
 
-  dm[0] = 82.;
-  dm[1] = 252.;
-  dm[2] = 0.00125;
+  //
 
-  gMC->Gsvolu("TPHV","TUBE",idtmed[5],dm,3);
+  dm[9]= -73.3;
+  dm[10]= 59.0;
+  dm[11]= 277.95;
 
-  gMC->Gspos("TPHV",1,"TGAS",0.,0.,0.,0,"ONLY");
+  //
 
-  gMC->Gspos("TGAS",1,"TPC ",0.,0.,0.,0,"ONLY");
+  dm[12]= -73.3;
+  dm[13]= 56.9;
+  dm[14]= 277.95;
 
-  //----------------------------------------------------------
-  // "side" gas volume, the same as the drift gas
-  // the readout chambers are placed there.  
-  //----------------------------------------------------------
+  //
 
-  dm[0] = 78.;
-  dm[1] = 258.;
-  dm[2] = 0.5*(275. - 250.);
-   
-  gMC->Gsvolu("TPSG", "TUBE", idtmed[2], dm, 3);
+  dm[15]= -72.1;
+  dm[16]= 56.9;
+  dm[17]= 277.95;
 
-  Float_t zSide = dm[2]; // 1/2 of the side gas thickness
+  //
 
-  //-----------------------------------------------------------
-  //   Readout chambers , 25% of X0, I use Al as the material
-  //-----------------------------------------------------------
+  dm[18]= -72.1;
+  dm[19]= 60.65;
+  dm[20]= 277.95;
+
+  //
+
+  dm[21]= 72.1;
+  dm[22]= 60.65;
+  dm[23]= 277.95;  
+
+  //
+
+  dm[24]= 72.1;
+  dm[25]= 56.9;
+  dm[26]= 277.95;
+
+  //
+
+  dm[27]= 73.3;
+  dm[28]= 56.9;
+  dm[29]= 277.95;
+
+  //
+
+  dm[30]= 73.3;
+  dm[31]= 60.65;
+  dm[32]= 277.95;
+
+  //
+
+  dm[33]= 250.4;
+  dm[34]= 66.0;
+  dm[35]= 277.95;
+
+  //
+
+  dm[36]= 283.7;
+  dm[37]= 66.0;
+  dm[38]= 277.95;
+
+
+  gMC->Gsvolu("TPC ","PCON",idtmed[0],dm,39);
+
+
+  //-------------------------------------------------------------------
+  //  Tpc Outer INsulator (CO2)
+  //-------------------------------------------------------------------
+
+  dm[0]= 0.;
+  dm[1]= 360.;
+  dm[2]= 6.;
+
+  //
+ 
+  dm[3]= -253.6;
+  dm[4]= 258.;
+  dm[5]= 266.65;
+
+  //
+
+  dm[6]= -253.;
+  dm[7]= 258.;
+  dm[8]= 266.65;
+
+  dm[9]= -253.;
+  dm[10]= 258.;
+  dm[11]= 277.97;
+
+  dm[12]= 253.6;
+  dm[13]= 258.;
+  dm[14]= 277.97;
+
+  //
+
+  dm[15]= 253.6;
+  dm[16]= 265.2;
+  dm[17]= 277.95;
+
+  //
+
+  dm[18]= 255.6;
+  dm[19]= 265.2;
+  dm[20]= 277.95;
+
+
+  gMC->Gsvolu("TOIN","PCON",idtmed[3],dm,21);
+
+  //---------------------------------------------------------------
+  // shreds (G10) - TPC Rings
+  //---------------------------------------------------------------
+
+  gMC->Gsvolu("TPCR","TUBE",idtmed[12],dm,0);
+
+  dm[0]= 258.;
+  dm[1]= 266.65;
+  dm[2]= 0.3;
+
+  gMC->Gsposp("TPCR",1,"TOIN",0.,0.,-253.3,0,"ONLY",dm,3); // left bottom
+
+  //
+
+  dm[0]= 258.;
+  dm[1]= 270.9;
+  dm[2]= 0.3;
+
+  gMC->Gsposp("TPCR",2,"TOIN",0.,0.,253.3,0,"ONLY",dm,3); // right
+
+  //
+
+  dm[0]= 272.2;
+  dm[1]= 277.95;
+  dm[2]= 0.3;
+
+  gMC->Gsposp("TPCR",3,"TOIN",0.,0.,-250.7,0,"ONLY",dm,3); // left top
+
+  //----------------------------------------------------------------
+  // Tpc Outer Contaiment Vessel  
+  //  mother volume - Al, daughters - composite (sandwich)
+  //----------------------------------------------------------------
+  
+  dm[0]= 0.;
+  dm[1]= 360.;
+  dm[2]=5.;
+
+  //
+
+  dm[3]= -250.4;
+  dm[4]= 272.2;
+  dm[5]= 277.95;
+
+  //
+
+  dm[6]= -248.4;
+  dm[7]= 272.2;
+  dm[8]= 277.95;
+
+  //
+
+  dm[9]= 253.6;
+  dm[10]= 272.2;
+  dm[11]= 277.95;
+
+  //
+
+  dm[12]= 253.6;
+  dm[13]= 265.2;
+  dm[14]= 277.95;
+
+  // 
+
+  dm[15]= 255.6;
+  dm[16]= 265.2;
+  dm[17]= 277.95;
+
+  gMC->Gsvolu("TOCV","PCON",idtmed[4],dm,18);
+
+  // Daughter volumes
+
+  // Tpc SAndwich 1 - Al
+ 
+  dm[0]= 274.81;
+  dm[1]= 277.95;
+  dm[2]= 251.7;
+
+  gMC->Gsvolu("TSA1","TUBE",idtmed[4],dm,3);
+
+  // Tpc SAndwich 2 - Tedlar
+
+  dm[0] += 5.e-3;
+  dm[1] -= 5.e-3;
+  
+  gMC->Gsvolu("TSA2","TUBE",idtmed[9],dm,3);
+
+  // Tpc SAndwich 3 - Kevlar
+
+  dm[0] += 5e-3;
+  dm[1] -= 5.e-3;
+
+  gMC->Gsvolu("TSA3","TUBE",idtmed[5],dm,3);
+
+  // Tpc SAndwich 4 - NOMEX honeycomb
+
+  dm[0] += 0.06;
+  dm[1] -= 0.06;
+
+  gMC->Gsvolu("TSA4","TUBE",idtmed[5],dm,3);  
+  
+  // 4->3->2->1->TOCV
+
+  gMC->Gspos("TSA4",1,"TSA3",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TSA3",1,"TSA2",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TSA2",1,"TSA1",0.,0.,0.,0,"ONLY");
+
+  gMC->Gspos("TSA1",1,"TOCV",0.,0.,2.6,0,"ONLY");
+
+  // TCOV-> TOIN
+
+  gMC->Gspos("TOCV",1,"TOIN",0.,0.,0.,0,"ONLY");
+
+  //-------------------------------------------------------
+  //  Tpc Outer Field Cage
+  //  mother volume - Al, daughters - composite (sandwich)
+  //-------------------------------------------------------
+
+  dm[0]=0.;
+  dm[1]=360.;
+  dm[2]=6.;
+
+  dm[3]= -253.;
+  dm[4]= 258.;
+  dm[5]= 277.95;
+
+  //
+
+  dm[6]= -251.;
+  dm[7]= 258.;
+  dm[8]= 277.95;
+
+  //
+ 
+  dm[9]= -251.;
+  dm[10]= 258.;
+  dm[11]= 260.05;
+
+  //
+
+  dm[12]= 251.;
+  dm[13]= 258.;
+  dm[14]= 260.05;
+
+  //
+
+  dm[15]= 251.;
+  dm[16]= 258.;
+  dm[17]= 260.05;
+
+  //
+
+  dm[18]= 253.;
+  dm[19]= 258.;
+  dm[20]= 270.9;
+
+  gMC->Gsvolu("TOFC","PCON",idtmed[4],dm,21);  
+
+  // Daughter volumes 
+
+  // Tpc SAndwich 5 - Al
+
+  dm[0]= 258.;
+  dm[1]= 260.05;
+  dm[2]= 251.7;
+
+  gMC->Gsvolu("TSA5","TUBE",idtmed[4],dm,3);
+
+  // Tpc SAndwich 6 - Tedlar
+
+  dm[0] += 5.e-3;
+  dm[1] -= 5.e-3;
+
+  gMC->Gsvolu("TSA6","TUBE",idtmed[9],dm,3);
+
+  // Tpc SAndwich 7 - Kevlar
+
+  dm[0] += 5.e-3;
+  dm[1] -= 5.e-3;
+
+  gMC->Gsvolu("TSA7","TUBE",idtmed[5],dm,3);
+
+  // Tpc SAndwich 8 - NOMEX
+
+  dm[0] += 0.02;
+  dm[1] -= 0.02;
+
+  gMC->Gsvolu("TSA8","TUBE",idtmed[6],dm,3);    
+
+  // 8->7->6->5->TOFC
+
+  gMC->Gspos("TSA8",1,"TSA7",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TSA7",1,"TSA6",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TSA6",1,"TSA5",0.,0.,0.,0,"ONLY"); 
+
+  gMC->Gspos("TSA5",1,"TOFC",0.,0.,0.,0,"ONLY");
+
+  // TOFC->TOIN
+
+  gMC->Gspos("TOFC",1,"TOIN",0.,0.,0.,0,"ONLY"); 
+
+  // TOIN->TPC
+
+  gMC->Gspos("TOIN",1,"TPC ",0.,0.,0.,0,"ONLY");
+
+  //--------------------------------------------------------------------
+  // Tpc Inner INsulator (CO2)
+  //--------------------------------------------------------------------
+
+
+  dm[0]=0.;
+  dm[1]= 360.;
+  dm[2]= 15.;
+
+  //
+
+  dm[3]= -255.6;
+  dm[4]= 66.2;
+  dm[5]= 74.8;
+
+  //
+
+  Float_t tanL = (66.2-59.0)/(255.6-73.3); // tangent of the left cone part
+
+  dm[6]= -253.6;
+  dm[7]= 59.0+ (253.6-73.3)*tanL;
+  dm[8]= 74.8;
+
+  //
+
+  dm[9]= -253.6;
+  dm[10]= dm[7];
+  dm[11]= 79.2;
+
+  //
+
+  dm[12]= -73.3;
+  dm[13]= 59.0;
+  dm[14]= 79.2;
+
+  //
+
+  dm[15]= -73.3;
+  dm[16]= 56.9;
+  dm[17]= 79.2;
+
+  //
+
+  dm[18]= -72.1;
+  dm[19]= 59.6;
+  dm[20]= 79.2;
+
+  //
+
+  dm[21]= -72.1;
+  dm[22]= 60.65;
+  dm[23]= 79.2;
+
+  //
+
+  dm[24]= 72.1;
+  dm[25]= 60.65;
+  dm[26]= 79.2;  
+
+  //
+
+  dm[27]= 72.1;
+  dm[28]= 59.6;
+  dm[29]= 79.2;
+
+  //
+
+  dm[30]= 73.3;
+  dm[31]= 56.9;
+  dm[32]= 79.2;
+
+  //
+
+  dm[33]= 73.3;
+  dm[34]= 59.0;
+  dm[35]= 79.2;
+
+  //
+
+  dm[36]= 250.4;
+  dm[37]= 66.0;
+  dm[38]= 79.2;
+
+  //
+  
+  dm[39]= 253.0;
+  dm[40]= 66.0;
+  dm[41]= 79.2;
+
+  //
+
+  dm[42]= 253.0;
+  dm[43]= 75.3;
+  dm[44]= 79.2;
+
+  //
+
+  dm[45]= 253.6;
+  dm[46]= 75.3;
+  dm[47]= 79.2;
+
+  gMC->Gsvolu("TIIN","PCON",idtmed[3],dm,48);
+
+
+  //--------------------------------------------------------------------
+  //  Tpc Inner Containment vessel, Left part
+  //  mother volume - Al, daughter - composite (sandwich)
+  //--------------------------------------------------------------------
+
+  dm[0]= 0.;
+  dm[1]= 360.;
+  dm[2]= 8.;
+
+  //
+
+  dm[3]= -255.6;
+  dm[4]= 66.2;
+  dm[5]= 74.8;
+
+  //
+
+  Float_t cosL = 1./TMath::Sqrt(1.+tanL*tanL);
+  Float_t sandThick = 2.14; // cone composite thickness
+
+
+  //
+
+  dm[6]= -253.6;
+  dm[7]= 59.0 + (253.6-73.3)*tanL;
+  dm[8]= 74.8;
+
+  //
+
+  dm[9]= -253.6;
+  dm[10]= dm[7];
+  dm[11]= dm[7]+sandThick/cosL;
+
+  //
+
+  dm[12]= -75.6;
+  dm[13]= 59.0+(75.6-73.3)*tanL;
+  dm[14]= dm[13]+sandThick/cosL;
+
+  //
+
+  dm[15]= -75.6;
+  dm[16]= dm[13];
+  dm[17]= 60.65;
+
+  //
+
+  dm[18]= -73.3;
+  dm[19]= 59.0;
+  dm[20]= 60.65;
+
+  //
+
+  dm[21]= -73.3;
+  dm[22]= 56.9;
+  dm[23]= 60.65;
+
+  //
+
+  dm[24]= -72.1;
+  dm[25]= 56.9;
+  dm[26]= 60.65;
+
+  gMC->Gsvolu("TICL","PCON",idtmed[4],dm,27);
+
+  // Daughter volumes 
+
+  // Tpc SAndwich 9 - Al
+
+  dm[0]= 0.;
+  dm[1]= 360.;
+  dm[2]= 2.;
+
+  //
+
+  dm[3]= - 254.3;
+  dm[4]= 59.0+(254.3-73.3)*tanL;
+  dm[5]= dm[4]+sandThick/cosL;
+
+  //
+
+  dm[6]= -78.3;
+  dm[7]= 59.0+(78.3-73.3)*tanL;
+  dm[8]= dm[7]+sandThick/cosL;
+
+  //
+
+  gMC->Gsvolu("TSA9","PCON",idtmed[4],dm,9);
+
+  // Tpc SAndwich 10 - Tedlar
+
+  dm[4]+= 5.e-3/cosL;
+  dm[5]-= 5.e-3/cosL;
+
+  //
+
+  dm[7]+= 5.e-3/cosL;
+  dm[8]+= 5.e-3/cosL;
+
+  gMC->Gsvolu("TS10","PCON",idtmed[9],dm,9); 
+
+  // Tpc SAndwich 11 - Kevlar
+
+  dm[4]+= 5.e-3/cosL;
+  dm[5]-= 5.e-3/cosL;
+
+  //
+
+  dm[7]+= 5.e-3/cosL;
+  dm[8]+= 5.e-3/cosL;
+
+  gMC->Gsvolu("TS11","PCON",idtmed[5],dm,9); 
+
+  // Tpc SAndwich 12 - NOMEX
+
+  dm[4]+= 0.06/cosL;
+  dm[5]-= 0.06/cosL;
+
+  //
+
+  dm[7]+= 0.06/cosL;
+  dm[8]+= 0.06/cosL;
+
+  gMC->Gsvolu("TS12","PCON",idtmed[6],dm,9);   
+
+  // 12->11->10->9
+
+  gMC->Gspos("TS12",1,"TS11",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS11",1,"TS10",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS10",1,"TSA9",0.,0.,0.,0,"ONLY");
+
+  // TSA9->TICL
+
+  gMC->Gspos("TSA9",1,"TICL",0.,0.,0.,0,"ONLY");
+ 
+  //--------------------------------------------------------------------
+  //  Tpc Inner Containment vessel, Right part
+  //  mother volume - Al, daughter - composite (sandwich)
+  //--------------------------------------------------------------------
+
+  dm[0]= 0.;
+  dm[1]= 360.;
+  dm[2]=8.;
+
+  //
+
+  dm[3]= 72.1;
+  dm[4]= 56.9;
+  dm[5]= 60.65;
+
+  //
+
+  dm[6]= 73.3;
+  dm[7]= 56.9;
+  dm[8]= 60.65;
+
+  //
+
+  dm[9]= 73.3;
+  dm[10]= 59.0;
+  dm[11]= 60.65;
+
+  //
+
+  Float_t tanR = (66.0-59.0)/(250.5-73.3); // to avoid accuracy problems
+  Float_t cosR = 1./TMath::Sqrt(1.+tanR*tanR); //as above
+
+  //
+
+  dm[12]= 75.6;
+  dm[13]= 59.0+(75.6-73.3)*tanR;
+  dm[14]= 60.65;
+
+  //
+
+  dm[15]= 75.6;
+  dm[16]= dm[13];
+  dm[17]= dm[16]+sandThick/cosR;
+
+  //
+
+  dm[18]= 248.4;
+  dm[19]= 59.0+(248.4-73.3)*tanR;
+  dm[20]= dm[19]+sandThick/cosR;
+
+  //
+
+  dm[21]= 248.4;
+  dm[22]= dm[19];
+  dm[23]= 70.2;
+
+  //
+
+  dm[24]= 250.4;
+  dm[25]= 66.0;
+  dm[26]= 70.2;
+
+  gMC->Gsvolu("TICR","PCON",idtmed[4],dm,27);
+
+
+
+  // Daughter volumes 
+
+  // Tpc SAndwich 13 - Al
+
+  dm[0]= 0.;
+  dm[1]= 360.;
+  dm[2]= 2.;
+
+  //
+
+  dm[3]= 78.3;
+  dm[4]= 59.0+(78.3-73.3)*tanR;
+  dm[5]= dm[4]+sandThick/cosR;
+
+  //
+
+  dm[6]= 249.1;
+  dm[7]= 59.0+(249.1-73.3)*tanR;
+  dm[8]= dm[7]+sandThick/cosR;
+
+  //
+
+  gMC->Gsvolu("TS13","PCON",idtmed[4],dm,9);
+
+  // Tpc SAndwich 14 - Tedlar
+
+  dm[4]+= 5.e-3/cosR;
+  dm[5]-= 5.e-3/cosR;
+
+  //
+
+  dm[7]+= 5.e-3/cosR;
+  dm[8]+= 5.e-3/cosR;
+
+  gMC->Gsvolu("TS14","PCON",idtmed[9],dm,9); 
+
+  // Tpc SAndwich 15 - Kevlar
+
+  dm[4]+= 5.e-3/cosR;
+  dm[5]-= 5.e-3/cosR;
+
+  //
+
+  dm[7]+= 5.e-3/cosR;
+  dm[8]+= 5.e-3/cosR;
+
+  gMC->Gsvolu("TS15","PCON",idtmed[5],dm,9); 
+
+  // Tpc SAndwich 16 - NOMEX
+
+  dm[4]+= 0.06/cosR;
+  dm[5]-= 0.06/cosR;
+
+  //
+
+  dm[7]+= 0.06/cosR;
+  dm[8]+= 0.06/cosR;
+
+  gMC->Gsvolu("TS16","PCON",idtmed[6],dm,9);   
+
+  // 16->15->14->13
+
+  gMC->Gspos("TS16",1,"TS15",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS15",1,"TS14",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS14",1,"TS13",0.,0.,0.,0,"ONLY");
+
+  // TS12->TICR
+
+  gMC->Gspos("TS13",1,"TICR",0.,0.,0.,0,"ONLY");
+
+  //------------------------------------------------------
+  // Tpc Inner Field Cage
+  // mother volume - Al, daughters - composite (sandwich)
+  //------------------------------------------------------
+
+  dm[0]= 0.;
+  dm[1]= 360.;
+  dm[2]=6.;
+
+  //
+
+  dm[3]= -253.0;
+  dm[4]= 70.7;
+  dm[5]= 79.2;
+
+  //
+
+  dm[6]= -251.0;
+  dm[7]= 70.7;
+  dm[8]= 79.2;
+
+  //
+
+  dm[9]= -251.0;
+  dm[10]= 77.15;
+  dm[11]= 79.2;
+
+  //
+  
+  dm[12]= 251.0;
+  dm[13]= 77.15;
+  dm[14]= 79.2;
+
+  //
+
+  dm[15]= 251.0;
+  dm[16]= 66.0;
+  dm[17]= 79.2;
+
+  //
+
+  dm[18]= 253.0;
+  dm[19]= 66.0;
+  dm[20]= 79.2;
+
+  gMC->Gsvolu("TIFC","PCON",idtmed[4],dm,21);
+
+  // Daughter volumes
+
+  // Tpc Sandwich 17 - Al
+
+  dm[0]= 77.15;
+  dm[1]= 79.2;
+  dm[2]= 251.7;
+
+  gMC->Gsvolu("TS17","TUBE",idtmed[4],dm,3);
+
+  // Tpc Sandwich 18 - Tedlar
+
+  dm[0]+= 5.e-3;
+  dm[1]-= 5.e-3;
+
+  gMC->Gsvolu("TS18","TUBE",idtmed[9],dm,3);
+
+  // Tpc Sandwich 19 - Kevlar
+
+  dm[0]+= 5.e-3;
+  dm[1]-= 5.e-3;
+
+  gMC->Gsvolu("TS19","TUBE",idtmed[5],dm,3);
+
+  // Tpc Sandwich 20 - NOMEX
+
+  dm[0]+= 0.06;
+  dm[1]-= 0.06;
+
+  gMC->Gsvolu("TS20","TUBE",idtmed[6],dm,3);
+
+  // 20->19->18->17
+
+  gMC->Gspos("TS20",1,"TS19",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS19",1,"TS18",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS18",1,"TS17",0.,0.,0.,0,"ONLY");
+
+  // TS17->TIFC
+
+  gMC->Gspos("TS17",1,"TIFC",0.,0.,0.,0,"ONLY");
+
+  // TPC Rings
+
+  dm[0]= 70.7;
+  dm[1]= 79.2;
+  dm[2]= 0.3;
+
+  gMC->Gsposp("TPCR",4,"TIIN",0.,0.,-253.3,0,"ONLY",dm,3);
+
+  dm[0]= 66.0;
+  dm[1]= 70.2;  
+
+  gMC->Gsposp("TPCR",5,"TIIN",0.,0.,250.7,0,"ONLY",dm,3);
+
+  dm[0]= 75.3;
+  dm[1]= 79.2;  
+
+  gMC->Gsposp("TPCR",6,"TIIN",0.,0.,253.3,0,"ONLY",dm,3);  
+
+  // TICL->TIIN
+
+  gMC->Gspos("TICL",1,"TIIN",0.,0.,0.,0,"ONLY");
+
+  // TICR->TIIN
+
+  gMC->Gspos("TICR",1,"TIIN",0.,0.,0.,0,"ONLY");
+
+  // TIFC->TIIN
+
+  gMC->Gspos("TIFC",1,"TIIN",0.,0.,0.,0,"ONLY");
+
+  // Tpc Sandwich 21 - Al (central barrel)
+
+  dm[0]= 77.15;
+  dm[1]= 79.2;
+  dm[2]= 75.2;
+
+  gMC->Gsvolu("TS21","TUBE",idtmed[4],dm,3);
+
+  // Tpc Sandwich 22 - Tedlar (central barrel) 
+
+  dm[0]+= 5.e-3;
+  dm[1]-= 5.e-3;
+
+  gMC->Gsvolu("TS22","TUBE",idtmed[9],dm,3); 
+
+  // Tpc Sandwich 23 - Kevlar (central barrel) 
+
+  dm[0]+= 5.e-3;
+  dm[1]-= 5.e-3;
+
+  gMC->Gsvolu("TS23","TUBE",idtmed[5],dm,3); 
+
+  // Tpc Sandwich 24 - NOMEX (central barrel) 
+
+  dm[0]+= 0.02;
+  dm[1]-= 0.02;
+
+  gMC->Gsvolu("TS24","TUBE",idtmed[6],dm,3); 
+
+  // 24->23->22->21
+
+  gMC->Gspos("TS24",1,"TS23",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS23",1,"TS22",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("TS22",1,"TS21",0.,0.,0.,0,"ONLY");
+
+  gMC->Gspos("TS21",1,"TIIN",0.,0.,0.,0,"ONLY");
+
+  // put everything into the TPC 
+
+  gMC->Gspos("TIIN",1,"TPC ",0.,0.,0.,0,"ONLY");
+
+
+  //---------------------------------------------------------
+  //  Tpc Dift Gas volume Nonsensitive (Ne-CO2 90/10)
+  //  and its daughters (HV membrane, rods, readout chambers)
+  //---------------------------------------------------------
+
+  dm[0]= 79.2;
+  dm[1]= 258.0;
+  dm[2]= 253.6;
+
+  gMC->Gsvolu("TDGN","TUBE",idtmed[1],dm,3);  
+
+  // sector opening angles
 
   Float_t innerOpenAngle = fTPCParam->GetInnerAngle();
   Float_t outerOpenAngle = fTPCParam->GetOuterAngle();
 
-  Float_t innerAngleShift = fTPCParam->GetInnerAngleShift();
-  Float_t outerAngleShift = fTPCParam->GetOuterAngleShift();
+  // sector angle shift
 
+  Float_t innerAngleShift = fTPCParam->GetInnerAngleShift();
+
+  // number of sectors
 
   Int_t nInnerSector = fTPCParam->GetNInnerSector()/2;
   Int_t nOuterSector = fTPCParam->GetNOuterSector()/2;
+
+  // All above parameters are identical for inner and outer
+  // sectors. The distinction is kept for the historical reasons
+  // and eventually will disappear.
+
+  Float_t tanAlpha = TMath::Tan(0.5*innerOpenAngle);
+  Float_t cosAlpha = TMath::Sqrt(1.+tanAlpha*tanAlpha);
+  Float_t space;
+
+  //-------------------------------------------------------------------------
+  //   Tpc Inner Readout Chambers 
+  //-------------------------------------------------------------------------
+
+  dm[0]= 14.483;
+  dm[1]= 23.3345; 
+  dm[2]= 1.6; // thickness
+  dm[3]= 25.1;
+
+  gMC->Gsvolu("TIRC","TRD1",idtmed[4],dm,4);
+
+  // this volume will be positioned in the empty space
+  // of the end-cap to avoid overlaps
+
+  dm[0]= 13.7305;
+  dm[1]= 21.1895;
+  dm[2]= 2.25;
+  dm[3]= 21.15;
+
+  gMC->Gsvolu("TIC1","TRD1",idtmed[4],dm,4);
+
+
+  //------------------------------------------------
+  // Tpc Inner readout chamber Pad Plane
+  //------------------------------------------------
+
+  dm[0]= 14.483;
+  dm[1]= 23.3345;
+  dm[2]= 0.5;
+  dm[3]= 25.1;
+
+  gMC->Gsvolu("TIPP","TRD1",idtmed[12],dm,4);
+
+  // 
+
+  dm[0] -= 1.218511934;
+  dm[1] -= 1.218511934;
+  dm[2] = 0.35;
+
+  gMC->Gsvolu("TIC3","TRD1",idtmed[1],dm,4);
+
+  gMC->Gspos("TIC3",1,"TIPP",0.,0.15,0.,0,"ONLY");
+
+  gMC->Gspos("TIPP",1,"TIRC",0.,1.1,0.,0,"ONLY");
+
+
+  //----------------------------------------------
+  // Tpc Readout Chambers Empty spaces - for both
+  // inner and outer sectors
+  //----------------------------------------------
+
+  gMC->Gsvolu("TRCE","TRD1",idtmed[0],dm,0);
+
+  // Inner sector - 4 spaces
+
+
+  dm[3] = 4.7625;
+  dm[0] = 12.472;
+
+  Float_t rr = 90.52;
+  Float_t zz;
+
+  zz= -12.7875;
+  
+  space = rr*tanAlpha-dm[0];
+
+  for(Int_t nsLow=0;nsLow<4;nsLow++){
+
+    rr += 9.525;
+    dm[1]= rr*tanAlpha - space;  
+
+    dm[2]=0.8;
+
+    gMC->Gsposp("TRCE",nsLow+1,"TIRC",0.,-0.8,zz,0,"ONLY",dm,4);
+
+    //
+
+    dm[2]= 1.2;
+
+    gMC->Gsposp("TRCE",nsLow+5,"TIC1",0.,1.05,zz-2.1,0,"ONLY",dm,4);
+
+    rr += 0.4;
+    dm[0] = rr*tanAlpha - space;
+    zz += (0.4+9.525); 
+
+  }
+
+  dm[0]= 12.472;
+  // dm[1] - this is the dm[1] from the previous TRCE
+  dm[2]= 1.05;
+  dm[3]= 19.65;
+
+  gMC->Gsposp("TRCE",9,"TIC1",0.,-1.2,0.,0,"ONLY",dm,4);  
+  
+  //
+  // TPc Space for Connectors
+  //
+
+  dm[0]= .3;
+  dm[1]= .3;
+  dm[2]= 4.5;
+
+  gMC->Gsvolu("TPSC","BOX ",idtmed[0],dm,3);
+
+  // TPC Connectors
+
+  dm[0]= .25;
+  dm[1]= .15;
+  dm[2]= 3.75;
+
+  gMC->Gsvolu("TPCC","BOX ",idtmed[13],dm,3); 
+
+  gMC->Gspos("TPCC",1,"TPSC",0.,0.15,0.,0,"ONLY");
+
+  zz = -12.7875;
+
+
+  Float_t alpha;
+  Float_t astep;
+
+  Float_t phi1,phi2,phi3,theta1,theta2,theta3; // rotation angles
+
+  // inner part of the inner sector - 2 x 20 holes
+  
+  astep = 20.00096874/19.;
+
+  alpha = 10.00048437-astep;
+
+  Float_t x1,x2;
+
+    x1 = 13.31175725;
+    x1 -= 0.996357832; 
+
+    x2 = 15.06180253;
+    x2 -= 1.163028812;
+
+  Int_t ncon;
+
+  for(ncon=0;ncon<20;ncon++){
+
+    phi1 = 0.;
+    theta1 = 90.+alpha;
+    phi2=90.;
+    theta2 = 90.;
+    phi3 = (alpha>0) ? 0. : 180.;
+    theta3 = TMath::Abs(alpha);
+
+    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
+
+ 
+
+    gMC->Gspos("TPSC",ncon+1,"TIRC",x1,0.3,-12.7875,idrotm[nRotMat],"ONLY");
+    gMC->Gspos("TPSC",ncon+21,"TIRC",x2,0.3,-2.8625,idrotm[nRotMat],"ONLY");
+
+
+    x1 -= 1.296357833;
+    x2 -= 1.463028812;
+
+    alpha -= astep;   
+    nRotMat++; 
+
+  }
+
+  // outer part of the inner sector - 2 x 25 holes
+
+   astep = 20.00096874/24.; 
+   alpha = 10.00048437-astep;
+
+   x1 = 16.81184781;
+   x1 -= 1.016295986;
+
+   x2 = 18.5618931;
+   x2 -= 1.150914854;
+
+  for(ncon=0;ncon<25;ncon++){
+
+    phi1 = 0.;
+    theta1 = 90.+alpha;
+    phi2=90.;
+    theta2 = 90.;
+    phi3 = (alpha>0) ? 0. : 180.;
+    theta3 = TMath::Abs(alpha);
+
+    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
+
+ 
+
+    gMC->Gspos("TPSC",ncon+41,"TIRC",x1,0.3,7.0625,idrotm[nRotMat],"ONLY");
+    gMC->Gspos("TPSC",ncon+66,"TIRC",x2,0.3,16.9875,idrotm[nRotMat],"ONLY");
+
+
+    x1 -= 1.316295986;
+    x2 -= 1.450914854;
+
+    alpha -= astep;   
+    nRotMat++; 
+
+  }  
+
+  //--------------------------------------------------------------------------
+  //  TPC Outer Readout Chambers
+  //  this is NOT a final design
+  //--------------------------------------------------------------------------
+
+  dm[0]= 23.3875;
+  dm[1]= 43.524;
+  dm[2]= 1.5; //thickness
+  dm[3]= 57.1;
+
+  gMC->Gsvolu("TORC","TRD1",idtmed[4],dm,4);
+
+  //------------------------------------------------
+  // Tpc Outer readout chamber Pad Plane
+  //------------------------------------------------
+
+  dm[2]= 0.5;
+
+  gMC->Gsvolu("TOPP","TRD1",idtmed[12],dm,4);
+
+  dm[0] -= 1.218511934;
+  dm[1] -= 1.218511934;
+  dm[2] = 0.35;
+
+  gMC->Gsvolu("TOC3","TRD1",idtmed[1],dm,4);
+
+  gMC->Gspos("TOC3",1,"TOPP",0.,0.15,0.,0,"ONLY");
+
+  gMC->Gspos("TOPP",1,"TORC",0.,1.0,0.,0,"ONLY");
+
+  // empty space
+
+
+  dm[0]= 21.035;
+  dm[1]= 38.7205;
+  dm[2]= 0.7; 
+  dm[3]= 50.15;
+
+  gMC->Gsposp("TRCE",11,"TORC",0.,-0.8,-2.15,0,"ONLY",dm,4);  
+
+  dm[0]= 22.2935;
+  dm[1]= 40.5085;
+  dm[2]= 2.25;
+  dm[3]= 51.65;
+
+  gMC->Gsvolu("TOC1","TRD1",idtmed[4],dm,4);
+
+
+  dm[0]= 21.35;
+  dm[1]= 38.7205;
+  dm[2]= 2.25;
+  dm[3]= 50.15;
+
+  gMC->Gsposp("TRCE",11,"TOC1",0.,0.,0.,0,"ONLY",dm,4); 
+
+
+  //-----------------------------------------------
+  // Tpc Services Support Wheel
+  //-----------------------------------------------
+
+  dm[0]=0.;
+  dm[1]=360.;
+  dm[2]=18.;
+  dm[3]=2.;
+
+  dm[4]= -5.;
+  dm[5]= 77.017;
+  dm[6]= 255.267;
+
+  dm[7]= 5.;
+  dm[8]= dm[5];
+  dm[9]= dm[6];
+
+  gMC->Gsvolu("TSSW","PGON",idtmed[4],dm,10);
+
+  // Tpc Services Wheel Cover
+
+  dm[4]= -0.5;
+  dm[7]= 0.5;
+
+  gMC->Gsvolu("TSWC","PGON",idtmed[4],dm,10);
+
+  // Tpc Service wheel Cover Empty space
+   
+  dm[0]= 10.99;
+  dm[1]= 39.599;
+  dm[2]= .5;
+  dm[3]= 81.125;
+
+  gMC->Gsvolu("TSCE","TRD1",idtmed[0],dm,4);
+
+  // Tpc services Wheel Empty Spaces
+
+  dm[0]= 13.18017507;
+  dm[1]= 44.61045938;
+  dm[2]= 4.;
+  dm[3]= 89.125;
+
+  gMC->Gsvolu("TWES","TRD1",idtmed[0],dm,4);
+
+  // Tpc Services Wheel Bars
+
+  gMC->Gsvolu("TSWB","TRD1",idtmed[4],dm,0);
+
+  // bars-> TWES
+
+  dm[2]= 4.;
+  dm[3]= .4;
+
+  dm[0]= 13.8149522;
+  dm[1]= 13.95601379;
+  
+  gMC->Gsposp("TSWB",1,"TWES",0.,0.,-85.125,0,"ONLY",dm,4);
+
+  dm[0]= 43.83462067; 
+  dm[1]= 43.97568225;
+
+  gMC->Gsposp("TSWB",2,"TWES",0.,0.,85.125,0,"ONLY",dm,4);
+
+  // TPc ELectronics - right now 30% X0 Si
+
+  dm[0]= 14.03813696;
+  dm[1]= 43.3524075;
+  dm[2]= 1.404;
+  dm[3]= 83.125;
+
+  gMC->Gsvolu("TPEL","TRD1",idtmed[11],dm,4);
+  gMC->Gspos("TPEL",1,"TWES",0.,0.,0.,0,"ONLY");
+
+  //--------------------------------------------------------------------------
+  //  End caps
+  //--------------------------------------------------------------------------
+
+  // TPc Main Wheel - Al
+
+  dm[0]= 75.3;
+  dm[1]= 264.8;
+  dm[2]= 3.0;
+
+  gMC->Gsvolu("TPMW","TUBE",idtmed[4],dm,3);
+
+  // TPc Extra Wheel (to avoid overlapping) - Al
+
+  dm[0]= 264.8;
+  dm[1]= 277.0;
+  dm[2]= 1.95;
+
+  gMC->Gsvolu("TPEW","TUBE",idtmed[4],dm,3);
+
+  //--------------------------------------------------------------------------
+  //  Tpc Empty Space for the Readout chambers
+  //--------------------------------------------------------------------------  
+
+  Float_t rLow= 86.2;
+  Float_t rUp= 243.5;
+  Float_t dR = 0.5*(rUp-rLow);
+
+  space= 1.4/cosAlpha; // wheel ribs are 2.8 cm wide
+
+  dm[0]= rLow*tanAlpha-space;
+  dm[1]= rUp*tanAlpha-space;
+  dm[2]= 3.0;
+  dm[3]= dR;
+
+  gMC->Gsvolu("TESR","TRD1",idtmed[0],dm,4);
+
+  // TIC1->TESR
+
+
+  gMC->Gspos("TIC1",1,"TESR",0.,0.75,-dR+23.97,0,"ONLY");
+
+
+  // TOC1->TESR
+
+  gMC->Gspos("TOC1",1,"TESR",0.,0.75,dR-55.02,0,"ONLY");
+
+  // Tpc Empty Space Bars - Al (daughters of TESR)
+
+  Float_t zBar;
+
+  gMC->Gsvolu("TESB","TRD1",idtmed[4],dm,0);
+
+  // lower bar
+
+  dm[0]= rLow*tanAlpha-space;
+  dm[1]= 88.7*tanAlpha-space;
+  dm[2]= 0.95;
+  dm[3]= 1.275;
+
+  zBar = -dR+dm[3];
+
+  gMC->Gsposp("TESB",1,"TESR",0.,2.05,zBar,0,"ONLY",dm,4);
+
+  // middle bar
+
+  dm[0]= 131.65*tanAlpha-space;
+  dm[1]= 136.5*tanAlpha-space;
+  dm[3]= 2.425;
+
+  zBar = -dR +131.65+dm[3]-rLow;
+
+  gMC->Gsposp("TESB",2,"TESR",0.,2.05,zBar,0,"ONLY",dm,4);
+
+  // upper bar
+
+  dm[0]= 240.4*tanAlpha-space;
+  dm[1]= rUp*tanAlpha-space;
+  dm[3]= 1.55;
+
+  zBar = dR-dm[3];
+
+  gMC->Gsposp("TESB",3,"TESR",0.,2.05,zBar,0,"ONLY",dm,4);
+
+  //------------------------------------------------------
+  //  TPc Lower "S" Sectors 
+  //------------------------------------------------------
+  
+  Float_t deadSpace;
 
 
   Float_t inSecLowEdge = fTPCParam->GetInnerRadiusLow();
   Float_t inSecUpEdge =  fTPCParam->GetInnerRadiusUp();
 
+  dm[0] = inSecLowEdge*TMath::Tan(0.5*innerOpenAngle)-0.01;
+  dm[1] = inSecUpEdge*TMath::Tan(0.5*innerOpenAngle)-0.01;
+  dm[2] = 0.5*(250. - 0.3);
+  dm[3] = 0.5*(inSecUpEdge-inSecLowEdge);  
+
+  gMC->Gsvolu("TPLS", "TRD1", idtmed[1], dm, 4); // nonsensitive 
+
+  //----------------------------------------------------------
+  //  TPc Upper Sectors
+  //----------------------------------------------------------
+
   Float_t ouSecLowEdge = fTPCParam->GetOuterRadiusLow();
   Float_t ouSecUpEdge = fTPCParam->GetOuterRadiusUp();
 
-  Float_t secThick = 2.225; // Al
-
-  //  S (Inner) sectors
-
-  Float_t lowEdge = fTPCParam->GetInnerFrameSpace();
-
-  dm[0] = inSecLowEdge*TMath::Tan(0.5*innerOpenAngle)-lowEdge;
-  dm[1] = inSecUpEdge*TMath::Tan(0.5*innerOpenAngle)-lowEdge;
-  dm[2] = 0.5*secThick;
-  dm[3] = 0.5*(inSecUpEdge-inSecLowEdge);
-
-  Float_t xCenterS = inSecLowEdge+dm[3];
-
-  gMC->Gsvolu("TRCS", "TRD1", idtmed[0], dm, 4); 
-
-  //  L (Outer) sectors
-
-  Float_t upEdge = fTPCParam->GetOuterFrameSpace();
-
-  dm[0] = ouSecLowEdge*TMath::Tan(0.5*outerOpenAngle)-upEdge;
-  dm[1] = ouSecUpEdge*TMath::Tan(0.5*outerOpenAngle)-upEdge;
-  dm[2] = 0.5*secThick;
+  dm[0] = ouSecLowEdge*TMath::Tan(0.5*outerOpenAngle)-0.01;  
+  dm[1] = ouSecUpEdge*TMath::Tan(0.5*outerOpenAngle)-0.01;  
+  dm[2] = 0.5*(250. - 0.3);
   dm[3] = 0.5*(ouSecUpEdge-ouSecLowEdge);
 
-  Float_t xCenterL = ouSecLowEdge+dm[3];  
+  gMC->Gsvolu("TPUS", "TRD1", idtmed[1], dm, 4); // nonsensitive   
 
-  gMC->Gsvolu("TRCL", "TRD1", idtmed[0], dm, 4);
+  //--------------------------------------------------------
+  // TPc Sensitive Strips, the same for S and L sectors
+  //--------------------------------------------------------
 
-  Float_t z1 = -zSide + secThick*0.5;
+  gMC->Gsvolu("TPSS","TRD1",idtmed[2],dm,0); // sensitive
 
-  //------------------------------------------------------------------
-  // S sectors - "gas sectors" (TRD1)
-  //------------------------------------------------------------------
-
-  dm[0] = inSecLowEdge*TMath::Tan(0.5*innerOpenAngle)-0.01;
-  dm[1] = inSecUpEdge*TMath::Tan(0.5*innerOpenAngle)-0.01;
-  dm[2] = 0.5*(250. - 0.001);
-  dm[3] = 0.5*(inSecUpEdge-inSecLowEdge);  
-
-  gMC->Gsvolu("TSGA", "TRD1", idtmed[3], dm, 4); // nonsensitive
-
-  //------------------------------------------------------------------
-  // sensitive strips - "pad rows"
-  //------------------------------------------------------------------
-
-  Int_t ns;
-  Float_t r1,r2,zz;
-
+  Int_t nofStrips,nstr;
+  Float_t r1,r2,zs;
   Float_t stripThick = 0.01; // 100 microns
-  Float_t dead;
 
-  gMC->Gsvolu("TSST", "TRD1", idtmed[4], dm, 0);
+  // inner sector
 
-  dm[2] = 0.5*(250. - 0.002);
+  nofStrips = fTPCParam->GetNRowLow();
+  deadSpace = fTPCParam->GetInnerWireMount();
+
+  dm[2] = 0.5*(250. - 0.3);
   dm[3] = 0.5 * stripThick;
 
+  for(nstr=0;nstr<nofStrips;nstr++){
 
-  // S-sector
-
-  dead = fTPCParam->GetInnerWireMount();
-
-  for (ns = 0; ns < fTPCParam->GetNRowLow(); ns++) {
-
-    r1 = fTPCParam->GetPadRowRadiiLow(ns);
+    r1 = fTPCParam->GetPadRowRadiiLow(nstr);
     r2 = r1 + stripThick;     
-    dm[0] = r1 * TMath::Tan(0.5*innerOpenAngle) - dead;
-    dm[1] = r2 * TMath::Tan(0.5*innerOpenAngle) - dead;
-
-    zz = -inSecLowEdge -0.5*(inSecUpEdge-inSecLowEdge);
-    zz += r1;
-    zz += dm[3];
-
-    gMC->Gsposp("TSST", ns+1, "TSGA", 0., 0., zz, 0, "ONLY", dm, 4);
+    dm[0] = r1 * TMath::Tan(0.5*innerOpenAngle) - deadSpace;
+    dm[1] = r2 * TMath::Tan(0.5*innerOpenAngle) - deadSpace;
+    zs = -inSecLowEdge -0.5*(inSecUpEdge-inSecLowEdge);
+    zs += r1;
+    zs += dm[3];
     
+    gMC->Gsposp("TPSS", nstr+1, "TPLS", 0., 0., zs, 0, "ONLY", dm, 4);
 
   }
 
-  //-----------------------------------------------------------------
-  //  L sectors - "gas sectors" (PGON to avoid overlaps)
-  //-----------------------------------------------------------------
+  Int_t nsSave = nofStrips;
 
-  dm[0] = 360.*kDegrad - 0.5*outerOpenAngle;
-  dm[0] *= kRaddeg;
-  dm[0] = (Float_t)TMath::Nint(dm[0]);
+  // outer sector
 
-  dm[1] = outerOpenAngle*kRaddeg;
-  dm[1] = (Float_t)TMath::Nint(dm[1]);
+  nofStrips = fTPCParam->GetNRowUp();
+  deadSpace = fTPCParam->GetOuterWireMount();
 
-  dm[2] = 1.;
-  dm[3] = 4.;
-
-  dm[4] = 0.002;
-  dm[5] = ouSecLowEdge;
-  dm[6] = 252.*TMath::Cos(0.5*outerOpenAngle)-0.002;
-
-  dm[7] = dm[4]+0.2;
-  dm[8] = dm[5];
-  dm[9] = dm[6];
-
-  dm[10] = dm[7];
-  dm[11] = ouSecLowEdge;
-  dm[12] = ouSecUpEdge;
-
-  dm[13] = 250.;
-  dm[14] = dm[11];
-  dm[15] = dm[12];
-
-  gMC->Gsvolu("TLGA","PGON",idtmed[3],dm,16);
-
-  //------------------------------------------------------------------
-  // sensitive strips - "pad rows"
-  //------------------------------------------------------------------
-
-  Float_t rmax = dm[6];
-
-  // L-sectors
-
-  gMC->Gsvolu("TLST", "PGON", idtmed[4], dm, 0);
-
-  dm[0] = 360.*kDegrad - 0.5*outerOpenAngle;
-  dm[0] *= kRaddeg;
-  dm[0] = (Float_t)TMath::Nint(dm[0]);
-
-  dm[1] = outerOpenAngle*kRaddeg;
-  dm[1] = (Float_t)TMath::Nint(dm[1]);
-
-  dm[2] = 1.;
-  dm[3] = 2.;
-
-  dm[7] = 250.;
-
-  dead = fTPCParam->GetOuterWireMount();
-
-  Float_t xx = dead/TMath::Tan(0.5*outerOpenAngle);
-
-  for(ns=0;ns<fTPCParam->GetNRowUp();ns++){
-
-    r1 = fTPCParam->GetPadRowRadiiUp(ns)-xx;
-    r2 = r1 + stripThick;
-
-    dm[5] = r1;
-    dm[6] = r2;
-
-    dm[8] = r1;
-    dm[9] = r2;
-
-    if(r2+xx < rmax){
-      dm[4] = 0.002;
-    }
-    else{
-      dm[4] = 0.202;
-    }
-
-    gMC->Gsposp("TLST",ns+1,"TLGA",xx,0.,0.,0,"ONLY",dm,10);
-
-  }
+  dm[2] = 0.5*(250. - 0.3);
+  dm[3] = 0.5 * stripThick;
   
-  //------------------------------------------------------------------
-  // Positioning of the S-sector readout chambers
-  //------------------------------------------------------------------
-
-  Float_t zs = 0.5*(250.+0.002);
-
-  Float_t theta1,theta2,theta3;
-  Float_t phi1,phi2,phi3;
-  Float_t alpha;
-  Float_t x,y;
-
-  for(ns=0;ns<nInnerSector;ns++){
+   for(nstr=0;nstr<nofStrips;nstr++){
     
-    phi1 = ns * innerOpenAngle + 270.*kDegrad + innerAngleShift;
+    r1 = fTPCParam->GetPadRowRadiiUp(nstr); 
+    r2 = r1 + stripThick;
+    dm[0] = r1 * TMath::Tan(0.5*outerOpenAngle) - deadSpace;
+    dm[1] = r2 * TMath::Tan(0.5*outerOpenAngle) - deadSpace;
+    zs = -ouSecLowEdge -0.5*(ouSecUpEdge-ouSecLowEdge);
+    zs += r1;
+    zs += dm[3];
+
+    gMC->Gsposp("TPSS", nstr+1+nsSave, "TPUS", 0., 0., zs, 0, "ONLY", dm, 4);
+
+   } 
+  
+
+  //-------------------------------------------------------
+  //  positioning of the empty spaces into the main wheel
+  //  and readout chambers and sectors into the drift gas
+  //-------------------------------------------------------
+
+  Float_t rCenter,xc,yc;
+  Float_t rInner,rOuter; // center of the inner and outer chamber
+
+  rCenter = rLow+dR;
+
+  rInner = 108.07;
+  rOuter = 190.68;
+
+  for(Int_t ns=0; ns<nInnerSector;ns++){
+
+    phi1 = ns * innerOpenAngle + innerAngleShift;
     phi1 *= kRaddeg; // in degrees
 
-    phi1 = (Float_t)TMath::Nint(phi1);
+    phi1 = (Float_t)TMath::Nint(phi1) + 270.;
 
     if (phi1 > 360.) phi1 -= 360.;
 
-      
     theta1 = 90.;
     phi2   = 90.;
     theta2 = 180.;
@@ -423,340 +1570,67 @@ void AliTPCv1::CreateGeometry()
 
     theta3 = 90.;
 
-    alpha = phi3*kDegrad;
+    // "holes"->End plate
 
-    x = xCenterS * TMath::Cos(alpha);
-    y = xCenterS * TMath::Sin(alpha); 
- 
-    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);  
+    xc = rCenter*TMath::Cos(phi3*kDegrad);
+    yc = rCenter*TMath::Sin(phi3*kDegrad);
+
+    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
+
+    gMC->Gspos("TESR",ns+1,"TPMW",xc,yc,0.,idrotm[nRotMat],"ONLY");
+
+    // TSCE->TSWC (services wheel volumes)
+
+    xc = 166.142*TMath::Cos(phi3*kDegrad);
+    yc = 166.142*TMath::Sin(phi3*kDegrad);
+
+    gMC->Gspos("TSCE",ns+1,"TSWC",xc,yc,0.,idrotm[nRotMat],"ONLY");
+    gMC->Gspos("TWES",ns+1,"TSSW",xc,yc,0.,idrotm[nRotMat],"ONLY");
+
+
+    // readout chambers->TDGN (drift gas)
+
+    xc = rInner*TMath::Cos(phi3*kDegrad);
+    yc = rInner*TMath::Sin(phi3*kDegrad);
+
+    gMC->Gspos("TIRC",ns+1,"TDGN",xc,yc,252.,idrotm[nRotMat],"ONLY");
+
+    // here lower sectors 
+
+    gMC->Gspos("TPLS",ns+1,"TDGN",xc,yc,125.15,idrotm[nRotMat],"ONLY");
+    gMC->Gspos("TPLS",ns+nInnerSector+1,"TDGN",xc,yc,-125.15,idrotm[nRotMat],"ONLY");
      
-    gMC->Gspos("TRCS", ns+1, "TPSG", x, y, z1, idrotm[nRotMat], "ONLY");
+    xc = rOuter*TMath::Cos(phi3*kDegrad);
+    yc = rOuter*TMath::Sin(phi3*kDegrad);
 
-    gMC->Gspos("TSGA",ns+1,"TGAS",x,y,zs,idrotm[nRotMat], "ONLY");
-    gMC->Gspos("TSGA",ns+1+nInnerSector,"TGAS",x,y,-zs,idrotm[nRotMat], "ONLY");
+    gMC->Gspos("TORC",ns+1,"TDGN",xc,yc,252.1,idrotm[nRotMat],"ONLY");
 
-    nRotMat++;     
+    // here upper sectors 
 
-  }
-    
-  //-------------------------------------------------------------------
-  //  Positioning of the L-sectors readout chambers
-  //-------------------------------------------------------------------
-    
-  for(ns=0;ns<nOuterSector;ns++){
-    phi1 = ns * outerOpenAngle + 270.*kDegrad + outerAngleShift;
-    phi1 *= kRaddeg; // in degrees
+    gMC->Gspos("TPUS",ns+1,"TDGN",xc,yc,125.15,idrotm[nRotMat],"ONLY");
+    gMC->Gspos("TPUS",ns+nOuterSector+1,"TDGN",xc,yc,-125.15,idrotm[nRotMat],"ONLY");
 
-    phi1 = (Float_t)TMath::Nint(phi1);
-    
-
-    if (phi1 > 360.) phi1 -= 360.;
-      
-    theta1 = 90.;
-    phi2   = 90.;
-    theta2 = 180.;
-    phi3   = ns * outerOpenAngle+outerAngleShift;
-    phi3 *= kRaddeg; // in degrees
-
-    phi3 = (Float_t)TMath::Nint(phi3);
-
-      
-    if(phi3 > 360.) phi3 -= 360.;
-
-    theta3 = 90.;
-
-    alpha = phi3*kDegrad;
-
-    x = xCenterL * TMath::Cos(alpha);
-    y = xCenterL * TMath::Sin(alpha); 
- 
-    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);  
-     
-
-    gMC->Gspos("TRCL", ns+1, "TPSG", x, y, z1, idrotm[nRotMat], "ONLY"); 
-
-    nRotMat++;   
-
-  }
-
-  //-------------------------------------------------------------------
-  // Positioning of the L-sectors (gas sectors)
-  //-------------------------------------------------------------------
-
-  for(ns=0;ns<nOuterSector;ns++){
-
-     phi1 = ns*outerOpenAngle + outerAngleShift;
-     phi1 *= kRaddeg;
-    
-     phi1 = (Float_t)TMath::Nint(phi1);
-     if(phi1>360.) phi1 -= 360.;
-
-     theta1 = 90.;
-
-     phi2 = 90. + phi1;
-     if(phi2>360.) phi2 -= 360.;
-
-     theta2 = 90.; 
-
-     phi3 = 0.;
-     theta3 = 0.;
-
-     alpha = phi1*kDegrad;
-
-
-     AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3); 
-
-
-     gMC->Gspos("TLGA",ns+1,"TGAS" ,0.,0.,0.,idrotm[nRotMat],"ONLY");
-
-     nRotMat++;
-   
-     // reflection !!
-
-     phi3 = 0.;
-     theta3 = 180.;
-     
-     AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
-  
-     gMC->Gspos("TLGA",ns+1+nOuterSector,"TGAS" ,0.,0.,0.,idrotm[nRotMat],"ONLY");
-          
     nRotMat++;
-  }
-  
-  Float_t z0 = zSide - 0.95;
 
-  gMC->Gspos("TPEC",1,"TPSG",0.,0.,z0,0,"ONLY");
+    theta2 = 0.; // reflection
 
-  // ========================================================== 
-  //                  wheels 
-  // ========================================================== 
+    AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
 
-  //
-  //  auxilary structures
-  //
+    xc = rInner*TMath::Cos(phi3*kDegrad);
+    yc = rInner*TMath::Sin(phi3*kDegrad);
 
+    gMC->Gspos("TIRC",ns+nInnerSector+1,"TDGN",xc,yc,-252.,idrotm[nRotMat],"ONLY");
 
-  gMC->Gsvolu("TPWI","TUBE",idtmed[24],dm,0); // "air" 
+    xc = rOuter*TMath::Cos(phi3*kDegrad);
+    yc = rOuter*TMath::Sin(phi3*kDegrad);
 
-  // ---------------------------------------------------------- 
-  //       Large wheel -> positioned in the TPC 
-  // ---------------------------------------------------------- 
-  
+    gMC->Gspos("TORC",ns+nOuterSector+1,"TDGN",xc,yc,-252.1,idrotm[nRotMat],"ONLY");
 
-  z0 = 263.5; // TPC length - 1/2 spoke wheel width
+    nRotMat++;
 
-  dm[0] = 258.;
-  dm[1] = 278.;
-  dm[2] = 11.5;
-  
-  gMC->Gsvolu("TPWL", "TUBE", idtmed[0], dm, 3); 
+  } 
 
-  dm[0] = dm[0]+2.;
-  dm[1] = 278.;
-  dm[2] = dm[2]-2.;
-
-  gMC->Gsposp("TPWI",1,"TPWL",0.,0.,0.,0,"ONLY",dm,3);
-
-  gMC->Gspos("TPWL", 1, "TPC ", 0, 0, z0, 0, "ONLY");
-  gMC->Gspos("TPWL", 2, "TPC ", 0, 0, -z0, 0, "ONLY");
-
-  //
-  //  Outer vessel + CO2 HV degrader
-  //
-
-  dm[0] = 260.;
-  dm[1] = 278.;
-  dm[2] = 252.;
-
-  gMC->Gsvolu("TPCO","TUBE",idtmed[12],dm,3);
-
-  dm[0] = 275.;
-  dm[1] = 278.;
-  
-  gMC->Gsvolu("TPOV","TUBE",idtmed[10],dm,3);
-
-  gMC->Gspos("TPOV",1,"TPCO",0.,0.,0.,0,"ONLY");
-
-
- 
-
-  gMC->Gspos("TPCO",1,"TPC ",0.,0.,0.,0,"ONLY");
-
-
-  //----------------------------------------------------------
-  //  Small wheel -> positioned in "side gas
-  //----------------------------------------------------------
-
-  dm[0] = 78.;
-  dm[1] = 82.;
-  dm[2] = 11.5;
-
-  gMC->Gsvolu("TPWS", "TUBE", idtmed[0], dm, 3);
-
-  dm[0] = 78.;
-  dm[1] = dm[1]-2;
-  dm[2] = dm[2]-2.;
-
-  gMC->Gsvolu("TPW1", "TUBE", idtmed[2], dm, 3);
-  
-  gMC->Gspos("TPW1", 1, "TPWS", 0., 0., 0., 0, "ONLY");
-
-  z0 = 1.; // spoke wheel is shifted w.r.t. center of the "side gas"
-
-  gMC->Gspos("TPWS", 1, "TPSG", 0, 0, z0, 0, "ONLY");
-
-
-  // to avoid overlaps
-
-  dm[0] = 76.;
-  dm[1] = 78.;
-  dm[2] = 11.5;
-
-  gMC->Gsvolu("TPS1","TUBE",idtmed[0],dm,3);
-
-  dm[2] = 9.5;
-
-  gMC->Gsvolu("TPS2","TUBE",idtmed[24],dm,3);
-
-  gMC->Gspos("TPS2",1,"TPS1",0.,0.,0.,0,"ONLY");
-
-  z0= 263.5;
-  
-  gMC->Gspos("TPS1",1,"TPC ",0.,0.,z0,0,"ONLY");
-  gMC->Gspos("TPS1",2,"TPC ",0.,0.,-z0,0,"ONLY");
-
-  // G10 plug
-
-  dm[0] = 76.;
-  dm[1] = 78.;
-  dm[2] = 1.;
-
-  gMC->Gsvolu("TPG2","TUBE",idtmed[8],dm,3);
-
-  z0 = 251.;
-
-  gMC->Gspos("TPG2",1,"TPC ",0.,0.,z0,0,"ONLY");
-  gMC->Gspos("TPG2",2,"TPC ",0.,0.,-z0,0,"ONLY");
-
-
-  //---------------------------------------------------------
-  //  central wheel  6 (radial direction) x 4 (along z) cm2
-  //---------------------------------------------------------
-
-  dm[0] = 140.;
-  dm[1] = 146.;
-  dm[2] = 2.;
-
-  gMC->Gsvolu("TPWC","TUBE",idtmed[0],dm,3);
-
-  dm[0] = dm[0] + 2.;
-  dm[1] = dm[1] - 2.;
-  dm[2] = dm[2] - 1.;
-
-  gMC->Gsposp("TPWI",2,"TPWC",0.,0.,0.,0,"ONLY",dm,3);
-
-  z0 = zSide - 1.9 - 2.;
-
-  gMC->Gspos("TPWC",1,"TPSG",0.,0.,z0,0,"ONLY");
-
-  //
-
-  gMC->Gsvolu("TPSE","BOX ",idtmed[24],dm,0); // "empty" part of the spoke 
-
- 
-  //---------------------------------------------------------
-  //  inner spokes (nSectorInner)
-  //---------------------------------------------------------
-
-  dm[0] = 0.5*(139.9-82.1);
-  dm[1] = 3.;
-  dm[2] = 2.;
-
-  Float_t x1 = dm[0]+82.;
-
-  gMC->Gsvolu("TPSI","BOX",idtmed[0],dm,3);
-
-  dm[1] = dm[1]-1.;
-  dm[2] = dm[2]-1.;
-
-  gMC->Gsposp("TPSE",1,"TPSI",0.,0.,0.,0,"ONLY",dm,3);
-
-  for(ns=0;ns<nInnerSector;ns++){
-
-    phi1 = 0.5*innerOpenAngle + ns*innerOpenAngle + innerAngleShift;
-    theta1=90.;
-    phi1 *=kRaddeg;
-
-    phi1 = (Float_t)TMath::Nint(phi1);
-    if(phi1>360.) phi1 -= 360.;    
-
-    phi2 = phi1+90.;
-    if(phi2>360.) phi2 -= 360.;
-    theta2=90.;
-    phi3=0.;
-    theta3=0.;
-
-    alpha = phi1 * kDegrad;
-    x     = x1 * TMath::Cos(alpha);
-    y     = x1 * TMath::Sin(alpha);    
-
-   AliMatrix(idrotm[nRotMat],theta1,phi1,theta2,phi2,theta3,phi3);
-
-   gMC->Gspos("TPSI",ns+1,"TPSG",x,y,z0,idrotm[nRotMat],"ONLY");  
-
-   nRotMat++;
-
-  }
-
-  //-------------------------------------------------------------
-  // outer spokes (nSectorOuter)
-  //-------------------------------------------------------------
-
-  dm[0] = 0.5*(257.9-146.1);
-  dm[1] = 3.;
-  dm[2] = 2.;
-
-  x1 = dm[0] + 146.;
-
-  gMC->Gsvolu("TPSO","BOX ",idtmed[0],dm,3);
-
-  dm[1] = dm[1] - 1.;
-  dm[2] = dm[2] - 1.;
-
-  gMC->Gsposp("TPSE",2,"TPSO",0.,0.,0.,0,"ONLY",dm,3);
-
-  for(ns=0;ns<nOuterSector;ns++){
-
-    phi1 = 0.5*outerOpenAngle + ns*outerOpenAngle + outerAngleShift;
-    theta1=90.;
-    phi1 *=kRaddeg;
-
-    phi1 = (Float_t)TMath::Nint(phi1);
-    if(phi1>360.) phi1 -= 360.;
-
-    phi2 = phi1+90.;
-    if(phi2>360.) phi2 -= 360.;
-    theta2=90.;
-    phi3=0.;
-    theta3=0.;
-
-    alpha = phi1 * kDegrad;
-    x     = x1 * TMath::Cos(alpha);
-    y     = x1 * TMath::Sin(alpha);    
-
-   AliMatrix(idrotm[nRotMat],theta1,phi1,theta2,phi2,theta3,phi3);
-
-   gMC->Gspos("TPSO",ns+1,"TPSG",x,y,z0,idrotm[nRotMat],"ONLY");  
-
-   nRotMat++;
-
-  }  
-  
-
-  
-  // -------------------------------------------------------- 
-  //         put the readout chambers into the TPC 
-  // -------------------------------------------------------- 
+  // reflection matrix
 
   theta1 = 90.;
   phi1   = 0.;
@@ -764,88 +1638,147 @@ void AliTPCv1::CreateGeometry()
   phi2   = 270.;
   theta3 = 180.;
   phi3   = 0.;
-  
+
   AliMatrix(idrotm[nRotMat], theta1, phi1, theta2, phi2, theta3, phi3);
+
+
+  // TPMW->TPC
+
+  gMC->Gspos("TPMW",1,"TPC ",0.,0.,256.6,0,"ONLY");
+  gMC->Gspos("TPMW",2,"TPC ",0.,0.,-256.6,idrotm[nRotMat],"ONLY");
+  gMC->Gspos("TPEW",1,"TPC ",0.,0.,257.65,0,"ONLY");
+  gMC->Gspos("TPEW",2,"TPC ",0.,0.,-257.5,0,"ONLY");
+
+
+
+  //-------------------------------------------------------
+  // Tpc High Voltage Membrane - NOMEX honeycomb
+  //-------------------------------------------------------
+
+  dm[0]=0.,
+  dm[1]=360.;
+  dm[2]=18.;
+  dm[3]=2.;
+
+  //
+
+  dm[4]= -0.3;
+  dm[5]= 81.156;
+  dm[6]= 253.386;
+
+  //
+
+  dm[7]= 0.3;
+  dm[8]= dm[5];
+  dm[9]= dm[6];
+
+  gMC->Gsvolu("THVM","PGON",idtmed[6],dm,10);
+
+  gMC->Gspos("THVM",1,"TDGN",0.,0.,0.,0,"ONLY");
+
+  //----------------------------------------------------------
+  // TPc Support Rods - MAKROLON
+  //----------------------------------------------------------
+
+  dm[0]= 0.9;
+  dm[1]= 1.2;
+  dm[2]= 126.65;
+
+  gMC->Gsvolu("TPSR","TUBE",idtmed[7],dm,3);
+
+  for(Int_t nrod=1;nrod<18;nrod++){
+    Float_t angle=innerOpenAngle*(Float_t)nrod;
+
+    xc=82.4*TMath::Cos(angle);
+    yc=82.4*TMath::Sin(angle);
+
+    gMC->Gspos("TPSR",nrod,"TDGN",xc,yc,126.95,0,"ONLY");
+    gMC->Gspos("TPSR",nrod+17,"TDGN",xc,yc,-126.95,0,"ONLY");
+
+    xc=254.2*TMath::Cos(angle);
+    yc=254.2*TMath::Sin(angle);
+
+    gMC->Gspos("TPSR",nrod+34,"TDGN",xc,yc,126.95,0,"ONLY");
+    gMC->Gspos("TPSR",nrod+51,"TDGN",xc,yc,-126.95,0,"ONLY");    
+
+  }
+
+  //----------------------------------------------------------
+  // Tpc High Voltage rod - MAKROLON + Copper cable
+  //----------------------------------------------------------
+
+  // rod with cable (Left)
+
+  dm[0]=0.;
+  dm[1]=2.25;
+  dm[2]=126.65;
+
+  gMC->Gsvolu("THVL","TUBE",idtmed[7],dm,3);
+
+  // HV cable
+ 
+  dm[0]=0.;
+  dm[1]=0.3;
+  dm[2]=126.65;
+
+  gMC->Gsvolu("THVC","TUBE",idtmed[10],dm,3);
+
+  // empty space
+
+  dm[0]=0.3;
+  dm[1]=1.;
+  dm[2]=126.65;
+
+  gMC->Gsvolu("THVE","TUBE",idtmed[1],dm,3);
+
+  gMC->Gspos("THVC",1,"THVL",0.,0.,0.,0,"ONLY");
+  gMC->Gspos("THVE",1,"THVL",0.,0.,0.,0,"ONLY");
+
+  // rod without cable
+
+  dm[0]=1.8;
+  dm[1]=2.25;
+  dm[2]=126.65;
+
+  gMC->Gsvolu("THVR","TUBE",idtmed[7],dm,3);
+
   
-  z0 = zSide + 250.;
   
-  gMC->Gspos("TPSG", 1, "TPC ", 0, 0, z0, 0, "ONLY");
-  gMC->Gspos("TPSG", 2, "TPC ", 0, 0, -z0, idrotm[nRotMat], "ONLY");
+  gMC->Gspos("THVL",1,"TDGN",82.4,0.,-126.95,0,"ONLY");
+  gMC->Gspos("THVL",2,"TDGN",254.2,0.,-126.95,0,"ONLY");
+
+  gMC->Gspos("THVR",1,"TDGN",82.4,0.,126.95,0,"ONLY");
+  gMC->Gspos("THVR",2,"TDGN",254.2,0.,126.95,0,"ONLY");  
   
+
+
+  gMC->Gspos("TDGN",1,"TPC ",0.,0.,0.,0,"ONLY"); 
+
+  // services wheel cover -> wheel
+
+
+  gMC->Gspos("TSWC",1,"TSSW",0.,0.,4.5,0,"ONLY");
+  gMC->Gspos("TSWC",2,"TSSW",0.,0.,-4.5,0,"ONLY");
+
+
+  // put the wheel into the TPC
+
+  gMC->Gspos("TSSW",1,"TPC ",0.,0.,278.7,0,"ONLY");
+  gMC->Gspos("TSSW",2,"TPC ",0.,0.,-278.7,0,"ONLY");
+
+  gMC->Gsord("TPMW",6);
+  gMC->Gsord("TPLS",3);
+  gMC->Gsord("TPUS",3);
+  gMC->Gsord("TDGN",6);
+  gMC->Gsord("TSSW",6);
+  gMC->Gsord("TSWC",6);
+
+  // put the TPC into ALIC (main mother volume)
+
   gMC->Gspos("TPC ", 1, "ALIC", 0, 0, 0, 0, "ONLY");
 
-  //----------------------------------------------------
-  //  Inner vessel and HV degrader
-  //----------------------------------------------------
-
-  dm[0] = 0.;
-  dm[1] = 360.;
-  dm[2] = 4.;
-  
-  dm[3] = -250.;
-  dm[4] = 74.4;
-  dm[5] = 76.;
-
-  dm[6] = -64.5;
-  dm[7] = 50.;
-  dm[8] = 76.;
-
-  dm[9] = 64.5;
-  dm[10] = 50.;
-  dm[11] = 76.;
-
-  dm[12] = 250.;
-  dm[13] = 74.4;
-  dm[14] = 76.;
-
-  gMC->Gsvolu("TPVD", "PCON", idtmed[12], dm, 15); // CO2
-
-  // cone parts
-
-  dm[0] = 0.;
-  dm[1] = 360.;
-  dm[2] = 2.;
-
-  dm[3] = 64.5;
-  dm[4] = 50.;
-  dm[5] = 51.6;
- 
-  dm[6] = 250.;
-  dm[7] = 74.4;
-  dm[8] = 76.;
-
-
-  gMC->Gsvolu("TIVC","PCON",idtmed[11],dm,9); // C-fibre
-
-  gMC->Gspos("TIVC",1,"TPVD",0.,0.,0.,0,"ONLY");
-  gMC->Gspos("TIVC",2,"TPVD",0.,0.,0.,idrotm[nRotMat],"ONLY");
-
-  // barrel part
-
-  dm[0] = 50.;
-  dm[1] = 50.5;
-  dm[2] = 64.5;
-
-  gMC->Gsvolu("TIVB","TUBE",idtmed[9],dm,3);
-
-  gMC->Gspos("TIVB",1,"TPVD",0.,0.,0.,0,"ONLY");
-
-  gMC->Gspos("TPVD",1,"ALIC",0.,0.,0.,0,"ONLY");
-
-  
-
-  
-
-  // --------------------------------------------------- 
-  //               volumes ordering 
-  // --------------------------------------------------- 
-  gMC->Gsord("TGAS", 6);
-  gMC->Gsord("TPSG", 6);
-  gMC->Gsord("TSGA", 3);
-  gMC->Gsord("TLGA", 4);
 
 } // end of function
-
 
 //_____________________________________________________________________________
 void AliTPCv1::DrawDetector()
@@ -861,34 +1794,94 @@ void AliTPCv1::DrawDetector()
   gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  gMC->Gsatt("TPC","SEEN",0);
-  gMC->Gsatt("TGAS","SEEN",0);
-  gMC->Gsatt("TPSG","SEEN",0);
-  gMC->Gsatt("TPHV","SEEN",1);
-  gMC->Gsatt("TPMH","SEEN",1);
-  gMC->Gsatt("TPEC","SEEN",0);
-  gMC->Gsatt("TRCS","SEEN",1);
-  gMC->Gsatt("TRCL","SEEN",1);
-  gMC->Gsatt("TPWL","SEEN",1);
-  gMC->Gsatt("TPWI","SEEN",1);
-  gMC->Gsatt("TPWS","SEEN",1);
-  gMC->Gsatt("TPW1","SEEN",1);
-  gMC->Gsatt("TPS1","SEEN",1);
-  gMC->Gsatt("TPS2","SEEN",1);
-  gMC->Gsatt("TPG1","SEEN",1);
-  gMC->Gsatt("TPG2","SEEN",1);
-  gMC->Gsatt("TPWC","SEEN",1);
-  gMC->Gsatt("TPSI","SEEN",1); 
-  gMC->Gsatt("TPSO","SEEN",1);
-  gMC->Gsatt("TPCO","SEEN",1);
-  gMC->Gsatt("TPOV","SEEN",1);
-  gMC->Gsatt("TPVD","SEEN",1);
+  gMC->Gsatt("TPC ","SEEN",0);
+  gMC->Gsatt("TOIN","SEEN",1);
+  gMC->Gsatt("TOIN","COLO",7);
+  gMC->Gsatt("TPCR","SEEN",0);
+  gMC->Gsatt("TOCV","SEEN",1);
+  gMC->Gsatt("TOCV","COLO",4);
+  gMC->Gsatt("TSA1","SEEN",0);
+  gMC->Gsatt("TSA2","SEEN",0);
+  gMC->Gsatt("TSA3","SEEN",0);
+  gMC->Gsatt("TSA4","SEEN",0);
+  gMC->Gsatt("TOFC","SEEN",1);
+  gMC->Gsatt("TOFC","COLO",4);
+  gMC->Gsatt("TSA5","SEEN",0);
+  gMC->Gsatt("TSA6","SEEN",0);
+  gMC->Gsatt("TSA7","SEEN",0);
+  gMC->Gsatt("TSA8","SEEN",0);
+  gMC->Gsatt("TIIN","COLO",7);
+  gMC->Gsatt("TIIN","SEEN",1);
+  gMC->Gsatt("TICL","SEEN",0);
+  gMC->Gsatt("TSA9","SEEN",0);
+  gMC->Gsatt("TS10","SEEN",0);
+  gMC->Gsatt("TS11","SEEN",0);
+  gMC->Gsatt("TS12","SEEN",0);
+  gMC->Gsatt("TICR","SEEN",0); 
+  gMC->Gsatt("TS13","SEEN",0);
+  gMC->Gsatt("TS14","SEEN",0);
+  gMC->Gsatt("TS15","SEEN",0);
+  gMC->Gsatt("TS16","SEEN",0);
+  gMC->Gsatt("TIFC","SEEN",1);
+  gMC->Gsatt("TIFC","COLO",4); 
+  gMC->Gsatt("TS17","SEEN",0);
+  gMC->Gsatt("TS18","SEEN",0);
+  gMC->Gsatt("TS19","SEEN",0);
+  gMC->Gsatt("TS20","SEEN",0);
+  gMC->Gsatt("TS21","SEEN",0);
+  gMC->Gsatt("TS22","SEEN",0);
+  gMC->Gsatt("TS23","SEEN",0);
+  gMC->Gsatt("TS24","SEEN",0);
+  gMC->Gsatt("TDGN","SEEN",0);
+  gMC->Gsatt("TIRC","SEEN",0);
+  gMC->Gsatt("TIC1","SEEN",1);
+  gMC->Gsatt("TIPP","SEEN",0);
+  gMC->Gsatt("TIC3","SEEN",0);
+  gMC->Gsatt("TRCE","SEEN",0);
+  gMC->Gsatt("TPSC","SEEN",0);
+  gMC->Gsatt("TPCC","SEEN",0);
+  gMC->Gsatt("TORC","SEEN",0);
+  gMC->Gsatt("TOPP","SEEN",0);
+  gMC->Gsatt("TOC3","SEEN",0);
+  gMC->Gsatt("TOC1","SEEN",1);
+  gMC->Gsatt("TSSW","SEEN",1);
+  gMC->Gsatt("TSWC","SEEN",1);
+  gMC->Gsatt("TSCE","SEEN",1); 
+  gMC->Gsatt("TSSW","COLO",3);
+  gMC->Gsatt("TSWC","COLO",3);
+  gMC->Gsatt("TSCE","COLO",6);
+  gMC->Gsatt("TWES","SEEN",0);
+  gMC->Gsatt("TSWB","SEEN",0);
+  gMC->Gsatt("TPEL","SEEN",0);
+  gMC->Gsatt("TPMW","SEEN",1);
+  gMC->Gsatt("TPEW","SEEN",1);
+  gMC->Gsatt("TESR","SEEN",1);
+  gMC->Gsatt("TPMW","COLO",12);
+  gMC->Gsatt("TPEW","COLO",12);
+  gMC->Gsatt("TWES","COLO",5);
+  gMC->Gsatt("TIC1","COLO",5);
+  gMC->Gsatt("TOC1","COLO",5);  
+  gMC->Gsatt("TESB","SEEN",0);
+  gMC->Gsatt("TPLS","SEEN",0);
+  gMC->Gsatt("TPUS","SEEN",0);
+  gMC->Gsatt("TPSS","SEEN",0);
+  gMC->Gsatt("THVM","SEEN",1);
+  gMC->Gsatt("THVM","COLO",11);
+  gMC->Gsatt("TPSR","SEEN",0);
+  gMC->Gsatt("THVL","SEEN",0);
+  gMC->Gsatt("THVC","SEEN",0);
+  gMC->Gsatt("THVE","SEEN",0);
+  gMC->Gsatt("THVR","SEEN",0);
   
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("shad", "on");
   gMC->Gsatt("*", "fill", 7);
   gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->SetClipBox("TPMW",-300,300,-300,300,254.,270.);
+  gMC->SetClipBox("TESR",-300,300,-300,300,254.,270.);
+  gMC->SetClipBox("TSSW",-300,300,-300,300,283.,284.);
+  gMC->SetClipBox("TSWC",-300,300,-300,300,283.,284.);
+  gMC->SetClipBox("*", 0, 300, -300, 300, -290, 290);
   gMC->DefaultRange();
   gMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .025, .025);
   gMC->Gdhead(1111, "Time Projection Chamber");
@@ -912,8 +1905,9 @@ void AliTPCv1::Init()
   // Initialises TPC detector after it has been created
   //
 
-  fIdSens1=gMC->VolId("TLST"); // L-sector
-  fIdSens2=gMC->VolId("TSST"); // S-sector
+  fIdSens=gMC->VolId("TPSS"); // sensitive strip
+  fIdLSec=gMC->VolId("TPLS"); // lower sector
+  fIdUSec=gMC->VolId("TPUS"); // upper sector
 
   printf("TPC version 1 initialized\n");
 }
@@ -929,72 +1923,73 @@ void AliTPCv1::StepManager()
   Int_t         vol[2];
   TLorentzVector p;
   TClonesArray &lhits = *fHits;
-  
   //
 
   if(gMC->TrackCharge() && gMC->IsTrackEntering()) {
+
+    // 
+    // Only charged tracks entering the sensitive volume
     //
-    // Only entering charged tracks
-    //
-    if((id=gMC->CurrentVolID(copy))==fIdSens1) {
 
-      // L
+    id = gMC->CurrentVolID(copy);
 
-      vol[1]=copy-1; // row
-      id=gMC->CurrentVolOffID(1,copy);
-      vol[0]=copy+fTPCParam->GetNInnerSector()-1; // sector
+    if(id == fIdSens){
 
-      //I.Belikov's modification
-      if (vol[1]==0) {
-       gMC->TrackMomentum(p);
-       hits[0]=p[0];
-       hits[1]=p[1];
-       hits[2]=p[2];
-       hits[3]=0.; // this hit has no energy loss
-       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      // sensitive volume (strip)
 
-       gMC->TrackPosition(p);
-       hits[0]=p[0];
-       hits[1]=p[1];
-       hits[2]=p[2];
-       hits[3]=0.; // this hit has no energy loss
-       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      vol[1]= copy-1; // row number (absolute)
+    
+      // sector type
+      
+      id = gMC->CurrentVolOffID(1,copy); 
+      
+      if(id == fIdLSec){
+
+        // lower sector
+     
+        vol[0] = copy-1; // sector number
+
       }
-      //end of I.Belikov's modification
-    } else if(id==fIdSens2) {
+      else {
+   
+        // upper sector
 
-      // S
+        vol[0] = copy-1+fTPCParam->GetNInnerSector(); // sector number
+        vol[1] -= fTPCParam->GetNRowLow(); // row number  
 
-      vol[1]=copy-1; // row
-      id=gMC->CurrentVolOffID(1,copy); // sector
-      vol[0]=copy-1;
+      } 
+    
+      if(vol[1] == 0){
+  
+        // because Jouri wants to have this
 
-      //I.Belikov's modification
-      if (vol[1]==0) {
-       gMC->TrackMomentum(p);
-       hits[0]=p[0];
-       hits[1]=p[1];
-       hits[2]=p[2];
-       hits[3]=0.; // this hit has no energy loss
-       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+        gMC->TrackMomentum(p);
+        hits[0]=p[0];
+        hits[1]=p[1];
+        hits[2]=p[2];
+        hits[3]=0.; // this hit has no energy loss
+        new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 
-       gMC->TrackPosition(p);
-       hits[0]=p[0];
-       hits[1]=p[1];
-       hits[2]=p[2];
-       hits[3]=0.; // this hit has no energy loss
-       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-      }
-      //end of I.Belikov's modification
+        gMC->TrackPosition(p);
+        hits[0]=p[0];
+        hits[1]=p[1];
+        hits[2]=p[2];
+        hits[3]=0.; // this hit has no energy loss
+        new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 
-    } else return;
+      } 
 
-    gMC->TrackPosition(p);
-    for(i=0;i<3;++i) hits[i]=p[i];
-    hits[3]=1; //I'd like to have something positive here (I.Belikov)
-    new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-  }
+      gMC->TrackPosition(p);
+      for(i=0;i<3;++i) hits[i]=p[i];
+      hits[3]=1; //I'd like to have something positive here (I.Belikov)
+      new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+
+    }
+
+  }  
+   
 }
+//_____________________________________________________________________________
 
 
 

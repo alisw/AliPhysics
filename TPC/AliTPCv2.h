@@ -26,10 +26,9 @@ public:
   virtual void  DrawDetector();
 
 protected:
-  Int_t fIdSens1;    //First  sensitive volume identifier - lower sector
-  Int_t fIdSens2;    //Second sensitive volume identifier - upper sector
-  Int_t fIdSens3;    //Sensitive strip - lower sector
-  Int_t fIdSens4;    //Sensitive strip - upper sector     
+  Int_t fIdSens;    // sensitive strip
+  Int_t fIdLSec;    // lower sector
+  Int_t fIdUSec;    // upper sector    
 
 private:
 

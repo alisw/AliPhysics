@@ -27,7 +27,7 @@ public:
 
 protected:
 
-  Int_t fIdSens1; // sensitive volume (entire drift gas)   
+  Int_t fIdSens; // sensitive volume (entire drift gas)   
 
 private:
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.1.2.2  2000/06/25 08:38:41  kowal2
 Splitted from AliTPCtracking
 
@@ -175,8 +178,9 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   //Energy losses************************
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d*rho;
   if (x1 < x2) dE=-dE;
+  cc=fC;
   fC*=(1.- sqrt(p2+pm*pm)/p2*dE);
-  //fE*=(1.- sqrt(p2+pm*pm)/p2*dE);
+  fE+=fX*(fC-cc);
 
   return 1;
 }

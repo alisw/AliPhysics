@@ -148,7 +148,7 @@ inline Double_t AliTPCtrack::GetTgl() const {
 
 inline Double_t AliTPCtrack::GetPt() const {
   //just to calm down our rule checker
-  return 0.3*0.2/GetC()/100;
+  return 0.299792458*0.2/GetC()/100;
 }
 
 inline Double_t AliTPCtrack::GetP() const {

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.1.2.1  2000/06/25 08:52:51  kowal2
 replacing AliClusterFinder
 
@@ -197,8 +200,8 @@ void AliTPCClusterFinder::GetHisto(TH2F * his2)
 
     }  else 
       rOK=kFALSE;
-  for (Int_t i = 0; i<idim;i++)    
-    for (Int_t j = 0; j<jdim;j++)
+  for (Int_t i = 0; i<(Int_t)idim;i++)    
+    for (Int_t j = 0; j<(Int_t)jdim;j++)
       {
 	Int_t index = his2->GetBin(i+1,j+1);
 	//AliCell * cell = GetCell(i,j);
