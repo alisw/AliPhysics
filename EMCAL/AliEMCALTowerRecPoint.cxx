@@ -332,8 +332,14 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
       wtot  += w ;
     }
     
-    fTheta /= wtot ;
-    fPhi   /= wtot ;
+    if (wtot > 0 ) {
+      fTheta /= wtot ;
+      fPhi   /= wtot ;
+    } else {
+      fTheta = -1. ;
+      fPhi   = -1. ; 
+    }
+	
   }
 
   const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
@@ -360,7 +366,10 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
     wtot+=w ;
   }
   
-  d /= wtot ;
+  if ( wtot > 0 ) 
+    d /= wtot ;
+  else 
+    d = 0. ; 
 
   fDispersion = TMath::Sqrt(d) ;
  
@@ -398,8 +407,13 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
       wtot  += w ;
     }
     
-    fTheta /= wtot ;
-    fPhi   /= wtot ;
+    if (wtot > 0 ) { 
+      fTheta /= wtot ;
+      fPhi   /= wtot ;
+    } else { 
+      fTheta = -1 ; 
+      fPhi   = -1 ; 
+    }
   }
 
   const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
@@ -467,16 +481,18 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
     dxz  += w * xi * zi ; 
     wtot += w ;
   }
-  dxx /= wtot ;
-  x   /= wtot ;
-  dxx -= x * x ;
-  dzz /= wtot ;
-  z   /= wtot ;
-  dzz -= z * z ;
-  dxz /= wtot ;
-  dxz -= x * z ;
+  if ( wtot > 0 ) { 
+    dxx /= wtot ;
+    x   /= wtot ;
+    dxx -= x * x ;
+    dzz /= wtot ;
+    z   /= wtot ;
+    dzz -= z * z ;
+    dxz /= wtot ;
+    dxz -= x * z ;
 
-//   //Apply correction due to non-perpendicular incidence
+    
+    //   //Apply correction due to non-perpendicular incidence
 //   Double_t CosX ;
 //   Double_t CosZ ;
 //   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
@@ -491,15 +507,19 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
 //   dxz = dxz/(CosX*CosZ) ;
 
 
-  fLambda[0] =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-  if(fLambda[0] > 0)
-    fLambda[0] = TMath::Sqrt(fLambda[0]) ;
-
-  fLambda[1] =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-  if(fLambda[1] > 0) //To avoid exception if numerical errors lead to negative lambda.
-    fLambda[1] = TMath::Sqrt(fLambda[1]) ;
-  else
+    fLambda[0] =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    if(fLambda[0] > 0)
+      fLambda[0] = TMath::Sqrt(fLambda[0]) ;
+    
+    fLambda[1] =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    if(fLambda[1] > 0) //To avoid exception if numerical errors lead to negative lambda.
+      fLambda[1] = TMath::Sqrt(fLambda[1]) ;
+    else
+      fLambda[1]= 0. ;
+  } else { 
+    fLambda[0]= 0. ;
     fLambda[1]= 0. ;
+  }
 }
 
 //____________________________________________________________________________
@@ -542,9 +562,14 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
     wtot  += w ;
   }
 
-  fTheta /= wtot ;
-  fPhi   /= wtot ;
-
+  if ( wtot > 0 ) { 
+    fTheta /= wtot ;
+    fPhi   /= wtot ;
+  } else {
+    fTheta = -1 ; 
+    fPhi   = -1.; 
+  }
+  
   fLocPos.SetX(0.)  ;
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(0.)  ;
