@@ -820,9 +820,9 @@ Double_t AliQuenchingWeights::CalcR(Double_t wc, Double_t l) const
   //check if it is less then maximum
 
   Double_t R = wc*l*fgkConvFmToInvGeV;
-  if(R>fgkRMax) {
+  if(R>=fgkRMax) {
     Warning("CalcR","Value of R = %.2f; should be less than %.2f",R,fgkRMax);
-    return -R;
+    return fgkRMax-1;
   }  
   return R;
 }
@@ -832,12 +832,12 @@ Double_t AliQuenchingWeights::CalcRk(Double_t k, Double_t I0, Double_t I1) const
   //calculate R value and 
   //check if it is less then maximum
 
-  Double_t R = fgkRMax;
+  Double_t R = fgkRMax-1;
   if(I0>0)
     R = 2*I1*I1/I0*k;
-  if(R>fgkRMax) {
+  if(R>=fgkRMax) {
     Warning("CalcRk","Value of R = %.2f; should be less than %.2f",R,fgkRMax);
-    return -R;
+    return fgkRMax-1;
   }  
   return R;
 }
@@ -931,12 +931,12 @@ Double_t AliQuenchingWeights::GetELossRandomK(Int_t ipart, Double_t I0, Double_t
   }
 
   Double_t R=CalcRk(I0,I1);
-  if(R<0){
+  if(R<0.){
     Fatal("GetELossRandomK","R should not be negative");
     return -1000.;
   }
   Double_t wc=CalcWCk(I1);
-  if(wc<=0){
+  if(wc<=0.){
     Fatal("GetELossRandomK","wc should be greater than zero");
     return -1000.;
   }
@@ -985,17 +985,34 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
   // read-in data tables before first call 
 
   Double_t R=CalcRk(I0,I1);
-  if(R<=0){
+  if(R<=0.){
     return 0.;
   }
 
   Double_t wc=CalcWCk(I1);
-  if(wc<=0){
+  if(wc<=0.){
     return 0.;
   }
 
+  return GetELossRandomKFastR(ipart,R,wc,e);
+}
+
+Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Double_t wc, Double_t e)
+{
+  // return DeltaE for new dynamic version
+  // for given parton type, R and wc value and energy
+  // Dependant on ECM (energy constraint method)
+  // e is used to determine where to set bins to zero.
+  // method is optimized and should only be used if 
+  // all parameters are well within the bounds.
+  // read-in data tables before first call 
+
+  if(R>=fgkRMax) {
+    R=fgkRMax-1;
+  }  
+
   Double_t discrete=0.;
-  Double_t continuous=0;
+  Double_t continuous=0.;
   Int_t bin=1;
   Double_t xxxx = fHisto->GetBinCenter(bin);
   if(fMultSoft)
@@ -1004,12 +1021,13 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
     CalcSingleHard(ipart,R,xxxx,continuous,discrete);
 
   if(discrete>0.999) {
-    return 0.0;
+    return 0.; //no energy loss
   }
 
   fHisto->SetBinContent(bin,continuous);
-#if 1 /* fast new version*/
   const Int_t kbinmax=fHisto->FindBin(e/wc);
+  if(kbinmax==1) return e; //maximum energy loss
+
   if(fMultSoft) {
     for(Int_t bin=2; bin<=kbinmax; bin++) {
       xxxx = fHisto->GetBinCenter(bin);
@@ -1025,7 +1043,6 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
   }
 
   const Double_t kdelta=fHisto->Integral(1,kbinmax);
-
   Double_t val=discrete*fgkBins/fgkMaxBin;
   fHisto->Fill(0.,val);
 
@@ -1037,32 +1054,6 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
   for(Int_t bin=kbinmax+2; bin<=fgkBins; bin++) {
     fHisto->SetBinContent(bin,0);
   }
-
-#else
-  if(fMultSoft) {
-    for(Int_t bin=2; bin<=fgkBins; bin++) {
-      xxxx = fHisto->GetBinCenter(bin);
-      CalcMult(ipart,R,xxxx,continuous,discrete);
-      fHisto->SetBinContent(bin,continuous);
-    }
-  } else {
-    for(Int_t bin=2; bin<=fgkBins; bin++) {
-      xxxx = fHisto->GetBinCenter(bin);
-      CalcSingleHard(ipart,R,xxxx,continuous,discrete);
-      fHisto->SetBinContent(bin,continuous);
-    }
-  }
-
-  // add discrete part to distribution
-  Double_t val=discrete/(1.-discrete)*fHisto->Integral(1,fgkBins);
-  fHisto->Fill(0.,val);
-
-  if(fECMethod==kReweight) {
-    for(Int_t bin=fHisto->FindBin(e/wc)+1; bin<=fgkBins; bin++) {
-      fHisto->SetBinContent(bin,0);
-    }
-  }
-#endif
 
   Double_t ret=fHisto->GetRandom()*wc;
   if(ret>e) return e;
@@ -2072,7 +2063,7 @@ Int_t AliQuenchingWeights::GetIndex(Double_t len) const
   if(len>fLengthMax) len=fLengthMax;
 
   Int_t l=Int_t(len/0.25);
-  if((len-l*0.5)>0.125) l++;
+  if((len-l*0.25)>0.125) l++;
   return l;
 }
 

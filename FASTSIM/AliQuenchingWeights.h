@@ -39,6 +39,7 @@ class AliQuenchingWeights : public TObject {
   Double_t GetELossRandomK(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
   Double_t CalcQuenchedEnergyK(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
   Double_t GetELossRandomKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
+  Double_t GetELossRandomKFastR(Int_t ipart, Double_t R, Double_t wc, Double_t e=1.e10);
   Double_t CalcQuenchedEnergyKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
 
   //multiple soft scattering approximation
@@ -89,7 +90,7 @@ class AliQuenchingWeights : public TObject {
     {return CalcQk(fK,I0,I1);} 
 
   Double_t CalcQk(Double_t k, Double_t I0, Double_t I1) const
-    {return I0*I0/2/I1/fgkConvFmToInvGeV/fgkConvFmToInvGeV*k;}
+    {return I0*I0/2./I1/fgkConvFmToInvGeV/fgkConvFmToInvGeV*k;}
 
   Double_t CalcLk(Double_t i0, Double_t i1) const
     {return 2.*i1/i0;}
