@@ -130,12 +130,11 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd):
  AliDigitizer(rd,"PHOS"+AliConfig::fgkDigitizerTaskName),
  fEventFolderName(0)
 {
-  // ctor
+  // ctor Init() is called by RunDigitizer
   fManager = rd ; 
   fEventFolderName = fManager->GetInputFolderName(0) ;
   SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
-  Init() ; 
   fDefaultInit = kFALSE ; 
 }
 
@@ -162,6 +161,11 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   // contribution to new SDigits only.
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName) ; 
+  Int_t ReadEvent = event ; 
+  if (fManager) 
+    ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
+  Info("Digitize", "Adding event %d from input stream 0", ReadEvent) ; 
+  gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
 
@@ -191,8 +195,11 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   for(i = 1 ; i < fInput ; i++){
     TString tempo(fEventNames[i]) ; 
     tempo += i ;
-    AliPHOSGetter * gime = AliPHOSGetter::Instance(fInputFileNames[i], tempo) ; 
-    gime->Event(event,"S");
+    AliPHOSGetter * gime = AliPHOSGetter::Instance(fInputFileNames[i], tempo) ;
+    if (fManager) 
+      ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
+    Info("Digitize", "Adding event %d from input stream %d", ReadEvent, i) ; 
+    gime->Event(ReadEvent,"S");
     sdigArray->AddAt(gime->SDigits(), i) ;
   }
 
@@ -385,7 +392,8 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   // Steering method to process digitization for events
   // in the range from fFirstEvent to fLastEvent.
   // This range is optionally set by SetEventRange().
-  // if fLastEvent=-1 (by default), then process events until the end.
+  // if fLastEvent=-1, then process events until the end.
+  // by default fLastEvent = fFirstEvent (process only one event)
 
   if (!fInit) { // to prevent overwrite existing file
     Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
@@ -400,15 +408,14 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSDigitizer");
   
-  if (fManager) 
-    fInput = fManager->GetNinputs() ;
-  
+//   if (fManager) 
+//     fInput = fManager->GetNinputs() ;
+ 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
-  else 
-    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+ 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
   Int_t ievent ;
@@ -484,6 +491,8 @@ Bool_t AliPHOSDigitizer::Init()
   // Post Digitizer to the white board
   gime->PostDigitizer(this) ;
   
+  fFirstEvent = 0 ; 
+  fLastEvent = fFirstEvent ; 
   if (fManager) 
     fInput = fManager->GetNinputs() ; 
   else 
@@ -497,7 +506,7 @@ Bool_t AliPHOSDigitizer::Init()
   for (index = 1 ; index < fInput ; index++) {
     fInputFileNames[index] = dynamic_cast<AliStream*>(fManager->GetInputStream(index))->GetFileName(0); 
     TString tempo = fManager->GetInputFolderName(index) ;
-    fEventNames[index] = tempo.Remove(tempo.Length()-1) ; // strip of the stream number added bt fManager 
+    fEventNames[index] = tempo.Remove(tempo.Length()-1) ; // strip of the stream number added by fManager
   }
 
   //to prevent cleaning of this object while GetEvent is called
@@ -509,7 +518,7 @@ Bool_t AliPHOSDigitizer::Init()
 //____________________________________________________________________________ 
 void AliPHOSDigitizer::InitParameters()
 {
-  // Set initial parameters for Digitizer
+  // Set initial parameters Digitizer
 
   fPinNoise           = 0.004 ;
   fEMCDigitThreshold  = 0.012 ;

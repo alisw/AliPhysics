@@ -46,7 +46,7 @@ public:
   Float_t GetTimeResolution() const { return fTimeResolution ; }
   Float_t GetECAchannel()     const { return fADCchannelEC ; }
   Float_t GetECApedestal()    const { return fADCpedestalEC ; }
-
+ void   SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void    SetDigitThreshold(Float_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
@@ -98,6 +98,8 @@ private:
   Int_t   fNADCEC ;               // number of channels in EC section ADC
 
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
 
   ClassDef(AliEMCALDigitizer,4)  // description 
 

@@ -137,12 +137,11 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
  AliDigitizer(rd,"EMCAL"+AliConfig::fgkDigitizerTaskName),
  fEventFolderName(0)
 {
-  // ctor
+  // ctor Init() is called by RunDigitizer
   fManager = rd ; 
   fEventFolderName = fManager->GetInputFolderName(0) ;
   SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
-  Init() ; 
   fDefaultInit = kFALSE ; 
 }
 
@@ -169,6 +168,11 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   // contribution of any new SDigit.
 
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
+  Int_t ReadEvent = event ; 
+  if (fManager) 
+    ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
+  Info("Digitize", "Adding event %d from input stream 0", ReadEvent) ; 
+  gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
 
@@ -197,7 +201,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     TString tempo(fEventNames[i]) ; 
     tempo += i ;
     AliEMCALGetter * gime = AliEMCALGetter::Instance(fInputFileNames[i], tempo) ; 
-    gime->Event(event,"S");
+    if (fManager) 
+      ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
+    Info("Digitize", "Adding event %d from input stream %d", ReadEvent, i) ; 
+    gime->Event(ReadEvent,"S");
     sdigArray->AddAt(gime->SDigits(), i) ;
   }
   
@@ -337,7 +344,11 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy)
 //____________________________________________________________________________
 void AliEMCALDigitizer::Exec(Option_t *option) 
 { 
-  // Managing method
+  // Steering method to process digitization for events
+  // in the range from fFirstEvent to fLastEvent.
+  // This range is optionally set by SetEventRange().
+  // if fLastEvent=-1, then process events until the end.
+  // by default fLastEvent = fFirstEvent (process only one event)
 
   if (!fInit) { // to prevent overwrite existing file
     Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
@@ -351,18 +362,18 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALDigitizer");
-
-  if (fManager) 
-    fInput = fManager->GetNinputs() ;
   
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
+   
+  if (fLastEvent == -1) 
+    fLastEvent = gime->MaxEvent() - 1 ;
   
-  Int_t nevents = gime->MaxEvent() ;;
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
   Int_t ievent ;
 
-  for(ievent = 0; ievent < nevents; ievent++){
-    
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
+  
     gime->Event(ievent,"S") ; 
 
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
@@ -379,7 +390,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
     printf("Exec: took %f seconds for Digitizing %f seconds per event", 
-	 gBenchmark->GetCpuTime("EMCALDigitizer"), gBenchmark->GetCpuTime("EMCALDigitizer")/nevents ) ;
+	 gBenchmark->GetCpuTime("EMCALDigitizer"), gBenchmark->GetCpuTime("EMCALDigitizer")/nEvents ) ;
   } 
 }
 
@@ -424,7 +435,10 @@ Bool_t AliEMCALDigitizer::Init()
 
   // Post Digitizer to the white board
   gime->PostDigitizer(this) ;
- 
+  
+  fFirstEvent = 0 ; 
+  fLastEvent = fFirstEvent ; 
+  
   if(fManager)
     fInput = fManager->GetNinputs() ; 
   else 
