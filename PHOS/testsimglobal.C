@@ -425,7 +425,7 @@ Bool_t particle()
   if ( nRecParticles < maxRecParticles-0.25 ||
        nRecParticles > maxRecParticles+0.25 ) {
     cout <<  "particle() : nRecParticles = " << nRecParticles 
-	 << " maxRecParticles,widRecParticles= " << maxRecParticles << "," << widRecParticles << endl ;    
+	 << " maxRecParticles,widRecParticles= " << maxRecParticles << "," << "0.25" << endl ;    
     mess = "Error detected in the RecParticles process. Sending error file to PHOS director.Stop reconstruction." ;
     write_info(mess) ;
     return kFALSE ;
