@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2002/11/21 14:34:53  cblume
+Bug fix in SetNRowPad() reposted by Bogdan
+
 Revision 1.10  2002/10/31 17:46:22  cblume
 New padplane (same number of columns in outer plane
 
@@ -82,6 +85,7 @@ AliTRDparameter::AliTRDparameter():TNamed()
   fADCoutRange        = 0.0;
   fADCinRange         = 0.0;
   fADCthreshold       = 0;
+  fADCbaseline        = 0;        
   fDiffusionOn        = 0;
   fDiffusionT         = 0.0;
   fDiffusionL         = 0.0;
@@ -135,6 +139,7 @@ AliTRDparameter::AliTRDparameter(const Text_t *name, const Text_t *title)
   fADCoutRange        = 0.0;
   fADCinRange         = 0.0;
   fADCthreshold       = 0;
+  fADCbaseline        = 0;        
   fDiffusionOn        = 0;
   fDiffusionT         = 0.0;
   fDiffusionL         = 0.0;
@@ -245,6 +250,7 @@ void AliTRDparameter::Copy(TObject &p)
   ((AliTRDparameter &) p).fADCoutRange        = fADCoutRange;
   ((AliTRDparameter &) p).fADCinRange         = fADCinRange;
   ((AliTRDparameter &) p).fADCthreshold       = fADCthreshold;
+  ((AliTRDparameter &) p).fADCbaseline        = fADCbaseline; 
   ((AliTRDparameter &) p).fDiffusionOn        = fDiffusionOn; 
   ((AliTRDparameter &) p).fDiffusionT         = fDiffusionT;
   ((AliTRDparameter &) p).fDiffusionL         = fDiffusionL;
@@ -365,8 +371,10 @@ void AliTRDparameter::Init()
   fChipGain       = 12.4;
   fNoise          = 1000.;
   fADCoutRange    = 1023.;          // 10-bit ADC
-  fADCinRange     = 1000.;          // 1V input range
+  //fADCinRange     = 1000.;          // 1V input range
+  fADCinRange     = 2000.;          // 2V input range
   fADCthreshold   = 1;
+  fADCbaseline    = 0;
 
   // The drift velocity (cm / mus)
   fDriftVelocity  = 1.5;
@@ -375,7 +383,7 @@ void AliTRDparameter::Init()
   fDiffusionOn    = 1;
 
   // E x B effects
-  fExBOn          = 0;
+  fExBOn          = 1;
 
   // Propability for electron attachment
   fElAttachOn     = 0;
@@ -388,7 +396,7 @@ void AliTRDparameter::Init()
   fTRFOn          = 1;
 
   // The cross talk
-  fCTOn           = 0;
+  fCTOn           = 1;
 
   // The tail cancelation
   fTCOn           = 1;

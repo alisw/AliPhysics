@@ -45,6 +45,7 @@ class AliTRDparameter : public TNamed {
   virtual void     SetADCoutRange(Float_t range)                  { fADCoutRange    = range;    };
   virtual void     SetADCinRange(Float_t range)                   { fADCinRange     = range;    };
   virtual void     SetADCthreshold(Int_t thresh)                  { fADCthreshold   = thresh;   };
+  virtual void     SetADCbaseline(Int_t basel)                    { fADCbaseline    = basel;    };   
   virtual void     SetDiffusion(Int_t diffOn = 1)                 { fDiffusionOn    = diffOn;   };
   virtual void     SetElAttach(Int_t elOn = 1)                    { fElAttachOn     = elOn;     };
   virtual void     SetElAttachProp(Float_t prop)                  { fElAttachProp   = prop;     };
@@ -92,6 +93,7 @@ class AliTRDparameter : public TNamed {
           Float_t  GetADCoutRange()                         const { return fADCoutRange;   };
           Float_t  GetADCinRange()                          const { return fADCinRange;    };
           Int_t    GetADCthreshold()                        const { return fADCthreshold;  };
+          Int_t    GetADCbaseline()                         const { return fADCbaseline;   };
           Float_t  GetDiffusionT()                          const { return fDiffusionT;    };
           Float_t  GetDiffusionL()                          const { return fDiffusionL;    };
           Float_t  GetElAttachProp()                        const { return fElAttachProp;  };
@@ -156,6 +158,7 @@ class AliTRDparameter : public TNamed {
   Float_t              fADCoutRange;                        //  ADC output range (number of channels)
   Float_t              fADCinRange;                         //  ADC input range (input charge)
   Int_t                fADCthreshold;                       //  ADC threshold in ADC channel
+  Int_t                fADCbaseline;                        //  ADC baseline in ADC chann
   Int_t                fDiffusionOn;                        //  Switch for the diffusion
   Float_t              fDiffusionT;                         //  Diffusion in transverse direction
   Float_t              fDiffusionL;                         //  Diffusion in longitudinal direction
@@ -200,7 +203,7 @@ class AliTRDparameter : public TNamed {
   virtual void         SampleTRF();
   virtual void         FillLUT();
 
-  ClassDef(AliTRDparameter,2)                               //  TRD parameter class
+  ClassDef(AliTRDparameter,3)                               //  TRD parameter class
 
 };
 

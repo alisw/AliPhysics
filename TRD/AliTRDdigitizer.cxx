@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2002/10/21 09:10:32  cblume
+Fix type conversion warnings
+
 Revision 1.40  2002/10/14 14:57:43  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -1104,11 +1107,18 @@ Bool_t AliTRDdigitizer::MakeDigits()
               Float_t signalAmp = signals->GetDataUnchecked(iRow,iCol,iTime);
               // Pad and time coupling
               signalAmp *= coupling;
-              // Add the noise
-              signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,fPar->GetNoise()),0.0);
+              // Add the noise, starting from minus ADC baseline in electrons
+              Double_t baselineEl = fPar->GetADCbaseline() * (fPar->GetADCinRange()
+                                                           / fPar->GetADCoutRange()) 
+                                                           / convert;
+              signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,fPar->GetNoise())
+                                     ,-baselineEl);
               // Convert to mV
               signalAmp *= convert;
-	      // Convert to ADC counts. Set the overflow-bit fADCoutRange if the 
+              // Add ADC baseline in mV
+              signalAmp += fPar->GetADCbaseline() * (fPar->GetADCinRange()
+                                                   / fPar->GetADCoutRange());
+ 	      // Convert to ADC counts. Set the overflow-bit fADCoutRange if the 
 	      // signal is larger than fADCinRange
               Int_t adc  = 0;
               if (signalAmp >= fPar->GetADCinRange()) {
@@ -1254,6 +1264,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   Double_t adcInRange   = fPar->GetADCinRange();
   Double_t adcOutRange  = fPar->GetADCoutRange();
   Int_t    adcThreshold = fPar->GetADCthreshold();
+  Int_t    adcBaseline  = fPar->GetADCbaseline();   
 
   AliTRDdataArrayI *digitsIn;
   AliTRDdataArrayI *digitsOut;
@@ -1297,10 +1308,13 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
           signal *= sDigitsScale;
           // Pad and time coupling
           signal *= coupling;
-          // Add the noise
-          signal  = TMath::Max((Double_t) gRandom->Gaus(signal,noise),0.0);
+          // Add the noise, starting from minus ADC baseline in electrons
+          Double_t baselineEl = adcBaseline * (adcInRange / adcOutRange) / convert;
+          signal  = TMath::Max((Double_t) gRandom->Gaus(signal,noise),-baselineEl);
           // Convert to mV
           signal *= convert;
+          // add ADC baseline in mV
+          signal += adcBaseline * (adcInRange / adcOutRange);
 	  // Convert to ADC counts. Set the overflow-bit adcOutRange if the 
 	  // signal is larger than adcInRange
           Int_t adc  = 0;
