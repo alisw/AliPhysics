@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/12/01 08:19:01  coppedis
+Adding a message error if ZDC is constructed without DIPO
+
 Revision 1.11  2000/11/30 17:21:03  coppedis
 Introduce hit array fStHits reset only at the end of the event (for digitization)
 
@@ -69,12 +72,8 @@ AliZDC::AliZDC()
   
   fIshunt = 1;
 
-  fHits = 0;
   fNhits = 0;
-
-  fStHits = 0;
   fNStHits = 0;
-
   fNPrimaryHits = 0;
 }
  
@@ -172,13 +171,13 @@ AliZDC::~AliZDC()
   //
 
   fIshunt   = 0;
-  delete fHits;
-  if(fStHits){
-    fStHits->Delete();
-    delete fStHits;
-    fNStHits = 0;
-  }
-  delete fDigits;
+//  delete fHits;
+//  if(fStHits){
+//    fStHits->Delete();
+//    delete fStHits;
+//    fNStHits = 0;
+//  }
+//  delete fDigits;
 }
 //_____________________________________________________________________________
 void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
@@ -194,11 +193,12 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   static Float_t primKinEn, xImpact, yImpact, sFlag;
 
   TClonesArray &lsthits = *fStHits;
-  TClonesArray &lhits = *fHits;
 
 
   AliZDCHit *newquad, *curevquad, *curprimquad;
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
+
+  TClonesArray &lhits = *fHits;
    
   Int_t i,j,kStHit = 1;
   for(i=0; i<fNStHits; i++){
@@ -252,26 +252,13 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       fNStHits++;
     }
  
-//    printf("\nPrimary Hits --------------------------------------------------------\n");
+//    printf("\n  Primary Hits --------------------------------------------------------\n");
 //    fHits->Print("");
 //    printf("\n  Event Hits --------------------------------------------------------\n");
 //    fStHits->Print("");
 
     delete newquad;
   }
-  
-//_____________________________________________________________________________
-void AliZDC::ResetHits()
-{
-  //
-  // Reset number of hits and the hits array
-  //
-    
-//    fStHits->Clear();
-//    fNStHits = 0;
-    
-    AliDetector::ResetHits();
-}
   
 //_____________________________________________________________________________
 void AliZDC::ResetDigits()
@@ -281,10 +268,8 @@ void AliZDC::ResetDigits()
   //
     
     AliDetector::ResetDigits();
-    if(fStHits){
-      fStHits->Delete();
-      fNStHits = 0;
-    }
+//    fNStHits = 0;
+//    if(fStHits) fStHits->Clear();
 }
 
 //_____________________________________________________________________________
