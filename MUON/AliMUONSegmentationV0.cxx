@@ -23,10 +23,10 @@
 #include "AliMUON.h"
 
 ClassImp(AliMUONSegmentationV0)
-    AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmentation)
-{
-// Dummy copy constructor
-}
+//     AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmentation)
+// {
+// // Dummy copy constructor
+// }
 
     void AliMUONSegmentationV0::Init(Int_t  chamber)
 {
@@ -54,7 +54,35 @@ Float_t AliMUONSegmentationV0::GetAnod(Float_t xhit) const
     Float_t wire= (xhit>0)? Int_t(xhit/fWireD)+0.5:Int_t(xhit/fWireD)-0.5;
     return fWireD*wire;
 }
+//____________________________________________________________________________
+void   AliMUONSegmentationV0::GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t *Nparallel, Int_t *Offset) 
+{
+  *Nparallel=1;
+  *Offset=0;
+}
 
+
+//____________________________________________________________________________
+void   AliMUONSegmentationV0::GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)  
+{
+  GetPadI(x, y, ix, iy);
+}
+//____________________________________________________________________________
+void   AliMUONSegmentationV0::SetCorrFunc(Int_t /*dum*/, TF1* func) 
+{
+  fCorr=func;
+}
+//____________________________________________________________________________
+Int_t   AliMUONSegmentationV0::Sector(Int_t /*ix*/, Int_t /*iy*/)  
+{
+  return 1;
+}
+//____________________________________________________________________________
+Int_t   AliMUONSegmentationV0::Sector(Float_t /*x*/, Float_t /*y*/)  
+{
+  return 1;
+}
+//____________________________________________________________________________
 void AliMUONSegmentationV0::SetPadSize(Float_t p1, Float_t p2)
 {
 //  Sets the padsize 
@@ -93,9 +121,8 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
     x = (ix>0) ? Float_t(ix*fDpx)-fDpx/2. : Float_t(ix*fDpx)+fDpx/2.;
     y = (iy>0) ? Float_t(iy*fDpy)-fDpy/2. : Float_t(iy*fDpy)+fDpy/2.;
 }
-
-void AliMUONSegmentationV0::
-SetHit(Float_t xhit, Float_t yhit)
+//______________________________________________________________________
+void AliMUONSegmentationV0::SetHit(Float_t xhit, Float_t yhit)
 {
     //
     // Sets virtual hit position, needed for evaluating pad response 
@@ -103,6 +130,13 @@ SetHit(Float_t xhit, Float_t yhit)
     fXhit=xhit;
     fYhit=yhit;
 }
+//_______________________________________________________________________
+void     AliMUONSegmentationV0::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
+{
+  SetHit(xhit, yhit);
+}
+//_______________________________________________________________________
+
 
 void AliMUONSegmentationV0::
 SetPad(Int_t ix, Int_t iy)
@@ -112,9 +146,8 @@ SetPad(Int_t ix, Int_t iy)
     // outside the tracking program 
     GetPadC(ix,iy,fX,fY);
 }
-
-void AliMUONSegmentationV0::
-FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
+//____________________________________________________________________________________
+void AliMUONSegmentationV0::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 {
 // Initialises iteration over pads for charge distribution algorithm
 //
@@ -139,6 +172,10 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     fIy=fIymin;
     GetPadC(fIx,fIy,fX,fY);
 }
+//________________________________________________________________________
+void AliMUONSegmentationV0::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy)
+	{FirstPad(xhit, yhit, dx, dy);}
+
 
 void AliMUONSegmentationV0::NextPad()
 {
@@ -174,7 +211,7 @@ Int_t AliMUONSegmentationV0::MorePads()
     }
 }
 
-void AliMUONSegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t z)
+void AliMUONSegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t /*z*/)
 {
 //
 //  Initialises pad and wire position during stepping
@@ -184,7 +221,7 @@ void AliMUONSegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t z)
     fIwt= (x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1 ;
 }
  
-Int_t AliMUONSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t z) 
+Int_t AliMUONSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t /*z*/) 
 {
 //  Signal generation condition during stepping 
 //  0: don't generate signal
@@ -238,7 +275,7 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 }
 
 Float_t AliMUONSegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y
-, Int_t *dummy)
+						  , Int_t * /*dummy*/)
 {
 // Returns the square of the distance between 1 pad
 // labelled by its Channel numbers and a coordinate
@@ -275,7 +312,7 @@ void AliMUONSegmentationV0::Draw(const char *) const
     circle->Draw();
 }
 
-AliMUONSegmentationV0& AliMUONSegmentationV0::operator =(const AliMUONSegmentationV0 & rhs)
+AliMUONSegmentationV0& AliMUONSegmentationV0::operator =(const AliMUONSegmentationV0 & /*rhs*/)
 {
 // Dummy assignment operator
     return *this;
