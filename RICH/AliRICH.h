@@ -40,7 +40,7 @@ class AliRICH : public  AliDetector {
     virtual void   AddPadHit(Int_t *clhits);
     virtual void   AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual void   AddRawCluster(Int_t id, const AliRICHRawCluster& cluster);
-    virtual void   AddRecHit(Int_t id, Float_t* rechit);
+    virtual void   AddRecHit(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
 
 
     virtual void   BuildGeometry();
@@ -72,6 +72,10 @@ class AliRICH : public  AliDetector {
     virtual void   SetNsec(Int_t id, Int_t nsec);
 // Set Reconstruction Model
     virtual void   SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconstruction);
+// Set source debugging level
+    void SetDebugLevel(Int_t level) {fDebugLevel=level;}
+// Get source debugging level
+    Int_t GetDebugLevel() {return fDebugLevel;}
 // Response Simulation
     virtual Int_t   MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
 // Return reference to Chamber #id
@@ -106,6 +110,7 @@ class AliRICH : public  AliDetector {
     TObjArray            *fRecHits;            // List of rec. hits
     Int_t                *fNrawch;             // Number of raw clusters
     Int_t                *fNrechits;           // Number of rec hits 
+    Int_t                 fDebugLevel;          // Source debugging level
 
  protected:
     
