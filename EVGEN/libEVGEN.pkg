@@ -19,7 +19,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx\
 		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx\
 		AliGenAfterBurnerFlow.cxx \
-		AliPartonicEnergyLoss.cxx
+		AliPartonicEnergyLoss.cxx AliGenHerwig.cxx
 
 # Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 
