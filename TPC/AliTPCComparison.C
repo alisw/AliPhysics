@@ -3,7 +3,7 @@
  *                                                                          *
  *               Creates list of "trackable" tracks,                        *
  *             calculates efficiency, resolutions etc.                      *
- *  The ESD tracks must be in an appropriate state (kTPCin or kTPCrefit)    *
+ *     There is a possibility to run this macro over several events.         *
  *                                                                          *
  *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
  * with several nice improvements by: M.Ivanov, GSI, m.ivanov@gsi.de        *
@@ -24,6 +24,7 @@
   #include <TBenchmark.h>
   #include <TStyle.h>
   #include <TKey.h>
+  #include <TROOT.h>
 
   #include "AliStack.h"
   #include "AliHeader.h"
@@ -38,7 +39,7 @@
   #include "AliTPCParamSR.h"
   #include "AliTPCClustersArray.h"
   #include "AliTPCClustersRow.h"
-  #include "AliTPCtracker.h"
+  #include "AliTPCcluster.h"
   #include "AliTPCLoader.h"
 #endif
 
@@ -54,8 +55,9 @@ const char* evfoldname=AliConfig::fgkDefaultEventFolderName);
 
 extern AliRun *gAlice;
 extern TBenchmark *gBenchmark;
+extern TROOT *gROOT;
 
-Int_t AliTPCComparison() {
+Int_t AliTPCComparison(const Char_t *dir=".") {
    gBenchmark->Start("AliTPCComparison");
 
    ::Info("AliTPCComparison.C","Doing comparison...");
@@ -66,27 +68,20 @@ Int_t AliTPCComparison() {
        gAlice = 0x0;
     }
 
-   AliRunLoader *rl = AliRunLoader::Open("galice.root","COMPARISON");
+   Char_t fname[100];
+   sprintf(fname,"%s/galice.root",dir);
+
+   AliRunLoader *rl = AliRunLoader::Open(fname,"COMPARISON");
    if (!rl) {
        ::Fatal("AliTPCComparison.C","Can't start session !");
    }
-
-   rl->LoadgAlice();
-   if (rl->GetAliRun())
-   AliKalmanTrack::SetConvConst(
-     1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
-   );
-   else {
-       ::Fatal("AliTPCComparison.C","Can't get AliRun !");
-   }
-   //rl->UnloadgAlice();
-  
 
    /* Generate a list of "good" tracks */
    const Int_t MAX=20000;
    GoodTrackTPC gt[MAX];
    Int_t ngood=0;
-   ifstream in("good_tracks_tpc");
+   sprintf(fname,"%s/good_tracks_tpc",dir);
+   ifstream in(fname);
    if (in) {
       ::Info("AliTPCComparison.C","Reading good tracks...");
       while (in>>gt[ngood].lab>>gt[ngood].code>>
@@ -104,7 +99,7 @@ Int_t AliTPCComparison() {
       ::Info
       ("AliTPCComparison","Marking good tracks (this will take a while)...");
       ngood=good_tracks_tpc(gt,MAX,"COMPARISON");
-      ofstream out("good_tracks_tpc");
+      ofstream out(fname);
       if (out) {
          for (Int_t ngd=0; ngd<ngood; ngd++)            
 	    out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '<<
@@ -115,46 +110,65 @@ Int_t AliTPCComparison() {
       out.close();
    }
 
-   Int_t i=0; TObjArray tarray(MAX);
+   AliESD *event=0;
    { /*Load tracks*/
-   TFile *ef=TFile::Open("AliESDtpc.root");
+   sprintf(fname,"%s/AliESDs.root",dir);
+   TFile *ef=TFile::Open(fname);
    if ((!ef)||(!ef->IsOpen())) {
-      ::Fatal("AliTPCComparison.C","Can't open AliESDtpc.root !");
+      sprintf(fname,"%s/AliESDtpc.root",dir);
+      ef=TFile::Open(fname);
+      if ((!ef)||(!ef->IsOpen()))
+         ::Fatal("AliTPCComparison.C","Can't open AliESDtpc.root !");
    }
    TKey *key=0;
    TIter next(ef->GetListOfKeys());
-   if ((key=(TKey*)next())!=0) {
-     AliESD *event=(AliESD*)key->ReadObj();
-     Int_t ntrk=event->GetNumberOfTracks();
-     for (Int_t i=0; i<ntrk; i++) {
-        AliESDtrack *t=event->GetTrack(i);
-        if ((t->GetStatus()&AliESDtrack::kTPCin)==0) continue;
-        AliTPCtrack *iotrack=new AliTPCtrack(*t);
-        tarray.AddLast(iotrack);
-     }
-     delete event;
-   }
+   if ((key=(TKey*)next())!=0) event=(AliESD*)key->ReadObj();
    ef->Close();
    }
-   Int_t nentr=tarray.GetEntriesFast();
+   Int_t nentr=event->GetNumberOfTracks();
 
-   TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
-   TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);
-   TH1F *hpt=new TH1F("hpt","Relative Pt resolution",30,-10.,10.); 
-   hpt->SetFillColor(2); 
-   TH1F *hmpt=new TH1F("hmpt","Relative Pt resolution (pt>4GeV/c)",30,-60,60); 
+   TH1F *hp=(TH1F*)gROOT->FindObject("hp");
+   if (!hp) hp=new TH1F("hp","PHI resolution",50,-20.,20.); 
+   hp->SetFillColor(4);
+
+   TH1F *hl=(TH1F*)gROOT->FindObject("hl");
+   if (!hl) hl=new TH1F("hl","LAMBDA resolution",50,-20,20);
+   hl->SetFillColor(4);
+
+   TH1F *hpt=(TH1F*)gROOT->FindObject("hpt");
+   if (!hpt) hpt=new TH1F("hpt","Relative Pt resolution",30,-10.,10.); 
+   hpt->SetFillColor(2);
+ 
+   TH1F *hmpt=(TH1F*)gROOT->FindObject("hmpt");
+   if (!hmpt) 
+      hmpt=new TH1F("hmpt","Relative Pt resolution (pt>4GeV/c)",30,-60,60); 
    hmpt->SetFillColor(6);
 
-   TH1F *hgood=new TH1F("hgood","Good tracks",30,0.2,6.1);    
-   TH1F *hfound=new TH1F("hfound","Found tracks",30,0.2,6.1);
-   TH1F *hfake=new TH1F("hfake","Fake tracks",30,0.2,6.1);
-   TH1F *hg=new TH1F("hg","Efficiency for good tracks",30,0.2,6.1);
+
+
+   TH1F *hgood=(TH1F*)gROOT->FindObject("hgood");
+   if (!hgood) hgood=new TH1F("hgood","Good tracks",30,0.2,6.1);
+    
+   TH1F *hfound=(TH1F*)gROOT->FindObject("hfound");
+   if (!hfound) hfound=new TH1F("hfound","Found tracks",30,0.2,6.1);
+
+   TH1F *hfake=(TH1F*)gROOT->FindObject("hfake");
+   if (!hfake) hfake=new TH1F("hfake","Fake tracks",30,0.2,6.1);
+
+   TH1F *hg=(TH1F*)gROOT->FindObject("hg");
+   if (!hg) hg=new TH1F("hg","Efficiency for good tracks",30,0.2,6.1);
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,0.2,6.1);
+
+   TH1F *hf=(TH1F*)gROOT->FindObject("hf");
+   if (!hf) hf=new TH1F("hf","Efficiency for fake tracks",30,0.2,6.1);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
-   TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
-   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,400.);
+   TH1F *he=(TH1F*)gROOT->FindObject("he");
+   if (!he) 
+      he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
+
+   TH2F *hep=(TH2F*)gROOT->FindObject("hep");
+   if (!hep) hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,400.);
    hep->SetMarkerStyle(8);
    hep->SetMarkerSize(0.4);
 
@@ -164,6 +178,7 @@ Int_t AliTPCComparison() {
    Int_t track_fake[MAX], itrack_fake=0;
    Int_t track_multifound[MAX], track_multifound_n[MAX], itrack_multifound=0;
 
+   Int_t i;
    while (ngood--) {
       Int_t lab=gt[ngood].lab,tlab=-1;
       Float_t ptg=
@@ -173,9 +188,9 @@ Int_t AliTPCComparison() {
 
       hgood->Fill(ptg);
 
-      AliTPCtrack *track=0;
+      AliESDtrack *track=0;
       for (i=0; i<nentr; i++) {
-          track=(AliTPCtrack*)tarray.UncheckedAt(i);
+          track=event->GetTrack(i);
           tlab=track->GetLabel();
           if (lab==TMath::Abs(tlab)) break;
       }
@@ -187,9 +202,9 @@ Int_t AliTPCComparison() {
       //MI change  - addition
       Int_t micount=0;
       Int_t mi;
-      AliTPCtrack * mitrack;
+      AliESDtrack * mitrack;
       for (mi=0; mi<nentr; mi++) {
-	mitrack=(AliTPCtrack*)tarray.UncheckedAt(mi);          
+	mitrack=event->GetTrack(mi);          
 	if (lab==TMath::Abs(mitrack->GetLabel())) micount++;
       }
       if (micount>1) {
@@ -198,21 +213,19 @@ Int_t AliTPCComparison() {
 	itrack_multifound++;
       }
       
-      Double_t xk=gt[ngood].x;
-      track->PropagateTo(xk);
-
       if (lab==tlab) hfound->Fill(ptg);
       else { 
 	track_fake[itrack_fake++]=lab;
 	hfake->Fill(ptg); 
       }
 
-      Double_t par[5]; track->GetExternalParameters(xk,par);
-      Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();
+      Double_t pxpypz[3]; track->GetInnerPxPyPz(pxpypz);
+      Float_t phi=TMath::ATan2(pxpypz[1],pxpypz[0]);
       if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
       if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
-      Float_t lam=TMath::ATan(par[3]); 
-      Float_t pt_1=TMath::Abs(par[4]);
+      Double_t pt=TMath::Sqrt(pxpypz[0]*pxpypz[0]+pxpypz[1]*pxpypz[1]);
+      Float_t lam=TMath::ATan2(pxpypz[2],pt); 
+      Float_t pt_1=1/pt;
 
       if (TMath::Abs(gt[ngood].code)==11 && ptg>4.) {
          hmpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
@@ -226,8 +239,8 @@ Int_t AliTPCComparison() {
          hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
       }
 
-      Float_t mom=1./(pt_1*TMath::Cos(lam));
-      Float_t dedx=track->GetdEdx();
+      Float_t mom=pt/TMath::Cos(lam);
+      Float_t dedx=track->GetTPCsignal();
       hep->Fill(mom,dedx,1.);
       if (TMath::Abs(gt[ngood].code)==211)
 	 if (mom>0.4 && mom<0.5) {
@@ -483,6 +496,10 @@ good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname) {
       if (p->Pt()<0.100) continue;
       if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
 
+      Double_t vx=p->Vx(),vy=p->Vy();
+      if (TMath::Sqrt(vx*vx+vy*vy)>3.5) continue;
+
+      /*
       Int_t j=p->GetFirstMother();
       if (j>=0) {
         TParticle *pp = (TParticle*)stack->Particle(j);
@@ -491,15 +508,16 @@ good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const char* evfoldname) {
            cerr<<"Can not get particle "<<j<<endl;
            continue;
          }
-        if (pp->GetFirstMother()>=0) continue;//only one decay is allowed
-	/*  for cascade hyperons only
+        //if (pp->GetFirstMother()>=0) continue;//only one decay is allowed
+	//  for cascade hyperons only
         Int_t jj=pp->GetFirstMother();
         if (jj>=0) {
           TParticle *ppp = (TParticle*)stack->Particle(jj);
           if (ppp->GetFirstMother()>=0) continue;//two decays are allowed
         }
-	*/
+
       }
+      */
 
       gt[nt].lab=i;
       gt[nt].code=p->GetPdgCode();
