@@ -90,7 +90,7 @@ void AliMUONMerger::Update(AliMUONPadHit *padhit)
 
     // update list of tracks
     //
-    Int_t track, charge;    
+    Int_t track, charge;   
     if (fSignal) {
       track = fTrack;
       charge = iqpad;

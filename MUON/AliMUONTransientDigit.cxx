@@ -58,7 +58,7 @@ AliMUONTransientDigit& AliMUONTransientDigit::operator =(const AliMUONTransientD
 ////////////////////////////////////////////////////////////////////////
 void AliMUONTransientDigit::AddToTrackList(Int_t track, Int_t charge)
 {
-  TVector *pTrInfo = new TVector(2);
+  TVector *pTrInfo = new TVector(3);
   TVector &trInfo = *pTrInfo;
   trInfo(0) = track;
   trInfo(1) = charge;
@@ -93,3 +93,4 @@ Int_t AliMUONTransientDigit::GetCharge(Int_t i) const
   TVector *pVect = static_cast<TVector*>(fTrackList->At(i));
   return static_cast<Int_t>((*pVect)(1));
 }
+

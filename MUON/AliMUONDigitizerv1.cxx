@@ -95,10 +95,12 @@ void AliMUONDigitizerv1::UpdateTransientDigit(Int_t track, AliMUONTransientDigit
   pdigit->AddPhysicsSignal(iqpad);		
   // update list of tracks
   //
-  Int_t charge;    
+  Int_t charge;   
   track=+ fMask;
   if (fSignal) charge = iqpad;
-  else         charge = kBgTag;
+  //else         charge = kBgTag;
+  else         charge = iqpad + fMask; 
+	       
   pdigit->UpdateTrackList(track,charge);
 }
 
@@ -144,14 +146,15 @@ void AliMUONDigitizerv1::MakeTransientDigit(Int_t track, Int_t iHit, AliMUONHit 
 			"Charge " << digits[3] <<" " <<
 			"Hit " << digits[5] << endl;
     // list of tracks
-    Int_t charge;    
+    Int_t charge;   
     track += fMask;
     if (fSignal) charge = digits[3];
-    else         charge = kBgTag;
+    //else         charge = kBgTag;
+    else         charge = digits[3] + fMask;
+		 
     if (GetDebug()>2) cerr<<"AliMUONDigitizerv1::MakeTransientDigit Creating AliMUONTransientDigit"<<endl;
     AliMUONTransientDigit * mTD = new AliMUONTransientDigit(ichamber, digits);
     mTD->AddToTrackList(track,charge);
-
     if (!ExistTransientDigit(mTD)) {
       AddTransientDigit(mTD);
       if (GetDebug()>2) cerr<<"AliMUONDigitizerv1::MakeTransientDigit Adding TransientDigit"<<endl;
@@ -452,7 +455,7 @@ void AliMUONDigitizerv1::SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr)
     if(qmax > 0) {
       idx[i]=jmax;
       jch[i]=charges[jmax]; 
-      jtr[i]=tracks[jmax]; 
+      jtr[i]=tracks[jmax];
     }
     
   } 
