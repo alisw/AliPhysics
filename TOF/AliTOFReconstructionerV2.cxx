@@ -112,7 +112,8 @@ AliTOFReconstructionerV2::AliTOFReconstructionerV2(char* tpcBackTracks, char* to
 }
 
 //____________________________________________________________________________
-AliTOFReconstructionerV2::AliTOFReconstructionerV2(const AliTOFReconstructionerV2 & rec)
+AliTOFReconstructionerV2::AliTOFReconstructionerV2(const AliTOFReconstructionerV2 & /*rec*/)
+:TTask("AliTOFReconstructionerV2","")
 {
   //
   // Dummy copy constructor
@@ -469,7 +470,7 @@ void AliTOFReconstructionerV2::Exec(Option_t* option)
 
 
 //__________________________________________________________________
-void AliTOFReconstructionerV2::Init(Option_t* opt)
+void AliTOFReconstructionerV2::Init(Option_t* /*opt*/)
 {
   //
   // Initialize the AliTOFReconstructionerV2
@@ -819,7 +820,7 @@ void AliTOFReconstructionerV2::IsInsideThePad(Float_t x, Float_t y, Float_t z, I
 }
 
 //__________________________________________________________________
-void AliTOFReconstructionerV2::GetGlobalXYZ(Double_t alpha, Double_t& x, Double_t& y, Double_t& z)
+void AliTOFReconstructionerV2::GetGlobalXYZ(Double_t alpha, Double_t& x, Double_t& y, Double_t& /*z*/)
 {
   //
   // return the current running coordinates of 
